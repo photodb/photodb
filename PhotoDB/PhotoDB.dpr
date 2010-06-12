@@ -1,0 +1,1037 @@
+program PhotoDB;
+
+{%File 'Units\dx\STRINGSWITCH.INC'}
+{%File 'Units\dx\COMSWITCH.INC'}
+
+{$DEFINE DEBUG}
+
+uses
+  Bde,
+  ADODB,
+  FileCtrl,
+  ShellApi,
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  DB,
+  DBTables,
+  Grids,
+  DBGrids,
+  Menus,
+  ExtCtrls,
+  StdCtrls,
+  ImgList,
+  ComCtrls,
+  ActiveX,
+  ShlObj,
+  DBCtrls,
+  jpeg,
+  DmProgress,
+  ClipBrd,
+  SaveWindowPos,
+  ExtDlgs,
+  ToolWin,
+  Rating,
+  Searching in 'Searching.pas' {SearchForm},
+  SlideShow in 'SlideShow.pas' {Viewer},
+  Loadingresults in 'Threads\Loadingresults.pas',
+  Options in 'Options.pas' {OptionsForm},
+  PropertyForm in 'PropertyForm.pas' {PropertiesForm},
+  UnitCleanUpThread in 'Threads\UnitCleanUpThread.pas',
+  login in 'login.pas' {LoginForm},
+  UnitFormCont in 'UnitFormCont.pas' {FormCont},
+  replaceform in 'replaceform.pas' {DBReplaceForm},
+  dolphin_db in 'Units\dolphin_db.pas',
+  UnitDBKernel in 'Units\UnitDBKernel.pas',
+  EmptyDeletedThreadUnit in 'Threads\EmptyDeletedThreadUnit.pas',
+  unitimhint in 'unitimhint.pas' {ImHint},
+  UnitHintCeator in 'Threads\UnitHintCeator.pas',
+  createuserunit in 'createuserunit.pas' {NewSingleUserForm},
+  CmpUnit in 'Units\CmpUnit.pas',
+  UnitCmpDB in 'Threads\UnitCmpDB.pas',
+  DBCMenu in 'Units\DBCMenu.pas',
+  SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
+  UnitLoadFilesToPanel in 'Threads\UnitLoadFilesToPanel.pas',
+  unitid in 'unitid.pas' {IDForm},
+  activation in 'activation.pas' {ActivateForm},
+  about in 'about.pas' {AboutForm},
+  win32crc in 'Units\win32crc.pas',
+  ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
+  ExplorerThreadUnit in 'Threads\ExplorerThreadUnit.pas',
+  InstallFormUnit in 'InstallFormUnit.pas' {InstallForm},
+  SetupProgressUnit in 'SetupProgressUnit.pas' {SetupProgressForm},
+  UnitInstallThread in 'Threads\UnitInstallThread.pas',
+  UnitUnInstallThread in 'Threads\UnitUnInstallThread.pas',
+  UnInstallFormUnit in 'UnInstallFormUnit.pas' {UnInstallForm},
+  UnitUpdateDB in 'UnitUpdateDB.pas' {UpdateDBForm},
+  UnitUpdateDBThread in 'Threads\UnitUpdateDBThread.pas',
+  ExplorerTypes in 'Units\ExplorerTypes.pas',
+  GraphicEx in 'External\Formats\GraphicEx\GraphicEx.pas',
+  GraphicColor in 'External\Formats\GraphicEx\GraphicColor.pas',
+  GraphicCompression in 'External\Formats\GraphicEx\GraphicCompression.pas',
+  GraphicStrings in 'External\Formats\GraphicEx\GraphicStrings.pas',
+  JPG in 'External\Formats\GraphicEx\JPG.pas',
+  MZLib in 'External\Formats\GraphicEx\MZLib.pas',
+  GIFImage in 'GIFImage.pas',
+  FormManegerUnit in 'FormManegerUnit.pas' {FormManager},
+  ManagerDBUnit in 'ManagerDBUnit.pas' {ManagerDB},
+  ThreadManeger in 'Units\ThreadManeger.pas',
+  UnitTerminationApplication in 'Threads\UnitTerminationApplication.pas',
+  UnitPackingTable in 'Threads\UnitPackingTable.pas',
+  CMDUnit in 'CMDUnit.pas' {CMDForm},
+  ExportUnit in 'ExportUnit.pas' {ExportForm},
+  UnitExportThread in 'Threads\UnitExportThread.pas',
+  UnitBackUpTableThread in 'Threads\UnitBackUpTableThread.pas',
+  UnitDBCleaning in 'UnitDBCleaning.pas' {DBCleaningForm},
+  UnitCompareProgress in 'UnitCompareProgress.pas' {ImportProgressForm},
+  UnitCompareDataBases in 'UnitCompareDataBases.pas' {ImportDataBaseForm},
+  UnitGroupsWork in 'Units\UnitGroupsWork.pas',
+  UnitEditGroupsForm in 'UnitEditGroupsForm.pas' {EditGroupsForm},
+  UnitNewGroupForm in 'UnitNewGroupForm.pas' {NewGroupForm},
+  UnitManageGroups in 'UnitManageGroups.pas' {FormManageGroups},
+  UnitFormChangeGroup in 'UnitFormChangeGroup.pas' {FormChangeGroup},
+  UnitQuickGroupInfo in 'UnitQuickGroupInfo.pas' {FormQuickGroupInfo},
+  UnitMenuDateForm in 'UnitMenuDateForm.pas' {FormMenuDateEdit},
+  UnitExplorerThumbnailCreatorThread in 'Threads\UnitExplorerThumbnailCreatorThread.pas',
+  UnitGroupReplace in 'UnitGroupReplace.pas' {FormGroupReplace},
+  Language in 'Units\Language.pas',
+  UnitGroupsReplace in 'Units\UnitGroupsReplace.pas',
+  UnitSavingTableForm in 'UnitSavingTableForm.pas' {SavingTableForm},
+  UnitSaveQueryThread in 'Threads\UnitSaveQueryThread.pas',
+  UnitBitmapImageList in 'Units\UnitBitmapImageList.pas',
+  UnitRecreatingThInTable in 'Threads\UnitRecreatingThInTable.pas',
+  Network in 'Units\Network.pas',
+  FloatPanelFullScreen in 'FloatPanelFullScreen.pas' {FloatPanel},
+  GraphicCrypt in 'Units\GraphicCrypt.pas',
+  UnitPasswordForm in 'UnitPasswordForm.pas' {PassWordForm},
+  UnitCryptImageForm in 'UnitCryptImageForm.pas' {CryptImageForm},
+  UnitCrypting in 'Units\UnitCrypting.pas',
+  UnitFileRenamerForm in 'UnitFileRenamerForm.pas' {FormFastFileRenamer},
+  UnitSizeResizerForm in 'UnitSizeResizerForm.pas' {FormSizeResizer},
+  ShellContextMenu in 'Units\ShellContextMenu.pas',
+  UnitImageConverter in 'UnitImageConverter.pas' {FormConvertImages},
+  ImageConverting in 'Units\ImageConverting.pas',
+  UnitJPEGOptions in 'UnitJPEGOptions.pas' {FormJpegOptions},
+  UnitRotateImages in 'UnitRotateImages.pas' {FormRotateImages},
+  DDraw in 'Units\DDraw.pas',
+  OLE2 in 'Units\ole2.pas',
+  DXCommon in 'Units\DXCommon.pas',
+  DX_Alpha in 'Units\dx\DX_Alpha.pas' {DirectShowForm},
+  UnitDirectXSlideShowCreator in 'Threads\UnitDirectXSlideShowCreator.pas',
+  UnitViewerThread in 'Threads\UnitViewerThread.pas',
+  UnitInternetUpdate in 'Threads\UnitInternetUpdate.pas',
+  UnitFormInternetUpdating in 'UnitFormInternetUpdating.pas' {FormInternetUpdating},
+  UnitHelp in 'UnitHelp.pas' {HelpPopup},
+  ProgressActionUnit in 'ProgressActionUnit.pas' {ProgressActionForm},
+  Exif in 'Units\Exif.pas',
+  ImEditor in 'ImageEditor\ImEditor.pas' {ImageEditor},
+  ColorToolUnit in 'ImageEditor\ColorToolUnit.pas',
+  CropToolUnit in 'ImageEditor\CropToolUnit.pas',
+  EffectsToolThreadUnit in 'ImageEditor\EffectsToolThreadUnit.pas',
+  EffectsToolUnit in 'ImageEditor\EffectsToolUnit.pas',
+  ExEffectFormUnit in 'ImageEditor\ExEffectFormUnit.pas' {ExEffectForm},
+  ExEffects in 'ImageEditor\ExEffects.pas',
+  ImageHistoryUnit in 'ImageEditor\ImageHistoryUnit.pas',
+  RedEyeToolUnit in 'ImageEditor\RedEyeToolUnit.pas',
+  ResizeToolThreadUnit in 'ImageEditor\ResizeToolThreadUnit.pas',
+  ResizeToolUnit in 'ImageEditor\ResizeToolUnit.pas',
+  RotateToolThreadUnit in 'ImageEditor\RotateToolThreadUnit.pas',
+  RotateToolUnit in 'ImageEditor\RotateToolUnit.pas',
+  ToolsUnit in 'ImageEditor\ToolsUnit.pas',
+  Effects in 'ImageEditor\effects\Effects.pas',
+  UserRightsEditorUnit in 'UserRightsEditorUnit.pas' {UserRightEditorForm},
+  UnitEditorFullScreenForm in 'UnitEditorFullScreenForm.pas' {EditorFullScreenForm},
+  ExEffectsUnit in 'ImageEditor\ExEffectsUnit.pas',
+  GraphicsBaseTypes in 'ImageEditor\GraphicsBaseTypes.pas',
+  GBlur2 in 'ImageEditor\GBlur2.pas',
+  EffectsLanguage in 'ImageEditor\EffectsLanguage.pas',
+  UnitExportImagesForm in 'UnitExportImagesForm.pas' {ExportImagesForm},
+  CustomSelectTool in 'ImageEditor\CustomSelectTool.pas',
+  TextToolUnit in 'ImageEditor\TextToolUnit.pas',
+  BrushToolUnit in 'ImageEditor\BrushToolUnit.pas',
+  UnitGeneratorPrinterPreview in 'Printer\UnitGeneratorPrinterPreview.pas',
+  UnitPrinterTypes in 'Printer\UnitPrinterTypes.pas',
+  PrintMainForm in 'Printer\PrintMainForm.pas' {PrintForm},
+  PrinterProgress in 'Printer\PrinterProgress.pas' {FormPrinterProgress},
+  ExEffectsUnitW in 'ImageEditor\ExEffectsUnitW.pas',
+  UnitGetPhotosForm in 'UnitGetPhotosForm.pas' {GetToPersonalFolderForm},
+  rxtypes in 'SelfDelete\rxtypes.pas',
+  SelfDeleteUnit in 'SelfDelete\SelfDeleteUnit.pas',
+  Scanlines in 'ImageEditor\effects\Scanlines.pas',
+  ScanlinesFX in 'ImageEditor\effects\ScanlinesFX.pas',
+  InsertImageToolUnit in 'ImageEditor\InsertImageToolUnit.pas',
+  OptimizeImageUnit in 'ImageEditor\OptimizeImageUnit.pas',
+  UnitLinksSupport in 'Units\UnitLinksSupport.pas',
+  UnitEditLinkForm in 'UnitEditLinkForm.pas' {FormEditLink},
+  GDIPlusRotate in 'Units\GDIPlusRotate.pas',
+  SelectGroupForm in 'SelectGroupForm.pas' {FormSelectGroup},
+  UnitGroupsTools in 'Units\UnitGroupsTools.pas',
+  UnitRestoreTableThread in 'Threads\UnitRestoreTableThread.pas',
+  UnitWindowsCopyFilesThread in 'Threads\UnitWindowsCopyFilesThread.pas',
+  UnitSelectFontForm in 'UnitSelectFontForm.pas' {FormSelectFont},
+  UnitListOfKeyWords in 'UnitListOfKeyWords.pas' {FormListOfKeyWords},
+  UnitDBTreeView in 'DBTools\UnitDBTreeView.pas' {FormCreateDBFileTree},
+  UnitResampleFilters in 'ImageEditor\effects\UnitResampleFilters.pas',
+  UnitSQLOptimizing in 'Units\UnitSQLOptimizing.pas',
+  UnitHistoryForm in 'UnitHistoryForm.pas' {FormHistory},
+  UnitThreadShowBadLinks in 'Threads\UnitThreadShowBadLinks.pas',
+  UnitStringPromtForm in 'UnitStringPromtForm.pas' {FormStringPromt},
+  CommonDBSupport in 'Units\CommonDBSupport.pas',
+  UnitScripts in 'Units\UnitScripts.pas',
+  ReplaseLanguageInScript in 'Units\ReplaseLanguageInScript.pas',
+  ReplaseIconsInScript in 'Units\ReplaseIconsInScript.pas',
+  DBScriptFunctions in 'Units\DBScriptFunctions.pas',
+  UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas',
+  UnitBackUpTableInCMD in 'Threads\UnitBackUpTableInCMD.pas',
+  UnitFormManagerHint in 'UnitFormManagerHint.pas' {FormManagerHint},
+  UnitGetNewFilesInFolderThread in 'Threads\UnitGetNewFilesInFolderThread.pas',
+  UnitScriptsFunctions in 'Units\UnitScriptsFunctions.pas',
+  UnitFormCanvasSize in 'UnitFormCanvasSize.pas' {FormCanvasSize},
+  UnitImageActions in 'Units\UnitImageActions.pas',
+  UnitActionsForm in 'Units\UnitActionsForm.pas' {ActionsForm},
+  UnitSplitExportForm in 'UnitSplitExportForm.pas' {SplitExportForm},
+  UnitDebugScriptForm in 'UnitDebugScriptForm.pas' {DebugScriptForm},
+  UnitReadingActions in 'Units\UnitReadingActions.pas',
+  PNG_IO in 'png\PNG_IO.pas',
+  PngDef in 'png\PngDef.pas',
+  PngImage in 'png\PNGImage.pas',
+  UnitOpenQueryThread in 'Threads\UnitOpenQueryThread.pas',
+  UnitTIFFOptionsUnit in 'UnitTIFFOptionsUnit.pas' {TIFFOptionsForm},
+  TiffImageUnit in 'External\Formats\TiffImageUnit.pas',
+  LibDelphi in 'External\Formats\\Tiff\LibDelphi.pas',
+  LibJpegDelphi in 'External\Formats\\Tiff\LibJpegDelphi.pas',
+  LibTiffDelphi in 'External\Formats\\Tiff\LibTiffDelphi.pas',
+  ZLibDelphi in 'External\Formats\\Tiff\ZLibDelphi.pas',
+  UnitOptimizeDublicatesThread in 'Threads\UnitOptimizeDublicatesThread.pas',
+  UnitImportingImagesForm in 'UnitImportingImagesForm.pas' {FormImportingImages},
+  UnitConvertDBForm in 'UnitConvertDBForm.pas' {FormConvertingDB},
+  ConvertDBThreadUnit in 'Threads\ConvertDBThreadUnit.pas',
+  UnitUpdateDBObject in 'Units\UnitUpdateDBObject.pas',
+  UnitTimeCounter in 'Units\UnitTimeCounter.pas',
+  UnitRangeDBSelectForm in 'UnitRangeDBSelectForm.pas' {FormDateRangeSelectDB},
+  VirtualSystemImageLists in 'Units\VirtualSystemImageLists.pas',
+  acWorkRes in 'Units\acWorkRes.pas',
+  UnitBigImagesSize in 'UnitBigImagesSize.pas' {BigImagesSizeForm},
+  UnitSearchBigImagesLoaderThread in 'Threads\UnitSearchBigImagesLoaderThread.pas',
+  uVistaFuncs in '..\..\..\Dmitry\uVistaFuncs.pas',
+  RAWImage in 'External\Formats\DelphiDcraw\RAWImage.pas',
+  Global_FastIO in 'External\Formats\DelphiDcraw\Global_FastIO.pas',
+  GlobalTypes in 'External\Formats\DelphiDcraw\GlobalTypes.pas',
+  UnitConvertImagesThread in 'Threads\UnitConvertImagesThread.pas',
+  UnitPropertyLoadImageThread in 'Threads\UnitPropertyLoadImageThread.pas',
+  UnitPropertyLoadGistogrammThread in 'Threads\UnitPropertyLoadGistogrammThread.pas',
+  UnitScanImportPhotosThread in 'Threads\UnitScanImportPhotosThread.pas',
+  dEXIF in 'Units\dEXIF.pas',
+  dIPTC in 'Units\dIPTC.pas',
+  msData in 'Units\msData.pas',
+  UnitRefreshDBRecordsThread in 'Threads\UnitRefreshDBRecordsThread.pas',
+  UnitPropeccedFilesSupport in 'Units\UnitPropeccedFilesSupport.pas',
+  UnitCryptingImagesThread in 'Threads\UnitCryptingImagesThread.pas',
+  UnitINI in 'Units\UnitINI.pas',
+  UnitRotatingImagesThread in 'Threads\UnitRotatingImagesThread.pas',
+  UnitDBRedeclare in 'Units\UnitDBRedeclare.pas',
+  UnitStenoGraphia in 'UnitStenoGraphia.pas' {FormSteno},
+  wfsU in 'Units\wfsU.pas',
+  UnitFileCheckerDB in 'Units\UnitFileCheckerDB.pas',
+  BitmapDB in 'Units\BitmapDB.pas',
+  UnitPasswordKeeper in 'Units\UnitPasswordKeeper.pas',
+  UnitPanelLoadingBigImagesThread in 'Threads\UnitPanelLoadingBigImagesThread.pas',
+  UnitDBDeclare in 'Units\UnitDBDeclare.pas',
+  UnitDBNullQueryThread in 'Threads\UnitDBNullQueryThread.pas',
+  UnitDBCommon in 'Units\UnitDBCommon.pas',
+  UnitDBCommonGraphics in 'Units\UnitDBCommonGraphics.pas',
+  UnitSlideShowScanDirectoryThread in 'Units\UnitSlideShowScanDirectoryThread.pas',
+  VistaDialogInterfaces in 'Units\VistaDialogInterfaces.pas',
+  VistaFileDialogs in 'Units\VistaFileDialogs.pas',
+  UnitDBFileDialogs in 'Units\UnitDBFileDialogs.pas',
+  UnitChangeDBPath in 'UnitChangeDBPath.pas' {FormChangeDBPath},
+  UnitSelectDB in 'UnitSelectDB.pas' {FormSelectDB},
+  UnitFileExistsThread in 'Threads\UnitFileExistsThread.pas',
+  UnitDBOptions in 'UnitDBOptions.pas' {FormDBOptions},
+  UnitSendMessageWithTimeoutThread in 'Units\UnitSendMessageWithTimeoutThread.pas',
+  UnitSlideShowUpdateInfoThread in 'Threads\UnitSlideShowUpdateInfoThread.pas',
+  UnitFormLoginModeChooser in 'UnitFormLoginModeChooser.pas' {FormLoginModeChooser},
+  WindowsIconCacheTools in 'Units\WindowsIconCacheTools.pas',
+  VRSIShortCuts in 'Units\VRSIShortCuts.pas',
+  UnitFormCDExport in 'UnitFormCDExport.pas' {FormCDExport},
+  UnitCDMappingSupport in 'Units\UnitCDMappingSupport.pas',
+  UnitFormCDMapper in 'UnitFormCDMapper.pas' {FormCDMapper},
+  UnitFormCDMapInfo in 'UnitFormCDMapInfo.pas' {FormCDMapInfo},
+  UnitCDExportThread in 'Threads\UnitCDExportThread.pas',
+  Scpanel in 'External\Controls\scpanel\Scpanel.pas';
+
+{$R *.res}
+
+type
+    TInitializeProc = function(s:PChar) : integer;
+    TInitializeAProc = function(s:PChar) : boolean;
+
+var
+    s1,s2 : string;
+    Reg : TBDRegistry;
+    hw : THandle;
+    cd : TCopyDataStruct;
+    rec : TRecToPass;
+    hSemaphore:thandle;
+    name : string;
+    actcode : string;
+    initproc : TInitializeProc;
+    initaproc : TInitializeAProc;
+    TablePacked : boolean;    
+    ActivKey, ActivName, AllParams : String;
+    aHandle : Thandle;
+    i : integer;
+    CheckResult : integer;
+    b1,b2 : tbitmap;
+
+  f : TPcharFunction;
+  Fh : pointer;
+  p : PChar;
+  k : integer;
+
+function IsFalidDBFile : boolean;
+begin
+ Result:=true;
+end;
+
+function FileVersion : integer;
+begin
+ Result:=ReleaseNumber;
+end;
+
+Procedure FindRunningVersion;
+begin
+  Name := DBID;
+  hSemaphore := CreateSemaphore( nil, 0, 1, pchar(name));
+  if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
+  begin
+   CloseHandle(hSemaphore); 
+   if not CheckFileExistsWithMessageEx(ParamStr(1),false) then
+   begin
+    If (AnsiUpperCase(ParamStr(1))<>'/EXPLORER') and (AnsiUpperCase(ParamStr(1))<>'/GETPHOTOS') then
+    begin
+     if FindWindow(nil, DBID)<>0 then
+     begin
+      hw:=FindWindow(nil, DBID);
+      rec.s := 'Activate';
+      rec.i := 32;
+      cd.dwData := 3232;
+      cd.cbData := sizeof(rec);
+      cd.lpData := @rec;
+      if SendMessageEx(hw, WM_COPYDATA, 0, LongInt(@cd)) then
+      begin
+       halt;
+      end else
+      begin
+       if ID_YES<>MessageBoxDB(0,TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED,TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then halt;
+      end;
+     end;
+    end else
+    begin
+      hw:=FindWindow(nil, DBID);
+      rec.s := ParamStr(1)+#0+ParamStr(2);
+      rec.i := 32;
+      cd.dwData := 3232;
+      cd.cbData := sizeof(rec);
+      cd.lpData := @rec;
+      if SendMessageEx(hw, WM_COPYDATA, 0, LongInt(@cd)) then
+      begin
+       halt;
+      end else
+      begin
+       if ID_YES<>MessageBoxDB(0,TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED,TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then halt;
+      end;
+    end;
+    Exit;
+   end;
+   if FindWindow(nil, DBID)=0 then
+   begin
+    i:=0;
+    Repeat
+     Sleep(100);
+     Inc(i,100);
+     hSemaphore := CreateSemaphore( nil, 0, 1, PChar(Name));
+     IF ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) THEN
+     BEGIN
+      CloseHandle(hSemaphore);
+     end else break;
+     if i>10000 then Halt; //more than 10 second -> exit;
+    until (FindWindow(nil, DBID)<>0);
+   end;
+  end;
+  hw := FindWindow(nil, DBID);
+  if hw<>0 then
+  begin
+   rec.s := ParamStr(1)+#0+ParamStr(2);
+   rec.i := 32;
+   cd.dwData := 3232;
+   cd.cbData := sizeof(rec);
+   cd.lpData := @rec;
+   if SendMessageEx(hw, WM_COPYDATA, 0, LongInt(@cd)) then
+   begin
+    halt;
+   end else
+   begin
+    if ID_YES<>MessageBoxDB(0,TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED,TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then halt;
+   end;
+   Exit;
+  end;
+end;
+
+exports
+ IsFalidDBFile name 'IsFalidDBFile',
+ FileVersion name 'FileVersion';
+
+begin
+{
+ //Command line
+ 
+ /OPTIMIZE_DUBLICTES
+ /SHOWBADLINKS
+ /RECREATETHTABLE
+ /BACKUP
+ /PACKTABLE
+ /CONVERT
+ /SLEEP
+ /SAFEMODE
+ /UNINSTALL
+ /EXPLORER
+ /GETPHOTOS 
+ /NOLOGO 
+ /user user
+ /pass pass    
+ /NoPrevVersion
+ /NoFaultCheck  
+ /NoFullRun 
+ /Execute "c:\script.dbscript"
+ /NoVistaMsg
+ /NoVistaFileDlg   
+ /SelectDB "DBFile"
+ /SelectDB "DBName"
+ /SelectDBPermanent
+ /ADD "file"
+ /ADD "directory"
+ /AddPass "pass1!pass2!..."
+ /Logging
+ /SQLExec   
+ /SQLExecFile
+}
+                 
+  ProgramDir := ExtractFileDir(Application.ExeName) + '\';
+
+  EventLog('');
+  EventLog('');
+  EventLog('');
+  EventLog(Format('Program running! [%s]',[ProductName]));
+
+  KernelHandle:=loadlibrary(PChar(ProgramDir+'icons.dll'));
+  if KernelHandle=0 then
+  begin
+   EventLog('icons IS missing -> exit');
+   MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_ICONS_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   Halt;
+  end;
+
+  if GetParamStrDBBool('/Logging') then
+  begin
+   EventLog(Format('Program logging enabled!! [%s]',[ProductName]));
+   LOGGING_ENABLED:=true;
+  end else
+  begin
+   EventLog('Program logging DISABLED! Run program with param "/Logging"');
+   LOGGING_ENABLED := false;
+  end;
+  AllParams:='';
+  for i := 0 to 250 do
+  if ParamStr(i)<>'' then
+  AllParams:=AllParams+' '+ParamStr(i) else break;
+  EventLog('Program params :'+AllParams);
+  //PREPAIRING ----------------------------------------------------
+
+  TablePacked:=false;
+  If GetParamStrDBBool('/SLEEP') then Sleep(1000);
+  SafeMode:=False;
+  If GetParamStrDBBool('/SAFEMODE') then SafeMode:=True;
+
+  EventLog(Format('Safe mode = %s',[BoolToStr(SafeMode)]));
+
+  ProgramDir:=GetDirectory(Application.ExeName);  
+  DBTerminating:=false;     
+  DBKernel:=nil;
+
+  InitializeDBLoadScript;
+  LoadingAboutForm:=nil;
+  // INITIALIZAING APPLICATION
+
+  if GetDBViewMode then
+  begin
+   FolderView:=true;
+   UseScripts:=false;
+  end;
+  Application.Initialize;
+
+  EventLog(Format('Folder View = %s',[BoolToStr(FolderView)]));
+
+  //INSTALL ----------------------------------------------------
+
+  if not FolderView then
+  if not Emulation then
+  if not DBInDebug then
+  begin
+   EventLog('...INSTALL COMPARING...');
+   If not ThisFileInstalled then
+   begin
+    if (AnsiUpperCase(ExtractFileName(Application.ExeName))<>'SETUP.EXE') and not EmulationInstall then
+    begin
+     if ID_YES=MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_PROGRAMM_NOT_INSTALLED,TEXT_MES_ERROR,TD_BUTTON_YESNO,TD_ICON_ERROR) then
+     begin
+      EventLog('Loading Kernel.dll');
+      KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
+      if KernelHandle=0 then
+      begin
+       EventLog('KernelHandle IS 0 -> exit');
+       MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+       Halt;
+      end;
+      DBKernel:=TDBKernel.Create;
+      DBKernel.LoadColorTheme;
+      Application.CreateForm(TInstallForm, InstallForm);
+  Application.Restore;
+      EventLog(':InstallForm.SetQuickSelfInstallOption()');
+      InstallForm.SetQuickSelfInstallOption;
+      InstallForm.ShowModal;
+      InstallForm.Release;
+      if UseFreeAfterRelease then InstallForm.free;
+      InstallForm:=nil;
+      DBTerminating:=True;
+      Halt;
+     end else
+     begin
+      DBTerminating:=True;
+      Halt;
+     end;
+    end else
+    begin               
+     EventLog('Loading Kernel.dll');
+     KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
+     if KernelHandle=0 then
+     begin                
+      EventLog('KernelHandle IS 0 -> exit');
+      MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      Halt;
+     end;
+     DBKernel:=TDBKernel.Create;
+     DBKernel.LoadColorTheme;
+     if Length(GetDirectory(Application.ExeName))>200 then
+     begin  
+      MessageBoxDB(Dolphin_DB.GetActiveFormHandle,PChar(Format(TEXT_MES_PATH_TOO_LONG,[GetDirectory(Application.ExeName)])),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+     end;
+     Application.CreateForm(TInstallForm, InstallForm);
+     Application.Restore;
+     InstallForm.ShowModal;
+     InstallForm.Release;
+     if UseFreeAfterRelease then InstallForm.free;
+     InstallForm:=nil;
+     Halt;
+    end;
+   end;
+  end;
+  EventLog(':BDEInstalled()');
+  BDEIsInstalled:=BDEInstalled;
+           
+  //UNINSTALL ----------------------------------------------------
+           
+  EventLog('...UNINSTALL COMPARING...');
+  If ThisFileInstalled and GetParamStrDBBool('/UNINSTALL') and not DBTerminating then
+  begin
+   If ID_YES=MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_UNINSTALL_CONFIRM,TEXT_MES_WARNING,TD_BUTTON_YESNO,TD_ICON_WARNING) then
+   begin
+    AExplorerFolders.Free;
+    AExplorerFolders:=nil;
+    Application.CreateForm(TUnInstallForm, UnInstallForm);
+    Application.Restore;
+    UnInstallForm.ShowModal;
+    UnInstallForm.Release;
+    if UseFreeAfterRelease then UnInstallForm.free;
+    UnInstallForm:=nil;
+   end;
+   Halt;
+  end;
+
+  if not SafeMode then
+  if not GetParamStrDBBool('/NoPrevVersion') then
+  FindRunningVersion;
+
+  if not GetParamStrDBBool('/NoLogo') then
+  begin
+   Application.CreateForm(TAboutForm, LoadingAboutForm);
+   LoadingAboutForm.FormStyle := fsStayOnTop;
+   TAboutForm(LoadingAboutForm).CloseButton.Visible:=false;
+   LoadingAboutForm.Show;
+   Application.Restore;
+   Application.ProcessMessages;
+   TAboutForm(LoadingAboutForm).DmProgress1.MaxValue:=8;
+  end else LoadingAboutForm:=nil;
+
+
+  //CHECK DEMO MODE ----------------------------------------------------
+  {$IFDEF DEBUG}
+  EventLog('...CHECK DEMO MODE...');
+  {$ENDIF}
+  if not DBTerminating then
+  begin
+   EventLog('Loading Kernel.dll');
+   if not FolderView then
+   KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
+   DBKernel:=TDBKernel.Create;    
+   EventLog(':DBKernel.LoadColorTheme');
+   DBKernel.LoadColorTheme;
+  end;
+  if not FolderView then
+  if not DBTerminating then
+  If IsInstalling then
+  begin     
+   EventLog('IsInstalling IS true -> exit');
+   MessageBoxDB(GetActiveFormHandle,TEXT_MES_SETUP_RUNNING,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+   Application.Terminate;
+   DBTerminating:=True;
+  end;
+  if not DBTerminating then
+  if not FolderView then
+  if KernelHandle=0 then
+  begin
+   EventLog('KernelHandle IS 0 -> exit');
+   MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   Halt;
+  end;
+
+  if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
+  begin
+   ProgramDir:=GetDirectory(ParamStr(0));
+   AIcons:=TAIcons.Create;
+   AExplorerFolders := TExplorerFolders.Create;
+  end;
+
+  if not FolderView then
+  for k:=1 to 10 do
+  begin
+   Fh:=GetProcAddress(KernelHandle,'GetCIDA');
+   if fh=nil then
+   begin
+    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+    halt;
+    exit;
+   end;
+   @f:=Fh;
+   p:=f;
+  end;
+            
+  {$IFDEF DEBUG}
+  EventLog('...CHECK GetCIDA...');
+  {$ENDIF}
+  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=1;
+  if not FolderView then
+  If not DBTerminating then
+  begin
+   @initproc := GetProcAddress(KernelHandle,'Initialize');
+
+   GetMem(p,Length(Application.ExeName)+1);
+   FillChar(p[0],Length(Application.ExeName)+1,#0);
+
+   for k:=0 to Length(Application.ExeName)-1 do
+   p[k]:=Application.ExeName[k+1];
+   initproc(PChar(Application.ExeName));
+   for k:=1 to 10 do
+   begin
+    {$IFDEF DEBUG}
+    EventLog('...:GetCIDA('+IntToStr(k)+')...');
+    {$ENDIF}
+    Fh:=GetProcAddress(KernelHandle,'GetCIDA');
+    if fh=nil then
+    begin
+     MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+     halt;
+     exit;
+    end;
+    @f:=Fh;
+    p:=f;
+   end;
+
+   {$IFDEF DEBUG}
+   EventLog('...Get [Registration] Key and User Name...');
+   {$ENDIF}
+   Reg:=TBDRegistry.Create(REGISTRY_CLASSES,true);
+   if PortableWork then
+   begin
+    ActivKey:='\CLSID';
+    ActivName:='Key';
+   end else
+   begin
+    ActivKey:='\CLSID\'+ActivationID;
+    ActivName:='DefaultHandle';
+   end;
+   {$IFDEF DEBUG}
+   EventLog('...ActivKey = '+ActivKey);   
+   EventLog('...ActivName = '+ActivName);
+   {$ENDIF}
+   try
+    Reg.OpenKey(ActivKey,true);
+    ActCode:=Reg.ReadString(ActivName);
+   except
+    on e : Exception do EventLog(':PhotoDB() throw exception: '+e.Message);
+   end;
+   Reg.free;
+   EventLog(':FindRunningVersion()');
+  end;
+
+  EventLog('...Loading menu...');
+  if not DBTerminating then
+  DBPopupMenu:=TDBPopupMenu.create;
+  if LoadingAboutForm<>nil then begin TAboutForm(LoadingAboutForm).DmProgress1.Position:=2; if not FolderView then TAboutForm(LoadingAboutForm).LoadRegistrationData; end;
+  //LOGGING ----------------------------------------------------
+
+  EventLog('...LOGGING...');
+  if not FolderView then
+  if not DBInDebug then
+  if not DBTerminating then
+  If DBKernel.ProgramInDemoMode then
+  begin
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   EventLog('Loading About...');
+   if AboutForm= nil then
+   Application.CreateForm(TAboutForm, AboutForm);
+   AboutForm.Execute;
+   AboutForm.Release;
+   if UseFreeAfterRelease then AboutForm.Free;
+   AboutForm:=nil;
+  end;
+  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=3;
+  {$IFDEF DEBUG}
+  //DEBUGGING
+  //LOGGING_MESSAGE:=true;
+  {$ENDIF}
+
+  //CHECK APPDATA DIRECTORY
+  EventLog('...CHECK APPDATA DIRECTORY...');
+  if not DirectoryExists(GetAppDataDirectory) then
+  begin
+   try
+    CreateDirA(GetAppDataDirectory);
+   except
+    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,Format(ERROR_CREATING_APP_DATA_DIRECTORY_MAY_NE_PROBLEMS,[GetAppDataDirectory]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   end;
+  end;
+  EventLog('...CHECK APPDATA TEMP DIRECTORY...');
+  if not DirectoryExists(GetAppDataDirectory+TempFolder) then
+  begin
+   try
+    CreateDirA(GetAppDataDirectory+TempFolder);
+   except
+    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,Format(ERROR_CREATING_APP_DATA_DIRECTORY_TEMP_MAY_BE_PROBLEMS,[GetAppDataDirectory+TempFolder]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   end;
+  end;
+  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=4;
+
+  EventLog('Login...');
+  if not FolderView then
+  If not DBTerminating then
+  begin
+   EventLog(':DBKernel.FixLoginDB()');
+   DBKernel.FixLoginDB;
+   if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=5;
+   if not SafeMode then
+   begin
+    CheckResult:=FileCheckedDB.CheckFile(DBKernel.GetLoginDataBaseFileName);
+    if CheckResult=CHECK_RESULT_OK then
+    begin
+     FileCheckedDB.SaveCheckFile(DBKernel.GetLoginDataBaseFileName);
+    end;
+    //if no check then full check!
+    if (CheckResult=CHECK_RESULT_OK) or (DBKernel.TestLoginDB and (DBKernel.CheckAdmin=LOG_IN_OK)) then
+    if not (AltKeyDown or CtrlKeyDown or ShiftKeyDown) then
+    begin
+     EventLog(':DBKernel.TryToLoadDefaultUser()');
+     DBKernel.TryToLoadDefaultUser(s1,s2);
+
+     if GetParamStrDBBool('/user') and GetParamStrDBBool('/pass') then
+     begin
+      s1:=GetParamStrDBValue('/user');    
+      s2:=GetParamStrDBValue('/pass');
+     end;
+    end;
+   end;
+   if s1='' then
+   begin
+    s1:=TEXT_MES_ADMIN;
+    s2:='';
+   end;
+   if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=6;
+   EventLog(':DBKernel.LogIn() <-- default user and password: '+s1+', '+s2);
+   if DBKernel.LogIn(s1,s2,true)<>LOG_IN_OK then
+   begin                 
+    EventLog('Query login...');
+    ResultLogin:=false;
+    Application.CreateForm(TLoginForm, LoginForm);
+    LoginForm.Execute;
+    LoginForm.Release;
+    if UseFreeAfterRelease then LoginForm.Free;
+    LoginForm:=nil;
+   end else ResultLogin:=true;
+   if not ResultLogin then
+   begin         
+    EventLog('Loging failed...');
+    DBTerminating:=True;
+    Application.Terminate;
+   End;
+  end;
+
+  //GROUPS CHECK + MENU----------------------------------------------------
+                
+  EventLog('...GROUPS CHECK + MENU...');
+  if FolderView then DBKernel.SetGuestModeAccess;
+  if DBPopupMenu<>nil then
+  DBPopupMenu.LoadScriptFunctions;
+  if not SafeMode then
+  begin
+   try
+    if not DBTerminating then
+    if not IsValidGroupsTable then
+    if ThisFileInstalled then
+    CreateGroupsTable;
+   except    
+    on e : Exception do EventLog(':PhotoDB() throw exception: '+e.Message);
+   end;
+  end;
+  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=7;
+  //DB FAULT ----------------------------------------------------
+
+  if not FolderView then
+  if not DBTerminating then
+  if not GetParamStrDBBool('/NoFaultCheck') then
+  if (DBKernel.ReadProperty('Starting','ApplicationStarted')='1') and not DBInDebug then
+  begin
+   EventLog('Application terminated...');
+   if LoadingAboutForm<>nil then
+   aHandle:=LoadingAboutForm.Handle else aHandle:=0;
+   if ID_OK=MessageBoxDB(aHandle,TEXT_MES_APPLICATION_FAILED,TEXT_MES_ERROR,TD_BUTTON_OKCANCEL,TD_ICON_ERROR) then
+   begin
+    LoadingAboutForm.Free;
+    LoadingAboutForm:=nil;
+    TablePacked:=true;
+    DBkernel.WriteBool('StartUp','Pack',False);
+    Application.CreateForm(TCMDForm, CMDForm);
+    CMDForm.PackPhotoTable;
+    CMDForm.Release;
+    if UseFreeAfterRelease then CMDForm.Free;
+    CMDForm:=nil;
+   end;
+  end;
+
+  //SERVICES ----------------------------------------------------
+
+  if not DBTerminating then
+  If GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp','ConvertDB',False) and (DBKernel.DBUserType=UtAdmin) then
+  if not TablePacked then
+  begin
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   EventLog('Converting...');
+   DBkernel.WriteBool('StartUp','ConvertDB',False);
+   ConvertDB(dbname);
+  end;
+
+  if not DBTerminating then
+  If GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp','Pack',False) and (DBKernel.DBUserType=UtAdmin) then
+  if not TablePacked then
+  begin
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   EventLog('Packing...');
+   DBkernel.WriteBool('StartUp','Pack',False);
+   Application.CreateForm(TCMDForm, CMDForm);
+   CMDForm.PackPhotoTable;
+   CMDForm.Release;
+   if UseFreeAfterRelease then CMDForm.Free;
+   CMDForm:=nil;
+  end;
+
+  if not DBTerminating then
+  If GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp','BackUp',False) then
+  if not TablePacked then
+  begin   
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   EventLog('BackUp...');
+   DBkernel.WriteBool('StartUp','BackUp',False);
+   Application.CreateForm(TCMDForm, CMDForm);
+   CMDForm.BackUpTable;
+   CMDForm.Release;
+   if UseFreeAfterRelease then CMDForm.Free;
+   CMDForm:=nil;
+  end;
+
+  if not DBTerminating then
+  If GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp','RecreateIDEx',False) and (DBKernel.DBUserType=UtAdmin) then
+  begin
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   EventLog('Recreating thumbs in Table...');
+   DBkernel.WriteBool('StartUp','RecreateIDEx',False);
+   Application.CreateForm(TCMDForm, CMDForm);
+   CMDForm.RecreateImThInPhotoTable;
+   CMDForm.Release;
+   if UseFreeAfterRelease then CMDForm.Free;
+   CMDForm:=nil;
+  end;
+  
+  if not DBTerminating then
+  If GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp','ScanBadLinks',False) and (DBKernel.DBUserType=UtAdmin) then
+  begin    
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   EventLog('Show Bad Links in table...');
+   DBkernel.WriteBool('StartUp','ScanBadLinks',False);
+   Application.CreateForm(TCMDForm, CMDForm);
+   CMDForm.ShowBadLinks;
+   CMDForm.Release;
+   if UseFreeAfterRelease then CMDForm.Free;
+   CMDForm:=nil;
+  end;
+
+  if not DBTerminating then
+  If GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp','OptimizeDublicates',False) and (DBKernel.DBUserType=UtAdmin) then
+  begin     
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   EventLog('Optimizingdublicates in table...');
+   DBkernel.WriteBool('StartUp','OptimizeDublicates',False);
+   Application.CreateForm(TCMDForm, CMDForm);
+   CMDForm.OptimizeDublicates;
+   CMDForm.Release;
+   if UseFreeAfterRelease then CMDForm.Free;
+   CMDForm:=nil;
+  end;
+  
+  if not DBTerminating then
+  If DBKernel.ReadBool('StartUp','Restore',False) and (DBKernel.DBUserType=UtAdmin) then
+  begin      
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+   DBkernel.WriteBool('StartUp','Restore',False);
+   EventLog('Restoring Table...'+DBkernel.ReadString('StartUp','RestoreFile'));
+   Application.CreateForm(TCMDForm, CMDForm);
+   CMDForm.RestoreTable(DBkernel.ReadString('StartUp','RestoreFile'));
+   CMDForm.Release;
+   if UseFreeAfterRelease then CMDForm.Free;
+   CMDForm:=nil;
+  end;
+
+ //DEMO? ----------------------------------------------------
+
+ if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=8;
+ if not FolderView then
+ If not DBTerminating then
+ if not DBInDebug then
+ if not Emulation then
+ begin
+  EventLog('Verifyng....');
+  @initAproc := GetProcAddress(KernelHandle,'InitializeA');
+  if not initAproc(PChar(Application.ExeName)) then
+  begin
+   MessageBoxDB(GetActiveFormHandle,TEXT_MES_APPLICATION_NOT_VALID,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   DBTerminating:=True;
+   Application.Terminate;
+  end;
+ end;
+
+ //PREPAIRING RUNNING DB ----------------------------------------
+ if LoadingAboutForm<>nil then
+ begin
+   LoadingAboutForm.Free;
+   LoadingAboutForm:=nil;
+ end;
+ If DBTerminating then
+ Application.ShowMainForm:=False;
+ If not DBTerminating then
+ begin
+  EventLog('Form manager...');
+  Application.CreateForm(TFormManager, FormManager);
+  If not DBTerminating then
+  begin
+   EventLog('ID Form...');
+   Application.CreateForm(TIDForm, IDForm);
+  end;
+ end;
+
+ //THEMES AND RUNNING DB ---------------------------------------------
+           
+ If not DBTerminating then
+ begin
+  EventLog('Run manager...');
+  if not GetParamStrDBBool('/NoFullRun') then
+  FormManager.Run;
+  if not SafeMode then
+  begin
+   EventLog('Theme...');
+   DBkernel.LoadColorTheme;
+   DBkernel.ReloadGlobalTheme;
+  end;
+  If not DBTerminating then
+  begin
+   if AnsiUpperCase(ParamStr(1))='/GETPHOTOS' then
+   if ParamStr(2)<>'' then
+   GetPhotosFromDrive(ParamStr(2)[1]);
+  end;
+ end;
+ EventLog('Application Started!...');
+
+ if GetParamStrDBBool('/Execute') then
+ begin
+  ExecuteScriptFile(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Execute'),'"'));
+ end;
+
+ if GetParamStrDBBool('/AddPass') then
+ begin
+  DBKernel.GetPasswordsFromParams;
+ end;
+
+ s1:=SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Add'),'"');
+ 
+ if FileExistsEx(s1) then
+ begin            
+  Running:=true;
+  If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
+  FormManager.RegisterMainForm(UpdaterDB.Form);
+  UpdaterDB.AddFile(s1);
+ end;
+
+ if DirectoryExists(s1) then
+ begin     
+  Running:=true;
+  If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
+  FormManager.RegisterMainForm(UpdaterDB.Form);
+  UpdaterDB.AddDirectory(s1,nil);
+ end;
+
+ if GetParamStrDBBool('/SQLExec') then
+ begin
+  Dolphin_DB.ExecuteSQLExecOnCurrentDB(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'),'"'));
+ end;
+   
+ if GetParamStrDBBool('/SQLExecFile') then
+ begin
+  s1:=SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'),'"');
+  s1:=ReadTextFileInString(s1);
+  Dolphin_DB.ExecuteSQLExecOnCurrentDB(s1);
+ end;
+
+ Application.Run;
+
+end.
