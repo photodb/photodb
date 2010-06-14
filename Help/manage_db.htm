@@ -1,0 +1,169 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<title>Управление БД</title>
+<style fprolloverstyle>A:hover {color: #FF0000; font-weight: bold}
+</style>
+</head>
+<body link="#000080" text="#000000" vlink="#008000" alink="#FF0000" bgcolor="#FFFFFF">
+
+<body>
+
+<div align="center">
+<table cellpadding="0" cellspacing="0" width="652" height="357" id="table1" style="border: 1px dotted #C0C0C0">
+	<!-- MSTableType="nolayout" -->
+	<tr>
+		<td height="15" width="707">
+		<font size="5">Управление БД</font></td>
+		</tr>
+	<tr>
+		<td height="20" width="707">
+		&nbsp;</td>
+		</tr>
+	<tr>
+		<td height="322" width="707">
+		&nbsp;&nbsp;&nbsp;&nbsp; Окно управлением базы данных вызывается пунктом 
+		&quot;<font color="#800000">Управление 
+		БД</font>&quot; из окна поиска или 
+		проводника. В данном окне возможно изменить практически любую информацию 
+		в базе данных. 
+		<p>&nbsp;&nbsp;&nbsp;&nbsp; Для выбора базы данных, отличной от текущей, 
+		необходимо нажать на кнопку &quot;<font color="#800000">Изменение файла БД</font>&quot;. 
+		В открывшемся окне можно с помощью кнопки &quot;<font color="#800000">Открыть</font>&quot; 
+		выбрать существующую БД или создано новую с помощью кнопки &quot;<font color="#800000">Создать 
+		новую</font>&quot;. Кнопка &quot;<font color="#800000">Использовать БД по 
+		умолчанию</font>&quot; определяет, что открытая БД будет использоваться при 
+		следующей загрузке, а иначе банная БД будет использоваться только до 
+		перезагрузки приложения.</p>
+		<p>&nbsp;&nbsp;&nbsp;&nbsp; Слева находится информация о текущей записи 
+		в базе данных: <font color="#006600">предпросмотр</font> фотографии 
+		(взятый из базы данных), <font color="#006600">оценка</font>,
+		<font color="#006600">доступ</font>, <span lang="en-us">
+		<font color="#006600">ID</font>, </span><font color="#006600">Имя Файла</font>\<font color="#006600">Путь 
+		к файлу</font>\<font color="#006600">Комментарии</font>\<font color="#006600">Ключевые</font><font color="#CCFFCC"> </font>
+		<font color="#006600">слова</font>, <font color="#006600">размер файла</font>,
+		<font color="#006600">разрешение</font> исходной фотографии,
+		<font color="#006600">дата</font> фотографии (если существует),
+		<font color="#006600">группы</font>, к которым относится фотография,
+		<font color="#006600">владелец</font> и <font color="#006600">коллекция</font>. 
+		Многие свойства можно изменить непосредственно тут, а некоторые можно в 
+		самой таблице:</p>
+		<p>Таблица базы данных содержит следующие основные поля:<br>
+		<br>
+		<font color="#00FF00">ID</font> (<font color="#990099">+</font>) - 
+		Уникальный индетификационный номер фотографии<br>
+		<font color="#00FF00">Name</font> (<font color="#990099">Alpha</font>) - 
+		Имя файла<br>
+		<font color="#00FF00">FFileName</font> (<font color="#990099">Memo</font>) 
+		- Полный путь к файлу (<font color="#003399">указывается маленькими 
+		буквами для регистронезависимости поиска</font>)<br>
+		<font color="#00FF00">Comment</font> (<font color="#990099">Memo</font>) 
+		- Комментарии к фотографии<br>
+		<font color="#00FF00">DateToAdd</font> (<font color="#990099">Date</font>) 
+		- Дата добавления файла в базу данных<br>
+		<span lang="en-us"><font color="#00FF00">IsDate</font></span> (<font color="#990099"><span lang="en-us">Bool</span></font>) 
+		- Определяет, присутствует ли у фотографии конкретная дата<br>
+		<font color="#00FF00">Owner</font> (<font color="#990099">Alpha</font>) 
+		- Владелец фотографии<br>
+		<font color="#00FF00">Rating</font> (<font color="#990099">Number</font>) 
+		- Рейтинг фотографии<br>
+		<font color="#00FF00">Thum</font> (<font color="#990099">Blob</font>) - 
+		Небольшое уменьшенное изображение фотографии (<font color="#003399">JPEG 
+		формат</font>)<br>
+		<font color="#00FF00">FileSize</font> (<font color="#990099">Long 
+		Integer</font>) - Размер файла<br>
+		<font color="#00FF00">KeyWords</font> (<font color="#990099">Memo</font>) 
+		- Ключевые слова для поиска<br>
+		<font color="#00FF00">Attr</font> (<font color="#990099">Number</font>) 
+		- Атрибуты записи (<font color="#003399">0 - нормальная запись, 1 - 
+		файла не существует, 2 - дубликат</font>)<br>
+		<font color="#00FF00">StrTh</font> (<font color="#990099">Alpha</font>) 
+		- Образ изображения (<font color="#003399">используется для 
+		индетефикации фотографий, поиска дубликатов и т.д.</font>)<br>
+		<font color="#00FF00">Collection</font> (<font color="#990099">Alpha</font>) 
+		- Имя коллекции, в которую входит данная фотография <br>
+		<font color="#00FF00">Access</font> (<font color="#990099">Long Integer</font>) 
+		- Права доступа к фотографии (<font color="#003399">0 - фотография 
+		общего доступа, 1 - личная фотография</font>)<br>
+		<font color="#00FF00">Width</font> (<font color="#990099">Long Integer</font>) 
+		- Ширина фотографии<br>
+		<font color="#00FF00">Height</font> (<font color="#990099">Long Integer</font>) 
+		- Высота фотографии<br>
+		<font color="#00FF00">Rotated</font> (<font color="#990099">Long Integer</font>) 
+		- Пометка о положении фотографии (<font color="#003399">0 - нормальное 
+		положение, 1 - фотография будет повёрнута на 90 градусов, 2 - 180 
+		градусов, 3 - 270 градусов</font>)<br>
+		<font color="#00FF00">Groups</font> (<font color="#990099">Memo</font>) 
+		- Содержит группы, к которым относится данная фотография<br>
+		<span lang="en-us"><font color="#00FF00">Include</font></span> (<font color="#990099"><span lang="en-us">Bool</span></font>) 
+		- Фотография включается в базовый поиск<br>
+		<span lang="en-us"><font color="#00FF00">Links</font></span> (<font color="#990099">Memo</font>) 
+		- Ссылки к фотографии (<font color="#003399">формат ссылок - [<span lang="ru">тип_ссылки</span>]{<span lang="ru">Имя</span>}<span lang="ru">Значение</span>;</font><span lang="ru">)</span> <br>
+		<font color="#00FF00">aTime</font> (<font color="#990099">Date</font><font color="#FF99FF">) </font>-
+		<span lang="ru">Время фотографии</span><br>
+		<font color="#00FF00">IsTime</font> (<font color="#990099"><span lang="en-us">Bool</span></font><font color="#FF99FF">) </font>
+		- <span lang="ru">присутствует ли время к фотографии</span></p>
+		<p>&nbsp;&nbsp;&nbsp;&nbsp; Доступ к полю <font color="#006600">Groups</font> 
+		напрямую запрещён. Изменения можно вносить через редактор групп.</p>
+		<p><font color="#800000">&nbsp;&nbsp;&nbsp;&nbsp; Генератор
+		<span lang="en-us">SQL</span>-запросов</font> позволяет выполнять 
+		некоторые действия ко многим фотографиям, позволяет установить 
+		какое-либо значение, либо удалить группу фотографий, заданную условием. 
+		Выполнение запроса начнётся после нажатия кнопки &quot;<font color="#800000">Выполнить
+		<span lang="en-us">SQL</span></font>&quot;</p>
+		<p><span lang="en-us">&nbsp;&nbsp;&nbsp;&nbsp; </span>Дополнительные 
+		возможности:</p>
+		<p>&quot;<font color="#006600">Упаковать БД</font>&quot; - Позволяет окончательно 
+		удалить стёртые записи (при обычном удалении они просто помечаются как 
+		удалённые). 
+		<br><img border="0" src="notify.gif" width="19" height="19" align="left"> 
+		 
+		Упаковка будет реализована при следующем запуске программы.</p>
+		<p>&quot;<font color="#006600">Экспортировать</font>&quot; - 
+		<span lang="ru">Экспорт базы данных. В открывшемся окне необходимо 
+		выбрать путь к конечной базе данных, выбрать нужные опции экспорта и 
+		нажать на кнопку &quot;<font color="#800000">Начать экспорт</font>&quot;. </span> </p>
+		<p>&quot;<font color="#006600">Импортировать</font>&quot; - 
+		<span lang="ru">Импорт другой базы данных в текущую. Позволяет добавить 
+		новую информацию в базу данных и дополнить существующие записи из 
+		импортируемой базы данных.. В открывшемся окне нужно выбрать 
+		импортируемую базу данных, выбрать опции импорта и нажать на кнопку &quot;<font color="#800000">Да</font>&quot;, 
+		после чего будет произведёт импорт. Данная операция ведётся не полностью 
+		в автоматическом режиме, при добавлении информации программа может 
+		спрашивать о том, что делать с новыми данными (как, например, группами, 
+		отсутствующими в текущей БД, и т.д.).</span></p>
+		<p>&quot;<font color="#006600">Перестроить <span lang="en-us">IDEx</span></font>&quot; - 
+		обновляет уникальные индетефикаторы к файлом в БД, используйте при 
+		переходе от более ранней версии программы.</p>
+		<p>&quot;<font color="#006600">Битые ссылки</font>&quot; - 
+		осуществляет поиск недействительных ссылок в БД</p>
+		<p>&quot;<font color="#006600">Резервная копия</font>&quot; - 
+		<span lang="ru">Создание резервной копии базы данных. Резервная копия 
+		создаётся автоматически с интервалом около недели, но при необходимости 
+		можно выполнить резервное копирование в любое время.</span></p>
+		<p>&quot;<font color="#006600">Очистка</font>&quot; - <span lang="ru">
+		Просмотр и редактирование сервиса очистки и оптимизации БД.</span></p>
+		<p>&quot;<font color="#006600">Резервн<span lang="ru">ые</span> копи</font><span lang="ru"><font color="#006600">и</font></span>&quot;<span lang="ru"> 
+		- список резервных копий БД. Любую из них можно либо удалить (в 
+		контекстном меню) либо восстановить на место текущей БД. Текущая БД 
+		будет перед этим дополнительно резервно скопирована на случай неудачной 
+		операции. Восстановление происходит после перезапуска программы 
+		(необходимо для монопольного доступа к текущей БД) Все резервные копии 
+		находятся в списке &quot;<font color="#800000">Резервные копии</font>&quot;, из 
+		него можно восстановить любую резервную копию БД, выбрав в контекстном 
+		меню пункт &quot;<font color="#800000">Восстановить</font>&quot;. текущая БД при 
+		этом предварительно будет скопирована в резервное хранилище, 
+		восстановление произойдёт после перезагрузки программы.</span></p>
+		<p><img border="0" src="notify.gif" width="19" height="19" align="left"> 
+		Внимание: некорректное изменение информации может повлечь за собой 
+		неправильное интерпретирование данных программой.</td>
+		</tr>
+</table>
+
+</div>
+<p align="center"><a href="index.htm">К оглавлению</a></p>
+
+</body>
+
+</html>

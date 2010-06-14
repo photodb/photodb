@@ -1,0 +1,646 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="ru" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ВВЕДЕНИЕ</title>
+<style type="text/css">
+<!--
+.Normal {
+	font-size: 12.0pt;
+	font-family: "Times New Roman","serif";
+}
+p.Norm {
+	margin-bottom: .0001pt;
+	font-size: 12.0pt;
+	font-family: "Times New Roman","serif";
+	margin-left: 0cm;
+	margin-right: 0cm;
+	margin-top: 0cm;
+	text-align: left;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" class="Normal">
+
+<div align="center">
+	<table cellpadding="0" cellspacing="0" width="652" height="414">
+		<tr>
+			<td height="27" valign="top" class="Normal"><u><font size="5">Скрипты</font></u></td>
+		</tr>
+		<tr>
+			<td height="19" valign="top" class="Normal">&nbsp;</td>
+		</tr>
+		<tr>
+			<td width="652" height="368" valign="top" class="Normal">
+			<p class="Norm" style="text-indent: 36.0pt; text-align: center;"><b>
+			ВВЕДЕНИЕ</b></p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt">Вот краткое описание языка 
+			скриптов, используемом в БД. Если кт-то захочет узнать что-либо специфическое, 
+			то спрашивайте по e-mail т.к. не думаю, что большое количество людей 
+			имеют склонности к программированию (а тем более желание) на незнакомом 
+			языке. </p>
+			<p class="Norm" style="text-indent: 36.0pt">Язык синтаксисом похож в 
+			некотором на PHP, в некотором на JavaScript, но возможностей естественно 
+			меньше. <b>Регистрозависим</b>!</p>
+			<p class="Norm" style="text-indent: 36.0pt">Переменные начинаются с 
+			символа “<b>$</b>”</p>
+			<p class="Norm" style="text-indent: 36.0pt">Символ присваивания “<b>=</b>”</p>
+			<p class="Norm" style="text-indent: 36.0pt">Оператор заканчивается точкой 
+			с запятой “<b>;</b>”</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: #993300">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: #993300;">$var =&nbsp; </span>
+			<span style="color: #993300">значение</span><span style="color: #993300;">;</span><span style="color: #993300"></span></p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt">Существует только 8 типов:</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">INTEGER</span> – целое</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">STRING</span> – строка (ограничивается двойными 
+			кавычками “строка”)</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">BOOL</span> – булеан (<span style="color: navy">true</span> 
+			или <span style="color: navy">false</span>)</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">FLAOT</span> – с плавающей точкой</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">ARINTEGER</span> – массив целых</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">ARSTRING</span> – массив строк</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">ARBOOL</span> – массив булеанов</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: navy;">ARFLOAT</span> – массив с плавающей точкой</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$a = 10;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$b = $a;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$s = “string”;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$n = 3.45;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$b = true;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><span>&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">Работа с массивами не очень 
+			удобная, но всё же. <u>Массивы начинаются с нуля</u>.</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300">$</span><span style="color: #993300;">ar</span><span style="color: #993300"> 
+			= </span><span style="color: #993300;">GetIntArray</span><span style="color: #993300">(10);</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">SetIntItem</span><span style="color: #993300">($</span><span style="color: #993300;">ar</span><span style="color: #993300">,5,20);</span></b>
+			<span style="color: gray">//устанавливает <u>6му</u> элементу значение 
+			20;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">AddIntItem</span><span style="color: #993300">($</span><span style="color: #993300;">ar</span><span style="color: #993300">,4);</span></b>
+			<span style="color: gray">//увеличивает размер массива на 1 и устанавливает 
+			значение последнего элемента = 4</span><span style="color: gray;"></span></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$int=GetIntItem($ar,5);</span></b><span style="color: #993300;">
+			</span><span style="color: gray;">//</span><span style="color: gray">устанавливает</span><span style="color: gray;"> 
+			$int=20;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: #993300;">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">А также<span style="color: #993300;"> 
+			GetStringArray(int), </span><span style="color: #339966;">GetBoolArray(int), 
+			GetFloatArray(int)</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: #339966;">&nbsp;</span></p>
+			Для целых чисел возможны вычисления по схеме:<p class="Norm" style="text-indent: 36.0pt">
+			<b><span style="color: #993300;">$b=5;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$int=%34+cos(45)*$b;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt">Значение округляется до 
+			целого.</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp; </p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>УСЛОВИЯ</b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>&nbsp;</b></p>
+			<p class="Norm" style="text-indent: 36.0pt">Присутствует <b>if</b>.
+			</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">if </span>
+			<span style="color: #993300">(условие)</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">{</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</span><span style="color: #993300">если_верно</span><span style="color: #993300;">;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">}; else</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">{</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+			если_ложно;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300">};</span></b><span style="color: #993300">
+			</span><span style="color: gray">// обязательно наличие в таких конструкциях 
+			точки с запятой!!!</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>условие </b>пока не очень 
+			хорошие. Если в начале присутствует <span style="font-size: 14.0pt">
+			#</span><b> </b>то вычисляется выражение в скобках и если оно НЕ НОЛЬ 
+			то считается верным, иначе – ложным.</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">if</span><span style="color: #993300"> 
+			(#($</span><span style="color: #993300;">b</span><span style="color: #993300">&lt;10)&amp;($</span><span style="color: #993300;">b</span><span style="color: #993300">&gt;0)) 
+			{};</span></b><span style="color: gray"> //выполнится в скобках если 
+			$</span><span style="color: gray;">b</span><span style="color: gray"> 
+			от 1го до 9ти.</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: gray">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: black">&amp; - логическое И</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: black">| - логическое ИЛИ</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: black">~ - логическое ИЛИ-<b>НЕ</b></span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: black">простого <b>НЕ</b> нету. Реализуется при 
+			помощи ИЛИ-НЕ </span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: #993300">(</span><span style="color: #993300;">true</span><span style="color: #993300">)~1
+			</span><span style="color: #993300;">-&gt;</span><span style="color: #993300">
+			</span><span style="color: #993300;">false</span><span style="color: #993300"></span></p>
+			<p class="Norm" style="text-indent: 36.0pt;">
+			<span style="color: gray">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: black">Либо можно указывать простое условие (одно 
+			сравнение)</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: black">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">$b=true;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">if ($b=true) {};</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: #993300;">if ($i&lt;&gt;20) {}; else {};</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: #993300">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">Возможно использование<span style="color: #993300">
+			</span><span style="color: #993300;">&gt; &lt; = &lt;&gt;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp; </p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt; text-align: center;"><b>
+			ЦИКЛЫ</b></p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt">Существует только один тип
+			<b>for</b> (пока), но его вполне хватает.</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>for</b>(инициальизация; 
+			условие; выполняется_для_каждого)</p>
+			<p class="Norm" style="text-indent: 36.0pt">{</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+			тело_цикла;</p>
+			<p class="Norm" style="text-indent: 36.0pt">};</p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon;">for ($i=0;$i&lt;10;$i=%$i+1)</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon;">{</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</span></b><span style="color: maroon">тело_цикла</span><span style="color: maroon;">;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon;">};</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: maroon">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: maroon">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>ДРУГИЕ ОБЪЕКТЫ</b></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: maroon">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt">В БД присутствуют <b>формы</b>,
+			<b>указатели на скрипты, </b><u>они все имеют строковый тип</u> и похожи 
+			на GUID:</p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon;">$form = GetProgressWindow; </span></b>
+			</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: gray;">//$form = “{35F949C2-9AE7-410D-BD42-3A526C75ECD8}”
+			</span><u><span style="color: gray">к</span><span style="color: gray;">
+			</span><span style="color: gray">примеру</span></u><span style="color: gray;"></span></p>
+			<p class="Norm" style="text-indent: 36.0pt">&nbsp;</p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: maroon;">&nbsp;</span></p>
+			<p class="Norm" style="text-indent: 36.0pt; text-align: center;"><b>
+			ПОЛЬЗОВАТЕЛЬСКИЕ ФУНКЦИИ</b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>&nbsp;</b></p>
+			<p class="Norm" style="text-indent: 36.0pt">Объявляются в облоке </p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>&nbsp;</b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon">@functions</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt">
+			<span style="color: gray;">//</span><span style="color: gray"> объявления</span></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon">@end</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt"><b>
+			<span style="color: maroon">&nbsp;</span></b></p>
+			<p class="Norm" style="text-indent: 36.0pt">Объявление:</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b><span style="color: maroon">.тип название(список 
+			входных переменных)</span></b></p>
+			<p class="Norm"><b><span style="color: maroon;">{</span></b></p>
+			<p class="Norm" style="text-indent: 35.4pt"><b>
+			<span style="color: maroon;">$Result=</span><span style="color: maroon">значение</span><span style="color: maroon;">;</span></b></p>
+			<p class="Norm"><b><span style="color: maroon;">}</span></b></p>
+			<p class="Norm"><span style="color: maroon;">&nbsp;</span></p>
+			<p class="Norm">Типы:</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>.int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>целое<b></b></p>
+			<p class="Norm"><b>.string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>строка<b></b></p>
+			<p class="Norm"><b>.float&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>плавающая точка<b></b></p>
+			<p class="Norm"><b>.bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>булеан<b></b></p>
+			<p class="Norm"><b>.void&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>ничего не возвращает</p>
+			<p class="Norm"><b>.int[]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>массив целых чисел<b></b></p>
+			<p class="Norm"><b>.string[]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>массив строк<b></b></p>
+			<p class="Norm"><b>.float[]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>массив значений с плавающей точкой<b></b></p>
+			<p class="Norm"><b>.bool[]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</b>массив булеанов<b></b></p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm">Пример из БД!</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp; .int[] GetDBsIcons(){</span></b></p>
+			<p class="Norm"><b><span style="color: gray">&nbsp;&nbsp; //получение 
+			списка иконок</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;&nbsp; $DBIconList=GetDBIconList;</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;&nbsp; </span>
+			<span style="color: maroon;">$n=ArrayStringLength($DBIconList);
+			</span></b></p>
+			<p class="Norm"><b><span style="color: maroon;">&nbsp;&nbsp; $Resultt=GetIntArray;</span></b></p>
+			<p class="Norm"><b><span style="color: maroon;">&nbsp;&nbsp; for($i=0;$i&lt;$n;$i=%$i+1)</span></b></p>
+			<p class="Norm"><b><span style="color: maroon;">&nbsp;&nbsp; {</span></b></p>
+			<p class="Norm"><b><span style="color: maroon;">&nbsp;&nbsp;&nbsp; $aicon=GetStringItem($DBIconList,$i);</span></b></p>
+			<p class="Norm"><b><span style="color: gray;">&nbsp;&nbsp;&nbsp;
+			</span><span style="color: gray">//получаем номер иконки </span></b>
+			</p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;&nbsp;&nbsp; $n=AddIcon($aicon);</span></b></p>
+			<p class="Norm"><b><span style="color: gray">&nbsp;&nbsp;&nbsp; //добавляем 
+			в массив</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;&nbsp;&nbsp; AddIntItem($Result,$n);</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;&nbsp; };</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp; };</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;</span></b></p>
+			<p class="Norm"><b><span style="color: maroon">&nbsp;</span></b></p>
+			<p class="Norm" style="text-align: center"><b>ВАЖНЫЕ ВНУТРЕННИЕ ФУНКЦИИ</b></p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b><span style="color: maroon;">.void LOAD_VARS(string);
+			</span><span style="color: maroon"></span></b></p>
+			<p class="Norm">Загружает переменные из указателя на скрипт. </p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b><span style="color: maroon">.</span><span style="color: maroon;">string</span><span style="color: maroon">
+			</span><span style="color: maroon;">REGISTER</span><span style="color: maroon">_</span><span style="color: maroon;">SCRIPT</span><span style="color: maroon">();</span></b></p>
+			<p class="Norm">Регистрирует скрипт и возвращает указатель на него</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b><span style="color: maroon;">.void START_DEBUG();</span></b></p>
+			<p class="Norm">Запускает дебаг (очень простой, но лучше что-то чем 
+			ничего ;) )</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b><span style="color: maroon;">.void STOP_DEBUG();</span></b></p>
+			<p class="Norm">Остановка дебага</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b><span style="color: maroon;">.void ClearMemory();</span></b></p>
+			<p class="Norm">очищает <u>все переменные</u></p>
+			<p class="Norm"><u><o:p>
+&nbsp;</o:p></u></p>
+			<p class="Norm"><b><span style="color: maroon;">.void Include (string);</span></b></p>
+			<p class="Norm">включает указанный файл</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b><span style="color: maroon">.</span><span style="color: maroon;">void</span><span style="color: maroon">
+			</span><span style="color: maroon;">WriteCode</span><span style="color: maroon">(</span><span style="color: maroon;">string</span><span style="color: maroon">);</span></b></p>
+			<p class="Norm">дописывает в скрипт указанную строку</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"></p>
+			<p class="Norm" style="text-align: center"><b>МЕНЮ</b></p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm">Многие меню в БД созданы при помощи скриптов. Меню задаётся 
+			схемой</p>
+			<p class="Norm"><span style="color: maroon">&nbsp;</span></p>
+			<p class="Norm"><span style="color: maroon">&lt;надпись&gt;[номер_иконки]</span></p>
+			<p class="Norm"><span style="color: maroon">{</span></p>
+			<p class="Norm"><span style="color: maroon">&nbsp; </span>
+			<span style="color: maroon;">initialization</span><span style="color: maroon">:</span></p>
+			<p class="Norm"><span style="color: maroon">&nbsp;&nbsp; выполнение_секции_инициализации;</span></p>
+			<p class="Norm"><span style="color: maroon">&nbsp; </span>
+			<span style="color: maroon;">run</span><span style="color: maroon">:</span></p>
+			<p class="Norm"><span style="color: maroon">&nbsp;&nbsp; выполняется_по_клику_меню</span><span style="color: maroon;">;</span><span style="color: maroon"></span></p>
+			<p class="Norm"><span style="color: maroon;">}</span><span style="color: maroon"></span></p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm">Если секции не указаны то код будет выполняться по клику 
+			на меню.</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><span style="color: maroon">&lt;#&gt;[]{путь_к_скрипту</span><span style="color: gray">} 
+			//включат в файл содержимое другого скрипта</span></p>
+			<p class="Norm"><span style="color: maroon">&lt;&gt;[]{путь_к_скрипту</span><span style="color: gray">} 
+			//включат в файл содержимое части меню</span></p>
+			<p class="Norm"><span style="color: maroon">&lt;-&gt;[]{}</span><span style="color: gray">
+			</span><span style="color: gray;">// </span>
+			<span style="color: gray">разделитель</span></p>
+			<p class="Norm"><span style="color: gray">&nbsp;</span></p>
+			<p class="Norm">Меню создаются или динамически или статически. Для динамического 
+			создания используются функции <span style="color: maroon">CreateItem</span>,
+			<span style="color: maroon">CreateItemDef</span> и
+			<span style="color: maroon">CreateItemDefChecked</span>.</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><span style="color: maroon">InVisible;</span>
+			<span style="color: gray">&nbsp;//устанавливает флаг </span>
+			<span style="color: gray;">Visible</span><span style="color: gray">
+			</span><span style="color: gray">в </span>
+			<span style="color: gray;">false</span><span style="color: gray"> – 
+			меню невидимо</span></p>
+			<p class="Norm"><span style="color: gray">&nbsp;</span></p>
+			<p class="Norm"><span style="color: gray">Флаги меню, которые можно 
+			изменить в секции инициализации</span></p>
+			<p class="Norm"><span style="color: maroon">$</span><span style="color: maroon;">Tag</span><span style="color: maroon">&nbsp;
+			</span><span style="color: gray">//целое число – индетефикатор меню</span><span style="color: maroon"></span></p>
+			<p class="Norm"><span style="color: maroon">$</span><span style="color: maroon;">Default</span><span style="color: maroon">
+			</span><span style="color: gray">//меню выделено</span><span style="color: maroon"></span></p>
+			<p class="Norm"><span style="color: maroon">$</span><span style="color: maroon;">Enabled</span><span style="color: maroon">
+			</span><span style="color: gray">//доступно</span><span style="color: maroon"></span></p>
+			<p class="Norm"><span style="color: maroon">$</span><span style="color: maroon;">Checked</span><span style="color: maroon">
+			</span><span style="color: gray">//установлен флаг</span><span style="color: maroon"></span></p>
+			<p class="Norm"><span style="color: maroon">$</span><span style="color: maroon;">Visible</span><span style="color: maroon">
+			</span><span style="color: gray">//видимо</span><span style="color: red"></span></p>
+			<p class="Norm"><span style="color: red;">$</span><span style="color: red">Caption</span><span style="color: red;"> 
+			//</span><span style="color: red">заголовок</span></p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm" style="text-align: center"><b>ФУНКЦИИ</b></p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AddAssociatedIcon(path: string) : integer;</b></p>
+			<p class="Norm">возвращает номер иконки указанной в <b>path.</b></p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AddDBFile;</b></p>
+			<p class="Norm">открывает диалог добавления новой БД</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AddFileInDB(path: string);</b></p>
+			<p class="Norm">добавляет файл <b>path</b> в БД</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AddFileToPanel(panel : string; filename : string);</b></p>
+			<p class="Norm">добавляет в панель <b>panel</b> файл <b>filename</b></p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AddFolderInDB(path: string); </b></p>
+			<p class="Norm">добавляет папку <b>path</b> в БД</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AddIcon(path: string) : integer; </b></p>
+			<p class="Norm">возвращает номер иконки указанной в <b>path.</b></p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AddStringItem(var ar: arstring; item : string);</b></p>
+			<p class="Norm">добавляет в конец массива<b> ar </b>значение<b> item
+			</b></p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>AltKeyDown : bool;</b></p>
+			<p class="Norm">определяет, нажата ли клавиша alt</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void SetFileNameByID (int ID, string FileName)</b></p>
+			<p class="Norm">Устанавливает имя файла в БД FileName для записи с ID</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string GetImagesMask(); </b></p>
+			<p class="Norm">возвращает маску для поддерживаемых типов файлов</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string GetOpenImageFileName(string Text, string Mask)</b></p>
+			<p class="Norm">Открывает диалог открытия файла для изображений с текстом 
+			Text и маской на файлы Mask</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>bool ShiftKeyDown </b></p>
+			<p class="Norm">Определяет нажата ли клавиша SHIFT</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void LoadVariablesNo(int NO);&nbsp; (для меню ID)</b></p>
+			<p class="Norm">Загружает переменный для записи с номером NO</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>int Compare2Images(string Image1, string Image2, 
+			int param)</b></p>
+			<p class="Norm">Сравнивает Image1 и Image2 и выдаёт значение похожести 
+			в диапазоне 0-100 с относительным критерием param (0-100), учитывающий 
+			возможный разброс изображений. Рекомендуется param=20-60</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string GetCurrentUser()</b></p>
+			<p class="Norm">возвращает имя текущего пользователя</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string Char(int code)</b></p>
+			<p class="Norm">возвращает символ с кодом code</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void MessageBox(string Caption, string Text, int 
+			options)</b></p>
+			<p class="Norm">выводит сообщение с текстом Text, заголовком Caption. 
+			В options кнопки и значок сообщения</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void SetJPEGOptions;</b></p>
+			<p class="Norm">выводит диалог настроек JPEG файла</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string ExtractFileName(string FileName)</b></p>
+			<p class="Norm">возвращает имя файла</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string GetOpenFileName(string Default, string Mask)</b></p>
+			<p class="Norm">открывает диалог выбора файла: Default – имя файла по 
+			умолчанию, Mask – маска файлов, возвращает имя файла</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string NewImageEditor;</b></p>
+			<p class="Norm">возвращает дескриптор нового созданного редактора</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void ShowDBForm(string Form)</b></p>
+			<p class="Norm">Отображает на экране форму с дескриптором Form</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void ImageEditorOpenFileName(string Form, string 
+			FileName)</b></p>
+			<p class="Norm">В редакторе с дескриптором Form открывает файл FileName</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void ImageEditorRegisterCallBack(string Form, string 
+			ScriptID, string ProcName)</b></p>
+			<p class="Norm">Регистрирует процедуру которая будет выполняться после 
+			выполнения операций над изображением. Form – дескриптор редактора, ScriptID 
+			– дескриптор скрипта текущего, ProcName – имя процедуры которая будет 
+			вызвана. Процедура должна иметь один входной параметр типа string куда 
+			будет помещён дескриптор исходного скрипта</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>void ExecuteActions(string Form, string FileName, 
+			string SaveFileName)</b></p>
+			<p class="Norm">В форме с дескриптором Form выполняет действия из файла 
+			FileName и записывает итоговый файл в SaveFileName. </p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string GetOpenDirectory(string Text,string DefaultPath)</b></p>
+			<p class="Norm">Отображает диалог выбора папки с текстом Text, если 
+			указан DefaultPath то он выбирается по умолчанию</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>bool&nbsp; DirectoryExists(string FileName)</b></p>
+			<p class="Norm">определяет, существует ли папка</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>bool&nbsp; FileExists(string FileName)</b></p>
+			<p class="Norm">определяет, существует ли файл</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>bool&nbsp; DeleteFile(string FileName)</b></p>
+			<p class="Norm">Удаляет файл с именем FileName</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void GetProgressWindow(sring Text)</b></p>
+			<p class="Norm">создаёт окно прогресса с текстом Text и возвращает дескриптор 
+			окна</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void CreateFile(sring FileName)</b></p>
+			<p class="Norm">Создаёт файл с именем FileName</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void SetProgressWindowProgress(string Form, int percent)</b></p>
+			<p class="Norm">Устанавливает в окно прогресса с дескриптором Form значение 
+			percent (0-100)</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>int Pos(string sub, string str)</b></p>
+			<p class="Norm">возвращает позицию sub в строке str, если строка не 
+			найдена то возвращает -1</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string StrCopy(string str, int start, int length)</b></p>
+			<p class="Norm">возвращает строку, скопированную с позиции start длинной 
+			length</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>int StrToInt(string str)</b></p>
+			<p class="Norm">конвертирует строку в число</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void WriteLnToFile(sring FileName, sring line)</b></p>
+			<p class="Norm">Записывает line в файл с именем FileName новой строкой</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void WriteToFile(sring FileName, sring line)</b></p>
+			<p class="Norm">Записывает line в файл с именем FileName </p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void CloseDBForm(string Form)</b></p>
+			<p class="Norm">Закрывает форму БД</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string[] SplitLinks(string Links) </b></p>
+			<p class="Norm">разбивает строку, содержащую ссылки на отдельные ссылки</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string LinkName(string link);</b></p>
+			<p class="Norm">возвращает имя ссылки</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>int LinkType(string link);</b></p>
+			<p class="Norm">возвращает тип ссылки</p>
+			<p class="Norm">$LINK_TYPE_ID</p>
+			<p class="Norm">$LINK_TYPE_ID_EXT</p>
+			<p class="Norm">$LINK_TYPE_IMAGE</p>
+			<p class="Norm">$LINK_TYPE_FILE</p>
+			<p class="Norm">$LINK_TYPE_FOLDER</p>
+			<p class="Norm">$LINK_TYPE_TXT</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string LinkValue(string link);</b></p>
+			<p class="Norm">возвращает значение ссылки</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string PathFormat(string path,string file);</b></p>
+			<p class="Norm">возвращает строку path с заменённой в ней подстрокой 
+			%1 строкой file</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void Hint(string Text)</b></p>
+			<p class="Norm">отображает окно подсказки с текстом Text</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>int GetGroupImage(string Name)</b></p>
+			<p class="Norm">возвращает номер иконки для группы с именем Name</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string[] SpilitWords(string words)</b></p>
+			<p class="Norm">Разбивает строку words на массив строк (разделитель 
+			– пробел)</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void ShowKeyWord(string KeyWord)</b></p>
+			<p class="Norm">Открывает окно поиска по БД с ключевым словом KeyWord</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>bool&nbsp; FileInPath(string FileName, string Path)</b></p>
+			<p class="Norm">Определяет находится ли файл FileName в Path</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void CopyFileSynch(string from, string to)</b></p>
+			<p class="Norm">Копирует файл из from в to синхронно, т.е. управление 
+			на следующую строку скрипта будет дано только после выполнения операции 
+			копирования</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string GetLastPanel;</b></p>
+			<p class="Norm">возвращает дескриптор последней созданной панели, если 
+			панелей в данный момент не создано то создаёт ей</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void AddFileInDB(string FileName)</b></p>
+			<p class="Norm">Добавляет файл с именем FileName в БД</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void AddFileToPanel(string Form, string FileName)</b></p>
+			<p class="Norm">Добавляет файл FileName в панель с дескриптором Form</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>int[] GetDBIconList;</b></p>
+			<p class="Norm">возвращает номера всех доступных иконок</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>int AddIcon(string path)</b></p>
+			<p class="Norm">добавляет в системный лист иконку и возвращает её номер</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string[] GetDBNameList;</b></p>
+			<p class="Norm">возвращает список имён баз зарегистрированных в программе</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string[] GetDBFileList </b></p>
+			<p class="Norm">возвращает список имён файлов баз зарегистрированных 
+			в программе</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string LowerCase(string str)</b></p>
+			<p class="Norm">переводит строку к нижнему регистру </p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string UpperCase(string str)</b></p>
+			<p class="Norm">переводит строку к верхнему регистру</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string GetCurrentDB();</b></p>
+			<p class="Norm">имя файла текущей БД </p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string[] GetCDROMDrives;</b></p>
+			<p class="Norm">возвращает массив всех CD-дисководов в системе </p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string[] GetUSBDrives; </b></p>
+			<p class="Norm">возвращает массив всех USB-дисководов (съёмных дисков) 
+			в системе</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>int AddAssociatedIcon (string path)</b></p>
+			<p class="Norm">добавляет в системный лист иконку и возвращает её номер</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string GetDriveName(string path)</b></p>
+			<p class="Norm">возвращает метку тома диска</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>void SelectDir(string Text)</b></p>
+			<p class="Norm">выводит диалог выбора папки с текстом Text</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string GetProgramPath;</b></p>
+			<p class="Norm">имя исполняемого файла</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string NewExplorerByPath(string path)</b></p>
+			<p class="Norm">создаёт новый проводник с путём path и возвращает его 
+			дескриптор</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>string[] GetRegKeyListing(string key)</b></p>
+			<p class="Norm">возвращает массив ключей в ключе с именем key</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			<p class="Norm"><b>string ReadRegString(string Key, string Value)</b></p>
+			<p class="Norm">читает строковое значении Value в ключе Key<b></b></p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>bool ReadRegRealBool(string Key, string Value)</b></p>
+			<p class="Norm">читает bool значении Value в ключе Key</p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>bool&nbsp; ReadRegBool(string Key, string Value)</b></p>
+			<p class="Norm">читает строковое значении Value в ключе Key и преобразует 
+			его в bool (“false”/”true”)<b></b></p>
+			<p class="Norm">&nbsp;</p>
+			<p class="Norm"><b>&nbsp;</b></p>
+			</td>
+		</tr>
+	</table>
+</div>
+<p align="center"><a href="index.htm">К оглавлению</a></p>
+
+</body>
+
+</html>

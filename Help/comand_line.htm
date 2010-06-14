@@ -1,0 +1,88 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="ru">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<title>Активация</title>
+<style fprolloverstyle>A:hover {color: #FF0000; font-weight: bold}
+</style>
+</head>
+<body link="#000080" text="#000000" vlink="#008000" alink="#FF0000" bgcolor="#FFFFFF">
+<body>
+
+<div align="center">
+<table cellpadding="0" cellspacing="0" width="652" height="225" id="table1" style="border: 1px dotted #C0C0C0">
+	<!-- MSTableType="nolayout" -->
+	<tr>
+		<td height="20" width="707">
+		<font size="5">Командная строка </font></td>
+	</tr>
+	<tr>
+		<td height="15" width="707">
+		</td>
+		</tr>
+	<tr>
+		<td height="179" width="707">
+		  <p><img border="0" src="notify.gif"> Программа может вызываться с параметрами командной строки для автоматизации некоотрых действий. Параметры не чувствительны к регистру. Вот полный перечень параметров с их описанием:</p>
+	    <p><img border="0" src="go.gif" width="13" height="16">  /OPTIMIZE_DUBLICTES - запускает при запуске программы оптимизацию дубликатов в текущей базе. <br><br>
+          <img border="0" src="go.gif" width="13" height="16"> /SHOWBADLINKS - проверяет сканирование на несуществующие ссылки в текущей базе. <br><br>
+          <img border="0" src="go.gif" width="13" height="16"> /RECREATETHTABLE - пересоздаёт предпросмотры изображений в базе, а также исправляет неточности описаний файлов в базе. <br><br>
+          <img border="0" src="go.gif" width="13" height="16"> /BACKUP - запускает принудительно резервное копирование текущей базы. <br><br>
+          <img border="0" src="go.gif" width="13" height="16"> /PACKTABLE - запускает упаковку базы. <br><br>
+          <img border="0" src="go.gif" width="13" height="16"> /CONVERT - запускает конвертирование базы. <br>
+          <br>
+          <img border="0" src="go.gif" width="13" height="16"> /SLEEP - после запуска ждёт одну секунду <br>
+          <br>
+          <img border="0" src="go.gif" width="13" height="16"> /SAFEMODE - инициализирует &quot;Безопасный режим&quot;, в котором отключаются некоторые функции. <br>
+<br>
+          <img border="0" src="go.gif" width="13" height="16"> /UNINSTALL - запускает диалог удаление программы <br>
+<br>
+          <img border="0" src="go.gif" width="13" height="16"> /EXPLORER - запускает проводник и папкой, указанной после параметра. К примеру: /explorer &quot;c:\photos&quot;<br>
+<br>
+          <img border="0" src="go.gif" width="13" height="16"> /GETPHOTOS  - запускает получения фотографий с указанной папки. К примеру: /getphotos &quot;c:\photos&quot;<br>
+<br>
+          <img border="0" src="go.gif" width="13" height="16"> /NOLOGO  - отключает окно &quot;о программе&quot; при старте. <br>
+<br>
+          <img border="0" src="go.gif" width="13" height="16"> /user user - указывает имя пользователя для автоматического входа <br>
+<br>
+          <img border="0" src="go.gif" width="13" height="16"> /pass pass  - указывает пароль для автоматического входа (необходимо указания также пользователя)<br>
+<br>
+          <img border="0" src="go.gif" width="13" height="16"> /NoPrevVersion - отключает проверку запущенных копий программы<br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /NoFaultCheck  - отключает проверку на крах программы<br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /NoFullRun  - не запускает ни одно окно программы! После выполнения всех запросов програма выгрузится<br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /Execute  - запускает скрипт БД. К примеру /Execute &quot;c:\script.dbscript&quot;<br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /NoVistaMsg - отключает окна сообщений Vista-стиля (если у на компьютере устновлена Vista) <br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /NoVistaFileDlg  - отключает диалоги выбора файлов и папок  Vista-стиля (если у на компьютере устновлена Vista) <br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /SelectDB &quot;DBFile&quot; - выбирается база из файла DBFile<br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /SelectDB &quot;DBName&quot; - выбирается база с внутренним именем DBName<br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /SelectDBPermanent - выбранная база устанавливается по умолчанию <br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /ADD &quot;file&quot; - добавляет файл <br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /ADD &quot;directory&quot; - добавляет директорию <br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /AddPass &quot;pass1!pass2!...&quot; - добавляет пароль или списов паролей. Пароли разделяются восклицательным знаком. <br>
+
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /SQLExec  - выполняет SQL запрос на базу. Пример: /SQLExec &quot;delete from imagetable where id=0&quot;. Не рекомендуется использовать данную комадну т.к. она является низкоуровневой и не содержит никаких проверок на выполняемые действия. <br>
+<br>
+<img border="0" src="go.gif" width="13" height="16"> /SQLExecFile  - выполняет SQL запрос на базу из файла. Пример: /SQLExec &quot;c:\1.sql&quot;. Не рекомендуется использовать данную комадну т.к. она является низкоуровневой и не содержит никаких проверок на выполняемые действия. <br>
+</p></td>
+	</tr>
+</table>
+
+</div>
+
+<p align="center"><a href="index.htm">К оглавлению</a></p>
+
+</body>
+
+</html>
