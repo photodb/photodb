@@ -1,0 +1,34 @@
+<TEXT_MES_USER_SUBMENU>[DB_IC_MY_COMPUTER]
+{
+initialization:
+  $c=0;
+  $list=GetRegKeyListing("Menu");
+  $len=ArrayStringLength($list);
+  if ($CanFileOperationsCritical=true)
+{
+  for ($i=0;$i<$len;$i=SumInt($i,1)) {
+    $i_s=IntToStr($i);
+    $x="Menu\."+$i_s;
+    $Caption=ReadRegString($x,"Caption");
+    $Exe=ReadRegString($x,"EXEFile");
+    $Params=ReadRegString($x,"Params");
+    $Icon=ReadRegString($x,"Icon");
+    $IconN=AddIcon($Icon);
+    $SubItem=ReadRegRealBool($x,"UseSubMenu");   
+    $Params=PathFormat($Params,$FileName);
+    $RunString="Run("""+$Exe+""","""""+$Params+""""");";
+    if ($SubItem=true) {
+      CreateItem($Caption,$IconN,$RunString,false,0);
+      $c=SumInt($c,1);
+    }; else
+    {
+      CreateParentItem($Caption,$IconN,$RunString,false,0);
+    };
+  };
+};
+  if ($c=0) { InVisible;};
+  if ($IsCurrentFile=false) { InVisible;};
+  if ($CanFileOperationsCritical=false) { InVisible;};
+  $b=ReadRegBool("Options","UseUserMenuForIDmenu");
+  if ($b=false) {InVisible;};
+}

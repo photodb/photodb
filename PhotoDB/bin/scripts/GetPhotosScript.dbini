@@ -1,0 +1,62 @@
+<TEXT_MES_GET_PHOTOS>[DB_IC_GET_USB]
+{
+initialization:
+  $UR=UserRights("RIGHTS_NORMAL_FILE_OPERATIONS");
+  if ($UR=false) {InVisible;};
+run:
+  $CDROM=GetCDROMDrives;
+  $CD_ROM_ICONS=GetIntArray(0);
+  $CD_ROMs=GetStringArray(0);
+  $len=ArrayStringLength($CDROM);
+  for ($i=0;$i<$len;$i=SumInt($i,1)) {
+    $Drive=GetStringItem($CDROM,$i);
+    $IconN=AddAssociatedIcon($Drive);
+    
+    AddIntItem($CD_ROM_ICONS,$IconN);
+    AddStringItem($CD_ROMs,$Drive);
+  };
+  <TEXT_MES_REMOVABLE_DRIVES>[DB_IC_USB]
+  {
+    <->[]{}
+    $USB=GetUSBDrives;
+    DeleteNoFirst;
+    $c=0;
+    $len=ArrayStringLength($USB);
+    $Command="GetPhotosFromFolder(""%1"");";
+    for ($i=0;$i<$len;$i=SumInt($i,1)) {
+      $Drive=GetStringItem($USB,$i);
+      $c=SumInt($c,1);
+      $Caption=GetDriveName($Drive,"Съёмный диск");
+      $RunScript=PathFormat($Command,$Drive);
+      CreateItem($Caption,DB_IC_USB,$RunScript,false,0);
+    };
+    if ($c=0) {
+      CreateItemDef("TEXT_MES_NO_USB_DRIVES",DB_IC_DELETE_INFO,"",false,0,false);
+    };
+  }
+  <TEXT_MES_CD_ROM_DRIVES>[DB_IC_CD_ROM]
+  {
+    <->[]{initialization: InVisible; }
+    DeleteNoFirst;
+    $c=0;
+    $Command="GetPhotosFromFolder(""%1"");";
+    $len=ArrayStringLength($CD_ROMs);
+    for ($i=0;$i<$len;$i=SumInt($i,1)) {
+      $Drive=GetStringItem($CD_ROMs,$i);
+      $Caption=GetDriveName($Drive,"CD-ROM");
+      $IconN=GetIntItem($CD_ROM_ICONS,$i);
+      $c=SumInt($c,1);
+      $RunScript=PathFormat($Command,$Drive);
+      CreateItem($Caption,$IconN,$RunScript,false,0);
+    };
+    if ($c=0) {
+      CreateItemDef("TEXT_MES_NO_CD_ROM_DRIVES",DB_IC_DELETE_INFO,"",false,0,false);
+    };
+  }
+  <TEXT_MES_SPECIAL_LOCATION>[DB_IC_DIRECTORY]
+  {
+    $dir=SelectDir("TEXT_MES_SEL_FOLDER_IMPORT_PHOTOS");
+    $DirExists=DirectoryExists($dir);
+    if ($DirExists=true) {GetPhotosFromFolder($dir);};
+  }
+}

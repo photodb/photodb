@@ -1,0 +1,36 @@
+  @functions
+
+  .int[] GetDBsIcons(){
+   //получение списка иконок
+   $DBIconList=GetDBIconList;
+   $n=ArrayStringLength($DBIconList); 
+   $Result=GetIntArray;
+   for($i=0;$i<$n;$i=%$i+1)
+   {
+    $aicon=GetStringItem($DBIconList,$i);
+    //получаем номер иконки 
+    $n=AddIcon($aicon);
+    //добавляем в массив
+    AddIntItem($Result,$n);
+   };
+  };
+
+  .void InsertSelectDBMenu($IconList){
+   $DBNameList=GetDBNameList; //список имён
+   $DBFileList=GetDBFileList; //файлы
+   $n=ArrayStringLength($DBNameList);
+   for($i=0;$i<$n;$i=%$i+1)
+   {
+    $aCaption=GetStringItem($DBNameList,$i); 
+    $ic=GetIntItem($IconList,$i);
+    $file=GetStringItem($DBFileList,$i);
+    $file=LowerCase($file);
+    $dbname=GetCurrentDB; //текущая БД
+    $dbname=LowerCase($dbname); //приводим всё к маленьким буквам для сравнения
+    if ($dbname=$file) {$b=true;}; else {$b=false;}; //если это текущая БД то её будет выделять жирным
+    $run=PathFormat("SelectDB(""%1"");",$file); //по клику на итем - выбор новой БД
+    CreateItemDefChecked($aCaption,$ic,$run,$b,true,false,0);
+   };
+  };
+
+  @end

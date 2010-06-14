@@ -1,0 +1,22 @@
+  <Скрипты>[DB_IC_SHELL]
+  {
+  initialization:
+    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
+    if ($UR=false) {InVisible;};
+  run:
+    <Список функций>[DB_IC_OPTIONS]
+    {
+     ShowFunctionList;
+    }
+    <Список переменных>[DB_IC_BOX]
+    {
+     ShowMemoryStatus;
+    }
+    <Открыть папку>[DB_IC_DIRECTORY]
+    {
+     $script_path=GetProgramPath;
+     $script_path=ExtractFileDirectory($script_path);
+     $script_path=$script_path+"\scripts";
+     NewExplorerByPath($script_path);
+    }
+  }

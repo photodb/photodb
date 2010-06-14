@@ -1,0 +1,501 @@
+<#>[]{scripts\dbe.dbini}
+<#>[]{scripts\Actions.dbini}
+
+<Найти файл вручную>[DB_IC_SEARCH]
+{
+initialization:
+  $Visible=true;
+  if ($StaticImage=false) {InVisible;};
+  if ($IsFile=true) {InVisible;};
+run:
+ $mask=GetImagesMask;
+ $File=GetOpenImageFileName("Найдите самостоятельно данный файл",$mask);
+ if ($File<>"")
+ {
+  SetFileNameByID($ID,$File);
+ };
+}
+
+<TEXT_MES_SHOW>[DB_IC_SLIDE_SHOW]
+{
+initialization:
+  Default;
+run:
+ ShowItemPopUpMenu; 
+}
+
+<Сравнить!>[DB_IC_SLIDE_SHOW]
+{
+initialization:
+ $skd=ShiftKeyDown;
+ if ($skd=false) {InVisible;};
+ if ($IsFile=false) {InVisible;};
+ $SelCount=0;
+ if ($Visible=true) {
+ for($i=0;$i<$MenuLength;$i=%$i+1)
+ {
+  LoadVariablesNo($i);
+  if ($Selected=true) 
+  {
+   $SelCount=%$SelCount+1;
+   if ($SelCount=1) {$f2=$FileName;};
+   if ($SelCount=2) {$f1=$FileName;};
+  };
+ };
+ LoadVariablesNo($Position);
+ if ($SelCount<>2) {InVisible;};
+ };
+run:
+ 
+ $cp=Compare2Images($f1,$f2,60);
+ $s=IntToStr($cp);
+ $user=GetCurrentUser;
+ $nl=Char(13);
+ $s="Дорогой "+$user+"!"+$nl+"Степень похожести этих двук картинок - "+$s+"%!";
+ $s=$s+$nl+"Удачи!";
+ $p=%$MB_OK+$MB_ICONINFORMATION;
+ MessageBox($s,"Анализатор",$p);
+}
+
+<TEXT_MES_APPLY_ACTION>[DB_IC_APPLY_ACTION]
+{
+initialization:
+  $Visible=true;
+  $UR=UserRights("RIGHTS_EDIT_IMAGE");
+  if ($UR=false) {InVisible;};
+  $UR=UserRights("RIGHTS_CRITICAL_FILE_OPERATIONS");
+  if ($UR=false) {InVisible;};
+  if ($FileExists=false) {InVisible;};
+  
+  $sID=REGISTER_SCRIPT;
+  $script="$file=GetOpenFileName(""Result.dbact"",""DB Action Files (*.dbact)|*.dbact"");ApplyActionsToSelected("""+$sID+""",$file);";
+  CreateItem("Выбрать",DB_IC_APPLY_ACTION,$script,false,0);
+  CreateItem("-",DB_IC_APPLY_ACTION,"",false,0);
+
+  $DBProgramDir=GetProgramFolder;
+  $ActionsDir=$DBProgramDir+"Actions";
+  $files=GetDirListing($ActionsDir,"|DBACT|");
+
+  $FilesLength=ArrayStringLength($files);
+  for($i=0;$i<$FilesLength;$i=%$i+1)
+  { 
+     $file=GetStringItem($files,$i);
+
+
+     $file_name=ExtractFileName($file);
+
+     $script="ApplyActionsToSelected("""+$sID+""","""+$file+""");";
+     CreateItem($file_name,DB_IC_APPLY_ACTION,$script,false,0);
+  };
+
+   run:
+
+//$file=GetOpenFileName("Result.dbact","DB Action Files (*.dbact)|*.dbact");
+//$sID=REGISTER_SCRIPT;
+//ApplyActionsToSelected($sID,$file);
+}
+
+<Сохранить фотоссылки>[DB_IC_SHELL]
+{
+initialization:
+ $Visible=true;
+ $skd=ShiftKeyDown;
+ if ($skd=false) {InVisible;};
+  if ($IsFile=false) {InVisible;};
+run:
+  $file=GetSaveFileName("Result.txt","Text Files (*.txt)|*.txt");
+  if ($file<>"") 
+  {
+   $fe=FileExists($file);
+   if ($fe=true) {DeleteFile($file);};
+   $progress=GetProgressWindow("Происходит сохранение данных в файл - пожалуйста подождите!");
+   ShowDBForm($progress);
+   CreateFile($file);
+   for($i=0;$i<$MenuLength;$i=%$i+1)
+   {
+    $percent=%100*$i/$MenuLength;
+    SetProgressWindowProgress($progress,$percent);
+    LoadVariablesNo($i);
+    $f=ExtractFileName($FileName);
+    $int=Pos(" ",$f);
+    $int=%$int-1;
+    if ($int>0)
+    {
+     $str=StrCopy($f,1,$int);
+     $no=StrToInt($str);
+     if ($no>0) 
+     {
+      $str="http://www.photosight.ru/photo.php?photoid="+$str;
+      WriteLnToFile($file,$str);
+     };
+    };
+   };
+   CloseDBForm($progress);
+  };
+}
+
+<TEXT_MES_SHELL>[DB_IC_SHELL]
+{
+initialization:
+ $Visible=true;
+ if ($FileExists=false) {InVisible;};
+run:
+  ShellExecutePopUpMenu;
+}
+
+<TEXT_MES_LINKS>[DB_IC_NOTES]
+{
+initialization:
+ $Visible=true;
+ $AllLinks=SplitLinks($Links,"");
+ $L=ArrayStringLength($AllLinks);
+ if ($L=0) 
+ {
+  InVisible;
+ }; else 
+ {
+ $skd=ShiftKeyDown;
+ if ($skd=true)
+ {
+   for ($i=0;$i<$L;$i=SumInt($i,1)) 
+   {
+     $link=GetStringItem($AllLinks,$i);
+     $aCaption=LinkName($link);
+     $Type=LinkType($link);
+     $Value=LinkValue($link);
+     $Icon=-1;
+     $RunScript="";
+     
+     if ($Type=$LINK_TYPE_ID) {$ID=StrToInt($Value); $FaileName=GetFileNameByID($ID); $Icon=DB_IC_SLIDE_SHOW;};
+     if ($Type=$LINK_TYPE_ID_EXT) {$IDEx=DeCodeExtID($Value); $aFileName=GetFileNameByIDEx($IDEx); $Icon=DB_IC_NOTES;};
+     if ($Type=$LINK_TYPE_IMAGE) {$aFileName=$Value; $Icon=DB_IC_DESKTOP;};
+     if ($Type=$LINK_TYPE_FILE) {$aFileName=$Value; $Icon=DB_IC_SHELL;};
+     if ($Type=$LINK_TYPE_FOLDER) {$aFileName=$Value; $Icon=DB_IC_DIRECTORY;};
+     if ($Type=$LINK_TYPE_TXT) {$aFileName="::"; $Icon=DB_IC_TEXT_FILE;};
+     
+     $fe=FileExists($aFileName);
+     if ($fe=true) 
+     {
+       $im=ImageFile($aFileName);
+       if ($im=true) 
+       {
+         
+         $RunScript=PathFormat("ShowFile(""%1"");",$aFileName);
+       }; else 
+       {
+         $RunScript=PathFormat("Run(""%1"","""");",$aFileName);
+       };
+     }; else 
+     {
+       $de = DirectoryExists($aFileName);
+       if ($de=true) 
+       {
+         $RunScript=PathFormat("NewExplorerByPath(""%1"");",$aFileName);
+       };
+     };
+     if ($aFileName="::") 
+     {
+       $RunScript="Hint(""%1"","""+$Value+""");";
+       $RunScript=PathFormat($RunScript,$aCaption);
+     };
+     CreateItem($aCaption,$Icon,$RunScript,false,0);
+    };
+   }; else { InVisible; };
+ };
+}
+
+<TEXT_MES_REFRESH_ITEM>[DB_IC_REFRESH_THUM]
+{
+initialization:
+  $Visible=true;
+  if ($NoDBInfoNeeded=true) {InVisible;};
+run:
+  RefreshThumItemPopUpMenu;
+}
+<TEXT_MES_ROTATE>[DB_IC_ROTETED_0]{
+initialization:
+  if ($CanSetInfo=false) {InVisible;};
+  if ($IsRecord=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+
+  for ($i=0;$i<4;$i=SumInt($i,1)) {
+      if ($i=0) {$s="TEXT_MES_ROTATE_0";};
+      if ($i=1) {$s="TEXT_MES_ROTATE_90";};
+      if ($i=2) {$s="TEXT_MES_ROTATE_180";};
+      if ($i=3) {$s="TEXT_MES_ROTATE_270";};
+      $n=SumInt($i,DB_IC_ROTETED_0);
+      if ($Rotation=$i) {
+      CreateItem($s,$n,"SetRotateItemPopUpMenu;",true,$i);
+      }; else {
+      CreateItem($s,$n,"SetRotateItemPopUpMenu;",false,$i);
+      };
+   };
+}
+
+<TEXT_MES_RATING>[DB_IC_RATING_STAR]{
+initialization:
+  $Visible=true;
+  if ($CanSetRating=false) {InVisible;};
+  if ($IsRecord=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+   CreateItem("0",4,"SetRatingItemPopUpMenu;",false,0);
+   for ($i=1;$i<6;$i=SumInt($i,1)) {
+     $s=IntToStr($i);
+     $n=SumInt(16,$i);
+     if ($Rating=$i) {
+     CreateItem($s,$n,"SetRatingItemPopUpMenu;",true,$n); }; else {
+     CreateItem($s,$n,"SetRatingItemPopUpMenu;",false,$n);
+     };
+   };
+}
+<TEXT_MES_PRIVATE>[DB_IC_PRIVATE]
+{ 
+ initialization:
+  $Visible=true;
+  if ($IsRecord=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+  if ($CanSetPrivate=1) {InVisible;};
+  if ($Access=1) {InVisible;};
+  $Tag=0;
+run:
+  PrivateItemPopUpMenu;
+}
+
+<TEXT_MES_COMMON>[DB_IC_COMMON]
+{
+ initialization:
+  $Visible=true;
+  if ($IsRecord=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+  if ($CanSetPrivate=1) {InVisible;};
+  if ($Access=0) {InVisible;};
+  $Tag=1;
+run:
+  PrivateItemPopUpMenu;
+}
+
+<TEXT_MES_DATE>[DB_IC_EDIT_DATE]
+{
+ initialization:
+  $Visible=true;
+  if ($IsRecord=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+  Tag(1);
+ run:
+  DateItemPopUpMenu;
+}
+<TEXT_MES_GROUPS>[DB_IC_GROUPS]
+{ 
+ initialization:
+  $Visible=true;
+ if ($IsRecord=false) {InVisible;};
+ if ($NoDBInfoNeeded=true) {InVisible;};
+ $len=ArrayStringLength($GroupsCodes);
+
+ $UR=UserRights("RIGHTS_MANAGE_GROUPS");
+ if ($len=0) 
+ {
+  if ($UR=false) {InVisible;};
+ };
+
+  for ($i=0;$i<$len;$i=SumInt($i,1)) {
+      $s=GetStringItem($GroupsCodes,$i);
+      $caption=GetStringItem($GroupsNames,$i);
+      $n=GetGroupImage($s);
+      CreateItem($caption,$n,"QuickGroupInfoPopUpMenu;",false,0);
+   };
+  CreateItem("-",0,"",false,0);
+  if ($CanSetInfo=true) 
+  {
+    CreateItem("TEXT_MES_EDITA",DB_IC_GROUPS,"GroupsPopUpMenu;",false,0);
+  };
+}
+
+<Ключевые слова>[DB_IC_NOTEPAD]
+{ 
+initialization:
+  $Visible=true;
+  $KeyWordsArray=SpilitWords($KeyWords);
+  $len=ArrayStringLength($KeyWordsArray);
+  for ($i=0;$i<$len;$i=SumInt($i,1)) {
+      $caption=GetStringItem($KeyWordsArray,$i);
+      CreateItem($caption,DB_IC_NOTEPAD,"ShowKeyWord($Caption);",false,0);
+   }; 
+  if ($len=0) {InVisible;}; 
+  $shift=ShiftKeyDown;
+  if ($shift=true) {InVisible;}; 
+}
+
+<TEXT_MES_CRYPTING>[DB_IC_KEY]
+{
+initialization:
+  $Visible=true;
+  if ($CanSetCrypt=fasle) {InVisible;};
+  if ($Crypted=true) {
+    if ($CanDecrypt=false) 
+    {
+      CreateItem("TEXT_MES_ENTER_PASSWORD",DB_IC_PASSWORD,"EnterPasswordItemPopUpMenu;",false,0);
+    };
+    CreateItem("TEXT_MES_DECRYPT",DB_IC_DECRYPTIMAGE,"DeCryptItemPopUpMenu;",false,0);
+  }; else {
+    CreateItem("TEXT_MES_CRYPT",DB_IC_CRYPTIMAGE,"CryptItemPopUpMenu;",false,0);
+  };
+  CreateItem("-",0,"",false,0);
+  $script = "DoSteno("""+$FileName+""")";
+  CreateItem("TEXT_MES_DO_STENO",DB_IC_STENO,$script,false,0);
+  $can_desteno=FileHasExt($FileName,"|BMP|PNG|");
+  if ($can_desteno=true) {
+    $script = "DoDesteno("""+$FileName+""")";
+    CreateItem("TEXT_MES_DO_DESTENO",DB_IC_DESTENO,$script,false,0);
+  };
+}
+
+<TEXT_MES_SET_AS_DESKTOP_WALLPAPER>[DB_IC_WALLPAPER]
+{
+initialization:
+  $Visible=true;
+  if ($CanFileOperationsCritical=false) {InVisible;};
+  if ($IsCurrentFile=false) {InVisible;};
+  if ($WallPaper=false) {InVisible;};
+  if ($Crypted=true) {InVisible;};
+  CreateItem("TEXT_MES_BY_STRETCH",DB_IC_WALLPAPER,"WallpaperStretchItemPopUpMenu;",false,0);
+  CreateItem("TEXT_MES_BY_CENTER",DB_IC_WALLPAPER,"WallpaperCenterItemPopUpMenu;",false,0);
+  CreateItem("TEXT_MES_BY_TILE",DB_IC_WALLPAPER,"WallpaperTileItemPopUpMenu;",false,0);
+}
+
+<TEXT_MES_IMAGE_EDITOR>[DB_IC_IMEDITOR]
+{
+initialization:
+  $Visible=true;
+  if ($CanEditImage=false) {InVisible;};
+  if ($IsCurrentFile=false) {InVisible;};
+run:
+  ImageEditorItemPopUpMenu;
+}
+
+<>[]{scripts\UserMenu.dbini}
+
+<TEXT_MES_REFRESH_ID>[DB_IC_REFRESH_ID]
+{
+initialization:
+  $Visible=true;
+  if ($NoDBInfoNeeded=true) {InVisible;};
+  if ($IsCurrentFile=false) {InVisible;};
+  if ($IsRecord=false) {InVisible;};
+run:
+  RefreshIDItemPopUpMenu;
+}
+
+<TEXT_MES_SCAN_IMAGE>[DB_IC_SEARCH]
+{
+initialization:
+  $Visible=true;
+  $shift=ShiftKeyDown;
+  if ($shift=true) {InVisible;};
+  if ($FileExists=false) {InVisible;};
+run: 
+  ScanImageItemPopUpMenu;
+}
+
+<TEXT_MES_PRINT>[DB_IC_PRINTER]
+{
+initialization:
+  $Visible=true;
+  if ($IsCurrentFile=false) {InVisible;};
+  if ($CanPrint=false) {InVisible;};
+run: 
+  PrintItemPopUpMenu;
+}
+
+<TEXT_MES_DUBLICATES>[DB_IC_DUBLICAT]
+{
+initialization:
+  $Visible=true;
+  if ($Dublicat=false) {InVisible;};
+  CreateItem("TEXT_MES_SHOW_DUBLICATES",DB_IC_DUBLICAT,"ShowDublicatesItemPopUpMenu;",false,0);
+  CreateItem("TEXT_MES_DEL_DUBLICATES",DB_IC_DEL_DUBLICAT,"DeleteDublicatesItemPopUpMenu;",false,0);
+}
+
+<TEXT_MES_DEL_FROM_DB>[DB_IC_DELETE_INFO]
+{
+initialization:
+  $Visible=true;
+  if ($CanDeleteInfo=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+  if ($IsRecord=false) {InVisible;};
+run:
+  DeleteLItemPopUpMenu;
+}
+
+<TEXT_MES_DEL_FILE>[DB_IC_DELETE_FILE]
+{
+initialization:
+  $Visible=true;
+  if ($CanFileOperationsCritical=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+  if ($IsRecord=false) {InVisible;};
+  if ($IsFile=false) {InVisible;};
+  if ($FileExists=false) {InVisible;};
+run:
+  DeleteItemPopUpMenu;
+}
+
+<TEXT_MES_COPY_ITEM>[DB_IC_COPY]
+{
+initialization:
+  $Visible=true;
+  if ($CanFileOperationsNormal=false) {InVisible;};
+  if ($IsFile=false) {InVisible;};
+  if ($FileExists=false) {InVisible;};
+run:
+  CopyItemPopUpMenu;
+}
+
+<TEXT_MES_RENAME>[DB_IC_RENAME]
+{
+initialization:
+  $Visible=true;
+  if ($CanRename=false) {InVisible;};
+  if ($CanFileOperationsCritical=false) {InVisible;};
+run:
+  RenameItemPopUpMenu;
+}
+
+<->[]{}
+
+<TEXT_MES_EXPLORER>[DB_IC_EXPLORER]
+{
+initialization:
+ $Visible=true;
+ if ($FileExists=false) {InVisible;};
+run:
+  ExplorerPopUpMenu;
+}
+
+<TEXT_MES_SEND_TO>[DB_IC_SENDTO]
+{
+  initialization:
+  $Visible=true;
+  $len=ArrayStringLength($Panels);
+  for ($i=0;$i<$len;$i=SumInt($i,1)) {
+      $s=GetStringItem($Panels,$i);
+      CreateItem($s,DB_IC_SEND,"SendToItemPopUpMenu;",false,$i);
+   };
+  CreateItem("-","","",false,0);
+  CreateItem("TEXT_MES_NEW_PANEL",DB_IC_SENDTO,"SendToItemPopUpMenu;",false,-1);
+}
+
+<TEXT_MES_SHOW_FOLDER>[DB_IC_SEARCH]
+{
+initialization:
+  $Visible=true;
+  if ($IsRecord=false) {InVisible;};
+  if ($NoDBInfoNeeded=true) {InVisible;};
+run:
+  SearchFolderPopUpMenu;
+}
+
+<TEXT_MES_PROPERTY>[DB_IC_PROPERTIES]
+{
+  PropertyItemPopUpMenu;
+}

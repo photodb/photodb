@@ -1,0 +1,227 @@
+// <Execute>[DB_IC_SHELL]
+// {
+//  $index=SelectedIndex;
+//  $file=GetOpenFileName("","Exe Files (*.exe)|*.exe");
+//  Run($file,"");
+// }
+<#>[]{scripts\changedb_functions.dbini}
+<TEXT_MES_FILE>[0]
+{
+ <->[]{}
+ $IconList=GetDBsIcons;
+ DeleteNoFirst;
+ 
+ $UR=UserRights("TEXT_MES_RIGHTS_EXECUTE");
+ if ($UR=true)
+ { 
+	$Sel=SelCount;
+	if ($Sel=1) 
+	{
+		$index=SelectedIndex;
+		$file=GetPathByIndex($index);
+		$im=ImageFile($file);
+		$b=true;
+		if ($im=true) 
+		{
+			$runscript=PathFormat("ShowFile(""%1"")",$file);
+			CreateItemDefChecked("TEXT_MES_SHELL",DB_IC_SHELL,$runscript,false,true,false,0);
+			$b=false;
+		};
+		$dir=DirectoryExists($file);
+		if ($dir=true) 
+		{
+			$runscript=PathFormat("NewExplorerByPath(""%1"")",$file);
+			CreateItemDefChecked("TEXT_MES_SHELL",DB_IC_SHELL,$runscript,false,true,false,0);
+			$b=false;
+		};
+		if ($b=true)
+		{
+			$runscript=PathFormat("Exec(""%1"")",$file);
+			CreateItemDefChecked("TEXT_MES_SHELL",DB_IC_SHELL,$runscript,false,true,false,0);
+		};
+	};
+	CreateItemDefChecked("-",0,"",false,false,false,0);
+ };
+    
+ $UR=UserRights("RIGHTS_CHANGE_DB_NAME");
+ if ($UR=true)
+ {
+	InsertSelectDBMenu($IconList);
+ };
+
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ CreateItemDefChecked("TEXT_MES_EXIT",DB_IC_EXIT,"CloseWindow;",false,true,false,0);
+}
+
+<TEXT_MES_EDIT>[0]
+{
+ <->[]{}
+ DeleteNoFirst;
+ $fCanBack=CanBack;
+ CreateItemDefChecked("TEXT_MES_BACK",DB_IC_PREVIOUS,"GoBack;",false,$fCanBack,false,0);
+ $fCanForward=CanForward;
+ CreateItemDefChecked("TEXT_MES_FORWARD",DB_IC_NEXT,"GoForward;",false,$fCanForward,false,0);
+ if ($CanShowPath=true) 
+ {
+  $fCanUp=CanUp;
+  CreateItemDefChecked("TEXT_MES_UP",DB_IC_UP,"GoUp;",false,$fCanUp,false,0);
+ };
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ 
+ $CanCopy=CanCopySelection;
+ if ($CanFileOperationsNormal=true) {
+ CreateItemDefChecked("TEXT_MES_COPY",DB_IC_COPY,"Copy;",false,$CanCopy,false,0);};
+ if ($CanFileOperationsCritical=true) {
+ CreateItemDefChecked("TEXT_MES_CUT",DB_IC_CUT,"Cut;",false,$CanCopy,false,0);};
+ 
+ $ClipBoardFiles=LoadFilesFromClipBoard;
+ $l=ArrayStringLength($ClipBoardFiles);
+ if ($l>0) 
+ {
+   $CanPaste=CanPasteInSelection;
+   CreateItemDefChecked("TEXT_MES_PASTE",DB_IC_PASTE,"Paste;",false,$CanPaste,false,0);
+ };
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ CreateItemDefChecked("TEXT_MES_SELECT_ALL",DB_IC_SELECTALL,"SelectAll;",false,true,false,0);
+}
+
+
+<TEXT_MES_VIEW>[0]
+{
+ <->[]{}
+ DeleteNoFirst;
+
+ $explorer=ExplorerType;
+ if ($explorer=true) 
+ {
+  CreateItemDefChecked("TEXT_MES_SHOW_INFO_PANEL",DB_IC_INFO_PANEL,"CancelExplorerMode;",false,true,false,0);
+ }; else 
+ {
+  if ($CanShowPath=true) 
+  {
+   CreateItemDefChecked("TEXT_MES_SHOW_EXPLORER_PANEL",DB_IC_EXPLORER_PANEL,"GoToExplorerMode;",false,true,false,0);
+  };
+ };
+
+ if ($CanShowPrivate=true) 
+ {
+  $State=ShowPrivateNow;
+  if ($State=true) 
+  {
+   CreateItemDefChecked("TEXT_MES_SHOW_ONLY_COMMON",DB_IC_COMMON,"HidePrivate;",false,true,false,0);
+  }; else
+  {
+   CreateItemDefChecked("TEXT_MES_SHOW_PRIVATE",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
+  };
+ };
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ CreateItemDefChecked("TEXT_MES_VIEW",DB_IC_SORT,"",false,true,false,-1);
+ $View=GetView;
+ $Check=false;
+ if ($View=0) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("TEXT_MES_VIEW_THUMBNAILS",-1,"SetThumbnailsView;",false,true,$Check,0,-1);
+ if ($View=4) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("TEXT_MES_VIEW_TILE",-1,"SetTilesView;",false,true,$Check,0,-1);
+ if ($View=1) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("TEXT_MES_VIEW_ICONS",-1,"SetIconsView;",false,true,$Check,0,-1);
+ if ($View=3) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("TEXT_MES_VIEW_LIST",-1,"SetListView;",false,true,$Check,0,-1);
+ if ($View=2) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("TEXT_MES_VIEW_LIST2",-1,"SetList2View;",false,true,$Check,0,-1);
+
+}
+<TEXT_MES_TOOLS>[0]
+{
+  <TEXT_MES_GET_LIST_OF_KEYWORDS>[DB_IC_SEARCH]
+  {
+    GetListOfKeyWords;
+  }
+  <TEXT_MES_MAKE_DB_TREE>[DB_IC_TREE]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_SHOW_PATH");
+    if ($UR=false) {InVisible;};
+   run:
+    MakeDBFileTree;
+  }
+  <TEXT_MES_SHOW_UPDATER>[DB_IC_BOX]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_ADD");
+    if ($UR=false) {InVisible;};
+   run:
+    ShowUpdateWindow;
+  }
+  <TEXT_MES_MANAGE_DB>[DB_IC_ADMINTOOLS]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
+    if ($UR=false) {InVisible;};
+   run:
+    DoManager;
+  }
+  <TEXT_MES_IMAGE_EDITOR>[DB_IC_IMEDITOR]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_EDIT_IMAGE");
+    if ($UR=false) {InVisible;};
+   run:
+    $form=NewImageEditor;
+    ShowDBForm($form);
+  }
+  <TEXT_MES_NEW_PANEL>[DB_IC_PANEL]
+  {
+    NewPanel;
+  }
+  <TEXT_MES_NEW_SEARCH>[DB_IC_ADDTODB]
+  {
+    NewSearch;
+  }
+  <TEXT_MES_GROUPS_MANAGER>[DB_IC_GROUPS]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_SHOW_OPTIONS");
+    if ($UR=false) {InVisible;};
+   run:
+    ExecuteGroupManager;
+  }
+  <TEXT_MES_EXPLORER>[DB_IC_EXPLORER]
+  {
+    NewExplorer;
+  }
+  <TEXT_MES_SPLIT_DB_CAPTION>[DB_IC_SPLIT]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
+    if ($UR=false) {InVisible;};
+   run:
+    SplitDB;
+  }
+  <->[]{}
+  <TEXT_MES_CD_EXPORT_CAPTION>[DB_IC_CD_EXPORT]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
+    if ($UR=false) {InVisible;};
+   run:
+    DoCDExport;
+  }  
+  <TEXT_MES_CD_MAPPING_CAPTION>[DB_IC_CD_MAPPING]
+  {
+   run:
+    DoCDMapping;
+  }
+  <->[]{}
+  <TEXT_MES_OPTIONS>[DB_IC_OPTIONS]
+  {
+   initialization:
+    $UR=UserRights("RIGHTS_SHOW_OPTIONS");
+    if ($UR=false) {InVisible;};
+   run:
+    DoOptions;
+  }
+  <>[]{scripts\MenuScripts.dbini}
+}
+<->[]{}
+<>[]{scripts\GetPhotosScript.dbini}
+<>[]{scripts\HelpScript.dbini}

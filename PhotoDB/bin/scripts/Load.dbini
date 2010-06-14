@@ -1,0 +1,3 @@
+ $InitialString=ReadFile("scripts\InitialString.ini");
+ $Provider="Microsoft.Jet.OLEDB.4.0";
+ $PortableWork="False";

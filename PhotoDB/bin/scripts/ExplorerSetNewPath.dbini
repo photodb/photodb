@@ -1,0 +1,15 @@
+ $Path=$Path;
+ if ($Path="pic") {$Path=GetMyPicturesFolder;};
+ if ($Path="my") {$Path=GetMyDocumentsFolder;};
+ if ($Path="ph") {  $Path=GetMyPicturesFolder; $Path=$Path+"\ph";};
+ if ($Path="serv") {$Path="\\10.16.0.5";};
+ if ($Path="in") {$Path="\\10.16.0.5\inbox";};
+  
+ if ($Path="fav") {  $Path=GetMyPicturesFolder;
+  $Path=$Path+"\Favorite Pictures";};
+
+ if ($Path="f") {  $Path=GetMyPicturesFolder;
+  $Path=$Path+"\Favorite Pictures\photo";};
+
+ //необходимо прекратить запрос перед выключением приложения!!!
+ if ($Path="exit") {$Path=$InvalidQuery; CloseApp;};

@@ -1,0 +1,50 @@
+$f=ExtractFileName($File);
+$int=Pos(" ",$f);
+$int=%$int-1;
+$f_path="D:\Dmitry\My Pictures\Favorite Pictures\photo\";
+$f_in_path=FileInPath($File,$f_path);
+if ($f_in_path=false) 
+{
+ if ($int>0)
+  {
+    $str=StrCopy($f,1,$int);
+    $no=StrToInt($str);
+    if ($no>0) 
+    {
+      $NewPath="";
+      if (#(no<100000)&(no>0)) {$NewPath="0-100000\";};
+
+      if (#($no>100000)&($no<200000)) {$NewPath="100001-200000\";};
+      if (#($no>200000)&($no<300000)) {$NewPath="200001-300000\";};
+      if (#($no>300000)&($no<400000)) {$NewPath="300001-400000\";};
+      if (#($no>400000)&($no<500000)) {$NewPath="400001-500000\";};
+      if (#($no>500000)&($no<600000)) {$NewPath="500001-600000\";};
+      if (#($no>600000)&($no<700000)) {$NewPath="600001-700000\";};
+      if (#($no>700000)&($no<800000)) {$NewPath="700001-800000\";};
+      if (#($no>800000)&($no<900000)) {$NewPath="800001-900000\";};
+      if (#($no>900000)&($no<1000000)) {$NewPath="900001-1000000\";};
+      if (#($no>1000000)&($no<1100000)) {$NewPath="1000001-1100000\";};
+      if (#($no>1100000)&($no<1200000)) {$NewPath="1100001-1200000\";};
+      if (#($no>1200000)&($no<1300000)) {$NewPath="1200001-1300000\";};
+      if (#($no>1300000)&($no<1400000)) {$NewPath="1300001-1400000\";};
+      if (#($no>1400000)&($no<1500000)) {$NewPath="1400001-1500000\";};
+      if (#($no>1500000)&($no<1600000)) {$NewPath="1500001-1600000\";};
+      if (#($no>1600000)&($no<1700000)) {$NewPath="1600001-1700000\";};
+      if (#($no>1700000)&($no<1800000)) {$NewPath="1700001-1800000\";};
+      if (#($no>1800000)&($no<1900000)) {$NewPath="1800001-1900000\";};
+      if (#($no>1900000)&($no<2000000)) {$NewPath="1900001-2000000\";};
+      $NewPath=$f_path+$NewPath;
+      $NewFileName=$NewPath+$f;
+      CopyFileSynch($File,$NewFileName);
+      $fe=FileExists($NewFileName);
+      if ($fe=true)
+      {
+        $Form=GetLastPanel;
+        ShowDBForm($Form);
+        DeleteFile($File);
+        AddFileInDB($NewFileName);
+        AddFileToPanel($Form,$NewFileName);
+      };
+    };
+  };
+};
