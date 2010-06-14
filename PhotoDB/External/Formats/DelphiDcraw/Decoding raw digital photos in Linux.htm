@@ -1,0 +1,713 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<TITLE>Decoding raw digital photos in Linux</TITLE>
+</HEAD>
+<BODY>
+<a href="../">Back to Dave Coffin's Home Page</a>
+<center>
+<H1>Decoding raw digital photos in Linux</H1>
+</center>
+<a href="index_eo.html">en Esperanto</a>
+<br><a href="index_pt.html">em Português</a>
+<br><a href="index_ru.html">на русском</a>
+<p>
+Welcome!  If you are wondering how to connect your digital
+camera and download images to a Linux PC, go to the
+<a href="http://gphoto.sourceforge.net/">gPhoto homepage</a>.
+My software is for processing those images <em>after</em>
+downloading them.
+<p>
+If you're downloading JPEG files, you don't need my software
+at all.  The image has already been processed inside the
+camera.  Almost all digital cameras made since 1997 produce
+JPEG images, so why would you want to do it any other way?
+<p>
+Well, despite the convenience and ubiquity of JPEG, there are
+some disadvantages.  JPEG is a lossy format -- to fit a big
+image into a small file, a lot of information is thrown away.
+That's why midrange and high-end digital cameras offer an
+alternative:  Raw, unprocessed CCD data files, for which the
+camera manufacturer provides special decoding software.
+<p>
+Of course this software is for Windows and Macintosh only,
+with no source code.  So it's useless to users of other
+operating systems, programmers hoping to design a better
+interpolation algorithm, and historians not yet born in an
+era when the only Windows machines will be in museums.
+<p>
+So here is my mission:  Write and maintain an ANSI C program
+that decodes any raw image from any digital camera on any
+computer running any operating system.
+<p>
+That program is called <a href="dcraw.c">dcraw</a>
+(pronounced "dee-see-raw"),
+and it's become a standard tool within and without the
+Open Source world.  It's small (about 8000 lines), portable
+(standard C libraries only), free (both "gratis" and "libre"),
+and when used skillfully, produces
+<a href="http://www.insflug.org/raw/">better</a>
+quality
+<a href="http://www.aim-dtp.net/aim/digicam/dcraw/">output</a>
+than the tools provided by the camera vendor.
+<p>
+<a href="../resume.html">Here's my resume</a>.
+I do freelance consulting related to dcraw, and I'm also
+available for full-time software work in the Northeast USA.
+<p>
+I can be reached by sending e-mail to cybercom dot net with
+the username "dcoffin".
+<H3>News and Interviews</H3>
+<a href="http://www.outbackphoto.com/artofraw/raw_07/essay.html">
+Essay for Digital Outback Photo, 25 April 2003</a>
+<br>
+<a href="http://news.com.com/Nikons+photo+encryption+reported+broken/2100-1030_3-5679848.html">
+Article in News.com, 21 April 2005</a>
+<br>
+<a href="http://www.dpreview.com/news/0504/05042701davecoffininterview.asp">
+Interview with Digital Photography Review, 27 April 2005</a>
+<br>
+<a href="http://www.schnebeck.de/interview-with-dave-coffin-creator-of-dcraw">
+Interview with Thorsten Schnebeck, 10 June 2006</a>
+<br>
+<a href="http://www.ladinamo.org/english/raw-format-the-captive-photo.php">
+Interview with Ladinamo, 16 June 2006</a>
+<H3>My Code</H3>
+Unless otherwise noted in the source code, these programs are free
+for all uses, although I would like to receive credit for them.
+Donations are welcome too, if you're making money from my code.
+<p>
+<b>Note to Linux distributors:</b>  The only executable files that
+should be installed by a dcraw package are "dcraw", "clean_crw",
+and maybe "fuji_green", "fujiturn", and "fujiturn16".  My shell
+scripts are dangerous and should only be installed in a "doc"
+directory without execute permission.
+<ul>
+<li>
+<a href="dcraw.c">dcraw.c -- decodes raw photos, extracts
+thumbnails, and displays metadata</a>
+<br>Supports 268 cameras at last count.
+Compile with "<b>gcc -o dcraw -O4 dcraw.c -lm -ljpeg -llcms</b>"
+or "<b>gcc -o dcraw -O4 dcraw.c -lm -DNO_JPEG -DNO_LCMS</b>".
+Run with no arguments to see a usage message.
+Don't complain that 16-bit output is too dark -- read the <a href="#faq">FAQ</a>!
+<li>
+<a href="dcraw.1.html">UNIX manpage for dcraw</a>
+<br>This is dcraw's official user documentation, updated in
+lockstep with the source code.
+<li>
+<a href="rawphoto.c">rawphoto.c -- basic plugin for GIMP 1.2 &amp; 2.0</a>
+<br>After installing "<b>dcraw</b>",
+do "<b>gimptool --install rawphoto.c</b>".
+My plugin provides a simple dialog box for loading raw
+files into the Gimp.
+<a href="http://ufraw.sourceforge.net/">Udi Fuchs</a>
+and
+<a href="http://pages.quicksilver.net.nz/pepe/">Joseph Heled</a>
+have written much nicer plugins, with live preview, histograms,
+and color curves.
+<li>
+<a href=".badpixels">.badpixels -- my camera's "hot pixels"</a>
+<br>This file tells dcraw which pixels have died and when,
+so that it can interpolate around them.
+<li>
+<a href="RCS/dcraw.c,v">dcraw.c,v -- complete unabridged RCS file</a>
+<br>This file contains the entire history of dcraw.c since its
+conception on February 23, 1997.  If you don't have the RCS toolkit,
+<a href="http://www.cs.purdue.edu/homes/trinkle/RCS/">
+download it here</a>.
+<li>
+<a href="parse.c">parse.c -- read image data structures</a>
+<br>This program displays CIFF and TIFF data structures in a very
+cryptic format.
+<li>
+<a href="clean_crw.c">clean_crw.c -- clean Canon CRW files</a>
+<br>Recovered or undeleted CRW files often have junk appended
+to them that makes them unreadable.  This program safely cleans
+CRW files.
+<li>
+<a href="fujiturn.c">fujiturn.c -- rotate Fuji Super CCD images</a>
+<br>An alternative to dcraw's built-in Fuji rotation.
+<li>
+<a href="fuji_green.c">fuji_green.c -- convert Fuji green pixels to PGM</a>
+<br>A side benefit of the Fuji Super CCD design is that its green
+pixels make nice greyscale images.
+</ul>
+For hackers only:
+<ul>
+<li><a href="decompress.c">decompress.c</a>
+is a simple reference decompressor for CRW files.
+<li><a href="sony_clear.c">sony_clear.c</a>
+decrypts SRF files from the Sony DSC-F828.
+</ul>
+<h3><a name="i18n">Internationalization</a></h3>
+To install dcraw with support for non-English languages, download
+the latest tarball <a href="archive/">from this directory</a> and
+run the "install" script.  The currently supported languages are
+<a href="dcraw_eo.1.html">Esperanto</a>,
+<a href="dcraw_ru.1.html">Russian</a>,
+<a href="dcraw_fr.1.html">French</a>,
+<a href="dcraw_it.1.html">Italian</a>,
+<a href="dcraw_de.1.html">German</a>,
+<a href="dcraw_pt.1.html">Portuguese</a>,
+<a href="dcraw_es.1.html">Spanish</a>,
+<a href="dcraw_nl.1.html">Dutch</a>,
+<a href="dcraw_pl.1.html">Polish</a>,
+<a href="dcraw_hu.1.html">Hungarian</a>,
+and Chinese (both
+<a href="dcraw_zh_TW.1.html">Traditional</a> and
+<a href="dcraw_zh_CN.1.html">Simplified</a>).
+<p>
+To add another language, send me translations of
+<a href="dcraw.1">this manpage</a> and
+<a href="dcraw_eo.po">this message table</a>
+in UTF-8 encoding.
+Translate only from my original English and Esperanto texts --
+other languages may contain factual errors invisible to me.
+<p>
+Do not translate "Cannot do X" as "It is impossible to do X".
+Dcraw is not perfect, so if it cannot do something, that does
+not mean that the task is impossible.  Computers must never use
+the pronoun "I", so write "dcraw cannot do X".
+<p>
+"no white balance option" means "no option for white balance".
+Do not translate it as "an option for no white balance"!
+<p>
+It is correct to say that dcraw decodes "raw photos".  Some of
+these raw photos are raw files (raw images with no other data
+of any kind), but most contain data structures full of other
+information about the raw image (called "metadata").
+<p>
+"raw" is an English word, not an acronym or file format.
+"raw photo" should be translated with the same adjective that
+you would use for "crude oil" or "raw materials".
+<p>
+There are dozens of raw photo formats:  CRW, CR2, MRW, NEF,
+RAF, etc.  "RAW Format" does not exist; it is an illusion
+created by dcraw's ability to read all raw formats.
+<h3><a name="others">Other Raw Photo Decoders</a></h3>
+Dcraw has made it far easier for developers to support a wide
+range of digital cameras in their applications.  They can call
+dcraw from a graphical interface, paste pieces of dcraw.c into
+their code, or just use dcraw.c as the documentation that camera
+makers refuse to provide:
+<ul>
+<li><a href="http://www.acdsystems.com/">ACDSee</a>
+<li><a href="http://www.adobe.com/products/photoshop/cameraraw.html">Adobe Photoshop</a>
+<li><a href="http://www.br-software.com/">BR's PhotoArchiver by Baard Riiber</a>
+<li><a href="http://www.breezesys.com/">BreezeBrowser by Chris Breeze</a>
+<li><a href="http://www.conceiva.com/">Conceiva Lightbox</a>
+<li><a href="http://cpicture.net/en/t_raw.html">cPicture by Jürgen Eidt</a>
+<li><a href="http://www.canto.com/">Cumulus by Canto</a>
+<li><a href="http://frostyplace.com/dcraw/">dcRAW-X by Bryan Chang</a>
+<li><a href="http://www.tanis.dk/wiki/index.php/DCRawUI">DCRawUI by Sune Trudslev</a>
+<li><a href="http://www.pretentiousname.com/jp2raw/">Directory Opus Plugin by Leo Davidson</a>(with C++ source code)
+<li><a href="http://deepskystacker.free.fr/">DeepSkyStacker by Luc Coiffier</a>
+<li><a href="http://www.dpmagic.com/">dpMagic by Mikhail Stolpner</a>
+<li><a href="http://www.easyraw.com/">EasyRaw Studio</a>
+<li><a href="http://www.lemkesoft.com/">GraphicConverter by Thorsten Lemke</a>
+<li><a href="http://jcoconsulting.com/index.asp?Section=GVOCX">GVBox from JCO Consulting</a>
+<li><a href="http://www.aragonsystem.com/">ImageLab from Aragon System</a>
+<li><a href="http://www.irfanview.com/">IrfanView by Irfan Skiljan</a>
+<li><a href="http://www.astrosurf.com/buil/us/iris/iris.htm">IRIS image processor for astronomers</a>
+<li><a href="http://www.kaorg.com/photoservice.asp">KA Photoservice</a>
+<li><a href="http://www.lightboxsoftware.com/">Lightbox by Josh Anon</a>
+<li><a href="http://sonic.net/~rat/lightcrafts/">LightZone by Anton Kast</a>
+<li><a href="http://www.mediarecover.com/">MediaRECOVER File Recovery Software</a>
+<li><a href="http://www.mixpo.com/">Mixpo by Mixpo Portfolio Broadcasting Inc.</a>
+<li><a href="http://www.wildcape.com/">Photo Companion by Jeff Moore</a>
+<li><a href="http://photojockey.com/">Photo Jockey by Davie Lee Reed</a>
+who also wrote a
+<a href="http://smatters.com/dcraw/">
+dcraw interface for Delphi programmers</a>.
+<li><a href="http://www.k-i-s.net/">Photo Organizer by Balint Kis</a>
+<li><a href="http://www.datarescue.com/photorescue/">PhotoRescue from DataRescue</a>
+<li><a href="http://www.sticksoftware.com/software/PhotoReviewer.html">PhotoReviewer by Ben Haller</a>
+<li><a href="http://www.photovault.org/">Photovault by Harri Kaimio</a>
+<li><a href="http://www.picasa.com/">Picasa from Google</a>
+<li><a href="http://www.picturearena.com/">Picture Arena by Felix Schwarz</a>
+<li><a href="http://pleiades-astrophoto.com/">PixInsight by Pleiades Software</a>
+<li><a href="http://www.pixpo.com/">PiXPO by PiXPO Inc.</a>
+<li><a href="http://www.polybytes.com/">PolyView by Polybytes</a>
+<li><a href="http://lens.liteserv.com/download/powershovel2.php">PowerShovel-II by Luc Minnebo</a>
+<li><a href="http://www.iridientdigital.com/">RAW Developer by Iridient Digital</a>
+<li><a href="http://www.rawmagick.com/">Raw Magick</a>
+<li><a href="http://www.i-graph.com/">RawConvert by Jason Swain</a>
+<li><a href="http://www.wizards.de/rawdrop">RawDrop by Frank Siegert</a>
+<li><a href="http://www.pixmantec.com/">RawShooter from pixmantec</a>
+<li><a href="http://www.through-the-lens.net/">RawView by Jari Savolainen</a>
+<li><a href="http://www.serif.com/">Serif PhotoPlus, PanoramaPlus, and AlbumPlus</a>
+<li><a href="http://www.logicaldesigns.com/">SharpRaw by Duane DeSieno</a>
+<li><a href="http://www.silverfast.com/">SilverFast DCPro by LaserSoft Imaging</a>
+<li><a href="http://www.studioline.net/">StudioLine Photo by H&amp;M Software</a>
+<li><a href="http://www.hexcat.com/viewit/">ViewIt by Zdzislaw Losvik</a>
+<li><a href="http://www.dimin.net/software/viewer/">Viewer n5 by Dmitry Fedorov</a>
+<li><a href="http://www.hamrick.com/">VueScan by Ed Hamrick</a>
+<li><a href="http://www.xara.com/products/xtreme/">Xara Xtreme Pro</a>
+</ul>
+<p>
+<H3><a name="faq">Frequently Asked Questions</a></H3>
+<dl>
+<dt><b>I don't have a C compiler.  Could you send me an executable?</b>
+<dd>No, but Francisco Montilla provides Mac OS and Windows executables
+<a href="http://www.insflug.org/raw/">
+on his website</a>.
+And Benjamin Lebsanft has volunteered to maintain
+<a href="http://www.lebsanft.org/blog/index.php?cat=9">
+Windows executables optimized for specific CPUs</a>.
+Dcraw has also been ported to
+<a href="http://aminet.net/search?query=dcraw">Amiga</a>,
+<a href="http://amis.flatrate.ru/dcraw/">MorphOS</a>,
+<a href="http://www.pidcock.co.uk/beos/index.html">BeOS</a>,
+<a href="http://hobbes.nmsu.edu/cgi-bin/h-search?key=dcraw">OS/2</a>, and
+<a href="http://www.riscos.info/unix/indexes/graphics.html">RISC OS</a>.
+<p>
+If you're familiar with the DOS command line but don't know C,
+you can install this <a href="http://www.delorie.com/djgpp/">
+free C compiler for Windows</a> and compile dcraw.c quite easily.
+<p>
+<dt><b>Why does dcraw say "Out of memory" in Windows Vista?</b>
+<dd>This is an arbitrary limitation of Windows Vista that will be
+fixed in Service Pack 1.
+Thomas Nicely (of Pentium FDIV fame) has a
+<a href="http://www.trnicely.net/misc/vista.html">
+page describing the problem</a>.
+At the moment, the only workaround is to build dcraw.exe with a
+Microsoft compiler instead of a GNU compiler.
+<p>
+<dt><b>How can I read the EXIF data (shutter speed, aperture, etc.)?</b>
+<dd><a href="http://www.sno.phy.queensu.ca/~phil/exiftool/">
+Phil Harvey's ExifTool</a> provides a unified Perl-based EXIF
+reader (and editor!) for all cameras and file formats.
+"dcraw -i -v" is much faster, but provides less information.
+<p>
+<dt><b>How can I read NEF files from Nikon scanners?</b>
+<dd>Dcraw only supports cameras.
+Try <a href="scan.c">this simple program</a> for scanners.
+<p>
+<dt><b>How can I read Nikon Dust Off images (NDF files)?</b>
+<dd><a href="read_ndf.c">Use this program</a>.
+<p>
+<dt><b>Do you have any specifications describing raw photo formats?</b>
+<dd>Yes, but they tend to omit important details, like how
+to decompress the raw image or decrypt private metadata.
+See the
+<a href="http://partners.adobe.com/asn/developer/PDFS/TN/TIFF6.pdf">TIFF spec</a>, the
+<a href="http://www.map.tu.chiba-u.ac.jp/IEC/100/TA2/recdoc/N4378.pdf">TIFF/EP spec</a>, the
+<a href="http://www.adobe.com/products/dng/pdfs/dng_spec.pdf">Adobe DNG spec</a>, the
+<a href="http://xyrion.org/ciff/">CIFF (CRW) spec</a>, and the
+<a href="http://www.x3f.info/technotes/FileDocs/X3F_Format.pdf">X3F spec</a>.
+<p>
+<dt><b>Where can I get an assortment of raw photos to test my software?</b>
+<dd>
+Try <a href="http://raw.fotosite.pl/">raw.fotosite.pl</a>,
+<a href="http://www.rawsamples.ch/">www.rawsamples.ch</a>,
+and <a href="http://www.glasslantern.com/RAWpository/">Glass Lantern RAWpository</a>.
+For the complete dcraw test suite (every camera supported by dcraw),
+I sell a 2-DVD set for $600 and web-based updates for $300/year.
+<p>
+<dt><b>I'm designing a digital camera.  How do I convert its raw
+photos into something that dcraw and Adobe Photoshop can open?</b>
+<dd>
+Download <a href="http://dl.maptools.org/dl/libtiff/tiff-3.8.2.tar.gz">
+LibTIFF v3.8.2</a> and apply <a href="libtiff.patch">this patch</a>.
+Then use <a href="elphel_dng.c">this C program</a> as a template for
+converting your photos to valid
+<a href="http://www.adobe.com/products/dng/main.html">Adobe DNG</a> files.
+<p>
+<dt><b>Why are dcraw output images larger than camera JPEGs?</b>
+<dd>Any algorithm that combines each pixel with its neighbors is
+going to have problems near the edges.  C code is cheap, so dcraw
+applies a different algorithm to edge pixels.  Hardware logic is
+expensive, so cameras crop off the edge pixels after processing.
+<p>
+<dt><b>I shot a raw photo with no light.  Why does it appear
+all noisy, when it should be solid black?</b>
+<dd>No matter how dark an image is, dcraw's auto-exposure stretches
+it so that one percent of its pixels appear white.  The "-b" option
+adjusts this behavior, while "-4" (16-bit output) avoids it entirely.
+<p>
+<dt><b>I bracket plus/minus two stops, but all five shots look
+almost the same in dcraw.  Why?</b>
+<dd>See the previous question.
+<p>
+<dt><b>Why is 16-bit output dark / unreadable?</b>
+<dd>If you want pretty pictures straight out of dcraw, stay with
+8-bit output.  16-bit linear output is the best raw material
+for professional image editors such as
+<a href="http://www.adobe.com/products/photoshop/main.html">
+Photoshop</a> and
+<a href="http://cinepaint.sourceforge.net/">CinePaint</a>,
+but it's no good for most image viewers.
+<p>
+<dt><b>What does the "-f" (four color RGB) option do?</b>
+<dd>If you see patterns like <a href="ahd_maze.png">this</a>
+or <a href="vng_grid.png">this</a> in your output images, first
+try "dcraw -a".  If these patterns persist, use "dcraw -f" to
+get rid of them.
+<p>
+<dt><b>Could you please add an option for TIFF / FITS / PNG / BMP / JPEG output?</b>
+<dd>In versions 8.25 and later, "dcraw -T" writes TIFF output
+with metadata.  To write other formats:
+<pre>
+dcraw -c crw_0001.crw | pnmtofits > crw_0001.fits
+dcraw -c crw_0001.crw | pnmtopng > crw_0001.png
+dcraw -c crw_0001.crw | ppmtobmp > crw_0001.bmp
+dcraw -c crw_0001.crw | cjpeg > crw_0001.jpeg
+</pre>
+I used the
+<a href="http://netpbm.sourceforge.net/">Netpbm toolkit</a>
+in these examples.
+<a href="http://www.imagemagick.org/">ImageMagick</a>
+also does command-line format conversions.  Both are free.
+<p>
+<dt><b>Why don't you implement dcraw as a library?</b>
+<dd>I have decided that dcraw shall be a command-line program
+written in C, and that any further abstraction layers must be
+added around this core, not inside it.
+<p>
+Library code is ugly because it cannot use global variables.
+Libraries are more difficult to modify, build, install, and
+test than standalone programs, and so are inappropriate for
+file formats that change every day.
+<p>
+There's a simpler way to make dcraw modular and thread-safe:
+Run it as a separate process.  Eric Raymond
+<a href="http://www.faqs.org/docs/artu/multiprogramchapter.html">
+explains this technique here</a>.
+<p>
+<dt><b>Why are there false colors along edges within the image?</b>
+<dd>Because of interpolation.  This is a hard problem, easily defined:
+<ol>
+<li>Take a three-color RGB image.  At each pixel, set two color
+values to zero.
+<li>Reconstruct the original three-color image as best you can
+from the remaining one color per pixel.
+</ol>
+Dcraw currently gives a choice of four methods:
+Bilinear, Variable Number of Gradients (VNG),
+Patterned Pixel Grouping (PPG),
+and Adaptive Homogeneity-Directed (AHD).
+<p>
+<a href="http://www.dpreview.com/news/0202/02021101foveonx3.asp">
+The Foveon X3 Capture chip</a> requires a different kind of interpolation.
+Unlike CCD arrays, it captures three colors at every pixel location.
+But the colors are not well separated, so the raw data looks very gray.
+Much processing is needed to enhance color while suppressing noise.
+<p>
+<dt><b>How do I get my camera to take raw photos?</b>
+<dd>
+For the Canon PowerShot A610, A620, and others,
+<a href="http://digicanon.narod.ru/">go here</a>.
+<br>
+For some Nikon Coolpix cameras, you need to enable a
+<a href="http://e2500.narod.ru/raw_format_e.htm">
+special "DIAG&nbsp;RAW" mode</a>.
+<br>
+For Casio cameras, see
+<a href="http://www.inweb.ch/foto/rawformat.html">
+Maurice Delaney's website</a>
+or read
+<a href="http://forums.dpreview.com/forums/read.asp?forum=1015&amp;message=4961779">
+this discussion on dpreview</a>.
+<br>
+For the Minolta DiMAGE G400, G500, G530, or G600, go
+<a href="http://myfototest.narod.ru/">here (in Russian)</a> or
+<a href="http://forums.dpreview.com/forums/read.asp?forum=1024&amp;message=11773287">
+here (in English)</a>.
+<br>
+For the Minolta DiMAGE Z2 and Nikon Coolpix 2100/3100/3700,
+<a href="http://tester13.nm.ru/nikon/">go here</a>.
+<br>
+For SMaL cameras, see the
+<a href="http://www.camerahacking.com/">camerahacking Forum</a>.
+<p>
+For other cameras, refer to the User's Manual.
+<p>
+<dt><b>Does dcraw work with my camera?</b>
+<dd>Most likely, yes.  If your camera is not on the list below,
+try dcraw anyway.  If it doesn't work, post a raw image to a
+website and e-mail me the URL.  If you don't have a website, use
+<a href="http://dropload.com/">Dropload</a> or
+<a href="http://yousendit.com/">YouSendIt</a>.
+<p>
+Ideally, your sample image should show a standard white card
+or color chart in direct sunlight, with other colors in the
+background.
+</dl>
+<h3><a name="cameras">Supported Cameras</a></h3>
+<ul>
+<li>Adobe Digital Negative (DNG)
+<li>Apple QuickTake 100
+<li>Apple QuickTake 150
+<li>AVT F-145C
+<li>AVT F-201C
+<li>AVT F-510C
+<li>AVT F-810C
+<li>Canon PowerShot 600
+<li>Canon PowerShot A5
+<li>Canon PowerShot A5 Zoom
+<li>Canon PowerShot A50
+<li>Canon PowerShot A610
+<li>Canon PowerShot A620
+<li>Canon PowerShot A630
+<li>Canon PowerShot A640
+<li>Canon PowerShot A710 IS
+<li>Canon PowerShot Pro70
+<li>Canon PowerShot Pro90 IS
+<li>Canon PowerShot G1
+<li>Canon PowerShot G2
+<li>Canon PowerShot G3
+<li>Canon PowerShot G5
+<li>Canon PowerShot G6
+<li>Canon PowerShot S2 IS
+<li>Canon PowerShot S3 IS
+<li>Canon PowerShot S30
+<li>Canon PowerShot S40
+<li>Canon PowerShot S45
+<li>Canon PowerShot S50
+<li>Canon PowerShot S60
+<li>Canon PowerShot S70
+<li>Canon PowerShot Pro1
+<li>Canon EOS D30
+<li>Canon EOS D60
+<li>Canon EOS 5D
+<li>Canon EOS 10D
+<li>Canon EOS 20D
+<li>Canon EOS 30D
+<li>Canon EOS 300D / Digital Rebel / Kiss Digital
+<li>Canon EOS 350D / Digital Rebel XT / Kiss Digital N
+<li>Canon EOS 400D / Digital Rebel XTi / Kiss Digital X
+<li>Canon EOS D2000C
+<li>Canon EOS-1D
+<li>Canon EOS-1DS
+<li>Canon EOS-1D Mark II
+<li>Canon EOS-1D Mark III
+<li>Canon EOS-1D Mark II N
+<li>Canon EOS-1Ds Mark II
+<li>Casio QV-2000UX
+<li>Casio QV-3000EX
+<li>Casio QV-3500EX
+<li>Casio QV-4000
+<li>Casio QV-5700
+<li>Casio QV-R41
+<li>Casio QV-R51
+<li>Casio QV-R61
+<li>Casio EX-S100
+<li>Casio EX-Z4
+<li>Casio EX-Z50
+<li>Casio EX-Z55
+<li>Casio Exlim Pro 505
+<li>Casio Exlim Pro 600
+<li>Casio Exlim Pro 700
+<li>Contax N Digital
+<li>Creative PC-CAM 600
+<li>Epson R-D1
+<li>Foculus 531C
+<li>Fuji FinePix E550
+<li>Fuji FinePix E900
+<li>Fuji FinePix F700
+<li>Fuji FinePix F710
+<li>Fuji FinePix F800
+<li>Fuji FinePix F810
+<li>Fuji FinePix S2Pro
+<li>Fuji FinePix S3Pro
+<li>Fuji FinePix S5Pro
+<li>Fuji FinePix S20Pro
+<li>Fuji FinePix S5000
+<li>Fuji FinePix S5100/S5500
+<li>Fuji FinePix S5200/S5600
+<li>Fuji FinePix S6000fd
+<li>Fuji FinePix S7000
+<li>Fuji FinePix S9000/S9500
+<li>Hasselblad CFV
+<li>Imacon Ixpress 16-megapixel
+<li>Imacon Ixpress 22-megapixel
+<li>Imacon Ixpress 39-megapixel
+<li>ISG 2020x1520
+<li>Kodak DC20 (see <a href="http://www.planet-interkom.de/oliver.hartmann/dc20secr.htm">Oliver Hartman's page</a>)
+<li>Kodak DC25 (see <a href="http://www.itojun.org/diary/19961113/index.eng.html">Jun-ichiro Itoh's page</a>)
+<li>Kodak DC40
+<li>Kodak DC50
+<li>Kodak DC120 (also try <a href="http://kdc2tiff.sourceforge.net/">kdc2tiff</a>)
+<li>Kodak DCS200
+<li>Kodak DCS315C
+<li>Kodak DCS330C
+<li>Kodak DCS420
+<li>Kodak DCS460
+<li>Kodak DCS460A
+<li>Kodak DCS520C
+<li>Kodak DCS560C
+<li>Kodak DCS620C
+<li>Kodak DCS620X
+<li>Kodak DCS660C
+<li>Kodak DCS660M
+<li>Kodak DCS720X
+<li>Kodak DCS760C
+<li>Kodak DCS760M
+<li>Kodak EOSDCS1
+<li>Kodak EOSDCS3B
+<li>Kodak NC2000F
+<li>Kodak ProBack
+<li>Kodak PB645C
+<li>Kodak PB645H
+<li>Kodak PB645M
+<li>Kodak DCS Pro 14n
+<li>Kodak DCS Pro 14nx
+<li>Kodak DCS Pro SLR/c
+<li>Kodak DCS Pro SLR/n
+<li>Kodak C330
+<li>Kodak P850
+<li>Kodak P880
+<li>Kodak KAI-0340
+<li>Konica KD-400Z
+<li>Konica KD-510Z
+<li>Leaf Aptus 17
+<li>Leaf Aptus 22
+<li>Leaf Aptus 54S
+<li>Leaf Aptus 65
+<li>Leaf Aptus 75
+<li>Leaf Aptus 75S
+<li>Leaf Cantare
+<li>Leaf CatchLight
+<li>Leaf CMost
+<li>Leaf DCB2
+<li>Leaf Valeo 6
+<li>Leaf Valeo 11
+<li>Leaf Valeo 17
+<li>Leaf Valeo 22
+<li>Leaf Volare
+<li>Leica Digilux 2
+<li>Leica Digilux 3
+<li>Leica D-LUX2
+<li>Leica D-LUX3
+<li>Leica V-LUX1
+<li>Logitech Fotoman Pixtura
+<li>Mamiya ZD
+<li>Micron 2010
+<li>Minolta RD175
+<li>Minolta DiMAGE 5
+<li>Minolta DiMAGE 7
+<li>Minolta DiMAGE 7i
+<li>Minolta DiMAGE 7Hi
+<li>Minolta DiMAGE A1
+<li>Minolta DiMAGE A2
+<li>Minolta DiMAGE A200
+<li>Minolta DiMAGE G400
+<li>Minolta DiMAGE G500
+<li>Minolta DiMAGE G530
+<li>Minolta DiMAGE G600
+<li>Minolta DiMAGE Z2
+<li>Minolta Alpha/Dynax/Maxxum 5D
+<li>Minolta Alpha/Dynax/Maxxum 7D
+<li>Nikon D1
+<li>Nikon D1H
+<li>Nikon D1X
+<li>Nikon D2H
+<li>Nikon D2Hs
+<li>Nikon D2X
+<li>Nikon D2Xs
+<li>Nikon D40
+<li>Nikon D40X
+<li>Nikon D50
+<li>Nikon D70
+<li>Nikon D70s
+<li>Nikon D80
+<li>Nikon D100
+<li>Nikon D200
+<li>Nikon E700  ("DIAG RAW" hack)
+<li>Nikon E800  ("DIAG RAW" hack)
+<li>Nikon E880  ("DIAG RAW" hack)
+<li>Nikon E900  ("DIAG RAW" hack)
+<li>Nikon E950  ("DIAG RAW" hack)
+<li>Nikon E990  ("DIAG RAW" hack)
+<li>Nikon E995  ("DIAG RAW" hack)
+<li>Nikon E2100 ("DIAG RAW" hack)
+<li>Nikon E2500 ("DIAG RAW" hack)
+<li>Nikon E3200 ("DIAG RAW" hack)
+<li>Nikon E3700 ("DIAG RAW" hack)
+<li>Nikon E4300 ("DIAG RAW" hack)
+<li>Nikon E4500 ("DIAG RAW" hack)
+<li>Nikon E5000
+<li>Nikon E5400
+<li>Nikon E5700
+<li>Nikon E8400
+<li>Nikon E8700
+<li>Nikon E8800
+<li>Olympus C3030Z
+<li>Olympus C5050Z
+<li>Olympus C5060WZ
+<li>Olympus C7070WZ
+<li>Olympus C70Z,C7000Z
+<li>Olympus C740UZ
+<li>Olympus C770UZ
+<li>Olympus C8080WZ
+<li>Olympus E-1
+<li>Olympus E-10
+<li>Olympus E-20
+<li>Olympus E-300
+<li>Olympus E-330
+<li>Olympus E-400
+<li>Olympus E-410
+<li>Olympus E-500
+<li>Olympus E-510
+<li>Olympus SP310
+<li>Olympus SP320
+<li>Olympus SP350
+<li>Olympus SP500UZ
+<li>Olympus SP510UZ
+<li>Olympus SP550UZ
+<li>Panasonic DMC-FZ8
+<li>Panasonic DMC-FZ30
+<li>Panasonic DMC-FZ50
+<li>Panasonic DMC-L1
+<li>Panasonic DMC-LC1
+<li>Panasonic DMC-LX1
+<li>Panasonic DMC-LX2
+<li>Pentax *ist D
+<li>Pentax *ist DL
+<li>Pentax *ist DL2
+<li>Pentax *ist DS
+<li>Pentax *ist DS2
+<li>Pentax K10D
+<li>Pentax K100D
+<li>Pentax Optio S
+<li>Pentax Optio S4
+<li>Pentax Optio 33WR
+<li>Pentax Optio 750Z
+<li>Phase One LightPhase
+<li>Phase One H 10
+<li>Phase One H 20
+<li>Phase One H 25
+<li>Phase One P 20
+<li>Phase One P 25
+<li>Phase One P 30
+<li>Phase One P 45
+<li>Pixelink A782
+<li>Polaroid x530
+<li>Rollei d530flex
+<li>RoverShot 3320af
+<li>Samsung GX-1S
+<li>Samsung GX-10
+<li>Sarnoff 4096x5440
+<li>Sigma SD9
+<li>Sigma SD10
+<li>Sigma SD14
+<li>Sinar 3072x2048
+<li>Sinar 4080x4080
+<li>Sinar 4080x5440
+<li>Sinar STI format
+<li>SMaL Ultra-Pocket 3
+<li>SMaL Ultra-Pocket 4
+<li>SMaL Ultra-Pocket 5
+<li>Sony DSC-F828
+<li>Sony DSC-R1
+<li>Sony DSC-V3
+<li>Sony DSLR-A100
+<li>Sony XCD-SX910CR
+<li>STV680 VGA
+</ul>
+<p>
+<hr>
+</HTML>

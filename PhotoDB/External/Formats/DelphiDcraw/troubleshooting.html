@@ -1,0 +1,360 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- InstanceBegin template="/Templates/Template.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>cardWatch by opcs - Troubleshooting cardWatch</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+
+<style type="text/css">
+<!--
+.style1 {color: #FFFFFF}
+-->
+</style>
+<!-- InstanceEndEditable -->
+<link href="css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" id="main_table">
+  <tr>
+    <td height="20" align="left" valign="top"><p><a href="contents.html">Contents</a> / <a href="index.html">Introduction</a> / <a href="usage.html">Usage</a> / <a href="main.html">Main Window</a> /<br>
+        <a href="settings.html">Settings</a> / <a href="sub-folder-explain.html">Sub-Folders</a> / <a href="date-formatting-explain.html">Date Formatting</a> / <a href="custom-camera.html">Custom Camera Profiles</a> /<br>
+        <a href="troubleshooting.html">Troubleshooting</a>  /<br>
+        <a href="about.html">About Credits</a> /</p></td>
+  </tr>
+  <tr>
+    <td align="left" valign="top"><!-- InstanceBeginEditable name="erContent" -->
+      <h1>Troubleshooting <span class="cardWatch">cardWatch</span></h1>
+      <p>Use this grid to help troubleshoot problems you may be experiencing with <span class="cardWatch">cardWatch</span>.</p>
+      <p>If this still doesn't help then feel free to <a href="http://www.askopcs.com/contact.htm">contact us</a>. Make sure you give a clear and detailed description of the problem and also let us know exactly which camera you have and how you have setup <span class="cardWatch">cardWatch</span> to read your camera. </p>
+      <table  border="1" cellspacing="0" cellpadding="5">
+        <tr bgcolor="#2b2f3f">
+          <th scope="col"><span class="style1">Symptom</span></th>
+          <th scope="col"><span class="style1">Possible Cause </span></th>
+        </tr>
+        <tr>
+          <td width="200">No thumbnails are visible.
+            <span class="cardWatch">cardWatch</span> just shows the icon (shown below) in place of the thumbnail previews.<br>            <br>            <img src="images/thumb.gif" width="128" height="128"> </td>
+          <td align="left" valign="top"><p>The most likely reason for this is <span class="cardWatch">cardWatch</span> doesn't understand the image file format. </p>
+            <p>              <span class="cardWatch">cardWatch</span> uses <em>msdcraw.dll</em> to load thumbnails from supported image files (see the note <a href="#supported">here</a> for a list of supported formats). <em>msdcraw.dll</em> is neither written or supported by us so we can't really help you if you image files are not supported. However <em>msdcraw.dll</em> is continually being updated and it's possible there is a newer version available.              You can check <a href="http://smatters.com/dcraw/" target="_blank">here</a>.</p>
+            <p>Note: Updating <em>msdcraw.dll</em> is not for the faint of heart. If you're not sure, don't do it. </p>
+            <p>Tips: - </p>
+            <ul>
+              <li>          Make sure you backup your existing <em>msdcraw.dll</em> file before attempting to update. </li>
+              <li>Also make sure <span class="cardWatch">cardWatch</span> is not running before updating. </li>
+              <li>It may also be a good idea to backup all the INI files in the <span class="cardWatch">cardWatch</span> install folder before attempting to run <span class="cardWatch">cardWatch</span> with a new <em>msdcraw.dll</em> for the first time. </li>
+            </ul></td>
+        </tr>
+        <tr>
+          <td width="200">No Images in the main <br>
+          window. Not even<br>
+          the thumbnails shown<br>
+          above. </td>
+          <td align="left" valign="top"><p>There can be a number of reasons for this: - </p>
+            <ul>
+              <li>              Wrong camera type selected. See <a href="settings.html">settings</a></li>
+              <li>Wrong drive letter selected.  See <a href="settings.html">settings</a></li>
+              <li> File Types on the camera/memory card are different from those in the camera profile. If you are using a <a href="custom-camera.html">Custom Camera Profile</a> then check the file types are correct. If you are using an existing profile then <a href="http://www.askopcs.com/contact.htm" target="_blank">tell us</a> - we may have made a mistake in the profile. In the meantime, you could create a <a href="custom-camera.html">Custom Camera Profile</a> to get round the issue. </li>
+              <li>Files on the camera/memory card are marked hidden (why that should be is beyond me).</li>
+          </ul></td>
+        </tr>
+        <tr>
+          <td width="200"><p>I have my camera (or memory card) plugged in and can see it in Windows but <span class="cardWatch">cardWatch</span> doesn't show it. Also, at the top left of the main window where it says should say what camera type I have it just says: - </p>
+            <blockquote>
+              <p>              Camera:<br> 
+                  </p>
+          </blockquote></td>
+          <td align="left" valign="top"><p>Are you sure you have the correct camera selected in the <a href="settings.html">settings</a>? Cameras configured to be watched by <span class="cardWatch">cardWatch</span> are highlighted in the list box. E.G.</p>
+            <p><img src="images/ss/settings/which_camera.gif" width="251" height="232"> </p>
+          <p>Also, make sure you have the correct drive letter selected. </p></td>
+        </tr>
+        <tr>
+          <td width="200"><span class="cardWatch">cardWatch</span> sees my camera and the source location but doesn't show any images. I'm using a custom camera profile. </td>
+          <td align="left" valign="top"><p>Your problem could be cause by one of the following in the custom camera profile: -</p>
+            <ul>
+              <li>Folder is set wrong. Make sure you have the FULL path to the images minus the drive letter and the :</li>
+              <li>File Type is set wrong. You've included the . in the file extension. Remove it and try again.</li>
+              <li>File Type is missing. You've forgotten to add the file type for your camera.</li>
+            </ul>
+          <p>See <a href="custom-camera.html">here</a> for more information on Custom Camera Profiles.</p></td>
+        </tr>
+        <tr>
+          <td width="200">I minimised <span class="cardWatch">cardWatch</span> but now it won't come back when I insert my camera/memory card. </td>
+          <td align="left" valign="top"><p><span class="cardWatch">cardWatch</span> is programmed to minimise/restore automatically when a camera/memory card is inserted. If you Minimise or restore manually it switches off this feature until the next time <span class="cardWatch">cardWatch</span> starts. </p>
+          <p>To get <span class="cardWatch">cardWatch</span> back, right click the cardwatch icon in the system try and select &quot;Transfer Window&quot;</p></td>
+        </tr>
+        <tr>
+          <td width="200">With the preview window, it disappears every time I move the mouse over one of the thumbnails. </td>
+          <td align="left" valign="top"><p><span class="cardWatch">cardWatch</span> has to do this or the preview would not be able to update without you having to click the main transfer window each time. Something that would quickly become frustrating.</p>
+          <p>Best advice we can give is to move the preview window into a position where you can see both it and the main transfer window. If you can't do that due to too low a resolution then you could either make the preview size smaller (see the <a href="settings.html">settings</a> for this) or make the main window smaller. <span class="cardWatch">cardWatch</span> will remember the position and sizes of both windows. </p></td>
+        </tr>
+      </table>
+      <h2><a name="supported"></a>Supported Camera Formats </h2>
+      <p>At the time of writing msdcraw.dll supports the following RAW formats. <br>
+      (Note: This is NOT a list of cameras supported by <span class="cardWatch">cardWatch.</span>)     </p>
+<ul>
+<li>Adobe Digital Negative (DNG)
+<li>AVT F-145C
+<li>AVT F-201C
+<li>AVT F-510C
+<li>AVT F-810C
+<li>Canon PowerShot 600
+<li>Canon PowerShot A5
+<li>Canon PowerShot A5 Zoom
+<li>Canon PowerShot A50
+<li>Canon PowerShot A610
+<li>Canon PowerShot A620
+<li>Canon PowerShot Pro70
+<li>Canon PowerShot Pro90 IS
+<li>Canon PowerShot G1
+<li>Canon PowerShot G2
+<li>Canon PowerShot G3
+<li>Canon PowerShot G5
+<li>Canon PowerShot G6
+<li>Canon PowerShot S2 IS
+<li>Canon PowerShot S3 IS
+<li>Canon PowerShot S30
+<li>Canon PowerShot S40
+<li>Canon PowerShot S45
+<li>Canon PowerShot S50
+<li>Canon PowerShot S60
+<li>Canon PowerShot S70
+<li>Canon PowerShot Pro1
+<li>Canon EOS D30
+<li>Canon EOS D60
+<li>Canon EOS 5D
+<li>Canon EOS 10D
+<li>Canon EOS 20D
+<li>Canon EOS 30D
+<li>Canon EOS 300D / Digital Rebel / Kiss Digital
+<li>Canon EOS 350D / Digital Rebel XT / Kiss Digital N
+<li>Canon EOS 400D / Digital Rebel XTi / Kiss Digital X
+<li>Canon EOS D2000C
+<li>Canon EOS-1D
+<li>Canon EOS-1DS
+<li>Canon EOS-1D Mark II
+<li>Canon EOS-1D Mark III
+<li>Canon EOS-1D Mark II N
+<li>Canon EOS-1Ds Mark II
+<li>Casio QV-2000UX
+<li>Casio QV-3000EX
+<li>Casio QV-3500EX
+<li>Casio QV-4000
+<li>Casio QV-5700
+<li>Casio QV-R51
+<li>Casio QV-R61
+<li>Casio EX-S100
+<li>Casio EX-Z4
+<li>Casio EX-Z50
+<li>Casio EX-Z55
+<li>Casio Exlim Pro 505
+<li>Casio Exlim Pro 600
+<li>Casio Exlim Pro 700
+<li>Contax N Digital
+<li>Creative PC-CAM 600
+<li>Epson R-D1
+<li>Foculus 531C
+<li>Fuji FinePix E550
+<li>Fuji FinePix E900
+<li>Fuji FinePix F700
+<li>Fuji FinePix F710
+<li>Fuji FinePix F800
+<li>Fuji FinePix F810
+<li>Fuji FinePix S2Pro
+<li>Fuji FinePix S3Pro
+<li>Fuji FinePix S5Pro
+<li>Fuji FinePix S20Pro
+<li>Fuji FinePix S5000
+<li>Fuji FinePix S5100/S5500
+<li>Fuji FinePix S5200/S5600
+<li>Fuji FinePix S6000fd
+<li>Fuji FinePix S7000
+<li>Fuji FinePix S9000/S9500
+<li>Imacon Ixpress 16-megapixel
+<li>Imacon Ixpress 22-megapixel
+<li>Imacon Ixpress 39-megapixel
+<li>ISG 2020x1520
+<li>Kodak DC20 
+<li>Kodak DC25 
+<li>Kodak DC40
+<li>Kodak DC50
+<li>Kodak DC120 
+<li>Kodak DCS200
+<li>Kodak DCS315C
+<li>Kodak DCS330C
+<li>Kodak DCS420
+<li>Kodak DCS460
+<li>Kodak DCS460A
+<li>Kodak DCS520C
+<li>Kodak DCS560C
+<li>Kodak DCS620C
+<li>Kodak DCS620X
+<li>Kodak DCS660C
+<li>Kodak DCS660M
+<li>Kodak DCS720X
+<li>Kodak DCS760C
+<li>Kodak DCS760M
+<li>Kodak EOSDCS1
+<li>Kodak EOSDCS3B
+<li>Kodak NC2000F
+<li>Kodak ProBack
+<li>Kodak PB645C
+<li>Kodak PB645H
+<li>Kodak PB645M
+<li>Kodak DCS Pro 14n
+<li>Kodak DCS Pro 14nx
+<li>Kodak DCS Pro SLR/c
+<li>Kodak DCS Pro SLR/n
+<li>Kodak P850
+<li>Kodak P880
+<li>Kodak KAI-0340
+<li>Konica KD-400Z
+<li>Konica KD-510Z
+<li>Leaf Aptus 17
+<li>Leaf Aptus 22
+<li>Leaf Aptus 65
+<li>Leaf Aptus 75
+<li>Leaf Cantare
+<li>Leaf CatchLight
+<li>Leaf CMost
+<li>Leaf DCB2
+<li>Leaf Valeo 6
+<li>Leaf Valeo 11
+<li>Leaf Valeo 17
+<li>Leaf Valeo 22
+<li>Leaf Volare
+<li>Leica Digilux 2
+<li>Leica Digilux 3
+<li>Leica D-LUX2
+<li>Leica D-LUX3
+<li>Leica V-LUX1
+<li>Logitech Fotoman Pixtura
+<li>Micron 2010
+<li>Minolta RD175
+<li>Minolta DiMAGE 5
+<li>Minolta DiMAGE 7
+<li>Minolta DiMAGE 7i
+<li>Minolta DiMAGE 7Hi
+<li>Minolta DiMAGE A1
+<li>Minolta DiMAGE A2
+<li>Minolta DiMAGE A200
+<li>Minolta DiMAGE G400
+<li>Minolta DiMAGE G500
+<li>Minolta DiMAGE G530
+<li>Minolta DiMAGE G600
+<li>Minolta DiMAGE Z2
+<li>Minolta Alpha/Dynax/Maxxum 5D
+<li>Minolta Alpha/Dynax/Maxxum 7D
+<li>Nikon D1
+<li>Nikon D1H
+<li>Nikon D1X
+<li>Nikon D2H
+<li>Nikon D2Hs
+<li>Nikon D2X
+<li>Nikon D40
+<li>Nikon D50
+<li>Nikon D70
+<li>Nikon D70s
+<li>Nikon D80
+<li>Nikon D100
+<li>Nikon D200
+<li>Nikon E700  ("DIAG RAW" hack)
+<li>Nikon E800  ("DIAG RAW" hack)
+<li>Nikon E880  ("DIAG RAW" hack)
+<li>Nikon E900  ("DIAG RAW" hack)
+<li>Nikon E950  ("DIAG RAW" hack)
+<li>Nikon E990  ("DIAG RAW" hack)
+<li>Nikon E995  ("DIAG RAW" hack)
+<li>Nikon E2100 ("DIAG RAW" hack)
+<li>Nikon E2500 ("DIAG RAW" hack)
+<li>Nikon E3200 ("DIAG RAW" hack)
+<li>Nikon E3700 ("DIAG RAW" hack)
+<li>Nikon E4300 ("DIAG RAW" hack)
+<li>Nikon E4500 ("DIAG RAW" hack)
+<li>Nikon E5000
+<li>Nikon E5400
+<li>Nikon E5700
+<li>Nikon E8400
+<li>Nikon E8700
+<li>Nikon E8800
+<li>Olympus C3030Z
+<li>Olympus C5050Z
+<li>Olympus C5060WZ
+<li>Olympus C7070WZ
+<li>Olympus C70Z,C7000Z
+<li>Olympus C740UZ
+<li>Olympus C770UZ
+<li>Olympus C8080WZ
+<li>Olympus E-1
+<li>Olympus E-10
+<li>Olympus E-20
+<li>Olympus E-300
+<li>Olympus E-330
+<li>Olympus E-400
+<li>Olympus E-500
+<li>Olympus SP310
+<li>Olympus SP320
+<li>Olympus SP350
+<li>Olympus SP500UZ
+<li>Olympus SP510UZ
+<li>Olympus SP550UZ
+<li>Panasonic DMC-FZ30
+<li>Panasonic DMC-FZ50
+<li>Panasonic DMC-L1
+<li>Panasonic DMC-LC1
+<li>Panasonic DMC-LX1
+<li>Panasonic DMC-LX2
+<li>Pentax *ist D
+<li>Pentax *ist DL
+<li>Pentax *ist DL2
+<li>Pentax *ist DS
+<li>Pentax *ist DS2
+<li>Pentax K10D
+<li>Pentax K100D
+<li>Pentax Optio S
+<li>Pentax Optio S4
+<li>Pentax Optio 33WR
+<li>Phase One LightPhase
+<li>Phase One H 10
+<li>Phase One H 20
+<li>Phase One H 25
+<li>Phase One P 20
+<li>Phase One P 25
+<li>Phase One P 30
+<li>Phase One P 45
+<li>Pixelink A782
+<li>Polaroid x530
+<li>Rollei d530flex
+<li>RoverShot 3320af
+<li>Samsung GX-1S
+<li>Samsung GX-10
+<li>Sarnoff 4096x5440
+<li>Sigma SD9
+<li>Sigma SD10
+<li>Sinar 3072x2048
+<li>Sinar 4080x4080
+<li>Sinar 4080x5440
+<li>Sinar STI format
+<li>SMaL Ultra-Pocket 3
+<li>SMaL Ultra-Pocket 4
+<li>SMaL Ultra-Pocket 5
+<li>Sony DSC-F828
+<li>Sony DSC-R1
+<li>Sony DSC-V3
+<li>Sony DSLR-A100
+<li>Sony XCD-SX910CR
+<li>STV680 VGA
+</ul>
+      <!-- InstanceEndEditable --></td>
+  </tr>
+  <tr>
+    <td height="20" align="center" valign="bottom"><span class="cardWatch">cardWatch</span> &copy; 2007 <a href="http://www.askopcs.com/" target="_blank">opcs</a><br>
+      Written By Neil Farquharson </td>
+  </tr>
+</table>
+
+
+</body>
+<!-- InstanceEnd --></html>

@@ -1,0 +1,271 @@
+[Main Window]
+Create=1
+Visible=1
+State=0
+Left=7
+Top=0
+Width=1073
+Height=105
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=1065
+ClientHeight=78
+
+[PropertyInspector]
+Create=1
+Visible=1
+State=0
+Left=0
+Top=11
+Width=273
+Height=632
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=271
+ClientHeight=630
+TBDockHeight=632
+LRDockWidth=273
+Dockable=1
+SplitPos=64
+
+[WatchWindow]
+Create=1
+Visible=0
+State=0
+Left=0
+Top=11
+Width=320
+Height=735
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=320
+ClientHeight=735
+TBDockHeight=149
+LRDockWidth=320
+Dockable=1
+
+[BreakpointWindow]
+Create=1
+Visible=0
+State=0
+Left=136
+Top=11
+Width=137
+Height=632
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=137
+ClientHeight=632
+TBDockHeight=632
+LRDockWidth=215
+Dockable=1
+Column0Width=143
+Column1Width=75
+Column2Width=225
+Column3Width=40
+
+[Closed Files]
+File_0=SourceModule,'g:\program files\borland\delphi4\source\vcl\stdctrls.pas',0,1,2856,1,2871,0,0
+File_1=SourceModule,'g:\program files\borland\delphi4\source\rtl\Sys\system.pas',0,1,1,1,11,0,0
+File_2=SourceModule,'G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\dcraw2.c',0,1,4445,18,4482,0,0
+File_3=SourceModule,'G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\parse.c',0,1,1385,14,1397,0,0
+File_4=SourceModule,'G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\RAW.pas',0,1,161,17,164,0,0
+File_5=SourceModule,'G:\Program Files\Borland\Delphi4\MY Programs\Jpeg\ExifFunc.pas',0,1,41,42,44,0,0
+File_6=SourceModule,'G:\Program Files\Borland\Delphi4\Lib\BUG FIXES\Classes.pas',0,1,3526,50,3548,0,0
+File_7=SourceModule,'g:\program files\borland\delphi4\source\rtl\Sys\sysconst.pas',0,1,1,1,10,0,0
+
+[Modules]
+Module0=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Unit1.pas
+Module1=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\CStdIO.pas
+Module2=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Global_FastIO.pas
+Module3=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Project2.dpr
+Module4=g:\program files\borland\delphi4\MY Programs\!CD-Menu\Graphics.pas
+Module5=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\MSdcRAW.c
+Module6=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\GraphicEX\GraphicEX.pas
+Count=7
+EditWindowCount=1
+
+[G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Unit1.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
+
+[G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\CStdIO.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Global_FastIO.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Project2.dpr]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[g:\program files\borland\delphi4\MY Programs\!CD-Menu\Graphics.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\MSdcRAW.c]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\GraphicEX\GraphicEX.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[G:\Program Files\Borland\Delphi4\Projects\ProjectGroup1.bpg]
+FormState=0
+FormOnTop=0
+
+[EditWindow0]
+CodeExplorer=CodeExplorer@EditWindow0
+MessageView=MessageView@EditWindow0
+Create=1
+Visible=1
+State=0
+Left=297
+Top=111
+Width=768
+Height=684
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=760
+ClientHeight=657
+LeftPanelSize=0
+LeftPanelClients=CodeExplorer@EditWindow0,WatchWindow
+LeftPanelData=00000400020000000C000000436F64654578706C6F7265720B000000576174636857696E646F770000000000000000000000000000000000FFFFFFFF
+RightPanelSize=0
+BottomPanelSize=52
+BottomPanelClients=MessageView@EditWindow0
+BottomPanelData=000004000000000000000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
+ViewCount=7
+CurrentView=0
+View0=0
+View1=1
+View2=2
+View3=3
+View4=4
+View5=5
+View6=6
+
+[CodeExplorer@EditWindow0]
+Create=1
+Visible=0
+State=0
+Left=0
+Top=11
+Width=140
+Height=735
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=140
+ClientHeight=735
+TBDockHeight=305
+LRDockWidth=140
+Dockable=1
+
+[MessageView@EditWindow0]
+Create=1
+Visible=1
+State=0
+Left=11
+Top=0
+Width=749
+Height=52
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=749
+ClientHeight=52
+TBDockHeight=52
+LRDockWidth=443
+Dockable=1
+
+[View0]
+Module=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Unit1.pas
+CursorX=1
+CursorY=753
+TopLine=1
+LeftCol=1
+
+[View1]
+Module=g:\program files\borland\delphi4\MY Programs\!CD-Menu\Graphics.pas
+CursorX=1
+CursorY=3852
+TopLine=3839
+LeftCol=1
+
+[View2]
+Module=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Project2.dpr
+CursorX=1
+CursorY=6
+TopLine=1
+LeftCol=1
+
+[View3]
+Module=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\GraphicEX\GraphicEX.pas
+CursorX=1
+CursorY=1
+TopLine=1
+LeftCol=1
+
+[View4]
+Module=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\CStdIO.pas
+CursorX=1
+CursorY=419
+TopLine=391
+LeftCol=1
+
+[View5]
+Module=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\MSdcRAW.c
+CursorX=11
+CursorY=789
+TopLine=778
+LeftCol=1
+
+[View6]
+Module=G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Global_FastIO.pas
+CursorX=26
+CursorY=77
+TopLine=61
+LeftCol=1
+
+[DockHosts]
+DockHostCount=1
+
+[DockSite0]
+DockSiteType=0
+Create=1
+Visible=1
+State=0
+Left=6
+Top=109
+Width=281
+Height=667
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=273
+ClientHeight=643
+TBDockHeight=104
+LRDockWidth=201
+Dockable=1
+DockClients=BreakpointWindow,PropertyInspector
+DockSiteData=000004000100000008000000425057696E646F7711010000000000000283020000000000000100000000110100001100000050726F7065727479496E73706563746F72FFFFFFFF
+
+[Watches]
+Count=1
+Watch0='SeekTo',256,0,18,1
+
+[Breakpoints]
+Count=1
+Breakpoint0='G:\Program Files\Borland\Delphi4\MY Programs\!CD-Menu\CRW_TIFF_ETC\MSdcRAW\DCraw_WWW\Unit1.pas',475,'',0,1
+
+[AddressBreakpoints]
+Count=0
+
