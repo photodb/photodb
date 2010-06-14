@@ -2131,9 +2131,9 @@ begin
   CalcStringCRC32(Folder,crc);
   DBStr:='(Select * from '+GetDefDBName+' where FolderCRC='+inttostr(Integer(crc))+')';
   CalcStringCRC32(AnsiLowerCase(s),crc);
-  SetSQL(fQuery,'SELECT * FROM '+DBStr+' WHERE FFileName like :ffilename');
+  SetSQL(fQuery,'SELECT * FROM '+DBStr+' WHERE FFileName = :ffilename');
  end;
- SetStrParam(fQuery,0,Delnakl(NormalizeDBStringLike(AnsiLowerCase(s))));
+ SetStrParam(fQuery,0,AnsiLowerCase(s));
  For i:=1 to 20 do
  begin
   b:=true;

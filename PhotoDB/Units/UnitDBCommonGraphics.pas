@@ -33,6 +33,8 @@ interface
   procedure Rotate180A(var im : tbitmap);
   procedure Rotate270A(var im : tbitmap);
   procedure Rotate90A(var im : tbitmap);
+  procedure FillColorEx(Bitmap : TBitmap; Color : TColor);  
+//TODO! PRIORITY: HIGH  procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
 
 
 implementation
@@ -295,6 +297,27 @@ begin
    p[j].b:=Round(pl[j].b*(pl[j].l/255)+b*(1-pl[j].l/255));
   end;
  end;
+end;
+
+procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
+var
+  i, j : integer;
+  p : PARGB;
+  r, g, b : byte;
+begin
+  r := GetRValue(Color);
+  g := GetGValue(Color);
+  b := GetBValue(Color);
+  for i:=0 to Bitmap.Height-1 do
+  begin
+    p:=Bitmap.ScanLine[i];
+    for j:=0 to Bitmap.Width-1 do
+    begin
+      p[j].r := r;
+      p[j].g := g;
+      p[j].b := b;
+    end;
+  end;
 end;
 
 procedure LoadBMPImage32bit(BMP : TBitmap; Bitmap : TBitmap; BackGroundColor : TColor);

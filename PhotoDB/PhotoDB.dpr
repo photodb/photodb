@@ -175,13 +175,11 @@ uses
   ZLibDelphi in 'External\Formats\\Tiff\ZLibDelphi.pas',  
   RAWImage in 'External\Formats\DelphiDcraw\RAWImage.pas',
   Global_FastIO in 'External\Formats\DelphiDcraw\Global_FastIO.pas',
-  GlobalTypes in 'External\Formats\DelphiDcraw\GlobalTypes.pas',
-
-  GIFImage in 'GIFImage.pas',
-
-  PNG_IO in 'png\PNG_IO.pas',
-  PngDef in 'png\PngDef.pas',
-  PngImage in 'png\PNGImage.pas',
+  GlobalTypes in 'External\Formats\DelphiDcraw\GlobalTypes.pas',    
+  GIFImage in 'External\Formats\GIFImage.pas',
+  PNG_IO in 'External\Formats\PNG_IO.pas',
+  PngDef in 'External\Formats\PngDef.pas',
+  PngImage in 'External\Formats\PNGImage.pas',
 
   ColorToolUnit in 'ImageEditor\ColorToolUnit.pas',
   CropToolUnit in 'ImageEditor\CropToolUnit.pas',
@@ -215,8 +213,7 @@ uses
   rxtypes in 'SelfDelete\rxtypes.pas',
   SelfDeleteUnit in 'SelfDelete\SelfDeleteUnit.pas',
 
-  uVistaFuncs in '..\..\..\Dmitry\uVistaFuncs.pas',
-                       
+  uVistaFuncs in 'Units\uVistaFuncs.pas',
   dEXIF in 'Units\dEXIF.pas',
   dIPTC in 'Units\dIPTC.pas',
   msData in 'Units\msData.pas',
