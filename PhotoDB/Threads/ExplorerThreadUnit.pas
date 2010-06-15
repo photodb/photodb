@@ -772,7 +772,7 @@ end;
 
 procedure TExplorerThread.AddDirectoryImageToExplorer;
 begin
- If not not Terminated then
+ If not Terminated then
  begin
   if ExplorerInfo.View=LV_THUMBS then
     FSender.AddBitmap(FFolderBitmap, GUIDParam)
@@ -1095,16 +1095,17 @@ end;
 
 procedure TExplorerThread.ReplaceImageInExplorer;
 begin
- If not Terminated then
- begin
-  FSender.SetInfoToItem(Info, GUIDParam);
-  if IsEqualGUID(FSender.CurrentGUID, FCID) then
+  if not Terminated then
   begin
-   if not isBigImage then
-   FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude) else
-   FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude, True);
+    FSender.SetInfoToItem(Info, GUIDParam);
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+    begin
+      if not isBigImage then
+        FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude)
+      else
+        FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude, True);
+    end;
   end;
- end;
 end;
 
 procedure TExplorerThread.ReplaceInfoInExplorer;
@@ -2313,14 +2314,7 @@ end;
 
 procedure TExplorerThread.DoVerifyExplorer;
 begin
-  BooleanResult:=true;
-  If Terminated then
-  begin
-    BooleanResult:=false;
-  end else
-  begin
-    if not IsEqualGUID(FSender.CurrentGUID, FCID) then BooleanResult:=false;
-  end;
+  BooleanResult:=not Terminated and IsEqualGUID(FSender.CurrentGUID, FCID);
 end;
 
 procedure TExplorerThread.DoStopSearch;

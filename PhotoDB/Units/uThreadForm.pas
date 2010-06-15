@@ -2,12 +2,13 @@ unit uThreadForm;
 
 interface
 
-uses Classes, Forms;
+uses Classes, Forms, SyncObjs;
 
 type
   TThreadForm = class(TForm)
   private
     FThreadList : TList;
+    FSync : TCriticalSection;
     procedure ThreadTerminated(Sender : TObject);  
   protected
     procedure RegisterThreadAndStart(Thread : TThread);
@@ -22,6 +23,7 @@ implementation
 constructor TThreadForm.Create(AOwner: TComponent);
 begin
   inherited;
+  FSync := TCriticalSection.Create;
   FThreadList := TList.Create;
 end;
 
@@ -29,30 +31,46 @@ destructor TThreadForm.Destroy;
 begin
   TerminateAllThreads;
   FThreadList.Free;
+  FSync.Free;
   inherited;
 end;
 
 procedure TThreadForm.RegisterThreadAndStart(Thread: TThread);
 begin
-  Thread.OnTerminate := ThreadTerminated;
-  FThreadList.Add(Thread);
-  Thread.Resume;
+  FSync.Enter;
+  try
+    Thread.OnTerminate := ThreadTerminated;
+    FThreadList.Add(Thread);
+    Thread.Resume;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TThreadForm.TerminateAllThreads;
 var
   I : Integer;
-begin
-  for I := 0 to FThreadList.Count - 1 do
-  begin
-    TThread(FThreadList[i]).OnTerminate := nil;
-    TThread(FThreadList[i]).Terminate;
+begin    
+  FSync.Enter;
+  try
+    for I := 0 to FThreadList.Count - 1 do
+    begin
+      TThread(FThreadList[i]).OnTerminate := nil;
+      TThread(FThreadList[i]).Terminate;
+    end;
+  finally
+    FSync.Leave;
   end;
 end;
 
 procedure TThreadForm.ThreadTerminated(Sender: TObject);
-begin
-  FThreadList.Remove(Sender);
+begin     
+  FSync.Enter;
+  try
+    FThreadList.Remove(Sender);     
+  finally
+    FSync.Leave;
+  end;
 end;
 
 end.
