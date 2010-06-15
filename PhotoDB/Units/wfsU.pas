@@ -56,7 +56,7 @@ type
   private
     WFS : TWFS;
     fOnDirectoryChanged: TNotifyDirectoryChangeW;
-    fCID : string;
+    fCID : TGUID;
     fOwner : TForm;
     procedure SetOnDirectoryChanged(const Value: TNotifyDirectoryChangeW);
     { Запуск мониторинга файловой системы
@@ -72,7 +72,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Start(Directory : string; Owner : TForm; CID : string);
+    procedure Start(Directory : string; Owner : TForm; CID : TGUID);
     // Остановка мониторинга
     procedure StopWatch;
   published
@@ -133,7 +133,7 @@ begin
 end;
 
 procedure TWachDirectoryClass.Start(Directory: string; Owner: TForm;
-  CID: string);
+  CID: TGUID);
 begin
  fCID:=CID;
  fOwner:=Owner;

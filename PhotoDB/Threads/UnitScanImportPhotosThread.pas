@@ -35,7 +35,7 @@ type
   private
    fOptions : TScanImportPhotosThreadOptions;
    fFiles : TStrings;
-   FSID : string;
+   FSID : TGUID;
    StrParam : String;
    BoolParam : Boolean;
    DateFileList : TFileDateList;
@@ -59,7 +59,7 @@ type
   end;
 
   var
-    GetPhotosFormSID : String;
+    GetPhotosFormSID : TGUID;
 
 implementation
 
@@ -181,7 +181,9 @@ begin
     begin
      FDate:=Dolphin_DB.EXIFDateToDate(RAWExif.TimeStamp);
      if FDate>0 then AddFileToList(fFiles[i],FDate);
-     if FSID=GetPhotosFormSID then break;
+
+     if IsEqualGUID(FSID, GetPhotosFormSID) then
+       Break;
     end;
    end;
   end;
@@ -195,8 +197,8 @@ end;
 
 procedure TScanImportPhotosThread.SetDateDataList;
 begin
- if FSID=GetPhotosFormSID then
- (fOptions.Owner as TGetToPersonalFolderForm).SetDataList(DateFileList);
+  if IsEqualGUID(FSID, GetPhotosFormSID) then
+    (fOptions.Owner as TGetToPersonalFolderForm).SetDataList(DateFileList);
 end;
 
 procedure TScanImportPhotosThread.SetMaxPosition(MaxPos: integer);
@@ -207,11 +209,11 @@ end;
 
 procedure TScanImportPhotosThread.SetMaxPositionSynch;
 begin
- if FSID=GetPhotosFormSID then
- begin
-  (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.MaxValue:=intParam;
-  (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text:=Language.TEXT_MES_PROGRESS_PR;
- end;
+  if IsEqualGUID(FSID, GetPhotosFormSID) then
+  begin
+    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.MaxValue:=intParam;
+    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text:=Language.TEXT_MES_PROGRESS_PR;
+  end;
 end;
 
 procedure TScanImportPhotosThread.SetPosition(Pos: integer);
@@ -221,11 +223,9 @@ begin
 end;
 
 procedure TScanImportPhotosThread.SetPositionSynch;
-begin
- if FSID=GetPhotosFormSID then
- begin
-  (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Position:=intParam;
- end;
+begin                         
+  if IsEqualGUID(FSID, GetPhotosFormSID) then
+    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Position:=intParam;
 end;
 
 procedure TScanImportPhotosThread.DoOnDone;
@@ -236,13 +236,14 @@ end;
 procedure TScanImportPhotosThread.OnLoadingFilesCallBackEvent(
   Sender: TObject; var Info: TProgressCallBackInfo);
 begin
- if FSID=GetPhotosFormSID then
- begin
-  StrParam:=Info.Information;
-  BoolParam:=Info.Terminate;
-  Synchronize(OnProgressSynch);
-  Info.Terminate:=BoolParam;
- end else Info.Terminate:=true;
+  if IsEqualGUID(FSID, GetPhotosFormSID) then
+  begin
+    StrParam:=Info.Information;
+    BoolParam:=Info.Terminate;
+    Synchronize(OnProgressSynch);
+    Info.Terminate:=BoolParam;
+ end else
+   Info.Terminate:=true;
 end;
 
 procedure TScanImportPhotosThread.OnProgressSynch;

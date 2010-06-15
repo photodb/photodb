@@ -508,12 +508,12 @@ type
     { Private declarations }
   public
     ListView1: TXListView;
-    WindowID : string;
+    WindowID : TGUID;
     ThreadQuery : TDataSet;
     SelectQuery : TDataSet;
     WorkQuery : TDataSet;
     FBitmapImageList : TBitmapImageList;
-    SID : String;
+    SID : TGUID;
     Data : TSearchRecordArray;
 
     FormDateRangeSelectDBHideed : boolean;
@@ -562,7 +562,7 @@ type
     procedure ZoomIn;
     procedure ZoomOut;
     procedure ReRecreateGroupsList;
-    function IfBreak(Sender : TObject; aSID : string) : boolean;
+    function IfBreak(Sender : TObject; aSID : TGUID) : boolean;
     procedure DoSetSearchByComparing;
     procedure LoadSearchDBParametrs;
     procedure SaveQueryList;          
@@ -781,7 +781,7 @@ begin
  WideSearch.MaxID:=Max(StrToIntDef(Edit2.Text,0),StrToIntDef(Edit3.Text,0));
  WideSearch.Private_:=CheckBox2.Checked;
  WideSearch.Common_:=CheckBox3.Checked;
- SID:=GetCID;
+ SID:=GetGUID;
  ToolButton14.Enabled:=true;
  SearchThread.Create(false,Self,SID,Rating2.Rating,TwButton1.Pushed,SortLink.Tag,Decremect1.Checked,SearchEdit.text,WideSearch,BreakOperation,FPictureSize);
  AddNewSearchListEntry;
@@ -903,7 +903,7 @@ begin
  ToolButton14.Enabled:=false;
 
  ExplorerManager.LoadEXIF;
- WindowID:=GetCID;
+ WindowID:=GetGUID;
  InitializeScript(aScript);
  LoadBaseFunctions(aScript);
  LoadDBFunctions(aScript);
@@ -5120,7 +5120,7 @@ procedure TSearchForm.BigImagesTimerTimer(Sender: TObject);
 begin
  if Self.fListUpdating then exit;
  BigImagesTimer.Enabled:=false;
- SID:=GetCID;
+ SID:=GetGUID;
  //тут начинается загрузка больших картинок
  UnitSearchBigImagesLoaderThread.TSearchBigImagesLoaderThread.Create(false,self,SID,nil,fPictureSize,Copy(Data));
 end;
@@ -5614,13 +5614,13 @@ begin
  begin                      
   ToolButton14.Enabled:=false;
   BreakOperation(Sender);
-  SID:=Dolphin_DB.GetCID;
+  SID:=Dolphin_DB.GetGUID;
  end;
 end;
 
-function TSearchForm.IfBreak(Sender : TObject; aSID : string): boolean;
+function TSearchForm.IfBreak(Sender : TObject; aSID : TGUID): boolean;
 begin
- Result:=SID<>aSID;
+ Result:=not IsEqualGUID(SID, aSID);
 end;
 
 procedure TSearchForm.SortingClick(Sender: TObject);

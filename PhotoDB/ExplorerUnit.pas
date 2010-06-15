@@ -18,9 +18,6 @@ uses
   UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs;
 
 type
-  TXListView = TEasyListView;
-
-type
   TExplorerForm = class(TForm)
     SizeImageList: TImageList;
     PopupMenu1: TPopupMenu;
@@ -295,14 +292,14 @@ type
     function hintrealA(item: TObject): boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    Procedure SetItemLength(Length : integer; GUID_ : string);
-    Procedure IncItemLength(GUID_ : string);
-    Procedure SetInfoToItem(info : TOneRecordInfo; FileGUID: string);
-    Procedure SetInfoTolastItem(info : TOneRecordInfo; GUID_ : string);
+    Procedure SetItemLength(Length : integer; GUID : TGUID);
+    Procedure IncItemLength(GUID : TGUID);
+    Procedure SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
+    Procedure SetInfoTolastItem(info : TOneRecordInfo; GUID : TGUID);
     procedure ListView1DblClick(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
-    Procedure BeginUpdate(GUID_: string);
-    Procedure EndUpdate(GUID_: string);
+    Procedure BeginUpdate(GUID: TGUID);
+    Procedure EndUpdate(GUID: TGUID);
     procedure Open1Click(Sender: TObject);
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
     Function ListView1Selected : TEasyItem;
@@ -341,10 +338,10 @@ type
     Procedure SetPath(Path : String);
     procedure ShowUpdater1Click(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
-     Procedure Select(Item : TEasyItem; GUID_ : string);
-    procedure ReplaceBitmap(Bitmap: TBitmap; FileGUID: string; Include : boolean; Big : boolean = false);
-    procedure ReplaceIcon(Icon: TIcon; FIleGUID: string; Include : boolean);
-    function AddItem(FileGUID: string; LockItems : boolean = true) : TEasyItem;
+     Procedure Select(Item : TEasyItem; GUID : TGUID);
+    procedure ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : boolean; Big : boolean = false);
+    procedure ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean);
+    function AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
     procedure ListView1KeyPress(Sender: TObject; var Key: Char);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
@@ -355,13 +352,13 @@ type
     procedure DeleteIndex1Click(Sender: TObject);
     procedure DeleteItemWithIndex(Index : Integer);
     Procedure DeleteFiles(ToRecycle : Boolean);
-    Procedure DirectoryChanged(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray);
-    Procedure LoadInfoAboutFiles(Info : TExplorerFilesInfo; SID : string);
-    Procedure AddInfoAboutFile(Info : TExplorerFilesInfo; SID : string);
-    Function FileNeeded(FileSID : String) : Boolean;                    
-    Function FileNeededW(FileSID : String) : Boolean;  //для больших имаг
-    procedure AddBitmap(Bitmap: TBitmap; FileGUID: string);
-    procedure AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: string);
+    Procedure DirectoryChanged(Sender : TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    Procedure LoadInfoAboutFiles(Info : TExplorerFilesInfo; SID : TGUID);
+    Procedure AddInfoAboutFile(Info : TExplorerFilesInfo; SID : TGUID);
+    function FileNeeded(FileSID : TGUID) : Boolean;
+    function FileNeededW(FileSID : TGUID) : Boolean;  //для больших имаг
+    procedure AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
+    procedure AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID);
     Function ItemIndexToMenuIndex(Index : Integer) : Integer;
     Function MenuIndexToItemIndex(Index : Integer) : Integer;
     procedure WaitForUnLock;
@@ -373,16 +370,16 @@ type
     procedure Paste1Click(Sender: TObject);
     procedure PopupMenu2Popup(Sender: TObject);
     procedure Cut2Click(Sender: TObject);
-    procedure ShowProgress(SID : string);
-    procedure HideProgress(SID : string);
-    procedure SetProgressMax(Value : Integer; SID : string);
-    procedure SetProgressPosition(Value : Integer; SID : string);
-    procedure SetProgressText(Text : String; SID : string);
-    procedure SetStatusText(Text : String; SID : string);
-    procedure SetNewFileNameGUID(FileGUID : string; SID : string);
+    procedure ShowProgress(SID : TGUID);
+    procedure HideProgress(SID : TGUID);
+    procedure SetProgressMax(Value : Integer; SID : TGUID);
+    procedure SetProgressPosition(Value : Integer; SID : TGUID);
+    procedure SetProgressText(Text : String; SID : TGUID);
+    procedure SetStatusText(Text : String; SID : TGUID);
+    procedure SetNewFileNameGUID(FileGUID : TGUID; SID : TGUID);
     procedure Button1Click(Sender: TObject);
-    Procedure SetPanelInfo(Info : TOneRecordInfo; FileGUID : string);
-    Procedure SetPanelImage(Image : TBitmap; FileGUID : string);
+    Procedure SetPanelInfo(Info : TOneRecordInfo; FileGUID : TGUID);
+    Procedure SetPanelImage(Image : TBitmap; FileGUID : TGUID);
     procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure PropertyPanelResize(Sender: TObject);
@@ -400,7 +397,7 @@ type
     procedure Options1Click(Sender: TObject);
     procedure DBManager1Click(Sender: TObject);
     procedure DeleteLinkClick(Sender: TObject);
-    function AddItemW(Caption, FileGUID: string) : TEasyItem;
+    function AddItemW(Caption : string; FileGUID: TGUID) : TEasyItem;
     procedure SetSelected(NewSelected: TEasyItem);
     procedure PropertiesLinkClick(Sender: TObject);
     procedure SlideShowLinkClick(Sender: TObject);
@@ -481,7 +478,7 @@ type
     procedure SpecialLocation1Click(Sender: TObject);
     procedure SendTo1Click(Sender: TObject);
     procedure View2Click(Sender: TObject);
-    procedure RemoveUpdateID(ID : Integer; CID : String);
+    procedure RemoveUpdateID(ID : Integer; CID : TGUID);
     procedure AddUpdateID(ID : Integer);
     procedure Reload;
     function FileNameToID(FileName: string): integer;
@@ -555,8 +552,8 @@ type
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 
     function GetAllItems : TExplorerFilesInfo;
-    procedure DoDefaultSort(CID : String);
-    procedure DoStopLoading(CID : String);
+    procedure DoDefaultSort(GUID : TGUID);
+    procedure DoStopLoading(GUID : TGUID);
     procedure AddHiddenInfo1Click(Sender: TObject);
     procedure ExtractHiddenInfo1Click(Sender: TObject);
     procedure ToolButton13Click(Sender: TObject);
@@ -569,7 +566,7 @@ type
    private
      FPictureSize : integer;
      ListView : integer;
-     ListView1 : TXListView;
+     ListView1 : TEasyListView;
      aScript : TScript;
      MainMenuScript : string;
      RefreshIDList : TArInteger;
@@ -644,10 +641,10 @@ type
    public
      ExtIcons : TBitmapImageList;
      FBitmapImageList : TBitmapImageList;
-     WindowID : string;
-     CurrentGUID : String;
+     WindowID : TGUID;
+     CurrentGUID : TGUID;
      NewFileName : String;
-     NewFileNameGUID : String;
+     NewFileNameGUID : TGUID;
      TempFolderName : String;
      ComboPath : string;
      NoLockListView : boolean;
@@ -871,7 +868,7 @@ begin
  Activation1.Visible:=not FolderView;
  Help2.Visible:=not FolderView;
   
- WindowID:=GetCID;
+ WindowID:=GetGUID;
  SetLength(RefreshIDList,0);
  if not DBkernel.UserRights.ShowPath then
  begin
@@ -915,7 +912,7 @@ begin
  DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
  DBKernel.RegisterChangesID(Sender,ChangedDBDataByID);
 
- CurrentGUID:='';
+ CurrentGUID:=GetGUID;
  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
  NewPath:=DBkernel.ReadString('Explorer','Patch');
  NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
@@ -1891,7 +1888,7 @@ begin
  DragFilesPopup.Free;
  FBitmapImageList.Free;
  ExtIcons.Free;
- CurrentGUID:=GetCID;
+ CurrentGUID:=GetGUID;
  SaveWindowPos1.SavePosition;
  DropFileTarget2.Unregister;
  DropFileTarget1.Unregister;
@@ -2217,16 +2214,16 @@ begin
  end;
 end;
 
-procedure TExplorerForm.SetItemLength(Length: integer; GUID_ : string);
+procedure TExplorerForm.SetItemLength(Length: integer; GUID : TGUID);
 begin
- if GUID_=CurrentGUID then
- SetLength(fFilesInfo,Length);
+  if IsEqualGUID(GUID, CurrentGUID) then
+    SetLength(fFilesInfo, Length);
 end;
 
-procedure TExplorerForm.IncItemLength(GUID_: string);
+procedure TExplorerForm.IncItemLength(GUID: TGUID);
 begin
- if GUID_=CurrentGUID then
- Setlength(fFilesInfo,Length(fFilesInfo)+1);
+  if IsEqualGUID(GUID, CurrentGUID) then
+    Setlength(fFilesInfo, Length(fFilesInfo) + 1);
 end;
 
 procedure TExplorerForm.SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
@@ -2252,12 +2249,12 @@ begin
  ListView1SelectItem(nil,nil,false);
 end;
 
-procedure TExplorerForm.SetInfoToItem(info : TOneRecordInfo; FileGUID: string);
+procedure TExplorerForm.SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
 var
   i : Integer;
 begin
  for i:=0 to Length(fFilesInfo)-1 do
- If fFilesInfo[i].SID=FileGUID then
+ if IsEqualGUID(fFilesInfo[i].SID, FileGUID) then
  begin
   fFilesInfo[i].FileName:=info.ItemFileName;
   fFilesInfo[i].ID:=info.ItemId;
@@ -2285,12 +2282,11 @@ begin
  ListView1SelectItem(nil,nil,false);
 end;
 
-procedure TExplorerForm.SetInfoToLastItem(info: TOneRecordInfo;
-  GUID_: string);
+procedure TExplorerForm.SetInfoToLastItem(info: TOneRecordInfo; GUID: TGUID);
 Var
   Index : Integer;
 begin
-  if GUID_=CurrentGUID then
+  if IsEqualGUID(GUID, CurrentGUID) then
   begin
    Index:=Length(fFilesInfo);
    fFilesInfo[Index].FileName:=info.ItemFileName;
@@ -2526,10 +2522,10 @@ begin
  end;
 end;
 
-procedure TExplorerForm.BeginUpdate(GUID_: string);
+procedure TExplorerForm.BeginUpdate(GUID: TGUID);
 begin
- if GUID_=CurrentGUID then
- begin
+  if IsEqualGUID(GUID, CurrentGUID) then
+  begin
   If not UpdatingList then
   if ListView1<>nil then
   begin
@@ -2540,9 +2536,9 @@ begin
  end;
 end;
 
-procedure TExplorerForm.EndUpdate(GUID_: string);
+procedure TExplorerForm.EndUpdate(GUID: TGUID);
 begin
- if GUID_=CurrentGUID then
+  if IsEqualGUID(GUID, CurrentGUID) then
  begin       
   If UpdatingList then
   begin
@@ -2843,9 +2839,9 @@ begin
  info.View:=ListView;  
  info.PictureSize:=fPictureSize;
  if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,fFilesInfo[Index].SID,THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
+ TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
  if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_EXEFILE) then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,fFilesInfo[Index].SID,THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID);
+ TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID);
 end;
 
 procedure TExplorerForm.RefreshItemA(Number: Integer);
@@ -2871,9 +2867,9 @@ begin
  info.View:=ListView;    
  info.PictureSize:=fPictureSize;
  if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,fFilesInfo[Index].SID,THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
+ TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
  if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_EXEFILE) then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,fFilesInfo[Index].SID,THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID);
+ TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID);
 end;
 
 procedure TExplorerForm.HistoryChanged(Sender: TObject);
@@ -3102,12 +3098,12 @@ begin
   Index := ItemIndexToMenuIndex(i);
   if (fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE) then
   begin
-   TExplorerThread.Create(false,fFilesInfo[Index].FileName,fFilesInfo[Index].SID,THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
+   TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
   end;
 
   if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FOLDER) then
   begin
-   TExplorerThread.Create(false,fFilesInfo[Index].FileName,fFilesInfo[Index].SID,THREAD_TYPE_FOLDER_UPDATE,info,self,UpdaterInfo,CurrentGUID);
+   TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FOLDER_UPDATE,info,self,UpdaterInfo,CurrentGUID);
   end;
  end;
 end;
@@ -3247,9 +3243,9 @@ begin
   HintTimer.Enabled:=False;
 end;
 
-Procedure TExplorerForm.Select(Item : TEasyItem; GUID_ : string);
+Procedure TExplorerForm.Select(Item : TEasyItem; GUID : TGUID);
 begin
- if (GUID_=CurrentGUID) and (Item<>nil) then
+ if IsEqualGUID(GUID, CurrentGUID) and (Item<>nil) then
  begin
   Item.Selected:=true;
   Item.Focused:=true;
@@ -3257,7 +3253,7 @@ begin
  end;
 end;
 
-procedure TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FIleGUID: string; Include : boolean; Big : boolean = false);
+procedure TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : boolean; Big : boolean = false);
 var
   i, index, c : Integer;
   R : TRect;
@@ -3265,7 +3261,7 @@ var
   RectArray: TEasyRectArrayObject;
 begin
  For i:=0 to length(FFilesInfo)-1 do
- if FFilesInfo[i].SID=FileGUID then
+ if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   index:=MenuIndexToItemIndex(i);
   if (FFilesInfo[i].isBigImage) and (Big=true) //если загружается большая картинка впервые
@@ -3321,7 +3317,7 @@ begin
  end;
 end;
 
-procedure TExplorerForm.ReplaceIcon(Icon: TIcon; FIleGUID: string; Include : boolean);
+procedure TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean);
 var
   i, index, c : Integer;
   R : TRect;
@@ -3329,7 +3325,7 @@ var
   RectArray: TEasyRectArrayObject;
 begin
  For i:=0 to length(FFilesInfo)-1 do
- if FFilesInfo[i].SID=FileGUID then
+ if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   index:=MenuIndexToItemIndex(i);
   if index>ListView1.Items.Count-1 then exit;
@@ -3366,33 +3362,33 @@ begin
  end;
 end;
 
-procedure TExplorerForm.AddBitmap(Bitmap: TBitmap; FileGUID: string);
-Var
-  i:integer;
+procedure TExplorerForm.AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
+var
+  i : Integer;
 begin
- For i:=length(FFilesInfo)-1 downto 0 do
- if FFilesInfo[i].SID=FileGUID then
- begin
-  FBitmapImageList.AddBitmap(Bitmap);
-  FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
-  Break;
- end;
+  for i := Length(FFilesInfo)-1 downto 0 do
+    if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
+    begin
+      FBitmapImageList.AddBitmap(Bitmap);
+      FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
+      Break;
+    end;
 end;
 
-procedure TExplorerForm.AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: string);
-Var
-  i:integer;
+procedure TExplorerForm.AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID);
+var
+  i : Integer;
 begin
- For i:=length(FFilesInfo)-1 downto 0 do
- if FFilesInfo[i].SID=FileGUID then
- begin
-  FBitmapImageList.AddIcon(Icon,SelfReleased);
-  FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
-  Break;
- end;
+  for i := Length(FFilesInfo)-1 downto 0 do
+    if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
+     begin
+      FBitmapImageList.AddIcon(Icon, SelfReleased);
+      FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
+      Break;
+     end;
 end;
 
-function TExplorerForm.AddItem(FileGUID: string; LockItems : boolean = true) : TEasyItem;
+function TExplorerForm.AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
 Var
   i : integer;
   P : PBoolean;
@@ -3400,7 +3396,7 @@ Var
 begin
  Result:=Nil;
  For i:=Length(FFilesInfo)-1 downto 0 do
- if FFilesInfo[i].SID=FileGUID then
+ if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   if LockItems then
   if ListView1.Groups[0].Visible then
@@ -3421,13 +3417,13 @@ begin
   If FFilesInfo[i].FileType<>EXPLORER_ITEM_DRIVE then
   Result.Caption:=GetFileName(FFilesInfo[i].FileName) else
   Result.Caption:=FFilesInfo[i].FileName;
-  if FileGUID=NewFileNameGUID then
+  if IsEqualGUID(FileGUID, NewFileNameGUID) then
   begin
    Result.Selected:=true;
    Result.Focused:=true;  
    ListView1.EditManager.Enabled:=true;
    Result.Edit;
-   NewFileNameGUID:='';
+   NewFileNameGUID:=GetGUID;
   end;
   LockDrawIcon:=false;
   if ListView1.Groups[0].Visible then
@@ -3436,14 +3432,14 @@ begin
  end;
 end;
 
-function TExplorerForm.AddItemW(Caption, FileGUID: string) : TEasyItem;
+function TExplorerForm.AddItemW(Caption: string; FileGUID: TGUID) : TEasyItem;
 Var
   i : integer;
   P : PBoolean;
 begin
  Result:=Nil;
  For i:=0 to length(FFilesInfo)-1 do
- if FFilesInfo[i].SID=FileGUID then
+ if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   if ListView1.Groups[0].Visible then
   if ListView1.Items.Count=0 then ListView1.Groups[0].Visible:=false;
@@ -3660,12 +3656,15 @@ var j:integer;
     MenuIndex : integer;
 begin
   LockItems;
- MenuIndex:=ItemIndexToMenuIndex(Index);
- ListView1.Items.Delete(Index);
- for j:=MenuIndex to Length(fFilesInfo)-2 do
- fFilesInfo[j]:=fFilesInfo[j+1];
- setlength(fFilesInfo,Length(fFilesInfo)-1);
- UnLockItems;
+  try
+    MenuIndex:=ItemIndexToMenuIndex(Index);
+    ListView1.Items.Delete(Index);
+    for j:=MenuIndex to Length(fFilesInfo)-2 do
+    fFilesInfo[j]:=fFilesInfo[j+1];
+    setlength(fFilesInfo,Length(fFilesInfo)-1);
+  finally
+    UnLockItems;
+  end;
 end;
 
 procedure TExplorerForm.DeleteIndex1Click(Sender: TObject);
@@ -3685,7 +3684,7 @@ begin
  end;
 end;
 
-Procedure TExplorerForm.DirectoryChanged(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray);
+Procedure TExplorerForm.DirectoryChanged(Sender : TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
 Var
   i, k, index : Integer;
   ExplorerViewInfo : TExplorerViewInfo;
@@ -3694,7 +3693,7 @@ Var
 begin
  if not FormLoadEnd then exit;
  UpdaterInfo.ProcHelpAfterUpdate:=nil;
- if SID<>CurrentGUID then Exit;
+ if not IsEqualGUID(SID, CurrentGUID) then Exit;
  For k:=0 to length(pInfo)-1 do
  Case pInfo[k].FAction of
  FILE_ACTION_ADDED:
@@ -3790,29 +3789,27 @@ begin
  end;  
 end;
 
-Procedure TExplorerForm.LoadInfoAboutFiles(Info : TExplorerFilesInfo; SID : string);
+Procedure TExplorerForm.LoadInfoAboutFiles(Info : TExplorerFilesInfo; SID : TGUID);
 var
   i, n :Integer;
 begin
- If SID=CurrentGUID then
+ If IsEqualGUID(SID, CurrentGUID) then
  begin
   n:=Length(fFilesInfo);
   SetLength(fFilesInfo,Length(Info)+n);
   For i:=0 to Length(Info)-1 do
   begin
    fFilesInfo[i+n]:=Info[i];
-   {ListView1.
-   ListView1.Items.Add();    }
   end;
  end;
 end;
 
-Procedure TExplorerForm.AddInfoAboutFile(Info : TExplorerFilesInfo; SID : string);
+Procedure TExplorerForm.AddInfoAboutFile(Info : TExplorerFilesInfo; SID : TGUID);
 var
   i:Integer;
   b : Boolean;
 begin
- If SID=CurrentGUID then
+ If IsEqualGUID(SID, CurrentGUID) then
  begin
   b:=false;
   For i:=0 to Length(fFilesInfo)-1 do
@@ -3829,31 +3826,31 @@ begin
  end;
 end;
 
-Function TExplorerForm.FileNeeded(FileSID : String) : Boolean;
+function TExplorerForm.FileNeeded(FileSID : TGUID) : Boolean;
 var
   i:Integer;
 begin
- Result:=false;
- For i:=0 to Length(fFilesInfo)-1 do
- If fFilesInfo[i].SID=FileSID then
- begin
-  Result:=True;
-  Break;
- end;
+  Result := False;
+  for i := 0 to Length(fFilesInfo) - 1 do
+    if IsEqualGUID(fFilesInfo[i].SID, FileSID) then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
-Function TExplorerForm.FileNeededW(FileSID : String) : Boolean;
+function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;
 var
-  i:Integer;
+  i : Integer;
 begin
- Result:=false;
- For i:=0 to Length(fFilesInfo)-1 do
- If fFilesInfo[i].SID=FileSID then
- begin
-  if not fFilesInfo[i].isBigImage then
-  Result:=True;   
-  Break;
- end;
+  Result := false;
+  for i := 0 to Length(fFilesInfo) - 1 do
+  If IsEqualGUID(fFilesInfo[i].SID, FileSID) then
+  begin
+    if not fFilesInfo[i].IsBigImage then
+      Result := True;
+    Break;
+  end;
 end;
 
 function TExplorerForm.ItemIndexToMenuIndex(Index: Integer): Integer;
@@ -3938,37 +3935,6 @@ begin
  Copy_Move(false,File_List);
  File_List.Free;
 end;
-
-{function DestPathExists(S : array of string; Dest : String) : boolean;
-var
-  List : TArStrings;
-  i,j : integer;
-begin
- Result:=false;
- List:=GetDirectoryListingOfPath(Dest);
- for i:=0 to Length(List)-1 do
- for j:=0 to Length(S)-1 do
- begin
-  if AnsiLowerCase(List[i])=AnsiLowerCase(ExtractFileName(S[j])) then
-  begin
-   Result:=true;
-   break;
-  end;
- end;
-end;  }
-
-{function AutoRename(S : array of string; Dest : String; var Break : boolean) : boolean;
-var
-  Res : integer;
-begin
- Result:=false;
- if DestPathExists(S,Dest) then
- begin
-  Res:=MessageBoxDB(GetActiveFormHandle,TEXT_MES_FILES_ALREADY_EXISTS_REPLACE,TEXT_MES_QUESTION,TD_BUTTON_YES+TD_BUTTON_NO+TD_RESULT_CANCEL,TD_ICON_QUESTION);
-  if Res=ID_CANCEL then Break:=true;
-  Result:=Res=ID_OK;
- end;
-end;    }
 
 procedure TExplorerForm.Paste1Click(Sender: TObject);
 Var
@@ -4060,39 +4026,39 @@ begin
  File_List.Free;
 end;
 
-procedure TExplorerForm.HideProgress(SID: string);
+procedure TExplorerForm.HideProgress(SID: TGUID);
 begin
- If SID=CurrentGUID then
+ If IsEqualGUID(SID, CurrentGUID) then
  fStatusProgress.Hide;
 end;
 
-procedure TExplorerForm.SetProgressMax(Value: Integer; SID: string);
+procedure TExplorerForm.SetProgressMax(Value: Integer; SID: TGUID);
 begin
- If SID=CurrentGUID then
+ If IsEqualGUID(SID, CurrentGUID) then
  fStatusProgress.Max:=Value;
 end;
 
-procedure TExplorerForm.SetProgressPosition(Value: Integer; SID: string);
+procedure TExplorerForm.SetProgressPosition(Value: Integer; SID: TGUID);
 begin
- If SID=CurrentGUID then
+ If IsEqualGUID(SID, CurrentGUID) then
  fStatusProgress.Position:=Value;
 end;
 
-procedure TExplorerForm.SetProgressText(Text, SID: string);
+procedure TExplorerForm.SetProgressText(Text: string; SID: TGUID);
 begin
- If SID=CurrentGUID then
+ If IsEqualGUID(SID, CurrentGUID) then
 end;
 
-procedure TExplorerForm.SetStatusText(Text, SID: string);
+procedure TExplorerForm.SetStatusText(Text: string; SID: TGUID);
 begin
- If SID=CurrentGUID then
+ If IsEqualGUID(SID, CurrentGUID) then
  StatusBar1.Panels[0].Text:=Text;
 end;
 
-procedure TExplorerForm.ShowProgress(SID: string);
+procedure TExplorerForm.ShowProgress(SID: TGUID);
 begin
- If SID=CurrentGUID then
- fStatusProgress.Show;
+ If IsEqualGUID(SID, CurrentGUID) then
+   fStatusProgress.Show;
 end;
 
 procedure TExplorerForm.Button1Click(Sender: TObject);
@@ -4108,27 +4074,27 @@ begin
  ListView1SelectItem(Sender,ListView1Selected,false);
 end;
 
-procedure TExplorerForm.SetPanelImage(Image: TBitmap; FIleGUID: string);
+procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
 begin
-  IF FSelectedInfo._GUID=FIleGUID then
- begin
-  Image1.Picture.Bitmap.Assign(Image);
-  Image1.Refresh;
- end;
+  if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
+  begin
+    Image1.Picture.Bitmap.Assign(Image);
+    Image1.Refresh;
+  end;
 end;
 
 procedure TExplorerForm.SetPanelInfo(Info: TOneRecordInfo;
-  FIleGUID: string);
+  FIleGUID: TGUID);
 begin
-  IF FSelectedInfo._GUID=FIleGUID then
- begin
-  FSelectedInfo.Width:=Info.ItemWidth;
-  FSelectedInfo.Height:=Info.ItemHeight;
-  FSelectedInfo.Id:=Info.ItemId;
-  FSelectedInfo.Rating:=Info.ItemRating;
-  FSelectedInfo.Access:=Info.ItemAccess;
-  ReallignInfo;
- end;
+  if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
+  begin
+    FSelectedInfo.Width:=Info.ItemWidth;
+    FSelectedInfo.Height:=Info.ItemHeight;
+    FSelectedInfo.Id:=Info.ItemId;
+    FSelectedInfo.Rating:=Info.ItemRating;
+    FSelectedInfo.Access:=Info.ItemAccess;
+    ReallignInfo;
+  end;
 end;
 
 procedure TExplorerForm.Image1ContextPopup(Sender: TObject;
@@ -4833,12 +4799,12 @@ end;
 function TManagerExplorer.GetExplorerBySID(SID: String): TExplorerForm;
 var
   i : Integer;
-begin    
+begin
   Result := nil; 
   FSync.Enter;
   try
     for i := 0 to FExplorers.Count - 1 do
-    If TExplorerForm(FExplorers[i]).CurrentGUID = SID then
+    If IsEqualGUID(TExplorerForm(FExplorers[i]).CurrentGUID, StringToGUID(SID)) then
     begin
       Result := FExplorers[i];
       Break;
@@ -5536,7 +5502,7 @@ begin
   ThreadType:=THREAD_TYPE_COMPUTER;
  end;
  S := Path;
- CurrentGUID:=GetCID;
+ CurrentGUID:=GetGUID;
  if ListView1<>nil then
  begin
   fCurrentPath:=Path;
@@ -6707,7 +6673,8 @@ Var
   Index, i, j, x, y, w, h : Integer;
   Ico : TIcon;
   Ico48 : TIcon48;
-  s, FileName, FileSID : String;
+  s, FileName : String;
+  FileSID : TGUID;
   FFolderImagesResult : TFolderImages;
   Dx : Integer;
   FolderImageRect : TRect;
@@ -6763,7 +6730,7 @@ begin
     FSelectedInfo.FileName:=MyComputer;
     FSelectedInfo.FileTypeW:=MyComputer;
     FSelectedInfo.FileType:=EXPLORER_ITEM_MYCOMPUTER;
-    FileSID:='';
+    FileSID:=GetGUID;
    end;
    if FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE then
    NameLabel.Caption:=FileName;
@@ -6894,7 +6861,7 @@ begin
   begin
    With image1.Picture.Bitmap do
    begin
-    FSelectedInfo._GUID:='';
+    FSelectedInfo._GUID:=GetGUID;
     Width:=ThSizeExplorerPreview;
     height:=ThSizeExplorerPreview;
     Canvas.Pen.Color:=PropertyPanel.Color;
@@ -7129,10 +7096,10 @@ begin
  end;
 end;
 
-procedure TExplorerForm.SetNewFileNameGUID(FileGUID, SID: string);
+procedure TExplorerForm.SetNewFileNameGUID(FileGUID, SID: TGUID);
 begin
- if SID=CurrentGUID then
- NewFileNameGUID:=FileGUID;
+  if IsEqualGUID(SID,CurrentGUID) then
+    NewFileNameGUID := FileGUID;
 end;
 
 procedure TExplorerForm.View2Click(Sender: TObject);
@@ -7153,12 +7120,12 @@ begin
  RefreshIDList[Length(RefreshIDList)-1]:=ID;
 end;
 
-procedure TExplorerForm.RemoveUpdateID(ID: Integer; CID: String);
+procedure TExplorerForm.RemoveUpdateID(ID: Integer; CID: TGUID);
 var
   i, j : integer;
 begin
  if ID<1 then exit;
- if CID=CurrentGUID then
+ if IsEqualGUID(CID, CurrentGUID) then
  begin
   for i:=0 to length(RefreshIDList)-1 do
   if RefreshIDList[i]=ID then
@@ -7235,7 +7202,7 @@ begin
   begin
    index:=Self.ItemIndexToMenuIndex(i);
    SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=fFilesInfo[index].SID;
+   Result[Length(Result)-1]:= GUIDToString(fFilesInfo[index].SID);
    SetLength(t,Length(t)+1);
    t[Length(t)-1]:=fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER;
    if not b then
@@ -8148,7 +8115,7 @@ begin
  info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
  info.View:=ListView;
  Info.PictureSize:=fPictureSize;
- CurrentGUID:=GetCID;
+ CurrentGUID:=GetGUID;
  
  ToolButton18.Enabled:=true;
  TExplorerThread.Create(false,'::BIGIMAGES','',THREAD_TYPE_BIG_IMAGES,info,self,UpdaterInfo,CurrentGUID);
@@ -8163,9 +8130,11 @@ begin
  Result:=Copy(fFilesInfo);
 end;
 
-procedure TExplorerForm.DoDefaultSort(CID : String);
-begin
- if CID<>CurrentGUID then exit;
+procedure TExplorerForm.DoDefaultSort(GUID : TGUID);
+begin                           
+  if not IsEqualGUID(GUID, CurrentGUID) then
+    Exit;
+
  case DefaultSort of
   0: FileName1Click(FileName1);
  //1: - rating!!! no default sorting, information about sorting goes later
@@ -8319,7 +8288,7 @@ end;
 
 procedure TExplorerForm.ToolButton18Click(Sender: TObject);
 begin
- CurrentGUID:=Dolphin_DB.GetCID;
+ CurrentGUID:=Dolphin_DB.GetGUID;
  if UpdatingList then
  EndUpdate(CurrentGUID);
  ToolButton18.Enabled:=false;
@@ -8327,9 +8296,9 @@ begin
  StatusBar1.Panels[0].Text:=TEXT_MES_LOADING_BREAK;
 end;
 
-procedure TExplorerForm.DoStopLoading(CID: String);
+procedure TExplorerForm.DoStopLoading(GUID: TGUID);
 begin
- if CID = CurrentGUID then
+ if IsEqualGUID(GUID, CurrentGUID) then
  begin
   ToolButton18.Enabled:=false;
   fStatusProgress.Visible:=false;

@@ -14,7 +14,7 @@ type
   FRotate : Byte;
   FFullImage : Boolean;
   FBeginZoom : Extended;
-  FSID : String;
+  FSID : TGUID;
   Picture : TPicture;
   PassWord : String;
   Crypted : Boolean;
@@ -43,7 +43,7 @@ type
     procedure TestThreadSynch;
     procedure UpdateRecord;
   public
-   constructor Create(CreateSuspennded: Boolean; FileName : String; Rotate : Byte; FullImage : Boolean; BeginZoom : Extended; SID : String; IsForward, UpdateInfo : Boolean; Page : Word);
+   constructor Create(CreateSuspennded: Boolean; FileName : String; Rotate : Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
    destructor Destroy; override;
   end;
 
@@ -54,7 +54,7 @@ uses UnitPasswordForm, SlideShow;
 { TViewerThread }
 
 constructor TViewerThread.Create(CreateSuspennded: Boolean;
-  FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : String; IsForward, UpdateInfo : Boolean; Page : Word);
+  FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
 begin
  inherited Create(True);
  FPage:=Page;
@@ -210,7 +210,7 @@ begin
    begin
     Repeat
      if Viewer=nil then break;
-     if Viewer.ForwardThreadSID<>FSID then break;
+     if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
      if not Viewer.ForwardThreadExists then break;
      if Viewer.ForwardThreadNeeds then
      begin
@@ -233,12 +233,12 @@ end;
 procedure TViewerThread.SetAnimatedImage;
 begin
  if Viewer<>nil then
- if ((Viewer.GetSID=FSID) and not FIsForward) or ((Viewer.ForwardThreadSID=FSID) and FIsForward) then begin
+ if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then begin
   RealImageHeight:=FRealHeight;
   RealImageWidth:=FRealWidth;
   RealZoomInc:=FRealZoomScale;
   if FUpdateInfo then
-  Viewer.UpdateInfo(FSID,FInfo);
+  Viewer.UpdateInfo(FSID, FInfo);
   Viewer.SetFullImageState(FFullImage,FBeginZoom,1,0);
   Viewer.SetAnimatedImage(Picture);
  end else Picture.Free;
@@ -254,7 +254,7 @@ begin
  begin
   Repeat
    if Viewer=nil then break;
-   if Viewer.ForwardThreadSID<>FSID then break;
+   if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
    if not Viewer.ForwardThreadExists then break;
    if Viewer.ForwardThreadNeeds then
    begin
@@ -270,7 +270,7 @@ end;
 procedure TViewerThread.SetNOImage;
 begin
  if Viewer<>nil then
- if ((Viewer.GetSID=FSID) and not FIsForward) or ((Viewer.ForwardThreadSID=FSID) and FIsForward) then begin
+ if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then begin
   RealImageHeight:=FRealHeight;
   RealImageWidth:=FRealWidth;    
   RealZoomInc:=FRealZoomScale;
@@ -292,7 +292,7 @@ begin
  begin
   Repeat
    if Viewer=nil then break;
-   if Viewer.ForwardThreadSID<>FSID then break;
+   if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
    if not Viewer.ForwardThreadExists then break;
    if Viewer.ForwardThreadNeeds then
    begin
@@ -307,13 +307,13 @@ end;
 procedure TViewerThread.SetStaticImage;
 begin
  if Viewer<>nil then
- if ((Viewer.GetSID=FSID) and not FIsForward) or ((Viewer.ForwardThreadSID=FSID) and FIsForward) then
+ if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
  begin
   RealImageHeight:=FRealHeight;
   RealImageWidth:=FRealWidth;    
   RealZoomInc:=FRealZoomScale;
   if FUpdateInfo then
-  Viewer.UpdateInfo(FSID,FInfo);
+  Viewer.UpdateInfo(FSID, FInfo);
   Viewer.SetFullImageState(FFullImage,FBeginZoom,fPages,fPage);
   Viewer.SetStaticImage(Bitmap,FTransparent);
  end else Bitmap.Free;
@@ -329,7 +329,7 @@ begin
  begin
   Repeat
    if Viewer=nil then break;
-   if Viewer.ForwardThreadSID<>FSID then break;
+   if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
    if not Viewer.ForwardThreadExists then break;
    if Viewer.ForwardThreadNeeds then
    begin
@@ -356,7 +356,7 @@ begin
   FBooleanResult:=false;
   Exit;
  end;
- FBooleanResult:= ((Viewer.GetSID=FSID) and not FIsForward) or ((Viewer.ForwardThreadSID=FSID) and FIsForward) and (Viewer<>nil);
+ FBooleanResult := (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) and (Viewer<>nil);
 end;
 
 procedure TViewerThread.UpdateRecord;

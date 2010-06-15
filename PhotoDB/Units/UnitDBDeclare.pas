@@ -106,7 +106,7 @@ type
    OnProgress : TCallBackProgressEvent;
   end;
 
-  TIfBreakThreadProc = function(Sender : TObject; SID : string) : boolean of object;
+  TIfBreakThreadProc = function(Sender : TObject; SID : TGUID) : boolean of object;
 
 
 Type TEventField=(EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,

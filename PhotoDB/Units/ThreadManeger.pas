@@ -161,10 +161,10 @@ begin
 end;
 
 procedure TThreadManeger.TerminateAll;
-Var
+var
   i : Integer;
 begin
- For i:=0 to Length(FThreads)-1 do
+ for i:=0 to Length(FThreads)-1 do
  begin
   TerminateThread(FThreads[i].Handle,0);
  end;

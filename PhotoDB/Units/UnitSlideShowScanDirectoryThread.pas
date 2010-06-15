@@ -11,24 +11,24 @@ type
    FSender : TForm;
    BaseFileName : string;
    Info : TRecordsInfo;
-   fSID : String;
+   fSID : TGUID;
     { Private declarations }
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID, aBaseFileName : string);
+    constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID; aBaseFileName : string);
     procedure SynchNotify;
   end;
 
 implementation
 
-uses SlideShow;
+uses SlideShow, SysUtils;
 
 constructor TSlideShowScanDirectoryThread.Create(CreateSuspennded: Boolean;
-  Sender: TForm; SID, aBaseFileName: string);
+  Sender: TForm; SID : TGUID; aBaseFileName: string);
 begin         
  inherited create(true);
- fSID := SID;  
+ fSID := SID;
  fSender:=Sender;
  BaseFileName:=aBaseFileName;  
  if not CreateSuspennded then Resume;
@@ -46,7 +46,7 @@ end;
 procedure TSlideShowScanDirectoryThread.SynchNotify;
 begin
  if Viewer<>nil then
- if Viewer.SID=fSID then
+ if IsEqualGUID(Viewer.SID, fSID) then
  begin
   Viewer.WaitingList:=false;
   Viewer.ExecuteW(self, Info, BaseFileName);

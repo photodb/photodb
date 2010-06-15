@@ -183,7 +183,7 @@ type
     procedure Pause;
     procedure DestroyTimerTimer(Sender: TObject);
     procedure ImageFrameTimerTimer(Sender: TObject);
-    procedure UpdateInfo(SID : String; Info : TOneRecordInfo);
+    procedure UpdateInfo(SID : TGUID; Info : TOneRecordInfo);
     procedure ToolButton6Click(Sender: TObject);
     procedure SlideTimerTimer(Sender: TObject);
     procedure ImageEditor1Click(Sender: TObject);
@@ -206,7 +206,7 @@ type
     AnimatedBuffer : TBitmap;
     FValidImages: Integer;
     FForwardThreadExists: Boolean;
-    FForwardThreadSID: string;
+    FForwardThreadSID: TGUID;
     FForwardThreadNeeds: Boolean;
     FForwardThreadFileName: string;
     FTransparentImage: Boolean;
@@ -220,7 +220,7 @@ type
     procedure SetLoading(const Value: Boolean);
     procedure SetValidImages(const Value: Integer);
     procedure SetForwardThreadExists(const Value: Boolean);
-    procedure SetForwardThreadSID(const Value: string);
+    procedure SetForwardThreadSID(const Value: TGUID);
     procedure SetForwardThreadNeeds(const Value: Boolean);
     procedure SetForwardThreadFileName(const Value: string);
     procedure SetTransparentImage(const Value: Boolean);
@@ -232,7 +232,7 @@ type
   protected
     procedure CreateParams(VAR Params: TCreateParams); override;
   public        
-    SID : String;
+    SID : TGUID;
     WaitingList : boolean;
     fCurrentPage : integer;
     fPageCount : integer;
@@ -244,7 +244,7 @@ type
     function HeightW : Integer;
     function GetImageRectA : TRect;
     procedure RecreateImLists;
-    function GetSID : String;
+    function GetSID : TGUID;
     procedure SetStaticImage(Image : TBitmap; Transparent : Boolean);
     procedure SetAnimatedImage(Image : TPicture);
     procedure NextSlide;
@@ -266,7 +266,7 @@ type
   Property Loading : Boolean read FLoading write SetLoading;
   Property ValidImages : Integer read FValidImages write SetValidImages;
   Property ForwardThreadExists : Boolean read FForwardThreadExists write SetForwardThreadExists;
-  Property ForwardThreadSID : string read FForwardThreadSID write SetForwardThreadSID;
+  Property ForwardThreadSID : TGUID read FForwardThreadSID write SetForwardThreadSID;
   Property ForwardThreadNeeds : Boolean read FForwardThreadNeeds write SetForwardThreadNeeds;
   Property ForwardThreadFileName : string read FForwardThreadFileName write SetForwardThreadFileName;
   Property TransparentImage : Boolean read FTransparentImage write SetTransparentImage;
@@ -300,7 +300,7 @@ var
   RealImageHeight : Integer = 0;
   UseOnlyDefaultDraw : Boolean = false;
   DelTwo : integer = 2;
-  FSID : String;
+  FSID : TGUID;
 
   Const
     CursorZoomInNo = 130;
@@ -497,7 +497,7 @@ begin
   ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
   ToolButton13.Enabled:=ToolButton12.Enabled;
 
-  FSID:=GetCID;
+  FSID:=GetGUID;
   if not ForwardThreadExists or (ForwardThreadFileName<>FileName) or (Length(CurrentInfo.ItemIds)=0) or FullImage then
   begin
    if NeedsUpdating then
@@ -1543,7 +1543,7 @@ procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName : String);
 var
   Info: TRecordsInfo;
 begin
- SID:=Dolphin_DB.GetCID;  
+ SID:=Dolphin_DB.GetGUID;  
  WaitingList:=true;
  TSlideShowScanDirectoryThread.Create(false, self, SID, FileName);
  Info:=RecordsInfoOne(FileName,0,0,0,0,'','','','','',0,False,False,0,ValidCryptGraphicFile(FileName),false,false,'');
@@ -1553,7 +1553,7 @@ end;
                                                                          
 function TViewer.Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
 begin
- SID:=Dolphin_DB.GetCID;
+ SID:=Dolphin_DB.GetGUID;
  WaitingList:=false;
  Result:=ExecuteW(Sender,Info,'');
 end;
@@ -2445,7 +2445,7 @@ begin
   FStaticImage := Value;
 end;
 
-function TViewer.GetSID: String;
+function TViewer.GetSID: TGUID;
 begin
  Result:=FSID;
 end;
@@ -2776,7 +2776,7 @@ begin
   FForwardThreadExists := Value;
 end;
 
-procedure TViewer.SetForwardThreadSID(const Value: string);
+procedure TViewer.SetForwardThreadSID(const Value: TGUID);
 begin
   FForwardThreadSID := Value;
 end;
@@ -2836,7 +2836,7 @@ procedure TViewer.PrepareNextImage;
 var
   n : integer;
 begin
- ForwardThreadSID:=GetCID;
+ ForwardThreadSID:=GetGUID;
  if Length(CurrentInfo.ItemFileNames)>1 then
  begin
   n:=CurrentFileNumber;
@@ -2865,7 +2865,7 @@ begin
  end;
 end;
 
-procedure TViewer.UpdateInfo(SID: String; Info: TOneRecordInfo);
+procedure TViewer.UpdateInfo(SID: TGUID; Info: TOneRecordInfo);
 begin
  SetRecordsInfoOne(CurrentInfo,CurrentFileNumber,Info.ItemFileName,Info.ItemId,Info.ItemRotate,Info.ItemRating,Info.ItemAccess,Info.ItemComment,Info.ItemGroups,Info.ItemDate,Info.ItemIsDate,Info.ItemIsTime,Info.ItemTime,Info.ItemCrypted,Info.ItemInclude,Info.ItemLinks);
  ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;

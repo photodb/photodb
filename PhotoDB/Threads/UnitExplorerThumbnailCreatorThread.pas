@@ -9,7 +9,7 @@ uses GraphicCrypt, Windows, Graphics, Classes, Dolphin_DB, ExplorerUnit,
 type
   TExplorerThumbnailCreator = class(TThread)
   private
-   FFileSID : String;
+   FFileSID : TGUID;
    FFileName : String;
    TempBitmap : TBitmap;
    Info : TOneRecordInfo;
@@ -26,7 +26,7 @@ type
     procedure DrawAttributes;
     procedure FindPassword;
   public
-    constructor Create(CreateSuspennded: Boolean; FileName : string; FileSID : string; Owner : TExplorerForm);
+    constructor Create(CreateSuspennded: Boolean; FileName : string; FileSID: TGUID; Owner : TExplorerForm);
   end;
 
 implementation
@@ -36,7 +36,7 @@ uses Searching, FormManegerUnit, ExplorerThreadUnit;
 { TExplorerThumbnailCreator }
 
 constructor TExplorerThumbnailCreator.Create(CreateSuspennded: Boolean;
-  FileName, FileSID: string; Owner : TExplorerForm);
+  FileName : string; FileSID: TGUID; Owner : TExplorerForm);
 begin
  inherited Create(True);
  FFileName := FileName;

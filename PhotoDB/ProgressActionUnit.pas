@@ -45,7 +45,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     { Private declarations }
   public
-  WindowID : string;
+  WindowID : TGUID;
   Closed : Boolean;
   WindowCanClose : boolean;
   Procedure DoShow;
@@ -116,7 +116,7 @@ procedure TProgressActionForm.FormCreate(Sender: TObject);
 begin
  WindowCanClose:=false;
  Closed:=false;
- WindowID:=GetCID;
+ WindowID:=GetGUID;
  ManagerProgresses.AddProgress(self);
  DBKernel.RecreateThemeToForm(self);
  LoadLanguage;

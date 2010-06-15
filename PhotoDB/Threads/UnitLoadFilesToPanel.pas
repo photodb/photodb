@@ -26,7 +26,7 @@ type
   FValidThread : boolean;
     { Private declarations }
   protected
-    fSID : string;
+    fSID : TGUID;
     procedure Execute; override;
     function GetInfoByFileNameOrID(FileName : string; id, N : integer) : TPicture;
     Procedure NewItem(Graphic : TGraphic);
@@ -50,8 +50,8 @@ uses UnitFormCont, Searching, ExplorerUnit, CommonDBSupport,
 
 procedure LoadFilesToPanel.AddToPanel;
 begin
- if ManagerPanels.ExistsPanel(FOwner,fSID) then
- (FOwner as TFormCont).AddNewItem(fbit,FInfo) else
+ if ManagerPanels.ExistsPanel(FOwner, fSID) then
+ (FOwner as TFormCont).AddNewItem(fbit, FInfo) else
  begin
   fTermitated:=true;
   FValidThread:=false;

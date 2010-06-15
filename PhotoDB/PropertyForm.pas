@@ -303,7 +303,7 @@ type
 
     { Private declarations }
   public      
-  SID : String;
+  SID : TGUID;
   FShowInfoType : TShowInfoType;
   CurrentItemInfo : TOneRecordInfo;
   FCurrentPass : String;
@@ -771,7 +771,7 @@ begin
  except
   On E : Exception do MessageBoxDB(Handle,'Error on geting info:'#13+E.Message,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
  end;
- SID:=GetCID;
+ SID:=GetGUID;
 end;
 
 procedure TPropertiesForm.Button1Click(Sender: TObject);
@@ -1503,7 +1503,7 @@ begin
  If not Fileexists(FileName) then exit;
  If not ExtInMask(SupportedExt,getext(FileName)) then exit;
 
- SID:=GetCID;
+ SID:=GetGUID;
  Options.FileName:=FileName;
  Options.OnDone:=OnDoneLoadingImage;
  Options.SID:=SID;
@@ -1955,7 +1955,7 @@ begin
  Button2.Visible:=false;   
  ImageLoadingFile.Visible:=false;
  Show;    
- SID:=GetCID;
+ SID:=GetGUID;
 end;
 
 procedure TPropertiesForm.FormShow(Sender: TObject);

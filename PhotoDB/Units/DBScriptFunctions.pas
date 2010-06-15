@@ -186,7 +186,7 @@ begin
   Show;
   SearchEdit.Text:=':KeyWord('+KeyWord+'):';
   DoSearchNow(nil);
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
  end;
 end;
 
@@ -197,7 +197,7 @@ begin
   Show;
   SearchEdit.Text:=StringSearch;
   DoSearchNow(nil);
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
  end;
 end;
 
@@ -227,7 +227,7 @@ begin
  With EditorsManager.NewEditor do
  begin
 //  Show;
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
   CloseOnFailture:=false;
  end;
 end;
@@ -238,7 +238,7 @@ begin
  begin
   Show;
   SetFocus;
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
  end;
 end;
 
@@ -246,14 +246,14 @@ function GetLastPanel : string;
 begin
  if ManagerPanels.Count>0 then
  begin
-  Result:=ManagerPanels.Panels[ManagerPanels.Count-1].WindowID;
+  Result:=GUIDToString(ManagerPanels.Panels[ManagerPanels.Count-1].WindowID);
   exit;
  end;
  With ManagerPanels.NewPanel do
  begin
   Show;
   SetFocus;
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
  end;
 end;
 
@@ -263,7 +263,7 @@ begin
  begin
   Show;
   SetFocus;
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
  end;
 end;
 
@@ -273,7 +273,7 @@ begin
  begin
   SetStringPath(Path,false);
   Show;
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
  end;
 end;
 
@@ -283,7 +283,7 @@ begin
  begin
   SetNewPathW(GetCurrentPathW,false);
   Show;
-  Result:=WindowID;
+  Result:= GUIDToString(WindowID);
  end;
 end;
 
@@ -416,7 +416,7 @@ begin
  begin
   for i:=0 to ExplorerManager.ExplorersCount-1 do
   begin
-   if CID=ExplorerManager[i].WindowID then
+   if CID=GUIDToString(ExplorerManager[i].WindowID) then
    begin
     Result:=ExplorerManager[i];
     break;
@@ -451,7 +451,7 @@ begin
   for i:=0 to ExplorerManager.ExplorersCount-1 do
   if AnsiLowerCase(ExplorerManager[i].GetCurrentPath)=AnsiLowerCase(Path) then
   begin
-   Result:=ExplorerManager[i].WindowID;
+   Result:=GUIDToString(ExplorerManager[i].WindowID);
    break;
   end;
  end;
@@ -468,7 +468,7 @@ begin
   if AnsiLowerCase(ExplorerManager[i].GetCurrentPath)=AnsiLowerCase(Path) then
   begin
    SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=ExplorerManager[i].WindowID;
+   Result[Length(Result)-1]:= GUIDToString(ExplorerManager[i].WindowID);
    break;
   end;
  end;
@@ -483,7 +483,7 @@ begin
  begin
   SetLength(Result,ExplorerManager.ExplorersCount);
   for i:=0 to ExplorerManager.ExplorersCount-1 do
-  if  CID=ExplorerManager[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
   begin
    Result:=ExplorerManager[i].GetCurrentPath;
    break;
@@ -500,7 +500,7 @@ begin
  begin
   SetLength(Result,ExplorerManager.ExplorersCount);
   for i:=0 to ExplorerManager.ExplorersCount-1 do
-  if  CID=ExplorerManager[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
   begin
    ExplorerManager[i].SetStringPath(Path,false);
    break;
@@ -517,7 +517,7 @@ begin
  begin
   for i:=0 to SearchManager.SearchCount-1 do
   begin
-   if CID=SearchManager.Searchs[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
     Result:=SearchManager.Searchs[i];
     break;
@@ -535,7 +535,7 @@ begin
  begin
   for i:=0 to ManagerPanels.Count-1 do
   begin
-   if CID=ManagerPanels.Panels[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
     Result:=ManagerPanels.Panels[i];
     break;
@@ -554,7 +554,7 @@ begin
   SetLength(Result,SearchManager.SearchCount);
   for i:=0 to SearchManager.SearchCount-1 do
   begin
-   if CID=SearchManager.Searchs[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
     Result:=SearchManager.Searchs[i].SearchEdit.Text;
     break;
@@ -571,7 +571,7 @@ begin
  begin
   for i:=0 to SearchManager.SearchCount-1 do
   begin
-   if CID=SearchManager.Searchs[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
     SearchManager.Searchs[i].SearchEdit.Text:=Text;
     break;
@@ -588,7 +588,7 @@ begin
  begin
   for i:=0 to SearchManager.SearchCount-1 do
   begin
-   if CID=SearchManager.Searchs[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
     SearchManager.Searchs[i].DoSearchNow(nil);
     break;
@@ -607,7 +607,7 @@ begin
   SetLength(Result,SearchManager.SearchCount);
   for i:=0 to SearchManager.SearchCount-1 do
   begin
-   Result[i]:=SearchManager.Searchs[i].WindowID;
+   Result[i]:=GUIDToString(SearchManager.Searchs[i].WindowID);
   end;
  end;
 end;
@@ -621,7 +621,7 @@ begin
  begin
   for i:=0 to ManagerProgresses.ProgressCount-1 do
   begin
-   if CID=TProgressActionForm(ManagerProgresses.Progresses[i]).WindowID then
+   if CID=GUIDToString(TProgressActionForm(ManagerProgresses.Progresses[i]).WindowID) then
    begin
     Result:=TProgressActionForm(ManagerProgresses.Progresses[i]);
     break;
@@ -637,7 +637,7 @@ begin
   OneOperation:=true;
   MaxPosCurrentOperation:=100;
   if Text<>'' then Label1.Caption:=Text;
-  Result:=WindowID;
+  Result:=GUIDToString(WindowID);
  end;
 end;
 
@@ -656,7 +656,7 @@ begin
  begin
   for i:=0 to EditorsManager.EditorsCount-1 do
   begin
-   if CID=EditorsManager.FEditors[i].WindowID then
+   if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
     Result:=EditorsManager.FEditors[i];
     break;

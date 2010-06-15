@@ -218,7 +218,7 @@ type
      Width : Integer;
      Height : Integer;
      Nil_ : Boolean;
-     _GUID : String;
+     _GUID : TGUID;
      SelCount : Integer;
      Selected : TListItem;
      Links : String;
@@ -344,7 +344,7 @@ type
    Clpr: IDirectDrawClipper;
    BPP, RBM, GBM, BBM : Integer;
    TransSrc1, TransSrc2, TempSrc: PByteArr;
-   SID : String;
+   SID : TGUID;
    Manager : TObject;
    Form : TForm;
   end;
@@ -592,7 +592,7 @@ function HardwareStringToCode(hs : string):string;
 function CodeToActivateCode(s : string):string;
 function GetuserString : string;
 function RenameFileWithDB(OldFileName, NewFileName :string; ID : integer; OnlyBD : Boolean) : boolean;
-function GetCID : string;
+function GetGUID : TGUID;
 procedure GetFileListByMask(BeginFile, Mask : string;{ var list : tstrings; }out Info : TRecordsInfo; var n :integer; ShowPrivate : Boolean );
 function AltKeyDown : boolean;
 function CtrlKeyDown : boolean;
@@ -2900,12 +2900,9 @@ begin
   FreeDS(FQuery);
 end;
 
-function GetCID : string;
-var
-  CID : TGUID;
+function GetGUID : TGUID;
 begin
- CoCreateGuid(CID);
- Result:=GUIDToString(CID);
+  CoCreateGuid(Result);
 end;
 
 function GetDirectoresOfPath(dir : string) : TArStrings;

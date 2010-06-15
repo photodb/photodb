@@ -1119,54 +1119,56 @@ function TDBKernel.ReadProperty(Key, Name: string): string;
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+Key,true);
-  Result:=Reg.ReadString(Name);
- except
- end;
- Reg.Free;
+  Result := '';
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot+Key,true);
+    Result:=Reg.ReadString(Name);
+  finally
+    Reg.Free;
+  end;
 end;
 
 function TDBKernel.ReadString(Key, Name: string): string;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Result:=Reg.ReadString(Name);
- except
- end;
- Reg.Free;
+begin        
+  Result := '';
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey+Key,true);
+    Result:=Reg.ReadString(Name);
+  finally
+    Reg.Free;
+  end;
 end;
 
 function TDBKernel.ReadKeys(Key: string): TStrings;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- Result:=TStringList.Create;
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Reg.GetKeyNames(Result);
- except
- end;
- Reg.Free;
+begin     
+  Result:=TStringList.Create;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey+Key,true);
+    Reg.GetKeyNames(Result);
+  finally
+    Reg.Free;
+  end;
 end;
 
 function TDBKernel.ReadValues(Key: string): TStrings;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- Result:=TStringList.Create;
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Reg.GetValueNames(Result);
- except
- end;
- Reg.Free;
+begin           
+  Result:=TStringList.Create;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey+Key,true);
+    Reg.GetValueNames(Result);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TDBKernel.DeleteValues(Key: string);
@@ -1175,41 +1177,42 @@ var
   i : integer;
   Result : TStrings;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Result:=TStringList.Create;
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Reg.GetValueNames(Result);
-  for i:=0 to Result.Count-1 do
-  Reg.DeleteValue(Result[i]);
- except
- end;
- Reg.Free;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Result:=TStringList.Create;
+    Reg.OpenKey(GetRegRootKey+Key,true);
+    Reg.GetValueNames(Result);
+    for i:=0 to Result.Count-1 do
+      Reg.DeleteValue(Result[i]);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TDBKernel.DeleteKey(Key: string);
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.DeleteKey(GetRegRootKey+Key);
- except
- end;
- Reg.Free;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.DeleteKey(GetRegRootKey+Key);
+  finally;
+    Reg.Free;
+  end;
 end;
 
 function TDBKernel.ReadStringW(Key, Name: string): string;
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+Key,true);
-  Result:=Reg.ReadString(Name);
- except
- end;
- Reg.Free;
+  Result := '';
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot+Key,true);
+    Result:=Reg.ReadString(Name);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TDBKernel.RegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);

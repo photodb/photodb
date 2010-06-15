@@ -352,7 +352,7 @@ var
 begin
   {$IFDEF USEPHOTODB}
 
- TempName:=GetAppDataDirectory+TempFolder+GetCID+'.raw';
+ TempName:=GetAppDataDirectory+TempFolder+GUIDToString(GetGUID)+'.raw';
  CreateDir(GetAppDataDirectory+TempFolder);
  try
   FS:=TFileStream.Create(TempName,fmOpenWrite or fmCreate);
@@ -426,7 +426,7 @@ if DecodingCount=1 then
   try
    ThumbNailType:=100;
 
-   StrCopy(ThumbName,PChar(GetAppDataDirectory+TempFolder+GetCID+'.thumb'));
+   StrCopy(ThumbName,PChar(GetAppDataDirectory+TempFolder+GUIDToString(GetGUID)+'.thumb'));
    raw_fileio_init_Pointers(FilePtrs);
    
    Status:=Extract_Thumbnail(Self,@FilePtrs,IFileName,ThumbName,ThumbnailType);

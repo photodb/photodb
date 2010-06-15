@@ -173,10 +173,10 @@ type
   procedure CreateParams(VAR Params: TCreateParams); override;
     { Private declarations }
   public
-   WindowID : string;   
-   SID : string;
-   BigImagesSID : string;
-   procedure DoStopLoading(CID: String);
+   WindowID : TGUID;   
+   SID : TGUID;
+   BigImagesSID : TGUID;
+   procedure DoStopLoading(CID: TGUID);
    function IsSelectedVisible: boolean;
    procedure AddFileName(FileName: String);
    function GetPictureSize : integer;
@@ -212,7 +212,7 @@ type
     Procedure RemovePanel(Panel : TFormCont);
     Function GetPanelsTexts : TStrings;
     Property Panels : TArFormCont Read FPanels;
-    Function ExistsPanel(Panel : TForm; CID : string) : Boolean;
+    Function ExistsPanel(Panel : TForm; CID : TGUID) : Boolean;
     Function Count : integer;
    function IsPanelForm(Panel: TForm): Boolean;
    published
@@ -293,8 +293,8 @@ var
 begin
  FilePushedName:='';
  fThreadCount:=0;
- SID:=GetCID;
- BigImagesSID:=GetCID;
+ SID:=GetGUID;
+ BigImagesSID:=GetGUID;
  fPictureSize:=ThSizePanelPreview;
  DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
  ListView1:=TXListView.Create(self);
@@ -364,7 +364,7 @@ begin
                        
    ConvertTo32BitImageList(DragImageList);
 
- WindowID:=GetCID;
+ WindowID:=GetGUID;
  FilePushed:=false;
  LoadLanguage;
  Label2.Visible:=DBkernel.UserRights.FileOperationsNormal;
@@ -1493,7 +1493,7 @@ begin
 //
 end;
 
-function TManagePanels.ExistsPanel(Panel: TForm; CID : string): Boolean;
+function TManagePanels.ExistsPanel(Panel: TForm; CID : TGUID): Boolean;
 var
   i:integer;
 begin
@@ -1501,7 +1501,7 @@ begin
  For i:=0 to Length(FPanels)-1 do
  begin
   if FPanels[i]=Panel then
-  if ((FPanels[i] as TFormCont).SID = CID) or ((FPanels[i] as TFormCont).BigImagesSID = CID) then
+  if IsEqualGUID((FPanels[i] as TFormCont).SID, CID) or IsEqualGUID((FPanels[i] as TFormCont).BigImagesSID, CID) then
   begin
    Result:=true;
    Break;
@@ -2089,7 +2089,7 @@ end;
 procedure TFormCont.BigImagesTimerTimer(Sender: TObject);
 begin
  BigImagesTimer.Enabled:=false;
- BigImagesSID:=GetCID;
+ BigImagesSID:=GetGUID;
                  
  ToolButton10.Enabled:=true;
 
@@ -2131,20 +2131,20 @@ end;
 
 procedure TFormCont.ToolButton10Click(Sender: TObject);
 begin
- SID:=Dolphin_DB.GetCID;
- BigImagesSID:=Dolphin_DB.GetCID;
+ SID:=Dolphin_DB.GetGUID;
+ BigImagesSID:=Dolphin_DB.GetGUID;
  ToolButton10.Enabled:=false;
  //todo: break
 end;
 
-procedure TFormCont.DoStopLoading(CID: String);
+procedure TFormCont.DoStopLoading(CID: TGUID);
 begin
- if (CID = SID) or (CID = BigImagesSID) then
+ if IsEqualGUID(CID, SID) or IsEqualGUID(CID, BigImagesSID) then
  begin
-  if (CID = SID) then
-  Dec(fThreadCount);
+  if IsEqualGUID(CID, SID) then
+    Dec(fThreadCount);
   if fThreadCount=0 then
-  ToolButton10.Enabled:=false;
+    ToolButton10.Enabled:=false;
  end;
 end;
 

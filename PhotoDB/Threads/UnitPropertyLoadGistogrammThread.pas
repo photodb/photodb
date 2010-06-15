@@ -10,7 +10,7 @@ type
   TPropertyLoadGistogrammThreadOptions = record
    FileName : String;
    Owner : TForm;
-   SID : String;
+   SID : TGUID;
    OnDone : TNotifyEvent;
   end;
 
@@ -81,7 +81,7 @@ end;
 procedure TPropertyLoadGistogrammThread.DoOnDone;
 begin          
  if PropertyManager.IsPropertyForm(fOptions.Owner) then
- if (fOptions.Owner as TPropertiesForm).SID=fOptions.SID then
+ if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
  fOptions.OnDone(self);
 end;
 
@@ -143,25 +143,23 @@ end;
 
 procedure TPropertyLoadGistogrammThread.GetCurrentpassword;
 begin
- if PropertyManager.IsPropertyForm(fOptions.Owner) then
- if (fOptions.Owner as TPropertiesForm).SID=fOptions.SID then
- StrParam:=(fOptions.Owner as TPropertiesForm).FCurrentPass;
+  if PropertyManager.IsPropertyForm(fOptions.Owner) then
+    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
+      StrParam:=(fOptions.Owner as TPropertiesForm).FCurrentPass;
 end;
 
 procedure TPropertyLoadGistogrammThread.GetPasswordFromUserSynch;
 begin
- if PropertyManager.IsPropertyForm(fOptions.Owner) then
- if (fOptions.Owner as TPropertiesForm).SID=fOptions.SID then
- StrParam:=GetImagePasswordFromUser(StrParam);
+  if PropertyManager.IsPropertyForm(fOptions.Owner) then
+    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
+      StrParam:=GetImagePasswordFromUser(StrParam);
 end;
 
 procedure TPropertyLoadGistogrammThread.SetGistogrammData;
 begin
- if PropertyManager.IsPropertyForm(fOptions.Owner) then
- if (fOptions.Owner as TPropertiesForm).SID=fOptions.SID then
- begin
-  (fOptions.Owner as TPropertiesForm).GistogrammData:=Data;
- end;
+  if PropertyManager.IsPropertyForm(fOptions.Owner) then
+    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
+     (fOptions.Owner as TPropertiesForm).GistogrammData:=Data;
 end;
 
 end.

@@ -212,7 +212,7 @@ type
    VirtualBrushCursor : Boolean;
    Transparency : extended;
    FStatusProgress : TProgressBar;
-   WindowID : string;
+   WindowID : TGUID;
    procedure LoadLanguage;
    procedure CMMOUSELEAVE(var Message: TWMNoParams); message CM_MOUSELEAVE;
   published
@@ -469,7 +469,7 @@ begin
  FScript:='';
  SaveAfterEndActions:=false;
  ForseSave:=false;
- WindowID:=GetCID;
+ WindowID:=GetGUID;
  ClearBrush(VBrush);
  ToolClass:=nil;
  PTempLayer:=nil;

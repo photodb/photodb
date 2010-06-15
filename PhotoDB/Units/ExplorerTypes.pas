@@ -62,7 +62,7 @@ Type
 
   TExplorerFileInfo = Record
    FileName : String;
-   SID : String;
+   SID : TGUID;
    FileType :  Integer;
    ID : Integer;
    Rotate : Integer;
@@ -90,7 +90,7 @@ Type
   TExplorerFilesInfo = array of TExplorerFileInfo;
 
 Function SetNilExplorerFileInfo : TExplorerFilesInfo;
-Procedure AddOneExplorerFileInfo(Var Info : TExplorerFilesInfo; FileName : String; FileType, ImageIndex : Integer; SID : string; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+Procedure AddOneExplorerFileInfo(Var Info : TExplorerFilesInfo; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
 
 type
   TExplorerThreadNotifyDirectoryChange = class(TThread)
@@ -552,7 +552,7 @@ begin
  SetLength(Result,0);
 end;
 
-Procedure AddOneExplorerFileInfo(Var Info : TExplorerFilesInfo; FileName : String; FileType, ImageIndex : Integer; SID : string; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+Procedure AddOneExplorerFileInfo(Var Info : TExplorerFilesInfo; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
 Var
   Index : Integer;
 begin

@@ -62,8 +62,8 @@ type
     { Private declarations }
   public
     fPlay : Boolean;
-    SID : String;
-    ForwardSID : String;
+    SID : TGUID;
+    ForwardSID : TGUID;
     FManager : TObject;
     FNowPaused : Boolean;
     FReadyAfterPause : Boolean;
@@ -427,7 +427,7 @@ begin
  fPlay:=true;
  if FloatPanel=nil then
  Application.CreateForm(TFloatPanel, FloatPanel);
- SID:=GetCID;
+ SID:=GetGUID;
  try
  //Создаем DirectDraw.
  DirectDrawCreate (nil, DirectDraw2, nil);
@@ -850,7 +850,7 @@ begin
  if fPlay=false then exit;
  FNowPaused :=true;
  FReadyAfterPause :=false;
- SID:=GetCID;
+ SID:=GetGUID;
  DelayTimer.Enabled:=false;
  fPlay:=false;
 end;
@@ -883,7 +883,7 @@ begin
  FNowPaused:=false;
  FReadyAfterPause:=false;
  if not XForward then
- SID:=GetCID;
+ SID:=GetGUID;
  AlphaCount:=255-Round(255*sqr(cos(XAlphaCount)));
  if AlphaCount<30 then exit;
  if not XForward then
@@ -899,7 +899,7 @@ procedure TDirectShowForm.Previous;
 begin
  FNowPaused:=false;
  FReadyAfterPause:=false;
- SID:=GetCID;
+ SID:=GetGUID;
  Dec(CurrentFileNumber);
  if CurrentFileNumber<0 then
  CurrentFileNumber:=Length(CurrentInfo.ItemFileNames)-1;
@@ -925,7 +925,7 @@ begin
  if XForward then
  begin
   n:=CurrentFileNumber;
-  ForwardSID:=GetCID;
+  ForwardSID:=GetGUID;
   if Next then
   begin
    inc(n);

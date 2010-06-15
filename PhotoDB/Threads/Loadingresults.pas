@@ -117,7 +117,8 @@ type
     LastChar : Char;
     LastSize, SizeParam : int64;
     FileNameParam : String;
-    FSID, StrTh : String;
+    FSID : TGUID;
+    StrTh : String;
     QueryType : TQueryType;
     FDateTimeParam : TDateTime;
 
@@ -137,7 +138,7 @@ type
     IsTerminated : boolean;
     procedure Execute; override;
   public
-      constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : string; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
+      constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
   end;
 
   const
@@ -155,7 +156,7 @@ implementation
 uses FormManegerUnit, Searching, ExplorerUnit, UnitGroupsWork, Language,
      CommonDBSupport, ExplorerThreadUnit;
 
-constructor SearchThread.Create(CreateSuspennded: Boolean; Sender : TForm; SID : string; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
+constructor SearchThread.Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
 begin
  inherited create(true);
  FSender:=Sender;
@@ -181,7 +182,7 @@ procedure SearchThread.AddImageToList;
 begin
  if IsTerminated then exit;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).FBitmapImageList.AddBitmap(fbit);
  end;
@@ -190,7 +191,7 @@ end;
 procedure SearchThread.ProgressNull;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).DmProgress1.Position:=0;
   (FSender as TSearchForm).DmProgress1.text:=TEXT_MES_DONE;
@@ -200,7 +201,7 @@ end;
 procedure SearchThread.ProgressNullA;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).DmProgress1.Position:=0;
   (FSender as TSearchForm).DmProgress1.text:=TEXT_MES_PROGRESS_PR;
@@ -210,7 +211,7 @@ end;
 procedure SearchThread.SetImageIndex;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(FSender as TSearchForm).FBitmapImageList.Count-1);
   (FSender as TSearchForm).DmProgress1.Position:=fthum_images_;
@@ -220,7 +221,7 @@ end;
 procedure SearchThread.BeginUpdate;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).BeginUpdate;
  end;
@@ -229,7 +230,7 @@ end;
 procedure SearchThread.EndUpdate;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   With (FSender as TSearchForm) do
   begin
@@ -242,7 +243,7 @@ end;
 procedure SearchThread.ErrorSQL;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  (FSender as TSearchForm).ErrorQSL(ferrormsg);
 end;
 
@@ -693,7 +694,7 @@ begin
    for i:=1 to fQuery.RecordCount do
    begin
     if not SearchManager.IsSearchForm(FSender) then break;
-    if (FSender as TSearchForm).SID<>FSID then break;
+    if not IsEqualGUID((FSender as TSearchForm).SID, FSID) then break;
     if i mod 3 = 0 then sleep(0);
     PassWord:='';
     inc(fthum_images_);
@@ -766,7 +767,7 @@ procedure SearchThread.InitializeA;
 begin
  if IsTerminated then exit;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  with (FSender as TSearchForm) do
  begin
   FShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
@@ -782,7 +783,7 @@ procedure SearchThread.InitializeB;
 begin
  if IsTerminated then exit;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  with (FSender as TSearchForm) do
  begin
   DmProgress1.Position:=0;
@@ -1003,7 +1004,7 @@ end;
 procedure SearchThread.NewItem;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   if QueryType<>QT_W_SCAN_FILE then
   begin
@@ -1516,7 +1517,7 @@ procedure SearchThread.DoOnDone;
 begin
  try
   if SearchManager.IsSearchForm(FSender) then
-  if (FSender as TSearchForm).SID=FSID then
+  if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
   begin
    if fPictureSize=ThImageSize then
    if Assigned(OnDone) then OnDone(self);
@@ -1575,7 +1576,7 @@ end;
 procedure SearchThread.SetSearchPath;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  (FSender as TSearchForm).SetPath(StringParam);
 end;
 
@@ -1625,7 +1626,7 @@ end;
 procedure SearchThread.SetMaxValueA;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  (FSender as TSearchForm).DmProgress1.MaxValue:=IntParam;
 end;
 
@@ -1638,7 +1639,7 @@ end;
 procedure SearchThread.SetProgressA;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  (FSender as TSearchForm).DmProgress1.Position:=IntParam;
 end;
 
@@ -1651,14 +1652,14 @@ end;
 procedure SearchThread.SetProgressTextA;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  (FSender as TSearchForm).DmProgress1.Text:=StrParam;
 end;
 
 procedure SearchThread.ListViewImageIndex;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  IntParam:=(FSender as TSearchForm).GetImageIndexWithPath(FData[IntParam].FileName)
   else
  IntParam:=-1;
@@ -1667,7 +1668,7 @@ end;
 procedure SearchThread.LoadThreadQuery;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   SetSQL((FSender as TSearchForm).ThreadQuery,GetQueryText(fQuery));
   AssignParams(fQuery,(FSender as TSearchForm).ThreadQuery);
@@ -1707,7 +1708,7 @@ procedure SearchThread.GetTerminated;
 begin
  IsTerminated:=true;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   IsTerminated:=false;
  end;
@@ -1717,7 +1718,7 @@ procedure SearchThread.DoSetSearchByComparing;
 begin
  IsTerminated:=true;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).DoSetSearchByComparing;
  end;

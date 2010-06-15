@@ -298,7 +298,7 @@ begin
  Width:=273;
  ExtendedButton.Left:=248;
  ExtendedMode:=false;
- GetPhotosFormSID:=GetCID;
+ GetPhotosFormSID:=GetGUID;
  ThreadInProgress:=false;
  CheckBox2.Enabled:=DBKernel.UserRights.Add;
  if not DBKernel.UserRights.Add then CheckBox2.Enabled:=false;
@@ -596,7 +596,7 @@ end;
 
 procedure TGetToPersonalFolderForm.FormDestroy(Sender: TObject);
 begin
- GetPhotosFormSID:=GetCID; // to prevent Thread AV
+ GetPhotosFormSID:=GetGUID; // to prevent Thread AV
 end;
 
 procedure TGetToPersonalFolderForm.OnLoadingFilesCallBackEvent(

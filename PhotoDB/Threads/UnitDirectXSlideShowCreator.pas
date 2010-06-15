@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses DX_Alpha, SlideShow;
+uses DX_Alpha, SlideShow, SysUtils;
 
 { TDirectXSlideShowCreator }
 
@@ -154,7 +154,7 @@ end;
 procedure TDirectXSlideShowCreator.DoExitSynch;
 begin
  if DirectShowForm<>nil then
- if (DirectShowForm.SID=FInfo.SID) or (Ready and FXForward) or (Paused and Ready) then
+ if IsEqualGUID(DirectShowForm.SID, FInfo.SID) or (Ready and FXForward) or (Paused and Ready) then
  begin
   DirectShowForm.SetThreadImage(FInfo.TempSrc);
   DirectShowForm.BeginFade;
@@ -350,15 +350,15 @@ end;
 
 function TDirectXSlideShowCreator.Ready: boolean;
 begin
- Result:=false;
- if Paused then
- begin
-  Result:=DirectShowForm.FReadyAfterPause;
-  exit;;
- end;
- if DirectShowForm<>nil then
- if DirectShowForm.ForwardSID=FInfo.SID then
- Result:=DirectShowForm.Ready;
+  Result:=false;
+  if Paused then
+  begin
+    Result:=DirectShowForm.FReadyAfterPause;
+    exit;
+  end;
+  if DirectShowForm<>nil then
+    if IsEqualGUID(DirectShowForm.ForwardSID, FInfo.SID) then
+      Result:=DirectShowForm.Ready;
 end;
 
 function TDirectXSlideShowCreator.ExitReady: boolean;
@@ -373,7 +373,7 @@ begin
   Result:=not DirectShowForm.FNowPaused;
   exit;
  end;
- if ((DirectShowForm.ForwardSID<>FInfo.SID) and FXForward) or (DirectShowForm=nil) then
+ if (not IsEqualGUID(DirectShowForm.ForwardSID, FInfo.SID) and FXForward) or (DirectShowForm=nil) then
  Result:=true else Result:=false;
 end;
 

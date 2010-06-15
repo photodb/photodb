@@ -11,7 +11,7 @@ type
   TSearchBigImagesLoaderThread = class(TThread)
   private
    fSender: TForm;
-   fSID : String;
+   fSID : TGUID;
    fOnDone: TNotifyEvent;
    fPictureSize : integer;
    FVisibleFiles : TArStrings;
@@ -27,7 +27,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : string;
+    constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID;
       aOnDone : TNotifyEvent; PictureSize : integer; Data : TSearchRecordArray; Updating : boolean = false);
     destructor Destroy; override;
     procedure VisibleUp(TopIndex: integer);     
@@ -51,7 +51,7 @@ implementation
 uses Searching, Language, ExplorerThreadUnit;
 
 constructor TSearchBigImagesLoaderThread.Create(CreateSuspennded: Boolean;
-  Sender: TForm; SID: string; aOnDone: TNotifyEvent; PictureSize: integer;
+  Sender: TForm; SID: TGUID; aOnDone: TNotifyEvent; PictureSize: integer;
   Data : TSearchRecordArray; Updating : boolean = false);
 begin    
  inherited create(true);
@@ -214,7 +214,7 @@ procedure TSearchBigImagesLoaderThread.InitializeLoadingBigImages;
 begin
 // if terminated_ then exit;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  with (FSender as TSearchForm) do
  begin
   DmProgress1.Position:=0;
@@ -231,7 +231,7 @@ procedure TSearchBigImagesLoaderThread.FileNameExists;
 begin
  BoolParam:=false;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  if (FSender as TSearchForm).FileNameExistsInList(StrParam) then
  begin
   BoolParam:=true;
@@ -250,7 +250,7 @@ end;
 procedure TSearchBigImagesLoaderThread.SetProgressPosition;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).DmProgress1.MaxValue:=Length(fData);
   (FSender as TSearchForm).DmProgress1.Position:=IntParam;
@@ -261,7 +261,7 @@ end;
 procedure TSearchBigImagesLoaderThread.ReplaceBigBitmap;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  if (FSender as TSearchForm).FileNameExistsInList(StrParam) then
  begin
   (FSender as TSearchForm).ReplaceBitmapWithPath(StrParam,BitmapParam);
@@ -271,7 +271,7 @@ end;
 procedure TSearchBigImagesLoaderThread.EndLoading;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then  
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   if (FSender as TSearchForm).ToolButton14.Enabled then
   begin
@@ -293,7 +293,7 @@ end;
 procedure TSearchBigImagesLoaderThread.InitWorking;
 begin
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   (FSender as TSearchForm).Button1.Onclick:= (FSender as TSearchForm).Breakoperation;
   (FSender as TSearchForm).Button1.Caption:=TEXT_MES_STOP;
@@ -304,7 +304,7 @@ procedure TSearchBigImagesLoaderThread.ValidateThread;
 begin
  BoolParam:=false;
  if SearchManager.IsSearchForm(FSender) then
- if (FSender as TSearchForm).SID=FSID then
+ if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  begin
   BoolParam:=true;
  end;
