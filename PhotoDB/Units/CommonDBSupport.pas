@@ -1069,7 +1069,7 @@ initialization
   DBFConnectionString:=DBViewConnectionString;
  end;
 
- If UpcaseAll(paramStr(1))<>'/SAFEMODE' then
+ If AnsiUpperCase(paramStr(1))<>'/SAFEMODE' then
  if not GetDBViewMode then
  begin
   InitializeScript(aScript);

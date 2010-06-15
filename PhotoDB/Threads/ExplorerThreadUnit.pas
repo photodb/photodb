@@ -94,6 +94,8 @@ type
   InvalidThread : boolean;      
   IsBigImage : boolean;
   LoadingAllBigImages : boolean;
+
+  FullFolderPicture : TPNGGraphic;
    { Private declarations }
   protected
     procedure GetVisibleFiles;
@@ -103,7 +105,6 @@ type
     procedure InfoToExplorerForm;
     procedure MakeTempBitmap;
     procedure MakeTempBitmapSmall;
-    procedure FillRect;
     procedure BeginUpDate;
     procedure EndUpDate;
     Procedure MakeFolderImage(Folder : String);
@@ -242,6 +243,7 @@ begin
  ExplorerInfo:= Info;
  FShowFiles := True;
  FUpdaterInfo := UpdaterInfo;
+ FullFolderPicture := nil;
  If not CreateSuspennded then Resume;
 end;
 
@@ -277,6 +279,7 @@ Var
  
 begin
  CoInitialize(nil);
+ try
  Synchronize(RegisterThread);
  IsCurrentRecord:=false;
  CountOfShowenGraphicFiles:=0;
@@ -296,7 +299,6 @@ begin
  If FUpdaterInfo.IsUpdater then
  begin
   AddFile;
-  CoUninitialize;
   Exit;
  end;
        
@@ -305,7 +307,6 @@ begin
   ShowProgress;
   DoLoadBigImages;
   Synchronize(UnRegisterThread);
-  CoUninitialize;
   Exit;
  end;
 
@@ -322,7 +323,6 @@ begin
   try
    LoadingAllBigImages:=false; //грузятся не все файлы заново а только текущий
    UpdateFile;
-   CoUninitialize;
   except
   end;
   Dec(UpdaterCount);
@@ -331,13 +331,11 @@ begin
  if (FThreadType=THREAD_TYPE_FILE) then
  begin
   UpdateSimpleFile;
-  CoUninitialize;
   Exit;
  end;
  if (FThreadType=THREAD_TYPE_FOLDER_UPDATE) then
  begin
   UpdateFolder;
-  CoUninitialize;
   Exit;
  end;
  
@@ -349,28 +347,24 @@ begin
   begin
    LoadMyComputerFolder;
    Synchronize(DoStopSearch);
-   CoUninitialize;
    Exit;
   end;
   if (FThreadType=THREAD_TYPE_NETWORK) then
   begin
    LoadNetWorkFolder;
    Synchronize(DoStopSearch);
-   CoUninitialize;
    Exit;
   end;
   if (FThreadType=THREAD_TYPE_WORKGROUP) then
   begin
    LoadWorkgroupFolder;    
    Synchronize(DoStopSearch);
-   CoUninitialize;
    Exit;
   end;
   if (FThreadType=THREAD_TYPE_COMPUTER) then
   begin
    LoadComputerFolder;   
    Synchronize(DoStopSearch);
-   CoUninitialize;
    Exit;
   end;
   UnformatDir(FFolder);
@@ -382,7 +376,6 @@ begin
    ShowInfo('',1,0);
    Synchronize(ExplorerBack);
    Synchronize(UnRegisterThread);
-   CoUninitialize;
    Exit;
   end;
 
@@ -396,7 +389,7 @@ begin
   Synchronize(BeginUpdate);
   FFiles:=SetNilExplorerFileInfo;
 
-  DBFolder:=NormalizeDBStringLike(NormalizeDBString(normalizeDBFileNameString(DBFolderToSearch)));
+  DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
   ShowInfo(TEXT_MES_CONNECTING_TO_DB,1,0);
   FQuery:=GetQuery;         
   ShowInfo(TEXT_MES_GETTING_INFO_FROM_DB,1,0);
@@ -414,7 +407,7 @@ begin
   end else
   begin
    SetStrParam(FQuery,0,'%'+DBFolderToSearch+'%');
-   SetStrParam(FQuery,1,'%'+DBFolderToSearch+normalizeDBFileNameString('%\%'));
+   SetStrParam(FQuery,1,'%'+DBFolderToSearch+'%\%');
   end;
   for i:=1 to 20 do
   begin
@@ -475,7 +468,7 @@ begin
       FE:=(SearchRec.Attr and faDirectory=0);
       s:=ExtractFileExt(SearchRec.Name);
       Delete(s,1,1);
-      s:='|'+UpcaseAll(s)+'|';
+      s:='|'+AnsiUpperCase(s)+'|';
       p:=StrPos(PChar(SupportedExt),PChar(s));
       EM:=p<>nil;
      end;
@@ -671,12 +664,9 @@ begin
   FQuery.Close;
   FreeDS(FQuery);
   Synchronize(UnRegisterThread);
-  CoUninitialize;
-end;
-
-procedure TExplorerThread.FillRect;
-begin
- FillRectToBitmap(TempBitmap);
+  finally
+    CoUninitialize;
+  end;
 end;
 
 procedure TExplorerThread.Beginupdate;
@@ -1218,7 +1208,7 @@ begin
  Nbr:=0;
  if not FFastDirectoryLoading then
  begin
-  DBFolder:=NormalizeDBStringLike(NormalizeDBString(NormalizeDBFileNameString(AnsiLowerCase(CurrentFile))));
+  DBFolder:=NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(CurrentFile)));
   UnFormatDir(DBFolder);
   CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
   FormatDir(DBFolder);
@@ -1228,7 +1218,7 @@ begin
   if GetDBType=DB_TYPE_BDE then SetSQL(Query,'Select  FFileName,Access,thum,Rotated From '+GetDefDBname+' where (FFileName Like :FolderA) and not (FFileName like :FolderB) ');
   if GetDBType=DB_TYPE_MDB then SetSQL(Query,'Select  FFileName,Access,thum,Rotated From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB) ');
   SetStrParam(Query,0,'%'+DBFolder+'%');             //(top 4)
-  SetStrParam(Query,1,'%'+DBFolder+normalizeDBFileNameString('%\%'));
+  SetStrParam(Query,1,'%'+DBFolder+'%\%');
 
   try
   Query.Active:=true;
@@ -1287,7 +1277,7 @@ begin
      FE:=(SearchRec.Attr and faDirectory=0);
      s:=ExtractFileExt(SearchRec.Name);
      Delete(s,1,1);
-     s:='|'+UpcaseAll(s)+'|';
+     s:='|'+AnsiUpperCase(s)+'|';
      p:=StrPos(PChar(SupportedExt),PChar(s));
      EM:=p<>nil;
 
@@ -1319,7 +1309,7 @@ begin
  end;
  Dx:=4;
  MakeTempBitmap;
- Synchronize(FillRect);
+ FillColorEx(TempBitmap, Theme_ListColor);
  try
   Synchronize(DrawFolderImageBig);
  except
@@ -1470,21 +1460,24 @@ end;
 
 procedure TExplorerThread.DrawFolderImageBig;
 var
-   Pic : TPicture;
-   bit32 : TBitmap;
+   Bit32 : TBitmap;
 begin
- Pic:=nil;
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  Pic:=GetFolderPicture;
-  if pic = nil then exit;
+  if ExplorerManager.IsExplorer(FSender) then
+  begin
+    if FullFolderPicture = nil then
+      FullFolderPicture := GetFolderPicture;
 
-  bit32:=TBitmap.Create;
-  LoadPNGImage32bit(Pic.Graphic as TPNGGraphic,bit32,Theme_ListColor);
-  Pic.free;
-  StretchCoolW(0,0,ExplorerInfo.PictureSize,ExplorerInfo.PictureSize,Rect(0,0,bit32.Width,bit32.Height),bit32,TempBitmap);
-  bit32.Free;
- end;
+   if FullFolderPicture = nil then
+     exit;
+
+   Bit32 := TBitmap.Create;
+   try
+     LoadPNGImage32bit(FullFolderPicture, bit32, Theme_ListColor);
+     StretchCoolW(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0,0,bit32.Width,bit32.Height), bit32, TempBitmap);
+   finally
+     Bit32.Free;
+    end;
+  end;
 end;
 
 procedure TExplorerThread.DrawFolderImageWithXY;
@@ -1615,22 +1608,18 @@ end;
 procedure TExplorerThread.MakeTempBitmap;
 begin
  TempBitmap:=Tbitmap.Create;
+ TempBitmap.PixelFormat:=pf24Bit;
  TempBitmap.Width:=ExplorerInfo.PictureSize;
  TempBitmap.Height:=ExplorerInfo.PictureSize;
- TempBitmap.PixelFormat:=pf24Bit;
- TempBitmap.Canvas.Brush.Color:=Theme_ListColor;
- TempBitmap.Canvas.Pen.Color:=Theme_ListColor;
 end;
 
 procedure TExplorerThread.MakeTempBitmapSmall;
 begin
- TempBitmap:=Tbitmap.Create;
+ TempBitmap:=Tbitmap.Create;  
+ TempBitmap.PixelFormat:=pf24Bit;
  TempBitmap.Width:=FIcoSize;
  TempBitmap.Height:=FIcoSize;
- TempBitmap.PixelFormat:=pf24Bit;
- TempBitmap.Canvas.Brush.Color:=Theme_ListColor;
- TempBitmap.Canvas.Pen.Color:=Theme_ListColor;
- FillRectNocanvas(TempBitmap,Theme_ListColor);
+ FillRectNocanvas(TempBitmap, Theme_ListColor);
 end;
 
 procedure TExplorerThread.FindInQuery(FileName: String);
@@ -1842,7 +1831,7 @@ procedure TExplorerThread.MakeImageWithIcon;
 begin
  if ExplorerInfo.View=LV_THUMBS then
  begin
-  Synchronize(MakeTempBitmapSmall);
+  MakeTempBitmapSmall;
   Synchronize(DrawImageIconSmall);
  end;
  Synchronize(AddImageFileImageToExplorer);
@@ -1979,7 +1968,7 @@ begin
 
   SetSQL(fQuery,'SELECT * FROM '+dbstr+' WHERE FFileName like :ImageFile');
  end;
- SetStrParam(FQuery,0,'%'+normalizeDBStringLike(NormalizeDBString(normalizeDBFileNameString(AnsiLowercase(FFolder))))+'%');
+ SetStrParam(FQuery,0,'%'+normalizeDBStringLike(NormalizeDBString(AnsiLowercase(FFolder)))+'%');
  try
   FQuery.Active:=True;
  except
@@ -2041,7 +2030,7 @@ procedure TExplorerThread.MakeIconForFile;
 begin
  MakeTempBitmapSmall;
  FillRectNoCanvas(TempBitmap,Dolphin_DB.Theme_ListColor);
-// Synchronize(FillRect);
+
  if not SafeMode then ficon:=AIcons.GetIconByExt(CurrentFile,false, FIcoSize,false) else
  begin
   ficon:=TIcon.Create;
@@ -2149,152 +2138,155 @@ var
   fbit : TBitmap;
   w, h : integer;
   ProcNum : integer;
+  T : TThread;
 begin
  ProcNum:=GettingProcNum;
  FPic:=nil;
-
- Repeat
-  sleep(100);
- until ExplorerUpdateBigImageThreadsCount<(ProcNum+1);
- ExplorerUpdateBigImageThreadsCount:=ExplorerUpdateBigImageThreadsCount+1;
-
- if LoadingAllBigImages then
- Synchronize(GetAllFiles);
-                
- ShowInfo(TEXT_MES_LOADING_BIG_IMAGES);
- ShowInfo(Length(FFiles),0);
- InfoPosition:=0;
  
- for i:=0 to Length(FFiles)-1 do
- begin
+  Repeat
+    sleep(100);
+  until ExplorerUpdateBigImageThreadsCount<(ProcNum+1);
+
+  Inc(ExplorerUpdateBigImageThreadsCount);
+
+  try
+    if LoadingAllBigImages then
+      Synchronize(GetAllFiles);
+                
+    ShowInfo(TEXT_MES_LOADING_BIG_IMAGES);
+    ShowInfo(Length(FFiles),0);
+    InfoPosition:=0;
+ 
+    for i:=0 to Length(FFiles)-1 do
+    begin
              
-  Inc(InfoPosition);
-  ShowInfo(InfoPosition);
+    Inc(InfoPosition);
+    ShowInfo(InfoPosition);
 
-  if i mod 5=0 then
-  begin
-   Synchronize(GetVisibleFiles);
-   VisibleUp(i);
-   Sleep(5);
-  end;
-
-  StringParam:=FFiles[i].SID;
-  
-  BooleanResult:=false;
-
-  if FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
-  begin
-   Synchronize(FileNeededAW);
-  
-   //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
-   if not LoadingAllBigImages then BooleanResult:=true;
-
-   if InvalidThread then break;
-   if not FileExists(ProcessPath(FFiles[i].FileName)) then continue;
-   if BooleanResult then
-   begin
-    try
-     FPic := TPicture.Create;
-    except
-     if FPic<>nil then
-     FPic.Free;
-     FPic:=nil;
-     continue;
+    if i mod 5=0 then
+    begin
+     Synchronize(GetVisibleFiles);
+     VisibleUp(i);
+     Sleep(5);
     end;
-    try
-     if GraphicCrypt.ValidCryptGraphicFile(ProcessPath(FFiles[i].FileName)) then
+
+    StringParam:=FFiles[i].SID;
+  
+    BooleanResult:=false;
+
+    if FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
+    begin
+     Synchronize(FileNeededAW);
+  
+     //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
+     if not LoadingAllBigImages then BooleanResult:=true;
+
+     if InvalidThread then break;
+     if not FileExists(ProcessPath(FFiles[i].FileName)) then continue;
+     if BooleanResult then
      begin
-      PassWord:=DBKernel.FindPasswordForCryptImageFile(ProcessPath(FFiles[i].FileName));
-      if PassWord='' then
-      begin
-       if FPic<>nil then FPic.Free;
+      try
+       FPic := TPicture.Create;
+      except
+       if FPic<>nil then
+       FPic.Free;
        FPic:=nil;
        continue;
       end;
-      FPic.Graphic:=GraphicCrypt.DeCryptGraphicFile(ProcessPath(FFiles[i].FileName),PassWord);
-     end else
-     begin
-      if IsRAWImageFile(FFiles[i].FileName) then
-      begin
-       Fpic.Graphic:=TRAWImage.Create;
-       if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(ProcessPath(FFiles[i].FileName)) then
-       FPic.Graphic.LoadFromFile(ProcessPath(FFiles[i].FileName));
-      end else
-      FPic.LoadFromFile(ProcessPath(FFiles[i].FileName));
+      try
+       if GraphicCrypt.ValidCryptGraphicFile(ProcessPath(FFiles[i].FileName)) then
+       begin
+        PassWord:=DBKernel.FindPasswordForCryptImageFile(ProcessPath(FFiles[i].FileName));
+        if PassWord='' then
+        begin
+         if FPic<>nil then FPic.Free;
+         FPic:=nil;
+         continue;
+        end;
+        FPic.Graphic:=GraphicCrypt.DeCryptGraphicFile(ProcessPath(FFiles[i].FileName),PassWord);
+       end else
+       begin
+        if IsRAWImageFile(FFiles[i].FileName) then
+        begin
+         Fpic.Graphic:=TRAWImage.Create;
+         if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(ProcessPath(FFiles[i].FileName)) then
+         FPic.Graphic.LoadFromFile(ProcessPath(FFiles[i].FileName));
+        end else
+        FPic.LoadFromFile(ProcessPath(FFiles[i].FileName));
+       end;
+      except
+       if FPic<>nil then
+       FPic.Free;
+       FPic:=nil;
+       continue;
+       end;
+      fbit:=nil;
+      fbit:=TBitmap.Create;
+      fbit.PixelFormat:=pf24bit;
+      JPEGScale(Fpic.Graphic,ExplorerInfo.PictureSize,ExplorerInfo.PictureSize);
+
+      if Min(Fpic.Height,Fpic.Width)>1 then
+      try
+       LoadImageX(Fpic.Graphic,fbit,Theme_ListColor);
+      except
+      end;
+      Fpic.Free;
+      Fpic:=nil;
+
+      TempBitmap:=TBitmap.create;
+      TempBitmap.PixelFormat:=pf24bit;
+      w:=fbit.Width;
+      h:=fbit.Height;
+      ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize,w,h);
+      TempBitmap.Width:=w;
+      TempBitmap.Height:=h;
+      try
+       DoResize(w,h,fbit,TempBitmap);
+      except
+      end;
+      fbit.Free;
+      fbit:=nil;
+
+      case FFiles[i].Rotate of
+       DB_IMAGE_ROTATED_90  :  Rotate90A(TempBitmap);
+       DB_IMAGE_ROTATED_180 :  Rotate180A(TempBitmap);
+       DB_IMAGE_ROTATED_270 :  Rotate270A(TempBitmap);
+      end;
+
+      BooleanParam:=LoadingAllBigImages;
+      Synchronize(ReplaceImageInExplorerB);
+
+     //TempBitmap.Free;
      end;
-    except
-     if FPic<>nil then
-     FPic.Free;
-     FPic:=nil;
-     continue;
+    end;
+
+    BooleanResult:=false;
+
+    //directories
+    if FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
+    begin
+     Synchronize(FileNeededAW);
+     CurrentFile:=FFiles[i].FileName;
+
+     //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
+     if not LoadingAllBigImages then BooleanResult:=true;
+
+     if InvalidThread then break;
+
+     if BooleanResult then
+     if ExplorerInfo.ShowThumbNailsForFolders then
+     try
+      ReplaceThumbImageToFolder;
+     except
      end;
-    fbit:=nil;
-    fbit:=TBitmap.Create;
-    fbit.PixelFormat:=pf24bit;
-    JPEGScale(Fpic.Graphic,ExplorerInfo.PictureSize,ExplorerInfo.PictureSize);
-
-    if Min(Fpic.Height,Fpic.Width)>1 then
-    try
-     LoadImageX(Fpic.Graphic,fbit,Theme_ListColor);
-    except
     end;
-    Fpic.Free;
-    Fpic:=nil;
-
-    TempBitmap:=TBitmap.create;
-    TempBitmap.PixelFormat:=pf24bit;
-    w:=fbit.Width;
-    h:=fbit.Height;
-    ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize,w,h);
-    TempBitmap.Width:=w;
-    TempBitmap.Height:=h;
-    try
-     DoResize(w,h,fbit,TempBitmap);
-    except
     end;
-    fbit.Free;
-    fbit:=nil;
-
-    case FFiles[i].Rotate of
-     DB_IMAGE_ROTATED_90  :  Rotate90A(TempBitmap);
-     DB_IMAGE_ROTATED_180 :  Rotate180A(TempBitmap);
-     DB_IMAGE_ROTATED_270 :  Rotate270A(TempBitmap);
-    end;
-
-    BooleanParam:=LoadingAllBigImages;
-    Synchronize(ReplaceImageInExplorerB);
-
-   //TempBitmap.Free;
-   end;
+    Synchronize(DoStopSearch);
+    HideProgress;
+    ShowInfo('');
+  finally
+    Dec(ExplorerUpdateBigImageThreadsCount);
   end;
-
-  BooleanResult:=false;
-
-  //directories
-  if FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
-  begin
-   Synchronize(FileNeededAW);
-   CurrentFile:=FFiles[i].FileName;
-
-   //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
-   if not LoadingAllBigImages then BooleanResult:=true;
-
-   if InvalidThread then break;
-
-   if BooleanResult then
-   if ExplorerInfo.ShowThumbNailsForFolders then
-   try
-    ReplaceThumbImageToFolder;
-   except
-   end;
-  end;
- end;
-
- ExplorerUpdateBigImageThreadsCount:=ExplorerUpdateBigImageThreadsCount-1;
-
- Synchronize(DoStopSearch);
- HideProgress;
- ShowInfo('');
 end;
 
 procedure TExplorerThread.GetAllFiles;

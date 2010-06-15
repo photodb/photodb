@@ -1619,11 +1619,9 @@ begin
    begin
     bit := TBitmap.create;
     bit.PixelFormat:=pf24bit;
-    bit.width:=ThSize;
-    bit.height:=ThSize;
-    bit.Canvas.Brush.Color:=Theme_ListColor;
-    bit.Canvas.Pen.Color:=Theme_ListColor;
-    FillRectToBitmap(bit);
+    bit.Width:=ThSize;
+    bit.Height:=ThSize;
+    FillColorEx(bit, Theme_ListColor);
     try
      bit.canvas.Draw(ThSize div 2 - image1.picture.Graphic.Width div 2,ThSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
     except
@@ -1653,7 +1651,8 @@ begin
   bit.Canvas.Pen.Color:=Theme_ListColor;
   bit.width:=ThSize;
   bit.height:=ThSize;
-  FillRectToBitmap(bit);
+  FillColorEx(bit, Theme_ListColor);
+
   bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
   J.free;
   Data[ItemIndex(item)].Rotation:=SelectQuery.FieldByName('Rotated').AsInteger;
@@ -1662,7 +1661,7 @@ begin
    DB_IMAGE_ROTATED_180 :  Rotate180A(bit);
    DB_IMAGE_ROTATED_270 :  Rotate270A(bit);
   end;
-  fname:=DeleteEndSpaces(SelectQuery.FieldByName('Name').asstring);
+  fname:=Trim(SelectQuery.FieldByName('Name').asstring);
   for i:= Length(fname) downto 1 do
   begin
    if fname[i]=' ' then Delete(fname,i,1) else break;
@@ -1705,7 +1704,7 @@ begin
    begin
     bit.width:=ThSize;
     bit.height:=ThSize;
-    FillRectToBitmap(bit);
+    FillColorEx(bit, Theme_ListColor);
     try
      bit.canvas.Draw(ThSize div 2 - Image1.Picture.Graphic.Width div 2,ThSize div 2 - Image1.Picture.Graphic.height div 2,Image1.Picture.Graphic);
     except
@@ -1732,9 +1731,7 @@ begin
   bit.PixelFormat:=pf24bit;
   bit.width:=ThSize;
   bit.height:=ThSize;
-  bit.Canvas.Brush.Color:=Theme_ListColor;
-  bit.Canvas.Pen.Color:=Theme_ListColor;
-  FillRectToBitmap(bit);
+  FillColorEx(bit, Theme_ListColor);
   bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
   J.free;
   case Data[ItemIndex(item)].Rotation of

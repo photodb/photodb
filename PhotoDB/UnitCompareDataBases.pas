@@ -102,7 +102,7 @@ begin
  if OpenDialog1.execute then
  begin
   DBTestOK:=DBKernel.testDB(OpenDialog1.FileName);
-  if UpcaseAll(OpenDialog1.FileName)=UpcaseAll(dbname) then
+  if AnsiUpperCase(OpenDialog1.FileName)=AnsiUpperCase(dbname) then
   begin
    MessageBoxDB(Handle,TEXT_MES_MAIN_DB_AND_ADD_SAME,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
    DBTestOK:=false;

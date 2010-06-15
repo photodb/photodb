@@ -170,7 +170,7 @@ var
 begin
  fQuery:=GetQuery;
  fQuery.Active:=false;
- FileName:=NormalizeDBString(normalizeDBFileNameString(AnsiLowerCase(FileName)));
+ FileName:=NormalizeDBString(AnsiLowerCase(FileName));
  SetSQL(fQuery,'Update '+GetDefDBname+' Set FFileName="'+FileName+'" WHERE ID='+inttostr(ID));
  try
   ExecSQL(fQuery);
@@ -308,7 +308,7 @@ var
 begin
  s:=ExtractFileExt(FileName);
  Delete(s,1,1);
- s:='|'+UpcaseAll(s)+'|';
+ s:='|'+AnsiUpperCase(s)+'|';
  p:=StrPos(PChar(SupportedExt),PChar(s));
  Result:=p<>nil;
 end;
@@ -411,13 +411,14 @@ var
   i : integer;
 begin
  Result:=nil;
+
  if ExplorerManager<>nil then
  begin
   for i:=0 to ExplorerManager.ExplorersCount-1 do
   begin
-   if CID=ExplorerManager.Explorers[i].WindowID then
+   if CID=ExplorerManager[i].WindowID then
    begin
-    Result:=ExplorerManager.Explorers[i];
+    Result:=ExplorerManager[i];
     break;
    end;
   end;
@@ -434,7 +435,7 @@ begin
   SetLength(Result,ExplorerManager.ExplorersCount);
   for i:=0 to ExplorerManager.ExplorersCount-1 do
   begin
-   Result[i]:=ExplorerManager.Explorers[i].WindowID;
+   //TODO: Result[i]:=ExplorerManager.Explorers[i].WindowID;
   end;
  end;
 end;
@@ -448,9 +449,9 @@ begin
  begin
   SetLength(Result,ExplorerManager.ExplorersCount);
   for i:=0 to ExplorerManager.ExplorersCount-1 do
-  if AnsiLowerCase(ExplorerManager.Explorers[i].GetCurrentPath)=AnsiLowerCase(Path) then
+  if AnsiLowerCase(ExplorerManager[i].GetCurrentPath)=AnsiLowerCase(Path) then
   begin
-   Result:=ExplorerManager.Explorers[i].WindowID;
+   Result:=ExplorerManager[i].WindowID;
    break;
   end;
  end;
@@ -464,10 +465,10 @@ begin
  if ExplorerManager<>nil then
  begin
   for i:=0 to ExplorerManager.ExplorersCount-1 do
-  if AnsiLowerCase(ExplorerManager.Explorers[i].GetCurrentPath)=AnsiLowerCase(Path) then
+  if AnsiLowerCase(ExplorerManager[i].GetCurrentPath)=AnsiLowerCase(Path) then
   begin
    SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=ExplorerManager.Explorers[i].WindowID;
+   Result[Length(Result)-1]:=ExplorerManager[i].WindowID;
    break;
   end;
  end;
@@ -482,9 +483,9 @@ begin
  begin
   SetLength(Result,ExplorerManager.ExplorersCount);
   for i:=0 to ExplorerManager.ExplorersCount-1 do
-  if  CID=ExplorerManager.Explorers[i].WindowID then
+  if  CID=ExplorerManager[i].WindowID then
   begin
-   Result:=ExplorerManager.Explorers[i].GetCurrentPath;
+   Result:=ExplorerManager[i].GetCurrentPath;
    break;
   end;
  end;
@@ -499,9 +500,9 @@ begin
  begin
   SetLength(Result,ExplorerManager.ExplorersCount);
   for i:=0 to ExplorerManager.ExplorersCount-1 do
-  if  CID=ExplorerManager.Explorers[i].WindowID then
+  if  CID=ExplorerManager[i].WindowID then
   begin
-   ExplorerManager.Explorers[i].SetStringPath(Path,false);
+   ExplorerManager[i].SetStringPath(Path,false);
    break;
   end;
  end;

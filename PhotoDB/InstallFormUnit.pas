@@ -193,7 +193,7 @@ begin
  Edit4.Text:=TEXT_MES_NAMEA;
  if BDEInstalled then
  begin
-  Edit3.Text:=GetAnyValidDBFileInProgramFolder(GetDirectory(Application.ExeName),true);
+  //DELETE: Edit3.Text:=GetAnyValidDBFileInProgramFolder(GetDirectory(Application.ExeName),true);
   if Edit3.Text='' then Edit3.Text:=TEXT_MES_NO_FILE else CheckBox2.Enabled:=true;
  end else
  begin
@@ -212,9 +212,9 @@ begin
   begin
    If SupportedExt[j]='|' then
    If (j-i-1>0) and (i+1<length(SupportedExt)) then
-   if (upcaseall(copy(SupportedExt,i+1,j-i-1))<>'') then
+   if (AnsiUpperCase(copy(SupportedExt,i+1,j-i-1))<>'') then
    begin
-    CheckListBox1.Items.Add(Upcaseall(copy(SupportedExt,i+1,j-i-1)));
+    CheckListBox1.Items.Add(AnsiUpperCase(copy(SupportedExt,i+1,j-i-1)));
     Break;
    end;
   end;

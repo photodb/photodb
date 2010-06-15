@@ -34,7 +34,8 @@ interface
   procedure Rotate270A(var im : tbitmap);
   procedure Rotate90A(var im : tbitmap);
   procedure FillColorEx(Bitmap : TBitmap; Color : TColor);  
-//TODO! PRIORITY: HIGH  procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
+  procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
+  procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
 
 
 implementation
@@ -55,6 +56,26 @@ begin
     RDW_ALLCHILDREN + RDW_NOINTERNALPAINT);
   if (erase) then
     Windows.InvalidateRect(hwnd, nil, True);
+end;
+
+procedure DrawTransparent(s,d : TBitmap; Transparent : byte);
+var
+  i,j:integer;
+  ps,pd : PARGB;
+  l : extended;
+begin
+ l:=Transparent/255;
+ for i:=0 to S.Height-1 do
+ begin
+  ps:=s.ScanLine[i];
+  pd:=d.ScanLine[i];
+  for j:=0 to S.Width-1 do
+  begin
+   pd[j].r:=Round(ps[j].r*l+pd[j].r*(1-l));
+   pd[j].g:=Round(ps[j].g*l+pd[j].g*(1-l));
+   pd[j].b:=Round(ps[j].b*l+pd[j].b*(1-l));
+  end;
+ end;
 end;
 
 
@@ -269,6 +290,38 @@ begin
       ImageList.AddImages(TemporyImageList);
     finally
       TemporyImageList.Free;
+    end;
+  end;
+end;
+
+procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW  : integer;
+  pS : PARGB;
+  pD : PARGB;
+begin
+  DH := Bitmap.Height;
+  DW := Bitmap.Width;
+  SH := Image.Height;
+  SW := Image.Width;
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS:=Image.ScanLine[I];
+    pD:=Bitmap.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;  
+      if (XD >= DW) then
+        Break;
+      pD[XD].r := pS[j].r;
+      pD[XD].g := pS[j].g;
+      pD[XD].b := pS[j].b;
     end;
   end;
 end;

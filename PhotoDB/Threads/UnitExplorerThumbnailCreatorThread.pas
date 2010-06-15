@@ -23,7 +23,6 @@ type
     procedure Execute; override;
     procedure SetInfo;
     procedure SetImage;
-    procedure DrawImageToTempBitmap;
     procedure DrawAttributes;
     procedure FindPassword;
   public
@@ -53,11 +52,6 @@ var
 begin
  Exists:=1;
  Searching.DrawAttributes(TempBitmap,ThSizeExplorerPreview,info.ItemRating,info.ItemRotate,info.ItemAccess,info.ItemFileName,info.ItemCrypted,Exists,info.ItemId);
-end;
-
-procedure TExplorerThumbnailCreator.DrawImageToTempBitmap;
-begin
- TempBitmap.Canvas.Draw(ThSizeExplorerPreview div 2-GraphicParam.Width div 2,ThSizeExplorerPreview div 2-GraphicParam.height div 2,GraphicParam);
 end;
 
 procedure TExplorerThumbnailCreator.Execute;
@@ -96,13 +90,13 @@ begin
        end;
        TempBit.free;
 
-       GraphicParam:=Fbit;
-       Synchronize(DrawImageToTempBitmap);
+       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2-GraphicParam.Width div 2, ThSizeExplorerPreview div 2-GraphicParam.height div 2);
+
        Info.Image.Free;
       end else
       begin
        GraphicParam:=Info.Image;
-       Synchronize(DrawImageToTempBitmap);
+       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2-GraphicParam.Width div 2, ThSizeExplorerPreview div 2-GraphicParam.height div 2);
        Info.Image.Free;
       end;
 
@@ -180,8 +174,7 @@ begin
         end;
        end;
        TempBit.Free;
-       GraphicParam:=Fbit;
-       Synchronize(DrawImageToTempBitmap);
+       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2-Fbit.Width div 2, ThSizeExplorerPreview div 2-Fbit.height div 2);
        Fbit.free;
       end;
       Synchronize(DrawAttributes);

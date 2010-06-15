@@ -273,7 +273,7 @@ var
   SetStrParam(FQuery,0,'%'+AnsiLowerCase(Location)+'%') else
   SetStrParam(FQuery,0,'%'+LocationFolder+'%');
   if not FSubFolders then
-  SetStrParam(FQuery,1,'%'+LocationFolder+normalizeDBFileNameString('%\%'));
+  SetStrParam(FQuery,1,'%'+LocationFolder+'%\%');
  end;
 
  procedure SaveLocation;

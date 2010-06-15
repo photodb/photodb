@@ -15,7 +15,7 @@ uses
   DragDrop, UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
-  UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts;
+  UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs;
 
 type
   TXListView = TEasyListView;
@@ -660,44 +660,39 @@ type
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
    end;
 
-  TArExplorer = array of TExplorerForm;
-  TArForm = array of TForm;
-
   TManagerExplorer = class(TObject)
-   Private
-    FExplorers : TArExplorer;
-    FForms : TArForm;
+  private
+    FExplorers : TList;
+    FForms : TList;
     fShowPrivate: Boolean;
     fShowEXIF: Boolean;
     FShowQuickLinks: Boolean;
-    procedure SetShowPrivate(const Value: Boolean);
-    procedure SetShowEXIF(const Value: Boolean);
+    FSync : TCriticalSection;
     procedure SetShowQuickLinks(const Value: Boolean);
-   Public
-    Constructor Create;
-    Destructor Destroy; override;
-    Function NewExplorer : TExplorerForm;
-    Procedure FreeExplorer(Explorer : TExplorerForm);
-    Procedure AddExplorer(Explorer : TExplorerForm);
-    Procedure LoadEXIF;
-    Procedure RemoveExplorer(Explorer : TExplorerForm);
-    Function GetExplorersTexts : TStrings;
-    Property Explorers : TArExplorer Read FExplorers;
-    Function IsExplorer(Explorer : TExplorerForm) : Boolean;
-    Function ExplorersCount : Integer;
-    Function GetExplorerNumber(Explorer : TExplorerForm) : Integer;
-    Function GetExplorerBySID(SID : String) : TExplorerForm;
-    Property ShowPrivate : Boolean read fShowPrivate Write SetShowPrivate;
-    Function IsExplorerForm(Explorer: TForm): Boolean;
-    Property ShowEXIF : Boolean read fShowEXIF Write SetShowEXIF;
-    Property ShowQuickLinks : Boolean read FShowQuickLinks Write SetShowQuickLinks;
-   published
+    function GetExplorerByIndex(Index: Integer): TExplorerForm;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function NewExplorer : TExplorerForm;
+    procedure FreeExplorer(Explorer : TExplorerForm);
+    procedure AddExplorer(Explorer : TExplorerForm);
+    procedure LoadEXIF;
+    procedure RemoveExplorer(Explorer : TExplorerForm);
+    function GetExplorersTexts : TStrings;
+    function IsExplorer(Explorer : TExplorerForm) : Boolean;
+    function ExplorersCount : Integer;
+    function GetExplorerNumber(Explorer : TExplorerForm) : Integer;
+    function GetExplorerBySID(SID : string) : TExplorerForm;
+    property ShowPrivate : Boolean read fShowPrivate write fShowPrivate;
+    function IsExplorerForm(Explorer: TForm): Boolean;
+    property ShowEXIF : Boolean read fShowEXIF write fShowEXIF;
+    property ShowQuickLinks : Boolean read FShowQuickLinks write SetShowQuickLinks;
+    property Items[Index: Integer]: TExplorerForm read GetExplorerByIndex; default;
+    property Sync : TCriticalSection read FSync;
   end;
 
 var
   ExplorerManager : TManagerExplorer;
-
-procedure FillRectToBitmap(var Bitmap : TBitmap);
 
 implementation
 
@@ -719,14 +714,6 @@ uses language, ThreadManeger,UnitUpdateDB, ExplorerThreadUnit, Searching,
 function _AutoRename : boolean;
 begin
  Result:=not DBKernel.UserRights.FileOperationsCritical;
-end;
-
-procedure FillRectToBitmap(var Bitmap: TBitmap);
-begin
- Bitmap.Canvas.Pen.Color:=Theme_ListColor;
- Bitmap.Canvas.Brush.Color:=Theme_ListColor;//RGB(Round(GetRValue(Theme_ListColor)*0.9),Round(GetGValue(Theme_ListColor)*0.9),Round(GetBValue(Theme_ListColor)*0.9));
- Bitmap.Canvas.Rectangle(0,0,Bitmap.Width,Bitmap.Height);
- Bitmap.Canvas.Pen.Color:=Theme_ListColor;
 end;
 
 Function MakeRegPath(Path : String) : String;
@@ -789,26 +776,6 @@ begin
  end;
 end;
 
-procedure DrawTransparent(s,d : TBitmap; Transparent : byte);
-var
-  i,j:integer;
-  ps,pd : PARGB;
-  l : extended;
-begin
- l:=Transparent/255;
- for i:=0 to S.Height-1 do
- begin
-  ps:=s.ScanLine[i];
-  pd:=d.ScanLine[i];
-  for j:=0 to S.Width-1 do
-  begin
-   pd[j].r:=Round(ps[j].r*l+pd[j].r*(1-l));
-   pd[j].g:=Round(ps[j].g*l+pd[j].g*(1-l));
-   pd[j].b:=Round(ps[j].b*l+pd[j].b*(1-l));
-  end;
- end;
-end;
-
 procedure TExplorerForm.FormCreate(Sender: TObject);
 Var
   NewPath : String;
@@ -841,9 +808,7 @@ begin
      ListView1.BackGround.Image.PixelFormat:=pf24bit;
      ListView1.BackGround.Image.Width:=150;
      ListView1.BackGround.Image.Height:=150;
-     ListView1.BackGround.Image.Canvas.Brush.Color:=Theme_ListColor;
-     ListView1.BackGround.Image.Canvas.Pen.Color:=Theme_ListColor;
-     ListView1.BackGround.Image.Canvas.Rectangle(0,0,150,150);
+     FillColorEx(ListView1.BackGround.Image, Theme_ListColor);
 
      for i:=1 to 20 do
      begin
@@ -1183,7 +1148,7 @@ begin
  ScrollBox1.BackGround.Height:=150;
  DrawTransparent(b,ScrollBox1.BackGround,40);
  b.free;
- 
+
  Button1Click(Sender);
  try
   DoSelectItem;
@@ -1882,21 +1847,23 @@ begin
    UserLinks[i].Refresh;
   end;
 
- b:=TBitmap.Create;
- b.PixelFormat:=pf24bit;
- b.Width:=120;
- b.Height:=150;
- b.Canvas.Brush.Color:=ScrollBox1.Color;
- b.Canvas.Pen.Color:=ScrollBox1.Color;
- b.Canvas.Rectangle(0,0,120,150);
- b.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
- ScrollBox1.BackGround.Canvas.Brush.Color:=ScrollBox1.Color;
- ScrollBox1.BackGround.Canvas.Pen.Color:=ScrollBox1.Color;
- ScrollBox1.BackGround.Width:=120;
- ScrollBox1.BackGround.Height:=150;
- ScrollBox1.BackGround.Canvas.Rectangle(0,0,120,150);
- DrawTransparent(b,ScrollBox1.BackGround,40);
- b.free;
+  b:=TBitmap.Create;
+  try
+    b.PixelFormat:=pf24bit;
+    b.Width:=120;
+    b.Height:=150;
+    b.Canvas.Brush.Color:=ScrollBox1.Color;
+    b.Canvas.Pen.Color:=ScrollBox1.Color;
+    b.Canvas.Rectangle(0,0,120,150);
+    b.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
+    ScrollBox1.BackGround.Width:=120;
+    ScrollBox1.BackGround.Height:=150;
+    FillColorEx(ScrollBox1.BackGround, ScrollBox1.Color);
+    DrawTransparent(b,ScrollBox1.BackGround,40);
+  finally
+    b.free;
+  end;
+
   if ListView1<>nil then
   begin
    if ListView1.BackGround.Image<>nil then
@@ -1966,7 +1933,7 @@ begin
    Folder:=fFilesInfo[popupmenu1.tag].FileName;
    FormatDir(Folder);
    SetSQL(DS,'Select count(*) as CountField from '+GetDefDBName+' where (FFileName Like :FolderA)');
-   SetStrParam(DS,0,normalizeDBStringLike(normalizeDBFileNameString('%'+Folder+'%')));
+   SetStrParam(DS,0,normalizeDBStringLike('%'+Folder+'%'));
    DS.Open;
    if DS.FieldByName('CountField').AsInteger=0 then
    begin
@@ -2507,26 +2474,15 @@ begin
 
    end;
   end;
-  if fFilesInfo[Index].FileType=EXPLORER_ITEM_NETWORK then
-  begin
-   SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName,fFilesInfo[Index].FileType),false);
-   exit;
+
+  case fFilesInfo[Index].FileType of
+    EXPLORER_ITEM_NETWORK,
+    EXPLORER_ITEM_WORKGROUP,
+    EXPLORER_ITEM_COMPUTER,
+    EXPLORER_ITEM_SHARE:
+      SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName, fFilesInfo[Index].FileType), False);
   end;
-  if fFilesInfo[Index].FileType=EXPLORER_ITEM_WORKGROUP then
-  begin
-   SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName,fFilesInfo[Index].FileType),false);
-   exit;
-  end;
-  if fFilesInfo[Index].FileType=EXPLORER_ITEM_COMPUTER then
-  begin
-   SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName,fFilesInfo[Index].FileType),false);
-   exit;
-  end;
-  if fFilesInfo[Index].FileType=EXPLORER_ITEM_SHARE then
-  begin
-   SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName,fFilesInfo[Index].FileType),false);
-   exit;
-  end;
+
  end;
 end;
 
@@ -2797,13 +2753,8 @@ begin
    begin
     index:=MenuIndexToItemIndex(i);
     if ListView1.Items[index].ImageIndex>-1 then
-    begin
-     Case ReRotation of
-      DB_IMAGE_ROTATED_270: Rotate270A(FBitmapImageList.FImages[ListView1.Items[index].ImageIndex].Bitmap);
-      DB_IMAGE_ROTATED_90: Rotate90A(FBitmapImageList.FImages[ListView1.Items[index].ImageIndex].Bitmap);
-      DB_IMAGE_ROTATED_180: Rotate180A(FBitmapImageList.FImages[ListView1.Items[index].ImageIndex].Bitmap);
-     end;
-    end;
+      ApplyRotate(FBitmapImageList.FImages[ListView1.Items[index].ImageIndex].Bitmap, ReRotation);
+
    end;
   end;
  end;
@@ -3988,7 +3939,7 @@ begin
  File_List.Free;
 end;
 
-function DestPathExists(S : array of string; Dest : String) : boolean;
+{function DestPathExists(S : array of string; Dest : String) : boolean;
 var
   List : TArStrings;
   i,j : integer;
@@ -4004,9 +3955,9 @@ begin
    break;
   end;
  end;
-end;
+end;  }
 
-function AutoRename(S : array of string; Dest : String; var Break : boolean) : boolean;
+{function AutoRename(S : array of string; Dest : String; var Break : boolean) : boolean;
 var
   Res : integer;
 begin
@@ -4017,7 +3968,7 @@ begin
   if Res=ID_CANCEL then Break:=true;
   Result:=Res=ID_OK;
  end;
-end;
+end;    }
 
 procedure TExplorerForm.Paste1Click(Sender: TObject);
 Var
@@ -4839,38 +4790,39 @@ var
 begin
  fShowEXIF:=DBKernel.ReadBool('Options','ShowEXIFMarker',false);
  ShowQuickLinks:=DBKernel.ReadBool('Options','ShowOtherPlaces',true);
- b:=false;
- For i:=0 to Length(FExplorers)-1 do
- if FExplorers[i]=Explorer then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FForms,Length(FForms)+1);
-  FForms[Length(FForms)-1]:=Explorer;
-  SetLength(FExplorers,Length(FExplorers)+1);
-  FExplorers[Length(FExplorers)-1]:=Explorer;
- end;
+
+ if FExplorers.IndexOf(Explorer) = -1 then
+   FExplorers.Add(Explorer);
+
+ if FForms.IndexOf(Explorer) = -1 then
+   FForms.Add(Explorer);
+
 end;
 
 constructor TManagerExplorer.Create;
 begin
- SetLength(FForms,0);
- SetLength(FExplorers,0);
- fShowPrivate:=false;
+  FSync := TCriticalSection.Create;
+  FExplorers := TList.Create; 
+  FForms := TList.Create;
+  fShowPrivate:=false;
 end;
 
 destructor TManagerExplorer.Destroy;
 begin
-//
- inherited;
+  FExplorers.Free;  
+  FForms.Free;
+  FSync.Free;
+  inherited;
 end;
 
 function TManagerExplorer.ExplorersCount: Integer;
 begin
- Result:=Length(FExplorers);
+  FSync.Enter;
+  try
+    Result := FExplorers.Count;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TManagerExplorer.FreeExplorer(Explorer: TExplorerForm);
@@ -4879,30 +4831,32 @@ begin
 end;
 
 function TManagerExplorer.GetExplorerBySID(SID: String): TExplorerForm;
-Var
+var
   i : Integer;
-begin
- Result:=nil;
- For i:=0 to Length(FExplorers)-1 do
- If FExplorers[i].CurrentGUID=SID then
- begin
-  Result:=FExplorers[i];
-  Break;
- end;
+begin    
+  Result := nil; 
+  FSync.Enter;
+  try
+    for i := 0 to FExplorers.Count - 1 do
+    If TExplorerForm(FExplorers[i]).CurrentGUID = SID then
+    begin
+      Result := FExplorers[i];
+      Break;
+    end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TManagerExplorer.GetExplorerNumber(
   Explorer: TExplorerForm): Integer;
-Var
-  i : Integer;
-begin
- Result:=-1;
- For i:=0 to Length(FExplorers)-1 do
- if FExplorers[i]=Explorer then
- Begin
-  Result:=i;
-  Break;
- End;
+begin     
+  FSync.Enter;
+  try
+    Result := FExplorers.IndexOf(Explorer);    
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TManagerExplorer.GetExplorersTexts: TStrings;
@@ -4911,89 +4865,73 @@ var
   b : Boolean;
   S : string;
 begin   
- Result:=TStringList.Create;
- For i:=0 to Length(FExplorers)-1 do
- Result.Add(FExplorers[i].Caption);
- Repeat
-  b:=False;
-  For i:=0 to Result.Count-2 do
-  If Comparestr(Result[i],Result[i+1])>0 then
-  begin
-   S:=Result[i];
-   Result[i]:=Result[i+1];
-   Result[i+1]:=S;
-   b:=True;
+  Result:=TStringList.Create;
+  FSync.Enter;
+  try
+    for i:=0 to FExplorers.Count - 1 do
+      Result.Add(TForm(FExplorers[i]).Caption);
+   
+    repeat
+      b:=False;
+      For i:=0 to Result.Count-2 do
+      If Comparestr(Result[i],Result[i+1])>0 then
+      begin
+        S:=Result[i];
+        Result[i]:=Result[i+1];
+        Result[i+1]:=S;
+        b:=True;
+      end;
+    Until not b;
+  finally
+    FSync.Leave;
   end;
- Until not b;
 end;
 
 function TManagerExplorer.IsExplorer(Explorer: TExplorerForm): Boolean;
-Var
-  i : Integer;
 begin
- Result:=False;
- For i:=0 to Length(FExplorers)-1 do
- if FExplorers[i]=Explorer then
- Begin
-  Result:=True;
-  Break;
- End;
+  FSync.Enter;
+  try
+    Result := FExplorers.IndexOf(Explorer) <> -1;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TManagerExplorer.IsExplorerForm(Explorer: TForm): Boolean;
-Var
-  i : Integer;
-begin
- Result:=False;
- For i:=0 to Length(FForms)-1 do
- if FForms[i]=Explorer then
- Begin
-  Result:=True;
-  Break;
- End;
+begin  
+  FSync.Enter;
+  try
+    Result := FForms.IndexOf(Explorer) <> -1;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TManagerExplorer.NewExplorer: TExplorerForm;
 begin
- if not DBKernel.ProgramInDemoMode then
- begin
-  if FolderView or (CharToInt(DBkernel.GetCodeChar(4))<>CharToInt(DBkernel.GetCodeChar(2))*(CharToInt(DBkernel.GetCodeChar(3))+1)*123 mod 15) then
+  if not DBKernel.ProgramInDemoMode then
   begin
-   if length(FExplorers)>0 then
-   begin
-    Result:=FExplorers[0];
-    exit;
-   end;
+    if FolderView or (CharToInt(DBkernel.GetCodeChar(4))<>CharToInt(DBkernel.GetCodeChar(2))*(CharToInt(DBkernel.GetCodeChar(3))+1)*123 mod 15) then
+    begin
+      if FExplorers.Count > 0 then
+      begin
+        Result:=FExplorers[0];
+        exit;
+      end;
+    end;
   end;
- end;
- Application.CreateForm(TExplorerForm,Result);
+  Application.CreateForm(TExplorerForm, Result);
 end;
 
 procedure TManagerExplorer.RemoveExplorer(Explorer: TExplorerForm);
-var
-  i, j : integer;
-begin
- For i:=0 to Length(FExplorers)-1 do
- if FExplorers[i]=Explorer then
- begin
-  For j:=i to Length(FExplorers)-2 do
-  FExplorers[j]:=FExplorers[j+1];
-  SetLength(FExplorers,Length(FExplorers)-1);
-  For j:=i to Length(FForms)-2 do
-  FForms[j]:=FForms[j+1];
-  SetLength(FForms,Length(FForms)-1);
-  break;
- end;
-end;
-
-procedure TManagerExplorer.SetShowEXIF(const Value: Boolean);
-begin
-  fShowEXIF := Value;
-end;
-
-procedure TManagerExplorer.SetShowPrivate(const Value: Boolean);
-begin
- fShowPrivate := Value;
+begin     
+  FSync.Enter;
+  try
+    FExplorers.Remove(Explorer);
+    FForms.Remove(Explorer);
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TExplorerForm.SetNewPath(Path : String; Explorer : Boolean);
@@ -6775,7 +6713,7 @@ Var
   FolderImageRect : TRect;
   fbmp : TBitmap;
   oldMode: Cardinal;
-  Pic : TPicture;
+  Pic : TPNGGraphic;
   bit32 : TBitmap;
   TempBitmap : TBitmap;
 begin
@@ -6895,10 +6833,10 @@ begin
       end else
       begin
        Pic:=GetFolderPicture;
-       if pic = nil then exit;
+         if pic = nil then exit;
 
        bit32:=TBitmap.Create;
-       LoadPNGImage32bit(Pic.Graphic as TPNGGraphic,bit32,Theme_MainColor);
+       LoadPNGImage32bit(Pic,bit32,Theme_MainColor);
        Pic.free;
        TempBitmap:=TBitmap.Create;
        StretchCoolW(0,0,100,100,Rect(0,0,bit32.Width,bit32.Height),bit32,TempBitmap);
@@ -7671,14 +7609,18 @@ begin
   SIs[i].ID:=i;
  end;
 
- aType:=0;
- if ((Sender as TMenuItem).Tag=0) then aType:=4;
- if ((Sender as TMenuItem).Tag=2) or ((Sender as TMenuItem).Tag=1) then aType:=1;
- if ((Sender as TMenuItem).Tag=4) then aType:=2;
- if ((Sender as TMenuItem).Tag=3) then aType:=3;  
- if ((Sender as TMenuItem).Tag=5) then aType:=5;
 
- QuickSort(SIs,l,aType);
+ case (Sender as TMenuItem).Tag of
+   0:    aType:=4;
+   1,2 : aType:=1;
+   3:    aType:=3;
+   4:    aType:=2;    
+   5:    aType:=5;
+   else
+     aType:=0;
+ end;
+
+ QuickSort(SIs, l, aType);
 
  for i:=0 to l-1 do
  begin
@@ -7748,7 +7690,7 @@ begin
  Folder:=GetCurrentPath;
  FormatDir(Folder);
  SetSQL(Query,'Select count(*) as CountField From '+GetDefDBname+' where (FFileName Like :FolderA)');
- SetStrParam(Query,0,'%'+Folder+normalizeDBStringLike(normalizeDBFileNameString('%\%')));
+ SetStrParam(Query,0,'%'+Folder+normalizeDBStringLike('%\%'));
  Query.Open;
  if Query.FieldByName('CountField').AsInteger>0 then
  IncludeSub:=MessageBoxDB(Handle,TEXT_MES_INCLUDE_SUBFOLDERS_QUERY,TEXT_MES_QUESTION,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION)=ID_OK;
@@ -7963,7 +7905,6 @@ begin
  ListView1SelectItem(Sender,Item,false);
 end;
 
-
 procedure TExplorerForm.SetSelected(NewSelected: TEasyItem);
 begin
  ListView1.Selection.GroupSelectBeginUpdate;
@@ -8022,7 +7963,7 @@ procedure TExplorerForm.EasyListview1ItemImageDrawIsCustom(
   Sender: TCustomEasyListview; Item: TEasyItem; Column: TEasyColumn;
   var IsCustom: Boolean);
 begin
- IsCustom:=ListView<>LV_THUMBS;
+  IsCustom := ListView <> LV_THUMBS;
 end;
 
 procedure TExplorerForm.EasyListview1ItemImageGetSize(Sender: TCustomEasyListview;
@@ -8130,23 +8071,21 @@ end;
 procedure TExplorerForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
- if CopyInstances>0 then
- begin
-  CanClose:=ID_OK=MessageBoxDB(Handle,TEXT_MES_MOVING_FILES_NOW,TEXT_MES_INFORMATION,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION);
- end;
+  if CopyInstances > 0 then
+    CanClose := ID_OK = MessageBoxDB(Handle, TEXT_MES_MOVING_FILES_NOW, TEXT_MES_INFORMATION, TD_BUTTON_OKCANCEL, TD_ICON_QUESTION);
+
 end;
 
 procedure TExplorerForm.ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
- if not (ssCtrl in Shift) then exit;
- if WheelDelta<0 then
- begin
-  ZoomIn;
- end else
- begin
-  ZoomOut;
- end;
+  if not (ssCtrl in Shift) then exit;
+  
+  if WheelDelta<0 then
+    ZoomIn
+  else
+    ZoomOut;
+
  Handled:=true;
 end;
 
@@ -8476,7 +8415,21 @@ end;
 procedure TExplorerForm.ToolBar1MouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
- if Application.HintHidePause<5000 then Application.HintHidePause:=5000;
+ if Application.HintHidePause < 5000 then
+   Application.HintHidePause := 5000;
+end;
+
+function TManagerExplorer.GetExplorerByIndex(
+  Index: Integer): TExplorerForm;
+begin
+  Result := nil;
+  FSync.Enter;
+  try
+    if (Index > -1) and (Index < FExplorers.Count) then
+      Result := FExplorers[Index];      
+  finally
+    FSync.Leave;
+  end;
 end;
 
 initialization

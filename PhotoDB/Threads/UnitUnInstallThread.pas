@@ -329,7 +329,7 @@ begin
  begin
   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
   begin
-   If FileExists(fdir+SearchRec.Name) and (UpcaseAll(Copy(SearchRec.Name,1,4))='_QSQ') then
+   If FileExists(fdir+SearchRec.Name) and (AnsiUpperCase(Copy(SearchRec.Name,1,4))='_QSQ') then
    begin
     Filesetattr(fdir+SearchRec.Name,faHidden);
     Assignfile(f1,fdir+SearchRec.Name);

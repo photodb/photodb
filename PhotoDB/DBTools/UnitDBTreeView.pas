@@ -395,7 +395,7 @@ begin
    B.PixelFormat:=pf24bit;
    B.Width:=102;
    B.height:=102;
-   FillRectToBitmap(B);
+   FillColorEx(B, Theme_ListColor);
    Exists:=0;
    DrawAttributes(B,102,0,0,0,'',false,Exists);
    Image1.Picture.Graphic:=B;
@@ -410,8 +410,8 @@ begin
    B.PixelFormat:=pf24bit;
 
    B.Width:=102;
-   B.height:=102;
-   FillRectToBitmap(B);
+   B.height:=102;   
+   FillColorEx(B, Theme_ListColor);
 
    if PassWord='' then
    begin
@@ -439,7 +439,7 @@ begin
    B.PixelFormat:=pf24bit;
    B.Width:=102;
    B.height:=102;
-   FillRectToBitmap(B);
+   FillColorEx(B, Theme_ListColor);
 
    if (J.Width>100) or (J.Height>100) then
    begin

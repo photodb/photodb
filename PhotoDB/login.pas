@@ -175,8 +175,8 @@ begin
   arlb[nn].Font.Name:='Comic Sans MS';
   arlb[nn].Font.Size:=12;
   arlb[nn].Font.Color:=0;
-  if UpcaseAll(DeleteEndSpaces(fQuery.FieldByName('LOGO').AsString))<>UpcaseAll(TEXT_MES_ADMIN) then
-  arlb[nn].caption:=DeleteEndSpaces(fQuery.FieldByName('LOGO').AsString)
+  if UpcaseAll(Trim(fQuery.FieldByName('LOGO').AsString))<>UpcaseAll(TEXT_MES_ADMIN) then
+  arlb[nn].caption:=Trim(fQuery.FieldByName('LOGO').AsString)
   else arlb[0].caption:=TEXT_MES_ADMIN;
   arlb[nn].ParentColor:=true;
   ared[nn]:=tedit.create(self);

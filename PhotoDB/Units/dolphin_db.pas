@@ -568,9 +568,7 @@ procedure CopyFilesToClipboard(FileList: string);
 function SizeInTextA(Size : int64) : String;
 procedure UpdateDeletedDBRecord(ID : integer; FileName : string);
 procedure UpdateMovedDBRecord(ID : integer; FileName : string);
-procedure SetDate(ID : integer; Date : TDateTime);
-procedure SetTime(ID : integer; Time : TDateTime);
-procedure SetAccess(ID, Access: integer);
+
 procedure SetRotate(ID, Rotate: integer);
 procedure SetRating(ID, Rating: integer);
 procedure SetAttr(ID, Attr: integer);
@@ -596,7 +594,6 @@ function GetuserString : string;
 function RenameFileWithDB(OldFileName, NewFileName :string; ID : integer; OnlyBD : Boolean) : boolean;
 function GetCID : string;
 procedure GetFileListByMask(BeginFile, Mask : string;{ var list : tstrings; }out Info : TRecordsInfo; var n :integer; ShowPrivate : Boolean );
-Function GetInfoByFileName(FileName : string) : TDbFileInfoA;
 function AltKeyDown : boolean;
 function CtrlKeyDown : boolean;
 function ShiftKeyDown : boolean;
@@ -624,8 +621,6 @@ function GetInfoByFileNameA(FileName : string; LoadThum : boolean) : TOneRecordI
 function GetMenuInfoByID(ID : Integer) : TDBPopupMenuInfo;
 function GetMenuInfoByStrTh(StrTh : string) : TDBPopupMenuInfo;
 {END DB Types}
-function normalizeDBFileNameString(S:String):String;
-function normalizeDBStringA(S:String):String;
 function normalizeDBStringLike(S:String):String;
 procedure ShowPropertiesDialog(FName: string);
 function MrsGetFileType(strFilename: string): string;
@@ -660,7 +655,6 @@ Function InstalledFileName : string;
 function BDEInstalled: Boolean;
 //function BDEVerifySQL(Folder : String) : boolean;
 Function FileRegisteredOnInstalledApplication(Value : String) : Boolean;
-Function GetAnyValidDBFileInProgramFolder(dir : String; init : Boolean) : String;
 procedure GetValidDBFilesInFolder(dir : String; init : Boolean; Res: TStrings);
 procedure GetValidMDBFilesInFolder(dir : String; init : Boolean; Res: TStrings);
 function GetDefaultDBName : String;
@@ -699,7 +693,7 @@ function ExtinMask(mask : string; ext : string):boolean;
 function GetFileName(filename:string):string;
 function GetFileNameWithoutExt(filename : string) : string;
 function GetFileSize(FileName: String): int64;
-function GetCPUSpeed(interval:integer):real;
+//function GetCPUSpeed(interval:integer):real;
 
 function CompareImages(Image1, Image2 : TGraphic; var Rotate : Integer; fSpsearch_ScanFileRotate : boolean = true; Quick : boolean = false; Raz : integer = 60) : TImageCompareResult;
 function GetIdeDiskSerialNumber : String;
@@ -711,7 +705,6 @@ function CreateDirA(dir : string) : boolean;
 function ValidDBPath(DBPath : String) : boolean;
 function CopyFilesSynch(Handle : Hwnd; Src : array of string;
   Dest : string; Move : Boolean; AutoRename : Boolean ) : Integer;
-function Upcaseall(s : string) : string;
 function CreateProgressBar(StatusBar:TStatusBar; index:integer):TProgressBar;
   var findleft:integer;
       i:integer;
@@ -736,7 +729,6 @@ procedure HideFromTaskBar(handle : Thandle);
 function RandomPwd(PWLen: integer; StrTable : string): string;
 procedure Del_Close_btn(Handle : Thandle);
 Procedure DoUpdateHelp;
-function DeleteEndSpaces(s : string) : string;
 function GetProcessMemory : integer;
 function ChangeIconDialog(hOwner :tHandle; var FileName: string; var IconIndex: Integer): Boolean;
 function GetProgramPath : string;
@@ -754,7 +746,6 @@ function DBReadOnly : boolean;
 function StringCRC(str : string) : Cardinal;
 function AnsiCompareTextWithNum(Text1,Text2 : string) : integer;
 function DateModify(FileName : string) : TDateTime;
-function GetDirectoryListingOfPath(dir : string) : TArStrings;
 
 function GettingProcNum: integer;  //Win95 or later and NT3.1 or later
 function GetWindowsUserName: string;
@@ -772,11 +763,12 @@ function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: i
 procedure TextToClipboard(const S : string);
 function GetActiveFormHandle : integer;
 function GetGraphicFilter : string;
-function GetFolderPicture : TPicture;
+function GetFolderPicture : TPNGGraphic;
 function GetNeededRotation(OldRotation, NewRotation : integer) : Integer;
-procedure ExecuteSQLExecOnCurrentDB(SQL : string);
+procedure ExecuteQuery(SQL : string);
 function ReadTextFileInString(FileName : string) : string;
-function CompareImagesByGistogramm(Image1, Image2 : TBitmap) : Byte;
+function CompareImagesByGistogramm(Image1, Image2 : TBitmap) : Byte;  
+procedure ApplyRotate(Bitmap : TBitmap; RotateValue : Integer);
 
 var
   GetAnyValidDBFileInProgramFolderCounter : Integer;
@@ -823,14 +815,13 @@ begin
  Result:=true;
 end;
 
-function FileCRC(FileName : string) : Cardinal;
+function FilePathCRC(FileName : string) : Cardinal;
 var
-  folder : string;
+  Folder : string;
 begin
- folder:=GetDirectory(FileName);
- UnFormatDir(folder);
- Result:=0;
- CalcStringCRC32(AnsiLowerCase(folder),Result);
+  Folder := GetDirectory(FileName);
+  UnFormatDir(folder);
+  CalcStringCRC32(AnsiLowerCase(folder), Result);
 end;
 
 function StringCRC(str : string) : Cardinal;
@@ -852,52 +843,6 @@ begin
   else
     Result:=0;
   FreeMem(pmc);
-end;
-
-function DeleteEndSpaces(s : string) : string;
-var
-  i : integer;
-begin
- Result:=s;
- for i:=Length(Result) downto 1 do
- if Result[i]=' ' then delete(Result,i,1) else break;
-end;
-
-function Upcaseall(s : string) : string;
-var
-  i : integer;
-begin
- result:=s;
- for i:=1 to length(s) do
- result[i]:=Upcase(result[i]);
-end;
-
-function GetCPUSpeed(interval:integer):real;
-var
-  TimerHi, TimerLo: DWORD;
-  PriorityClass, Priority: Integer;
-begin
-  PriorityClass := GetPriorityClass(GetCurrentProcess);
-  Priority := GetThreadPriority(GetCurrentThread);
-   SetPriorityClass(GetCurrentProcess, REALTIME_PRIORITY_CLASS);
-  SetThreadPriority(GetCurrentThread, THREAD_PRIORITY_TIME_CRITICAL);
-  Sleep(10);
-  asm
-    dw 310Fh // rdtsc
-    mov TimerLo, eax
-    mov TimerHi, edx
-  end;
-  Sleep(interval);
-  asm
-    dw 310Fh // rdtsc
-    sub eax, TimerLo
-    sbb edx, TimerHi
-    mov TimerLo, eax
-    mov TimerHi, edx
-  end;
-  SetThreadPriority(GetCurrentThread, Priority);
-  SetPriorityClass(GetCurrentProcess, PriorityClass);
-  Result := TimerLo / (1000.0 * interval);
 end;
 
 function GetFileSize(FileName: String): int64;
@@ -1296,44 +1241,6 @@ begin
   end;
 end;
 
-function GetAnyValidDBFileInProgramFolder(dir : String; init : Boolean) : String;
-Var
- Found  : integer;
- SearchRec : TSearchRec;
-begin
- Result:='';
- if init then GetAnyValidDBFileInProgramFolderCounter:=0;
- FormatDir(dir);
- Found := FindFirst(dir+'*.DB', faAnyFile, SearchRec);
- while Found = 0 do
- begin
-  if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-  begin
-  If fileexists(dir+SearchRec.Name) then
-  begin
-   inc(GetAnyValidDBFileInProgramFolderCounter);
-   if GetAnyValidDBFileInProgramFolderCounter>1000 then exit;
-   if DBKernel.TestDB(dir+SearchRec.Name) then
-   begin
-    Result:=dir+SearchRec.Name;
-    FindClose(SearchRec);
-    Exit;
-   end;
-  end else If directoryexists(dir+SearchRec.Name) then
-  begin
-   Result:=GetAnyValidDBFileInProgramFolder(dir+SearchRec.Name,false);
-   if Result<>'' then
-   begin
-    FindClose(SearchRec);
-    Exit;
-   end;
-  end;
-   end;
-    Found := sysutils.FindNext(SearchRec);
-  end;
-  FindClose(SearchRec);
-end;
-
 procedure GetValidDBFilesInFolder(dir : String; init : Boolean; Res: TStrings);
 var
  Found  : integer;
@@ -1416,42 +1323,41 @@ begin
  fReg.free;
 end;
 
-Function InstalledUserName : string;
+function InstalledUserName : string;
 var
-  fReg : TBDRegistry;
+  Reg : TBDRegistry;
 begin
- Result:='';
- fReg:=TBDRegistry.Create(REGISTRY_ALL_USERS,true);
- try
-  fReg.OpenKey(RegRoot,true);
-  Result:=fReg.ReadString('DBUserName');
-  except
- end;
- fReg.free;
+  Reg:=TBDRegistry.Create(REGISTRY_ALL_USERS, True);
+  try
+    Reg.OpenKey(RegRoot,true);
+    Result := Reg.ReadString('DBUserName');
+  finally
+    Reg.free;
+  end;
 end;
 
-Function InstalledDirectory : string;
+function InstalledDirectory : string;
 begin
- Result:=GetDirectory(InstalledFileName);
+ Result := ExtractFileDir(InstalledFileName);
 end;
 
-Function IsInstalling : boolean;
+function IsInstalling : boolean;
 var
   hSemaphore : THandle;
 begin
- Result:=false;
- hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBBeginInstallID) );
- IF ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) THEN
- BEGIN
-  Result:=true;
-  hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBEndInstallID));
-  IF ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) THEN
+  Result:=false;
+  hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBBeginInstallID) );
+  if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin
-   Result:=false;
+    Result:=true;
+    hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBEndInstallID));
+    if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
+    begin
+      Result:=false;
+    end;
+    CloseHandle(hSemaphore);
   end;
   CloseHandle(hSemaphore);
- end;
- CloseHandle(hSemaphore);
 end;
 
 procedure DoBeginInstall;
@@ -2063,37 +1969,6 @@ begin
   end;
  end;
  Reg.free;
-end;
-
-function GetInfoByFileName(FileName : string) : TDbFileInfoA;
-var
-  fQuery : TDataSet;
-begin
-  fQuery:=GetQuery;
-  fQuery.Active:=false;
-  SetSQL(fQuery,'SELECT ID,Access,Rotated FROM '+GetDefDBName+' WHERE FFileName like :ffilename');
-  SetStrParam(fQuery,0,delnakl(AnsiLowerCase(FileName)));
-  try
-   fQuery.active:=true;
-  except
-   Result.ID:=0;
-   Result.Access:=0;
-   Result.Rotated:=0;
-   FreeDS(fQuery);
-   Exit;
-  end;
-  if fQuery.RecordCount=0 then
-  begin
-   Result.ID:=0;
-   Result.Access:=0;
-   Result.Rotated:=0;
-  end else
-  begin
-   Result.ID:=fQuery.fieldByName('ID').AsInteger;
-   Result.Access:=fQuery.fieldByName('Access').AsInteger;
-   Result.Rotated:=fQuery.fieldByName('Rotated').AsInteger;
-  end;
-  FreeDS(fQuery);
 end;
 
 Function GetInfoByFileNameA(FileName : string; LoadThum : boolean) : TOneRecordInfo;
@@ -2923,7 +2798,7 @@ begin
   Folder:=AnsiLowerCase(Folder);
   formatdir(Folder);
   Folder:=AnsiLowercase(Folder);
-  DBFolder:=NormalizeDBStringLike(NormalizeDBString(NormalizeDBFileNameString(Folder)));
+  DBFolder:=NormalizeDBStringLike(NormalizeDBString(Folder));
 
   if FolderView then AddFolder:=AnsiLowerCase(ProgramDir) else
   AddFolder:='';
@@ -2947,7 +2822,7 @@ begin
    CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
    FormatDir(DBFolder);
    SetStrParam(FQuery,0,'%'+DBFolder+'%');
-   SetStrParam(FQuery,1,'%'+DBFolder+normalizeDBFileNameString('%\%'));
+   SetStrParam(FQuery,1,'%'+DBFolder+'%\%');
   end;
 
 
@@ -3055,30 +2930,6 @@ begin
   FindClose(SearchRec);
 end;
 
-function GetDirectoryListingOfPath(dir : string) : TArStrings;
-var
- Found  : integer;
- SearchRec : TSearchRec;
-begin
-  SetLength(Result,0);
-  If length(dir)<4 then exit;
-  If dir[length(dir)]<>'\' then dir:=dir+'\';
-  Found := FindFirst(dir+'*.*', faDirectory, SearchRec);
-  while Found = 0 do
-  begin
-   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-   begin
-    SetLength(Result,Length(Result)+1);
-    Result[Length(Result)-1]:=SearchRec.Name;
-   end;
-   Found := sysutils.FindNext(SearchRec);
-  end;
-  FindClose(SearchRec);
-end;
-
-
-//procedure RenameFileWithDB
-
 procedure RenameFolderWithDB(OldFileName, NewFileName :string; ask : boolean = true);
 var
   ProgressWindow : TProgressActionForm;
@@ -3100,7 +2951,7 @@ begin
   FormatDir(FFolder);
 
   DBFolder:=AnsiLowerCase(FFolder);
-  DBFolder:=NormalizeDBStringLike(NormalizeDBString(normalizeDBFileNameString(DBFolder)));
+  DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolder));
   if FolderView then
   begin
    Delete(DBFolder,1,Length(ProgramDir));
@@ -3149,7 +3000,7 @@ begin
        NewPath:=AnsiLowerCase(s+ExtractFileName(FQuery.FieldByName('FFileName').AsString));
       end;
       int:=integer(crc);                                                                                                                         
-      sql:='UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(normalizeDBFileNameString(NormalizeDBString(NewPath)))+'" , FolderCRC = '+IntToStr(int)+' where ID = '+inttostr(fQuery.FieldByName('ID').AsInteger);
+      sql:='UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(NormalizeDBString(NewPath))+'" , FolderCRC = '+IntToStr(int)+' where ID = '+inttostr(fQuery.FieldByName('ID').AsInteger);
       SetSQL(SetQuery,sql);
      end;
      ExecSQL(SetQuery);
@@ -3283,42 +3134,25 @@ end;
 
 function ActivationID : string;
 var
-  f : TPcharFunction;
+  f : TPCharFunction;
   Fh : pointer;
-  p : PChar;
+  Activation : PChar;
 begin
- Fh:=GetProcAddress(KernelHandle,'GetCIDA');
- if fh=nil then
- begin
-  Showmessage(TEXT_MES_ERROR_KERNEL_DLL);
-  halt;
-  exit;
- end;
- @f:=Fh;
- p:=f;
- result:=Copy(p,1,Length(p));
+  Fh:=GetProcAddress(KernelHandle,'GetCIDA');
+  if fh=nil then
+  begin
+    Showmessage(TEXT_MES_ERROR_KERNEL_DLL);
+    halt;
+    exit;
+  end;
+  @f := Fh;
+  Activation := f();
+  result := Copy(Activation, 1, Length(Activation));
 end;
 
 function NormalizeDBString(S : String) : String;
-var
-  i : integer;
 begin
- result:=s;
- i:=1;
- if length(result)>0 then
- Repeat
-  if result[i]='"' then
-  begin
-   insert('"',result,i);
-   inc(i);
-  end;
-  inc(i);
- until i>length(result);
-end;
-
-function normalizeDBStringA(S:String):String;
-begin
- result:=s;
+  Result := AnsiQuotedStr(S, '"')
 end;
 
 function normalizeDBStringLike(S:String):String;
@@ -3328,25 +3162,6 @@ begin
  for i:=1 to Length(s) do
  if (s[i]='[') or (s[i]=']') then s[i]:='_';
  result:=s;
-end;
-
-
-function normalizeDBFileNameString(S:String):String;
-var
-  i : integer;
-begin
- result:=s;
- if GetDBType(dbname)=DB_TYPE_MDB then exit;
- i:=1;
- if length(result)>0 then
- Repeat
-  if result[i]='\' then
-  begin
-   insert('\',result,i);
-   inc(i);
-  end;
-  inc(i);
- until i>length(result);
 end;
 
 function GetIdByFileName(FileName : string) : integer;
@@ -3478,138 +3293,28 @@ begin
  Result:=Format(TEXT_MES_PIXEL_FORMAT,[IntToStr(Pixels)]);
 end;
 
-procedure SetDate(ID : integer; Date : TDateTime);
-var
-  _sqlexectext : string;
-   fQuery : TDataSet;
-begin
- fQuery:=GetQuery;
- try
-  _sqlexectext:='Update '+GetDefDBname+'';
-  _sqlexectext:=_sqlexectext+ ' Set DateToAdd=:Date';
-  _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(ID)+'';
-  fQuery.active:=false;
-  SetSQL(fQuery,_sqlexectext);
-  SetDateParam(fQuery,0,Date);
-  ExecSQL(fQuery);
-  except
- end;
- FreeDS(fQuery);
-end;
-
-procedure SetTime(ID : integer; Time : TDateTime);
-var
-  _sqlexectext : string;
-  fQuery : TDataSet;
-begin
- fQuery:=GetQuery;
- try
-  _sqlexectext:='Update '+GetDefDBname;
-  _sqlexectext:=_sqlexectext+ ' Set aTime=:aTime';
-  _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(ID)+'';
-  fQuery.active:=false;
-  SetSQL(fQuery,_sqlexectext);
-  SetDateParam(fQuery,0,TimeOf(Time));
-  ExecSQL(fQuery);
-  except
- end;
- FreeDS(fQuery);
-end;
-
-procedure SetAccess(ID, Access: integer);
-var
-  _sqlexectext : string;
-  fQuery : TDataSet;
-begin
- fQuery:=GetQuery;
- try
-  _sqlexectext:='Update '+GetDefDBname;
-  _sqlexectext:=_sqlexectext+ ' Set Access='+inttostr(Access);
-  _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(ID)+'';
-  fQuery.active:=false;
-  SetSQL(fQuery,_sqlexectext);
-  ExecSQL(fQuery);
-  except
- end;
- FreeDS(fQuery);
-end;
-
 procedure SetRotate(ID, Rotate: integer);
-var
-  _sqlexectext : string;
-  fQuery : TDataSet;
 begin
- fQuery:=GetQuery;
- try
-  _sqlexectext:='Update '+GetDefDBname;
-  _sqlexectext:=_sqlexectext+ ' Set Rotated='+inttostr(Rotate);
-  _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(ID)+'';
-  fQuery.Active:=false;
-  SetSQL(fQuery,_sqlexectext);
-  ExecSQL(fQuery);
-  except
- end;
- FreeDS(fQuery);
+  ExecuteQuery(Format('Update Set Rotated=%d Where ID=%d', [GetDefDBname, Rotate, ID]));
 end;
 
 procedure SetAttr(ID, Attr: integer);
-var
-  _sqlexectext : string;
-  fQuery : TDataSet;
 begin
- fQuery:=GetQuery;
- try
-  _sqlexectext:='Update '+GetDefDBname;
-  _sqlexectext:=_sqlexectext+ ' Set Attr='+inttostr(Attr);
-  _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(ID)+'';
-  fQuery.active:=false;
-  SetSQL(fQuery,_sqlexectext);
-  ExecSQL(fQuery);
-  except
- end;
- FreeDS(fQuery);
+  ExecuteQuery(Format('Update Set Attr=%d Where ID=%d', [GetDefDBname, Attr, ID]));
 end;
 
 procedure SetRating(ID, Rating: integer);
-var
-  _sqlexectext : string;
-  fQuery : TDataSet;
 begin
- fQuery:=GetQuery;
- try
-  _sqlexectext:='Update '+GetDefDBname;
-  _sqlexectext:=_sqlexectext+ ' Set Rating='+inttostr(Rating);
-  _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(ID)+'';
-  fQuery.active:=false;
-  SetSQL(fQuery,_sqlexectext);
-  ExecSQL(fQuery);
-  except
- end;
- FreeDS(fQuery);
+  ExecuteQuery(Format('Update Set Rating=%d Where ID=%d', [GetDefDBname, Rating, ID]));
 end;
 
 procedure UpdateMovedDBRecord(ID : integer; FileName : string);
 var
-  fQuery : TDataSet;
-  crc : cardinal;
-  int : integer;
   MDBstr : string;
 begin
- MDBstr:='';
- fQuery:=GetQuery;
- try
-  fQuery.Active:=false;
-  if GetDBType(dbname)=DB_TYPE_MDB then
-  begin
-   crc:=FileCRC(FileName);
-   int:=Integer(crc);
-   MDBstr:=', FolderCRC = '+IntToStr(int);
-  end;
-  SetSQL(fQuery,'UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(FileName)+'", Name ="'+GetFileName(FileName)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+')');
-  ExecSQL(fQuery);
-  except
- end;
- FreeDS(fQuery);
+  MDBstr:=', FolderCRC = '+IntToStr(Integer(FilePathCRC(FileName)));
+
+  ExecuteQuery('UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(FileName)+'", Name ="'+GetFileName(FileName)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+')');
 end;
 
 procedure UpdateDeletedDBRecord(ID : integer; filename : string);
@@ -3624,7 +3329,7 @@ begin
   fQuery.Active:=false;
   if GetDBType(dbname)=DB_TYPE_MDB then
   begin
-   crc:=FileCRC(FileName);
+   crc:=FilePathCRC(FileName);
    int:=Integer(crc);
    MDBstr:=', FolderCRC = '+IntToStr(int);
   end;
@@ -4054,25 +3759,13 @@ begin
 end;
 
 procedure SetPrivate(ID: integer);
-var
-  fQuery : TDataSet;
-begin
- fQuery:=GetQuery;
- fQuery.Active:=false;
- SetSQL(fQuery,'Update '+GetDefDBname+' Set Access='+inttostr(db_access_private)+' WHERE ID='+inttostr(ID));
- ExecSQL(fQuery);
- FreeDS(fQuery);
+begin             
+  ExecuteQuery(Format('Update %s Set Access=%d WHERE ID=%d', [GetDefDBname, db_access_private, ID]));
 end;
 
 procedure UnSetPrivate(ID: integer);
-var
-  fQuery : TDataSet;
 begin
- fQuery:=GetQuery;
- fQuery.Active:=false;
- SetSQL(fQuery,'Update '+GetDefDBname+' Set Access='+inttostr(db_access_none)+' WHERE ID='+inttostr(ID));
- ExecSQL(fQuery);
- FreeDS(fQuery);
+  ExecuteQuery(Format('Update %s Set Access=%d WHERE ID=%d', [GetDefDBname, db_access_none, ID]));
 end;
 
 procedure CopyFilesToClipboard(FileList: string);
@@ -4623,11 +4316,6 @@ var
   pidlDrives: PItemIDList;
   cmd: TCMInvokeCommandInfo;
 begin
-// hr := CoInitializeEx( nil, COINIT_MULTITHREADED );
-// CoUninitialize;
- hr := CoInitialize( nil );
- if SUCCEEDED( hr ) then
- try
   hr := SHGetMalloc( pMalloc );
   if SUCCEEDED( hr ) then
   try
@@ -4662,9 +4350,6 @@ begin
   finally
    pMalloc := nil;
   end;
- finally
-  CoUninitialize;
- end;
 end;
 
 function KillTask(ExeFileName: string): integer;
@@ -4772,16 +4457,7 @@ end;
 
 Procedure DoHelp;
 begin
- if FileExists(ProgramDir+'Help\index.htm') then
- begin
-  ShellExecute(0, Nil,PChar(ProgramDir+'Help\index.htm'), Nil, Nil, SW_NORMAL);
-  exit;
- end;
- if FileExists(ProgramDir+'Help\index.html') then
- begin
-  ShellExecute(0, Nil,PChar(ProgramDir+'Help\index.html'), Nil, Nil, SW_NORMAL);
-  exit;
- end
+  ShellExecute(0, Nil, 'http://photodb.illusdolphin.net', Nil, Nil, SW_NORMAL);
 end;
 
 Procedure DoUpdateHelp;
@@ -5230,7 +4906,7 @@ begin
    DB_IMAGE_ROTATED_180 :  EventInfo.Rotate:=DB_IMAGE_ROTATED_0;
    DB_IMAGE_ROTATED_270 :  EventInfo.Rotate:=DB_IMAGE_ROTATED_90;
   end;
-  SetRotate(ID,EventInfo.Rotate);
+  SetRotate(ID, EventInfo.Rotate);
   DBKernel.DoIDEvent(nil,ID,[EventID_Param_Rotate],EventInfo);
  end;
 end;
@@ -7144,7 +6820,6 @@ function GetAppDataDirectory: string;
 begin
   Result := GetAppDataDir+PHOTO_DB_APPDATA_DIRECTORY;
   UnFormatDir(Result);
-// Recyclic!!!!  EventLog(':GetAppDataDirectory() return' +Result);
 end;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons,Icon: integer): integer; overload;
@@ -7187,7 +6862,7 @@ begin
  end;
 end;
 
-function GetFolderPicture : TPicture;
+function GetFolderPicture : TPNGGraphic;
 const
   ResName = 'DIRECTORY_LARGE';
 var
@@ -7195,10 +6870,8 @@ var
   MyResP : Pointer;
   MyResS : Integer;
   MyMS   : TMemoryStream;
-
-  Pic : TPicture;
 begin
-  pic:=nil;
+  Result:=nil;
   MyRes := FindResource(HInstance,PChar(ResName),RT_RCDATA);
   if MyRes <> 0 then begin
     MyResS := SizeOfResource(HInstance,MyRes);
@@ -7210,9 +6883,8 @@ begin
         with MyMS do begin
           Write(MyResP^,MyResS);
           Seek(0,soFromBeginning);
-          pic:=TPicture.Create;
-          pic.Graphic := TPNGGraphic.Create;
-          pic.Graphic.LoadFromStream(MyMS);
+          Result := TPNGGraphic.Create;
+          Result.LoadFromStream(MyMS);
           Free;
         end;
         UnLockResource(MyRes);
@@ -7220,7 +6892,6 @@ begin
       FreeResource(MyRes);
     end
   end;
-  Result:=pic;
 end;
 
 function GetActiveFormHandle : integer;
@@ -7326,28 +6997,32 @@ begin
  Result:=ROT[OldRotation,NewRotation];
 end;
 
-procedure ExecuteSQLExecOnCurrentDB(SQL : string);
+procedure ExecuteQuery(SQL : string);
 var
   DS : TDataSet;
 begin
- DS:=GetQuery;
- SetSQL(DS,SQL);
- try
-  ExecSQL(DS);
-  EventLog('::ExecuteSQLExecOnCurrentDB()/ExecSQL OK ['+SQL+']');
- except
-  on e : Exception do EventLog(':ExecuteSQLExecOnCurrentDB()/ExecSQL throw exception: '+e.Message);
- end;
- FreeDS(DS);
+  DS:=GetQuery;
+  try
+    SetSQL(DS,SQL);
+    try
+      ExecSQL(DS);
+      EventLog('::ExecuteSQLExecOnCurrentDB()/ExecSQL OK ['+SQL+']');
+    except
+      on e : Exception do EventLog(':ExecuteSQLExecOnCurrentDB()/ExecSQL throw exception: '+e.Message);
+    end;
+  finally
+    FreeDS(DS);
+  end;
 end;
 
 function ReadTextFileInString(FileName : string) : string;
 var
   FS : TFileStream;
 begin
- if not FileExists(FileName) then exit;
+  if not FileExists(FileName) then
+    Exit;
  try
-  FS:=TFileStream.Create(FileName,fmOpenRead);
+  FS:=TFileStream.Create(FileName, fmOpenRead);
  except   
   on e : Exception do
   begin
@@ -7366,6 +7041,15 @@ begin
   end;
  end;
  FS.Free;
+end;
+
+procedure ApplyRotate(Bitmap : TBitmap; RotateValue : Integer);
+begin
+  case RotateValue of
+    DB_IMAGE_ROTATED_270: Rotate270A(Bitmap);
+    DB_IMAGE_ROTATED_90:  Rotate90A(Bitmap);
+    DB_IMAGE_ROTATED_180: Rotate180A(Bitmap);
+  end;
 end;
 
 initialization

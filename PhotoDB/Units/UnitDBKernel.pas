@@ -680,7 +680,7 @@ begin
     Reg.CloseKey;
    end;
    Reg.Free;
-   DBKernel.WriteboolW('Options','SlideShow_UseCoolStretch',GetCPUSpeed(200)>500)
+   DBKernel.WriteboolW('Options','SlideShow_UseCoolStretch', true);
   except
    on e : Exception do EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
   end;
@@ -865,7 +865,7 @@ begin
   end;
   fquery.First;
   self.fDBUserName:=UserName;
-  if Hash_Cos_C(Password)<> HexToIntDef(DeleteEndSpaces(fquery.FieldByName('PASSHESH').AsString),0) then
+  if Hash_Cos_C(Password)<> HexToIntDef(Trim(fquery.FieldByName('PASSHESH').AsString),0) then
   begin
    result:=LOG_IN_PASSWORD_WRONG;
    FreeDS(fQuery);
@@ -909,7 +909,7 @@ begin
   begin
    fquery.First;
    self.fDBUserName:=UserName;
-   if Hash_Cos_C(Password)<> HexToIntDef(DeleteEndSpaces(fquery.FieldByName('PASSHESH').AsString),0) then
+   if Hash_Cos_C(Password)<> HexToIntDef(Trim(fquery.FieldByName('PASSHESH').AsString),0) then
    begin
     result:=LOG_IN_PASSWORD_WRONG;
     FreeDS(fQuery);

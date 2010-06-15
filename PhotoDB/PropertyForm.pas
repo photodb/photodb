@@ -693,10 +693,10 @@ begin
  b1.free;
  fbit.Free;
  fpic.free;
- caption:=TEXT_MES_PROPERTY+' - '+ DeleteEndSpaces(WorkQuery.FieldByName('Name').AsString);
+ caption:=TEXT_MES_PROPERTY+' - '+ Trim(WorkQuery.FieldByName('Name').AsString);
  KeyWordsMemo.Text:=WorkQuery.FieldByName('KeyWords').AsString;
  KeyWordsMemo.ReadOnly:=not DBKernel.UserRights.SetInfo;
- LabelName.Text:=DeleteEndSpaces(WorkQuery.FieldByName('Name').AsString);
+ LabelName.Text:=Trim(WorkQuery.FieldByName('Name').AsString);
  if DBKernel.UserRights.ShowPath then
  begin
   LabelPach.Text:=LongFileName(WorkQuery.FieldByName('FFileName').AsString);

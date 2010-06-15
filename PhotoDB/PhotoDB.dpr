@@ -1028,14 +1028,14 @@ begin
 
  if GetParamStrDBBool('/SQLExec') then
  begin
-  Dolphin_DB.ExecuteSQLExecOnCurrentDB(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'),'"'));
+  Dolphin_DB.ExecuteQuery(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'),'"'));
  end;
    
  if GetParamStrDBBool('/SQLExecFile') then
  begin
   s1:=SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'),'"');
   s1:=ReadTextFileInString(s1);
-  Dolphin_DB.ExecuteSQLExecOnCurrentDB(s1);
+  Dolphin_DB.ExecuteQuery(s1);
  end;
 
  Application.Run;

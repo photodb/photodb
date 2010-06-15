@@ -164,7 +164,7 @@ begin
   end;
   BS.Free;
  end;
- FillRectToBitmap(bit);
+ FillColorEx(bit, Theme_ListColor);
  if (J.Width>ListItemPreviewSize) or (J.Height>ListItemPreviewSize) then
  begin
   TempBitmap:=TBitmap.Create;
@@ -241,7 +241,7 @@ begin
  ReadFileInfo(Filename);
  for i:=1 to WorkQuery.RecordCount do
  begin
-  AddItem(DeleteEndSpaces(WorkQuery.FieldByName('Name').AsString),WorkQuery.FieldByName('ID').AsInteger,nil);
+  AddItem(Trim(WorkQuery.FieldByName('Name').AsString),WorkQuery.FieldByName('ID').AsInteger,nil);
   WorkQuery.Next;
  end;
  ReadDBInfoByID(WorkQuery.FieldByName('ID').AsInteger);
@@ -266,7 +266,7 @@ begin
  fQuery.Active:=true;
  current_id_show:=fQuery.FieldByName('ID').AsInteger;
  DB_ID.text:=IntToStr(ID);
- DB_NAME.text:=DeleteEndSpaces(fQuery.FieldByName('Name').AsString);
+ DB_NAME.text:=Trim(fQuery.FieldByName('Name').AsString);
  DB_RATING.text:=inttostr(fQuery.FieldByName('Rating').AsInteger);
  DB_WIDTH.text:=Format(TEXT_MES_PIXEL_FORMAT_D,[fQuery.FieldByName('Width').AsInteger]);
  DB_HEIGHT.text:=Format(TEXT_MES_PIXEL_FORMAT_D,[fQuery.FieldByName('Height').AsInteger]);

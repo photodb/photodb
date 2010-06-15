@@ -601,8 +601,8 @@ begin
        SetIntParam(fQuery,nextparam,Integer(crc));
       end;
       FormatDir(fspsearch_showfoldername);
-      SetStrParam(fQuery,nextparam,'%'+normalizeDBFileNameString(fspsearch_showfoldername)+'%');
-      SetStrParam(fQuery,nextparam,'%'+normalizeDBFileNameString(fspsearch_showfoldername+'%\%'));
+      SetStrParam(fQuery,nextparam,'%'+fspsearch_showfoldername+'%');
+      SetStrParam(fQuery,nextparam,'%'+fspsearch_showfoldername+'%\%');
      end else begin
       SetIntParam(fQuery,nextparam,0);
       SetStrParam(fQuery,nextparam,'\');
@@ -622,8 +622,8 @@ begin
       SetIntParam(fQuery,nextparam,Integer(crc));
       end;
      FormatDir(fspsearch_showfolder);
-     SetStrParam(fQuery,nextparam,'%'+normalizeDBFileNameString(fspsearch_showfolder)+'%');
-     SetStrParam(fQuery,nextparam,'%'+normalizeDBFileNameString(fspsearch_showfolder+'%\%'));
+     SetStrParam(fQuery,nextparam,'%'+fspsearch_showfolder+'%');
+     SetStrParam(fQuery,nextparam,'%'+fspsearch_showfolder+'%\%');
     end;
     FreeDS(fspecquery);
    end;
@@ -1122,7 +1122,7 @@ begin
    QueryType:=QT_ONE_TEXT;
    SystemQuery:=true;
    stemp:=Copy(sysaction,6,length(sysaction)-6);
-   stemp:=NormalizeDBString(NormalizeDBStringA(stemp));
+   stemp:=NormalizeDBString(stemp);
    sqlquery:='SELECT * FROM '+GetDefDBName+'';
    sqlquery:=sqlquery+' where (KeyWords like "%'+stemp+'%") or (Comment like "%'+stemp+'%") or (FFileName like "%'+stemp+'%")';
    sqlquery:=sqlquery+GetFilter(db_attr_norm);
@@ -1134,7 +1134,7 @@ begin
    QueryType:=QT_NO_NOPATH;
    SystemQuery:=true;
    stemp:=Copy(sysaction,6,length(sysaction)-6);
-   stemp:=NormalizeDBString(NormalizeDBStringA(stemp));
+   stemp:=NormalizeDBString(stemp);
    sqlquery:='SELECT * FROM '+GetDefDBName+'';
    sqlquery:=sqlquery+' where (FolderCRC = 0)';
    sqlquery:=sqlquery+GetFilter(db_attr_norm);
@@ -1231,7 +1231,7 @@ begin
    QueryType:=QT_ONE_KEYWORD;
    SystemQuery:=true;
    stemp:=Copy(sysaction,9,length(sysaction)-9);
-   stemp:=NormalizeDBString(NormalizeDBStringA(stemp));
+   stemp:=NormalizeDBString(stemp);
    sqlquery:='SELECT * FROM '+GetDefDBName+'';
    sqlquery:=sqlquery+' where (KeyWords like "%'+stemp+'%") ';
    sqlquery:=sqlquery+GetFilter(db_attr_norm);
