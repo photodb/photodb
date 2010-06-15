@@ -146,12 +146,6 @@ begin
  if DBKernel.ReadInteger('ExportImages options','ShadowColor',-1)=-1 then
  Shape1.Brush.Color:=$FFFFFF else
  Shape1.Brush.Color:=DBKernel.ReadInteger('ExportImages options','ShadowColor',$FFFFFF);
- if not DBkernel.UserRights.FileOperationsCritical then
- begin
-  RadioButton001.Enabled:=false;
-  RadioButton002.Enabled:=false;
-  RadioButton002.Checked:=true;
- end;
 end;
 
 procedure TExportImagesForm.GetFileList(ImageList: TArStrings;

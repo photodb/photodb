@@ -102,7 +102,6 @@ Procedure MakeDBFileTree(DBFileName : String);
 var
  FormCreateDBFileTree: TFormCreateDBFileTree;
 begin
- if not DBKernel.UserRights.ShowPath then exit;
  Application.CreateForm(TFormCreateDBFileTree, FormCreateDBFileTree);
  FormCreateDBFileTree.FDBFileName:=DBFileName;
  FormCreateDBFileTree.Execute;
@@ -156,13 +155,7 @@ begin
   fStatusProgress.Max:=WorkTable.RecordCount;
   for k:=1 to WorkTable.RecordCount do
   begin
-   if not DBkernel.UserRights.ShowPrivate then
-   if WorkTable.FieldByName('Access').AsInteger=db_access_private then
-   begin
-    WorkTable.Next;
-    Application.ProcessMessages;
-    Continue;
-   end;
+
    AddFile(WorkTable.FieldByName('FFileName').AsString,WorkTable.FieldByName('ID').AsInteger,ValidCryptBlobStreamJPG(WorkTable.FieldByName('Thum')),false{not FileExists(WorkTable.FieldByName('FFileName').AsString)});
    WorkTable.Next;
    if k mod 50 = 0 then
@@ -583,7 +576,7 @@ procedure TFormCreateDBFileTree.Image1MouseDown(Sender: TObject;
 begin
  If Button=mbLeft then
  begin
-  DBCanDrag:=DBKernel.UserRights.FileOperationsNormal;
+  DBCanDrag:=True;
   GetCursorPos(DBDragPoint);
  end;
 end;

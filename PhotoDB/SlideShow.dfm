@@ -2602,23 +2602,16 @@ object Viewer: TViewer
     Top = 40
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = [dtCopy, dtMove, dtLink]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtMove, dtLink]
     OnDrop = DropFileTarget1Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 368
     Top = 104
   end
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
-    AllowAsyncTransfer = False
     Left = 400
     Top = 104
   end

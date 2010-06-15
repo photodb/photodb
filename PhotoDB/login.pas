@@ -293,7 +293,7 @@ begin
   if dbkernel.DBUserType<>UtAdmin then
   if Arlb[n].Caption<>DBKernel.DBUserName then exit;
   Popup:=TPopupMenu.Create(self);
-  if DBkernel.UserRights.ChPass then
+
   begin
    Menu_ChangePass := TMenuItem.Create(PopUp);
    Menu_ChangePass.Caption:=TEXT_MES_CH_USER;
@@ -324,7 +324,6 @@ begin
    Menu_CancelAsDefault.OnClick:=CancelDefUser;
    Menu_CancelAsDefault.Tag:=n;
   end;
-  if DBkernel.UserRights.ChPass then
   Popup.Items.Add(Menu_ChangePass);
   if arcb[n].Checked and ((Dbkernel.DBUserType=UtAdmin) or ((Dbkernel.DBUserType<>UtAdmin) and (DefaultUserName=DBKernel.DBUserName))) then
   Popup.Items.Add(Menu_CancelAsDefault);

@@ -22,7 +22,7 @@ object ManagerDB: TManagerDB
     Left = 0
     Top = 0
     Width = 882
-    Height = 614
+    Height = 612
     Align = alClient
     TabOrder = 0
     object Panel3: TPanel
@@ -472,7 +472,7 @@ object ManagerDB: TManagerDB
       Left = 1
       Top = 217
       Width = 880
-      Height = 396
+      Height = 394
       Align = alClient
       Columns = <
         item
@@ -585,20 +585,13 @@ object ManagerDB: TManagerDB
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
-    AllowAsyncTransfer = False
     Left = 153
     Top = 288
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = []
-    GetDataOnEnter = False
-    ShowImage = True
+    DragTypes = []
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 185
     Top = 288
   end

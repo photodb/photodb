@@ -2035,8 +2035,6 @@ object PropertiesForm: TPropertiesForm
       PopupMenu = PopupMenu2
       TabOrder = 4
       OnChange = DateEditChange
-      OnKeyDown = DateEditKeyDown
-      OnKeyPress = DateEditKeyPress
     end
     object IsDatePanel: TPanel
       Left = 72
@@ -2063,8 +2061,6 @@ object PropertiesForm: TPropertiesForm
       PopupMenu = PopupMenu11
       TabOrder = 5
       OnChange = TimeEditChange
-      OnKeyDown = TimeEditKeyDown
-      OnKeyPress = TimeEditKeyPress
     end
     object IsTimePanel: TPanel
       Left = 72
@@ -2248,20 +2244,14 @@ object PropertiesForm: TPropertiesForm
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
     AllowAsyncTransfer = True
     Left = 240
     Top = 104
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = []
-    GetDataOnEnter = False
-    ShowImage = True
+    DragTypes = []
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 208
     Top = 104
   end
@@ -2408,12 +2398,10 @@ object PropertiesForm: TPropertiesForm
     Top = 8
   end
   object DropFileTarget2: TDropFileTarget
-    Dragtypes = [dtCopy, dtMove, dtLink]
+    DragTypes = [dtCopy, dtMove, dtLink]
     GetDataOnEnter = True
     OnDrop = DropFileTarget2Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 176
     Top = 104
   end

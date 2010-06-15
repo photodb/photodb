@@ -84,7 +84,6 @@ uses UnitDBKernel, CommCtrl, CommonDBSupport, ProgressActionUnit;
 
 procedure SplitDB;
 begin
- if not DBKernel.UserRights.ShowAdminTools then exit;
  if Split_Opened then
  begin
   SplitExportForm.Show;

@@ -494,8 +494,6 @@ var
 begin
  if (Button = mbLeft) and FileExists(DB_PATCH.Text) then
  begin
-  if DBKernel.UserRights.FileOperationsNormal then
-  begin
    DragImageList.Clear;
    DropFileSource1.Files.Clear;
    DropFileSource1.Files.Add(DB_PATCH.Text);
@@ -507,7 +505,6 @@ begin
    DragImageList.Add(DragImage,nil);
    DragImage.free;
    DropFileSource1.Execute;
-  end;
  end;
 end;
 

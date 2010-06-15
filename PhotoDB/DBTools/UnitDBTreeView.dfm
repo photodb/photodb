@@ -21,7 +21,7 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
     Left = 0
     Top = 0
     Width = 384
-    Height = 349
+    Height = 347
     Align = alClient
     Images = ImageList1
     Indent = 19
@@ -39,7 +39,7 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
     Left = 384
     Top = 0
     Width = 131
-    Height = 349
+    Height = 347
     Align = alRight
     TabOrder = 1
     object Label1: TLabel
@@ -87,7 +87,7 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 349
+    Top = 347
     Width = 515
     Height = 19
     Panels = <
@@ -126,10 +126,7 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
     DragTypes = [dtCopy]
     OnFeedback = DropFileSource1Feedback
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
     AllowAsyncTransfer = True
     Left = 160
     Top = 32
@@ -141,11 +138,8 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
     Top = 72
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = []
-    GetDataOnEnter = False
-    ShowImage = True
+    DragTypes = []
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 128
     Top = 32
   end

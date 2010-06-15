@@ -96,7 +96,6 @@ uses UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo, Language,
 
 Procedure ExecuteGroupManager;
 begin
- if not DBKernel.UserRights.ShowOptions then exit;
  if FormManageGroups=nil then
  Application.CreateForm(TFormManageGroups,FormManageGroups) else
  begin
@@ -149,7 +148,6 @@ begin
  LoadLanguage;
  ShowAll1.Checked:=DBKernel.ReadBool('GroupsManager','ShowAllGroups',true);
  if ShowAll1.Checked then ShowAll1.ImageIndex:=-1;
- AddGroup1.Visible:=DBKernel.UserRights.ManageGroups;
  LoadToolBarIcons;
 end;
 
@@ -161,8 +159,8 @@ begin
  ImagePopupMenu := TPopupMenu.Create(nil);
  ImagePopupMenu.Images:=DBKernel.ImageList;
  ImagePopupMenu.Tag:=(Sender as TListView).GetItemAt(MousePos.x,MousePos.Y).ImageIndex;
- if DBKernel.UserRights.ManageGroups then
- begin
+
+
   MenuChangeGroup := TMenuItem.Create(ImagePopupMenu);
   MenuChangeGroup.Caption:=TEXT_MES_CHANGE_GROUP;
   MenuChangeGroup.OnClick:=ChangeGroup;
@@ -175,7 +173,8 @@ begin
   MenuAddGroup.Caption:=TEXT_MES_ADD_GROUP;
   MenuAddGroup.OnClick:=MenuActionAddGroup;
   MenuAddGroup.ImageIndex:=DB_IC_NEW_SHELL;
- end;
+
+
  MenuSearchForGroup := TmenuItem.Create(ImagePopupMenu);
  MenuSearchForGroup.Caption:=TEXT_MES_SEARCH_FOR_GROUP;
  MenuSearchForGroup.ImageIndex:=DB_IC_SEARCH;
@@ -184,12 +183,12 @@ begin
  MenuQuickInfoGroup.Caption:=TEXT_MES_QUICK_GROUP_INFO;
  MenuQuickInfoGroup.OnClick:=MenuActionQuickInfoGroup;
  MenuQuickInfoGroup.ImageIndex:=DB_IC_PROPERTIES;
- if DBKernel.UserRights.ManageGroups then
- begin
-  ImagePopupMenu.Items.Add(MenuChangeGroup);
-  ImagePopupMenu.Items.Add(MenuDeleteGroup);
-  ImagePopupMenu.Items.Add(MenuAddGroup);
- end;
+
+
+ ImagePopupMenu.Items.Add(MenuChangeGroup);
+ ImagePopupMenu.Items.Add(MenuDeleteGroup);
+ ImagePopupMenu.Items.Add(MenuAddGroup);
+
  ImagePopupMenu.Items.Add(MenuSearchForGroup);
  ImagePopupMenu.Items.Add(MenuQuickInfoGroup);
  ImagePopupMenu.Popup((Sender as TControl).ClientToScreen(MousePos).X,(Sender as TControl).ClientToScreen(MousePos).Y);
@@ -515,11 +514,8 @@ var
    Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
    ToolBarImageList.AddIcon(Ico);
   end;
+  
 begin
- ToolButton1.Visible:=DBkernel.UserRights.ManageGroups;  
- ToolButton2.Visible:=DBkernel.UserRights.ManageGroups;
-
- ToolButton8.Visible:=DBkernel.UserRights.ShowOptions;
 
  ConvertTo32BitImageList(ToolBarImageList);
 

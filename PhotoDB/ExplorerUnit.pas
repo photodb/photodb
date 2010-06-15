@@ -402,11 +402,9 @@ type
     procedure SetSelected(NewSelected: TEasyItem);
     procedure PropertiesLinkClick(Sender: TObject);
     procedure SlideShowLinkClick(Sender: TObject);
-    procedure Tools1Click(Sender: TObject);
     procedure InfoPanel1Click(Sender: TObject);
     function GetThreadsCount : Integer;
     procedure Paste3Click(Sender: TObject);
-    procedure View1Click(Sender: TObject);
     procedure ShowOnlyCommon1Click(Sender: TObject);
     procedure ShowPrivate1Click(Sender: TObject);
     procedure OpeninSearchWindow1Click(Sender: TObject);
@@ -709,11 +707,6 @@ uses language, ThreadManeger,UnitUpdateDB, ExplorerThreadUnit, Searching,
 
 {$R directory_large.res}
 
-function _AutoRename : boolean;
-begin
- Result:=not DBKernel.UserRights.FileOperationsCritical;
-end;
-
 Function MakeRegPath(Path : String) : String;
 var
   i : Integer;
@@ -770,7 +763,6 @@ begin
   Files.free;
   if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
   ToolButton7.Enabled:=false;
-  ToolButton7.Visible:=DBKernel.UserRights.FileOperationsNormal;
  end;
 end;
 
@@ -788,7 +780,6 @@ begin
  FWasDragAndDrop:=false;
  LockDrawIcon:=false;
  ListView:=LV_THUMBS;
- ToolButton19.Visible:=DBkernel.UserRights.ShowOptions;
  IsReallignInfo:=false;
 
  ListView1:=TXListView.Create(self);
@@ -871,27 +862,13 @@ begin
   
  WindowID:=GetGUID;
  SetLength(RefreshIDList,0);
- if not DBkernel.UserRights.ShowPath then
- begin
-//?  CoolBar1.Bands[1].Visible:=false;
-  CoolBar1.Bands[0].Visible:=false;
-  CoolBar1.Realign;
-  CoolBar1.Height:=CoolBar1.Bands[0].Height+2;
-  ToolButton3.Enabled:=false;
- end;
- if not DBkernel.UserRights.ShowPath then
- if not DBkernel.UserRights.ShowPrivate then
- View1.Visible:=false;
- Edit1.Enabled:=DBkernel.UserRights.ShowPath;
- ToolBar2.Visible:=DBkernel.UserRights.ShowPath;
+
+
  SetLength(UserLinks,0);
  SetLength(FPlaces,0);
  DragFilesPopup:=TStringList.Create;
- if not DBkernel.UserRights.FileOperationsCritical then
- DropFileSource1.Dragtypes:=[dtCopy,dtLink];
- if not DBkernel.UserRights.FileOperationsNormal then
- DropFileSource1.Dragtypes:=[];
- GetPhotosFromDrive1.Visible:=DBKernel.UserRights.FileOperationsNormal and not FolderView;
+
+ GetPhotosFromDrive1.Visible:=not FolderView;
  SelfDraging:=false;
 // ToolBar2.ButtonHeight:=19;
  FDblClicked:=false;
@@ -933,7 +910,6 @@ begin
  LoadBaseFunctions(aScript);
  LoadDBFunctions(aScript);
  AddAccessVariables(aScript);
- if DBKernel.UserRights.FileOperationsCritical then
  LoadFileFunctions(aScript);
  AddScriptObjFunction(aScript,'CloseWindow',F_TYPE_OBJ_PROCEDURE_TOBJECT,CloseWindow);
 
@@ -1284,11 +1260,11 @@ begin
   if ImHint<>nil then
   ImHint.Close;
   if Item.Index>Length(fFilesInfo)-1 then exit;
-  If (fFilesInfo[Item.Index].Access=db_access_private) and not DBKernel.UserRights.ShowPrivate then exit;
+  If (fFilesInfo[Item.Index].Access=db_access_private) then exit;
   SetForegroundWindow(Self.Handle);
   SetLength(fFilesToDrag,0);
   fpopupdown:=true;
-  if not ((GetTickCount-WindowsMenuTickCount>WindowsMenuTime) and (DBkernel.UserRights.FileOperationsCritical)) then
+  if not (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
   begin
    popupmenu1.Tag:=ItemIndexToMenuIndex(Item.Index);
    popupmenu1.Popup(ListView1.clienttoscreen(MousePos).X ,ListView1.clienttoscreen(MousePos).y);
@@ -1428,7 +1404,6 @@ begin
   NewWindow1.Visible:=true;
   AddFile1.Caption:=TEXT_MES_ADD_DISK;
   AddFile1.Visible:=True;
-  If not DBkernel.UserRights.Add then AddFile1.Visible:=false;
   Properties1.Visible:=True;
   Open1.Visible:=true;
   SlideShow1.Visible:=True;
@@ -1440,13 +1415,13 @@ begin
   Files.free;
   Cut2.Visible:=false;
   Copy1.Visible:=false;
-  Paste2.Visible:=DBkernel.UserRights.FileOperationsNormal;
-  Shell1.Visible:=DBkernel.UserRights.Execute;
+  Paste2.Visible:=True;
+  Shell1.Visible:=True;
  end;
  If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_FOLDER then
  begin         
   DBitem1.Visible:=false;
-  MakeFolderViewer2.Visible:=not FolderView and DBkernel.UserRights.FileOperationsCritical;
+  MakeFolderViewer2.Visible:=not FolderView;
   Print1.Visible:=false;
   Othertasks1.Visible:=false;
   ImageEditor2.Visible:=false;
@@ -1463,11 +1438,11 @@ begin
   NewWindow1.Visible:=true;
   AddFile1.Caption:=TEXT_MES_ADD_DIRECTORY;
   AddFile1.Visible:=True;
-  Properties1.Visible:=DBKernel.UserRights.ShowPrivate;
-  Paste2.Visible:=DBkernel.UserRights.FileOperationsNormal;
+  Properties1.Visible:=True;
+  Paste2.Visible:=True;
   Open1.Visible:=true;
-  Delete1.Visible:=DBkernel.UserRights.FileOperationsCritical;
-  Rename1.Visible:=DBkernel.UserRights.FileOperationsCritical;
+  Delete1.Visible:=True;
+  Rename1.Visible:=True;
   SlideShow1.Visible:=True;
   Files:=TStringList.Create;
   LoadFIlesFromClipBoard(Effects,Files);
@@ -1475,51 +1450,45 @@ begin
   Files.free;
 
   b:=CanCopySelection;
-  Cut2.Visible:=DBkernel.UserRights.FileOperationsCritical and b;
-  Copy1.Visible:=DBkernel.UserRights.FileOperationsNormal and b;
-  Paste2.Visible:=DBkernel.UserRights.FileOperationsNormal;
-  Shell1.Visible:=DBkernel.UserRights.Execute;
+  Cut2.Visible:= b;
+  Copy1.Visible:= b;
+  Paste2.Visible:=True;
+  Shell1.Visible:=True;
  end;
  If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
  begin   
   DBitem1.Visible:=true;            
   StenoGraphia1.Visible:=true;
-  AddHiddenInfo1.Visible:= DBKernel.UserRights.FileOperationsCritical and (SelCount=1);
-  ExtractHiddenInfo1.Visible:=DBKernel.UserRights.FileOperationsCritical;
-  ExtractHiddenInfo1.Visible:=ExtractHiddenInfo1.Visible and ExtInMask('|PNG|BMP|',GetExt(fFilesInfo[popupmenu1.tag].FileName));
+  AddHiddenInfo1.Visible:= (SelCount=1);
+  ExtractHiddenInfo1.Visible:=True;
+  ExtractHiddenInfo1.Visible:=ExtInMask('|PNG|BMP|',GetExt(fFilesInfo[popupmenu1.tag].FileName));
 
-  MakeFolderViewer2.Visible:=not FolderView and DBkernel.UserRights.FileOperationsCritical;
-  Print1.Visible:=DBkernel.UserRights.Print;
-  Othertasks1.Visible:=DBKernel.UserRights.FileOperationsNormal;
-  ImageEditor2.Visible:=DBKernel.UserRights.EditImage;
+  MakeFolderViewer2.Visible:=not FolderView ;
+  Print1.Visible:=True;
+  Othertasks1.Visible:=True;
+  ImageEditor2.Visible:=True;
   CryptFile1.Visible:=not ValidCryptGraphicFile(fFilesInfo[popupmenu1.tag].FileName);
   ResetPassword1.Visible:=not CryptFile1.Visible;
   EnterPassword1.Visible:=not CryptFile1.Visible and (DBkernel.FindPasswordForCryptImageFile(fFilesInfo[popupmenu1.tag].FileName)='') ;
-  if not DBkernel.UserRights.Crypt then
-  begin
-   ResetPassword1.Visible:=false;
-   EnterPassword1.Visible:=false;
-   CryptFile1.Visible:=false;
-  end;
-  Convert1.Visible:=not EnterPassword1.Visible and DBkernel.UserRights.FileOperationsNormal;
-  Resize1.Visible:=not EnterPassword1.Visible and DBkernel.UserRights.FileOperationsNormal;
-  Rotate1.Visible:=not EnterPassword1.Visible and DBkernel.UserRights.FileOperationsNormal;
+
+  Convert1.Visible:=not EnterPassword1.Visible;
+  Resize1.Visible:=not EnterPassword1.Visible;
+  Rotate1.Visible:=not EnterPassword1.Visible;
   RefreshID1.Visible:=(not EnterPassword1.Visible) and (fFilesInfo[popupmenu1.tag].ID<>0);
-  SetasDesktopWallpaper1.Visible:=CryptFile1.Visible and DBkernel.UserRights.FileOperationsCritical and IsWallpaper(fFilesInfo[popupmenu1.tag].FileName);
+  SetasDesktopWallpaper1.Visible:=CryptFile1.Visible and IsWallpaper(fFilesInfo[popupmenu1.tag].FileName);
   Refresh1.Visible:=True;
   Open1.Visible:=false;
-  Shell1.Visible:=DBkernel.UserRights.Execute;
-  Rename1.Visible:=DBkernel.UserRights.FileOperationsCritical;
+  Shell1.Visible:=True;
+  Rename1.Visible:=True;
   NewWindow1.Visible:=false;
   Properties1.Visible:=true;
   SlideShow1.Visible:=True;
-  Delete1.Visible:=DBkernel.UserRights.FileOperationsCritical;;
+  Delete1.Visible:=True;
   AddFile1.Caption:=TEXT_MES_ADDFILE;
   if fFilesInfo[popupmenu1.tag].ID=0 then
   AddFile1.Visible:=true else AddFile1.Visible:=false;
-  If not DBkernel.UserRights.Add then AddFile1.Visible:=false;
-  Cut2.Visible:=DBkernel.UserRights.FileOperationsCritical;
-  Copy1.Visible:=DBkernel.UserRights.FileOperationsNormal;
+  Cut2.Visible:=True;
+  Copy1.Visible:=True;
   Paste2.Visible:=false;
  end;
  If (fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_EXEFILE) then
@@ -1546,13 +1515,13 @@ begin
   Open1.Visible:=false;
   SlideShow1.Visible:=false;
   Properties1.Visible:=True;
-  Delete1.Visible:=DBkernel.UserRights.FileOperationsCritical;
-  Rename1.Visible:=DBkernel.UserRights.FileOperationsCritical;
+  Delete1.Visible:=True;
+  Rename1.Visible:=True;
   AddFile1.Visible:=false;
-  Cut2.Visible:=DBkernel.UserRights.FileOperationsCritical;
-  Copy1.Visible:=DBkernel.UserRights.FileOperationsNormal;
+  Cut2.Visible:=True;
+  Copy1.Visible:=True;
   Paste2.Visible:=false;
-  Shell1.Visible:=DBkernel.UserRights.Execute;
+  Shell1.Visible:=True;
  end;
 
  If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_NETWORK then
@@ -1695,7 +1664,6 @@ begin
   if fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
   SendTo1.Visible:=true;
   if DBKernel.ReadBool('Options','UseUserMenuForExplorer',true) then
-  if DBKernel.UserRights.FileOperationsCritical then
   if fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
   begin
    info:=GetCurrentPopUpMenuInfo(Item);
@@ -1716,7 +1684,6 @@ begin
  If ListView1.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
-  if not (DBkernel.UserRights.FileOperationsCritical and (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER)) or DBkernel.UserRights.FileOperationsCritical then
   File_List.Add(ProcessPath(fFilesInfo[index].FileName));
  end;
  if File_List.Count>0 then
@@ -2366,8 +2333,6 @@ end;
 
 begin
 
- if DBkernel.UserRights.SetRating then
- begin
   GetCursorPos(p1);
   p:=ListView1.ScreenToClient(p1);
   if ItemByPointStar(Listview1,p,fPictureSize)<>nil then
@@ -2386,7 +2351,6 @@ begin
     exit;
    end;
   end;
- end;
 
  FDblClicked:=true;
  fDBCanDrag:=false;
@@ -2832,7 +2796,7 @@ begin
  info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
  info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
  info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False) and DBKernel.UserRights.FileOperationsCritical;
+ info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
  info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
  info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
  info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
@@ -2860,7 +2824,7 @@ begin
  info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
  info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
  info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False) and DBKernel.UserRights.FileOperationsCritical;
+ info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
  info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
  info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
  info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
@@ -2980,7 +2944,7 @@ begin
     begin
      rdown:=false;
     end;
-    fDBCanDrag:=DBKernel.UserRights.FileOperationsNormal;
+    fDBCanDrag:=True;
     SetLength(fFilesToDrag,0);
     SetLength(FListDragItems,0);
     GetCursorPos(fDBDragPoint);
@@ -3086,7 +3050,7 @@ begin
  info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
  info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
  info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False) and DBKernel.UserRights.FileOperationsCritical;
+ info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
  info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
  info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
  info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
@@ -3559,8 +3523,7 @@ Showmessage(Inttostr(Msg.message)); }
   WindowsMenuTickCount:=GetTickCount;
   if (Msg.wParam=37) and CtrlKeyDown then SpeedButton1Click(nil);
   if (Msg.wParam=39) and CtrlKeyDown then SpeedButton2Click(nil);
-  if DBkernel.UserRights.ShowPath then
-  if (Msg.wParam=38) and CtrlKeyDown then SpeedButton3Click(nil);                                          
+  if (Msg.wParam=38) and CtrlKeyDown then SpeedButton3Click(nil);
   if (Msg.wParam=83) and CtrlKeyDown then
   if ToolButton18.Enabled then ToolButton18Click(nil);
   if (Msg.wParam=116) then SetPath(GetCurrentPath);
@@ -3594,13 +3557,13 @@ Showmessage(Inttostr(Msg.message)); }
   //107+
   if (Msg.wParam=107) then ZoomOut;
 
-  if (Msg.wParam=113) then if DBkernel.UserRights.FileOperationsCritical then If ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then begin popupmenu1.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index); Rename1Click(nil); end;
+  if (Msg.wParam=113) then If ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then begin popupmenu1.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index); Rename1Click(nil); end;
 
-  if (Msg.wParam=46) and ShiftKeyDown then if DBkernel.UserRights.FileOperationsCritical then begin DeleteFiles(False); Exit; end;
-  if (Msg.wParam=46) then if DBkernel.UserRights.FileOperationsCritical then DeleteFiles(True);
-  if (Msg.wParam=67) and CtrlKeyDown then if DBkernel.UserRights.FileOperationsNormal then Copy3Click(Nil);
-  if (Msg.wParam=88) and CtrlKeyDown then if DBkernel.UserRights.FileOperationsCritical then Cut3Click(Nil);
-  if (Msg.wParam=86) and CtrlKeyDown then if DBkernel.UserRights.FileOperationsNormal then Paste3Click(Nil);
+  if (Msg.wParam=46) and ShiftKeyDown then begin DeleteFiles(False); Exit; end;
+  if (Msg.wParam=46) then DeleteFiles(True);
+  if (Msg.wParam=67) and CtrlKeyDown then Copy3Click(Nil);
+  if (Msg.wParam=88) and CtrlKeyDown then Cut3Click(Nil);
+  if (Msg.wParam=86) and CtrlKeyDown then Paste3Click(Nil);
   if (Msg.wParam=65) and CtrlKeyDown then SelectAll1Click(nil);
 
  //  if (Msg.wParam=13) and AltKeyDown then Properties1Click(Nil);
@@ -3646,9 +3609,9 @@ begin
   end else
   Paste3.Visible:=False;
  end;
- Cut3.Visible:=DBKernel.UserRights.FileOperationsCritical;
- Copy3.Visible:=DBKernel.UserRights.FileOperationsNormal;
- Paste3.Visible:=DBKernel.UserRights.FileOperationsNormal;
+ Cut3.Visible:=True;
+ Copy3.Visible:=True;
+ Paste3.Visible:=True;
  Up1.Enabled:=ToolButton3.Enabled;
 end;
 
@@ -3709,7 +3672,7 @@ begin
     ExplorerViewInfo.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
     ExplorerViewInfo.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
     ExplorerViewInfo.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
-    ExplorerViewInfo.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False) and DBKernel.UserRights.FileOperationsCritical;
+    ExplorerViewInfo.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
     ExplorerViewInfo.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
     ExplorerViewInfo.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
     ExplorerViewInfo.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
@@ -3957,12 +3920,12 @@ begin
 
  if Effects= DROPEFFECT_MOVE then
  begin
-  CopyFiles(Handle,S,GetCurrentPath,True,_AutoRename,CorrectPath,self);
+  CopyFiles(Handle,S,GetCurrentPath,True,False,CorrectPath,self);
   inc(CopyInstances);
   ClipBoard.Clear;
   ToolButton7.Enabled:=false;
  end;
- if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,GetCurrentPath,false,_AutoRename);
+ if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,GetCurrentPath,false,False);
 
 end;
 
@@ -3971,19 +3934,13 @@ var
   Files : TStrings;
   Effects : Integer;
 begin
- ShowUpdater1.Visible:=DBKernel.UserRights.Add;
- Addfolder1.Visible:=DBKernel.UserRights.Add;
  OpeninSearchWindow1.Visible:=True;
  Files:=TStringList.Create;
  LoadFIlesFromClipBoard(Effects,Files);
  if Files.Count<>0 then Paste1.Enabled:=true else Paste1.Enabled:=false;
  Files.free;
- Paste1.Visible:=DBKernel.UserRights.FileOperationsNormal;
- Cut1.Visible:=DBKernel.UserRights.FileOperationsCritical;
- Copy2.Visible:=DBKernel.UserRights.FileOperationsNormal;
- MakeNew1.Visible:=DBKernel.UserRights.FileOperationsNormal;
 
- MakeFolderViewer1.Visible:=((GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView and DBkernel.UserRights.FileOperationsCritical;
+ MakeFolderViewer1.Visible:=((GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
 
  if GetCurrentPathW.PType=EXPLORER_ITEM_MYCOMPUTER then
  begin
@@ -4007,8 +3964,6 @@ begin
  begin
   Cut1.Visible:=false;
  end;
- MakeNew1.Visible:=MakeNew1.Visible and DBkernel.UserRights.FileOperationsNormal;
- OpeninSearchWindow1.Visible:=OpeninSearchWindow1.Visible and DBkernel.UserRights.ShowPath;
 end;
 
 procedure TExplorerForm.Cut2Click(Sender: TObject);
@@ -4117,7 +4072,6 @@ begin
   Application.HideHint;
   if ImHint<>nil then
   ImHint.close;
-  If (fFilesInfo[Item.Index].Access=db_access_private) and not DBKernel.UserRights.ShowPrivate then exit;
   popupmenu1.Tag:=ItemIndexToMenuIndex(Item.Index);
   popupmenu1.Popup(Image1.clienttoscreen(MousePos).X ,Image1.clienttoscreen(MousePos).y);
  end else begin
@@ -4134,11 +4088,7 @@ procedure TExplorerForm.ReallignToolInfo;
 begin
  VerifyPaste(self);
 
- ToolButton5.Visible:=DBKernel.UserRights.FileOperationsCritical;
- ToolButton6.Visible:=DBKernel.UserRights.FileOperationsNormal;
- ToolButton8.Visible:=DBKernel.UserRights.FileOperationsCritical;
-
- If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) and DBkernel.UserRights.FileOperationsNormal then
+ If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) then
  begin
   if SelCount<>0 then
   ToolButton6.Enabled:=true else
@@ -4148,7 +4098,7 @@ begin
   ToolButton6.Enabled:=false;
  end;
 
- If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) and DBkernel.UserRights.FileOperationsCritical then
+ If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then
  begin
   if SelCount<>0 then
   begin
@@ -4162,7 +4112,7 @@ begin
   ToolButton5.Enabled:=false;
  end;
 
- If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) and DBkernel.UserRights.FileOperationsCritical then
+ If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then
  begin
   if SelCount<>0 then
   begin
@@ -4226,9 +4176,6 @@ begin
 
  VerifyPaste(self);
 
- ToolButton5.Visible:=DBKernel.UserRights.FileOperationsCritical;
- ToolButton6.Visible:=DBKernel.UserRights.FileOperationsNormal;
- ToolButton8.Visible:=DBKernel.UserRights.FileOperationsCritical;
 // SelCount:=SelCount;
  LockWindowUpdate(self.Handle);
  s:=GetFileName(FSelectedInfo.FileName)+' ';
@@ -4354,7 +4301,7 @@ begin
   SlideShowLink.Top:=TasksLabel.Top;
  end;
 
- If (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) and (SelCount=1) and DBKernel.UserRights.EditImage then
+ If (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) and (SelCount=1)then
  begin
   ImageEditorLink.Visible:=true;
   ImageEditorLink.Top:=SlideShowLink.Top+SlideShowLink.Height+h;
@@ -4364,7 +4311,7 @@ begin
   ImageEditorLink.Top:=SlideShowLink.Top;
  end;
 
- If (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) and DBkernel.UserRights.Print then
+ If (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) then
  begin
   PrintLink.Visible:=true;
   PrintLink.Top:=ImageEditorLink.Top+ImageEditorLink.Height+h;
@@ -4375,7 +4322,7 @@ begin
  end;
 
 
- If (((((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) and DBkernel.UserRights.Execute) or (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) And (SelCount=1)) then
+ If (((((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE))) or (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) And (SelCount=1)) then
  begin
   ShellLink.Visible:=true;
   ShellLink.Top:=PrintLink.Top+PrintLink.Height+h;
@@ -4385,7 +4332,7 @@ begin
   ShellLink.Top:=PrintLink.Top;
  end;
 
- If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) and DBkernel.UserRights.FileOperationsNormal then
+ If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) then
  begin
   CopyToLink.Visible:=true;
   if SelCount<>0 then
@@ -4399,7 +4346,7 @@ begin
   CopyToLink.Top:=ShellLink.Top;
  end;
 
- If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) and DBkernel.UserRights.FileOperationsCritical then
+ If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then
  begin
   if SelCount<>0 then
   begin
@@ -4418,7 +4365,7 @@ begin
   MoveToLink.Top:=CopyToLink.Top;
  end;
 
- If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) And (SelCount<>0) and DBkernel.UserRights.FileOperationsCritical  then
+ If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) And (SelCount<>0)  then
  begin
   RenameLink.Visible:=true;
   RenameLink.Top:=MoveToLink.Top+MoveToLink.Height+h;
@@ -4438,7 +4385,7 @@ begin
   PropertiesLink.Top:=RenameLink.Top;
  end;
 
- If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) and DBkernel.UserRights.FileOperationsCritical then
+ If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then
  begin
   if SelCount<>0 then
   begin
@@ -4484,7 +4431,7 @@ begin
   b:=((FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) and b);
  end;
 
- If b and DBkernel.UserRights.Add then
+ If b then
  begin
   If SelCount=1 then AddLink.Text:=TEXT_MES_ADD_OBJECT;
   If SelCount>1 then AddLink.Text:=TEXT_MES_ADD_OBJECTS;
@@ -4612,7 +4559,7 @@ begin
   If ListView1.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
-   if ((fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) and DBkernel.UserRights.FileOperationsCritical) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_EXEFILE) then
+   if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_EXEFILE) then
    begin
     SetLength(S,Length(s)+1);
     S[Length(s)-1]:=fFilesInfo[index].FileName;
@@ -4629,12 +4576,8 @@ begin
 
  EndDir:=UnitDBFileDialogs.DBSelectDir(Handle,DlgCaption,Dolphin_DB.UseSimpleSelectFolderDialog);
 
-{ _Break:=false;
- _AutoRename:=AutoRename(S,EndDir,_Break);
- if _Break then Exit;}
-
  If EndDir<>'' then
- CopyFiles(Self.Handle,S,EndDir,false,_AutoRename);
+ CopyFiles(Self.Handle,S,EndDir,false,False);
 end;
 
 procedure TExplorerForm.MoveToLinkClick(Sender: TObject);
@@ -4642,10 +4585,8 @@ var
   EndDir : String;
   i, index : integer;
   S : Array of String;
-  DlgCaption : String;  
-//  _AutoRename, _Break : boolean;
+  DlgCaption : String;
 begin
- if not DBkernel.UserRights.FileOperationsCritical then exit;
  SetLength(S,0);
  If SelCount<>0 then
  begin
@@ -4668,11 +4609,8 @@ begin
  EndDir:=UnitDBFileDialogs.DBSelectDir(Handle,DlgCaption,Dolphin_DB.UseSimpleSelectFolderDialog);
  If EndDir<>'' then
  begin
-{  _AutoRename:=AutoRename(S,EndDir,_Break);
-  if _Break then Exit;
-           
-  _Break:=false; }
-  CopyFiles(Self.Handle,S,EndDir,True,_AutoRename,CorrectPath,self);
+
+  CopyFiles(Self.Handle,S,EndDir,True,False,CorrectPath,self);
   inc(CopyInstances);
  end;
 end;
@@ -4682,8 +4620,7 @@ var
   Files : TStrings;
   Effects : Integer;
   i : Integer;
-  S : array of String; 
-//  _AutoRename, _Break : boolean;
+  S : array of String;
 begin
  Files:=TStringList.Create;
  LoadFilesFromClipBoard(Effects,Files);
@@ -4695,18 +4632,14 @@ begin
   S[Length(s)-1]:=Files[i];
  end;
 
-{ _Break:=false;
- _AutoRename:=AutoRename(S,fFilesInfo[popupmenu1.tag].FileName,_Break);
- if _Break then Exit;   }
-
  if Effects= DROPEFFECT_MOVE then
  begin
-  CopyFiles(Handle,S,fFilesInfo[popupmenu1.tag].FileName,True,_AutoRename,CorrectPath,self);
+  CopyFiles(Handle,S,fFilesInfo[popupmenu1.tag].FileName,True,False,CorrectPath,self);
   inc(CopyInstances);
   ClipBoard.Clear;
   ToolButton7.Enabled:=false;
  end;
- if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,fFilesInfo[popupmenu1.tag].FileName,False,_AutoRename);
+ if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,fFilesInfo[popupmenu1.tag].FileName,False,False);
 end;
 
 procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
@@ -5039,12 +4972,9 @@ end;
 
 procedure TExplorerForm.Options1Click(Sender: TObject);
 begin
- if DBkernel.UserRights.ShowOptions then
- begin
   if OptionsForm=nil then
   Application.CreateForm(TOptionsForm, OptionsForm);
   OptionsForm.show;
- end;
 end;
 
 procedure TExplorerForm.DBManager1Click(Sender: TObject);
@@ -5118,15 +5048,6 @@ begin
  end;
 end;
 
-procedure TExplorerForm.Tools1Click(Sender: TObject);
-begin
- ShowUpdater2.Visible:=DBKernel.UserRights.Add;
- DBManager1.Visible:=DBKernel.UserRights.ShowAdminTools;
- ImageEditor1.Visible:=DBKernel.UserRights.EditImage;
- GroupManager1.Visible:=DBKernel.UserRights.ShowOptions;
-
-end;
-
 procedure TExplorerForm.InfoPanel1Click(Sender: TObject);
 begin
  Button1Click(Sender);
@@ -5146,13 +5067,6 @@ begin
  DBKernel.DoIDEvent(self,0,[EventID_Param_CopyPaste],EventInfo);
 end;
 
-procedure TExplorerForm.View1Click(Sender: TObject);
-begin
- ExplorerPanel1.Visible:=ExplorerPanel1.Visible and DBkernel.UserRights.ShowPath;
- ShowOnlyCommon1.Visible:=ExplorerManager.ShowPrivate and DBkernel.UserRights.ShowPrivate;
- ShowPrivate1.Visible:=not ExplorerManager.ShowPrivate and DBkernel.UserRights.ShowPrivate;
-end;
-
 procedure TExplorerForm.ShowOnlyCommon1Click(Sender: TObject);
 begin
  ExplorerManager.ShowPrivate:=false;
@@ -5160,7 +5074,6 @@ end;
 
 procedure TExplorerForm.ShowPrivate1Click(Sender: TObject);
 begin
- if DBkernel.UserRights.ShowPrivate then
  ExplorerManager.ShowPrivate:=True;
 end;
 
@@ -5379,7 +5292,7 @@ begin
  begin
   TempFolderName:=ShellTreeView1.SelectedFolder.PathName;
   OpeninExplorer1.Visible:=DirectoryExists(TempFolderName);
-  AddFolder2.Visible:=OpeninExplorer1.Visible and DBkernel.UserRights.Add;
+  AddFolder2.Visible:=OpeninExplorer1.Visible ;
   View2.Visible:=OpeninExplorer1.Visible;
  end else
  begin
@@ -5463,13 +5376,9 @@ begin
  Path:=LongFileName(Path);
  If WPath.PType=EXPLORER_ITEM_MYCOMPUTER then
  begin
-  if DBKernel.UserRights.ShowPath then
-  begin
-   Caption:=MyComputer
-  end else
-  begin
-   Caption:=ProductName;
-  end;
+
+  Caption:=MyComputer;
+
   Edit1.text:=MyComputer;
   ThreadType:=THREAD_TYPE_MY_COMPUTER;
  end;
@@ -5477,28 +5386,26 @@ begin
  begin
   S:=Path;
   UnFormatDir(s);
-  if DBKernel.UserRights.ShowPath then
-  Caption:=S else Caption:=ProductName;
+
+  Caption:=S;
   Edit1.text:=Path;
  end;
  If WPath.PType=EXPLORER_ITEM_NETWORK then
  begin
-  if DBKernel.UserRights.ShowPath then
-  Caption:=Path else Caption:=ProductName;
+
+  Caption:=Path;
   Edit1.text:=Path;
   ThreadType:=THREAD_TYPE_NETWORK;
  end;
  If WPath.PType=EXPLORER_ITEM_WORKGROUP then
  begin
-  if DBKernel.UserRights.ShowPath then
-  Caption:=Path else Caption:=ProductName;
+  Caption:=Path;
   Edit1.text:=Path;
   ThreadType:=THREAD_TYPE_WORKGROUP;
  end;
  If WPath.PType=EXPLORER_ITEM_COMPUTER then
  begin
-  if DBKernel.UserRights.ShowPath then
-  Caption:=Path else Caption:=ProductName;
+  Caption:=Path;
   Edit1.text:=Path;
   ThreadType:=THREAD_TYPE_COMPUTER;
  end;
@@ -5528,7 +5435,7 @@ begin
  If (WPath.PType=EXPLORER_ITEM_MYCOMPUTER){ or not DirectoryExists(GetCurrentPath)} then
  ToolButton3.Enabled:=false else
  ToolButton3.Enabled:=True;
- ToolButton3.Enabled:=ToolButton3.Enabled and DBKernel.UserRights.ShowPath;
+ ToolButton3.Enabled:=ToolButton3.Enabled;
  Setlength(fFilesInfo,0);
  try
   SelectTimer.Enabled:=false;
@@ -5544,7 +5451,7 @@ begin
  except
  end;
  Info.OldFolderName:=FOldPatch;
- info.ShowPrivate:=DBkernel.UserRights.SetPrivate and ExplorerManager.ShowPrivate;  
+ info.ShowPrivate:=ExplorerManager.ShowPrivate;
  Info.PictureSize:=fPictureSize;
  BeginUpdate(CurrentGUID);
 
@@ -5566,7 +5473,7 @@ begin
  info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
  info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
  info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False) and DBKernel.UserRights.FileOperationsCritical;
+ info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
  info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
  info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
  info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
@@ -6004,7 +5911,6 @@ var
   Pnt : TPoint;   
 //  _AutoRename, _Break : boolean;
 begin
- if not DBkernel.UserRights.FileOperationsNormal then exit;
  outdrag:=false;
  DropInfo:=DropFileTarget1.Files;
 
@@ -6030,14 +5936,11 @@ begin
    S[i-1]:=DropInfo[i-1];
 
 
-{   _Break:=false;
-   _AutoRename:=AutoRename(S,GetCurrentPath,_Break);
-   if _Break then Exit;       }
 
    if not ShiftKeyDown then
-   CopyFiles(Handle,S,GetCurrentPath,false,_AutoRename) else
+   CopyFiles(Handle,S,GetCurrentPath,false,False) else
    begin
-    CopyFiles(Handle,S,GetCurrentPath,true,_AutoRename,CorrectPath,self);
+    CopyFiles(Handle,S,GetCurrentPath,true,False,CorrectPath,self);
     inc(CopyInstances);
    end;
   end;
@@ -6058,14 +5961,11 @@ begin
     if S[j,i]=#0 then
     Delete(S[j],i,1);
 
-{    _Break:=false;
-    _AutoRename:=AutoRename(S,Str,_Break);
-    if _Break then Exit;    }
 
     if not ShiftKeyDown then
-    CopyFiles(Handle,S,Str,ShiftKeyDown,_AutoRename) else
+    CopyFiles(Handle,S,Str,ShiftKeyDown,False) else
     begin
-     CopyFiles(Handle,S,Str,ShiftKeyDown,_AutoRename,CorrectPath,self);
+     CopyFiles(Handle,S,Str,ShiftKeyDown,False,CorrectPath,self);
      inc(CopyInstances);
     end;
 
@@ -6135,7 +6035,6 @@ begin
  LoadBaseFunctions(fScript);
  LoadDBFunctions(fScript);
  AddAccessVariables(fScript);
- if DBkernel.UserRights.FileOperationsCritical then
  LoadFileFunctions(fScript);
  SetNamedValueStr(fScript,'$Path',Path);
  ExecuteScript(nil,fScript,ScriptString,c,nil);
@@ -6510,7 +6409,7 @@ begin
    NewDir:=Dir+UpDir;
    FormatDir(NewDir);
    CreateDirA(NewDir);
-   CopyFiles(Handle,Files,NewDir,false,_AutoRename);
+   CopyFiles(Handle,Files,NewDir,false,False);
   end;
  end;
 end;
@@ -6609,8 +6508,7 @@ procedure TExplorerForm.Copy4Click(Sender: TObject);
 var
   S : array of string;
   i, j, index : integer;
-  Str : string;     
-//  _AutoRename, _Break : boolean;
+  Str : string;
 begin
  if (LastListViewSelCount=0) then
  begin
@@ -6620,14 +6518,10 @@ begin
   S[i-1]:=DragFilesPopup[i-1];
 
 
-{  _Break:=false;
-  _AutoRename:=AutoRename(S,GetCurrentPath,_Break);
-  if _Break then Exit;    }
-
   if not (Sender=Move1) then
-  CopyFiles(Handle,S,GetCurrentPath,Sender=Move1,_AutoRename) else
+  CopyFiles(Handle,S,GetCurrentPath,Sender=Move1,False) else
   begin
-   CopyFiles(Handle,S,GetCurrentPath,Sender=Move1,_AutoRename,CorrectPath,self);
+   CopyFiles(Handle,S,GetCurrentPath,Sender=Move1,False,CorrectPath,self);
    inc(CopyInstances);
   end;
  end;
@@ -6648,15 +6542,10 @@ begin
    if S[j,i]=#0 then
    Delete(S[j],i,1);
 
-
-{   _Break:=false;
-   _AutoRename:=AutoRename(S,Str,_Break);
-   if _Break then Exit;   }
-
    if not (Sender=Move1) then
-   CopyFiles(Handle,S,Str,Sender=Move1,_AutoRename) else
+   CopyFiles(Handle,S,Str,Sender=Move1,False) else
    begin
-    CopyFiles(Handle,S,Str,Sender=Move1,_AutoRename,CorrectPath,self);
+    CopyFiles(Handle,S,Str,Sender=Move1,False,CorrectPath,self);
     inc(CopyInstances);
    end;
   end;
@@ -7320,8 +7209,7 @@ end;
 
 function TExplorerForm.GetPath: string;
 begin
- if DBkernel.UserRights.ShowPath then
- Result:=GetCurrentPath else Result:='';
+ Result:=GetCurrentPath;
 end;
 
 function CanPasteFileInByType(FileType : integer) : boolean;
@@ -7334,8 +7222,7 @@ var
   i, index : integer;
 begin
  SetLength(Result,0);
- if DBkernel.UserRights.ShowPath then
- begin
+
   for i:=0 to ListView1.Items.Count-1 do
   If ListView1.Items[i].Selected then
   begin
@@ -7346,7 +7233,6 @@ begin
     Result[Length(Result)-1]:=fFilesInfo[index].FileName;
    end;
   end;
- end;
 end;
 
 function TExplorerForm.CanPasteInSelection: boolean;
@@ -7394,9 +7280,7 @@ begin
  if ListView1Selected=nil then
  Result:='' else
  begin
-  if DBkernel.UserRights.ShowPath then
-  Result:=FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.Index)].FileName
-  else Result:='';
+  Result:=FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.Index)].FileName;
  end;
 end;
 
@@ -7789,12 +7673,9 @@ procedure TExplorerForm.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
- if DBkernel.UserRights.SetRating then
- begin
   Dolphin_DB.SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
   EventInfo.Rating:=(Sender as TMenuItem).Tag;
   DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
- end;
 end;
 
 procedure TExplorerForm.ListView1Resize(Sender : TObject);
@@ -8109,7 +7990,7 @@ begin
  info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
  info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
  info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False) and DBKernel.UserRights.FileOperationsCritical;
+ info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
  info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
  info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
  info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);

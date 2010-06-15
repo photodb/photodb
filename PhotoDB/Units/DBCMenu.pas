@@ -256,13 +256,13 @@ begin
   _menuitem_show.ImageIndex:=DB_IC_SLIDE_SHOW;
  end;
 
- if DBKernel.UserRights.Delete and isrecord and not NoDBInfoNeeded then
+ if isrecord and not NoDBInfoNeeded then
  begin
   _menuitem_delete_l:=Tmenuitem.Create(_popupmenu);
   _menuitem_delete_l.Caption:=TEXT_MES_DEL_FROM_DB;
   _menuitem_delete_l.OnClick:=DeleteLItemPopUpMenu_;
   _menuitem_delete_l.ImageIndex:=DB_IC_DELETE_INFO;
-  If IsFile and DBKernel.UserRights.FileOperationsCritical then
+  If IsFile then
   begin
    _menuitem_delete:=Tmenuitem.Create(_popupmenu);
    _menuitem_delete.Caption:=TEXT_MES_DEL_FILE;
@@ -280,7 +280,6 @@ begin
  end;
 
  If IsFile then
- if DBkernel.UserRights.FileOperationsNormal then
  begin
   _menuitem_copy:=Tmenuitem.Create(_popupmenu);
   _menuitem_copy.Caption:=TEXT_MES_COPY_ITEM;
@@ -288,7 +287,7 @@ begin
   _menuitem_copy.ImageIndex:=DB_IC_COPY_ITEM;
  end;
 
- if Info.IsListItem and DBKernel.UserRights.FileOperationsCritical then
+ if Info.IsListItem then
  begin
   _menuitem_rename:=Tmenuitem.Create(_popupmenu);
   _menuitem_rename.Caption:=TEXT_MES_RENAME;
@@ -304,7 +303,7 @@ begin
  _menuitem_nil:=Tmenuitem.Create(_popupmenu);
  _menuitem_nil.Caption:='-';
 
- if DBKernel.UserRights.SetRating and IsRecord and not NoDBInfoNeeded then
+ if IsRecord and not NoDBInfoNeeded then
  begin
   _menuitem_rating:=Tmenuitem.Create(_popupmenu);
   _menuitem_rating.Caption:=TEXT_MES_RATING;
@@ -327,7 +326,7 @@ begin
   _menuitem_rating.Add(_ratings[i]);
  end;
 
- if DBKernel.UserRights.SetInfo and IsRecord and not NoDBInfoNeeded then
+ if IsRecord and not NoDBInfoNeeded then
  begin
   _menuitem_rotate:=Tmenuitem.Create(_popupmenu);
   _menuitem_rotate.Caption:=TEXT_MES_ROTATE;
@@ -352,7 +351,7 @@ begin
   _menuitem_rotate.Add(_rotated[i]);
  end;
 
- if DBKernel.UserRights.SetPrivate and IsRecord and not NoDBInfoNeeded then
+ if IsRecord and not NoDBInfoNeeded then
  begin
   access_db_item:=info.ItemAccess_[info.Position];
   _menuitem_private:=Tmenuitem.Create(_popupmenu);
@@ -431,7 +430,7 @@ begin
     FreeGroup(FGroup);
 
    end;
-   if DBkernel.UserRights.SetInfo then
+
    begin
     SetLength(_groups,Length(_groups)+1);
     _groups[Length(_groups)-1]:=TMenuItem.Create(_menuitem_groups);
@@ -499,11 +498,11 @@ begin
 
  if isrecord and not NoDBInfoNeeded then
  Item.Add(_menuitem_refresh_thum);
- if DBKernel.UserRights.SetInfo and isrecord and not NoDBInfoNeeded then
+ if isrecord and not NoDBInfoNeeded then
  Item.Add(_menuitem_rotate);
- if DBKernel.UserRights.SetRating and isrecord and not NoDBInfoNeeded then
+ if isrecord and not NoDBInfoNeeded then
  Item.Add(_menuitem_rating);
- if DBKernel.UserRights.SetPrivate and isrecord and not NoDBInfoNeeded then
+ if isrecord and not NoDBInfoNeeded then
  Item.Add(_menuitem_private);
  if info.IsDateGroup then
  if IsRecord and not NoDBInfoNeeded then
@@ -513,7 +512,6 @@ begin
   Item.Add(_menuitem_groups);
  end;
 
- if dbkernel.UserRights.Crypt then
  begin
   _menuitem_crypt:=TmenuItem.Create(_popupmenu);
   _menuitem_crypt.ImageIndex:=DB_IC_KEY;
@@ -563,7 +561,6 @@ begin
  end;
 
  If IsCurrentFile then
- if DBKernel.UserRights.FileOperationsCritical then
  if not Info.ItemCrypted_[Info.Position] then
  if IsWallpaper(Info.ItemFileNames_[Info.Position]) then
  begin
@@ -589,7 +586,6 @@ begin
  end;
 
  If IsCurrentFile then
- If DBKernel.UserRights.EditImage then
  begin
   _edit_image_menu:=TmenuItem.Create(_popupmenu);
   _edit_image_menu.Caption:=TEXT_MES_IMAGE_EDITOR;
@@ -600,7 +596,6 @@ begin
 
  If IsCurrentFile then
  if DBKernel.ReadBool('Options','UseUserMenuForIDmenu',true) then
- if DBKernel.UserRights.FileOperationsCritical then
  AddUserMenu(Item,false,0);
 
  If IsCurrentFile and (Info.ItemIDs_[Info.Position]<>0) and not NoDBInfoNeeded then
@@ -621,7 +616,6 @@ begin
   Item.Add(_menuitem_scan_image);
  end;
 
- if IsCurrentFile and DBKernel.UserRights.Print then
  begin
   _menuitem_print:=TmenuItem.Create(_popupmenu);
   _menuitem_print.Caption:=TEXT_MES_PRINT;
@@ -649,19 +643,17 @@ begin
   _menuitem_dublicates.Add(_menuitem_delete_dublicates);
  end;
 
- if DBKernel.UserRights.Delete and isrecord and not NoDBInfoNeeded then
+ if isrecord and not NoDBInfoNeeded then
  begin
   Item.Add(_menuitem_delete_l);
   if IsFile then
-  if dbkernel.UserRights.FileOperationsCritical then
   Item.Add(_menuitem_delete);
  end;
 
  if IsFile then
- if DBKernel.UserRights.FileOperationsNormal then
  Item.Add(_menuitem_copy);
 
- if Info.IsListItem and DBKernel.UserRights.FileOperationsCritical then
+ if Info.IsListItem then
  Item.Add(_menuitem_rename);
  if isrecord then Item.Add(_menuitem_nil);
  If DirectoryExists(GetDirectory(Info.ItemFileNames_[Info.Position])) then
@@ -812,7 +804,6 @@ begin
   InitializeScript(aScript);
   LoadBaseFunctions(aScript);
   LoadDBFunctions(aScript);
-  if DBKernel.UserRights.FileOperationsCritical then
   LoadFileFunctions(aScript);
   AddScriptObjFunction(aScript,'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
   AddScriptObjFunction(aScript,'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
@@ -908,7 +899,6 @@ begin
  If Changed then
  begin
   FQuery := GetQuery;
-  If DBkernel.UserRights.SetInfo then
   begin
    //[BEGIN] Date Support
    If IsDate then
@@ -1441,7 +1431,6 @@ end;
 procedure TDBPopupMenu.LoadScriptFunctions;
 begin
   LoadDBFunctions(aScript);
-  if DBKernel.UserRights.FileOperationsCritical then
   LoadFileFunctions(aScript);
 end;
 
@@ -1475,7 +1464,6 @@ begin
   SetNamedValue(aScript,'$Rotation',IntToStr(finfo.ItemRotations_[int]));
   SetNamedValue(aScript,'$Rating',IntToStr(finfo.ItemRatings_[int]));
   SetNamedValue(aScript,'$ID',IntToStr(finfo.ItemIDs_[int]));
-  if DBKernel.UserRights.ShowPath then
   SetNamedValue(aScript,'$FileName','"'+ProcessPath(finfo.ItemFileNames_[int])+'"');
   SetNamedValue(aScript,'$KeyWords','"'+finfo.ItemKeyWords_[int]+'"');
   SetNamedValue(aScript,'$Links','"'+finfo.ItemLinks_[int]+'"');

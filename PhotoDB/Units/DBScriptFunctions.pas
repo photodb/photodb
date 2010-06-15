@@ -42,22 +42,6 @@ begin
  SetIntAttr(aScript,'$LINK_TYPE_TXT',5);
  SetNamedValueStr(aScript,'$InvalidQuery',#8);
 
- SetBoolAttr(aScript,'$CanSetRating',DBKernel.UserRights.SetRating);
- SetBoolAttr(aScript,'$CanDeleteInfo',DBKernel.UserRights.Delete);
- SetBoolAttr(aScript,'$CanFileOperationsNormal',DBkernel.UserRights.FileOperationsNormal);
- SetBoolAttr(aScript,'$CanFileOperationsCritical',DBKernel.UserRights.FileOperationsCritical);
- SetBoolAttr(aScript,'$CanSetInfo',DBKernel.UserRights.SetInfo);
- SetBoolAttr(aScript,'$CanSetPrivate',DBKernel.UserRights.SetPrivate);
- SetBoolAttr(aScript,'$CanSetCrypt',DBKernel.UserRights.Crypt);
- SetBoolAttr(aScript,'$CanEditImage',DBKernel.UserRights.EditImage);
- SetBoolAttr(aScript,'$CanPrint',DBKernel.UserRights.Print);
- SetBoolAttr(aScript,'$CanShowPath',DBKernel.UserRights.ShowPath);
- SetBoolAttr(aScript,'$CanExecute',DBKernel.UserRights.Execute);
- SetBoolAttr(aScript,'$CanShowAdminTools',DBKernel.UserRights.ShowAdminTools);
- SetBoolAttr(aScript,'$CanEditImage',DBKernel.UserRights.EditImage);
- SetBoolAttr(aScript,'$CanManageGroups',DBKernel.UserRights.ManageGroups);
- SetBoolAttr(aScript,'$CanCrypt',DBKernel.UserRights.Crypt);
- SetBoolAttr(aScript,'$CanShowPrivate',DBKernel.UserRights.ShowPrivate);
 end;
 
 procedure DoActivation;
@@ -100,14 +84,12 @@ end;
 
 procedure AddFileInDB(FileName : string);
 begin
- if not DBKernel.UserRights.Add then exit;
  If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
  UpdaterDB.AddFile(FileName)
 end;
 
 procedure AddFolderInDB(Directory : string);
 begin
- if not DBKernel.UserRights.Add then exit;
  If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
  UpdaterDB.AddDirectory(Directory,nil)
 end;
@@ -203,27 +185,20 @@ end;
 
 procedure DoManager;
 begin
- if DBkernel.UserRights.ShowAdminTools then
- begin
   if ManagerDB=nil then
   Application.CreateForm(TManagerDB,ManagerDB);
   ManagerDB.Show;
- end;
 end;
 
 procedure DoOptions;
 begin
- if DBkernel.UserRights.ShowOptions then
- begin
   if OptionsForm=nil then
   Application.CreateForm(TOptionsForm, OptionsForm);
   OptionsForm.show;
- end;
 end;
 
 function NewImageEditor : string;
 begin
- if DBkernel.UserRights.EditImage then
  With EditorsManager.NewEditor do
  begin
 //  Show;
@@ -888,32 +863,6 @@ begin
  Result:=SupportedExt;
 end;
 
-function UserRights(StringRights : string) : boolean;
-var
-  fDBUserAccess : String;
-begin
- Result:=false;
- fDBUserAccess:=DBKernel.fDBUserAccess;
- if AnsiUpperCase(StringRights)='RIGHTS_DELETE' then Result:=fDBUserAccess[1]='1'; //  fUserRights.Delete:=fDBUserAccess[1]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_ADD' then Result:=fDBUserAccess[2]='1'; //  fUserRights.Add:=fDBUserAccess[2]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_SET_PRIVATE' then Result:=fDBUserAccess[3]='1';  //  fUserRights.SetPrivate:=fDBUserAccess[3]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_CHANGE_PASSWORD' then Result:=fDBUserAccess[4]='1'; //   fUserRights.ChPass:=fDBUserAccess[4]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_EDIT_IMAGE' then Result:=fDBUserAccess[5]='1'; //   fUserRights.EditImage:=fDBUserAccess[5]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_SET_RATING' then Result:=fDBUserAccess[6]='1'; //   fUserRights.SetRating:=fDBUserAccess[6]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_SET_INFO' then Result:=fDBUserAccess[7]='1';  //   fUserRights.SetInfo:=fDBUserAccess[7]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_SHOW_PRIVATE' then Result:=fDBUserAccess[8]='1';  //   fUserRights.ShowPrivate:=fDBUserAccess[8]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_SHOW_OPTIONS' then Result:=fDBUserAccess[9]='1';  //    fUserRights.ShowOptions:=fDBUserAccess[9]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_ADMIN_TOOLS' then Result:=fDBUserAccess[10]='1';  //    fUserRights.ShowAdminTools:=fDBUserAccess[10]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_CHANGE_DB_NAME' then Result:=fDBUserAccess[11]='1';  //    fUserRights.ChDbName:=fDBUserAccess[11]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_CRITICAL_FILE_OPERATIONS' then Result:=fDBUserAccess[12]='1';  // fUserRights.FileOperationsCritical:=fDBUserAccess[12]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_MANAGE_GROUPS' then Result:=fDBUserAccess[13]='1';  //  fUserRights.ManageGroups:=fDBUserAccess[13]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_NORMAL_FILE_OPERATIONS' then Result:=fDBUserAccess[14]='1';   //  fUserRights.FileOperationsNormal:=fDBUserAccess[14]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_EXECUTE' then Result:=fDBUserAccess[15]='1';   //  fUserRights.Execute:=fDBUserAccess[15]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_CRYPT' then Result:=fDBUserAccess[16]='1';    // fUserRights.Crypt:=fDBUserAccess[16]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_SHOW_PATH' then Result:=fDBUserAccess[17]='1';    // fUserRights.Crypt:=fDBUserAccess[17]='1';
- if AnsiUpperCase(StringRights)='RIGHTS_PRINT' then Result:=fDBUserAccess[18]='1';    // fUserRights.Crypt:=fDBUserAccess[18]='1';
-end;
-
 Procedure LoadDBFunctions(var aScript : TScript);
 begin
  //Crypt
@@ -924,16 +873,12 @@ begin
  AddScriptFunction(aScript,'GetImagePasswordFromUser',F_TYPE_FUNCTION_IS_STRING,@GetImagePasswordFromUser);
  AddScriptFunction(aScript,'PromtUserCryptImageFile',F_TYPE_FUNCTION_IS_STRING,@PromtUserCryptImageFile);
  AddScriptFunction(aScript,'PromtUserCryptImageFile',F_TYPE_FUNCTION_IS_STRING,@PromtUserCryptImageFile);
- if DBKernel.UserRights.FileOperationsCritical then
  AddScriptFunction(aScript,'CryptGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@CryptGraphicFile);
- if DBKernel.UserRights.FileOperationsCritical then
  AddScriptFunction(aScript,'ResetPasswordInGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@GraphicCrypt.ResetPasswordInGraphicFile);
  // AddScriptFunction
 
 
  AddScriptFunction(aScript,'StaticPath',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@StaticPath);
-
- AddScriptFunction(aScript,'UserRights',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@UserRights);
 
  AddScriptFunction(aScript,'GetImagesMask',F_TYPE_FUNCTION_IS_STRING,@GetImagesMask);
  AddScriptFunction(aScript,'SetFileNameByID',F_TYPE_PROCEDURE_INTEGER_STRING,@SetFileNameByID);
@@ -945,10 +890,8 @@ begin
  AddScriptFunction(aScript,'GetCurrentUser',F_TYPE_FUNCTION_IS_STRING,@GetCurrentUser);
  AddScriptFunction(aScript,'GetCurrentDB',F_TYPE_FUNCTION_IS_STRING,@GetCurrentDB);
  AddScriptFunction(aScript,'GetProgramPath',F_TYPE_FUNCTION_IS_STRING,@GetProgramPath);
- if DBKernel.UserRights.ChDbName then
  AddScriptFunction(aScript,'SelectDB',F_TYPE_PROCEDURE_STRING,@SelectDB);
- AddScriptFunction(aScript,'TestDB',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@TestDB); 
- if DBKernel.UserRights.ChDbName then
+ AddScriptFunction(aScript,'TestDB',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@TestDB);
  AddScriptFunction(aScript,'AddDBFile',F_TYPE_PROCEDURE_NO_PARAMS,@AddDBFile);
 
  AddScriptFunction(aScript,'Char',F_TYPE_FUNCTION_INTEGER_IS_STRING,@aChar);
@@ -964,12 +907,11 @@ begin
  AddScriptFunction(aScript,'ReadRegBool',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@ReadRegBool);
  AddScriptFunction(aScript,'ReadRegInteger',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@ReadRegInteger);
  AddScriptFunction(aScript,'ReadRegRealBool',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@ReadRegRealBool);
- if DBKernel.UserRights.ShowOptions then
- begin
+
   AddScriptFunction(aScript,'WriteRegString',F_TYPE_PROCEDURE_STRING_STRING_STRING,@WriteRegString);
   AddScriptFunction(aScript,'WriteRegBool',F_TYPE_PROCEDURE_STRING_STRING_BOOLEAN,@WriteRegBool);
   AddScriptFunction(aScript,'WriteRegInteger',F_TYPE_PROCEDURE_STRING_STRING_INTEGER,@WriteRegInteger);
- end;
+
  AddScriptFunction(aScript,'ImageFile',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@ImageFile);
  AddScriptFunction(aScript,'ShowFile',F_TYPE_PROCEDURE_STRING,@ShowFile);
 
@@ -977,26 +919,23 @@ begin
  AddScriptFunction(aScript,'DoHomePage',F_TYPE_PROCEDURE_NO_PARAMS,@DoHomePage);
  AddScriptFunction(aScript,'DoHomeContactWithAuthor',F_TYPE_PROCEDURE_NO_PARAMS,@DoHomeContactWithAuthor);
  AddScriptFunction(aScript,'DoActivation',F_TYPE_PROCEDURE_NO_PARAMS,@DoActivation);
- if DBKernel.UserRights.ManageGroups then
+
  AddScriptFunction(aScript,'ExecuteGroupManager',F_TYPE_PROCEDURE_NO_PARAMS,@ExecuteGroupManager);
  AddScriptFunction(aScript,'GetUpdates',F_TYPE_PROCEDURE_BOOLEAN,@GetUpdates);
  AddScriptFunction(aScript,'DoAbout',F_TYPE_PROCEDURE_NO_PARAMS,@DoAbout);
- if DBKernel.UserRights.Add then
- begin
+
   AddScriptFunction(aScript,'ShowUpdateWindow',F_TYPE_PROCEDURE_NO_PARAMS,@ShowUpdateWindow);
   AddScriptFunction(aScript,'AddFileInDB',F_TYPE_PROCEDURE_STRING,@AddFileInDB);
   AddScriptFunction(aScript,'AddFolderInDB',F_TYPE_PROCEDURE_STRING,@AddFolderInDB);
- end;
+
  AddScriptFunction(aScript,'GetFileNameByID',F_TYPE_FUNCTION_INTEGER_IS_STRING,@GetFileNameByID);
  AddScriptFunction(aScript,'GetIDByFileName',F_TYPE_FUNCTION_STRING_IS_INTEGER,@GetIDByFileName);
  AddScriptFunction(aScript,'InstalledFileName',F_TYPE_FUNCTION_IS_STRING,@InstalledFileName);
  AddScriptFunction(aScript,'TryBDEInstall',F_TYPE_PROCEDURE_NO_PARAMS,@TryBDEInstall);
- if DBKernel.UserRights.ShowAdminTools then
- AddScriptFunction(aScript,'DoManager',F_TYPE_PROCEDURE_NO_PARAMS,@DoManager);
- if DBKernel.UserRights.ShowOptions then
- AddScriptFunction(aScript,'DoOptions',F_TYPE_PROCEDURE_NO_PARAMS,@DoOptions);
 
- if DBKernel.UserRights.EditImage then
+ AddScriptFunction(aScript,'DoManager',F_TYPE_PROCEDURE_NO_PARAMS,@DoManager);
+
+ AddScriptFunction(aScript,'DoOptions',F_TYPE_PROCEDURE_NO_PARAMS,@DoOptions);
  AddScriptFunction(aScript,'NewImageEditor',F_TYPE_FUNCTION_IS_STRING,@NewImageEditor);
 
  AddScriptFunction(aScript,'ImageEditorRegisterCallBack',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ImageEditorRegisterCallBack);
@@ -1017,7 +956,6 @@ begin
  AddScriptFunction(aScript,'SelectDir',F_TYPE_FUNCTION_STRING_IS_STRING,@SelectDir);
 
  AddScriptFunction(aScript,'GetListOfKeyWords',F_TYPE_PROCEDURE_NO_PARAMS,@GetListOfKeyWords);
- if DBKernel.UserRights.ShowPath then
  AddScriptFunction(aScript,'MakeDBFileTree',F_TYPE_PROCEDURE_NO_PARAMS,@aMakeDBFileTree);
 
  AddScriptFunction(aScript,'LinkType',F_TYPE_FUNCTION_INTEGER_IS_STRING,@LinkType);

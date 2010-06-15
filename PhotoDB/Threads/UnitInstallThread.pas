@@ -833,7 +833,6 @@ begin
    //TODO: if db version old??? 
    CreateExampleDB(aDBName,FEndDirectory+'PhotoDB.exe,0',CurrentDirectory);
    DBKernel.AddDB(TEXT_MES_DEFAULT_DB_NAME,aDBName,FEndDirectory+'PhotoDB.exe,0',true);
-   DBKernel.SetEnabledChangeDBRight;
    DBKernel.SetDataBase(aDBName);
   end;
  end;

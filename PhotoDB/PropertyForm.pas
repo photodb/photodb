@@ -203,9 +203,6 @@ type
     procedure DateExists1Click(Sender: TObject);
     procedure PopupMenu2Popup(Sender: TObject);
     procedure Datenotsets1Click(Sender: TObject);
-    procedure DateEditKeyPress(Sender: TObject; var Key: Char);
-    procedure DateEditKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure PopupMenu4Popup(Sender: TObject);
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
@@ -263,9 +260,6 @@ type
     procedure DestroyTimerTimer(Sender: TObject);
     procedure DateSetsDblClick(Sender: TObject);
     procedure TimeSetsDblClick(Sender: TObject);
-    procedure TimeEditKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure TimeEditKeyPress(Sender: TObject; var Key: Char);
     procedure LockImput;
     procedure UnLockImput;
     procedure PopupMenu10Popup(Sender: TObject);
@@ -695,20 +689,12 @@ begin
  fpic.free;
  caption:=TEXT_MES_PROPERTY+' - '+ Trim(WorkQuery.FieldByName('Name').AsString);
  KeyWordsMemo.Text:=WorkQuery.FieldByName('KeyWords').AsString;
- KeyWordsMemo.ReadOnly:=not DBKernel.UserRights.SetInfo;
  LabelName.Text:=Trim(WorkQuery.FieldByName('Name').AsString);
- if DBKernel.UserRights.ShowPath then
- begin
-  LabelPach.Text:=LongFileName(WorkQuery.FieldByName('FFileName').AsString);
- end else
- begin
-  LabelPach.Text:=TEXT_MES_UNKNOWN;
- end;
+ LabelPach.Text:=LongFileName(WorkQuery.FieldByName('FFileName').AsString);
  SizeLabel.text:=SizeInTextA(WorkQuery.FieldByName('FileSize').AsInteger);
  widthmemo.text:=IntToStr(WorkQuery.FieldByName('Width').AsInteger)+'px.';
  heightmemo.text:=IntToStr(WorkQuery.FieldByName('Height').AsInteger)+'px.';
  Rating1.Rating:=WorkQuery.FieldByName('Rating').AsInteger;
- Rating1.Enabled:=DBKernel.UserRights.SetRating;
  Rating1.Islayered:=false;
  DateSets.Visible:=false;
  TimeSets.Visible:=false;
@@ -717,10 +703,8 @@ begin
  CurrentItemInfo.ItemKeyWords:=WorkQuery.FieldByName('KeyWords').AsString;
  CurrentItemInfo.ItemComment:=WorkQuery.FieldByName('Comment').AsString;
  CollectionMemo.text:=Trim(WorkQuery.FieldByName('Collection').AsString);
- CollectionMemo.ReadOnly:=not dbkernel.UserRights.SetInfo;
  CurrentItemInfo.ItemCollections:=Trim(WorkQuery.FieldByName('Collection').AsString);
  OwnerMemo.text:=Trim(WorkQuery.FieldByName('Owner').AsString);
- OwnerMemo.ReadOnly:=not dbkernel.UserRights.SetInfo;
  CurrentItemInfo.ItemOwner:=Trim(WorkQuery.FieldByName('Owner').AsString);
  CurrentItemInfo.ItemDate:=WorkQuery.FieldByName('DateToAdd').AsDateTime;
  DateEdit.DateTime:=CurrentItemInfo.ItemDate;
@@ -751,7 +735,6 @@ begin
 
  DateSets.Visible:=false;
  TimeSets.Visible:=false;
- CommentMemo.ReadOnly:=not DBKernel.UserRights.SetInfo;
  FFilesInfo:=DBPopupMenuInfoOne(ProcessPath(WorkQuery.FieldByName('FFileName').AsString),WorkQuery.FieldByName('Comment').AsString,WorkQuery.FieldByName('Groups').AsString,WorkQuery.FieldByName('ID').AsInteger,WorkQuery.FieldByName('FileSize').AsInteger, WorkQuery.FieldByName('Rotated').AsInteger,WorkQuery.FieldByName('Rating').AsInteger,WorkQuery.FieldByName('Access').AsInteger,WorkQuery.FieldByName('DateToAdd').AsDateTime,WorkQuery.FieldByName('IsDate').AsBoolean,WorkQuery.FieldByName('IsTime').AsBoolean,WorkQuery.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')),WorkQuery.FieldByName('KeyWords').AsString,true,WorkQuery.FieldByName('Include').AsBoolean,WorkQuery.FieldByName('Links').AsString);
  FFilesInfo.IsDateGroup:=True;
  FFilesInfo.IsAttrExists:=false;
@@ -809,10 +792,6 @@ begin
  WorkQuery:=GetQuery;
  DestroyCounter:=0;
  GistogrammData.Loaded:=false;
- Button4.Enabled:= DBKernel.UserRights.ManageGroups;
- Button5.Enabled:= DBKernel.UserRights.ManageGroups;
- Button6.Enabled:= DBKernel.UserRights.SetInfo;
- Button7.Enabled:= DBKernel.UserRights.SetInfo;
 
  LinkDropFiles:=TStringList.Create;
  PropertyManager.AddProperty(self);
@@ -820,9 +799,6 @@ begin
  ListBox2.DoubleBuffered:=true;
  FreeGroups(RegGroups);          
  FreeGroups(FShowenRegGroups);
- CheckBox1.TabStop:=DBKernel.UserRights.SetInfo;
-// CheckBox3.TabStop:=DBKernel.UserRights.ManageGroups and DBKernel.UserRights.SetInfo;
- CheckBox3.Enabled:=DBKernel.UserRights.ManageGroups and DBKernel.UserRights.SetInfo;
 
  EditLinkForm:=nil;
  SetLength(Links,0);
@@ -861,7 +837,6 @@ begin
 
  CheckBox2.Checked:=DBKernel.ReadBool('Propetry','DeleteKeyWords',True);
  CheckBox3.Checked:=DBKernel.ReadBool('Propetry','ShowAllGroups',false);
- CheckBox3.Checked:=CheckBox3.Checked and DBKernel.UserRights.ManageGroups;
  Height:=561;
 end;
 
@@ -877,8 +852,6 @@ begin
  begin
   if FShowInfoType=SHOW_INFO_IDS then
   begin
-   if DBKernel.UserRights.FileOperationsNormal then
-   begin
     DragImageList.Clear;
     DragImage := TBitmap.Create;
     DragImage.PixelFormat:=pf24bit;
@@ -901,7 +874,6 @@ begin
      c:=true;
     end;
     if c then DropFileSource1.Execute;
-   end;
   end else
   begin
     DragImageList.Clear;
@@ -946,7 +918,6 @@ begin
  Button3.Enabled:=True else Button3.Enabled:=False;
  if FShowInfoType=SHOW_INFO_FILE_NAME then
  Button3.Enabled:=false;
- if not DBKernel.UserRights.SetInfo then Button3.Enabled:=false;
  if FShowInfoType<>SHOW_INFO_IDS then
  if CurrentItemInfo.ItemComment<>CommentMemo.Text then Label3.Font.Style:=Label3.Font.Style+[fsBold] else Label3.Font.Style:=Label3.Font.Style-[fsBold];
  if FShowInfoType=SHOW_INFO_IDS then
@@ -967,7 +938,6 @@ procedure TPropertiesForm.Image1DblClick(Sender: TObject);
 begin
  if no_file then exit;
  if (FShowInfoType=SHOW_INFO_ID) or (FShowInfoType=SHOW_INFO_IDS) then
- if DBkernel.UserRights.SetInfo then
  begin
   CommentMemo.show;
   Label3.Show;
@@ -990,7 +960,6 @@ begin
  begin
   if CharToInt(DBkernel.GetCodeChar(14))<>CharToInt(DBkernel.GetCodeChar(7))*CharToInt(DBkernel.GetCodeChar(9)) mod 15 then exit;
  end;
- If not DBKernel.UserRights.SetInfo then Exit;
 
 
  if FShowInfoType=SHOW_INFO_IDS then
@@ -1001,15 +970,15 @@ begin
 
   ProgressForm:=nil;
   CommonKeyWords:=CurrentItemInfo.ItemKeyWords;
-  If DBkernel.UserRights.SetInfo then
+
   If VariousKeyWords(KeywordsMemo.Text,CommonKeyWords) then
   Inc(xCount);
   If not CompareGroups(FNowGroups,FOldGroups) then
   Inc(xCount);
-  If DBKernel.UserRights.SetInfo then
+
   if not CommentMemo.ReadOnly then
   Inc(xCount); 
-  If DBKernel.UserRights.SetInfo then
+
   if ReadCHLinks then
   Inc(xCount);
 
@@ -1024,7 +993,7 @@ begin
    ProgressForm.DoShow;
   end;
   //[BEGIN] Include Support
-  If DBKernel.UserRights.SetInfo then
+
   if ReadCHInclude then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set Include = :Include Where ID in (';
@@ -1042,7 +1011,7 @@ begin
   //[END] Include Support
 
   //[BEGIN] Rating Support
-  If DBKernel.UserRights.SetRating then
+
   if not Rating1.Islayered then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set Rating = :Rating Where ID in (';
@@ -1062,7 +1031,7 @@ begin
 
   //[BEGIN] KeyWords Support
   CommonKeyWords:=CurrentItemInfo.ItemKeyWords;
-  If DBkernel.UserRights.SetInfo then
+
   If VariousKeyWords(KeywordsMemo.Text,CommonKeyWords) then
   begin
    FreeSQLList(List);
@@ -1101,7 +1070,7 @@ begin
   //[END] KeyWords Support
 
   //[BEGIN] Groups Support
-  if DBKernel.UserRights.SetInfo then
+
   CommonGroups:=CodeGroups(FOldGroups);
   If not CompareGroups(FNowGroups,FOldGroups) then
   begin
@@ -1178,7 +1147,7 @@ begin
   //[END] Links Support
 
   //[BEGIN] Commnet Support
-  if DBKernel.UserRights.SetInfo then
+
   if not CommentMemo.ReadOnly then
   if CommentMemo.Text<>SelectedInfo.Comment then
   begin
@@ -1202,7 +1171,7 @@ begin
   //[END] Commnet Support
 
   //[BEGIN] Date Support
-  If DBKernel.UserRights.SetInfo then
+
   If not DateSets.Visible then
   begin
    FQuery := GetQuery;
@@ -1241,7 +1210,7 @@ begin
   //[END] Date Support
 
   //[BEGIN] Time Support
-  If DBKernel.UserRights.SetInfo then
+
   If not TimeSets.Visible then
   begin
    if IsTimePanel.Visible then
@@ -1469,13 +1438,9 @@ begin
  RatingLabel1.Font.Style:=Label1.Font.Style-[fsBold];
 
  LabelName.text:=GetFileName(FileName);
- If DBkernel.UserRights.ShowPath then
- begin
-  LabelPach.Text:=LongFileName(FileName);
- end else
- begin
-  LabelPach.Text:=TEXT_MES_UNKNOWN;
- end;
+
+ LabelPach.Text:=LongFileName(FileName);
+
  Label3.Hide;
  CommentMemo.Hide;
  CommentMemo.ReadOnly:=true;
@@ -1517,7 +1482,6 @@ begin
  
  SizeLabel.text:=SizeInTextA(GetFileSize(FileName));
  Button3.Caption:=TEXT_MES_ADD_FILE;
- Button3.Enabled:=DBKernel.UserRights.Add;
  Button2.Visible:=True;
 
  ImageLoadingFile.Visible:=true;
@@ -1600,8 +1564,6 @@ begin
  DBItem1.Clear;
  FFilesInfo.IsAttrExists:=false;
  DBPopupMenu.AddDBContMenu(DBItem1,FFilesInfo);
- Shell1.Visible:=Shell1.Visible and DBkernel.UserRights.Execute;
- Copy1.Visible:=Shell1.Visible and DBkernel.UserRights.FileOperationsNormal;
 end;
 
 procedure TPropertiesForm.FormDestroy(Sender: TObject);
@@ -1632,16 +1594,16 @@ begin
  if Msg.message=256 then
  if Msg.wParam=46 then
  begin
-  if not DBkernel.UserRights.SetInfo then
-  Button7Click(nil);
+  //???if not DBkernel.UserRights.SetInfo then
+  //???Button7Click(nil);
  end;
 
- if not DBkernel.UserRights.SetInfo then
- If (Msg.hwnd=CheckBox1.Handle) or (Msg.hwnd=CheckBox3.Handle) or (Msg.hwnd=CheckBox3.Handle) then
- begin
-  If Msg.message=513 then Msg.message:=0;
-  If Msg.message=515 then Msg.message:=0;
- end;
+ //???if not DBkernel.UserRights.SetInfo then
+ //???If (Msg.hwnd=CheckBox1.Handle) or (Msg.hwnd=CheckBox3.Handle) or (Msg.hwnd=CheckBox3.Handle) then
+ //???begin
+ //??? If Msg.message=513 then Msg.message:=0;
+ //??? If Msg.message=515 then Msg.message:=0;
+ //???end;
 
  if Msg.message=256 then
  begin
@@ -1652,13 +1614,8 @@ begin
  begin
   if msg.message=513 then
   begin
-   If DBKernel.UserRights.SetInfo then
-   begin
     CommentMemoChange(nil);
-   end;
-   if not DBKernel.UserRights.SetInfo then msg.message:=0;
   end;
-
  end;
 end;
 
@@ -1673,7 +1630,6 @@ end;
 procedure TPropertiesForm.IsDatePanelDblClick(Sender: TObject);
 begin
  if fSaving then Exit;
- If not DBKernel.UserRights.SetInfo then Exit;
  if FShowInfoType=SHOW_INFO_FILE_NAME then Exit;
  IsDatePanel.Visible:=False;
  CommentMemoChange(Sender);
@@ -1884,19 +1840,16 @@ begin
  LabelName.Text:=TEXT_MES_VAR_FILES;
  if IsVariousArStrings(ArDir) then
  begin
-  If DBkernel.UserRights.ShowPath then
-  LabelPach.Text:=TEXT_MES_VAR_LOCATION else LabelPach.Text:=TEXT_MES_UNKNOWN;
+  LabelPach.Text:=TEXT_MES_VAR_LOCATION;
  end else
  begin
   s:=ArDir[0];
   UnFormatDir(s);
-  If DBkernel.UserRights.ShowPath then
-  LabelPach.Text:=format(TEXT_MES_ALL_IN,[LongFileName(s)]) else LabelPach.Text:=TEXT_MES_UNKNOWN;
+  LabelPach.Text:=format(TEXT_MES_ALL_IN,[LongFileName(s)]);
  end;
 
  CurrentItemInfo.ItemRating:=MaxStatInt(FFilesInfo.ItemRatings_);
  Rating1.Rating:=CurrentItemInfo.ItemRating;
- Rating1.Enabled:=DBkernel.UserRights.SetRating;
  Rating1.Islayered:=true;
  Rating1.layered:=100;
  CurrentItemInfo.ItemDate:=MaxStatDate(FFilesInfo.ItemDates_);
@@ -1920,7 +1873,6 @@ begin
  CommonKeyWords:=GetCommonWordsA(FFilesInfo.ItemKeyWords_);
  SelectedInfo.CommonKeyWords:=CommonKeyWords;
  KeyWordsMemo.Text:=CommonKeyWords;
- KeyWordsMemo.ReadOnly:=not DBKernel.UserRights.SetInfo;
  CurrentItemInfo.ItemKeyWords:=CommonKeyWords;
  IDLabel.Text:=format(TEXT_MES_SELECTED_ITEMS,[IntToStr(Length(FFilesInfo.ItemIDs_))]);
  CommentMemo.Cursor:=CrDefault;
@@ -1970,11 +1922,8 @@ end;
 
 procedure TPropertiesForm.Rating1MouseDown(Sender: TObject);
 begin
- if DBkernel.UserRights.SetRating then
- begin
   if Rating1.islayered then Rating1.islayered:=false;
   CommentMemoChange(Sender);
- end;
 end;
 
 procedure TPropertiesForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -1999,11 +1948,8 @@ end;
 
 procedure TPropertiesForm.SetValue1Click(Sender: TObject);
 begin
- if DBKernel.UserRights.SetInfo then
- begin
   DateSets.Visible:=false;
- end;
- CommentMemoChange(Sender);
+  CommentMemoChange(Sender);
 end;
 
 procedure TPropertiesForm.Ratingnotsets1Click(Sender: TObject);
@@ -2022,12 +1968,11 @@ begin
  Ratingnotsets1.Visible:=not Rating1.Islayered;
  if FShowInfoType<>SHOW_INFO_IDS then
  Ratingnotsets1.Visible:=false;
- Ratingnotsets1.Visible:=Ratingnotsets1.Visible and DBKernel.UserRights.SetInfo and not fSaving;;
+ Ratingnotsets1.Visible:=Ratingnotsets1.Visible and not fSaving;;
 end;
 
 procedure TPropertiesForm.CommentMemoDblClick(Sender: TObject);
 begin
- if not DBKernel.UserRights.SetInfo then exit;
  if FShowInfoType=SHOW_INFO_FILE_NAME then exit;
  if not CommentMemo.ReadOnly then exit;
  CommentMemo.ReadOnly:=False;
@@ -2098,9 +2043,9 @@ begin
  DateExists1.Visible:=(IsDatePanel.Visible or (DateSets.Visible)) and (FShowInfoType<>SHOW_INFO_FILE_NAME);
  Datenotsets1.Visible:=not DateSets.Visible and (FShowInfoType=SHOW_INFO_IDS);
  //rights section
- Datenotexists1.Visible:=Datenotexists1.Visible and DBKernel.UserRights.SetInfo and not fSaving;
- DateExists1.Visible:=DateExists1.Visible and DBKernel.UserRights.SetInfo and not fSaving;
- Datenotsets1.Visible:=Datenotsets1.Visible and DBKernel.UserRights.SetInfo and not fSaving;
+ Datenotexists1.Visible:=Datenotexists1.Visible and not fSaving;
+ DateExists1.Visible:=DateExists1.Visible and not fSaving;
+ Datenotsets1.Visible:=Datenotsets1.Visible and not fSaving;
 end;
 
 procedure TPropertiesForm.Datenotsets1Click(Sender: TObject);
@@ -2208,20 +2153,11 @@ begin
  AddOriginalImTh1.Caption:=TEXT_MES_ADD_ORIG_IMTH;
 end;
 
-procedure TPropertiesForm.DateEditKeyPress(Sender: TObject; var Key: Char);
-begin
- if not DBKernel.UserRights.SetInfo then Key:=#0;
-end;
 
-procedure TPropertiesForm.DateEditKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
- if not DBKernel.UserRights.SetInfo then Key:=0;
-end;
 
 procedure TPropertiesForm.PopupMenu4Popup(Sender: TObject);
 begin
- SetValue1.Visible:=DBKernel.UserRights.SetInfo and (FShowInfoType=SHOW_INFO_FILE_NAME) and not fSaving;
+ SetValue1.Visible:= (FShowInfoType=SHOW_INFO_FILE_NAME) and not fSaving;
 end;
 
 procedure TPropertiesForm.TabbedNotebook1Change(Sender: TObject;
@@ -2618,11 +2554,11 @@ var
    begin
     Open1.Visible:=false; OpenFolder1.Visible:=false; IDMenu1.Visible:=false; Up1.Visible:=false; Down1.Visible:=false;
    end;
-   Change1.Visible:=Change1.Visible and DBkernel.UserRights.SetInfo and not fSaving;
-   Delete1.Visible:=Delete1.Visible and DBkernel.UserRights.SetInfo and not fSaving;
+   Change1.Visible:=Change1.Visible and not fSaving;
+   Delete1.Visible:=Delete1.Visible and  not fSaving;
 
-   Up1.Visible:=Up1.Visible and DBkernel.UserRights.SetInfo and not fSaving;
-   Down1.Visible:=Down1.Visible and DBkernel.UserRights.SetInfo and not fSaving;
+   Up1.Visible:=Up1.Visible and not fSaving;
+   Down1.Visible:=Down1.Visible and not fSaving;
 
   end;
 
@@ -2703,7 +2639,7 @@ end;
 procedure TPropertiesForm.PopupMenu8Popup(Sender: TObject);
 begin
  AddNewlink1.Visible:=EditLinkForm=nil;
- AddNewlink1.Visible:=AddNewlink1.Visible and DBkernel.UserRights.SetInfo and not fSaving;
+ AddNewlink1.Visible:=AddNewlink1.Visible and not fSaving;
 end;
 
 procedure TPropertiesForm.SetLinkInfo(Sender: TObject; ID: String;
@@ -2799,13 +2735,12 @@ end;
 
 procedure TPropertiesForm.Button5Click(Sender: TObject);
 begin
- if DBKernel.UserRights.ManageGroups then ExecuteGroupManager;
+  ExecuteGroupManager;
 end;
 
 procedure TPropertiesForm.Button4Click(Sender: TObject);
 begin
- if DBKernel.UserRights.ManageGroups then
- CreateNewGroupDialog;
+  CreateNewGroupDialog;
 end;
 
 procedure TPropertiesForm.RecreateGroupsList;
@@ -2970,7 +2905,6 @@ var
   Group : TGroup;
 begin
  if fSaving then Exit;
- if not DBkernel.UserRights.SetInfo then exit;
  for i:=0 to (Sender as TListBox).Items.Count-1 do
  if (Sender as TListBox).Selected[i] then
  begin
@@ -3096,7 +3030,6 @@ end;
 procedure TPropertiesForm.ListBox2DblClick(Sender: TObject);
 begin
  if fSaving then Exit;
- if DBkernel.UserRights.SetInfo then
  Button6Click(Sender);
 end;
 
@@ -3128,7 +3061,7 @@ end;
 
 procedure TPropertiesForm.GroupManeger1Click(Sender: TObject);
 begin
- if DBKernel.UserRights.ManageGroups then ExecuteGroupManager;
+  ExecuteGroupManager;
 end;
 
 procedure TPropertiesForm.SearchForGroup1Click(Sender: TObject);
@@ -3159,11 +3092,6 @@ begin
   MoveToGroup1.Visible:=True;
   ChangeGroup1.Visible:=False;
  end;
- GroupManeger1.Visible:=DBkernel.UserRights.ManageGroups;
- CreateGroup1.Visible:=CreateGroup1.Visible and DBkernel.UserRights.ManageGroups;
- ChangeGroup1.Visible:=ChangeGroup1.Visible and DBkernel.UserRights.ManageGroups;
- MoveToGroup1.Visible:=MoveToGroup1.Visible and DBkernel.UserRights.ManageGroups;
- MenuItem1.Visible:=MenuItem1.Visible and DBkernel.UserRights.ManageGroups;
 end;
 
 procedure TPropertiesForm.CheckBox2Click(Sender: TObject);
@@ -3184,10 +3112,7 @@ end;
 
 procedure TPropertiesForm.PanelValueIsTimeSetsDblClick(Sender: TObject);
 begin
- if DBKernel.UserRights.SetInfo then
- begin
-  IsDatePanel.Visible:=false;
- end;
+ IsDatePanel.Visible:=false;
  CommentMemoChange(Sender);
 end;
 
@@ -3197,9 +3122,9 @@ begin
  TimeExists1.Visible:=(IsTimePanel.Visible or TimeSets.Visible) and (FShowInfoType<>SHOW_INFO_FILE_NAME);
  Timenotsets1.Visible:=not TimeSets.Visible and (FShowInfoType=SHOW_INFO_IDS);
  //rights section
- Timenotexists1.Visible:=Timenotexists1.Visible and DBKernel.UserRights.SetInfo and not fSaving;
- TimeExists1.Visible:=TimeExists1.Visible and DBKernel.UserRights.SetInfo and not fSaving;
- Timenotsets1.Visible:=Timenotsets1.Visible and DBKernel.UserRights.SetInfo and not fSaving;
+ Timenotexists1.Visible:=Timenotexists1.Visible and not fSaving;
+ TimeExists1.Visible:=TimeExists1.Visible and not fSaving;
+ Timenotsets1.Visible:=Timenotsets1.Visible and not fSaving;
 end;
 
 procedure TPropertiesForm.DateEditChange(Sender: TObject);
@@ -3237,7 +3162,6 @@ end;
 procedure TPropertiesForm.IsTimePanelDblClick(Sender: TObject);
 begin
  if fSaving then Exit;
- If not DBKernel.UserRights.SetInfo then Exit;
  if FShowInfoType=SHOW_INFO_FILE_NAME then Exit;
  IsTimePanel.Visible:=False;
  CommentMemoChange(Sender);
@@ -3280,51 +3204,39 @@ begin
  CommentMemoChange(Sender);
 end;
 
-procedure TPropertiesForm.TimeEditKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
- if not DBKernel.UserRights.SetInfo then Key:=0;
-end;
-
-procedure TPropertiesForm.TimeEditKeyPress(Sender: TObject; var Key: Char);
-begin
- if not DBKernel.UserRights.SetInfo then Key:=#0;
-end;
-
 procedure TPropertiesForm.LockImput;
 begin
  fSaving := true;
  if EditLinkForm<>nil then
  EditLinkForm.Close;
- CommentMemo.Enabled:=false;
- OwnerMemo.Enabled:=false;
- CollectionMemo.Enabled:=false;
- Rating1.Enabled:=false;
- KeyWordsMemo.Enabled:=false;
- DateEdit.Enabled:=false;
- TimeEdit.Enabled:=false;
- CheckBox1.Enabled:=false;
- ListBox2.Enabled:=false;
- ListBox1.Enabled:=false;
- Button6.Enabled:=false;
- Button7.Enabled:=false;
+ CommentMemo.Enabled:=False;
+ OwnerMemo.Enabled:=False;
+ CollectionMemo.Enabled:=False;
+ Rating1.Enabled:=False;
+ KeyWordsMemo.Enabled:=False;
+ DateEdit.Enabled:=False;
+ TimeEdit.Enabled:=False;
+ CheckBox1.Enabled:=False;
+ ListBox2.Enabled:=False;
+ ListBox1.Enabled:=False;
+ Button6.Enabled:=False;
+ Button7.Enabled:=False;
 end;
 
 procedure TPropertiesForm.UnLockImput;
 begin
- fSaving := false;
- CommentMemo.Enabled:=DBKernel.UserRights.SetInfo;
- OwnerMemo.Enabled:=true;
- CollectionMemo.Enabled:=true;
- Rating1.Enabled:=DBKernel.UserRights.SetRating;
- KeyWordsMemo.Enabled:=DBKernel.UserRights.SetInfo;
- DateEdit.Enabled:=DBKernel.UserRights.SetInfo;
- TimeEdit.Enabled:=DBKernel.UserRights.SetInfo;
- CheckBox1.Enabled:=DBKernel.UserRights.SetInfo;
- ListBox2.Enabled:=DBKernel.UserRights.SetInfo;
- ListBox1.Enabled:=DBKernel.UserRights.SetInfo;
- Button6.Enabled:=DBKernel.UserRights.SetInfo;
- Button7.Enabled:=DBKernel.UserRights.SetInfo;
+ fSaving := False;
+ OwnerMemo.Enabled := True;
+ CollectionMemo.Enabled := True;
+ Rating1.Enabled := True;
+ KeyWordsMemo.Enabled := True;
+ DateEdit.Enabled := True;
+ TimeEdit.Enabled := True;
+ CheckBox1.Enabled := True;
+ ListBox2.Enabled := True;
+ ListBox1.Enabled := True;
+ Button6.Enabled := True;
+ Button7.Enabled := True;
 end;
 
 procedure TPropertiesForm.PopupMenu10Popup(Sender: TObject);
@@ -3337,7 +3249,6 @@ procedure TPropertiesForm.DropFileTarget2Drop(Sender: TObject;
 begin
  if FShowInfoType<>SHOW_INFO_FILE_NAME then
  if DropFileTarget2.Files.Count=1 then
- if DBkernel.UserRights.SetInfo then
  begin
   SetFocus;
   Point:=LinksScrollBox.ClientToScreen(Point);
@@ -3353,8 +3264,8 @@ var
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],false);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],false).ImTh;
+ Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_PROCESSING;
  LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
@@ -3362,7 +3273,7 @@ begin
  for i:=0 to Length(FPropertyLinks)-1 do
  if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
  begin
-  b:=false;
+  b:=False;
   break;
  end;
  if b then
@@ -3382,8 +3293,8 @@ var
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],false);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],false).ImTh;
+ Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_ORIGINAL;
  LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
@@ -3391,7 +3302,7 @@ begin
  for i:=0 to Length(FPropertyLinks)-1 do
  if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
  begin
-  b:=false;
+  b:=False;
   break;
  end;
  if b then
@@ -3413,8 +3324,8 @@ var
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],false);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],false).ImTh;
+ Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_PROCESSING;
  LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
@@ -3422,7 +3333,7 @@ begin
  for i:=0 to Length(FPropertyLinks)-1 do
  if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
  begin
-  b:=false;
+  b:=False;
   break;
  end;
  if b then
@@ -3454,8 +3365,8 @@ var
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],false);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],false).ImTh;
+ Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_ORIGINAL;
  LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
@@ -3463,7 +3374,7 @@ begin
  for i:=0 to Length(FPropertyLinks)-1 do
  if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
  begin
-  b:=false;
+  b:=False;
   break;
  end;
  if b then

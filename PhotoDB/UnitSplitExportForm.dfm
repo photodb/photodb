@@ -176,7 +176,7 @@ object SplitExportForm: TSplitExportForm
     Left = 0
     Top = 113
     Width = 470
-    Height = 237
+    Height = 235
     Align = alClient
     Columns = <
       item
@@ -199,7 +199,7 @@ object SplitExportForm: TSplitExportForm
   end
   object Panel2: TPanel
     Left = 0
-    Top = 350
+    Top = 348
     Width = 470
     Height = 41
     Align = alBottom
@@ -233,12 +233,9 @@ object SplitExportForm: TSplitExportForm
     end
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = [dtCopy, dtLink]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtLink]
     OnDrop = DropFileTarget1Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 8
     Top = 280
   end

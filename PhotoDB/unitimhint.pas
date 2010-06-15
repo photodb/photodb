@@ -351,7 +351,6 @@ var
 begin
  if not drag_ then exit;
  if (Button = mbLeft) then
- if DBKernel.UserRights.FileOperationsNormal then
  begin
   CanClosed:=false;
   DragImageList.Clear;

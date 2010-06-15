@@ -329,13 +329,10 @@ begin
  end;
  if NewTab=1 then
  begin
-  CheckListBox1.Enabled:=DBKernel.UserRights.ShowAdminTools;
-  Button12.Enabled:=DBKernel.UserRights.ShowAdminTools;
   CheckBox1.Checked:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
   CheckBox6.Checked:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
   CheckBox7.Checked:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
-  CheckBox8.Checked:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False) and DBKernel.UserRights.FileOperationsCritical;
-  CheckBox8.Enabled:=DBKernel.UserRights.FileOperationsCritical;
+  CheckBox8.Checked:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
   CheckBox9.Checked:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
   CheckBox10.Checked:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
   CheckBox11.Checked:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
@@ -364,9 +361,7 @@ begin
  begin
   CheckBox37.Checked:=DBKernel.ReadBool('SlideShow','UseFastSlideShowImageLiading',true);
 
-  Button2.Enabled:=DBkernel.UserRights.ShowAdminTools;
   CheckBox22.Checked:=DBKernel.Readbool('Options','NextOnClick',false);
-
   CheckBox24.Checked:=DBKernel.Readbool('Options','RotateWithoutPromt',true);
   CheckBox25.Checked:=DBKernel.Readbool('Options','RotateEvenIfFileInDB',true);
 
@@ -376,8 +371,6 @@ begin
   TrackBar4.Position:=Min(Max(DBKernel.ReadInteger('Options','FullScreen_SlideDelay',40),1),100);
   CheckBox2.Checked:=DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True);
   CheckBox13.Checked:=DBKernel.ReadboolW('Options','SlideShow_UseExternelViewer',False);
-  CheckBox13.Enabled:=DBkernel.UserRights.ShowAdminTools;
-  Edit1.Enabled:=DBkernel.UserRights.ShowAdminTools;
   CheckBox13Click(Sender);
   TrackBar1Change(Sender);
   TrackBar2Change(Sender);
@@ -558,20 +551,7 @@ var
 begin
  ReloadData:=false;
  ClientHeight:=OkButton.Top+OkButton.Height+3;
- if not DBKernel.UserRights.FileOperationsCritical then
- begin
-  ListView1.Enabled:=false;
-  Button14.Enabled:=false;
-  Button15.Enabled:=false;
-  Button16.Enabled:=false;
-  Button17.Enabled:=false;
-  Button18.Enabled:=false;
-  CheckBox16.Enabled:=false;
-  CheckBox17.Enabled:=false;
-  CheckBox18.Enabled:=false;
-  CheckBox19.Enabled:=false;
- end;
- Edit10.Enabled:=DBkernel.UserRights.ShowAdminTools;
+
  SaveWindowPos1.Key:=GetRegRootKey+'Options';
  SaveWindowPos1.SetPosition;
  for i:=0 to 5 do
@@ -1081,7 +1061,7 @@ end;
 
 procedure TOptionsForm.CheckBox13Click(Sender: TObject);
 begin
- if (not CheckBox13.Checked) or (not DBkernel.UserRights.ShowAdminTools) then
+ if (not CheckBox13.Checked) then
  begin
   Edit1.Enabled:=false;
   Button2.Enabled:=false;

@@ -85,12 +85,6 @@ begin
  end;
  RadioButton1.Checked:=DBkernel.ReadBool('Resizer','Replace',false);
  RadioButton2.Checked:=DBkernel.ReadBool('Resizer','Make New',true);
- if not DBkernel.UserRights.FileOperationsCritical then
- begin
-  RadioButton1.Enabled:=false;
-  RadioButton2.Enabled:=false;
-  RadioButton2.Checked:=true;
- end;
 end;
 
 procedure TFormConvertImages.CancelClick(Sender: TObject);

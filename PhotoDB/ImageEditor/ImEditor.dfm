@@ -2858,12 +2858,9 @@ object ImageEditor: TImageEditor
     Visible = False
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = [dtCopy, dtMove]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtMove]
     OnDrop = DropFileTarget1Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 152
     Top = 48
   end

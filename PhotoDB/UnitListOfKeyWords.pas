@@ -187,12 +187,7 @@ begin
   ProgressForm.xPosition:=FTable.RecordCount-FTable.RecNo;
   Application.ProcessMessages;
   SpilitWords(FTable.FieldByName('KeyWords').AsString,Words);
-  if (FTable.FieldByName('Access').AsInteger=db_access_private) and (not DBkernel.UserRights.ShowPrivate) then
-  begin
-   FTable.Prior;
-   if ProgressForm.Closed then Break;
-   Continue;
-  end;
+
   AddWordsB(Words,AllList);
   FTable.Prior;
  if ProgressForm.Closed then Break;

@@ -436,20 +436,13 @@ object DBReplaceForm: TDBReplaceForm
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy]
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
-    AllowAsyncTransfer = False
     Left = 56
     Top = 320
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = []
-    GetDataOnEnter = False
-    ShowImage = True
+    DragTypes = []
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 88
     Top = 320
   end

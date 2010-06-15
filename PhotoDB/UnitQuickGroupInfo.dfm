@@ -282,7 +282,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     TabOrder = 8
   end
   object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
     Left = 120
     Top = 64
     object EditGroup1: TMenuItem

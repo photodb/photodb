@@ -1,7 +1,7 @@
 program PhotoDB;
 
-{%File 'Units\dx\STRINGSWITCH.INC'}
-{%File 'Units\dx\COMSWITCH.INC'}
+//{ % File 'Units\dx\STRINGSWITCH.INC' }
+//{ % File 'Units\dx\COMSWITCH.INC' }
 
 {$DEFINE DEBUG}
 
@@ -796,7 +796,6 @@ begin
   //GROUPS CHECK + MENU----------------------------------------------------
                 
   EventLog('...GROUPS CHECK + MENU...');
-  if FolderView then DBKernel.SetGuestModeAccess;
   if DBPopupMenu<>nil then
   DBPopupMenu.LoadScriptFunctions;
   if not SafeMode then

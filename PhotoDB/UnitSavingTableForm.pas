@@ -38,7 +38,6 @@ Procedure SaveQuery(Query : TDataSet; FileName : String; SubFolders : boolean; F
 var
   SavingTableForm: TSavingTableForm;
 begin
- if not DBkernel.UserRights.FileOperationsCritical then exit;
  Application.CreateForm(TSavingTableForm,SavingTableForm);
  SavingTableForm.Execute(Query,FileName,SubFolders,FileList);
  SavingTableForm.Release;

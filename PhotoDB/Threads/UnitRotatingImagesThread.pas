@@ -112,7 +112,7 @@ begin
    NewEXT:=GraphicExtension(GetConvertableImageClasses[fOptions.FormatIndex]);
    NewGraphicClass:=GetGraphicClass(NewEXT,true);
   end;
-  if (fOptions.IDs[i]<>0) and not fOptions.RotateEvenIfFileInDB and DBKernel.UserRights.SetInfo then
+  if (fOptions.IDs[i]<>0) and not fOptions.RotateEvenIfFileInDB then
   begin
    if fOptions.RotateCCW then RotateDBImage270(fOptions.IDs[i],fOptions.Rotate[i]);
    if fOptions.RotateCW  then RotateDBImage90(fOptions.IDs[i],fOptions.Rotate[i]);
@@ -122,15 +122,6 @@ begin
 
   if DBKernel.Readbool('Options','UseGDIPlus',GDIPlusPresent) and GDIPlusPresent and (NewEXT='jpg') and (GetGraphicClass(OldEXT,false)=TJPEGImage) then
   begin
-   if not DBkernel.UserRights.FileOperationsCritical then
-   begin
-    Synchronize(ShowErrorRights);
-    if ID_CANCEL=IntParam then
-    Continue;
-    fOptions.UseAnotherFolder:=False;
-    EndDir:=GetDirectory(fOptions.Files[i]);
-    fOptions.TryKeepOriginalFormat:=false;
-   end;
    Password:='';
    if ValidCryptGraphicFile(fOptions.Files[i]) then
    begin
@@ -139,11 +130,10 @@ begin
     ResetPasswordInGraphicFile(fOptions.Files[i],Password);
    end;
    FileDir:=GetDirectory(fOptions.Files[i]);
-   if DBKernel.UserRights.FileOperationsCritical then
    EndDir:=fOptions.EndDir;
    FormatDir(EndDir);
 
-   if ((AnsiLowerCase(FileDir)=AnsiLowerCase(EndDir)) or not fOptions.UseAnotherFolder) and DBkernel.UserRights.FileOperationsCritical then
+   if ((AnsiLowerCase(FileDir)=AnsiLowerCase(EndDir)) or not fOptions.UseAnotherFolder) then
    begin
     ExplorerTypes.LockedFiles[1]:=aGetTempFileName(fOptions.Files[i]);
     ExplorerTypes.LockedFiles[2]:=fOptions.Files[i];
@@ -201,7 +191,7 @@ begin
    end;
   end else
   begin
-  if not DBkernel.UserRights.FileOperationsNormal then Continue;
+  
   Password:='';
   if ValidCryptGraphicFile(fOptions.Files[i]) then
   begin

@@ -1220,7 +1220,7 @@ object FormCont: TFormCont
     Left = 0
     Top = 26
     Width = 89
-    Height = 340
+    Height = 338
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
@@ -1228,7 +1228,7 @@ object FormCont: TFormCont
       Left = 0
       Top = 24
       Width = 89
-      Height = 316
+      Height = 314
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
@@ -1574,10 +1574,7 @@ object FormCont: TFormCont
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy]
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
     AllowAsyncTransfer = True
     Left = 168
     Top = 112
@@ -1589,12 +1586,9 @@ object FormCont: TFormCont
     Top = 112
   end
   object DropFileTarget2: TDropFileTarget
-    Dragtypes = [dtCopy, dtMove, dtLink]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtMove, dtLink]
     OnDrop = DropFileTarget2Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 136
     Top = 112
   end

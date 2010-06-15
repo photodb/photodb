@@ -28,7 +28,7 @@ object SearchForm: TSearchForm
   object Splitter1: TSplitter
     Left = 150
     Top = 25
-    Height = 548
+    Height = 546
     MinSize = 135
     OnCanResize = Splitter1CanResize
     OnMoved = Splitter1Moved
@@ -2160,7 +2160,7 @@ object SearchForm: TSearchForm
     Left = 0
     Top = 25
     Width = 150
-    Height = 548
+    Height = 546
     Align = alLeft
     ParentColor = True
     ParentShowHint = False
@@ -2467,8 +2467,6 @@ object SearchForm: TSearchForm
         PopupMenu = PopupMenu3
         TabOrder = 1
         OnChange = Memo1Change
-        OnKeyDown = DateTimePicker1KeyDown
-        OnKeyPress = DateTimePicker1KeyPress
       end
       object IsDatePanel: TPanel
         Left = 8
@@ -2517,8 +2515,6 @@ object SearchForm: TSearchForm
         PopupMenu = PopupMenu11
         TabOrder = 2
         OnChange = Memo1Change
-        OnKeyDown = DateTimePicker1KeyDown
-        OnKeyPress = DateTimePicker1KeyPress
       end
       object IsTimePanel: TPanel
         Left = 8
@@ -3177,7 +3173,7 @@ object SearchForm: TSearchForm
     Left = 153
     Top = 25
     Width = 655
-    Height = 548
+    Height = 546
     Align = alClient
     BevelInner = bvRaised
     BevelOuter = bvNone
@@ -5921,10 +5917,7 @@ object SearchForm: TSearchForm
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
     AllowAsyncTransfer = True
     Left = 290
     Top = 128
@@ -5936,9 +5929,7 @@ object SearchForm: TSearchForm
     Top = 128
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = []
-    GetDataOnEnter = False
-    ShowImage = True
+    DragTypes = []
     OptimizedMove = True
     AllowAsyncTransfer = True
     Left = 322
@@ -6094,7 +6085,6 @@ object SearchForm: TSearchForm
     end
     object Tools1: TMenuItem
       Caption = 'Tools'
-      OnClick = Tools1Click
       object GetListofKeyWords1: TMenuItem
         Caption = 'Get List of KeyWords'
         OnClick = GetListofKeyWords1Click
@@ -6200,12 +6190,9 @@ object SearchForm: TSearchForm
     Top = 88
   end
   object DropFileTarget2: TDropFileTarget
-    Dragtypes = [dtCopy, dtLink]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtLink]
     OnDrop = DropFileTarget2Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 393
     Top = 128
   end
@@ -6258,11 +6245,9 @@ object SearchForm: TSearchForm
     Top = 328
   end
   object DropFileTarget3: TDropFileTarget
-    Dragtypes = [dtCopy, dtLink]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtLink]
     ShowImage = False
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 457
     Top = 128
   end

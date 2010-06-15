@@ -26,7 +26,7 @@ object ExplorerForm: TExplorerForm
   object Splitter1: TSplitter
     Left = 135
     Top = 42
-    Height = 529
+    Height = 527
     Constraints.MaxWidth = 100
     OnCanResize = Splitter1CanResize
   end
@@ -4339,7 +4339,7 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 42
     Width = 135
-    Height = 529
+    Height = 527
     Align = alLeft
     ParentColor = True
     TabOrder = 0
@@ -4347,7 +4347,7 @@ object ExplorerForm: TExplorerForm
       Left = 1
       Top = 22
       Width = 133
-      Height = 506
+      Height = 504
       ObjectTypes = []
       Root = 'rfDesktop'
       UseShellImages = False
@@ -4385,7 +4385,7 @@ object ExplorerForm: TExplorerForm
       Left = 1
       Top = 22
       Width = 133
-      Height = 506
+      Height = 504
       Align = alClient
       BevelOuter = bvNone
       Color = clInactiveCaption
@@ -4397,7 +4397,7 @@ object ExplorerForm: TExplorerForm
         Left = 0
         Top = 0
         Width = 133
-        Height = 506
+        Height = 504
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -4803,7 +4803,7 @@ object ExplorerForm: TExplorerForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 571
+    Top = 569
     Width = 862
     Height = 20
     Panels = <
@@ -5077,7 +5077,7 @@ object ExplorerForm: TExplorerForm
     Left = 138
     Top = 42
     Width = 724
-    Height = 529
+    Height = 527
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
@@ -5662,7 +5662,6 @@ object ExplorerForm: TExplorerForm
     end
     object View1: TMenuItem
       Caption = 'View'
-      OnClick = View1Click
       object ExplorerPanel1: TMenuItem
         Caption = 'Show Explorer Panel'
         OnClick = ExplorerPanel1Click
@@ -5733,7 +5732,6 @@ object ExplorerForm: TExplorerForm
     end
     object Tools1: TMenuItem
       Caption = 'Tools'
-      OnClick = Tools1Click
       object ShowUpdater2: TMenuItem
         Caption = 'Show Updater'
         OnClick = ShowUpdater1Click

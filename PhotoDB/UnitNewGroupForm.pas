@@ -332,8 +332,7 @@ procedure TNewGroupForm.ComboBoxEx1DblClick(Sender: TObject);
 var
   KeyWords : string;
 begin
- if not DBkernel.UserRights.ManageGroups then exit;
- DBChangeGroups(FNewRelatedGroups,KeyWords);
+ DBChangeGroups(FNewRelatedGroups, KeyWords);
 end;
 
 procedure TNewGroupForm.ComboBoxEx1Select(Sender: TObject);
@@ -342,7 +341,7 @@ var
 begin
  Application.ProcessMessages;
  if ComboBoxEx1.ItemsEx.Count=0 then exit;
- if (ComboBoxEx1.Text=ComboBoxEx1.Items[ComboBoxEx1.Items.Count-1]) and (DBKernel.UserRights.SetInfo) then
+ if (ComboBoxEx1.Text=ComboBoxEx1.Items[ComboBoxEx1.Items.Count-1]) then
  begin
   DBChangeGroups(FNewRelatedGroups,KeyWords,false);
   Application.ProcessMessages;
@@ -366,10 +365,8 @@ begin
  begin
   ComboBoxEx1.Items.Add(FCurrentGroups[i].GroupName);
  end;
- if DBKernel.UserRights.SetInfo then
- begin
-  ComboBoxEx1.Items.Add(TEXT_MES_MANAGEA);
- end;
+
+ ComboBoxEx1.Items.Add(TEXT_MES_MANAGEA);
  ComboBoxEx1.Text:=TEXT_MES_GROUPSA;
 end;
 

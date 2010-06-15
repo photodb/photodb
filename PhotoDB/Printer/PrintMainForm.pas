@@ -579,8 +579,6 @@ procedure TPrintForm.Execute(PrintFiles: TStrings);
 var
   i : integer;
 begin
- if DBKernel.UserRights.Print then
- begin
   VirtualBitmap:=nil;
   FFiles.Assign(PrintFiles);
   {$IFDEF PHOTODB}
@@ -596,7 +594,6 @@ begin
   end;
   DoGenerateSample;
   ShowModal;
- end;
 end;
 
 procedure TPrintForm.FormDestroy(Sender: TObject);

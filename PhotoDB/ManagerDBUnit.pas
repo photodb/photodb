@@ -327,11 +327,6 @@ begin
  DBkernel.RegisterForm(self);
  DBkernel.RecreateThemeTOForm(self);
 
-// Edit1.text:=DBKernel.GetDataBase;
- RadioButton2.Enabled:=DBKernel.UserRights.Delete;
- Button2.Enabled:=DBKernel.UserRights.SetInfo;
-
-
  Showfileinexplorer1.ImageIndex:=DB_IC_FOLDER;
  
  ComboBox2.Items.Clear;

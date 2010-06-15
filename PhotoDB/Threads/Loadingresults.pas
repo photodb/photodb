@@ -287,12 +287,6 @@ var
     Result:=false;
     exit;
    end;
-   if not DBKernel.UserRights.ShowPrivate then
-   if S.FieldByName('Access').AsInteger=db_access_private then
-   begin
-    Result:=false;
-    exit;
-   end;
    if FWideSearch.EnableDate then
    if (S.FieldByName('DateToAdd').AsDateTime>FWideSearch.MaxDate) or (S.FieldByName('DateToAdd').AsDateTime<FWideSearch.MinDate) then
    begin
@@ -441,8 +435,6 @@ begin
     if FWideSearch.GroupName<>'' then
     tempsql:=tempsql+' AND (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'")';
 
-    if not DBKernel.UserRights.ShowPrivate then
-    tempsql:=tempsql+Format(' AND (Access<>%d)',[db_access_private]);
     if FWideSearch.ShowLastTime then
     begin
      tempsql:=tempsql+' AND (DateToAdd > :DateToAdd) ';
@@ -1039,7 +1031,7 @@ begin
   Result:=Result+' AND (Rating>='+inttostr(showrating)+')';
   if FWideSearch.Enabled=false then
   if not ShowPrivate then Result:=Result+' AND (Access=0)';
-  if not DBKernel.UserRights.ShowPrivate then Result:=Result+' AND (Access=0)';
+
   Result:=Result+GetWideSearchOptions;
 end;
 
@@ -1092,7 +1084,7 @@ begin
  if (sqltext[1]=':') and (sqltext[length(sqltext)]=':') then
  begin
   sysaction:=copy(sqltext,2,length(sqltext)-2);
-  if DBKernel.UserRights.ShowAdminTools then
+
   if AnsiLowerCase(sysaction)=AnsiLowerCase('DeletedFiles') then
   begin
    systemquery:=true;
@@ -1100,7 +1092,7 @@ begin
    sqlquery:='SELECT * FROM '+GetDefDBName+' WHERE ';
    sqlquery:=sqlquery+GetFilter(db_attr_not_exists);
   end;
-  if DBKernel.UserRights.ShowAdminTools then
+
   if AnsiLowerCase(sysaction)=AnsiLowerCase('Dublicates') then
   begin
    QueryType:=QT_DUBLICATES;
@@ -1251,7 +1243,7 @@ begin
    if GetDBType=DB_TYPE_MDB then sqlquery:='Select * From (Select * from '+GetDefDBname+' where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)';
 
    if not showprivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
-   if not dbkernel.UserRights.ShowPrivate then sqlquery:=sqlquery+' AND (Access=0)';
+
    foptions:=SPSEARCH_SHOWFOLDER;
    if not directoryexists(Folder) then
    fspsearch_showfolder:='' else fspsearch_showfolder:=Folder;
@@ -1276,7 +1268,7 @@ begin
    sqlquery:='SELECT * FROM '+GetDefDBName+' WHERE StrTh = :str';
 
    if not showprivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
-   if not dbkernel.UserRights.ShowPrivate then sqlquery:=sqlquery+' AND (Access=0)';
+
    foptions:=SPSEARCH_SHOWSIMILAR;
   end;
  end;
@@ -1592,7 +1584,7 @@ begin
  Result:='';
 
   if not showprivate then Result:=Result+' AND (Access=0)' else
-  if not dbkernel.UserRights.ShowPrivate then Result:=Result+' AND (Access=0)';
+
   Result:=Result+' AND (Attr<>'+inttostr(db_attr_not_exists)+')';
 
   if FWideSearch.EnableDate then
@@ -1609,8 +1601,7 @@ begin
   end;
   if FWideSearch.Enabled then
   begin
-   if not (FWideSearch.Private_ and DBkernel.UserRights.SetPrivate) then
-   Result:=Result+' AND (Access<>'+inttostr(db_access_private)+') ';
+
    if not (FWideSearch.Common_) then
    Result:=Result+' AND (Access<>'+inttostr(db_access_none)+') ';
    Result:=Result+' AND (Attr='+inttostr(db_attr_norm)+')';

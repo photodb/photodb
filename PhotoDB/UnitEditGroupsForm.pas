@@ -140,8 +140,6 @@ begin
  begin
   ListBox1.Items.Add(Groups[i].GroupName);
  end;
- Button5.Enabled:=Button5.Enabled and DBKernel.UserRights.ManageGroups;
- Button3.Enabled:=Button3.Enabled and DBKernel.UserRights.ManageGroups;
  ShowModal;
  FreeGroups(Groups);
  if FResult then
@@ -175,8 +173,6 @@ begin
  LoadLanguage;
  CheckBox2.Checked:=DBkernel.ReadBool('Propetry','DeleteKeyWords',True);
  CheckBox3.Checked:=DBkernel.ReadBool('Propetry','ShowAllGroups',false);
- CheckBox3.Enabled:=DBKernel.UserRights.ManageGroups and DBKernel.UserRights.SetInfo;
-
 end;
 
 procedure TEditGroupsForm.Button3Click(Sender: TObject);
@@ -286,7 +282,7 @@ end;
 
 procedure TEditGroupsForm.GroupManeger1Click(Sender: TObject);
 begin
- if DBKernel.UserRights.ManageGroups then ExecuteGroupManager;
+  ExecuteGroupManager;
 end;
 
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);
@@ -357,10 +353,6 @@ begin
   MoveToGroup1.Visible:=True;
   ChangeGroup1.Visible:=False;
  end;
- GroupManeger1.Visible:=DBkernel.UserRights.ManageGroups;
- CreateGroup1.Visible:=CreateGroup1.Visible and DBkernel.UserRights.ManageGroups;
- ChangeGroup1.Visible:=ChangeGroup1.Visible and DBkernel.UserRights.ManageGroups;
- MoveToGroup1.Visible:=MoveToGroup1.Visible and DBkernel.UserRights.ManageGroups;
 end;
 
 procedure TEditGroupsForm.QuickInfo1Click(Sender: TObject);

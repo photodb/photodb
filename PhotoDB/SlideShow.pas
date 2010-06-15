@@ -350,10 +350,6 @@ begin
  WaitingList:=false;
  LastZValue:=1;
  LockEventRotateFileList:=TStringList.Create;
-  ToolButton20.Enabled:=DBKernel.UserRights.FileOperationsCritical;
-  ToolButton19.Enabled:=DBKernel.UserRights.FileOperationsCritical;
-  ToolButton22.Enabled:=DBKernel.UserRights.SetRating;
-  ToolButton15.Enabled:=DBKernel.UserRights.EditImage;
   RatingPopupMenu.Images:=DBKernel.ImageList;
   N01.ImageIndex:=DB_IC_DELETE_INFO;
   N11.ImageIndex:=DB_IC_RATING_1;
@@ -492,9 +488,9 @@ begin
  begin
   Caption:=Format(TEXT_MES_SLIDE_CAPTION,[GetFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
   ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-  ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+  ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
 
-  ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+  ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
   ToolButton13.Enabled:=ToolButton12.Enabled;
 
   FSID:=GetGUID;
@@ -506,10 +502,10 @@ begin
     begin
      UpdateRecord(CurrentFileNumber);
      Rotate:=CurrentInfo.ItemRotates[CurrentFileNumber];
-     ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+     ToolButton22.Enabled:=CurrentInfo.ItemIds[CurrentFileNumber]<>0;
      ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
 
-     ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+     ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
      ToolButton13.Enabled:=ToolButton12.Enabled;
     end else
     begin            
@@ -533,9 +529,9 @@ begin
  begin
   Caption:=Format(TEXT_MES_SLIDE_CAPTION,[GetFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
   ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-  ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+  ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
 
-  ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+  ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
   ToolButton13.Enabled:=ToolButton12.Enabled;
 
   Text:=Format(TEXT_MES_FILE_NOT_EXISTS_F,[Mince(FileName,30)]);
@@ -1096,7 +1092,6 @@ begin
  end else
  begin
 
-  if DBKernel.UserRights.FileOperationsCritical then
   if DBKernel.ReadBool('Options','UseUserMenuForViewer',true) then
   if not (SlideShowNow or FullScreenNow) then
   begin
@@ -1108,35 +1103,26 @@ begin
   AddToDB1.Visible:=True;
   DBItem1.Visible:=false;
  end;
- Copy1.Visible:=DBKernel.UserRights.FileOperationsNormal;
- Shell1.Visible:=DBKernel.UserRights.Execute;
  FullScreen1.Visible:=not (FullScreenNow or SlideShowNow);
  SlideShow1.Visible:=not (FullScreenNow or SlideShowNow);
  begin
-  AddToDB1.Visible:=AddToDB1.Visible and not (SlideShowNow or FullScreenNow) and not CurrentInfo.ItemCrypted[CurrentFileNumber] and DBKernel.UserRights.Add;
+  AddToDB1.Visible:=AddToDB1.Visible and not (SlideShowNow or FullScreenNow) and not CurrentInfo.ItemCrypted[CurrentFileNumber];
   ZoomOut1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
   ZoomIn1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
   RealSize1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
   BestSize1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
   DBItem1.Visible:=not (SlideShowNow or FullScreenNow) and (CurrentInfo.ItemIds[CurrentFileNumber]<>0);
-  SetasDesktopWallpaper1.Visible:=not (SlideShowNow) and ImageExists and not CurrentInfo.ItemCrypted[CurrentFileNumber] and DBkernel.UserRights.FileOperationsCritical and IsWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+  SetasDesktopWallpaper1.Visible:=not (SlideShowNow) and ImageExists and not CurrentInfo.ItemCrypted[CurrentFileNumber] and IsWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber]);
   Rotate1.Visible:=not (SlideShowNow) and ImageExists;
   Properties1.Visible:=not (SlideShowNow or FullScreenNow);
   GoToSearchWindow1.Visible:=not (SlideShowNow);
   Explorer1.Visible:=not (SlideShowNow);
   Resize1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
   Shell1.Visible:=not (SlideShowNow or FullScreenNow);
-  Print1.Visible:=not (SlideShowNow) and ImageExists and DBKernel.UserRights.Print;
+  Print1.Visible:=not (SlideShowNow) and ImageExists;
   ImageEditor1.Visible:=not (SlideShowNow) and ImageExists;
   SendTo1.Visible:=not (SlideShowNow) and ImageExists and (CurrentInfo.ItemIds[CurrentFileNumber]=0);
  end;
-
- Shell1.Visible:=Shell1.Visible and DBKernel.UserRights.Execute;
- Copy1.Visible:=Copy1.Visible and DBKernel.UserRights.FileOperationsNormal;
- Rotate1.Visible:=Rotate1.Visible and DBKernel.UserRights.FileOperationsNormal;
- Resize1.Visible:=Resize1.Visible and DBKernel.UserRights.FileOperationsNormal;
- ImageEditor1.Visible:=Resize1.Visible and DBKernel.UserRights.EditImage;
- AddToDB1.Visible:=AddToDB1.Visible and DBKernel.UserRights.Add;
 
  Tools1.Visible:=Resize1.Visible or Print1.Visible or ImageEditor1.Visible or GoToSearchWindow1.Visible;
  NewPanel1.Visible:=Tools1.Visible;
@@ -1261,7 +1247,6 @@ begin
    CurrentInfo.ItemTimes[i]:=Value.Time;
    CurrentInfo.ItemIsDates[i]:=true;
    CurrentInfo.ItemIsTimes[i]:=Value.IsTime;
-   ToolButton22.Enabled:=DBKernel.UserRights.SetRating;
    break;
   end;
   exit;
@@ -1292,7 +1277,7 @@ begin
     CurrentInfo.ItemRatings[i]:=Value.Rating;
     if i=CurrentFileNumber then
     ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-    ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+    ToolButton22.Enabled:=CurrentInfo.ItemIds[CurrentFileNumber]<>0;
    end;
    if EventID_Param_Name in params then
    CurrentInfo.ItemFileNames[i]:=Value.Name;
@@ -1473,7 +1458,7 @@ begin
   if (Msg.wParam=Byte('L')) and CtrlKeyDown then RotateCCW1Click(nil);
   if (Msg.wParam=Byte('R')) and CtrlKeyDown then RotateCW1Click(nil);
   if (Msg.wParam=Byte('D')) and CtrlKeyDown then ToolButton20Click(nil);
-  if (Msg.wParam=Byte('P')) and CtrlKeyDown then if DBKernel.UserRights.Print then Print1Click(nil);
+  if (Msg.wParam=Byte('P')) and CtrlKeyDown then Print1Click(nil);
   if ((Msg.wParam=Byte('0')) or (Msg.wParam=Byte(VK_NUMPAD0))) and CtrlKeyDown then N51Click(N01);
   if ((Msg.wParam=Byte('1')) or (Msg.wParam=Byte(VK_NUMPAD1))) and CtrlKeyDown then N51Click(N11);
   if ((Msg.wParam=Byte('2')) or (Msg.wParam=Byte(VK_NUMPAD2))) and CtrlKeyDown then N51Click(N21);
@@ -1568,8 +1553,6 @@ var
 const text_out = TEXT_MES_GENERATING;
 
 begin
- ToolButton17.Enabled:=DBkernel.UserRights.Print;
- Print1.Enabled:=DBkernel.UserRights.Print;
  Result:=true;
  SlideTimer.Enabled:=false;
  Play:=false;
@@ -1700,9 +1683,8 @@ begin
   begin
    Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
    ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-   ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+   ToolButton22.Enabled:=CurrentInfo.ItemIds[CurrentFileNumber]<>0;
 
-   ToolButton12.Enabled:=DBKernel.UserRights.FileOperationsNormal;
    ToolButton13.Enabled:=ToolButton12.Enabled;
   end;
  end;
@@ -1871,7 +1853,7 @@ begin
  If Button=mbLeft then
  if FileExists(CurrentInfo.ItemFileNames[CurrentFileNumber]) then
  begin
-  DBCanDrag:=DBKernel.UserRights.FileOperationsNormal;
+  DBCanDrag:=True;
   GetCursorPos(DBDragPoint);
  end;
 end;
@@ -2392,7 +2374,7 @@ var
   p : TPoint;
 begin
  if Length(CurrentInfo.ItemFileNames)=0 then exit;
- if (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) and (DBkernel.UserRights.FileOperationsCritical) then
+ if (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
  begin
   SetLength(FNames,1);
   FNames[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
@@ -2473,7 +2455,7 @@ begin
 // ToolButton12.Enabled:=true;
 // ToolButton13.Enabled:=true;
 
- ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+ ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
  ToolButton13.Enabled:=ToolButton12.Enabled;
 
  ZoomIn1.Enabled:=True;
@@ -2528,9 +2510,8 @@ begin
  ToolButton6.Enabled:=true;
  ToolButton8.Enabled:=true;
  ToolButton9.Enabled:=true;
-// ToolButton12.Enabled:=true;
-// ToolButton13.Enabled:=true;
- ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+
+ ToolButton12.Enabled:=True;
  ToolButton13.Enabled:=ToolButton12.Enabled;
 
  ZoomIn1.Enabled:=True;
@@ -2868,10 +2849,10 @@ end;
 procedure TViewer.UpdateInfo(SID: TGUID; Info: TOneRecordInfo);
 begin
  SetRecordsInfoOne(CurrentInfo,CurrentFileNumber,Info.ItemFileName,Info.ItemId,Info.ItemRotate,Info.ItemRating,Info.ItemAccess,Info.ItemComment,Info.ItemGroups,Info.ItemDate,Info.ItemIsDate,Info.ItemIsTime,Info.ItemTime,Info.ItemCrypted,Info.ItemInclude,Info.ItemLinks);
- ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+ ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
  ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
 
- ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+ ToolButton12.Enabled:=True;
  ToolButton13.Enabled:=ToolButton12.Enabled;
 end;
 
@@ -2903,7 +2884,6 @@ procedure TViewer.ImageEditor1Click(Sender: TObject);
 begin
  if FullScreenNow then
  FullScreenView.Close;
- if DBKernel.UserRights.EditImage then
  With EditorsManager.NewEditor do
  begin
   Show;
@@ -2915,7 +2895,6 @@ procedure TViewer.Print1Click(Sender: TObject);
 var
   Files : TStrings;
 begin
- if not DBKernel.UserRights.Print then exit;
  Files:=TStringList.Create;
  if FileExists(CurrentInfo.ItemFileNames[CurrentFileNumber]) then
  Files.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
@@ -2932,7 +2911,6 @@ var
   SQL_ : string;
   i, DeleteID : Integer;
 begin
- if not DBKernel.UserRights.FileOperationsCritical then exit;
  If ID_OK=MessageBoxDB(Handle,TEXT_MES_DEL_FILE_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   DeleteID:=0;
@@ -3038,7 +3016,6 @@ var
   P : TPoint;
   i : integer;
 begin
- if not DBKernel.UserRights.SetRating then exit;
  GetCursorPos(P);
  for i:=0 to 5 do
  (FindComponent('N'+IntToStr(i)+'1') as TMenuItem).Default:=false;
@@ -3053,7 +3030,6 @@ var
   EventInfo : TEventValues;
   i : integer;
 begin
-  if not DBKernel.UserRights.SetRating then exit;
   Str:=(Sender as TMenuItem).Caption;
   for i:=Length(Str) downto 1 do
   if Str[i]='&' then System.Delete(Str,i,1);
@@ -3191,10 +3167,10 @@ begin
   end;
   break;
  end;
- ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+ ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
  ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
 
- ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+ ToolButton12.Enabled:=True;
  ToolButton13.Enabled:=ToolButton12.Enabled;
 end;
 
@@ -3209,10 +3185,10 @@ begin
   CurrentInfo.LoadedImageInfo[i]:=true;
   break;
  end;
- ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetRating;
+ ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
  ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
 
- ToolButton12.Enabled:=((CurrentInfo.ItemIds[CurrentFileNumber]<>0) and DBKernel.UserRights.SetInfo) or ((CurrentInfo.ItemIds[CurrentFileNumber]=0) and DBKernel.UserRights.FileOperationsNormal);
+ ToolButton12.Enabled:=True;
  ToolButton13.Enabled:=ToolButton12.Enabled;
 end;
 

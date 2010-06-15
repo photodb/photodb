@@ -132,11 +132,6 @@ Procedure GetPhotosFromDrive(DriveLetter : Char);
 var
   GetToPersonalFolderForm: TGetToPersonalFolderForm;
 begin
- if not DBKernel.UserRights.FileOperationsNormal then
- begin
-  MessageBoxDB(GetActiveFormHandle,TEXT_MES_CANT_MAKE_ACTION_BECAUSE_USER_HAVENT_NORMAL_FILE_ACTION_RIGHTS,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  exit;
- end;
  Application.CreateForm(TGetToPersonalFolderForm,GetToPersonalFolderForm);
  GetToPersonalFolderForm.Execute(DriveLetter+':\');
 end;
@@ -145,11 +140,6 @@ Procedure GetPhotosFromFolder(Folder : string);
 var
   GetToPersonalFolderForm: TGetToPersonalFolderForm;
 begin
- if not DBKernel.UserRights.FileOperationsNormal then
- begin
-  MessageBoxDB(GetActiveFormHandle,TEXT_MES_CANT_MAKE_ACTION_BECAUSE_USER_HAVENT_NORMAL_FILE_ACTION_RIGHTS,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  exit;
- end;
  Application.CreateForm(TGetToPersonalFolderForm,GetToPersonalFolderForm);
  GetToPersonalFolderForm.Execute(Folder);
 end;
@@ -300,8 +290,6 @@ begin
  ExtendedMode:=false;
  GetPhotosFormSID:=GetGUID;
  ThreadInProgress:=false;
- CheckBox2.Enabled:=DBKernel.UserRights.Add;
- if not DBKernel.UserRights.Add then CheckBox2.Enabled:=false;
  DBKernel.RecreateThemeToForm(Self);
  LoadLanguage;
  if DirectoryExists(DBKernel.ReadString('GetPhotos','DFolder')) then
@@ -328,8 +316,7 @@ begin
  ShowImages1.ImageIndex:=DB_IC_SLIDE_SHOW;
  
  CheckBox1.Checked:=DBKernel.ReadBool('GetPhotos','OpenFolder',true);
- CheckBox3.Checked:=DBKernel.ReadBool('GetPhotos','AddPhotos',true) and DBKernel.UserRights.Add;
- CheckBox3.Enabled:=DBKernel.UserRights.Add;
+ CheckBox3.Checked:=DBKernel.ReadBool('GetPhotos','AddPhotos',true);
  if DBKernel.ReadString('GetPhotos','MaskFolder')<>'' then
  Edit1.Text:=DBKernel.ReadString('GetPhotos','MaskFolder') else
  Edit1.Text:='%yy:mm:dd = %YMD (%coment)';

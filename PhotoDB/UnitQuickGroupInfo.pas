@@ -36,7 +36,6 @@ type
     procedure EditGroup1Click(Sender: TObject);
     procedure Manager1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
     procedure SearchForGroup1Click(Sender: TObject);
     procedure ComboBoxEx1KeyPress(Sender: TObject; var Key: Char);
     procedure ComboBoxEx1Select(Sender: TObject);
@@ -198,12 +197,6 @@ begin
  CommentLabel.Caption:=TEXT_MES_GROUP_COMMENT;
  CheckBox2.Caption:=TEXT_MES_INCLUDE_IN_QUICK_LISTS;
  Label3.Caption:=TEXT_MES_RELATED_GROUPS+':';
-end;
-
-procedure TFormQuickGroupInfo.PopupMenu1Popup(Sender: TObject);
-begin
- EditGroup1.Visible:=DBKernel.UserRights.ManageGroups;
- Manager1.Visible:=DBKernel.UserRights.ManageGroups;
 end;
 
 procedure TFormQuickGroupInfo.SearchForGroup1Click(Sender: TObject);

@@ -2783,7 +2783,6 @@ Var
  
 begin
 
-  ShowPrivate:=ShowPrivate and DBkernel.UserRights.ShowPrivate;
   If FileExists(BeginFile) then
   Folder:=GetDirectory(BeginFile);
   If DirectoryExists(BeginFile) then
@@ -4858,7 +4857,6 @@ procedure RotateDBImage270(ID : integer; OldRotation : Integer);
 var
   EventInfo : TEventValues;
 begin
- if not DBkernel.UserRights.SetInfo then exit;
  if ID<>0 then
  begin
   Case OldRotation of
@@ -4876,7 +4874,6 @@ procedure RotateDBImage90(ID : integer; OldRotation : Integer);
 var
   EventInfo : TEventValues;
 begin
- if not DBkernel.UserRights.SetInfo then exit;
  if ID<>0 then
  begin
   Case OldRotation of
@@ -4894,7 +4891,6 @@ procedure RotateDBImage180(ID : integer; OldRotation : Integer);
 var
   EventInfo : TEventValues;
 begin
- if not DBkernel.UserRights.SetInfo then exit;
  if ID<>0 then
  begin
   Case OldRotation of

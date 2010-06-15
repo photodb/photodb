@@ -108,6 +108,8 @@ object DBSelect: TDBSelect
     Images = DBImageList
     DropDownCount = 8
     ShowDropDownMenu = True
+    LastItemIndex = 0
+    ShowEditIndex = -1
   end
   object DBImageList: TImageList
     Left = 8

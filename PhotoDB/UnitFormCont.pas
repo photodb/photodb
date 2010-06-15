@@ -367,11 +367,7 @@ begin
  WindowID:=GetGUID;
  FilePushed:=false;
  LoadLanguage;
- Label2.Visible:=DBkernel.UserRights.FileOperationsNormal;
- WebLink1.Visible:=DBkernel.UserRights.FileOperationsNormal;
- WebLink2.Visible:=DBkernel.UserRights.FileOperationsNormal;
- ExportLink.Visible:=DBkernel.UserRights.FileOperationsNormal;
- ExCopyLink.Visible:=DBkernel.UserRights.FileOperationsNormal;
+
 
  ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
 
@@ -450,7 +446,7 @@ begin
   hinttimer.Enabled:=false;
   info:=GetCurrentPopUpMenuInfo(item);
   info.IsAttrExists:=false;
-  if not ((GetTickCount-WindowsMenuTickCount>WindowsMenuTime) and DBkernel.UserRights.FileOperationsCritical) then
+  if not (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
   begin
    info.IsPlusMenu:=false;
    info.IsListItem:=false;
@@ -513,7 +509,7 @@ begin
   WindowsMenuTickCount:=GetTickCount;
   if (Button = mbLeft) and (Item<>nil) then
   begin
-    DBCanDrag:=DBKernel.UserRights.FileOperationsNormal;
+    DBCanDrag:=True;
     SetLength(FilesToDrag,0);
     GetCursorPos(DBDragPoint);
     MenuInfo:=Self.GetCurrentPopUpMenuInfo(Item);
@@ -813,8 +809,7 @@ begin
  SaveDialog:=DBSaveDialog.Create;
  SaveDialog.Filter:='DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
  SaveDialog.FilterIndex:=1;
- 
- if not DBkernel.UserRights.FileOperationsCritical then exit;
+
  if SaveDialog.Execute then
  begin
   FileName:=SaveDialog.FileName;
@@ -1620,8 +1615,6 @@ var
   Item : TEasyItem;
 begin
 
- if DBkernel.UserRights.SetRating then
- begin
   GetCursorPos(p1);
   p:=ListView1.ScreenToClient(p1);
   Item:=ItemByPointStar(Listview1,p);
@@ -1639,7 +1632,6 @@ begin
     exit;
    end;
   end;
- end;
 
  Application.HideHint;
  if ImHint<>nil then
@@ -1861,7 +1853,7 @@ begin
  SlideShow1.Visible:=ListView1.Items.Count<>0;
  SelectAll1.Visible:=ListView1.Items.Count<>0;
  Copy1.Visible:=ListView1.Items.Count<>0;
- SaveToFile1.Visible:=(ListView1.Items.Count<>0) and DBkernel.UserRights.FileOperationsCritical;
+ SaveToFile1.Visible:=ListView1.Items.Count<>0;
  Clear1.Visible:=ListView1.Items.Count<>0;
 end;
 
@@ -2183,12 +2175,9 @@ procedure TFormCont.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
- if DBkernel.UserRights.SetRating then
- begin
   Dolphin_DB.SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
   EventInfo.Rating:=(Sender as TMenuItem).Tag;
   DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
- end;
 end;
 
 procedure TFormCont.PopupMenuZoomDropDownPopup(Sender: TObject);

@@ -101,11 +101,7 @@ object ImHint: TImHint
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy]
     Images = DragImageList
-    ImageIndex = 0
     ShowImage = True
-    ImageHotSpotX = 16
-    ImageHotSpotY = 16
-    AllowAsyncTransfer = False
     Left = 72
     Top = 72
   end
@@ -116,11 +112,8 @@ object ImHint: TImHint
     Top = 72
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = []
-    GetDataOnEnter = False
-    ShowImage = True
+    DragTypes = []
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 104
     Top = 72
   end

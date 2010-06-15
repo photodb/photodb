@@ -122,12 +122,7 @@ begin
  RadioButton2.Checked:=DBKernel.ReadBool('Convert options','Convert',false);
  RadioButton001.Checked:=DBKernel.ReadBool('Convert options','Replace',false);
  RadioButton002.Checked:=DBKernel.ReadBool('Convert options','New',true);
- if not DBkernel.UserRights.FileOperationsCritical then
- begin
-  RadioButton001.Enabled:=false;
-  RadioButton002.Enabled:=false;
-  RadioButton002.Checked:=true;
- end;
+
 end;
 
 procedure TFormSizeResizer.Button1Click(Sender: TObject);

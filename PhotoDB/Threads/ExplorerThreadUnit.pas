@@ -1484,14 +1484,6 @@ begin
   fFolderImages.Images[FcountOfFolderImage]:=TBitmap.create;
   fFolderImages.Images[FcountOfFolderImage].Assign(fbmp);
  end;
- If info.ItemAccess=db_access_private then
- begin
-  If not DBKernel.UserRights.ShowPrivate then
-  begin
-   DrawIconEx(TempBitmap.Canvas.Handle,FolderImageRect.Left,FolderImageRect.Top,UnitDBKernel.icons[DB_IC_KEY+1].Handle,32,32,1,0,DI_NORMAL);
-   exit;
-  end;
- end;
  TempBitmap.Canvas.StretchDraw(FolderImageRect,fbmp);
 end;
 

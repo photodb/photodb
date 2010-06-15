@@ -414,15 +414,11 @@ type
     procedure CDROMDrives1Click(Sender: TObject);
     procedure SpecialLocation1Click(Sender: TObject);
     procedure GetPhotosFromDrive2Click(Sender: TObject);
-    procedure Tools1Click(Sender: TObject);
     procedure File1Click(Sender: TObject);
     procedure IsTimePanelDblClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure DBTreeView1Click(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
-    procedure DateTimePicker1KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure DateTimePicker1KeyPress(Sender: TObject; var Key: Char);
     procedure View2Click(Sender: TObject);
     procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
@@ -907,7 +903,6 @@ begin
  InitializeScript(aScript);
  LoadBaseFunctions(aScript);
  LoadDBFunctions(aScript);
- if DBKernel.UserRights.FileOperationsCritical then
  LoadFileFunctions(aScript);
 
  AddScriptObjFunction(aScript,'ShowExplorerPanel',F_TYPE_OBJ_PROCEDURE_TOBJECT,Explorer2Click);
@@ -942,10 +937,7 @@ begin
  ThreadQuery:=GetQuery(dbname);
  WorkQuery:=GetQuery(dbname);
  DropFileTarget2.Register(SearchEdit);
- CheckBox2.Enabled:=DBkernel.UserRights.ShowPrivate;
- ShowExplorerPage1.Visible:=DBKernel.UserRights.ShowPath;
- View1.Visible:=DBKernel.UserRights.ShowPath;
- GetPhotosFromDrive2.Visible:=DBKernel.UserRights.FileOperationsNormal and not FolderView;
+ GetPhotosFromDrive2.Visible:=not FolderView;
  DestroyCounter:=0;
  FShowen:=false;
  FUpdatingDB:=false;
@@ -968,7 +960,7 @@ begin
  Menus[0].Enabled:=false;
  ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
  Panel1.Width:=DBKernel.ReadInteger('Search','LeftPanelWidth',150);
- GetPhotosFromDrive1.Visible:=DBKernel.UserRights.FileOperationsNormal and not FolderView;
+ GetPhotosFromDrive1.Visible:= not FolderView;
  FBitmapImageList := TBitmapImageList.Create;
  FormManager.RegisterMainForm(Self);
  except
@@ -1031,7 +1023,7 @@ begin
   ImHint.Close;
   HintTimer.Enabled:=false;
   Info:=GetCurrentPopUpMenuInfo(Item);
-  if not ((getTickCount-WindowsMenuTickCount>WindowsMenuTime) and DBKernel.UserRights.FileOperationsCritical) then
+  if not (getTickCount-WindowsMenuTickCount>WindowsMenuTime)  then
   begin
    DBPopupMenu.Execute(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,Info);
   end else
@@ -1111,7 +1103,7 @@ begin
 
   if (Button = mbLeft) and (Item<>nil) then
   begin
-    DBCanDrag:=DBKernel.UserRights.FileOperationsNormal;
+    DBCanDrag:=True;
     SetLength(FilesToDrag,0);
     GetCursorPos(DBDragPoint);
     MenuInfo:=GetCurrentPopUpMenuInfo(Item);
@@ -1163,8 +1155,6 @@ var
   p,p1 : TPoint;
 begin
 
- if DBkernel.UserRights.SetRating then
- begin
   GetCursorPos(p1);
   p:=ListView1.ScreenToClient(p1);
   if ItemByPointStar(Listview1,p)<>nil then
@@ -1178,7 +1168,6 @@ begin
    RatingPopupMenu1.Popup(p1.x,p1.y);
    exit;
   end;
- end;
 
  if Active then
  Application.HideHint;
@@ -1232,7 +1221,6 @@ begin
  begin
   if CharToInt(DBkernel.GetCodeChar(12))<>CharToInt(DBkernel.GetCodeChar(10))*CharToInt(DBkernel.GetCodeChar(10))*CharToInt(DBkernel.GetCodeChar(10)) mod 15 then exit;
  end;
- if not DBkernel.UserRights.SetInfo then Exit;
 
 
  if SelCount=1 then
@@ -1296,7 +1284,6 @@ begin
   end;
 
   //[BEGIN] Date Support
-  If DBkernel.UserRights.SetInfo then
   If not PanelValueIsDateSets.Visible then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set DateToAdd = :Date Where ';
@@ -1311,7 +1298,6 @@ begin
    For i:=0 to Length(SelectedInfo.Ids)-1 do
    DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_Date],EventInfo);
   end;
-  If DBkernel.UserRights.SetInfo then
   if not PanelValueIsDateSets.Visible then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set IsDate = :IsDate Where ';
@@ -1330,7 +1316,6 @@ begin
 
 
   //[BEGIN] Time Support
-  If DBkernel.UserRights.SetInfo then
   If not PanelValueIsTimeSets.Visible then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set aTime = :aTime Where ';
@@ -1345,7 +1330,6 @@ begin
    For i:=0 to Length(SelectedInfo.Ids)-1 do
    DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_Time],EventInfo);
   end;
-  If DBkernel.UserRights.SetInfo then
   if not PanelValueIsTimeSets.Visible then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set IsTime = :IsTime Where ID in (';
@@ -1365,7 +1349,6 @@ begin
   //[END] Time Support
 
   //[BEGIN] Rating Support
-  If DBKernel.UserRights.SetRating then
   if not Rating1.Islayered then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set Rating = :Rating Where ID in (';
@@ -1384,7 +1367,6 @@ begin
   //[END] Rating Support
 
   //[BEGIN] Comment Support
-  If DBKernel.UserRights.SetInfo then
   if not Memo2.ReadOnly then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set Comment = "'+normalizeDBString(Memo2.Text)+'" Where ID in (';
@@ -1403,7 +1385,6 @@ begin
 
   //[BEGIN] KeyWords Support
 
-  If DBKernel.UserRights.SetInfo then
   If VariousKeyWords(Memo1.lines.Text,CommonKeyWords) then
   begin
    FreeSQLList(List);
@@ -1444,9 +1425,7 @@ begin
   //[END] KeyWords Support
 
   //[BEGIN] Groups Support
-  if DBKernel.UserRights.SetInfo then
   CommonGroups:=SelectedInfo.Groups;
-  if DBKernel.UserRights.SetInfo then
   If not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
   begin
    FreeSQLList(List);
@@ -2418,8 +2397,6 @@ begin
  end;
 
  SelectAll1.Visible:=SelectAll1.Visible and not FUpdatingDB;
- ManageDB1.Visible:=DBKernel.UserRights.ShowAdminTools;
- ShowUpdater1.Visible:=DBKernel.UserRights.Add;
  SaveasTable1.Visible:=False;
  SaveResults1.Visible:=false;
  if ListView1.Items.Count>0 then
@@ -2427,11 +2404,9 @@ begin
   SaveAsTable1.Visible:=True;
   SaveResults1.Visible:=True;
  end;
- ImageEditor1.Visible:=DBKernel.UserRights.EditImage;
- SaveasTable1.Visible:=SaveasTable1.Visible and DBKernel.UserRights.FileOperationsCritical;
- GroupsManager2.Visible:=DBKernel.UserRights.ShowOptions;
- SaveResults1.Visible:=DBKernel.UserRights.FileOperationsCritical and not FolderView;
- GetPhotosFromDrive1.Visible:=DBKernel.UserRights.FileOperationsNormal and not FolderView;
+
+ SaveResults1.Visible:=not FolderView;
+ GetPhotosFromDrive1.Visible:=not FolderView;
 end;
 
 procedure TSearchForm.Options1Click(Sender: TObject);
@@ -2539,7 +2514,6 @@ begin
  button1.caption:=TEXT_MES_SEARCH;
  Label7.Caption:=TEXT_MES_NO_RES;
  DmProgress1.Text:=TEXT_MES_NO_RES;
- TwButton1.Visible:=DBKernel.UserRights.ShowPrivate;
  SaveWindowPos1.Key:=RegRoot+'Searching';
  if not SafeMode then
  SaveWindowPos1.SetPosition;
@@ -2837,11 +2811,11 @@ begin
 
  if Ord(Key) = VK_F2 then
  if SelCount=1 then
- if DBkernel.UserRights.FileOperationsNormal then
- begin
+
+
   ListView1.EditManager.Enabled:=true;
   ListView1.Selection.First.Edit;
- end;
+
  if Active then
  Application.HideHint;
  if ImHint<>nil then
@@ -3016,11 +2990,8 @@ end;
 
 procedure TSearchForm.Rating1MouseDown(Sender: TObject);
 begin
- if DBkernel.UserRights.SetRating then
- begin
   if Rating1.islayered then Rating1.islayered:=false;
   Memo1Change(Sender);
- end;
 end;
 
 procedure TSearchForm.ApplicationEvents1Message(var Msg: tagMSG;
@@ -3071,16 +3042,6 @@ begin
   end;
  end;
 
- if msg.message=513 then
- begin
-  if not DBKernel.UserRights.SetInfo then
-  if GetParent(Msg.hwnd)=DateTimePicker4.Handle then msg.message:=0;
-  if (Msg.hwnd=DateTimePicker1.Handle) or (Msg.hwnd=DateTimePicker4.Handle) then
-  begin
-   if not DBKernel.UserRights.SetInfo then msg.message:=0;
-   if not DBKernel.UserRights.SetInfo then msg.message:=0;
-  end;
- end;
 
  if Msg.hwnd=FFirstTip_WND then
  if msg.message=275 then
@@ -3198,14 +3159,12 @@ end;
 
 procedure TSearchForm.Datenotexists1Click(Sender: TObject);
 begin
- If not DBKernel.UserRights.SetInfo then Exit;
  IsDatePanel.Visible:=True;
  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.IsDatePanelDblClick(Sender: TObject);
 begin
- If not DBKernel.UserRights.SetInfo then Exit;
  If FUpdatingDB then Exit;
  IsDatePanel.Visible:=False;
  Memo1Change(Sender);
@@ -3213,7 +3172,6 @@ end;
 
 procedure TSearchForm.PanelValueIsDateSetsDblClick(Sender: TObject);
 begin
- If not DBKernel.UserRights.SetInfo then Exit;
  If FUpdatingDB then Exit;
  PanelValueIsDateSets.Visible:=false;
  Memo1Change(Sender);
@@ -3283,10 +3241,9 @@ begin
  begin
   ComboBoxSelGroups.ItemsEx.Add().Caption:=FCurrentGroups[i].GroupName;
  end;
- if DBKernel.UserRights.SetInfo then
- begin
-  ComboBoxSelGroups.ItemsEx.Add().Caption:=(TEXT_MES_MANAGEA);
- end;
+
+ ComboBoxSelGroups.ItemsEx.Add().Caption:=TEXT_MES_MANAGEA;
+
  ComboBoxSelGroups.Text:=TEXT_MES_GROUPSA;
 end;
 
@@ -3297,7 +3254,7 @@ begin
  Application.ProcessMessages;
  if ComboBoxSelGroups.ItemsEx.Count=0 then exit;
  if ComboBoxSelGroups.ItemIndex<>-1 then
- if (ComboBoxSelGroups.Text=ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.Items.Count-1].Caption) and (DBKernel.UserRights.SetInfo) and (ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.ItemIndex].ImageIndex=0) then
+ if (ComboBoxSelGroups.Text=ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.Items.Count-1].Caption) and (ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.ItemIndex].ImageIndex=0) then
  begin
   KeyWords:=Memo1.Text;
   DBChangeGroups(FPropertyGroups,KeyWords);
@@ -3318,7 +3275,6 @@ procedure TSearchForm.ComboBox1_DblClick(Sender: TObject);
 var
   KeyWords : string;
 begin
- if not DBkernel.UserRights.SetInfo then exit;
  KeyWords:=Memo1.Text;
  DBChangeGroups(FPropertyGroups,KeyWords);
  Memo1.Text:=KeyWords;
@@ -3341,9 +3297,8 @@ procedure TSearchForm.PopupMenu3Popup(Sender: TObject);
 begin
  DateNotExists1.Visible:=not IsDatePanel.Visible;
  DateExists1.Visible:=IsDatePanel.Visible;
- Datenotexists1.Visible:=Datenotexists1.Visible and DBKernel.UserRights.SetInfo;
- DateExists1.Visible:=DateExists1.Visible and DBKernel.UserRights.SetInfo and not FUpdatingDB;
- Datenotsets1.Visible:=Datenotsets1.Visible and DBKernel.UserRights.SetInfo and not FUpdatingDB;
+ DateExists1.Visible:=DateExists1.Visible and not FUpdatingDB;
+ Datenotsets1.Visible:=Datenotsets1.Visible and not FUpdatingDB;
  Datenotsets1.Visible:=Datenotsets1.Visible and (SelCount>1) and not FUpdatingDB;
 end;
 
@@ -3386,7 +3341,6 @@ end;
 
 procedure TSearchForm.SetComent1Click(Sender: TObject);
 begin
- if not DBkernel.UserRights.SetInfo then Exit;
  if not Memo2.ReadOnly then exit;
  Memo2.ReadOnly:=False;
  Memo2.Cursor:=CrDefault;
@@ -3633,7 +3587,6 @@ begin
  if not Active then Exit;
  if FolderView then Exit;
  HelpTimer.Enabled:=false;
- if not DBkernel.UserRights.Add then Exit;
  if not DBKernel.ReadBool('HelpSystem','CheckRecCount',True) then
  begin
   HelpActivationNO:=0;
@@ -3667,12 +3620,12 @@ end;
 
 procedure TSearchForm.PopupMenu7Popup(Sender: TObject);
 begin
- Setvalue1.Visible:=DBKernel.UserRights.SetInfo and not FUpdatingDB;
+ Setvalue1.Visible:= not FUpdatingDB;
 end;
 
 procedure TSearchForm.PopupMenu4Popup(Sender: TObject);
 begin
- EditGroups1.Visible:=DBkernel.UserRights.SetInfo and not FUpdatingDB;
+ EditGroups1.Visible:= not FUpdatingDB;
 end;
 
 procedure TSearchForm.Button2Click(Sender: TObject);
@@ -3717,7 +3670,7 @@ begin
  begin
   TempFolderName:=ShellTreeView1.SelectedFolder.PathName;
   OpeninExplorer1.Visible:=DirectoryExists(ShellTreeView1.SelectedFolder.PathName);
-  AddFolder1.Visible:=OpeninExplorer1.Visible and DBkernel.UserRights.Add;
+  AddFolder1.Visible:=OpeninExplorer1.Visible;
   View2.Visible:=OpeninExplorer1.Visible;
  end else
  begin
@@ -3995,7 +3948,7 @@ var
 begin
  if not GroupsLoaded then LoadGroupsList(true);
  GetCursorPos(P);
- Groups:=GetRegisterGroupList(true,not (ShiftKeyDown and DBKernel.UserRights.ManageGroups));
+ Groups:=GetRegisterGroupList(true,not (ShiftKeyDown));
  QuickGroupsSearch.Items.Clear;
  GroupsImageList.Clear;
  SmallB := TBitmap.Create;
@@ -4197,7 +4150,6 @@ begin
  GroupsImageList.Add(SmallB,nil);
  SmallB.Free;
 
- if DBkernel.UserRights.SetInfo then
  if ComboBoxSelGroups.ItemsEx.Count<>0 then
  With ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.ItemsEx.Count-1] do ImageIndex:=0;
 
@@ -4246,7 +4198,6 @@ end;
 
 procedure TSearchForm.PanelValueIsTimeSetsDblClick(Sender: TObject);
 begin
- If not DBKernel.UserRights.SetInfo then Exit;
  If FUpdatingDB then Exit;
  PanelValueIsTimeSets.Visible:=false;
  Memo1Change(Sender);
@@ -4256,15 +4207,13 @@ procedure TSearchForm.PopupMenu11Popup(Sender: TObject);
 begin
  TimeNotExists1.Visible:=not IsTimePanel.Visible;
  TimeExists1.Visible:=IsTimePanel.Visible;
- Timenotexists1.Visible:=Timenotexists1.Visible and DBKernel.UserRights.SetInfo;
- TimeExists1.Visible:=TimeExists1.Visible and DBKernel.UserRights.SetInfo and not FUpdatingDB;
- Timenotsets1.Visible:=Timenotsets1.Visible and DBKernel.UserRights.SetInfo and not FUpdatingDB;
+ TimeExists1.Visible:=TimeExists1.Visible and not FUpdatingDB;
+ Timenotsets1.Visible:=Timenotsets1.Visible and not FUpdatingDB;
  Timenotsets1.Visible:=Timenotsets1.Visible and (SelCount>1) and not FUpdatingDB;
 end;
 
 procedure TSearchForm.Timenotexists1Click(Sender: TObject);
 begin
- If not DBKernel.UserRights.SetInfo then Exit;
  IsTimePanel.Visible:=True;
  Memo1Change(Sender);
 end;
@@ -4342,10 +4291,6 @@ var
 begin
  if Active then
 
- Rating1.Enabled:=dbkernel.UserRights.SetRating;
- Memo1.ReadOnly:=not DBKernel.UserRights.SetInfo;
- Memo2.ReadOnly:=not DBKernel.UserRights.SetInfo;
-
  Memo2.PopupMenu:=nil;
  if ListView1Selected=nil then
  if SelCount=0 then
@@ -4403,7 +4348,6 @@ begin
   lockwindowupdate(Handle);
   SelectedInfo.CommonRating:=MaxStatInt(ArInt);
   rating1.Rating:=SelectedInfo.CommonRating;
-  rating1.Enabled:=DBkernel.UserRights.SetRating;
   rating1.Islayered:=true;
   rating1.layered:=100;
 
@@ -4499,7 +4443,6 @@ begin
   FPropertyGroups:=CurrentItemInfo.ItemGroups;
   ReloadGroups;
   Save.Enabled:=false;
-  Memo2.ReadOnly:=not DBkernel.UserRights.SetInfo;
   Memo2.Cursor:=CrDefault;
   Application.HintHidePause:=50*length(SelectQuery.FieldByName('Comment').AsString);
   SelectQuery.Close;
@@ -4651,23 +4594,13 @@ begin
  SetErrorMode(oldMode);
 end;
 
-procedure TSearchForm.Tools1Click(Sender: TObject);
-begin
- GroupsManager3.Visible:=DBkernel.UserRights.ShowOptions;
- DBTreeView1.Visible:=DBkernel.UserRights.ShowPath;
- ImageEditor2.Visible:=DBkernel.UserRights.EditImage;
- ManageDB2.Visible:=DBkernel.UserRights.ShowAdminTools;
-end;
-
 procedure TSearchForm.File1Click(Sender: TObject);
 begin
- SaveResults2.Visible:=DBkernel.UserRights.FileOperationsCritical;
  LoadResults2.Visible:=not FUpdatingDB;
 end;
 
 procedure TSearchForm.IsTimePanelDblClick(Sender: TObject);
 begin
- If not DBKernel.UserRights.SetInfo then Exit;
  If FUpdatingDB then Exit;
  IsTimePanel.Visible:=False;
  Memo1Change(Sender);
@@ -4676,7 +4609,6 @@ end;
 procedure TSearchForm.PopupMenu1Popup(Sender: TObject);
 begin
  DoSearchNow1.Visible:=not FUpdatingDB;
- Panels1.Visible:=DBKernel.UserRights.ShowPath;
 end;
 
 procedure TSearchForm.DBTreeView1Click(Sender: TObject);
@@ -4697,18 +4629,6 @@ begin
  if UseFreeAfterRelease then Free;
 end;
 
-procedure TSearchForm.DateTimePicker1KeyDown(Sender: TObject;
-  var Key: Word; Shift: TShiftState);
-begin
- if not DBKernel.UserRights.SetInfo then Key:=0;
-end;
-
-procedure TSearchForm.DateTimePicker1KeyPress(Sender: TObject;
-  var Key: Char);
-begin
- if not DBKernel.UserRights.SetInfo then Key:=#0;
-end;
-
 procedure TSearchForm.View2Click(Sender: TObject);
 var
   info : TRecordsInfo;
@@ -4723,7 +4643,6 @@ end;
 procedure TSearchForm.DropFileTarget2Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 begin
- if DBKernel.UserRights.ShowPath then
  if DropFileTarget2.Files.Count<>0 then
  begin
   SearchEdit.Text:=':ScanImageW('+DropFileTarget2.Files[0]+':1):';
@@ -4878,12 +4797,9 @@ procedure TSearchForm.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
- if DBkernel.UserRights.SetRating then
- begin
   Dolphin_DB.SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
   EventInfo.Rating:=(Sender as TMenuItem).Tag;
   DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
- end;
 end;
 
 procedure TSearchForm.ListView1Resize(Sender : TObject);
@@ -5470,9 +5386,7 @@ var
    end;
   end;
 begin
- ToolButton4.Visible:=DBkernel.UserRights.FileOperationsCritical;
  ToolButton5.Visible:=true;
- ToolButton10.Visible:=DBkernel.UserRights.ShowOptions;
 
  if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then
  begin

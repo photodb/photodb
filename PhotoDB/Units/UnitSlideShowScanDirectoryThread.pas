@@ -39,7 +39,7 @@ var
   n : integer;
 begin
  FreeOnTerminate:=true;
- GetFileListByMask(BaseFileName,SupportedExt,Info,n,DBKernel.UserRights.ShowPrivate);
+ GetFileListByMask(BaseFileName, SupportedExt,Info, n, true);
  Synchronize(SynchNotify);
 end;
 

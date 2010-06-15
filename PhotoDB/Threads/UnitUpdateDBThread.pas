@@ -349,11 +349,6 @@ begin
 
  end;
 
- if not DBKernel.UserRights.Add then
- begin
-  EventLog(':UpdateDBThread::Execute()/User haven''t rights --> exit!');
-  exit;
- end;
  ResArray:=getimageIDWEx(FFiles,FUseFileNameScaning);
 
  for Counter:=1 to Length(FFiles) do

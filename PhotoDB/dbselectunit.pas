@@ -224,7 +224,6 @@ begin
  DBFile.Icon:='';
  DBFile.FileName:='';
  DBFile.aType:=0;
- CheckBox1.Checked:=DBKernel.UserRights.ChDbName;
  DBkernel.RecreateThemeToForm(Self);
  LoadLanguage;
  SetDefaultIcon;

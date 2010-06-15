@@ -2329,14 +2329,6 @@ begin
      FileName:=FileName+'.jpg';
      if FileExists(FileName) then
      begin
-      {$IFDEF PHOTODB}
-      if not DBkernel.UserRights.FileOperationsCritical then
-      begin
-       MessageBoxDB(Handle,TEXT_MES_CANT_SAVE_IMAGE_BECAUSE_USER_HAVENT_RIGHTS,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-       SavePictureDialog.Free;
-       exit;
-      end;
-      {$ENDIF}
       if not ForseSave then
       if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
       Replace:=true;
@@ -2413,14 +2405,6 @@ begin
      FileName:=FileName+'.gif';
      if FileExists(FileName) then
      begin
-      {$IFDEF PHOTODB}
-      if not DBkernel.UserRights.FileOperationsCritical then
-      begin
-       MessageBoxDB(Handle,TEXT_MES_CANT_SAVE_IMAGE_BECAUSE_USER_HAVENT_RIGHTS,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);  
-       SavePictureDialog.Free;
-       exit;
-      end;
-      {$ENDIF}
       if not ForseSave then
       if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
       Replace:=true;
@@ -2451,14 +2435,6 @@ begin
      FileName:=FileName+'.bmp';
      if FileExists(FileName) then
      begin
-      {$IFDEF PHOTODB}
-      if not DBKernel.UserRights.FileOperationsCritical then
-      begin
-       MessageBoxDB(Handle,TEXT_MES_CANT_SAVE_IMAGE_BECAUSE_USER_HAVENT_RIGHTS,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);   
-       SavePictureDialog.Free;
-       exit;
-      end;
-      {$ENDIF}
       if not ForseSave then
       if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
       Replace:=true;
@@ -2487,14 +2463,6 @@ begin
      FileName:=FileName+'.png';
      if FileExists(FileName) then
      begin
-      {$IFDEF PHOTODB}
-      if not DBKernel.UserRights.FileOperationsCritical then
-      begin
-       MessageBoxDB(Handle,TEXT_MES_CANT_SAVE_IMAGE_BECAUSE_USER_HAVENT_RIGHTS,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);   
-       SavePictureDialog.Free;
-       exit;
-      end;
-      {$ENDIF}
       if not ForseSave then
       if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
       Replace:=true;
@@ -2523,14 +2491,6 @@ begin
      FileName:=FileName+'.TIFF';
      if FileExists(FileName) then
      begin
-      {$IFDEF PHOTODB}
-      if not DBkernel.UserRights.FileOperationsCritical then
-      begin
-       MessageBoxDB(Handle,TEXT_MES_CANT_SAVE_IMAGE_BECAUSE_USER_HAVENT_RIGHTS,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);    
-       SavePictureDialog.Free;
-       exit;
-      end;
-      {$ENDIF}
       if not ForseSave then
       if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
       Replace:=true;

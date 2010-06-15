@@ -77,13 +77,7 @@ begin
   v:=true;
   break;
  end;
- if v and not DBkernel.UserRights.FileOperationsNormal then
- begin
-  MessageBoxDB(FormRotateImages.Handle,TEXT_MES_CANT_MAKE_ACTION_BECAUSE_USER_HAVENT_NORMAL_FILE_ACTION_RIGHTS,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  FormRotateImages.Release;
-  if UseFreeAfterRelease then FormRotateImages.Free;
-  Exit;
- end;
+
  RotateWithoutPromt:=DBKernel.Readbool('Options','RotateWithoutPromt',true);
  if v and not RotateWithoutPromt then FormRotateImages.ShowModal else FormRotateImages.Button2Click(nil);
  FormRotateImages.Release;
@@ -127,12 +121,7 @@ begin
  RadioButton2.Checked:=DBKernel.ReadBool('Rotate options','Convert',false);
  RadioButton001.Checked:=DBKernel.ReadBool('Rotate options','Replace',false);
  RadioButton002.Checked:=DBKernel.ReadBool('Rotate options','New',true);
- if not DBkernel.UserRights.FileOperationsCritical then
- begin
-  RadioButton001.Enabled:=false;
-  RadioButton002.Enabled:=false;
-  RadioButton002.Checked:=true;
- end;
+
 end;
 
 procedure TFormRotateImages.Button4Click(Sender: TObject);
@@ -173,9 +162,9 @@ begin
   exit;
  end;
  RotateWithoutPromt:=DBKernel.Readbool('Options','RotateWithoutPromt',true);
- RotateEvenIfFileInDB:=DBKernel.Readbool('Options','RotateEvenIfFileInDB',true) and DBKernel.UserRights.FileOperationsCritical;
+ RotateEvenIfFileInDB:=DBKernel.Readbool('Options','RotateEvenIfFileInDB',true);
 
- if RotateWithoutPromt and DBKernel.UserRights.FileOperationsCritical then RadioButton001.Checked:=true;
+ if RotateWithoutPromt then RadioButton001.Checked:=true;
  if RotateEvenIfFileInDB and FViewer then RadioButton001.Checked:=true;
 
  Options.Files:=FImageList;

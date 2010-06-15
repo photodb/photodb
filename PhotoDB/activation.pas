@@ -59,7 +59,6 @@ begin
  Nm := DBKernel.ReadRegName;
  Edit1.text:=DBKernel.ApplicationCode;
  LoadLanguage;
- Button2.Enabled:=DBKernel.UserRights.ShowAdminTools;
 
  if not FolderView then
  if not DBKernel.ProgramInDemoMode then

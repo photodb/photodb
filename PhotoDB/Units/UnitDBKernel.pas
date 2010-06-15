@@ -224,7 +224,6 @@ type TDBKernel = class(TObject)
     fDBUserPassword: string;
     fDBUserType: TUserType;
     fDBUserHash: integer;
-    fUserRights: TUserRights;
     FTheme: TDbTheme;
     flock: boolean;
     FForms : array of TForm;
@@ -249,7 +248,6 @@ type TDBKernel = class(TObject)
     { Private declarations }
   public              
   IconDllInstance : THandle;
-  fDBUserAccess : string;
   constructor create;
   destructor destroy; override;
   published
@@ -282,13 +280,11 @@ type TDBKernel = class(TObject)
   function ReadStringW(Key, Name: string): string;
   function ReadDateTime(Key, Name : string; default : TdateTime): TDateTime;
   procedure BackUpTable;
-  function ReadAdminPassword : string;
   Property DBUserName : string read fDBUserName write SetDBUserName;
   Property DBUserPassword : string read fDBUserPassword write SetDBUserPassword;
   Property DBUserType : TUserType read fDBUserType write SetDBUserType;
   Property DBUserHash : integer read fDBUserHash write SetDBUserHash;
   procedure LoadColorTheme;
-  procedure SetGuestModeAccess;
   Procedure SaveCurrentColorTheme;
   Function LogIn(UserName, Password : string; AutoLogin : boolean) : integer;
   Function CreateDBbyName(FileName : string) : integer;
@@ -301,7 +297,6 @@ type TDBKernel = class(TObject)
   Function LoadUserImage(Login : String; var image : TJpegImage) : integer;
   procedure LoginErrorMsg(Error : integer);
   Function CreateLoginDB : integer;
-  Property UserRights : TUserRights read fUserRights;
   Function CancelUserAsDefault : integer;
   Function GetLoginDataBaseName : string;
   class function GetLoginDataBaseFileName : string;
@@ -357,7 +352,6 @@ type TDBKernel = class(TObject)
   procedure ReadDBOptions;
   procedure DoSelectDB;
   procedure GetPasswordsFromParams;
-  procedure SetEnabledChangeDBRight;
       { Public declarations }
   published
     property ImageOptions : TImageDBOptions read fImageOptions;
@@ -388,20 +382,7 @@ begin
   FINIPasswods := nil;
   FApplicationKey:='';
   fDBUserType:=UtNone;
-  fUserRights.Delete:=false;
-  fUserRights.Add:=false;
-  fUserRights.SetPrivate:=false;
-  fUserRights.ChPass:=false;
-  fUserRights.SetRating:=false;
-  fUserRights.SetInfo:=false;
-  fUserRights.ShowPrivate:=false;
-  fUserRights.ShowOptions:=false;
-  fUserRights.ShowAdminTools:=false;
-  fUserRights.ChDbName:=false;
-  fUserRights.FileOperationsCritical:=false;
-  fUserRights.FileOperationsNormal:=false;
-  fUserRights.ManageGroups:=false;
-  fUserRights.Execute:=false;
+
   FImageList:=TImageList.Create(nil);
   FImageList.Width:=16;
   FImageList.Height:=16;
@@ -796,40 +777,12 @@ end;
 //     fUserRights.Add:=false;
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-procedure TDBKernel.SetGuestModeAccess;
-var
-  DBInReadOnlyMode : Boolean;
-begin
- DBInReadOnlyMode:=DBReadOnly;
- fUserRights.Delete:=not DBInReadOnlyMode;
- fUserRights.Add:=false;
- fUserRights.SetPrivate:=false;
- fUserRights.ChPass:=false;
- fUserRights.EditImage:=true;
- fUserRights.SetRating:=not DBInReadOnlyMode;
- fUserRights.SetInfo:=not DBInReadOnlyMode;
- fUserRights.ShowPrivate:=true;
- fUserRights.ShowOptions:=true;
- fUserRights.ShowAdminTools:=false;
- fUserRights.ChDbName:=false;
- fUserRights.FileOperationsCritical:=true;
- fUserRights.ManageGroups:=not DBInReadOnlyMode;
- fUserRights.FileOperationsNormal:=true;
- fUserRights.Execute:=true;
- fUserRights.Crypt:=true;
- fUserRights.ShowPath:=true;
- fUserRights.Print:=true;
- fDBUserType:=UtUser;
- DBUserName:='Guest';
- LoadINIPasswords;
-end;
-
 function TDBKernel.LogIn(UserName, Password: string; AutoLogin : boolean): integer;
 var
   fQuery : TDataSet;
   s1, s2 : string;
 begin
- Result:=LOG_IN_ERROR;
+
  if UserName<>TEXT_MES_ADMIN then
  begin
   if not FileExists(GetLoginDataBaseFileName) then
@@ -918,13 +871,13 @@ begin
    self.fDBUserPassword:=Password;
   end;
  end;
- fDBUserAccess:=fquery.FieldByName('Access').AsString;
+ {fDBUserAccess:=fquery.FieldByName('Access').AsString;
  if (fDBUserAccess='') or (Length(fDBUserAccess)<50) then
  begin
   if UserName<>TEXT_MES_ADMIN then
   fDBUserAccess:='0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' else
   fDBUserAccess:='1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111';
- end;
+ end;   }
  FreeDS(fQuery);
  if UserName=TEXT_MES_ADMIN then
  self.fDBUserType:=UtAdmin else
@@ -940,7 +893,7 @@ begin
   if (s2=self.fDBUserPassword) and (s2=self.fDBUserName) then
   CancelUserAsDefault;                                             
   end;
-  Case self.fDBUserType of
+{  Case self.fDBUserType of
   UtNone :
   begin
     fUserRights.Delete:=false;
@@ -1025,94 +978,82 @@ begin
     fUserRights.ShowPath:=true;
     fUserRights.Print:=true;
    end;
-  end;
+  end;   }
   LoadINIPasswords;
   result:=LOG_IN_OK;
-end;
-
-function TDBKernel.ReadAdminPassword: string;
-begin
- result:='NOT_SUPPORTED';
 end;
 
 function TDBKernel.Readbool(Key, Name: string; default : boolean): boolean;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
+begin         
   Result:=default;
-  if AnsiLowerCase(reg.ReadString(Name))='true' then result:=true;
-  if AnsiLowerCase(reg.ReadString(Name))='false' then result:=false;
- except
-  Result:=Default;
- end;
- reg.Free;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey+Key,true);
+    if AnsiLowerCase(reg.ReadString(Name)) = 'true' then Result := True;
+    if AnsiLowerCase(reg.ReadString(Name)) = 'false' then Result := False;
+  finally  
+    Reg.Free;
+  end;
 end;
 
-function TDBKernel.ReadRealBool(Key, Name: string; default : boolean): boolean;
+function TDBKernel.ReadRealBool(Key, Name: string; Default : boolean): boolean;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Result:=reg.ReadBool(Name);
- except
-  Result:=default;
- end;
- reg.Free;
+begin         
+  Result := Default;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey + Key, True);
+    Result := Reg.ReadBool(Name);
+  finally
+    Reg.Free;
+  end;
 end;
 
-function TDBKernel.ReadboolW(Key, Name: string; default : boolean): boolean;
+function TDBKernel.ReadboolW(Key, Name: string; Default : boolean): boolean;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+Key,true);
-  Result:=default;
-  if AnsiLowerCase(reg.ReadString(Name))='true' then result:=true;
-  if AnsiLowerCase(reg.ReadString(Name))='false' then result:=false;
- except
-  Result:=default;
- end;
- reg.Free;
+begin     
+  Result := Default;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot + Key, True);
+    if AnsiLowerCase(Reg.ReadString(Name)) = 'true' then Result := True;
+    if AnsiLowerCase(Reg.ReadString(Name)) = 'false' then Result := False;
+  finally
+    Reg.Free;
+  end;
 end;
 
 function TDBKernel.ReadInteger(Key, Name : string; Default : integer): integer;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- Result:=Default;
- try
-  reg.OpenKey(GetRegRootKey+Key,true);
-  Result:=strtointdef(reg.ReadString(Name), default);
- except
- end;
- reg.Free;
+begin               
+  Result:=Default;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    reg.OpenKey(GetRegRootKey+Key,true);
+    Result := strtointdef(reg.ReadString(Name), default);
+  finally
+    reg.Free;
+  end;
 end;
 
 function TDBKernel.ReadDateTime(Key, Name : string; Default : TDateTime): TDateTime;
 var
   Reg : TBDRegistry;
 begin
- Result:=0;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- Result:=Default;
- try
-  if Reg.KeyExists(GetRegRootKey+Key) then
-  begin
-   Reg.OpenKey(GetRegRootKey+Key,true);
-   if Reg.ValueExists(Name) then
-   Result:=Reg.ReadDateTime(Name);
+  Result:=Default;
+  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey+Key, true);
+    if Reg.ValueExists(Name) then
+      Result:=Reg.ReadDateTime(Name);
+  finally
+    reg.Free;
   end;
- except
-  result:=default;
- end;
- reg.Free;
 end;
 
 function TDBKernel.ReadProperty(Key, Name: string): string;
@@ -2231,7 +2172,6 @@ procedure TDBKernel.SetDataBase(DBname_: string);
 var
   Reg : TBDRegistry;
 begin
- if not fUserRights.ChDbName then exit;
  if not FileExists(DBname_) then exit;
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  try
@@ -3357,7 +3297,6 @@ procedure TDBKernel.AddDB(DBName, DBFile, DBIco: string; Force : boolean = false
 var
   Reg : TBDRegistry;
 begin
- if not DBKernel.UserRights.ShowAdminTools then
  if not Force then
  if DBExists(DBFile) then exit;
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
@@ -3379,7 +3318,6 @@ var
   DB : TPhotoDBFile;
 begin
  Result:=false;
- if not DBKernel.UserRights.ShowAdminTools then exit;
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  try
   Reg.OpenKey(RegRoot+'dbs\'+OldDBName,true);
@@ -3412,7 +3350,6 @@ var
   Reg : TBDRegistry;
 begin   
  Result:=false;
- if not DBKernel.UserRights.ShowAdminTools then exit;
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  try
   Reg.DeleteKey(RegRoot+'dbs\'+DBName);
@@ -3522,11 +3459,6 @@ begin
  PassArray:=SplitString(PassParam,'!');
  for i:=0 to Length(PassArray)-1 do
  AddTemporaryPasswordInSession(PassArray[i]);
-end;
-
-procedure TDBKernel.SetEnabledChangeDBRight;
-begin
- fUserRights.ChDbName:=true;;
 end;
 
 { TCharObject }

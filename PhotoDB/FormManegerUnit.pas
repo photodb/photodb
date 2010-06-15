@@ -220,7 +220,6 @@ begin
        if UseFreeAfterRelease then AboutForm.Free;
        AboutForm:=nil;
       end;
-      if DBkernel.UserRights.Add then
       begin
        ImportImages(dbname);
        DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);

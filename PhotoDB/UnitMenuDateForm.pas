@@ -71,14 +71,10 @@ end;
 procedure TFormMenuDateEdit.Execute(var Date: TDateTime; var IsDate : Boolean;
   out Changed: Boolean; var Time : TDateTime; var IsTime : Boolean);
 begin
- Label2.Visible:=DBkernel.UserRights.SetInfo;
  MonthCalendar1.Date := Date;
  MonthCalendar1.Visible := IsDate;
  DateTimePicker1.Time:= Time;
- Button2.Enabled:=DBkernel.UserRights.SetInfo;
  DateTimePicker1.Visible := IsTime;
- MonthCalendar1.Enabled:=DBkernel.UserRights.SetInfo;
- DateTimePicker1.Enabled:=DBkernel.UserRights.SetInfo;
  ShowModal;
  If FChanged then
  begin
@@ -98,8 +94,7 @@ end;
 
 procedure TFormMenuDateEdit.Button1Click(Sender: TObject);
 begin
- if DBkernel.UserRights.SetInfo then
- FChanged:=True else FChanged:=false;
+ FChanged:=True;
  Close;
 end;
 
@@ -125,9 +120,9 @@ end;
 
 procedure TFormMenuDateEdit.PopupMenu1Popup(Sender: TObject);
 begin
- GoToCurrentDate1.Visible:=MonthCalendar1.Visible and DBkernel.UserRights.SetInfo;
- DateNotExists1.Visible:=MonthCalendar1.Visible and DBkernel.UserRights.SetInfo;
- DateExists1.Visible:=not MonthCalendar1.Visible and DBkernel.UserRights.SetInfo;
+ GoToCurrentDate1.Visible:=MonthCalendar1.Visible;
+ DateNotExists1.Visible:=MonthCalendar1.Visible;
+ DateExists1.Visible:=not MonthCalendar1.Visible;
 end;
 
 procedure TFormMenuDateEdit.FormShow(Sender: TObject);
@@ -175,9 +170,9 @@ end;
 
 procedure TFormMenuDateEdit.PopupMenu2Popup(Sender: TObject);
 begin
- GoToCurrentTime1.Visible:=DateTimePicker1.Visible and DBkernel.UserRights.SetInfo;
- TimeNotExists1.Visible:=DateTimePicker1.Visible and DBkernel.UserRights.SetInfo;
- TimeExists1.Visible:=not DateTimePicker1.Visible and DBkernel.UserRights.SetInfo;
+ GoToCurrentTime1.Visible:=DateTimePicker1.Visible;
+ TimeNotExists1.Visible:=DateTimePicker1.Visible;
+ TimeExists1.Visible:=not DateTimePicker1.Visible;
 end;
 
 end.
