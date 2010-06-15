@@ -15,10 +15,11 @@ uses
   DragDrop, UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
-  UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs;
+  UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs,
+  uThreadForm;
 
 type
-  TExplorerForm = class(TForm)
+  TExplorerForm = class(TThreadForm)
     SizeImageList: TImageList;
     PopupMenu1: TPopupMenu;
     SlideShow1: TMenuItem;
@@ -652,7 +653,7 @@ type
      Procedure LoadLanguage;
      function ExitstExtInIcons(Ext : String) : boolean;
      function GetIconByExt(Ext : String) : TIcon;
-     procedure AddIconByExt(Ext : String; Icon : TIcon);    
+     procedure AddIconByExt(Ext : String; Icon : TIcon);
      procedure LoadSizes();   
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
    end;
@@ -2839,9 +2840,9 @@ begin
  info.View:=ListView;  
  info.PictureSize:=fPictureSize;
  if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
+ RegisterThreadAndStart(TExplorerThread.Create(true,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID));
  if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_EXEFILE) then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID);
+ RegisterThreadAndStart(TExplorerThread.Create(true,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID));
 end;
 
 procedure TExplorerForm.RefreshItemA(Number: Integer);
@@ -2867,9 +2868,9 @@ begin
  info.View:=ListView;    
  info.PictureSize:=fPictureSize;
  if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
+ RegisterThreadAndStart(TExplorerThread.Create(true,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID));
  if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_EXEFILE) then
- TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID);
+ RegisterThreadAndStart(TExplorerThread.Create(true,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,CurrentGUID));
 end;
 
 procedure TExplorerForm.HistoryChanged(Sender: TObject);
@@ -3098,12 +3099,12 @@ begin
   Index := ItemIndexToMenuIndex(i);
   if (fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE) then
   begin
-   TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID);
+   RegisterThreadAndStart(TExplorerThread.Create(true,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,CurrentGUID));
   end;
 
   if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FOLDER) then
   begin
-   TExplorerThread.Create(false,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FOLDER_UPDATE,info,self,UpdaterInfo,CurrentGUID);
+   RegisterThreadAndStart(TExplorerThread.Create(true,fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FOLDER_UPDATE,info,self,UpdaterInfo,CurrentGUID));
   end;
  end;
 end;
@@ -3715,7 +3716,7 @@ begin
     ExplorerViewInfo.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
     ExplorerViewInfo.View:=ListView;
     ExplorerViewInfo.PictureSize:=fPictureSize;
-    TExplorerThread.Create(False,'',SupportedExt,0,ExplorerViewInfo,Self,UpdaterInfo,CurrentGUID);
+    RegisterThreadAndStart(TExplorerThread.Create(true,'',SupportedExt,0,ExplorerViewInfo,Self,UpdaterInfo,CurrentGUID));
    end;
   end;
  FILE_ACTION_REMOVED:
@@ -5575,7 +5576,7 @@ begin
  if ListView1<>nil then
  begin
   ToolButton18.Enabled:=true;
-  TExplorerThread.Create(false,Path,FileMask,ThreadType,info,self,UpdaterInfo,CurrentGUID);
+  RegisterThreadAndStart(TExplorerThread.Create(true,Path,FileMask,ThreadType,info,self,UpdaterInfo,CurrentGUID));
  end;
  if FIsExplorer then
  if not Explorer then
@@ -8118,7 +8119,7 @@ begin
  CurrentGUID:=GetGUID;
  
  ToolButton18.Enabled:=true;
- TExplorerThread.Create(false,'::BIGIMAGES','',THREAD_TYPE_BIG_IMAGES,info,self,UpdaterInfo,CurrentGUID);
+ RegisterThreadAndStart(TExplorerThread.Create(true,'::BIGIMAGES','',THREAD_TYPE_BIG_IMAGES,info,self,UpdaterInfo,CurrentGUID));
  for i:=0 to Length(fFilesInfo)-1 do
  begin
   fFilesInfo[i].isBigImage:=false;

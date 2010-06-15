@@ -277,15 +277,15 @@ Var
    Break;
   end;
  end;
- 
-begin
+
+begin        
+ FreeOnTerminate:=true;
  CoInitialize(nil);
  try
  Synchronize(RegisterThread);
  IsCurrentRecord:=false;
  CountOfShowenGraphicFiles:=0;
  NoRecords:=false;
- FreeOnTerminate:=true;
  LoadingAllBigImages:=true;
 
  Case ExplorerInfo.View of
@@ -448,7 +448,7 @@ begin
   EM:=false;
   while Found = 0 do
   begin
-   If not ExplorerManager.IsExplorer(FSender) then break;
+   If Terminated then break;
    if not IsEqualGUID(FSender.CurrentGUID, FCID) then break;
    if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
    begin     
@@ -541,7 +541,7 @@ begin
   If FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
   begin
    if i mod 10=0  then
-   If not ExplorerManager.IsExplorer(FSender) then break;
+   If Terminated then break;
    GUIDParam:=FFiles[i].SID;
    Synchronize(FileNeeded);
    If BooleanResult then
@@ -559,7 +559,7 @@ begin
   For i:=0 to Length(FFiles)-1 do
   If FFiles[i].FileType=EXPLORER_ITEM_FILE then
   begin
-   If not ExplorerManager.IsExplorer(FSender) then break;
+   If Terminated then break;
    GUIDParam:=FFiles[i].SID;
    Synchronize(FileNeeded);
    If BooleanResult then
@@ -591,7 +591,7 @@ begin
 
    If FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
    begin
-    If not ExplorerManager.IsExplorer(FSender) then break;
+    If Terminated then break;
     GUIDParam:=FFiles[i].SID;
     Synchronize(FileNeededA);
     If BooleanResult then
@@ -610,7 +610,7 @@ begin
    If ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[i].Tag=1)) then
    begin
     FFiles[i].Tag:=1;
-    If not ExplorerManager.IsExplorer(FSender) then break;
+    If Terminated then break;
     GUIDParam:=FFiles[i].SID;
     Synchronize(FileNeededA);
     If BooleanResult then
@@ -628,7 +628,7 @@ begin
     If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
     begin
      FFiles[i].Tag:=1;
-     If not ExplorerManager.IsExplorer(FSender) then break;
+     If Terminated then break;
      GUIDParam:=FFiles[i].SID;
      Synchronize(FileNeededA);
      If BooleanResult then
@@ -672,18 +672,18 @@ end;
 
 procedure TExplorerThread.Beginupdate;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- FSender.BeginUpdate(FCID);
+ If not Terminated then
+   FSender.BeginUpdate(FCID);
 end;
 
 procedure TExplorerThread.EndUpdate;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  FSender.EndUpdate(FCID);
-  FSender.Select(FSelected,FCID);
-  AExplorerFolders.CheckFolder(FFolder);
- end;
+  if not Terminated then
+  begin
+    FSender.EndUpdate(FCID);
+    FSender.Select(FSelected,FCID);
+    AExplorerFolders.CheckFolder(FFolder);
+  end;
 end;
 
 procedure TExplorerThread.MakeFolderBitmap;
@@ -702,23 +702,24 @@ end;
 
 procedure TExplorerThread.InfoToExplorerForm;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- FSender.LoadInfoAboutFiles(FFiles,FCID);
+  if not Terminated then 
+    FSender.LoadInfoAboutFiles(FFiles, FCID);
 end;
 
 procedure TExplorerThread.FileNeededA;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  BooleanResult:=FSender.FileNeeded(GUIDParam);
-  if not FSender.Active then Priority:=tpLowest;
- end;
+  if not Terminated then
+  begin
+    BooleanResult:=FSender.FileNeeded(GUIDParam);
+    if not FSender.Active then
+      Priority:=tpLowest;
+  end;
 end;
 
 procedure TExplorerThread.FileNeededAW;
 begin    
   BooleanResult := False;
-  If ExplorerManager.IsExplorer(FSender) then
+  If not Terminated then
   begin
     BooleanResult:=FSender.FileNeededW(GUIDParam);
     InvalidThread:=not IsEqualGUID(FSender.CurrentGUID, FCID);
@@ -730,7 +731,7 @@ end;
 procedure TExplorerThread.FileNeeded;
 begin
   BooleanResult := False;
-  If ExplorerManager.IsExplorer(FSender) then
+  If not Terminated then
    BooleanResult:=FSender.FileNeeded(GUIDParam);
 end;
 
@@ -771,7 +772,7 @@ end;
 
 procedure TExplorerThread.AddDirectoryImageToExplorer;
 begin
- If ExplorerManager.IsExplorer(FSender) then
+ If not not Terminated then
  begin
   if ExplorerInfo.View=LV_THUMBS then
     FSender.AddBitmap(FFolderBitmap, GUIDParam)
@@ -850,49 +851,42 @@ end;
 
 procedure TExplorerThread.DrawImageIcon;
 begin
- if IconParam<>nil then
- TempBitmap.Canvas.Draw(ExplorerInfo.PictureSize div 2-FIcoSize div 2,ExplorerInfo.PictureSize div 2-FIcoSize div 2,IconParam);
+  if IconParam <> nil then
+    TempBitmap.Canvas.Draw(ExplorerInfo.PictureSize div 2-FIcoSize div 2,ExplorerInfo.PictureSize div 2-FIcoSize div 2,IconParam);
 end;
 
 procedure TExplorerThread.DrawImageIconSmall;
 begin
- if IconParam<>nil then
- TempBitmap.Canvas.Draw(0,0,IconParam);
+  if IconParam <> nil then
+    TempBitmap.Canvas.Draw(0,0,IconParam);
 end;
 
 procedure TExplorerThread.AddImageFileImageToExplorer;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  if ExplorerInfo.View=LV_THUMBS then
-  FSender.AddBitmap(TempBitmap, GUIDParam) else
-  FSender.AddIcon(fIcon,true,GUIDParam);
- end;
+  if not Terminated then
+  begin
+    if ExplorerInfo.View=LV_THUMBS then
+    FSender.AddBitmap(TempBitmap, GUIDParam) else
+    FSender.AddIcon(fIcon,true,GUIDParam);
+  end;
 end;
 
 procedure TExplorerThread.AddIconFileImageToExplorer;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- FSender.AddIcon(FIcon, True, GUIDParam);
+  If not Terminated then
+   FSender.AddIcon(FIcon, True, GUIDParam);
 end;
 
 procedure TExplorerThread.AddImageFileItemToExplorer;
-Var
-  {$IFNDEF EASYLISTVIEW}
-  NewItem : TListItem;
-  {$ENDIF}
-  {$IFDEF EASYLISTVIEW}
+var
   NewItem : TEasyItem;
-  {$ENDIF}
 begin
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  NewItem:=FSender.AddItem(GUIDParam);
-  If AnsiLowerCase(ExplorerInfo.OldFolderName)=AnsiLowerCase(CurrentFile) then
+  if not Terminated then
   begin
-   FSelected:=NewItem;
+    NewItem:=FSender.AddItem(GUIDParam);
+    If AnsiLowerCase(ExplorerInfo.OldFolderName)=AnsiLowerCase(CurrentFile) then
+      FSelected:=NewItem;
   end;
- end;
 end;
 
 procedure TExplorerThread.ReplaceImageItemImage;
@@ -1101,7 +1095,7 @@ end;
 
 procedure TExplorerThread.ReplaceImageInExplorer;
 begin
- If ExplorerManager.IsExplorer(FSender) then
+ If not Terminated then
  begin
   FSender.SetInfoToItem(Info, GUIDParam);
   if IsEqualGUID(FSender.CurrentGUID, FCID) then
@@ -1115,14 +1109,14 @@ end;
 
 procedure TExplorerThread.ReplaceInfoInExplorer;
 begin
- if ExplorerManager.IsExplorer(FSender) then
-   FSender.SetInfoToItem(Info, GUIDParam);
+  if not Terminated then
+    FSender.SetInfoToItem(Info, GUIDParam);
 end;
 
 procedure TExplorerThread.ReplaceImageInExplorerA;
 begin
-  if ExplorerManager.IsExplorer(FSender) then
-    FSender.SetInfoToItem(Info, GUIDParam);
+  if not Terminated then
+     FSender.SetInfoToItem(Info, GUIDParam);
 end;
 
 procedure TExplorerThread.ReplaceThumbImageToFolder;
@@ -1463,7 +1457,7 @@ procedure TExplorerThread.DrawFolderImageBig;
 var
    Bit32 : TBitmap;
 begin
-  if ExplorerManager.IsExplorer(FSender) then
+  if not Terminated then
   begin
     if FullFolderPicture = nil then
       FullFolderPicture := GetFolderPicture;
@@ -1502,9 +1496,9 @@ end;
 
 procedure TExplorerThread.ReplaceFolderImage;
 begin
- if ExplorerManager.IsExplorer(FSender) then
-   if IsEqualGUID(FSender.CurrentGUID, FCID) then
-     FSender.ReplaceBitmap(TempBitmap, GUIDParam, True);
+  if not Terminated then
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+      FSender.ReplaceBitmap(TempBitmap, GUIDParam, True);
 end;
 
 procedure TExplorerThread.AddFileToExplorer;
@@ -1576,16 +1570,16 @@ end;
 
 procedure TExplorerThread.AddImageFileItemToExplorerW;
 begin
- if ExplorerManager.IsExplorer(FSender) then
- begin
-  FSender.AddInfoAboutFile(FFiles, FCID);
-  if ExplorerInfo.View=LV_THUMBS then
-  FSender.AddBitmap(TempBitmap, GUIDParam) else
-  FSender.AddIcon(ficon, true, GUIDParam);
-  if FUpdaterInfo.NewFileItem then
-  FSender.SetNewFileNameGUID(GUIDParam, FCID);
-  FSender.AddItem(GUIDParam,false);
- end;
+  if not Terminated then
+  begin
+    FSender.AddInfoAboutFile(FFiles, FCID);
+    if ExplorerInfo.View=LV_THUMBS then
+    FSender.AddBitmap(TempBitmap, GUIDParam) else
+    FSender.AddIcon(ficon, true, GUIDParam);
+    if FUpdaterInfo.NewFileItem then
+    FSender.SetNewFileNameGUID(GUIDParam, FCID);
+    FSender.AddItem(GUIDParam,false);
+  end;
 end;
 
 procedure TExplorerThread.MakeFolderImage(Folder: String);
@@ -1686,37 +1680,38 @@ end;
 
 procedure TExplorerThread.SetInfoToStatusBar;
 begin
- If SetText then
- If ExplorerManager.IsExplorer(FSender) then
- FSender.SetStatusText(FInfoText,FCID);
- If Setmax then
- If ExplorerManager.IsExplorer(FSender) then
- FSender.SetProgressMax(FInfoMax,FCID);
- If SetPos Then
- If ExplorerManager.IsExplorer(FSender) then
- FSender.SetProgressPosition(FInfoPosition,FCID);
+  if not Terminated then
+  begin
+    if SetText then
+      FSender.SetStatusText(FInfoText,FCID);
+    if Setmax then
+      FSender.SetProgressMax(FInfoMax,FCID);
+    if SetPos Then
+      FSender.SetProgressPosition(FInfoPosition,FCID);
+  end;
 end;
 
 procedure TExplorerThread.HideProgress;
 begin
- ProgressVisible:=False;
- Synchronize(SetProgressVisible);
+  ProgressVisible:=False;
+  Synchronize(SetProgressVisible);
 end;
 
 procedure TExplorerThread.SetProgressVisible;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  If ProgressVisible then
-  FSender.ShowProgress(FCID) else
-  FSender.HideProgress(FCID);
+  if not Terminated then
+  begin
+   If ProgressVisible then
+     FSender.ShowProgress(FCID)
+   else
+     FSender.HideProgress(FCID);
  end;
 end;
 
 procedure TExplorerThread.ShowProgress;
 begin
- ProgressVisible:=True;
- Synchronize(SetProgressVisible);
+  ProgressVisible:=True;
+  Synchronize(SetProgressVisible);
 end;
 
 procedure TExplorerThread.LoadMyComputerFolder;
@@ -1776,7 +1771,7 @@ Var
 begin
  Info.Handle:=ThreadID;
  Info.Type_:=Thread_Type_Explorer_Loading;
- If ExplorerManager.IsExplorer(FSender) then
+ if not Terminated then
  Info.OwnerHandle:=FSender.Handle else
  Info.OwnerHandle:=0;
  DBThreadManeger.AddThread(Info);
@@ -1788,7 +1783,7 @@ Var
 begin
  Info.Handle:=ThreadID;
  Info.Type_:=Thread_Type_Explorer_Loading;
- If ExplorerManager.IsExplorer(FSender) then
+ if not Terminated then
  Info.OwnerHandle:=FSender.Handle else
  Info.OwnerHandle:=0;
  DBThreadManeger.RemoveThread(Info);
@@ -1931,16 +1926,16 @@ end;
 
 procedure TExplorerThread.ShowMessage_;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- if IsEqualGUID(FSender.CurrentGUID, FCID) then
- MessageBoxDB(FSender.Handle, StrParam, TEXT_MES_ERROR,TD_BUTTON_OK, TD_ICON_ERROR);
+  if not Terminated then
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+      MessageBoxDB(FSender.Handle, StrParam, TEXT_MES_ERROR,TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TExplorerThread.ExplorerBack;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- if IsEqualGUID(FSender.CurrentGUID, FCID) then
- FSender.DoBack;
+  if not Terminated then
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+      FSender.DoBack;
 end;
 
 procedure TExplorerThread.UpdateFile;
@@ -2016,15 +2011,15 @@ end;
 
 procedure TExplorerThread.ReplaceImageInExplorerB;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- if IsEqualGUID(FSender.CurrentGUID, FCID) then
- begin
-  if ExplorerInfo.View=LV_THUMBS then
-  begin
-   FSender.ReplaceBitmap(TempBitmap,GUIDParam,true,BooleanParam)
-  end else
-  FSender.ReplaceIcon(fIcon,GUIDParam,true);
- end;
+  if not Terminated then
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+    begin
+      if ExplorerInfo.View=LV_THUMBS then
+      begin
+        FSender.ReplaceBitmap(TempBitmap,GUIDParam,true,BooleanParam)
+      end else
+        FSender.ReplaceIcon(fIcon,GUIDParam,true);
+    end;
 end;
 
 procedure TExplorerThread.MakeIconForFile;
@@ -2070,36 +2065,36 @@ end;
 
 procedure TExplorerThread.DoUpdaterHelpProc;
 begin
- if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
- FUpdaterInfo.ProcHelpAfterUpdate(self);
+  if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
+    FUpdaterInfo.ProcHelpAfterUpdate(self);
 end;
 
 procedure TExplorerThread.AddDirectoryIconToExplorer;
 begin
-  if ExplorerManager.IsExplorer(FSender) then
-   FSender.AddIcon(FIcon, true, GUIDParam);
+  if not Terminated then
+    FSender.AddIcon(FIcon, true, GUIDParam);
 end;
 
 procedure TExplorerThread.UpdateFolder;
 begin
- FFiles:=SetNilExplorerFileInfo;
- AddOneExplorerFileInfo(FFiles,FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(Fmask), 0,0,0,0,0,'','','',0,false,false,true);
- GUIDParam:=FFiles[0].SID;
- CurrentFile:=FFiles[0].FileName;
- fMask:=SupportedExt;
- if ExplorerInfo.ShowThumbNailsForFolders then
- ReplaceThumbImageToFolder;
+  FFiles:=SetNilExplorerFileInfo;
+  AddOneExplorerFileInfo(FFiles,FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(Fmask), 0,0,0,0,0,'','','',0,false,false,true);
+  GUIDParam:=FFiles[0].SID;
+  CurrentFile:=FFiles[0].FileName;
+  fMask:=SupportedExt;
+  if ExplorerInfo.ShowThumbNailsForFolders then
+  ReplaceThumbImageToFolder;
 end;
 
 procedure TExplorerThread.EndUpdateID;
 begin
-  if ExplorerManager.IsExplorer(FSender) then
+  if not Terminated then
     FSender.RemoveUpdateID(IntParam, FCID);
 end;
 
 procedure TExplorerThread.GetVisibleFiles;
 begin
-  if ExplorerManager.IsExplorer(FSender) then
+  if not Terminated then
     if IsEqualGUID(FSender.CurrentGUID, FCID) then
       FVisibleFiles := FSender.GetVisibleItems;
 end;
@@ -2122,6 +2117,8 @@ begin
          FFiles[c] := FFiles[j];
          FFiles[j] := temp;
          inc(c);
+         if c >= Length(FFiles) then
+           Exit;
         end;
       end;
 end;
@@ -2134,7 +2131,6 @@ var
   fbit : TBitmap;
   w, h : integer;
   ProcNum : integer;
-  T : TThread;
 begin
  ProcNum:=GettingProcNum;
  FPic:=nil;
@@ -2287,61 +2283,51 @@ end;
 
 procedure TExplorerThread.GetAllFiles;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  FFiles:=FSender.GetAllItems;
- end
+  if not Terminated then
+    FFiles:=FSender.GetAllItems;
 end;
 
 procedure TExplorerThread.DoDefaultSort;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- begin
-  FSender.NoLockListView:=true;
-  FSender.DoDefaultSort(FCID);
-  FSender.NoLockListView:=false;
- end
+  if not Terminated then
+  begin
+    FSender.NoLockListView:=true;
+    FSender.DoDefaultSort(FCID);
+    FSender.NoLockListView:=false;
+  end
 end;
 
 procedure TExplorerThread.ExplorerHasIconForExt;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- if IsEqualGUID(FSender.CurrentGUID, FCID) then
- begin
-  BooleanParam:=FSender.ExitstExtInIcons(GetExt(CurrentFile));
- end;
+  if not Terminated then
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+      BooleanParam:=FSender.ExitstExtInIcons(GetExt(CurrentFile));
 end;
 
 procedure TExplorerThread.SetIconForFileByExt;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- if IsEqualGUID(FSender.CurrentGUID, FCID) then
- begin
-  FSender.AddIconByExt(GetExt(CurrentFile),IconParam);
- end;
+  if not Terminated then
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+      FSender.AddIconByExt(GetExt(CurrentFile),IconParam);
 end;
-
 
 procedure TExplorerThread.DoVerifyExplorer;
 begin
- BooleanResult:=true;
- If not ExplorerManager.IsExplorer(FSender) then
- begin
-  BooleanResult:=false;
- end else
- begin
-  if not IsEqualGUID(FSender.CurrentGUID, FCID) then BooleanResult:=false;
- end;
+  BooleanResult:=true;
+  If Terminated then
+  begin
+    BooleanResult:=false;
+  end else
+  begin
+    if not IsEqualGUID(FSender.CurrentGUID, FCID) then BooleanResult:=false;
+  end;
 end;
 
 procedure TExplorerThread.DoStopSearch;
 begin
- If ExplorerManager.IsExplorer(FSender) then
- if IsEqualGUID(FSender.CurrentGUID, FCID) then
- begin
-  FSender.DoStopLoading(FCID);
- end;
-
+  if not Terminated then
+    if IsEqualGUID(FSender.CurrentGUID, FCID) then
+      FSender.DoStopLoading(FCID);
 end;
 
 { TAIcons }
