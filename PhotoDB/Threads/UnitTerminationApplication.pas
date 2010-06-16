@@ -18,12 +18,14 @@ type
 
 implementation
 
+uses SysUtils;
+
 { TerminationApplication }
 
 constructor TerminationApplication.Create(CreateSuspennded: Boolean);
 begin
  inherited Create(True);
- FCurrentApplicationName:=GetFileName(Application.ExeName);
+ FCurrentApplicationName:=ExtractFileName(Application.ExeName);
  If not CreateSuspennded then Resume;
 end;
 

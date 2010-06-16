@@ -109,8 +109,8 @@ type
     procedure BeginUpDate;
     procedure EndUpDate;
     Procedure MakeFolderImage(Folder : String);
-    Procedure FileNeeded;
-    procedure FileNeededA;   
+//    Procedure FileNeeded;
+//    procedure FileNeededA;
     procedure FileNeededAW;
     procedure AddDirectoryToExplorer;
     procedure AddDirectoryItemToExplorer;
@@ -484,40 +484,30 @@ begin
    FFiles[i].Tag:=0;
    If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
    begin
-    if Terminated then
-      Break;
+    if Terminated then Break;
     GUIDParam:=FFiles[i].SID;
-    SynchronizeEx(FileNeeded);
-    If BooleanResult then
-    begin
      Inc(Folders);
      Inc(InfoPosition); 
      if i mod 10=0 then
-     ShowInfo(InfoPosition);
+       ShowInfo(InfoPosition);
      CurrentFile := FFiles[i].FileName;
      MakeFolderImage(CurrentFile);
      AddDirectoryToExplorer;
-    end;
    end;
   end;
   ShowInfo(TEXT_MES_LOADING_IMAGES);
   ImageFiles:=0;
-  For i:=0 to Length(FFiles)-1 do
+  for i:=0 to Length(FFiles)-1 do
   If FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
   begin
-   if i mod 10=0  then
-   If Terminated then break;
+   If Terminated then Break;
    GUIDParam:=FFiles[i].SID;
-   SynchronizeEx(FileNeeded);
-   If BooleanResult then
-   Begin
     inc(ImageFiles);
     Inc(InfoPosition);
     if i mod 10=0 then
     ShowInfo(InfoPosition);
     CurrentFile:=FFiles[i].FileName;
     AddImageFileToExplorer;
-   End;
   end;
   ShowInfo(TEXT_MES_LOADING_FILES);
   If FShowFiles then
@@ -526,16 +516,12 @@ begin
   begin
    If Terminated then break;
    GUIDParam:=FFiles[i].SID;
-   SynchronizeEx(FileNeeded);
-   If BooleanResult then
-   begin
     Inc(InfoPosition);
     ShowInfo(InfoPosition);
     CurrentFile:=FFiles[i].FileName;
     AddImageFileToExplorer;
     FFiles[i].Tag:=IntIconParam;
-   end;
-  end;            
+  end;
   SynchronizeEx(DoDefaultSort);
   SynchronizeEx(EndUpdate);
 
@@ -556,10 +542,10 @@ begin
 
    If FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
    begin
-    If Terminated then break;
+    If Terminated then Break;
     GUIDParam:=FFiles[i].SID;
-    SynchronizeEx(FileNeededA);
-    If BooleanResult then
+    //SynchronizeEx(FileNeededA);
+    //If BooleanResult then
     begin
      Inc(InfoPosition);
      ShowInfo(InfoPosition);
@@ -577,8 +563,8 @@ begin
     FFiles[i].Tag:=1;
     If Terminated then break;
     GUIDParam:=FFiles[i].SID;
-    SynchronizeEx(FileNeededA);
-    If BooleanResult then
+    //SynchronizeEx(FileNeededA);
+    //If BooleanResult then
     begin
      Inc(InfoPosition);
      ShowInfo(InfoPosition);
@@ -595,8 +581,8 @@ begin
      FFiles[i].Tag:=1;
      If Terminated then break;
      GUIDParam:=FFiles[i].SID;
-     SynchronizeEx(FileNeededA);
-     If BooleanResult then
+     //SynchronizeEx(FileNeededA);
+     //If BooleanResult then
      begin
       Inc(InfoPosition);
       ShowInfo(InfoPosition);
@@ -667,7 +653,7 @@ begin
     FSender.LoadInfoAboutFiles(FFiles, FCID);
 end;
 
-procedure TExplorerThread.FileNeededA;
+{procedure TExplorerThread.FileNeededA;
 begin
   if not Terminated then
   begin
@@ -675,7 +661,7 @@ begin
     if not FSender.Active then
       Priority:=tpLowest;
   end;
-end;
+end;   }
 
 procedure TExplorerThread.FileNeededAW;
 begin    
@@ -688,12 +674,12 @@ begin
   end;
 end;
 
-procedure TExplorerThread.FileNeeded;
+{procedure TExplorerThread.FileNeeded;
 begin
   BooleanResult := False;
   If not Terminated then
    BooleanResult:=FSender.FileNeeded(GUIDParam);
-end;
+end;  }
 
 procedure TExplorerThread.AddDirectoryToExplorer;
 begin
@@ -801,12 +787,11 @@ begin
   MakeTempBitmapSmall;
   IconParam:=ficon;
   SynchronizeEx(DrawImageIconSmall);
-//  SynchronizeEx(SetIconForFileByExt);
   ficon.free;
  end;
 
  SynchronizeEx(AddImageFileImageToExplorer);
- SynchronizeEx(AddImageFileItemToExplorer);
+ SynchronizeEx(AddImageFileItemToExplorer); 
 end;
 
 procedure TExplorerThread.DrawImageIcon;
@@ -894,7 +879,7 @@ begin
      end;
     end;
    end;
-   if ValidCryptGraphicFile(CurrentFile) then Info.ItemCrypted:=true;
+   Info.ItemCrypted:=Crypted;
   end else
   begin
    Info:=GetInfoByFileNameA(CurrentFile,(ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS)));
@@ -922,7 +907,7 @@ begin
     exit;
    end;
    try
-    if ValidCryptGraphicFile(CurrentFile) then
+    if Crypted then
     begin      
      IsBigImage:=true;
      Info.ItemCrypted:=true;
@@ -1989,8 +1974,8 @@ end;
 procedure TExplorerThread.UpdateSimpleFile;
 begin
  StringParam:=Fmask;
- SynchronizeEx(FileNeeded);
- If BooleanResult then
+// SynchronizeEx(FileNeeded);
+// If BooleanResult then
  begin
   CurrentFile:=FFolder;
   MakeIconForFile;

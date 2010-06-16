@@ -690,7 +690,7 @@ function SidToStr(Sid : PSID):WideString;
 function HexToIntDef(hex:string; Default:integer):integer;
 function GetDirectory(FileName:string):string;
 function ExtinMask(mask : string; ext : string):boolean;
-function GetFileName(filename:string):string;
+
 function GetFileNameWithoutExt(filename : string) : string;
 function GetFileSize(FileName: String): int64;
 //function GetCPUSpeed(interval:integer):real;
@@ -769,6 +769,7 @@ procedure ExecuteQuery(SQL : string);
 function ReadTextFileInString(FileName : string) : string;
 function CompareImagesByGistogramm(Image1, Image2 : TBitmap) : Byte;  
 procedure ApplyRotate(Bitmap : TBitmap; RotateValue : Integer);
+function CenterPos(W1, W2 : Integer) : Integer;
 
 var
   GetAnyValidDBFileInProgramFolderCounter : Integer;
@@ -779,6 +780,11 @@ uses ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSuppo
 CommonDBSupport, Activation, UnitInternetUpdate, UnitManageGroups, About,
 UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
 UnitDBCommonGraphics, UnitCDMappingSupport;
+
+function CenterPos(W1, W2 : Integer) : Integer;
+begin
+  Result := W1 div 2 - W2 div 2;
+end;
 
 function GetDBFileName(FileName, DBName : string) : string;
 begin
@@ -1124,7 +1130,7 @@ begin
  end;
 end;
 
-function GetFileName(filename:string):string;
+{function GetFileName(filename:string):string;
 var
   i, n : integer;
 begin
@@ -1142,7 +1148,7 @@ begin
  If filename[Length(filename)]='\' then
  Delete(filename,Length(filename),1);
  result:=filename;
-end;
+end;    }
 
 function GetFileNameWithoutExt(filename : string) : string;
 var
@@ -3107,7 +3113,7 @@ begin
     acrc:='';
    end;
    fQuery.Active:=false;
-   SetSQL(fQuery,'UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(NewFileName)+'", Name="'+GetFileName(NewFileName)+'" '+acrc+' WHERE (ID='+inttostr(ID)+')');
+   SetSQL(fQuery,'UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(NewFileName)+'", Name="'+ExtractFileName(NewFileName)+'" '+acrc+' WHERE (ID='+inttostr(ID)+')');
    if GetDBType=DB_TYPE_MDB then
    SetIntParam(fQuery,0,Integer(crc));
    ExecSQL(fQuery);
@@ -3291,17 +3297,17 @@ end;
 
 procedure SetRotate(ID, Rotate: integer);
 begin
-  ExecuteQuery(Format('Update Set Rotated=%d Where ID=%d', [GetDefDBname, Rotate, ID]));
+  ExecuteQuery(Format('Update %s Set Rotated=%d Where ID=%d', [GetDefDBname, Rotate, ID]));
 end;
 
 procedure SetAttr(ID, Attr: integer);
 begin
-  ExecuteQuery(Format('Update Set Attr=%d Where ID=%d', [GetDefDBname, Attr, ID]));
+  ExecuteQuery(Format('Update %s Set Attr=%d Where ID=%d', [GetDefDBname, Attr, ID]));
 end;
 
 procedure SetRating(ID, Rating: integer);
 begin
-  ExecuteQuery(Format('Update Set Rating=%d Where ID=%d', [GetDefDBname, Rating, ID]));
+  ExecuteQuery(Format('Update %s Set Rating=%d Where ID=%d', [GetDefDBname, Rating, ID]));
 end;
 
 procedure UpdateMovedDBRecord(ID : integer; FileName : string);
@@ -3310,7 +3316,7 @@ var
 begin
   MDBstr:=', FolderCRC = '+IntToStr(Integer(FilePathCRC(FileName)));
 
-  ExecuteQuery('UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(FileName)+'", Name ="'+GetFileName(FileName)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+')');
+  ExecuteQuery('UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(FileName)+'", Name ="'+ExtractFileName(FileName)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+')');
 end;
 
 procedure UpdateDeletedDBRecord(ID : integer; filename : string);

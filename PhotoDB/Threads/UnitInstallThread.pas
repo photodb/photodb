@@ -535,10 +535,10 @@ begin
   begin
    IfPause;
    if terminate_ then break;
-   FCurrentFile:=Mince(FEndDirectory+PlugInImagesFolder+GetFileName(PlugInsFiles[i]),MaxShowPathLength);
+   FCurrentFile:=Mince(FEndDirectory+PlugInImagesFolder+ExtractFileName(PlugInsFiles[i]),MaxShowPathLength);
    Synchronize(ProgressFile);
    Synchronize(SetProgress);
-   CopyFileByStreams(PlugInsFiles[i],FEndDirectory+PlugInImagesFolder+GetFileName(PlugInsFiles[i]));
+   CopyFileByStreams(PlugInsFiles[i],FEndDirectory+PlugInImagesFolder+ExtractFileName(PlugInsFiles[i]));
    inc(FBytesOfFilesCopied,GetFileSizeByName(PlugInsFiles[i]));
    FProgress:=FBytesOfFilesCopied;
   end;       
@@ -553,10 +553,10 @@ begin
   begin
    IfPause;
    if terminate_ then break;
-   FCurrentFile:=Mince(FEndDirectory+ThemesDirectory+GetFileName(ThemesFiles[i]),MaxShowPathLength);
+   FCurrentFile:=Mince(FEndDirectory+ThemesDirectory+ExtractFileName(ThemesFiles[i]),MaxShowPathLength);
    Synchronize(ProgressFile);
    Synchronize(SetProgress);
-   CopyFileByStreams(ThemesFiles[i],FEndDirectory+ThemesDirectory+GetFileName(ThemesFiles[i]));
+   CopyFileByStreams(ThemesFiles[i],FEndDirectory+ThemesDirectory+ExtractFileName(ThemesFiles[i]));
    inc(FBytesOfFilesCopied,GetFileSizeByName(ThemesFiles[i]));
    FProgress:=FBytesOfFilesCopied;
   end;

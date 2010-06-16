@@ -427,7 +427,7 @@ const
   FilePreviewSize = 100;
 begin
  filesize_:=GetFileSizeByName(FileName);
- F_NAME.Text:=GetFileName(FileName);
+ F_NAME.Text:=ExtractFileName(FileName);
  F_SIZE.Text:=SizeInTextA(FileSize_);
  F_PATCH.text:=FileName;
  for i:=length(FileName) downto 1 do

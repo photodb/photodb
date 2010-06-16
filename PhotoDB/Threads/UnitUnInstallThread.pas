@@ -85,7 +85,7 @@ begin
   fdir:=GetDirectory(freg.ReadString('DataBase'));
   fdbfile:=freg.ReadString('DBDefaultName');
   fDBDir:=GetDirectory(fDBfile);
-  fDBFile:=GetFileName(fDBfile);
+  fDBFile:=ExtractFileName(fDBfile);
   for i:=length(fDBfile) downto 1 do
   if fDBfile[i]='.' then
   begin

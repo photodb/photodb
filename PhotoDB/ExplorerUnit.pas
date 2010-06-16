@@ -356,7 +356,7 @@ type
     Procedure DirectoryChanged(Sender : TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
     Procedure LoadInfoAboutFiles(Info : TExplorerFilesInfo; SID : TGUID);
     Procedure AddInfoAboutFile(Info : TExplorerFilesInfo; SID : TGUID);
-    function FileNeeded(FileSID : TGUID) : Boolean;
+//    function FileNeeded(FileSID : TGUID) : Boolean;
     function FileNeededW(FileSID : TGUID) : Boolean;  //для больших имаг
     procedure AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
     procedure AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID);
@@ -1879,14 +1879,14 @@ var
 begin
  FDblClicked:=false;
  s:=copy(s,1,min(length(s),255));
- if AnsiLowerCase(s)=AnsiLowerCase(GetFileName(fFilesInfo[popupmenu1.tag].FileName)) then exit;
+ if AnsiLowerCase(s)=AnsiLowerCase(ExtractFileName(fFilesInfo[popupmenu1.tag].FileName)) then exit;
  begin
   If GetExt(s)<>GetExt(fFilesInfo[popupmenu1.tag].FileName) then
   If FileExists(fFilesInfo[popupmenu1.tag].FileName) then
   begin
    If ID_OK<>MessageBoxDB(Handle,TEXT_MES_REPLACE_EXT,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
    begin
-    s:=GetFileName(fFilesInfo[popupmenu1.tag].FileName);
+    s:=ExtractFileName(fFilesInfo[popupmenu1.tag].FileName);
     Exit;
    end;
   end;
@@ -2490,13 +2490,15 @@ begin
    ListView1.Groups[0].Visible:=false;
    ListView1.Cursor:=CrHourGlass;
    UpdatingList:=True;
+   ListView1.BeginUpdate;
   end;
 end;
 
 procedure TExplorerForm.EndUpdate();
 begin
   If UpdatingList then
-  begin
+  begin           
+   ListView1.EndUpdate;
    ListView1.Groups[0].Visible:=true;
    ListView1.Groups.EndUpdate(true);
    ListView1.Realign;
@@ -2846,7 +2848,7 @@ begin
    MenuBack[Length(MenuBack)-1-i]:=TMenuItem.Create(PopupMenuBack.Items);
    if (MenuBackInfo[i].PType=EXPLORER_ITEM_DRIVE) or (MenuBackInfo[i].PType=EXPLORER_ITEM_MYCOMPUTER) or (MenuBackInfo[i].PType=EXPLORER_ITEM_NETWORK) or (MenuBackInfo[i].PType=EXPLORER_ITEM_WORKGROUP) then
    MenuBack[Length(MenuBack)-1-i].Caption:=MenuBackInfo[i].Path else
-   MenuBack[Length(MenuBack)-1-i].Caption:=GetFileName(MenuBackInfo[i].Path);
+   MenuBack[Length(MenuBack)-1-i].Caption:=ExtractFileName(MenuBackInfo[i].Path);
    MenuBack[Length(MenuBack)-1-i].Tag:=MenuBackInfo[i].Tag;
    MenuBack[Length(MenuBack)-1-i].OnClick:=JumpHistoryClick;
   end;
@@ -2862,7 +2864,7 @@ begin
    MenuForward[i]:=TMenuItem.Create(PopupMenuForward.Items);
    if (MenuForwardInfo[i].PType=EXPLORER_ITEM_DRIVE) or (MenuForwardInfo[i].PType=EXPLORER_ITEM_MYCOMPUTER) or (MenuForwardInfo[i].PType=EXPLORER_ITEM_NETWORK) or (MenuForwardInfo[i].PType=EXPLORER_ITEM_WORKGROUP) then
    MenuForward[i].Caption:=MenuForwardInfo[i].Path else
-   MenuForward[i].Caption:=GetFileName(MenuForwardInfo[i].Path);
+   MenuForward[i].Caption:=ExtractFileName(MenuForwardInfo[i].Path);
    MenuForward[i].Tag:=MenuForwardInfo[i].Tag;
    MenuForward[i].OnClick:=JumpHistoryClick;
   end;
@@ -3324,7 +3326,7 @@ begin
     if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
     begin
       FBitmapImageList.AddBitmap(Bitmap);
-      FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
+      FFilesInfo[i].ImageIndex := FBitmapImageList.Count-1;
       Break;
     end;
 end;
@@ -3369,7 +3371,7 @@ begin
   Result.ImageIndex:=FFilesInfo[i].ImageIndex;
 
   If FFilesInfo[i].FileType<>EXPLORER_ITEM_DRIVE then
-  Result.Caption:=GetFileName(FFilesInfo[i].FileName) else
+  Result.Caption:=ExtractFileName(FFilesInfo[i].FileName) else
   Result.Caption:=FFilesInfo[i].FileName;
   if IsEqualGUID(FileGUID, NewFileNameGUID) then
   begin
@@ -3717,7 +3719,7 @@ begin
     begin
      If (not DirectoryExists(pInfo[k].FOldFileName) and DirectoryExists(pInfo[k].FNewFileName)) or (not FileExists(pInfo[k].FOldFileName) and FileExists(pInfo[k].FNewFileName)) then
      begin
-      ListView1.Items[i].Caption:=GetFileName(pInfo[k].FNewFileName);
+      ListView1.Items[i].Caption:=ExtractFileName(pInfo[k].FNewFileName);
       fFilesInfo[index].FileName:=pInfo[k].FNewFileName;
       if fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE then
       if not ExtInMask(SupportedExt,GetExt(pInfo[k].FNewFileName)) then
@@ -3775,7 +3777,7 @@ begin
   end;
 end;
 
-function TExplorerForm.FileNeeded(FileSID : TGUID) : Boolean;
+{function TExplorerForm.FileNeeded(FileSID : TGUID) : Boolean;
 var
   i:Integer;
 begin
@@ -3786,7 +3788,7 @@ begin
       Result := True;
       Break;
     end;
-end;
+end;       }
 
 function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;
 var
@@ -4153,14 +4155,14 @@ begin
 
 // SelCount:=SelCount;
  LockWindowUpdate(self.Handle);
- s:=GetFileName(FSelectedInfo.FileName)+' ';
+ s:=ExtractFileName(FSelectedInfo.FileName)+' ';
  For i:=Length(s) downto 1 do
  if s[i]='&' then Insert('&',S,i);
 
  NameLabel.Caption:=S;
  NameLabel.Constraints.MaxWidth:=ScrollBox1.Width-ScrollBox1.Left-otstup-ScrollBox1.VertScrollBar.ButtonSize;
  NameLabel.Constraints.MinWidth:=ScrollBox1.Width-ScrollBox1.Left-otstup-ScrollBox1.VertScrollBar.ButtonSize;
- S:=GetFileName(FSelectedInfo.FileName);
+ S:=ExtractFileName(FSelectedInfo.FileName);
  For i:=Length(s) downto 1 do
  if s[i]='&' then Insert('&',S,i);
  NameLabel.Caption:=S;
@@ -4546,7 +4548,7 @@ begin
   S[0]:=GetCurrentPath;
   UnFormatDir(S[0]);
  end;
- If Length(s)=1 then DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_COPY_ONE,[GetFileName(S[0])]) else
+ If Length(s)=1 then DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_COPY_ONE,[ExtractFileName(S[0])]) else
  DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_COPY_MANY,[inttostr(Length(s))]);
 
  EndDir:=UnitDBFileDialogs.DBSelectDir(Handle,DlgCaption,Dolphin_DB.UseSimpleSelectFolderDialog);
@@ -4578,7 +4580,7 @@ begin
   S[0]:=GetCurrentPath;
   UnFormatDir(S[0]);
  end;
- If Length(s)=1 then DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_MOVE_ONE,[GetFileName(S[0])]) else
+ If Length(s)=1 then DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_MOVE_ONE,[ExtractFileName(S[0])]) else
  DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_MOVE_MANY,[inttostr(Length(s))]);
 
  EndDir:=UnitDBFileDialogs.DBSelectDir(Handle,DlgCaption,Dolphin_DB.UseSimpleSelectFolderDialog);
@@ -6600,7 +6602,7 @@ begin
    if FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE then
    NameLabel.Caption:=FileName;
    if (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) then
-   NameLabel.Caption:=GetFileName(FileName);
+   NameLabel.Caption:=ExtractFileName(FileName);
    If (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE) then
    FSelectedInfo.FileTypeW:=MrsGetFileType(FileName);
    If (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) then
@@ -7486,15 +7488,15 @@ begin
  UnforMatDir(Dest);
  for i:=0 to Length(Src)-1 do
  begin
-  fn:=Dest+'\'+GetFileName(Src[i]);
+  fn:=Dest+'\'+ExtractFileName(Src[i]);
   if DirectoryExists(fn) then
   begin
-   adest:=Dest+'\'+GetFileName(Src[i]);
+   adest:=Dest+'\'+ExtractFileName(Src[i]);
    RenameFolderWithDB(Src[i],adest,false);
   end;
   if FileExists(fn) then
   begin
-   adest:=Dest+'\'+GetFileName(Src[i]);
+   adest:=Dest+'\'+ExtractFileName(Src[i]);
    RenameFileWithDB(Src[i],adest,GetIDByFileName(Src[i]),true);
   end;
  end;

@@ -1,5 +1,5 @@
 object SearchForm: TSearchForm
-  Left = 735
+  Left = 456
   Top = 121
   Width = 824
   Height = 629

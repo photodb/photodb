@@ -485,7 +485,7 @@ begin
 // DBKernel.RegisterChangesIDbyID(self,ChangedDBDataByID,CurrentInfo.ItemIds[CurrentFileNumber]);
  if CheckFileExistsWithSleep(FileName,false) then
  begin
-  Caption:=Format(TEXT_MES_SLIDE_CAPTION,[GetFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
+  Caption:=Format(TEXT_MES_SLIDE_CAPTION,[ExtractFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
   ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
   ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
 
@@ -526,7 +526,7 @@ begin
   end else ForwardThreadNeeds:=true;
  end else
  begin
-  Caption:=Format(TEXT_MES_SLIDE_CAPTION,[GetFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
+  Caption:=Format(TEXT_MES_SLIDE_CAPTION,[ExtractFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
   ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
   ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
 

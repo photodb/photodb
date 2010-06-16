@@ -978,7 +978,7 @@ begin
  RelodThemesNamesW(FThemeList);
  ListBox1.Items.Clear;
  for i:=0 to FThemeList.Count-1 do
- ListBox1.Items.Add(GetFileName(FThemeList[i]));
+ ListBox1.Items.Add(ExtractFileName(FThemeList[i]));
 end;
 
 procedure TOptionsForm.Button1Click(Sender: TObject);

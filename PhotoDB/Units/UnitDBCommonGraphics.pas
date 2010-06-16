@@ -709,7 +709,7 @@ var
  image : tbitmap;
 begin
  im.PixelFormat:=pf24bit;
- image:=tbitmap.create;
+ image:=TBitmap.create;
  image.PixelFormat:=pf24bit;
  image.Assign(im);
  im.Width:=image.Height;
@@ -738,10 +738,12 @@ var
  adrIn, adrOut, adrLine0, deltaLine, deltaLine2 : Integer;
 begin    
  {$R-}
+ if BmpIn.PixelFormat <> pf24bit then
+   BmpIn.PixelFormat := pf24bit;   
+ if BmpOut.PixelFormat <> pf24bit then
+   BmpOut.PixelFormat := pf24bit;
  BmpOut.Width := NewWidth;
  BmpOut.Height := NewHeight;
- BmpIn.PixelFormat := pf24bit;
- BmpOut.PixelFormat := pf24bit;
  bufw := BmpIn.Width;
  bufh := BmpIn.Height;
  outw := BmpOut.Width;

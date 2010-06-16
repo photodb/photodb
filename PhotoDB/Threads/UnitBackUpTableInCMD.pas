@@ -53,7 +53,7 @@ begin
  CreateDirA(GetAppDataDirectory+BackUpFolder);
  try
   FSOut := TFileStream.Create(dbname,fmOpenRead);
-  FSIn := TFileStream.Create(GetAppDataDirectory+BackUpFolder+GetFileName(dbname),fmOpenWrite or fmCreate);
+  FSIn := TFileStream.Create(GetAppDataDirectory+BackUpFolder+ExtractFileName(dbname),fmOpenWrite or fmCreate);
   FSIn.CopyFrom(FSOut,FSOut.Size);
   FSIn.Free;
   FSOut.Free;

@@ -698,7 +698,7 @@ begin
  new.Data:=TDataObject.Create;
  TDataObject(new.Data).Data:=p;
 
- new.Caption:=GetFileName(Info.ItemFileName);
+ new.Caption:=ExtractFileName(Info.ItemFileName);
 
  L:=Length(Data);
  SetLength(Data,Length(Data)+1);
@@ -760,7 +760,7 @@ begin
   image1.Picture.Bitmap.Assign(Image);
   Image.Free;
   
-  LabelName.Caption:=GetFileName(Data[Item.Index].FileName);// else
+  LabelName.Caption:=ExtractFileName(Data[Item.Index].FileName);// else
   LabelID.Caption:=Format(TEXT_MES_ID_FORMATA,[IntToStr(Data[Item.Index].ID)]);
   Panel3.Visible:=true; 
   WebLink1.Visible:=true;

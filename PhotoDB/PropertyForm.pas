@@ -1437,7 +1437,7 @@ begin
  Label1.Font.Style:=Label1.Font.Style-[fsBold];
  RatingLabel1.Font.Style:=Label1.Font.Style-[fsBold];
 
- LabelName.text:=GetFileName(FileName);
+ LabelName.text:=ExtractFileName(FileName);
 
  LabelPach.Text:=LongFileName(FileName);
 
@@ -1807,7 +1807,7 @@ begin
    Exit;
   end;
 
- Caption:=TEXT_MES_PROPERTY+' - '+GetFileName(FFilesInfo.ItemFileNames_[0])+TEXT_MES_AND_OTHERS;
+ Caption:=TEXT_MES_PROPERTY+' - '+ExtractFileName(FFilesInfo.ItemFileNames_[0])+TEXT_MES_AND_OTHERS;
  SizeLAbel.Text:=SizeInTextA(Size);
  OwnerMemo.Text:=TEXT_MES_NOT_AVALIABLE;
  CollectionMemo.Text:=TEXT_MES_NOT_AVALIABLE;

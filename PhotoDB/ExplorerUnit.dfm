@@ -4869,7 +4869,6 @@ object ExplorerForm: TExplorerForm
         ItemsEx = <>
         ItemHeight = 16
         TabOrder = 1
-        Text = 'Text'
         OnKeyDown = Edit1KeyDown
         OnKeyPress = Edit1KeyPress
         DropDownCount = 8

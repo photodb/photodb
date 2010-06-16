@@ -171,7 +171,7 @@ begin
  if not Assigned(FuncHintReal) then exit;
  if not FuncHintReal(item) then exit;
  if Info.ItemComment<>'' then
- fname:=Info.ItemComment else fname:=GetFileName(Info.ItemFileName);
+ fname:=Info.ItemComment else fname:=ExtractFileName(Info.ItemFileName);
  if Bitmaped then
  begin
 {} if Image1.Picture.Bitmap=nil then

@@ -2786,14 +2786,14 @@ procedure TSearchForm.ListView1Edited(Sender: TObject; Item: TEasyItem;
   var S: String);
 begin
  s:=copy(s,1,min(length(s),255));
- if AnsiLowerCase(s)=AnsiLowerCase(GetFileName(Data[ItemIndex(Item)].FileName)) then exit;
+ if AnsiLowerCase(s)=AnsiLowerCase(ExtractFileName(Data[ItemIndex(Item)].FileName)) then exit;
  begin
   If GetExt(s)<>GetExt(Data[ItemIndex(Item)].FileName) then
   If FileExists(Data[ItemIndex(Item)].FileName) then
   begin
    If ID_OK<>MessageBoxDB(Handle,TEXT_MES_REPLACE_EXT,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
    begin
-    s:=GetFileName(Data[ItemIndex(Item)].FileName);
+    s:=ExtractFileName(Data[ItemIndex(Item)].FileName);
     Exit;
    end;
   end;

@@ -38,13 +38,13 @@ begin
   FTable.Active:=false;
   FTable.TableName:=dbname;
   FTable.Active:=true;
-  CopyTable(FTable,GetAppDataDirectory+BackUpFolder+GetFileName(dbname));
+  CopyTable(FTable,GetAppDataDirectory+BackUpFolder+ExtractFileName(dbname));
   FTable.free;
   FTable:=TTable.Create(nil);
   FTable.Active:=false;
   FTable.TableName:=GroupsTableFileNameW(dbname);
   FTable.Active:=true;
-  CopyTable(FTable,GroupsTableFileNameW(GetAppDataDirectory+GetFileName(dbname)));
+  CopyTable(FTable,GroupsTableFileNameW(GetAppDataDirectory+ExtractFileName(dbname)));
   FTable.free;
  end;
  if (GetDBType(dbname)=DB_TYPE_MDB) then

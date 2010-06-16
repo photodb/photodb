@@ -170,7 +170,7 @@ begin
  sql:=sql+' (Name,FFileName,FileSize,DateToAdd,Thum,StrTh,KeyWords,Owner,Collection,Access,Width,Height,Comment,Attr,Rotated,Rating,IsDate,Include,aTime,IsTime,Links,Groups'+mdbfields+') ';
  sql:=sql+' values (:Name,:FFileName,:FileSize,:DateToAdd,:Thum,:StrTh,:KeyWords,:Owner,:Collection,:Access,:Width,:Height,:Comment,:Attr,:Rotated,:Rating,:IsDate,:Include,:aTime,:IsTime,:Links,:Groups'+mdbvalues+') ';
  SetSQL(fQuery,sql);
- SetStrParam(fQuery,0,GetFileName(Path));
+ SetStrParam(fQuery,0,ExtractFileName(Path));
  SetStrParam(fQuery,1,AnsiLowerCase(Path));
  SetIntParam(fQuery,2,Dolphin_DB.GetFileSize(Path));
   Exif := TExif.Create;
