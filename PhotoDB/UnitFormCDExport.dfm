@@ -23,7 +23,7 @@ object FormCDExport: TFormCDExport
     Left = 0
     Top = 185
     Width = 708
-    Height = 171
+    Height = 169
     Align = alClient
     Columns = <
       item
@@ -51,7 +51,7 @@ object FormCDExport: TFormCDExport
   end
   object PanelBottom: TPanel
     Left = 0
-    Top = 356
+    Top = 354
     Width = 708
     Height = 113
     Align = alBottom
@@ -586,12 +586,10 @@ object FormCDExport: TFormCDExport
     Top = 8
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = [dtCopy]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy]
     OnDrop = DropFileTarget1Drop
     ShowImage = False
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 72
     Top = 216
   end

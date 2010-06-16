@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
-  UnitDBFileDialogs, WindowsIconCacheTools;
+  UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons;
 
 type
   TOptionsForm = class(TForm)
@@ -1350,7 +1350,7 @@ end;
 
 procedure TOptionsForm.Button20Click(Sender: TObject);
 begin
- AIcons.Clear;
+  TAIcons.Instance.Clear;
 end;
 
 procedure TOptionsForm.Button19Click(Sender: TObject);

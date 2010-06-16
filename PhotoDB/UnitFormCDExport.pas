@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ComboBoxExDB, Menus, ImgList,
   Language, Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget,
   DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
-  AppEvnts, uVistaFuncs, DB;
+  AppEvnts, uVistaFuncs, DB, uAssociatedIcons;
 
 type
   TFormCDExport = class(TForm)
@@ -206,7 +206,7 @@ begin
   Item:=ListView.Items.Add;
   Item.Caption:='[..]';
   Item.Data:=nil;
-  Icon:=AIcons.GetIconByExt('',true,16,true);
+  Icon:=TAIcons.Instance.GetIconByExt('',true,16,true);
   Item.ImageIndex:=ImageListIcons.AddIcon(Icon);
  end;
  for i:=0 to Level.Files.Count-1 do
@@ -227,10 +227,10 @@ begin
 
   if PCDIndexMappingDirectory(Level.Files[i]).IsFile then
   begin
-   Icon:=AIcons.GetIconByExt(PCDIndexMappingDirectory(Level.Files[i]).RealFileName,false,16,false);
+   Icon:=TAIcons.Instance.GetIconByExt(PCDIndexMappingDirectory(Level.Files[i]).RealFileName,false,16,false);
   end else
   begin
-   Icon:=AIcons.GetIconByExt('',true,16,true);
+   Icon:=TAIcons.Instance.GetIconByExt('',true,16,true);
   end;
   Item.ImageIndex:=ImageListIcons.AddIcon(Icon);
  end;

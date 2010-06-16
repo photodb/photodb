@@ -263,7 +263,8 @@ uses
   VRSIShortCuts in 'Units\VRSIShortCuts.pas',
   UnitCDMappingSupport in 'Units\UnitCDMappingSupport.pas',
   uThreadForm in 'Units\uThreadForm.pas',
-  uThreadEx in 'Threads\uThreadEx.pas';
+  uThreadEx in 'Threads\uThreadEx.pas',
+  uAssociatedIcons in 'Threads\uAssociatedIcons.pas';
 
 {$R *.res}
 
@@ -613,7 +614,6 @@ begin
   if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
   begin
    ProgramDir:=GetDirectory(ParamStr(0));
-   AIcons:=TAIcons.Create;
    AExplorerFolders := TExplorerFolders.Create;
   end;
 

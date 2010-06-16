@@ -16,7 +16,7 @@ uses
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs,
-  uThreadForm;
+  uThreadForm, uAssociatedIcons;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -6652,7 +6652,7 @@ begin
 
        oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
 
-       Ico:=AIcons.GetIconByExt(FileName,
+       Ico:=TAIcons.Instance.GetIconByExt(FileName,
        (FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER),48,false);
 
        Ico48:=TIcon48.Create;
