@@ -7,7 +7,7 @@ uses
  Classes, Math, DB, DBTables, SysUtils, Controls, Graphics, Dialogs,
  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
- UnitDBCommonGraphics;
+ UnitDBCommonGraphics, uThreadForm, uThreadEx;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
@@ -46,7 +46,7 @@ type
  end;
 
 type
-  SearchThread = class(TThread)
+  SearchThread = class(TThreadEx)
   private
    fQuery: TDataSet;
    Fname : string;
@@ -79,8 +79,6 @@ type
   StrParam : String;
   IntParam : Integer;
   DefaultImage : TBitmap;
-  procedure RegisterThread;
-  procedure UnRegisterThread;
   procedure NewItem;
   procedure InitializeA;
   procedure InitializeB;
@@ -106,13 +104,12 @@ type
   Procedure SetProgress(Value : Integer);
   Procedure SetProgressA;
   Procedure LoadThreadQuery;
-  Procedure GetTerminated;
   Procedure DoSetSearchByComparing;
   function GetFilter(Attr : Integer) : string;
   procedure GetPassForFile;
     { Private declarations }
   protected
-    FSender : TForm;
+    FSender : TThreadForm;
     RatingParam, LastMonth, LastYear, LastRating : integer;
     LastChar : Char;
     LastSize, SizeParam : int64;
@@ -135,10 +132,10 @@ type
     FSortDecrement : Boolean;
     FShowGroups : boolean;
     BitmapParam : TBitmap;
-    IsTerminated : boolean;
+//    IsTerminated : boolean;
     procedure Execute; override;
   public
-      constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
+      constructor Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
   end;
 
   const
@@ -156,9 +153,9 @@ implementation
 uses FormManegerUnit, Searching, ExplorerUnit, UnitGroupsWork, Language,
      CommonDBSupport, ExplorerThreadUnit;
 
-constructor SearchThread.Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
-begin
- inherited create(true);
+constructor SearchThread.Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
+begin         
+ inherited Create(Sender, SID);
  FSender:=Sender;
  LastMonth:=0;
  LastRating:=-1;
@@ -175,75 +172,47 @@ begin
  ShowRating := Rating;
  UserQuery := Query;
  WideSearch := WideSearch_;
- if not CreateSuspennded then Resume;
+ Start;
 end;
 
 procedure SearchThread.AddImageToList;
 begin
- if IsTerminated then exit;
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
   (FSender as TSearchForm).FBitmapImageList.AddBitmap(fbit);
- end;
 end;
 
 procedure SearchThread.ProgressNull;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
   (FSender as TSearchForm).DmProgress1.Position:=0;
   (FSender as TSearchForm).DmProgress1.text:=TEXT_MES_DONE;
- end;
 end;
 
 procedure SearchThread.ProgressNullA;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
   (FSender as TSearchForm).DmProgress1.Position:=0;
   (FSender as TSearchForm).DmProgress1.text:=TEXT_MES_PROGRESS_PR;
- end;
 end;
 
 procedure SearchThread.SetImageIndex;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
   (FSender as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(FSender as TSearchForm).FBitmapImageList.Count-1);
   (FSender as TSearchForm).DmProgress1.Position:=fthum_images_;
- end;
 end;
 
 procedure SearchThread.BeginUpdate;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
   (FSender as TSearchForm).BeginUpdate;
- end;
 end;
 
 procedure SearchThread.EndUpdate;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
-  With (FSender as TSearchForm) do
-  begin
-   Data:=Copy(fData);
-  end;
- (FSender as TSearchForm).EndUpdate;
- end;
+  with (FSender as TSearchForm) do
+    Data:=Copy(fData);
+
+  (FSender as TSearchForm).EndUpdate;
 end;
 
 procedure SearchThread.ErrorSQL;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
  (FSender as TSearchForm).ErrorQSL(ferrormsg);
 end;
 
@@ -314,7 +283,7 @@ var
     SizeParam:=S.FieldByName('FileSize').AsInteger;
     FileNameParam:=AnsiLowerCase(S.FieldByName('FFileName').AsString);
 
-    Synchronize(NewItem);
+    SynchronizeEx(NewItem);
     Dec(N);
     fData[N].ID:=fid;
     fData[N].FileName:=FileNameParam;
@@ -355,12 +324,10 @@ begin
   //#8 - invalid query identify, needed from script executing
   if UserQuery=#8 then exit;
 
-  Synchronize(RegisterThread);
   FreeOnTerminate:=true;
-  IsTerminated:=false;
 
   try
-   Synchronize(BeginUpdate);
+   SynchronizeEx(BeginUpdate);
   except        
     on e : Exception do EventLog(':SearchThread:Execute() throw exception: '+e.Message);
   end;
@@ -388,7 +355,7 @@ begin
      if PassWord='' then
      begin
       StrParam:=fSpSearch_ScanFile;
-      Synchronize(GetPassForFile);
+      SynchronizeEx(GetPassForFile);
       PassWord:=StrParam;
      end;
      if PassWord='' then
@@ -461,13 +428,12 @@ begin
     FTable.First;
 
     intParam:=FTable.RecordCount;
-    Synchronize(initializeB);
+    SynchronizeEx(initializeB);
     //Searching in DB
     for i:=1 to FTable.RecordCount do
     begin
      SetProgress(i);
-     Synchronize(GetTerminated);
-     if IsTerminated then break;
+     if Terminated then break;
      JPEG:=nil;
      if ValidCryptBlobStreamJPG(FTable.FieldByName('thum')) then
      begin
@@ -484,14 +450,14 @@ begin
       JPEG := TJPEGImage.Create;
       JPEG.Assign(FTable.FieldByName('thum'));
      end;
-     
+
      res:=CompareImages(JPEG,SBitmap,rot,fSpsearch_ScanFileRotate,not fSpsearch_ScanFileRotate, 60);
      if (Res.ByGistogramm>fSpsearch_ScanFilePersent) or (Res.ByPixels>fSpsearch_ScanFilePersent) then
      begin
       SetLength(fQData,Length(fQData)+1);
       fQData[Length(fQData)-1].ID:=FTable.FieldByName('ID').AsInteger;
       fQData[Length(fQData)-1].CompareResult:=Res;
-      Synchronize(DoSetSearchByComparing);
+      SynchronizeEx(DoSetSearchByComparing);
      end;
      if JPEG<>nil then
      JPEG.Free;
@@ -502,7 +468,7 @@ begin
     begin
      QueryType:=QT_TEXT;
      query_:='SELECT * FROM '+GetDefDBname+' WHERE ';
-     
+
      if FWideSearch.GroupName<>'' then
      query_:=query_+' (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'") AND ';
 
@@ -521,13 +487,12 @@ begin
      if Pic<>nil then Pic.Free;
      if FTable<>nil then FTable.Free;
      DoExit;
-     Synchronize(ProgressNull);
-     Synchronize(UnRegisterThread);
-     Synchronize(DoOnDone);
+     SynchronizeEx(ProgressNull);
+     SynchronizeEx(DoOnDone);
      exit;
     end;
    end;
-   Synchronize(ProgressNull);
+   SynchronizeEx(ProgressNull);
    if (QueryType=QT_W_SCAN_FILE) then
    begin
     if TempBitmap <>nil then TempBitmap.Free;
@@ -535,9 +500,8 @@ begin
     if Pic<>nil then Pic.Free;
     if FTable<>nil then FTable.Free;
     DoExit;
-    Synchronize(ProgressNull);
-    Synchronize(UnRegisterThread);
-    Synchronize(DoOnDone);
+    SynchronizeEx(ProgressNull);
+    SynchronizeEx(DoOnDone);
     exit;
    end;
   end;
@@ -621,41 +585,40 @@ begin
     FreeDS(fspecquery);
    end;
    try
-     Synchronize(LoadThreadQuery);
+     SynchronizeEx(LoadThreadQuery);
     except
      on e : Exception do
      begin
       EventLog(':SearchThread::LoadThreadQuery() throw exception: '+e.Message);
       fErrorMsg:=e.Message+#13+TEXT_MES_QUERY_FAILED;
-      Synchronize(ErrorSQL);
+      SynchronizeEx(ErrorSQL);
      end;
     end;
    try
 
-    Synchronize(GetTerminated);
-    if not IsTerminated then
+    CheckForm;
+    if not Terminated then
     fQuery.active:=true;
    except
    on e : Exception do
    begin
     fErrorMsg:=e.Message+#13+TEXT_MES_QUERY_FAILED;
-    Synchronize(ErrorSQL);
+    SynchronizeEx(ErrorSQL);
     DoExit;
     exit;
     end;
    end;
-   Synchronize(GetTerminated);
-   if not IsTerminated then
+   CheckForm;
+   if not Terminated then
    begin
     SetLength(fData,fQuery.RecordCount);
-    Synchronize(InitializeA);
+    SynchronizeEx(InitializeA);
     fQuery.First;
    end;
    c:=0;
    for i:=1 to fQuery.RecordCount do
-   begin     
-    Synchronize(GetTerminated);
-    if IsTerminated then break;
+   begin
+    if Terminated then break;
     AddItem(i, FQuery);
     fQuery.Next;
    end;
@@ -663,15 +626,14 @@ begin
    on e : Exception do
    begin
     fErrorMsg:=e.Message+#13+TEXT_MES_QUERY_FAILED;
-    Synchronize(ErrorSQL);
+    SynchronizeEx(ErrorSQL);
     end;
   end;
-  synchronize(EndUpdate);
-  Synchronize(GetTerminated);
-  if IsTerminated then
+  SynchronizeEx(EndUpdate);
+  if Terminated then
   begin
-   Synchronize(ProgressNull);
-   Synchronize(DoOnDone);
+   SynchronizeEx(ProgressNull);
+   SynchronizeEx(DoOnDone);
    FreeDS(fQuery);
    exit;
   end;
@@ -679,24 +641,21 @@ begin
   fpic:=TPicture.create;
   fpic.Graphic:=TJPEGImage.Create;
   fthum_images_:=Images_sm;
-  Synchronize(ProgressNullA);
+  SynchronizeEx(ProgressNullA);
   if SearchManager.IsSearchForm(FSender) then
   begin
    fQuery.First;
    for i:=1 to fQuery.RecordCount do
    begin
-    if not SearchManager.IsSearchForm(FSender) then break;
-    if not IsEqualGUID((FSender as TSearchForm).SID, FSID) then break;
-    if i mod 3 = 0 then sleep(0);
+    if Terminated then break;
     PassWord:='';
     inc(fthum_images_);
     IntParam:=i-1;
-    Synchronize(ListViewImageIndex);
+    SynchronizeEx(ListViewImageIndex);
     if IntParam=-2 then break;
     if IntParam=-1 then
     begin
-     Synchronize(GetTerminated);
-     if IsTerminated then break;
+     if Terminated then break;
      if TBlobField(fQuery.FieldByName('thum'))=nil then Continue;
      if fData[i-1].Crypted then
      begin
@@ -731,8 +690,8 @@ begin
      FCurrentFile:=fQuery.FieldByName('FFileName').AsString;
 
      IntParam:=i-1;
-     Synchronize(AddImageToList);
-     Synchronize(SetImageIndex);
+     SynchronizeEx(AddImageToList);
+     SynchronizeEx(SetImageIndex);
      end;
      fquery.Next;
     end;
@@ -742,7 +701,7 @@ begin
   on e : Exception do
   begin
    fErrorMsg:=e.Message+#13+TEXT_MES_QUERY_FAILED;
-   Synchronize(ErrorSQL);
+   SynchronizeEx(ErrorSQL);
    end;
  end;
  Count:=fQuery.RecordCount;
@@ -750,39 +709,32 @@ begin
 
  FPic:=nil;
 
- Synchronize(ProgressNull);
- Synchronize(UnRegisterThread);
- Synchronize(DoOnDone);
+ SynchronizeEx(ProgressNull);
+ SynchronizeEx(DoOnDone);
 end;
 
 procedure SearchThread.InitializeA;
 begin
- if IsTerminated then exit;
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- with (FSender as TSearchForm) do
- begin
-  FShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
-  ListView1.ShowGroupMargins:=FShowGroups;
-  DmProgress1.Position:=0;
-  DmProgress1.MaxValue:=fQuery.RecordCount;
-  Label7.Caption:=format(TEXT_MES_RES_REC,[IntToStr(fQuery.RecordCount)]);
-  DmProgress1.Text:=TEXT_MES_LOAD_QUERY_PR;
- end;
+  with (FSender as TSearchForm) do
+  begin
+    FShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
+    ListView1.ShowGroupMargins:=FShowGroups;
+    DmProgress1.Position:=0;
+    DmProgress1.MaxValue:=fQuery.RecordCount;
+    Label7.Caption:=format(TEXT_MES_RES_REC,[IntToStr(fQuery.RecordCount)]);
+    DmProgress1.Text:=TEXT_MES_LOAD_QUERY_PR;
+  end;
 end;
 
 procedure SearchThread.InitializeB;
 begin
- if IsTerminated then exit;
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- with (FSender as TSearchForm) do
- begin
-  DmProgress1.Position:=0;
-  DmProgress1.MaxValue:=intparam;
-  Label7.Caption:=TEXT_MES_SEARCH_FOR_REC;
-  DmProgress1.Text:=format(TEXT_MES_SEARCH_FOR_REC_FROM,[IntToStr(intparam)]);
- end;
+  with (FSender as TSearchForm) do
+  begin
+    DmProgress1.Position:=0;
+    DmProgress1.MaxValue:=intparam;
+    Label7.Caption:=TEXT_MES_SEARCH_FOR_REC;
+    DmProgress1.Text:=format(TEXT_MES_SEARCH_FOR_REC_FROM,[IntToStr(intparam)]);
+  end;
 end;
 
 
@@ -995,19 +947,12 @@ end;
 
 procedure SearchThread.NewItem;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
   if QueryType<>QT_W_SCAN_FILE then
   begin
    (FSender as TSearchForm).DmProgress1.Position:=fi;
   end;
   AddItemInListViewByGroups((FSender as TSearchForm).ListView1, FID, FName, fSortMethod, fSortDecrement, fShowGroups, SizeParam,
-  FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
- end else
- begin
-  //?   terminated_:=true;
- end;
+    FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
 end;
 
 function SearchThread.GetFilter(Attr : Integer) : string;
@@ -1059,7 +1004,7 @@ begin
  QueryType:=QT_NONE;
  foptions:=0;
  sqltext:=userquery;
- synchronize(savehistory);
+ SynchronizeEx(savehistory);
  if sqltext='' then sqltext:='*';
  systemquery:=false;
  if length(sqltext)>3 then
@@ -1508,8 +1453,6 @@ end;
 procedure SearchThread.DoOnDone;
 begin
  try
-  if SearchManager.IsSearchForm(FSender) then
-  if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
   begin
    if fPictureSize=ThImageSize then
    if Assigned(OnDone) then OnDone(self);
@@ -1528,55 +1471,21 @@ begin
   end;
   //Loading big images
   if fPictureSize<>ThImageSize then
-  UnitSearchBigImagesLoaderThread.TSearchBigImagesLoaderThread.Create(false,fSender,FSID,nil,fPictureSize,Copy(fData));
+    (FSender as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,fSender,FSID,nil,fPictureSize,Copy(fData)));
  except
  end;
 end;
 
-procedure SearchThread.RegisterThread;
-Var
-  Info : TDBThreadInfo;
-  TermInfo : TTemtinatedAction;
-begin
- Info.Handle:=ThreadID;
- Info.Type_:=Thread_Type_Searching;
- Info.OwnerHandle:=0;
- DBThreadManeger.AddThread(Info);
-{ TermInfo.TerminatedPointer:=@terminated_;
- TermInfo.TerminatedVerify:=@active_;
- TermInfo.Options:=TA_INFORM_AND_NT;
- TermInfo.Owner:=Self;
- FormManager.RegisterActionCanTerminating(TermInfo); }
-end;
-
-procedure SearchThread.UnRegisterThread;
-Var
-  Info : TDBThreadInfo;
-  TermInfo : TTemtinatedAction;
-begin
- Info.Handle:=ThreadID;
- Info.Type_:=Thread_Type_Searching;
- Info.OwnerHandle:=0;
- DBThreadManeger.RemoveThread(Info);
-{ TermInfo.TerminatedPointer:=@terminated_;
- TermInfo.TerminatedVerify:=@active_;
- TermInfo.Options:=TA_INFORM_AND_NT;
- TermInfo.Owner:=Self;
- FormManager.UnRegisterActionCanTerminating(TermInfo); }
-end;
-
 procedure SearchThread.SetSearchPath;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- (FSender as TSearchForm).SetPath(StringParam);
+  (FSender as TSearchForm).SetPath(StringParam);
 end;
 
 procedure SearchThread.SetSearchPathW(Path: String);
 begin
  if not DirectoryExists(Path) then exit;
  StringParam:=Path;
- Synchronize(SetSearchPath);
+ SynchronizeEx(SetSearchPath);
 end;
 
 function SearchThread.GetWideSearchOptions: String;
@@ -1611,60 +1520,47 @@ end;
 procedure SearchThread.SetMaxValue(Value: Integer);
 begin
  IntParam:=Value;
- Synchronize(SetMaxValueA);
+ SynchronizeEx(SetMaxValueA);
 end;
 
 procedure SearchThread.SetMaxValueA;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- (FSender as TSearchForm).DmProgress1.MaxValue:=IntParam;
+  (FSender as TSearchForm).DmProgress1.MaxValue:=IntParam;
 end;
 
 procedure SearchThread.SetProgress(Value: Integer);
 begin
  IntParam:=Value;
- Synchronize(SetProgressA);
+ SynchronizeEx(SetProgressA);
 end;
 
 procedure SearchThread.SetProgressA;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- (FSender as TSearchForm).DmProgress1.Position:=IntParam;
+  (FSender as TSearchForm).DmProgress1.Position:=IntParam;
 end;
 
 procedure SearchThread.SetProgressText(Value: String);
 begin
  StrParam:=Value;
- Synchronize(SetProgressTextA);
+ SynchronizeEx(SetProgressTextA);
 end;
 
 procedure SearchThread.SetProgressTextA;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- (FSender as TSearchForm).DmProgress1.Text:=StrParam;
+  (FSender as TSearchForm).DmProgress1.Text:=StrParam;
 end;
 
 procedure SearchThread.ListViewImageIndex;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- IntParam:=(FSender as TSearchForm).GetImageIndexWithPath(FData[IntParam].FileName)
-  else
- IntParam:=-1;
+  IntParam:=(FSender as TSearchForm).GetImageIndexWithPath(FData[IntParam].FileName);
 end;
 
 procedure SearchThread.LoadThreadQuery;
 begin
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
   SetSQL((FSender as TSearchForm).ThreadQuery,GetQueryText(fQuery));
   AssignParams(fQuery,(FSender as TSearchForm).ThreadQuery);
- end;
 end;
+
 function SearchThread.AddOptions(s : string): string;
 var
   sqlquery : string;
@@ -1695,24 +1591,9 @@ begin
  end;
 end;
 
-procedure SearchThread.GetTerminated;
-begin
- IsTerminated:=true;
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
-  IsTerminated:=false;
- end;
-end;
-
 procedure SearchThread.DoSetSearchByComparing;
 begin
- IsTerminated:=true;
- if SearchManager.IsSearchForm(FSender) then
- if IsEqualGUID((FSender as TSearchForm).SID, FSID) then
- begin
-  (FSender as TSearchForm).DoSetSearchByComparing;
- end;
+ (FSender as TSearchForm).DoSetSearchByComparing;
 end;
 
 procedure SearchThread.GetPassForFile;

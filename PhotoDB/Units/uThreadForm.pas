@@ -2,23 +2,29 @@ unit uThreadForm;
 
 interface
 
-uses Classes, Forms, SyncObjs;
+uses Classes, Forms, SyncObjs, Dolphin_DB;
 
 type
   TThreadForm = class(TForm)
   private
     FThreadList : TList;
     FSync : TCriticalSection;
-    procedure ThreadTerminated(Sender : TObject);  
+    FStateID : TGUID;
+    procedure ThreadTerminated(Sender : TObject);
   protected
-    procedure RegisterThreadAndStart(Thread : TThread);
     procedure TerminateAllThreads;
-  public
+    procedure NewFormState;
+  public                     
+    procedure RegisterThreadAndStart(Thread : TThread);
+    function IsActualState(State : TGUID) : Boolean;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    property StateID : TGUID read FStateID;
   end;
 
 implementation
+
+uses SysUtils;
 
 constructor TThreadForm.Create(AOwner: TComponent);
 begin
@@ -33,6 +39,16 @@ begin
   FThreadList.Free;
   FSync.Free;
   inherited;
+end;
+
+function TThreadForm.IsActualState(State: TGUID): Boolean;
+begin
+  Result := IsEqualGUID(State, FStateID);
+end;
+
+procedure TThreadForm.NewFormState;
+begin
+  FStateID := GetGUID;
 end;
 
 procedure TThreadForm.RegisterThreadAndStart(Thread: TThread);

@@ -15,7 +15,7 @@ uses
   UnitRangeDBSelectForm, UnitSearchBigImagesLoaderThread, DragDropFile,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport;
+  UnitCDMappingSupport, uThreadForm;
 
 type
  TString255 = string[255];
@@ -25,7 +25,7 @@ type
   TXListView = TEasyListView;
 
 type
-  TSearchForm = class(TForm)
+  TSearchForm = class(TThreadForm)
     Panel1: TPanel;
     PopupMenu2: TPopupMenu;
     SlideShow1: TMenuItem;
@@ -486,16 +486,16 @@ type
     procedure SortingPopupMenuPopup(Sender: TObject);
     procedure SortbyCompare1Click(Sender: TObject);
   private
-  fListUpdating : boolean;
-  FPropertyGroups: String;
-  TempFolderName : String;
-  CurrentItemInfo : TOneRecordInfo;
-  FFirstTip_WND : HWND;
-  WindowsMenuTickCount : Cardinal;
-  LastSelCount : integer;
-  FUpdatingDB : Boolean;
-  DestroyCounter : Integer;
-  GroupsLoaded : boolean;
+    fListUpdating : boolean;
+    FPropertyGroups: String;
+    TempFolderName : String;
+    CurrentItemInfo : TOneRecordInfo;
+    FFirstTip_WND : HWND;
+    WindowsMenuTickCount : Cardinal;
+    LastSelCount : integer;
+    FUpdatingDB : Boolean;
+    DestroyCounter : Integer;
+    GroupsLoaded : boolean;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     { Protected declarations }
   protected
@@ -509,7 +509,6 @@ type
     SelectQuery : TDataSet;
     WorkQuery : TDataSet;
     FBitmapImageList : TBitmapImageList;
-    SID : TGUID;
     Data : TSearchRecordArray;
 
     FormDateRangeSelectDBHideed : boolean;
@@ -777,9 +776,9 @@ begin
  WideSearch.MaxID:=Max(StrToIntDef(Edit2.Text,0),StrToIntDef(Edit3.Text,0));
  WideSearch.Private_:=CheckBox2.Checked;
  WideSearch.Common_:=CheckBox3.Checked;
- SID:=GetGUID;
+  NewFormState;
  ToolButton14.Enabled:=true;
- SearchThread.Create(false,Self,SID,Rating2.Rating,TwButton1.Pushed,SortLink.Tag,Decremect1.Checked,SearchEdit.text,WideSearch,BreakOperation,FPictureSize);
+ SearchThread.Create(True,Self,StateID,Rating2.Rating,TwButton1.Pushed,SortLink.Tag,Decremect1.Checked,SearchEdit.text,WideSearch,BreakOperation,FPictureSize);
  AddNewSearchListEntry;
 end;
 
@@ -1660,7 +1659,6 @@ begin
   RecordInfo.ItemAccess:=Data[iItemIndex].Access;
   RecordInfo.ItemCrypted:=Data[iItemIndex].Crypted;
 
- //?????????????? TSearchThreadLoadBigImage.Create(false,self,self.SID,RecordInfo,fPictureSize);
   ListView1.Refresh;
  end;
  if GetlistitembyID(ID).imageindex=0 then
@@ -2118,7 +2116,7 @@ begin
     SetLength(FilesToUpdate,1);
     FilesToUpdate[0].FileName:=FileName;
     FilesToUpdate[0].Rotation:=Rotate;
-    TSearchBigImagesLoaderThread.Create(false,self,SID,nil,fPictureSize,FilesToUpdate,true);
+    RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,self,StateID,nil,fPictureSize,FilesToUpdate,true));
    end;
   end;
  end;
@@ -2136,7 +2134,7 @@ begin
 
   FilesToUpdate[0].FileName:=FileName;
   FilesToUpdate[0].Rotation:=Rotate;
-  TSearchBigImagesLoaderThread.Create(false,self,SID,nil,fPictureSize,FilesToUpdate,true);
+  TSearchBigImagesLoaderThread.Create(false,self,StateID,nil,fPictureSize,FilesToUpdate,true);
  end;
  if ((EventID_Param_Comment in params) or (EventID_Param_KeyWords in params) or (EventID_Param_Rating in params) or (EventID_Param_Date in params) or (EventID_Param_Time in params) or (EventID_Param_IsDate in params) or (EventID_Param_IsTime in params)  or (EventID_Param_Groups in params)) and (ID=current_id_show) then
  ListView1SelectItem(Sender,GetListItemByID(ID),true);
@@ -5036,9 +5034,9 @@ procedure TSearchForm.BigImagesTimerTimer(Sender: TObject);
 begin
  if Self.fListUpdating then exit;
  BigImagesTimer.Enabled:=false;
- SID:=GetGUID;
+ NewFormState;
  //тут начинается загрузка больших картинок
- UnitSearchBigImagesLoaderThread.TSearchBigImagesLoaderThread.Create(false,self,SID,nil,fPictureSize,Copy(Data));
+ RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,self,StateID,nil,fPictureSize,Copy(Data)));
 end;
 
 function TSearchForm.GetVisibleItems: TArStrings;
@@ -5528,13 +5526,13 @@ begin
  begin                      
   ToolButton14.Enabled:=false;
   BreakOperation(Sender);
-  SID:=Dolphin_DB.GetGUID;
+  NewFormState;
  end;
 end;
 
 function TSearchForm.IfBreak(Sender : TObject; aSID : TGUID): boolean;
 begin
- Result:=not IsEqualGUID(SID, aSID);
+ Result:=IsActualState(aSID);
 end;
 
 procedure TSearchForm.SortingClick(Sender: TObject);

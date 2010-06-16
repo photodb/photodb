@@ -11,7 +11,8 @@ uses
  Dialogs, Controls, ComObj, ActiveX, ShlObj,CommCtrl, Registry,
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
  EasyListview, GraphicsCool, uVistaFuncs, VirtualSystemImageLists,
- UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport;
+ UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
+ uThreadEx;
 
 type
  TExplorerViewInfo = record
@@ -38,7 +39,7 @@ Type TUpdaterInfo = record
  end;
 
 type
-  TExplorerThread = class(TThread)
+  TExplorerThread = class(TThreadEx)
   private
   FFolder : String;
   Fmask : String;
@@ -92,7 +93,6 @@ type
   CountOfShowenGraphicFiles : Integer;
   CurrentInfoPos : Integer;
   FVisibleFiles : TArStrings;
-  InvalidThread : boolean;      
   IsBigImage : boolean;
   LoadingAllBigImages : boolean;
 
@@ -123,7 +123,7 @@ type
     procedure AddImageFileItemToExplorer;
     procedure ReplaceImageItemImage;
     procedure DrawImageToTempBitmap;
-    procedure ReplaceImageInExplorer;   
+    procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
     procedure ReplaceThumbImageToFolder;
     Procedure MakeFolderBitmap;
@@ -171,9 +171,8 @@ type
     procedure DoDefaultSort;
     procedure ExplorerHasIconForExt;
     procedure SetIconForFileByExt;
-    procedure DoVerifyExplorer;
   public
-    constructor Create(CreateSuspennded: Boolean; folder, Mask: string;
+    constructor Create(folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
   end;
@@ -232,10 +231,10 @@ uses Language, FormManegerUnit, UnitViewerThread, CommonDBSupport;
 
 { TExplorerThread }
 
-Constructor TExplorerThread.Create(CreateSuspennded: Boolean; folder,
+Constructor TExplorerThread.Create(folder,
   Mask: string; ThreadType : Integer; Info: TExplorerViewInfo; Sender : TExplorerForm; UpdaterInfo: TUpdaterInfo; SID : TGUID);
-begin
- inherited Create(True);
+begin             
+ inherited Create(Sender, SID);
  FThreadType:= ThreadType;
  FSender:=Sender;
  FFolder := Folder;
@@ -245,7 +244,7 @@ begin
  FShowFiles := True;
  FUpdaterInfo := UpdaterInfo;
  FullFolderPicture := nil;
- If not CreateSuspennded then Resume;
+ Start;
 end;
 
 procedure TExplorerThread.Execute;
@@ -282,7 +281,7 @@ begin
  FreeOnTerminate:=true;
  CoInitialize(nil);
  try
- Synchronize(RegisterThread);
+ SynchronizeEx(RegisterThread);
  IsCurrentRecord:=false;
  CountOfShowenGraphicFiles:=0;
  NoRecords:=false;
@@ -307,7 +306,7 @@ begin
  begin     
   ShowProgress;
   DoLoadBigImages;
-  Synchronize(UnRegisterThread);
+  SynchronizeEx(UnRegisterThread);
   Exit;
  end;
 
@@ -347,36 +346,36 @@ begin
   if (FThreadType=THREAD_TYPE_MY_COMPUTER) then
   begin
    LoadMyComputerFolder;
-   Synchronize(DoStopSearch);
+   SynchronizeEx(DoStopSearch);
    Exit;
   end;
   if (FThreadType=THREAD_TYPE_NETWORK) then
   begin
    LoadNetWorkFolder;
-   Synchronize(DoStopSearch);
+   SynchronizeEx(DoStopSearch);
    Exit;
   end;
   if (FThreadType=THREAD_TYPE_WORKGROUP) then
   begin
    LoadWorkgroupFolder;    
-   Synchronize(DoStopSearch);
+   SynchronizeEx(DoStopSearch);
    Exit;
   end;
   if (FThreadType=THREAD_TYPE_COMPUTER) then
   begin
    LoadComputerFolder;   
-   Synchronize(DoStopSearch);
+   SynchronizeEx(DoStopSearch);
    Exit;
   end;
   UnformatDir(FFolder);
   if not DirectoryExists(FFolder) then
   begin
    StrParam:=TEXT_MES_ERROR_OPENING_FOLDER;
-   Synchronize(ShowMessage_);
-   Synchronize(EndUpdate);
+   SynchronizeEx(ShowMessage_);
+   SynchronizeEx(EndUpdate);
    ShowInfo('',1,0);
-   Synchronize(ExplorerBack);
-   Synchronize(UnRegisterThread);
+   SynchronizeEx(ExplorerBack);
+   SynchronizeEx(UnRegisterThread);
    Exit;
   end;
 
@@ -387,7 +386,7 @@ begin
   CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
   FormatDir(DBFolderToSearch);                                    
   FormatDir(FFolder);
-  Synchronize(BeginUpdate);
+  SynchronizeEx(BeginUpdate);
   FFiles:=SetNilExplorerFileInfo;
 
   DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
@@ -449,7 +448,6 @@ begin
   while Found = 0 do
   begin
    If Terminated then break;
-   if not IsEqualGUID(FSender.CurrentGUID, FCID) then break;
    if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
    begin     
     fa:=SearchRec.Attr and FaHidden;
@@ -507,7 +505,7 @@ begin
   FindClose(SearchRec);
   ShowInfo(TEXT_MES_LOADING_INFO,1,0);
   ShowProgress;
-  Synchronize(InfoToExplorerForm);
+  SynchronizeEx(InfoToExplorerForm);
   ShowInfo(TEXT_MES_LOADING_FOLDERS,Length(FFiles),0);
   InfoPosition:=0;
   Folders:=0;
@@ -516,13 +514,10 @@ begin
    FFiles[i].Tag:=0;
    If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
    begin
-    if i mod 10=0 then
-    begin
-     Synchronize(DoVerifyExplorer);
-     if not BooleanResult then break;
-    end;
+    if Terminated then
+      Break;
     GUIDParam:=FFiles[i].SID;
-    Synchronize(FileNeeded);
+    SynchronizeEx(FileNeeded);
     If BooleanResult then
     begin
      Inc(Folders);
@@ -543,7 +538,7 @@ begin
    if i mod 10=0  then
    If Terminated then break;
    GUIDParam:=FFiles[i].SID;
-   Synchronize(FileNeeded);
+   SynchronizeEx(FileNeeded);
    If BooleanResult then
    Begin
     inc(ImageFiles);
@@ -561,7 +556,7 @@ begin
   begin
    If Terminated then break;
    GUIDParam:=FFiles[i].SID;
-   Synchronize(FileNeeded);
+   SynchronizeEx(FileNeeded);
    If BooleanResult then
    begin
     Inc(InfoPosition);
@@ -571,8 +566,8 @@ begin
     FFiles[i].Tag:=IntIconParam;
    end;
   end;            
-  Synchronize(DoDefaultSort);
-  Synchronize(EndUpdate);
+  SynchronizeEx(DoDefaultSort);
+  SynchronizeEx(EndUpdate);
 
   ShowInfo(TEXT_MES_LOADING_TH);
   ShowInfo(Length(FFiles),0);
@@ -583,7 +578,7 @@ begin
 
    if i mod 5=0 then
    begin
-    Synchronize(GetVisibleFiles);
+    SynchronizeEx(GetVisibleFiles);
     VisibleUp(i);
     Sleep(5);
    end;
@@ -593,7 +588,7 @@ begin
    begin
     If Terminated then break;
     GUIDParam:=FFiles[i].SID;
-    Synchronize(FileNeededA);
+    SynchronizeEx(FileNeededA);
     If BooleanResult then
     begin
      Inc(InfoPosition);
@@ -612,7 +607,7 @@ begin
     FFiles[i].Tag:=1;
     If Terminated then break;
     GUIDParam:=FFiles[i].SID;
-    Synchronize(FileNeededA);
+    SynchronizeEx(FileNeededA);
     If BooleanResult then
     begin
      Inc(InfoPosition);
@@ -630,7 +625,7 @@ begin
      FFiles[i].Tag:=1;
      If Terminated then break;
      GUIDParam:=FFiles[i].SID;
-     Synchronize(FileNeededA);
+     SynchronizeEx(FileNeededA);
      If BooleanResult then
      begin
       Inc(InfoPosition);
@@ -661,29 +656,25 @@ begin
 
   HideProgress;
   ShowInfo('');
-  Synchronize(DoStopSearch);
+  SynchronizeEx(DoStopSearch);
   FQuery.Close;
   FreeDS(FQuery);
-  Synchronize(UnRegisterThread);
+  SynchronizeEx(UnRegisterThread);
   finally
     CoUninitialize;
   end;
 end;
 
-procedure TExplorerThread.Beginupdate;
+procedure TExplorerThread.BeginUpdate;
 begin
- If not Terminated then
-   FSender.BeginUpdate(FCID);
+  FSender.BeginUpdate;
 end;
 
 procedure TExplorerThread.EndUpdate;
 begin
-  if not Terminated then
-  begin
-    FSender.EndUpdate(FCID);
-    FSender.Select(FSelected,FCID);
-    AExplorerFolders.CheckFolder(FFolder);
-  end;
+  FSender.EndUpdate;
+  FSender.Select(FSelected,FCID);
+  AExplorerFolders.CheckFolder(FFolder);
 end;
 
 procedure TExplorerThread.MakeFolderBitmap;
@@ -722,7 +713,6 @@ begin
   If not Terminated then
   begin
     BooleanResult:=FSender.FileNeededW(GUIDParam);
-    InvalidThread:=not IsEqualGUID(FSender.CurrentGUID, FCID);
     if not FSender.Active then
       Priority:=tpLowest;
   end;
@@ -737,14 +727,14 @@ end;
 
 procedure TExplorerThread.AddDirectoryToExplorer;
 begin
- Synchronize(AddDirectoryImageToExplorer);
- Synchronize(AddDirectoryItemToExplorer);
+ SynchronizeEx(AddDirectoryImageToExplorer);
+ SynchronizeEx(AddDirectoryItemToExplorer);
 end;
 
 procedure TExplorerThread.AddDriveToExplorer;
 begin
- Synchronize(AddDirectoryImageToExplorer);
- Synchronize(AddDirectoryItemToExplorerW);
+ SynchronizeEx(AddDirectoryImageToExplorer);
+ SynchronizeEx(AddDirectoryItemToExplorerW);
 end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorer;
@@ -840,13 +830,13 @@ begin
  begin
   MakeTempBitmapSmall;
   IconParam:=ficon;
-  Synchronize(DrawImageIconSmall);
-//  Synchronize(SetIconForFileByExt);
+  SynchronizeEx(DrawImageIconSmall);
+//  SynchronizeEx(SetIconForFileByExt);
   ficon.free;
  end;
 
- Synchronize(AddImageFileImageToExplorer);
- Synchronize(AddImageFileItemToExplorer);
+ SynchronizeEx(AddImageFileImageToExplorer);
+ SynchronizeEx(AddImageFileItemToExplorer);
 end;
 
 procedure TExplorerThread.DrawImageIcon;
@@ -947,7 +937,7 @@ begin
 
   if not (ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS)) then
   begin
-   Synchronize(ReplaceInfoInExplorer);  
+   SynchronizeEx(ReplaceInfoInExplorer);  
    Exit;
   end;
 
@@ -967,7 +957,7 @@ begin
      IsBigImage:=true;
      Info.ItemCrypted:=true;
      PassParam:=CurrentFile;
-     Synchronize(FindPassword);
+     SynchronizeEx(FindPassword);
      if PassParam<>'' then
      begin
       Fpic.Graphic:=DeCryptGraphicFile(CurrentFile,PassParam);
@@ -1039,12 +1029,12 @@ begin
     begin
      if TempBitmap=nil then MakeTempBitmap;
      IconParam:=ficon;
-     Synchronize(DrawImageIcon);
+     SynchronizeEx(DrawImageIcon);
      ficon.free;
      GraphicParam:=Fbit;
     end;
 
-    synchronize(DrawImageToTempBitmap);
+    SynchronizeEx(DrawImageToTempBitmap);
     Fbit.free;
    end;
   end else
@@ -1067,10 +1057,10 @@ begin
     end;
     IconParam:=ficon;  
     if TempBitmap=nil then MakeTempBitmap;
-    Synchronize(DrawImageIcon);
+    SynchronizeEx(DrawImageIcon);
     ficon.free;
     GraphicParam:=Fbit;
-    synchronize(DrawImageToTempBitmap);
+    SynchronizeEx(DrawImageToTempBitmap);
     Fbit.free;
    end;
   end;
@@ -1084,7 +1074,7 @@ begin
   end;
   
   if FThreadType=THREAD_TYPE_IMAGE then IsBigImage:=false; //сбрасываем флаг для того чтобы перезагрузилась картинка
-  Synchronize(ReplaceImageInExplorer);
+  SynchronizeEx(ReplaceImageInExplorer);
   if Info.PassTag=1 then inc(CountOfShowenGraphicFiles);
 end;
 
@@ -1098,13 +1088,12 @@ begin
   if not Terminated then
   begin
     FSender.SetInfoToItem(Info, GUIDParam);
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-    begin
-      if not isBigImage then
-        FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude)
-      else
-        FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude, True);
-    end;
+
+    if not isBigImage then
+      FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude)
+    else
+      FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude, True);
+
   end;
 end;
 
@@ -1307,7 +1296,7 @@ begin
  MakeTempBitmap;
  FillColorEx(TempBitmap, Theme_ListColor);
  try
-  Synchronize(DrawFolderImageBig);
+  SynchronizeEx(DrawFolderImageBig);
  except
  end;
  c:=0;
@@ -1337,7 +1326,7 @@ begin
    ProportionalSize(SmallImageSize,SmallImageSize,w,h);
 
    FolderImageRect:=Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h);
-   synchronize(DrawFolderImageWithXY);
+   SynchronizeEx(DrawFolderImageWithXY);
    Continue;
   end;
   if index>count+Nbr then break;
@@ -1382,7 +1371,7 @@ begin
    h:=fbmp.Height;
    ProportionalSize(SmallImageSize,SmallImageSize,w,h);
    FolderImageRect:=Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h);
-   synchronize(DrawFolderImageWithXY);
+   SynchronizeEx(DrawFolderImageWithXY);
    fbmp.Free;
    Query.Next;
   end else begin
@@ -1427,7 +1416,7 @@ begin
    fbmp.PixelFormat:=pf24bit;
    DoResize(w,h,bmp,fbmp);
    bmp.Free;
-   Synchronize(DrawFolderImageWithXY);
+   SynchronizeEx(DrawFolderImageWithXY);
    fbmp.free;
   end;
  end;
@@ -1448,7 +1437,7 @@ begin
    fFolderImages.FileDates[i]:=FilesDatesInFolder[i];
    AExplorerFolders.SaveFolderImages(fFolderImages,SmallImageSize,SmallImageSize);
   end;
-  Synchronize(ReplaceFolderImage);
+  SynchronizeEx(ReplaceFolderImage);
  except
  end;
 // TempBitmap.free;
@@ -1489,9 +1478,7 @@ end;
 
 procedure TExplorerThread.ReplaceFolderImage;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-      FSender.ReplaceBitmap(TempBitmap, GUIDParam, True);
+  FSender.ReplaceBitmap(TempBitmap, GUIDParam, True);
 end;
 
 procedure TExplorerThread.AddFileToExplorer;
@@ -1555,10 +1542,10 @@ begin
  begin
   MakeTempBitmap;
   IconParam:=ficon;
-  Synchronize(DrawImageIcon);
+  SynchronizeEx(DrawImageIcon);
   ficon.free;
  end;
- Synchronize(AddImageFileItemToExplorerW);
+ SynchronizeEx(AddImageFileItemToExplorerW);
 end;
 
 procedure TExplorerThread.AddImageFileItemToExplorerW;
@@ -1570,7 +1557,7 @@ begin
     FSender.AddBitmap(TempBitmap, GUIDParam) else
     FSender.AddIcon(ficon, true, GUIDParam);
     if FUpdaterInfo.NewFileItem then
-    FSender.SetNewFileNameGUID(GUIDParam, FCID);
+    FSender.SetNewFileNameGUID(GUIDParam);
     FSender.AddItem(GUIDParam,false);
   end;
 end;
@@ -1585,7 +1572,7 @@ begin
   end;
   if ExplorerInfo.View=LV_THUMBS then
   begin
-   Synchronize(MakeFolderBitmap);
+   SynchronizeEx(MakeFolderBitmap);
    ficon.Free;
   end else
   begin
@@ -1637,7 +1624,7 @@ begin
   SetMax:=false;
   SetPos:=false;
   FInfoText:=StatusText;
-  Synchronize(SetInfoToStatusBar);
+  SynchronizeEx(SetInfoToStatusBar);
 end;
 
 procedure TExplorerThread.ShowInfo(Max, Value: Integer);
@@ -1647,7 +1634,7 @@ begin
   SetPos:=True;
   FInfoMax := Max;
   FInfoPosition := Value;
-  Synchronize(SetInfoToStatusBar);
+  SynchronizeEx(SetInfoToStatusBar);
 end;
 
 procedure TExplorerThread.ShowInfo(StatusText: String; Max,
@@ -1659,7 +1646,7 @@ begin
   FInfoText:=StatusText;
   FInfoMax := Max;
   FInfoPosition := Value;
-  Synchronize(SetInfoToStatusBar);
+  SynchronizeEx(SetInfoToStatusBar);
 end;
 
 procedure TExplorerThread.ShowInfo(Pos: Integer);
@@ -1668,7 +1655,7 @@ begin
   SetMax:=False;
   SetPos:=True;
   FInfoPosition := Pos;
-  Synchronize(SetInfoToStatusBar);
+  SynchronizeEx(SetInfoToStatusBar);
 end;
 
 procedure TExplorerThread.SetInfoToStatusBar;
@@ -1676,18 +1663,18 @@ begin
   if not Terminated then
   begin
     if SetText then
-      FSender.SetStatusText(FInfoText,FCID);
+      FSender.SetStatusText(FInfoText);
     if Setmax then
-      FSender.SetProgressMax(FInfoMax,FCID);
+      FSender.SetProgressMax(FInfoMax);
     if SetPos Then
-      FSender.SetProgressPosition(FInfoPosition,FCID);
+      FSender.SetProgressPosition(FInfoPosition);
   end;
 end;
 
 procedure TExplorerThread.HideProgress;
 begin
   ProgressVisible:=False;
-  Synchronize(SetProgressVisible);
+  SynchronizeEx(SetProgressVisible);
 end;
 
 procedure TExplorerThread.SetProgressVisible;
@@ -1695,16 +1682,16 @@ begin
   if not Terminated then
   begin
    If ProgressVisible then
-     FSender.ShowProgress(FCID)
+     FSender.ShowProgress
    else
-     FSender.HideProgress(FCID);
+     FSender.HideProgress;
  end;
 end;
 
 procedure TExplorerThread.ShowProgress;
 begin
   ProgressVisible:=True;
-  Synchronize(SetProgressVisible);
+  SynchronizeEx(SetProgressVisible);
 end;
 
 procedure TExplorerThread.LoadMyComputerFolder;
@@ -1714,7 +1701,7 @@ Var
   oldMode: Cardinal;
 begin
  HideProgress;
- Synchronize(BeginUpdate);
+ SynchronizeEx(BeginUpdate);
  ShowInfo(TEXT_MES_READING_MY_COMPUTER,1,0);
  FFiles:=SetNilExplorerFileInfo;
  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
@@ -1724,7 +1711,7 @@ begin
   AddOneExplorerFileInfo(FFiles,Chr(i)+':\', EXPLORER_ITEM_DRIVE, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
  end;
  AddOneExplorerFileInfo(FFiles,TEXT_MES_NETWORK, EXPLORER_ITEM_NETWORK, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
- Synchronize(InfoToExplorerForm);
+ SynchronizeEx(InfoToExplorerForm);
  For i:=0 to Length(FFiles)-1 do
  begin
   if FFiles[i].FileType=EXPLORER_ITEM_DRIVE then
@@ -1754,7 +1741,7 @@ begin
   end;
  end;
  SetErrorMode(oldMode);
- Synchronize(EndUpdate);
+ SynchronizeEx(EndUpdate);
  ShowInfo('',1,0);
 end;
 
@@ -1788,14 +1775,14 @@ var
   i : integer;
 begin
  HideProgress;
- Synchronize(BeginUpdate);
+ SynchronizeEx(BeginUpdate);
  ShowInfo(TEXT_MES_READING_NETWORK,1,0);
  FFiles:=SetNilExplorerFileInfo;
  NetworkList:=TStringList.Create;
  FillNetLevel(nil,NetWorkList);
  For i:=0 to NetworkList.Count-1 do
  AddOneExplorerFileInfo(FFiles,NetworkList[i], EXPLORER_ITEM_WORKGROUP, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
- Synchronize(InfoToExplorerForm);
+ SynchronizeEx(InfoToExplorerForm);
  NetworkList.Free;
  For i:=0 to Length(FFiles)-1 do
  begin
@@ -1812,7 +1799,7 @@ begin
   IconParam.Free;
 
  end;
- Synchronize(EndUpdate);
+ SynchronizeEx(EndUpdate);
  ShowInfo('',1,0);
 end;
 
@@ -1821,10 +1808,10 @@ begin
  if ExplorerInfo.View=LV_THUMBS then
  begin
   MakeTempBitmapSmall;
-  Synchronize(DrawImageIconSmall);
+  SynchronizeEx(DrawImageIconSmall);
  end;
- Synchronize(AddImageFileImageToExplorer);
- Synchronize(AddImageFileItemToExplorer);
+ SynchronizeEx(AddImageFileImageToExplorer);
+ SynchronizeEx(AddImageFileItemToExplorer);
 end;
 
 procedure TExplorerThread.LoadWorkgroupFolder;
@@ -1833,24 +1820,24 @@ var
   i : integer;
 begin
  HideProgress;
- Synchronize(BeginUpdate);
+ SynchronizeEx(BeginUpdate);
  ShowInfo(TEXT_MES_READING_WORKGROUP,1,0);
  FFiles:=SetNilExplorerFileInfo;
  ComputerList:=TStringList.Create;
  if (FindAllComputers(FFolder,ComputerList)<>0) and (ComputerList.Count=0) then
  begin
   StrParam:=TEXT_MES_ERROR_OPENING_WORKGROUP;
-  Synchronize(ShowMessage_);
+  SynchronizeEx(ShowMessage_);
   ComputerList.Free;
-  Synchronize(EndUpdate);
+  SynchronizeEx(EndUpdate);
   ShowInfo('',1,0);
-  Synchronize(ExplorerBack);
-  Synchronize(UnRegisterThread);
+  SynchronizeEx(ExplorerBack);
+  SynchronizeEx(UnRegisterThread);
   Exit;
  end;
  For i:=0 to ComputerList.Count-1 do
  AddOneExplorerFileInfo(FFiles,ComputerList[i], EXPLORER_ITEM_COMPUTER, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
- Synchronize(InfoToExplorerForm);
+ SynchronizeEx(InfoToExplorerForm);
  ComputerList.Free;
  For i:=0 to Length(FFiles)-1 do
  begin
@@ -1867,7 +1854,7 @@ begin
   IconParam.Free;
   
  end;
- Synchronize(EndUpdate);
+ SynchronizeEx(EndUpdate);
  ShowInfo('',1,0);
 end;
 
@@ -1877,7 +1864,7 @@ var
   i, Res : integer;
 begin
  HideProgress;
- Synchronize(BeginUpdate);
+ SynchronizeEx(BeginUpdate);
  ShowInfo(TEXT_MES_READING_COMPUTER,1,0);
  FFiles:=SetNilExplorerFileInfo;
  ShareList:=TStringList.Create;
@@ -1885,17 +1872,17 @@ begin
  if (Res<>0) and (ShareList.Count=0) then
  begin
   StrParam:=TEXT_MES_ERROR_OPENING_COMPUTER;
-  Synchronize(ShowMessage_);
+  SynchronizeEx(ShowMessage_);
   ShareList.Free;
-  Synchronize(EndUpdate);
+  SynchronizeEx(EndUpdate);
   ShowInfo('',1,0);
-  Synchronize(ExplorerBack);
-  Synchronize(UnRegisterThread);
+  SynchronizeEx(ExplorerBack);
+  SynchronizeEx(UnRegisterThread);
   Exit;
  end;
  For i:=0 to ShareList.Count-1 do
  AddOneExplorerFileInfo(FFiles,ShareList[i], EXPLORER_ITEM_SHARE, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
- Synchronize(InfoToExplorerForm);
+ SynchronizeEx(InfoToExplorerForm);
  ShareList.Free;
  For i:=0 to Length(FFiles)-1 do
  begin
@@ -1913,22 +1900,18 @@ begin
   IconParam.Free;
 
  end;
- Synchronize(EndUpdate);
+ SynchronizeEx(EndUpdate);
  ShowInfo('',1,0);
 end;
 
 procedure TExplorerThread.ShowMessage_;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-      MessageBoxDB(FSender.Handle, StrParam, TEXT_MES_ERROR,TD_BUTTON_OK, TD_ICON_ERROR);
+  MessageBoxDB(FSender.Handle, StrParam, TEXT_MES_ERROR,TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TExplorerThread.ExplorerBack;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-      FSender.DoBack;
+  FSender.DoBack;
 end;
 
 procedure TExplorerThread.UpdateFile;
@@ -1974,16 +1957,16 @@ begin
  if ExplorerInfo.ShowThumbNailsForImages then
  ReplaceImageItemImage;
  if FUpdaterInfo.ID<>0 then
- Synchronize(ChangeIDImage);
+ SynchronizeEx(ChangeIDImage);
  IntParam:=FUpdaterInfo.ID;
- Synchronize(EndUpdateID);
+ SynchronizeEx(EndUpdateID);
  FreeDS(FQuery);
 
  DoLoadBigImages;
  
  if Info.ItemId<>0 then
  if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
- Synchronize(DoUpdaterHelpProc);
+ SynchronizeEx(DoUpdaterHelpProc);
 end;
 
 procedure TExplorerThread.FindPassword;
@@ -2004,15 +1987,11 @@ end;
 
 procedure TExplorerThread.ReplaceImageInExplorerB;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-    begin
-      if ExplorerInfo.View=LV_THUMBS then
-      begin
-        FSender.ReplaceBitmap(TempBitmap,GUIDParam,true,BooleanParam)
-      end else
-        FSender.ReplaceIcon(fIcon,GUIDParam,true);
-    end;
+  if ExplorerInfo.View=LV_THUMBS then
+  begin
+    FSender.ReplaceBitmap(TempBitmap,GUIDParam,true,BooleanParam)
+  end else
+    FSender.ReplaceIcon(fIcon,GUIDParam,true);
 end;
 
 procedure TExplorerThread.MakeIconForFile;
@@ -2029,18 +2008,18 @@ begin
  begin
   IconParam:=ficon;
   try
-  Synchronize(DrawImageIconSmall);
+  SynchronizeEx(DrawImageIconSmall);
   except
   end;
   ficon.free;
  end;
- Synchronize(ReplaceImageInExplorerB);
+ SynchronizeEx(ReplaceImageInExplorerB);
 end;
 
 procedure TExplorerThread.UpdateSimpleFile;
 begin
  StringParam:=Fmask;
- Synchronize(FileNeeded);
+ SynchronizeEx(FileNeeded);
  If BooleanResult then
  begin
   CurrentFile:=FFolder;
@@ -2087,9 +2066,7 @@ end;
 
 procedure TExplorerThread.GetVisibleFiles;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-      FVisibleFiles := FSender.GetVisibleItems;
+  FVisibleFiles := FSender.GetVisibleItems;
 end;
 
 procedure TExplorerThread.VisibleUp(TopIndex: integer);
@@ -2136,7 +2113,7 @@ begin
 
   try
     if LoadingAllBigImages then
-      Synchronize(GetAllFiles);
+      SynchronizeEx(GetAllFiles);
                 
     ShowInfo(TEXT_MES_LOADING_BIG_IMAGES);
     ShowInfo(Length(FFiles),0);
@@ -2150,7 +2127,7 @@ begin
 
     if i mod 5=0 then
     begin
-     Synchronize(GetVisibleFiles);
+     SynchronizeEx(GetVisibleFiles);
      VisibleUp(i);
      Sleep(5);
     end;
@@ -2161,12 +2138,12 @@ begin
 
     if FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
     begin
-     Synchronize(FileNeededAW);
+     SynchronizeEx(FileNeededAW);
   
      //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
      if not LoadingAllBigImages then BooleanResult:=true;
 
-     if InvalidThread then break;
+     if Terminated then break;
      if not FileExists(ProcessPath(FFiles[i].FileName)) then continue;
      if BooleanResult then
      begin
@@ -2239,7 +2216,7 @@ begin
       end;
 
       BooleanParam:=LoadingAllBigImages;
-      Synchronize(ReplaceImageInExplorerB);
+      SynchronizeEx(ReplaceImageInExplorerB);
 
      //TempBitmap.Free;
      end;
@@ -2250,13 +2227,13 @@ begin
     //directories
     if FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
     begin
-     Synchronize(FileNeededAW);
+     SynchronizeEx(FileNeededAW);
      CurrentFile:=FFiles[i].FileName;
 
      //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
      if not LoadingAllBigImages then BooleanResult:=true;
 
-     if InvalidThread then break;
+     if Terminated then break;
 
      if BooleanResult then
      if ExplorerInfo.ShowThumbNailsForFolders then
@@ -2266,7 +2243,7 @@ begin
      end;
     end;
     end;
-    Synchronize(DoStopSearch);
+    SynchronizeEx(DoStopSearch);
     HideProgress;
     ShowInfo('');
   finally
@@ -2292,28 +2269,17 @@ end;
 
 procedure TExplorerThread.ExplorerHasIconForExt;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-      BooleanParam:=FSender.ExitstExtInIcons(GetExt(CurrentFile));
+  BooleanParam:=FSender.ExitstExtInIcons(GetExt(CurrentFile));
 end;
 
 procedure TExplorerThread.SetIconForFileByExt;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-      FSender.AddIconByExt(GetExt(CurrentFile),IconParam);
-end;
-
-procedure TExplorerThread.DoVerifyExplorer;
-begin
-  BooleanResult:=not Terminated and IsEqualGUID(FSender.CurrentGUID, FCID);
+  FSender.AddIconByExt(GetExt(CurrentFile),IconParam);
 end;
 
 procedure TExplorerThread.DoStopSearch;
 begin
-  if not Terminated then
-    if IsEqualGUID(FSender.CurrentGUID, FCID) then
-      FSender.DoStopLoading(FCID);
+  FSender.DoStopLoading;
 end;
 
 { TAIcons }

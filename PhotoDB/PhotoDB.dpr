@@ -1,8 +1,5 @@
 program PhotoDB;
 
-//{ % File 'Units\dx\STRINGSWITCH.INC' }
-//{ % File 'Units\dx\COMSWITCH.INC' }
-
 {$DEFINE DEBUG}
 
 uses
@@ -265,7 +262,8 @@ uses
   WindowsIconCacheTools in 'Units\WindowsIconCacheTools.pas',
   VRSIShortCuts in 'Units\VRSIShortCuts.pas',
   UnitCDMappingSupport in 'Units\UnitCDMappingSupport.pas',
-  uThreadForm in 'Units\uThreadForm.pas';
+  uThreadForm in 'Units\uThreadForm.pas',
+  uThreadEx in 'Threads\uThreadEx.pas';
 
 {$R *.res}
 
