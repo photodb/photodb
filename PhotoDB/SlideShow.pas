@@ -11,7 +11,7 @@ uses
   ShellContextMenu, DropSource, DropTarget, DDraw, GIFImage, GraphicEx,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
-  UnitCDMappingSupport;
+  UnitCDMappingSupport, uThreadForm;
 
 type
   TRotatingImageInfo = record
@@ -21,7 +21,7 @@ type
   end;
 
 type
-  TViewer = class(TForm)
+  TViewer = class(TThreadForm)
     PopupMenu1: TPopupMenu;
     Next1: TMenuItem;
     Previous1: TMenuItem;
@@ -232,7 +232,6 @@ type
   protected
     procedure CreateParams(VAR Params: TCreateParams); override;
   public        
-    SID : TGUID;
     WaitingList : boolean;
     fCurrentPage : integer;
     fPageCount : integer;
@@ -514,7 +513,7 @@ begin
      TimerDBWork.Enabled:=true;
      ToolButton12.Enabled:=false;
      ToolButton13.Enabled:=false;
-     UnitSlideShowUpdateInfoThread.TSlideShowUpdateInfoThread.Create(false,CurrentInfo.ItemFileNames[CurrentFileNumber]);
+     TSlideShowUpdateInfoThread.Create(Self, StateID, CurrentInfo.ItemFileNames[CurrentFileNumber]);
      Rotate:=0;
     end;
    end;
@@ -1528,19 +1527,19 @@ procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName : String);
 var
   Info: TRecordsInfo;
 begin
- SID:=Dolphin_DB.GetGUID;  
- WaitingList:=true;
- TSlideShowScanDirectoryThread.Create(false, self, SID, FileName);
- Info:=RecordsInfoOne(FileName,0,0,0,0,'','','','','',0,False,False,0,ValidCryptGraphicFile(FileName),false,false,'');
- ExecuteW(Self,Info,'');
- Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
+  NewFormState;
+  WaitingList:=true;
+  TSlideShowScanDirectoryThread.Create(Self, StateID, FileName);
+  Info:=RecordsInfoOne(FileName,0,0,0,0,'','','','','',0,False,False,0,ValidCryptGraphicFile(FileName),false,false,'');
+  ExecuteW(Self,Info,'');
+  Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
 end;
                                                                          
 function TViewer.Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
 begin
- SID:=Dolphin_DB.GetGUID;
- WaitingList:=false;
- Result:=ExecuteW(Sender,Info,'');
+  NewFormState;
+  WaitingList:=false;
+  Result:=ExecuteW(Sender, Info, '');
 end;
 
 function TViewer.ExecuteW(Sender: TObject; Info: TRecordsInfo; LoadBaseFile : String) : boolean;

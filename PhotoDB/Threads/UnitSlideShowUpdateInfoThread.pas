@@ -3,10 +3,10 @@ unit UnitSlideShowUpdateInfoThread;
 interface
 
 uses
-  Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB;
+  Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB, uThreadForm, uThreadEx;
 
 type
-  TSlideShowUpdateInfoThread = class(TThread)
+  TSlideShowUpdateInfoThread = class(TThreadEx)
   private
    FFileName : string;
    DS : TDataSet;
@@ -16,8 +16,7 @@ type
     procedure DoUpdateWithSlideShow;
     procedure DoSetNotDBRecord;
   public
-    constructor Create(CreateSuspennded: Boolean; FileName : string);
-    destructor Destroy; override;
+    constructor Create(AOwner : TThreadForm; AState : TGUID; FileName : string);
   end;
 
 implementation
@@ -26,33 +25,21 @@ uses SlideShow;
 
 { TSlideShowUpdateInfoThread }
 
-constructor TSlideShowUpdateInfoThread.Create(CreateSuspennded: Boolean;
-  FileName: string);
+constructor TSlideShowUpdateInfoThread.Create(AOwner : TThreadForm; AState : TGUID; FileName : string);
 begin
- inherited Create(true);
- fFileName:=FileName;
- if not CreateSuspennded then Resume;
-end;
-
-destructor TSlideShowUpdateInfoThread.Destroy;
-begin
- inherited;
+  inherited Create(AOwner, AState);
+  FFileName := FileName;
+  Start;
 end;
 
 procedure TSlideShowUpdateInfoThread.DoSetNotDBRecord;
 begin
- if Viewer<>nil then
- begin
   Viewer.DoSetNoDBRecord(fFileName);
- end;
 end;
 
 procedure TSlideShowUpdateInfoThread.DoUpdateWithSlideShow;
 begin
- if Viewer<>nil then
- begin
   Viewer.DoUpdateRecordWithDataSet(fFileName, DS);
- end;
 end;
 
 procedure TSlideShowUpdateInfoThread.Execute;
@@ -65,15 +52,15 @@ begin
   DS.Active:=true;
  except      
   FreeDS(DS);
-  Synchronize(DoSetNotDBRecord);
+  SynchronizeEx(DoSetNotDBRecord);
   exit;
  end;
  if DS.RecordCount=0 then
  begin           
-  Synchronize(DoSetNotDBRecord);
+  SynchronizeEx(DoSetNotDBRecord);
  end else
  begin
-  Synchronize(DoUpdateWithSlideShow);
+  SynchronizeEx(DoUpdateWithSlideShow);
  end;
  FreeDS(DS);
 end;

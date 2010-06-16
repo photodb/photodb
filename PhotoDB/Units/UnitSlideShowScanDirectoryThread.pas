@@ -3,10 +3,10 @@ unit UnitSlideShowScanDirectoryThread;
 interface
 
 uses
-  Classes, Forms, Dolphin_DB;
+  Classes, Forms, Dolphin_DB, uThreadForm, uThreadEx;
 
 type
-  TSlideShowScanDirectoryThread = class(TThread)
+  TSlideShowScanDirectoryThread = class(TThreadEx)
   private
    FSender : TForm;
    BaseFileName : string;
@@ -16,7 +16,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID; aBaseFileName : string);
+    constructor Create(Sender : TThreadForm; SID : TGUID; aBaseFileName : string);
     procedure SynchNotify;
   end;
 
@@ -24,33 +24,29 @@ implementation
 
 uses SlideShow, SysUtils;
 
-constructor TSlideShowScanDirectoryThread.Create(CreateSuspennded: Boolean;
-  Sender: TForm; SID : TGUID; aBaseFileName: string);
+constructor TSlideShowScanDirectoryThread.Create(
+  Sender: TThreadForm; SID : TGUID; aBaseFileName: string);
 begin         
- inherited create(true);
- fSID := SID;
- fSender:=Sender;
- BaseFileName:=aBaseFileName;  
- if not CreateSuspennded then Resume;
+  inherited Create(Sender, SID);
+  fSID := SID;
+  fSender:=Sender;
+  BaseFileName:=aBaseFileName;
+  Start;
 end;
 
 procedure TSlideShowScanDirectoryThread.Execute;
 var
   n : integer;
 begin
- FreeOnTerminate:=true;
- GetFileListByMask(BaseFileName, SupportedExt,Info, n, true);
- Synchronize(SynchNotify);
+  FreeOnTerminate:=true;
+  GetFileListByMask(BaseFileName, SupportedExt,Info, n, true);
+  SynchronizeEx(SynchNotify);
 end;
 
 procedure TSlideShowScanDirectoryThread.SynchNotify;
 begin
- if Viewer<>nil then
- if IsEqualGUID(Viewer.SID, fSID) then
- begin
   Viewer.WaitingList:=false;
   Viewer.ExecuteW(self, Info, BaseFileName);
- end;
 end;
 
 end.
