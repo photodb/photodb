@@ -11,7 +11,7 @@ uses
   ScrollingImage, printers, ScrollingImageAddons, ImgList, Math, UnitPrinterTypes,
   WebLink, SaveWindowPos, ExtDlgs, Language, UnitDBFileDialogs,
   {$IFDEF PHOTODB}
-    Dolphin_DB, GraphicCrypt, uVistaFuncs, UnitCDMappingSupport,
+    Dolphin_DB, GraphicCrypt, uVistaFuncs, UnitCDMappingSupport, uConstants,
   {$ENDIF}
    Menus ;
 

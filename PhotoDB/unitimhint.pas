@@ -429,7 +429,7 @@ begin
   RecordInfoOneToDBPopupMenuInfo(CurrentInfo,Info);
   Info.IsDateGroup:=True;
   Info.IsAttrExists:=false;
-  DBPopupMenu.Execute(self.image1.ClientToScreen(MousePos).x,self.image1.ClientToScreen(MousePos).y,Info);
+  TDBPopupMenu.Instance.Execute(self.image1.ClientToScreen(MousePos).x,self.image1.ClientToScreen(MousePos).y,Info);
   Self.HideShadow;
   if not closed then Timer2.Enabled:=true;
   drag_:=false;

@@ -2,7 +2,7 @@ unit wfsU;
 
 interface
 
-uses  Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes;
+uses  Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, uLogger;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;

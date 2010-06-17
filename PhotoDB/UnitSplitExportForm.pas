@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, DropSource, DropTarget, Dolphin_DB,
    Language, acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc,
-  DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs;
+  DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger;
 
 type
   TSplitExportForm = class(TForm)
@@ -172,13 +172,7 @@ var
   OpenDialog : DBOpenDialog;
 begin      
  OpenDialog:=DBOpenDialog.Create;
- if BDEIsInstalled then
- begin
-  OpenDialog.Filter:='PhotoDB files (*.photodb)|*.photodb|DataBase files (*.db)|*.db|All Files|*.*';
- end else
- begin
-  OpenDialog.Filter:='PhotoDB files (*.photodb)|*.photodb|*.db|All Files|*.*';
- end;
+ OpenDialog.Filter:='PhotoDB files (*.photodb)|*.photodb|All Files|*.*';
 
  if OpenDialog.Execute then
  if DBKernel.TestDB(OpenDialog.FileName) then
@@ -416,17 +410,9 @@ var
   SaveDialog : DBSaveDialog;
   FileName : string;
 begin
- SaveDialog:=DBSaveDialog.Create;
-
- if BDEIsInstalled then
- begin
-  SaveDialog.Filter:='PhotoDB files (*.photodb)|*.photodb|DataBase files (*.db)|*.db';
- end else
- begin
+  SaveDialog:=DBSaveDialog.Create;
   SaveDialog.Filter:='PhotoDB files (*.photodb)|*.photodb';
- end;
- SaveDialog.FilterIndex:=1;
-
+  SaveDialog.FilterIndex:=1;
 
  if SaveDialog.Execute then
  begin

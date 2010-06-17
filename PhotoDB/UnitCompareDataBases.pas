@@ -70,8 +70,6 @@ procedure TImportDataBaseForm.FormCreate(Sender: TObject);
 var
   Filter : String;
 begin
- if BDEIsInstalled then
- Filter:='PhotoDB files (*.photodb;*.mdb)|*.photodb;*.mdb|DataBase Files (*.db)|*.db' else
  Filter:='Access files (*.photodb;*.mdb)|*.photodb;*.mdb';
  OpenDialog1.Filter:=Filter;
  DBKernel.RegisterForm(ImportDataBaseForm);

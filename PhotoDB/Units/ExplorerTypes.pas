@@ -60,7 +60,7 @@ Type TExplorerPath = Record
 Type
   PStringA = ^String;
 
-  TExplorerFileInfo = Record
+  TExplorerFileInfo = record
    FileName : String;
    SID : TGUID;
    FileType :  Integer;
@@ -69,21 +69,21 @@ Type
    Access : Integer;
    Rating : Integer;
    FileSize : Integer;
-   Comment : String;
-   KeyWords : String;
+   Comment : string;
+   KeyWords : string;
    Date : TDateTime;
    Time : TDateTime;
    ImageIndex : Integer;
-   Owner : String;
-   Groups : String;
-   Collections : String;
+   Owner : string;
+   Groups : string;
+   Collections : string;
    IsDate : Boolean;
    IsTime : Boolean;
    Crypted : Boolean;
    Tag : Integer;
    Loaded : Boolean;
    Include : Boolean;
-   Links : String;
+   Links : string;
    isBigImage : Boolean;
   end;
 

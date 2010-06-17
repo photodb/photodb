@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Language, SysUtils, Dolphin_DB, Forms, CommonDBSupport,
-  UnitDBDeclare;
+  UnitDBDeclare, uConstants, uFileUtils;
 
 type
   BackUpTableInCMD = class(TThread)

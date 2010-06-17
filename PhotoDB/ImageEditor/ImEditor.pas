@@ -16,9 +16,9 @@ uses
 {$IFDEF PHOTODB}
   ,GraphicCrypt, Dolphin_DB, UnitPasswordForm, Searching, UnitJPEGOptions,
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
-  UnitCrypting, GraphicEx, GraphicsCool, UnitScripts, PngImage, TiffImageUnit,
+  UnitCrypting, GraphicEx, GraphicsCool, uScript, UnitScripts, PngImage, TiffImageUnit,
   RAWImage, DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
-  UnitDBCommonGraphics, UnitCDMappingSupport
+  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger
 {$ENDIF}
   ;
 
@@ -1312,14 +1312,14 @@ end;
 procedure TImageEditor.FormClose(Sender: TObject;
   var Action: TCloseAction);
 var
-  aFScript : PScript;
+  aFScript : TScript;
   c : integer;
 begin
  if FScript<>'' then
  if ScriptsManager.ScriptExists(FScript) then
  begin
   aFScript:=ScriptsManager.GetScriptByID(FScript);
-  ExecuteScript(nil,aFScript^,FScriptProc+'("'+FScript+'");',c,nil);
+  ExecuteScript(nil,aFScript,FScriptProc+'("'+FScript+'");',c,nil);
  end;
  try
   if ToolClass<>nil then ToolClass.ClosePanel;

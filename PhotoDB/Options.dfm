@@ -34,22 +34,13 @@ object OptionsForm: TOptionsForm
       Left = 4
       Top = 24
       Caption = 'General'
-      object CheckBox3: TCheckBox
-        Left = 232
-        Top = 80
-        Width = 153
-        Height = 17
-        Caption = 'Animate Show Hint Window'
-        TabOrder = 0
-        Visible = False
-      end
       object CheckBox4: TCheckBox
         Left = 232
         Top = 8
         Width = 161
         Height = 17
         Caption = 'Show Preview'
-        TabOrder = 1
+        TabOrder = 0
       end
       object RadioGroup1: TRadioGroup
         Left = 232
@@ -61,16 +52,7 @@ object OptionsForm: TOptionsForm
         Items.Strings = (
           'Animated Show'
           'Show Shadow')
-        TabOrder = 2
-      end
-      object Button6: TButton
-        Left = 232
-        Top = 80
-        Width = 161
-        Height = 17
-        Caption = 'Users'
-        TabOrder = 3
-        OnClick = Button6Click
+        TabOrder = 1
       end
       object Panel1: TPanel
         Left = 8
@@ -79,7 +61,7 @@ object OptionsForm: TOptionsForm
         Height = 401
         BevelInner = bvRaised
         BevelOuter = bvLowered
-        TabOrder = 4
+        TabOrder = 2
         object Shape6: TShape
           Left = 8
           Top = 173
@@ -288,7 +270,7 @@ object OptionsForm: TOptionsForm
         Width = 70
         Height = 17
         Caption = ' Color Theme '
-        TabOrder = 5
+        TabOrder = 3
       end
       object ListBox1: TListBox
         Left = 232
@@ -296,7 +278,7 @@ object OptionsForm: TOptionsForm
         Width = 161
         Height = 225
         ItemHeight = 13
-        TabOrder = 6
+        TabOrder = 4
         OnDblClick = ListBox1DblClick
       end
       object Button1: TButton
@@ -305,7 +287,7 @@ object OptionsForm: TOptionsForm
         Width = 169
         Height = 25
         Caption = 'Load Theme'
-        TabOrder = 7
+        TabOrder = 5
         OnClick = Button1Click
       end
       object Label10: TStaticText
@@ -314,7 +296,7 @@ object OptionsForm: TOptionsForm
         Width = 91
         Height = 17
         Caption = 'Avaliable Themes:'
-        TabOrder = 8
+        TabOrder = 6
       end
       object CheckBox36: TCheckBox
         Left = 232
@@ -322,7 +304,7 @@ object OptionsForm: TOptionsForm
         Width = 161
         Height = 17
         Caption = 'Use Windows Theme'
-        TabOrder = 9
+        TabOrder = 7
         OnClick = CheckBox36Click
       end
     end
@@ -1665,7 +1647,7 @@ object OptionsForm: TOptionsForm
   end
   object PopupMenu3: TPopupMenu
     Left = 324
-    Top = 144
+    Top = 168
     object Additem1: TMenuItem
       Caption = 'Add item'
       OnClick = Button24Click
@@ -1695,7 +1677,7 @@ object OptionsForm: TOptionsForm
   end
   object PlacesImageList: TImageList
     Left = 292
-    Top = 144
+    Top = 168
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = True

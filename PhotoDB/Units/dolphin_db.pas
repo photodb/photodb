@@ -2,9 +2,6 @@ unit dolphin_db;
 
 interface
 
-//{$DEFINE ENGL}
-{$DEFINE RUS}
-
 uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
       Dialogs, DB, DBTables, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
@@ -12,8 +9,8 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       SaveWindowPos, ExtDlgs, ToolWin, DbiProcs, DbiErrs, Exif, UnitDBDeclare,
       DbiTypes, acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
-      ACLApi, AccCtrl, uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes,
-      UnitDBFileDialogs, RAWImage, UnitDBCommon;
+      uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger,
+      UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants;
 
 Const
     DBInDebug = true;
@@ -47,14 +44,11 @@ const
  abs_englDown : set of char = ['a'..'z'];
  abs_rusDown : set of char = ['à'..'ÿ'];
 
-  SHELL_FOLDERS_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\Explorer'; 
-  QUICK_LAUNCH_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\GrpConv'; 
-     
+  SHELL_FOLDERS_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\Explorer';
+  QUICK_LAUNCH_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\GrpConv';
 
  cifri : set of char = ['0'..'9'];
- pwd_all=pwd_rusup+pwd_rusdown+pwd_engldown+pwd_englup+pwd_cifr+pwd_spec;
- pwd_norm=pwd_engldown+pwd_englup+pwd_cifr;
- delphi_temp='|scr|exe|dcu|~pas|~dfm|~dpr|cfg|dof|';
+
  unusedchar : set of char = ['''','/','|','\','<','>','"','?','*',':'];
  unusedchar_folders : set of char = ['''','/','|','<','>','"','?','*',':'];
  abs_alldb=['0'..'9','à'..'ÿ','À'..'ß','¸','¨','a'..'z','A'..'Z','/','|','\','<','>','''','?','*',':'];
@@ -489,50 +483,12 @@ var
         ThImageSize : integer = 150;
         ThHintSize : integer = 300;
 
-const
-        //envoirements
-        TempFolder = '\Temp\';
-        HKEY_INSTALL = Windows.HKEY_LOCAL_MACHINE;
-        HKEY_USER_WORK = Windows.HKEY_CURRENT_USER;
-        PlugInImagesFolder = 'PlugInsEx\';
-        OldPlugInImagesFolder = 'PlugIns\';
-        ThemesDirectory = 'Themes\';
-        BackUpFolder : String = '\DBBackUp\';
-        ScriptsFolder : String = 'Scripts\';
-        ActionsFolder : String = 'Actions\';  
-        ImagesFolder : String = 'Images\';
-        DBRestoreFolder : String = '\DB\';
-        PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase\Data';
-        RegRoot : string = 'Software\Photo DataBase\';
-        TempFolderMask = '|NDX|MB|DB|NET|';
-
-        //Information
-        MyComputer = TEXT_MES_MY_COMPUTER;
-        ProductName = 'Photo DataBase 2.2';
-        StartMenuProgramsPath = 'Photo DB v2.2';
-        ProductVersion = '2.2';
-        ProgramShortCutFile = ProductName+'.lnk';
-        HelpShortCutFile = TEXT_MES_HELP+'.lnk';
-        WindowsMenuTime = 1000;
-        ProgramMail = 'illusdolphin@gmail.com';
-        CopyRightString = 'Studio "Illusion Dolphin" © 2002-2008';
-        {$IFDEF RUS}
-        UpdateFileName = '/rus_update.txt';
-        AlternativeUpdateURL = 'http://www.illusdolphin.narod.ru/photodb/rus_update.txt';
-        HomeURL = 'http://www.illusdolphin.narod.ru/photodb';
-        {$ENDIF}
-        {$IFDEF ENGL}
-        UpdateFileName = '/engl_update.txt';
-        HomeURL = 'http://www.illusdolphin.narod.ru/photodb';
-        {$ENDIF}
-
 resourcestring
     SNotSupported = 'This function is not supported by your version of Windows';
 
 
 var 
     DBName : string;
-    BDEIsInstalled : boolean = false;
     ProgramDir : string;
     Theme_ListSelectColor, Theme_MainColor, Theme_MainFontColor, Theme_ListColor,
     Theme_ListFontColor, Theme_MemoEditColor, Theme_MemoEditFontColor, Theme_LabelFontColor,
@@ -652,10 +608,7 @@ procedure DoEndInstall;
 Function IsInstalling : boolean;
 Function InstalledDirectory : string;
 Function InstalledFileName : string;
-function BDEInstalled: Boolean;
-//function BDEVerifySQL(Folder : String) : boolean;
 Function FileRegisteredOnInstalledApplication(Value : String) : Boolean;
-procedure GetValidDBFilesInFolder(dir : String; init : Boolean; Res: TStrings);
 procedure GetValidMDBFilesInFolder(dir : String; init : Boolean; Res: TStrings);
 function GetDefaultDBName : String;
 
@@ -666,7 +619,6 @@ function ExtractAssociatedIcon_W(FileName :String; IconIndex : Word) :HICON;
 
 procedure DoHomeContactWithAuthor;
 Procedure DoHomePage;
-procedure TryBDEInstall;
 procedure UpdateImageRecord(FileName: String; ID : Integer);
 Procedure UpdateImageRecordEx(FileName: String; ID : Integer; OnDBKernelEvent : TOnDBKernelEventProcedure);
 procedure SetDesktopWallpaper(FileName : String; WOptions : Byte);
@@ -677,7 +629,6 @@ procedure RotateDBImage180(ID : integer; OldRotation : Integer);
 
 Procedure DBError(ErrorValue, Error : String);
 function GetSmallIconByPath(IconPath : String; Big : boolean = false) : TIcon;
-procedure EventLog(S : String);
 
 procedure UnFormatDir(var s:string);
 procedure FormatDir(var s:string);
@@ -753,9 +704,6 @@ Procedure GetPhotosNamesFromDrive(Dir, Mask: String; var Files : TStrings; var M
 function EXIFDateToDate(DateTime : String) : TDateTime;
 function EXIFDateToTime(DateTime : String) : TDateTime;
 function RemoveBlackColor(im : TBitmap) : TBitmap;
-
-function SetDirectoryWriteRights(lPath : String): Dword;
-function GetAppDataDirectory: string;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons,Icon: integer): integer; overload;
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: integer): integer; overload;
@@ -913,7 +861,7 @@ Begin
   Result := AnsiUpperCase(ExtractFileDrive (ShortName)) + Result;
 end;
 
-Function LongFileNameW(ShortName: String): String;
+function LongFileNameW(ShortName: String): String;
 Var
   SR: TSearchRec; 
 Begin
@@ -1130,26 +1078,6 @@ begin
  end;
 end;
 
-{function GetFileName(filename:string):string;
-var
-  i, n : integer;
-begin
- Result:='';
- If filename='' then exit;
- n:=0;
- for i:=length(filename)-1 downto 1 do
- If filename[i]='\' then
- begin
-  n:=i;
-  break;
- end;
- delete(filename,1,n);
- If filename<>'' then
- If filename[Length(filename)]='\' then
- Delete(filename,Length(filename),1);
- result:=filename;
-end;    }
-
 function GetFileNameWithoutExt(filename : string) : string;
 var
   i, n : integer;
@@ -1178,105 +1106,6 @@ begin
  Result:=FileName;
 end;
 
-procedure TryBDEInstall;
-var
-  h: Thandle;
-  RegServ: TDllRegisterServer;
-  FTempFolder, FTemp, FTmp : String;
-  FReg : TRegistry;
-  IsSetFolder : Boolean;
-  F : File;
-begin
-  if not BDEInstalled then
-  begin
-   if fileexists(ProgramDir+'BdeInst.dll') then
-   begin
-    h:=loadlibrary(Pchar(ProgramDir+'BdeInst.dll'));
-    if h=0 then halt;
-    @RegServ := GetProcAddress ( h, 'DllRegisterServer' );
-    FReg:=TRegistry.Create;
-    FReg.RootKey:=HKEY_INSTALL;
-    FReg.OpenKey('\Environment',true);
-    FTemp:=FReg.ReadString('TEMP');
-    FTmp:=FReg.ReadString('TMP');
-    FTempFolder:='C:\Temp';
-    IsSetFolder:=false;
-    Repeat
-     if Length(FTempFolder)<80 then
-     begin
-      If not DirectoryExists(FTempFolder) then
-      begin
-       try
-         CreateDir(FTempFolder);
-       except
-       end;
-      end;
-      AssignFile(F,FTempFolder+'\$TRY$WRITE$.$TEMP$.DB.V'+ProductVersion);
-      {$I-}
-      Rewrite(F);
-      {$I+}
-     end;
-     If (IOResult<>0) or (Length(FTempFolder)>80) then
-     begin
-      If ID_RETRY = MessageBoxDB(GetActiveFormHandle,TEXT_MES_SELECT_TEMP_DIR,TEXT_MES_WARNING,TD_RESULT_RETRY+TD_RESULT_CANCEL,TD_ICON_WARNING) then
-      begin
-       FTempFolder:=SelectDirPlus(Application.Handle,TEXT_MES_SELECT_TEMP_DIR_DIALOG);
-      end else Break;
-     end else
-     begin
-      Close(F);
-      IsSetFolder:=True;
-      Break;
-     end;
-    Until True;
-    try
-     If IsSetFolder then
-     begin
-      FReg.WriteString('TEMP',FTempFolder);
-      FReg.WriteString('TMP',FTempFolder);
-      RegServ;
-     end;
-    except
-    end;
-    FReg.WriteString('TEMP',FTemp);
-    FReg.WriteString('TMP',FTmp);
-    FReg.CloseKey;
-    Freg.Free;
-    FreeLibrary(h);
-   end;
-  end;
-end;
-
-procedure GetValidDBFilesInFolder(dir : String; init : Boolean; Res: TStrings);
-var
- Found  : integer;
- SearchRec : TSearchRec;
-begin
- if init then GetAnyValidDBFileInProgramFolderCounter:=0;
- FormatDir(dir);
- Found := FindFirst(dir+'*.DB', faAnyFile, SearchRec);
- while Found = 0 do
- begin
-  if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-  begin
-  If fileexists(dir+SearchRec.Name) then
-  begin
-   inc(GetAnyValidDBFileInProgramFolderCounter);
-   if GetAnyValidDBFileInProgramFolderCounter>1000 then break;
-   if DBKernel.TestDB(dir+SearchRec.Name) then
-   begin
-    Res.Add(dir+SearchRec.Name)
-   end;
-  end else If directoryexists(dir+SearchRec.Name) then
-  begin
-   GetValidDBFilesInFolder(dir+SearchRec.Name,false,Res);
-  end;
-   end;
-    Found := sysutils.FindNext(SearchRec);
-  end;
-  FindClose(SearchRec);
-end;
-
 procedure GetValidMDBFilesInFolder(dir : String; init : Boolean; Res: TStrings);
 var
  Found  : integer;
@@ -1299,17 +1128,12 @@ begin
    end;
   end else If directoryexists(dir+SearchRec.Name) then
   begin
-   GetValidDBFilesInFolder(dir+SearchRec.Name,false,Res);
+   GetValidMDBFilesInFolder(dir+SearchRec.Name,false,Res);
   end;
    end;
     Found := sysutils.FindNext(SearchRec);
   end;
   FindClose(SearchRec);
-end;
-
-function BDEInstalled: Boolean;
-begin
- Result := (dbiInit(nil) = 0)
 end;
 
 Function InstalledFileName : string;
@@ -5007,31 +4831,6 @@ begin
  end;
 end;
 
-procedure EventLog(S : String);
-var
-  file_ : string;
-  FFile : TextFile;
-begin
- if not LOGGING_ENABLED then exit;
- try
-  file_:= GetAppDataDirectory+'\EventLog.txt';
-  if LOGGING_MESSAGE then
-  MessageBox(0,PChar('Log ['+DateTimeToStr(Now)+'] = "'+S+'"'),'',0);
-  System.Assign(FFile,file_);
-  {$I-}
-  if FileExists(file_) then
-  System.Append(FFile) else
-  System.Rewrite(FFile);
-  {$I+}
-  If IOResult<>0 then exit;
-  if S<>'' then
-  Writeln(FFile,'Log ['+DateTimeToStr(Now)+'] = "'+S+'"') else
-  Writeln(FFile);
-  System.Close(FFile);
- except
- end;
-end;
-
 procedure StretchA(Width, Height : Integer; var S, D : TBitmap);
 var
   i,j:integer;
@@ -6663,163 +6462,6 @@ begin
  end;
 end;
 
-function SetDirectoryWriteRights(lPath : String): Dword;
-var
-  pDACL: PACL;
-  pEA: PEXPLICIT_ACCESS_A;
-  R: DWORD;
-begin
-  pEA := AllocMem(SizeOf(EXPLICIT_ACCESS));
-  BuildExplicitAccessWithName(pEA, 'EVERYONE', GENERIC_WRITE or
-GENERIC_READ, GRANT_ACCESS, SUB_OBJECTS_ONLY_INHERIT);
-  R := SetEntriesInAcl(1, pEA, nil, pDACL);
-  if R = ERROR_SUCCESS then
-  begin
-    if SetNamedSecurityInfo(PChar(lPath), SE_FILE_OBJECT,
-DACL_SECURITY_INFORMATION, nil, nil, pDACL, nil) <> ERROR_SUCCESS then
-      result := 2
-    else
-      result := 0;
-   LocalFree(Cardinal(pDACL));
- end
- else
-   result := 1;
-end;
-
-function GetSpecialFolder(hWindow: HWND; Folder: Integer): String;
-var
-  pMalloc: IMalloc;
-  pidl: PItemIDList;
-  Path: PChar;
-begin
-  // get IMalloc interface pointer
-  if (SHGetMalloc(pMalloc) <> S_OK) then
-  begin
-   MessageBox(hWindow, 'Couldn''t get pointer to IMalloc interface.','SHGetMalloc(pMalloc)', 16);
-   exit;
-  end;
-  // retrieve path
-  SHGetSpecialFolderLocation(hWindow, Folder, pidl);
-  GetMem(Path, MAX_PATH);
-  SHGetPathFromIDList(pidl, Path);
-  Result := Path;
-  FreeMem(Path);
-  // free memory allocated by SHGetSpecialFolderLocation
-  pMalloc.Free(pidl);
-end;
-
-function GetSpecialFolder2(FolderID : longint) : string;
-var
-  Path : pchar;
-  idList : PItemIDList;
-begin
-  GetMem(Path, MAX_PATH);
-  SHGetSpecialFolderLocation(0, FolderID, idList);
-  SHGetPathFromIDList(idList, Path);
-  Result := string(Path);
-  FreeMem(Path);
-end;
-
-function GetDrives: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_Drives));
-end;
-
-function GetMyMusic: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(13));
-end;
-
-function GetTmpInternetDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_INTERNET_CACHE));
-end;
-
-function GetCookiesDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_COOKIES));
-end;
-
-function GetHistoryDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_HISTORY));
-end;
-
-function GetDesktop: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_DESKTOP));
-end;
-
-function GetDesktopDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_DESKTOPDIRECTORY));
-end;
-
-function GetProgDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_PROGRAMS));
-end;
-
-function GetMyDocDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_PERSONAL));
-end;
-
-function GetFavDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_FAVORITES));
-end;
-
-function GetStartUpDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_STARTUP));
-end;
-
-function GetRecentDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_RECENT));
-end;
-
-function GetSendToDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_SENDTO));
-end;
-
-function GetStartMenuDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_STARTMENU));
-end;
-
-function GetNetHoodDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_NETHOOD));
-end;
-
-function GetFontsDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_FONTS));
-end;
-
-function GetTemplateDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_TEMPLATES));
-end;
-
-function GetAppDataDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_APPDATA));
-end;
-
-function GetPrintHoodDir: string;
-begin
-  Result := IncludeTrailingBackslash(GetSpecialFolder2(CSIDL_PRINTHOOD));
-end;
-
-function GetAppDataDirectory: string;
-begin
-  Result := GetAppDataDir+PHOTO_DB_APPDATA_DIRECTORY;
-  UnFormatDir(Result);
-end;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons,Icon: integer): integer; overload;
 begin

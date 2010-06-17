@@ -329,13 +329,9 @@ var
   SaveDialog : DBSaveDialog;
   FileName : string;
 begin        
- SaveDialog:=DBSaveDialog.Create;
-
- if BDEInstalled then
- SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb|BDE Files (*.db)|*.db' else
- SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
-
- SaveDialog.FilterIndex:=0;
+  SaveDialog:=DBSaveDialog.Create;
+  SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
+  SaveDialog.FilterIndex:=0;
  
  if SaveDialog.Execute then
  begin

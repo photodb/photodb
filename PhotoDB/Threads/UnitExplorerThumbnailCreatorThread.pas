@@ -4,7 +4,7 @@ interface
 
 uses GraphicCrypt, Windows, Graphics, Classes, Dolphin_DB, ExplorerUnit,
      SysUtils, Math, ComObj, ActiveX, ShlObj,CommCtrl,RAWImage,
-     Effects, UnitDBCommonGraphics, UnitCDMappingSupport;
+     Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger;
 
 type
   TExplorerThumbnailCreator = class(TThread)

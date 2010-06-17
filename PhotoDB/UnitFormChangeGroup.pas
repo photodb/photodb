@@ -6,7 +6,8 @@ uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, Math, UnitGroupsTools, uVistaFuncs,
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
-  ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon;
+  ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon,
+  uConstants;
 
 type
   TFormChangeGroup = class(TForm)

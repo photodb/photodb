@@ -2,7 +2,7 @@ unit UnitINI;
 
 interface
 
-uses Windows, Registry, IniFiles, Dolphin_DB, Classes, SysUtils;
+uses Windows, Registry, IniFiles, Dolphin_DB, Classes, SysUtils, uLogger, uConstants;
 
 type
   TMyRegistryINIFile = class(TIniFile)
@@ -80,7 +80,7 @@ end;
 
 function GetRegRootKey: string;
 begin
- Result:=RegRoot+DBKernel.DBUserName+'\';
+ Result:=RegRoot+'UserData\';
 end;
 
 function GetRegIniFileName : string;
@@ -167,7 +167,6 @@ begin
     end;
    end;
    TempStrings.Free;
-   //(Registry as TMyRegistryINIFile).ReadSection(Key,Strings);
   end;
  except
   on e : Exception do EventLog(':TBDRegistry::GetKeyNames() throw exception: '+e.Message);

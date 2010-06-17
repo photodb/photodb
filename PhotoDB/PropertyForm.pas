@@ -10,7 +10,7 @@ uses
   DropSource, SaveWindowPos, Grids, ValEdit, TabNotBk, GraphicCrypt, DateUtils,
   Exif, ProgressActionUnit, DmGradient, Clipbrd, WebLink, UnitLinksSupport,
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
-  DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI,
+  DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
   UnitCDMappingSupport;
 
@@ -1563,7 +1563,7 @@ begin
  Copy1.Visible:=True;
  DBItem1.Clear;
  FFilesInfo.IsAttrExists:=false;
- DBPopupMenu.AddDBContMenu(DBItem1,FFilesInfo);
+ TDBPopupMenu.Instance.AddDBContMenu(DBItem1,FFilesInfo);
 end;
 
 procedure TPropertiesForm.FormDestroy(Sender: TObject);
@@ -2592,7 +2592,7 @@ begin
   MenuInfo.IsDateGroup:=True;
   MenuInfo.IsAttrExists:=false;
   IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(ID)]);
-  DBPopupMenu.AddDBContMenu(IDMenu1,MenuInfo);
+  TDBPopupMenu.Instance.AddDBContMenu(IDMenu1,MenuInfo);
   DoExit;
   exit;
  end;
@@ -2608,7 +2608,7 @@ begin
   if Length(MenuInfo.ItemIDs_)<>0 then
   IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(MenuInfo.ItemIDs_[0])]) else
   IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(0)]);
-  DBPopupMenu.AddDBContMenu(IDMenu1,MenuInfo);
+  TDBPopupMenu.Instance.AddDBContMenu(IDMenu1,MenuInfo);
   DoExit;
   exit;
  end;

@@ -122,7 +122,7 @@ var
 begin
  if AboutForm<>nil then AboutForm.WaitEnabled:=false;
  FFileName:=FileName;
- RadioButton1.Enabled:=BDEInstalled;
+ RadioButton1.Enabled:=False;// TODO: !!! BDEInstalled;
  Edit2.Text:=FFileName;
  ImageOptions:=CommonDBSupport.GetImageSettingsFromTable(FFileName);
  DBVer:=DBKernel.TestDBEx(FFileName);

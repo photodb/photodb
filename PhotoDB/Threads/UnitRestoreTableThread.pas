@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, DBTables, Dolphin_DB, Forms, UnitGroupsWork, SysUtils,
-  Language, CommonDBSupport, UnitDBDeclare;
+  Language, CommonDBSupport, UnitDBDeclare, uFileUtils, uConstants;
 
 type
   ThreadRestoreTable = class(TThread)

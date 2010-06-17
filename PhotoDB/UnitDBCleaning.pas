@@ -4,7 +4,7 @@ interface
 
 uses
   Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, SaveWindowPos;
+  Dialogs, StdCtrls, DmProgress, SaveWindowPos, uConstants;
 
 type
   TDBCleaningForm = class(TForm)

@@ -5,9 +5,8 @@ interface
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      ReplaseLanguageInScript, Forms, Classes, SysUtils, Registry, GraphicCrypt,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
-     Math, UnitCDMappingSupport;
+     Math, uScript, UnitCDMappingSupport;
 
-Procedure LoadDBFunctions(var aScript : TScript);
 procedure DoActivation;
 procedure GetUpdates(ShowInfo : boolean);
 procedure DoAbout;
@@ -18,8 +17,8 @@ procedure DoOptions;
 function NewImageEditor : string;
 function NewExplorer : string;
 function NewExplorerByPath(Path : string) : string;
-procedure AddAccessVariables(var aScript : TScript);
-function InitializeScriptString(Script : string) : string;
+function InitializeScriptString(Script : string) : string;    
+procedure InitEnviroment(Enviroment : TScriptEnviroment);
 
 implementation
 
@@ -32,17 +31,6 @@ UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB, Language,
 UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
 UnitFormCDMapper, UnitFormCDExport;
 
-procedure AddAccessVariables(var aScript : TScript);
-begin
- SetIntAttr(aScript,'$LINK_TYPE_ID',0);
- SetIntAttr(aScript,'$LINK_TYPE_ID_EXT',1);
- SetIntAttr(aScript,'$LINK_TYPE_IMAGE',2);
- SetIntAttr(aScript,'$LINK_TYPE_FILE',3);
- SetIntAttr(aScript,'$LINK_TYPE_FOLDER',4);
- SetIntAttr(aScript,'$LINK_TYPE_TXT',5);
- SetNamedValueStr(aScript,'$InvalidQuery',#8);
-
-end;
 
 procedure DoActivation;
 begin
@@ -221,7 +209,7 @@ function GetLastPanel : string;
 begin
  if ManagerPanels.Count>0 then
  begin
-  Result:=GUIDToString(ManagerPanels.Panels[ManagerPanels.Count-1].WindowID);
+  Result:=GUIDToString(ManagerPanels[ManagerPanels.Count-1].WindowID);
   exit;
  end;
  With ManagerPanels.NewPanel do
@@ -512,7 +500,7 @@ begin
   begin
    if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
-    Result:=ManagerPanels.Panels[i];
+    Result:=ManagerPanels[i];
     break;
    end;
   end;
@@ -736,11 +724,6 @@ begin
  Result:=DBKernel.FindPasswordForCryptImageFile(FileName);
 end;
 
-function GetCurrentUser : string;
-begin
- Result:=DBkernel.DBUserName;
-end;
-
 procedure AddDBFile;
 var
   DBFile : TPhotoDBFile;
@@ -863,152 +846,154 @@ begin
  Result:=SupportedExt;
 end;
 
-Procedure LoadDBFunctions(var aScript : TScript);
+Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);
 begin
  //Crypt
 
- AddScriptFunction(aScript,'ValidCryptGraphicFile',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@GraphicCrypt.ValidCryptGraphicFile);
- AddScriptFunction(aScript,'ValidPassInCryptGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@GraphicCrypt.ValidPassInCryptGraphicFile);
- AddScriptFunction(aScript,'FindPasswordForCryptImageFile',F_TYPE_FUNCTION_IS_STRING,@FindPasswordForCryptImageFile);
- AddScriptFunction(aScript,'GetImagePasswordFromUser',F_TYPE_FUNCTION_IS_STRING,@GetImagePasswordFromUser);
- AddScriptFunction(aScript,'PromtUserCryptImageFile',F_TYPE_FUNCTION_IS_STRING,@PromtUserCryptImageFile);
- AddScriptFunction(aScript,'PromtUserCryptImageFile',F_TYPE_FUNCTION_IS_STRING,@PromtUserCryptImageFile);
- AddScriptFunction(aScript,'CryptGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@CryptGraphicFile);
- AddScriptFunction(aScript,'ResetPasswordInGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@GraphicCrypt.ResetPasswordInGraphicFile);
+ AddScriptFunction(Enviroment,'ValidCryptGraphicFile',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@GraphicCrypt.ValidCryptGraphicFile);
+ AddScriptFunction(Enviroment,'ValidPassInCryptGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@GraphicCrypt.ValidPassInCryptGraphicFile);
+ AddScriptFunction(Enviroment,'FindPasswordForCryptImageFile',F_TYPE_FUNCTION_IS_STRING,@FindPasswordForCryptImageFile);
+ AddScriptFunction(Enviroment,'GetImagePasswordFromUser',F_TYPE_FUNCTION_IS_STRING,@GetImagePasswordFromUser);
+ AddScriptFunction(Enviroment,'PromtUserCryptImageFile',F_TYPE_FUNCTION_IS_STRING,@PromtUserCryptImageFile);
+ AddScriptFunction(Enviroment,'CryptGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@CryptGraphicFile);
+ AddScriptFunction(Enviroment,'ResetPasswordInGraphicFile',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@GraphicCrypt.ResetPasswordInGraphicFile);
+
  // AddScriptFunction
 
+ AddScriptFunction(Enviroment,'StaticPath',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@StaticPath);
 
- AddScriptFunction(aScript,'StaticPath',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@StaticPath);
+ AddScriptFunction(Enviroment,'GetImagesMask',F_TYPE_FUNCTION_IS_STRING,@GetImagesMask);
+ AddScriptFunction(Enviroment,'SetFileNameByID',F_TYPE_PROCEDURE_INTEGER_STRING,@SetFileNameByID);
 
- AddScriptFunction(aScript,'GetImagesMask',F_TYPE_FUNCTION_IS_STRING,@GetImagesMask);
- AddScriptFunction(aScript,'SetFileNameByID',F_TYPE_PROCEDURE_INTEGER_STRING,@SetFileNameByID);
+ AddScriptFunction(Enviroment,'Compare2Images',F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER,@Compare2Images);
 
- AddScriptFunction(aScript,'Compare2Images',F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER,@Compare2Images);
+ AddScriptFunction(Enviroment,'PromtString',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@aPromtString);
 
- AddScriptFunction(aScript,'PromtString',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@aPromtString);
+ AddScriptFunction(Enviroment,'GetCurrentDB',F_TYPE_FUNCTION_IS_STRING,@GetCurrentDB);
+ AddScriptFunction(Enviroment,'GetProgramPath',F_TYPE_FUNCTION_IS_STRING,@GetProgramPath);
+ AddScriptFunction(Enviroment,'SelectDB',F_TYPE_PROCEDURE_STRING,@SelectDB);
+ AddScriptFunction(Enviroment,'TestDB',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@TestDB);
+ AddScriptFunction(Enviroment,'AddDBFile',F_TYPE_PROCEDURE_NO_PARAMS,@AddDBFile);
 
- AddScriptFunction(aScript,'GetCurrentUser',F_TYPE_FUNCTION_IS_STRING,@GetCurrentUser);
- AddScriptFunction(aScript,'GetCurrentDB',F_TYPE_FUNCTION_IS_STRING,@GetCurrentDB);
- AddScriptFunction(aScript,'GetProgramPath',F_TYPE_FUNCTION_IS_STRING,@GetProgramPath);
- AddScriptFunction(aScript,'SelectDB',F_TYPE_PROCEDURE_STRING,@SelectDB);
- AddScriptFunction(aScript,'TestDB',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@TestDB);
- AddScriptFunction(aScript,'AddDBFile',F_TYPE_PROCEDURE_NO_PARAMS,@AddDBFile);
+ AddScriptFunction(Enviroment,'Char',F_TYPE_FUNCTION_INTEGER_IS_STRING,@aChar);
 
- AddScriptFunction(aScript,'Char',F_TYPE_FUNCTION_INTEGER_IS_STRING,@aChar);
+ AddScriptFunction(Enviroment,'UpperCase',F_TYPE_FUNCTION_STRING_IS_STRING,@aAnsiUpperCase);
+ AddScriptFunction(Enviroment,'LowerCase',F_TYPE_FUNCTION_STRING_IS_STRING,@aAnsiLowerCase);
 
- AddScriptFunction(aScript,'UpperCase',F_TYPE_FUNCTION_STRING_IS_STRING,@aAnsiUpperCase);
- AddScriptFunction(aScript,'LowerCase',F_TYPE_FUNCTION_STRING_IS_STRING,@aAnsiLowerCase);
+ AddScriptFunction(Enviroment,'ShowKeyWord',F_TYPE_FUNCTION_STRING_IS_STRING,@ShowKeyWord);
+ AddScriptFunction(Enviroment,'OpenSearch',F_TYPE_FUNCTION_STRING_IS_STRING,@OpenSearch);
+ AddScriptFunction(Enviroment,'GetRegKeyListing',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@GetRegKeyListing);
 
- AddScriptFunction(aScript,'ShowKeyWord',F_TYPE_FUNCTION_STRING_IS_STRING,@ShowKeyWord);
- AddScriptFunction(aScript,'OpenSearch',F_TYPE_FUNCTION_STRING_IS_STRING,@OpenSearch);
- AddScriptFunction(aScript,'GetRegKeyListing',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@GetRegKeyListing);
+ AddScriptFunction(Enviroment,'ReadRegString',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@ReadRegString);
+ AddScriptFunction(Enviroment,'ReadRegBool',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@ReadRegBool);
+ AddScriptFunction(Enviroment,'ReadRegInteger',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@ReadRegInteger);
+ AddScriptFunction(Enviroment,'ReadRegRealBool',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@ReadRegRealBool);
 
- AddScriptFunction(aScript,'ReadRegString',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@ReadRegString);
- AddScriptFunction(aScript,'ReadRegBool',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@ReadRegBool);
- AddScriptFunction(aScript,'ReadRegInteger',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@ReadRegInteger);
- AddScriptFunction(aScript,'ReadRegRealBool',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@ReadRegRealBool);
+  AddScriptFunction(Enviroment,'WriteRegString',F_TYPE_PROCEDURE_STRING_STRING_STRING,@WriteRegString);
+  AddScriptFunction(Enviroment,'WriteRegBool',F_TYPE_PROCEDURE_STRING_STRING_BOOLEAN,@WriteRegBool);
+  AddScriptFunction(Enviroment,'WriteRegInteger',F_TYPE_PROCEDURE_STRING_STRING_INTEGER,@WriteRegInteger);
 
-  AddScriptFunction(aScript,'WriteRegString',F_TYPE_PROCEDURE_STRING_STRING_STRING,@WriteRegString);
-  AddScriptFunction(aScript,'WriteRegBool',F_TYPE_PROCEDURE_STRING_STRING_BOOLEAN,@WriteRegBool);
-  AddScriptFunction(aScript,'WriteRegInteger',F_TYPE_PROCEDURE_STRING_STRING_INTEGER,@WriteRegInteger);
+ AddScriptFunction(Enviroment,'ImageFile',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@ImageFile);
+ AddScriptFunction(Enviroment,'ShowFile',F_TYPE_PROCEDURE_STRING,@ShowFile);
 
- AddScriptFunction(aScript,'ImageFile',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@ImageFile);
- AddScriptFunction(aScript,'ShowFile',F_TYPE_PROCEDURE_STRING,@ShowFile);
+ AddScriptFunction(Enviroment,'DoHelp',F_TYPE_PROCEDURE_NO_PARAMS,@DoHelp);
+ AddScriptFunction(Enviroment,'DoHomePage',F_TYPE_PROCEDURE_NO_PARAMS,@DoHomePage);
+ AddScriptFunction(Enviroment,'DoHomeContactWithAuthor',F_TYPE_PROCEDURE_NO_PARAMS,@DoHomeContactWithAuthor);
+ AddScriptFunction(Enviroment,'DoActivation',F_TYPE_PROCEDURE_NO_PARAMS,@DoActivation);
 
- AddScriptFunction(aScript,'DoHelp',F_TYPE_PROCEDURE_NO_PARAMS,@DoHelp);
- AddScriptFunction(aScript,'DoHomePage',F_TYPE_PROCEDURE_NO_PARAMS,@DoHomePage);
- AddScriptFunction(aScript,'DoHomeContactWithAuthor',F_TYPE_PROCEDURE_NO_PARAMS,@DoHomeContactWithAuthor);
- AddScriptFunction(aScript,'DoActivation',F_TYPE_PROCEDURE_NO_PARAMS,@DoActivation);
+ AddScriptFunction(Enviroment,'ExecuteGroupManager',F_TYPE_PROCEDURE_NO_PARAMS,@ExecuteGroupManager);
+ AddScriptFunction(Enviroment,'GetUpdates',F_TYPE_PROCEDURE_BOOLEAN,@GetUpdates);
+ AddScriptFunction(Enviroment,'DoAbout',F_TYPE_PROCEDURE_NO_PARAMS,@DoAbout);
 
- AddScriptFunction(aScript,'ExecuteGroupManager',F_TYPE_PROCEDURE_NO_PARAMS,@ExecuteGroupManager);
- AddScriptFunction(aScript,'GetUpdates',F_TYPE_PROCEDURE_BOOLEAN,@GetUpdates);
- AddScriptFunction(aScript,'DoAbout',F_TYPE_PROCEDURE_NO_PARAMS,@DoAbout);
+ AddScriptFunction(Enviroment,'ShowUpdateWindow',F_TYPE_PROCEDURE_NO_PARAMS,@ShowUpdateWindow);
+ AddScriptFunction(Enviroment,'AddFileInDB',F_TYPE_PROCEDURE_STRING,@AddFileInDB);
+ AddScriptFunction(Enviroment,'AddFolderInDB',F_TYPE_PROCEDURE_STRING,@AddFolderInDB);
 
-  AddScriptFunction(aScript,'ShowUpdateWindow',F_TYPE_PROCEDURE_NO_PARAMS,@ShowUpdateWindow);
-  AddScriptFunction(aScript,'AddFileInDB',F_TYPE_PROCEDURE_STRING,@AddFileInDB);
-  AddScriptFunction(aScript,'AddFolderInDB',F_TYPE_PROCEDURE_STRING,@AddFolderInDB);
+ AddScriptFunction(Enviroment,'GetFileNameByID',F_TYPE_FUNCTION_INTEGER_IS_STRING,@GetFileNameByID);
+ AddScriptFunction(Enviroment,'GetIDByFileName',F_TYPE_FUNCTION_STRING_IS_INTEGER,@GetIDByFileName);
+ AddScriptFunction(Enviroment,'InstalledFileName',F_TYPE_FUNCTION_IS_STRING,@InstalledFileName);
 
- AddScriptFunction(aScript,'GetFileNameByID',F_TYPE_FUNCTION_INTEGER_IS_STRING,@GetFileNameByID);
- AddScriptFunction(aScript,'GetIDByFileName',F_TYPE_FUNCTION_STRING_IS_INTEGER,@GetIDByFileName);
- AddScriptFunction(aScript,'InstalledFileName',F_TYPE_FUNCTION_IS_STRING,@InstalledFileName);
- AddScriptFunction(aScript,'TryBDEInstall',F_TYPE_PROCEDURE_NO_PARAMS,@TryBDEInstall);
+ AddScriptFunction(Enviroment,'DoManager',F_TYPE_PROCEDURE_NO_PARAMS,@DoManager);
 
- AddScriptFunction(aScript,'DoManager',F_TYPE_PROCEDURE_NO_PARAMS,@DoManager);
+ AddScriptFunction(Enviroment,'DoOptions',F_TYPE_PROCEDURE_NO_PARAMS,@DoOptions);
+ AddScriptFunction(Enviroment,'NewImageEditor',F_TYPE_FUNCTION_IS_STRING,@NewImageEditor);
 
- AddScriptFunction(aScript,'DoOptions',F_TYPE_PROCEDURE_NO_PARAMS,@DoOptions);
- AddScriptFunction(aScript,'NewImageEditor',F_TYPE_FUNCTION_IS_STRING,@NewImageEditor);
+ AddScriptFunction(Enviroment,'ImageEditorRegisterCallBack',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ImageEditorRegisterCallBack);
+ AddScriptFunction(Enviroment,'ExecuteActions',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ExecuteActions);
 
- AddScriptFunction(aScript,'ImageEditorRegisterCallBack',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ImageEditorRegisterCallBack);
- AddScriptFunction(aScript,'ExecuteActions',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ExecuteActions);
+ AddScriptFunction(Enviroment,'ImageEditorOpenFileName',F_TYPE_PROCEDURE_STRING_STRING,@ImageEditorOpenFileName);
 
- AddScriptFunction(aScript,'ImageEditorOpenFileName',F_TYPE_PROCEDURE_STRING_STRING,@ImageEditorOpenFileName);
+ AddScriptFunction(Enviroment,'NewPanel',F_TYPE_FUNCTION_IS_STRING,@NewPanel);
 
- AddScriptFunction(aScript,'NewPanel',F_TYPE_FUNCTION_IS_STRING,@NewPanel);
+ AddScriptFunction(Enviroment,'AddFileToPanel',F_TYPE_PROCEDURE_STRING_STRING,@AddFileToPanel);
 
- AddScriptFunction(aScript,'AddFileToPanel',F_TYPE_PROCEDURE_STRING_STRING,@AddFileToPanel);
+ AddScriptFunction(Enviroment,'GetLastPanel',F_TYPE_FUNCTION_IS_STRING,@GetLastPanel);
 
- AddScriptFunction(aScript,'GetLastPanel',F_TYPE_FUNCTION_IS_STRING,@GetLastPanel);
+ AddScriptFunction(Enviroment,'NewSearch',F_TYPE_FUNCTION_IS_STRING,@NewSearch);
+ AddScriptFunction(Enviroment,'NewExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@NewExplorerByPath);
+ AddScriptFunction(Enviroment,'NewExplorer',F_TYPE_FUNCTION_IS_STRING,@NewExplorer);
+ AddScriptFunction(Enviroment,'GetPhotosFromFolder',F_TYPE_PROCEDURE_STRING,@GetPhotosFromFolder);
+ AddScriptFunction(Enviroment,'SelectDir',F_TYPE_FUNCTION_STRING_IS_STRING,@SelectDir);
 
- AddScriptFunction(aScript,'NewSearch',F_TYPE_FUNCTION_IS_STRING,@NewSearch);
- AddScriptFunction(aScript,'NewExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@NewExplorerByPath);
- AddScriptFunction(aScript,'NewExplorer',F_TYPE_FUNCTION_IS_STRING,@NewExplorer);
- AddScriptFunction(aScript,'GetPhotosFromFolder',F_TYPE_PROCEDURE_STRING,@GetPhotosFromFolder);
- AddScriptFunction(aScript,'SelectDir',F_TYPE_FUNCTION_STRING_IS_STRING,@SelectDir);
+ AddScriptFunction(Enviroment,'GetListOfKeyWords',F_TYPE_PROCEDURE_NO_PARAMS,@GetListOfKeyWords);
+ AddScriptFunction(Enviroment,'MakeDBFileTree',F_TYPE_PROCEDURE_NO_PARAMS,@aMakeDBFileTree);
 
- AddScriptFunction(aScript,'GetListOfKeyWords',F_TYPE_PROCEDURE_NO_PARAMS,@GetListOfKeyWords);
- AddScriptFunction(aScript,'MakeDBFileTree',F_TYPE_PROCEDURE_NO_PARAMS,@aMakeDBFileTree);
+ AddScriptFunction(Enviroment,'SplitLinks',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@SplitLinks);
 
- AddScriptFunction(aScript,'LinkType',F_TYPE_FUNCTION_INTEGER_IS_STRING,@LinkType);
- AddScriptFunction(aScript,'SplitLinks',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@SplitLinks);
+ AddScriptFunction(Enviroment,'LinkName',F_TYPE_FUNCTION_STRING_IS_STRING,@aLinkName);
+ AddScriptFunction(Enviroment,'LinkValue',F_TYPE_FUNCTION_STRING_IS_STRING,@aLinkValue);
+ AddScriptFunction(Enviroment,'LinkType',F_TYPE_FUNCTION_STRING_IS_INTEGER,@aLinkType);
+ AddScriptFunction(Enviroment,'LinkTypeString',F_TYPE_FUNCTION_STRING_IS_STRING,@aLinkTypeString);
 
- AddScriptFunction(aScript,'LinkName',F_TYPE_FUNCTION_STRING_IS_STRING,@aLinkName);
- AddScriptFunction(aScript,'LinkValue',F_TYPE_FUNCTION_STRING_IS_STRING,@aLinkValue);
- AddScriptFunction(aScript,'LinkType',F_TYPE_FUNCTION_STRING_IS_INTEGER,@aLinkType);
- AddScriptFunction(aScript,'LinkTypeString',F_TYPE_FUNCTION_STRING_IS_STRING,@aLinkTypeString);
+ AddScriptFunction(Enviroment,'GetFileNameByIDEx',F_TYPE_FUNCTION_STRING_IS_STRING,@GetFileNameByIDEx);
+ AddScriptFunction(Enviroment,'GetIDByIDEx',F_TYPE_FUNCTION_STRING_IS_INTEGER,@GetIDByIDEx);
 
- AddScriptFunction(aScript,'GetFileNameByIDEx',F_TYPE_FUNCTION_STRING_IS_STRING,@GetFileNameByIDEx);
- AddScriptFunction(aScript,'GetIDByIDEx',F_TYPE_FUNCTION_STRING_IS_INTEGER,@GetIDByIDEx);
+ AddScriptFunction(Enviroment,'CodeExtID',F_TYPE_FUNCTION_STRING_IS_STRING,@CodeExtID);
+ AddScriptFunction(Enviroment,'DeCodeExtID',F_TYPE_FUNCTION_STRING_IS_STRING,@DeCodeExtID);
 
- AddScriptFunction(aScript,'CodeExtID',F_TYPE_FUNCTION_STRING_IS_STRING,@CodeExtID);
- AddScriptFunction(aScript,'DeCodeExtID',F_TYPE_FUNCTION_STRING_IS_STRING,@DeCodeExtID);
+ AddScriptFunction(Enviroment,'Hint',F_TYPE_PROCEDURE_STRING_STRING,@aHint);
+ AddScriptFunction(Enviroment,'CloseApp',F_TYPE_PROCEDURE_NO_PARAMS,@CloseApp);
 
- AddScriptFunction(aScript,'Hint',F_TYPE_PROCEDURE_STRING_STRING,@aHint);
- AddScriptFunction(aScript,'CloseApp',F_TYPE_PROCEDURE_NO_PARAMS,@CloseApp);
-
- AddScriptFunction(aScript,'GetDBNameList',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetDBNameList);
- AddScriptFunction(aScript,'GetDBFileList',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetDBFileList);
- AddScriptFunction(aScript,'GetDBIconList',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetDBIcoList);
+ AddScriptFunction(Enviroment,'GetDBNameList',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetDBNameList);
+ AddScriptFunction(Enviroment,'GetDBFileList',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetDBFileList);
+ AddScriptFunction(Enviroment,'GetDBIconList',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetDBIcoList);
 
  //forms
 
- AddScriptFunction(aScript,'GetSearchs',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetSearchs);
- AddScriptFunction(aScript,'DoSearch',F_TYPE_PROCEDURE_STRING,@DoSearch);
- AddScriptFunction(aScript,'SetSearchText',F_TYPE_PROCEDURE_STRING_STRING,@SetSearchText);
- AddScriptFunction(aScript,'GetSearchTextByCID',F_TYPE_FUNCTION_STRING_IS_STRING,@GetSearchTextByCID);
+ AddScriptFunction(Enviroment,'GetSearchs',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetSearchs);
+ AddScriptFunction(Enviroment,'DoSearch',F_TYPE_PROCEDURE_STRING,@DoSearch);
+ AddScriptFunction(Enviroment,'SetSearchText',F_TYPE_PROCEDURE_STRING_STRING,@SetSearchText);
+ AddScriptFunction(Enviroment,'GetSearchTextByCID',F_TYPE_FUNCTION_STRING_IS_STRING,@GetSearchTextByCID);
 
- AddScriptFunction(aScript,'GetExplorerPath',F_TYPE_FUNCTION_STRING_IS_STRING,@GetExplorerPath);
- AddScriptFunction(aScript,'GetExplorersByPath',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@GetExplorersByPath);
- AddScriptFunction(aScript,'GetExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@GetExplorerByPath);
- AddScriptFunction(aScript,'GetExplorers',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetExplorers);
- AddScriptFunction(aScript,'SetExplorerPath',F_TYPE_PROCEDURE_STRING_STRING,@SetExplorerPath);
+ AddScriptFunction(Enviroment,'GetExplorerPath',F_TYPE_FUNCTION_STRING_IS_STRING,@GetExplorerPath);
+ AddScriptFunction(Enviroment,'GetExplorersByPath',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@GetExplorersByPath);
+ AddScriptFunction(Enviroment,'GetExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@GetExplorerByPath);
+ AddScriptFunction(Enviroment,'GetExplorers',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetExplorers);
+ AddScriptFunction(Enviroment,'SetExplorerPath',F_TYPE_PROCEDURE_STRING_STRING,@SetExplorerPath);
 
- AddScriptFunction(aScript,'CloseDBForm',F_TYPE_PROCEDURE_STRING,@CloseDBForm);
- AddScriptFunction(aScript,'ShowDBForm',F_TYPE_PROCEDURE_STRING,@ShowDBForm);
+ AddScriptFunction(Enviroment,'CloseDBForm',F_TYPE_PROCEDURE_STRING,@CloseDBForm);
+ AddScriptFunction(Enviroment,'ShowDBForm',F_TYPE_PROCEDURE_STRING,@ShowDBForm);
 
- AddScriptFunction(aScript,'GetProgressWindow',F_TYPE_FUNCTION_STRING_IS_STRING,@GetProgressWindow);
+ AddScriptFunction(Enviroment,'GetProgressWindow',F_TYPE_FUNCTION_STRING_IS_STRING,@GetProgressWindow);
 
- AddScriptFunction(aScript,'SetProgressWindowProgress',F_TYPE_FUNCTION_STRING_INTEGER_INTEGER_IS_STRING,@SetProgressWindowProgress);
+ AddScriptFunction(Enviroment,'SetProgressWindowProgress',F_TYPE_FUNCTION_STRING_INTEGER_INTEGER_IS_STRING,@SetProgressWindowProgress);
 
- AddScriptFunction(aScript,'SplitDB',F_TYPE_PROCEDURE_NO_PARAMS,@SplitDB);
+ AddScriptFunction(Enviroment,'SplitDB',F_TYPE_PROCEDURE_NO_PARAMS,@SplitDB);
 
-// AddScriptFunction(aScript,'DoSearch',F_TYPE_PROCEDURE_STRING,@DoSearch);
- AddScriptFunction(aScript,'SetJPEGOptions',F_TYPE_PROCEDURE_NO_PARAMS,@SetJPEGOptions);
+ AddScriptFunction(Enviroment,'SetJPEGOptions',F_TYPE_PROCEDURE_NO_PARAMS,@SetJPEGOptions);
 
- AddScriptFunction(aScript,'DoDesteno',F_TYPE_PROCEDURE_STRING,@DoDesteno);
- AddScriptFunction(aScript,'DoSteno',F_TYPE_PROCEDURE_STRING,@DoSteno);
+ AddScriptFunction(Enviroment,'DoDesteno',F_TYPE_PROCEDURE_STRING,@DoDesteno);
+ AddScriptFunction(Enviroment,'DoSteno',F_TYPE_PROCEDURE_STRING,@DoSteno);
 
- AddScriptFunction(aScript,'DoCDExport',F_TYPE_PROCEDURE_NO_PARAMS,@DoCDExport);
- AddScriptFunction(aScript,'DoCDMapping',F_TYPE_PROCEDURE_NO_PARAMS,@DoManageCDMapping);
+ AddScriptFunction(Enviroment,'DoCDExport',F_TYPE_PROCEDURE_NO_PARAMS,@DoCDExport);
+ AddScriptFunction(Enviroment,'DoCDMapping',F_TYPE_PROCEDURE_NO_PARAMS,@DoManageCDMapping);
+end;   
+
+procedure InitEnviroment(Enviroment : TScriptEnviroment);
+begin
+  LoadBaseFunctions(Enviroment);
+  LoadDBFunctions(Enviroment);
+  LoadFileFunctions(Enviroment);
 end;
 
 initialization

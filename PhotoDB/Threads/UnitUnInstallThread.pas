@@ -5,7 +5,7 @@ interface
 uses
   ExplorerTypes, Forms, ShellApi, Dialogs, Registry, SelfDeleteUnit,
   Windows, SysUtils, Dolphin_DB, Classes, UnitGroupsWork,  uVistaFuncs,
-  GraphicSelectEx, WindowsIconCacheTools;
+  GraphicSelectEx, WindowsIconCacheTools, uConstants, uFileUtils;
 
   type TUnInstallOptions = record
    Program_Files : boolean;
@@ -107,8 +107,6 @@ begin
   FMaxSize:=FilesCount;
   Synchronize(SetInfo);
   Synchronize(SetProgress);
-  DeleteFile(GetAppDataDirectory+'\dbboot.dat');
-  Sleep(100);
   FProgress:=1;
   Synchronize(SetProgress);
   For i:=0 to FilesCount-1 do
@@ -342,25 +340,7 @@ begin
   Found := sysutils.FindNext(SearchRec);
  end;
  FindClose(SearchRec);
- try
-  Filesetattr(DBkernel.GetLoginDataBaseFileName,faHidden);
-  DeleteFile(DBkernel.GetLoginDataBaseFileName);
- except
- end;
-{ //UnSupported
-  try
-  FExplorerFolders := TExplorerFolders.Create;
-  s:=FExplorerFolders.GetThumbDBName;
-  FExplorerFolders.Free;
-  For i:=1 to 5 do
-  begin
-   try
-    DeleteFile(GetDirectory(S)+GetFileNameWithoutExt((S))+'.'+DBFilesExt[i-1]);
-   except
-   end;
-  end;
- except
- end;    }
+
  DelDir(GetAppDataDirectory+BackUpFolder,'|DB|MB|FAM|VAL|TV|MDB|LDB|PHOTODB|');
  DelDir(GetAppDataDirectory+TempFolder,'||');
  SysUtils.DeleteFile(fdir+ImagesFolder+'Family.jpg');

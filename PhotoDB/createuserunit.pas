@@ -5,7 +5,8 @@ interface
 uses
   Windows, UnitDBKernel, Math, DB, DBTables, Menus, Dialogs, ExtDlgs,
   StdCtrls, Controls, ExtCtrls, jpeg, Classes, Messages, SysUtils, Variants, Graphics,
-  Forms, Registry, GraphicSelectEx, UnitDBCommon, UnitDBCommonGraphics;
+  Forms, Registry, GraphicSelectEx, UnitDBCommon, UnitDBCommonGraphics, uFileUtils,
+  uConstants;
 
 type
   TNewSingleUserForm = class(TForm)
@@ -47,10 +48,10 @@ type
     { Public declarations }
   end;
 
-var
-  NewSingleUserForm: TNewSingleUserForm;
-  AddUser_ : boolean;
-  ExAdmin_ : boolean;
+//var
+//  NewSingleUserForm: TNewSingleUserForm;
+//  AddUser_ : boolean;
+//  ExAdmin_ : boolean;
 
 implementation
 
@@ -60,27 +61,27 @@ uses Dolphin_DB, Language, UnitHelp;
 
 procedure TNewSingleUserForm.Button2Click(Sender: TObject);
 begin
- if ExAdmin_ then
+{ if ExAdmin_ then
  begin
   DBTerminating:=True;
   Application.Terminate;
  end else
- close;
+ close; }
 end;
 
 procedure TNewSingleUserForm.Image1Click(Sender: TObject);
 var
   p : Tpoint;
 begin
-  GetCursorPos(p);
-  GraphicSelect1.RequestPicture(p.X,p.y);
+{  GetCursorPos(p);
+  GraphicSelect1.RequestPicture(p.X,p.y);    }
 end;
 
 procedure TNewSingleUserForm.Execute(Add : boolean; Name : string; Pass : string; ID : integer; Image : TJpegImage);
 var
   jpg : tjpegimage;
 begin
- AddUser_:=add;
+{ AddUser_:=add;
  ExAdmin_:=false;
  Edit2.Text:='';
  Edit3.Text:='';
@@ -111,14 +112,14 @@ begin
    jpg.free;
   end else Image1.Picture.Graphic.Assign(image);
   ShowModal;
- end;
+ end;    }
 end;
 
 procedure TNewSingleUserForm.Button1Click(Sender: TObject);
 var
   Result_ : integer;
 begin
- if ExAdmin_ then
+{ if ExAdmin_ then
  begin
   Result_:=DBKernel.CreateNewUser(TEXT_MES_ADMIN,Edit2.text,image1.Picture.Graphic as TJpegImage);
   case result_ of
@@ -154,7 +155,7 @@ begin
    end;
    else DBKernel.LoginErrorMsg(result_);
   end;
- end;
+ end;  }
 end;
 
 procedure TNewSingleUserForm.Edit2Change(Sender: TObject);
@@ -166,7 +167,7 @@ end;
 
 procedure TNewSingleUserForm.ExecuteAdmin;
 begin
- ExAdmin_:=true;
+{ ExAdmin_:=true;
  Edit2.Text:='';
  Edit3.Text:='';
  Caption:=TEXT_MES_CREATE_ADMIN_CAPTION;
@@ -185,7 +186,7 @@ begin
  Radiobutton1.Checked:=true;
  HelpTimer1.Enabled:=true;
  ShowModal;
- ExAdmin_:=false;
+ ExAdmin_:=false;  }
 end;
 
 procedure TNewSingleUserForm.Edit5KeyPress(Sender: TObject; var Key: Char);
@@ -196,11 +197,11 @@ end;
 procedure TNewSingleUserForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
- if ExAdmin_ then
+{ if ExAdmin_ then
  begin
   DBTerminating:=True;
   Application.Terminate;
- end;
+ end;   }
 end;
 
 procedure TNewSingleUserForm.LoadFromFile1Click(Sender: TObject);

@@ -74,9 +74,6 @@ var
   FileName : string;
 begin         
  OpenDialog := DBOpenDialog.Create;
-
- if BDEInstalled then
- OpenDialog.Filter:='DataBase Files (*.db;*.mdb;*.photodb)|*.db;*.mdb;*.photodb|Access Files (*.mdb)|*.mdb|BDE Files (*.db)|*.db' else
  OpenDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
 
  if FileExists(dbname) then
@@ -154,8 +151,6 @@ var
   FileName : string;
 begin
  SaveDialog:=DBSaveDialog.Create;
- if BDEInstalled then
- SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb|Access Files (*.mdb)|*.mdb|BDE Files (*.db)|*.db' else
  SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb|Access Files (*.mdb)|*.mdb';
 
  if SaveDialog.Execute then

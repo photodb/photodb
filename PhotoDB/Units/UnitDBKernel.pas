@@ -8,8 +8,9 @@ interface
 uses  win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
  Rating, ComCtrls, StdCtrls, ExtCtrls, Forms,  Windows, Classes,
  Controls, Graphics, DB, DBTables, SysUtils, JPEG, UnitDBDeclare, IniFiles,
- GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs,
-   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics;
+ GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
+   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
+   uConstants, CommCtrl;
 
 type
   TCharObject = class (TObject)
@@ -152,12 +153,12 @@ DB_IC_CD_MAPPING     = 117;
 DB_IC_CD_IMAGE       = 118;
 
 
-LOG_IN_OK                   = 0;
+{LOG_IN_OK                   = 0;
 LOG_IN_ERROR                = 1;
 LOG_IN_USER_NOT_FOUND       = 2;
 LOG_IN_TABLE_NOT_FOUND      = 3;
 LOG_IN_PASSWORD_WRONG       = 4;
-LOG_IN_USER_ALREADY_EXISTS  = 5;
+LOG_IN_USER_ALREADY_EXISTS  = 5;  }
 
 type DBChangesIDEvent = Procedure(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues)  of object;
 
@@ -239,10 +240,6 @@ type TDBKernel = class(TObject)
     fImageOptions : TImageDBOptions;
     procedure LoadDBs;
     procedure SetImageList(const Value: TImageList);
-    procedure SetDBUserName(const Value: string);
-    procedure SetDBUserPassword(const Value: string);
-    procedure SetDBUserType(const Value: TUserType);
-    procedure SetDBUserHash(const Value: integer);
     procedure SetTheme(const Value: TDbTheme);
     procedure setlock(const Value: boolean);
     { Private declarations }
@@ -252,7 +249,6 @@ type TDBKernel = class(TObject)
   destructor destroy; override;
   published
   property DBs : TPhotoDBFiles read FDBs;
-  function CheckAdmin : integer;
   Property ImageList : TImageList read FImageList Write SetImageList;
   procedure UnRegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
   procedure UnRegisterChangesIDByID(Sender : TObject; Event_ : DBChangesIDEvent; id : integer);
@@ -280,26 +276,10 @@ type TDBKernel = class(TObject)
   function ReadStringW(Key, Name: string): string;
   function ReadDateTime(Key, Name : string; default : TdateTime): TDateTime;
   procedure BackUpTable;
-  Property DBUserName : string read fDBUserName write SetDBUserName;
-  Property DBUserPassword : string read fDBUserPassword write SetDBUserPassword;
-  Property DBUserType : TUserType read fDBUserType write SetDBUserType;
-  Property DBUserHash : integer read fDBUserHash write SetDBUserHash;
   procedure LoadColorTheme;
   Procedure SaveCurrentColorTheme;
   Function LogIn(UserName, Password : string; AutoLogin : boolean) : integer;
   Function CreateDBbyName(FileName : string) : integer;
-  Procedure SaveCurrentUserAsDefault;
-  Procedure TryToLoadDefaultUser(var DBUserName_, DBUserPassword_ : string);
-  Function UpdateUserInfo(Login : string; OldPass, NewPass : string; Image : TJpegImage; UpdateImage : boolean) : integer;
-  Function CreateNewUser(Login, Password : string; image : TJpegImage) : integer;
-  Function TestLoginDB : boolean;
-  Function DeleteUser(Login : string) : integer;
-  Function LoadUserImage(Login : String; var image : TJpegImage) : integer;
-  procedure LoginErrorMsg(Error : integer);
-  Function CreateLoginDB : integer;
-  Function CancelUserAsDefault : integer;
-  Function GetLoginDataBaseName : string;
-  class function GetLoginDataBaseFileName : string;
   Function GetDataBase : string;
   function GetDataBaseName: string;
   procedure SetDataBase(DBname_ : string);
@@ -313,7 +293,6 @@ type TDBKernel = class(TObject)
   Procedure SaveThemeToFile(FileName : string);
   Procedure LoadThemeFromFile(FileName : string);
   Procedure RegisterForm(Form : TForm);
-  procedure FixLoginDB;
   Procedure UnRegisterForm(Form : TForm);
   Procedure ReloadGlobalTheme;
   Procedure RegisterProcUpdateTheme(Proc : TNotifyEvent; Form : TForm);
@@ -333,8 +312,6 @@ type TDBKernel = class(TObject)
   procedure LoadINIPasswords;
   procedure SaveINIPasswords;
   procedure ClearINIPasswords;
-  function GetUserAccess(Login : String; var Access : string): Integer;
-  function SetUserAccess(Login : String; Access : string): Integer;
   procedure ThreadOpenResult(Result: boolean);
   procedure AddDB(DBName, DBFile, DBIco : string; Force : boolean = false);
   function RenameDB(OldDBName, NewDBName : string) : boolean;
@@ -514,7 +491,8 @@ begin
 //disabled items are bad
 //  ConvertTo32BitImageList(FImageList);
   for i:=1 to IconsCount do
-  FImageList.AddIcon(icons[i]);
+  ImageList_ReplaceIcon(FImageList.Handle, -1, icons[i].Handle);
+
   InitRegModule;
 end;
 
@@ -549,152 +527,6 @@ begin
   if ADOCreateImageTable(FileName) then result:=0;
   ADOCreateSettingsTable(FileName);
  end;
-end;
-
-function TDBKernel.CreateNewUser(Login, Password: string;
-  image: tjpegimage): integer;
-var
-  fQuery : TDataSet;
-  Buf: PChar;
-  WinDir : String;
-  FUserMenu : TUserMenuItemArray;
-  S : TStrings;
-  i, c : integer;
-  Reg : TBDRegistry;
-  SQL : string;
-begin
- result:=LOG_IN_ERROR;
-
- if not TestLoginDB then
- begin
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  exit;
- end;
- fQuery:=GetQuery(GetLoginDataBaseFileName);
- fQuery.Active:=false;
- SetSQL(fQuery,'Select * from '+GetLoginDataBaseName+' Where Logo = "'+Login+'"');
- try
-  fQuery.Active:=true;
- except       
-  on e : Exception do
-  begin
-   EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
-   result:=LOG_IN_TABLE_NOT_FOUND;
-   FreeDS(fQuery);
-   exit;
-  end;
- end;
- if fQuery.RecordCount<>0 then
- begin
-  result:=LOG_IN_USER_ALREADY_EXISTS;
-  FreeDS(fQuery);
-  exit;
- end;
- fQuery.Active:=false;
- SQL:='';
- SQL:=SQL+'insert into '+GetLoginDataBaseName;
- SQL:=SQL+'(FIMAGE,LOGO,PASSHESH)';
- SQL:=SQL+'values (:FIMAGE0,:LOGO,:PASSHESH)';
- SetSQL(fQuery,SQL);
-  try
-   AssignParam(fQuery,0,image);
-  except
-  on e : Exception do
-   begin
-    EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
-    result:=LOG_IN_ERROR;
-    FreeDS(fQuery);
-    exit;
-   end;
-  end;
-  SetStrParam(fQuery,1,Login);
-  SetStrParam(fQuery,2,IntToHex(Hash_Cos_C(Password),8));
-  try
-   ExecSQL(fQuery);
-  except
-  on e : Exception do
-   begin
-    EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
-    result:=LOG_IN_ERROR;
-    FreeDS(fQuery);
-    exit;
-   end;
-  end;
-  try
-   GetMem(Buf, MAX_PATH);
-   GetWindowsDirectory(Buf, MAX_PATH);
-   WinDir:=Buf;
-   FreeMem(Buf);
-   UnFormatDir(WinDir);
-   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-   Reg.OpenKey(RegRoot+Login+'\Menu',true);
-   S := TStringList.create;
-   Reg.GetKeyNames(S);
-   Reg.CloseKey;
-   c:=0;
-   for i:=1 to S.Count do
-   begin
-    Reg.DeleteKey(RegRoot+Login+'Menu\.'+IntToStr(i));
-    c:=c+1;
-   end;
-   s.free;
-   SetLength(FUserMenu,2);
-   FUserMenu[0].Caption:=TEXT_MES_EDIT;
-   FUserMenu[0].EXEFile:=WinDir+'\system32\mspaint.exe';
-   FUserMenu[0].Params:='%1';
-   FUserMenu[0].Icon:=WinDir+'\system32\mspaint.exe,0';
-   FUserMenu[0].UseSubMenu:=True;
-   FUserMenu[1].Caption:=TEXT_MES_FIND;
-   FUserMenu[1].EXEFile:=WinDir+'\explorer.exe';
-   FUserMenu[1].Params:='/select, %1';
-   FUserMenu[1].Icon:=WinDir+'\explorer.exe,0';
-   FUserMenu[1].UseSubMenu:=True;
-   if c=0 then
-   for i:=0 to Length(FUserMenu)-1 do
-   begin
-    Reg.OpenKey(RegRoot+Login+'\Menu\.'+IntToStr(i),true);
-    Reg.WriteString('Caption',FUserMenu[i].Caption);
-    Reg.WriteString('EXEFile',FUserMenu[i].EXEFile);
-    Reg.WriteString('Params',FUserMenu[i].Params);
-    Reg.WriteString('Icon',FUserMenu[i].Icon);
-    Reg.WriteBool('UseSubMenu',FUserMenu[i].UseSubMenu);
-    Reg.CloseKey;
-   end;
-   Reg.Free;
-   DBKernel.WriteboolW('Options','SlideShow_UseCoolStretch', true);
-  except
-   on e : Exception do EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
-  end;
-  result:=LOG_IN_OK;
-  FreeDS(fQuery);
-end;
-
-function TDBKernel.DeleteUser(Login: string): integer;
-var
-  fQuery : TDataSet;
-begin
- Result:=LOG_IN_ERROR;
- if not FileExists(GetLoginDataBaseFileName) then
- begin
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  exit;
- end;
- if fDBUserType<>UtAdmin then exit;
- fQuery := GetQuery(GetLoginDataBaseFileName);
- fQuery.Active:=false;
- SetSQL(fQuery,'Delete from '+GetLoginDataBaseName+' Where LOGO = "'+Login+'"');
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
-   FreeDS(fQuery);
-   exit;
-  end;
- end;
- FreeDS(fQuery);
- result:=LOG_IN_OK;
 end;
 
 destructor TDBKernel.destroy;
@@ -782,205 +614,8 @@ var
   fQuery : TDataSet;
   s1, s2 : string;
 begin
-
- if UserName<>TEXT_MES_ADMIN then
- begin
-  if not FileExists(GetLoginDataBaseFileName) then
-  begin
-   Result:=LOG_IN_TABLE_NOT_FOUND;
-   Exit;
-  end;
-  fQuery:=GetQuery(GetLoginDataBaseFileName);
-  try
-   fQuery.Active:=false;
-   SetSQL(fQuery,'Select * from '+GetLoginDataBaseName+' where LOGO="'+UserName+'"');
-   fQuery.Active:=true;
-  except
-   on e : Exception do
-   begin
-    EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
-    result:=LOG_IN_ERROR;
-    FreeDS(fQuery);
-    exit;
-   end;
-  end;
-  if fQuery.RecordCount=0 then
-  begin
-   result:=LOG_IN_USER_NOT_FOUND;
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fquery.RecordCount>1 then
-  begin
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
-  fquery.First;
-  self.fDBUserName:=UserName;
-  if Hash_Cos_C(Password)<> HexToIntDef(Trim(fquery.FieldByName('PASSHESH').AsString),0) then
-  begin
-   result:=LOG_IN_PASSWORD_WRONG;
-   FreeDS(fQuery);
-   exit;
-  end;
-  self.fDBUserPassword:=Password;
- end else
- begin
-  if not FileExists(GetLoginDataBaseFileName) then
-  begin
-   result:=LOG_IN_TABLE_NOT_FOUND;
-   exit;
-  end;
-  fQuery:=GetQuery(GetLoginDataBaseFileName);
-  try
-   fQuery.Active:=false;
-   SetSQL(fQuery,'Select * from '+GetLoginDataBaseName+' where LOGO="'+UserName+'"');
-   fQuery.Active:=true;
-  except
-   on e : Exception do
-   begin
-    EventLog(':TDBKernel::CreateNewUser() throw exception: '+e.Message);
-    result:=LOG_IN_ERROR;
-    FreeDS(fQuery);
-    exit;
-   end;
-  end;
-  if fquery.RecordCount>1 then
-  begin
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;   
-  if fquery.RecordCount=0 then
-  begin
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fquery.RecordCount=1 then
-  begin
-   fquery.First;
-   self.fDBUserName:=UserName;
-   if Hash_Cos_C(Password)<> HexToIntDef(Trim(fquery.FieldByName('PASSHESH').AsString),0) then
-   begin
-    result:=LOG_IN_PASSWORD_WRONG;
-    FreeDS(fQuery);
-    exit;
-   end else
-   self.fDBUserPassword:=Password;
-  end;
- end;
- {fDBUserAccess:=fquery.FieldByName('Access').AsString;
- if (fDBUserAccess='') or (Length(fDBUserAccess)<50) then
- begin
-  if UserName<>TEXT_MES_ADMIN then
-  fDBUserAccess:='0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' else
-  fDBUserAccess:='1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111';
- end;   }
- FreeDS(fQuery);
- if UserName=TEXT_MES_ADMIN then
- self.fDBUserType:=UtAdmin else
- self.fDBUserType:=UtUser;
-
- //TODO: select DB!
-
- DoSelectDB;
-
-  if AutoLogin then SaveCurrentUserAsDefault else
-  begin
-  TryToLoadDefaultUser(s1,s2);
-  if (s2=self.fDBUserPassword) and (s2=self.fDBUserName) then
-  CancelUserAsDefault;                                             
-  end;
-{  Case self.fDBUserType of
-  UtNone :
-  begin
-    fUserRights.Delete:=false;
-    fUserRights.Add:=false;
-    fUserRights.SetPrivate:=false;
-    fUserRights.ChPass:=false;
-    fUserRights.EditImage:=false;
-    fUserRights.SetRating:=false;
-    fUserRights.SetInfo:=false;
-    fUserRights.ShowPrivate:=false;
-    fUserRights.ShowOptions:=false;
-    fUserRights.ShowAdminTools:=false;
-    fUserRights.ChDbName:=false;
-    fUserRights.FileOperationsCritical:=false;
-    fUserRights.ManageGroups:=false;
-    fUserRights.FileOperationsNormal:=false;
-    fUserRights.Execute:=false;
-    fUserRights.Crypt:=false;
-    fUserRights.ShowPath:=false;
-    fUserRights.Print:=false;
-  end;
-  UtUser :
-  begin
-    fUserRights.Delete:=fDBUserAccess[1]='1';
-    fUserRights.Add:=fDBUserAccess[2]='1';
-    fUserRights.SetPrivate:=fDBUserAccess[3]='1';
-    fUserRights.ChPass:=fDBUserAccess[4]='1';
-    fUserRights.EditImage:=fDBUserAccess[5]='1';
-    fUserRights.SetRating:=fDBUserAccess[6]='1';
-    fUserRights.SetInfo:=fDBUserAccess[7]='1';
-    fUserRights.ShowPrivate:=fDBUserAccess[8]='1';
-    fUserRights.ShowOptions:=fDBUserAccess[9]='1';
-    fUserRights.ShowAdminTools:=fDBUserAccess[10]='1';
-    fUserRights.ChDbName:=fDBUserAccess[11]='1';
-    fUserRights.FileOperationsCritical:=fDBUserAccess[12]='1';
-    fUserRights.ManageGroups:=fDBUserAccess[13]='1';
-    fUserRights.FileOperationsNormal:=fDBUserAccess[14]='1';
-    fUserRights.Execute:=fDBUserAccess[15]='1';
-    fUserRights.Crypt:=fDBUserAccess[16]='1';
-    fUserRights.ShowPath:=fDBUserAccess[17]='1';
-    fUserRights.Print:=fDBUserAccess[18]='1';
-  end;
-  UtGuest :
-  begin
-    fUserRights.Delete:=fDBUserAccess[1]='1';
-    fUserRights.Add:=fDBUserAccess[2]='1';
-    fUserRights.SetPrivate:=fDBUserAccess[3]='1';
-    fUserRights.ChPass:=fDBUserAccess[4]='1';
-    fUserRights.EditImage:=fDBUserAccess[5]='1';
-    fUserRights.SetRating:=fDBUserAccess[6]='1';
-    fUserRights.SetInfo:=fDBUserAccess[7]='1';
-    fUserRights.ShowPrivate:=fDBUserAccess[8]='1';
-    fUserRights.ShowOptions:=fDBUserAccess[9]='1';
-    fUserRights.ShowAdminTools:=fDBUserAccess[10]='1';
-    fUserRights.ChDbName:=fDBUserAccess[11]='1';
-    fUserRights.FileOperationsCritical:=fDBUserAccess[12]='1';
-    fUserRights.ManageGroups:=fDBUserAccess[13]='1';
-    fUserRights.FileOperationsNormal:=fDBUserAccess[14]='1';
-    fUserRights.Execute:=fDBUserAccess[15]='1';
-    fUserRights.Crypt:=fDBUserAccess[16]='1';
-    fUserRights.ShowPath:=fDBUserAccess[17]='1';
-    fUserRights.Print:=fDBUserAccess[18]='1';
-  end;
-  UtAdmin :
-  begin
-    fUserRights.Delete:=true;
-    fUserRights.Add:=true;
-    fUserRights.SetPrivate:=true;
-    fUserRights.ChPass:=true;
-    fUserRights.EditImage:=true;
-    fUserRights.SetRating:=true;
-    fUserRights.SetInfo:=true;
-    fUserRights.ShowPrivate:=true;
-    fUserRights.ShowOptions:=true;
-    fUserRights.ShowAdminTools:=true;
-    fUserRights.ChDbName:=true;
-    fUserRights.FileOperationsCritical:=true;
-    fUserRights.ManageGroups:=true;
-    fUserRights.FileOperationsNormal:=true;
-    fUserRights.Execute:=true;
-    fUserRights.Crypt:=true;
-    fUserRights.ShowPath:=true;
-    fUserRights.Print:=true;
-   end;
-  end;   }
+  DoSelectDB;
   LoadINIPasswords;
-  result:=LOG_IN_OK;
 end;
 
 function TDBKernel.Readbool(Key, Name: string; default : boolean): boolean;
@@ -1199,173 +834,9 @@ begin
  end;
 end;
 
-procedure TDBKernel.SaveCurrentUserAsDefault;
-var
-  hID, rand, path_ : string;
-  i : integer;
-  s1, s2, s3, sid : string;
-  f : file;
-  buffer : Pbuffer;
-  passw, usernamew : string;
-  fReg : TBDRegistry;
-begin
- passw:=fDBUserPassword;
- if length(passw)>255 then passw:=copy(passw,1,255);
- hID := gethardwarestring;
- for i:=1 to 255-length(passw) do
- passw:=passw+' ';
- passw:=xorstrings(passw,hID);
- sid:=setstringtolengthwithnodata(sidtostr(GetUserSID),255);
- passw:=xorstrings(passw,SID);
- path_:=AnsiLowerCase(LongFileName(Application.ExeName));
- path_:=setstringtolengthwithnodata(path_,255);
- passw:=xorstrings(passw,path_);
- rand:='';
- randomize;
- for i:=1 to 255 do
- rand:=rand+pwd_all[random(length(pwd_all)-1)+1];
- s1:=xorstrings(passw,rand);
- s2:=rand;
- s3:=inttohex(Hash_Cos_C(fDBUserPassword),8);
- fReg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- fReg.OpenKey(RegRoot,true);
- fReg.WriteString('dbbootpass',StringToHexString(s2));
- fReg.free;
- new(buffer);
- Assignfile(f,GetAppDataDirectory+'\dbboot.dat');
- {$i-}
- System.Rewrite(f, 1);
- {$i+}
- if ioresult<>0 then
- begin
-  exit;
- end;
- for i:=1 to 255 do
- buffer[i]:=ord(s1[i]);
- blockwrite(f,buffer^,255);
- for i:=1 to 8 do
- buffer[i]:=ord(s3[i]);
- blockwrite(f,buffer^,8);
- usernamew:=self.fDBUserName;
- if length(usernamew)>255 then usernamew:=copy(usernamew,1,255);
- hID := gethardwarestring;
- for i:=1 to 255-length(usernamew) do
- usernamew:=usernamew+' ';
- usernamew:=xorstrings(usernamew,hID);
- sid:=setstringtolengthwithnodata(sidtostr(GetUserSID),255);
- usernamew:=xorstrings(usernamew,SID);
- path_:=AnsiLowerCase(LongFileName(Application.ExeName));
- path_:=setstringtolengthwithnodata(path_,255);
- usernamew:=xorstrings(usernamew,path_);
- rand:='';
- randomize;
- for i:=1 to 255 do
- rand:=rand+pwd_all[random(length(pwd_all)-1)+1];
- s1:=xorstrings(usernamew,rand);
- s2:=rand;
- s3:=inttohex(Hash_Cos_C(self.fDBUserName),8);
- fReg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- fReg.openkey(RegRoot,true);
- fReg.WriteString('dbbootuser',StringToHexString(s2));
- fReg.free;
- for i:=1 to 255 do
- buffer[i]:=ord(s1[i]);
- blockwrite(f,buffer^,255);
- for i:=1 to 8 do
- buffer[i]:=ord(s3[i]);
- blockwrite(f,buffer^,8);
- System.Close(f);
- freemem(buffer);
-end;
-
-procedure TDBKernel.SetDBUserHash(const Value: integer);
-begin
-  fDBUserHash := Value;
-end;
-
-procedure TDBKernel.SetDBUserName(const Value: string);
-begin
-  fDBUserName := Value;
-end;
-
-procedure TDBKernel.SetDBUserPassword(const Value: string);
-begin
-  fDBUserPassword := Value;
-end;
-
-procedure TDBKernel.SetDBUserType(const Value: TUserType);
-begin
-  fDBUserType := Value;
-end;
-
 procedure TDBKernel.SetImageList(const Value: TImageList);
 begin
   FImageList.assign(Value);
-end;
-
-function TDBKernel.UpdateUserInfo(Login, OldPass, NewPass: string; Image : TJpegImage; UpdateImage : boolean):integer;
-var
-  fquery : TDataSet;
-  _sqlexectext : string;
-begin
- result:=LOG_IN_ERROR;
- If not ((self.fDBUserType=UtAdmin) or (Login=self.fDBUserName)) then exit;
-// if AnsiLowerCase(Login)<>AnsiLowerCase('Administrator') then
- begin
-  if not FileExists(GetLoginDataBaseFileName) and (GetDBType(GetLoginDataBaseFileName)=DB_TYPE_BDE) then
-  begin
-   result:=LOG_IN_TABLE_NOT_FOUND;
-   exit;
-  end;
-  fQuery:=GetQuery(GetLoginDataBaseFileName);
-  try
-   fQuery.Active:=false;
-   SetSQl(fQuery,'Select * from '+GetLoginDataBaseName+' where LOGO="'+Login+'"');
-   fQuery.Active:=true;
-  except;
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fquery.RecordCount=0 then
-  begin
-   result:=LOG_IN_USER_NOT_FOUND;
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fquery.RecordCount>1 then
-  begin
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
-  fquery.First;
-  if (Hash_Cos_C(oldpass)<> HexToIntDef(fQuery.FieldByName('PASSHESH').AsString,0)) then
-  begin
-   if fquery.FieldByName('LOGO').AsString='Administrator' then
-   begin
-    result:=LOG_IN_PASSWORD_WRONG;
-    FreeDS(fQuery);
-    exit;
-   end;
-  end;
-  try
-   _sqlexectext:='Update '+GetLoginDataBaseName;
-   _sqlexectext:=_sqlexectext+ ' Set PASSHESH = "'+IntToHex(Hash_Cos_C(newpass),8)+'"';
-   if UpdateImage then _sqlexectext:=_sqlexectext+ ', FIMAGE = :image';
-   _sqlexectext:=_sqlexectext+ ' Where LOGO = "'+login+'"';
-   fQuery.active:=false;
-   SetSQl(fQuery,_sqlexectext);
-   if UpdateImage then AssignParam(fQuery,0,image);
-   ExecSQL(fQuery);
-  except
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
-  FreeDS(fQuery);
-  result:=LOG_IN_OK;
- end;
 end;
 
 function TDBKernel.TestDB(DBName_: string; OpenInThread : boolean = false): boolean;
@@ -1584,176 +1055,6 @@ begin
   FreeDS(FTestTable);
 end;
 
-function TDBKernel.TestLoginDB: boolean;
-var
-  LoginDBName, fn : string;
-  FTestTable : TDataSet;
-  Query : TQuery;
-  CheckResult : integer;
-begin
-  LoginDBName:=GetLoginDataBaseFileName;
-  CheckResult:=FileCheckedDB.CheckFile(LoginDBName);
-  if CheckResult=CHECK_RESULT_OK then
-  begin
-   Result:=true;
-   FileCheckedDB.SaveCheckFile(LoginDBName);
-   exit;
-  end;
-  FileCheckedDB.SaveCheckFile(LoginDBName);
-  if CheckResult = CHECK_RESULT_FILE_NOE_EXISTS then
-  begin
-   result:=false;
-   exit;
-  end;
-  FTestTable:= GetTable(LoginDBName,DB_TABLE_LOGIN);
-  if FTestTable=nil then
-  begin
-   Result:=false;
-   Exit;
-  end;
-  try
-   FTestTable.Active:=true;
-  except   
-   on e : Exception do
-   begin
-    EventLog(':TDBKernel::TestLoginDB() throw exception: '+e.Message);
-    Result:=false;
-    FreeDS(FTestTable);
-    Exit;
-   end;
-  end;
-  try
-   FTestTable.First;
-   FTestTable.FieldByName('ID').AsInteger;
-   FTestTable.FieldByName('FIMAGE').AsVariant;
-   FTestTable.FieldByName('LOGO').AsString;
-   FTestTable.FieldByName('PWD').AsString;
-   FTestTable.FieldByName('DefaultDB').AsString;
-   FTestTable.FieldByName('PASSHESH').AsString;
-   //Added in PhotoDB v1.8
-   if FTestTable.FindField('Access')=nil then
-   begin
-    FTestTable.Active := False;
-    fn:=LoginDBName;
-    fn:=GetDirectory(fn)+GetFileNameWithoutExt(fn);
-    if FileExists(fn+'.db') then DeleteFile(fn+'.db');
-    RenameFile(LoginDBName,fn+'.db');
-    Query := TQuery.Create(nil);
-    Query.SQL.Text:='ALTER TABLE "'+fn+'.db'+'" ADD Access CHAR(100) ';
-    Query.ExecSQL;
-    Query.Free;
-    RenameFile(fn+'.db',LoginDBName);
-    FTestTable.Active := True;
-   end;
-   FTestTable.FindField('Access').AsString;
-  except
-   on e : Exception do
-   begin
-    EventLog(':TDBKernel::TestLoginDB() throw exception: '+e.Message);
-    Result:=false;
-    FreeDS(FTestTable);
-    Exit;
-   end;
-  end;
-  Result:=true;
-  FreeDS(FTestTable);
-end;
-
-procedure TDBKernel.TryToLoadDefaultUser(var dbusername_, dbuserPassword_ : string);
-var
-  f : file;
-  Buffer : Pbuffer;
-  Pass, username, s1, s2, s3, HardwareString, SID, Path_ : string;
-  i : integer;
-  fReg : TBDRegistry;
-begin
- New(Buffer);
- AssignFile(f,GetAppDataDirectory+'\dbboot.dat');
- {$i-}
- System.Reset(f, 1);
- {$i+}
- if IOResult<>0 then
- begin
-  DBUserName_:='';
-  DBUserPassword_:='';
-  FreeMem(Buffer);
-  Exit;
- end;
- Seek(f,0);
- try
-  BlockRead(f,buffer^,255);
- except
- end;
- s1:='';
- s3:='';
- for i:=1 to 255 do
- s1:=s1+chr(Buffer[i]);
- try
-  BlockRead(f,Buffer^,8);
- except
- end;
- for i:=1 to 8 do
- s3:=s3+chr(Buffer[i]);
- fReg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- fReg.OpenKey(RegRoot,true);
- s2:=HexStringToString(fReg.ReadString('dbbootpass'));
- hardwarestring:=gethardwarestring;
- pass:='';
- for i:=1 to 255 do
- pass:=pass+' ';
- path_:=AnsiLowerCase(LongFileName(Application.ExeName));
- path_:=setstringtolengthwithnodata(path_,255);
- pass:=xorstrings(s2,s1);
- pass:=xorstrings(pass,path_);
- sid:=setstringtolengthwithnodata(sidtostr(GetUserSID),255);
- pass:=xorstrings(pass,SID);
- pass:=xorstrings(pass,hardwarestring);
- for i:=length(pass) downto 1 do
- if pass[i]=' ' then Delete(pass,i,1) else
- break;
- if Hash_Cos_C(pass)=HexToIntDef(s3,0) then
- DBUserPassword_:=pass else
- DBUserPassword_:='';
- freg.free;
- try
-  BlockRead(f,Buffer^,255);
- except
- end;
- s1:='';
- s3:='';
- for i:=1 to 255 do
- s1:=s1+chr(Buffer[i]);
- try
-  BlockRead(f,Buffer^,8);
- except
- end;
- System.Close(f);
- for i:=1 to 8 do
- s3:=s3+chr(Buffer[i]);
- fReg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- fReg.openkey(RegRoot,true);
- s2:=HexStringToString(fReg.ReadString('dbbootuser'));
- hardwarestring:=gethardwarestring;
- username:='';
- for i:=1 to 255 do
- username:=username+' ';
- path_:=AnsiLowerCase(LongFileName(Application.ExeName));
- path_:=setstringtolengthwithnodata(path_,255);
- username:=xorstrings(s2,s1);
- username:=xorstrings(username,path_);
- sid:=setstringtolengthwithnodata(sidtostr(GetUserSID),255);
- username:=xorstrings(username,SID);
- username:=xorstrings(username,hardwarestring);
- for i:=length(username) downto 1 do
- if username[i]=' ' then delete(username,i,1) else
- break;
- if Hash_Cos_C(username)=hextointdef(s3,0) then
- dbusername_:=username else
- dbusername_:='';
- freemem(buffer);
- fReg.free;
-end;
-
 procedure TDBKernel.UnRegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
 var
   i, j : integer;
@@ -1895,249 +1196,6 @@ begin
  except
  end;
  Reg.free;
-end;
-
-function TDBKernel.LoadUserImage(Login: String;
-  var image: TJpegImage): integer;
-var
-  fQuery : TDataSet;
-  fbs : TStream;
-begin
- result:=LOG_IN_ERROR;
-  if not FileExists(GetLoginDataBaseFileName) then
-  begin
-   Result:=LOG_IN_TABLE_NOT_FOUND;
-   exit;
-  end;
-  fQuery:=GetQuery(GetLoginDataBaseFileName);
-  try
-   fQuery.Active:=false;
-   SetSQL(fQuery,'Select * from '+GetLoginDataBaseName+' where LOGO="'+Login+'"');
-   fQuery.Active:=true;
-  except;
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fQuery.RecordCount=0 then
-  begin
-   result:=LOG_IN_USER_NOT_FOUND;
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fquery.RecordCount>1 then
-  begin
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
-  fquery.First;
-  if image=nil then
-  image:=TJPEGImage.Create;
-  if TBlobField(fQuery.FieldByName('FIMAGE'))=nil then exit;
-  fbs:=GetBlobStream(fQuery.FieldByName('FIMAGE'),bmRead);
-  try
-   if fbs.Size<>0 then
-   image.loadfromStream(fbs) else
-   except
-  end;
-  fbs.Free;
-  fQuery.Close;
-  FreeDS(fQuery);
-  result:=LOG_IN_OK;
-end;
-
-procedure TDBKernel.LoginErrorMsg(Error: integer);
-begin
-  case Error of
-   LOG_IN_ERROR :  MessageBoxDB(GetActiveFormHandle,TEXT_MES_ERROR_LOGON,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_ERROR);
-   LOG_IN_USER_NOT_FOUND :  MessageBoxDB(GetActiveFormHandle,TEXT_MES_ERROR_USER_NOT_FOUND,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_ERROR);
-   LOG_IN_TABLE_NOT_FOUND :  MessageBoxDB(GetActiveFormHandle,TEXT_MES_ERROR_TABLE_NOT_FOUND,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_ERROR);
-   LOG_IN_USER_ALREADY_EXISTS : MessageBoxDB(GetActiveFormHandle,TEXT_MES_ERROR_USER_ALREADY_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_ERROR);
-   LOG_IN_PASSWORD_WRONG : MessageBoxDB(GetActiveFormHandle,TEXT_MES_ERROR_PASSWORD_WRONG,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_ERROR);
-  end;
-end;
-
-function TDBKernel.CreateLoginDB: integer;
-var
-  sql : string;
-  f : file;
-  fQuery : TDataSet;
-begin
- EventLog('-> :TDBKernel.CreateLoginDB()');
- result:=LOG_IN_ERROR;
- if FileExists(GetLoginDataBaseFileName) then
- begin           
-  EventLog('-> :TDBKernel.CreateLoginDB() LoginDataBaseFileName = '+GetLoginDataBaseFileName);
-  EventLog('-> :TDBKernel.CreateLoginDB() -> TryRemoveConnection()');
-  TryRemoveConnection(GetLoginDataBaseFileName);
-  System.Assign(f,GetLoginDataBaseFileName);
-  try
-   System.Erase(f);
-  except
-   on e : Exception do
-   begin
-    EventLog(':TDBKernel::CreateLoginDB() throw exception: '+e.Message);
-    exit;
-   end;
-  end;
- end;
- EventLog('-> :TDBKernel.CreateLoginDB() -> CreateMSAccessDatabase()');
- try
-  CreateMSAccessDatabase(GetLoginDataBaseFileName);
- except
-  on e : Exception do
-  begin
-   EventLog(':TDBKernel::CreateLoginDB() throw exception: '+e.Message);
-   result:=LOG_IN_ERROR;
-   exit;
-  end;
- end;
- EventLog('-> :TDBKernel.CreateLoginDB() -> GetQuery()');
- fQuery := GetQuery(GetLoginDataBaseFileName);
- sql := 'CREATE TABLE '+GetLoginDataBaseName+' ( '+
-        'ID  Autoincrement, '+
-        'FIMAGE  LONGBINARY , '+
-        'LOGO Character(255) , '+
-        'ACCESS Character(255) , '+
-        'PWD Character(255) , '+
-        'DefaultDB Memo , '+
-        'PASSHESH Character(255))';
- SetSQL(fQuery,sql);
- EventLog('-> :TDBKernel.CreateLoginDB() -> ExecSQL()');
- try
-  ExecSQL(fQuery);
-  result:=LOG_IN_ERROR;
-  exit;
- except
-  on e : Exception do EventLog(':TDBKernel::CreateLoginDB() throw exception: '+e.Message);
- end;
- FreeDS(fQuery);
-end;
-
-function TDBKernel.CancelUserAsDefault: integer;
-var
-  f : file;
-  S1, S2 : string;
-begin
- Result:=LOG_IN_ERROR;
- if not FileExists(GetAppDataDirectory+'\dbboot.dat') then
- begin
-  result:=LOG_IN_ERROR;
-  exit;
- end;
- try
-  Assignfile(f,GetAppDataDirectory+'\dbboot.dat');
- try
-  Erase(f);
- except
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  exit;
- end;
- DBKernel.TryToLoadDefaultUser(s1,s2);
- if (s1='') and (s2='')
- then
-  result:=LOG_IN_OK
- except
-  result:=LOG_IN_ERROR;
- end;
-end;
-
-class function TDBKernel.GetLoginDataBaseFileName: string;
-var
-  Buf: PChar;
-begin
- EventLog(':GetLoginDataBaseFileName()');
- if (IsWindowsVista or PortableWork) then
- begin
-  Result:=GetAppDataDirectory;//GetDirectory(Application.ExeName);
- end else
- begin
-  GetMem(Buf, MAX_PATH);
-  GetWindowsDirectory(Buf, MAX_PATH);
-  Result:=Buf+'\system32';
-  FreeMem(Buf);
- end;  
- EventLog(':GetLoginDataBaseFileName() directory is: '+Result);
-
- UnFormatDir(result);
- if FileExists(result+'\dbmsftr.dll') then
- begin
-  if BDEIsInstalled then
-  result:=result+'\dbmsftr.dll' else
-  result:=result+'\dbmsftr.ocx';
- end else
- begin
-  result:=result+'\dbmsftr.ocx';
- end;
-end;
-
-function TDBKernel.GetLoginDataBaseName: string;
-var
-  Buf: PChar;  
-begin
- if (IsWindowsVista or PortableWork) then
- begin
-  Result:=GetDirectory(Application.ExeName);
- end else
- begin
-  GetMem(Buf, MAX_PATH);
-  GetWindowsDirectory(Buf, MAX_PATH);
-  Result:=Buf+'\system32';
-  FreeMem(Buf);
- end;
- UnFormatDir(Result);
- if FileExists(result+'\dbmsftr.dll') then
- begin
-  if BDEIsInstalled then
-  result:='"'+result+'\dbmsftr.dll"' else
-  result:='Login';
- end else
- begin
-  result:='Login';
- end;
-end;
-
-function TDBKernel.CheckAdmin: integer;
-var
-  fQuery : TDataSet;
-begin
- result:=LOG_IN_ERROR;
- EventLog('-> :CheckAdmin()');
- begin
-  if not FileExists(GetLoginDataBaseFileName) then
-  begin
-   result:=LOG_IN_TABLE_NOT_FOUND;
-   exit;
-  end;   
-  EventLog('-> :CheckAdmin() -> GetQuery');
-  fQuery:=GetQuery(GetLoginDataBaseFileName);
-  try
-   fQuery.Active:=false;
-   SetSQL(fQuery,'Select * from '+GetLoginDataBaseName+' where LOGO="'+'Administrator'+'"');
-   fQuery.Active:=true;
-  except;
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;           
-  EventLog('-> :CheckAdmin() -> RecordCount = ' +IntToStr(fQuery.RecordCount));
-  if fQuery.RecordCount=0 then
-  begin
-   result:=LOG_IN_USER_NOT_FOUND;
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fQuery.RecordCount>1 then
-  begin
-   result:=LOG_IN_ERROR;
-   FreeDS(fQuery);
-   exit;
-  end;
- end;
- result:=LOG_IN_OK;
- FreeDS(fQuery);
- EventLog('-> :CheckAdmin() -> Result = ' +IntToStr(LOG_IN_OK));
 end;
 
 function TDBKernel.GetDataBase: string;
@@ -2307,7 +1365,6 @@ var
   i, n : integer;
   aTag : integer;
 begin
- if fDBUserName='' then exit;
  If Form=nil then exit;
  SetVistaFonts(Form);
  for i:=1 to Form.ComponentCount do
@@ -3048,119 +2105,6 @@ begin
  SaveINIPasswords;
 end;
 
-function TDBKernel.GetUserAccess(Login: String; var Access : string): Integer;
-var
-  fQuery : TDataSet;
-begin
- Access:='';
- result:=LOG_IN_ERROR;
- if not TestLoginDB then
- begin
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  exit;
- end;
- if fDBUserType<>UtAdmin then
- begin
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  exit;
- end;
- fQuery:=GetQuery(GetLoginDataBaseFileName);
- fQuery.Active:=false;
- SetSQL(fQuery,'Select Access from '+GetLoginDataBaseName+' Where Logo = "'+Login+'"');
- try
- fQuery.Active:=true;
- except
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  FreeDS(fQuery);
-  exit;
- end;
- if fQuery.RecordCount=0 then
- begin
-  result:=LOG_IN_USER_NOT_FOUND;
-  FreeDS(fQuery);
-  exit;
- end;
- Access:=fQuery.FieldByName('Access').AsString;
- if (Access='') or (Length(Access)<50) then Access:='0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
- result:=LOG_IN_OK;
- FreeDS(fQuery);
-end;
-
-function TDBKernel.SetUserAccess(Login, Access: string): Integer;
-var
-  fQuery : TDataSet;
-begin
- result:=LOG_IN_ERROR;
- if not TestLoginDB then
- begin
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  exit;
- end;
- if fDBUserType<>UtAdmin then
- begin
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  exit;
- end;
- fQuery:=GetQuery(GetLoginDataBaseFileName);
- fQuery.Active:=false;
- SetSQL(fQuery,'UPDATE '+GetLoginDataBaseName+' SET Access = "'+Access+'" Where Logo = "'+Login+'"');
- try
- ExecSQL(fQuery);
- except
-  result:=LOG_IN_TABLE_NOT_FOUND;
-  FreeDS(fQuery);
-  exit;
- end;
- result:=LOG_IN_OK;
- FreeDS(fQuery);
-end;
-
-procedure TDBKernel.FixLoginDB;
-var
-  Connection : TADOConnection;
-  LoginDB : string;
-  List : TStrings;
-  c : boolean;
-  i, CheckResult : integer;
-begin
- EventLog('-> :FixLoginDB()');
- LoginDB := GetLoginDataBaseFileName;
-
- CheckResult:=FileCheckedDB.CheckFile(LoginDB);
- if CheckResult=CHECK_RESULT_OK then
- begin    
-  EventLog('-> :FixLoginDB().CheckFile OK');
-  exit;
- end;
-
- if GetDBType(LoginDB)=DB_TYPE_MDB then
- begin
-  List:=TStringList.Create;   
-  EventLog('-> :FixLoginDB() -> ADOInitialize()');
-  Connection:=ADOInitialize(LoginDB);
-  try
-   Connection.GetTableNames(List);
-  except
-   on e : Exception do EventLog(':TDBKernel::FixLoginDB() throw exception: '+e.Message);
-  end;
-  c:=false;
-  for i:=0 to List.Count-1 do
-  if List[i]='Login' then
-  begin
-   c:=true;
-   break;
-  end;       
-  EventLog('-> :FixLoginDB() -> RemoveADORef()');
-  RemoveADORef(Connection);
-  if not c then
-  begin      
-   EventLog('-> :FixLoginDB() -> DBKernel.CreateLoginDB()');
-   DBKernel.CreateLoginDB;
-  end;
- end;  
- EventLog('-> :FixLoginDB() return');
-end;
-
 procedure TDBKernel.ThreadOpenResult(Result: boolean);
 begin
  ThreadOpenResultBool := Result;
@@ -3485,7 +2429,6 @@ finalization
 
  if DBKernel<>nil then
  begin
-  FileCheckedDB.SaveCheckFile(TDBKernel.GetLoginDataBaseFileName);
   FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(dbname));
  end;
  

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, dolphin_db, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
   uVistaFuncs, CommonDBSupport, UnitPasswordKeeper, ImgList,
-  UnitDBDeclare, DmProgress, UnitDBCommonGraphics;
+  UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants;
 
 type
   TCMDForm = class(TForm)

@@ -7,15 +7,13 @@ uses
   Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
-  UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons;
+  UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons, uLogger, uConstants;
 
 type
   TOptionsForm = class(TForm)
     TabbedNotebook1: TTabbedNotebook;
-    CheckBox3: TCheckBox;
     CheckBox4: TCheckBox;
     RadioGroup1: TRadioGroup;
-    Button6: TButton;
     ColorDialog1: TColorDialog;
     FontDialog1: TFontDialog;
     CancelButton: TButton;
@@ -182,7 +180,6 @@ type
     CheckBox38: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
-    procedure Button6Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -273,7 +270,7 @@ var
 
 implementation
 
-uses Language, CleaningForm, dbselectunit, login, SlideShow, ExplorerThreadUnit,
+uses Language, CleaningForm, dbselectunit, SlideShow, ExplorerThreadUnit,
       ExplorerUnit, UnitJPEGOptions;
 
 {$R *.dfm}
@@ -288,7 +285,7 @@ begin
  List.Clear;
  Directory:=ProgramDir;
  FormatDir(Directory);
- Directory:=Directory+ThemesDirectory;
+ Directory:=Directory + ThemesDirectory;
  Found := FindFirst(Directory+'*.dbc', faAnyFile, SearchRec);
  while Found = 0 do
  begin
@@ -316,11 +313,8 @@ begin
  if FLoadedPages[NewTab] then exit;
  FLoadedPages[NewTab]:=true;
 
-
  if NewTab=0 then
  begin
-  Button6.Enabled:=not FolderView;
-  CheckBox3.Checked:=DBKernel.Readbool('Options','ShowAnimateToHintWindow',false);
   CheckBox4.Checked:=DBKernel.Readbool('Options','AllowPreview',True);
   RadioGroup1.ItemIndex:=DBKernel.readinteger('Options','PreviewSwohOptions',0);
 
@@ -485,16 +479,6 @@ begin
 
 end;
 
-procedure TOptionsForm.Button6Click(Sender: TObject);
-begin
-  if LoginForm=nil then
-   Application.CreateForm(TLoginForm, LoginForm);
-   LoginForm.Execute;
-   LoginForm.Release;
-   LoginForm.Free;
-   LoginForm:=nil;
-end;
-
 procedure TOptionsForm.FormShow(Sender: TObject);
 var
   b : boolean;
@@ -640,7 +624,6 @@ begin
 // 0:
   if FLoadedPages[0] then
   begin
-   DBKernel.WriteBool('Options','ShowAnimateToHintWindow',CheckBox3.Checked);
    DBKernel.WriteBool('Options','AllowPreview',CheckBox4.Checked);
    DBKernel.WriteInteger('Options','PreviewSwohOptions',RadioGroup1.ItemIndex);
    DBKernel.WriteBool('Options','UseWindowsTheme',CheckBox36.Checked);
@@ -861,7 +844,6 @@ begin
  RadioGroup1.Caption:=TEXT_MES_HINTS;
  RadioGroup1.Items[0]:=TEXT_MES_ANIMATE_SHOW;
  RadioGroup1.Items[1]:=TEXT_MES_SHOW_SHADOW;
- Button6.Caption:=TEXT_MES_USERS;
  Label12.Caption:= TEXT_MES_SHOW_CURRENT_OBJ;
  CheckBox1.Caption:= TEXT_MES_FOLDERS;
  CheckBox6.Caption:= TEXT_MES_SIMPLE_FILES;

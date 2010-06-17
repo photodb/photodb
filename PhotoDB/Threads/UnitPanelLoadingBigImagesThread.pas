@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt, Dolphin_DB,
   UnitDBDeclare, RAWImage, UnitDBCommonGraphics, UnitDBCommon,
-  UnitCDMappingSupport;
+  UnitCDMappingSupport, uLogger;
 
 type
   TPanelLoadingBigImagesThread = class(TThread)

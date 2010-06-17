@@ -369,8 +369,6 @@ var
 begin
  SaveDialog:=DBSaveDialog.Create;
 
- if BDEInstalled then
- SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb|BDE Files (*.db)|*.db' else
  SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
 
  if SaveDialog.Execute then
@@ -573,8 +571,6 @@ begin
   //Sample DB
   SaveDialog:=DBSaveDialog.Create;
 
-  if BDEInstalled then
-  SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb|BDE Files (*.db)|*.db' else
   SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
 
   if SaveDialog.Execute then
@@ -703,8 +699,6 @@ var
 begin         
  OpenDialog := DBOpenDialog.Create;
 
- if BDEInstalled then
- OpenDialog.Filter:='DataBase Files (*.db;*.mdb;*.photodb)|*.db;*.mdb;*.photodb|Access Files (*.photodb;*.mdb)|*.photodb;*.mdb|BDE Files (*.db)|*.db' else
  OpenDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
 
  if FileExists(dbname) then

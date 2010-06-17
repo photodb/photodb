@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, ExtDlgs, Jpeg, Dolphin_DB,
   Menus, GraphicEx, Gifimage, Math, ComCtrls, ImgList, GraphicSelectEx,
-  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon;
+  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, uConstants;
 
 type
   TNewGroupForm = class(TForm)
@@ -224,7 +224,7 @@ begin
  Ts.Clear;
  Directory:=ProgramDir;
  FormatDir(Directory);
- Directory:=Directory+PlugInImagesFolder;
+ Directory:=Directory + PlugInImagesFolder;
  Found := FindFirst(Directory+'*.jpgc', faAnyFile, SearchRec);
  while Found = 0 do
  begin

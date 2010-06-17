@@ -7,7 +7,7 @@ uses
  Classes, Math, DB, DBTables, SysUtils, Controls, Graphics, Dialogs,
  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
- UnitDBCommonGraphics, uThreadForm, uThreadEx;
+ UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,

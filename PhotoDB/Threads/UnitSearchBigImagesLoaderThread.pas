@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Forms, Dolphin_DB, SysUtils, Graphics, GraphicCrypt, Math,
   RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon,
-  UnitCDMappingSupport, uThreadForm;
+  UnitCDMappingSupport, uThreadForm, uLogger;
 
 type
   TSearchBigImagesLoaderThread = class(TThread)

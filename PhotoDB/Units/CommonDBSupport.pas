@@ -6,8 +6,8 @@ interface
 
 uses
 {$IFNDEF DEBUG}
-Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, UnitScripts,
-UnitDBDeclare,
+Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
+UnitDBDeclare, uLogger,
 {$ENDIF}
  Windows, ADODB, SysUtils, DB, DBTables, ActiveX, Variants, Classes, ComObj,
  UnitINI, BDE;
@@ -70,7 +70,6 @@ var
 
 {$IFDEF DEBUG}
  var dbname : string = 'D:\Dmitry\ImagesDB\dolphin.db';
- BDEIsInstalled : boolean = true;
 {$ENDIF}
 
 function GetDBType : integer; overload;
@@ -370,22 +369,9 @@ end;
 function GetTable(Table : String; TableID : integer = DB_TABLE_UNKNOWN) : TDataSet;
 begin
  Result:=nil;
- if (GetDBType(Table)=DB_TYPE_BDE) and BDEIsInstalled then
- begin
-  Result:=TTable.Create(nil);
-  if Table<>'' then if Table[1]='"' then Table:=Copy(Table,2,Length(Table)-2);
-  if TableID=DB_TABLE_IMAGES then (Result as TTable).TableName:=Table;
-  if TableID=DB_TABLE_GROUPS then
-  begin
-   (Result as TTable).TableName:=GroupsTableFileNameW(Table);
-  end;
-  {$IFNDEF DEBUG}
-  if TableID=DB_TABLE_LOGIN then (Result as TTable).TableName:=Table;
-  {$ENDIF}
- end;
  if GetDBType(Table)=DB_TYPE_MDB then
  begin
-  CoInitialize(nil);
+
   Result:=TADODataSet.Create(nil);
   (Result as TADODataSet).Connection:=ADOInitialize(Table);
   (Result as TADODataSet).CommandType:=cmdTable;
@@ -401,23 +387,14 @@ var
   FTable : TDataSet;
 begin
  Result:=0;
- if (GetDBType(Table)=DB_TYPE_BDE) and BDEIsInstalled then
- begin
-  FTable:=TTable.Create(nil);
-  (FTable as TTable).TableName:=Table;
-  FTable.Active:=True;
-  Result:=FTable.RecordCount;
-  FTable.Free;
- end;
  if (GetDBType(Table)=DB_TYPE_MDB) then
  begin
   FTable:=GetQuery(Table);            //ONLY MDB
-  SetSQL(FTable,'Select count(*)as RecordsCount from ImageTable');
+  SetSQL(FTable,'Select count(*) as RecordsCount from ImageTable');
   FTable.Open;
   Result:=FTable.FieldByName('RecordsCount').AsInteger;
   FreeDS(FTable);
  end;
-
 end;
 
 function ADOCreateGroupsTable(TableName : string) : boolean;
@@ -998,25 +975,12 @@ begin
 end;
 
 procedure PackTable(FileName : string);
-var
-  FTable : TTable;
 begin
- FTable := TTable.Create(nil);
- FTable.TableName:=dbname;
- if (GetDBType(dbname)=DB_TYPE_BDE) and BDEIsInstalled then
- begin
-  dgPackDbaseTable(FTable);
-  FTable.TableName:=GroupsTableFileNameW(dbname);
-  dgPackDbaseTable(FTable);
- end;
-
  if (GetDBType(dbname)=DB_TYPE_MDB) then
  begin
-  CoInitialize(nil);
   CommonDBSupport.TryRemoveConnection(dbname,true);
   CompactDatabase_JRO(dbname,'','')
  end;
- FTable.Free;
 end;
 
 Procedure InitializeDBLoadScript;
@@ -1027,9 +991,13 @@ begin
  if DBLoadInitialized then exit;
  {$IFNDEF DEBUG}
  begin
-  InitializeScript(aScript);
-  LoadBaseFunctions(aScript);
-  SetNamedValue(aScript,'$PortableWork','False');
+    aScript := TScript.Create('InitializeDBLoadScript');
+    try
+    AddScriptFunction(aScript.PrivateEnviroment,'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @UnitScripts.ReadFile);
+
+  SetNamedValue(aScript,'$PortableWork','False'); 
+  SetNamedValue(aScript,'$InitialString',DBFConnectionString);
+  SetNamedValue(aScript,'$Provider',MDBProvider);
   LoadScript:='';
   try
    aFS := TFileStream.Create(ProgramDir+'scripts\Load.dbini',fmOpenRead);
@@ -1040,8 +1008,6 @@ begin
     if LoadScript[LoadInteger]=#10 then LoadScript[LoadInteger]:=' ';
     if LoadScript[LoadInteger]=#13 then LoadScript[LoadInteger]:=' ';
    end;
-   LoadScript:=AddLanguage(LoadScript);
-   LoadScript:=AddIcons(LoadScript);
    aFS.Free;
   except
    on e : Exception do EventLog(':InitializeDBLoadScript() at Loading Script exception : '+e.Message);
@@ -1051,7 +1017,12 @@ begin
   except
    on e : Exception do EventLog(':InitializeDBLoadScript() at Executing Script exception : '+e.Message);
   end;
-  PortableWork:=AnsiUpperCase(GetNamedValueString(aScript,'$PortableWork'))='TRUE';
+  PortableWork:=AnsiUpperCase(GetNamedValueString(aScript,'$PortableWork'))='TRUE'; 
+  DBFConnectionString:=GetNamedValueString(aScript,'$InitialString');
+  MDBProvider:=GetNamedValueString(aScript,'$Provider');
+  finally
+    aScript.Free;
+  end;
  end;
  EventLog(':InitializeDBLoadScript() return true');
  DBLoadInitialized:=true;
@@ -1069,37 +1040,6 @@ initialization
   DBFConnectionString:=DBViewConnectionString;
  end;
 
- If AnsiUpperCase(paramStr(1))<>'/SAFEMODE' then
- if not GetDBViewMode then
- begin
-  InitializeScript(aScript);
-  LoadBaseFunctions(aScript);
-  SetNamedValue(aScript,'$InitialString',DBFConnectionString);
-  SetNamedValue(aScript,'$Provider',MDBProvider);
-  LoadScript:='';
-  try
-   aFS := TFileStream.Create(ProgramDir+'scripts\Load.dbini',fmOpenRead);
-   SetLength(LoadScript,aFS.Size);
-   aFS.Read(LoadScript[1],aFS.Size);
-   for LoadInteger:=Length(LoadScript) downto 1 do
-   begin
-    if LoadScript[LoadInteger]=#10 then LoadScript[LoadInteger]:=' ';
-    if LoadScript[LoadInteger]=#13 then LoadScript[LoadInteger]:=' ';
-   end;
-   LoadScript:=AddLanguage(LoadScript);
-   LoadScript:=AddIcons(LoadScript);
-   aFS.Free;
-  except
-   on e : Exception do EventLog(':CommonDBSupport::initialization() throw exception : '+e.Message);
-  end;
-  try
-   ExecuteScript(nil,aScript,LoadScript,LoadInteger,nil);
-  except  
-   on e : Exception do EventLog(':CommonDBSupport::initialization()/ExecuteScript throw exception : '+e.Message);
-  end;
-  DBFConnectionString:=GetNamedValueString(aScript,'$InitialString');
-  MDBProvider:=GetNamedValueString(aScript,'$Provider');
- end;
  {$ENDIF}
 
 end.

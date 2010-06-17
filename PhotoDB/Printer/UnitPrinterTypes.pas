@@ -4,7 +4,7 @@ interface
 
 {$DEFINE PHOTODB}
 
-uses Windows, SysUtils, Math, Graphics, Printers, Classes,ComObj,
+uses Windows, SysUtils, Math, Graphics, Printers, Classes,ComObj, uLogger,
 {$IFDEF PHOTODB}
  Dolphin_DB, GraphicCrypt, GraphicsBaseTypes, UnitDBCommonGraphics,
 {$ENDIF}

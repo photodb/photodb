@@ -11,13 +11,10 @@ uses
   DBCtrls, UnitBitmapImageList, EasyListview, DragDropFile, DragDrop,
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
-  UnitDBCommon, UnitCDMappingSupport;
+  UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm;
 
 type
-  TXListView = TEasyListView;
-
-type
-  TFormCont = class(TForm)
+  TFormCont = class(TThreadForm)
     Panel1: TPanel;
     PopupMenu1: TPopupMenu;
     SelectAll1: TMenuItem;
@@ -135,7 +132,7 @@ type
     PopupHandled : boolean;
     LoadingThItem, ShLoadingThItem : TEasyItem;
 
-    ListView1 : TXListView;
+    ListView1 : TEasyListView;
     FilePushed : boolean;
     FilePushedName : string;
 
@@ -198,24 +195,22 @@ type
     { Public declarations }
   end;
 
-  TArFormCont = array of TFormCont;
-
   TManagePanels = class(TObject)
    Private
-    FPanels : TArFormCont;
+    FPanels : TList;
+    function GetPanelByIndex(Index: Integer): TFormCont;
    Public
-    Constructor Create;
-    Destructor Destroy; override;
+    constructor Create;
+    destructor Destroy; override;
     Function NewPanel : TFormCont;
     Procedure FreePanel(Panel : TFormCont);
     Procedure AddPanel(Panel : TFormCont);
     Procedure RemovePanel(Panel : TFormCont);
     Function GetPanelsTexts : TStrings;
-    Property Panels : TArFormCont Read FPanels;
     Function ExistsPanel(Panel : TForm; CID : TGUID) : Boolean;
     Function Count : integer;
-   function IsPanelForm(Panel: TForm): Boolean;
-   published
+    function IsPanelForm(Panel: TForm): Boolean;
+    property Items[Index: Integer]: TFormCont read GetPanelByIndex; default;
   end;
 
 
@@ -456,7 +451,7 @@ begin
    menus[0].Tag:=item.Index;
    menus[0].ImageIndex:=DB_IC_DELETE_INFO;
    menus[0].OnClick:=DeleteIndexItemFromPopUpMenu;
-   DBPopupMenu.ExecutePlus(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,Info,menus);
+   TDBPopupMenu.Instance.ExecutePlus(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,Info,menus);
   end else
   begin
    SetLength(FileNames,0);
@@ -1459,49 +1454,43 @@ var
   i : integer;
   b : boolean;
 begin
- b:=false;
- For i:=0 to Length(FPanels)-1 do
- if FPanels[i]=Panel then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FPanels,Length(FPanels)+1);
-  FPanels[Length(FPanels)-1]:=Panel;
- end;
+  if FPanels.IndexOf(Panel) > -1 then
+    Exit;
+
+  FPanels.Add(Panel);
 end;
 
 function TManagePanels.Count: integer;
 begin
- Result:=Length(Self.FPanels);
+ Result := FPanels.Count;
 end;
 
 constructor TmanagePanels.Create;
 begin
-//
+  FPanels := TList.Create;
 end;
 
 destructor TmanagePanels.Destroy;
 begin
-//
+  FPanels.Free;
+end;
+
+function TManagePanels.GetPanelByIndex(Index: Integer): TFormCont;
+begin
+  Result := nil;
+  if (Index > -1) and (Index < FPanels.Count) then
+    Result := FPanels[Index];
 end;
 
 function TManagePanels.ExistsPanel(Panel: TForm; CID : TGUID): Boolean;
 var
-  i:integer;
+  Index : integer;
 begin
- Result:=false;
- For i:=0 to Length(FPanels)-1 do
- begin
-  if FPanels[i]=Panel then
-  if IsEqualGUID((FPanels[i] as TFormCont).SID, CID) or IsEqualGUID((FPanels[i] as TFormCont).BigImagesSID, CID) then
-  begin
-   Result:=true;
-   Break;
-  end;
- end;
+  Result := False;
+  Index := FPanels.IndexOf(Panel);
+  if (Index > -1) then
+    Result := IsEqualGUID(Self[Index].SID, CID) or IsEqualGUID(Self[Index].BigImagesSID, CID);
+
 end;
 
 procedure TManagePanels.FreePanel(Panel: TFormCont);
@@ -1516,8 +1505,10 @@ var
   S : string;
 begin   
  Result:=TStringList.Create;
- For i:=0 to Length(FPanels)-1 do
- Result.Add(FPanels[i].Caption);
+
+ for i := 0 to FPanels.Count - 1 do
+   Result.Add(Self[i].Caption);
+   
  Repeat
  b:=False;
   For i:=0 to Result.Count-2 do
@@ -1540,8 +1531,8 @@ Var
   var i:integer;
   begin
    result:=false;
-   For i:=0 to length(FPanels)-1 do
-   if FPanels[i].Tag=Tag then
+   For i:=0 to FPanels.Count - 1 do
+   if Self[i].Tag=Tag then
    begin
     Result:=True;
     Break;
@@ -1551,14 +1542,14 @@ Var
 begin
  s:='';
  FTag:=0;
- If length(FPanels)=0 then
+ If FPanels.Count = 0 then
  begin
   FTag:=1;
   s:=Format(TEXT_MES_PANEL_CAPTION,[IntToStr(FTag)]);
  end;
- If length(FPanels)>0 then
+ If FPanels.Count > 0 then
  begin
-  For i:=0 to length(FPanels)-1 do
+  For i:=0 to FPanels.Count-1 do
   if not TagExists(i+1) then
   begin
    s:=format(TEXT_MES_PANEL_CAPTION,[inttostr(i+1)]);
@@ -1567,8 +1558,8 @@ begin
   end;
   if FTag=0 then
   begin
-   s:=format(TEXT_MES_PANEL_CAPTION,[inttostr(length(FPanels)+1)]);
-   FTag:=length(FPanels)+1;
+   s:=format(TEXT_MES_PANEL_CAPTION,[inttostr(FPanels.Count+1)]);
+   FTag:=FPanels.Count+1;
   end;
  end;
  Application.CreateForm(TFormCont,Result);
@@ -1580,31 +1571,13 @@ begin
 end;
 
 procedure TManagePanels.RemovePanel(Panel: TFormCont);
-var
-  i, j : integer;
 begin
- For i:=0 to Length(FPanels)-1 do
- if FPanels[i]=Panel then
- begin
-  FPanels[i]:=nil;
-  For j:=i to Length(FPanels)-2 do
-  FPanels[j]:=FPanels[j+1];
-  SetLength(FPanels,Length(FPanels)-1);
-  break;
- end;
+  FPanels.Remove(Panel);
 end;
 
 function TManagePanels.IsPanelForm(Panel: TForm): Boolean;
-var
-  i : Integer;
 begin
- Result:=False;
- For i:=0 to Length(FPanels)-1 do
- if FPanels[i]=Panel then
- Begin
-  Result:=True;
-  Break;
- End;
+  Result:= FPanels.Indexof(Panel) > -1;
 end;
 
 procedure TFormCont.ListView1DblClick(Sender: TObject);

@@ -10,12 +10,12 @@ uses
   SaveWindowPos, ExtDlgs , ToolWin, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
   ShellContextMenu, DropSource, DropTarget, DateUtils, acDlgSelect,
-  ProgressActionUnit, UnitSQLOptimizing, UnitScripts, DBScriptFunctions,
+  ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts, DBScriptFunctions,
   Exif, EasyListview, WebLink, MPCommonUtilities, GraphicsCool,
   UnitRangeDBSelectForm, UnitSearchBigImagesLoaderThread, DragDropFile,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm;
+  UnitCDMappingSupport, uThreadForm, uLogger, uConstants;
 
 type
  TString255 = string[255];
@@ -718,24 +718,23 @@ begin
  end;
  SearchByCompating:=false;
  ScriptString:=Include('Scripts\DoSearch.dbini');
- InitializeScript(fScript);
- fScript.Description:='New search script';
 
- FinalizeScript(fScript);
+ fScript := TScript.Create('');
+ try
+   fScript.Description:='New search script';
 
- LoadBaseFunctions(fScript);
- LoadDBFunctions(fScript);
- AddAccessVariables(fScript);
- if Pos('"',SearchEdit.Text)>0 then
- SearchEdit.Text:=SysUtils.StringReplace(SearchEdit.Text,'"',' ',[rfReplaceAll]);
+   if Pos('"',SearchEdit.Text)>0 then
+   SearchEdit.Text:=SysUtils.StringReplace(SearchEdit.Text,'"',' ',[rfReplaceAll]);
 
- SetNamedValue(fScript,'$SearchString','"'+SearchEdit.Text+'"');
- SetNamedValue(fScript,'$Rating',IntToStr(Rating2.Rating));
+   SetNamedValue(fScript,'$SearchString','"'+SearchEdit.Text+'"');
+   SetNamedValue(fScript,'$Rating',IntToStr(Rating2.Rating));
 
- ExecuteScript(nil,fScript,ScriptString,c,nil);
- SearchEdit.Text:=GetNamedValueString(fScript,'$SearchString');
- Rating2.Rating:=GetNamedValueInt(fScript,'$Rating');
-
+   ExecuteScript(nil,fScript,ScriptString,c,nil);
+   SearchEdit.Text:=GetNamedValueString(fScript,'$SearchString');
+   Rating2.Rating:=GetNamedValueInt(fScript,'$Rating');
+ finally
+   fScript.Free;
+ end;
  WideSearch.ShowLastTime:=CheckBox6.Checked;
  WideSearch.LastTimeValue:=StrToIntDef(ComboBox4.Text,3);
  WideSearch.LastTimeCode:=ComboBox5.ItemIndex;
@@ -899,21 +898,17 @@ begin
 
  ExplorerManager.LoadEXIF;
  WindowID:=GetGUID;
- InitializeScript(aScript);
- LoadBaseFunctions(aScript);
- LoadDBFunctions(aScript);
- LoadFileFunctions(aScript);
-
- AddScriptObjFunction(aScript,'ShowExplorerPanel',F_TYPE_OBJ_PROCEDURE_TOBJECT,Explorer2Click);
- AddScriptObjFunction(aScript,'HideExplorerPanel',F_TYPE_OBJ_PROCEDURE_TOBJECT,Properties1Click);
- AddScriptObjFunction(aScript,'SlideShow',F_TYPE_OBJ_PROCEDURE_TOBJECT,SlideShow1Click);
- AddScriptObjFunction(aScript,'SelectAll',F_TYPE_OBJ_PROCEDURE_TOBJECT,SelectAll1Click);
- AddScriptObjFunction(aScript,'SaveResultsAsTable',F_TYPE_OBJ_PROCEDURE_TOBJECT,SaveasTable1Click);
- AddScriptObjFunction(aScript,'CopySearchResults',F_TYPE_OBJ_PROCEDURE_TOBJECT,CopySearchResults1Click);
- AddScriptObjFunction(aScript,'LoadResults',F_TYPE_OBJ_PROCEDURE_TOBJECT,LoadResults1Click);
- AddScriptObjFunction(aScript,'SaveResults',F_TYPE_OBJ_PROCEDURE_TOBJECT,SaveResults1Click);
- AddScriptObjFunction(aScript,'CloseWindow',F_TYPE_OBJ_PROCEDURE_TOBJECT,Exit1Click);
- AddScriptObjFunction(aScript,'LoadExplorerValue',F_TYPE_OBJ_PROCEDURE_TOBJECT,LoadExplorerValue);
+ aScript := TScript.Create('');
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'HideExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Properties1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'SlideShow',          F_TYPE_OBJ_PROCEDURE_TOBJECT, SlideShow1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'SelectAll',          F_TYPE_OBJ_PROCEDURE_TOBJECT, SelectAll1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'SaveResultsAsTable', F_TYPE_OBJ_PROCEDURE_TOBJECT, SaveasTable1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'CopySearchResults',  F_TYPE_OBJ_PROCEDURE_TOBJECT, CopySearchResults1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadResults',        F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadResults1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'SaveResults',        F_TYPE_OBJ_PROCEDURE_TOBJECT, SaveResults1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, Exit1Click);
+ AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadExplorerValue',  F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadExplorerValue);
 
  Menu:=nil;
  SetNamedValue(aScript,'$dbname','"'+dbname+'"');
@@ -1024,7 +1019,7 @@ begin
   Info:=GetCurrentPopUpMenuInfo(Item);
   if not (getTickCount-WindowsMenuTickCount>WindowsMenuTime)  then
   begin
-   DBPopupMenu.Execute(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,Info);
+   TDBPopupMenu.Instance.Execute(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,Info);
   end else
   begin
    SetLength(FileNames,0);
@@ -1787,7 +1782,7 @@ procedure TSearchForm.FormDestroy(Sender: TObject);
 begin
  DBKernel.WriteInteger('Search','LeftPanelWidth',Panel1.Width);
  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
- FinalizeScript(aScript);
+ aScript.Free;
  FreeDS(ThreadQuery);
  FreeDS(SelectQuery);
  FreeDS(WorkQuery);
@@ -2034,7 +2029,7 @@ begin
    FormDateRangeSelectDB.Free;
    FormDateRangeSelectDB:=nil;
   end;
-  Caption:=ProductName+' - '+DBKernel.DBUserName+'  ['+DBkernel.GetDataBaseName+']';
+  Caption:=ProductName+' -  ['+DBkernel.GetDataBaseName+']';
   ReRecreateGroupsList;
   FPictureSize:=Dolphin_DB.ThImageSize;
   LoadSizes;
@@ -2498,13 +2493,8 @@ begin
  If DBTerminating then exit;
  DBCanDrag:=false;
  DBKernel.RegisterChangesID(self,ChangedDBDataByID);
- Caption:=ProductName+' - '+DBKernel.DBUserName+'  ['+DBkernel.GetDataBaseName+']';
- if (DBKernel.DBUserType=UtAdmin) and (DBKernel.DBUserName<>TEXT_MES_ADMIN) then
- Caption:=Caption+' ('+TEXT_MES_ADMIN+')';
- if DBKernel.DBUserType=UtUser then
- Caption:=Caption+' ('+TEXT_MES_USER+')';
- if DBKernel.DBUserType=UtGuest then
- Caption:=Caption+' ('+TEXT_MES_GUEST+')';
+ Caption:=ProductName+' - ['+DBkernel.GetDataBaseName+']';
+
  DoShowSelectInfo;
  ListView1.Canvas.Pen.Color:=$0;
  ListView1.Canvas.brush.Color:=$0;
@@ -2751,7 +2741,7 @@ procedure TSearchForm.ApplicationEvents1Exception(Sender: TObject;
 begin
  if DBkernel.ReadString('Options','SaveLogErrors')<>'' then
  begin
-  Dolphin_DB.EventLog('Error ['+DateTimeToStr(Now)+'] = '+e.Message);
+  EventLog('Error ['+DateTimeToStr(Now)+'] = '+e.Message);
  end;
 end;
 

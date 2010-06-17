@@ -11,7 +11,7 @@ uses
   ShellContextMenu, DropSource, DropTarget, DDraw, GIFImage, GraphicEx,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm;
+  UnitCDMappingSupport, uThreadForm, uLogger, uConstants;
 
 type
   TRotatingImageInfo = record
@@ -1087,7 +1087,7 @@ begin
   DBItem1.Visible:=true;
   DBItem1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(CurrentInfo.ItemIds[CurrentFileNumber])]);
   InitializeInfo;
-  DBPopupMenu.AddDBContMenu(DBItem1,info);
+  TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
  end else
  begin
 
@@ -1095,8 +1095,8 @@ begin
   if not (SlideShowNow or FullScreenNow) then
   begin
    InitializeInfo;
-   DBPopupMenu.SetInfo(info);
-   DBPopupMenu.AddUserMenu(PopupMenu1.Items,true,N2.MenuIndex+1);
+   TDBPopupMenu.Instance.SetInfo(info);
+   TDBPopupMenu.Instance.AddUserMenu(PopupMenu1.Items,true,N2.MenuIndex+1);
   end;
 
   AddToDB1.Visible:=True;
@@ -3118,8 +3118,8 @@ begin
  end;
  If NumberOfPanel>=0 then
  begin
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels.Panels[NumberOfPanel]);
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels.Panels[NumberOfPanel]);
+  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
+  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
  end;
  If NumberOfPanel<0 then
  begin

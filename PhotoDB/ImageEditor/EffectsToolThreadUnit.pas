@@ -4,7 +4,7 @@ interface
 
 uses Windows,
   Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes, Forms,
-  Dolphin_DB, uVistaFuncs;
+  Dolphin_DB, uVistaFuncs, uLogger;
 
 type
   TBaseEffectThread = class(TThread)

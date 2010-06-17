@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Registry, WinSock, WinInet, Windows, SysUtils, dolphin_db, Forms,
-  uVistaFuncs;
+  uVistaFuncs, uLogger, uConstants;
 
 type
   TConnectionType = (ctNone, ctProxy, ctDialup);
@@ -136,7 +136,7 @@ var
   BytesRead: cardinal; 
 begin 
   Result := '';
-  NetHandle := InternetOpen(Dolphin_DB.ProductName, INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0); 
+  NetHandle := InternetOpen(ProductName, INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
   if Assigned(NetHandle) then
     begin
       UrlHandle := InternetOpenUrl(NetHandle, PChar(Url), nil, 0, INTERNET_FLAG_RELOAD, 0);
@@ -161,7 +161,7 @@ begin
     end 
   else                      
 { NetHandle недопустимый. Генерируем исключительную ситуацию }
-   Dolphin_DB.EventLog(':DownloadFile() throw exception: Unable to initialize Wininet');
+   EventLog(':DownloadFile() throw exception: Unable to initialize Wininet');
 end;
 
 constructor TInternetUpdate.Create(CreateSuspennded,

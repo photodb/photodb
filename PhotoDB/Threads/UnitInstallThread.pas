@@ -6,7 +6,7 @@ uses
   Windows, Dialogs, Variants, DB, DBTables, Dolphin_DB, Classes, Sysutils, Forms,
   ActiveX, UnitGroupsWork, Registry, acDlgSelect, jpeg, Math,
   GraphicSelectEx, CommonDBSupport, UnitINI,uVistaFuncs,
-  WindowsIconCacheTools;
+  WindowsIconCacheTools, uLogger, uConstants, uFileUtils;
 
 type
   InstallThread = class(TThread)
@@ -42,8 +42,6 @@ type
     procedure ErrorA;
     procedure ErrorB;
     procedure errorC;
-    procedure TryBDEInstall;
-    procedure VerBDEInstall;
     procedure FilterGroupsSync;
     procedure Post(SQL : string);
   end;
@@ -473,7 +471,6 @@ begin
  FProgress:=0;
  Synchronize(SetInfo);
  Synchronize(SetProgress);
- Synchronize(TryBDEInstall);
  If terminate_ then
  begin
   InstallDone:=true;
@@ -621,7 +618,6 @@ begin
     on e : Exception do EventLog(':Install() throw exception: '+e.Message);
    end;
   end;
-  BDEIsInstalled:=BDEInstalled;
   FErrorResult:=ID_OK;
  end;
  
@@ -922,96 +918,6 @@ end;
 procedure InstallThread.IfPause;
 begin
  If Pause then DoPause;
-end;
-
-procedure InstallThread.TryBDEInstall;
-var
-  h: Thandle;
-  RegServ: TDllRegisterServer;
-  FTempFolder, FTemp, FTmp : String;
-  FReg : TRegistry;
-  IsSetFolder : Boolean;
-  F : File;
-begin
-  if (not BDEInstalled) or InstallBDEAnyway then
-  begin
-   if FileExists(ProgramDir+'BdeInst.dll') then
-   begin
-    MessageDlg(TEXT_MES_IDAPI_NEED,  mtError, [mbOK], 0);
-    h:=loadlibrary(PChar(ProgramDir+'BdeInst.dll'));
-    if h=0 then
-    begin
-     MessageBoxDB(Handle,Format(TEXT_MES_DBE_DLL_LOADING_FAILED_F,[ProgramDir]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-     //halt;
-    end;
-    @RegServ := GetProcAddress ( h, 'DllRegisterServer' );
-    FReg:=TRegistry.Create;
-    FReg.RootKey:=HKEY_INSTALL;
-    FReg.OpenKey('\Environment',true);
-    FTemp:=FReg.ReadString('TEMP');
-    FTmp:=FReg.ReadString('TMP');
-    FTempFolder:='C:\Temp';
-    IsSetFolder:=false;
-    Repeat
-     if Length(FTempFolder)<80 then
-     begin
-      If not DirectoryExists(FTempFolder) then
-      begin
-       try
-         CreateDir(FTempFolder);
-       except
-       end;
-      end;
-      AssignFile(F,FTempFolder+'\$TRY$WRITE$.$TEMP$.DB.V'+ProductVersion);
-      {$I-}
-      Rewrite(F);
-      {$I+}
-     end;
-     If (IOResult<>0) or (Length(FTempFolder)>80) then
-     begin
-      If ID_RETRY = MessageBoxDB(GetActiveFormHandle,TEXT_MES_SELECT_TEMP_DIR,TEXT_MES_WARNING,TD_BUTTON_RETRY+TD_BUTTON_CANCEL,TD_ICON_WARNING) then
-      begin
-       FTempFolder:=SelectDirPlus(Handle,TEXT_MES_SELECT_TEMP_DIR_DIALOG);
-      end else Break;
-     end else
-     begin
-      try
-       Erase(F);
-      except   
-       on e : Exception do EventLog(':TryBDEInstall() throw exception: '+e.Message);
-      end;
-      Close(F);
-      IsSetFolder:=True;
-      Break;
-     end;
-    Until True;
-    try
-     If IsSetFolder then
-     begin
-      FReg.WriteString('TEMP',FTempFolder);
-      FReg.WriteString('TMP',FTempFolder);
-      RegServ;
-     end;
-    except
-     on e : Exception do EventLog(':TryBDEInstall() throw exception: '+e.Message);
-    end;
-    FReg.WriteString('TEMP',FTemp);
-    FReg.WriteString('TMP',FTmp);
-    FReg.CloseKey;
-    Freg.Free;
-    FreeLibrary(h);
-        //NO NEED TO INSTALL BDE!!!!!
-   end;// else Application.MessageBox(PChar(Format(TEXT_MES_DBE_DLL_LOADING_FAILED_F,[ProgramDir])),TEXT_MES_ERROR,MB_OK+MB_ICONERROR);
-  end;
-end;
-
-procedure InstallThread.VerBDEInstall;
-begin
- if not BDEInstalled then
-   begin
-    MessageBoxDB(GetActiveFormHandle,TEXT_MES_IDAPI_NOT_FOUND,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-    Terminate_:=true;
-   end;
 end;
 
 procedure InstallThread.FilterGroupsSync;

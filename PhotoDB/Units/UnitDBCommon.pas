@@ -2,7 +2,7 @@ unit UnitDBCommon;
 
 interface
 
-uses Windows, Classes, Forms, SysUtils, UnitScripts,
+uses Windows, Classes, Forms, SysUtils, uScript, UnitScripts,
      ReplaseLanguageInScript, ReplaseIconsInScript;
 
 function Hash_Cos_C(s:string):integer;
@@ -107,32 +107,30 @@ var
   LoadScript : string;
   aFS : TFileStream;
 begin
-  InitializeScript(aScript);
-  LoadBaseFunctions(aScript);
-  if UseDBFunctions then
-  begin
-   //TODO:!!! LoadDBFunctions(aScript);
-   //TODO:!!! LoadFileFunctions(aScript);
-  end;
-  LoadScript:='';
+  aScript := TScript.Create('');
   try
-   aFS := TFileStream.Create(FileName,fmOpenRead);
-   SetLength(LoadScript,aFS.Size);
-   aFS.Read(LoadScript[1],aFS.Size);
-   for i:=Length(LoadScript) downto 1 do
-   begin
-    if LoadScript[i]=#10 then LoadScript[i]:=' ';
-    if LoadScript[i]=#13 then LoadScript[i]:=' ';
-   end;
-   LoadScript:=AddLanguage(LoadScript);
-   LoadScript:=AddIcons(LoadScript);
-   aFS.Free;
-  except
-  end;
-  try
-   ExecuteScript(nil,aScript,LoadScript,i,nil);
-  except
-    //on e : Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
+    LoadScript:='';
+    try
+     aFS := TFileStream.Create(FileName,fmOpenRead);
+     SetLength(LoadScript,aFS.Size);
+     aFS.Read(LoadScript[1],aFS.Size);
+     for i:=Length(LoadScript) downto 1 do
+     begin
+      if LoadScript[i]=#10 then LoadScript[i]:=' ';
+      if LoadScript[i]=#13 then LoadScript[i]:=' ';
+     end;
+     LoadScript:=AddLanguage(LoadScript);
+     LoadScript:=AddIcons(LoadScript);
+     aFS.Free;
+    except
+    end;
+    try
+     ExecuteScript(nil,aScript,LoadScript,i,nil);
+    except
+      //on e : Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
+    end;
+  finally
+    aScript.Free;
   end;
 end;
 

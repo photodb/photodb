@@ -16,7 +16,7 @@ interface
 {$ENDIF}
 
 uses Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs,
-     Classes, Controls, Registry, ShlObj, Forms, StdCtrls{, ShareMem};
+     Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -29,78 +29,14 @@ type
     { Public declarations }
   end;
 
- TArrayOfString = array of string;
- TArrayOfInt = array of integer;
- TArrayOfBool = array of boolean;
- TArrayOfFloat = array of extended;
-
-  TFunctinStringIsIntegerObject = function(s : string) : integer of object;
-  TFunctionIntegerIsIntegerObject = function(int : integer) : integer of object;
-  TFunctionIsIntegerObject = function : integer of object;
-  TFunctionIsBoolObject = function : Boolean of object;
-  TFunctionIsStringObject = function : String of object;
-  TFunctionIntegerIsStringObject = function(int : integer) : string of object;
-  TFunctionStringIsStringObject = function(s : string) : string of object;
-  TFunctionIsArrayStringsObject = function : TArrayOfString of object;
-
-   TScriptStringFunction = record
-    fType : integer;
-    fName : string;
-    fArgs : TArrayOfString;
-    fBody : string;
-   end;
-
-type
-  TScriptFunction = record
-   Name : String;
-   aType : integer;
-   aFunction : Pointer;
-   aObjFunction : TNotifyEvent;
-   aObjFunctinStringIsInteger : TFunctinStringIsIntegerObject;
-   aObjFunctionIntegerIsInteger : TFunctionIntegerIsIntegerObject;
-   aObjFunctionIsInteger : TFunctionIsIntegerObject;
-   aObjFunctionIsBool : TFunctionIsBoolObject;
-   aObjFunctionIsString : TFunctionIsStringObject;
-   aObjFunctionIsArrayStrings : TFunctionIsArrayStringsObject;
-   aObjFunctionIntegerIsString : TFunctionIntegerIsStringObject;
-   aObjFunctionStringIsString : TFunctionStringIsStringObject;
-   ScriptStringFunction : TScriptStringFunction;
-  end;
 
   type
   TSDriveState =(DSS_NO_DISK, DSS_UNFORMATTED_DISK, DSS_EMPTY_DISK,
     DSS_DISK_WITH_FILES);
 
 
- type
-   TValue = record
-   aName : string;
-   StrValue : string;
-   FloatValue : extended;
-   IntValue : integer;
-   BoolValue : boolean;
-   IntArray : TArrayOfInt;
-   StrArray : TArrayOfString;
-   FloatArray : TArrayOfFloat;
-   BoolArray : TArrayOfBool;
-   ArrayLength : integer;
-   aType : integer;
-  end;
 
   TScriptFunctionArray = array of TScriptFunction;
-
-  type
-   TScript = record
-    ScriptFunctions : TScriptFunctionArray;
-    Description : string;
-    NamedValues : array of TValue;
-    ID : String;
-    ParentScript : Pointer;
-   end;
-
-  type
-   PScript = ^TScript; 
-   PScriptArray = array of PScript;
 
   TInitScriptFunction = function(Script : String) : string;
 
@@ -226,57 +162,44 @@ type
 
 
 //MessageBox
-   procedure ExecuteScript(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil);
-   procedure LoadItemVariables(var aScript : TScript; Sender : TMenuItem);
-   procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TImageList; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
-   procedure SetNamedValue(var aScript : TScript; ValueName, Value : string);
-   procedure SetNamedValueStr(var aScript : TScript; ValueName, Value : string);
-   procedure SetNamedValueFloat(var aScript : TScript; ValueName : string; Value : Extended);
-   procedure SetNamedValueArrayStrings(var aScript : TScript; ValueName: string; Value : TArrayOfString);
-   function CalcExpression(var aScript : TScript; Expression : string) : string;
-   function GetNamedValueString(var aScript : TScript; ValueName : string) : string;
-   function GetNamedValueInt(var aScript : TScript; ValueName : string; Default : integer = 0) : integer;
-   function GetNamedValueFloat(var aScript : TScript; ValueName : string) : extended;
-   procedure LoadFileFunctions(var aScript : TScript);
-   procedure LoadBaseFunctions(var aScript : TScript);
-   procedure InitializeScript(var aScript : TScript);
-   procedure FinalizeScript(var aScript : TScript);
-   procedure SetBoolAttr(var aScript : TScript; Name : String; Value : boolean);
-   procedure SetIntAttr(var aScript : TScript; Name : String; Value :Integer);
+   procedure ExecuteScript(Sender : TMenuItemW; aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil);
+   procedure LoadItemVariables(aScript : TScript; Sender : TMenuItem);
+   procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TImageList; Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
+   procedure SetNamedValue(aScript : TScript; ValueName, AValue : string);
+   procedure SetNamedValueStr(aScript : TScript; ValueName, AValue : string);
+   procedure SetNamedValueFloat(aScript : TScript; ValueName : string; Value : Extended);
+   procedure SetNamedValueArrayStrings(aScript : TScript; ValueName: string; AValue : TArrayOfString);
+   function CalcExpression(aScript : TScript; Expression : string) : string;
+   function GetNamedValueString(aScript : TScript; ValueName : string) : string;
+   function GetNamedValueInt(aScript : TScript; ValueName : string; Default : integer = 0) : integer;
+   function GetNamedValueFloat(aScript : TScript; ValueName : string) : extended;
+
+   procedure SetBoolAttr(aScript : TScript; Name : String; Value : boolean);
+   procedure SetIntAttr(aScript : TScript; Name : String; Value :Integer);
    function Include(FileName : string) : string;
    function aFileExists(FileName : string) : boolean;
    procedure ExecuteScriptFile(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil; FileName : string = '');
 
    function ReadScriptFile(FileName : string) : string;
 
-   procedure AddScriptTextFunction(var aScript : TScript; _Function : TScriptStringFunction);
-   procedure AddScriptFunction(var aScript : TScript; FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
-   procedure AddScriptObjFunction(var aScript : TScript; FunctionName : String; FunctionType : integer; aFunction : TNotifyEvent);
-   procedure AddScriptObjFunctionIsInteger(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsIntegerObject);
-   procedure AddScriptObjFunctionIsString(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsStringObject);
-   procedure AddScriptObjFunctionIsBool(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsBoolObject);
-   procedure AddScriptObjFunctionStringIsInteger(var aScript : TScript; FunctionName : String; aFunction : TFunctinStringIsIntegerObject);
-   procedure AddScriptObjFunctionIntegerIsInteger(var aScript : TScript; FunctionName : String; aFunction : TFunctionIntegerIsIntegerObject);
-   procedure AddScriptObjFunctionIntegerIsString(var aScript : TScript; FunctionName : String; aFunction : TFunctionIntegerIsStringObject);
-   procedure AddScriptObjFunctionStringIsString(var aScript : TScript; FunctionName : String; aFunction : TFunctionStringIsStringObject);
-   procedure AddScriptObjFunctionIsArrayStrings(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsArrayStringsObject);
+   procedure AddScriptTextFunction(Enviroment : TScriptEnviroment; AFunction : TScriptStringFunction);
+   procedure AddScriptFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
+   procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; aFunction : TNotifyEvent);
+   procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsIntegerObject);
+   procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsStringObject);
+   procedure AddScriptObjFunctionIsBool(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsBoolObject);
+   procedure AddScriptObjFunctionStringIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctinStringIsIntegerObject);
+   procedure AddScriptObjFunctionIntegerIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIntegerIsIntegerObject);
+   procedure AddScriptObjFunctionIntegerIsString(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIntegerIsStringObject);
+   procedure AddScriptObjFunctionStringIsString(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionStringIsStringObject);
+   procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsArrayStringsObject);
 
-   function PosExS(SubStr : string; var Str : string; index : integer = 1) : integer;
-   function VarValue(var aScript : TScript;Variable : string; List : TListBox = nil) : string;
-
+   function VarValue(aScript : TScript;Variable : string; List : TListBox = nil) : string;
+   procedure LoadBaseFunctions(Enviroment : TScriptEnviroment);
+   procedure LoadFileFunctions(Enviroment : TScriptEnviroment);
 
    const
-   VALUE_TYPE_ERROR         = 0;
-   VALUE_TYPE_STRING        = 1;
-   VALUE_TYPE_INTEGER       = 2;
-   VALUE_TYPE_BOOLEAN       = 3;
-   VALUE_TYPE_FLOAT         = 4;
-   VALUE_TYPE_STRING_ARRAY  = 5;
-   VALUE_TYPE_INT_ARRAY     = 6;
-   VALUE_TYPE_BOOL_ARRAY    = 7;
-   VALUE_TYPE_FLOAT_ARRAY   = 8;
-   VALUE_TYPE_VOID          = 9;
-
+   //TODO: пиздец!
   DROPEFFECT_COPY   = 1;
   DROPEFFECT_MOVE   = 2;
 
@@ -363,14 +286,14 @@ type
   TScriptsManager = class(TObject)
    Private
    Public
-    FScripts : PScriptArray;
+    FScripts : TList;
 
     Constructor Create;
     Destructor Destroy; override;
-    function AddScript(Script: PScript) : string;
+    function AddScript(Script: TScript) : string;
     Procedure RemoveScript(ID : string);
     Function ScriptExists(ID : string) : Boolean;
-    Function GetScriptByID(ID : string) : PScript;
+    Function GetScriptByID(ID : string) : TScript;
    published
   end;
 
@@ -385,7 +308,9 @@ const
      InitScriptFunction : Pointer = nil;
      ScriptsManager : TScriptsManager = nil;
 
-function CoCreateGuid;                  external ole32 name 'CoCreateGuid';
+function CoCreateGuid;                  external ole32 name 'CoCreateGuid';    
+function ReadFile(FileName : string) : string;     
+function IsVariable(s : string) : Boolean;
 
 implementation
 
@@ -398,6 +323,11 @@ implementation
 
 /////////////////////////////////////////////////////////////////////////
 
+function IsVariable(s : string) : Boolean;
+begin
+  Result := (s <> '') and (s[1] = '$');
+end;
+
 function GetCID : string;
 var
   CID : TGUID;
@@ -406,45 +336,15 @@ begin
  Result:=GUIDToString(CID);
 end;
 
- procedure MakeFloat(var s : string);
- var
-   j : integer;
- begin
-  for j:=1 to Length(s) do
-  if s[j]='.' then s[j]:=DecimalSeparator;
- end;
-
-function GetValue(aScript : TScript; ValueName : string) : TValue;
-var
-  i : integer;
-
-begin
- if ValueName<>'' then
- if ValueName[1]='$' then
- begin
-  for i:=0 to Length(aScript.NamedValues)-1 do
-  if aScript.NamedValues[i].aName=ValueName then
-  begin
-   Result:=aScript.NamedValues[i];
-   exit;
-  end;
-  if aScript.ParentScript<>nil then
-  begin
-   Result:=GetValue(PScript(aScript.ParentScript)^,ValueName);
-  end;
- end;
-end;
-
-function GetValueType(var aScript : TScript; Value : string) : integer;
+function GetValueType(aScript : TScript; Value : string) : integer;
 var
   i : integer;
 
 begin  
  Result:=VALUE_TYPE_ERROR;
- if Value<>'' then
- if Value[1]='$' then
+ if IsVariable(Value) then
  begin
-  for i:=0 to Length(aScript.NamedValues)-1 do
+  for i:=0 to aScript.NamedValues.Count - 1 do
   if aScript.NamedValues[i].aName=Value then
   begin
    Result:=aScript.NamedValues[i].aType;
@@ -452,7 +352,7 @@ begin
   end;  
   if aScript.ParentScript<>nil then
   begin
-   Result:=GetValueType(PScript(aScript.ParentScript)^,Value);
+   Result:=GetValueType(aScript.ParentScript, Value);
   end;
   exit;
  end;
@@ -472,8 +372,8 @@ begin
  begin
   Result:=VALUE_TYPE_STRING;
  end;
- MakeFloat(Value);
- if StrToFloatDef(Value,-1)=StrToFloatDef(Value,1) then
+ ;
+ if StrToFloatDef(ConvertUniversalFloatToLocal(Value),-1)=StrToFloatDef(ConvertUniversalFloatToLocal(Value),1) then
  begin
   Result:=VALUE_TYPE_FLOAT;
   exit;
@@ -481,147 +381,62 @@ begin
 
 end;
 
-procedure aSetValue(var aScript : TScript; i : integer; aName, Value : string);
-
-begin
- Case GetValueType(aScript,Value) of
-  VALUE_TYPE_INTEGER:
-   begin
-    aScript.NamedValues[i].aName:=aName;
-    aScript.NamedValues[i].aType:=VALUE_TYPE_INTEGER;
-    aScript.NamedValues[i].IntValue:=StrToIntDef(Value,0);
-   end;
-  VALUE_TYPE_FLOAT:    
-   begin
-    aScript.NamedValues[i].aName:=aName;
-    aScript.NamedValues[i].aType:=VALUE_TYPE_FLOAT;
-    MakeFloat(Value);
-    aScript.NamedValues[i].FloatValue:=StrToFloatDef(Value,0);
-   end;
-  VALUE_TYPE_STRING:
-   begin
-    aScript.NamedValues[i].aName:=aName;
-    aScript.NamedValues[i].aType:=VALUE_TYPE_STRING;
-    if Value<>'""' then
-    aScript.NamedValues[i].StrValue:=AnsiDequotedStr(Value
-    {$IFDEF EXT}
-    ,'"'
-    {$ENDIF EXT}
-    ) else
-    aScript.NamedValues[i].StrValue:='';
-   end;
-  VALUE_TYPE_BOOLEAN:
-   begin
-    aScript.NamedValues[i].aName:=aName;
-    aScript.NamedValues[i].aType:=VALUE_TYPE_BOOLEAN;
-    if Value='true' then
-    aScript.NamedValues[i].BoolValue:=true else
-    aScript.NamedValues[i].BoolValue:=false;
-   end;
-
- end;
-end;
-
-procedure SetNamedValueArrayStrings(var aScript : TScript; ValueName: string; Value : TArrayOfString);
+procedure SetNamedValueArrayStrings(aScript : TScript; ValueName: string; AValue : TArrayOfString);
 var
-  i, l : integer;
+  Value : TValue;
 begin
- for i:=1 to Length(ValueName) do
- if ValueName[1]=' ' then Delete(ValueName,1,1) else break;
- for i:=Length(ValueName) downto 1 do
- if ValueName[i]=' ' then Delete(ValueName,i,1) else break;
- l:=Length(aScript.NamedValues);
- if ValueName='' then exit;
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- begin
-  aScript.NamedValues[i].aName:=ValueName;
-  aScript.NamedValues[i].aType:=VALUE_TYPE_STRING_ARRAY;
-  aScript.NamedValues[i].StrArray:=Value;
-  exit;
- end;
- SetLength(aScript.NamedValues,l+1);
- aScript.NamedValues[l].aName:=ValueName;
- aScript.NamedValues[l].aType:=VALUE_TYPE_STRING_ARRAY;
- aScript.NamedValues[l].StrArray:=Value;
+  ValueName := Trim(ValueName);
+  if ValueName = '' then
+    Exit;
+
+  Value := aScript.NamedValues.GetValueByName(ValueName);
+  Value.aType := VALUE_TYPE_STRING_ARRAY;
+  Value.StrArray := AValue;
 end;
 
-procedure SetNamedValueArrayInt(var aScript : TScript; ValueName: string; Value : TArrayOfInt);
+procedure SetNamedValueArrayInt(aScript : TScript; ValueName: string; AValue : TArrayOfInt);
 var
-  i, l : integer;
+  Value : TValue;
 begin
- for i:=1 to Length(ValueName) do
- if ValueName[1]=' ' then Delete(ValueName,1,1) else break;
- for i:=Length(ValueName) downto 1 do
- if ValueName[i]=' ' then Delete(ValueName,i,1) else break;
- l:=Length(aScript.NamedValues);
- if ValueName='' then exit;
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- begin
-  aScript.NamedValues[i].aName:=ValueName;
-  aScript.NamedValues[i].aType:=VALUE_TYPE_INT_ARRAY;
-  aScript.NamedValues[i].IntArray:=Value;
-  exit;
- end;
- SetLength(aScript.NamedValues,l+1);
- aScript.NamedValues[l].aName:=ValueName;
- aScript.NamedValues[l].aType:=VALUE_TYPE_INT_ARRAY;
- aScript.NamedValues[l].IntArray:=Value;
+  ValueName := Trim(ValueName);
+  if ValueName = '' then
+   Exit;
+
+  Value := aScript.NamedValues.GetValueByName(ValueName);
+  Value.aType := VALUE_TYPE_INT_ARRAY;
+  Value.IntArray := AValue;
 end;
 
-procedure SetNamedValueArrayBool(var aScript : TScript; ValueName: string; Value : TArrayOfBool);
+procedure SetNamedValueArrayBool(aScript : TScript; ValueName: string; AValue : TArrayOfBool);
 var
-  i, l : integer;
+  Value : TValue;
 begin
- for i:=1 to Length(ValueName) do
- if ValueName[1]=' ' then Delete(ValueName,1,1) else break;
- for i:=Length(ValueName) downto 1 do
- if ValueName[i]=' ' then Delete(ValueName,i,1) else break;
- l:=Length(aScript.NamedValues);
- if ValueName='' then exit;
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- begin
-  aScript.NamedValues[i].aName:=ValueName;
-  aScript.NamedValues[i].aType:=VALUE_TYPE_BOOL_ARRAY;
-  aScript.NamedValues[i].BoolArray:=Value;
-  exit;
- end;
- SetLength(aScript.NamedValues,l+1);
- aScript.NamedValues[l].aName:=ValueName;
- aScript.NamedValues[l].aType:=VALUE_TYPE_BOOL_ARRAY;
- aScript.NamedValues[l].BoolArray:=Value;
+  ValueName := Trim(ValueName);
+  if ValueName = '' then
+    Exit;
+
+  Value := aScript.NamedValues.GetValueByName(ValueName);
+  Value.aType := VALUE_TYPE_BOOL_ARRAY;
+  Value.BoolArray := AValue;
 end;
 
-procedure SetNamedValueArrayFloat(var aScript : TScript; ValueName: string; Value : TArrayOfFloat);
+procedure SetNamedValueArrayFloat(aScript : TScript; ValueName: string; AValue : TArrayOfFloat);
 var
-  i, l : integer;
+  Value : TValue;
 begin
- for i:=1 to Length(ValueName) do
- if ValueName[1]=' ' then Delete(ValueName,1,1) else break;
- for i:=Length(ValueName) downto 1 do
- if ValueName[i]=' ' then Delete(ValueName,i,1) else break;
- l:=Length(aScript.NamedValues);
- if ValueName='' then exit;
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- begin
-  aScript.NamedValues[i].aName:=ValueName;
-  aScript.NamedValues[i].aType:=VALUE_TYPE_FLOAT_ARRAY;
-  aScript.NamedValues[i].FloatArray:=Value;
-  exit;
- end;
- SetLength(aScript.NamedValues,l+1);
- aScript.NamedValues[l].aName:=ValueName;
- aScript.NamedValues[l].aType:=VALUE_TYPE_FLOAT_ARRAY;
- aScript.NamedValues[l].FloatArray:=Value;
+  ValueName := Trim(ValueName);
+  if ValueName = '' then
+    Exit;
+
+  Value := aScript.NamedValues.GetValueByName(ValueName);
+  Value.aType := VALUE_TYPE_FLOAT_ARRAY;
+  Value.FloatArray := AValue;
 end;
 
-procedure SetNamedValueStr(var aScript : TScript; ValueName, Value : string);
+procedure SetNamedValueStr(aScript : TScript; ValueName, AValue : string);
 begin
  {$IFNDEF EXT}
- SetNamedValue(aScript,ValueName,'"'+AnsiDeDequotedStr(Value)+'"');
+ SetNamedValue(aScript,ValueName,'"'+AnsiDeDequotedStr(AValue)+'"');
  {$ENDIF EXT}
 end;
 
@@ -640,7 +455,7 @@ end;
    if b then s:=s+'.0';
   end;
 
-procedure SetNamedValueFloat(var aScript : TScript; ValueName : string; Value : Extended);
+procedure SetNamedValueFloat(aScript : TScript; ValueName : string; Value : Extended);
 var
   s : string;
 
@@ -650,315 +465,124 @@ begin
  SetNamedValue(aScript,ValueName,s);
 end;
 
-procedure SetNamedValue(var aScript : TScript; ValueName, Value : string);
+procedure SetNamedValue(aScript : TScript; ValueName, AValue : string);
 var
-  i,j,l : integer;
-  temp : TValue;
+  Value, TmpValue : TValue;
 begin
- for i:=1 to Length(ValueName) do
- if ValueName[1]=' ' then Delete(ValueName,1,1) else break;
- for i:=Length(ValueName) downto 1 do
- if ValueName[i]=' ' then Delete(ValueName,i,1) else break;
- l:=Length(aScript.NamedValues);
- if ValueName='' then exit;
- if Value<>'' then
- if Value[1]='$' then
+  ValueName := Trim(ValueName);
+  if ValueName = '' then
+    Exit;
+
+ Value := aScript.NamedValues.GetValueByName(ValueName);
+
+ if IsVariable(AValue) then
  begin
-  for i:=0 to l-1 do
-  if aScript.NamedValues[i].aName=Value then
-  begin
-   temp:=aScript.NamedValues[i];
-   for j:=0 to l-1 do
-   if aScript.NamedValues[j].aName=ValueName then
-   begin
-    aScript.NamedValues[j]:=temp;
-    break;
-   end;
-   exit;
-  end;
- end;
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- begin
-  aSetValue(aScript,i,ValueName,Value);
-  exit;
- end;
- SetLength(aScript.NamedValues,l+1);
- aSetValue(aScript,l,ValueName,Value);
+   TmpValue := aScript.NamedValues.GetValueByName(AValue);
+   Value.Assign(TmpValue);
+ end else
+   Value.FromString(AValue);
 end;
 
-procedure CopyVar(var ToScript : TScript; var FromScript : TScript; ValueFrom, ValueTo : string);
+procedure CopyVar(ToScript : TScript; FromScript : TScript; ValueFrom, ValueTo : string);
 var
-  i, j, lFrom, lTo : integer;
-  temp : TValue;
+  SValue, DValue : TValue;
 begin
- lFrom:=Length(FromScript.NamedValues);
- lTo:=Length(ToScript.NamedValues);
- for i:=0 to lFrom-1 do
- if FromScript.NamedValues[i].aName=ValueFrom then
- begin
-  temp:=FromScript.NamedValues[i];
-  for j:=0 to lTo-1 do
-  if ToScript.NamedValues[j].aName=ValueTo then
-  begin
-   ToScript.NamedValues[j]:=FromScript.NamedValues[i];
-   ToScript.NamedValues[j].aName:=ValueTo;
-   exit;
-  end;
-  SetLength(ToScript.NamedValues,lTo+1);
-  ToScript.NamedValues[lTo]:=temp;
-  ToScript.NamedValues[lTo].aName:=ValueTo;
- end;
+  SValue := FromScript.NamedValues.GetValueByName(ValueFrom);
+  DValue := ToScript.NamedValues.GetValueByName(ValueTo);
+  DValue.Assign(SValue);
 end;
 
-procedure SetNamedValueEx(var aScript : TScript; var FromScript : TScript; ValueName, Value : string);
-var
-  i,j,lFrom, lTo : integer;
-  temp : TValue;
+procedure SetNamedValueEx(aScript : TScript; FromScript : TScript; ValueName, Value : string);
 begin
- for i:=1 to Length(ValueName) do
- if ValueName[1]=' ' then Delete(ValueName,1,1) else break;
- for i:=Length(ValueName) downto 1 do
- if ValueName[i]=' ' then Delete(ValueName,i,1) else break;
- lFrom:=Length(FromScript.NamedValues);
- lTo:=Length(aScript.NamedValues);
- if ValueName='' then exit;
- if Value<>'' then
- if Value[1]='$' then
- begin
-  for i:=0 to lFrom-1 do
-  if FromScript.NamedValues[i].aName=Value then
-  begin
-   temp:=FromScript.NamedValues[i];
-   for j:=0 to lTo-1 do
-   if aScript.NamedValues[j].aName=ValueName then
-   begin
-    aScript.NamedValues[j]:=temp;
-    exit;
-   end;
-  end;
-  CopyVar(aScript,FromScript,Value, ValueName);
-  exit;
- end;
- for i:=0 to lTo-1 do
- if aScript.NamedValues[i].aName=ValueName then
- begin
-  aSetValue(aScript,i,ValueName,Value);
-  exit;
- end;
- SetLength(aScript.NamedValues,lTo+1);
- aSetValue(aScript,lTo,ValueName,Value);
+  ValueName := Trim(ValueName);
+  if ValueName = '' then
+    Exit;
+
+ if IsVariable(Value) then
+   CopyVar(aScript, FromScript, Value, ValueName)
+ else
+   aScript.NamedValues.GetValueByName(ValueName).FromString(Value);
 end;
 
-function GetNamedValueInt(var aScript : TScript; ValueName : string; Default : integer = 0) : integer;
+function GetNamedValueInt(aScript : TScript; ValueName : string; Default : Integer = 0) : integer;
 var
-  i, l : integer;
+  Value : TValue;
 begin
- Result:=Default;
- if ValueName<>'' then
- if ValueName[1]<>'$' then
- begin
-  Result:=StrToIntDef(ValueName,Default);
-  exit;
- end;
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if aScript.NamedValues[i].aType=VALUE_TYPE_INTEGER then
- begin
-  Result:=aScript.NamedValues[i].IntValue;
-  exit;
- end;
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueInt(PScript(aScript.ParentScript)^,ValueName);
- end;
+  Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_INTEGER);
+  if Value <> nil then
+    Result := Value.IntValue
+  else
+    Result := StrToIntDef(ValueName, Default);
 end;
 
-function GetNamedValueFloat(var aScript : TScript; ValueName : string) : extended;
+function GetNamedValueFloat(aScript : TScript; ValueName : string) : Extended;
 var
-  i, l : integer;
+  Value : TValue;
 begin
- Result:=0;
- if ValueName<>'' then
- if ValueName[1]<>'$' then
- begin
-  MakeFloat(ValueName);
-  Result:=StrToFloatDef(ValueName,0);
-  exit;
- end;
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- begin
-  if (aScript.NamedValues[i].aType=VALUE_TYPE_FLOAT) then
-  begin
-   Result:=aScript.NamedValues[i].FloatValue;
-   exit;
-  end;
-  if (aScript.NamedValues[i].aType=VALUE_TYPE_INTEGER) then
-  begin
-   Result:=aScript.NamedValues[i].IntValue;
-   exit;
-  end;
- end;
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueFloat(PScript(aScript.ParentScript)^,ValueName);
- end;
+  Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_INTEGER or VALUE_TYPE_FLOAT);
+  if Value <> nil then
+    Result := Value.IntValue
+  else
+    Result := StrToFloatDef(ConvertUniversalFloatToLocal(ValueName), 0);
 end;
 
-function GetNamedValueBool(var aScript : TScript;ValueName : string) : boolean;
+function GetNamedValueBool(aScript : TScript; ValueName : string) : boolean;
 var
-  i, l : integer;
+  Value : TValue;
 begin
- Result:=false;
- if ValueName<>'' then
- if ValueName[1]<>'$' then
- begin
-  if ValueName='true' then
-  Result:=true else Result:=false;
-  exit;
- end;
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if aScript.NamedValues[i].aType=VALUE_TYPE_BOOLEAN then
- begin
-  Result:=aScript.NamedValues[i].BoolValue;
-  exit;
- end; 
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueBool(PScript(aScript.ParentScript)^,ValueName);
- end;
+  Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_BOOLEAN);
+  if Value <> nil then
+    Result := Value.BoolValue
+  else
+    Result := ValueName = 'true';
 end;
 
 function GetNamedValueArrayString(var aScript : TScript; ValueName : string) : TArrayOfString;
-var
-  i, l : integer;
 begin
- SetLength(Result,0);
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if aScript.NamedValues[i].aType=VALUE_TYPE_STRING_ARRAY then
- begin
-  Result:=aScript.NamedValues[i].StrArray;
-  exit;
- end;
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueArrayString(PScript(aScript.ParentScript)^,ValueName);
- end;
+  if aScript.NamedValues.Exists(ValueName) then
+    Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_STRING_ARRAY).StrArray)
+  else
+    SetLength(Result, 0);
 end;
 
 function GetNamedValueArrayInt(var aScript : TScript; ValueName : string) : TArrayOfInt;
-var
-  i, l : integer;
 begin
- SetLength(Result,0);
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if aScript.NamedValues[i].aType=VALUE_TYPE_INT_ARRAY then
- begin
-  Result:=aScript.NamedValues[i].IntArray;
-  exit;
- end;
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueArrayInt(PScript(aScript.ParentScript)^,ValueName);
- end;
+  if aScript.NamedValues.Exists(ValueName) then
+    Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_INT_ARRAY).IntArray)
+  else
+    SetLength(Result, 0);
 end;
 
 function GetNamedValueArrayBool(var aScript : TScript; ValueName : string) : TArrayOfBool;
-var
-  i, l : integer;
 begin
- SetLength(Result,0);
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if aScript.NamedValues[i].aType=VALUE_TYPE_BOOL_ARRAY then
- begin
-  Result:=aScript.NamedValues[i].BoolArray;
-  exit;
- end;
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueArrayBool(PScript(aScript.ParentScript)^,ValueName);
- end;
+  if aScript.NamedValues.Exists(ValueName) then
+    Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_BOOL_ARRAY).BoolArray)
+  else
+    SetLength(Result, 0);
 end;
 
 function GetNamedValueArrayFloat(aScript : TScript; ValueName : string) : TArrayOfFloat;
-var
-  i, l : integer;
 begin
- SetLength(Result,0);
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if aScript.NamedValues[i].aType=VALUE_TYPE_FLOAT_ARRAY then
- begin
-  Result:=aScript.NamedValues[i].FloatArray;
-  exit;
- end;
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueArrayFloat(PScript(aScript.ParentScript)^,ValueName);
- end;
+  if aScript.NamedValues.Exists(ValueName) then
+    Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_FLOAT_ARRAY).FloatArray)
+  else
+    SetLength(Result, 0);
 end;
 
-function GetNamedValueString(var aScript : TScript; ValueName : string) : string;
+function GetNamedValueString(aScript : TScript; ValueName : string) : string;
 var
-  i, l : integer;
+  Value : TValue;
 begin
- Result:='';
- if Length(ValueName)>1 then
- if ValueName[1]<>'$' then
- if (ValueName[1]='"') and ((ValueName[Length(ValueName)]='"')) then
- begin
- {$IFNDEF EXT}
- Result:=AnsiDequotedStr(ValueName);
- {$ENDIF EXT}
-  exit;
- end;
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if aScript.NamedValues[i].aType=VALUE_TYPE_STRING then
- begin
-  Result:=aScript.NamedValues[i].StrValue;
-  exit;
- end;
- if aScript.ParentScript<>nil then
- begin
-  Result:=GetNamedValueString(PScript(aScript.ParentScript)^,ValueName);
- end;
+  Result:='';
+  if not IsVariable(ValueName) and (ValueName[1]='"') and (ValueName[Length(ValueName)]='"') then
+    Result:=AnsiDequotedStr(ValueName)
+  else
+  begin
+    Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_STRING);
+    if Value <> nil then
+      Result := Value.StrValue;
+  end;
 end;
-
-{function GetNamedValueFloat(var aScript : TScript; ValueName : string) : extended;
-var
-  i, l : integer;
-begin
- Result:=0;
- if ValueName<>'' then
- if ValueName[1]<>'$' then
- begin
-  MakeFloat(ValueName);
-  Result:=StrToFloatDef(ValueName,0);
-  exit;
- end;
- l:=Length(aScript.NamedValues);
- for i:=0 to l-1 do
- if aScript.NamedValues[i].aName=ValueName then
- if (aScript.NamedValues[i].aType=VALUE_TYPE_FLOAT) or (aScript.NamedValues[i].aType=VALUE_TYPE_INTEGER) then
- begin
-  Result:=aScript.NamedValues[i].FloatValue;
-  exit;
- end;
-end;   }
 
 function PosExR(SubStr : Char; var Str : string; index : integer = 1) : integer;
 var
@@ -990,65 +614,6 @@ begin
    s:=Copy(Str,i+1,Length(SubStr));
    if s=SubStr then Result:=i;
   end else exit;
- end;
-end;
-
-function PosExS(SubStr : string; var Str : string; index : integer = 1) : integer;
-var
-  i, n, ns, ls : integer;
-  q : boolean;
-begin
- n:=0;
- ns:=0;
- q:=false;
- Result:=0;
- ls:=Length(SubStr);
- if index<1 then index:=1;
- for i:=index to Length(Str) do
- begin
-  if (Copy(Str,i,Ls)=SubStr) and (n=0) and (ns=0) and (not q) then
-  begin
-   Result:=i;
-   exit;
-  end;
-
-  if (Str[i]='"') and not q then
-  begin
-   q:=true;
-   continue;
-  end;
-  if (Str[i]='"') and q then
-  begin
-   q:=false;
-   continue;
-  end;
-  if i=index then continue;
-  if (Str[i]='{') and (not q) then
-  begin
-   inc(n);
-  end;
-  if (Str[i]='}') and (n>0) and (not q) then
-  begin
-   dec(n);
-   if n=0 then continue;
-  end;
-
-  if (Str[i]='(') and (not q) then
-  begin
-   inc(ns);
-  end;
-  if (Str[i]=')') and (ns>0) and (not q) then
-  begin
-   dec(ns);
-   if ns=0 then continue;
-  end;
-
-
-  if (Copy(Str,i,Ls)=SubStr) and (n=0) and (not q) and (ns=0) then
-  begin
-   Result:=i;
-   exit;
-  end;
  end;
 end;
 
@@ -1239,7 +804,7 @@ begin
       4 : Result:=CompareStr(_as,_bs)>0;
      end;
     end;
-   VALUE_TYPE_INTEGER :    
+   VALUE_TYPE_INTEGER :
     begin
      _ai:=GetNamedValueInt(aScript,_as);
      _bi:=GetNamedValueInt(aScript,_bs);
@@ -1331,7 +896,7 @@ begin
       ScriptStringFunction.fName:=fname;
       ScriptStringFunction.fArgs:=farg;
       ScriptStringFunction.fBody:=fbody;
-      AddScriptTextFunction(aScript,ScriptStringFunction);
+      AddScriptTextFunction(aScript.Enviroment, ScriptStringFunction);
      end;
     end;
    end;
@@ -1340,7 +905,7 @@ begin
  until (PosEx(';',Functions,fb)<1) or (fb>=Length(Functions));
 end;
 
-procedure ExecuteScript(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil);
+procedure ExecuteScript(Sender : TMenuItemW; aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil);
 var
   apos, af, fb, fe, i, J, n, r, ifb, ifsb, ifse, ifssb, ifsse, ifelex, ifelb, ifele, forb, forsb, forse, forssb, forsse, n1,n2,n3 : integer;
   s, script, Command, Func, s1, s2, s3, s4, s5, NVar, aIf, ifScript, aFor, forScript, forinit, foreval, forexevery, NewFunc, NewFunctions : String;
@@ -1348,6 +913,7 @@ var
   bb1 : TArrayOfBool;
   ii1 : TArrayOfInt;
   ff1 : TArrayOfFloat;
+  Value : TValue;
 
   i1, i2, k : integer;
   f1, f2 : extended;
@@ -1416,7 +982,7 @@ var
   TempItem : TMenuItemW;
   aTempItem : TMenuItem;
   TempScript : TScript;
-  pTempScript : PScript;
+  pTempScript : TScript;
  {$IFDEF USEDEBUG}
 
   DebugScriptForm: TDebugScriptForm;
@@ -1579,7 +1145,7 @@ begin
   end;
 
   fb:=fe+1;
-  for i:=0 to Length(aScript.ScriptFunctions)-1 do
+  for i:=0 to aScript.ScriptFunctions.Count - 1 do
   begin
    if aScript.ScriptFunctions[i].Name=Func then
    begin
@@ -1608,57 +1174,32 @@ begin
 
     F_TYPE_FUNCTION_REGISTER_SCRIPT :
     begin
-     if r<>0 then SetNamedValueStr(aScript,NVar,ScriptsManager.AddScript(@aScript));
+     if r<>0 then SetNamedValueStr(aScript,NVar,ScriptsManager.AddScript(aScript));
     end;
 
     F_TYPE_FUNCTION_LOAD_VARS :
     begin
-     s1:=GetNamedValueString(aScript,OneParam(Command));
-     pTempScript:=ScriptsManager.GetScriptByID(s1);
-     if pTempScript<>nil then
-     begin
-      aScript.ParentScript := pTempScript;
-                                                    
-      for J:=0 to Length(pTempScript^.NamedValues)-1 do
+      s1:=GetNamedValueString(aScript,OneParam(Command));
+      pTempScript:=ScriptsManager.GetScriptByID(s1);
+
+      if pTempScript<>nil then
       begin
-       b1:=false;
-       for K:=0 to Length(aScript.NamedValues)-1 do
-       begin
-        if aScript.NamedValues[K].aName=pTempScript^.NamedValues[J].aName then
+        aScript.ParentScript := pTempScript;
+        aScript.Enviroment := pTempScript.Enviroment;
+
+        for J := 0 to pTempScript.NamedValues.Count - 1 do
         begin
-         b1:=true;
-         break;
+          Value :=  pTempScript.NamedValues[J];
+          if not aScript.NamedValues.Exists(Value.AName) then
+            aScript.NamedValues.GetValueByName(Value.AName).Assign(Value);
         end;
-       end;
-       if not b1 then
-       begin
-        SetLength(aScript.NamedValues,Length(aScript.NamedValues)+1);
-        aScript.NamedValues[Length(aScript.NamedValues)-1]:=pTempScript^.NamedValues[J];
-       end;
       end;
-
-      //aScript.NamedValues:=pTempScript^.NamedValues;
-
-      for J:=0 to Length(pTempScript^.ScriptFunctions)-1 do
-      begin
-       AddScriptFunction(aScript,pTempScript^.ScriptFunctions[J].Name,pTempScript^.ScriptFunctions[J].aType,pTempScript^.ScriptFunctions[J].aFunction);
-      end;
-     end;
     end;
 
     F_TYPE_FUNCTION_DELETE_VAR :
     begin             
-     s1:=ParamNO(Command,1);
-     for J := 0 to Length(aScript.NamedValues)-1 do
-     if aScript.NamedValues[J].aName = s1 then
-     begin
-      for K := J to Length(aScript.NamedValues)-2 do
-      begin
-       aScript.NamedValues[K]:=aScript.NamedValues[K+1];
-      end;
-      SetLength(aScript.NamedValues,Length(aScript.NamedValues)-1);
-      break;
-     end;
+     s1 := ParamNO(Command, 1);
+     aScript.NamedValues.Remove(s1);
     end;
 
     F_TYPE_FUNCTION_SAVE_VAR :
@@ -1666,37 +1207,23 @@ begin
      s1:=GetNamedValueString(aScript,ParamNO(Command,1));
      s2:=ParamNO(Command,2);
      pTempScript:=ScriptsManager.GetScriptByID(s1);
-     b1:=false;
-     for J := 0 to Length(aScript.NamedValues)-1 do
-     if aScript.NamedValues[J].aName = s2 then
-     begin
-       for k:=0 to Length(pTempScript^.NamedValues)-1 do
-       if pTempScript^.NamedValues[k].aName = s2 then
-       begin
-        pTempScript^.NamedValues[k] := aScript.NamedValues[J];
-        b1:=true;
-        break;
-       end;
-       if not b1 then
-       begin
-        SetLength(pTempScript^.NamedValues,Length(pTempScript^.NamedValues)+1);
-        pTempScript^.NamedValues[Length(pTempScript^.NamedValues)-1]:=aScript.NamedValues[J];
-       end;
-       break;
-     end;
+     pTempScript.NamedValues.GetValueByName(s2).Assign(aScript.NamedValues.GetValueByName(s2));
     end;
 
     F_TYPE_FUNCTION_OF_SCRIPT :
     begin
-     InitializeScript(TempScript);
-     TempScript.ScriptFunctions:=aScript.ScriptFunctions;
-     for J:=0 to Length(aScript.ScriptFunctions[i].ScriptStringFunction.fArgs)-1 do
-     begin
-      SetNamedValueEx(TempScript,aScript,aScript.ScriptFunctions[i].ScriptStringFunction.fArgs[J],ParamNo(Command,J+1));
-     end;
-     ExecuteScript(Sender,TempScript,aScript.ScriptFunctions[i].ScriptStringFunction.fBody,ImagesCount,ImageList,OnClick);
-     CopyVar(aScript,TempScript,'$Result',NVar);
-     FinalizeScript(TempScript);
+      TempScript := TScript.Create(aScript.Enviroment.Name);
+      try
+        for J:=0 to Length(aScript.ScriptFunctions[i].ScriptStringFunction.fArgs) - 1 do
+        begin
+          SetNamedValueEx(TempScript, aScript, aScript.ScriptFunctions[i].ScriptStringFunction.fArgs[J], ParamNo(Command, J + 1));
+        end;
+
+        ExecuteScript(Sender, TempScript, aScript.ScriptFunctions[i].ScriptStringFunction.fBody,ImagesCount,ImageList,OnClick);
+        CopyVar(aScript, TempScript, '$Result', NVar);
+      finally
+        TempScript.Free;
+      end;
     end;
 
     F_TYPE_PROCEDURE_CLEAR :
@@ -2279,7 +1806,7 @@ begin
  Result:=Item;
 end;
 
-procedure LoadItemVariables(var aScript : TScript; Sender : TMenuItem);
+procedure LoadItemVariables(aScript : TScript; Sender : TMenuItem);
 var
   s : string;
   i : integer;
@@ -2296,7 +1823,7 @@ begin
  end;
 end;
 
-procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TImageList; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
+procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TImageList; Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
 var
   Text, Icon, Command, InitScript, RunScript, IncludeFile  : string;
   i : integer;
@@ -2372,8 +1899,9 @@ begin
      if MenuItem<>nil then
      begin
       if MenuItem is TMenuItemW then
-      TempItem:=MenuItem as TMenuItemW;
-      TempItem:=nil;
+        TempItem:=MenuItem as TMenuItemW
+      else
+        TempItem:=nil;
      end else
      TempItem:=nil;
      ExecuteScriptFile(TempItem,aScript,'',ImagesCount,ImageList,OnClick,Command);
@@ -2422,7 +1950,7 @@ begin
  until PosEx('<',script,apos)<1;
 end;
 
-function CalcExpression(var aScript : TScript; Expression : string) : string;
+function CalcExpression(aScript : TScript; Expression : string) : string;
 var
   n, nnew : integer;
   s, ResS : string;
@@ -2478,244 +2006,135 @@ begin
  end;
 end;
 
-procedure AddScriptTextFunction(var aScript : TScript; _Function : TScriptStringFunction);
+procedure AddScriptTextFunction(Enviroment : TScriptEnviroment; AFunction : TScriptStringFunction);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=_Function.fName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_OF_SCRIPT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].ScriptStringFunction:=_Function;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=_Function.fName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_OF_SCRIPT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].ScriptStringFunction:=_Function;
+  FFunction: TScriptFunction;
+begin       
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := AFunction.fName;
+  FFunction.aType := F_TYPE_FUNCTION_OF_SCRIPT;
+  FFunction.aFunction := nil;
+  FFunction.ScriptStringFunction := AFunction;
+  Enviroment.Functions.Register(FFunction, True);
 end;
 
-procedure AddScriptFunction(var aScript : TScript; FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
+procedure AddScriptFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=FunctionType;
-   aScript.ScriptFunctions[i].aFunction:=FunctionPointer;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=FunctionType;
- aScript.ScriptFunctions[i].aFunction:=FunctionPointer;
+  FFunction: TScriptFunction;
+begin     
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := FunctionType;
+  FFunction.aFunction := FunctionPointer;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunction(var aScript : TScript; FunctionName : String; FunctionType : integer; aFunction : TNotifyEvent);
+procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; AFunction : TNotifyEvent);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=FunctionType;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunction:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=FunctionType;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunction:=aFunction;
+  FFunction: TScriptFunction;
+begin      
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := FunctionType;
+  FFunction.aFunction := nil;      
+  FFunction.aObjFunction := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionStringIsInteger(var aScript : TScript; FunctionName : String; aFunction : TFunctinStringIsIntegerObject);
+procedure AddScriptObjFunctionStringIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctinStringIsIntegerObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_STRING_IS_INTEGER_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctinStringIsInteger:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_STRING_IS_INTEGER_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctinStringIsInteger:=aFunction;
+  FFunction: TScriptFunction;
+begin       
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_STRING_IS_INTEGER_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctinStringIsInteger := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIntegerIsInteger(var aScript : TScript; FunctionName : String; aFunction : TFunctionIntegerIsIntegerObject);
+procedure AddScriptObjFunctionIntegerIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIntegerIsIntegerObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_INTEGER_IS_INTEGER_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctionIntegerIsInteger:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_INTEGER_IS_INTEGER_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctionIntegerIsInteger:=aFunction;
+  FFunction: TScriptFunction;
+begin      
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_INTEGER_IS_INTEGER_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctionIntegerIsInteger := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsInteger(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsIntegerObject);
+procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsIntegerObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_INTEGER_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctionIsInteger:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_INTEGER_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctionIsInteger:=aFunction;
+  FFunction: TScriptFunction;
+begin      
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_IS_INTEGER_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctionIsInteger := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsBool(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsBoolObject);
+procedure AddScriptObjFunctionIsBool(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsBoolObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_BOOL_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctionIsBool:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_BOOL_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctionIsBool:=aFunction;
+  FFunction: TScriptFunction;
+begin      
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_IS_BOOL_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctionIsBool := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsString(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsStringObject);
+procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsStringObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_STRING_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctionIsString:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_STRING_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctionIsString:=aFunction;
+  FFunction: TScriptFunction;
+begin        
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_IS_STRING_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctionIsString := aFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIntegerIsString(var aScript : TScript; FunctionName : String; aFunction : TFunctionIntegerIsStringObject);
+procedure AddScriptObjFunctionIntegerIsString(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIntegerIsStringObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_INTEGER_IS_STRING_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctionIntegerIsString:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_INTEGER_IS_STRING_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctionIntegerIsString:=aFunction;
+  FFunction: TScriptFunction;
+begin         
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_INTEGER_IS_STRING_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctionIntegerIsString := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionStringIsString(var aScript : TScript; FunctionName : String; aFunction : TFunctionStringIsStringObject);
+procedure AddScriptObjFunctionStringIsString(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionStringIsStringObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_STRING_IS_STRING_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctionStringIsString:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_STRING_IS_STRING_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctionStringIsString:=aFunction;
+  FFunction: TScriptFunction;
+begin         
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_STRING_IS_STRING_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctionStringIsString := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsArrayStrings(var aScript : TScript; FunctionName : String; aFunction : TFunctionIsArrayStringsObject);
+procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsArrayStringsObject);
 var
-  i : integer;
-begin
- for i:=0 to Length(aScript.ScriptFunctions)-1 do
- begin
-  if aScript.ScriptFunctions[i].Name=FunctionName then
-  begin
-   aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_ARRAY_STRING_OBJECT;
-   aScript.ScriptFunctions[i].aFunction:=nil;
-   aScript.ScriptFunctions[i].aObjFunctionIsArrayStrings:=aFunction;
-   exit;
-  end;
- end;
- i:=Length(aScript.ScriptFunctions);
- SetLength(aScript.ScriptFunctions,i+1);
- aScript.ScriptFunctions[i].Name:=FunctionName;
- aScript.ScriptFunctions[i].aType:=F_TYPE_FUNCTION_IS_ARRAY_STRING_OBJECT;
- aScript.ScriptFunctions[i].aFunction:=nil;
- aScript.ScriptFunctions[i].aObjFunctionIsArrayStrings:=aFunction;
+  FFunction: TScriptFunction;
+begin        
+  FFunction := TScriptFunction.Create;
+  FFunction.Name := FunctionName;
+  FFunction.aType := F_TYPE_FUNCTION_IS_ARRAY_STRING_OBJECT;
+  FFunction.aFunction := nil;
+  FFunction.aObjFunctionIsArrayStrings := AFunction;
+  Enviroment.Functions.Register(FFunction);
 end;
 
 function aSetString(S : String) : String;
@@ -3045,32 +2464,23 @@ begin
  TopItem:=nil;
 end;
 
-procedure SetNamedValueInt(var aScript : TScript; Name : string; Value : integer);
+procedure SetNamedValueInt(aScript : TScript; Name : string; Value : integer);
 begin
  SetNamedValue(aScript,Name,IntToStr(Value));
 end;
 
-procedure InitializeScript(var aScript : TScript);
+procedure InitializeScript(aScript : TScript);
 begin
  aScript.ParentScript := nil;
- SetLength(aScript.NamedValues,0);
- SetLength(aScript.ScriptFunctions,0);
- SetNamedValueInt(aScript,'$MB_OK',MB_OK);
- SetNamedValueInt(aScript,'$MB_OKCANCEL',MB_OKCANCEL);
- SetNamedValueInt(aScript,'$ID_OK',ID_OK);
- SetNamedValueInt(aScript,'$ID_CANCEL',ID_CANCEL);
- SetNamedValueInt(aScript,'$MB_ICONERROR',MB_ICONERROR);
- SetNamedValueInt(aScript,'$MB_ICONWARNING',MB_ICONWARNING);  
- SetNamedValueInt(aScript,'$MB_ICONINFORMATION',MB_ICONINFORMATION);
 end;
 
-procedure SetBoolAttr(var aScript : TScript; Name : String; Value : boolean);
+procedure SetBoolAttr(aScript : TScript; Name : String; Value : boolean);
 begin
  if Value then
  SetNamedValue(aScript,Name,'true') else SetNamedValue(aScript,  Name,'false');
 end;
 
-procedure SetIntAttr(var aScript : TScript; Name : String; Value :Integer);
+procedure SetIntAttr(aScript : TScript; Name : String; Value :Integer);
 begin
  SetNamedValue(aScript,Name,IntToStr(Value));
 end;
@@ -3095,17 +2505,17 @@ end;
 
 procedure ClearMemory(var aScript : TScript);
 begin
- SetLength(aScript.NamedValues,0)
+ aScript.NamedValues.Clear;
 end;
 
-function VarValue(var aScript : TScript; Variable : string; List : TListBox = nil) : string;
+function VarValue(aScript : TScript; Variable : string; List : TListBox = nil) : string;
 var
    Value : TValue;
    j : integer;
    StringResult : boolean;
 begin
  Result:='';
- Value:=GetValue(aScript,Variable);
+ Value := aScript.NamedValues.GetValueByName(Variable);
  StringResult:=List=nil;
 
   Case Value.aType of
@@ -3196,7 +2606,7 @@ begin
  List.Parent:=StatusForm;
  List.Align:=AlClient;
  StatusForm.Position:=poScreenCenter;
- for i:=0 to Length(aScript.NamedValues)-1 do
+ for i:=0 to aScript.NamedValues.Count-1 do
  begin
   VarValue(aScript,aScript.NamedValues[i].aName,List);
  end;
@@ -3237,7 +2647,7 @@ begin
  StatusForm.Width:=500;
  StatusForm.Height:=300;
  StatusForm.Position:=poScreenCenter;
- TempFunctions:=aScript.ScriptFunctions;
+{ TempFunctions:=aScript.ScriptFunctions;
 
  for j:=0 to Length(TempFunctions)-1 do
  for i:=0 to Length(TempFunctions)-2 do
@@ -3248,9 +2658,9 @@ begin
    TempFunctions[i]:=TempFunctions[i+1];
    TempFunctions[i+1]:=TempFunct;
   end;
- end;
+ end; }
 
- for i:=0 to Length(TempFunctions)-1 do
+ for i:=0 to aScript.ScriptFunctions.Count do
  begin
   List.Items.Add(TempFunctions[i].Name+'   ['+GetTypeName(TempFunctions[i].aType)+']');
  end;
@@ -3282,132 +2692,129 @@ begin
  Result:=StringReplace(Str,WhatReplase,ToReplase,[rfIgnoreCase]);
 end;
 
-procedure LoadBaseFunctions(var aScript : TScript);
-begin                                                                         
-// AddScriptFunction(aScript,'LoadVariablesByScriptID',F_TYPE_PROCEDURE_STRING,@LoadVariablesByScriptID);
+procedure LoadBaseFunctions(Enviroment : TScriptEnviroment);
+begin
+ AddScriptFunction(Enviroment,'ShowString',F_TYPE_PROCEDURE_STRING,@ShowString);
 
- AddScriptFunction(aScript,'ShowString',F_TYPE_PROCEDURE_STRING,@ShowString);
+ AddScriptFunction(Enviroment,'REGISTER_SCRIPT',F_TYPE_FUNCTION_REGISTER_SCRIPT,nil);
 
- AddScriptFunction(aScript,'REGISTER_SCRIPT',F_TYPE_FUNCTION_REGISTER_SCRIPT,nil);
+ AddScriptFunction(Enviroment,'START_DEBUG',F_TYPE_FUNCTION_DEBUG_START,nil);
+ AddScriptFunction(Enviroment,'STOP_DEBUG',F_TYPE_FUNCTION_DEBUG_END,nil);
+ AddScriptFunction(Enviroment,'LOAD_VARS',F_TYPE_FUNCTION_LOAD_VARS,nil);
+ AddScriptFunction(Enviroment,'SAVE_VAR',F_TYPE_FUNCTION_SAVE_VAR,nil);
+ AddScriptFunction(Enviroment,'DELETE_VAR',F_TYPE_FUNCTION_DELETE_VAR,nil);
 
- AddScriptFunction(aScript,'START_DEBUG',F_TYPE_FUNCTION_DEBUG_START,nil);
- AddScriptFunction(aScript,'STOP_DEBUG',F_TYPE_FUNCTION_DEBUG_END,nil);    
- AddScriptFunction(aScript,'LOAD_VARS',F_TYPE_FUNCTION_LOAD_VARS,nil);
- AddScriptFunction(aScript,'SAVE_VAR',F_TYPE_FUNCTION_SAVE_VAR,nil);        
- AddScriptFunction(aScript,'DELETE_VAR',F_TYPE_FUNCTION_DELETE_VAR,nil);
+ AddScriptFunction(Enviroment,'ReplaceString',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ReplaceString);
+ AddScriptFunction(Enviroment,'ReplaceStringAll',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ReplaceStringAll);
 
- AddScriptFunction(aScript,'ReplaceString',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ReplaceString);
- AddScriptFunction(aScript,'ReplaceStringAll',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ReplaceStringAll);
-
- AddScriptFunction(aScript,'ArrayIntLength',F_TYPE_FUNCTION_ARRAYINTEGER_IS_INTEGER,@ArrayIntLength);
- AddScriptFunction(aScript,'GetIntItem',F_TYPE_FUNCTION_ARRAYINTEGER_INTEGER_IS_INTEGER,@GetIntItem);
- AddScriptFunction(aScript,'SetIntItem',F_TYPE_PROCEDURE_ARRAYINTEGER_INTEGER_INTEGER,@SetIntItem);
- AddScriptFunction(aScript,'GetIntArray',F_TYPE_FUNCTION_INTEGER_IS_ARRAYINTEGER,@GetIntArray);
- AddScriptFunction(aScript,'AddIntItem',F_TYPE_PROCEDURE_VAR_ARRAYINTEGER_INTEGER,@AddIntItem);
- AddScriptFunction(aScript,'AddStringItem',F_TYPE_PROCEDURE_VAR_ARRAYSTRING_STRING,@AddStringItem);
- AddScriptFunction(aScript,'GetStringArray',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@GetStringArray);
- AddScriptFunction(aScript,'Clear',F_TYPE_PROCEDURE_CLEAR,@Clear);
- AddScriptFunction(aScript,'DeleteNoFirst',F_TYPE_PROCEDURE_CLEAR,@DeleteNoFirst);
- AddScriptFunction(aScript,'SetNamedValue',F_TYPE_PROCEDURE_STRING_STRING,@SetNamedValue);
- AddScriptFunction(aScript,'String',F_TYPE_FUNCTION_STRING_IS_STRING,@aSetString);
- AddScriptFunction(aScript,'Integer',F_TYPE_FUNCTION_INTEGER_IS_INTEGER,@aSetInteger);
- AddScriptFunction(aScript,'WriteCode',F_TYPE_PROCEDURE_WRITE_STRING,@WriteCode);
- AddScriptFunction(aScript,'Include',F_TYPE_PROCEDURE_WRITE_STRING,@include);
+ AddScriptFunction(Enviroment,'ArrayIntLength',F_TYPE_FUNCTION_ARRAYINTEGER_IS_INTEGER,@ArrayIntLength);
+ AddScriptFunction(Enviroment,'GetIntItem',F_TYPE_FUNCTION_ARRAYINTEGER_INTEGER_IS_INTEGER,@GetIntItem);
+ AddScriptFunction(Enviroment,'SetIntItem',F_TYPE_PROCEDURE_ARRAYINTEGER_INTEGER_INTEGER,@SetIntItem);
+ AddScriptFunction(Enviroment,'GetIntArray',F_TYPE_FUNCTION_INTEGER_IS_ARRAYINTEGER,@GetIntArray);
+ AddScriptFunction(Enviroment,'AddIntItem',F_TYPE_PROCEDURE_VAR_ARRAYINTEGER_INTEGER,@AddIntItem);
+ AddScriptFunction(Enviroment,'AddStringItem',F_TYPE_PROCEDURE_VAR_ARRAYSTRING_STRING,@AddStringItem);
+ AddScriptFunction(Enviroment,'GetStringArray',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@GetStringArray);
+ AddScriptFunction(Enviroment,'Clear',F_TYPE_PROCEDURE_CLEAR,@Clear);
+ AddScriptFunction(Enviroment,'DeleteNoFirst',F_TYPE_PROCEDURE_CLEAR,@DeleteNoFirst);
+ AddScriptFunction(Enviroment,'SetNamedValue',F_TYPE_PROCEDURE_STRING_STRING,@SetNamedValue);
+ AddScriptFunction(Enviroment,'String',F_TYPE_FUNCTION_STRING_IS_STRING,@aSetString);
+ AddScriptFunction(Enviroment,'Integer',F_TYPE_FUNCTION_INTEGER_IS_INTEGER,@aSetInteger);
+ AddScriptFunction(Enviroment,'WriteCode',F_TYPE_PROCEDURE_WRITE_STRING,@WriteCode);
+ AddScriptFunction(Enviroment,'Include',F_TYPE_PROCEDURE_WRITE_STRING,@include);
  {$IFNDEF EXT}
     
- AddScriptFunction(aScript,'SumInt',F_TYPE_FUNCTION_INTEGER_INTEGER_IS_INTEGER,@SumInt);
- AddScriptFunction(aScript,'SumStr',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@SumStr);
- AddScriptFunction(aScript,'ArrayStringLength',F_TYPE_FUNCTION_ARRAYSTRING_IS_INTEGER,@ArrayStringLength);
- AddScriptFunction(aScript,'GetStringItem',F_TYPE_FUNCTION_ARRAYSTRING_INTEGER_IS_STRING,@GetStringItem);
- AddScriptFunction(aScript,'CreateItem',F_TYPE_FUNCTION_CREATE_ITEM,@CreateItem);
- AddScriptFunction(aScript,'CreateItemDef',F_TYPE_FUNCTION_CREATE_ITEM_DEF,@CreateItemDef);
- AddScriptFunction(aScript,'CreateItemDefChecked',F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED,@CreateItemDefChecked);
- AddScriptFunction(aScript,'CreateItemDefCheckedSubTag',F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED_SUBTAG,@CreateItemDefChecked);
- AddScriptFunction(aScript,'CreateParentItem',F_TYPE_FUNCTION_CREATE_PARENT_ITEM,@CreateItem);
+ AddScriptFunction(Enviroment,'SumInt',F_TYPE_FUNCTION_INTEGER_INTEGER_IS_INTEGER,@SumInt);
+ AddScriptFunction(Enviroment,'SumStr',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@SumStr);
+ AddScriptFunction(Enviroment,'ArrayStringLength',F_TYPE_FUNCTION_ARRAYSTRING_IS_INTEGER,@ArrayStringLength);
+ AddScriptFunction(Enviroment,'GetStringItem',F_TYPE_FUNCTION_ARRAYSTRING_INTEGER_IS_STRING,@GetStringItem);
+ AddScriptFunction(Enviroment,'CreateItem',F_TYPE_FUNCTION_CREATE_ITEM,@CreateItem);
+ AddScriptFunction(Enviroment,'CreateItemDef',F_TYPE_FUNCTION_CREATE_ITEM_DEF,@CreateItemDef);
+ AddScriptFunction(Enviroment,'CreateItemDefChecked',F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED,@CreateItemDefChecked);
+ AddScriptFunction(Enviroment,'CreateItemDefCheckedSubTag',F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED_SUBTAG,@CreateItemDefChecked);
+ AddScriptFunction(Enviroment,'CreateParentItem',F_TYPE_FUNCTION_CREATE_PARENT_ITEM,@CreateItem);
 
 
- AddScriptFunction(aScript,'IntToStr',F_TYPE_FUNCTION_INTEGER_IS_STRING,@aIntToStr);
- AddScriptFunction(aScript,'SpilitWords',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@SpilitWords);
- AddScriptFunction(aScript,'ReadFile',F_TYPE_FUNCTION_STRING_IS_STRING,@ReadFile);
- AddScriptFunction(aScript,'Default',F_TYPE_PROCEDURE_TSCRIPT,@Default);
- AddScriptFunction(aScript,'InVisible',F_TYPE_PROCEDURE_TSCRIPT,@InVisible);
- AddScriptFunction(aScript,'Disabled',F_TYPE_PROCEDURE_TSCRIPT,@Disabled);
- AddScriptFunction(aScript,'Checked',F_TYPE_PROCEDURE_TSCRIPT,@Checked);
- AddScriptFunction(aScript,'AddIcon',F_TYPE_FUNCTION_ADD_ICON,@AddIcon);
- AddScriptFunction(aScript,'Boolean',F_TYPE_FUNCTION_BOOLEAN_IS_BOOLEAN,@aBoolean);
- AddScriptFunction(aScript,'GetDirListing',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@GetDirListing);
- AddScriptFunction(aScript,'FileExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aFileExists);
- AddScriptFunction(aScript,'DirectoryExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aDirectoryExists);
- AddScriptFunction(aScript,'DirectoryFileExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aDirectoryFileExists);
- AddScriptFunction(aScript,'AddAssociatedIcon',F_TYPE_FUNCTION_ADD_ICON,@AddAssociatedIcon);
- AddScriptFunction(aScript,'PathFormat',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@aPathFormat);
- AddScriptFunction(aScript,'GetUSBDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetUSBDrives);
- AddScriptFunction(aScript,'GetCDROMDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetCDROMDrives);
- AddScriptFunction(aScript,'GetAllDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetAllDrives);
- AddScriptFunction(aScript,'GetDriveName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetDriveName);
- AddScriptFunction(aScript,'GetMyPicturesFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyPicturesFolder);
- AddScriptFunction(aScript,'GetMyDocumentsFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyDocumentsFolder);
- AddScriptFunction(aScript,'ShowInt',F_TYPE_PROCEDURE_INTEGER,@ShowInt);
- AddScriptFunction(aScript,'Sleep',F_TYPE_PROCEDURE_INTEGER,@aSleep);
- AddScriptFunction(aScript,'AltKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@AltKeyDown);
- AddScriptFunction(aScript,'CtrlKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@CtrlKeyDown);
- AddScriptFunction(aScript,'ShiftKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@ShiftKeyDown);
- AddScriptFunction(aScript,'NowString',F_TYPE_FUNCTION_IS_STRING,@NowString);
- AddScriptFunction(aScript,'Halt',F_TYPE_PROCEDURE_NO_PARAMS,@aHalt);
- AddScriptFunction(aScript,'LoadFilesFromClipBoard',F_TYPE_FUNCTION_IS_ARRAYSTRING,@LoadFIlesFromClipBoard);
- AddScriptFunction(aScript,'CopyFile',F_TYPE_PROCEDURE_STRING,@CopyFile);
- AddScriptFunction(aScript,'CutFile',F_TYPE_PROCEDURE_STRING,@CutFile);
- AddScriptFunction(aScript,'CopyFiles',F_TYPE_PROCEDURE_ARRAYSTRING,@CopyFiles);
- AddScriptFunction(aScript,'CutFiles',F_TYPE_PROCEDURE_ARRAYSTRING,@CutFiles);
- AddScriptFunction(aScript,'ShowMemoryStatus',F_TYPE_PROCEDURE_TSCRIPT,@ShowMemoryStatus);
- AddScriptFunction(aScript,'ClearMemory',F_TYPE_PROCEDURE_TSCRIPT,@ClearMemory);
- AddScriptFunction(aScript,'ShowFunctionList',F_TYPE_PROCEDURE_TSCRIPT,@ShowFunctionList);
+ AddScriptFunction(Enviroment,'IntToStr',F_TYPE_FUNCTION_INTEGER_IS_STRING,@aIntToStr);
+ AddScriptFunction(Enviroment,'SpilitWords',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@SpilitWords);
+ AddScriptFunction(Enviroment, 'ReadFile',F_TYPE_FUNCTION_STRING_IS_STRING,@ReadFile);
+ AddScriptFunction(Enviroment, 'Default',F_TYPE_PROCEDURE_TSCRIPT,@Default);
+ AddScriptFunction(Enviroment, 'InVisible',F_TYPE_PROCEDURE_TSCRIPT,@InVisible);
+ AddScriptFunction(Enviroment, 'Disabled',F_TYPE_PROCEDURE_TSCRIPT,@Disabled);
+ AddScriptFunction(Enviroment, 'Checked',F_TYPE_PROCEDURE_TSCRIPT,@Checked);
+ AddScriptFunction(Enviroment, 'AddIcon',F_TYPE_FUNCTION_ADD_ICON,@AddIcon);
+ AddScriptFunction(Enviroment, 'Boolean',F_TYPE_FUNCTION_BOOLEAN_IS_BOOLEAN,@aBoolean);
+ AddScriptFunction(Enviroment, 'GetDirListing',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@GetDirListing);
+ AddScriptFunction(Enviroment, 'FileExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aFileExists);
+ AddScriptFunction(Enviroment, 'DirectoryExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aDirectoryExists);
+ AddScriptFunction(Enviroment, 'DirectoryFileExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aDirectoryFileExists);
+ AddScriptFunction(Enviroment, 'AddAssociatedIcon',F_TYPE_FUNCTION_ADD_ICON,@AddAssociatedIcon);
+ AddScriptFunction(Enviroment, 'PathFormat',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@aPathFormat);
+ AddScriptFunction(Enviroment, 'GetUSBDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetUSBDrives);
+ AddScriptFunction(Enviroment, 'GetCDROMDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetCDROMDrives);
+ AddScriptFunction(Enviroment, 'GetAllDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetAllDrives);
+ AddScriptFunction(Enviroment, 'GetDriveName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetDriveName);
+ AddScriptFunction(Enviroment, 'GetMyPicturesFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyPicturesFolder);
+ AddScriptFunction(Enviroment, 'GetMyDocumentsFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyDocumentsFolder);
+ AddScriptFunction(Enviroment, 'ShowInt',F_TYPE_PROCEDURE_INTEGER,@ShowInt);
+ AddScriptFunction(Enviroment, 'Sleep',F_TYPE_PROCEDURE_INTEGER,@aSleep);
+ AddScriptFunction(Enviroment, 'AltKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@AltKeyDown);
+ AddScriptFunction(Enviroment, 'CtrlKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@CtrlKeyDown);
+ AddScriptFunction(Enviroment, 'ShiftKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@ShiftKeyDown);
+ AddScriptFunction(Enviroment, 'NowString',F_TYPE_FUNCTION_IS_STRING,@NowString);
+ AddScriptFunction(Enviroment, 'Halt',F_TYPE_PROCEDURE_NO_PARAMS,@aHalt);
+ AddScriptFunction(Enviroment, 'LoadFilesFromClipBoard',F_TYPE_FUNCTION_IS_ARRAYSTRING,@LoadFIlesFromClipBoard);
+ AddScriptFunction(Enviroment, 'ClipboardCopyFile',F_TYPE_PROCEDURE_STRING,@CopyFile);
+ AddScriptFunction(Enviroment, 'ClipboardCutFile',F_TYPE_PROCEDURE_STRING,@CutFile);
+ AddScriptFunction(Enviroment, 'ClipboardCopyFiles',F_TYPE_PROCEDURE_ARRAYSTRING,@CopyFiles);
+ AddScriptFunction(Enviroment, 'ClipboardCutFiles',F_TYPE_PROCEDURE_ARRAYSTRING,@CutFiles);
+ AddScriptFunction(Enviroment, 'ShowMemoryStatus',F_TYPE_PROCEDURE_TSCRIPT,@ShowMemoryStatus);
+ AddScriptFunction(Enviroment, 'ClearMemory',F_TYPE_PROCEDURE_TSCRIPT,@ClearMemory);
+ AddScriptFunction(Enviroment, 'ShowFunctionList',F_TYPE_PROCEDURE_TSCRIPT,@ShowFunctionList);
 
- AddScriptFunction(aScript,'StrToInt',F_TYPE_FUNCTION_STRING_IS_INTEGER,@aStrToInt);
- AddScriptFunction(aScript,'Pos',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@aPos);
- AddScriptFunction(aScript,'StrCopy',F_TYPE_FUNCTION_STRING_INTEGER_INTEGER_IS_STRING,@aStrCopy);
+ AddScriptFunction(Enviroment, 'StrToInt',F_TYPE_FUNCTION_STRING_IS_INTEGER,@aStrToInt);
+ AddScriptFunction(Enviroment, 'Pos',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@aPos);
+ AddScriptFunction(Enviroment, 'StrCopy',F_TYPE_FUNCTION_STRING_INTEGER_INTEGER_IS_STRING,@aStrCopy);
 
- AddScriptFunction(aScript,'GetOpenDirectory',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenDirectory);
+ AddScriptFunction(Enviroment, 'GetOpenDirectory',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenDirectory);
 
 
- AddScriptFunction(aScript,'GetProgramFolder',F_TYPE_FUNCTION_IS_STRING,@GetProgramFolder);
- AddScriptFunction(aScript,'GetOpenFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenFileName);
- AddScriptFunction(aScript,'ExtractFileName',F_TYPE_FUNCTION_STRING_IS_STRING,@aExtractFileName);
+ AddScriptFunction(Enviroment, 'GetProgramFolder',F_TYPE_FUNCTION_IS_STRING,@GetProgramFolder);
+ AddScriptFunction(Enviroment, 'ExtractFileName',F_TYPE_FUNCTION_STRING_IS_STRING,@aExtractFileName);
 
- AddScriptFunction(aScript,'ExtractFileDirectory',F_TYPE_FUNCTION_STRING_IS_STRING,@GetDirectory);
- AddScriptFunction(aScript,'ExecuteScriptFile',F_TYPE_PROCEDURE_TSCRIPT_STRING_W,@ExecuteScriptFile);
+ AddScriptFunction(Enviroment, 'ExtractFileDirectory',F_TYPE_FUNCTION_STRING_IS_STRING,@GetDirectory);
+ AddScriptFunction(Enviroment, 'ExecuteScriptFile',F_TYPE_PROCEDURE_TSCRIPT_STRING_W,@ExecuteScriptFile);
  {$ENDIF EXT}
- AddScriptFunction(aScript,'MessageBox',F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER,@aMessageBox);
- AddScriptFunction(aScript,'Float',F_TYPE_FUNCTION_FLOAT_IS_FLOAT,@Float);
+ AddScriptFunction(Enviroment, 'MessageBox',F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER,@aMessageBox);
+ AddScriptFunction(Enviroment, 'Float',F_TYPE_FUNCTION_FLOAT_IS_FLOAT,@Float);
 
- AddScriptFunction(aScript,'FileInPath',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@FileInPath);
+ AddScriptFunction(Enviroment, 'FileInPath',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@FileInPath);
                                                                                                 
- AddScriptFunction(aScript,'FileHasExt',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@UnitScriptsFunctions.FileHasExt);
+ AddScriptFunction(Enviroment, 'FileHasExt',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@UnitScriptsFunctions.FileHasExt);
 end;
 
-procedure LoadFileFunctions(var aScript : TScript);
+procedure LoadFileFunctions(Enviroment : TScriptEnviroment);
 begin
  {$IFNDEF EXT}
- AddScriptFunction(aScript,'CopyFile',F_TYPE_PROCEDURE_STRING_STRING,@aCopyFile);
- AddScriptFunction(aScript,'CopyFileSynch',F_TYPE_PROCEDURE_STRING_STRING,@CopyFileSynch);
- AddScriptFunction(aScript,'RenameFile',F_TYPE_PROCEDURE_STRING_STRING,@aRenameFile);
- AddScriptFunction(aScript,'Run',F_TYPE_PROCEDURE_STRING_STRING,@Run);
- AddScriptFunction(aScript,'RunWait',F_TYPE_PROCEDURE_STRING_STRING,@ExecAndWait);
- AddScriptFunction(aScript,'DeleteFile',F_TYPE_PROCEDURE_STRING,@aDeleteFile);
- AddScriptFunction(aScript,'Exec',F_TYPE_PROCEDURE_STRING,@Exec);
+ AddScriptFunction(Enviroment, 'CopyFile',F_TYPE_PROCEDURE_STRING_STRING,@aCopyFile);
+ AddScriptFunction(Enviroment, 'CopyFileSynch',F_TYPE_PROCEDURE_STRING_STRING,@CopyFileSynch);
+ AddScriptFunction(Enviroment, 'RenameFile',F_TYPE_PROCEDURE_STRING_STRING,@aRenameFile);
+ AddScriptFunction(Enviroment, 'Run',F_TYPE_PROCEDURE_STRING_STRING,@Run);
+ AddScriptFunction(Enviroment, 'RunWait',F_TYPE_PROCEDURE_STRING_STRING,@ExecAndWait);
+ AddScriptFunction(Enviroment, 'DeleteFile',F_TYPE_PROCEDURE_STRING,@aDeleteFile);
+ AddScriptFunction(Enviroment, 'Exec',F_TYPE_PROCEDURE_STRING,@Exec);
 
- AddScriptFunction(aScript,'WriteLnToFile',F_TYPE_PROCEDURE_STRING_STRING,@WriteLnToFile);
- AddScriptFunction(aScript,'WriteToFile',F_TYPE_PROCEDURE_STRING_STRING,@WriteToFile);
- AddScriptFunction(aScript,'CreateFile',F_TYPE_PROCEDURE_STRING,@CreateFile);
- AddScriptFunction(aScript,'GetSaveFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetSaveFileName);
- AddScriptFunction(aScript,'GetOpenFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenFileName);
+ AddScriptFunction(Enviroment, 'WriteLnToFile',F_TYPE_PROCEDURE_STRING_STRING,@WriteLnToFile);
+ AddScriptFunction(Enviroment, 'WriteToFile',F_TYPE_PROCEDURE_STRING_STRING,@WriteToFile);
+ AddScriptFunction(Enviroment, 'CreateFile',F_TYPE_PROCEDURE_STRING,@CreateFile);
+ AddScriptFunction(Enviroment, 'GetSaveFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetSaveFileName);
+ AddScriptFunction(Enviroment, 'GetOpenFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenFileName);
 
- AddScriptFunction(aScript,'GetSaveImageFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetSaveImageFileName);
- AddScriptFunction(aScript,'GetOpenImageFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenImageFileName);
+ AddScriptFunction(Enviroment, 'GetSaveImageFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetSaveImageFileName);
+ AddScriptFunction(Enviroment, 'GetOpenImageFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenImageFileName);
  {$ENDIF EXT}
 end;
 
-procedure FinalizeScript(var aScript : TScript);
+procedure FinalizeScript(aScript : TScript);
 //var
 //  i : integer;
 begin
@@ -3415,84 +2822,77 @@ begin
  if aScript.NamedValues[i].aName='$NO_UNLOAD' then
  if aScript.NamedValues[i].BoolValue=true then
   exit; }
-
- if aScript.ID<>'' then
- ScriptsManager.RemoveScript(aScript.ID);
+  //TODO: !!!!!
+ //if aScript.ID<>'' then
+ //ScriptsManager.RemoveScript(aScript.ID);
 end;
 
 { TScriptsManager }
 
-function TScriptsManager.AddScript(Script: PScript) : string;
+function TScriptsManager.AddScript(Script: TScript) : string;
 var
-  i : integer;
+  Index : integer;
   b : boolean;
 begin
- b:=false;
- For i:=0 to Length(FScripts)-1 do
- if FScripts[i]=Script then
- begin
-  Result:=FScripts[i].ID;
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FScripts,Length(FScripts)+1);
-  FScripts[Length(FScripts)-1]:=Script;
-  FScripts[Length(FScripts)-1].ID:=GetCID;
-  Result:=FScripts[Length(FScripts)-1].ID;
- end;
+  Index := FScripts.IndexOf(Script);
+  if Index > -1 then
+    Result := TScript(FScripts[Index]).ID
+  else
+    Result := TScript(FScripts[FScripts.Add(Script)]).ID;
 end;
 
 constructor TScriptsManager.Create;
 begin
- SetLength(FScripts,0);
+ FScripts := TList.Create;
 end;
 
 destructor TScriptsManager.Destroy;
+var
+  I : Integer;
 begin
- SetLength(FScripts,0);
+  for I := 0 to FScripts.Count - 1 do
+    TScript(FScripts[i]).Free;
+    
+ FScripts.Free;
  inherited;
 end;
 
-function TScriptsManager.GetScriptByID(ID: string): PScript;
+function TScriptsManager.GetScriptByID(ID: string): TScript;
 var
-  i : integer;
+  I : integer;
 begin
- Result:=nil;
- For i:=0 to Length(FScripts)-1 do
- if FScripts[i].ID=ID then
- begin
-  Result:=FScripts[i];
-  exit;
- end;
+  Result := nil;
+  for I := 0 to FScripts.Count - 1 do
+    if TScript(FScripts[I]).ID = ID then
+    begin
+      Result := FScripts[I];
+      Exit;
+    end;
 end;
 
 procedure TScriptsManager.RemoveScript(ID : string);
 var
-  i, j : integer;
+  I : integer;
 begin
- For i:=0 to Length(FScripts)-1 do
- if FScripts[i].ID=ID then
- begin
-  For j:=i to Length(FScripts)-2 do
-  FScripts[j]:=FScripts[j+1];
-  SetLength(FScripts,Length(FScripts)-1);
-  break;
- end;
+  for I := 0 to FScripts.Count - 1 do
+    if TScript(FScripts[I]).ID = ID then
+    begin
+      FScripts.Delete(I);
+      Exit;
+    end;
 end;
 
 function TScriptsManager.ScriptExists(ID : string): Boolean;
 var
-  i : integer;
+  I : integer;
 begin
- Result:=false;
- For i:=0 to Length(FScripts)-1 do
- if FScripts[i].ID=ID then
- begin
-  Result:=true;
-  exit;
- end;
+  Result := False;
+  for I := 0 to FScripts.Count - 1 do
+    if TScript(FScripts[I]).ID = ID then
+    begin
+      Result := True;
+      Exit;
+    end;
 end;
 
 initialization

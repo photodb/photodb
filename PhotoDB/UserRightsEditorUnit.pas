@@ -48,7 +48,7 @@ var
   Access : String;
   i, res : integer;
 begin
- FUserName:=UserName;
+{ FUserName:=UserName;
  res:=DBKernel.GetUserAccess(UserName,Access);
  if res<>LOG_IN_OK then
  begin
@@ -58,7 +58,7 @@ begin
  for i:=1 to CheckListBox1.Count do
  CheckListBox1.Checked[i-1]:=Access[i]='1';
  Label1.Caption:=Format(TEXT_MES_SELECT_RIGHTS_F,[UserName]);
- ShowModal;
+ ShowModal; }
 end;
 
 procedure TUserRightEditorForm.Button1Click(Sender: TObject);
@@ -66,7 +66,7 @@ var
   Access : String;
   i, res : integer;
 begin
- Access:='0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+{ Access:='0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
  for i:=1 to CheckListBox1.Count do
  begin
   if CheckListBox1.Checked[i-1] then Access[i]:='1' else Access[i]:='0';
@@ -77,7 +77,7 @@ begin
   DBKernel.LoginErrorMsg(res);
   exit;
  end;
- Close;
+ Close;  }
 end;
 
 procedure TUserRightEditorForm.Button2Click(Sender: TObject);

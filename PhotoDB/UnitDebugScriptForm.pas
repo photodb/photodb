@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Grids, ValEdit;
+  Dialogs, StdCtrls, ExtCtrls, Grids, ValEdit, uStringUtils;
 
 type
   TDebugScriptForm = class(TForm)
@@ -51,11 +51,9 @@ type
     { Public declarations }
   end;
 
-
-
 implementation
 
-uses UnitScripts;
+uses uScript, UnitScripts;
 
 {$R *.dfm}
 
@@ -110,7 +108,7 @@ begin
   Variable:=ValueListEditor1.Cells[0,i];
   if Variable<>'' then
   begin
-   Val:=VarValue(TScript(p^),Variable);
+   Val:=VarValue(TScript(p),Variable);
    ValueListEditor1.Cells[1,i]:=Val;
   end;
  end;

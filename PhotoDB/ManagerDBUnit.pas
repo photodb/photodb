@@ -9,9 +9,9 @@ uses
   DropSource, Menus, SaveWindowPos, DB, ComCtrls, WebLink, StdCtrls,
   Dialogs, Grids, DBGrids, jpeg, DBCtrls, TwButton, Rating, Mask,
   GraphicCrypt, UnitStringPromtForm, CommonDBSupport, GraphicsCool,
-  CommCtrl, DateUtils, UnitScripts, CmpUnit, UnitFormManagerHint,
+  CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport;
+  UnitCDMappingSupport, uConstants, uFileUtils;
 
 type
   TManagerDB = class(TForm)
@@ -686,7 +686,6 @@ var
   i : integer;
 begin
  FBackUpFiles.Clear;
- GetValidDBFilesInFolder(GetAppDataDirectory+BackUpFolder,true,FBackUpFiles);
  GetValidMDBFilesInFolder(GetAppDataDirectory+BackUpFolder,true,FBackUpFiles);
  ListBox1.Clear;
  for i:=0 to FBackUpFiles.Count-1 do
@@ -1739,7 +1738,7 @@ begin
   MenuInfo.IsListItem:=False;
   MenuInfo.IsDateGroup:=True;
   MenuInfo.IsAttrExists:=false;
-  DBPopupMenu.Execute(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,MenuInfo);
+  TDBPopupMenu.Instance.Execute(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,MenuInfo);
  end;
 end;
 

@@ -3,7 +3,7 @@ unit RAWImage;
 interface
 
 uses  Windows, Messages, SysUtils, Graphics, Classes, FileCtrl, GraphicEX, Forms,
-      UnitScripts, UnitDBCommonGraphics;
+      uScript, UnitScripts, UnitDBCommonGraphics, uConstants, uFileUtils;
 
   {$DEFINE USEPHOTODB}
 
@@ -539,26 +539,29 @@ initialization
   aExtract_Thumbnail := GetProcAddress(aRAWModuleHandle,'ExtractThumbnail');
 
   //Loading Extensions from ini-file
-  InitializeScript(aScript);
-  LoadBaseFunctions(aScript);
-  LoadScript:='';
+  aScript := TScript.Create('InitRAW');
   try
-   aFS := TFileStream.Create(ProgramDir+'scripts\LoadRAW.dbini',fmOpenRead);
-   SetLength(LoadScript,aFS.Size);
-   aFS.Read(LoadScript[1],aFS.Size);
-   for LoadInteger:=Length(LoadScript) downto 1 do
-   begin
-    if LoadScript[LoadInteger]=#10 then LoadScript[LoadInteger]:=' ';
-    if LoadScript[LoadInteger]=#13 then LoadScript[LoadInteger]:=' ';
-   end;
-   aFS.Free;
-  except
+    LoadScript:='';
+    try
+     aFS := TFileStream.Create(ProgramDir+'scripts\LoadRAW.dbini',fmOpenRead);
+     SetLength(LoadScript,aFS.Size);
+     aFS.Read(LoadScript[1],aFS.Size);
+     for LoadInteger:=Length(LoadScript) downto 1 do
+     begin
+      if LoadScript[LoadInteger]=#10 then LoadScript[LoadInteger]:=' ';
+      if LoadScript[LoadInteger]=#13 then LoadScript[LoadInteger]:=' ';
+     end;
+     aFS.Free;
+    except
+    end;
+    try
+     ExecuteScript(nil,aScript,LoadScript,LoadInteger,nil);
+    except
+    end;
+    RAWImages:=GetNamedValueString(aScript,'$RAWImages');
+  finally
+    aScript.Free;
   end;
-  try
-   ExecuteScript(nil,aScript,LoadScript,LoadInteger,nil);
-  except
-  end;
-  RAWImages:=GetNamedValueString(aScript,'$RAWImages');
   if RAWImages='' then
   RAWImages:='CR2|';
   TempRAWMask:=TempRAWMask+RAWImages;

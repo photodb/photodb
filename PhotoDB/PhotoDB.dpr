@@ -39,7 +39,6 @@ uses
   SlideShow in 'SlideShow.pas' {Viewer},
   Options in 'Options.pas' {OptionsForm},
   PropertyForm in 'PropertyForm.pas' {PropertiesForm},
-  login in 'login.pas' {LoginForm},
   UnitFormCont in 'UnitFormCont.pas' {FormCont},
   replaceform in 'replaceform.pas' {DBReplaceForm},
   unitimhint in 'unitimhint.pas' {ImHint},
@@ -88,7 +87,6 @@ uses
   UnitChangeDBPath in 'UnitChangeDBPath.pas' {FormChangeDBPath},
   UnitSelectDB in 'UnitSelectDB.pas' {FormSelectDB},
   UnitDBOptions in 'UnitDBOptions.pas' {FormDBOptions},
-  UnitFormLoginModeChooser in 'UnitFormLoginModeChooser.pas' {FormLoginModeChooser},
   UnitFormCDExport in 'UnitFormCDExport.pas' {FormCDExport},
   UnitFormCDMapper in 'UnitFormCDMapper.pas' {FormCDMapper},
   UnitFormCDMapInfo in 'UnitFormCDMapInfo.pas' {FormCDMapInfo},
@@ -264,7 +262,12 @@ uses
   UnitCDMappingSupport in 'Units\UnitCDMappingSupport.pas',
   uThreadForm in 'Units\uThreadForm.pas',
   uThreadEx in 'Threads\uThreadEx.pas',
-  uAssociatedIcons in 'Threads\uAssociatedIcons.pas';
+  uAssociatedIcons in 'Threads\uAssociatedIcons.pas',
+  uLogger in 'Units\uLogger.pas',
+  uConstants in 'Units\uConstants.pas',
+  uFileUtils in 'Units\uFileUtils.pas',
+  uScript in 'KernelDll\uScript.pas',
+  uStringUtils in 'Units\uStringUtils.pas';
 
 {$R *.res}
 
@@ -273,7 +276,7 @@ type
     TInitializeAProc = function(s:PChar) : boolean;
 
 var
-    s1,s2 : string;
+    s1 : string;
     Reg : TBDRegistry;
     hw : THandle;
     cd : TCopyDataStruct;
@@ -288,7 +291,6 @@ var
     aHandle : Thandle;
     i : integer;
     CheckResult : integer;
-    b1,b2 : tbitmap;
 
   f : TPcharFunction;
   Fh : pointer;
@@ -403,9 +405,7 @@ begin
  /UNINSTALL
  /EXPLORER
  /GETPHOTOS 
- /NOLOGO 
- /user user
- /pass pass    
+ /NOLOGO
  /NoPrevVersion
  /NoFaultCheck  
  /NoFullRun 
@@ -422,13 +422,16 @@ begin
  /SQLExec   
  /SQLExecFile
 }
-                 
+  CoInitialize(nil);
+
   ProgramDir := ExtractFileDir(Application.ExeName) + '\';
 
   EventLog('');
   EventLog('');
   EventLog('');
   EventLog(Format('Program running! [%s]',[ProductName]));
+
+  TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
 
   KernelHandle:=loadlibrary(PChar(ProgramDir+'icons.dll'));
   if KernelHandle=0 then
@@ -543,7 +546,6 @@ begin
    end;
   end;
   EventLog(':BDEInstalled()');
-  BDEIsInstalled:=BDEInstalled;
            
   //UNINSTALL ----------------------------------------------------
            
@@ -690,8 +692,7 @@ begin
   end;
 
   EventLog('...Loading menu...');
-  if not DBTerminating then
-  DBPopupMenu:=TDBPopupMenu.create;
+  
   if LoadingAboutForm<>nil then begin TAboutForm(LoadingAboutForm).DmProgress1.Position:=2; if not FolderView then TAboutForm(LoadingAboutForm).LoadRegistrationData; end;
   //LOGGING ----------------------------------------------------
 
@@ -743,59 +744,14 @@ begin
   If not DBTerminating then
   begin
    EventLog(':DBKernel.FixLoginDB()');
-   DBKernel.FixLoginDB;
-   if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=5;
-   if not SafeMode then
-   begin
-    CheckResult:=FileCheckedDB.CheckFile(DBKernel.GetLoginDataBaseFileName);
-    if CheckResult=CHECK_RESULT_OK then
-    begin
-     FileCheckedDB.SaveCheckFile(DBKernel.GetLoginDataBaseFileName);
-    end;
-    //if no check then full check!
-    if (CheckResult=CHECK_RESULT_OK) or (DBKernel.TestLoginDB and (DBKernel.CheckAdmin=LOG_IN_OK)) then
-    if not (AltKeyDown or CtrlKeyDown or ShiftKeyDown) then
-    begin
-     EventLog(':DBKernel.TryToLoadDefaultUser()');
-     DBKernel.TryToLoadDefaultUser(s1,s2);
-
-     if GetParamStrDBBool('/user') and GetParamStrDBBool('/pass') then
-     begin
-      s1:=GetParamStrDBValue('/user');    
-      s2:=GetParamStrDBValue('/pass');
-     end;
-    end;
-   end;
-   if s1='' then
-   begin
-    s1:=TEXT_MES_ADMIN;
-    s2:='';
-   end;
    if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=6;
-   EventLog(':DBKernel.LogIn() <-- default user and password: '+s1+', '+s2);
-   if DBKernel.LogIn(s1,s2,true)<>LOG_IN_OK then
-   begin                 
-    EventLog('Query login...');
-    ResultLogin:=false;
-    Application.CreateForm(TLoginForm, LoginForm);
-    LoginForm.Execute;
-    LoginForm.Release;
-    if UseFreeAfterRelease then LoginForm.Free;
-    LoginForm:=nil;
-   end else ResultLogin:=true;
-   if not ResultLogin then
-   begin         
-    EventLog('Loging failed...');
-    DBTerminating:=True;
-    Application.Terminate;
-   End;
-  end;
 
+   DBKernel.LogIn('','',true);
+  end;
   //GROUPS CHECK + MENU----------------------------------------------------
                 
   EventLog('...GROUPS CHECK + MENU...');
-  if DBPopupMenu<>nil then
-  DBPopupMenu.LoadScriptFunctions;
+
   if not SafeMode then
   begin
    try
@@ -835,7 +791,7 @@ begin
   //SERVICES ----------------------------------------------------
 
   if not DBTerminating then
-  If GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp','ConvertDB',False) and (DBKernel.DBUserType=UtAdmin) then
+  If GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp','ConvertDB',False) then
   if not TablePacked then
   begin
    LoadingAboutForm.Free;
@@ -846,7 +802,7 @@ begin
   end;
 
   if not DBTerminating then
-  If GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp','Pack',False) and (DBKernel.DBUserType=UtAdmin) then
+  If GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp','Pack',False) then
   if not TablePacked then
   begin
    LoadingAboutForm.Free;
@@ -876,7 +832,7 @@ begin
   end;
 
   if not DBTerminating then
-  If GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp','RecreateIDEx',False) and (DBKernel.DBUserType=UtAdmin) then
+  If GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp','RecreateIDEx',False) then
   begin
    LoadingAboutForm.Free;
    LoadingAboutForm:=nil;
@@ -890,7 +846,7 @@ begin
   end;
   
   if not DBTerminating then
-  If GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp','ScanBadLinks',False) and (DBKernel.DBUserType=UtAdmin) then
+  If GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp','ScanBadLinks',False) then
   begin    
    LoadingAboutForm.Free;
    LoadingAboutForm:=nil;
@@ -904,7 +860,7 @@ begin
   end;
 
   if not DBTerminating then
-  If GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp','OptimizeDublicates',False) and (DBKernel.DBUserType=UtAdmin) then
+  If GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp','OptimizeDublicates',False) then
   begin     
    LoadingAboutForm.Free;
    LoadingAboutForm:=nil;
@@ -918,7 +874,7 @@ begin
   end;
   
   if not DBTerminating then
-  If DBKernel.ReadBool('StartUp','Restore',False) and (DBKernel.DBUserType=UtAdmin) then
+  If DBKernel.ReadBool('StartUp','Restore',False) then
   begin      
    LoadingAboutForm.Free;
    LoadingAboutForm:=nil;
@@ -1030,6 +986,6 @@ begin
   Dolphin_DB.ExecuteQuery(s1);
  end;
 
- Application.Run;
-
+  Application.Run;
+  CoUnInitialize();
 end.

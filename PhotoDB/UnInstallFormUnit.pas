@@ -5,7 +5,7 @@ interface
 uses
   Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
    Controls, Forms, uVistaFuncs,
-  Dialogs, StdCtrls, CheckLst, DmProgress;
+  Dialogs, StdCtrls, CheckLst, DmProgress, uConstants;
 
 type
   TUnInstallForm = class(TForm)

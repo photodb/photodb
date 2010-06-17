@@ -8,7 +8,7 @@ interface
 uses
   win32crc, dolphin_db, Searching, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
-  ImButton, Dialogs, jpeg, DmProgress, psAPI;
+  ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants;
 
 type
   TAboutForm = class(TForm)
@@ -99,7 +99,7 @@ begin
  Memo1.Lines.Add('About project:');
  Memo1.Lines.Add('All copyrights to this program are');
  Memo1.Lines.Add('exclusively owned by the author:');
- Memo1.Lines.Add('Veresov Dmitry © 2002-2008');
+ Memo1.Lines.Add('Veresov Dmitry © 2002-2011');
  Memo1.Lines.Add('Studio "Illusion Dolphin".');
  Memo1.Lines.Add('You can''t emulate, clone, rent, lease,');
  Memo1.Lines.Add('sell, modify, decompile, disassemble,');

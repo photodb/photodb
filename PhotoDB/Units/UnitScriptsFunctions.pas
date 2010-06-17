@@ -2,9 +2,9 @@ unit UnitScriptsFunctions;
 
 interface
 
-uses Windows, SysUtils, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
+uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
      Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
-     UnitDBFileDialogs, Forms, Language, uVistaFuncs;
+     UnitDBFileDialogs, Forms, Language, uVistaFuncs, uLogger;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;

@@ -12,7 +12,7 @@ uses
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
  EasyListview, GraphicsCool, uVistaFuncs,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
- uThreadEx, uAssociatedIcons;
+ uThreadEx, uAssociatedIcons, uLogger;
 
 type
  TExplorerViewInfo = record
@@ -899,13 +899,13 @@ begin
   FPic:=nil;
   If Info.ItemId=0 then
   begin
-   If FileExists(CurrentFile) then
-   Fpic:=Tpicture.Create
-   else
-   begin
-    if TempBitmap<>nil then TempBitmap.Free;
-    exit;
-   end;
+ //  If FileExists(CurrentFile) then
+   Fpic:=Tpicture.Create;
+ //  else
+  // begin
+  //  if TempBitmap<>nil then TempBitmap.Free;
+  //  exit;
+  // end;
    try
     if Crypted then
     begin      

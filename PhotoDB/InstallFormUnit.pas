@@ -6,7 +6,7 @@ uses
   Registry, UnitInstallThread, acDlgSelect, Dolphin_db, Windows, Messages,
   SysUtils, Variants, Classes, Graphics, Controls, Forms, uVistaFuncs,
   Dialogs, StdCtrls, jpeg, ExtCtrls, DmProgress, CheckLst, Menus, AppEvnts,
-  UnitDBFileDialogs;
+  UnitDBFileDialogs, uConstants, uFileUtils;
 
 type
   TInstallForm = class(TForm)
@@ -89,12 +89,11 @@ uses Language, SetupProgressUnit;
 {$R *.dfm}
 
 procedure TInstallForm.Button5Click(Sender: TObject);
-
- procedure DoOpen;
- begin
-  If OpenDialog1.Execute then
+begin
+  OpenDialog1.Filter:='PhotoDB files (*.photodb;*.mdb)|*.photodb;*.mdb';
+  if OpenDialog1.Execute then
   begin
-   If DBKernel.TestDB(OpenDialog1.FileName) then
+   if DBKernel.TestDB(OpenDialog1.FileName) then
    begin
     Edit3.Text:=OpenDialog1.FileName;
     CheckBox2.Enabled:=true;
@@ -104,30 +103,6 @@ procedure TInstallForm.Button5Click(Sender: TObject);
     MessageBoxDB(Handle,TEXT_MES_DB_FILE_NOT_VALID,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_WARNING);
    end;
   end;
- end;
-
-begin
- 
- BDEIsInstalled:=BDEInstalled;
- if not BDEInstalled then
- begin
-  if FileExists(ProgramDir+'BdeInst.dll') then
-  if MessageBoxDB(Handle,TEXT_MES_IDAPI_INSTALL_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)=ID_OK then
-  TryBDEInstall;
-  if not BDEInstalled then
-  begin
-   OpenDialog1.Filter:='PhotoDB files (*.photodb;*.mdb)|*.photodb;*.mdb';
-   DoOpen;
-  end;
-  
- end;
- 
- if BDEInstalled then
- begin
-  ComboBox1.Enabled:=true;
-  OpenDialog1.Filter:='PhotoDB files (*.photodb;*.mdb)|*.photodb;*.mdb|DataBase files (*.db)|*.db';
-  DoOpen;
- end;
 end;
 
 procedure TInstallForm.Button3Click(Sender: TObject);
@@ -191,16 +166,11 @@ begin
  if InstalledUserName<>'' then
  Edit4.Text:=InstalledUserName else
  Edit4.Text:=TEXT_MES_NAMEA;
- if BDEInstalled then
- begin
-  //DELETE: Edit3.Text:=GetAnyValidDBFileInProgramFolder(GetDirectory(Application.ExeName),true);
-  if Edit3.Text='' then Edit3.Text:=TEXT_MES_NO_FILE else CheckBox2.Enabled:=true;
- end else
- begin
+
   ComboBox1.Enabled:=false;
   Edit3.Text:=TEXT_MES_NO_FILE;
- end;
- Edit3.Enabled:=BDEInstalled;
+
+ Edit3.Enabled:=False; //TODO: delete: BDEInstalled;
 
  If not Edit3.Enabled then
  Edit3.Text:=TEXT_MES_FILE_ONLY_MDB;//TEXT_MES_FILE_NOT_AVALIABLE_BDE;

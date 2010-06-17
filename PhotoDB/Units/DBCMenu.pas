@@ -10,12 +10,11 @@ uses
   ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare,
-  UnitDBCommonGraphics;
+  UnitDBCommonGraphics, uScript, uLogger;
 
 type TDBPopupMenu = class
    private
-
-    _popupmenu:Tpopupmenu;
+    _popupmenu : Tpopupmenu;
     _menuitem_shell, _menuitem_show, _menuitem_delete_l, _menuitem_delete, _menuitem_refresh_thum, _menuitem_copy, _menuitem_rename, _menuitem_property, _menuitem_rating, _menuitem_private, _menuitem_nil, _menuitem_rotate, _menuitem_search_folder, _menuitem_send_to, _menuitem_nil1, _menuitem_send_to_new, _menuitem_explorer, _menuitem_groups, _menuitem_date : TMenuItem;
     _ratings : array[0..5] of TMenuItem;
     _rotated : array[0..3] of TMenuItem;
@@ -41,6 +40,7 @@ type TDBPopupMenu = class
     aScript : TScript;
 //    FImagesCounter : integer;
     public
+    class function Instance : TDBPopupMenu;
     constructor create;
     destructor destroy; override;
     Procedure ShowItemPopUpMenu_(Sender : TObject);
@@ -81,14 +81,12 @@ type TDBPopupMenu = class
  Procedure ScriptExecuted(Sender : TObject);
  Function GetGroupImageInImageList(GroupCode : string) : integer;
  Function LoadVariablesNo(int : integer) : integer;
- Procedure LoadScriptFunctions;
   published
  end;
 
  procedure ReloadIDMenu;
 
- var
-   DBPopupMenu: TDBPopupMenu;
+var
    MenuScript : string;
    aFS : TFileStream;
 
@@ -99,6 +97,9 @@ uses ExplorerUnit, PropertyForm, SlideShow, Searching, UnitFormCont,
      UnitQuickGroupInfo, Language, UnitCrypting, UnitPasswordForm,
      AddSessionPasswordUnit, ImEditor, FormManegerUnit, CommonDBSupport,
      UnitCDMappingSupport;
+
+ var
+   DBPopupMenu: TDBPopupMenu = nil;
 
 { TDBPopupMenu }
 
@@ -206,8 +207,6 @@ begin
   //if user haven't rights to get FileName its only possible way to know
   SetBoolAttr(aScript,'$FileExists',FileExists(Info.ItemFileNames_[Info.Position]));
 
-// Access section
-  AddAccessVariables(aScript);
 // END Access section
   SetBoolAttr(aScript,'$IsCurrentFile',IsCurrentFile);
 
@@ -797,48 +796,43 @@ end;
 constructor TDBPopupMenu.create;
 begin
   inherited;
-  // ReloadIDMenu;
 
   FBusy:=false;
-  aScript.Description:='ID Menu';
-  InitializeScript(aScript);
-  LoadBaseFunctions(aScript);
-  LoadDBFunctions(aScript);
-  LoadFileFunctions(aScript);
-  AddScriptObjFunction(aScript,'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
-  AddScriptObjFunction(aScript,'SearchFolderPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SearchFolderPopUpMenu_);
-  AddScriptObjFunction(aScript,'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'DeleteLItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteLItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'DeleteItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'RefreshThumItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshThumItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'PropertyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PropertyItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'ScanImageItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ScanImageItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'SetRatingItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRatingItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'SetRotateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRotateItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'PrivateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrivateItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'RenameItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RenameItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'CopyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,CopyItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'SendToItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SendToItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'ExplorerPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ExplorerPopUpMenu_);
-  AddScriptObjFunction(aScript,'GroupsPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,GroupsPopUpMenu_);
-  AddScriptObjFunction(aScript,'DateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DateItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'CryptItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,CryptItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'DeCryptItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeCryptItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'QuickGroupInfoPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,QuickGroupInfoPopUpMenu_);
-  AddScriptObjFunction(aScript,'EnterPasswordItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,EnterPasswordItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'ImageEditorItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ImageEditorItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'WallpaperStretchItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperStretchItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'WallpaperCenterItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperCenterItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'WallpaperTileItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperTileItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'RefreshIDItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshIDItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'ShowDublicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowDublicatesItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'DeleteDublicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteDublicatesItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'UserMenuItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,UserMenuItemPopUpMenu_);
-  AddScriptObjFunction(aScript,'PrintItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrintItemPopUpMenu_);
-  AddScriptObjFunctionStringIsInteger(aScript,'GetGroupImage',Self.GetGroupImageInImageList);
+  aScript := TScript.Create('');
+  aScript.Description:='ID Menu'; 
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SearchFolderPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SearchFolderPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteLItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteLItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'RefreshThumItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshThumItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'PropertyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PropertyItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ScanImageItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ScanImageItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetRatingItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRatingItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetRotateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRotateItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'PrivateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrivateItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'RenameItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RenameItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'CopyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,CopyItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SendToItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SendToItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ExplorerPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ExplorerPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'GroupsPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,GroupsPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'DateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DateItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'CryptItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,CryptItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeCryptItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeCryptItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'QuickGroupInfoPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,QuickGroupInfoPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'EnterPasswordItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,EnterPasswordItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ImageEditorItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ImageEditorItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperStretchItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperStretchItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperCenterItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperCenterItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperTileItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperTileItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'RefreshIDItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshIDItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowDublicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowDublicatesItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteDublicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteDublicatesItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'UserMenuItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,UserMenuItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'PrintItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrintItemPopUpMenu_);
 
-  AddScriptObjFunctionIntegerIsInteger(aScript,'LoadVariablesNo',Self.LoadVariablesNo);
+  AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
+  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment,' LoadVariablesNo',Self.LoadVariablesNo);
 
   _popupmenu:=Tpopupmenu.Create(nil);
 end;
@@ -1428,10 +1422,15 @@ begin
  end;
 end;
 
-procedure TDBPopupMenu.LoadScriptFunctions;
+class function TDBPopupMenu.Instance: TDBPopupMenu;
 begin
-  LoadDBFunctions(aScript);
-  LoadFileFunctions(aScript);
+  if DBPopupMenu = nil then
+  begin
+    ReloadIDMenu;
+    DBPopupMenu := TDBPopupMenu.Create;
+  end;
+
+  Result := DBPopupMenu
 end;
 
 function TDBPopupMenu.LoadVariablesNo(int: integer): integer;
@@ -1678,8 +1677,8 @@ begin
  end;
  If NumberOfPanel>=0 then
  begin
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels.Panels[NumberOfPanel]);
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels.Panels[NumberOfPanel]);
+  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
+  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
  end;
  If NumberOfPanel<0 then
  begin
@@ -1838,13 +1837,6 @@ begin
  SetDesktopWallpaper(FileName,WPSTYLE_TILE) else
  MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
 end;
-
-initialization
-
- if ThisFileInstalled or DBInDebug or Emulation then
- begin
-  ReloadIDMenu;
- end;
 
 end.
 

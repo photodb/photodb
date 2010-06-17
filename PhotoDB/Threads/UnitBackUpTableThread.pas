@@ -3,7 +3,7 @@ unit UnitBackUpTableThread;
 interface
 
 uses
-  Classes, DB, Dolphin_DB, DBTables, Forms, SysUtils;
+  Classes, DB, Dolphin_DB, DBTables, Forms, SysUtils, uFileUtils, uConstants;
 
 type
   BackUpTableThread = class(TThread)
@@ -32,21 +32,6 @@ begin
  s:=GetDirectory(Application.ExeName);
  FormatDir(S);
  CreateDirA(GetAppDataDirectory+BackUpFolder);
- if (GetDBType(dbname)=DB_TYPE_BDE) and BDEIsInstalled then
- begin
-  FTable:=TTable.Create(nil);
-  FTable.Active:=false;
-  FTable.TableName:=dbname;
-  FTable.Active:=true;
-  CopyTable(FTable,GetAppDataDirectory+BackUpFolder+ExtractFileName(dbname));
-  FTable.free;
-  FTable:=TTable.Create(nil);
-  FTable.Active:=false;
-  FTable.TableName:=GroupsTableFileNameW(dbname);
-  FTable.Active:=true;
-  CopyTable(FTable,GroupsTableFileNameW(GetAppDataDirectory+ExtractFileName(dbname)));
-  FTable.free;
- end;
  if (GetDBType(dbname)=DB_TYPE_MDB) then
  begin
 {  Can't do it because table is locked!}

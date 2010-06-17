@@ -3,7 +3,7 @@ unit UnitSendMessageWithTimeoutThread;
 interface
 
 uses
-  Windows, Classes, Dolphin_DB, Forms;
+  Windows, Classes, Dolphin_DB, Forms, uLogger;
 
 type
   TSendMessageWithTimeoutThread = class(TThread)

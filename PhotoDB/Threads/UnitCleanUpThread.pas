@@ -5,7 +5,7 @@ interface
 uses
   UnitDBKernel, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
   DBTables, SysUtils,ComCtrls, Graphics, jpeg, UnitINI, Exif, DateUtils,
-  CommonDBSupport, win32crc, UnitCDMappingSupport;
+  CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants;
 
 type
   CleanUpThread = class(TThread)

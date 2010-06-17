@@ -5,7 +5,7 @@ interface
 uses
   acDlgSelect, ActiveX, ExplorerTypes, DBCMenu, UnitDBKernel, UnitINI,
   ShellApi, dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, ComObj, Registry, PrintMainForm, UnitScripts, BitmapDB,
+  Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts, BitmapDB,
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
   Network, GraphicCrypt, AddSessionPasswordUnit, UnitCrypting,
@@ -16,7 +16,7 @@ uses
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs,
-  uThreadForm, uAssociatedIcons;
+  uThreadForm, uAssociatedIcons, uLogger, uConstants;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -682,7 +682,6 @@ type
     property ShowEXIF : Boolean read fShowEXIF write fShowEXIF;
     property ShowQuickLinks : Boolean read FShowQuickLinks write SetShowQuickLinks;
     property Items[Index: Integer]: TExplorerForm read GetExplorerByIndex; default;
-    property Sync : TCriticalSection read FSync;
   end;
 
 var
@@ -904,49 +903,45 @@ begin
  Edit1.WindowProc := ComboWNDProc;
  SlashHandled:=false;
 
- InitializeScript(aScript);
- LoadBaseFunctions(aScript);
- LoadDBFunctions(aScript);
- AddAccessVariables(aScript);
- LoadFileFunctions(aScript);
- AddScriptObjFunction(aScript,'CloseWindow',F_TYPE_OBJ_PROCEDURE_TOBJECT,CloseWindow);
+  aScript := TScript.Create('');
 
- AddScriptObjFunction(aScript,'SelectAll',F_TYPE_OBJ_PROCEDURE_TOBJECT,SelectAll1Click);
- AddScriptObjFunction(aScript,'GoUp',F_TYPE_OBJ_PROCEDURE_TOBJECT,Up1Click);
- AddScriptObjFunction(aScript,'GoBack',F_TYPE_OBJ_PROCEDURE_TOBJECT,Back1Click);
- AddScriptObjFunction(aScript,'GoForward',F_TYPE_OBJ_PROCEDURE_TOBJECT,Forward1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment,'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, CloseWindow);
 
- AddScriptObjFunction(aScript,'Copy',F_TYPE_OBJ_PROCEDURE_TOBJECT,Copy3Click);
- AddScriptObjFunction(aScript,'Paste',F_TYPE_OBJ_PROCEDURE_TOBJECT,Paste3Click);
- AddScriptObjFunction(aScript,'Cut',F_TYPE_OBJ_PROCEDURE_TOBJECT,Cut3Click);
- AddScriptObjFunction(aScript,'GoToExplorerMode',F_TYPE_OBJ_PROCEDURE_TOBJECT,ExplorerPanel1Click);
- AddScriptObjFunction(aScript,'CancelExplorerMode',F_TYPE_OBJ_PROCEDURE_TOBJECT,InfoPanel1Click);
- AddScriptObjFunction(aScript,'ShowPrivate',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowPrivate1Click);
- AddScriptObjFunction(aScript,'HidePrivate',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowOnlyCommon1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SelectAll',         F_TYPE_OBJ_PROCEDURE_TOBJECT, SelectAll1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoUp',              F_TYPE_OBJ_PROCEDURE_TOBJECT, Up1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoBack',            F_TYPE_OBJ_PROCEDURE_TOBJECT, Back1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoForward',         F_TYPE_OBJ_PROCEDURE_TOBJECT, Forward1Click);
 
- AddScriptObjFunction(aScript,'SetThumbnailsView',F_TYPE_OBJ_PROCEDURE_TOBJECT,Thumbnails1Click);
- AddScriptObjFunction(aScript,'SetTilesView',F_TYPE_OBJ_PROCEDURE_TOBJECT,Tile2Click);
- AddScriptObjFunction(aScript,'SetIconsView',F_TYPE_OBJ_PROCEDURE_TOBJECT,Icons1Click);
- AddScriptObjFunction(aScript,'SetListView',F_TYPE_OBJ_PROCEDURE_TOBJECT,List1Click);
- AddScriptObjFunction(aScript,'SetList2View',F_TYPE_OBJ_PROCEDURE_TOBJECT,SmallIcons1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'Copy',              F_TYPE_OBJ_PROCEDURE_TOBJECT, Copy3Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'Paste',             F_TYPE_OBJ_PROCEDURE_TOBJECT, Paste3Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'Cut',               F_TYPE_OBJ_PROCEDURE_TOBJECT, Cut3Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoToExplorerMode',  F_TYPE_OBJ_PROCEDURE_TOBJECT, ExplorerPanel1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'CancelExplorerMode',F_TYPE_OBJ_PROCEDURE_TOBJECT, InfoPanel1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowPrivate',       F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowPrivate1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'HidePrivate',       F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowOnlyCommon1Click);
+
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetThumbnailsView', F_TYPE_OBJ_PROCEDURE_TOBJECT, Thumbnails1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetTilesView',      F_TYPE_OBJ_PROCEDURE_TOBJECT, Tile2Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetIconsView',      F_TYPE_OBJ_PROCEDURE_TOBJECT, Icons1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetListView',       F_TYPE_OBJ_PROCEDURE_TOBJECT, List1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetList2View',      F_TYPE_OBJ_PROCEDURE_TOBJECT, SmallIcons1Click);
 
 
- AddScriptObjFunctionIsString(aScript,'GetPath',GetPath);
- AddScriptObjFunctionIsBool(aScript,'CanBack',fHistory.CanBack);
- AddScriptObjFunctionIsBool(aScript,'CanForward',fHistory.CanForward);
- AddScriptObjFunctionIsBool(aScript,'CanUp',CanUp);
- AddScriptObjFunctionIsInteger(aScript,'SelCount',SelCount);
- AddScriptObjFunctionIsInteger(aScript,'SelectedIndex',SelectedIndex);
- AddScriptObjFunctionIsInteger(aScript,'GetSelectedType',GetSelectedType);
- AddScriptObjFunctionIsInteger(aScript,'CanCopySelection',GetSelectedType);
- AddScriptObjFunctionIsBool(aScript,'CanCopySelection',CanCopySelection);
- AddScriptObjFunctionIsArrayStrings(aScript,'GetSelectedFiles',GetSelectedFiles);
- AddScriptObjFunctionIsBool(aScript,'CanPasteInSelection',CanPasteInSelection);
- AddScriptObjFunctionIsBool(aScript,'ExplorerType',ExplorerType);
- AddScriptObjFunctionIsBool(aScript,'ShowPrivateNow',ShowPrivate);
- AddScriptObjFunctionIntegerIsString(aScript,'GetPathByIndex',GetPathByIndex);
+  AddScriptObjFunctionIsString(       aScript.PrivateEnviroment, 'GetPath',            GetPath);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanBack',            fHistory.CanBack);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanForward',         fHistory.CanForward);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanUp',              CanUp);
+  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'SelCount',           SelCount);
+  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'SelectedIndex',      SelectedIndex);
+  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetSelectedType',    GetSelectedType);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanCopySelection',   CanCopySelection);
+  AddScriptObjFunctionIsArrayStrings( aScript.PrivateEnviroment, 'GetSelectedFiles',   GetSelectedFiles);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanPasteInSelection',CanPasteInSelection);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'ExplorerType',       ExplorerType);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'ShowPrivateNow',     ShowPrivate);
+  AddScriptObjFunctionIntegerIsString(aScript.PrivateEnviroment, 'GetPathByIndex',     GetPathByIndex);
 
- AddScriptObjFunctionIsInteger(aScript,'GetView',GetView);
+  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
 // if false then
  if UseScripts and not SafeMode then
@@ -1653,7 +1648,7 @@ begin
   end;
   info.IsDateGroup:=True;
   info.IsAttrExists:=false;
-  DBPopupMenu.AddDBContMenu(DBItem1,info);
+  TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
  end;
 
  If fFilesInfo[popupmenu1.tag].ID=0 then
@@ -1665,8 +1660,8 @@ begin
   if fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
   begin
    info:=GetCurrentPopUpMenuInfo(Item);
-   DBPopupMenu.SetInfo(info);
-   DBPopupMenu.AddUserMenu(PopupMenu1.Items,true,DBitem1.MenuIndex+1);
+   TDBPopupMenu.Instance.SetInfo(info);
+   TDBPopupMenu.Instance.AddUserMenu(PopupMenu1.Items,true,DBitem1.MenuIndex+1);
   end;
  end;// else begin
 // end;
@@ -1850,7 +1845,7 @@ procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
  DirectoryWatcher.StopWatch;
  DirectoryWatcher.Free;
- FinalizeScript(aScript);
+ aScript.Free;
  DragFilesPopup.Free;
  FBitmapImageList.Free;
  ExtIcons.Free;
@@ -3238,7 +3233,6 @@ begin
 
    ListView1.Items[index].Data:=TDataObject.Create;
    TDataObject(ListView1.Items[index].Data).Data:=p;
-
   end;
   if c=-1 then
   begin
@@ -3259,11 +3253,7 @@ begin
   FBitmapImageList.FImages[c].Bitmap:=Bitmap;
   FBitmapImageList.FImages[c].SelfReleased:=true;
 
-  r :=  Listview1.Scrollbars.ViewableViewportRect;
-  Listview1.Items[index].ItemRectArray(Listview1.Header.FirstColumn, Listview1.Canvas, RectArray);
-  r:=Rect(ListView1.ClientRect.Left+r.Left,ListView1.ClientRect.Top+r.Top,ListView1.ClientRect.Right+r.Left,ListView1.ClientRect.Bottom+r.Top);
-  if RectInRect(r,RectArray.BoundsRect) then
-  ListView1.Refresh;
+  Listview1.Items[index].Invalidate(False);
 
   If FFilesInfo[i].FileType=EXPLORER_ITEM_FOLDER then
   If FFilesInfo[i].FileName=FSelectedInfo.FileName then
@@ -3304,11 +3294,8 @@ begin
   FBitmapImageList.FImages[c].Icon:=Icon;
   FBitmapImageList.FImages[c].SelfReleased:=true;
 
-  r :=  Listview1.Scrollbars.ViewableViewportRect;
-  Listview1.Items[index].ItemRectArray(Listview1.Header.FirstColumn, Listview1.Canvas, RectArray);
-  r:=Rect(ListView1.ClientRect.Left+r.Left,ListView1.ClientRect.Top+r.Top,ListView1.ClientRect.Right+r.Left,ListView1.ClientRect.Bottom+r.Top);
-  if RectInRect(r,RectArray.BoundsRect) then
-  ListView1.Refresh;
+
+  Listview1.Items[index].Invalidate(False);
 
   If FFilesInfo[i].FileType=EXPLORER_ITEM_FOLDER then
   If FFilesInfo[i].FileName=FSelectedInfo.FileName then
@@ -3383,7 +3370,7 @@ begin
   end;
   LockDrawIcon:=false;
   if ListView1.Groups[0].Visible then
-  ListView1.Refresh;
+  Result.Invalidate(False);
   Break;
  end;
 end;
@@ -3413,7 +3400,7 @@ begin
 
   LockDrawIcon:=false;
   if ListView1.Groups[0].Visible then
-  ListView1.Refresh;
+  Result.Invalidate(False);
   Break;
  end;
 end;
@@ -6006,16 +5993,15 @@ var
   fScript : TScript;
   c : integer;
 begin
- ScriptString:=Include('scripts\ExplorerSetNewPath.dbini');
- InitializeScript(fScript);
- fScript.Description:='Set path script';
- LoadBaseFunctions(fScript);
- LoadDBFunctions(fScript);
- AddAccessVariables(fScript);
- LoadFileFunctions(fScript);
- SetNamedValueStr(fScript,'$Path',Path);
- ExecuteScript(nil,fScript,ScriptString,c,nil);
- FinalizeScript(fScript);
+  ScriptString:=Include('scripts\ExplorerSetNewPath.dbini');
+  fScript := fScript.Create('');
+  try
+    fScript.Description:='Set path script';
+    SetNamedValueStr(fScript,'$Path',Path);
+    ExecuteScript(nil,fScript,ScriptString,c,nil);
+  finally
+    fScript.Free;
+  end;
  Path:=GetNamedValueString(fScript,'$Path');
  if Path=#8 then
  begin
@@ -6951,8 +6937,8 @@ begin
  end;
  If NumberOfPanel>=0 then
  begin
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels.Panels[NumberOfPanel]);
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels.Panels[NumberOfPanel]);
+  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
+  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
  end;
  If NumberOfPanel<0 then
  begin

@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitDBDeclare, SysUtils;
+  UnitDBDeclare, SysUtils, uLogger;
 
 type
   TRefreshIDRecordThreadOptions = record

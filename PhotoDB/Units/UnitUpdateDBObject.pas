@@ -2,7 +2,7 @@ unit UnitUpdateDBObject;
 
 interface
 
-uses Windows, Controls, Classes,  Forms, SysUtils, UnitScripts,
+uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
      Dolphin_DB, UnitDBDeclare, UnitDBCommon;
 
 type
@@ -168,12 +168,8 @@ var
 begin
 
  ScriptProcessString:=Include('scripts\Adding_AddFile.dbini');
- InitializeScript(fProcessScript);
+ fProcessScript := TScript.Create('');
  fProcessScript.Description:='Add File script';
- LoadBaseFunctions(fProcessScript);
- LoadDBFunctions(fProcessScript);
- LoadFileFunctions(fProcessScript);
- AddAccessVariables(fProcessScript);
 
  NoLimit:=false;
  OwnerFormSetText:=nil;
@@ -236,6 +232,8 @@ begin
   if UseFreeAfterRelease then
   FForm.Free;
  end;
+
+ fProcessScript.Free;
 end;
 
 procedure TUpdaterDB.DoPause;

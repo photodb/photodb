@@ -203,9 +203,6 @@ var
   FileName : string;
 begin         
  OpenDialog := DBOpenDialog.Create;
-
- if BDEInstalled then
- OpenDialog.Filter:='DataBase Files (*.db;*.mdb;*.photodb)|*.db;*.mdb;*.photodb|Access Files (*.mdb)|*.mdb|BDE Files (*.db)|*.db' else
  OpenDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
 
  if FileExists(dbname) then

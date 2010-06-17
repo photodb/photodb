@@ -492,7 +492,7 @@ begin
   info:=GetMenuInfoByID(FID);
   info.IsDateGroup:=True;
   Info.IsAttrExists:=false;
-  DBPopupMenu.Execute(Image1.ClientToScreen(MousePos).x,Image1.ClientToScreen(MousePos).y,info);
+  TDBPopupMenu.Instance.Execute(Image1.ClientToScreen(MousePos).x,Image1.ClientToScreen(MousePos).y,info);
 end;
 
 procedure TFormCreateDBFileTree.TreeView1ContextPopup(Sender: TObject;
@@ -526,7 +526,7 @@ begin
   info:=GetMenuInfoByID(TItemData(Node.Data^).ID);
   info.IsDateGroup:=True;
   Info.IsAttrExists:=false;
-  DBPopupMenu.Execute(TreeView1.ClientToScreen(MousePos).x,TreeView1.ClientToScreen(MousePos).y,info);
+  TDBPopupMenu.Instance.Execute(TreeView1.ClientToScreen(MousePos).x,TreeView1.ClientToScreen(MousePos).y,info);
  end;
 end;
 

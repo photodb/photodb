@@ -7,7 +7,7 @@ uses
   ThreadManeger, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms,  uVistaFuncs, UnitDBNullQueryThread, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
-  UnitDBCommon;
+  UnitDBCommon, uLogger, uConstants, uFileUtils;
 
 type
   TFormManager = class(TForm)
@@ -165,26 +165,11 @@ begin
  DateTime:=Now;
  If not SafeMode and not DBTerminating then
  begin
-  if GetFileSizeByName(dbname)>1024*1024*10 then
-  begin
-   if AboutForm=nil then
-   Application.CreateForm(TAboutForm, AboutForm);
-   AboutForm.Execute(true);
-  end;
-  Application.ProcessMessages;
-  ProcessMemorySize:=GetProcessMemory;
 
-  DBVersion:=DBKernel.TestDBEx(dbname,true);
+ // DBVersion:=DBKernel.TestDBEx(dbname,true);
   DBKernel.ReadDBOptions;
-  if DBVersion<0 then
+{  if DBVersion<0 then
   begin
-   if AboutForm<>nil then
-   begin
-    AboutForm.Release;
-    if UseFreeAfterRelease then AboutForm.Free;
-    AboutForm:=nil;
-   end;
-
    MessageBoxDB(Handle,TEXT_MES_DB_FILE_NOT_FOUND_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
 
    DBFile:=DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
@@ -195,13 +180,13 @@ begin
    DBVersion:=DBKernel.TestDBEx(dbname,true);
    if not DBKernel.ValidDBVersion(dbname,DBVersion) then
    Halt;
-  end else
+  end else  }
   begin
-   if not DBKernel.ValidDBVersion(dbname,DBVersion) then
+  { if not DBKernel.ValidDBVersion(dbname,DBVersion) then
    begin
     ConvertDB(dbname);
     if not DBKernel.TestDB(dbname,true) then Halt;
-   end else
+   end else }
    begin
     if DBkernel.ReadboolW('DBCheckType',ExtractFileName(dbname),true)=true then
     begin
@@ -232,12 +217,6 @@ begin
    end;
   end;
   LockCleaning:=false;
-  if AboutForm<>nil then
-  begin
-   AboutForm.Release;
-   if UseFreeAfterRelease then AboutForm.Free;
-   AboutForm:=nil;
-  end;
  end;
  HidefromTaskBar(Handle);
  if not DBTerminating then
@@ -547,7 +526,7 @@ begin
  FindClose(SearchRec);
 
 
- Found := FindFirst(GetAppDataDirectory+TempFolder+'*.*', faAnyFile, SearchRec);
+ Found := FindFirst(GetAppDataDirectory + TempFolder+'*.*', faAnyFile, SearchRec);
  while Found = 0 do
  begin
   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
