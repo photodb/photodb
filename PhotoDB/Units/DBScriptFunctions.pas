@@ -242,9 +242,8 @@ end;
 
 function NewExplorer : string;
 begin
- With ExplorerManager.NewExplorer(False) do
+  with ExplorerManager.NewExplorer(True) do
  begin
-  SetNewPathW(GetCurrentPathW,false);
   Show;
   Result:= GUIDToString(WindowID);
  end;

@@ -2660,9 +2660,9 @@ begin
   end;
  end; }
 
- for i:=0 to aScript.ScriptFunctions.Count do
+ for i:=0 to aScript.ScriptFunctions.Count - 1 do
  begin
-  List.Items.Add(TempFunctions[i].Name+'   ['+GetTypeName(TempFunctions[i].aType)+']');
+  List.Items.Add(aScript.ScriptFunctions[i].Name+'   ['+GetTypeName(aScript.ScriptFunctions[i].aType)+']');
  end;
  StatusForm.ShowModal;
  StatusForm.Release;

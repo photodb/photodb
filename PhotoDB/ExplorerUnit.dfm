@@ -4351,6 +4351,7 @@ object ExplorerForm: TExplorerForm
       Align = alTop
       ParentColor = True
       TabOrder = 0
+      Visible = False
       OnResize = CloseButtonPanelResize
       object Button1: TButton
         Left = 101

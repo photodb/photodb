@@ -340,9 +340,9 @@ begin
   UnformatDir(FFolder);
   if not DirectoryExists(FFolder) then
   begin
-   StrParam:=TEXT_MES_ERROR_OPENING_FOLDER;
-   SynchronizeEx(ShowMessage_);
+   StrParam:=TEXT_MES_ERROR_OPENING_FOLDER;  
    SynchronizeEx(EndUpdate);
+   SynchronizeEx(ShowMessage_);
    ShowInfo('',1,0);
    SynchronizeEx(ExplorerBack);
    SynchronizeEx(UnRegisterThread);

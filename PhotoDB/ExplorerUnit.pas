@@ -3,7 +3,7 @@ unit ExplorerUnit;
 interface
 
 uses
-  acDlgSelect, ActiveX, ExplorerTypes, DBCMenu, UnitDBKernel, UnitINI,
+  acDlgSelect, CommCtrl, ActiveX, ExplorerTypes, DBCMenu, UnitDBKernel, UnitINI,
   ShellApi, dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts, BitmapDB,
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
@@ -560,7 +560,16 @@ type
     procedure MapCD1Click(Sender: TObject);
     procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-   private
+   private     
+     ExtIcons : TBitmapImageList;
+     FBitmapImageList : TBitmapImageList;
+     FWindowID : TGUID;
+     NewFileName : String;
+     NewFileNameGUID : TGUID;
+     TempFolderName : String;
+     ComboPath : string;
+     FormLoadEnd : boolean;
+
      FPictureSize : integer;
      ListView : integer;
      ListView1 : TEasyListView;
@@ -628,27 +637,19 @@ type
      procedure DoSelectItem;
      procedure SendToItemPopUpMenu_(Sender : TObject);
      procedure CorrectPath(Src : array of string; Dest : string);
+     procedure LoadIcons;
     { Private declarations }
    protected
      procedure ComboWNDProc(var Message: TMessage);
-     procedure CreateParams(VAR Params: TCreateParams); override;
+     procedure CreateParams(var Params: TCreateParams); override;
      procedure ZoomIn;
      procedure ZoomOut;
      procedure LoadToolBarGrayedIcons();
      procedure LoadToolBarNormaIcons();
      function IsSelectedVisible: boolean;
-     function TreeView : TShellTreeView;  
-     constructor Create(AOwner : TComponent); overload;
-   public
-     ExtIcons : TBitmapImageList;
-     FBitmapImageList : TBitmapImageList;
-     WindowID : TGUID;
-     NewFileName : String;
-     NewFileNameGUID : TGUID;
-     TempFolderName : String;
-     ComboPath : string;
+     function TreeView : TShellTreeView;
+   public         
      NoLockListView : boolean;
-     FormLoadEnd : boolean;
      Procedure LoadLanguage;
      function ExitstExtInIcons(Ext : String) : boolean;
      function GetIconByExt(Ext : String) : TIcon;
@@ -656,6 +657,7 @@ type
      procedure LoadSizes();
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
      constructor Create(AOwner : TComponent; GoToLastSavedPath : Boolean); reintroduce; overload;
+     property WindowID : TGUID read FWindowID;
    end;
 
   TManagerExplorer = class(TObject)
@@ -722,27 +724,13 @@ begin
  end;
 end;
 
-procedure TExplorerForm.CreateParams(VAR Params: TCreateParams);
+procedure TExplorerForm.CreateParams(var Params: TCreateParams);
 begin
-  FShellTreeView := nil;
-  FormLoadEnd:=false;
-  NoLockListView:=false;
-  FPictureSize:=ThImageSize;
-  ListView1:=nil;
   Inherited CreateParams(Params);
+  
   Params.WndParent := GetDesktopWindow;
   with params do
-  ExStyle := ExStyle or WS_EX_APPWINDOW;
-  FBitmapImageList := TBitmapImageList.Create;
-  ExtIcons:= TBitmapImageList.Create;
-  fHistory:=TStringsHistoryW.create;
-  UpdatingList:=false;
-  GlobalLock := false;
-  NotSetOldPath := True;
-  FIsExplorer:=false;
-  FReadingFolderNumber:=0;
-  FChangeHistoryOnChPath:=true;
-  CopyInstances:=0;
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TExplorerForm.ShellTreeView1Change(Sender: TObject;
@@ -862,9 +850,8 @@ begin
  Activation1.Visible:=not FolderView;
  Help2.Visible:=not FolderView;
   
- WindowID:=GetGUID;
+ FWindowID:=GetGUID;
  SetLength(RefreshIDList,0);
-
 
  SetLength(UserLinks,0);
  SetLength(FPlaces,0);
@@ -885,7 +872,7 @@ begin
  FormManager.RegisterMainForm(Self);
  fStatusProgress:=CreateProgressBar(StatusBar1,1);
  fStatusProgress.Visible:=false;
- EndUpdate;
+// EndUpdate;
  fHistory.OnHistoryChange:=HistoryChanged;
  ToolButton1.Enabled:=false;
  ToolButton2.Enabled:=false;
@@ -894,20 +881,6 @@ begin
 
  NewFormState;
  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
-
- //???if FGoToLastSavedPath then
- begin
-   NewPath:=DBkernel.ReadString('Explorer','Patch');
-   NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
-
-   DBkernel.WriteString('Explorer','Patch','');
-   DBkernel.WriteInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
-
-   SetNewPathW(ExplorerPath(NewPath,NewPathType),True);
-
-   DBkernel.WriteString('Explorer','Patch',NewPath);
-   DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
- end;
 
  fHistory.Clear;
 
@@ -962,147 +935,19 @@ begin
   SetNamedValueStr(aScript,'$dbname',dbname);
   MainMenuScript:=ReadScriptFile('scripts\ExplorerMainMenu.dbini');
   Menu:=nil;
-  LoadMenuFromScript(ScriptMainMenu.Items,DBkernel.ImageList,MainMenuScript,aScript,ScriptExecuted,FExtImagesInImageList,true);
-  Menu:=ScriptMainMenu;
-  ScriptMainMenu.Images:=DBkernel.ImageList;
+  LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
+  Menu := ScriptMainMenu;
+  ScriptMainMenu.Images := DBkernel.ImageList;
  end;
-
- ReadPlaces;
-
- PopUpMenu1.Images:=DBKernel.ImageList;
- PopUpMenu2.Images:=DBKernel.ImageList;
- MainMenu1.Images:=DBKernel.ImageList;
- PopupMenu3.Images:=DBKernel.ImageList;
- Shell1.ImageIndex:=DB_IC_SHELL;
- SlideShow1.ImageIndex:=DB_IC_SLIDE_SHOW;
- DBitem1.ImageIndex:=DB_IC_NOTES;
- Copy1.ImageIndex:=DB_IC_COPY;
- Delete1.ImageIndex:=DB_IC_DELETE_FILE;
- Rename1.ImageIndex:=DB_IC_RENAME;
- Properties1.ImageIndex:=DB_IC_PROPERTIES;
- AddFile1.ImageIndex:=DB_IC_NEW;
- Open1.ImageIndex:=DB_IC_EXPLORER;
- Open2.ImageIndex:=DB_IC_EXPLORER;
- SelectAll1.ImageIndex:=DB_IC_SELECTALL;
- SelectAll2.ImageIndex:=DB_IC_SELECTALL;
- Copy2.ImageIndex:=DB_IC_COPY;
- Copy3.ImageIndex:=DB_IC_COPY;
- Cut1.ImageIndex:=DB_IC_CUT;
- Cut2.ImageIndex:=DB_IC_CUT;
- Cut3.ImageIndex:=DB_IC_CUT;
- Paste1.ImageIndex:=DB_IC_PASTE;
- Paste2.ImageIndex:=DB_IC_PASTE;
- Paste3.ImageIndex:=DB_IC_PASTE;
- DBManager1.ImageIndex:=DB_IC_ADMINTOOLS;
- Searching1.ImageIndex:=DB_IC_ADDTODB;
- Options1.ImageIndex:=DB_IC_OPTIONS;
- New1.ImageIndex:=DB_IC_NEW_SHELL;
- Directory1.ImageIndex:=DB_IC_NEW_DIRECTORY;
- Refresh1.ImageIndex:=DB_IC_REFRESH_THUM;
- Back1.ImageIndex:=DB_IC_SHELL_PREVIOUS;
- Forward1.ImageIndex:=DB_IC_SHELL_NEXT;
- Up1.ImageIndex:=DB_IC_SHELL_UP;
- Addfolder1.ImageIndex:=DB_IC_ADD_FOLDER;
- MakeNew1.ImageIndex:=DB_IC_NEW_SHELL;
- Refresh2.ImageIndex:=DB_IC_REFRESH_THUM;
- Exit1.ImageIndex:=DB_IC_EXIT;
- Exit2.ImageIndex:=DB_IC_EXIT;
- TextFile1.ImageIndex:=DB_IC_TEXT_FILE;
- ShowUpdater1.ImageIndex:=DB_IC_BOX;
- NewPanel1.ImageIndex:=DB_IC_PANEL;
- ShowUpdater2.ImageIndex:=DB_IC_BOX;
- OpenInNewWindow1.ImageIndex:=DB_IC_FOLDER;
- OpeninNewWindow2.ImageIndex:=DB_IC_FOLDER;
- NewWindow1.ImageIndex:=DB_IC_FOLDER;
- GoToSearchWindow1.ImageIndex:=DB_IC_ADDTODB;
- OpeninSearchWindow1.ImageIndex:=DB_IC_ADDTODB;
- ShowOnlyCommon1.ImageIndex:=DB_IC_COMMON;
- ShowPrivate1.ImageIndex:=DB_IC_PRIVATE;
- ExplorerPanel1.ImageIndex:=DB_IC_EXPLORER_PANEL;
- InfoPanel1.ImageIndex:=DB_IC_INFO_PANEL;
- PopupMenu8.Images:=DBKernel.ImageList;
- OpeninExplorer1.ImageIndex:=DB_IC_EXPLORER;
- AddFolder2.ImageIndex:=DB_IC_ADD_FOLDER;
- Help2.ImageIndex:=DB_IC_HELP;
- Activation1.ImageIndex:=DB_IC_NOTES;
- About1.ImageIndex:=DB_IC_HELP;
- HomePage1.ImageIndex:=DB_IC_NETWORK;
- ContactWithAuthor1.ImageIndex:=DB_IC_E_MAIL;
- CryptFile1.ImageIndex:=DB_IC_CRYPTIMAGE;
- ResetPassword1.ImageIndex:=DB_IC_DECRYPTIMAGE;
- EnterPassword1.ImageIndex:=DB_IC_PASSWORD;
- Convert1.ImageIndex:=DB_IC_CONVERT;
- Resize1.ImageIndex:=DB_IC_RESIZE;
- Directory2.ImageIndex:= DB_IC_NEW_DIRECTORY;
- TextFile2.ImageIndex:= DB_IC_TEXT_FILE;
- GroupManager1.ImageIndex:=DB_IC_GROUPS;
- RotateCCW1.ImageIndex:=DB_IC_ROTETED_270;
- RotateCW1.ImageIndex:=DB_IC_ROTETED_90;
- Rotateon1801.ImageIndex:=DB_IC_ROTETED_180;
- Rotate1.ImageIndex:=DB_IC_ROTETED_0;
- GetUpdates1.ImageIndex:=DB_IC_UPDATING;
- SetasDesktopWallpaper1.ImageIndex:=DB_IC_WALLPAPER;
- Stretch1.ImageIndex:=DB_IC_WALLPAPER;
- Center1.ImageIndex:=DB_IC_WALLPAPER;
- Tile1.ImageIndex:=DB_IC_WALLPAPER;
- RefreshID1.ImageIndex:=DB_IC_REFRESH_ID;
- Othertasks1.ImageIndex:=DB_IC_OTHER_TOOLS;
- ExportImages1.ImageIndex:=DB_IC_EXPORT_IMAGES;
- ImageEditor1.ImageIndex:=DB_IC_IMEDITOR;
- ImageEditor2.ImageIndex:=DB_IC_IMEDITOR;
- Print1.ImageIndex:=DB_IC_PRINTER;
- Copywithfolder1.ImageIndex:=DB_IC_COPY;
-
- RemovableDrives1.ImageIndex:=DB_IC_USB;
- CDROMDrives1.ImageIndex:=DB_IC_CD_ROM;
- SpecialLocation1.ImageIndex:=DB_IC_DIRECTORY;
- SendTo1.ImageIndex:=DB_IC_SEND;
- View2.ImageIndex:=DB_IC_SLIDE_SHOW;
-
- Sortby1.ImageIndex:=DB_IC_SORT;
- SetFilter1.ImageIndex:=DB_IC_FILTER;
-
- Nosorting1.ImageIndex:=DB_IC_DELETE_INFO;
- FileName1.ImageIndex:=DB_IC_PROPERTIES;
- Rating1.ImageIndex:=DB_IC_RATING_STAR;
- Size1.ImageIndex:=DB_IC_RESIZE;
- Type1.ImageIndex:=DB_IC_ATYPE;
- Modified1.ImageIndex:=DB_IC_CLOCK;
- MakeFolderViewer1.ImageIndex:=DB_IC_SAVE_AS_TABLE; 
- MakeFolderViewer2.ImageIndex:=DB_IC_SAVE_AS_TABLE;
- Number1.ImageIndex:=DB_IC_RENAME;
-                                   
- RatingPopupMenu1.Images:=DBkernel.ImageList;
-
- N00.ImageIndex:=DB_IC_DELETE_INFO;
- N01.ImageIndex:=DB_IC_RATING_1;
- N02.ImageIndex:=DB_IC_RATING_2;
- N03.ImageIndex:=DB_IC_RATING_3;
- N04.ImageIndex:=DB_IC_RATING_4;
- N05.ImageIndex:=DB_IC_RATING_5;
-
- StenoGraphia1.ImageIndex:=DB_IC_STENO;
- AddHiddenInfo1.ImageIndex:=DB_IC_STENO;
- ExtractHiddenInfo1.ImageIndex:=DB_IC_DESTENO;
- 
- View3.ImageIndex:=DB_IC_SORT;
- MapCD1.ImageIndex:=DB_IC_CD_MAPPING;
-
- SlideShowLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SLIDE_SHOW+1]);
- ShellLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL+1]);
- CopyToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);
- MoveToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CUT+1]);
- RenameLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_RENAME+1]);
- PropertiesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PROPERTIES+1]);
- DeleteLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
- AddLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_NEW+1]);
- RefreshLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_REFRESH_THUM+1]);
- ImageEditorLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_IMEDITOR+1]);
- PrintLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PRINTER+1]);
- MyPicturesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_PICTURES+1]);
- MyDocumentsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_DOCUMENTS+1]);
- MyComputerLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_COMPUTER+1]);
- DesktopLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DESKTOPLINK+1]);
+         
+ DBKernel.RecreateThemeToForm(Self);
+ ReadPlaces; 
+ LoadLanguage;
+ LoadIcons; 
+ LoadToolBarNormaIcons;
+ LoadToolBarGrayedIcons;  
+ ToolBar1.Images := ToolBarNormalImageList;
+ ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
  for i:=0 to ComponentCount-1 do
  if Components[i] is TWebLink then
@@ -1111,8 +956,6 @@ begin
 
  for i:=0 to Length(UserLinks)-1 do
  UserLinks[i].GetBackGround:=BackGround;
-
- DBKernel.RecreateThemeToForm(Self);
 
  b:=TBitmap24.Create('TExplorerForm.FormCreate.b');
  b.PixelFormat:=pf24bit;
@@ -1129,25 +972,34 @@ begin
  DrawTransparent(b,ScrollBox1.BackGround,40);
  b.free;
 
- Button1Click(Sender);
+// Button1Click(Sender);
 
  ExplorerManager.AddExplorer(Self);
- LoadLanguage;
  DBKernel.RegisterForm(Self);
  MainPanel.DoubleBuffered:=true;
  PropertyPanel.DoubleBuffered:=true;
  ListView1.DoubleBuffered:=true;
  ScrollBox1.DoubleBuffered:=true;
 
- LoadToolBarNormaIcons;
- LoadToolBarGrayedIcons;
- ToolBar1.Images := ToolBarNormalImageList;
- ToolBar1.DisabledImages := ToolBarDisabledImageList;
  ToolBar2.ButtonHeight:=22;
  ToolButton18.Enabled:=false;
  SaveWindowPos1.Key:=RegRoot+'Explorer\'+MakeRegPath(GetCurrentPath);
  SaveWindowPos1.SetPosition;
  FormLoadEnd:=true;
+
+ if FGoToLastSavedPath then
+ begin
+   NewPath:=DBkernel.ReadString('Explorer','Patch');
+   NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
+
+   DBkernel.WriteString('Explorer','Patch','');
+   DBkernel.WriteInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
+
+   SetNewPathW(ExplorerPath(NewPath,NewPathType),True);
+
+   DBkernel.WriteString('Explorer','Patch',NewPath);
+   DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
+ end;
 end;
 
 procedure TExplorerForm.ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject);
@@ -2501,7 +2353,7 @@ end;
 procedure TExplorerForm.EndUpdate();
 begin
   If UpdatingList then
-  begin           
+  begin
    ListView1.EndUpdate;
    ListView1.Groups[0].Visible:=true;
    ListView1.Groups.EndUpdate(true);
@@ -3993,14 +3845,14 @@ end;
 procedure TExplorerForm.Button1Click(Sender: TObject);
 begin
  FIsExplorer:=false;
- ListView1SelectItem(Sender,ListView1Selected,true);
+ ListView1SelectItem(Sender, ListView1Selected, True);
  PropertyPanel.Show;
  CloseButtonPanel.Hide;                 
  DBkernel.WriteInteger('Explorer','LeftPanelWidthExplorer',MainPanel.Width);
  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
  ExplorerPanel1.Visible:=True;
  InfoPanel1.Visible:=False;
- ListView1SelectItem(Sender,ListView1Selected,false);
+ ListView1SelectItem(Sender, ListView1Selected, False);
 end;
 
 procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
@@ -8069,9 +7921,7 @@ var
   procedure AddIcon(Name : String);
   begin
    if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL';
-   Ico:=TIcon.Create;
-   Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-   ToolBarNormalImageList.AddIcon(Ico);
+   ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
 begin
  ToolBarNormalImageList.Clear;
@@ -8105,16 +7955,13 @@ var
 
   procedure AddIcon(Name : String);
   begin
-   if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL';
-   Ico:=TIcon.Create;
-   Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-   ToolBarDisabledImageList.AddIcon(Ico);
+   if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL'; 
+   ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
   
 begin                  
  ToolBarDisabledImageList.Clear;
  ConvertTo32BitImageList(ToolBarDisabledImageList);
-// ToolBarDisabledImageList.BkColor:=ToolBar1.Color;
 
  if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then
  begin
@@ -8269,15 +8116,162 @@ end;
 
 constructor TExplorerForm.Create(AOwner: TComponent;
   GoToLastSavedPath: Boolean);
-begin
+begin          
+  FShellTreeView := nil;
+  FormLoadEnd:=false;
+  NoLockListView:=false;
+  FPictureSize:=ThImageSize;
+  ListView1:=nil;
+  FBitmapImageList := TBitmapImageList.Create;
+  ExtIcons:= TBitmapImageList.Create;
+  fHistory:=TStringsHistoryW.create;
+  UpdatingList:=false;
+  GlobalLock := false;
+  NotSetOldPath := True;
+  FIsExplorer:=false;
+  FReadingFolderNumber:=0;
+  FChangeHistoryOnChPath:=true;
+  CopyInstances:=0;
+  FGoToLastSavedPath := GoToLastSavedPath; 
   inherited Create(AOwner);
-  FGoToLastSavedPath := GoToLastSavedPath;
 end;
 
-constructor TExplorerForm.Create(AOwner: TComponent);
+procedure TExplorerForm.LoadIcons;
 begin
-  inherited;
+ PopUpMenu1.Images:=DBKernel.ImageList;
+ PopUpMenu2.Images:=DBKernel.ImageList;
+ MainMenu1.Images:=DBKernel.ImageList;
+ PopupMenu3.Images:=DBKernel.ImageList;
+ Shell1.ImageIndex:=DB_IC_SHELL;
+ SlideShow1.ImageIndex:=DB_IC_SLIDE_SHOW;
+ DBitem1.ImageIndex:=DB_IC_NOTES;
+ Copy1.ImageIndex:=DB_IC_COPY;
+ Delete1.ImageIndex:=DB_IC_DELETE_FILE;
+ Rename1.ImageIndex:=DB_IC_RENAME;
+ Properties1.ImageIndex:=DB_IC_PROPERTIES;
+ AddFile1.ImageIndex:=DB_IC_NEW;
+ Open1.ImageIndex:=DB_IC_EXPLORER;
+ Open2.ImageIndex:=DB_IC_EXPLORER;
+ SelectAll1.ImageIndex:=DB_IC_SELECTALL;
+ SelectAll2.ImageIndex:=DB_IC_SELECTALL;
+ Copy2.ImageIndex:=DB_IC_COPY;
+ Copy3.ImageIndex:=DB_IC_COPY;
+ Cut1.ImageIndex:=DB_IC_CUT;
+ Cut2.ImageIndex:=DB_IC_CUT;
+ Cut3.ImageIndex:=DB_IC_CUT;
+ Paste1.ImageIndex:=DB_IC_PASTE;
+ Paste2.ImageIndex:=DB_IC_PASTE;
+ Paste3.ImageIndex:=DB_IC_PASTE;
+ DBManager1.ImageIndex:=DB_IC_ADMINTOOLS;
+ Searching1.ImageIndex:=DB_IC_ADDTODB;
+ Options1.ImageIndex:=DB_IC_OPTIONS;
+ New1.ImageIndex:=DB_IC_NEW_SHELL;
+ Directory1.ImageIndex:=DB_IC_NEW_DIRECTORY;
+ Refresh1.ImageIndex:=DB_IC_REFRESH_THUM;
+ Back1.ImageIndex:=DB_IC_SHELL_PREVIOUS;
+ Forward1.ImageIndex:=DB_IC_SHELL_NEXT;
+ Up1.ImageIndex:=DB_IC_SHELL_UP;
+ Addfolder1.ImageIndex:=DB_IC_ADD_FOLDER;
+ MakeNew1.ImageIndex:=DB_IC_NEW_SHELL;
+ Refresh2.ImageIndex:=DB_IC_REFRESH_THUM;
+ Exit1.ImageIndex:=DB_IC_EXIT;
+ Exit2.ImageIndex:=DB_IC_EXIT;
+ TextFile1.ImageIndex:=DB_IC_TEXT_FILE;
+ ShowUpdater1.ImageIndex:=DB_IC_BOX;
+ NewPanel1.ImageIndex:=DB_IC_PANEL;
+ ShowUpdater2.ImageIndex:=DB_IC_BOX;
+ OpenInNewWindow1.ImageIndex:=DB_IC_FOLDER;
+ OpeninNewWindow2.ImageIndex:=DB_IC_FOLDER;
+ NewWindow1.ImageIndex:=DB_IC_FOLDER;
+ GoToSearchWindow1.ImageIndex:=DB_IC_ADDTODB;
+ OpeninSearchWindow1.ImageIndex:=DB_IC_ADDTODB;
+ ShowOnlyCommon1.ImageIndex:=DB_IC_COMMON;
+ ShowPrivate1.ImageIndex:=DB_IC_PRIVATE;
+ ExplorerPanel1.ImageIndex:=DB_IC_EXPLORER_PANEL;
+ InfoPanel1.ImageIndex:=DB_IC_INFO_PANEL;
+ PopupMenu8.Images:=DBKernel.ImageList;
+ OpeninExplorer1.ImageIndex:=DB_IC_EXPLORER;
+ AddFolder2.ImageIndex:=DB_IC_ADD_FOLDER;
+ Help2.ImageIndex:=DB_IC_HELP;
+ Activation1.ImageIndex:=DB_IC_NOTES;
+ About1.ImageIndex:=DB_IC_HELP;
+ HomePage1.ImageIndex:=DB_IC_NETWORK;
+ ContactWithAuthor1.ImageIndex:=DB_IC_E_MAIL;
+ CryptFile1.ImageIndex:=DB_IC_CRYPTIMAGE;
+ ResetPassword1.ImageIndex:=DB_IC_DECRYPTIMAGE;
+ EnterPassword1.ImageIndex:=DB_IC_PASSWORD;
+ Convert1.ImageIndex:=DB_IC_CONVERT;
+ Resize1.ImageIndex:=DB_IC_RESIZE;
+ Directory2.ImageIndex:= DB_IC_NEW_DIRECTORY;
+ TextFile2.ImageIndex:= DB_IC_TEXT_FILE;
+ GroupManager1.ImageIndex:=DB_IC_GROUPS;
+ RotateCCW1.ImageIndex:=DB_IC_ROTETED_270;
+ RotateCW1.ImageIndex:=DB_IC_ROTETED_90;
+ Rotateon1801.ImageIndex:=DB_IC_ROTETED_180;
+ Rotate1.ImageIndex:=DB_IC_ROTETED_0;
+ GetUpdates1.ImageIndex:=DB_IC_UPDATING;
+ SetasDesktopWallpaper1.ImageIndex:=DB_IC_WALLPAPER;
+ Stretch1.ImageIndex:=DB_IC_WALLPAPER;
+ Center1.ImageIndex:=DB_IC_WALLPAPER;
+ Tile1.ImageIndex:=DB_IC_WALLPAPER;
+ RefreshID1.ImageIndex:=DB_IC_REFRESH_ID;
+ Othertasks1.ImageIndex:=DB_IC_OTHER_TOOLS;
+ ExportImages1.ImageIndex:=DB_IC_EXPORT_IMAGES;
+ ImageEditor1.ImageIndex:=DB_IC_IMEDITOR;
+ ImageEditor2.ImageIndex:=DB_IC_IMEDITOR;
+ Print1.ImageIndex:=DB_IC_PRINTER;
+ Copywithfolder1.ImageIndex:=DB_IC_COPY;
 
+ RemovableDrives1.ImageIndex:=DB_IC_USB;
+ CDROMDrives1.ImageIndex:=DB_IC_CD_ROM;
+ SpecialLocation1.ImageIndex:=DB_IC_DIRECTORY;
+ SendTo1.ImageIndex:=DB_IC_SEND;
+ View2.ImageIndex:=DB_IC_SLIDE_SHOW;
+
+ Sortby1.ImageIndex:=DB_IC_SORT;
+ SetFilter1.ImageIndex:=DB_IC_FILTER;
+
+ Nosorting1.ImageIndex:=DB_IC_DELETE_INFO;
+ FileName1.ImageIndex:=DB_IC_PROPERTIES;
+ Rating1.ImageIndex:=DB_IC_RATING_STAR;
+ Size1.ImageIndex:=DB_IC_RESIZE;
+ Type1.ImageIndex:=DB_IC_ATYPE;
+ Modified1.ImageIndex:=DB_IC_CLOCK;
+ MakeFolderViewer1.ImageIndex:=DB_IC_SAVE_AS_TABLE; 
+ MakeFolderViewer2.ImageIndex:=DB_IC_SAVE_AS_TABLE;
+ Number1.ImageIndex:=DB_IC_RENAME;
+                                   
+ RatingPopupMenu1.Images:=DBkernel.ImageList;
+
+ N00.ImageIndex:=DB_IC_DELETE_INFO;
+ N01.ImageIndex:=DB_IC_RATING_1;
+ N02.ImageIndex:=DB_IC_RATING_2;
+ N03.ImageIndex:=DB_IC_RATING_3;
+ N04.ImageIndex:=DB_IC_RATING_4;
+ N05.ImageIndex:=DB_IC_RATING_5;
+
+ StenoGraphia1.ImageIndex:=DB_IC_STENO;
+ AddHiddenInfo1.ImageIndex:=DB_IC_STENO;
+ ExtractHiddenInfo1.ImageIndex:=DB_IC_DESTENO;
+ 
+ View3.ImageIndex:=DB_IC_SORT;
+ MapCD1.ImageIndex:=DB_IC_CD_MAPPING;
+
+ SlideShowLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SLIDE_SHOW+1]);
+ ShellLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL+1]);
+ CopyToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);
+ MoveToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CUT+1]);
+ RenameLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_RENAME+1]);
+ PropertiesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PROPERTIES+1]);
+ DeleteLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
+ AddLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_NEW+1]);
+ RefreshLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_REFRESH_THUM+1]);
+ ImageEditorLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_IMEDITOR+1]);
+ PrintLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PRINTER+1]);
+ MyPicturesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_PICTURES+1]);
+ MyDocumentsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_DOCUMENTS+1]);
+ MyComputerLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_COMPUTER+1]);
+ DesktopLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DESKTOPLINK+1]);
 end;
 
 initialization

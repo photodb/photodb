@@ -90,13 +90,16 @@ begin
        end;
        TempBit.free;
 
-       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2-GraphicParam.Width div 2, ThSizeExplorerPreview div 2-GraphicParam.height div 2);
+       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2 - Fbit.Width div 2, ThSizeExplorerPreview div 2 - Fbit.Height div 2);
 
        Info.Image.Free;
       end else
-      begin
-       GraphicParam:=Info.Image;
-       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2-GraphicParam.Width div 2, ThSizeExplorerPreview div 2-GraphicParam.height div 2);
+      begin        
+       TempBit:=TBitmap.Create;
+       TempBit.PixelFormat:=pf24bit;
+       TempBit.Assign(Info.Image);
+       DrawImageEx(TempBitmap, TempBit, ThSizeExplorerPreview div 2 - Info.Image.Width div 2, ThSizeExplorerPreview div 2 - Info.Image.Height div 2);
+       TempBit.Free;
        Info.Image.Free;
       end;
 

@@ -505,7 +505,7 @@ begin
       DBKernel:=TDBKernel.Create;
       DBKernel.LoadColorTheme;
       Application.CreateForm(TInstallForm, InstallForm);
-  Application.Restore;
+      Application.Restore;
       EventLog(':InstallForm.SetQuickSelfInstallOption()');
       InstallForm.SetQuickSelfInstallOption;
       InstallForm.ShowModal;
