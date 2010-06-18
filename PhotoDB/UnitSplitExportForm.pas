@@ -104,8 +104,11 @@ begin
  LoadLanguage;
  MethodImageList.BkColor:=Theme_ListColor;  
  ImageList1.BkColor:=Theme_ListColor;
- MethodImageList.AddIcon(icons[DB_IC_COPY+1]);
- MethodImageList.AddIcon(icons[DB_IC_CUT+1]);
+
+
+ ImageList_ReplaceIcon(MethodImageList.Handle, -1, icons[DB_IC_COPY+1]);
+ ImageList_ReplaceIcon(MethodImageList.Handle, -1, icons[DB_IC_CUT+1]);
+
  PopupMenu1.Images:=DBKernel.ImageList;
  Copy1.ImageIndex:=DB_IC_COPY;
  Cut1.ImageIndex:=DB_IC_CUT;           

@@ -1239,7 +1239,7 @@ end;
 
 procedure TDBPopupMenu.ExplorerPopUpMenu_(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(FInfo.ItemFileNames_[FInfo.Position]);
   SetPath(GetDirectory(FInfo.ItemFileNames_[FInfo.Position]));

@@ -59,7 +59,6 @@ type
     Memo1: TMemo;
     Save: TButton;
     ExplorerPanel: TPanel;
-    ShellTreeView1: TShellTreeView;
     Explorer1: TMenuItem;
     N3: TMenuItem;
     ShowUpdater1: TMenuItem;
@@ -496,11 +495,13 @@ type
     FUpdatingDB : Boolean;
     DestroyCounter : Integer;
     GroupsLoaded : boolean;
+    FShellTreeView : TShellTreeView;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     { Protected declarations }
   protected
-  procedure CreateWND; override;
-  procedure CreateParams(VAR Params: TCreateParams); override;
+    procedure CreateWND; override;
+    procedure CreateParams(VAR Params: TCreateParams); override;
+    function TreeView : TShellTreeView;
     { Private declarations }
   public
     ListView1: TXListView;
@@ -1494,7 +1495,7 @@ var
 begin
  DeltaX:=PistureSize-100;
  If ID=0 then
- DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_NEW+1].Handle,16,16,0,0,DI_NORMAL);
+ DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_NEW+1],16,16,0,0,DI_NORMAL);
 
  FE:=true;
  if Exists=0 then
@@ -1523,36 +1524,36 @@ begin
   if FExif.Valid and not failture then
   begin
    If Id=0 then
-   DrawIconEx(bit.Canvas.Handle,20+DeltaX,0,UnitDBKernel.icons[DB_IC_EXIF+1].Handle,16,16,0,0,DI_NORMAL) else
-   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_EXIF+1].Handle,16,16,0,0,DI_NORMAL)
+   DrawIconEx(bit.Canvas.Handle,20+DeltaX,0,UnitDBKernel.icons[DB_IC_EXIF+1],16,16,0,0,DI_NORMAL) else
+   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_EXIF+1],16,16,0,0,DI_NORMAL)
   end;
   FExif.free;
  end;
 
 
- if Crypt then DrawIconEx(bit.Canvas.Handle,20+DeltaX,0,UnitDBKernel.icons[DB_IC_KEY+1].Handle,16,16,0,0,DI_NORMAL);
+ if Crypt then DrawIconEx(bit.Canvas.Handle,20+DeltaX,0,UnitDBKernel.icons[DB_IC_KEY+1],16,16,0,0,DI_NORMAL);
  Case Rating of
-  1: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_1+1].Handle,16,16,0,0,DI_NORMAL);
-  2: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_2+1].Handle,16,16,0,0,DI_NORMAL);
-  3: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_3+1].Handle,16,16,0,0,DI_NORMAL);
-  4: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_4+1].Handle,16,16,0,0,DI_NORMAL);
-  5: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_5+1].Handle,16,16,0,0,DI_NORMAL);
+  1: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_1+1],16,16,0,0,DI_NORMAL);
+  2: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_2+1],16,16,0,0,DI_NORMAL);
+  3: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_3+1],16,16,0,0,DI_NORMAL);
+  4: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_4+1],16,16,0,0,DI_NORMAL);
+  5: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_5+1],16,16,0,0,DI_NORMAL);
  end;
  Case Rotate of
-  DB_IMAGE_ROTATED_90: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_90+1].Handle,16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_180: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_180+1].Handle,16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_270: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_270+1].Handle,16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATED_90: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATED_180: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATED_270: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
  end;
  If Access=db_access_private then
- DrawIconEx(bit.Canvas.Handle,40+DeltaX,0,UnitDBKernel.icons[DB_IC_PRIVATE+1].Handle,16,16,0,0,DI_NORMAL);
+ DrawIconEx(bit.Canvas.Handle,40+DeltaX,0,UnitDBKernel.icons[DB_IC_PRIVATE+1],16,16,0,0,DI_NORMAL);
  if not FE then
  begin             
   if Copy(FileName,1,2)='::' then
   begin
-   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_CD_IMAGE+1].Handle,18,18,0,0,DI_NORMAL);
+   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_CD_IMAGE+1],18,18,0,0,DI_NORMAL);
   end else
   begin
-   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_DELETE_INFO+1].Handle,18,18,0,0,DI_NORMAL);
+   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],18,18,0,0,DI_NORMAL);
   end;
  end;
 end;
@@ -2599,7 +2600,7 @@ begin
  ManageDB2.ImageIndex:=DB_IC_ADMINTOOLS;
  Options1.ImageIndex:=DB_IC_OPTIONS;
 
- ShowDateOptionsLink.Icon:=(UnitDBKernel.icons[DB_IC_EDIT_DATE+1]);
+ ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EDIT_DATE+1]);
 
  BackGroundSearchPanelResize(Nil);
  Splitter1Moved(nil);
@@ -2755,7 +2756,7 @@ begin
   If LockChangePath then Exit;
   If Creating then Exit;
   if FUpdatingDB then Exit;
-  SearchEdit.Text:=':folder('+ShellTreeView1.Path+'):';
+  SearchEdit.Text:=':folder('+TreeView.Path+'):';
   DoSearchNow(Sender);
 end;
 
@@ -2951,19 +2952,19 @@ begin
  ShowExplorerPage1.ImageIndex:=-1;
  PropertyPanel.Visible:=false;
  ExplorerPanel.Visible:=true;
- if not ShellTreeView1.UseShellImages then
+ if not TreeView.UseShellImages then
  begin
-  ShellTreeView1.ObjectTypes:=[otFolders];
-  ShellTreeView1.UseShellImages:=true;
-  ShellTreeView1.Refresh(ShellTreeView1.TopItem);
+  TreeView.ObjectTypes:=[otFolders];
+  TreeView.UseShellImages:=true;
+  TreeView.Refresh(TreeView.TopItem);
  end;
  ExplorerPanel.Align:=AlClient;
  Properties1.Checked:=false;
  Explorer2.Checked:=true;
- ShellTreeView1.FullCollapse;
+ TreeView.FullCollapse;
  if FSearchPath<>'' then
  if DirectoryExists(FSearchPath) then
- ShellTreeView1.Path:=FSearchPath;
+ TreeView.Path:=FSearchPath;
 end;
 
 procedure TSearchForm.SearchPanelAContextPopup(Sender: TObject; MousePos: TPoint;
@@ -3091,7 +3092,7 @@ begin
  FSearchPath := Value;
  LockChangePath:=true;
  If ExplorerPanel.Visible then
- ShellTreeView1.Path:=Value;
+ TreeView.Path:=Value;
  LockChangePath:=false;
 end;
 
@@ -3654,10 +3655,10 @@ end;
 
 procedure TSearchForm.PopupMenu8Popup(Sender: TObject);
 begin
- if ShellTreeView1.SelectedFolder<>nil then
+ if TreeView.SelectedFolder<>nil then
  begin
-  TempFolderName:=ShellTreeView1.SelectedFolder.PathName;
-  OpeninExplorer1.Visible:=DirectoryExists(ShellTreeView1.SelectedFolder.PathName);
+  TempFolderName:=TreeView.SelectedFolder.PathName;
+  OpeninExplorer1.Visible:=DirectoryExists(TreeView.SelectedFolder.PathName);
   AddFolder1.Visible:=OpeninExplorer1.Visible;
   View2.Visible:=OpeninExplorer1.Visible;
  end else
@@ -3671,7 +3672,7 @@ end;
 
 procedure TSearchForm.OpeninExplorer1Click(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetPath(Self.TempFolderName);
   Show;
@@ -4086,7 +4087,7 @@ var
    SmallB.Canvas.Pen.Color:=Theme_MainColor;
    SmallB.Canvas.Brush.Color:=Theme_MainColor;
    SmallB.Canvas.Rectangle(0,0,16,16);
-   DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1].Handle,16,16,0,0,DI_NORMAL);
+   DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
    GroupImageValid:=true;
   end;
 
@@ -4719,11 +4720,11 @@ begin
  DrawAttributes(b,fPictureSize,Data[index].Rating,Data[index].Rotation,Data[index].Access,Data[index].FileName,Data[index].Crypted,Data[index].Exists,1);
 
  if ProcessedFilesCollection.ExistsFile(Data[index].FileName)<>nil then
- DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1].Handle,16,16,0,0,DI_NORMAL);
+ DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
 
  if (Data[index].CompareResult.ByGistogramm>0) or (Data[index].CompareResult.ByPixels>0) then
  begin
-  DrawIconEx(b.Canvas.Handle,fPictureSize-16,b.Height-18,UnitDBKernel.icons[DB_IC_DUBLICAT+1].Handle,16,16,0,0,DI_NORMAL);
+  DrawIconEx(b.Canvas.Handle,fPictureSize-16,b.Height-18,UnitDBKernel.icons[DB_IC_DUBLICAT+1],16,16,0,0,DI_NORMAL);
   temp_str:=Format('%d%%\%d%%',[Round(Data[index].CompareResult.ByPixels),Round(Data[index].CompareResult.ByGistogramm)]);
   r1:=Rect(fPictureSize-16-b.Canvas.TextWidth(temp_str)-3,b.Height-16,fPictureSize-16,B.Height);
   DrawTextA(b.Canvas.Handle, PChar(temp_str), Length(temp_str), r1, DT_VCENTER+DT_CENTER);
@@ -5322,6 +5323,7 @@ end;
 
 procedure TSearchForm.CreateWND;
 begin
+  FShellTreeView := nil;
   inherited;
 end;
 
@@ -5487,7 +5489,7 @@ begin
   NewExplorer;
  end else
  begin
-  With ExplorerManager.NewExplorer do
+  With ExplorerManager.NewExplorer(False) do
   begin
    FileName:=Data[GetItemNO(ListView1.Selection.First)].FileName;
    DoProcessPath(FileName);
@@ -5868,6 +5870,25 @@ begin
   DBKernel.WriteString('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Group',Group);
   DBKernel.WriteInteger('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Rating',Rating);
  end;
+end;
+
+function TSearchForm.TreeView: TShellTreeView;
+begin
+  if FShellTreeView = nil then
+  begin
+    FShellTreeView := TShellTreeView.Create(Self);
+    FShellTreeView.Parent := ExplorerPanel;
+    FShellTreeView.Align := alClient;  
+    FShellTreeView.AutoRefresh := False;
+    FShellTreeView.PopupMenu := PopupMenu8;
+    FShellTreeView.RightClickSelect := True;
+    FShellTreeView.ShowRoot := False;
+    FShellTreeView.OnChange := ShellTreeView1Change;
+    FShellTreeView.UseShellImages := False;
+    FShellTreeView.ObjectTypes := [];
+  end;
+
+  Result := FShellTreeView;
 end;
 
 initialization

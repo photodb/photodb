@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ImgList, DB, DBTables, ExtCtrls, jpeg
+  Dialogs, StdCtrls, ComCtrls, ImgList, DB, DBTables, ExtCtrls, JPEG, CommCtrl
 {$IFDEF PHOTODB}
   ,Dolphin_DB, Language, UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
   AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
@@ -339,18 +339,14 @@ begin
   DBKernel.RecreateThemeToForm(self);
   TreeView1.Color:=Theme_ListColor;
   TreeView1.Font.Color:=Theme_ListFontColor;
-  Icon := Ticon.Create;
-  Icon.Handle:=LoadIcon(HInstance,'MAINICON');
-  ImageList1.AddIcon(Icon);
-  icon.free;
-  Icon := Ticon.Create;
-  Icon.Handle:=LoadIcon(DBKernel.IconDllInstance,'PICTURE');
-  ImageList1.AddIcon(Icon);
-  icon.free;
-  ImageList1.AddIcon(UnitDBKernel.icons[DB_IC_DIRECTORY+1]);
-  ImageList1.AddIcon(UnitDBKernel.icons[DB_IC_EXPLORER+1]);
-  ImageList1.AddIcon(UnitDBKernel.icons[DB_IC_KEY+1]);
-  ImageList1.AddIcon(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
+
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(HInstance,'MAINICON'));
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(DBKernel.IconDllInstance,'PICTURE'));
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_DIRECTORY+1]);  
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_EXPLORER+1]);
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_KEY+1]);
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
+
   Label1.Hide;
   Panel2.Hide;
   Label2.Hide;
@@ -533,7 +529,7 @@ end;
 procedure TFormCreateDBFileTree.OpeninExplorer1Click(Sender: TObject);
 begin
  if DirectoryExists(FPath) then
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetStringPath(FPath,false);
   Show;

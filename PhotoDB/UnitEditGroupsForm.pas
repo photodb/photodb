@@ -306,7 +306,7 @@ begin
  SmallB.Canvas.Pen.Color:=Theme_MainColor;
  SmallB.Canvas.Brush.Color:=Theme_MainColor;
  SmallB.Canvas.Rectangle(0,0,SmallB.Width,SmallB.Height);
- DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1].Handle,SmallB.Width div 2 - 8,SmallB.Height div 2 - 8,0,0,DI_NORMAL);
+ DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],SmallB.Width div 2 - 8,SmallB.Height div 2 - 8,0,0,DI_NORMAL);
  GroupsImageList.Add(SmallB,nil);
  SmallB.Free;
  ListBox2.Clear;
@@ -531,7 +531,7 @@ begin
    GroupsImageList.Draw((Control as TListBox).Canvas,Rect.Left+2,Rect.Top+2,Max(0,n));
    if n=-1 then
    begin
-    DrawIconEx((Control as TListBox).Canvas.Handle,Rect.Left+10,Rect.Top+8,UnitDBKernel.icons[DB_IC_DELETE_INFO+1].Handle,8,8,0,0,DI_NORMAL);
+    DrawIconEx((Control as TListBox).Canvas.Handle,Rect.Left+10,Rect.Top+8,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],8,8,0,0,DI_NORMAL);
    end;
    if Control=ListBox1 then
    if NewGroup(FSetGroups[Index].GroupCode) then

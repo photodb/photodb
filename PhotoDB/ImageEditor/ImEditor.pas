@@ -2591,7 +2591,7 @@ end;
 procedure TImageEditor.Explorer1Click(Sender: TObject);
 begin
  {$IFDEF PHOTODB}
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(CurrentFileName);
   SetPath(GetDirectory(CurrentFileName));

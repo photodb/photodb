@@ -54,7 +54,7 @@ begin
   begin
    If CheckFileExistsWithMessageEx(LongFileName(filenameB),true) then
    begin
-    With ExplorerManager.NewExplorer do
+    With ExplorerManager.NewExplorer(False) do
     begin
      SetPath(LongFileName(FileNameB));
      Show;                           

@@ -110,28 +110,28 @@ begin
  If fInfo.ItemAccess=db_access_private then
  begin
   Dec(sm,20);
-  DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_PRIVATE+1].Handle,16,16,0,0,DI_NORMAL);
+  DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_PRIVATE+1],16,16,0,0,DI_NORMAL);
  end;
  Dec(sm,20);
  Case fInfo.ItemRotate of
-  DB_IMAGE_ROTATED_90: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1].Handle,16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_180: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1].Handle,16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_270: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1].Handle,16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATED_90: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATED_180: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATED_270: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
  else Inc(sm,20);
  end;
  Dec(sm,20);
  Case fInfo.ItemRating of
-  1: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_1+1].Handle,16,16,0,0,DI_NORMAL);
-  2: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_2+1].Handle,16,16,0,0,DI_NORMAL);
-  3: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_3+1].Handle,16,16,0,0,DI_NORMAL);
-  4: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_4+1].Handle,16,16,0,0,DI_NORMAL);
-  5: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_5+1].Handle,16,16,0,0,DI_NORMAL);
+  1: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_1+1],16,16,0,0,DI_NORMAL);
+  2: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_2+1],16,16,0,0,DI_NORMAL);
+  3: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_3+1],16,16,0,0,DI_NORMAL);
+  4: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_4+1],16,16,0,0,DI_NORMAL);
+  5: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_5+1],16,16,0,0,DI_NORMAL);
  else Inc(sm,20);
  end;
  If FInfo.ItemCrypted then
  begin
   Dec(sm,20);
-  DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_KEY+1].Handle,16,16,0,0,DI_NORMAL);
+  DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_KEY+1],16,16,0,0,DI_NORMAL);
  end;
 end;
 

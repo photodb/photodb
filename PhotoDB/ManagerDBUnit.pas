@@ -289,16 +289,16 @@ begin
 
  SI:=-1;
  DBInOpening:=true;
- PackTabelLink.Icon:=(UnitDBKernel.icons[DB_IC_SHELL+1]);
- ExportTableLink.Icon:=(UnitDBKernel.icons[DB_IC_SAVE_AS_TABLE+1]);
- ImportTableLink.Icon:=(UnitDBKernel.icons[DB_IC_LOADFROMFILE+1]);
- RecreateIDExLink.Icon:=(UnitDBKernel.icons[DB_IC_REFRESH_ID+1]);
- ScanforBadLinksLink.Icon:=(UnitDBKernel.icons[DB_IC_SEARCH+1]);
- BackUpDBLink.Icon:=(UnitDBKernel.icons[DB_IC_CANCEL_ACTION+1]);
- CleaningLink.Icon:=(UnitDBKernel.icons[DB_IC_COMMON+1]);      
- DublicatesLink.Icon:=(UnitDBKernel.icons[DB_IC_DUBLICAT+1]);
- ConvertLink.Icon:=(UnitDBKernel.icons[DB_IC_CONVERT+1]);
- ChangePathLink.Icon:=(UnitDBKernel.icons[DB_IC_DIRECTORY+1]);
+ PackTabelLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL+1]);
+ ExportTableLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SAVE_AS_TABLE+1]);
+ ImportTableLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_LOADFROMFILE+1]);
+ RecreateIDExLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_REFRESH_ID+1]);
+ ScanforBadLinksLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SEARCH+1]);
+ BackUpDBLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CANCEL_ACTION+1]);
+ CleaningLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COMMON+1]);
+ DublicatesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DUBLICAT+1]);
+ ConvertLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CONVERT+1]);
+ ChangePathLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DIRECTORY+1]);
 
  OldWNDProc:=ListView1.WindowProc;
  ListView1.WindowProc:=ListView1WindowProc;
@@ -701,7 +701,7 @@ begin
  LB:=(Control as TListBox);
  LB.Canvas.FillRect(Rect);
  LB.Canvas.TextOut(Rect.Left+21, Rect.Top+3,LB.Items[Index]);
- DrawIconEx(LB.Canvas.Handle,Rect.Left+2,Rect.Top+2,UnitDBKernel.icons[DB_IC_LOADFROMFILE+1].Handle,16,16,0,0,DI_NORMAL);
+ DrawIconEx(LB.Canvas.Handle,Rect.Left+2,Rect.Top+2,UnitDBKernel.icons[DB_IC_LOADFROMFILE+1],16,16,0,0,DI_NORMAL);
 end;
 
 procedure TManagerDB.ListBox1ContextPopup(Sender: TObject;
@@ -1039,7 +1039,7 @@ begin
   aRect.Top:=aRect.Top+1;
   if PListData(aData[Item.Index])^.Rating>0 then
   begin
-   DrawIconEx(Sender.Canvas.Handle,aRect.Left+(aRect.Right-aRect.Left) div 2-8,aRect.Top,UnitDBKernel.icons[PListData(aData[Item.Index])^.Rating+DB_IC_RATING_1].Handle,16,16,0,0,DI_NORMAL);
+   DrawIconEx(Sender.Canvas.Handle,aRect.Left+(aRect.Right-aRect.Left) div 2-8,aRect.Top,UnitDBKernel.icons[PListData(aData[Item.Index])^.Rating+DB_IC_RATING_1],16,16,0,0,DI_NORMAL);
   end;
   ListView_GetSubItemRect(ListView1.Handle,Item.Index,1,0,@aRect);
   Caption:=PListData(aData[Item.Index])^.FileName;
@@ -1060,7 +1060,7 @@ begin
    if PListData(aData[Item.Index])^.Rotate>0 then
    begin
     aRect.Top:=aRect.Top+1;
-    DrawIconEx(Sender.Canvas.Handle,aRect.Left+(aRect.Right-aRect.Left) div 2-8,aRect.Top,UnitDBKernel.icons[PListData(aData[Item.Index])^.Rotate+DB_IC_ROTETED_0+1].Handle,16,16,0,0,DI_NORMAL);
+    DrawIconEx(Sender.Canvas.Handle,aRect.Left+(aRect.Right-aRect.Left) div 2-8,aRect.Top,UnitDBKernel.icons[PListData(aData[Item.Index])^.Rotate+DB_IC_ROTETED_0+1],16,16,0,0,DI_NORMAL);
    end;
   end;
  6 :
@@ -1068,7 +1068,7 @@ begin
   if PListData(aData[Item.Index])^.Access=1 then
   begin
    aRect.Top:=aRect.Top+1;
-   DrawIconEx(Sender.Canvas.Handle,aRect.Left+(aRect.Right-aRect.Left) div 2-8,aRect.Top,UnitDBKernel.icons[DB_IC_PRIVATE+1].Handle,16,16,0,0,DI_NORMAL);
+   DrawIconEx(Sender.Canvas.Handle,aRect.Left+(aRect.Right-aRect.Left) div 2-8,aRect.Top,UnitDBKernel.icons[DB_IC_PRIVATE+1],16,16,0,0,DI_NORMAL);
   end;
  end;
  end;
@@ -1410,7 +1410,7 @@ begin
     Bit.Canvas.Brush.Color:=Graphics.clMenu;
     Bit.Canvas.Pen.Color:=Graphics.clMenu;
     Bit.Canvas.Rectangle(0,0,16,16);
-    DrawIconEx(Bit.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1].Handle,16,16,0,0,DI_NORMAL);
+    DrawIconEx(Bit.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
     ImageListPopupGroups.Add(Bit,nil);
     Bit.Free;
 
@@ -2011,7 +2011,7 @@ var
   Path : string;
 begin
  Path:=FBackUpFiles[PopupMenu5.Tag];
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(Path);
   SetPath(GetDirectory(Path));

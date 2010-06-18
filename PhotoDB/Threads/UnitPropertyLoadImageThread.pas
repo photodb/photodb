@@ -154,8 +154,8 @@ begin
       BitmapParam.Canvas.Pen.color:=Theme_MainColor;
       BitmapParam.Canvas.Rectangle(0,0,ThSizePropertyPreview,ThSizePropertyPreview);
       BitmapParam.Canvas.Draw(ThSizePropertyPreview div 2-DrawBitmapParam.Width div 2,ThSizePropertyPreview div 2- DrawBitmapParam.Height div 2,DrawBitmapParam);
-      if PassWord<>'' then DrawIconEx(BitmapParam.Canvas.Handle,20,0,UnitDBKernel.icons[DB_IC_KEY+1].Handle,18,18,0,0,DI_NORMAL);
-      DrawIconEx(BitmapParam.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_NEW+1].Handle,18,18,0,0,DI_NORMAL);
+      if PassWord<>'' then DrawIconEx(BitmapParam.Canvas.Handle,20,0,UnitDBKernel.icons[DB_IC_KEY+1],18,18,0,0,DI_NORMAL);
+      DrawIconEx(BitmapParam.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_NEW+1],18,18,0,0,DI_NORMAL);
 
       With (fOptions.Owner as TPropertiesForm) do
       begin

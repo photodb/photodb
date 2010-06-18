@@ -1778,7 +1778,7 @@ procedure TViewer.Explorer1Click(Sender: TObject);
 begin         
  if FullScreenNow then
  Exit1Click(nil);
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(CurrentInfo.ItemFileNames[CurrentFileNumber]);
   SetPath(GetDirectory(CurrentInfo.ItemFileNames[CurrentFileNumber]));

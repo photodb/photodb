@@ -3529,7 +3529,7 @@ begin
     bmp.Width:=aThImageSize;
     bmp.Height:=aThImageSize;
     FillRectNoCanvas(bmp,$FFFFFF);
-    DrawIconEx(bmp.Canvas.Handle,70,70,UnitDBKernel.icons[DB_IC_DELETE_INFO+1].Handle,16,16,0,0,DI_NORMAL);
+    DrawIconEx(bmp.Canvas.Handle,70,70,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],16,16,0,0,DI_NORMAL);
     thbmp.Height:=100;
     thbmp.Width:=100;
    end;
@@ -6695,7 +6695,6 @@ end;
 
 initialization
 
-CoInitialize(nil);
 DBKernel:=nil;
 FExtImagesInImageList:=0;
 LastInseredID:=0;

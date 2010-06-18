@@ -257,7 +257,7 @@ begin
  SmallB.Canvas.Pen.Color:=Theme_MainColor;
  SmallB.Canvas.Brush.Color:=Theme_MainColor;
  SmallB.Canvas.Rectangle(0,0,16,16);
- DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1].Handle,16,16,0,0,DI_NORMAL);
+ DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
  GroupsImageList.Add(SmallB,nil);
  SmallB.Free;
  FCurrentGroups:=EncodeGroups(FNewRelatedGroups);

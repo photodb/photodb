@@ -726,7 +726,7 @@ procedure TUpdateDBForm.WebLinkOpenFolderClick(Sender: TObject);
 begin
  if fCurrentFileName<>'' then
  begin
-  With ExplorerManager.NewExplorer do
+  With ExplorerManager.NewExplorer(False) do
   begin
    SetOldPath(fCurrentFileName);
    SetPath(ExtractFilePath(fCurrentFileName));

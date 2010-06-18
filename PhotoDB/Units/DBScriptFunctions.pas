@@ -232,7 +232,7 @@ end;
 
 function NewExplorerByPath(Path : string) : string;
 begin
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetStringPath(Path,false);
   Show;
@@ -242,7 +242,7 @@ end;
 
 function NewExplorer : string;
 begin
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetNewPathW(GetCurrentPathW,false);
   Show;

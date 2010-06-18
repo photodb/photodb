@@ -67,7 +67,7 @@ procedure TBigImagesSizeForm.FormCreate(Sender: TObject);
 begin
  RadioGroup1.DoubleBuffered:=true;
  
- CloseLink.Icon:=(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
+ CloseLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
 
  RadioGroup1.DoubleBuffered:=true;
  RadioGroup1.Buttons[0].DoubleBuffered:=true;

@@ -611,7 +611,7 @@ begin
    Bit.PixelFormat:=pf24bit;
    Bit.Width:=16;
    Bit.Height:=16;
-   DrawIconEx(Bit.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_DELETE_INFO+1].Handle,16,16,0,0,DI_NORMAL);
+   DrawIconEx(Bit.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],16,16,0,0,DI_NORMAL);
    Group.GroupImage:=TJpegImage.Create;
    Group.GroupImage.Assign(Bit);
    Bit.Free;

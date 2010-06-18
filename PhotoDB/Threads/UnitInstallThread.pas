@@ -934,6 +934,4 @@ end;
 
 initialization
 
-Coinitialize(nil);
-
 end.

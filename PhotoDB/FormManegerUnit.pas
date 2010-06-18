@@ -314,7 +314,7 @@ begin
    //Default Form
    if DBKernel.ReadBool('Options','RunExplorerAtStartUp',false) then
    begin
-    With ExplorerManager.NewExplorer do
+    With ExplorerManager.NewExplorer(False) do
     begin
      if DBKernel.ReadBool('Options','UseSpecialStartUpFolder',false) then
      SetPath(DBKernel.ReadString('Options','SpecialStartUpFolder')) else
@@ -335,7 +335,7 @@ begin
  begin
   If DirectoryExists(Directory) then
   begin
-   With ExplorerManager.NewExplorer do
+   With ExplorerManager.NewExplorer(False) do
    begin
     SetPath(Directory);
     Show;        

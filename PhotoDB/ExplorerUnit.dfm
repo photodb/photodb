@@ -4343,25 +4343,6 @@ object ExplorerForm: TExplorerForm
     Align = alLeft
     ParentColor = True
     TabOrder = 0
-    object ShellTreeView1: TShellTreeView
-      Left = 1
-      Top = 22
-      Width = 133
-      Height = 504
-      ObjectTypes = []
-      Root = 'rfDesktop'
-      UseShellImages = False
-      Align = alClient
-      AutoRefresh = False
-      HideSelection = False
-      Indent = 19
-      ParentColor = False
-      PopupMenu = PopupMenu8
-      RightClickSelect = True
-      ShowRoot = False
-      TabOrder = 0
-      OnChange = ShellTreeView1Change
-    end
     object CloseButtonPanel: TPanel
       Left = 1
       Top = 1
@@ -4369,7 +4350,7 @@ object ExplorerForm: TExplorerForm
       Height = 21
       Align = alTop
       ParentColor = True
-      TabOrder = 1
+      TabOrder = 0
       OnResize = CloseButtonPanelResize
       object Button1: TButton
         Left = 101
@@ -4391,7 +4372,7 @@ object ExplorerForm: TExplorerForm
       Color = clInactiveCaption
       Ctl3D = True
       ParentCtl3D = False
-      TabOrder = 2
+      TabOrder = 1
       OnResize = PropertyPanelResize
       object ScrollBox1: TScrollPanel
         Left = 0

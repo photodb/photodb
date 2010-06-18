@@ -101,7 +101,7 @@ end;
 procedure TFormEditLink.FormCreate(Sender: TObject);
 var
   SmallB : TBitmap;
-  icon : TIcon;
+  icon : THandle;
   i : integer;
 begin
  LoadLanguage;
@@ -123,10 +123,10 @@ begin
   LINK_TYPE_FILE : Icon:=UnitDBKernel.Icons[DB_IC_SHELL+1];
   LINK_TYPE_FOLDER : Icon:=UnitDBKernel.Icons[DB_IC_DIRECTORY+1];
   LINK_TYPE_TXT : Icon:=UnitDBKernel.Icons[DB_IC_TEXT_FILE+1];
-   else Icon:=nil;
+   else Icon:=0;
   end;
-  if Icon<>nil then
-  DrawIconEx(SmallB.Canvas.Handle,0,0,Icon.Handle,16,16,0,0,DI_NORMAL);
+  if Icon<>0 then
+  DrawIconEx(SmallB.Canvas.Handle,0,0,Icon,16,16,0,0,DI_NORMAL);
   LinkImageList.Add(SmallB,nil);
   SmallB.Free;
  end;

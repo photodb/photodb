@@ -44,7 +44,6 @@ type
     File1: TMenuItem;
     Exit1: TMenuItem;
     MainPanel: TPanel;
-    ShellTreeView1: TShellTreeView;
     CloseButtonPanel: TPanel;
     Button1: TButton;
     PropertyPanel: TPanel;
@@ -620,6 +619,8 @@ type
      WasError : boolean;
      DefaultSort : integer;
      DirectoryWatcher : TWachDirectoryClass;
+     FShellTreeView : TShellTreeView;
+     FGoToLastSavedPath : Boolean;
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
@@ -635,7 +636,9 @@ type
      procedure ZoomOut;
      procedure LoadToolBarGrayedIcons();
      procedure LoadToolBarNormaIcons();
-    function IsSelectedVisible: boolean;
+     function IsSelectedVisible: boolean;
+     function TreeView : TShellTreeView;  
+     constructor Create(AOwner : TComponent); overload;
    public
      ExtIcons : TBitmapImageList;
      FBitmapImageList : TBitmapImageList;
@@ -650,8 +653,9 @@ type
      function ExitstExtInIcons(Ext : String) : boolean;
      function GetIconByExt(Ext : String) : TIcon;
      procedure AddIconByExt(Ext : String; Icon : TIcon);
-     procedure LoadSizes();   
+     procedure LoadSizes();
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
+     constructor Create(AOwner : TComponent; GoToLastSavedPath : Boolean); reintroduce; overload;
    end;
 
   TManagerExplorer = class(TObject)
@@ -667,7 +671,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function NewExplorer : TExplorerForm;
+    function NewExplorer(GoToLastSavedPath : Boolean) : TExplorerForm;
     procedure FreeExplorer(Explorer : TExplorerForm);
     procedure AddExplorer(Explorer : TExplorerForm);
     procedure LoadEXIF;
@@ -720,6 +724,7 @@ end;
 
 procedure TExplorerForm.CreateParams(VAR Params: TCreateParams);
 begin
+  FShellTreeView := nil;
   FormLoadEnd:=false;
   NoLockListView:=false;
   FPictureSize:=ThImageSize;
@@ -744,7 +749,7 @@ procedure TExplorerForm.ShellTreeView1Change(Sender: TObject;
   Node: TTreeNode);
 begin
  if ListView1<>nil then
- SetStringPath(ShellTreeView1.Path,True);
+ SetStringPath(TreeView.Path,True);
 end;
 
 procedure VerifyPaste(Form : TExplorerForm);
@@ -889,13 +894,21 @@ begin
 
  NewFormState;
  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
- NewPath:=DBkernel.ReadString('Explorer','Patch');
- NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
- DBkernel.WriteString('Explorer','Patch','');
- DBkernel.WriteInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
- SetNewPathW(ExplorerPath(NewPath,NewPathType),True);
- DBkernel.WriteString('Explorer','Patch',NewPath);
- DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
+
+ //???if FGoToLastSavedPath then
+ begin
+   NewPath:=DBkernel.ReadString('Explorer','Patch');
+   NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
+
+   DBkernel.WriteString('Explorer','Patch','');
+   DBkernel.WriteInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
+
+   SetNewPathW(ExplorerPath(NewPath,NewPathType),True);
+
+   DBkernel.WriteString('Explorer','Patch',NewPath);
+   DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
+ end;
+
  fHistory.Clear;
 
  Lock:=false;
@@ -1075,21 +1088,21 @@ begin
  View3.ImageIndex:=DB_IC_SORT;
  MapCD1.ImageIndex:=DB_IC_CD_MAPPING;
 
- SlideShowLink.Icon:=(UnitDBKernel.icons[DB_IC_SLIDE_SHOW+1]);
- ShellLink.Icon:=(UnitDBKernel.icons[DB_IC_SHELL+1]);
- CopyToLink.Icon:=(UnitDBKernel.icons[DB_IC_COPY+1]);
- MoveToLink.Icon:=(UnitDBKernel.icons[DB_IC_CUT+1]);
- RenameLink.Icon:=(UnitDBKernel.icons[DB_IC_RENAME+1]);
- PropertiesLink.Icon:=(UnitDBKernel.icons[DB_IC_PROPERTIES+1]);
- DeleteLink.Icon:=(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
- AddLink.Icon:=(UnitDBKernel.icons[DB_IC_NEW+1]);
- RefreshLink.Icon:=(UnitDBKernel.icons[DB_IC_REFRESH_THUM+1]);
- ImageEditorLink.Icon:=(UnitDBKernel.icons[DB_IC_IMEDITOR+1]);
- PrintLink.Icon:=(UnitDBKernel.icons[DB_IC_PRINTER+1]);
- MyPicturesLink.Icon:=(UnitDBKernel.icons[DB_IC_MY_PICTURES+1]);
- MyDocumentsLink.Icon:=(UnitDBKernel.icons[DB_IC_MY_DOCUMENTS+1]);
- MyComputerLink.Icon:=(UnitDBKernel.icons[DB_IC_MY_COMPUTER+1]);
- DesktopLink.Icon:=(UnitDBKernel.icons[DB_IC_DESKTOPLINK+1]);
+ SlideShowLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SLIDE_SHOW+1]);
+ ShellLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL+1]);
+ CopyToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);
+ MoveToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CUT+1]);
+ RenameLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_RENAME+1]);
+ PropertiesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PROPERTIES+1]);
+ DeleteLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
+ AddLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_NEW+1]);
+ RefreshLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_REFRESH_THUM+1]);
+ ImageEditorLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_IMEDITOR+1]);
+ PrintLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PRINTER+1]);
+ MyPicturesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_PICTURES+1]);
+ MyDocumentsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_DOCUMENTS+1]);
+ MyComputerLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_COMPUTER+1]);
+ DesktopLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DESKTOPLINK+1]);
 
  for i:=0 to ComponentCount-1 do
  if Components[i] is TWebLink then
@@ -1117,11 +1130,7 @@ begin
  b.free;
 
  Button1Click(Sender);
- try
-  DoSelectItem;
- except
-  on e : Exception do EventLog(':TExplorerForm::FormCreate() throw exception: '+e.Message);
- end;
+
  ExplorerManager.AddExplorer(Self);
  LoadLanguage;
  DBKernel.RegisterForm(Self);
@@ -2446,8 +2455,8 @@ begin
  b:=false;
  If FIsExplorer then
  begin
-  if ShellTreeView1.Selected<>nil then
-  ShellTreeView1.Select(ShellTreeView1.Selected.Parent);
+  if TreeView.Selected<>nil then
+  TreeView.Select(TreeView.Selected.Parent);
  end else
  begin
   dir:=GetCurrentPath;
@@ -3158,7 +3167,7 @@ var
   Path : TExplorerPath;
 begin
  Path:=GetCurrentPathW;
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetNewPathW(Path,False);
   Show;
@@ -3857,7 +3866,7 @@ var
   Path : TExplorerPath;
 begin
  Path:=ExplorerPath(fFilesInfo[popupmenu1.tag].FileName,fFilesInfo[popupmenu1.tag].FileType);
- With Explorermanager.NewExplorer do
+ With Explorermanager.NewExplorer(False) do
  begin
   SetNewPathW(Path,False);
   Show;
@@ -4401,11 +4410,11 @@ begin
   If SelCount>1 then AddLink.Text:=TEXT_MES_ADD_OBJECTS;
   if (FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (SelCount=0) then
   begin
-   AddLink.Icon:=(UnitDBKernel.icons[DB_IC_ADD_FOLDER+1]);
+   AddLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_ADD_FOLDER+1]);
   end;
   if (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) and (SelCount<>0) then
   begin
-   AddLink.Icon:=(UnitDBKernel.icons[DB_IC_ADD_SINGLE_FILE+1]);
+   AddLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_ADD_SINGLE_FILE+1]);
   end;
   AddLink.Visible:=true;
   AddLink.Top:=DeleteLink.Top+DeleteLink.Height+h;
@@ -4610,27 +4619,27 @@ procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
 var
   s : String;
 begin
- if not ShellTreeView1.UseShellImages then
- begin                                        
-  ShellTreeView1.UseShellImages:=true;
-  ShellTreeView1.ObjectTypes:=[otFolders,otHidden];
-  ShellTreeView1.Refresh(ShellTreeView1.TopItem);
+ if not TreeView.UseShellImages then
+ begin
+  TreeView.UseShellImages:=true;
+  TreeView.ObjectTypes:=[otFolders,otHidden];
+  TreeView.Refresh(TreeView.TopItem);
  end;
  PropertyPanel.Hide;
  try
   if GetCurrentPathW.PType=EXPLORER_ITEM_MYCOMPUTER then
-  ShellTreeView1.Path:='C:\';
+  TreeView.Path:='C:\';
   if (GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType=EXPLORER_ITEM_COMPUTER) or (GetCurrentPathW.PType=EXPLORER_ITEM_SHARE) then
   begin
    s:=GetCurrentPath;
    if Length(s)=2 then
    FormatDir(s);
-   ShellTreeView1.Path:=s;
+   TreeView.Path:=s;
   end;
   If GetCurrentPathW.PType=EXPLORER_ITEM_NETWORK then
-  ShellTreeView1.Path:='C:\';
+  TreeView.Path:='C:\';
   If GetCurrentPathW.PType=EXPLORER_ITEM_WORKGROUP then
-  ShellTreeView1.Path:='C:\';
+  TreeView.Path:='C:\';
  except
  end;
  FIsExplorer:=True;
@@ -4771,7 +4780,7 @@ begin
   end;
 end;
 
-function TManagerExplorer.NewExplorer: TExplorerForm;
+function TManagerExplorer.NewExplorer(GoToLastSavedPath : Boolean): TExplorerForm;
 begin
   if not DBKernel.ProgramInDemoMode then
   begin
@@ -4784,7 +4793,7 @@ begin
       end;
     end;
   end;
-  Application.CreateForm(TExplorerForm, Result);
+  Result := TExplorerForm.Create(Application, GoToLastSavedPath);
 end;
 
 procedure TManagerExplorer.RemoveExplorer(Explorer: TExplorerForm);
@@ -5252,9 +5261,9 @@ end;
 
 procedure TExplorerForm.PopupMenu8Popup(Sender: TObject);
 begin
- if ShellTreeView1.SelectedFolder<>nil then
+ if TreeView.SelectedFolder<>nil then
  begin
-  TempFolderName:=ShellTreeView1.SelectedFolder.PathName;
+  TempFolderName:=TreeView.SelectedFolder.PathName;
   OpeninExplorer1.Visible:=DirectoryExists(TempFolderName);
   AddFolder2.Visible:=OpeninExplorer1.Visible ;
   View2.Visible:=OpeninExplorer1.Visible;
@@ -5269,7 +5278,7 @@ end;
 
 procedure TExplorerForm.OpeninExplorer1Click(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetPath(Self.TempFolderName);
   Show;
@@ -5455,8 +5464,8 @@ begin
  try
   s:=GetCurrentPath;
   if Length(s)=2 then FormatDir(S);
-  ShellTreeView1.Path:=s;
-  ShellTreeView1.Select(ShellTreeView1.Selected);// Scroll(ShellTreeView1.Selected.Left,ShellTreeView1.Selected.Top);
+  TreeView.Path:=s;
+  TreeView.Select(TreeView.Selected);// Scroll(ShellTreeView1.Selected.Left,ShellTreeView1.Selected.Top);
  except
  end;
  DropFileTarget1.Unregister;
@@ -5994,15 +6003,15 @@ var
   c : integer;
 begin
   ScriptString:=Include('scripts\ExplorerSetNewPath.dbini');
-  fScript := fScript.Create('');
+  fScript := TScript.Create('');
   try
     fScript.Description:='Set path script';
     SetNamedValueStr(fScript,'$Path',Path);
-    ExecuteScript(nil,fScript,ScriptString,c,nil);
+    ExecuteScript(nil,fScript,ScriptString,c,nil);  
+    Path:=GetNamedValueString(fScript,'$Path');
   finally
     fScript.Free;
   end;
- Path:=GetNamedValueString(fScript,'$Path');
  if Path=#8 then
  begin
   exit;
@@ -6269,7 +6278,7 @@ begin
   if Link=MyComputerLink then S:='';
   Reg.Free;
  end;
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetPath(S);
   Show;
@@ -6720,8 +6729,10 @@ begin
     Canvas.Pen.Color:=PropertyPanel.Color;
     Canvas.Brush.Color:=PropertyPanel.Color;
     Canvas.Rectangle(0,0,ThImageSize,ThImageSize);
-    Ico:=UnitDBKernel.icons[DB_IC_MANY_FILES+1];
+    Ico:=TIcon.Create;
+    Ico.Handle := UnitDBKernel.icons[DB_IC_MANY_FILES+1];
     Canvas.Draw(ThSizeExplorerPreview div 2-Ico.Width div 2,ThSizeExplorerPreview div 2-Ico.Height div 2,Ico);
+    Ico.Free;
     FSelectedInfo.Size:=0;
     if SelCount<1000 then
     begin
@@ -7692,7 +7703,7 @@ begin
   if fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE then
   DrawAttributes(b,fPictureSize,fFilesInfo[index].Rating,fFilesInfo[index].Rotate,fFilesInfo[index].Access,fFilesInfo[index].FileName,fFilesInfo[index].Crypted,Exists,fFilesInfo[index].id);
   if ProcessedFilesCollection.ExistsFile(fFilesInfo[index].FileName)<>nil then
-  DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1].Handle,16,16,0,0,DI_NORMAL);
+  DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
 
   ACanvas.Draw(r.Left,r.Top,b);
   b.free;
@@ -8237,6 +8248,36 @@ begin
   finally
     FSync.Leave;
   end;
+end;
+
+function TExplorerForm.TreeView: TShellTreeView;
+begin
+  if FShellTreeView = nil then
+  begin
+    FShellTreeView := TShellTreeView.Create(Self);
+    FShellTreeView.Parent := MainPanel;
+    FShellTreeView.Align := alClient;
+    FShellTreeView.AutoRefresh := False;
+    FShellTreeView.PopupMenu := PopupMenu8;
+    FShellTreeView.RightClickSelect := True;
+    FShellTreeView.ShowRoot := False;
+    FShellTreeView.OnChange := ShellTreeView1Change;
+  end;
+
+  Result := FShellTreeView;
+end;
+
+constructor TExplorerForm.Create(AOwner: TComponent;
+  GoToLastSavedPath: Boolean);
+begin
+  inherited Create(AOwner);
+  FGoToLastSavedPath := GoToLastSavedPath;
+end;
+
+constructor TExplorerForm.Create(AOwner: TComponent);
+begin
+  inherited;
+
 end;
 
 initialization

@@ -300,10 +300,10 @@ begin
   Reg.Free;
  end;            
  OptionsImageList.BkColor:=Theme_ListColor;
- OptionsImageList.AddIcon(icons[DB_IC_SENDTO+1]);
- OptionsImageList.AddIcon(icons[DB_IC_UP+1]);
- OptionsImageList.AddIcon(icons[DB_IC_DOWN+1]);
- OptionsImageList.AddIcon(icons[DB_IC_DELETE_INFO+1]);
+ ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_SENDTO+1]);
+ ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_UP+1]);
+ ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DOWN+1]);  
+ ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DELETE_INFO+1]);
  PopupMenu1.Images:=DBKernel.ImageList;
 
  MoveUp1.ImageIndex:=DB_IC_UP;
@@ -449,7 +449,7 @@ begin
    Files.Add(fDataList[j].FileName);
 
    if Options.OpenFolder then
-   With ExplorerManager.NewExplorer do
+   With ExplorerManager.NewExplorer(False) do
    begin
     SetPath(Folder);
     Show;
@@ -508,7 +508,7 @@ begin
   FFiles[i]:=Files[i];
   Hide;
   if CheckBox1.Checked then
-  With ExplorerManager.NewExplorer do
+  With ExplorerManager.NewExplorer(False) do
   begin
    SetPath(Folder);
    Show;

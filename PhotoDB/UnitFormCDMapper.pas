@@ -209,7 +209,7 @@ procedure TFormCDMapper.Explorer1Click(Sender: TObject);
 begin
  if CDMappingListView.Selected<>nil then
  begin
-  With ExplorerManager.NewExplorer do
+  With ExplorerManager.NewExplorer(False) do
   begin
    SetOldPath(PCDClass(CDMappingListView.Selected.Data).Path);
    SetPath(GetDirectory(PCDClass(CDMappingListView.Selected.Data).Path));

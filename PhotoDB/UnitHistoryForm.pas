@@ -153,7 +153,7 @@ end;
 
 procedure TFormHistory.Explorer1Click(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(InfoListBox.Items[PopupMenu1.Tag]);
   SetPath(GetDirectory(FileList[PopupMenu1.Tag]));

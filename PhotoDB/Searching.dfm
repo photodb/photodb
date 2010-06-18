@@ -2579,26 +2579,6 @@ object SearchForm: TSearchForm
       ParentColor = True
       TabOrder = 3
       Visible = False
-      object ShellTreeView1: TShellTreeView
-        Left = 1
-        Top = 1
-        Width = 146
-        Height = 29
-        ObjectTypes = []
-        Root = 'rfDesktop'
-        UseShellImages = False
-        Align = alClient
-        AutoRefresh = False
-        Color = clInactiveCaption
-        HideSelection = False
-        Indent = 19
-        ParentColor = False
-        PopupMenu = PopupMenu8
-        RightClickSelect = True
-        ShowRoot = False
-        TabOrder = 0
-        OnChange = ShellTreeView1Change
-      end
     end
     object SearchPanelB: TPanel
       Left = 1

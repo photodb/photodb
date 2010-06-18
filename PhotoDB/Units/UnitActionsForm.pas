@@ -55,9 +55,9 @@ begin
  ActionList.DoubleBuffered:=true;
  LoadLanguage;
  DBKernel.RecreateThemeToForm(self);
- SaveToFileLink.Icon:=(UnitDBKernel.icons[DB_IC_SAVETOFILE+1]);
- LoadFromFileLink.Icon:=(UnitDBKernel.icons[DB_IC_LOADFROMFILE+1]);
- CloseLink.Icon:=(UnitDBKernel.icons[DB_IC_EXIT+1]);
+ SaveToFileLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SAVETOFILE+1]);
+ LoadFromFileLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_LOADFROMFILE+1]);
+ CloseLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EXIT+1]);
  SaveToFileLink.SetDefault;
  LoadFromFileLink.SetDefault;
  CloseLink.SetDefault;

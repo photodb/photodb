@@ -778,7 +778,7 @@ end;
 procedure TPropertiesForm.Button2Click(Sender: TObject);
 begin
  if no_file then exit;
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(LabelPach.text);
   SetPath(GetDirectory(LabelPach.text));
@@ -1648,7 +1648,7 @@ var
    SmallB.Canvas.Pen.Color:=Theme_MainColor;
    SmallB.Canvas.Brush.Color:=Theme_MainColor;
    SmallB.Canvas.Rectangle(0,0,16,16);
-   DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1].Handle,16,16,0,0,DI_NORMAL);
+   DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
    GroupImageValid:=true;
   end;
 
@@ -1733,8 +1733,10 @@ begin
  b.Canvas.Brush.color:=Theme_MainColor;
  b.Canvas.Pen.color:=RGB(Round(GetRValue(Theme_MainColor)*0.8),Round(GetGValue(Theme_MainColor)*0.8),Round(GetBValue(Theme_MainColor)*0.8));
  b.Canvas.Rectangle(0,0,100,100);
- Ico:=UnitDBKernel.icons[DB_IC_MANY_FILES+1];
+ Ico := TIcon.Create;
+ Ico.Handle:=UnitDBKernel.icons[DB_IC_MANY_FILES+1];
  b.Canvas.Draw(100 div 2-Ico.Width div 2,100 div 2-Ico.Height div 2,Ico);
+ Ico.Free;
  Size := 0;
  n := Trunc(Length(IDs)/AllocBy);
  if Length(IDs)/AllocBy-n>0 then inc(n);
@@ -2429,6 +2431,7 @@ procedure TPropertiesForm.ReadLinks;
 var
   LI : TLinksInfo;
   i : integer;
+  Icon : TIcon;
 begin
  for i:=0 to Length(Links)-1 do
  Links[i].Free;
@@ -2454,15 +2457,19 @@ begin
   Links[i].OnContextPopup:=LinkOnPopup;
   Links[i].ImageCanRegenerate:=true;
    //
+  Icon := TIcon.Create;
+
   case LI[i].LinkType of
-  LINK_TYPE_ID : Links[i].Icon:=UnitDBKernel.Icons[DB_IC_SLIDE_SHOW+1];
-  LINK_TYPE_ID_EXT : Links[i].Icon:=UnitDBKernel.Icons[DB_IC_NOTES+1];
-  LINK_TYPE_IMAGE : Links[i].Icon:=UnitDBKernel.Icons[DB_IC_DESKTOP+1];
-  LINK_TYPE_FILE : Links[i].Icon:=UnitDBKernel.Icons[DB_IC_SHELL+1];
-  LINK_TYPE_FOLDER : Links[i].Icon:=UnitDBKernel.Icons[DB_IC_DIRECTORY+1];
-  LINK_TYPE_TXT : Links[i].Icon:=UnitDBKernel.Icons[DB_IC_TEXT_FILE+1];
-  LINK_TYPE_HTML : Links[i].Icon:=UnitDBKernel.Icons[DB_IC_SLIDE_SHOW+1];
+  LINK_TYPE_ID : Icon.Handle:=UnitDBKernel.Icons[DB_IC_SLIDE_SHOW+1];
+  LINK_TYPE_ID_EXT : Icon.Handle:=UnitDBKernel.Icons[DB_IC_NOTES+1];
+  LINK_TYPE_IMAGE : Icon.Handle:=UnitDBKernel.Icons[DB_IC_DESKTOP+1];
+  LINK_TYPE_FILE : Icon.Handle:=UnitDBKernel.Icons[DB_IC_SHELL+1];
+  LINK_TYPE_FOLDER : Icon.Handle:=UnitDBKernel.Icons[DB_IC_DIRECTORY+1];
+  LINK_TYPE_TXT : Icon.Handle:=UnitDBKernel.Icons[DB_IC_TEXT_FILE+1];
+  LINK_TYPE_HTML : Icon.Handle:=UnitDBKernel.Icons[DB_IC_SLIDE_SHOW+1];
   end;
+  Links[i].Icon := Icon;
+  Icon.Free;
   Links[i].Visible:=true;
  end;
  CommentMemoChange(self);
@@ -2530,7 +2537,7 @@ begin
     MessageBoxDB(Handle,Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F,[DN]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
     Exit;
    end;
-   With ExplorerManager.NewExplorer do
+   With ExplorerManager.NewExplorer(False) do
    begin
     SetPath(LI[n].LinkValue);
     Show;
@@ -2699,7 +2706,7 @@ begin
   MessageBoxDB(Handle,Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F,[DN]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
   Exit;
  end;
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   if FN<>'' then
   SetOldPath(FN);
@@ -2760,7 +2767,7 @@ begin
  SmallB.Canvas.Pen.Color:=Theme_MainColor;
  SmallB.Canvas.Brush.Color:=Theme_MainColor;
  SmallB.Canvas.Rectangle(0,0,16,18);
- DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1].Handle,16,16,0,0,DI_NORMAL);
+ DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
  RegGroupsImageList.Add(SmallB,nil);
  SmallB.Free;
  ListBox2.Clear;
@@ -2871,7 +2878,7 @@ begin
    RegGroupsImageList.Draw((Control as TListBox).Canvas,Rect.Left+2,Rect.Top+2,max(0,n));
    if n=-1 then
    begin
-    DrawIconEx((Control as TListBox).Canvas.Handle,Rect.Left+10,Rect.Top+8,UnitDBKernel.icons[DB_IC_DELETE_INFO+1].Handle,8,8,0,0,DI_NORMAL);
+    DrawIconEx((Control as TListBox).Canvas.Handle,Rect.Left+10,Rect.Top+8,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],8,8,0,0,DI_NORMAL);
    end;
    if Control=ListBox1 then
    if NewGroup(FNowGroups[Index].GroupCode) then

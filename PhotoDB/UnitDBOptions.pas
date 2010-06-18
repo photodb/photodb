@@ -141,7 +141,7 @@ end;
 
 procedure TFormDBOptions.Button3Click(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer do
+ With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(DBFile.FileName);
   SetPath(GetDirectory(DBFile.FileName));

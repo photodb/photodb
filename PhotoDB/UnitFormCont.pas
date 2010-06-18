@@ -389,10 +389,10 @@ begin
 
  Label2.Caption:=TEXT_MES_ACTIONS+':';
  Rename1.Caption:=TEXT_MES_RENAME;
- WebLink1.Icon:=(UnitDBKernel.icons[DB_IC_RESIZE+1]);
- WebLink2.Icon:=(UnitDBKernel.icons[DB_IC_CONVERT+1]);
- ExportLink.Icon:=(UnitDBKernel.icons[DB_IC_EXPORT_IMAGES+1]);
- ExCopyLink.Icon:=(UnitDBKernel.icons[DB_IC_COPY+1]);
+ WebLink1.LoadFromHIcon(UnitDBKernel.icons[DB_IC_RESIZE+1]);
+ WebLink2.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CONVERT+1]);
+ ExportLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EXPORT_IMAGES+1]);
+ ExCopyLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);
                                  
  RatingPopupMenu1.Images:=DBkernel.ImageList;
 
@@ -1363,7 +1363,7 @@ begin
   DrawAttributes(b,fPictureSize,Data[index].Rating,Data[index].Rotation,Data[index].Access,Data[index].FileName,Data[index].Crypted,Data[index].Exists,Data[index].ID);
 
   if ProcessedFilesCollection.ExistsFile(Data[index].FileName)<>nil then
-  DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1].Handle,16,16,0,0,DI_NORMAL);
+  DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
 
 
   ACanvas.Draw(r.Left,r.Top,b);
