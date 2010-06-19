@@ -241,7 +241,6 @@ var
   try
    FreeDS(FQuery);
    if FTable<>nil then
-   If FTable.Active then FlushBuffers(FTable);
    FreeDS(FTable);
   except
   end;

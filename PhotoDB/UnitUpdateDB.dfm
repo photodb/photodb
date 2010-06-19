@@ -704,12 +704,9 @@ object UpdateDBForm: TUpdateDBForm
     end
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = [dtCopy, dtMove, dtLink]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtMove, dtLink]
     OnDrop = DropFileTarget1Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 112
     Top = 48
   end

@@ -6,7 +6,7 @@ uses
   UnitDBKernel, DBCMenu, dolphin_db, Windows, Messages, SysUtils, Variants,
   Classes, Graphics, Controls, Forms, GraphicCrypt, uVistaFuncs, UnitDBDeclare,
   DropTarget, DragDropFile, DragDrop, DropSource, Menus, ImgList, StdCtrls,
-  ExtCtrls, ComCtrls,  Dialogs, DB, DBTables, CommCtrl, jpeg, math,
+  ExtCtrls, ComCtrls,  Dialogs, DB, CommCtrl, jpeg, math,
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
   UnitDBCommonGraphics, uLogger;
 

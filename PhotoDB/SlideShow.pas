@@ -6,12 +6,12 @@ uses
   FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, Searching, Shellapi,
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
-  AppEvnts,  DBTables, ImgList, UnitDBKernel, FadeImage, jpeg, Win32crc,
+  AppEvnts, ImgList, UnitDBKernel, FadeImage, jpeg, Win32crc, CommCtrl,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
   ShellContextMenu, DropSource, DropTarget, DDraw, GIFImage, GraphicEx,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm, uLogger, uConstants;
+  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime;
 
 type
   TRotatingImageInfo = record
@@ -315,30 +315,27 @@ uses  Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
 
 {$R *.dfm}
 
-procedure GrayScaleImage(var S,D : TBitmap; n : integer);
+procedure GrayScaleImage(var S, D : TBitmap; N : integer);
 var
   i, j : integer;
   p1, p2 : Pargb;
-  n100, n1_100, cn100, n100_0_3, n100_0_59, n100_0_11 : Extended;
+  G : Byte;
+  W1, W2 : Byte;
 begin
- n:=Math.min(100,Math.max(n,0));
- n100:=n/100;
- n100_0_3:=n100*0.3;
- n100_0_59:=n100*0.59;
- n100_0_11:=n100*0.11;
- n1_100:=1-n/100;
- for i:=0 to S.Height-1 do
- begin
-  p1:=S.ScanLine[i];
-  p2:=D.ScanLine[i];
-  for j:=0 to S.Width-1 do
+  W1 := Round((N / 100)*255);
+  W2 := 255 - W1;
+  for I := 0 to S.Height - 1 do
   begin
-   cn100:=n100_0_3*p1[j].r+n100_0_59*p1[j].g+n100_0_11*p1[j].b;
-   p2[j].r:=Round(cn100+p1[j].r*n1_100);
-   p2[j].g:=Round(cn100+p1[j].g*n1_100);
-   p2[j].b:=Round(cn100+p1[j].b*n1_100);
+    p1 := S.ScanLine[I];
+    p2 := D.ScanLine[I];
+    for j:=0 to S.Width-1 do
+    begin
+      G := HiByte(p1[j].R * 77 + p1[j].G * 151 + p1[j].B * 28);
+      p2[j].R := HiByte(W2 * p2[j].R + W1 * G);
+      p2[j].G := HiByte(W2 * p2[j].G + W1 * G);
+      p2[j].B := HiByte(W2 * p2[j].B + W1 * G);
+    end;
   end;
- end;
 end;
 
 procedure TViewer.FormCreate(Sender: TObject);
@@ -367,7 +364,9 @@ begin
   FLoading:=true;
   FImageExists:=false;
   Caption:=TEXT_MES_SLIDE_SHOW;
+  TW.I.Start('RecreateImLists');
   RecreateImLists;
+  TW.I.Stop;
   DBCanDrag:=false;
   DropFileTarget1.Register(self);
   SlideTimer.Interval:=Math.Min(Math.Max(DBKernel.ReadInteger('Options','FullScreen_SlideDelay',40),1),100)*100;
@@ -2233,7 +2232,9 @@ begin
  for i:=0 to 1 do
  for j:=0 to 22 do
  begin
-  imlists[i].AddIcon(icons[i,j]);
+  
+  ImageList_ReplaceIcon(imlists[i].Handle, -1, icons[i,j].Handle);
+
   if i=0 then
   begin
    lb := TLayeredBitmap.Create;
@@ -2245,10 +2246,10 @@ begin
    for k:=0 to lb.Height-1 do
    for l:=0 to lb.Width-1 do
    begin
-    c:=Round(0.3*Ppx^[k,l,0]+0.59*Ppx^[k,l,1]+0.11*Ppx^[k,l,2]);
-    Ppx^[k,l,0]:=c;
-    Ppx^[k,l,1]:=c;
-    Ppx^[k,l,2]:=c;
+    c:=HiByte(Ppx^[k,l,0] * 77 + Ppx^[k,l,1] * 151 + Ppx^[k,l,2] * 28);
+    Ppx^[k,l,0] := c;
+    Ppx^[k,l,1] := c;
+    Ppx^[k,l,2] := c;
    end;
    b:=TBitmap.create;
    b.Width:=16;

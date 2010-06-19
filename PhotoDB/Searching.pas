@@ -5,7 +5,7 @@ interface
 uses
   UnitGroupsWork, BDE, ThreadManeger, DBCMenu, CmpUnit, FileCtrl, Dolphin_DB,
   ShellApi,Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Registry, Dialogs, DB, DBTables, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
+  Registry, Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
   ImgList, ComCtrls, ActiveX, ShlObj, DBCtrls, JPEG, DmProgress, ClipBrd,
   SaveWindowPos, ExtDlgs , ToolWin, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
@@ -3135,16 +3135,6 @@ begin
  DestroyTimer.Enabled:=true;
 end;
 
-procedure MakePermTable(Qry: TQuery; PermTableName: string);
-var
-  h: HDBICur;
-begin
- if Qry.Active then Qry.Close;
- Qry.Prepare;
- dbiQExec(Qry.StmtHandle, @h);
- DbiMakePermanent(h, PChar(PermTableName), True);
-end;
-
 procedure TSearchForm.SaveAsTable1Click(Sender: TObject);
 var
   FileList : TArStrings;
@@ -3578,14 +3568,12 @@ end;
 
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
 var
-  FTable : TTable;
   DS : TDataSet;
 
   procedure xHint(xDS : TDataSet);
 
     function count :  integer;
     begin
-     if xDS is TTable then result:=xDS.RecordCount else
      result:=xDS.FieldByName('Coun').AsInteger;
     end;
 
@@ -3622,15 +3610,6 @@ begin
   FreeDS(DS);
  end;
 
- if GetDBType=DB_TYPE_BDE then
- begin
-  FTable := TTable.Create(nil);
-  FTable.TableName:=dbname;
-  FTable.Active:=true;
-  xHint(FTable);
-  FTable.Close;
-  FTable.Free;
- end;
 end;
 
 procedure TSearchForm.PopupMenu7Popup(Sender: TObject);

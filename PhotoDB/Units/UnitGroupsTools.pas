@@ -55,7 +55,6 @@ begin
    end;
    Table.Next;
   end;
-  FlushBuffers(Table);
   Table.Close;
  except
   on e : Exception do

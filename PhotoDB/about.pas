@@ -8,7 +8,7 @@ interface
 uses
   win32crc, dolphin_db, Searching, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
-  ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants;
+  ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime;
 
 type
   TAboutForm = class(TForm)
@@ -60,6 +60,7 @@ var
   i, j, c : integer;
   p : PARGB;
 begin
+ TW.I.Start('GrayScale');
  if image.PixelFormat<>pf24bit then image.PixelFormat:=pf24bit;
  for i:=0 to image.Height-1 do
  begin
@@ -71,7 +72,8 @@ begin
    p[j].g:=c;
    p[j].b:=c;
   end;
- end;
+ end;  
+ TW.I.Stop;
 end;
 
 procedure TAboutForm.WMMouseDown(var s: Tmessage);
@@ -87,13 +89,16 @@ end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
 begin
+ TW.I.Start('FormCreate');
  DmProgress1.Text:=TEXT_MES_LOADING_PHOTODB;
  WaitEnabled:=true;
+ TW.I.Start('CloseButton');
  CloseButton.Filter:=grayscale;
  CloseButton.Refresh;
  Button1.Caption:=TEXT_MES_OPEN_ACTIVATION_FORM;
  if DBKernel<>nil then
  Button1.Visible:=DBkernel.ProgramInDemoMode else Button1.Visible:=false;
+ TW.I.Start('Memo1');
  Memo1.Clear;
  Memo1.Lines.Add(ProductName);
  Memo1.Lines.Add('About project:');
@@ -110,7 +115,8 @@ begin
  Memo1.Lines.Add(HomeURL);
  Memo1.Lines.Add('');
  Memo1.Lines.Add('E-Mail:');
- Memo1.Lines.Add(ProgramMail);
+ Memo1.Lines.Add(ProgramMail);   
+ TW.I.Start('End');
 end;
 
 procedure TAboutForm.Execute(Wait : boolean = false);

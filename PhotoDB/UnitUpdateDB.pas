@@ -5,7 +5,7 @@ interface
 uses
   dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp, uVistaFuncs,
-  DBTables, DropSource, DropTarget, UnitDBkernel, DB, AppEvnts, UnitDBDeclare,
+  DropSource, DropTarget, UnitDBkernel, DB, AppEvnts, UnitDBDeclare,
   UnitUpdateDBObject, UnitTimeCounter, DragDrop, DragDropFile, WebLink,
   GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon,
   UnitDBCommonGraphics, DmMemo;

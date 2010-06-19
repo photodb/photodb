@@ -112,7 +112,6 @@ begin
    if pos mod 100=0 then
    begin        
     TableIn.Post;
-    FlushBuffers(TableIn);
    end;
    //TableIn.Last;
    TableIn.Append;
@@ -120,7 +119,6 @@ begin
    TableOut.Next;
    if StopExport then break;
   Until TableOut.Eof;
-  FlushBuffers(TableIn);
 
   FreeDS(TableOut);
   FreeDS(TableIn);

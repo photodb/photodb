@@ -223,7 +223,6 @@ begin
     fField:=Table.FieldByName('thum');
     Synchronize(FindPasswordToBlob);
     Table.Post;
-    FlushBuffers(Table);
     end else
    begin
     Synchronize(GetPasswordFromUserFile);

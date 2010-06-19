@@ -4,7 +4,7 @@ interface
 
 uses
   Clipbrd, dolphin_db, DBCMenu, ComCtrls, CommCtrl, ImgList, ExtCtrls, StdCtrls,
-  UnitDBKernel, DBTables, db, Windows, Messages, SysUtils, Variants, Classes,
+  UnitDBKernel, db, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, GraphicCrypt, ShellContextMenu, GraphicsCool,
   Dialogs, activex, jpeg, Menus, DmProgress, Buttons, acDlgSelect,  Math,
   DropSource, DropTarget, AppEvnts, WebLink, MPCommonUtilities, uVistaFuncs,

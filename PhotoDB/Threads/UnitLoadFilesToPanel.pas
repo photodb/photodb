@@ -3,7 +3,7 @@ unit UnitLoadFilesToPanel;
 interface
 
 uses
- SysUtils, UnitDBKernel, Classes, Dolphin_DB, DBTables, jpeg, DB,
+ SysUtils, UnitDBKernel, Classes, Dolphin_DB, jpeg, DB,
  Forms, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage, UnitDBCommonGraphics,
  UnitPanelLoadingBigImagesThread, UnitDBDeclare, UnitDBCommon, uLogger;
 

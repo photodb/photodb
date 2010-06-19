@@ -3,7 +3,7 @@ unit createuserunit;
 interface
 
 uses
-  Windows, UnitDBKernel, Math, DB, DBTables, Menus, Dialogs, ExtDlgs,
+  Windows, UnitDBKernel, Math, DB, Menus, Dialogs, ExtDlgs,
   StdCtrls, Controls, ExtCtrls, jpeg, Classes, Messages, SysUtils, Variants, Graphics,
   Forms, Registry, GraphicSelectEx, UnitDBCommon, UnitDBCommonGraphics, uFileUtils,
   uConstants;

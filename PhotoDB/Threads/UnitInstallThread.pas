@@ -3,7 +3,7 @@ unit UnitInstallThread;
 interface
 
 uses
-  Windows, Dialogs, Variants, DB, DBTables, Dolphin_DB, Classes, Sysutils, Forms,
+  Windows, Dialogs, Variants, DB, Dolphin_DB, Classes, Sysutils, Forms,
   ActiveX, UnitGroupsWork, Registry, acDlgSelect, jpeg, Math,
   GraphicSelectEx, CommonDBSupport, UnitINI,uVistaFuncs,
   WindowsIconCacheTools, uLogger, uConstants, uFileUtils;
@@ -820,7 +820,6 @@ begin
      end;
      OutTable.Next;
     Until OutTable.Eof;
-    FlushBuffers(InTable);
     FreeDS(InTable);
     FreeDS(OutTable);
    end;

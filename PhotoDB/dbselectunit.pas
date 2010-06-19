@@ -4,7 +4,7 @@ interface
 
 uses
   Dolphin_DB, Searching, UnitDBKernel, Windows, Messages, SysUtils, Variants,
-  Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, DB, DBTables,
+  Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, DB, 
   ExtCtrls, uVistaFuncs, UnitConvertDBForm, ComCtrls, ComboBoxExDB, ImgList,
   UnitDBFileDialogs, UnitDBDeclare;
 

@@ -17,7 +17,6 @@ uses
   Forms,
   Dialogs,
   DB,
-  DBTables,
   Grids,
   DBGrids,
   Menus,
@@ -422,8 +421,8 @@ begin
  /Logging
  /SQLExec   
  /SQLExecFile
-}
-  CoInitialize(nil);
+}               
+  TW.I.Start('CoInitialize');
 
   ProgramDir := ExtractFileDir(Application.ExeName) + '\';
 
@@ -433,15 +432,7 @@ begin
   EventLog(Format('Program running! [%s]',[ProductName]));
 
   TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
-
-  KernelHandle:=loadlibrary(PChar(ProgramDir+'icons.dll'));
-  if KernelHandle=0 then
-  begin
-   EventLog('icons IS missing -> exit');
-   MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_ICONS_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   Halt;
-  end;
-
+            
   if GetParamStrDBBool('/Logging') then
   begin
    EventLog(Format('Program logging enabled!! [%s]',[ProductName]));
@@ -465,10 +456,11 @@ begin
 
   EventLog(Format('Safe mode = %s',[BoolToStr(SafeMode)]));
 
-  ProgramDir:=GetDirectory(Application.ExeName);  
+  ProgramDir:=GetDirectory(Application.ExeName);
   DBTerminating:=false;     
   DBKernel:=nil;
-
+            
+  TW.I.Start('InitializeDBLoadScript');
   InitializeDBLoadScript;
   LoadingAboutForm:=nil;
   // INITIALIZAING APPLICATION
@@ -477,7 +469,8 @@ begin
   begin
    FolderView:=true;
    UseScripts:=false;
-  end;
+  end;          
+  TW.I.Start('Application.Initialize');
   Application.Initialize;
 
   EventLog(Format('Folder View = %s',[BoolToStr(FolderView)]));
@@ -566,23 +559,30 @@ begin
    end;
    Halt;
   end;
-
+           
+  TW.I.Start('FindRunningVersion');
   if not SafeMode then
   if not GetParamStrDBBool('/NoPrevVersion') then
   FindRunningVersion;
 
   if not GetParamStrDBBool('/NoLogo') then
   begin
+  TW.I.Start('TAboutForm');
    Application.CreateForm(TAboutForm, LoadingAboutForm);
    LoadingAboutForm.FormStyle := fsStayOnTop;
-   TAboutForm(LoadingAboutForm).CloseButton.Visible:=false;
+   TAboutForm(LoadingAboutForm).CloseButton.Visible:=false;  
+  TW.I.Start('LoadingAboutForm.Show');
    LoadingAboutForm.Show;
-   Application.Restore;
+  TW.I.Start('Application.Restore');
+   Application.Restore;     
+  TW.I.Start('Application.ProcessMessages');
    Application.ProcessMessages;
    TAboutForm(LoadingAboutForm).DmProgress1.MaxValue:=8;
   end else LoadingAboutForm:=nil;
 
-
+            
+  TW.I.Start('Kernel.dll');
+  
   //CHECK DEMO MODE ----------------------------------------------------
   {$IFDEF DEBUG}
   EventLog('...CHECK DEMO MODE...');
@@ -594,8 +594,10 @@ begin
    KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
    DBKernel:=TDBKernel.Create;    
    EventLog(':DBKernel.LoadColorTheme');
+   TW.I.Start('DBKernel.LoadColorThem');
    DBKernel.LoadColorTheme;
   end;
+
   if not FolderView then
   if not DBTerminating then
   If IsInstalling then
@@ -620,6 +622,8 @@ begin
    AExplorerFolders := TExplorerFolders.Create;
   end;
 
+   TW.I.Start('GetCIDA');
+
   if not FolderView then
   for k:=1 to 10 do
   begin
@@ -633,7 +637,9 @@ begin
    @f:=Fh;
    p:=f;
   end;
-            
+          
+   TW.I.Start('Initialize');
+
   {$IFDEF DEBUG}
   EventLog('...CHECK GetCIDA...');
   {$ENDIF}
@@ -693,10 +699,17 @@ begin
   end;
 
   EventLog('...Loading menu...');
-  
-  if LoadingAboutForm<>nil then begin TAboutForm(LoadingAboutForm).DmProgress1.Position:=2; if not FolderView then TAboutForm(LoadingAboutForm).LoadRegistrationData; end;
-  //LOGGING ----------------------------------------------------
 
+  if LoadingAboutForm<>nil then
+  begin
+    TAboutForm(LoadingAboutForm).DmProgress1.Position:=2;
+     TW.I.Start('LoadRegistrationData');
+    if not FolderView then
+      TAboutForm(LoadingAboutForm).LoadRegistrationData;
+  end;
+  //LOGGING ----------------------------------------------------
+               
+     TW.I.Start('LoadingAboutForm.Free');
   EventLog('...LOGGING...');
   if not FolderView then
   if not DBInDebug then
@@ -718,6 +731,8 @@ begin
   //DEBUGGING
   //LOGGING_MESSAGE:=true;
   {$ENDIF}
+                   
+  TW.I.Start('CHECK APPDATA DIRECTORY');
 
   //CHECK APPDATA DIRECTORY
   EventLog('...CHECK APPDATA DIRECTORY...');
@@ -740,6 +755,7 @@ begin
   end;
   if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=4;
 
+
   EventLog('Login...');
   if not FolderView then
   If not DBTerminating then
@@ -747,11 +763,14 @@ begin
    EventLog(':DBKernel.FixLoginDB()');
    if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=6;
 
+   TW.I.Start('DBKernel.LogIn');
    DBKernel.LogIn('','',true);
   end;
   //GROUPS CHECK + MENU----------------------------------------------------
                 
   EventLog('...GROUPS CHECK + MENU...');
+         
+  TW.I.Start('IsValidGroupsTable');
 
   if not SafeMode then
   begin
@@ -766,6 +785,8 @@ begin
   end;
   if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=7;
   //DB FAULT ----------------------------------------------------
+         
+   TW.I.Start('CHECKS');
 
   if not FolderView then
   if not DBTerminating then
@@ -890,6 +911,8 @@ begin
 
  //DEMO? ----------------------------------------------------
 
+   TW.I.Start('DEMO');
+
  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=8;
  if not FolderView then
  If not DBTerminating then
@@ -911,22 +934,28 @@ begin
  begin
    LoadingAboutForm.Free;
    LoadingAboutForm:=nil;
- end;
+ end;   
+   TW.I.Start('LoadingAboutForm.FREE');
+
  If DBTerminating then
  Application.ShowMainForm:=False;
  If not DBTerminating then
  begin
   EventLog('Form manager...');
+  TW.I.Start('Form manager...');
   Application.CreateForm(TFormManager, FormManager);
   If not DBTerminating then
   begin
    EventLog('ID Form...');
+   TW.I.Start('ID Form...');
    Application.CreateForm(TIDForm, IDForm);
   end;
  end;
 
  //THEMES AND RUNNING DB ---------------------------------------------
-           
+                 
+  TW.I.Start('THEMES AND RUNNING DB');
+
  If not DBTerminating then
  begin
   EventLog('Run manager...');
@@ -988,5 +1017,4 @@ begin
  end;
 
   Application.Run;
-  CoUnInitialize();
 end.

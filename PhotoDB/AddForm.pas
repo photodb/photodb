@@ -4,7 +4,7 @@ interface
 
 uses
   UnitDBKernel, dolphin_db, dm, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, DB, DBTables, ADODB,
+  Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, DB, ADODB,
   ExtCtrls,  DragDrop, EnumFmt,FileDrop, ActiveX, Menus, SaveWindowPos, shellapi;
 
 type

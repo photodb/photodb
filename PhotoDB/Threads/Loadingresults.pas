@@ -4,7 +4,7 @@ interface
 
 uses
  ThreadManeger, UnitDBKernel, dolphin_db, jpeg, ComCtrls, CommCtrl, windows,
- Classes, Math, DB, DBTables, SysUtils, Controls, Graphics, Dialogs,
+ Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs,
  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
  UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger;

@@ -3,7 +3,7 @@ unit UnitRestoreTableThread;
 interface
 
 uses
-  Windows, Classes, DBTables, Dolphin_DB, Forms, UnitGroupsWork, SysUtils,
+  Windows, Classes, Dolphin_DB, Forms, UnitGroupsWork, SysUtils,
   Language, CommonDBSupport, UnitDBDeclare, uFileUtils, uConstants;
 
 type
@@ -42,79 +42,9 @@ end;
 procedure ThreadRestoreTable.Execute;
 var
   s : String;
-  FTable : TTable;
   CurrentFile, FileName : String;
 begin
  FreeOnTerminate:=True;
-
- if GetDBType(dbname)=DB_TYPE_BDE then
- begin
-  try
-   s:=GetDirectory(Application.ExeName);
-   FormatDir(S);
-   CreateDirA(GetAppDataDirectory+BackUpFolder);
-   FTable:=TTable.Create(nil);
-   FTable.Active:=false;
-   FTable.TableName:=dbname;
-   FTable.Active:=true;
-   CopyTable(FTable,GetAppDataDirectory+BackUpFolder+GetFileNameWithoutExt(dbname)+'[BU].db');
-   FTable.free;
-   FTable:=TTable.Create(nil);
-   FTable.Active:=false;
-   FTable.TableName:=GroupsTableFileNameW(dbname);
-   FTable.Active:=true;
-   CopyTable(FTable,GroupsTableFileNameW(GetAppDataDirectory+BackUpFolder+GetFileNameWithoutExt(dbname)+'[BU].db'));
-   FTable.free;
-  except
-   StrParam:=TEXT_MES_ERROR_CREATE_BACK_UP_DEFAULT_DB;
-   Synchronize(TextOut);
-   Synchronize(DoExit);
-   exit;
-  end;
-  CurrentFile:=dbname;
-  try
-   DeleteFile(CurrentFile);
-  except
-  end;
-  CurrentFile:=ChangeFileExt(CurrentFile,'.mb');
-  try
-   DeleteFile(CurrentFile);
-  except
-  end;
-  CurrentFile:=GroupsTableFileNameW(dbname);
-  try
-   DeleteFile(CurrentFile);
-  except
-  end;
-  CurrentFile:=ChangeFileExt(CurrentFile,'.mb');
-  try
-   DeleteFile(CurrentFile);
-  except
-  end;
-
-  try
-   s:=GetDirectory(Application.ExeName);
-   FormatDir(S);
-   FTable:=TTable.Create(nil);
-   FTable.Active:=false;
-   FTable.TableName:=fOptions.FileName;
-   FTable.Active:=true;
-   CopyTable(FTable,dbname);
-   FTable.free;
-   FTable:=TTable.Create(nil);
-   FTable.Active:=false;
-   FTable.TableName:=GroupsTableFileNameW(fOptions.FileName);
-   FTable.Active:=true;
-   CopyTable(FTable,GroupsTableFileNameW(dbname));
-   FTable.free;
-  except
-   StrParam:=Format(TEXT_MES_ERROR_COPYING_DB,[fOptions.FileName,GetAppDataDirectory+BackUpFolder+GetFileNameWithoutExt(dbname)+'[BU].db']);
-   Sleep(10000);
-   Synchronize(TextOut);
-   Synchronize(DoExit);
-   exit;
-  end;
- end;
 
  if GetDBType(dbname)=DB_TYPE_MDB then
  begin
@@ -165,7 +95,6 @@ begin
    DBKernel.AddDB(GetFileNameWithoutExt(fOptions.FileName),fOptions.FileName,Application.ExeName+',0',false);
    DBKernel.SetDataBase(FileName);
  end;
-
  
  Sleep(2000);
  Synchronize(DoExit);

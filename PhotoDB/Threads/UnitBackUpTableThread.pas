@@ -3,7 +3,7 @@ unit UnitBackUpTableThread;
 interface
 
 uses
-  Classes, DB, Dolphin_DB, DBTables, Forms, SysUtils, uFileUtils, uConstants;
+  Classes, DB, Dolphin_DB, Forms, SysUtils, uFileUtils, uConstants;
 
 type
   BackUpTableThread = class(TThread)
@@ -24,7 +24,7 @@ uses UnitGroupsWork, CommonDBSupport;
 procedure BackUpTableThread.Execute;
 var
   s : String;
-  FTable : TTable;
+//  FTable : TTable;
 begin
  Active:=True;
  FreeOnTerminate:=True;

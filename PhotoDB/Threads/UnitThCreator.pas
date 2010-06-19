@@ -4,7 +4,7 @@ interface
 
 uses
   UnitDBKernel, dm, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, DB, DBTables,
+  Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, DB, 
   ExtCtrls, jpeg, math;
 
 type

@@ -7,10 +7,10 @@ interface
 
 uses  win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
  Rating, ComCtrls, StdCtrls, ExtCtrls, Forms,  Windows, Classes,
- Controls, Graphics, DB, DBTables, SysUtils, JPEG, UnitDBDeclare, IniFiles,
+ Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
    EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
-   uConstants, CommCtrl;
+   uConstants, CommCtrl, uTime;
 
 type
   TCharObject = class (TObject)
@@ -364,7 +364,9 @@ begin
   FImageList.Width:=16;
   FImageList.Height:=16;
   FImageList.BkColor:=clMenu;
+  TW.I.Start('TDBKernel -> Icons DLL');
   InitIconDll;
+  TW.I.Start('TDBKernel -> Icons');
   //TODO : load icon at first access???
   icons[1] := LoadIcon(IconDllInstance,'SHELL');
   icons[2] := LoadIcon(IconDllInstance,'SLIDE_SHOW');
@@ -488,10 +490,13 @@ begin
 
 //disabled items are bad
 //  ConvertTo32BitImageList(FImageList);
+  TW.I.Start('TDBKernel -> ImageList_ReplaceIcon');
   for i:=1 to IconsCount do
   ImageList_ReplaceIcon(FImageList.Handle, -1, icons[i]);
 
+  TW.I.Start('TDBKernel -> InitRegModule');
   InitRegModule;
+  TW.I.Stop;
 end;
 
 function TDBKernel.CreateDBbyName(FileName: string): integer;
@@ -519,7 +524,6 @@ begin
   exit;
  end;
  Result:=1;
- if GetDBType(FileName)=DB_TYPE_BDE then if BDECreateImageTable(FileName) then result:=0;
  if GetDBType(FileName)=DB_TYPE_MDB then
  begin
   if ADOCreateImageTable(FileName) then result:=0;
@@ -2323,7 +2327,14 @@ end;
 
 procedure TDBKernel.InitIconDll;
 begin
- IconDllInstance:=LoadLibrary(PChar(ProgramDir+'icons.dll'));
+  TW.I.Start('icons.dll');
+  IconDllInstance := LoadLibrary(PChar(ProgramDir + 'icons.dll'));
+  if IconDllInstance = 0 then
+  begin
+   EventLog('icons IS missing -> exit');
+   MessageBoxDB(GetActiveFormHandle, TEXT_MES_ERROR_ICONS_DLL, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+   Halt;
+  end;
 end;
 
 procedure TDBKernel.FreeIconDll;

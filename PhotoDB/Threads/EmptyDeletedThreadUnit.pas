@@ -3,15 +3,15 @@ unit EmptyDeletedThreadUnit;
 interface
 
 uses
- dolphin_db, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
- DBTables, SysUtils,ComCtrls, Graphics, jpeg, registry;
+ windows, Messages, CommCtrl, Dialogs, Classes, CommonDBSupport, DBGrids, DB, dolphin_db,
+ SysUtils, ComCtrls, Graphics, jpeg, registry;
 
 type
   EmptyDeletedThread = class(TThread)
   private
-  fQuery : TQuery;
-  fReqQuery : TQuery;
-  fUpdateQuery : TQuery;
+  fQuery : TDataSet;
+  fReqQuery : TDataSet;
+  fUpdateQuery : TDataSet;
   FMaxPosition : integer;
   FPosition : integer;
   procedure UpdateProgress;
@@ -33,11 +33,11 @@ SetFields:string;
 UpdatedComment, UpdatedKeyWords  : string;  UpdatedRating: integer;
 begin
  Priority:=tpIdle;
- fQuery:=TQuery.Create(nil);
- fReqQuery:=TQuery.Create(nil);
- fUpdateQuery:=TQuery.Create(nil);
+ fQuery:=GetQuery;
+ fReqQuery:=GetQuery;
+ fUpdateQuery:=GetQuery;
  fQuery.Active:=false;
- fQuery.sql.text:='SELECT * FROM "'+dbname+'"'+'WHERE Attr = '+inttostr(db_attr_not_exists);
+ SetSQL(fQuery, 'SELECT * FROM "'+dbname+'"'+'WHERE Attr = '+inttostr(db_attr_not_exists));
  fQuery.active:=true;
  fQuery.First;
  FMaxPosition := fQuery.RecordCount;
@@ -47,8 +47,8 @@ begin
   FPosition:=i;
   Synchronize(UpdateProgress);
   fReqQuery.Active:=false;
-  fReqQuery.sql.text:='SELECT * FROM "'+dbname+'"'+' WHERE (StrTh = :str)';// AND (Attr <> '+inttostr(db_attr_not_exists)+')';
-  fReqQuery.params[0].asstring:=fQuery.FieldByName('StrTh').AsString;
+  SetSQL(fReqQuery, 'SELECT * FROM "'+dbname+'"'+' WHERE (StrTh = :str)');
+  SetStrParam(fReqQuery, 0, fQuery.FieldByName('StrTh').AsString);
   fReqQuery.Active:=true;
   if fReqQuery.RecordCount>1 then
   begin
@@ -69,17 +69,19 @@ begin
       UpdatedRating:=fQuery.FieldByName('Rating').AsInteger;
       SetFields:=' Comment = "'+UpdatedComment+'", KeyWords = "'+UpdatedKeyWords+'", Rating = '+inttostr(UpdatedRating);
       fUpdateQuery.Active:=false;
-      fUpdateQuery.SQL.Text:='Update "'+dbname+'"'+' Set '+ SetFields + ' WHERE ID='+inttostr(fReqQuery.FieldByName('ID').AsInteger);
-      fUpdateQuery.ExecSQL;
+
+      SetSQL(fUpdateQuery, 'Update "'+dbname+'"'+' Set '+ SetFields + ' WHERE ID='+inttostr(fReqQuery.FieldByName('ID').AsInteger));
+      ExecSQL(fUpdateQuery);
       fUpdateQuery.Active:=false;
-      fUpdateQuery.SQL.Text:='Delete from "'+dbname+'"'+' Where ID='+inttostr(fQuery.FieldByName('ID').AsInteger);
-      fUpdateQuery.ExecSQL;
+
+      SetSQL(fUpdateQuery, 'Delete from "'+dbname+'"'+' Where ID='+inttostr(fQuery.FieldByName('ID').AsInteger));
+      ExecSQL(fUpdateQuery);
      end;
      if fQuery.FieldByName('FFileName').AsString=fReqQuery.FieldByName('FFileName').AsString then
      begin
       fUpdateQuery.Active:=false;
-      fUpdateQuery.SQL.Text:='Delete from "'+dbname+'"'+' Where ID='+inttostr(fQuery.FieldByName('ID').AsInteger);
-      fUpdateQuery.ExecSQL;
+      SetSQL(fUpdateQuery, 'Delete from "'+dbname+'"'+' Where ID='+inttostr(fQuery.FieldByName('ID').AsInteger));
+      ExecSQL(fUpdateQuery);
      end
     end;
     fReqQuery.Next;
@@ -87,9 +89,9 @@ begin
   end;
   fQuery.Next;
  end;
- fQuery.Free;
- fReqQuery.Free;
- fUpdateQuery.Free;
+ FreeDS(fQuery);   
+ FreeDS(fReqQuery);
+ FreeDS(fUpdateQuery);
 end;
 
 procedure EmptyDeletedThread.UpdateMaxProgress;

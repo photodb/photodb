@@ -355,7 +355,6 @@ begin
     D.Append;
     CopyRecordsW(S,D);
     D.Post;
-    FlushBuffers(D);
    end;
    S.Next;
    if i mod 10=0 then

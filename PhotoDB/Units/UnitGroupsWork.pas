@@ -4,7 +4,7 @@ interface
 
 //{$DEFINE EXT}
 
-uses Windows, DBTables, SysUtils, Graphics,
+uses Windows, SysUtils, Graphics,
 {$IFNDEF EXT}
 Dolphin_DB, UnitDBDeclare,
 {$ENDIF}
@@ -792,7 +792,6 @@ begin
   Result:=False;
   Exit;
  end;
- if GetDBType(FileName)=DB_TYPE_BDE then Result:=BDECreateGroupsTable(FileName);
  if GetDBType(FileName)=DB_TYPE_MDB then Result:=ADOCreateGroupsTable(FileName);
 end;
 

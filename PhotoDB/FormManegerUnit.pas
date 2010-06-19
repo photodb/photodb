@@ -3,11 +3,11 @@ unit FormManegerUnit;
 interface
 
 uses
-  GraphicCrypt, DB, DBTables, UnitINI, UnitTerminationApplication,
+  GraphicCrypt, DB, UnitINI, UnitTerminationApplication,
   ThreadManeger, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms,  uVistaFuncs, UnitDBNullQueryThread, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
-  UnitDBCommon, uLogger, uConstants, uFileUtils;
+  UnitDBCommon, uLogger, uConstants, uFileUtils, uTime;
 
 type
   TFormManager = class(TForm)
@@ -167,6 +167,7 @@ begin
  begin
 
  // DBVersion:=DBKernel.TestDBEx(dbname,true);
+ //TODO: IN THREAD!!!
   DBKernel.ReadDBOptions;
 {  if DBVersion<0 then
   begin
@@ -265,8 +266,11 @@ begin
   UnformatDir(Directory);
  end;
 
+ TW.I.Start('CheckFileExistsWithMessageEx - Directory');
+
  If not ((UpcaseAll(ParamStr1)='/EXPLORER') or CheckFileExistsWithMessageEx(Directory,true)) then
- begin
+ begin         
+  TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
   if CheckFileExistsWithMessageEx(ParamStr1,false) then
   begin
    if not ExtInMask(SupportedExt,GetExt(ParamStr1)) then

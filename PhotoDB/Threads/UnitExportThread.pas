@@ -144,7 +144,6 @@ begin
    TableOut.Next;
    if StopExport then break;
   Until TableOut.Eof;
-  FlushBuffers(TableIn);
 
   FreeDS(TableOut);
   FreeDS(TableIn);

@@ -5,7 +5,7 @@ interface
  {$DEFINE EASYLISTVIEW}
 
 uses
- ThreadManeger, Jpeg, DB, DBTables, GraphicEx, ExplorerTypes, ImgList,
+ ThreadManeger, Jpeg, DB, GraphicEx, ExplorerTypes, ImgList,
  UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, windows, ComCtrls,
  Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
  Dialogs, Controls, ComObj, ActiveX, ShlObj,CommCtrl, Registry,
@@ -184,7 +184,6 @@ type
 
   var
       AExplorerFolders : TExplorerFolders;
-      ASession : TSession;
       UpdaterCount : integer = 0;
       ExplorerUpdateBigImageThreadsCount : integer = 0;
 

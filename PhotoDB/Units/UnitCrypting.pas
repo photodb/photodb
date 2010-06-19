@@ -2,7 +2,7 @@ unit UnitCrypting;
 
 interface
 
-uses dolphin_db, GraphicCrypt, Language, DB, DBTables, Windows, SysUtils,
+uses dolphin_db, GraphicCrypt, Language, DB, Windows, SysUtils,
      UnitDBKernel, Classes, Win32Crc, UnitDBDeclare;
 
 const
@@ -29,34 +29,18 @@ uses JPEG, CommonDBSupport;
 
 function CryptDBRecordByID(ID : integer; Password : String) : integer;
 var
-  Table : TTable;
   Query : TDataSet;
   jpeg : TJPEGImage;
   ms : TMemoryStream;
 begin
  Result:=CRYPT_RESULT_UNDEFINED;
- if GetDBType=DB_TYPE_BDE then
- begin
-  Table := TTable.Create(nil);
-  Table.TableName:=DBName;
-  Table.Active:=true;
-  if Table.Locate('ID',ID,[loPartialKey]) then
-  begin
-   Table.Edit;
-   if CryptBlobStream(Table.FieldByName('thum'),Password) then
-   Result:=CRYPT_RESULT_OK;
-   Table.Post;
-  end;
-  Table.FlushBuffers;
-  Table.free;
-  Result:=CRYPT_RESULT_OK;
- end else
+ if GetDBType=DB_TYPE_MDB then
  begin
   Query:=GetQuery;
   SetSQL(Query,'Select thum from '+GetDefDBName+'  where ID = '+IntToStr(ID));
   Query.Open;
   jpeg:=TJPEGImage.Create;
-  jpeg.Assign(Query.FieldByName('thum'));  
+  jpeg.Assign(Query.FieldByName('thum'));
   ms:=CryptGraphicImage(jpeg,Password);
   jpeg.Free;
   SetSQL(Query,'Update '+GetDefDBName+' Set thum=:thum where ID = '+IntToStr(ID));
@@ -70,29 +54,13 @@ end;
 
 function ResetPasswordDBRecordByID(ID : integer; Password : String) : integer;
 var
-  Table : TTable;
   Query : TDataSet;
   jpeg : TJPEGImage;
 begin
  Result:=CRYPT_RESULT_UNDEFINED;
  try
 
-  if GetDBType=DB_TYPE_BDE then
-  begin
-   Table := TTable.Create(nil);
-   Table.TableName:=DBName;
-   Table.Active:=true;
-   if Table.Locate('ID',ID,[loPartialKey]) then
-   begin
-    Table.Edit;
-    if ResetPasswordInCryptBlobStreamJPG(Table.FieldByName('thum'),Password) then
-    Result:=CRYPT_RESULT_OK;
-    Table.Post;
-   end;
-   Table.FlushBuffers;
-   Table.free;
-   Result:=CRYPT_RESULT_OK;
-  end else
+  if GetDBType=DB_TYPE_MDB then
   begin
    Query:=GetQuery;
    SetSQL(Query,'Select thum from '+GetDefDBName+'  where ID = '+IntToStr(ID));

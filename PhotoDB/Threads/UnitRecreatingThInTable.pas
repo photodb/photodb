@@ -256,7 +256,6 @@ begin
   //until files present in list
   GetCryptFileList;
  until fCryptFileList.Count=0;
- FlushBuffers(Table);
  FreeDS(Table);
 
  FIntParam:=LINE_INFO_PROGRESS;

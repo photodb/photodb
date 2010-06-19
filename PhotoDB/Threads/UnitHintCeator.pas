@@ -6,7 +6,7 @@ uses
   dolphin_db, UnitDBKernel, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, RAWImage,
-  ExtCtrls, jpeg, db, dbtables, GraphicCrypt, UnitDBCommon;
+  ExtCtrls, jpeg, db, GraphicCrypt, UnitDBCommon;
 
 type
   HintCeator = class(TThread)

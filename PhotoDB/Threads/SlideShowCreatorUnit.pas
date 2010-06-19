@@ -5,7 +5,7 @@ interface
 uses
   UnitUpdateDBThread, UnitDBKernel, Windows, Messages, SysUtils, Variants,
   Classes, Graphics, Controls, Forms, Math,
-  Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, DB, DBTables,
+  Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, DB, 
   ExtCtrls, jpeg, GraphicCrypt, GIFImage;
 
 type TEndCreateObject = Class(TObject)

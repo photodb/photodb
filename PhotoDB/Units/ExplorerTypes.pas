@@ -3,7 +3,7 @@ unit ExplorerTypes;
 interface
 
 Uses UnitDBKernel, Forms, SysUtils, Windows, Graphics,  Dolphin_DB, 
-     Messages, Classes, DB, DBTables, GraphicsCool, jpeg, wfsU,
+     Messages, Classes, DB, GraphicsCool, jpeg, wfsU,
      UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics;
 
 Type

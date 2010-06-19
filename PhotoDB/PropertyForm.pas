@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, ExplorerTypes, UnitGroupsWork, UnitUpdateDB, dolphin_db, UnitDBKernel,
-  Forms, DBCMenu, Menus, DB, DBTables, StdCtrls, Controls, Graphics, Classes,
+  Forms, DBCMenu, Menus, DB, StdCtrls, Controls, Graphics, Classes,
   ExtCtrls, ActiveX, ShellAPI, Messages, SysUtils, Variants, UnitPasswordForm,
   Dialogs, JPEG, Rating, ComCtrls, AppEvnts, Effects, ImgList, DropTarget,
   DropSource, SaveWindowPos, Grids, ValEdit, TabNotBk, GraphicCrypt, DateUtils,

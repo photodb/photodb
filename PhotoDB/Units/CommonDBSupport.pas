@@ -7,9 +7,9 @@ interface
 uses
 {$IFNDEF DEBUG}
 Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
-UnitDBDeclare, uLogger,
+UnitDBDeclare, uLogger, uTime,
 {$ENDIF}
- Windows, ADODB, SysUtils, DB, DBTables, ActiveX, Variants, Classes, ComObj,
+ Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
  UnitINI, BDE;
 
 const
@@ -107,12 +107,9 @@ procedure AssignParams(S,D : TDataSet);
 function GetDefDBName : string;
 function GetBlobStream(F : TField; Mode : TBlobStreamMode) : TStream;
 procedure AssignParam(Query : TDataSet; index : integer; Value : TPersistent);
-procedure FlushBuffers(DS : TDataSet);
 
-function BDECreateImageTable(TableName : string) : boolean;
 function ADOCreateImageTable(TableName : string) : boolean;
 
-function BDECreateGroupsTable(TableName : string) : boolean;
 function ADOCreateGroupsTable(TableName : string) : boolean;
 
 //ADO Only
@@ -138,38 +135,28 @@ implementation
  uses UnitGroupsWork;
 //{$ENDIF}
 
-procedure FlushBuffers(DS : TDataSet);
-begin
- if (DS is TTable) then (DS as TTable).FlushBuffers;
-end;
-
 function GetBlobStream(F : TField; Mode : TBlobStreamMode) : TStream;
 begin
  Result:=nil;
- if (F is TBlobField) and (F.DataSet is TQuery) then Result:=TBlobStream.Create(TBlobField(F),Mode);
  if (F is TBlobField) and (F.DataSet is TADOQuery) then Result:=TADOBlobStream.Create(TBlobField(F),Mode);
- if (F is TBlobField) and (F.DataSet is TTable) then Result:=TBlobStream.Create(TBlobField(F),Mode);
  if (F is TBlobField) and (F.DataSet is TADODataSet) then Result:=TADOBlobStream.Create(TBlobField(F),Mode);
 end;
 
-procedure AssignParams(S,D : TDataSet);
+procedure AssignParams(S, D : TDataSet);
 begin
  if (S is TADOQuery) then (D as TADOQuery).Parameters.Assign((S as TADOQuery).Parameters);
- if (S is TQuery) then (D as TQuery).Params.Assign((S as TQuery).Params);
 end;
 
 function GetQueryText(Query : TDataSet) : string;
 begin
  Result:='';
  if (Query is TADOQuery) then Result:=(Query as TADOQuery).SQL.Text;
- if (Query is TQuery) then Result:=(Query as TQuery).SQL.Text;
 end;
 
 function QueryParamsCount(Query : TDataSet) : integer;
 begin
  Result:=0;
  if (Query is TADOQuery) then Result:=(Query as TADOQuery).Parameters.Count;
- if (Query is TQuery) then Result:=(Query as TQuery).Params.Count;
 end;
 
 procedure LoadParamFromStream(Query : TDataSet; index : integer; Stream : TStream; FT : TFieldType);
@@ -177,45 +164,37 @@ begin
  Stream.Seek(0,soFromBeginning);
  if (Query is TADOQuery) then
    (Query as TADOQuery).Parameters[index].LoadFromStream(Stream,FT);
- if (Query is TQuery) then
-   (Query as TQuery).Params[index].LoadFromStream(Stream,FT);
 end;
 
 procedure AssignParam(Query : TDataSet; index : integer; Value : TPersistent);
 begin
  if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Assign(Value);
- if (Query is TQuery) then (Query as TQuery).Params[index].Assign(Value);
 end;
 
 function GetBoolParam(Query : TDataSet; index : integer) : boolean;
 begin
  Result:=false;
  if (Query is TADOQuery) then Result:=(Query as TADOQuery).Parameters[index].Value;
- if (Query is TQuery) then Result:=(Query as TQuery).Params[index].AsBoolean;
 end;
 
 procedure SetBoolParam(Query : TDataSet; index : integer; Bool : Boolean);
 begin
  if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=Bool;
- if (Query is TQuery) then (Query as TQuery).Params[index].AsBoolean:=Bool;
 end;
 
 procedure SetDateParam(Query : TDataSet; index : integer; Date : TDateTime);
 begin
  if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=Date;
- if (Query is TQuery) then (Query as TQuery).Params[index].AsDateTime:=Date;
 end;
 
 procedure SetIntParam(Query : TDataSet; index : integer; int : integer);
 begin
  if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=int;
- if (Query is TQuery) then (Query as TQuery).Params[index].AsInteger:=int;
 end;
 
 procedure SetStrParam(Query : TDataSet; index : integer; Str : String);
 begin
  if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=Str;
- if (Query is TQuery) then (Query as TQuery).Params[index].AsString:=Str;
 end;
 
 function GetDBType : integer;
@@ -255,7 +234,6 @@ end;
 procedure ExecSQL(SQL : TDataSet);
 begin
  if (SQL is TADOQuery) then (SQL as TADOQuery).ExecSQL;
- if (SQL is TQuery) then (SQL as TQuery).ExecSQL;
 end;
 
 procedure SetSQL(SQL : TDataSet; SQLText : String);
@@ -270,8 +248,7 @@ begin
     (SQL as TADOQuery).SQL.Text:=SQLText;
     (SQL as TADOQuery).Parameters.ParseSQL((SQL as TADOQuery).SQL.Text, true);
    end;
-   if (SQL is TQuery) then (SQL as TQuery).SQL.Text:=SQLText;
-   break;
+   Break;
   except  
    on e : Exception do
    begin
@@ -286,7 +263,6 @@ function ActiveSQL(SQL : TDataSet; Active : boolean) : boolean;
 begin
  try
   if (SQL is TADOQuery) then (SQL as TADOQuery).Active:=Active;
-  if (SQL is TQuery) then (SQL as TQuery).Active:=Active;
  except
   on e : Exception do
   begin
@@ -302,7 +278,6 @@ function ActiveTable(Table : TDataSet; Active : boolean) : boolean;
 begin
  try
  if (Table is TADODataSet) then (Table as TADODataSet).Active:=Active;
- if (Table is TTable) then (Table as TTable).Active:=Active;
  except
   on e : Exception do
   begin
@@ -333,11 +308,6 @@ begin
   SetSQL(QueryD,(QueryS as TADOQuery).SQL.Text);
   (QueryS as TADOQuery).Parameters.Assign((QueryD as TADOQuery).Parameters);
  end;
- if (QueryS is TQuery) then
- begin
-  (QueryD as TQuery).SQL.Assign((QueryS as TQuery).SQL);
-  (QueryD as TQuery).Params.Assign((QueryS as TQuery).Params);
- end;
 end;
 
 function GetQuery(TableName : string) : TDataSet;
@@ -349,10 +319,6 @@ function GetQuery(TableName : string; TableType : integer) : TDataSet;
 begin
  Result:=nil;
  if TableType=DB_TYPE_UNKNOWN then TableType:=GetDBType;
- if TableType=DB_TYPE_BDE then
- begin
-  Result:=TQuery.Create(nil);
- end;
  if TableType=DB_TYPE_MDB then
  begin
   CoInitialize(nil);
@@ -655,52 +621,6 @@ begin
   raise Exception.Create('DAO engine could not be initialized'); 
 end; 
 
-function BDECreateImageTable(TableName : string) : boolean;
-var
-  SQL : string;
-  fQuery : TQuery;
-begin
- fQuery:=TQuery.Create(nil);
- sql:= 'CREATE TABLE "'+TableName+'" ( '+
-       'ID  AUTOINC , '+
-       'Name CHAR(255) , '+
-       'FFileName BLOB(240,1) , ' +
-       'Comment BLOB(240,1) , ' +
-       'IsDate BOOLEAN , ' +
-       'DateToAdd Date , ' +
-       'Owner CHAR(255) , '+
-       'Rating INTEGER , ' +
-       'Thum BLOB(1,2) , '+   
-       'FileSize INTEGER , '+
-       'KeyWords BLOB(240,1) , '+
-       'Groups BLOB(240,1) , '+
-       'StrTh CHAR(255) , '+
-       'Attr INTEGER , ' +
-       'Collection CHAR(255) , '+
-       'Access INTEGER , '+
-       'Width INTEGER , '+
-       'Height INTEGER , '+
-       'Colors INTEGER , '+
-       'Include BOOLEAN , '+
-       'Links BLOB(1,1) , '+
-       'aTime TIME , '+
-       'IsTime BOOLEAN , ' +
-       'Rotated INTEGER )';
- fQuery.sql.text:=sql;
- try
-  fQuery.ExecSQL;
- except
-  on e : Exception do
-  begin
-   EventLog(':BDECreateImageTable() throw exception: '+e.Message);
-   Result:=false;
-   exit;
-  end;
- end;
- fQuery.free;
- Result:=true;
-end;
-
 function ADOCreateImageTable(TableName : string) : boolean;
 var
   SQL : string;
@@ -848,8 +768,6 @@ var
   Connection : TADOConnection;
 begin
  if DS=nil then exit;
- if DS is TQuery then begin DS.Free; DS:=nil; exit; end;
- if DS is TTable then begin DS.Free; DS:=nil; exit; end;
  if DS is TADOQuery then begin Connection:=(DS as TADOQuery).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADOQuery).Connection.Free;} exit; end;
  if DS is TADODataSet then begin Connection:=(DS as TADODataSet).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADODataSet).Connection.Free;} exit; end;
 end;
@@ -906,26 +824,6 @@ begin
       Result := '';  
   finally
   end;
-end;
-
-function dgPackDbaseTable(tLog: TTable): DBIResult;
-var 
-  TblDesc: CRTblDesc; 
-  Dir: string;
-  hDb: hDbiDb;
-begin
- tLog.Active := False;
- SetLength(Dir, dbiMaxNameLen + 1);
- DbiGetDirectory(tLog.DBHandle, False, PChar(Dir));
- SetLength(Dir, StrLen(PChar(Dir)));
- DbiOpenDatabase(nil, nil, dbiReadWrite, dbiOpenExcl, nil, 0, nil, nil, hDb);
- DbiSetDirectory(hDb, PChar(Dir));
- FillChar(TblDesc, sizeof(CRTblDesc), 0);
- StrPCopy(TblDesc.szTblName, tLog.TableName);
- StrCopy(TblDesc.szTblType, szParadox);
- TblDesc.bPack := TRUE;
- Result:=DbiDoRestructure(hDb, 1, @TblDesc, nil, nil, nil, False);
- DbiCloseDatabase(hDb);
 end;
 
 procedure CompactDatabase_JRO(DatabaseName:string;DestDatabaseName:string='';Password:string='');
@@ -991,6 +889,7 @@ begin
  if DBLoadInitialized then exit;
  {$IFNDEF DEBUG}
  begin
+  TW.I.Start('InitializeDB -> aScript');
     aScript := TScript.Create('InitializeDBLoadScript');
     try
     AddScriptFunction(aScript.PrivateEnviroment,'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @UnitScripts.ReadFile);
@@ -999,6 +898,7 @@ begin
   SetNamedValue(aScript,'$InitialString',DBFConnectionString);
   SetNamedValue(aScript,'$Provider',MDBProvider);
   LoadScript:='';
+  TW.I.Start('InitializeDB -> Load.dbini');
   try
    aFS := TFileStream.Create(ProgramDir+'scripts\Load.dbini',fmOpenRead);
    SetLength(LoadScript,aFS.Size);
@@ -1012,18 +912,21 @@ begin
   except
    on e : Exception do EventLog(':InitializeDBLoadScript() at Loading Script exception : '+e.Message);
   end;
+  TW.I.Start('InitializeDB -> ExecuteScript');
   try
-   ExecuteScript(nil,aScript,LoadScript,LoadInteger,nil);
+   ExecuteScript(nil, aScript, LoadScript, LoadInteger, nil);
   except
    on e : Exception do EventLog(':InitializeDBLoadScript() at Executing Script exception : '+e.Message);
-  end;
-  PortableWork:=AnsiUpperCase(GetNamedValueString(aScript,'$PortableWork'))='TRUE'; 
+  end;        
+  TW.I.Start('InitializeDB -> Read vars');
+  PortableWork:=AnsiUpperCase(GetNamedValueString(aScript,'$PortableWork'))='TRUE';
   DBFConnectionString:=GetNamedValueString(aScript,'$InitialString');
   MDBProvider:=GetNamedValueString(aScript,'$Provider');
   finally
     aScript.Free;
   end;
- end;
+ end;   
+  TW.I.Stop;
  EventLog(':InitializeDBLoadScript() return true');
  DBLoadInitialized:=true;
  {$ENDIF}

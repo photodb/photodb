@@ -4,7 +4,7 @@ interface
 
 uses
  UnitDBKernel, forms,dm, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
- DBTables, SysUtils,ComCtrls, Graphics, jpeg, StdCtrls, dolphin_db;
+ SysUtils,ComCtrls, Graphics, jpeg, StdCtrls, dolphin_db;
 
 type
   AddDataThread = class(TThread)

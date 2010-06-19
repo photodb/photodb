@@ -4,12 +4,12 @@ interface
 
 //{$DEFINE EXT}
 
-uses win32crc, Windows, SysUtils, Classes, Graphics,
+uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
      JPEG, PngImage, PngDef, TiffImageUnit,
 {$IFNDEF EXT}
      GraphicEx, RAWImage,
 {$ENDIF}
-     GIFImage, DBTables, DB;
+     GIFImage, DB;
 
 //{$DEFINE DBDEBUG}
 
@@ -848,9 +848,7 @@ begin
  for i:=0 to Length(x)-1 do
  x[i]:=x[i] xor (TMagicByte(GraphicHeaderV1.Magic)[i mod 4] xor Byte(Pass[i mod Lpass+1])) xor xcos[i mod 1024];
 
-
-
- FBS:=TBlobStream.Create(TBlobField(DF),bmWrite);
+ FBS:=TADOBlobStream.Create(TBlobField(DF),bmWrite);
  GraphicHeader.ID:='.PHDBCRT';
  GraphicHeader.Version:=1;
  GraphicHeader.DBVersion:=0;

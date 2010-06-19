@@ -4,7 +4,7 @@ interface
 
 uses
   UnitDBKernel, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
-  DBTables, SysUtils,ComCtrls, Graphics, jpeg, UnitINI, Exif, DateUtils,
+  SysUtils,ComCtrls, Graphics, jpeg, UnitINI, Exif, DateUtils,
   CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants;
 
 type
@@ -210,7 +210,6 @@ begin
      FTable.Edit;
      FTable.FieldByName('FFileName').AsString:=AnsiLowerCase(s);
      FTable.Post;
-     FlushBuffers(FTable);
     end else
     begin
      SetQuery:=GetQuery;
@@ -242,7 +241,6 @@ begin
       FTable.FieldByName('IsDate').AsBoolean:=True;
       FTable.FieldByName('IsTime').AsBoolean:=True;
       FTable.Post;
-      FlushBuffers(FTable);
      end else
      begin
 

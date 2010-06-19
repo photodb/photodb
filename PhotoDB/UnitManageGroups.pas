@@ -5,7 +5,7 @@ interface
 uses
   Dolphin_DB, UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
-  ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, DBTables, Menus, Math,
+  ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
   UnitDBDeclare;
 

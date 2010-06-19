@@ -4,10 +4,10 @@ interface
 
 uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-      Dialogs, DB, DBTables, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
+      Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
       ImgList, ComCtrls, DBCtrls, JPEG, DmProgress, ClipBrd, win32crc,
       SaveWindowPos, ExtDlgs, ToolWin, DbiProcs, DbiErrs, Exif, UnitDBDeclare,
-      DbiTypes, acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
+      acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants;
@@ -532,7 +532,6 @@ function GetHardwareString: string;
 function XorStrings(s1,s2:string):string;
 function SetStringToLengthWithNoData(s:string;n:integer):string;
 function BitmapToString(bit : tbitmap):string;
-function CopyTable(tbl: TTable; Dest: string): boolean;
 function Delnakl(s:string):string;
 function GetIdByFileName(FileName : string) : integer;
 function GetFileNameById(ID : integer) : string;
@@ -3085,27 +3084,6 @@ begin
  b.Free;
 end;
 
-function CopyTable(tbl: TTable; dest: string): boolean;
-var 
-  psrc, pdest: array[0..1024] of char;
-  rslt: DBIResult;
-begin 
-  Result := False;
-  StrPCopy(pdest, dest); 
-  with tbl do 
-  begin 
-    try
-      DisableControls; 
-      StrPCopy(psrc, TableName); 
-      rslt := DbiCopyTable(DBHandle, True, psrc, nil, pdest);
-      Result := (rslt = 0); 
-    finally 
-      Refresh; 
-      EnableControls; 
-    end; 
-  end; 
-end;
-
 function PixelsToText(Pixels : integer): String;
 begin
  If not DBkernel.ProgramInDemoMode then
@@ -4378,7 +4356,6 @@ begin
     Table.Edit;
     Table.FieldByName('Links').AsString:=Link;
     Table.Post;
-    FlushBuffers(Table);
    end;
   end;
   FreeDS(Table);
@@ -4653,7 +4630,6 @@ begin
   end;
  finally
   Res.Jpeg.Free;
-  FlushBuffers(Table);
   FreeDS(Table);
  end;
  try

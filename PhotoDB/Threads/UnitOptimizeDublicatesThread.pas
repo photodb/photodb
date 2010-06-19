@@ -420,7 +420,6 @@ begin
 
   Table.Next;
  Until Table.Eof;
- FlushBuffers(Table);
  FreeDS(Table);
  Sleep(5000);
  Synchronize(DoExit);
