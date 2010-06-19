@@ -34,7 +34,7 @@ Type
   Type
     ARGB32=array [0..32677] of TRGB32;
     PARGB32=^ARGB32;  
-
+  PRGB32 = ^TRGB32;
   PARGB32Array = array of PARGB32;
 
 

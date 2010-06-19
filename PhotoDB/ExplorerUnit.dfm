@@ -5082,7 +5082,6 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 845
       Height = 21
-      AutoSize = True
       ButtonHeight = 19
       ButtonWidth = 48
       Color = clInactiveCaption
@@ -5090,7 +5089,6 @@ object ExplorerForm: TExplorerForm
       List = True
       ParentColor = False
       ParentShowHint = False
-      ShowCaptions = True
       ShowHint = True
       TabOrder = 0
       Transparent = True
@@ -5106,7 +5104,7 @@ object ExplorerForm: TExplorerForm
         OnClick = SpeedButton1Click
       end
       object ToolButton2: TToolButton
-        Left = 34
+        Left = 27
         Top = 2
         AutoSize = True
         DropdownMenu = PopupMenuForward
@@ -5115,14 +5113,14 @@ object ExplorerForm: TExplorerForm
         OnClick = SpeedButton2Click
       end
       object ToolButton3: TToolButton
-        Left = 68
+        Left = 54
         Top = 2
         AutoSize = True
         ImageIndex = 1
         OnClick = SpeedButton3Click
       end
       object ToolButton4: TToolButton
-        Left = 87
+        Left = 66
         Top = 2
         Width = 8
         Caption = 'ToolButton3'
@@ -5130,7 +5128,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton5: TToolButton
-        Left = 95
+        Left = 74
         Top = 2
         AutoSize = True
         Caption = 'Cut'
@@ -5138,7 +5136,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Cut3Click
       end
       object ToolButton6: TToolButton
-        Left = 127
+        Left = 86
         Top = 2
         AutoSize = True
         Caption = 'Copy'
@@ -5146,7 +5144,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Copy3Click
       end
       object ToolButton7: TToolButton
-        Left = 167
+        Left = 98
         Top = 2
         AutoSize = True
         Caption = 'Paste'
@@ -5154,7 +5152,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Paste3Click
       end
       object ToolButton17: TToolButton
-        Left = 210
+        Left = 110
         Top = 2
         Width = 8
         Caption = 'ToolButton17'
@@ -5162,14 +5160,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton8: TToolButton
-        Left = 218
+        Left = 118
         Top = 2
         AutoSize = True
         ImageIndex = 6
         OnClick = DeleteLinkClick
       end
       object ToolButton10: TToolButton
-        Left = 237
+        Left = 130
         Top = 2
         Width = 8
         Caption = 'ToolButton10'
@@ -5177,7 +5175,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButtonView: TToolButton
-        Left = 245
+        Left = 138
         Top = 2
         AutoSize = True
         DropdownMenu = PopupMenu5
@@ -5186,7 +5184,7 @@ object ExplorerForm: TExplorerForm
         OnClick = ToolButtonViewClick
       end
       object ToolButton11: TToolButton
-        Left = 279
+        Left = 165
         Top = 2
         Width = 8
         Caption = 'ToolButton11'
@@ -5194,14 +5192,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton13: TToolButton
-        Left = 287
+        Left = 173
         Top = 2
         AutoSize = True
         ImageIndex = 8
         OnClick = ToolButton13Click
       end
       object ToolButton14: TToolButton
-        Left = 306
+        Left = 185
         Top = 2
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
@@ -5210,7 +5208,7 @@ object ExplorerForm: TExplorerForm
         OnClick = ToolButton14Click
       end
       object ToolButton20: TToolButton
-        Left = 340
+        Left = 212
         Top = 2
         Width = 8
         Caption = 'ToolButton20'
@@ -5218,14 +5216,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton18: TToolButton
-        Left = 348
+        Left = 220
         Top = 2
         AutoSize = True
         ImageIndex = 12
         OnClick = ToolButton18Click
       end
       object ToolButton12: TToolButton
-        Left = 367
+        Left = 232
         Top = 2
         Width = 8
         Caption = 'ToolButton12'
@@ -5233,14 +5231,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton15: TToolButton
-        Left = 375
+        Left = 240
         Top = 2
         AutoSize = True
         ImageIndex = 10
         OnClick = GoToSearchWindow1Click
       end
       object ToolButton16: TToolButton
-        Left = 394
+        Left = 252
         Top = 2
         Width = 8
         Caption = 'ToolButton16'
@@ -5248,7 +5246,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton19: TToolButton
-        Left = 402
+        Left = 260
         Top = 2
         AutoSize = True
         Caption = 'Options'

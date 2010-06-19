@@ -328,28 +328,48 @@ end;
 
 procedure LoadPNGImage32bit(PNG : TPNGGraphic; Bitmap : TBitmap; BackGroundColor : TColor);
 var
-  i, j : integer;
-  p : PARGB;
-  pl : PARGB32;
-  r,g,b : byte;
+  I, J : Integer;
+  DeltaS, DeltaD : Integer;
+  AddrLineS, AddrLineD : Integer;
+  AddrS, AddrD : Integer;
+  R, G, B : Integer;
+  W1, W2 : Integer;
+  S : PRGB32;
+  D : PRGB;
 begin
- r:=GetRValue(BackGroundColor);
- g:=GetGValue(BackGroundColor);
- b:=GetBValue(BackGroundColor);
- Bitmap.Width:=PNG.Width;
- Bitmap.Height:=PNG.Height;
- Bitmap.PixelFormat:=pf24bit;
- for i:=0 to PNG.Height-1 do
- begin
-  p:=Bitmap.ScanLine[i];
-  pl:=PNG.ScanLine[i];
-  for j:=0 to PNG.Width-1 do
+  R := GetRValue(BackGroundColor);
+  G := GetGValue(BackGroundColor);
+  B := GetBValue(BackGroundColor);
+  if Bitmap.PixelFormat <> pf24bit then
+    Bitmap.PixelFormat:=pf24bit;
+  Bitmap.Width:=PNG.Width;
+  Bitmap.Height:=PNG.Height;
+
+  AddrLineS := Integer(PNG.ScanLine[0]);
+  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+
+  for i:=0 to PNG.Height-1 do
   begin
-   p[j].r:=Round(pl[j].r*(pl[j].l/255)+r*(1-pl[j].l/255));
-   p[j].g:=Round(pl[j].g*(pl[j].l/255)+g*(1-pl[j].l/255));
-   p[j].b:=Round(pl[j].b*(pl[j].l/255)+b*(1-pl[j].l/255));
+    AddrS := AddrLineS;
+    AddrD := AddrLineD;
+    for j:=0 to PNG.Width-1 do
+    begin
+      S := PRGB32(AddrS);
+      D := PRGB(AddrD);
+      W1 := S.L;
+      W2 := 255 - W1;
+      D.R := (R * W2 + S.R * W1 + 127) div 255;
+      D.G := (G * W2 + S.G * W1 + 127) div 255;
+      D.B := (B * W2 + S.B * W1 + 127) div 255;
+
+      AddrS := AddrS + 4;
+      AddrD := AddrD + 3;
+    end;
+    AddrLineS := AddrLineS + DeltaS;
+    AddrLineD := AddrLineD + DeltaD;
   end;
- end;
 end;
 
 procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
@@ -380,23 +400,24 @@ var
   pl : PARGB32;
   r,g,b : byte;
 begin
- r:=GetRValue(BackGroundColor);
- g:=GetGValue(BackGroundColor);
- b:=GetBValue(BackGroundColor);
- Bitmap.Width:=BMP.Width;
- Bitmap.Height:=BMP.Height;
- Bitmap.PixelFormat:=pf24bit;
- for i:=0 to BMP.Height-1 do
- begin
-  p:=Bitmap.ScanLine[i];
-  pl:=BMP.ScanLine[i];
-  for j:=0 to BMP.Width-1 do
+  r:=GetRValue(BackGroundColor);
+  g:=GetGValue(BackGroundColor);
+  b:=GetBValue(BackGroundColor);
+  Bitmap.Width:=BMP.Width;
+  Bitmap.Height:=BMP.Height;
+  Bitmap.PixelFormat:=pf24bit;
+
+  for i:=0 to BMP.Height-1 do
   begin
-   p[j].r:=Round(pl[j].r*(pl[j].l/255)+r*(1-pl[j].l/255));
-   p[j].g:=Round(pl[j].g*(pl[j].l/255)+g*(1-pl[j].l/255));
-   p[j].b:=Round(pl[j].b*(pl[j].l/255)+b*(1-pl[j].l/255));
+    p:=Bitmap.ScanLine[i];
+    pl:=BMP.ScanLine[i];
+    for j:=0 to BMP.Width-1 do
+    begin
+      p[j].r:=Round(pl[j].r*(pl[j].l/255)+r*(1-pl[j].l/255));
+      p[j].g:=Round(pl[j].g*(pl[j].l/255)+g*(1-pl[j].l/255));
+      p[j].b:=Round(pl[j].b*(pl[j].l/255)+b*(1-pl[j].l/255));
+    end;
   end;
- end;
 end;
 
 procedure LoadGIFImage32bit(GIF : TGIFSubImage; Bitmap : TBitmap; BackGroundColorIndex : integer; BackGroundColor : TColor);

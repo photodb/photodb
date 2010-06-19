@@ -12,7 +12,7 @@ uses
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
  EasyListview, GraphicsCool, uVistaFuncs,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
- uThreadEx, uAssociatedIcons, uLogger;
+ uThreadEx, uAssociatedIcons, uLogger, uTime;
 
 type
  TExplorerViewInfo = record
@@ -127,8 +127,8 @@ type
     procedure ReplaceInfoInExplorer;
     procedure ReplaceThumbImageToFolder;
     Procedure MakeFolderBitmap;
-    Procedure DrawFolderImageBig;
-    procedure DrawFolderImageWithXY;
+    Procedure DrawFolderImageBig(Bitmap : TBitmap);
+    procedure DrawFolderImageWithXY(Bitmap : TBitmap);
     procedure ReplaceFolderImage;
     procedure AddFileToExplorer;
     procedure AddFile;
@@ -341,7 +341,7 @@ begin
   if not DirectoryExists(FFolder) then
   begin
    StrParam:=TEXT_MES_ERROR_OPENING_FOLDER;  
-   SynchronizeEx(EndUpdate);
+   //SynchronizeEx(EndUpdate);
    SynchronizeEx(ShowMessage_);
    ShowInfo('',1,0);
    SynchronizeEx(ExplorerBack);
@@ -1248,12 +1248,10 @@ begin
   end;
  end;
  Dx:=4;
- MakeTempBitmap;
- FillColorEx(TempBitmap, Theme_ListColor);
- try
-  SynchronizeEx(DrawFolderImageBig);
- except
- end;
+
+ TempBitmap:=Tbitmap.Create;
+ DrawFolderImageBig(TempBitmap);
+
  c:=0;
  try
  For i:=1 to 2 do
@@ -1281,7 +1279,7 @@ begin
    ProportionalSize(SmallImageSize,SmallImageSize,w,h);
 
    FolderImageRect:=Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h);
-   SynchronizeEx(DrawFolderImageWithXY);
+   DrawFolderImageWithXY(TempBitmap);
    Continue;
   end;
   if index>count+Nbr then break;
@@ -1326,7 +1324,7 @@ begin
    h:=fbmp.Height;
    ProportionalSize(SmallImageSize,SmallImageSize,w,h);
    FolderImageRect:=Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h);
-   SynchronizeEx(DrawFolderImageWithXY);
+   DrawFolderImageWithXY(TempBitmap);
    fbmp.Free;
    Query.Next;
   end else begin
@@ -1371,7 +1369,7 @@ begin
    fbmp.PixelFormat:=pf24bit;
    DoResize(w,h,bmp,fbmp);
    bmp.Free;
-   SynchronizeEx(DrawFolderImageWithXY);
+   DrawFolderImageWithXY(TempBitmap);
    fbmp.free;
   end;
  end;
@@ -1398,7 +1396,7 @@ begin
 // TempBitmap.free;
 end;
 
-procedure TExplorerThread.DrawFolderImageBig;
+procedure TExplorerThread.DrawFolderImageBig(Bitmap : TBitmap);
 var
    Bit32 : TBitmap;
 begin
@@ -1412,15 +1410,15 @@ begin
 
    Bit32 := TBitmap.Create;
    try
-     LoadPNGImage32bit(FullFolderPicture, bit32, Theme_ListColor);
-     StretchCoolW(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0,0,bit32.Width,bit32.Height), bit32, TempBitmap);
+     LoadPNGImage32bit(FullFolderPicture, Bit32, Theme_ListColor);
+     StretchCoolW(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0,0, Bit32.Width, Bit32.Height), Bit32, Bitmap);
    finally
      Bit32.Free;
     end;
   end;
 end;
 
-procedure TExplorerThread.DrawFolderImageWithXY;
+procedure TExplorerThread.DrawFolderImageWithXY(Bitmap : TBitmap);
 begin
  If not fFastDirectoryLoading then
  if ExplorerInfo.SaveThumbNailsForFolders then
@@ -1428,7 +1426,7 @@ begin
   fFolderImages.Images[FcountOfFolderImage]:=TBitmap.create;
   fFolderImages.Images[FcountOfFolderImage].Assign(fbmp);
  end;
- TempBitmap.Canvas.StretchDraw(FolderImageRect,fbmp);
+ StretchCoolW(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, fbmp.Width, fbmp.Height), fbmp, Bitmap);
 end;
 
 procedure TExplorerThread.ReplaceFolderImage;

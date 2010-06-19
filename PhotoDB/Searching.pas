@@ -15,7 +15,7 @@ uses
   UnitRangeDBSelectForm, UnitSearchBigImagesLoaderThread, DragDropFile,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm, uLogger, uConstants;
+  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl;
 
 type
  TString255 = string[255];
@@ -899,6 +899,7 @@ begin
 
  ExplorerManager.LoadEXIF;
  WindowID:=GetGUID;
+ TW.I.Start('S -> TScript');
  aScript := TScript.Create('');
  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
  AddScriptObjFunction(aScript.PrivateEnviroment, 'HideExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Properties1Click);
@@ -919,8 +920,10 @@ begin
  begin
   if not SafeMode and UseScripts then
   begin
+ TW.I.Start('S -> ReadScriptFile');
    MainMenuScript:=ReadScriptFile('scripts\SearchMainMenu.dbini');
    Menu:=nil;
+ TW.I.Start('S -> LoadMenuFromScript');
    LoadMenuFromScript(ScriptMainMenu.Items,DBkernel.ImageList,MainMenuScript,aScript,ScriptExecuted,FExtImagesInImageList,true);
    Menu:=ScriptMainMenu;
   end else Menu:=MainMenu1;
@@ -928,9 +931,11 @@ begin
 
  ScriptListPopupMenu.Images:=DBKernel.ImageList;
  ScriptMainMenu.Images:=DBKernel.ImageList;
+ TW.I.Start('S -> GetQuery');
  SelectQuery:=GetQuery(dbname);
  ThreadQuery:=GetQuery(dbname);
  WorkQuery:=GetQuery(dbname);
+ TW.I.Start('S -> Register');
  DropFileTarget2.Register(SearchEdit);
  GetPhotosFromDrive2.Visible:=not FolderView;
  DestroyCounter:=0;
@@ -939,6 +944,7 @@ begin
 
  DropFileTarget1.Register(Self);
 
+ TW.I.Start('S -> DateTimePickers');
  try
  DateTimePicker2.DateTime:=Now;
  DateTimePicker3.DateTime:=Now;
@@ -957,6 +963,7 @@ begin
  Panel1.Width:=DBKernel.ReadInteger('Search','LeftPanelWidth',150);
  GetPhotosFromDrive1.Visible:= not FolderView;
  FBitmapImageList := TBitmapImageList.Create;
+ TW.I.Start('S -> RegisterMainForm');
  FormManager.RegisterMainForm(Self);
  except
    on e : Exception do EventLog(':TSearchForm::FormCreate() throw exception: '+e.Message);
@@ -965,8 +972,11 @@ begin
   initialization_;
  except    
    on e : Exception do EventLog(':TSearchForm::FormCreate() throw exception: '+e.Message);
- end;
+ end;                
+ TW.I.Start('S -> DBKernel.RegisterForm');
  DBKernel.RegisterForm(self);
+
+ TW.I.Start('S -> LoadLanguage');
  LoadLanguage;
  SearchManager.AddSearch(Self);
 
@@ -976,23 +986,33 @@ begin
  end;
  DBKernel.WriteBoolW('','DoUpdateHelp',false);
  try
+ TW.I.Start('S -> LoadSearchTexts');
   LoadSearchTexts;
  except
    on e : Exception do EventLog(':TSearchForm::FormCreate()/LoadSearchTexts throw exception: '+e.Message);
  end;
  try
+ TW.I.Start('S -> LoadGroupsList');
   LoadGroupsList;
  except
    on e : Exception do EventLog(':TSearchForm::FormCreate()/LoadGroupsList throw exception: '+e.Message);
  end;
  try
+ TW.I.Start('S -> LoadSearchList');
   LoadSearchList;
  except
    on e : Exception do EventLog(':TSearchForm::FormCreate()/LoadSearchList throw exception: '+e.Message);
  end;
- LoadToolBarIcons;
+ TW.I.Start('S -> LoadToolBarIcons');
+ LoadToolBarIcons; 
+ ToolBar1.ShowCaptions := True;
+ ToolBar1.AutoSize := True;
+
+ TW.I.Start('S -> LoadQueryList');
  LoadQueryList;
- LoadSearchDBParametrs;
+ TW.I.Start('S -> LoadSearchDBParametrs');
+ LoadSearchDBParametrs;  
+ TW.I.Start('S -> Create - END');
 end;
 
 procedure TSearchForm.ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -2491,11 +2511,13 @@ procedure TSearchForm.initialization_;
 var
   s : string;
 begin
+ TW.I.Start('S -> initialization_');
  If DBTerminating then exit;
  DBCanDrag:=false;
  DBKernel.RegisterChangesID(self,ChangedDBDataByID);
  Caption:=ProductName+' - ['+DBkernel.GetDataBaseName+']';
 
+ TW.I.Start('S -> DoShowSelectInfo');
  DoShowSelectInfo;
  ListView1.Canvas.Pen.Color:=$0;
  ListView1.Canvas.brush.Color:=$0;
@@ -2506,6 +2528,7 @@ begin
  SaveWindowPos1.Key:=RegRoot+'Searching';
  if not SafeMode then
  SaveWindowPos1.SetPosition;
+ TW.I.Start('S -> Reloadtheme');
  if not SafeMode then
  Reloadtheme(nil);
 
@@ -2525,6 +2548,7 @@ begin
 
 
 
+ TW.I.Start('S -> Immges');
  PopupMenu2.Images:=DBKernel.ImageList;
  PopupMenu8.Images:=DBKernel.ImageList;
  MainMenu1.Images:=DBKernel.ImageList;
@@ -2602,8 +2626,11 @@ begin
 
  ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EDIT_DATE+1]);
 
+ TW.I.Start('S -> BackGroundSearchPanelResize');
  BackGroundSearchPanelResize(Nil);
+ TW.I.Start('S -> Splitter1Moved');
  Splitter1Moved(nil);
+ TW.I.Start('S -> DoUnLockInfo');
  DoUnLockInfo;
  Image3.Picture.Graphic:=TIcon.Create;
  DBkernel.ImageList.GetIcon(DB_IC_GROUPS,Image3.Picture.Icon);
@@ -3498,7 +3525,6 @@ begin
  ToolButton4.Caption:=TEXT_MES_SAVE;
  ToolButton5.Caption:=TEXT_MES_OPEN;
  ToolButton12.Caption:=TEXT_MES_EXPLORER;
-
 end;
 
 procedure GrayScale(var image : TBitmap);
@@ -5350,41 +5376,34 @@ end;
 procedure TSearchForm.LoadToolBarIcons();
 var
   Ico : TIcon;
+  UseSmallIcons : Boolean;
 
   procedure AddIcon(Name : String);
   begin
-   if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL';
-   try
-    Ico:=TIcon.Create;
-    Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-    ToolBarImageList.AddIcon(Ico);
-   except
-   end;
+    if UseSmallIcons then Name:=Name+'_SMALL';
+    ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
 
   procedure AddDisabledIcon(Name : String);
   var
     i : integer;
   begin
-   if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL';
-   Ico:=TIcon.Create;
-   try
-    Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-    for i:=1 to 9 do
-    DisabledToolBarImageList.AddIcon(Ico);
-   except
-   end;
+    if UseSmallIcons then Name:=Name+'_SMALL';
+    for i := 1 to 9 do
+    ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
-begin
- ToolButton5.Visible:=true;
 
- if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then
- begin
-  ToolBarImageList.Width:=16;
-  ToolBarImageList.Height:=16;  
-  DisabledToolBarImageList.Width:=16;
-  DisabledToolBarImageList.Height:=16;
- end;
+begin
+  UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
+  ToolButton5.Visible:=true;
+
+  if UseSmallIcons then
+  begin
+    ToolBarImageList.Width:=16;
+    ToolBarImageList.Height:=16;
+    DisabledToolBarImageList.Width:=16;
+    DisabledToolBarImageList.Height:=16;
+  end;
 
  ConvertTo32BitImageList(ToolBarImageList);
  ConvertTo32BitImageList(DisabledToolBarImageList);

@@ -267,7 +267,8 @@ uses
   uConstants in 'Units\uConstants.pas',
   uFileUtils in 'Units\uFileUtils.pas',
   uScript in 'KernelDll\uScript.pas',
-  uStringUtils in 'Units\uStringUtils.pas';
+  uStringUtils in 'Units\uStringUtils.pas',
+  uTime in 'Units\uTime.pas';
 
 {$R *.res}
 
@@ -505,7 +506,7 @@ begin
       DBKernel:=TDBKernel.Create;
       DBKernel.LoadColorTheme;
       Application.CreateForm(TInstallForm, InstallForm);
-      Application.Restore;
+  Application.Restore;
       EventLog(':InstallForm.SetQuickSelfInstallOption()');
       InstallForm.SetQuickSelfInstallOption;
       InstallForm.ShowModal;

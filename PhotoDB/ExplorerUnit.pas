@@ -16,7 +16,7 @@ uses
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs,
-  uThreadForm, uAssociatedIcons, uLogger, uConstants;
+  uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -772,6 +772,8 @@ begin
  ListView:=LV_THUMBS;
  IsReallignInfo:=false;
 
+ TW.I.Start('ListView1');
+ 
  ListView1:=TXListView.Create(self);
  ListView1.Parent:=self;
  ListView1.Align:=AlClient;
@@ -844,6 +846,7 @@ begin
 
      ListView1.Groups.Add;
 
+ TW.I.Start('ConvertTo32BitImageList');
              
  ConvertTo32BitImageList(DragImageList);
  
@@ -889,6 +892,7 @@ begin
  Edit1.WindowProc := ComboWNDProc;
  SlashHandled:=false;
 
+ TW.I.Start('aScript');
   aScript := TScript.Create('');
 
   AddScriptObjFunction(aScript.PrivateEnviroment,'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, CloseWindow);
@@ -929,23 +933,29 @@ begin
 
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
-// if false then
  if UseScripts and not SafeMode then
- begin
+ begin             
+ TW.I.Start('Script read');
   SetNamedValueStr(aScript,'$dbname',dbname);
-  MainMenuScript:=ReadScriptFile('scripts\ExplorerMainMenu.dbini');
+  MainMenuScript:=ReadScriptFile('scripts\ExplorerMainMenu.dbini');  
+ TW.I.Start('Script Execure');
   Menu:=nil;
   LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
   Menu := ScriptMainMenu;
   ScriptMainMenu.Images := DBkernel.ImageList;
  end;
-         
+ TW.I.Start('RecreateThemeToForm');
  DBKernel.RecreateThemeToForm(Self);
- ReadPlaces; 
+ ReadPlaces;
+ TW.I.Start('LoadLanguage');
  LoadLanguage;
- LoadIcons; 
- LoadToolBarNormaIcons;
- LoadToolBarGrayedIcons;  
+ TW.I.Start('LoadIcons');
+ LoadIcons;
+ TW.I.Start('LoadToolBarNormaIcons');
+ LoadToolBarNormaIcons;  
+ TW.I.Start('LoadToolBarGrayedIcons');
+ LoadToolBarGrayedIcons;
+ TW.I.Stop;
  ToolBar1.Images := ToolBarNormalImageList;
  ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
@@ -4916,7 +4926,6 @@ end;
 
 procedure TExplorerForm.LoadLanguage;
 begin
- Label1.Caption:=TEXT_MES_IMAGE_PRIVIEW;
  SlideShowLink.Text:= TEXT_MES_SLIDE_SHOW;
  ShellLink.Text:= TEXT_MES_OPEN;
  CopyToLink.Text:= TEXT_MES_COPY_TO;
@@ -4924,6 +4933,16 @@ begin
  RenameLink.Text:= TEXT_MES_RENAME;
  PropertiesLink.Text:= TEXT_MES_PROPERTY;
  DeleteLink.Text:= TEXT_MES_DELETE;
+ RefreshLink.Text:=TEXT_MES_REFRESH;
+ ImageEditorLink.Text:=TEXT_MES_IMAGE_EDITOR;
+ PrintLink.Text:=TEXT_MES_PRINT;
+ MyPicturesLink.Text:=TEXT_MES_MY_PICTURES;
+ MyDocumentsLink.Text:=TEXT_MES_MY_DOCUMENTS;
+ DesktopLink.Text:=TEXT_MES_DESKTOP;
+ MyComputerLink.Text:=TEXT_MES_MY_COMPUTER;  
+ AddLink.Text:=TEXT_MES_ADD_OBJECT;
+
+ Label1.Caption:=TEXT_MES_IMAGE_PRIVIEW;
  TasksLabel.Caption:= TEXT_MES_TASKS;
  Open1.Caption:= TEXT_MES_OPEN;
  Open2.Caption:= TEXT_MES_OPEN;
@@ -4992,12 +5011,7 @@ begin
  OpeninExplorer1.Caption:=TEXT_MES_OPEN_IN_EXPLORER;
  AddFolder2.Caption:=TEXT_MES_ADD_FOLDER;
 // NO LABEL ToolButton2.Caption:=TEXT_MES_FORWARD;
- ToolButton5.Caption:=TEXT_MES_CUT;
- ToolButton6.Caption:=TEXT_MES_COPY;
- ToolButton7.Caption:=TEXT_MES_PASTE;
-// NO LABEL  ToolButton8.Caption:=TEXT_MES_DELETE;
- ToolButton19.Caption:=TEXT_MES_OPTIONS;
- RefreshLink.Text:=TEXT_MES_REFRESH;
+
  Label2.Caption:=TEXT_MES_ADDRESS;
  Help2.Caption:=TEXT_MES_HELP;
  Activation1.Caption:=TEXT_MES_ACTIVATION;
@@ -5023,18 +5037,12 @@ begin
  DBInfoLabel.Caption:=TEXT_MES_DB_INFO;
  ImageEditor1.Caption:=TEXT_MES_IMAGE_EDITOR_W;
  ImageEditor2.Caption:=TEXT_MES_IMAGE_EDITOR;
- ImageEditorLink.Text:=TEXT_MES_IMAGE_EDITOR;
 
  Othertasks1.Caption:=TEXT_MES_OTHER_TASKS;
  ExportImages1.Caption:=TEXT_MES_EXPORT_IMAGES;
- PrintLink.Text:=TEXT_MES_PRINT;
  Print1.Caption:=TEXT_MES_PRINT;
 
  OtherPlacesLabel.Caption:=TEXT_MES_OTHER_PLACES;
- MyPicturesLink.Text:=TEXT_MES_MY_PICTURES;
- MyDocumentsLink.Text:=TEXT_MES_MY_DOCUMENTS;
- DesktopLink.Text:=TEXT_MES_DESKTOP;
- MyComputerLink.Text:=TEXT_MES_MY_COMPUTER;
 
  TextFile1.Caption:=TEXT_MES_NEW_TEXT_FILE;
  GetPhotosFromDrive1.Caption:=TEXT_MES_GET_PHOTOS;
@@ -5079,8 +5087,7 @@ begin
  List2.Caption:=TEXT_MES_VIEW_LIST;
 
 // NO CAPTION ToolButtonView.Caption:=TEXT_MES_VIEW;
- View3.Caption:=TEXT_MES_VIEW;      
- AddLink.Text:=TEXT_MES_ADD_OBJECT;
+ View3.Caption:=TEXT_MES_VIEW;
 
  StenoGraphia1.Caption:=TEXT_MES_STENOGRAPHIA;
  AddHiddenInfo1.Caption:=TEXT_MES_DO_STENO;
@@ -5088,6 +5095,11 @@ begin
 
  MapCD1.Caption:=TEXT_MES_ADD_CD_LOCATION;
 
+ ToolButton5.Caption:=TEXT_MES_CUT;
+ ToolButton6.Caption:=TEXT_MES_COPY;
+ ToolButton7.Caption:=TEXT_MES_PASTE;
+// NO LABEL  ToolButton8.Caption:=TEXT_MES_DELETE;
+ ToolButton19.Caption:=TEXT_MES_OPTIONS;
  ToolButton1.Hint:=TEXT_MES_GO_BACK;
  ToolButton2.Hint:=TEXT_MES_GO_FORWARD;
  ToolButton3.Hint:=TEXT_MES_GO_UP;
@@ -5101,7 +5113,8 @@ begin
  ToolButton15.Hint:=TEXT_MES_GO_TO_SEARCH_WINDOW;
  ToolButton18.Hint:=TEXT_MES_STOP;
  ToolButton19.Hint:=TEXT_MES_OPTIONS;
-
+ ToolBar1.ShowCaptions := True;
+ ToolBar1.AutoSize := True;
 end;
 
 procedure TExplorerForm.Help1Click(Sender: TObject);
@@ -5278,7 +5291,7 @@ begin
  Info.OldFolderName:=FOldPatch;
  info.ShowPrivate:=ExplorerManager.ShowPrivate;
  Info.PictureSize:=fPictureSize;
- BeginUpdate;
+// BeginUpdate;
 
   if ListView1<>nil then
   Case ListView of
@@ -7916,22 +7929,24 @@ end;
 
 procedure TExplorerForm.LoadToolBarNormaIcons();
 var
-  Ico : TIcon;
+  UseSmallIcons : Boolean;
 
   procedure AddIcon(Name : String);
   begin
-   if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL';
-   ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
+    if UseSmallIcons then Name:=Name+'_SMALL';
+    ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
-begin
- ToolBarNormalImageList.Clear;
- ConvertTo32BitImageList(ToolBarNormalImageList);
 
- if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then
- begin
-  ToolBarNormalImageList.Width:=16;
-  ToolBarNormalImageList.Height:=16;
- end;
+begin   
+  UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
+  ToolBarNormalImageList.Clear;
+  ConvertTo32BitImageList(ToolBarNormalImageList);
+
+  if UseSmallIcons then
+  begin
+    ToolBarNormalImageList.Width:=16;
+    ToolBarNormalImageList.Height:=16;
+  end;
 
  AddIcon('EXPLORER_BACK');
  AddIcon('EXPLORER_UP');
@@ -7952,22 +7967,24 @@ end;
 procedure TExplorerForm.LoadToolBarGrayedIcons();
 var
   Ico : TIcon;
+  UseSmallIcons : Boolean;
 
   procedure AddIcon(Name : String);
   begin
-   if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL'; 
+   if UseSmallIcons then Name:=Name+'_SMALL';
    ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
   
 begin                  
- ToolBarDisabledImageList.Clear;
- ConvertTo32BitImageList(ToolBarDisabledImageList);
-
- if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then
- begin
-  ToolBarDisabledImageList.Width:=16;
-  ToolBarDisabledImageList.Height:=16;
- end;
+  ToolBarDisabledImageList.Clear;
+  ConvertTo32BitImageList(ToolBarDisabledImageList);
+                  
+  UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
+  if UseSmallIcons then
+  begin
+    ToolBarDisabledImageList.Width:=16;
+    ToolBarDisabledImageList.Height:=16;
+   end;
 
  AddIcon('EXPLORER_BACK_GRAY');
  AddIcon('EXPLORER_UP_GRAY');
