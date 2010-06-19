@@ -267,7 +267,9 @@ uses
   uFileUtils in 'Units\uFileUtils.pas',
   uScript in 'KernelDll\uScript.pas',
   uStringUtils in 'Units\uStringUtils.pas',
-  uTime in 'Units\uTime.pas';
+  uTime in 'Units\uTime.pas',
+  UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
+  UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas';
 
 {$R *.res}
 
@@ -291,6 +293,9 @@ var
     aHandle : Thandle;
     i : integer;
     CheckResult : integer;
+    //FAST LOAD
+    LoadDBKernelIconsThread,
+    LoadDBSettingsThread : THandle;
 
   f : TPcharFunction;
   Fh : pointer;
@@ -592,7 +597,11 @@ begin
    EventLog('Loading Kernel.dll');
    if not FolderView then
    KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
-   DBKernel:=TDBKernel.Create;    
+   DBKernel:=TDBKernel.Create;
+   TW.I.Start('DBKernel.LogIn');
+   DBKernel.LogIn('','',true);
+   LoadDBKernelIconsThread := TLoadDBKernelIconsThread.Create(False).ThreadID;
+   LoadDBSettingsThread := TLoadDBSettingsThread.Create(False).ThreadID;
    EventLog(':DBKernel.LoadColorTheme');
    TW.I.Start('DBKernel.LoadColorThem');
    DBKernel.LoadColorTheme;
@@ -763,8 +772,6 @@ begin
    EventLog(':DBKernel.FixLoginDB()');
    if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=6;
 
-   TW.I.Start('DBKernel.LogIn');
-   DBKernel.LogIn('','',true);
   end;
   //GROUPS CHECK + MENU----------------------------------------------------
                 
@@ -913,7 +920,8 @@ begin
 
    TW.I.Start('DEMO');
 
- if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=8;
+ if LoadingAboutForm<>nil then
+   TAboutForm(LoadingAboutForm).DmProgress1.Position:=8;
  if not FolderView then
  If not DBTerminating then
  if not DBInDebug then
@@ -929,13 +937,20 @@ begin
   end;
  end;
 
- //PREPAIRING RUNNING DB ----------------------------------------
- if LoadingAboutForm<>nil then
- begin
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
- end;   
-   TW.I.Start('LoadingAboutForm.FREE');
+  TW.I.Start('WaitForSingleObjects -> LoadDBKernelIconsThread');
+  WaitForSingleObject(LoadDBKernelIconsThread, INFINITE);
+  TW.I.Start('WaitForSingleObjects -> LoadDBSettingsThread');
+  WaitForSingleObject(LoadDBSettingsThread, INFINITE);
+  TDBNullQueryThread.Create(False);
+                        
+  TW.I.Start('LoadingAboutForm.FREE');
+
+  //PREPAIRING RUNNING DB ----------------------------------------
+  if LoadingAboutForm<>nil then
+  begin
+    LoadingAboutForm.Free;
+    LoadingAboutForm:=nil;
+  end;
 
  If DBTerminating then
  Application.ShowMainForm:=False;
@@ -960,7 +975,7 @@ begin
  begin
   EventLog('Run manager...');
   if not GetParamStrDBBool('/NoFullRun') then
-  FormManager.Run;
+  FormManager.Run(LoadingAboutForm);
   if not SafeMode then
   begin
    EventLog('Theme...');

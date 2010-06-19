@@ -23,7 +23,7 @@ interface
   procedure ConvertTo32BitImageList(const ImageList: TImageList);
   procedure LoadImageX(Image : TGraphic; Bitmap : TBitmap; BackGround : TColor);
   procedure LoadPNGImage32bit(PNG : TPNGGraphic; Bitmap : TBitmap; BackGroundColor : TColor);
-  procedure LoadBMPImage32bit(BMP : TBitmap; Bitmap : TBitmap; BackGroundColor : TColor);
+  procedure LoadBMPImage32bit(S : TBitmap; D : TBitmap; BackGroundColor : TColor);
   procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
   procedure StretchCool(x, y, Width, Height : Integer; var S, D : TBitmap); overload;
   procedure StretchCool(Width, Height : integer; var S,D : TBitmap); overload;
@@ -36,7 +36,8 @@ interface
   procedure FillColorEx(Bitmap : TBitmap; Color : TColor);  
   procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
   procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
-
+  procedure GrayScale(Image : TBitmap);  
+  procedure SelectedColor(Image : TBitmap; Color : TColor);  
 
 implementation
 
@@ -58,26 +59,93 @@ begin
     Windows.InvalidateRect(hwnd, nil, True);
 end;
 
-procedure DrawTransparent(s,d : TBitmap; Transparent : byte);
+procedure SelectedColor(Image : TBitmap; Color : TColor);
 var
-  i,j:integer;
-  ps,pd : PARGB;
-  l : extended;
+  I, J, R, G, B : integer;
+  p : PARGB;
 begin
- l:=Transparent/255;
- for i:=0 to S.Height-1 do
- begin
-  ps:=s.ScanLine[i];
-  pd:=d.ScanLine[i];
-  for j:=0 to S.Width-1 do
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+  if Image.PixelFormat<>pf24bit then
+    Image.PixelFormat:=pf24bit;
+
+  for I := 0 to Image.Height - 1 do
   begin
-   pd[j].r:=Round(ps[j].r*l+pd[j].r*(1-l));
-   pd[j].g:=Round(ps[j].g*l+pd[j].g*(1-l));
-   pd[j].b:=Round(ps[j].b*l+pd[j].b*(1-l));
+    p:=image.ScanLine[I];
+    for J:=0 to Image.Width - 1 do
+      if Odd(I + J) then
+      begin
+        p[J].R := R;
+        p[J].G := G;
+        p[J].B := B;
+      end;
   end;
- end;
 end;
 
+procedure GrayScale(Image : TBitmap);
+var
+  I, J, C : integer;
+  P : PARGB;
+begin
+  if Image.PixelFormat <> pf24bit then
+    Image.PixelFormat:=pf24bit;
+   
+  for i := 0 to Image.Height - 1 do
+  begin
+    p := Image.ScanLine[I];
+    for J:=0 to Image.Width - 1 do
+    begin
+      C := (p[J].R * 77 + p[J].G * 151 + p[J].B * 28) shr 8;
+      p[J].r := C;
+      p[J].g := C;
+      p[J].b := C;
+    end;
+  end;
+end;
+
+procedure GrayScaleImage(var S, D : TBitmap; N : integer);
+var
+  i, j : integer;
+  p1, p2 : Pargb;
+  G : Byte;
+  W1, W2 : Byte;
+begin
+  W1 := Round((N / 100)*255);
+  W2 := 255 - W1;
+  for I := 0 to S.Height - 1 do
+  begin
+    p1 := S.ScanLine[I];
+    p2 := D.ScanLine[I];
+    for j:=0 to S.Width-1 do
+    begin
+      G := (p1[j].R * 77 + p1[j].G * 151 + p1[j].B * 28) shr 8;
+      p2[j].R := (W2 * p2[j].R + W1 * G) shr 8;
+      p2[j].G := (W2 * p2[j].G + W1 * G) shr 8;
+      p2[j].B := (W2 * p2[j].B + W1 * G) shr 8;
+    end;
+  end;
+end;
+
+procedure DrawTransparent(S, D : TBitmap; Transparent : byte);
+var
+  W1, W2, I, J : Integer;
+  PS, PD : PARGB;
+begin
+  W1 := Transparent;
+  W2 := 255 - W1;
+  for I := 0 to S.Height - 1 do
+  begin
+    PS := S.ScanLine[I];
+    pd := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+    begin
+      PD[j].R := (PD[J].R * W2 + PS[J].R * W1 + 127) div 255;
+      PD[j].G := (PD[J].G * W2 + PS[J].G * W1 + 127) div 255;
+      PD[j].B := (PD[J].B * W2 + PS[J].B * W1 + 127) div 255;
+    end;
+  end;
+end;
 
 procedure DoInfoListBoxDrawItem(ListBox: TListBox; Index: Integer; aRect: TRect; State: TOwnerDrawState;
 ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
@@ -393,29 +461,32 @@ begin
   end;
 end;
 
-procedure LoadBMPImage32bit(BMP : TBitmap; Bitmap : TBitmap; BackGroundColor : TColor);
+procedure LoadBMPImage32bit(S : TBitmap; D : TBitmap; BackGroundColor : TColor);
 var
-  i, j : integer;
-  p : PARGB;
-  pl : PARGB32;
-  r,g,b : byte;
+  I, J, W1, W2 : integer;
+  PD : PARGB;
+  PS : PARGB32;
+  R, G, B : byte;
 begin
-  r:=GetRValue(BackGroundColor);
-  g:=GetGValue(BackGroundColor);
-  b:=GetBValue(BackGroundColor);
-  Bitmap.Width:=BMP.Width;
-  Bitmap.Height:=BMP.Height;
-  Bitmap.PixelFormat:=pf24bit;
+  R := GetRValue(BackGroundColor);
+  B := GetGValue(BackGroundColor);
+  b := GetBValue(BackGroundColor);
+  if D.PixelFormat <> pf24bit then
+    D.PixelFormat := pf24bit;
+  D.Width := S.Width;
+  D.Height := S.Height;
 
-  for i:=0 to BMP.Height-1 do
+  for I := 0 to S.Height - 1 do
   begin
-    p:=Bitmap.ScanLine[i];
-    pl:=BMP.ScanLine[i];
-    for j:=0 to BMP.Width-1 do
-    begin
-      p[j].r:=Round(pl[j].r*(pl[j].l/255)+r*(1-pl[j].l/255));
-      p[j].g:=Round(pl[j].g*(pl[j].l/255)+g*(1-pl[j].l/255));
-      p[j].b:=Round(pl[j].b*(pl[j].l/255)+b*(1-pl[j].l/255));
+    PD := D.ScanLine[I];
+    PS := S.ScanLine[I];
+    for J:=0 to S.Width - 1 do
+    begin      
+      W1 := PS[J].L;
+      W2 := 255 - W1;
+      PD[J].R := (R * W2 + PS[J].R * W1 + 127) div 255;
+      PD[J].G := (G * W2 + PS[J].G * W1 + 127) div 255;
+      PD[J].B := (B * W2 + PS[J].B * W1 + 127) div 255;
     end;
   end;
 end;

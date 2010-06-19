@@ -8,7 +8,8 @@ interface
 uses
   win32crc, dolphin_db, Searching, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
-  ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime;
+  ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
+  UnitDBCommonGraphics;
 
 type
   TAboutForm = class(TForm)
@@ -23,7 +24,7 @@ type
     LoadingTimer: TTimer;
     procedure CloseButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Grayscale(var image : tbitmap);
+    procedure Grayscale(var Image : TBitmap);
     procedure Execute(Wait : boolean = false);
     procedure Button1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
@@ -55,24 +56,13 @@ uses Activation, Language;
 
 { TAboutForm }
 
-procedure TAboutForm.GrayScale(var image : tbitmap);
+procedure TAboutForm.GrayScale(var Image : TBitmap);
 var
   i, j, c : integer;
   p : PARGB;
 begin
  TW.I.Start('GrayScale');
- if image.PixelFormat<>pf24bit then image.PixelFormat:=pf24bit;
- for i:=0 to image.Height-1 do
- begin
-  p:=image.ScanLine[i];
-  for j:=0 to image.Width-1 do
-  begin
-   c:=round(0.3*p[j].r+0.59*p[j].g+0.11*p[j].b);
-   p[j].r:=c;
-   p[j].g:=c;
-   p[j].b:=c;
-  end;
- end;  
+ UnitDBCommonGraphics.GrayScale(Image);
  TW.I.Stop;
 end;
 
@@ -88,6 +78,8 @@ begin
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
+var
+  InfoText : TStringList;
 begin
  TW.I.Start('FormCreate');
  DmProgress1.Text:=TEXT_MES_LOADING_PHOTODB;
@@ -99,23 +91,29 @@ begin
  if DBKernel<>nil then
  Button1.Visible:=DBkernel.ProgramInDemoMode else Button1.Visible:=false;
  TW.I.Start('Memo1');
- Memo1.Clear;
- Memo1.Lines.Add(ProductName);
- Memo1.Lines.Add('About project:');
- Memo1.Lines.Add('All copyrights to this program are');
- Memo1.Lines.Add('exclusively owned by the author:');
- Memo1.Lines.Add('Veresov Dmitry © 2002-2011');
- Memo1.Lines.Add('Studio "Illusion Dolphin".');
- Memo1.Lines.Add('You can''t emulate, clone, rent, lease,');
- Memo1.Lines.Add('sell, modify, decompile, disassemble,');
- Memo1.Lines.Add('otherwise, reverse engineer, transfer');
- Memo1.Lines.Add('this software.');
- Memo1.Lines.Add('');
- Memo1.Lines.Add('HomePage:');
- Memo1.Lines.Add(HomeURL);
- Memo1.Lines.Add('');
- Memo1.Lines.Add('E-Mail:');
- Memo1.Lines.Add(ProgramMail);   
+ InfoText := TStringList.Create;
+ try
+   Memo1.Clear;
+   InfoText.Add(ProductName);
+   InfoText.Add('About project:');
+   InfoText.Add('All copyrights to this program are');
+   InfoText.Add('exclusively owned by the author:');
+   InfoText.Add('Veresov Dmitry © 2002-2011');
+   InfoText.Add('Studio "Illusion Dolphin".');
+   InfoText.Add('You can''t emulate, clone, rent, lease,');
+   InfoText.Add('sell, modify, decompile, disassemble,');
+   InfoText.Add('otherwise, reverse engineer, transfer');
+   InfoText.Add('this software.');
+   InfoText.Add('');
+   InfoText.Add('HomePage:');
+   InfoText.Add(HomeURL);
+   InfoText.Add('');
+   InfoText.Add('E-Mail:');
+   InfoText.Add(ProgramMail);
+   Memo1.Lines.Assign(InfoText);
+ finally
+   InfoText.Free;
+ end;
  TW.I.Start('End');
 end;
 
@@ -229,8 +227,10 @@ var
   n : Cardinal;
 begin
  Memo2.Clear;
- memo2.Lines.Add(TEXT_MES_PROGRAM_CODE);
+ memo2.Lines.Add(TEXT_MES_PROGRAM_CODE); 
+ TW.I.Start('GetIdeDiskSerialNumber');
  s:=GetIdeDiskSerialNumber;
+ TW.I.Stop;
  CalcStringCRC32(s,n);
 // n:=n xor $FA45B671;  //v1.75
 // n:=n xor $8C54AF5B; //v1.8

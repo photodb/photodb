@@ -152,14 +152,6 @@ DB_IC_CD_EXPORT      = 116;
 DB_IC_CD_MAPPING     = 117;
 DB_IC_CD_IMAGE       = 118;
 
-
-{LOG_IN_OK                   = 0;
-LOG_IN_ERROR                = 1;
-LOG_IN_USER_NOT_FOUND       = 2;
-LOG_IN_TABLE_NOT_FOUND      = 3;
-LOG_IN_PASSWORD_WRONG       = 4;
-LOG_IN_USER_ALREADY_EXISTS  = 5;  }
-
 type DBChangesIDEvent = Procedure(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues)  of object;
 
 TUserType = (UtUser, UtAdmin, UtGuest, UtNone);
@@ -329,12 +321,13 @@ type TDBKernel = class(TObject)
   procedure ReadDBOptions;
   procedure DoSelectDB;
   procedure GetPasswordsFromParams;
+  procedure LoadIcons;
       { Public declarations }
   published
     property ImageOptions : TImageDBOptions read fImageOptions;
   end;
 
-  var icons : TDbKernelArrayIcons;
+  var Icons : TDbKernelArrayIcons;
 
 function inttochar(int : Integer):char;
 function chartoint(ch : char):Integer;
@@ -359,141 +352,7 @@ begin
   FINIPasswods := nil;
   FApplicationKey:='';
   fDBUserType:=UtNone;
-
-  FImageList:=TImageList.Create(nil);
-  FImageList.Width:=16;
-  FImageList.Height:=16;
-  FImageList.BkColor:=clMenu;
-  TW.I.Start('TDBKernel -> Icons DLL');
-  InitIconDll;
-  TW.I.Start('TDBKernel -> Icons');
-  //TODO : load icon at first access???
-  icons[1] := LoadIcon(IconDllInstance,'SHELL');
-  icons[2] := LoadIcon(IconDllInstance,'SLIDE_SHOW');
-  icons[3] := LoadIcon(IconDllInstance,'REFRESH_THUM');
-  icons[4] := LoadIcon(IconDllInstance,'RATING_STAR');
-  icons[5] := LoadIcon(IconDllInstance,'DELETE_INFO');
-  icons[6] := LoadIcon(IconDllInstance,'DELETE_FILE');
-  icons[7] := LoadIcon(IconDllInstance,'COPY_ITEM');
-  icons[8] := LoadIcon(IconDllInstance,'PROPERTIES');
-  icons[9] := LoadIcon(IconDllInstance,'PRIVATE');
-  icons[10] := LoadIcon(IconDllInstance,'COMMON');
-  icons[11] := LoadIcon(IconDllInstance,'SEARCH');
-  icons[12] := LoadIcon(IconDllInstance,'EXIT');
-  icons[13] := LoadIcon(IconDllInstance,'FAVORITE');
-  icons[14] := LoadIcon(IconDllInstance,'DESKTOP');
-  icons[15] := LoadIcon(IconDllInstance,'RELOAD');
-  icons[16] := LoadIcon(IconDllInstance,'NOTES');
-  icons[17] := LoadIcon(IconDllInstance,'NOTEPAD');
-  icons[18] := LoadIcon(IconDllInstance,'TRATING_1');
-  icons[19] := LoadIcon(IconDllInstance,'TRATING_2');
-  icons[20] := LoadIcon(IconDllInstance,'TRATING_3');
-  icons[21] := LoadIcon(IconDllInstance,'TRATING_4');
-  icons[22] := LoadIcon(IconDllInstance,'TRATING_5');
-  icons[23] := LoadIcon(IconDllInstance,'NEXT');
-  icons[24] := LoadIcon(IconDllInstance,'PREVIOUS');
-  icons[25] := LoadIcon(IconDllInstance,'TH_NEW');
-  icons[26] := LoadIcon(IconDllInstance,'ROTATE_0');
-  icons[27] := LoadIcon(IconDllInstance,'ROTATE_90');
-  icons[28] := LoadIcon(IconDllInstance,'ROTATE_180');
-  icons[29] := LoadIcon(IconDllInstance,'ROTATE_270');
-  icons[30] := LoadIcon(IconDllInstance,'PLAY');
-  icons[31] := LoadIcon(IconDllInstance,'PAUSE');
-  icons[32] := LoadIcon(IconDllInstance,'COPY');
-  icons[33] := LoadIcon(IconDllInstance,'PASTE');
-  icons[34] := LoadIcon(IconDllInstance,'LOADFROMFILE');
-  icons[35] := LoadIcon(IconDllInstance,'SAVETOFILE');
-  icons[36] := LoadIcon(IconDllInstance,'PANEL');
-  icons[37] := LoadIcon(IconDllInstance,'SELECTALL');
-  icons[38] := LoadIcon(IconDllInstance,'OPTIONS');
-  icons[39] := LoadIcon(IconDllInstance,'ADMINTOOLS');
-  icons[40] := LoadIcon(IconDllInstance,'ADDTODB');
-  icons[41] := LoadIcon(IconDllInstance,'HELP');
-  icons[42] := LoadIcon(IconDllInstance,'RENAME');
-  icons[43] := LoadIcon(IconDllInstance,'EXPLORER');
-  icons[44] := LoadIcon(IconDllInstance,'SEND');
-  icons[45] := LoadIcon(IconDllInstance,'SENDTO');
-  icons[46] := LoadIcon(IconDllInstance,'NEW');
-  icons[47] := LoadIcon(IconDllInstance,'NEWDIRECTORY');
-  icons[48] := LoadIcon(IconDllInstance,'SHELLPREVIOUS');
-  icons[49] := LoadIcon(IconDllInstance,'SHELLNEXT');
-  icons[50] := LoadIcon(IconDllInstance,'SHELLUP');
-  icons[51] := LoadIcon(IconDllInstance,'KEY');
-  icons[52] := LoadIcon(IconDllInstance,'FOLDER');
-  icons[53] := LoadIcon(IconDllInstance,'ADDFOLDER');
-  icons[54] := LoadIcon(IconDllInstance,'BOX');
-  icons[55] := LoadIcon(IconDllInstance,'DIRECTORY');
-  icons[56] := LoadIcon(IconDllInstance,'THFOLDER');
-  icons[57] := LoadIcon(IconDllInstance,'CUT');
-  icons[58] := LoadIcon(IconDllInstance,'NEWWINDOW');
-  icons[59] := LoadIcon(IconDllInstance,'ADDSINGLEFILE');
-  icons[60] := LoadIcon(IconDllInstance,'MANYFILES');
-  icons[61] := LoadIcon(IconDllInstance,'MYCOMPUTER');
-  icons[62] := LoadIcon(IconDllInstance,'EXPLORERPANEL');
-  icons[63] := LoadIcon(IconDllInstance,'INFOPANEL');
-  icons[64] := LoadIcon(IconDllInstance,'SAVEASTABLE');
-  icons[65] := LoadIcon(IconDllInstance,'EDITDATE');
-  icons[66] := LoadIcon(IconDllInstance,'GROUPS');
-  icons[67] := LoadIcon(IconDllInstance,'WALLPAPER');
-  icons[68] := LoadIcon(IconDllInstance,'NETWORK');
-  icons[69] := LoadIcon(IconDllInstance,'WORKGROUP');
-  icons[70] := LoadIcon(IconDllInstance,'COMPUTER');
-  icons[71] := LoadIcon(IconDllInstance,'SHARE');
-  icons[72] := LoadIcon(IconDllInstance,'Z_ZOOMIN_NORM');
-  icons[73] := LoadIcon(IconDllInstance,'Z_ZOOMOUT_NORM');
-  icons[74] := LoadIcon(IconDllInstance,'Z_FULLSIZE_NORM');
-  icons[75] := LoadIcon(IconDllInstance,'Z_BESTSIZE_NORM');
-  icons[76] := LoadIcon(IconDllInstance,'E_MAIL');
-  icons[77] := LoadIcon(IconDllInstance,'CRYPTFILE');
-  icons[78] := LoadIcon(IconDllInstance,'DECRYPTFILE');
-  icons[79] := LoadIcon(IconDllInstance,'PASSWORD');
-  icons[80] := LoadIcon(IconDllInstance,'EXEFILE');
-  icons[81] := LoadIcon(IconDllInstance,'SIMPLEFILE');
-  icons[82] := LoadIcon(IconDllInstance,'CONVERT');
-  icons[83] := LoadIcon(IconDllInstance,'RESIZE');
-  icons[84] := LoadIcon(IconDllInstance,'REFRESHID');
-  icons[85] := LoadIcon(IconDllInstance,'DUBLICAT');
-  icons[86] := LoadIcon(IconDllInstance,'DELDUBLICAT');
-  icons[87] := LoadIcon(IconDllInstance,'UPDATING');
-  icons[88] := LoadIcon(IconDllInstance,'Z_FULLSCREEN_NORM');
-  icons[89] := LoadIcon(IconDllInstance,'MYDOCUMENTS');
-  icons[90] := LoadIcon(IconDllInstance,'MYPICTURES');
-  icons[91] := LoadIcon(IconDllInstance,'DESKTOPLINK');
-  icons[92] := LoadIcon(IconDllInstance,'IMEDITOR');
-  icons[93] := LoadIcon(IconDllInstance,'OTHER_TOOLS');
-  icons[94] := LoadIcon(IconDllInstance,'EXPORT_IMAGES');
-  icons[95] := LoadIcon(IconDllInstance,'PRINTER');
-  icons[96] := LoadIcon(IconDllInstance,'EXIF');
-  icons[97] := LoadIcon(IconDllInstance,'GET_USB');
-  icons[98] := LoadIcon(IconDllInstance,'USB');
-  icons[99] := LoadIcon(IconDllInstance,'TXTFILE');
-  icons[100] := LoadIcon(IconDllInstance,'DOWN');
-  icons[101] := LoadIcon(IconDllInstance,'UP');
-  icons[102] := LoadIcon(IconDllInstance,'CDROM');
-  icons[103] := LoadIcon(IconDllInstance,'TREE');
-  icons[104] := LoadIcon(IconDllInstance,'CANCELACTION');
-  icons[105] := LoadIcon(IconDllInstance,'XDB');
-  icons[106] := LoadIcon(IconDllInstance,'XMDB');
-  icons[107] := LoadIcon(IconDllInstance,'SORT');
-  icons[108] := LoadIcon(IconDllInstance,'FILTER');  
-  icons[109] := LoadIcon(IconDllInstance,'CLOCK');
-  icons[110] := LoadIcon(IconDllInstance,'ATYPE');
-  icons[111] := LoadIcon(HInstance,'MAINICON');
-  icons[112] := LoadIcon(IconDllInstance,'APPLY_ACTION');
-  icons[113] := LoadIcon(IconDllInstance,'RELOADING');      
-  icons[114] := LoadIcon(IconDllInstance,'STENO');
-  icons[115] := LoadIcon(IconDllInstance,'DESTENO');     
-  icons[116] := LoadIcon(IconDllInstance,'SPLIT');        
-  icons[117] := LoadIcon(IconDllInstance,'CD_EXPORT');
-  icons[118] := LoadIcon(IconDllInstance,'CD_MAPPING');
-  icons[119] := LoadIcon(IconDllInstance,'CD_IMAGE');
-
-//disabled items are bad
-//  ConvertTo32BitImageList(FImageList);
-  TW.I.Start('TDBKernel -> ImageList_ReplaceIcon');
-  for i:=1 to IconsCount do
-  ImageList_ReplaceIcon(FImageList.Handle, -1, icons[i]);
-
+  //LoadIcons;
   TW.I.Start('TDBKernel -> InitRegModule');
   InitRegModule;
   TW.I.Stop;
@@ -2327,12 +2186,11 @@ end;
 
 procedure TDBKernel.InitIconDll;
 begin
-  TW.I.Start('icons.dll');
   IconDllInstance := LoadLibrary(PChar(ProgramDir + 'icons.dll'));
   if IconDllInstance = 0 then
   begin
    EventLog('icons IS missing -> exit');
-   MessageBoxDB(GetActiveFormHandle, TEXT_MES_ERROR_ICONS_DLL, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+//   MessageBoxDB(GetActiveFormHandle, TEXT_MES_ERROR_ICONS_DLL, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
    Halt;
   end;
 end;
@@ -2412,6 +2270,143 @@ begin
  PassArray:=SplitString(PassParam,'!');
  for i:=0 to Length(PassArray)-1 do
  AddTemporaryPasswordInSession(PassArray[i]);
+end;
+
+procedure TDBKernel.LoadIcons;
+var
+  I : Integer;
+begin
+  FImageList:=TImageList.Create(nil);
+  FImageList.Width:=16;
+  FImageList.Height:=16;
+  FImageList.BkColor:=clMenu;
+  InitIconDll;
+
+  icons[1] := LoadIcon(IconDllInstance,'SHELL');
+  icons[2] := LoadIcon(IconDllInstance,'SLIDE_SHOW');
+  icons[3] := LoadIcon(IconDllInstance,'REFRESH_THUM');
+  icons[4] := LoadIcon(IconDllInstance,'RATING_STAR');
+  icons[5] := LoadIcon(IconDllInstance,'DELETE_INFO');
+  icons[6] := LoadIcon(IconDllInstance,'DELETE_FILE');
+  icons[7] := LoadIcon(IconDllInstance,'COPY_ITEM');
+  icons[8] := LoadIcon(IconDllInstance,'PROPERTIES');
+  icons[9] := LoadIcon(IconDllInstance,'PRIVATE');
+  icons[10] := LoadIcon(IconDllInstance,'COMMON');
+  icons[11] := LoadIcon(IconDllInstance,'SEARCH');
+  icons[12] := LoadIcon(IconDllInstance,'EXIT');
+  icons[13] := LoadIcon(IconDllInstance,'FAVORITE');
+  icons[14] := LoadIcon(IconDllInstance,'DESKTOP');
+  icons[15] := LoadIcon(IconDllInstance,'RELOAD');
+  icons[16] := LoadIcon(IconDllInstance,'NOTES');
+  icons[17] := LoadIcon(IconDllInstance,'NOTEPAD');
+  icons[18] := LoadIcon(IconDllInstance,'TRATING_1');
+  icons[19] := LoadIcon(IconDllInstance,'TRATING_2');
+  icons[20] := LoadIcon(IconDllInstance,'TRATING_3');
+  icons[21] := LoadIcon(IconDllInstance,'TRATING_4');
+  icons[22] := LoadIcon(IconDllInstance,'TRATING_5');
+  icons[23] := LoadIcon(IconDllInstance,'NEXT');
+  icons[24] := LoadIcon(IconDllInstance,'PREVIOUS');
+  icons[25] := LoadIcon(IconDllInstance,'TH_NEW');
+  icons[26] := LoadIcon(IconDllInstance,'ROTATE_0');
+  icons[27] := LoadIcon(IconDllInstance,'ROTATE_90');
+  icons[28] := LoadIcon(IconDllInstance,'ROTATE_180');
+  icons[29] := LoadIcon(IconDllInstance,'ROTATE_270');
+  icons[30] := LoadIcon(IconDllInstance,'PLAY');
+  icons[31] := LoadIcon(IconDllInstance,'PAUSE');
+  icons[32] := LoadIcon(IconDllInstance,'COPY');
+  icons[33] := LoadIcon(IconDllInstance,'PASTE');
+  icons[34] := LoadIcon(IconDllInstance,'LOADFROMFILE');
+  icons[35] := LoadIcon(IconDllInstance,'SAVETOFILE');
+  icons[36] := LoadIcon(IconDllInstance,'PANEL');
+  icons[37] := LoadIcon(IconDllInstance,'SELECTALL');
+  icons[38] := LoadIcon(IconDllInstance,'OPTIONS');
+  icons[39] := LoadIcon(IconDllInstance,'ADMINTOOLS');
+  icons[40] := LoadIcon(IconDllInstance,'ADDTODB');
+  icons[41] := LoadIcon(IconDllInstance,'HELP');
+  icons[42] := LoadIcon(IconDllInstance,'RENAME');
+  icons[43] := LoadIcon(IconDllInstance,'EXPLORER');
+  icons[44] := LoadIcon(IconDllInstance,'SEND');
+  icons[45] := LoadIcon(IconDllInstance,'SENDTO');
+  icons[46] := LoadIcon(IconDllInstance,'NEW');
+  icons[47] := LoadIcon(IconDllInstance,'NEWDIRECTORY');
+  icons[48] := LoadIcon(IconDllInstance,'SHELLPREVIOUS');
+  icons[49] := LoadIcon(IconDllInstance,'SHELLNEXT');
+  icons[50] := LoadIcon(IconDllInstance,'SHELLUP');
+  icons[51] := LoadIcon(IconDllInstance,'KEY');
+  icons[52] := LoadIcon(IconDllInstance,'FOLDER');
+  icons[53] := LoadIcon(IconDllInstance,'ADDFOLDER');
+  icons[54] := LoadIcon(IconDllInstance,'BOX');
+  icons[55] := LoadIcon(IconDllInstance,'DIRECTORY');
+  icons[56] := LoadIcon(IconDllInstance,'THFOLDER');
+  icons[57] := LoadIcon(IconDllInstance,'CUT');
+  icons[58] := LoadIcon(IconDllInstance,'NEWWINDOW');
+  icons[59] := LoadIcon(IconDllInstance,'ADDSINGLEFILE');
+  icons[60] := LoadIcon(IconDllInstance,'MANYFILES');
+  icons[61] := LoadIcon(IconDllInstance,'MYCOMPUTER');
+  icons[62] := LoadIcon(IconDllInstance,'EXPLORERPANEL');
+  icons[63] := LoadIcon(IconDllInstance,'INFOPANEL');
+  icons[64] := LoadIcon(IconDllInstance,'SAVEASTABLE');
+  icons[65] := LoadIcon(IconDllInstance,'EDITDATE');
+  icons[66] := LoadIcon(IconDllInstance,'GROUPS');
+  icons[67] := LoadIcon(IconDllInstance,'WALLPAPER');
+  icons[68] := LoadIcon(IconDllInstance,'NETWORK');
+  icons[69] := LoadIcon(IconDllInstance,'WORKGROUP');
+  icons[70] := LoadIcon(IconDllInstance,'COMPUTER');
+  icons[71] := LoadIcon(IconDllInstance,'SHARE');
+  icons[72] := LoadIcon(IconDllInstance,'Z_ZOOMIN_NORM');
+  icons[73] := LoadIcon(IconDllInstance,'Z_ZOOMOUT_NORM');
+  icons[74] := LoadIcon(IconDllInstance,'Z_FULLSIZE_NORM');
+  icons[75] := LoadIcon(IconDllInstance,'Z_BESTSIZE_NORM');
+  icons[76] := LoadIcon(IconDllInstance,'E_MAIL');
+  icons[77] := LoadIcon(IconDllInstance,'CRYPTFILE');
+  icons[78] := LoadIcon(IconDllInstance,'DECRYPTFILE');
+  icons[79] := LoadIcon(IconDllInstance,'PASSWORD');
+  icons[80] := LoadIcon(IconDllInstance,'EXEFILE');
+  icons[81] := LoadIcon(IconDllInstance,'SIMPLEFILE');
+  icons[82] := LoadIcon(IconDllInstance,'CONVERT');
+  icons[83] := LoadIcon(IconDllInstance,'RESIZE');
+  icons[84] := LoadIcon(IconDllInstance,'REFRESHID');
+  icons[85] := LoadIcon(IconDllInstance,'DUBLICAT');
+  icons[86] := LoadIcon(IconDllInstance,'DELDUBLICAT');
+  icons[87] := LoadIcon(IconDllInstance,'UPDATING');
+  icons[88] := LoadIcon(IconDllInstance,'Z_FULLSCREEN_NORM');
+  icons[89] := LoadIcon(IconDllInstance,'MYDOCUMENTS');
+  icons[90] := LoadIcon(IconDllInstance,'MYPICTURES');
+  icons[91] := LoadIcon(IconDllInstance,'DESKTOPLINK');
+  icons[92] := LoadIcon(IconDllInstance,'IMEDITOR');
+  icons[93] := LoadIcon(IconDllInstance,'OTHER_TOOLS');
+  icons[94] := LoadIcon(IconDllInstance,'EXPORT_IMAGES');
+  icons[95] := LoadIcon(IconDllInstance,'PRINTER');
+  icons[96] := LoadIcon(IconDllInstance,'EXIF');
+  icons[97] := LoadIcon(IconDllInstance,'GET_USB');
+  icons[98] := LoadIcon(IconDllInstance,'USB');
+  icons[99] := LoadIcon(IconDllInstance,'TXTFILE');
+  icons[100] := LoadIcon(IconDllInstance,'DOWN');
+  icons[101] := LoadIcon(IconDllInstance,'UP');
+  icons[102] := LoadIcon(IconDllInstance,'CDROM');
+  icons[103] := LoadIcon(IconDllInstance,'TREE');
+  icons[104] := LoadIcon(IconDllInstance,'CANCELACTION');
+  icons[105] := LoadIcon(IconDllInstance,'XDB');
+  icons[106] := LoadIcon(IconDllInstance,'XMDB');
+  icons[107] := LoadIcon(IconDllInstance,'SORT');
+  icons[108] := LoadIcon(IconDllInstance,'FILTER');  
+  icons[109] := LoadIcon(IconDllInstance,'CLOCK');
+  icons[110] := LoadIcon(IconDllInstance,'ATYPE');
+  icons[111] := LoadIcon(HInstance,'MAINICON');
+  icons[112] := LoadIcon(IconDllInstance,'APPLY_ACTION');
+  icons[113] := LoadIcon(IconDllInstance,'RELOADING');      
+  icons[114] := LoadIcon(IconDllInstance,'STENO');
+  icons[115] := LoadIcon(IconDllInstance,'DESTENO');     
+  icons[116] := LoadIcon(IconDllInstance,'SPLIT');        
+  icons[117] := LoadIcon(IconDllInstance,'CD_EXPORT');
+  icons[118] := LoadIcon(IconDllInstance,'CD_MAPPING');
+  icons[119] := LoadIcon(IconDllInstance,'CD_IMAGE');
+
+  //disabled items are bad
+  //ConvertTo32BitImageList(FImageList);
+  
+  for i:=1 to IconsCount do
+    ImageList_ReplaceIcon(FImageList.Handle, -1, icons[i]);
 end;
 
 { TCharObject }

@@ -39,7 +39,7 @@ type
    procedure UnRegisterMainForm(Value: TForm);
    procedure RegisterActionCanTerminating(Value: TTemtinatedAction);
    procedure UnRegisterActionCanTerminating(Value: TTemtinatedAction);
-   Procedure Run;
+   Procedure Run(LoadingForm : TForm);
    Procedure Close(Form : TForm);
    Procedure AppMinimize(Sender: TObject);
    Function MainFormsCount : Integer;
@@ -167,8 +167,7 @@ begin
  begin
 
  // DBVersion:=DBKernel.TestDBEx(dbname,true);
- //TODO: IN THREAD!!!
-  DBKernel.ReadDBOptions;
+
 {  if DBVersion<0 then
   begin
    MessageBoxDB(Handle,TEXT_MES_DB_FILE_NOT_FOUND_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
@@ -224,7 +223,7 @@ begin
  TInternetUpdate.Create(false,false);
 end;
 
-procedure TFormManager.Run;
+procedure TFormManager.Run(LoadingForm : TForm);
 var
   Directory, s : String;
   ParamStr1, ParamStr2 : String;
@@ -232,6 +231,16 @@ var
   IDList : TArInteger;
   FileList : TArStrings;
   i : integer;
+
+  procedure CloseLoadingForm;
+  begin
+    {if LoadingForm<>nil then
+    begin
+      LoadingForm.Free;
+      LoadingForm:=nil;
+    end;}
+  end;
+
 begin               
  EventLog(':TFormManager::Run()...');
  DBKernel.WriteProperty('Starting','ApplicationStarted','1');
@@ -240,6 +249,7 @@ begin
   Running:=true;
   if ActivateForm=nil then
   Application.CreateForm(TActivateForm,ActivateForm);
+  CloseLoadingForm;
   ActivateForm.Show;
   ActivateApplication(ActivateForm.Handle);
   RegisterMainForm(ActivateForm);
@@ -248,7 +258,8 @@ begin
  if SafeMode then
  begin
   EventLog(':TFormManager::Run()/NewSearch...');
-  NewSearch:=SearchManager.NewSearch;
+  NewSearch:=SearchManager.NewSearch;  
+  CloseLoadingForm;
   NewSearch.Show;
   ActivateApplication(NewSearch.Handle);
   exit;
@@ -299,16 +310,16 @@ begin
       NewSearch.SearchEdit.Text:=Copy(s,1,500);
       NewSearch.DoSearchNow(nil);
      end;
-    end;           
+    end;  
+    CloseLoadingForm;         
     NewSearch.Show;
     ActivateApplication(NewSearch.Handle);
-    //loading db in background
-    UnitDBNullQueryThread.TDBNullQueryThread.Create(false);
    end else
    begin
     If Viewer=nil then
     Application.CreateForm(TViewer,Viewer);
-    RegisterMainForm(Viewer);
+    RegisterMainForm(Viewer);  
+    CloseLoadingForm;
     Viewer.Show;
     Viewer.ExecuteDirectoryWithFileOnThread(LongFileName(ParamStr1));
     ActivateApplication(Viewer.Handle);
@@ -322,17 +333,19 @@ begin
     begin
      if DBKernel.ReadBool('Options','UseSpecialStartUpFolder',false) then
      SetPath(DBKernel.ReadString('Options','SpecialStartUpFolder')) else
-     SetNewPathW(GetCurrentPathW,false);    
+     SetNewPathW(GetCurrentPathW,false); 
+     CloseLoadingForm;   
      Show;
      ActivateApplication(Handle);
     end;
    end else
-   begin
+   begin               
+  TW.I.Start('SearchManager.NewSearch');
     NewSearch:=SearchManager.NewSearch;
-    Application.Restore;
+    Application.Restore; 
+    CloseLoadingForm;
     NewSearch.Show;
     ActivateApplication(NewSearch.Handle);
-    UnitDBNullQueryThread.TDBNullQueryThread.Create(false);
    end;
   end;
  end else
@@ -341,7 +354,8 @@ begin
   begin
    With ExplorerManager.NewExplorer(False) do
    begin
-    SetPath(Directory);
+    SetPath(Directory);    
+    CloseLoadingForm;
     Show;        
     ActivateApplication(Handle);
    end;
@@ -350,9 +364,9 @@ begin
    Application.Restore;
    With SearchManager.NewSearch do
    begin
-    Show;           
+    Show;    
+    CloseLoadingForm;       
     ActivateApplication(Handle);
-    UnitDBNullQueryThread.TDBNullQueryThread.Create(false);
    end;
   end;
  end;

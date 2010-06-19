@@ -594,8 +594,6 @@ var
   Sclipbrd : string;
   SearchManager : TManagerSearchs;
 
-  procedure SelectedColor(var image : TBitmap; Color : TColor);
-  procedure GrayScale(var image : TBitmap);
   Function RectInRect(Const R1, R2 : TRect) : Boolean;
  procedure DrawAttributes(bit : TBitmap; PistureSize : integer; Rating,Rotate, Access : Integer; FileName : String; Crypt : Boolean; var Exists : integer; ID : integer = 0);
  function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint): TEasyItem;
@@ -811,7 +809,8 @@ var
   i : integer;
   MainMenuScript : string;
 
-begin
+begin  
+  TW.I.Start('S -> FormCreate');
  CanSaveQueryList:=true;
  fListUpdating:=false;
  GroupsLoaded:=false;
@@ -3515,50 +3514,6 @@ begin
  ToolButton4.Caption:=TEXT_MES_SAVE;
  ToolButton5.Caption:=TEXT_MES_OPEN;
  ToolButton12.Caption:=TEXT_MES_EXPLORER;
-end;
-
-procedure GrayScale(var image : TBitmap);
-var
-  i, j, c : integer;
-  p : PARGB;
-begin
- if image.PixelFormat<>pf24bit then image.PixelFormat:=pf24bit;
- for i:=0 to image.Height-1 do
- begin
-  p:=image.ScanLine[i];
-  for j:=0 to image.Width-1 do
-  begin
-   c:=round(0.3*p[j].r+0.59*p[j].g+0.11*p[j].b);
-   p[j].r:=c;
-   p[j].g:=c;
-   p[j].b:=c;
-  end;
- end;
-end;
-
-procedure SelectedColor(var image : TBitmap; Color : TColor);
-var
-  i, j, r, g, b : integer;
-  p : PARGB;
-
-
-
-begin
- r:=GetRValue(Color);
- g:=GetGValue(Color);
- b:=GetBValue(Color);
- if image.PixelFormat<>pf24bit then image.PixelFormat:=pf24bit;
- for i:=0 to image.Height-1 do
- begin
-  p:=image.ScanLine[i];
-  for j:=0 to image.Width-1 do
-  if Odd(i+j) then
-  begin
-   p[j].r:=r;
-   p[j].g:=g;
-   p[j].b:=b;
-  end;
- end;
 end;
 
 Function RectInRect(Const R1, R2 : TRect) : Boolean;

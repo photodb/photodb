@@ -713,8 +713,6 @@ begin
  ImHint:=nil;
 end;
 
-
-
 initialization
 
 ImHint:=nil;

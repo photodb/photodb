@@ -584,8 +584,6 @@ initialization
   IsRAWSupport:=false;
  end;
 
-
-
 finalization
 
 if IsRAWSupport then

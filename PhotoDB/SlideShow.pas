@@ -315,28 +315,6 @@ uses  Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
 
 {$R *.dfm}
 
-procedure GrayScaleImage(var S, D : TBitmap; N : integer);
-var
-  i, j : integer;
-  p1, p2 : Pargb;
-  G : Byte;
-  W1, W2 : Byte;
-begin
-  W1 := Round((N / 100)*255);
-  W2 := 255 - W1;
-  for I := 0 to S.Height - 1 do
-  begin
-    p1 := S.ScanLine[I];
-    p2 := D.ScanLine[I];
-    for j:=0 to S.Width-1 do
-    begin
-      G := HiByte(p1[j].R * 77 + p1[j].G * 151 + p1[j].B * 28);
-      p2[j].R := HiByte(W2 * p2[j].R + W1 * G);
-      p2[j].G := HiByte(W2 * p2[j].G + W1 * G);
-      p2[j].B := HiByte(W2 * p2[j].B + W1 * G);
-    end;
-  end;
-end;
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin
