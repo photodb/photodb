@@ -28,7 +28,6 @@ initialization:
 };
   if ($c=0) { InVisible;};
   if ($IsCurrentFile=false) { InVisible;};
-  if ($CanFileOperationsCritical=false) { InVisible;};
   $b=ReadRegBool("Options","UseUserMenuForIDmenu");
   if ($b=false) {InVisible;};
 }

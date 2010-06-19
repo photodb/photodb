@@ -1,9 +1,5 @@
   <Скрипты>[DB_IC_SHELL]
   {
-  initialization:
-    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
-    if ($UR=false) {InVisible;};
-  run:
     <Список функций>[DB_IC_OPTIONS]
     {
      ShowFunctionList;

@@ -7,9 +7,6 @@
 
   <TEXT_MES_SAVE_AS_TABLE>[DB_IC_SAVE_AS_TABLE]
   {
-   initialization:
-    $UR=UserRights("RIGHTS_CRITICAL_FILE_OPERATIONS");
-    if ($UR=false) {InVisible;};
    run:
     SaveResultsAsTable;
   }
@@ -24,9 +21,6 @@
   <->[]{}
   <TEXT_MES_SELECT_DATABASE>[DB_IC_ADDTODB]
   {
-   initialization:
-    $UR=UserRights("RIGHTS_CHANGE_DB_NAME");
-    if ($UR=false) {InVisible;};
    run:  
    //пустой итем. создаётся сразу
    <->[]{}
@@ -62,34 +56,18 @@
   }
   <TEXT_MES_MAKE_DB_TREE>[DB_IC_TREE]
   {   
-   initialization:
-    $UR=UserRights("RIGHTS_SHOW_PATH");
-    if ($UR=false) {InVisible;};
-   run:
     MakeDBFileTree;
   }
   <TEXT_MES_SHOW_UPDATER>[DB_IC_BOX]
   {
-   initialization:
-    $UR=UserRights("RIGHTS_ADD");
-    if ($UR=false) {InVisible;};
-   run:
     ShowUpdateWindow;
   }
   <TEXT_MES_MANAGE_DB>[DB_IC_ADMINTOOLS]
   {
-   initialization:
-    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
-    if ($UR=false) {InVisible;};
-   run:
     DoManager;
   }
   <TEXT_MES_IMAGE_EDITOR>[DB_IC_IMEDITOR]
   {  
-   initialization:
-    $UR=UserRights("RIGHTS_EDIT_IMAGE");
-    if ($UR=false) {InVisible;};
-   run:
     $form=NewImageEditor;
     ShowDBForm($form);
   }
@@ -103,10 +81,6 @@
   }
   <TEXT_MES_GROUPS_MANAGER>[DB_IC_GROUPS]
   {   
-   initialization:
-    $UR=UserRights("RIGHTS_SHOW_OPTIONS");
-    if ($UR=false) {InVisible;};
-   run:
     ExecuteGroupManager;
   }
   <TEXT_MES_EXPLORER>[DB_IC_EXPLORER]
@@ -116,35 +90,22 @@
 
   <TEXT_MES_SPLIT_DB_CAPTION>[DB_IC_SPLIT]
   {
-   initialization:
-    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
-    if ($UR=false) {InVisible;};
-   run:
     SplitDB;
   }
 
   <->[]{}
   <TEXT_MES_CD_EXPORT_CAPTION>[DB_IC_CD_EXPORT]
   {
-   initialization:
-    $UR=UserRights("RIGHTS_ADMIN_TOOLS");
-    if ($UR=false) {InVisible;};
-   run:
     DoCDExport;
   }  
   <TEXT_MES_CD_MAPPING_CAPTION>[DB_IC_CD_MAPPING]
   {
-   run:
     DoCDMapping;
   }
 
   <->[]{}
   <TEXT_MES_OPTIONS>[DB_IC_OPTIONS]
   {
-   initialization:
-    $UR=UserRights("RIGHTS_SHOW_OPTIONS");
-    if ($UR=false) {InVisible;};
-   run:
     DoOptions;
   }
   <>[]{scripts\MenuScripts.dbini}

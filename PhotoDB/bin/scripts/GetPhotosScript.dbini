@@ -1,9 +1,5 @@
 <TEXT_MES_GET_PHOTOS>[DB_IC_GET_USB]
 {
-initialization:
-  $UR=UserRights("RIGHTS_NORMAL_FILE_OPERATIONS");
-  if ($UR=false) {InVisible;};
-run:
   $CDROM=GetCDROMDrives;
   $CD_ROM_ICONS=GetIntArray(0);
   $CD_ROMs=GetStringArray(0);
