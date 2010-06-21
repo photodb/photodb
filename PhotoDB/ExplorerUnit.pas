@@ -6914,17 +6914,16 @@ var
   rv : TRect;
 
 begin
- SetLength(Result,0);
- SetLength(t,0);
+ SetLength(Result, 0);
+ SetLength(t, 0);
  b:=false;
  rv :=  Listview1.Scrollbars.ViewableViewportRect;
 
  for i:=0 to ListView1.Items.Count-1 do
  begin
- 
   Listview1.Items[i].ItemRectArray(Listview1.Header.FirstColumn, Listview1.Canvas, RectArray);
   r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,RectArray.BoundsRect) then
+  if RectInRect(r, RectArray.BoundsRect) then
 
   begin
    index:=Self.ItemIndexToMenuIndex(i);

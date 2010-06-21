@@ -211,26 +211,12 @@ var
  InfoPosition : Integer;
  ImageFiles : Integer;
  Folders : integer;
- PrivateFiles : TArStrings;
+ PrivateFiles : TStringList;
  fa : Integer;
  FE, EM : Boolean;
  crc : cardinal;
-
  s : string;
  p : PansiChar;
- Function IsStringInTArStrings(Strings : TArStrings; Str : String) : Boolean;
- var
-   j:integer;
- begin
-  Str:=AnsiLowerCase(Str);
-  Result:=False;
-  For j:=0 to length(Strings)-1 do
-  if AnsiLowerCase(Strings[j])=AnsiLowerCase(Str) then
-  begin
-   Result:=true;
-   Break;
-  end;
- end;
 
 begin        
   FreeOnTerminate:=true;
@@ -327,271 +313,266 @@ begin
     if not DirectoryExists(FFolder) then
     begin
       StrParam:=TEXT_MES_ERROR_OPENING_FOLDER;
-      //SynchronizeEx(EndUpdate);
       SynchronizeEx(ShowMessage_);
       ShowInfo('',1,0);
       SynchronizeEx(ExplorerBack);
       Exit;
     end;
+    
+    PrivateFiles := TStringList.Create;
+    try
+      SynchronizeEx(BeginUpdate);
+      
+      DBFolderToSearch:=FFolder;
+      UnProcessPath(DBFolderToSearch);
+      DBFolderToSearch:=AnsiLowerCase(DBFolderToSearch);
+      UnFormatDir(DBFolderToSearch);
+      CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
+      FormatDir(DBFolderToSearch);                                    
+      FormatDir(FFolder);
+      FFiles:=SetNilExplorerFileInfo;
 
-    DBFolderToSearch:=FFolder;
-    UnProcessPath(DBFolderToSearch);
-    DBFolderToSearch:=AnsiLowerCase(DBFolderToSearch);
-    UnFormatDir(DBFolderToSearch);
-    CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
-    FormatDir(DBFolderToSearch);                                    
-    FormatDir(FFolder);
-    SynchronizeEx(BeginUpdate);
-    FFiles:=SetNilExplorerFileInfo;
-
-    DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
-    ShowInfo(TEXT_MES_CONNECTING_TO_DB,1,0);
-    FQuery:=GetQuery;         
-    ShowInfo(TEXT_MES_GETTING_INFO_FROM_DB,1,0);
-
-  if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
-  if FolderView then
-  begin
-   SetSQL(FQuery,'Select * From '+GetDefDBname+' where FolderCRC = :crc');
-   s:=FFolder;
-   Delete(s,1,Length(ProgramDir));
-   UnformatDir(s);
-   CalcStringCRC32(AnsiLowerCase(s),crc);
-   SetIntParam(FQuery,0,Integer(crc));
-  end else
-  begin
-   SetStrParam(FQuery,0,'%'+DBFolderToSearch+'%');
-   SetStrParam(FQuery,1,'%'+DBFolderToSearch+'%\%');
-  end;
-  for i:=1 to 20 do
-  begin
-   try
-    FQuery.Active:=True;
-    break;
-   except
-    on e : Exception do
-    begin
-     EventLog(':TExplorerThread::Execute throw exception: '+e.Message);
-     Sleep(300);
-    end;
-   end;
-  end;
-  If not ExplorerInfo.ShowPrivate then
-  If FQuery.RecordCount<>0 then
-  begin
-   SetLength(PrivateFiles,0);
-   FQuery.First;
-   For i:=1 to FQuery.RecordCount do
-   begin
-    If FQuery.FieldByName('Access').AsInteger=db_access_private then
-    begin
-     SetLength(PrivateFiles,Length(PrivateFiles)+1);
-     PrivateFiles[Length(PrivateFiles)-1]:=FQuery.FieldByName('FFileName').AsString;
-    end;
-    FQuery.Next;
-   end;
-  end;
-  If FQuery.RecordCount=0 then NoRecords:=true;
-  if FMask='' then FileMask:='*.*' else FileMask:=FMask;
-  Found := FindFirst(FFolder+FileMask, faAnyFile, SearchRec);
-  ShowInfo(TEXT_MES_READING_FOLDER,1,0);
-  FilesReadedCount:=0;
-  FilesWithoutIcons:=0;
-  FE:=false;
-  EM:=false;
-  while Found = 0 do
-  begin
-   If Terminated then break;
-   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-   begin     
-    fa:=SearchRec.Attr and FaHidden;
-    If ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (fa=0)) then
-    begin
-     If not ExplorerInfo.ShowPrivate then
-     If Length(PrivateFiles)<>0 then
-     If IsStringInTArStrings(PrivateFiles,FFolder+SearchRec.Name) then
-     begin
-      Found := SysUtils.FindNext(SearchRec);
-      Continue;
-     end;
-     inc(FilesReadedCount);
-     ShowInfo(Format(TEXT_MES_READING_FOLDER_FORMAT,[IntToStr(FilesReadedCount)]),1,0);
-     If ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
-     begin
-      FE:=(SearchRec.Attr and faDirectory=0);
-      s:=ExtractFileExt(SearchRec.Name);
-      Delete(s,1,1);
-      s:='|'+AnsiUpperCase(s)+'|';
-      p:=StrPos(PChar(SupportedExt),PChar(s));
-      EM:=p<>nil;
-     end;
-     If FShowFiles then
-     if ExplorerInfo.ShowSimpleFiles then
-     If FE and not EM and ExplorerInfo.ShowSimpleFiles then
-     begin
-      if FolderView then
-      if AnsiLowerCase(SearchRec.Name)='folderdb.ldb' then
-      begin
-       Found := SysUtils.FindNext(SearchRec);
-       Continue;
-      end;
-      AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FILE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,true,true);
-      Found := SysUtils.FindNext(SearchRec);
-      Continue;
-     end;
-     if ExplorerInfo.ShowImageFiles then
-     If FE and EM and ExplorerInfo.ShowImageFiles then
-     begin
-      AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_IMAGE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,false{ValidCryptGraphicFileA(FFolder+SearchRec.Name)},true);
-      Found := SysUtils.FindNext(SearchRec);
-      Continue;
-     end;
-     If (SearchRec.Attr and faDirectory<>0) and ExplorerInfo.ShowFolders then
-     begin
-      AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FOLDER, -1, GetGUID,0,0,0,0,0{SearchRec.Size},'','','',0,false,true,true);
-      Found := SysUtils.FindNext(SearchRec);
-      Continue;
-     end;  
-    end;   
-   end;
-   Found := SysUtils.FindNext(SearchRec);
-  end;
-  FindClose(SearchRec);
-  ShowInfo(TEXT_MES_LOADING_INFO,1,0);
-  ShowProgress;
-  SynchronizeEx(InfoToExplorerForm);
-  ShowInfo(TEXT_MES_LOADING_FOLDERS,Length(FFiles),0);
-  InfoPosition:=0;
-  Folders:=0;
-  for i:=0 to Length(FFiles)-1 do
-  begin
-   FFiles[i].Tag:=0;
-   If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
-   begin
-    if Terminated then Break;
-    GUIDParam:=FFiles[i].SID;
-     Inc(Folders);
-     Inc(InfoPosition); 
-     if i mod 10=0 then
-       ShowInfo(InfoPosition);
-     CurrentFile := FFiles[i].FileName;
-     MakeFolderImage(CurrentFile);
-     AddDirectoryToExplorer;
-   end;
-  end;
-  ShowInfo(TEXT_MES_LOADING_IMAGES);
-  ImageFiles:=0;
-  for i:=0 to Length(FFiles)-1 do
-  If FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
-  begin
-   If Terminated then Break;
-   GUIDParam:=FFiles[i].SID;
-    inc(ImageFiles);
-    Inc(InfoPosition);
-    if i mod 10=0 then
-    ShowInfo(InfoPosition);
-    CurrentFile:=FFiles[i].FileName;
-    AddImageFileToExplorer;
-  end;
-  ShowInfo(TEXT_MES_LOADING_FILES);
-  If FShowFiles then
-  For i:=0 to Length(FFiles)-1 do
-  If FFiles[i].FileType=EXPLORER_ITEM_FILE then
-  begin
-   If Terminated then break;
-   GUIDParam:=FFiles[i].SID;
-    Inc(InfoPosition);
-    ShowInfo(InfoPosition);
-    CurrentFile:=FFiles[i].FileName;
-    AddImageFileToExplorer;
-    FFiles[i].Tag:=IntIconParam;
-  end;
-  SynchronizeEx(DoDefaultSort);
-  SynchronizeEx(EndUpdate);
-
-  ShowInfo(TEXT_MES_LOADING_TH);
-  ShowInfo(Length(FFiles),0);
-  InfoPosition:=0;
-
-  for i:=0 to Length(FFiles)-1 do
-  begin
-    if Terminated then Break;
-    if i mod 5=0 then
-    begin
-      SynchronizeEx(GetVisibleFiles);
-      VisibleUp(i);
-      Sleep(5);
-    end;
-
-    if FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
-    begin
-      GUIDParam:=FFiles[i].SID;
-      begin
-        Inc(InfoPosition);
-        ShowInfo(InfoPosition);
-        CurrentFile:=FFiles[i].FileName;
-        CurrentInfoPos:=i;
-
-        ReplaceImageItemImage;
-      end;
-      Priority:=tpNormal;
-    end;
-
-   If ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[i].Tag=1)) then
-   begin
-    FFiles[i].Tag:=1;
-    If Terminated then break;
-    GUIDParam:=FFiles[i].SID;
-    begin
-     Inc(InfoPosition);
-     ShowInfo(InfoPosition);
-     CurrentFile:=FFiles[i].FileName;
-     MakeIconForFile;
-    end;
-    Priority:=tpNormal;
-   end;
-
-   if ExplorerInfo.View=LV_THUMBS then
-   begin
-    If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
-    begin
-     FFiles[i].Tag:=1;
-     If Terminated then break;
-     GUIDParam:=FFiles[i].SID;
-     //SynchronizeEx(FileNeededA);
-     //If BooleanResult then
-     begin
-      Inc(InfoPosition);
-      ShowInfo(InfoPosition);
-      CurrentFile:=FFiles[i].FileName;
-      if ExplorerInfo.ShowThumbNailsForFolders then
+      DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
+      ShowInfo(TEXT_MES_CONNECTING_TO_DB,1,0);
+      FQuery:=GetQuery;
       try
-       ReplaceThumbImageToFolder;
-      except
+        ShowInfo(TEXT_MES_GETTING_INFO_FROM_DB,1,0);
+
+        if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+        if FolderView then
+        begin
+         SetSQL(FQuery,'Select * From '+GetDefDBname+' where FolderCRC = :crc');
+         s:=FFolder;
+         Delete(s,1,Length(ProgramDir));
+         UnformatDir(s);
+         CalcStringCRC32(AnsiLowerCase(s),crc);
+         SetIntParam(FQuery,0,Integer(crc));
+        end else
+        begin
+         SetStrParam(FQuery,0,'%'+DBFolderToSearch+'%');
+         SetStrParam(FQuery,1,'%'+DBFolderToSearch+'%\%');
+        end;
+        
+        for I:=1 to 20 do
+        begin
+         try
+          FQuery.Active:=True;
+          Break;
+         except
+          on e : Exception do
+          begin
+           EventLog(':TExplorerThread::Execute throw exception: '+e.Message);
+           Sleep(300);
+          end;
+         end;
+        end;
+        if (FQuery.RecordCount <> 0) and not ExplorerInfo.ShowPrivate then
+        begin
+          FQuery.First;
+          for I := 1 to FQuery.RecordCount do
+          begin
+            if FQuery.FieldByName('Access').AsInteger=db_access_private then
+              PrivateFiles.Add(AnsiLowerCase(ExtractFileName(FQuery.FieldByName('FFileName').AsString)));
+            
+            FQuery.Next;
+          end;
+          PrivateFiles.Sort;
+        end else
+           NoRecords := True;
+                                     
+        ShowInfo(TEXT_MES_READING_FOLDER,1,0);   
+        FilesReadedCount:=0;
+        FilesWithoutIcons:=0;
+        FE := False;
+        EM := False;
+        if FMask = '' then FileMask:='*.*' else FileMask:=FMask;
+        Found := FindFirst(FFolder + FileMask, faAnyFile, SearchRec);
+        while Found = 0 do
+        begin
+         if Terminated then Break;
+         try
+         if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+         begin     
+          FA := SearchRec.Attr and FaHidden;
+          If ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
+          begin
+           if not ExplorerInfo.ShowPrivate and not NoRecords then
+             if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.Name)) > -1 then
+             begin
+              Continue;
+             end;
+           inc(FilesReadedCount);
+           ShowInfo(Format(TEXT_MES_READING_FOLDER_FORMAT,[IntToStr(FilesReadedCount)]),1,0);
+           If ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
+           begin
+            FE:=(SearchRec.Attr and faDirectory=0);
+            s:=ExtractFileExt(SearchRec.Name);
+            Delete(s,1,1);
+            s:='|'+AnsiUpperCase(s)+'|';
+            p:=StrPos(PChar(SupportedExt),PChar(s));
+            EM:=p<>nil;
+           end;
+           If FShowFiles then
+           if ExplorerInfo.ShowSimpleFiles then
+           If FE and not EM and ExplorerInfo.ShowSimpleFiles then
+           begin
+            if FolderView then
+            if AnsiLowerCase(SearchRec.Name)='folderdb.ldb' then
+             Continue;
+
+            AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FILE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,true,true);
+            Continue;
+           end;
+           if ExplorerInfo.ShowImageFiles then
+           If FE and EM and ExplorerInfo.ShowImageFiles then
+           begin
+            AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_IMAGE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,false{ValidCryptGraphicFileA(FFolder+SearchRec.Name)},true);
+            Continue;
+           end;
+           If (SearchRec.Attr and faDirectory<>0) and ExplorerInfo.ShowFolders then
+           begin
+            AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FOLDER, -1, GetGUID,0,0,0,0,0{SearchRec.Size},'','','',0,false,true,true);
+            Continue;
+           end;  
+          end;   
+         end;
+         finally
+          Found := SysUtils.FindNext(SearchRec);
+         end;
+        end;
+        FindClose(SearchRec);
+        
+        ShowInfo(TEXT_MES_LOADING_INFO,1,0);
+        ShowProgress;
+        SynchronizeEx(InfoToExplorerForm);
+        ShowInfo(TEXT_MES_LOADING_FOLDERS,Length(FFiles),0);
+        InfoPosition:=0;
+        Folders:=0;
+        for i:=0 to Length(FFiles)-1 do
+        begin
+         FFiles[i].Tag:=0;
+         If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
+         begin
+          if Terminated then Break;
+          GUIDParam:=FFiles[i].SID;
+           Inc(Folders);
+           Inc(InfoPosition); 
+           if i mod 10=0 then
+             ShowInfo(InfoPosition);
+           CurrentFile := FFiles[i].FileName;
+           MakeFolderImage(CurrentFile);
+           AddDirectoryToExplorer;
+         end;
+        end;
+        ShowInfo(TEXT_MES_LOADING_IMAGES);
+        ImageFiles:=0;
+        for i:=0 to Length(FFiles)-1 do
+        If FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
+        begin
+         If Terminated then Break;
+         GUIDParam:=FFiles[i].SID;
+          inc(ImageFiles);
+          Inc(InfoPosition);
+          if i mod 10=0 then
+          ShowInfo(InfoPosition);
+          CurrentFile:=FFiles[i].FileName;
+          AddImageFileToExplorer;
+        end;
+        ShowInfo(TEXT_MES_LOADING_FILES);
+        If FShowFiles then
+        For i:=0 to Length(FFiles)-1 do
+        If FFiles[i].FileType=EXPLORER_ITEM_FILE then
+        begin
+         If Terminated then break;
+         GUIDParam:=FFiles[i].SID;
+          Inc(InfoPosition);
+          ShowInfo(InfoPosition);
+          CurrentFile:=FFiles[i].FileName;
+          AddImageFileToExplorer;
+          FFiles[i].Tag:=IntIconParam;
+        end;
+        SynchronizeEx(DoDefaultSort);
+        SynchronizeEx(EndUpdate);
+
+        ShowInfo(TEXT_MES_LOADING_TH);
+        ShowInfo(Length(FFiles),0);
+        InfoPosition:=0;
+
+        for i:=0 to Length(FFiles)-1 do
+        begin
+          if Terminated then Break;
+          if i mod 5=0 then
+          begin
+            TW.I.Start('GetVisibleFiles');
+            SynchronizeEx(GetVisibleFiles);
+            VisibleUp(i); 
+            TW.I.Stop;
+          end;   
+          Priority := tpNormal;
+
+          if FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
+          begin
+            GUIDParam:=FFiles[i].SID;
+            begin
+              Inc(InfoPosition);
+              ShowInfo(InfoPosition);
+              CurrentFile:=FFiles[i].FileName;
+              CurrentInfoPos:=i;
+              ReplaceImageItemImage;
+            end;
+          end;
+
+         If ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[i].Tag=1)) then
+         begin
+          FFiles[i].Tag:=1;
+          GUIDParam:=FFiles[i].SID;
+          begin
+           Inc(InfoPosition);
+           ShowInfo(InfoPosition);
+           CurrentFile:=FFiles[i].FileName;
+           MakeIconForFile;
+          end;
+         end;
+
+         if ExplorerInfo.View=LV_THUMBS then
+         begin
+          If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
+          begin
+           FFiles[i].Tag:=1;
+           GUIDParam:=FFiles[i].SID;
+           begin
+            Inc(InfoPosition);
+            ShowInfo(InfoPosition);
+            CurrentFile:=FFiles[i].FileName;
+            if ExplorerInfo.ShowThumbNailsForFolders then
+            try
+             ReplaceThumbImageToFolder;
+            except
+            end;
+           end;
+          end;
+         end else
+         begin
+          Inc(InfoPosition);
+          ShowInfo(InfoPosition);
+          CurrentInfoPos:=i;
+         end;
+
+        end;
+
+        if (ExplorerInfo.View = LV_THUMBS) and (ExplorerInfo.PictureSize <> ThImageSize) then
+          DoLoadBigImages;
+
+        HideProgress;
+        ShowInfo('');
+        SynchronizeEx(DoStopSearch);
+      finally
+        FQuery.Close;
+        FreeDS(FQuery);
       end;
-     end;
-     Priority:=tpNormal;
+    finally
+      PrivateFiles.Free;
     end;
-   end else
-   begin
-    Inc(InfoPosition);
-    ShowInfo(InfoPosition);
-    CurrentInfoPos:=i;
-    Priority:=tpNormal;
-   end;
-
-  end;
-
-  //XXX
-  if ExplorerInfo.View=LV_THUMBS then
-  if ExplorerInfo.PictureSize<>ThImageSize then
-  DoLoadBigImages;
-
-  HideProgress;
-  ShowInfo('');
-  SynchronizeEx(DoStopSearch);
-  FQuery.Close;
-  FreeDS(FQuery);
   finally
     CoUninitialize;
   end;
@@ -629,15 +610,6 @@ begin
     FSender.LoadInfoAboutFiles(FFiles, FCID);
 end;
 
-{procedure TExplorerThread.FileNeededA;
-begin
-  if not Terminated then
-  begin
-    BooleanResult:=FSender.FileNeeded(GUIDParam);
-    if not FSender.Active then
-      Priority:=tpLowest;
-  end;
-end;   }
 
 procedure TExplorerThread.FileNeededAW;
 begin    
@@ -649,13 +621,6 @@ begin
       Priority:=tpLowest;
   end;
 end;
-
-{procedure TExplorerThread.FileNeeded;
-begin
-  BooleanResult := False;
-  If not Terminated then
-   BooleanResult:=FSender.FileNeeded(GUIDParam);
-end;  }
 
 procedure TExplorerThread.AddDirectoryToExplorer;
 begin
@@ -1986,9 +1951,8 @@ begin
  ProcNum:=GettingProcNum;
  FPic:=nil;
  
-  Repeat
+  while ExplorerUpdateBigImageThreadsCount>=(ProcNum+1) do
     sleep(100);
-  until ExplorerUpdateBigImageThreadsCount<(ProcNum+1);
 
   Inc(ExplorerUpdateBigImageThreadsCount);
 
@@ -2088,16 +2052,11 @@ begin
       end;
       FreeAndNil(fbit);
 
-      case FFiles[i].Rotate of
-       DB_IMAGE_ROTATED_90  :  Rotate90A(TempBitmap);
-       DB_IMAGE_ROTATED_180 :  Rotate180A(TempBitmap);
-       DB_IMAGE_ROTATED_270 :  Rotate270A(TempBitmap);
-      end;
+      ApplyRotate(TempBitmap, FFiles[i].Rotate );
 
       BooleanParam:=LoadingAllBigImages;
       SynchronizeEx(ReplaceImageInExplorerB);
 
-     //TempBitmap.Free;
      end;
     end;
 

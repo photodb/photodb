@@ -2,7 +2,7 @@ unit uTime;
 
 interface
 
-uses Classes, SysUtils;
+uses Classes, Windows, SysUtils, SyncObjs;
 
 type
   TW = class(TObject)
@@ -11,25 +11,31 @@ type
     FStart : TDateTime;
     IsRuning : Boolean;
     FName : string;
+    FThreadID : THandle;
   public
-    constructor Create;
+    constructor Create(ThreadID : THandle);
     destructor Destroy; override;
     procedure Start(Name : string);
     procedure Stop;
     class function I : TW;
+    property ThreadID : THandle read FThreadID;
   end;
 
 implementation
 
 var
-  W : TW;
+  W : TList = nil;
+  Sync : TCriticalSection = nil;
 
 { TW }
 
-constructor TW.Create;
+constructor TW.Create(ThreadID : THandle);
 begin
+  FThreadID := ThreadID;
   IsRuning := False;
-  FS := TFileStream.Create('c:\tw.txt', fmCreate);
+  if MainThreadID = ThreadID then
+    ThreadID := 0;
+  FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate);
 end;
 
 destructor TW.Destroy;
@@ -39,11 +45,32 @@ begin
 end;
 
 class function TW.I: TW;
+var
+  I : Integer;
+  CurrentThreadID : THandle;
 begin
-  if W = nil then
-    W := TW.Create;
+  Result := nil;
+  if Sync = nil then
+    Sync := TCriticalSection.Create;
 
-  Result := W;
+  Sync.Enter;
+  try
+    if W = nil then
+      W := TList.Create;
+
+    CurrentThreadID := GetCurrentThreadID;
+    for I := 0 to W.Count - 1 do
+      if TW(W[I]).ThreadID = CurrentThreadID then
+         Result := W[I];
+
+    if Result = nil then
+    begin
+      Result := TW.Create(CurrentThreadID);
+      W.Add(Result);
+    end;
+  finally
+    Sync.Leave;
+  end;
 end;
 
 procedure TW.Start(Name: string);
