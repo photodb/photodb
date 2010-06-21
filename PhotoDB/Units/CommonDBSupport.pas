@@ -7,7 +7,7 @@ interface
 uses
 {$IFNDEF DEBUG}
 Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
-UnitDBDeclare, uLogger, uTime,
+UnitDBDeclare, uLogger, uTime, SyncObjs,
 {$ENDIF}
  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
  UnitINI, BDE;
@@ -24,14 +24,32 @@ const
  DB_TABLE_SETTINGS = 4;
 
  type
-  TADOConnectionX = record
-   ADOConnection : TADOConnection;
-   FileName : string;
-   RefCount : integer;
+  TADODBConnection = class(TObject)
+  public
+    ADOConnection : TADOConnection;
+    FileName : string;
+    RefCount : Integer;
+    ThreadID : THandle;
+  end;
+
+  TADOConnections = class(TObject)
+  private
+    FConnections : TList;
+    FSync : TCriticalSection;
+    function GetCount: Integer;
+    function GetValueByIndex(Index: Integer): TADODBConnection;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure RemoveAt(Index : Integer);
+    function Add : TADODBConnection;
+    property Count : Integer read GetCount;
+    property Items[Index: Integer]: TADODBConnection read GetValueByIndex; default;
   end;
 
 var
-  ADOConnections : array of TADOConnectionX;
+  ADOConnections : TADOConnections = nil;
+  
 {$IFNDEF DEBUG}
   aScript : TScript;
 {$ENDIF}
@@ -75,7 +93,7 @@ function GetDBType : integer; overload;
 function GetDBType(dbname : string) : integer; overload;
 
 procedure FreeDS(var DS : TDataSet);
-function ADOInitialize(dbname : String) : TADOConnection;
+function ADOInitialize(dbname : String; ForseNewConnection : Boolean = False) : TADOConnection;
 
 function GetTable : TDataSet; overload;
 function GetTable(Table : String; TableID : integer = DB_TABLE_UNKNOWN) : TDataSet; overload;
@@ -85,9 +103,9 @@ function ActiveTable(Table : TDataSet; Active : boolean) : boolean;
 function GetConnectionString(dbname : String) : String; overload;
 function GetConnectionString : String; overload;
 
-function GetQuery : TDataSet; overload;
-function GetQuery(TableName : string) : TDataSet; overload;
-function GetQuery(TableName : string; TableType : integer) : TDataSet; overload;
+function GetQuery(IsolateThread : Boolean = False) : TDataSet; overload;
+function GetQuery(TableName : string; IsolateThread : Boolean = False) : TDataSet; overload;
+function GetQuery(TableName : string; TableType : integer; IsolateThread : Boolean = False) : TDataSet; overload;
 
 procedure SetSQL(SQL : TDataSet; SQLText : String);
 procedure ExecSQL(SQL : TDataSet);
@@ -278,9 +296,9 @@ begin
  Result:=Table<>nil;
 end;
 
-function GetQuery : TDataSet;
+function GetQuery(IsolateThread : Boolean = False) : TDataSet;
 begin
- Result:=GetQuery(dbname,GetDBType);
+ Result:=GetQuery(dbname, GetDBType, IsolateThread);
 end;
 
 function GetTableNameByFileName(FileName : string) : string;
@@ -299,20 +317,19 @@ begin
  end;
 end;
 
-function GetQuery(TableName : string) : TDataSet;
+function GetQuery(TableName : string; IsolateThread : Boolean = False) : TDataSet;
 begin
- Result:=GetQuery(TableName,GetDBType(TableName));
+ Result:=GetQuery(TableName, GetDBType(TableName), IsolateThread);
 end;
 
-function GetQuery(TableName : string; TableType : integer) : TDataSet;
+function GetQuery(TableName : string; TableType : integer; IsolateThread : Boolean = False) : TDataSet;
 begin
  Result:=nil;
  if TableType=DB_TYPE_UNKNOWN then TableType:=GetDBType;
  if TableType=DB_TYPE_MDB then
  begin
-  CoInitialize(nil);
   Result:=TADOQuery.Create(nil);
-  (Result as TADOQuery).Connection:=ADOInitialize(TableName);
+  (Result as TADOQuery).Connection:=ADOInitialize(TableName, IsolateThread);
  end;
 end;
 
@@ -684,72 +701,65 @@ end;
 
 procedure TryRemoveConnection(dbname : string; Delete : boolean = false);
 var
-  i, j, l : integer;
+  I : integer;
 begin
- dbname:=AnsiLowerCase(dbname);
- l:=Length(ADOConnections);
- for i:=0 to l-1 do
- begin
-  if ADOConnections[i].FileName=dbname then
-  if (ADOConnections[i].RefCount=0) or Delete then
+  dbname := AnsiLowerCase(dbname);
+  for I:=0 to ADOConnections.Count - 1 do
   begin
-   ADOConnections[i].ADOConnection.Close;
-   for j:=i to l-2 do
-   ADOConnections[i]:=ADOConnections[i+1];
-   exit;
+    if ADOConnections[I].FileName=dbname then
+    if (ADOConnections[I].RefCount = 0) or Delete then
+    begin
+      ADOConnections[I].ADOConnection.Close;
+      ADOConnections.RemoveAt(I);
+      exit;
+    end;
   end;
- end;
 end;
 
 procedure RemoveADORef(ADOConnection : TADOConnection);
 var
-  i, j, l : integer;
+  I  : integer;
 begin
- l:=Length(ADOConnections);
- for i:=0 to l-1 do
- begin
-  if ADOConnections[i].ADOConnection=ADOConnection then
+  for I := 0 to ADOConnections.Count - 1 do
   begin
-   dec(ADOConnections[i].RefCount);
-   //exit;
-   if ADOConnections[i].RefCount=0 then
-   begin
-    //l:=ADOConnections[i].ADOConnection.DataSetCount;
-    l:=Length(ADOConnections);
-    ADOConnections[i].ADOConnection.Close;
-    for j:=i to l-2 do
-    ADOConnections[j]:=ADOConnections[j+1];
-    SetLength(ADOConnections,Length(ADOConnections)-1);
-   end;
-   exit;
+    if ADOConnections[I].ADOConnection = ADOConnection then
+    begin
+      Dec(ADOConnections[I].RefCount);
+      if ADOConnections[I].RefCount = 0 then
+      begin
+        ADOConnections[I].ADOConnection.Close;
+        ADOConnections.RemoveAt(I);
+      end;
+      Exit;
+    end;
   end;
- end;
 end;
 
-function ADOInitialize(dbname : String) : TADOConnection;
+function ADOInitialize(dbname : String; ForseNewConnection : Boolean = False) : TADOConnection;
 var
-  i, l : integer;
+  I : integer;
+  DBConnection : TADODBConnection;
 begin
- dbname:=AnsiLowerCase(dbname);
- l:=Length(ADOConnections);
- for i:=0 to l-1 do
- begin
-  if ADOConnections[i].FileName=dbname then
-  begin
-   Result:=ADOConnections[i].ADOConnection;
-   inc(ADOConnections[i].RefCount);
-   exit;
-  end;
- end;
- SetLength(ADOConnections,l+1);
- ADOConnections[l].ADOConnection:= TADOConnection.Create(nil);
- ADOConnections[l].ADOConnection.ConnectionString:=GetConnectionString(dbname);
- ADOConnections[l].ADOConnection.LoginPrompt:=false;
- ADOConnections[l].ADOConnection.Provider:=MDBProvider;
-// ADOConnections[i].ADOConnection.KeepConnection:=false;
- Result:=ADOConnections[l].ADOConnection;
- ADOConnections[l].FileName:=AnsiLowerCase(dbname);
- ADOConnections[l].RefCount:=1;
+  dbname := AnsiLowerCase(dbname);
+  if not ForseNewConnection then
+    for I := 0 to ADOConnections.Count - 1 do
+    begin
+      if ADOConnections[I].FileName = dbname then
+      begin
+        Result:=ADOConnections[I].ADOConnection;
+        Inc(ADOConnections[I].RefCount);
+        exit;
+      end;
+    end;
+  DBConnection := ADOConnections.Add;
+  DBConnection.FileName := AnsiLowerCase(dbname);
+  DBConnection.RefCount := 1;
+  DBConnection.ADOConnection := TADOConnection.Create(nil);
+  DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname);
+  DBConnection.ADOConnection.LoginPrompt := False;
+  DBConnection.ADOConnection.Provider := MDBProvider;
+ // DBConnection.ADOConnection.KeepConnection:=false;
+  Result := DBConnection.ADOConnection;
 end;
 
 procedure FreeDS(var DS : TDataSet);
@@ -920,9 +930,49 @@ begin
  {$ENDIF}
 end;
 
+{ TADOConnections }
+
+function TADOConnections.Add: TADODBConnection;
+begin
+  Result := FConnections[FConnections.Add(TADODBConnection.Create)];
+end;
+
+constructor TADOConnections.Create;
+begin
+  FSync := TCriticalSection.Create;
+  FConnections := TList.Create;
+end;
+
+destructor TADOConnections.Destroy;
+var
+  I : Integer;
+begin
+  for I := 0 to FConnections.Count - 1 do
+    TADODBConnection(FConnections[I]).Free;
+  FConnections.Free;
+  FSync.Free;
+  inherited;
+end;
+
+function TADOConnections.GetCount: Integer;
+begin
+  Result := FConnections.Count;
+end;
+
+function TADOConnections.GetValueByIndex(Index: Integer): TADODBConnection;
+begin
+  Result := FConnections[Index];
+end;
+
+procedure TADOConnections.RemoveAt(Index: Integer);
+begin
+  FConnections.Delete(Index);
+end;
+
 initialization
 
- SetLength(ADOConnections,0);
+ ADOConnections := TADOConnections.Create;
+
  {$IFNDEF DEBUG}
 
  if GetDBViewMode then
@@ -932,5 +982,9 @@ initialization
  end;
 
  {$ENDIF}
+
+finalization
+
+ ADOConnections.Free;
 
 end.

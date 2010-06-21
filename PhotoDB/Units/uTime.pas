@@ -9,6 +9,7 @@ type
   private
     FS : TFileStream;
     FStart : TDateTime;
+    FStartUp : TDateTime;
     IsRuning : Boolean;
     FName : string;
     FThreadID : THandle;
@@ -33,6 +34,7 @@ constructor TW.Create(ThreadID : THandle);
 begin
   FThreadID := ThreadID;
   IsRuning := False;
+  FStartUp := Now;
   if MainThreadID = ThreadID then
     ThreadID := 0;
   FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate);
@@ -86,10 +88,15 @@ end;
 procedure TW.Stop;
 var
   Info : string;
+  Delta : Integer;
 begin
   IsRuning := False;
-  Info := Format('%s = %d ms.%s', [FName, Round((Now - FStart)*24*60*60*1000), #13#10]);
-  FS.Write(Info[1], Length(Info))
+  Delta := Round((Now - FStart)*24*60*60*1000);
+  if Delta > 9 then
+  begin
+    Info := Format('%s = %d ms. (%d ms.)%s', [FName, Delta , Round((Now - FStartUp)*24*60*60*1000), #13#10]);
+    FS.Write(Info[1], Length(Info))
+  end;
 end;
 
 end.

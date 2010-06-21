@@ -12,7 +12,6 @@ object FormManager: TFormManager
   Font.Style = []
   OldCreateOrder = False
   OnActivate = FormActivate
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnPaint = FormPaint
   PixelsPerInch = 96

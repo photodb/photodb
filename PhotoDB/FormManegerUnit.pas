@@ -16,7 +16,6 @@ type
     ApplicationEvents1: TApplicationEvents;
     CheckTimer: TTimer;
     TimerCloseApplicationByDBTerminate: TTimer;
-    procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure TerminateTimerTimer(Sender: TObject);
@@ -45,6 +44,7 @@ type
    Function MainFormsCount : Integer;
    Function IsMainForms(Form : TForm) : Boolean;
    Procedure CloseApp(Sender : TObject);
+   Procedure Load;
   end;
 
 var
@@ -134,96 +134,6 @@ begin
  if SafeMode then Exit;
 end;
 
-procedure TFormManager.FormCreate(Sender: TObject);
-var
-  DBVersion : integer;
-  DBFile : TPhotoDBFile;
-begin
- CanCheckViewerInMainForms:=false;
- LockCleaning:=true;
- EnteringCodeNeeded := false;
- Running:=false;
- try
-  if not FolderView then
-  InitializeDolphinDB else
-  begin
-   dbname:=GetDirectory(Application.ExeName)+'FolderDB.photodb';
-
-   if FileExists(GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
-   dbname:=GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb';
-  end;
- except
-  on e : Exception do EventLog(':TFormManager::FormCreate() throw exception: '+e.Message);
- end;
- If DBTerminating then
- begin
-  TimerCloseApplicationByDBTerminate.Enabled:=true;
- end;
- ShowWindow(Handle,SW_HIDE);
- FormManager.Visible:=false;
- Application.ShowMainForm:=false;
- DateTime:=Now;
- If not SafeMode and not DBTerminating then
- begin
-
- // DBVersion:=DBKernel.TestDBEx(dbname,true);
-
-{  if DBVersion<0 then
-  begin
-   MessageBoxDB(Handle,TEXT_MES_DB_FILE_NOT_FOUND_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-
-   DBFile:=DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
-   if DBKernel.TestDB(DBFile.FileName) then
-   DBKernel.AddDB(DBFile._Name,DBFile.FileName,DBFile.Icon);
-   DBKernel.SetDataBase(DBFile.FileName);
-
-   DBVersion:=DBKernel.TestDBEx(dbname,true);
-   if not DBKernel.ValidDBVersion(dbname,DBVersion) then
-   Halt;
-  end else  }
-  begin
-  { if not DBKernel.ValidDBVersion(dbname,DBVersion) then
-   begin
-    ConvertDB(dbname);
-    if not DBKernel.TestDB(dbname,true) then Halt;
-   end else }
-   begin
-    if DBkernel.ReadboolW('DBCheckType',ExtractFileName(dbname),true)=true then
-    begin
-     //TODO: ???
-     {if GetDBType=DB_TYPE_BDE then
-     ConvertDB(dbname);}
-     DBkernel.WriteBoolW('DBCheckType',ExtractFileName(dbname),false);
-    end;
-    //checking RecordCount
-    if DBkernel.ReadboolW('DBCheck',ExtractFileName(dbname),true)=true then
-    begin
-     if CommonDBSupport.GetRecordsCount(dbname)=0 then
-     begin
-      if AboutForm<>nil then
-      begin
-       AboutForm.Release;
-       if UseFreeAfterRelease then AboutForm.Free;
-       AboutForm:=nil;
-      end;
-      begin
-       ImportImages(dbname);
-       DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
-      end;
-     end else
-     begin
-      DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
-     end;
-    end;
-   end;
-  end;
-  LockCleaning:=false;
- end;
- HidefromTaskBar(Handle);
- if not DBTerminating then
- TInternetUpdate.Create(false,false);
-end;
-
 procedure TFormManager.Run(LoadingForm : TForm);
 var
   Directory, s : String;
@@ -235,11 +145,8 @@ var
 
   procedure CloseLoadingForm;
   begin
-    {if LoadingForm<>nil then
-    begin
-      LoadingForm.Free;
-      LoadingForm:=nil;
-    end;}
+    if LoadingForm<>nil then
+      FreeAndNil(LoadingForm);
   end;
 
 begin               
@@ -666,6 +573,100 @@ procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(
   Sender: TObject);
 begin
  inherited Close;
+end;
+
+procedure TFormManager.Load;
+var
+  DBVersion : integer;
+  DBFile : TPhotoDBFile;
+begin
+  TW.I.Start('FM -> Load');
+ CanCheckViewerInMainForms:=false;
+ LockCleaning:=true;
+ EnteringCodeNeeded := false;
+ Running:=false;
+ try
+  TW.I.Start('FM -> InitializeDolphinDB');
+  if not FolderView then
+  InitializeDolphinDB else
+  begin
+   dbname:=GetDirectory(Application.ExeName)+'FolderDB.photodb';
+
+   if FileExists(GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
+   dbname:=GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb';
+  end;
+ except
+  on e : Exception do EventLog(':TFormManager::FormCreate() throw exception: '+e.Message);
+ end;
+ If DBTerminating then
+ begin
+  TimerCloseApplicationByDBTerminate.Enabled:=true;
+ end;
+ ShowWindow(Handle,SW_HIDE);
+ FormManager.Visible:=false;
+ Application.ShowMainForm:=false;
+ DateTime:=Now;
+ If not SafeMode and not DBTerminating then
+ begin
+
+ // DBVersion:=DBKernel.TestDBEx(dbname,true);
+
+{  if DBVersion<0 then
+  begin
+   MessageBoxDB(Handle,TEXT_MES_DB_FILE_NOT_FOUND_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+
+   DBFile:=DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
+   if DBKernel.TestDB(DBFile.FileName) then
+   DBKernel.AddDB(DBFile._Name,DBFile.FileName,DBFile.Icon);
+   DBKernel.SetDataBase(DBFile.FileName);
+
+   DBVersion:=DBKernel.TestDBEx(dbname,true);
+   if not DBKernel.ValidDBVersion(dbname,DBVersion) then
+   Halt;
+  end else  }
+  begin
+  { if not DBKernel.ValidDBVersion(dbname,DBVersion) then
+   begin
+    ConvertDB(dbname);
+    if not DBKernel.TestDB(dbname,true) then Halt;
+   end else }
+   begin
+    if DBkernel.ReadboolW('DBCheckType',ExtractFileName(dbname),true)=true then
+    begin
+     //TODO: ???
+     {if GetDBType=DB_TYPE_BDE then
+     ConvertDB(dbname);}
+     DBkernel.WriteBoolW('DBCheckType',ExtractFileName(dbname),false);
+    end;
+    //checking RecordCount
+    if DBkernel.ReadboolW('DBCheck',ExtractFileName(dbname),true)=true then
+    begin
+     if CommonDBSupport.GetRecordsCount(dbname)=0 then
+     begin
+      if AboutForm<>nil then
+      begin
+       AboutForm.Release;
+       if UseFreeAfterRelease then AboutForm.Free;
+       AboutForm:=nil;
+      end;
+      begin
+       ImportImages(dbname);
+       DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
+      end;
+     end else
+     begin
+      DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
+     end;
+    end;
+   end;
+  end;
+  LockCleaning:=false;
+ end;
+  TW.I.Start('FM -> HidefromTaskBar');
+ HidefromTaskBar(Handle);
+ if not DBTerminating then
+ TInternetUpdate.Create(false,false);  
+  TW.I.Stop;
 end;
 
 initialization

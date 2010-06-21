@@ -427,9 +427,8 @@ begin
  /Logging
  /SQLExec   
  /SQLExecFile
-}               
-  TW.I.Start('CoInitialize');
-
+}
+  TW.I.Start('START');
   ProgramDir := ExtractFileDir(Application.ExeName) + '\';
 
   EventLog('');
@@ -570,6 +569,9 @@ begin
   if not SafeMode then
   if not GetParamStrDBBool('/NoPrevVersion') then
   FindRunningVersion;
+
+  //This is main form of application
+  Application.CreateForm(TFormManager, FormManager);
 
   if not GetParamStrDBBool('/NoLogo') then
   begin
@@ -947,11 +949,6 @@ begin
   TW.I.Start('LoadingAboutForm.FREE');
 
   //PREPAIRING RUNNING DB ----------------------------------------
-  if LoadingAboutForm<>nil then
-  begin
-    LoadingAboutForm.Free;
-    LoadingAboutForm:=nil;
-  end;
 
  If DBTerminating then
  Application.ShowMainForm:=False;
@@ -959,7 +956,7 @@ begin
  begin
   EventLog('Form manager...');
   TW.I.Start('Form manager...');
-  Application.CreateForm(TFormManager, FormManager);
+  FormManager.Load;
   If not DBTerminating then
   begin
    EventLog('ID Form...');
@@ -1007,7 +1004,8 @@ begin
  if FileExistsEx(s1) then
  begin            
   Running:=true;
-  If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
+  If UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
   FormManager.RegisterMainForm(UpdaterDB.Form);
   UpdaterDB.AddFile(s1);
  end;
@@ -1022,14 +1020,14 @@ begin
 
  if GetParamStrDBBool('/SQLExec') then
  begin
-  Dolphin_DB.ExecuteQuery(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'),'"'));
+  ExecuteQuery(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'),'"'));
  end;
    
  if GetParamStrDBBool('/SQLExecFile') then
  begin
   s1:=SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'),'"');
   s1:=ReadTextFileInString(s1);
-  Dolphin_DB.ExecuteQuery(s1);
+  ExecuteQuery(s1);
  end;
 
   Application.Run;

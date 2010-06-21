@@ -3,7 +3,7 @@ unit UnitDBNullQueryThread;
 interface
 
 uses
-  Classes, Dolphin_DB, CommonDBSupport, DB, UnitCrypting;
+  Classes, Dolphin_DB, CommonDBSupport, DB, UnitCrypting, ActiveX;
 
 type
   TDBNullQueryThread = class(TThread)
@@ -22,13 +22,19 @@ var
   Query : TDataSet;
   SQL : string;
 begin
-  SQL := 'Select * from '+ GetTableNameByFileName(DBName) + ' where (Rating>=6)';
-  Query:=GetQuery;
+  FreeOnTerminate := True;
+  CoInitialize(nil);
   try
-    SetSQL(Query, SQL);
-    Query.Active := true;
+    SQL := 'Select * from '+ GetTableNameByFileName(DBName) + ' where (Rating>=6) or FFileName like "%:::%"';
+    Query:=GetQuery(True);
+    try
+      SetSQL(Query, SQL);
+      Query.Active := true;
+    finally
+      FreeDS(Query);
+    end;
   finally
-    FreeDS(Query);
+    CoUninitialize;
   end;
 end;
 

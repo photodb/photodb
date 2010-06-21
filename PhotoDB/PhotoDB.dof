@@ -100,7 +100,7 @@ Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=
+RunParams="/EXPLORER" "D:\Dmitry\Dolphin"
 HostApplication=
 Launcher=
 UseLauncher=0
