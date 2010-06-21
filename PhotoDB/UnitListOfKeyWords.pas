@@ -118,14 +118,10 @@ var
   X : List;
 
 begin
- if GetDBType=DB_TYPE_BDE then
- begin
-  FTable := GetTable;
- end else
- begin
+
   FTable:=GetQuery;
   SetSQL(FTable,'Select ID, Access, KeyWords from '+GetDefDBName+' order by ID desc');
- end;
+
  ProgressForm:=GetProgressWindow;
  ProgressForm.OneOperation:=true;
  ProgressForm.OperationPosition:=0;
@@ -133,7 +129,6 @@ begin
  ProgressForm.CanClosedByUser:=true;
  ProgressForm.SetAlternativeText(TEXT_MES_LOADING_KEYWORDS);
  try
-  if GetDBType=DB_TYPE_BDE then FTable.Open else
   begin
 
    TOpenQueryThread.Create(false,FTable,DBOpened);

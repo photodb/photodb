@@ -269,7 +269,8 @@ uses
   uStringUtils in 'Units\uStringUtils.pas',
   uTime in 'Units\uTime.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
-  UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas';
+  UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas',
+  UnitExplorerLoadSingleImageThread in 'Threads\UnitExplorerLoadSingleImageThread.pas';
 
 {$R *.res}
 

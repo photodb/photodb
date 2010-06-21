@@ -163,23 +163,11 @@ begin
 
  try
   //deleting temp and system db files
-  if GetDBType(FFileName)=DB_TYPE_BDE then
-  begin
-   Files[0]:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'.mb';
-   if FileExists(Files[0]) then
-   SilentDeleteFiles(0, Files, true);
-   Files[0]:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'g.db';
-   if FileExists(Files[0]) then
-   SilentDeleteFiles(0, Files, true);
-   Files[0]:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'g.mb';
-   if FileExists(Files[0]) then
-   SilentDeleteFiles(0, Files, true);
-  end else
-  begin
+
    Files[0]:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'.ldb';
    if FileExists(Files[0]) then
    SilentDeleteFiles(0, Files, true);
-  end;
+
  except
   on e : Exception do
   begin
@@ -196,11 +184,6 @@ begin
  NewFileName:=NewFileName+'.db';
 
  RenameFile(ToFileName, NewFileName);
- if GetDBType(ToFileName)=DB_TYPE_BDE then
- begin
-  RenameFile(GetDirectory(ToFileName)+GetFileNameWithoutExt(ToFileName)+'.mb',
-  GetDirectory(NewFileName)+GetFileNameWithoutExt(NewFileName)+'.mb');
- end;
 
  if AnsiLowerCase(FFileName)=AnsiLowerCase(dbname) then
  begin

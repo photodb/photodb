@@ -1696,14 +1696,6 @@ procedure TManagerDB.BackUpDBLinkClick(Sender: TObject);
 begin
  if ID_OK<>MessageBoxDB(Handle,TEXT_MES_BACK_UP_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then exit;
  begin
-  if GetDBType=DB_TYPE_BDE then
-  begin
-   if not UnitBackUpTableThread.Active then
-   begin
-    BackUpTableThread.Create(false);
-   end;
-   ReadBackUps;
-  end;
   if GetDBType=DB_TYPE_MDB then
   begin
    DBkernel.WriteBool('StartUp','BackUp',True);

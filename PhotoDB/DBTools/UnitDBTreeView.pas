@@ -246,14 +246,7 @@ var
   OpenProgress : TProgressActionForm;
   c, i : integer;
 begin
- if GetDBType=DB_TYPE_BDE then
- begin
-  WorkTable:=GetTable(FDBFileName,DB_TABLE_IMAGES);
-  TempTable:=GetTable(FDBFileName,DB_TABLE_IMAGES);
-  WorkTable.Active:=true;
-  TempTable.Active:=true;
- end else
- begin
+
   WorkTable:=GetQuery;
   TempTable:=GetQuery;
   SetSQL(WorkTable,'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from '+GetDefDBName);
@@ -303,7 +296,7 @@ begin
   OpenProgress.Release;
   if UseFreeAfterRelease then
   OpenProgress.Free;
- end;
+  
  Show;
  Button1Click(self);
 end;

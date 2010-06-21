@@ -265,7 +265,6 @@ var
    FromSQL:=GetDefDBname;
    AndWhere:='';
   end;
-  if GetDBType=DB_TYPE_BDE then SetSQL(FQuery,'Select * From '+GetDefDBname+' where (FFileName Like :FolderA)'+AndWhere);
   if GetDBType=DB_TYPE_MDB then SetSQL(FQuery,'Select * From '+FromSQL+' where (FFileName Like :FolderA)'+AndWhere);
   FormatDir(LocationFolder);
   if FileExists(Location) then

@@ -83,6 +83,31 @@ begin
   end;
 end;
 
+function MixBytes(FG, BG, TRANS: byte): byte;
+ asm
+  push bx  // push some regs
+  push cx
+  push dx
+  mov DH,TRANS // remembering Transparency value (or Opacity - as you like)
+  mov BL,FG    // filling registers with our values
+  mov AL,DH    // BL = ForeGround (FG)
+  mov CL,BG    // CL = BackGround (BG)
+  xor AH,AH    // Clear High-order parts of regs
+  xor BH,BH
+  xor CH,CH
+  mul BL       // AL=AL*BL
+  mov BX,AX    // BX=AX
+  xor AH,AH
+  mov AL,DH
+  xor AL,$FF   // AX=(255-TRANS)
+  mul CL       // AL=AL*CL
+  add AX,BX    // AX=AX+BX
+  shr AX,8     // Fine! Here we have mixed value in AL
+  pop dx       // Hm... No rubbish after us, ok?
+  pop cx
+  pop bx       // Bye, dear Assembler - we go home to Delphi!
+end;
+
 procedure GrayScale(Image : TBitmap);
 var
   I, J, C : integer;

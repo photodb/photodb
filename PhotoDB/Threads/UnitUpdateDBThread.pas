@@ -273,24 +273,11 @@ var
 
  Function GetRecordsCount : integer;
  begin
-  if (GetDBType(dbname)=DB_TYPE_BDE) then
-  begin
-   DemoTable:=GetTable(dbname,DB_TABLE_IMAGES);
-   try
-    DemoTable.Active:=true;
-   except
-    on e : Exception do EventLog(':UpdateDBThread::Execute()/GetRecordsCount throw exception: '+e.Message);
-   end;
-   Result:=DemoTable.RecordCount;
-   FreeDS(Demotable);
-  end else
-  begin
    DemoTable:=GetQuery(dbname);
    SetSQL(DemoTable,'Select Count(*) as CountOfRecs from '+GetDefDBname);
    DemoTable.Open;
    Result:=Demotable.FieldByName('CountOfRecs').AsInteger;
    FreeDS(Demotable);
-  end;
  end;
 
 begin

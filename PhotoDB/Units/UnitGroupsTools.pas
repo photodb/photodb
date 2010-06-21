@@ -87,8 +87,6 @@ begin
  sGroupToDelete:=CodeGroup(GroupToRename);
  GroupToRename.GroupName:=NewName;
  sGroupToAdd:=CodeGroup(GroupToRename);
- if GetDBType=DB_TYPE_BDE then
- Table :=  GetTable(dbname,DB_TABLE_IMAGES);
 
  if GetDBType=DB_TYPE_MDB then
  begin
@@ -151,9 +149,6 @@ begin
  sGroupToMove:=CodeGroup(GroupToMove);
  sIntoGroup:=CodeGroup(IntoGroup);
 
- if GetDBType=DB_TYPE_BDE then
- Table :=  GetTable(dbname,DB_TABLE_IMAGES);
-
  if GetDBType=DB_TYPE_MDB then
  begin
   Table:=GetQuery;
@@ -181,12 +176,6 @@ begin
      FQuery:=GetQuery;
      SetSQL(FQuery,'UPDATE '+GetDefDBname+' SET Groups=:Groups where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
      SetStrParam(FQuery,0,Groups);
-     ExecSQL(FQuery);
-    end;
-    if GetDBType=DB_TYPE_BDE then
-    begin
-     FQuery:=GetQuery;
-     SetSQL(FQuery,'UPDATE '+GetDefDBname+' SET Groups="'+normalizeDBString(Groups)+'" where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
      ExecSQL(FQuery);
     end;
 

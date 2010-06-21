@@ -1842,10 +1842,6 @@ begin
   begin
    DBkernel.WriteBool('StartUp','BackUp',True);
   end;
-  if GetDBType=DB_TYPE_BDE then
-  begin
-   BackUpTableThread.Create(false);
-  end;
  end;
 end;
 

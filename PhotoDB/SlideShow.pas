@@ -358,6 +358,7 @@ begin
   drawimage.PixelFormat:=pf24bit;
   drawimage.width:=Clientwidth;
   drawimage.Height:=HeightW;
+  TW.I.Start('fcsrbmp');
   fcsrbmp := TBitmap.create;
   fcsrbmp.PixelFormat:=pf24bit;
   fcsrbmp.width:=screen.Width;
@@ -365,6 +366,7 @@ begin
   fcsrbmp.Canvas.Brush.Color:=0;
   fcsrbmp.Canvas.pen.Color:=0;
   fcsrbmp.Canvas.Rectangle(0,0,fcsrbmp.width,fcsrbmp.Height);
+  TW.I.Start('fnewcsrbmp');
   fnewcsrbmp := TBitmap.create;
   fnewcsrbmp.PixelFormat:=pf24bit;
   fnewcsrbmp.width:=screen.Width;
@@ -380,7 +382,8 @@ begin
   fnowcsrbmp.Height:=screen.Height;
   fnowcsrbmp.Canvas.Brush.Color:=0;
   fnowcsrbmp.Canvas.pen.Color:=0;
-  fnowcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);
+  fnowcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);  
+  TW.I.Start('AnimatedBuffer');
   AnimatedBuffer := TBitmap.create;
   AnimatedBuffer.PixelFormat:=pf24bit;    
   MTimer1.Caption:=TEXT_MES_SLIDE_STOP_TIMER;
@@ -1319,16 +1322,12 @@ begin
  begin
   FileName:=List[i];//NornalizeFileName(List[i]);
 
-  if GetDBType=DB_TYPE_BDE then
-  begin
-   SetSQL(fQuery,'SELECT * FROM '+GetDefDBName+' WHERE FFileName like :ffilename');
-  end else
-  begin
+
    Folder:=GetDirectory(FileName);
    UnFormatDir(Folder);
    CalcStringCRC32(AnsiLowerCase(Folder),crc);
    SetSQL(fQuery,'SELECT * FROM (Select * from '+GetDefDBName+' where FolderCRC='+inttostr(Integer(crc))+') WHERE FFileName like :ffilename');
-  end;
+
   SetStrParam(fQuery,0,Delnakl(NormalizeDBStringLike(AnsiLowerCase(FileName))));
 
   fQuery.active:=true;

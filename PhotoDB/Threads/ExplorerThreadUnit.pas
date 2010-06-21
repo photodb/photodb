@@ -2,8 +2,6 @@ unit ExplorerThreadUnit;
 
 interface
 
- {$DEFINE EASYLISTVIEW}
-
 uses
  ThreadManeger, Jpeg, DB, GraphicEx, ExplorerTypes, ImgList,
  UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, windows, ComCtrls,
@@ -12,7 +10,8 @@ uses
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
  EasyListview, GraphicsCool, uVistaFuncs,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
- uThreadEx, uAssociatedIcons, uLogger, uTime;
+ uThreadEx, uAssociatedIcons, uLogger, uTime,
+ UnitExplorerLoadSIngleImageThread;
 
 type
  TExplorerViewInfo = record
@@ -50,16 +49,8 @@ type
   fbmp : tbitmap;
   FPic : TPicture;
   ExplorerInfo : TExplorerViewInfo;
-
-    {$IFNDEF EASYLISTVIEW}
-  FSelected : TListItem;
-    {$ENDIF}
-    {$IFDEF EASYLISTVIEW}  
   FSelected : TEasyItem;
-    {$ENDIF}
-
   FFolderBitmap : TBitmap;
-  FFolderBitmapCash : TBitmap;
   FolderImageRect : TRect;
   fFolderImages : TFolderImages;
   FcountOfFolderImage : Integer;
@@ -95,13 +86,10 @@ type
   FVisibleFiles : TArStrings;
   IsBigImage : boolean;
   LoadingAllBigImages : boolean;
-
   FullFolderPicture : TPNGGraphic;
    { Private declarations }
   protected
     procedure GetVisibleFiles;
-    procedure RegisterThread;
-    procedure UnRegisterThread;
     procedure Execute; override;
     procedure InfoToExplorerForm;
     procedure MakeTempBitmap;
@@ -109,8 +97,6 @@ type
     procedure BeginUpDate;
     procedure EndUpDate;
     Procedure MakeFolderImage(Folder : String);
-//    Procedure FileNeeded;
-//    procedure FileNeededA;
     procedure FileNeededAW;
     procedure AddDirectoryToExplorer;
     procedure AddDirectoryItemToExplorer;
@@ -217,7 +203,7 @@ begin
 end;
 
 procedure TExplorerThread.Execute;
-Var
+var
  Found, FilesReadedCount  : integer;
  SearchRec : TSearchRec;
  i : integer;
@@ -247,123 +233,122 @@ Var
  end;
 
 begin        
- FreeOnTerminate:=true;
- CoInitialize(nil);
- try
- SynchronizeEx(RegisterThread);
- IsCurrentRecord:=false;
- CountOfShowenGraphicFiles:=0;
- NoRecords:=false;
- LoadingAllBigImages:=true;
-
- Case ExplorerInfo.View of
-  LV_THUMBS     : begin FIcoSize:=48; end;
-  LV_ICONS      : begin FIcoSize:=32; end;
-  LV_SMALLICONS : begin FIcoSize:=16; end;
-  LV_TITLES     : begin FIcoSize:=16; end;
-  LV_TILE       : begin FIcoSize:=48; end;
-  LV_GRID       : begin FIcoSize:=32; end;
-  end;
-
- If FUpdaterInfo.IsUpdater then
- begin
-  AddFile;
-  Exit;
- end;
-       
- if (FThreadType=THREAD_TYPE_BIG_IMAGES) then
- begin     
-  ShowProgress;
-  DoLoadBigImages;
-  SynchronizeEx(UnRegisterThread);
-  Exit;
- end;
-
- if (FThreadType=THREAD_TYPE_IMAGE) then
- begin
-  if UpdaterCount>UpdatesCountLimit then
-  begin
-   Repeat
-    if UpdaterCount<UpdatesCountLimit then break;
-    Sleep(100);
-   Until false;
-  end;
-  inc(UpdaterCount);
+  FreeOnTerminate:=true;
+  CoInitialize(nil);
   try
-   LoadingAllBigImages:=false; //грузятся не все файлы заново а только текущий
-   UpdateFile;
-  except
-  end;
-  Dec(UpdaterCount);
-  Exit;
- end;
- if (FThreadType=THREAD_TYPE_FILE) then
- begin
-  UpdateSimpleFile;
-  Exit;
- end;
- if (FThreadType=THREAD_TYPE_FOLDER_UPDATE) then
- begin
-  UpdateFolder;
-  Exit;
- end;
+    IsCurrentRecord:=false;
+    CountOfShowenGraphicFiles:=0;
+    NoRecords:=false;
+    LoadingAllBigImages:=true;
+
+    case ExplorerInfo.View of
+      LV_THUMBS     : begin FIcoSize:=48; end;
+      LV_ICONS      : begin FIcoSize:=32; end;
+      LV_SMALLICONS : begin FIcoSize:=16; end;
+      LV_TITLES     : begin FIcoSize:=16; end;
+      LV_TILE       : begin FIcoSize:=48; end;
+      LV_GRID       : begin FIcoSize:=32; end;
+    end;
+
+    if FUpdaterInfo.IsUpdater then
+    begin
+      AddFile;
+      Exit;
+    end;
+       
+    if (FThreadType=THREAD_TYPE_BIG_IMAGES) then
+    begin
+      ShowProgress;
+      DoLoadBigImages;
+      Exit;
+    end;
+
+    if (FThreadType=THREAD_TYPE_IMAGE) then
+    begin
+      if UpdaterCount>UpdatesCountLimit then
+      begin
+        repeat
+          if UpdaterCount < UpdatesCountLimit then
+            Break;
+          Sleep(10);
+        until False;
+      end;
+      Inc(UpdaterCount);
+      LoadingAllBigImages:=false; //грузятся не все файлы заново а только текущий
+      UpdateFile;
+      Dec(UpdaterCount);
+      Exit;
+    end;
  
-  ShowInfo(TEXT_MES_INITIALIZATION+'...',1,0);
-  FFolderBitmap:=nil;
-  FFolderBitmapCash:=nil;
-  FSelected:=nil;
-  if (FThreadType=THREAD_TYPE_MY_COMPUTER) then
-  begin
-   LoadMyComputerFolder;
-   SynchronizeEx(DoStopSearch);
-   Exit;
-  end;
-  if (FThreadType=THREAD_TYPE_NETWORK) then
-  begin
-   LoadNetWorkFolder;
-   SynchronizeEx(DoStopSearch);
-   Exit;
-  end;
-  if (FThreadType=THREAD_TYPE_WORKGROUP) then
-  begin
-   LoadWorkgroupFolder;    
-   SynchronizeEx(DoStopSearch);
-   Exit;
-  end;
-  if (FThreadType=THREAD_TYPE_COMPUTER) then
-  begin
-   LoadComputerFolder;   
-   SynchronizeEx(DoStopSearch);
-   Exit;
-  end;
-  UnformatDir(FFolder);
-  if not DirectoryExists(FFolder) then
-  begin
-   StrParam:=TEXT_MES_ERROR_OPENING_FOLDER;  
-   //SynchronizeEx(EndUpdate);
-   SynchronizeEx(ShowMessage_);
-   ShowInfo('',1,0);
-   SynchronizeEx(ExplorerBack);
-   SynchronizeEx(UnRegisterThread);
-   Exit;
-  end;
+    if (FThreadType=THREAD_TYPE_FILE) then
+    begin
+      UpdateSimpleFile;
+      Exit;
+    end;
+    
+    if (FThreadType=THREAD_TYPE_FOLDER_UPDATE) then
+    begin
+      UpdateFolder;
+      Exit;
+    end;
+ 
+    ShowInfo(TEXT_MES_INITIALIZATION+'...', 1, 0);
+    FFolderBitmap := nil;
+    FSelected := nil;
 
-  DBFolderToSearch:=FFolder;
-  UnProcessPath(DBFolderToSearch);
-  DBFolderToSearch:=AnsiLowerCase(DBFolderToSearch);
-  UnFormatDir(DBFolderToSearch);
-  CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
-  FormatDir(DBFolderToSearch);                                    
-  FormatDir(FFolder);
-  SynchronizeEx(BeginUpdate);
-  FFiles:=SetNilExplorerFileInfo;
+    if (FThreadType=THREAD_TYPE_MY_COMPUTER) then
+    begin
+     LoadMyComputerFolder;
+     SynchronizeEx(DoStopSearch);
+     Exit;
+    end;
+    
+    if (FThreadType=THREAD_TYPE_NETWORK) then
+    begin
+      LoadNetWorkFolder;
+      SynchronizeEx(DoStopSearch);
+      Exit;
+    end;
+    
+    if (FThreadType=THREAD_TYPE_WORKGROUP) then
+    begin
+      LoadWorkgroupFolder;
+      SynchronizeEx(DoStopSearch);
+      Exit;
+    end;
+    if (FThreadType=THREAD_TYPE_COMPUTER) then
+    begin
+      LoadComputerFolder;
+      SynchronizeEx(DoStopSearch);
+     Exit;
+    end;
+    
+    UnformatDir(FFolder);
+    if not DirectoryExists(FFolder) then
+    begin
+      StrParam:=TEXT_MES_ERROR_OPENING_FOLDER;
+      //SynchronizeEx(EndUpdate);
+      SynchronizeEx(ShowMessage_);
+      ShowInfo('',1,0);
+      SynchronizeEx(ExplorerBack);
+      Exit;
+    end;
 
-  DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
-  ShowInfo(TEXT_MES_CONNECTING_TO_DB,1,0);
-  FQuery:=GetQuery;         
-  ShowInfo(TEXT_MES_GETTING_INFO_FROM_DB,1,0);
+    DBFolderToSearch:=FFolder;
+    UnProcessPath(DBFolderToSearch);
+    DBFolderToSearch:=AnsiLowerCase(DBFolderToSearch);
+    UnFormatDir(DBFolderToSearch);
+    CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
+    FormatDir(DBFolderToSearch);                                    
+    FormatDir(FFolder);
+    SynchronizeEx(BeginUpdate);
+    FFiles:=SetNilExplorerFileInfo;
 
-  if (GetDBType=DB_TYPE_BDE) and not FolderView then SetSQL(FQuery,'Select * From '+GetDefDBname+' where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+    DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
+    ShowInfo(TEXT_MES_CONNECTING_TO_DB,1,0);
+    FQuery:=GetQuery;         
+    ShowInfo(TEXT_MES_GETTING_INFO_FROM_DB,1,0);
+
   if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
   if FolderView then
   begin
@@ -530,40 +515,33 @@ begin
 
   for i:=0 to Length(FFiles)-1 do
   begin
-
-   if i mod 5=0 then
-   begin
-    SynchronizeEx(GetVisibleFiles);
-    VisibleUp(i);
-    Sleep(5);
-   end;
-
-
-   If FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
-   begin
-    If Terminated then Break;
-    GUIDParam:=FFiles[i].SID;
-    //SynchronizeEx(FileNeededA);
-    //If BooleanResult then
+    if Terminated then Break;
+    if i mod 5=0 then
     begin
-     Inc(InfoPosition);
-     ShowInfo(InfoPosition);
-     CurrentFile:=FFiles[i].FileName;
-     CurrentInfoPos:=i;
-
-     ReplaceImageItemImage;
+      SynchronizeEx(GetVisibleFiles);
+      VisibleUp(i);
+      Sleep(5);
     end;
-    Priority:=tpNormal;
-   end;
 
+    if FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
+    begin
+      GUIDParam:=FFiles[i].SID;
+      begin
+        Inc(InfoPosition);
+        ShowInfo(InfoPosition);
+        CurrentFile:=FFiles[i].FileName;
+        CurrentInfoPos:=i;
+
+        ReplaceImageItemImage;
+      end;
+      Priority:=tpNormal;
+    end;
 
    If ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[i].Tag=1)) then
    begin
     FFiles[i].Tag:=1;
     If Terminated then break;
     GUIDParam:=FFiles[i].SID;
-    //SynchronizeEx(FileNeededA);
-    //If BooleanResult then
     begin
      Inc(InfoPosition);
      ShowInfo(InfoPosition);
@@ -614,7 +592,6 @@ begin
   SynchronizeEx(DoStopSearch);
   FQuery.Close;
   FreeDS(FQuery);
-  SynchronizeEx(UnRegisterThread);
   finally
     CoUninitialize;
   end;
@@ -694,14 +671,7 @@ end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorer;
 var
-
-    {$IFNDEF EASYLISTVIEW}
-   NewItem: TListItem;
-    {$ENDIF}
-    {$IFDEF EASYLISTVIEW}
-   NewItem: TEasyItem;
-    {$ENDIF}
-
+  NewItem: TEasyItem;
   S1, S2 : String;
 begin
  NewItem:=FSender.AddItem(GUIDParam);
@@ -728,12 +698,7 @@ end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorerW;
 var
-  {$IFNDEF EASYLISTVIEW}
-  NewItem : TListItem;
-  {$ENDIF}
-  {$IFDEF EASYLISTVIEW}
   NewItem : TEasyItem;
-  {$ENDIF}
   S1, S2 : String;
 begin
  NewItem:=FSender.AddItemW(DriveNameParam, GUIDParam);
@@ -802,7 +767,7 @@ end;
 procedure TExplorerThread.DrawImageIconSmall;
 begin
   if IconParam <> nil then
-    TempBitmap.Canvas.Draw(0,0,IconParam);
+    TempBitmap.Canvas.Draw(0, 0, IconParam);
 end;
 
 procedure TExplorerThread.AddImageFileImageToExplorer;
@@ -844,9 +809,9 @@ begin
   IsBigImage:=false;
   Crypted:=ValidCryptGraphicFile(CurrentFile);
 
-  Info:=RecordInfoOne(CurrentFile,0,0,0,0,FFiles[CurrentInfoPos].FileSize,'','','','','',0,false,false,0,Crypted,true,false,'');
+  Info:=RecordInfoOne(CurrentFile, 0, 0, 0, 0, FFiles[CurrentInfoPos].FileSize, '', '', '', '', '', 0, False, False, 0, Crypted, True, False, '');
   Info.Tag:=0;
-  If not FUpdaterInfo.IsUpdater then
+  if not FUpdaterInfo.IsUpdater then
   begin
    If not NoRecords then
    begin
@@ -898,13 +863,8 @@ begin
   FPic:=nil;
   If Info.ItemId=0 then
   begin
- //  If FileExists(CurrentFile) then
    Fpic:=Tpicture.Create;
- //  else
-  // begin
-  //  if TempBitmap<>nil then TempBitmap.Free;
-  //  exit;
-  // end;
+
    try
     if Crypted then
     begin      
@@ -939,7 +899,6 @@ begin
    if not ((Info.PassTag=0) and Info.ItemCrypted) then
    begin
     TempBit:=TBitmap.create;
-    //XXX JPEGScale(Fpic.Graphic,100,100);
     JPEGScale(Fpic.Graphic,ExplorerInfo.PictureSize,ExplorerInfo.PictureSize);
     if Min(Fpic.Height,Fpic.Width)>1 then
     try
@@ -1154,7 +1113,6 @@ begin
 
   Query := GetQuery;
   Query.Active:=false;
-  if GetDBType=DB_TYPE_BDE then SetSQL(Query,'Select  FFileName,Access,thum,Rotated From '+GetDefDBname+' where (FFileName Like :FolderA) and not (FFileName like :FolderB) ');
   if GetDBType=DB_TYPE_MDB then SetSQL(Query,'Select  FFileName,Access,thum,Rotated From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB) ');
   SetStrParam(Query,0,'%'+DBFolder+'%');             //(top 4)
   SetStrParam(Query,1,'%'+DBFolder+'%\%');
@@ -1697,30 +1655,6 @@ begin
  ShowInfo('',1,0);
 end;
 
-procedure TExplorerThread.RegisterThread;
-Var
-  Info : TDBThreadInfo;
-begin
- Info.Handle:=ThreadID;
- Info.Type_:=Thread_Type_Explorer_Loading;
- if not Terminated then
- Info.OwnerHandle:=FSender.Handle else
- Info.OwnerHandle:=0;
- DBThreadManeger.AddThread(Info);
-end;
-
-procedure TExplorerThread.UnRegisterThread;
-Var
-  Info : TDBThreadInfo;
-begin
- Info.Handle:=ThreadID;
- Info.Type_:=Thread_Type_Explorer_Loading;
- if not Terminated then
- Info.OwnerHandle:=FSender.Handle else
- Info.OwnerHandle:=0;
- DBThreadManeger.RemoveThread(Info);
-end;
-
 procedure TExplorerThread.LoadNetWorkFolder;
 var
   NetworkList : TStrings;
@@ -1784,7 +1718,6 @@ begin
   SynchronizeEx(EndUpdate);
   ShowInfo('',1,0);
   SynchronizeEx(ExplorerBack);
-  SynchronizeEx(UnRegisterThread);
   Exit;
  end;
  For i:=0 to ComputerList.Count-1 do
@@ -1829,7 +1762,6 @@ begin
   SynchronizeEx(EndUpdate);
   ShowInfo('',1,0);
   SynchronizeEx(ExplorerBack);
-  SynchronizeEx(UnRegisterThread);
   Exit;
  end;
  For i:=0 to ShareList.Count-1 do
@@ -1877,11 +1809,7 @@ begin
  UnProcessPath(FFolder);
  if FolderView then FFolder:=ExtractFileName(FFolder);
 
- if GetDBType=DB_TYPE_BDE then
- begin
-  SetSQL(FQuery,'Select * From '+GetDefDBname+' where (FFileName Like :ImageFile)');
- end else
- begin
+
   Folder:=GetDirectory(FFolder);
   UnFormatDir(Folder);
   CalcStringCRC32(AnsiLowerCase(Folder),crc);
@@ -1891,7 +1819,8 @@ begin
   dbstr:='(Select * from '+GetDefDBName+' where FolderCRC='+inttostr(Integer(crc))+')';
 
   SetSQL(fQuery,'SELECT * FROM '+dbstr+' WHERE FFileName like :ImageFile');
- end;
+
+  
  SetStrParam(FQuery,0,'%'+normalizeDBStringLike(NormalizeDBString(AnsiLowercase(FFolder)))+'%');
  try
   FQuery.Active:=True;
@@ -2134,7 +2063,6 @@ begin
        FPic:=nil;
        continue;
        end;
-      fbit:=nil;
       fbit:=TBitmap.Create;
       fbit.PixelFormat:=pf24bit;
       JPEGScale(Fpic.Graphic,ExplorerInfo.PictureSize,ExplorerInfo.PictureSize);
@@ -2158,8 +2086,7 @@ begin
        DoResize(w,h,fbit,TempBitmap);
       except
       end;
-      fbit.Free;
-      fbit:=nil;
+      FreeAndNil(fbit);
 
       case FFiles[i].Rotate of
        DB_IMAGE_ROTATED_90  :  Rotate90A(TempBitmap);

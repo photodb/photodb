@@ -1812,12 +1812,7 @@ begin
  fQuery:=GetQuery;
  fQuery.Active:=false;
  UnProcessPath(FileName);
- if GetDBType=DB_TYPE_BDE then
- begin
-  SetSQL(fQuery,'SELECT * FROM '+GetDefDBName+' WHERE FFileName like :ffilename');
-  s:=FileName;
- end else
- begin
+
   UnFormatDir(Folder);
   if FolderView then
   begin
@@ -1836,7 +1831,7 @@ begin
   DBStr:='(Select * from '+GetDefDBName+' where FolderCRC='+inttostr(Integer(crc))+')';
   CalcStringCRC32(AnsiLowerCase(s),crc);
   SetSQL(fQuery,'SELECT * FROM '+DBStr+' WHERE FFileName = :ffilename');
- end;
+
  SetStrParam(fQuery,0,AnsiLowerCase(s));
  For i:=1 to 20 do
  begin
@@ -2634,7 +2629,6 @@ begin
   UnFormatDir(DBFolder);
   CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
 
-  if (GetDBType=DB_TYPE_BDE) and not FolderView then SetSQL(FQuery,'Select * From '+GetDefDBname+' where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
   if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
   if FolderView then
   begin
@@ -2809,7 +2803,6 @@ begin
      NewPath:=NewFileName+NewPath;
      OldPath:=FQuery.FieldByName('FFileName').AsString;
 
-     if GetDBType=DB_TYPE_BDE then SetSQL(SetQuery,'UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(NewPath)+'" where ID = '+inttostr(fQuery.FieldByName('ID').AsInteger));
      if GetDBType=DB_TYPE_MDB then
      begin
       if not FolderView then
@@ -4338,29 +4331,6 @@ begin
   end;
  end;
  //correction
- if GetDBType=DB_TYPE_BDE then
- begin
-  //DBE, Paradox
-  Table := GetTable(DBName,DB_TABLE_IMAGES);
-  try
-   Table.Active:=true;
-  except
-   FreeDS(Table);
-   exit;
-  end;
-  for i:=0 to Length(IDs)-1 do
-  begin
-   Link:=CodeLinksInfo(info[i]);
-   if Table.Locate('ID',IDs[i],[loPartialKey]) then
-   begin
-    Table.Edit;
-    Table.FieldByName('Links').AsString:=Link;
-    Table.Post;
-   end;
-  end;
-  FreeDS(Table);
- end else
- begin
   //Access
   Table:=GetQuery;
   for i:=0 to Length(IDs)-1 do
@@ -4369,7 +4339,6 @@ begin
    SetSQL(Table,'Update '+GetDefDBName+' set Links="'+Link+'" where ID = '+IntToStr(IDs[i]));
    ExecSQL(Table);
   end;
- end;
 end;
                                                                                                             
 Procedure UpdateImageRecord(FileName: String; ID : Integer);
@@ -5476,7 +5445,6 @@ var
 begin
  Result:=true;
  x:=[];
- if GetDBType(DBPath)=DB_TYPE_BDE then x:=validchars;
  if GetDBType(DBPath)=DB_TYPE_MDB then x:=validcharsmdb;
  for i:=1 to Length(DBPath) do
  if not (DBPath[i] in validchars) then

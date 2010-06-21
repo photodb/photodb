@@ -62,21 +62,7 @@ begin
  Termitating:=false;
  Sleep(10*60000); //delay 10 minutes after start
  Active:=true;
- if (GetDBType(fDBname)=DB_TYPE_BDE) then
- begin
-  FTable:=GetTable;
-  try
-   FTable.Active:=true;
-  except   
-   on e : Exception do
-   begin
-    EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
-    FTable.Free;
-    exit;
-   end;
-  end;
-  FTable.First;
- end;
+
  if (GetDBType(fDBname)=DB_TYPE_MDB) then
  FTable:=GetQuery; //no TABLEs with access - slow work
 
@@ -97,19 +83,13 @@ begin
  end;
  fReg.free;
 
- if (GetDBType(fDBname)=DB_TYPE_BDE) then
- begin
-  FTable.MoveBy(Position);
-  FTable.RecNo:=Position;
- end;
- 
  Share_Position:=0;
 
  Share_MaxPosition:=FMaxPosition;
  Synchronize(UpdateMaxProgress);
  Synchronize(InitializeForm);
  FPosition:=Position;
- while not {FTable.eof}FMaxPosition<FPosition do
+ while not FMaxPosition<FPosition do
  begin
   if not DBKernel.ReadBool('Options','AllowFastCleaning',False) then
   Sleep(2500);
@@ -205,20 +185,12 @@ begin
    s:=FTable.FieldByName('FFileName').AsString;
    If s<>AnsiLowerCase(s) then
    begin
-    if (GetDBType(fDBname)=DB_TYPE_BDE) then
-    begin
-     FTable.Edit;
-     FTable.FieldByName('FFileName').AsString:=AnsiLowerCase(s);
-     FTable.Post;
-    end else
-    begin
      SetQuery:=GetQuery;
      SetSQL(SetQuery,'UPDATE '+GetDefDBName+' Set FFileName=:FFileName Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
      SetStrParam(SetQuery,0,AnsiLowerCase(s));
      ExecSQL(SetQuery);
      FreeDS(SetQuery);
     end;
-   end;
   except    
    on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
   end;
@@ -233,16 +205,6 @@ begin
     if YearOf(Exif.Date)>2000 then
     if (FTable.FieldByName('DateToAdd').AsDateTime<>Exif.Date) or (FTable.FieldByName('aTime').AsDateTime<>Exif.Time) then
     begin
-     if (GetDBType(fDBname)=DB_TYPE_BDE) then
-     begin
-      FTable.Edit;
-      FTable.FieldByName('DateToAdd').AsDateTime:=Exif.Date;
-      FTable.FieldByName('aTime').AsDateTime:=Exif.Time;
-      FTable.FieldByName('IsDate').AsBoolean:=True;
-      FTable.FieldByName('IsTime').AsBoolean:=True;
-      FTable.Post;
-     end else
-     begin
 
        DateToAdd:=Exif.Date;
        aTime:=Exif.Time;
@@ -262,7 +224,6 @@ begin
        ExecSQL(SetQuery);
        FreeDS(SetQuery);
      end;
-    end;
    except  
    on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
    end;
@@ -343,11 +304,6 @@ function CleanUpThread.GetDBRecordCount: integer;
 var
   DS : TDataSet;
 begin
- if (GetDBType(fDBname)=DB_TYPE_BDE) then
- begin
-  Result:=FTable.RecordCount;
-  exit;
- end;
 
  Result:=0;
  DS := GetQuery;

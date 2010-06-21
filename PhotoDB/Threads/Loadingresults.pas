@@ -1184,7 +1184,6 @@ begin
    UnFormatDir(Folder);
    Folder:=AnsiLowerCase(Folder);
 
-   if GetDBType=DB_TYPE_BDE then sqlquery:='SELECT * FROM '+GetDefDBName+' where (ffilename like :ffilenameA) and (not (ffilename like :ffilenameB))';
    if GetDBType=DB_TYPE_MDB then sqlquery:='Select * From (Select * from '+GetDefDBname+' where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)';
 
    if not showprivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';

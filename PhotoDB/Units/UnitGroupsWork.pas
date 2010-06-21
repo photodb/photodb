@@ -282,7 +282,6 @@ end;
 
 function GroupSearchByGroupName(GroupName : String) : String;
 begin
- if GetDBType=DB_TYPE_BDE then Result:='%[#'+GroupName+'#]%';
  if GetDBType=DB_TYPE_MDB then Result:='%#'+GroupName+'#%';
 end;
 
@@ -512,7 +511,6 @@ var
   Query : TDataSet;
 begin
  Result:=False;
- If not FileExists(GroupsTableFileNameW(dbname)) and (GetDBType=DB_TYPE_BDE) then exit;
  Query := GetQuery;
  SetSQL(Query,'Select * From '+GroupsTableName+' Where GroupCode like "'+GroupCode+'"');
  try
@@ -533,7 +531,6 @@ var
 begin
  Result:=false;
  Query := GetQuery;
- If not FileExistsW(GroupsTableFileNameW(dbname)) and (GetDBType=DB_TYPE_BDE) then exit;
  SetSQL(Query,'Delete From '+GroupsTableName+' Where GroupCode like "'+Group.GroupCode+'"');
  try
   ExecSQL(Query);
@@ -650,29 +647,19 @@ end;
 
 Function GroupsTableFileNameW(FileName : String) : String;
 begin
- if GetDBType(FileName)=DB_TYPE_BDE then Result:=GetDirectory(FileName)+GetFileNameWithoutExt(FileName)+'G.'+AnsiLowerCase(GetExt(FileName));
  if GetDBType(FileName)=DB_TYPE_MDB then Result:=FileName;
 end;
-
-{function GroupsTableFileName : String;
-begin
- if GetDBType=DB_TYPE_BDE then Result:=GroupsTableFileNameW(dbname);
- if GetDBType=DB_TYPE_MDB then Result:=dbname;
-end;  }
 
 function GroupsTableName(FileName : String) : String;
 begin
  if FileName<>'' then
  if (FileName[1]=FileName[Length(FileName)]) then
  if FileName[1]='"' then FileName:=Copy(FileName,2,Length(FileName)-2);
- if GetDBType(FileName)=DB_TYPE_BDE then
-   Result:='"'+GroupsTableFileNameW(FileName)+'"';
  if GetDBType(FileName)=DB_TYPE_MDB then Result:='Groups';
 end;
 
 function GroupsTableName : String;
 begin
- if GetDBType=DB_TYPE_BDE then Result:='"'+GroupsTableFileNameW(dbname)+'"';
  if GetDBType=DB_TYPE_MDB then Result:='Groups';
 end;
 
@@ -766,33 +753,13 @@ end;
 
 Function IsValidGroupsTable : Boolean;
 begin
-// Result:=IsValidGroupsTableW(GroupsTableFileName);
-Result:=true; exit; //xxx
- Result:=IsValidGroupsTableW(dbname);
+  Result:=IsValidGroupsTableW(dbname);
 end;
 
-Function CreateGroupsTableW(FileName : String) : Boolean;
-var
-  F : file;
+function CreateGroupsTableW(FileName : String) : Boolean;
 begin
- Result:=False;
- try
-  if FileExistsW(GroupsTableFileNameW(FileName)) then
-  if GetDBType(FileName)=DB_TYPE_BDE then
-  begin
-   System.Assign(f,GroupsTableFileNameW(FileName));
-   System.Erase(f);
-  end;
- except
-  exit;
- end;
- if FileExistsW(GroupsTableFileNameW(FileName)) then
- if GetDBType(FileName)=DB_TYPE_BDE then
- begin
   Result:=False;
-  Exit;
- end;
- if GetDBType(FileName)=DB_TYPE_MDB then Result:=ADOCreateGroupsTable(FileName);
+  if GetDBType(FileName)=DB_TYPE_MDB then Result:=ADOCreateGroupsTable(FileName);
 end;
 
 Function CreateGroupsTable : Boolean;
@@ -932,7 +899,6 @@ var
   b : Boolean;
 begin
  Setlength(Result,0);
- If not FileExistsW(FileName) and (GetDBType=DB_TYPE_BDE) then exit;
  Table := GetTable(FileName,DB_TABLE_GROUPS);
  if Table=nil then exit;
  try

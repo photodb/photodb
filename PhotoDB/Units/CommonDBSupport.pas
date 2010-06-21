@@ -15,8 +15,7 @@ UnitDBDeclare, uLogger, uTime,
 const
 
  DB_TYPE_UNKNOWN = 0;
- DB_TYPE_BDE     = 1;
- DB_TYPE_MDB     = 2;
+ DB_TYPE_MDB     = 1;
 
  DB_TABLE_UNKNOWN  = 0;
  DB_TABLE_GROUPS   = 1;
@@ -200,25 +199,15 @@ end;
 function GetDBType : integer;
 begin
  Result:=DB_TYPE_UNKNOWN;
-{ if dbname<>'' then
- if dbname[1]='"' then dbname:=Copy(dbname,2,Length(dbname)-2);        }
- if AnsiLowerCase(ExtractFileExt(dbname))='.db' then Result:=DB_TYPE_BDE;
- if AnsiLowerCase(ExtractFileExt(dbname))='.mdb' then Result:=DB_TYPE_MDB; 
+ if AnsiLowerCase(ExtractFileExt(dbname))='.mdb' then Result:=DB_TYPE_MDB;
  if AnsiLowerCase(ExtractFileExt(dbname))='.photodb' then Result:=DB_TYPE_MDB;
- if AnsiLowerCase(ExtractFileExt(dbname))='.dll' then Result:=DB_TYPE_BDE;
- if AnsiLowerCase(ExtractFileExt(dbname))='.ocx' then Result:=DB_TYPE_MDB;
 end;
 
 function GetDBType(dbname : string) : integer;
 begin
  Result:=DB_TYPE_UNKNOWN;
-{ if dbname<>'' then
- if dbname[1]='"' then dbname:=Copy(dbname,2,Length(dbname)-2);   }
- if AnsiLowerCase(ExtractFileExt(dbname))='.db' then Result:=DB_TYPE_BDE;
  if AnsiLowerCase(ExtractFileExt(dbname))='.mdb' then Result:=DB_TYPE_MDB;  
  if AnsiLowerCase(ExtractFileExt(dbname))='.photodb' then Result:=DB_TYPE_MDB;
- if AnsiLowerCase(ExtractFileExt(dbname))='.dll' then Result:=DB_TYPE_BDE;
- if AnsiLowerCase(ExtractFileExt(dbname))='.ocx' then Result:=DB_TYPE_MDB;
 end;
 
 function GetConnectionString : String;
@@ -774,7 +763,6 @@ end;
 
 function GetDefDBName : string;
 begin
- if GetDBType(dbname)=DB_TYPE_BDE then Result:='"'+DBName+'"';
  if GetDBType(dbname)=DB_TYPE_MDB then Result:='ImageTable';
 end;
 

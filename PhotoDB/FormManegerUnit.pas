@@ -190,8 +190,9 @@ begin
    begin
     if DBkernel.ReadboolW('DBCheckType',ExtractFileName(dbname),true)=true then
     begin
-     if GetDBType=DB_TYPE_BDE then
-     ConvertDB(dbname);
+     //TODO: ???
+     {if GetDBType=DB_TYPE_BDE then
+     ConvertDB(dbname);}
      DBkernel.WriteBoolW('DBCheckType',ExtractFileName(dbname),false);
     end;
     //checking RecordCount
