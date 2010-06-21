@@ -13,9 +13,9 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants;
 
 Const
-    DBInDebug = true;
-    Emulation = false;
-    EmulationInstall = false;
+    DBInDebug = True;
+    Emulation = False;
+    EmulationInstall = False;
 
 var
     LOGGING_ENABLED : boolean = true;

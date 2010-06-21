@@ -270,12 +270,14 @@ uses
   uTime in 'Units\uTime.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
   UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas',
-  UnitExplorerLoadSingleImageThread in 'Threads\UnitExplorerLoadSingleImageThread.pas';
+  UnitExplorerLoadSingleImageThread in 'Threads\UnitExplorerLoadSingleImageThread.pas',
+  UnitDBThread in 'Units\UnitDBThread.pas',
+  UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
+  uSplachThread in 'Threads\uSplachThread.pas';
 
 {$R *.res}
 
 type
-    TInitializeProc = function(s:PChar) : integer;
     TInitializeAProc = function(s:PChar) : boolean;
 
 var
@@ -287,7 +289,6 @@ var
     hSemaphore:thandle;
     name : string;
     actcode : string;
-    initproc : TInitializeProc;
     initaproc : TInitializeAProc;
     TablePacked : boolean;    
     ActivKey, ActivName, AllParams : String;
@@ -296,11 +297,12 @@ var
     CheckResult : integer;
     //FAST LOAD
     LoadDBKernelIconsThread,
-    LoadDBSettingsThread : TThread;
+    LoadDBSettingsThread,
+    LoadCRCCheckThread : TDBThread;
+    SplashThread : TThread;
 
   f : TPcharFunction;
   Fh : pointer;
-  p : PChar;
   k : integer;
 
 function IsFalidDBFile : boolean;
@@ -577,30 +579,34 @@ begin
   if not GetParamStrDBBool('/NoPrevVersion') then
   FindRunningVersion;
 
-  //This is main form of application
+  //This is main form of application  
+  TW.I.Start('TFormManager Create');
   Application.CreateForm(TFormManager, FormManager);
 
   if not GetParamStrDBBool('/NoLogo') then
   begin
   TW.I.Start('TAboutForm');
-   Application.CreateForm(TAboutForm, LoadingAboutForm);
+ {  Application.CreateForm(TAboutForm, LoadingAboutForm);
    LoadingAboutForm.FormStyle := fsStayOnTop;
-   TAboutForm(LoadingAboutForm).CloseButton.Visible:=false;  
+   TAboutForm(LoadingAboutForm).CloseButton.Visible:=false; }
   TW.I.Start('LoadingAboutForm.Show');
-   LoadingAboutForm.Show;
-  TW.I.Start('Application.Restore');
-   Application.Restore;     
-  TW.I.Start('Application.ProcessMessages');
-   Application.ProcessMessages;
-   TAboutForm(LoadingAboutForm).DmProgress1.MaxValue:=8;
+  { LoadingAboutForm.Show;
+   Application.Restore;
+   Application.ProcessMessages;  
+   TAboutForm(LoadingAboutForm).DmProgress1.MaxValue:=8;  }
   end else LoadingAboutForm:=nil;
+
+  TW.I.Start('TSplashThread');
+  SplashThread := TSplashThread.Create(False);
+  TW.I.Stop;
 
   //CHECK DEMO MODE ----------------------------------------------------
   if not DBTerminating then
   begin
    EventLog('Loading Kernel.dll');
    if not FolderView then
-   KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));   
+   KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
+   LoadCRCCheckThread := TLoadCRCCheckThread.Create(False);
    EventLog(':DBKernel.InitRegModule');
    DBKernel.InitRegModule;
    EventLog(':DBKernel.LoadColorTheme');
@@ -657,14 +663,6 @@ begin
   if not FolderView then
   If not DBTerminating then
   begin
-   @initproc := GetProcAddress(KernelHandle,'Initialize');
-
-   GetMem(p,Length(Application.ExeName)+1);
-   FillChar(p[0],Length(Application.ExeName)+1,#0);
-
-   for k:=0 to Length(Application.ExeName)-1 do
-   p[k]:=Application.ExeName[k+1];
-   initproc(PChar(Application.ExeName));
    for k:=1 to 10 do
    begin
     {$IFDEF DEBUG}
@@ -678,7 +676,7 @@ begin
      exit;
     end;
     @f:=Fh;
-    p:=f;
+   // p:=f;
    end;
 
    {$IFDEF DEBUG}
@@ -929,6 +927,11 @@ begin
  if not Emulation then
  begin
   EventLog('Verifyng....');
+
+  if not LoadCRCCheckThread.IsTerminated then
+    WaitForSingleObject(LoadCRCCheckThread.Handle, 10000);
+  LoadCRCCheckThread.Free;
+
   @initAproc := GetProcAddress(KernelHandle,'InitializeA');
   if not initAproc(PChar(Application.ExeName)) then
   begin
@@ -938,14 +941,6 @@ begin
   end;
  end;
 
-  TW.I.Start('WaitForSingleObjects -> LoadDBKernelIconsThread');
-  if not LoadDBKernelIconsThread.Suspended then
-    WaitForSingleObject(LoadDBKernelIconsThread.Handle, 10000);
-  TW.I.Start('WaitForSingleObjects -> LoadDBSettingsThread');    
-  if not LoadDBSettingsThread.Suspended then
-    WaitForSingleObject(LoadDBSettingsThread.Handle, 10000);
-  TDBNullQueryThread.Create(False);
-                        
   TW.I.Start('LoadingAboutForm.FREE');
 
   //PREPAIRING RUNNING DB ----------------------------------------
@@ -964,7 +959,7 @@ begin
    Application.CreateForm(TIDForm, IDForm);
   end;
  end;
-
+            
  //THEMES AND RUNNING DB ---------------------------------------------
                  
   TW.I.Start('THEMES AND RUNNING DB');
@@ -974,6 +969,20 @@ begin
   EventLog('Run manager...');
   if not GetParamStrDBBool('/NoFullRun') then
   FormManager.Run(LoadingAboutForm);
+
+
+  TW.I.Start('WaitForSingleObjects -> LoadDBKernelIconsThread');
+  if not LoadDBKernelIconsThread.IsTerminated then
+    WaitForSingleObject(LoadDBKernelIconsThread.Handle, INFINITE);
+  LoadDBKernelIconsThread.Free;
+  TW.I.Start('WaitForSingleObjects -> LoadDBSettingsThread');    
+  if not LoadDBSettingsThread.IsTerminated then
+    WaitForSingleObject(LoadDBSettingsThread.Handle, INFINITE);
+  LoadDBSettingsThread.Free;
+  TDBNullQueryThread.Create(False);
+
+
+  SplashThread.Terminate;
   if not SafeMode then
   begin
    EventLog('Theme...');

@@ -231,8 +231,8 @@ begin
     TW.I.Start('ExecuteDirectoryWithFileOnThread');
     Viewer.ExecuteDirectoryWithFileOnThread(LongFileName(ParamStr1));
     TW.I.Start('ActivateApplication');
-    ActivateApplication(Viewer.Handle);            
-    TW.I.Stop;
+    ActivateApplication(Viewer.Handle);
+    //TW.I.Stop;
    end;
   end else
   begin
@@ -281,6 +281,7 @@ begin
    end;
   end;
  end;
+ CheckTimer.Enabled := True;
  Running:=true;
 end;
 
@@ -408,14 +409,14 @@ begin
 end;
 
 procedure TFormManager.TerminateTimerTimer(Sender: TObject);
-begin   
- EventLog('TFormManager::TerminateTimerTimer()!');
- Halt;
+begin
+  EventLog('TFormManager::TerminateTimerTimer()!');
+  Halt;
 end;
 
 procedure TFormManager.CalledTimerTimer(Sender: TObject);
 begin
- Application.Terminate;
+  Application.Terminate;
 end;
 
 procedure TFormManager.ApplicationEvents1Idle(Sender: TObject;

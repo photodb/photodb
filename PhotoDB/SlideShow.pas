@@ -523,7 +523,8 @@ begin
   RecreateDrawImage_(Sender);
   FormPaint(Sender);
   Result:=false;
- end;
+ end;   
+ TW.I.Stop;
 end;
 
 procedure TViewer.RecreateDrawImage_(Sender: TObject);
@@ -1530,6 +1531,7 @@ var
 const text_out = TEXT_MES_GENERATING;
 
 begin
+ TW.I.Start('ExecuteW');
  Result:=true;
  SlideTimer.Enabled:=false;
  Play:=false;

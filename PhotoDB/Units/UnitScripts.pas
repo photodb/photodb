@@ -1980,7 +1980,6 @@ begin
     exit;
    end;
 
-
    n:=1;
    ResS:='';
    if PosExS('+',Expression)<>0 then

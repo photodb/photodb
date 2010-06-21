@@ -30,34 +30,18 @@ implementation
 
   function SendMessageEx(hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM) : boolean;
   var
-    BeginTime : Cardinal;
-    i : integer;
+    SendMessageThread : TThread;
   begin
    
    EventLog(':SendMessageEx()...');
    while SendMessageMessageWork do
     Application.ProcessMessages;
 
-   SendMessageMessageWork:=true;
-   SendMessageResult:=false;
-   BeginTime:=Windows.GetTickCount;
-   TSendMessageWithTimeoutThread.Create(false,hWnd,Msg,wParam,lParam);
-   i:=0;
-   while SendMessageMessageWork do
-   begin
-    Inc(i);
-    Application.ProcessMessages;
-    Sleep(1);
-    if (i=100) then
-    begin
-     if Windows.GetTickCount-BeginTime>5000 then
-     begin
-      Result:=false;
-      exit;
-     end;
-     i:=0;
-    end;
-   end;
+   SendMessageMessageWork := True;
+   SendMessageResult:=false;          
+   SendMessageThread := TSendMessageWithTimeoutThread.Create(false, hWnd, Msg, wParam, lParam);
+   WaitForSingleObject(SendMessageThread.Handle, 5000);
+
    Result:=SendMessageResult;
   end;
 
@@ -82,9 +66,9 @@ end;
 
 procedure TSendMessageWithTimeoutThread.Execute;
 begin
- FreeOnTerminate:=true;
+ FreeOnTerminate:=True;
  SendMessage(fhWnd, fMsg, fwParam, flParam);
- SendMessageResult:=true;
+ SendMessageResult:=True;
 end;
 
 end.

@@ -100,7 +100,7 @@ Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams= "D:\Dmitry\Delphi exe\Photo Database\DB_File\Document.psd" 
+RunParams="C:\1.jpg"
 HostApplication=
 Launcher=
 UseLauncher=0

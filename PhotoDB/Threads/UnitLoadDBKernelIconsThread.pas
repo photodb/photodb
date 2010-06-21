@@ -3,10 +3,11 @@ unit UnitLoadDBKernelIconsThread;
 interface
 
 uses
-  Windows, Classes, UnitDBkernel, Dolphin_DB;
+  Windows, Classes, UnitDBkernel, Dolphin_DB, UnitDBThread,
+  uTime;
 
 type
-  TLoadDBKernelIconsThread = class(TThread)
+  TLoadDBKernelIconsThread = class(TDBThread)
   private
     { Private declarations }
   protected
@@ -19,8 +20,8 @@ implementation
 
 procedure TLoadDBKernelIconsThread.Execute;
 begin
-  FreeOnTerminate := True;
   DBKernel.LoadIcons;
+  Terminate;
 end;
 
 end.

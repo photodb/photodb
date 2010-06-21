@@ -37,6 +37,7 @@ object FormManager: TFormManager
     Top = 8
   end
   object CheckTimer: TTimer
+    Enabled = False
     OnTimer = CheckTimerTimer
     Left = 104
     Top = 8
