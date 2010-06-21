@@ -14,7 +14,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; FileName : string; IsDirectory : boolean);
+    constructor Create(FileName : string; IsDirectory : boolean);
     destructor Destroy; override;
   end;
 
@@ -32,40 +32,24 @@ implementation
 
   function CheckFileExistsWithSleep(FileName : string; IsDirectory : boolean) : boolean;
   var
-    BeginTime : Cardinal;
-    i : integer;
+    CheckThread : THandle;
   begin
 
    EventLog(':CheckFileExistsWithMessageEx()...');
    while CheckFileExistsWithMessageWork do
-    Sleep(10);
+    Sleep(1);
 
-   CheckFileExistsWithMessageWork:=true;
-   CheckFileExistsWithMessageResult:=false;
-   BeginTime:=Windows.GetTickCount;
-   TFileExistsThread.Create(false,FileName,IsDirectory);
-   i:=0;
-   while CheckFileExistsWithMessageWork do
-   begin
-    Inc(i);
-    Sleep(10);
-    if (i=100) then
-    begin
-     if Windows.GetTickCount-BeginTime>FileCheckTimeOut then
-     begin
-      Result:=false;
-      exit;
-     end;
-     i:=0;
-    end;
-   end;
-   Result:=CheckFileExistsWithMessageResult;
+   CheckFileExistsWithMessageWork := True;
+   CheckFileExistsWithMessageResult := False;
+   CheckThread := TFileExistsThread.Create(FileName, IsDirectory).Handle;
+   WaitForSingleObject(CheckThread, FileCheckTimeOut);
+
+   Result := CheckFileExistsWithMessageResult;
   end;
 
   function CheckFileExistsWithMessageEx(FileName : string; IsDirectory : boolean) : boolean;
   var
-    BeginTime, NowTime : Cardinal;
-    i : integer;
+    CheckThread : THandle;
   begin
 
    EventLog(':CheckFileExistsWithMessageEx()...');
@@ -74,35 +58,21 @@ implementation
 
    CheckFileExistsWithMessageWork:=true;
    CheckFileExistsWithMessageResult:=false;
-   BeginTime:=Windows.GetTickCount;
-   TFileExistsThread.Create(false,FileName,IsDirectory);
-   i:=0;
-   while CheckFileExistsWithMessageWork do
-   begin
-    Inc(i);
-    Sleep(1);
-    if (i=100) then
-    begin
-     if Windows.GetTickCount-BeginTime>FileCheckTimeOut then
-     begin
-      Result:=false;
-      exit;
-     end;
-     i:=0;
-    end;
-   end;
+
+   CheckThread := TFileExistsThread.Create(FileName, IsDirectory).Handle;
+   WaitForSingleObject(CheckThread, FileCheckTimeOut);
+
    Result:=CheckFileExistsWithMessageResult;
   end;
-  
+
 { TFileExistsThread }
 
-constructor TFileExistsThread.Create(CreateSuspennded: Boolean;
-  FileName: string; IsDirectory : boolean);
+constructor TFileExistsThread.Create(FileName: string; IsDirectory : boolean);
 begin
- inherited Create(true);
- fFileName:=FileName;
- fIsDirectory:=IsDirectory;
- if not CreateSuspennded then Resume;
+  inherited Create(True);
+  fFileName:=FileName;
+  fIsDirectory:=IsDirectory;
+  Resume;
 end;
 
 destructor TFileExistsThread.Destroy;
@@ -115,12 +85,13 @@ procedure TFileExistsThread.Execute;
 var
   oldMode : Cardinal;
 begin
- FreeOnTerminate:=true;
- oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- if fIsDirectory then
- CheckFileExistsWithMessageResult:=DirectoryExists(fFileName) else
- CheckFileExistsWithMessageResult:=FileExistsEx(fFileName);
- SetErrorMode(oldMode);
+  FreeOnTerminate := True;
+  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
+  if fIsDirectory then
+    CheckFileExistsWithMessageResult:=DirectoryExists(fFileName)
+  else
+    CheckFileExistsWithMessageResult:=FileExistsEx(fFileName);
+  SetErrorMode(oldMode);
 end;
 
 end.

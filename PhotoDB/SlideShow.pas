@@ -367,22 +367,20 @@ begin
   fcsrbmp.Canvas.pen.Color:=0;
   fcsrbmp.Canvas.Rectangle(0,0,fcsrbmp.width,fcsrbmp.Height);
   TW.I.Start('fnewcsrbmp');
+  WaitImage := TBitmap.create;
+  WaitImage.PixelFormat:=pf24bit;
+  
   fnewcsrbmp := TBitmap.create;
   fnewcsrbmp.PixelFormat:=pf24bit;
   fnewcsrbmp.width:=screen.Width;
   fnewcsrbmp.Height:=screen.Height;
-  WaitImage := TBitmap.create;
-  WaitImage.PixelFormat:=pf24bit;
   fnewcsrbmp.Canvas.Brush.Color:=0;
   fnewcsrbmp.Canvas.pen.Color:=0;
   fnewcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);
   fnowcsrbmp := TBitmap.create;
   fnowcsrbmp.PixelFormat:=pf24bit;
-  fnowcsrbmp.width:=screen.Width;
-  fnowcsrbmp.Height:=screen.Height;
-  fnowcsrbmp.Canvas.Brush.Color:=0;
-  fnowcsrbmp.Canvas.pen.Color:=0;
-  fnowcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);  
+  fnowcsrbmp.Assign(fnewcsrbmp);
+  
   TW.I.Start('AnimatedBuffer');
   AnimatedBuffer := TBitmap.create;
   AnimatedBuffer.PixelFormat:=pf24bit;    
@@ -425,9 +423,11 @@ begin
   Tools1.ImageIndex:=DB_IC_OTHER_TOOLS;
   NewPanel1.ImageIndex:=DB_IC_PANEL;
 
+  TW.I.Start('RecreateThemeToForm');
   DBKernel.RecreateThemeToForm(self);
   DBkernel.RegisterProcUpdateTheme(UpdateTheme,self);
   DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
+  TW.I.Start('LoadLanguage');
   LoadLanguage;
   ToolButton2.Hint:=TEXT_MES_VIEW_SC_LEFT_ARROW;
   ToolButton1.Hint:=TEXT_MES_VIEW_SC_RIGHT_ARROW;
@@ -448,7 +448,9 @@ begin
   CursorZoomOut := LoadCursor(HInstance,'ZOOMOUT');
   Screen.Cursors[CursorZoomInNo]:=CursorZoomIn;
   Screen.Cursors[CursorZoomOutNo]:=CursorZoomOut;
+  TW.I.Start('MakePagesLinks');
   MakePagesLinks;
+  TW.I.Stop;
 end;
 
 function TViewer.LoadImage_(Sender: TObject; FileName: String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
@@ -2245,9 +2247,9 @@ begin
  begin
   icons[i,j].free;
  end;
- ToolBar2.HotImages:=ImageList2;
+{ ToolBar2.HotImages:=ImageList2;
  ToolBar2.Images:=ImageList1;
- ToolBar2.DisabledImages:=ImageList3;
+ ToolBar2.DisabledImages:=ImageList3;  }
 end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);

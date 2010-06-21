@@ -3,7 +3,7 @@ unit UnitSlideShowScanDirectoryThread;
 interface
 
 uses
-  Classes, Forms, Dolphin_DB, uThreadForm, uThreadEx;
+  Classes, Forms, Dolphin_DB, uThreadForm, uThreadEx, ActiveX;
 
 type
   TSlideShowScanDirectoryThread = class(TThreadEx)
@@ -39,8 +39,13 @@ var
   n : integer;
 begin
   FreeOnTerminate:=true;
-  GetFileListByMask(BaseFileName, SupportedExt,Info, n, true);
-  SynchronizeEx(SynchNotify);
+  CoInitialize(nil);
+  try
+    GetFileListByMask(BaseFileName, SupportedExt,Info, n, true);
+    SynchronizeEx(SynchNotify);
+  finally
+    CoUninitialize;
+  end;
 end;
 
 procedure TSlideShowScanDirectoryThread.SynchNotify;

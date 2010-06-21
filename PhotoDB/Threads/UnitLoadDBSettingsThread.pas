@@ -3,7 +3,7 @@ unit UnitLoadDBSettingsThread;
 interface
 
 uses
-  Classes, DB, Dolphin_DB, CommonDBSupport, ActiveX;
+  Windows, Classes, DB, Dolphin_DB, CommonDBSupport, ActiveX;
 
 type
   TLoadDBSettingsThread = class(TThread)

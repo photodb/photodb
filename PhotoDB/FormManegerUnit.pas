@@ -185,10 +185,8 @@ begin
   UnformatDir(Directory);
  end;
 
- TW.I.Start('CheckFileExistsWithMessageEx - Directory');
-
- If not ((UpcaseAll(ParamStr1)='/EXPLORER') or CheckFileExistsWithMessageEx(Directory,true)) then
- begin         
+ if UpcaseAll(ParamStr1)<>'/EXPLORER' then
+ begin
   TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
   if CheckFileExistsWithMessageEx(ParamStr1,false) then
   begin
@@ -224,19 +222,24 @@ begin
     ActivateApplication(NewSearch.Handle);
    end else
    begin
+    TW.I.Start('RUN TViewer');
     If Viewer=nil then
     Application.CreateForm(TViewer,Viewer);
     RegisterMainForm(Viewer);  
     CloseLoadingForm;
     Viewer.Show;
+    TW.I.Start('ExecuteDirectoryWithFileOnThread');
     Viewer.ExecuteDirectoryWithFileOnThread(LongFileName(ParamStr1));
-    ActivateApplication(Viewer.Handle);
+    TW.I.Start('ActivateApplication');
+    ActivateApplication(Viewer.Handle);            
+    TW.I.Stop;
    end;
   end else
   begin
    //Default Form
    if DBKernel.ReadBool('Options','RunExplorerAtStartUp',false) then
-   begin
+   begin     
+    TW.I.Start('RUN NewExplorer');
     With ExplorerManager.NewExplorer(False) do
     begin
      if DBKernel.ReadBool('Options','UseSpecialStartUpFolder',false) then
@@ -248,7 +251,7 @@ begin
     end;
    end else
    begin               
-  TW.I.Start('SearchManager.NewSearch');
+   TW.I.Start('SearchManager.NewSearch');
     NewSearch:=SearchManager.NewSearch;
     Application.Restore; 
     CloseLoadingForm;

@@ -461,7 +461,7 @@ var
   fQuery : TDataSet;
 begin
  Result:=GetDefaultImageDBOptions;
- fQuery:=GetQuery(TableName);
+ fQuery:=GetQuery(TableName, True);
  SQL:= 'Select * from DBSettings';
  try
   SetSQL(fQuery,SQL);
@@ -966,7 +966,8 @@ end;
 
 procedure TADOConnections.RemoveAt(Index: Integer);
 begin
-  FConnections.Delete(Index);
+  if (Index > -1) and (Index < FConnections.Count) then
+    FConnections.Delete(Index);
 end;
 
 initialization

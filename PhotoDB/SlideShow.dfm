@@ -2207,7 +2207,10 @@ object Viewer: TViewer
         ButtonHeight = 23
         Caption = 'ToolBar1'
         Color = clBtnFace
+        DisabledImages = ImageList3
         EdgeBorders = []
+        HotImages = ImageList2
+        Images = ImageList1
         ParentColor = False
         TabOrder = 0
         Transparent = True

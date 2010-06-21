@@ -296,7 +296,7 @@ var
     CheckResult : integer;
     //FAST LOAD
     LoadDBKernelIconsThread,
-    LoadDBSettingsThread : THandle;
+    LoadDBSettingsThread : TThread;
 
   f : TPcharFunction;
   Fh : pointer;
@@ -564,7 +564,14 @@ begin
    end;
    Halt;
   end;
-           
+                  
+   EventLog('TDBKernel.Create');
+   DBKernel:=TDBKernel.Create;
+   TW.I.Start('DBKernel.LogIn');
+   DBKernel.LogIn('','',true);
+   LoadDBKernelIconsThread := TLoadDBKernelIconsThread.Create(False);
+   LoadDBSettingsThread := TLoadDBSettingsThread.Create(False);
+
   TW.I.Start('FindRunningVersion');
   if not SafeMode then
   if not GetParamStrDBBool('/NoPrevVersion') then
@@ -588,23 +595,14 @@ begin
    TAboutForm(LoadingAboutForm).DmProgress1.MaxValue:=8;
   end else LoadingAboutForm:=nil;
 
-            
-  TW.I.Start('Kernel.dll');
-  
   //CHECK DEMO MODE ----------------------------------------------------
-  {$IFDEF DEBUG}
-  EventLog('...CHECK DEMO MODE...');
-  {$ENDIF}
   if not DBTerminating then
   begin
    EventLog('Loading Kernel.dll');
    if not FolderView then
-   KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
-   DBKernel:=TDBKernel.Create;
-   TW.I.Start('DBKernel.LogIn');
-   DBKernel.LogIn('','',true);
-   LoadDBKernelIconsThread := TLoadDBKernelIconsThread.Create(False).ThreadID;
-   LoadDBSettingsThread := TLoadDBSettingsThread.Create(False).ThreadID;
+   KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));   
+   EventLog(':DBKernel.InitRegModule');
+   DBKernel.InitRegModule;
    EventLog(':DBKernel.LoadColorTheme');
    TW.I.Start('DBKernel.LoadColorThem');
    DBKernel.LoadColorTheme;
@@ -941,9 +939,11 @@ begin
  end;
 
   TW.I.Start('WaitForSingleObjects -> LoadDBKernelIconsThread');
-  WaitForSingleObject(LoadDBKernelIconsThread, INFINITE);
-  TW.I.Start('WaitForSingleObjects -> LoadDBSettingsThread');
-  WaitForSingleObject(LoadDBSettingsThread, INFINITE);
+  if not LoadDBKernelIconsThread.Suspended then
+    WaitForSingleObject(LoadDBKernelIconsThread.Handle, 10000);
+  TW.I.Start('WaitForSingleObjects -> LoadDBSettingsThread');    
+  if not LoadDBSettingsThread.Suspended then
+    WaitForSingleObject(LoadDBSettingsThread.Handle, 10000);
   TDBNullQueryThread.Create(False);
                         
   TW.I.Start('LoadingAboutForm.FREE');

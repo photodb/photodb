@@ -352,10 +352,6 @@ begin
   FINIPasswods := nil;
   FApplicationKey:='';
   fDBUserType:=UtNone;
-  //LoadIcons;
-  TW.I.Start('TDBKernel -> InitRegModule');
-  InitRegModule;
-  TW.I.Stop;
 end;
 
 function TDBKernel.CreateDBbyName(FileName: string): integer;

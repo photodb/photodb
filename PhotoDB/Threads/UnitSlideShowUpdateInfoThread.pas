@@ -3,7 +3,7 @@ unit UnitSlideShowUpdateInfoThread;
 interface
 
 uses
-  Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB, uThreadForm, uThreadEx;
+  Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB, uThreadForm, uThreadEx, ActiveX;
 
 type
   TSlideShowUpdateInfoThread = class(TThreadEx)
@@ -43,9 +43,11 @@ begin
 end;
 
 procedure TSlideShowUpdateInfoThread.Execute;
-begin
+begin         
  FreeOnTerminate:=true;
- DS:=GetQuery;
+ CoInitialize(nil);
+ try
+ DS:=GetQuery(True);
  SetSQL(DS,'SELECT * FROM '+GetDefDBName+' WHERE FFileName like :ffilename');
  SetStrParam(DS,0,DelNakl(AnsiLowerCase(FFileName)));
  try
@@ -63,6 +65,9 @@ begin
   SynchronizeEx(DoUpdateWithSlideShow);
  end;
  FreeDS(DS);
+ finally
+   CoUninitialize;
+ end;
 end;
 
 end.

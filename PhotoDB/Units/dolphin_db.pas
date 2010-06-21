@@ -2616,7 +2616,7 @@ begin
   c:=0;
   n:=0;
   SetLength(FBlockedFiles,0);
-  FQuery:=GetQuery;
+  FQuery:=GetQuery(True);
   FQuery.Active:=false;
   Folder:=AnsiLowerCase(Folder);
   formatdir(Folder);
