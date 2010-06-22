@@ -1205,6 +1205,7 @@ begin
   Application.CreateForm(TViewer,Viewer);
   DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
   Viewer.Execute(Sender,info);
+  Viewer.Show;
  end;
 end;
 

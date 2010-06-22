@@ -24,7 +24,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
     procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
-    procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);  
+    procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
   private
     FMainForms : array of TForm;
     FTemtinatedActions : TTemtinatedActions;  

@@ -394,10 +394,12 @@ exports
  IsFalidDBFile name 'IsFalidDBFile',
  FileVersion name 'FileVersion';
 
-begin
+begin             
+  TW.I.Start('SetPriority');
+  SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
   TW.I.Start('SetThreadAffinityMask');
   SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
-  StartProcessorMask := SetThreadAffinityMask(MainThreadID, $3); //only first CPU
+  StartProcessorMask := SetThreadAffinityMask(MainThreadID, $1); //only first CPU
 {
  //Command line
  
@@ -910,7 +912,6 @@ begin
   if not GetParamStrDBBool('/NoFullRun') then
   FormManager.Run(SplashThread);
 
-  SplashThread.Terminate;
   if not SafeMode then
   begin
    EventLog('Theme...');
@@ -968,7 +969,8 @@ begin
  end;
 
   SetProcessAffinityMask(MainThreadID, StartProcessorMask);    
-  SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
+  SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL); 
+  SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
   Application.Run;
 
 end.

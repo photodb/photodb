@@ -1544,6 +1544,7 @@ begin
  SlideShowNow:=false;
  ImageExists:=false;
  ImageFrameTimer.Enabled:=false;
+ TW.I.Start('ToolButton1.Enabled');
  if Length(Info.ItemFileNames)=0 then
  begin
   ToolButton1.Enabled:=false;
@@ -1571,6 +1572,7 @@ begin
   ToolButton12.Enabled:=false;
   ToolButton13.Enabled:=false;
  end;
+ TW.I.Start('SlideShow_UseExternelViewer');
  if not UseOnlySelf then
  if not ((FormManager.MainFormsCount=1) and FormManager.IsMainForms(self)) then
  if not SafeMode then
@@ -1623,6 +1625,7 @@ begin
  end;
  If CurrentInfo.Position=-1 then CurrentInfo.Position:=0;
 
+ TW.I.Start('DoProcessPath');
  DoProcessPath(CurrentInfo.ItemFileNames[CurrentInfo.Position],true);
  for i:=0 to length(CurrentInfo.ItemFileNames)-1 do
  DoProcessPath(CurrentInfo.ItemFileNames[i]);
@@ -1639,6 +1642,7 @@ begin
   CurrentFileNumber:=CurrentInfo.Position;
   if not ((LoadBaseFile<>'') and (AnsiLowerCase(CurrentInfo.ItemFileNames[CurrentFileNumber])=AnsiLowerCase(LoadBaseFile))) then
   begin
+ TW.I.Start('LoadImage_');
    if LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false) then
    begin
 //   Timer1.Enabled:=true;
@@ -1656,7 +1660,10 @@ begin
      on e : Exception do EventLog(':TSlideShow::ExecuteW() throw exception: '+e.Message);
     end;
     FbImage.Canvas.TextOut(FbImage.Width div 2-FbImage.Canvas.TextWidth(text_out) div 2,FbImage.Height{ div 2}-4*FbImage.Canvas.Textheight(text_out) div 2,text_out);
+
+ TW.I.Start('RecreateDrawImage_');
     RecreateDrawImage_(Sender);
+ TW.I.Start('FormPaint');
     FormPaint(Sender);
    end;
 //   ShowWindow(Handle,SW_SHOWNORMAL);
@@ -1694,16 +1701,18 @@ begin
    FloatPanel.ToolButton4.Enabled:=True;
    FloatPanel.ToolButton5.Enabled:=True;
   end;
- end;
+ end;      
+ TW.I.Stop;
  //Show;
 end;
 
 procedure TViewer.CreateParams(var Params: TCreateParams);
-begin
- Inherited CreateParams(Params);  
+begin      
+  TW.I.Start('CreateParams');
  Params.WndParent := GetDesktopWindow;
  with params do
  ExStyle := ExStyle or WS_EX_APPWINDOW;
+ Inherited CreateParams(Params);
 end;
 
 procedure TViewer.WaitImageTimerTimer(Sender: TObject);
@@ -2208,9 +2217,10 @@ begin
   imlists[0]:=ImageList1; 
   imlists[1]:=ImageList2;
   imlists[2]:=ImageList3;
-  TW.I.Start('Clear');
+  TW.I.Start('Clear'); 
+ if not Self.FCreating then
  for i:=0 to 2 do
-  imlists[i].Clear;     
+  imlists[i].Clear;
   TW.I.Start('BkColor');
  imlists[0].BkColor:=Theme_MainColor;
  imlists[1].BkColor:=ClBtnFace;
