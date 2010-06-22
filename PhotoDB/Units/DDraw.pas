@@ -4654,7 +4654,8 @@ const
 
   DDCREATE_HARDWAREONLY       = $00000001;
   DDCREATE_EMULATIONONLY      = $00000002;
-
+             
+procedure DDrawInit;
 
 implementation
 
@@ -4786,7 +4787,7 @@ begin
   end;
 end;
 
-initialization
+procedure DDrawInit;
 begin
   if not IsNTandDelphiRunning then
   begin
@@ -4814,6 +4815,8 @@ begin
 {$ENDIF}
   end;
 end;
+
+initialization
 
 finalization
 begin

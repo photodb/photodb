@@ -2122,6 +2122,7 @@ end;
 
 initialization
 
+ TW.I.Start('GettingProcNum');
  UpdatesCountLimit := GettingProcNum+1;
  UpdaterCount:=0;
 

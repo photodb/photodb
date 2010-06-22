@@ -82,6 +82,7 @@ var
   b : boolean;
   RetryCounter : integer;
 begin
+ InitGDIPlus;
  FreeOnTerminate:=true;
  OldGraphic:=nil;
 

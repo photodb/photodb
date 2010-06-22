@@ -8,10 +8,10 @@ uses
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
   AppEvnts, ImgList, UnitDBKernel, FadeImage, jpeg, Win32crc, CommCtrl,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
-  ShellContextMenu, DropSource, DropTarget, DDraw, GIFImage, GraphicEx,
+  ShellContextMenu, DropSource, DropTarget, GIFImage, GraphicEx,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime;
+  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad;
 
 type
   TRotatingImageInfo = record
@@ -214,6 +214,7 @@ type
     FPlay: boolean;
     LockEventRotateFileList : TStrings;
     LastZValue : extended;
+    FCreating : Boolean;
     FRotatingImageInfo : TRotatingImageInfo;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
@@ -315,9 +316,10 @@ uses  Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
 
 {$R *.dfm}
 
-
 procedure TViewer.FormCreate(Sender: TObject);
-begin
+begin        
+  TW.I.Start('TViewer.FormCreate');
+ FCreating := True;
  fCurrentPage := 0;
  fPageCount := 1;
  FRotatingImageInfo.Enabled:=false;
@@ -342,9 +344,6 @@ begin
   FLoading:=true;
   FImageExists:=false;
   Caption:=TEXT_MES_SLIDE_SHOW;
-  TW.I.Start('RecreateImLists');
-  RecreateImLists;
-  TW.I.Stop;
   DBCanDrag:=false;
   DropFileTarget1.Register(self);
   SlideTimer.Interval:=Math.Min(Math.Max(DBKernel.ReadInteger('Options','FullScreen_SlideDelay',40),1),100)*100;
@@ -356,8 +355,8 @@ begin
   FbImage:=TBitmap.create;
   FbImage.PixelFormat:=pf24bit;
   drawimage.PixelFormat:=pf24bit;
-  drawimage.width:=Clientwidth;
-  drawimage.Height:=HeightW;
+  //drawimage.width:=Clientwidth;
+  //drawimage.Height:=HeightW;
   TW.I.Start('fcsrbmp');
   fcsrbmp := TBitmap.create;
   fcsrbmp.PixelFormat:=pf24bit;
@@ -451,6 +450,7 @@ begin
   TW.I.Start('MakePagesLinks');
   MakePagesLinks;
   TW.I.Stop;
+  FCreating := False;
 end;
 
 function TViewer.LoadImage_(Sender: TObject; FileName: String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
@@ -738,6 +738,9 @@ end;
 
 procedure TViewer.FormResize(Sender: TObject);
 begin
+ TW.I.Start('TViewer.FormResize');
+ if FCreating then
+   Exit;
  DrawImage.width:=ClientWidth;
  DrawImage.Height:=HeightW;
  if not WaitImageTimer.Enabled then
@@ -756,6 +759,7 @@ begin
   FormPaint(Sender);
  end;
  ToolBar2.Refresh;
+ TW.I.Stop;
 end;
 
 procedure TViewer.Next_(Sender: TObject);
@@ -2185,73 +2189,56 @@ end;
 
 procedure TViewer.RecreateImLists;
 var
-  icons : array [0..1,0..22] of TIcon;
+  icons : array [0..1,0..22] of HIcon;
   c, i, j, k, l : integer;
   b : TBitmap;
   imlists : array [0..2] of TImageList;
-//  p: PARGB;
-  Ppx : Plpixels;
-  lb : TLayeredBitmap;
 Const
   Names : array [0..1,0..22] of String = (('Z_NEXT_NORM','Z_PREVIOUS_NORM','Z_BESTSIZE_NORM','Z_FULLSIZE_NORM','Z_FULLSCREEN_NORM','Z_ZOOMIN_NORM','Z_ZOOMOUT_NORM','Z_FULLSCREEN','Z_LEFT_NORM','Z_RIGHT_NORM','Z_INFO_NORM','IMEDITOR','PRINTER','DELETE_INFO','RATING_STAR','TRATING_1','TRATING_2','TRATING_3','TRATING_4','TRATING_5','Z_DB_NORM','Z_DB_WORK','Z_PAGES'),('Z_NEXT_HOT','Z_PREVIOUS_HOT','Z_BESTSIZE_HOT','Z_FULLSIZE_HOT','Z_FULLSCREEN_HOT','Z_ZOOMIN_HOT','Z_ZOOMOUT_HOT','Z_FULLSCREEN','Z_LEFT_HOT','Z_RIGHT_HOT','Z_INFO_HOT','IMEDITOR','PRINTER','DELETE_INFO','RATING_STAR','TRATING_1','TRATING_2','TRATING_3','TRATING_4','TRATING_5','Z_DB_NORM','Z_DB_WORK','Z_PAGES'));
 
-begin                                                                                                                         
+begin
+  TW.I.Start('LoadIcon');
  for i:=0 to 1 do
  for j:=0 to 22 do
  begin
-  icons[i,j]:=TIcon.Create;
-  icons[i,j].Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Names[i,j]));
+  icons[i,j] := LoadIcon(DBKernel.IconDllInstance,PChar(Names[i,j]));
  end;
+  TW.I.Start('FindComponent');
+
+  imlists[0]:=ImageList1; 
+  imlists[1]:=ImageList2;
+  imlists[2]:=ImageList3;  
  for i:=0 to 2 do
- begin
-  imlists[i]:=FindComponent('ImageList'+IntToStr(i+1)) as TImageList;
   imlists[i].Clear;
- end;
  imlists[0].BkColor:=Theme_MainColor;
  imlists[1].BkColor:=ClBtnFace;
  imlists[2].BkColor:=Theme_MainColor;
+ b:=TBitmap.create;
+ b.Width:=16;
+ b.Height:=16;
+ b.Canvas.Brush.Color:=Theme_MainColor;
+ b.Canvas.Pen.Color:=Theme_MainColor;
+  TW.I.Start('ImageList_ReplaceIcon');
  for i:=0 to 1 do
  for j:=0 to 22 do
  begin
-  
-  ImageList_ReplaceIcon(imlists[i].Handle, -1, icons[i,j].Handle);
-
-  if i=0 then
+  ImageList_ReplaceIcon(imlists[i].Handle, -1, icons[i,j]);
+  if i = 0 then
   begin
-   lb := TLayeredBitmap.Create;
-   lb.LoadFromIconA(icons[i,j]);
-   Ppx:=lb.GetArray;
-
-   //no DB wokring icons grayed
-   if (j<20) or (j<21) then
-   for k:=0 to lb.Height-1 do
-   for l:=0 to lb.Width-1 do
-   begin
-    c:=HiByte(Ppx^[k,l,0] * 77 + Ppx^[k,l,1] * 151 + Ppx^[k,l,2] * 28);
-    Ppx^[k,l,0] := c;
-    Ppx^[k,l,1] := c;
-    Ppx^[k,l,2] := c;
-   end;
-   b:=TBitmap.create;
-   b.Width:=16;
-   b.Height:=16;
-   b.Canvas.Brush.Color:=Theme_MainColor;
-   b.Canvas.Pen.Color:=Theme_MainColor;
-   b.Canvas.Rectangle(0,0,16,16);
-   lb.DoStreachDraw(0,0,16,16,b);
-   imlists[2].Add(b,nil);
-   b.free;
-   lb.free;
+   b.Canvas.Rectangle(0, 0, 16, 16);
+   DrawIconEx(b.Canvas.Handle, 0, 0, icons[i, j], 16, 16, 0, 0, DI_NORMAL);
+   GrayScale(b);
+   imlists[2].Add(B, nil);
   end;
- end;
+ end;    
+  TW.I.Start('DestroyIcon');
  for i:=0 to 1 do
  for j:=0 to 22 do
  begin
-  icons[i,j].free;
+  DestroyIcon(icons[i,j]);
  end;
-{ ToolBar2.HotImages:=ImageList2;
- ToolBar2.Images:=ImageList1;
- ToolBar2.DisabledImages:=ImageList3;  }
+ b.free;
+  TW.I.Stop;
 end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);

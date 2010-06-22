@@ -533,6 +533,7 @@ procedure TOptionsForm.FormCreate(Sender: TObject);
 var
   i : integer;
 begin
+ InitGDIPlus;
  ReloadData:=false;
  ClientHeight:=OkButton.Top+OkButton.Height+3;
 

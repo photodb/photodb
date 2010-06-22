@@ -251,6 +251,7 @@ end;
 constructor TPngImage.Create;
 begin
   inherited;
+  InitPNG;
   FData     := nil;
   FRowPtrs  := nil;
   FHeight  := 0;

@@ -48,7 +48,7 @@ var
 implementation
 
 
-uses SlideShow, FloatPanelFullScreen,DDraw;
+uses SlideShow, FloatPanelFullScreen;
 
 {$R *.dfm}
 

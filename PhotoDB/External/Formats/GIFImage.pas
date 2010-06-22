@@ -1531,7 +1531,7 @@ uses
 {$ifdef DEBUG}
   dialogs,
 {$endif}
-  mmsystem, // timeGetTime()
+//  mmsystem, // timeGetTime()
   messages,
   Consts;
 
@@ -10438,9 +10438,9 @@ var
   Msg			: TMsg;
   Delay			,
   OldDelay		,
-  DelayUsed		: longInt;
+  DelayUsed		: int64;
   DelayStart		,
-  NewDelayStart		: DWORD;
+  NewDelayStart		: Int64;
 
   procedure FireEvent(Event: TNotifyEvent);
   begin
@@ -10490,7 +10490,7 @@ begin
           Delay := 1; // Dummy to process messages
         OldDisposal := dmNoDisposal;
         // Fetch delay start time
-        DelayStart := timeGetTime;
+        QueryPerformanceCounter (DelayStart);
         OldDelay := 0;
 
         // Loop to loop - duh!
@@ -10521,7 +10521,7 @@ begin
 {$endif}
 
               // Calculate inter frame delay
-              NewDelayStart := timeGetTime;
+              QueryPerformanceCounter(NewDelayStart);
               if (FAnimationSpeed > 0) then
               begin
                 // Calculate number of mS used in prefetch and display
@@ -10560,7 +10560,7 @@ begin
                     // were prematurely aborted (e.g. because the animation
                     // speed were changed)
                     OldDelay := 0;
-                    DelayStart := longInt(timeGetTime);
+                    QueryPerformanceCounter(DelayStart);
                   end;
                 end;
               end else
@@ -10568,7 +10568,7 @@ begin
                 if (Delay <= 0) then
                   Delay := 1;
                 // Fetch start time
-                NewDelayStart := timeGetTime;
+                QueryPerformanceCounter(NewDelayStart);
                 // If we are not running in a thread we Sleep in small chunks
                 // and give the user a chance to abort
                 while (Delay > 0) and not(Terminated or DoRestart) do
@@ -10578,10 +10578,11 @@ begin
                   else
                     Sleep(100);
                   // Calculate number of mS delayed in this chunk
-                  DelayUsed := integer(timeGetTime - NewDelayStart);
+                  QueryPerformanceCounter(DelayUsed);
+                  DelayUsed := DelayUsed - NewDelayStart;
                   dec(Delay, DelayUsed);
                   // Reset start time for chunk
-                  NewDelaySTart := timeGetTime;
+                  QueryPerformanceCounter(NewDelaySTart);
                   // Application.ProcessMessages wannabe
                   while (not(Terminated or DoRestart)) and
                     (PeekMessage(Msg, 0, 0, 0, PM_REMOVE)) do

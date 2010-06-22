@@ -18,7 +18,9 @@ implementation
 { TLoadDBSettingsThread }
 
 procedure TLoadDBSettingsThread.Execute;
-begin
+begin     
+  if ProcessorCount > 0 then
+    SetThreadAffinityMask(MainThreadID, $10); //if possible -> second CPU
   CoInitialize(nil);
   try
     DBKernel.ReadDBOptions;

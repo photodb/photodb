@@ -336,7 +336,7 @@ begin
     Synchronize(SetStaticImage);
     exit;
    end;
-   sleep(100);
+   sleep(10);
   until false;
   Bitmap.Free;
  end;

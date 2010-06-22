@@ -417,6 +417,7 @@ var
     PixelFormat: TDDPixelFormat;
     Objects : TThreadDestroyDXObjects;
 begin
+ DDrawInit;
  AlphaSteeps:=Min(Max(DBKernel.ReadInteger('Options','SlideShow_SlideSteps',25),1),100);
  DelayTimer.Interval:=Min(Max(DBKernel.ReadInteger('Options','SlideShow_SlideDelay',40),1),100)*50;
  FNowPaused :=false;

@@ -20,6 +20,8 @@ implementation
 
 procedure TLoadDBKernelIconsThread.Execute;
 begin
+  if ProcessorCount > 0 then
+    SetThreadAffinityMask(MainThreadID, $10); //if possible -> second CPU
   DBKernel.LoadIcons;
   Terminate;
 end;

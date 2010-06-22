@@ -482,6 +482,7 @@ var
         ThSizePanelPreview : integer = 75;
         ThImageSize : integer = 150;
         ThHintSize : integer = 300;
+        ProcessorCount : Integer = 0;
 
 resourcestring
     SNotSupported = 'This function is not supported by your version of Windows';
@@ -495,7 +496,6 @@ var
     Theme_ProgressBackColor, Theme_ProgressFontColor, Theme_ProgressFillColor : TColor;
 
     DBKernel : TDBKernel;
-    LoadingAboutForm : TForm;
     ResultLogin : boolean;
     KernelHandle : THandle;
     DBTerminating : Boolean;
@@ -6481,12 +6481,10 @@ end;
 
 function GetActiveFormHandle : integer;
 begin
- if LoadingAboutForm<>nil then
- begin
-  Result:=LoadingAboutForm.Handle;
-  exit;
- end;
- If Screen.ActiveForm<>nil then Result:=Screen.ActiveForm.Handle else Result:=0;
+ If Screen.ActiveForm <> nil then
+   Result := Screen.ActiveForm.Handle
+ else
+   Result := 0;
 end;
 
 function GetGraphicFilter : string;
@@ -6643,6 +6641,7 @@ DBKernel:=nil;
 FExtImagesInImageList:=0;
 LastInseredID:=0;
 GraphicFilterString:='';
+ProcessorCount := GettingProcNum;
 
 finalization
 

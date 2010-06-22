@@ -3,7 +3,7 @@ unit RAWImage;
 interface
 
 uses  Windows, Messages, SysUtils, Graphics, Classes, FileCtrl, GraphicEX, Forms,
-      uScript, UnitScripts, UnitDBCommonGraphics, uConstants, uFileUtils;
+      uScript, UnitScripts, UnitDBCommonGraphics, uConstants, uFileUtils, uTime;
 
   {$DEFINE USEPHOTODB}
 
@@ -53,10 +53,11 @@ PExifEssentials=^TExifEssentials;
          end;
 
 Function IsRAWImageFile(FileName : String) : boolean;
-Function ReadRAWExif(FileName : String) : TExifRAWRecord;
+Function ReadRAWExif(FileName : String) : TExifRAWRecord;    
+procedure InitRAW;
 
 var
-  IsRAWSupport : boolean = false;
+  IsRAWSupport : boolean = true;
 
 implementation
 
@@ -104,11 +105,9 @@ var
   PTimeStamp:Array[0..1000] Of Char;
   i : integer;
 begin
- if DecodingCount=1 then
- Repeat
+ InitRAW;
+ while DecodingCount > 0 do
   sleep(10);
-//  Application.ProcessMessages;
- until DecodingCount<1;
  inc(DecodingCount);
 
   FillChar(PMake,1000,1);
@@ -231,22 +230,14 @@ Var
   ProgressInfo:TProgress;
   RAWSettings:TRAWSettings;
   ErrorVal:Integer;
-  
-{  _RAWInfo : TRAWInfo;
-  _FromRawToPSD : TFromRawToPSD;
-  RAWDllNewHandle : THandle; }
+
 begin
-if DecodingCount=1 then
- Repeat
+ 
+ InitRAW;
+ while DecodingCount>0 do
   sleep(10);
-//  Application.ProcessMessages;
- until DecodingCount<1;
  inc(DecodingCount);
 
-{  RAWDllNewHandle:=LoadLibrary(PHOTOJOCKEYdll);
-  _FromRawToPSD := GetProcAddress(RAWDllNewHandle,'FromRawToPSD');
-  _RAWInfo := GetProcAddress(RAWDllNewHandle,'RawInfo');
-   }
 GetMem(ThumbFileName,255);
 IFileName:=PChar(FileName);
 raw_settings_init(RAWSettings);
@@ -524,20 +515,28 @@ begin
   fLoadHalfSize := Value;
 end;
 
+procedure InitRAW;
+begin
+  if aRAWModuleHandle = 0 then
+  begin
+    aRAWModuleHandle:=LoadLibrary(PHOTOJOCKEYdll);
+    if aRAWModuleHandle<>0 then
+    begin
+      aFromRawToPSD := GetProcAddress(aRAWModuleHandle,'FromRawToPSD');
+      aRAWInfo := GetProcAddress(aRAWModuleHandle,'RawInfo');
+      aExtract_Thumbnail := GetProcAddress(aRAWModuleHandle,'ExtractThumbnail');
+    end;
+  end;
+end;
+
 initialization
 
+ TW.I.Start('InitRAW');
  RAWImages:='';
  aRAWModuleHandle:=0;
  If AnsiUpperCase(paramStr(1))<>'/SAFEMODE' then
  If AnsiUpperCase(paramStr(1))<>'/UNINSTALL' then
- aRAWModuleHandle:=LoadLibrary(PHOTOJOCKEYdll);
- if aRAWModuleHandle<>0 then
  begin
-  IsRAWSupport:=true;
-  aFromRawToPSD := GetProcAddress(aRAWModuleHandle,'FromRawToPSD');
-  aRAWInfo := GetProcAddress(aRAWModuleHandle,'RawInfo');
-  aExtract_Thumbnail := GetProcAddress(aRAWModuleHandle,'ExtractThumbnail');
-
   //Loading Extensions from ini-file
   aScript := TScript.Create('InitRAW');
   try
@@ -567,6 +566,7 @@ initialization
   TempRAWMask:=TempRAWMask+RAWImages;
   SupportedExt:=SupportedExt+RAWImages;
 
+ TW.I.Start('RAW - RegisterFileFormat');
   _p:=1; //first -  NOT "|"
   for _i:=1 to Length(RAWImages) do
   begin

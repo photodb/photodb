@@ -2,7 +2,7 @@ unit ThreadManeger;
 
 interface
 
-Uses Windows, Classes, ExtCtrls, Messages, Controls, Forms, Dolphin_DB;
+Uses Windows, Classes, ExtCtrls, Messages, Controls, Forms, Dolphin_DB, uTime;
 
 
 Const
@@ -91,8 +91,8 @@ end;
 
 constructor TThreadManeger.Create;
 begin
- SetLength(FThreads,0);
- TThreadTimer.Create(False,ExitW);
+ SetLength(FThreads,0); //???
+//??? TODO: DELETE CLASS!!! TThreadTimer.Create(False,ExitW);
 end;
 
 destructor TThreadManeger.Destroy;
@@ -110,14 +110,15 @@ procedure TThreadManeger.RemoveThread(Thread: TDBThreadInfo);
 var
   i, j : integer;
 begin
- For i:=0 to Length(FThreads)-1 do
+//????
+{ For i:=0 to Length(FThreads)-1 do
  if FThreads[i].Handle=Thread.Handle then
  begin
   For j:=i to Length(FThreads)-2 do
   FThreads[j]:=FThreads[j+1];
   SetLength(FThreads,Length(FThreads)-1);
   break;
- end;
+ end;  }
 end;
 
 procedure TThreadManeger.TerminateThreadW(Handle_: THandle);
@@ -175,7 +176,8 @@ procedure TThreadManeger.TerminateThreads(Owner: THandle; Type_: Integer);
 Var
   i, j: Integer;
 begin
- For i:=0 to Length(FThreads)-1 do
+//??? TODO:
+{ For i:=0 to Length(FThreads)-1 do
  if (FThreads[i].OwnerHandle=Owner) and (FThreads[i].Type_=Type_) then
  begin
   TerminateThread(FThreads[i].Handle,0);
@@ -189,7 +191,7 @@ begin
   FThreads[j]:=FThreads[j+1];
   if length(FThreads)>0 then
   SetLength(FThreads,Length(FThreads)-1);
- end;
+ end;}
 end;
 
 { TThreadTimer }
@@ -258,8 +260,10 @@ end;
 
 initialization
 
-if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
-DBThreadManeger:= TThreadManeger.Create;
+ TW.I.Start('TThreadManeger');
+//if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
+//DBThreadManeger:= TThreadManeger.Create;
+ TW.I.Start('TThreadManeger - END');
 
 Finalization
 

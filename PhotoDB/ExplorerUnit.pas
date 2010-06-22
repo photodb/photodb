@@ -16,7 +16,7 @@ uses
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs,
-  uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime;
+  uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -812,7 +812,8 @@ begin
      ListView1.Selection.RectSelect:=true;
      ListView1.Selection.EnableDragSelect:=true;
      ListView1.Selection.TextColor:=Theme_ListFontColor;
-
+               
+     TLoad.Instance.RequaredDBSettings;
      LoadSizes;
 
      ListView1.HotTrack.Cursor:=CrArrow;
@@ -8273,6 +8274,7 @@ begin
  View3.ImageIndex:=DB_IC_SORT;
  MapCD1.ImageIndex:=DB_IC_CD_MAPPING;
 
+ TLoad.Instance.RequaredDBKernelIcons;
  SlideShowLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SLIDE_SHOW+1]);
  ShellLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL+1]);
  CopyToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);

@@ -37,69 +37,71 @@ var
   AniInfo: TAnimationInfo;
   Animate: Boolean;
 begin
-if IsIconic(Handle1) then ShowWindow(Handle1, SW_RESTORE);
-hParent := GetWindowLong(Handle1, GWL_HWNDPARENT);
-if hParent > 0 then
-  if IsIconic(hParent) then ShowWindow(hParent, SW_RESTORE);
+  ShowWindow(Application.MainForm.Handle, SW_HIDE);
+  ShowWindow(Application.Handle, SW_HIDE);
+  if IsIconic(Handle1) then ShowWindow(Handle1, SW_RESTORE);
+    hParent := GetWindowLong(Handle1, GWL_HWNDPARENT);
+  if hParent > 0 then
+    if IsIconic(hParent) then ShowWindow(hParent, SW_RESTORE);
 
-  if (GetForegroundWindow = Handle1) then Result := true
+  if (GetForegroundWindow = Handle1) then
+    Result := true
   else
-    begin
+  begin
     OSVersionInfo.dwOSVersionInfoSize := SizeOf(OSVersionInfo);
     GetVersionEx(OSVersionInfo);
 
     if ((OSVersionInfo.dwPlatformId = VER_PLATFORM_WIN32_NT) and (OSVersionInfo.dwMajorVersion > 4))
-    or
-    ((OSVersionInfo.dwPlatformId = VER_PLATFORM_WIN32_WINDOWS) and ((OSVersionInfo.dwMajorVersion > 4)
-    or
-    ((OSVersionInfo.dwMajorVersion = 4) and (OSVersionInfo.dwMinorVersion > 0))))
-    then
-      begin // OS is above win 95
+       or
+       ((OSVersionInfo.dwPlatformId = VER_PLATFORM_WIN32_WINDOWS) and ((OSVersionInfo.dwMajorVersion > 4)
+       or
+       ((OSVersionInfo.dwMajorVersion = 4) and (OSVersionInfo.dwMinorVersion > 0))))
+      then
+    begin // OS is above win 95
       Result := false;
       ForegndThreadID := GetWindowThreadProcessID(GetForegroundWindow,nil);
       TheThreadID := GetWindowThreadProcessId(Handle1,nil);
       if AttachThreadInput(TheThreadID, ForegndThreadID, true) then
-        begin
+      begin
         SetForegroundWindow(Handle1);
         AttachThreadInput(TheThreadID, ForegndThreadID, false);
         Result := (GetForegroundWindow = Handle1);
-        end;
+      end;
       if not Result then
-        begin
+      begin
         SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @timeout, 0);
         SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, nil, SPIF_SENDCHANGE);
         SetForegroundWindow(Handle1);
         SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, @timeout, SPIF_SENDCHANGE);
-        end;
-
-      end else // OS is above win 95
+      end;
+    end else // OS is above win 95
       SetForegroundWindow(Handle1);
+    Result := (GetForegroundWindow = Handle1);
+    if Result then Exit;
 
-  Result := (GetForegroundWindow = Handle1);
-  if Result then Exit;
-  
-  AniInfo.cbSize := SizeOf(TAnimationInfo);
-  if SystemParametersInfo(SPI_GETANIMATION, SizeOf(AniInfo), @AniInfo, 0) then
-    Animate := AniInfo.iMinAnimate <> 0 else
-    Animate := False;
-  if Animate then
+    AniInfo.cbSize := SizeOf(TAnimationInfo);
+    if SystemParametersInfo(SPI_GETANIMATION, SizeOf(AniInfo), @AniInfo, 0) then
+      Animate := AniInfo.iMinAnimate <> 0
+    else
+      Animate := False;
+    if Animate then
     begin
-    AniInfo.iMinAnimate := 0;
-    SystemParametersInfo(SPI_SETANIMATION, SizeOf(AniInfo), @AniInfo, 0);
+      AniInfo.iMinAnimate := 0;
+      SystemParametersInfo(SPI_SETANIMATION, SizeOf(AniInfo), @AniInfo, 0);
     end;
-  SendMessage(Handle1,WM_SYSCOMMAND,SC_MINIMIZE,0);
-  Sleep(40);
-  if hParent > 0 then
-  SendMessage(hParent,WM_SYSCOMMAND,SC_RESTORE,0)
-  else
-  SendMessage(Handle1,WM_SYSCOMMAND,SC_RESTORE,0);
-  if Animate then
-  begin
-  AniInfo.iMinAnimate := 1;
-  SystemParametersInfo(SPI_SETANIMATION, SizeOf(AniInfo), @AniInfo, 0);
-  end;
+    SendMessage(Handle1,WM_SYSCOMMAND,SC_MINIMIZE,0);
+    Sleep(40);
+    if hParent > 0 then
+      SendMessage(hParent,WM_SYSCOMMAND,SC_RESTORE,0)
+    else
+      SendMessage(Handle1,WM_SYSCOMMAND,SC_RESTORE,0);
+    if Animate then
+    begin
+      AniInfo.iMinAnimate := 1;
+      SystemParametersInfo(SPI_SETANIMATION, SizeOf(AniInfo), @AniInfo, 0);
+    end;
   
-  Result := (GetForegroundWindow = Handle1);
+    Result := (GetForegroundWindow = Handle1);
   end;
 end;
 

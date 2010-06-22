@@ -37,6 +37,7 @@ begin
   FStartUp := Now;
   if MainThreadID = ThreadID then
     ThreadID := 0;
+
   FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate);
 end;
 
@@ -92,11 +93,14 @@ var
 begin
   IsRuning := False;
   Delta := Round((Now - FStart)*24*60*60*1000);
- if Delta > 2 then
+  if Delta >= 10 then
   begin
     Info := Format('%s = %d ms. (%d ms.)%s', [FName, Delta , Round((Now - FStartUp)*24*60*60*1000), #13#10]);
     FS.Write(Info[1], Length(Info))
   end;
 end;
+
+initialization
+  TW.I.Start('initialization');
 
 end.

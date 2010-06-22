@@ -2,8 +2,8 @@ program PhotoDB;
 
 {$DEFINE DEBUG}
 
-uses
-  Bde,
+uses     
+  uTime in 'Units\uTime.pas',
   ADODB,
   FileCtrl,
   ShellApi,
@@ -267,13 +267,13 @@ uses
   uFileUtils in 'Units\uFileUtils.pas',
   uScript in 'KernelDll\uScript.pas',
   uStringUtils in 'Units\uStringUtils.pas',
-  uTime in 'Units\uTime.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
   UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas',
   UnitExplorerLoadSingleImageThread in 'Threads\UnitExplorerLoadSingleImageThread.pas',
   UnitDBThread in 'Units\UnitDBThread.pas',
   UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
-  uSplachThread in 'Threads\uSplachThread.pas';
+  uSplachThread in 'Threads\uSplachThread.pas',
+  uFastLoad in 'Units\uFastLoad.pas';
 
 {$R *.res}
 
@@ -295,11 +295,8 @@ var
     aHandle : Thandle;
     i : integer;
     CheckResult : integer;
-    //FAST LOAD
-    LoadDBKernelIconsThread,
-    LoadDBSettingsThread,
-    LoadCRCCheckThread : TDBThread;
-    SplashThread : TThread;
+    SplashThread : TThread = nil;
+    StartProcessorMask : Cardinal;
 
   f : TPcharFunction;
   Fh : pointer;
@@ -399,6 +396,9 @@ exports
  FileVersion name 'FileVersion';
 
 begin
+  TW.I.Start('SetThreadAffinityMask');
+  SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
+  StartProcessorMask := SetThreadAffinityMask(MainThreadID, $3); //only first CPU
 {
  //Command line
  
@@ -433,11 +433,13 @@ begin
   TW.I.Start('START');
   ProgramDir := ExtractFileDir(Application.ExeName) + '\';
 
+  TW.I.Start('EventLog');
   EventLog('');
   EventLog('');
   EventLog('');
   EventLog(Format('Program running! [%s]',[ProductName]));
-
+           
+  TW.I.Start('TScriptEnviroments');
   TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
             
   if GetParamStrDBBool('/Logging') then
@@ -469,7 +471,6 @@ begin
             
   TW.I.Start('InitializeDBLoadScript');
   InitializeDBLoadScript;
-  LoadingAboutForm:=nil;
   // INITIALIZAING APPLICATION
 
   if GetDBViewMode then
@@ -546,7 +547,6 @@ begin
     end;
    end;
   end;
-  EventLog(':BDEInstalled()');
            
   //UNINSTALL ----------------------------------------------------
            
@@ -567,12 +567,12 @@ begin
    Halt;
   end;
                   
-   EventLog('TDBKernel.Create');
-   DBKernel:=TDBKernel.Create;
-   TW.I.Start('DBKernel.LogIn');
-   DBKernel.LogIn('','',true);
-   LoadDBKernelIconsThread := TLoadDBKernelIconsThread.Create(False);
-   LoadDBSettingsThread := TLoadDBSettingsThread.Create(False);
+  EventLog('TDBKernel.Create');
+  DBKernel:=TDBKernel.Create;
+  TW.I.Start('DBKernel.LogIn');
+  DBKernel.LogIn('','',true);
+  TLoad.Instance.StartDBKernelIconsThread;
+  TLoad.Instance.StartDBSettingsThread;
 
   TW.I.Start('FindRunningVersion');
   if not SafeMode then
@@ -585,20 +585,10 @@ begin
 
   if not GetParamStrDBBool('/NoLogo') then
   begin
-  TW.I.Start('TAboutForm');
- {  Application.CreateForm(TAboutForm, LoadingAboutForm);
-   LoadingAboutForm.FormStyle := fsStayOnTop;
-   TAboutForm(LoadingAboutForm).CloseButton.Visible:=false; }
-  TW.I.Start('LoadingAboutForm.Show');
-  { LoadingAboutForm.Show;
-   Application.Restore;
-   Application.ProcessMessages;  
-   TAboutForm(LoadingAboutForm).DmProgress1.MaxValue:=8;  }
-  end else LoadingAboutForm:=nil;
-
-  TW.I.Start('TSplashThread');
-  SplashThread := TSplashThread.Create(False);
-  TW.I.Stop;
+    TW.I.Start('TSplashThread');
+    SplashThread := TSplashThread.Create(False);
+    TW.I.Stop;
+  end;
 
   //CHECK DEMO MODE ----------------------------------------------------
   if not DBTerminating then
@@ -606,7 +596,7 @@ begin
    EventLog('Loading Kernel.dll');
    if not FolderView then
    KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
-   LoadCRCCheckThread := TLoadCRCCheckThread.Create(False);
+   TLoad.Instance.StartCRCCheckThread;
    EventLog(':DBKernel.InitRegModule');
    DBKernel.InitRegModule;
    EventLog(':DBKernel.LoadColorTheme');
@@ -659,7 +649,7 @@ begin
   {$IFDEF DEBUG}
   EventLog('...CHECK GetCIDA...');
   {$ENDIF}
-  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=1;
+ //TODO: if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=1;
   if not FolderView then
   If not DBTerminating then
   begin
@@ -708,13 +698,13 @@ begin
 
   EventLog('...Loading menu...');
 
-  if LoadingAboutForm<>nil then
-  begin
+//TODO:  if LoadingAboutForm<>nil then
+{  begin
     TAboutForm(LoadingAboutForm).DmProgress1.Position:=2;
      TW.I.Start('LoadRegistrationData');
     if not FolderView then
       TAboutForm(LoadingAboutForm).LoadRegistrationData;
-  end;
+  end; }
   //LOGGING ----------------------------------------------------
                
      TW.I.Start('LoadingAboutForm.Free');
@@ -724,8 +714,7 @@ begin
   if not DBTerminating then
   If DBKernel.ProgramInDemoMode then
   begin
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    EventLog('Loading About...');
    if AboutForm= nil then
    Application.CreateForm(TAboutForm, AboutForm);
@@ -734,7 +723,7 @@ begin
    if UseFreeAfterRelease then AboutForm.Free;
    AboutForm:=nil;
   end;
-  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=3;
+  //TODO:if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=3;
   {$IFDEF DEBUG}
   //DEBUGGING
   //LOGGING_MESSAGE:=true;
@@ -742,36 +731,8 @@ begin
                    
   TW.I.Start('CHECK APPDATA DIRECTORY');
 
-  //CHECK APPDATA DIRECTORY
-  EventLog('...CHECK APPDATA DIRECTORY...');
-  if not DirectoryExists(GetAppDataDirectory) then
-  begin
-   try
-    CreateDirA(GetAppDataDirectory);
-   except
-    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,Format(ERROR_CREATING_APP_DATA_DIRECTORY_MAY_NE_PROBLEMS,[GetAppDataDirectory]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   end;
-  end;
-  EventLog('...CHECK APPDATA TEMP DIRECTORY...');
-  if not DirectoryExists(GetAppDataDirectory+TempFolder) then
-  begin
-   try
-    CreateDirA(GetAppDataDirectory+TempFolder);
-   except
-    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,Format(ERROR_CREATING_APP_DATA_DIRECTORY_TEMP_MAY_BE_PROBLEMS,[GetAppDataDirectory+TempFolder]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   end;
-  end;
-  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=4;
+  //TODO:if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=4;
 
-
-  EventLog('Login...');
-  if not FolderView then
-  If not DBTerminating then
-  begin
-   EventLog(':DBKernel.FixLoginDB()');
-   if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=6;
-
-  end;
   //GROUPS CHECK + MENU----------------------------------------------------
                 
   EventLog('...GROUPS CHECK + MENU...');
@@ -789,7 +750,7 @@ begin
     on e : Exception do EventLog(':PhotoDB() throw exception: '+e.Message);
    end;
   end;
-  if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=7;
+  //TODO: if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=7;
   //DB FAULT ----------------------------------------------------
          
    TW.I.Start('CHECKS');
@@ -800,12 +761,9 @@ begin
   if (DBKernel.ReadProperty('Starting','ApplicationStarted')='1') and not DBInDebug then
   begin
    EventLog('Application terminated...');
-   if LoadingAboutForm<>nil then
-   aHandle:=LoadingAboutForm.Handle else aHandle:=0;
-   if ID_OK=MessageBoxDB(aHandle,TEXT_MES_APPLICATION_FAILED,TEXT_MES_ERROR,TD_BUTTON_OKCANCEL,TD_ICON_ERROR) then
+   if ID_OK=MessageBoxDB(FormManager.Handle,TEXT_MES_APPLICATION_FAILED,TEXT_MES_ERROR,TD_BUTTON_OKCANCEL,TD_ICON_ERROR) then
    begin
-    LoadingAboutForm.Free;
-    LoadingAboutForm:=nil;
+    SplashThread.Terminate;
     TablePacked:=true;
     DBkernel.WriteBool('StartUp','Pack',False);
     Application.CreateForm(TCMDForm, CMDForm);
@@ -822,8 +780,7 @@ begin
   If GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp','ConvertDB',False) then
   if not TablePacked then
   begin
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    EventLog('Converting...');
    DBkernel.WriteBool('StartUp','ConvertDB',False);
    ConvertDB(dbname);
@@ -833,8 +790,7 @@ begin
   If GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp','Pack',False) then
   if not TablePacked then
   begin
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    EventLog('Packing...');
    DBkernel.WriteBool('StartUp','Pack',False);
    Application.CreateForm(TCMDForm, CMDForm);
@@ -848,8 +804,7 @@ begin
   If GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp','BackUp',False) then
   if not TablePacked then
   begin   
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    EventLog('BackUp...');
    DBkernel.WriteBool('StartUp','BackUp',False);
    Application.CreateForm(TCMDForm, CMDForm);
@@ -862,8 +817,7 @@ begin
   if not DBTerminating then
   If GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp','RecreateIDEx',False) then
   begin
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    EventLog('Recreating thumbs in Table...');
    DBkernel.WriteBool('StartUp','RecreateIDEx',False);
    Application.CreateForm(TCMDForm, CMDForm);
@@ -876,8 +830,7 @@ begin
   if not DBTerminating then
   If GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp','ScanBadLinks',False) then
   begin    
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    EventLog('Show Bad Links in table...');
    DBkernel.WriteBool('StartUp','ScanBadLinks',False);
    Application.CreateForm(TCMDForm, CMDForm);
@@ -890,8 +843,7 @@ begin
   if not DBTerminating then
   If GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp','OptimizeDublicates',False) then
   begin     
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    EventLog('Optimizingdublicates in table...');
    DBkernel.WriteBool('StartUp','OptimizeDublicates',False);
    Application.CreateForm(TCMDForm, CMDForm);
@@ -904,8 +856,7 @@ begin
   if not DBTerminating then
   If DBKernel.ReadBool('StartUp','Restore',False) then
   begin      
-   LoadingAboutForm.Free;
-   LoadingAboutForm:=nil;
+   SplashThread.Terminate;
    DBkernel.WriteBool('StartUp','Restore',False);
    EventLog('Restoring Table...'+DBkernel.ReadString('StartUp','RestoreFile'));
    Application.CreateForm(TCMDForm, CMDForm);
@@ -919,8 +870,8 @@ begin
 
    TW.I.Start('DEMO');
 
- if LoadingAboutForm<>nil then
-   TAboutForm(LoadingAboutForm).DmProgress1.Position:=8;
+//TODO if LoadingAboutForm<>nil then
+//TODO   TAboutForm(LoadingAboutForm).DmProgress1.Position:=8;
  if not FolderView then
  If not DBTerminating then
  if not DBInDebug then
@@ -928,10 +879,7 @@ begin
  begin
   EventLog('Verifyng....');
 
-  if not LoadCRCCheckThread.IsTerminated then
-    WaitForSingleObject(LoadCRCCheckThread.Handle, 10000);
-  LoadCRCCheckThread.Free;
-
+  TLoad.Instance.RequaredCRCCheck;
   @initAproc := GetProcAddress(KernelHandle,'InitializeA');
   if not initAproc(PChar(Application.ExeName)) then
   begin
@@ -952,12 +900,12 @@ begin
   EventLog('Form manager...');
   TW.I.Start('Form manager...');
   FormManager.Load;
-  If not DBTerminating then
-  begin
-   EventLog('ID Form...');
-   TW.I.Start('ID Form...');
-   Application.CreateForm(TIDForm, IDForm);
-  end;
+  //If not DBTerminating then
+  //begin
+   //EventLog('ID Form...');
+   //TW.I.Start('ID Form...');
+   //Application.CreateForm(TIDForm, IDForm);
+  //end;
  end;
             
  //THEMES AND RUNNING DB ---------------------------------------------
@@ -968,19 +916,7 @@ begin
  begin
   EventLog('Run manager...');
   if not GetParamStrDBBool('/NoFullRun') then
-  FormManager.Run(LoadingAboutForm);
-
-
-  TW.I.Start('WaitForSingleObjects -> LoadDBKernelIconsThread');
-  if not LoadDBKernelIconsThread.IsTerminated then
-    WaitForSingleObject(LoadDBKernelIconsThread.Handle, INFINITE);
-  LoadDBKernelIconsThread.Free;
-  TW.I.Start('WaitForSingleObjects -> LoadDBSettingsThread');    
-  if not LoadDBSettingsThread.IsTerminated then
-    WaitForSingleObject(LoadDBSettingsThread.Handle, INFINITE);
-  LoadDBSettingsThread.Free;
-  TDBNullQueryThread.Create(False);
-
+  FormManager.Run(SplashThread);
 
   SplashThread.Terminate;
   if not SafeMode then
@@ -1039,5 +975,8 @@ begin
   ExecuteQuery(s1);
  end;
 
+  SetProcessAffinityMask(MainThreadID, StartProcessorMask);    
+  SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
   Application.Run;
+
 end.

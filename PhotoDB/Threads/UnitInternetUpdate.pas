@@ -3,11 +3,8 @@ unit UnitInternetUpdate;
 interface
 
 uses
-  Classes, Registry, WinSock, WinInet, Windows, SysUtils, dolphin_db, Forms,
+  Classes, Registry, Windows, SysUtils, dolphin_db, Forms,
   uVistaFuncs, uLogger, uConstants;
-
-type
-  TConnectionType = (ctNone, ctProxy, ctDialup);
 
 type
   TInternetUpdate = class(TThread)
@@ -24,6 +21,26 @@ type
   public
    constructor Create(CreateSuspennded: Boolean; NeedsInformation : Boolean);
   end;
+     
+type
+  HINTERNET = Pointer;
+
+  TInternetOpen = function(lpszAgent: PChar; dwAccessType: DWORD;
+  lpszProxy, lpszProxyBypass: PChar; dwFlags: DWORD): HINTERNET; stdcall;
+          
+  TInternetOpenUrl = function(hInet: HINTERNET; lpszUrl: PChar;
+  lpszHeaders: PChar; dwHeadersLength: DWORD; dwFlags: DWORD;
+  dwContext: DWORD): HINTERNET; stdcall;
+
+  TInternetReadFile = function(hFile: HINTERNET; lpBuffer: Pointer;
+  dwNumberOfBytesToRead: DWORD; var lpdwNumberOfBytesRead: DWORD): BOOL; stdcall;
+
+  TInternetCloseHandle = function(hInet: HINTERNET): BOOL; stdcall;
+const
+
+  INTERNET_OPEN_TYPE_PRECONFIG        = 0;  { use registry configuration }   
+  INTERNET_FLAG_RELOAD = $80000000;                 { retrieve the original item }
+  wininet = 'wininet.dll';
 
 var
   UpdatingWorking : boolean;
@@ -32,109 +49,23 @@ implementation
 
 uses UnitFormInternetUpdating, Language;
 
-//For RasConnectionCount =======================
-const  
-  cERROR_BUFFER_TOO_SMALL = 603;  
-  cRAS_MaxEntryName       = 256;
-  cRAS_MaxDeviceName      = 128;
-  cRAS_MaxDeviceType      = 16;
-
-  type
-  ERasError = class(Exception);
-
-  HRASConn = DWORD;  
-  PRASConn = ^TRASConn;  
-  TRASConn = record  
-    dwSize: DWORD;  
-    rasConn: HRASConn;
-    szEntryName: array[0..cRAS_MaxEntryName] of Char;  
-    szDeviceType: array[0..cRAS_MaxDeviceType] of Char;  
-    szDeviceName: array [0..cRAS_MaxDeviceName] of Char;  
-  end;
-
-  TRasEnumConnections =  
-    function(RASConn: PrasConn; { buffer to receive Connections data }  
-    var BufSize: DWORD;    { size in bytes of buffer }  
-    var Connections: DWORD { number of Connections written to buffer }
-    ): Longint;
-  stdcall;
-  //End RasConnectionCount =======================  
-
-function RasConnectionCount: Integer;
-var  
-  RasDLL:    HInst;  
-  Conns:     array[1..4] of TRasConn;  
-  RasEnums:  TRasEnumConnections;  
-  BufSize:   DWORD;  
-  NumConns:  DWORD;  
-  RasResult: Longint;  
-begin
-  Result := 0;  
-  //Load the RAS DLL
-  RasDLL := LoadLibrary('rasapi32.dll');  
-  if RasDLL = 0 then Exit;  
-  try
-    RasEnums := GetProcAddress(RasDLL, 'RasEnumConnectionsA');  
-    if @RasEnums = nil then
-      raise ERasError.Create('RasEnumConnectionsA not found in rasapi32.dll');  
-    Conns[1].dwSize := SizeOf(Conns[1]);
-    BufSize         := SizeOf(Conns);
-    RasResult := RasEnums(@Conns, BufSize, NumConns);
-    if (RasResult = 0) or (Result = cERROR_BUFFER_TOO_SMALL) then Result := NumConns;
-  finally
-    FreeLibrary(RasDLL);
-  end;  
-end; 
-
-function ConnectedToInternet: TConnectionType;
-var
-  Reg:       TRegistry;  
-  bUseProxy: Boolean;  
-  UseProxy:  LongWord;  
-begin  
-  Result := ctNone;
-  Reg    := TRegistry.Create;  
-  with REG do  
-    try  
-      try  
-        RootKey := HKEY_CURRENT_USER;  
-        if OpenKey('\Software\Microsoft\Windows\CurrentVersion\Internet settings', False) then   
-        begin  
-          //I just try to read it, and trap an exception  
-          if GetDataType('ProxyEnable') = rdBinary then
-            ReadBinaryData('ProxyEnable', UseProxy, SizeOf(Longword))  
-          else   
-          begin  
-            bUseProxy := ReadBool('ProxyEnable');  
-            if bUseProxy then  
-              UseProxy := 1  
-            else  
-              UseProxy := 0;  
-          end;
-          if (UseProxy <> 0) and (ReadString('ProxyServer') <> '') then  
-            Result := ctProxy;  
-        end;  
-      except  
-        //Obviously not connected through a proxy  
-      end;  
-    finally  
-      Free;  
-    end;
-  //We can check RasConnectionCount even if dialup networking is not installed
-  //simply because it will return 0 if the DLL is not found.
-  if Result = ctNone then
-  begin  
-    if RasConnectionCount > 0 then Result := ctDialup;  
-  end;  
-end;  
-
 function DownloadFile(const Url: string): string;
 var 
-  NetHandle: HINTERNET; 
+  NetHandle: HINTERNET;
   UrlHandle: HINTERNET; 
   Buffer: array[0..1024] of char; 
-  BytesRead: cardinal; 
-begin 
+  BytesRead: cardinal;
+  InternetOpen : TInternetOpen;
+  InternetOpenUrl : TInternetOpenUrl;
+  InternetReadFile : TInternetReadFile;
+  InternetCloseHandle : TInternetCloseHandle;
+  WinInetHandle : THandle;
+begin
+  WinInetHandle := LoadLibrary(wininet);
+  @InternetOpen := GetProcAddress(WinInetHandle, 'InternetOpen');
+  @InternetOpenUrl := GetProcAddress(WinInetHandle, 'InternetOpenUrl');
+  @InternetReadFile := GetProcAddress(WinInetHandle, 'InternetReadFile');  
+  @InternetCloseHandle := GetProcAddress(WinInetHandle, 'InternetCloseHandle');
   Result := '';
   NetHandle := InternetOpen(ProductName, INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
   if Assigned(NetHandle) then
@@ -149,7 +80,7 @@ begin
             FillChar(Buffer, SizeOf(Buffer), 0); 
             InternetReadFile(UrlHandle, @Buffer, SizeOf(Buffer), BytesRead);
           until BytesRead = 0; 
-          InternetCloseHandle(UrlHandle); 
+          InternetCloseHandle(UrlHandle);
         end 
       else 
         begin
@@ -182,22 +113,13 @@ begin
  if UpdatingWorking then exit;
  FreeOnTerminate:=True;
  UpdatingWorking:=true;
- Sleep(1000);
+ Sleep(5000);
  D:=DBKernel.ReadDateTime('','LastUpdating',now);
  if (now-D<7) and not FNeedsInformation then
  begin
   UpdatingWorking:=false;
   exit;
  end;
-
- //Local internet and other types!!!
-{ if RasConnectionCount=0 then
- begin
-  if FNeedsInformation then
-  Inform(TEXT_MES_NEEDS_INTERNET_CONNECTION);
-  UpdatingWorking:=false;
-  exit;
- end;  }
  
  S:=TStringList.Create;
  try

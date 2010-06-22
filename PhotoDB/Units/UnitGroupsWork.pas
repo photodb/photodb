@@ -753,6 +753,7 @@ end;
 
 Function IsValidGroupsTable : Boolean;
 begin
+  Result := True; exit; //TODO:!!!
   Result:=IsValidGroupsTableW(dbname);
 end;
 
@@ -1095,7 +1096,5 @@ begin
   Break;
  end;
 end;
-
-initialization
 
 end.

@@ -136,7 +136,7 @@ var
   i, j : Integer;
 begin
  QuickSelfInstall:=false;
- CheckBox6.Visible:=FileExists(ProgramDir+'BdeInst.dll');
+ CheckBox6.Visible:=False;//TODO: delete FileExists(ProgramDir+'BdeInst.dll');
 
  Label1.Caption:=ProductName;
  hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBID));

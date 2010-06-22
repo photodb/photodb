@@ -10,7 +10,7 @@ Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
 UnitDBDeclare, uLogger, uTime, SyncObjs,
 {$ENDIF}
  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
- UnitINI, BDE;
+ UnitINI;
 
 const
 

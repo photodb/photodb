@@ -5,7 +5,7 @@ unit GDIPlusRotate;
 
 interface
 
-uses Windows, SysUtils;
+uses Windows, SysUtils, uTime;
 
 type
 
@@ -173,8 +173,8 @@ type
 
    StartupInput: TGDIPlusStartupInput;
    gdiplusToken: ULONG;
-   GDIPlusLib : THandle;
-   GDIPlusPresent : Boolean;
+   GDIPlusLib : THandle = 0;
+   GDIPlusPresent : Boolean = False;
 
 
 type
@@ -209,7 +209,8 @@ var
   GdiplusShutdown  : TGdiplusShutdown;
 
 procedure RotateGDIPlusJPEGFile(aFileName : String; Encode : TEncoderValue; UseOtherFile : Boolean = false; OtherFile : String = '');
-function aGetTempFileName(FileName : String) : String;
+function aGetTempFileName(FileName : String) : String; 
+procedure InitGDIPlus;
 
 implementation
 
@@ -292,33 +293,40 @@ begin
  end;
 end;
 
-initialization
-begin
+procedure InitGDIPlus;
+begin         
+ TW.I.Start('WINGDIPDLL');
+  if GDIPlusLib = 0 then
+  begin
  If AnsiUpperCase(paramStr(1))<>'/SAFEMODE' then
- If AnsiUpperCase(paramStr(1))<>'/UNINSTALL' then
- GDIPlusLib:=LoadLibrary(WINGDIPDLL);
- if GDIPlusLib<>0 then
- begin
-  GDIPlusPresent:=true;
-  GdipLoadImageFromFile := GetProcAddress(GDIPlusLib,'GdipLoadImageFromFile');
-  GdipGetImageEncodersSize := GetProcAddress(GDIPlusLib,'GdipGetImageEncodersSize');
-  GdipGetImageEncoders := GetProcAddress(GDIPlusLib,'GdipGetImageEncoders');
-  GdipSaveImageToFile := GetProcAddress(GDIPlusLib,'GdipSaveImageToFile');
-  GdipDisposeImage := GetProcAddress(GDIPlusLib,'GdipDisposeImage');
-  GdiplusStartup := GetProcAddress(GDIPlusLib,'GdiplusStartup');
-  GdiplusShutdown  := GetProcAddress(GDIPlusLib,'GdiplusShutdown');
-  // Initialize StartupInput structure
-  StartupInput.DebugEventCallback := nil;
-  StartupInput.SuppressBackgroundThread := False;
-  StartupInput.SuppressExternalCodecs   := False;
-  StartupInput.GdiplusVersion := 1;
-  // Initialize GDI+
-  GdiplusStartup(gdiplusToken, @StartupInput, nil);
- end else
- begin
-  GDIPlusPresent:=false;
- end;
+   If AnsiUpperCase(paramStr(1))<>'/UNINSTALL' then
+   GDIPlusLib:=LoadLibrary(WINGDIPDLL);
+   if GDIPlusLib<>0 then
+   begin
+    GDIPlusPresent:=true;
+    GdipLoadImageFromFile := GetProcAddress(GDIPlusLib,'GdipLoadImageFromFile');
+    GdipGetImageEncodersSize := GetProcAddress(GDIPlusLib,'GdipGetImageEncodersSize');
+    GdipGetImageEncoders := GetProcAddress(GDIPlusLib,'GdipGetImageEncoders');
+    GdipSaveImageToFile := GetProcAddress(GDIPlusLib,'GdipSaveImageToFile');
+    GdipDisposeImage := GetProcAddress(GDIPlusLib,'GdipDisposeImage');
+    GdiplusStartup := GetProcAddress(GDIPlusLib,'GdiplusStartup');
+    GdiplusShutdown  := GetProcAddress(GDIPlusLib,'GdiplusShutdown');
+    // Initialize StartupInput structure
+    StartupInput.DebugEventCallback := nil;
+    StartupInput.SuppressBackgroundThread := False;
+    StartupInput.SuppressExternalCodecs   := False;
+    StartupInput.GdiplusVersion := 1;
+    // Initialize GDI+
+    GdiplusStartup(gdiplusToken, @StartupInput, nil);
+   end else
+   begin
+    GDIPlusPresent:=false;
+   end;    
+   TW.I.Start('WINGDIPDLL - END');
+  end;
 end;
+
+initialization
 
 finalization
 begin

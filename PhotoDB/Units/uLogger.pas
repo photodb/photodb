@@ -31,15 +31,19 @@ end;
 { TLogger }
 
 constructor TLogger.Create;
-begin            
+begin
+{$IFDEF LOG}
   FSync := TCriticalSection.Create;
-  FFile := TFileStream.Create(GetAppDataDirectory+'\EventLog.txt', fmCreate);
+  FFile := TFileStream.Create(GetAppDataDirectory+'\EventLog'+ FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) +'.txt', fmCreate);
+{$ENDIF LOG}
 end;
 
 destructor TLogger.Destroy;
-begin
+begin        
+{$IFDEF LOG}
   FFile.Free;
   FSync.Free;
+{$ENDIF LOG}
   inherited;
 end;
 
@@ -52,14 +56,16 @@ begin
 end;
 
 procedure TLogger.Message(Value: string);
-begin
+begin    
+{$IFDEF LOG}
   FSync.Enter;
   try
     Value := Value + #13#10;
     FFile.Write(Value[1], Length(Value));
   finally
     FSync.Leave;
-  end;
+  end;        
+{$ENDIF LOG}
 end;
 
 end.

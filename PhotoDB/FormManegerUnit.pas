@@ -24,12 +24,13 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
     procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
-    procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
+    procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);  
   private
     FMainForms : array of TForm;
     FTemtinatedActions : TTemtinatedActions;  
     CanCheckViewerInMainForms : boolean;
-    procedure ExitApplication;
+    procedure ExitApplication;  
+    procedure WMCopyData(var m : TMessage); message WM_COPYDATA;
     { Private declarations }
   public
     { Public declarations }
@@ -38,7 +39,7 @@ type
    procedure UnRegisterMainForm(Value: TForm);
    procedure RegisterActionCanTerminating(Value: TTemtinatedAction);
    procedure UnRegisterActionCanTerminating(Value: TTemtinatedAction);
-   Procedure Run(LoadingForm : TForm);
+   Procedure Run(LoadingThread : TThread);
    Procedure Close(Form : TForm);
    Procedure AppMinimize(Sender: TObject);
    Function MainFormsCount : Integer;
@@ -61,7 +62,7 @@ implementation
 uses Language, UnitCleanUpThread, ExplorerUnit, Searching, SlideShow,
 DBSelectUnit, Activation, UnitUpdateDB, UnitInternetUpdate, About,
 UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB, UnitID,
-UnitSelectDB;
+UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
 
 {$R *.dfm}
 
@@ -134,7 +135,7 @@ begin
  if SafeMode then Exit;
 end;
 
-procedure TFormManager.Run(LoadingForm : TForm);
+procedure TFormManager.Run(LoadingThread : TThread);
 var
   Directory, s : String;
   ParamStr1, ParamStr2 : String;
@@ -145,8 +146,7 @@ var
 
   procedure CloseLoadingForm;
   begin
-    if LoadingForm<>nil then
-      FreeAndNil(LoadingForm);
+    LoadingThread.Terminate;
   end;
 
 begin               
@@ -583,8 +583,9 @@ procedure TFormManager.Load;
 var
   DBVersion : integer;
   DBFile : TPhotoDBFile;
-begin
+begin          
   TW.I.Start('FM -> Load');
+ Caption:=DBID;
  CanCheckViewerInMainForms:=false;
  LockCleaning:=true;
  EnteringCodeNeeded := false;
@@ -671,6 +672,108 @@ begin
  if not DBTerminating then
  TInternetUpdate.Create(false,false);  
   TW.I.Stop;
+end;
+
+procedure TFormManager.WMCopyData(var m: TMessage);
+var
+  Param : TArStrings;
+  fids_ : TArInteger;
+  FileNameA, FileNameB, S : string;
+  n, i : integer;
+  FormCont : TFormCont;
+  B : TArBoolean;
+  Info : TRecordsInfo;
+begin
+ S :=PRecToPass(PCopyDataStruct(m.LParam)^.lpData)^.s;
+ For i:=1 to Length(s) do
+ If s[i]=#0 then
+ begin
+  FileNameA:=Copy(S,1,i-1);
+  FileNameB:=Copy(S,i+1,Length(S)-i);
+ end;
+ if not CheckFileExistsWithMessageEx(FileNameA,false) then
+ begin
+  If AnsiUpperCase(FileNameA)='/EXPLORER' then
+  begin
+   If CheckFileExistsWithMessageEx(LongFileName(filenameB),true) then
+   begin
+    With ExplorerManager.NewExplorer(False) do
+    begin
+     SetPath(LongFileName(FileNameB));
+     Show;                           
+     ActivateApplication(Handle);
+    end;
+   end;
+  end else
+  begin
+   if AnsiUpperCase(filenameA)='/GETPHOTOS' then
+   if FileNameB<>'' then
+   begin
+    GetPhotosFromDrive(FileNameB[1]);
+    Exit;
+   end;
+   With SearchManager.GetAnySearch do
+   begin
+    Show;
+    ActivateApplication(Handle);
+   end;
+   Exit;
+  end;
+ end;
+ If ExtInMask(SupportedExt,GetExt(FileNameA)) then
+ begin
+  if Viewer=nil then Application.CreateForm(TViewer, Viewer);
+  FileNameA:=LongFileName(FileNameA);
+  GetFileListByMask(FileNameA,SupportedExt,info,n,True);
+  SlideShow.UseOnlySelf:=true;
+  ShowWindow(Viewer.Handle,SW_RESTORE);
+  Viewer.Execute(Self,info);
+  Viewer.Show;
+  ActivateApplication(Viewer.Handle);
+ end else
+ If (AnsiUpperCase(FileNameA)<>'/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA,false) then
+ begin
+  if GetExt(FileNameA)='DBL' then
+  begin
+   Dolphin_DB.LoadDblFromfile(FileNameA,fids_,param);
+   FormCont:=ManagerPanels.NewPanel;
+   SetLength(B,0);
+   LoadFilesToPanel.Create(false,param,fids_,B,false,true,FormCont);
+   LoadFilesToPanel.Create(false,param,fids_,B,false,false,FormCont);     
+   FormCont.Show;
+   ActivateApplication(FormCont.Handle);
+   exit;
+  end;
+  if GetExt(filenameA)='IDS' then
+  begin
+   fids_:=LoadIDsFromfileA(FileNameA);
+   setlength(param,1);
+   FormCont:=ManagerPanels.NewPanel;
+   LoadFilesToPanel.Create(false,param,fids_,B,false,true,FormCont);
+   FormCont.Show;
+   ActivateApplication(FormCont.Handle);
+  end else
+  begin
+   if GetExt(FileNameA)='ITH' then
+   begin
+    With SearchManager.NewSearch do
+    begin
+      SearchEdit.Text:=':ThFile('+filenameA+'):';
+      DoSearchNow(Self);
+      Show;                    
+      ActivateApplication(Handle);
+    end;
+    exit;
+   end else
+   begin
+    With SearchManager.GetAnySearch do
+    begin
+     Show;     
+     ActivateApplication(Handle);
+    end;
+   end;
+  end;
+ end;
 end;
 
 initialization

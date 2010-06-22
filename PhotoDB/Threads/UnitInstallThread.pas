@@ -831,6 +831,27 @@ begin
    DBKernel.SetDataBase(aDBName);
   end;
  end;
+ 
+  //CHECK APPDATA DIRECTORY
+  EventLog('...CHECK APPDATA DIRECTORY...');
+  if not DirectoryExists(GetAppDataDirectory) then
+  begin
+   try
+    CreateDirA(GetAppDataDirectory);
+   except
+    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,Format(ERROR_CREATING_APP_DATA_DIRECTORY_MAY_NE_PROBLEMS,[GetAppDataDirectory]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   end;
+  end;
+  EventLog('...CHECK APPDATA TEMP DIRECTORY...');
+  if not DirectoryExists(GetAppDataDirectory+TempFolder) then
+  begin
+   try
+    CreateDirA(GetAppDataDirectory+TempFolder);
+   except
+    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,Format(ERROR_CREATING_APP_DATA_DIRECTORY_TEMP_MAY_BE_PROBLEMS,[GetAppDataDirectory+TempFolder]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   end;
+  end;
+
  if not terminate_ then
  begin
   InstallDone:=true;

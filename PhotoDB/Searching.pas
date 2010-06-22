@@ -3,7 +3,7 @@ unit Searching;
 interface
 
 uses
-  UnitGroupsWork, BDE, ThreadManeger, DBCMenu, CmpUnit, FileCtrl, Dolphin_DB,
+  UnitGroupsWork, ThreadManeger, DBCMenu, CmpUnit, FileCtrl, Dolphin_DB,
   ShellApi,Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Registry, Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
   ImgList, ComCtrls, ActiveX, ShlObj, DBCtrls, JPEG, DmProgress, ClipBrd,
@@ -15,7 +15,8 @@ uses
   UnitRangeDBSelectForm, UnitSearchBigImagesLoaderThread, DragDropFile,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl;
+  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
+  uFastload;
 
 type
  TString255 = string[255];
@@ -861,6 +862,7 @@ begin
      ListView1.Selection.EnableDragSelect:=true;
      ListView1.Selection.TextColor:=Theme_ListFontColor;
      ListView1.GroupFont.Color:=Theme_ListFontColor;
+     TLoad.Instance.RequaredDBSettings;
      FPictureSize:=ThImageSize;
      LoadSizes();
 
@@ -1003,14 +1005,20 @@ begin
    on e : Exception do EventLog(':TSearchForm::FormCreate()/LoadSearchList throw exception: '+e.Message);
  end;
  TW.I.Start('S -> LoadToolBarIcons');
- LoadToolBarIcons; 
+ LoadToolBarIcons;
  ToolBar1.ShowCaptions := True;
  ToolBar1.AutoSize := True;
 
  TW.I.Start('S -> LoadQueryList');
  LoadQueryList;
  TW.I.Start('S -> LoadSearchDBParametrs');
- LoadSearchDBParametrs;  
+ LoadSearchDBParametrs;
+                               
+ TW.I.Start('S -> RequaredDBKernelIcons');
+ TLoad.Instance.RequaredDBKernelIcons;
+ Image3.Picture.Graphic:=TIcon.Create;
+ DBkernel.ImageList.GetIcon(DB_IC_GROUPS,Image3.Picture.Icon);
+
  TW.I.Start('S -> Create - END');
 end;
 
@@ -2380,7 +2388,8 @@ procedure TSearchForm.PopupMenu2Popup(Sender: TObject);
 var
   i : integer;
 begin        
-
+ 
+ TLoad.Instance.RequaredDBKernelIcons;
  HintTimer.Enabled:=false;
  WorkedFiles_.Clear;
  if ListView1Selected=nil then
@@ -2631,8 +2640,6 @@ begin
  Splitter1Moved(nil);
  TW.I.Start('S -> DoUnLockInfo');
  DoUnLockInfo;
- Image3.Picture.Graphic:=TIcon.Create;
- DBkernel.ImageList.GetIcon(DB_IC_GROUPS,Image3.Picture.Icon);
 
  Creating:=false;
 end;
