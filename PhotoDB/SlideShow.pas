@@ -937,7 +937,7 @@ begin
 end;
 
 procedure TViewer.FormPaint(Sender: TObject);
-begin
+begin  
  if SlideShowNow or FullScreenNow then exit;
  if WaitImageTimer.Enabled then Canvas.Draw(0,0,WaitImage) else Canvas.draw(0,0,DrawImage);
 end;
@@ -1659,9 +1659,9 @@ begin
     RecreateDrawImage_(Sender);
     FormPaint(Sender);
    end;
-   ShowWindow(Handle,SW_SHOWNORMAL);
-   Show;
-   SetFocus;
+//   ShowWindow(Handle,SW_SHOWNORMAL);
+//   Show;
+//   SetFocus;
   end else
   begin
    Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
@@ -1695,7 +1695,7 @@ begin
    FloatPanel.ToolButton5.Enabled:=True;
   end;
  end;
- Show;
+ //Show;
 end;
 
 procedure TViewer.CreateParams(var Params: TCreateParams);
@@ -2207,9 +2207,11 @@ begin
 
   imlists[0]:=ImageList1; 
   imlists[1]:=ImageList2;
-  imlists[2]:=ImageList3;  
+  imlists[2]:=ImageList3;
+  TW.I.Start('Clear');
  for i:=0 to 2 do
-  imlists[i].Clear;
+  imlists[i].Clear;     
+  TW.I.Start('BkColor');
  imlists[0].BkColor:=Theme_MainColor;
  imlists[1].BkColor:=ClBtnFace;
  imlists[2].BkColor:=Theme_MainColor;

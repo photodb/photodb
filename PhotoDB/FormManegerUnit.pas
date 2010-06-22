@@ -149,7 +149,22 @@ var
     LoadingThread.Terminate;
   end;
 
-begin               
+  function IsFile(s : string) : Boolean;
+  var
+    Ext : string;
+  begin
+    Result := False;
+    s := Trim(s);
+    if ExtractFileName(s) <> '' then
+    begin
+      Ext := ExtractFileExt(s);
+      if (Ext <> '') and (Ext[1] = '.') then
+        Result := True;
+    end;
+  end;
+
+begin
+try
  EventLog(':TFormManager::Run()...');
  DBKernel.WriteProperty('Starting','ApplicationStarted','1');
  if EnteringCodeNeeded then
@@ -159,7 +174,7 @@ begin
   Application.CreateForm(TActivateForm,ActivateForm);
   CloseLoadingForm;
   ActivateForm.Show;
-  ActivateApplication(ActivateForm.Handle);
+  //ActivateApplication(ActivateForm.Handle);
   RegisterMainForm(ActivateForm);
   exit;
  end;
@@ -188,7 +203,7 @@ begin
  if UpcaseAll(ParamStr1)<>'/EXPLORER' then
  begin
   TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
-  if CheckFileExistsWithMessageEx(ParamStr1,false) then
+  if IsFile(ParamStr1) then
   begin
    if not ExtInMask(SupportedExt,GetExt(ParamStr1)) then
    begin
@@ -219,7 +234,7 @@ begin
     end;  
     CloseLoadingForm;         
     NewSearch.Show;
-    ActivateApplication(NewSearch.Handle);
+  //  ActivateApplication(NewSearch.Handle);
    end else
    begin
     TW.I.Start('RUN TViewer');
@@ -231,7 +246,7 @@ begin
     TW.I.Start('ExecuteDirectoryWithFileOnThread');
     Viewer.ExecuteDirectoryWithFileOnThread(LongFileName(ParamStr1));
     TW.I.Start('ActivateApplication');
-    ActivateApplication(Viewer.Handle);
+    //ActivateApplication(Viewer.Handle);
     //TW.I.Stop;
    end;
   end else
@@ -247,7 +262,7 @@ begin
      SetNewPathW(GetCurrentPathW,false); 
      CloseLoadingForm;   
      Show;
-     ActivateApplication(Handle);
+  //   ActivateApplication(Handle);
     end;
    end else
    begin               
@@ -256,7 +271,7 @@ begin
     Application.Restore; 
     CloseLoadingForm;
     NewSearch.Show;
-    ActivateApplication(NewSearch.Handle);
+  //  ActivateApplication(NewSearch.Handle);
    end;
   end;
  end else
@@ -268,7 +283,7 @@ begin
     SetPath(Directory);    
     CloseLoadingForm;
     Show;        
-    ActivateApplication(Handle);
+ //   ActivateApplication(Handle);
    end;
   end else
   begin
@@ -277,22 +292,27 @@ begin
    begin
     Show;    
     CloseLoadingForm;       
-    ActivateApplication(Handle);
+  //  ActivateApplication(Handle);
    end;
   end;
  end;
  CheckTimer.Enabled := True;
  Running:=true;
+ finally
+   
+  ShowWindow(Application.MainForm.Handle, SW_HIDE);
+  ShowWindow(Application.Handle, SW_HIDE);
+ end;
 end;
 
 procedure TFormManager.FormPaint(Sender: TObject);
 begin
- Showwindow(handle,SW_HIDE);
+// Showwindow(handle,SW_HIDE);
 end;
 
 procedure TFormManager.FormActivate(Sender: TObject);
 begin
- Showwindow(handle,SW_HIDE);
+// Showwindow(handle,SW_HIDE);
 end;
 
 procedure TFormManager.Close(Form: TForm);
@@ -538,7 +558,7 @@ end;
 
 procedure TFormManager.AppMinimize;
 begin
- ShowWindow(Application.Handle, SW_HIDE);
+ //ShowWindow(Application.Handle, SW_HIDE);
 end;
 
 function TFormManager.MainFormsCount: Integer;
@@ -583,7 +603,7 @@ procedure TFormManager.Load;
 var
   DBVersion : integer;
   DBFile : TPhotoDBFile;
-begin          
+begin
   TW.I.Start('FM -> Load');
  Caption:=DBID;
  CanCheckViewerInMainForms:=false;
@@ -607,9 +627,9 @@ begin
  begin
   TimerCloseApplicationByDBTerminate.Enabled:=true;
  end;
- ShowWindow(Handle,SW_HIDE);
- FormManager.Visible:=false;
- Application.ShowMainForm:=false;
+ //ShowWindow(Handle,SW_HIDE);
+ //FormManager.Visible:=false;
+ //Application.ShowMainForm:=false;
  DateTime:=Now;
  If not SafeMode and not DBTerminating then
  begin

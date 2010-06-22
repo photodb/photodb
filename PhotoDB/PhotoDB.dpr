@@ -2,8 +2,9 @@ program PhotoDB;
 
 {$DEFINE DEBUG}
 
-uses     
+uses
   uTime in 'Units\uTime.pas',
+  uSplachThread in 'Threads\uSplachThread.pas',
   ADODB,
   FileCtrl,
   ShellApi,
@@ -272,7 +273,6 @@ uses
   UnitExplorerLoadSingleImageThread in 'Threads\UnitExplorerLoadSingleImageThread.pas',
   UnitDBThread in 'Units\UnitDBThread.pas',
   UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
-  uSplachThread in 'Threads\uSplachThread.pas',
   uFastLoad in 'Units\uFastLoad.pas';
 
 {$R *.res}
@@ -295,7 +295,6 @@ var
     aHandle : Thandle;
     i : integer;
     CheckResult : integer;
-    SplashThread : TThread = nil;
     StartProcessorMask : Cardinal;
 
   f : TPcharFunction;
@@ -579,17 +578,10 @@ begin
   if not GetParamStrDBBool('/NoPrevVersion') then
   FindRunningVersion;
 
-  //This is main form of application  
+  //This is main form of application
   TW.I.Start('TFormManager Create');
   Application.CreateForm(TFormManager, FormManager);
-
-  if not GetParamStrDBBool('/NoLogo') then
-  begin
-    TW.I.Start('TSplashThread');
-    SplashThread := TSplashThread.Create(False);
-    TW.I.Stop;
-  end;
-
+  Application.ShowMainForm := False;
   //CHECK DEMO MODE ----------------------------------------------------
   if not DBTerminating then
   begin

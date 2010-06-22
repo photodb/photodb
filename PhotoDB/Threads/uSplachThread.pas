@@ -4,7 +4,7 @@ unit uSplachThread;
 interface
 
 uses
-   Classes,windows, messages, JPEG, Graphics, DmProgress;
+   Classes,windows, messages, JPEG, Graphics, DmProgress, uTime;
 
 type
   TSplashThread = class(TThread)
@@ -13,6 +13,9 @@ type
   protected
     procedure Execute; override;
   end;
+
+var
+  SplashThread : TThread = nil;
 
 implementation
 
@@ -161,7 +164,7 @@ begin
   hSplashWnd := CreateWindow(ClassName, 'SplashScreen',
                              WS_POPUP or WS_EX_TOPMOST,
                              350, 300, 480, 500, 0, 0, Instance, NIL);
-  ShowWindow(hSplashWnd, SW_SHOW);
+  ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
   UpdateWindow(hSplashWnd);
 
   while True do
@@ -184,5 +187,14 @@ begin
   DestroyWindow(hSplashWnd);
   UnregisterClass(ClassName, Instance);
 end; // ShowSplashWindow
+
+initialization
+
+ // if not GetParamStrDBBool('/NoLogo') then
+  begin
+    TW.I.Start('TSplashThread');
+    SplashThread := TSplashThread.Create(False);
+    TW.I.Stop;
+  end;
 
 end.

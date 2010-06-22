@@ -37,8 +37,6 @@ var
   AniInfo: TAnimationInfo;
   Animate: Boolean;
 begin
-  ShowWindow(Application.MainForm.Handle, SW_HIDE);
-  ShowWindow(Application.Handle, SW_HIDE);
   if IsIconic(Handle1) then ShowWindow(Handle1, SW_RESTORE);
     hParent := GetWindowLong(Handle1, GWL_HWNDPARENT);
   if hParent > 0 then
@@ -102,7 +100,9 @@ begin
     end;
   
     Result := (GetForegroundWindow = Handle1);
-  end;
+  end; 
+  ShowWindow(Application.MainForm.Handle, SW_HIDE);
+  ShowWindow(Application.Handle, SW_HIDE);
 end;
 
 function Hash_Cos_C(s : string):integer;
