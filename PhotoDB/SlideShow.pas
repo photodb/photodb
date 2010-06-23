@@ -11,7 +11,8 @@ uses
   ShellContextMenu, DropSource, DropTarget, GIFImage, GraphicEx,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad;
+  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
+  uResources;
 
 type
   TRotatingImageInfo = record
@@ -43,7 +44,6 @@ type
     GoToSearchWindow1: TMenuItem;
     Explorer1: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
-    Image2: TImage;
     SetasDesktopWallpaper1: TMenuItem;
     Copy1: TMenuItem;
     ScrollBar1: TScrollBar;
@@ -315,6 +315,7 @@ uses  Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
   UnitSlideShowUpdateInfoThread;
 
 {$R *.dfm}
+{$R slideshow_load.res}
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin        
@@ -1532,7 +1533,11 @@ var
   si : TStartupInfo;
   p  : TProcessInformation;
   TempInfo : TOneRecordInfo;
-const text_out = TEXT_MES_GENERATING;
+  LoadImage : TPNGGraphic;   
+  LoadImageBMP : TBitmap;
+
+const
+  text_out = TEXT_MES_GENERATING;
 
 begin
  TW.I.Start('ExecuteW');
@@ -1626,7 +1631,8 @@ begin
  If CurrentInfo.Position=-1 then CurrentInfo.Position:=0;
 
  TW.I.Start('DoProcessPath');
- DoProcessPath(CurrentInfo.ItemFileNames[CurrentInfo.Position],true);
+ if CurrentInfo.Position < Length(CurrentInfo.ItemFileNames) then
+   DoProcessPath(CurrentInfo.ItemFileNames[CurrentInfo.Position],true);
  for i:=0 to length(CurrentInfo.ItemFileNames)-1 do
  DoProcessPath(CurrentInfo.ItemFileNames[i]);
 
@@ -1654,11 +1660,20 @@ begin
     FbImage.Width:=170;
     FbImage.Height:=170;
     FbImage.Canvas.Rectangle(0,0,FbImage.width,FbImage.Height);
+
+    LoadImage := GetSlideShowLoadPicture;
     try
-     FbImage.Canvas.Draw(0,0,Image2.Picture.Graphic);
-    except
-     on e : Exception do EventLog(':TSlideShow::ExecuteW() throw exception: '+e.Message);
+      LoadImageBMP := TBitmap.Create;
+      try
+        LoadPNGImage32bit(LoadImage, LoadImageBMP, Theme_MainColor);
+        FbImage.Canvas.Draw(0, 0, LoadImageBMP);
+      finally
+        LoadImageBMP.Free;
+      end;
+    finally
+      LoadImage.Free;
     end;
+
     FbImage.Canvas.TextOut(FbImage.Width div 2-FbImage.Canvas.TextWidth(text_out) div 2,FbImage.Height{ div 2}-4*FbImage.Canvas.Textheight(text_out) div 2,text_out);
 
  TW.I.Start('RecreateDrawImage_');

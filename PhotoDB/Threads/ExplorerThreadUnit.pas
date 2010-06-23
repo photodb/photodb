@@ -8,7 +8,7 @@ uses
  Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
  Dialogs, Controls, ComObj, ActiveX, ShlObj,CommCtrl, Registry,
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
- EasyListview, GraphicsCool, uVistaFuncs,
+ EasyListview, GraphicsCool, uVistaFuncs, uResources,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
  uThreadEx, uAssociatedIcons, uLogger, uTime,
  UnitExplorerLoadSIngleImageThread;

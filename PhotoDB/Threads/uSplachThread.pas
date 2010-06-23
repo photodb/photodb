@@ -4,7 +4,8 @@ unit uSplachThread;
 interface
 
 uses
-   Classes,windows, messages, JPEG, Graphics, DmProgress, uTime;
+   Classes,windows, messages, JPEG, Graphics, DmProgress, uTime,
+   uConstants, uResources;
 
 type
   TSplashThread = class(TThread)
@@ -16,6 +17,8 @@ type
 
 var
   SplashThread : TThread = nil;
+                
+{$R Logo.res}
 
 implementation
 
@@ -50,56 +53,69 @@ begin
   Brush := CreateBrushIndirect(brushInfo);
   FillRect(DrawDC, Rect(0, 0, SplWidth, SplHeight), Brush);
 
-  J :=TJPEGImage.Create;
-  J.LoadFromFile('c:\1.jpg');
-  BMP := TBitmap.Create;
-  BMP.Canvas.Brush.Color := 0;
-  BMP.Canvas.Pen.Color := 0;
-  BMP.Height := SplHeight;
-  BMP.Width := SplWidth;
-  BMP.Assign(J);
-  TP := TDmProgress.Create(nil);
-  TP.Visible := False;
-  TP.MaxValue := 100;
-  TP.Position := 37;
-  TP.Width := SplWidth - 20*2;
-  TP.Height := 17;
-  TP.BorderColor := clGray;
-  TP.Color := clBlack;
-  TP.Font.Color := clWhite; 
-  TP.Font.Name := 'Times New Roman';
-  TP.CoolColor := clNavy;
-  TP.DoDraw(DrawDC, 10, SplHeight - TP.Height - 10);
+  J := GetLogoPicture;
+  try
+    BMP := TBitmap.Create;
+    try
+      BMP.Canvas.Brush.Color := 0;
+      BMP.Canvas.Pen.Color := 0;
+      BMP.Height := SplHeight;
+      BMP.Width := SplWidth;
+      BMP.Assign(J);
+      try
+        TP := TDmProgress.Create(nil);
+        TP.Visible := False;
+        TP.MaxValue := 100;
+        TP.Position := 37;
+        TP.Width := SplWidth - 20*2;
+        TP.Height := 17;
+        TP.BorderColor := clGray;
+        TP.Color := clBlack;
+        TP.Font.Color := clWhite; 
+        TP.Font.Name := 'Times New Roman';
+        TP.CoolColor := clNavy;
+        TP.DoDraw(DrawDC, 10, SplHeight - TP.Height - 10);
+      finally
+        TP.Free;
+      end;
+      InfoText := TStringList.Create;
+      try
+        InfoText.Add('PhotoDB 2.3');
+        InfoText.Add('About project:');
+        InfoText.Add('All copyrights to this program are');
+        InfoText.Add('exclusively owned by the author:');
+        InfoText.Add('Veresov Dmitry © 2002-2011');
+        InfoText.Add('Studio "Illusion Dolphin".');
+        InfoText.Add('You can''t emulate, clone, rent, lease,');
+        InfoText.Add('sell, modify, decompile, disassemble,');
+        InfoText.Add('otherwise, reverse engineer, transfer');
+        InfoText.Add('this software.');
+        InfoText.Add('');
+        InfoText.Add('HomePage:');
+        InfoText.Add(HomeURL);
+        InfoText.Add('');
+        InfoText.Add('E-Mail:');
+        InfoText.Add(ProgramMail);
 
-  InfoText := TStringList.Create;
-  InfoText.Add('PhotoDB 2.3');
-  InfoText.Add('About project:');
-  InfoText.Add('All copyrights to this program are');
-  InfoText.Add('exclusively owned by the author:');
-  InfoText.Add('Veresov Dmitry © 2002-2011');
-  InfoText.Add('Studio "Illusion Dolphin".');
-  InfoText.Add('You can''t emulate, clone, rent, lease,');
-  InfoText.Add('sell, modify, decompile, disassemble,');
-  InfoText.Add('otherwise, reverse engineer, transfer');
-  InfoText.Add('this software.');
-  InfoText.Add('');
-  InfoText.Add('HomePage:');
-  InfoText.Add('www');
-  InfoText.Add('');
-  InfoText.Add('E-Mail:');
-  InfoText.Add('email');
-
-  R := Rect(10, 10, SplWidth, SplHeight);
-  SetBkColor(DrawDC, clBlack);
-  SetTextColor(DrawDC, clWhite);
-  hf := CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Times New Roman');
-  oldFont := SelectObject(DrawDC, hf);
-  DrawTextA(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);
-  SelectObject(DrawDC, oldFont);
-  if(hf > 0) then
-    DeleteObject(hf);
-  BitBlt(DrawDC, 200, 0, SplWidth, SplHeight, BMP.Canvas.Handle, 0, 0, SRCCOPY);
-
+        R := Rect(10, 10, SplWidth, SplHeight);
+        SetBkColor(DrawDC, clBlack);
+        SetTextColor(DrawDC, clWhite);
+        hf := CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Times New Roman');
+        oldFont := SelectObject(DrawDC, hf);
+        DrawTextA(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);  
+        SelectObject(DrawDC, oldFont);
+      finally
+        InfoText.Free;
+      end;
+      if(hf > 0) then
+        DeleteObject(hf);
+      BitBlt(DrawDC, 200, 0, SplWidth, SplHeight, BMP.Canvas.Handle, 0, 0, SRCCOPY);
+    finally
+      BMP.Free;
+    end;
+  finally
+    J.Free;
+  end;
  { DrawPen := CreatePen(PS_SOLID, 1, RGB(Random(256), Random(256), Random(256)));
   // Create our pen to draw with. It will be a solid line style, of width 1 and
   // a completely random colour

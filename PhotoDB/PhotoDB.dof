@@ -94,7 +94,7 @@ OutputDir=bin
 UnitOutputDir=dcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG
+SearchPath=$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Resources
 Packages=vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;dclOfficeXP;EasyListviewD7
 Conditionals=
 DebugSourceDirs=
@@ -140,12 +140,13 @@ E-Mail=illusdolphin@gmail.com
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=5
-Item0=$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG
-Item1=External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG
-Item2=External\Controls\Image Controls\Source;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components
-Item3=External\Controls\Image Controls\Source;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG
-Item4=External\Controls\Image Controls\Source;External\Controls\DragDrop\Components
+Count=6
+Item0=$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Resources
+Item1=$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG
+Item2=External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG
+Item3=External\Controls\Image Controls\Source;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components
+Item4=External\Controls\Image Controls\Source;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG
+Item5=External\Controls\Image Controls\Source;External\Controls\DragDrop\Components
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=dcu

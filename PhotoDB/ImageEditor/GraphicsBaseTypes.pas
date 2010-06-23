@@ -2,7 +2,7 @@ unit GraphicsBaseTypes;
 
 interface
 
-uses Graphics;
+uses Classes, Graphics, SyncObjs;
 
 type TBaseEffectCallBackProc = procedure(Progress : integer; var Break: boolean) of object;
 
@@ -18,122 +18,119 @@ type TBaseEffectProcW = record
 type TBaseEffectProcedures = array of TBaseEffectProcW;
 
 Type
-  TRGB=record
-  b,g,r : byte;
+  TRGB = record
+    B, G, R : Byte;
   end;
 
-  ARGB=array [0..32677] of TRGB;
-  PARGB=^ARGB;
+  ARGB = array [0..32677] of TRGB;
+  PARGB = ^ARGB;
   PRGB = ^TRGB;
   PARGBArray = array of PARGB;
 
-  type
-  TRGB32=record
-  b,g,r,l : byte;
+type
+  TRGB32 = record
+    B, G, R, L : byte;
   end;
-  Type
-    ARGB32=array [0..32677] of TRGB32;
-    PARGB32=^ARGB32;  
+
+  ARGB32 = array [0..32677] of TRGB32;
+  PARGB32 = ^ARGB32;
   PRGB32 = ^TRGB32;
   PARGB32Array = array of PARGB32;
 
-
 type
  TSetPointerToNewImage = procedure(Image : TBitmap) of object;
- TCancelTemporaryImage  = procedure(Destroy : Boolean) of object;
-
- TArObject = array of TObject;
+ TCancelTemporaryImage = procedure(Destroy : Boolean) of object;
 
   TManagerObjects = class(TObject)
-   Private
-    FObjects : TArObject;
-   Public
-    Constructor Create;
-    Destructor Destroy; override;
-    Procedure FreeObj(Obj : TObject);
-    Procedure AddObj(Obj : TObject);
-    Procedure RemoveObj(Obj : TObject);
-    Function IsObj(Obj : TObject) : Boolean;
-    Function ObjCount : Integer;
-   published
+  private
+     FObjects : TList;
+     FSycn    : TCriticalSection;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure FreeObj(Obj : TObject);
+    procedure AddObj(Obj : TObject);
+    procedure RemoveObj(Obj : TObject);
+    function IsObj(Obj : TObject) : Boolean;
+    function ObjCount : Integer;
   end;
 
-  var GOM : TManagerObjects;
+  var GOM : TManagerObjects = nil;
 
 implementation
 
 { TManagerObjects }
 
 procedure TManagerObjects.AddObj(Obj: TObject);
-var
-  i : integer;
-  b : boolean;
 begin
- b:=false;
- For i:=0 to Length(FObjects)-1 do
- if FObjects[i]=Obj then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FObjects,Length(FObjects)+1);
-  FObjects[Length(FObjects)-1]:=Obj;
- end;
+  FSycn.Enter;
+  try
+    if FObjects.IndexOf(Obj) > -1 then
+      Exit;
+
+    FObjects.Add(Obj);
+  finally
+    FSycn.Leave;
+  end;
 end;
 
 constructor TManagerObjects.Create;
 begin
- SetLength(FObjects,0);
+  FSycn := TCriticalSection.Create;
+  FObjects := TList.Create;
 end;
 
 destructor TManagerObjects.Destroy;
 begin
- SetLength(FObjects,0);
- inherited;
+  FObjects.Free;
+  FSycn.Free;
+  inherited;
 end;
 
 procedure TManagerObjects.FreeObj(Obj: TObject);
-begin
- RemoveObj(Obj);
- Obj.Free;
+begin      
+  FSycn.Enter;
+  try
+    RemoveObj(Obj);
+    Obj.Free;
+  finally
+    FSycn.Leave;
+  end;
 end;
 
 function TManagerObjects.IsObj(Obj: TObject): Boolean;
-Var
-  i : Integer;
 begin
- Result:=False;
- For i:=0 to Length(FObjects)-1 do
- if FObjects[i]=Obj then
- Begin
-  Result:=True;
-  Break;
- End;
+  FSycn.Enter;
+  try
+    Result := FObjects.IndexOf(Obj) > -1; 
+  finally
+    FSycn.Leave;
+  end;
 end;
 
 function TManagerObjects.ObjCount: Integer;
 begin
- Result:=Length(FObjects);
+  Result := FObjects.Count;
 end;
 
 procedure TManagerObjects.RemoveObj(Obj: TObject);
 var
   i, j : integer;
-begin
- For i:=0 to Length(FObjects)-1 do
- if FObjects[i]=Obj then
- begin
-  For j:=i to Length(FObjects)-2 do
-  FObjects[j]:=FObjects[j+1];
-  SetLength(FObjects,Length(FObjects)-1);
-  break;
- end;
+begin      
+  FSycn.Enter;
+  try
+    FObjects.Remove(Obj);  
+  finally
+    FSycn.Leave;
+  end;
 end;
 
 initialization
 
 GOM := TManagerObjects.Create;
+
+finalization
+
+GOM.Free;
 
 end.

@@ -240,7 +240,6 @@ begin
       TempImage.Free;
      end;
 
-
     end;
    DB_IMAGE_ROTATED_270 :
     begin

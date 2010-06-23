@@ -710,13 +710,12 @@ function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: i
 procedure TextToClipboard(const S : string);
 function GetActiveFormHandle : integer;
 function GetGraphicFilter : string;
-function GetFolderPicture : TPNGGraphic;
 function GetNeededRotation(OldRotation, NewRotation : integer) : Integer;
 procedure ExecuteQuery(SQL : string);
 function ReadTextFileInString(FileName : string) : string;
 function CompareImagesByGistogramm(Image1, Image2 : TBitmap) : Byte;  
 procedure ApplyRotate(Bitmap : TBitmap; RotateValue : Integer);
-function CenterPos(W1, W2 : Integer) : Integer;
+function CenterPos(W1, W2 : Integer) : Integer;    
 
 var
   GetAnyValidDBFileInProgramFolderCounter : Integer;
@@ -6445,38 +6444,6 @@ begin
   end;
  except
  end;
-end;
-
-function GetFolderPicture : TPNGGraphic;
-const
-  ResName = 'DIRECTORY_LARGE';
-var
-  MyRes  : Integer;
-  MyResP : Pointer;
-  MyResS : Integer;
-  MyMS   : TMemoryStream;
-begin
-  Result:=nil;
-  MyRes := FindResource(HInstance,PChar(ResName),RT_RCDATA);
-  if MyRes <> 0 then begin
-    MyResS := SizeOfResource(HInstance,MyRes);
-    MyRes := LoadResource(HInstance,MyRes);
-    if MyRes <> 0 then begin
-      MyResP := LockResource(MyRes);
-      if MyResP <> nil then begin
-        MyMS := TMemoryStream.Create;
-        with MyMS do begin
-          Write(MyResP^,MyResS);
-          Seek(0,soFromBeginning);
-          Result := TPNGGraphic.Create;
-          Result.LoadFromStream(MyMS);
-          Free;
-        end;
-        UnLockResource(MyRes);
-      end;
-      FreeResource(MyRes);
-    end
-  end;
 end;
 
 function GetActiveFormHandle : integer;

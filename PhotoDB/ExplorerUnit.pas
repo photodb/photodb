@@ -15,7 +15,7 @@ uses
   DragDrop, UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
-  UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs,
+  UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs, uResources,
   uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad;
 
 type
@@ -736,24 +736,27 @@ end;
 procedure TExplorerForm.ShellTreeView1Change(Sender: TObject;
   Node: TTreeNode);
 begin
- if ListView1<>nil then
- SetStringPath(TreeView.Path,True);
+  if ListView1 <> nil then
+    SetStringPath(TreeView.Path, True);
 end;
 
-procedure VerifyPaste(Form : TExplorerForm);
+procedure VerifyPaste(Explorer : TExplorerForm);
 var
   Files : TStrings;
   Effects : Integer;
 begin
- with Form do
- begin
-  Files:=TStringList.Create;
-  LoadFIlesFromClipBoard(Effects,Files);
-  if Files.Count<>0 then ToolButton7.Enabled:=true else ToolButton7.Enabled:=false;
-  Files.free;
-  if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
-  ToolButton7.Enabled:=false;
- end;
+  with Explorer do
+  begin
+    Files:=TStringList.Create;
+    try
+      LoadFilesFromClipBoard(Effects, Files);
+      ToolButton7.Enabled := Files.Count > 0;
+    finally
+      Files.free;
+    end;
+    if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
+      ToolButton7.Enabled:=false;
+  end;
 end;
 
 procedure TExplorerForm.FormCreate(Sender: TObject);
@@ -763,8 +766,8 @@ Var
   b : tbitmap;
 
 begin
- DirectoryWatcher := TWachDirectoryClass.Create;
- DefaultSort:=-1;
+  DirectoryWatcher := TWachDirectoryClass.Create;
+  DefaultSort:=-1;
  FPictureSize:=ThImageSize;
  WasError:=false;
  FWasDragAndDrop:=false;

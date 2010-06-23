@@ -273,7 +273,8 @@ uses
   UnitExplorerLoadSingleImageThread in 'Threads\UnitExplorerLoadSingleImageThread.pas',
   UnitDBThread in 'Units\UnitDBThread.pas',
   UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
-  uFastLoad in 'Units\uFastLoad.pas';
+  uFastLoad in 'Units\uFastLoad.pas',
+  uResources in 'Units\uResources.pas';
 
 {$R *.res}
 
@@ -292,9 +293,7 @@ var
     initaproc : TInitializeAProc;
     TablePacked : boolean;    
     ActivKey, ActivName, AllParams : String;
-    aHandle : Thandle;
     i : integer;
-    CheckResult : integer;
     StartProcessorMask : Cardinal;
 
   f : TPcharFunction;
