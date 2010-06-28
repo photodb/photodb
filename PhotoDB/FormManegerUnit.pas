@@ -26,13 +26,15 @@ type
     procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
   private
-    FMainForms : array of TForm;
+    FMainForms : TList;
     FTemtinatedActions : TTemtinatedActions;  
     CanCheckViewerInMainForms : boolean;
     procedure ExitApplication;  
     procedure WMCopyData(var m : TMessage); message WM_COPYDATA;
     { Private declarations }
   public
+    constructor Create(AOwner : TComponent);  override;
+    destructor Destroy; override;
     { Public declarations }
   published
    procedure RegisterMainForm(Value: TForm);
@@ -299,7 +301,6 @@ try
  CheckTimer.Enabled := True;
  Running:=true;
  finally
-   
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
  end;
@@ -317,54 +318,28 @@ end;
 
 procedure TFormManager.Close(Form: TForm);
 begin
- UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
 end;
 
 procedure TFormManager.RegisterMainForm(Value: TForm);
-var
-  i : integer;
-  b : boolean;
 begin
- if Value<>Viewer then
- CanCheckViewerInMainForms:=true;
- EventLog(':TFormManager::RegisterMainForm()...'+Value.Name);
-
- b:=false;
- For i:=0 to Length(FMainForms)-1 do
- if FMainForms[i]=Value then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FMainForms,Length(FMainForms)+1);
-  FMainForms[Length(FMainForms)-1]:=Value;
- end;
+  if Value <> Viewer then
+    CanCheckViewerInMainForms:=true;
+  FMainForms.Add(Value);
 end;
 
 procedure TFormManager.UnRegisterMainForm(Value: TForm);
 var
-  i, j : integer;
-begin           
- EventLog(':TFormManager::UnRegisterMainForm()...'+Value.Name);
- For i:=0 to Length(FMainForms)-1 do
- if FMainForms[i]=Value then
- begin
-  For j:=i to Length(FMainForms)-2 do
-  FMainForms[j]:=FMainForms[j+1];
-  SetLength(FMainForms,Length(FMainForms)-1);
-  break;
- end;
-
- try
- For i:=Length(FMainForms)-1 downto 1 do
-  if not FMainForms[i].Visible then
-  FMainForms[i].Close;
- except
-  on e : Exception do EventLog(':TFormManager::UnRegisterMainForm() throw exception: '+e.Message);
- end;
-
+  i : integer;
+begin
+  FMainForms.Remove(Value);
+  try
+    for i:=FMainForms.Count - 1 downto 1 do
+      if not TForm(FMainForms[i]).Visible then
+        TForm(FMainForms[i]).Close;
+  except
+    on e : Exception do EventLog(':TFormManager::UnRegisterMainForm() throw exception: ' + e.Message);
+  end;
 end;
 
 procedure TFormManager.ExitApplication;
@@ -373,23 +348,23 @@ Var
   FirstTick : Cardinal;
   ApplReadyForEnd : Boolean;
 begin
- if ExitAppl then exit;
- ExitAppl:=true;
+  if ExitAppl then exit;
+    ExitAppl := True;
       
- EventLog(':TFormManager::ExitApplication()...');
+  EventLog(':TFormManager::ExitApplication()...');
 
- For i:=0 to Length(FMainForms)-1 do
- if not FMainForms[i].Visible then
- begin
-  try
-   FMainForms[i].Close;
-  except
-   on e : Exception do EventLog(':TFormManager::ExitApplication()/CloseForms throw exception: '+e.Message);
-  end;
+  for i := 0 to FMainForms.Count - 1 do
+    if not TForm(FMainForms[i]).Visible then
+    begin
+    try
+      TForm(FMainForms[i]).Close;
+    except
+      on e : Exception do EventLog(':TFormManager::ExitApplication()/CloseForms throw exception: ' + e.Message);
+    end;
  end;
 
  //to allow run new copy
- IDForm.Caption:='';
+ IDForm.Caption := '';
 
  for i:=0 to Length(FTemtinatedActions)-1 do
  if (FTemtinatedActions[i].Options=TA_INFORM) or (FTemtinatedActions[i].Options=TA_INFORM_AND_NT) then
@@ -497,28 +472,27 @@ end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
 begin
- if Running then
- begin
-  if CanCheckViewerInMainForms then
+  if Running then
   begin
-   If (Length(FMainForms)=1) and (FMainForms[0]=Viewer) and (Viewer<>nil) then
-   begin               
-    CanCheckViewerInMainForms:=false;
-    //to prevent many messageboxes
-    CheckTimer.Enabled:=false;
-    ActivateApplication(Viewer.Handle);
-    if ID_YES = MessageBoxDB(Viewer.Handle,TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q,TEXT_MES_WARNING,TD_BUTTON_YESNO,TD_ICON_WARNING) then
+    if CanCheckViewerInMainForms then
     begin
-     SetLength(FMainForms,0);
-     CheckTimer.Enabled:=true;
+      if (FMainForms.Count = 1) and (FMainForms[0] = Viewer) and (Viewer <> nil) then
+      begin
+        CanCheckViewerInMainForms:=false;
+        //to prevent many messageboxes
+        CheckTimer.Enabled := False;
+        try
+          ActivateApplication(Viewer.Handle);
+          if ID_YES = MessageBoxDB(Viewer.Handle, TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q, TEXT_MES_WARNING,TD_BUTTON_YESNO, TD_ICON_WARNING) then
+            FMainForms.Clear;
+        finally
+          CheckTimer.Enabled := True;
+        end;
+      end;
     end;
-    CheckTimer.Enabled:=true;
-   end;
+    if FMainForms.Count = 0 then
+      ExitApplication;
   end;
-
-  If Length(FMainForms)=0 then
-  ExitApplication;
- end;
 end;
 
 procedure TFormManager.RegisterActionCanTerminating(
@@ -563,20 +537,12 @@ end;
 
 function TFormManager.MainFormsCount: Integer;
 begin
- Result:=Length(FMainForms);
+  Result := FMainForms.Count;
 end;
 
 function TFormManager.IsMainForms(Form: TForm): Boolean;
-var
-  i : integer;
 begin
- Result:=false;
- For i:=0 to length(FMainForms)-1 do
- if FMainForms[i]=Form then
- begin
-  Result:=true;
-  break
- end; 
+  Result:= FMainForms.IndexOf(Form) > -1;
 end;
 
 procedure TFormManager.ApplicationEvents1Exception(Sender: TObject;
@@ -589,14 +555,14 @@ procedure TFormManager.CloseApp(Sender: TObject);
 var
   i : integer;
 begin
- for i:=0 to Length(FMainForms)-1 do
- FMainForms[i].Close;
+  for i := 0 to FMainForms.Count - 1 do
+    TForm(FMainForms[i]).Close;
 end;
 
 procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(
   Sender: TObject);
 begin
- inherited Close;
+  inherited Close;
 end;
 
 procedure TFormManager.Load;
@@ -794,6 +760,18 @@ begin
    end;
   end;
  end;
+end;
+
+constructor TFormManager.Create(AOwner: TComponent);
+begin            
+  FMainForms := TList.Create;
+  inherited Create(AOwner);
+end;
+
+destructor TFormManager.Destroy;
+begin
+  inherited;    
+  FMainForms.Free;
 end;
 
 initialization

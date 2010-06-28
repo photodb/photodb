@@ -25,8 +25,8 @@ object ExplorerForm: TExplorerForm
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 135
-    Top = 49
-    Height = 520
+    Top = 42
+    Height = 527
     Constraints.MaxWidth = 100
     OnCanResize = Splitter1CanResize
   end
@@ -4337,9 +4337,9 @@ object ExplorerForm: TExplorerForm
   end
   object MainPanel: TPanel
     Left = 0
-    Top = 49
+    Top = 42
     Width = 135
-    Height = 520
+    Height = 527
     Align = alLeft
     ParentColor = True
     TabOrder = 0
@@ -4367,7 +4367,7 @@ object ExplorerForm: TExplorerForm
       Left = 1
       Top = 22
       Width = 133
-      Height = 497
+      Height = 504
       Align = alClient
       BevelOuter = bvNone
       Color = clInactiveCaption
@@ -4379,7 +4379,7 @@ object ExplorerForm: TExplorerForm
         Left = 0
         Top = 0
         Width = 133
-        Height = 497
+        Height = 504
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -4800,13 +4800,13 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 25
     Width = 862
-    Height = 24
+    Height = 17
     AutoSize = True
     Bands = <
       item
         Control = ToolBar2
         ImageIndex = -1
-        MinHeight = 22
+        MinHeight = 15
         Width = 858
       end>
     EdgeBorders = [ebLeft, ebRight, ebBottom]
@@ -4817,9 +4817,9 @@ object ExplorerForm: TExplorerForm
       Left = 9
       Top = 0
       Width = 845
-      Height = 22
+      Height = 15
       AutoSize = True
-      ButtonHeight = 20
+      ButtonHeight = 13
       Caption = 'ToolBar2'
       DockSite = True
       EdgeBorders = []
@@ -4829,7 +4829,7 @@ object ExplorerForm: TExplorerForm
         Left = 0
         Top = 2
         Width = 41
-        Height = 20
+        Height = 13
         Alignment = taCenter
         Caption = 'Address '
         Enabled = False
@@ -5056,9 +5056,9 @@ object ExplorerForm: TExplorerForm
   end
   object WaitingPanel: TPanel
     Left = 138
-    Top = 49
+    Top = 42
     Width = 724
-    Height = 520
+    Height = 527
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
@@ -5261,8 +5261,8 @@ object ExplorerForm: TExplorerForm
     Left = 264
     Top = 80
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
+  object PmItemPopup: TPopupMenu
+    OnPopup = PmItemPopupPopup
     Left = 136
     Top = 80
     object Open1: TMenuItem
@@ -5452,8 +5452,8 @@ object ExplorerForm: TExplorerForm
       OnClick = Properties1Click
     end
   end
-  object PopupMenu2: TPopupMenu
-    OnPopup = PopupMenu2Popup
+  object PmListPopup: TPopupMenu
+    OnPopup = PmListPopupPopup
     Left = 168
     Top = 80
     object OpenInNewWindow1: TMenuItem

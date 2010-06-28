@@ -60,37 +60,55 @@ Type TExplorerPath = Record
 Type
   PStringA = ^String;
 
-  TExplorerFileInfo = record
-   FileName : String;
-   SID : TGUID;
-   FileType :  Integer;
-   ID : Integer;
-   Rotate : Integer;
-   Access : Integer;
-   Rating : Integer;
-   FileSize : Integer;
-   Comment : string;
-   KeyWords : string;
-   Date : TDateTime;
-   Time : TDateTime;
-   ImageIndex : Integer;
-   Owner : string;
-   Groups : string;
-   Collections : string;
-   IsDate : Boolean;
-   IsTime : Boolean;
-   Crypted : Boolean;
-   Tag : Integer;
-   Loaded : Boolean;
-   Include : Boolean;
-   Links : string;
-   isBigImage : Boolean;
+  TExplorerFileInfo = class(TObject)
+  public
+    FileName : String;
+    SID : TGUID;
+    FileType :  Integer;
+    ID : Integer;
+    Rotate : Integer;
+    Access : Integer;
+    Rating : Integer;
+    FileSize : Integer;
+    Comment : string;
+    KeyWords : string;
+    Date : TDateTime;
+    Time : TDateTime;
+    ImageIndex : Integer;
+    Owner : string;
+    Groups : string;
+    Collections : string;
+    IsDate : Boolean;
+    IsTime : Boolean;
+    Crypted : Boolean;
+    Tag : Integer;
+    Loaded : Boolean;
+    Include : Boolean;
+    Links : string;
+    isBigImage : Boolean;
+    function Clone : TExplorerFileInfo;
   end;
 
-  TExplorerFilesInfo = array of TExplorerFileInfo;
+  TExplorerFileInfos = class(TObject)
+  private
+    FItems : TList;
+    function GeInfoByIndex(Index: Integer): TExplorerFileInfo;
+    function GetCount: Integer;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Add(Info : TExplorerFileInfo);
+    procedure Remove(Info : TExplorerFileInfo);
+    procedure Delete(I : Integer);
+    procedure Clear;
+    procedure Exchange(Index1, Index2 : Integer);
+    procedure Assign(Source : TExplorerFileInfos);
+    function Clone : TExplorerFileInfos;
+    property Count : Integer read GetCount;
+    property Items[Index: Integer]: TExplorerFileInfo read GeInfoByIndex; default;
+  end;
 
-Function SetNilExplorerFileInfo : TExplorerFilesInfo;
-Procedure AddOneExplorerFileInfo(Var Info : TExplorerFilesInfo; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+Procedure AddOneExplorerFileInfo(Infos : TExplorerFileInfos; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
 
 type
   TExplorerThreadNotifyDirectoryChange = class(TThread)
@@ -169,7 +187,7 @@ Type
     function GetWidth: Integer; override;
 end;
 
-Function GetRecordFromExplorerInfo(Info : TExplorerFilesInfo; N : Integer) : TOneRecordInfo;
+Function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
 Function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
 
 var
@@ -186,7 +204,7 @@ begin
  Result.PType:=PType;
 end;
 
-Function GetRecordFromExplorerInfo(Info : TExplorerFilesInfo; N : Integer) : TOneRecordInfo;
+Function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
 begin
  Result.ItemFileName:= Info[N].FileName;
  Result.ItemId:= Info[N].ID;
@@ -547,35 +565,35 @@ begin
  SetLength(FAction,0);
 end;
 
-Function SetNilExplorerFileInfo : TExplorerFilesInfo;
+{Function SetNilExplorerFileInfo : TExplorerFilesInfo;
 begin
  SetLength(Result,0);
 end;
-
-Procedure AddOneExplorerFileInfo(Var Info : TExplorerFilesInfo; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
-Var
-  Index : Integer;
+          }
+procedure AddOneExplorerFileInfo(Infos : TExplorerFileInfos; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+var
+  Info : TExplorerFileInfo;
 begin
-  Index:=Length(Info);
-  SetLength(Info,Index+1);
-  Info[index].FileName:=FileName;
-  Info[index].ID:=ID;
-  Info[index].FileType:=FileType;
-  Info[index].SID:=SID;
-  Info[index].Rotate:=Rotate;
-  Info[index].Rating:=Rating;
-  Info[index].Access:=Access;
-  Info[index].FileSize:=FileSize;
-  Info[index].Comment:=Comment;
-  Info[index].KeyWords:=KeyWords;
-  Info[index].ImageIndex:=ImageIndex;
-  Info[index].Date:=Date;
-  Info[index].IsDate:=IsDate;
-  Info[index].Groups:=Groups;
-  Info[index].Crypted:=Crypted;
-  Info[index].Loaded:=false;
-  Info[index].Include:=Include;   
-  Info[index].isBigImage:=false;
+  Info := TExplorerFileInfo.Create;
+  Info.FileName:=FileName;
+  Info.ID:=ID;
+  Info.FileType:=FileType;
+  Info.SID:=SID;
+  Info.Rotate:=Rotate;
+  Info.Rating:=Rating;
+  Info.Access:=Access;
+  Info.FileSize:=FileSize;
+  Info.Comment:=Comment;
+  Info.KeyWords:=KeyWords;
+  Info.ImageIndex:=ImageIndex;
+  Info.Date:=Date;
+  Info.IsDate:=IsDate;
+  Info.Groups:=Groups;
+  Info.Crypted:=Crypted;
+  Info.Loaded:=false;
+  Info.Include:=Include;
+  Info.isBigImage:=false;
+  Infos.Add(Info);
 end;
 
 procedure TExplorerThreadNotifyDirectoryChange.RegisterThread;
@@ -749,6 +767,109 @@ end;
 function TIcon48.GetWidth: Integer;
 begin
  Result:=48;
+end;
+
+{ TExplorerFileInfos }
+
+procedure TExplorerFileInfos.Add(Info: TExplorerFileInfo);
+begin
+  FItems.Add(Info);
+end;
+
+constructor TExplorerFileInfos.Create;
+begin
+  FItems := TList.Create;
+end;
+
+procedure TExplorerFileInfos.Delete(I: Integer);
+begin
+  FItems.Delete(I);
+end;
+
+procedure TExplorerFileInfos.Remove(Info: TExplorerFileInfo);
+begin
+  FItems.Remove(Info);
+end;
+
+destructor TExplorerFileInfos.Destroy;
+begin
+  Clear;
+  FItems.Free;
+  inherited;
+end;
+
+function TExplorerFileInfos.GeInfoByIndex(
+  Index: Integer): TExplorerFileInfo;
+begin
+  Result := FItems[Index];
+end;
+
+function TExplorerFileInfos.GetCount: Integer;
+begin
+  Result := FItems.Count;
+end;
+
+procedure TExplorerFileInfos.Clear;
+var
+  I : Integer;
+begin
+  for I := 0 to FItems.Count - 1 do
+    TExplorerFileInfo(FItems[I]).Free;
+  FItems.Clear;
+end;
+
+procedure TExplorerFileInfos.Exchange(Index1, Index2: Integer);
+begin
+  FItems.Exchange(Index1, Index2);
+end;
+
+procedure TExplorerFileInfos.Assign(Source: TExplorerFileInfos);
+var
+  I : Integer;
+begin
+  Clear;
+  for I := 0 to Source.Count - 1 do
+    Add(Source[i].Clone);
+end;
+
+function TExplorerFileInfos.Clone: TExplorerFileInfos;
+var
+  I : Integer;
+begin
+  Result := TExplorerFileInfos.Create;
+  for I := 0 to Count - 1 do
+    Result.Add(Self[i].Clone);
+end;
+
+{ TExplorerFileInfo }
+
+function TExplorerFileInfo.Clone: TExplorerFileInfo;
+begin
+  Result := TExplorerFileInfo.Create;
+  Result.FileName := FileName;
+  Result.SID := SID;
+  Result.FileType := FileType;
+  Result.ID := ID;
+  Result.Rotate := Rotate;
+  Result.Access := Access;
+  Result.Rating := Rating;
+  Result.FileSize := FileSize;
+  Result.Comment := Comment;
+  Result.KeyWords := KeyWords;
+  Result.Date := Date;
+  Result.Time := Time;
+  Result.ImageIndex := ImageIndex;
+  Result.Owner := Owner;
+  Result.Groups := Groups;
+  Result.Collections := Collections;
+  Result.IsDate := IsDate;
+  Result.IsTime := IsTime;
+  Result.Crypted := Crypted;
+  Result.Tag := Tag;
+  Result.Loaded := Loaded;
+  Result.Include := Include;
+  Result.Links := Links;
+  Result.isBigImage := isBigImage;
 end;
 
 initialization

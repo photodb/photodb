@@ -478,13 +478,15 @@ end;
 function TDBKernel.Readbool(Key, Name: string; default : boolean): boolean;
 var
   Reg : TBDRegistry;
+  Value : string;
 begin         
   Result:=default;
   Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    Reg.OpenKey(GetRegRootKey+Key,true);
-    if AnsiLowerCase(reg.ReadString(Name)) = 'true' then Result := True;
-    if AnsiLowerCase(reg.ReadString(Name)) = 'false' then Result := False;
+    Reg.OpenKey(GetRegRootKey + Key, true);
+    Value := reg.ReadString(Name);
+    if AnsiLowerCase(Value) = 'true' then Result := True;
+    if AnsiLowerCase(Value) = 'false' then Result := False;
   finally  
     Reg.Free;
   end;

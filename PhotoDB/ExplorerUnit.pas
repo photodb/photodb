@@ -21,7 +21,7 @@ uses
 type
   TExplorerForm = class(TThreadForm)
     SizeImageList: TImageList;
-    PopupMenu1: TPopupMenu;
+    PmItemPopup: TPopupMenu;
     SlideShow1: TMenuItem;
     Properties1: TMenuItem;
     Shell1: TMenuItem;
@@ -30,7 +30,7 @@ type
     Delete1: TMenuItem;
     DBitem1: TMenuItem;
     Splitter1: TSplitter;
-    PopupMenu2: TPopupMenu;
+    PmListPopup: TPopupMenu;
     Addfolder1: TMenuItem;
     SelectAll1: TMenuItem;
     AddFile1: TMenuItem;
@@ -192,7 +192,6 @@ type
     N03: TMenuItem;
     N04: TMenuItem;
     N05: TMenuItem;
-    ImageBackGround: TImage;
     ScrollBox1: TScrollPanel;
     TypeLabel: TLabel;
     TasksLabel: TLabel;
@@ -278,7 +277,7 @@ type
     procedure SlideShow1Click(Sender: TObject);
     procedure Shell1Click(Sender: TObject);
     procedure Properties1Click(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
+    procedure PmItemPopupPopup(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
@@ -292,10 +291,10 @@ type
     function hintrealA(item: TObject): boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    Procedure SetItemLength(Length : integer);
-    Procedure IncItemLength();
+  {  Procedure SetItemLength(Length : integer);
+    Procedure IncItemLength();    }
     Procedure SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
-    Procedure SetInfoTolastItem(info : TOneRecordInfo);
+  //  Procedure SetInfoTolastItem(info : TOneRecordInfo);
     procedure ListView1DblClick(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
     Procedure BeginUpdate();
@@ -353,9 +352,8 @@ type
     procedure DeleteItemWithIndex(Index : Integer);
     Procedure DeleteFiles(ToRecycle : Boolean);
     Procedure DirectoryChanged(Sender : TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
-    Procedure LoadInfoAboutFiles(Info : TExplorerFilesInfo; SID : TGUID);
-    Procedure AddInfoAboutFile(Info : TExplorerFilesInfo; SID : TGUID);
-//    function FileNeeded(FileSID : TGUID) : Boolean;
+    Procedure LoadInfoAboutFiles(Info : TExplorerFileInfos);
+    Procedure AddInfoAboutFile(Info : TExplorerFileInfos);
     function FileNeededW(FileSID : TGUID) : Boolean;  //для больших имаг
     procedure AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
     procedure AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID);
@@ -368,7 +366,7 @@ type
     procedure NewWindow1Click(Sender: TObject);
     procedure Cut1Click(Sender: TObject);
     procedure Paste1Click(Sender: TObject);
-    procedure PopupMenu2Popup(Sender: TObject);
+    procedure PmListPopupPopup(Sender: TObject);
     procedure Cut2Click(Sender: TObject);
     procedure ShowProgress();
     procedure HideProgress();
@@ -480,7 +478,7 @@ type
     procedure Reload;
     function FileNameToID(FileName: string): integer;
     function UpdatingNow(ID : Integer) : boolean;
-    function GetVisibleItems : TArStrings;
+    function GetVisibleItems : TStrings;
     procedure LoadStatusVariables(Sender: TObject);
     function CanUp : boolean;
     function SelCount : integer;
@@ -547,8 +545,7 @@ type
     procedure BigImagesTimerTimer(Sender: TObject);
     procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-
-    function GetAllItems : TExplorerFilesInfo;
+    function GetAllItems : TExplorerFileInfos;
     procedure DoDefaultSort(GUID : TGUID);
     procedure DoStopLoading;
     procedure AddHiddenInfo1Click(Sender: TObject);
@@ -583,7 +580,7 @@ type
      FDblClicked : Boolean;
      FSelectedInfo : TSelectedInfo;
      fStatusProgress : TProgressBar;
-     fFilesInfo : TExplorerFilesInfo;
+     fFilesInfo : TExplorerFileInfos;
      fCurrentPath : String;
      fCurrentTypePath : Integer;
      LockDrawIcon : boolean;
@@ -625,7 +622,6 @@ type
      Lock : boolean;
      FWndOrigin: TWndMethod;
      SlashHandled:boolean;
-     WasError : boolean;
      DefaultSort : integer;
      DirectoryWatcher : TWachDirectoryClass;
      FShellTreeView : TShellTreeView;
@@ -648,6 +644,7 @@ type
      procedure LoadToolBarNormaIcons();
      function IsSelectedVisible: boolean;
      function TreeView : TShellTreeView;
+     procedure CreateBackgrounds;
    public         
      NoLockListView : boolean;
      Procedure LoadLanguage;
@@ -657,6 +654,7 @@ type
      procedure LoadSizes();
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
      constructor Create(AOwner : TComponent; GoToLastSavedPath : Boolean); reintroduce; overload;
+     destructor Destroy; override;
      property WindowID : TGUID read FWindowID;
    end;
 
@@ -708,25 +706,27 @@ uses language, ThreadManeger,UnitUpdateDB, ExplorerThreadUnit, Searching,
 
 {$R *.dfm}
 
-{$R directory_large.res}
+{$R directory_large.res}   
+{$R ExplorerBackground.res}
 
-Function MakeRegPath(Path : String) : String;
+function MakeRegPath(Path : string) : string;
 var
-  i : Integer;
+  I : Integer;
 begin
- Result:=Path;
- If Path='' then exit;
- UnFormatDir(Result);
- For i:=1 to Length(Result) do
- begin
-  if Result[i]=':' then Result[i]:='_';
-  if Result[i]='\' then Result[i]:='_';
- end;
+  Result := Path;
+  if Path = '' then
+    Exit;
+  UnFormatDir(Result);
+  for I:=1 to Length(Result) do
+  begin
+    if Result[i] = ':' then Result[i] := '_';
+    if Result[i] = '\' then Result[i] := '_';
+  end;
 end;
 
 procedure TExplorerForm.CreateParams(var Params: TCreateParams);
 begin
-  Inherited CreateParams(Params);
+  inherited CreateParams(Params);
   
   Params.WndParent := GetDesktopWindow;
   with params do
@@ -759,144 +759,156 @@ begin
   end;
 end;
 
+procedure TExplorerForm.CreateBackgrounds;
+var
+  Bitmap, ExplorerBackgroundBMP : TBitmap;
+  ExplorerBackground : TPNGGraphic;
+begin
+  ListView1.BackGround.Image := TBitmap.Create;
+  ListView1.BackGround.Image.PixelFormat := pf24bit;
+  ListView1.BackGround.Image.Width := 150;
+  ListView1.BackGround.Image.Height := 150;
+  FillColorEx(ListView1.BackGround.Image, Theme_ListColor);
+
+  ExplorerBackground := GetExplorerBackground;
+  try
+    ExplorerBackgroundBMP := TBitmap.Create;
+    try
+      LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme_ListColor);
+      ListView1.BackGround.Image.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
+
+
+      LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ColorToRGB(ScrollBox1.Color));
+      Bitmap:=TBitmap.Create();
+      Bitmap.PixelFormat := pf24bit;
+      Bitmap.Width := 120;
+      Bitmap.Height := 150;
+      Bitmap.Canvas.Brush.Color := ScrollBox1.Color;
+      Bitmap.Canvas.Pen.Color := ScrollBox1.Color;
+      Bitmap.Canvas.Rectangle(0, 0, 120, 150);
+      Bitmap.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
+      ScrollBox1.BackGround.PixelFormat := pf24bit;
+      ScrollBox1.BackGround.Width := 120;
+      ScrollBox1.BackGround.Height := 150;
+      DrawTransparent(Bitmap, ScrollBox1.BackGround, 40);
+    finally
+      ExplorerBackgroundBMP.Free;
+    end;
+  finally
+    ExplorerBackground.Free;
+  end;
+end;
+
 procedure TExplorerForm.FormCreate(Sender: TObject);
-Var
+var
   NewPath : String;
   NewPathType, i : Integer;
-  b : tbitmap;
-
 begin
   DirectoryWatcher := TWachDirectoryClass.Create;
   DefaultSort:=-1;
- FPictureSize:=ThImageSize;
- WasError:=false;
- FWasDragAndDrop:=false;
- LockDrawIcon:=false;
- ListView:=LV_THUMBS;
- IsReallignInfo:=false;
+  FWasDragAndDrop:=false;
+  LockDrawIcon:=false;
+  ListView:=LV_THUMBS;
+  IsReallignInfo:=false;
 
- TW.I.Start('ListView1');
- 
- ListView1:=TXListView.Create(self);
- ListView1.Parent:=self;
- ListView1.Align:=AlClient;
+  TW.I.Start('ListView1');
 
-     MouseDowned:=false;
-     PopupHandled:=false;
-     ListView1.BackGround.Enabled:=true;
-     ListView1.BackGround.Tile:=false;
-     ListView1.BackGround.AlphaBlend:=true;
-     ListView1.BackGround.OffsetTrack:=true;
-     ListView1.BackGround.BlendAlpha:=220;
-     ListView1.BackGround.Image:=TBitmap24.create('TExplorerForm.FormCreate.ListView1.BackGround.Image');
-     ListView1.BackGround.Image.PixelFormat:=pf24bit;
-     ListView1.BackGround.Image.Width:=150;
-     ListView1.BackGround.Image.Height:=150;
-     FillColorEx(ListView1.BackGround.Image, Theme_ListColor);
+  ListView1:=TEasyListView.Create(self);
+  ListView1.Parent := Self;
+  ListView1.Align := AlClient;
 
-     for i:=1 to 20 do
-     begin
-      try
-       ListView1.BackGround.Image.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
-       break;
-      except
-       Sleep(50);
-      end;
-     end;              
-     ListView1.HotTrack.Color:=Theme_ListFontColor;
-
-     ListView1.Font.Color:=0;
-     ListView1.View:=elsThumbnail;
-     ListView1.DragKind:=dkDock;
-     ListView1.Selection.MouseButton:= [];
-     ListView1.Selection.AlphaBlend:=true;
-     ListView1.Selection.AlphaBlendSelRect:=true;
-     ListView1.Selection.MultiSelect:=true;
-     ListView1.Selection.RectSelect:=true;
-     ListView1.Selection.EnableDragSelect:=true;
-     ListView1.Selection.TextColor:=Theme_ListFontColor;
-               
-     TLoad.Instance.RequaredDBSettings;
-     LoadSizes;
-
-     ListView1.HotTrack.Cursor:=CrArrow;
-     ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-     ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
-
-     ListView1.IncrementalSearch.Enabled:=true;
-     ListView1.IncrementalSearch.ItemType:=eisiInitializedOnly;
-     ListView1.OnItemThumbnailDraw:=EasyListview1ItemThumbnailDraw;
-
-     ListView1.OnDblClick:=EasyListview1DblClick;
-
-
-     ListView1.OnExit:=ListView1Exit;
-     ListView1.OnMouseDown:=ListView1MouseDown;
-     ListView1.OnMouseUp:=ListView1MouseUp;
-     ListView1.OnMouseMove:=ListView1MouseMove;
-     ListView1.OnItemSelectionChanged:=EasyListview1ItemSelectionChanged;
-
-     ListView1.OnIncrementalSearch:=Listview1IncrementalSearch;
-
-     ListView1.OnMouseWheel:=ListView1MouseWheel;
-
-     ListView1.OnKeyAction:=EasyListview2KeyAction;
-     ListView1.OnItemEdited:=self.EasyListview1ItemEdited;
-     ListView1.OnResize:=ListView1Resize;
-     ListView1.OnItemImageDraw:=EasyListview1ItemImageDraw;
-     ListView1.OnItemImageDrawIsCustom:=EasyListview1ItemImageDrawIsCustom;
-     ListView1.OnItemImageGetSize:=EasyListview1ItemImageGetSize;
-     ListView1.Header.Columns.Add;
-
-     ListView1.Groups.Add;
-
- TW.I.Start('ConvertTo32BitImageList');
+  MouseDowned:=false;
+  PopupHandled:=false;
+  ListView1.BackGround.Enabled:=true;
+  ListView1.BackGround.Tile:=false;
+  ListView1.BackGround.AlphaBlend:=true;
+  ListView1.BackGround.OffsetTrack:=true;
+  ListView1.BackGround.BlendAlpha:=220;
              
- ConvertTo32BitImageList(DragImageList);
- 
- Activation1.Visible:=not FolderView;
- Help2.Visible:=not FolderView;
+  CreateBackgrounds;
+
+  ListView1.HotTrack.Color := Theme_ListFontColor;
+  ListView1.Font.Color := 0;
+  ListView1.View := elsThumbnail;
+  ListView1.DragKind := dkDock;
+  ListView1.Selection.MouseButton := [];
+  ListView1.Selection.AlphaBlend := True;
+  ListView1.Selection.AlphaBlendSelRect := True;
+  ListView1.Selection.MultiSelect := True;
+  ListView1.Selection.RectSelect := True;
+  ListView1.Selection.EnableDragSelect := True;
+  ListView1.Selection.TextColor := Theme_ListFontColor;
+
+  ListView1.HotTrack.Cursor := CrArrow;
+  ListView1.Selection.FullCellPaint := DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
+  ListView1.Selection.RoundRectRadius := DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
+
+  ListView1.IncrementalSearch.Enabled := True;
+  ListView1.IncrementalSearch.ItemType := eisiInitializedOnly;
+  ListView1.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
+  ListView1.OnDblClick := EasyListview1DblClick;
+  ListView1.OnExit := ListView1Exit;
+  ListView1.OnMouseDown := ListView1MouseDown;
+  ListView1.OnMouseUp := ListView1MouseUp;
+  ListView1.OnMouseMove := ListView1MouseMove;
+  ListView1.OnItemSelectionChanged := EasyListview1ItemSelectionChanged;
+  ListView1.OnIncrementalSearch := Listview1IncrementalSearch;
+  ListView1.OnMouseWheel := ListView1MouseWheel;
+  ListView1.OnKeyAction := EasyListview2KeyAction;
+  ListView1.OnItemEdited := self.EasyListview1ItemEdited;
+  ListView1.OnResize := ListView1Resize;
+  ListView1.OnItemImageDraw := EasyListview1ItemImageDraw;
+  ListView1.OnItemImageDrawIsCustom := EasyListview1ItemImageDrawIsCustom;
+  ListView1.OnItemImageGetSize := EasyListview1ItemImageGetSize;
+  ListView1.Header.Columns.Add;
+  ListView1.Groups.Add;
+
+  TLoad.Instance.RequaredDBSettings;
+  FPictureSize:=ThImageSize;
+  LoadSizes;
+
+  TW.I.Start('ConvertTo32BitImageList');
+  ConvertTo32BitImageList(DragImageList);
+
+  Activation1.Visible:=not FolderView;
+  Help2.Visible:=not FolderView;
   
- FWindowID:=GetGUID;
- SetLength(RefreshIDList,0);
+  FWindowID:=GetGUID;
+  SetLength(RefreshIDList,0);
 
- SetLength(UserLinks,0);
- SetLength(FPlaces,0);
- DragFilesPopup:=TStringList.Create;
+  SetLength(UserLinks,0);
+  SetLength(FPlaces,0);
+  DragFilesPopup:=TStringList.Create;
 
- GetPhotosFromDrive1.Visible:=not FolderView;
- SelfDraging:=false;
-// ToolBar2.ButtonHeight:=19;
- FDblClicked:=false;
- FIsExplorer:=false;
- SetLength(FListDragItems,0);
- fDBCanDragW:=false;
- image1.Picture.Bitmap:=nil;
- DropFileTarget2.Register(Self);
- DropFileTarget1.Register(ListView1);
+  GetPhotosFromDrive1.Visible:=not FolderView;
+  SelfDraging:=false;
+  FDblClicked:=false;
+  FIsExplorer:=false;
+  SetLength(FListDragItems,0);
+  fDBCanDragW:=false;
+  image1.Picture.Bitmap:=nil;
+  DropFileTarget2.Register(Self);
+  DropFileTarget1.Register(ListView1);
 
- ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
- FormManager.RegisterMainForm(Self);
- fStatusProgress:=CreateProgressBar(StatusBar1,1);
- fStatusProgress.Visible:=false;
-// EndUpdate;
- fHistory.OnHistoryChange:=HistoryChanged;
- ToolButton1.Enabled:=false;
- ToolButton2.Enabled:=false;
- DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
- DBKernel.RegisterChangesID(Sender,ChangedDBDataByID);
+  ListView1.HotTrack.Enabled := DBKernel.Readbool('Options','UseHotSelect',true);
+  FormManager.RegisterMainForm(Self);
+  fStatusProgress := CreateProgressBar(StatusBar1, 1);
+  fStatusProgress.Visible:=false;
+  fHistory.OnHistoryChange:=HistoryChanged;
+  ToolButton1.Enabled:=false;
+  ToolButton2.Enabled:=false;
+  DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
+  DBKernel.RegisterChangesID(Sender,ChangedDBDataByID);
 
- NewFormState;
- MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
+  NewFormState;
+  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
 
- fHistory.Clear;
+  Lock:=false;
+  FWndOrigin := Edit1.WindowProc;
+  Edit1.WindowProc := ComboWNDProc;
+  SlashHandled:=false;
 
- Lock:=false;
- FWndOrigin := Edit1.WindowProc;
- Edit1.WindowProc := ComboWNDProc;
- SlashHandled:=false;
-
- TW.I.Start('aScript');
+  TW.I.Start('aScript');
   aScript := TScript.Create('');
 
   AddScriptObjFunction(aScript.PrivateEnviroment,'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, CloseWindow);
@@ -937,83 +949,65 @@ begin
 
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
- if UseScripts and not SafeMode then
- begin             
- TW.I.Start('Script read');
-  SetNamedValueStr(aScript,'$dbname',dbname);
-  MainMenuScript:=ReadScriptFile('scripts\ExplorerMainMenu.dbini');  
- TW.I.Start('Script Execure');
-  Menu:=nil;
-  LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
-  Menu := ScriptMainMenu;
-  ScriptMainMenu.Images := DBkernel.ImageList;
- end;
- TW.I.Start('RecreateThemeToForm');
- DBKernel.RecreateThemeToForm(Self);
- ReadPlaces;
- TW.I.Start('LoadLanguage');
- LoadLanguage;
- TW.I.Start('LoadIcons');
- LoadIcons;
- TW.I.Start('LoadToolBarNormaIcons');
- LoadToolBarNormaIcons;  
- TW.I.Start('LoadToolBarGrayedIcons');
- LoadToolBarGrayedIcons;
- TW.I.Stop;
- ToolBar1.Images := ToolBarNormalImageList;
- ToolBar1.DisabledImages := ToolBarDisabledImageList;
+  if UseScripts and not SafeMode then
+  begin             
+    TW.I.Start('Script read');
+    SetNamedValueStr(aScript, '$dbname', dbname);
+    MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');  
+    TW.I.Start('Script Execure');
+    Menu := nil;
+    LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
+    Menu := ScriptMainMenu;
+    ScriptMainMenu.Images := DBkernel.ImageList;
+  end;
+  TW.I.Start('RecreateThemeToForm');
+  DBKernel.RecreateThemeToForm(Self);
+  ReadPlaces;
+  TW.I.Start('LoadLanguage');
+  LoadLanguage;
+  TW.I.Start('LoadIcons');
+  LoadIcons;
+  TW.I.Start('LoadToolBarNormaIcons');
+  LoadToolBarNormaIcons;
+  TW.I.Start('LoadToolBarGrayedIcons');
+  LoadToolBarGrayedIcons;
+  TW.I.Stop;
+  ToolBar1.Images := ToolBarNormalImageList;
+  ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
- for i:=0 to ComponentCount-1 do
- if Components[i] is TWebLink then
- (Components[i] as TWebLink).GetBackGround:=BackGround;
+  for i:=0 to ComponentCount-1 do
+    if Components[i] is TWebLink then
+     (Components[i] as TWebLink).GetBackGround := BackGround;
 
+  for i:=0 to Length(UserLinks)-1 do
+    UserLinks[i].GetBackGround := BackGround;
 
- for i:=0 to Length(UserLinks)-1 do
- UserLinks[i].GetBackGround:=BackGround;
+  ExplorerManager.AddExplorer(Self);
+  DBKernel.RegisterForm(Self);
+  MainPanel.DoubleBuffered:=true;
+  PropertyPanel.DoubleBuffered:=true;
+  ListView1.DoubleBuffered:=true;
+  ScrollBox1.DoubleBuffered:=true;
 
- b:=TBitmap24.Create('TExplorerForm.FormCreate.b');
- b.PixelFormat:=pf24bit;
- b.Width:=120;
- b.Height:=150;
- b.Canvas.Brush.Color:=ScrollBox1.Color;
- b.Canvas.Pen.Color:=ScrollBox1.Color;
- b.Canvas.Rectangle(0,0,120,150);
- b.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
- ScrollBox1.BackGround.Canvas.Brush.Color:=ScrollBox1.Color;
- ScrollBox1.BackGround.Canvas.Pen.Color:=ScrollBox1.Color;
- ScrollBox1.BackGround.Width:=120;
- ScrollBox1.BackGround.Height:=150;
- DrawTransparent(b,ScrollBox1.BackGround,40);
- b.free;
+  ToolBar2.ButtonHeight:=22;
+  ToolButton18.Enabled:=false;
+  SaveWindowPos1.Key:=RegRoot+'Explorer\'+MakeRegPath(GetCurrentPath);
+  SaveWindowPos1.SetPosition;
+  FormLoadEnd:=true;
 
-// Button1Click(Sender);
+  if FGoToLastSavedPath then
+  begin
+    NewPath:=DBkernel.ReadString('Explorer','Patch');
+    NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
 
- ExplorerManager.AddExplorer(Self);
- DBKernel.RegisterForm(Self);
- MainPanel.DoubleBuffered:=true;
- PropertyPanel.DoubleBuffered:=true;
- ListView1.DoubleBuffered:=true;
- ScrollBox1.DoubleBuffered:=true;
+    DBkernel.WriteString('Explorer','Patch','');
+    DBkernel.WriteInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
 
- ToolBar2.ButtonHeight:=22;
- ToolButton18.Enabled:=false;
- SaveWindowPos1.Key:=RegRoot+'Explorer\'+MakeRegPath(GetCurrentPath);
- SaveWindowPos1.SetPosition;
- FormLoadEnd:=true;
+    SetNewPathW(ExplorerPath(NewPath,NewPathType),True);
 
- if FGoToLastSavedPath then
- begin
-   NewPath:=DBkernel.ReadString('Explorer','Patch');
-   NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
-
-   DBkernel.WriteString('Explorer','Patch','');
-   DBkernel.WriteInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
-
-   SetNewPathW(ExplorerPath(NewPath,NewPathType),True);
-
-   DBkernel.WriteString('Explorer','Patch',NewPath);
-   DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
- end;
+    DBkernel.WriteString('Explorer','Patch',NewPath);
+    DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
+  end;
 end;
 
 procedure TExplorerForm.ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject);
@@ -1031,8 +1025,8 @@ begin
       FillChar(RectArray, SizeOf(RectArray), #0);
       try
         RectArray.BoundsRect := Item.DisplayRect;
-        if ListView=0 then
-        InflateRect(RectArray.BoundsRect, -Item.Border, -Item.Border);
+        if ListView = 0 then
+          InflateRect(RectArray.BoundsRect, -Item.Border, -Item.Border);
 
         // Calcuate the Bounds of the Cell that is allowed to be drawn in
         // **********
@@ -1040,10 +1034,10 @@ begin
         RectArray.IconRect.Bottom := RectArray.IconRect.Bottom - tmHeight * 2;
 
         // Calculate area that the Checkbox may be drawn
-          RectArray.CheckRect.Top := RectArray.IconRect.Bottom;
-          RectArray.CheckRect.Left := RectArray.BoundsRect.Left;
-          RectArray.CheckRect.Bottom := RectArray.BoundsRect.Bottom;
-          RectArray.CheckRect.Right := RectArray.CheckRect.Left;
+        RectArray.CheckRect.Top := RectArray.IconRect.Bottom;
+        RectArray.CheckRect.Left := RectArray.BoundsRect.Left;
+        RectArray.CheckRect.Bottom := RectArray.BoundsRect.Bottom;
+        RectArray.CheckRect.Right := RectArray.CheckRect.Left;
 
         // Calcuate the Bounds of the Cell that is allowed to be drawn in
         // **********
@@ -1104,20 +1098,22 @@ end;
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  item: TEasyItem;
+  Item: TEasyItem;
   FileNames : TArStrings;
   i, index : Integer;
   r : TRect;
   VitrualKey : boolean;
 begin
- if CopyFilesSynchCount>0 then WindowsMenuTickCount:=GetTickCount;
- rdown:=false;
- FDblClicked:=false;
- HintTimer.Enabled:=false;
- fDBCanDrag:=false;
+  if CopyFilesSynchCount > 0 then
+    WindowsMenuTickCount := GetTickCount;
 
- Item:=ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y));
- VitrualKey:=((MousePos.x=-1) and (MousePos.y=-1));
+  rdown:=false;
+  FDblClicked:=false;
+  HintTimer.Enabled:=false;
+  fDBCanDrag:=false;
+
+  Item := ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y));
+  VitrualKey:=((MousePos.x=-1) and (MousePos.y=-1));
  if (Item=nil) or VitrualKey then Item:=ListView1.Selection.First;
 
  r :=  Listview1.Scrollbars.ViewableViewportRect;
@@ -1127,15 +1123,15 @@ begin
   Application.HideHint;
   if ImHint<>nil then
   ImHint.Close;
-  if Item.Index>Length(fFilesInfo)-1 then exit;
+  if Item.Index>fFilesInfo.Count-1 then exit;
   If (fFilesInfo[Item.Index].Access=db_access_private) then exit;
   SetForegroundWindow(Self.Handle);
   SetLength(fFilesToDrag,0);
   fpopupdown:=true;
   if not (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
   begin
-   popupmenu1.Tag:=ItemIndexToMenuIndex(Item.Index);
-   popupmenu1.Popup(ListView1.clienttoscreen(MousePos).X ,ListView1.clienttoscreen(MousePos).y);
+   PmItemPopup.Tag:=ItemIndexToMenuIndex(Item.Index);
+   PmItemPopup.Popup(ListView1.clienttoscreen(MousePos).X ,ListView1.clienttoscreen(MousePos).y);
   end else
   begin
    Screen.Cursor:=CrDefault;
@@ -1152,9 +1148,8 @@ begin
     GetProperties(FileNames,MousePos,ListView1);
    end;
   end;
- end else begin
-  popupmenu2.Popup(ListView1.clienttoscreen(MousePos).X ,ListView1.clienttoscreen(MousePos).y);
- end;
+ end else
+   PmListPopup.Popup(ListView1.clienttoscreen(MousePos).X ,ListView1.clienttoscreen(MousePos).y);
 end;
 
 procedure TExplorerForm.SlideShow1Click(Sender: TObject);
@@ -1163,9 +1158,9 @@ var
   info: TRecordsInfo;
   MenuInfo: TDBPopupMenuInfo;
 begin
- filename:=fFilesInfo[popupmenu1.tag].FileName;
+ filename:=fFilesInfo[PmItemPopup.tag].FileName;
  if Viewer=nil then Application.CreateForm(TViewer, Viewer);
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
  begin
   MenuInfo:=GetCurrentPopUpMenuInfo(ListView1Selected);
   If Viewer=nil then
@@ -1173,13 +1168,13 @@ begin
   DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
   Viewer.Execute(Sender,info);
  end;
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_FOLDER then
- Viewer.ShowFolderA(fFilesInfo[popupmenu1.tag].FileName,ExplorerManager.ShowPrivate);
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_FOLDER then
+ Viewer.ShowFolderA(fFilesInfo[PmItemPopup.tag].FileName,ExplorerManager.ShowPrivate);
 end;
 
 procedure TExplorerForm.Shell1Click(Sender: TObject);
 begin
- ShellExecute(0, Nil,PChar(ProcessPath(fFilesInfo[popupmenu1.tag].FileName)), Nil, Nil, SW_NORMAL);
+ ShellExecute(0, Nil,PChar(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName)), Nil, Nil, SW_NORMAL);
 end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);
@@ -1190,7 +1185,7 @@ var
   Files : TArStrings;
   WindowsProperty : Boolean;
 begin
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
  begin
   if SelCount>1 then
   begin
@@ -1219,11 +1214,11 @@ begin
    end;
   end else
   begin
-  if not fFilesInfo[popupmenu1.tag].Loaded then
-  fFilesInfo[popupmenu1.tag].ID:=Dolphin_DB.GetIdByFileName(fFilesInfo[popupmenu1.tag].FileName);
-  If fFilesInfo[popupmenu1.tag].ID=0 then
-  PropertyManager.NewFileProperty(fFilesInfo[popupmenu1.tag].FileName).ExecuteFileNoEx(fFilesInfo[popupmenu1.tag].FileName) else
-  PropertyManager.NewIDProperty(fFilesInfo[popupmenu1.tag].ID).Execute(fFilesInfo[popupmenu1.tag].ID);
+  if not fFilesInfo[PmItemPopup.tag].Loaded then
+  fFilesInfo[PmItemPopup.tag].ID:=Dolphin_DB.GetIdByFileName(fFilesInfo[PmItemPopup.tag].FileName);
+  If fFilesInfo[PmItemPopup.tag].ID=0 then
+  PropertyManager.NewFileProperty(fFilesInfo[PmItemPopup.tag].FileName).ExecuteFileNoEx(fFilesInfo[PmItemPopup.tag].FileName) else
+  PropertyManager.NewIDProperty(fFilesInfo[PmItemPopup.tag].ID).Execute(fFilesInfo[PmItemPopup.tag].ID);
   end;
  end else
  begin
@@ -1239,7 +1234,7 @@ begin
  end;
 end;
 
-procedure TExplorerForm.PopupMenu1Popup(Sender: TObject);
+procedure TExplorerForm.PmItemPopupPopup(Sender: TObject);
 var
   info : TDBPopupMenuInfo;
   item: TEasyItem;
@@ -1253,7 +1248,7 @@ begin
  SendTo1.Visible:=false;
  MakeFolderViewer2.Visible:=false;
  MapCD1.Visible:=false;
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_DRIVE then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_DRIVE then
  begin          
   DBitem1.Visible:=false;
   Print1.Visible:=false;
@@ -1286,7 +1281,7 @@ begin
   Paste2.Visible:=True;
   Shell1.Visible:=True;
  end;
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_FOLDER then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_FOLDER then
  begin         
   DBitem1.Visible:=false;
   MakeFolderViewer2.Visible:=not FolderView;
@@ -1323,27 +1318,27 @@ begin
   Paste2.Visible:=True;
   Shell1.Visible:=True;
  end;
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
  begin   
   DBitem1.Visible:=true;            
   StenoGraphia1.Visible:=true;
   AddHiddenInfo1.Visible:= (SelCount=1);
   ExtractHiddenInfo1.Visible:=True;
-  ExtractHiddenInfo1.Visible:=ExtInMask('|PNG|BMP|',GetExt(fFilesInfo[popupmenu1.tag].FileName));
+  ExtractHiddenInfo1.Visible:=ExtInMask('|PNG|BMP|',GetExt(fFilesInfo[PmItemPopup.tag].FileName));
 
   MakeFolderViewer2.Visible:=not FolderView ;
   Print1.Visible:=True;
   Othertasks1.Visible:=True;
   ImageEditor2.Visible:=True;
-  CryptFile1.Visible:=not ValidCryptGraphicFile(fFilesInfo[popupmenu1.tag].FileName);
+  CryptFile1.Visible:=not ValidCryptGraphicFile(fFilesInfo[PmItemPopup.tag].FileName);
   ResetPassword1.Visible:=not CryptFile1.Visible;
-  EnterPassword1.Visible:=not CryptFile1.Visible and (DBkernel.FindPasswordForCryptImageFile(fFilesInfo[popupmenu1.tag].FileName)='') ;
+  EnterPassword1.Visible:=not CryptFile1.Visible and (DBkernel.FindPasswordForCryptImageFile(fFilesInfo[PmItemPopup.tag].FileName)='') ;
 
   Convert1.Visible:=not EnterPassword1.Visible;
   Resize1.Visible:=not EnterPassword1.Visible;
   Rotate1.Visible:=not EnterPassword1.Visible;
-  RefreshID1.Visible:=(not EnterPassword1.Visible) and (fFilesInfo[popupmenu1.tag].ID<>0);
-  SetasDesktopWallpaper1.Visible:=CryptFile1.Visible and IsWallpaper(fFilesInfo[popupmenu1.tag].FileName);
+  RefreshID1.Visible:=(not EnterPassword1.Visible) and (fFilesInfo[PmItemPopup.tag].ID<>0);
+  SetasDesktopWallpaper1.Visible:=CryptFile1.Visible and IsWallpaper(fFilesInfo[PmItemPopup.tag].FileName);
   Refresh1.Visible:=True;
   Open1.Visible:=false;
   Shell1.Visible:=True;
@@ -1353,15 +1348,15 @@ begin
   SlideShow1.Visible:=True;
   Delete1.Visible:=True;
   AddFile1.Caption:=TEXT_MES_ADDFILE;
-  if fFilesInfo[popupmenu1.tag].ID=0 then
+  if fFilesInfo[PmItemPopup.tag].ID=0 then
   AddFile1.Visible:=true else AddFile1.Visible:=false;
   Cut2.Visible:=True;
   Copy1.Visible:=True;
   Paste2.Visible:=false;
  end;
- If (fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_EXEFILE) then
+ If (fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_EXEFILE) then
  begin
-  if AnsiLowerCase(ExtractFileName(fFilesInfo[popupmenu1.tag].FileName))=AnsiLowerCase(TEXT_MES_CD_MAP_FILE) then
+  if AnsiLowerCase(ExtractFileName(fFilesInfo[PmItemPopup.tag].FileName))=AnsiLowerCase(TEXT_MES_CD_MAP_FILE) then
   begin
    MapCD1.Visible:=not FolderView;
   end;
@@ -1392,7 +1387,7 @@ begin
   Shell1.Visible:=True;
  end;
 
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_NETWORK then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_NETWORK then
  begin        
   DBitem1.Visible:=false;
   StenoGraphia1.Visible:=false;
@@ -1421,7 +1416,7 @@ begin
   Shell1.Visible:=false;
  end;
 
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_WORKGROUP then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_WORKGROUP then
  begin        
   DBitem1.Visible:=false;
   StenoGraphia1.Visible:=false;
@@ -1450,7 +1445,7 @@ begin
   Shell1.Visible:=false;
  end;
 
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_COMPUTER then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_COMPUTER then
  begin          
   DBitem1.Visible:=false;
   StenoGraphia1.Visible:=false;
@@ -1479,7 +1474,7 @@ begin
   Shell1.Visible:=false;
  end;
 
- If fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_SHARE then
+ If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_SHARE then
  begin
   DBitem1.Visible:=false;
   StenoGraphia1.Visible:=false;
@@ -1509,9 +1504,9 @@ begin
  end;
 
  Item:=ItemAtPos(ListView1.ScreenToClient(Point).X,ListView1.ScreenToClient(Point).y);
- if PopupMenu1.tag<0 then exit;
+ if PmItemPopup.tag<0 then exit;
  For i:=DBitem1.MenuIndex+1 to N8.MenuIndex-1 do
- PopupMenu1.Items.Delete(DBitem1.MenuIndex+1);
+ PmItemPopup.Items.Delete(DBitem1.MenuIndex+1);
 
  if DBitem1.Visible then
   begin
@@ -1526,17 +1521,17 @@ begin
   TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
  end;
 
- If fFilesInfo[popupmenu1.tag].ID=0 then
+ If fFilesInfo[PmItemPopup.tag].ID=0 then
  begin
 //  DBitem1.Visible:=false;
-  if fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
+  if fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
   SendTo1.Visible:=true;
   if DBKernel.ReadBool('Options','UseUserMenuForExplorer',true) then
-  if fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_IMAGE then
+  if fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
   begin
    info:=GetCurrentPopUpMenuInfo(Item);
    TDBPopupMenu.Instance.SetInfo(info);
-   TDBPopupMenu.Instance.AddUserMenu(PopupMenu1.Items,true,DBitem1.MenuIndex+1);
+   TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items,true,DBitem1.MenuIndex+1);
   end;
  end;// else begin
 // end;
@@ -1635,7 +1630,7 @@ begin
   if ListView1.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
-   if index>Length(fFilesInfo)-1 then exit;
+   if index>fFilesInfo.Count-1 then exit;
    If fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER then
    begin
     UpdaterDB.AddDirectory(fFilesInfo[index].FileName,nil);
@@ -1669,7 +1664,6 @@ var
   i : integer;
   b : TBitmap;
 begin
- try
   ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
   ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
   ListView1SelectItem(Sender,ListView1Selected,ListView1Selected=nil);
@@ -1680,40 +1674,7 @@ begin
    UserLinks[i].Refresh;
   end;
 
-  b:=TBitmap.Create;
-  try
-    b.PixelFormat:=pf24bit;
-    b.Width:=120;
-    b.Height:=150;
-    b.Canvas.Brush.Color:=ScrollBox1.Color;
-    b.Canvas.Pen.Color:=ScrollBox1.Color;
-    b.Canvas.Rectangle(0,0,120,150);
-    b.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
-    ScrollBox1.BackGround.Width:=120;
-    ScrollBox1.BackGround.Height:=150;
-    FillColorEx(ScrollBox1.BackGround, ScrollBox1.Color);
-    DrawTransparent(b,ScrollBox1.BackGround,40);
-  finally
-    b.free;
-  end;
-
-  if ListView1<>nil then
-  begin
-   if ListView1.BackGround.Image<>nil then
-   ListView1.BackGround.Image:=nil;
-   b:=TBitmap.create;
-   b.PixelFormat:=pf24bit;
-   b.Width:=150;
-   b.Height:=150;
-   b.Canvas.Brush.Color:=ListView1.Color;
-   b.Canvas.Pen.Color:=ListView1.Color;
-   b.Canvas.Rectangle(0,0,150,150);
-   b.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
-   ListView1.BackGround.Image:=b;
-   b.Free;
-  end;
- except
- end;
+  CreateBackgrounds;
 end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
@@ -1749,21 +1710,21 @@ var
 begin
  FDblClicked:=false;
  s:=copy(s,1,min(length(s),255));
- if AnsiLowerCase(s)=AnsiLowerCase(ExtractFileName(fFilesInfo[popupmenu1.tag].FileName)) then exit;
+ if AnsiLowerCase(s)=AnsiLowerCase(ExtractFileName(fFilesInfo[PmItemPopup.tag].FileName)) then exit;
  begin
-  If GetExt(s)<>GetExt(fFilesInfo[popupmenu1.tag].FileName) then
-  If FileExists(fFilesInfo[popupmenu1.tag].FileName) then
+  If GetExt(s)<>GetExt(fFilesInfo[PmItemPopup.tag].FileName) then
+  If FileExists(fFilesInfo[PmItemPopup.tag].FileName) then
   begin
    If ID_OK<>MessageBoxDB(Handle,TEXT_MES_REPLACE_EXT,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
    begin
-    s:=ExtractFileName(fFilesInfo[popupmenu1.tag].FileName);
+    s:=ExtractFileName(fFilesInfo[PmItemPopup.tag].FileName);
     Exit;
    end;
   end;
-  if fFilesInfo[popupmenu1.tag].FileType=EXPLORER_ITEM_FOLDER then
+  if fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_FOLDER then
   begin
    DS:=GetQuery;
-   Folder:=fFilesInfo[popupmenu1.tag].FileName;
+   Folder:=fFilesInfo[PmItemPopup.tag].FileName;
    FormatDir(Folder);
    SetSQL(DS,'Select count(*) as CountField from '+GetDefDBName+' where (FFileName Like :FolderA)');
    SetStrParam(DS,0,normalizeDBStringLike('%'+Folder+'%'));
@@ -1771,15 +1732,15 @@ begin
    if DS.FieldByName('CountField').AsInteger=0 then
    begin
     try
-     RenameResult:=RenameFile(fFilesInfo[popupmenu1.tag].FileName,GetDirectory(fFilesInfo[popupmenu1.tag].FileName)+s);
+     RenameResult:=RenameFile(fFilesInfo[PmItemPopup.tag].FileName,GetDirectory(fFilesInfo[PmItemPopup.tag].FileName)+s);
     except
      RenameResult:=false;
     end;
    end else
-   RenameResult:=RenamefileWithDB(fFilesInfo[popupmenu1.tag].FileName,GetDirectory(fFilesInfo[popupmenu1.tag].FileName)+s, fFilesInfo[popupmenu1.tag].ID,false);
+   RenameResult:=RenamefileWithDB(fFilesInfo[PmItemPopup.tag].FileName,GetDirectory(fFilesInfo[PmItemPopup.tag].FileName)+s, fFilesInfo[PmItemPopup.tag].ID,false);
    FreeDS(DS);
   end else
-  RenameResult:=RenamefileWithDB(fFilesInfo[popupmenu1.tag].FileName,GetDirectory(fFilesInfo[popupmenu1.tag].FileName)+s, fFilesInfo[popupmenu1.tag].ID,false);
+  RenameResult:=RenamefileWithDB(fFilesInfo[PmItemPopup.tag].FileName,GetDirectory(fFilesInfo[PmItemPopup.tag].FileName)+s, fFilesInfo[PmItemPopup.tag].ID,false);
  end;
 end;
 
@@ -1799,7 +1760,7 @@ begin
  Index:=Loadingthitem.index;
  if Index<0 then exit;
  Index:=ItemIndexToMenuIndex(index);
- if Index>Length(fFilesInfo)-1 then exit;
+ if Index>fFilesInfo.Count-1 then exit;
 
   if not (CtrlKeyDown or ShiftKeyDown) then
   if DBKernel.Readbool('Options','UseHotSelect',true) then
@@ -1959,8 +1920,9 @@ begin
     R:=Rect(0,MaxH+3,MaxW,TempImage.Height);
 
     Index:=ItemIndexToMenuIndex(Item.index);
-    if Index<Length(fFilesInfo) then
-    FileName:=Item.Caption;
+    if Index < fFilesInfo.Count then
+      FileName := Item.Caption;
+
     TempImage.Canvas.Brush.Style:=bsClear;
     DrawTextA(TempImage.Canvas.Handle, PChar(FileName), Length(FileName), R, DrawTextOpt);
 
@@ -2042,22 +2004,12 @@ begin
    shloadingthitem:=loadingthitem;
   end;
   Index:=ItemIndexToMenuIndex(loadingthitem.index);
-  If Length(fFilesInfo)=0 then Exit;
+  If fFilesInfo.Count=0 then Exit;
   if DBKernel.Readbool('Options','AllowPreview',True) then
   listview1.showhint:=false{ not fileexists(fFilesInfo[Index].FileName)} else
   listview1.showhint:=false;
   ListView1.Hint:=fFilesInfo[Index].Comment;
  end;
-end;
-
-procedure TExplorerForm.SetItemLength(Length: integer);
-begin
-  SetLength(fFilesInfo, Length);
-end;
-
-procedure TExplorerForm.IncItemLength();
-begin
-    Setlength(fFilesInfo, Length(fFilesInfo) + 1);
 end;
 
 procedure TExplorerForm.SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
@@ -2085,38 +2037,43 @@ end;
 
 procedure TExplorerForm.SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
 var
-  i : Integer;
+  I : Integer;
+  ExplorerInfo : TExplorerFileInfo;
 begin
- for i:=0 to Length(fFilesInfo)-1 do
- if IsEqualGUID(fFilesInfo[i].SID, FileGUID) then
- begin
-  fFilesInfo[i].FileName:=info.ItemFileName;
-  fFilesInfo[i].ID:=info.ItemId;
-  fFilesInfo[i].Rotate:=info.ItemRotate;
-  fFilesInfo[i].Access:=info.ItemAccess;
-  fFilesInfo[i].Rating:=info.ItemRating;
-  fFilesInfo[i].FileSize:=info.ItemSize;
-  fFilesInfo[i].Comment:=info.ItemComment;
-  fFilesInfo[i].KeyWords:=info.ItemKeyWords;
-  fFilesInfo[i].Date:=info.ItemDate;
-  fFilesInfo[i].Time:=info.ItemTime;
-  fFilesInfo[i].IsDate:=info.ItemIsDate;
-  fFilesInfo[i].IsTime:=info.ItemIsTime;
-  fFilesInfo[i].Groups:=info.ItemGroups;
-  fFilesInfo[i].KeyWords:=info.ItemKeyWords;
-  fFilesInfo[i].FileType:=Info.Tag;
-  fFilesInfo[i].Crypted:=Info.ItemCrypted;
-  fFilesInfo[i].Loaded:=Info.Loaded;
-  fFilesInfo[i].Include:=Info.ItemInclude;
-  fFilesInfo[i].Links:=Info.ItemLinks;
-  if Viewer<>nil then Viewer.UpdateInfoAboutFileName(info.ItemFileName,info);
-  Break;
- end;
- if AnsiLowerCase(info.ItemFileName)=AnsiLowerCase(FSelectedInfo.FileName) then
- ListView1SelectItem(nil,nil,false);
+  for I := 0 to fFilesInfo.Count - 1 do
+  begin
+    ExplorerInfo := fFilesInfo[I];
+    if IsEqualGUID(ExplorerInfo.SID, FileGUID) then
+    begin
+      ExplorerInfo.FileName := info.ItemFileName;
+      ExplorerInfo.ID := info.ItemId;
+      ExplorerInfo.Rotate := info.ItemRotate;
+      ExplorerInfo.Access := info.ItemAccess;
+      ExplorerInfo.Rating := info.ItemRating;
+      ExplorerInfo.FileSize := info.ItemSize;
+      ExplorerInfo.Comment := info.ItemComment;
+      ExplorerInfo.KeyWords := info.ItemKeyWords;
+      ExplorerInfo.Date := info.ItemDate;
+      ExplorerInfo.Time := info.ItemTime;
+      ExplorerInfo.IsDate := info.ItemIsDate;
+      ExplorerInfo.IsTime := info.ItemIsTime;
+      ExplorerInfo.Groups := info.ItemGroups;
+      ExplorerInfo.KeyWords := info.ItemKeyWords;
+      ExplorerInfo.FileType := Info.Tag;
+      ExplorerInfo.Crypted := Info.ItemCrypted;
+      ExplorerInfo.Loaded := Info.Loaded;
+      ExplorerInfo.Include := Info.ItemInclude;
+      ExplorerInfo.Links := Info.ItemLinks;
+      if Viewer <> nil then
+        Viewer.UpdateInfoAboutFileName(info.ItemFileName, Info);
+      Break;
+    end;
+  end;
+  if AnsiLowerCase(info.ItemFileName) = AnsiLowerCase(FSelectedInfo.FileName) then
+    ListView1SelectItem(nil, nil, False);
 end;
 
-procedure TExplorerForm.SetInfoToLastItem(info: TOneRecordInfo);
+{procedure TExplorerForm.SetInfoToLastItem(info: TOneRecordInfo);
 Var
   Index : Integer;
 begin
@@ -2143,7 +2100,7 @@ begin
   end;
  if AnsiLowerCase(info.ItemFileName)=AnsiLowerCase(FSelectedInfo.FileName) then
  ListView1SelectItem(nil,nil,false);
-end;
+end;  }
 
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; FPictureSize : integer): TEasyItem;
 var
@@ -2239,7 +2196,7 @@ begin
   getcursorpos(MousePos);
   Index:=ListView1Selected.index;
   Index:=ItemIndexToMenuIndex(index);
-  if Index>Length(fFilesInfo)-1 then exit;
+  if Index>fFilesInfo.Count-1 then exit;
   if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FOLDER) then
   begin
    dir:=fFilesInfo[Index].FileName;
@@ -2399,7 +2356,7 @@ begin
  For i:=0 to ListView1.Items.Count-1 do
  begin
   ItemIndex:=ItemIndexToMenuIndex(i);
-  if ItemIndex>length(fFilesInfo)-1 then exit;
+  if ItemIndex>fFilesInfo.Count-1 then exit;
   if fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE then
   begin
    inc(Count);
@@ -2486,7 +2443,7 @@ begin
  if ID=-2 then exit;
  if SetNewIDFileData in params then
  begin
-  for i:=0 to length(fFilesInfo)-1 do
+  for i:=0 to fFilesInfo.Count-1 do
   if AnsiLowerCase(fFilesInfo[i].FileName)=Value.Name then
   begin
    //fFilesInfo[i].SID:=GetCid; //?
@@ -2532,7 +2489,7 @@ begin
  if UpdateInfoParams*params<>[] then
  if ID<>0 then
  begin
-  for i:=0 to length(fFilesInfo)-1 do
+  for i:=0 to fFilesInfo.Count-1 do
   begin
    if fFilesInfo[i].ID=ID then
    begin
@@ -2570,7 +2527,7 @@ begin
 
  if [EventID_Param_Rotate]*params<>[] then
  begin
-  for i:=0 to length(fFilesInfo)-1 do
+  for i:=0 to fFilesInfo.Count-1 do
   begin
    if fFilesInfo[i].ID=ID then
    begin
@@ -2679,7 +2636,7 @@ var
 begin
  Index := ItemIndexToMenuIndex(Number);
  if Index=-1 then exit;
- if Index>Length(fFilesInfo)-1 then exit;
+ if Index>fFilesInfo.Count-1 then exit;
  UpdaterInfo.IsUpdater:=false;
  UpdaterInfo.ID:=fFilesInfo[Index].ID;
  UpdaterInfo.ProcHelpAfterUpdate:=nil;
@@ -2814,7 +2771,7 @@ begin
     if ListView1.Items[i].Selected then
     begin
      index:=ItemIndexToMenuIndex(i);
-     if index>Length(fFilesInfo)-1 then exit;
+     if index>fFilesInfo.Count-1 then exit;
      if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_SHARE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_DRIVE) then
      begin
       SetLength(FListDragItems,Length(FListDragItems)+1);
@@ -2940,7 +2897,7 @@ Var
   i : integer;
   index : Integer;
 begin
- For i:=0 to Length(fFilesInfo)-1 do
+ For i:=0 to fFilesInfo.Count-1 do
  begin
   if fFilesInfo[i].ID=ID then
   begin
@@ -2960,7 +2917,7 @@ Var
   i:integer;
   Index : Integer;
 begin
- For i:=0 to Length(fFilesInfo)-1 do
+  for I := 0 to fFilesInfo.Count - 1 do
  begin
   if AnsiLowerCase(fFilesInfo[i].FileName)=AnsiLowerCase(Name) then
   begin
@@ -2980,7 +2937,7 @@ Var
   i:integer;
   Index : Integer;
 begin
- For i:=0 to Length(fFilesInfo)-1 do
+  for I := 0 to fFilesInfo.Count - 1 do
  begin
   if AnsiLowerCase(fFilesInfo[i].FileName)=AnsiLowerCase(Name) then
   begin
@@ -3087,7 +3044,7 @@ var
   p : PBoolean;
   RectArray: TEasyRectArrayObject;
 begin
- For i:=0 to length(FFilesInfo)-1 do
+  for I := 0 to fFilesInfo.Count - 1 do
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   index:=MenuIndexToItemIndex(i);
@@ -3146,7 +3103,7 @@ var
   p : PBoolean;
   RectArray: TEasyRectArrayObject;
 begin
- For i:=0 to length(FFilesInfo)-1 do
+  for I := 0 to fFilesInfo.Count - 1 do
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   index:=MenuIndexToItemIndex(i);
@@ -3183,38 +3140,38 @@ end;
 
 procedure TExplorerForm.AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
 var
-  i : Integer;
+  I : Integer;
 begin
-  for i := Length(FFilesInfo)-1 downto 0 do
-    if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
+  for I := FFilesInfo.Count - 1 downto 0 do
+    if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
       FBitmapImageList.AddBitmap(Bitmap);
-      FFilesInfo[i].ImageIndex := FBitmapImageList.Count-1;
+      FFilesInfo[I].ImageIndex := FBitmapImageList.Count - 1;
       Break;
     end;
 end;
 
 procedure TExplorerForm.AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID);
 var
-  i : Integer;
+  I : Integer;
 begin
-  for i := Length(FFilesInfo)-1 downto 0 do
+  for I := FFilesInfo.Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
      begin
       FBitmapImageList.AddIcon(Icon, SelfReleased);
-      FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
+      FFilesInfo[I].ImageIndex:=FBitmapImageList.Count - 1;
       Break;
      end;
 end;
 
 function TExplorerForm.AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
-Var
+var
   i : integer;
   P : PBoolean;
   Data : TObject;
 begin
- Result:=Nil;
- For i:=Length(FFilesInfo)-1 downto 0 do
+  Result := nil;
+  for i := FFilesInfo.Count - 1 downto 0 do
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   if LockItems then
@@ -3253,11 +3210,11 @@ end;
 
 function TExplorerForm.AddItemW(Caption: string; FileGUID: TGUID) : TEasyItem;
 Var
-  i : integer;
+  I : integer;
   P : PBoolean;
 begin
  Result:=Nil;
- For i:=0 to length(FFilesInfo)-1 do
+ for I := 0 to FFilesInfo.Count - 1 do
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   if ListView1.Groups[0].Visible then
@@ -3411,7 +3368,7 @@ Showmessage(Inttostr(Msg.message)); }
   //107+
   if (Msg.wParam=107) then ZoomOut;
 
-  if (Msg.wParam=113) then If ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then begin popupmenu1.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index); Rename1Click(nil); end;
+  if (Msg.wParam=113) then If ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then begin PmItemPopup.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index); Rename1Click(nil); end;
 
   if (Msg.wParam=46) and ShiftKeyDown then begin DeleteFiles(False); Exit; end;
   if (Msg.wParam=46) then DeleteFiles(True);
@@ -3477,9 +3434,7 @@ begin
   try
     MenuIndex:=ItemIndexToMenuIndex(Index);
     ListView1.Items.Delete(Index);
-    for j:=MenuIndex to Length(fFilesInfo)-2 do
-    fFilesInfo[j]:=fFilesInfo[j+1];
-    setlength(fFilesInfo,Length(fFilesInfo)-1);
+    fFilesInfo.Delete(MenuIndex);
   finally
     UnLockItems;
   end;
@@ -3543,7 +3498,7 @@ begin
    for i:=0 to ListView1.Items.Count-1 do
    begin
     index:=ItemIndexToMenuIndex(i);
-    if index>Length(fFilesInfo)-1 then exit;
+    if index>fFilesInfo.Count-1 then exit;
     FileName:=fFilesInfo[index].FileName;
     FOldFileName:=pInfo[k].FNewFileName;
     If fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER then
@@ -3577,7 +3532,7 @@ begin
    for i:=0 to ListView1.Items.Count-1 do
    begin
     index:=ItemIndexToMenuIndex(i);
-    if index>Length(fFilesInfo)-1 then exit;
+    if index>fFilesInfo.Count-1 then exit;
     If AnsiLowerCase(fFilesInfo[index].FileName)=AnsiLowerCase(pInfo[k].FOldFileName) then
     begin
      If (not DirectoryExists(pInfo[k].FOldFileName) and DirectoryExists(pInfo[k].FNewFileName)) or (not FileExists(pInfo[k].FOldFileName) and FileExists(pInfo[k].FNewFileName)) then
@@ -3607,80 +3562,55 @@ begin
  end;  
 end;
 
-Procedure TExplorerForm.LoadInfoAboutFiles(Info : TExplorerFilesInfo; SID : TGUID);
-var
-  i, n :Integer;
+procedure TExplorerForm.LoadInfoAboutFiles(Info : TExplorerFileInfos);
 begin
- begin
-  n:=Length(fFilesInfo);
-  SetLength(fFilesInfo,Length(Info)+n);
-  For i:=0 to Length(Info)-1 do
-  begin
-   fFilesInfo[i+n]:=Info[i];
-  end;
- end;
+  fFilesInfo.Assign(Info);
 end;
 
-Procedure TExplorerForm.AddInfoAboutFile(Info : TExplorerFilesInfo; SID : TGUID);
+procedure TExplorerForm.AddInfoAboutFile(Info : TExplorerFileInfos);
 var
-  i:Integer;
+  I : Integer;
   b : Boolean;
 begin
   b:=false;
-  For i:=0 to Length(fFilesInfo)-1 do
-  if fFilesInfo[i].FileName=Info[0].FileName then
+  for I:=0 to fFilesInfo.Count-1 do
+  if fFilesInfo[i].FileName = Info[0].FileName then
   begin
-   B:=true;
-   break;
+    B:=true;
+    Break;
   end;
-  If not b then
-  begin
-   SetLength(fFilesInfo,Length(fFilesInfo)+1);
-   fFilesInfo[Length(fFilesInfo)-1]:=Info[0];
-  end;
+  if not B then
+    fFilesInfo.Add(Info[0].Clone);
 end;
-
-{function TExplorerForm.FileNeeded(FileSID : TGUID) : Boolean;
-var
-  i:Integer;
-begin
-  Result := False;
-  for i := 0 to Length(fFilesInfo) - 1 do
-    if IsEqualGUID(fFilesInfo[i].SID, FileSID) then
-    begin
-      Result := True;
-      Break;
-    end;
-end;       }
 
 function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;
 var
-  i : Integer;
+  I : Integer;
 begin
   Result := false;
-  for i := 0 to Length(fFilesInfo) - 1 do
-  If IsEqualGUID(fFilesInfo[i].SID, FileSID) then
+  for I := 0 to fFilesInfo.Count - 1 do
+  If IsEqualGUID(fFilesInfo[I].SID, FileSID) then
   begin
-    if not fFilesInfo[i].IsBigImage then
+    if not fFilesInfo[I].IsBigImage then
       Result := True;
     Break;
   end;
 end;
 
 function TExplorerForm.ItemIndexToMenuIndex(Index: Integer): Integer;
-Var
-  i, n : Integer;
+var
+  I, n : Integer;
 begin
- Result:=0;
- n:=ListView1.Items[Index].ImageIndex;
- For i:=0 to Length(fFilesInfo)-1 do
- begin
-  If fFilesInfo[i].ImageIndex=n then
+  Result := 0;
+  n := ListView1.Items[Index].ImageIndex;
+  for I := 0 to fFilesInfo.Count - 1 do
   begin
-   Result:=i;
-   Break;
+    if fFilesInfo[I].ImageIndex = n then
+    begin
+      Result := I;
+      Break;
+    end;
   end;
- end;
 end;
 
 function TExplorerForm.MenuIndexToItemIndex(Index: Integer): Integer;
@@ -3732,7 +3662,7 @@ procedure TExplorerForm.NewWindow1Click(Sender: TObject);
 var
   Path : TExplorerPath;
 begin
- Path:=ExplorerPath(fFilesInfo[popupmenu1.tag].FileName,fFilesInfo[popupmenu1.tag].FileType);
+ Path:=ExplorerPath(fFilesInfo[PmItemPopup.tag].FileName,fFilesInfo[PmItemPopup.tag].FileType);
  With Explorermanager.NewExplorer(False) do
  begin
   SetNewPathW(Path,False);
@@ -3779,7 +3709,7 @@ begin
 
 end;
 
-procedure TExplorerForm.PopupMenu2Popup(Sender: TObject);
+procedure TExplorerForm.PmListPopupPopup(Sender: TObject);
 var
   Files : TStrings;
   Effects : Integer;
@@ -3912,10 +3842,10 @@ begin
   Application.HideHint;
   if ImHint<>nil then
   ImHint.close;
-  popupmenu1.Tag:=ItemIndexToMenuIndex(Item.Index);
-  popupmenu1.Popup(Image1.clienttoscreen(MousePos).X ,Image1.clienttoscreen(MousePos).y);
+  PmItemPopup.Tag:=ItemIndexToMenuIndex(Item.Index);
+  PmItemPopup.Popup(Image1.clienttoscreen(MousePos).X ,Image1.clienttoscreen(MousePos).y);
  end else begin
-  popupmenu2.Popup(Image1.clienttoscreen(MousePos).X ,Image1.clienttoscreen(MousePos).y);
+  PmListPopup.Popup(Image1.clienttoscreen(MousePos).X ,Image1.clienttoscreen(MousePos).y);
  end;
 end;
 
@@ -4253,7 +4183,7 @@ begin
   end else
   begin
    b:=false;
-   if Length(fFilesInfo)<>0 then
+   if fFilesInfo.Count<>0 then
    For i:=0 to ListView1.Items.Count-1 do
    if ListView1.Items[i].Selected then
    begin
@@ -4474,12 +4404,12 @@ begin
 
  if Effects= DROPEFFECT_MOVE then
  begin
-  CopyFiles(Handle,S,fFilesInfo[popupmenu1.tag].FileName,True,False,CorrectPath,self);
+  CopyFiles(Handle,S,fFilesInfo[PmItemPopup.tag].FileName,True,False,CorrectPath,self);
   inc(CopyInstances);
   ClipBoard.Clear;
   ToolButton7.Enabled:=false;
  end;
- if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,fFilesInfo[popupmenu1.tag].FileName,False,False);
+ if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,fFilesInfo[PmItemPopup.tag].FileName,False,False);
 end;
 
 procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
@@ -4524,18 +4454,15 @@ begin
 end;
 
 procedure TManagerExplorer.AddExplorer(Explorer: TExplorerForm);
-var
-  i : integer;
-  b : boolean;
 begin
- fShowEXIF:=DBKernel.ReadBool('Options','ShowEXIFMarker',false);
- ShowQuickLinks:=DBKernel.ReadBool('Options','ShowOtherPlaces',true);
+  fShowEXIF:=DBKernel.ReadBool('Options','ShowEXIFMarker',false);
+  ShowQuickLinks:=DBKernel.ReadBool('Options','ShowOtherPlaces',true);
 
- if FExplorers.IndexOf(Explorer) = -1 then
-   FExplorers.Add(Explorer);
+  if FExplorers.IndexOf(Explorer) = -1 then
+    FExplorers.Add(Explorer);
 
- if FForms.IndexOf(Explorer) = -1 then
-   FForms.Add(Explorer);
+  if FForms.IndexOf(Explorer) = -1 then
+    FForms.Add(Explorer);
 
 end;
 
@@ -4848,8 +4775,8 @@ begin
   item:=ListView1Selected;
   if item=nil then exit;
   index:=ItemIndexToMenuIndex(Item.Index);
-  PopupMenu1.Tag:=index;
-  if index>Length(fFilesInfo)-1 then exit;
+  PmItemPopup.Tag:=index;
+  if index>fFilesInfo.Count-1 then exit;
   if (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) then
   Properties1Click(Sender);
   exit;
@@ -4879,7 +4806,7 @@ procedure TExplorerForm.SlideShowLinkClick(Sender: TObject);
 begin
  If SelCount<>0 then
  begin
-  Popupmenu1.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index);
+  PmItemPopup.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index);
   SlideShow1Click(Sender)
  end else
  begin
@@ -5279,7 +5206,7 @@ begin
  ToolButton3.Enabled:=false else
  ToolButton3.Enabled:=True;
  ToolButton3.Enabled:=ToolButton3.Enabled;
- Setlength(fFilesInfo,0);
+ fFilesInfo.Clear;
  try
   SelectTimer.Enabled:=false;
 
@@ -5490,17 +5417,17 @@ var
  ItemSelected : TArBoolean;  
  Password : string;
 begin
- Password:=DBKernel.FindPasswordForCryptImageFile(ProcessPath(fFilesInfo[popupmenu1.tag].FileName));
+ Password:=DBKernel.FindPasswordForCryptImageFile(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName));
  if Password='' then
- Password:=GetImagePasswordFromUser(ProcessPath(fFilesInfo[PopupMenu1.tag].FileName));
+ Password:=GetImagePasswordFromUser(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName));
 
- Setlength(ItemFileNames,Length(fFilesInfo));
- Setlength(ItemIDs,Length(fFilesInfo));
- Setlength(ItemSelected,Length(fFilesInfo));
+ Setlength(ItemFileNames,fFilesInfo.Count);
+ Setlength(ItemIDs,fFilesInfo.Count);
+ Setlength(ItemSelected,fFilesInfo.Count);
 
  //be default unchecked
- for i:=0 to Length(fFilesInfo)-1 do
- ItemSelected[i]:=false;
+ for i:=0 to fFilesInfo.Count-1 do
+   ItemSelected[i] := False;
 
  for i:=0 to ListView1.Items.Count-1 do
  If ListView1.Items[i].Selected then
@@ -5522,7 +5449,7 @@ end;
 
 procedure TExplorerForm.CryptFile1Click(Sender: TObject);
 var
- i, index : integer;
+ I, index : integer;
  Options : TCryptImageThreadOptions;
  Opt : TCryptImageOptions;
  CryptOptions : integer;
@@ -5531,17 +5458,17 @@ var
  ItemSelected : TArBoolean;
 
 begin
- Opt:=GetPassForCryptImageFile(ProcessPath(fFilesInfo[popupmenu1.tag].FileName));
+ Opt:=GetPassForCryptImageFile(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName));
  if Opt.SaveFileCRC then CryptOptions:=CRYPT_OPTIONS_SAVE_CRC else CryptOptions:=CRYPT_OPTIONS_NORMAL;
  if Opt.Password='' then exit;
 
- Setlength(ItemFileNames,Length(fFilesInfo));
- Setlength(ItemIDs,Length(fFilesInfo));
- Setlength(ItemSelected,Length(fFilesInfo));
+ Setlength(ItemFileNames,fFilesInfo.Count);
+ Setlength(ItemIDs,fFilesInfo.Count);
+ Setlength(ItemSelected,fFilesInfo.Count);
 
- //be default unchecked
- for i:=0 to Length(fFilesInfo)-1 do
- ItemSelected[i]:=false;
+  //be default unchecked
+  for I:=0 to fFilesInfo.Count-1 do
+   ItemSelected[I] := False;
 
  for i:=0 to ListView1.Items.Count-1 do
  If ListView1.Items[i].Selected then
@@ -5569,15 +5496,15 @@ procedure TExplorerForm.EnterPassword1Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
- if fFilesInfo[popupmenu1.tag].ID<>0 then
+ if fFilesInfo[PmItemPopup.tag].ID<>0 then
  begin
   EventInfo.Image:=nil;
-  if GetImagePasswordFromUser(ProcessPath(fFilesInfo[popupmenu1.tag].FileName))<>'' then
-  DBKernel.DoIDEvent(Sender,fFilesInfo[popupmenu1.tag].ID,[EventID_Param_Image],EventInfo);
+  if GetImagePasswordFromUser(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName))<>'' then
+  DBKernel.DoIDEvent(Sender,fFilesInfo[PmItemPopup.tag].ID,[EventID_Param_Image],EventInfo);
  end else
  begin
-  if GetImagePasswordFromUser(ProcessPath(fFilesInfo[popupmenu1.tag].FileName))<>'' then
-  RefreshItemByName(ProcessPath(fFilesInfo[popupmenu1.tag].FileName));
+  if GetImagePasswordFromUser(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName))<>'' then
+  RefreshItemByName(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName));
  end;
 end;
 
@@ -5621,7 +5548,7 @@ procedure TExplorerForm.Stretch1Click(Sender: TObject);
 var
   FileName : string;
 begin
- FileName:=fFilesInfo[PopupMenu1.tag].FileName;
+ FileName:=fFilesInfo[PmItemPopup.tag].FileName;
  if StaticPath(FileName) then
  SetDesktopWallpaper(FileName,WPSTYLE_STRETCH) else
  MessageBoxDB(Handle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
@@ -5631,7 +5558,7 @@ procedure TExplorerForm.Center1Click(Sender: TObject);
 var
   FileName : string;
 begin
- FileName:=fFilesInfo[PopupMenu1.tag].FileName;
+ FileName:=fFilesInfo[PmItemPopup.tag].FileName;
  if StaticPath(FileName) then
  SetDesktopWallpaper(FileName,WPSTYLE_CENTER) else
  MessageBoxDB(Handle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
@@ -5642,7 +5569,7 @@ procedure TExplorerForm.Tile1Click(Sender: TObject);
 var
   FileName : string;
 begin
- FileName:=fFilesInfo[PopupMenu1.tag].FileName;
+ FileName:=fFilesInfo[PmItemPopup.tag].FileName;
  if StaticPath(FileName) then
  SetDesktopWallpaper(FileName,WPSTYLE_TILE) else
  MessageBoxDB(Handle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
@@ -5716,15 +5643,15 @@ var
   ItemFileNames : TArStrings;
   ItemIDs : TArInteger;
   ItemSelected : TArBoolean;
-  i, index : integer;
+  I, index : integer;
 begin
- Setlength(ItemFileNames,Length(fFilesInfo));
- Setlength(ItemIDs,Length(fFilesInfo));
- Setlength(ItemSelected,Length(fFilesInfo));
+ Setlength(ItemFileNames,fFilesInfo.Count);
+ Setlength(ItemIDs,fFilesInfo.Count);
+ Setlength(ItemSelected,fFilesInfo.Count);
 
  //be default unchecked
- for i:=0 to Length(fFilesInfo)-1 do
- ItemSelected[i]:=false;
+  for I := 0 to fFilesInfo.Count - 1 do
+  ItemSelected[I] := False;
 
  for i:=0 to ListView1.Items.Count-1 do
  If ListView1.Items[i].Selected then
@@ -6434,8 +6361,8 @@ begin
    If SelCount=1 then
    begin
     Index:=ItemIndexToMenuIndex(ListView1Selected.Index);
-    if length(fFilesInfo)=0 then exit;
-    if Index>length(fFilesInfo)-1 then exit;
+    if fFilesInfo.Count = 0 then exit;
+    if Index>fFilesInfo.Count-1 then exit;
     FSelectedInfo.FileType:=fFilesInfo[Index].FileType;
     FileName:=fFilesInfo[Index].FileName;
     FSelectedInfo.FileName:=FileName;
@@ -6480,7 +6407,7 @@ begin
    FSelectedInfo.FileTypeW:=TEXT_MES_SHARE;
   end;
    If SelCount=1 then
-   PopupMenu1.Tag:=Index;
+   PmItemPopup.Tag:=Index;
    FSelectedInfo._GUID:=FileSID;
    if FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE then
    begin
@@ -6612,7 +6539,7 @@ begin
       Index := ItemIndexToMenuIndex(i);
       if FSelectedInfo.FileType<>EXPLORER_ITEM_MYCOMPUTER then
       FSelectedInfo.FileType:=fFilesInfo[Index].FileType;
-      if Length(fFilesInfo)-1<Index then exit;
+      if fFilesInfo.Count-1<Index then exit;
       if (fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE) or ((fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_EXEFILE)) then
       begin
        FSelectedInfo.Size:=FSelectedInfo.Size+fFilesInfo[Index].FileSize;//GetFileSizeByName(fFilesInfo[Index].FileName);
@@ -6798,7 +6725,7 @@ begin
  Setlength(InfoNames,0);
  Setlength(InfoIDs,0);
  Setlength(Infoloaded,0);
- for i:=0 to Length(fFilesInfo)-1 do
+ for i:=0 to fFilesInfo.Count - 1 do
  begin
   index:=MenuIndexToItemIndex(i);
   if ListView1.Items[index].Selected then
@@ -6874,18 +6801,18 @@ end;
 
 function TExplorerForm.FileNameToID(FileName: string): integer;
 var
-  i : integer;
+  I : integer;
 begin
- Result:=-1;
- FileName:=AnsiLowerCase(FileName);
- for i:=0 to Length(fFilesInfo)-1 do
- begin
-  if AnsiLowerCase(fFilesInfo[i].FileName)=FileName then
+  Result := -1;
+  FileName := AnsiLowerCase(FileName);
+  for I := 0 to fFilesInfo.Count - 1 do
   begin
-   Result:=fFilesInfo[i].ID;
-   exit;
+    if AnsiLowerCase(fFilesInfo[I].FileName) = FileName then
+    begin
+      Result := fFilesInfo[I].ID;
+      Exit;
+    end;
   end;
- end;
 end;
 
 function TExplorerForm.UpdatingNow(ID: Integer): boolean;
@@ -6908,64 +6835,57 @@ begin
  ExecuteScript(Sender as TMenuItemW,aScript,'',FExtImagesInImageList,DBkernel.ImageList,ScriptExecuted);
 end;
 
-function TExplorerForm.GetVisibleItems: TArStrings;
+function TExplorerForm.GetVisibleItems: TStrings;
 var
-  i, index : integer;
+  I, index : integer;
   r : TRect;
   t : array of boolean;
   b : boolean;
-  TempResult : TArStrings;
+  TempResult : TStrings;
   RectArray: TEasyRectArrayObject;
   rv : TRect;
-
 begin
- SetLength(Result, 0);
- SetLength(t, 0);
- b:=false;
- rv :=  Listview1.Scrollbars.ViewableViewportRect;
+  Result := TStringList.Create;
+  b := False;
+  rv :=  Listview1.Scrollbars.ViewableViewportRect;
 
- for i:=0 to ListView1.Items.Count-1 do
- begin
-  Listview1.Items[i].ItemRectArray(Listview1.Header.FirstColumn, Listview1.Canvas, RectArray);
-  r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r, RectArray.BoundsRect) then
+  for I := 0 to ListView1.Items.Count - 1 do
+  begin
+    Listview1.Items[I].ItemRectArray(Listview1.Header.FirstColumn, Listview1.Canvas, RectArray);
+    r := Rect(ListView1.ClientRect.Left+rv.Left, ListView1.ClientRect.Top + rv.Top,ListView1.ClientRect.Right + rv.Left, ListView1.ClientRect.Bottom + rv.Top);
 
-  begin
-   index:=Self.ItemIndexToMenuIndex(i);
-   SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:= GUIDToString(fFilesInfo[index].SID);
-   SetLength(t,Length(t)+1);
-   t[Length(t)-1]:=fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER;
-   if not b then
-   begin
-    if fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER then
-    b:=true;
-   end;
-  end;
- end;
-
- if b then
- begin
-  SetLength(TempResult,0);
-  for i:=0 to Length(Result)-1 do
-  begin
-   if not t[i] then
-   begin
-    SetLength(TempResult,Length(TempResult)+1);
-    TempResult[Length(TempResult)-1]:=Result[i];
-   end;
-  end;
-  for i:=0 to Length(Result)-1 do
-  begin
-   if t[i] then
-   begin
-    SetLength(TempResult,Length(TempResult)+1);
-    TempResult[Length(TempResult)-1]:=Result[i];
-   end;
+    if RectInRect(r, RectArray.BoundsRect) then
+    begin
+      index := Self.ItemIndexToMenuIndex(I);
+      Result.Add(GUIDToString(fFilesInfo[index].SID));
+      SetLength(T,Length(t) + 1);
+      t[Length(t)-1] := fFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER;
+      if not b then
+      begin
+        if fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER then
+        b := True;
+      end;
+    end;
   end;
 
-  Result:=Copy(TempResult);
- end;
+  //order by TYPE
+  if b then
+  begin
+    TempResult := TStringList.Create;
+    try
+      for I := 0 to Result.Count - 1 do
+        if not t[I] then
+          TempResult.Add(Result[I]);
+
+      for I := 0 to Result.Count - 1 do
+        if t[i] then
+          TempResult.Add(Result[I]);
+          
+      Result.Assign(TempResult);
+    finally
+      TempResult.Free;
+    end;
+  end;
 end;
 
 procedure TExplorerForm.LoadStatusVariables(Sender: TObject);
@@ -7842,15 +7762,15 @@ begin
  
  ToolButton18.Enabled:=true;
  TExplorerThread.Create('::BIGIMAGES','',THREAD_TYPE_BIG_IMAGES,info,self,UpdaterInfo,StateID);
- for i:=0 to Length(fFilesInfo)-1 do
+ for i:=0 to fFilesInfo.Count-1 do
  begin
   fFilesInfo[i].isBigImage:=false;
  end;
 end;
 
-function TExplorerForm.GetAllItems : TExplorerFilesInfo;
+function TExplorerForm.GetAllItems : TExplorerFileInfos;
 begin
- Result:=Copy(fFilesInfo);
+  Result := fFilesInfo.Clone;
 end;
 
 procedure TExplorerForm.DoDefaultSort(GUID : TGUID);
@@ -8049,8 +7969,8 @@ end;
 
 procedure TExplorerForm.LoadSizes;
 begin
- ListView1.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height:=FPictureSize+36;
+ ListView1.CellSizes.Thumbnail.Width := FPictureSize+10;
+ ListView1.CellSizes.Thumbnail.Height := FPictureSize+36;
 end;
 
 procedure TExplorerForm.PopupMenuZoomDropDownPopup(Sender: TObject);
@@ -8085,16 +8005,16 @@ var
   info : TCDIndexInfo;
   Dir : string;
 begin
- info:=TCDIndexMapping.ReadMapFile(fFilesInfo[Popupmenu1.tag].FileName);
+ info:=TCDIndexMapping.ReadMapFile(fFilesInfo[PmItemPopup.tag].FileName);
  if CDMapper = nil then CDMapper:=TCDDBMapping.Create;
  if info.Loaded then
  begin
-  Dir:=ExtractFilePath(fFilesInfo[Popupmenu1.tag].FileName);
+  Dir:=ExtractFilePath(fFilesInfo[PmItemPopup.tag].FileName);
   FormatDir(Dir);
   CDMapper.AddCDMapping(info.CDLabel,Dir,false);
  end else
  begin
-  MessageBoxDB(Handle,Format(TEXT_MES_UNABLE_TO_FIND_FILE_CDMAP_F,[fFilesInfo[Popupmenu1.tag].FileName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+  MessageBoxDB(Handle,Format(TEXT_MES_UNABLE_TO_FIND_FILE_CDMAP_F,[fFilesInfo[PmItemPopup.tag].FileName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
  end;
 end;
 
@@ -8137,7 +8057,8 @@ end;
 
 constructor TExplorerForm.Create(AOwner: TComponent;
   GoToLastSavedPath: Boolean);
-begin          
+begin
+  fFilesInfo := TExplorerFileInfos.Create;
   FShellTreeView := nil;
   FormLoadEnd:=false;
   NoLockListView:=false;
@@ -8145,7 +8066,7 @@ begin
   ListView1:=nil;
   FBitmapImageList := TBitmapImageList.Create;
   ExtIcons:= TBitmapImageList.Create;
-  fHistory:=TStringsHistoryW.create;
+  fHistory:=TStringsHistoryW.Create;
   UpdatingList:=false;
   GlobalLock := false;
   NotSetOldPath := True;
@@ -8159,8 +8080,8 @@ end;
 
 procedure TExplorerForm.LoadIcons;
 begin
- PopUpMenu1.Images:=DBKernel.ImageList;
- PopUpMenu2.Images:=DBKernel.ImageList;
+ PmItemPopup.Images:=DBKernel.ImageList;
+ PmListPopup.Images:=DBKernel.ImageList;
  MainMenu1.Images:=DBKernel.ImageList;
  PopupMenu3.Images:=DBKernel.ImageList;
  Shell1.ImageIndex:=DB_IC_SHELL;
@@ -8294,6 +8215,13 @@ begin
  MyDocumentsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_DOCUMENTS+1]);
  MyComputerLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_COMPUTER+1]);
  DesktopLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DESKTOPLINK+1]);
+end;
+
+destructor TExplorerForm.Destroy;
+begin
+  fHistory.Free;
+  inherited;    
+  fFilesInfo.Free;
 end;
 
 initialization

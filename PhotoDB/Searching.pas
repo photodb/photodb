@@ -23,9 +23,6 @@ type
  PString255 = ^TString255;
 
 type
-  TXListView = TEasyListView;
-
-type
   TSearchForm = class(TThreadForm)
     Panel1: TPanel;
     PopupMenu2: TPopupMenu;
@@ -505,7 +502,7 @@ type
     function TreeView : TShellTreeView;
     { Private declarations }
   public
-    ListView1: TXListView;
+    ListView1: TEasyListView;
     WindowID : TGUID;
     ThreadQuery : TDataSet;
     SelectQuery : TDataSet;
@@ -820,7 +817,7 @@ begin
  SearchEdit.ShowDropDownMenu:=false;
 
  SearchEdit.NullText := TEXT_MES_NULL_TEXT;
- ListView1:=TXListView.Create(self);
+ ListView1:=TEasyListView.Create(self);
  ListView1.Parent:=self;
  ListView1.Align:=AlClient;
 

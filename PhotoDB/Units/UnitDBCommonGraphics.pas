@@ -434,7 +434,7 @@ begin
   G := GetGValue(BackGroundColor);
   B := GetBValue(BackGroundColor);
   if Bitmap.PixelFormat <> pf24bit then
-    Bitmap.PixelFormat:=pf24bit;
+    Bitmap.PixelFormat := pf24bit;
   Bitmap.Width:=PNG.Width;
   Bitmap.Height:=PNG.Height;
 

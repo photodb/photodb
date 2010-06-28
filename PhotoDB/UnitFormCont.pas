@@ -292,7 +292,7 @@ begin
  BigImagesSID:=GetGUID;
  fPictureSize:=ThSizePanelPreview;
  DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
- ListView1:=TXListView.Create(self);
+ ListView1 := TEasyListView.Create(self);
  ListView1.Parent:=self;
  ListView1.Align:=AlClient;
 

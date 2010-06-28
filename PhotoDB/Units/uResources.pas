@@ -7,6 +7,7 @@ uses Windows, SysUtils, Classes, JPEG, GraphicEx;
 function GetFolderPicture : TPNGGraphic;
 function GetLogoPicture : TJpegImage; 
 function GetSlideShowLoadPicture : TPNGGraphic;
+function GetExplorerBackground : TPNGGraphic;
 
 implementation
 
@@ -17,7 +18,7 @@ var
   MyResS : Integer;
 begin
   Result:=nil;
-  MyRes := FindResource(HInstance,PChar(ResName),RT_RCDATA);
+  MyRes := FindResource(HInstance,PChar(ResName), RT_RCDATA);
   if MyRes <> 0 then begin
     MyResS := SizeOfResource(HInstance,MyRes);
     MyRes := LoadResource(HInstance,MyRes);
@@ -58,6 +59,11 @@ end;
 function GetSlideShowLoadPicture : TPNGGraphic;
 begin
   Result := LoadPNGFromRES('SLIDESHOW_LOAD');
+end;
+    
+function GetExplorerBackground : TPNGGraphic;
+begin
+  Result := LoadPNGFromRES('EXPLORERBACKGROUND');
 end;
 
 function GetLogoPicture : TJpegImage;
