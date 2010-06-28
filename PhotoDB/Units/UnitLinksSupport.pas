@@ -6,7 +6,7 @@ interface
 //{$DEFINE ENGL}
 
 uses
-  Windows, SysUtils, StrUtils, Dolphin_DB, Language, UnitDBDeclare;
+  Windows, SysUtils, StrUtils, Dolphin_DB, Language, UnitDBDeclare, UnitDBCommon;
 
 const
   LINK_TYPE_ID       = 0;

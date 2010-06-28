@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, SysUtils, Forms,
   GIFImage, GraphicEx, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
-  ActiveX, UnitDBCommonGraphics, UnitDBCommon;
+  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils;
 
 type
   TViewerThread = class(TThread)
@@ -56,16 +56,16 @@ uses UnitPasswordForm, SlideShow;
 constructor TViewerThread.Create(CreateSuspennded: Boolean;
   FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
 begin
- inherited Create(True);
- FPage:=Page;
- FFileName:=FileName;
- FRotate:=Rotate;
- FFullImage:=FullImage;
- FBeginZoom:=BeginZoom;
- FSID:=SID;
- FIsForward:=IsForward;
- FUpdateInfo:=UpdateInfo;
- if not CreateSuspennded then Resume;
+  inherited Create(True);
+  FPage := Page;
+  FFileName := FileName;
+  FRotate := Rotate;
+  FFullImage := FullImage;
+  FBeginZoom := BeginZoom;
+  FSID := SID;
+  FIsForward := IsForward;
+  FUpdateInfo := UpdateInfo;
+  if not CreateSuspennded then Resume;
 end;
 
 destructor TViewerThread.Destroy;
@@ -126,12 +126,12 @@ begin
  end;
  if FUpdateInfo then
  UpdateRecord;
- if not TestThread then
+{ if not TestThread then
  begin
   Picture.Free;
   SetNOImageAsynch;
   exit;
- end;
+ end;   }
  FRealWidth:=Picture.Graphic.Width;
  FRealHeight:=Picture.Graphic.Height;
  if not FFullImage then
@@ -180,18 +180,13 @@ begin
    exit;
   end;
   Picture.Free;
-  if not TestThread then
+{  if not TestThread then
   begin
    Bitmap.Free;
    SetNOImageAsynch;
    exit;
-  end;
-  if FRotate<>DB_IMAGE_ROTATED_0 then
-  begin
-   if FRotate=DB_IMAGE_ROTATED_270 then Rotate270A(Bitmap);
-   if FRotate=DB_IMAGE_ROTATED_90 then Rotate90A(Bitmap);
-   if FRotate=DB_IMAGE_ROTATED_180 then Rotate180A(Bitmap);
-  end;
+  end; }
+  ApplyRotate(Bitmap, FRotate);
   SetStaticImageAsynch;
  end;
 end;
@@ -201,7 +196,7 @@ begin
  PassWord:='';
  if ValidCryptGraphicFile(FFileName) then
  begin
-  Crypted:=true;
+  Crypted := True;
   PassWord:=DBKernel.FindPasswordForCryptImageFile(FFileName);
   if PassWord='' then
   begin
@@ -217,11 +212,11 @@ begin
       Synchronize(GetPasswordSynch);
       exit;
      end;
-     sleep(50);
+     sleep(10);
     until false;
    end;
   end;
- end else Crypted:=false;
+ end else Crypted := False;
 end;
 
 procedure TViewerThread.GetPasswordSynch;
@@ -261,7 +256,7 @@ begin
     Synchronize(SetAnimatedImage);
     exit;
    end;
-   sleep(50);
+   sleep(10);
   until false;
   Picture.Free;
  end;
@@ -287,7 +282,7 @@ begin
  if not FIsForward then
  begin
   Synchronize(SetNOImage);
-  exit;
+  Exit;
  end else
  begin
   Repeat
@@ -299,35 +294,35 @@ begin
     Synchronize(SetNOImage);
     exit;
    end;
-   sleep(100);
-  until false;
+   sleep(10);
+  until False;
  end;
 end;
 
 procedure TViewerThread.SetStaticImage;
 begin
- if Viewer<>nil then
- if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
- begin
-  RealImageHeight:=FRealHeight;
-  RealImageWidth:=FRealWidth;    
-  RealZoomInc:=FRealZoomScale;
-  if FUpdateInfo then
-  Viewer.UpdateInfo(FSID, FInfo);
-  Viewer.SetFullImageState(FFullImage,FBeginZoom,fPages,fPage);
-  Viewer.SetStaticImage(Bitmap,FTransparent);
- end else Bitmap.Free;
+  if Viewer<>nil then
+  if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
+  begin
+    RealImageHeight := FRealHeight;
+    RealImageWidth := FRealWidth;
+    RealZoomInc := FRealZoomScale;
+    if FUpdateInfo then
+      Viewer.UpdateInfo(FSID, FInfo);
+    Viewer.SetFullImageState(FFullImage, FBeginZoom, fPages, fPage);
+    Viewer.SetStaticImage(Bitmap, FTransparent);
+  end else Bitmap.Free;
 end;
 
 procedure TViewerThread.SetStaticImageAsynch;
 begin
- if not FIsForward then
- begin
-  Synchronize(SetStaticImage);
-  exit;
- end else
- begin
-  Repeat
+  if not FIsForward then
+  begin
+   Synchronize(SetStaticImage);
+   exit;
+  end else
+  begin
+    Repeat
    if Viewer=nil then break;
    if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
    if not Viewer.ForwardThreadExists then break;
@@ -336,7 +331,7 @@ begin
     Synchronize(SetStaticImage);
     exit;
    end;
-   sleep(10);
+   Sleep(10);
   until false;
   Bitmap.Free;
  end;
@@ -344,19 +339,19 @@ end;
 
 function TViewerThread.TestThread: Boolean;
 begin
- FBooleanResult:=false;
- Synchronize(TestThreadSynch);
- Result:=FBooleanResult;
+  FBooleanResult:=false;
+  Synchronize(TestThreadSynch);
+  Result:=FBooleanResult;
 end;
 
 procedure TViewerThread.TestThreadSynch;
 begin
- if Viewer=nil then
- begin
-  FBooleanResult:=false;
-  Exit;
- end;
- FBooleanResult := (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) and (Viewer<>nil);
+  if Viewer=nil then
+  begin
+    FBooleanResult:=false;
+    Exit;
+  end;
+  FBooleanResult := (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) and (Viewer<>nil);
 end;
 
 procedure TViewerThread.UpdateRecord;
@@ -367,7 +362,7 @@ begin
  Query := GetQuery;
  try
   Query.Active:=false;
-  SetSQL(Query,'SELECT * FROM '+GetDefDBName+' WHERE FFileName like :ffilename');
+  SetSQL(Query,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
   SetStrParam(Query,0,delnakl(AnsiLowerCase(FFileName)));
   Query.active:=true;
   if Query.RecordCount<>0 then

@@ -7,7 +7,7 @@ interface
 uses
 {$IFNDEF DEBUG}
 Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
-UnitDBDeclare, uLogger, uTime, SyncObjs,
+UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc,
 {$ENDIF}
  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
  UnitINI;
@@ -145,6 +145,7 @@ function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : b
 function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
 procedure PackTable(FileName : string);
 function GetDefaultImageDBOptions : TImageDBOptions;
+function GetPathCRC(FileFullPath : string) : Integer;
 
 implementation
 
@@ -968,6 +969,16 @@ procedure TADOConnections.RemoveAt(Index: Integer);
 begin
   if (Index > -1) and (Index < FConnections.Count) then
     FConnections.Delete(Index);
+end;
+
+function GetPathCRC(FileFullPath : string) : Integer;
+var
+  Folder : string;
+  CRC : Cardinal;
+begin
+  Folder:=SysUtils.ExtractFileDir(AnsiLowerCase(FileFullPath));
+  CalcStringCRC32(AnsiLowerCase(Folder), CRC);
+  Result := Integer(CRC);
 end;
 
 initialization

@@ -3,7 +3,7 @@ unit UnitFileExistsThread;
 interface
 
 uses
-  Windows, Classes, SysUtils, Forms, Dolphin_DB, UnitDBCommon, uLogger;
+  Windows, Classes, SysUtils, Forms, Dolphin_DB, UnitDBCommon, uLogger, uFIleUtils;
 
 type
   TFileExistsThread = class(TThread)

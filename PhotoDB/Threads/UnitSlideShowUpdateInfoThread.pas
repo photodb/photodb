@@ -43,31 +43,30 @@ begin
 end;
 
 procedure TSlideShowUpdateInfoThread.Execute;
-begin         
- FreeOnTerminate:=true;
- CoInitialize(nil);
- try
- DS:=GetQuery(True);
- SetSQL(DS,'SELECT * FROM '+GetDefDBName+' WHERE FFileName like :ffilename');
- SetStrParam(DS,0,DelNakl(AnsiLowerCase(FFileName)));
- try
-  DS.Active:=true;
- except      
-  FreeDS(DS);
-  SynchronizeEx(DoSetNotDBRecord);
-  exit;
- end;
- if DS.RecordCount=0 then
- begin           
-  SynchronizeEx(DoSetNotDBRecord);
- end else
- begin
-  SynchronizeEx(DoUpdateWithSlideShow);
- end;
- FreeDS(DS);
- finally
-   CoUninitialize;
- end;
+begin
+  FreeOnTerminate:=true;
+  CoInitialize(nil);
+  try
+    DS:=GetQuery(True);
+    try
+      SetSQL(DS,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
+      SetStrParam(DS, 0, DelNakl(AnsiLowerCase(FFileName)));
+      try
+        DS.Active := True;
+      except
+        SynchronizeEx(DoSetNotDBRecord);
+        Exit;
+      end;
+      if DS.RecordCount = 0 then
+        SynchronizeEx(DoSetNotDBRecord)
+      else
+        SynchronizeEx(DoUpdateWithSlideShow);
+    finally
+      FreeDS(DS);
+    end;
+  finally
+    CoUninitialize;
+  end;
 end;
 
 end.

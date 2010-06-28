@@ -28,18 +28,18 @@ const
 
   //Information
   MyComputer = TEXT_MES_MY_COMPUTER;
-  ProductName = 'Photo DataBase 2.2';
-  StartMenuProgramsPath = 'Photo DB v2.2';
+  ProductName = 'Photo DataBase 2.3';
+  StartMenuProgramsPath = 'Photo DB v2.3';
   ProductVersion = '2.2';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = TEXT_MES_HELP+'.lnk';
   WindowsMenuTime = 1000;
   ProgramMail = 'illusdolphin@gmail.com';
-  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2008';
+  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
   {$IFDEF RUS}
   UpdateFileName = '/rus_update.txt';
-  AlternativeUpdateURL = 'http://www.illusdolphin.narod.ru/photodb/rus_update.txt';
-  HomeURL = 'http://www.illusdolphin.narod.ru/photodb';
+  AlternativeUpdateURL = 'http://photodb.illusdolphin.net/update?ln=ru';
+  HomeURL = 'http://photodb.illusdolphin.net';
   {$ENDIF}
   {$IFDEF ENGL}
   UpdateFileName = '/engl_update.txt';

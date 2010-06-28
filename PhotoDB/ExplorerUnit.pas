@@ -15,8 +15,9 @@ uses
   DragDrop, UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
-  UnitDBCommon, UnitCDMappingSupport, VRSIShortCuts, SyncObjs, uResources,
-  uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad;
+  UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
+  uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
+  uFileUtils;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -2073,35 +2074,6 @@ begin
     ListView1SelectItem(nil, nil, False);
 end;
 
-{procedure TExplorerForm.SetInfoToLastItem(info: TOneRecordInfo);
-Var
-  Index : Integer;
-begin
-  begin
-   Index:=Length(fFilesInfo);
-   fFilesInfo[Index].FileName:=info.ItemFileName;
-   fFilesInfo[Index].ID:=info.ItemId;
-   fFilesInfo[Index].Rotate:=info.ItemRotate;
-   fFilesInfo[Index].Access:=info.ItemAccess;
-   fFilesInfo[Index].Rating:=info.ItemRating;
-   fFilesInfo[Index].FileSize:=info.ItemSize;
-   fFilesInfo[Index].Comment:=info.ItemComment;
-   fFilesInfo[Index].KeyWords:=info.ItemKeyWords;
-   fFilesInfo[Index].Date:=info.ItemDate;
-   fFilesInfo[Index].Time:=info.ItemTime;
-   fFilesInfo[Index].IsDate:=info.ItemIsDate;
-   fFilesInfo[Index].IsTime:=info.ItemIsTime;
-   fFilesInfo[Index].Groups:=info.ItemGroups;
-   fFilesInfo[Index].FileType:=Info.Tag;
-   fFilesInfo[Index].Crypted:=Info.ItemCrypted;
-   fFilesInfo[Index].Loaded:=Info.Loaded;
-   fFilesInfo[Index].Include:=Info.ItemInclude;
-   fFilesInfo[Index].Links:=Info.ItemLinks;
-  end;
- if AnsiLowerCase(info.ItemFileName)=AnsiLowerCase(FSelectedInfo.FileName) then
- ListView1SelectItem(nil,nil,false);
-end;  }
-
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; FPictureSize : integer): TEasyItem;
 var
   i: Integer;
@@ -2143,15 +2115,6 @@ var
    fDBCanDrag:=false;
    fDBCanDragW:=false;
   end;
-
-function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
-var
-  ShortCut : TVRSIShortCut;
-begin
-  ShortCut:= TVRSIShortCut.Create(ShortcutPath);
-  Result:= ShortCut.Path;
-  ShortCut.Free;
-end;
 
 begin
 

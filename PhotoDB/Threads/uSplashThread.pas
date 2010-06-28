@@ -1,5 +1,4 @@
-unit uSplachThread;
-
+unit uSplashThread;
 
 interface
 

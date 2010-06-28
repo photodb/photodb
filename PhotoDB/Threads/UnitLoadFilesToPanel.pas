@@ -266,12 +266,12 @@ begin
  Result:=nil;
  if not (FUseLoaded and not fbyid and (FArLoaded[N]=true)) then
  begin
-  fQuery.Active:=false;
+  fQuery.Active:=False;
   if fbyid then
    SetSQL(fQuery,'SELECT * FROM '+GetDefDBname+' WHERE ID = '+inttostr(id))
   else
   begin
-   SetSQL(fQuery,'SELECT * FROM '+GetDefDBname+' WHERE FFileName like :FFileName');
+   SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
    s:=FileName;
    if FolderView then
    Delete(s,1,Length(ProgramDir));

@@ -2,11 +2,31 @@ unit uFileUtils;
 
 interface
 
-uses Windows, Classes, SysUtils, ACLApi, AccCtrl,  ShlObj, ActiveX, uConstants;
+uses Windows, Classes, SysUtils, ACLApi, AccCtrl,  ShlObj, ActiveX, uConstants,
+     VRSIShortCuts;
                                                 
-function GetAppDataDirectory: string;
+function GetAppDataDirectory: string; 
+function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string; 
+function FileExistsEx(const FileName :TFileName) :Boolean;
 
 implementation
+
+function FileExistsEx(const FileName :TFileName) : Boolean;
+var
+  Code :DWORD;
+begin
+  Code := GetFileAttributes(PChar(FileName));
+  Result := (Code <> DWORD(-1)) and (Code and FILE_ATTRIBUTE_DIRECTORY = 0);
+end;
+
+function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
+var
+  ShortCut : TVRSIShortCut;
+begin
+  ShortCut:= TVRSIShortCut.Create(ShortcutPath);
+  Result := ShortCut.Path;
+  ShortCut.Free;
+end;
 
 function SetDirectoryWriteRights(lPath : String): Dword;
 var

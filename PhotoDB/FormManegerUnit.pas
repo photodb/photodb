@@ -581,7 +581,7 @@ begin
   if not FolderView then
   InitializeDolphinDB else
   begin
-   dbname:=GetDirectory(Application.ExeName)+'FolderDB.photodb';
+   dbname := GetDirectory(Application.ExeName)+'FolderDB.photodb';
 
    if FileExists(GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
    dbname:=GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb';
@@ -654,9 +654,9 @@ begin
   LockCleaning:=false;
  end;
   TW.I.Start('FM -> HidefromTaskBar');
- HidefromTaskBar(Handle);
- if not DBTerminating then
- TInternetUpdate.Create(false,false);  
+  HidefromTaskBar(Application.Handle);
+  if not DBTerminating then
+  TInternetUpdate.Create(False, False);
   TW.I.Stop;
 end;
 

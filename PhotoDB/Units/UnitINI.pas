@@ -2,7 +2,8 @@ unit UnitINI;
 
 interface
 
-uses Windows, Registry, IniFiles, Dolphin_DB, Classes, SysUtils, uLogger, uConstants;
+uses Windows, Registry, IniFiles, Classes, SysUtils, uLogger, uConstants,
+     UnitDBCommon;
 
 type
   TMyRegistryINIFile = class(TIniFile)
@@ -12,27 +13,40 @@ type
 type
   TBDRegistry = class(TObject)
   private
-   Registry : TObject;
-   FReadOnly : boolean;
+    Registry : TObject;
+    FReadOnly : Boolean;
+    FKey : string;
+    FSection : Integer;
   public
-   constructor Create(Options : integer; ReadOnly : Boolean = false);
-   destructor Destroy; override;
-   function OpenKey(Key : String; CreateInNotExists : Boolean) : boolean;
-   function ReadString(Name : String; Default : string = '') : string;
-   function ReadInteger(Name : String; Default : Integer = 0) : Integer;
-   function ReadDateTime(Name : String; Default : TDateTime = 0) : TDateTime;
-   procedure CloseKey;
-   procedure GetKeyNames(Strings : TStrings);
-   procedure GetValueNames(Strings : TStrings);
-   function ValueExists(Name : String) : boolean;
-   function KeyExists(Key : String) : boolean;
-   function ReadBool(Name : String; Default : boolean = false) : boolean;
-   function DeleteKey(Key : String) : boolean;
-   function DeleteValue(Name : String) : boolean;
-   procedure WriteString(Name : String; Value : String);
-   procedure WriteBool(Name : String; Value : boolean);
-   procedure WriteDateTime(Name : String; Value : TDateTime);  
-   procedure WriteInteger(Name : String; Value : Integer);
+    constructor Create(ASection : integer; ReadOnly : Boolean = false);
+    destructor Destroy; override;
+    function OpenKey(Key : String; CreateInNotExists : Boolean) : boolean;
+    function ReadString(Name : String; Default : string = '') : string;
+    function ReadInteger(Name : String; Default : Integer = 0) : Integer;
+    function ReadDateTime(Name : String; Default : TDateTime = 0) : TDateTime;
+    procedure CloseKey;
+    procedure GetKeyNames(Strings : TStrings);
+    procedure GetValueNames(Strings : TStrings);
+    function ValueExists(Name : String) : boolean;
+    function KeyExists(Key : String) : boolean;
+    function ReadBool(Name : String; Default : boolean = false) : boolean;
+    function DeleteKey(Key : String) : boolean;
+    function DeleteValue(Name : String) : boolean;
+    procedure WriteString(Name : String; Value : String);
+    procedure WriteBool(Name : String; Value : boolean);
+    procedure WriteDateTime(Name : String; Value : TDateTime);  
+    procedure WriteInteger(Name : String; Value : Integer);
+    property Key : string read FKey;
+    property Section : Integer read FSection;
+  end;
+
+  TDBRegistryCache = class(TObject)
+  private
+    FList : TList;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function GetSection(ASection : Integer; AKey : string) : TBDRegistry;
   end;
 
 function StringToHexString(text : String) : string;
@@ -85,7 +99,7 @@ end;
 
 function GetRegIniFileName : string;
 begin
- Result:=GetDirectory(ParamStr(0))+'Registry.ini';
+  Result := ExtractFileDir(ParamStr(0))+'Registry.ini';
 end;
 
 { TBDRegistry }
@@ -95,9 +109,11 @@ begin
  if Registry is TRegistry then (Registry as TRegistry).CloseKey;
 end;
 
-constructor TBDRegistry.Create(Options: integer; ReadOnly : Boolean = false);
+constructor TBDRegistry.Create(ASection: integer; ReadOnly : Boolean = false);
 begin
  inherited Create;
+ FSection := ASection;
+ FKey := '';
  FReadOnly:=ReadOnly;
  If PortableWork then
  begin
@@ -107,9 +123,9 @@ begin
   if ReadOnly then
   Registry:=TRegistry.Create(KEY_READ) else
   Registry:=TRegistry.Create(KEY_ALL_ACCESS);
-  if Options=REGISTRY_ALL_USERS then (Registry as TRegistry).RootKey := HKEY_INSTALL;
-  if Options=REGISTRY_CLASSES then (Registry as TRegistry).RootKey := windows.HKEY_CLASSES_ROOT;
-  if Options=REGISTRY_CURRENT_USER then (Registry as TRegistry).RootKey := HKEY_USER_WORK;
+  if ASection = REGISTRY_ALL_USERS then (Registry as TRegistry).RootKey := HKEY_INSTALL;
+  if ASection = REGISTRY_CLASSES then (Registry as TRegistry).RootKey := windows.HKEY_CLASSES_ROOT;
+  if ASection = REGISTRY_CURRENT_USER then (Registry as TRegistry).RootKey := HKEY_USER_WORK;
  end;
 end;
 
@@ -202,7 +218,7 @@ end;
 function TBDRegistry.OpenKey(Key: String; CreateInNotExists: Boolean) : boolean;
 begin
  Result:=false;
- if Registry is TRegistry then Result:=(Registry as TRegistry).OpenKey(Key,not FReadOnly);
+ if Registry is TRegistry then Result:=(Registry as TRegistry).OpenKey(Key, not FReadOnly);
  if Registry is TMyRegistryINIFile then
  begin
   (Registry as TMyRegistryINIFile).Key:=Key;
@@ -341,6 +357,43 @@ begin
   Key:=(Registry as TMyRegistryINIFile).Key;
   (Registry as TMyRegistryINIFile).WriteString(Key,Name,Value);
  end;
+end;
+
+{ TDBRegistryCache }
+
+constructor TDBRegistryCache.Create;
+begin
+  FList := TList.Create;
+end;
+
+destructor TDBRegistryCache.Destroy;
+var
+  I : Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TBDRegistry(FList[I]).Free;
+  FList.Free;
+  inherited;
+end;
+
+function TDBRegistryCache.GetSection(ASection : Integer; AKey : string): TBDRegistry;
+var
+  I : Integer;
+  Reg : TBDRegistry;
+begin
+  for I := 0 to FList.Count - 1 do
+  begin
+    Reg := FList[I];
+    if (Reg.Key = AKey) and (Reg.Section = ASection) then
+    begin
+      Result := FList[I];
+      Break;
+    end;
+  end;
+
+  Result := TBDRegistry.Create(ASection);
+  Result.OpenKey(AKey, True);
+  FList.Add(Result);
 end;
 
 end.

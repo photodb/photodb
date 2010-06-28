@@ -2,7 +2,7 @@ unit UnitDBCommon;
 
 interface
 
-uses Windows, Classes, Forms, SysUtils, uScript, UnitScripts, Messages,
+uses Windows, Classes, Forms, Math, SysUtils, uScript, UnitScripts, Messages,
      ReplaseLanguageInScript, ReplaseIconsInScript, uTime;
 
 function Hash_Cos_C(s:string):integer;
@@ -12,16 +12,49 @@ function GetParamStrDBValue(param : string) : string;
 function GetParamStrDBBool(param : string) : boolean;
 procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
-function FileExistsEx(const FileName :TFileName) :Boolean;
+function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
 
 implementation
 
-function FileExistsEx(const FileName :TFileName) :Boolean;
-var
-  Code :DWORD;
+function StripHexPrefix(const HexStr: string): string;
 begin
-  Code := GetFileAttributes(PChar(FileName));
-  Result := (Code <> DWORD(-1)) and (Code and FILE_ATTRIBUTE_DIRECTORY = 0);
+  if Pos('$', HexStr) = 1 then
+    Result := Copy(HexStr, 2, Length(HexStr) - 1)
+  else if Pos('0x', SysUtils.LowerCase(HexStr)) = 1 then
+    Result := Copy(HexStr, 3, Length(HexStr) - 2)
+  else
+    Result := HexStr;
+end;
+
+function AddHexPrefix(const HexStr: string): string;
+begin
+  Result := SysUtils.HexDisplayPrefix + StripHexPrefix(HexStr);
+end;
+
+function TryHexToInt(const HexStr: string; out Value: Integer): Boolean;
+var
+  E: Integer; // error code
+begin
+  Val(AddHexPrefix(HexStr), Value, E);
+  Result := E = 0;
+end;
+
+function HexToInt(const HexStr: string): Integer;
+{$IFDEF FPC}
+const
+{$ELSE}
+resourcestring
+{$ENDIF}
+  sHexConvertError = '''%s'' is not a valid hexadecimal value';
+begin
+  if not TryHexToInt(HexStr, Result) then
+    raise SysUtils.EConvertError.CreateFmt(sHexConvertError, [HexStr]);
+end;
+
+function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
+begin
+  if not TryHexToInt(HexStr, Result) then
+    Result := Default;
 end;
 
 function ActivateApplication(const Handle1: THandle): Boolean;

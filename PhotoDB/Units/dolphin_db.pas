@@ -637,7 +637,6 @@ function LongFileName(ShortName: String): String;
 function LongFileNameW(ShortName: String): String;
 function GetUserSID: PSID;
 function SidToStr(Sid : PSID):WideString;
-function HexToIntDef(hex:string; Default:integer):integer;
 function GetDirectory(FileName:string):string;
 function ExtinMask(mask : string; ext : string):boolean;
 
@@ -943,57 +942,6 @@ begin
  // и теперь перебираем их
  for i:=0 to dwCount-1 do
   Result:=Result+'-'+IntToStr(GetSidSubAuthority(Sid,i)^);
-end;
-
-function HexToIntDef(hex:string; Default:integer):integer;
-var
- S : string;
- i:integer;
- int : integer;
-begin
- int:=0;
-{$IFOPT R+}
-{$DEFINE CKRANGE}
-{$R-}
-{$ENDIF}
- If length(hex)>0 then If hex[1]='$' then delete(hex,1,1);
- If length(hex)>0 then
- begin
-  For i:=1 to length(hex) do
-  begin
-   s:=s+' ';
-   s[i]:=hex[length(hex)+1-i];
-  end;
-  For i:=1 to length(hex) do
-  Case Upcase(s[i]) of
-    '0': int:=int;
-    '1': int:=int+round(intpower(16,i-1));
-    '2': int:=int+2*round(intpower(16,i-1));
-    '3': int:=int+3*round(intpower(16,i-1));
-    '4': int:=int+4*round(intpower(16,i-1));
-    '5': int:=int+5*round(intpower(16,i-1));
-    '6': int:=int+6*round(intpower(16,i-1));
-    '7': int:=int+7*round(intpower(16,i-1));
-    '8': int:=int+8*round(intpower(16,i-1));
-    '9': int:=int+9*round(intpower(16,i-1));
-    'A': int:=int+10*round(intpower(16,i-1));
-    'B': int:=int+11*round(intpower(16,i-1));
-    'C': int:=int+12*round(intpower(16,i-1));
-    'D': int:=int+13*round(intpower(16,i-1));
-    'E': int:=int+14*round(intpower(16,i-1));
-    'F': int:=int+15*round(intpower(16,i-1));
-   else
-   begin
-    int:=default;
-    break;
-   end;
-  end;
- end else int:=default;
- result:=int;
-{$IFDEF CKRANGE}
-{$UNDEF CKRANGE}
-{$R+}
-{$ENDIF}
 end;
 
 procedure UnFormatDir(var s:string);
@@ -2987,7 +2935,7 @@ var
 begin
   fQuery:=GetQuery;
   fQuery.Active:=false;
-  SetSQL(fQuery,'SELECT ID FROM '+GetDefDBname+' WHERE FFileName like :ffilename');
+  SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
   if FolderView then
   Delete(FileName,1,Length(ProgramDir));
   SetStrParam(fQuery,0,Delnakl(NormalizeDBStringLike(AnsiLowerCase(FileName))));

@@ -10,7 +10,7 @@ uses  win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
  Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
    EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
-   uConstants, CommCtrl, uTime;
+   uConstants, CommCtrl, uTime, UnitINI;
 
 type
   TCharObject = class (TObject)
@@ -230,6 +230,7 @@ type TDBKernel = class(TObject)
     ThreadOpenResultWork : Boolean;
     FDBs : TPhotoDBFiles;
     fImageOptions : TImageDBOptions;
+    FRegistryCache : TDBRegistryCache;
     procedure LoadDBs;
     procedure SetImageList(const Value: TImageList);
     procedure SetTheme(const Value: TDbTheme);
@@ -237,8 +238,8 @@ type TDBKernel = class(TObject)
     { Private declarations }
   public              
   IconDllInstance : THandle;
-  constructor create;
-  destructor destroy; override;
+  constructor Create;
+  destructor Destroy; override;
   published
   property DBs : TPhotoDBFiles read FDBs;
   Property ImageList : TImageList read FImageList Write SetImageList;
@@ -335,7 +336,7 @@ function chartoint(ch : char):Integer;
 implementation
 
 uses dolphin_db, UnitBackUpTableThread, Language, UnitCrypting, CommonDBSupport,
-UnitActiveTableThread, UnitINI, UnitFileCheckerDB, UnitGroupsWork,
+UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
 UnitCDMappingSupport;
 
 { TDBKernel }
@@ -345,6 +346,7 @@ var
   i : integer;
 begin
   inherited;
+  FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
   for i:=1 to 100 do
   Chars[i]:=nil;
@@ -396,6 +398,7 @@ begin
   for i:=1 to 100 do
   if Chars[i]<>nil then Chars[i].free;
   FreeIconDll;
+  FRegistryCache.Free;
   inherited;
 end;
 
@@ -481,129 +484,86 @@ var
   Value : string;
 begin         
   Result:=default;
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey + Key, true);
-    Value := reg.ReadString(Name);
-    if AnsiLowerCase(Value) = 'true' then Result := True;
-    if AnsiLowerCase(Value) = 'false' then Result := False;
-  finally  
-    Reg.Free;
-  end;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Value := AnsiLowerCase(reg.ReadString(Name));
+  if Value = 'true' then Result := True;
+  if Value = 'false' then Result := False;
 end;
 
-function TDBKernel.ReadRealBool(Key, Name: string; Default : boolean): boolean;
+function TDBKernel.ReadRealBool(Key, Name: string; Default : boolean): Boolean;
 var
   Reg : TBDRegistry;
 begin         
   Result := Default;
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey + Key, True);
-    Result := Reg.ReadBool(Name);
-  finally
-    Reg.Free;
-  end;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Result := Reg.ReadBool(Name);
 end;
 
 function TDBKernel.ReadboolW(Key, Name: string; Default : boolean): boolean;
 var
   Reg : TBDRegistry;
+  Value : string;
 begin     
   Result := Default;
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(RegRoot + Key, True);
-    if AnsiLowerCase(Reg.ReadString(Name)) = 'true' then Result := True;
-    if AnsiLowerCase(Reg.ReadString(Name)) = 'false' then Result := False;
-  finally
-    Reg.Free;
-  end;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Value := AnsiLowerCase(Reg.ReadString(Name));
+  if Value = 'true' then Result := True;
+  if Value = 'false' then Result := False;
 end;
 
 function TDBKernel.ReadInteger(Key, Name : string; Default : integer): integer;
 var
   Reg : TBDRegistry;
 begin               
-  Result:=Default;
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    reg.OpenKey(GetRegRootKey+Key,true);
-    Result := strtointdef(reg.ReadString(Name), default);
-  finally
-    reg.Free;
-  end;
+  Result:=Default;           
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Result := StrToIntDef(reg.ReadString(Name), Default);
 end;
 
 function TDBKernel.ReadDateTime(Key, Name : string; Default : TDateTime): TDateTime;
 var
   Reg : TBDRegistry;
 begin
-  Result:=Default;
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey+Key, true);
-    if Reg.ValueExists(Name) then
-      Result:=Reg.ReadDateTime(Name);
-  finally
-    reg.Free;
-  end;
+  Result:=Default;             
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  if Reg.ValueExists(Name) then
+    Result:=Reg.ReadDateTime(Name);
 end;
 
 function TDBKernel.ReadProperty(Key, Name: string): string;
 var
   Reg : TBDRegistry;
 begin
-  Result := '';
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(RegRoot+Key,true);
-    Result:=Reg.ReadString(Name);
-  finally
-    Reg.Free;
-  end;
+  Result := '';     
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Result:=Reg.ReadString(Name);
 end;
 
 function TDBKernel.ReadString(Key, Name: string): string;
 var
   Reg : TBDRegistry;
 begin        
-  Result := '';
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey+Key,true);
-    Result:=Reg.ReadString(Name);
-  finally
-    Reg.Free;
-  end;
+  Result := '';                   
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Result:=Reg.ReadString(Name);
 end;
 
 function TDBKernel.ReadKeys(Key: string): TStrings;
 var
   Reg : TBDRegistry;
 begin     
-  Result:=TStringList.Create;
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey+Key,true);
-    Reg.GetKeyNames(Result);
-  finally
-    Reg.Free;
-  end;
+  Result:=TStringList.Create;    
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg.GetKeyNames(Result);
 end;
 
 function TDBKernel.ReadValues(Key: string): TStrings;
 var
   Reg : TBDRegistry;
 begin           
-  Result:=TStringList.Create;
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey+Key,true);
-    Reg.GetValueNames(Result);
-  finally
-    Reg.Free;
-  end;
+  Result:=TStringList.Create;    
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg.GetValueNames(Result);
 end;
 
 procedure TDBKernel.DeleteValues(Key: string);
@@ -641,13 +601,8 @@ var
   Reg : TBDRegistry;
 begin
   Result := '';
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(RegRoot+Key,true);
-    Result:=Reg.ReadString(Name);
-  finally
-    Reg.Free;
-  end;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Result := Reg.ReadString(Name);
 end;
 
 procedure TDBKernel.RegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
@@ -962,112 +917,74 @@ begin
  end;
 end;
 
-procedure TDBKernel.WriteBool(Key, Name: string; value: boolean);
+procedure TDBKernel.WriteBool(Key, Name: string; Value: boolean);
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  if value then
-  Reg.writeString(Name,'True') else
-  Reg.writeString(Name,'False');
- except
- end;
- Reg.free;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  if Value then
+    Reg.WriteString(Name,'True')
+  else
+    Reg.WriteString(Name,'False');
 end;
 
 procedure TDBKernel.WriteBoolW(Key, Name: string; value: boolean);
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try   
-  Reg.OpenKey(RegRoot+Key,true);
-  if value then
-  Reg.writeString(Name,'True') else
-  Reg.writeString(Name,'False');
- except
- end;
- Reg.free;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  if Value then
+    Reg.WriteString(Name,'True')
+  else
+    Reg.WriteString(Name,'False');
 end;
 
-procedure TDBKernel.WriteInteger(Key, Name: string; value: integer);
+procedure TDBKernel.WriteInteger(Key, Name: string; Value: integer);
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Reg.WriteString(Name,inttostr(value));
- except
- end;
- Reg.free;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg.WriteString(Name, IntToStr(Value));
 end;
 
-procedure TDBKernel.WriteProperty(Key, Name, value: string);
+procedure TDBKernel.WriteProperty(Key, Name, Value: string);
+var
+  Reg : TBDRegistry;
+begin            
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg.WriteString(Name, Value);
+end;
+
+procedure TDBKernel.WriteString(Key, Name, Value: string);
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+Key,true);
-  Reg.WriteString(Name,value);
- except
- end;
- Reg.Free;
-end;
-
-procedure TDBKernel.WriteString(Key, Name, value: string);
-var
-  Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Reg.writeString(Name,value);
- except
- end;
- Reg.free;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg.WriteString(Name, Value);
 end;
 
 procedure TDBKernel.WriteStringW(Key, Name, value: string);
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+Key,true);
-  Reg.writeString(Name,value);
- except
- end;
- Reg.free;
+begin                               
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg.WriteString(Name, Value);
 end;
 
 procedure TDBKernel.WriteDateTime(Key, Name : String; Value: TDateTime);
 var
   Reg : TBDRegistry;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey+Key,true);
-  Reg.WriteDateTime(Name,Value);
- except
- end;
- Reg.free;
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg.WriteDateTime(Name, Value);
 end;
 
 function TDBKernel.GetDataBase: string;
 var
   Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot,true);
+begin                
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
   Result:=Reg.ReadString('DBDefaultName');
- except
- end;
- Reg.Free;
 end;
 
 function TDBKernel.GetDataBaseName: string;

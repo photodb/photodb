@@ -1328,16 +1328,9 @@ begin
  fQuery:=GetQuery;
  for i := 0 to List.Count-1 do
  begin
-  FileName:=List[i];//NornalizeFileName(List[i]);
-
-
-   Folder:=GetDirectory(FileName);
-   UnFormatDir(Folder);
-   CalcStringCRC32(AnsiLowerCase(Folder),crc);
-   SetSQL(fQuery,'SELECT * FROM (Select * from '+GetDefDBName+' where FolderCRC='+inttostr(Integer(crc))+') WHERE FFileName like :ffilename');
-
+  FileName:=List[i];
+  SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
   SetStrParam(fQuery,0,Delnakl(NormalizeDBStringLike(AnsiLowerCase(FileName))));
-
   fQuery.active:=true;
   if fQuery.RecordCount<>0 then
   begin
@@ -1403,15 +1396,20 @@ end;
 procedure TViewer.UpdateRecord(FileNo: integer);
 var
   DS : TDataSet;
+  FileName : string;
 begin
-  DS:=GetQuery;
-  DS.Active:=false;
-  SetSQL(DS,'SELECT * FROM '+GetDefDBName+' WHERE FFileName like :ffilename');
-  SetStrParam(DS,0,DelNakl(AnsiLowerCase(CurrentInfo.ItemFileNames[FileNo])));
-  DS.active:=true;
-  if DS.RecordCount=0 then exit;
-  SetRecordsInfoOne(CurrentInfo,FileNo,DS.FieldByName('FFileName').AsString,DS.FieldByName('ID').AsInteger,DS.FieldByName('Rotated').AsInteger,DS.FieldByName('Rating').AsInteger,DS.FieldByName('Access').AsInteger,DS.FieldByName('Comment').AsString,DS.FieldByName('Groups').AsString,DS.FieldByName('DateToAdd').AsDateTime,DS.FieldByName('IsDate').AsBoolean,DS.FieldByName('IsTime').AsBoolean,DS.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(DS.FieldByName('thum')),DS.FieldByName('Include').AsBoolean,DS.FieldByName('Links').AsString);
-  FreeDS(DS);
+  DS := GetQuery;
+  try
+    FileName := CurrentInfo.ItemFileNames[FileNo];
+    SetSQL(DS,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
+    SetStrParam(DS, 0, DelNakl(AnsiLowerCase(FileName)));
+    DS.Active := True;
+    if DS.RecordCount=0 then
+      Exit;
+    SetRecordsInfoOne(CurrentInfo,FileNo,DS.FieldByName('FFileName').AsString,DS.FieldByName('ID').AsInteger,DS.FieldByName('Rotated').AsInteger,DS.FieldByName('Rating').AsInteger,DS.FieldByName('Access').AsInteger,DS.FieldByName('Comment').AsString,DS.FieldByName('Groups').AsString,DS.FieldByName('DateToAdd').AsDateTime,DS.FieldByName('IsDate').AsBoolean,DS.FieldByName('IsTime').AsBoolean,DS.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(DS.FieldByName('thum')),DS.FieldByName('Include').AsBoolean,DS.FieldByName('Links').AsString);
+  finally
+    FreeDS(DS);
+  end;
 end;
 
 procedure TViewer.ApplicationEvents1Message(var Msg: tagMSG;
@@ -2464,14 +2462,8 @@ begin
  EndWaitToImage(nil);
 
  if FRotatingImageInfo.Enabled then
- if AnsiLowerCase(FRotatingImageInfo.FileName)=AnsiLowerCase(FCurrentlyLoadedFile) then
- begin
-  Case FRotatingImageInfo.Rotating of
-   DB_IMAGE_ROTATED_270: Rotate270A(FbImage);
-   DB_IMAGE_ROTATED_90: Rotate90A(FbImage);
-   DB_IMAGE_ROTATED_180: Rotate180A(FbImage);
-  end;
- end;
+   if AnsiLowerCase(FRotatingImageInfo.FileName)=AnsiLowerCase(FCurrentlyLoadedFile) then
+     ApplyRotate(FbImage, FRotatingImageInfo.Rotating);
 
  ReAllignScrolls(False,Point(0,0));
  ValidImages:=1;

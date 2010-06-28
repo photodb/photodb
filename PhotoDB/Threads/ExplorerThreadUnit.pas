@@ -1797,11 +1797,7 @@ begin
   UnFormatDir(Folder);
   CalcStringCRC32(AnsiLowerCase(Folder),crc);
 
-  if FolderView then
-  dbstr:=GetDefDBName else
-  dbstr:='(Select * from '+GetDefDBName+' where FolderCRC='+inttostr(Integer(crc))+')';
-
-  SetSQL(fQuery,'SELECT * FROM '+dbstr+' WHERE FFileName like :ImageFile');
+  SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FFolder))+' AND FFileName LIKE :FFileName');
 
   
  SetStrParam(FQuery,0,'%'+normalizeDBStringLike(NormalizeDBString(AnsiLowercase(FFolder)))+'%');

@@ -5,7 +5,7 @@ interface
 //{$DEFINE EXT}
 
 uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
-     JPEG, PngImage, PngDef, TiffImageUnit,
+     JPEG, PngImage, PngDef, TiffImageUnit, uFileUtils,
 {$IFNDEF EXT}
      GraphicEx, RAWImage,
 {$ENDIF}
@@ -649,7 +649,7 @@ var
 begin
  Result:=false;
  c:=false;
- if not FileExists(FileName) then exit;
+ if not FileExistsEx(FileName) then exit;
  {$IFDEF DBDEBUG}
  Assign(F,FileName);
  {$ENDIF}

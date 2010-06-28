@@ -93,7 +93,7 @@ var
 begin
   IsRuning := False;
   Delta := Round((Now - FStart)*24*60*60*1000);
-  if Delta > 20 then
+  if Delta > 10 then
   begin
     Info := Format('%s = %d ms. (%d ms.)%s', [FName, Delta , Round((Now - FStartUp)*24*60*60*1000), #13#10]);
     FS.Write(Info[1], Length(Info))

@@ -4,7 +4,7 @@ program PhotoDB;
 
 uses
   uTime in 'Units\uTime.pas',
-  uSplachThread in 'Threads\uSplachThread.pas',
+  uSplashThread in 'Threads\uSplashThread.pas',
   ADODB,
   FileCtrl,
   ShellApi,
@@ -588,7 +588,7 @@ begin
   begin
    EventLog('Loading Kernel.dll');
    if not FolderView then
-   KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
+   KernelHandle := Loadlibrary(PChar(ProgramDir+'Kernel.dll'));
    TLoad.Instance.StartCRCCheckThread;
    EventLog(':DBKernel.InitRegModule');
    DBKernel.InitRegModule;
