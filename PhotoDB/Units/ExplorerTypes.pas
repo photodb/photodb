@@ -6,6 +6,30 @@ Uses UnitDBKernel, Forms, SysUtils, Windows, Graphics,  Dolphin_DB,
      Messages, Classes, DB, GraphicsCool, jpeg, wfsU,
      UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics;
 
+type
+ TExplorerViewInfo = record
+ ShowPrivate : boolean;
+ ShowFolders : boolean;
+ ShowSimpleFiles : boolean;
+ ShowImageFiles : boolean;
+ ShowHiddenFiles : boolean;
+ ShowAttributes : Boolean;
+ ShowThumbNailsForFolders : boolean;
+ SaveThumbNailsForFolders : boolean;
+ ShowThumbNailsForImages : boolean;
+ OldFolderName : String;
+ View : integer;
+ PictureSize : integer;
+ end;
+
+Type TUpdaterInfo = record
+ FileName : String;
+ IsUpdater : Boolean;
+ ID : integer;
+ ProcHelpAfterUpdate : TNotifyEvent;
+ NewFileItem : Boolean;
+ end;
+
 Type
   TFolderImages = record
   Images : array[1..4] of TBitmap;
@@ -40,7 +64,8 @@ Const
   THREAD_TYPE_IMAGE        = 6;
   THREAD_TYPE_FILE         = 7;
   THREAD_TYPE_FOLDER_UPDATE= 8;  
-  THREAD_TYPE_BIG_IMAGES   = 9;
+  THREAD_TYPE_BIG_IMAGES   = 9;  
+  THREAD_TYPE_THREAD_IMAGE = 10;
 
   LV_THUMBS     = 0;
   LV_ICONS      = 1;

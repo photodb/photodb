@@ -14,30 +14,6 @@ uses
  UnitExplorerLoadSIngleImageThread, uConstants;
 
 type
- TExplorerViewInfo = record
- ShowPrivate : boolean;
- ShowFolders : boolean;
- ShowSimpleFiles : boolean;
- ShowImageFiles : boolean;
- ShowHiddenFiles : boolean;
- ShowAttributes : Boolean;
- ShowThumbNailsForFolders : boolean;
- SaveThumbNailsForFolders : boolean;
- ShowThumbNailsForImages : boolean;
- OldFolderName : String;
- View : integer;
- PictureSize : integer;
- end;
-
-Type TUpdaterInfo = record
- FileName : String;
- IsUpdater : Boolean;
- ID : integer;
- ProcHelpAfterUpdate : TNotifyEvent;
- NewFileItem : Boolean;
- end;
-
-type
   TExplorerThread = class(TThreadEx)
   private
   FFolder : String;
@@ -48,14 +24,12 @@ type
   TempBitmap : TBitmap;
   fbmp : tbitmap;
 //  FPic : TPicture;
-  ExplorerInfo : TExplorerViewInfo;
   FSelected : TEasyItem;
   FFolderBitmap : TBitmap;
   fFolderImages : TFolderImages;
   FcountOfFolderImage : Integer;
   fFastDirectoryLoading : Boolean;
   FFiles : TExplorerFileInfos;
-  Info : TOneRecordInfo;
   BooleanResult : Boolean;
   IntParam : integer;
   BooleanParam : Boolean;
@@ -65,7 +39,6 @@ type
   IconParam : TIcon;
   GraphicParam : TGraphic;
   FShowFiles : Boolean;
-  FUpdaterInfo : TUpdaterInfo;
   FQuery : TDataSet;
   FInfoText : String;
   FInfoMax : integer;
@@ -102,7 +75,7 @@ type
     procedure DrawImageIconSmall;
     procedure AddImageFileImageToExplorer;
     procedure AddImageFileItemToExplorer;
-    procedure ReplaceImageItemImage(FileName : string; FileSize : Int64);
+    procedure ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
     procedure DrawImageToTempBitmapCenter;
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
@@ -151,9 +124,16 @@ type
     procedure DoDefaultSort;
     procedure ExplorerHasIconForExt;
     procedure SetIconForFileByExt;
-    procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean);
+    procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
+    procedure ProcessThreadImages;
   public
-    constructor Create(folder, Mask: string;
+    FUpdaterInfo : TUpdaterInfo;
+    ExplorerInfo : TExplorerViewInfo;   
+    FInfo : TOneRecordInfo;
+    IsCryptedFile : Boolean;
+    FFileID : TGUID;
+    FEvent : THandle;
+    constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
   end;
@@ -170,11 +150,11 @@ type
 
 implementation
 
-uses Language, FormManegerUnit, UnitViewerThread, CommonDBSupport;
+uses Language, FormManegerUnit, UnitViewerThread, CommonDBSupport, uExplorerThreadPool;
 
 { TExplorerThread }
 
-Constructor TExplorerThread.Create(folder,
+Constructor TExplorerThread.Create(Folder,
   Mask: string; ThreadType : Integer; Info: TExplorerViewInfo; Sender : TExplorerForm; UpdaterInfo: TUpdaterInfo; SID : TGUID);
 begin             
  inherited Create(Sender, SID);
@@ -188,7 +168,8 @@ begin
  FUpdaterInfo := UpdaterInfo;
  FullFolderPicture := nil;
  FVisibleFiles := nil;
- Start;
+ if ThreadType <> THREAD_TYPE_THREAD_IMAGE then
+   Start;
 end;
 
 procedure TExplorerThread.Execute;
@@ -208,10 +189,10 @@ var
  p : PansiChar;
 
 begin        
-  FreeOnTerminate:=true;
+  FreeOnTerminate := True;
   CoInitialize(nil);
   try
-    LoadingAllBigImages:=true;
+    LoadingAllBigImages := True;
 
     case ExplorerInfo.View of
       LV_THUMBS     : begin FIcoSize:=48; end;
@@ -227,8 +208,14 @@ begin
       AddFile;
       Exit;
     end;
+
+    if (FThreadType = THREAD_TYPE_THREAD_IMAGE) then
+    begin
+      ProcessThreadImages;
+      Exit;
+    end;
        
-    if (FThreadType=THREAD_TYPE_BIG_IMAGES) then
+    if (FThreadType = THREAD_TYPE_BIG_IMAGES) then
     begin
       ShowProgress;
       DoLoadBigImages;
@@ -496,14 +483,11 @@ begin
 
           if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
           begin
-            GUIDParam := FFiles[i].SID;
-            begin
-              Inc(InfoPosition);
-              ShowInfo(InfoPosition);
-              CurrentFile:=FFiles[i].FileName;
-              CurrentInfoPos:=i;
-              ReplaceImageItemImage(FFiles[i].FileName, FFiles[i].FileSize);
-            end;
+            Inc(InfoPosition);
+            ShowInfo(InfoPosition);
+            CurrentFile:=FFiles[i].FileName;
+            CurrentInfoPos:=i;
+            ReplaceImageItemImage(FFiles[i].FileName, FFiles[i].FileSize, FFiles[i].SID);
           end;
 
          If ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[i].Tag=1)) then
@@ -740,23 +724,24 @@ begin
   end;
 end;
 
-procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64);
+procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
 var
   FBS : TStream;
   CryptedFile : Boolean;
+  Info : TOneRecordInfo;
 begin
   TempBitmap := nil;
   IsBigImage := False;
   CryptedFile := ValidCryptGraphicFile(FileName);
 
-  Info:=RecordInfoOne(FileName, 0, 0, 0, 0, FileSize, '', '', '', '', '', 0, False, False, 0, CryptedFile, True, False, '');
+  Info := RecordInfoOne(FileName, 0, 0, 0, 0, FileSize, '', '', '', '', '', 0, False, False, 0, CryptedFile, True, False, '');
   Info.Tag := EXPLORER_ITEM_FOLDER;
 
   if not FUpdaterInfo.IsUpdater then
   begin
     if FindInQuery(FileName) then
     begin
-      Info:=RecordInfoOne(
+      FInfo:=RecordInfoOne(
         FileName,
         fQuery.FieldByName('ID').AsInteger,
         fQuery.FieldByName('Rotated').AsInteger,
@@ -810,7 +795,10 @@ begin
 
   //Create image from Info!!!
 
-  ExtractImage(Info, CryptedFile);
+  if ProcessorCount > 1 then
+    TExplorerThreadPool.Instance.ExtractImage(Self, Info, CryptedFile, FileID)
+  else
+    ExtractImage(Info, CryptedFile, FileID);
 end;
 
 procedure TExplorerThread.DrawImageToTempBitmapCenter;
@@ -822,21 +810,21 @@ procedure TExplorerThread.ReplaceImageInExplorer;
 begin
   if not Terminated then
   begin
-    FSender.SetInfoToItem(Info, GUIDParam);
-    FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude, isBigImage);
+    FSender.SetInfoToItem(FInfo, GUIDParam);
+    FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.ItemInclude, isBigImage);
   end;
 end;
 
 procedure TExplorerThread.ReplaceInfoInExplorer;
 begin
   if not Terminated then
-    FSender.SetInfoToItem(Info, GUIDParam);
+    FSender.SetInfoToItem(FInfo, GUIDParam);
 end;
 
 procedure TExplorerThread.ReplaceImageInExplorerA;
 begin
   if not Terminated then
-     FSender.SetInfoToItem(Info, GUIDParam);
+     FSender.SetInfoToItem(FInfo, GUIDParam);
 end;
 
 procedure TExplorerThread.ReplaceThumbImageToFolder;
@@ -1232,7 +1220,7 @@ begin
    GUIDParam:=FFiles[0].SID;
    CurrentFile:=FFiles[0].FileName;
    AddImageFileToExplorerW;           //TODO: filesize is undefined
-   ReplaceImageItemImage(CUrrentFile, FFiles[0].FileSize);
+   ReplaceImageItemImage(CUrrentFile, FFiles[0].FileSize, GUIDParam);
   end;
  If FFiles[0].FileType=EXPLORER_ITEM_FILE then
  begin
@@ -1660,7 +1648,7 @@ begin
  if FolderView then CurrentFile:=ProgramDir+FFiles[0].FileName else
  CurrentFile:=FFiles[0].FileName;
  if ExplorerInfo.ShowThumbNailsForImages then
- ReplaceImageItemImage(FFiles[0].FileName, -1); //todo: filesize is undefined
+ ReplaceImageItemImage(FFiles[0].FileName, -1, GUIDParam); //todo: filesize is undefined
  if FUpdaterInfo.ID<>0 then
  SynchronizeEx(ChangeIDImage);
  IntParam:=FUpdaterInfo.ID;
@@ -1672,9 +1660,9 @@ begin
  finally
    FFiles.Free;
  end;
- if Info.ItemId<>0 then
- if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
- SynchronizeEx(DoUpdaterHelpProc);
+ if FInfo.ItemId<>0 then
+   if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
+     SynchronizeEx(DoUpdaterHelpProc);
 end;
 
 function TExplorerThread.ShowFileIfHidden(FileName :String): boolean;
@@ -1970,7 +1958,7 @@ begin
   FSender.DoStopLoading;
 end;
 
-procedure TExplorerThread.ExtractImage(Info: TOneRecordInfo; CryptedFile : Boolean);
+procedure TExplorerThread.ExtractImage(Info: TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
 var
   W, H : integer;
   FPic : TPicture;
@@ -2074,7 +2062,22 @@ begin
   if FThreadType = THREAD_TYPE_IMAGE then
     IsBigImage := False; //сбрасываем флаг для того чтобы перезагрузилась картинка
 
+  GUIDParam := FileID;
   SynchronizeEx(ReplaceImageInExplorer);
+end;
+
+procedure TExplorerThread.ProcessThreadImages;
+begin    
+  FEvent := CreateEvent(nil, True, True, PChar(GUIDToString(GetGUID)));
+  while True do
+  begin
+    SetEvent(FEvent);
+    ExtractImage(FInfo, IsCryptedFile, FFileID);
+    ResetEvent(FEvent);
+    FEvent := 0;
+    Suspend;
+  end;
+  CloseHandle(FEvent);
 end;
 
 initialization

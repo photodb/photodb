@@ -16,7 +16,9 @@ type
     procedure Start;
     function CheckForm : Boolean;
   public
-    constructor Create(AOwnerForm : TThreadForm; AState : TGUID); 
+    constructor Create(AOwnerForm : TThreadForm; AState : TGUID);
+    property ThreadForm : TThreadForm read FThreadForm;
+    property StateID : TGUID read FState write FState;
   end;
 
 implementation
