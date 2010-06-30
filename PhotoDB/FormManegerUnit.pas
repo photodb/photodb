@@ -29,6 +29,7 @@ type
     FMainForms : TList;
     FTemtinatedActions : TTemtinatedActions;  
     CanCheckViewerInMainForms : boolean;
+    FCheckCount : Integer;
     procedure ExitApplication;  
     procedure WMCopyData(var m : TMessage); message WM_COPYDATA;
     { Private declarations }
@@ -52,11 +53,11 @@ type
 
 var
   FormManager: TFormManager;
-  DateTime : TDateTime;
-  WasIde : Boolean = false;
+  DateTime : TDateTime;    
+  WasIde : Boolean = false;    
   ExitAppl : Boolean = false;
   Running : Boolean = false;
-  LockCleaning : boolean = false;  
+  LockCleaning : boolean = false;
   EnteringCodeNeeded : boolean;
 
 implementation
@@ -134,7 +135,6 @@ begin
    end;
   end;
  end;
- if SafeMode then Exit;
 end;
 
 procedure TFormManager.Run(LoadingThread : TThread);
@@ -180,15 +180,7 @@ try
   RegisterMainForm(ActivateForm);
   exit;
  end;
- if SafeMode then
- begin
-  EventLog(':TFormManager::Run()/NewSearch...');
-  NewSearch:=SearchManager.NewSearch;  
-  CloseLoadingForm;
-  NewSearch.Show;
-  ActivateApplication(NewSearch.Handle);
-  exit;
- end;
+
  ParamStr1:=ParamStr(1);
  ParamStr2:=Paramstr(2);
  Directory:=ParamStr2;
@@ -298,6 +290,7 @@ try
    end;
   end;
  end;
+ FCheckCount := 0;
  CheckTimer.Enabled := True;
  Running:=true;
  finally
@@ -474,6 +467,13 @@ procedure TFormManager.CheckTimerTimer(Sender: TObject);
 begin
   if Running then
   begin
+    Inc(FCheckCount);
+    if (FCheckCount = 10) then //after 1sec. set normal priority
+    begin
+     SetProcessAffinityMask(MainThreadID, StartProcessorMask);
+     SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
+     SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
+    end;
     if CanCheckViewerInMainForms then
     begin
       if (FMainForms.Count = 1) and (FMainForms[0] = Viewer) and (Viewer <> nil) then
@@ -597,7 +597,7 @@ begin
  //FormManager.Visible:=false;
  //Application.ShowMainForm:=false;
  DateTime:=Now;
- If not SafeMode and not DBTerminating then
+ If not DBTerminating then
  begin
 
  // DBVersion:=DBKernel.TestDBEx(dbname,true);

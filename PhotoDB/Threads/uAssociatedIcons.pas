@@ -52,6 +52,8 @@ function VarIco(Ext : string) : boolean;
 
 implementation
 
+uses ExplorerTypes;
+
 var
   AIcons : TAIcons = nil;
 
@@ -281,7 +283,10 @@ begin
       begin
       if (not FAssociatedIcons[i].SelfIcon) or Default then
       begin
-       Result:=TIcon.Create;
+        if Size = 48 then
+          Result := TIcon48.Create
+        else
+         Result:=TIcon.Create;
        Result.Assign(FAssociatedIcons[i].Icon);
       end else
       begin

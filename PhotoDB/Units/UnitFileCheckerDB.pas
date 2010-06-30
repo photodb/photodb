@@ -28,8 +28,6 @@ var
   Reg : TBDRegistry;
 begin
  Result:=CHECK_RESULT_UNDEFINED;
- //no checking n save mode!
- if Dolphin_DB.SafeMode then exit;
  
  if not FileExists(FileName) then
  begin

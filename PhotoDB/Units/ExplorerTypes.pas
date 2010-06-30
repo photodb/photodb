@@ -69,7 +69,7 @@ Type
     Rotate : Integer;
     Access : Integer;
     Rating : Integer;
-    FileSize : Integer;
+    FileSize : Int64;
     Comment : string;
     KeyWords : string;
     Date : TDateTime;
@@ -315,7 +315,6 @@ Var
 begin
  FormatDir(Directory);
  Result.Directory:='';
- if SafeMode then Exit;
  For i:=1 to 4 do Result.Images[i]:=nil;
  For i:=0 to Length(FImages)-1 do
  begin
@@ -380,7 +379,6 @@ Var
 begin
  b:=false;   
  FormatDir(FolderImages.Directory);
- if SafeMode then Exit;
  For i:=0 to Length(FImages)-1 do
  begin
   If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(FolderImages.Directory) then
@@ -558,18 +556,13 @@ begin
   If S <> fSID then
   Terminating:=true else
  end else Terminating:=true;
- if ExplorerManager.IsExplorerForm(FOwner) then
+//? if ExplorerManager.IsExplorerForm(FOwner) then
 //? If Assigned(FOnNotifyFile) then
 //? FOnNotifyFile(self,FSID,fOldFileName,fNewFileName,FAction);
  SetLength(fOldFileName,0);
  SetLength(FAction,0);
 end;
 
-{Function SetNilExplorerFileInfo : TExplorerFilesInfo;
-begin
- SetLength(Result,0);
-end;
-          }
 procedure AddOneExplorerFileInfo(Infos : TExplorerFileInfos; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
 var
   Info : TExplorerFileInfo;

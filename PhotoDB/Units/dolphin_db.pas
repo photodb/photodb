@@ -26,7 +26,8 @@ const
     FIXIDEX = true;
 var
     UseFreeAfterRelease : boolean = true;
-    ApplicationRuned : boolean = false;
+    ApplicationRuned : boolean = false;  
+    StartProcessorMask : Cardinal;
 
 const
  pwd_rusup='¨ÉÖÓÊÅÍÃØÙÇÕÚÔÛÂÀÏĞÎËÄÆİß×ÑÌÈÒÜÁŞ';
@@ -499,7 +500,6 @@ var
     ResultLogin : boolean;
     KernelHandle : THandle;
     DBTerminating : Boolean;
-    SafeMode : Boolean;
     HelpNO : integer = 0;
     HelpActivationNO : integer = 0;
     FExtImagesInImageList : Integer;
@@ -1789,7 +1789,7 @@ begin
    if not fQuery.active then b:=false;
   end;
   if b then break;
-  sleep(500);
+  sleep(DelayExecuteSQLOperation);
  end;
  if not b then
  begin
@@ -2593,7 +2593,6 @@ begin
    SetStrParam(FQuery,0,'%'+DBFolder+'%');
    SetStrParam(FQuery,1,'%'+DBFolder+'%\%');
   end;
-
 
   FQuery.Active:=True;
   FQuery.First;

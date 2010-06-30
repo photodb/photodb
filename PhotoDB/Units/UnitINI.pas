@@ -217,13 +217,14 @@ end;
 
 function TBDRegistry.OpenKey(Key: String; CreateInNotExists: Boolean) : boolean;
 begin
- Result:=false;
- if Registry is TRegistry then Result:=(Registry as TRegistry).OpenKey(Key, not FReadOnly);
- if Registry is TMyRegistryINIFile then
- begin
-  (Registry as TMyRegistryINIFile).Key:=Key;
-  Result:=true;
- end;
+  FKey := Key;
+  Result:=false;
+  if Registry is TRegistry then Result:=(Registry as TRegistry).OpenKey(Key, not FReadOnly);
+  if Registry is TMyRegistryINIFile then
+  begin
+   (Registry as TMyRegistryINIFile).Key:=Key;
+    Result:=true;
+  end;
 end;
 
 function TBDRegistry.ReadBool(Name: String; Default: boolean): boolean;
@@ -387,7 +388,7 @@ begin
     if (Reg.Key = AKey) and (Reg.Section = ASection) then
     begin
       Result := FList[I];
-      Break;
+      Exit;
     end;
   end;
 

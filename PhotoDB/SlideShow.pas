@@ -361,22 +361,22 @@ begin
   TW.I.Start('fcsrbmp');
   fcsrbmp := TBitmap.create;
   fcsrbmp.PixelFormat:=pf24bit;
-  fcsrbmp.width:=screen.Width;
-  fcsrbmp.Height:=screen.Height;
+ // fcsrbmp.width:=screen.Width;
+ // fcsrbmp.Height:=screen.Height;
   fcsrbmp.Canvas.Brush.Color:=0;
   fcsrbmp.Canvas.pen.Color:=0;
-  fcsrbmp.Canvas.Rectangle(0,0,fcsrbmp.width,fcsrbmp.Height);
+ // fcsrbmp.Canvas.Rectangle(0,0,fcsrbmp.width,fcsrbmp.Height);
   TW.I.Start('fnewcsrbmp');
   WaitImage := TBitmap.create;
   WaitImage.PixelFormat:=pf24bit;
   
   fnewcsrbmp := TBitmap.create;
   fnewcsrbmp.PixelFormat:=pf24bit;
-  fnewcsrbmp.width:=screen.Width;
-  fnewcsrbmp.Height:=screen.Height;
+ // fnewcsrbmp.width:=screen.Width;
+//  fnewcsrbmp.Height:=screen.Height;
   fnewcsrbmp.Canvas.Brush.Color:=0;
   fnewcsrbmp.Canvas.pen.Color:=0;
-  fnewcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);
+ // fnewcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);
   fnowcsrbmp := TBitmap.create;
   fnowcsrbmp.PixelFormat:=pf24bit;
   fnowcsrbmp.Assign(fnewcsrbmp);
@@ -428,7 +428,8 @@ begin
   DBkernel.RegisterProcUpdateTheme(UpdateTheme,self);
   DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
   TW.I.Start('LoadLanguage');
-  LoadLanguage;
+  LoadLanguage;                           
+  TW.I.Start('ToolButton2.Hint');
   ToolButton2.Hint:=TEXT_MES_VIEW_SC_LEFT_ARROW;
   ToolButton1.Hint:=TEXT_MES_VIEW_SC_RIGHT_ARROW;
   ToolButton4.Hint:=TEXT_MES_VIEW_SC_FIT_TO_SIZE;
@@ -443,7 +444,8 @@ begin
   ToolButton17.Hint:=TEXT_MES_VIEW_SC_PRINT;
   ToolButton22.Hint:=TEXT_MES_VIEW_SC_RATING;
   ToolButton15.Hint:=TEXT_MES_VIEW_SC_EDITOR;
-  ToolButton14.Hint:=TEXT_MES_VIEW_SC_INFO; 
+  ToolButton14.Hint:=TEXT_MES_VIEW_SC_INFO;             
+  TW.I.Start('LoadCursor');
   CursorZoomIn := LoadCursor(HInstance,'ZOOMIN');
   CursorZoomOut := LoadCursor(HInstance,'ZOOMOUT');
   Screen.Cursors[CursorZoomInNo]:=CursorZoomIn;
@@ -713,12 +715,14 @@ begin
    DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(text_error_out) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2,text_error_out);
    DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(FileName) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2+DrawImage.Canvas.Textheight(FileName)+4,FileName);
   end;
-  if WaitImageTimer.Enabled then
-  begin
+  if WaitImageTimer.Enabled and FImageExists then
+  begin              
+   TW.I.Start('WaitImageTimer');
    WaitImage.Width:=DrawImage.Width;
    WaitImage.Height:=DrawImage.Height;
    GrayScaleImage(DrawImage,WaitImage,WaitGrayScale);
-   Canvas.Draw(0,0,WaitImage);
+   Canvas.Draw(0,0,WaitImage); 
+   TW.I.Stop;      
    exit;
   end;
   if (not WaitImageTimer.Enabled) and (RealImageHeight*RealImageWidth<>0) then
@@ -940,7 +944,12 @@ end;
 procedure TViewer.FormPaint(Sender: TObject);
 begin  
  if SlideShowNow or FullScreenNow then exit;
- if WaitImageTimer.Enabled then Canvas.Draw(0,0,WaitImage) else Canvas.draw(0,0,DrawImage);
+ if WaitImageTimer.Enabled then
+ begin
+   if FImageExists then
+     Canvas.Draw(0,0,WaitImage)
+ end else
+   Canvas.draw(0,0,DrawImage);
 end;
 
 procedure TViewer.NewPicture(Sender: TObject);
@@ -1578,7 +1587,7 @@ begin
  TW.I.Start('SlideShow_UseExternelViewer');
  if not UseOnlySelf then
  if not ((FormManager.MainFormsCount=1) and FormManager.IsMainForms(self)) then
- if not SafeMode then
+
  if DBKernel.ReadboolW('Options','SlideShow_UseExternelViewer',False) then
  begin
   s:='';
@@ -1646,11 +1655,9 @@ begin
   CurrentFileNumber:=CurrentInfo.Position;
   if not ((LoadBaseFile<>'') and (AnsiLowerCase(CurrentInfo.ItemFileNames[CurrentFileNumber])=AnsiLowerCase(LoadBaseFile))) then
   begin
- TW.I.Start('LoadImage_');
+   TW.I.Start('LoadImage_');
    if LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false) then
    begin
-//   Timer1.Enabled:=true;
-//   MouseTimer.Enabled:=true;
     FbImage.Canvas.Brush.Color:=Theme_MainColor;
     FbImage.Canvas.pen.Color:=Theme_MainColor;
     if fNewCsrBMP<>nil then
@@ -1722,10 +1729,10 @@ end;
 procedure TViewer.CreateParams(var Params: TCreateParams);
 begin      
   TW.I.Start('CreateParams');
+ Inherited CreateParams(Params);
  Params.WndParent := GetDesktopWindow;
  with params do
  ExStyle := ExStyle or WS_EX_APPWINDOW;
- Inherited CreateParams(Params);
 end;
 
 procedure TViewer.WaitImageTimerTimer(Sender: TObject);
@@ -1738,8 +1745,8 @@ begin
  end;
  WaitImage.Width:=drawimage.Width;
  WaitImage.Height:=drawimage.Height;
- GrayScaleImage(drawimage,WaitImage,WaitGrayScale);
- Canvas.Draw(0,0,WaitImage);
+ GrayScaleImage(drawimage, WaitImage, WaitGrayScale);
+ Canvas.Draw(0, 0, WaitImage);
 end;
 
 procedure TViewer.DoWaitToImage(Sender: TObject);
@@ -2214,7 +2221,8 @@ var
   icons : array [0..1,0..22] of HIcon;
   c, i, j, k, l : integer;
   b : TBitmap;
-  imlists : array [0..2] of TImageList;
+  GrayIcon : HICON;
+  imlists : array [0..2] of TImageList;   ii : TIconInfo;
 Const
   Names : array [0..1,0..22] of String = (('Z_NEXT_NORM','Z_PREVIOUS_NORM','Z_BESTSIZE_NORM','Z_FULLSIZE_NORM','Z_FULLSCREEN_NORM','Z_ZOOMIN_NORM','Z_ZOOMOUT_NORM','Z_FULLSCREEN','Z_LEFT_NORM','Z_RIGHT_NORM','Z_INFO_NORM','IMEDITOR','PRINTER','DELETE_INFO','RATING_STAR','TRATING_1','TRATING_2','TRATING_3','TRATING_4','TRATING_5','Z_DB_NORM','Z_DB_WORK','Z_PAGES'),('Z_NEXT_HOT','Z_PREVIOUS_HOT','Z_BESTSIZE_HOT','Z_FULLSIZE_HOT','Z_FULLSCREEN_HOT','Z_ZOOMIN_HOT','Z_ZOOMOUT_HOT','Z_FULLSCREEN','Z_LEFT_HOT','Z_RIGHT_HOT','Z_INFO_HOT','IMEDITOR','PRINTER','DELETE_INFO','RATING_STAR','TRATING_1','TRATING_2','TRATING_3','TRATING_4','TRATING_5','Z_DB_NORM','Z_DB_WORK','Z_PAGES'));
 
@@ -2223,7 +2231,7 @@ begin
  for i:=0 to 1 do
  for j:=0 to 22 do
  begin
-  icons[i,j] := LoadIcon(DBKernel.IconDllInstance,PChar(Names[i,j]));
+  icons[i,j] := LoadImage(DBKernel.IconDllInstance, PChar(Names[i, j]), IMAGE_ICON, 16, 16, 0);
  end;
   TW.I.Start('FindComponent');
 
@@ -2247,15 +2255,19 @@ begin
  for i:=0 to 1 do
  for j:=0 to 22 do
  begin
-  ImageList_ReplaceIcon(imlists[i].Handle, -1, icons[i,j]);
+  ImageList_ReplaceIcon(imlists[i].Handle, -1, icons[i, j]);
   if i = 0 then
   begin
-   b.Canvas.Rectangle(0, 0, 16, 16);
-   DrawIconEx(b.Canvas.Handle, 0, 0, icons[i, j], 16, 16, 0, 0, DI_NORMAL);
-   GrayScale(b);
-   imlists[2].Add(B, nil);
+    if j in [0, 1, 12, 14, 15, 22] then
+    begin
+      b.Canvas.Rectangle(0, 0, 16, 16);
+      DrawIconEx(b.Canvas.Handle, 0, 0, icons[i, j], 16, 16, 0, 0, DI_NORMAL);
+      GrayScale(b);
+      imlists[2].Add(B, nil);
+    end else
+      ImageList_ReplaceIcon(imlists[2].Handle, -1, icons[i, j]);
   end;
- end;    
+ end;
   TW.I.Start('DestroyIcon');
  for i:=0 to 1 do
  for j:=0 to 22 do

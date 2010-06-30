@@ -916,7 +916,7 @@ begin
 
  if DBKernel.Readbool('Options','UseMainMenuInSearchForm',true) then
  begin
-  if not SafeMode and UseScripts then
+  if UseScripts then
   begin
  TW.I.Start('S -> ReadScriptFile');
    MainMenuScript:=ReadScriptFile('scripts\SearchMainMenu.dbini');
@@ -2532,10 +2532,8 @@ begin
  Label7.Caption:=TEXT_MES_NO_RES;
  DmProgress1.Text:=TEXT_MES_NO_RES;
  SaveWindowPos1.Key:=RegRoot+'Searching';
- if not SafeMode then
  SaveWindowPos1.SetPosition;
  TW.I.Start('S -> Reloadtheme');
- if not SafeMode then
  Reloadtheme(nil);
 
  SortLink.UseSpecIconSize:=true;
@@ -5757,8 +5755,7 @@ procedure TSearchForm.LoadSearchDBParametrs;
 var
   s : string;
 begin
- if not SafeMode then
- s:=DBKernel.ReadString('Search_DB_'+DBKernel.GetDataBaseName,'OldValue') else s:='';
+ s:=DBKernel.ReadString('Search_DB_'+DBKernel.GetDataBaseName,'OldValue') ;
  Rating2.Rating:=DBKernel.ReadInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMinRating',0);
  if DBKernel.ReadBool('Search_DB_'+DBKernel.GetDataBaseName,'OldMethodDecrement',false) then
  Decremect1Click(self) else Increment1Click(self);

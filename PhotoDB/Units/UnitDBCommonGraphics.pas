@@ -113,8 +113,7 @@ var
   I, J, C : integer;
   P : PARGB;
 begin
-  if Image.PixelFormat <> pf24bit then
-    Image.PixelFormat:=pf24bit;
+  Image.PixelFormat := pf24bit;
    
   for i := 0 to Image.Height - 1 do
   begin

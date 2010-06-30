@@ -25,6 +25,8 @@ const
   PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase\Data';
   RegRoot : string = 'Software\Photo DataBase\';
   TempFolderMask = '|NDX|MB|DB|NET|';
+  DelayReadFileOperation = 200;
+  DelayExecuteSQLOperation = 200;
 
   //Information
   MyComputer = TEXT_MES_MY_COMPUTER;

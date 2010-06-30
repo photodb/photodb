@@ -2755,7 +2755,7 @@ begin
  AddScriptFunction(Enviroment, 'GetMyPicturesFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyPicturesFolder);
  AddScriptFunction(Enviroment, 'GetMyDocumentsFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyDocumentsFolder);
  AddScriptFunction(Enviroment, 'ShowInt',F_TYPE_PROCEDURE_INTEGER,@ShowInt);
- AddScriptFunction(Enviroment, 'Sleep',F_TYPE_PROCEDURE_INTEGER,@aSleep);
+ AddScriptFunction(Enviroment, 'Sleep',F_TYPE_PROCEDURE_INTEGER,@Sleep);
  AddScriptFunction(Enviroment, 'AltKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@AltKeyDown);
  AddScriptFunction(Enviroment, 'CtrlKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@CtrlKeyDown);
  AddScriptFunction(Enviroment, 'ShiftKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@ShiftKeyDown);

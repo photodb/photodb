@@ -274,7 +274,8 @@ uses
   UnitDBThread in 'Units\UnitDBThread.pas',
   UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
   uFastLoad in 'Units\uFastLoad.pas',
-  uResources in 'Units\uResources.pas';
+  uResources in 'Units\uResources.pas',
+  uExplorerThreadPool in 'Threads\uExplorerThreadPool.pas';
 
 {$R *.res}
 
@@ -294,7 +295,6 @@ var
     TablePacked : boolean;    
     ActivKey, ActivName, AllParams : String;
     i : integer;
-    StartProcessorMask : Cardinal;
 
   f : TPcharFunction;
   Fh : pointer;
@@ -460,10 +460,6 @@ begin
 
   TablePacked:=false;
   If GetParamStrDBBool('/SLEEP') then Sleep(1000);
-  SafeMode:=False;
-  If GetParamStrDBBool('/SAFEMODE') then SafeMode:=True;
-
-  EventLog(Format('Safe mode = %s',[BoolToStr(SafeMode)]));
 
   ProgramDir:=GetDirectory(Application.ExeName);
   DBTerminating:=false;     
@@ -575,7 +571,6 @@ begin
   TLoad.Instance.StartDBSettingsThread;
 
   TW.I.Start('FindRunningVersion');
-  if not SafeMode then
   if not GetParamStrDBBool('/NoPrevVersion') then
   FindRunningVersion;
 
@@ -732,16 +727,13 @@ begin
          
   TW.I.Start('IsValidGroupsTable');
 
-  if not SafeMode then
-  begin
-   try
-    if not DBTerminating then
-    if not IsValidGroupsTable then
-    if ThisFileInstalled then
+  try
+  if not DBTerminating then
+  if not IsValidGroupsTable then
+  if ThisFileInstalled then
     CreateGroupsTable;
-   except    
+  except
     on e : Exception do EventLog(':PhotoDB() throw exception: '+e.Message);
-   end;
   end;
   //TODO: if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=7;
   //DB FAULT ----------------------------------------------------
@@ -910,13 +902,10 @@ begin
   EventLog('Run manager...');
   if not GetParamStrDBBool('/NoFullRun') then
   FormManager.Run(SplashThread);
+  EventLog('Theme...');
+  DBkernel.LoadColorTheme;
+  DBkernel.ReloadGlobalTheme;
 
-  if not SafeMode then
-  begin
-   EventLog('Theme...');
-   DBkernel.LoadColorTheme;
-   DBkernel.ReloadGlobalTheme;
-  end;
   If not DBTerminating then
   begin
    if AnsiUpperCase(ParamStr(1))='/GETPHOTOS' then
@@ -967,9 +956,7 @@ begin
   ExecuteQuery(s1);
  end;
 
-  SetProcessAffinityMask(MainThreadID, StartProcessorMask);    
-  SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL); 
-  SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
-  Application.Run;
+
+ Application.Run;
 
 end.

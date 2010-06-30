@@ -950,7 +950,7 @@ begin
 
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
-  if UseScripts and not SafeMode then
+  if UseScripts then
   begin             
     TW.I.Start('Script read');
     SetNamedValueStr(aScript, '$dbname', dbname);
@@ -7855,7 +7855,7 @@ procedure TExplorerForm.LoadToolBarGrayedIcons();
 var
   Ico : TIcon;
   UseSmallIcons : Boolean;
-
+         
   procedure AddIcon(Name : String);
   begin
    if UseSmallIcons then Name:=Name+'_SMALL';

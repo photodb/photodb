@@ -10,7 +10,7 @@ uses  win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
  Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
    EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
-   uConstants, CommCtrl, uTime, UnitINI;
+   uConstants, CommCtrl, uTime, UnitINI, SyncObjs;
 
 type
   TCharObject = class (TObject)
@@ -218,7 +218,6 @@ type TDBKernel = class(TObject)
     fDBUserType: TUserType;
     fDBUserHash: integer;
     FTheme: TDbTheme;
-    flock: boolean;
     FForms : array of TForm;
     FThemeNotifys : array of TNotifyEvent; 
     FThemeNotifysForms : array of TForm;
@@ -231,10 +230,10 @@ type TDBKernel = class(TObject)
     FDBs : TPhotoDBFiles;
     fImageOptions : TImageDBOptions;
     FRegistryCache : TDBRegistryCache;
+    FSych : TCriticalSection;
     procedure LoadDBs;
     procedure SetImageList(const Value: TImageList);
     procedure SetTheme(const Value: TDbTheme);
-    procedure setlock(const Value: boolean);
     { Private declarations }
   public              
   IconDllInstance : THandle;
@@ -282,7 +281,6 @@ type TDBKernel = class(TObject)
   Function GetDemoMode : Boolean;
   Function ReadRegName : string;
   Procedure RecreateThemeToForm(Form : TForm);
-  Property Lock : boolean read flock write setlock default false;
   Procedure SaveThemeToFile(FileName : string);
   Procedure LoadThemeFromFile(FileName : string);
   Procedure RegisterForm(Form : TForm);
@@ -345,7 +343,8 @@ constructor TDBKernel.Create;
 var
   i : integer;
 begin
-  inherited;
+  inherited;      
+  FSych := TCriticalSection.Create;
   FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
   for i:=1 to 100 do
@@ -399,6 +398,7 @@ begin
   if Chars[i]<>nil then Chars[i].free;
   FreeIconDll;
   FRegistryCache.Free;
+  FSych.Free;
   inherited;
 end;
 
@@ -1472,11 +1472,6 @@ begin
  Form.font.Color:=Theme_MainFontColor;
 end;
 
-procedure TDBKernel.setlock(const Value: boolean);
-begin
- flock := Value;
-end;
-
 procedure TDBKernel.SaveCurrentColorTheme;
 var
   Reg : TBDRegistry;
@@ -1762,71 +1757,100 @@ end;
 
 procedure TDBKernel.InitRegModule;
 begin
- ReadActivateKey;
- FDemoMode:=GetDemoMode;
+  ReadActivateKey;
+  FDemoMode := GetDemoMode;
 end;
 
 procedure TDBKernel.AddTemporaryPasswordInSession(Pass: String);
 var
-  i : integer;
-begin
- for i:=1 to FPasswodsInSession.Count do
- if FPasswodsInSession[i-1]=Pass then exit;
- FPasswodsInSession.Add(Pass);
+  I : integer;
+begin     
+  FSych.Enter;
+  try
+    for I := 0 to FPasswodsInSession.Count - 1 do
+      if FPasswodsInSession[I] = Pass then
+        Exit;
+    FPasswodsInSession.Add(Pass);
+  finally
+    FSych.Leave;
+  end;
 end;
 
 procedure TDBKernel.ClearTemporaryPasswordsInSession;
-begin
- FPasswodsInSession.Clear;
+begin     
+  FSych.Enter;
+  try
+    FPasswodsInSession.Clear;
+  finally
+    FSych.Leave;
+  end;
 end;
 
 function TDBKernel.FindPasswordForCryptImageFile(FileName: String): String;
 var
-  i : integer;
+  I : Integer;
 begin
- Result:='';
- FileName:=ProcessPath(FileName);
- for i:=1 to FPasswodsInSession.Count do
- if ValidPassInCryptGraphicFile(FileName,FPasswodsInSession[i-1]) then
- begin
-  Result:=FPasswodsInSession[i-1];
-  Break;
- end;
- for i:=1 to FINIPasswods.Count do
- if ValidPassInCryptGraphicFile(FileName,FINIPasswods[i-1]) then
- begin
-  Result:=FINIPasswods[i-1];
-  Break;
- end;
+  Result := '';   
+  FSych.Enter;
+  try
+    FileName := ProcessPath(FileName);
+    for I := 0 to FPasswodsInSession.Count - 1 do
+      if ValidPassInCryptGraphicFile(FileName, FPasswodsInSession[I]) then
+      begin
+        Result := FPasswodsInSession[I];
+        Exit;
+      end;
+    for I := 0 to FINIPasswods.Count - 1 do
+      if ValidPassInCryptGraphicFile(FileName, FINIPasswods[I]) then
+      begin
+        Result := FINIPasswods[I];
+        Exit;
+      end;
+  finally
+    FSych.Leave;
+  end;
 end;
 
 function TDBKernel.FindPasswordForCryptBlobStream(DF : TField): String;
 var
-  i : integer;
+  I : Integer;
 begin
- Result:='';
- for i:=1 to FPasswodsInSession.Count do
- if ValidPassInCryptBlobStreamJPG(DF,FPasswodsInSession[i-1]) then
- begin
-  Result:=FPasswodsInSession[i-1];
-  Break;
- end;
- for i:=1 to FINIPasswods.Count do
- if ValidPassInCryptBlobStreamJPG(DF,FINIPasswods[i-1]) then
- begin
-  Result:=FINIPasswods[i-1];
-  Break;
- end;
+  Result := '';    
+  FSych.Enter;
+  try
+    for I := 0 to FPasswodsInSession.Count - 1 do
+      if ValidPassInCryptBlobStreamJPG(DF, FPasswodsInSession[I]) then
+      begin
+        Result:=FPasswodsInSession[I];
+        Exit;
+      end;
+    for I := 0 to FINIPasswods.Count - 1 do
+      if ValidPassInCryptBlobStreamJPG(DF, FINIPasswods[I]) then
+      begin
+        Result:=FINIPasswods[I];
+        Exit;
+      end;
+  finally
+    FSych.Leave;
+  end;
 end;
 
 procedure TDBKernel.SavePassToINIDirectory(Pass: String);
 var
-  i : integer;
+  I : integer;
 begin
- for i:=1 to FINIPasswods.Count do
- if FINIPasswods[i-1]=Pass then exit;
- FINIPasswods.Add(Pass);
- SaveINIPasswords;
+  FSych.Enter;
+  try
+    for I := 0 to FINIPasswods.Count - 1 do
+      if FINIPasswods[I] = Pass then
+        Exit;
+
+     FINIPasswods.Add(Pass);
+     SaveINIPasswords;
+
+   finally
+     FSych.Leave;
+   end;
 end;
 
 procedure TDBKernel.LoadINIPasswords;
@@ -2186,6 +2210,12 @@ end;
 procedure TDBKernel.LoadIcons;
 var
   I : Integer;
+
+  function LoadIcon(Instance : HINST; ResName : string) : HIcon;
+  begin
+    Result := LoadImage(Instance, PChar(ResName), IMAGE_ICON, 16, 16, 0);
+  end;
+
 begin
   FImageList:=TImageList.Create(nil);
   FImageList.Width:=16;

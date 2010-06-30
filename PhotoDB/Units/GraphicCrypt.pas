@@ -7,7 +7,7 @@ interface
 uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
      JPEG, PngImage, PngDef, TiffImageUnit, uFileUtils,
 {$IFNDEF EXT}
-     GraphicEx, RAWImage,
+     GraphicEx, RAWImage, uConstants,
 {$ENDIF}
      GIFImage, DB;
 
@@ -186,7 +186,7 @@ begin
    c:=true;
    break;
   except
-   sleep(500);
+   sleep(DelayReadFileOperation);
   end;
  end;
  if not c then exit;
@@ -326,7 +326,7 @@ function DeCryptGraphicFile(FileName : String; Pass : String; LoadFullRAW : bool
 var
   Pages : Word;
 begin
- Result:=DeCryptGraphicFileEx(FileName, Pass, Pages, LoadFullRAW, Page);
+  Result:=DeCryptGraphicFileEx(FileName, Pass, Pages, LoadFullRAW, Page);
 end;
 
 function DeCryptGraphicFileEx(FileName : String; Pass : String; var Pages : Word; LoadFullRAW : boolean = false; Page : Word = 0) : TGraphic;
@@ -353,7 +353,7 @@ begin
    c:=true;
    break;
   except
-   sleep(500);
+   sleep(DelayReadFileOperation);
   end;
  end;
  if not c then exit;
@@ -465,7 +465,7 @@ begin
    c:=true;
    break;
   except
-   sleep(500);
+   sleep(DelayReadFileOperation);
   end;
  end;
  if not c then exit;
@@ -552,7 +552,7 @@ begin
    c:=true;
    break;
   except
-   sleep(500);
+   sleep(DelayReadFileOperation);
   end;
  end;
  if not c then exit;
@@ -614,7 +614,7 @@ begin
    c:=true;
    break;
   except
-   sleep(500);
+   sleep(DelayReadFileOperation);
   end;
  end;
  if not c then exit;
@@ -663,7 +663,7 @@ begin
    c:=true;
    break;
   except
-   Sleep(500);
+   Sleep(DelayReadFileOperation);
   end;
   {$ENDIF}
   {$IFDEF DBDEBUG}
@@ -672,7 +672,7 @@ begin
   {$I+}
   if IOResult<>0 then
   begin
-   Sleep(500);
+   Sleep(DelayReadFileOperation);
   end else
   begin
    Close(F);
@@ -724,7 +724,7 @@ begin
    c:=true;
    break;
   except
-   Sleep(500);
+   Sleep(DelayReadFileOperation);
   end;
   {$ENDIF}
   {$IFDEF DBDEBUG}
@@ -733,7 +733,7 @@ begin
   {$I+}
   if IOResult<>0 then
   begin
-   Sleep(500);
+   Sleep(DelayReadFileOperation);
   end else
   begin
    Close(F);
@@ -774,7 +774,7 @@ begin
    c:=true;
    break;
   except
-   sleep(500);
+   sleep(DelayReadFileOperation);
   end;
  end;
  if not c then exit;  
@@ -946,18 +946,18 @@ end;
 
 function ValidCryptBlobStreamJPG(DF : TField) : boolean;
 var
- FBS : TStream;
- GraphicHeader : TGraphicCryptFileHeader;
+  FBS : TStream;
+  GraphicHeader : TGraphicCryptFileHeader;
 begin
- Result:=false;
- FBS:=GetBlobStream(DF,bmRead);
- FBS.Seek(0,soFromBeginning);
- FBS.Read(GraphicHeader,SizeOf(TGraphicCryptFileHeader));
- if GraphicHeader.ID='.PHDBCRT' then
- begin
-  Result:=true;
- end;
- FBS.Free;
+  Result := False;
+  FBS := GetBlobStream(DF,bmRead);
+  try
+    FBS.Seek(0, soFromBeginning);
+    FBS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    Result := GraphicHeader.ID = '.PHDBCRT';
+  finally
+    FBS.Free;
+  end;
 end;
 
 function ValidPassInCryptBlobStreamJPG(DF : TField; Pass : String) : boolean;

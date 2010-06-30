@@ -43,7 +43,6 @@ procedure Run(ExeFile, Params : String);
 procedure Exec(FileName : string);
 Procedure aCopyFile(FromFile, ToDir : string);
 procedure aRenameFile(S,D : String);
-procedure aSleep(ms : integer);
 function ShowInt(int : integer) : string;
 procedure aDeleteFile(S : String);
 function AltKeyDown : boolean;
@@ -682,11 +681,6 @@ begin
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
   RenameFile(PChar(S),PChar(D));
   SetErrorMode(oldMode);
-end;
-
-procedure aSleep(ms : integer);
-begin
- Sleep(ms);
 end;
 
 function ShowInt(int : integer) : string;

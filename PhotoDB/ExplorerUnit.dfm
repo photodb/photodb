@@ -1,6 +1,6 @@
 object ExplorerForm: TExplorerForm
   Left = 268
-  Top = 193
+  Top = 153
   Width = 878
   Height = 647
   VertScrollBar.Visible = False

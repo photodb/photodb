@@ -11,7 +11,7 @@ uses
  EasyListview, GraphicsCool, uVistaFuncs, uResources,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
  uThreadEx, uAssociatedIcons, uLogger, uTime,
- UnitExplorerLoadSIngleImageThread;
+ UnitExplorerLoadSIngleImageThread, uConstants;
 
 type
  TExplorerViewInfo = record
@@ -47,11 +47,10 @@ type
   FCID : TGUID;
   TempBitmap : TBitmap;
   fbmp : tbitmap;
-  FPic : TPicture;
+//  FPic : TPicture;
   ExplorerInfo : TExplorerViewInfo;
   FSelected : TEasyItem;
   FFolderBitmap : TBitmap;
-  FolderImageRect : TRect;
   fFolderImages : TFolderImages;
   FcountOfFolderImage : Integer;
   fFastDirectoryLoading : Boolean;
@@ -68,8 +67,6 @@ type
   FShowFiles : Boolean;
   FUpdaterInfo : TUpdaterInfo;
   FQuery : TDataSet;
-  NoRecords : Boolean;
-  IsCurrentRecord : Boolean;
   FInfoText : String;
   FInfoMax : integer;
   FInfoPosition : Integer;
@@ -78,10 +75,8 @@ type
   DriveNameParam : String;
   FThreadType : Integer;
   StrParam : String;
-  PassParam : String;
   FIcoSize : integer;
   FilesWithoutIcons, IntIconParam : Integer;
-  CountOfShowenGraphicFiles : Integer;
   CurrentInfoPos : Integer;
   FVisibleFiles : TStrings;
   IsBigImage : boolean;
@@ -107,20 +102,20 @@ type
     procedure DrawImageIconSmall;
     procedure AddImageFileImageToExplorer;
     procedure AddImageFileItemToExplorer;
-    procedure ReplaceImageItemImage;
-    procedure DrawImageToTempBitmap;
+    procedure ReplaceImageItemImage(FileName : string; FileSize : Int64);
+    procedure DrawImageToTempBitmapCenter;
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
     procedure ReplaceThumbImageToFolder;
     Procedure MakeFolderBitmap;
     Procedure DrawFolderImageBig(Bitmap : TBitmap);
-    procedure DrawFolderImageWithXY(Bitmap : TBitmap);
+    procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect);
     procedure ReplaceFolderImage;
     procedure AddFileToExplorer;
     procedure AddFile;
     procedure AddImageFileToExplorerW;
     procedure AddImageFileItemToExplorerW;
-    procedure FindInQuery(FileName : String);
+    function FindInQuery(FileName : String) : Boolean;
     Procedure ShowInfo(StatusText : String); overload;
     Procedure ShowInfo(Max, Value : Integer); overload;
     Procedure ShowInfo(StatusText : String; Max, Value : Integer); overload;
@@ -140,7 +135,6 @@ type
     procedure ShowMessage_;
     procedure ExplorerBack;
     procedure UpdateFile;
-    procedure FindPassword;
     procedure UpdateFolder;
     procedure ReplaceImageInExplorerA;
     procedure ReplaceImageInExplorerB;
@@ -157,6 +151,7 @@ type
     procedure DoDefaultSort;
     procedure ExplorerHasIconForExt;
     procedure SetIconForFileByExt;
+    procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean);
   public
     constructor Create(folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
@@ -172,13 +167,6 @@ type
       AExplorerFolders : TExplorerFolders;
       UpdaterCount : integer = 0;
       ExplorerUpdateBigImageThreadsCount : integer = 0;
-
-  
-
-  UpdatesCountLimit : integer = 2;
-
-  const fGlobalSm = 1;
-
 
 implementation
 
@@ -223,9 +211,6 @@ begin
   FreeOnTerminate:=true;
   CoInitialize(nil);
   try
-    IsCurrentRecord:=false;
-    CountOfShowenGraphicFiles:=0;
-    NoRecords:=false;
     LoadingAllBigImages:=true;
 
     case ExplorerInfo.View of
@@ -250,12 +235,12 @@ begin
       Exit;
     end;
 
-    if (FThreadType=THREAD_TYPE_IMAGE) then
+    if (FThreadType = THREAD_TYPE_IMAGE) then
     begin
-      if UpdaterCount>UpdatesCountLimit then
+      if UpdaterCount > ProcessorCount then
       begin
         repeat
-          if UpdaterCount < UpdatesCountLimit then
+          if UpdaterCount < ProcessorCount then
             Break;
           Sleep(10);
         until False;
@@ -363,11 +348,11 @@ begin
           on e : Exception do
           begin
            EventLog(':TExplorerThread::Execute throw exception: '+e.Message);
-           Sleep(300);
+           Sleep(DelayExecuteSQLOperation);
           end;
          end;
         end;
-        if (FQuery.RecordCount <> 0) and not ExplorerInfo.ShowPrivate then
+        if not FQuery.IsEmpty and not ExplorerInfo.ShowPrivate then
         begin
           FQuery.First;
           for I := 1 to FQuery.RecordCount do
@@ -378,8 +363,7 @@ begin
             FQuery.Next;
           end;
           PrivateFiles.Sort;
-        end else
-           NoRecords := True;
+        end;
                                      
         ShowInfo(TEXT_MES_READING_FOLDER,1,0);   
         FilesReadedCount:=0;
@@ -397,11 +381,10 @@ begin
           FA := SearchRec.Attr and FaHidden;
           If ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
           begin
-           if not ExplorerInfo.ShowPrivate and not NoRecords then
+           if not ExplorerInfo.ShowPrivate then
              if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.Name)) > -1 then
-             begin
-              Continue;
-             end;
+               Continue;
+
            inc(FilesReadedCount);
            ShowInfo(Format(TEXT_MES_READING_FOLDER_FORMAT,[IntToStr(FilesReadedCount)]),1,0);
            If ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
@@ -470,7 +453,7 @@ begin
         for I := 0 to FFiles.Count - 1 do
         if FFiles[I].FileType = EXPLORER_ITEM_IMAGE then
         begin
-         If Terminated then Break;
+          if Terminated then Break;
          GUIDParam:=FFiles[i].SID;
           inc(ImageFiles);
           Inc(InfoPosition);
@@ -519,7 +502,7 @@ begin
               ShowInfo(InfoPosition);
               CurrentFile:=FFiles[i].FileName;
               CurrentInfoPos:=i;
-              ReplaceImageItemImage;
+              ReplaceImageItemImage(FFiles[i].FileName, FFiles[i].FileSize);
             end;
           end;
 
@@ -702,15 +685,8 @@ begin
    IntIconParam:=1;
   end;
  end;
- if not b then
-  begin
-  if not SafeMode then
-  ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false) else
-  begin
-   ficon:=TIcon.Create;
-   ficon.Handle:=ExtractAssociatedIcon_(CurrentFile);
-  end;
- end;
+  if not b then
+    ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false);
 
  if ExplorerInfo.View=LV_THUMBS then
  begin
@@ -764,202 +740,82 @@ begin
   end;
 end;
 
-procedure TExplorerThread.ReplaceImageItemImage;
+procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64);
 var
-  TempBit, Fbit : TBitmap;
-  w, h : integer;
   FBS : TStream;
-  Crypted : boolean;
+  CryptedFile : Boolean;
 begin
-  TempBitmap:=nil;
-  IsBigImage:=false;
-  Crypted:=ValidCryptGraphicFile(CurrentFile);
+  TempBitmap := nil;
+  IsBigImage := False;
+  CryptedFile := ValidCryptGraphicFile(FileName);
 
-  Info:=RecordInfoOne(CurrentFile, 0, 0, 0, 0, FFiles[CurrentInfoPos].FileSize, '', '', '', '', '', 0, False, False, 0, Crypted, True, False, '');
-  Info.Tag:=0;
+  Info:=RecordInfoOne(FileName, 0, 0, 0, 0, FileSize, '', '', '', '', '', 0, False, False, 0, CryptedFile, True, False, '');
+  Info.Tag := EXPLORER_ITEM_FOLDER;
+
   if not FUpdaterInfo.IsUpdater then
   begin
-   If not NoRecords then
-   begin
-    FindInQuery(CurrentFile);
-    If IsCurrentRecord then
+    if FindInQuery(FileName) then
     begin
-     Info:=RecordInfoOne(fQuery.FieldByName('FFileName').AsString,fQuery.FieldByName('ID').AsInteger,fQuery.FieldByName('Rotated').AsInteger,fQuery.FieldByName('Rating').AsInteger, fQuery.FieldByName('Access').AsInteger, fQuery.FieldByName('FileSize').AsInteger,fQuery.FieldByName('Comment').AsString,fQuery.FieldByName('KeyWords').AsString, fQuery.FieldByName('Owner').AsString, fQuery.FieldByName('Collection').AsString, fQuery.FieldByName('Groups').AsString, fQuery.FieldByName('DateToAdd').AsDateTime, fQuery.FieldByName('IsDate').AsBoolean, fQuery.FieldByName('IsTime').AsBoolean, fQuery.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')),fQuery.FieldByName('Include').AsBoolean,true,fQuery.FieldByName('Links').AsString);
+      Info:=RecordInfoOne(
+        FileName,
+        fQuery.FieldByName('ID').AsInteger,
+        fQuery.FieldByName('Rotated').AsInteger,
+        fQuery.FieldByName('Rating').AsInteger,
+        fQuery.FieldByName('Access').AsInteger,
+        fQuery.FieldByName('FileSize').AsInteger,
+        fQuery.FieldByName('Comment').AsString,
+        fQuery.FieldByName('KeyWords').AsString,
+        fQuery.FieldByName('Owner').AsString,
+        fQuery.FieldByName('Collection').AsString,
+        fQuery.FieldByName('Groups').AsString,
+        fQuery.FieldByName('DateToAdd').AsDateTime,
+        fQuery.FieldByName('IsDate').AsBoolean,
+        fQuery.FieldByName('IsTime').AsBoolean,
+        fQuery.FieldByName('aTime').AsDateTime,
+        ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')),
+        fQuery.FieldByName('Include').AsBoolean,
+        True,
+        fQuery.FieldByName('Links').AsString);
 
-      if (ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS)) then
+      if ExplorerInfo.View = LV_THUMBS then
       begin
-      if TBlobField(fQuery.FieldByName('thum'))=nil then begin FreeDS(fQuery); exit; end;
-      info.ItemCrypted:=ValidCryptBlobStreamJPG(fQuery.FieldByName('thum'));
-      if info.ItemCrypted then
-      begin
-       Info.Image:=DeCryptBlobStreamJPG(fQuery.FieldByName('thum'),DBkernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'))) as TJpegImage;
-       if Info.Image<>nil then Info.PassTag:=1;
-      end else
-      begin
-       Info.Image:=TJpegImage.Create;
-       FBS:=GetBlobStream(fQuery.FieldByName('thum'),bmRead);
-       inc(CountOfShowenGraphicFiles);
-       try
-        if FBS.Size<>0 then
-        Info.Image.loadfromStream(FBS) else
-       except
-       end;
-       FBS.Free;
+        if info.ItemCrypted then
+        begin
+          Info.Image := DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'))) as TJpegImage;
+          if Info.Image <> nil then
+            Info.PassTag := 1;
+        end else
+        begin
+          Info.Image := TJpegImage.Create;
+          FBS := GetBlobStream(fQuery.FieldByName('thum'), bmRead);
+          try
+            Info.Image.LoadFromStream(FBS);
+          finally
+            FBS.Free;
+          end;
+        end;
       end;
-     end;
     end;
-   end;
-   Info.ItemCrypted:=Crypted;
   end else
-  begin
-   Info:=GetInfoByFileNameA(CurrentFile,(ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS)));
-   if FUpdaterInfo.IsUpdater then
-   Info.ItemSize:=FFiles[CurrentInfoPos].FileSize;
-  end;
-  Info.Loaded:=true;
-  Info.Tag:=EXPLORER_ITEM_IMAGE;
-  Info.ItemFileName:=CurrentFile;
+    Info := GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS);
+    
+  Info.Loaded := True;
+  Info.Tag := EXPLORER_ITEM_IMAGE;
 
-  if not (ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS)) then
+  if not ExplorerInfo.View = LV_THUMBS then
   begin
-   SynchronizeEx(ReplaceInfoInExplorer);  
-   Exit;
+    SynchronizeEx(ReplaceInfoInExplorer);
+    Exit;
   end;
 
-  FPic:=nil;
-  If Info.ItemId=0 then
-  begin
-   Fpic:=Tpicture.Create;
+  //Create image from Info!!!
 
-   try
-    if Crypted then
-    begin      
-     IsBigImage:=true;
-     Info.ItemCrypted:=true;
-     PassParam:=CurrentFile;
-     SynchronizeEx(FindPassword);
-     if PassParam<>'' then
-     begin
-      Fpic.Graphic:=DeCryptGraphicFile(CurrentFile,PassParam);
-      Info.PassTag:=1;
-     end else
-     begin
-      Info.PassTag:=0;
-     end;
-    end else
-    begin
-     if IsRAWImageFile(CurrentFile) then
-     begin
-      Fpic.Graphic:=TRAWImage.Create;
-      if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(CurrentFile) then
-      Fpic.Graphic.LoadFromFile(CurrentFile);
-     end else
-     Fpic.LoadFromFile(CurrentFile);
-     IsBigImage:=true;
-    end;
-   except
-    Fpic.Free;
-    TempBitmap.Free;
-    exit;
-   end;
-   if not ((Info.PassTag=0) and Info.ItemCrypted) then
-   begin
-    TempBit:=TBitmap.create;
-    JPEGScale(Fpic.Graphic,ExplorerInfo.PictureSize,ExplorerInfo.PictureSize);
-    if Min(Fpic.Height,Fpic.Width)>1 then
-    try
-     LoadImageX(Fpic.Graphic,TempBit,Theme_ListColor);
-    except
-    end;    
-    inc(CountOfShowenGraphicFiles);
-    Fpic.Free;
-    TempBit.PixelFormat:=pf24bit;
-    w:=TempBit.Width;
-    h:=TempBit.Height;
-    Fbit:=TBitmap.create;
-    Fbit.PixelFormat:=pf24bit;
-    If Max(w,h)<ThImageSize then Fbit.Assign(TempBit) else
-    begin
-
-     ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize,w,h);
-     try
-      DoResize(w,h,TempBit,Fbit);
-     except
-     end;
-    end;
-    TempBit.Free;
-
-    TempBitmap:=Fbit;
-    Fbit:=nil;
-
-   end else
-   begin
-    if FPic<>nil then Fpic.Free;
-    Fbit:=TBitmap.create;
-    Fbit.PixelFormat:=pf24bit;
-    if not SafeMode then
-    ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false) else
-    begin
-     ficon:=TIcon.Create;
-     ficon.Handle:=ExtractAssociatedIcon_(CurrentFile);
-    end;
-
-    if ExplorerInfo.View=LV_THUMBS then
-    begin
-     if TempBitmap=nil then MakeTempBitmap;
-     IconParam:=ficon;
-     SynchronizeEx(DrawImageIcon);
-     ficon.free;
-     GraphicParam:=Fbit;
-    end;
-
-    SynchronizeEx(DrawImageToTempBitmap);
-    Fbit.free;
-   end;
-  end else
-  begin
-   if not ((Info.PassTag=0) and Info.ItemCrypted) then
-   begin
-    if TempBitmap=nil then MakeTempBitmap;
-    TempBitmap.Assign(Info.Image);
-    Info.Image.Free;
-   end else
-   begin
-    if FPic<>nil then Fpic.Free;
-    Fbit:=TBitmap.create;
-    Fbit.PixelFormat:=pf24bit;
-    if not SafeMode then
-    ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false) else
-    begin
-     ficon:=TIcon.Create;
-     ficon.Handle:=ExtractAssociatedIcon_(CurrentFile);
-    end;
-    IconParam:=ficon;  
-    if TempBitmap=nil then MakeTempBitmap;
-    SynchronizeEx(DrawImageIcon);
-    ficon.free;
-    GraphicParam:=Fbit;
-    SynchronizeEx(DrawImageToTempBitmap);
-    Fbit.free;
-   end;
-  end;
-  if not ((Info.PassTag=0) and Info.ItemCrypted) then
-  begin
-   case Info.ItemRotate of
-    DB_IMAGE_ROTATED_90  :  Rotate90A(TempBitmap);
-    DB_IMAGE_ROTATED_180 :  Rotate180A(TempBitmap);
-    DB_IMAGE_ROTATED_270 :  Rotate270A(TempBitmap);
-   end;
-  end;
-  
-  if FThreadType=THREAD_TYPE_IMAGE then IsBigImage:=false; //сбрасываем флаг для того чтобы перезагрузилась картинка
-  SynchronizeEx(ReplaceImageInExplorer);
-  if Info.PassTag=1 then inc(CountOfShowenGraphicFiles);
+  ExtractImage(Info, CryptedFile);
 end;
 
-procedure TExplorerThread.DrawImageToTempBitmap;
+procedure TExplorerThread.DrawImageToTempBitmapCenter;
 begin
- TempBitmap.Canvas.Draw(ThSize div 2-GraphicParam.Width div 2,ThSize div 2-GraphicParam.height div 2,GraphicParam);
+  TempBitmap.Canvas.Draw(ThSize div 2 - GraphicParam.Width div 2, ThSize div 2 - GraphicParam.height div 2, GraphicParam);
 end;
 
 procedure TExplorerThread.ReplaceImageInExplorer;
@@ -967,12 +823,7 @@ begin
   if not Terminated then
   begin
     FSender.SetInfoToItem(Info, GUIDParam);
-
-    if not isBigImage then
-      FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude)
-    else
-      FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude, True);
-
+    FSender.ReplaceBitmap(TempBitmap, GUIDParam, Info.ItemInclude, isBigImage);
   end;
 end;
 
@@ -1200,9 +1051,7 @@ begin
    w:=fbmp.Width;
    h:=fbmp.Height;
    ProportionalSize(SmallImageSize,SmallImageSize,w,h);
-
-   FolderImageRect:=Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h);
-   DrawFolderImageWithXY(TempBitmap);
+   DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h));
    Continue;
   end;
   if index>count+Nbr then break;
@@ -1246,8 +1095,7 @@ begin
    w:=fbmp.Width;
    h:=fbmp.Height;
    ProportionalSize(SmallImageSize,SmallImageSize,w,h);
-   FolderImageRect:=Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h);
-   DrawFolderImageWithXY(TempBitmap);
+   DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h));
    fbmp.Free;
    Query.Next;
   end else begin
@@ -1282,8 +1130,7 @@ begin
    JPEGScale(pic.Graphic,SmallImageSize,SmallImageSize);
    w:=pic.Width;
    h:=pic.Height;
-   ProportionalSize(SmallImageSize,SmallImageSize,w,h);   
-   FolderImageRect:=Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h);
+   ProportionalSize(SmallImageSize,SmallImageSize,w,h);
    bmp := TBitmap.create;
    bmp.Assign(pic.Graphic);
    pic.Free;
@@ -1292,7 +1139,7 @@ begin
    fbmp.PixelFormat:=pf24bit;
    DoResize(w,h,bmp,fbmp);
    bmp.Free;
-   DrawFolderImageWithXY(TempBitmap);
+   DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h));
    fbmp.free;
   end;
  end;
@@ -1329,7 +1176,7 @@ begin
       FullFolderPicture := GetFolderPicture;
 
    if FullFolderPicture = nil then
-     exit;
+     Exit;
 
    Bit32 := TBitmap.Create;
    try
@@ -1341,7 +1188,7 @@ begin
   end;
 end;
 
-procedure TExplorerThread.DrawFolderImageWithXY(Bitmap : TBitmap);
+procedure TExplorerThread.DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect);
 begin
  If not fFastDirectoryLoading then
  if ExplorerInfo.SaveThumbNailsForFolders then
@@ -1384,8 +1231,8 @@ begin
   begin
    GUIDParam:=FFiles[0].SID;
    CurrentFile:=FFiles[0].FileName;
-   AddImageFileToExplorerW;
-   ReplaceImageItemImage;
+   AddImageFileToExplorerW;           //TODO: filesize is undefined
+   ReplaceImageItemImage(CUrrentFile, FFiles[0].FileSize);
   end;
  If FFiles[0].FileType=EXPLORER_ITEM_FILE then
  begin
@@ -1398,7 +1245,7 @@ begin
   GUIDParam:=FFiles[0].SID;
   CurrentFile:=FFiles[0].FileName;
   AddImageFileToExplorerW;
-  Sleep(5000);
+  Sleep(2000); //wait if folder was jast created - it possible that files are currentry in copy-progress...
   try
    if ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS) then
    ReplaceThumbImageToFolder;
@@ -1409,11 +1256,7 @@ end;
 
 procedure TExplorerThread.AddImageFileToExplorerW;
 begin
- if not SafeMode then ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false) else
- begin
-  ficon:=TIcon.Create;
-  ficon.Handle:=ExtractAssociatedIcon_(CurrentFile);
- end;
+ ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false);
  if ExplorerInfo.View=LV_THUMBS then
  begin
   MakeTempBitmap;
@@ -1440,12 +1283,7 @@ end;
 
 procedure TExplorerThread.MakeFolderImage(Folder: String);
 begin
-  if not SafeMode then
-  ficon:=TAIcons.Instance.GetIconByExt(Folder,true, FIcoSize,false) else
-  begin
-   ficon:=TIcon.Create;
-   ficon.Handle:=ExtractAssociatedIcon_(CurrentFile);
-  end;
+  ficon:=TAIcons.Instance.GetIconByExt(Folder,true, FIcoSize,false);
   if ExplorerInfo.View=LV_THUMBS then
   begin
    SynchronizeEx(MakeFolderBitmap);
@@ -1458,10 +1296,10 @@ end;
 
 procedure TExplorerThread.MakeTempBitmap;
 begin
- TempBitmap:=Tbitmap.Create;
- TempBitmap.PixelFormat:=pf24Bit;
- TempBitmap.Width:=ExplorerInfo.PictureSize;
- TempBitmap.Height:=ExplorerInfo.PictureSize;
+ TempBitmap := Tbitmap.Create;
+ TempBitmap.PixelFormat := pf24Bit;
+ TempBitmap.Width := ExplorerInfo.PictureSize;
+ TempBitmap.Height := ExplorerInfo.PictureSize;
 end;
 
 procedure TExplorerThread.MakeTempBitmapSmall;
@@ -1473,25 +1311,31 @@ begin
  FillRectNocanvas(TempBitmap, Theme_ListColor);
 end;
 
-procedure TExplorerThread.FindInQuery(FileName: String);
+function TExplorerThread.FindInQuery(FileName: String) : Boolean;
 Var
   i : integer;
   AddPathStr : string;
 begin
- IsCurrentRecord:=false;
- Fquery.First;
- UnProcessPath(FileName);
- FileName:=AnsiLowerCase(FileName);
- if FolderView then AddPathStr:=ProgramDir else AddPathStr:='';
- For i:=1 to Fquery.RecordCount do
- begin
-  if AnsiLowerCase(AddPathStr+Fquery.FieldByName('FFileName').AsString)=FileName then
+  Result := False;
+  if (not FQuery.IsEmpty) then
   begin
-   IsCurrentRecord:=true;
-   Break;
+    UnProcessPath(FileName);
+    FileName:=AnsiLowerCase(FileName);
+    if FolderView then
+      AddPathStr:=ProgramDir
+    else
+      AddPathStr := '';   
+    Fquery.First;
+    for i:=1 to Fquery.RecordCount do
+    begin
+      if AnsiLowerCase(AddPathStr+Fquery.FieldByName('FFileName').AsString) = FileName then
+      begin
+        Result := true;
+        Exit;
+      end;
+      FQuery.Next;
+   end;
   end;
- Fquery.Next;
- end;
 end;
 
 procedure TExplorerThread.ShowInfo(StatusText: String);
@@ -1816,7 +1660,7 @@ begin
  if FolderView then CurrentFile:=ProgramDir+FFiles[0].FileName else
  CurrentFile:=FFiles[0].FileName;
  if ExplorerInfo.ShowThumbNailsForImages then
- ReplaceImageItemImage;
+ ReplaceImageItemImage(FFiles[0].FileName, -1); //todo: filesize is undefined
  if FUpdaterInfo.ID<>0 then
  SynchronizeEx(ChangeIDImage);
  IntParam:=FUpdaterInfo.ID;
@@ -1831,11 +1675,6 @@ begin
  if Info.ItemId<>0 then
  if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
  SynchronizeEx(DoUpdaterHelpProc);
-end;
-
-procedure TExplorerThread.FindPassword;
-begin
- PassParam:=DBKernel.FindPasswordForCryptImageFile(PassParam);
 end;
 
 function TExplorerThread.ShowFileIfHidden(FileName :String): boolean;
@@ -1863,11 +1702,7 @@ begin
  MakeTempBitmapSmall;
  FillRectNoCanvas(TempBitmap,Dolphin_DB.Theme_ListColor);
 
- if not SafeMode then ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false) else
- begin
-  ficon:=TIcon.Create;
-  ficon.Handle:=ExtractAssociatedIcon_(CurrentFile);
- end;
+ ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false);
  if self.ExplorerInfo.View=LV_THUMBS then
  begin
   IconParam:=ficon;
@@ -1967,8 +1802,8 @@ begin
   ProcNum:=GettingProcNum;
   FPic:=nil;
  
-  while ExplorerUpdateBigImageThreadsCount>=(ProcNum+1) do
-    sleep(10);
+  while ExplorerUpdateBigImageThreadsCount > ProcNum do
+    Sleep(10);
 
   Inc(ExplorerUpdateBigImageThreadsCount);
 
@@ -1990,7 +1825,6 @@ begin
     begin
      SynchronizeEx(GetVisibleFiles);
      VisibleUp(i);
-     Sleep(5);
     end;
 
     GUIDParam:=FFiles[i].SID;
@@ -2136,10 +1970,115 @@ begin
   FSender.DoStopLoading;
 end;
 
+procedure TExplorerThread.ExtractImage(Info: TOneRecordInfo; CryptedFile : Boolean);
+var
+  W, H : integer;
+  FPic : TPicture;
+  Password : string;  
+  TempBit, Fbit : TBitmap;
+begin
+ if Info.ItemId = 0 then
+  begin
+    Fpic := TPicture.Create;
+    try
+      if CryptedFile then
+      begin
+        IsBigImage := True;
+        Info.ItemCrypted := True;
+        Password := DBKernel.FindPasswordForCryptImageFile(Info.ItemFileName);
+        if Password <> '' then
+        begin
+          Fpic.Graphic := DeCryptGraphicFile(Info.ItemFileName, Password);
+          Info.PassTag := 1;
+        end else
+        begin
+          Info.PassTag := 0;
+        end;
+      end else
+      begin
+        if IsRAWImageFile(CurrentFile) then
+        begin
+          Fpic.Graphic := TRAWImage.Create;
+          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(Info.ItemFileName) then
+            Fpic.Graphic.LoadFromFile(Info.ItemFileName);
+        end else
+          Fpic.LoadFromFile(Info.ItemFileName);
+        IsBigImage := True;
+      end;
+      if not ((Info.PassTag = 0) and Info.ItemCrypted) then
+      begin
+        TempBit := TBitmap.create;
+        try
+          TempBit.PixelFormat := pf24bit;
+          JPEGScale(Fpic.Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+          if Min(FPic.Height, FPic.Width) > 1 then
+            LoadImageX(Fpic.Graphic, TempBit, Theme_ListColor);
+
+          W := TempBit.Width;
+          H := TempBit.Height;
+          //Result picture
+          TempBitmap := TBitmap.Create;
+          TempBitmap.PixelFormat := pf24bit;
+          if Max(W, H) < ThImageSize then
+            TempBitmap.Assign(TempBit)
+          else
+          begin
+            ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
+            DoResize(W, H, TempBit, TempBitmap);
+          end;
+        finally
+          TempBit.Free;
+        end;
+      end else
+      begin
+        GraphicParam :=  TAIcons.Instance.GetIconByExt(Info.ItemFileName, False, FIcoSize, False);
+        try
+          MakeTempBitmap;
+          SynchronizeEx(DrawImageToTempBitmapCenter);
+        finally
+          GraphicParam.Free;
+        end;
+      end;
+    finally
+      FPic.Free;
+    end;
+  end else //if ID <> 0
+  begin
+    if not ((Info.PassTag = 0) and Info.ItemCrypted) then
+    begin
+      TempBitmap := TBitmap.Create;
+      TempBitmap.Assign(Info.Image);
+    end else
+    begin
+      Fbit := TBitmap.Create;
+      try
+        Fbit.PixelFormat := pf24bit;
+        GraphicParam := TAIcons.Instance.GetIconByExt(Info.ItemFileName, False, FIcoSize, False);
+        try
+          MakeTempBitmap;
+          SynchronizeEx(DrawImageToTempBitmapCenter);
+        finally
+          GraphicParam.Free;
+        end;
+      finally
+        Fbit.free;
+      end;
+    end;
+  end;
+  if Info.Image <> nil then
+    Info.Image.Free;
+    
+  if not ((Info.PassTag = 0) and Info.ItemCrypted) then
+    ApplyRotate(TempBitmap, Info.ItemRotate);
+  
+  if FThreadType = THREAD_TYPE_IMAGE then
+    IsBigImage := False; //сбрасываем флаг для того чтобы перезагрузилась картинка
+
+  SynchronizeEx(ReplaceImageInExplorer);
+end;
+
 initialization
 
- TW.I.Start('GettingProcNum');
- UpdatesCountLimit := GettingProcNum+1;
  UpdaterCount:=0;
 
 finalization

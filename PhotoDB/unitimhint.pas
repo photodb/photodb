@@ -140,7 +140,6 @@ const
   CS_DROPSHADOW = $00020000; 
 begin 
   inherited;
-  if not SafeMode then
   if DBKernel.Readinteger('Options','PreviewSwohOptions',0)=1 then
   if IsWinXP then
   Params.WindowClass.Style := Params.WindowClass.Style or CS_DROPSHADOW;
