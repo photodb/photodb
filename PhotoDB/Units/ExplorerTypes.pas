@@ -3,7 +3,7 @@ unit ExplorerTypes;
 interface
 
 Uses UnitDBKernel, Forms, SysUtils, Windows, Graphics,  Dolphin_DB, 
-     Messages, Classes, DB, GraphicsCool, jpeg, wfsU,
+     Messages, Classes, DB, GraphicsCool, jpeg, wfsU, SyncObjs,
      UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics;
 
 type
@@ -187,7 +187,8 @@ Type
   Private
     FImages : Array of TFolderImages;
     FSaveFoldersToDB: Boolean;
-    fDBName : String;
+    FDBName : String;
+    FSync : TCriticalSection;
     procedure SetSaveFoldersToDB(const Value: Boolean);
   Public
     Constructor Create;
@@ -196,11 +197,6 @@ Type
     Procedure SaveFolderImages(FolderImages : TFolderImages; Width : integer; Height : integer);
     Function GetFolderImages(Directory : String; Width : integer; Height : integer) : TFolderImages;
     Property SaveFoldersToDB : Boolean Read FSaveFoldersToDB Write SetSaveFoldersToDB;
-    Function GetThumbDBName : String;
-    Function CheckDB : Boolean;
-    Function CreateThumbDB: Boolean;
-    Function FormatDirNameToDB(Directory : String):String;
-    Procedure LoadImageFromThumbDB(Directory : String; var FolderImages : TFolderImages);
     procedure CheckFolder(Folder : String);
     procedure Clear;
   end;
@@ -247,89 +243,60 @@ end;
 
 { TExplorerFolders }
 
-function TExplorerFolders.CheckDB : Boolean;
-begin
- //UnSupported
- Result:=false;
-{ If not FileExists(fDBName) then exit;
- fTable.Active:=false;
- fTable.TableName:=fDBName;
- Try
-  fTable.Active:=true;
- Except
-  SaveFoldersToDB:=false;
-  Exit;
- end;
- Try
-  fTable.FieldByName('FolderName').AsString;
-  fTable.FieldByName('ImagesCount').AsInteger;
-  fTable.FieldByName('Attr').AsString;
- Except
-  SaveFoldersToDB:=false;
-  Exit;
- End;
- Result:=true;}
-end;
-
 procedure TExplorerFolders.CheckFolder(Folder: String);
 var
   i, k, l: integer;
-begin
- For i:=0 to Length(FImages)-1 do
- begin
-  If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(Folder) then
-  for k:=1 to 4 do
-  if FImages[i].FileNames[k]='' then
-  begin
-   for l:=1 to 4 do
-   if FImages[i].Images[l]<>nil then FImages[i].Images[l].free;
-   for l:=i to Length(FImages)-2 do
-   FImages[l]:=FImages[l+1];
-   if Length(FImages)>0 then
-   SetLength(FImages,Length(FImages)-1);
-   break;
+begin 
+  FSync.Enter;
+  try
+   For i:=0 to Length(FImages)-1 do
+   begin
+    If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(Folder) then
+    for k:=1 to 4 do
+    if FImages[i].FileNames[k]='' then
+    begin
+     for l:=1 to 4 do
+     if FImages[i].Images[l]<>nil then FImages[i].Images[l].free;
+     for l:=i to Length(FImages)-2 do
+     FImages[l]:=FImages[l+1];
+     if Length(FImages)>0 then
+     SetLength(FImages,Length(FImages)-1);
+     break;
+    end;
+   end;
+  finally
+    FSync.Leave;
   end;
- end;
 end;
 
 procedure TExplorerFolders.Clear;
 var
-  i, j :integer;
+  I, J :integer;
 begin
-  For i:=0 to Length(FImages)-1 do
-  For j:=1 to 4 do       
-  if FImages[i].Images[j]<>nil then
-  FImages[i].Images[j].Free;
-  SetLength(FImages,0);
+  FSync.Enter;
+  try
+    for I := 0 to Length(FImages) - 1 do
+      for J := 1 to 4 do
+        if FImages[I].Images[J] <> nil then
+          FImages[I].Images[J].Free;
+    SetLength(FImages, 0);
+  finally
+    FSync.Leave;
+  end;
 end;
 
 constructor TExplorerFolders.Create;
 begin
-  SaveFoldersToDB:=false;
-  SetLength(FImages,0);
-end;
-
-function TExplorerFolders.CreateThumbDB: Boolean;
-begin
- //UnSupported
- Result:=false;
+  FSync := TCriticalSection.Create;
+  SaveFoldersToDB := False;
+  SetLength(FImages, 0);
 end;
 
 destructor TExplorerFolders.Destroy;
-var
-  i, j : integer;
 begin
-  For i:=0 to Length(FImages)-1 do
-  For j:=1 to 4 do
-  if FImages[i].Images[j]<>nil then
-  FImages[i].Images[j].Free;
+  Clear;
+  FSync.Free;
   inherited;
-end;
-
-function TExplorerFolders.FormatDirNameToDB(Directory: String): String;
-begin
- //UnSupported
- Result:='';
 end;
 
 function TExplorerFolders.GetFolderImages(
@@ -337,10 +304,12 @@ function TExplorerFolders.GetFolderImages(
 Var
   i, j, k, w, h : integer;
   b : Boolean;
-begin
- FormatDir(Directory);
- Result.Directory:='';
- For i:=1 to 4 do Result.Images[i]:=nil;
+begin   
+  FSync.Enter;
+  try
+  FormatDir(Directory);
+  Result.Directory:='';
+  for i:=1 to 4 do Result.Images[i]:=nil;
  For i:=0 to Length(FImages)-1 do
  begin
   If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(Directory) then
@@ -379,21 +348,10 @@ begin
     end;
    end;
   end;
- end;
-end;
-
-function TExplorerFolders.GetThumbDBName: String;
-begin
- //unsupported
-{ Result:=DBKernel.GetTemporaryFolder;
- FormatDir(Result);
- Result:=Result+'DBThumbs.db'; }
-end;
-
-procedure TExplorerFolders.LoadImageFromThumbDB(Directory: String;
-  var FolderImages: TFolderImages);
-begin
- //unsupported
+  end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TExplorerFolders.SaveFolderImages(FolderImages: TFolderImages;
@@ -402,54 +360,59 @@ Var
   i, j : integer;
   b : Boolean;
 begin
- b:=false;   
- FormatDir(FolderImages.Directory);
- For i:=0 to Length(FImages)-1 do
- begin
-  If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(FolderImages.Directory) then
-  if FImages[i].Width<Width then
-  begin       
-   FImages[i].Width:=Width;
-   FImages[i].Height:=Height;
-   FImages[i].Directory:=FolderImages.Directory;
-   for j:=1 to 4 do
-   FImages[i].FileNames[j]:=FolderImages.FileNames[j];
-   for j:=1 to 4 do
-   FImages[i].FileDates[j]:=FolderImages.FileDates[j];
-   for j:=1 to 4 do
-   if FImages[i].Images[j]<>nil then
-   FImages[i].Images[j].free;
-   for j:=1 to 4 do
+  FSync.Enter;
+  try
+   b:=false;   
+   FormatDir(FolderImages.Directory);
+   For i:=0 to Length(FImages)-1 do
    begin
-    If FolderImages.Images[j]=nil then break;
-    FImages[i].Images[j]:=TBitmap.create;
-    FImages[i].Images[j].Assign(FolderImages.Images[j]);
-    FImages[i].Images[j].PixelFormat:=pf24bit;
+    If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(FolderImages.Directory) then
+    if FImages[i].Width<Width then
+    begin       
+     FImages[i].Width:=Width;
+     FImages[i].Height:=Height;
+     FImages[i].Directory:=FolderImages.Directory;
+     for j:=1 to 4 do
+     FImages[i].FileNames[j]:=FolderImages.FileNames[j];
+     for j:=1 to 4 do
+     FImages[i].FileDates[j]:=FolderImages.FileDates[j];
+     for j:=1 to 4 do
+     if FImages[i].Images[j]<>nil then
+     FImages[i].Images[j].free;
+     for j:=1 to 4 do
+     begin
+      If FolderImages.Images[j]=nil then break;
+      FImages[i].Images[j]:=TBitmap.create;
+      FImages[i].Images[j].Assign(FolderImages.Images[j]);
+      FImages[i].Images[j].PixelFormat:=pf24bit;
+     end;
+     B:=true;
+     Break;
+    end;
    end;
-   B:=true;
-   Break;
+   If not b and (FolderImages.Images[1]<>nil) then
+   begin
+    SetLength(FImages,Length(FImages)+1);
+    FImages[Length(FImages)-1].Width:=Width;
+    FImages[Length(FImages)-1].Height:=Height;
+    FImages[Length(FImages)-1].Directory:=FolderImages.Directory;
+    For i:=1 to 4 do
+    FImages[Length(FImages)-1].FileNames[i]:=FolderImages.FileNames[i];
+    For i:=1 to 4 do
+    FImages[Length(FImages)-1].FileDates[i]:=FolderImages.FileDates[i];
+    For i:=1 to 4 do
+    FImages[Length(FImages)-1].Images[i]:=nil;
+    For i:=1 to 4 do
+    Begin
+     If FolderImages.Images[i]=nil then break;
+     FImages[Length(FImages)-1].Images[i]:=TBitmap.Create;
+     FImages[Length(FImages)-1].Images[i].Assign(FolderImages.Images[i]);
+     FImages[Length(FImages)-1].Images[i].PixelFormat:=pf24bit;
+    End;
+   end;
+  finally
+    FSync.Leave;
   end;
- end;
- If not b and (FolderImages.Images[1]<>nil) then
- begin
-  SetLength(FImages,Length(FImages)+1);
-  FImages[Length(FImages)-1].Width:=Width;
-  FImages[Length(FImages)-1].Height:=Height;
-  FImages[Length(FImages)-1].Directory:=FolderImages.Directory;
-  For i:=1 to 4 do
-  FImages[Length(FImages)-1].FileNames[i]:=FolderImages.FileNames[i];
-  For i:=1 to 4 do
-  FImages[Length(FImages)-1].FileDates[i]:=FolderImages.FileDates[i];
-  For i:=1 to 4 do
-  FImages[Length(FImages)-1].Images[i]:=nil;
-  For i:=1 to 4 do
-  Begin
-   If FolderImages.Images[i]=nil then break;
-   FImages[Length(FImages)-1].Images[i]:=TBitmap.Create;
-   FImages[Length(FImages)-1].Images[i].Assign(FolderImages.Images[i]);
-   FImages[Length(FImages)-1].Images[i].PixelFormat:=pf24bit;
-  End;
- end;
 end;
 
 procedure TExplorerFolders.SetSaveFoldersToDB(const Value: Boolean);
@@ -462,15 +425,15 @@ end;
 constructor TExplorerThreadNotifyDirectoryChange.Create(CreateSuspennded: Boolean; Owner : TForm;
   Directory: string; OnNotify: TNotifyDirectoryChangeW; SID: string; ParentSID : Pointer);
 begin
- Inherited Create(True);
- fOnNotifyFile := OnNotify;
- fDirectory := Directory;
- FormatDir(fDirectory);
- FOwner := Owner;
- fSID := SID;
- FParentSID := ParentSID;
- Terminating := false;
- IF not CreateSuspennded Then Resume;
+  inherited Create(True);
+  FOnNotifyFile := OnNotify;
+  FDirectory := Directory;
+  FormatDir(fDirectory);
+  FOwner := Owner;
+  FSID := SID;
+  FParentSID := ParentSID;
+  Terminating := false;
+  if not CreateSuspennded then Resume;
 end;
 
 procedure TExplorerThreadNotifyDirectoryChange.Execute;

@@ -55,7 +55,7 @@ begin
   try
     Thread := Sender as TExplorerThread;
     if Thread = nil then
-      raise Exception.Create('Sender is TExplorerThread');
+      raise Exception.Create('Sender is not TExplorerThread!');
 
     if FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX, ProcessorCount) then
       FAvaliableThreadList.Add(TExplorerThread.Create('', '::THREAD_IMAGES', THREAD_TYPE_THREAD_IMAGE, Thread.ExplorerInfo, TExplorerForm(Thread.ThreadForm), Thread.FUpdaterInfo, Thread.StateID));
@@ -105,5 +105,12 @@ begin
 
   Result := ExplorerThreadPool;
 end;
+
+initialization
+
+finalization
+
+  if ExplorerThreadPool <> nil then
+    FreeAndNil(ExplorerThreadPool);
 
 end.

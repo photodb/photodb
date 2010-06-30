@@ -23,7 +23,6 @@ type
   FCID : TGUID;
   TempBitmap : TBitmap;
   fbmp : tbitmap;
-//  FPic : TPicture;
   FSelected : TEasyItem;
   FFolderBitmap : TBitmap;
   fFolderImages : TFolderImages;
@@ -79,10 +78,10 @@ type
     procedure DrawImageToTempBitmapCenter;
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
-    procedure ReplaceThumbImageToFolder;
+    procedure ReplaceThumbImageToFolder(CurrentFile : string);
     Procedure MakeFolderBitmap;
     Procedure DrawFolderImageBig(Bitmap : TBitmap);
-    procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect);
+    procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
     procedure ReplaceFolderImage;
     procedure AddFileToExplorer;
     procedure AddFile;
@@ -179,8 +178,6 @@ var
  i : integer;
  DBFolder, DBFolderToSearch, FileMask : String;
  InfoPosition : Integer;
- ImageFiles : Integer;
- Folders : integer;
  PrivateFiles : TStringList;
  fa : Integer;
  FE, EM : Boolean;
@@ -418,17 +415,15 @@ begin
         SynchronizeEx(InfoToExplorerForm);
         ShowInfo(TEXT_MES_LOADING_FOLDERS,FFiles.Count, 0);
         InfoPosition := 0;
-        Folders := 0;
         for I := 0 to FFiles.Count - 1 do
         begin
          FFiles[I].Tag:=0;
          If FFiles[I].FileType=EXPLORER_ITEM_FOLDER then
          begin
-          if Terminated then Break;
-          GUIDParam:=FFiles[i].SID;
-           Inc(Folders);
+           if Terminated then Break;
+           GUIDParam:=FFiles[i].SID;
            Inc(InfoPosition); 
-           if i mod 10=0 then
+           if i mod 10 = 0 then
              ShowInfo(InfoPosition);
            CurrentFile := FFiles[i].FileName;
            MakeFolderImage(CurrentFile);
@@ -436,13 +431,11 @@ begin
          end;
         end;
         ShowInfo(TEXT_MES_LOADING_IMAGES);
-        ImageFiles:=0;
         for I := 0 to FFiles.Count - 1 do
         if FFiles[I].FileType = EXPLORER_ITEM_IMAGE then
         begin
           if Terminated then Break;
-         GUIDParam:=FFiles[i].SID;
-          inc(ImageFiles);
+          GUIDParam:=FFiles[i].SID;
           Inc(InfoPosition);
           if i mod 10=0 then
           ShowInfo(InfoPosition);
@@ -472,7 +465,7 @@ begin
         for I := 0 to FFiles.Count - 1 do
         begin
           if Terminated then Break;
-          if i mod 5=0 then
+          if i mod 5 = 0 then
           begin
             TW.I.Start('GetVisibleFiles');
             SynchronizeEx(GetVisibleFiles);
@@ -511,12 +504,8 @@ begin
            begin
             Inc(InfoPosition);
             ShowInfo(InfoPosition);
-            CurrentFile:=FFiles[i].FileName;
             if ExplorerInfo.ShowThumbNailsForFolders then
-            try
-             ReplaceThumbImageToFolder;
-            except
-            end;
+              ReplaceThumbImageToFolder(FFiles[i].FileName);
            end;
           end;
          end else
@@ -525,7 +514,6 @@ begin
           ShowInfo(InfoPosition);
           CurrentInfoPos:=i;
          end;
-
         end;
 
         if (ExplorerInfo.View = LV_THUMBS) and (ExplorerInfo.PictureSize <> ThImageSize) then
@@ -794,7 +782,6 @@ begin
   end;
 
   //Create image from Info!!!
-
   if ProcessorCount > 1 then
     TExplorerThreadPool.Instance.ExtractImage(Self, Info, CryptedFile, FileID)
   else
@@ -827,11 +814,11 @@ begin
      FSender.SetInfoToItem(FInfo, GUIDParam);
 end;
 
-procedure TExplorerThread.ReplaceThumbImageToFolder;
+procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string);
 Var
   Found, Count, Dx, i, j, x, y, w, h, ps, index : integer;
   SearchRec : TSearchRec;
-  Files : Array[1..4] of string;
+  Files : array[1..4] of string;
   bmp : TBitmap;
   FFolderImagesResult : TFolderImages;
   FFastDirectoryLoading, OK : Boolean;
@@ -841,9 +828,9 @@ Var
   FilesInFolder : array[1..4] of string;
   FilesDatesInFolder : array[1..4] of TDateTime;
   CountFilesInFolder : Integer;
-  FFileNames, FPrivateFileNames : array of string;
+  FFileNames, FPrivateFileNames : TStringList;
   DBFolder, Password : String;
-  RecCount, SmallImageSize, deltax,deltay,_x,_y : Integer;
+  RecCount, SmallImageSize, deltax, deltay, _x, _y : Integer;
   fbs : TStream;
   fJpeg : TJpegImage;
   Nbr : Integer;
@@ -854,29 +841,13 @@ Var
   crc : Cardinal;
 
   function FileInFiles(FileName : String) : Boolean;
-  var
-    ii : Integer;
   begin
-   Result:=false;
-   For ii:=0 to Length(FFileNames)-1 do
-   if AnsiLowerCase(FFileNames[ii])=AnsiLowerCase(FileName) then
-   begin
-    Result:=True;
-    Break;
-   end;
+    Result := FFileNames.IndexOf(AnsiLowerCase(FileName)) > -1;
   end;
 
   function FileInPrivateFiles(FileName : String) : Boolean;
-  var
-    ii : Integer;
-  begin
-   Result:=false;
-   For ii:=0 to Length(FPrivateFileNames)-1 do
-   if AnsiLowerCase(FPrivateFileNames[ii])=AnsiLowerCase(FileName) then
-   begin
-    Result:=True;
-    Break;
-   end;
+  begin          
+    Result := FPrivateFileNames.IndexOf(AnsiLowerCase(FileName)) > -1;
   end;
 
   Procedure AddFileInFolder(FileName : String);
@@ -890,268 +861,259 @@ Var
   end;
 
 begin          
- ps:=ExplorerInfo.PictureSize;
- _y:=Round((564-68)*ps/1200);
- SmallImageSize:=Round(_y/1.05);
- CountFilesInFolder:=0;
- for i:=1 to 4 do
- FilesInFolder[i]:='';
- FormatDir(CurrentFile);
- fFolderImages.Directory:=CurrentFile;
- FFolderImagesResult:=AExplorerFolders.GetFolderImages(CurrentFile,SmallImageSize,SmallImageSize);
- FFastDirectoryLoading:=false;
- If FFolderImagesResult.Directory<>'' then
- FFastDirectoryLoading:=True else
- begin
-  for i:=1 to 4 do
-  FFolderImages.Images[i]:=nil;
- end;
- Query:=nil;
- Count:=0;    
- Nbr:=0;
- if not FFastDirectoryLoading then
- begin
-  DBFolder:=NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(CurrentFile)));
-  UnFormatDir(DBFolder);
-  CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
-  FormatDir(DBFolder);
+  ps := ExplorerInfo.PictureSize;
+  _y := Round((564-68)*ps/1200);
+  SmallImageSize := Round(_y/1.05);
+  CountFilesInFolder := 0;
+  for i := 1 to 4 do
+    FilesInFolder[i] := '';
+  FormatDir(CurrentFile);
+  fFolderImages.Directory := CurrentFile;
+  FFolderImagesResult := AExplorerFolders.GetFolderImages(CurrentFile, SmallImageSize, SmallImageSize);
+  FFastDirectoryLoading:=false;
+  if FFolderImagesResult.Directory <> '' then
+    FFastDirectoryLoading:=True
+  else
+  begin
+    for i := 1 to 4 do
+    FFolderImages.Images[i] := nil;
+  end;
 
-  Query := GetQuery;
-  Query.Active:=false;
-  if GetDBType=DB_TYPE_MDB then SetSQL(Query,'Select  FFileName,Access,thum,Rotated From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB) ');
-  SetStrParam(Query,0,'%'+DBFolder+'%');             //(top 4)
-  SetStrParam(Query,1,'%'+DBFolder+'%\%');
-
+  Query := nil;
   try
-  Query.Active:=true;
-  except
-   FreeDS(Query);
-   exit;
-  end;
-  SetLength(FFileNames,0);
-  SetLength(FPrivateFileNames,0);
-  for i:=1 to 4 do
-  begin
-   RecNos[i]:=0;
-  end;
-  RecCount:=Query.RecordCount;
-  If RecCount<>0 then
-  begin
-   Query.First;
-   For i:=1 to RecCount do
-   begin
-    if Query.FieldByName('Access').AsInteger=db_access_private then
-    begin
-     SetLength(FPrivateFileNames,Length(FPrivateFileNames)+1);
-     FPrivateFileNames[Length(FPrivateFileNames)-1]:=Query.FieldByName('FFileName').AsString;
-    end;
-    if (Query.FieldByName('Access').AsInteger<>db_access_private) or ExplorerInfo.ShowPrivate then
-    if FileExists(Query.FieldByName('FFileName').AsString) then
-    if ShowFileIfHidden(Query.FieldByName('FFileName').AsString) then
-    begin
-     OK:=true;
-     if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
-     if DBkernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'))='' then OK:=false;
-     if OK then
-     begin
-      if Nbr<4 then
-      begin
-       inc(Nbr);
-       RecNos[Nbr]:=Query.RecNo;
-       FilesInFolder[Nbr]:=Query.FieldByName('FFileName').AsString;
-       SetLength(FFileNames,Length(FFileNames)+1);
-       FFileNames[Length(FFileNames)-1]:=Query.FieldByName('FFileName').AsString;
-       AddFileInFolder(Query.FieldByName('FFileName').AsString);
-      end;
-     end;
-    end;
-    Query.Next;
-   end;
-  end;
-  if Nbr<4 then
-  begin
-   Found := FindFirst(CurrentFile+'*.*', faAnyFile, SearchRec);
-   while Found = 0 do
-   begin
-    if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-    begin
-
-     FE:=(SearchRec.Attr and faDirectory=0);
-     s:=ExtractFileExt(SearchRec.Name);
-     Delete(s,1,1);
-     s:='|'+AnsiUpperCase(s)+'|';
-     p:=StrPos(PChar(SupportedExt),PChar(s));
-     EM:=p<>nil;
-
-     If FE and EM and not FileInFiles(CurrentFile+SearchRec.Name) and not (FileInPrivateFiles(CurrentFile+SearchRec.Name) and not ExplorerInfo.ShowPrivate) then
-     if ShowFileIfHidden(CurrentFile+SearchRec.Name) then
-     begin
-      OK:=true;
-      if ValidCryptGraphicFile(CurrentFile+SearchRec.Name) then
-      if DBkernel.FindPasswordForCryptImageFile(CurrentFile+SearchRec.Name)='' then OK:=false;
-      if OK then
-      begin
-       Inc(Count);
-       Files[Count]:=CurrentFile+SearchRec.Name;
-       AddFileInFolder(CurrentFile+SearchRec.Name);
-       FilesInFolder[Count+Nbr]:=CurrentFile+SearchRec.Name;
-       If Count+Nbr>3 then Break;
-      end;
-     end;
-    end;
-    Found := sysutils.FindNext(SearchRec);
-   end;
-   FindClose(SearchRec);
-  end;
-  If Count+Nbr=0 then
-  begin
-   FreeDS(Query);
-   exit;
-  end;
- end;
- Dx:=4;
-
- TempBitmap:=Tbitmap.Create;
- DrawFolderImageBig(TempBitmap);
-
- c:=0;
- try
- For i:=1 to 2 do
- For j:=1 to 2 do
- begin
-  Index:=(i-1)*2+j;
-  FcountOfFolderImage:=Index;
-  // 34  68
-  // 562 564
-  // 600 600
-  deltax:=Round(34*ps/600);
-  deltay:=Round(68*ps/600);
-  _x:=Round((562-34)*ps/1200);
-  _y:=Round((564-68)*ps/1200);
-  SmallImageSize:=Round(_y/1.05);
-
-  x:=(j-1)*_x+deltax;
-  y:=(i-1)*_y+deltay;
-  If fFastDirectoryLoading then
-  begin
-   if FFolderImagesResult.Images[Index]=nil then break;
-   fbmp:=FFolderImagesResult.Images[Index];
-   w:=fbmp.Width;
-   h:=fbmp.Height;
-   ProportionalSize(SmallImageSize,SmallImageSize,w,h);
-   DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h));
-   Continue;
-  end;
-  if index>count+Nbr then break;
-  if index>count then
-  begin
-   inc(c);
-   Query.RecNo:=RecNos[c];
-   fJpeg:=nil;
-   if TBlobField(Query.FieldByName('thum'))=nil then
-   begin
-    Continue;
-   end;
-   if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
-   begin
-    Password:=DBKernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'));
-    if Password<>'' then FJPEG:=DeCryptBlobStreamJPG(Query.FieldByName('thum'),Password) as TJPEGImage else
-    begin
-     Continue;
-    end;
-   end else
-   begin
-    FJPEG:=TJpegImage.Create;
-    FBS:= GetBlobStream(Query.FieldByName('thum'),bmRead);
+    Count:=0;
+    Nbr:=0;
+    FFileNames := TStringList.Create;
+    FPrivateFileNames := TStringList.Create;
     try
-     if FBS.Size<>0 then
-     FJPEG.loadfromStream(fbs) else
-    except
+      if not FFastDirectoryLoading then
+      begin
+        DBFolder:=NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(CurrentFile)));
+        UnFormatDir(DBFolder);
+        CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
+        FormatDir(DBFolder);
+
+        Query := GetQuery(True);
+                
+        if ExplorerInfo.ShowPrivate then
+          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From '+GetDefDBname+' where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
+        else
+          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From '+GetDefDBname+' where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) where Access <> ' + IntToStr(db_access_private));
+
+        SetStrParam(Query,0,'%'+DBFolder+'%');
+        SetStrParam(Query,1,'%'+DBFolder+'%\%');
+
+        Query.Active := True;
+
+        for i:=1 to 4 do
+          RecNos[i] := 0;
+
+        if not Query.IsEmpty then
+        begin
+          Query.First;
+          for i:=1 to Query.RecordCount do
+          begin
+            if Query.FieldByName('Access').AsInteger = db_access_private then
+              FPrivateFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
+
+            if (Query.FieldByName('Access').AsInteger<>db_access_private) or ExplorerInfo.ShowPrivate then
+            if FileExists(Query.FieldByName('FFileName').AsString) then
+            if ShowFileIfHidden(Query.FieldByName('FFileName').AsString) then
+            begin
+              OK := true;
+              if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
+              if DBkernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'))='' then
+                OK := false;
+              if OK then
+              begin
+                if Nbr<4 then
+                begin
+                  inc(Nbr);
+                  RecNos[Nbr] := Query.RecNo;
+                  FilesInFolder[Nbr] := Query.FieldByName('FFileName').AsString;
+                  FFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
+                  AddFileInFolder(Query.FieldByName('FFileName').AsString);
+                end;
+              end;
+            end;
+            Query.Next;
+          end;
+        end;
+        if Nbr < 4 then
+        begin
+          Found := FindFirst(CurrentFile + '*.*', faAnyFile, SearchRec);
+          while Found = 0 do
+          begin
+            if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
+            begin
+              FE := (SearchRec.Attr and faDirectory = 0);
+              s := ExtractFileExt(SearchRec.Name);
+              Delete(s, 1, 1);
+              s:= '|' + AnsiUpperCase(s) + '|';
+              p := StrPos(PChar(SupportedExt), PChar(s));
+              EM := p <> nil;
+
+              if FE and EM and not FileInFiles(CurrentFile + SearchRec.Name) and not (FileInPrivateFiles(CurrentFile + SearchRec.Name) and not ExplorerInfo.ShowPrivate) then
+              if ShowFileIfHidden(CurrentFile + SearchRec.Name) then
+              begin
+                OK := True;
+                if ValidCryptGraphicFile(CurrentFile+SearchRec.Name) then
+                if DBkernel.FindPasswordForCryptImageFile(CurrentFile + SearchRec.Name) = '' then
+                OK := False;
+                if OK then
+                begin
+                  Inc(Count);
+                  Files[Count] := CurrentFile + SearchRec.Name;
+                  AddFileInFolder(CurrentFile + SearchRec.Name);
+                  FilesInFolder[Count+Nbr] := CurrentFile + SearchRec.Name;
+                  if Count + Nbr >= 4 then
+                    Break;
+                end;
+              end;
+            end;
+            Found := SysUtils.FindNext(SearchRec);
+          end;
+          FindClose(SearchRec);
+        end;
+      end;
+
+    finally
+      FFileNames.Free;
+      FPrivateFileNames.Free;
     end;
-    FBS.Free;
-   end;
-   fbmp := TBitmap.create;
-   JPEGScale(fJpeg,SmallImageSize,SmallImageSize);
-   fbmp.Assign(fJpeg);
-   fJpeg.Free;
-   fbmp.PixelFormat:=pf24bit;
-   case Query.FieldByName('Rotated').AsInteger of
-    DB_IMAGE_ROTATED_90  :  Rotate90A(fbmp);
-    DB_IMAGE_ROTATED_180 :  Rotate180A(fbmp);
-    DB_IMAGE_ROTATED_270 :  Rotate270A(fbmp);
-   end;
-   w:=fbmp.Width;
-   h:=fbmp.Height;
-   ProportionalSize(SmallImageSize,SmallImageSize,w,h);
-   DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h));
-   fbmp.Free;
-   Query.Next;
-  end else begin
-   pic:=Tpicture.create;
-   if ValidCryptGraphicFile(Files[Index]) then
-   begin
-    Password:=DBkernel.FindPasswordForCryptImageFile(Files[Index]);
-    if Password<>'' then pic.Graphic:=DeCryptGraphicFile(Files[Index],Password) else
+
+    if Count + Nbr = 0 then
+      Exit;
+
+    Dx:=4;
+
+    TempBitmap := TBitmap.Create;
+    DrawFolderImageBig(TempBitmap);
+
+    c:=0;
+
+    for i:=1 to 2 do
+    for j:=1 to 2 do
     begin
-     pic.Free;
-     Continue;
-    end;
-   end else
-   begin
-    try
+      Index:=(i - 1) * 2 + j;
+      FcountOfFolderImage := Index;
+      // 34  68
+      // 562 564
+      // 600 600
+      deltax := Round(34*ps/600);
+      deltay := Round(68*ps/600);
+      _x := Round((562-34)*ps/1200);
+      _y := Round((564-68)*ps/1200);
+      SmallImageSize := Round(_y/1.05);
 
-     if IsRAWImageFile(Files[Index]) then
-     begin
-      pic.Graphic:=TRAWImage.Create;
-      if not (pic.Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index]) then
-      pic.Graphic.LoadFromFile(Files[Index]);
-     end else
-     pic.LoadFromFile(Files[Index]);
+      x:=(j - 1) * _x + deltax;
+      y:=(i - 1) * _y + deltay;
+      if fFastDirectoryLoading then
+      begin
+        if FFolderImagesResult.Images[Index]=nil then break;
+        fbmp:=FFolderImagesResult.Images[Index];
+        w:=fbmp.Width;
+        h:=fbmp.Height;
+        ProportionalSize(SmallImageSize,SmallImageSize,w,h);
+        DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+        Continue;
+      end;
+      if index > count + Nbr then
+        Break;
+      if index > count then
+      begin
+        inc(c);
+        Query.RecNo := RecNos[c];
+        if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
+        begin
+          Password := DBKernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'));
+          if Password <> '' then
+            FJPEG := DeCryptBlobStreamJPG(Query.FieldByName('thum'),Password) as TJPEGImage
+          else
+            Continue;
+        end else
+        begin
+          FJPEG:=TJpegImage.Create;
+          FBS:= GetBlobStream(Query.FieldByName('thum'), bmRead);
+          try
+            FJPEG.LoadFromStream(FBS);
+          finally
+            FBS.Free;
+          end;
+        end;
+        fbmp := TBitmap.Create;
+        try
+          JPEGScale(fJpeg, SmallImageSize, SmallImageSize);
+          fbmp.Assign(fJpeg);
+          fJpeg.Free;
+          fbmp.PixelFormat := pf24bit;
+          ApplyRotate(fbmp, Query.FieldByName('Rotated').AsInteger);
 
-    except
-     pic.Free;
-     Continue;
+          w := fbmp.Width;
+          h := fbmp.Height;
+          ProportionalSize(SmallImageSize, SmallImageSize, W, H);
+          DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+        finally
+          fbmp.Free;
+        end;
+      end else
+      begin
+        Pic := TPicture.Create;
+        try
+          if ValidCryptGraphicFile(Files[Index]) then
+          begin
+            Password := DBkernel.FindPasswordForCryptImageFile(Files[Index]);
+            if Password<>'' then
+              Pic.Graphic := DeCryptGraphicFile(Files[Index], Password)
+            else
+              Continue;
+          end else
+          begin
+            if IsRAWImageFile(Files[Index]) then
+            begin
+              Pic.Graphic := TRAWImage.Create;
+              if not (pic.Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index]) then
+                Pic.Graphic.LoadFromFile(Files[Index]);
+            end else
+              Pic.LoadFromFile(Files[Index]);
+          end;
+          _y := Round((564-68)*ps/1200);
+          SmallImageSize := Round(_y/1.05);
+          JPEGScale(pic.Graphic, SmallImageSize, SmallImageSize);
+          W := pic.Width;
+          H := pic.Height;
+          ProportionalSize(SmallImageSize, SmallImageSize, w, h);
+          bmp := TBitmap.Create;
+          try
+            bmp.Assign(pic.Graphic);
+            bmp.PixelFormat:=pf24bit;
+            fbmp:=TBitmap.create;
+            fbmp.PixelFormat:=pf24bit;
+            DoResize(W, H, bmp, fbmp);
+            DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+          finally
+            bmp.Free;
+          end;
+          fbmp.free;
+        finally
+          pic.Free;
+        end;
+      end;
     end;
-   end;    
-   _y:=Round((564-68)*ps/1200);
-   SmallImageSize:=Round(_y/1.05);
-   JPEGScale(pic.Graphic,SmallImageSize,SmallImageSize);
-   w:=pic.Width;
-   h:=pic.Height;
-   ProportionalSize(SmallImageSize,SmallImageSize,w,h);
-   bmp := TBitmap.create;
-   bmp.Assign(pic.Graphic);
-   pic.Free;
-   bmp.PixelFormat:=pf24bit;
-   fbmp:=TBitmap.create;
-   fbmp.PixelFormat:=pf24bit;
-   DoResize(w,h,bmp,fbmp);
-   bmp.Free;
-   DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h));
-   fbmp.free;
+  finally
+    FreeAndNil(Query);
   end;
- end;
- if Query<>nil then
- begin
-  Query.close;
-  FreeDS(Query);
- end;
- except
- end;
- try
-  if not FFastDirectoryLoading then
-  if ExplorerInfo.SaveThumbNailsForFolders then
+
+  if not FFastDirectoryLoading and ExplorerInfo.SaveThumbNailsForFolders then
   begin
-   for i:=1 to 4 do
-   fFolderImages.FileNames[i]:=FilesInFolder[i];
-   for i:=1 to 4 do
-   fFolderImages.FileDates[i]:=FilesDatesInFolder[i];
-   AExplorerFolders.SaveFolderImages(fFolderImages,SmallImageSize,SmallImageSize);
+    for i := 1 to 4 do
+      fFolderImages.FileNames[i] := FilesInFolder[i];
+    for i:=1 to 4 do
+      fFolderImages.FileDates[i] := FilesDatesInFolder[i];
+    AExplorerFolders.SaveFolderImages(fFolderImages, SmallImageSize, SmallImageSize);
   end;
+  
   SynchronizeEx(ReplaceFolderImage);
- except
- end;
-// TempBitmap.free;
 end;
 
 procedure TExplorerThread.DrawFolderImageBig(Bitmap : TBitmap);
@@ -1176,7 +1138,7 @@ begin
   end;
 end;
 
-procedure TExplorerThread.DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect);
+procedure TExplorerThread.DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
 begin
  If not fFastDirectoryLoading then
  if ExplorerInfo.SaveThumbNailsForFolders then
@@ -1184,7 +1146,7 @@ begin
   fFolderImages.Images[FcountOfFolderImage]:=TBitmap.create;
   fFolderImages.Images[FcountOfFolderImage].Assign(fbmp);
  end;
- StretchCoolW(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, fbmp.Width, fbmp.Height), fbmp, Bitmap);
+ StretchCoolW(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Source.Width, Source.Height), Source, Bitmap);
 end;
 
 procedure TExplorerThread.ReplaceFolderImage;
@@ -1236,7 +1198,7 @@ begin
   Sleep(2000); //wait if folder was jast created - it possible that files are currentry in copy-progress...
   try
    if ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS) then
-   ReplaceThumbImageToFolder;
+   ReplaceThumbImageToFolder(CurrentFile);
   except
   end;
  end;
@@ -1742,7 +1704,7 @@ begin
   CurrentFile:=FFiles[0].FileName;
   fMask:=SupportedExt;
   if ExplorerInfo.ShowThumbNailsForFolders then
-  ReplaceThumbImageToFolder;
+  ReplaceThumbImageToFolder(CurrentFile);
 end;
 
 procedure TExplorerThread.EndUpdateID;
@@ -1914,7 +1876,7 @@ begin
      if BooleanResult then
      if ExplorerInfo.ShowThumbNailsForFolders then
      try
-      ReplaceThumbImageToFolder;
+      ReplaceThumbImageToFolder(CurrentFile);
      except
      end;
     end;
@@ -1965,7 +1927,7 @@ var
   Password : string;  
   TempBit, Fbit : TBitmap;
 begin
- if Info.ItemId = 0 then
+  if Info.ItemId = 0 then
   begin
     Fpic := TPicture.Create;
     try
@@ -2068,16 +2030,26 @@ end;
 
 procedure TExplorerThread.ProcessThreadImages;
 begin    
-  FEvent := CreateEvent(nil, True, True, PChar(GUIDToString(GetGUID)));
-  while True do
-  begin
-    SetEvent(FEvent);
-    ExtractImage(FInfo, IsCryptedFile, FFileID);
-    ResetEvent(FEvent);
-    FEvent := 0;
-    Suspend;
+  FEvent := CreateEvent(nil, True, True, PChar(GUIDToString(GetGUID)));   
+  try
+    while True do
+    begin
+      SetEvent(FEvent);
+      try
+        try
+          ExtractImage(FInfo, IsCryptedFile, FFileID);
+        except
+          on e : Exception do
+            EventLog('TExplorerThread.ProcessThreadImages' + e.Message);
+        end;
+      finally
+        ResetEvent(FEvent);
+      end;
+      Suspend;
+    end;
+  finally
+    CloseHandle(FEvent);
   end;
-  CloseHandle(FEvent);
 end;
 
 initialization
