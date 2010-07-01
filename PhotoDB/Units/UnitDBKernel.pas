@@ -2214,7 +2214,7 @@ var
   function LoadIcon(Instance : HINST; ResName : string) : HIcon;
   begin
     Result := LoadImage(Instance, PChar(ResName), IMAGE_ICON, 16, 16, 0);
-  end;
+  end;   
 
 begin
   FImageList:=TImageList.Create(nil);

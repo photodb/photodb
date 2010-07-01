@@ -19,7 +19,6 @@ type
   FFolder : String;
   Fmask : String;
   ficon : ticon;
-  FSender : TExplorerForm;
   FCID : TGUID;
   TempBitmap : TBitmap;
   fbmp : tbitmap;
@@ -134,17 +133,15 @@ type
     FInfo : TOneRecordInfo;
     IsCryptedFile : Boolean;
     FFileID : TGUID;
-    FEvent : THandle;
     FThreadPreviewMode : Integer;
     FPreviewInProgress : Boolean;
+    FSender : TExplorerForm;
     constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
   end;
 
-
 type
-
   TIconType = (itSmall, itLarge);
 
   var
@@ -547,6 +544,7 @@ begin
   finally
     CoUninitialize;
   end;
+ // Sleep(1000);
 end;
 
 procedure TExplorerThread.BeginUpdate;
@@ -589,7 +587,7 @@ begin
   begin
     BooleanResult:=FSender.FileNeededW(GUIDParam);
     if not FSender.Active then
-      Priority:=tpLowest;
+      Priority := tpLowest;
   end;
 end;
 
@@ -737,8 +735,8 @@ begin
   IsBigImage := False;
   CryptedFile := ValidCryptGraphicFile(FileName);
 
-  Info := RecordInfoOne(FileName, 0, 0, 0, 0, FileSize, '', '', '', '', '', 0, False, False, 0, CryptedFile, True, False, '');
-  Info.Tag := EXPLORER_ITEM_FOLDER;
+  FInfo := RecordInfoOne(FileName, 0, 0, 0, 0, FileSize, '', '', '', '', '', 0, False, False, 0, CryptedFile, True, False, '');
+  FInfo.Tag := EXPLORER_ITEM_FOLDER;
 
   if not FUpdaterInfo.IsUpdater then
   begin
@@ -767,17 +765,17 @@ begin
 
       if ExplorerInfo.View = LV_THUMBS then
       begin
-        if info.ItemCrypted then
+        if FInfo.ItemCrypted then
         begin
-          Info.Image := DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'))) as TJpegImage;
-          if Info.Image <> nil then
-            Info.PassTag := 1;
+          FInfo.Image := DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'))) as TJpegImage;
+          if FInfo.Image <> nil then
+            FInfo.PassTag := 1;
         end else
         begin
-          Info.Image := TJpegImage.Create;
+          FInfo.Image := TJpegImage.Create;
           FBS := GetBlobStream(fQuery.FieldByName('thum'), bmRead);
           try
-            Info.Image.LoadFromStream(FBS);
+            FInfo.Image.LoadFromStream(FBS);
           finally
             FBS.Free;
           end;
@@ -785,10 +783,10 @@ begin
       end;
     end;
   end else
-    Info := GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS);
+    FInfo := GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS);
     
-  Info.Loaded := True;
-  Info.Tag := EXPLORER_ITEM_IMAGE;
+  FInfo.Loaded := True;
+  FInfo.Tag := EXPLORER_ITEM_IMAGE;
 
   if not ExplorerInfo.View = LV_THUMBS then
   begin
@@ -798,9 +796,9 @@ begin
 
   //Create image from Info!!!
   if ProcessorCount > 1 then
-    TExplorerThreadPool.Instance.ExtractImage(Self, Info, CryptedFile, FileID)
+    TExplorerThreadPool.Instance.ExtractImage(Self, FInfo, CryptedFile, FileID)
   else
-    ExtractImage(Info, CryptedFile, FileID);
+    ExtractImage(FInfo, CryptedFile, FileID);
 end;
 
 procedure TExplorerThread.DrawImageToTempBitmapCenter;
@@ -2065,6 +2063,9 @@ begin
             ReplaceThumbImageToFolder(FInfo.ItemFileName, FFileID);
 
           FThreadPreviewMode := 0;
+
+          if GOM.IsObj(ParentThread) then
+            ParentThread.UnRegisterSubThread(Self);
         except
           on e : Exception do
             EventLog('TExplorerThread.ProcessThreadImages' + e.Message);

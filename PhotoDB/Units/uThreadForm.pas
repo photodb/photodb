@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses SysUtils;
+uses SysUtils, uThreadEx;
 
 constructor TThreadForm.Create(AOwner: TComponent);
 begin
@@ -72,7 +72,7 @@ begin
     for I := 0 to FThreadList.Count - 1 do
     begin
       TThread(FThreadList[i]).OnTerminate := nil;
-      TThread(FThreadList[i]).Terminate;
+      TThreadEx(FThreadList[i]).DoTerminate;
     end;
   finally
     FSync.Leave;

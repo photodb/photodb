@@ -898,13 +898,13 @@ begin
   TW.I.Start('THEMES AND RUNNING DB');
 
  If not DBTerminating then
- begin
+ begin                  
+  EventLog('Theme...');
+  DBkernel.LoadColorTheme;
+//  DBkernel.ReloadGlobalTheme;
   EventLog('Run manager...');
   if not GetParamStrDBBool('/NoFullRun') then
   FormManager.Run(SplashThread);
-  EventLog('Theme...');
-  DBkernel.LoadColorTheme;
-  DBkernel.ReloadGlobalTheme;
 
   If not DBTerminating then
   begin

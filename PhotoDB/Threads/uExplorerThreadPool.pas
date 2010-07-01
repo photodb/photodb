@@ -63,9 +63,7 @@ begin
         FAvaliableThreadList.Add(FBusyThreadList[I]);
         FBusyThreadList.Delete(I);
       end else
-      begin
         TExplorerThread(FBusyThreadList[I]).Resume;
-      end;
     end;
 
     if FAvaliableThreadList.Count > 0 then
@@ -101,7 +99,10 @@ begin
     begin
       Avaliablethread := FAvaliableThreadList[0];
       FAvaliableThreadList.Remove(Avaliablethread);
-      FBusyThreadList.Add(Avaliablethread);
+      FBusyThreadList.Add(Avaliablethread);     
+      Avaliablethread.Priority := tpNormal; 
+      Avaliablethread.ThreadForm := Sender.ThreadForm;
+      Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
@@ -109,7 +110,8 @@ begin
       Avaliablethread.IsCryptedFile := CryptedFile;
       Avaliablethread.FFileID := FileID;
       Avaliablethread.FThreadPreviewMode := THREAD_PREVIEW_MODE_IMAGE;
-      Avaliablethread.FPreviewInProgress := True;
+      Avaliablethread.FPreviewInProgress := True;  
+      Thread.RegisterSubThread(Avaliablethread);
       TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
       Avaliablethread.Resume;
     end
@@ -136,8 +138,10 @@ begin
     begin
       Avaliablethread := FAvaliableThreadList[0];
       FAvaliableThreadList.Remove(Avaliablethread);
-      Avaliablethread.Priority := tpLower;
-      FBusyThreadList.Add(Avaliablethread);
+      FBusyThreadList.Add(Avaliablethread);     
+      Avaliablethread.Priority := tpNormal; 
+      Avaliablethread.ThreadForm := Sender.ThreadForm;
+      Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
@@ -146,6 +150,7 @@ begin
       Avaliablethread.FFileID := FileID;
       Avaliablethread.FThreadPreviewMode := THREAD_PREVIEW_MODE_DIRECTORY;  
       Avaliablethread.FPreviewInProgress := True;
+      Thread.RegisterSubThread(Avaliablethread);
       TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
       Avaliablethread.Resume;
     end

@@ -452,8 +452,10 @@ begin
   Screen.Cursors[CursorZoomOutNo]:=CursorZoomOut;
   TW.I.Start('MakePagesLinks');
   MakePagesLinks;
-  TW.I.Start('MakePagesLinks - end');
-  FCreating := False;
+  FCreating := False;   
+  TW.I.Start('RecreateImLists');
+  RecreateImLists;  
+  TW.I.Start('RecreateImLists - END');
 end;
 
 function TViewer.LoadImage_(Sender: TObject; FileName: String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
