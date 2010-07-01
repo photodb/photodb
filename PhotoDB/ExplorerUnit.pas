@@ -972,7 +972,7 @@ begin
   LoadToolBarNormaIcons;
   TW.I.Start('LoadToolBarGrayedIcons');
   LoadToolBarGrayedIcons;
-  TW.I.Stop;
+ TW.I.Start('LoadToolBarGrayedIcons - end');
   ToolBar1.Images := ToolBarNormalImageList;
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
 

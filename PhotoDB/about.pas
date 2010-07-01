@@ -63,7 +63,7 @@ var
 begin
  TW.I.Start('GrayScale');
  UnitDBCommonGraphics.GrayScale(Image);
- TW.I.Stop;
+ TW.I.Start('GrayScale - end');
 end;
 
 procedure TAboutForm.WMMouseDown(var s: Tmessage);
@@ -230,7 +230,7 @@ begin
  memo2.Lines.Add(TEXT_MES_PROGRAM_CODE); 
  TW.I.Start('GetIdeDiskSerialNumber');
  s:=GetIdeDiskSerialNumber;
- TW.I.Stop;
+ TW.I.Start('GetIdeDiskSerialNumber - end');
  CalcStringCRC32(s,n);
 // n:=n xor $FA45B671;  //v1.75
 // n:=n xor $8C54AF5B; //v1.8

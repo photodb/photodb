@@ -925,7 +925,7 @@ begin
     aScript.Free;
   end;
  end;   
-  TW.I.Stop;
+  TW.I.Start('InitializeDBLoadScript - end');
  EventLog(':InitializeDBLoadScript() return true');
  DBLoadInitialized:=true;
  {$ENDIF}

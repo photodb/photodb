@@ -452,7 +452,7 @@ begin
   Screen.Cursors[CursorZoomOutNo]:=CursorZoomOut;
   TW.I.Start('MakePagesLinks');
   MakePagesLinks;
-  TW.I.Stop;
+  TW.I.Start('MakePagesLinks - end');
   FCreating := False;
 end;
 
@@ -526,8 +526,8 @@ begin
   RecreateDrawImage_(Sender);
   FormPaint(Sender);
   Result:=false;
- end;   
- TW.I.Stop;
+ end;
+ TW.I.Start('LoadImage_ - end');
 end;
 
 procedure TViewer.RecreateDrawImage_(Sender: TObject);
@@ -722,7 +722,7 @@ begin
    WaitImage.Height:=DrawImage.Height;
    GrayScaleImage(DrawImage,WaitImage,WaitGrayScale);
    Canvas.Draw(0,0,WaitImage); 
-   TW.I.Stop;      
+   TW.I.Start('WaitImageTimer - end');
    exit;
   end;
   if (not WaitImageTimer.Enabled) and (RealImageHeight*RealImageWidth<>0) then
@@ -764,7 +764,7 @@ begin
   FormPaint(Sender);
  end;
  ToolBar2.Refresh;
- TW.I.Stop;
+ TW.I.Start('TViewer.FormResize - end');
 end;
 
 procedure TViewer.Next_(Sender: TObject);
@@ -1722,7 +1722,7 @@ begin
    FloatPanel.ToolButton5.Enabled:=True;
   end;
  end;      
- TW.I.Stop;
+ TW.I.Start('ExecuteW - end');
  //Show;
 end;
 
@@ -2275,7 +2275,7 @@ begin
   DestroyIcon(icons[i,j]);
  end;
  b.free;
-  TW.I.Stop;
+ TW.I.Start('RecreateImLists - end');
 end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);

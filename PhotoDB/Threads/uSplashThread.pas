@@ -209,7 +209,7 @@ initialization
   begin
     TW.I.Start('TSplashThread');
     SplashThread := TSplashThread.Create(False);
-    TW.I.Stop;
+    TW.I.Start('TSplashThread - Created');
   end;
 
 end.

@@ -78,7 +78,7 @@ type
     procedure DrawImageToTempBitmapCenter;
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
-    procedure ReplaceThumbImageToFolder(CurrentFile : string);
+    procedure ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
     Procedure MakeFolderBitmap;
     Procedure DrawFolderImageBig(Bitmap : TBitmap);
     procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
@@ -124,7 +124,10 @@ type
     procedure ExplorerHasIconForExt;
     procedure SetIconForFileByExt;
     procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
-    procedure ProcessThreadImages;
+    procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
+    procedure ProcessThreadPreviews;
+  protected
+    function IsVirtualTerminate : Boolean; override;
   public
     FUpdaterInfo : TUpdaterInfo;
     ExplorerInfo : TExplorerViewInfo;   
@@ -132,6 +135,8 @@ type
     IsCryptedFile : Boolean;
     FFileID : TGUID;
     FEvent : THandle;
+    FThreadPreviewMode : Integer;
+    FPreviewInProgress : Boolean;
     constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
@@ -167,7 +172,9 @@ begin
  FUpdaterInfo := UpdaterInfo;
  FullFolderPicture := nil;
  FVisibleFiles := nil;
- if ThreadType <> THREAD_TYPE_THREAD_IMAGE then
+ FEvent := 0;
+ FPreviewInProgress := False;
+ if ThreadType <> THREAD_TYPE_THREAD_PREVIEW then
    Start;
 end;
 
@@ -206,9 +213,15 @@ begin
       Exit;
     end;
 
-    if (FThreadType = THREAD_TYPE_THREAD_IMAGE) then
-    begin
-      ProcessThreadImages;
+    if (FThreadType = THREAD_TYPE_THREAD_PREVIEW) then
+    begin     
+      FEvent := CreateEvent(nil, False, False, PChar(GUIDToString(GetGUID)));
+      TW.I.Start('CreateEvent: ' + IntToStr(FEvent));
+      try
+        ProcessThreadPreviews;
+      finally
+        CloseHandle(FEvent);
+      end;
       Exit;
     end;
        
@@ -288,7 +301,8 @@ begin
       SynchronizeEx(ExplorerBack);
       Exit;
     end;
-    
+          
+    TW.I.Start('<EXPLORER THREAD>');
     PrivateFiles := TStringList.Create;
     try
       SynchronizeEx(BeginUpdate);
@@ -358,7 +372,7 @@ begin
         Found := FindFirst(FFolder + FileMask, faAnyFile, SearchRec);
         while Found = 0 do
         begin
-         if Terminated then Break;
+         if IsTerminated then Break;
          try
          if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
          begin     
@@ -420,7 +434,7 @@ begin
          FFiles[I].Tag:=0;
          If FFiles[I].FileType=EXPLORER_ITEM_FOLDER then
          begin
-           if Terminated then Break;
+           if IsTerminated then Break;
            GUIDParam:=FFiles[i].SID;
            Inc(InfoPosition); 
            if i mod 10 = 0 then
@@ -434,7 +448,7 @@ begin
         for I := 0 to FFiles.Count - 1 do
         if FFiles[I].FileType = EXPLORER_ITEM_IMAGE then
         begin
-          if Terminated then Break;
+          if IsTerminated then Break;
           GUIDParam:=FFiles[i].SID;
           Inc(InfoPosition);
           if i mod 10=0 then
@@ -447,7 +461,7 @@ begin
         for I := 0 to FFiles.Count - 1 do
         If FFiles[I].FileType=EXPLORER_ITEM_FILE then
         begin
-         If Terminated then break;
+         If IsTerminated then break;
          GUIDParam:=FFiles[i].SID;
           Inc(InfoPosition);
           ShowInfo(InfoPosition);
@@ -464,13 +478,13 @@ begin
 
         for I := 0 to FFiles.Count - 1 do
         begin
-          if Terminated then Break;
+          if IsTerminated then Break;
           if i mod 5 = 0 then
           begin
             TW.I.Start('GetVisibleFiles');
             SynchronizeEx(GetVisibleFiles);
             VisibleUp(i); 
-            TW.I.Stop;
+            TW.I.Start('GetVisibleFiles - end');
           end;   
           Priority := tpNormal;
 
@@ -505,7 +519,8 @@ begin
             Inc(InfoPosition);
             ShowInfo(InfoPosition);
             if ExplorerInfo.ShowThumbNailsForFolders then
-              ReplaceThumbImageToFolder(FFiles[i].FileName);
+              ExtractDirectoryPreview(FFiles[i].FileName, FFiles[i].SID);
+             // ReplaceThumbImageToFolder(FFiles[i].FileName);
            end;
           end;
          end else
@@ -562,7 +577,7 @@ end;
 
 procedure TExplorerThread.InfoToExplorerForm;
 begin
-  if not Terminated then 
+  if not IsTerminated then 
     FSender.LoadInfoAboutFiles(FFiles);
 end;
 
@@ -570,7 +585,7 @@ end;
 procedure TExplorerThread.FileNeededAW;
 begin    
   BooleanResult := False;
-  If not Terminated then
+  If not IsTerminated then
   begin
     BooleanResult:=FSender.FileNeededW(GUIDParam);
     if not FSender.Active then
@@ -608,7 +623,7 @@ end;
 
 procedure TExplorerThread.AddDirectoryImageToExplorer;
 begin
- If not Terminated then
+ If not IsTerminated then
  begin
   if ExplorerInfo.View=LV_THUMBS then
     FSender.AddBitmap(FFolderBitmap, GUIDParam)
@@ -686,7 +701,7 @@ end;
 
 procedure TExplorerThread.AddImageFileImageToExplorer;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
     if ExplorerInfo.View=LV_THUMBS then
     FSender.AddBitmap(TempBitmap, GUIDParam) else
@@ -696,7 +711,7 @@ end;
 
 procedure TExplorerThread.AddIconFileImageToExplorer;
 begin
-  If not Terminated then
+  If not IsTerminated then
    FSender.AddIcon(FIcon, True, GUIDParam);
 end;
 
@@ -704,7 +719,7 @@ procedure TExplorerThread.AddImageFileItemToExplorer;
 var
   NewItem : TEasyItem;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
     NewItem:=FSender.AddItem(GUIDParam);
     If AnsiLowerCase(ExplorerInfo.OldFolderName)=AnsiLowerCase(CurrentFile) then
@@ -795,7 +810,7 @@ end;
 
 procedure TExplorerThread.ReplaceImageInExplorer;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam);
     FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.ItemInclude, isBigImage);
@@ -804,17 +819,17 @@ end;
 
 procedure TExplorerThread.ReplaceInfoInExplorer;
 begin
-  if not Terminated then
+  if not IsTerminated then
     FSender.SetInfoToItem(FInfo, GUIDParam);
 end;
 
 procedure TExplorerThread.ReplaceImageInExplorerA;
 begin
-  if not Terminated then
+  if not IsTerminated then
      FSender.SetInfoToItem(FInfo, GUIDParam);
 end;
 
-procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string);
+procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
 Var
   Found, Count, Dx, i, j, x, y, w, h, ps, index : integer;
   SearchRec : TSearchRec;
@@ -881,8 +896,8 @@ begin
 
   Query := nil;
   try
-    Count:=0;
-    Nbr:=0;
+    Count := 0;
+    Nbr := 0;
     FFileNames := TStringList.Create;
     FPrivateFileNames := TStringList.Create;
     try
@@ -893,12 +908,12 @@ begin
         CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
         FormatDir(DBFolder);
 
-        Query := GetQuery(True);
+        Query := GetQuery(False);
                 
         if ExplorerInfo.ShowPrivate then
           SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From '+GetDefDBname+' where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
         else
-          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From '+GetDefDBname+' where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) where Access <> ' + IntToStr(db_access_private));
+          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From '+GetDefDBname+' where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
 
         SetStrParam(Query,0,'%'+DBFolder+'%');
         SetStrParam(Query,1,'%'+DBFolder+'%\%');
@@ -957,8 +972,8 @@ begin
               if ShowFileIfHidden(CurrentFile + SearchRec.Name) then
               begin
                 OK := True;
-                if ValidCryptGraphicFile(CurrentFile+SearchRec.Name) then
-                if DBkernel.FindPasswordForCryptImageFile(CurrentFile + SearchRec.Name) = '' then
+                if ValidCryptGraphicFile(CurrentFile + SearchRec.Name) then
+                if DBKernel.FindPasswordForCryptImageFile(CurrentFile + SearchRec.Name) = '' then
                 OK := False;
                 if OK then
                 begin
@@ -974,16 +989,15 @@ begin
             Found := SysUtils.FindNext(SearchRec);
           end;
           FindClose(SearchRec);
-        end;
+        end; 
+        if Count + Nbr = 0 then
+          Exit;
       end;
-
     finally
       FFileNames.Free;
       FPrivateFileNames.Free;
     end;
 
-    if Count + Nbr = 0 then
-      Exit;
 
     Dx:=4;
 
@@ -995,6 +1009,8 @@ begin
     for i:=1 to 2 do
     for j:=1 to 2 do
     begin
+      if IsTerminated then
+        Exit;
       Index:=(i - 1) * 2 + j;
       FcountOfFolderImage := Index;
       // 34  68
@@ -1010,10 +1026,11 @@ begin
       y:=(i - 1) * _y + deltay;
       if fFastDirectoryLoading then
       begin
-        if FFolderImagesResult.Images[Index]=nil then break;
-        fbmp:=FFolderImagesResult.Images[Index];
-        w:=fbmp.Width;
-        h:=fbmp.Height;
+        if FFolderImagesResult.Images[Index]=nil then
+          Break;
+        fbmp := FFolderImagesResult.Images[Index];
+        W := fbmp.Width;
+        H := fbmp.Height;
         ProportionalSize(SmallImageSize,SmallImageSize,w,h);
         DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
         Continue;
@@ -1083,18 +1100,21 @@ begin
           W := pic.Width;
           H := pic.Height;
           ProportionalSize(SmallImageSize, SmallImageSize, w, h);
-          bmp := TBitmap.Create;
+          fbmp := TBitmap.create;
           try
-            bmp.Assign(pic.Graphic);
-            bmp.PixelFormat:=pf24bit;
-            fbmp:=TBitmap.create;
-            fbmp.PixelFormat:=pf24bit;
-            DoResize(W, H, bmp, fbmp);
-            DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+            fbmp.PixelFormat := pf24bit;
+            bmp := TBitmap.Create;
+            try
+              bmp.Assign(pic.Graphic);
+              bmp.PixelFormat := pf24bit;
+              DoResize(W, H, bmp, fbmp);
+              DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+            finally
+              bmp.Free;
+            end;
           finally
-            bmp.Free;
+            fbmp.free;
           end;
-          fbmp.free;
         finally
           pic.Free;
         end;
@@ -1112,7 +1132,8 @@ begin
       fFolderImages.FileDates[i] := FilesDatesInFolder[i];
     AExplorerFolders.SaveFolderImages(fFolderImages, SmallImageSize, SmallImageSize);
   end;
-  
+           
+  GUIDParam := DirctoryID;
   SynchronizeEx(ReplaceFolderImage);
 end;
 
@@ -1120,7 +1141,7 @@ procedure TExplorerThread.DrawFolderImageBig(Bitmap : TBitmap);
 var
    Bit32 : TBitmap;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
     if FullFolderPicture = nil then
       FullFolderPicture := GetFolderPicture;
@@ -1198,7 +1219,7 @@ begin
   Sleep(2000); //wait if folder was jast created - it possible that files are currentry in copy-progress...
   try
    if ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS) then
-   ReplaceThumbImageToFolder(CurrentFile);
+   ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
   except
   end;
  end;
@@ -1219,7 +1240,7 @@ end;
 
 procedure TExplorerThread.AddImageFileItemToExplorerW;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
     FSender.AddInfoAboutFile(FFiles);
     if ExplorerInfo.View=LV_THUMBS then
@@ -1262,21 +1283,21 @@ begin
 end;
 
 function TExplorerThread.FindInQuery(FileName: String) : Boolean;
-Var
-  i : integer;
+var
+  I : integer;
   AddPathStr : string;
 begin
   Result := False;
   if (not FQuery.IsEmpty) then
   begin
     UnProcessPath(FileName);
-    FileName:=AnsiLowerCase(FileName);
+    FileName := AnsiLowerCase(FileName);
     if FolderView then
-      AddPathStr:=ProgramDir
+      AddPathStr := ProgramDir
     else
       AddPathStr := '';   
     Fquery.First;
-    for i:=1 to Fquery.RecordCount do
+    for I := 1 to Fquery.RecordCount do
     begin
       if AnsiLowerCase(AddPathStr+Fquery.FieldByName('FFileName').AsString) = FileName then
       begin
@@ -1284,7 +1305,7 @@ begin
         Exit;
       end;
       FQuery.Next;
-   end;
+    end;
   end;
 end;
 
@@ -1330,7 +1351,7 @@ end;
 
 procedure TExplorerThread.SetInfoToStatusBar;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
     if SetText then
       FSender.SetStatusText(FInfoText);
@@ -1349,7 +1370,7 @@ end;
 
 procedure TExplorerThread.SetProgressVisible;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
    If ProgressVisible then
      FSender.ShowProgress
@@ -1692,7 +1713,7 @@ end;
 
 procedure TExplorerThread.AddDirectoryIconToExplorer;
 begin
-  if not Terminated then
+  if not IsTerminated then
     FSender.AddIcon(FIcon, true, GUIDParam);
 end;
 
@@ -1704,12 +1725,12 @@ begin
   CurrentFile:=FFiles[0].FileName;
   fMask:=SupportedExt;
   if ExplorerInfo.ShowThumbNailsForFolders then
-  ReplaceThumbImageToFolder(CurrentFile);
+  ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
 end;
 
 procedure TExplorerThread.EndUpdateID;
 begin
-  if not Terminated then
+  if not IsTerminated then
     FSender.RemoveUpdateID(IntParam, FCID);
 end;
 
@@ -1788,7 +1809,7 @@ begin
      //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
      if not LoadingAllBigImages then BooleanResult:=true;
 
-     if Terminated then break;
+     if IsTerminated then break;
      if not FileExists(ProcessPath(FFiles[i].FileName)) then continue;
      if BooleanResult then
      begin
@@ -1871,12 +1892,12 @@ begin
      //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
      if not LoadingAllBigImages then BooleanResult:=true;
 
-     if Terminated then break;
+     if IsTerminated then break;
 
      if BooleanResult then
      if ExplorerInfo.ShowThumbNailsForFolders then
      try
-      ReplaceThumbImageToFolder(CurrentFile);
+      ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
      except
      end;
     end;
@@ -1891,13 +1912,13 @@ end;
 
 procedure TExplorerThread.GetAllFiles;
 begin
-  if not Terminated then
+  if not IsTerminated then
     FFiles:=FSender.GetAllItems;
 end;
 
 procedure TExplorerThread.DoDefaultSort;
 begin
-  if not Terminated then
+  if not IsTerminated then
   begin
     FSender.NoLockListView:=true;
     FSender.DoDefaultSort(FCID);
@@ -2028,28 +2049,48 @@ begin
   SynchronizeEx(ReplaceImageInExplorer);
 end;
 
-procedure TExplorerThread.ProcessThreadImages;
-begin    
-  FEvent := CreateEvent(nil, True, True, PChar(GUIDToString(GetGUID)));   
-  try
-    while True do
-    begin
-      SetEvent(FEvent);
+procedure TExplorerThread.ProcessThreadPreviews;
+begin       
+  TW.I.Start('<ProcessThreadPreviews>');
+  while True do
+  begin
+    IsTerminated := False;
+    try
       try
         try
-          ExtractImage(FInfo, IsCryptedFile, FFileID);
+          if FThreadPreviewMode = THREAD_PREVIEW_MODE_IMAGE then
+            ExtractImage(FInfo, IsCryptedFile, FFileID);
+
+          if FThreadPreviewMode = THREAD_PREVIEW_MODE_DIRECTORY then
+            ReplaceThumbImageToFolder(FInfo.ItemFileName, FFileID);
+
+          FThreadPreviewMode := 0;
         except
           on e : Exception do
             EventLog('TExplorerThread.ProcessThreadImages' + e.Message);
         end;
-      finally
-        ResetEvent(FEvent);
+      finally 
+        TW.I.Start('SetEvent: ' + IntToStr(FEvent));
+        SetEvent(FEvent);
       end;
+    finally
+      TW.I.Start('Suspend: ' + IntToStr(FEvent));
       Suspend;
     end;
-  finally
-    CloseHandle(FEvent);
   end;
+end;
+
+procedure TExplorerThread.ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
+begin
+  if ProcessorCount > 1 then
+    TExplorerThreadPool.Instance.ExtractDirectoryPreview(Self, FileName, DirectoryID)
+  else
+    ReplaceThumbImageToFolder(FileName, DirectoryID);
+end;
+
+function TExplorerThread.IsVirtualTerminate: Boolean;
+begin
+  Result := FThreadType = THREAD_TYPE_THREAD_PREVIEW;
 end;
 
 initialization

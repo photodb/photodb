@@ -4,20 +4,27 @@ interface
 
 uses Classes, Windows, SysUtils, SyncObjs;
 
+{$DEFINE MULTITHREAD}
+
 type
   TW = class(TObject)
   private
     FS : TFileStream;
     FStart : TDateTime;
+    FMessageThreadID : THandle;
     FStartUp : TDateTime;
     IsRuning : Boolean;
     FName : string;
-    FThreadID : THandle;
+    FThreadID : THandle;  
+{$IFDEF MULTITHREAD}
+    FSync : TCriticalSection;
+{$ENDIF}
+  private
+    procedure Stop;
   public
     constructor Create(ThreadID : THandle);
     destructor Destroy; override;
     procedure Start(Name : string);
-    procedure Stop;
     class function I : TW;
     property ThreadID : THandle read FThreadID;
   end;
@@ -31,12 +38,18 @@ var
 { TW }
 
 constructor TW.Create(ThreadID : THandle);
-begin
+begin        
+{$IFDEF MULTITHREAD}
+    FSync := TCriticalSection.Create;
+{$ENDIF}
   FThreadID := ThreadID;
   IsRuning := False;
   FStartUp := Now;
   if MainThreadID = ThreadID then
     ThreadID := 0;
+{$IFDEF MULTITHREAD}
+  ThreadID := 0;
+{$ENDIF}
 
   FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate);
 end;
@@ -44,6 +57,9 @@ end;
 destructor TW.Destroy;
 begin
   FS.Free;
+{$IFDEF MULTITHREAD}
+    FSync.Free;
+{$ENDIF}
   inherited;
 end;
 
@@ -62,6 +78,9 @@ begin
       W := TList.Create;
 
     CurrentThreadID := GetCurrentThreadID;
+{$IFDEF MULTITHREAD}
+    CurrentThreadID := 0;
+{$ENDIF}
     for I := 0 to W.Count - 1 do
       if TW(W[I]).ThreadID = CurrentThreadID then
          Result := W[I];
@@ -78,12 +97,22 @@ end;
 
 procedure TW.Start(Name: string);
 begin
+{$IFDEF MULTITHREAD}
+  FSync.Enter;
+  try
+{$ENDIF}
   if IsRuning then
     Stop;
 
   FName := Name;
   FStart := Now;
-  IsRuning := True;
+  FMessageThreadID := GetCurrentThreadID;
+  IsRuning := True;  
+{$IFDEF MULTITHREAD}
+  finally
+    FSync.leave;
+  end
+{$ENDIF}
 end;
 
 procedure TW.Stop;
@@ -93,9 +122,12 @@ var
 begin
   IsRuning := False;
   Delta := Round((Now - FStart)*24*60*60*1000);
-  if Delta > 10 then
+  //if Delta > 10 then
   begin
     Info := Format('%s = %d ms. (%d ms.)%s', [FName, Delta , Round((Now - FStartUp)*24*60*60*1000), #13#10]);
+{$IFDEF MULTITHREAD}
+    Info := IntToStr(FMessageThreadID) + ':' + Info;
+{$ENDIF}
     FS.Write(Info[1], Length(Info))
   end;
 end;

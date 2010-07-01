@@ -657,7 +657,7 @@ begin
   HidefromTaskBar(Application.Handle);
   if not DBTerminating then
   TInternetUpdate.Create(False, False);
-  TW.I.Stop;
+  TW.I.Start('TInternetUpdate - Create');
 end;
 
 procedure TFormManager.WMCopyData(var m: TMessage);
