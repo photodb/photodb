@@ -221,8 +221,6 @@ type
      Include : Boolean;
    end;
 
-  TDBaccess = set of (db_read_shared, db_read_all, db_write);
-
   TImageDBRecordA = record
     IDs : array of integer;
     FileNames : array of string;
@@ -460,7 +458,7 @@ type
   const DBID = '{E1446065-CB87-440D-9315-6FA356F921B5}';
         DBBeginInstallID = '{A8C9FD9D-C2F6-4B1C-9164-11E6075FD527}';
         DBEndInstallID = '{C5348907-0AD6-4D02-8E0D-4063057B652F}';
-        ReleaseNumber = 11;
+        ReleaseNumber = 12;
         DemoSecondsToOpen = 5;
         MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
         FilesCount = 11;
@@ -471,7 +469,7 @@ type
         RetryTryCountOnWrite = 10;
         RetryTryDelayOnWrite = 500;
         CurrentDBSettingVersion = 1;
-        UseSimpleSelectFolderDialog = false;
+        UseSimpleSelectFolderDialog = False;
 
 var
         // Image sizes
@@ -496,10 +494,10 @@ var
     Theme_ListFontColor, Theme_MemoEditColor, Theme_MemoEditFontColor, Theme_LabelFontColor,
     Theme_ProgressBackColor, Theme_ProgressFontColor, Theme_ProgressFillColor : TColor;
 
-    DBKernel : TDBKernel;
+    DBKernel : TDBKernel = nil;
     ResultLogin : boolean;
     KernelHandle : THandle;
-    DBTerminating : Boolean;
+    DBTerminating : Boolean = False;
     HelpNO : integer = 0;
     HelpActivationNO : integer = 0;
     FExtImagesInImageList : Integer;
@@ -1181,45 +1179,9 @@ begin
  fReg.free;
 end;
 
-Function ThisFileInstalled : boolean;
-var
-  fReg : TBDRegistry;
-  FileName : String;
+function ThisFileInstalled : boolean;
 begin
- EventLog(':ThisFileInstalled()');
- if not DBLoadInitialized then
- begin
-  InitializeDBLoadScript();
- end;
-
- if fThisFileInstalled>-1 then
- begin
-  Result:=fThisFileInstalled = 1;
-  EventLog(':ThisFileInstalled() return* '+BoolToStr(Result,true));
-  exit;
- end;
-
- Result:=false;
- fReg:=TBDRegistry.Create(REGISTRY_ALL_USERS,true);
- try
-  fReg.OpenKey(RegRoot,true); 
-  FileName:=fReg.ReadString('DataBase');
-  EventLog(':ThisFileInstalled() found program at "'+FileName+'"');
-  if PortableWork then
-  if FileName<>'' then FileName[1]:=Application.ExeName[1];
-  If FileExists(FileName) then
-  begin
-   EventLog('This program at "'+Application.ExeName+'"');
-   if AnsiLowerCase(FileName)=AnsiLowerCase(Application.ExeName) then
-   Result:=true;
-  end else EventLog('File at "'+FileName+'" not found!');
- except
-  on e : Exception do EventLog(':ThisFileInstalled() throw exception: '+e.Message);
- end;
- fReg.free;
- if Result then
- fThisFileInstalled := 1 else fThisFileInstalled := 0;
- EventLog(':ThisFileInstalled() return '+BoolToStr(Result,true));
+  Result := AnsiUpperCase(ExtractFileName(Application.ExeName)) <> 'SETUP.EXE';
 end;
 
 Function IsInstalledApplication : Boolean;

@@ -132,7 +132,6 @@ type
     procedure Exit1Click(Sender: TObject);
     procedure PaintBox1DblClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
-//    procedure SlideTimerTimer(Sender: TObject);
     procedure newpicture(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure MTimer1Click(Sender: TObject);
@@ -356,27 +355,18 @@ begin
   FbImage:=TBitmap.create;
   FbImage.PixelFormat:=pf24bit;
   drawimage.PixelFormat:=pf24bit;
-  //drawimage.width:=Clientwidth;
-  //drawimage.Height:=HeightW;
   TW.I.Start('fcsrbmp');
   fcsrbmp := TBitmap.create;
   fcsrbmp.PixelFormat:=pf24bit;
- // fcsrbmp.width:=screen.Width;
- // fcsrbmp.Height:=screen.Height;
   fcsrbmp.Canvas.Brush.Color:=0;
   fcsrbmp.Canvas.pen.Color:=0;
- // fcsrbmp.Canvas.Rectangle(0,0,fcsrbmp.width,fcsrbmp.Height);
   TW.I.Start('fnewcsrbmp');
   WaitImage := TBitmap.create;
   WaitImage.PixelFormat:=pf24bit;
-  
   fnewcsrbmp := TBitmap.create;
   fnewcsrbmp.PixelFormat:=pf24bit;
- // fnewcsrbmp.width:=screen.Width;
-//  fnewcsrbmp.Height:=screen.Height;
   fnewcsrbmp.Canvas.Brush.Color:=0;
   fnewcsrbmp.Canvas.pen.Color:=0;
- // fnewcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);
   fnowcsrbmp := TBitmap.create;
   fnowcsrbmp.PixelFormat:=pf24bit;
   fnowcsrbmp.Assign(fnewcsrbmp);
@@ -424,8 +414,8 @@ begin
   NewPanel1.ImageIndex:=DB_IC_PANEL;
 
   TW.I.Start('RecreateThemeToForm');
-  DBKernel.RecreateThemeToForm(self);
-  DBkernel.RegisterProcUpdateTheme(UpdateTheme,self);
+  DBKernel.RecreateThemeToForm(Self);
+  DBkernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
   TW.I.Start('LoadLanguage');
   LoadLanguage;                           
@@ -448,8 +438,8 @@ begin
   TW.I.Start('LoadCursor');
   CursorZoomIn := LoadCursor(HInstance,'ZOOMIN');
   CursorZoomOut := LoadCursor(HInstance,'ZOOMOUT');
-  Screen.Cursors[CursorZoomInNo]:=CursorZoomIn;
-  Screen.Cursors[CursorZoomOutNo]:=CursorZoomOut;
+  Screen.Cursors[CursorZoomInNo]  := CursorZoomIn;
+  Screen.Cursors[CursorZoomOutNo] := CursorZoomOut;
   TW.I.Start('MakePagesLinks');
   MakePagesLinks;
   FCreating := False;   
@@ -1521,11 +1511,11 @@ var
   Info: TRecordsInfo;
 begin
   NewFormState;
-  WaitingList:=true;
+  WaitingList := True;
   TSlideShowScanDirectoryThread.Create(Self, StateID, FileName);
-  Info:=RecordsInfoOne(FileName,0,0,0,0,'','','','','',0,False,False,0,ValidCryptGraphicFile(FileName),false,false,'');
-  ExecuteW(Self,Info,'');
-  Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
+  Info := RecordsInfoOne(FileName, 0,0,0,0,'','','','','',0, False, False, 0, ValidCryptGraphicFile(FileName), False, False, '');
+  ExecuteW(Self, Info, '');
+  Caption := Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
 end;
                                                                          
 function TViewer.Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
@@ -3153,11 +3143,7 @@ begin
    if CurrentInfo.ItemRotates[i]<>0 then
    if i = CurrentFileNumber then
    begin
-    Case CurrentInfo.ItemRotates[i] of
-    DB_IMAGE_ROTATED_270: Rotate270A(FbImage);
-    DB_IMAGE_ROTATED_90: Rotate90A(FbImage);
-    DB_IMAGE_ROTATED_180: Rotate180A(FbImage);
-    end;
+    ApplyRotate(FbImage, CurrentInfo.ItemRotates[i]);
     RecreateDrawImage_(self);
    end;
   end else

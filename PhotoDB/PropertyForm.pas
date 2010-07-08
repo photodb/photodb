@@ -676,9 +676,7 @@ begin
 
  frotate:=WorkQuery.FieldByName('Rotated').AsInteger;
  CurrentItemInfo.ItemRotate:=frotate;
- if frotate=DB_IMAGE_ROTATED_270 then Rotate270A(b1);
- if frotate=DB_IMAGE_ROTATED_90 then Rotate90A(b1);
- if frotate=DB_IMAGE_ROTATED_180 then Rotate180A(b1);
+ ApplyRotate(B1, frotate);
  Exists:=0;
  DrawAttributes(b1,100,WorkQuery.FieldByName('Rating').asinteger,WorkQuery.FieldByName('Rotated').asinteger,WorkQuery.FieldByName('Access').asinteger,WorkQuery.FieldByName('FFileName').AsString,ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')),Exists,ID);
  if Image1.Picture.Bitmap=nil then

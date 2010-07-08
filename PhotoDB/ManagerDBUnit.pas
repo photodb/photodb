@@ -1630,11 +1630,7 @@ begin
    B.Canvas.Pen.Color:=Theme_ListColor;
    B.canvas.Draw(ThSize div 2 - JPG.Width div 2,ThSize div 2 - JPG.Height div 2,JPG);
    JPG.Free;
-   case PListData(aData[Item.Index])^.Rotate of
-    DB_IMAGE_ROTATED_90  :  Rotate90A(B);
-    DB_IMAGE_ROTATED_180 :  Rotate180A(B);
-    DB_IMAGE_ROTATED_270 :  Rotate270A(B);
-   end;
+   ApplyRotate(B, PListData(aData[Item.Index])^.Rotate);
    DrawAttributes(B,ThSize,PListData(aData[Item.Index])^.Rating,PListData(aData[Item.Index])^.Rotate, PListData(aData[Item.Index])^.Access,DS.FieldByName('FFileName').AsString,ValidCryptBlobStreamJPG(DS.FieldByName('Thum')),PListData(aData[Item.Index])^.Exists,PListData(aData[Item.Index])^.ID);
    FreeDS(DS);
   if Active then

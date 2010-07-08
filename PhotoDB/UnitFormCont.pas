@@ -621,11 +621,7 @@ begin
   begin
    if ListView1.Items[i].ImageIndex>-1 then
    begin
-    Case ReRotation of
-     DB_IMAGE_ROTATED_270: Rotate270A(FBitmapImageList.FImages[ListView1.Items[i].ImageIndex].Bitmap);
-     DB_IMAGE_ROTATED_90: Rotate90A(FBitmapImageList.FImages[ListView1.Items[i].ImageIndex].Bitmap);
-     DB_IMAGE_ROTATED_180: Rotate180A(FBitmapImageList.FImages[ListView1.Items[i].ImageIndex].Bitmap);
-    end;
+     ApplyRotate(FBitmapImageList[ListView1.Items[i].ImageIndex].Bitmap, ReRotation);
    end;
   end;
  end;
@@ -748,10 +744,10 @@ begin
 
   Image:=TBitmap.Create;
   Image.PixelFormat:=pf24bit;
-  w:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Height;
+  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
+  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
   ProportionalSize(50,50,w,h);
-  DoResize(w,h,FBitmapImageList.FImages[Item.ImageIndex].Bitmap,Image);
+  DoResize(w,h,FBitmapImageList[Item.ImageIndex].Bitmap,Image);
   image1.Picture.Bitmap.Assign(Image);
   Image.Free;
   
@@ -941,7 +937,7 @@ Const
 
   function GetImageByIndex(index : integer) : TBitmap;
   begin
-   Result:=FBitmapImageList.FImages[index].Bitmap;
+   Result:=FBitmapImageList[index].Bitmap;
    Result:=RemoveBlackColor(Result);
   end;
 
@@ -1352,10 +1348,10 @@ begin
   b.Height:=fPictureSize;
   FillRectNoCanvas(b,Theme_ListColor);
 
-  w:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Height;
+  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
+  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
   ProportionalSize(fPictureSize,fPictureSize,w,h);
-  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList.FImages[Item.ImageIndex].Bitmap);
+  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList[Item.ImageIndex].Bitmap);
 
   r.Left:=r1.Left-2;
   r.Top:=r1.Top-2;
@@ -2087,7 +2083,7 @@ begin
  begin
   if AnsiLowerCase(Data[i].FileName)=FileName then
   begin
-   FBitmapImageList.FImages[i].Bitmap.Assign(Bitmap);
+   FBitmapImageList[i].Bitmap.Assign(Bitmap);
    ListView1.Refresh;
    break;
   end;

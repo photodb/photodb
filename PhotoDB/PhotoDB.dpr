@@ -275,7 +275,8 @@ uses
   UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
   uFastLoad in 'Units\uFastLoad.pas',
   uResources in 'Units\uResources.pas',
-  uExplorerThreadPool in 'Threads\uExplorerThreadPool.pas';
+  uExplorerThreadPool in 'Threads\uExplorerThreadPool.pas',
+  uGOM in 'Units\uGOM.pas';
 
 {$R *.res}
 
@@ -285,15 +286,10 @@ type
 var
     s1 : string;
     Reg : TBDRegistry;
-    hw : THandle;
-    cd : TCopyDataStruct;
-    rec : TRecToPass;
-    hSemaphore:thandle;
-    name : string;
     actcode : string;
     initaproc : TInitializeAProc;
     TablePacked : boolean;    
-    ActivKey, ActivName, AllParams : String;
+    ActivKey, ActivName : String;
     i : integer;
 
   f : TPcharFunction;
@@ -302,96 +298,49 @@ var
 
 function IsFalidDBFile : boolean;
 begin
- Result:=true;
+  Result := True;
 end;
 
 function FileVersion : integer;
 begin
- Result:=ReleaseNumber;
+ Result := ReleaseNumber;
 end;
 
-Procedure FindRunningVersion;
+procedure FindRunningVersion;
+var
+  HSemaphore : THandle;  
+  Rec : TRecToPass;
+  MessageToSent : string; 
+  cd : TCopyDataStruct;
 begin
-  Name := DBID;
-  hSemaphore := CreateSemaphore( nil, 0, 1, pchar(name));
-  if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
+  HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DBID));
+  if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin
-   CloseHandle(hSemaphore); 
-   if not CheckFileExistsWithMessageEx(ParamStr(1),false) then
-   begin
-    If (AnsiUpperCase(ParamStr(1))<>'/EXPLORER') and (AnsiUpperCase(ParamStr(1))<>'/GETPHOTOS') then
+    CloseHandle(HSemaphore);
+    if not CheckFileExistsWithMessageEx(ParamStr(1), False) then
     begin
-     if FindWindow(nil, DBID)<>0 then
-     begin
-      hw:=FindWindow(nil, DBID);
-      rec.s := 'Activate';
+      if (AnsiUpperCase(ParamStr(1)) <> '/EXPLORER') and (AnsiUpperCase(ParamStr(1)) <> '/GETPHOTOS') and (FindWindow(nil, DBID) <> 0) then
+        MessageToSent := 'Activate'
+      else
+        MessageToSent := ParamStr(1) + #0 + ParamStr(2);
+
+      rec.s := MessageToSent;
       rec.i := 32;
       cd.dwData := 3232;
-      cd.cbData := sizeof(rec);
-      cd.lpData := @rec;
-      if SendMessageEx(hw, WM_COPYDATA, 0, LongInt(@cd)) then
-      begin
-       halt;
-      end else
-      begin
-       if ID_YES<>MessageBoxDB(0,TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED,TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then halt;
-      end;
-     end;
-    end else
-    begin
-      hw:=FindWindow(nil, DBID);
-      rec.s := ParamStr(1)+#0+ParamStr(2);
-      rec.i := 32;
-      cd.dwData := 3232;
-      cd.cbData := sizeof(rec);
-      cd.lpData := @rec;
-      if SendMessageEx(hw, WM_COPYDATA, 0, LongInt(@cd)) then
-      begin
-       halt;
-      end else
-      begin
-       if ID_YES<>MessageBoxDB(0,TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED,TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then halt;
-      end;
+      cd.cbData := SizeOf(Rec);
+      cd.lpData := @Rec;
+      if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
+        Halt
+      else
+        if ID_YES <> MessageBoxDB(0, TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED, TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then
+          Halt;
     end;
-    Exit;
-   end;
-   if FindWindow(nil, DBID)=0 then
-   begin
-    i:=0;
-    Repeat
-     Sleep(100);
-     Inc(i,100);
-     hSemaphore := CreateSemaphore( nil, 0, 1, PChar(Name));
-     IF ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) THEN
-     BEGIN
-      CloseHandle(hSemaphore);
-     end else break;
-     if i>10000 then Halt; //more than 10 second -> exit;
-    until (FindWindow(nil, DBID)<>0);
-   end;
-  end;
-  hw := FindWindow(nil, DBID);
-  if hw<>0 then
-  begin
-   rec.s := ParamStr(1)+#0+ParamStr(2);
-   rec.i := 32;
-   cd.dwData := 3232;
-   cd.cbData := sizeof(rec);
-   cd.lpData := @rec;
-   if SendMessageEx(hw, WM_COPYDATA, 0, LongInt(@cd)) then
-   begin
-    halt;
-   end else
-   begin
-    if ID_YES<>MessageBoxDB(0,TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED,TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then halt;
-   end;
-   Exit;
   end;
 end;
 
 exports
- IsFalidDBFile name 'IsFalidDBFile',
- FileVersion name 'FileVersion';
+  IsFalidDBFile name 'IsFalidDBFile',
+  FileVersion name 'FileVersion';
 
 begin             
   TW.I.Start('SetPriority');
@@ -438,32 +387,24 @@ begin
   EventLog('');
   EventLog('');
   EventLog(Format('Program running! [%s]',[ProductName]));
-           
+
+  //Lazy init enviroment procedure  
   TW.I.Start('TScriptEnviroments');
   TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
-            
-  if GetParamStrDBBool('/Logging') then
-  begin
-   EventLog(Format('Program logging enabled!! [%s]',[ProductName]));
-   LOGGING_ENABLED:=true;
-  end else
-  begin
-   EventLog('Program logging DISABLED! Run program with param "/Logging"');
-   LOGGING_ENABLED := false;
-  end;
-  AllParams:='';
-  for i := 0 to 250 do
-  if ParamStr(i)<>'' then
-  AllParams:=AllParams+' '+ParamStr(i) else break;
-  EventLog('Program params :'+AllParams);
+
+  LOGGING_ENABLED := GetParamStrDBBool('/Logging');
+  if LOGGING_ENABLED then
+    EventLog(Format('Program logging enabled!! [%s]',[ProductName]))
+  else
+    EventLog('Program logging DISABLED! Run program with param "/Logging"');
+    
   //PREPAIRING ----------------------------------------------------
 
   TablePacked:=false;
-  If GetParamStrDBBool('/SLEEP') then Sleep(1000);
+  if GetParamStrDBBool('/SLEEP') then
+    Sleep(1000);
 
-  ProgramDir:=GetDirectory(Application.ExeName);
-  DBTerminating:=false;     
-  DBKernel:=nil;
+  ProgramDir := GetDirectory(Application.ExeName);
             
   TW.I.Start('InitializeDBLoadScript');
   InitializeDBLoadScript;
@@ -471,13 +412,14 @@ begin
 
   if GetDBViewMode then
   begin
-   FolderView:=true;
-   UseScripts:=false;
-  end;          
+    FolderView := True;
+    UseScripts := False;
+  end;
+  
   TW.I.Start('Application.Initialize');
   Application.Initialize;
 
-  EventLog(Format('Folder View = %s',[BoolToStr(FolderView)]));
+  EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
   //INSTALL ----------------------------------------------------
 
@@ -503,7 +445,7 @@ begin
       DBKernel:=TDBKernel.Create;
       DBKernel.LoadColorTheme;
       Application.CreateForm(TInstallForm, InstallForm);
-  Application.Restore;
+      Application.Restore;
       EventLog(':InstallForm.SetQuickSelfInstallOption()');
       InstallForm.SetQuickSelfInstallOption;
       InstallForm.ShowModal;
@@ -572,7 +514,7 @@ begin
 
   TW.I.Start('FindRunningVersion');
   if not GetParamStrDBBool('/NoPrevVersion') then
-  FindRunningVersion;
+    FindRunningVersion;
 
   //This is main form of application
   TW.I.Start('TFormManager Create');
@@ -687,9 +629,7 @@ begin
   EventLog('...Loading menu...');
 
 //TODO:  if LoadingAboutForm<>nil then
-{  begin
-    TAboutForm(LoadingAboutForm).DmProgress1.Position:=2;
-     TW.I.Start('LoadRegistrationData');
+{ 
     if not FolderView then
       TAboutForm(LoadingAboutForm).LoadRegistrationData;
   end; }
@@ -878,20 +818,14 @@ begin
 
   //PREPAIRING RUNNING DB ----------------------------------------
 
- If DBTerminating then
- Application.ShowMainForm:=False;
- If not DBTerminating then
- begin
-  EventLog('Form manager...');
-  TW.I.Start('Form manager...');
-  FormManager.Load;
-  //If not DBTerminating then
-  //begin
-   //EventLog('ID Form...');
-   //TW.I.Start('ID Form...');
-   //Application.CreateForm(TIDForm, IDForm);
-  //end;
- end;
+  If DBTerminating then
+  Application.ShowMainForm:=False;
+  If not DBTerminating then
+  begin
+    EventLog('Form manager...');
+    TW.I.Start('Form manager...');
+    FormManager.Load;
+  end;
             
  //THEMES AND RUNNING DB ---------------------------------------------
                  
@@ -901,7 +835,6 @@ begin
  begin                  
   EventLog('Theme...');
   DBkernel.LoadColorTheme;
-//  DBkernel.ReloadGlobalTheme;
   EventLog('Run manager...');
   if not GetParamStrDBBool('/NoFullRun') then
   FormManager.Run(SplashThread);
@@ -925,9 +858,9 @@ begin
   DBKernel.GetPasswordsFromParams;
  end;
 
- s1:=SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Add'),'"');
+ s1 := SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Add'),'"');
  
- if FileExistsEx(s1) then
+ if (s1 <> '') and FileExistsEx(s1) then
  begin            
   Running:=true;
   If UpdaterDB = nil then
@@ -936,7 +869,7 @@ begin
   UpdaterDB.AddFile(s1);
  end;
 
- if DirectoryExists(s1) then
+ if (s1 <> '') and DirectoryExists(s1) then
  begin     
   Running:=true;
   If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
@@ -956,7 +889,5 @@ begin
   ExecuteQuery(s1);
  end;
 
-
  Application.Run;
-
 end.

@@ -394,11 +394,7 @@ begin
   end;
   Temp.free;
   if CheckBox3.Checked then
-  begin
-   if FRotateList[i]=DB_IMAGE_ROTATED_270 then Rotate270A(BitmapGraphic);
-   if FRotateList[i]=DB_IMAGE_ROTATED_90 then Rotate90A(BitmapGraphic);
-   if FRotateList[i]=DB_IMAGE_ROTATED_180 then Rotate180A(BitmapGraphic);
-  end;
+    ApplyRotate(BitmapGraphic, FRotateList[i]);
   BitmapGraphic.Canvas.Font.Assign(FFont);
   if CheckBox4.Checked then
   DrawCopyRightA(BitmapGraphic,Shape1.Brush.Color,Edit4.Text);

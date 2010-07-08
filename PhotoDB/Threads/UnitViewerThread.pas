@@ -212,7 +212,7 @@ begin
       Synchronize(GetPasswordSynch);
       exit;
      end;
-     sleep(10);
+     Sleep(10);
     until false;
    end;
   end;
@@ -359,6 +359,7 @@ var
   Query : TDataSet;
 begin
  CoInitialize(nil);
+ try
  Query := GetQuery;
  try
   Query.Active:=false;
@@ -375,6 +376,9 @@ begin
   FreeDS(Query);
  end;              
  FInfo.ItemFileName:=FFileName;
+ finally
+   CoUnInitialize;
+ end;
 end;
 
 end.

@@ -3,7 +3,7 @@ unit ExEffectsUnitW;
 interface
 
 uses ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2, EffectsLanguage,
-     Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs;
+     Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs, uGOM;
 
 type
   TExEffectOneParamCustom = class(TExEffect)

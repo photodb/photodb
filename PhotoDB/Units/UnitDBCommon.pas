@@ -8,8 +8,8 @@ uses Windows, Classes, Forms, Math, SysUtils, uScript, UnitScripts, Messages,
 function Hash_Cos_C(s:string):integer;
 function ActivateApplication(const Handle1: THandle): Boolean;
 procedure ExecuteScriptFile(FileName : String; UseDBFunctions : boolean = false);
-function GetParamStrDBValue(param : string) : string;
-function GetParamStrDBBool(param : string) : boolean;
+function GetParamStrDBValue(Param : string) : string;
+function GetParamStrDBBool(Param : string) : Boolean;
 procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
@@ -150,22 +150,23 @@ begin
  Result:=c;
 end;
 
-function GetParamStrDBBool(param : string) : boolean;
+function GetParamStrDBBool(Param : string) : Boolean;
 var
   i : integer;
   ParamStrValue : string;
 begin
- Result:=false;
- for i:=1 to ParamCount do
- begin
-  ParamStrValue:=paramStr(i);
-  if ParamStrValue='' then break;
-  if AnsiUpperCase(ParamStrValue)=AnsiUpperCase(param) then
+  Result := False;
+  for i := 1 to ParamCount do
   begin
-   Result:=true;
-   break;
+    ParamStrValue := ParamStr(i);
+    if ParamStrValue = '' then
+      Break;
+    if AnsiUpperCase(ParamStrValue) = AnsiUpperCase(Param) then
+    begin
+      Result := true;
+      Exit;
+    end;
   end;
- end;
 end;
 
 function GetParamStrDBValue(param : string) : string;

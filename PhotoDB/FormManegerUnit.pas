@@ -228,20 +228,17 @@ try
     end;  
     CloseLoadingForm;         
     NewSearch.Show;
-  //  ActivateApplication(NewSearch.Handle);
    end else
    begin
     TW.I.Start('RUN TViewer');
-    If Viewer=nil then
-    Application.CreateForm(TViewer,Viewer);
-    RegisterMainForm(Viewer);  
-    CloseLoadingForm;
-    Viewer.Show;
+    if Viewer = nil then
+      Application.CreateForm(TViewer, Viewer);
+    RegisterMainForm(Viewer);
     TW.I.Start('ExecuteDirectoryWithFileOnThread');
     Viewer.ExecuteDirectoryWithFileOnThread(LongFileName(ParamStr1));
     TW.I.Start('ActivateApplication');
-    //ActivateApplication(Viewer.Handle);
-    //TW.I.Stop;
+    CloseLoadingForm;
+    Viewer.Show;
    end;
   end else
   begin
@@ -256,7 +253,6 @@ try
      SetNewPathW(GetCurrentPathW,false); 
      CloseLoadingForm;   
      Show;
-  //   ActivateApplication(Handle);
     end;
    end else
    begin               
@@ -265,7 +261,6 @@ try
     Application.Restore; 
     CloseLoadingForm;
     NewSearch.Show;
-  //  ActivateApplication(NewSearch.Handle);
    end;
   end;
  end else
@@ -276,8 +271,7 @@ try
    begin
     SetPath(Directory);    
     CloseLoadingForm;
-    Show;        
- //   ActivateApplication(Handle);
+    Show;
    end;
   end else
   begin
@@ -286,7 +280,6 @@ try
    begin
     Show;    
     CloseLoadingForm;       
-  //  ActivateApplication(Handle);
    end;
   end;
  end;

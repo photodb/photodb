@@ -338,7 +338,7 @@ begin
  r2 := Item.DisplayRect(drLabel);
  b := TBitmap.create;
  b.PixelFormat:=pf24bit;
- b.Assign(FBitmapImageList.FImages[Item.ImageIndex].Bitmap);
+ b.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
 
  if item.ImageIndex>Length(Groups)-1 then exit;
  acaption:=Groups[item.ImageIndex].GroupName;

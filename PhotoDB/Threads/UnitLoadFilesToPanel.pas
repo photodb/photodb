@@ -374,11 +374,7 @@ begin
   fbit:=TBitmap.create;
   DoResize(w,h,B,fbit);
   B.Free;
- case FInfo.ItemRotate of
-  DB_IMAGE_ROTATED_90  :  Rotate90A(fbit);
-  DB_IMAGE_ROTATED_180 :  Rotate180A(fbit);
-  DB_IMAGE_ROTATED_270 :  Rotate270A(fbit);
- end;
+  ApplyRotate(fbit, FInfo.ItemRotate);
 
  Synchronize(AddToPanel);
 end;

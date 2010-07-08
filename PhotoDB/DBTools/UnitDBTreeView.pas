@@ -439,11 +439,8 @@ begin
    end else
    B.Canvas.Draw(50-J.Width div 2,50 - J.Height div 2,J);
    J.Free;
-   Case TempTable.FieldByName('Rotated').AsInteger of
-    DB_IMAGE_ROTATED_270: Rotate270A(B);
-    DB_IMAGE_ROTATED_90: Rotate90A(B);
-    DB_IMAGE_ROTATED_180: Rotate180A(B);
-   end;
+   ApplyRotate(B, TempTable.FieldByName('Rotated').AsInteger);
+
    Exists:=0;
    DrawAttributes(B,102,TempTable.FieldByName('Rating').AsInteger,TempTable.FieldByName('Rotated').AsInteger,TempTable.FieldByName('Access').AsInteger,TempTable.FieldByName('FFileName').AsString,ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')),Exists,TempTable.FieldByName('ID').AsInteger);
    Image1.Picture.Graphic:=B;

@@ -183,11 +183,7 @@ begin
  begin
   Bit.canvas.Draw(ListItemPreviewSize div 2 - J.Width div 2,ListItemPreviewSize div 2 - J.height div 2,J);
  end;
-  case WorkQuery.FieldByName('Rotated').AsInteger of
-   DB_IMAGE_ROTATED_90  :  Rotate90A(bit);
-   DB_IMAGE_ROTATED_180 :  Rotate180A(bit);
-   DB_IMAGE_ROTATED_270 :  Rotate270A(bit);
-  end;
+ ApplyRotate(bit, WorkQuery.FieldByName('Rotated').AsInteger);
  Exists:=0;
  DrawAttributes(bit,ListItemPreviewSize,WorkQuery.FieldByName('Rating').AsInteger,WorkQuery.FieldByName('Rotated').AsInteger,WorkQuery.FieldByName('Access').AsInteger,WorkQuery.FieldByName('FFileName').AsString,false,Exists,WorkQuery.FieldByName('ID').AsInteger);
  J.free;
@@ -333,12 +329,7 @@ begin
  begin
   Bit.canvas.Draw(ListItemPreviewSize div 2 - pic.Graphic.Width div 2,ListItemPreviewSize div 2 - pic.Graphic.height div 2,pic.Graphic);
  end;
-
- case fQuery.FieldByName('Rotated').AsInteger of
-  DB_IMAGE_ROTATED_90  :  Rotate90A(bit);
-  DB_IMAGE_ROTATED_180 :  Rotate180A(bit);
-  DB_IMAGE_ROTATED_270 :  Rotate270A(bit);
- end;
+ ApplyRotate(bit, fQuery.FieldByName('Rotated').AsInteger);
  Exists:=0;
  DrawAttributes(bit,ListItemPreviewSize,fQuery.FieldByName('Rating').AsInteger,fQuery.FieldByName('Rotated').AsInteger,fQuery.FieldByName('Access').AsInteger,fQuery.FieldByName('FFileName').AsString,false,Exists,fQuery.FieldByName('ID').AsInteger);
  pic.free;
@@ -522,7 +513,7 @@ begin
   DropFileSource1.Files.Add(DB_PATCH.Text);
   DragImage:=TBitmap.Create;
   DragImage.PixelFormat:=pf24bit;
-  DragImage.Assign(FBitmapImageList.FImages[item.ImageIndex].Bitmap);
+  DragImage.Assign(FBitmapImageList[item.ImageIndex].Bitmap);
   DragImageList.Width:=DragImage.Width;
   DragImageList.Height:=DragImage.Height;
   DragImageList.Add(DragImage,nil);
@@ -592,7 +583,7 @@ begin
  r2 := Item.DisplayRect(drLabel);
  b := TBitmap.create;
  b.PixelFormat:=pf24bit;
- b.Assign(FBitmapImageList.FImages[Item.ImageIndex].Bitmap);
+ b.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
  if not (Sender.IsEditing and (Sender.ItemFocused=Item)) then
  begin
  if Item.Selected then

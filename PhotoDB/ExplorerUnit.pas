@@ -1095,7 +1095,6 @@ begin
   end
 end;
 
-
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
@@ -1840,9 +1839,9 @@ begin
    Image.Icon:=nil;
 
    if ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y)<>nil then
-   Image:=FBitmapImageList.FImages[ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y).ImageIndex] else
+   Image:=FBitmapImageList[ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y).ImageIndex] else
    if Listview1Selected<>nil then
-   Image:=FBitmapImageList.FImages[Listview1Selected.ImageIndex];
+   Image:=FBitmapImageList[Listview1Selected.ImageIndex];
    
    item:=ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y);
    if item=nil then exit;
@@ -1874,9 +1873,9 @@ begin
     begin
      DragImage:=nil;
      if item<>nil then
-     DragImage:=FBitmapImageList.FImages[item.ImageIndex].Bitmap else
+     DragImage:=FBitmapImageList[item.ImageIndex].Bitmap else
      if ListView1.Selection.First<>nil then
-     DragImage:=FBitmapImageList.FImages[Listview1.Selection.First.ImageIndex].Bitmap;
+     DragImage:=FBitmapImageList[Listview1.Selection.First.ImageIndex].Bitmap;
 
      DragImage:=RemoveBlackColor(DragImage);
      TempImage.Canvas.Draw(0,0, DragImage);
@@ -1894,7 +1893,7 @@ begin
      begin
       if SelectedItem<>item then
       begin
-       DragImage:=FBitmapImageList.FImages[SelectedItem.ImageIndex].Bitmap;
+       DragImage:=FBitmapImageList[SelectedItem.ImageIndex].Bitmap;
        DragImage:=RemoveBlackColor(DragImage);
        TempImage.Canvas.Draw(n,n, DragImage);
        Inc(n,7);
@@ -1905,7 +1904,7 @@ begin
       SelectedItem:=Listview1.Selection.Next(SelectedItem);
       if SelectedItem=nil then break;
      end;
-     DragImage:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap;
+     DragImage:=FBitmapImageList[Item.ImageIndex].Bitmap;
      DragImage:=RemoveBlackColor(DragImage);
      TempImage.Canvas.Draw(n,n, DragImage);
      if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
@@ -2420,17 +2419,17 @@ begin
    fFilesInfo[i].Loaded:=true;
    fFilesInfo[i].Links:='';
    fFilesInfo[i].Crypted:=GraphicCrypt.ValidCryptGraphicFile(fFilesInfo[i].FileName);
-   if FBitmapImageList.FImages[fFilesInfo[i].ImageIndex].Bitmap=nil then
+   if FBitmapImageList[fFilesInfo[i].ImageIndex].Bitmap=nil then
    begin
     bit := TBitmap.Create;
     bit.PixelFormat:=pf24bit;
     bit.Assign(Value.JPEGImage);
     
-    if FBitmapImageList.FImages[fFilesInfo[i].ImageIndex].IsBitmap then
-    FBitmapImageList.FImages[fFilesInfo[i].ImageIndex].Bitmap.Free;
+    if FBitmapImageList[fFilesInfo[i].ImageIndex].IsBitmap then
+    FBitmapImageList[fFilesInfo[i].ImageIndex].Bitmap.Free;
     
-    FBitmapImageList.FImages[fFilesInfo[i].ImageIndex].IsBitmap:=true;
-    FBitmapImageList.FImages[fFilesInfo[i].ImageIndex].Bitmap:=bit;
+    FBitmapImageList[fFilesInfo[i].ImageIndex].IsBitmap:=true;
+    FBitmapImageList[fFilesInfo[i].ImageIndex].Bitmap:=bit;
    end;
    ListView1.Refresh;
    break;
@@ -2496,7 +2495,7 @@ begin
    begin
     index:=MenuIndexToItemIndex(i);
     if ListView1.Items[index].ImageIndex>-1 then
-      ApplyRotate(FBitmapImageList.FImages[ListView1.Items[index].ImageIndex].Bitmap, ReRotation);
+      ApplyRotate(FBitmapImageList[ListView1.Items[index].ImageIndex].Bitmap, ReRotation);
 
    end;
   end;
@@ -3036,18 +3035,18 @@ begin
    FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
    c:=FBitmapImageList.Count-1;
   end;
-  if FBitmapImageList.FImages[c].IsBitmap then
+  if FBitmapImageList[c].IsBitmap then
   begin
-   if FBitmapImageList.FImages[c].Bitmap<>nil then
-   FBitmapImageList.FImages[c].Bitmap.Free
+   if FBitmapImageList[c].Bitmap<>nil then
+   FBitmapImageList[c].Bitmap.Free
   end else
-  if FBitmapImageList.FImages[c].SelfReleased then
+  if FBitmapImageList[c].SelfReleased then
   begin
-   if FBitmapImageList.FImages[c].Icon<>nil then
-   FBitmapImageList.FImages[c].Icon.Free;
+   if FBitmapImageList[c].Icon<>nil then
+   FBitmapImageList[c].Icon.Free;
   end;
-  FBitmapImageList.FImages[c].Bitmap:=Bitmap;
-  FBitmapImageList.FImages[c].SelfReleased:=true;
+  FBitmapImageList[c].Bitmap:=Bitmap;
+  FBitmapImageList[c].SelfReleased:=true;
 
   Listview1.Items[index].Invalidate(False);
 
@@ -3083,12 +3082,12 @@ begin
    ListView1.Items[index].Data:=TDataObject.Create;
    TDataObject(ListView1.Items[index].Data).Data:=p;
   end;
-  if FBitmapImageList.FImages[c].IsBitmap then
-  FBitmapImageList.FImages[c].Bitmap.Free else
-  if FBitmapImageList.FImages[c].SelfReleased then
-  FBitmapImageList.FImages[c].Icon.Free;
-  FBitmapImageList.FImages[c].Icon:=Icon;
-  FBitmapImageList.FImages[c].SelfReleased:=true;
+  if FBitmapImageList[c].IsBitmap then
+  FBitmapImageList[c].Bitmap.Free else
+  if FBitmapImageList[c].SelfReleased then
+  FBitmapImageList[c].Icon.Free;
+  FBitmapImageList[c].Icon:=Icon;
+  FBitmapImageList[c].SelfReleased:=true;
 
 
   Listview1.Items[index].Invalidate(False);
@@ -7440,11 +7439,11 @@ begin
   b.Height:=fPictureSize;
   FillRectNoCanvas(b,ListView1.Canvas.Brush.Color);
 
-  w:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Height;
+  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
+  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
   ProportionalSize(fPictureSize,fPictureSize,w,h);
 
-  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList.FImages[Item.ImageIndex].Bitmap);
+  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList[Item.ImageIndex].Bitmap);
 
   r.Left:=r1.Left-2;
   r.Top:=r1.Top-2;
@@ -7527,9 +7526,9 @@ procedure TExplorerForm.EasyListview1ItemImageDraw(Sender: TCustomEasyListview;
   const RectArray: TEasyRectArrayObject; AlphaBlender: TEasyAlphaBlender);
 begin
  if Item.Data=nil then exit;
- if FBitmapImageList.FImages[Item.ImageIndex].Icon<>nil then
+ if FBitmapImageList[Item.ImageIndex].Icon<>nil then
  ACanvas.Draw(RectArray.IconRect.Left,RectArray.IconRect.Top,
-  FBitmapImageList.FImages[Item.ImageIndex].Icon);
+  FBitmapImageList[Item.ImageIndex].Icon);
 end;
 
 procedure TExplorerForm.EasyListview1ItemImageDrawIsCustom(
@@ -7756,7 +7755,7 @@ begin
  Result:=false;
  Ext:=AnsiLowerCase(Ext);
  for i:=0 to ExtIcons.Count-1 do
- if ExtIcons.FImages[i].Ext=Ext then
+ if ExtIcons[i].Ext=Ext then
  begin
   Result:=true;
   break;
@@ -7770,9 +7769,9 @@ begin
  Result:=nil;
  Ext:=AnsiLowerCase(Ext);
  for i:=0 to ExtIcons.Count-1 do
- if ExtIcons.FImages[i].Ext=Ext then
+ if ExtIcons[i].Ext=Ext then
  begin
-  Result:=ExtIcons.FImages[i].Icon;
+  Result:=ExtIcons[i].Icon;
   break;
  end;
 end;

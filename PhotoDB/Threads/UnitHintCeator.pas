@@ -279,12 +279,7 @@ begin
     end else fb.Assign(G);
    end;
   end;
-  if fRotate<>DB_IMAGE_ROTATED_0 then
-  begin
-   if fRotate=DB_IMAGE_ROTATED_270 then Rotate270A(fb);
-   if fRotate=DB_IMAGE_ROTATED_90 then Rotate90A(fb);
-   if fRotate=DB_IMAGE_ROTATED_180 then Rotate180A(fb);
-  end;
+  ApplyRotate(fb, fRotate);
   Synchronize(DrawHintInfo);
   if not isvalidth_thread then begin DoExit; exit; end;
   Synchronize(ok);

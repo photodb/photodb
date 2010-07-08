@@ -187,13 +187,7 @@ begin
    end;
    fbit.Free;
    fbit:=nil;
-
-   case fData[i].Rotation of
-    DB_IMAGE_ROTATED_90  :  Rotate90A(TempBitmap);
-    DB_IMAGE_ROTATED_180 :  Rotate180A(TempBitmap);
-    DB_IMAGE_ROTATED_270 :  Rotate270A(TempBitmap);
-   end;      
-
+   ApplyRotate(TempBitmap, fData[i].Rotation);
    BitmapParam:=TempBitmap;
    FI:=i+1;
    IntParam:=FI;

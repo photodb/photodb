@@ -2,7 +2,7 @@ unit uThreadEx;
 
 interface
 
-uses Classes, uThreadForm, Windows, SyncObjs, GraphicsBaseTypes;
+uses Classes, uThreadForm, Windows, SyncObjs, uGOM;
 
 type
   TThreadEx = class(TThread)

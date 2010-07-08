@@ -4,12 +4,15 @@ interface
 
 uses Classes, Windows, SysUtils, SyncObjs;
 
+{$DEFINE _PROFILER}
 {$DEFINE MULTITHREAD}
 
 type
   TW = class(TObject)
-  private
-    FS : TFileStream;
+  private    
+{$IFDEF PROFILER}
+    FS : TFileStream; 
+{$ENDIF}
     FStart : TDateTime;
     FMessageThreadID : THandle;
     FStartUp : TDateTime;
@@ -46,19 +49,23 @@ begin
   IsRuning := False;
   FStartUp := Now;
   if MainThreadID = ThreadID then
-    ThreadID := 0;
+    FThreadID := 0;
 {$IFDEF MULTITHREAD}
-  ThreadID := 0;
+  FThreadID := 0;
 {$ENDIF}
 
+{$IFDEF PROFILER}
   FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate);
+{$ENDIF}
 end;
 
 destructor TW.Destroy;
-begin
-  FS.Free;
+begin    
+{$IFDEF PROFILER}
+  FS.Free;   
+{$ENDIF}
 {$IFDEF MULTITHREAD}
-    FSync.Free;
+  FSync.Free;
 {$ENDIF}
   inherited;
 end;
@@ -78,7 +85,7 @@ begin
       W := TList.Create;
 
     CurrentThreadID := GetCurrentThreadID;
-{$IFDEF MULTITHREAD}
+{$IFNDEF MULTITHREAD}
     CurrentThreadID := 0;
 {$ENDIF}
     for I := 0 to W.Count - 1 do
@@ -97,6 +104,9 @@ end;
 
 procedure TW.Start(Name: string);
 begin
+{$IFDEF PROFILER}
+  Exit; 
+{$ENDIF}
 {$IFDEF MULTITHREAD}
   FSync.Enter;
   try
@@ -128,7 +138,9 @@ begin
 {$IFDEF MULTITHREAD}
     Info := IntToStr(FMessageThreadID) + ':' + Info;
 {$ENDIF}
-    FS.Write(Info[1], Length(Info))
+{$IFDEF PROFILER}
+    FS.Write(Info[1], Length(Info));  
+{$ENDIF}
   end;
 end;
 

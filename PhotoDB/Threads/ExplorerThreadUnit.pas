@@ -10,7 +10,7 @@ uses
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
  EasyListview, GraphicsCool, uVistaFuncs, uResources,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
- uThreadEx, uAssociatedIcons, uLogger, uTime,
+ uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM,
  UnitExplorerLoadSIngleImageThread, uConstants;
 
 type
@@ -82,7 +82,6 @@ type
     Procedure DrawFolderImageBig(Bitmap : TBitmap);
     procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
     procedure ReplaceFolderImage;
-    procedure AddFileToExplorer;
     procedure AddFile;
     procedure AddImageFileToExplorerW;
     procedure AddImageFileItemToExplorerW;
@@ -145,7 +144,7 @@ type
   TIconType = (itSmall, itLarge);
 
   var
-      AExplorerFolders : TExplorerFolders;
+      AExplorerFolders : TExplorerFolders = nil;
       UpdaterCount : integer = 0;
       ExplorerUpdateBigImageThreadsCount : integer = 0;
 
@@ -1150,7 +1149,7 @@ begin
    Bit32 := TBitmap.Create;
    try
      LoadPNGImage32bit(FullFolderPicture, Bit32, Theme_ListColor);
-     StretchCoolW(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0,0, Bit32.Width, Bit32.Height), Bit32, Bitmap);
+     StretchCoolW(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, Bitmap);
    finally
      Bit32.Free;
     end;
@@ -1171,11 +1170,6 @@ end;
 procedure TExplorerThread.ReplaceFolderImage;
 begin
   FSender.ReplaceBitmap(TempBitmap, GUIDParam, True);
-end;
-
-procedure TExplorerThread.AddFileToExplorer;
-begin
-
 end;
 
 procedure TExplorerThread.AddFile;
@@ -1768,10 +1762,9 @@ var
   w, h : integer;
   ProcNum : integer;
 begin
-  ProcNum:=GettingProcNum;
   FPic:=nil;
  
-  while ExplorerUpdateBigImageThreadsCount > ProcNum do
+  while ExplorerUpdateBigImageThreadsCount > ProcessorCount do
     Sleep(10);
 
   Inc(ExplorerUpdateBigImageThreadsCount);
@@ -1796,11 +1789,11 @@ begin
      VisibleUp(i);
     end;
 
-    GUIDParam:=FFiles[i].SID;
+    GUIDParam := FFiles[i].SID;
   
     BooleanResult:=false;
 
-    if FFiles[i].FileType=EXPLORER_ITEM_IMAGE then
+    if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
     begin
      SynchronizeEx(FileNeededAW);
   
@@ -2000,7 +1993,7 @@ begin
         end;
       end else
       begin
-        GraphicParam :=  TAIcons.Instance.GetIconByExt(Info.ItemFileName, False, FIcoSize, False);
+        GraphicParam := TAIcons.Instance.GetIconByExt(Info.ItemFileName, False, FIcoSize, False);
         try
           MakeTempBitmap;
           SynchronizeEx(DrawImageToTempBitmapCenter);
@@ -2100,11 +2093,7 @@ initialization
 
 finalization
 
- if ThisFileInstalled then
- begin
-  if AExplorerFolders<>nil then
-  AExplorerFolders.free;
- end;
+ FreeAndNil(AExplorerFolders);
  
 end.
  

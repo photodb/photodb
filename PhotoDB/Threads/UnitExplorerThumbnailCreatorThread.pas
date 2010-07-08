@@ -102,12 +102,7 @@ begin
        TempBit.Free;
        Info.Image.Free;
       end;
-
-      case Info.ItemRotate of
-      DB_IMAGE_ROTATED_90  :  Rotate90A(TempBitmap);
-      DB_IMAGE_ROTATED_180 :  Rotate180A(TempBitmap);
-      DB_IMAGE_ROTATED_270 :  Rotate270A(TempBitmap);
-      end;
+      ApplyRotate(TempBitmap, Info.ItemRotate);
       end else
       begin
        DoProcessPath(FFileName);

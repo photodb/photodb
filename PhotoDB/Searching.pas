@@ -1627,8 +1627,8 @@ begin
     end;
     Exists:=0;
     DrawAttributes(bit,fPictureSize,0,0,0,SelectQuery.FieldByName('FFileName').AsString,true,Exists);
-    FBitmapImageList.FImages[item.ImageIndex].Bitmap.Free;
-    FBitmapImageList.FImages[item.ImageIndex].Bitmap:=bit;
+    FBitmapImageList[item.ImageIndex].Bitmap.Free;
+    FBitmapImageList[item.ImageIndex].Bitmap:=bit;
     ListView1.Refresh;
     exit;
    end;
@@ -1655,11 +1655,8 @@ begin
   bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
   J.free;
   Data[ItemIndex(item)].Rotation:=SelectQuery.FieldByName('Rotated').AsInteger;
-  case Data[ItemIndex(item)].Rotation of
-   DB_IMAGE_ROTATED_90  :  Rotate90A(bit);
-   DB_IMAGE_ROTATED_180 :  Rotate180A(bit);
-   DB_IMAGE_ROTATED_270 :  Rotate270A(bit);
-  end;
+  ApplyRotate(bit, Data[ItemIndex(item)].Rotation);
+ 
   fname:=Trim(SelectQuery.FieldByName('Name').asstring);
   for i:= Length(fname) downto 1 do
   begin
@@ -1672,8 +1669,8 @@ begin
   Exists:=0;
   DrawAttributes(bit,fPictureSize,Data[iItemIndex].Rating,Data[iItemIndex].Rotation,Data[iItemIndex].Access,SelectQuery.FieldByName('FFileName').AsString,Data[iItemIndex].Crypted,Exists);
 
-  FBitmapImageList.FImages[item.ImageIndex].Bitmap.free;
-  FBitmapImageList.FImages[item.ImageIndex].Bitmap:=bit;
+  FBitmapImageList[item.ImageIndex].Bitmap.free;
+  FBitmapImageList[item.ImageIndex].Bitmap:=bit;
   RecordInfo.ItemFileName:=SelectQuery.FieldByName('FFileName').AsString;
   RecordInfo.ItemRating:=Data[iItemIndex].Rating;
   RecordInfo.ItemRotate:=Data[iItemIndex].Rotation;
@@ -1709,7 +1706,7 @@ begin
     end;
     Exists:=0;
     DrawAttributes(bit,fPictureSize,0,0,0,SelectQuery.FieldByName('FFileName').AsString,true,Exists);
-    FBitmapImageList.FImages[item.ImageIndex].Bitmap.Assign(bit);
+    FBitmapImageList[item.ImageIndex].Bitmap.Assign(bit);
     ListView1.Refresh;
     exit;
    end;
@@ -1732,11 +1729,7 @@ begin
   FillColorEx(bit, Theme_ListColor);
   bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
   J.free;
-  case Data[ItemIndex(item)].Rotation of
-   DB_IMAGE_ROTATED_90  :  Rotate90A(bit);
-   DB_IMAGE_ROTATED_180 :  Rotate180A(bit);
-   DB_IMAGE_ROTATED_270 :  Rotate270A(bit);
-  end;
+  ApplyRotate(bit, Data[ItemIndex(item)].Rotation);
   Exists:=0;
   DrawAttributes(bit,fPictureSize,Data[ItemIndex(item)].Rating,Data[ItemIndex(item)].Rotation,Data[ItemIndex(item)].Access,SelectQuery.FieldByName('FFileName').AsString,Data[ItemIndex(item)].Crypted,Exists);
   FBitmapImageList.AddBitmap(bit);
@@ -2127,11 +2120,7 @@ begin
   begin
    if ListView1.Items[i].ImageIndex>-1 then
    begin
-    Case ReRotation of
-     DB_IMAGE_ROTATED_270: Rotate270A(FBitmapImageList.FImages[ListView1.Items[i].ImageIndex].Bitmap);
-     DB_IMAGE_ROTATED_90: Rotate90A(FBitmapImageList.FImages[ListView1.Items[i].ImageIndex].Bitmap);
-     DB_IMAGE_ROTATED_180: Rotate180A(FBitmapImageList.FImages[ListView1.Items[i].ImageIndex].Bitmap);
-    end;
+    ApplyRotate(FBitmapImageList[ListView1.Items[i].ImageIndex].Bitmap, ReRotation);
    end else
    begin         
     SetLength(FilesToUpdate,1);
@@ -2234,7 +2223,7 @@ Const
     Result.Canvas.Draw(Result.Width div 2 - image1.picture.Graphic.Width div 2,Result.Height div 2 - image1.picture.Graphic.Height div 2,image1.picture.Graphic);
    end else
    begin
-    Result:=FBitmapImageList.FImages[index].Bitmap;
+    Result:=FBitmapImageList[index].Bitmap;
     Result:=RemoveBlackColor(Result);
    end;
   end;
@@ -4652,8 +4641,8 @@ begin
 
  if Item.ImageIndex>-1 then
  begin
-  w:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList.FImages[Item.ImageIndex].Bitmap.Height;
+  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
+  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
   ProportionalSizeA(fPictureSize,fPictureSize,w,h);
  end;
 
@@ -4665,7 +4654,7 @@ begin
 
  if Item.ImageIndex>-1 then
  begin
-  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList.FImages[Item.ImageIndex].Bitmap);
+  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList[Item.ImageIndex].Bitmap);
  end else
  begin
   b.Canvas.Draw(fPictureSize div 2 - image1.picture.Graphic.Width div 2,fPictureSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
@@ -4944,7 +4933,7 @@ begin
     ListView1.Items[i].ImageIndex:=FBitmapImageList.Count-1;
    end else
    begin
-    FBitmapImageList.FImages[ListView1.Items[i].ImageIndex].Bitmap.Assign(Bitmap);
+    FBitmapImageList[ListView1.Items[i].ImageIndex].Bitmap.Assign(Bitmap);
    end;
    ListView1.Refresh;
   end;

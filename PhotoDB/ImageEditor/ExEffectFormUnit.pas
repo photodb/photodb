@@ -10,10 +10,10 @@ uses
   EffectsLanguage, ToolsUnit, ScrollingImage, Math,
 
  {$IFDEF PHOTODB}
-  Dolphin_DB,
+  Dolphin_DB, uGOM, AppEvnts
  {$ENDIF}
 
-   GraphicsBaseTypes, AppEvnts;
+  ;
 
 type
   TExEffectForm = class(TForm)

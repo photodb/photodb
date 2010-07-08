@@ -681,11 +681,7 @@ begin
      fbit.PixelFormat:=pf24bit;
      fbit.Assign(fpic.Graphic);
 
-     case fData[i-1].Rotation of
-      DB_IMAGE_ROTATED_90  :  Rotate90A(fbit);
-      DB_IMAGE_ROTATED_180 :  Rotate180A(fbit);
-      DB_IMAGE_ROTATED_270 :  Rotate270A(fbit);
-     end;
+     ApplyRotate(fbit, fData[i-1].Rotation);
      FI:=i;
      FCurrentFile:=fQuery.FieldByName('FFileName').AsString;
 

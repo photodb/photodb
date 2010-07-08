@@ -8,7 +8,7 @@ uses Windows, ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
      Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs,
      EffectsLanguage, Forms, OptimizeImageUnit
 {$IFDEF PHOTODB}
-     , Dolphin_DB
+     , Dolphin_DB, uGOM
 {$ENDIF}
      ;
 

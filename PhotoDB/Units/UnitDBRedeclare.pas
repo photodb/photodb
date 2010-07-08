@@ -4,12 +4,12 @@ interface
 
 {$DEFINE DEBUG}
 
-uses Graphics, GraphicsBaseTypes;
+uses Graphics, uGOM;
 
 type
   TDBBitmap = class(TBitmap)
   private
-   fInfo : string;
+   FInfo : string;
   public
    constructor Create(Info : string); reintroduce;
    destructor Destroy; override;

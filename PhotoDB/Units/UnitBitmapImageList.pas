@@ -2,10 +2,10 @@ unit UnitBitmapImageList;
 
 interface
 
-uses Graphics;
+uses Classes, Graphics;
 
 type
- TBitmapImageListImage = record
+ TBitmapImageListImage = class
   Bitmap : TBitmap;
   IsBitmap : Boolean;
   Icon : TIcon;
@@ -14,19 +14,20 @@ type
  end;
 
 type
- TBitmapImageList = Class(TObject)
- Private
-
- Public
- Constructor Create;
- Destructor Destroy; override;
+  TBitmapImageList = Class(TObject)
+  private
+    FImages : TList;
+    function GetBitmapByIndex(Index: Integer): TBitmapImageListImage;
   public
-   FImages : array of TBitmapImageListImage;
-   Procedure AddBitmap(Bitmap : TBitmap);
-   Procedure AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '');
-   Procedure Clear;
-   Function Count : Integer;
-   Procedure Delete(Index : Integer);
+    constructor Create;
+    destructor Destroy; override;
+  public
+    procedure AddBitmap(Bitmap : TBitmap);
+    procedure AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '');
+    procedure Clear;
+    function Count : Integer;
+    procedure Delete(Index : Integer);
+    property Items[Index: Integer]: TBitmapImageListImage read GetBitmapByIndex; default;
  end;
 
 implementation
@@ -34,86 +35,98 @@ implementation
 { BitmapImageList }
 
 procedure TBitmapImageList.AddBitmap(Bitmap: TBitmap);
-begin
- SetLength(FImages,Length(FImages)+1);
- if Bitmap<>nil then
- begin
-  Pointer(FImages[Length(FImages)-1].Bitmap):=Pointer(Bitmap);
-  FImages[Length(FImages)-1].Icon:=nil;
-  FImages[Length(FImages)-1].IsBitmap:=true;
-  FImages[Length(FImages)-1].SelfReleased:=true;
-  FImages[Length(FImages)-1].Ext:='';
- end else
- begin
-  FImages[Length(FImages)-1].Bitmap:=nil;
-  FImages[Length(FImages)-1].Icon:=nil;
-  FImages[Length(FImages)-1].IsBitmap:=true;
-  FImages[Length(FImages)-1].SelfReleased:=false;
-  FImages[Length(FImages)-1].Ext:='';
- end;
+var
+  Item : TBitmapImageListImage;
+begin    
+  Item := TBitmapImageListImage.Create;  
+  Item.IsBitmap := True;
+  Item.Icon := nil;     
+  Item.Ext := '';
+  if Bitmap <> nil then
+  begin
+    Pointer(Item.Bitmap) := Pointer(Bitmap);
+    Item.SelfReleased := True;
+  end else
+  begin
+    Item.Bitmap := nil;
+    Item.SelfReleased := False;
+  end;
+  FImages.Add(Item);
 end;
 
-procedure TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased : Boolean; Ext : string = '');
-begin
- SetLength(FImages,Length(FImages)+1);
- FImages[Length(FImages)-1].Bitmap:=nil;
- FImages[Length(FImages)-1].Icon:=Icon;
- FImages[Length(FImages)-1].IsBitmap:=false;
- FImages[Length(FImages)-1].SelfReleased:=SelfReleased;
- FImages[Length(FImages)-1].Ext:=Ext;
+procedure TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased : Boolean; Ext : string = '');   
+var
+  Item : TBitmapImageListImage;
+begin      
+  Item := TBitmapImageListImage.Create;
+  Item.Bitmap := nil;
+  Item.Icon := Icon;
+  Item.IsBitmap := False;
+  Item.SelfReleased := SelfReleased;
+  Item.Ext := Ext;
+  FImages.Add(Item);
 end;
 
 procedure TBitmapImageList.Clear;
 var
-  i : integer;
+  I : integer;
+  Item : TBitmapImageListImage;
 begin
- For i:=0 to Length(FImages)-1 do
- begin
-  try
-  if FImages[i].SelfReleased then
+  for I := 0 to FImages.Count - 1 do
   begin
-   if FImages[i].Bitmap<>nil then
-   FImages[i].Bitmap.Free;
-  end else
-  begin
-   if FImages[i].Icon<>nil then
-   FImages[i].Icon.Free;
+    Item := FImages[I];
+    if Item.SelfReleased then
+    begin
+      if Item.Bitmap <> nil then
+        Item.Bitmap.Free;
+    end else
+    begin
+      if Item.Icon <> nil then
+        Item.Icon.Free;
+    end;
   end;
-  except
-  end;
- end;
- SetLength(FImages,0);
+  FImages.Clear;
 end;
 
 function TBitmapImageList.Count: Integer;
 begin
- Result:=Length(FImages);
+  Result := FImages.Count;
 end;
 
 constructor TBitmapImageList.Create;
 begin
- inherited;
- SetLength(FImages,0);
+  inherited;
+  FImages := TList.Create;
 end;
 
 procedure TBitmapImageList.Delete(Index: Integer);
 var
-  i : integer;
+  Item : TBitmapImageListImage;
 begin
- if length(FImages)=0 then exit;
- FImages[Index].Bitmap.Free;
- if FImages[Index].SelfReleased then
- if FImages[Index].Icon<>nil then
- FImages[Index].Icon.Free;
- For i:=Index to length(FImages)-2 do
- FImages[i]:=FImages[i+1];
- SetLength(FImages,Length(FImages)-1);
+  Item := FImages[Index];
+
+  if Item.Bitmap <> nil then
+    Item.Bitmap.Free;
+    
+  if Item.SelfReleased and (Item.Icon <> nil) then
+    Item.Icon.Free;
+
+  Item.Free;
+
+  FImages.Delete(Index);
 end;
 
 destructor TBitmapImageList.Destroy;
 begin
- Clear;
- Inherited;
+  Clear;
+  FImages.Free;
+  inherited;
+end;
+
+function TBitmapImageList.GetBitmapByIndex(
+  Index: Integer): TBitmapImageListImage;
+begin
+  Result := FImages[Index];
 end;
 
 end.
