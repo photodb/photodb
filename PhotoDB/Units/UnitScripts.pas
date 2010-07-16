@@ -165,14 +165,14 @@ type
    procedure ExecuteScript(Sender : TMenuItemW; aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil);
    procedure LoadItemVariables(aScript : TScript; Sender : TMenuItem);
    procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TImageList; Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
-   procedure SetNamedValue(aScript : TScript; ValueName, AValue : string);
-   procedure SetNamedValueStr(aScript : TScript; ValueName, AValue : string);
-   procedure SetNamedValueFloat(aScript : TScript; ValueName : string; Value : Extended);
-   procedure SetNamedValueArrayStrings(aScript : TScript; ValueName: string; AValue : TArrayOfString);
-   function CalcExpression(aScript : TScript; Expression : string) : string;
-   function GetNamedValueString(aScript : TScript; ValueName : string) : string;
-   function GetNamedValueInt(aScript : TScript; ValueName : string; Default : integer = 0) : integer;
-   function GetNamedValueFloat(aScript : TScript; ValueName : string) : extended;
+   procedure SetNamedValue(const aScript : TScript; const ValueName, AValue : string);
+   procedure SetNamedValueStr(const aScript : TScript; const ValueName, AValue : string);
+   procedure SetNamedValueFloat(const aScript : TScript; const ValueName : string; const Value : Extended);
+   procedure SetNamedValueArrayStrings(const aScript : TScript; const ValueName: string; const AValue : TArrayOfString);
+   function CalcExpression(aScript : TScript; const Expression : string) : string;
+   function GetNamedValueString(const aScript : TScript; const ValueName : string) : string;
+   function GetNamedValueInt(const aScript : TScript; const ValueName : string; const Default : integer = 0) : integer;
+   function GetNamedValueFloat(const aScript : TScript; const ValueName : string) : extended;
 
    procedure SetBoolAttr(aScript : TScript; Name : String; Value : boolean);
    procedure SetIntAttr(aScript : TScript; Name : String; Value :Integer);
@@ -183,18 +183,18 @@ type
    function ReadScriptFile(FileName : string) : string;
 
    procedure AddScriptTextFunction(Enviroment : TScriptEnviroment; AFunction : TScriptStringFunction);
-   procedure AddScriptFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
-   procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; aFunction : TNotifyEvent);
-   procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsIntegerObject);
-   procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsStringObject);
-   procedure AddScriptObjFunctionIsBool(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsBoolObject);
-   procedure AddScriptObjFunctionStringIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctinStringIsIntegerObject);
-   procedure AddScriptObjFunctionIntegerIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIntegerIsIntegerObject);
-   procedure AddScriptObjFunctionIntegerIsString(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIntegerIsStringObject);
-   procedure AddScriptObjFunctionStringIsString(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionStringIsStringObject);
-   procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; FunctionName : String; aFunction : TFunctionIsArrayStringsObject);
+   procedure AddScriptFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
+   procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; aFunction : TNotifyEvent);
+   procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIsIntegerObject);
+   procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIsStringObject);
+   procedure AddScriptObjFunctionIsBool(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIsBoolObject);
+   procedure AddScriptObjFunctionStringIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctinStringIsIntegerObject);
+   procedure AddScriptObjFunctionIntegerIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIntegerIsIntegerObject);
+   procedure AddScriptObjFunctionIntegerIsString(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIntegerIsStringObject);
+   procedure AddScriptObjFunctionStringIsString(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionStringIsStringObject);
+   procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIsArrayStringsObject);
 
-   function VarValue(aScript : TScript;Variable : string; List : TListBox = nil) : string;
+   function VarValue(aScript : TScript; const Variable : string; List : TListBox = nil) : string;
    procedure LoadBaseFunctions(Enviroment : TScriptEnviroment);
    procedure LoadFileFunctions(Enviroment : TScriptEnviroment);
 
@@ -309,8 +309,8 @@ const
      ScriptsManager : TScriptsManager = nil;
 
 function CoCreateGuid;                  external ole32 name 'CoCreateGuid';    
-function ReadFile(FileName : string) : string;     
-function IsVariable(s : string) : Boolean;
+function ReadFile(FileName : string) : string;
+function IsVariable(const s : string) : Boolean;
 
 implementation
 
@@ -323,7 +323,7 @@ implementation
 
 /////////////////////////////////////////////////////////////////////////
 
-function IsVariable(s : string) : Boolean;
+function IsVariable(const s : string) : Boolean;
 begin
   Result := (s <> '') and (s[1] = '$');
 end;
@@ -336,7 +336,7 @@ begin
  Result:=GUIDToString(CID);
 end;
 
-function GetValueType(aScript : TScript; Value : string) : integer;
+function GetValueType(const aScript : TScript; const Value : string) : integer;
 var
   i : integer;
 
@@ -381,12 +381,11 @@ begin
 
 end;
 
-procedure SetNamedValueArrayStrings(aScript : TScript; ValueName: string; AValue : TArrayOfString);
+procedure SetNamedValueArrayStrings(const aScript : TScript; const ValueName: string; const AValue : TArrayOfString);
 var
   Value : TValue;
 begin
-  ValueName := Trim(ValueName);
-  if ValueName = '' then
+  if Trim(ValueName) = '' then
     Exit;
 
   Value := aScript.NamedValues.GetValueByName(ValueName);
@@ -394,25 +393,23 @@ begin
   Value.StrArray := AValue;
 end;
 
-procedure SetNamedValueArrayInt(aScript : TScript; ValueName: string; AValue : TArrayOfInt);
+procedure SetNamedValueArrayInt(const aScript : TScript; const ValueName: string; const AValue : TArrayOfInt);
 var
   Value : TValue;
 begin
-  ValueName := Trim(ValueName);
-  if ValueName = '' then
-   Exit;
+  if Trim(ValueName) = '' then
+    Exit;
 
   Value := aScript.NamedValues.GetValueByName(ValueName);
   Value.aType := VALUE_TYPE_INT_ARRAY;
   Value.IntArray := AValue;
 end;
 
-procedure SetNamedValueArrayBool(aScript : TScript; ValueName: string; AValue : TArrayOfBool);
+procedure SetNamedValueArrayBool(const aScript : TScript; const ValueName: string; const AValue : TArrayOfBool);
 var
   Value : TValue;
 begin
-  ValueName := Trim(ValueName);
-  if ValueName = '' then
+  if Trim(ValueName) = '' then
     Exit;
 
   Value := aScript.NamedValues.GetValueByName(ValueName);
@@ -420,12 +417,11 @@ begin
   Value.BoolArray := AValue;
 end;
 
-procedure SetNamedValueArrayFloat(aScript : TScript; ValueName: string; AValue : TArrayOfFloat);
+procedure SetNamedValueArrayFloat(const aScript : TScript; const ValueName: string; const AValue : TArrayOfFloat);
 var
   Value : TValue;
 begin
-  ValueName := Trim(ValueName);
-  if ValueName = '' then
+  if Trim(ValueName) = '' then
     Exit;
 
   Value := aScript.NamedValues.GetValueByName(ValueName);
@@ -433,10 +429,10 @@ begin
   Value.FloatArray := AValue;
 end;
 
-procedure SetNamedValueStr(aScript : TScript; ValueName, AValue : string);
+procedure SetNamedValueStr(const aScript : TScript; const ValueName, AValue : string);
 begin
  {$IFNDEF EXT}
- SetNamedValue(aScript,ValueName,'"'+AnsiDeDequotedStr(AValue)+'"');
+ SetNamedValue(aScript,ValueName,'"'+AnsiQuotedStr(AValue)+'"');
  {$ENDIF EXT}
 end;
 
@@ -455,7 +451,7 @@ end;
    if b then s:=s+'.0';
   end;
 
-procedure SetNamedValueFloat(aScript : TScript; ValueName : string; Value : Extended);
+procedure SetNamedValueFloat(const aScript : TScript; const ValueName : string; const Value : Extended);
 var
   s : string;
 
@@ -465,12 +461,11 @@ begin
  SetNamedValue(aScript,ValueName,s);
 end;
 
-procedure SetNamedValue(aScript : TScript; ValueName, AValue : string);
+procedure SetNamedValue(const aScript : TScript; const ValueName, AValue : string);
 var
   Value, TmpValue : TValue;
 begin
-  ValueName := Trim(ValueName);
-  if ValueName = '' then
+  if Trim(ValueName) = '' then
     Exit;
 
  Value := aScript.NamedValues.GetValueByName(ValueName);
@@ -483,7 +478,7 @@ begin
    Value.FromString(AValue);
 end;
 
-procedure CopyVar(ToScript : TScript; FromScript : TScript; ValueFrom, ValueTo : string);
+procedure CopyVar(const ToScript : TScript; const FromScript : TScript; const ValueFrom, ValueTo : string);
 var
   SValue, DValue : TValue;
 begin
@@ -492,10 +487,9 @@ begin
   DValue.Assign(SValue);
 end;
 
-procedure SetNamedValueEx(aScript : TScript; FromScript : TScript; ValueName, Value : string);
+procedure SetNamedValueEx(const aScript : TScript; const FromScript : TScript; const ValueName, Value : string);
 begin
-  ValueName := Trim(ValueName);
-  if ValueName = '' then
+  if Trim(ValueName) = '' then
     Exit;
 
  if IsVariable(Value) then
@@ -504,7 +498,7 @@ begin
    aScript.NamedValues.GetValueByName(ValueName).FromString(Value);
 end;
 
-function GetNamedValueInt(aScript : TScript; ValueName : string; Default : Integer = 0) : integer;
+function GetNamedValueInt(const aScript : TScript; const ValueName : string; const Default : Integer = 0) : integer;
 var
   Value : TValue;
 begin
@@ -515,7 +509,7 @@ begin
     Result := StrToIntDef(ValueName, Default);
 end;
 
-function GetNamedValueFloat(aScript : TScript; ValueName : string) : Extended;
+function GetNamedValueFloat(const aScript : TScript; const ValueName : string) : Extended;
 var
   Value : TValue;
 begin
@@ -526,7 +520,7 @@ begin
     Result := StrToFloatDef(ConvertUniversalFloatToLocal(ValueName), 0);
 end;
 
-function GetNamedValueBool(aScript : TScript; ValueName : string) : boolean;
+function GetNamedValueBool(const aScript : TScript; const ValueName : string) : boolean;
 var
   Value : TValue;
 begin
@@ -537,7 +531,7 @@ begin
     Result := ValueName = 'true';
 end;
 
-function GetNamedValueArrayString(var aScript : TScript; ValueName : string) : TArrayOfString;
+function GetNamedValueArrayString(const aScript : TScript; const ValueName : string) : TArrayOfString;
 begin
   if aScript.NamedValues.Exists(ValueName) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_STRING_ARRAY).StrArray)
@@ -545,7 +539,7 @@ begin
     SetLength(Result, 0);
 end;
 
-function GetNamedValueArrayInt(var aScript : TScript; ValueName : string) : TArrayOfInt;
+function GetNamedValueArrayInt(const aScript : TScript; const ValueName : string) : TArrayOfInt;
 begin
   if aScript.NamedValues.Exists(ValueName) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_INT_ARRAY).IntArray)
@@ -553,7 +547,7 @@ begin
     SetLength(Result, 0);
 end;
 
-function GetNamedValueArrayBool(var aScript : TScript; ValueName : string) : TArrayOfBool;
+function GetNamedValueArrayBool(const aScript : TScript; const ValueName : string) : TArrayOfBool;
 begin
   if aScript.NamedValues.Exists(ValueName) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_BOOL_ARRAY).BoolArray)
@@ -561,7 +555,7 @@ begin
     SetLength(Result, 0);
 end;
 
-function GetNamedValueArrayFloat(aScript : TScript; ValueName : string) : TArrayOfFloat;
+function GetNamedValueArrayFloat(const aScript : TScript; const ValueName : string) : TArrayOfFloat;
 begin
   if aScript.NamedValues.Exists(ValueName) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_FLOAT_ARRAY).FloatArray)
@@ -569,13 +563,13 @@ begin
     SetLength(Result, 0);
 end;
 
-function GetNamedValueString(aScript : TScript; ValueName : string) : string;
+function GetNamedValueString(const aScript : TScript; const ValueName : string) : string;
 var
   Value : TValue;
 begin
   Result:='';
   if not IsVariable(ValueName) and (ValueName[1]='"') and (ValueName[Length(ValueName)]='"') then
-    Result:=AnsiDequotedStr(ValueName)
+    Result:=AnsiDequotedStr(ValueName, '"')
   else
   begin
     Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_STRING);
@@ -584,7 +578,7 @@ begin
   end;
 end;
 
-function PosExR(SubStr : Char; var Str : string; index : integer = 1) : integer;
+function PosExR(const SubStr : Char; const Str : string; const index : integer = 1) : integer;
 var
   i : integer;
 begin
@@ -600,7 +594,7 @@ begin
  end;
 end;
 
-function PosNext(SubStr : string; var Str : string; index : integer = 1) : integer;
+function PosNext(const SubStr : string; const Str : string; const index : integer = 1) : integer;
 var
   i : integer;
   s : string;
@@ -617,11 +611,12 @@ begin
  end;
 end;
 
-function PosExK(SubStr : string; var Str : string; index : integer = 1) : integer;
+function PosExK(const SubStr : string; const Str : string; index : integer = 1) : integer;
 var
   i : integer;
   n : boolean;
   ls : integer;
+  TmpS : string;
 begin
  n:=false;
  Result:=0;
@@ -629,7 +624,8 @@ begin
  if index<1 then index:=1;
  for i:=index to Length(Str) do
  begin
-  if (Copy(Str,i,Ls)=SubStr) and (not n) then
+   TmpS := Copy(Str,i,Ls);
+  if (TmpS=SubStr) and (not n) then
   begin
    Result:=i;
    exit;
@@ -645,7 +641,7 @@ begin
    n:=false;
    continue;
   end;
-  if (Copy(Str,i,Ls)=SubStr) and (not n) then
+  if (TmpS=SubStr) and (not n) then
   begin
    Result:=i;
    exit;
@@ -657,7 +653,6 @@ end;
 
 
 /////////////////////////////////////////////////////////////////////////
-
 
 
 function GetFunctionName(aFunction : string) : string;
@@ -683,7 +678,7 @@ begin
  if Result[i]=' ' then Delete(Result,i,1) else break;
 end;
 
-function OneParam(aFunction : string) : string;
+function OneParam(const aFunction : string) : string;
 var
   fb, fe : integer;
 begin
@@ -692,7 +687,7 @@ begin
  Result:=Copy(aFunction,fb+1,fe-fb-1);
 end;
 
-function FirstParam(aFunction : string) : string;
+function FirstParam(const aFunction : string) : string;
 var
   fb, fe, p : integer;
 begin
@@ -703,7 +698,7 @@ begin
  Result:=Copy(aFunction,fb+1,p-fb-1);
 end;
 
-function SecondParam(aFunction : string) : string;
+function SecondParam(const aFunction : string) : string;
 var
   fb, fe, p : integer;
 begin
@@ -713,7 +708,7 @@ begin
  Result:=Copy(aFunction,p+1,fe-p-1);
 end;
 
-function ParamNO(aFunction : string; N : integer) : string;
+function ParamNO(const aFunction : string; const N : integer) : string;
 var
   fb, {fe,} i, p, px, pold : integer;
 begin
@@ -732,14 +727,14 @@ begin
  Result:=Copy(aFunction,pold+1,p-pold-1);
 end;
 
-function RightEvalution(var aScript : TScript; Evalution : string) : boolean;
+function RightEvalution(const aScript : TScript; Evalution : string) : boolean;
 var
  _as, _bs : string;
  _ai, _bi : integer;
  _af, _bf : extended;
  _ab, _bb : boolean;
 
-  function LeftOperand(S : string) : string;
+  function LeftOperand(const S : string) : string;
   var
     i : integer;
   begin
@@ -752,7 +747,7 @@ var
    end;
   end;
 
-  function RightOperand(S : string) : string;
+  function RightOperand(const S : string) : string;
   var
     i : integer;
   begin
@@ -766,7 +761,7 @@ var
    end;
   end;
 
-  function GetOperand(S : string) : integer;
+  function GetOperand(const S : string) : integer;
   var
     i : integer;
   begin
@@ -774,15 +769,15 @@ var
    for i:=1 to Length(S)-1 do
    if (S[i]='=') or ((S[i]='!') and (S[i+1]='=')) or (S[i]='<') or (S[i]='>') then
    begin
-    if (S[i]='=') then Result:=1;
-    if ((S[i]='!') and (S[i+1]='=')) then Result:=2;
-    if (S[i]='<') then Result:=3;
-    if (S[i]='>') then Result:=4;
+    if (S[i]='=') then Result:=1
+    else if ((S[i]='!') and (S[i+1]='=')) then Result:=2
+    else if (S[i]='<') then Result:=3
+    else if (S[i]='>') then Result:=4;
    end;
   end;
 
 begin
-  Result:=false;
+  Result:=False;
   if Evalution<>'' then
   if Evalution[1]='#' then
   begin
@@ -863,14 +858,14 @@ begin
    begin
     Ftype:=Copy(funct,2,ps-2);
     _type:=VALUE_TYPE_ERROR;
-    if Ftype='int' then _type:=VALUE_TYPE_INTEGER;
-    if Ftype='string' then _type:=VALUE_TYPE_STRING;
-    if Ftype='bool' then _type:=VALUE_TYPE_BOOLEAN;
-    if Ftype='float' then _type:=VALUE_TYPE_FLOAT;
-    if Ftype='string[]' then _type:=VALUE_TYPE_STRING_ARRAY;
-    if Ftype='int[]' then _type:=VALUE_TYPE_INT_ARRAY;
-    if Ftype='bool[]' then _type:=VALUE_TYPE_BOOL_ARRAY;
-    if Ftype='float[]' then _type:=VALUE_TYPE_FLOAT_ARRAY;
+    if Ftype='int' then _type:=VALUE_TYPE_INTEGER else
+    if Ftype='string' then _type:=VALUE_TYPE_STRING else
+    if Ftype='bool' then _type:=VALUE_TYPE_BOOLEAN else
+    if Ftype='float' then _type:=VALUE_TYPE_FLOAT else
+    if Ftype='string[]' then _type:=VALUE_TYPE_STRING_ARRAY else
+    if Ftype='int[]' then _type:=VALUE_TYPE_INT_ARRAY else
+    if Ftype='bool[]' then _type:=VALUE_TYPE_BOOL_ARRAY else
+    if Ftype='float[]' then _type:=VALUE_TYPE_FLOAT_ARRAY else
     if Ftype='void' then _type:=VALUE_TYPE_VOID;
     if _type<>VALUE_TYPE_ERROR then
     begin
@@ -1727,7 +1722,7 @@ begin
  DoExit;
 end;
 
-function ValidMenuDescription(Desc : string) : boolean;
+function ValidMenuDescription(const Desc : string) : boolean;
 var
   n, k : integer;
 begin
@@ -1950,7 +1945,7 @@ begin
  until PosEx('<',script,apos)<1;
 end;
 
-function CalcExpression(aScript : TScript; Expression : string) : string;
+function CalcExpression(aScript : TScript; const Expression : string) : string;
 var
   n, nnew : integer;
   s, ResS : string;
@@ -1997,7 +1992,7 @@ begin
     s:=Copy(Expression,n,Length(Expression)-n+1);
     ResS:=ResS+GetNamedValueString(aScript,s); 
     {$IFNDEF EXT}
-    Result:='String("'+AnsiDeDequotedStr(ResS)+'");';
+    Result:='String("'+AnsiQuotedStr(ResS)+'");';
     {$ENDIF EXT}
    end else
    Result:=Expression;
@@ -2017,7 +2012,7 @@ begin
   Enviroment.Functions.Register(FFunction, True);
 end;
 
-procedure AddScriptFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
+procedure AddScriptFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
 var
   FFunction: TScriptFunction;
 begin     
@@ -2028,7 +2023,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; FunctionName : String; FunctionType : integer; AFunction : TNotifyEvent);
+procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; AFunction : TNotifyEvent);
 var
   FFunction: TScriptFunction;
 begin      
@@ -2040,7 +2035,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionStringIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctinStringIsIntegerObject);
+procedure AddScriptObjFunctionStringIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctinStringIsIntegerObject);
 var
   FFunction: TScriptFunction;
 begin       
@@ -2052,7 +2047,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIntegerIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIntegerIsIntegerObject);
+procedure AddScriptObjFunctionIntegerIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIntegerIsIntegerObject);
 var
   FFunction: TScriptFunction;
 begin      
@@ -2064,7 +2059,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsIntegerObject);
+procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsIntegerObject);
 var
   FFunction: TScriptFunction;
 begin      
@@ -2076,7 +2071,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsBool(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsBoolObject);
+procedure AddScriptObjFunctionIsBool(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsBoolObject);
 var
   FFunction: TScriptFunction;
 begin      
@@ -2088,7 +2083,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsStringObject);
+procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsStringObject);
 var
   FFunction: TScriptFunction;
 begin        
@@ -2100,7 +2095,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIntegerIsString(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIntegerIsStringObject);
+procedure AddScriptObjFunctionIntegerIsString(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIntegerIsStringObject);
 var
   FFunction: TScriptFunction;
 begin         
@@ -2112,7 +2107,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionStringIsString(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionStringIsStringObject);
+procedure AddScriptObjFunctionStringIsString(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionStringIsStringObject);
 var
   FFunction: TScriptFunction;
 begin         
@@ -2124,7 +2119,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; FunctionName : String; AFunction : TFunctionIsArrayStringsObject);
+procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsArrayStringsObject);
 var
   FFunction: TScriptFunction;
 begin        
@@ -2136,7 +2131,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-function aSetString(S : String) : String;
+function aSetString(const S : String) : String;
 begin
  Result:=S;
 end;
@@ -2151,7 +2146,7 @@ begin
  Result:=float;
 end;
 
-function WriteCode(str : string) : string;
+function WriteCode(const str : string) : string;
 begin
  Result:=str;
 end;
@@ -2507,7 +2502,7 @@ begin
  aScript.NamedValues.Clear;
 end;
 
-function VarValue(aScript : TScript; Variable : string; List : TListBox = nil) : string;
+function VarValue(aScript : TScript; const Variable : string; List : TListBox = nil) : string;
 var
    Value : TValue;
    j : integer;
@@ -2593,7 +2588,7 @@ begin
   end;
 end;
 
-procedure ShowMemoryStatus(var aScript : TScript);
+procedure ShowMemoryStatus(const aScript : TScript);
 var
   StatusForm : TForm;
   List : TListBox;
@@ -2614,7 +2609,7 @@ begin
  StatusForm.Free;
 end;
 
-procedure ShowFunctionList(var aScript : TScript);
+procedure ShowFunctionList(const aScript : TScript);
 var
   StatusForm : TForm;
   List : TListBox;

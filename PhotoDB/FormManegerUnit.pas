@@ -64,7 +64,7 @@ implementation
 
 uses Language, UnitCleanUpThread, ExplorerUnit, Searching, SlideShow,
 DBSelectUnit, Activation, UnitUpdateDB, UnitInternetUpdate, About,
-UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB, UnitID,
+UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
 UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
 
 {$R *.dfm}
@@ -350,7 +350,7 @@ begin
  end;
 
  //to allow run new copy
- IDForm.Caption := '';
+ Caption := '';
 
  for i:=0 to Length(FTemtinatedActions)-1 do
  if (FTemtinatedActions[i].Options=TA_INFORM) or (FTemtinatedActions[i].Options=TA_INFORM_AND_NT) then

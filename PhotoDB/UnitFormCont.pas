@@ -11,7 +11,8 @@ uses
   DBCtrls, UnitBitmapImageList, EasyListview, DragDropFile, DragDrop,
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
-  UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm;
+  UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
+  uListViewUtils;
 
 type
   TFormCont = class(TThreadForm)
@@ -228,47 +229,6 @@ uses language, Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
 {$R *.dfm}
 
 { TFormCont }
-
-procedure BeginScreenUpdate(hwnd: THandle);
-begin
-  if (hwnd = 0) then
-    hwnd := Application.MainForm.Handle;
-  SendMessage(hwnd, WM_SETREDRAW, 0, 0);
-end;
-
-procedure EndScreenUpdate(hwnd: THandle; erase: Boolean);
-begin
-  if (hwnd = 0) then
-    hwnd := Application.MainForm.Handle;
-  SendMessage(hwnd, WM_SETREDRAW, 1, 0);
-  RedrawWindow(hwnd, nil, 0, {DW_FRAME + }RDW_INVALIDATE +
-    RDW_ALLCHILDREN + RDW_NOINTERNALPAINT);
-  if (erase) then
-    Windows.InvalidateRect(hwnd, nil, True);
-end;
-
-function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint): TEasyItem;
-var
-  i: Integer;
-  r : TRect;
-  RectArray: TEasyRectArrayObject;
-begin
-  Result := nil;
-  i := 0;
-  r :=  EasyListview.Scrollbars.ViewableViewportRect;
-  ViewportPoint.X:=ViewportPoint.X+r.Left;         
-  ViewportPoint.Y:=ViewportPoint.Y+r.Top;
-  while not Assigned(Result) and (i < EasyListview.Items.Count) do
-  begin
-      EasyListview.Items[i].ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
-
-      if PtInRect(RectArray.IconRect, ViewportPoint) then
-       Result := EasyListview.Items[i];
-      if PtInRect(RectArray.TextRect, ViewportPoint) then
-       Result := EasyListview.Items[i];
-    Inc(i)
-  end
-end;
 
 procedure TFormCont.RefreshItemByID(ID: integer);
 var

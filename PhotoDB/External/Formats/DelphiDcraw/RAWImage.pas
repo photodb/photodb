@@ -3,7 +3,8 @@ unit RAWImage;
 interface
 
 uses  Windows, Messages, SysUtils, Graphics, Classes, FileCtrl, GraphicEX, Forms,
-      uScript, UnitScripts, UnitDBCommonGraphics, uConstants, uFileUtils, uTime;
+      uScript, UnitScripts, UnitDBCommonGraphics, uConstants, uFileUtils, uTime,
+      FreeBitmap, FreeImage, GraphicsBaseTypes;
 
   {$DEFINE USEPHOTODB}
 
@@ -15,14 +16,15 @@ type
     fHeight : integer;
     fLoadHalfSize: boolean;
     function GetWidth : integer; override;
-    function GetHeight : integer; override;  
+    function GetHeight : integer; override;
   private
     procedure SetLoadHalfSize(const Value: boolean);
+    procedure LoadFromFreeImage(Image : TFreeBitmap);
   public
     constructor Create; override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure LoadFromFile(const Filename: string); override;
-    function LoadThumbnailFromFile(const FileName : string) : boolean;
+    function LoadThumbnailFromFile(const FileName : string; Width, Height : Integer) : boolean;
     procedure Assign(Source : TPersistent); override;
     Property LoadHalfSize : boolean read fLoadHalfSize write SetLoadHalfSize;
   end;
@@ -64,7 +66,7 @@ implementation
 Uses
   Global_FastIO
   {$IFDEF USEPHOTODB}
-  ,Dolphin_DB
+  ,Dolphin_DB, UnitDBCommon
   {$ENDIF}
   ;
 
@@ -83,6 +85,10 @@ var
   _i : integer;
   _s : string;
   _p : integer;
+    
+const
+  RAW_DISPLAY = 2;
+  RAW_PREVIEW = 1;
 
 {$I CSTDIO.PAS}
 
@@ -105,6 +111,8 @@ var
   PTimeStamp:Array[0..1000] Of Char;
   i : integer;
 begin
+
+
  InitRAW;
  while DecodingCount > 0 do
   sleep(10);
@@ -149,7 +157,7 @@ begin
   Result.CameraModel:='';
   for i:=0 to 999 do
   if PModel[i]<>#0 then Result.CameraModel:=Result.CameraModel+PModel[i] else break;
-           
+
   Result.TimeStamp:='';
   for i:=0 to 999 do
   if PTimeStamp[i]<>#0 then Result.TimeStamp:=Result.TimeStamp+PTimeStamp[i] else break;
@@ -182,7 +190,7 @@ begin
  begin
   //for crypting - loading private variables width and height 
   fWidth:=(Source as TRAWImage).fWidth;
-  fHeight:=(Source as TRAWImage).fHeight;   
+  fHeight:=(Source as TRAWImage).fHeight;
   fLoadHalfSize:=(Source as TRAWImage).fLoadHalfSize;
   inherited Assign(Source);
  end else
@@ -194,7 +202,7 @@ end;
 constructor TRAWImage.Create;
 begin
   inherited;
-  fLoadHalfSize:=true;
+  fLoadHalfSize:=False;
 end;
 
 function TRAWImage.GetHeight: integer;
@@ -210,304 +218,89 @@ begin
 end;
 
 procedure TRAWImage.LoadFromFile(const Filename: string);
-Var
-  ScanLines:ALines;
-  X:Integer;
-  IWidth:LongInt;
-  IHeight:LongInt;
-  PMake:Array[0..1000] Of Char;
-  PModel:Array[0..1000] Of Char;
-  PTimeStamp:Array[0..1000] Of Char;
-  IFileName:PChar;
-  ThumbFileName:PChar;
-  Status:Integer;
-  IShrink:Integer;
-  FilePtrs:TRawFilePointers;
-  MyStream:TRawFileStream;
-  StreamIn:TFastFile;
-  ExifRecord:TExifRecord;
-  ExifEssentials:TExifEssentials;
-  ProgressInfo:TProgress;
-  RAWSettings:TRAWSettings;
-  ErrorVal:Integer;
-
+var
+  RawBitmap : TFreeWinBitmap;
 begin
- 
- InitRAW;
- while DecodingCount>0 do
-  sleep(10);
- inc(DecodingCount);
-
-GetMem(ThumbFileName,255);
-IFileName:=PChar(FileName);
-raw_settings_init(RAWSettings);
-RAWSettings.iGamma_Val:=0.6;
-RAWSettings.iBright:=1;
-RAWSettings.iScale1:=0;
-RAWSettings.iScale2:=0;
-RAWSettings.iScale3:=0;
-RAWSettings.iScale4:=0;
-RAWSettings.iBlack_Level:=-1;
-
-RAWSettings.IFour_Color_RGB:=0;
-RAWSettings.IQuality:=1;
-if fLoadHalfSize then
-RAWSettings.IShrink:=1 else RAWSettings.IShrink:=0;
-RAWSettings.IUse_Auto_WB:=0;
-RAWSettings.IUse_Camera_WB:=1;
-RAWSettings.IRAWColors:=0;
-
-RAWSettings.IHighLight:=0;
-RAWSettings.IRGB_Colors:=1;
-IShrink:=RAWSettings.IShrink;
-
-raw_fileio_init_Pointers(FilePtrs);
-raw_fileio_init_stream(MyStream);
-StreamIn:=TFastFile.Create(IFileName,fmOpenRead,ErrorVal);
-StreamIn.Position:=0;
-MyStream.FFile:=StreamIn;
-FilePtrs.IFile:=@MyStream;
-raw_exif_init(ExifRecord);
-try
-Status:=RAWInfo(@FilePtrs,
-                @ExifRecord,
-                @ExifEssentials,
-                IFileName,
-                IShrink,
-                IWidth,IHeight,
-                @PMake,
-                @PModel,
-                @PTimeStamp);
-except
- Status:=-1;
-end;
-If Status=0 Then
-   Begin
-
-   Width:=IWidth;
-   fWidth:=IWidth;
-   PixelFormat:=pf24bit;
-   Height:=IHeight;
-   fHeight:=IHeight;
-   For X:=0 To fHeight-1 Do
-       ScanLines[X]:=Scanline[X];
-   MyStream.FFile.Position:=0;
-   raw_exif_init(ExifRecord);
-
-   raw_progress_init(ProgressInfo,nil);
-   ProgressInfo.Progress:=nil;//@RawProgress;
-   ProgressInfo.Context:=nil;//Self;                          @ProgressInfo
-   try
-   Status:=FromRawToPSD(@FilePtrs,@ExifRecord,@ExifEssentials,nil,IFileName,ThumbFileName,RAWSettings,ScanLines,IWidth,IHeight,PMake,PModel,PTimeStamp);
-   except
-    Status:=-1;
-   end;
-   If Status=0 Then
-      Begin
-        //All OK
-      End
-   Else
-      Begin
-       
-       StreamIn.Free;
-       FreeMem(ThumbFileName);
-       dec(DecodingCount); 
-//       FreeLibrary(RAWDllNewHandle);
-
-       If Status=7 Then
-        raise Exception.Create('LOADING WAS ABORTED!') else
-        raise Exception.Create('Error in decoding RAW image');
-       exit;
-      End;
-   End
-Else
-  Begin   
-   StreamIn.Free;
-   FreeMem(ThumbFileName);
-   dec(DecodingCount);
-//   FreeLibrary(RAWDllNewHandle);
-   raise Exception.Create('Error in decoding RAW image');
-   exit;
-  End;
-
-  StreamIn.Free;
-  FreeMem(ThumbFileName);
-//  FreeLibrary(RAWDllNewHandle);
-  dec(DecodingCount);
+  RawBitmap := TFreeWinBitmap.Create;
+  try
+    RawBitmap.LoadU(Filename, RAW_PREVIEW);
+    RawBitmap.ConvertTo24Bits;
+    fWidth := RawBitmap.GetWidth;
+    fHeight := RawBitmap.GetHeight;
+    LoadFromFreeImage(RawBitmap);
+  finally
+    RawBitmap.Free;
+  end;
 end;
 
 procedure TRAWImage.LoadFromStream(Stream: TStream);
 var
-  TempName : String;
   FS : TFileStream;
+  RawBitmap : TFreeWinBitmap;
 begin
   {$IFDEF USEPHOTODB}
-
- TempName:=GetAppDataDirectory+TempFolder+GUIDToString(GetGUID)+'.raw';
- CreateDir(GetAppDataDirectory+TempFolder);
- try
-  FS:=TFileStream.Create(TempName,fmOpenWrite or fmCreate);
- except
-  exit;
- end;
- Stream.Seek(0,soFromBeginning);
- FS.CopyFrom(Stream,Stream.Size);
- FS.Free;
- LoadFromFile(TempName);
- try
-  DeleteFile(TempName);
- except
- end;
+  RawBitmap := TFreeWinBitmap.Create;
+  try
+    RawBitmap.LoadFromStream(Stream, RAW_PREVIEW);
+    RawBitmap.ConvertTo24Bits;
+    fWidth := RawBitmap.GetWidth;
+    fHeight := RawBitmap.GetHeight;
+    LoadFromFreeImage(RawBitmap);
+  finally
+    RawBitmap.Free;
+  end;
   {$ENDIF}
 end;
 
-function TRAWImage.LoadThumbnailFromFile(const FileName: string): boolean;
+procedure TRAWImage.LoadFromFreeImage(Image: TFreeBitmap);
 var
-  PMake:Array[0..1000] Of Char;
-  PModel:Array[0..1000] Of Char;
-  ThumbName:Array[0..1000] Of Char;
-  IFileName:PChar;
-  FilePtrs:TRawFilePointers;
-  MyStream:TRawFileStream;
-  StreamIn:TFastFile;
-  Dummy:Integer;
-  ExifRecord:TExifRecord;
-  IShrink:Integer;
-  Status:Integer;
-  ExifEssentials:TExifEssentials;
-  IWidth:LongInt;
-  IHeight:LongInt;
-  PTimeStamp:Array[0..1000] Of Char;
-  ThumbNailType:Integer;  
-  ImageTmp:TPicture;   
-  OldThumbName:String;
-  NewThumbName:String;
-  TempBitmap : TBitmap;
-
+  I, J : Integer;
+  PS, PD : PARGB;
+  W, H : integer;
 begin
+  PixelFormat := pf24Bit;
+  W := Image.GetWidth;
+  H := Image.GetHeight;
+  Width := W;
+  Height := H;
 
-if DecodingCount=1 then
- Repeat
-  sleep(10);
- until DecodingCount<1;
- inc(DecodingCount);
+  for I := 0 to H - 1 do
+  begin
+    PS := PARGB(Image.GetScanLine(H - I - 1));
+    PD := ScanLine[I];
+    for J := 0 to W - 1 do
+    begin
+      PD[J].R := PS[J].R;
+      PD[J].G := PS[J].G;
+      PD[J].B := PS[J].B;
+    end;
+  end;
+end;
 
- FillChar(PMake,1000,1);
- FillChar(PModel,1000,2);
-
- IFileName:=PChar(FileName);
- raw_fileio_init_Pointers(FilePtrs);
- raw_fileio_init_stream(MyStream);
- Try
-  StreamIn:=TFastFile.Create(IFileName,0,Dummy);
- Except
- End;
- MyStream.FFile:=StreamIn;
- FilePtrs.IFile:=@MyStream;
- raw_exif_init(ExifRecord);
-
- if fLoadHalfSize then
-  IShrink:=1 else IShrink:=0;
-
- Status:=RawInfo(@FilePtrs,@ExifRecord,@ExifEssentials,IFileName,IShrink,IWidth,IHeight,@PMake,@PModel,@PTimeStamp);
- StreamIn.Free;
-
- If Status=0 Then
- Begin
+function TRAWImage.LoadThumbnailFromFile(const FileName: string; Width, Height : Integer): boolean;
+var
+  RawBitmap : TFreeWinBitmap;
+  RawThumb : TFreeWinBitmap;
+  W, H : Integer;
+begin
+  RawBitmap := TFreeWinBitmap.Create;
   try
-   ThumbNailType:=100;
-
-   StrCopy(ThumbName,PChar(GetAppDataDirectory+TempFolder+GUIDToString(GetGUID)+'.thumb'));
-   raw_fileio_init_Pointers(FilePtrs);
-   
-   Status:=Extract_Thumbnail(Self,@FilePtrs,IFileName,ThumbName,ThumbnailType);
-   Width:=IWidth;
-   fWidth:=IWidth;
-   PixelFormat:=pf24bit;
-   Height:=IHeight;
-   fHeight:=IHeight;
-  except
-    on EZeroDivide do Begin
-                    End;
-    on EDivByZero do Begin
-                    End;
+    RawBitmap.LoadU(Filename, RAW_PREVIEW);
+    RawThumb := TFreeWinBitmap.Create;
+    try           
+      fWidth := RawBitmap.GetWidth;
+      fHeight := RawBitmap.GetHeight;
+      W := fWidth;
+      H := fHeight;
+      ProportionalSize(Width, Height, W, H);
+      RawBitmap.MakeThumbnail(W, H, RawThumb);
+      LoadFromFreeImage(RawThumb);
+    finally
+      RawThumb.Free;
+    end;
+  finally
+    RawBitmap.Free;
   end;
-
-  Case Status Of
-    0:
-    Begin
-      DeleteFile(ThumbName);
-    End;
-   -1: //thumbnail is corrupted
-    Begin
-    End;
-    1:
-    Begin
-
-
-      Case ThumbNailType Of
-        RAW_THUMB_BAD:
-        Begin
-          DeleteFile(ThumbName);
-        End;
-       RAW_THUMB_NOTAVAIL:
-       Begin
-          DeleteFile(ThumbName);
-       End;
-       RAW_THUMB_JPG:
-       Begin
-         OldThumbName:=ThumbName;
-         NewThumbName:=ThumbName+'.jpg';
-         FileSetAttr(NewThumbName,0);
-         DeleteFile(NewThumbName);
-         RenameFile(PChar(OldThumbName),PChar(NewThumbName));
-       End;
-       RAW_THUMB_PPM:
-       Begin
-         OldThumbName:=ThumbName;
-         NewThumbName:=ThumbName+'.ppm';
-         FileSetAttr(NewThumbName,0);
-         DeleteFile(NewThumbName);
-         RenameFile(PChar(OldThumbName),PChar(NewThumbName));
-       End;
-       RAW_THUMB_TIFF:
-       Begin
-         OldThumbName:=ThumbName;
-         NewThumbName:=ThumbName+'.tiff';
-         FileSetAttr(NewThumbName,0);
-         DeleteFile(NewThumbName);
-         RenameFile(PChar(OldThumbName),PChar(NewThumbName));
-       End;
-     End;
-
-     Case ThumbNailType Of
-           RAW_THUMB_JPG,
-           RAW_THUMB_PPM,
-           RAW_THUMB_TIFF:
-           Begin
-             ImageTmp:=TPicture.Create;
-             ImageTmp.LoadFromFile(NewThumbName);
-             if ThumbNailType=RAW_THUMB_JPG then
-             JPEGScale(ImageTmp.Graphic,550,550);
-             inherited Assign(ImageTmp.Graphic);
-             ImageTmp.Free;
-             TempBitmap:=Self as TBitmap;
-             case ExifEssentials.Rotation of
-                90  :  Rotate90A(TempBitmap);
-                180 :  Rotate180A(TempBitmap);
-                270 :  Rotate270A(TempBitmap);
-             end;
-             DeleteFile(NewThumbName);
-             Result:=True; 
-             dec(DecodingCount);
-             exit;
-           End;
-     end;
-   end;
-  end;
- end;       
- dec(DecodingCount);
- Result:=false;
 end;
 
 procedure TRAWImage.SetLoadHalfSize(const Value: boolean);
@@ -529,6 +322,11 @@ begin
   end;
 end;
 
+function aSetString(S : String) : String;
+begin
+ Result := S;
+end;
+
 initialization
 
  TW.I.Start('InitRAW');
@@ -540,6 +338,7 @@ initialization
   //Loading Extensions from ini-file
   aScript := TScript.Create('InitRAW');
   try
+    AddScriptFunction(aScript.Enviroment,'String',F_TYPE_FUNCTION_STRING_IS_STRING,@aSetString);
     LoadScript:='';
     try
      aFS := TFileStream.Create(ProgramDir+'scripts\LoadRAW.dbini',fmOpenRead);

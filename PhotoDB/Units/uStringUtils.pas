@@ -5,7 +5,7 @@ interface
 uses Windows, SysUtils;
   
 function ConvertUniversalFloatToLocal(s : string) : string;
-function PosExS(SubStr : string; var Str : string; index : integer = 1) : integer;
+function PosExS(SubStr : string; const Str : string; index : integer = 1) : integer;
 
 implementation
 
@@ -18,7 +18,7 @@ begin
   if Result[I]='.' then Result[I] := DecimalSeparator;
 end;
 
-function PosExS(SubStr : string; var Str : string; index : integer = 1) : integer;
+function PosExS(SubStr : string; const Str : string; index : integer = 1) : integer;
 var
   i, n, ns, ls : integer;
   q : boolean;

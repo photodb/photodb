@@ -166,7 +166,7 @@ begin
      begin
       if (Picture.Graphic as TBitmap).PixelFormat=pf32bit then
       begin
-       FTransparent:=true;
+       FTransparent := True;
        LoadBMPImage32bit(Picture.Graphic as TBitmap,Bitmap,TransparentColor);
       end else Bitmap.Assign(Picture.Graphic);
      end else Bitmap.Assign(Picture.Graphic);   

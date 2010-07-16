@@ -163,7 +163,7 @@ begin
     if IsRAWImageFile(ffile) then
     begin
      G:=TRAWImage.Create;
-     if not (G as TRAWImage).LoadThumbnailFromFile(ffile) then
+     if not (G as TRAWImage).LoadThumbnailFromFile(ffile, ThHintSize, ThHintSize) then
      G.LoadFromFile(ffile);
     end else
     begin

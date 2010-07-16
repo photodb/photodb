@@ -275,7 +275,11 @@ uses
   uFastLoad in 'Units\uFastLoad.pas',
   uResources in 'Units\uResources.pas',
   uExplorerThreadPool in 'Threads\uExplorerThreadPool.pas',
-  uGOM in 'Units\uGOM.pas';
+  uGOM in 'Units\uGOM.pas',
+  uListViewUtils in 'Units\uListViewUtils.pas',
+  FreeBitmap in 'External\Formats\FreeImage\FreeBitmap.pas',
+  FreeImage in 'External\Formats\FreeImage\FreeImage.pas',
+  FreeUtils in 'External\Formats\FreeImage\FreeUtils.pas';
 
 {$R *.res}
 

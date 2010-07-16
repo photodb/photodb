@@ -61,8 +61,8 @@ function GetDriveName(Drive, DefString : string) : string;
 function GetMyPicturesFolder : string;
 function GetMyDocumentsFolder : string;    
 function GetProgramFolder : string;
-function AnsiDeDequotedStr(Value : string) : string;
-function AnsiDequotedStr(Value : string) : string;
+//function AnsiDequotedStr(Value : string) : string;
+function AnsiQuotedStr(const S: string): string;
 function ScriptString(s : String) : String;
 function GetSaveImageFileName(InitFile, Filter : string) : string;
 function GetOpenImageFileName(InitFile, Filter : string) : string;
@@ -110,6 +110,45 @@ begin
  end;
 end;
 
+function AnsiQuotedStr(const S: string): string;
+var
+  P, Src, Dest: PChar;
+  AddCount: Integer;
+const
+  Quote = '"';
+begin
+  AddCount := 0;
+  P := AnsiStrScan(PChar(S), Quote);
+  while P <> nil do
+  begin
+    Inc(P);
+    Inc(AddCount);
+    P := AnsiStrScan(P, Quote);
+  end;
+  if AddCount = 0 then
+  begin
+    Result := S;
+    Exit;
+  end;
+  SetLength(Result, Length(S) + AddCount);
+  Dest := Pointer(Result);
+  Src := Pointer(S);
+  P := AnsiStrScan(Src, Quote);
+  repeat
+    Inc(P);
+    Move(Src^, Dest^, P - Src);
+    Inc(Dest, P - Src);
+    Dest^ := Quote;
+    Inc(Dest);
+    Src := P;
+    P := AnsiStrScan(Src, Quote);
+  until P = nil;
+  P := StrEnd(Src);
+  Move(Src^, Dest^, P - Src);
+  Inc(Dest, P - Src);
+  Dest^ := Quote;
+end;
+
 function AnsiDequotedStr(Value : string) : string;
 var
   i : integer;
@@ -125,20 +164,6 @@ begin
     if i>Length(Result)-1 then exit;
     if (Result[i]='"') and (Result[i+1]='"') then Delete(Result,i,1);
    end;
-  end;
- end;
-end;
-
-function AnsiDeDequotedStr(Value : string) : string;
-var
-  i : integer;
-begin
- Result:=Value;
- if Length(Result)>1 then
- begin
-  for i:=Length(Result)-1 downto 1  do
-  begin
-   if (Result[i]='"') then Insert('"',Result,i);
   end;
  end;
 end;

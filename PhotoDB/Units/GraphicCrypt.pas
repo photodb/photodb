@@ -77,7 +77,7 @@ function CryptGraphicImage(Image : TJpegImage; Pass : String) : TMemoryStream;
 
 implementation
 
-uses CommonDBSupport;
+uses CommonDBSupport, Dolphin_DB;
 
 Function GetExt(Filename : string) : string;
 var
@@ -150,7 +150,7 @@ begin
  else if Ext = 'cut' then Result := TCUTGraphic
  else if Ext = 'psp' then Result := TPSPGraphic    
 
- else if Ext = 'cr2' then Result := TRAWImage
+ else if Pos('|' + AnsiUpperCase(Ext) + '|', RAWImages) > -1 then Result := TRAWImage
 
  else if Ext = 'png' then
  begin

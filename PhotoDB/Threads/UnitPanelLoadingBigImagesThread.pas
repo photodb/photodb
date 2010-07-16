@@ -143,7 +143,7 @@ begin
       if IsRAWImageFile(StrParam) then
       begin
        FPic.Graphic:=TRAWImage.Create;
-       if not (FPic.Graphic as TRAWImage).LoadThumbnailFromFile(StrParam) then
+       if not (FPic.Graphic as TRAWImage).LoadThumbnailFromFile(StrParam,FPictureSize,FPictureSize) then
        FPic.Graphic.LoadFromFile(ProcessPath(StrParam));
       end else
       FPic.LoadFromFile(ProcessPath(StrParam));

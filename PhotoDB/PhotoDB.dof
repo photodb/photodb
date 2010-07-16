@@ -100,7 +100,7 @@ Conditionals=PHOTODB
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams="C:\1.jpg"
+RunParams=
 HostApplication=
 Launcher=
 UseLauncher=0

@@ -1086,7 +1086,7 @@ begin
             if IsRAWImageFile(Files[Index]) then
             begin
               Pic.Graphic := TRAWImage.Create;
-              if not (pic.Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index]) then
+              if not (pic.Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index],SmallImageSize, SmallImageSize) then
                 Pic.Graphic.LoadFromFile(Files[Index]);
             end else
               Pic.LoadFromFile(Files[Index]);
@@ -1828,7 +1828,7 @@ begin
         if IsRAWImageFile(FFiles[i].FileName) then
         begin
          Fpic.Graphic:=TRAWImage.Create;
-         if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(ProcessPath(FFiles[i].FileName)) then
+         if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(ProcessPath(FFiles[i].FileName),ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
          FPic.Graphic.LoadFromFile(ProcessPath(FFiles[i].FileName));
         end else
         FPic.LoadFromFile(ProcessPath(FFiles[i].FileName));
@@ -1958,10 +1958,10 @@ begin
         end;
       end else
       begin
-        if IsRAWImageFile(CurrentFile) then
+        if IsRAWImageFile(Info.ItemFileName) then
         begin
           Fpic.Graphic := TRAWImage.Create;
-          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(Info.ItemFileName) then
+          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(Info.ItemFileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
             Fpic.Graphic.LoadFromFile(Info.ItemFileName);
         end else
           Fpic.LoadFromFile(Info.ItemFileName);

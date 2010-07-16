@@ -136,7 +136,7 @@ begin
          if IsRAWImageFile(FFileName) then
          begin
           Fpic.Graphic:=TRAWImage.Create;
-          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FFileName) then
+          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FFileName,ThSizeExplorerPreview,ThSizeExplorerPreview) then
           Fpic.Graphic.LoadFromFile(FFileName);
          end else
          Fpic.LoadFromFile(FFileName);

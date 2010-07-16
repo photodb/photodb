@@ -84,7 +84,7 @@ begin
    if IsRAWImageFile(fOptions.FileName) then
    begin
     fPic.Graphic:=TRAWImage.Create;
-    if not (fPic.Graphic as TRAWImage).LoadThumbnailFromFile(fOptions.FileName) then
+    if not (fPic.Graphic as TRAWImage).LoadThumbnailFromFile(fOptions.FileName,ThSizePropertyPreview,ThSizePropertyPreview) then
     fPic.Graphic.LoadFromFile(fOptions.FileName);
    end else
    fPic.LoadFromFile(fOptions.FileName);

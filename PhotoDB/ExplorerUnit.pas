@@ -17,7 +17,7 @@ uses
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
   uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils;
+  uFileUtils, uListViewUtils;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -535,8 +535,6 @@ type
     procedure Grid1Click(Sender: TObject);
     procedure ToolButtonViewClick(Sender: TObject);
     procedure Thumbnails1Click(Sender: TObject);
-    procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject);
-    function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint): TEasyItem;
     function GetView : integer;
     procedure MakeFolderViewer2Click(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -1004,90 +1002,6 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject);
-var
-  PositionIndex: Integer;
-begin
-  if Assigned(Item) then
-  begin
-    if not Item.Initialized then
-      Item.Initialized := True;
-      PositionIndex := 0;
-
-    if PositionIndex > -1 then
-    begin
-      FillChar(RectArray, SizeOf(RectArray), #0);
-      try
-        RectArray.BoundsRect := Item.DisplayRect;
-        if ListView = 0 then
-          InflateRect(RectArray.BoundsRect, -Item.Border, -Item.Border);
-
-        // Calcuate the Bounds of the Cell that is allowed to be drawn in
-        // **********
-        RectArray.IconRect := RectArray.BoundsRect;
-        RectArray.IconRect.Bottom := RectArray.IconRect.Bottom - tmHeight * 2;
-
-        // Calculate area that the Checkbox may be drawn
-        RectArray.CheckRect.Top := RectArray.IconRect.Bottom;
-        RectArray.CheckRect.Left := RectArray.BoundsRect.Left;
-        RectArray.CheckRect.Bottom := RectArray.BoundsRect.Bottom;
-        RectArray.CheckRect.Right := RectArray.CheckRect.Left;
-
-        // Calcuate the Bounds of the Cell that is allowed to be drawn in
-        // **********
-        RectArray.LabelRect.Left := RectArray.CheckRect.Right + Item.CaptionIndent;
-        RectArray.LabelRect.Top := RectArray.IconRect.Bottom + 1;
-        RectArray.LabelRect.Right := RectArray.BoundsRect.Right;
-        RectArray.LabelRect.Bottom := RectArray.BoundsRect.Bottom;
-
-        // Calcuate the Text rectangle based on the current text
-        // **********
-        RectArray.TextRect := RectArray.LabelRect;
-        // Leave room for a small border between edge of the selection rect and text
-        if ListView=0 then
-        InflateRect(RectArray.TextRect, -2, -2);
-
-      finally
-      end;
-    end
-  end
-end;
-
-function TExplorerForm.ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint): TEasyItem;
-var
-  i: Integer;
-  r : TRect;
-  RectArray: TEasyRectArrayObject;
-  aCanvas : TCanvas;
-  Metrics: TTextMetric;
-begin
-  Result := nil;
-  i := 0;
-  r :=  EasyListview.Scrollbars.ViewableViewportRect;
-  ViewportPoint.X:=ViewportPoint.X+r.Left;
-  ViewportPoint.Y:=ViewportPoint.Y+r.Top;
-  aCanvas:=EasyListview.Canvas;    
-  GetTextMetrics(aCanvas.Handle, Metrics);
-
-  while not Assigned(Result) and (i < EasyListview.Items.Count) do
-  begin
-    begin
-     ItemRectArray(EasyListview.Items[i],Metrics.tmHeight,RectArray);
-
-     if ListView=0 then
-     begin
-      if PtInRect(RectArray.IconRect, ViewportPoint) then
-       Result := EasyListview.Items[i] else
-      if PtInRect(RectArray.TextRect, ViewportPoint) then
-       Result := EasyListview.Items[i];
-    end else
-      if PtInRect(RectArray.BoundsRect, ViewportPoint) then
-       Result := EasyListview.Items[i];
-    end;
-    Inc(i)
-  end
-end;
-
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
@@ -1105,7 +1019,7 @@ begin
   HintTimer.Enabled:=false;
   fDBCanDrag:=false;
 
-  Item := ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y));
+  Item := ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y), ListView);
   VitrualKey:=((MousePos.x=-1) and (MousePos.y=-1));
  if (Item=nil) or VitrualKey then Item:=ListView1.Selection.First;
 
@@ -1978,7 +1892,7 @@ begin
   if WindowFromPoint(p)=ImHint.Handle then exit;
  end;
 
- if loadingthitem=ItemByPointImage(ListView1,Point(X,Y)) then exit;
+ if loadingthitem=ItemByPointImage(ListView1,Point(X,Y), ListView) then exit;
  loadingthitem:=ItemByPointImage(ListView1,Point(X,Y));
 
  if loadingthitem=nil then
@@ -2144,7 +2058,7 @@ begin
               
  GetCursorPos(p1);
  p:=ListView1.ScreenToClient(p1);
- Item:=ItemByPointImage(ListView1, Point(p.x,p.y));
+ Item:=ItemByPointImage(ListView1, Point(p.x,p.y), ListView);
  if (Item=nil) and (Sender=nil) then Item:= ListView1Selected;
 
  if Item<>nil then
@@ -7360,7 +7274,7 @@ end;
 
 Function TExplorerForm.ItemAtPos(X,Y : integer): TEasyItem;
 begin
- Result:=ItemByPointImage(Listview1,Point(x,y));
+ Result:=ItemByPointImage(Listview1,Point(x,y), ListView);
 end;
 
 procedure TExplorerForm.EasyListview2KeyAction(Sender: TCustomEasyListview;

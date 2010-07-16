@@ -301,7 +301,7 @@ begin
    if IsRAWImageFile(FileName) then
    begin
     Result.Graphic:=TRAWImage.Create;
-    if not (Result.Graphic as TRAWImage).LoadThumbnailFromFile(FileName) then
+    if not (Result.Graphic as TRAWImage).LoadThumbnailFromFile(FileName,fPictureSize,fPictureSize) then
     Result.Graphic.LoadFromFile(FileName);
    end else
    Result.LoadFromFile(FileName);
