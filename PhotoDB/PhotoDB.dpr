@@ -44,7 +44,6 @@ uses
   unitimhint in 'unitimhint.pas' {ImHint},
   createuserunit in 'createuserunit.pas' {NewSingleUserForm},
   SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
-  unitid in 'unitid.pas' {IDForm},
   activation in 'activation.pas' {ActivateForm},
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
   InstallFormUnit in 'InstallFormUnit.pas' {InstallForm},
@@ -449,7 +448,7 @@ begin
       DBKernel:=TDBKernel.Create;
       DBKernel.LoadColorTheme;
       Application.CreateForm(TInstallForm, InstallForm);
-      Application.Restore;
+  Application.Restore;
       EventLog(':InstallForm.SetQuickSelfInstallOption()');
       InstallForm.SetQuickSelfInstallOption;
       InstallForm.ShowModal;
