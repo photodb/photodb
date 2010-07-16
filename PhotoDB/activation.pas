@@ -31,20 +31,19 @@ type
     procedure HelpTimer2Timer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-  private
-  procedure wmmousedown(var s : Tmessage); message wm_lbuttondown;
+  private        
+    Hs, Nm : string;
+    procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
     { Private declarations }
   public
-  Procedure LoadLanguage;
-  procedure HelpActivationNextClick(Sender: TObject);
-  procedure HelpActivationCloseClick(Sender : TObject; var CanClose : Boolean);
-
+    procedure LoadLanguage;
+    procedure HelpActivationNextClick(Sender: TObject);
+    procedure HelpActivationCloseClick(Sender : TObject; var CanClose : Boolean);
     { Public declarations }
   end;
 
 var
   ActivateForm: TActivateForm;
-  Hs, Nm : string;
 
 implementation
 
@@ -53,12 +52,12 @@ uses language, UnitHelp, FormManegerUnit;
 {$R *.dfm}
 
 procedure TActivateForm.FormCreate(Sender: TObject);
-begin
+begin   
+ LoadLanguage;
  Hs := DBKernel.ReadActivateKey;
  if not FolderView then
  Nm := DBKernel.ReadRegName;
  Edit1.text:=DBKernel.ApplicationCode;
- LoadLanguage;
 
  if not FolderView then
  if not DBKernel.ProgramInDemoMode then
@@ -73,31 +72,35 @@ procedure TActivateForm.Button2Click(Sender: TObject);
 var
   Reg : TBDRegistry;
 begin
- if FolderView then exit;
- Nm:=Edit3.text;
- Hs:=Edit2.text;
- Reg:=TBDRegistry.Create(REGISTRY_CLASSES);    
- Reg.OpenKey('\CLSID\'+ActivationID,true);
- reg.WriteString('UserName',Nm);
- reg.WriteString('Code',Hs);
- reg.free;
- MessageBoxDB(Handle,TEXT_MES_KEY_SAVE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
- Close;
+  if FolderView then
+    Exit;
+  Nm := Edit3.text;
+  Hs := Edit2.text;
+  Reg := TBDRegistry.Create(REGISTRY_CLASSES);
+  try
+    Reg.OpenKey('\CLSID\' + ActivationID, True);
+    Reg.WriteString('UserName', Nm);
+    Reg.WriteString('Code', Hs);
+  finally
+    Reg.free;
+  end;
+  MessageBoxDB(Handle, TEXT_MES_KEY_SAVE,TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+  Close;
 end;
 
 procedure TActivateForm.Execute;
 begin
- ShowModal;
+  ShowModal;
 end;
 
 procedure TActivateForm.Button1Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
-procedure TActivateForm.wmmousedown(var s: Tmessage);
+procedure TActivateForm.WMMouseDown(var Message: TMessage);
 begin
- Perform(wm_nclbuttondown,HTcaption,s.lparam);
+  Perform(WM_NCLBUTTONDOWN, HTCaption, Message.lparam);
 end;
 
 procedure TActivateForm.LoadLanguage;
@@ -155,16 +158,16 @@ end;
 
 procedure TActivateForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- if not FolderView then
- DBKernel.SetActivateKey(Nm,Hs);
- FormManager.UnRegisterMainForm(ActivateForm)
+  if not FolderView then
+  DBKernel.SetActivateKey(Nm, Hs);
+  FormManager.UnRegisterMainForm(ActivateForm)
 end;
 
 procedure TActivateForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
- //ESC
- if Key = 27 then Close();
+  //ESC
+  if Key = 27 then Close();
 end;
 
 initialization

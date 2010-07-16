@@ -292,10 +292,7 @@ type
     function hintrealA(item: TObject): boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-  {  Procedure SetItemLength(Length : integer);
-    Procedure IncItemLength();    }
     Procedure SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
-  //  Procedure SetInfoTolastItem(info : TOneRecordInfo);
     procedure ListView1DblClick(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
     Procedure BeginUpdate();
@@ -707,9 +704,6 @@ uses language, ThreadManeger,UnitUpdateDB, ExplorerThreadUnit, Searching,
 
 {$R *.dfm}
 
-{$R directory_large.res}   
-{$R ExplorerBackground.res}
-
 function MakeRegPath(Path : string) : string;
 var
   I : Integer;
@@ -748,7 +742,7 @@ var
 begin
   with Explorer do
   begin
-    Files:=TStringList.Create;
+    Files := TStringList.Create;
     try
       LoadFilesFromClipBoard(Effects, Files);
       ToolButton7.Enabled := Files.Count > 0;
@@ -756,7 +750,7 @@ begin
       Files.free;
     end;
     if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
-      ToolButton7.Enabled:=false;
+      ToolButton7.Enabled := False;
   end;
 end;
 
@@ -777,7 +771,6 @@ begin
     try
       LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme_ListColor);
       ListView1.BackGround.Image.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
-
 
       LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ColorToRGB(ScrollBox1.Color));
       Bitmap:=TBitmap.Create();
@@ -2013,26 +2006,29 @@ begin
 end;
 
 procedure TExplorerForm.SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
+var
+  InternalInfo : TExplorerFileInfo;
 begin
- fFilesInfo[Number].FileName:=info.ItemFileName;
- fFilesInfo[Number].ID:=info.ItemId;
- fFilesInfo[Number].Rotate:=info.ItemRotate;
- fFilesInfo[Number].Access:=info.ItemAccess;
- fFilesInfo[Number].Rating:=info.ItemRating;
- fFilesInfo[Number].FileSize:=info.ItemSize;
- fFilesInfo[Number].Comment:=info.ItemComment;
- fFilesInfo[Number].KeyWords:=info.ItemKeyWords;
- fFilesInfo[Number].FileType:=Info.Tag;
- fFilesInfo[Number].Date:=Info.ItemDate;
- fFilesInfo[Number].Time:=Info.ItemTime;
- fFilesInfo[Number].IsDate:=Info.ItemIsDate;
- fFilesInfo[Number].IsTime:=Info.ItemIsTime;
- fFilesInfo[Number].Groups:=Info.ItemGroups;
- fFilesInfo[Number].Crypted:=Info.ItemCrypted;
- fFilesInfo[Number].Include:=Info.ItemInclude;
- fFilesInfo[Number].Links:=Info.ItemLinks;
- if AnsiLowerCase(info.ItemFileName)=AnsiLowerCase(FSelectedInfo.FileName) then
- ListView1SelectItem(nil,nil,false);
+  InternalInfo := fFilesInfo[Number];
+  InternalInfo.FileName:=info.ItemFileName;
+  InternalInfo.ID:=info.ItemId;
+  InternalInfo.Rotate:=info.ItemRotate;
+  InternalInfo.Access:=info.ItemAccess;
+  InternalInfo.Rating:=info.ItemRating;
+  InternalInfo.FileSize:=info.ItemSize;
+  InternalInfo.Comment:=info.ItemComment;
+  InternalInfo.KeyWords:=info.ItemKeyWords;
+  InternalInfo.FileType:=Info.Tag;
+  InternalInfo.Date:=Info.ItemDate;
+  InternalInfo.Time:=Info.ItemTime;
+  InternalInfo.IsDate:=Info.ItemIsDate;
+  InternalInfo.IsTime:=Info.ItemIsTime;
+  InternalInfo.Groups:=Info.ItemGroups;
+  InternalInfo.Crypted:=Info.ItemCrypted;
+  InternalInfo.Include:=Info.ItemInclude;
+  InternalInfo.Links:=Info.ItemLinks;
+  if AnsiLowerCase(Info.ItemFileName) = AnsiLowerCase(FSelectedInfo.FileName) then
+    ListView1SelectItem(nil, nil, false);
 end;
 
 procedure TExplorerForm.SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
@@ -2286,10 +2282,10 @@ end;
 
 procedure TExplorerForm.EndUpdate();
 begin
-  If UpdatingList then
+  if UpdatingList then
   begin
    ListView1.EndUpdate;
-   ListView1.Groups[0].Visible:=true;
+   ListView1.Groups[0].Visible := True;
    ListView1.Groups.EndUpdate(true);
    ListView1.Realign;
    ListView1.Repaint;
@@ -2940,29 +2936,29 @@ end;
 
 procedure TExplorerForm.Copy2Click(Sender: TObject);
 var
-  File_List : TStrings;
+  FileList : TStrings;
 begin
- File_List:=TStringList.Create;
- File_List.Add(GetCurrentPath);
- Copy_Move(true,File_List);
- File_List.Free;
+  FileList := TStringList.Create;
+  try
+    FileList.Add(GetCurrentPath);
+    Copy_Move(True, FileList);
+  finally
+    FileList.Free;
+  end;
 end;
 
 procedure TExplorerForm.OpenInNewWindow1Click(Sender: TObject);
-var
-  Path : TExplorerPath;
 begin
- Path:=GetCurrentPathW;
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetNewPathW(Path,False);
-  Show;
- end;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetNewPathW(Self.GetCurrentPathW,False);
+    Show;
+  end;
 end;
 
 function TExplorerForm.GetCurrentPath: String;
 begin
- Result:=GetCurrentPathW.Path;
+ Result := GetCurrentPathW.Path;
 end;
 
 procedure TExplorerForm.SetPath(Path: String);

@@ -600,7 +600,6 @@ var
   Images_sm = 1;
   limit_up = false;
 
-  {$R WindowsXPMan.res}
 
 implementation
 

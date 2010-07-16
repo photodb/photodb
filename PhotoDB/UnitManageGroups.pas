@@ -305,15 +305,7 @@ Const DrawTextOpt = DT_EDITCONTROL;
   DrawTextOpt1 = DT_NOPREFIX+DT_WORDBREAK+DT_EDITCONTROL;
 
   ThSize : integer = 48;
-
-  function GrayScale(Color : TColor) : TColor;
-  var
-    c : integer;
-  begin
-   c:=Round(0.3*GetRValue(Color)+0.59*GetGValue(Color)+0.11*GetBValue(Color));
-   Result:=RGB(c,c,c);
-  end;
-
+  
   function Darken(Color : TColor) : TColor;
   begin
    Result:=RGB(Round(0.75*GetRValue(Color)),Round(0.75*GetGValue(Color)),Round(0.75*GetBValue(Color)));

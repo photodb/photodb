@@ -190,44 +190,44 @@ begin
  GrayScaleImage(S,D,100,CallBack);
 end;
 
-procedure GrayScaleImage(S,D : tbitmap; n : integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure GrayScaleImage(S,D : TBitmap; N : integer; CallBack : TBaseEffectCallBackProc = nil);
 var
-  i, j : integer;
-  p1, p2 :pargb;
-  n100, n1_100, cn100, n100_0_3, n100_0_59, n100_0_11 : Extended;
+  I, J : Integer;
+  p1, p2 : PARGB;
+  W1, W2, GR : Byte;
   Terminating : boolean;
 begin
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- D.Width:=S.Width;
- D.Height:=S.Height;
- n:=min(100,max(n,0));
- n100:=n/100;
- n100_0_3:=n100*0.3;
- n100_0_59:=n100*0.59;
- n100_0_11:=n100*0.11;
- n1_100:=1-n/100;
- Terminating:=false;
- for i:=0 to S.Height-1 do
- begin
-  p1:=S.ScanLine[i];
-  p2:=D.ScanLine[i];
-  for j:=0 to S.Width-1 do
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  N := Min(100, Max(N, 0));
+
+  W1 := Round((N / 100)*255);
+  W2 := 255 - W1;
+
+  Terminating := False;
+  for I := 0 to S.Height - 1 do
   begin
-   cn100:=n100_0_3*p1[j].r+n100_0_59*p1[j].g+n100_0_11*p1[j].b;
-   p2[j].r:=Round(cn100+p1[j].r*n1_100);
-   p2[j].g:=Round(cn100+p1[j].g*n1_100);
-   p2[j].b:=Round(cn100+p1[j].b*n1_100);
+    p1 := S.ScanLine[I];
+    p2 := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+    begin
+      GR := (p1[j].R * 77 + p1[j].G * 151 + p1[j].B * 28) shr 8;
+
+      p2[j].R := (W2 * p1[j].R + W1 * GR) shr 8;
+      p2[j].G := (W2 * p1[j].G + W1 * GR) shr 8;
+      p2[j].B := (W2 * p1[j].B + W1 * GR) shr 8;
+    end;
+    if I mod 50 = 0 then
+      If Assigned(CallBack) then CallBack(Round(100*I / S.Height),Terminating);
+    if Terminating then Break;
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*i/S.Height),Terminating);
-  if Terminating then Break;
- end;
 end;
 
 procedure Sepia(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 begin
- Sepia(S,D,20,CallBack);
+ Sepia(S, D, 20, CallBack);
 end;
 
 procedure Sepia(S,D : TBitmap; Depth: Integer; CallBack : TBaseEffectCallBackProc = nil);
@@ -871,95 +871,94 @@ end;
 
 procedure SetRGBChannelValue(S, D: TBitmap; Red, Green, Blue: Integer);
 var
-  i, j: Integer;
-  rgbc: array[0..2] of Byte;
-  ps, pd : PARGB;
-begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- if (Red = 0) and (Green = 0) and (Blue = 0) then
- begin
-  D.Assign(S);
-  Exit;
- end;
- for i := 0 to S.Height-1 do
- begin
-  ps:=S.ScanLine[i];
-  pd:=D.ScanLine[i];
-  for j := 0 to S.Width-1 do
+  I, J: Integer;
+  PS, PD : PARGB;
+  RuleArrayR, RuleArrayG, RuleArrayB : array[0..255] of byte;
+begin            
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  if (Red = 0) and (Green = 0) and (Blue = 0) then
   begin
-   rgbc[0]:=ps[j].r;
-   rgbc[1]:=ps[j].g;
-   rgbc[2]:=ps[j].b;
-   rgbc[0]:=Round(Min(255,Max(0, rgbc[0]*(1+(Red/100)) )));
-   rgbc[1]:=Round(Min(255,Max(0, rgbc[1]*(1+(Green/100)) )));
-   rgbc[2]:=Round(Min(255,Max(0, rgbc[2]*(1+(Blue/100)) )));
-   pd[j].r:=rgbc[0];
-   pd[j].g:=rgbc[1];
-   pd[j].b:=rgbc[2];
+    D.Assign(S);
+    Exit;
   end;
- end;
+  for I := 0 to 255 do
+  begin
+    RuleArrayR[I] := Round(Min(255, Max(0, I * (1+(Red/100)))));
+    RuleArrayG[I] := Round(Min(255, Max(0, I * (1+(Green/100)))));
+    RuleArrayB[I] := Round(Min(255, Max(0, I * (1+(Blue/100)))));
+  end;
+  for I := 0 to S.Height - 1 do
+  begin
+    PS := S.ScanLine[I];
+    PD := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+    begin
+      PD[J].r:=RuleArrayR[PS[J].r];
+      PD[J].g:=RuleArrayR[PS[J].G];
+      PD[J].b:=RuleArrayR[PS[J].B];
+    end;
+  end;
 end;
 
 procedure SetRGBChannelValue(Image: TBitmap; Red, Green, Blue: Integer);
 var
-  i, j: Integer;
-  rgbc: array[0..2] of Byte;
-  pd : PARGB;
+  I, J: Integer;
+  PD : PARGB;   
+  RuleArrayR, RuleArrayG, RuleArrayB : array[0..255] of byte;
 begin
  Image.PixelFormat := pf24bit;
- if (Red = 0) and (Green = 0) and (Blue = 0) then
- begin
-  Exit;
- end;
- for i := 0 to Image.Height-1 do
- begin
-  pd:=Image.ScanLine[i];
-  for j := 0 to Image.Width-1 do
+  if (Red = 0) and (Green = 0) and (Blue = 0) then
+    Exit;
+    
+  for I := 0 to 255 do
   begin
-   rgbc[0]:=pd[j].r;
-   rgbc[1]:=pd[j].g;
-   rgbc[2]:=pd[j].b;
-   rgbc[0]:=Round(Min(255,Max(0, rgbc[0]*(1+(Red/100)) )));
-   rgbc[1]:=Round(Min(255,Max(0, rgbc[1]*(1+(Green/100)) )));
-   rgbc[2]:=Round(Min(255,Max(0, rgbc[2]*(1+(Blue/100)) )));
-   pd[j].r:=rgbc[0];
-   pd[j].g:=rgbc[1];
-   pd[j].b:=rgbc[2];
+    RuleArrayR[I] := Round(Min(255, Max(0, I * (1 + (Red/100)))));
+    RuleArrayG[I] := Round(Min(255, Max(0, I * (1 + (Green/100)))));
+    RuleArrayB[I] := Round(Min(255, Max(0, I * (1 + (Blue/100)))));
   end;
- end;
+  for I := 0 to Image.Height - 1 do
+  begin
+    PD := Image.ScanLine[I];
+    for J := 0 to Image.Width - 1 do
+    begin
+      PD[J].r:=RuleArrayR[PD[J].r];
+      PD[J].g:=RuleArrayR[PD[J].G];
+      PD[J].b:=RuleArrayR[PD[J].B];
+    end;
+  end;
 end;
 
 procedure SetRGBChannelValue(Image: TArPARGB; Width, Height : integer; Red, Green, Blue: Integer); overload;
 var
-  i, j: Integer;
+  I, J: Integer;
   Rx,Gx,Bx : extended;
   RArray, GArray, BArray : T255ByteArray;
 begin
- if (Red = 0) and (Green = 0) and (Blue = 0) then
- begin
-  Exit;
- end;
- Rx:=1+(Red/100);
- Gx:=1+(Green/100);
- Bx:=1+(Blue/100);
- for i := 0 to 255 do
- begin
-  RArray[i]:=Round(Min(255,Max(0, i*(Rx) )));
-  GArray[i]:=Round(Min(255,Max(0, i*(Gx) )));
-  BArray[i]:=Round(Min(255,Max(0, i*(Bx) )));
- end;
- for i := 0 to Height-1 do
- begin
-  for j := 0 to Width-1 do
+  if (Red = 0) and (Green = 0) and (Blue = 0) then
   begin
-   Image[i,j].r:=RArray[Image[i,j].r];
-   Image[i,j].g:=GArray[Image[i,j].g];
-   Image[i,j].b:=BArray[Image[i,j].b];
+    Exit;
   end;
- end;
+  Rx := 1+(Red/100);
+  Gx := 1+(Green/100);
+  Bx := 1+(Blue/100);
+  for I := 0 to 255 do
+  begin
+    RArray[I]:=Round(Min(255,Max(0, I*(Rx) )));
+    GArray[I]:=Round(Min(255,Max(0, I*(Gx) )));
+    BArray[I]:=Round(Min(255,Max(0, I*(Bx) )));
+  end;
+  for I := 0 to Height-1 do
+  begin
+    for j := 0 to Width-1 do
+    begin
+     Image[I, J].r:=RArray[Image[I,J].r];
+     Image[I, J].g:=GArray[Image[I,J].g];
+     Image[I, J].b:=BArray[Image[I,J].b];
+    end;
+  end;
 end;
 
 procedure Disorder(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
@@ -1262,39 +1261,27 @@ var
   ps, pd : PARGB;
   i,j : integer;
   Col : TColor;
-
- function Colorize(RGB, Luma: Cardinal) : TColor;
- var
-   l, r, g, b: Single;
- begin
-   Result := Luma;
-   if Luma = 0 then { it's all black anyway}
-    Exit;
-   l := Luma / 255;
-   r := RGB and $FF * l;
-   g := RGB shr 8 and $FF * l;
-   b := RGB shr 16 and $FF * l;
-   Result := Round(b) shl 16 or Round(g) shl 8 or Round(r);
- end;
+  LumMatrix : array[0..255] of byte;
 
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- for i:=0 to s.height-1 do
- begin
-  ps:=s.ScanLine[i];
-  pd:=d.ScanLine[i];
-  for j:=0 to s.Width-1 do
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  for I := 0 to 255 do
+    LumMatrix[I] := Round(Min(255, I * Luma / 255));
+
+  for I := 0 to S.height - 1 do
   begin
-   Col:=RGB(ps[j].r,ps[j].g,ps[j].b);
-   Col:=Colorize(Col,Luma);
-   pd[j].r:=GetRvalue(Col);
-   pd[j].g:=GetGvalue(Col);
-   pd[j].b:=GetBvalue(Col);
+    ps := S.ScanLine[i];
+    pd := D.ScanLine[i];
+    for J := 0 to s.Width - 1 do
+    begin
+      pd[J].R := LumMatrix[ps[J].r];
+      pd[J].G := LumMatrix[ps[J].G];
+      pd[J].B := LumMatrix[ps[J].B];
+    end;
   end;
- end;
 end;
 
 function Gistogramma(S : TBitmap; var Terminated : boolean; CallBack : TBaseEffectCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
@@ -1314,7 +1301,7 @@ begin
   ps:=S.ScanLine[i];
   for j:=0 to S.Width-1 do
   begin
-   L:=Round(0.3*ps[j].r+0.59*ps[j].g+0.11*ps[j].b);
+   L := (ps[j].R * 77 + ps[j].G * 151 + ps[j].B * 28) shr 8;
    inc(Result[L]);
   end;
   if i mod 50=0 then

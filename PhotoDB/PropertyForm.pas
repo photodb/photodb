@@ -312,21 +312,18 @@ type
     { Public declarations }
   end;
 
-  TArProperty = array of TPropertiesForm;
-
   TPropertyManager = class(TObject)
-   Private
-    FPropertys : TArProperty;
-   Public
-    Constructor Create;
-    Destructor Destroy; override;
+  private
+    FPropertys : TList;
+  public
+    constructor Create;
+    destructor Destroy; override;
     function NewSimpleProperty : TPropertiesForm;
     function NewIDProperty(ID : Integer) : TPropertiesForm;
     function NewFileProperty(FileName : string) : TPropertiesForm;
 
     Procedure AddProperty(aProperty : TPropertiesForm);
     Procedure RemoveProperty(aProperty : TPropertiesForm);
-    function IsProperty(aProperty : TPropertiesForm) : Boolean;   
     function IsPropertyForm(aProperty: TForm): Boolean;
     function PropertyCount : Integer;
     function GetAnySimpleProperty : TPropertiesForm;
@@ -350,147 +347,106 @@ uses Language, UnitQuickGroupInfo, Searching, SlideShow, UnitHintCeator,
 { TPropertyManager }
 
 procedure TPropertyManager.AddProperty(aProperty: TPropertiesForm);
-var
-  i : integer;
-  b : boolean;
 begin
- b:=false;
- For i:=0 to Length(FPropertys)-1 do
- if FPropertys[i]=aProperty then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FPropertys,Length(FPropertys)+1);
-  FPropertys[Length(FPropertys)-1]:=aProperty;
- end;
+  if FPropertys.IndexOf(aProperty) = -1 then
+    FPropertys.Add(aProperty);
 end;
 
 constructor TPropertyManager.Create;
 begin
- SetLength(FPropertys,0);
+  FPropertys := TList.Create;
 end;
 
 destructor TPropertyManager.Destroy;
 begin
- SetLength(FPropertys,0);
- inherited;
+  FreeAndNil(FPropertys);
 end;
 
 function TPropertyManager.GetAnySimpleProperty: TPropertiesForm;
 begin
- if PropertyCount=0 then Result:=NewSimpleProperty else Result:=FPropertys[0];
+  if PropertyCount = 0 then
+    Result:=NewSimpleProperty
+  else
+    Result:=FPropertys[0];
 end;
 
 function TPropertyManager.GetPropertyByID(ID : integer): TPropertiesForm;
 var
-  i : Integer;
+  I : Integer;
 begin
- Result:=nil;
- for i:=0 to Length(FPropertys)-1 do
- if FPropertys[i].FShowInfoType=SHOW_INFO_ID then
- if FPropertys[i].CurrentItemInfo.ItemId=ID then
- begin
-  Result:=FPropertys[i];
-  Exit;
- end;
+  Result := nil;
+  for I := 0 to FPropertys.Count - 1 do
+    if TPropertiesForm(FPropertys[I]).FShowInfoType = SHOW_INFO_ID then
+      if TPropertiesForm(FPropertys[I]).CurrentItemInfo.ItemId = ID then
+  begin
+    Result := FPropertys[i];
+    Exit;
+  end;
 end;
 
 function TPropertyManager.GetPropertyByFileName(FileName : string): TPropertiesForm;
 var
-  i : Integer;
+  I : Integer;
 begin
- Result:=nil;
- for i:=0 to Length(FPropertys)-1 do
- if FPropertys[i].FShowInfoType=SHOW_INFO_FILE_NAME then
- if AnsiLowerCase(FPropertys[i].CurrentItemInfo.ItemFileName)=AnsiLowerCase(FileName) then
- begin
-  Result:=FPropertys[i];
-  Exit;
- end;
-end;
-
-function TPropertyManager.IsProperty(aProperty: TPropertiesForm): Boolean;
-var
-  i : Integer;
-begin
- Result:=False;
- for i:=0 to Length(FPropertys)-1 do
- if FPropertys[i]=aProperty then
- begin
-  Result:=True;
-  Break;
- end;
+  Result := nil;
+  for I := 0 to FPropertys.Count - 1 do
+    if TPropertiesForm(FPropertys[i]).FShowInfoType = SHOW_INFO_FILE_NAME then
+      if AnsiLowerCase(TPropertiesForm(FPropertys[i]).CurrentItemInfo.ItemFileName) = AnsiLowerCase(FileName) then
+      begin
+        Result := FPropertys[i];
+        Exit;
+      end;
 end;
 
 function TPropertyManager.IsPropertyForm(aProperty: TForm): Boolean;
-var
-  i : Integer;
 begin
- Result:=False;
- for i:=0 to Length(FPropertys)-1 do
- if FPropertys[i]=aProperty then
- begin
-  Result:=True;
-  Break;
- end;
+  Result := FPropertys.IndexOf(aProperty) > -1;
 end;
 
 function TPropertyManager.NewFileProperty(
   FileName: string): TPropertiesForm;
 begin
- if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
- begin
-  if PropertyCount>0 then Result:=FPropertys[0] else Application.CreateForm(TPropertiesForm,Result);
- end else
- begin
-  Result:=GetPropertyByFileName(FileName);
-  if Result<>nil then exit else Result:=NewSimpleProperty;
- end;
+  if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
+  begin
+    if PropertyCount > 0 then Result := FPropertys[0] else Application.CreateForm(TPropertiesForm, Result);
+  end else
+  begin
+    Result := GetPropertyByFileName(FileName);
+    if Result <> nil then Exit else Result := NewSimpleProperty;
+  end;
 end;
 
 function TPropertyManager.NewIDProperty(ID: Integer): TPropertiesForm;
 begin
- if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
- begin
-  if PropertyCount>0 then Result:=FPropertys[0] else Application.CreateForm(TPropertiesForm,Result);
- end else
- begin
-  Result:=GetPropertyByID(ID);
-  if Result<>nil then exit else Result:=NewSimpleProperty;
- end;
+  if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
+  begin
+    if PropertyCount>0 then Result := FPropertys[0] else Application.CreateForm(TPropertiesForm, Result);
+  end else
+  begin
+    Result := GetPropertyByID(ID);
+    if Result <> nil then Exit else Result := NewSimpleProperty;
+  end;
 end;
 
 function TPropertyManager.NewSimpleProperty: TPropertiesForm;
 begin
- if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
- begin
-  if PropertyCount>0 then Result:=FPropertys[0] else Application.CreateForm(TPropertiesForm,Result);
- end else
- begin
-  Application.CreateForm(TPropertiesForm,Result);
- end;
+  if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
+  begin
+    if PropertyCount > 0 then Result := FPropertys[0] else Application.CreateForm(TPropertiesForm, Result);
+  end else
+  begin
+    Application.CreateForm(TPropertiesForm,Result);
+  end;
 end;
 
 function TPropertyManager.PropertyCount: Integer;
 begin
- Result:=Length(FPropertys);
+  Result := FPropertys.Count;
 end;
 
 procedure TPropertyManager.RemoveProperty(aProperty: TPropertiesForm);
-var
-  i, j : integer;
 begin
- for i:=0 to Length(FPropertys)-1 do
- if FPropertys[i]=aProperty then
- begin
-  for j:=i to Length(FPropertys)-2 do
-  FPropertys[j]:=FPropertys[j+1];
-  SetLength(FPropertys,Length(FPropertys)-1);
-  break;
- end;
+  FPropertys.Remove(aProperty);
 end;
 
   function TPropertiesForm.ReadCHInclude : Boolean;
@@ -563,7 +519,7 @@ var
   fpic : Tpicture;
   fRotate : integer;
   PassWord : String;
-  Exists, w,h : integer;
+  Exists, w, h : integer;
 begin
  try
  if fSaving then

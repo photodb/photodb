@@ -8,10 +8,10 @@ uses
 
 type
   TPropertyLoadGistogrammThreadOptions = record
-   FileName : String;
-   Owner : TForm;
-   SID : TGUID;
-   OnDone : TNotifyEvent;
+    FileName : String;
+    Owner : TForm;
+    SID : TGUID;
+    OnDone : TNotifyEvent;
   end;
 
 type
@@ -43,39 +43,40 @@ uses PropertyForm, UnitPasswordForm;
 constructor TPropertyLoadGistogrammThread.Create(CreateSuspennded: Boolean;
   Options: TPropertyLoadGistogrammThreadOptions);
 begin
- inherited create(true);
- fOptions:=Options;
+ inherited Create(true);
+ fOptions := Options;
  if not CreateSuspennded then Resume;
 end;
 
 function Gistogramma(w,h : integer; S : PARGBArray) : TGistogrammData;
 var
-  i,j : integer;
+  I, j : integer;
   ps : PARGB;
   LGray, LR, LG, LB : byte;
 begin
- for i:=0 to 255 do
- begin
-  Result.Gray[i]:=0;
-  Result.Red[i]:=0;
-  Result.Green[i]:=0;
-  Result.Blue[i]:=0;
- end;
- for i:=0 to h-1 do
- begin
-  ps:=S[i];
-  for j:=0 to w-1 do
+  for I := 0 to 255 do
   begin
-   LR:=ps[j].r;
-   LG:=ps[j].g;
-   LB:=ps[j].b;
-   LGray:=Round(0.3*LR+0.59*LG+0.11*LB);
-   inc(Result.Gray[LGray]);
-   inc(Result.Red[LR]);
-   inc(Result.Green[LG]); 
-   inc(Result.Blue[LB]);
+    Result.Gray[I] := 0;
+    Result.Red[I] := 0;
+    Result.Green[I] := 0;
+    Result.Blue[I] := 0;
   end;
- end;
+
+  for I:=0 to H - 1 do
+  begin
+    ps := S[i];
+    for j:=0 to W-1 do
+    begin
+      LR := ps[j].r;
+      LG := ps[j].g;
+      LB := ps[j].b;
+      LGray:= (ps[j].R * 77 + ps[j].G * 151 + ps[j].B * 28) shr 8;
+      Inc(Result.Gray[LGray]);
+      Inc(Result.Red[LR]);
+      Inc(Result.Green[LG]);
+      Inc(Result.Blue[LB]);
+    end;
+  end;
 end;
 
 procedure TPropertyLoadGistogrammThread.DoOnDone;

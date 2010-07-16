@@ -9,7 +9,11 @@ function GetLogoPicture : TJpegImage;
 function GetSlideShowLoadPicture : TPNGGraphic;
 function GetExplorerBackground : TPNGGraphic;
               
-{$R Logo.res}
+{$R Logo.res}    
+{$R WindowsXPMan.res}
+{$R slideshow_load.res}
+{$R directory_large.res}
+{$R ExplorerBackground.res}
 
 implementation
 

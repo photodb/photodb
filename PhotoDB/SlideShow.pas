@@ -316,7 +316,6 @@ uses  Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
   UnitSlideShowUpdateInfoThread;
 
 {$R *.dfm}
-{$R slideshow_load.res}
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin        
@@ -1540,7 +1539,7 @@ begin
  Result:=true;
  SlideTimer.Enabled:=false;
  Play:=false;
- Loading:=true;
+ //Loading:=true;
  FullScreenNow:=false;
  SlideShowNow:=false;
  ImageExists:=false;
@@ -1640,6 +1639,7 @@ begin
   CurrentFileNumber:=CurrentInfo.Position;
   if not ((LoadBaseFile<>'') and (AnsiLowerCase(CurrentInfo.ItemFileNames[CurrentFileNumber])=AnsiLowerCase(LoadBaseFile))) then
   begin
+   Loading := True;
    TW.I.Start('LoadImage_');
    if LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false) then
    begin
@@ -1666,14 +1666,12 @@ begin
 
     FbImage.Canvas.TextOut(FbImage.Width div 2-FbImage.Canvas.TextWidth(text_out) div 2,FbImage.Height{ div 2}-4*FbImage.Canvas.Textheight(text_out) div 2,text_out);
 
- TW.I.Start('RecreateDrawImage_');
+    TW.I.Start('RecreateDrawImage_');
     RecreateDrawImage(Sender);
- TW.I.Start('FormPaint');
+    TW.I.Start('FormPaint');
     FormPaint(Sender);
    end;
-//   ShowWindow(Handle,SW_SHOWNORMAL);
-//   Show;
-//   SetFocus;
+
   end else
   begin
    Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
@@ -1707,21 +1705,20 @@ begin
   end;
  end;      
  TW.I.Start('ExecuteW - end');
- //Show;
 end;
 
 procedure TViewer.CreateParams(var Params: TCreateParams);
 begin      
   TW.I.Start('CreateParams');
- Inherited CreateParams(Params);
- Params.WndParent := GetDesktopWindow;
- with params do
- ExStyle := ExStyle or WS_EX_APPWINDOW;
+  Inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TViewer.WaitImageTimerTimer(Sender: TObject);
 begin
- WaitGrayScale:=WaitGrayScale+IncGrayScale;
+ WaitGrayScale:=WaitGrayScale + IncGrayScale;
  If WaitGrayScale>100 then
  begin
   WaitGrayScale:=100;
@@ -1729,7 +1726,7 @@ begin
  end;
  WaitImage.Width:=drawimage.Width;
  WaitImage.Height:=drawimage.Height;
- GrayScaleImage(drawimage, WaitImage, WaitGrayScale);
+ GrayScaleImage(Drawimage, WaitImage, WaitGrayScale);
  Canvas.Draw(0, 0, WaitImage);
 end;
 
