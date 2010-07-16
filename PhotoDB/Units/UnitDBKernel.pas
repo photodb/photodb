@@ -154,8 +154,6 @@ DB_IC_CD_IMAGE       = 118;
 
 type DBChangesIDEvent = Procedure(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues)  of object;
 
-TUserType = (UtUser, UtAdmin, UtGuest, UtNone);
-
 type DBEventsIDArray = record
  Sender : TObject;
  IDs : integer;
@@ -215,7 +213,6 @@ type TDBKernel = class(TObject)
     FImageList: TImageList;
     fDBUserName: string;
     fDBUserPassword: string;
-    fDBUserType: TUserType;
     fDBUserHash: integer;
     FTheme: TDbTheme;
     FForms : array of TForm;
@@ -347,12 +344,11 @@ begin
   FSych := TCriticalSection.Create;
   FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
-  for i:=1 to 100 do
-  Chars[i]:=nil;
+  for i := 1 to 100 do
+    Chars[i] := nil;
   FPasswodsInSession := TStringList.create;
   FINIPasswods := nil;
-  FApplicationKey:='';
-  fDBUserType:=UtNone;
+  FApplicationKey := '';
 end;
 
 function TDBKernel.CreateDBbyName(FileName: string): integer;

@@ -3,7 +3,7 @@ unit uSplashThread;
 interface
 
 uses
-   Classes,windows, messages, JPEG, Graphics, DmProgress, uTime,
+   Classes, Windows, Messages, JPEG, Graphics, DmProgress, uTime,
    uConstants, uResources;
 
 type
@@ -16,8 +16,8 @@ type
 
 var
   SplashThread : TThread = nil;
-                
-{$R Logo.res}
+
+procedure SetSplashProgress(ProgressValue : Byte);
 
 implementation
 
@@ -28,13 +28,24 @@ const
   SplHeight = 500;
 
 var
- SplashWindowClass : TWndClass;
- hSplashWnd, hSplashEvent, hSplashRoutineThread : HWND;
+  SplashWindowClass : TWndClass;
+  hSplashWnd, hSplashEvent, hSplashRoutineThread : HWND;
+  hSplashProgress : Byte = 0;
+  IsFirstDraw : Boolean = True;
+
+procedure SetSplashProgress(ProgressValue : Byte);
+var
+  Rectangle : TRect;
+begin
+  hSplashProgress := ProgressValue;
+  Rectangle := Rect(0, SplHeight - 30, SplWidth, SplHeight);
+  InvalidateRect(hSplashWnd, @Rectangle, False);
+  PostMessage(hSplashWnd, WM_PAINT, 0, 0);
+end;
 
 procedure DrawOurStuff(DrawDC: HDC);
 const
-  NUM_SHAPES = 4000;
-  DrawTextOpt = DT_NOPREFIX+DT_WORDBREAK+DT_LEFT;
+  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_LEFT;
 var
   i: Integer;
   OldPen, DrawPen: HPEN;
@@ -49,88 +60,78 @@ var
 begin
   brushInfo.lbStyle := BS_SOLID;
   brushInfo.lbColor := 0;
-  Brush := CreateBrushIndirect(brushInfo);
-  FillRect(DrawDC, Rect(0, 0, SplWidth, SplHeight), Brush);
 
-  J := GetLogoPicture;
-  try
-    BMP := TBitmap.Create;
+  if IsFirstDraw then
+  begin             
+    Brush := CreateBrushIndirect(brushInfo);
+    FillRect(DrawDC, Rect(0, 0, SplWidth, SplHeight), Brush);
+    DeleteObject(Brush);
+    J := GetLogoPicture;
     try
-      BMP.Canvas.Brush.Color := 0;
-      BMP.Canvas.Pen.Color := 0;
-      BMP.Height := SplHeight;
-      BMP.Width := SplWidth;
-      BMP.Assign(J);
+      BMP := TBitmap.Create;
       try
-        TP := TDmProgress.Create(nil);
-        TP.Visible := False;
-        TP.MaxValue := 100;
-        TP.Position := 37;
-        TP.Width := SplWidth - 20*2;
-        TP.Height := 17;
-        TP.BorderColor := clGray;
-        TP.Color := clBlack;
-        TP.Font.Color := clWhite; 
-        TP.Font.Name := 'Times New Roman';
-        TP.CoolColor := clNavy;
-        TP.DoDraw(DrawDC, 10, SplHeight - TP.Height - 10);
+        BMP.Canvas.Brush.Color := 0;
+        BMP.Canvas.Pen.Color := 0;
+        BMP.Height := SplHeight;
+        BMP.Width := SplWidth;
+        BMP.Assign(J);
+        BitBlt(DrawDC, 200, 0, SplWidth, SplHeight, BMP.Canvas.Handle, 0, 0, SRCCOPY);
       finally
-        TP.Free;
+        BMP.Free;
       end;
-      InfoText := TStringList.Create;
-      try
-        InfoText.Add('PhotoDB 2.3');
-        InfoText.Add('About project:');
-        InfoText.Add('All copyrights to this program are');
-        InfoText.Add('exclusively owned by the author:');
-        InfoText.Add('Veresov Dmitry © 2002-2011');
-        InfoText.Add('Studio "Illusion Dolphin".');
-        InfoText.Add('You can''t emulate, clone, rent, lease,');
-        InfoText.Add('sell, modify, decompile, disassemble,');
-        InfoText.Add('otherwise, reverse engineer, transfer');
-        InfoText.Add('this software.');
-        InfoText.Add('');
-        InfoText.Add('HomePage:');
-        InfoText.Add(HomeURL);
-        InfoText.Add('');
-        InfoText.Add('E-Mail:');
-        InfoText.Add(ProgramMail);
+    finally
+      J.Free;
+    end;        
+    InfoText := TStringList.Create;
+    try
+      InfoText.Add(ProductName);
+      InfoText.Add('About project:');
+      InfoText.Add('All copyrights to this program are');
+      InfoText.Add('exclusively owned by the author:');
+      InfoText.Add('Veresov Dmitry © 2002-2011');
+      InfoText.Add('Studio "Illusion Dolphin".');
+      InfoText.Add('You can''t emulate, clone, rent, lease,');
+      InfoText.Add('sell, modify, decompile, disassemble,');
+      InfoText.Add('otherwise, reverse engineer, transfer');
+      InfoText.Add('this software.');
+      InfoText.Add('');
+      InfoText.Add('HomePage:');
+      InfoText.Add(HomeURL);
+      InfoText.Add('');
+      InfoText.Add('E-Mail:');
+      InfoText.Add(ProgramMail);
 
-        R := Rect(10, 10, SplWidth, SplHeight);
-        SetBkColor(DrawDC, clBlack);
-        SetTextColor(DrawDC, clWhite);
-        hf := CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Times New Roman');
-        oldFont := SelectObject(DrawDC, hf);
-        DrawTextA(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);  
-        SelectObject(DrawDC, oldFont);
-      finally
-        InfoText.Free;
-      end;
+      R := Rect(10, 10, SplWidth, SplHeight);
+      SetBkColor(DrawDC, clBlack);
+      SetTextColor(DrawDC, clWhite);
+      hf := CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Times New Roman');
+      oldFont := SelectObject(DrawDC, hf);
+      DrawTextA(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);  
+      SelectObject(DrawDC, oldFont);  
       if(hf > 0) then
         DeleteObject(hf);
-      BitBlt(DrawDC, 200, 0, SplWidth, SplHeight, BMP.Canvas.Handle, 0, 0, SRCCOPY);
     finally
-      BMP.Free;
+      InfoText.Free;
     end;
-  finally
-    J.Free;
+    IsFirstDraw := False;
   end;
- { DrawPen := CreatePen(PS_SOLID, 1, RGB(Random(256), Random(256), Random(256)));
-  // Create our pen to draw with. It will be a solid line style, of width 1 and
-  // a completely random colour
-  // Select our new pen into the DC, so lines will be drawn using it. Store
-  // the old pen too
-  OldPen := SelectObject(DrawDC, DrawPen);
 
-  // Draw our lines
-  for i := 0 to NUM_SHAPES - 1 do
-    LineTo(DrawDC, Random(500), Random(500));
-
-  // Select the old pen back again so Windows doesn't complain
-  SelectObject(DrawDC, OldPen);
-
-  // and kill the pen we created
-  DeleteObject(DrawPen);            }
+  try
+    TP := TDmProgress.Create(nil);
+    TP.Visible := False;
+    TP.MaxValue := 100;
+    TP.Position := hSplashProgress;
+    TP.Width := SplWidth - 20*2;
+    TP.Height := 17;
+    TP.BorderColor := clGray;
+    TP.Color := clBlack;
+    TP.Font.Color := clWhite; 
+    TP.Font.Name := 'Times New Roman';
+    TP.CoolColor := clNavy;
+    TP.DoDraw(DrawDC, 10, SplHeight - TP.Height - 10);
+  finally
+    TP.Free;
+  end;
 end;
 
 function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;
@@ -151,8 +152,11 @@ begin
          // note: g_Handle is the handle to our window, got from CreateWindow
          // tell Windows we're painting the window
          DrawDC := BeginPaint(hSplashWnd, ps);
-         DrawOurStuff(DrawDC);
-         EndPaint(hSplashWnd, ps); // we've stopped painting now
+         try
+           DrawOurStuff(DrawDC);
+         finally
+           EndPaint(hSplashWnd, ps); // we've stopped painting now
+         end;
          Result := 0;
          Exit;
        end;
@@ -166,6 +170,8 @@ var
   Instance : Thandle;
   Msg: TMsg; // declare this too, for later
 begin
+  FreeOnTerminate := True;
+  
   Instance := GetModuleHandle(nil);
   SplashWindowClass.style := CS_HREDRAW or CS_VREDRAW;
   SplashWindowClass.lpfnWndProc := @SplashWindowProc;
@@ -176,36 +182,43 @@ begin
   SplashWindowClass.lpszClassName := ClassName;
 
   RegisterClass(SplashWindowClass);
-  hSplashWnd := CreateWindow(ClassName, 'SplashScreen',
-                             WS_POPUP or WS_EX_TOPMOST,
-                             350, 300, 480, 500, 0, 0, Instance, NIL);
-  ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
-  UpdateWindow(hSplashWnd);
+  try
+    hSplashWnd := CreateWindow(ClassName, 'SplashScreen',
+                               WS_POPUP or WS_EX_TOPMOST,
+                               GetSystemMetrics(SM_CXSCREEN) div 2 - SplWidth div 2,
+                               GetSystemMetrics(SM_CYSCREEN) div 2 - SplHeight div 2,
+                               SplWidth, SplHeight, 0, 0, Instance, NIL);
+    try
+      ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
+      UpdateWindow(hSplashWnd);
 
-  while True do
-  begin
-    if Terminated then
-      Break;
-    if PeekMessage(Msg, hSplashWnd,0,0, PM_REMOVE) then
-    begin
-      if Msg.message = WM_QUIT then
-        break;
-      TranslateMessage(Msg);
-      DispatchMessage(Msg);
-    end else
-    begin
-      // Do rendering here if a real-time app
+      while True do
+      begin
+        if Terminated then
+          Break;
+        if PeekMessage(Msg, hSplashWnd, 0,0, PM_REMOVE) then
+        begin
+          if Msg.message = WM_QUIT then
+            Break;
+          TranslateMessage(Msg);
+          DispatchMessage(Msg);
+        end else
+        begin
+          // Do rendering here if a real-time app
+        end;
+        Sleep(1);
+      end;
+    finally
+      DestroyWindow(hSplashWnd);
     end;
-    Sleep(1);
+  finally
+    UnregisterClass(ClassName, Instance);
   end;
-
-  DestroyWindow(hSplashWnd);
-  UnregisterClass(ClassName, Instance);
 end; // ShowSplashWindow
 
 initialization
 
- // if not GetParamStrDBBool('/NoLogo') then
+  //if not GetParamStrDBBool('/NoLogo') then
   begin
     TW.I.Start('TSplashThread');
     SplashThread := TSplashThread.Create(False);

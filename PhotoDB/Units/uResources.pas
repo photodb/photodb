@@ -8,6 +8,8 @@ function GetFolderPicture : TPNGGraphic;
 function GetLogoPicture : TJpegImage; 
 function GetSlideShowLoadPicture : TPNGGraphic;
 function GetExplorerBackground : TPNGGraphic;
+              
+{$R Logo.res}
 
 implementation
 

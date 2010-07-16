@@ -156,7 +156,7 @@ type
     procedure RegisterThread;
     procedure UnRegisterThread;
   public
-      constructor Create(CreateSuspennded: Boolean; Owner : TForm; Directory : string; OnNotify : TNotifyDirectoryChangeW; SID : string; ParentSID : Pointer);
+    constructor Create(CreateSuspennded: Boolean; Owner : TForm; Directory : string; OnNotify : TNotifyDirectoryChangeW; SID : string; ParentSID : Pointer);
   end;
 
 type
@@ -204,15 +204,15 @@ Type
     procedure Clear;
   end;
 
-Type
+type
   TIcon48 = class(TIcon)
   protected  
     function GetHeight: Integer; override;
     function GetWidth: Integer; override;
 end;
 
-Function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
-Function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
+function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
+function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
 
 var
   LockedFiles : array[1..2] of String;
@@ -222,13 +222,13 @@ implementation
 
 uses ExplorerUnit, ThreadManeger;
 
-Function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
+function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
 begin
  Result.Path:=Path;
  Result.PType:=PType;
 end;
 
-Function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
+function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
 begin
  Result.ItemFileName:= Info[N].FileName;
  Result.ItemId:= Info[N].ID;

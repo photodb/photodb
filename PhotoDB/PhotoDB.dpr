@@ -303,7 +303,7 @@ end;
 
 function FileVersion : integer;
 begin
- Result := ReleaseNumber;
+  Result := ReleaseNumber;
 end;
 
 procedure FindRunningVersion;
@@ -405,7 +405,8 @@ begin
     Sleep(1000);
 
   ProgramDir := GetDirectory(Application.ExeName);
-            
+
+  SetSplashProgress(5);
   TW.I.Start('InitializeDBLoadScript');
   InitializeDBLoadScript;
   // INITIALIZAING APPLICATION
@@ -415,9 +416,12 @@ begin
     FolderView := True;
     UseScripts := False;
   end;
-  
+
+  SetSplashProgress(10);
   TW.I.Start('Application.Initialize');
   Application.Initialize;
+
+  SetSplashProgress(15);
 
   EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
@@ -506,20 +510,25 @@ begin
   end;
                   
   EventLog('TDBKernel.Create');
-  DBKernel:=TDBKernel.Create;
+  DBKernel := TDBKernel.Create;
   TW.I.Start('DBKernel.LogIn');
-  DBKernel.LogIn('','',true);
+  DBKernel.LogIn('', '', True);
   TLoad.Instance.StartDBKernelIconsThread;
   TLoad.Instance.StartDBSettingsThread;
+  SetSplashProgress(25);
 
   TW.I.Start('FindRunningVersion');
   if not GetParamStrDBBool('/NoPrevVersion') then
     FindRunningVersion;
 
+  SetSplashProgress(35);
+
   //This is main form of application
   TW.I.Start('TFormManager Create');
   Application.CreateForm(TFormManager, FormManager);
   Application.ShowMainForm := False;
+
+  SetSplashProgress(50);
   //CHECK DEMO MODE ----------------------------------------------------
   if not DBTerminating then
   begin
@@ -532,7 +541,8 @@ begin
    EventLog(':DBKernel.LoadColorTheme');
    TW.I.Start('DBKernel.LoadColorThem');
    DBKernel.LoadColorTheme;
-  end;
+  end;     
+  SetSplashProgress(70);
 
   if not FolderView then
   if not DBTerminating then
@@ -558,7 +568,8 @@ begin
    AExplorerFolders := TExplorerFolders.Create;
   end;
 
-   TW.I.Start('GetCIDA');
+  TW.I.Start('GetCIDA');  
+  SetSplashProgress(80);
 
   if not FolderView then
   for k:=1 to 10 do
@@ -573,13 +584,13 @@ begin
    @f:=Fh;
    p:=f;
   end;
-          
-   TW.I.Start('Initialize');
+         
+  SetSplashProgress(90);
+  TW.I.Start('Initialize');
 
   {$IFDEF DEBUG}
   EventLog('...CHECK GetCIDA...');
   {$ENDIF}
- //TODO: if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=1;
   if not FolderView then
   If not DBTerminating then
   begin
@@ -596,7 +607,6 @@ begin
      exit;
     end;
     @f:=Fh;
-   // p:=f;
    end;
 
    {$IFDEF DEBUG}
@@ -627,15 +637,9 @@ begin
   end;
 
   EventLog('...Loading menu...');
+  SetSplashProgress(95);
 
-//TODO:  if LoadingAboutForm<>nil then
-{ 
-    if not FolderView then
-      TAboutForm(LoadingAboutForm).LoadRegistrationData;
-  end; }
-  //LOGGING ----------------------------------------------------
-               
-     TW.I.Start('LoadingAboutForm.Free');
+  TW.I.Start('LoadingAboutForm.Free');
   EventLog('...LOGGING...');
   if not FolderView then
   if not DBInDebug then
@@ -651,20 +655,10 @@ begin
    if UseFreeAfterRelease then AboutForm.Free;
    AboutForm:=nil;
   end;
-  //TODO:if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=3;
-  {$IFDEF DEBUG}
-  //DEBUGGING
-  //LOGGING_MESSAGE:=true;
-  {$ENDIF}
                    
   TW.I.Start('CHECK APPDATA DIRECTORY');
-
-  //TODO:if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=4;
-
   //GROUPS CHECK + MENU----------------------------------------------------
-                
   EventLog('...GROUPS CHECK + MENU...');
-         
   TW.I.Start('IsValidGroupsTable');
 
   try
@@ -675,10 +669,9 @@ begin
   except
     on e : Exception do EventLog(':PhotoDB() throw exception: '+e.Message);
   end;
-  //TODO: if LoadingAboutForm<>nil then TAboutForm(LoadingAboutForm).DmProgress1.Position:=7;
   //DB FAULT ----------------------------------------------------
          
-   TW.I.Start('CHECKS');
+  TW.I.Start('CHECKS');
 
   if not FolderView then
   if not DBTerminating then
@@ -817,7 +810,9 @@ begin
   TW.I.Start('LoadingAboutForm.FREE');
 
   //PREPAIRING RUNNING DB ----------------------------------------
-
+                
+  SetSplashProgress(100);
+  
   If DBTerminating then
   Application.ShowMainForm:=False;
   If not DBTerminating then
@@ -834,10 +829,10 @@ begin
  If not DBTerminating then
  begin                  
   EventLog('Theme...');
-  DBkernel.LoadColorTheme;
+  DBKernel.LoadColorTheme;
   EventLog('Run manager...');
   if not GetParamStrDBBool('/NoFullRun') then
-  FormManager.Run(SplashThread);
+    FormManager.Run(SplashThread);
 
   If not DBTerminating then
   begin
@@ -887,7 +882,7 @@ begin
   s1:=SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'),'"');
   s1:=ReadTextFileInString(s1);
   ExecuteQuery(s1);
- end;
+ end;   
 
  Application.Run;
 end.

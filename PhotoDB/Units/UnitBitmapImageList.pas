@@ -5,12 +5,13 @@ interface
 uses Classes, Graphics;
 
 type
- TBitmapImageListImage = class
-  Bitmap : TBitmap;
-  IsBitmap : Boolean;
-  Icon : TIcon;
-  SelfReleased : Boolean;
-  Ext : string;
+  TBitmapImageListImage = class
+  public
+    Bitmap : TBitmap;
+    IsBitmap : Boolean;
+    Icon : TIcon;
+    SelfReleased : Boolean;
+    Ext : string;
  end;
 
 type

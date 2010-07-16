@@ -60,15 +60,15 @@ type
     BottomImage: TPanel;
     ToolsBar: TPanel;
     ToolBar2: TToolBar;
-    ToolButton2: TToolButton;
-    ToolButton1: TToolButton;
-    ToolButton3: TToolButton;
-    ToolButton4: TToolButton;
-    ToolButton5: TToolButton;
-    ToolButton6: TToolButton;
-    ToolButton7: TToolButton;
-    ToolButton8: TToolButton;
-    ToolButton9: TToolButton;
+    TbBack: TToolButton;
+    TbForward: TToolButton;
+    TbSeparator1: TToolButton;
+    TbFitToWindow: TToolButton;
+    TbRealSize: TToolButton;
+    TbSlideShow: TToolButton;
+    TbSeparator2: TToolButton;
+    TbZoomOut: TToolButton;
+    TbZoomIn: TToolButton;
     Properties1: TMenuItem;
     Rotate1: TMenuItem;
     RotateCCW1: TMenuItem;
@@ -85,21 +85,21 @@ type
     ImageFrameTimer: TTimer;
     SlideShow1: TMenuItem;
     SlideTimer: TTimer;
-    ToolButton10: TToolButton;
-    ToolButton11: TToolButton;
-    ToolButton12: TToolButton;
-    ToolButton13: TToolButton;
-    ToolButton14: TToolButton;
+    TbFullScreen: TToolButton;
+    TbSeparator3: TToolButton;
+    TbRotateCCW: TToolButton;
+    TbRotateCW: TToolButton;
+    TbInfo: TToolButton;
     ImageEditor1: TMenuItem;
-    ToolButton15: TToolButton;
+    TbEditImage: TToolButton;
     Print1: TMenuItem;
-    ToolButton16: TToolButton;
-    ToolButton17: TToolButton;
-    ToolButton18: TToolButton;
-    ToolButton19: TToolButton;
+    TbSeparator4: TToolButton;
+    TbPrint: TToolButton;
+    TbSeparator7: TToolButton;
+    TbSeparator5: TToolButton;
     ToolButton20: TToolButton;
-    ToolButton21: TToolButton;
-    ToolButton22: TToolButton;
+    TbSeparator6: TToolButton;
+    TbRating: TToolButton;
     RatingPopupMenu: TPopupMenu;
     N01: TMenuItem;
     N11: TMenuItem;
@@ -114,12 +114,12 @@ type
     Tools1: TMenuItem;
     NewPanel1: TMenuItem;
     TimerDBWork: TTimer;
-    ToolButton23: TToolButton;
-    ToolButtonPage: TToolButton;
+    TbSeparatorPageNumber: TToolButton;
+    TbPageNumber: TToolButton;
     PopupMenuPageSelecter: TPopupMenu;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FileName : String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
-    procedure RecreateDrawImage_(Sender: TObject);
+    procedure RecreateDrawImage(Sender: TObject);
     procedure FormResize(Sender: TObject);
     Procedure Next_(Sender: TObject);
     Procedure Previous_(Sender: TObject);
@@ -141,7 +141,7 @@ type
     procedure LoadListImages(List : TstringList);
     Procedure ShowFile(FileName : String);
     Procedure ShowFolder(Files : Tstrings; CurrentN : integer);
-    Procedure ShowFolderA(File_ : string; ShowPrivate : Boolean);
+    Procedure ShowFolderA(FileName : string; ShowPrivate : Boolean);
     Procedure UpdateRecord(FileNo: integer);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
@@ -163,8 +163,8 @@ type
       var ScrollPos: Integer);
     procedure ToolButton4Click(Sender: TObject);
     procedure ToolButton5Click(Sender: TObject);
-    procedure ToolButton8Click(Sender: TObject);
-    procedure ToolButton9Click(Sender: TObject);
+    procedure TbZoomOutClick(Sender: TObject);
+    procedure TbZoomInClick(Sender: TObject);
     procedure FormClick(Sender: TObject);
     procedure RotateCCW1Click(Sender: TObject);
     procedure RotateCW1Click(Sender: TObject);
@@ -183,12 +183,12 @@ type
     procedure DestroyTimerTimer(Sender: TObject);
     procedure ImageFrameTimerTimer(Sender: TObject);
     procedure UpdateInfo(SID : TGUID; Info : TOneRecordInfo);
-    procedure ToolButton6Click(Sender: TObject);
+    procedure TbSlideShowClick(Sender: TObject);
     procedure SlideTimerTimer(Sender: TObject);
     procedure ImageEditor1Click(Sender: TObject);
     procedure Print1Click(Sender: TObject);
     procedure ToolButton20Click(Sender: TObject);
-    procedure ToolButton22Click(Sender: TObject);
+    procedure TbRatingClick(Sender: TObject);
     procedure N51Click(Sender: TObject);
     procedure ApplicationEvents1Hint(Sender: TObject);
     procedure UpdateInfoAboutFileName(FileName : String; info : TOneRecordInfo);
@@ -228,6 +228,7 @@ type
     procedure SetPlay(const Value: boolean);
     procedure SendToItemPopUpMenu_(Sender: TObject);
     procedure OnPageSelecterClick(Sender: TObject);
+    procedure SetDisplayRating(const Value: Integer);
     { Private declarations }
   protected
     procedure CreateParams(VAR Params: TCreateParams); override;
@@ -259,18 +260,19 @@ type
     procedure DoSetNoDBRecord(FileName : string);
     procedure MakePagesLinks;
     function GetPageCaption : String;
+    property DisplayRating : Integer write SetDisplayRating;
   published
-  Property ImageExists : Boolean read FImageExists write SetImageExists;
-  Property StaticImage : Boolean read FStaticImage Write SetPropStaticImage;
-  Property Loading : Boolean read FLoading write SetLoading;
-  Property ValidImages : Integer read FValidImages write SetValidImages;
-  Property ForwardThreadExists : Boolean read FForwardThreadExists write SetForwardThreadExists;
-  Property ForwardThreadSID : TGUID read FForwardThreadSID write SetForwardThreadSID;
-  Property ForwardThreadNeeds : Boolean read FForwardThreadNeeds write SetForwardThreadNeeds;
-  Property ForwardThreadFileName : string read FForwardThreadFileName write SetForwardThreadFileName;
-  Property TransparentImage : Boolean read FTransparentImage write SetTransparentImage;
-  Property CurrentlyLoadedFile : String read FCurrentlyLoadedFile write SetCurrentlyLoadedFile;
-  Property Play : boolean read FPlay write SetPlay;
+    Property ImageExists : Boolean read FImageExists write SetImageExists;
+    Property StaticImage : Boolean read FStaticImage Write SetPropStaticImage;
+    Property Loading : Boolean read FLoading write SetLoading;
+    Property ValidImages : Integer read FValidImages write SetValidImages;
+    Property ForwardThreadExists : Boolean read FForwardThreadExists write SetForwardThreadExists;
+    Property ForwardThreadSID : TGUID read FForwardThreadSID write SetForwardThreadSID;
+    Property ForwardThreadNeeds : Boolean read FForwardThreadNeeds write SetForwardThreadNeeds;
+    Property ForwardThreadFileName : string read FForwardThreadFileName write SetForwardThreadFileName;
+    Property TransparentImage : Boolean read FTransparentImage write SetTransparentImage;
+    Property CurrentlyLoadedFile : String read FCurrentlyLoadedFile write SetCurrentlyLoadedFile;
+    Property Play : boolean read FPlay write SetPlay;
     { Public declarations }
   end;
 
@@ -420,21 +422,21 @@ begin
   TW.I.Start('LoadLanguage');
   LoadLanguage;                           
   TW.I.Start('ToolButton2.Hint');
-  ToolButton2.Hint:=TEXT_MES_VIEW_SC_LEFT_ARROW;
-  ToolButton1.Hint:=TEXT_MES_VIEW_SC_RIGHT_ARROW;
-  ToolButton4.Hint:=TEXT_MES_VIEW_SC_FIT_TO_SIZE;
-  ToolButton5.Hint:=TEXT_MES_VIEW_SC_FULL_SIZE;
-  ToolButton6.Hint:=TEXT_MES_VIEW_SC_SLIDE_SHOW;
-  ToolButton10.Hint:=TEXT_MES_VIEW_SC_FULLSCREEN;
-  ToolButton8.Hint:=TEXT_MES_VIEW_SC_ZOOM_IN;
-  ToolButton9.Hint:=TEXT_MES_VIEW_SC_ZOOM_OUT;
-  ToolButton12.Hint:=TEXT_MES_VIEW_SC_ROTATE_LEFT;
-  ToolButton13.Hint:=TEXT_MES_VIEW_SC_ROTATE_RIGHT;
+  TbBack.Hint:=TEXT_MES_VIEW_SC_LEFT_ARROW;
+  TbForward.Hint:=TEXT_MES_VIEW_SC_RIGHT_ARROW;
+  TbFitToWindow.Hint:=TEXT_MES_VIEW_SC_FIT_TO_SIZE;
+  TbRealSize.Hint:=TEXT_MES_VIEW_SC_FULL_SIZE;
+  TbSlideShow.Hint:=TEXT_MES_VIEW_SC_SLIDE_SHOW;
+  TbFullScreen.Hint:=TEXT_MES_VIEW_SC_FULLSCREEN;
+  TbZoomOut.Hint:=TEXT_MES_VIEW_SC_ZOOM_IN;
+  TbZoomIn.Hint:=TEXT_MES_VIEW_SC_ZOOM_OUT;
+  TbRotateCCW.Hint:=TEXT_MES_VIEW_SC_ROTATE_LEFT;
+  TbRotateCW.Hint:=TEXT_MES_VIEW_SC_ROTATE_RIGHT;
   ToolButton20.Hint:=TEXT_MES_VIEW_SC_DELETE;
-  ToolButton17.Hint:=TEXT_MES_VIEW_SC_PRINT;
-  ToolButton22.Hint:=TEXT_MES_VIEW_SC_RATING;
-  ToolButton15.Hint:=TEXT_MES_VIEW_SC_EDITOR;
-  ToolButton14.Hint:=TEXT_MES_VIEW_SC_INFO;             
+  TbPrint.Hint:=TEXT_MES_VIEW_SC_PRINT;
+  TbRating.Hint:=TEXT_MES_VIEW_SC_RATING;
+  TbEditImage.Hint:=TEXT_MES_VIEW_SC_EDITOR;
+  TbInfo.Hint:=TEXT_MES_VIEW_SC_INFO;
   TW.I.Start('LoadCursor');
   CursorZoomIn := LoadCursor(HInstance,'ZOOMIN');
   CursorZoomOut := LoadCursor(HInstance,'ZOOMOUT');
@@ -463,11 +465,10 @@ begin
  if CheckFileExistsWithSleep(FileName,false) then
  begin
   Caption:=Format(TEXT_MES_SLIDE_CAPTION,[ExtractFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
-  ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-  ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
+  DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
-  ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
-  ToolButton13.Enabled:=ToolButton12.Enabled;
+  TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
+  TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 
   FSID:=GetGUID;
   if not ForwardThreadExists or (ForwardThreadFileName<>FileName) or (Length(CurrentInfo.ItemIds)=0) or FullImage then
@@ -478,18 +479,16 @@ begin
     begin
      UpdateRecord(CurrentFileNumber);
      Rotate:=CurrentInfo.ItemRotates[CurrentFileNumber];
-     ToolButton22.Enabled:=CurrentInfo.ItemIds[CurrentFileNumber]<>0;
-     ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
+     DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
-     ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
-     ToolButton13.Enabled:=ToolButton12.Enabled;
+     TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
+     TbRotateCW.Enabled:=TbRotateCCW.Enabled;
     end else
-    begin            
-     ToolButton22.Enabled:=false;
-     ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
+    begin
+     DisplayRating := - CurrentInfo.ItemIds[CurrentFileNumber];
      TimerDBWork.Enabled:=true;
-     ToolButton12.Enabled:=false;
-     ToolButton13.Enabled:=false;
+     TbRotateCCW.Enabled:=false;
+     TbRotateCW.Enabled:=false;
      TSlideShowUpdateInfoThread.Create(Self, StateID, CurrentInfo.ItemFileNames[CurrentFileNumber]);
      Rotate:=0;
     end;
@@ -504,25 +503,24 @@ begin
  end else
  begin
   Caption:=Format(TEXT_MES_SLIDE_CAPTION,[ExtractFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
-  ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-  ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
+  DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
-  ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
-  ToolButton13.Enabled:=ToolButton12.Enabled;
+  TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
+  TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 
   Text:=Format(TEXT_MES_FILE_NOT_EXISTS_F,[Mince(FileName,30)]);
   FbImage.Canvas.Rectangle(0,0,FbImage.width,FbImage.Height);
   FbImage.Width:=FbImage.Canvas.TextWidth(text);
   FbImage.Height:=FbImage.Canvas.TextHeight(text);
   FbImage.Canvas.TextOut(0,0,text);
-  RecreateDrawImage_(Sender);
+  RecreateDrawImage(Sender);
   FormPaint(Sender);
   Result:=false;
  end;
  TW.I.Start('LoadImage_ - end');
 end;
 
-procedure TViewer.RecreateDrawImage_(Sender: TObject);
+procedure TViewer.RecreateDrawImage(Sender: TObject);
 var
   fh,fw : integer;
   zx,zy,zw,zh, x1,x2,y1,y2 : integer;
@@ -742,7 +740,7 @@ begin
  DrawImage.Height:=HeightW;
  if not WaitImageTimer.Enabled then
  ReAllignScrolls(False,Point(0,0));
- RecreateDrawImage_(Sender);
+ RecreateDrawImage(Sender);
  ToolsBar.Left:=ClientWidth div 2- ToolsBar.Width div 2;
  BottomImage.Top:=ClientHeight - ToolsBar.Height;
  BottomImage.Width:=ClientWidth;
@@ -890,7 +888,7 @@ begin
  SlideTimer.Enabled:=true;
  Play:=true;
  WaitImageTimer.Enabled:=false;
- RecreateDrawImage_(Sender);
+ RecreateDrawImage(Sender);
  if FullScreenView=nil then
  Application.CreateForm(TFullScreenView, FullScreenView);
  MTimer1.ImageIndex:=DB_IC_PAUSE;
@@ -910,7 +908,7 @@ begin
   FloatPanel.Free;
   FloatPanel:=nil;
   FullScreenNow:=false;
-  RecreateDrawImage_(Sender);
+  RecreateDrawImage(Sender);
   SlideTimer.Enabled:=false;
   Play:=false;
   if FullScreenView<>nil then FullScreenView.Close;
@@ -1264,8 +1262,7 @@ begin
    begin
     CurrentInfo.ItemRatings[i]:=Value.Rating;
     if i=CurrentFileNumber then
-    ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-    ToolButton22.Enabled:=CurrentInfo.ItemIds[CurrentFileNumber]<>0;
+      DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
    end;
    if EventID_Param_Name in params then
    CurrentInfo.ItemFileNames[i]:=Value.Name;
@@ -1348,8 +1345,8 @@ begin
  SetFocus;
  if Length(CurrentInfo.ItemFileNames)<2 then
  begin
-  ToolButton2.Enabled:=false;
-  ToolButton1.Enabled:=false;
+  TbBack.Enabled := False;
+  TbForward.Enabled := False;
   if FloatPanel<>nil then
   begin
    FloatPanel.ToolButton4.Enabled:=false;
@@ -1359,8 +1356,8 @@ begin
   end;
  end else
  begin
-  ToolButton2.Enabled:=True;
-  ToolButton1.Enabled:=True;
+  TbBack.Enabled := True;
+  TbForward.Enabled := True;
   if FloatPanel<>nil then
   begin
    FloatPanel.ToolButton4.Enabled:=True;
@@ -1433,10 +1430,10 @@ begin
 
   if (Msg.wParam=Byte('F')) and CtrlKeyDown then ToolButton5Click(nil);
   if (Msg.wParam=Byte('A')) and CtrlKeyDown then ToolButton4Click(nil);
-  if (Msg.wParam=Byte('S')) and CtrlKeyDown then ToolButton6Click(nil);
+  if (Msg.wParam=Byte('S')) and CtrlKeyDown then TbSlideShowClick(nil);
   if (Msg.wParam=Byte(#13)) and CtrlKeyDown then FullScreen1Click(nil);
-  if (Msg.wParam=Byte('I')) and CtrlKeyDown then ToolButton8Click(nil);
-  if (Msg.wParam=Byte('O')) and CtrlKeyDown then ToolButton9Click(nil);
+  if (Msg.wParam=Byte('I')) and CtrlKeyDown then TbZoomOutClick(nil);
+  if (Msg.wParam=Byte('O')) and CtrlKeyDown then TbZoomInClick(nil);
   if (Msg.wParam=Byte('L')) and CtrlKeyDown then RotateCCW1Click(nil);
   if (Msg.wParam=Byte('R')) and CtrlKeyDown then RotateCW1Click(nil);
   if (Msg.wParam=Byte('D')) and CtrlKeyDown then ToolButton20Click(nil);
@@ -1481,29 +1478,29 @@ Showmessage(Inttostr(Msg.message));     }
   if Msg.wParam>0 then Previous_(nil) else Next_(nil);
  end else
  begin
-  if Msg.wParam>0 then ToolButton8Click(nil) else ToolButton9Click(nil);
+  if Msg.wParam>0 then TbZoomOutClick(nil) else TbZoomInClick(nil);
  end;
 end;
 
 procedure TViewer.UpdateTheme(Sender: TObject);
 begin
- RecreateDrawImage_(self);
+ RecreateDrawImage(self);
  RecreateImLists;
  ToolBar2.Refresh;
 end;
 
-procedure TViewer.ShowFolderA(File_:string; ShowPrivate : Boolean);
+procedure TViewer.ShowFolderA(FileName : string; ShowPrivate : Boolean);
 var
-  FileName : string;
-  n : integer;
+  N : integer;
   Info : TRecordsInfo;
 begin
- FileName:=File_;
- If FileExists(FileName) then
- FileName:=LongFileName(FileName);
- GetFileListByMask(FileName,SupportedExt,Info,n,ShowPrivate);
- if Length(info.ItemFileNames)>0 then
- Execute(Self,info);
+  if FileExists(FileName) then
+  begin
+    FileName := LongFileName(FileName);
+    GetFileListByMask(FileName, SupportedExt, Info, N, ShowPrivate);
+    if Length(info.ItemFileNames) > 0 then
+      Execute(Self, info);
+  end;
 end;
                                                       
 procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName : String);
@@ -1515,7 +1512,7 @@ begin
   TSlideShowScanDirectoryThread.Create(Self, StateID, FileName);
   Info := RecordsInfoOne(FileName, 0,0,0,0,'','','','','',0, False, False, 0, ValidCryptGraphicFile(FileName), False, False, '');
   ExecuteW(Self, Info, '');
-  Caption := Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
+  Caption := Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]), RealImageWidth, RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
 end;
                                                                          
 function TViewer.Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
@@ -1551,30 +1548,26 @@ begin
  TW.I.Start('ToolButton1.Enabled');
  if Length(Info.ItemFileNames)=0 then
  begin
-  ToolButton1.Enabled:=false;
-  ToolButton2.Enabled:=false;
-  ToolButton3.Enabled:=false;
-  ToolButton4.Enabled:=false;
-  ToolButton5.Enabled:=false;
-  ToolButton6.Enabled:=false;
-  ToolButton7.Enabled:=false;
-  ToolButton8.Enabled:=false;
-  ToolButton9.Enabled:=false;
-  ToolButton12.Enabled:=false;
-  ToolButton13.Enabled:=false;
+  TbBack.Enabled := False;
+  TbForward.Enabled := False;
+  TbFitToWindow.Enabled:=false;
+  TbRealSize.Enabled:=false;
+  TbSlideShow.Enabled:=false;
+  TbZoomOut.Enabled:=false;
+  TbZoomIn.Enabled:=false;
+  TbRotateCCW.Enabled:=false;
+  TbRotateCW.Enabled:=false;
  end else
  begin
-  ToolButton1.Enabled:=true;
-  ToolButton2.Enabled:=true;
-  ToolButton3.Enabled:=true;
-  ToolButton4.Enabled:=true;
-  ToolButton5.Enabled:=true;
-  ToolButton6.Enabled:=true;
-  ToolButton7.Enabled:=true;
-  ToolButton8.Enabled:=true;
-  ToolButton9.Enabled:=true;
-  ToolButton12.Enabled:=false;
-  ToolButton13.Enabled:=false;
+  TbBack.Enabled := True;
+  TbForward.Enabled := True;
+  TbFitToWindow.Enabled:=true;
+  TbRealSize.Enabled:=true;
+  TbSlideShow.Enabled:=true;
+  TbZoomOut.Enabled:=true;
+  TbZoomIn.Enabled:=true;
+  TbRotateCCW.Enabled:=false;
+  TbRotateCW.Enabled:=false;
  end;
  TW.I.Start('SlideShow_UseExternelViewer');
  if not UseOnlySelf then
@@ -1674,7 +1667,7 @@ begin
     FbImage.Canvas.TextOut(FbImage.Width div 2-FbImage.Canvas.TextWidth(text_out) div 2,FbImage.Height{ div 2}-4*FbImage.Canvas.Textheight(text_out) div 2,text_out);
 
  TW.I.Start('RecreateDrawImage_');
-    RecreateDrawImage_(Sender);
+    RecreateDrawImage(Sender);
  TW.I.Start('FormPaint');
     FormPaint(Sender);
    end;
@@ -1684,17 +1677,16 @@ begin
   end else
   begin
    Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
-   ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
-   ToolButton22.Enabled:=CurrentInfo.ItemIds[CurrentFileNumber]<>0;
+   DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
-   ToolButton13.Enabled:=ToolButton12.Enabled;
+   TbRotateCW.Enabled:=TbRotateCCW.Enabled;
   end;
  end;
  UseOnlySelf:=false;
  if Length(CurrentInfo.ItemFileNames)<2 then
  begin
-  ToolButton2.Enabled:=false;
-  ToolButton1.Enabled:=false;
+  TbBack.Enabled := False;
+  TbForward.Enabled := False;
   if FloatPanel<>nil then
   begin
    FloatPanel.ToolButton1.Enabled:=false;
@@ -1704,8 +1696,8 @@ begin
   end;
  end else
  begin
-  ToolButton2.Enabled:=True;
-  ToolButton1.Enabled:=True;
+  TbBack.Enabled := True;
+  TbForward.Enabled := True;
   if FloatPanel<>nil then
   begin
    FloatPanel.ToolButton1.Enabled:=True;
@@ -1836,10 +1828,10 @@ begin
  ImageEditor1.Caption:=TEXT_MES_IMAGE_EDITOR;
  Print1.Caption:=TEXT_MES_PRINT;
 
- ToolButton2.Caption:=TEXT_MES_SLIDE_PREVIOUS;
- ToolButton1.Caption:=TEXT_MES_NEXT;
- ToolButton14.Caption:=TEXT_MES_PROPERTIES;
- ToolButton15.Caption:=TEXT_MES_IMAGE_EDITOR_W;
+ TbBack.Caption := TEXT_MES_SLIDE_PREVIOUS;
+ TbForward.Caption := TEXT_MES_NEXT;
+ TbInfo.Caption:=TEXT_MES_PROPERTIES;
+ TbEditImage.Caption:=TEXT_MES_IMAGE_EDITOR_W;
  SendTo1.Caption:=TEXT_MES_SEND_TO;
  NewPanel1.Caption:=TEXT_MES_NEW_PANEL;
 end;
@@ -1873,7 +1865,7 @@ procedure TViewer.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode;
 begin
  if ScrollPos>(Sender as TScrollBar).Max-(Sender as TScrollBar).PageSize then
  ScrollPos:=(Sender as TScrollBar).Max-(Sender as TScrollBar).PageSize;
- RecreateDrawImage_(Sender);
+ RecreateDrawImage(Sender);
 end;
 
 procedure TViewer.ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
@@ -1983,21 +1975,21 @@ end;
 procedure TViewer.ToolButton4Click(Sender: TObject);
 begin
  Cursor:=CrDefault;
- ToolButton8.Down:=false;
- ToolButton9.Down:=false;
+ TbZoomOut.Down:=false;
+ TbZoomIn.Down:=false;
  if not ZoomerOn and (RealZoomInc>1) then
  begin
   ZoomerOn:=True;
   Zoom:=1;
-  ToolButton4.Enabled:=false;
+  TbFitToWindow.Enabled:=false;
   ZoomIn1.Enabled:=false;
   ZoomOut1.Enabled:=false;
-  ToolButton5.Enabled:=false;
-  ToolButton6.Enabled:=false;
-  ToolButton8.Enabled:=false;
-  ToolButton9.Enabled:=false;
-  ToolButton12.Enabled:=false;
-  ToolButton13.Enabled:=false;
+  TbRealSize.Enabled:=false;
+  TbSlideShow.Enabled:=false;
+  TbZoomOut.Enabled:=false;
+  TbZoomIn.Enabled:=false;
+  TbRotateCCW.Enabled:=false;
+  TbRotateCW.Enabled:=false;
   RealSize1.Enabled:=false;
   BestSize1.Enabled:=false;
   ScrollBar1.PageSize:=0;
@@ -2019,20 +2011,20 @@ end;
 procedure TViewer.ToolButton5Click(Sender: TObject);
 begin
  Cursor:=CrDefault;
- ToolButton8.Down:=false;
- ToolButton9.Down:=false;
+ TbZoomOut.Down:=false;
+ TbZoomIn.Down:=false;
  ZoomerOn:=False;
  Zoom:=1;
  FormResize(Sender);
 end;
 
-procedure TViewer.ToolButton8Click(Sender: TObject);
+procedure TViewer.TbZoomOutClick(Sender: TObject);
 var
 //  i,n : integer;
   z : real;
 begin
- ToolButton5.Down:=false;
- ToolButton4.Down:=false;
+ TbRealSize.Down:=false;
+ TbFitToWindow.Down:=false;
  Cursor:=CursorZoomOutNo; 
  if not ZoomerOn and (RealZoomInc>1) then
  begin
@@ -2042,13 +2034,13 @@ begin
   z:=Max(RealImageWidth/ClientWidth,RealImageHeight/(HeightW));
   z:=1/z;
   z:=Max(z*0.8,0.01);
-  ToolButton4.Enabled:=false;
-  ToolButton5.Enabled:=false;
-  ToolButton6.Enabled:=false;
-  ToolButton8.Enabled:=false;
-  ToolButton9.Enabled:=false;
-  ToolButton12.Enabled:=false;
-  ToolButton13.Enabled:=false;
+  TbFitToWindow.Enabled:=false;
+  TbRealSize.Enabled:=false;
+  TbSlideShow.Enabled:=false;
+  TbZoomOut.Enabled:=false;
+  TbZoomIn.Enabled:=false;
+  TbRotateCCW.Enabled:=false;
+  TbRotateCW.Enabled:=false;
   RealSize1.Enabled:=false;
   BestSize1.Enabled:=false;
   ZoomIn1.Enabled:=false;
@@ -2073,12 +2065,12 @@ begin
  end;
 end;
 
-procedure TViewer.ToolButton9Click(Sender: TObject);
+procedure TViewer.TbZoomInClick(Sender: TObject);
 var
   z : real;
 begin
- ToolButton5.Down:=false;
- ToolButton4.Down:=false;
+ TbRealSize.Down:=false;
+ TbFitToWindow.Down:=false;
  Cursor:=CursorZoomInNo;
  if not ZoomerOn and (RealZoomInc>1) then
  begin
@@ -2088,13 +2080,13 @@ begin
   z:=Max(RealImageWidth/ClientWidth,RealImageHeight/(HeightW));
   z:=1/z;
   z:=Min(z*(1/0.8),16);
-  ToolButton4.Enabled:=false;
-  ToolButton5.Enabled:=false;
-  ToolButton6.Enabled:=false;
-  ToolButton8.Enabled:=false;
-  ToolButton9.Enabled:=false;
-  ToolButton12.Enabled:=false;
-  ToolButton13.Enabled:=false;
+  TbFitToWindow.Enabled:=false;
+  TbRealSize.Enabled:=false;
+  TbSlideShow.Enabled:=false;
+  TbZoomOut.Enabled:=false;
+  TbZoomIn.Enabled:=false;
+  TbRotateCCW.Enabled:=false;
+  TbRotateCW.Enabled:=false;
   RealSize1.Enabled:=false;
   BestSize1.Enabled:=false;  
   ZoomIn1.Enabled:=false;
@@ -2289,7 +2281,7 @@ begin
  begin
   ToolButton4Click(Sender);
  end;
- RecreateDrawImage_(self);
+ RecreateDrawImage(self);
 end;
 
 procedure TViewer.RotateCW1Click(Sender: TObject);
@@ -2313,7 +2305,7 @@ begin
   ToolButton4Click(Sender);
  end;
  ReAllignScrolls(true,Point(0,0));
- RecreateDrawImage_(self);
+ RecreateDrawImage(self);
 end;
 
 procedure TViewer.Rotateon1801Click(Sender: TObject);
@@ -2430,8 +2422,6 @@ begin
 end;
 
 procedure TViewer.SetStaticImage(Image : TBitmap; Transparent : Boolean);
-{var
-  n : integer;   }
 begin
  if CurrentFileNumber>Length(CurrentInfo.ItemFileNames)-1 then exit;
  FCurrentlyLoadedFile:=CurrentInfo.ItemFileNames[CurrentFileNumber];
@@ -2444,25 +2434,23 @@ begin
  ImageExists:=True;
  Loading:=False;
  if not ZoomerOn  then Cursor:=crDefault;
- ToolButton4.Enabled:=true;
- ToolButton5.Enabled:=true;
- ToolButton6.Enabled:=true;
- ToolButton8.Enabled:=true;
- ToolButton9.Enabled:=true;
-// ToolButton12.Enabled:=true;
-// ToolButton13.Enabled:=true;
+ TbFitToWindow.Enabled:=true;
+ TbRealSize.Enabled:=true;
+ TbSlideShow.Enabled:=true;
+ TbZoomOut.Enabled:=true;
+ TbZoomIn.Enabled:=true;
 
- ToolButton12.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
- ToolButton13.Enabled:=ToolButton12.Enabled;
+ TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
+ TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 
  ZoomIn1.Enabled:=True;
  ZoomOut1.Enabled:=True;
  RealSize1.Enabled:=True;
  BestSize1.Enabled:=True;
- ToolButton5.Down:=false;
- ToolButton4.Down:=false;
- ToolButton8.Down:=false;
- ToolButton9.Down:=false;
+ TbRealSize.Down:=false;
+ TbFitToWindow.Down:=false;
+ TbZoomOut.Down:=false;
+ TbZoomIn.Down:=false;
  EndWaitToImage(nil);
 
  if FRotatingImageInfo.Enabled then
@@ -2471,7 +2459,7 @@ begin
 
  ReAllignScrolls(False,Point(0,0));
  ValidImages:=1;
- RecreateDrawImage_(nil);
+ RecreateDrawImage(nil);
  PrepareNextImage;
  FRotatingImageInfo.Enabled:=false;
 end;
@@ -2479,8 +2467,8 @@ end;
 procedure TViewer.SetLoading(const Value: Boolean);
 begin
   FLoading := Value;
-  ToolButton6.Enabled:=not Value;
-  if Length(CurrentInfo.ItemFileNames)=0 then ToolButton6.Enabled:=false;
+  TbSlideShow.Enabled:=not Value;
+  if Length(CurrentInfo.ItemFileNames)=0 then TbSlideShow.Enabled:=false;
 end;
 
 procedure TViewer.SetAnimatedImage(Image: TPicture);
@@ -2496,23 +2484,23 @@ begin
  if AnimatedImage<>nil then AnimatedImage.Free;
  AnimatedImage:=Image;
  if not ZoomerOn  then Cursor:=crDefault;
- ToolButton4.Enabled:=true;
- ToolButton5.Enabled:=true;
- ToolButton6.Enabled:=true;
- ToolButton8.Enabled:=true;
- ToolButton9.Enabled:=true;
+ TbFitToWindow.Enabled:=true;
+ TbRealSize.Enabled:=true;
+ TbSlideShow.Enabled:=true;
+ TbZoomOut.Enabled:=true;
+ TbZoomIn.Enabled:=true;
 
- ToolButton12.Enabled:=True;
- ToolButton13.Enabled:=ToolButton12.Enabled;
+ TbRotateCCW.Enabled:=True;
+ TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 
  ZoomIn1.Enabled:=True;
  ZoomOut1.Enabled:=True;
  RealSize1.Enabled:=True;
  BestSize1.Enabled:=True;
- ToolButton5.Down:=false;
- ToolButton4.Down:=false;
- ToolButton8.Down:=false;
- ToolButton9.Down:=false;
+ TbRealSize.Down:=false;
+ TbFitToWindow.Down:=false;
+ TbZoomOut.Down:=false;
+ TbZoomIn.Down:=false;
  EndWaitToImage(nil);
  ReAllignScrolls(False,Point(0,0));
  SlideNO:=-1;
@@ -2632,7 +2620,7 @@ begin
   DB_IMAGE_ROTATED_180 : Rotate180(AnimatedBuffer,FbImage);
   DB_IMAGE_ROTATED_270: Rotate270(AnimatedBuffer,FbImage)
  end;
- RecreateDrawImage_(nil);
+ RecreateDrawImage(nil);
  ImageFrameTimer.Enabled:=false;
  ImageFrameTimer.Interval:=del;
  if not TimerEnabled then ImageFrameTimer.Enabled:=false else
@@ -2773,28 +2761,28 @@ begin
  Loading:=false;
  FCurrentlyLoadedFile:=FileName;
  Cursor:=crDefault;
- ToolButton4.Enabled:=false;
- ToolButton5.Enabled:=false;
- ToolButton6.Enabled:=false;
- ToolButton8.Enabled:=false;
- ToolButton9.Enabled:=false;
- ToolButton12.Enabled:=false;
- ToolButton13.Enabled:=false;
+ TbFitToWindow.Enabled:=false;
+ TbRealSize.Enabled:=false;
+ TbSlideShow.Enabled:=false;
+ TbZoomOut.Enabled:=false;
+ TbZoomIn.Enabled:=false;
+ TbRotateCCW.Enabled:=false;
+ TbRotateCW.Enabled:=false;
  ZoomIn1.Enabled:=false;
  ZoomOut1.Enabled:=false;
  RealSize1.Enabled:=false;
  BestSize1.Enabled:=false;
- ToolButton5.Down:=false;
- ToolButton4.Down:=false;
- ToolButton8.Down:=false;
- ToolButton9.Down:=false;
+ TbRealSize.Down:=false;
+ TbFitToWindow.Down:=false;
+ TbZoomOut.Down:=false;
+ TbZoomIn.Down:=false;
  EndWaitToImage(nil);
  ReAllignScrolls(False,Point(0,0));
  ImageExists:=false;
  ValidImages:=0;
  ForwardThreadExists:=false;
  ForwardThreadNeeds:=false;
- RecreateDrawImage_(nil);
+ RecreateDrawImage(nil);
  PrepareNextImage;
  FRotatingImageInfo.Enabled:=false;
 end;
@@ -2840,14 +2828,13 @@ end;
 procedure TViewer.UpdateInfo(SID: TGUID; Info: TOneRecordInfo);
 begin
  SetRecordsInfoOne(CurrentInfo,CurrentFileNumber,Info.ItemFileName,Info.ItemId,Info.ItemRotate,Info.ItemRating,Info.ItemAccess,Info.ItemComment,Info.ItemGroups,Info.ItemDate,Info.ItemIsDate,Info.ItemIsTime,Info.ItemTime,Info.ItemCrypted,Info.ItemInclude,Info.ItemLinks);
- ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
- ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
+ DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
- ToolButton12.Enabled:=True;
- ToolButton13.Enabled:=ToolButton12.Enabled;
+ TbRotateCCW.Enabled:=True;
+ TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 end;
 
-procedure TViewer.ToolButton6Click(Sender: TObject);
+procedure TViewer.TbSlideShowClick(Sender: TObject);
 begin
  if CurrentInfo.Position=-1 then exit;
  if Loading then exit;
@@ -2908,11 +2895,14 @@ begin
   if CurrentInfo.ItemIds[CurrentFileNumber]<>0 then
   begin
    fQuery:=GetQuery;
-   DeleteID:=CurrentInfo.ItemIds[CurrentFileNumber];
-   SQL_:=Format('DELETE FROM %s WHERE ID = %d',[GetDefDBname,CurrentInfo.ItemIds[CurrentFileNumber]]);
-   SetSQL(fQuery,SQL_);
-   ExecSQL(fQuery);
-   FreeDS(fQuery);
+   try
+     DeleteID:=CurrentInfo.ItemIds[CurrentFileNumber];
+     SQL_:=Format('DELETE FROM %s WHERE ID = %d', [GetDefDBname, CurrentInfo.ItemIds[CurrentFileNumber]]);
+     SetSQL(fQuery,SQL_);
+     ExecSQL(fQuery);
+   finally
+     FreeDS(fQuery);
+   end;
   end;
   SetLength(s,1);
   s[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
@@ -2953,7 +2943,7 @@ begin
    SetLength(ItemIsDates,Length(ItemIsDates)-1);
    SetLength(ItemCrypted,Length(ItemCrypted)-1);
    SetLength(LoadedImageInfo,Length(LoadedImageInfo)-1);
-   If Length(CurrentInfo.ItemFileNames)=0 then
+   if Length(CurrentInfo.ItemFileNames)=0 then
    begin
     Close;
     DBKernel.DoIDEvent(nil,DeleteID,[EventID_Param_Delete],EventInfo);
@@ -2961,12 +2951,12 @@ begin
    end;
    if CurrentFileNumber>Length(ItemFileNames)-1 then CurrentFileNumber:=Length(ItemFileNames)-1;
   end;
-  if CurrentInfo.ItemIds[CurrentFileNumber]<>0 then
-  DBKernel.DoIDEvent(nil,DeleteID,[EventID_Param_Delete],EventInfo);
+  if CurrentInfo.ItemIds[CurrentFileNumber] <> 0 then
+    DBKernel.DoIDEvent(nil,DeleteID,[EventID_Param_Delete],EventInfo);
   if Length(CurrentInfo.ItemFileNames)<2 then
   begin
-   ToolButton2.Enabled:=false;
-   ToolButton1.Enabled:=false;
+   TbBack.Enabled := False;
+   TbForward.Enabled := False;
    if FloatPanel<>nil then
    begin
     FloatPanel.ToolButton1.Enabled:=false;
@@ -2976,8 +2966,8 @@ begin
    end;
   end else
   begin
-   ToolButton2.Enabled:=True;
-   ToolButton1.Enabled:=True;
+   TbBack.Enabled := True;
+   TbForward.Enabled := True;
    if FloatPanel<>nil then
    begin
     FloatPanel.ToolButton1.Enabled:=True;
@@ -2986,15 +2976,15 @@ begin
     FloatPanel.ToolButton5.Enabled:=True;
    end;
   end;
-  ToolButton4.Enabled:=false;
+  TbFitToWindow.Enabled:=false;
   ZoomIn1.Enabled:=false;
   ZoomOut1.Enabled:=false;
-  ToolButton5.Enabled:=false;
-  ToolButton6.Enabled:=false;
-  ToolButton8.Enabled:=false;
-  ToolButton9.Enabled:=false;
-  ToolButton12.Enabled:=false;
-  ToolButton13.Enabled:=false;
+  TbRealSize.Enabled:=false;
+  TbSlideShow.Enabled:=false;
+  TbZoomOut.Enabled:=false;
+  TbZoomIn.Enabled:=false;
+  TbRotateCCW.Enabled:=false;
+  TbRotateCW.Enabled:=false;
   RealSize1.Enabled:=false;
   BestSize1.Enabled:=false;
   LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,1,true);
@@ -3002,7 +2992,7 @@ begin
  end;
 end;
 
-procedure TViewer.ToolButton22Click(Sender: TObject);
+procedure TViewer.TbRatingClick(Sender: TObject);
 var
   P : TPoint;
   i : integer;
@@ -3017,23 +3007,20 @@ end;
 procedure TViewer.N51Click(Sender: TObject);
 var
   Str : String;
-  NewRating : integer;
+  NewRating : Integer;
   EventInfo : TEventValues;
-  i : integer;
 begin
-  Str:=(Sender as TMenuItem).Caption;
-  for i:=Length(Str) downto 1 do
-  if Str[i]='&' then System.Delete(Str,i,1);
-  NewRating:=StrToInt(str);
-  SetRating(CurrentInfo.ItemIds[CurrentFileNumber],NewRating);
-  EventInfo.Rating:=NewRating;
-  DBKernel.DoIDEvent(Sender,CurrentInfo.ItemIds[CurrentFileNumber],[EventID_Param_Rating],EventInfo);
+  Str := StringReplace((Sender as TMenuItem).Caption, '&', '', [rfReplaceAll]);
+  NewRating := StrToInt(str);
+  SetRating(CurrentInfo.ItemIds[CurrentFileNumber], NewRating);
+  EventInfo.Rating := NewRating;
+  DBKernel.DoIDEvent(Sender, CurrentInfo.ItemIds[CurrentFileNumber], [EventID_Param_Rating], EventInfo);
 end;
 
 procedure TViewer.ApplicationEvents1Hint(Sender: TObject);
 begin
- Application.HintPause:=1000;
- Application.HintHidePause:=5000;
+  Application.HintPause:=1000;
+  Application.HintHidePause:=5000;
 end;
 
 procedure TViewer.UpdateInfoAboutFileName(FileName: String;
@@ -3144,7 +3131,7 @@ begin
    if i = CurrentFileNumber then
    begin
     ApplyRotate(FbImage, CurrentInfo.ItemRotates[i]);
-    RecreateDrawImage_(self);
+    RecreateDrawImage(self);
    end;
   end else
   begin
@@ -3154,11 +3141,10 @@ begin
   end;
   break;
  end;
- ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
- ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
+ DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
- ToolButton12.Enabled:=True;
- ToolButton13.Enabled:=ToolButton12.Enabled;
+ TbRotateCCW.Enabled:=True;
+ TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 end;
 
 procedure TViewer.DoSetNoDBRecord(FileName: string);
@@ -3172,63 +3158,68 @@ begin
   CurrentInfo.LoadedImageInfo[i]:=true;
   break;
  end;
- ToolButton22.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0);
- ToolButton22.ImageIndex:=14+CurrentInfo.ItemRatings[CurrentFileNumber];
+  DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
- ToolButton12.Enabled:=True;
- ToolButton13.Enabled:=ToolButton12.Enabled;
+ TbRotateCCW.Enabled:=True;
+ TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 end;
 
 procedure TViewer.TimerDBWorkTimer(Sender: TObject);
 begin
- if not (ToolButton22.ImageIndex in [20..21]) then
- begin
-  TimerDBWork.Enabled:=false;
-  exit;
- end;
- if ToolButton22.ImageIndex=20 then
- begin
-  ToolButton22.ImageIndex:=21;
- end else
- begin
-  ToolButton22.ImageIndex:=20;
- end;
+  if not (TbRating.ImageIndex in [20..21]) then
+  begin
+    TimerDBWork.Enabled := False;
+    Exit;
+  end;
+
+  if TbRating.ImageIndex=20 then
+    TbRating.ImageIndex:=21
+  else
+    TbRating.ImageIndex:=20;
 end;
 
 procedure TViewer.MakePagesLinks;
 var
-  i : integer;
+  i : Integer;
   MenuItem : TMenuItem;
 begin
- ToolButtonPage.Visible:=fPageCount>1;
- ToolButton23.Visible:=fPageCount>1;
- ToolsBar.Realign;
- ToolBar2.Width:=ToolButton14.Left+ToolButton14.Width+2;
- ToolsBar.Width:=ToolBar2.Width;
- ToolsBar.Left:=ClientWidth div 2- ToolsBar.Width div 2;
- PopupMenuPageSelecter.Items.Clear;
- for i:=1 to Self.fPageCount do
- begin
-  MenuItem := TMenuItem.Create(PopupMenuPageSelecter);
-  MenuItem.Caption:=IntToStr(i);
-  MenuItem.OnClick:=OnPageSelecterClick;
-  MenuItem.Tag:=i-1; //page
-  if i-1=Self.fCurrentPage then
-  MenuItem.Default:=true;
-  PopupMenuPageSelecter.Items.Add(MenuItem);
- end;
+  TbPageNumber.Visible := fPageCount > 1;
+  TbSeparatorPageNumber.Visible := fPageCount > 1;
+  ToolsBar.Realign;
+  ToolBar2.Width := TbInfo.Left + TbInfo.Width + 2;
+  ToolsBar.Width := ToolBar2.Width;
+  ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
+  PopupMenuPageSelecter.Items.Clear;
+  for i := 1 to Self.fPageCount do
+  begin
+    MenuItem := TMenuItem.Create(PopupMenuPageSelecter);
+    MenuItem.Caption := IntToStr(i);
+    MenuItem.OnClick := OnPageSelecterClick;
+    MenuItem.Tag := i - 1; //page index
+    if i - 1 = Self.fCurrentPage then
+      MenuItem.Default := True;
+    PopupMenuPageSelecter.Items.Add(MenuItem);
+   end;
 end;
 
 procedure TViewer.OnPageSelecterClick(Sender: TObject);
 begin
- fCurrentPage:=TMenuItem(Sender).Tag;
- ReloadCurrent;
+  fCurrentPage := TMenuItem(Sender).Tag;
+  ReloadCurrent;
 end;
 
 function TViewer.GetPageCaption: String;
 begin
- if fPageCount>1 then
- Result:=Format(TEXT_MES_SLIDE_PAGE_CATION,[fCurrentPage+1,fPageCount]) else Result:='';
+  if fPageCount > 1 then
+    Result := Format(TEXT_MES_SLIDE_PAGE_CATION, [fCurrentPage + 1, fPageCount])
+  else
+    Result := '';
+end;
+
+procedure TViewer.SetDisplayRating(const Value: Integer);
+begin
+   TbRating.Enabled := (Value > 0);
+   TbRating.ImageIndex := 14 + Abs(Value);
 end;
 
 initialization

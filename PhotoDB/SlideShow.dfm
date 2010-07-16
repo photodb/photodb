@@ -89,130 +89,125 @@ object Viewer: TViewer
         ParentColor = False
         TabOrder = 0
         Transparent = True
-        object ToolButton2: TToolButton
+        object TbBack: TToolButton
           Left = 0
           Top = 2
-          Caption = 'ToolButton2'
+          Caption = 'Back'
           ImageIndex = 1
           OnClick = SpeedButton3Click
         end
-        object ToolButton1: TToolButton
+        object TbForward: TToolButton
           Left = 23
           Top = 2
-          Caption = 'ToolButton1'
+          Caption = 'Forward'
           ImageIndex = 0
           OnClick = SpeedButton4Click
         end
-        object ToolButton3: TToolButton
+        object TbSeparator1: TToolButton
           Left = 46
           Top = 2
           Width = 8
-          Caption = 'ToolButton3'
           ImageIndex = 2
           Style = tbsSeparator
         end
-        object ToolButton4: TToolButton
+        object TbFitToWindow: TToolButton
           Left = 54
           Top = 2
-          Caption = 'ToolButton4'
+          Caption = 'FitToWindow'
           Grouped = True
           ImageIndex = 2
           Style = tbsCheck
           OnClick = ToolButton5Click
         end
-        object ToolButton5: TToolButton
+        object TbRealSize: TToolButton
           Left = 77
           Top = 2
-          Caption = 'ToolButton5'
+          Caption = 'RealSize'
           Grouped = True
           ImageIndex = 3
           Style = tbsCheck
           OnClick = ToolButton4Click
         end
-        object ToolButton6: TToolButton
+        object TbSlideShow: TToolButton
           Left = 100
           Top = 2
-          Caption = 'ToolButton6'
+          Caption = 'SlideShow'
           ImageIndex = 4
-          OnClick = ToolButton6Click
+          OnClick = TbSlideShowClick
         end
-        object ToolButton10: TToolButton
+        object TbFullScreen: TToolButton
           Left = 123
           Top = 2
-          Caption = 'ToolButton10'
+          Caption = 'FullScreen'
           ImageIndex = 7
           OnClick = FullScreen1Click
         end
-        object ToolButton7: TToolButton
+        object TbSeparator2: TToolButton
           Left = 146
           Top = 2
           Width = 8
-          Caption = 'ToolButton7'
           ImageIndex = 5
           Style = tbsSeparator
         end
-        object ToolButton8: TToolButton
+        object TbZoomOut: TToolButton
           Left = 154
           Top = 2
-          Caption = 'ToolButton8'
+          Caption = 'ZoomOut'
           Grouped = True
           ImageIndex = 5
           Style = tbsCheck
-          OnClick = ToolButton8Click
+          OnClick = TbZoomOutClick
         end
-        object ToolButton9: TToolButton
+        object TbZoomIn: TToolButton
           Left = 177
           Top = 2
-          Caption = 'ToolButton9'
+          Caption = 'ZoomIn'
           Grouped = True
           ImageIndex = 6
           Style = tbsCheck
-          OnClick = ToolButton9Click
+          OnClick = TbZoomInClick
         end
-        object ToolButton11: TToolButton
+        object TbSeparator3: TToolButton
           Left = 200
           Top = 2
           Width = 8
-          Caption = 'ToolButton11'
           ImageIndex = 7
           Style = tbsSeparator
         end
-        object ToolButtonPage: TToolButton
+        object TbPageNumber: TToolButton
           Left = 208
           Top = 2
-          Caption = 'ToolButtonPage'
+          Caption = 'PageNumber'
           DropdownMenu = PopupMenuPageSelecter
           ImageIndex = 22
           Style = tbsDropDown
         end
-        object ToolButton23: TToolButton
+        object TbSeparatorPageNumber: TToolButton
           Left = 246
           Top = 2
           Width = 8
-          Caption = 'ToolButton23'
           ImageIndex = 11
           Style = tbsSeparator
           Visible = False
         end
-        object ToolButton12: TToolButton
+        object TbRotateCCW: TToolButton
           Left = 254
           Top = 2
-          Caption = 'ToolButton12'
+          Caption = 'RotateCCW'
           ImageIndex = 8
           OnClick = RotateCCW1Click
         end
-        object ToolButton13: TToolButton
+        object TbRotateCW: TToolButton
           Left = 277
           Top = 2
-          Caption = 'ToolButton13'
+          Caption = 'RotateCW'
           ImageIndex = 9
           OnClick = RotateCW1Click
         end
-        object ToolButton16: TToolButton
+        object TbSeparator4: TToolButton
           Left = 300
           Top = 2
           Width = 8
-          Caption = 'ToolButton16'
           ImageIndex = 11
           Style = tbsSeparator
         end
@@ -223,55 +218,52 @@ object Viewer: TViewer
           ImageIndex = 13
           OnClick = ToolButton20Click
         end
-        object ToolButton19: TToolButton
+        object TbSeparator5: TToolButton
           Left = 331
           Top = 2
           Width = 8
-          Caption = 'ToolButton19'
           ImageIndex = 11
           Style = tbsSeparator
         end
-        object ToolButton17: TToolButton
+        object TbPrint: TToolButton
           Left = 339
           Top = 2
-          Caption = 'ToolButton17'
+          Caption = 'Print'
           ImageIndex = 12
           OnClick = Print1Click
         end
-        object ToolButton21: TToolButton
+        object TbSeparator6: TToolButton
           Left = 362
           Top = 2
           Width = 8
-          Caption = 'ToolButton21'
           ImageIndex = 11
           Style = tbsSeparator
         end
-        object ToolButton22: TToolButton
+        object TbRating: TToolButton
           Left = 370
           Top = 2
-          Caption = 'ToolButton22'
+          Caption = 'Rating'
           ImageIndex = 14
-          OnClick = ToolButton22Click
+          OnClick = TbRatingClick
         end
-        object ToolButton18: TToolButton
+        object TbSeparator7: TToolButton
           Left = 393
           Top = 2
           Width = 8
-          Caption = 'ToolButton18'
           ImageIndex = 12
           Style = tbsSeparator
         end
-        object ToolButton15: TToolButton
+        object TbEditImage: TToolButton
           Left = 401
           Top = 2
-          Caption = 'ToolButton15'
+          Caption = 'Edit Image'
           ImageIndex = 11
           OnClick = ImageEditor1Click
         end
-        object ToolButton14: TToolButton
+        object TbInfo: TToolButton
           Left = 424
           Top = 2
-          Caption = 'ToolButton14'
+          Caption = 'Info'
           ImageIndex = 10
           OnClick = Properties1Click
         end
@@ -301,11 +293,11 @@ object Viewer: TViewer
     end
     object ZoomIn1: TMenuItem
       Caption = 'Zoom In1'
-      OnClick = ToolButton9Click
+      OnClick = TbZoomInClick
     end
     object ZoomOut1: TMenuItem
       Caption = 'Zoom Out'
-      OnClick = ToolButton8Click
+      OnClick = TbZoomOutClick
     end
     object RealSize1: TMenuItem
       Caption = 'Real Size'
@@ -393,7 +385,7 @@ object Viewer: TViewer
     end
     object SlideShow1: TMenuItem
       Caption = 'Slide Show'
-      OnClick = ToolButton6Click
+      OnClick = TbSlideShowClick
     end
     object N2: TMenuItem
       Caption = '-'
