@@ -17,7 +17,7 @@ uses
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
   uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils, uListViewUtils;
+  uFileUtils, uListViewUtils, uDBDrawing;
 
 type
   TExplorerForm = class(TThreadForm)

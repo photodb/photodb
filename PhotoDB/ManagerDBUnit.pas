@@ -11,7 +11,7 @@ uses
   GraphicCrypt, UnitStringPromtForm, CommonDBSupport, GraphicsCool,
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uConstants, uFileUtils;
+  UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing;
 
 type
   TManagerDB = class(TForm)

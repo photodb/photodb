@@ -3,7 +3,7 @@ unit UnitExplorerThumbnailCreatorThread;
 interface
 
 uses GraphicCrypt, Windows, Graphics, Classes, Dolphin_DB, ExplorerUnit,
-     SysUtils, Math, ComObj, ActiveX, ShlObj,CommCtrl,RAWImage,
+     SysUtils, Math, ComObj, ActiveX, ShlObj,CommCtrl,RAWImage, uDBDrawing,
      Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger;
 
 type
@@ -51,7 +51,7 @@ var
   Exists : integer;
 begin
  Exists:=1;
- Searching.DrawAttributes(TempBitmap,ThSizeExplorerPreview,info.ItemRating,info.ItemRotate,info.ItemAccess,info.ItemFileName,info.ItemCrypted,Exists,info.ItemId);
+ uDBDrawing.DrawAttributes(TempBitmap, ThSizeExplorerPreview,info.ItemRating,info.ItemRotate,info.ItemAccess,info.ItemFileName,info.ItemCrypted,Exists,info.ItemId);
 end;
 
 procedure TExplorerThumbnailCreator.Execute;

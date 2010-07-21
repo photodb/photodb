@@ -1,6 +1,6 @@
 object ManagerDB: TManagerDB
-  Left = 124
-  Top = 194
+  Left = 100
+  Top = 78
   Width = 898
   Height = 650
   Caption = 'ManagerDB'

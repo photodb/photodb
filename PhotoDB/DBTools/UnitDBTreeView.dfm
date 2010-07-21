@@ -1,5 +1,5 @@
 object FormCreateDBFileTree: TFormCreateDBFileTree
-  Left = 107
+  Left = 87
   Top = 134
   Width = 531
   Height = 404

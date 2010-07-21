@@ -8,7 +8,7 @@ uses
   DropTarget, DragDropFile, DragDrop, DropSource, Menus, ImgList, StdCtrls,
   ExtCtrls, ComCtrls,  Dialogs, DB, CommCtrl, jpeg, math,
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
-  UnitDBCommonGraphics, uLogger;
+  UnitDBCommonGraphics, uLogger, uDBDrawing;
 
 type
   TDBReplaceForm = class(TForm)

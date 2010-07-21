@@ -1,5 +1,5 @@
 object FormCont: TFormCont
-  Left = 288
+  Left = 231
   Top = 193
   Width = 484
   Height = 402

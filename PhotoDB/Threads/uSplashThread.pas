@@ -29,7 +29,7 @@ const
 
 var
   SplashWindowClass : TWndClass;
-  hSplashWnd, hSplashEvent, hSplashRoutineThread : HWND;
+  hSplashWnd : HWND;
   hSplashProgress : Byte = 0;
   IsFirstDraw : Boolean = True;
 
@@ -47,8 +47,6 @@ procedure DrawOurStuff(DrawDC: HDC);
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_LEFT;
 var
-  i: Integer;
-  OldPen, DrawPen: HPEN;
   J : TJPEGImage;
   BMP : TBitmap;
   TP : TDmProgress;
@@ -115,9 +113,9 @@ begin
     end;
     IsFirstDraw := False;
   end;
-
+    
+  TP := TDmProgress.Create(nil);
   try
-    TP := TDmProgress.Create(nil);
     TP.Visible := False;
     TP.MaxValue := 100;
     TP.Position := hSplashProgress;
@@ -162,6 +160,7 @@ begin
          Exit;
        end;
   end;
+  Result := DefWindowProc(hWnd, uMsg, wParam, lParam);
 end; // SplashWindowProc
 
 procedure TSplashThread.Execute;

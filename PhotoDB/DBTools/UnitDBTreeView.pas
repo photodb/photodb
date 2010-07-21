@@ -10,7 +10,7 @@ uses
 {$IFDEF PHOTODB}
   ,Dolphin_DB, Language, UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
   AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
-  UnitDBCommon, UnitDBCommonGraphics
+  UnitDBCommon, UnitDBCommonGraphics, uDBDrawing
 {$ENDIF}
   ;
 

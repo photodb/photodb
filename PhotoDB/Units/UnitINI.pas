@@ -230,9 +230,9 @@ end;
 function TBDRegistry.ReadBool(Name: String; Default: boolean): boolean;
 var
   Key : string;
-begin
- try
+begin  
   Result:=Default;
+ try
   if Registry is TRegistry then Result:=(Registry as TRegistry).ReadBool(Name);
   if Registry is TMyRegistryINIFile then
   begin
@@ -248,9 +248,9 @@ function TBDRegistry.ReadDateTime(Name: String;
   Default: TDateTime): TDateTime;
 var
   Key : string;
-begin      
+begin    
+  Result:=Default;  
  try
-  Result:=Default;
   if Registry is TRegistry then Result:=(Registry as TRegistry).ReadDateTime(Name);
   if Registry is TMyRegistryINIFile then
   begin

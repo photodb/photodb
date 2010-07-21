@@ -3,10 +3,11 @@ unit uListViewUtils;
 interface
 
 uses
-  Windows, Graphics, SysUtils, EasyListview;
+  Windows, Classes, Graphics, SysUtils, EasyListview;
 
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
+function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer): TEasyItem;
 
 implementation
 
@@ -90,6 +91,35 @@ begin
        Result := EasyListview.Items[i];
 
     Inc(i);
+  end
+end;
+
+function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer): TEasyItem;
+var
+  i: Integer;
+  r : TRect;
+  RectArray: TEasyRectArrayObject;
+  t,l, a,b : integer;
+begin
+  Result := nil;
+  i := 0;
+  r :=  EasyListview.Scrollbars.ViewableViewportRect;
+  ViewportPoint.X:=ViewportPoint.X+r.Left;
+  ViewportPoint.Y:=ViewportPoint.Y+r.Top;
+  while not Assigned(Result) and (i < EasyListview.Items.Count) do
+  begin
+   if EasyListview.Items[i].Visible then
+   begin
+      EasyListview.Items[i].ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
+      a:=EasyListview.CellSizes.Thumbnail.Width - 35;
+      b:=0;
+      t:=RectArray.IconRect.Top;
+      l:=RectArray.IconRect.Left;
+      r:=Rect(a+l,b+t,a+22+l,b+t+18);
+      if PtInRect(r, ViewportPoint) then
+       Result := EasyListview.Items[i];
+   end;
+   Inc(i)
   end
 end;
 

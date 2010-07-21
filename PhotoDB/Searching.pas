@@ -16,7 +16,7 @@ uses
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
-  uFastload, uListViewUtils;
+  uFastload, uListViewUtils, uDBDrawing;
 
 type
   TGroupInfo = class(TObject)
@@ -499,7 +499,6 @@ type
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     { Protected declarations }
   protected
-    procedure CreateWND; override;
     procedure CreateParams(VAR Params: TCreateParams); override;
     function TreeView : TShellTreeView;
     { Private declarations }
@@ -590,18 +589,10 @@ type
   end;
 
 var
-  Foperations : integer;
   Sclipbrd : string;
   SearchManager : TManagerSearchs;
 
   Function RectInRect(Const R1, R2 : TRect) : Boolean;
- procedure DrawAttributes(bit : TBitmap; PistureSize : integer; Rating,Rotate, Access : Integer; FileName : String; Crypt : Boolean; var Exists : integer; ID : integer = 0);
- function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint): TEasyItem;
-
-  const
-  Images_sm = 1;
-  limit_up = false;
-
 
 implementation
 
@@ -1059,35 +1050,6 @@ begin
   end;
 end;
 
-function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint): TEasyItem;
-var
-  i: Integer;
-  r : TRect;
-  RectArray: TEasyRectArrayObject;
-  t,l, a,b : integer;
-begin
-  Result := nil;
-  i := 0;
-  r :=  EasyListview.Scrollbars.ViewableViewportRect;
-  ViewportPoint.X:=ViewportPoint.X+r.Left;
-  ViewportPoint.Y:=ViewportPoint.Y+r.Top;
-  while not Assigned(Result) and (i < EasyListview.Items.Count) do
-  begin
-   if EasyListview.Items[i].Visible then
-   begin
-      EasyListview.Items[i].ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
-      a:=EasyListview.CellSizes.Thumbnail.Width - 35;
-      b:=0;
-      t:=RectArray.IconRect.Top;
-      l:=RectArray.IconRect.Left;
-      r:=Rect(a+l,b+t,a+22+l,b+t+18);
-      if PtInRect(r, ViewportPoint) then
-       Result := EasyListview.Items[i];
-   end;
-   Inc(i)
-  end
-end;
-
 procedure TSearchForm.ListView1DblClick(Sender: TObject);
 var
   MenuInfo : TDBPopupMenuInfo;
@@ -1097,7 +1059,7 @@ begin
 
   GetCursorPos(p1);
   p:=ListView1.ScreenToClient(p1);
-  if ItemByPointStar(Listview1,p)<>nil then
+  if ItemByPointStar(Listview1,p, fPictureSize)<>nil then
   begin
    RatingPopupMenu1.Tag:=ItemAtPos(p.x,p.y).Tag;
    Application.HideHint;
@@ -1432,77 +1394,6 @@ begin
  PbProgress.Position:=0;
 end;
 
-procedure DrawAttributes(bit : TBitmap; PistureSize : integer; Rating,Rotate, Access : Integer; FileName : String; Crypt : Boolean; var Exists : integer; ID : integer = 0);
-var
-  FExif : TExif;
-  failture : boolean;
-  DeltaX : integer;
-  FE : boolean;
-begin
- DeltaX:=PistureSize-100;
- If ID=0 then
- DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_NEW+1],16,16,0,0,DI_NORMAL);
-
- FE:=true;
- if Exists=0 then
- begin
-  FE:=FileExists(FileName);
-  if FE then Exists:=1 else Exists:=-1;
- end;
- if Exists=-1 then FE:=false;
-
- if FolderView then
- if not FE then
- begin
-  FileName:=ProgramDir+FileName;
-  FE:=FileExists(FileName);
- end;
-
- if ExplorerManager.ShowEXIF then
- begin
-  FExif := TExif.Create;
-  failture:=false;
-  try
-  FExif.ReadFromFile(FileName);
-  except
-   failture:=true;
-  end;
-  if FExif.Valid and not failture then
-  begin
-   If Id=0 then
-   DrawIconEx(bit.Canvas.Handle,20+DeltaX,0,UnitDBKernel.icons[DB_IC_EXIF+1],16,16,0,0,DI_NORMAL) else
-   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_EXIF+1],16,16,0,0,DI_NORMAL)
-  end;
-  FExif.free;
- end;
-
-
- if Crypt then DrawIconEx(bit.Canvas.Handle,20+DeltaX,0,UnitDBKernel.icons[DB_IC_KEY+1],16,16,0,0,DI_NORMAL);
- Case Rating of
-  1: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_1+1],16,16,0,0,DI_NORMAL);
-  2: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_2+1],16,16,0,0,DI_NORMAL);
-  3: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_3+1],16,16,0,0,DI_NORMAL);
-  4: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_4+1],16,16,0,0,DI_NORMAL);
-  5: DrawIconEx(bit.Canvas.Handle,80+DeltaX,0,UnitDBKernel.icons[DB_IC_RATING_5+1],16,16,0,0,DI_NORMAL);
- end;
- Case Rotate of
-  DB_IMAGE_ROTATED_90: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_180: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_270: DrawIconEx(bit.Canvas.Handle,60+DeltaX,0,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
- end;
- If Access=db_access_private then
- DrawIconEx(bit.Canvas.Handle,40+DeltaX,0,UnitDBKernel.icons[DB_IC_PRIVATE+1],16,16,0,0,DI_NORMAL);
- if not FE then
- begin             
-  if Copy(FileName,1,2)='::' then
-  begin
-   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_CD_IMAGE+1],18,18,0,0,DI_NORMAL);
-  end else
-  begin
-   DrawIconEx(bit.Canvas.Handle,0+DeltaX,0,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],18,18,0,0,DI_NORMAL);
-  end;
- end;
-end;
 
 procedure TSearchForm.RefreshThumItemByID(ID : integer);
 var
@@ -1519,7 +1410,7 @@ begin
  Password:='';
  item:=GetListItemByID(ID);
  if item=nil then exit;
- if not (item.imageindex<=Images_sm-1) then
+ if not (item.imageindex<=0) then
  begin
   SelectQuery.Active:=false;
   SetSQL(SelectQuery,'SELECT * FROM '+GetDefDBName+' WHERE ID='+inttostr(ID));
@@ -2454,7 +2345,6 @@ begin
  SortLink.UseSpecIconSize:=true;
  SortLink.SetDefault;
 
- Foperations:=0;
  WorkedFiles_:=TstringList.Create;
  ListView1.DoubleBuffered:=true;
                           
@@ -3436,9 +3326,9 @@ begin
  ToolButton12.Caption:=TEXT_MES_EXPLORER;
 end;
 
-Function RectInRect(Const R1, R2 : TRect) : Boolean;
-begin
- Result:=PtInRect(R2,R1.TopLeft) or PtInRect(R2,R1.BottomRight) or PtInRect(R1,R2.TopLeft) or PtInRect(R1,R2.BottomRight);
+function RectInRect(Const R1, R2 : TRect) : Boolean;
+begin          
+ Result := PtInRect(R2,R1.TopLeft) or PtInRect(R2,R1.BottomRight) or PtInRect(R1,R2.TopLeft) or PtInRect(R1,R2.BottomRight);
 end;
 
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
@@ -5194,13 +5084,6 @@ begin
  end;
  if SearchEdit.ShowDropDownMenu then
  Rating2.Rating:=Integer(SearchRatingList[SearchEdit.GetItemIndex]^);
-end;
-
-
-procedure TSearchForm.CreateWND;
-begin
-  FShellTreeView := nil;
-  inherited;
 end;
 
 procedure TSearchForm.SearchEditEnterDown(Sender: TObject);

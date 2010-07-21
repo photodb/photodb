@@ -43,15 +43,15 @@ type
   TRAWExif = class(TObject)
   private
     FExifList : TList;
-    FTimeStamp : TDateTime;
     function GetCount: Integer;
     function GetValueByIndex(Index: Integer): TRAWExifRecord;
+    function GetTimeStamp: TDateTime;
   public
     constructor Create;
     destructor Destroy; override;
     function Add(Description, Key, Value : string) : TRAWExifRecord;
     function IsEXIF : Boolean;
-    property TimeStamp : TDateTime read FTimeStamp write FTimeStamp;
+    property TimeStamp : TDateTime read GetTimeStamp;
     property Count : Integer read GetCount;
     property Items[Index: Integer]: TRAWExifRecord read GetValueByIndex; default;
   end;
@@ -293,6 +293,16 @@ end;
 function TRAWExif.GetCount: Integer;
 begin
   Result := FExifList.Count;
+end;
+
+function TRAWExif.GetTimeStamp: TDateTime;
+var
+  I : Integer;
+begin
+  Result := 0;
+  for I := 0 to Count - 1 do
+    if Self[I].Key = 'DateTime' then
+        Result := EXIFDateToDate(Self[I].Value) + EXIFDateToTime(Self[I].Value);
 end;
 
 function TRAWExif.GetValueByIndex(Index: Integer): TRAWExifRecord;

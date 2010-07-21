@@ -12,7 +12,7 @@ uses
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
-  uListViewUtils;
+  uListViewUtils, uDBDrawing;
 
 type
   TFormCont = class(TThreadForm)
@@ -1546,7 +1546,7 @@ begin
 
   GetCursorPos(p1);
   p:=ListView1.ScreenToClient(p1);
-  Item:=ItemByPointStar(Listview1,p);
+  Item := ItemByPointStar(Listview1,p, fPictureSize);
   if Item<>nil then
   begin
    if ItemAtPos(p.x,p.y).Tag<>0 then

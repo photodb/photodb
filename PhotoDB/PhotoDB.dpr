@@ -277,7 +277,8 @@ uses
   uListViewUtils in 'Units\uListViewUtils.pas',
   FreeBitmap in 'External\Formats\FreeImage\FreeBitmap.pas',
   FreeImage in 'External\Formats\FreeImage\FreeImage.pas',
-  FreeUtils in 'External\Formats\FreeImage\FreeUtils.pas';
+  FreeUtils in 'External\Formats\FreeImage\FreeUtils.pas',
+  uDBDrawing in 'Units\uDBDrawing.pas';
 
 {$R *.res}
 
@@ -450,7 +451,7 @@ begin
       DBKernel:=TDBKernel.Create;
       DBKernel.LoadColorTheme;
       Application.CreateForm(TInstallForm, InstallForm);
-      Application.Restore;
+  Application.Restore;
       EventLog(':InstallForm.SetQuickSelfInstallOption()');
       InstallForm.SetQuickSelfInstallOption;
       InstallForm.ShowModal;

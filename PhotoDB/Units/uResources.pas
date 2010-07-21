@@ -76,6 +76,7 @@ function GetLogoPicture : TJpegImage;
 var
   RCDataStream : TMemoryStream;
 begin
+  Result := nil;
   RCDataStream := GetRCDATAResourceStream('LOGO');
   if RCDataStream <> nil then
   begin
