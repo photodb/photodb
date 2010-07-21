@@ -165,8 +165,6 @@ uses
   LibTiffDelphi in 'External\Formats\Tiff\LibTiffDelphi.pas',
   ZLibDelphi in 'External\Formats\Tiff\ZLibDelphi.pas',
   RAWImage in 'External\Formats\DelphiDcraw\RAWImage.pas',
-  Global_FastIO in 'External\Formats\DelphiDcraw\Global_FastIO.pas',
-  GlobalTypes in 'External\Formats\DelphiDcraw\GlobalTypes.pas',
   GIFImage in 'External\Formats\GIFImage.pas',
   PNG_IO in 'External\Formats\PNG_IO.pas',
   PngDef in 'External\Formats\PngDef.pas',
@@ -452,7 +450,7 @@ begin
       DBKernel:=TDBKernel.Create;
       DBKernel.LoadColorTheme;
       Application.CreateForm(TInstallForm, InstallForm);
-  Application.Restore;
+      Application.Restore;
       EventLog(':InstallForm.SetQuickSelfInstallOption()');
       InstallForm.SetQuickSelfInstallOption;
       InstallForm.ShowModal;

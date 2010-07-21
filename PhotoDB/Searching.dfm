@@ -2605,7 +2605,7 @@ object SearchForm: TSearchForm
         Font.Style = [fsUnderline]
         ParentFont = False
       end
-      object DmProgress1: TDmProgress
+      object PbProgress: TDmProgress
         Left = 8
         Top = 36
         Width = 121

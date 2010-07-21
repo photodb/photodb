@@ -1330,7 +1330,7 @@ end;
 procedure TPropertiesForm.ExecuteFileNoEx(FileName: string);
 var
   Exif : TExif;
-  RAWExif : TExifRAWRecord;
+  RAWExif : TRAWExif;
   Options : TPropertyLoadImageThreadOptions;
 begin
  if fSaving  then
@@ -1355,16 +1355,16 @@ begin
  FDateTimeInFileExists:=FFileDate<>0;
  if not FDateTimeInFileExists then
  begin
-  RAWExif.isEXIF:=false;
   if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FileName) then
   begin
    RAWExif:=ReadRAWExif(FileName);
    if RAWExif.isEXIF then
    begin
     FDateTimeInFileExists:=true;
-    FFileDate:=EXIFDateToDate(RAWExif.TimeStamp);
-    FFileTime:=EXIFDateToTime(RAWExif.TimeStamp);
+    FFileDate:=DateOf(RAWExif.TimeStamp);
+    FFileTime:=TimeOf(RAWExif.TimeStamp);
    end;
+   RAWExif.Free;
   end;
  end;
 
@@ -2233,7 +2233,8 @@ end;
 procedure TPropertiesForm.ReadExifData;
 var
   ex : TExif;
-  RAWExif : TExifRAWRecord;
+  I : Integer;
+  RAWExif : TRAWExif;
 
   procedure xInsert(Key,Value : String);
   begin
@@ -2254,82 +2255,75 @@ var
   end;
 
 begin          
- ValueListEditor1.Strings.Clear;
- RAWExif.isEXIF:=false;
- if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(CurrentItemInfo.ItemFileName) then
- begin
-   RAWExif:=ReadRAWExif(CurrentItemInfo.ItemFileName);
-   if RAWExif.isEXIF then
-   begin
-    ValueListEditor1.InsertRow('RAW Info:','',true);
-    xInsert('Model: ',RAWExif.CameraModel);
-    xInsert('DateTime: ',RAWExif.TimeStamp);
-    xInsert('ShutterSpeed: ','1/'+IntToStr(Round(RAWExif.Shutter_Speed)));
+  ValueListEditor1.Strings.Clear;
 
-    ValueListEditor1.InsertRow('Aperture:',FloatToStr(Trunc(RAWExif.Aperture*10)/10),true);
-
-    //xInsertFloat('Aperture: ',);
-    xInsertFloat('Focal Length: ',RAWExif.Focal_Length);
-    xInsertInt('ISO speed: ',RAWExif.ISO_Speed);
-    xInsertInt('XResolution: ',RAWExif.Width);
-    xInsertInt('YResolution: ',RAWExif.Height);
-    xInsertInt('Orientation: ',RAWExif.Rotation);
-   end;
- end;
-
- ex:=TExif.Create;
- try
-  ex.ReadFromFile(CurrentItemInfo.ItemFileName);
-  if ex.Valid then
+  if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(CurrentItemInfo.ItemFileName) then
   begin
-   xInsert('Make: ',ex.Make);
-   xInsert('Model: ',ex.Model);
-   xInsert('Image Desk: ',ex.ImageDesc);
-   xInsert('Copyright: ',ex.Copyright);
-   xInsert('DateTime: ',ex.DateTime);
-   xInsert('Original DateTime: ',ex.DateTimeOriginal);
-   xInsert('Created DateTime: ',ex.DateTimeDigitized);
-   xInsert('UserComments: ',ex.UserComments);
-   xInsert('Software: ',ex.Software);
-   xInsert('Artist: ',ex.Artist);
-   if Byte(ex.Orientation)<>0 then
-   ValueListEditor1.InsertRow('Orientation: ',Format('%d (%s)',[Byte(ex.Orientation), ex.OrientationDesc]),true);
-   xInsert('Exposure: ',ex.Exposure);
-   if ex.ExposureProgram<>0 then
-   ValueListEditor1.InsertRow('Exposure Program: ',Format('%d (%s)',[ex.ExposureProgram, ex.ExposureProgramDesc]),true);
-   xInsert('Fstops: ',ex.FStops);
-   xInsert('ShutterSpeed: ',ex.ShutterSpeed);
-   xInsert('Aperture: ',ex.Aperture);
-   xInsert('MaxAperture: ',ex.MaxAperture);
-   xInsert('Compressed BPP: ',ex.CompressedBPP);
-   xInsertInt('ISO speed: ',ex.ISO);
-   xInsertInt('PixelXDimension: ',ex.PixelXDimension);
-   xInsertInt('PixelYDimension: ',ex.PixelYDimension);
-   xInsertInt('XResolution: ',ex.XResolution);
-   xInsertInt('YResolution: ',ex.YResolution);
-   xInsertInt('MeteringMode: ',ex.MeteringMode);
-   xInsert('MeteringMethod: ',ex.MeteringMethod);
-   xInsert('Orientation: ',ex.OrientationDesc);
-   if ex.LightSource<>0 then
-   ValueListEditor1.InsertRow('LightSource: ',Format('%d (%s)',[ex.LightSource, ex.LightSourceDesc]),true);
-   if ex.Flash<>0 then
-   ValueListEditor1.InsertRow('Flash: ',Format('%d (%s)',[ex.Flash, ex.FlashDesc]),true);
+    RAWExif:=ReadRAWExif(CurrentItemInfo.ItemFileName);
+    if RAWExif.isEXIF then
+    begin
+      ValueListEditor1.InsertRow('RAW Info:','',true);
+      for I := 0 to RAWExif.Count - 1 do
+        xInsert(Format('%s: ', [RAWExif[i].Description]), RAWExif[i].Value);
+    end else
+      ValueListEditor1.InsertRow('Info:',TEXT_MES_NO_EXIF_HEADER,true);
+    RAWExif.Free;
   end else
   begin
-   if not RAWExif.isEXIF then
-   ValueListEditor1.InsertRow('Info:',TEXT_MES_NO_EXIF_HEADER,true);
+    ex := TExif.Create;
+    try
+      try
+        ex.ReadFromFile(CurrentItemInfo.ItemFileName);
+        if ex.Valid then
+        begin
+          xInsert('Make: ',ex.Make);
+          xInsert('Model: ',ex.Model);
+          xInsert('Image Desk: ',ex.ImageDesc);
+          xInsert('Copyright: ',ex.Copyright);
+          xInsert('DateTime: ',ex.DateTime);
+          xInsert('Original DateTime: ',ex.DateTimeOriginal);
+          xInsert('Created DateTime: ',ex.DateTimeDigitized);
+          xInsert('UserComments: ',ex.UserComments);
+          xInsert('Software: ',ex.Software);
+          xInsert('Artist: ',ex.Artist);
+          if Byte(ex.Orientation) <> 0 then
+            ValueListEditor1.InsertRow('Orientation: ',Format('%d (%s)', [Byte(ex.Orientation), ex.OrientationDesc]), True);
+          xInsert('Exposure: ',ex.Exposure);
+          if ex.ExposureProgram<>0 then
+            ValueListEditor1.InsertRow('Exposure Program: ',Format('%d (%s)',[ex.ExposureProgram, ex.ExposureProgramDesc]), True);
+          xInsert('Fstops: ',ex.FStops);
+          xInsert('ShutterSpeed: ',ex.ShutterSpeed);
+          xInsert('Aperture: ',ex.Aperture);
+          xInsert('MaxAperture: ',ex.MaxAperture);
+          xInsert('Compressed BPP: ',ex.CompressedBPP);
+          xInsertInt('ISO speed: ',ex.ISO);
+          xInsertInt('PixelXDimension: ',ex.PixelXDimension);
+          xInsertInt('PixelYDimension: ',ex.PixelYDimension);
+          xInsertInt('XResolution: ',ex.XResolution);
+          xInsertInt('YResolution: ',ex.YResolution);
+          xInsertInt('MeteringMode: ',ex.MeteringMode);
+          xInsert('MeteringMethod: ',ex.MeteringMethod);
+          xInsert('Orientation: ',ex.OrientationDesc);
+          if ex.LightSource <> 0 then
+            ValueListEditor1.InsertRow('LightSource: ',Format('%d (%s)',[ex.LightSource, ex.LightSourceDesc]),true);
+          if ex.Flash <> 0 then
+            ValueListEditor1.InsertRow('Flash: ',Format('%d (%s)',[ex.Flash, ex.FlashDesc]),true);
+        end else
+          ValueListEditor1.InsertRow('Info:',TEXT_MES_NO_EXIF_HEADER, True);
+      except
+      end;
+    finally
+      ex.free;
+    end;
   end;
- except
- end;
- ex.free;
 end;
 
 procedure TPropertiesForm.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);
- Params.WndParent := GetDesktopWindow;
- with params do
- ExStyle := ExStyle or WS_EX_APPWINDOW;
+  Inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TPropertiesForm.RadioGroup1Click(Sender: TObject);

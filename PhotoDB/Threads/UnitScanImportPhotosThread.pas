@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Messages, Forms, Dolphin_DB, EXIF, RawImage, SysUtils,
-  Language, UnitDBDeclare;
+  Language, UnitDBDeclare, DateUtils;
 
 type
   TScanImportPhotosThreadOptions = record
@@ -88,7 +88,7 @@ var
   i : integer;
   MaxFilesCount,MaxFilesSearch : Integer;   
   FEXIF : TEXIF;
-  RAWExif : TExifRAWRecord;
+  RAWExif : TRAWExif;
   FDate : TDateTime;
 
   function L_Less_Than_R(L,R:TFileDateRecord):boolean;
@@ -179,7 +179,7 @@ begin
     RAWExif:=ReadRAWExif(fFiles[i]);
     if RAWExif.isEXIF then
     begin
-     FDate:=Dolphin_DB.EXIFDateToDate(RAWExif.TimeStamp);
+     FDate:=DateOf(RAWExif.TimeStamp);
      if FDate>0 then AddFileToList(fFiles[i],FDate);
 
      if IsEqualGUID(FSID, GetPhotosFormSID) then

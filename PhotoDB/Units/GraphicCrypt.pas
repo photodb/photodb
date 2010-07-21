@@ -950,7 +950,7 @@ var
   GraphicHeader : TGraphicCryptFileHeader;
 begin
   Result := False;
-  FBS := GetBlobStream(DF,bmRead);
+  FBS := GetBlobStream(DF, bmRead);
   try
     FBS.Seek(0, soFromBeginning);
     FBS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));

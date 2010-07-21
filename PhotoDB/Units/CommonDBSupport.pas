@@ -284,7 +284,7 @@ end;
 
 function ActiveTable(Table : TDataSet; Active : boolean) : boolean;
 begin
- try
+ try       
  if (Table is TADODataSet) then (Table as TADODataSet).Active:=Active;
  except
   on e : Exception do

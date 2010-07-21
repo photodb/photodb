@@ -172,33 +172,48 @@ type
     ByPixels : Byte;
   end;
 
-  TSearchRecord = record
-   FileName : string;
-   Comments : string;
-   KeyWords : string;
-   ImTh : string;
-   Groups : string;
-   Links : string;
-   FileSize : int64;
-   Date : TDateTime;
-   Time : TDateTime;
-   IsDate : boolean;
-   IsTime : boolean;
-   Crypted : boolean;
-   Include : boolean;
-   Rotation : integer;
-   Rating : integer;
-   Access : integer;
-   Exists : integer;
-   ID : integer;
-   Selected : boolean;
-   Attr : integer;
-   CompareResult : TImageCompareResult;
-   Width : integer;
-   Height : integer;
+  TSearchRecord = class(TObject)
+  public
+    FileName : string;
+    Comments : string;
+    KeyWords : string;
+    ImTh : string;
+    Groups : string;
+    Links : string;
+    FileSize : int64;
+    Date : TDateTime;
+    Time : TDateTime;
+    IsDate : boolean;
+    IsTime : boolean;
+    Crypted : boolean;
+    Include : boolean;
+    Rotation : integer;
+    Rating : integer;
+    Access : integer;
+    Exists : integer;
+    ID : integer;
+    Selected : boolean;
+    Attr : integer;
+    CompareResult : TImageCompareResult;
+    Width : integer;
+    Height : integer;
   end;
 
-  TSearchRecordArray = array of TSearchRecord;
+  TSearchRecordArray = class(TObject)
+  private
+    FList : TList;
+    function GetCount: Integer;
+    function GetValueByIndex(Index: Integer): TSearchRecord;
+    procedure SetValueByIndex(Index: Integer; const Value: TSearchRecord);
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Clear;
+    procedure DeleteAt(Index : Integer);
+    function AddNew : TSearchRecord;
+    property Items[Index: Integer]: TSearchRecord read GetValueByIndex write SetValueByIndex; default;
+    property Count : Integer read GetCount;
+  end;
 
   TImageContRecord = record
    FileName : string;
@@ -236,5 +251,59 @@ type
 
 
 implementation
+
+{ TSearchRecordArray }
+
+function TSearchRecordArray.AddNew: TSearchRecord;
+begin
+  Result := TSearchRecord.Create;
+  FList.Add(Result);
+end;
+
+procedure TSearchRecordArray.Clear;
+var
+  I : Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TSearchRecord(FList[I]).Free;
+  FList.Clear;
+end;
+
+constructor TSearchRecordArray.Create;
+begin
+  FList := TList.Create;
+end;
+
+procedure TSearchRecordArray.DeleteAt(Index: Integer);
+var
+  Rec : TSearchRecord;
+begin
+  Rec := FList[Index];
+  Rec.Free;
+  FList.Delete(Index);
+end;
+
+destructor TSearchRecordArray.Destroy;
+begin
+  Clear;
+  FList.Free;
+  inherited;
+end;
+
+function TSearchRecordArray.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function TSearchRecordArray.GetValueByIndex(Index: Integer): TSearchRecord;
+begin
+  Result := FList[Index];
+end;
+
+procedure TSearchRecordArray.SetValueByIndex(Index: Integer;
+  const Value: TSearchRecord);
+begin
+  FList[Index] := Value;
+end;
 
 end.

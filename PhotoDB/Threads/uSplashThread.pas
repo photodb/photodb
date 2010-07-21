@@ -4,7 +4,7 @@ interface
 
 uses
    Classes, Windows, Messages, JPEG, Graphics, DmProgress, uTime,
-   uConstants, uResources;
+   uConstants, uResources, Language;
 
 type
   TSplashThread = class(TThread)
@@ -121,14 +121,15 @@ begin
     TP.Visible := False;
     TP.MaxValue := 100;
     TP.Position := hSplashProgress;
-    TP.Width := SplWidth - 20*2;
+    TP.Width := SplWidth - 20;
     TP.Height := 17;
     TP.BorderColor := clGray;
     TP.Color := clBlack;
+    TP.Text := TEXT_MES_LOADING___;
     TP.Font.Color := clWhite; 
     TP.Font.Name := 'Times New Roman';
     TP.CoolColor := clNavy;
-    TP.DoDraw(DrawDC, 10, SplHeight - TP.Height - 10);
+    TP.DoDraw(DrawDC, 10, SplHeight - TP.Height- 10);
   finally
     TP.Free;
   end;
@@ -171,7 +172,7 @@ var
   Msg: TMsg; // declare this too, for later
 begin
   FreeOnTerminate := True;
-  
+    
   Instance := GetModuleHandle(nil);
   SplashWindowClass.style := CS_HREDRAW or CS_VREDRAW;
   SplashWindowClass.lpfnWndProc := @SplashWindowProc;

@@ -1363,7 +1363,7 @@ Const
 
  TEXT_MES_DO_YOU_REALLY_WANT_CANCEL_OPERATION = 'Вы действительно хотите прервать выполнение текущей операции?';
 
- TEXT_MES_LOADING___ = 'загрузка...';
+ TEXT_MES_LOADING___ = 'Загрузка...';
  TEXT_MES_PHOTO_SERIES_DATES_ = 'Серии фотографий по датам:';
  TEXT_MES_ACTION_DOWNLOAD_DATE = 'Опции';
 

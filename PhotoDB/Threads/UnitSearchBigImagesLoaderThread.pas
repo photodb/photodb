@@ -71,11 +71,11 @@ var
 begin
  c:=TopIndex;
  for i:=0 to Length(FVisibleFiles)-1 do
- for j:=TopIndex to Length(fData)-1 do
+ for j:=TopIndex to fData.Count-1 do
  begin
   if FVisibleFiles[i]=fData[j].FileName then
   begin
-   if c>=Length(fData) then break;
+   if c>=fData.Count then break;
    temp:=fData[c];
    fData[c]:=fData[j];
    fData[j]:=temp;
@@ -107,7 +107,7 @@ begin
  Synchronize(InitializeLoadingBigImages);
 
 
- for i:=0 to Length(fData)-1 do
+ for i:=0 to fData.Count-1 do
  begin
 
   if i mod 5=0 then
@@ -209,12 +209,12 @@ begin
     if FSender.IsActualState(FSID) then
  with (FSender as TSearchForm) do
  begin
-  DmProgress1.Position:=0;
-  DmProgress1.MaxValue:=intparam;
+  PbProgress.Position:=0;
+  PbProgress.MaxValue:=intparam;
   //Saving text information    
   OldInformationText:=Label7.Caption;
   Label7.Caption:=TEXT_MES_LOADING_BIG_IMAGES;
-  DmProgress1.Text:=format(TEXT_MES_LOADING_BIG_IMAGES_F,[IntToStr(intparam)]);
+  PbProgress.Text:=format(TEXT_MES_LOADING_BIG_IMAGES_F,[IntToStr(intparam)]);
   (FSender as TSearchForm).ToolButton14.Enabled:=true;
  end;
 end;
@@ -246,9 +246,9 @@ begin
   if not Terminated then
     if FSender.IsActualState(FSID) then
  begin
-  (FSender as TSearchForm).DmProgress1.MaxValue:=Length(fData);
-  (FSender as TSearchForm).DmProgress1.Position:=IntParam;
-  (FSender as TSearchForm).DmProgress1.text:=TEXT_MES_PROGRESS_PR;
+  (FSender as TSearchForm).PbProgress.MaxValue:=fData.Count;
+  (FSender as TSearchForm).PbProgress.Position:=IntParam;
+  (FSender as TSearchForm).PbProgress.text:=TEXT_MES_PROGRESS_PR;
  end;
 end;
 
@@ -270,10 +270,10 @@ begin
   if (FSender as TSearchForm).ToolButton14.Enabled then
   begin
    (FSender as TSearchForm).ToolButton14.Click;
-   (FSender as TSearchForm).DmProgress1.Text:=TEXT_MES_DONE;
+   (FSender as TSearchForm).PbProgress.Text:=TEXT_MES_DONE;
    (FSender as TSearchForm).Label7.Caption:=OldInformationText;
-   (FSender as TSearchForm).DmProgress1.Position:=0;
-   (FSender as TSearchForm).DmProgress1.MaxValue:=1;
+   (FSender as TSearchForm).PbProgress.Position:=0;
+   (FSender as TSearchForm).PbProgress.MaxValue:=1;
   end;
  end;
 end;

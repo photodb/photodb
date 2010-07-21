@@ -4,7 +4,7 @@ interface
 
 uses
  ThreadManeger, UnitDBKernel, dolphin_db, jpeg, ComCtrls, CommCtrl, windows,
- Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs,
+ Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs, adodb,
  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
  UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger;
@@ -49,7 +49,6 @@ type
   SearchThread = class(TThreadEx)
   private
    fQuery: TDataSet;
-   Fname : string;
    FI : integer;
    FID : integer;
    FPictureSize : integer;
@@ -143,7 +142,7 @@ type
       SPSEARCH_SHOWTHFILE = 2;
       SPSEARCH_SHOWSIMILAR = 3;
 
-procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; Name : String; SortMethod : integer;
+procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
       SortDecrement : boolean; ShowGroups : boolean; SizeParam : int64; FileNameParam : string; RatingParam : integer;
       DateTimeParam : TDateTime; Include : Boolean; var LastSize : int64; var LastChar : Char; var LastRating : integer;
       var LastMonth : integer; var LastYear : integer);
@@ -182,20 +181,20 @@ end;
 
 procedure SearchThread.ProgressNull;
 begin
-  (FSender as TSearchForm).DmProgress1.Position:=0;
-  (FSender as TSearchForm).DmProgress1.text:=TEXT_MES_DONE;
+  (FSender as TSearchForm).PbProgress.Position:=0;
+  (FSender as TSearchForm).PbProgress.text:=TEXT_MES_DONE;
 end;
 
 procedure SearchThread.ProgressNullA;
 begin
-  (FSender as TSearchForm).DmProgress1.Position:=0;
-  (FSender as TSearchForm).DmProgress1.text:=TEXT_MES_PROGRESS_PR;
+  (FSender as TSearchForm).PbProgress.Position:=0;
+  (FSender as TSearchForm).PbProgress.text:=TEXT_MES_PROGRESS_PR;
 end;
 
 procedure SearchThread.SetImageIndex;
 begin
   (FSender as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(FSender as TSearchForm).FBitmapImageList.Count-1);
-  (FSender as TSearchForm).DmProgress1.Position:=fthum_images_;
+  (FSender as TSearchForm).PbProgress.Position:=fthum_images_;
 end;
 
 procedure SearchThread.BeginUpdate;
@@ -206,7 +205,7 @@ end;
 procedure SearchThread.EndUpdate;
 begin
   with (FSender as TSearchForm) do
-    Data:=Copy(fData);
+    Data:=fData;
 
   (FSender as TSearchForm).EndUpdate;
 end;
@@ -267,12 +266,8 @@ var
   procedure AddItem(N: integer; S : TDataSet);
   var
     i : integer;
+    Data : TSearchRecord;
   begin
-    fname:=S.FieldByName('Name').AsString;
-    for i:= Length(fname) downto 1 do
-    begin
-     if fname[i]=' ' then Delete(fname,i,1) else break;
-    end;
     fid:=S.FieldByName('ID').asinteger;
     fInclude:=S.FieldByName('Include').AsBoolean;
     FI:=N;
@@ -285,35 +280,36 @@ var
 
     SynchronizeEx(NewItem);
     Dec(N);
-    fData[N].ID:=fid;
-    fData[N].FileName:=FileNameParam;
-    fData[N].Comments:=S.FieldByName('Comment').AsString;
-    fData[N].FileSize:=SizeParam;
-    fData[N].Rotation:=S.FieldByName('Rotated').AsInteger;
-    fData[N].ImTh:=S.FieldByName('StrTh').AsString;
-    fData[N].Access:=S.FieldByName('Access').AsInteger;
-    fData[N].Rating:=RatingParam;
-    fData[N].KeyWords:=S.FieldByName('KeyWords').AsString;
-    fData[N].Date:=FDateTimeParam;
-    fData[N].IsDate:=S.FieldByName('IsDate').AsBoolean;
-    fData[N].IsTime:=S.FieldByName('IsTime').AsBoolean;
-    fData[N].Groups:=S.FieldByName('Groups').AsString;
-    fData[N].Attr:=S.FieldByName('Attr').AsInteger;
-    fData[N].Time:=S.FieldByName('aTime').AsDateTime;
-    fData[N].Links:=S.FieldByName('Links').AsString;
-    fData[N].Width:=S.FieldByName('Width').AsInteger;
-    fData[N].Height:=S.FieldByName('Height').AsInteger;
-    fData[N].Crypted:=ValidCryptBlobStreamJPG(S.FieldByName('thum'));
-    fData[N].Include:=fInclude;
-    fData[N].Exists:=0;
-    fData[N].CompareResult.ByGistogramm:=0;   
-    fData[N].CompareResult.ByPixels:=0;
-    if Length(fQData)>0 then
+    Data := fData[N];
+    Data.ID:=fid;
+    Data.FileName:=FileNameParam;
+    Data.Comments:=S.FieldByName('Comment').AsString;
+    Data.FileSize:=SizeParam;
+    Data.Rotation:=S.FieldByName('Rotated').AsInteger;
+    Data.ImTh:=S.FieldByName('StrTh').AsString;
+    Data.Access:=S.FieldByName('Access').AsInteger;
+    Data.Rating:=RatingParam;
+    Data.KeyWords:=S.FieldByName('KeyWords').AsString;
+    Data.Date:=FDateTimeParam;
+    Data.IsDate:=S.FieldByName('IsDate').AsBoolean;
+    Data.IsTime:=S.FieldByName('IsTime').AsBoolean;
+    Data.Groups:=S.FieldByName('Groups').AsString;
+    Data.Attr:=S.FieldByName('Attr').AsInteger;
+    Data.Time:=S.FieldByName('aTime').AsDateTime;
+    Data.Links:=S.FieldByName('Links').AsString;
+    Data.Width:=S.FieldByName('Width').AsInteger;
+    Data.Height:=S.FieldByName('Height').AsInteger;
+    Data.Crypted:=ValidCryptBlobStreamJPG(S.FieldByName('thum'));
+    Data.Include:=fInclude;
+    Data.Exists:=0;
+    Data.CompareResult.ByGistogramm:=0;
+    Data.CompareResult.ByPixels:=0;
+    if fQData.Count>0 then
     begin
-     for i:=0 to Length(fQData)-1 do
+     for i:=0 to fQData.Count - 1 do
      if fQData[i].ID = fid then
      begin
-      fData[N].CompareResult:= fQData[i].CompareResult;
+      Data.CompareResult:= fQData[i].CompareResult;
      end;
     end;
   end;
@@ -343,7 +339,8 @@ begin
   TempBitmap:=nil;
   SBitmap:=nil;
 
-  SetLength(fQData,0);
+  fQData := TSearchRecordArray.Create;
+  fQData.Clear;
   //searching for image in DB
   if QueryType=QT_W_SCAN_FILE then
   begin
@@ -454,9 +451,11 @@ begin
      res:=CompareImages(JPEG,SBitmap,rot,fSpsearch_ScanFileRotate,not fSpsearch_ScanFileRotate, 60);
      if (Res.ByGistogramm>fSpsearch_ScanFilePersent) or (Res.ByPixels>fSpsearch_ScanFilePersent) then
      begin
-      SetLength(fQData,Length(fQData)+1);
-      fQData[Length(fQData)-1].ID:=FTable.FieldByName('ID').AsInteger;
-      fQData[Length(fQData)-1].CompareResult:=Res;
+      With fQData.AddNew do
+      begin
+        ID:=FTable.FieldByName('ID').AsInteger;
+        CompareResult:=Res;
+      end;
       SynchronizeEx(DoSetSearchByComparing);
      end;
      if JPEG<>nil then
@@ -464,7 +463,7 @@ begin
      JPEG:=nil;
      FTable.Next;
     end;
-    if Length(fQData)<>0 then
+    if fQData.Count<>0 then
     begin
      QueryType:=QT_TEXT;
      query_:='SELECT * FROM '+GetDefDBname+' WHERE ';
@@ -473,7 +472,7 @@ begin
      query_:=query_+' (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'") AND ';
 
      query_:=query_+' ID in (';
-     for i:=0 to Length(fQData)-1 do
+     for i:=0 to fQData.Count-1 do
      if i=0 then query_:=query_+' '+inttostr(fQData[i].ID)+' ' else
      query_:=query_+' , '+inttostr(fQData[i].ID)+'';
      query_:=AddOptions(query_+') '+GetFilter(db_attr_norm)+' ');
@@ -507,7 +506,9 @@ begin
   end;
 
   try
-  fQuery.active:=false;                                           
+  fQuery.active:=false;
+  TADOQuery(fQuery).CursorType := ctOpenForwardOnly;
+  TADOQuery(fQuery).ExecuteOptions := [eoAsyncFetchNonBlocking];
   query_:=SysUtils.StringReplace(query_,'''',' ',[rfReplaceAll]);   
   query_:=SysUtils.StringReplace(query_,'\',' ',[rfReplaceAll]);
   SetSQL(fQuery,query_);
@@ -609,9 +610,11 @@ begin
     end;
    end;
    CheckForm;
+   fData := TSearchRecordArray.Create;
    if not Terminated then
-   begin
-    SetLength(fData,fQuery.RecordCount);
+   begin       
+    for i:=1 to fQuery.RecordCount do
+      fData.AddNew;
     SynchronizeEx(InitializeA);
     fQuery.First;
    end;
@@ -715,10 +718,10 @@ begin
   begin
     FShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
     ListView1.ShowGroupMargins:=FShowGroups;
-    DmProgress1.Position:=0;
-    DmProgress1.MaxValue:=fQuery.RecordCount;
+    PbProgress.Position:=0;
+    PbProgress.MaxValue:=fQuery.RecordCount;
     Label7.Caption:=format(TEXT_MES_RES_REC,[IntToStr(fQuery.RecordCount)]);
-    DmProgress1.Text:=TEXT_MES_LOAD_QUERY_PR;
+    PbProgress.Text:=TEXT_MES_LOAD_QUERY_PR;
   end;
 end;
 
@@ -726,15 +729,15 @@ procedure SearchThread.InitializeB;
 begin
   with (FSender as TSearchForm) do
   begin
-    DmProgress1.Position:=0;
-    DmProgress1.MaxValue:=intparam;
+    PbProgress.Position:=0;
+    PbProgress.MaxValue:=intparam;
     Label7.Caption:=TEXT_MES_SEARCH_FOR_REC;
-    DmProgress1.Text:=format(TEXT_MES_SEARCH_FOR_REC_FROM,[IntToStr(intparam)]);
+    PbProgress.Text:=format(TEXT_MES_SEARCH_FOR_REC_FROM,[IntToStr(intparam)]);
   end;
 end;
 
 
-procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; Name : String; SortMethod : integer;
+procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
       SortDecrement : boolean; ShowGroups : boolean; SizeParam : int64; FileNameParam : string; RatingParam : integer;
       DateTimeParam : TDateTime; Include : Boolean; var LastSize : int64; var LastChar : Char; var LastRating : integer;
       var LastMonth : integer; var LastYear : integer);
@@ -938,16 +941,16 @@ begin
  new := ListView.Items.Add(DataObject);
  new.Tag:=ID;
  new.ImageIndex:=-1;
- new.Caption:=Name;
+ new.Caption:=ExtractFileName(FileNameParam);
 end;
 
 procedure SearchThread.NewItem;
 begin
-  if QueryType<>QT_W_SCAN_FILE then
+  if QueryType <> QT_W_SCAN_FILE then
   begin
-   (FSender as TSearchForm).DmProgress1.Position:=fi;
+   (FSender as TSearchForm).PbProgress.Position:=fi;
   end;
-  AddItemInListViewByGroups((FSender as TSearchForm).ListView1, FID, FName, fSortMethod, fSortDecrement, fShowGroups, SizeParam,
+  AddItemInListViewByGroups((FSender as TSearchForm).ListView1, FID, fSortMethod, fSortDecrement, fShowGroups, SizeParam,
     FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
 end;
 
@@ -1466,7 +1469,7 @@ begin
   end;
   //Loading big images
   if fPictureSize<>ThImageSize then
-    (FSender as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,fSender,FSID,nil,fPictureSize,Copy(fData)));
+    (FSender as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,fSender,FSID,nil,fPictureSize,fData));
  except
  end;
 end;
@@ -1520,7 +1523,7 @@ end;
 
 procedure SearchThread.SetMaxValueA;
 begin
-  (FSender as TSearchForm).DmProgress1.MaxValue:=IntParam;
+  (FSender as TSearchForm).PbProgress.MaxValue:=IntParam;
 end;
 
 procedure SearchThread.SetProgress(Value: Integer);
@@ -1531,7 +1534,7 @@ end;
 
 procedure SearchThread.SetProgressA;
 begin
-  (FSender as TSearchForm).DmProgress1.Position:=IntParam;
+  (FSender as TSearchForm).PbProgress.Position:=IntParam;
 end;
 
 procedure SearchThread.SetProgressText(Value: String);
@@ -1542,7 +1545,7 @@ end;
 
 procedure SearchThread.SetProgressTextA;
 begin
-  (FSender as TSearchForm).DmProgress1.Text:=StrParam;
+  (FSender as TSearchForm).PbProgress.Text:=StrParam;
 end;
 
 procedure SearchThread.ListViewImageIndex;

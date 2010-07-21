@@ -34,19 +34,19 @@ type
     procedure LoadingTimerTimer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-  private
-  FStartTime : Cardinal;
-  procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
+  private    
     { Private declarations }
+    Seconds : integer;
+    FStartTime : Cardinal;
+    procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
   public
-   WaitEnabled : boolean;
-   procedure LoadRegistrationData;
+    WaitEnabled : boolean;
+    procedure LoadRegistrationData;
     { Public declarations }
   end;
 
 var
   AboutForm: TAboutForm;
-  Seconds : integer;
 
 implementation
 
@@ -57,35 +57,29 @@ uses Activation, Language;
 { TAboutForm }
 
 procedure TAboutForm.GrayScale(var Image : TBitmap);
-var
-  i, j, c : integer;
-  p : PARGB;
 begin
- TW.I.Start('GrayScale');
- UnitDBCommonGraphics.GrayScale(Image);
- TW.I.Start('GrayScale - end');
+  UnitDBCommonGraphics.GrayScale(Image);
 end;
 
-procedure TAboutForm.WMMouseDown(var s: Tmessage);
+procedure TAboutForm.WMMouseDown(var s: TMessage);
 begin
- Perform(WM_NCLBUTTONDOWN,HTCaption,s.lparam);
+  Perform(WM_NCLBUTTONDOWN, HTCaption, s.lparam);
 end;
 
 procedure TAboutForm.CloseButtonClick(Sender: TObject);
 begin
- if timer1.Enabled then exit;
- close;
+  if Timer1.Enabled then
+    Exit;
+  Close;
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
 var
   InfoText : TStringList;
 begin
- TW.I.Start('FormCreate');
+ WaitEnabled:=True;
  DmProgress1.Text:=TEXT_MES_LOADING_PHOTODB;
- WaitEnabled:=true;
- TW.I.Start('CloseButton');
- CloseButton.Filter:=grayscale;
+ CloseButton.Filter:=GrayScale;
  CloseButton.Refresh;
  Button1.Caption:=TEXT_MES_OPEN_ACTIVATION_FORM;
  if DBKernel<>nil then
@@ -227,16 +221,9 @@ var
   n : Cardinal;
 begin
  Memo2.Clear;
- memo2.Lines.Add(TEXT_MES_PROGRAM_CODE); 
- TW.I.Start('GetIdeDiskSerialNumber');
+ memo2.Lines.Add(TEXT_MES_PROGRAM_CODE);
  s:=GetIdeDiskSerialNumber;
- TW.I.Start('GetIdeDiskSerialNumber - end');
  CalcStringCRC32(s,n);
-// n:=n xor $FA45B671;  //v1.75
-// n:=n xor $8C54AF5B; //v1.8
-// n:=n xor $AC68DF35; //v1.9
-// n:=n xor $B1534A4F; //v2.0
-// n:=n xor $29E0FA13; //v2.1
  n:=n xor $6357A302; //v2.2
  s:=inttohex(n,8);
  CalcStringCRC32(s,n);
@@ -244,9 +231,6 @@ begin
   n:=n xor $1459EF12;
  {$ENDIF}
  {$IFDEF RUS}
-//  n:=n xor $4D69F789; //v1.9
-//  n:=n xor $E445CF12; //v2.0
-//  n:=n xor $56C987F3; //v2.1
  n:=n xor $762C90CA; //v2.2
  {$ENDIF}
  Code:=s+inttohex(n,8);

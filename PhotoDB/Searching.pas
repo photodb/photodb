@@ -99,7 +99,7 @@ type
     ImageList1: TImageList;
     HelpTimer: TTimer;
     SearchPanelB: TPanel;
-    DmProgress1: TDmProgress;
+    PbProgress: TDmProgress;
     Label7: TLabel;
     Button1: TButton;
     Button2: TButton;
@@ -670,7 +670,7 @@ begin
  Button2.Caption:='-->';
  Button1.OnClick:= BreakOperation;
  Button1.Caption:=TEXT_MES_STOP;
- DmProgress1.Text:=TEXT_MES_STOPING+'...';
+ PbProgress.Text:=TEXT_MES_STOPING+'...';
  Label7.Caption:=TEXT_MES_CALCULATING+'...';
  If Creating then Exit;
  try
@@ -679,9 +679,9 @@ begin
   FBitmapImageList.Clear;
  except
  end;
- DmProgress1.Text:=TEXT_MES_INITIALIZE+'...';
- DmProgress1.position:=0;
- DmProgress1.Text:=TEXT_MES_QUERY_EX;
+ PbProgress.Text:=TEXT_MES_INITIALIZE+'...';
+ PbProgress.position:=0;
+ PbProgress.Text:=TEXT_MES_QUERY_EX;
  WideSearch.EnableDate:=CheckBox1.Checked;
  WideSearch.MinDate:=Min(DateTimePicker2.DateTime,DateTimePicker3.DateTime);
  WideSearch.MaxDate:=Max(DateTimePicker2.DateTime,DateTimePicker3.DateTime);
@@ -984,7 +984,7 @@ begin
   WorkedFiles_.Clear;
   if ListView1.Selection.First=nil then
 
-   if Length(Data)=ListView1.Items.Count then
+   if Data.Count=ListView1.Items.Count then
    begin
     for i:=1 to ListView1.Items.Count do
     WorkedFiles_.Add(Data[ItemIndex(ListView1.Items[i-1])].FileName);
@@ -1428,8 +1428,8 @@ end;
 
 procedure TSearchForm.load_thum_(Sender: TObject);
 begin
- DmProgress1.Text:=TEXT_MES_PROGRESS_PR;
- DmProgress1.Position:=0;
+ PbProgress.Text:=TEXT_MES_PROGRESS_PR;
+ PbProgress.Position:=0;
 end;
 
 procedure DrawAttributes(bit : TBitmap; PistureSize : integer; Rating,Rotate, Access : Integer; FileName : String; Crypt : Boolean; var Exists : integer; ID : integer = 0);
@@ -1756,11 +1756,11 @@ procedure TSearchForm.BreakOperation(Sender: TObject);
 begin
  if ToolButton14.Enabled then
  ToolButton14.Click;
- DmProgress1.Text:=TEXT_MES_STOPING+'...';
+ PbProgress.Text:=TEXT_MES_STOPING+'...';
  Button1.Onclick:= Search;
  Button1.Caption:=TEXT_MES_SEARCH;
- DmProgress1.Text:=TEXT_MES_DONE;
- DmProgress1.Position:=0;
+ PbProgress.Text:=TEXT_MES_DONE;
+ PbProgress.Position:=0;
  ListView1.Show;
  BackGroundSearchPanel.Hide;
  ListView1.Groups.EndUpdate;
@@ -1809,7 +1809,7 @@ begin
  if Panel1.width<150 then Panel1.width:=150;
  if Panel1.width>240 then Panel1.width:=240;
  SearchEdit.Width:=Panel1.width-otstup;
- DmProgress1.Width:=Panel1.width-otstup;
+ PbProgress.Width:=Panel1.width-otstup;
  Memo1.Width:=Panel1.width-otstup;
  Memo2.Width:=Panel1.width-otstup;
  ComboBoxSearchGroups.Width:=Panel1.width-otstup;
@@ -1999,7 +1999,7 @@ begin
  end;
 
  Rotate:=0;
- For i:=0 to Length(Data)-1 do
+ For i:=0 to Data.Count-1 do
  if Data[i].ID=ID then
  begin
   if EventID_Param_Private in params then Data[i].Access:=Value.Access;
@@ -2036,17 +2036,20 @@ begin
                                    
  if [EventID_Param_Rotate]*params<>[] then
  begin
-  for i:=0 to Length(Data)-1 do
+  for i:=0 to Data.Count-1 do
   if Data[i].ID=ID then
   begin
    if ListView1.Items[i].ImageIndex>-1 then
    begin
     ApplyRotate(FBitmapImageList[ListView1.Items[i].ImageIndex].Bitmap, ReRotation);
    end else
-   begin         
-    SetLength(FilesToUpdate,1);
-    FilesToUpdate[0].FileName:=FileName;
-    FilesToUpdate[0].Rotation:=Rotate;
+   begin
+    FilesToUpdate := TSearchRecordArray.Create;
+    with FilesToUpdate.AddNew do
+    begin
+      FileName:=FileName;
+      Rotation:=Rotate;
+    end;
     RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,self,StateID,nil,fPictureSize,FilesToUpdate,true));
    end;
   end;
@@ -2060,11 +2063,13 @@ begin
 
  RefreshParams:=[EventID_Param_Image,EventID_Param_Delete,EventID_Param_Critical];
  if RefreshParams*params<>[] then
- begin
-  SetLength(FilesToUpdate,1);
+ begin               
+  with FilesToUpdate.AddNew do
+  begin
+    FileName:=FileName;
+    Rotation:=Rotate;
+  end;
 
-  FilesToUpdate[0].FileName:=FileName;
-  FilesToUpdate[0].Rotation:=Rotate;
   TSearchBigImagesLoaderThread.Create(false,self,StateID,nil,fPictureSize,FilesToUpdate,true);
  end;
  if ((EventID_Param_Comment in params) or (EventID_Param_KeyWords in params) or (EventID_Param_Rating in params) or (EventID_Param_Date in params) or (EventID_Param_Time in params) or (EventID_Param_IsDate in params) or (EventID_Param_IsTime in params)  or (EventID_Param_Groups in params)) and (ID=current_id_show) then
@@ -2280,12 +2285,12 @@ begin
   end;
   if LoadingThItem<>nil then
   if DBKernel.Readbool('Options','AllowPreview',True) then
-  if ItemIndex(LoadingThItem)<Length(Data) then
+  if ItemIndex(LoadingThItem)<Data.Count then
   ListView1.ShowHint:= not FileExists(Data[ItemIndex(loadingthitem)].FileName) else
   ListView1.ShowHint:=true;
   if LoadingThItem<>nil then
   begin
-   if ItemIndex(LoadingThItem)<Length(Data)-1 then
+   if ItemIndex(LoadingThItem)<Data.Count-1 then
    if ItemIndex(LoadingThItem)>-1 then
    ListView1.Hint:=Data[ItemIndex(LoadingThItem)].Comments;
   end;
@@ -2302,7 +2307,7 @@ begin
  WorkedFiles_.Clear;
  if ListView1Selected=nil then
 
- if Length(Data)=ListView1.Items.Count then
+ if Data.Count=ListView1.Items.Count then
  begin
   for i:=1 to ListView1.Items.Count do
   WorkedFiles_.Add(Data[ItemIndex(ListView1.Items[i-1])].FileName);
@@ -2377,7 +2382,7 @@ begin
  HintTimer.Enabled:=false;
  UnitHintCeator.fItem:= LoadingThItem;
  Index:=ItemIndex(LoadingThItem);
- if (Index<0) or (Index>Length(Data)-1) then Exit;
+ if (Index<0) or (Index>Data.Count-1) then Exit;
  UnitHintCeator.fInfo:=RecordInfoOne(ProcessPath(Data[Index].FileName),Data[Index].ID,Data[Index].Rotation,Data[Index].Rating,Data[Index].Access,Data[Index].FileSize,Data[index].Comments,Data[index].KeyWords,'','',Data[index].Groups,Data[index].Date,Data[index].IsDate ,Data[index].IsTime,Data[index].Time, Data[index].Crypted, Data[index].Include, true, Data[index].Links);
  UnitHintCeator.ThRect:=rect(p.X,p.Y,p.x+ThSize,p.Y+ThSize);
  UnitHintCeator.Work_.Add(ProcessPath(Data[Index].FileName));
@@ -2440,7 +2445,7 @@ begin
  button1.onclick:= Search;
  button1.caption:=TEXT_MES_SEARCH;
  Label7.Caption:=TEXT_MES_NO_RES;
- DmProgress1.Text:=TEXT_MES_NO_RES;
+ PbProgress.Text:=TEXT_MES_NO_RES;
  SaveWindowPos1.Key:=RegRoot+'Searching';
  SaveWindowPos1.SetPosition;
  TW.I.Start('S -> Reloadtheme');
@@ -2598,8 +2603,8 @@ begin
    if FileExists(FileName) then
    if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
 
-   SetLength(ItemsIDArray,Length(Data));
-   for i:=0 to Length(Data)-1 do
+   SetLength(ItemsIDArray,Data.Count);
+   for i:=0 to Data.Count-1 do
    ItemsIDArray[i]:=Data[i].ID;
 
    SaveIDsTofile(FileName,ItemsIDArray);
@@ -2613,8 +2618,8 @@ begin
    if FileExists(FileName) then
    if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
 
-   SetLength(ItemsIDArray,Length(Data));
-   for i:=0 to Length(Data)-1 do
+   SetLength(ItemsIDArray,Data.Count);
+   for i:=0 to Data.Count-1 do
    ItemsIDArray[i]:=Data[i].ID;
 
    SaveListTofile(FileName,ItemsIDArray,l);
@@ -2627,8 +2632,8 @@ begin
    if FileExists(FileName) then
    if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
 
-   SetLength(ItemsImThArray,Length(Data));
-   for i:=0 to Length(Data)-1 do
+   SetLength(ItemsImThArray,Data.Count);
+   for i:=0 to Data.Count-1 do
    ItemsImThArray[i]:=Data[i].ImTh;
 
    SaveImThsTofile(FileName,ItemsImThArray);
@@ -2763,7 +2768,7 @@ begin
  Result.Position:=0;
  Result.IsListItem:=false;
  Result.IsPlusMenu:=false;
- MenuLength:=Length(Data);
+ MenuLength:=Data.Count;
  if MenuLength<ListView1.Items.Count then exit;
  SetLength(Result.ItemFileNames_,MenuLength);
  SetLength(Result.ItemComments_,MenuLength);
@@ -3098,6 +3103,7 @@ end;
 procedure TSearchForm.BeginUpdate;
 begin
  fListUpdating:=true;
+ ListView1.BeginUpdate;
  ListView1.Groups.BeginUpdate(false);
  BackGroundSearchPanel.Visible:=True;
  ListView1.Visible:=false;
@@ -3109,6 +3115,7 @@ begin
  ListView1.Visible:=true;
  BackGroundSearchPanel.Visible:=False;
  ListView1.Groups.EndUpdate;
+ ListView1.EndUpdate;
 end;
 
 procedure TSearchForm.BackGroundSearchPanelResize(Sender: TObject);
@@ -3590,13 +3597,9 @@ begin
  begin
   if ListView1.Items[i].Tag=ID then
   begin
-   for j:=i to ListView1.Items.Count-2 do
-   begin
-    Data[j]:=Data[j+1];
-   end;
-   ListView1.Items.Delete(i);
-   Setlength(Data,Length(Data)-1);
-   break;
+    Data.DeleteAt(i);
+    ListView1.Items.Delete(i);
+    break;
   end;
  end;
 end;
@@ -4039,7 +4042,7 @@ procedure TSearchForm.DeleteSelected;
 var
   i : integer;
 begin
- if DmProgress1.Position<>0 then exit;
+ if PbProgress.Position<>0 then exit;
  ListView1.Groups.BeginUpdate(false);
  for i:=ListView1.Items.Count-1 downto 0 do
  if ListView1.Items[i].Selected then
@@ -4585,9 +4588,9 @@ begin
  r.Top:=r1.Top-2;
 
  index:=ItemIndex(Item);
- if index>Length(Data)-1 then
+ if index>Data.Count-1 then
  begin
-  EventLog(':TSearchForm.Listview1ItemThumbnailDraw() Error: index = '+IntToStr(index)+', Length(Data) = '+IntToStr(Length(Data)));
+  EventLog(':TSearchForm.Listview1ItemThumbnailDraw() Error: index = '+IntToStr(index)+', Length(Data) = '+IntToStr(Data.Count));
   exit;
  end;
  DrawAttributes(b,fPictureSize,Data[index].Rating,Data[index].Rotation,Data[index].Access,Data[index].FileName,Data[index].Crypted,Data[index].Exists,1);
@@ -4796,7 +4799,7 @@ var
 begin
  FileName:=AnsiLowerCase(FileName);
  Result:=false;
- for i:=0 to Length(Data)-1 do
+ for i:=0 to Data.Count-1 do
  begin
   if Data[i].FileName=FileName then
   begin
@@ -4812,7 +4815,7 @@ var
 begin
  Result:=-1;
  FileName:=AnsiLowerCase(FileName);
- for i:=0 to Length(Data)-1 do
+ for i:=0 to Data.Count-1 do
  begin
   if Data[i].FileName=FileName then
   begin
@@ -4827,7 +4830,7 @@ var
   i : integer;
 begin
  FileName:=AnsiLowerCase(FileName);
- for i:=0 to Length(Data)-1 do
+ for i:=0 to Data.Count-1 do
  begin
   if Data[i].FileName=FileName then
   begin
@@ -4842,7 +4845,7 @@ var
   Bmp : TBitmap;
 begin
  FileName:=AnsiLowerCase(FileName);
- for i:=0 to Length(Data)-1 do
+ for i:=0 to Data.Count-1 do
  begin
   if Data[i].FileName=FileName then
   begin
@@ -4900,7 +4903,7 @@ begin
  BigImagesTimer.Enabled:=false;
  NewFormState;
  //тут начинается загрузка больших картинок
- RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,self,StateID,nil,fPictureSize,Copy(Data)));
+ RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,self,StateID,nil,fPictureSize,Data));
 end;
 
 function TSearchForm.GetVisibleItems: TArStrings;
@@ -4912,7 +4915,7 @@ var
 begin
  SetLength(Result,0);
  SetLength(t,0);              
- if Length(Data)<>ListView1.Items.Count then exit;
+ if Data.Count<>ListView1.Items.Count then exit;
  rv :=  Listview1.Scrollbars.ViewableViewportRect;
  for i:=0 to ListView1.Items.Count-1 do
  begin
@@ -5617,7 +5620,7 @@ begin
 
  for i:=0 to L-1 do
  begin
-  AddItemInListViewByGroups(ListView1,LI[SIs[i].ID].DBData.ID,LI[SIs[i].ID].Caption,SortLink.Tag,Decremect1.Checked,
+  AddItemInListViewByGroups(ListView1,LI[SIs[i].ID].DBData.ID,SortLink.Tag,Decremect1.Checked,
   ShowGroups,LI[SIs[i].ID].DBData.FileSize,LI[SIs[i].ID].DBData.FileName,LI[SIs[i].ID].DBData.Rating,
   LI[SIs[i].ID].DBData.Date,LI[SIs[i].ID].DBData.Include,FLastSize,FLastChar,FLastRating,FLastMonth,FLastYear);
   ListView1.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
