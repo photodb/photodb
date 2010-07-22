@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
   ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
-  UnitDBDeclare;
+  UnitDBDeclare, uDBDrawing;
 
 type
   TFormManageGroups = class(TForm)

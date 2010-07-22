@@ -515,7 +515,7 @@ type
         Sender: TCustomEasyListview; Item: TEasyItem);
     procedure ScrollBox1Reallign(Sender: TObject);
     procedure BackGround(Sender: TObject; x, y, w, h: integer;
-        var Bitmap: TBitmap);
+        Bitmap: TBitmap);
     procedure Listview1IncrementalSearch(Item: TEasyCollectionItem;
         const SearchBuffer: WideString; var CompareResult: Integer);
 
@@ -2387,7 +2387,7 @@ begin
      index:=MenuIndexToItemIndex(i);
      if index<ListView1.Items.Count-1 then
      if ListView1.Items[i].Data<>nil then
-     Boolean(TDataObject(ListView1.Items[i].Data).Data^):=Value.Include;
+     Boolean(TDataObject(ListView1.Items[i].Data).Include):=Value.Include;
 
      fFilesInfo[i].Include:=Value.Include;
      ListView1.Refresh;
@@ -2913,7 +2913,6 @@ procedure TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include 
 var
   i, index, c : Integer;
   R : TRect;
-  p : PBoolean;
   RectArray: TEasyRectArrayObject;
 begin
   for I := 0 to fFilesInfo.Count - 1 do
@@ -2929,15 +2928,11 @@ begin
   c:=ListView1.Items[index].ImageIndex;
   if ListView1.Items[index].Data<>nil then
   begin
-   Boolean(TDataObject(ListView1.Items[index].Data).Data^):=Include;
+   Boolean(TDataObject(ListView1.Items[index].Data).Include):=Include;
   end else
   begin
-
-   Getmem(p,SizeOf(Boolean));
-   p^:=Include;
-
    ListView1.Items[index].Data:=TDataObject.Create;
-   TDataObject(ListView1.Items[index].Data).Data:=p;
+   TDataObject(ListView1.Items[index].Data).Include:=Include;
   end;
   if c=-1 then
   begin
@@ -2972,7 +2967,6 @@ procedure TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : bool
 var
   i, index, c : Integer;
   R : TRect;
-  p : PBoolean;
   RectArray: TEasyRectArrayObject;
 begin
   for I := 0 to fFilesInfo.Count - 1 do
@@ -2983,14 +2977,11 @@ begin
   c:=ListView1.Items[index].ImageIndex;
   if ListView1.Items[index].Data<>nil then
   begin
-   Boolean(TDataObject(ListView1.Items[index].Data).Data^):=Include;
+   TDataObject(ListView1.Items[index].Data).Include:=Include;
   end else
   begin
-   Getmem(p,SizeOf(Boolean));
-   p^:=Include;
-
    ListView1.Items[index].Data:=TDataObject.Create;
-   TDataObject(ListView1.Items[index].Data).Data:=p;
+   TDataObject(ListView1.Items[index].Data).Include:=Include;
   end;
   if FBitmapImageList[c].IsBitmap then
   FBitmapImageList[c].Bitmap.Free else
@@ -3039,8 +3030,7 @@ end;
 function TExplorerForm.AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
 var
   i : integer;
-  P : PBoolean;
-  Data : TObject;
+  Data : TDataObject;
 begin
   Result := nil;
   for i := FFilesInfo.Count - 1 downto 0 do
@@ -3052,11 +3042,8 @@ begin
 
   LockDrawIcon:=true;
 
-  GetMem(P,sizeof(Boolean));
-  p^:=FFilesInfo[i].Include;
-
   Data:=TDataObject.Create;
-  TDataObject(Data).Data:=p;
+  Data.Include:=FFilesInfo[i].Include;
 
   Result:=ListView1.Items.Add(Data);
   Result.Tag:=FFilesInfo[i].FileType;
@@ -3084,6 +3071,7 @@ function TExplorerForm.AddItemW(Caption: string; FileGUID: TGUID) : TEasyItem;
 Var
   I : integer;
   P : PBoolean;
+  Data : TDataObject;
 begin
  Result:=Nil;
  for I := 0 to FFilesInfo.Count - 1 do
@@ -3092,13 +3080,11 @@ begin
   if ListView1.Groups[0].Visible then
   if ListView1.Items.Count=0 then ListView1.Groups[0].Visible:=false;
   
-  LockDrawIcon:=true;
-  Result:=ListView1.Items.Add;
-  GetMem(P,sizeof(Boolean));
-  p^:=True;
+  LockDrawIcon:=true; 
+  Data:=TDataObject.Create;
+  Data.Include:=True;
+  Result:=ListView1.Items.Add(Data);
   Result.Tag:=FFilesInfo[i].FileType;
-  Result.Data:=TDataObject.Create;
-  TDataObject(Result.Data).Data:=p;
 
   Result.ImageIndex:=FFilesInfo[i].ImageIndex;
   Result.Caption:=Caption;
@@ -7332,16 +7318,12 @@ var
   w,h, index, ind : integer;
   Exists : integer;
 begin
- index:=0;
- ind:=0;
  if Item.Data=nil then exit;
  try
   r1:=ARect;
   if Item.ImageIndex<0 then exit;
 
-  if not Boolean(TDataObject(Item.Data).Data^) then
-  ListView1.PaintInfoItem.fBorderColor:=$00FFFF
-  else ListView1.PaintInfoItem.fBorderColor:=Theme_ListSelectColor;
+  ListView1.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
 
   b:=TBitmap.Create;
   b.PixelFormat:=pf24bit;
@@ -7403,14 +7385,14 @@ begin
  for i:=0 to ComponentCount-1 do
  if Components[i] is TWebLink then
  if (Components[i] as TWebLink).Visible then
- (Components[i] as TWebLink).RecreateShImage;
+ (Components[i] as TWebLink).RefreshBuffer;
 
  for i:=0 to Length(UserLinks)-1 do
- UserLinks[i].RecreateShImage;
+ UserLinks[i].RefreshBuffer;
 end;
 
 procedure TExplorerForm.BackGround(Sender: TObject; x, y, w, h: integer;
-  var Bitmap: TBitmap);
+  Bitmap: TBitmap);
 begin
  ScrollBox1.GetBackGround(x,y,w,h,Bitmap);
 end;

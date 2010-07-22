@@ -304,7 +304,7 @@ begin
   if Edit2.Text<>TEXT_MES_NO_DB_FILE then
   begin
    DBFile.FileName:=Edit2.Text;
-   DBFile._Name:=Edit1.Text;
+   DBFile.Name:=Edit1.Text;
    DoSelectStep(30);
   end else
   begin
@@ -550,7 +550,7 @@ begin
  Memo1.Clear;
  Memo1.Lines.Add(TEXT_MES_NEW_DB_WILL_CREATE_WITH_THIS_OPTIONS);
  Memo1.Lines.Add('');
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_NAME_FORMAT,[DBFile._Name]));
+ Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_NAME_FORMAT,[DBFile.Name]));
  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_PATH_FORMAT,[DBFile.FileName]));
  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_ICON_FORMAT,[DBFile.Icon]));   
  Memo1.Lines.Add('');
@@ -598,10 +598,10 @@ begin
 
    CreateExampleDB(FileName,Application.ExeName+',0',GetDirectory(Application.ExeName));
 
-   DBFile._Name:=DBkernel.NewDBName(TEXT_MES_DEFAULT_DB_NAME);
+   DBFile.Name:=DBkernel.NewDBName(TEXT_MES_DEFAULT_DB_NAME);
    DBFile.FileName:=FileName;
    DBFile.Icon:=Application.ExeName+',0';
-   DBKernel.AddDB(DBFile._Name,DBFile.FileName,DBFile.Icon);
+   DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
    
    MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
    Close;
@@ -643,7 +643,7 @@ begin
   if DBkernel.TestDB(DBFile.FileName) then
   begin  
    //TODO:
-   DBKernel.AddDB(DBFile._Name,DBFile.FileName,DBFile.Icon);
+   DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
    Close;
    exit;
   end else
@@ -662,11 +662,11 @@ begin
  DBImageList.Clear;
  DBImageList.BkColor:=Theme_ListColor;
 
- for i:=0 to Length(DBKernel.DBs)-1 do
+ for i:=0 to DBKernel.DBs.Count-1 do
  begin
   With ComboBoxExDB1.ItemsEx.Add do
   begin
-   Caption:=DBKernel.DBs[i]._Name;
+   Caption:=DBKernel.DBs[i].Name;
    ImageIndex:=i+1;
   end;
   ico:=GetSmallIconByPath(DBKernel.DBs[i].Icon);
@@ -786,7 +786,7 @@ end;
 
 procedure TFormSelectDB.InternalNameEditChange(Sender: TObject);
 begin
- DBFile._Name:=InternalNameEdit.Text;
+ DBFile.Name:=InternalNameEdit.Text;
 end;
 
 end.

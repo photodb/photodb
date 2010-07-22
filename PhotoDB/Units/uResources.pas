@@ -7,13 +7,15 @@ uses Windows, SysUtils, Classes, JPEG, GraphicEx;
 function GetFolderPicture : TPNGGraphic;
 function GetLogoPicture : TJpegImage; 
 function GetSlideShowLoadPicture : TPNGGraphic;
-function GetExplorerBackground : TPNGGraphic;
+function GetExplorerBackground : TPNGGraphic;    
+function GetSearchBackground : TPNGGraphic;
               
 {$R Logo.res}    
 {$R WindowsXPMan.res}
 {$R slideshow_load.res}
 {$R directory_large.res}
-{$R ExplorerBackground.res}
+{$R ExplorerBackground.res} 
+{$R SearchBackground.res}
 
 implementation
 
@@ -66,10 +68,15 @@ function GetSlideShowLoadPicture : TPNGGraphic;
 begin
   Result := LoadPNGFromRES('SLIDESHOW_LOAD');
 end;
-    
+
 function GetExplorerBackground : TPNGGraphic;
 begin
   Result := LoadPNGFromRES('EXPLORERBACKGROUND');
+end;
+
+function GetSearchBackground : TPNGGraphic;
+begin
+  Result := LoadPNGFromRES('SEARCHBACKGROUND');
 end;
 
 function GetLogoPicture : TJpegImage;

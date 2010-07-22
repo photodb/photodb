@@ -5,7 +5,7 @@ interface
 uses Classes, Windows, SysUtils, SyncObjs;
 
 {$DEFINE _PROFILER}
-{$DEFINE MULTITHREAD}
+{$DEFINE _MULTITHREAD}
 
 type
   TW = class(TObject)
@@ -90,7 +90,7 @@ begin
 {$ENDIF}
     for I := 0 to W.Count - 1 do
       if TW(W[I]).ThreadID = CurrentThreadID then
-         Result := W[I];
+         Result := W[I];  
 
     if Result = nil then
     begin
@@ -104,7 +104,7 @@ end;
 
 procedure TW.Start(Name: string);
 begin
-{$IFDEF PROFILER}
+{$IFNDEF PROFILER}
   Exit; 
 {$ENDIF}
 {$IFDEF MULTITHREAD}

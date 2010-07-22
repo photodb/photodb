@@ -2,9 +2,11 @@ unit uDBDrawing;
 
 interface
 
-uses Windows, SysUtils, Graphics, Exif;
+uses Windows, SysUtils, Graphics, UnitDBDeclare, Exif;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
+function GetListItemBorderColor(Data : TDataObject) : TColor;
+function RectInRect(const R1, R2 : TRect) : Boolean;
 
 implementation
 
@@ -87,6 +89,19 @@ begin
     else
       DrawIconEx(Bitmap.Canvas.Handle, 0 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 16, 16, 0, 0, DI_NORMAL);
   end;
+end;
+
+function GetListItemBorderColor(Data : TDataObject) : TColor;
+begin
+  if not Data.Include then
+    Result := $00FFFF
+  else
+    Result := Theme_ListSelectColor;
+end;
+
+function RectInRect(const R1, R2 : TRect) : Boolean;
+begin
+ Result := PtInRect(R2,R1.TopLeft) or PtInRect(R2,R1.BottomRight) or PtInRect(R1,R2.TopLeft) or PtInRect(R1,R2.BottomRight);
 end;
 
 end.

@@ -74,7 +74,6 @@ var
   c, i, j, k, l : integer;
   b : TBitmap;
   imlists : array [0..2] of TImageList;
-  Ppx : Plpixels;
   lb : TLayeredBitmap;
 Const
   Names : array [0..1,0..4] of String = (('Z_PLAY_NORM','Z_PAUSE_NORM','Z_PREVIOUS_NORM','Z_NEXT_NORM','Z_CLOSE_NORM'),('Z_PLAY_HOT','Z_PAUSE_HOT','Z_PREVIOUS_HOT','Z_NEXT_HOT','Z_CLOSE_HOT'));
@@ -101,16 +100,8 @@ begin
   if i=0 then
   begin
    lb := TLayeredBitmap.Create;
-   lb.LoadFromIconA(icons[i,j]);
-   Ppx:=lb.GetArray;
-   for k:=0 to lb.Height-1 do
-   for l:=0 to lb.Width-1 do
-   begin
-    c:=Round(0.3*Ppx^[k,l,0]+0.59*Ppx^[k,l,1]+0.11*Ppx^[k,l,2]);
-    Ppx^[k,l,0]:=c;
-    Ppx^[k,l,1]:=c;
-    Ppx^[k,l,2]:=c;
-   end;
+   lb.LoadFromHIcon(icons[i,j].Handle);
+   lb.GrayScale;
    b:=TBitmap.create;
    b.Width:=16;
    b.Height:=16;

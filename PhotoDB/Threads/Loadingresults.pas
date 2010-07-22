@@ -15,14 +15,6 @@ type
                 QT_ONE_TEXT, QT_ONE_KEYWORD, QT_W_SCAN_FILE, QT_NO_NOPATH);
 
 type
-  TDataObject = class(TObject)
-  private
-  public
-   Data : Pointer;
-   IsImage : boolean;
-  end;
-
-type
  TWideSearchOptions = record
   Enabled : Boolean;
   EnableDate : Boolean;
@@ -42,7 +34,6 @@ type
   LastTimeCode : Integer;
   UseWideSearch : boolean;
   GroupName : string;
-  IfBreak : TIfBreakThreadProc;
  end;
 
 type
@@ -452,7 +443,7 @@ begin
     try
       //ITS amazing!
       TADOQuery(fQuery).CursorType := ctOpenForwardOnly;
-      TADOQuery(fQuery).ExecuteOptions := [eoAsyncFetchNonBlocking];
+      //TADOQuery(fQuery).ExecuteOptions := [eoAsyncFetchNonBlocking];
       QueryString := SysUtils.StringReplace(QueryString, '''', ' ', [rfReplaceAll]);
       QueryString := SysUtils.StringReplace(QueryString, '\', ' ', [rfReplaceAll]);
       SetSQL(fQuery, QueryString);
@@ -559,13 +550,15 @@ begin
        CheckForm;
        fData := TSearchRecordArray.Create;
        if not Terminated then
-       begin
+       begin      
+         fQuery.Last;
          for I := 1 to fQuery.RecordCount do
            fData.AddNew;
          SynchronizeEx(InitializeA);
          fQuery.First;
        end;
        c := 0;
+       fQuery.First;
        for I := 1 to fQuery.RecordCount do
        begin
          if Terminated then
@@ -592,7 +585,7 @@ begin
        fpic.Graphic := TJPEGImage.Create;
        fthum_images_ := 1;
        SynchronizeEx(ProgressNullA);
-       if SearchManager.IsSearchForm(FSender) then
+       if SearchManager.IsSearch(FSender) then
        begin
          fQuery.First;
          for I := 1 to fQuery.RecordCount do
@@ -669,7 +662,7 @@ begin
   with (FSender as TSearchForm) do
   begin
     FShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
-    ListView1.ShowGroupMargins:=FShowGroups;
+    ListView.ShowGroupMargins:=FShowGroups;
     PbProgress.Position:=0;
     PbProgress.MaxValue:=fQuery.RecordCount;
     Label7.Caption:=format(TEXT_MES_RES_REC,[IntToStr(fQuery.RecordCount)]);
@@ -695,7 +688,6 @@ procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; Sort
       var LastMonth : integer; var LastYear : integer);
 var
   new: TEasyItem;
-  p : PBoolean;
   i,i10 : integer;
   DataObject : TDataObject;
 begin
@@ -885,10 +877,8 @@ begin
    end;
   end;
 
- Getmem(p,SizeOf(Boolean));
- p^:=Include;
  DataObject:=TDataObject.Create;
- DataObject.Data:=p;
+ DataObject.Include := Include;
 
  new := ListView.Items.Add(DataObject);
  new.Tag:=ID;
@@ -902,7 +892,7 @@ begin
   begin
    (FSender as TSearchForm).PbProgress.Position:=fi;
   end;
-  AddItemInListViewByGroups((FSender as TSearchForm).ListView1, FID, fSortMethod, fSortDecrement, fShowGroups, SizeParam,
+  AddItemInListViewByGroups((FSender as TSearchForm).ListView, FID, fSortMethod, fSortDecrement, fShowGroups, SizeParam,
     FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
 end;
 

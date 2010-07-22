@@ -13,7 +13,7 @@ type
     TArDateTime   = array of TDateTime;
     TArTime       = array of TDateTime;
     TArInteger64  = array of int64;
-    TArCardinal = array of Cardinal;
+    TArCardinal   = array of Cardinal;
 
 const
   BufferSize = 100*3*4*4096;
@@ -105,9 +105,6 @@ type
    WriteLnLineProc :  TWriteLineProcedure;  
    OnProgress : TCallBackProgressEvent;
   end;
-
-  TIfBreakThreadProc = function(Sender : TObject; SID : TGUID) : boolean of object;
-
 
 Type TEventField=(EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
      EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
@@ -240,15 +237,33 @@ type
   TImageContRecordArray = array of TImageContRecord;
 
 type
-  TPhotoDBFile = record
-   _Name : string;
-   Icon : string;
-   FileName : string;
-   aType : integer;
+  TPhotoDBFile = class
+  public
+    Name : string;
+    Icon : string;
+    FileName : string;
+    FileType : integer;
   end;
 
-  type TPhotoDBFiles = array of TPhotoDBFile;
+  TPhotoDBFiles = class
+  private
+    FList : TList;
+    function GetCount: Integer;
+    function GetValueByIndex(Index: Integer): TPhotoDBFile;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function Add(Name, Icon, FileName : string; FileType : Integer) : TPhotoDBFile;
+    property Items[Index: Integer]: TPhotoDBFile read GetValueByIndex; default;
+    property Count : Integer read GetCount;
+  end;
 
+  TDataObject = class(TObject)
+  private
+  public
+    Include : Boolean;
+    IsImage : Boolean;
+  end;
 
 implementation
 
@@ -304,6 +319,44 @@ procedure TSearchRecordArray.SetValueByIndex(Index: Integer;
   const Value: TSearchRecord);
 begin
   FList[Index] := Value;
+end;
+
+{ TPhotoDBFiles }
+
+function TPhotoDBFiles.Add(Name, Icon, FileName: string;
+  FileType: Integer): TPhotoDBFile;
+begin
+  Result := TPhotoDBFile.Create;
+  Result.Name := Name;
+  Result.Icon := Icon;
+  Result.FileName := FileName;
+  Result.FileType := FileType;
+  FList.Add(Result);
+end;
+
+constructor TPhotoDBFiles.Create;
+begin
+  FList := TList.Create;
+end;
+
+destructor TPhotoDBFiles.Destroy;
+var
+  I : Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TPhotoDBFile(FList[I]).Free;
+  FList.Free;
+  inherited;
+end;
+
+function TPhotoDBFiles.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function TPhotoDBFiles.GetValueByIndex(Index: Integer): TPhotoDBFile;
+begin
+  Result := FList[Index];
 end;
 
 end.

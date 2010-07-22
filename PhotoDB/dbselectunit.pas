@@ -215,10 +215,11 @@ end;
 procedure TDBSelect.FormCreate(Sender: TObject);
 begin
  AddDB:=false;
- DBFile._Name:=TEXT_MES_DB_BY_DEFAULT;
+ DBFile := TPhotoDBFile.Create;
+ DBFile.Name:=TEXT_MES_DB_BY_DEFAULT;
  DBFile.Icon:='';
  DBFile.FileName:='';
- DBFile.aType:=0;
+ DBFile.FileType:=0;
  DBkernel.RecreateThemeToForm(Self);
  LoadLanguage;
  SetDefaultIcon;
@@ -309,11 +310,11 @@ begin
  DBImageList.AddIcon(ico);
  ico.Free;
 
- for i:=0 to Length(DBKernel.DBs)-1 do
+ for i:=0 to DBKernel.DBs.Count - 1 do
  begin
   With ComboBoxExDB1.ItemsEx.Add do
   begin
-   Caption:=DBKernel.DBs[i]._Name;
+   Caption:=DBKernel.DBs[i].Name;
    ImageIndex:=i+1;
   end;
   ico:=GetSmallIconByPath(DBKernel.DBs[i].Icon);
@@ -359,7 +360,7 @@ begin
   //?if DBTestOK then
   //?begin
    Edit1.Text:= DB.FileName;
-   Edit2.Text:= DB._Name;
+   Edit2.Text:= DB.Name;
    Image1.Picture.Icon:=GetSmallIconByPath(DB.Icon);
   //?end else
   Edit1.Text:=TEXT_MES_NO_DB_FILE;

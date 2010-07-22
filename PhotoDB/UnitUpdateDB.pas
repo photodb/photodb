@@ -145,13 +145,10 @@ begin
 end;
 
 procedure TUpdateDBForm.FormCreate(Sender: TObject);
-type
-  TLayeredByteArray = array of array of array[0..3] of byte;
-  PLayeredByteArray = ^TLayeredByteArray;
 var
   i, j : integer;
-  Bytes : PLayeredByteArray;
   b : byte;
+  P : PARGB32;
 begin
  FullSize:=0;
  DoubleBuffered := true;
@@ -174,22 +171,24 @@ begin
  FImagePos:=0;
  FImagePosStep:=1;
  FImage := TLayeredBitmap.Create();
- FImage.LoadFromIconA(ImageGo.Picture.Icon);
+ FImage.LoadFromHIcon(ImageGo.Picture.Icon.Handle);
 
  FImageInv := TLayeredBitmap.Create();
- FImageInv.LoadFromIconA(ImageGo.Picture.Icon);
+ FImageInv.LoadFromHIcon(ImageGo.Picture.Icon.Handle);
 
- Bytes:=FImageInv.GetArray;
  for i:=0 to FImageInv.Height-1 do
- for j:=0 to FImageInv.Width-1 do
  begin
-  b:=Bytes^[i][j][0];
-  Bytes^[i][j][0]:=Bytes^[i][j][2];
-  Bytes^[i][j][2]:=b;
+   P := FImageInv.ScanLine[i];
+   for j:=0 to FImageInv.Width-1 do
+   begin
+    b := P[j].R;
+    P[j].R := P[j].B;
+    P[j].B := b;
+   end;
  end;
 
  FImageHourGlass:= TLayeredBitmap.Create();
- FImageHourGlass.LoadFromIconA(ImageHourGlass.Picture.Icon,48,48);
+ FImageHourGlass.LoadFromHIcon(ImageHourGlass.Picture.Icon.Handle, 48, 48);
 end;
 
 procedure TUpdateDBForm.Stayontop1Click(Sender: TObject);
@@ -284,10 +283,10 @@ begin
   ProgressBar.Text:=Format(TEXT_MES_TIME_REM_F,[FormatDateTime('hh:mm:ss',TimeCounter.GetTimeRemaining)]);
   FCurrentFileName:=Value.Name;
   WebLinkOpenImage.Enabled:=true;
-  WebLinkOpenImage.RecreateShImage;
+  WebLinkOpenImage.RefreshBuffer;
   WebLinkOpenImage.Repaint;
   WebLinkOpenFolder.Enabled:=true;
-  WebLinkOpenFolder.RecreateShImage;
+  WebLinkOpenFolder.RefreshBuffer;
   WebLinkOpenFolder.Repaint;
   exit;
  end;
@@ -324,10 +323,10 @@ begin
   end;
  end;
  WebLinkOpenImage.Enabled:=false;
- WebLinkOpenImage.RecreateShImage;
+ WebLinkOpenImage.RefreshBuffer;
  WebLinkOpenImage.Repaint;
  WebLinkOpenFolder.Enabled:=false;
- WebLinkOpenFolder.RecreateShImage;
+ WebLinkOpenFolder.RefreshBuffer;
  WebLinkOpenFolder.Repaint;
  FCurrentImage.free;
  FCurrentFileName:='';

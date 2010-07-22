@@ -987,10 +987,10 @@ function TDBKernel.GetDataBaseName: string;
 var
   i : integer;
 begin
- for i:=0 to length(FDBs)-1 do
+ for i:=0 to FDBs.Count-1 do
  if AnsiLowerCase(FDBs[i].FileName)=AnsiLowerCase(DBName) then
  begin
-  Result:=FDBs[i]._Name;
+  Result:=FDBs[i].Name;
  end;
 
  //? if Result='' then Result:=Dolphin_DB.GetFileNameWithoutExt(DBName);
@@ -1909,20 +1909,16 @@ var
   List : TStrings;
   i : integer;
 begin
- SetLength(FDBs,0);
+ FDBs := TPhotoDBFiles.Create;
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  Reg.OpenKey(RegRoot+'dbs',true);
  List:=TStringList.Create;
  Reg.GetKeyNames(List);
- SetLength(FDBs,List.Count);
  for i:=0 to List.Count-1 do
  begin
   Reg.CloseKey;
   Reg.OpenKey(RegRoot+'dbs\'+List[i],true);
-  FDBs[i]._Name:=List[i];
-  FDBs[i].Icon:=Reg.ReadString('icon');
-  FDBs[i].FileName:=Reg.ReadString('FileName');
-  FDBs[i].aType:=Reg.ReadInteger('type');
+  FDBs.Add(List[i], Reg.ReadString('Icon'), Reg.ReadString('FileName'), Reg.ReadInteger('Type'));
  end;
  Reg.Free;
  List.Free;
@@ -2057,10 +2053,10 @@ begin
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  try
   Reg.OpenKey(RegRoot+'dbs\'+OldDBName,true);
-  DB._Name:=OldDBName;
+  DB.Name:=OldDBName;
   DB.Icon:=Reg.ReadString('icon');
   DB.FileName:=Reg.ReadString('FileName');
-  DB.aType:=Reg.ReadInteger('type');
+  DB.FileType:=Reg.ReadInteger('type');
   Reg.CloseKey;
   Reg.OpenKey(RegRoot+'dbs\'+NewDBName,true);
   Reg.WriteString('FileName',DB.FileName);
@@ -2153,9 +2149,9 @@ begin
   dbname:=GetDataBase;
  end else
  begin
-  for i:=0 to Length(DBs)-1 do
+  for i:=0 to DBs.Count-1 do
   begin
-   if DBs[i]._Name=ParamDBFile then
+   if DBs[i].Name=ParamDBFile then
    begin
     DBName:=DBs[i].FileName;   
     if GetParamStrDBBool('/SelectDBPermanent') then

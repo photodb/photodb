@@ -2,26 +2,30 @@ unit UnitPropeccedFilesSupport;
 
 interface
 
-uses Windows, Classes, win32crc, SysUtils;
+uses Windows, Classes, win32crc, SysUtils, SyncObjs;
 
 type
- TCollectionItem = record
-  FileName : string[255];
-  CRC : Cardinal;
-  RefCount : integer;
- end;
- PCollectionItem = ^TCollectionItem;
+  TCollectionItem = class
+  public
+    FileName : string;
+    CRC : Cardinal;
+    RefCount : integer; 
+    constructor Create;
+    procedure AddRef;
+    procedure RemoveRef;
+  end;
 
 type
   TProcessedFilesCollection = class
   private
-   Data : TList;
+    FData : TList;
+    FSync : TCriticalSection;
   public
-  procedure AddFile(FileName : String);
-  procedure RemoveFile(FileName : String);
-  function ExistsFile(FileName : String) : Pointer;
-  constructor Create;
-  destructor Destroy; override;
+    function AddFile(FileName : String) : TCollectionItem;
+    procedure RemoveFile(FileName : String);
+    function ExistsFile(FileName : String) : TCollectionItem;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
   var
@@ -31,94 +35,101 @@ implementation
 
 { TProcessedFilesCollection }
 
-procedure TProcessedFilesCollection.AddFile(FileName: String);
-var
-  aRecord : PCollectionItem;
-  crc : Cardinal;
-  p : Pointer;
+function TProcessedFilesCollection.AddFile(FileName: String) : TCollectionItem;
 begin
- p:=ExistsFile(FileName);
- if p=nil then
- begin
-  GetMem(aRecord,SizeOf(TCollectionItem));
-  aRecord^.FileName:=AnsiLowerCase(ExtractFileName(FileName));
-  crc:=0;
-  CalcStringCRC32(aRecord^.FileName,crc);
-  aRecord^.CRC := crc;
-  aRecord^.RefCount:=1;
-  Data.Add(aRecord)
- end else
- begin
-  TCollectionItem(p^).RefCount:=TCollectionItem(p^).RefCount+1;
- end;
+  FSync.Enter;
+  try
+    Result := ExistsFile(FileName);
+    if Result = nil then
+    begin
+      Result := TCollectionItem.Create;
+      Result.FileName := AnsiLowerCase(FileName);
+      CalcStringCRC32(Result.FileName, Result.CRC);
+      FData.Add(Result);
+    end else
+      Result.AddRef;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 constructor TProcessedFilesCollection.Create;
 begin
- Data:=TList.Create;
+  FData := TList.Create;
+  FSync := TCriticalSection.Create;
 end;
 
 destructor TProcessedFilesCollection.Destroy;
+var
+  I : Integer;
 begin
- Data.Free;
+  for I := 0 to FData.Count - 1 do
+    TCollectionItem(FData[I]).Free;
+  FData.Free;
+  FSync.Free;
 end;
 
-function TProcessedFilesCollection.ExistsFile(FileName: String): Pointer;
+function TProcessedFilesCollection.ExistsFile(FileName: String): TCollectionItem;
 var
-  i, dc : integer;
-  crc : Cardinal;
-  aFileName : string; 
-  p : Pointer;
-begin
- dc:=Data.Count;
- if dc=0 then begin Result:=nil; exit; end;
- aFileName:=AnsiLowerCase(ExtractFileName(FileName));
- crc:=0;
- CalcStringCRC32(aFileName,crc);
- for i:=0 to dc-1 do
- begin
-  p:=Data.Items[i];
-  if TCollectionItem(p^).CRC=crc then
-  begin
-   if TCollectionItem(p^).FileName=aFileName then
-   begin
-    Result:=p;
-    exit;
-   end;
+  I : Integer;
+  CRC : Cardinal;
+  Item : TCollectionItem;
+begin    
+  Result := nil;
+  FSync.Enter;
+  try
+    FileName := AnsiLowerCase(FileName);
+    CalcStringCRC32(FileName, CRC);
+    for I := 0 to FData.Count - 1 do
+    begin
+      Item := FData.Items[i];
+      if (Item.CRC = CRC) and (Item.FileName = FileName) then
+      begin
+        Result:=Item;
+        Exit;
+      end;
+    end;
+  finally
+    FSync.Leave;
   end;
- end;
- Result:=nil;
 end;
 
 procedure TProcessedFilesCollection.RemoveFile(FileName: String);
 var
-  i, dc : integer;
-  crc : Cardinal;
-  aFileName : string;
-  p : Pointer;
-begin       
- dc:=Data.Count;
- if dc=0 then begin exit; end;
- aFileName:=AnsiLowerCase(ExtractFileName(FileName));
- crc:=0;
- CalcStringCRC32(aFileName,crc);
- for i:=0 to dc-1 do
- begin
-  p:=Data.Items[i];
-  if TCollectionItem(p^).CRC=crc then
-  begin
-   if TCollectionItem(p^).FileName=aFileName then
-   begin
-    TCollectionItem(p^).RefCount:=TCollectionItem(p^).RefCount-1;
-    if TCollectionItem(p^).RefCount=0 then
+  I : Integer;
+  CRC : Cardinal;
+  Item : TCollectionItem;
+begin
+  FSync.Enter;
+  try
+    Item := ExistsFile(FileName);
+    if Item <> nil then
     begin
-     Data.Remove(p);
-     FreeMem(p);
+      if Item.RefCount > 1 then
+        Item.RemoveRef
+      else
+        FData.Remove(Item);
     end;
-    exit;
-   end;
+  finally
+    FSync.Leave;
   end;
- end;
+end;
+
+{ TCollectionItem }
+
+procedure TCollectionItem.AddRef;
+begin
+  Inc(RefCount);
+end;
+
+constructor TCollectionItem.Create;
+begin
+  RefCount := 1;
+end;
+
+procedure TCollectionItem.RemoveRef;
+begin
+  Dec(RefCount);
 end;
 
 initialization

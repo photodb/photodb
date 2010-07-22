@@ -320,13 +320,13 @@ uses  Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
 procedure TViewer.FormCreate(Sender: TObject);
 begin        
   TW.I.Start('TViewer.FormCreate');
- FCreating := True;
- fCurrentPage := 0;
- fPageCount := 1;
- FRotatingImageInfo.Enabled:=false;
- WaitingList:=false;
- LastZValue:=1;
- LockEventRotateFileList:=TStringList.Create;
+  FCreating := True;
+  fCurrentPage := 0;
+  fPageCount := 1;
+  FRotatingImageInfo.Enabled:=false;
+  WaitingList:=false;
+  LastZValue:=1;
+  LockEventRotateFileList:=TStringList.Create;
   RatingPopupMenu.Images:=DBKernel.ImageList;
   N01.ImageIndex:=DB_IC_DELETE_INFO;
   N11.ImageIndex:=DB_IC_RATING_1;
@@ -352,8 +352,8 @@ begin
   FullScreenNow:=false;
   SlideShowNow:=false;
   ToolBar2.DoubleBuffered:=True;
-  drawimage:=Tbitmap.create;
-  FbImage:=TBitmap.create;
+  drawimage:=Tbitmap.Create;
+  FbImage:=TBitmap.Create;
   FbImage.PixelFormat:=pf24bit;
   drawimage.PixelFormat:=pf24bit;
   TW.I.Start('fcsrbmp');

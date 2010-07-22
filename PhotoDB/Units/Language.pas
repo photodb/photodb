@@ -811,26 +811,6 @@ Const
  TEXT_MES_USER_CHANGE_ACCESS = 'Изменить права';
  TEXT_MES_SELECT_RIGHTS_F = 'Выберите права для пользователя "%s" и нажмите на кнопку "'+TEXT_MES_OK+'"';
 
- TEXT_MES_RIGHTS_DELETE = 'Удаление';
- TEXT_MES_RIGHTS_ADD = 'Добавление';
- TEXT_MES_RIGHTS_CHANGE_DB_NAME = 'Изменение БД';
- TEXT_MES_RIGHTS_SET_PRIVATE = 'Установка личных атрибутов';
- TEXT_MES_RIGHTS_SET_RATING = 'Установка оценки';
- TEXT_MES_RIGHTS_SET_INFO = 'Установка информации';
- TEXT_MES_RIGHTS_CHANGE_PASSWORD = 'Изменение пароля';
- TEXT_MES_RIGHTS_EDIT_IMAGE = 'Запуск редактора';
- TEXT_MES_RIGHTS_SHOW_PRIVATE = 'Показ личных фотографий';
- TEXT_MES_RIGHTS_SHOW_OPTIONS = 'Показывать опции';
- TEXT_MES_RIGHTS_ADMIN_TOOLS = 'Показывать системные настройки';
- TEXT_MES_RIGHTS_CRITICAL_FILE_OPERATIONS = 'Критические файловые операции';
- TEXT_MES_RIGHTS_NORMAL_FILE_OPERATIONS = 'Безопасные файловые операции';
- TEXT_MES_RIGHTS_MANAGE_GROUPS = 'Управление группами';
- TEXT_MES_RIGHTS_EXECUTE = 'Выполнение';
- TEXT_MES_RIGHTS_CRYPT = 'Шифрование';
- TEXT_MES_RIGHTS_SHOW_PATH = 'Показывать путь';
- TEXT_MES_RIGHTS_PRINT = 'Печать';
- TEXT_MES_RIGHTS_EDIT_GROUPS = 'Редактировать группы';
-
  TEXT_MES_SORT_BY_ID = 'Сортировка по ID';
  TEXT_MES_SORT_BY_NAME = 'Сортировка по имени';
  TEXT_MES_SORT_BY_RATING = 'Сортировка по оценке';

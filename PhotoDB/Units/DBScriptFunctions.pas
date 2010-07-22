@@ -481,7 +481,7 @@ begin
   begin
    if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
-    Result:=SearchManager.Searchs[i];
+    Result:=SearchManager[i];
     break;
    end;
   end;
@@ -518,7 +518,7 @@ begin
   begin
    if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
-    Result:=SearchManager.Searchs[i].SearchEdit.Text;
+    Result:=SearchManager[i].SearchEdit.Text;
     break;
    end;
   end;
@@ -535,7 +535,7 @@ begin
   begin
    if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
-    SearchManager.Searchs[i].SearchEdit.Text:=Text;
+    SearchManager[i].SearchEdit.Text:=Text;
     break;
    end;
   end;
@@ -552,7 +552,7 @@ begin
   begin
    if CID=GUIDToString(EditorsManager.FEditors[i].WindowID) then
    begin
-    SearchManager.Searchs[i].DoSearchNow(nil);
+    SearchManager[i].DoSearchNow(nil);
     break;
    end;
   end;
@@ -569,7 +569,7 @@ begin
   SetLength(Result,SearchManager.SearchCount);
   for i:=0 to SearchManager.SearchCount-1 do
   begin
-   Result[i]:=GUIDToString(SearchManager.Searchs[i].WindowID);
+   Result[i]:=GUIDToString(SearchManager[i].WindowID);
   end;
  end;
 end;
@@ -669,10 +669,10 @@ function GetDBNameList : TArrayOfString;
 var
   i : integer;
 begin
- SetLength(Result,Length(DBkernel.DBs));
- for i:=0 to Length(DBkernel.DBs)-1 do
+ SetLength(Result,DBkernel.DBs.Count);
+ for i:=0 to DBkernel.DBs.Count-1 do
  begin
-  Result[i]:=DBkernel.DBs[i]._Name;
+  Result[i]:=DBkernel.DBs[i].Name;
  end;
 end;
 
@@ -680,8 +680,8 @@ function GetDBFileList : TArrayOfString;
 var
   i : integer;
 begin
- SetLength(Result,Length(DBkernel.DBs)); 
- for i:=0 to Length(DBkernel.DBs)-1 do
+ SetLength(Result,DBkernel.DBs.Count);
+ for i:=0 to DBkernel.DBs.Count-1 do
  begin
   Result[i]:=DBkernel.DBs[i].FileName;
  end;
@@ -691,8 +691,8 @@ function GetDBIcoList : TArrayOfString;
 var
   i : integer;
 begin
- SetLength(Result,Length(DBkernel.DBs));
- for i:=0 to Length(DBkernel.DBs)-1 do
+ SetLength(Result,DBkernel.DBs.Count);
+ for i:=0 to DBkernel.DBs.Count-1 do
  begin
   Result[i]:=DBkernel.DBs[i].Icon;
  end;
@@ -729,7 +729,7 @@ var
 begin
  DBFile:=DoChooseDBFile();
  if DBKernel.TestDB(DBFile.FileName) then
- DBKernel.AddDB(DBFile._Name,DBFile.FileName,DBFile.Icon);
+ DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
 end;
 
 function Compare2Images(File1, File2 : string; raz : integer) : integer;

@@ -68,10 +68,11 @@ var
   Options : TPhotoDBFile;
 begin
   Application.CreateForm(TFormDBOptions, FormDBOptions);
-  Options._Name:=Name;
+  Options := TPhotoDBFile.Create;
+  Options.Name:=Name;
   Options.Icon:='';
   Options.FileName:=FileName;
-  Options.aType:=0;
+  Options.FileType:=0;
   FormDBOptions.Execute(Options);
   FormDBOptions.Release;
   FormDBOptions.Free;
@@ -89,7 +90,7 @@ end;
 
 procedure TFormDBOptions.Execute(Options : TPhotoDBFile);
 begin
- fName:=Options._Name;
+ fName:=Options.Name;
  DBFile.FileName:=Options.FileName;
  ReadSettingsFromDB;        
  SetDefaultIcon(Options.Icon);    
@@ -272,10 +273,10 @@ begin
  DBFile.Icon:=Application.ExeName+',0';
  if fName='' then
  begin
-  DBFile._Name:=TEXT_MES_DB_NAME_PATTERN;
+  DBFile.Name:=TEXT_MES_DB_NAME_PATTERN;
  end else
  begin
-  DBFile._Name:=fName;
+  DBFile.Name:=fName;
  end;
  Edit1.Text:=Trim(ImageOptions.Name);
  Edit2.Text:=Trim(ImageOptions.Description);

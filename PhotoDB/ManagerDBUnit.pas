@@ -1793,7 +1793,7 @@ var
 begin
  DBFile:=DoChooseDBFile();
  if DBKernel.TestDB(DBFile.FileName) then
- DBKernel.AddDB(DBFile._Name,DBFile.FileName,DBFile.Icon);
+ DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
  RefreshDBList;
 end;
 
@@ -1805,9 +1805,9 @@ begin
  DBImageList.Clear;
  ListBox2.Clear;
  DBImageList.BkColor:=Theme_ListColor;
- for i:=0 to Length(DBKernel.DBs)-1 do
+ for i:=0 to DBKernel.DBs.Count-1 do
  begin
-  ListBox2.Items.Add(DBKernel.DBs[i]._Name);
+  ListBox2.Items.Add(DBKernel.DBs[i].Name);
   ico:=GetSmallIconByPath(DBKernel.DBs[i].Icon);
   if ico.Empty then
   begin

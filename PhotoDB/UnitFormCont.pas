@@ -570,7 +570,7 @@ begin
    item:=GetListItemById(id);
    if item<>nil then
    if item.Data<>nil then
-   Boolean(TDataObject(item.Data).Data^):=Value.Include;
+   Boolean(TDataObject(item.Data).Include):=Value.Include;
   end;
  end;
 
@@ -629,7 +629,6 @@ end;
 procedure TFormCont.AddNewItem(Image : Tbitmap; Info : TOneRecordInfo);
 var
   New: TEasyItem;
-  p : PBoolean;
   L : integer;
 begin
  if Info.ItemId<>0 then
@@ -643,11 +642,8 @@ begin
  new := ListView1.Items.Add;
 
  new.Tag:=Info.ItemId;
-
- Getmem(p,SizeOf(Boolean));
- p^:=Info.ItemInclude; 
  new.Data:=TDataObject.Create;
- TDataObject(new.Data).Data:=p;
+ TDataObject(new.Data).Include:=Info.ItemInclude;
 
  new.Caption:=ExtractFileName(Info.ItemFileName);
 
@@ -1298,9 +1294,8 @@ begin
   r1:=ARect;
   if Item.ImageIndex<0 then exit;
 
-  if not Boolean(TDataObject(Item.Data).Data^) then
-  ListView1.PaintInfoItem.fBorderColor:=$00FFFF
-  else ListView1.PaintInfoItem.fBorderColor:=Theme_ListSelectColor;
+  
+  ListView1.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
 
   b:=TBitmap.Create;
   b.PixelFormat:=pf24bit;

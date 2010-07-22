@@ -4,7 +4,7 @@ interface
 
 uses
   UnitGroupsWork, ThreadManeger, DBCMenu, CmpUnit, FileCtrl, Dolphin_DB,
-  ShellApi,Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  ShellApi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Registry, Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
   ImgList, ComCtrls, ActiveX, ShlObj, DBCtrls, JPEG, DmProgress, ClipBrd,
   SaveWindowPos, ExtDlgs , ToolWin, UnitDBKernel, Rating, Math, CommonDBSupport,
@@ -16,7 +16,7 @@ uses
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
-  uFastload, uListViewUtils, uDBDrawing;
+  uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources;
 
 type
   TGroupInfo = class(TObject)
@@ -212,7 +212,6 @@ type
     N03: TMenuItem;
     N04: TMenuItem;
     N05: TMenuItem;
-    ImageBackGround: TImage;
     ShowDateOptionsLink: TWebLink;
     SortLink: TWebLink;
     BigImagesTimer: TTimer;
@@ -248,11 +247,11 @@ type
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure Additem_(sender: TObject; Name_ : String; tag : integer );
     procedure FormCreate(Sender: TObject);
-    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure ListViewContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton;
+    procedure ListViewMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure ListView1DblClick(Sender: TObject);
+    procedure ListViewDblClick(Sender: TObject);
 
     procedure SlideShow1Click(Sender: TObject);
     procedure SaveClick(Sender: TObject);
@@ -267,7 +266,7 @@ type
     procedure breakoperation(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
 
-    function GetAllFiles:  Tstrings;
+    function GetAllFiles:  TStrings;
     procedure Splitter1Moved(Sender: TObject);
     procedure Memo1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -277,7 +276,7 @@ type
     procedure ErrorQSL(sql : string);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     procedure Memo1KeyPress(Sender: TObject; var Key: Char);
-    procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
+    procedure ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure PopupMenu2Popup(Sender: TObject);
     procedure Options1Click(Sender: TObject);
@@ -294,14 +293,14 @@ type
     procedure Help1Click(Sender: TObject);
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure RenameCurrentItem(Sender: TObject);
-    procedure ListView1KeyPress(Sender: TObject; var Key: Char);
+    procedure ListViewKeyPress(Sender: TObject; var Key: Char);
 
-    procedure ListView1KeyDown(Sender: TObject; var Key: Word;
+    procedure ListViewKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure Explorer1Click(Sender: TObject);
-    procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure ListViewMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure ListView1Exit(Sender: TObject);
+    procedure ListViewExit(Sender: TObject);
     procedure Properties1Click(Sender: TObject);
     procedure Explorer2Click(Sender: TObject);
     procedure SetPath(Value : String);
@@ -367,9 +366,9 @@ type
     procedure RefreshThumItemByID(ID : integer);
     procedure NewSearch1Click(Sender: TObject);
     procedure GetUpdates1Click(Sender: TObject);
+    
     procedure HelpNextClick(Sender: TObject);
     procedure HelpCloseClick(Sender : TObject; var CanClose : Boolean);
-
     procedure HelpActivationNextClick(Sender: TObject);
     procedure HelpActivationCloseClick(Sender : TObject; var CanClose : Boolean);
 
@@ -424,45 +423,45 @@ type
     procedure ReloadListMenu;
     procedure ScriptExecuted(Sender : TObject);
     Procedure LoadExplorerValue(Sender : TObject);
-    Procedure ListView1Resize(Sender : TObject);
+    Procedure ListViewResize(Sender : TObject);
     procedure UpdateTheme(Sender: TObject);
     Function SelCount : integer;
-    procedure EasyListview1ItemThumbnailDraw(
+    procedure EasyListviewItemThumbnailDraw(
       Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
-    procedure ListView1SelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
+    procedure ListViewSelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
     function GetListItemByID(ID : integer) : TEasyItem;
     function GetItemNO(item : TEasyItem):integer;
     function GetSelecteditemNO(item : TEasyItem):integer;
     function ItemIndex(item : TEasyItem) : integer;
-    procedure ListView1Edited(Sender: TObject; Item: TEasyItem;
+    procedure ListViewEdited(Sender: TObject; Item: TEasyItem;
       var S: String);
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
-    Function ListView1Selected : TEasyItem;
+    Function ListViewSelected : TEasyItem;
     Function ItemAtPos(X,Y : integer): TEasyItem;
     Function ItemAtPosStar(X,Y : integer): TEasyItem;
-    procedure EasyListview1DblClick(Sender: TCustomEasyListview;
+    procedure EasyListviewDblClick(Sender: TCustomEasyListview;
       Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
-    procedure EasyListview1ItemSelectionChanged(
+    procedure EasyListviewItemSelectionChanged(
       Sender: TCustomEasyListview; Item: TEasyItem);
-    procedure EasyListview2KeyAction(Sender: TCustomEasyListview;
+    procedure EasyListviewKeyAction(Sender: TCustomEasyListview;
       var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
-    procedure EasyListview1ItemEdited(Sender: TCustomEasyListview;
+    procedure EasyListviewItemEdited(Sender: TCustomEasyListview;
       Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
     procedure N05Click(Sender: TObject);
-    procedure Listview1IncrementalSearch(Item: TEasyCollectionItem;
+    procedure ListviewIncrementalSearch(Item: TEasyCollectionItem;
         const SearchBuffer: WideString; var CompareResult: Integer);
     procedure ShowDateOptionsLinkClick(Sender: TObject);
     procedure SetDateSettings(Sender : TObject; DateFrom, DateTo, LastDate : TDateTime; ByLastDate: boolean);
     procedure ApplicationEvents1Deactivate(Sender: TObject);
     procedure ApplicationEvents1Activate(Sender: TObject);
-    procedure LoadSizes();
+    procedure LoadSizes;
     function FileNameExistsInList(FileName : string) : boolean;
     procedure ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap);
     procedure ReplaceImageIndexWithPath(FileName : string; Index : integer);
     function GetImageIndexWithPath(FileName : string) : integer;
 
-    procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
+    procedure ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure BigImagesTimerTimer(Sender: TObject);
     function GetVisibleItems : TArStrings;
@@ -501,16 +500,15 @@ type
   protected
     procedure CreateParams(VAR Params: TCreateParams); override;
     function TreeView : TShellTreeView;
+    procedure CreateBackground;
     { Private declarations }
   public
-    ListView1: TEasyListView;
+    ListView: TEasyListView;
     WindowID : TGUID;
     ThreadQuery : TDataSet;
     SelectQuery : TDataSet;
-    WorkQuery : TDataSet;
     FBitmapImageList : TBitmapImageList;
     Data : TSearchRecordArray;
-
     FormDateRangeSelectDBHideed : boolean;
 
     MouseDowned : Boolean;
@@ -529,7 +527,6 @@ type
     current_id_show : integer;
     FSearchPath, fcomment, fkeywords : string;
     thum_images_:integer;
-    WorkedFiles_ : Tstrings;
     mouse_mov:boolean;
     frating :integer;
     SelectedInfo : TSelectedInfo;
@@ -557,7 +554,6 @@ type
     procedure ZoomIn;
     procedure ZoomOut;
     procedure ReRecreateGroupsList;
-    function IfBreak(Sender : TObject; aSID : TGUID) : boolean;
     procedure DoSetSearchByComparing;
     procedure LoadSearchDBParametrs;
     procedure SaveQueryList;          
@@ -566,33 +562,24 @@ type
     { Public declarations }
   end;
 
-  TArSearch = array of TSearchForm;
-  TArForms = array of TForm;
-
   TManagerSearchs = class(TObject)
-   Private
-    FSearchs : TArSearch;
-    FForms : TArForms;
-   Public
-    Constructor Create;
-    Destructor Destroy; override;
-    Function NewSearch : TSearchForm;
-    Procedure FreeSearch(Search : TSearchForm);
-    Procedure AddSearch(Search : TSearchForm);
-    Procedure RemoveSearch(Search : TSearchForm);
-    Function IsSearch(Search : TSearchForm) : Boolean;
-    Function SearchCount : Integer;
-    Property Searchs : TArSearch Read FSearchs;
-    Function IsSearchForm(Search: TForm): Boolean;
-    Function GetAnySearch : TSearchForm;
-   published
+  private
+    FSearches : TList;
+    function GetValueByIndex(Index: Integer): TSearchForm;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function NewSearch : TSearchForm;
+    procedure AddSearch(Search : TSearchForm);
+    procedure RemoveSearch(Search : TSearchForm);
+    function IsSearch(Search : TForm) : Boolean;
+    function SearchCount : Integer;
+    property Items[Index: Integer]: TSearchForm read GetValueByIndex; default;
+    function GetAnySearch : TSearchForm;
   end;
 
 var
-  Sclipbrd : string;
   SearchManager : TManagerSearchs;
-
-  Function RectInRect(Const R1, R2 : TRect) : Boolean;
 
 implementation
 
@@ -618,7 +605,6 @@ begin
  If FUpdatingDB then Exit;
  If Creating then Exit;
  WideSearch.Enabled:=PanelWideSearch.Visible;
- WideSearch.IfBreak:=IfBreak;
  if FormDateRangeSelectDB<>nil then
  if FormDateRangeSelectDB.IsVisible then
  begin
@@ -666,7 +652,7 @@ begin
  If Creating then Exit;
  try
   ThreadQuery.Active:=false;
-  ListView1.Items.Clear;
+  ListView.Items.Clear;
   FBitmapImageList.Clear;
  except
  end;
@@ -692,18 +678,18 @@ end;
 
 procedure TSearchForm.Edit1_KeyPress(Sender: TObject; var Key: Char);
 begin
- if key=#13 then
- begin
-  key:=#0;
-  DoSearchNow(nil);
- end;
+  if Byte(Key) = VK_RETURN then
+  begin
+    Key := #0;
+    DoSearchNow(Sender);
+  end;
 end;
 
 procedure TSearchForm.Additem_(Sender: TObject; Name_ : String; Tag : integer );
 var
   New : TEasyItem;
 begin
- New := ListView1.Items.Add;
+ New := ListView.Items.Add;
  New.Tag:=Tag;
  New.ImageIndex:=0;
  New.Caption:=Name_;
@@ -718,94 +704,76 @@ var
   Menus : array[0..n-1] of TMenuItem;
   i : integer;
   MainMenuScript : string;
-
 begin  
   TW.I.Start('S -> FormCreate');
- CanSaveQueryList:=true;
- fListUpdating:=false;
- GroupsLoaded:=false;
- ShowingDateRangeWindow:=false;
- FormDateRangeSelectDB:=nil;
- SearchEdit.ShowDropDownMenu:=false;
+  CanSaveQueryList := True;
+  fListUpdating:=false;
+  GroupsLoaded:=false;
+  ShowingDateRangeWindow:=false;
+  FormDateRangeSelectDB:=nil;
+  SearchEdit.ShowDropDownMenu:=false;
 
- SearchEdit.NullText := TEXT_MES_NULL_TEXT;
- ListView1:=TEasyListView.Create(self);
- ListView1.Parent:=self;
- ListView1.Align:=AlClient;
+  SearchEdit.NullText := TEXT_MES_NULL_TEXT;
 
-     MouseDowned:=false;
-     PopupHandled:=false;
-     ListView1.BackGround.Enabled:=true;
-     ListView1.BackGround.Tile:=false;
-     ListView1.BackGround.AlphaBlend:=true;
-     ListView1.BackGround.OffsetTrack:=true;
-     ListView1.BackGround.BlendAlpha:=220;
-     ListView1.BackGround.Image:=TBitmap.create;
-     ListView1.BackGround.Image.PixelFormat:=pf24bit;
-     ListView1.BackGround.Image.Width:=150;
-     ListView1.BackGround.Image.Height:=150;
-     ListView1.BackGround.Image.Canvas.Brush.Color:=Theme_ListColor;
-     ListView1.BackGround.Image.Canvas.Pen.Color:=Theme_ListColor;
-     ListView1.BackGround.Image.Canvas.Rectangle(0,0,150,150);
+  ListView := TEasyListView.Create(Self);
+  ListView.Parent := Self;
+  ListView.Align := AlClient;
 
-     for i:=1 to 20 do
-     begin
-      try
-       ListView1.BackGround.Image.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
-       break;
-      except
-       Sleep(50);
-      end;
-     end;
-     ListView1.Font.Color:=0;
-     ListView1.View:=elsThumbnail;
-     ListView1.DragKind:=dkDock;
-     ListView1.Selection.MouseButton:= [cmbRight];
+  MouseDowned:=false;
+  PopupHandled:=false;
+  ListView.BackGround.Enabled:=true;
+  ListView.BackGround.Tile:=false;
+  ListView.BackGround.AlphaBlend:=true;
+  ListView.BackGround.OffsetTrack:=true;
+  ListView.BackGround.BlendAlpha:=220;
+  CreateBackground;
+  ListView.Font.Color:=0;
+  ListView.View:=elsThumbnail;
+  ListView.DragKind:=dkDock;
+  ListView.Selection.MouseButton:= [cmbRight];
 
-     ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-     ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
-     ListView1.Selection.AlphaBlend:=true;
-     ListView1.Selection.AlphaBlendSelRect:=true;
-     ListView1.Selection.MultiSelect:=true;
-     ListView1.Selection.RectSelect:=true;
-     ListView1.Selection.EnableDragSelect:=true;
-     ListView1.Selection.TextColor:=Theme_ListFontColor;
-     ListView1.GroupFont.Color:=Theme_ListFontColor;
-     TLoad.Instance.RequaredDBSettings;
-     FPictureSize:=ThImageSize;
-     LoadSizes();
+  ListView.Selection.FullCellPaint := DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
+  ListView.Selection.RoundRectRadius := DBKernel.ReadInteger('Options','UseListViewRoundRectSize', 3);
+  ListView.Selection.AlphaBlend := True;
+  ListView.Selection.AlphaBlendSelRect := True;
+  ListView.Selection.MultiSelect := True;
+  ListView.Selection.RectSelect := True;
+  ListView.Selection.EnableDragSelect := True;
+  ListView.Selection.TextColor := Theme_ListFontColor;
+  ListView.GroupFont.Color := Theme_ListFontColor;
+  TLoad.Instance.RequaredDBSettings;
+  FPictureSize := ThImageSize;
+  LoadSizes();
 
-     ListView1.HotTrack.Color:=Theme_ListFontColor;
-     ListView1.HotTrack.Cursor:=CrArrow;
-     ListView1.IncrementalSearch.Enabled:=true;
-     ListView1.OnItemThumbnailDraw:=EasyListview1ItemThumbnailDraw;
+  ListView.HotTrack.Color := Theme_ListFontColor;
+  ListView.HotTrack.Cursor := CrArrow;
+  ListView.IncrementalSearch.Enabled := True;
+  ListView.OnItemThumbnailDraw := EasyListViewItemThumbnailDraw;
+  ListView.OnDblClick := EasyListViewDblClick;
+  ListView.OnIncrementalSearch := ListViewIncrementalSearch;
+  ListView.OnExit := ListViewExit;
+  ListView.OnMouseDown := ListViewMouseDown;
+  ListView.OnMouseUp := ListViewMouseUp;
+  ListView.OnMouseMove := ListViewMouseMove;
+  ListView.OnItemSelectionChanged := EasyListViewItemSelectionChanged;
+  ListView.OnMouseWheel := ListViewMouseWheel;
+  ListView.OnKeyAction := EasyListviewKeyAction;
+  ListView.OnItemEdited := EasyListViewItemEdited;
+  ListView.OnResize := ListViewResize;
+  ListView.Groups.Add;
+  ListView.Header.Columns.Add;
 
-     ListView1.OnDblClick:=EasyListview1DblClick;
+  ConvertTo32BitImageList(DragImageList);
 
-     ListView1.OnIncrementalSearch:=Listview1IncrementalSearch;
-     ListView1.OnExit:=ListView1Exit;
-     ListView1.OnMouseDown:=ListView1MouseDown;
-     ListView1.OnMouseUp:=ListView1MouseUp;
-     ListView1.OnMouseMove:=ListView1MouseMove;
-     ListView1.OnItemSelectionChanged:=EasyListview1ItemSelectionChanged;
-     ListView1.OnMouseWheel:=ListView1MouseWheel;
-     ListView1.OnKeyAction:=EasyListview2KeyAction;
-     ListView1.OnItemEdited:=self.EasyListview1ItemEdited;
-     ListView1.OnResize:=ListView1Resize;
-     ListView1.Groups.Add;
-     ListView1.Header.Columns.Add;
+  DBKernel.RegisterProcUpdateTheme(UpdateTheme, Self);
+  Activation1.Visible :=not FolderView;
+  Activation2.Visible :=not FolderView;
+  Help1.Visible := not FolderView;
+  Help4.Visible := not FolderView;
 
- ConvertTo32BitImageList(DragImageList);
-
- DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
- Activation1.Visible:=not FolderView;
- Activation2.Visible:=not FolderView;
- Help1.Visible:=not FolderView;
- Help4.Visible:=not FolderView;
-
- GetPhotosFromDrive1.Visible:=not FolderView;
- GetPhotosFromDrive2.Visible:=not FolderView;
- ToolButton14.Enabled:=false;
+  GetPhotosFromDrive1.Visible :=not FolderView;
+  GetPhotosFromDrive2.Visible :=not FolderView;
+  ToolButton14.Enabled := False;
 
  ExplorerManager.LoadEXIF;
  WindowID:=GetGUID;
@@ -844,7 +812,6 @@ begin
  TW.I.Start('S -> GetQuery');
  SelectQuery:=GetQuery(dbname);
  ThreadQuery:=GetQuery(dbname);
- WorkQuery:=GetQuery(dbname);
  TW.I.Start('S -> Register');
  DropFileTarget2.Register(SearchEdit);
  GetPhotosFromDrive2.Visible:=not FolderView;
@@ -869,7 +836,7 @@ begin
   InsertSpesialQueryPopupMenu.Items.Add(Menus[i]);
  end;
  Menus[0].Enabled:=false;
- ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
+ ListView.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
  Panel1.Width:=DBKernel.ReadInteger('Search','LeftPanelWidth',150);
  GetPhotosFromDrive1.Visible:= not FolderView;
  FBitmapImageList := TBitmapImageList.Create;
@@ -931,7 +898,7 @@ begin
  TW.I.Start('S -> Create - END');
 end;
 
-procedure TSearchForm.ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
+procedure TSearchForm.ListViewContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
   Info : TDBPopupMenuInfo;
@@ -939,11 +906,12 @@ var
   FileNames : TArStrings;
   i : integer;
   S : String;
+  WorkedFiles_ : TStrings;
 begin
  if CopyFilesSynchCount>0 then WindowsMenuTickCount:=GetTickCount;
  HintTimer.Enabled:=false;
- Item:=ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y));
- if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ListView1.Selection.First;
+ Item:=ItemByPointImage(ListView, Point(MousePos.x,MousePos.y));
+ if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ListView.Selection.First;
 
  if (item<>nil) and (item.Selected) then
  begin
@@ -956,7 +924,7 @@ begin
   Info:=GetCurrentPopUpMenuInfo(Item);
   if not (getTickCount-WindowsMenuTickCount>WindowsMenuTime)  then
   begin
-   TDBPopupMenu.Instance.Execute(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,Info);
+   TDBPopupMenu.Instance.Execute(ListView.ClientToScreen(MousePos).x,ListView.ClientToScreen(MousePos).y,Info);
   end else
   begin
    SetLength(FileNames,0);
@@ -966,21 +934,23 @@ begin
     SetLength(FileNames,Length(FileNames)+1);
     FileNames[Length(FileNames)-1]:=Info.ItemFileNames_[i];
    end;
-   GetProperties(FileNames,MousePos,ListView1);
+   GetProperties(FileNames,MousePos,ListView);
   end;
  end else
  begin
   if not (ShiftKeyDown and CtrlKeyDown) and UseScripts then
   begin
+  WorkedFiles_ := TStringList.Create;
   WorkedFiles_.Clear;
-  if ListView1.Selection.First=nil then
+  if ListView.Selection.First=nil then
 
-   if Data.Count=ListView1.Items.Count then
+   if Data.Count=ListView.Items.Count then
    begin
-    for i:=1 to ListView1.Items.Count do
-    WorkedFiles_.Add(Data[ItemIndex(ListView1.Items[i-1])].FileName);
+    for i:=1 to ListView.Items.Count do
+    WorkedFiles_.Add(Data[ItemIndex(ListView.Items[i-1])].FileName);
    end else
    begin
+     WorkedFiles_ := TStringList.Create;
     if SelCount=1 then
     begin
      WorkedFiles_:=GetAllFiles;
@@ -992,13 +962,13 @@ begin
    SetBoolAttr(aScript,'$OneFileExists',WorkedFiles_.count<>0);
    S:=ListMenuScript;
    LoadMenuFromScript(ScriptListPopupMenu.Items,DBkernel.ImageList,S,aScript,ScriptExecuted,FExtImagesInImageList,true);
-   ScriptListPopupMenu.Popup(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y);
+   ScriptListPopupMenu.Popup(ListView.ClientToScreen(MousePos).x,ListView.ClientToScreen(MousePos).y);
   end else
-   PopupMenu2.Popup(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y);
+   PopupMenu2.Popup(ListView.ClientToScreen(MousePos).x,ListView.ClientToScreen(MousePos).y);
  end;
 end;
 
-procedure TSearchForm.ListView1MouseDown(Sender: TObject; Button: TMouseButton;
+procedure TSearchForm.ListViewMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   i : integer;
@@ -1017,12 +987,12 @@ begin
    if not itemsel.Selected then
    begin
     if [ssCtrl,ssShift]*Shift=[] then
-    for i:=0 to Listview1.Items.Count-1 do
-    if Listview1.Items[i].Selected then
-    if itemsel<>Listview1.Items[i] then
-    Listview1.Items[i].Selected:=false;
+    for i:=0 to ListView.Items.Count-1 do
+    if ListView.Items[i].Selected then
+    if itemsel<>ListView.Items[i] then
+    ListView.Items[i].Selected:=false;
     if [ssShift]*Shift<>[] then
-     Listview1.Selection.SelectRange(itemsel,Listview1.Selection.FocusedItem,false,false) else
+     ListView.Selection.SelectRange(itemsel,ListView.Selection.FocusedItem,false,false) else
     begin
      ItemSelectedByMouseDown:=true;
      itemsel.Selected:=true;
@@ -1050,7 +1020,7 @@ begin
   end;
 end;
 
-procedure TSearchForm.ListView1DblClick(Sender: TObject);
+procedure TSearchForm.ListViewDblClick(Sender: TObject);
 var
   MenuInfo : TDBPopupMenuInfo;
   info : TRecordsInfo;
@@ -1058,8 +1028,8 @@ var
 begin
 
   GetCursorPos(p1);
-  p:=ListView1.ScreenToClient(p1);
-  if ItemByPointStar(Listview1,p, fPictureSize)<>nil then
+  p:=ListView.ScreenToClient(p1);
+  if ItemByPointStar(ListView,p, fPictureSize)<>nil then
   begin
    RatingPopupMenu1.Tag:=ItemAtPos(p.x,p.y).Tag;
    Application.HideHint;
@@ -1078,9 +1048,9 @@ begin
  ImHint.Close;
  HintTimer.Enabled:=false;
 
- if ListView1.Selection.First<>nil then
+ if ListView.Selection.First<>nil then
  begin
-  MenuInfo:=GetCurrentPopUpMenuInfo(ListView1Selected);
+  MenuInfo:=GetCurrentPopUpMenuInfo(ListViewSelected);
   If Viewer=nil then
   Application.CreateForm(TViewer,Viewer);
   DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
@@ -1089,7 +1059,7 @@ begin
  end;
 end;
 
-procedure TSearchForm.ListView1SelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
+procedure TSearchForm.ListViewSelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
 begin
  if not SelectTimer.Enabled then
  SelectTimer.Enabled:=true;
@@ -1160,7 +1130,7 @@ begin
   FUpdatingDB:=true;
   Save.Enabled:=false;
   Button1.Enabled:=false;
-  ListView1.Enabled:=false;
+  ListView.Enabled:=false;
 
   Memo1.Enabled:=false;
   Memo2.Enabled:=false;
@@ -1293,8 +1263,8 @@ begin
    FreeSQLList(List);
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
-   for i:=0 to ListView1.Items.Count-1 do
-   if ListView1.Items[i].Selected then
+   for i:=0 to ListView.Items.Count-1 do
+   if ListView.Items[i].Selected then
    begin
     KeyWords:=Data[i].KeyWords;
     ReplaceWords(SelectedInfo.CommonKeyWords,Memo1.Lines.Text,KeyWords);
@@ -1334,8 +1304,8 @@ begin
    FreeSQLList(List);
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
-   for i:=0 to ListView1.Items.Count-1 do
-   if ListView1.Items[i].Selected then
+   for i:=0 to ListView.Items.Count-1 do
+   if ListView.Items[i].Selected then
    begin
     Groups:=Data[i].Groups;
     ReplaceGroups(SelectedInfo.Groups,FPropertyGroups,Groups);
@@ -1368,7 +1338,7 @@ begin
   end;
   //[END] Groups Support
   FUpdatingDB:=false;
-  ListView1.Enabled:=true;
+  ListView.Enabled:=true;
   Button1.Enabled:=true;
 
   Memo1.Enabled:=true;
@@ -1441,7 +1411,7 @@ begin
     DrawAttributes(bit,fPictureSize,0,0,0,SelectQuery.FieldByName('FFileName').AsString,true,Exists);
     FBitmapImageList[item.ImageIndex].Bitmap.Free;
     FBitmapImageList[item.ImageIndex].Bitmap:=bit;
-    ListView1.Refresh;
+    ListView.Refresh;
     exit;
    end;
   end else
@@ -1489,7 +1459,7 @@ begin
   RecordInfo.ItemAccess:=Data[iItemIndex].Access;
   RecordInfo.ItemCrypted:=Data[iItemIndex].Crypted;
 
-  ListView1.Refresh;
+  ListView.Refresh;
  end;
  if GetlistitembyID(ID).imageindex=0 then
  begin
@@ -1519,7 +1489,7 @@ begin
     Exists:=0;
     DrawAttributes(bit,fPictureSize,0,0,0,SelectQuery.FieldByName('FFileName').AsString,true,Exists);
     FBitmapImageList[item.ImageIndex].Bitmap.Assign(bit);
-    ListView1.Refresh;
+    ListView.Refresh;
     exit;
    end;
   end else
@@ -1545,7 +1515,7 @@ begin
   Exists:=0;
   DrawAttributes(bit,fPictureSize,Data[ItemIndex(item)].Rating,Data[ItemIndex(item)].Rotation,Data[ItemIndex(item)].Access,SelectQuery.FieldByName('FFileName').AsString,Data[ItemIndex(item)].Crypted,Exists);
   FBitmapImageList.AddBitmap(bit);
-  ListView1.Refresh;
+  ListView.Refresh;
   item.ImageIndex:=FBitmapImageList.Count-1;
  end;
 end;
@@ -1569,11 +1539,11 @@ var
   i : integer;
 begin
  result:=nil;
- for i:=0 to ListView1.Items.Count-1 do
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  if listview1.Items[i].Tag=ID then
+  if ListView.Items[i].Tag=ID then
   begin
-   result:=ListView1.Items[i];
+   result:=ListView.Items[i];
    break;
   end;
  end;
@@ -1584,13 +1554,13 @@ var
   i, c : integer;
 begin
  c:=0;
- for i:=0 to listview1.Items.Count-1 do
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  if listview1.Items[i].Selected then
+  if ListView.Items[i].Selected then
   begin
    inc(c);
    SetLength(result,c);
-   result[c-1]:=ListView1.Items[i].Tag;
+   result[c-1]:=ListView.Items[i].Tag;
   end;
  end;
 end;
@@ -1600,12 +1570,12 @@ var
   i : integer;
 begin
  Result:=TStringList.Create;
- if listview1.Items.Count=0 then exit;
- for i:=0 to listview1.Items.Count-1 do
+ if ListView.Items.Count=0 then exit;
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  if listview1.Items[i].Selected then
-  if FileExists(Data[ItemIndex(ListView1.Items[i])].FileName) then
-  Result.Add(Data[ItemIndex(ListView1.Items[i])].FileName);
+  if ListView.Items[i].Selected then
+  if FileExists(Data[ItemIndex(ListView.Items[i])].FileName) then
+  Result.Add(Data[ItemIndex(ListView.Items[i])].FileName);
  end;
 end;
 
@@ -1616,7 +1586,6 @@ begin
  aScript.Free;
  FreeDS(ThreadQuery);
  FreeDS(SelectQuery);
- FreeDS(WorkQuery);
  DropFileTarget2.Unregister;
  DropFileTarget1.Unregister;
  if Creating then exit;
@@ -1652,9 +1621,9 @@ begin
  Button1.Caption:=TEXT_MES_SEARCH;
  PbProgress.Text:=TEXT_MES_DONE;
  PbProgress.Position:=0;
- ListView1.Show;
+ ListView.Show;
  BackGroundSearchPanel.Hide;
- ListView1.Groups.EndUpdate;
+ ListView.Groups.EndUpdate;
 end;
 
 procedure TSearchForm.Search(Sender: TObject);
@@ -1664,8 +1633,8 @@ end;
 
 procedure TSearchForm.SelectAll1Click(Sender: TObject);
 begin
- ListView1.Selection.SelectAll;
- ListView1.SetFocus;
+ ListView.Selection.SelectAll;
+ ListView.SetFocus;
 end;
 
 {function TSearchForm.GetSelectedNO: integer;
@@ -1673,10 +1642,10 @@ var
   i : integer;
 begin
  result:=0;
- if Listview1.Items.Count=0 then exit;
- for i:=0 to ListView1.Items.Count-1 do
+ if ListView.Items.Count=0 then exit;
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  if listview1.Items[i].Selected then
+  if ListView.Items[i].Selected then
   begin
    result:=i;
    break;
@@ -1689,8 +1658,8 @@ var
   i : integer;
 begin
  Result:=TStringList.Create;
- for i:=1 to ListView1.Items.Count do
- Result.Add(Data[ItemIndex(ListView1.Items[i-1])].FileName);
+ for i:=1 to ListView.Items.Count do
+ Result.Add(Data[ItemIndex(ListView.Items[i-1])].FileName);
 end;
 
 procedure TSearchForm.Splitter1Moved(Sender: TObject);
@@ -1740,10 +1709,10 @@ var
   i : integer;
 begin
  result:=0;
- if ListView1.Items.Count=0 then exit;
- for i:=0 to ListView1.Items.Count-1 do
+ if ListView.Items.Count=0 then exit;
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  if listview1.Items[i]=item then
+  if ListView.Items[i]=item then
   begin
    Result:=i;
    break;
@@ -1757,11 +1726,11 @@ var
 begin
  result:=0;
  c:=-1;
- if listview1.Items.Count=0 then exit;
- for i:=0 to listview1.Items.Count-1 do
+ if ListView.Items.Count=0 then exit;
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  if listview1.Items[i].Selected then inc(c);
-  if listview1.Items[i]=item then
+  if ListView.Items[i].Selected then inc(c);
+  if ListView.Items[i]=item then
   begin
    result:=c;
    break;
@@ -1783,7 +1752,7 @@ end;
 procedure TSearchForm.RefreshInfoByID(ID : integer);
 begin
  if Current_id_show<>ID then exit;
- ListView1SelectItem(nil,GetlistitembyID(ID),true);
+ ListViewSelectItem(nil,GetlistitembyID(ID),true);
 end;
 
 procedure TSearchForm.Memo1Change(Sender: TObject);
@@ -1840,7 +1809,7 @@ begin
 
  if EventID_Repaint_ImageList in params then
  begin
-  ListView1.Refresh;
+  ListView.Refresh;
   exit;
  end;
 
@@ -1872,11 +1841,9 @@ begin
  begin
   FreeDS(SelectQuery);
   FreeDS(ThreadQuery);
-  FreeDS(WorkQuery);
   SelectQuery:=GetQuery(dbname);
   ThreadQuery:=GetQuery(dbname);
-  WorkQuery:=GetQuery(dbname);
-  ReRecreateGroupsList; 
+  ReRecreateGroupsList;
   LoadQueryList;
   LoadSearchDBParametrs;
   DoSearchNow(nil);
@@ -1898,7 +1865,7 @@ begin
   if EventID_Param_Include in params then
   begin
    Data[i].Include:=Value.Include;
-   Boolean(TDataObject(GetListItemByID(ID).Data).Data^):=Value.Include;
+   Boolean(TDataObject(GetListItemByID(ID).Data).Include):=Value.Include;
   end;
   if EventID_Param_Attr in params then Data[i].Attr:=Value.Attr;
   if EventID_Param_IsDate in params then Data[i].IsDate:=Value.IsDate;
@@ -1930,9 +1897,9 @@ begin
   for i:=0 to Data.Count-1 do
   if Data[i].ID=ID then
   begin
-   if ListView1.Items[i].ImageIndex>-1 then
+   if ListView.Items[i].ImageIndex>-1 then
    begin
-    ApplyRotate(FBitmapImageList[ListView1.Items[i].ImageIndex].Bitmap, ReRotation);
+    ApplyRotate(FBitmapImageList[ListView.Items[i].ImageIndex].Bitmap, ReRotation);
    end else
    begin
     FilesToUpdate := TSearchRecordArray.Create;
@@ -1949,7 +1916,7 @@ begin
  RefreshParams:=[EventID_Param_Private,EventID_Param_Rotate,EventID_Param_Name,EventID_Param_Rating,EventID_Param_Crypt];
  if RefreshParams*params<>[] then
  begin
-  ListView1.Repaint;
+  ListView.Repaint;
  end;
 
  RefreshParams:=[EventID_Param_Image,EventID_Param_Delete,EventID_Param_Critical];
@@ -1964,9 +1931,9 @@ begin
   TSearchBigImagesLoaderThread.Create(false,self,StateID,nil,fPictureSize,FilesToUpdate,true);
  end;
  if ((EventID_Param_Comment in params) or (EventID_Param_KeyWords in params) or (EventID_Param_Rating in params) or (EventID_Param_Date in params) or (EventID_Param_Time in params) or (EventID_Param_IsDate in params) or (EventID_Param_IsTime in params)  or (EventID_Param_Groups in params)) and (ID=current_id_show) then
- ListView1SelectItem(Sender,GetListItemByID(ID),true);
+ ListViewSelectItem(Sender,GetListItemByID(ID),true);
 
- if (EventID_Param_include in params) then ListView1.Refresh;
+ if (EventID_Param_include in params) then ListView.Refresh;
 end;
 
 procedure TSearchForm.Memo1KeyPress(Sender: TObject; var Key: Char);
@@ -1974,7 +1941,7 @@ begin
   if Key='"' then key:='''';
 end;
 
-procedure TSearchForm.ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TSearchForm.ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   p : Tpoint;
@@ -1994,8 +1961,8 @@ Const
     pass : String;
   begin
    Result:=100;
-   Item:= Listview1.Selection.First;
-   for i:=0 to Listview1.Selection.Count-1 do
+   Item:= ListView.Selection.First;
+   for i:=0 to ListView.Selection.Count-1 do
    begin
     if not Data[ItemIndex(Item)].Crypted then
     begin
@@ -2010,7 +1977,7 @@ Const
       exit;
      end;
     end;
-    Item:=Listview1.Selection.Next(Item);
+    Item:=ListView.Selection.Next(Item);
     if Item=nil then exit;
    end;
   end;
@@ -2054,27 +2021,27 @@ begin
   begin
    p:=DBDragPoint;
 
-   item:=ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y);
+   item:=ItemAtPos(ListView.ScreenToClient(p).x,ListView.ScreenToClient(p).y);
    if item=nil then exit;
-   if Listview1.Selection.FocusedItem=nil then
-   Listview1.Selection.FocusedItem:=item;
+   if ListView.Selection.FocusedItem=nil then
+   ListView.Selection.FocusedItem:=item;
    //Creating Draw image
    TempImage:=TBitmap.create;
    TempImage.PixelFormat:=pf32bit;
-   TempImage.Width:=fPictureSize+Min(ListView1.Selection.Count,10)*7+5;
-   TempImage.Height:=fPictureSize+Min(ListView1.Selection.Count,10)*7+45+1;
+   TempImage.Width:=fPictureSize+Min(ListView.Selection.Count,10)*7+5;
+   TempImage.Height:=fPictureSize+Min(ListView.Selection.Count,10)*7+45+1;
    MaxH:=0;
    MaxW:=0;
    TempImage.Canvas.Brush.Color := 0;
    TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
 
-   if ListView1.Selection.Count<2 then
+   if ListView.Selection.Count<2 then
    begin
     DragImage:=nil;
     if item<>nil then
     DragImage:=GetImageByIndex(item.ImageIndex,item.Index) else
-    if ListView1.Selection.First<>nil then
-    DragImage:=GetImageByIndex(Listview1.Selection.First.ImageIndex,ItemIndex(Listview1.Selection.First));
+    if ListView.Selection.First<>nil then
+    DragImage:=GetImageByIndex(ListView.Selection.First.ImageIndex,ItemIndex(ListView.Selection.First));
 
     TempImage.Canvas.Draw(0,0, DragImage);
     n:=0;
@@ -2085,23 +2052,23 @@ begin
     DragImage.Free;
    end else
    begin
-    SelectedItem:=ListView1.Selection.First;
+    SelectedItem:=ListView.Selection.First;
     n:=1;
     for i:=1 to 9 do
     begin
      if SelectedItem<>item then
      begin
-      DragImage:=GetImageByIndex(SelectedItem.ImageIndex,ItemIndex(Listview1.Selection.First));
+      DragImage:=GetImageByIndex(SelectedItem.ImageIndex,ItemIndex(ListView.Selection.First));
       TempImage.Canvas.Draw(n,n, DragImage);
       Inc(n,7);
       if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
       if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
       DragImage.Free;
      end;
-     SelectedItem:=Listview1.Selection.Next(SelectedItem);
+     SelectedItem:=ListView.Selection.Next(SelectedItem);
      if SelectedItem=nil then break;
     end;
-    DragImage:=GetImageByIndex(Listview1.Selection.FocusedItem.ImageIndex,ItemIndex(Listview1.Selection.FocusedItem));
+    DragImage:=GetImageByIndex(ListView.Selection.FocusedItem.ImageIndex,ItemIndex(ListView.Selection.FocusedItem));
     TempImage.Canvas.Draw(n,n, DragImage);
     if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
     if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
@@ -2114,7 +2081,7 @@ begin
    TempImage.Canvas.Font.Color:=$000001;
    R:=Rect(0,MaxH+3,MaxW,TempImage.Height);
    TempImage.Canvas.Brush.Style:=bsClear;
-   FileName:=Listview1.Selection.FocusedItem.Caption;
+   FileName:=ListView.Selection.FocusedItem.Caption;
    DrawTextA(TempImage.Canvas.Handle, PChar(FileName), Length(FileName), R, DrawTextOpt);
 
    DragImageList.Clear;
@@ -2128,7 +2095,7 @@ begin
    DropFileSource1.Files.Clear;
    for i:=0 to Length(FilesToDrag)-1 do
    DropFileSource1.Files.Add(FilesToDrag[i]);
-   ListView1.Refresh;
+   ListView.Refresh;
 
    Application.HideHint;
    if ImHint<>nil then
@@ -2136,14 +2103,14 @@ begin
    ImHint.close;
    HintTimer.Enabled:=false;
 
-   item.ItemRectArray(nil,ListView1.Canvas,EasyRect);
+   item.ItemRectArray(nil,ListView.Canvas,EasyRect);
 
-   DBDragPoint:=ListView1.ScreenToClient(DBDragPoint);
+   DBDragPoint:=ListView.ScreenToClient(DBDragPoint);
 
    ImW:=(EasyRect.IconRect.Right-EasyRect.IconRect.Left) div 2 - ImW div 2;
    ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
    DropFileSource1.ImageHotSpotX:=Min(MaxW,Max(1,DBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
-   DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,DBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView1.Scrollbars.ViewableViewportRect.Top));
+   DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,DBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView.Scrollbars.ViewableViewportRect.Top));
 
    DropFileSource1.Execute;
    DBCanDrag:=false;
@@ -2156,8 +2123,8 @@ begin
   if WindowFromPoint(p)=ImHint.Handle then exit;
  end;
 
- if LoadingThItem=ItemByPointImage(ListView1,Point(X,Y)) then exit;
- LoadingThItem:=ItemByPointImage(ListView1,Point(X,Y));
+ if LoadingThItem=ItemByPointImage(ListView,Point(X,Y)) then exit;
+ LoadingThItem:=ItemByPointImage(ListView,Point(X,Y));
  if LoadingThItem=nil then
  begin
   Application.HideHint;
@@ -2177,13 +2144,13 @@ begin
   if LoadingThItem<>nil then
   if DBKernel.Readbool('Options','AllowPreview',True) then
   if ItemIndex(LoadingThItem)<Data.Count then
-  ListView1.ShowHint:= not FileExists(Data[ItemIndex(loadingthitem)].FileName) else
-  ListView1.ShowHint:=true;
+  ListView.ShowHint:= not FileExists(Data[ItemIndex(loadingthitem)].FileName) else
+  ListView.ShowHint:=true;
   if LoadingThItem<>nil then
   begin
    if ItemIndex(LoadingThItem)<Data.Count-1 then
    if ItemIndex(LoadingThItem)>-1 then
-   ListView1.Hint:=Data[ItemIndex(LoadingThItem)].Comments;
+   ListView.Hint:=Data[ItemIndex(LoadingThItem)].Comments;
   end;
  end;
 end;
@@ -2191,17 +2158,18 @@ end;
 procedure TSearchForm.PopupMenu2Popup(Sender: TObject);
 var
   i : integer;
+  WorkedFiles_ : TStrings;
 begin        
  
  TLoad.Instance.RequaredDBKernelIcons;
  HintTimer.Enabled:=false;
- WorkedFiles_.Clear;
- if ListView1Selected=nil then
+ WorkedFiles_ := TStringList.Create;
+ if ListViewSelected=nil then
 
- if Data.Count=ListView1.Items.Count then
+ if Data.Count=ListView.Items.Count then
  begin
-  for i:=1 to ListView1.Items.Count do
-  WorkedFiles_.Add(Data[ItemIndex(ListView1.Items[i-1])].FileName);
+  for i:=1 to ListView.Items.Count do
+  WorkedFiles_.Add(Data[ItemIndex(ListView.Items[i-1])].FileName);
   end else
   begin
   if SelCount=1 then
@@ -2225,7 +2193,7 @@ begin
  SelectAll1.Visible:=SelectAll1.Visible and not FUpdatingDB;
  SaveasTable1.Visible:=False;
  SaveResults1.Visible:=false;
- if ListView1.Items.Count>0 then
+ if ListView.Items.Count>0 then
  begin        
   SaveAsTable1.Visible:=True;
   SaveResults1.Visible:=True;
@@ -2242,12 +2210,14 @@ end;
 
 procedure TSearchForm.CopySearchResults1Click(Sender: TObject);
 var
-  i : integer;
+  I : integer;
+  Sclipbrd : string;
 begin
- Sclipbrd:='';
- for i:=1 to ListView1.Items.Count do
- Sclipbrd:=Sclipbrd+IntTostr(ListView1.Items[i-1].Tag)+'$';
- Sclipbrd:=Sclipbrd+'';
+  Sclipbrd := '';
+  for I := 1 to ListView.Items.Count do
+    Sclipbrd := Sclipbrd + IntToStr(ListView.Items[I - 1].Tag) + '$';
+
+  Clipboard.AsText := Sclipbrd;
 end;
 
 procedure TSearchForm.HintTimerTimer(Sender: TObject);
@@ -2257,9 +2227,9 @@ var
   item: TEasyItem;
 begin
  GetCursorPos(p);
- p1:=ListView1.ScreenToClient(p);
+ p1:=ListView.ScreenToClient(p);
 
- if (not Active) or (not ListView1.Focused) or (ItemAtPos(p1.X,p1.y)<>LoadingThItem) or (shloadingthitem<>LoadingThItem) then
+ if (not Active) or (not ListView.Focused) or (ItemAtPos(p1.X,p1.y)<>LoadingThItem) or (shloadingthitem<>LoadingThItem) then
 
  begin
   HintTimer.Enabled:=false;
@@ -2289,12 +2259,12 @@ begin
   if not LoadingThItem.Selected then
   begin
    if not (CtrlKeyDown or ShiftKeyDown) then
-   for i:=0 to Listview1.Items.Count-1 do
-   if Listview1.Items[i].Selected then
-   if LoadingThItem<>Listview1.Items[i] then
-   Listview1.Items[i].Selected:=false;
+   for i:=0 to ListView.Items.Count-1 do
+   if ListView.Items[i].Selected then
+   if LoadingThItem<>ListView.Items[i] then
+   ListView.Items[i].Selected:=false;
    if ShiftKeyDown then
-    Listview1.Selection.SelectRange(LoadingThItem,Listview1.Selection.FocusedItem,false,false) else
+    ListView.Selection.SelectRange(LoadingThItem,ListView.Selection.FocusedItem,false,false) else
    if not ShiftKeyDown then
    begin
     LoadingThItem.Selected:=true;
@@ -2315,13 +2285,11 @@ var
   p, p1 : tpoint;
 begin
  getcursorpos(p);
- p1:=listview1.ScreenToClient(p);
- result:=not ((not self.Active) or (not listview1.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
+ p1:=ListView.ScreenToClient(p);
+ result:=not ((not self.Active) or (not ListView.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
 end;
 
 procedure TSearchForm.initialization_;
-var
-  s : string;
 begin
  TW.I.Start('S -> initialization_');
  If DBTerminating then exit;
@@ -2331,8 +2299,8 @@ begin
 
  TW.I.Start('S -> DoShowSelectInfo');
  DoShowSelectInfo;
- ListView1.Canvas.Pen.Color:=$0;
- ListView1.Canvas.brush.Color:=$0;
+ ListView.Canvas.Pen.Color:=$0;
+ ListView.Canvas.brush.Color:=$0;
  button1.onclick:= Search;
  button1.caption:=TEXT_MES_SEARCH;
  Label7.Caption:=TEXT_MES_NO_RES;
@@ -2345,8 +2313,7 @@ begin
  SortLink.UseSpecIconSize:=true;
  SortLink.SetDefault;
 
- WorkedFiles_:=TstringList.Create;
- ListView1.DoubleBuffered:=true;
+ ListView.DoubleBuffered:=true;
                           
  CheckBox6.Caption:=TEXT_MES_SHOW_LAST;
  ComboBox5.Clear;
@@ -2596,18 +2563,18 @@ end;
 
 procedure TSearchForm.RenameCurrentItem(Sender: TObject);
 begin
- if ListView1.Selection.First=nil then exit;
- ListView1.EditManager.Enabled:=true;
+ if ListView.Selection.First=nil then exit;
+ ListView.EditManager.Enabled:=true;
 end;
 
-procedure TSearchForm.ListView1KeyPress(Sender: TObject; var Key: Char);
+procedure TSearchForm.ListViewKeyPress(Sender: TObject; var Key: Char);
 begin
- If key=#13 then ListView1DblClick(Sender);
+ If key=#13 then ListViewDblClick(Sender);
  if Key in Unusedchar then key:=#0;
  //TODO: contex menu popup
 end;
 
-procedure TSearchForm.ListView1Edited(Sender: TObject; Item: TEasyItem;
+procedure TSearchForm.ListViewEdited(Sender: TObject; Item: TEasyItem;
   var S: String);
 begin
  s:=copy(s,1,min(length(s),255));
@@ -2626,18 +2593,18 @@ begin
  end;
 end;
 
-procedure TSearchForm.ListView1KeyDown(Sender: TObject; var Key: Word;
+procedure TSearchForm.ListViewKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 
- if ListView1Selected=nil then exit;
+ if ListViewSelected=nil then exit;
 
  if Ord(Key) = VK_F2 then
  if SelCount=1 then
 
 
-  ListView1.EditManager.Enabled:=true;
-  ListView1.Selection.First.Edit;
+  ListView.EditManager.Enabled:=true;
+  ListView.Selection.First.Edit;
 
  if Active then
  Application.HideHint;
@@ -2659,7 +2626,7 @@ begin
  Result.IsListItem:=false;
  Result.IsPlusMenu:=false;
  MenuLength:=Data.Count;
- if MenuLength<ListView1.Items.Count then exit;
+ if MenuLength<ListView.Items.Count then exit;
  SetLength(Result.ItemFileNames_,MenuLength);
  SetLength(Result.ItemComments_,MenuLength);
  SetLength(Result.ItemFileSizes_,MenuLength);
@@ -2703,8 +2670,8 @@ begin
   Result.ItemLinks_[i]:=Data[i].Links;
  end;
  Result.IsAttrExists:=true;
- For i:=0 to ListView1.Items.Count-1 do
- if ListView1.Items[i].Selected then
+ For i:=0 to ListView.Items.Count-1 do
+ if ListView.Items[i].Selected then
  Result.ItemSelected_[i]:=true else
  Result.ItemSelected_[i]:=false;
  If Item=nil then
@@ -2714,10 +2681,10 @@ begin
   if SelCount=1 then
   begin
    Result.IsListItem:=true;
-   if ListView1.Selection.First<>nil then
+   if ListView.Selection.First<>nil then
    begin
-    Result.ListItem:=ListView1.Selection.First;
-    Result.Position:=ItemIndex(ListView1.Selection.First);
+    Result.ListItem:=ListView.Selection.First;
+    Result.Position:=ItemIndex(ListView.Selection.First);
    end;
   end;
   if SelCount>1 then
@@ -2727,7 +2694,7 @@ begin
  end;
 end;
 
-procedure TSearchForm.ListView1MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TSearchForm.ListViewMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   Handled : boolean;
@@ -2742,12 +2709,12 @@ begin
     if (Shift=[]) and item.Selected then
     if ItemByMouseDown then
     begin
-     for i:=0 to Listview1.Items.Count-1 do
-     if Listview1.Items[i].Selected then
-     if item<>Listview1.Items[i] then
-     Listview1.Items[i].Selected:=false;
+     for i:=0 to ListView.Items.Count-1 do
+     if ListView.Items[i].Selected then
+     if item<>ListView.Items[i] then
+     ListView.Items[i].Selected:=false;
     end;
-    if not (ebcsDragSelecting in Listview1.States) then
+    if not (ebcsDragSelecting in ListView.States) then
     if ([ssCtrl]*Shift<>[]) and not ItemSelectedByMouseDown and (Button=mbLeft) then
     item.Selected:=false;
    end;
@@ -2755,7 +2722,7 @@ begin
  if MouseDowned then
  if Button=mbRight then
  begin
-  ListView1ContextPopup(ListView1,Point(X,Y),Handled);
+  ListViewContextPopup(ListView,Point(X,Y),Handled);
   PopupHandled:=true;
  end;
  MouseDowned:=false;
@@ -2763,7 +2730,7 @@ begin
  SetLength(FilesToDrag,0);
 end;
 
-procedure TSearchForm.ListView1Exit(Sender: TObject);
+procedure TSearchForm.ListViewExit(Sender: TObject);
 begin
  DBCanDrag:=false;
  SetLength(FilesToDrag,0);
@@ -2821,88 +2788,69 @@ procedure TSearchForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
   i : integer;
-  b : Boolean;
+  TmpBool : Boolean;
 begin
-
- begin
-  if Msg.message=WM_KEYDOWN then
-  if SearchEdit.Focused then
-  begin
-   if Msg.wParam=13 then
-   begin
+  if (Msg.message = WM_KEYDOWN) and (SearchEdit.Focused) and (Msg.wParam = VK_RETURN) then
+  begin     
+    Handled := True;
+    Msg.Message := 0;
     DoSearchNow(nil);
-    Handled:=true;
-    Msg.Message:=0;
-   end;
   end;
-  if Msg.message=WM_KEYUP then
-  if SearchEdit.Focused then
-  Msg.Message:=0;
- end;
- if Msg.hwnd=ListView1.Handle then
- begin
-  if Msg.message=516 then
-  begin
-   WindowsMenuTickCount:=GetTickCount;
-  end;
-
-  //middle mouse button
-  if Msg.message=519 then
-  begin
-   Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
-   BigImagesSizeForm.Execute(self,fPictureSize,BigSizeCallBack);
-   Msg.message:=0;
-  end;
-
-  if Msg.message=WM_MOUSEWHEEL then
-  begin
-   if Msg.wParam>0 then i:=1 else i:=-1;
-   if CtrlKeyDown then
-   begin
-    ListView1MouseWheel(ListView1,[ssCtrl],i,Point(0,0),b);
-    Msg.message:=0;
-   end;
-  end;
- end;
-
-
- if Msg.hwnd=FFirstTip_WND then
- if msg.message=275 then
- if msg.WParam=4 then
- SendMessage(FFirstTip_WND, WM_CLOSE,1,1);
-
- if Msg.hwnd=ListView1.Handle then
- if Msg.message=256 then
- begin             
-  WindowsMenuTickCount:=GetTickCount;
-  //93-context menu button
-  if (Msg.wParam=93) then
-  begin
-   ListView1ContextPopup(ListView1,Point(-1,-1),b);
-  end;
-  if (Msg.wParam=Ord('r')) or (Msg.wParam=Ord('R')) then
-  if ShiftkeyDown then
-  begin
-   ReloadIDMenu;
-   ReloadListMenu;
-   MessageBoxDB(Handle,TEXT_MES_MENU_RELOADED,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
-  end;         
-  //109-
-  if (Msg.wParam=109) then ZoomIn; 
-  //107+
-  if (Msg.wParam=107) then ZoomOut;
   
-  //Del  --->  delete selected
-  if (Msg.wParam=46) and not FUpdatingDB then DeleteSelected;
+  if (Msg.message = WM_KEYUP) and SearchEdit.Focused then
+    Msg.Message := 0;
 
-  //Ctrl+a  --->  select all
-  if (Msg.wParam=65) and CtrlKeyDown and not FUpdatingDB then SelectAll1Click(Nil);
+  if Msg.hwnd = ListView.Handle then
+  begin
+    if Msg.message = WM_RBUTTONDOWN then
+      WindowsMenuTickCount:=GetTickCount;
 
-  //Ctrl+s  --->  stop loading
-  if (Msg.wParam=83) and CtrlKeyDown then
-  if ToolButton14.Enabled then ToolButton14Click(nil);
+    //middle mouse button
+    if Msg.message = WM_MBUTTONDOWN then
+    begin
+      Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
+      BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
+      Msg.message := 0;
+    end;
 
- end;
+    if (Msg.message = WM_MOUSEWHEEL) and CtrlKeyDown then
+    begin
+      if Msg.wParam > 0 then i := 1 else i := -1;
+      ListViewMouseWheel(ListView, [ssCtrl], i, Point(0,0), TmpBool);
+      Msg.message := 0;
+    end;
+
+    if Msg.message = WM_KEYDOWN then
+    begin
+      WindowsMenuTickCount:=GetTickCount;
+      //context menu button
+      if (Msg.wParam = VK_APPS) then
+        ListViewContextPopup(ListView,Point(-1,-1), TmpBool);
+
+      if (Msg.wParam = Ord('r')) or (Msg.wParam = Ord('R')) and ShiftkeyDown then
+      begin
+        ReloadIDMenu;
+        ReloadListMenu;
+        MessageBoxDB(Handle,TEXT_MES_MENU_RELOADED,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+      end;
+
+      if (Msg.wParam = VK_SUBTRACT) then
+        ZoomIn;
+      if (Msg.wParam = VK_ADD) then
+        ZoomOut;
+      if (Msg.wParam = VK_DELETE) and not FUpdatingDB then
+        DeleteSelected;
+      if (Msg.wParam = Ord('a')) and CtrlKeyDown and not FUpdatingDB then
+        SelectAll1Click(Nil);
+      if (Msg.wParam = Ord('s')) and CtrlKeyDown and ToolButton14.Enabled then
+        ToolButton14Click(nil);
+
+    end;
+  end;
+
+  if (Msg.hwnd = FFirstTip_WND) and (Msg.message = WM_TIMER) and (Msg.WParam = 4) then
+    SendMessage(FFirstTip_WND, WM_CLOSE, 1, 1);
+
 end;
 
 procedure TSearchForm.DoLockInfo;
@@ -2950,7 +2898,7 @@ var
 begin
  SaveDialog:=DBSaveDialog.Create;
  SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
- if ListView1.Items.Count>0 then
+ if ListView.Items.Count>0 then
  begin
   if SaveDialog.Execute then
   begin
@@ -2993,19 +2941,19 @@ end;
 procedure TSearchForm.BeginUpdate;
 begin
  fListUpdating:=true;
- ListView1.BeginUpdate;
- ListView1.Groups.BeginUpdate(false);
+ ListView.BeginUpdate;
+ ListView.Groups.BeginUpdate(false);
  BackGroundSearchPanel.Visible:=True;
- ListView1.Visible:=false;
+ ListView.Visible:=false;
 end;
 
 procedure TSearchForm.EndUpdate;
 begin
  fListUpdating:=false;
- ListView1.Visible:=true;
+ ListView.Visible:=true;
  BackGroundSearchPanel.Visible:=False;
- ListView1.Groups.EndUpdate;
- ListView1.EndUpdate;
+ ListView.Groups.EndUpdate;
+ ListView.EndUpdate;
 end;
 
 procedure TSearchForm.BackGroundSearchPanelResize(Sender: TObject);
@@ -3326,11 +3274,6 @@ begin
  ToolButton12.Caption:=TEXT_MES_EXPLORER;
 end;
 
-function RectInRect(Const R1, R2 : TRect) : Boolean;
-begin          
- Result := PtInRect(R2,R1.TopLeft) or PtInRect(R2,R1.BottomRight) or PtInRect(R1,R2.TopLeft) or PtInRect(R1,R2.BottomRight);
-end;
-
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
 var
   DS : TDataSet;
@@ -3344,7 +3287,7 @@ var
 
   begin
    if count<50 then
-   DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_FIRST,Point(0,0),ListView1,HelpNextClick,TEXT_MES_NEXT_HELP,HelpCloseClick) else
+   DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_FIRST,Point(0,0),ListView,HelpNextClick,TEXT_MES_NEXT_HELP,HelpCloseClick) else
    begin
     HelpNo:=0;
     DBKernel.WriteBool('HelpSystem','CheckRecCount',False);
@@ -3360,7 +3303,7 @@ begin
   HelpActivationNO:=0;
   if DBkernel.GetDemoMode then
   if DBKernel.ReadBool('HelpSystem','ActivationHelp',True) then
-  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_FIRST,Point(0,0),ListView1,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick) else
+  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_FIRST,Point(0,0),ListView,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick) else
   if not DBkernel.GetDemoMode then
   DBKernel.WriteBool('HelpSystem','ActivationHelp',false);
   exit;
@@ -3481,14 +3424,14 @@ end;
 
 procedure TSearchForm.DeleteItemByID(ID: integer);
 var
-  i, j: integer;
+  i: integer;
 begin
- for i:=0 to ListView1.Items.Count-1 do
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  if ListView1.Items[i].Tag=ID then
+  if ListView.Items[i].Tag=ID then
   begin
     Data.DeleteAt(i);
-    ListView1.Items.Delete(i);
+    ListView.Items.Delete(i);
     break;
   end;
  end;
@@ -3522,110 +3465,57 @@ end;
 { TManagerSearchs }
 
 procedure TManagerSearchs.AddSearch(Search: TSearchForm);
-var
-  i : integer;
-  b : boolean;
 begin
- b:=false;
- For i:=0 to Length(FSearchs)-1 do
- if FSearchs[i]=Search then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FSearchs,Length(FSearchs)+1);
-  FSearchs[Length(FSearchs)-1]:=Search;
-
-  SetLength(FForms,Length(FForms)+1);
-  FForms[Length(FForms)-1]:=Search;
- end;
+  if FSearches.IndexOf(Search) = -1 then
+    FSearches.Add(Search);
 end;
 
 constructor TManagerSearchs.Create;
 begin
- SetLength(FSearchs,0);
- SetLength(FForms,0);
+  FSearches := TList.Create;
 end;
 
 destructor TManagerSearchs.Destroy;
 begin
- SetLength(FSearchs,0);
- SetLength(FForms,0);
- inherited;
+  FSearches.Free;
+  inherited;
 end;
 
-procedure TManagerSearchs.FreeSearch(Search: TSearchForm);
+function TManagerSearchs.IsSearch(Search: TForm): Boolean;
 begin
-//
-end;
-
-function TManagerSearchs.IsSearch(Search: TSearchForm): Boolean;
-Var
-  i : Integer;
-begin
- Result:=False;
- For i:=0 to Length(FSearchs)-1 do
- if FSearchs[i]=Search then
- Begin
-  Result:=True;
-  Break;
- End;
-end;
-
-function TManagerSearchs.IsSearchForm(Search: TForm): Boolean;
-var
-  i : Integer;
-begin
- Result:=False;
- For i:=0 to Length(FForms)-1 do
- if FForms[i]=Search then
- Begin
-  Result:=True;
-  Break;
- End;
+  Result := FSearches.IndexOf(Search) > -1;
 end;
 
 function TManagerSearchs.NewSearch: TSearchForm;
 begin
- Application.CreateForm(TSearchForm,Result);
+  Application.CreateForm(TSearchForm,Result);
 end;
 
 function TManagerSearchs.GetAnySearch : TSearchForm;
 begin
- if SearchCount=0 then Result:=NewSearch else Result:=FSearchs[0];
+  if SearchCount = 0 then
+    Result := NewSearch
+  else
+    Result := FSearches[0];
 end;
 
 procedure TManagerSearchs.RemoveSearch(Search: TSearchForm);
-var
-  i, j : integer;
 begin
- For i:=0 to Length(FSearchs)-1 do
- if FSearchs[i]=Search then
- begin
-  For j:=i to Length(FSearchs)-2 do
-  FSearchs[j]:=FSearchs[j+1];
-  SetLength(FSearchs,Length(FSearchs)-1);
-  For j:=i to Length(FForms)-2 do
-  FForms[j]:=FForms[j+1];
-  SetLength(FForms,Length(FForms)-1);
-  break;
- end;
+  FSearches.Remove(Search);
 end;
 
 function TManagerSearchs.SearchCount: Integer;
 begin
- Result:=Length(FSearchs);
+ Result := FSearches.Count;
 end;
 
 procedure TSearchForm.NewSearch1Click(Sender: TObject);
 begin
- With SearchManager.NewSearch do
- begin
-  Show;
-  SetFocus;
- end;
+  with SearchManager.NewSearch do
+  begin
+    Show;
+    SetFocus;
+  end;
 end;
 
 procedure TSearchForm.GetUpdates1Click(Sender: TObject);
@@ -3648,7 +3538,7 @@ procedure TSearchForm.HelpNextClick(Sender: TObject);
 var
   Handled : boolean;
 begin
- ListView1ContextPopup(ListView1,Point(0,0),Handled);
+ ListViewContextPopup(ListView,Point(0,0),Handled);
  HelpNO:=1;
 end;
 
@@ -3678,11 +3568,11 @@ begin
  HelpActivationNO:=HelpActivationNO+1;
  if HelpActivationNO=1 then
  begin
-  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_1,Point(0,0),ListView1,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick);
+  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_1,Point(0,0),ListView,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick);
  end;
  if HelpActivationNO=2 then
  begin
-  ListView1ContextPopup(ListView1,Point(0,0),Handled);
+  ListViewContextPopup(ListView,Point(0,0),Handled);
   HelpActivationNO:=3;
  end;
 end;
@@ -3817,7 +3707,7 @@ procedure TSearchForm.Decremect1Click(Sender: TObject);
 begin
  Decremect1.Checked:=true;
  SortLink.Icon:=Image6.Picture.Icon;
- SortLink.RecreateShImage;
+ SortLink.RefreshBuffer;
  SortingClick(Sender);
 end;
 
@@ -3825,7 +3715,7 @@ procedure TSearchForm.Increment1Click(Sender: TObject);
 begin
  Increment1.Checked:=true;
  SortLink.Icon:=Image5.Picture.Icon;
- SortLink.RecreateShImage;
+ SortLink.RefreshBuffer;
  SortingClick(Sender);
 end;
 
@@ -3933,18 +3823,18 @@ var
   i : integer;
 begin
  if PbProgress.Position<>0 then exit;
- ListView1.Groups.BeginUpdate(false);
- for i:=ListView1.Items.Count-1 downto 0 do
- if ListView1.Items[i].Selected then
+ ListView.Groups.BeginUpdate(false);
+ for i:=ListView.Items.Count-1 downto 0 do
+ if ListView.Items[i].Selected then
  begin
-  DeleteItemByID(ListView1.Items[i].Tag);
+  DeleteItemByID(ListView.Items[i].Tag);
  end;
- ListView1.Groups.EndUpdate(false);
+ ListView.Groups.EndUpdate(false);
 end;
 
 procedure TSearchForm.HidePanelTimerTimer(Sender: TObject);
 begin
- if (ListView1Selected=nil) or (SelCount=0) then
+ if (ListViewSelected=nil) or (SelCount=0) then
  begin
   HidePanelTimer.Enabled:=false;
   PropertyPanel.Hide;
@@ -4047,7 +3937,7 @@ begin
  if Active then
 
  Memo2.PopupMenu:=nil;
- if ListView1Selected=nil then
+ if ListViewSelected=nil then
  if SelCount=0 then
  begin
   HidePanelTimer.Enabled:=true;
@@ -4074,8 +3964,8 @@ begin
   SetLength(ArStr,0);
   SetLength(ArGroups,0);
 
-  For i:=0 to ListView1.Items.Count-1 do
-  if ListView1.Items[i].Selected then
+  For i:=0 to ListView.Items.Count-1 do
+  if ListView.Items[i].Selected then
   begin
    Size:=Size+Data[i].FileSize;
    SetLength(A,Length(A)+1);
@@ -4161,8 +4051,8 @@ begin
   SelectQuery.Active:=false;
 
   indent:=0;
-  if ListView1.Selection.First<>nil then
-  indent:=ListView1.Selection.First.Tag;
+  if ListView.Selection.First<>nil then
+  indent:=ListView.Selection.First.Tag;
 
   SetSQL(SelectQuery,'SELECT * FROM '+GetDefDBName+' WHERE ID='+inttostr(indent));
   SelectQuery.active:=true;
@@ -4174,7 +4064,7 @@ begin
   Rating1.Rating:=SelectQuery.FieldByName('Rating').asinteger;
   CurrentItemInfo.ItemRating:=Rating1.Rating;
 
-  listView1.Hint := SelectQuery.FieldByName('Comment').asstring;
+  ListView.Hint := SelectQuery.FieldByName('Comment').asstring;
   current_id_show:=SelectQuery.FieldByName('ID').AsInteger;
   frating:=SelectQuery.FieldByName('Rating').asinteger;
   CurrentItemInfo.ItemKeyWords:=SelectQuery.FieldByName('KeyWords').AsString;
@@ -4424,15 +4314,15 @@ end;
 
 function TSearchForm.SelCount : integer;
 begin
- Result:= ListView1.Selection.Count;
+ Result:= ListView.Selection.Count;
 end;
 
-function TSearchForm.ListView1Selected : TEasyItem;
+function TSearchForm.ListViewSelected : TEasyItem;
 begin
- Result:= ListView1.Selection.First;
+ Result:= ListView.Selection.First;
 end;
 
-procedure TSearchForm.EasyListview1ItemThumbnailDraw(
+procedure TSearchForm.EasyListViewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
@@ -4445,13 +4335,7 @@ begin
  if Item.Data=nil then exit;
  r1:=ARect;
 
- if not Boolean(TDataObject(Item.Data).Data^) then
- begin
-  ListView1.PaintInfoItem.fBorderColor:=$00FFFF;
- end else
- begin
-  ListView1.PaintInfoItem.fBorderColor:=Theme_ListSelectColor;
- end;
+ ListView.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
 
  if Item.ImageIndex>-1 then
  begin
@@ -4464,7 +4348,7 @@ begin
  b.PixelFormat:=pf24bit;
  b.Width:=fPictureSize;
  b.Height:=fPictureSize;
- FillRectNoCanvas(b,ListView1.Canvas.Brush.Color);
+ FillRectNoCanvas(b,ListView.Canvas.Brush.Color);
 
  if Item.ImageIndex>-1 then
  begin
@@ -4480,7 +4364,7 @@ begin
  index:=ItemIndex(Item);
  if index>Data.Count-1 then
  begin
-  EventLog(':TSearchForm.Listview1ItemThumbnailDraw() Error: index = '+IntToStr(index)+', Length(Data) = '+IntToStr(Data.Count));
+  EventLog(':TSearchForm.ListViewItemThumbnailDraw() Error: index = '+IntToStr(index)+', Length(Data) = '+IntToStr(Data.Count));
   exit;
  end;
  DrawAttributes(b,fPictureSize,Data[index].Rating,Data[index].Rotation,Data[index].Access,Data[index].FileName,Data[index].Crypted,Data[index].Exists,1);
@@ -4500,16 +4384,16 @@ begin
  b.free;
 end;
 
-procedure TSearchForm.EasyListview1DblClick(Sender: TCustomEasyListview;
+procedure TSearchForm.EasyListViewDblClick(Sender: TCustomEasyListview;
       Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
 begin
- ListView1DblClick(Sender);
+ ListViewDblClick(Sender);
 end;
 
-procedure TSearchForm.EasyListview1ItemSelectionChanged(
+procedure TSearchForm.EasyListViewItemSelectionChanged(
   Sender: TCustomEasyListview; Item: TEasyItem);
 begin
- ListView1SelectItem(Sender,Item,false);
+ ListViewSelectItem(Sender,Item,false);
 end;
 
 function TSearchForm.ItemAtPosStar(X,Y : integer): TEasyItem;
@@ -4519,28 +4403,28 @@ end;
 
 Function TSearchForm.ItemAtPos(X,Y : integer): TEasyItem;
 begin
- Result:=ItemByPointImage(Listview1,Point(x,y));
+ Result:=ItemByPointImage(ListView,Point(x,y));
 end;
 
-procedure TSearchForm.EasyListview2KeyAction(Sender: TCustomEasyListview;
+procedure TSearchForm.EasyListviewKeyAction(Sender: TCustomEasyListview;
   var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 var
   aChar : Char;
 begin
  aChar:=Char(CharCode);
- ListView1KeyPress(Sender,aChar);
- if CharCode=VK_F2 then ListView1KeyDown(Sender,CharCode,[]);
+ ListViewKeyPress(Sender,aChar);
+ if CharCode=VK_F2 then ListViewKeyDown(Sender,CharCode,[]);
 end;
 
-procedure TSearchForm.EasyListview1ItemEdited(Sender: TCustomEasyListview;
+procedure TSearchForm.EasyListViewItemEdited(Sender: TCustomEasyListview;
   Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
 var
   s : string;
 begin
  s:=NewValue;
  RenameResult:=true;
- ListView1Edited(Sender,Item,s);
- ListView1.EditManager.Enabled:=false;
+ ListViewEdited(Sender,Item,s);
+ ListView.EditManager.Enabled:=false;
  Accept:=RenameResult;
  if not Accept then
  begin
@@ -4557,39 +4441,21 @@ begin
   DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
 end;
 
-procedure TSearchForm.ListView1Resize(Sender : TObject);
+procedure TSearchForm.ListViewResize(Sender : TObject);
 begin
- Listview1.BackGround.OffsetX:=ListView1.Width-Listview1.BackGround.Image.Width;
- Listview1.BackGround.OffsetY:=ListView1.Height-Listview1.BackGround.Image.Height;
+ ListView.BackGround.OffsetX:=ListView.Width-ListView.BackGround.Image.Width;
+ ListView.BackGround.OffsetY:=ListView.Height-ListView.BackGround.Image.Height;
 end;
 
 procedure TSearchForm.UpdateTheme(Sender: TObject);
-var
-  b : TBitmap;
 begin
  SortLink.SetDefault;
- ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
- ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
-
-  if ListView1<>nil then
-  begin
-   if ListView1.BackGround.Image<>nil then
-   ListView1.BackGround.Image:=nil;
-   b:=TBitmap.create;
-   b.PixelFormat:=pf24bit;
-   b.Width:=150;
-   b.Height:=150;
-   b.Canvas.Brush.Color:=ListView1.Color;
-   b.Canvas.Pen.Color:=ListView1.Color;
-   b.Canvas.Rectangle(0,0,150,150);
-   b.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
-   ListView1.BackGround.Image:=b;
-   b.Free;
-  end;
-
+ ListView.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
+ ListView.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
+ CreateBackground;
 end;
 
-procedure TSearchForm.Listview1IncrementalSearch(Item: TEasyCollectionItem;
+procedure TSearchForm.ListViewIncrementalSearch(Item: TEasyCollectionItem;
   const SearchBuffer: WideString; var CompareResult: Integer);
 var
   CompareStr: WideString;
@@ -4611,7 +4477,7 @@ begin
   Result:=item.Index;
   for i:=0 to item.OwnerGroup.Index-1 do
   begin
-   Result:=Result+ListView1.Groups[i].Items.Count;
+   Result:=Result+ListView.Groups[i].Items.Count;
   end;
 end;
 
@@ -4679,8 +4545,8 @@ end;
 
 procedure TSearchForm.LoadSizes();
 begin
- ListView1.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height:=FPictureSize+36;
+ ListView.CellSizes.Thumbnail.Width:=FPictureSize+10;
+ ListView.CellSizes.Thumbnail.Height:=FPictureSize+36;
 end;
 
 function TSearchForm.FileNameExistsInList(FileName : string) : boolean;
@@ -4709,7 +4575,7 @@ begin
  begin
   if Data[i].FileName=FileName then
   begin
-   Result:=ListView1.Items[i].ImageIndex;
+   Result:=ListView.Items[i].ImageIndex;
    break;
   end;
  end;
@@ -4724,7 +4590,7 @@ begin
  begin
   if Data[i].FileName=FileName then
   begin
-   ListView1.Items[i].ImageIndex:=Index;
+   ListView.Items[i].ImageIndex:=Index;
   end;
  end;
 end;
@@ -4739,17 +4605,17 @@ begin
  begin
   if Data[i].FileName=FileName then
   begin
-   if ListView1.Items[i].ImageIndex=-1 then
+   if ListView.Items[i].ImageIndex=-1 then
    begin
     Bmp:=TBitmap.Create;
     Bmp.Assign(Bitmap);
     FBitmapImageList.AddBitmap(Bmp);
-    ListView1.Items[i].ImageIndex:=FBitmapImageList.Count-1;
+    ListView.Items[i].ImageIndex:=FBitmapImageList.Count-1;
    end else
    begin
-    FBitmapImageList[ListView1.Items[i].ImageIndex].Bitmap.Assign(Bitmap);
+    FBitmapImageList[ListView.Items[i].ImageIndex].Bitmap.Assign(Bitmap);
    end;
-   ListView1.Refresh;
+   ListView.Refresh;
   end;
  end;
 end;
@@ -4758,23 +4624,23 @@ procedure TSearchForm.BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
 var
   SelectedVisible : boolean;
 begin
- ListView1.BeginUpdate;
+ ListView.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  FPictureSize:=SizeX;
  LoadSizes();
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;
 
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+ ListView.Scrollbars.ReCalculateScrollbars(false,true);
+ ListView.Groups.ReIndexItems;
+ ListView.Groups.Rebuild(true);
 
  if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+ ListView.Selection.First.MakeVisible(emvTop);
+ ListView.EndUpdate();
 end;
 
-procedure TSearchForm.ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
+procedure TSearchForm.ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
  if not (ssCtrl in Shift) then exit;
@@ -4805,12 +4671,12 @@ var
 begin
  SetLength(Result,0);
  SetLength(t,0);              
- if Data.Count<>ListView1.Items.Count then exit;
- rv :=  Listview1.Scrollbars.ViewableViewportRect;
- for i:=0 to ListView1.Items.Count-1 do
+ if Data.Count<>ListView.Items.Count then exit;
+ rv :=  ListView.Scrollbars.ViewableViewportRect;
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,ListView1.Items[i].DisplayRect) then
+  r:=Rect(ListView.ClientRect.Left+rv.Left,ListView.ClientRect.Top+rv.Top,ListView.ClientRect.Right+rv.Left,ListView.ClientRect.Bottom+rv.Top);
+  if RectInRect(r,ListView.Items[i].DisplayRect) then
   begin
    SetLength(Result,Length(Result)+1);
    Result[Length(Result)-1]:=Data[i].FileName;
@@ -4827,13 +4693,13 @@ var
 begin
  Result:=false;
  SetLength(t,0);
- rv :=  Listview1.Scrollbars.ViewableViewportRect;
- for i:=0 to ListView1.Items.Count-1 do
+ rv :=  ListView.Scrollbars.ViewableViewportRect;
+ for i:=0 to ListView.Items.Count-1 do
  begin
-  r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,ListView1.Items[i].DisplayRect) then
+  r:=Rect(ListView.ClientRect.Left+rv.Left,ListView.ClientRect.Top+rv.Top,ListView.ClientRect.Right+rv.Left,ListView.ClientRect.Bottom+rv.Top);
+  if RectInRect(r,ListView.Items[i].DisplayRect) then
   begin
-   if ListView1.Items[i].Selected then
+   if ListView.Items[i].Selected then
    begin
     Result:=true;
     exit;
@@ -5108,7 +4974,6 @@ end;
 
 procedure TSearchForm.LoadToolBarIcons();
 var
-  Ico : TIcon;
   UseSmallIcons : Boolean;
 
   procedure AddIcon(Name : String);
@@ -5176,39 +5041,39 @@ procedure TSearchForm.ZoomIn;
 var
   SelectedVisible : boolean;
 begin
- ListView1.BeginUpdate;
+ ListView.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  if FPictureSize>40 then FPictureSize:=FPictureSize-10;
- ListView1.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height:=FPictureSize+36;
+ ListView.CellSizes.Thumbnail.Width:=FPictureSize+10;
+ ListView.CellSizes.Thumbnail.Height:=FPictureSize+36;
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+ ListView.Scrollbars.ReCalculateScrollbars(false,true);
+ ListView.Groups.ReIndexItems;
+ ListView.Groups.Rebuild(true);
 
  if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+ ListView.Selection.First.MakeVisible(emvTop);
+ ListView.EndUpdate();
 end;
 
 procedure TSearchForm.ZoomOut;
 var
   SelectedVisible : boolean;
 begin                 
- ListView1.BeginUpdate;
+ ListView.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  if FPictureSize<550 then FPictureSize:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height:=FPictureSize+36;  
+ ListView.CellSizes.Thumbnail.Width:=FPictureSize+10;
+ ListView.CellSizes.Thumbnail.Height:=FPictureSize+36;  
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;   
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+ ListView.Scrollbars.ReCalculateScrollbars(false,true);
+ ListView.Groups.ReIndexItems;
+ ListView.Groups.Rebuild(true);
  if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+ ListView.Selection.First.MakeVisible(emvTop);
+ ListView.EndUpdate();
 end;
 
 procedure TSearchForm.ToolButton1Click(Sender: TObject);
@@ -5236,14 +5101,14 @@ procedure TSearchForm.ToolButton12Click(Sender: TObject);
 var
   FileName : string;
 begin
- if ListView1.Selection.Count=0 then
+ if ListView.Selection.Count=0 then
  begin
   NewExplorer;
  end else
  begin
   With ExplorerManager.NewExplorer(False) do
   begin
-   FileName:=Data[GetItemNO(ListView1.Selection.First)].FileName;
+   FileName:=Data[GetItemNO(ListView.Selection.First)].FileName;
    DoProcessPath(FileName);
    SetOldPath(FileName);
    SetPath(ExtractFilePath(FileName));
@@ -5272,11 +5137,6 @@ begin
   BreakOperation(Sender);
   NewFormState;
  end;
-end;
-
-function TSearchForm.IfBreak(Sender : TObject; aSID : TGUID): boolean;
-begin
- Result:=IsActualState(aSID);
 end;
 
 procedure TSearchForm.SortingClick(Sender: TObject);
@@ -5416,8 +5276,8 @@ begin
  //NOT RIGHT! SORTING BY FOLDERS-IMAGES-OTHERS
  if ((Sender as TMenuItem).Tag=-1) then exit;
 
- if ListView1.Items.Count<2 then exit;
- ListView1.Groups.BeginUpdate(false);
+ if ListView.Items.Count<2 then exit;
+ ListView.Groups.BeginUpdate(false);
 
  //saving settings
  DBKernel.WriteInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMethod',SortLink.Tag);
@@ -5433,17 +5293,17 @@ begin
  if (SortbyCompare1.Checked) then SortType:=6;
 
  try
- l:=ListView1.Items.Count;
+ l:=ListView.Items.Count;
 
  SetLength(SIs,L);
  SetLength(LI,L);
 
  for i:=0 to l-1 do
  begin
-  LI[i].Caption:=ListView1.Items[i].Caption;
-  LI[i].Indent:=ListView1.Items[i].Tag;
-  LI[i].Data:=ListView1.Items[i].Data;
-  LI[i].ImageIndex:=ListView1.Items[i].ImageIndex;
+  LI[i].Caption:=ListView.Items[i].Caption;
+  LI[i].Indent:=ListView.Items[i].Tag;
+  LI[i].Data:=ListView.Items[i].Data;
+  LI[i].ImageIndex:=ListView.Items[i].ImageIndex;
   LI[i].DBData:=Data[i];
 
   index:=i;
@@ -5490,8 +5350,8 @@ begin
 
  QuickSort(SIs,l,aType,Increment1.Checked);
                        
- ListView1.BeginUpdate;
- ListView1.Items.Clear;
+ ListView.BeginUpdate;
+ ListView.Items.Clear;
 
  ShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
 
@@ -5503,19 +5363,19 @@ begin
 
  for i:=0 to L-1 do
  begin
-  AddItemInListViewByGroups(ListView1,LI[SIs[i].ID].DBData.ID,SortLink.Tag,Decremect1.Checked,
+  AddItemInListViewByGroups(ListView,LI[SIs[i].ID].DBData.ID,SortLink.Tag,Decremect1.Checked,
   ShowGroups,LI[SIs[i].ID].DBData.FileSize,LI[SIs[i].ID].DBData.FileName,LI[SIs[i].ID].DBData.Rating,
   LI[SIs[i].ID].DBData.Date,LI[SIs[i].ID].DBData.Include,FLastSize,FLastChar,FLastRating,FLastMonth,FLastYear);
-  ListView1.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
-  ListView1.Items[i].Data:=LI[SIs[i].ID].Data;
+  ListView.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
+  ListView.Items[i].Data:=LI[SIs[i].ID].Data;
   Data[i]:=LI[SIs[i].ID].DBData;
  end;
- ListView1.EndUpdate();
+ ListView.EndUpdate();
  except    
    on e : Exception do EventLog(':TSearchForm::SortingClick() throw exception: '+e.Message);
  end;
- ListView1.Groups.EndUpdate;  
- ListView1.Realign;
+ ListView.Groups.EndUpdate;  
+ ListView.Realign;
 end;
 
 procedure TSearchForm.PopupMenuZoomDropDownPopup(Sender: TObject);
@@ -5640,6 +5500,38 @@ begin
   end;
 
   Result := FShellTreeView;
+end;
+
+procedure TSearchForm.CreateBackground;
+var
+  BackgroundImage : TPNGGraphic;
+  SearchBackgroundBMP : TBitmap;
+begin
+  ListView.BackGround.Image := nil;
+  ListView.BackGround.Image := TBitmap.Create;
+  ListView.BackGround.Image.PixelFormat := pf24bit;
+  ListView.BackGround.Image.Width := 150;
+  ListView.BackGround.Image.Height := 150;
+  ListView.BackGround.Image.Canvas.Brush.Color := Theme_ListColor;
+  ListView.BackGround.Image.Canvas.Pen.Color := Theme_ListColor;
+  ListView.BackGround.Image.Canvas.Rectangle(0,0,150,150);
+  BackgroundImage := GetSearchBackground;
+  try
+    SearchBackgroundBMP := TBitmap.Create;
+    try
+      LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme_ListColor);
+      ListView.BackGround.Image.Canvas.Draw(0, 0, SearchBackgroundBMP);
+    finally
+      SearchBackgroundBMP.Free;
+     end;
+  finally
+    BackgroundImage.Free;
+  end;
+end;
+
+function TManagerSearchs.GetValueByIndex(Index: Integer): TSearchForm;
+begin
+  Result := FSearches[Index];
 end;
 
 initialization

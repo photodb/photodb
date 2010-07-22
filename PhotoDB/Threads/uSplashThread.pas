@@ -127,7 +127,7 @@ begin
     TP.Font.Color := clWhite; 
     TP.Font.Name := 'Times New Roman';
     TP.CoolColor := clNavy;
-    TP.DoDraw(DrawDC, 10, SplHeight - TP.Height- 10);
+    TP.DoDraw(DrawDC, 10, SplHeight - TP.Height - 10);
   finally
     TP.Free;
   end;
