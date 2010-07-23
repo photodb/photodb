@@ -3,7 +3,7 @@ unit UnitDBCommonGraphics;
 interface
 
  uses Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics, GraphicEx,
-      DmProgress, UnitDBDeclare, Language, JPEG, BitmapDB, CommCtrl, UnitDBCommon,
+      DmProgress, UnitDBDeclare, Language, JPEG, CommCtrl, UnitDBCommon,
       GraphicsBaseTypes, GIFImage, Effects, Math;
 
  const
@@ -346,16 +346,22 @@ var
   Bitmap, OutBitmap : TBitmap;
   w, h : integer;
 begin
- Bitmap:=TBitmap24.Create('CalcJpegResampledSize.Bitmap');
- Bitmap.Assign(Jpeg);
- OutBitmap:=TBitmap24.Create('CalcJpegResampledSize.OutBitmap');
- w:=Jpeg.Width;
- h:=Jpeg.Height;
- ProportionalSize(Size,Size,w,h);
- DoResize(w,h,Bitmap,OutBitmap);
- Bitmap.Free;
- Result:=CalcBitmapToJPEGCompressSize(OutBitmap,CompressionRate,JpegImageResampled);
- OutBitmap.Free;
+  Bitmap:=TBitmap.Create;
+  try
+   Bitmap.Assign(Jpeg);
+   OutBitmap:=TBitmap.Create();
+   try
+      w:=Jpeg.Width;
+      h:=Jpeg.Height;
+      ProportionalSize(Size,Size,w,h);
+      DoResize(w,h,Bitmap,OutBitmap);
+      Result:=CalcBitmapToJPEGCompressSize(OutBitmap,CompressionRate,JpegImageResampled);
+    finally
+      OutBitmap.Free;
+    end;
+  finally
+    Bitmap.Free;
+  end;
 end;
 
 procedure ConvertTo32BitImageList(const ImageList: TImageList);

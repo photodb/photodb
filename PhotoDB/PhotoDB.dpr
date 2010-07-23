@@ -242,7 +242,6 @@ uses
   UnitDBRedeclare in 'Units\UnitDBRedeclare.pas',
   wfsU in 'Units\wfsU.pas',
   UnitFileCheckerDB in 'Units\UnitFileCheckerDB.pas',
-  BitmapDB in 'Units\BitmapDB.pas',
   UnitPasswordKeeper in 'Units\UnitPasswordKeeper.pas',
   UnitDBDeclare in 'Units\UnitDBDeclare.pas',
   UnitDBCommon in 'Units\UnitDBCommon.pas',

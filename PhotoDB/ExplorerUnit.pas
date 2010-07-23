@@ -5,7 +5,7 @@ interface
 uses
   acDlgSelect, CommCtrl, ActiveX, ExplorerTypes, DBCMenu, UnitDBKernel, UnitINI,
   ShellApi, dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts, BitmapDB,
+  Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts, 
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
   Network, GraphicCrypt, AddSessionPasswordUnit, UnitCrypting,

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, DmProgress, ComCtrls, Dolphin_DB, BitmapDB,
+  Dialogs, StdCtrls, ExtCtrls, DmProgress, ComCtrls, Dolphin_DB, 
   uVistaFuncs, jpeg, Spin, UnitRecreatingThInTable, CommonDBSupport, Menus,
   ExtDlgs, Graphics, UnitPasswordKeeper, UnitDBDeclare, AppEvnts,
   UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon;
@@ -359,13 +359,13 @@ ThHintSize
   begin    
    w:=Image.Width;
    h:=Image.Height; 
-   Bitmap:=TBitmap24.Create('TFormConvertingDB.ComboBox2Change.Bitmap');
+   Bitmap:=TBitmap.Create;
    Bitmap.Assign(Image);
    ProportionalSize(ImageOptions.ThHintSize,ImageOptions.ThHintSize,w,h);
-   Result:=TBitmap24.Create('TFormConvertingDB.ComboBox2Change.Result');
+   Result:=TBitmap.Create;
    DoResize(w,h,Bitmap,Result);
    Bitmap.Free;
-   ImagePreview.Picture.Assign(Result);    
+   ImagePreview.Picture.Assign(Result);
   end;
  end;
 
