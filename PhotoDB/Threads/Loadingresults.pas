@@ -15,22 +15,6 @@ type
                 QT_ONE_TEXT, QT_ONE_KEYWORD, QT_W_SCAN_FILE, QT_NO_NOPATH);
 
 type
- TWideSearchOptions = record
-  Enabled : Boolean;
-  MinDate : TDateTime;
-  MaxDate : TDateTime;
-  MinRating : integer;
-  MaxRating : integer;
-  MinID : integer;
-  MaxID : integer;
-  Private_ : Boolean;
-  Common_ : Boolean;
-  Deleted_ : Boolean;
-  UseWideSearch : boolean;
-  GroupName : string;
- end;
-
-type
   SearchThread = class(TThreadEx)
   private
    fQuery: TDataSet;
@@ -58,7 +42,7 @@ type
   ImThs : TArStrings;
   FCurrentFile : String;
   StringParam : String;
-  FWideSearch : TWideSearchOptions;
+  FSearchParams : TSearchQuery;
   IthIds : TArInteger;
   StrParam : String;
   IntParam : Integer;
@@ -86,42 +70,33 @@ type
   Procedure SetMaxValueA;
   Procedure SetProgress(Value : Integer);
   Procedure SetProgressA;
-  Procedure LoadThreadQuery;
   Procedure DoSetSearchByComparing;
   function GetFilter(Attr : Integer) : string;
   procedure GetPassForFile;
     { Private declarations }
   protected
-    FSender : TThreadForm;
     RatingParam, LastMonth, LastYear, LastRating : integer;
     LastChar : Char;
     LastSize, SizeParam : int64;
-    FileNameParam : String;
-    FSID : TGUID;
-    StrTh : String;
+    FileNameParam : string;
+    StrTh : string;
+    FQueryString : string;
     QueryType : TQueryType;
     FDateTimeParam : TDateTime;
-
     fData : TSearchRecordArray;   
     fQData : TSearchRecordArray;
-
-    QueryString : string;
-    OnDone : TNotifyEvent;
-    ShowPrivate : boolean;
-    UserQuery : string;
-    FSortMethod : integer;
-    FSortDecrement : Boolean;
+    FOnDone : TNotifyEvent;
     FShowGroups : boolean;
     BitmapParam : TBitmap;
     procedure Execute; override;
   public
-      constructor Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
+    constructor Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
   end;
 
   const
-      SPSEARCH_SHOWFOLDER = 1;
-      SPSEARCH_SHOWTHFILE = 2;
-      SPSEARCH_SHOWSIMILAR = 3;
+    SPSEARCH_SHOWFOLDER = 1;
+    SPSEARCH_SHOWTHFILE = 2;
+    SPSEARCH_SHOWSIMILAR = 3;
 
 procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
       SortDecrement : boolean; ShowGroups : boolean; SizeParam : int64; FileNameParam : string; RatingParam : integer;
@@ -133,66 +108,59 @@ implementation
 uses FormManegerUnit, Searching, ExplorerUnit, UnitGroupsWork, Language,
      CommonDBSupport, ExplorerThreadUnit;
 
-constructor SearchThread.Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
-begin         
- inherited Create(Sender, SID);
- FSender:=Sender;
- LastMonth:=0;
- LastRating:=-1;
- FPictureSize := PictureSize;
- LastChar := #0;
- SizeParam :=0;
- FileNameParam := '';
- LastYear:=0;
- FSID:=SID;
- OnDone:=OnDone_;
- FSortMethod:=SortMethod;
- FSortDecrement:=SortDecrement;
- ShowPrivate := FShowPrivate;
- UserQuery := Query;
- FWideSearch := WideSearch_;
- Start;
+constructor SearchThread.Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
+begin
+  inherited Create(Sender, SID);
+
+  FPictureSize := PictureSize;
+  LastChar := #0;
+  SizeParam :=0;
+  FileNameParam := '';
+  LastYear:=0;
+  FOnDone:=OnDone;
+  FSearchParams := SearchParams;
+  Start;
 end;
 
 procedure SearchThread.AddImageToList;
 begin
-  (FSender as TSearchForm).FBitmapImageList.AddBitmap(fbit);
+  (ThreadForm as TSearchForm).FBitmapImageList.AddBitmap(fbit);
 end;
 
 procedure SearchThread.ProgressNull;
 begin
-  (FSender as TSearchForm).PbProgress.Position:=0;
-  (FSender as TSearchForm).PbProgress.text:=TEXT_MES_DONE;
+  (ThreadForm as TSearchForm).PbProgress.Position:=0;
+  (ThreadForm as TSearchForm).PbProgress.text:=TEXT_MES_DONE;
 end;
 
 procedure SearchThread.ProgressNullA;
 begin
-  (FSender as TSearchForm).PbProgress.Position:=0;
-  (FSender as TSearchForm).PbProgress.text:=TEXT_MES_PROGRESS_PR;
+  (ThreadForm as TSearchForm).PbProgress.Position:=0;
+  (ThreadForm as TSearchForm).PbProgress.text:=TEXT_MES_PROGRESS_PR;
 end;
 
 procedure SearchThread.SetImageIndex;
 begin
-  (FSender as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(FSender as TSearchForm).FBitmapImageList.Count-1);
-  (FSender as TSearchForm).PbProgress.Position:=fthum_images_;
+  (ThreadForm as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(ThreadForm as TSearchForm).FBitmapImageList.Count-1);
+  (ThreadForm as TSearchForm).PbProgress.Position:=fthum_images_;
 end;
 
 procedure SearchThread.BeginUpdate;
 begin
-  (FSender as TSearchForm).BeginUpdate;
+  (ThreadForm as TSearchForm).BeginUpdate;
 end;
 
 procedure SearchThread.EndUpdate;
 begin
-  with (FSender as TSearchForm) do
+  with (ThreadForm as TSearchForm) do
     Data:=fData;
 
-  (FSender as TSearchForm).EndUpdate;
+  (ThreadForm as TSearchForm).EndUpdate;
 end;
 
 procedure SearchThread.ErrorSQL;
 begin
- (FSender as TSearchForm).ErrorQSL(ferrormsg);
+ (ThreadForm as TSearchForm).ErrorQSL(ferrormsg);
 end;
 
 procedure SearchThread.Execute;
@@ -272,7 +240,7 @@ begin
   ParamNo:=0;
 
   //#8 - invalid query identify, needed from script executing
-  if UserQuery = #8 then
+  if FSearchParams.Query = #8 then
     Exit;
 
   SynchronizeEx(BeginUpdate);
@@ -318,25 +286,25 @@ begin
             SBitmap.PixelFormat := pf24bit;
             DoResize(100, 100, TempBitmap, SBitmap); //100x100 is best size!
 
-            FWideSearch.MaxDate := Trunc(FWideSearch.MaxDate);
-            FWideSearch.MinDate := Trunc(FWideSearch.MinDate);
+            FSearchParams.DateFrom := Trunc(FSearchParams.DateFrom);
+            FSearchParams.DateTo := Trunc(FSearchParams.DateTo);
 
             c := 0;
             FTable:=GetQuery;
             try
               tempsql:='Select ID, Thum from '+GetDefDBName+' Where ';
-              tempsql:=tempsql+Format(' (Rating >= %d) and (Rating <= %d) ',[FWideSearch.MinRating, FWideSearch.MaxRating]);
-              if FWideSearch.GroupName<>'' then
-                tempsql:=tempsql+' AND (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'")';
+              tempsql:=tempsql+Format(' (Rating >= %d) and (Rating <= %d) ',[FSearchParams.RatingFrom, FSearchParams.RatingTo]);
+              if FSearchParams.GroupName<>'' then
+                tempsql:=tempsql+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
 
               tempsql:=tempsql+' AND ((DateToAdd > :MinDate) and (DateToAdd<:MaxDate)) ';
 
               SetSQL(FTable,tempsql);
 
 
-              SetDateParam(FTable,c,FWideSearch.MinDate);
+              SetDateParam(FTable,c,FSearchParams.RatingFrom);
               inc(c);
-              SetDateParam(FTable,c,FWideSearch.MaxDate);
+              SetDateParam(FTable,c,FSearchParams.RatingTo);
 
               FTable.Active:=true;
               FTable.First;
@@ -397,16 +365,16 @@ begin
       if fQData.Count <> 0 then
       begin
         QueryType := QT_TEXT;
-        QueryString := 'SELECT * FROM '+GetDefDBname+' WHERE ';
+        FQueryString := 'SELECT * FROM '+GetDefDBname+' WHERE ';
 
-        if FWideSearch.GroupName <> '' then
-          QueryString:=QueryString+' (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'") AND ';
+        if FSearchParams.GroupName <> '' then
+          FQueryString:=FQueryString+' (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'") AND ';
 
-        QueryString:=QueryString+' ID in (';
+        FQueryString:=FQueryString+' ID in (';
         for i:=0 to fQData.Count-1 do
-          if i=0 then QueryString:=QueryString+' '+inttostr(fQData[i].ID)+' ' else
-        QueryString:=QueryString+' , '+inttostr(fQData[i].ID)+'';
-        QueryString:=AddOptions(QueryString+') '+GetFilter(db_attr_norm)+' ');
+          if i=0 then FQueryString:=FQueryString+' '+inttostr(fQData[i].ID)+' ' else
+        FQueryString:=FQueryString+' , '+inttostr(fQData[i].ID)+'';
+        FQueryString:=AddOptions(FQueryString+') '+GetFilter(db_attr_norm)+' ');
       end;
     end;
 
@@ -414,12 +382,12 @@ begin
       //ITS amazing!
       TADOQuery(fQuery).CursorType := ctOpenForwardOnly;
       //TADOQuery(fQuery).ExecuteOptions := [eoAsyncFetchNonBlocking];
-      QueryString := SysUtils.StringReplace(QueryString, '''', ' ', [rfReplaceAll]);
-      QueryString := SysUtils.StringReplace(QueryString, '\', ' ', [rfReplaceAll]);
-      SetSQL(fQuery, QueryString);
+      FQueryString := SysUtils.StringReplace(FQueryString, '''', ' ', [rfReplaceAll]);
+      FQueryString := SysUtils.StringReplace(FQueryString, '\', ' ', [rfReplaceAll]);
+      SetSQL(fQuery, FQueryString);
 
-      SetDateParam(fQuery, QueryParamsCount(fQuery)-2-x, Trunc(FWideSearch.MinDate));
-      SetDateParam(fQuery, QueryParamsCount(fQuery)-1-x, Trunc(FWideSearch.MaxDate));
+      SetDateParam(fQuery, QueryParamsCount(fQuery)-2-x, Trunc(FSearchParams.DateFrom));
+      SetDateParam(fQuery, QueryParamsCount(fQuery)-1-x, Trunc(FSearchParams.DateTo));
 
       if (QueryType=QT_SIMILAR) then
         SetStrParam(fQuery, 0, StrTh);
@@ -473,16 +441,7 @@ begin
          end;
          FreeDS(fspecquery);
        end;
-       try
-         SynchronizeEx(LoadThreadQuery);
-       except
-         on e : Exception do
-         begin
-           EventLog(':SearchThread::LoadThreadQuery() throw exception: '+e.Message);
-           fErrorMsg:=e.Message+#13+TEXT_MES_QUERY_FAILED;
-           SynchronizeEx(ErrorSQL);
-         end;
-       end;
+      
        try
 
          CheckForm;
@@ -534,10 +493,10 @@ begin
        fpic.Graphic := TJPEGImage.Create;
        fthum_images_ := 1;
        SynchronizeEx(ProgressNullA);
-       if SearchManager.IsSearch(FSender) then
+       if not Terminated then
        begin
          fQuery.First;
-         for I := 1 to fQuery.RecordCount do
+         while not fQuery.Eof do
          begin
            if Terminated then
              Break;
@@ -608,7 +567,7 @@ end;
 
 procedure SearchThread.InitializeA;
 begin
-  with (FSender as TSearchForm) do
+  with (ThreadForm as TSearchForm) do
   begin
     FShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
     ListView.ShowGroupMargins:=FShowGroups;
@@ -621,7 +580,7 @@ end;
 
 procedure SearchThread.InitializeB;
 begin
-  with (FSender as TSearchForm) do
+  with (ThreadForm as TSearchForm) do
   begin
     PbProgress.Position:=0;
     PbProgress.MaxValue:=intparam;
@@ -629,7 +588,6 @@ begin
     PbProgress.Text:=format(TEXT_MES_SEARCH_FOR_REC_FROM,[IntToStr(intparam)]);
   end;
 end;
-
 
 procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
       SortDecrement : boolean; ShowGroups : boolean; SizeParam : int64; FileNameParam : string; RatingParam : integer;
@@ -839,9 +797,9 @@ procedure SearchThread.NewItem;
 begin
   if QueryType <> QT_W_SCAN_FILE then
   begin
-   (FSender as TSearchForm).PbProgress.Position:=fi;
+   (ThreadForm as TSearchForm).PbProgress.Position:=fi;
   end;
-  AddItemInListViewByGroups((FSender as TSearchForm).ListView, FID, fSortMethod, fSortDecrement, fShowGroups, SizeParam,
+  AddItemInListViewByGroups((ThreadForm as TSearchForm).ListView, FID, FSearchParams.SortMethod, FSearchParams.SortDecrement, fShowGroups, SizeParam,
     FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
 end;
 
@@ -862,8 +820,7 @@ begin
    Result:=Result+Format('(Attr= %d)',[db_attr_not_exists]);
   end;
 
-  if FWideSearch.Enabled=false then
-  if not ShowPrivate then Result:=Result+' AND (Access=0)';
+  if not FSearchParams.ShowPrivate then Result:=Result+' AND (Access=0)';
 
   Result:=Result+GetWideSearchOptions;
 end;
@@ -891,7 +848,7 @@ const
 begin
  QueryType:=QT_NONE;
  foptions:=0;
- sqltext:=userquery;
+ sqltext:=FSearchParams.Query;
  if sqltext='' then sqltext:='*';
  systemquery:=false;
  if length(sqltext)>3 then
@@ -899,11 +856,6 @@ begin
   if (sqltext[1]='%') and (sqltext[2]=':') and (sqltext[length(sqltext)]=':') then
   begin
    Delete(sqltext,1,1);
-   FWideSearch.Enabled:=false;
-   FWideSearch.Private_:=true;
-   FWideSearch.Common_:=true;
-   FWideSearch.Deleted_:=true;
-   FWideSearch.UseWideSearch:=true;
   end;
  end;
 
@@ -1068,7 +1020,7 @@ begin
 
    if GetDBType=DB_TYPE_MDB then sqlquery:='Select * From (Select * from '+GetDefDBname+' where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)';
 
-   if not showprivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
+   if not FSearchParams.ShowPrivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
 
    foptions:=SPSEARCH_SHOWFOLDER;
    if not directoryexists(Folder) then
@@ -1093,7 +1045,7 @@ begin
 
    sqlquery:='SELECT * FROM '+GetDefDBName+' WHERE StrTh = :str';
 
-   if not showprivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
+   if not FSearchParams.ShowPrivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
 
    foptions:=SPSEARCH_SHOWSIMILAR;
   end;
@@ -1263,9 +1215,9 @@ begin
     sqlquery:='SELECT * FROM '+GetDefDBName;
     sqlquery:=sqlquery+' where ('+sqltext+')';
 
-    sqlquery := sqlquery + Format(' AND ((Rating >= %d) AND (Rating <= %d)) ',[FWideSearch.MinRating, FWideSearch.MaxRating]);
-    if FWideSearch.GroupName<>'' then
-    sqlquery:=sqlquery+' AND (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'")';
+    sqlquery := sqlquery + Format(' AND ((Rating >= %d) AND (Rating <= %d)) ',[FSearchParams.RatingFrom, FSearchParams.RatingTo]);
+    if FSearchParams.GroupName<>'' then
+    sqlquery:=sqlquery+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
 
     if sqlrwords.count>0 then
     begin
@@ -1292,7 +1244,7 @@ begin
    end else
    begin
     sqltext:='(';
-    s:=userquery;
+    s:=FSearchParams.Query;
     for i:=length(s) downto 1 do
     if not (s[i] in cifri) and (s[i]<>'$') then delete(s,i,1);
     if length(s)<2 then exit;
@@ -1308,14 +1260,14 @@ begin
     sqlquery:='SELECT * FROM '+GetDefDBName;
     sqlquery:=sqlquery+' where ('+sqltext+')';
     
-    if FWideSearch.GroupName<>'' then
-    sqlquery:=sqlquery+' AND (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'")';
+    if FSearchParams.GroupName<>'' then
+    sqlquery:=sqlquery+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
    end;
    sqlquery:=sqlquery+GetFilter(db_attr_norm);
   end;
  end;
 
- QueryString:=AddOptions(sqlquery);
+ FQueryString:=AddOptions(sqlquery);
 
 end;
 
@@ -1324,30 +1276,30 @@ begin
  try
   begin
    if fPictureSize=ThImageSize then
-   if Assigned(OnDone) then OnDone(self);
-   (FSender as TSearchForm).ToolButton14.Enabled:=false;
-   if (FSender as TSearchForm).SearchByCompating then
+   if Assigned(FOnDone) then FOnDone(self);
+   (ThreadForm as TSearchForm).tbStopOperation.Enabled:=false;
+   if (ThreadForm as TSearchForm).SearchByCompating then
    begin
-    (FSender as TSearchForm).Decremect1.Checked:=true;
-    (FSender as TSearchForm).SortbyCompare1Click((FSender as TSearchForm).SortbyCompare1);
+    (ThreadForm as TSearchForm).Decremect1.Checked:=true;
+    (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
    end else
    begin
-    if (FSender as TSearchForm).SortbyCompare1.Checked then
+    if (ThreadForm as TSearchForm).SortbyCompare1.Checked then
     begin
-     (FSender as TSearchForm).SortbyDate1Click((FSender as TSearchForm).SortbyDate1);
+     (ThreadForm as TSearchForm).SortbyDate1Click((ThreadForm as TSearchForm).SortbyDate1);
     end;
    end;
   end;
   //Loading big images
   if fPictureSize<>ThImageSize then
-    (FSender as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,fSender,FSID,nil,fPictureSize,fData));
+    (ThreadForm as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,ThreadForm,StateID,nil,fPictureSize,fData));
  except
  end;
 end;
 
 procedure SearchThread.SetSearchPath;
 begin
-  (FSender as TSearchForm).SetPath(StringParam);
+  (ThreadForm as TSearchForm).SetPath(StringParam);
 end;
 
 procedure SearchThread.SetSearchPathW(Path: String);
@@ -1361,22 +1313,15 @@ function SearchThread.GetWideSearchOptions: String;
 begin
  Result:='';
 
-  if not showprivate then Result:=Result+' AND (Access=0)' else
+  if not FSearchParams.ShowPrivate then Result:=Result+' AND (Access=0)' else
   Result:=Result+' AND (Attr<>'+inttostr(db_attr_not_exists)+')';
   
   Result:=Result+' AND ((DateToAdd >= :MinDate ) and (DateToAdd <= :MaxDate ) and IsDate=True) ';
 
   begin
-   Result:=Result+' AND ((Rating>='+IntToStr(FWideSearch.MinRating)+') and (Rating<='+IntToStr(FWideSearch.MaxRating)+')) ';
+   Result:=Result+' AND ((Rating>='+IntToStr(FSearchParams.RatingFrom)+') and (Rating<='+IntToStr(FSearchParams.RatingTo)+')) ';
   end;
 
-  if FWideSearch.Enabled then
-  begin
-
-   {if not (FWideSearch.Common_) then
-   Result:=Result+' AND (Access<>'+inttostr(db_access_none)+') ';
-   Result:=Result+' AND (Attr='+inttostr(db_attr_norm)+')';    }
-  end;
 end;
 
 procedure SearchThread.SetMaxValue(Value: Integer);
@@ -1387,7 +1332,7 @@ end;
 
 procedure SearchThread.SetMaxValueA;
 begin
-  (FSender as TSearchForm).PbProgress.MaxValue:=IntParam;
+  (ThreadForm as TSearchForm).PbProgress.MaxValue:=IntParam;
 end;
 
 procedure SearchThread.SetProgress(Value: Integer);
@@ -1398,7 +1343,7 @@ end;
 
 procedure SearchThread.SetProgressA;
 begin
-  (FSender as TSearchForm).PbProgress.Position:=IntParam;
+  (ThreadForm as TSearchForm).PbProgress.Position:=IntParam;
 end;
 
 procedure SearchThread.SetProgressText(Value: String);
@@ -1409,18 +1354,12 @@ end;
 
 procedure SearchThread.SetProgressTextA;
 begin
-  (FSender as TSearchForm).PbProgress.Text:=StrParam;
+  (ThreadForm as TSearchForm).PbProgress.Text:=StrParam;
 end;
 
 procedure SearchThread.ListViewImageIndex;
 begin
-  IntParam:=(FSender as TSearchForm).GetImageIndexWithPath(FData[IntParam].FileName);
-end;
-
-procedure SearchThread.LoadThreadQuery;
-begin
-  SetSQL((FSender as TSearchForm).ThreadQuery,GetQueryText(fQuery));
-  AssignParams(fQuery,(FSender as TSearchForm).ThreadQuery);
+  IntParam:=(ThreadForm as TSearchForm).GetImageIndexWithPath(FData[IntParam].FileName);
 end;
 
 function SearchThread.AddOptions(s : string): string;
@@ -1429,7 +1368,7 @@ var
 
   function DESC : string;
   begin
-   if FSortDecrement then result:=' DESC'
+   if FSearchParams.SortDecrement then result:=' DESC'
   end;
 
 begin
@@ -1437,10 +1376,11 @@ begin
  if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
 
  if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
- if not FWideSearch.UseWideSearch then
+
+ //TODO: 
  sqlquery:=sqlquery+' and (Include=TRUE) ';
 
- Case FSortMethod of
+ Case FSearchParams.SortMethod of
  0 : Result:=sqlquery;
  1 : Result:=sqlquery+' order by Name'+DESC;
  2 : Result:=sqlquery+' order by DateToAdd'+DESC+', aTime'+DESC;
@@ -1453,7 +1393,7 @@ end;
 
 procedure SearchThread.DoSetSearchByComparing;
 begin
- (FSender as TSearchForm).DoSetSearchByComparing;
+ (ThreadForm as TSearchForm).DoSetSearchByComparing;
 end;
 
 procedure SearchThread.GetPassForFile;

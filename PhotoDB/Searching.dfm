@@ -873,7 +873,6 @@ object SearchForm: TSearchForm
     ParentColor = True
     TabOrder = 1
     Visible = False
-    OnContextPopup = BackGroundSearchPanelContextPopup
     OnResize = BackGroundSearchPanelResize
     object ImageSearchWait: TImage
       Left = 200
@@ -903,7 +902,6 @@ object SearchForm: TSearchForm
       ParentFont = False
       Transparent = True
       WordWrap = True
-      OnContextPopup = LabelBackGroundSearchingContextPopup
     end
     object ImageAllGroups: TImage
       Left = 16
@@ -1091,12 +1089,13 @@ object SearchForm: TSearchForm
         ImageIndex = 5
         Style = tbsSeparator
       end
-      object ToolButton14: TToolButton
+      object TbStopOperation: TToolButton
         Left = 20
         Top = 2
         AutoSize = True
+        Caption = 'Stop Operation'
         ImageIndex = 5
-        OnClick = ToolButton14Click
+        OnClick = TbStopOperationClick
       end
       object ToolButton6: TToolButton
         Left = 32
@@ -1197,134 +1196,11 @@ object SearchForm: TSearchForm
       end
     end
   end
-  object PopupMenu2: TPopupMenu
-    OnPopup = PopupMenu2Popup
-    Left = 224
-    Top = 56
-    object SlideShow1: TMenuItem
-      Caption = 'Slide Show'
-      ImageIndex = 0
-      Visible = False
-      OnClick = SlideShow1Click
-    end
-    object SelectAll1: TMenuItem
-      Caption = 'Select All'
-      ImageIndex = 4
-      OnClick = SelectAll1Click
-    end
-    object N1: TMenuItem
-      Caption = '-'
-    end
-    object ShowUpdater1: TMenuItem
-      Caption = 'Show Updater'
-    end
-    object N2: TMenuItem
-      Caption = '-'
-    end
-    object Help1: TMenuItem
-      Caption = 'Help'
-      object Help2: TMenuItem
-        Caption = 'Help'
-        OnClick = Help2Click
-      end
-      object Activation1: TMenuItem
-        Caption = 'Activation'
-        OnClick = Activation1Click
-      end
-      object About1: TMenuItem
-        Caption = 'About'
-        OnClick = Help1Click
-      end
-      object HomePage1: TMenuItem
-        Caption = 'Home Page'
-        OnClick = HomePage1Click
-      end
-      object ContactWithAuthor1: TMenuItem
-        Caption = 'Contact With Author'
-        OnClick = ContactWithAuthor1Click
-      end
-      object GetUpdates1: TMenuItem
-        Caption = 'Get Updates'
-        OnClick = GetUpdates1Click
-      end
-    end
-    object ManageDB1: TMenuItem
-      Caption = 'Manage DB'
-      ImageIndex = 5
-      OnClick = ManageDB1Click
-    end
-    object Options1: TMenuItem
-      Caption = 'Options'
-      OnClick = Options1Click
-    end
-    object GroupsManager2: TMenuItem
-      Caption = 'Groups Manager'
-      OnClick = GroupsManager2Click
-    end
-    object ImageEditor1: TMenuItem
-      Caption = 'Image Editor'
-      OnClick = ImageEditor1Click
-    end
-    object GetPhotosFromDrive1: TMenuItem
-      Caption = 'Get Photos From Drive'
-      OnClick = GetPhotosFromDrive2Click
-      object RemovableDrives2: TMenuItem
-        Caption = 'Removable Drives'
-        OnClick = RemovableDrives1Click
-        object N10: TMenuItem
-          Caption = '-'
-        end
-      end
-      object CDROMDrives2: TMenuItem
-        Caption = 'CD-ROM Drives'
-        OnClick = CDROMDrives1Click
-        object N11: TMenuItem
-          Caption = '-'
-        end
-      end
-      object SpecialLocation2: TMenuItem
-        Caption = 'Special Location'
-        OnClick = SpecialLocation1Click
-      end
-    end
-    object SaveasTable1: TMenuItem
-      Caption = 'Save as Table'
-      OnClick = SaveasTable1Click
-    end
-    object CopySearchResults1: TMenuItem
-      Caption = 'Copy Search Results'
-      Visible = False
-      OnClick = CopySearchResults1Click
-    end
-    object LoadResults1: TMenuItem
-      Caption = 'Load Results'
-      OnClick = LoadResults1Click
-    end
-    object SaveResults1: TMenuItem
-      Caption = 'Save Results'
-      OnClick = SaveResults1Click
-    end
-    object NewPanel1: TMenuItem
-      Caption = 'New Panel'
-      OnClick = NewPanel1Click
-    end
-    object NewSearch1: TMenuItem
-      Caption = 'New Search'
-      OnClick = NewSearch1Click
-    end
-    object N3: TMenuItem
-      Caption = '-'
-    end
-    object Explorer1: TMenuItem
-      Caption = 'Explorer'
-      OnClick = Explorer1Click
-    end
-  end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\DolphinImagesDB\Search'
-    Left = 192
+    Left = 224
     Top = 56
   end
   object HintTimer: TTimer
@@ -1455,14 +1331,13 @@ object SearchForm: TSearchForm
   object ImageList1: TImageList
     Height = 102
     Width = 102
-    Left = 159
-    Top = 56
+    Left = 479
   end
   object HelpTimer: TTimer
     Enabled = False
     OnTimer = HelpTimerTimer
-    Left = 161
-    Top = 120
+    Left = 513
+    Top = 56
   end
   object PopupMenu8: TPopupMenu
     OnPopup = PopupMenu8Popup
@@ -1586,24 +1461,23 @@ object SearchForm: TSearchForm
     end
   end
   object GroupsImageList: TImageList
-    Left = 177
-    Top = 192
+    Left = 577
   end
   object InsertSpesialQueryPopupMenu: TPopupMenu
-    Left = 177
-    Top = 232
+    Left = 521
+    Top = 88
   end
   object HidePanelTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = HidePanelTimerTimer
-    Left = 257
-    Top = 200
+    Left = 489
+    Top = 128
   end
   object PopupMenu10: TPopupMenu
     OnPopup = PopupMenu7Popup
-    Left = 322
-    Top = 408
+    Left = 386
+    Top = 56
     object Setvalue2: TMenuItem
       Caption = 'Set value'
       OnClick = PanelValueIsTimeSetsDblClick
@@ -1611,8 +1485,8 @@ object SearchForm: TSearchForm
   end
   object PopupMenu11: TPopupMenu
     OnPopup = PopupMenu11Popup
-    Left = 360
-    Top = 408
+    Left = 416
+    Top = 56
     object Timenotexists1: TMenuItem
       Caption = 'Time not exists'
       OnClick = Timenotexists1Click
@@ -1637,8 +1511,8 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 10
     OnTimer = DestroyTimerTimer
-    Left = 489
-    Top = 88
+    Left = 521
+    Top = 128
   end
   object DropFileTarget2: TDropFileTarget
     DragTypes = [dtCopy, dtLink]
@@ -1692,8 +1566,8 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 200
     OnTimer = BigImagesTimerTimer
-    Left = 217
-    Top = 328
+    Left = 417
+    Top = 88
   end
   object DropFileTarget3: TDropFileTarget
     DragTypes = [dtCopy, dtLink]
@@ -1708,8 +1582,8 @@ object SearchForm: TSearchForm
     Masked = False
     ShareImages = True
     Width = 32
-    Left = 73
-    Top = 96
+    Left = 225
+    Top = 120
   end
   object SearchImageList: TImageList
     Left = 513
@@ -1722,12 +1596,12 @@ object SearchForm: TSearchForm
   object DisabledToolBarImageList: TImageList
     Height = 32
     Width = 32
-    Left = 209
-    Top = 409
+    Left = 609
+    Top = 1
   end
   object PopupMenuZoomDropDown: TPopupMenu
     OnPopup = PopupMenuZoomDropDownPopup
-    Left = 569
-    Top = 145
+    Left = 489
+    Top = 89
   end
 end

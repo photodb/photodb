@@ -1740,8 +1740,6 @@ begin
   begin
    p:=fDBDragPoint;
    DragImageList.Clear;
-   Image.Bitmap:=nil;
-   Image.Icon:=nil;
 
    if ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y)<>nil then
    Image:=FBitmapImageList[ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y).ImageIndex] else

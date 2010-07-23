@@ -106,7 +106,6 @@ uses
   UnitTIFFOptionsUnit in 'UnitTIFFOptionsUnit.pas' {TIFFOptionsForm},
   UnitImportingImagesForm in 'UnitImportingImagesForm.pas' {FormImportingImages},
   UnitConvertDBForm in 'UnitConvertDBForm.pas' {FormConvertingDB},
-  UnitRangeDBSelectForm in 'UnitRangeDBSelectForm.pas' {FormDateRangeSelectDB},
   UnitBigImagesSize in 'UnitBigImagesSize.pas' {BigImagesSizeForm},
   UnitStenoGraphia in 'UnitStenoGraphia.pas' {FormSteno},
   Loadingresults in 'Threads\Loadingresults.pas',
@@ -851,18 +850,17 @@ begin
  s1 := SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Add'),'"');
  
  if (s1 <> '') and FileExistsEx(s1) then
- begin            
-  Running:=true;
-  If UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
-  FormManager.RegisterMainForm(UpdaterDB.Form);
-  UpdaterDB.AddFile(s1);
+ begin
+   if UpdaterDB = nil then
+     UpdaterDB := TUpdaterDB.Create;
+   FormManager.RegisterMainForm(UpdaterDB.Form);
+   UpdaterDB.AddFile(s1);
  end;
 
  if (s1 <> '') and DirectoryExists(s1) then
- begin     
-  Running:=true;
-  If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
+ begin
+  if UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
   FormManager.RegisterMainForm(UpdaterDB.Form);
   UpdaterDB.AddDirectory(s1,nil);
  end;

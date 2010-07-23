@@ -14,40 +14,37 @@ type
     procedure CalledTimerTimer(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
-  private
+  private    
+    { Private declarations }
     FMainForms : TList;
     FTemtinatedActions : TTemtinatedActions;  
-    CanCheckViewerInMainForms : boolean;
-    FCheckCount : Integer;
-    procedure ExitApplication;  
+    CanCheckViewerInMainForms : Boolean;
+    FCheckCount : Integer;     
+    WasIde : Boolean;
+    ExitAppl : Boolean;
+    LockCleaning : Boolean;
+    EnteringCodeNeeded : Boolean;
+    procedure ExitApplication;
     procedure WMCopyData(var m : TMessage); message WM_COPYDATA;
-    { Private declarations }
+    procedure InitializeActivation;
   public
     constructor Create(AOwner : TComponent);  override;
     destructor Destroy; override;
-    { Public declarations }
-  published
-   procedure RegisterMainForm(Value: TForm);
-   procedure UnRegisterMainForm(Value: TForm);
-   procedure RegisterActionCanTerminating(Value: TTemtinatedAction);
-   procedure UnRegisterActionCanTerminating(Value: TTemtinatedAction);
-   Procedure Run(LoadingThread : TThread);
-   Procedure Close(Form : TForm);
-   Procedure AppMinimize(Sender: TObject);
-   Function MainFormsCount : Integer;
-   Function IsMainForms(Form : TForm) : Boolean;
-   Procedure CloseApp(Sender : TObject);
-   Procedure Load;
+    procedure RegisterMainForm(Value: TForm);
+    procedure UnRegisterMainForm(Value: TForm);
+    procedure RegisterActionCanTerminating(Value: TTemtinatedAction);
+    procedure UnRegisterActionCanTerminating(Value: TTemtinatedAction);
+    procedure Run(LoadingThread : TThread);
+    procedure Close(Form : TForm);
+    procedure AppMinimize(Sender: TObject);
+    function MainFormsCount : Integer;
+    function IsMainForms(Form : TForm) : Boolean;
+    procedure CloseApp(Sender : TObject);
+    procedure Load;
   end;
 
 var
   FormManager: TFormManager;
-  WasIde : Boolean = false;    
-  ExitAppl : Boolean = false;
-  Running : Boolean = false;
-  LockCleaning : boolean = false;
-  EnteringCodeNeeded : boolean;
-
   TimerTerminateHandle : THandle;
   TimerCheckMainFormsHandle : THandle;
   TimerTerminateAppHandle : THandle;    
@@ -97,7 +94,7 @@ end;
 
 { TFormManager }
 
-procedure InitializeDolphinDB;
+procedure TFormManager.InitializeActivation;
 var
   Reg : TBDRegistry;
   days : integer;
@@ -197,7 +194,6 @@ try
  DBKernel.WriteProperty('Starting','ApplicationStarted','1');
  if EnteringCodeNeeded then
  begin
-  Running:=true;
   if ActivateForm=nil then
   Application.CreateForm(TActivateForm,ActivateForm);
   CloseLoadingForm;
@@ -311,7 +307,6 @@ try
  end;
  FCheckCount := 0;
  TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
- Running:=true;
  finally
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
@@ -427,7 +422,6 @@ end;  }
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
 begin
-  if Running then
   begin
     Inc(FCheckCount);
     if (FCheckCount = 10) then //after 1sec. set normal priority
@@ -532,11 +526,10 @@ begin
  CanCheckViewerInMainForms:=false;
  LockCleaning:=true;
  EnteringCodeNeeded := false;
- Running:=false;
  try
   TW.I.Start('FM -> InitializeDolphinDB');
   if not FolderView then
-  InitializeDolphinDB else
+  InitializeActivation else
   begin
    dbname := GetDirectory(Application.ExeName)+'FolderDB.photodb';
 
@@ -718,6 +711,9 @@ end;
 constructor TFormManager.Create(AOwner: TComponent);
 begin            
   FMainForms := TList.Create;
+  WasIde := False;
+  ExitAppl := False;
+  LockCleaning := False;
   inherited Create(AOwner);
 end;
 

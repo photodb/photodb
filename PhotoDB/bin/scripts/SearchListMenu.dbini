@@ -38,10 +38,6 @@ run:
   ShowDBForm($form);
 }
 <>[]{scripts\GetPhotosScript.dbini}
-<TEXT_MES_SAVE_AS_TABLE>[DB_IC_SAVE_AS_TABLE]
-{
-  SaveResultsAsTable;
-}
 <TEXT_MES_LOAD_RES>[DB_IC_LOADFROMFILE]
 {
   LoadResults;

@@ -43,8 +43,6 @@ type
   var
     SearchUpdateBigImageThreadsCount : integer = 0;    
 
-//  GettingProcNum
-
 implementation
 
 uses Searching, Language, ExplorerThreadUnit;
@@ -215,7 +213,7 @@ begin
   OldInformationText:=Label7.Caption;
   Label7.Caption:=TEXT_MES_LOADING_BIG_IMAGES;
   PbProgress.Text:=format(TEXT_MES_LOADING_BIG_IMAGES_F,[IntToStr(intparam)]);
-  (FSender as TSearchForm).ToolButton14.Enabled:=true;
+  (FSender as TSearchForm).tbStopOperation.Enabled:=true;
  end;
 end;
 
@@ -267,9 +265,9 @@ begin
   if not Terminated then
     if FSender.IsActualState(FSID) then
  begin
-  if (FSender as TSearchForm).ToolButton14.Enabled then
+  if (FSender as TSearchForm).tbStopOperation.Enabled then
   begin
-   (FSender as TSearchForm).ToolButton14.Click;
+   (FSender as TSearchForm).tbStopOperation.Click;
    (FSender as TSearchForm).PbProgress.Text:=TEXT_MES_DONE;
    (FSender as TSearchForm).Label7.Caption:=OldInformationText;
    (FSender as TSearchForm).PbProgress.Position:=0;

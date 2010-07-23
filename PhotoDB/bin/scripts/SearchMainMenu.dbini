@@ -4,12 +4,6 @@
   //все иконки необходимо создать ДО появления соответствующего меню (Выбор БД)
   $IconList=GetDBsIcons;
   //
-
-  <TEXT_MES_SAVE_AS_TABLE>[DB_IC_SAVE_AS_TABLE]
-  {
-   run:
-    SaveResultsAsTable;
-  }
   <TEXT_MES_LOAD_RES>[DB_IC_LOADFROMFILE]
   {
     LoadResults;

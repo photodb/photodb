@@ -90,7 +90,6 @@ Const
  TEXT_MES_HELP = 'Справка';
  TEXT_MES_MANAGE_DB = 'Управление БД';
  TEXT_MES_OPTIONS = 'Настройки';
- TEXT_MES_SAVE_AS_TABLE = 'Сохранить как таблицу';
  TEXT_MES_LOAD_RES = 'Загрузить результаты';
  TEXT_MES_SAVE_RES = 'Сохранить результаты';
  TEXT_MES_NEW_PANEL = 'Новая панель';

@@ -265,6 +265,18 @@ type
     IsImage : Boolean;
   end;
 
+  TSearchQuery = class(TObject)
+  public
+    Query : string;
+    GroupName : string;
+    RatingFrom : Integer;
+    RatingTo : Integer;
+    ShowPrivate : Boolean;
+    DateFrom : TDateTime;
+    DateTo : TDateTime;
+    SortMethod : Integer;
+    SortDecrement : Boolean;
+  end;
 implementation
 
 { TSearchRecordArray }
