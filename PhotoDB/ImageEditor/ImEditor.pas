@@ -426,7 +426,7 @@ procedure TImageEditor.FormCreate(Sender: TObject);
 var
   i : integer;
 
-Function LoadLinkIcons : Boolean;
+{Function LoadLinkIcons : Boolean;
 begin
  try
  CropLink.Icon:= CropLink.Icon;
@@ -461,7 +461,7 @@ begin
   exit;
  end;
  Result:=true;
-end;
+end;    }
 
 begin
  EXIFSection:=nil;
@@ -498,10 +498,10 @@ begin
  
  LoadLanguage;
 
- for i:=1 to 10 do
+ {for i:=1 to 10 do
  begin
   if LoadLinkIcons then break;
- end;
+ end; }
 
  {$IFDEF PHOTODB}
   DBkernel.RegisterForm(self);

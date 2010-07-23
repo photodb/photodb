@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=bin
+OutputDir=C:\Program Files\Photo DataBase
 UnitOutputDir=dcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -100,7 +100,7 @@ Conditionals=PHOTODB,LOG
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams="C:\1.jpg"
+RunParams=
 HostApplication=
 Launcher=
 UseLauncher=0
@@ -158,5 +158,6 @@ Item7=External\Controls\Image Controls\Source;External\Controls\DragDrop\Compone
 Count=1
 Item0=dcu
 [HistoryLists\hlOutputDirectorry]
-Count=1
-Item0=bin
+Count=2
+Item0=C:\Program Files\Photo DataBase
+Item1=bin

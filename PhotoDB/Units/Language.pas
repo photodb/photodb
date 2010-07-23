@@ -531,7 +531,6 @@ Const
 
  TEXT_MES_WS_DATE_BETWEEN = 'Дата между';
  TEXT_MES_WS_RATING_BETWEEN = 'Оценка  между';
- TEXT_MES_WS_ID_BETWEEN = 'ID между';
  TEXT_MES_WS_SHOW_PRIVATE = 'Показывать личные';
  TEXT_MES_WS_SHOW_COMMON = 'Показывать общие';
  TEXT_MES_OPEN_IN_EXPLORER = 'Открыть в проводнике';
@@ -968,12 +967,6 @@ Const
  TEXT_MES_GET_MULTIMEDIA_FILES = 'Получать мультимедийные файлы';
  TEXT_MES_INSERT_IMAGE = 'Вставка';
 
- TEXT_MES_SHOW_LAST = 'За последние:';
- TEXT_MES_SHOW_LAST_DAYS = 'дней';
- TEXT_MES_SHOW_LAST_WEEKS = 'недель';
- TEXT_MES_SHOW_LAST_MONTH = 'месяцев';
- TEXT_MES_SHOW_LAST_YEARS = 'лет';
-
  TEXT_MES_LOAD_IMAGE = 'Загрузить изображение';
  TEXT_MES_NEW_EDITOR = 'Новый редактор';
  TEXT_MES_COPY_CURRENT_ROW = 'Копировать текущую строку';
@@ -1110,7 +1103,6 @@ Const
  TEXT_MES_SELECT_FONT_INFO = 'Выберите необходимый шрифт из списка и нажмите на кнопку "'+TEXT_MES_OK+'"';
  TEXT_MES_OLD_FONT_NAME = 'Старый шрифт';
  TEXT_MES_NEW_FONT_NAME = 'Новый шрифт';
- TEXT_MES_USE_MAIN_MENU_IN_SEARCH_FORM = 'Показывать главное меню в окне поиска';
  TEXT_MES_OPEN_TABLE_ERROR_F = 'Ошибка открытия таблицы "%s"';
  TEXT_MES_LIST_OF_KEYWORDS_CAPTION = 'Список ключевых слов';
  TEXT_MES_LIST_OF_KEYWORDS_TEXT = 'В этом списке все ключевые слова из текущей базы данных. Дважды кликните по любому чтобы скопировать в буфер обмена.';

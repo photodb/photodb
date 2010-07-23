@@ -33,7 +33,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure DBOpened(Sender: TObject);
+    procedure DBOpened(Sender : TObject; DS : TDataSet);
     procedure Button3Click(Sender: TObject);
   private
    DBInOpening : boolean;
@@ -212,7 +212,7 @@ begin
  PathList.Free;
 end;
 
-procedure TFormChangeDBPath.DBOpened(Sender: TObject);
+procedure TFormChangeDBPath.DBOpened(Sender : TObject; DS : TDataSet);
 begin
  DBInOpening:=false;
 end;

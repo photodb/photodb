@@ -6,7 +6,8 @@ uses
   Windows, Dialogs, Variants, DB, Dolphin_DB, Classes, Sysutils, Forms,
   ActiveX, UnitGroupsWork, Registry, acDlgSelect, jpeg, Math,
   GraphicSelectEx, CommonDBSupport, UnitINI,uVistaFuncs,
-  WindowsIconCacheTools, uLogger, uConstants, uFileUtils;
+  WindowsIconCacheTools, uLogger, uConstants, uFileUtils,
+  UnitDBCommon;
 
 type
   InstallThread = class(TThread)

@@ -190,7 +190,7 @@ begin
   Break;
  end;
  SetLength(MenuGroups,0);
- if UseScripts then
+
  if not (ShiftKeyDown and CtrlKeyDown) then
  begin
   script:=MenuScript;

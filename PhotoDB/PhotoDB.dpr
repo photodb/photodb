@@ -3,6 +3,7 @@ program PhotoDB;
 {$DEFINE DEBUG}
 
 uses
+  uInit in 'Units\uInit.pas',
   uTime in 'Units\uTime.pas',
   uSplashThread in 'Threads\uSplashThread.pas',
   ADODB,
@@ -276,7 +277,8 @@ uses
   FreeBitmap in 'External\Formats\FreeImage\FreeBitmap.pas',
   FreeImage in 'External\Formats\FreeImage\FreeImage.pas',
   FreeUtils in 'External\Formats\FreeImage\FreeUtils.pas',
-  uDBDrawing in 'Units\uDBDrawing.pas';
+  uDBDrawing in 'Units\uDBDrawing.pas',
+  uDBImages in 'Units\uDBImages.pas';
 
 {$R *.res}
 
@@ -342,7 +344,7 @@ exports
   IsFalidDBFile name 'IsFalidDBFile',
   FileVersion name 'FileVersion';
 
-begin             
+begin
   TW.I.Start('SetPriority');
   SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
   TW.I.Start('SetThreadAffinityMask');
@@ -380,9 +382,7 @@ begin
  /SQLExecFile
 }
   TW.I.Start('START');
-  ProgramDir := ExtractFileDir(Application.ExeName) + '\';
 
-  TW.I.Start('EventLog');
   EventLog('');
   EventLog('');
   EventLog('');
@@ -404,8 +404,6 @@ begin
   if GetParamStrDBBool('/SLEEP') then
     Sleep(1000);
 
-  ProgramDir := GetDirectory(Application.ExeName);
-
   SetSplashProgress(5);
   TW.I.Start('InitializeDBLoadScript');
   InitializeDBLoadScript;
@@ -414,7 +412,7 @@ begin
   if GetDBViewMode then
   begin
     FolderView := True;
-    UseScripts := False;
+    //TODO: !!! UseScripts := False;
   end;
 
   SetSplashProgress(10);
@@ -563,10 +561,7 @@ begin
   end;
 
   if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
-  begin
-   ProgramDir:=GetDirectory(ParamStr(0));
    AExplorerFolders := TExplorerFolders.Create;
-  end;
 
   TW.I.Start('GetCIDA');  
   SetSplashProgress(80);

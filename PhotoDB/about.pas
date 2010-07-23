@@ -9,18 +9,17 @@ uses
   win32crc, dolphin_db, Searching, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
-  UnitDBCommonGraphics;
+  UnitDBCommonGraphics, uResources;
 
 type
   TAboutForm = class(TForm)
-    Image1: TImage;
+    ImageLogo: TImage;
     Memo1: TMemo;
     Memo2: TMemo;
     CloseButton: TImButton;
     Button1: TButton;
     Timer1: TTimer;
     Button2: TButton;
-    DmProgress1: TDmProgress;
     LoadingTimer: TTimer;
     procedure CloseButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -76,9 +75,15 @@ end;
 procedure TAboutForm.FormCreate(Sender: TObject);
 var
   InfoText : TStringList;
+  Logo : TJPEGImage;
 begin
+  Logo := GetLogoPicture;
+  try
+    ImageLogo.Picture.Graphic := Logo;
+  finally
+    Logo.Free;
+  end;
  WaitEnabled:=True;
- DmProgress1.Text:=TEXT_MES_LOADING_PHOTODB;
  CloseButton.Filter:=GrayScale;
  CloseButton.Refresh;
  Button1.Caption:=TEXT_MES_OPEN_ACTIVATION_FORM;
@@ -117,7 +122,6 @@ begin
  begin
   Button2.Visible:=false;
   Button1.Visible:=false;
-  DmProgress1.Visible:=false;
   Memo2.Clear;
   Memo2.Lines.Add(Format(TEXT_MES_DB_VIEW_ABOUT_F,[ProductName]));
   if Wait then else
@@ -128,7 +132,6 @@ begin
  Seconds:=0;
  timer1.Interval:=1000;
  LoadingTimer.Enabled:=false;
- DmProgress1.Visible:=false;
  if not Wait then
  if DBkernel.ProgramInDemoMode then
  begin
@@ -149,7 +152,6 @@ begin
   CloseButton.Visible:=false;
   Button2.Visible:=false;
   LoadingTimer.Enabled:=true;
-  DmProgress1.Visible:=true;
  end;
  LoadRegistrationData;
  if Wait then else
@@ -206,13 +208,8 @@ begin
  LoadingTimer.Enabled:=false;
  if not WaitEnabled then exit;
  DBSize:=GetFileSizeByName(dbname);
- ProcessSize:=GetProcessMemory;
 
  if ((GetTickCount-FStartTime)>2000) and not Visible then Show;
-
- Progress:=Round(100*(ProcessSize-ProcessMemorySize)/DBSize);
- if Progress<=100 then
- if Progress>DmProgress1.Position then DmProgress1.Position:=Progress;
 end;
 
 procedure TAboutForm.LoadRegistrationData;

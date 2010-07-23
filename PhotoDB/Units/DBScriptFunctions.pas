@@ -48,20 +48,20 @@ procedure DoAbout;
 begin
  if AboutForm= nil then
  Application.CreateForm(TAboutForm,AboutForm);
- AboutForm.execute;
+ AboutForm.Execute;
 end;
 
 function ReadScriptFile(FileName : string) : string;
 begin
- Result:=UnitScripts.ReadScriptFile(FileName);
- Result:=AddLanguage(Result);
- Result:=AddIcons(Result);
+ Result := UnitScripts.ReadScriptFile(FileName);
+ Result := AddLanguage(Result);
+ Result := AddIcons(Result);
 end;
 
 function InitializeScriptString(Script : string) : string;
 begin
- Result:=AddLanguage(Script);
- Result:=AddIcons(Result);
+ Result := AddLanguage(Script);
+ Result := AddIcons(Result);
 end;
 
 procedure ShowUpdateWindow;

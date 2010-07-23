@@ -7,15 +7,19 @@ uses Windows, SysUtils, Classes, JPEG, GraphicEx;
 function GetFolderPicture : TPNGGraphic;
 function GetLogoPicture : TJpegImage; 
 function GetSlideShowLoadPicture : TPNGGraphic;
-function GetExplorerBackground : TPNGGraphic;    
-function GetSearchBackground : TPNGGraphic;
+function GetExplorerBackground : TPNGGraphic;
+function GetSearchBackground : TPNGGraphic;     
+function GetSearchWait : TPNGGraphic;          
+function GetDateRangeImage : TPNGGraphic;
               
 {$R Logo.res}    
 {$R WindowsXPMan.res}
 {$R slideshow_load.res}
 {$R directory_large.res}
-{$R ExplorerBackground.res} 
-{$R SearchBackground.res}
+{$R ExplorerBackground.res}
+{$R SearchBackground.res}   
+{$R SearchWait.res}
+{$R DateRange.res}
 
 implementation
 
@@ -77,6 +81,16 @@ end;
 function GetSearchBackground : TPNGGraphic;
 begin
   Result := LoadPNGFromRES('SEARCHBACKGROUND');
+end;
+
+function GetSearchWait : TPNGGraphic;
+begin
+  Result := LoadPNGFromRES('SEARCHWAIT');
+end;
+      
+function GetDateRangeImage : TPNGGraphic;
+begin
+  Result := LoadPNGFromRES('DATERANGE');
 end;
 
 function GetLogoPicture : TJpegImage;

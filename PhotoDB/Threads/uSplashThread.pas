@@ -123,7 +123,7 @@ begin
     TP.Height := 17;
     TP.BorderColor := clGray;
     TP.Color := clBlack;
-    TP.Text := TEXT_MES_LOADING___;
+    TP.Text := TEXT_MES_LOADING_PHOTODB;
     TP.Font.Color := clWhite; 
     TP.Font.Name := 'Times New Roman';
     TP.CoolColor := clNavy;

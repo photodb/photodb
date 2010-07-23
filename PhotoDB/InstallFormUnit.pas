@@ -428,9 +428,10 @@ end;
 
 procedure TInstallForm.SetQuickSelfInstallOption;
 begin
+ //TODO: remove this option.
  QuickSelfInstall:=true;
- ProgramDir:=GetProgramFilesDir;
- UnFormatDir(ProgramDir);
+ //???ProgramDir:=GetProgramFilesDir;
+ //?UnFormatDir(ProgramDir);
  Edit1.Text:=GetDirectory(Application.ExeName);
  Edit1.Enabled:=false;
  Edit2.text:='%APPDATA%\DB';

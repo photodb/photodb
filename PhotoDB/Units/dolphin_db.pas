@@ -461,13 +461,13 @@ type
         ReleaseNumber = 12;
         DemoSecondsToOpen = 5;
         MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
-        FilesCount = 11;
-        FileList : array[0..FilesCount-1] of string = ('Kernel.dll','Licence.txt','Scripts','DBShell.exe','Tools.exe','Help','lpng-px.dll','MSdcRAW.dll','icons.dll','Actions','Images');
-        FileOptions : array[0..FilesCount-1] of boolean = (true,true,true,true,true,true,true,true,true,true,true);
-        InstallFileNeeds : array[0..FilesCount-1] of boolean = (true,false,true,true,false,false,false,true,true,false,false);
-        DBFilesExt : array [0..6] of string = ('DB','MB','FAM','VAL','TV','MDB','LDB');
+        FilesCount = 10;
+        FileList : array[0..FilesCount-1] of string = ('Kernel.dll','Licence.txt','Scripts','Tools.exe','Help','lpng-px.dll','FreeImage.dll','icons.dll','Actions','Images');
+        FileOptions : array[0..FilesCount-1] of boolean = (true,true,true,true,true,true,true,true,true,true);
+        InstallFileNeeds : array[0..FilesCount-1] of boolean = (true,false,true,true,false,false,true,true,false,false);
+        DBFilesExt : array [0..1] of string = ('MDB','PHOTODB');
         RetryTryCountOnWrite = 10;
-        RetryTryDelayOnWrite = 500;
+        RetryTryDelayOnWrite = 100;
         CurrentDBSettingVersion = 1;
         UseSimpleSelectFolderDialog = False;
 
@@ -489,7 +489,6 @@ resourcestring
 
 var 
     DBName : string;
-    ProgramDir : string;
     Theme_ListSelectColor, Theme_MainColor, Theme_MainFontColor, Theme_ListColor,
     Theme_ListFontColor, Theme_MemoEditColor, Theme_MemoEditFontColor, Theme_LabelFontColor,
     Theme_ProgressBackColor, Theme_ProgressFontColor, Theme_ProgressFillColor : TColor;
@@ -502,8 +501,6 @@ var
     HelpActivationNO : integer = 0;
     FExtImagesInImageList : Integer;
     LastInseredID : integer;
-    ProcessMemorySize : integer;
-    UseScripts : boolean = true;
     CopyFilesSynchCount : integer = 0;
     FolderView : boolean = false;
     DBLoadInitialized : boolean = false;
@@ -1379,7 +1376,7 @@ begin
   freg.OpenKey('\PhotoDB.IdsFile\DefaultIcon',true);
   freg.WriteString('',FileName+',0');
   freg.OpenKey('\PhotoDB.IdsFile\Shell\Open\Command',true);
-  freg.WriteString('','"'+GetDirectory(FileName)+'DBShell.exe" "%1"');
+  freg.WriteString('','"'+GetDirectory(FileName)+'PhotoDB.exe" "%1"');
   Result:=true;
   freg.CloseKey;
  except
@@ -1401,7 +1398,7 @@ begin
   freg.OpenKey('\PhotoDB.dblFile\DefaultIcon',true);
   freg.WriteString('',FileName+',0');
   freg.OpenKey('\PhotoDB.dblFile\Shell\Open\Command',true);
-  freg.WriteString('','"'+GetDirectory(FileName)+'DBShell.exe" "%1"');
+  freg.WriteString('','"'+GetDirectory(FileName)+'PhotoDB.exe" "%1"');
   Result:=true;
   freg.CloseKey;
  except
@@ -1423,7 +1420,7 @@ begin
   freg.OpenKey('\PhotoDB.IthFile\DefaultIcon',true);
   freg.writestring('',FileName+',0');
   freg.OpenKey('\PhotoDB.IthFile\Shell\Open\Command',true);
-  freg.writestring('','"'+getdirectory(FileName)+'DBShell.exe" "%1"');
+  freg.writestring('','"'+getdirectory(FileName)+'PhotoDB.exe" "%1"');
   Result:=true;
   freg.CloseKey;
  except
@@ -1479,7 +1476,7 @@ begin
   freg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler\Shell\Open',True);
   freg.CloseKey;
   freg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler\Shell\Open\Command',True);
-  freg.WriteString('','"'+GetDirectory(filename)+'DBShell.exe" "/GETPHOTOS" "%1"');
+  freg.WriteString('','"'+GetDirectory(filename)+'PhotoDB.exe" "/GETPHOTOS" "%1"');
   freg.CloseKey;
  except
   on e : Exception do
@@ -1506,7 +1503,7 @@ begin
  For i:=Length(Value) DownTo 1 do
  if Value[i]=' ' then delete(Value,i,1) else
  break;
- If AnsiLowerCase(Value)=AnsiLowerCase(GetDirectory(InstalledFileName)+'DBShell.exe') then
+ If AnsiLowerCase(Value)=AnsiLowerCase(GetDirectory(InstalledFileName)+'PhotoDB.exe') then
  Result:=True;
 end;
 
@@ -1555,10 +1552,10 @@ begin
       Reg.WriteString('','PhotoDB.'+Exts[i].Ext);
       Reg.CloseKey;
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\Shell\Open\Command',True);
-      Reg.WriteString('','"'+GetDirectory(FileName)+'DBShell.exe" "%1"');
+      Reg.WriteString('','"'+GetDirectory(FileName)+'PhotoDB.exe" "%1"');
       Reg.CloseKey;          
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\DefaultIcon',True);
-      Reg.WriteString('',''+GetDirectory(filename)+'DBShell.exe,0');
+      Reg.WriteString('',''+GetDirectory(filename)+'PhotoDB.exe,0');
       Reg.CloseKey;
       DeleteExtInfo(Exts[i].Ext);
      end else
@@ -1569,10 +1566,10 @@ begin
       Reg.WriteString('','PhotoDB.'+Exts[i].Ext);
       Reg.CloseKey;
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\Shell\Open\Command',True);
-      Reg.WriteString('','"'+GetDirectory(filename)+'DBShell.exe" "%1"');
+      Reg.WriteString('','"'+GetDirectory(filename)+'PhotoDB.exe" "%1"');
       Reg.CloseKey;    
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\DefaultIcon',True);
-      Reg.WriteString('',''+GetDirectory(filename)+'DBShell.exe,0');  
+      Reg.WriteString('',''+GetDirectory(filename)+'PhotoDB.exe,0');
       Reg.CloseKey;   
       DeleteExtInfo(Exts[i].Ext);
      end;
@@ -1605,11 +1602,11 @@ begin
      If b then
      Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\Shell\PhotoDBView\Command',True) else
      Reg.OpenKey('\'+S+'\Shell\PhotoDBView\Command',True);
-     Reg.WriteString('','"'+GetDirectory(filename)+'DBShell.exe" "%1"');
+     Reg.WriteString('','"'+GetDirectory(filename)+'PhotoDB.exe" "%1"');
      if b then
      begin
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\DefaultIcon',True);
-      Reg.WriteString('',''+GetDirectory(filename)+'DBShell.exe,0');
+      Reg.WriteString('',''+GetDirectory(filename)+'PhotoDB.exe,0');
      end;
      Reg.CloseKey;
     end;
@@ -1680,7 +1677,7 @@ begin
   Reg.Writestring('',TEXT_MES_BROWSE_WITH_DB);
   Reg.CloseKey;
   Reg.OpenKey('\Directory\Shell\PhDBBrowse\Command',true);
-  Reg.Writestring('','"'+GetDirectory(filename)+'DBShell.exe" "/EXPLORER" "%1"');
+  Reg.Writestring('','"'+GetDirectory(filename)+'PhotoDB.exe" "/EXPLORER" "%1"');
   Result:=true;
  except
   on e : Exception do
@@ -1697,7 +1694,7 @@ begin
   Reg.Writestring('',TEXT_MES_BROWSE_WITH_DB);
   Reg.CloseKey;
   Reg.OpenKey('\Drive\Shell\PhDBBrowse\Command',true);
-  Reg.Writestring('','"'+GetDirectory(filename)+'DBShell.exe" "/EXPLORER" "%1"');
+  Reg.Writestring('','"'+GetDirectory(filename)+'PhotoDB.exe" "/EXPLORER" "%1"');
   Result:=true;
  except
   on e : Exception do
@@ -4911,14 +4908,14 @@ begin
  PRGBArr[i]:=Image1.ScanLine[i];
  Data1:=Gistogramma(Image1.Width,Image1.Height,PRGBArr);
 
- GetGistogrammBitmapX(150,0,Data1.Red,a,a).SaveToFile('c:\w1.bmp');
+ //???GetGistogrammBitmapX(150,0,Data1.Red,a,a).SaveToFile('c:\w1.bmp');
                    
  SetLength(PRGBArr,Image2.Height);
  for i:=0 to Image2.Height-1 do
  PRGBArr[i]:=Image2.ScanLine[i];
  Data2:=Gistogramma(Image2.Width,Image2.Height,PRGBArr);
 
- GetGistogrammBitmapX(150,0,Data2.Red,a,a).SaveToFile('c:\w2.bmp');
+ //???GetGistogrammBitmapX(150,0,Data2.Red,a,a).SaveToFile('c:\w2.bmp');
 
  for i:=0 to 255 do
  begin
@@ -4927,11 +4924,11 @@ begin
   Data.Red[i]:=AbsByte(Data1.Red[i],Data2.Red[i]);
  end;
           
- GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w.bmp');
+ //???GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w.bmp');
 
  RemovePicks;
 
- GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w_pick.bmp');
+ //???GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w_pick.bmp');
 
  for i:=0 to 255 do
  begin
@@ -4940,7 +4937,7 @@ begin
   Data.Red[i]:=Abs(Data.Red[i]-mx_r);
  end;
 
- GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w_mx.bmp');
+ //?GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w_mx.bmp');
 
  ResultExt:=10000;
  if Abs(Data2.Max-Data2.Max)>20 then

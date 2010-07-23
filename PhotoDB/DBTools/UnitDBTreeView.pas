@@ -68,7 +68,7 @@ type
     procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormDestroy(Sender: TObject);
-    procedure DBOpened(Sender: TObject);
+    procedure DBOpened(Sender : TObject; DS : TDataSet);
     procedure DropFileSource1Feedback(Sender: TObject; Effect: Integer;
       var UseDefaultCursors: Boolean);
   protected
@@ -623,7 +623,7 @@ begin
  FreeDS(TempTable);
 end;
 
-procedure TFormCreateDBFileTree.DBOpened(Sender: TObject);
+procedure TFormCreateDBFileTree.DBOpened(Sender : TObject; DS : TDataSet);
 begin
  DBInOpening:=false;
 end;

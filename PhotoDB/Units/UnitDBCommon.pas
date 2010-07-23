@@ -13,6 +13,7 @@ function GetParamStrDBBool(Param : string) : Boolean;
 procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
+function ProgramDir : string;
 
 implementation
 
@@ -259,6 +260,11 @@ begin
    aHeightToSize := aHeight;
   end;
  end;
+end;
+
+function ProgramDir : string;
+begin
+  Result := ExtractFileDir(ParamStr(0)) + '\';
 end;
 
 end.

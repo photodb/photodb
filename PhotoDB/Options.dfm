@@ -23,6 +23,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 409
     Height = 441
+    PageIndex = 5
     TabFont.Charset = DEFAULT_CHARSET
     TabFont.Color = clBtnText
     TabFont.Height = -11
@@ -1427,21 +1428,13 @@ object OptionsForm: TOptionsForm
         Caption = 'Use many instances of Property'
         TabOrder = 4
       end
-      object CheckBox29: TCheckBox
-        Left = 7
-        Top = 138
-        Width = 386
-        Height = 17
-        Caption = 'Use Main Menu in Search Form'
-        TabOrder = 5
-      end
       object CheckBox30: TCheckBox
         Left = 7
         Top = 161
         Width = 386
         Height = 17
         Caption = 'Virtual Cursor in Editor'
-        TabOrder = 6
+        TabOrder = 5
       end
       object CheckBox31: TCheckBox
         Left = 7
@@ -1449,7 +1442,7 @@ object OptionsForm: TOptionsForm
         Width = 386
         Height = 38
         Caption = 'Verify links on updation images (works slowly, read help)'
-        TabOrder = 7
+        TabOrder = 6
         WordWrap = True
       end
       object CheckBox32: TCheckBox
@@ -1458,7 +1451,7 @@ object OptionsForm: TOptionsForm
         Width = 386
         Height = 17
         Caption = 'Start Explorer At startup'
-        TabOrder = 8
+        TabOrder = 7
         OnClick = CheckBox32Click
       end
       object Edit11: TEdit
@@ -1466,7 +1459,7 @@ object OptionsForm: TOptionsForm
         Top = 336
         Width = 193
         Height = 21
-        TabOrder = 9
+        TabOrder = 8
         Text = 'C:\'
       end
       object CheckBox33: TCheckBox
@@ -1475,7 +1468,7 @@ object OptionsForm: TOptionsForm
         Width = 169
         Height = 17
         Caption = 'Use Special Folder'
-        TabOrder = 10
+        TabOrder = 9
         OnClick = CheckBox33Click
       end
       object Button25: TButton
@@ -1484,7 +1477,7 @@ object OptionsForm: TOptionsForm
         Width = 17
         Height = 20
         Caption = '...'
-        TabOrder = 11
+        TabOrder = 10
         OnClick = Button25Click
       end
       object CheckBox34: TCheckBox
@@ -1493,7 +1486,7 @@ object OptionsForm: TOptionsForm
         Width = 377
         Height = 17
         Caption = 'No add to BD files less then'
-        TabOrder = 12
+        TabOrder = 11
         OnClick = CheckBox34Click
       end
       object Edit12: TEdit
@@ -1501,7 +1494,7 @@ object OptionsForm: TOptionsForm
         Top = 388
         Width = 33
         Height = 21
-        TabOrder = 13
+        TabOrder = 12
         Text = '64'
       end
       object Edit13: TEdit
@@ -1509,7 +1502,7 @@ object OptionsForm: TOptionsForm
         Top = 388
         Width = 33
         Height = 21
-        TabOrder = 14
+        TabOrder = 13
         Text = '64'
       end
       object CheckBox35: TCheckBox
@@ -1518,7 +1511,7 @@ object OptionsForm: TOptionsForm
         Width = 385
         Height = 17
         Caption = 'Use Groups in search'
-        TabOrder = 15
+        TabOrder = 14
       end
       object CheckBox5: TCheckBox
         Left = 7
@@ -1526,14 +1519,14 @@ object OptionsForm: TOptionsForm
         Width = 386
         Height = 17
         Caption = 'Use full rect select in ListView'
-        TabOrder = 16
+        TabOrder = 15
       end
       object Edit2: TEdit
         Left = 7
         Top = 242
         Width = 121
         Height = 21
-        TabOrder = 17
+        TabOrder = 16
         Text = '3'
       end
       object TPanel
@@ -1542,7 +1535,7 @@ object OptionsForm: TOptionsForm
         Width = 385
         Height = 15
         BevelOuter = bvNone
-        TabOrder = 18
+        TabOrder = 17
         object Label34: TLabel
           Left = 0
           Top = 0
@@ -1557,7 +1550,7 @@ object OptionsForm: TOptionsForm
         Width = 385
         Height = 17
         Caption = 'Use small icons in toolbars'
-        TabOrder = 19
+        TabOrder = 18
       end
     end
   end

@@ -12,7 +12,7 @@ uses
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
-  uResources;
+  uResources, UnitDBCommon;
 
 type
   TRotatingImageInfo = record

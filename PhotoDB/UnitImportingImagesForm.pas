@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Menus, DmProgress, Dolphin_DB, ComCtrls,
   acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
-  UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare;
+  UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
+  UnitDBCommon;
 
 type
   TFormImportingImages = class(TForm)

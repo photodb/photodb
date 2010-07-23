@@ -159,7 +159,7 @@ type
     procedure SelectDB1Click(Sender: TObject);
     procedure DeleteDB1Click(Sender: TObject);
     procedure ListBox2DblClick(Sender: TObject);
-    procedure DBOpened(Sender: TObject);
+    procedure DBOpened(Sender : TObject; DS : TDataSet);
     procedure EditDB1Click(Sender: TObject);
     procedure RecordNumberEditChange(Sender: TObject);
     procedure LoadDBTimerTimer(Sender: TObject);
@@ -1922,7 +1922,7 @@ begin
  RefreshDBList;
 end;
 
-procedure TManagerDB.DBOpened(Sender: TObject);
+procedure TManagerDB.DBOpened(Sender : TObject; DS : TDataSet);
 begin
  DBInOpening:=false;
 end;

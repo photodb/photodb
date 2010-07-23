@@ -11,42 +11,6 @@ object FormManager: TFormManager
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  OnActivate = FormActivate
-  OnDestroy = FormDestroy
-  OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
-  object TerminateTimer: TTimer
-    Enabled = False
-    Interval = 10000
-    OnTimer = TerminateTimerTimer
-    Left = 8
-    Top = 8
-  end
-  object CalledTimer: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = CalledTimerTimer
-    Left = 40
-    Top = 8
-  end
-  object ApplicationEvents1: TApplicationEvents
-    OnException = ApplicationEvents1Exception
-    OnIdle = ApplicationEvents1Idle
-    Left = 72
-    Top = 8
-  end
-  object CheckTimer: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = CheckTimerTimer
-    Left = 104
-    Top = 8
-  end
-  object TimerCloseApplicationByDBTerminate: TTimer
-    Enabled = False
-    OnTimer = TimerCloseApplicationByDBTerminateTimer
-    Left = 8
-    Top = 104
-  end
 end

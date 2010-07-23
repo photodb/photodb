@@ -376,7 +376,7 @@ begin
         ImageList.Handle := ImageList_Create(Width, Height, ILC_COLOR32 or Mask[Masked], 0, AllocBy);
         if not ImageList.HandleAllocated then
         begin
-          raise EInvalidOperation.Create('');
+          raise EInvalidOperation.Create('HandleAllocated Failed!');
         end;
       end;
       ImageList.AddImages(TemporyImageList);

@@ -11,19 +11,8 @@ uses
 
 type
   TFormManager = class(TForm)
-    TerminateTimer: TTimer;
-    CalledTimer: TTimer;
-    ApplicationEvents1: TApplicationEvents;
-    CheckTimer: TTimer;
-    TimerCloseApplicationByDBTerminate: TTimer;
-    procedure FormPaint(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
-    procedure TerminateTimerTimer(Sender: TObject);
     procedure CalledTimerTimer(Sender: TObject);
-    procedure ApplicationEvents1Idle(Sender: TObject; var Done: Boolean);
-    procedure FormDestroy(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
-    procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
   private
     FMainForms : TList;
@@ -53,12 +42,22 @@ type
 
 var
   FormManager: TFormManager;
-  DateTime : TDateTime;    
   WasIde : Boolean = false;    
   ExitAppl : Boolean = false;
   Running : Boolean = false;
   LockCleaning : boolean = false;
   EnteringCodeNeeded : boolean;
+
+  TimerTerminateHandle : THandle;
+  TimerCheckMainFormsHandle : THandle;
+  TimerTerminateAppHandle : THandle;    
+  TimerCloseHandle : THandle;
+
+const
+  TIMER_TERMINATE = 1;  
+  TIMER_TERMINATE_APP = 2;
+  TIMER_CHECK_MAIN_FORMS = 3;  
+  TIMER_CLOSE = 4;
 
 implementation
 
@@ -68,6 +67,33 @@ UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
 UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
 
 {$R *.dfm}
+
+// callback function for Timer
+procedure TimerProc(wnd :HWND; // handle of window for timer messages
+                    uMsg :UINT; // WM_TIMER message
+                    idEvent :UINT; // timer identifier
+                    dwTime :DWORD // current system time
+                    ); stdcall; // use stdcall when declare callback functions
+begin
+  if idEvent = TimerTerminateHandle then
+  begin
+    KillTimer(0, TimerTerminateHandle);
+    EventLog('TFormManager::TerminateTimerTimer()!');
+    Halt;
+  end else if idEvent = TimerCheckMainFormsHandle then
+  begin
+    if FormManager <> nil then
+      FormManager.CheckTimerTimer(nil);
+  end else if idEvent = TimerTerminateAppHandle then
+  begin
+    if FormManager <> nil then
+      FormManager.CalledTimerTimer(nil);
+  end else if idEvent = TimerCloseHandle then
+  begin
+    if FormManager <> nil then
+      FormManager.TimerCloseApplicationByDBTerminateTimer(nil);
+  end;
+end;
 
 { TFormManager }
 
@@ -284,22 +310,12 @@ try
   end;
  end;
  FCheckCount := 0;
- CheckTimer.Enabled := True;
+ TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
  Running:=true;
  finally
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
  end;
-end;
-
-procedure TFormManager.FormPaint(Sender: TObject);
-begin
-// Showwindow(handle,SW_HIDE);
-end;
-
-procedure TFormManager.FormActivate(Sender: TObject);
-begin
-// Showwindow(handle,SW_HIDE);
 end;
 
 procedure TFormManager.Close(Form: TForm);
@@ -310,7 +326,7 @@ end;
 procedure TFormManager.RegisterMainForm(Value: TForm);
 begin
   if Value <> Viewer then
-    CanCheckViewerInMainForms:=true;
+    CanCheckViewerInMainForms := True;
   FMainForms.Add(Value);
 end;
 
@@ -377,22 +393,19 @@ begin
   end;
   if ApplReadyForEnd then Break;
  until false;
- TerminationApplication.Create(False);
- TerminateTimer.Enabled:=True;
- Application.Terminate;
- CalledTimer.Enabled:=True;
- DBKernel.WriteProperty('Starting','ApplicationStarted','0'); 
- EventLog(':TFormManager::ExitApplication()/OK...');
- EventLog('');                                                 
- EventLog('');          
- EventLog('');            
- EventLog('finalization:');
-end;
+  TerminationApplication.Create(False);
+  
+  FormManager := nil;
+  TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 10000, @TimerProc);
+  Application.Terminate;
+  TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
 
-procedure TFormManager.TerminateTimerTimer(Sender: TObject);
-begin
-  EventLog('TFormManager::TerminateTimerTimer()!');
-  Halt;
+  DBKernel.WriteProperty('Starting','ApplicationStarted','0');
+  EventLog(':TFormManager::ExitApplication()/OK...');
+  EventLog('');
+  EventLog('');
+  EventLog('');
+  EventLog('finalization:');
 end;
 
 procedure TFormManager.CalledTimerTimer(Sender: TObject);
@@ -400,7 +413,8 @@ begin
   Application.Terminate;
 end;
 
-procedure TFormManager.ApplicationEvents1Idle(Sender: TObject;
+//TODO: review IDLE
+{procedure TFormManager.ApplicationEvents1Idle(Sender: TObject;
   var Done: Boolean);
 begin
  if WasIde then exit;
@@ -409,52 +423,7 @@ begin
  DBkernel.BackUpTable;
  if DBKernel.ReadBool('Options','AllowAutoCleaning',false) then
  CleanUpThread.Create(False);
-end;
-
-procedure TFormManager.FormDestroy(Sender: TObject);
-var
-  Found : integer;
-  SearchRec : TSearchRec;
-  f : TextFile;
-begin
-
- Found := FindFirst(ProgramDir+'*.*', faAnyFile, SearchRec);
- while Found = 0 do
- begin
-  if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-  begin
-   If FileExists(ProgramDir+SearchRec.Name) and (UpcaseAll(Copy(SearchRec.Name,1,4))='_QSQ') then
-   begin
-    Filesetattr(ProgramDir+SearchRec.Name,faHidden);
-    Assignfile(f,ProgramDir+SearchRec.Name);
-    {$I-}
-    Erase(f);
-    {$I+}
-   end;
-  end;
-  Found := SysUtils.FindNext(SearchRec);
- end;
- FindClose(SearchRec);
-
-
- Found := FindFirst(GetAppDataDirectory + TempFolder+'*.*', faAnyFile, SearchRec);
- while Found = 0 do
- begin
-  if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-  begin
-   If FileExists(GetAppDataDirectory+TempFolder+SearchRec.Name) and Dolphin_DB.ExtinMask(TempRAWMask,GetExt(SearchRec.Name)) then
-   begin
-    Filesetattr(GetAppDataDirectory+TempFolder+SearchRec.Name,faHidden);
-    Assignfile(f,GetAppDataDirectory+TempFolder+SearchRec.Name);
-    {$I-}
-    Erase(f);
-    {$I+}
-   end;
-  end;
-  Found := SysUtils.FindNext(SearchRec);
- end;
- FindClose(SearchRec);
-end;
+end;  }
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
 begin
@@ -473,13 +442,13 @@ begin
       begin
         CanCheckViewerInMainForms:=false;
         //to prevent many messageboxes
-        CheckTimer.Enabled := False;
+        KillTimer(0, TimerCheckMainFormsHandle);
         try
           ActivateApplication(Viewer.Handle);
           if ID_YES = MessageBoxDB(Viewer.Handle, TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q, TEXT_MES_WARNING,TD_BUTTON_YESNO, TD_ICON_WARNING) then
             FMainForms.Clear;
         finally
-          CheckTimer.Enabled := True;
+           TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
         end;
       end;
     end;
@@ -538,12 +507,6 @@ begin
   Result:= FMainForms.IndexOf(Form) > -1;
 end;
 
-procedure TFormManager.ApplicationEvents1Exception(Sender: TObject;
-  E: Exception);
-begin
- EventLog('Error ['+DateTimeToStr(Now)+'] = '+e.Message);
-end;
-
 procedure TFormManager.CloseApp(Sender: TObject);
 var
   i : integer;
@@ -561,7 +524,8 @@ end;
 procedure TFormManager.Load;
 var
   DBVersion : integer;
-  DBFile : TPhotoDBFile;
+  DBFile : TPhotoDBFile; 
+  DateTime : TDateTime;   
 begin
   TW.I.Start('FM -> Load');
  Caption:=DBID;
@@ -582,13 +546,9 @@ begin
  except
   on e : Exception do EventLog(':TFormManager::FormCreate() throw exception: '+e.Message);
  end;
- If DBTerminating then
- begin
-  TimerCloseApplicationByDBTerminate.Enabled:=true;
- end;
- //ShowWindow(Handle,SW_HIDE);
- //FormManager.Visible:=false;
- //Application.ShowMainForm:=false;
+ if DBTerminating then
+   TimerCloseHandle := SetTimer(0, TIMER_CLOSE, 1000, @TimerProc);
+
  DateTime:=Now;
  If not DBTerminating then
  begin

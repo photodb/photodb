@@ -941,8 +941,6 @@ begin
 
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
-  if UseScripts then
-  begin             
     TW.I.Start('Script read');
     SetNamedValueStr(aScript, '$dbname', dbname);
     MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');  
@@ -951,7 +949,7 @@ begin
     LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
     Menu := ScriptMainMenu;
     ScriptMainMenu.Images := DBkernel.ImageList;
-  end;
+
   TW.I.Start('RecreateThemeToForm');
   DBKernel.RecreateThemeToForm(Self);
   ReadPlaces;

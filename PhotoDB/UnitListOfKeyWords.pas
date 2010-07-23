@@ -33,7 +33,7 @@ type
     procedure ListBox1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure Search1Click(Sender: TObject);
-    procedure DBOpened(Sender: TObject);
+    procedure DBOpened(Sender : TObject; DS : TDataSet);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
@@ -291,7 +291,7 @@ begin
  end;
 end;
 
-procedure TFormListOfKeyWords.DBOpened(Sender: TObject);
+procedure TFormListOfKeyWords.DBOpened(Sender : TObject; DS : TDataSet);
 begin
  DBInOpening:=false;
 end;

@@ -7,7 +7,7 @@ uses
  Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs, adodb,
  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
- UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger;
+ UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
@@ -17,21 +17,15 @@ type
 type
  TWideSearchOptions = record
   Enabled : Boolean;
-  EnableDate : Boolean;
   MinDate : TDateTime;
   MaxDate : TDateTime;
-  EnableRating : Boolean;
   MinRating : integer;
   MaxRating : integer;
-  EnableID : Boolean;
   MinID : integer;
   MaxID : integer;
   Private_ : Boolean;
   Common_ : Boolean;
   Deleted_ : Boolean;
-  ShowLastTime : Boolean;
-  LastTimeValue : Integer;
-  LastTimeCode : Integer;
   UseWideSearch : boolean;
   GroupName : string;
  end;
@@ -80,7 +74,6 @@ type
   procedure ProgressNull;
   procedure AddImageToList;
   procedure CreateQuery;
-  procedure SaveHistory;
   Procedure DoOnDone;
   procedure SetSearchPathW(Path : String);
   procedure SetSearchPath;
@@ -115,7 +108,6 @@ type
     QueryString : string;
     OnDone : TNotifyEvent;
     ShowPrivate : boolean;
-    ShowRating : integer;
     UserQuery : string;
     FSortMethod : integer;
     FSortDecrement : Boolean;
@@ -123,7 +115,7 @@ type
     BitmapParam : TBitmap;
     procedure Execute; override;
   public
-      constructor Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
+      constructor Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
   end;
 
   const
@@ -141,7 +133,7 @@ implementation
 uses FormManegerUnit, Searching, ExplorerUnit, UnitGroupsWork, Language,
      CommonDBSupport, ExplorerThreadUnit;
 
-constructor SearchThread.Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; Rating : Integer; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
+constructor SearchThread.Create(CreateSuspennded: Boolean; Sender : TThreadForm; SID : TGUID; FShowPrivate : Boolean; SortMethod : integer; SortDecrement : Boolean; Query : String; WideSearch_ : TWideSearchOptions; OnDone_ : TNotifyEvent; PictureSize : integer);
 begin         
  inherited Create(Sender, SID);
  FSender:=Sender;
@@ -157,7 +149,6 @@ begin
  FSortMethod:=SortMethod;
  FSortDecrement:=SortDecrement;
  ShowPrivate := FShowPrivate;
- ShowRating := Rating;
  UserQuery := Query;
  FWideSearch := WideSearch_;
  Start;
@@ -327,46 +318,25 @@ begin
             SBitmap.PixelFormat := pf24bit;
             DoResize(100, 100, TempBitmap, SBitmap); //100x100 is best size!
 
-
-
             FWideSearch.MaxDate := Trunc(FWideSearch.MaxDate);
             FWideSearch.MinDate := Trunc(FWideSearch.MinDate);
-            x:=FWideSearch.LastTimeValue;
-            case FWideSearch.LastTimeCode of
-              0 : x:=x;
-              1 : x:=x*7;
-              2 : x:=x*30;
-              3 : x:=x*365;
-            end;
-            x := Round(Now) - x;
 
             c := 0;
             FTable:=GetQuery;
             try
               tempsql:='Select ID, Thum from '+GetDefDBName+' Where ';
-              tempsql:=tempsql+Format(' (Rating >= %d) ',[showrating]);
+              tempsql:=tempsql+Format(' (Rating >= %d) and (Rating <= %d) ',[FWideSearch.MinRating, FWideSearch.MaxRating]);
               if FWideSearch.GroupName<>'' then
                 tempsql:=tempsql+' AND (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'")';
 
-              if FWideSearch.ShowLastTime then
-                tempsql:=tempsql+' AND (DateToAdd > :DateToAdd) ';
-
-              if FWideSearch.EnableDate then
-                tempsql:=tempsql+' AND ((DateToAdd > :MinDate) and (DateToAdd<:MaxDate)) ';
+              tempsql:=tempsql+' AND ((DateToAdd > :MinDate) and (DateToAdd<:MaxDate)) ';
 
               SetSQL(FTable,tempsql);
-              if FWideSearch.ShowLastTime then
-              begin
-               SetDateParam(FTable,c,x);
-               inc(c);
-              end;
 
-              if FWideSearch.EnableDate then
-              begin
-                SetDateParam(FTable,c,FWideSearch.MinDate);
-                inc(c);
-                SetDateParam(FTable,c,FWideSearch.MaxDate);
-              end;
+
+              SetDateParam(FTable,c,FWideSearch.MinDate);
+              inc(c);
+              SetDateParam(FTable,c,FWideSearch.MaxDate);
 
               FTable.Active:=true;
               FTable.First;
@@ -448,29 +418,8 @@ begin
       QueryString := SysUtils.StringReplace(QueryString, '\', ' ', [rfReplaceAll]);
       SetSQL(fQuery, QueryString);
 
-      //??????????????????????????????
-      if FWideSearch.ShowLastTime then
-        x:=1
-      else
-        x:=0;
-        
-      if FWideSearch.EnableDate then
-      begin
-        SetDateParam(fQuery, QueryParamsCount(fQuery)-2-x, Trunc(FWideSearch.MinDate));
-        SetDateParam(fQuery, QueryParamsCount(fQuery)-1-x, Trunc(FWideSearch.MaxDate));
-      end;
-
-      x:=FWideSearch.LastTimeValue;
-      case FWideSearch.LastTimeCode of
-        0 : x:=x;
-        1 : x:=x*7;
-        2 : x:=x*30;
-        3 : x:=x*365;
-      end;
-
-      if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QT_NO_NOPATH=QueryType) then
-      if FWideSearch.ShowLastTime then
-        SetDateParam(fQuery,QueryParamsCount(fQuery)-1,Round(Now)-x);
+      SetDateParam(fQuery, QueryParamsCount(fQuery)-2-x, Trunc(FWideSearch.MinDate));
+      SetDateParam(fQuery, QueryParamsCount(fQuery)-1-x, Trunc(FWideSearch.MaxDate));
 
       if (QueryType=QT_SIMILAR) then
         SetStrParam(fQuery, 0, StrTh);
@@ -913,8 +862,6 @@ begin
    Result:=Result+Format('(Attr= %d)',[db_attr_not_exists]);
   end;
 
-  if not FWideSearch.EnableRating then
-  Result:=Result+' AND (Rating>='+inttostr(showrating)+')';
   if FWideSearch.Enabled=false then
   if not ShowPrivate then Result:=Result+' AND (Access=0)';
 
@@ -945,7 +892,6 @@ begin
  QueryType:=QT_NONE;
  foptions:=0;
  sqltext:=userquery;
- SynchronizeEx(savehistory);
  if sqltext='' then sqltext:='*';
  systemquery:=false;
  if length(sqltext)>3 then
@@ -954,15 +900,10 @@ begin
   begin
    Delete(sqltext,1,1);
    FWideSearch.Enabled:=false;
-   FWideSearch.EnableDate:=false;
-   FWideSearch.EnableRating:=false;
-   FWideSearch.EnableID:=false;
    FWideSearch.Private_:=true;
    FWideSearch.Common_:=true;
    FWideSearch.Deleted_:=true;
-   FWideSearch.ShowLastTime:=false;
    FWideSearch.UseWideSearch:=true;
-   showrating:=0;
   end;
  end;
 
@@ -1322,6 +1263,7 @@ begin
     sqlquery:='SELECT * FROM '+GetDefDBName;
     sqlquery:=sqlquery+' where ('+sqltext+')';
 
+    sqlquery := sqlquery + Format(' AND ((Rating >= %d) AND (Rating <= %d)) ',[FWideSearch.MinRating, FWideSearch.MaxRating]);
     if FWideSearch.GroupName<>'' then
     sqlquery:=sqlquery+' AND (Groups like "'+GroupSearchByGroupName(FWideSearch.GroupName)+'")';
 
@@ -1377,19 +1319,6 @@ begin
 
 end;
 
-procedure SearchThread.SaveHistory;
-begin
- //TODO: different from base
- DBKernel.WriteString('Search_DB_'+DBKernel.GetDataBaseName,'OldValue',UserQuery);
- DBKernel.WriteInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMinRating',ShowRating);
- DBKernel.WriteInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMethod',FSortMethod);
- DBKernel.WriteBool('Search_DB_'+DBKernel.GetDataBaseName,'OldMethodDecrement',FSortDecrement);
- DBKernel.WriteBool('Search_DB_'+DBKernel.GetDataBaseName,'ShowLastTime',FWideSearch.ShowLastTime);
- DBKernel.WriteInteger('Search_DB_'+DBKernel.GetDataBaseName,'ShowLastTimeValue',FWideSearch.LastTimeValue);
- DBKernel.WriteInteger('Search_DB_'+DBKernel.GetDataBaseName,'ShowLastTimeCode',FWideSearch.LastTimeCode);
- DBKernel.WriteBool('Search_DB_'+DBKernel.GetDataBaseName,'UseWideSearch',FWideSearch.UseWideSearch);
-end;
-
 procedure SearchThread.DoOnDone;
 begin
  try
@@ -1433,27 +1362,20 @@ begin
  Result:='';
 
   if not showprivate then Result:=Result+' AND (Access=0)' else
-
   Result:=Result+' AND (Attr<>'+inttostr(db_attr_not_exists)+')';
+  
+  Result:=Result+' AND ((DateToAdd >= :MinDate ) and (DateToAdd <= :MaxDate ) and IsDate=True) ';
 
-  if FWideSearch.EnableDate then
-  begin
-   Result:=Result+' AND ((DateToAdd >= :MinDate ) and (DateToAdd <= :MaxDate ) and IsDate=True) ';
-  end;
-  if FWideSearch.EnableRating then
   begin
    Result:=Result+' AND ((Rating>='+IntToStr(FWideSearch.MinRating)+') and (Rating<='+IntToStr(FWideSearch.MaxRating)+')) ';
   end;
-  if FWideSearch.EnableID then
-  begin
-   Result:=Result+' AND ((ID>='+IntToStr(FWideSearch.MinID)+') and (ID<='+IntToStr(FWideSearch.MaxID)+')) ';
-  end;
+
   if FWideSearch.Enabled then
   begin
 
-   if not (FWideSearch.Common_) then
+   {if not (FWideSearch.Common_) then
    Result:=Result+' AND (Access<>'+inttostr(db_access_none)+') ';
-   Result:=Result+' AND (Attr='+inttostr(db_attr_norm)+')';
+   Result:=Result+' AND (Attr='+inttostr(db_attr_norm)+')';    }
   end;
 end;
 
@@ -1513,8 +1435,6 @@ var
 begin
  sqlquery:=S;
  if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
- if FWideSearch.ShowLastTime then
- sqlquery:=sqlquery+' AND (DateToAdd>=:mindate)';
 
  if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
  if not FWideSearch.UseWideSearch then

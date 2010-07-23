@@ -6,16 +6,18 @@ uses
   Classes, DB, CommonDBSupport, ComObj, ActiveX, ShlObj,CommCtrl;
 
 type
+  TNotifyDBOpenedEvent = procedure(Sender : TObject; DS : TDataSet) of object;
+
   TOpenQueryThread = class(TThread)
   private
-  FOnEnd : TNotifyEvent;
+  FOnEnd : TNotifyDBOpenedEvent;
   FQuery : TDataSet;
     { Private declarations }
   protected
     procedure Execute; override;
   public
    procedure DoOnEnd;
-   constructor Create(CreateSuspennded: Boolean; Query: TDataSet; OnEnd: TNotifyEvent);
+   constructor Create(CreateSuspennded: Boolean; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
   end;
 
 implementation
@@ -23,7 +25,7 @@ implementation
 { TOpenQueryThread }
 
 constructor TOpenQueryThread.Create(CreateSuspennded: Boolean;
-  Query: TDataSet; OnEnd: TNotifyEvent);
+  Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
 begin
  inherited Create(True);
  FQuery:=Query;
@@ -33,14 +35,13 @@ end;
 
 procedure TOpenQueryThread.DoOnEnd;
 begin
- if Assigned(FOnEnd) then FOnEnd(nil);
+ if Assigned(FOnEnd) then FOnEnd(Self, FQuery);
 end;
 
 procedure TOpenQueryThread.Execute;
 begin
-  { Place thread code here }  
+ FreeOnTerminate := True;
  CoInitialize(nil);
- FreeOnTerminate:=true;
  try
   FQuery.Open;
  except

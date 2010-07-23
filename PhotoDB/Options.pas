@@ -7,7 +7,8 @@ uses
   Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
-  UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons, uLogger, uConstants;
+  UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons, uLogger, uConstants,
+  UnitDBCommon;
 
 type
   TOptionsForm = class(TForm)
@@ -137,7 +138,6 @@ type
     Rename1: TMenuItem;
     N2: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
-    CheckBox29: TCheckBox;
     CheckBox30: TCheckBox;
     Shape8: TShape;
     Label28: TLabel;
@@ -390,7 +390,6 @@ begin
   CheckBox23.Checked:=DBKernel.Readbool('Options','UseHotSelect',true);
   CheckBox27.Checked:=DBKernel.Readbool('Options','UseGDIPlus',GDIPlusPresent);
   CheckBox28.Checked:=DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true);
-  CheckBox29.Checked:=DBKernel.Readbool('Options','UseMainMenuInSearchForm',true);
   CheckBox30.Checked:=DBKernel.ReadBool('Editor','VirtualCursor',false);
   CheckBox31.Checked:=DBKernel.ReadBool('Options','CheckUpdateLinks',false);
 
@@ -714,7 +713,6 @@ begin
    DBKernel.WriteBool('Options','UseHotSelect',CheckBox23.Checked);
    DBKernel.WriteBool('Options','UseGDIPlus',CheckBox27.Checked);
    DBKernel.WriteBool('Options','AllowManyInstancesOfProperty',CheckBox28.Checked);
-   DBKernel.WriteBool('Options','UseMainMenuInSearchForm',CheckBox29.Checked);
    DBKernel.WriteBool('Editor','VirtualCursor',CheckBox30.Checked);
    DBKernel.WriteBool('Options','CheckUpdateLinks',CheckBox31.Checked);
 
@@ -924,7 +922,6 @@ begin
  Down1.Caption:=TEXT_MES_ITEM_DOWN;
  Button23.Caption:=TEXT_MES_ICON;
  Rename1.Caption:=TEXT_MES_RENAME;
- CheckBox29.Caption:=TEXT_MES_USE_MAIN_MENU_IN_SEARCH_FORM;
  CheckBox30.Caption:=TEXT_MES_ALLOW_VIRTUAL_CURSOR_IN_EDITOR;
 
  Label28.Caption:=TEXT_MES_SELECTED_COLOR;

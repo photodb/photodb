@@ -12,16 +12,45 @@ uses
   ShellContextMenu, DropSource, DropTarget, DateUtils, acDlgSelect,
   ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts, DBScriptFunctions,
   Exif, EasyListview, WebLink, MPCommonUtilities, GraphicsCool,
-  UnitRangeDBSelectForm, UnitSearchBigImagesLoaderThread, DragDropFile,
+  UnitSearchBigImagesLoaderThread, DragDropFile,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
-  uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources;
+  uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources,
+  MPCommonObjects, ADODB;
 
 type
+  TDateRange = record
+    DateFrom : TDateTime;
+    DateTo : TDateTime;
+  end;
+
   TGroupInfo = class(TObject)
   public
     Name : string;
+  end;
+
+  TSearchQuery = class(TObject)
+  public
+    Query : string;
+    Group : string;
+    RatingFrom : Integer;
+    RatingTo : Integer;
+    IsPrivate : Boolean;
+    DateFrom : TDateTime;
+    DateTo : TDateTime;
+  end;
+  
+  TSearchInfo = class(TObject)
+  private
+    FList : TList;
+    function GetCount: Integer;
+    function GetValueByIndex(Index: Integer): TSearchQuery;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    property Items[Index: Integer]: TSearchQuery read GetValueByIndex; default;
+    property Count : Integer read GetCount;
   end;
 
 type
@@ -46,7 +75,7 @@ type
     Help1: TMenuItem;
     SearchPanelA: TPanel;
     Label1: TLabel;
-    Rating2: TRating;
+    RatingQuery: TRating;
     TwButton1: TTwButton;
     PropertyPanel: TPanel;
     Label2: TLabel;
@@ -74,7 +103,7 @@ type
     PopupMenu3: TPopupMenu;
     Datenotexists1: TMenuItem;
     PanelValueIsDateSets: TPanel;
-    Image2: TImage;
+    ImageSearchWait: TImage;
     LabelBackGroundSearching: TLabel;
     PopupMenu4: TPopupMenu;
     EditGroups1: TMenuItem;
@@ -102,19 +131,7 @@ type
     PbProgress: TDmProgress;
     Label7: TLabel;
     Button1: TButton;
-    Button2: TButton;
-    PanelWideSearch: TPanel;
-    DateTimePicker2: TDateTimePicker;
-    DateTimePicker3: TDateTimePicker;
-    CheckBox1: TCheckBox;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
-    CheckBox4: TCheckBox;
-    ComboBox2: TComboBox;
-    ComboBox3: TComboBox;
-    CheckBox5: TCheckBox;
-    Edit2: TEdit;
-    Edit3: TEdit;
+    pnDateRange: TPanel;
     PopupMenu8: TPopupMenu;
     OpeninExplorer1: TMenuItem;
     AddFolder1: TMenuItem;
@@ -147,11 +164,7 @@ type
     Image6: TImage;
     GetPhotosFromDrive1: TMenuItem;
     GroupsImageList: TImageList;
-    CheckBox6: TCheckBox;
-    ComboBox4: TComboBox;
-    ComboBox5: TComboBox;
     InsertSpesialQueryPopupMenu: TPopupMenu;
-    CheckBox7: TCheckBox;
     HidePanelTimer: TTimer;
     DateTimePicker4: TDateTimePicker;
     IsTimePanel: TPanel;
@@ -162,46 +175,14 @@ type
     Timenotexists1: TMenuItem;
     TimeExists1: TMenuItem;
     Timenotsets1: TMenuItem;
-    MainMenu1: TMainMenu;
-    File1: TMenuItem;
-    Help3: TMenuItem;
-    Tools1: TMenuItem;
-    View1: TMenuItem;
-    Exit1: TMenuItem;
-    Help4: TMenuItem;
-    Activation2: TMenuItem;
-    About2: TMenuItem;
-    HomePage2: TMenuItem;
-    ContactWithAuthor2: TMenuItem;
-    GetUpdates2: TMenuItem;
-    NewPanel2: TMenuItem;
-    NewSearch2: TMenuItem;
-    Explorer3: TMenuItem;
-    N6: TMenuItem;
-    Options2: TMenuItem;
-    GroupsManager3: TMenuItem;
-    N7: TMenuItem;
-    LoadResults2: TMenuItem;
-    SaveResults2: TMenuItem;
-    ShowExplorerPage1: TMenuItem;
     SelectTimer: TTimer;
-    GetListofKeyWords1: TMenuItem;
-    GetPhotosFromDrive2: TMenuItem;
-    RemovableDrives1: TMenuItem;
-    CDROMDrives1: TMenuItem;
-    SpecialLocation1: TMenuItem;
-    N8: TMenuItem;
-    N9: TMenuItem;
     RemovableDrives2: TMenuItem;
     N10: TMenuItem;
     CDROMDrives2: TMenuItem;
     N11: TMenuItem;
     SpecialLocation2: TMenuItem;
-    DBTreeView1: TMenuItem;
     DestroyTimer: TTimer;
-    ImageEditor2: TMenuItem;
     View2: TMenuItem;
-    ManageDB2: TMenuItem;
     DropFileTarget2: TDropFileTarget;
     ScriptListPopupMenu: TPopupMenu;
     ScriptMainMenu: TMainMenu;
@@ -243,6 +224,7 @@ type
     ComboBoxSelGroups: TComboBoxExDB;
     PopupMenuZoomDropDown: TPopupMenu;
     SortbyCompare1: TMenuItem;
+    elvDateRange: TEasyListview;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure Additem_(sender: TObject; Name_ : String; tag : integer );
@@ -267,7 +249,6 @@ type
     procedure SelectAll1Click(Sender: TObject);
 
     function GetAllFiles:  TStrings;
-    procedure Splitter1Moved(Sender: TObject);
     procedure Memo1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure ManageDB1Click(Sender: TObject);
@@ -309,9 +290,6 @@ type
     procedure Rating1MouseDown(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
-    Procedure DoLockInfo;
-    Procedure DoUnLockInfo;
-    Function LockInfo : Boolean;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SaveAsTable1Click(Sender: TObject);
     procedure DateNotExists1Click(Sender: TObject);
@@ -346,10 +324,6 @@ type
     procedure HelpTimerTimer(Sender: TObject);
     procedure PopupMenu7Popup(Sender: TObject);
     procedure PopupMenu4Popup(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure CheckBox1Click(Sender: TObject);
-    procedure CheckBox4Click(Sender: TObject);
-    procedure CheckBox5Click(Sender: TObject);
     procedure Edit2KeyPress(Sender: TObject; var Key: Char);
     procedure PopupMenu8Popup(Sender: TObject);
     procedure OpeninExplorer1Click(Sender: TObject);
@@ -388,7 +362,6 @@ type
     procedure Increment1Click(Sender: TObject);
     procedure GetPhotosClick(Sender: TObject);
     procedure ComboBox1DropDown(Sender: TObject);
-    procedure CheckBox6Click(Sender: TObject);
     procedure InsertSpesialQueryPopupMenuItemClick(Sender: TObject);
     procedure DeleteSelected;
     procedure HidePanelTimerTimer(Sender: TObject);
@@ -412,7 +385,6 @@ type
     procedure CDROMDrives1Click(Sender: TObject);
     procedure SpecialLocation1Click(Sender: TObject);
     procedure GetPhotosFromDrive2Click(Sender: TObject);
-    procedure File1Click(Sender: TObject);
     procedure IsTimePanelDblClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure DBTreeView1Click(Sender: TObject);
@@ -452,9 +424,6 @@ type
     procedure ListviewIncrementalSearch(Item: TEasyCollectionItem;
         const SearchBuffer: WideString; var CompareResult: Integer);
     procedure ShowDateOptionsLinkClick(Sender: TObject);
-    procedure SetDateSettings(Sender : TObject; DateFrom, DateTo, LastDate : TDateTime; ByLastDate: boolean);
-    procedure ApplicationEvents1Deactivate(Sender: TObject);
-    procedure ApplicationEvents1Activate(Sender: TObject);
     procedure LoadSizes;
     function FileNameExistsInList(FileName : string) : boolean;
     procedure ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap);
@@ -483,7 +452,14 @@ type
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
     procedure SortingPopupMenuPopup(Sender: TObject);
     procedure SortbyCompare1Click(Sender: TObject);
+    procedure elvDateRangeItemClick(Sender: TCustomEasyListview;
+      Item: TEasyItem; KeyStates: TCommonKeyStates;
+      HitInfo: TEasyItemHitTestInfoSet);
+    procedure elvDateRangeMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure elvDateRangeResize(Sender: TObject);
   private
+    FSearchInfo : TSearchInfo;
     fListUpdating : boolean;
     FPropertyGroups: String;
     TempFolderName : String;
@@ -496,11 +472,17 @@ type
     GroupsLoaded : boolean;
     FShellTreeView : TShellTreeView;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
-    { Protected declarations }
+    function DateRangeItemAtPos(X,Y : integer): TEasyItem;
+    function GetDateFilter : TDateRange;
+   { Protected declarations }
   protected
     procedure CreateParams(VAR Params: TCreateParams); override;
     function TreeView : TShellTreeView;
     procedure CreateBackground;
+    procedure LoadDateRange;
+    procedure FetchProgress(DataSet: TCustomADODataSet;
+                            Progress, MaxProgress: Integer; var EventStatus: TEventStatus);
+    procedure DBRangeOpened(Sender : TObject; DS : TDataSet);
     { Private declarations }
   public
     ListView: TEasyListView;
@@ -530,7 +512,6 @@ type
     mouse_mov:boolean;
     frating :integer;
     SelectedInfo : TSelectedInfo;
-    FLockInfo : Boolean;
     Creating : Boolean;
     LockChangePath : Boolean;
     result_replaceimg : integer;
@@ -538,12 +519,13 @@ type
     aScript : TScript;
     ListMenuScript : String;
     aFS : TFileStream;
-    FormDateRangeSelectDB: TFormDateRangeSelectDB;
 
     FPictureSize : integer;
+
     SearchTextList : TStrings;
     SearchGroupsList : TStrings;
     SearchRatingList : TList;
+    
     SearchByCompating : boolean;
     CanSaveQueryList  : boolean;
     procedure LoadGroupsList(LoadAllLIst : boolean = false);
@@ -591,7 +573,8 @@ uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
      UnitGroupReplace, UnitSavingTableForm, UnitInternetUpdate, UnitHelp,
      ImEditor, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
      ReplaseLanguageInScript, ReplaseIconsInScript,
-     UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize;
+     UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
+     UnitOpenQueryThread, UnitRangeDBSelectForm;
 
 {$R *.dfm}
 
@@ -601,16 +584,11 @@ var
   fScript : TScript;
   ScriptString : string;
   c : integer;
+  DateRange : TDateRange;
 begin
  If FUpdatingDB then Exit;
  If Creating then Exit;
- WideSearch.Enabled:=PanelWideSearch.Visible;
- if FormDateRangeSelectDB<>nil then
- if FormDateRangeSelectDB.IsVisible then
- begin
-  ShowWindow(FormDateRangeSelectDB.Handle,SW_HIDE);
-  FormDateRangeSelectDB.IsVisible:=false;
- end;
+
  SearchByCompating:=false;
  ScriptString:=Include('Scripts\DoSearch.dbini');
 
@@ -618,33 +596,27 @@ begin
  try
    fScript.Description:='New search script';
 
-   if Pos('"',SearchEdit.Text)>0 then
-   SearchEdit.Text:=SysUtils.StringReplace(SearchEdit.Text,'"',' ',[rfReplaceAll]);
+   SearchEdit.Text := SysUtils.StringReplace(SearchEdit.Text,'"',' ',[rfReplaceAll]);
 
    SetNamedValue(fScript,'$SearchString','"'+SearchEdit.Text+'"');
-   SetNamedValue(fScript,'$Rating',IntToStr(Rating2.Rating));
+   SetNamedValue(fScript,'$Rating',IntToStr(RatingQuery.Rating));
 
    ExecuteScript(nil,fScript,ScriptString,c,nil);
    SearchEdit.Text:=GetNamedValueString(fScript,'$SearchString');
-   Rating2.Rating:=GetNamedValueInt(fScript,'$Rating');
+   RatingQuery.Rating:=GetNamedValueInt(fScript,'$Rating');
  finally
    fScript.Free;
  end;
- WideSearch.ShowLastTime:=CheckBox6.Checked;
- WideSearch.LastTimeValue:=StrToIntDef(ComboBox4.Text,3);
- WideSearch.LastTimeCode:=ComboBox5.ItemIndex;
- WideSearch.UseWideSearch:=CheckBox7.Checked;
 
  WideSearch.GroupName:=ComboBoxSearchGroups.ItemsEx[ComboBoxSearchGroups.GetItemIndex].Caption;
  if WideSearch.GroupName=TEXT_MES_ALL_GROUPS then
  WideSearch.GroupName:='';
 
- PanelWideSearch.Visible:=false;
- Rating2.IsLayered:=PanelWideSearch.Visible;
- TwButton1.IsLayered:=PanelWideSearch.Visible;
- Rating2.Enabled:= not PanelWideSearch.Visible;
- TwButton1.Enabled:= not PanelWideSearch.Visible;
- Button2.Caption:='-->';
+ DateRange := GetDateFilter;
+
+ WideSearch.MinDate := Min(GetDateFilter.DateFrom, GetDateFilter.DateTo);
+ WideSearch.MaxDate := Max(GetDateFilter.DateFrom, GetDateFilter.DateTo);
+
  Button1.OnClick:= BreakOperation;
  Button1.Caption:=TEXT_MES_STOP;
  PbProgress.Text:=TEXT_MES_STOPING+'...';
@@ -659,20 +631,11 @@ begin
  PbProgress.Text:=TEXT_MES_INITIALIZE+'...';
  PbProgress.position:=0;
  PbProgress.Text:=TEXT_MES_QUERY_EX;
- WideSearch.EnableDate:=CheckBox1.Checked;
- WideSearch.MinDate:=Min(DateTimePicker2.DateTime,DateTimePicker3.DateTime);
- WideSearch.MaxDate:=Max(DateTimePicker2.DateTime,DateTimePicker3.DateTime);
- WideSearch.EnableRating:=CheckBox4.Checked;
- WideSearch.MinRating:=Min(StrToIntDef(ComboBox2.Text,0),StrToIntDef(ComboBox3.Text,0));
- WideSearch.MaxRating:=Max(StrToIntDef(ComboBox2.Text,0),StrToIntDef(ComboBox3.Text,0));
- WideSearch.EnableID:=CheckBox5.Checked;
- WideSearch.MinID:=Min(StrToIntDef(Edit2.Text,0),StrToIntDef(Edit3.Text,0));
- WideSearch.MaxID:=Max(StrToIntDef(Edit2.Text,0),StrToIntDef(Edit3.Text,0));
- WideSearch.Private_:=CheckBox2.Checked;
- WideSearch.Common_:=CheckBox3.Checked;
+ WideSearch.MinRating:=Min(RatingQuery.Rating, RatingQuery.RatingRange);
+ WideSearch.MaxRating:=Max(RatingQuery.Rating, RatingQuery.RatingRange);
   NewFormState;
  ToolButton14.Enabled:=true;
- SearchThread.Create(True,Self,StateID,Rating2.Rating,TwButton1.Pushed,SortLink.Tag,Decremect1.Checked,SearchEdit.text,WideSearch,BreakOperation,FPictureSize);
+ SearchThread.Create(True,Self,StateID,TwButton1.Pushed,SortLink.Tag,Decremect1.Checked,SearchEdit.text,WideSearch,BreakOperation,FPictureSize);
  AddNewSearchListEntry;
 end;
 
@@ -706,11 +669,11 @@ var
   MainMenuScript : string;
 begin  
   TW.I.Start('S -> FormCreate');
+  FSearchInfo := TSearchInfo.Create;
   CanSaveQueryList := True;
   fListUpdating:=false;
   GroupsLoaded:=false;
   ShowingDateRangeWindow:=false;
-  FormDateRangeSelectDB:=nil;
   SearchEdit.ShowDropDownMenu:=false;
 
   SearchEdit.NullText := TEXT_MES_NULL_TEXT;
@@ -719,13 +682,13 @@ begin
   ListView.Parent := Self;
   ListView.Align := AlClient;
 
-  MouseDowned:=false;
-  PopupHandled:=false;
-  ListView.BackGround.Enabled:=true;
-  ListView.BackGround.Tile:=false;
-  ListView.BackGround.AlphaBlend:=true;
-  ListView.BackGround.OffsetTrack:=true;
-  ListView.BackGround.BlendAlpha:=220;
+  MouseDowned := False;
+  PopupHandled := False;
+  ListView.BackGround.Enabled := True;
+  ListView.BackGround.Tile := False;
+  ListView.BackGround.AlphaBlend := True;
+  ListView.BackGround.OffsetTrack := True;
+  ListView.BackGround.BlendAlpha := 220;
   CreateBackground;
   ListView.Font.Color:=0;
   ListView.View:=elsThumbnail;
@@ -767,45 +730,35 @@ begin
 
   DBKernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   Activation1.Visible :=not FolderView;
-  Activation2.Visible :=not FolderView;
   Help1.Visible := not FolderView;
-  Help4.Visible := not FolderView;
 
   GetPhotosFromDrive1.Visible :=not FolderView;
-  GetPhotosFromDrive2.Visible :=not FolderView;
   ToolButton14.Enabled := False;
 
- ExplorerManager.LoadEXIF;
- WindowID:=GetGUID;
- TW.I.Start('S -> TScript');
- aScript := TScript.Create('');
- AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'HideExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Properties1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'SlideShow',          F_TYPE_OBJ_PROCEDURE_TOBJECT, SlideShow1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'SelectAll',          F_TYPE_OBJ_PROCEDURE_TOBJECT, SelectAll1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'SaveResultsAsTable', F_TYPE_OBJ_PROCEDURE_TOBJECT, SaveasTable1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'CopySearchResults',  F_TYPE_OBJ_PROCEDURE_TOBJECT, CopySearchResults1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadResults',        F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadResults1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'SaveResults',        F_TYPE_OBJ_PROCEDURE_TOBJECT, SaveResults1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, Exit1Click);
- AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadExplorerValue',  F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadExplorerValue);
+  ExplorerManager.LoadEXIF;
+  WindowID:=GetGUID;
+  TW.I.Start('S -> TScript');
+  aScript := TScript.Create('');
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'HideExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Properties1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SlideShow',          F_TYPE_OBJ_PROCEDURE_TOBJECT, SlideShow1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SelectAll',          F_TYPE_OBJ_PROCEDURE_TOBJECT, SelectAll1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SaveResultsAsTable', F_TYPE_OBJ_PROCEDURE_TOBJECT, SaveasTable1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'CopySearchResults',  F_TYPE_OBJ_PROCEDURE_TOBJECT, CopySearchResults1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadResults',        F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadResults1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'SaveResults',        F_TYPE_OBJ_PROCEDURE_TOBJECT, SaveResults1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, Exit1Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadExplorerValue',  F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadExplorerValue);
 
- Menu:=nil;
- SetNamedValue(aScript,'$dbname','"'+dbname+'"');
- ReloadListMenu;
+  Menu:=nil;
+  SetNamedValue(aScript, '$dbname', '"'+dbname+'"');
+  ReloadListMenu;
 
- if DBKernel.Readbool('Options','UseMainMenuInSearchForm',true) then
- begin
-  if UseScripts then
-  begin
- TW.I.Start('S -> ReadScriptFile');
-   MainMenuScript:=ReadScriptFile('scripts\SearchMainMenu.dbini');
-   Menu:=nil;
- TW.I.Start('S -> LoadMenuFromScript');
-   LoadMenuFromScript(ScriptMainMenu.Items,DBkernel.ImageList,MainMenuScript,aScript,ScriptExecuted,FExtImagesInImageList,true);
-   Menu:=ScriptMainMenu;
-  end else Menu:=MainMenu1;
- end;
+  TW.I.Start('S -> ReadScriptFile');
+  MainMenuScript := ReadScriptFile('scripts\SearchMainMenu.dbini');
+  TW.I.Start('S -> LoadMenuFromScript');
+  LoadMenuFromScript(ScriptMainMenu.Items,DBkernel.ImageList,MainMenuScript,aScript,ScriptExecuted,FExtImagesInImageList,true);
+  Menu:=ScriptMainMenu;
 
  ScriptListPopupMenu.Images:=DBKernel.ImageList;
  ScriptMainMenu.Images:=DBKernel.ImageList;
@@ -814,7 +767,6 @@ begin
  ThreadQuery:=GetQuery(dbname);
  TW.I.Start('S -> Register');
  DropFileTarget2.Register(SearchEdit);
- GetPhotosFromDrive2.Visible:=not FolderView;
  DestroyCounter:=0;
  FShowen:=false;
  FUpdatingDB:=false;
@@ -823,13 +775,10 @@ begin
 
  TW.I.Start('S -> DateTimePickers');
  try
- DateTimePicker2.DateTime:=Now;
- DateTimePicker3.DateTime:=Now;
-
 
  for i:=0 to n-1 do
  begin
-  Menus[i]:=TmenuItem.Create(InsertSpesialQueryPopupMenu);
+  Menus[i]:=TMenuItem.Create(InsertSpesialQueryPopupMenu);
   Menus[i].Caption:=Captions[i];
   Menus[i].OnClick:=InsertSpesialQueryPopupMenuItemClick;
   Menus[i].Tag:=i;
@@ -938,7 +887,7 @@ begin
   end;
  end else
  begin
-  if not (ShiftKeyDown and CtrlKeyDown) and UseScripts then
+  if not (ShiftKeyDown and CtrlKeyDown) then
   begin
   WorkedFiles_ := TStringList.Create;
   WorkedFiles_.Clear;
@@ -1597,13 +1546,8 @@ begin
  FBitmapImageList:=nil;
  FormManager.UnRegisterMainForm(Self);
  Creating:=true;
- if FormDateRangeSelectDB<>nil then
- begin
-  FormDateRangeSelectDB.Selecting:=true;//NO APPLY BUTTON EBABLED
-  FormDateRangeSelectDB.Release;
-  if UseFreeAfterRelease then
-  FormDateRangeSelectDB.Free;
- end;
+
+ FSearchInfo.Free;
 end;
 
 procedure TSearchForm.Reloadtheme(Sender: TObject);
@@ -1637,22 +1581,6 @@ begin
  ListView.SetFocus;
 end;
 
-{function TSearchForm.GetSelectedNO: integer;
-var
-  i : integer;
-begin
- result:=0;
- if ListView.Items.Count=0 then exit;
- for i:=0 to ListView.Items.Count-1 do
- begin
-  if ListView.Items[i].Selected then
-  begin
-   result:=i;
-   break;
-  end;
- end;
-end;  }
-
 function TSearchForm.GetAllFiles: Tstrings;
 var
   i : integer;
@@ -1660,48 +1588,6 @@ begin
  Result:=TStringList.Create;
  for i:=1 to ListView.Items.Count do
  Result.Add(Data[ItemIndex(ListView.Items[i-1])].FileName);
-end;
-
-procedure TSearchForm.Splitter1Moved(Sender: TObject);
-const
-  otstup =15;
-begin
- if Panel1.width<150 then Panel1.width:=150;
- if Panel1.width>240 then Panel1.width:=240;
- SearchEdit.Width:=Panel1.width-otstup;
- PbProgress.Width:=Panel1.width-otstup;
- Memo1.Width:=Panel1.width-otstup;
- Memo2.Width:=Panel1.width-otstup;
- ComboBoxSearchGroups.Width:=Panel1.width-otstup;
- DateTimePicker1.Width:=Panel1.width-otstup;
- IsDatePanel.Width:=Panel1.width-otstup;
- PanelValueIsDateSets.Width:=Panel1.width-otstup;
-
- DateTimePicker4.Width:=Panel1.width-otstup;
- IsTimePanel.Width:=Panel1.width-otstup;
- PanelValueIsTimeSets.Width:=Panel1.width-otstup;
-
- Button2.Left:=Panel1.width-Button2.Width-otstup div 2;
- Button1.Width:=Panel1.width-78;
- ComboBoxSelGroups.Width:=Panel1.width-otstup;
- Save.Left:=memo1.Width+memo1.Left-Save.Width;
- DateTimePicker2.Width:=Panel1.width-otstup;
- DateTimePicker3.Width:=Panel1.width-otstup;
- CheckBox1.Width:=Panel1.width-otstup;
- CheckBox2.Width:=Panel1.width-otstup;
- CheckBox3.Width:=Panel1.width-otstup;
- CheckBox4.Width:=Panel1.width-otstup;
- CheckBox5.Width:=Panel1.width-otstup;
- ComboBox2.Width:=(Panel1.width-otstup*3) div 2+otstup div 2;
- Edit2.Width:=(Panel1.width-otstup*3) div 2+otstup div 2;
- ComboBox3.Width:=(Panel1.width-otstup*3) div 2+otstup div 2;
- ComboBox3.Left:=ComboBox2.Left+ComboBox2.Width+otstup;
- Edit3.Width:=(Panel1.width-otstup*3) div 2+otstup div 2;
- Edit3.Left:=ComboBox2.Left+ComboBox2.Width+otstup;
-
- ComboBox4.Width:=ComboBox2.width;
- ComboBox5.Left:=ComboBox3.Left;
- ComboBox5.Width:=ComboBox3.width;
 end;
 
 function TSearchForm.GetItemNO(item : TEasyItem) : integer;
@@ -1775,7 +1661,6 @@ procedure TSearchForm.Memo1Change(Sender: TObject);
  end;
 
 begin
- If LockInfo Then Exit;
  if SelCount>1 then
  begin
   if ReadCHTime or ReadCHDate or not rating1.Islayered or (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) or VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
@@ -1821,14 +1706,6 @@ begin
 
  if EventID_Param_DB_Changed in params then
  begin
-  if FormDateRangeSelectDB<>nil then
-  begin
-   FormDateRangeSelectDB.Selecting:=true;//NO APPLY BUTTON EBABLED
-   FormDateRangeSelectDB.Release;
-   if UseFreeAfterRelease then
-   FormDateRangeSelectDB.Free;
-   FormDateRangeSelectDB:=nil;
-  end;
   Caption:=ProductName+' -  ['+DBkernel.GetDataBaseName+']';
   ReRecreateGroupsList;
   FPictureSize:=Dolphin_DB.ThImageSize;
@@ -2314,24 +2191,13 @@ begin
  SortLink.SetDefault;
 
  ListView.DoubleBuffered:=true;
-                          
- CheckBox6.Caption:=TEXT_MES_SHOW_LAST;
- ComboBox5.Clear;
- ComboBox5.Items.Add(TEXT_MES_SHOW_LAST_DAYS);
- ComboBox5.Items.Add(TEXT_MES_SHOW_LAST_WEEKS);
- ComboBox5.Items.Add(TEXT_MES_SHOW_LAST_MONTH);
- ComboBox5.Items.Add(TEXT_MES_SHOW_LAST_YEARS);
-
-
 
  TW.I.Start('S -> Immges');
  PopupMenu2.Images:=DBKernel.ImageList;
  PopupMenu8.Images:=DBKernel.ImageList;
- MainMenu1.Images:=DBKernel.ImageList;
  SlideShow1.ImageIndex:=DB_IC_SLIDE_SHOW;
  SelectAll1.ImageIndex:=DB_IC_SELECTALL;
  ManageDB1.ImageIndex:=DB_IC_ADMINTOOLS;
- ManageDB2.ImageIndex:=DB_IC_ADMINTOOLS;
  Options1.ImageIndex:=DB_IC_OPTIONS;
  CopySearchResults1.ImageIndex:=DB_IC_COPY;
  LoadResults1.ImageIndex:=DB_IC_LOADFROMFILE;
@@ -2354,34 +2220,12 @@ begin
  ImageEditor1.ImageIndex:=DB_IC_IMEDITOR;
  GetPhotosFromDrive1.ImageIndex:=DB_IC_GET_USB;
 
- Help4.ImageIndex:=DB_IC_HELP;
- Activation2.ImageIndex:=DB_IC_NOTES;
- About2.ImageIndex:=DB_IC_HELP;
- HomePage2.ImageIndex:=DB_IC_NETWORK;
- ContactWithAuthor2.ImageIndex:=DB_IC_E_MAIL;
- GetUpdates2.ImageIndex:=DB_IC_UPDATING;
- Exit1.ImageIndex:=DB_IC_EXIT;
- LoadResults2.ImageIndex:=DB_IC_LOADFROMFILE;
- SaveResults2.ImageIndex:=DB_IC_SAVETOFILE;
- ShowExplorerPage1.ImageIndex:=DB_IC_EXPLORER_PANEL;
 
- NewPanel2.ImageIndex:=DB_IC_PANEL;
- NewSearch2.ImageIndex:=DB_IC_ADDTODB;
- GroupsManager3.ImageIndex:=DB_IC_GROUPS;
- Explorer3.ImageIndex:=DB_IC_EXPLORER;
- Options2.ImageIndex:=DB_IC_OPTIONS;
-
- RemovableDrives1.ImageIndex:=DB_IC_USB;
- CDROMDrives1.ImageIndex:=DB_IC_CD_ROM;
- SpecialLocation1.ImageIndex:=DB_IC_DIRECTORY;
  SortbyCompare1.ImageIndex:=DB_IC_DUBLICAT;
  RemovableDrives2.ImageIndex:=DB_IC_USB;
  CDROMDrives2.ImageIndex:=DB_IC_CD_ROM;
  SpecialLocation2.ImageIndex:=DB_IC_DIRECTORY;
 
- GetListofKeyWords1.ImageIndex:=DB_IC_SEARCH;
- DBTreeView1.ImageIndex:=DB_IC_TREE;
- ImageEditor2.ImageIndex:=DB_IC_IMEDITOR;
 
  View2.ImageIndex:=DB_IC_SLIDE_SHOW;
 
@@ -2397,7 +2241,6 @@ begin
  SlideShow1.ImageIndex:=DB_IC_SLIDE_SHOW;
  SelectAll1.ImageIndex:=DB_IC_SELECTALL;
  ManageDB1.ImageIndex:=DB_IC_ADMINTOOLS;
- ManageDB2.ImageIndex:=DB_IC_ADMINTOOLS;
  Options1.ImageIndex:=DB_IC_OPTIONS;
 
  ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EDIT_DATE+1]);
@@ -2405,9 +2248,7 @@ begin
  TW.I.Start('S -> BackGroundSearchPanelResize');
  BackGroundSearchPanelResize(Nil);
  TW.I.Start('S -> Splitter1Moved');
- Splitter1Moved(nil);
  TW.I.Start('S -> DoUnLockInfo');
- DoUnLockInfo;
 
  Creating:=false;
 end;
@@ -2743,14 +2584,10 @@ begin
  ExplorerPanel.Visible:=false;
  Properties1.Checked:=true;
  Explorer2.Checked:=false;
- ShowExplorerPage1.Checked:=false;
- ShowExplorerPage1.ImageIndex:=DB_IC_EXPLORER_PANEL;
 end;
 
 procedure TSearchForm.Explorer2Click(Sender: TObject);
 begin
- ShowExplorerPage1.Checked:=true;
- ShowExplorerPage1.ImageIndex:=-1;
  PropertyPanel.Visible:=false;
  ExplorerPanel.Visible:=true;
  if not TreeView.UseShellImages then
@@ -2796,7 +2633,7 @@ begin
     Msg.Message := 0;
     DoSearchNow(nil);
   end;
-  
+
   if (Msg.message = WM_KEYUP) and SearchEdit.Focused then
     Msg.Message := 0;
 
@@ -2851,21 +2688,6 @@ begin
   if (Msg.hwnd = FFirstTip_WND) and (Msg.message = WM_TIMER) and (Msg.WParam = 4) then
     SendMessage(FFirstTip_WND, WM_CLOSE, 1, 1);
 
-end;
-
-procedure TSearchForm.DoLockInfo;
-begin
- FLockInfo:=True;
-end;
-
-procedure TSearchForm.DoUnLockInfo;
-begin
- FLockInfo:=False;
-end;
-
-function TSearchForm.LockInfo: Boolean;
-begin
- Result:=FLockInfo;
 end;
 
 procedure TSearchForm.SetPath(Value: String);
@@ -2939,12 +2761,30 @@ begin
 end;
 
 procedure TSearchForm.BeginUpdate;
+var
+  WaitImage : TPNGGraphic;
+  WaitImageBMP : TBitmap;
 begin
- fListUpdating:=true;
- ListView.BeginUpdate;
- ListView.Groups.BeginUpdate(false);
- BackGroundSearchPanel.Visible:=True;
- ListView.Visible:=false;
+  FListUpdating := True;
+  ListView.BeginUpdate;
+  ListView.Groups.BeginUpdate(False);
+  if ImageSearchWait.Picture.Graphic = nil then
+  begin
+    WaitImage := GetSearchWait;
+    try
+      WaitImageBMP := TBitmap.Create;
+      try
+        LoadPNGImage32bit(WaitImage, WaitImageBMP, Theme_ListColor);
+        ImageSearchWait.Picture.Graphic := WaitImageBMP;
+      finally
+        WaitImageBMP.Free;
+      end;
+    finally
+      WaitImage.Free;
+    end;
+  end;
+  BackGroundSearchPanel.Visible := True;
+  ListView.Visible := False;
 end;
 
 procedure TSearchForm.EndUpdate;
@@ -2960,8 +2800,8 @@ procedure TSearchForm.BackGroundSearchPanelResize(Sender: TObject);
 begin
  LabelBackGroundSearching.Top:=BackGroundSearchPanel.Height div 2+128 div 2;
  LabelBackGroundSearching.Left:=BackGroundSearchPanel.Width div 2-LabelBackGroundSearching.Width div 2;
- Image2.Top:=BackGroundSearchPanel.Height div 2-128 div 2;
- Image2.Left:=BackGroundSearchPanel.Width div 2-128 div 2;
+ ImageSearchWait.Top:=BackGroundSearchPanel.Height div 2-128 div 2;
+ ImageSearchWait.Left:=BackGroundSearchPanel.Width div 2-128 div 2;
 end;
 
 procedure TSearchForm.BackGroundSearchPanelContextPopup(Sender: TObject;
@@ -3157,7 +2997,6 @@ begin
  ShowUpdater1.Caption:=TEXT_MES_SHOW_UPDATER;
  Help1.Caption:=TEXT_MES_HELP;
  ManageDB1.Caption:=TEXT_MES_MANAGE_DB;
- ManageDB2.Caption:=TEXT_MES_MANAGE_DB;
  Options1.Caption:=TEXT_MES_OPTIONS;
  SaveasTable1.Caption:=TEXT_MES_SAVE_AS_TABLE;
  CopySearchResults1.Caption:=TEXT_MES_LOAD_RES;
@@ -3180,11 +3019,6 @@ begin
  Copy2.Caption:=TEXT_MES_COPY;
  Paste1.Caption:=TEXT_MES_PASTE;
  Undo1.Caption:=TEXT_MES_UNDO;
- CheckBox1.Caption:=TEXT_MES_WS_DATE_BETWEEN;
- CheckBox2.Caption:=TEXT_MES_WS_SHOW_PRIVATE;
- CheckBox3.Caption:=TEXT_MES_WS_SHOW_COMMON;
- CheckBox4.Caption:=TEXT_MES_WS_RATING_BETWEEN;
- CheckBox5.Caption:=TEXT_MES_WS_ID_BETWEEN;
  OpeninExplorer1.Caption:=TEXT_MES_OPEN_IN_EXPLORER;
  AddFolder1.Caption:=TEXT_MES_ADD_FOLDER;
  Help2.Caption:=TEXT_MES_HELP;
@@ -3207,7 +3041,6 @@ begin
  Increment1.Caption:=TEXT_MES_SORT_INCREMENT;
  Decremect1.Caption:=TEXT_MES_SORT_DECREMENT;
  GetPhotosFromDrive1.Caption:=TEXT_MES_GET_PHOTOS;
- CheckBox7.Caption:=TEXT_MES_USE_WIDE_SEARCH;
 
  Datenotexists1.Caption:=TEXT_MES_NO_DATE_1;
  DateExists1.Caption:=TEXT_MES_DATE_EX;
@@ -3219,47 +3052,15 @@ begin
  IsTimePanel.Caption:=TEXT_MES_TIME_NOT_EXISTS;
  PanelValueIsTimeSets.Caption:=TEXT_MES_VAR_VALUES;
 
- Help3.Caption:=TEXT_MES_HELP;
- Help4.Caption:=TEXT_MES_HELP;
- Activation2.Caption:=TEXT_MES_ACTIVATION;
- About2.Caption:=TEXT_MES_ABOUT;
- HomePage2.Caption:=TEXT_MES_HOME_PAGE;
- ContactWithAuthor2.Caption:=TEXT_MES_CONTACT_WITH_AUTHOR;
- GetUpdates2.Caption:=TEXT_MES_GET_UPDATING;
-
- Exit1.Caption:=TEXT_MES_EXIT;
- LoadResults2.Caption:=TEXT_MES_LOAD_RES;
- SaveResults2.Caption:=TEXT_MES_SAVE_RES;
- ShowExplorerPage1.Caption:=TEXT_MES_SHOW_EXPLORER_PANEL;
-
- NewPanel2.Caption:=TEXT_MES_NEW_PANEL;
- NewSearch2.Caption:=TEXT_MES_NEW_SEARCH;
- GroupsManager3.Caption:=TEXT_MES_GROUPS_MANAGER;
- Explorer3.Caption:=TEXT_MES_EXPLORER;
- Options2.Caption:=TEXT_MES_OPTIONS;
-
- File1.Caption:=TEXT_MES_FILE;
- View1.Caption:=TEXT_MES_VIEW;
- Tools1.Caption:=TEXT_MES_TOOLS;
-
- RemovableDrives1.Caption:=TEXT_MES_REMOVABLE_DRIVES;
- CDROMDrives1.Caption:=TEXT_MES_CD_ROM_DRIVES;
- SpecialLocation1.Caption:=TEXT_MES_SPECIAL_LOCATION;
-
  RemovableDrives2.Caption:=TEXT_MES_REMOVABLE_DRIVES;
  CDROMDrives2.Caption:=TEXT_MES_CD_ROM_DRIVES;
  SpecialLocation2.Caption:=TEXT_MES_SPECIAL_LOCATION;
 
 
- GetListofKeyWords1.Caption:=TEXT_MES_GET_LIST_OF_KEYWORDS;
- GetPhotosFromDrive2.Caption:=TEXT_MES_GET_PHOTOS;
-
  Timenotsets1.Caption:=TEXT_MES_TIME_NOT_SETS;
  TimeExists1.Caption:=TEXT_MES_TIME_EXISTS;
  TimenotExists1.Caption:=TEXT_MES_TIME_NOT_EXISTS;
 
- DBTreeView1.Caption:=TEXT_MES_MAKE_DB_TREE;
- ImageEditor2.Caption:=TEXT_MES_IMAGE_EDITOR_W;
  View2.Caption:=TEXT_MES_SLIDE_SHOW;
  ShowDateOptionsLink.Text:=TEXT_MES_SHOW_DATE_OPTIONS;
 
@@ -3328,36 +3129,6 @@ end;
 procedure TSearchForm.PopupMenu4Popup(Sender: TObject);
 begin
  EditGroups1.Visible:= not FUpdatingDB;
-end;
-
-procedure TSearchForm.Button2Click(Sender: TObject);
-begin
- PanelWideSearch.Visible:=not PanelWideSearch.Visible;
- if PanelWideSearch.Visible then Button2.Caption:='<--' else Button2.Caption:='-->';
- Rating2.IsLayered:=PanelWideSearch.Visible;
- TwButton1.IsLayered:=PanelWideSearch.Visible;
- Rating2.Enabled:= not PanelWideSearch.Visible;
- TwButton1.Enabled:= not PanelWideSearch.Visible;
-end;
-
-procedure TSearchForm.CheckBox1Click(Sender: TObject);
-begin
- DateTimePicker2.Enabled:=CheckBox1.Checked;
- DateTimePicker3.Enabled:=CheckBox1.Checked;
- if CheckBox1.Checked then
- CheckBox6.Checked:=false;
-end;
-
-procedure TSearchForm.CheckBox4Click(Sender: TObject);
-begin
- ComboBox2.Enabled:=CheckBox4.Checked;
- ComboBox3.Enabled:=CheckBox4.Checked;
-end;
-
-procedure TSearchForm.CheckBox5Click(Sender: TObject);
-begin
- Edit2.Enabled:=CheckBox5.Checked;
- Edit3.Enabled:=CheckBox5.Checked;
 end;
 
 procedure TSearchForm.Edit2KeyPress(Sender: TObject; var Key: Char);
@@ -3801,14 +3572,6 @@ begin
  ComboBoxSelGroups.ShowEditIndex:=GroupsImageList.Count-1;
 end;
 
-procedure TSearchForm.CheckBox6Click(Sender: TObject);
-begin
- ComboBox4.Enabled:=CheckBox6.Checked;
- ComboBox5.Enabled:=CheckBox6.Checked;
- if CheckBox6.Checked then
- CheckBox1.Checked:=false;
-end;
-
 procedure TSearchForm.InsertSpesialQueryPopupMenuItemClick(
   Sender: TObject);
 begin
@@ -3916,7 +3679,7 @@ end;
 
 procedure TSearchForm.ShowExplorerPage1Click(Sender: TObject);
 begin
- if ShowExplorerPage1.Checked then Properties1Click(Sender) else Explorer2Click(Sender);
+ if ExplorerPanel.Visible then Properties1Click(Sender) else Explorer2Click(Sender);
 end;
 
 procedure TSearchForm.DoShowSelectInfo;
@@ -3989,7 +3752,6 @@ begin
    SetLength(ArGroups,Length(ArGroups)+1);
    ArGroups[Length(ArGroups)-1]:=Data[i].Groups;
   end;
-  DoLockInfo;
   lockwindowupdate(Handle);
   SelectedInfo.CommonRating:=MaxStatInt(ArInt);
   rating1.Rating:=SelectedInfo.CommonRating;
@@ -4041,7 +3803,6 @@ begin
   SelectedInfo.Groups:=CurrentItemInfo.ItemGroups;
   FPropertyGroups:=CurrentItemInfo.ItemGroups;
   ReloadGroups;
-  DoUnLockInfo;
   Memo1Change(nil);
   lockwindowupdate(0);
   current_id_show:=-1;
@@ -4239,11 +4000,6 @@ begin
  SetErrorMode(oldMode);
 end;
 
-procedure TSearchForm.File1Click(Sender: TObject);
-begin
- LoadResults2.Visible:=not FUpdatingDB;
-end;
-
 procedure TSearchForm.IsTimePanelDblClick(Sender: TObject);
 begin
  If FUpdatingDB then Exit;
@@ -4297,7 +4053,7 @@ end;
 
 procedure TSearchForm.ReloadListMenu;
 begin
- ListMenuScript:=ReadScriptFile('scripts\SearchListMenu.dbini');
+  ListMenuScript := ReadScriptFile('scripts\SearchListMenu.dbini');
 end;
 
 procedure TSearchForm.ScriptExecuted(Sender: TObject);
@@ -4482,71 +4238,19 @@ begin
 end;
 
 procedure TSearchForm.ShowDateOptionsLinkClick(Sender: TObject);
-var
-  x : TDateTime;
 begin
- if FormDateRangeSelectDB=nil then
- Application.CreateForm(TFormDateRangeSelectDB, FormDateRangeSelectDB);
-
- x:=StrToIntDef(ComboBox4.Text,3);
- Case ComboBox5.ItemIndex of
-  0 : x:=x;
-  1 : x:=x*7;
-  2 : x:=x*30;
-  3 : x:=x*365;
+  if pnDateRange.Visible then
+    pnDateRange.Hide
+  else begin
+    pnDateRange.Show;
+    LoadDateRange;
   end;
- x:=Round(Now)-x;
-
- ShowingDateRangeWindow:=true;
- FormDateRangeSelectDB.Execute(Min(DateTimePicker2.Date,DateTimePicker3.Date),Max(DateTimePicker2.Date,DateTimePicker3.Date),x,CheckBox6.Checked,SetDateSettings);
- ShowingDateRangeWindow:=false;
-
-end;
-
-procedure TSearchForm.SetDateSettings(Sender : TObject; DateFrom, DateTo,
-  LastDate : TDateTime; ByLastDate: boolean);
-begin
- CheckBox6.Checked:=ByLastDate;
- CheckBox1.Checked:=not ByLastDate;
- if ByLastDate then
- begin
-  ComboBox5.ItemIndex:=0;
-  ComboBox4.Text:=IntToStr(Max(1,Round(now-LastDate)));
- end else
- begin
-  DateTimePicker2.Date:=DateFrom;
-  DateTimePicker3.Date:=DateTo;
- end;
-end;
-
-
-procedure TSearchForm.ApplicationEvents1Deactivate(Sender: TObject);
-begin
- if ShowingDateRangeWindow then exit;
- if FormDateRangeSelectDB<>nil then
- if FormDateRangeSelectDB.IsVisible then
- begin
-  ShowWindow(FormDateRangeSelectDB.Handle,SW_HIDE);
-  FormDateRangeSelectDB.IsVisible:=false;
-  FormDateRangeSelectDBHideed:=true;
- end;
-end;
-
-procedure TSearchForm.ApplicationEvents1Activate(Sender: TObject);
-begin
- if FormDateRangeSelectDB<>nil then
- if FormDateRangeSelectDBHideed then
- begin
-  ShowWindow(FormDateRangeSelectDB.Handle,SW_SHOWNOACTIVATE);
-  FormDateRangeSelectDB.IsVisible:=true;
- end;
- FormDateRangeSelectDBHideed:=false;
 end;
 
 procedure TSearchForm.LoadSizes();
 begin
- ListView.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView.CellSizes.Thumbnail.Height:=FPictureSize+36;
+  ListView.CellSizes.Thumbnail.Width := FPictureSize + 10;
+  ListView.CellSizes.Thumbnail.Height := FPictureSize + 36;
 end;
 
 function TSearchForm.FileNameExistsInList(FileName : string) : boolean;
@@ -4859,7 +4563,7 @@ begin
   i:=ComboBoxSearchGroups.GetItemIndex;
   if SearchTextList[0]=SearchEdit.Text then
   if SearchGroupsList[0] = ComboBoxSearchGroups.ItemsEx[i].Caption then
-  if Integer(SearchRatingList[0]^)=Rating2.Rating then
+  if Integer(SearchRatingList[0]^)=RatingQuery.Rating then
     exit;
  end;
  text:=SearchEdit.Text;
@@ -4869,7 +4573,7 @@ begin
  begin
   if SearchTextList[i]=SearchEdit.Text then
   if SearchGroupsList[i] = ComboBoxSearchGroups.ItemsEx[ComboBoxSearchGroups.GetItemIndex].Caption then
-  if Integer(SearchRatingList[i]^)=Rating2.Rating then
+  if Integer(SearchRatingList[i]^)=RatingQuery.Rating then
   begin
    SearchTextList.Delete(i);
    SearchGroupsList.Delete(i);
@@ -4917,7 +4621,7 @@ begin
  end;
  SearchGroupsList.Insert(0,ComboBoxSearchGroups.ItemsEx[ComboBoxSearchGroups.GetItemIndex].Caption);
  SearchTextList.Insert(0,SearchEdit.Text);
- SearchRatingList.Insert(0,IntPointer(Rating2.Rating));
+ SearchRatingList.Insert(0,IntPointer(RatingQuery.Rating));
 
  SaveQueryList;
 end;
@@ -4949,7 +4653,7 @@ begin
   end;
  end;
  if SearchEdit.ShowDropDownMenu then
- Rating2.Rating:=Integer(SearchRatingList[SearchEdit.GetItemIndex]^);
+ RatingQuery.Rating:=Integer(SearchRatingList[SearchEdit.GetItemIndex]^);
 end;
 
 procedure TSearchForm.SearchEditEnterDown(Sender: TObject);
@@ -5125,7 +4829,7 @@ begin
  if Integer(SearchRatingList[index]^)>0 then
  begin
   FillRect(HDC,Rect(SearchEdit.Width-20,Top,SearchEdit.Width,Top+16),SearchEdit.Canvas.Brush.Handle);
-  Rating2.DoDrawImageByrating(HDC,SearchEdit.Width-18,Top,Integer(SearchRatingList[index]^));
+  RatingQuery.DoDrawImageByrating(HDC,SearchEdit.Width-18,Top,Integer(SearchRatingList[index]^));
  end;
 end;
 
@@ -5361,7 +5065,7 @@ begin
  FLastMonth:=0;
  FLastYear:=0;
 
- for i:=0 to L-1 do
+ for i:=0 to L - 1 do
  begin
   AddItemInListViewByGroups(ListView,LI[SIs[i].ID].DBData.ID,SortLink.Tag,Decremect1.Checked,
   ShowGroups,LI[SIs[i].ID].DBData.FileSize,LI[SIs[i].ID].DBData.FileName,LI[SIs[i].ID].DBData.Rating,
@@ -5412,7 +5116,7 @@ var
   s : string;
 begin
  s:=DBKernel.ReadString('Search_DB_'+DBKernel.GetDataBaseName,'OldValue') ;
- Rating2.Rating:=DBKernel.ReadInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMinRating',0);
+ RatingQuery.Rating:=DBKernel.ReadInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMinRating',0);
  if DBKernel.ReadBool('Search_DB_'+DBKernel.GetDataBaseName,'OldMethodDecrement',false) then
  Decremect1Click(self) else Increment1Click(self);
  Case DBKernel.ReadInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMethod',0) of
@@ -5428,10 +5132,6 @@ begin
  if s<>'' then SearchEdit.text:=Copy(s,1,1000);
  SearchEdit.text:=s;
 
- CheckBox6.Checked:=DBKernel.ReadBool('Search_DB_'+DBKernel.GetDataBaseName,'ShowLastTime',false);
- ComboBox4.Text:=IntToStr(DBKernel.ReadInteger('Search_DB_'+DBKernel.GetDataBaseName,'ShowLastTimeValue',3));
- ComboBox5.ItemIndex:=DBKernel.ReadInteger('Search_DB_'+DBKernel.GetDataBaseName,'ShowLastTimeCode',2);
- CheckBox7.Checked:=DBKernel.ReadBool('Search_DB_'+DBKernel.GetDataBaseName,'UseWideSearch',true);
 end;
 
 procedure TSearchForm.LoadQueryList;
@@ -5440,7 +5140,7 @@ var
   Group, Query : string;
 begin
  CanSaveQueryList:=false;
- lastRating:=Rating2.Rating;
+ lastRating:=RatingQuery.Rating;
  for i:=9 downto 0 do
  begin                               
   if DBKernel.ReadBool('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Valid',false) then
@@ -5449,7 +5149,7 @@ begin
    Query:= DBKernel.ReadString('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Query');
    Rating:=DBKernel.ReadInteger('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Rating',0);
    SearchEdit.Text:=Query;
-   Rating2.Rating:=Rating;
+   RatingQuery.Rating:=Rating;
    try
     AddNewSearchListEntry();
    except
@@ -5457,30 +5157,34 @@ begin
    end;
   end;
  end;
- Rating2.Rating:=LastRating;
+ RatingQuery.Rating:=LastRating;
  SearchEdit.Text:='';
  CanSaveQueryList:=true;
 end;
 
 procedure TSearchForm.SaveQueryList;
 var
-  i, Rating : integer;
-  Group : string;
+  I, Rating : integer;
+  BasePath, Group : string;
 begin
- if not CanSaveQueryList then exit;        
- for i:=0 to 9 do
- begin
-  DBKernel.WriteBool('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Valid',false);
- end;
- for i:=0 to SearchEdit.ItemsEx.Count-1 do
- begin
-  Group := ComboBoxSearchGroups.ItemsEx[ComboBoxSearchGroups.GetItemIndex].Caption;
-  Rating:=Integer(SearchRatingList[i]^);
-  DBKernel.WriteBool('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Valid',true);
-  DBKernel.WriteString('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Query',SearchTextList[i]);
-  DBKernel.WriteString('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Group',Group);
-  DBKernel.WriteInteger('Search\DB_'+DBKernel.GetDataBaseName+'\Query'+IntToStr(i),'Rating',Rating);
- end;
+  if not CanSaveQueryList then
+    Exit;
+
+  BasePath := 'Search\DB_'+DBKernel.GetDataBaseName+'\Query';
+  for I := 0 to 9 do
+  begin
+    DBKernel.WriteBool(BasePath + IntToStr(I), 'Valid', False);
+  end;
+  
+  for I := 0 to SearchEdit.ItemsEx.Count-1 do
+  begin
+    Group := ComboBoxSearchGroups.ItemsEx[ComboBoxSearchGroups.GetItemIndex].Caption;
+    Rating := Integer(SearchRatingList[I]^);
+    DBKernel.WriteBool(BasePath + IntToStr(I), 'Valid', True);
+    DBKernel.WriteString(BasePath + IntToStr(I), 'Query', SearchTextList[I]);
+    DBKernel.WriteString(BasePath + IntToStr(I), 'Group', Group);
+    DBKernel.WriteInteger(BasePath + IntToStr(I), 'Rating', Rating);
+  end;
 end;
 
 function TSearchForm.TreeView: TShellTreeView;
@@ -5507,7 +5211,6 @@ var
   BackgroundImage : TPNGGraphic;
   SearchBackgroundBMP : TBitmap;
 begin
-  ListView.BackGround.Image := nil;
   ListView.BackGround.Image := TBitmap.Create;
   ListView.BackGround.Image.PixelFormat := pf24bit;
   ListView.BackGround.Image.Width := 150;
@@ -5532,6 +5235,233 @@ end;
 function TManagerSearchs.GetValueByIndex(Index: Integer): TSearchForm;
 begin
   Result := FSearches[Index];
+end;
+
+{ TSearchInfo }
+
+constructor TSearchInfo.Create;
+begin
+  FList := TList.Create;
+end;
+
+destructor TSearchInfo.Destroy;
+var
+  I : Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TSearchQuery(FList[I]).Free;
+
+  FList.Free;
+  inherited;
+end;
+
+function TSearchInfo.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function TSearchInfo.GetValueByIndex(Index: Integer): TSearchQuery;
+begin
+  Result := FList[Index];
+end;
+
+procedure TSearchForm.LoadDateRange;
+var
+  DS : TDataSet;
+  DateRangeBackgroundImage : TPNGGraphic;
+  DateRangeBackgroundImageBMP : TBitmap;
+begin
+  if not elvDateRange.BackGround.Image.Empty then
+    Exit;
+
+  elvDateRange.BackGround.Enabled := True;
+  elvDateRange.BackGround.Tile := False;
+  elvDateRange.BackGround.AlphaBlend := True;
+  elvDateRange.BackGround.OffsetTrack := True;
+  elvDateRange.BackGround.BlendAlpha := 220;
+  elvDateRange.BackGround.Image := TBitmap.Create;
+  elvDateRange.BackGround.Image.PixelFormat := pf24bit;
+  elvDateRange.BackGround.Image.Width := 100;
+  elvDateRange.BackGround.Image.Height := 100;
+  elvDateRange.BackGround.Image.Canvas.Brush.Color := Theme_ListColor;
+  elvDateRange.BackGround.Image.Canvas.Pen.Color := Theme_ListColor;
+  elvDateRange.BackGround.Image.Canvas.Rectangle(0, 0, 100, 100);
+
+  DateRangeBackgroundImage := GetDateRangeImage;
+  try
+    DateRangeBackgroundImageBMP := TBitmap.Create;
+    try
+      LoadPNGImage32bit(DateRangeBackgroundImage, DateRangeBackgroundImageBMP, Theme_ListColor);
+      elvDateRange.BackGround.Image.Canvas.Draw(0, 0, DateRangeBackgroundImageBMP);
+    finally
+      DateRangeBackgroundImageBMP.Free;
+     end;
+  finally
+    DateRangeBackgroundImage.Free;
+  end;
+  elvDateRange.Refresh;
+
+  DS := GetQuery(True);
+
+  TADOQuery(DS).CursorType := ctOpenForwardOnly;
+  TADOQuery(DS).CursorLocation := clUseClient;
+  TADOQuery(DS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
+  TADOQuery(DS).LockType := ltReadOnly;
+  SetSQL(DS, 'Select distinct DateToAdd from ' + GetDefDBname + ' where IsDate = True order by DateToAdd DESC');
+  TADOQuery(DS).OnFetchProgress := FetchProgress;
+
+  TOpenQueryThread.Create(False, DS, DBRangeOpened);
+end;
+
+procedure TSearchForm.FetchProgress(DataSet: TCustomADODataSet; Progress,
+  MaxProgress: Integer; var EventStatus: TEventStatus);
+begin
+  Application.ProcessMessages;
+end;
+
+procedure TSearchForm.elvDateRangeItemClick(Sender: TCustomEasyListview;
+  Item: TEasyItem; KeyStates: TCommonKeyStates;
+  HitInfo: TEasyItemHitTestInfoSet);
+var
+  i : integer;
+begin
+ if not Item.Selected or ((elvDateRange.Selection.Count>1) and CtrlKeyDown) then
+ begin
+  if elvDateRange.Selection.First<>nil then
+  begin
+   for i:=0 to elvDateRange.Items.Count-1 do
+   if elvDateRange.Items[i].Selected then
+   elvDateRange.Items[i].Selected:=false;
+  end
+ end;
+end;
+
+function TSearchForm.DateRangeItemAtPos(X,Y : integer): TEasyItem;
+var
+  r : TRect;
+  i : integer;
+begin
+ Result:=nil;
+ r :=  elvDateRange.Scrollbars.ViewableViewportRect;
+ for i:=0 to elvDateRange.Groups.Count-1 do
+ begin
+  Result:=elvDateRange.Groups[0].ItemByPoint(Point(r.left+x,r.top+y));
+  if Result<>nil then exit;
+ end;
+end;
+
+procedure TSearchForm.elvDateRangeMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Item : TEasyItem;
+  i : integer;
+begin
+  if CtrlKeyDown then
+  begin
+    Item:=DateRangeItemAtPos(X, Y);
+    if not Item.Selected or ((elvDateRange.Selection.Count > 1) and CtrlKeyDown) then
+    begin
+      if elvDateRange.Selection.First<>nil then
+      begin
+        for I := 0 to elvDateRange.Items.Count - 1 do
+          if elvDateRange.Items[I].Selected then
+            elvDateRange.Items[I].Selected := False;
+      end;
+    end;
+  end;
+end;
+
+procedure TSearchForm.DBRangeOpened(Sender : TObject; DS : TDataSet);
+var
+  I : integer;
+  Date : TDateTime;
+  CurrentYear : integer;
+  CurrentMonth : integer;
+begin
+  CurrentYear:=0;
+  CurrentMonth:=0;
+
+  elvDateRange.Header.Columns.Add.Width := 150;
+
+  DS.First;
+  while not DS.EOF do
+  begin
+    Application.ProcessMessages;
+    Date := DS.FieldByName('DAteToAdd').AsDateTime;
+    if YearOf(Date) <> CurrentYear then
+    begin
+      CurrentYear := YearOf(Date);
+      with elvDateRange.Groups.Add do
+      begin
+        Caption := FormatDateTime('yyyy',Date);
+        Visible := True;
+        Tag := CurrentYear;
+      end;
+    end;
+
+    Date := DS.FieldByName('DateToAdd').AsDateTime;
+    if MonthOf(Date) <> CurrentMonth then
+    begin
+      CurrentMonth := MonthOf(Date);
+      with elvDateRange.Items.Add do
+      begin
+        Caption := FormatDateTime('mmmm',Date);
+        Tag := CurrentMonth;
+      end;
+    end;
+    DS.Next;
+  end;
+  FreeDS(DS);
+end;
+
+procedure TSearchForm.elvDateRangeResize(Sender: TObject);
+begin
+  elvDateRange.BackGround.OffsetX := elvDateRange.Width - elvDateRange.BackGround.Image.Width;
+  elvDateRange.BackGround.OffsetY := elvDateRange.Height - elvDateRange.BackGround.Image.Height;
+end;
+
+function TSearchForm.GetDateFilter: TDateRange;
+var
+  I, J : Integer;
+begin
+  Result.DateFrom := 0;
+  Result.DateTo := 0;
+  if elvDateRange.Selection.Count > 1 then
+  begin
+    for I := 0 to elvDateRange.Groups.Count - 1 do
+      for J := 0 to elvDateRange.Groups[I].ItemCount - 1 do
+      begin
+        if elvDateRange.Groups[I].Items[j].Selected then
+        begin
+          if Result.DateFrom = 0 then
+            if elvDateRange.Groups[I].Item[J].Tag < 12 then
+              Result.DateFrom := EncodeDateTime(elvDateRange.Groups[I].Tag, elvDateRange.Groups[i].Item[j].Tag + 1,1,0,0,0,0)
+            else
+              Result.DateFrom := EncodeDateTime(elvDateRange.Groups[I].Tag + 1, 1, 1, 0, 0, 0, 0);
+
+        end;
+        if not elvDateRange.Groups[I].Items[J].Selected then
+          if Result.DateFrom <> 0 then
+            if Result.DateTo = 0 then
+            begin
+              if elvDateRange.Groups[I].Item[J].Tag < 12 then
+                Result.DateTo := EncodeDateTime(elvDateRange.Groups[I].Tag, elvDateRange.Groups[i].Item[j].Tag + 1, 1, 0, 0, 0, 0)
+              else
+                Result.DateTo := EncodeDateTime(elvDateRange.Groups[I].Tag + 1, 1, 1, 0, 0, 0, 0);
+            end;
+      end;
+  end else if elvDateRange.Selection.Count = 1 then
+  begin
+    Result.DateFrom := EncodeDateTime(elvDateRange.Selection.First.OwnerGroup.Tag, elvDateRange.Selection.First.Tag, 1, 0, 0, 0, 0);
+    if elvDateRange.Selection.First.Tag < 12 then
+      Result.DateTo := EncodeDateTime(elvDateRange.Selection.First.OwnerGroup.Tag, elvDateRange.Selection.First.Tag + 1, 1, 0, 0 ,0, 0)
+    else
+      Result.DateTo := EncodeDateTime(elvDateRange.Selection.First.OwnerGroup.Tag + 1, 1, 1, 0, 0, 0, 0);
+  end else if elvDateRange.Selection.Count = 0 then
+  begin
+    Result.DateFrom := EncodeDateTime(1990, 1, 1, 0, 0, 0, 0);
+    Result.DateTo := Trunc(Now);
+  end;
 end;
 
 initialization

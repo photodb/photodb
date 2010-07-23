@@ -7,7 +7,7 @@ interface
 uses
 {$IFNDEF DEBUG}
 Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
-UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc,
+UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon,
 {$ENDIF}
  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
  UnitINI;

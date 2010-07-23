@@ -335,7 +335,7 @@ initialization
         aFS.Free;
       end;
     ExecuteScript(nil, aScript, LoadScript, LoadInteger, nil);
-    RAWImages:=GetNamedValueString(aScript, '$RAWImages');
+    RAWImages := GetNamedValueString(aScript, '$RAWImages');
   finally
     aScript.Free;
   end;

@@ -553,8 +553,8 @@ object ImageEditor: TImageEditor
       object OpenFileLink: TWebLink
         Left = 8
         Top = 9
-        Width = 76
-        Height = 32
+        Width = 68
+        Height = 24
         Cursor = crHandPoint
         Text = 'Open'
         OnClick = OpenFile
@@ -679,19 +679,19 @@ object ImageEditor: TImageEditor
           FFFFC0007FFFC0001FFFC00007FFC00001FF800000FF800000FF800000FF8000
           01FF000001FF000003FF000003FF000007FF000007FF00000FFF00000FFF0000
           0FFF00000FFF00001FFF00001FFF00001FFF00001FFF}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object CropLink: TWebLink
         Left = 8
         Top = 49
-        Width = 72
-        Height = 32
+        Width = 64
+        Height = 24
         Cursor = crHandPoint
         Text = 'Crop'
         OnClick = CropLinkClick
@@ -816,20 +816,20 @@ object ImageEditor: TImageEditor
           07FFF00001FFF00001FFE00001FFE00001FFE00001FFE00007FFE00207FFE000
           07FFE00007FFE00007FFE00007FFC00007FFC00007FFC00007FFC00003FFC000
           01FFE07F81FFE07FC1FFFFFFE1FFFFFFFFFFFFFFFFFF}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object RotateLink: TWebLink
         Left = 8
         Top = 89
-        Width = 89
-        Height = 32
+        Width = 81
+        Height = 24
         Cursor = crHandPoint
         Text = 'Rotate'
         OnClick = RotateLinkClick
@@ -954,20 +954,20 @@ object ImageEditor: TImageEditor
           07FFFFF803FFFFFE01FFFFFF00FFFFFF80FFFFFF80FFFFFFC0FFFFFFC0FFFFFF
           C0FF8003C0FF800180FF800380FF800200FF800000FF800001FFC00003FFC000
           03FFE0000FFFE0001FFFE001FFFFF0FFFFFFFFFFFFFF}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object ResizeLink: TWebLink
         Left = 8
         Top = 129
-        Width = 86
-        Height = 32
+        Width = 78
+        Height = 24
         Cursor = crHandPoint
         Text = 'Resize'
         OnClick = ResizeLinkClick
@@ -1092,20 +1092,20 @@ object ImageEditor: TImageEditor
           00FF800000FF800000FF800000FF800000FF800000FF800000FF800000FF8000
           00FF800000FF800000FFF80000FFF80000FFF80000FFF80000FFF80000FFF800
           00FFF00000FFF00000FFF00000FFFFFFFFFFFFFFFFFF}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object EffectsLink: TWebLink
         Left = 8
         Top = 169
-        Width = 96
-        Height = 32
+        Width = 88
+        Height = 24
         Cursor = crHandPoint
         Text = 'Effects'
         OnClick = EffectsLinkClick
@@ -1230,20 +1230,20 @@ object ImageEditor: TImageEditor
           00FFC00000FF800000FF000000FF000000FF000000FF000000FF000000FF0000
           00FF000000FF000000FF000000FF800001FFC00001FFF00001FFFC0000FFFF80
           00FFFFFC00FFFFFC00FFFFFF00FFFFFFC1FFFFFFC1FF}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object ColorsLink: TWebLink
         Left = 8
         Top = 209
-        Width = 83
-        Height = 32
+        Width = 75
+        Height = 24
         Cursor = crHandPoint
         Text = 'Colors'
         OnClick = ColorsLinkClick
@@ -1368,20 +1368,20 @@ object ImageEditor: TImageEditor
           01FFC00001FFC00001FFC00001FFC00001FFC00001FFC00001FFC00001FFC000
           01FFC00001FFC00001FFC00001FFC00001FFC00001FFC00001FFC03E01FFC03E
           01FFC03E01FFC07E01FFFFFE01FFFFFE01FFFFFE01FF}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object RedEyeLink: TWebLink
         Left = 8
         Top = 249
-        Width = 108
-        Height = 32
+        Width = 100
+        Height = 24
         Cursor = crHandPoint
         Text = 'Red Eyes'
         OnClick = RedEyeLinkClick
@@ -1506,20 +1506,20 @@ object ImageEditor: TImageEditor
           FFFFF8003FFFE0000FFFC00003FF800001FF000000FF000000FF000000FF0000
           00FF000000FF000000FF800001FFC00003FFE0000FFFF8003FFFFFFFFFFFFFFF
           FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object TextLink: TWebLink
         Left = 8
         Top = 289
-        Width = 74
-        Height = 32
+        Width = 66
+        Height = 24
         Cursor = crHandPoint
         Text = 'Text'
         OnClick = TextLinkClick
@@ -1608,20 +1608,20 @@ object ImageEditor: TImageEditor
           0100F0000100E0000100C0000100C00001008000010080000100800001008000
           0100800001008000010080000100800001008000010080000100800001008000
           010080000100800001008000010080000100800001008000010080000100}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object BrushLink: TWebLink
         Left = 8
         Top = 329
-        Width = 80
-        Height = 32
+        Width = 72
+        Height = 24
         Cursor = crHandPoint
         Text = 'Brush'
         OnClick = BrushLinkClick
@@ -1710,20 +1710,20 @@ object ImageEditor: TImageEditor
           FF00F807FF00F8007F00F8000F00F8000700F8080700F807FF00F803FF00F803
           FF00FC01FF00FC007F00FE007F00FE007F00FF003F00FF801F00FF801F00FFC0
           0F00FFE00700FFF00700FFF00700FFF80F00FFFC0F00FFFE1F00FFFFFF00}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
       object InsertImageLink: TWebLink
         Left = 8
         Top = 369
-        Width = 142
-        Height = 32
+        Width = 134
+        Height = 24
         Cursor = crHandPoint
         Text = 'Insert Image'
         OnClick = InsertImageLinkClick
@@ -1848,13 +1848,13 @@ object ImageEditor: TImageEditor
           1F00FF800F00FF800700FF800300FF000100FF000100FF000100FF000F00FF00
           1F25FF003FD2FF003FFFFF003FFFFF003FFFFE007FFFFE007FFFFE007FFFFC00
           7FFFF0007FFFC000FFFFC000FFE2E001FF36FC03FF05}
-        IconWidth = 32
-        IconHeight = 32
+        IconWidth = 24
+        IconHeight = 24
         UseEnterColor = True
         EnterColor = clMaroon
         EnterBould = True
         Enabled = False
-        TopIconIncrement = 4
+        TopIconIncrement = 0
         ImageCanRegenerate = False
       end
     end
@@ -1869,8 +1869,8 @@ object ImageEditor: TImageEditor
     object ZoomInLink: TWebLink
       Left = 208
       Top = 8
-      Width = 76
-      Height = 32
+      Width = 68
+      Height = 24
       Cursor = crHandPoint
       Text = 'Zoom In'
       OnClick = ZoomInLinkClick
@@ -1990,8 +1990,8 @@ object ImageEditor: TImageEditor
         FFFF801FFFFF800FFFFF8007FFFFC0041FFFE00007FFF00003FFF80001FFFC00
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFF0000FFFF0000FFFF00
         00FFFF8001FFFFC003FFFFE007FFFFFFFFFFFFFFFFFF}
-      IconWidth = 32
-      IconHeight = 32
+      IconWidth = 24
+      IconHeight = 24
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -2001,8 +2001,8 @@ object ImageEditor: TImageEditor
     object ZoomOutLink: TWebLink
       Left = 104
       Top = 8
-      Width = 84
-      Height = 32
+      Width = 76
+      Height = 24
       Cursor = crHandPoint
       Text = 'Zoom Out'
       OnClick = ZoomOutLinkClick
@@ -2122,8 +2122,8 @@ object ImageEditor: TImageEditor
         FFFFC01FFFFFC00FFFFFC007FFFFE0001FFFF00007FFF80001FFFC0001FFFE00
         00FFFF8000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF80
         00FFFF8001FFFFC003FFFFF007FFFFFFFFFFFFFFFFFF}
-      IconWidth = 32
-      IconHeight = 32
+      IconWidth = 24
+      IconHeight = 24
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -2133,8 +2133,8 @@ object ImageEditor: TImageEditor
     object UndoLink: TWebLink
       Left = 512
       Top = 8
-      Width = 63
-      Height = 32
+      Width = 55
+      Height = 24
       Cursor = crHandPoint
       Text = 'Undo'
       OnClick = UndoLinkClick
@@ -2254,8 +2254,8 @@ object ImageEditor: TImageEditor
         FFFFFFFFFFFF800078FF800070FF800070FF8000E0FF800180FF800000FF8000
         00FFC00000FFC00001FFC00001FFC00003FFE00007FFE0001FFFE0E07FFFE1FF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      IconWidth = 32
-      IconHeight = 32
+      IconWidth = 24
+      IconHeight = 24
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -2266,8 +2266,8 @@ object ImageEditor: TImageEditor
     object RedoLink: TWebLink
       Left = 608
       Top = 8
-      Width = 63
-      Height = 32
+      Width = 55
+      Height = 24
       Cursor = crHandPoint
       Text = 'Redo'
       OnClick = RedoLinkClick
@@ -2387,8 +2387,8 @@ object ImageEditor: TImageEditor
         FFFFFFFFFFFF878000FF838000FF818000FF80C000FF806000FF800000FFC000
         00FFC00000FFE00000FFE00000FFF00000FFF80001FFFC0001FFFF01C1FFFFFF
         E1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      IconWidth = 32
-      IconHeight = 32
+      IconWidth = 24
+      IconHeight = 24
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -2399,8 +2399,8 @@ object ImageEditor: TImageEditor
     object FitToSizeLink: TWebLink
       Left = 392
       Top = 8
-      Width = 87
-      Height = 32
+      Width = 79
+      Height = 24
       Cursor = crHandPoint
       Text = 'Fit To Size'
       OnClick = FitToSizeLinkClick
@@ -2520,8 +2520,8 @@ object ImageEditor: TImageEditor
         FFFF801FFFFF800FFFFFC007FFFFE0000FFFF00003FFF80001FFF80001FFFE00
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFE0000FFFF0000FFFF00
         00FFFF0000FFFF8001FFFFC003FFFFF00FFFFFFFFFFF}
-      IconWidth = 32
-      IconHeight = 32
+      IconWidth = 24
+      IconHeight = 24
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -2531,8 +2531,8 @@ object ImageEditor: TImageEditor
     object SaveLink: TWebLink
       Left = 8
       Top = 8
-      Width = 62
-      Height = 32
+      Width = 54
+      Height = 24
       Cursor = crHandPoint
       Text = 'Save'
       OnClick = SaveLinkClick
@@ -2652,8 +2652,8 @@ object ImageEditor: TImageEditor
         00FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC000
         00FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC000
         00FFC00000FFC00000FFC00000FFC00000FFFFFFFFFF}
-      IconWidth = 32
-      IconHeight = 32
+      IconWidth = 24
+      IconHeight = 24
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -2664,8 +2664,8 @@ object ImageEditor: TImageEditor
     object FullSiseLink: TWebLink
       Left = 312
       Top = 8
-      Width = 76
-      Height = 32
+      Width = 68
+      Height = 24
       Cursor = crHandPoint
       Text = 'Full Size'
       OnClick = FullSiseLinkClick
@@ -2785,8 +2785,8 @@ object ImageEditor: TImageEditor
         FFFF801FFFFF800FFFFFC007FFFFE0000FFFF00003FFF80001FFF80001FFFE00
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFE0000FFFF0000FFFF00
         00FFFF0000FFFF8001FFFFC003FFFFF00FFFFFFFFFFF}
-      IconWidth = 32
-      IconHeight = 32
+      IconWidth = 24
+      IconHeight = 24
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
