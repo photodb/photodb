@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=bin
+OutputDir=C:\Program Files\Photo DataBase
 UnitOutputDir=dcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -159,5 +159,5 @@ Count=1
 Item0=dcu
 [HistoryLists\hlOutputDirectorry]
 Count=2
-Item0=bin
-Item1=C:\Program Files\Photo DataBase
+Item0=C:\Program Files\Photo DataBase
+Item1=bin

@@ -1,5 +1,5 @@
 object DBReplaceForm: TDBReplaceForm
-  Left = 173
+  Left = 139
   Top = 91
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False

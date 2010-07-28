@@ -4,6 +4,8 @@ interface
 
 uses Windows, Classes, SysUtils, uFileUtils, SyncObjs;
 
+{$DEFINE _EVENTLOG}
+
 type
   TLogger = class(TObject)
   private
@@ -25,7 +27,9 @@ var
 
 procedure EventLog(Message : string);
 begin
+{$IFDEF EVENTLOG}
   TLogger.Instance.Message(Message);
+{$ENDIF}
 end;
 
 { TLogger }

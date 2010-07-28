@@ -27,7 +27,6 @@ const
 var
     UseFreeAfterRelease : boolean = true;
     ApplicationRuned : boolean = false;  
-    StartProcessorMask : Cardinal;
 
 const
  pwd_rusup='¨ÉÖÓÊÅÍÃØÙÇÕÚÔÛÂÀÏĞÎËÄÆİß×ÑÌÈÒÜÁŞ';
@@ -4415,8 +4414,8 @@ begin
     AssignParam(Table,next,Res.Jpeg);
     if UpdateDateTime then
     begin
-     SetDateParam(Table,next,DateToAdd);
-     SetDateParam(Table,next,aTime);
+     SetDateParam(Table,'DateToAdd',DateToAdd);
+     SetDateParam(Table,'aTime',aTime);
      SetBoolParam(Table,next,IsDate);
      SetBoolParam(Table,next,IsTime);
     end;

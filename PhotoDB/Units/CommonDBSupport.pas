@@ -47,6 +47,37 @@ const
     property Items[Index: Integer]: TADODBConnection read GetValueByIndex; default;
   end;
 
+  TDBParam = class(TObject)
+  private
+    FName : string;
+  public
+    property Name : string read FName write FName;
+  end;
+
+  TDBStringParam = class(TDBParam)
+    Value : string;
+  end;
+
+  TDBIntegerParam = class(TDBParam)
+    Value : Integer;
+  end;
+
+  TDBDateTimeParam = class(TDBParam)
+    Value : TDateTime;
+  end;
+
+  TDBQueryParams = class(TObject)
+  private
+    FParamList : TList;
+    FQuery : string;
+  public
+    function AddDateTimeParam(Name : string; Value : TDateTime) : TDBDateTimeParam;
+    constructor Create; 
+    destructor Destroy; override;
+    procedure ApplyToDS(DS : TDataSet);
+    property Query : string read FQuery write FQuery;
+  end;
+
 var
   ADOConnections : TADOConnections = nil;
   
@@ -113,7 +144,7 @@ procedure ExecSQL(SQL : TDataSet);
 function GetBoolParam(Query : TDataSet; index : integer) : boolean;
 
 procedure LoadParamFromStream(Query : TDataSet; index : integer; Stream : TStream; FT : TFieldType);
-procedure SetDateParam(Query : TDataSet; index : integer; Date : TDateTime);
+procedure SetDateParam(Query : TDataSet; Name : string; Date : TDateTime);
 procedure SetBoolParam(Query : TDataSet; index : integer; Bool : Boolean);
 procedure SetStrParam(Query : TDataSet; index : integer; Str : String);
 procedure SetIntParam(Query : TDataSet; index : integer; int : integer);
@@ -200,9 +231,9 @@ begin
  if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=Bool;
 end;
 
-procedure SetDateParam(Query : TDataSet; index : integer; Date : TDateTime);
+procedure SetDateParam(Query : TDataSet; Name : string; Date : TDateTime);
 begin
- if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=Date;
+ if (Query is TADOQuery) then (Query as TADOQuery).Parameters.FindParam(Name).Value:=Date;
 end;
 
 procedure SetIntParam(Query : TDataSet; index : integer; int : integer);
@@ -979,6 +1010,53 @@ begin
   Folder:=SysUtils.ExtractFileDir(AnsiLowerCase(FileFullPath));
   CalcStringCRC32(AnsiLowerCase(Folder), CRC);
   Result := Integer(CRC);
+end;
+
+{ TDBQueryParams }
+
+function TDBQueryParams.AddDateTimeParam(Name: string; Value: TDateTime) : TDBDateTimeParam;
+begin
+  Result := TDBDateTimeParam.Create;
+  Result.Name := Name;
+  Result.Value := Value;
+  FParamList.Add(Result);
+end;
+
+procedure TDBQueryParams.ApplyToDS(DS: TDataSet);
+var
+  I : Integer;
+  Paramert : TParameter;
+  DBParam : TDBParam;
+begin
+  SetSQL(DS, Query);
+  for I := 0 to FParamList.Count - 1 do
+  begin
+    DBParam := FParamList[I];
+    Paramert := nil;
+    if DS is TADOQuery then
+      Paramert := TADOQuery(DS).Parameters.FindParam(DBParam.Name);
+    if Paramert <> nil then
+    begin
+      if DBParam is TDBDateTimeParam then
+        Paramert.Value := TDBDateTimeParam(DBParam).Value;
+    end;
+  end;
+end;
+
+constructor TDBQueryParams.Create;
+begin
+  FParamList := TList.Create;
+end;
+
+destructor TDBQueryParams.Destroy;
+var
+  I : Integer;
+begin
+  for I := 0 to FParamList.Count - 1 do
+    TObject(FParamList[I]).Free;
+
+  FParamList.Free;
+  inherited;
 end;
 
 initialization

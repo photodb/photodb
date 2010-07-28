@@ -1,5 +1,5 @@
 object Viewer: TViewer
-  Left = 378
+  Left = 303
   Top = 90
   Width = 653
   Height = 518

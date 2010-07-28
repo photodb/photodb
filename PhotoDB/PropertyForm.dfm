@@ -2001,12 +2001,13 @@ object PropertiesForm: TPropertiesForm
       Width = 96
       Height = 16
       Cursor = crHandPoint
+      PopupMenu = PopupMenu5
       Rating = 0
+      RatingRange = 0
       BkColor = clBtnFace
       OnChange = CommentMemoChange
       Islayered = False
-      layered = 100
-      PopupMenu = PopupMenu5
+      Layered = 100
       OnMouseDown = Rating1MouseDown
       ImageCanRegenerate = False
     end

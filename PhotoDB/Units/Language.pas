@@ -1568,6 +1568,7 @@ Const
 
  TEXT_MES_ICONS_OPEN_MASK = 'Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll';
 
+ TEXT_MES_ENTER_QUERY_HERE = 'Введите поисковый запрос';
   implementation
 
 end.

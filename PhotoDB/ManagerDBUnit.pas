@@ -1342,8 +1342,8 @@ begin
 
      FQuery := GetQuery;
      SetSQL(FQuery,Format('Update '+GetDefDBname+' Set DateToAdd = :Date, aTime = :Time, IsTime = :IsTime, IsDate = :IsDate Where ID = %d',[PListData(aData[Item.index])^.ID]));
-     SetDateParam(FQuery,0,Date);
-     SetDateParam(FQuery,1,Time);  
+     SetDateParam(FQuery,'Date',Date);
+     SetDateParam(FQuery,'Time',Time);
      SetBoolParam(FQuery,2,IsTime);
      SetBoolParam(FQuery,3,IsDate);
      ExecSQL(FQuery);

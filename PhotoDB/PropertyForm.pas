@@ -1152,7 +1152,7 @@ begin
     _sqlexectext:=_sqlexectext+')';
     FQuery.Active:=false;
     SetSQL(FQuery,_sqlexectext);
-    SetDateParam(FQuery,0,DateEdit.DateTime);
+    SetDateParam(FQuery,'DateToAdd',DateEdit.DateTime);
     ExecSQL(FQuery);
     EventInfo.Date:=DateEdit.DateTime;
     EventInfo.IsDate:=True;
@@ -1190,7 +1190,7 @@ begin
     _sqlexectext:=_sqlexectext+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
-    SetDateParam(WorkQuery,0,TimeOf(TimeEdit.Time));
+    SetDateParam(WorkQuery,'aTime',TimeOf(TimeEdit.Time));
     ExecSQL(FQuery);
     EventInfo.Time:=TimeEdit.Time;
     EventInfo.IsTime:=True;
@@ -1220,11 +1220,11 @@ begin
   _sqlexectext:=_sqlexectext+ ' Where ID=:ID';
   WorkQuery.active:=false;
   SetSQL(WorkQuery,_sqlexectext);
-  SetDateParam(WorkQuery,0,DateEdit.DateTime);
+  SetDateParam(WorkQuery,'Date',DateEdit.DateTime);
   SetIntParam(WorkQuery,5,CurrentItemInfo.ItemId);  //Must be LAST PARAM!
   SetBoolParam(WorkQuery,1,not IsDatePanel.Visible);
   SetBoolParam(WorkQuery,2,CheckBox1.Checked);
-  SetDateParam(WorkQuery,3,TimeOf(TimeEdit.Time));
+  SetDateParam(WorkQuery,'aTime',TimeOf(TimeEdit.Time));
   SetBoolParam(WorkQuery,4,not IsTimePanel.Visible);
 
 

@@ -3,77 +3,82 @@ unit Loadingresults;
 interface
 
 uses
- ThreadManeger, UnitDBKernel, dolphin_db, jpeg, ComCtrls, CommCtrl, windows,
+ UnitDBKernel, dolphin_db, jpeg, ComCtrls, CommCtrl, windows,
  Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs, adodb,
  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
- UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon;
+ UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon,
+ CommonDBSupport;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
                 QT_FOLDER, QT_RESULT_ITH, QT_RESULT_IDS, QT_SIMILAR,
                 QT_ONE_TEXT, QT_ONE_KEYWORD, QT_W_SCAN_FILE, QT_NO_NOPATH);
 
+const
+  SM_ID         = 0;
+  SM_TITLE      = 1;
+  SM_DATE_TIME  = 2;
+  SM_RATING     = 3;
+  SM_FILE_SIZE  = 4;
+  SM_SIZE       = 5;
+
 type
   SearchThread = class(TThreadEx)
-  private
-   fQuery: TDataSet;
-   FI : integer;
-   FID : integer;
-   FPictureSize : integer;
-   fitem: TEasyItem;
-
-   BoolParam : boolean;
-   fbit : TBitmap;
-   fpic : TPicture;
-   fBS : TStream;
-   fthum_images_:integer;
-   ferrormsg : string;
-   foptions : integer;
-   fInclude : Boolean;
-
-  fSpsearch_ShowFolderid : integer;
-  fSpsearch_ShowFolder : string;
-  fSpsearch_ShowFoldername : string;
-  fSpsearch_ShowThFile : string;
-  fSpsearch_ScanFile : string;
-  fSpsearch_ScanFilePersent : Extended;
-  fSpsearch_ScanFileRotate : boolean;
-  ImThs : TArStrings;
-  FCurrentFile : String;
-  StringParam : String;
-  FSearchParams : TSearchQuery;
-  IthIds : TArInteger;
-  StrParam : String;
-  IntParam : Integer;
-  DefaultImage : TBitmap;
-  procedure NewItem;
-  procedure InitializeA;
-  procedure InitializeB;
-  procedure BeginUpdate;
-  procedure EndUpdate;
-  procedure ErrorSQL;
-  procedure SetImageIndex;
-  procedure ProgressNullA;
-  procedure ProgressNull;
-  procedure AddImageToList;
-  procedure CreateQuery;
-  Procedure DoOnDone;
-  procedure SetSearchPathW(Path : String);
-  procedure SetSearchPath;
-  function GetWideSearchOptions : String;
-  function AddOptions(S : string) : string;
-  procedure ListViewImageIndex;
-  Procedure SetProgressText(Value : String);
-  Procedure SetProgressTextA;
-  Procedure SetMaxValue(Value : Integer);
-  Procedure SetMaxValueA;
-  Procedure SetProgress(Value : Integer);
-  Procedure SetProgressA;
-  Procedure DoSetSearchByComparing;
-  function GetFilter(Attr : Integer) : string;
-  procedure GetPassForFile;
+  private    
     { Private declarations }
+    fQuery: TDataSet;
+    FI : integer;
+    FID : integer;
+    FPictureSize : integer;
+
+    fbit : TBitmap;
+    fpic : TPicture;
+    fthum_images_:integer;
+    ferrormsg : string;
+    foptions : integer;
+    fInclude : Boolean;
+
+    fSpsearch_ShowFolderid : integer;
+    fSpsearch_ShowFolder : string;
+    fSpsearch_ShowFoldername : string;
+    fSpsearch_ShowThFile : string;
+    fSpsearch_ScanFile : string;
+    fSpsearch_ScanFilePersent : Extended;
+    fSpsearch_ScanFileRotate : boolean;
+    ImThs : TArStrings;
+    FCurrentFile : String;
+    StringParam : String;
+    FSearchParams : TSearchQuery;
+    IthIds : TArInteger;
+    StrParam : String;
+    IntParam : Integer;
+//    procedure NewItem;
+//  procedure InitializeA;
+//  procedure InitializeB;
+    procedure BeginUpdate;
+    procedure EndUpdate;
+    procedure ErrorSQL;
+  //procedure SetImageIndex;
+//  procedure ProgressNullA;
+//  procedure ProgressNull;
+//  procedure AddImageToList;
+    function CreateQuery : TDBQueryParams;
+    procedure DoOnDone;
+    procedure SetSearchPathW(Path : String);
+    procedure SetSearchPath;
+    procedure GetWideSearchOptions(Params : TDBQueryParams);
+    function AddOptions(SqlQuery : string) : string;
+    procedure ListViewImageIndex;
+    procedure SetProgressText(Value : String);
+    procedure SetProgressTextA;
+    procedure SetMaxValue(Value : Integer);
+    procedure SetMaxValueA;
+    procedure SetProgress(Value : Integer);
+    procedure SetProgressA;
+    procedure DoSetSearchByComparing;
+    procedure GetFilter(Params : TDBQueryParams; Attr : Integer);
+    procedure GetPassForFile;
   protected
     RatingParam, LastMonth, LastYear, LastRating : integer;
     LastChar : Char;
@@ -83,12 +88,14 @@ type
     FQueryString : string;
     QueryType : TQueryType;
     FDateTimeParam : TDateTime;
-    fData : TSearchRecordArray;   
+    FData : TSearchRecordArray;
     fQData : TSearchRecordArray;
     FOnDone : TNotifyEvent;
     FShowGroups : boolean;
     BitmapParam : TBitmap;
     procedure Execute; override;
+    procedure LoadImages;
+    procedure SendDataPacketToForm;
   public
     constructor Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
   end;
@@ -97,16 +104,16 @@ type
     SPSEARCH_SHOWFOLDER = 1;
     SPSEARCH_SHOWTHFILE = 2;
     SPSEARCH_SHOWSIMILAR = 3;
+    MIN_PACKET_TIME = 500;
 
-procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
+{procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
       SortDecrement : boolean; ShowGroups : boolean; SizeParam : int64; FileNameParam : string; RatingParam : integer;
       DateTimeParam : TDateTime; Include : Boolean; var LastSize : int64; var LastChar : Char; var LastRating : integer;
-      var LastMonth : integer; var LastYear : integer);
+      var LastMonth : integer; var LastYear : integer); }
 
 implementation
 
-uses FormManegerUnit, Searching, ExplorerUnit, UnitGroupsWork, Language,
-     CommonDBSupport, ExplorerThreadUnit;
+uses FormManegerUnit, Searching, UnitGroupsWork, Language;
 
 constructor SearchThread.Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
 begin
@@ -122,12 +129,12 @@ begin
   Start;
 end;
 
-procedure SearchThread.AddImageToList;
+{procedure SearchThread.AddImageToList;
 begin
-  (ThreadForm as TSearchForm).FBitmapImageList.AddBitmap(fbit);
-end;
+  //TODO: !!!(ThreadForm as TSearchForm).FBitmapImageList.AddBitmap(fbit);
+end; }
 
-procedure SearchThread.ProgressNull;
+{procedure SearchThread.ProgressNull;
 begin
   (ThreadForm as TSearchForm).PbProgress.Position:=0;
   (ThreadForm as TSearchForm).PbProgress.text:=TEXT_MES_DONE;
@@ -137,13 +144,13 @@ procedure SearchThread.ProgressNullA;
 begin
   (ThreadForm as TSearchForm).PbProgress.Position:=0;
   (ThreadForm as TSearchForm).PbProgress.text:=TEXT_MES_PROGRESS_PR;
-end;
+end;    }
 
-procedure SearchThread.SetImageIndex;
+{procedure SearchThread.SetImageIndex;
 begin
-  (ThreadForm as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(ThreadForm as TSearchForm).FBitmapImageList.Count-1);
-  (ThreadForm as TSearchForm).PbProgress.Position:=fthum_images_;
-end;
+  //TODO:!!!(ThreadForm as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(ThreadForm as TSearchForm).FBitmapImageList.Count-1);
+  //TODO:!!!(ThreadForm as TSearchForm).PbProgress.Position:=fthum_images_;
+end;     }
 
 procedure SearchThread.BeginUpdate;
 begin
@@ -152,15 +159,12 @@ end;
 
 procedure SearchThread.EndUpdate;
 begin
-  with (ThreadForm as TSearchForm) do
-    Data:=fData;
-
   (ThreadForm as TSearchForm).EndUpdate;
 end;
 
 procedure SearchThread.ErrorSQL;
 begin
- (ThreadForm as TSearchForm).ErrorQSL(ferrormsg);
+  (ThreadForm as TSearchForm).ErrorQSL(ferrormsg);
 end;
 
 procedure SearchThread.Execute;
@@ -173,10 +177,11 @@ var
   pic : TPicture;
   SBitmap, TempBitmap : TBitmap;
   CmpResult : TImageCompareResult;
-  w,h, rot : integer;
+  rot : integer;
   crc : Cardinal;
   paramno : integer;
-  Count : integer;
+  Count : integer;  
+    fBS : TStream;
 
   function NextParam : integer;
   begin
@@ -184,67 +189,26 @@ var
    inc(paramno);
   end;
 
-  procedure AddItem(N: integer; S : TDataSet);
-  var
-    i : integer;
-    Data : TSearchRecord;
-  begin
-    fid:=S.FieldByName('ID').asinteger;
-    fInclude:=S.FieldByName('Include').AsBoolean;
-    FI:=N;
-    
-    FDateTimeParam :=S.FieldByName('DateToAdd').AsDateTime;
-
-    RatingParam:=S.FieldByName('Rating').AsInteger;
-    SizeParam:=S.FieldByName('FileSize').AsInteger;
-    FileNameParam:=AnsiLowerCase(S.FieldByName('FFileName').AsString);
-
-    SynchronizeEx(NewItem);
-    Dec(N);
-    Data := fData[N];
-    Data.ID:=fid;
-    Data.FileName := FileNameParam;
-    Data.Comments := S.FieldByName('Comment').AsString;
-    Data.FileSize := SizeParam;
-    Data.Rotation := S.FieldByName('Rotated').AsInteger;
-    Data.ImTh := S.FieldByName('StrTh').AsString;
-    Data.Access := S.FieldByName('Access').AsInteger;
-    Data.Rating := RatingParam;
-    Data.KeyWords := S.FieldByName('KeyWords').AsString;
-    Data.Date := FDateTimeParam;
-    Data.IsDate := S.FieldByName('IsDate').AsBoolean;
-    Data.IsTime := S.FieldByName('IsTime').AsBoolean;
-    Data.Groups := S.FieldByName('Groups').AsString;
-    Data.Attr := S.FieldByName('Attr').AsInteger;
-    Data.Time := S.FieldByName('aTime').AsDateTime;
-    Data.Links := S.FieldByName('Links').AsString;
-    Data.Width := S.FieldByName('Width').AsInteger;
-    Data.Height := S.FieldByName('Height').AsInteger;
-    Data.Crypted := ValidCryptBlobStreamJPG(S.FieldByName('thum'));
-    Data.Include := fInclude;
-    Data.Exists := 0;
-    Data.CompareResult.ByGistogramm := 0;
-    Data.CompareResult.ByPixels := 0;
-    if fQData.Count > 0 then
-    begin
-     for i:=0 to fQData.Count - 1 do
-     if fQData[i].ID = fid then
-     begin
-      Data.CompareResult:= fQData[i].CompareResult;
-     end;
-    end;
-  end;
-
 begin    
   FreeOnTerminate := True;
-  ParamNo:=0;
+  try
+    ParamNo:=0; 
+    //#8 - invalid query identify, needed from script executing
+    if FSearchParams.Query = #8 then
+      Exit;
 
-  //#8 - invalid query identify, needed from script executing
-  if FSearchParams.Query = #8 then
-    Exit;
+    FData := TSearchRecordArray.Create;
+    try
+      LoadImages;
+    finally
+      FData.Free;
+    end;
+  finally
+    SynchronizeEx(DoOnDone);
+  end;
 
-  SynchronizeEx(BeginUpdate);
-  fQuery := GetQuery;
+  Exit;
+ (* fQuery := GetQuery;
   try
     //Create SELECT statment
     CreateQuery;
@@ -302,15 +266,15 @@ begin
               SetSQL(FTable,tempsql);
 
 
-              SetDateParam(FTable,c,FSearchParams.RatingFrom);
+              SetDateParam(FTable,'MinDate',FSearchParams.DateFrom);
               inc(c);
-              SetDateParam(FTable,c,FSearchParams.RatingTo);
+              SetDateParam(FTable,'MaxDate',FSearchParams.DateTo);
 
               FTable.Active:=true;
               FTable.First;
 
               intParam := FTable.RecordCount;
-              SynchronizeEx(initializeB);
+              //???SynchronizeEx(initializeB);
               //Searching in DB
               for I := 1 to FTable.RecordCount do
               begin
@@ -379,15 +343,13 @@ begin
     end;
 
     try
-      //ITS amazing!
-      TADOQuery(fQuery).CursorType := ctOpenForwardOnly;
-      //TADOQuery(fQuery).ExecuteOptions := [eoAsyncFetchNonBlocking];
-      FQueryString := SysUtils.StringReplace(FQueryString, '''', ' ', [rfReplaceAll]);
-      FQueryString := SysUtils.StringReplace(FQueryString, '\', ' ', [rfReplaceAll]);
-      SetSQL(fQuery, FQueryString);
+      //TADOQuery(fQuery).CursorType := ctOpenForwardOnly;
+      //FQueryString := SysUtils.StringReplace(FQueryString, '''', ' ', [rfReplaceAll]);
+      //FQueryString := SysUtils.StringReplace(FQueryString, '\', ' ', [rfReplaceAll]);
+      //SetSQL(fQuery, FQueryString);
 
-      SetDateParam(fQuery, QueryParamsCount(fQuery)-2-x, Trunc(FSearchParams.DateFrom));
-      SetDateParam(fQuery, QueryParamsCount(fQuery)-1-x, Trunc(FSearchParams.DateTo));
+      //SetDateParam(fQuery, QueryParamsCount(fQuery)-2-x, Trunc(FSearchParams.DateFrom));
+      //SetDateParam(fQuery, QueryParamsCount(fQuery)-1-x, Trunc(FSearchParams.DateTo));
 
       if (QueryType=QT_SIMILAR) then
         SetStrParam(fQuery, 0, StrTh);
@@ -462,7 +424,7 @@ begin
          fQuery.Last;
          for I := 1 to fQuery.RecordCount do
            fData.AddNew;
-         SynchronizeEx(InitializeA);
+         //???SynchronizeEx(InitializeA);
          fQuery.First;
        end;
        c := 0;
@@ -471,7 +433,7 @@ begin
        begin
          if Terminated then
            Break;
-         AddItem(i, FQuery);
+         //AddItem(i, FQuery);
          fQuery.Next;
        end;
      except
@@ -484,7 +446,7 @@ begin
      SynchronizeEx(EndUpdate);
      if Terminated then
      begin
-       SynchronizeEx(ProgressNull);
+       ///???SynchronizeEx(ProgressNull);
        SynchronizeEx(DoOnDone);
        Exit;
      end;
@@ -492,12 +454,14 @@ begin
        fpic := TPicture.create;
        fpic.Graphic := TJPEGImage.Create;
        fthum_images_ := 1;
-       SynchronizeEx(ProgressNullA);
+       ///???SynchronizeEx(ProgressNullA);
        if not Terminated then
        begin
          fQuery.First;
+         I := 0;
          while not fQuery.Eof do
          begin
+           Inc(I);
            if Terminated then
              Break;
            PassWord := '';
@@ -541,8 +505,8 @@ begin
             FCurrentFile:=fQuery.FieldByName('FFileName').AsString;
 
             IntParam:=i-1;
-            SynchronizeEx(AddImageToList);
-            SynchronizeEx(SetImageIndex);
+            //???SynchronizeEx(AddImageToList);
+            ///???SynchronizeEx(SetImageIndex);
           end;
           fquery.Next;
         end;
@@ -561,16 +525,14 @@ begin
     FreeDS(fQuery);
   end;
   
-  SynchronizeEx(ProgressNull);
-  SynchronizeEx(DoOnDone);
+  ///???SynchronizeEx(ProgressNull);
+  SynchronizeEx(DoOnDone); *)
 end;
 
-procedure SearchThread.InitializeA;
+{procedure SearchThread.InitializeA;
 begin
   with (ThreadForm as TSearchForm) do
   begin
-    FShowGroups:=DBKernel.Readbool('Options','UseGroupsInSearch',true);
-    ListView.ShowGroupMargins:=FShowGroups;
     PbProgress.Position:=0;
     PbProgress.MaxValue:=fQuery.RecordCount;
     Label7.Caption:=format(TEXT_MES_RES_REC,[IntToStr(fQuery.RecordCount)]);
@@ -587,247 +549,40 @@ begin
     Label7.Caption:=TEXT_MES_SEARCH_FOR_REC;
     PbProgress.Text:=format(TEXT_MES_SEARCH_FOR_REC_FROM,[IntToStr(intparam)]);
   end;
-end;
-
-procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
-      SortDecrement : boolean; ShowGroups : boolean; SizeParam : int64; FileNameParam : string; RatingParam : integer;
-      DateTimeParam : TDateTime; Include : Boolean; var LastSize : int64; var LastChar : Char; var LastRating : integer;
-      var LastMonth : integer; var LastYear : integer);
-var
-  new: TEasyItem;
-  i,i10 : integer;
-  DataObject : TDataObject;
-begin
-  if (SortMethod=0) or not ShowGroups then
-  begin
-   if ListView.Groups.Count=0 then
-   With ListView.Groups.Add do
-   begin
-    Visible:=true;
-    Caption:=TEXT_MES_RECORDS_FOUNDED+':';
-   end;
-  end;
-
-  if ShowGroups then
-  if SortMethod=4 then
-  begin
-   if not SortDecrement then
-   begin
-    if (LastSize=0) and (SizeParam<100*1024) then
-    begin
-     LastSize:=max(1,SizeParam);
-     With ListView.Groups.Add do
-     begin
-      Caption:=TEXT_MES_LESS_THAN+' '+SizeInTextA(1024*100);
-      Visible:=true;
-     end;
-    end else
-    begin
-     if SizeParam<1000*1024 then
-     begin
-      i10:=Trunc(SizeParam/(100*1024))*10*1024;
-      i:=i10*10;
-      if (LastSize<i+i10) and (SizeParam>100*1024) then
-      With ListView.Groups.Add do
-      begin
-       LastSize:=i+i10;
-       Caption:=TEXT_MES_MORE_THAN+' '+SizeInTextA(i);
-       Visible:=true;
-      end;
-     end else
-     begin
-      if SizeParam<1024*1024*10 then
-      begin
-       i10:=Trunc(SizeParam/(1024*1024))*100*1024;
-       i:=round(i10*10/(1024*1024))*1024*1024;
-       if (i=0) then
-       With ListView.Groups.Add do
-       begin
-        i:=1024*1024;
-        LastSize:=i+i10;
-        Caption:=TEXT_MES_MORE_THAN+' '+SizeInTextA(i);
-        Visible:=true;
-       end;
-       if (LastSize<i+i10) and (SizeParam>1024*1024) then
-       With ListView.Groups.Add do
-       begin
-        LastSize:=i+i10;
-        Caption:=TEXT_MES_MORE_THAN+' '+SizeInTextA(i);
-        Visible:=true;
-       end;
-      end else
-      begin
-       if SizeParam<1024*1024*100 then
-       begin
-        i10:=Trunc(SizeParam/(1024*1024*10))*1000*1024;
-        i:=round(i10*10/(1024*1024*10))*1024*1024*10;
-        if (i=0) then
-        With ListView.Groups.Add do
-        begin
-         i:=1024*1024*10;
-         LastSize:=i+i10;
-         Caption:=TEXT_MES_MORE_THAN+' '+SizeInTextA(i);
-         Visible:=true;
-        end;
-        if (LastSize<i+i10) and (SizeParam>1024*1024*10) then
-        With ListView.Groups.Add do
-        begin
-         LastSize:=i+i10;
-         Caption:=TEXT_MES_MORE_THAN+' '+SizeInTextA(i);
-         Visible:=true;
-        end;
-       end else
-       begin
-        With ListView.Groups.Add do
-        begin
-         LastSize:=1024*1024*100;
-         Caption:=TEXT_MES_MORE_THAN+' '+SizeInTextA(1024*1024*100);
-         Visible:=true;
-        end;
-       end;
-      end;
-     end;
-    end;
-   end else
-   begin
-    begin
-     if SizeParam<901*1024 then
-     begin
-      i10:=Trunc(SizeParam/(1024*100))*1024*100;
-      if (Abs(LastSize-SizeParam)>1024*100) and (SizeParam>0) or (LastSize=0) then
-      With ListView.Groups.Add do
-      begin
-       LastSize:=i10+1024*100;
-       Caption:=TEXT_MES_LESS_THAN+' '+SizeInTextA(i10+1024*100);
-       Visible:=true;
-      end;
-     end else
-     begin
-      if SizeParam<1024*1024*10 then
-      begin
-       i10:=Trunc(SizeParam/(1024*1024))*1024*1024;
-       if (Abs(LastSize-SizeParam)>1024*1024) and (SizeParam>1024*1024) or (LastSize=0) then
-       With ListView.Groups.Add do
-       begin
-        LastSize:=i10+1024*1024;
-        Caption:=TEXT_MES_LESS_THAN+' '+SizeInTextA(i10+1024*1024);
-        Visible:=true;
-       end;
-      end else
-      begin
-       if SizeParam<1024*1024*100 then
-       begin                                  
-        i10:=Trunc(SizeParam/(1024*1024*10))*1024*1024*10;
-        if (Abs(LastSize-SizeParam)>1024*1024*10) and (SizeParam>1024*1024*10) or (LastSize=0)  then
-        With ListView.Groups.Add do
-        begin
-         LastSize:=i10+1024*1024*10;
-         Caption:=TEXT_MES_LESS_THAN+' '+SizeInTextA(i10+1024*1024*10);
-         Visible:=true;
-        end;
-       end else
-       begin
-        With ListView.Groups.Add do
-        begin
-         LastSize:=1024*1024*100;  
-         Caption:=TEXT_MES_MORE_THAN+' '+SizeInTextA(1024*1024*100);
-         Visible:=true;
-        end;
-       end;
-      end;
-     end;
-    end;
-   end;
-  end;
+end;   }
 
 
 
-  if ShowGroups then
-  if SortMethod=1 then
-  if ExtractFilename(FileNameParam)<>'' then
-  begin
-   if LastChar<>ExtractFilename(FileNameParam)[1] then
-   begin
-    LastChar:=ExtractFilename(FileNameParam)[1];
-    With ListView.Groups.Add do
-    begin
-     Caption:=LastChar;
-     Visible:=true;
-    end;
-   end;
-  end;
-
-  if ShowGroups then
-  if SortMethod=3 then //by Rating
-  if LastRating<>RatingParam then
-  begin
-   LastRating:=RatingParam;
-   With ListView.Groups.Add do
-   begin
-    if RatingParam=0 then
-    Caption:=TEXT_MES_NO_RATING+':' else
-    Caption:=TEXT_MES_RATING+': '+IntToStr(LastRating);
-    Visible:=true;
-   end;
-  end;
-
-  if ShowGroups then
-  if SortMethod=2 then //by DateTime
-  if (YearOf(DateTimeParam)<>LastYear) or (MonthOf(DateTimeParam)<>LastMonth) then
-  begin
-   LastYear:=YearOf(DateTimeParam);
-   LastMonth:=MonthOf(DateTimeParam);
-   With ListView.Groups.Add do
-   begin
-    Caption:=FormatDateTime('yyyy, mmmm',DateTimeParam);
-    Visible:=true;
-   end;
-  end;
-
- DataObject:=TDataObject.Create;
- DataObject.Include := Include;
-
- new := ListView.Items.Add(DataObject);
- new.Tag:=ID;
- new.ImageIndex:=-1;
- new.Caption:=ExtractFileName(FileNameParam);
-end;
-
-procedure SearchThread.NewItem;
+{procedure SearchThread.NewItem;
 begin
   if QueryType <> QT_W_SCAN_FILE then
   begin
    (ThreadForm as TSearchForm).PbProgress.Position:=fi;
   end;
-  AddItemInListViewByGroups((ThreadForm as TSearchForm).ListView, FID, FSearchParams.SortMethod, FSearchParams.SortDecrement, fShowGroups, SizeParam,
-    FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
-end;
+  //TODO:!!!!!AddItemInListViewByGroups((ThreadForm as TSearchForm).ListView, FID, FSearchParams.SortMethod, FSearchParams.SortDecrement, fShowGroups, SizeParam,
+  //TODO:!!!!!  FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
+end; }
 
-function SearchThread.GetFilter(Attr : Integer) : string;
+procedure SearchThread.GetFilter(Params : TDBQueryParams; Attr : Integer);
 begin
-  Result:='';
-  if db_attr_norm=Attr then
-  begin
-   Result:=Result+' AND ';
-   Result:=Result+Format('(Attr<> %d)',[db_attr_not_exists]);
-  end;
-  if db_attr_dublicate=Attr then
-  begin
-   Result:=Result+Format('(Attr= %d)',[db_attr_dublicate]);
-  end;
-  if db_attr_not_exists=Attr then
-  begin
-   Result:=Result+Format('(Attr= %d)',[db_attr_not_exists]);
+  case Attr of
+    db_attr_norm:
+      Params.Query := Params.Query + Format(' AND (Attr <> %d)',[db_attr_not_exists]);
+    db_attr_dublicate:
+      Params.Query := Params.Query + Format(' AND (Attr = %d)', [db_attr_dublicate]);
+    db_attr_not_exists:
+      Params.Query := Params.Query + Format('(Attr = %d)', [db_attr_not_exists]);
   end;
 
-  if not FSearchParams.ShowPrivate then Result:=Result+' AND (Access=0)';
+  if not FSearchParams.ShowPrivate then
+    Params.Query := Params.Query + ' AND (Access = 0)';
 
-  Result:=Result+GetWideSearchOptions;
+  GetWideSearchOptions(Params);
 end;
 
-procedure SearchThread.CreateQuery;
+function SearchThread.CreateQuery : TDBQueryParams;
 var
-  Folder, SysAction, stemp,s1,s,sqltext,sqlquery:string;
+  Folder, SysAction, stemp,s1,s,sqltext:string;
   a,b,c, n, i,j, id, Left, L, m : integer;
   sqlwords, sqlrwords: TStrings;
   systemquery, First : boolean;
@@ -846,6 +601,7 @@ const
   end;
 
 begin
+  Result := TDBQueryParams.Create;
  QueryType:=QT_NONE;
  foptions:=0;
  sqltext:=FSearchParams.Query;
@@ -868,25 +624,25 @@ begin
   begin
    systemquery:=true;
    QueryType:=QT_DELETED;
-   sqlquery:='SELECT * FROM '+GetDefDBName+' WHERE ';
-   sqlquery:=sqlquery+GetFilter(db_attr_not_exists);
+   Result.Query:='SELECT * FROM '+GetDefDBName+' WHERE ';
+   GetFilter(Result, db_attr_not_exists);
   end;
 
   if AnsiLowerCase(sysaction)=AnsiLowerCase('Dublicates') then
   begin
    QueryType:=QT_DUBLICATES;
    SystemQuery:=true;
-   sqlquery:='SELECT * FROM '+GetDefDBName+' WHERE';
-   sqlquery:=sqlquery+GetFilter(db_attr_dublicate);
+   Result.Query:='SELECT * FROM '+GetDefDBName+' WHERE ';
+   GetFilter(Result, db_attr_dublicate);
   end;
 
   if AnsiLowerCase(copy(sysaction,1,5))=AnsiLowerCase('Group') then
   begin
    QueryType:=QT_GROUP;
    SystemQuery:=true;
-   sqlquery:='SELECT * FROM '+GetDefDBName+'';
-   sqlquery:=sqlquery+' where (Groups like "'+GroupSearchByGroupName(Copy(sysaction,7,length(sysaction)-7))+'")';
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:=Result.Query+' where (Groups like "'+GroupSearchByGroupName(Copy(sysaction,7,length(sysaction)-7))+'")';
+   GetFilter(Result, db_attr_norm);
   end;
 
   if AnsiLowerCase(copy(sysaction,1,4))=AnsiLowerCase('Text') then
@@ -895,29 +651,28 @@ begin
    SystemQuery:=true;
    stemp:=Copy(sysaction,6,length(sysaction)-6);
    stemp:=NormalizeDBString(stemp);
-   sqlquery:='SELECT * FROM '+GetDefDBName+'';
-   sqlquery:=sqlquery+' where (KeyWords like "%'+stemp+'%") or (Comment like "%'+stemp+'%") or (FFileName like "%'+stemp+'%")';
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:=Result.Query+' where (KeyWords like "%'+stemp+'%") or (Comment like "%'+stemp+'%") or (FFileName like "%'+stemp+'%")';
+   GetFilter(Result, db_attr_norm);
   end;
 
   if AnsiLowerCase(copy(sysaction,1,6))=AnsiLowerCase('nopath') then
-  if GetDBType=DB_TYPE_MDB then
   begin
    QueryType:=QT_NO_NOPATH;
    SystemQuery:=true;
    stemp:=Copy(sysaction,6,length(sysaction)-6);
    stemp:=NormalizeDBString(stemp);
-   sqlquery:='SELECT * FROM '+GetDefDBName+'';
-   sqlquery:=sqlquery+' where (FolderCRC = 0)';
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:=Result.Query+' where (FolderCRC = 0)';
+   GetFilter(Result, db_attr_norm);
   end;
 
   if AnsiLowerCase(copy(sysaction,1,14))=AnsiLowerCase('ShowNullFields') then
   begin
    QueryType:=QT_ONE_TEXT;
    SystemQuery:=true;
-   sqlquery:='SELECT * FROM '+GetDefDBName;
-   sqlquery:=sqlquery+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
+   Result.Query:='SELECT * FROM '+GetDefDBName;
+   Result.Query:=Result.Query+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
   end;
 
   if AnsiLowerCase(copy(sysaction,1,13))=AnsiLowerCase('FixNullFields') then
@@ -925,8 +680,8 @@ begin
    QueryType:=QT_ONE_TEXT;
    SystemQuery:=true;
    fSpecQuery:=GetQuery;
-   sqlquery:='SELECT * FROM '+GetDefDBName;
-   sqlquery:=sqlquery+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
+   Result.Query:='SELECT * FROM '+GetDefDBName;
+   Result.Query:=Result.Query+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
 
    SetSQL(fSpecQuery,'Update '+GetDefDBName+' Set Comment="" where Comment is null');
    ExecSQL(fSpecQuery);
@@ -946,18 +701,18 @@ begin
    stemp:='';
    for i:=1 to 200 do
    stemp:=stemp+'_';
-   sqlquery:='SELECT * FROM '+GetDefDBName+'';
-   sqlquery:=sqlquery+' where not (StrTh like "'+stemp+'")';
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:=Result.Query+' where not (StrTh like "'+stemp+'")';
+   GetFilter(Result, db_attr_norm);
   end;
 
   if AnsiLowerCase(copy(sysaction,1,5))=AnsiLowerCase('Links') then
   begin
    QueryType:=QT_ONE_TEXT;
    SystemQuery:=true;
-   sqlquery:='SELECT * FROM '+GetDefDBName+'';
-   sqlquery:=sqlquery+' where (Links like "%[%]%{%}%;%" )';
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:=Result.Query+' where (Links like "%[%]%{%}%;%" )';
+   GetFilter(Result, db_attr_norm);
   end;
 
   if AnsiLowerCase(copy(sysaction,1,9))=AnsiLowerCase('ScanImage') then
@@ -1004,9 +759,9 @@ begin
    SystemQuery:=true;
    stemp:=Copy(sysaction,9,length(sysaction)-9);
    stemp:=NormalizeDBString(stemp);
-   sqlquery:='SELECT * FROM '+GetDefDBName+'';
-   sqlquery:=sqlquery+' where (KeyWords like "%'+stemp+'%") ';
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:=Result.Query+' where (KeyWords like "%'+stemp+'%") ';
+   GetFilter(Result, db_attr_norm);
   end;
 
   if AnsiLowerCase(copy(sysaction,1,6))=AnsiLowerCase('folder') then
@@ -1018,15 +773,15 @@ begin
    UnFormatDir(Folder);
    Folder:=AnsiLowerCase(Folder);
 
-   if GetDBType=DB_TYPE_MDB then sqlquery:='Select * From (Select * from '+GetDefDBname+' where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)';
+   if GetDBType=DB_TYPE_MDB then Result.Query:='Select * From (Select * from '+GetDefDBname+' where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)';
 
-   if not FSearchParams.ShowPrivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
+   if not FSearchParams.ShowPrivate then Result.Query:=Result.Query+' and (Access<>'+inttostr(db_access_private)+')';
 
    foptions:=SPSEARCH_SHOWFOLDER;
    if not directoryexists(Folder) then
    fspsearch_showfolder:='' else fspsearch_showfolder:=Folder;
    fspsearch_showfolderid:=StrToIntDef(Copy(sysaction,8,length(sysaction)-8),0);
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   GetFilter(Result, db_attr_norm);
   end;
   
   if AnsiLowerCase(copy(sysaction,1,7))=AnsiLowerCase('similar') then
@@ -1043,9 +798,9 @@ begin
    StrTh:=fSpecQuery.FieldByName('StrTh').AsString;
    FreeDS(fSpecQuery);
 
-   sqlquery:='SELECT * FROM '+GetDefDBName+' WHERE StrTh = :str';
+   Result.Query:='SELECT * FROM '+GetDefDBName+' WHERE StrTh = :str';
 
-   if not FSearchParams.ShowPrivate then sqlquery:=sqlquery+' and (Access<>'+inttostr(db_access_private)+')';
+   if not FSearchParams.ShowPrivate then Result.Query:=Result.Query+' and (Access<>'+inttostr(db_access_private)+')';
 
    foptions:=SPSEARCH_SHOWSIMILAR;
   end;
@@ -1100,20 +855,20 @@ begin
    end;
    FreeDS(fSpecQuery);
    first:=true;
-   sqlquery:='SELECT * FROM '+GetDefDBName+' Where (';
+   Result.Query:='SELECT * FROM '+GetDefDBName+' Where (';
    for i:=0 to Length(IthIds)-1 do
    begin
     if first then
     begin
-      sqlquery:= sqlquery+' (ID='+IntToStr(IthIds[i])+') ';
+      Result.Query:= Result.Query+' (ID='+IntToStr(IthIds[i])+') ';
      First:=false;
     end else
-    sqlquery:= sqlquery+' OR (ID='+IntToStr(IthIds[i])+') ';
+    Result.Query:= Result.Query+' OR (ID='+IntToStr(IthIds[i])+') ';
    end;
    if Length(IthIds)=0 then
-   sqlquery:= sqlquery+'(ID=0) ';
-   sqlquery:= sqlquery+' ) ';
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   Result.Query:= Result.Query+'(ID=0) ';
+   Result.Query:= Result.Query+' ) ';
+   GetFilter(Result, db_attr_norm);
   end;
 
  if not systemquery then
@@ -1212,16 +967,19 @@ begin
     sqltext:=sqltext+')';
 
 
-    sqlquery:='SELECT * FROM '+GetDefDBName;
-    sqlquery:=sqlquery+' where ('+sqltext+')';
+    Result.Query:='SELECT * FROM '+GetDefDBName;
 
-    sqlquery := sqlquery + Format(' AND ((Rating >= %d) AND (Rating <= %d)) ',[FSearchParams.RatingFrom, FSearchParams.RatingTo]);
+
+    Result.Query:=Result.Query+Format(' where %s and (%s)', [Format(' ((Rating >= %d) AND (Rating <= %d)) ',[FSearchParams.RatingFrom, FSearchParams.RatingTo]),
+                                                      sqltext]);
+
+
     if FSearchParams.GroupName<>'' then
-    sqlquery:=sqlquery+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
+    Result.Query:=Result.Query+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
 
     if sqlrwords.count>0 then
     begin
-     sqlquery:=sqlquery+' AND not (';
+     Result.Query:=Result.Query+' AND not (';
      sqltext:='(';
      for i:=1 to fields_names_count do
      begin
@@ -1236,7 +994,7 @@ begin
       end;
      end;
      sqltext:=sqltext+')';
-     sqlquery:=sqlquery+sqltext+')';
+     Result.Query:=Result.Query+sqltext+')';
     end;
 
     sqlwords.free;
@@ -1257,17 +1015,17 @@ begin
      sqltext:=sqltext+' (ID='+s1+') OR';
     end;
     sqltext:=sqltext+' (ID=0))';
-    sqlquery:='SELECT * FROM '+GetDefDBName;
-    sqlquery:=sqlquery+' where ('+sqltext+')';
+    Result.Query:='SELECT * FROM '+GetDefDBName;
+    Result.Query:=Result.Query+' where ('+sqltext+')';
     
     if FSearchParams.GroupName<>'' then
-    sqlquery:=sqlquery+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
+    Result.Query:=Result.Query+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
    end;
-   sqlquery:=sqlquery+GetFilter(db_attr_norm);
+   GetFilter(Result, db_attr_norm);
   end;
  end;
 
- FQueryString:=AddOptions(sqlquery);
+ Result.Query:=AddOptions(Result.Query);
 
 end;
 
@@ -1278,11 +1036,11 @@ begin
    if fPictureSize=ThImageSize then
    if Assigned(FOnDone) then FOnDone(self);
    (ThreadForm as TSearchForm).tbStopOperation.Enabled:=false;
-   if (ThreadForm as TSearchForm).SearchByCompating then
-   begin
-    (ThreadForm as TSearchForm).Decremect1.Checked:=true;
-    (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
-   end else
+   //TODO:!!!if (ThreadForm as TSearchForm).SearchByCompating then
+   //TODO:!!!begin
+   //TODO:!!! (ThreadForm as TSearchForm).Decremect1.Checked:=true;
+   //TODO:!!! (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
+   //TODO:!!!end else
    begin
     if (ThreadForm as TSearchForm).SortbyCompare1.Checked then
     begin
@@ -1309,7 +1067,9 @@ begin
  SynchronizeEx(SetSearchPath);
 end;
 
-function SearchThread.GetWideSearchOptions: String;
+procedure SearchThread.GetWideSearchOptions(Params : TDBQueryParams);
+var
+  Result : string;
 begin
  Result:='';
 
@@ -1318,10 +1078,13 @@ begin
   
   Result:=Result+' AND ((DateToAdd >= :MinDate ) and (DateToAdd <= :MaxDate ) and IsDate=True) ';
 
+  Params.AddDateTimeParam('MinDate', Trunc(FSearchParams.DateFrom)); 
+  Params.AddDateTimeParam('MaxDate', Trunc(FSearchParams.DateTo));
+
   begin
    Result:=Result+' AND ((Rating>='+IntToStr(FSearchParams.RatingFrom)+') and (Rating<='+IntToStr(FSearchParams.RatingTo)+')) ';
   end;
-
+  Params.Query := Params.Query + Result;
 end;
 
 procedure SearchThread.SetMaxValue(Value: Integer);
@@ -1362,43 +1125,161 @@ begin
   IntParam:=(ThreadForm as TSearchForm).GetImageIndexWithPath(FData[IntParam].FileName);
 end;
 
-function SearchThread.AddOptions(s : string): string;
+function SearchThread.AddOptions(SqlQuery : string): string;
 var
-  sqlquery : string;
-
-  function DESC : string;
-  begin
-   if FSearchParams.SortDecrement then result:=' DESC'
-  end;
+  SortDirection : string;
 
 begin
- sqlquery:=S;
- if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
+  if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
+    SqlQuery := SqlQuery + ' and (Include=TRUE) ';
 
- if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
-
- //TODO: 
- sqlquery:=sqlquery+' and (Include=TRUE) ';
-
- Case FSearchParams.SortMethod of
- 0 : Result:=sqlquery;
- 1 : Result:=sqlquery+' order by Name'+DESC;
- 2 : Result:=sqlquery+' order by DateToAdd'+DESC+', aTime'+DESC;
- 3:  Result:=sqlquery+' order by Rating'+DESC;
- 4:  Result:=sqlquery+' order by FileSize'+DESC;
- 5:  Result:=sqlquery+' order by Width'+DESC;
- else Result:=sqlquery;
- end;
+  SortDirection := '';
+  if FSearchParams.SortDecrement then
+    SortDirection := ' DESC';
+    
+  case FSearchParams.SortMethod of
+    SM_TITLE :     Result := SqlQuery + ' ORDER BY Name'      + SortDirection;
+    SM_DATE_TIME : Result := SqlQuery + ' ORDER BY DateToAdd' + SortDirection+', aTime' + SortDirection;
+    SM_RATING:     Result := SqlQuery + ' ORDER BY Rating'    + SortDirection;
+    SM_FILE_SIZE:  Result := SqlQuery + ' ORDER BY FileSize'  + SortDirection;
+    SM_SIZE:       Result := SqlQuery + ' ORDER BY Width'     + SortDirection;
+  end;
 end;
 
 procedure SearchThread.DoSetSearchByComparing;
 begin
- (ThreadForm as TSearchForm).DoSetSearchByComparing;
+  (ThreadForm as TSearchForm).DoSetSearchByComparing;
 end;
 
 procedure SearchThread.GetPassForFile;
 begin
- StrParam:=GetImagePasswordFromUser(StrParam);
+  StrParam := GetImagePasswordFromUser(StrParam);
+end;
+
+procedure SearchThread.LoadImages;
+var
+  FWorkQuery : TDataSet;
+  FLastPacketTime : Cardinal;
+  QueryParams : TDBQueryParams;
+
+  procedure AddItem(S : TDataSet);
+  var
+    I : Integer;
+    Data : TSearchRecord;
+    JPEG : TJPEGImage;
+    PassWord : string;
+    BS : TStream;
+  begin
+    Data := FData.AddNew;
+    Data.ID := S.FieldByName('ID').asinteger;
+    Data.FileName := S.FieldByName('FFileName').AsString;
+    Data.Comments := S.FieldByName('Comment').AsString;
+    Data.FileSize := S.FieldByName('FileSize').AsInteger;
+    Data.Rotation := S.FieldByName('Rotated').AsInteger;
+    Data.ImTh := S.FieldByName('StrTh').AsString;
+    Data.Access := S.FieldByName('Access').AsInteger;
+    Data.Rating := S.FieldByName('Rating').AsInteger;
+    Data.KeyWords := S.FieldByName('KeyWords').AsString;
+    Data.Date := S.FieldByName('DateToAdd').AsDateTime;
+    Data.IsDate := S.FieldByName('IsDate').AsBoolean;
+    Data.IsTime := S.FieldByName('IsTime').AsBoolean;
+    Data.Groups := S.FieldByName('Groups').AsString;
+    Data.Attr := S.FieldByName('Attr').AsInteger;
+    Data.Time := S.FieldByName('aTime').AsDateTime;
+    Data.Links := S.FieldByName('Links').AsString;
+    Data.Width := S.FieldByName('Width').AsInteger;
+    Data.Height := S.FieldByName('Height').AsInteger;
+    Data.Crypted := ValidCryptBlobStreamJPG(S.FieldByName('thum'));
+    Data.Include := S.FieldByName('Include').AsBoolean;
+    Data.Exists := 0;
+    Data.CompareResult.ByGistogramm := 0;
+    Data.CompareResult.ByPixels := 0;
+    if (FQData <> nil) and (FQData.Count > 0) then
+    begin
+     for I := 0 to fQData.Count - 1 do
+     if fQData[I].ID = Data.ID then
+       Data.CompareResult:= FQData[I].CompareResult;
+    end;
+
+    JPEG := TJPEGImage.Create;
+    try
+      if Data.Crypted then
+      begin
+        PassWord := DBKernel.FindPasswordForCryptBlobStream(S.FieldByName('thum'));
+        if PassWord <> '' then
+          DeCryptBlobStreamJPG(S.FieldByName('thum'), PassWord, JPEG);
+      end else
+      begin
+        BS := GetBlobStream(S.FieldByName('thum'), bmRead);
+        try
+          JPEG.LoadFromStream(BS);
+        finally
+          BS.Free;
+        end;
+      end;
+      if not JPEG.Empty then
+      begin
+        Data.Bitmap := TBitmap.Create;
+        Data.Bitmap.PixelFormat := pf24bit;
+        Data.Bitmap.Assign(JPEG);
+        ApplyRotate(Data.Bitmap, Data.Rotation);
+      end else
+        Data.Bitmap := nil;
+    finally
+      JPEG.Free;
+    end;
+  end;
+
+begin
+  FWorkQuery := GetQuery;
+  try
+    QueryParams := CreateQuery;
+    TADOQuery(FWorkQuery).CursorType := ctOpenForwardOnly;
+    TADOQuery(FWorkQuery).CursorLocation := clUseServer;
+    QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '''', ' ', [rfReplaceAll]);
+    QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '\', ' ', [rfReplaceAll]);
+    QueryParams.ApplyToDS(FWorkQuery);
+
+    try
+      CheckForm;
+      if not Terminated then
+        FWorkQuery.Open;
+    except
+      on e : Exception do
+      begin
+        FErrorMsg := e.Message + #13 + TEXT_MES_QUERY_FAILED;
+        SynchronizeEx(ErrorSQL);
+        Exit;
+      end;
+    end;
+
+    if not FWorkQuery.IsEmpty then
+    begin
+      FLastPacketTime := GetTickCount;
+      while not FWorkQuery.Eof do
+      begin      
+        if Terminated then
+          Break;
+        AddItem(FWorkQuery);
+
+        if GetTickCount - FLastPacketTime > MIN_PACKET_TIME then
+        begin
+          SynchronizeEx(SendDataPacketToForm); 
+          FLastPacketTime := GetTickCount;
+        end;
+        FWorkQuery.Next;
+      end;
+      SynchronizeEx(SendDataPacketToForm);
+    end;
+  finally
+    FWorkQuery.Free;
+  end;
+end;
+
+procedure SearchThread.SendDataPacketToForm;
+begin
+  (ThreadForm as TSearchForm).LoadDataPacket(FData);
+  FData.Clear;
 end;
 
 end.

@@ -201,7 +201,6 @@ uses
   dEXIF in 'Units\dEXIF.pas',
   dIPTC in 'Units\dIPTC.pas',
   msData in 'Units\msData.pas',
-  ThreadManeger in 'Units\ThreadManeger.pas',
   dolphin_db in 'Units\dolphin_db.pas',
   UnitDBKernel in 'Units\UnitDBKernel.pas',
   CmpUnit in 'Units\CmpUnit.pas',
@@ -343,11 +342,6 @@ exports
   FileVersion name 'FileVersion';
 
 begin
-  TW.I.Start('SetPriority');
-  SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
-  TW.I.Start('SetThreadAffinityMask');
-  SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
-  StartProcessorMask := SetThreadAffinityMask(MainThreadID, $1); //only first CPU
 {
  //Command line
  
@@ -516,7 +510,8 @@ begin
   TW.I.Start('FindRunningVersion');
   if not GetParamStrDBBool('/NoPrevVersion') then
     FindRunningVersion;
-
+                    
+  TW.I.Start('SetSplashProgress 35');
   SetSplashProgress(35);
 
   //This is main form of application
@@ -524,20 +519,26 @@ begin
   Application.CreateForm(TFormManager, FormManager);
   Application.ShowMainForm := False;
 
+  TW.I.Start('SetSplashProgress 50');
   SetSplashProgress(50);
+
+  TW.I.Start('Kernel');
   //CHECK DEMO MODE ----------------------------------------------------
   if not DBTerminating then
   begin
    EventLog('Loading Kernel.dll');
    if not FolderView then
-   KernelHandle := Loadlibrary(PChar(ProgramDir+'Kernel.dll'));
+   KernelHandle := Loadlibrary(PChar(ProgramDir+'Kernel.dll')); 
+   TW.I.Start('StartCRCCheckThread');
    TLoad.Instance.StartCRCCheckThread;
    EventLog(':DBKernel.InitRegModule');
-   DBKernel.InitRegModule;
+   TW.I.Start('InitRegModule');
+   //TODO: LATER!!!! DBKernel.InitRegModule;
    EventLog(':DBKernel.LoadColorTheme');
    TW.I.Start('DBKernel.LoadColorThem');
    DBKernel.LoadColorTheme;
-  end;     
+  end;                 
+   TW.I.Start('SetSplashProgress 70');
   SetSplashProgress(70);
 
   if not FolderView then
@@ -669,7 +670,7 @@ begin
   if not FolderView then
   if not DBTerminating then
   if not GetParamStrDBBool('/NoFaultCheck') then
-  if (DBKernel.ReadProperty('Starting','ApplicationStarted')='1') and not DBInDebug then
+  if (DBKernel.ReadProperty('Starting', 'ApplicationStarted')='1') and not DBInDebug then
   begin
    EventLog('Application terminated...');
    if ID_OK=MessageBoxDB(FormManager.Handle,TEXT_MES_APPLICATION_FAILED,TEXT_MES_ERROR,TD_BUTTON_OKCANCEL,TD_ICON_ERROR) then
@@ -688,7 +689,7 @@ begin
   //SERVICES ----------------------------------------------------
 
   if not DBTerminating then
-  If GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp','ConvertDB',False) then
+  if GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp','ConvertDB',False) then
   if not TablePacked then
   begin
    SplashThread.Terminate;
@@ -698,7 +699,7 @@ begin
   end;
 
   if not DBTerminating then
-  If GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp','Pack',False) then
+  if GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp','Pack',False) then
   if not TablePacked then
   begin
    SplashThread.Terminate;
@@ -712,7 +713,7 @@ begin
   end;
 
   if not DBTerminating then
-  If GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp','BackUp',False) then
+  if GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp','BackUp',False) then
   if not TablePacked then
   begin   
    SplashThread.Terminate;
@@ -726,7 +727,7 @@ begin
   end;
 
   if not DBTerminating then
-  If GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp','RecreateIDEx',False) then
+  if GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp','RecreateIDEx',False) then
   begin
    SplashThread.Terminate;
    EventLog('Recreating thumbs in Table...');
@@ -739,7 +740,7 @@ begin
   end;
   
   if not DBTerminating then
-  If GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp','ScanBadLinks',False) then
+  if GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp','ScanBadLinks',False) then
   begin    
    SplashThread.Terminate;
    EventLog('Show Bad Links in table...');
@@ -752,7 +753,7 @@ begin
   end;
 
   if not DBTerminating then
-  If GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp','OptimizeDublicates',False) then
+  if GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp','OptimizeDublicates',False) then
   begin     
    SplashThread.Terminate;
    EventLog('Optimizingdublicates in table...');
@@ -765,7 +766,7 @@ begin
   end;
   
   if not DBTerminating then
-  If DBKernel.ReadBool('StartUp','Restore',False) then
+  if DBKernel.ReadBool('StartUp','Restore',False) then
   begin      
    SplashThread.Terminate;
    DBkernel.WriteBool('StartUp','Restore',False);

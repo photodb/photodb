@@ -217,8 +217,8 @@ begin
        _sqlexectext:=_sqlexectext+'IsTime=:IsTime';
        SetQuery:=GetQuery;
        SetSQL(SetQuery,'Update '+GetDefDBName+' Set '+_sqlexectext+' where ID = '+IntToStr(FTable.FieldByName('ID').AsInteger));
-       SetDateParam(SetQuery,0,DateToAdd);
-       SetDateParam(SetQuery,1,aTime);
+       SetDateParam(SetQuery,'DateToAdd',DateToAdd);
+       SetDateParam(SetQuery,'aTime',aTime);
        SetBoolParam(SetQuery,2,IsDate);
        SetBoolParam(SetQuery,3,IsTime);
        ExecSQL(SetQuery);

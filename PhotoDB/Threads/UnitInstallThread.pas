@@ -793,7 +793,7 @@ begin
         _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
         SetSQL(FSetQuery,_sqlexectext);
         SetBoolParam(FSetQuery,0,True);
-        SetDateParam(FSetQuery,1,OutTable.fieldByName('DateToAdd').AsDateTime);
+        SetDateParam(FSetQuery,'DateToAdd',OutTable.fieldByName('DateToAdd').AsDateTime);
         ExecSQL(FSetQuery);
        end;
        Res:=false;

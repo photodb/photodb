@@ -171,7 +171,10 @@ var
   Msg: TMsg; // declare this too, for later
 begin
   FreeOnTerminate := True;
-    
+
+  SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
+  SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
+
   Instance := GetModuleHandle(nil);
   SplashWindowClass.style := CS_HREDRAW or CS_VREDRAW;
   SplashWindowClass.lpfnWndProc := @SplashWindowProc;
@@ -213,7 +216,8 @@ begin
     end;
   finally
     UnregisterClass(ClassName, Instance);
-  end;
+  end;      
+  TW.I.Start('SPLASH THREAD END');
 end; // ShowSplashWindow
 
 initialization

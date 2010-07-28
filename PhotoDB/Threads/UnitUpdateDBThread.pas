@@ -185,13 +185,13 @@ begin
   SetBoolParam(fQuery,16,true);
   if Date=0 then
   begin
-   SetDateParam(fQuery,3,Now);
-   SetDateParam(fQuery,18,TimeOf(Now));
+   SetDateParam(fQuery,'DateToAdd',Now);
+   SetDateParam(fQuery,'aTime',TimeOf(Now));
    SetBoolParam(fQuery,19,false);
   end else
   begin
-   SetDateParam(fQuery,3,Date);
-   SetDateParam(fQuery,18,TimeOf(Time));
+   SetDateParam(fQuery,'DateToAdd',Date);
+   SetDateParam(fQuery,'aTime',TimeOf(Time));
    SetBoolParam(fQuery,19,true);
   end;
   IsTime:=GetBoolParam(fQuery,19);

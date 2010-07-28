@@ -153,8 +153,6 @@ type
    protected
     procedure Execute; override;
     procedure NotifyFile;
-    procedure RegisterThread;
-    procedure UnRegisterThread;
   public
     constructor Create(CreateSuspennded: Boolean; Owner : TForm; Directory : string; OnNotify : TNotifyDirectoryChangeW; SID : string; ParentSID : Pointer);
   end;
@@ -220,7 +218,7 @@ var
 
 implementation
 
-uses ExplorerUnit, ThreadManeger;
+uses ExplorerUnit;
 
 function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
 begin
@@ -462,7 +460,6 @@ Const
  BUF_SIZE = 65535;
 begin
  inherited;
- Synchronize(RegisterThread);
  FreeOnTerminate:=true;
  fNewFileName:='';
 
@@ -534,7 +531,6 @@ begin
  until false;
  FreeMem(lpBuf);
  CloseHandle(hDir);
- Synchronize(UnRegisterThread);
 end;
 
 procedure TExplorerThreadNotifyDirectoryChange.NotifyFile;
@@ -578,36 +574,6 @@ begin
   Info.Include:=Include;
   Info.isBigImage:=false;
   Infos.Add(Info);
-end;
-
-procedure TExplorerThreadNotifyDirectoryChange.RegisterThread;
-Var
-  Info : TDBThreadInfo;
-  E: TExplorerForm;
-begin
- E:=nil;
- if ExplorerManager.IsExplorerForm(FOwner) then
- E:=ExplorerManager.GetExplorerBySID(String(fParentSID^));
- Info.Handle:=ThreadID;
- Info.Type_:=Thread_Type_Explorer_Watching;
- If E<>nil then Info.OwnerHandle:=E.Handle else
- Info.OwnerHandle:=0;
- DBThreadManeger.AddThread(Info);
-end;
-
-procedure TExplorerThreadNotifyDirectoryChange.UnRegisterThread;
-Var
-  Info : TDBThreadInfo;
-  E: TExplorerForm;
-begin
- e:=nil;
- if ExplorerManager.IsExplorerForm(FOwner) then
- E:=ExplorerManager.GetExplorerBySID(String(fParentSID^));
- Info.Handle:=ThreadID;
- Info.Type_:=Thread_Type_Explorer_Watching;
- If E<>nil then Info.OwnerHandle:=E.Handle else
- Info.OwnerHandle:=0;
- DBThreadManeger.RemoveThread(Info);
 end;
 
 { TStringsHistoryW }

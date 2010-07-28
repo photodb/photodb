@@ -442,7 +442,7 @@ begin
        FPostQuery:=GetQuery;
        SetSQL(FPostQuery,_sqlexectext);
        SetBoolParam(fPostQuery,0,True);
-       SetDateParam(fPostQuery,1,FSourceTable.fieldByName('DateToAdd').AsDateTime);
+       SetDateParam(fPostQuery,'DateToAdd',FSourceTable.fieldByName('DateToAdd').AsDateTime);
        ExecSQL(FPostQuery);
        FreeDS(FPostQuery);
 

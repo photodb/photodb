@@ -1316,9 +1316,8 @@ end;
 procedure TViewer.LoadListImages(List: TstringList);
 var
   i : integer;
-  Folder, FileName : string;
-  fQuery : TDataSet; 
-  crc : Cardinal;
+  FileName : string;
+  fQuery : TDataSet;
 begin
  if List.Count=0 then exit;
  CurrentInfo:=RecordsInfoNil;
@@ -2199,11 +2198,10 @@ end;
 
 procedure TViewer.RecreateImLists;
 var
-  icons : array [0..1,0..22] of HIcon;
-  c, i, j, k, l : integer;
+  Icons : array [0..1,0..22] of HIcon;
+  I, J : integer;
   b : TBitmap;
-  GrayIcon : HICON;
-  imlists : array [0..2] of TImageList;   ii : TIconInfo;
+  imlists : array [0..2] of TImageList;  
 Const
   Names : array [0..1,0..22] of String = (('Z_NEXT_NORM','Z_PREVIOUS_NORM','Z_BESTSIZE_NORM','Z_FULLSIZE_NORM','Z_FULLSCREEN_NORM','Z_ZOOMIN_NORM','Z_ZOOMOUT_NORM','Z_FULLSCREEN','Z_LEFT_NORM','Z_RIGHT_NORM','Z_INFO_NORM','IMEDITOR','PRINTER','DELETE_INFO','RATING_STAR','TRATING_1','TRATING_2','TRATING_3','TRATING_4','TRATING_5','Z_DB_NORM','Z_DB_WORK','Z_PAGES'),('Z_NEXT_HOT','Z_PREVIOUS_HOT','Z_BESTSIZE_HOT','Z_FULLSIZE_HOT','Z_FULLSCREEN_HOT','Z_ZOOMIN_HOT','Z_ZOOMOUT_HOT','Z_FULLSCREEN','Z_LEFT_HOT','Z_RIGHT_HOT','Z_INFO_HOT','IMEDITOR','PRINTER','DELETE_INFO','RATING_STAR','TRATING_1','TRATING_2','TRATING_3','TRATING_4','TRATING_5','Z_DB_NORM','Z_DB_WORK','Z_PAGES'));
 

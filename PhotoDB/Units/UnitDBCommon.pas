@@ -17,6 +17,9 @@ function ProgramDir : string;
 
 implementation
 
+var
+  ProgramParams : TStringList = nil;
+
 function StripHexPrefix(const HexStr: string): string;
 begin
   if Pos('$', HexStr) = 1 then
@@ -151,41 +154,37 @@ begin
  Result:=c;
 end;
 
-function GetParamStrDBBool(Param : string) : Boolean;
+procedure CheckParams;
 var
-  i : integer;
-  ParamStrValue : string;
+  I : Integer;
 begin
-  Result := False;
-  for i := 1 to ParamCount do
+  if ProgramParams = nil then
   begin
-    ParamStrValue := ParamStr(i);
-    if ParamStrValue = '' then
-      Break;
-    if AnsiUpperCase(ParamStrValue) = AnsiUpperCase(Param) then
-    begin
-      Result := true;
-      Exit;
-    end;
+    ProgramParams := TStringList.Create;
+    for i := 1 to ParamCount do
+      ProgramParams.Add(AnsiUpperCase(ParamStr(i)));
+    ProgramParams.Add('');
   end;
+end;
+
+function GetParamStrDBBool(Param : string) : Boolean;
+begin
+  CheckParams;
+  Result := ProgramParams.IndexOf(AnsiUpperCase(Param)) > -1;
 end;
 
 function GetParamStrDBValue(param : string) : string;
 var
-  i : integer;
+  Index : Integer;
   ParamStrValue : string;
 begin
- Result:='';
- for i:=1 to 250 do
- begin
-  ParamStrValue:=paramStr(i);
-  if ParamStrValue='' then break;
-  if AnsiUpperCase(ParamStrValue)=AnsiUpperCase(param) then
-  begin
-   Result:=paramStr(i+1);
-   break;
-  end;
- end;
+  Result := '';
+  if param = '' then
+    Exit;
+  CheckParams;
+  Index := ProgramParams.IndexOf(AnsiUpperCase(Param));
+  if Index > -1 then
+    Result := ProgramParams[Index + 1];
 end;
 
 procedure ExecuteScriptFile(FileName : String; UseDBFunctions : boolean = false);
@@ -266,5 +265,12 @@ function ProgramDir : string;
 begin
   Result := ExtractFileDir(ParamStr(0)) + '\';
 end;
+
+initialization
+
+finalization
+
+if ProgramParams <> nil then
+  FreeAndNil(ProgramParams);
 
 end.

@@ -532,7 +532,7 @@ var
 begin
   Result := '';     
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
-  Result:=Reg.ReadString(Name);
+  Result := Reg.ReadString(Name);
 end;
 
 function TDBKernel.ReadString(Key, Name: string): string;

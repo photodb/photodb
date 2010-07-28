@@ -2668,7 +2668,6 @@ end;
 
 function GetGistogrammBitmapX(Height,d : integer; G : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
 var
-  t : boolean;
   i, j,  xc : integer;
   x, MaxCount : Cardinal;
   GE : array[0..255] of extended;

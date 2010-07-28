@@ -909,7 +909,7 @@ begin
     _sqlexectext:=_sqlexectext+')';
     FQuery.active:=false;
     SetSQL(FQuery,_sqlexectext);
-    SetDateParam(FQuery,0,Date);
+    SetDateParam(FQuery,'Date',Date);
     ExecSQL(fQuery);
     EventInfo.Date:=Date;
     EventInfo.IsDate:=True;
@@ -952,7 +952,7 @@ begin
     _sqlexectext:=_sqlexectext+')';
     FQuery.active:=false;
     SetSQL(FQuery,_sqlexectext);
-    SetDateParam(FQuery,0,Time);
+    SetDateParam(FQuery,'aTime',Time);
     ExecSQL(fQuery);
     EventInfo.Time:=Time;
     EventInfo.IsTime:=True;

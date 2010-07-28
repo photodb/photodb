@@ -689,7 +689,7 @@ var
 
 implementation
 
-uses language, ThreadManeger,UnitUpdateDB, ExplorerThreadUnit, Searching,
+uses language, UnitUpdateDB, ExplorerThreadUnit, Searching,
      SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
      FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
      about, activation, UnitPasswordForm, UnitCryptImageForm,
@@ -5091,8 +5091,6 @@ begin
 
  UpdaterInfo.IsUpdater:=false;
  Inc(FReadingFolderNumber);
- If FReadingFolderNumber>MaxInt-1 then FReadingFolderNumber:=0;
- DBThreadManeger.TerminateThreads(Handle,Thread_Type_Explorer_Watching);
 
  info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
  info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);

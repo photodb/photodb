@@ -101,6 +101,7 @@ type
   end;
 
 var
+  //TODO: review!
   DBReplaceForm: TDBReplaceForm;
   Res_Address, ResIDAddress : pinteger;
   current_id_show : integer;

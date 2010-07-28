@@ -4,7 +4,7 @@ interface
 
 uses
   GraphicCrypt, DB, UnitINI, UnitTerminationApplication,
-  ThreadManeger, Windows, Messages, SysUtils, Variants, Classes, Graphics,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms,  uVistaFuncs, UnitDBNullQueryThread, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime;
@@ -105,7 +105,6 @@ var
   If DBTerminating then exit;
   if ActivateForm=nil then
   Application.CreateForm(TActivateForm,ActivateForm);
-  TimerTerminated := true;
   ApplicationRuned := true;
   Application.Run;
  end;
@@ -426,7 +425,7 @@ begin
     Inc(FCheckCount);
     if (FCheckCount = 10) then //after 1sec. set normal priority
     begin
-     SetProcessAffinityMask(MainThreadID, StartProcessorMask);
+//     SetProcessAffinityMask(MainThreadID, StartProcessorMask);
      SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
      SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
     end;

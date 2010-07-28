@@ -23,7 +23,7 @@ type
     constructor Create;
     destructor Destroy; override;
   public
-    procedure AddBitmap(Bitmap : TBitmap);
+    function AddBitmap(Bitmap : TBitmap) : Integer;
     procedure AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '');
     procedure Clear;
     function Count : Integer;
@@ -35,7 +35,7 @@ implementation
 
 { BitmapImageList }
 
-procedure TBitmapImageList.AddBitmap(Bitmap: TBitmap);
+function TBitmapImageList.AddBitmap(Bitmap: TBitmap) : Integer;
 var
   Item : TBitmapImageListImage;
 begin    
@@ -52,7 +52,7 @@ begin
     Item.Bitmap := nil;
     Item.SelfReleased := False;
   end;
-  FImages.Add(Item);
+  Result := FImages.Add(Item);
 end;
 
 procedure TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased : Boolean; Ext : string = '');   

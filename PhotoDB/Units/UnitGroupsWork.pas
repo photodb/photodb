@@ -565,12 +565,12 @@ begin
  Query.First;
  ID:=Query.FieldByName('ID').AsInteger;
  Query.Active:=false;
- SetSQL(Query,'Update '+GroupsTableName+' Set GroupName="'+NormalizeDBString(Group.GroupName)+'", GroupAccess=:GroupAccess, GroupImage=:GroupImage, GroupComment="'+NormalizeDBString(Group.GroupComment)+'", GroupFaces="'+NormalizeDBString(Group.GroupFaces)+'", GroupDate = :GroupDate, GroupAddKW=:GroupAddKW, GroupKW="'+NormalizeDBString(Group.GroupKeyWords)+'", RelatedGroups = "'+NormalizeDBString(Group.RelatedGroups)+'", IncludeInQuickList = :IncludeInQuickList Where ID='+IntToStr(ID));
+ SetSQL(Query,'Update '+GroupsTableName+' Set GroupName='+NormalizeDBString(Group.GroupName)+', GroupAccess=:GroupAccess, GroupImage=:GroupImage, GroupComment='+NormalizeDBString(Group.GroupComment)+', GroupFaces='+NormalizeDBString(Group.GroupFaces)+', GroupDate = :GroupDate, GroupAddKW=:GroupAddKW, GroupKW='+NormalizeDBString(Group.GroupKeyWords)+', RelatedGroups = '+NormalizeDBString(Group.RelatedGroups)+', IncludeInQuickList = :IncludeInQuickList Where ID='+IntToStr(ID));
  SetIntParam(Query,0,Group.GroupAccess);
  AssignParam(Query,1,Group.GroupImage);
  if Group.GroupDate=0 then
- SetDateParam(Query,2,Now) else
- SetDateParam(Query,2,Group.GroupDate);
+ SetDateParam(Query,'GroupDate',Now) else
+ SetDateParam(Query,'GroupDate',Group.GroupDate);
  SetBoolParam(Query,3,Group.AutoAddKeyWords);
  SetBoolParam(Query,4,Group.IncludeInQuickList);
  ExecSQL(Query);
@@ -578,7 +578,7 @@ begin
  Result:=true;
 end;
 
-Function AddGroupW(Group : TGroup; FileName : String) : Boolean;
+function AddGroupW(Group : TGroup; FileName : String) : Boolean;
 var
   Query : TDataSet;
   Bit : TBitmap;
@@ -620,8 +620,8 @@ begin
 //  else AssignParam(Query,2,nil);
   SetStrParam(Query,3,Group.GroupComment);
   if Group.GroupDate=0 then
-  SetDateParam(Query,4,Now) else
-  SetDateParam(Query,4,Group.GroupDate);
+  SetDateParam(Query,'GroupDate',Now) else
+  SetDateParam(Query,'GroupDate',Group.GroupDate);
   SetStrParam(Query,5,Group.GroupFaces);
   SetIntParam(Query,6,Group.GroupAccess);
   SetStrParam(Query,7,Group.GroupKeyWords);

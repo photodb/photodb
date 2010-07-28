@@ -2,7 +2,7 @@ unit UnitDBDeclare;
 
 interface
 
-uses Windows, Classes, Menus, Graphics, JPEG;
+uses DB, Windows, Classes, Menus, Graphics, JPEG;
 
 //Array types
 type
@@ -194,6 +194,9 @@ type
     CompareResult : TImageCompareResult;
     Width : integer;
     Height : integer;
+    Bitmap : TBitmap;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
   TSearchRecordArray = class(TObject)
@@ -206,7 +209,8 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
-    procedure DeleteAt(Index : Integer);
+    procedure DeleteAt(Index : Integer);  
+    function ExtractAt(Index : Integer) : TSearchRecord;
     function AddNew : TSearchRecord;
     property Items[Index: Integer]: TSearchRecord read GetValueByIndex write SetValueByIndex; default;
     property Count : Integer read GetCount;
@@ -263,6 +267,7 @@ type
   public
     Include : Boolean;
     IsImage : Boolean;
+    Data : TObject;
   end;
 
   TSearchQuery = class(TObject)
@@ -276,7 +281,9 @@ type
     DateTo : TDateTime;
     SortMethod : Integer;
     SortDecrement : Boolean;
+    function EqualsTo(AQuery : TSearchQuery) : Boolean;
   end;
+
 implementation
 
 { TSearchRecordArray }
@@ -315,6 +322,12 @@ begin
   Clear;
   FList.Free;
   inherited;
+end;
+
+function TSearchRecordArray.ExtractAt(Index: Integer): TSearchRecord;
+begin
+  Result := FList[Index];
+  FList.Delete(Index);
 end;
 
 function TSearchRecordArray.GetCount: Integer;
@@ -369,6 +382,30 @@ end;
 function TPhotoDBFiles.GetValueByIndex(Index: Integer): TPhotoDBFile;
 begin
   Result := FList[Index];
+end;
+
+{ TSearchQuery }
+
+function TSearchQuery.EqualsTo(AQuery: TSearchQuery): Boolean;
+begin
+  Result := (AQuery.RatingFrom = RatingFrom) and (AQuery.RatingTo = RatingTo)
+       and (AQuery.DateFrom = DateFrom) and (AQuery.DateTo = DateTo)
+       and (AQuery.GroupName = GroupName) and (AQuery.Query = Query)
+       and (AQuery.SortMethod = SortMethod) and (AQuery.SortDecrement = SortDecrement);
+end;
+
+{ TSearchRecord }
+
+constructor TSearchRecord.Create;
+begin
+  Bitmap := nil;
+end;
+
+destructor TSearchRecord.Destroy;
+begin
+  if Bitmap <> nil then
+    Bitmap.Free;
+  inherited;
 end;
 
 end.

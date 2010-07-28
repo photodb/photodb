@@ -3,7 +3,7 @@ unit ExplorerThreadUnit;
 interface
 
 uses
- ThreadManeger, Jpeg, DB, GraphicEx, ExplorerTypes, ImgList,
+ Jpeg, DB, GraphicEx, ExplorerTypes, ImgList,
  UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, windows, ComCtrls,
  Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
  Dialogs, Controls, ComObj, ActiveX, ShlObj,CommCtrl, Registry,

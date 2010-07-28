@@ -69,7 +69,8 @@ function GetPasswordCRCFromCryptGraphicFile(FileName : String) : Cardinal;
 
 function CryptBlobStream(DF : TField; Pass : String) : boolean;
 function CryptBlobStreamJPG(DF : TField; Image : TGraphic; Pass : String) : boolean;
-function DeCryptBlobStreamJPG(DF : TField; Pass : String) : TGraphic;
+function DeCryptBlobStreamJPG(DF : TField; Pass : string) : TJpegImage;  overload;
+procedure DeCryptBlobStreamJPG(DF : TField; Pass : string; JPEG : TJpegImage); overload;
 function ValidCryptBlobStreamJPG(DF : TField) : boolean;
 function ValidPassInCryptBlobStreamJPG(DF : TField; Pass : String) : boolean;
 function ResetPasswordInCryptBlobStreamJPG(DF : TField; Pass : String) : boolean;
@@ -875,7 +876,13 @@ begin
  result:=false;
 end;
 
-function DeCryptBlobStreamJPG(DF : TField; Pass : String) : TGraphic;
+function DeCryptBlobStreamJPG(DF : TField; Pass : String) : TJpegImage;
+begin
+  Result := TJpegImage.Create;
+  DeCryptBlobStreamJPG(DF, Pass, Result);
+end;
+
+procedure DeCryptBlobStreamJPG(DF : TField; Pass : string; JPEG : TJpegImage); overload;
 var
  FBS : TStream;
  x : array of byte;
@@ -886,7 +893,6 @@ var
  GraphicHeaderV1 : TGraphicCryptFileHeaderV1;
   xcos : array[0..1023] of byte;
 begin
- Result:=nil;
  FBS:=GetBlobStream(DF,bmRead);  
  FBS.Seek(0,soFromBeginning);
  FBS.Read(GraphicHeader,SizeOf(TGraphicCryptFileHeader));
@@ -937,9 +943,8 @@ begin
   TempStream := TMemoryStream.Create;
   TempStream.Seek(0,soFromBeginning);
   TempStream.WriteBuffer(Pointer(x)^,Length(x));
-  Result:=TJpegImage.Create;
   TempStream.Seek(0,soFromBeginning);
-  Result.LoadFromStream(TempStream);
+  JPEG.LoadFromStream(TempStream);
   TempStream.Free;
  end;
 end;
