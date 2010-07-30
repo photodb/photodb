@@ -174,7 +174,7 @@ type
     ToolButton1: TToolButton;
     ToolBarImageList: TImageList;
     ToolButton2: TToolButton;
-    ToolButton3: TToolButton;
+    TbSearch: TToolButton;
     ToolButton4: TToolButton;
     ToolButton5: TToolButton;
     ToolButton6: TToolButton;
@@ -236,7 +236,6 @@ type
     procedure NewPanel1Click(Sender: TObject);
     procedure SaveResults1Click(Sender: TObject);
     procedure LoadResults1Click(Sender: TObject);
-    procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
     procedure Help1Click(Sender: TObject);
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure RenameCurrentItem(Sender: TObject);
@@ -370,7 +369,6 @@ type
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
     function ListViewSelected : TEasyItem;
     function ItemAtPos(X,Y : integer): TEasyItem;
-    function ItemAtPosStar(X,Y : integer): TEasyItem;
     procedure EasyListviewDblClick(Sender: TCustomEasyListview;
       Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
     procedure EasyListviewItemSelectionChanged(
@@ -386,8 +384,6 @@ type
     procedure LoadSizes;
     function FileNameExistsInList(FileName : string) : boolean;
     procedure ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap);
-    procedure ReplaceImageIndexWithPath(FileName : string; Index : integer);
-    function GetImageIndexWithPath(FileName : string) : integer;
 
     procedure ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
@@ -398,9 +394,7 @@ type
     procedure ComboBoxSearchGroupsDropDown(Sender: TObject);
     procedure SearchEditDropDown(Sender: TObject);
     procedure SearchEditSelect(Sender: TObject);
-    procedure SearchEditEnterDown(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure ToolButton3Click(Sender: TObject);
     procedure ToolButton1Click(Sender: TObject);
     procedure ToolButton2Click(Sender: TObject);
     procedure ToolButton12Click(Sender: TObject);
@@ -441,7 +435,7 @@ type
     ItemSelectedByMouseDown : Boolean;
     ItemByMouseDown : Boolean;
     FSearchPath : string;
-    FilesToDrag : TArStrings;
+    FilesToDrag : TStringList;
     DBCanDrag : Boolean;
     DBDragPoint : TPoint;
     FCurrentSelectedID : Integer;
@@ -455,7 +449,7 @@ type
     FSearchByCompating : Boolean;
     FFillListInfo : TListFillInfo;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
-    function DateRangeItemAtPos(X,Y : integer): TEasyItem;
+    function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
     function GetDateFilter : TDateRange; 
     procedure AddItemInListViewByGroups(SearchRecord : TSearchRecord; ReplaceBitmap : Boolean);
     procedure RebuildQueryList;
@@ -481,7 +475,6 @@ type
     procedure ZoomOut;
     procedure ReRecreateGroupsList;
     procedure DoSetSearchByComparing;
-    procedure LoadSearchDBParametrs;
     procedure SaveQueryList;          
     procedure LoadQueryList;
     procedure LoadDataPacket(Packet : TSearchRecordArray);
@@ -625,6 +618,7 @@ var
   MainMenuScript : string;
 begin  
   TW.I.Start('S -> FormCreate');
+  FilesToDrag := TStringList.Create;
   FSearchInfo := TSearchInfo.Create;
   fListUpdating:=false;
   GroupsLoaded:=false;
@@ -680,7 +674,6 @@ begin
   ListView.Header.Columns.Add;
   CreateBackground;
 
-
   ConvertTo32BitImageList(DragImageList);
   DBKernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   tbStopOperation.Enabled := False;
@@ -699,7 +692,6 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, Exit1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadExplorerValue',  F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadExplorerValue);
 
-  Menu:=nil;
   SetNamedValue(aScript, '$dbname', '"'+dbname+'"');
   ReloadListMenu;
 
@@ -707,19 +699,19 @@ begin
   MainMenuScript := ReadScriptFile('scripts\SearchMainMenu.dbini');
   TW.I.Start('S -> LoadMenuFromScript');
   LoadMenuFromScript(ScriptMainMenu.Items,DBkernel.ImageList,MainMenuScript,aScript,ScriptExecuted,FExtImagesInImageList,true);
-  Menu:=ScriptMainMenu;
+  Menu := ScriptMainMenu;
 
- ScriptListPopupMenu.Images:=DBKernel.ImageList;
- ScriptMainMenu.Images:=DBKernel.ImageList;
- TW.I.Start('S -> GetQuery');
- SelectQuery:=GetQuery(dbname);
- TW.I.Start('S -> Register');
- DropFileTarget2.Register(SearchEdit);
- DestroyCounter:=0;
- FHelpTimerStarted := False;
- FUpdatingDB:=false;
-
- DropFileTarget1.Register(Self);
+  ScriptListPopupMenu.Images := DBKernel.ImageList;
+  ScriptMainMenu.Images := DBKernel.ImageList;
+  TW.I.Start('S -> GetQuery');
+  SelectQuery:=GetQuery(dbname);
+  TW.I.Start('S -> Register');
+  DestroyCounter := 0;
+  FHelpTimerStarted := False;
+  FUpdatingDB:=false;
+                  
+  DropFileTarget2.Register(SearchEdit);
+  DropFileTarget1.Register(Self);
 
  TW.I.Start('S -> DateTimePickers');
  try
@@ -770,9 +762,6 @@ begin
  ToolBar1.ShowCaptions := True;
  ToolBar1.AutoSize := True;
 
- TW.I.Start('S -> LoadSearchDBParametrs');
- LoadSearchDBParametrs;
-                               
  TW.I.Start('S -> RequaredDBKernelIcons');
  TLoad.Instance.RequaredDBKernelIcons;
  Image3.Picture.Graphic:=TIcon.Create;
@@ -850,52 +839,50 @@ end;
 procedure TSearchForm.ListViewMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  i : integer;
+  I : integer;
   MenuInfo : TDBPopupMenuInfo;
-  item, itemsel: TEasyItem;
+  Item, SelectedItem: TEasyItem;
 begin
-
-  Item:=ItemAtPos(x,y);
-  MouseDowned:=Button=mbRight;
-  itemsel:=Item;
-  ItemByMouseDown:=false;
-  if (Button = mbLeft) then
-  if itemsel<>nil then
+  Item := ItemAtPos(X, Y);
+  MouseDowned := Button = mbRight;
+  SelectedItem := Item;
+  ItemByMouseDown := False;
+  if (Button = mbLeft) and (SelectedItem <> nil) then
   begin
-   ItemSelectedByMouseDown:=false;
-   if not itemsel.Selected then
-   begin
-    if [ssCtrl,ssShift]*Shift=[] then
-    for i:=0 to ListView.Items.Count-1 do
-    if ListView.Items[i].Selected then
-    if itemsel<>ListView.Items[i] then
-    ListView.Items[i].Selected:=false;
-    if [ssShift]*Shift<>[] then
-     ListView.Selection.SelectRange(itemsel,ListView.Selection.FocusedItem,false,false) else
+    ItemSelectedByMouseDown := False;
+    if not SelectedItem.Selected then
     begin
-     ItemSelectedByMouseDown:=true;
-     itemsel.Selected:=true;
-     itemsel.Focused:=true;
-    end;
-   end else ItemByMouseDown:=true;
-   itemsel.Focused:=true;
+      if [ssCtrl, ssShift] * Shift = [] then
+        for I := 0 to ListView.Items.Count - 1 do
+          if ListView.Items[I].Selected and (SelectedItem <> ListView.Items[I]) then
+            ListView.Items[I].Selected := False;
+
+      if [ssShift] * Shift <> [] then
+        ListView.Selection.SelectRange(SelectedItem, ListView.Selection.FocusedItem, False, False)
+      else begin
+        ItemSelectedByMouseDown := True;
+        SelectedItem.Selected := True;
+      end;
+    end else
+      ItemByMouseDown:=true;
+      
+    SelectedItem.Focused:=True;
   end;
 
-  if (Button = mbLeft) and (Item<>nil) then
+  if (Button = mbLeft) and (Item <> nil) then
   begin
-    DBCanDrag:=True;
-    SetLength(FilesToDrag,0);
+    DBCanDrag := True;
+    FilesToDrag.Clear;
     GetCursorPos(DBDragPoint);
-    MenuInfo:=GetCurrentPopUpMenuInfo(Item);
-    SetLength(FilesToDrag,0);
-    For i:=0 to length(MenuInfo.ItemFileNames_)-1 do
-    if MenuInfo.ItemSelected_[i] then
-    If FileExists(MenuInfo.ItemFileNames_[i]) then
-    begin
-     SetLength(FilesToDrag,Length(FilesToDrag)+1);
-     FilesToDrag[Length(FilesToDrag)-1]:=MenuInfo.ItemFileNames_[i];
-    end;
-    If Length(FilesToDrag)=0 then DBCanDrag:=false;
+    MenuInfo := GetCurrentPopUpMenuInfo(Item);
+
+    for I:=0 to length(MenuInfo.ItemFileNames_) - 1 do
+      if MenuInfo.ItemSelected_[i] then
+        if FileExists(MenuInfo.ItemFileNames_[i]) then
+          FilesToDrag.Add(MenuInfo.ItemFileNames_[i]);
+
+    if FilesToDrag.Count = 0 then
+      DBCanDrag := False;
   end;
 end;
 
@@ -1648,7 +1635,6 @@ begin
   SelectQuery:=GetQuery(dbname);
   ReRecreateGroupsList;
   LoadQueryList;
-  LoadSearchDBParametrs;
   DoSearchNow(nil);
   Exit;
  end;
@@ -1754,6 +1740,7 @@ var
   FileName : string;
   R : TRect;
   EasyRect : TEasyRectArrayObject;
+  Data : TSearchRecord;
 Const
   DrawTextOpt = DT_NOPREFIX+DT_WORDBREAK+DT_CENTER;
 
@@ -1896,7 +1883,7 @@ begin
    TempImage.Free;
 
    DropFileSource1.Files.Clear;
-   for i:=0 to Length(FilesToDrag)-1 do
+   for i:=0 to FilesToDrag.Count - 1 do
    DropFileSource1.Files.Add(FilesToDrag[i]);
    ListView.Refresh;
 
@@ -1944,18 +1931,17 @@ begin
    HintTimer.Enabled:=true;
    ShLoadingThItem:=LoadingThItem;
   end;
-  if LoadingThItem<>nil then
-  if DBKernel.Readbool('Options','AllowPreview',True) then
-  if ItemIndex(LoadingThItem)<FData.Count then
-  ListView.ShowHint:= not FileExists(FData[ItemIndex(loadingthitem)].FileName) else
-  ListView.ShowHint:=true;
-  if LoadingThItem<>nil then
-  begin
-   if ItemIndex(LoadingThItem)<FData.Count-1 then
-   if ItemIndex(LoadingThItem)>-1 then
-   ListView.Hint:=FData[ItemIndex(LoadingThItem)].Comments;
+    if (LoadingThItem <> nil) then
+    begin
+     Data := TSearchRecord(TDataObject(LoadingThItem.Data).Data);
+
+     if DBKernel.Readbool('Options','AllowPreview',True) then
+       ListView.ShowHint:= not FileExists(Data.FileName);
+
+     ListView.Hint := Data.Comments;
+
+    end;
   end;
- end;
 end;
 
 procedure TSearchForm.Options1Click(Sender: TObject);
@@ -2047,7 +2033,6 @@ end;
 procedure TSearchForm.initialization_;
 begin
  TW.I.Start('S -> initialization_');
- If DBTerminating then exit;
  DBCanDrag:=false;
  DBKernel.RegisterChangesID(self,ChangedDBDataByID);
  Caption:=ProductName+' - ['+DBkernel.GetDataBaseName+']';
@@ -2066,8 +2051,6 @@ begin
  Reloadtheme(nil);
 
  SortLink.UseSpecIconSize:=true;
- SortLink.SetDefault;
-
  ListView.DoubleBuffered:=true;
 
  TW.I.Start('S -> Immges');
@@ -2094,7 +2077,6 @@ begin
  TW.I.Start('S -> BackGroundSearchPanelResize');
  BackGroundSearchPanelResize(Nil);
  TW.I.Start('S -> Splitter1Moved');
- TW.I.Start('S -> DoUnLockInfo');
 
  Creating:=false;
 end;
@@ -2120,7 +2102,7 @@ end;
 
 procedure TSearchForm.NewPanel1Click(Sender: TObject);
 begin
- ManagerPanels.NewPanel.Show;
+  ManagerPanels.NewPanel.Show;
 end;
 
 procedure TSearchForm.SaveResults1Click(Sender: TObject);
@@ -2225,15 +2207,6 @@ begin
  OpenDialog.Free;
 end;
 
-procedure TSearchForm.ApplicationEvents1Exception(Sender: TObject;
-  E: Exception);
-begin
- if DBkernel.ReadString('Options','SaveLogErrors')<>'' then
- begin
-  EventLog('Error ['+DateTimeToStr(Now)+'] = '+e.Message);
- end;
-end;
-
 procedure TSearchForm.Help1Click(Sender: TObject);
 begin
  DoAbout;
@@ -2256,9 +2229,9 @@ end;
 
 procedure TSearchForm.ListViewKeyPress(Sender: TObject; var Key: Char);
 begin
- If key=#13 then ListViewDblClick(Sender);
- if Key in Unusedchar then key:=#0;
- //TODO: contex menu popup
+  if Key =  #13 then ListViewDblClick(Sender);
+  if Key in Unusedchar then key:=#0;
+  //TODO: context menu popup
 end;
 
 procedure TSearchForm.ListViewEdited(Sender: TObject; Item: TEasyItem;
@@ -2413,13 +2386,13 @@ begin
  end;
  MouseDowned:=false;
  DBCanDrag:=false;
- SetLength(FilesToDrag,0);
+ FilesToDrag.Clear;
 end;
 
 procedure TSearchForm.ListViewExit(Sender: TObject);
 begin
  DBCanDrag:=false;
- SetLength(FilesToDrag,0);
+ FilesToDrag.Clear;
 end;
 
 procedure TSearchForm.Properties1Click(Sender: TObject);
@@ -2546,16 +2519,17 @@ begin
 end;
 
 procedure TSearchForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin       
+begin
   SaveQueryList;
- SearchManager.RemoveSearch(Self);
- Hide;
- if FUpdatingDB then
- begin
-  DestroyTimer.Interval:=100;
-  DestroyCounter:=1;
- end;
- DestroyTimer.Enabled:=true;
+  SearchManager.RemoveSearch(Self);
+  Hide;
+  if FUpdatingDB then
+  begin
+    DestroyTimer.Interval:=100;
+    DestroyCounter:=1;
+  end;
+  DestroyTimer.Enabled:=true;
+  FilesToDrag.Free;
 end;
 
 procedure TSearchForm.Datenotexists1Click(Sender: TObject);
@@ -2831,7 +2805,7 @@ begin
  View2.Caption:=TEXT_MES_SLIDE_SHOW;
  ShowDateOptionsLink.Text:=TEXT_MES_SHOW_DATE_OPTIONS;
 
- ToolButton3.Caption:=TEXT_MES_SEARCH;
+ TbSearch.Caption:=TEXT_MES_SEARCH;
  ToolButton9.Caption:=TEXT_MES_SORTING;
  ToolButton1.Caption:=TEXT_MES_ZOOM_IN;
  ToolButton2.Caption:=TEXT_MES_ZOOM_OUT;
@@ -3403,52 +3377,55 @@ end;
 
 procedure TSearchForm.Timenotsets1Click(Sender: TObject);
 begin
- PanelValueIsTimeSets.Visible:=True;
- Memo1Change(Sender);
+  PanelValueIsTimeSets.Visible:=True;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.Help4Click(Sender: TObject);
 begin
- DoHelp;
+  DoHelp;
 end;
 
 procedure TSearchForm.Activation2Click(Sender: TObject);
 begin
- if ActivateForm=nil then
- Application.CreateForm(TActivateForm,ActivateForm);
- ActivateForm.Execute;
+  if ActivateForm = nil then
+    Application.CreateForm(TActivateForm,ActivateForm);
+  ActivateForm.Execute;
 end;
 
 procedure TSearchForm.About2Click(Sender: TObject);
 begin
- if AboutForm = nil then
- Application.CreateForm(TAboutForm,AboutForm);
- AboutForm.Execute;
+  if AboutForm = nil then
+    Application.CreateForm(TAboutForm,AboutForm);
+  AboutForm.Execute;
 end;
 
 procedure TSearchForm.HomePage2Click(Sender: TObject);
 begin
- DoHomePage;
+  DoHomePage;
 end;
 
 procedure TSearchForm.ContactWithAuthor2Click(Sender: TObject);
 begin
- DoHomeContactWithAuthor;
+  DoHomeContactWithAuthor;
 end;
 
 procedure TSearchForm.GetUpdates2Click(Sender: TObject);
 begin
- TInternetUpdate.Create(false,true);
+  TInternetUpdate.Create(false,true);
 end;
 
 procedure TSearchForm.Exit1Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TSearchForm.ShowExplorerPage1Click(Sender: TObject);
 begin
- if ExplorerPanel.Visible then Properties1Click(Sender) else Explorer2Click(Sender);
+  if ExplorerPanel.Visible then
+    Properties1Click(Sender)
+  else
+    Explorer2Click(Sender);
 end;
 
 procedure TSearchForm.DoShowSelectInfo;
@@ -3777,12 +3754,12 @@ end;
 
 procedure TSearchForm.PopupMenu1Popup(Sender: TObject);
 begin
- DoSearchNow1.Visible:=not FUpdatingDB;
+  DoSearchNow1.Visible:=not FUpdatingDB;
 end;
 
 procedure TSearchForm.DBTreeView1Click(Sender: TObject);
 begin
- MakeDBFileTree(dbname);
+  MakeDBFileTree(dbname);
 end;
 
 procedure TSearchForm.DestroyTimerTimer(Sender: TObject);
@@ -3812,11 +3789,11 @@ end;
 procedure TSearchForm.DropFileTarget2Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 begin
- if DropFileTarget2.Files.Count<>0 then
- begin
-  SearchEdit.Text:=':ScanImageW('+DropFileTarget2.Files[0]+':1):';
-  SearchEdit.SetFocus;
- end;
+  if DropFileTarget2.Files.Count > 0 then
+  begin
+    SearchEdit.Text := ':ScanImageW(' + DropFileTarget2.Files[0] + ':1):';
+    SearchEdit.SetFocus;
+  end;
 end;
 
 procedure TSearchForm.ReloadListMenu;
@@ -3826,14 +3803,14 @@ end;
 
 procedure TSearchForm.ScriptExecuted(Sender: TObject);
 begin
- LoadItemVariables(aScript,Sender as TMenuItemW);
- if Trim((Sender as TMenuItemW).Script)<>'' then
- ExecuteScript(Sender as TMenuItemW,aScript,'',FExtImagesInImageList,DBkernel.ImageList,ScriptExecuted);
+  LoadItemVariables(aScript,Sender as TMenuItemW);
+  if Trim((Sender as TMenuItemW).Script) <> '' then
+    ExecuteScript(Sender as TMenuItemW, aScript, '', FExtImagesInImageList, DBkernel.ImageList, ScriptExecuted);
 end;
 
 procedure TSearchForm.LoadExplorerValue(Sender: TObject);
 begin
- SetBoolAttr(aScript,'$explorer',ExplorerPanel.Visible);
+  SetBoolAttr(aScript,'$explorer',ExplorerPanel.Visible);
 end;
 
 function TSearchForm.GetSelectionCount : integer;
@@ -3850,85 +3827,79 @@ procedure TSearchForm.EasyListViewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  r,r1 : TRect;
-  b : TBitmap;
+  R, R1 : TRect;
+  TmpBitmap : TBitmap;
   w,h : integer;
-  temp_str : string;
+  TmpStr : string;
   Data : TSearchRecord;
+  Image : TBitmapImageListImage;
 begin
- if fListUpdating then exit;
- if Item.Data=nil then exit;
- r1:=ARect;
+  if FListUpdating or (Item.Data = nil) then
+    Exit;
 
- ListView.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
- Data := TSearchRecord(TDataObject(Item.Data).Data);
- if Item.ImageIndex>-1 then
- begin
-  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
-  ProportionalSizeA(fPictureSize,fPictureSize,w,h);
- end;
+  R1 := ARect;
 
- b:=TBitmap.Create;
- b.PixelFormat:=pf24bit;
- b.Width:=fPictureSize;
- b.Height:=fPictureSize;
- FillRectNoCanvas(b,ListView.Canvas.Brush.Color);
+  ListView.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
+  Data := TSearchRecord(TDataObject(Item.Data).Data);
+  if Item.ImageIndex > -1 then
+  begin
+    Image := FBitmapImageList[Item.ImageIndex];
+    W := Image.Bitmap.Width;
+    H := Image.Bitmap.Height;
+    ProportionalSizeA(FPictureSize, FPictureSize , W, H);
+  end else
+    Image := nil;
 
- if Item.ImageIndex>-1 then
- begin
-  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList[Item.ImageIndex].Bitmap);
- end else
- begin
-  b.Canvas.Draw(fPictureSize div 2 - image1.picture.Graphic.Width div 2,fPictureSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
- end;
+  TmpBitmap := TBitmap.Create;
+  try
+    TmpBitmap.PixelFormat := pf24bit;
+    TmpBitmap.Width := FPictureSize;
+    TmpBitmap.Height := FPictureSize;
+    FillRectNoCanvas(TmpBitmap, ListView.Canvas.Brush.Color);
 
- r.Left:=r1.Left-2;
- r.Top:=r1.Top-2;
+    if Item.ImageIndex >- 1 then
+      TmpBitmap.Canvas.StretchDraw(Rect(FPictureSize div 2 - W div 2, FPictureSize div 2 - H div 2, W+(FPictureSize div 2 - W div 2),H + (FPictureSize div 2 - H div 2)), Image.Bitmap)
+    else
+      //TODO: move ICON to resources
+      TmpBitmap.Canvas.Draw(FPictureSize div 2 - image1.picture.Graphic.Width div 2,fPictureSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
 
-{ index:=ItemIndex(Item);
- if index>FData.Count-1 then
- begin
-  //???EventLog(':TSearchForm.ListViewItemThumbnailDraw() Error: index = '+IntToStr(index)+', Length(Data) = '+IntToStr(FData.Count));
-  exit;
- end;   }
- DrawAttributes(b,fPictureSize,Data.Rating,Data.Rotation,Data.Access,Data.FileName,Data.Crypted,Data.Exists,1);
+    R.Left := R1.Left - 2;
+    R.Top := R1.Top - 2;
 
- if ProcessedFilesCollection.ExistsFile(Data.FileName)<>nil then
- DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
+    DrawAttributes(TmpBitmap, FPictureSize, Data.Rating, Data.Rotation, Data.Access, Data.FileName, Data.Crypted,Data.Exists,1);
 
- if (Data.CompareResult.ByGistogramm>0) or (Data.CompareResult.ByPixels>0) then
- begin
-  DrawIconEx(b.Canvas.Handle,fPictureSize-16,b.Height-18,UnitDBKernel.icons[DB_IC_DUBLICAT+1],16,16,0,0,DI_NORMAL);
-  temp_str:=Format('%d%%\%d%%',[Round(Data.CompareResult.ByPixels),Round(Data.CompareResult.ByGistogramm)]);
-  r1:=Rect(fPictureSize-16-b.Canvas.TextWidth(temp_str)-3,b.Height-16,fPictureSize-16,B.Height);
-  DrawTextA(b.Canvas.Handle, PChar(temp_str), Length(temp_str), r1, DT_VCENTER+DT_CENTER);
- end;
+    if ProcessedFilesCollection.ExistsFile(Data.FileName) <> nil then
+      DrawIconEx(TmpBitmap.Canvas.Handle, 2, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
 
- ACanvas.Draw(r.Left,r.Top,b);
- b.free;
+    if (Data.CompareResult.ByGistogramm > 0) or (Data.CompareResult.ByPixels > 0) then
+    begin
+      DrawIconEx(TmpBitmap.Canvas.Handle, FPictureSize-16, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_DUBLICAT+1], 16, 16, 0, 0, DI_NORMAL);
+      TmpStr := Format('%d%%\%d%%', [Round(Data.CompareResult.ByPixels), Round(Data.CompareResult.ByGistogramm)]);
+      R1 := Rect(fPictureSize - 16 - TmpBitmap.Canvas.TextWidth(TmpStr) - 3, TmpBitmap.Height - 16,fPictureSize - 16, TmpBitmap.Height);
+      DrawTextA(TmpBitmap.Canvas.Handle, PChar(TmpStr), Length(TmpStr), R1, DT_VCENTER + DT_CENTER);
+    end;
+
+    ACanvas.Draw(R.Left, R.Top, TmpBitmap);
+  finally
+    TmpBitmap.free;
+  end;
 end;
 
 procedure TSearchForm.EasyListViewDblClick(Sender: TCustomEasyListview;
       Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
 begin
- ListViewDblClick(Sender);
+  ListViewDblClick(Sender);
 end;
 
 procedure TSearchForm.EasyListViewItemSelectionChanged(
   Sender: TCustomEasyListview; Item: TEasyItem);
 begin
- ListViewSelectItem(Sender,Item,false);
+  ListViewSelectItem(Sender, Item, False);
 end;
 
-function TSearchForm.ItemAtPosStar(X,Y : integer): TEasyItem;
+function TSearchForm.ItemAtPos(X,Y : integer): TEasyItem;
 begin
- result:=nil;
-end;
-
-Function TSearchForm.ItemAtPos(X,Y : integer): TEasyItem;
-begin
- Result:=ItemByPointImage(ListView,Point(x,y));
+  Result := ItemByPointImage(ListView, Point(X, Y));
 end;
 
 procedure TSearchForm.EasyListviewKeyAction(Sender: TCustomEasyListview;
@@ -3936,25 +3907,24 @@ procedure TSearchForm.EasyListviewKeyAction(Sender: TCustomEasyListview;
 var
   aChar : Char;
 begin
- aChar:=Char(CharCode);
- ListViewKeyPress(Sender,aChar);
- if CharCode=VK_F2 then ListViewKeyDown(Sender,CharCode,[]);
+  aChar := Char(CharCode);
+  ListViewKeyPress(Sender, aChar);
+  if CharCode=VK_F2 then
+    ListViewKeyDown(Sender, CharCode, []);
 end;
 
 procedure TSearchForm.EasyListViewItemEdited(Sender: TCustomEasyListview;
   Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
 var
-  s : string;
+  S : string;
 begin
- s:=NewValue;
- RenameResult:=true;
- ListViewEdited(Sender,Item,s);
- ListView.EditManager.Enabled:=false;
- Accept:=RenameResult;
- if not Accept then
- begin
-  MessageBoxDB(Handle,TEXT_MES_CANNOT_RENAME_FILE,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
- end;
+  S := NewValue;
+  RenameResult := True;
+  ListViewEdited(Sender, Item, S);
+  ListView.EditManager.Enabled := False;
+  Accept := RenameResult;
+  if not Accept then
+    MessageBoxDB(Handle, TEXT_MES_CANNOT_RENAME_FILE, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TSearchForm.N05Click(Sender: TObject);
@@ -3968,16 +3938,16 @@ end;
 
 procedure TSearchForm.ListViewResize(Sender : TObject);
 begin
- ListView.BackGround.OffsetX:=ListView.Width-ListView.BackGround.Image.Width;
- ListView.BackGround.OffsetY:=ListView.Height-ListView.BackGround.Image.Height;
+  ListView.BackGround.OffsetX := ListView.Width-ListView.BackGround.Image.Width;
+  ListView.BackGround.OffsetY := ListView.Height-ListView.BackGround.Image.Height;
 end;
 
 procedure TSearchForm.UpdateTheme(Sender: TObject);
 begin
- SortLink.SetDefault;
- ListView.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
- ListView.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
- CreateBackground;
+  SortLink.SetDefault;
+  ListView.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
+  ListView.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
+  CreateBackground;
 end;
 
 procedure TSearchForm.ListViewIncrementalSearch(Item: TEasyCollectionItem;
@@ -3985,7 +3955,6 @@ procedure TSearchForm.ListViewIncrementalSearch(Item: TEasyCollectionItem;
 var
   CompareStr: WideString;
 begin
-
   CompareStr := Item.Caption;
   SetLength(CompareStr, Length(SearchBuffer));
 
@@ -3997,13 +3966,11 @@ end;
 
 function TSearchForm.ItemIndex(item : TEasyItem) : integer;
 var
-  i : integer;
+  I : integer;
 begin
-  Result:=item.Index;
-  for i:=0 to item.OwnerGroup.Index-1 do
-  begin
-   Result:=Result+ListView.Groups[i].Items.Count;
-  end;
+  Result := item.Index;
+  for I := 0 to item.OwnerGroup.Index - 1 do
+    Result := Result + ListView.Groups[I].Items.Count;
 end;
 
 procedure TSearchForm.ShowDateOptionsLinkClick(Sender: TObject);
@@ -4022,226 +3989,207 @@ begin
   ListView.CellSizes.Thumbnail.Height := FPictureSize + 36;
 end;
 
-function TSearchForm.FileNameExistsInList(FileName : string) : boolean;
+function TSearchForm.FileNameExistsInList(FileName : string) : Boolean;
 var
-  i : integer;
-begin
- FileName:=AnsiLowerCase(FileName);
- Result:=false;
- for i:=0 to FData.Count-1 do
- begin
-  if FData[i].FileName=FileName then
-  begin
-   Result:=true;
-   break;
+  I : Integer;   
+  SearchRecord : TSearchRecord;
+begin          
+  Result := False;
+  FileName := AnsiLowerCase(FileName);
+  for I := 0 to ListView.Items.Count - 1 do
+  begin     
+    SearchRecord := GetSearchRecordFromItemData(ListView.Items[I]);
+    if AnsiLowerCase(SearchRecord.FileName) = FileName then
+    begin
+      Result := True;
+      Break;
+    end;
   end;
- end;
-end;
-
-function TSearchForm.GetImageIndexWithPath(FileName : string) : integer;
-var
-  i : integer;
-begin
- Result:=-1;
- FileName:=AnsiLowerCase(FileName);
- for i:=0 to FData.Count-1 do
- begin
-  if FData[i].FileName=FileName then
-  begin
-   Result:=ListView.Items[i].ImageIndex;
-   break;
-  end;
- end;
-end;
-
-procedure TSearchForm.ReplaceImageIndexWithPath(FileName : string; Index : integer);
-var
-  i : integer;
-begin
- FileName:=AnsiLowerCase(FileName);
- for i:=0 to FData.Count-1 do
- begin
-  if FData[i].FileName=FileName then
-  begin
-   ListView.Items[i].ImageIndex:=Index;
-  end;
- end;
 end;
 
 procedure TSearchForm.ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap);
 var
-  i : integer;
-  Bmp : TBitmap;
+  I : Integer;
+  SearchRecord : TSearchRecord;
+  ListItem : TEasyItem;
 begin
- FileName:=AnsiLowerCase(FileName);
- for i:=0 to FData.Count-1 do
- begin
-  if FData[i].FileName=FileName then
+  FileName := AnsiLowerCase(FileName);
+
+  for I := 0 to ListView.Items.Count - 1 do
   begin
-   if ListView.Items[i].ImageIndex=-1 then
-   begin
-    Bmp:=TBitmap.Create;
-    Bmp.Assign(Bitmap);
-    FBitmapImageList.AddBitmap(Bmp);
-    ListView.Items[i].ImageIndex:=FBitmapImageList.Count-1;
-   end else
-   begin
-    FBitmapImageList[ListView.Items[i].ImageIndex].Bitmap.Assign(Bitmap);
-   end;
-   ListView.Refresh;
+    ListItem := ListView.Items[I];
+    SearchRecord := GetSearchRecordFromItemData(ListItem);
+    if AnsiLowerCase(SearchRecord.FileName) = FileName then
+    begin
+      if ListItem.ImageIndex = -1 then
+        ListItem.ImageIndex := FBitmapImageList.AddBitmap(Bitmap)
+      else begin
+        FBitmapImageList.Items[ListItem.ImageIndex].Bitmap.Assign(Bitmap);
+        Bitmap.Free;
+      end;
+      ListItem.Invalidate(True);
+      Break;
+    end;
   end;
- end;
 end;
 
 procedure TSearchForm.BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
 var
   SelectedVisible : boolean;
 begin
- ListView.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- FPictureSize:=SizeX;
- LoadSizes();
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;
+  ListView.BeginUpdate;
+  SelectedVisible:=IsSelectedVisible;
+  FPictureSize:=SizeX;
+  LoadSizes();
+  BigImagesTimer.Enabled:=false;
+  BigImagesTimer.Enabled:=true;
 
- ListView.Scrollbars.ReCalculateScrollbars(false,true);
- ListView.Groups.ReIndexItems;
- ListView.Groups.Rebuild(true);
+  ListView.Scrollbars.ReCalculateScrollbars(false,true);
+  ListView.Groups.ReIndexItems;
+  ListView.Groups.Rebuild(true);
 
- if SelectedVisible then
- ListView.Selection.First.MakeVisible(emvTop);
- ListView.EndUpdate();
+  if SelectedVisible then
+    ListView.Selection.First.MakeVisible(emvTop);
+  ListView.EndUpdate();
 end;
 
 procedure TSearchForm.ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
- if not (ssCtrl in Shift) then exit;
- if WheelDelta<0 then
- begin
-  ZoomIn;
- end else
- begin
-  ZoomOut;
- end;
+  if not (ssCtrl in Shift) then
+    Exit;
+  if WheelDelta < 0 then
+    ZoomIn
+  else
+    ZoomOut;
 end;
 
 procedure TSearchForm.BigImagesTimerTimer(Sender: TObject);
 begin
- if Self.fListUpdating then exit;
- BigImagesTimer.Enabled:=false;
- NewFormState;
- //тут начинается загрузка больших картинок
- RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True,self,StateID,nil,fPictureSize,FData));
+  if Self.fListUpdating then
+    Exit;
+  BigImagesTimer.Enabled := False;
+  //???????NewFormState;
+  //тут начинается загрузка больших картинок
+  RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True, Self, StateID, nil, FPictureSize, FData));
 end;
 
 function TSearchForm.GetVisibleItems: TArStrings;
 var
-  i : integer;
-  r : TRect;
-  t : array of boolean;
-  rv : TRect;
+  I : integer;
+  R : TRect;
+  RV : TRect;
 begin
- SetLength(Result,0);
- SetLength(t,0);              
- if FData.Count<>ListView.Items.Count then exit;
- rv :=  ListView.Scrollbars.ViewableViewportRect;
- for i:=0 to ListView.Items.Count-1 do
- begin
-  r:=Rect(ListView.ClientRect.Left+rv.Left,ListView.ClientRect.Top+rv.Top,ListView.ClientRect.Right+rv.Left,ListView.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,ListView.Items[i].DisplayRect) then
+  SetLength(Result, 0);
+  if FData.Count <> ListView.Items.Count then
+    Exit;
+
+  RV :=  ListView.Scrollbars.ViewableViewportRect;
+  for I := 0 to ListView.Items.Count - 1 do
   begin
-   SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=FData[i].FileName;
+    r:=Rect(ListView.ClientRect.Left + RV.Left, ListView.ClientRect.Top + RV.Top, ListView.ClientRect.Right + RV.Left, ListView.ClientRect.Bottom + RV.Top);
+    if RectInRect(R, ListView.Items[i].DisplayRect) then
+    begin
+      SetLength(Result, Length(Result) + 1);
+      Result[Length(Result) - 1] := FData[I].FileName;
+    end;
   end;
- end;
 end;
 
 function TSearchForm.IsSelectedVisible: boolean;
 var
-  i : integer;
-  r : TRect;
-  t : array of boolean;
-  rv : TRect;
+  I : integer;
+  R : TRect;
+  RV : TRect;
 begin
- Result:=false;
- SetLength(t,0);
- rv :=  ListView.Scrollbars.ViewableViewportRect;
- for i:=0 to ListView.Items.Count-1 do
- begin
-  r:=Rect(ListView.ClientRect.Left+rv.Left,ListView.ClientRect.Top+rv.Top,ListView.ClientRect.Right+rv.Left,ListView.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,ListView.Items[i].DisplayRect) then
+  Result := False;
+  rv :=  ListView.Scrollbars.ViewableViewportRect;
+  for I := 0 to ListView.Items.Count - 1 do
   begin
-   if ListView.Items[i].Selected then
-   begin
-    Result:=true;
-    exit;
-   end;
+    r:=Rect(ListView.ClientRect.Left + RV.Left, ListView.ClientRect.Top + RV.Top, ListView.ClientRect.Right + RV.Left, ListView.ClientRect.Bottom + RV.Top);
+    if RectInRect(R, ListView.Items[I].DisplayRect) then
+    begin
+      if ListView.Items[I].Selected then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
   end;
- end;
 end;
 
 procedure TSearchForm.LoadGroupsList(LoadAllLIst : boolean = false);
 var
   Groups : TGroups;
-  size, i : integer;
+  Size, I : integer;
   SmallB, B : TBitmap;
   JPEG : TJPEGImage;
 begin
- SmallB := TBitmap.Create;
- SmallB.PixelFormat:=pf24bit;
- if not LoadAllLIst then
- begin
-  SearchGroupsImageList.Clear;
-  ComboBoxSearchGroups.Items.Clear;
-  With ComboBoxSearchGroups.ItemsEx.Add do
-  begin
-   B := TBitmap.Create;
-   B.PixelFormat:=pf24bit;
-   B.Canvas.Brush.Color:=Graphics.clMenu;
-   B.Canvas.Pen.Color:=Graphics.clMenu;
-   size:=Max(ImageAllGroups.Picture.Graphic.Width,ImageAllGroups.Picture.Graphic.Height);
-   B.Width:=size;
-   B.Height:=size;
-   B.Canvas.Rectangle(0,0,size,size);
-   B.Canvas.Draw(B.Width div 2 - ImageAllGroups.Picture.Graphic.Width div 2, B.Height div 2 - ImageAllGroups.Picture.Graphic.Height div 2,ImageAllGroups.Picture.Graphic);
-   DoResize(32,32,B,SmallB);
-   B.Free;
-   SearchGroupsImageList.Add(SmallB,nil);
-   Caption:=TEXT_MES_ALL_GROUPS;
-   ImageIndex:=0;
+  SmallB := TBitmap.Create;
+  try
+    SmallB.PixelFormat:=pf24bit;
+    if not LoadAllLIst then
+    begin
+      SearchGroupsImageList.Clear;
+      ComboBoxSearchGroups.Items.Clear;
+      with ComboBoxSearchGroups.ItemsEx.Add do
+      begin
+        B := TBitmap.Create;
+        try
+          B.PixelFormat := pf24bit;
+          B.Canvas.Brush.Color := Graphics.clMenu;
+          B.Canvas.Pen.Color := Graphics.clMenu;
+          Size := Max(ImageAllGroups.Picture.Graphic.Width, ImageAllGroups.Picture.Graphic.Height);
+          B.Width := Size;
+          B.Height := Size;
+          B.Canvas.Draw(B.Width div 2 - ImageAllGroups.Picture.Graphic.Width div 2, B.Height div 2 - ImageAllGroups.Picture.Graphic.Height div 2,ImageAllGroups.Picture.Graphic);
+          DoResize(32, 32, B, SmallB);
+          SearchGroupsImageList.Add(SmallB, nil);
+        finally
+          B.Free;
+        end;
+       Caption:=TEXT_MES_ALL_GROUPS;
+       ImageIndex:=0;
+      end;
+      ComboBoxSearchGroups.ItemIndex:=0;
+      Exit;
+     end;
+     Groups:=GetRegisterGroupList(True, False);
+     if GroupsLoaded then
+       Exit;
+       
+     for I := 0 to Length(Groups) - 1 do
+     begin
+      B := TBitmap.Create;
+      try
+        B.PixelFormat := pf24bit;
+        JPEG := TJPEGImage.Create;
+        try
+          JPEG.Assign(Groups[I].GroupImage);
+          B.Canvas.Brush.Color := Graphics.clMenu;
+          B.Canvas.Pen.Color := Graphics.clMenu;
+          Size := Max(JPEG.Width, JPEG.Height);
+          B.Width := Size;
+          B.Height := Size;
+          B.Canvas.Draw(B.Width div 2 - JPEG.Width div 2, B.Height div 2 - JPEG.Height div 2, JPEG);
+          DoResize(32, 32, B, SmallB);
+          SearchGroupsImageList.Add(SmallB, nil);
+        finally
+          JPEG.Free;
+        end;
+      finally
+        B.Free;
+      end;
+      with ComboBoxSearchGroups.ItemsEx.Add do
+      begin
+        Caption := Groups[I].GroupName;
+        ImageIndex := I + 1;
+      end;
+    end;
+  finally
+    SmallB.Free;
   end;
-  ComboBoxSearchGroups.ItemIndex:=0;
-  SmallB.Free;
-  exit;
- end;
- Groups:=GetRegisterGroupList(true,false);
- if GroupsLoaded then exit;
- for i:=0 to Length(Groups)-1 do
- begin
-  B := TBitmap.Create;
-  B.PixelFormat:=pf24bit;
-  JPEG := TJPEGImage.Create;
-  JPEG.Assign(Groups[i].GroupImage);
-  B.Canvas.Brush.Color:=Graphics.clMenu;
-  B.Canvas.Pen.Color:=Graphics.clMenu;
-  size:=Max(JPEG.Width,JPEG.Height);
-  B.Width:=size;
-  B.Height:=size;
-  B.Canvas.Rectangle(0,0,size,size);
-  B.Canvas.Draw(B.Width div 2 - JPEG.Width div 2, B.Height div 2 - JPEG.Height div 2,JPEG);
-  DoResize(32,32,B,SmallB);
-  B.Free;
-  SearchGroupsImageList.Add(SmallB,nil);
-  JPEG.Free;
-  With ComboBoxSearchGroups.ItemsEx.Add do
-  begin
-   Caption:=Groups[i].GroupName;
-   ImageIndex:=i+1;
-  end;
- end;
- SmallB.Free;
- GroupsLoaded:=true;
+  GroupsLoaded := True;
 end;
 
 procedure TSearchForm.ComboBoxSearchGroupsSelect(Sender: TObject);
@@ -4348,24 +4296,18 @@ begin
   end;
 end;
 
-procedure TSearchForm.SearchEditEnterDown(Sender: TObject);
-begin
- DoSearchNow(nil);
-end;
-
 procedure TSearchForm.FormResize(Sender: TObject);
 var
-  aTop,n, LastIndex : integer;
-
+  aTop, N, LastIndex : Integer;
 begin
- LastIndex:=ComboBoxSearchGroups.ItemIndex;
- aTop := ClientHeight - ComboBoxSearchGroups.Top-ComboBoxSearchGroups.Height - Panel1.Top;
- n:=Max(5,aTop div 32);
- if n<>ComboBoxSearchGroups.DropDownCount then
- begin
-  ComboBoxSearchGroups.DropDownCount:=n;
-  ComboBoxSearchGroups.ItemIndex:=LastIndex;
- end;
+  LastIndex := ComboBoxSearchGroups.ItemIndex;
+  aTop := ClientHeight - ComboBoxSearchGroups.Top - ComboBoxSearchGroups.Height - Panel1.Top;
+  N := Max(5, aTop div 32);
+  if N <> ComboBoxSearchGroups.DropDownCount then
+  begin
+    ComboBoxSearchGroups.DropDownCount := N;
+    ComboBoxSearchGroups.ItemIndex := LastIndex;
+  end;
 end;
 
 procedure TSearchForm.LoadToolBarIcons();
@@ -4380,11 +4322,12 @@ var
 
   procedure AddDisabledIcon(Name : String);
   var
-    i : integer;
+    I : integer;
   begin
-    if UseSmallIcons then Name:=Name+'_SMALL';
-    for i := 1 to 9 do
-    ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
+    if UseSmallIcons then
+      Name := Name + '_SMALL';
+    for I := 1 to 9 do
+      ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
 
 begin
@@ -4399,94 +4342,90 @@ begin
     DisabledToolBarImageList.Height:=16;
   end;
 
- ConvertTo32BitImageList(ToolBarImageList);
- ConvertTo32BitImageList(DisabledToolBarImageList);
+  ConvertTo32BitImageList(ToolBarImageList);
+  ConvertTo32BitImageList(DisabledToolBarImageList);
 
- AddIcon('SEARCH_FIND');
- AddIcon('SEARCH_SORT');
- AddIcon('SEARCH_ZOOM_IN');
- AddIcon('SEARCH_ZOOM_OUT');
- AddIcon('SEARCH_GROUPS');
- AddIcon('SEARCH_SAVE');
- AddIcon('SEARCH_IMPORT');
- AddIcon('SEARCH_EXPLORER');
- AddIcon('SEARCH_BREAK');
+  AddIcon('SEARCH_FIND');
+  AddIcon('SEARCH_SORT');
+  AddIcon('SEARCH_ZOOM_IN');
+  AddIcon('SEARCH_ZOOM_OUT');
+  AddIcon('SEARCH_GROUPS');
+  AddIcon('SEARCH_SAVE');
+  AddIcon('SEARCH_IMPORT');
+  AddIcon('SEARCH_EXPLORER');
+  AddIcon('SEARCH_BREAK');
 
- AddDisabledIcon('SEARCH_BREAK_GRAY');
+  AddDisabledIcon('SEARCH_BREAK_GRAY');
 
- ToolButton3.ImageIndex:=0;
- ToolButton9.ImageIndex:=1;
- ToolButton1.ImageIndex:=3;
- ToolButton2.ImageIndex:=2;
- ToolButton10.ImageIndex:=4;
- ToolButton4.ImageIndex:=5;
- ToolButton5.ImageIndex:=6;    
- ToolButton12.ImageIndex:=7;
- tbStopOperation.ImageIndex:=8;
+  TbSearch.ImageIndex:=0;
+  ToolButton9.ImageIndex:=1;
+  ToolButton1.ImageIndex:=3;
+  ToolButton2.ImageIndex:=2;
+  ToolButton10.ImageIndex:=4;
+  ToolButton4.ImageIndex:=5;
+  ToolButton5.ImageIndex:=6;
+  ToolButton12.ImageIndex:=7;
+  tbStopOperation.ImageIndex:=8;
 
- ToolBar1.Images := ToolBarImageList;
- ToolBar1.DisabledImages:= DisabledToolBarImageList;
-end;
-
-procedure TSearchForm.ToolButton3Click(Sender: TObject);
-begin
- DoSearchNow(nil);
+  ToolBar1.Images := ToolBarImageList;
+  ToolBar1.DisabledImages:= DisabledToolBarImageList;
 end;
 
 procedure TSearchForm.ZoomIn;
-var
-  SelectedVisible : boolean;
 begin
- ListView.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- if FPictureSize>40 then FPictureSize:=FPictureSize-10;
- ListView.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView.CellSizes.Thumbnail.Height:=FPictureSize+36;
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;
- ListView.Scrollbars.ReCalculateScrollbars(false,true);
- ListView.Groups.ReIndexItems;
- ListView.Groups.Rebuild(true);
+  ListView.BeginUpdate;
+  try
+    if FPictureSize > 40 then
+      FPictureSize:=FPictureSize - 10;
+    LoadSizes;
+    BigImagesTimer.Enabled := False;
+    BigImagesTimer.Enabled := True;
+    ListView.Scrollbars.ReCalculateScrollbars(False, True);
+    ListView.Groups.ReIndexItems;
+    ListView.Groups.Rebuild(true);
 
- if SelectedVisible then
- ListView.Selection.First.MakeVisible(emvTop);
- ListView.EndUpdate();
+    if IsSelectedVisible then
+      ListView.Selection.First.MakeVisible(emvTop);
+  finally
+    ListView.EndUpdate;
+  end;
 end;
 
 procedure TSearchForm.ZoomOut;
-var
-  SelectedVisible : boolean;
-begin                 
- ListView.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- if FPictureSize<550 then FPictureSize:=FPictureSize+10;
- ListView.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView.CellSizes.Thumbnail.Height:=FPictureSize+36;  
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;   
- ListView.Scrollbars.ReCalculateScrollbars(false,true);
- ListView.Groups.ReIndexItems;
- ListView.Groups.Rebuild(true);
- if SelectedVisible then
- ListView.Selection.First.MakeVisible(emvTop);
- ListView.EndUpdate();
+begin
+  ListView.BeginUpdate;
+  try
+    if FPictureSize < 550 then
+      FPictureSize := FPictureSize + 10;
+
+    LoadSizes;
+    BigImagesTimer.Enabled := False;
+    BigImagesTimer.Enabled := True;
+    ListView.Scrollbars.ReCalculateScrollbars(False, True);
+    ListView.Groups.ReIndexItems;
+    ListView.Groups.Rebuild(True);
+    if IsSelectedVisible then
+      ListView.Selection.First.MakeVisible(emvTop);
+  finally
+    ListView.EndUpdate;
+  end;
 end;
 
 procedure TSearchForm.ToolButton1Click(Sender: TObject);
 begin
- ZoomIn;
+  ZoomIn;
 end;
 
 procedure TSearchForm.ToolButton2Click(Sender: TObject);
 begin
- ZoomOut;
+  ZoomOut;
 end;
 
 procedure TSearchForm.ReRecreateGroupsList();
 begin            
- SearchEdit.ShowDropDownMenu:=false;
- GroupsLoaded:=false;
- LoadGroupsList;
+  SearchEdit.ShowDropDownMenu := False;
+  GroupsLoaded := False;
+  LoadGroupsList;
 end;
 
 procedure TSearchForm.ToolButton12Click(Sender: TObject);
@@ -4517,147 +4456,154 @@ var
 begin
   SearchQuery := SearchEdit.ItemsEx[Index].Data;
 
-  if SearchQuery.RatingFrom>0 then
+  if (SearchQuery.RatingFrom > 0) or (SearchQuery.RatingTo > 0) then
   begin
-    FillRect(HDC,Rect(SearchEdit.Width-20, Top, SearchEdit.Width,Top+16), SearchEdit.Canvas.Brush.Handle);
-    RtgQueryRating.DoDrawImageByrating(HDC,SearchEdit.Width - 18,Top, SearchQuery.RatingFrom);
+    if SearchQuery.RatingFrom <> SearchQuery.RatingTo then
+    begin
+      FillRect(HDC, Rect(SearchEdit.Width - 20 - 20, Top, SearchEdit.Width,Top + 16), SearchEdit.Canvas.Brush.Handle);
+      RtgQueryRating.DoDrawImageByrating(HDC, SearchEdit.Width - 18 - 20, Top, SearchQuery.RatingFrom);
+      RtgQueryRating.DoDrawImageByrating(HDC, SearchEdit.Width - 18, Top, SearchQuery.RatingTo);
+    end else
+    begin
+      FillRect(HDC, Rect(SearchEdit.Width - 20, Top, SearchEdit.Width ,Top + 16), SearchEdit.Canvas.Brush.Handle);
+      RtgQueryRating.DoDrawImageByrating(HDC, SearchEdit.Width - 18, Top, SearchQuery.RatingFrom);
+    end;
   end;
 end;
 
 procedure TSearchForm.TbStopOperationClick(Sender: TObject);
 begin
- if tbStopOperation.Enabled then
- begin                      
-  tbStopOperation.Enabled:=false;
-  BreakOperation(Sender);
-  NewFormState;
- end;
+  if tbStopOperation.Enabled then
+  begin
+    tbStopOperation.Enabled := False;
+    BreakOperation(Sender);
+    NewFormState;
+  end;
 end;
 
 procedure TSearchForm.SortingClick(Sender: TObject);
 var
-  i, l, index, n : integer;
-  aType, SortType : byte;
+  I, L, index, N : integer;
+  aType : Byte;
   Data : TSearchRecord;
 type
   SortList = array of TEasyItem;     
 
   TSortItem = record                 {This defines the objects being sorted.}
-    ID : integer;
-    ValueInt : int64;
+    ID : Integer;
+    ValueInt : Int64;
     ValueStr : string;
-    ValueDouble : double;
+    ValueDouble : Double;
    end;
                       
   TSortItems = array of TSortItem;  {This is an array of objects to be sorted.}
   
-   aListItem = record
+  aListItem = record
     Caption : string;
-    Indent : integer;
+    Indent : Integer;
     Data : Pointer;
-    ImageIndex : integer;
+    ImageIndex : Integer;
    end;
 
   aListItems = array of aListItem;
-
-
+  
 var
   SIs : TSortItems;
   LI : aListItems;
 
-  function L_Less_Than_R(L,R:TSortItem; aType : byte):boolean;
+  function L_Less_Than_R(L, R : TSortItem; aType : Byte) : Boolean;
   begin
-   Result:=true;
-   if aType=1 then
-   begin
-    if L.ValueInt=R.ValueInt then
-    Result:=AnsiCompareText(L.ValueStr,R.ValueStr)<0 else
-    Result:=L.ValueInt<R.ValueInt;
-    exit;
-   end;
-   if aType=0 then
-   Result:=AnsiCompareText(L.ValueStr,R.ValueStr)<0;
-   if aType=5 then
-   begin
-    Result:=AnsiCompareTextWithNum(L.ValueStr,R.ValueStr)<0;
-   end;
-   if aType=2 then
-   begin
-    if L.ValueDouble=R.ValueDouble then
-    Result:=AnsiCompareText(L.ValueStr,R.ValueStr)<0 else
-    Result:=L.ValueDouble<R.ValueDouble;
-    exit;
-   end;
-   if aType=3 then
-   begin
-    n:=AnsiCompareText(ExtractFileExt(L.ValueStr),ExtractFileExt(R.ValueStr));
-    if n=0 then
-    Result:=AnsiCompareText(L.ValueStr,R.ValueStr)<0 else
-    Result:=n<0;
-    exit;
-   end;
-   if aType=4 then
-   begin
-    Result:=AnsiCompareText(L.ValueStr,R.ValueStr)<0;
-   end;
+    Result := True;
+    if aType = 1 then
+    begin
+      if L.ValueInt = R.ValueInt then
+        Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0
+      else
+        Result := L.ValueInt < R.ValueInt;
+      Exit;
+    end;
+    if aType = 0 then
+      Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0;
+    if aType = 5 then
+    begin
+      Result := AnsiCompareTextWithNum(L.ValueStr, R.ValueStr) < 0;
+    end;
+    if aType=2 then
+    begin
+      if L.ValueDouble = R.ValueDouble then
+        Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0
+      else
+        Result := L.ValueDouble < R.ValueDouble;
+      Exit;
+    end;
+    if aType=3 then
+    begin
+      n := AnsiCompareText(ExtractFileExt(L.ValueStr), ExtractFileExt(R.ValueStr));
+      if n = 0 then
+        Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0
+      else
+        Result := n < 0;
+      Exit;
+    end;
+    if aType = 4 then
+      Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0;
   end;
 
-  procedure Swap(var X:TSortItems;I,J:integer);
+  procedure Swap(var X : TSortItems; I, J : Integer);
   var
     temp : TSortItem;
   begin
-   temp:=X[i];
-   X[i]:=X[J];
-   X[J]:=temp;
+    temp := X[I];
+    X[I] := X[J];
+    X[J] := temp;
   end;
 
-  procedure Qsort(var X:TSortItems; Left,Right:integer; aType : byte);
+  procedure Qsort(var X : TSortItems; Left, Right : Integer; aType : Byte);
   label
      Again;
   var
-     Pivot:TSortItem;
-     P,Q:integer;
-     m : integer;
+     Pivot : TSortItem;
+     P,Q : integer;
+     M : integer;
    begin
-      P:=Left;
-      Q:=Right;
-      m:=(Left+Right) div 2;
-      Pivot:=X [m];
+      P := Left;
+      Q := Right;
+      M := (Left + Right) div 2;
+      Pivot := X[M];
 
-      while P<=Q do
+      while P <= Q do
       begin
-         while L_Less_Than_R(X[P],Pivot,aType) do
+         while L_Less_Than_R(X[P], Pivot, aType) do
          begin
-          if p=m then break;
-          inc(P);
+          if P = M then
+            Break;
+          Inc(P);
          end;
-         while L_Less_Than_R(Pivot,X[Q],aType) do
+         while L_Less_Than_R(Pivot, X[Q], aType) do
          begin           
-          if q=m then break;
-          dec(Q);
+           if Q = M then break;
+           Dec(Q);
          end;
-         if P>Q then goto Again;
-         Swap(X,P,Q);
-         inc(P);dec(Q);
+         if P > Q then
+           goto Again;
+         Swap(X, P, Q);
+         Inc(P);
+         Dec(Q);
       end;
 
       Again:
-      if Left<Q  then Qsort(X,Left,Q,aType);
-      if P<Right then Qsort(X,P,Right,aType);
+      if Left < Q  then Qsort(X, Left, Q, aType);
+      if P < Right then Qsort(X, P, Right, aType);
    end;
 
-  procedure QuickSort(var X:TSortItems; N:integer;aType : byte; Increment : boolean);
+  procedure QuickSort(var X:TSortItems; N : integer; aType : Byte; Increment : Boolean);
   var
-    i : integer;
+    I : integer;
   begin
-    Qsort(X,0,N-1,aType);
+    Qsort(X, 0, N-1, aType);
     if not Increment then
-    begin
-     for i:=0 to Length(X) div 2 do
-     begin
-      Swap(X,i,Length(X)-1-i);
-     end;
-    end;
+     for I := 0 to Length(X) div 2 do
+       Swap(X, I, Length(X) - 1 - I);
   end;
 
 begin
@@ -4672,135 +4618,112 @@ begin
 
   ListView.Groups.BeginUpdate(false);
   try
-
-  SortType:=0;
-  if (SortbyID1.Checked) then SortType:=0;
-  if (SortbyName1.Checked) then SortType:=1;
-  if (SortbyDate1.Checked) then SortType:=2;
-  if (SortbyRating1.Checked) then SortType:=3;
-  if (SortbyFileSize1.Checked) then SortType:=4;
-  if (SortbySize1.Checked) then SortType:=5;
-  if (SortbyCompare1.Checked) then SortType:=6;
-
-  try
-   L := ListView.Items.Count;
-
-   SetLength(SIs, L);
-   SetLength(LI, L);
-
-   for I := 0 to L - 1 do
-   begin
-    LI[i].Caption:=ListView.Items[i].Caption;
-    LI[i].Indent:=ListView.Items[i].Tag;
-    LI[i].Data:=ListView.Items[i].Data;
-    LI[i].ImageIndex:=ListView.Items[i].ImageIndex;
-    Data := TSearchRecord(TDataObject(ListView.Items[i].Data).Data);
-    index:=i;
-    Case SortType of
-    0: begin
-        SIs[i].ValueInt:=Data.ID;
-        SIs[i].ValueStr:=ExtractFileName(Data.FileName);
-       end;
-    1: begin
-        SIs[i].ValueStr:=ExtractFileName(Data.FileName);
-       end;
-    2: begin
-        SIs[i].ValueDouble:=DateOf(Data.Date)+Data.Time;
-        SIs[i].ValueStr:=ExtractFileName(Data.FileName);
-       end;
-    3: begin      
-        SIs[i].ValueInt:=Data.Rating;
-        SIs[i].ValueStr:=ExtractFileName(Data.FileName);
-       end;
-    4: begin
-        SIs[i].ValueInt:=Data.FileSize;
-        SIs[i].ValueStr:=ExtractFileName(Data.FileName);
-       end;
-    5: begin
-        SIs[i].ValueStr:=ExtractFileName(Data.FileName);
-        SIs[i].ValueInt:=Data.Width*Data.Height;
-       end;
-    6: begin  //COMPARING!
-        SIs[i].ValueStr:=ExtractFileName(Data.FileName);
-        SIs[i].ValueInt:=Data.CompareResult.ByPixels*10+Data.CompareResult.ByGistogramm;
-       end;
-    end;
-    SIs[i].ID:=i;
-   end;
-
-    aType := 0;
-    if SortType=0 then aType:=1;
-    if SortType=1 then aType:=4;
-    if SortType=2 then aType:=2;
-    if SortType=3 then aType:=1;
-    if SortType=4 then aType:=1;
-    if SortType=5 then aType:=1;
-    if SortType=6 then aType:=1;
-
-    QuickSort(SIs, L, aType, Increment1.Checked);
-                       
-    ListView.BeginUpdate;
     try
-      ListView.Items.Clear;
+      L := ListView.Items.Count;
 
-      EmptyFillListInfo;
+      SetLength(SIs, L);
+      SetLength(LI, L);
 
       for I := 0 to L - 1 do
       begin
-        AddItemInListViewByGroups(TSearchRecord(TDataObject(LI[SIs[i].ID].Data).Data), False);
-        ListView.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
-        ListView.Items[i].Data := LI[SIs[i].ID].Data;
+        LI[I].Caption := ListView.Items[I].Caption;
+        LI[I].Indent := ListView.Items[I].Tag;
+        LI[I].Data := ListView.Items[I].Data;
+        LI[I].ImageIndex := ListView.Items[I].ImageIndex;
+        Data := TSearchRecord(TDataObject(ListView.Items[I].Data).Data);
+        index := I;
+        case SortMethod of
+          SM_ID: begin
+              SIs[i].ValueInt := Data.ID;
+              SIs[i].ValueStr := ExtractFileName(Data.FileName);
+             end;
+          SM_TITLE: begin
+              SIs[i].ValueStr := ExtractFileName(Data.FileName);
+             end;
+          SM_DATE_TIME: begin
+              SIs[i].ValueDouble := DateOf(Data.Date) + Data.Time;
+              SIs[i].ValueStr := ExtractFileName(Data.FileName);
+             end;
+          SM_RATING: begin
+              SIs[i].ValueInt := Data.Rating;
+              SIs[i].ValueStr := ExtractFileName(Data.FileName);
+             end;
+          SM_FILE_SIZE: begin
+              SIs[i].ValueInt := Data.FileSize;
+              SIs[i].ValueStr := ExtractFileName(Data.FileName);
+             end;
+          SM_SIZE: begin
+              SIs[i].ValueStr := ExtractFileName(Data.FileName);
+              SIs[i].ValueInt := Data.Width * Data.Height;
+             end;
+          SM_COMPARING: begin
+              SIs[i].ValueStr := ExtractFileName(Data.FileName);
+              SIs[i].ValueInt := Data.CompareResult.ByPixels * 10 + Data.CompareResult.ByGistogramm;
+             end;
+        end;
+        SIs[i].ID := I;
       end;
+
+      aType := 0;
+      case SortMethod of
+        SM_TITLE: aType := 4;
+        SM_DATE_TIME: aType := 2;
+        SM_ID, SM_RATING, SM_FILE_SIZE, SM_SIZE, SM_COMPARING: aType := 1;
+      end;
+
+      QuickSort(SIs, L, aType, SortDecrement);
+
+      ListView.BeginUpdate;
+      try
+        ListView.Items.Clear;
+
+        EmptyFillListInfo;
+
+        for I := 0 to L - 1 do
+        begin
+          AddItemInListViewByGroups(TSearchRecord(TDataObject(LI[SIs[i].ID].Data).Data), False);
+          ListView.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
+          ListView.Items[i].Data := LI[SIs[i].ID].Data;
+        end;
       except
-        on e : Exception do EventLog(':TSearchForm::SortingClick() throw exception: '+e.Message);
+        on e : Exception do EventLog(':TSearchForm::SortingClick() throw exception: ' + e.Message);
       end;
     finally
       ListView.EndUpdate();
     end;
   finally
-    ListView.Groups.EndUpdate(false);
+    ListView.Groups.EndUpdate(False);
   end;
   ListView.Realign;
 end;
 
 procedure TSearchForm.PopupMenuZoomDropDownPopup(Sender: TObject);
 begin
- Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
- BigImagesSizeForm.Execute(self,fPictureSize,BigSizeCallBack);
+  Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
+  BigImagesSizeForm.Execute(self,fPictureSize, BigSizeCallBack);
 end;
 
 procedure TSearchForm.DoSetSearchByComparing;
 begin
-  FSearchByCompating:=true;
+  FSearchByCompating := True;
 end;
 
 procedure TSearchForm.SortingPopupMenuPopup(Sender: TObject);
 var
-  i : integer;
+  I : Integer;
 begin
   SortbyCompare1.Visible := FSearchByCompating;
 
- for i:=0 to SortingPopupMenu.Items.Count-1 do
- SortingPopupMenu.Items[i].Enabled:=not fListUpdating;
+  for i:=0 to SortingPopupMenu.Items.Count-1 do
+    SortingPopupMenu.Items[i].Enabled:=not fListUpdating;
 end;
 
 procedure TSearchForm.SortbyCompare1Click(Sender: TObject);
 begin
- SortbyCompare1.Checked:=true;
- SortLink.Tag:=6;
- SortLink.Text:=TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
- SortingClick(Sender); 
-end;
-
-procedure TSearchForm.LoadSearchDBParametrs;
-var
-  s : string;
-begin
- s:=DBKernel.ReadString('Search_DB_'+DBKernel.GetDataBaseName,'OldValue') ;
- RtgQueryRating.Rating:=DBKernel.ReadInteger('Search_DB_'+DBKernel.GetDataBaseName,'OldMinRating',0);
-
- if s<>'' then SearchEdit.text:=Copy(s,1,1000);
- SearchEdit.text:=s;
+  SortbyCompare1.Checked := True;
+  SortLink.Tag := 6;
+  SortLink.Text := TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.LoadQueryList;
@@ -4842,15 +4765,20 @@ begin
     Increment1Click(Self);
 
   case FSearchInfo[0].SortMethod of
-   SM_ID        : SortbyID1Click(nil);
-   SM_TITLE     : SortbyName1Click(nil);
-   SM_DATE_TIME : SortbyDate1Click(nil);
-   SM_RATING    : SortbyRating1Click(nil);
-   SM_FILE_SIZE : SortbyFileSize1Click(nil);
-   SM_SIZE      : SortbySize1Click(nil);
-   else
-    SortbyDate1Click(nil);
+    SM_ID        : SortbyID1Click(nil);
+    SM_TITLE     : SortbyName1Click(nil);
+    SM_DATE_TIME : SortbyDate1Click(nil);
+    SM_RATING    : SortbyRating1Click(nil);
+    SM_FILE_SIZE : SortbyFileSize1Click(nil);
+    SM_SIZE      : SortbySize1Click(nil);
+    else
+     SortbyDate1Click(nil);
   end;
+
+  RtgQueryRating.Rating := FSearchInfo[0].RatingFrom;
+  RtgQueryRating.RatingRange := FSearchInfo[0].RatingTo;
+  SearchEdit.Text := FSearchInfo[0].Query;
+  
 end;
 
 procedure TSearchForm.SaveQueryList;
@@ -5031,7 +4959,7 @@ begin
   TADOQuery(DS).CursorLocation := clUseClient;
   TADOQuery(DS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
   TADOQuery(DS).LockType := ltReadOnly;
-  SetSQL(DS, 'Select distinct DateToAdd from ' + GetDefDBname + ' where IsDate = True order by DateToAdd DESC');
+  SetSQL(DS, 'SELECT DISTINCT DateToAdd FROM ' + GetDefDBname + ' WHERE IsDate = True ORDER BY DateToAdd DESC');
   TADOQuery(DS).OnFetchProgress := FetchProgress;
 
   TOpenQueryThread.Create(False, DS, DBRangeOpened);
@@ -5047,31 +4975,32 @@ procedure TSearchForm.elvDateRangeItemClick(Sender: TCustomEasyListview;
   Item: TEasyItem; KeyStates: TCommonKeyStates;
   HitInfo: TEasyItemHitTestInfoSet);
 var
-  i : integer;
+  I : Integer;
 begin
- if not Item.Selected or ((elvDateRange.Selection.Count>1) and CtrlKeyDown) then
- begin
-  if elvDateRange.Selection.First<>nil then
+  if not Item.Selected or ((elvDateRange.Selection.Count>1) and CtrlKeyDown) then
   begin
-   for i:=0 to elvDateRange.Items.Count-1 do
-   if elvDateRange.Items[i].Selected then
-   elvDateRange.Items[i].Selected:=false;
-  end
- end;
+    if elvDateRange.Selection.First<>nil then
+    begin
+      for I := 0 to elvDateRange.Items.Count - 1 do
+        if elvDateRange.Items[I].Selected then
+          elvDateRange.Items[I].Selected := False;
+    end
+  end;
 end;
 
-function TSearchForm.DateRangeItemAtPos(X,Y : integer): TEasyItem;
+function TSearchForm.DateRangeItemAtPos(X, Y : Integer): TEasyItem;
 var
-  r : TRect;
-  i : integer;
+  R : TRect;
+  I : integer;
 begin
- Result:=nil;
- r :=  elvDateRange.Scrollbars.ViewableViewportRect;
- for i:=0 to elvDateRange.Groups.Count-1 do
- begin
-  Result:=elvDateRange.Groups[0].ItemByPoint(Point(r.left+x,r.top+y));
-  if Result<>nil then exit;
- end;
+  Result := nil;
+  R :=  elvDateRange.Scrollbars.ViewableViewportRect;
+  for I := 0 to elvDateRange.Groups.Count - 1 do
+  begin
+    Result := elvDateRange.Groups[0].ItemByPoint(Point(R.Left + X, R.Top + Y));
+    if Result <> nil then
+      Exit;
+  end;
 end;
 
 procedure TSearchForm.elvDateRangeMouseDown(Sender: TObject;
@@ -5207,7 +5136,7 @@ begin
   if ShowGroups then
   begin
 
-  if SortMethod=4 then
+  if SortMethod = SM_FILE_SIZE then
   begin
     if not SortDecrement then
     begin
@@ -5251,7 +5180,7 @@ begin
             begin
               FFillListInfo.LastSize := I + i10;
               Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
-              Visible:=true;
+              Visible := True;
             end;
           end else
           begin

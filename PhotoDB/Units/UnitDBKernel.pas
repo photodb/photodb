@@ -311,7 +311,6 @@ type TDBKernel = class(TObject)
   function DBExists(DBName : string) : boolean;
   function NewDBName(DBNamePattern : string) : string;
   function ValidDBVersion(DBFile: string; DBVersion : integer) : boolean;
-  procedure ActivateDBControls(Form: TForm);
   procedure InitIconDll;
   procedure FreeIconDll;
   procedure ReadDBOptions;
@@ -1537,28 +1536,12 @@ begin
  IniFile.Free;
 end;
 
-procedure TDBKernel.ActivateDBControls(Form: TForm);
-var
-  i : integer;
-begin
-
- for i:=0 to Form.ComponentCount-1 do
- begin
-  if Form.Components[i] is TWebLink then
-  (Form.Components[i] as TWebLink).ImageCanRegenerate:=true;
-  if Form.Components[i] is TTwButton then
-  (Form.Components[i] as TTwButton).ImageCanRegenerate:=true;
-  if Form.Components[i] is TRating then
-  (Form.Components[i] as TRating).ImageCanRegenerate:=true;
- end;
-end;
 procedure TDBKernel.RegisterForm(Form: TForm);
 var
   i : integer;
   isform : boolean;
 begin
  isform:=false;
- ActivateDBControls(Form);
  For i:=0 to length(FForms)-1 do
  begin
   if FForms[i]=form then

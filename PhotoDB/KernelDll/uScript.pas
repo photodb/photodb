@@ -133,8 +133,8 @@ type
   private
     FEnviroments : TList;
     constructor Create;
+  public       
     destructor Destroy; override;
-  public
     class function Instance : TScriptEnviroments;
     function GetEnviroment(Name : string) : TScriptEnviroment;
   end;
@@ -161,7 +161,6 @@ type
     FPrivateEnviroment : TScriptEnviroment;
     FCombinedEnviromentFunctionList : TCombinedEnviromentFunctionList;
     function GetScriptFunctions: TCombinedEnviromentFunctionList;
-    function GetEnviroment: TScriptEnviroment;
     procedure SetEnviroment(const Value: TScriptEnviroment);
   public
     constructor Create(EnviromentName : string);
@@ -216,11 +215,6 @@ begin
   FCombinedEnviromentFunctionList.Free;
   FNamedValues.Free;
   inherited;
-end;
-
-function TScript.GetEnviroment: TScriptEnviroment;
-begin
-  Result := FEnviroment;
 end;
 
 function TScript.GetScriptFunctions: TCombinedEnviromentFunctionList;
@@ -541,6 +535,7 @@ end;
 function TCombinedEnviromentFunctionList.GetFunctionByIndex(
   Index: Integer): TScriptFunction;
 begin
+  Result := nil;
   if (Index > -1) and (Index < Count) then
   begin
     if Index < FEnviroment1.FFunctions.Count then

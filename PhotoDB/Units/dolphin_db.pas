@@ -82,6 +82,34 @@ const
   DemoDays = 30;
   LimitDemoRecords = 1000;
 
+type TDBPopupMenuInfoRecord = class
+  FileName : string;
+  Comment  : string;
+  FileSize  : Int64;
+  Rotation : Integer;
+  Rating : Integer;
+  ID : Integer;  
+  IsCurrent : Boolean;
+  Selected : Boolean;
+  Access : Integer;
+  Date : TDateTime;
+  Time : TDateTime;
+//TODO: +  IsPlusMenu : Boolean;
+//TODO: +  PlusMenu : TArMenuitem;
+//TODO: +   IsListItem : boolean;
+//TODO: +   ListItem : TObject;
+//TODO: +   IsDateGroup : Boolean;
+  IsDates : Boolean;
+  IsTimes : Boolean;
+  Groups : string;
+  KeyWords : string;
+  Crypted : Boolean;
+//TODO: +  IsAttrExists : boolean;
+  Attr : Integer;
+  InfoLoaded : Boolean;
+  Include : Boolean;
+  Links : string;  //??? not for common use yet
+end;
 
 type TDBPopupMenuInfo = record
   ItemFileNames_, ItemComments_  : TArstrings;   //0

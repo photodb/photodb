@@ -1,6 +1,6 @@
 object SearchForm: TSearchForm
-  Left = 200
-  Top = 50
+  Left = 353
+  Top = 58
   Width = 824
   Height = 678
   ActiveControl = ShowDateOptionsLink
@@ -725,7 +725,7 @@ object SearchForm: TSearchForm
         OnChange = Memo1Change
         Islayered = False
         Layered = 100
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object TwButton1: TTwButton
         Left = 105
@@ -776,7 +776,7 @@ object SearchForm: TSearchForm
         OnlyMainImage = True
         IsLayered = False
         Layered = 100
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ShowDateOptionsLink: TWebLink
         Left = 8
@@ -794,7 +794,7 @@ object SearchForm: TSearchForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object SortLink: TWebLink
         Left = 8
@@ -813,7 +813,7 @@ object SearchForm: TSearchForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ComboBoxSearchGroups: TComboBoxExDB
         Left = 8
@@ -854,7 +854,7 @@ object SearchForm: TSearchForm
         DropDownCount = 10
         ShowDropDownMenu = True
         LastItemIndex = 0
-        OnEnterDown = SearchEditEnterDown
+        OnEnterDown = DoSearchNow
         ShowEditIndex = -1
         OnGetAdditionalImage = SearchEditGetAdditionalImage
         StartText = 'Enter your query here'
@@ -1111,13 +1111,13 @@ object SearchForm: TSearchForm
       TabOrder = 0
       Transparent = True
       Wrapable = False
-      object ToolButton3: TToolButton
+      object TbSearch: TToolButton
         Left = 0
         Top = 2
         AutoSize = True
         Caption = 'Search'
         ImageIndex = 2
-        OnClick = ToolButton3Click
+        OnClick = DoSearchNow
       end
       object ToolButton15: TToolButton
         Left = 12

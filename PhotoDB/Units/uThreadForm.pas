@@ -28,7 +28,7 @@ uses SysUtils, uThreadEx;
 
 constructor TThreadForm.Create(AOwner: TComponent);
 begin
-  inherited;
+  inherited Create(AOwner);
   FSync := TCriticalSection.Create;
   FThreadList := TList.Create;
 end;

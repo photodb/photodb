@@ -21,7 +21,8 @@ const
   SM_DATE_TIME  = 2;
   SM_RATING     = 3;
   SM_FILE_SIZE  = 4;
-  SM_SIZE       = 5;
+  SM_SIZE       = 5; 
+  SM_COMPARING  = 6;
 
 type
   SearchThread = class(TThreadEx)
@@ -53,23 +54,15 @@ type
     IthIds : TArInteger;
     StrParam : String;
     IntParam : Integer;
-//    procedure NewItem;
-//  procedure InitializeA;
-//  procedure InitializeB;
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure ErrorSQL;
-  //procedure SetImageIndex;
-//  procedure ProgressNullA;
-//  procedure ProgressNull;
-//  procedure AddImageToList;
     function CreateQuery : TDBQueryParams;
     procedure DoOnDone;
     procedure SetSearchPathW(Path : String);
     procedure SetSearchPath;
     procedure GetWideSearchOptions(Params : TDBQueryParams);
     function AddOptions(SqlQuery : string) : string;
-    procedure ListViewImageIndex;
     procedure SetProgressText(Value : String);
     procedure SetProgressTextA;
     procedure SetMaxValue(Value : Integer);
@@ -128,29 +121,6 @@ begin
   FSearchParams := SearchParams;
   Start;
 end;
-
-{procedure SearchThread.AddImageToList;
-begin
-  //TODO: !!!(ThreadForm as TSearchForm).FBitmapImageList.AddBitmap(fbit);
-end; }
-
-{procedure SearchThread.ProgressNull;
-begin
-  (ThreadForm as TSearchForm).PbProgress.Position:=0;
-  (ThreadForm as TSearchForm).PbProgress.text:=TEXT_MES_DONE;
-end;
-
-procedure SearchThread.ProgressNullA;
-begin
-  (ThreadForm as TSearchForm).PbProgress.Position:=0;
-  (ThreadForm as TSearchForm).PbProgress.text:=TEXT_MES_PROGRESS_PR;
-end;    }
-
-{procedure SearchThread.SetImageIndex;
-begin
-  //TODO:!!!(ThreadForm as TSearchForm).ReplaceImageIndexWithPath(fData[IntParam].FileName,(ThreadForm as TSearchForm).FBitmapImageList.Count-1);
-  //TODO:!!!(ThreadForm as TSearchForm).PbProgress.Position:=fthum_images_;
-end;     }
 
 procedure SearchThread.BeginUpdate;
 begin
@@ -1118,11 +1088,6 @@ end;
 procedure SearchThread.SetProgressTextA;
 begin
   (ThreadForm as TSearchForm).PbProgress.Text:=StrParam;
-end;
-
-procedure SearchThread.ListViewImageIndex;
-begin
-  IntParam:=(ThreadForm as TSearchForm).GetImageIndexWithPath(FData[IntParam].FileName);
 end;
 
 function SearchThread.AddOptions(SqlQuery : string): string;

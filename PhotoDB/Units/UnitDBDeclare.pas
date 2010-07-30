@@ -2,7 +2,7 @@ unit UnitDBDeclare;
 
 interface
 
-uses DB, Windows, Classes, Menus, Graphics, JPEG;
+uses DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview;
 
 //Array types
 type
@@ -284,6 +284,8 @@ type
     function EqualsTo(AQuery : TSearchQuery) : Boolean;
   end;
 
+  function GetSearchRecordFromItemData(ListItem : TEasyItem) : TSearchRecord;
+
 implementation
 
 { TSearchRecordArray }
@@ -406,6 +408,11 @@ begin
   if Bitmap <> nil then
     Bitmap.Free;
   inherited;
+end;
+
+function GetSearchRecordFromItemData(ListItem : TEasyItem) : TSearchRecord;
+begin
+  Result := TSearchRecord(TDataObject(ListItem.Data).Data);
 end;
 
 end.
