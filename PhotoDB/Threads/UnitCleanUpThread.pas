@@ -4,7 +4,7 @@ interface
 
 uses
   UnitDBKernel, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
-  SysUtils,ComCtrls, Graphics, jpeg, UnitINI, Exif, DateUtils,
+  SysUtils,ComCtrls, Graphics, jpeg, UnitINI, Exif, DateUtils, uFileUtils,
   CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants;
 
 type

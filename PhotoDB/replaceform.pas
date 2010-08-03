@@ -553,7 +553,8 @@ end;
 procedure TDBReplaceForm.Image2ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
-  info : TDBPopupMenuInfo;
+  MenuInfo : TDBPopupMenuInfo;
+  MenuRecord : TDBPopupMenuInfoRecord;
   i : integer;
 begin
  WorkQuery.First;
@@ -562,10 +563,11 @@ begin
   if WorkQuery.FieldByName('ID').AsInteger=StrToInt(DB_ID.Text) then Break;
   WorkQuery.Next;
  end;
-  info:=DBPopupMenuInfoOne(WorkQuery.FieldByName('FFileName').AsString,WorkQuery.FieldByName('Comment').AsString,WorkQuery.FieldByName('Groups').AsString,WorkQuery.FieldByName('ID').AsInteger,WorkQuery.FieldByName('FileSize').AsInteger, WorkQuery.FieldByName('Rotated').AsInteger,WorkQuery.FieldByName('Rating').AsInteger,WorkQuery.FieldByName('Access').AsInteger,WorkQuery.FieldByName('DateToAdd').AsDateTime,WorkQuery.FieldByName('IsDate').AsBoolean,WorkQuery.FieldByName('IsTime').AsBoolean,WorkQuery.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')),WorkQuery.FieldByName('KeyWords').AsString,true,WorkQuery.FieldByName('Include').AsBoolean,WorkQuery.FieldByName('Links').AsString);
-  info.IsDateGroup:=True;
-  Info.IsAttrExists:=false;
-  TDBPopupMenu.Instance.Execute(Image2.ClientToScreen(MousePos).x,Image2.ClientToScreen(MousePos).y,info);
+  MenuInfo := TDBPopupMenuInfo.Create;
+  MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+  MenuInfo.Add(MenuRecord);
+  MenuInfo.AttrExists:=false;
+  TDBPopupMenu.Instance.Execute(Image2.ClientToScreen(MousePos).x, Image2.ClientToScreen(MousePos).y, MenuInfo);
 end;
 
 procedure TDBReplaceForm.ListView1CustomDrawItem(Sender: TCustomListView;

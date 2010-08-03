@@ -468,7 +468,7 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = False
       end
     end
-    object ListView1: TListView
+    object ElvMain: TListView
       Left = 1
       Top = 217
       Width = 880
@@ -536,10 +536,10 @@ object ManagerDB: TManagerDB
       StateImages = ImageList2
       TabOrder = 1
       ViewStyle = vsReport
-      OnAdvancedCustomDrawSubItem = ListView1AdvancedCustomDrawSubItem
-      OnContextPopup = ListView1ContextPopup
-      OnMouseMove = ListView1MouseMove
-      OnSelectItem = ListView1SelectItem
+      OnAdvancedCustomDrawSubItem = ElvMainAdvancedCustomDrawSubItem
+      OnContextPopup = ElvMainContextPopup
+      OnMouseMove = ElvMainMouseMove
+      OnSelectItem = ElvMainSelectItem
     end
   end
   object DataSource1: TDataSource

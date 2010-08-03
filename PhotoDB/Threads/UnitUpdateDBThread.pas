@@ -5,7 +5,7 @@ interface
 uses
    ReplaceForm, UnitDBKernel, Windows, dolphin_db, Classes, UnitUpdateDB, Forms,
   SysUtils, DB, GraphicCrypt, dialogs, Exif, DateUtils, CommonDBSupport,
-  win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger,
+  win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare;
 
 type

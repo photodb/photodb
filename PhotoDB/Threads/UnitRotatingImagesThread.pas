@@ -5,7 +5,7 @@ interface
 uses
   Windows, UnitDBKernel, Classes, UnitPropeccedFilesSupport, Dolphin_DB, Forms,
   Graphics, GDIPlusRotate, SysUtils, GraphicCrypt, ImageConverting, uVistaFuncs,
-  JPEG, Language, UnitDBDeclare, UnitDBCommonGraphics;
+  JPEG, Language, UnitDBDeclare, UnitDBCommonGraphics, uFileUtils;
 
 type
    TRotatingImagesThreadOptions = record

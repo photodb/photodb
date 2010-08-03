@@ -1097,12 +1097,12 @@ begin
    info:=GetCurrentPopUpMenuInfo(nil);
    SetLength(ArInt,0);
    WindowsProperty:=true;
-   For i:=0 to length(info.ItemIDs_)-1 do
-   if info.ItemSelected_[i] then
+   for i:=0 to info.Count - 1 do
+   if info[i].Selected then
    begin
     SetLength(ArInt,Length(ArInt)+1);
-    ArInt[Length(ArInt)-1]:=info.ItemIDs_[i];
-    if info.ItemIDs_[i]<>0 then WindowsProperty:=false;
+    ArInt[Length(ArInt)-1]:=info[i].ID;
+    if info[i].ID<>0 then WindowsProperty:=false;
    end;
    if not WindowsProperty then
    PropertyManager.NewSimpleProperty.ExecuteEx(ArInt) else
@@ -1421,8 +1421,7 @@ begin
    info.IsListItem:=True;
    info.ListItem:=Item;
   end;
-  info.IsDateGroup:=True;
-  info.IsAttrExists:=false;
+  info.AttrExists:=false;
   TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
  end;
 
@@ -2214,31 +2213,31 @@ function TExplorerForm.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuI
 var
   i, Count:integer;
   ItemIndex : Integer;
+  MenuRecord : TDBPopupMenuInfoRecord;
 begin
- Result.Position:=0;
- Result.IsListItem:=false;
- Result.IsPlusMenu:=false;
- Result:=DBPopupMenuInfoNil;
- Result.IsDateGroup:=True;
- Count:=0;
- For i:=0 to ListView1.Items.Count-1 do
- begin
-  ItemIndex:=ItemIndexToMenuIndex(i);
-  if ItemIndex>fFilesInfo.Count-1 then exit;
-  if fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE then
+  Result := TDBPopupMenuInfo.Create;
+//  Result.Position:=0;
+  Result.IsListItem:=false;
+  Result.IsPlusMenu:=false;
+  Count:=0;
+  for i:=0 to ListView1.Items.Count-1 do
   begin
-   inc(Count);
-   AddDBPopupMenuInfoOne(Result,fFilesInfo[ItemIndex].FileName, fFilesInfo[ItemIndex].Comment, fFilesInfo[ItemIndex].Groups, fFilesInfo[ItemIndex].ID, fFilesInfo[ItemIndex].FileSize, fFilesInfo[ItemIndex].Rotate, fFilesInfo[ItemIndex].Rating, fFilesInfo[ItemIndex].Access, fFilesInfo[ItemIndex].Date, fFilesInfo[ItemIndex].IsDate, fFilesInfo[ItemIndex].IsTime, fFilesInfo[ItemIndex].Time , fFilesInfo[ItemIndex].Crypted,  fFilesInfo[ItemIndex].KeyWords,fFilesInfo[ItemIndex].Loaded,fFilesInfo[ItemIndex].Include,fFilesInfo[ItemIndex].Links);
-   if ListView1.Items[i].Selected then
-   Result.ItemSelected_[Count-1]:=true else
-   Result.ItemSelected_[Count-1]:=false;
-   If item=nil then
-   Result.Position:=0 else
-   begin
-    if ListView1.Items[i].Selected then
-    if Result.Position=0 then
-    Result.Position:=count-1;
-   end;
+    ItemIndex := ItemIndexToMenuIndex(i);
+    if ItemIndex > fFilesInfo.Count-1 then
+      Exit;
+    if fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE then
+    begin
+     inc(Count);
+     MenuRecord := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[ItemIndex]);
+     MenuRecord.Selected := ListView1.Items[i].Selected;
+     Result.Add(MenuRecord);
+     if item=nil then
+     Result.Position:=0 else
+     begin
+      if ListView1.Items[i].Selected then
+      if Result.Position=0 then
+      Result.Position:=count-1;
+     end;
   end;
  end;
 end;
@@ -2908,8 +2907,6 @@ end;
 procedure TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : boolean; Big : boolean = false);
 var
   i, index, c : Integer;
-  R : TRect;
-  RectArray: TEasyRectArrayObject;
 begin
   for I := 0 to fFilesInfo.Count - 1 do
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
@@ -2962,8 +2959,6 @@ end;
 procedure TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean);
 var
   i, index, c : Integer;
-  R : TRect;
-  RectArray: TEasyRectArrayObject;
 begin
   for I := 0 to fFilesInfo.Count - 1 do
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
@@ -3066,7 +3061,6 @@ end;
 function TExplorerForm.AddItemW(Caption: string; FileGUID: TGUID) : TEasyItem;
 Var
   I : integer;
-  P : PBoolean;
   Data : TDataObject;
 begin
  Result:=Nil;
@@ -3281,8 +3275,8 @@ begin
 end;
 
 procedure TExplorerForm.DeleteItemWithIndex(Index: Integer);
-var j:integer;
-    MenuIndex : integer;
+var
+  MenuIndex : integer;
 begin
   LockItems;
   try

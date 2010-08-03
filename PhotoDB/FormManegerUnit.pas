@@ -105,7 +105,6 @@ var
   If DBTerminating then exit;
   if ActivateForm=nil then
   Application.CreateForm(TActivateForm,ActivateForm);
-  ApplicationRuned := true;
   Application.Run;
  end;
 

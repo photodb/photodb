@@ -1,6 +1,6 @@
 object SearchForm: TSearchForm
   Left = 353
-  Top = 58
+  Top = 73
   Width = 824
   Height = 678
   ActiveControl = ShowDateOptionsLink

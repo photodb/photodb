@@ -8,7 +8,7 @@ uses
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
   AppEvnts, ImgList, UnitDBKernel, FadeImage, jpeg, Win32crc, CommCtrl,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
-  ShellContextMenu, DropSource, DropTarget, GIFImage, GraphicEx,
+  ShellContextMenu, DropSource, DropTarget, GIFImage, GraphicEx, uFileUtils,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
@@ -1010,55 +1010,13 @@ end;
 procedure TViewer.PopupMenu1Popup(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
+  MenuRecord : TDBPopupMenuInfoRecord;
   i : integer;
 
  procedure InitializeInfo;
  begin
-  SetLength(info.ItemFileNames_,1);
-  SetLength(info.ItemIDs_,1);
-  SetLength(info.ItemRotations_,1);
-  SetLength(info.ItemRatings_,1);
-  SetLength(info.ItemComments_,1);
-  SetLength(info.ItemAccess_,1);
-  SetLength(info.ItemSelected_,1);
-  SetLength(info.ItemDates_,1);
-  SetLength(info.ItemTimes_,1);
-  SetLength(info.ItemIsDates_,1);
-  SetLength(info.ItemIsTimes_,1);
-  SetLength(info.ItemGroups_,1);
-  SetLength(info.ItemCrypted_,1);
-  SetLength(info.ItemLoaded_,1);
-  SetLength(info.ItemKeyWords_,1);
-  SetLength(info.ItemInclude_,1);
-  SetLength(info.ItemAttr_,1);
-  SetLength(info.ItemLoaded_,1);
-  SetLength(info.ItemFileSizes_,1);
-  SetLength(info.ItemLinks_,1);
-  info.ItemFileNames_[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
-  info.ItemIDs_[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
-  info.ItemRotations_[0]:=CurrentInfo.ItemRotates[CurrentFileNumber];
-  info.ItemRatings_[0]:=CurrentInfo.ItemRatings[CurrentFileNumber];
-  info.ItemComments_[0]:=CurrentInfo.ItemComments[CurrentFileNumber];
-  info.ItemAccess_[0]:=CurrentInfo.ItemAccesses[CurrentFileNumber];
-  info.ItemDates_[0]:=CurrentInfo.ItemDates[CurrentFileNumber];
-  info.ItemTimes_[0]:=CurrentInfo.ItemTimes[CurrentFileNumber];
-  info.ItemIsDates_[0]:=CurrentInfo.ItemIsDates[CurrentFileNumber];
-  info.ItemIsTimes_[0]:=CurrentInfo.ItemIsTimes[CurrentFileNumber];
-  info.ItemGroups_[0]:=CurrentInfo.ItemGroups[CurrentFileNumber];
-  info.ItemCrypted_[0]:=CurrentInfo.ItemCrypted[CurrentFileNumber];
-  info.ItemKeyWords_[0]:=CurrentInfo.ItemKeyWords[CurrentFileNumber];
-  info.ItemLinks_[0]:=CurrentInfo.ItemLinks[CurrentFileNumber];
-  info.ItemSelected_[0]:=True;
-  info.ItemLoaded_[0]:=True;
-  info.ItemAttr_[0]:=0; 
-  info.ItemLoaded_[0]:=CurrentInfo.LoadedImageInfo[CurrentFileNumber];
-  info.ItemFileSizes_[0]:=GetFileSizeByName(CurrentInfo.ItemFileNames[CurrentFileNumber]);
-  info.ItemInclude_[0]:=CurrentInfo.ItemInclude[CurrentFileNumber];
-  info.IsPlusMenu:=false;
-  info.IsDateGroup:=True;
-  info.Position:=0;
-  info.ListItem:=nil;
-  info.IsAttrExists:=false;
+   MenuRecord := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
+   info.Add(MenuRecord);
  end;
 
 begin

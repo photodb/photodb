@@ -6,7 +6,7 @@ uses
   Registry, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, Language, EXIF, Dolphin_DB,
   acDlgSelect, Math, UnitUpdateDBObject, UnitScanImportPhotosThread,
-  DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs,
+  DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
   UnitDBDeclare, UnitDBFileDialogs;
 
 type

@@ -58,7 +58,7 @@ type
     PopupMenu7: TPopupMenu;
     TimeExists1: TMenuItem;
     Rename1: TMenuItem;
-    ListView1: TListView;
+    ElvMain: TListView;
     ApplicationEvents1: TApplicationEvents;
     ImageList2: TImageList;
     PopupMenuRating: TPopupMenu;
@@ -125,19 +125,19 @@ type
     procedure Rename1Click(Sender: TObject);
     procedure Restore1Click(Sender: TObject);
     procedure InitializeQueryList;
-    procedure ListView1AdvancedCustomDrawSubItem(Sender: TCustomListView;
+    procedure ElvMainAdvancedCustomDrawSubItem(Sender: TCustomListView;
       Item: TListItem; SubItem: Integer; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
     procedure GetData(Index: integer);
-    procedure ListView1SelectItem(Sender: TObject; Item: TListItem;
+    procedure ElvMainSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
     procedure N51Click(Sender: TObject);
     procedure R04Click(Sender: TObject);
-    procedure ListView1WindowProc(var Message: TMessage);
+    procedure ElvMainWindowProc(var Message: TMessage);
     procedure EditGroupsMenuClick(Sender: TObject);
-    procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
+    procedure ElvMainMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure PackTabelLinkClick(Sender: TObject);
     procedure ExportTableLinkClick(Sender: TObject);
@@ -146,7 +146,7 @@ type
     procedure ScanforBadLinksLinkClick(Sender: TObject);
     procedure BackUpDBLinkClick(Sender: TObject);
     procedure CleaningLinkClick(Sender: TObject);
-    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure ElvMainContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure DeleteItemWithID(ID : integer);
     procedure ListBox2DrawItem(Control: TWinControl; Index: Integer;
@@ -169,39 +169,35 @@ type
     procedure ChangePathLinkClick(Sender: TObject);
     procedure Showfileinexplorer1Click(Sender: TObject);
   private
-   DBInOpening : boolean;
-   OldWNDProc : TWndMethod;
-   IDs : array of integer;
-   aData : array of Pointer;
-   LastSelected : TListItem;
-   LastSelectedIndex : integer;
-   LockDraw : boolean;
-   aGroups : TGroups;
-   GroupBitmaps : array of TBitmap;
-   FormManagerHint : TFormManagerHint;
-   WorkQuery : TDataSet;
-   IsLock : Boolean;
-   FBackUpFiles : TStrings;
-   DBCanDrag : Boolean;
-   SI : integer;
-   LoadingList : boolean;
-
-  procedure OnMove(var Msg: TWMMove); message WM_MOVE;
-  procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
-  procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
-
-  function GetListViewItemAt(y : integer): TListItem;
-
+    DBInOpening : boolean;
+    OldWNDProc : TWndMethod;
+    IDs : array of integer;
+    aData : array of Pointer;
+    LastSelected : TListItem;
+    LastSelectedIndex : integer;
+    LockDraw : boolean;
+    aGroups : TGroups;
+    GroupBitmaps : array of TBitmap;
+    FormManagerHint : TFormManagerHint;
+    WorkQuery : TDataSet;
+    IsLock : Boolean;
+    FBackUpFiles : TStrings;
+    DBCanDrag : Boolean;
+    SI : integer;
+    LoadingList : boolean;
+    procedure OnMove(var Msg: TWMMove); message WM_MOVE;
+    procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
+    procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
+    function GetListViewItemAt(y : integer): TListItem;
+  protected             
     { protected declarations }
-  protected
-  procedure CreateParams(VAR Params: TCreateParams); override;    
+    procedure CreateParams(VAR Params: TCreateParams); override;
+  public           
     { public declarations }
-  public
-  Procedure LoadLanguage;
-    { Public declarations }
+    procedure LoadLanguage;
   end;
 
-  type
+type
 
   TListData = record
     ID : Integer;
@@ -222,13 +218,11 @@ type
     Exists : integer;
   end;
 
-  PListData = ^TListData;
-
-
+  PListData = ^TListData;  
 var
   ManagerDB: TManagerDB;
 
-Const FieldCount = 19;
+const FieldCount = 19;
 ChFields : array[1..FieldCount] of string = ('ID','Rating','Rotated','Access',
 'Width','Height','Attr','Name','FFileName','Comment','KeyWords','Owner','Collection','DateToAdd','IsDate','Include','Links','aTime','IsTime');
       FieldTypeInt  = 0;
@@ -249,22 +243,22 @@ uses UnitQuickGroupInfo, UnitBackUpTableThread, DBSelectUnit, ExplorerUnit,
 
 {$R *.dfm}
 
-  function TManagerDB.GetListViewItemAt(y : integer): TListItem;
-  var
-    r : TRect;
-    i : integer;
+function TManagerDB.GetListViewItemAt(Y : integer): TListItem;
+var
+  R : TRect;
+  I : integer;
+begin
+  Result := nil;
+  for I := 0 to elvMain.Items.Count-1 do
   begin
-   Result:=nil;
-   for i:=0 to ListView1.Items.Count-1 do
-   begin
-    r:=ListView1.Items[i].DisplayRect(drBounds);
-    if PtInRect(r,Point(0,y)) then
+    R := elvMain.Items[i].DisplayRect(drBounds);
+    if PtInRect(R, Point(0, Y)) then
     begin
-     Result:=ListView1.Items[i];
-     exit;
+      Result := elvMain.Items[I];
+      Exit;
     end;
-   end;
   end;
+end;
 
 procedure TManagerDB.FormCreate(Sender: TObject);
 Var
@@ -300,9 +294,8 @@ begin
  ConvertLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CONVERT+1]);
  ChangePathLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DIRECTORY+1]);
 
- OldWNDProc:=ListView1.WindowProc;
- ListView1.WindowProc:=ListView1WindowProc;
-// InitializeQueryList;
+ OldWNDProc:=elvMain.WindowProc;
+ elvMain.WindowProc:=ElvMainWindowProc;
 
  WorkQuery:=GetQuery;
  DBCanDrag:=false;
@@ -374,7 +367,7 @@ begin
  begin
   SetLength(IDs,Length(IDs)+1);
   SetLength(aData,Length(aData)+1);
-  with  ListView1.Items.Add do
+  with  elvMain.Items.Add do
   begin
    aData[Length(aData)-1]:=nil;
   end;
@@ -384,7 +377,7 @@ begin
  
  if EventID_Param_DB_Changed in params then
  begin
-  ListView1.Clear;
+  elvMain.Clear;
   FreeDS(WorkQuery);
   DBInOpening:=true;
   InitializeQueryList;
@@ -413,7 +406,7 @@ begin
   if EventID_Param_Rotate in params then PListData(aData[i])^.Rotate:=Value.Rotate;
   if EventID_Param_Rating in params then PListData(aData[i])^.Rating:=Value.Rating;
   if EventID_Param_Private in params then PListData(aData[i])^.Access:=Value.Access;
-  ListView1.Repaint;
+  elvMain.Repaint;
  end;
 end;
 
@@ -658,17 +651,17 @@ begin
  ConvertLink.Text:=TEXT_MES_CONVERT_DB;
  ChangePathLink.Text:=TEXT_MES_THANGE_FILES_PATH_IN_DB;
 
- ListView1.Columns[0].Caption:=TEXT_MES_ID;
- ListView1.Columns[1].Caption:=TEXT_MES_FILE_NAME;
- ListView1.Columns[2].Caption:=TEXT_MES_KEYWORDS;
- ListView1.Columns[3].Caption:=TEXT_MES_COMMENT;
- ListView1.Columns[4].Caption:=TEXT_MES_RATING;
- ListView1.Columns[5].Caption:=TEXT_MES_ROTATE;
- ListView1.Columns[6].Caption:=TEXT_MES_ACCESS;
- ListView1.Columns[7].Caption:=TEXT_MES_GROUPS;  
- ListView1.Columns[8].Caption:=TEXT_MES_DATE;
- ListView1.Columns[9].Caption:=TEXT_MES_TIME;  
- ListView1.Columns[10].Caption:=TEXT_MES_SIZE;
+ elvMain.Columns[0].Caption:=TEXT_MES_ID;
+ elvMain.Columns[1].Caption:=TEXT_MES_FILE_NAME;
+ elvMain.Columns[2].Caption:=TEXT_MES_KEYWORDS;
+ elvMain.Columns[3].Caption:=TEXT_MES_COMMENT;
+ elvMain.Columns[4].Caption:=TEXT_MES_RATING;
+ elvMain.Columns[5].Caption:=TEXT_MES_ROTATE;
+ elvMain.Columns[6].Caption:=TEXT_MES_ACCESS;
+ elvMain.Columns[7].Caption:=TEXT_MES_GROUPS;
+ elvMain.Columns[8].Caption:=TEXT_MES_DATE;
+ elvMain.Columns[9].Caption:=TEXT_MES_TIME;
+ elvMain.Columns[10].Caption:=TEXT_MES_SIZE;
 
  Showfileinexplorer1.Caption:=TEXT_MES_SHOW_FILE_IN_EXPLORER;
 end;
@@ -842,8 +835,8 @@ begin
  end;
  LockDraw:=false;
  LastSelectedIndex:=-1;
- ListView1.DoubleBuffered:=true;
- ListView1.ControlStyle:=ListView1.ControlStyle-[csDoubleClicks];
+ elvMain.DoubleBuffered:=true;
+ elvMain.ControlStyle:=elvMain.ControlStyle-[csDoubleClicks];
  WorkQuery:=GetQuery;
  _sqlexectext:='Select ID from '+GetDefDBName+' order by ID';
  SetSQL(WorkQuery,_sqlexectext);
@@ -872,10 +865,10 @@ begin
  WorkQuery.First;
  SetLength(IDs,WorkQuery.RecordCount);
  SetLength(aData,WorkQuery.RecordCount);
- ListView1.Items.BeginUpdate;
+ elvMain.Items.BeginUpdate;
  c:=0;
  for i:=1 to WorkQuery.RecordCount do
- with ListView1.Items.Add do
+ with elvMain.Items.Add do
  begin
   aData[i-1]:=nil;
   if i mod 50=0 then
@@ -889,25 +882,25 @@ begin
   IDs[i-1]:=WorkQuery.FieldByName('ID').AsInteger;
   WorkQuery.Next;
  end;
- FreeDS(WorkQuery);   
- ListView1.Items.EndUpdate;
+ FreeDS(WorkQuery);
+ elvMain.Items.EndUpdate;
  
  FormProgress.Release;
  if UseFreeAfterRelease then
  FormProgress.Free;
 
- if ListView1.Items.Count>0 then
+ if elvMain.Items.Count>0 then
  begin
-  LastSelected:=ListView1.Items[0];
+  LastSelected:=elvMain.Items[0];
   LastSelected.Selected:=true;
-  ListView1.ItemFocused:=ListView1.Items[0];
+  elvMain.ItemFocused:=elvMain.Items[0];
   Self.LastSelectedIndex:=0;
  end;
- LoadingList:=false; 
+ LoadingList:=false;
  ListBox2.Enabled:=true;
 end;
 
-procedure TManagerDB.ListView1AdvancedCustomDrawSubItem(
+procedure TManagerDB.ElvMainAdvancedCustomDrawSubItem(
   Sender: TCustomListView; Item: TListItem; SubItem: Integer;
   State: TCustomDrawState; Stage: TCustomDrawStage;
   var DefaultDraw: Boolean);
@@ -932,8 +925,8 @@ begin
   begin
    Sender.Canvas.Brush.Color:=Theme_ListSelectColor;//ColorDarken(Theme_ListColor);//$AAAAFF;
    Sender.Canvas.Pen.Color:=Theme_ListSelectColor;//ColorDarken(Theme_ListColor);//$AAAAFF;
-   ListView_GetSubItemRect(ListView1.Handle,Item.Index,10,0,@aRect);
-   ListView1.Canvas.Rectangle(0,r2.Top,aRect.Right,r2.Bottom);
+   ListView_GetSubItemRect(elvMain.Handle,Item.Index,10,0,@aRect);
+   elvMain.Canvas.Rectangle(0,r2.Top,aRect.Right,r2.Bottom);
   end else
   begin
   if Odd(Item.Index) then
@@ -949,7 +942,7 @@ begin
   end;
   end;
   Caption:=IntToStr(IDs[Item.Index]);
-  ListView_GetSubItemRect(ListView1.Handle,Item.Index,SubItem,0,@aRect);
+  ListView_GetSubItemRect(elvMain.Handle,Item.Index,SubItem,0,@aRect);
   r2 := Item.DisplayRect(drBounds);
   r2:=Rect(r2.Left,r2.Top,aRect.Left,aRect.Bottom);
   r2.Top:=r2.Top+2;
@@ -957,7 +950,7 @@ begin
 //  DD:=true;
  end;
  Sender.Canvas.Brush.Style:=bsClear;
- ListView_GetSubItemRect(ListView1.Handle,Item.Index,SubItem,0,@aRect);
+ ListView_GetSubItemRect(elvMain.Handle,Item.Index,SubItem,0,@aRect);
  Sender.Canvas.Pen.Color:=ColorDarken(Theme_MemoEditFontColor);//$DDDDDD;
  Sender.Canvas.MoveTo(aRect.Left,aRect.Top);
  Sender.Canvas.LineTo(aRect.Left,aRect.Bottom);
@@ -972,17 +965,17 @@ begin
  end;
  2 :
  begin
-  ListView1.Canvas.Font.Color:=$808080;
+  elvMain.Canvas.Font.Color:=$808080;
   aRect.Top:=aRect.Top+2;
   DrawText(Sender.Canvas.Handle, PChar(PListData(aData[Item.Index])^.KeyWords), Length(PListData(aData[Item.Index])^.KeyWords), aRect, DrawTextOpt);
-  ListView1.Canvas.Font.Color:=$0;
+  elvMain.Canvas.Font.Color:=$0;
  end;
  3 :
  begin
-  ListView1.Canvas.Font.Color:=$FF8080;
+  elvMain.Canvas.Font.Color:=$FF8080;
   aRect.Top:=aRect.Top+2;
   DrawText(Sender.Canvas.Handle, PChar(PListData(aData[Item.Index])^.Comment), Length(PListData(aData[Item.Index])^.Comment), aRect, DrawTextOpt);
-  ListView1.Canvas.Font.Color:=$0;
+  elvMain.Canvas.Font.Color:=$0;
  end;
  7 :
  begin
@@ -1007,10 +1000,10 @@ begin
    DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
   end else
   begin
-   ListView1.Canvas.Font.Color:=$808080;
+   elvMain.Canvas.Font.Color:=$808080;
    Caption:='нет';
    DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
-   ListView1.Canvas.Font.Color:=$0;
+   elvMain.Canvas.Font.Color:=$0;
   end;
  end;
  9 :
@@ -1022,10 +1015,10 @@ begin
    DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
   end else
   begin
-   ListView1.Canvas.Font.Color:=$808080;
+   elvMain.Canvas.Font.Color:=$808080;
    Caption:='нет';
    DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
-   ListView1.Canvas.Font.Color:=$0;
+   elvMain.Canvas.Font.Color:=$0;
   end;
  end;
  10 :
@@ -1041,7 +1034,7 @@ begin
   begin
    DrawIconEx(Sender.Canvas.Handle,aRect.Left+(aRect.Right-aRect.Left) div 2-8,aRect.Top,UnitDBKernel.icons[PListData(aData[Item.Index])^.Rating+DB_IC_RATING_1],16,16,0,0,DI_NORMAL);
   end;
-  ListView_GetSubItemRect(ListView1.Handle,Item.Index,1,0,@aRect);
+  ListView_GetSubItemRect(elvMain.Handle,Item.Index,1,0,@aRect);
   Caption:=PListData(aData[Item.Index])^.FileName;
   aRect.Top:=aRect.Top+2;
   if PListData(aData[Item.Index])^.Include then
@@ -1049,9 +1042,9 @@ begin
    DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
   end else
   begin
-   ListView1.Canvas.Font.Color:=$808080;
+   elvMain.Canvas.Font.Color:=$808080;
    DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
-   ListView1.Canvas.Font.Color:=$0;
+   elvMain.Canvas.Font.Color:=$0;
   end;
 
  end;
@@ -1090,7 +1083,7 @@ begin
  for i:=-30 to 40 do
  begin
   if Index+i<0 then continue;
-  if ListView1.Items.Count<=Index+i then break;
+  if elvMain.Items.Count<=Index+i then break;
   if aData[Index+i]=nil then
   begin
    if b then _sqlexectext:=_sqlexectext+IntToStr(IDs[Index+i]) else
@@ -1111,7 +1104,7 @@ begin
    n:=MaxInt;
    for j:=-30 to 40 do
    if Index+j>=0 then
-   if Index+j<=ListView1.Items.Count then
+   if Index+j<=elvMain.Items.Count then
    if IDs[Index+j]=l then
   begin
    n:=Index+j;
@@ -1173,7 +1166,7 @@ begin
  FreeDS(WorkQuery);
 end;
 
-procedure TManagerDB.ListView1SelectItem(Sender: TObject; Item: TListItem;
+procedure TManagerDB.ElvMainSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 var
   i : integer;
@@ -1186,14 +1179,14 @@ begin
  begin
   DD:=true;
   for i:=1 to 10 do
-  ListView1AdvancedCustomDrawSubItem(ListView1,item,i,[],cdPrePaint,DD);
+  ElvMainAdvancedCustomDrawSubItem(ElvMain,item,i,[],cdPrePaint,DD);
   LastSelectedIndex:=Item.Index;
  end else
  begin
   DD:=false;
   if LastSelectedIndex<>-1 then
   for i:=1 to 10 do
-  ListView1AdvancedCustomDrawSubItem(ListView1,ListView1.Items[LastSelectedIndex],i,[],cdPrePaint,DD);
+  ElvMainAdvancedCustomDrawSubItem(ElvMain,ElvMain.Items[LastSelectedIndex],i,[],cdPrePaint,DD);
  end;
  LockDraw:=LastLock;
 end;
@@ -1271,11 +1264,11 @@ var
   FQuery : TDataSet;
 begin
  Words:=nil;
- if Msg.hwnd=ListView1.Handle then
+ if Msg.hwnd=ElvMain.Handle then
  begin
   if (msg.message=WM_LBUTTONDBLCLK) or (msg.message=WM_RBUTTONDBLCLK) then
   begin
-   ListView1.SetFocus;
+   ElvMain.SetFocus;
    if (msg.message=WM_RBUTTONDBLCLK) then
    begin
     msg.message:=0;
@@ -1285,13 +1278,13 @@ begin
    msg.message:=0;
    Handled:=true;
    GetCursorPos(p);
-   p:=ListView1.ScreenToClient(p);
+   p:=ElvMain.ScreenToClient(p);
    Item:=GetListViewItemAt(p.y);//ListView1.GetItemAt(10,p.y);
    if Item=nil then exit;
    SetLength(G,0);
    if ShiftKeyDown then
    CopyFullRecordInfo(PListData(aData[Item.Index])^.ID);
-   if GetSubItemIndexByPoint(ListView1,Item,p)=2 then
+   if GetSubItemIndexByPoint(ElvMain,Item,p)=2 then
    begin
     Words:=SpilitWords(PListData(aData[Item.Index])^.KeyWords);
     PopupMenuKeyWords.Items.Clear;
@@ -1301,23 +1294,23 @@ begin
      MenuItem.Caption:=Words[i];
      PopupMenuKeyWords.Items.Add(MenuItem);
     end;
-    p:=ListView1.ClientToScreen(p);
+    p:=ElvMain.ClientToScreen(p);
     PopupMenuKeyWords.Popup(p.x,p.y);
    end;
-   if GetSubItemIndexByPoint(ListView1,Item,p)=4 then
+   if GetSubItemIndexByPoint(ElvMain,Item,p)=4 then
    begin
     PopupMenuRating.Tag:=Item.Index;
-    p:=ListView1.ClientToScreen(p);
+    p:=ElvMain.ClientToScreen(p);
     for i:=0 to 5 do
     if PListData(aData[Item.Index])^.Rating=i then
     (FindComponent('N'+IntToStr(i)+'1') as TMenuItem).Default:=true else
     (FindComponent('N'+IntToStr(i)+'1') as TMenuItem).Default:=false;
     PopupMenuRating.Popup(p.x,p.y);
    end;
-   if GetSubItemIndexByPoint(ListView1,Item,p)=5 then
+   if GetSubItemIndexByPoint(ElvMain,Item,p)=5 then
    begin
     PopupMenuRotate.Tag:=Item.Index;
-    p:=ListView1.ClientToScreen(p);
+    p:=ElvMain.ClientToScreen(p);
     for i:=0 to 3 do
     if PListData(aData[Item.Index])^.Rotate=i then
     (FindComponent('R0'+IntToStr(i+1)) as TMenuItem).Default:=true else
@@ -1325,7 +1318,7 @@ begin
     PopupMenuRotate.Popup(p.x,p.y);
    end;
 
-   if (GetSubItemIndexByPoint(ListView1,Item,p)=8) or (GetSubItemIndexByPoint(ListView1,Item,p)=9) then
+   if (GetSubItemIndexByPoint(ElvMain,Item,p)=8) or (GetSubItemIndexByPoint(ElvMain,Item,p)=9) then
    begin
     Date:=PListData(aData[Item.Index])^.Date;
     Time:=PListData(aData[Item.Index])^.Time;
@@ -1348,15 +1341,15 @@ begin
      SetBoolParam(FQuery,3,IsDate);
      ExecSQL(FQuery);
      FreeDS(FQuery);
-     ListView1.Repaint;
+     ElvMain.Repaint;
 
     end;
    end;
 
-   if GetSubItemIndexByPoint(ListView1,Item,p)=7 then
+   if GetSubItemIndexByPoint(ElvMain,Item,p)=7 then
    begin
     PopupMenuGroups.Tag:=Item.Index;
-    p:=ListView1.ClientToScreen(p);
+    p:=ElvMain.ClientToScreen(p);
     G:=EncodeGroups(PListData(aData[Item.Index])^.Groups);
     ImageListPopupGroups.Clear;
     PopupMenuGroups.Items.Clear;
@@ -1425,17 +1418,17 @@ begin
 
   if (msg.message=WM_LBUTTONDOWN) or (msg.message=WM_RBUTTONDOWN) then
   begin
-   ListView1.SetFocus;
+   ElvMain.SetFocus;
    msg.message:=0;
    Handled:=true;
    GetCursorPos(p);
-   p:=ListView1.ScreenToClient(p);
-   Item:=ListView1.GetItemAt(10,p.y);
+   p:=ElvMain.ScreenToClient(p);
+   Item:=ElvMain.GetItemAt(10,p.y);
    if Item=nil then
    if LastSelected<>nil then
    begin
     LastSelected.Selected:=true;
-    ListView1.ItemFocused:=LastSelected;
+    ElvMain.ItemFocused:=LastSelected;
     exit;
    end;
    LockDraw:=true;
@@ -1443,7 +1436,7 @@ begin
    Item.Selected:=true;
    LastSelected:=Item;
    LockDraw:=false;
-   ListView1.ItemFocused:=Item;
+   ElvMain.ItemFocused:=Item;
   end;
  end;
 end;
@@ -1464,7 +1457,7 @@ begin
  SetSQL(FQuery,Format('Update '+GetDefDBname+' Set Rating = %d Where ID = %d',[NewRating,PListData(aData[index])^.ID]));
  ExecSQL(FQuery);
  FreeDS(FQuery);
- ListView1.Repaint;
+ ElvMain.Repaint;
 end;
 
 procedure TManagerDB.R04Click(Sender: TObject);
@@ -1479,10 +1472,10 @@ begin
  SetSQL(FQuery,Format('Update '+GetDefDBname+' Set Rotated = %d Where ID = %d',[NewRotate,PListData(aData[index])^.ID]));
  ExecSQL(FQuery);
  FreeDS(FQuery);
- ListView1.Repaint;
+ ElvMain.Repaint;
 end;
 
-procedure TManagerDB.ListView1WindowProc(var Message: TMessage);
+procedure TManagerDB.ElvMainWindowProc(var Message: TMessage);
 begin
 
  if Message.msg=78 then
@@ -1504,8 +1497,8 @@ Var
   Groups : TGroups;
   Query : TDataSet;
 begin
- if ListView1.Selected=nil then exit;
- index:=ListView1.Selected.Index;
+ if ElvMain.Selected=nil then exit;
+ index:=ElvMain.Selected.Index;
  KeyWords:=PListData(aData[index])^.KeyWords;
  S:=PListData(aData[index])^.Groups;
  Groups:=EnCodeGroups(S);
@@ -1514,7 +1507,7 @@ begin
  S:=CodeGroups(Groups);
  SetPCharString(PListData(aData[index])^.KeyWords,KeyWords);
  SetPCharString(PListData(aData[index])^.Groups,S);
- ListView1.Repaint;
+ ElvMain.Repaint;
 
  Query:=GetQuery;
  SetSQL(Query,'Update '+GetDefDBName+' SET KeyWords = :KeyWords, Groups = :KeyWords WHERE ID = :ID');
@@ -1551,7 +1544,7 @@ begin
  ShowWindow(FormManagerHint.Handle,SW_SHOWNOACTIVATE);
 end;
 
-procedure TManagerDB.ListView1MouseMove(Sender: TObject;
+procedure TManagerDB.ElvMainMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
   p :TPoint;
@@ -1565,18 +1558,18 @@ begin
  Application.CreateForm(TFormManagerHint, FormManagerHint);
  if FormManagerHint<>nil then
  begin
-  item:=GetListViewItemAt(y);//ListView1.GetItemAt(10,y);
+  item:=GetListViewItemAt(y);//ElvMain.GetItemAt(10,y);
   if item=nil then begin ShowWindow(FormManagerHint.Handle,SW_HIDE); exit; end;
   if item.Index=SI then exit;
   SI:=item.Index;
   p.x:=0;
   p.y:=y+18;
-  p:=ListView1.ClientToScreen(p);
+  p:=ElvMain.ClientToScreen(p);
   FormManagerHint.Left:=p.x;
   if Top+Height-15<p.y+FormManagerHint.Height then
   FormManagerHint.Top:=p.y-FormManagerHint.Height-18 else
   FormManagerHint.Top:=p.y;
-  if ListView1.Items.Count<=Item.Index then exit;
+  if ElvMain.Items.Count<=Item.Index then exit;
   DS:=GetQuery;
   if aData[Item.Index]=nil then
   begin
@@ -1707,7 +1700,7 @@ begin
  DBCleaningForm.Show;
 end;
 
-procedure TManagerDB.ListView1ContextPopup(Sender: TObject;
+procedure TManagerDB.ElvMainContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 Var
   MenuInfo : TDBPopupMenuInfo;
@@ -1716,17 +1709,16 @@ Var
 begin
 // If Button=mbRight then
  begin
-  //item:=ListView1.GetItemAt(10,MousePos.y);
+  //item:=ElvMain.GetItemAt(10,MousePos.y);
   item:=GetListViewItemAt(MousePos.y);
   if item=nil then exit;
   MenuInfo:=GetMenuInfoByID(PListData(aData[item.Index])^.ID); //DBPopupMenuInfoOne(WorkTable.FieldByName('FFileName').AsString,WorkTable.FieldByName('Comment').AsString,WorkTable.FieldByName('Groups').AsString,WorkTable.FieldByName('ID').AsInteger,WorkTable.FieldByName('FileSize').AsInteger,WorkTable.FieldByName('Rotated').AsInteger,WorkTable.FieldByName('Rating').AsInteger,WorkTable.FieldByName('Access').AsInteger,WorkTable.FieldByName('DateToAdd').AsDateTime,WorkTable.FieldByName('IsDate').AsBoolean,WorkTable.FieldByName('IsTime').AsBoolean,WorkTable.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(WorkTable.FieldByName('thum')),WorkTable.FieldByName('keyWords').AsString,true,WorkTable.FieldByName('Include').AsBoolean,WorkTable.FieldByName('Links').AsString);
-  if Length(MenuInfo.ItemFileNames_)=1 then
-  DoProcessPath(MenuInfo.ItemFileNames_[0]);
+  if MenuInfo.Count = 1 then
+  DoProcessPath(MenuInfo[0].FileName);
   MenuInfo.IsPlusMenu:=False;
   MenuInfo.IsListItem:=False;
-  MenuInfo.IsDateGroup:=True;
-  MenuInfo.IsAttrExists:=false;
-  TDBPopupMenu.Instance.Execute(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,MenuInfo);
+  MenuInfo.AttrExists:=false;
+  TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,MenuInfo);
  end;
 end;
 
@@ -1739,27 +1731,27 @@ begin
  for i:=0 to Length(IDs)-1 do
  if IDs[i]=ID then
  begin
-  l:=ListView1.Items.Count;
+  l:=ElvMain.Items.Count;
 
- si:=ListView1.Selected.Index;
+ si:=ElvMain.Selected.Index;
  if si>=0 then
  begin
-  ListView1.Selected:=nil;
+  ElvMain.Selected:=nil;
 
-  ListView1.Items.BeginUpdate;
-  ListView1.Items.Delete(i);
-//  ListView1.Items[i].Free;
-  ListView1.Items.EndUpdate;
+  ElvMain.Items.BeginUpdate;
+  ElvMain.Items.Delete(i);
+//  ElvMain.Items[i].Free;
+  ElvMain.Items.EndUpdate;
 
-  if si>=ListView1.Items.Count then si:=ListView1.Items.Count-1;
+  if si>=ElvMain.Items.Count then si:=ElvMain.Items.Count-1;
   if si>=0 then
   begin
-   ListView1.Items[si].Selected:=true;
-   ListView1.ItemFocused:=ListView1.Items[si];
+   ElvMain.Items[si].Selected:=true;
+   ElvMain.ItemFocused:=ElvMain.Items[si];
   end;
  end;
 
-  l:=ListView1.Items.Count*0+l; 
+  l:=ElvMain.Items.Count*0+l; 
   for j:=i to l-2 do
   begin
    IDs[j]:=IDs[j+1];
@@ -1769,7 +1761,7 @@ begin
   SetLength(aData,Length(aData)-1);
   Break;
  end;
- ListView1.Repaint;
+ ElvMain.Repaint;
 end;
 
 procedure TManagerDB.ListBox2DrawItem(Control: TWinControl; Index: Integer;
@@ -1945,26 +1937,26 @@ begin
   begin
    if IDs[i]>=n then
    begin
-    LastSelected :=ListView1.Items[i];
+    LastSelected :=ElvMain.Items[i];
     LastSelectedIndex := i;
-    ListView1.Selected:=ListView1.Items[i];
-    ListView1.ItemFocused:=ListView1.Items[i];
-    ListView1.Selected.Focused:=true;
-    ListView1.ItemIndex:=i;
-    SendMessage(ListView1.Handle, LVM_ENSUREVISIBLE, i,
+    ElvMain.Selected:=ElvMain.Items[i];
+    ElvMain.ItemFocused:=ElvMain.Items[i];
+    ElvMain.Selected.Focused:=true;
+    ElvMain.ItemIndex:=i;
+    SendMessage(ElvMain.Handle, LVM_ENSUREVISIBLE, i,
     MakeLong(Integer(false), 0));
     break;
    end;
   end;
- ListView1.Refresh;
+ ElvMain.Refresh;
 end;
 
 procedure TManagerDB.LoadDBTimerTimer(Sender: TObject);
 begin
- ListView1.Items.BeginUpdate;
+ ElvMain.Items.BeginUpdate;
  LoadDBTimer.Enabled:=false;
  InitializeQueryList;
- ListView1.Items.EndUpdate;
+ ElvMain.Items.EndUpdate;
 end;
 
 procedure TManagerDB.DublicatesLinkClick(Sender: TObject);

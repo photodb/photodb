@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, Math, UnitGroupsTools, uVistaFuncs,
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
   ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon,
-  uConstants;
+  uConstants, uFileUtils;
 
 type
   TFormChangeGroup = class(TForm)

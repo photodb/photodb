@@ -2,9 +2,21 @@ unit ExplorerTypes;
 
 interface
 
-Uses UnitDBKernel, Forms, SysUtils, Windows, Graphics,  Dolphin_DB, 
-     Messages, Classes, DB, GraphicsCool, jpeg, wfsU, SyncObjs,
-     UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics;
+uses Forms, SysUtils, Windows, Graphics, 
+     Messages, Classes, DB, GraphicsCool, JPEG, SyncObjs,
+     UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uFileUtils;
+
+type
+  PFileNotifyInformation = ^TFileNotifyInformation;
+  TFileNotifyInformation = record
+    NextEntryOffset : DWORD;
+    Action          : DWORD;
+    FileNameLength  : DWORD;
+    FileName        : array[0..0] of WideChar;
+  end;
+
+const
+  FILE_LIST_DIRECTORY   = $0001;
 
 type
  TExplorerViewInfo = record
@@ -85,8 +97,25 @@ Type TExplorerPath = Record
 
   TArExplorerPath = array of TExplorerPath;
 
-Type
-  PStringA = ^String;
+{Type
+  PStringA = ^String;    }
+
+type
+ // Структура с информацией об изменении в файловой системе (передается в callback процедуру)
+
+  PInfoCallback = ^TInfoCallback;
+  TInfoCallback = record
+    FAction      : Integer; // тип изменения (константы FILE_ACTION_XXX)
+//    FDrive       : string;  // диск, на котором было изменение
+    FOldFileName : string;  // имя файла до переименования
+    FNewFileName : string;  // имя файла после переименования
+  end;
+  TInfoCallBackDirectoryChangedArray = array of TInfoCallback;
+
+  // callback процедура, вызываемая при изменении в файловой системе
+  TWatchFileSystemCallback = procedure (pInfo: TInfoCallBackDirectoryChangedArray) of object;
+
+  TNotifyDirectoryChangeW = Procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of Object;
 
   TExplorerFileInfo = class(TObject)
   public
@@ -209,7 +238,7 @@ type
     function GetWidth: Integer; override;
 end;
 
-function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
+//function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
 function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
 
 var
@@ -226,7 +255,7 @@ begin
  Result.PType:=PType;
 end;
 
-function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
+{function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
 begin
  Result.ItemFileName:= Info[N].FileName;
  Result.ItemId:= Info[N].ID;
@@ -240,7 +269,7 @@ begin
  Result.ItemDate:= Info[N].Date;
  Result.ItemIsDate:= Info[N].IsDate;
  Result.ItemGroups:= Info[N].Groups;
-end;
+end;        }
 
 { TExplorerFolders }
 
@@ -451,7 +480,7 @@ var
  begin
   FormatDir(Directory);
   UnFormatDir(FileName);
-  FileName:=GetDirectory(FileName);
+  FileName:=ExtractFileDir(FileName);
   if AnsiLowerCase(FileName)=AnsiLowerCase(Directory) then
   result:=true else Result:=false;
  end;

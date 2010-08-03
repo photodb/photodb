@@ -8,7 +8,7 @@ uses
  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
  UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon,
- CommonDBSupport;
+ CommonDBSupport, uFileUtils;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,

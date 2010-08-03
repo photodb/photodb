@@ -3,7 +3,8 @@ unit UnitGetNewFilesInFolderThread;
 interface
 
 uses
-  Classes, SysUtils, CommonDBSupport, DB, Dolphin_DB, win32crc, UnitDBDeclare;
+  Classes, SysUtils, CommonDBSupport, DB, Dolphin_DB, win32crc, UnitDBDeclare,
+  uFileUtils;
 
 type
   TGetNewFilesInFolderThread = class(TThread)

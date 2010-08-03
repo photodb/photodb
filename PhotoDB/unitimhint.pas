@@ -419,16 +419,18 @@ end;
 procedure TImHint.Image1ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
-  Info : TDBPopupMenuInfo;
+  MenuInfo : TDBPopupMenuInfo;
+  MenuRecord : TDBPopupMenuInfoRecord;
 begin
  if citem <>nil then
  begin
   Timer3.Enabled:=false;
   drag_:=true;
-  RecordInfoOneToDBPopupMenuInfo(CurrentInfo,Info);
-  Info.IsDateGroup:=True;
-  Info.IsAttrExists:=false;
-  TDBPopupMenu.Instance.Execute(self.image1.ClientToScreen(MousePos).x,self.image1.ClientToScreen(MousePos).y,Info);
+  MenuInfo := TDBPopupMenuInfo.Create;
+  MenuRecord := TDBPopupMenuInfoRecord.CreateFromRecordInfo(CurrentInfo);
+  MenuInfo.Add(MenuRecord);
+  MenuInfo.AttrExists:=false;
+  TDBPopupMenu.Instance.Execute(Image1.ClientToScreen(MousePos).x,Image1.ClientToScreen(MousePos).y,MenuInfo);
   Self.HideShadow;
   if not closed then Timer2.Enabled:=true;
   drag_:=false;

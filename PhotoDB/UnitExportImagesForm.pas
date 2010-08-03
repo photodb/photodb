@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Dolphin_DB, ImageConverting, acDlgSelect,
   JPEG, GraphicEx, GIFImage, Language, UnitJPEGOptions, UnitDBkernel,
-  GraphicCrypt, Spin, GraphicsCool, TiffImageUnit, uVistaFuncs,
+  GraphicCrypt, Spin, GraphicsCool, TiffImageUnit, uVistaFuncs, uFileUtils,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics;
 
 type

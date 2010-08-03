@@ -10,7 +10,7 @@ uses
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
  EasyListview, GraphicsCool, uVistaFuncs, uResources,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
- uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM,
+ uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
  UnitExplorerLoadSIngleImageThread, uConstants;
 
 type

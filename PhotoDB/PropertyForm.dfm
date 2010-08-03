@@ -1,6 +1,6 @@
 object PropertiesForm: TPropertiesForm
-  Left = 408
-  Top = 78
+  Left = 510
+  Top = 98
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Property'

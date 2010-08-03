@@ -47,6 +47,10 @@ const
   UpdateFileName = '/engl_update.txt';
   HomeURL = 'http://www.illusdolphin.narod.ru/photodb';
   {$ENDIF}
+  
+const
+    WM_COPYDATA = $004A;
+    FIXIDEX = True;
 
 implementation
 

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ComboBoxExDB, Menus, ImgList,
-  Language, Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget,
+  Language, Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
   DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
   AppEvnts, uVistaFuncs, DB, uAssociatedIcons;
 

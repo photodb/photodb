@@ -3,7 +3,8 @@ unit ImageConverting;
 interface
 
  uses SysUtils, Classes, Graphics, Dolphin_DB,
-     JPEG, GraphicEx, GIFImage, PNGDef, TiffImageUnit;
+     JPEG, GraphicEx, GIFImage, PNGDef, TiffImageUnit,
+     uFileUtils;
 
  type TArGraphicClass = array of TGraphicClass;
 

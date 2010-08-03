@@ -9,8 +9,9 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       SaveWindowPos, ExtDlgs, ToolWin, DbiProcs, DbiErrs, Exif, UnitDBDeclare,
       acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
-      uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger,
-      UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants;
+      uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
+      UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants, uList64,
+      UnitLinksSupport, EasyListView, ExplorerTypes;
 
 Const
     DBInDebug = True;
@@ -21,12 +22,8 @@ var
     LOGGING_ENABLED : boolean = true;
     LOGGING_MESSAGE : boolean = false;
 
-const
-    WM_COPYDATA = $004A;
-    FIXIDEX = true;
 var
     UseFreeAfterRelease : boolean = true;
-    ApplicationRuned : boolean = false;  
 
 const
  pwd_rusup='ЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ';
@@ -82,111 +79,8 @@ const
   DemoDays = 30;
   LimitDemoRecords = 1000;
 
-type TDBPopupMenuInfoRecord = class
-  FileName : string;
-  Comment  : string;
-  FileSize  : Int64;
-  Rotation : Integer;
-  Rating : Integer;
-  ID : Integer;  
-  IsCurrent : Boolean;
-  Selected : Boolean;
-  Access : Integer;
-  Date : TDateTime;
-  Time : TDateTime;
-//TODO: +  IsPlusMenu : Boolean;
-//TODO: +  PlusMenu : TArMenuitem;
-//TODO: +   IsListItem : boolean;
-//TODO: +   ListItem : TObject;
-//TODO: +   IsDateGroup : Boolean;
-  IsDates : Boolean;
-  IsTimes : Boolean;
-  Groups : string;
-  KeyWords : string;
-  Crypted : Boolean;
-//TODO: +  IsAttrExists : boolean;
-  Attr : Integer;
-  InfoLoaded : Boolean;
-  Include : Boolean;
-  Links : string;  //??? not for common use yet
-end;
-
-type TDBPopupMenuInfo = record
-  ItemFileNames_, ItemComments_  : TArstrings;   //0
-  ItemFileSizes_  : TArInteger64;                //1
-  ItemRotations_ : TArInteger;                   //2
-  ItemRatings_ : TArInteger;                     //3
-  ItemIDs_ : TArInteger;                         //4
-  Position : integer;                            //5
-  ItemSelected_ : TArBoolean;                    //6
-  ItemAccess_ : TArInteger;                      //7
-  ItemDates_ : TArDateTime;                      //8
-  ItemTimes_ : TArTime;                          //9
-  IsPlusMenu : Boolean;                          //10
-  PlusMenu : TArMenuitem;                        //11
-  IsListItem : boolean;                          //12
-  ListItem : TObject;                            //13
-  IsDateGroup : Boolean;                         //14
-  ItemIsDates_ : TArBoolean;                     //15
-  ItemIsTimes_ : TArBoolean;                     //16
-  ItemGroups_ : TArstrings;                      //17
-  ItemKeyWords_ : TArstrings;                    //18
-  ItemCrypted_ : TArBoolean;                     //19
-  IsAttrExists : boolean;                        //20
-  ItemAttr_ : TArInteger;                        //21
-  ItemLoaded_ : TArBoolean;                      //22
-  ItemInclude_ : TArBoolean;                     //23
-  ItemLinks_ : TArstrings;  //not for common use yet
-end;
-
- type TBuffer = array of Char;
-
-  type
-    PCopyDataStruct = ^TCopyDataStruct;
-    TCopyDataStruct = record
-    dwData: LongInt;
-    cbData: LongInt;
-    lpData: Pointer;
-  end;
-
-  PRecToPass = ^TRecToPass;
-  TRecToPass = packed record
-    s : string[255];
-    i : integer;
-  end;
-
 type
-  ShortcutType = (_DESKTOP, _QUICKLAUNCH, _SENDTO, _STARTMENU, _OTHERFOLDER, _PROGRAMS);
-
-  THintRealFucntion = function(item: TObject): boolean of object;
-  TPCharFunctionA = function(s : pchar) : PChar;
-  TRemoteCloseFormProc = procedure(Form : TForm; ID : String) of object;
-  TFileFoundedEvent = procedure(Owner : TObject; FileName : string; Size : int64) of object;
-
-  TRecordsInfo = record
-    ItemFileNames : TArStrings;
-    ItemIds : TArInteger;
-    ItemRotates : TArInteger;
-    ItemRatings : TArInteger;
-    ItemAccesses : TArInteger;
-    ItemComments : TArStrings;
-    ItemCollections : TArStrings;
-    ItemGroups : TArStrings;
-    ItemOwners : TArStrings;
-    ItemKeyWords : TArStrings;
-    ItemDates : TArDateTime;
-    ItemTimes : TArTime;
-    ItemIsDates : TArBoolean;
-    ItemIsTimes : TArBoolean;
-    ItemCrypted : TArBoolean;
-    ItemInclude : TArBoolean;   
-    ItemLinks : TArStrings;
-    Position : Integer;
-    Tag : Integer;
-    LoadedImageInfo : TArBoolean;
-  end;
-
-  TOneRecordInfo = record
+TOneRecordInfo = record
     ItemFileName : String;
     ItemCrypted : boolean;
     ItemId : Integer;
@@ -213,6 +107,137 @@ type
     Loaded : boolean;
     ItemLinks : String;
   end;
+
+  TRecordsInfo = record
+    ItemFileNames : TArStrings;
+    ItemIds : TArInteger;
+    ItemRotates : TArInteger;
+    ItemRatings : TArInteger;
+    ItemAccesses : TArInteger;
+    ItemComments : TArStrings;
+    ItemCollections : TArStrings;
+    ItemGroups : TArStrings;
+    ItemOwners : TArStrings;
+    ItemKeyWords : TArStrings;
+    ItemDates : TArDateTime;
+    ItemTimes : TArTime;
+    ItemIsDates : TArBoolean;
+    ItemIsTimes : TArBoolean;
+    ItemCrypted : TArBoolean;
+    ItemInclude : TArBoolean;   
+    ItemLinks : TArStrings;
+    Position : Integer;
+    Tag : Integer;
+    LoadedImageInfo : TArBoolean;
+  end;
+
+type
+  TDBPopupMenuInfoRecord = class
+  public
+    FileName : string;
+    Comment  : string;
+    FileSize : Int64;
+    Rotation : Integer;
+    Rating : Integer;
+    ID : Integer;
+    IsCurrent : Boolean;
+    Selected : Boolean;
+    Access : Integer;
+    Date : TDateTime;
+    Time : TDateTime;
+    IsDate : Boolean;
+    IsTime : Boolean;
+    Groups : string;
+    KeyWords : string;
+    Crypted : Boolean;
+    Attr : Integer;
+    InfoLoaded : Boolean;
+    Include : Boolean;
+    Links : string;  //??? not for common use yet
+    constructor CreateFromDS(DS : TDataSet);
+    constructor CreateFromContRecord(ContRecord : TImageContRecord);
+    constructor CreateFromSlideShowInfo(Info : TRecordsInfo; Position : Integer);
+    constructor CreateFromSearchRecord(Info : TSearchRecord);
+    constructor CreateFromExplorerInfo(Info : TExplorerFileInfo);  
+    constructor CreateFromRecordInfo(RI : TOneRecordInfo);
+  end;
+
+type
+  TDBPopupMenuInfo = class
+  private
+    FData : TList;
+    FAttrExists : Boolean;
+    FIsPlusMenu : Boolean;
+    FIsListItem : Boolean;
+    FListItem : TEasyItem;
+    function GetValueByIndex(Index: Integer): TDBPopupMenuInfoRecord;
+    function GetCount: Integer;
+    function GetIsVariousInclude: Boolean;
+    function GetStatRating: Integer;
+    function GetStatDate: TDateTime;
+    function GetStatTime: TDateTime;
+    function GetStatIsDate: Boolean;
+    function GetStatIsTime: Boolean;
+    function GetIsVariousDate: Boolean;
+    function GetIsVariousTime: Boolean;
+    function GetCommonKeyWords: string;
+    function GetIsVariousComments: Boolean;
+    function GetCommonGroups: string;
+    function GetCommonLinks: TLinksInfo;
+    function GetPosition: Integer;
+    procedure SetPosition(const Value: Integer);
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Add(MenuRecord : TDBPopupMenuInfoRecord);
+    procedure Clear;
+    property Items[Index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex; default;
+    property IsListItem : Boolean read FIsListItem write FIsListItem;
+    property AttrExists : Boolean read FAttrExists write FAttrExists;
+    property Count : Integer read GetCount;
+    property IsVariousInclude : Boolean read GetIsVariousInclude;
+    property IsVariousDate : Boolean read GetIsVariousDate;
+    property IsVariousTime : Boolean read GetIsVariousTime;
+    property IsVariousComments : Boolean read GetIsVariousComments;
+    property StatRating : Integer read GetStatRating;
+    property StatDate : TDateTime read GetStatDate;
+    property StatTime : TDateTime read GetStatTime;
+    property StatIsDate : Boolean read GetStatIsDate;
+    property StatIsTime : Boolean read GetStatIsTime;
+    property IsPlusMenu : Boolean read FIsPlusMenu write FIsPlusMenu;
+    property CommonKeyWords : string read GetCommonKeyWords;
+    property CommonGroups : string read GetCommonGroups;
+    property CommonLinks : TLinksInfo read GetCommonLinks;
+    property Position : Integer read GetPosition write SetPosition;
+    property ListItem : TEasyItem read FListItem write FListItem;
+//TODO: +  PlusMenu : TArMenuitem;
+//TODO: +  IsListItem : boolean;
+//TODO: +  ListItem : TObject;
+  end;
+
+ type TBuffer = array of Char;
+
+  type
+    PCopyDataStruct = ^TCopyDataStruct;
+    TCopyDataStruct = record
+    dwData: LongInt;
+    cbData: LongInt;
+    lpData: Pointer;
+  end;
+
+  PRecToPass = ^TRecToPass;
+  TRecToPass = packed record
+    s : string[255];
+    i : integer;
+  end;
+
+type
+  ShortcutType = (_DESKTOP, _QUICKLAUNCH, _SENDTO, _STARTMENU, _OTHERFOLDER, _PROGRAMS);
+
+  THintRealFucntion = function(item: TObject): boolean of object;
+  TPCharFunctionA = function(s : pchar) : PChar;
+  TRemoteCloseFormProc = procedure(Form : TForm; ID : String) of object;
+  TFileFoundedEvent = procedure(Owner : TObject; FileName : string; Size : int64) of object;
 
   TSelectedInfo = record
      FileName : String;
@@ -422,23 +447,6 @@ const CSIDL_COMMON_APPDATA = $0023;
       CSIDL_PROGRAM_FILES = $0026;
       CSIDL_LOCAL_APPDATA  = $001C;
 
-type
- // Структура с информацией об изменении в файловой системе (передается в callback процедуру)
-
-  PInfoCallback = ^TInfoCallback;
-  TInfoCallback = record
-    FAction      : Integer; // тип изменения (константы FILE_ACTION_XXX)
-//    FDrive       : string;  // диск, на котором было изменение
-    FOldFileName : string;  // имя файла до переименования
-    FNewFileName : string;  // имя файла после переименования
-  end;
-  TInfoCallBackDirectoryChangedArray = array of TInfoCallback;
-
-  // callback процедура, вызываемая при изменении в файловой системе
-  TWatchFileSystemCallback = procedure (pInfo: TInfoCallBackDirectoryChangedArray) of object;
-
-  TNotifyDirectoryChangeW = Procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of Object;
-
   //[BEGIN] Short install section oldest version
   const
   //1.75
@@ -583,7 +591,7 @@ Function RecordInfoOneA(Name : string; ID, Rotate,Rating,Access, Size : integer;
 procedure AddRecordsInfoOne(Var D : TRecordsInfo; Name : string; ID, Rotate,Rating,Access : integer; Comment, KeyWords, Owner_, Collection, Groups : string; Date : TDateTime; IsDate, IsTime : Boolean; Time : TTime; Crypt, Loaded, Include : Boolean; Links : string);
 procedure SetRecordsInfoOne(Var D : TRecordsInfo; n : integer; Name : string; ID, Rotate,Rating,Access : integer; Comment, Groups : string; Date : TDateTime; IsDate, IsTime: Boolean; Time : TDateTime; Crypt, Include : Boolean; Links : string);
 function RecordsInfoOne(Name : string; ID, Rotate,Rating,Access : integer; Comment, KeyWords, Owner_, Collection, Groups : string; Date : TDateTime; Isdate, IsTime: Boolean; Time : TDateTime; Crypt, Loaded, Include : Boolean; Links : string) : TRecordsInfo;
-function DBPopupMenuInfoOne(Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TTime; Crypt : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string) : TDBPopupMenuInfo;
+//function DBPopupMenuInfoOne(Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TTime; Crypt : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string) : TDBPopupMenuInfo;
 function GetRecordsFromOne(Info : TOneRecordInfo) : TRecordsInfo;
 function GetRecordFromRecords(Info : TRecordsInfo; N : Integer) : TOneRecordInfo;
 procedure SetRecordToRecords(Info : TRecordsInfo; N : Integer; Rec : TOneRecordInfo);
@@ -591,9 +599,9 @@ procedure CopyRecordsInfo(var S,D : TRecordsInfo);
 function RecordsInfoNil : TRecordsInfo;
 procedure AddToRecordsInfoOneInfo(var Infos : TRecordsInfo; Info : TOneRecordInfo);
 procedure DBPopupMenuInfoToRecordsInfo(var DBP : TDBPopupMenuInfo;var RI : TRecordsInfo);
-procedure AddDBPopupMenuInfoOne(var Info : TDBPopupMenuInfo; Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TDateTime; Crypted : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string);
-function DBPopupMenuInfoNil : TDBPopupMenuInfo;
-procedure RecordInfoOneToDBPopupMenuInfo(var RI : TOneRecordInfo; var DBP : TDBPopupMenuInfo);
+//procedure AddDBPopupMenuInfoOne(var Info : TDBPopupMenuInfo; Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TDateTime; Crypted : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string);
+//function DBPopupMenuInfoNil : TDBPopupMenuInfo;
+//procedure RecordInfoOneToDBPopupMenuInfo(var RI : TOneRecordInfo; var DBP : TDBPopupMenuInfo);
 function GetInfoByFileNameA(FileName : string; LoadThum : boolean) : TOneRecordInfo;
 function GetMenuInfoByID(ID : Integer) : TDBPopupMenuInfo;
 function GetMenuInfoByStrTh(StrTh : string) : TDBPopupMenuInfo;
@@ -609,7 +617,6 @@ function DriveState(driveletter: Char): TDriveState;
 Procedure ShowMyComputerProperties(Hwnd : THandle);
 function KillTask(ExeFileName: string): integer;
 Procedure LoadNickJpegImage(Image : TImage);
-function GetFileDateTime(FileName: string): TDateTime;
 Procedure DoHelp;
 Procedure DoGetCode(S : String);
 function SilentDeleteFiles( Handle : HWnd; Names : array of string; ToRecycle : Boolean; HideErrors : boolean = false ) : Integer;
@@ -651,8 +658,6 @@ procedure RotateDBImage180(ID : integer; OldRotation : Integer);
 Procedure DBError(ErrorValue, Error : String);
 function GetSmallIconByPath(IconPath : String; Big : boolean = false) : TIcon;
 
-procedure UnFormatDir(var s:string);
-procedure FormatDir(var s:string);
 function GetExt(Filename : string) : string;
 function GetFileSizeByName(FileName: String): int64;
 function LongFileName(ShortName: String): String;
@@ -743,10 +748,10 @@ var
 
 implementation
 
-uses ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
+uses UnitPasswordForm, UnitWindowsCopyFilesThread,
 CommonDBSupport, Activation, UnitInternetUpdate, UnitManageGroups, About,
 UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
-UnitDBCommonGraphics, UnitCDMappingSupport;
+UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit;
 
 function CenterPos(W1, W2 : Integer) : Integer;
 begin
@@ -964,18 +969,6 @@ begin
  // и теперь перебираем их
  for i:=0 to dwCount-1 do
   Result:=Result+'-'+IntToStr(GetSidSubAuthority(Sid,i)^);
-end;
-
-procedure UnFormatDir(var s:string);
-begin
- if s='' then exit;
- if s[length(s)]='\' then Delete(s,length(s),1);
-end;
-
-procedure FormatDir(var s:string);
-begin
- if s='' then exit;
- if s[length(s)]<>'\' then s:=s+'\';
 end;
 
 Function GetExt(Filename : string) : string;
@@ -2214,150 +2207,34 @@ Procedure DBPopupMenuInfoToRecordsInfo(var DBP : TDBPopupMenuInfo; var RI : TRec
 var
   i, FilesSelected:integer;
 begin
- FilesSelected:=0;
- For i:=0 to  length(DBP.ItemFileNames_)-1 do
- if DBP.ItemSelected_[i] then
- inc(FilesSelected);
- If FilesSelected<2 then
- begin
-  RI:=RecordsInfoFromArrays(DBP.ItemFileNames_,DBP.ItemIDs_,DBP.ItemRotations_,DBP.ItemRatings_, DBP.ItemAccess_,DBP.ItemComments_,DBP.ItemKeyWords_,DBP.ItemGroups_,DBP.ItemDates_,DBP.ItemIsDates_,DBP.ItemIsTimes_,DBP.ItemTimes_,DBP.ItemCrypted_,DBP.ItemLoaded_,DBP.ItemInclude_,DBP.ItemLinks_);
-  if FilesSelected=1 then
-  RI.Position:=DBP.Position else
-  RI.Position:=0;
- end;
- If FilesSelected>1 then
- begin
-  RI:=RecordsInfoNil;
-  for i:=0 to Length(DBP.ItemFileNames_)-1 do
-  if DBP.ItemSelected_[i] then
+  FilesSelected:=0;
+  for i:=0 to DBP.Count - 1 do
+    if DBP[i].Selected then
+      inc(FilesSelected);
+
+{  if FilesSelected <= 1 then
   begin
-    AddRecordsInfoOne(RI,DBP.ItemFileNames_[i],DBP.ItemIDs_[i],DBP.ItemRotations_[i], DBP.ItemRatings_[i], DBP.ItemAccess_[i], DBP.ItemComments_[i],'','','',DBP.ItemGroups_[i],DBP.ItemDates_[i],DBP.ItemIsDates_[i],DBP.ItemIsTimes_[i],DBP.ItemDates_[i],DBP.ItemCrypted_[i],DBP.ItemLoaded_[i],DBP.ItemInclude_[i],DBP.ItemLinks_[i]);
-  end;
- end;
-end;
-
-function DBPopupMenuInfoOne(Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TTime; Crypt : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string) : TDBPopupMenuInfo;
-begin
- SetLength(Result.ItemFileNames_,1);
- SetLength(Result.ItemComments_,1);
- SetLength(Result.ItemFileSizes_,1);
- SetLength(Result.ItemRotations_,1);
- SetLength(Result.ItemRatings_,1);
- SetLength(Result.ItemIDs_,1);
- SetLength(Result.ItemSelected_,1);
- SetLength(Result.ItemAccess_,1);
- SetLength(Result.ItemDates_,1);
- SetLength(Result.ItemTimes_,1);
- SetLength(Result.ItemIsDates_,1);
- SetLength(Result.ItemIsTimes_,1);
- SetLength(Result.ItemGroups_,1);
- SetLength(Result.ItemCrypted_,1);
- SetLength(Result.ItemKeyWords_,1);
- SetLength(Result.ItemLoaded_,1);
- SetLength(Result.ItemAttr_,1);
- SetLength(Result.ItemInclude_,1);
- SetLength(Result.ItemLinks_,1);
- Result.ItemFileNames_[0]:=Filename;
- Result.ItemComments_[0]:=Comment;
- Result.ItemFileSizes_[0]:=Size;
- Result.ItemRotations_[0]:=Rotate;
- Result.ItemRatings_[0]:=Rating;
- Result.ItemIDs_[0]:=ID;
- Result.ItemSelected_[0]:=true;
- Result.ItemAccess_[0]:=Access;
- Result.ItemDates_[0]:=Date;
- Result.ItemTimes_[0]:=Time;
- Result.ItemIsDates_[0]:=IsDate;
- Result.ItemIsTimes_[0]:=IsDate;
- Result.ItemGroups_[0]:=Groups;
- Result.ItemCrypted_[0]:=Crypt;
- Result.ItemKeyWords_[0]:=KeyWords;
- Result.ItemLoaded_[0]:=Loaded;
- Result.ItemAttr_[0]:=0;
- Result.ItemInclude_[0]:=Include;
- Result.ItemLinks_[0]:=Links;
- Result.IsAttrExists:=false;
- Result.Position:=0;
-end;
-
-procedure AddDBPopupMenuInfoOne(var Info : TDBPopupMenuInfo; Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TDateTime; Crypted : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string);
-Var
-  Count : integer;
-begin
- Count:=Length(Info.ItemFileNames_)+1;
- SetLength(Info.ItemFileNames_,Count);
- SetLength(Info.ItemComments_,Count);
- SetLength(Info.ItemFileSizes_,Count);
- SetLength(Info.ItemRotations_,Count);
- SetLength(Info.ItemRatings_,Count);
- SetLength(Info.ItemIDs_,Count);
- SetLength(Info.ItemSelected_,Count);
- SetLength(Info.ItemAccess_,Count);
- SetLength(Info.ItemDates_,Count);
- SetLength(Info.ItemTimes_,Count);
- SetLength(Info.ItemIsDates_,Count);
- SetLength(Info.ItemIsTimes_,Count);
- SetLength(Info.ItemGroups_,Count);
- SetLength(Info.ItemCrypted_,Count);
- SetLength(Info.ItemKeyWords_,Count);
- SetLength(Info.ItemLoaded_,Count);
- SetLength(Info.ItemAttr_,Count);
- SetLength(Info.ItemInclude_,Count);
- SetLength(Info.ItemLinks_,Count);
- Info.ItemFileNames_[Count-1]:=Filename;
- Info.ItemComments_[Count-1]:=Comment;
- Info.ItemFileSizes_[Count-1]:=Size;
- Info.ItemRotations_[Count-1]:=Rotate;
- Info.ItemRatings_[Count-1]:=Rating;
- Info.ItemIDs_[Count-1]:=ID;
- Info.ItemSelected_[Count-1]:=true;
- Info.ItemAccess_[Count-1]:=Access;
- Info.ItemDates_[Count-1]:=Date;
- Info.ItemTimes_[Count-1]:=Time;
- Info.ItemIsDates_[Count-1]:=IsDate;
- Info.ItemIsTimes_[Count-1]:=IsTime;
- Info.ItemGroups_[Count-1]:=Groups;
- Info.ItemCrypted_[Count-1]:=Crypted;
- Info.ItemKeyWords_[Count-1]:=KeyWords;
- Info.ItemLoaded_[Count-1]:=Loaded;
- Info.ItemAttr_[Count-1]:=0;
- Info.ItemInclude_[Count-1]:=Include;
- Info.ItemLinks_[Count-1]:=Links;
-end;
-
-Function DBPopupMenuInfoNil : TDBPopupMenuInfo;
-begin
- SetLength(Result.ItemFileNames_,0);
- SetLength(Result.ItemComments_,0);
- SetLength(Result.ItemFileSizes_,0);
- SetLength(Result.ItemRotations_,0);
- SetLength(Result.ItemRatings_,0);
- SetLength(Result.ItemIDs_,0);
- SetLength(Result.ItemSelected_,0);
- SetLength(Result.ItemAccess_,0);
- SetLength(Result.ItemKeyWords_,0);
- SetLength(Result.ItemDates_,0);
- SetLength(Result.ItemTimes_,0);
- SetLength(Result.ItemIsDates_,0);
- SetLength(Result.ItemIsTimes_,0);
- SetLength(Result.ItemGroups_,0);
- SetLength(Result.ItemLoaded_,0);
- SetLength(Result.ItemAttr_,0);
- SetLength(Result.ItemCrypted_,0);
- SetLength(Result.ItemInclude_,0);
- SetLength(Result.ItemLinks_,0);
- Result.ListItem:=nil;
- Result.IsAttrExists:=false;
- Result.IsListItem:=False;
- Result.IsDateGroup:=False;
- Result.IsPlusMenu:=False;
- Result.Position:=0;
+    RI:=RecordsInfoFromArrays(DBP.ItemFileNames_,DBP.ItemIDs_,DBP.ItemRotations_,DBP.ItemRatings_, DBP.ItemAccess_,DBP.ItemComments_,DBP.ItemKeyWords_,DBP.ItemGroups_,DBP.ItemDates_,DBP.ItemIsDates_,DBP.ItemIsTimes_,DBP.ItemTimes_,DBP.ItemCrypted_,DBP.ItemLoaded_,DBP.ItemInclude_,DBP.ItemLinks_);
+    if FilesSelected=1 then
+    RI.Position:=DBP.Position else
+    RI.Position:=0;
+  end else
+  begin}
+    RI:=RecordsInfoNil;
+    for i:=0 to DBP.Count - 1 do
+    if DBP[i].Selected or (FilesSelected <= 1) then
+    begin
+      AddRecordsInfoOne(RI,DBP[i].FileName,DBP[i].ID,DBP[i].Rotation, DBP[i].Rating, DBP[i].Access, DBP[i].Comment,'','','',DBP[i].Groups,DBP[i].Date,DBP[i].IsDate,DBP[i].IsTime,DBP[i].Time,DBP[i].Crypted,DBP[i].InfoLoaded,DBP[i].Include,DBP[i].Links);
+    end;
+ // end;
 end;
 
 function GetMenuInfoByID(ID : Integer) : TDBPopupMenuInfo;
 var
   FQuery : TDataSet;
-begin
+  MenuRecord : TDBPopupMenuInfoRecord;
+begin     
+  Result := nil;
  FQuery := GetQuery;
  SetSQL(FQuery,'SELECT * FROM '+GetDefDBname+' WHERE ID = :ID');
  SetIntParam(FQuery,0,ID);
@@ -2365,62 +2242,26 @@ begin
  if FQuery.RecordCount<>1 then
  begin
   FreeDS(FQuery);
-  Result:=DBPopupMenuInfoNil;
   exit;
  end;
- SetLength(Result.ItemFileNames_,1);
- SetLength(Result.ItemComments_,1);
- SetLength(Result.ItemFileSizes_,1);
- SetLength(Result.ItemRotations_,1);
- SetLength(Result.ItemRatings_,1);
- SetLength(Result.ItemKeyWords_,1);
- SetLength(Result.ItemIDs_,1);
- SetLength(Result.ItemSelected_,1);
- SetLength(Result.ItemAccess_,1);
- SetLength(Result.ItemDates_,1);
- SetLength(Result.ItemTimes_,1);
- SetLength(Result.ItemIsDates_,1);
- SetLength(Result.ItemIsTimes_,1);
- SetLength(Result.ItemGroups_,1);
- SetLength(Result.ItemLoaded_,1);
- SetLength(Result.ItemAttr_,1);
- SetLength(Result.ItemCrypted_,1);
- SetLength(Result.ItemInclude_,1);
- SetLength(Result.ItemLinks_,1);
- Result.ItemFileNames_[0]:=FQuery.FieldByName('FFileName').AsString;
- Result.ItemComments_[0]:=FQuery.FieldByName('Comment').AsString;
- Result.ItemFileSizes_[0]:=FQuery.FieldByName('FileSize').AsInteger;
- Result.ItemRotations_[0]:=FQuery.FieldByName('Rotated').AsInteger;
- Result.ItemRatings_[0]:=FQuery.FieldByName('Rating').AsInteger;
- Result.ItemIDs_[0]:=FQuery.FieldByName('ID').AsInteger;
- Result.ItemSelected_[0]:=true;
- Result.ItemAccess_[0]:=FQuery.FieldByName('Access').AsInteger;
- Result.ItemKeyWords_[0]:=FQuery.FieldByName('KeyWords').AsString;
- Result.ItemDates_[0]:=FQuery.FieldByName('DateToAdd').AsDateTime;
- Result.ItemIsDates_[0]:=FQuery.FieldByName('IsDate').AsBoolean;
- Result.ItemIsTimes_[0]:=FQuery.FieldByName('IsTime').AsBoolean;
- Result.ItemTimes_[0]:=FQuery.FieldByName('aTime').AsDateTime;
- Result.ItemGroups_[0]:=FQuery.FieldByName('Groups').AsString;
- Result.ItemLoaded_[0]:=true;
- Result.ItemAttr_[0]:=FQuery.FieldByName('Attr').AsInteger;
- Result.ItemCrypted_[0]:=ValidCryptBlobStreamJPG(FQuery.FieldByName('thum'));
- Result.ItemInclude_[0]:=FQuery.FieldByName('Include').AsBoolean;
- Result.ItemLinks_[0]:=FQuery.FieldByName('Links').AsString;
- Result.ListItem:=nil;
- Result.IsAttrExists:=false;
- Result.IsListItem:=False;
- Result.IsDateGroup:=False;
- Result.IsPlusMenu:=False;
- Result.Position:=0;
- FQuery.Close;
- FreeDS(FQuery);
+  Result := TDBPopupMenuInfo.Create;
+  MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
+  Result.Add(MenuRecord);
+  Result.ListItem:=nil;
+  Result.AttrExists:=false;
+  Result.IsListItem:=False;
+  Result.IsPlusMenu:=False;
+  FQuery.Close;
+  FreeDS(FQuery);
 end;
 
 function GetMenuInfoByStrTh(StrTh : string) : TDBPopupMenuInfo;
 var
   FQuery : TDataSet;
-  FromDB : string;
-begin
+  FromDB : string; 
+  MenuRecord : TDBPopupMenuInfoRecord;
+begin        
+  Result:=nil;
  FQuery := GetQuery;
  if GetDBType=DB_TYPE_MDB then
  FromDB:='(Select * from '+GetDefDBname+' where StrThCrc = '+IntToStr(Integer(StringCRC(StrTh)))+')';
@@ -2430,61 +2271,25 @@ begin
  if FQuery.RecordCount<>1 then
  begin
   FreeDS(FQuery);
-  Result:=DBPopupMenuInfoNil;
   exit;
  end;
- SetLength(Result.ItemFileNames_,1);
- SetLength(Result.ItemComments_,1);
- SetLength(Result.ItemFileSizes_,1);
- SetLength(Result.ItemRotations_,1);
- SetLength(Result.ItemRatings_,1);
- SetLength(Result.ItemKeyWords_,1);
- SetLength(Result.ItemIDs_,1);
- SetLength(Result.ItemSelected_,1);
- SetLength(Result.ItemAccess_,1);
- SetLength(Result.ItemDates_,1);
- SetLength(Result.ItemTimes_,1);
- SetLength(Result.ItemIsDates_,1);
- SetLength(Result.ItemIsTimes_,1);
- SetLength(Result.ItemGroups_,1);
- SetLength(Result.ItemLoaded_,1);
- SetLength(Result.ItemAttr_,1);
- SetLength(Result.ItemCrypted_,1);
- SetLength(Result.ItemInclude_,1);
- SetLength(Result.ItemLinks_,1);
- Result.ItemFileNames_[0]:=FQuery.FieldByName('FFileName').AsString;
- Result.ItemComments_[0]:=FQuery.FieldByName('Comment').AsString;
- Result.ItemFileSizes_[0]:=FQuery.FieldByName('FileSize').AsInteger;
- Result.ItemRotations_[0]:=FQuery.FieldByName('Rotated').AsInteger;
- Result.ItemRatings_[0]:=FQuery.FieldByName('Rating').AsInteger;
- Result.ItemIDs_[0]:=FQuery.FieldByName('ID').AsInteger;
- Result.ItemSelected_[0]:=true;
- Result.ItemAccess_[0]:=FQuery.FieldByName('Access').AsInteger;
- Result.ItemKeyWords_[0]:=FQuery.FieldByName('KeyWords').AsString;
- Result.ItemDates_[0]:=FQuery.FieldByName('DateToAdd').AsDateTime;
- Result.ItemIsDates_[0]:=FQuery.FieldByName('IsDate').AsBoolean;
- Result.ItemIsTimes_[0]:=FQuery.FieldByName('IsTime').AsBoolean;
- Result.ItemTimes_[0]:=FQuery.FieldByName('aTime').AsDateTime;
- Result.ItemGroups_[0]:=FQuery.FieldByName('Groups').AsString;
- Result.ItemLoaded_[0]:=true;
- Result.ItemAttr_[0]:=FQuery.FieldByName('Attr').AsInteger;
- Result.ItemCrypted_[0]:=ValidCryptBlobStreamJPG(FQuery.FieldByName('thum'));
- Result.ItemInclude_[0]:=FQuery.FieldByName('Include').AsBoolean;
- Result.ItemLinks_[0]:=FQuery.FieldByName('Links').AsString;
+
+  Result := TDBPopupMenuInfo.Create;
+  MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
+  Result.Add(MenuRecord);
  Result.ListItem:=nil;
- Result.IsAttrExists:=false;
+ Result.AttrExists:=false;
  Result.IsListItem:=False;
- Result.IsDateGroup:=False;
  Result.IsPlusMenu:=False;
  Result.Position:=0;
  FQuery.Close;
  FreeDS(FQuery);
 end;
 
-procedure RecordInfoOneToDBPopupMenuInfo(var RI : TOneRecordInfo; var DBP : TDBPopupMenuInfo);
+{procedure RecordInfoOneToDBPopupMenuInfo(var RI : TOneRecordInfo; var DBP : TDBPopupMenuInfo);
 begin
  DBP:=DBPopupMenuInfoOne(RI.ItemFileName,RI.ItemComment,RI.ItemGroups,RI.ItemId,RI.ItemSize,RI.ItemRotate,RI.ItemRating,RI.ItemAccess,RI.ItemDate,RI.ItemIsDate,RI.ItemIsTime,RI.ItemTime,RI.ItemCrypted,RI.ItemKeyWords,RI.Loaded,RI.ItemInclude,RI.ItemLinks);
-end;
+end;  }
 
 function RecordInfoOne(Name : string; ID, Rotate,Rating,Access : integer; Size : int64; Comment, KeyWords, Owner_, Collection, Groups : string; Date : TDateTime; IsDate, IsTime: Boolean; Time : TTime; Crypt, Include, Loaded : Boolean; Links : string) : TOneRecordInfo;
 begin
@@ -4171,17 +3976,6 @@ var
   b : array[0..2048] of char;
 begin
  Result := ExtractAssociatedIcon(Application.Handle, StrLCopy(b,PChar(FileName),SizeOf(b)-1),IconIndex);
-end;
-
-function GetFileDateTime(FileName: string): TDateTime;
-var
- intFileAge: LongInt;
-begin
- intFileAge := FileAge(FileName);
- if intFileAge = -1 then
-  Result := 0
- else
-  Result := FileDateToDateTime(intFileAge)
 end;
 
 Procedure DoHelp;
@@ -6533,6 +6327,374 @@ begin
     DB_IMAGE_ROTATED_90:  Rotate90A(Bitmap);
     DB_IMAGE_ROTATED_180: Rotate180A(Bitmap);
   end;
+end;
+
+{ TDBPopupMenuInfo }
+
+procedure TDBPopupMenuInfo.Add(MenuRecord: TDBPopupMenuInfoRecord);
+begin
+  FData.Add(MenuRecord);
+end;
+
+procedure TDBPopupMenuInfo.Clear;
+var
+  I : Integer;
+begin
+  for I := 0 to FData.Count - 1 do
+    TDBPopupMenuInfoRecord(FData[I]).Free;
+  FData.Clear;
+end;
+
+constructor TDBPopupMenuInfo.Create;
+begin
+  FData := TList.Create;
+end;
+
+destructor TDBPopupMenuInfo.Destroy;
+begin
+  Clear;
+  FData.Free;
+  inherited;
+end;
+
+function TDBPopupMenuInfo.GetCommonGroups: string;
+var
+  SL : TStringList;
+  I : Integer;
+begin
+  SL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      SL.Add(Self[I].Groups);
+    Result := UnitGroupsWork.GetCommonGroups(SL);
+  finally
+    SL.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetCommonKeyWords: string;
+var
+  KL : TStringList;
+  I : Integer;
+begin
+  KL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      KL.Add(Self[I].KeyWords);
+    Result := GetCommonWordsA(KL);
+  finally
+    KL.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetCommonLinks: TLinksInfo;   
+var
+  LL : TStringList;
+  I : Integer;
+begin
+  LL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      LL.Add(Self[I].Links);
+    Result := UnitLinksSupport.GetCommonLinks(LL);
+  finally
+    LL.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetCount: Integer;
+begin
+  Result := FData.Count;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousComments: Boolean;
+var
+  I : Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Comment <> Self[I].Comment then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousDate: Boolean;
+var
+  I : Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Date <> Self[I].Date then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousInclude: Boolean;
+var
+  I : Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Include <> Self[I].Include then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousTime: Boolean;
+var
+  I : Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Time <> Self[I].Time then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetPosition: Integer;
+var
+  I : Integer;
+begin
+  Result := -1;
+  if Count > 0 then
+    Result := 0;
+  for I := 1 to Count - 1 do
+    if Self[0].IsCurrent then
+      Result := I;
+end;
+
+function TDBPopupMenuInfo.GetStatDate: TDateTime;
+var
+  I : Integer;
+  List : TList64;
+begin
+  Result := 0;
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Date);
+    Result := List.MaxStatDateTime;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatIsDate: Boolean;
+var
+  I : Integer;
+  List : TList64;
+begin
+  Result := False;
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].IsDate);
+    Result := List.MaxStatBoolean;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatIsTime: Boolean;
+var
+  I : Integer;
+  List : TList64;
+begin
+  Result := False;
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].IsTime);
+    Result := List.MaxStatBoolean;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatRating: Integer;
+var
+  I : Integer;
+  List : TList64;
+begin
+  Result := 0;
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Rating);
+    Result := List.MaxStatInteger;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatTime: TDateTime;
+var
+  I : Integer;
+  List : TList64;
+begin
+  Result := 0;
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Time);
+    Result := List.MaxStatDateTime;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetValueByIndex(
+  Index: Integer): TDBPopupMenuInfoRecord;
+begin
+  Result := FData[Index];
+end;
+
+procedure TDBPopupMenuInfo.SetPosition(const Value: Integer);
+var
+  I : Integer;
+begin        
+  for I := 0 to Count - 1 do
+    Self[I].IsCurrent := False;
+  Self[Value].IsCurrent := True;
+end;
+
+{ TDBPopupMenuInfoRecord }
+
+constructor TDBPopupMenuInfoRecord.CreateFromContRecord(
+  ContRecord: TImageContRecord);
+begin                         
+  ID         := ContRecord.ID;
+  FileName   := ProcessPath(ContRecord.FileName);
+  Comment    := ContRecord.Comment;
+  FileSize   := ContRecord.FileSize;
+  Rotation   := ContRecord.Rotation;
+  Access     := ContRecord.Access;
+  Rating     := ContRecord.Rating;
+  Date       := ContRecord.Date;
+  Time       := ContRecord.Time;
+  IsDate     := ContRecord.IsDate;
+  IsTime     := ContRecord.IsTime;
+  Groups     := ContRecord.Groups;
+  Crypted    := ContRecord.Crypted;
+  Include    := ContRecord.Include;
+  KeyWords   := ContRecord.KeyWords;
+  Links      := ContRecord.Links;
+  InfoLoaded := True;
+end;
+
+constructor TDBPopupMenuInfoRecord.CreateFromDS(DS : TDataSet);
+begin       
+   InfoLoaded := True;
+   Selected   := True;
+   ID         := DS.FieldByName('ID').AsInteger;
+   KeyWords   := DS.FieldByName('KeyWords').AsString;
+   FileName   := ProcessPath(DS.FieldByName('FFileName').AsString);
+   FileSize   := DS.FieldByName('FileSize').AsInteger;
+   Rotation   := DS.FieldByName('Rotated').AsInteger;
+   Rating     := DS.FieldByName('Rating').AsInteger;
+   Access     := DS.FieldByName('Access').AsInteger;
+   Attr       := DS.FieldByName('Attr').AsInteger;
+   Comment    := DS.FieldByName('Comment').AsString;
+   Date       := DS.FieldByName('DateToAdd').AsDateTime;
+   Time       := DS.FieldByName('aTime').AsDateTime;
+   IsDate     := DS.FieldByName('IsDate').AsBoolean;
+   IsTime     := DS.FieldByName('IsTime').AsBoolean;
+   Groups     := DS.FieldByName('Groups').AsString;
+   Crypted    := ValidCryptBlobStreamJPG(DS.FieldByName('Thum'));
+   Include    := DS.FieldByName('Include').AsBoolean;
+   Links      := DS.FieldByName('Links').AsString;
+end;
+
+constructor TDBPopupMenuInfoRecord.CreateFromExplorerInfo(
+  Info: TExplorerFileInfo);
+begin
+  ID         := Info.ID;
+  FileName   := Info.FileName;
+  Comment    := Info.Comment;
+  Groups     := Info.Groups;
+  FileSize   := Info.FileSize;
+  Rotation   := Info.Rotate;
+  Rating     := Info.Rating;
+  Access     := Info.Access;
+  Date       := Info.Date;
+  Time       := Info.Time;
+  IsDate     := Info.IsDate;
+  IsTime     := Info.IsTime;
+  Crypted    := Info.Crypted;
+  KeyWords   := Info.KeyWords;
+  InfoLoaded := Info.Loaded;
+  Include    := Info.Include;
+  Links      := Info.Links;
+end;
+
+constructor TDBPopupMenuInfoRecord.CreateFromRecordInfo(
+  RI: TOneRecordInfo);
+begin
+  FileName   := RI.ItemFileName;
+  Comment    := RI.ItemComment;
+  Groups     := RI.ItemGroups;
+  ID         := RI.ItemId;
+  FileSize   := RI.ItemSize;
+  Rotation   := RI.ItemRotate;
+  Rating     := RI.ItemRating;
+  Access     := RI.ItemAccess;
+  Date       := RI.ItemDate;   
+  Time       := RI.ItemTime;
+  IsDate     := RI.ItemIsDate;
+  IsTime     := RI.ItemIsTime;
+  Crypted    := RI.ItemCrypted;
+  KeyWords   := RI.ItemKeyWords;
+  InfoLoaded := RI.Loaded;
+  Include    := RI.ItemInclude;  
+  Links      := RI.ItemLinks;
+end;
+
+constructor TDBPopupMenuInfoRecord.CreateFromSearchRecord(
+  Info: TSearchRecord);
+begin
+  FileName   := ProcessPath(Info.FileName);
+  Comment    := Info.Comments;
+  FileSize   := Info.FileSize;
+  Rotation   := Info.Rotation;
+  ID         := Info.ID;
+  Access     := Info.Access;
+  Rating     := Info.Rating;
+  Date       := Info.Date;
+  Time       := Info.Time;
+  IsDate     := Info.IsDate;
+  IsTime     := Info.IsTime;
+  Groups     := Info.Groups;
+  Crypted    := Info.Crypted;
+  KeyWords   := Info.KeyWords;
+  Attr       := Info.Attr;
+  InfoLoaded := True;
+  Include    := Info.Include;
+  Links      := Info.Links;
+end;
+
+constructor TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(
+  Info: TRecordsInfo; Position: Integer);
+begin
+  FileName   := Info.ItemFileNames[Position];
+  ID         := Info.ItemIds[Position];
+  Rotation   := Info.ItemRotates[Position];
+  Rating     := Info.ItemRatings[Position];
+  Comment    := Info.ItemComments[Position];
+  Access     := Info.ItemAccesses[Position];
+  Date       := Info.ItemDates[Position];
+  Time       := Info.ItemTimes[Position];
+  IsDate     := Info.ItemIsDates[Position];
+  IsTime     := Info.ItemIsTimes[Position];
+  Groups     := Info.ItemGroups[Position];
+  Crypted    := Info.ItemCrypted[Position];
+  KeyWords   := Info.ItemKeyWords[Position];
+  Links      := Info.ItemLinks[Position];
+  Selected   := True;
+  InfoLoaded := True;
+  Attr       := 0;
+  InfoLoaded := Info.LoadedImageInfo[Position];
+  FileSize   := GetFileSizeByName(Info.ItemFileNames[Position]);
+  Include    := Info.ItemInclude[Position];
 end;
 
 initialization

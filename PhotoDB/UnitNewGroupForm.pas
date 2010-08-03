@@ -6,7 +6,8 @@ uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, ExtDlgs, Jpeg, Dolphin_DB,
   Menus, GraphicEx, Gifimage, Math, ComCtrls, ImgList, GraphicSelectEx,
-  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, uConstants;
+  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, uConstants,
+  uFileUtils;
 
 type
   TNewGroupForm = class(TForm)

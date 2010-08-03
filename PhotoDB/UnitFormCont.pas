@@ -12,7 +12,7 @@ uses
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
-  uListViewUtils, uDBDrawing;
+  uListViewUtils, uDBDrawing, uFileUtils;
 
 type
   TFormCont = class(TThreadForm)
@@ -400,7 +400,7 @@ begin
   ImHint.close;
   hinttimer.Enabled:=false;
   info:=GetCurrentPopUpMenuInfo(item);
-  info.IsAttrExists:=false;
+  info.AttrExists:=false;
   if not (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
   begin
    info.IsPlusMenu:=false;
@@ -415,11 +415,11 @@ begin
   end else
   begin
    SetLength(FileNames,0);
-   For i:=0 to length(Info.ItemFileNames_)-1 do
-   if Info.ItemSelected_[i] then
+   For i:=0 to Info.Count - 1 do
+   if Info[I].Selected then
    begin
     SetLength(FileNames,Length(FileNames)+1);
-    FileNames[Length(FileNames)-1]:=Info.ItemFileNames_[i];
+    FileNames[Length(FileNames)-1]:=Info[i].FileName;
    end;
    GetProperties(FileNames,MousePos,ListView1);
   end;
@@ -469,12 +469,12 @@ begin
     GetCursorPos(DBDragPoint);
     MenuInfo:=Self.GetCurrentPopUpMenuInfo(Item);
     SetLength(FilesToDrag,0);
-    For i:=0 to length(MenuInfo.ItemFileNames_)-1 do
+    For i:=0 to MenuInfo.Count-1 do
     if ListView1.Items[i].Selected then
-    If FileExists(MenuInfo.ItemFileNames_[i]) then
+    If FileExists(MenuInfo[I].FileName) then
     begin
      SetLength(FilesToDrag,Length(FilesToDrag)+1);
-     FilesToDrag[Length(FilesToDrag)-1]:=MenuInfo.ItemFileNames_[i];
+     FilesToDrag[Length(FilesToDrag)-1]:=MenuInfo[I].FileName;
     end;
     If Length(FilesToDrag)=0 then DBCanDrag:=false;
   end;
@@ -1151,57 +1151,22 @@ end;
 function TFormCont.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
 var
   i, MenuLength : integer;
+  MenuRecord : TDBPopupMenuInfoRecord;
 begin
- Result.Position:=0;
- Result.IsListItem:=false;
- Result.IsPlusMenu:=false;
- Result.IsDateGroup:=True;
- MenuLength:=Length(Data);
+  Result := TDBPopupMenuInfo.Create;
+  Result.IsListItem:=false;
+  Result.IsPlusMenu:=false;
+  MenuLength:=Length(Data);
 
- SetLength(Result.ItemFileNames_,MenuLength);
- SetLength(Result.ItemComments_,MenuLength);
- SetLength(Result.ItemFileSizes_,MenuLength);
- SetLength(Result.ItemRotations_,MenuLength);
- SetLength(Result.ItemIDs_,MenuLength);
- SetLength(Result.ItemSelected_,MenuLength);
- SetLength(Result.ItemAccess_,MenuLength);
- SetLength(Result.ItemRatings_,MenuLength);
- SetLength(Result.ItemDates_,MenuLength);
- SetLength(Result.ItemTimes_,MenuLength);
- SetLength(Result.ItemIsDates_,MenuLength);
- SetLength(Result.ItemIsTimes_,MenuLength);
- SetLength(Result.ItemGroups_,MenuLength);
- SetLength(Result.ItemCrypted_,MenuLength);
- SetLength(Result.ItemKeyWords_,MenuLength);
- SetLength(Result.ItemLoaded_,MenuLength);
- SetLength(Result.ItemAttr_,MenuLength);
- SetLength(Result.ItemInclude_,MenuLength);
- SetLength(Result.ItemLinks_,MenuLength);
- 
- For i:=0 to MenuLength-1 do
- begin
-  Result.ItemFileNames_[i]:=ProcessPath(Data[i].FileName);
-  Result.ItemComments_[i]:=Data[i].Comment;
-  Result.ItemFileSizes_[i]:=Data[i].FileSize;
-  Result.ItemRotations_[i]:=Data[i].Rotation;
-  Result.ItemIDs_[i]:=Data[i].ID;
-  Result.ItemAccess_[i]:=Data[i].Access;
-  Result.ItemRatings_[i]:=Data[i].Rating;
-  Result.ItemDates_[i]:=Data[i].Date;
-  Result.ItemTimes_[i]:=Data[i].Time;
-  Result.ItemIsDates_[i]:=Data[i].IsDate;
-  Result.ItemIsTimes_[i]:=Data[i].IsTime;
-  Result.ItemGroups_[i]:=Data[i].Groups;
-  Result.ItemCrypted_[i]:=Data[i].Crypted;
-  Result.ItemInclude_[i]:=Data[i].Include;
-  Result.ItemKeyWords_[i]:=Data[i].KeyWords;
-  Result.ItemLinks_[i]:=Data[i].Links;
-  Result.ItemLoaded_[i]:=true;
- end;
+  for i:=0 to MenuLength-1 do
+  begin
+    MenuRecord := TDBPopupMenuInfoRecord.CreateFromContRecord(Data[i]);
+    Result.Add(MenuRecord);
+  end;
  For i:=0 to ListView1.Items.Count-1 do
- if ListView1.Items[i].Selected then
- Result.ItemSelected_[i]:=true else
- Result.ItemSelected_[i]:=false;
+ Result[i].Selected:=ListView1.Items[i].Selected;
+
+ Result.Position:=0;
  If Item=nil then
  begin
  end else begin

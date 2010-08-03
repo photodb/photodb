@@ -6,7 +6,8 @@ interface
 //{$DEFINE ENGL}
 
 uses
-  Windows, SysUtils, StrUtils, Dolphin_DB, Language, UnitDBDeclare, UnitDBCommon;
+  Windows, SysUtils, Classes, StrUtils, Language, UnitDBDeclare, UnitDBCommon,
+  uConstants;
 
 const
   LINK_TYPE_ID       = 0;
@@ -74,8 +75,8 @@ function VariousLinks(info1, info2 : String) : boolean; overload;
 function DeleteLinkAtPos(var info : String; pos : integer) : boolean; overload;
 function DeleteLinkAtPos(var info : TLinksInfo; pos : integer) : boolean; overload;
 
+function GetCommonLinks(LinksList : TStringList) : TLinksInfo; overload;
 function GetCommonLinks(info : TArLinksInfo) : TLinksInfo; overload;
-function GetCommonLinks(info : TArStrings) : TLinksInfo; overload;
 
 Procedure ReplaceLinks(LinksToDelete, LinksToAdd : TLinksInfo; var Links : TLinksInfo); overload;
 Procedure ReplaceLinks(LinksToDelete, LinksToAdd : String; var Links : String); overload;
@@ -243,14 +244,14 @@ begin
  end;
 end;
 
-function GetCommonLinks(info : TArStrings) : TLinksInfo;
+function GetCommonLinks(LinksList : TStringList) : TLinksInfo;
 var
   i : integer;
   Tinfo : TArLinksInfo;
 begin
- SetLength(Tinfo,Length(info));
- for i:=0 to Length(info)-1 do
- Tinfo[i]:=ParseLinksInfo(info[i]);
+ SetLength(Tinfo, LinksList.Count);
+ for i:=0 to LinksList.Count-1 do
+ Tinfo[i]:=ParseLinksInfo(LinksList[i]);
  Result:=GetCommonLinks(Tinfo);
 end;
 

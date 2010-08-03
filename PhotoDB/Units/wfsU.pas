@@ -3,20 +3,7 @@ unit wfsU;
 interface
 
 uses  Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, uLogger,
-      uGOM;
-
-type
-  PFileNotifyInformation = ^TFileNotifyInformation;
-  TFileNotifyInformation = record
-    NextEntryOffset : DWORD;
-    Action          : DWORD;
-    FileNameLength  : DWORD;
-    FileName        : array[0..0] of WideChar;
-  end;
-
-
-const
-  FILE_LIST_DIRECTORY   = $0001;
+      uGOM, ExplorerTypes;
 
 type
 
@@ -85,7 +72,7 @@ type
 
 implementation
 
-uses ExplorerUnit, ExplorerTypes;
+uses ExplorerUnit;
 
 procedure TWachDirectoryClass.CallBack(pInfo: TInfoCallBackDirectoryChangedArray);
 begin

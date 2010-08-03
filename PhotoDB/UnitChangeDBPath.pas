@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Language, Dolphin_DB, StdCtrls, DmProgress, DB, win32crc,
   UnitDBFileDialogs, UnitOpenQueryThread, CommonDBSupport, uVistaFuncs,
-  UnitDBkernel, UnitDBDeclare;
+  UnitDBkernel, UnitDBDeclare, uFileUtils;
 
 type
   TFormChangeDBPath = class(TForm)

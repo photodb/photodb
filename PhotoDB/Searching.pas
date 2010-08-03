@@ -12,7 +12,7 @@ uses
   ShellContextMenu, DropSource, DropTarget, DateUtils, acDlgSelect,
   ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts, DBScriptFunctions,
   Exif, EasyListview, WebLink, MPCommonUtilities, GraphicsCool,
-  UnitSearchBigImagesLoaderThread, DragDropFile,
+  UnitSearchBigImagesLoaderThread, DragDropFile, uFileUtils,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
@@ -800,11 +800,11 @@ begin
   end else
   begin
    SetLength(FileNames,0);
-   For i:=0 to length(Info.ItemFileNames_)-1 do
-   if Info.ItemSelected_[i] then
+   for I := 0 to Info.Count - 1 do
+   if Info[i].Selected then
    begin
     SetLength(FileNames,Length(FileNames)+1);
-    FileNames[Length(FileNames)-1]:=Info.ItemFileNames_[i];
+    FileNames[Length(FileNames)-1]:=Info[i].FileName;
    end;
    GetProperties(FileNames,MousePos,ListView);
   end;
@@ -876,10 +876,10 @@ begin
     GetCursorPos(DBDragPoint);
     MenuInfo := GetCurrentPopUpMenuInfo(Item);
 
-    for I:=0 to length(MenuInfo.ItemFileNames_) - 1 do
-      if MenuInfo.ItemSelected_[i] then
-        if FileExists(MenuInfo.ItemFileNames_[i]) then
-          FilesToDrag.Add(MenuInfo.ItemFileNames_[i]);
+    for I:=0 to MenuInfo.Count - 1 do
+      if MenuInfo[I].Selected then
+        if FileExists(MenuInfo[I].FileName) then
+          FilesToDrag.Add(MenuInfo[I].FileName);
 
     if FilesToDrag.Count = 0 then
       DBCanDrag := False;
@@ -1971,7 +1971,6 @@ begin
  p1:=ListView.ScreenToClient(p);
 
  if (not Active) or (not ListView.Focused) or (ItemAtPos(p1.X,p1.y)<>LoadingThItem) or (shloadingthitem<>LoadingThItem) then
-
  begin
   HintTimer.Enabled:=false;
   exit;
@@ -2278,62 +2277,26 @@ begin
  NewExplorer;
 end;
 
-function TSearchForm.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
+function TSearchForm.GetCurrentPopUpMenuInfo(Item : TEasyItem) : TDBPopupMenuInfo;
 var
-  i , MenuLength : integer;
+  I : Integer;
+  MenuRecord : TDBPopupMenuInfoRecord;
+  SearchRecord : TSearchRecord;
 begin
+  Result := TDBPopupMenuInfo.Create;
+  Result.IsListItem:=false;
+  Result.IsPlusMenu:=false;
+  Result.IsPlusMenu := False;
+  for i:=0 to ListView.Items.Count - 1 do
+  begin
+    SearchRecord := TSearchRecord(TDataObject(Item.Data).Data);
+    MenuRecord := TDBPopupMenuInfoRecord.CreateFromSearchRecord(SearchRecord);
+    Result.Add(MenuRecord);
+  end;
  Result.Position:=0;
- Result.IsListItem:=false;
- Result.IsPlusMenu:=false;
- MenuLength:=FData.Count;
- if MenuLength<ListView.Items.Count then exit;
- SetLength(Result.ItemFileNames_,MenuLength);
- SetLength(Result.ItemComments_,MenuLength);
- SetLength(Result.ItemFileSizes_,MenuLength);
- SetLength(Result.ItemRotations_,MenuLength);
- SetLength(Result.ItemIDs_,MenuLength);
- SetLength(Result.ItemSelected_,MenuLength);
- SetLength(Result.ItemAccess_,MenuLength);
- SetLength(Result.ItemRatings_,MenuLength);
- SetLength(Result.ItemDates_,MenuLength);
- SetLength(Result.ItemIsDates_,MenuLength);
- SetLength(Result.ItemTimes_,MenuLength);
- SetLength(Result.ItemIsTimes_,MenuLength);
- SetLength(Result.ItemGroups_,MenuLength);
- SetLength(Result.ItemLinks_,MenuLength);
- SetLength(Result.ItemCrypted_,MenuLength);
- SetLength(Result.ItemInclude_,MenuLength);
- SetLength(Result.ItemKeyWords_,MenuLength);
- SetLength(Result.ItemAttr_,MenuLength);
- SetLength(Result.ItemLoaded_,MenuLength);
- Result.PlusMenu:=nil;
- Result.IsDateGroup:=True;
- For i:=0 to MenuLength-1 do
- begin
-  Result.ItemFileNames_[i]:=ProcessPath(FData[i].FileName);
-  Result.ItemComments_[i]:=FData[i].Comments;
-  Result.ItemFileSizes_[i]:=FData[i].FileSize;
-  Result.ItemRotations_[i]:=FData[i].Rotation;
-  Result.ItemIDs_[i]:=FData[i].ID;
-  Result.ItemAccess_[i]:=FData[i].Access;
-  Result.ItemRatings_[i]:=FData[i].Rating;
-  Result.ItemDates_[i]:=FData[i].Date;
-  Result.ItemTimes_[i]:=FData[i].Time;
-  Result.ItemIsDates_[i]:=FData[i].IsDate;
-  Result.ItemIsTimes_[i]:=FData[i].IsTime;
-  Result.ItemGroups_[i]:=FData[i].Groups;
-  Result.ItemCrypted_[i]:=FData[i].Crypted;
-  Result.ItemKeyWords_[i]:=FData[i].KeyWords;
-  Result.ItemAttr_[i]:=FData[i].Attr;
-  Result.ItemLoaded_[i]:=true;
-  Result.ItemInclude_[i]:=FData[i].Include;
-  Result.ItemLinks_[i]:=FData[i].Links;
- end;
- Result.IsAttrExists:=true;
- For i:=0 to ListView.Items.Count-1 do
- if ListView.Items[i].Selected then
- Result.ItemSelected_[i]:=true else
- Result.ItemSelected_[i]:=false;
+ Result.AttrExists:=true;
+  for i:=0 to ListView.Items.Count-1 do
+    Result[I].Selected:=ListView.Items[i].Selected;
  If Item=nil then
  begin
  end else
@@ -3432,14 +3395,14 @@ procedure TSearchForm.DoShowSelectInfo;
 var
   i, indent : integer;
   size : int64;
-  A : TArStrings;
+  KeyWordList : TStringList;
   CommonKeyWords : String;
   ArStr : TArStrings;
   ArDates : TArDateTime;
   ArIsDates : TArBoolean;
   ArIsTimes : TArBoolean;
   ArInt : TArInteger;
-  ArGroups : TArStrings;
+  ArGroups : TStringList;
   ArTimes : TArTime;
   WorkQuery : TDataSet;
 begin
@@ -3469,16 +3432,16 @@ begin
   SetLength(ArIsDates,0);
   SetLength(ArIsTimes,0);
   SetLength(ArInt,0);
-  SetLength(A,0);
   SetLength(ArStr,0);
-  SetLength(ArGroups,0);
+  
+  KeyWordList := TStringList.Create;
+  ArGroups := TStringList.Create;
 
-  For i:=0 to ListView.Items.Count-1 do
+  for i:=0 to ListView.Items.Count-1 do
   if ListView.Items[i].Selected then
   begin
    Size:=Size+FData[i].FileSize;
-   SetLength(A,Length(A)+1);
-   A[Length(A)-1]:=FData[i].KeyWords;
+   KeyWordList.Add(FData[i].KeyWords);
    SetLength(SelectedInfo.Ids,Length(SelectedInfo.Ids)+1);
    SelectedInfo.Ids[Length(SelectedInfo.Ids)-1]:=FData[i].ID;
    SetLength(ArDates,Length(ArDates)+1);
@@ -3495,8 +3458,7 @@ begin
    SetLength(ArIsTimes,Length(ArIsTimes)+1);
    ArIsTimes[Length(ArIsTimes)-1]:=FData[i].IsTime;
 
-   SetLength(ArGroups,Length(ArGroups)+1);
-   ArGroups[Length(ArGroups)-1]:=FData[i].Groups;
+   ArGroups.Add(FData[i].Groups);
   end;
   lockwindowupdate(Handle);
   SelectedInfo.CommonRating:=MaxStatInt(ArInt);
@@ -3523,7 +3485,7 @@ begin
   IsTimePanel.Visible:=not SelectedInfo.IsTime;
   SelectedInfo.IsVariousTimes:=PanelValueIsTimeSets.Visible;
 
-  CommonKeyWords:=GetCommonWordsA(A);
+  CommonKeyWords:=GetCommonWordsA(KeyWordList);
   SelectedInfo.CommonKeyWords:=CommonKeyWords;
   Label4.Caption:=Format(TEXT_MES_SIZE_FORMATA,[sizeintextA(size)]);
   Label2.Caption:=TEXT_MES_ITEMS+' = '+inttostr(GetSelectionCount);

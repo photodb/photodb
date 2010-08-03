@@ -87,7 +87,7 @@ Procedure AddGroupsToGroups(var Groups : TGroups; GroupsToAdd : TGroups); overlo
 Procedure AddGroupsToGroups(var Groups : String; GroupsToAdd : String); overload;
 Procedure AddGroupToGroups(var Groups : TGroups; Group : TGroup);
 {$IFNDEF EXT}
-Function GetCommonGroups(ArGroups : TArStrings) : String; overload;
+Function GetCommonGroups(GroupsList : TStringList) : String; overload;
 {$ENDIF}
 Function GetCommonGroups(ArGroups : TArGroups) : TGroups; overload;
 Function CompareGroups(GroupsA, GroupsB : String) : Boolean; overload;
@@ -996,7 +996,7 @@ begin
 end;
 
 {$IFNDEF EXT}
-Function GetCommonGroups(ArGroups : TArStrings) : String;
+function GetCommonGroups(GroupsList : TStringList) : String;
 var
   i : integer;
   FArGroups : TArGroups;
@@ -1004,15 +1004,16 @@ var
 begin
  Result:='';
  SetLength(Res,0);
- if Length(ArGroups)=0 then exit;
- SetLength(FArGroups,Length(ArGroups));
- For i:=0 to length(ArGroups)-1 do
- FArGroups[i]:=EncodeGroups(ArGroups[i]);
+ if GroupsList.Count=0 then exit;
+ SetLength(FArGroups,GroupsList.Count);
+ For i:=0 to GroupsList.Count-1 do
+ FArGroups[i]:=EncodeGroups(GroupsList[i]);
  Res:=GetCommonGroups(FArGroups);
  Result:=CodeGroups(Res);
 end;
 {$ENDIF}
-Function GetCommonGroups(ArGroups : TArGroups) : TGroups;
+
+function GetCommonGroups(ArGroups : TArGroups) : TGroups;
 var
   i, j : integer;
 begin

@@ -55,7 +55,7 @@ function WordExists(Words_ : TStrings; s: string) : boolean;
 procedure GetCommonWords(A,B : Tstrings; var D : Tstrings);
 Function WordsToString(Words : TStrings) : String;
 {$IFNDEF EXT}
-Function GetCommonWordsA(Words : TArStrings): String;
+Function GetCommonWordsA(Words : TStringList): String;
 procedure DeleteWords(var Words : String; WordsToDelete : String); overload;
 Procedure ReplaceWords(A,B : String; var D : string);
 function VariousKeyWords(S1, S2 : String) : Boolean;
@@ -283,18 +283,22 @@ begin
   Result:=Result+' '+Words[i];
   DelSpacesW(Result);
 end;
+
 {$IFNDEF EXT}
-Function GetCommonWordsA(Words : TArStrings): String;
+
+Function GetCommonWordsA(Words : TStringList): String;
 var
   Common, Temp, Str : TStrings;
   i : Integer;
 begin
-  If Length(Words)=0 then exit;
+  if Words.Count = 0 then
+    Exit;
+    
   Common:=TStringList.create;
   Temp:=TStringList.create;
   Str:=TStringList.create;
   SpilitWords(Words[0],Common);
-  For i:=1 to length(Words)-1 do
+  for i:=1 to Words.Count - 1 do
   begin
    SpilitWords(Words[i],Temp);
    GetCommonWords(Common,Temp,Str);
@@ -440,6 +444,8 @@ begin
  end;
  Result:=Stat[MaxN].Time;
 end;
+
+//function MaxStat32Bit(
 
 function MaxStatInt(Ints : TArInteger) : Integer;
 type TIntStat = record

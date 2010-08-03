@@ -8,8 +8,28 @@ uses Windows, Classes, SysUtils, ACLApi, AccCtrl,  ShlObj, ActiveX, uConstants,
 function GetAppDataDirectory: string; 
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string; 
 function FileExistsEx(const FileName :TFileName) :Boolean;
+procedure UnFormatDir(var FileName : string);
+procedure FormatDir(var FileName : string);
+function GetFileDateTime(FileName: string): TDateTime;
 
 implementation
+
+procedure UnFormatDir(var FileName : string);
+begin
+  if FileName = '' then
+    Exit;
+  if FileName[Length(FileName)] = '\' then
+    Delete(FileName, Length(FileName), 1);
+end;
+
+procedure FormatDir(var FileName : string);
+begin
+  if FileName = '' then
+    Exit;
+  if FileName[Length(FileName)] <> '\' then
+    FileName := FileName + '\'
+end;
+
 
 function FileExistsEx(const FileName :TFileName) : Boolean;
 var
@@ -183,6 +203,17 @@ end;
 function GetAppDataDirectory: string;
 begin
   Result := GetAppDataDir + PHOTO_DB_APPDATA_DIRECTORY;
+end;
+
+function GetFileDateTime(FileName: string): TDateTime;
+var
+  IntFileAge: LongInt;
+begin
+  IntFileAge := FileAge(FileName);
+  if IntFileAge = -1 then
+    Result := 0
+  else
+    Result := FileDateToDateTime(IntFileAge);
 end;
 
 end.

@@ -6,7 +6,7 @@ uses
   Windows, Messages, Classes, Dolphin_DB, Forms, Graphics, GraphicCrypt,
   Jpeg, RAWImage, PngImage, TiffImageUnit, ImageConverting, GIFImage, GraphicEx,
   SysUtils, Language, UnitDBKernel, UnitPropeccedFilesSupport, uVistaFuncs,
-  UnitDBDeclare;
+  UnitDBDeclare, uFileUtils;
 
 type
   TConvertThreadOptions = record

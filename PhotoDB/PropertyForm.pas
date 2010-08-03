@@ -12,7 +12,7 @@ uses
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uDBDrawing;
+  UnitCDMappingSupport, uDBDrawing, uFileUtils;
 
 type
  TShowInfoType=(SHOW_INFO_FILE_NAME,SHOW_INFO_ID,SHOW_INFO_IDS);
@@ -283,7 +283,8 @@ type
   FOldGroups, FNowGroups : TGroups;     
   FShowenRegGroups : TGroups;
   FPropertyLinks, ItemLinks : TLinksInfo;
-  FFilesInfo : TDBPopupMenuInfo;
+  FFilesInfo : TDBPopupMenuInfo;           
+  FMenuRecord : TDBPopupMenuInfoRecord;
   SelectedInfo : TSelectedInfo;
   RegGroups : TGroups;
   adding_now, editing_info, no_file : boolean;
@@ -689,9 +690,10 @@ begin
 
  DateSets.Visible:=false;
  TimeSets.Visible:=false;
- FFilesInfo:=DBPopupMenuInfoOne(ProcessPath(WorkQuery.FieldByName('FFileName').AsString),WorkQuery.FieldByName('Comment').AsString,WorkQuery.FieldByName('Groups').AsString,WorkQuery.FieldByName('ID').AsInteger,WorkQuery.FieldByName('FileSize').AsInteger, WorkQuery.FieldByName('Rotated').AsInteger,WorkQuery.FieldByName('Rating').AsInteger,WorkQuery.FieldByName('Access').AsInteger,WorkQuery.FieldByName('DateToAdd').AsDateTime,WorkQuery.FieldByName('IsDate').AsBoolean,WorkQuery.FieldByName('IsTime').AsBoolean,WorkQuery.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')),WorkQuery.FieldByName('KeyWords').AsString,true,WorkQuery.FieldByName('Include').AsBoolean,WorkQuery.FieldByName('Links').AsString);
- FFilesInfo.IsDateGroup:=True;
- FFilesInfo.IsAttrExists:=false;
+ FFilesInfo:= TDBPopupMenuInfo.Create;
+ FMenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+ FFilesInfo.Add(FMenuRecord);
+ FFilesInfo.AttrExists:=false;
  CommentMemoChange(nil);
  Button2.Visible:=True;
  ReloadGroups;
@@ -821,10 +823,10 @@ begin
     DragImage.Free;
     DropFileSource1.Files.Clear;
     c:=false;
-    for i:=0 to Length(FFilesInfo.ItemFileNames_)-1 do
-    if FileExists(ProcessPath(FFilesInfo.ItemFileNames_[i])) then
+    for I := 0 to FFilesInfo.Count - 1 do
+    if FileExists(ProcessPath(FFilesInfo[I].FileName)) then
     begin
-     DropFileSource1.Files.Add(ProcessPath(FFilesInfo.ItemFileNames_[i]));
+     DropFileSource1.Files.Add(ProcessPath(FFilesInfo[I].FileName));
      c:=true;
     end;
     if c then DropFileSource1.Execute;
@@ -909,6 +911,7 @@ var
   List : TSQLList;
   IDs : String;
   FQuery : TDataSet;
+  IDArray : TArInteger;
 begin
  If not DBkernel.ProgramInDemoMode then
  begin
@@ -942,7 +945,7 @@ begin
    ProgressForm.OperationCount:=xCount;
    ProgressForm.OperationPosition:=0;
    ProgressForm.OneOperation:=false;
-   ProgressForm.MaxPosCurrentOperation:=Length(FFilesInfo.ItemIDs_);
+   ProgressForm.MaxPosCurrentOperation:=FFilesInfo.Count;
    ProgressForm.xPosition:=0;
    ProgressForm.DoShow;
   end;
@@ -951,16 +954,18 @@ begin
   if ReadCHInclude then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set Include = :Include Where ID in (';
-   for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo.ItemIDs_[i])+' ' else
-   _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo.ItemIDs_[i])+'';
+   for I := 0 to FFilesInfo.Count - 1 do
+     if i=0 then
+       _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' '
+     else
+       _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
    _sqlexectext:=_sqlexectext+')';
    SetSQL(WorkQuery,_sqlexectext);
    SetBoolParam(WorkQuery,0,CheckBox1.Checked);
    ExecSQL(WorkQuery);
    EventInfo.Include:=CheckBox1.Checked;
-   For i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-   DBKernel.DoIDEvent(Sender,FFilesInfo.ItemIDs_[i],[EventID_Param_Include],EventInfo);
+   for I := 0 to FFilesInfo.Count - 1 do
+     DBKernel.DoIDEvent(Sender,FFilesInfo[I].ID,[EventID_Param_Include],EventInfo);
   end;
   //[END] Include Support
 
@@ -969,17 +974,17 @@ begin
   if not Rating1.Islayered then
   begin
    _sqlexectext:='Update '+GetDefDBName+' Set Rating = :Rating Where ID in (';
-   for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo.ItemIDs_[i])+' ' else
-   _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo.ItemIDs_[i])+'';
+   for I := 0 to FFilesInfo.Count - 1 do
+   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
+   _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
    _sqlexectext:=_sqlexectext+')';
    WorkQuery.active:=false;
    SetSQL(WorkQuery,_sqlexectext);
    SetIntParam(WorkQuery,0,Rating1.Rating);
    ExecSQL(WorkQuery);
    EventInfo.Rating:=Rating1.Rating;
-   for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-   DBKernel.DoIDEvent(Sender,FFilesInfo.ItemIDs_[i],[EventID_Param_Rating],EventInfo);
+   for I := 0 to FFilesInfo.Count - 1 do
+   DBKernel.DoIDEvent(Sender,FFilesInfo[I].ID,[EventID_Param_Rating],EventInfo);
   end;
   //[END] Rating Support
 
@@ -991,13 +996,13 @@ begin
    FreeSQLList(List);
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
-   For i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
+   for I := 0 to FFilesInfo.Count - 1 do
    begin
-    KeyWords:=FFilesInfo.ItemKeyWords_[i];
+    KeyWords:=FFilesInfo[I].KeyWords;
     ReplaceWords(CurrentItemInfo.ItemKeyWords, KeywordsMemo.Text, KeyWords);
-    if VariousKeyWords(KeyWords,FFilesInfo.ItemKeyWords_[i]) then
+    if VariousKeyWords(KeyWords,FFilesInfo[I].KeyWords) then
     begin
-     AddQuery(List,KeyWords,FFilesInfo.ItemIDs_[i]);
+     AddQuery(List,KeyWords,FFilesInfo[I].ID);
     end;
    end;
    PackSQLList(List,VALUE_TYPE_KEYWORDS);
@@ -1026,18 +1031,18 @@ begin
   //[BEGIN] Groups Support
 
   CommonGroups:=CodeGroups(FOldGroups);
-  If not CompareGroups(FNowGroups,FOldGroups) then
+  If not CompareGroups(FNowGroups, FOldGroups) then
   begin
    FreeSQLList(List);
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
-   For i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
+   For I := 0 to FFilesInfo.Count - 1 do
    begin
-    SGroups:=FFilesInfo.ItemGroups_[i];
+    SGroups:=FFilesInfo[I].Groups;
     ReplaceGroups(CommonGroups,CodeGroups(FNowGroups),SGroups);
-    if not CompareGroups(SGroups,FFilesInfo.ItemGroups_[i]) then
+    if not CompareGroups(SGroups,FFilesInfo[I].Groups) then
     begin
-     AddQuery(List,SGroups,FFilesInfo.ItemIDs_[i]);
+     AddQuery(List,SGroups,FFilesInfo[I].ID);
     end;
    end;
 
@@ -1070,15 +1075,15 @@ begin
    FreeSQLList(List);
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
-   for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
+   For I := 0 to FFilesInfo.Count - 1 do
    begin
-    SLinks:=FFilesInfo.ItemLinks_[i];
+    SLinks:=FFilesInfo[I].Links;
     SLinkInfo:=ParseLinksInfo(SLinks);
     ReplaceLinks(ItemLinks,FPropertyLinks,SLinkInfo);
     SLinks:=CodeLinksInfo(SLinkInfo);
-    if not CompareLinks(SLinks,FFilesInfo.ItemLinks_[i]) then
+    if not CompareLinks(SLinks,FFilesInfo[I].Links) then
     begin
-     AddQuery(List,SLinks,FFilesInfo.ItemIDs_[i]);
+     AddQuery(List,SLinks,FFilesInfo[I].ID);
     end;
    end;
    PackSQLList(List,VALUE_TYPE_LINKS);
@@ -1108,18 +1113,18 @@ begin
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
    _sqlexectext:='Update '+GetDefDBName+' Set Comment = "'+normalizeDBString(CommentMemo.Text)+'" Where ID in (';
-   for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo.ItemIDs_[i])+' ' else
-   _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo.ItemIDs_[i])+'';
+   for I := 0 to FFilesInfo.Count - 1 do
+   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
+   _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
    _sqlexectext:=_sqlexectext+')';
    SetSQL(WorkQuery,_sqlexectext);
    ExecSQL(WorkQuery);
    EventInfo.Comment:=CommentMemo.Text;
-   for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
+   for I := 0 to FFilesInfo.Count - 1 do
    begin
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!} Application.ProcessMessages;
-    DBKernel.DoIDEvent(Sender,FFilesInfo.ItemIDs_[i],[EventID_Param_Comment],EventInfo);
+    DBKernel.DoIDEvent(Sender,FFilesInfo[I].ID,[EventID_Param_Comment],EventInfo);
    end;
   end;
   //[END] Commnet Support
@@ -1132,23 +1137,23 @@ begin
    if IsDatePanel.Visible then
    begin
     _sqlexectext:='Update '+GetDefDBName+' Set IsDate = :IsDate Where ';
-    for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo.ItemIDs_[i])+' ' else
-    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo.ItemIDs_[i])+'';
+    for I := 0 to FFilesInfo.Count - 1 do
+    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
+    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
     _sqlexectext:=_sqlexectext+')';
     FQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
     SetBoolParam(FQuery,0,false);
     ExecSQL(FQuery);
     EventInfo.IsDate:=False;
-    for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    DBKernel.DoIDEvent(Sender,FFilesInfo.ItemIDs_[i],[EventID_Param_IsDate],EventInfo);
+    for I := 0 to FFilesInfo.Count - 1 do
+    DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
    end else
    begin
     _sqlexectext:='Update '+GetDefDBName+' Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (';
-    for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo.ItemIDs_[i])+' ' else
-    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo.ItemIDs_[i])+'';
+    for I := 0 to FFilesInfo.Count - 1 do
+    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
+    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
     _sqlexectext:=_sqlexectext+')';
     FQuery.Active:=false;
     SetSQL(FQuery,_sqlexectext);
@@ -1156,8 +1161,8 @@ begin
     ExecSQL(FQuery);
     EventInfo.Date:=DateEdit.DateTime;
     EventInfo.IsDate:=True;
-    For i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    DBKernel.DoIDEvent(Sender,FFilesInfo.ItemIDs_[i],[EventID_Param_Date,EventID_Param_IsDate],EventInfo);
+    for I := 0 to FFilesInfo.Count - 1 do
+    DBKernel.DoIDEvent(Sender,FFilesInfo[I].ID,[EventID_Param_Date,EventID_Param_IsDate],EventInfo);
    end;
    FreeDS(FQuery);
   end;
@@ -1170,23 +1175,23 @@ begin
    if IsTimePanel.Visible then
    begin
     _sqlexectext:='Update '+GetDefDBName+' Set IsTime = :IsTime Where ID in (';
-    for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo.ItemIDs_[i])+' ' else
-    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo.ItemIDs_[i])+'';
+    for I := 0 to FFilesInfo.Count - 1 do
+    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
+    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
     _sqlexectext:=_sqlexectext+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
     SetBoolParam(WorkQuery,0,false);
     ExecSQL(FQuery);
     EventInfo.IsTime:=False;
-    For i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    DBKernel.DoIDEvent(Sender,FFilesInfo.ItemIDs_[i],[EventID_Param_IsTime],EventInfo);
+    for I := 0 to FFilesInfo.Count - 1 do
+    DBKernel.DoIDEvent(Sender,FFilesInfo[I].ID,[EventID_Param_IsTime],EventInfo);
    end else
    begin
     _sqlexectext:='Update '+GetDefDBName+' Set aTime = :aTime, IsTime = True Where ID in (';
-    for i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo.ItemIDs_[i])+' ' else
-    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo.ItemIDs_[i])+'';
+    for I := 0 to FFilesInfo.Count - 1 do
+    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
+    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
     _sqlexectext:=_sqlexectext+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
@@ -1194,8 +1199,8 @@ begin
     ExecSQL(FQuery);
     EventInfo.Time:=TimeEdit.Time;
     EventInfo.IsTime:=True;
-    For i:=0 to Length(FFilesInfo.ItemIDs_)-1 do
-    DBKernel.DoIDEvent(Sender,FFilesInfo.ItemIDs_[i],[EventID_Param_Time,EventID_Param_IsTime],EventInfo);
+    for I := 0 to FFilesInfo.Count - 1 do
+    DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID,[EventID_Param_Time,EventID_Param_IsTime],EventInfo);
    end;
   end;
   //[END] Time Support
@@ -1209,7 +1214,13 @@ begin
   UnLockImput;
   Button3.Enabled:=true;
   if Visible then
-  ExecuteEx(FFilesInfo.ItemIDs_);
+  begin
+    SetLength(IDArray, FFilesInfo.Count);
+    for I := 0 to FFilesInfo.Count - 1 do
+      IDArray[I] := FFilesInfo[I].ID;
+
+    ExecuteEx(IDArray);
+  end;
   Exit;
  end;
 
@@ -1260,15 +1271,15 @@ begin
  begin
   FirstName:=True;
   s:='';
-  For i:=0 to length(FFilesInfo.ItemFileNames_)-1 do
+  For i:=0 to FFilesInfo.Count - 1 do
   begin
-   If FileExists(FFilesInfo.ItemFileNames_[i]) then
+   If FileExists(FFilesInfo[I].FileName) then
    if FirstName then
    begin
-    s:=FFilesInfo.ItemFileNames_[i];
+    s:=FFilesInfo[I].FileName;
     FirstName:=false;
    end else
-    s:=s+#0+FFilesInfo.ItemFileNames_[i];
+    s:=s+#0+FFilesInfo[I].FileName;
   end;
   s:=s+#0#0;
   If Length(s)>2 then
@@ -1486,11 +1497,9 @@ begin
     end;
     SHOW_INFO_IDS:
     begin
-     for i:=0 to length(FFilesInfo.ItemIDs_)-1 do
-     if FFilesInfo.ItemIDs_[i]=ID then
-     begin
-      Image2.Visible:=True;
-     end;
+     for i:=0 to FFilesInfo.Count - 1 do
+     if FFilesInfo[I].ID = ID then
+       Image2.Visible:=True;
     end;
     SHOW_INFO_FILE_NAME:
     begin
@@ -1516,7 +1525,7 @@ begin
  if FShowInfoType=SHOW_INFO_IDS then
  Copy1.Visible:=True;
  DBItem1.Clear;
- FFilesInfo.IsAttrExists:=false;
+ FFilesInfo.AttrExists:=false;
  TDBPopupMenu.Instance.AddDBContMenu(DBItem1,FFilesInfo);
 end;
 
@@ -1629,33 +1638,9 @@ var
   Size : int64;
   Ico : TIcon;
   ArWidth, ArHeight : TArInteger;
-
+  MenuRecord : TDBPopupMenuInfoRecord;
 const
   AllocBy = 300;
-
-  procedure aSetLength(Len : integer);
-  begin
-   SetLength(FFilesInfo.ItemFileNames_,len);
-   SetLength(FFilesInfo.ItemComments_,len);
-   SetLength(FFilesInfo.ItemFileSizes_,len);
-   SetLength(FFilesInfo.ItemRotations_,len);
-   SetLength(FFilesInfo.ItemRatings_,len);
-   SetLength(FFilesInfo.ItemIDs_,len);
-   SetLength(FFilesInfo.ItemSelected_,len);
-   SetLength(FFilesInfo.ItemAccess_,len);
-   SetLength(FFilesInfo.ItemDates_,len);
-   SetLength(FFilesInfo.ItemTimes_,len);
-   SetLength(FFilesInfo.ItemIsDates_,len);
-   SetLength(FFilesInfo.ItemIsTimes_,len);
-   SetLength(FFilesInfo.ItemGroups_,len);
-   SetLength(FFilesInfo.ItemKeyWords_,len);
-   SetLength(FFilesInfo.ItemCrypted_,len);
-   SetLength(FFilesInfo.ItemInclude_,len);
-   SetLength(FFilesInfo.ItemLinks_,len);
-   SetLength(ArWidth,len);
-   SetLength(ArHeight,len);
-   SetLength(ArDir,len);
-  end;
 
 begin
  if fSaving  then
@@ -1663,7 +1648,7 @@ begin
   SetFocus;
   exit;
  end;
- aSetLength(0);
+ //aSetLength(0);
  if EditLinkForm<>nil then
  EditLinkForm.Close;
  ResetBold;
@@ -1723,65 +1708,56 @@ begin
    exit;
   end;
 
-  len:=Length(FFilesInfo.ItemFileNames_)+WorkQuery.RecordCount;
-  aSetLength(len);
-  len:=len-WorkQuery.RecordCount;
+  //len:=Length(FFilesInfo.ItemFileNames_)+WorkQuery.RecordCount;
+  //aSetLength(len);
+  //len:=len-WorkQuery.RecordCount;
 
   WorkQuery.First;
-  for i:=0 to WorkQuery.RecordCount-1 do
+  for I := 0 to WorkQuery.RecordCount-1 do
   begin
-   Size:=Size+WorkQuery.FieldByName('FileSize').AsInteger;
-   FFilesInfo.ItemKeyWords_[i+len]:=WorkQuery.FieldByName('KeyWords').AsString;
-   FFilesInfo.ItemIDs_[i+len]:=WorkQuery.FieldByName('ID').AsInteger;
-   FFilesInfo.ItemDates_[i+len]:=WorkQuery.FieldByName('DateToAdd').AsDateTime;
-   FFilesInfo.ItemTimes_[i+len]:=WorkQuery.FieldByName('aTime').AsDateTime;
-   FFilesInfo.ItemRatings_[i+len]:=WorkQuery.FieldByName('Rating').AsInteger;
-   FFilesInfo.ItemComments_[i+len]:=WorkQuery.FieldByName('Comment').AsString;
-   FFilesInfo.ItemIsDates_[i+len]:=WorkQuery.FieldByName('IsDate').AsBoolean;
-   FFilesInfo.ItemIsTimes_[i+len]:=WorkQuery.FieldByName('IsTime').AsBoolean;
-   FFilesInfo.ItemGroups_[i+len]:=WorkQuery.FieldByName('Groups').AsString;
-   FFilesInfo.ItemCrypted_[i+len]:=ValidCryptBlobStreamJPG(WorkQuery.FieldByName('Thum'));
-   FFilesInfo.ItemSelected_[i+len]:=True;
-   FFilesInfo.ItemInclude_[i+len]:=WorkQuery.FieldByName('Include').AsBoolean;
+   MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+   MenuRecord.Selected := True;
+   FFilesInfo.Add(MenuRecord);
+   
+   Size := Size + WorkQuery.FieldByName('FileSize').AsInteger; 
    ArWidth[i+len]:=WorkQuery.FieldByName('Width').AsInteger;
    ArHeight[i+len]:=WorkQuery.FieldByName('Height').AsInteger;
-   FFilesInfo.ItemFileNames_[i+len]:=WorkQuery.FieldByName('FFileName').AsString;
-   ArDir[i+len]:=GetDirectory(FFilesInfo.ItemFileNames_[i+len]);
-   FFilesInfo.ItemLinks_[i+len]:=WorkQuery.FieldByName('Links').AsString;
+   ArDir[i+len]:=GetDirectory(MenuRecord.FileName);
+
    WorkQuery.Next;
   end;
 
  end;
-  If Length(FFilesInfo.ItemFileNames_)=0 then
+  if FFilesInfo.Count = 0 then
   begin
-   MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_SHOW_INFO_ABOUT_SELECTED_FILES,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   exit;
+    MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_SHOW_INFO_ABOUT_SELECTED_FILES,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+    Exit;
   end;
-  if Length(FFilesInfo.ItemFileNames_)=1 then
+  if FFilesInfo.Count = 1 then
   begin
-   Execute(WorkQuery.FieldByName('ID').AsInteger);
-   Exit;
+    Execute(WorkQuery.FieldByName('ID').AsInteger);
+    Exit;
   end;
 
- Caption:=TEXT_MES_PROPERTY+' - '+ExtractFileName(FFilesInfo.ItemFileNames_[0])+TEXT_MES_AND_OTHERS;
- SizeLAbel.Text:=SizeInTextA(Size);
- OwnerMemo.Text:=TEXT_MES_NOT_AVALIABLE;
- CollectionMemo.Text:=TEXT_MES_NOT_AVALIABLE;
- CurrentItemInfo.ItemOwner:=TEXT_MES_NOT_AVALIABLE;
- CurrentItemInfo.ItemCollections:=TEXT_MES_NOT_AVALIABLE;
- OwnerMemo.ReadOnly:=True;
- CommentMemo.PopupMenu:=nil;
- CollectionMemo.ReadOnly:=True;
+  Caption:=TEXT_MES_PROPERTY+' - '+ExtractFileName(FFilesInfo[0].FileName)+TEXT_MES_AND_OTHERS;
+  SizeLAbel.Text:=SizeInTextA(Size);
+  OwnerMemo.Text:=TEXT_MES_NOT_AVALIABLE;
+  CollectionMemo.Text:=TEXT_MES_NOT_AVALIABLE;
+  CurrentItemInfo.ItemOwner:=TEXT_MES_NOT_AVALIABLE;
+  CurrentItemInfo.ItemCollections:=TEXT_MES_NOT_AVALIABLE;
+  OwnerMemo.ReadOnly:=True;
+  CommentMemo.PopupMenu:=nil;
+  CollectionMemo.ReadOnly:=True;
 
- if IsVariousArBoolean(FFilesInfo.ItemInclude_) then
+ if FFilesInfo.IsVariousInclude then
  begin
   CheckBox1.State:=cbGrayed;
   SelectedInfo.IsVaruousInclude:=true;
  end else
  begin
   SelectedInfo.IsVaruousInclude:=false;
-  SelectedInfo.Include:=FFilesInfo.ItemInclude_[0];
-  if FFilesInfo.ItemInclude_[0] then
+  SelectedInfo.Include:=FFilesInfo[0].Include;
+  if FFilesInfo[0].Include then
   CheckBox1.State:=cbChecked else
   CheckBox1.State:=cbUnChecked;
  end;
@@ -1804,15 +1780,15 @@ begin
   LabelPach.Text:=format(TEXT_MES_ALL_IN,[LongFileName(s)]);
  end;
 
- CurrentItemInfo.ItemRating:=MaxStatInt(FFilesInfo.ItemRatings_);
- Rating1.Rating:=CurrentItemInfo.ItemRating;
- Rating1.Islayered:=true;
- Rating1.layered:=100;
- CurrentItemInfo.ItemDate:=MaxStatDate(FFilesInfo.ItemDates_);
- CurrentItemInfo.ItemTime:=MaxStatDate(TArDateTime(FFilesInfo.ItemTimes_));
- TimeEdit.Time:=CurrentItemInfo.ItemTime;
- CurrentItemInfo.ItemIsDate:=MaxStatBool(FFilesInfo.ItemIsDates_);
- CurrentItemInfo.ItemIsTime:=MaxStatBool(FFilesInfo.ItemIsTimes_);
+ CurrentItemInfo.ItemRating := FFilesInfo.StatRating;
+ Rating1.Rating := CurrentItemInfo.ItemRating;
+ Rating1.Islayered := True;
+ Rating1.layered := 100;
+ CurrentItemInfo.ItemDate := FFilesInfo.StatDate;
+ CurrentItemInfo.ItemTime := FFilesInfo.StatTime;
+ TimeEdit.Time := CurrentItemInfo.ItemTime;
+ CurrentItemInfo.ItemIsDate := FFilesInfo.StatIsDate;
+ CurrentItemInfo.ItemIsTime := FFilesInfo.StatIsTime;
  SelectedInfo.IsDate:=CurrentItemInfo.ItemIsDate;
  SelectedInfo.IsTime:=CurrentItemInfo.ItemIsTime;
  SelectedInfo.Date:=CurrentItemInfo.ItemDate;
@@ -1820,19 +1796,19 @@ begin
  IsDatePanel.Visible:=not SelectedInfo.IsDate;
  IsTimePanel.Visible:=not SelectedInfo.IsTime;
 
- DateSets.Visible:=IsVariousBool(FFilesInfo.ItemIsDates_) or IsVariousDate(FFilesInfo.ItemDates_);
- TimeSets.Visible:=IsVariousBool(FFilesInfo.ItemIsTimes_) or IsVariousDate(TArDateTime(FFilesInfo.ItemTimes_));
+ DateSets.Visible := FFilesInfo.StatIsDate or FFilesInfo.IsVariousDate;
+ TimeSets.Visible := FFilesInfo.StatIsTime or FFilesInfo.IsVariousDate;
 
  SelectedInfo.IsVariousDates:=DateSets.Visible;
  SelectedInfo.IsVariousTimes:=TimeSets.Visible;
 
- CommonKeyWords:=GetCommonWordsA(FFilesInfo.ItemKeyWords_);
+ CommonKeyWords:=FFilesInfo.CommonKeyWords;
  SelectedInfo.CommonKeyWords:=CommonKeyWords;
  KeyWordsMemo.Text:=CommonKeyWords;
  CurrentItemInfo.ItemKeyWords:=CommonKeyWords;
- IDLabel.Text:=format(TEXT_MES_SELECTED_ITEMS,[IntToStr(Length(FFilesInfo.ItemIDs_))]);
+ IDLabel.Text:=format(TEXT_MES_SELECTED_ITEMS,[IntToStr(FFilesInfo.Count)]);
  CommentMemo.Cursor:=CrDefault;
- SelectedInfo.IsVariousComments:=IsVariousArStrings(FFilesInfo.ItemComments_);
+ SelectedInfo.IsVariousComments:=FFilesInfo.IsVariousComments;
  if SelectedInfo.IsVariousComments then
  begin
   SelectedInfo.CommonComment:=TEXT_MES_VAR_COM;
@@ -1842,22 +1818,21 @@ begin
   CommentMemo.PopupMenu:=PopupMenu6;
  end else
  begin
-  SelectedInfo.CommonComment:=FFilesInfo.ItemComments_[0];
+  SelectedInfo.CommonComment:=FFilesInfo[0].Comment;
   CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
  end;
  CommentMemo.Text:=SelectedInfo.CommonComment;
 
- CurrentItemInfo.ItemGroups:=GetCommonGroups(FFilesInfo.ItemGroups_);
+ CurrentItemInfo.ItemGroups:=FFilesInfo.CommonGroups;
 
  FNowGroups:=UnitGroupsWork.EncodeGroups(CurrentItemInfo.ItemGroups);
  FOldGroups:=CopyGroups(FNowGroups);
 
- ItemLinks:=GetCommonLinks(FFilesInfo.ItemLinks_);
+ ItemLinks:=FFilesInfo.CommonLinks;
  FPropertyLinks:=CopyLinksInfo(ItemLinks);
 
  ReloadGroups;
  DBItem1.Visible:=True;
- FFilesInfo.IsDateGroup:=True;
  FFilesInfo.IsListItem:=False;
  CommentMemoChange(nil);
  Button2.Visible:=false;   
@@ -2544,8 +2519,7 @@ begin
   MenuInfo:=GetMenuInfoByID(ID);
   MenuInfo.IsPlusMenu:=False;
   MenuInfo.IsListItem:=False;
-  MenuInfo.IsDateGroup:=True;
-  MenuInfo.IsAttrExists:=false;
+  MenuInfo.AttrExists:=false;
   IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(ID)]);
   TDBPopupMenu.Instance.AddDBContMenu(IDMenu1,MenuInfo);
   DoExit;
@@ -2558,10 +2532,9 @@ begin
   MenuInfo:=GetMenuInfoByStrTh(DeCodeExtID(LI[n].LinkValue));
   MenuInfo.IsPlusMenu:=False;
   MenuInfo.IsListItem:=False;
-  MenuInfo.IsDateGroup:=True;
-  MenuInfo.IsAttrExists:=false;
-  if Length(MenuInfo.ItemIDs_)<>0 then
-  IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(MenuInfo.ItemIDs_[0])]) else
+  MenuInfo.AttrExists:=false;
+  if MenuInfo.Count > 0 then
+  IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(MenuInfo[0].ID)]) else
   IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(0)]);
   TDBPopupMenu.Instance.AddDBContMenu(IDMenu1,MenuInfo);
   DoExit;

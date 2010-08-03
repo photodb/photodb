@@ -10,7 +10,7 @@ uses
 {$IFDEF PHOTODB}
   ,Dolphin_DB, Language, UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
   AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
-  UnitDBCommon, UnitDBCommonGraphics, uDBDrawing
+  UnitDBCommon, UnitDBCommonGraphics, uDBDrawing, uFileUtils
 {$ENDIF}
   ;
 
@@ -476,8 +476,7 @@ var
   info : TDBPopupMenuInfo;
 begin
   info:=GetMenuInfoByID(FID);
-  info.IsDateGroup:=True;
-  Info.IsAttrExists:=false;
+  Info.AttrExists:=false;
   TDBPopupMenu.Instance.Execute(Image1.ClientToScreen(MousePos).x,Image1.ClientToScreen(MousePos).y,info);
 end;
 
@@ -510,8 +509,7 @@ begin
   Node:=TreeView1.GetNodeAt(MousePos.X,MousePos.Y);
   if Node<>nil then
   info:=GetMenuInfoByID(TItemData(Node.Data^).ID);
-  info.IsDateGroup:=True;
-  Info.IsAttrExists:=false;
+  Info.AttrExists:=false;
   TDBPopupMenu.Instance.Execute(TreeView1.ClientToScreen(MousePos).x,TreeView1.ClientToScreen(MousePos).y,info);
  end;
 end;

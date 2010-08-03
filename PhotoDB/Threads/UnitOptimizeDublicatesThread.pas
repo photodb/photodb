@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Language, Dolphin_DB, UnitLinksSupport, DB, SysUtils,
-  CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc,
+  CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc, uFileUtils,
   UnitDBDeclare;
 
 type
