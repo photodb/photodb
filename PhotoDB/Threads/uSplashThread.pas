@@ -162,7 +162,7 @@ begin
   end;
   Result := DefWindowProc(hWnd, uMsg, wParam, lParam);
 end; // SplashWindowProc
-
+               
 procedure TSplashThread.Execute;
 const
   ClassName = 'PhotoDB Splash';
@@ -186,11 +186,11 @@ begin
 
   RegisterClass(SplashWindowClass);
   try
-    hSplashWnd := CreateWindow(ClassName, 'SplashScreen',
-                               WS_POPUP or WS_EX_TOPMOST,
-                               GetSystemMetrics(SM_CXSCREEN) div 2 - SplWidth div 2,
-                               GetSystemMetrics(SM_CYSCREEN) div 2 - SplHeight div 2,
-                               SplWidth, SplHeight, 0, 0, Instance, NIL);
+    hSplashWnd := CreateWindowEx(WS_EX_TOOLWINDOW or WS_EX_TOPMOST, ClassName, 'SplashScreen',
+                                 WS_POPUP,
+                                 GetSystemMetrics(SM_CXSCREEN) div 2 - SplWidth div 2,
+                                 GetSystemMetrics(SM_CYSCREEN) div 2 - SplHeight div 2,
+                                 SplWidth, SplHeight, 0, 0, Instance, nil);
     try
       ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
       UpdateWindow(hSplashWnd);

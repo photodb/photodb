@@ -154,6 +154,7 @@ type
     InfoLoaded : Boolean;
     Include : Boolean;
     Links : string;  //??? not for common use yet
+    Exists : Integer; //for drawing in lists
     constructor CreateFromDS(DS : TDataSet);
     constructor CreateFromContRecord(ContRecord : TImageContRecord);
     constructor CreateFromSlideShowInfo(Info : TRecordsInfo; Position : Integer);
@@ -2220,7 +2221,8 @@ begin
     RI.Position:=0;
   end else
   begin}
-    RI:=RecordsInfoNil;
+  RI:=RecordsInfoNil; 
+  RI.Position := DBP.Position;
     for i:=0 to DBP.Count - 1 do
     if DBP[i].Selected or (FilesSelected <= 1) then
     begin
@@ -5686,8 +5688,7 @@ var
  ExtendedStyle : integer;
 begin
   ExtendedStyle:=GetWindowLong(application.Handle, GWL_EXSTYLE);
-  SetWindowLong(Application.Handle, SW_SHOWMINNOACTIVE,
-  WS_EX_TOOLWINDOW+ws_ex_topmost+ws_ex_ltrreading+ws_ex_left or ExtendedStyle);
+  SetWindowLong(Application.Handle, SW_SHOWMINNOACTIVE, WS_EX_TOOLWINDOW or WS_EX_TOPMOST or WS_EX_LTRREADING or WS_EX_LEFT or ExtendedStyle);
 end;
 
 function RandomPwd(PWLen: integer; StrTable : string): string;
@@ -6459,7 +6460,7 @@ begin
   if Count > 0 then
     Result := 0;
   for I := 1 to Count - 1 do
-    if Self[0].IsCurrent then
+    if Self[I].IsCurrent then
       Result := I;
 end;
 

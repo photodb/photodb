@@ -411,7 +411,6 @@ begin
   SetSplashProgress(10);
   TW.I.Start('Application.Initialize');
   Application.Initialize;
-
   SetSplashProgress(15);
 
   EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));

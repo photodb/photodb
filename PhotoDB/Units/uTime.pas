@@ -4,7 +4,7 @@ interface
 
 uses Classes, Windows, SysUtils, SyncObjs;
 
-{$DEFINE PROFILER}
+{$DEFINE _PROFILER}
 {$DEFINE _MULTITHREAD}
 
 type

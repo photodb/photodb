@@ -17,7 +17,7 @@ uses
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources,
-  MPCommonObjects, ADODB;
+  MPCommonObjects, ADODB, DBLoading;
 
 type
   TDateRange = record
@@ -192,6 +192,7 @@ type
     PopupMenuZoomDropDown: TPopupMenu;
     SortbyCompare1: TMenuItem;
     elvDateRange: TEasyListview;
+    dblDate: TDBLoading;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure Additem_(sender: TObject; Name_ : String; tag : integer );
@@ -411,6 +412,7 @@ type
     procedure elvDateRangeMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure elvDateRangeResize(Sender: TObject);
+    procedure dblDateDrawBackground(Sender: TObject; Buffer: TBitmap);
   private
     FSearchInfo : TSearchInfo;
     FListUpdating : boolean;
@@ -1964,8 +1966,9 @@ end;
 procedure TSearchForm.HintTimerTimer(Sender: TObject);
 var
   p, p1 : tpoint;
-  Index, i : Integer;
+  i : Integer;
   item: TEasyItem;
+  DataRecord : TSearchRecord;
 begin
  GetCursorPos(p);
  p1:=ListView.ScreenToClient(p);
@@ -1979,14 +1982,13 @@ begin
  if FPictureSize>=Dolphin_DB.ThHintSize then exit;
 
  if LoadingThItem=nil then exit;
- if ItemIndex(LoadingThItem)<0 then exit;
+ DataRecord := TSearchRecord(TDataObject(LoadingThItem.Data).Data);
+
  HintTimer.Enabled:=false;
  UnitHintCeator.fItem:= LoadingThItem;
- Index:=ItemIndex(LoadingThItem);
- if (Index<0) or (Index>FData.Count-1) then Exit;
- UnitHintCeator.fInfo:=RecordInfoOne(ProcessPath(FData[Index].FileName),FData[Index].ID,FData[Index].Rotation,FData[Index].Rating,FData[Index].Access,FData[Index].FileSize,FData[index].Comments,FData[index].KeyWords,'','',FData[index].Groups,FData[index].Date,FData[index].IsDate ,FData[index].IsTime,FData[index].Time, FData[index].Crypted, FData[index].Include, true, FData[index].Links);
+ UnitHintCeator.fInfo:=RecordInfoOne(ProcessPath(DataRecord.FileName),DataRecord.ID,DataRecord.Rotation,DataRecord.Rating,DataRecord.Access,DataRecord.FileSize,DataRecord.Comments,DataRecord.KeyWords,'','',DataRecord.Groups,DataRecord.Date,DataRecord.IsDate ,DataRecord.IsTime,DataRecord.Time, DataRecord.Crypted, DataRecord.Include, true, DataRecord.Links);
  UnitHintCeator.ThRect:=rect(p.X,p.Y,p.x+ThSize,p.Y+ThSize);
- UnitHintCeator.Work_.Add(ProcessPath(FData[Index].FileName));
+ UnitHintCeator.Work_.Add(ProcessPath(DataRecord.FileName));
  UnitHintCeator.Owner:=Self;
  UnitHintCeator.hr:=HintRealA;
 
@@ -2287,9 +2289,9 @@ begin
   Result.IsListItem:=false;
   Result.IsPlusMenu:=false;
   Result.IsPlusMenu := False;
-  for i:=0 to ListView.Items.Count - 1 do
+  for I := 0 to ListView.Items.Count - 1 do
   begin
-    SearchRecord := TSearchRecord(TDataObject(Item.Data).Data);
+    SearchRecord := TSearchRecord(TDataObject(ListView.Items[I].Data).Data);
     MenuRecord := TDBPopupMenuInfoRecord.CreateFromSearchRecord(SearchRecord);
     Result.Add(MenuRecord);
   end;
@@ -3937,6 +3939,7 @@ end;
 
 procedure TSearchForm.ShowDateOptionsLinkClick(Sender: TObject);
 begin
+  dblDate.Active := True;
   if pnDateRange.Visible then
     pnDateRange.Hide
   else begin
@@ -4401,7 +4404,7 @@ begin
  begin
   With ExplorerManager.NewExplorer(False) do
   begin
-   FileName:=FData[GetItemNO(ListView.Selection.First)].FileName;
+   FileName:=TSearchRecord(TDataObject(ListView.Selection.First.Data).Data).FileName;
    DoProcessPath(FileName);
    SetOldPath(FileName);
    SetPath(ExtractFilePath(FileName));
@@ -4916,7 +4919,7 @@ begin
   elvDateRange.Refresh;
 
   DS := GetQuery(True);
-
+                                
   TADOQuery(DS).CursorType := ctOpenForwardOnly;
   TADOQuery(DS).CursorLocation := clUseClient;
   TADOQuery(DS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
@@ -4992,6 +4995,8 @@ var
   CurrentYear : integer;
   CurrentMonth : integer;
 begin
+  dblDate.Hide;
+  
   CurrentYear := 0;
   CurrentMonth := 0;
   elvDateRange.Groups.Clear; 
@@ -5033,6 +5038,8 @@ procedure TSearchForm.elvDateRangeResize(Sender: TObject);
 begin
   elvDateRange.BackGround.OffsetX := elvDateRange.Width - elvDateRange.BackGround.Image.Width;
   elvDateRange.BackGround.OffsetY := elvDateRange.Height - elvDateRange.BackGround.Image.Height;
+  dblDate.Left := elvDateRange.Left + (elvDateRange.Left + elvDateRange.Width) div 2 - dblDate.Width div 2;
+  dblDate.Top := elvDateRange.Top + (elvDateRange.Top + elvDateRange.Height) div 2 - dblDate.Height div 2;
 end;
 
 function TSearchForm.GetDateFilter: TDateRange;
@@ -5320,6 +5327,14 @@ begin
   FFillListInfo.LastRating := -1;
   FFillListInfo.LastSize := 0;
   FFillListInfo.LastChar := #0;
+end;
+
+procedure TSearchForm.dblDateDrawBackground(Sender: TObject;
+  Buffer: TBitmap);
+begin
+  Buffer.Canvas.Pen.Color := Theme_ListColor;  
+  Buffer.Canvas.Brush.Color := Theme_ListColor;
+  Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 
 initialization

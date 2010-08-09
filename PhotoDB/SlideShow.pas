@@ -1021,6 +1021,7 @@ var
 
 begin
  if Length(CurrentInfo.ItemIds)=0 then exit;
+ Info := TDBPopupMenuInfo.Create;
  Info.IsPlusMenu:=false;
  Info.IsListItem:=false;
  For i:=N2.MenuIndex+1 to DBItem1.MenuIndex-1 do

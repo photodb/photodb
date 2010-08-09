@@ -14,7 +14,7 @@ uses
 
 type TDBPopupMenu = class
    private
-    _popupmenu : Tpopupmenu;
+    _popupmenu : TPopupMenu;
     _user_group_menu : TMenuItem;
     _user_group_menu_sub_items : array of TMenuItem;
     _user_menu : array of TMenuItem;
@@ -25,8 +25,8 @@ type TDBPopupMenu = class
     aScript : TScript;
    public
     class function Instance : TDBPopupMenu;
-    constructor create;
-    destructor destroy; override;
+    constructor Create;
+    destructor Destroy; override;
     Procedure ShowItemPopUpMenu_(Sender : TObject);
  Procedure ShellExecutePopUpMenu_(Sender : TObject);
  Procedure SearchFolderPopUpMenu_(Sender : TObject);
@@ -1342,6 +1342,7 @@ begin
  DBPopupMenuInfoToRecordsInfo(Finfo, Info);
  if Viewer=nil then Application.CreateForm(TViewer, Viewer);
  Viewer.Execute(Sender,info);
+ Viewer.Show;
 end;
 
 procedure TDBPopupMenu.UserMenuItemPopUpMenu_(Sender: TObject);

@@ -1,6 +1,6 @@
 object ManagerDB: TManagerDB
   Left = 100
-  Top = 78
+  Top = 98
   Width = 898
   Height = 650
   Caption = 'ManagerDB'
@@ -60,7 +60,7 @@ object ManagerDB: TManagerDB
         Height = 13
         Caption = 'BackUps:'
       end
-      object ComboBox2: TComboBox
+      object CbSetField: TComboBox
         Left = 296
         Top = 8
         Width = 65
@@ -92,7 +92,7 @@ object ManagerDB: TManagerDB
         TabOrder = 1
         Text = '0'
       end
-      object ComboBox3: TComboBox
+      object CbWhereField1: TComboBox
         Left = 212
         Top = 72
         Width = 89
@@ -101,7 +101,7 @@ object ManagerDB: TManagerDB
         ItemHeight = 13
         ParentColor = True
         TabOrder = 2
-        OnChange = ComboBox3Change
+        OnChange = CbWhereField1Change
         Items.Strings = (
           'Rating'
           'Rotate'
@@ -124,16 +124,16 @@ object ManagerDB: TManagerDB
         TabOrder = 3
         Text = '0'
       end
-      object Button2: TButton
+      object BtnExecSQL: TButton
         Left = 212
         Top = 162
         Width = 237
         Height = 17
         Caption = 'Exes SQL'
         TabOrder = 4
-        OnClick = Button2Click
+        OnClick = BtnExecSQLClick
       end
-      object ComboBox4: TComboBox
+      object CbWhereCombinator: TComboBox
         Left = 212
         Top = 96
         Width = 49
@@ -142,7 +142,7 @@ object ManagerDB: TManagerDB
         ItemHeight = 13
         ParentColor = True
         TabOrder = 5
-        OnChange = ComboBox4Change
+        OnChange = CbWhereCombinatorChange
         Items.Strings = (
           'OR'
           'AND'
@@ -156,7 +156,7 @@ object ManagerDB: TManagerDB
         TabOrder = 6
         Text = '0'
       end
-      object ComboBox5: TComboBox
+      object CbWhereField2: TComboBox
         Left = 212
         Top = 128
         Width = 89
@@ -165,7 +165,7 @@ object ManagerDB: TManagerDB
         ItemHeight = 13
         ParentColor = True
         TabOrder = 7
-        OnChange = ComboBox5Change
+        OnChange = CbWhereField2Change
         Items.Strings = (
           'Rating'
           'Rotate'
@@ -180,7 +180,7 @@ object ManagerDB: TManagerDB
           'Owner'
           'Collection')
       end
-      object ComboBox6: TComboBox
+      object CbOperatorWhere1: TComboBox
         Left = 304
         Top = 72
         Width = 49
@@ -189,7 +189,7 @@ object ManagerDB: TManagerDB
         ItemHeight = 13
         ParentColor = True
         TabOrder = 8
-        OnChange = ComboBox6Change
+        OnChange = CbOperatorWhere1Change
         Items.Strings = (
           '='
           '>'
@@ -197,7 +197,7 @@ object ManagerDB: TManagerDB
           '<>'
           'Like')
       end
-      object ComboBox7: TComboBox
+      object CbOperatorWhere2: TComboBox
         Left = 304
         Top = 128
         Width = 49
@@ -206,7 +206,7 @@ object ManagerDB: TManagerDB
         ItemHeight = 13
         ParentColor = True
         TabOrder = 9
-        OnChange = ComboBox6Change
+        OnChange = CbOperatorWhere1Change
         Items.Strings = (
           '='
           '>'
@@ -282,7 +282,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ExportTableLink: TWebLink
         Left = 8
@@ -300,7 +300,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ImportTableLink: TWebLink
         Left = 8
@@ -318,7 +318,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object RecreateIDExLink: TWebLink
         Left = 8
@@ -336,7 +336,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ScanforBadLinksLink: TWebLink
         Left = 8
@@ -354,7 +354,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object BackUpDBLink: TWebLink
         Left = 8
@@ -372,7 +372,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object CleaningLink: TWebLink
         Left = 8
@@ -390,7 +390,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ListBox2: TListBox
         Left = 456
@@ -429,7 +429,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ConvertLink: TWebLink
         Left = 8
@@ -447,7 +447,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ChangePathLink: TWebLink
         Left = 8
@@ -465,7 +465,7 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
     end
     object ElvMain: TListView
@@ -530,16 +530,27 @@ object ManagerDB: TManagerDB
           Width = 60
         end>
       HideSelection = False
-      LargeImages = ImageList2
+      LargeImages = ImlMain
       OwnerData = True
-      SmallImages = ImageList2
-      StateImages = ImageList2
+      SmallImages = ImlMain
+      StateImages = ImlMain
       TabOrder = 1
       ViewStyle = vsReport
       OnAdvancedCustomDrawSubItem = ElvMainAdvancedCustomDrawSubItem
       OnContextPopup = ElvMainContextPopup
+      OnData = ElvMainData
       OnMouseMove = ElvMainMouseMove
+      OnResize = ElvMainResize
       OnSelectItem = ElvMainSelectItem
+    end
+    object dblData: TDBLoading
+      Left = 397
+      Top = 368
+      Width = 63
+      Height = 64
+      LineColor = clBlack
+      Active = False
+      OnDrawBackground = dblDataDrawBackground
     end
   end
   object DataSource1: TDataSource
@@ -649,7 +660,7 @@ object ManagerDB: TManagerDB
     Left = 248
     Top = 416
   end
-  object ImageList2: TImageList
+  object ImlMain: TImageList
     Height = 18
     Left = 280
     Top = 416

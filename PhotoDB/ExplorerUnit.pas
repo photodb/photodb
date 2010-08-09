@@ -689,7 +689,7 @@ var
 
 implementation
 
-uses language, UnitUpdateDB, ExplorerThreadUnit, Searching,
+uses Language, UnitUpdateDB, ExplorerThreadUnit, Searching,
      SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
      FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
      about, activation, UnitPasswordForm, UnitCryptImageForm,
@@ -1072,6 +1072,7 @@ begin
   Application.CreateForm(TViewer, Viewer);
   DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
   Viewer.Execute(Sender,info);
+  Viewer.Show;
  end;
  If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_FOLDER then
  Viewer.ShowFolderA(fFilesInfo[PmItemPopup.tag].FileName,ExplorerManager.ShowPrivate);
@@ -2211,15 +2212,13 @@ end;
 
 function TExplorerForm.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
 var
-  i, Count:integer;
+  I : Integer;
   ItemIndex : Integer;
   MenuRecord : TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
-//  Result.Position:=0;
   Result.IsListItem:=false;
   Result.IsPlusMenu:=false;
-  Count:=0;
   for i:=0 to ListView1.Items.Count-1 do
   begin
     ItemIndex := ItemIndexToMenuIndex(i);
@@ -2227,17 +2226,12 @@ begin
       Exit;
     if fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE then
     begin
-     inc(Count);
      MenuRecord := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[ItemIndex]);
      MenuRecord.Selected := ListView1.Items[i].Selected;
      Result.Add(MenuRecord);
-     if item=nil then
-     Result.Position:=0 else
-     begin
-      if ListView1.Items[i].Selected then
-      if Result.Position=0 then
-      Result.Position:=count-1;
-     end;
+     if Item <> nil then
+       if ListView1.Items[I].Selected then
+         Result.Position := Result.Count - 1;
   end;
  end;
 end;

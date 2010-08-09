@@ -3,13 +3,27 @@ unit uListViewUtils;
 interface
 
 uses
-  Windows, Classes, Graphics, SysUtils, EasyListview;
+  Windows, Classes, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls;
 
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer): TEasyItem;
+function GetListViewHeaderHeight(ListView: TListView): Integer;
 
 implementation
+
+function GetListViewHeaderHeight(ListView: TListView): Integer;
+var
+  Header_Handle: HWND;
+  WindowPlacement: TWindowPlacement;
+begin
+  Header_Handle := ListView_GetHeader(ListView.Handle);
+  FillChar(WindowPlacement, SizeOf(WindowPlacement), 0);
+  WindowPlacement.Length := SizeOf(WindowPlacement);
+  GetWindowPlacement(Header_Handle, @WindowPlacement);
+  Result  := WindowPlacement.rcNormalPosition.Bottom -
+    WindowPlacement.rcNormalPosition.Top;
+end;
 
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 var

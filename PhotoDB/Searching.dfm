@@ -1,6 +1,6 @@
 object SearchForm: TSearchForm
   Left = 353
-  Top = 73
+  Top = 50
   Width = 824
   Height = 678
   ActiveControl = ShowDateOptionsLink
@@ -278,7 +278,7 @@ object SearchForm: TSearchForm
         Islayered = False
         Layered = 100
         OnMouseDown = Rating1MouseDown
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object Memo2: TMemo
         Tag = 1
@@ -587,6 +587,15 @@ object SearchForm: TSearchForm
         OnItemClick = elvDateRangeItemClick
         OnMouseDown = elvDateRangeMouseDown
         OnResize = elvDateRangeResize
+      end
+      object dblDate: TDBLoading
+        Left = 45
+        Top = 72
+        Width = 63
+        Height = 64
+        LineColor = clBlack
+        Active = False
+        OnDrawBackground = dblDateDrawBackground
       end
     end
     object SearchPanelA: TPanel

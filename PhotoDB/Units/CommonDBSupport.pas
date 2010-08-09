@@ -803,6 +803,7 @@ begin
  if DS is TADODataSet then begin Connection:=(DS as TADODataSet).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADODataSet).Connection.Free;} exit; end;
 end;
 
+//TODO: remove function, replace on %DB% in queries
 function GetDefDBName : string;
 begin
  if GetDBType(dbname)=DB_TYPE_MDB then Result:='ImageTable';

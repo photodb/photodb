@@ -25,8 +25,8 @@ object ExplorerForm: TExplorerForm
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 135
-    Top = 49
-    Height = 520
+    Top = 42
+    Height = 527
     Constraints.MaxWidth = 100
     OnCanResize = Splitter1CanResize
   end
@@ -4337,9 +4337,9 @@ object ExplorerForm: TExplorerForm
   end
   object MainPanel: TPanel
     Left = 0
-    Top = 49
+    Top = 42
     Width = 135
-    Height = 520
+    Height = 527
     Align = alLeft
     ParentColor = True
     TabOrder = 0
@@ -4367,7 +4367,7 @@ object ExplorerForm: TExplorerForm
       Left = 1
       Top = 22
       Width = 133
-      Height = 497
+      Height = 504
       Align = alClient
       BevelOuter = bvNone
       Color = clInactiveCaption
@@ -4379,7 +4379,7 @@ object ExplorerForm: TExplorerForm
         Left = 0
         Top = 0
         Width = 133
-        Height = 497
+        Height = 504
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -4522,7 +4522,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object ShellLink: TWebLink
           Left = 5
@@ -4540,7 +4540,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object RenameLink: TWebLink
           Left = 5
@@ -4558,7 +4558,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object RefreshLink: TWebLink
           Left = 5
@@ -4576,7 +4576,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object PropertiesLink: TWebLink
           Left = 5
@@ -4594,7 +4594,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object PrintLink: TWebLink
           Left = 5
@@ -4612,7 +4612,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object MyPicturesLink: TWebLink
           Left = 5
@@ -4620,6 +4620,7 @@ object ExplorerForm: TExplorerForm
           Width = 76
           Height = 16
           Cursor = crHandPoint
+          OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Pictures'
           OnClick = MyPicturesLinkClick
           BkColor = clInactiveCaption
@@ -4629,9 +4630,8 @@ object ExplorerForm: TExplorerForm
           UseEnterColor = False
           EnterColor = clBlack
           EnterBould = False
-          OnContextPopup = MyPicturesLinkContextPopup
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object MyDocumentsLink: TWebLink
           Left = 5
@@ -4639,6 +4639,7 @@ object ExplorerForm: TExplorerForm
           Width = 92
           Height = 16
           Cursor = crHandPoint
+          OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Documents'
           OnClick = MyDocumentsLinkClick
           BkColor = clInactiveCaption
@@ -4648,9 +4649,8 @@ object ExplorerForm: TExplorerForm
           UseEnterColor = False
           EnterColor = clBlack
           EnterBould = False
-          OnContextPopup = MyPicturesLinkContextPopup
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object MyComputerLink: TWebLink
           Left = 5
@@ -4658,6 +4658,7 @@ object ExplorerForm: TExplorerForm
           Width = 83
           Height = 16
           Cursor = crHandPoint
+          OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Computer'
           OnClick = MyComputerLinkClick
           BkColor = clInactiveCaption
@@ -4667,9 +4668,8 @@ object ExplorerForm: TExplorerForm
           UseEnterColor = False
           EnterColor = clBlack
           EnterBould = False
-          OnContextPopup = MyPicturesLinkContextPopup
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object MoveToLink: TWebLink
           Left = 5
@@ -4687,7 +4687,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object ImageEditorLink: TWebLink
           Left = 5
@@ -4705,7 +4705,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object DesktopLink: TWebLink
           Left = 5
@@ -4713,6 +4713,7 @@ object ExplorerForm: TExplorerForm
           Width = 61
           Height = 16
           Cursor = crHandPoint
+          OnContextPopup = MyPicturesLinkContextPopup
           Text = 'Desktop'
           OnClick = DesktopLinkClick
           BkColor = clInactiveCaption
@@ -4722,9 +4723,8 @@ object ExplorerForm: TExplorerForm
           UseEnterColor = False
           EnterColor = clBlack
           EnterBould = False
-          OnContextPopup = MyPicturesLinkContextPopup
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object DeleteLink: TWebLink
           Left = 5
@@ -4742,7 +4742,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object CopyToLink: TWebLink
           Left = 5
@@ -4760,7 +4760,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
         object AddLink: TWebLink
           Left = 5
@@ -4778,7 +4778,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
         end
       end
     end
@@ -4800,13 +4800,13 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 25
     Width = 862
-    Height = 24
+    Height = 17
     AutoSize = True
     Bands = <
       item
         Control = ToolBar2
         ImageIndex = -1
-        MinHeight = 22
+        MinHeight = 15
         Width = 858
       end>
     EdgeBorders = [ebLeft, ebRight, ebBottom]
@@ -4817,9 +4817,9 @@ object ExplorerForm: TExplorerForm
       Left = 9
       Top = 0
       Width = 845
-      Height = 22
+      Height = 15
       AutoSize = True
-      ButtonHeight = 20
+      ButtonHeight = 13
       Caption = 'ToolBar2'
       DockSite = True
       EdgeBorders = []
@@ -4829,7 +4829,7 @@ object ExplorerForm: TExplorerForm
         Left = 0
         Top = 2
         Width = 41
-        Height = 20
+        Height = 13
         Alignment = taCenter
         Caption = 'Address '
         Enabled = False
@@ -5056,9 +5056,9 @@ object ExplorerForm: TExplorerForm
   end
   object WaitingPanel: TPanel
     Left = 138
-    Top = 49
+    Top = 42
     Width = 724
-    Height = 520
+    Height = 527
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
