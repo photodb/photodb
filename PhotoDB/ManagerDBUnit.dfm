@@ -552,6 +552,15 @@ object ManagerDB: TManagerDB
       Active = False
       OnDrawBackground = dblDataDrawBackground
     end
+    object LsLoadingDB: TLoadingSign
+      Left = 3
+      Top = 240
+      Width = 17
+      Height = 17
+      Visible = False
+      Active = False
+      ParentColor = False
+    end
   end
   object DataSource1: TDataSource
     Left = 152

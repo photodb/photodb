@@ -276,7 +276,8 @@ uses
   FreeUtils in 'External\Formats\FreeImage\FreeUtils.pas',
   uDBDrawing in 'Units\uDBDrawing.pas',
   uDBImages in 'Units\uDBImages.pas',
-  uList64 in 'Units\uList64.pas';
+  uList64 in 'Units\uList64.pas',
+  uThreadLoadingManagerDB in 'Threads\uThreadLoadingManagerDB.pas';
 
 {$R *.res}
 

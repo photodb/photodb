@@ -12,7 +12,7 @@ uses
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
-  DBLoading;
+  DBLoading, LoadingSign;
 
 type
   TManagerDB = class(TForm)
@@ -102,6 +102,7 @@ type
     N2: TMenuItem;
     Showfileinexplorer1: TMenuItem;
     dblData: TDBLoading;
+    LsLoadingDB: TLoadingSign;
     procedure FormCreate(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
@@ -161,7 +162,8 @@ type
     procedure SelectDB1Click(Sender: TObject);
     procedure DeleteDB1Click(Sender: TObject);
     procedure ListBox2DblClick(Sender: TObject);
-    procedure DBOpened(Sender : TObject; DS : TDataSet);
+    procedure DBOpened(Sender : TObject);
+    procedure DBLoadDataPacket(DataList : TList);
     procedure EditDB1Click(Sender: TObject);
     procedure RecordNumberEditChange(Sender: TObject);
     procedure LoadDBTimerTimer(Sender: TObject);
@@ -174,7 +176,6 @@ type
     procedure dblDataDrawBackground(Sender: TObject; Buffer: TBitmap);
     procedure ElvMainResize(Sender: TObject);
   private
-    DBInOpening : Boolean;
     OldWNDProc : TWndMethod;
     LastSelected : TListItem;
     LastSelectedIndex : Integer;
@@ -187,8 +188,8 @@ type
     FBackUpFiles : TStrings;
     DBCanDrag : Boolean;
     SI : Integer;
-    LoadingList : Boolean;
     FData : TList;
+    FLoadingDataThread : TThread;
     procedure OnMove(var Msg: TWMMove); message WM_MOVE;
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
@@ -220,7 +221,7 @@ uses UnitQuickGroupInfo, UnitBackUpTableThread, DBSelectUnit, ExplorerUnit,
      Searching, SlideShow, ExportUnit, UnitManageGroups, Language,
      CleaningForm, UnitDBCleaning, UnitCompareDataBases, UnitEditGroupsForm,
      UnitPasswordForm, UnitOpenQueryThread, ProgressActionUnit,
-     UnitMenuDateForm, UnitChangeDBPath, UnitSelectDB,
+     UnitMenuDateForm, UnitChangeDBPath, UnitSelectDB, uThreadLoadingManagerDB,
      UnitDBOptions, uListViewUtils;
 
 {$R *.dfm}
@@ -247,6 +248,7 @@ procedure TManagerDB.FormCreate(Sender: TObject);
 var
   I : integer;
 begin
+  FLoadingDataThread := nil;
   FData := TList.Create;
   FormManagerHint := nil;
   PopupMenuRating.Images := DBkernel.ImageList;
@@ -264,7 +266,6 @@ begin
   R04.ImageIndex := DB_IC_ROTETED_270;
 
   SI:=-1;
-  DBInOpening:=true;
   PackTabelLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL + 1]);
   ExportTableLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SAVE_AS_TABLE + 1]);
   ImportTableLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_LOADFROMFILE + 1]);
@@ -360,7 +361,6 @@ begin
   begin
     elvMain.Clear;
     FreeDS(WorkQuery);
-    DBInOpening:=true;
     InitializeQueryList;
     WorkQuery:=GetQuery;
   //  Edit1.text:=Value.Name;
@@ -399,6 +399,13 @@ procedure TManagerDB.FormDestroy(Sender: TObject);
 var
   I : integer;
 begin
+  if FLoadingDataThread <> nil then
+  begin
+    FLoadingDataThread.Suspend;
+    FLoadingDataThread.FreeOnTerminate := True;
+    FLoadingDataThread.Terminate;    
+    FLoadingDataThread.Resume;
+  end;
   FreeGroups(aGroups);
   for I := 0 to Length(GroupBitmaps) - 1 do
     GroupBitmaps[I].Free;
@@ -804,7 +811,6 @@ var
   C : integer;
   ItemData : TDBPopupMenuInfoRecord;
 begin
-  LoadingList:=true;
   ListBox2.Enabled:=false;
   aGroups:=GetRegisterGroupList(true);
   SetLength(GroupBitmaps,Length(aGroups));
@@ -826,66 +832,52 @@ begin
   LastSelected := nil;
   elvMain.DoubleBuffered:=true;
   elvMain.ControlStyle := elvMain.ControlStyle-[csDoubleClicks];
-      
+
+  if FLoadingDataThread <> nil then
+  begin
+    FLoadingDataThread.Suspend;
+    FLoadingDataThread.FreeOnTerminate := True;
+    FLoadingDataThread.Terminate;
+    FLoadingDataThread.Resume;
+  end;
+
+  FLoadingDataThread := TThreadLoadingManagerDB.Create(Self);
+  dblData.Hide;
+  dblData.Active := False;
+  LsLoadingDB.Active := True;
+  LsLoadingDB.Top := ElvMain.Top + 4 + GetListViewHeaderHeight(ElvMain);
+  LsLoadingDB.Show;
+end;
+
+procedure TManagerDB.DBLoadDataPacket(DataList : TList);
+var
+  I : Integer;
+begin
   elvMain.Items.BeginUpdate;
   try
-  WorkQuery:=GetQuery(True);
-    try
-      TADOQuery(WorkQuery).CursorType := ctOpenForwardOnly;
-      TADOQuery(WorkQuery).CursorLocation := clUseClient;
-      TADOQuery(WorkQuery).LockType := ltReadOnly;
-      _sqlexectext:='SELECT ID FROM '+GetDefDBName+' ORDER BY ID';
-      SetSQL(WorkQuery,_sqlexectext);
-
-      TOpenQueryThread.Create(false, WorkQuery, DBOpened);
-      dblData.Active := True;
-      Repeat
-       Inc(i);
-       if i=100 then
-       begin
-         i:=0;
-       end;
-       Delay(5);
-      Until not DBInOpening;
-
-      WorkQuery.First;
-      C := 0;
-      I := 0;
-      while not WorkQuery.Eof do
-      begin
-        Inc(I);
-        ItemData := TDBPopupMenuInfoRecord.Create;
-        ItemData.ID := WorkQuery.Fields[0].AsInteger;
-        ItemData.InfoLoaded := False;
-        FData.Add(ItemData);
-        ElvMain.Items.Add;
-
-        if i mod 500=0 then
-        begin
-          Caption := IntToStr(FData.Count);
-          Application.ProcessMessages;
-          inc(c);
-          if c>100 then c:=0;
-        end;
-
-        WorkQuery.Next;
-      end;  
-      dblData.Hide;
-    finally
-      FreeDS(WorkQuery);
+    for I := 0 to DataList.Count - 1 do
+    begin             
+      FData.Add(DataList[I]);
+      ElvMain.Items.Add;
+    end;
+    if (LastSelected = nil) and (elvMain.Items.Count > 0) then
+    begin
+      LastSelected := elvMain.Items[0];
+      LastSelected.Selected := True;
+      elvMain.ItemFocused := elvMain.Items[0];
+      LastSelectedIndex := 0;
     end;
   finally
     elvMain.Items.EndUpdate;
   end;
+end;
 
-  if elvMain.Items.Count > 0 then
-  begin
-    LastSelected := elvMain.Items[0];
-    LastSelected.Selected := True;
-    elvMain.ItemFocused := elvMain.Items[0];
-    LastSelectedIndex := 0;
-  end;
-  LoadingList := False;
+procedure TManagerDB.DBOpened(Sender : TObject);
+begin
+  FLoadingDataThread.FreeOnTerminate := True;
+  FLoadingDataThread := nil;
+  LsLoadingDB.Active := False;
+  LsLoadingDB.Hide;
   ListBox2.Enabled := True;
 end;
 
@@ -1890,11 +1882,6 @@ begin
  RefreshDBList;
 end;
 
-procedure TManagerDB.DBOpened(Sender : TObject; DS : TDataSet);
-begin
-  DBInOpening := False;
-end;
-
 procedure TManagerDB.EditDB1Click(Sender: TObject);
 var
   index : integer;
@@ -1948,11 +1935,11 @@ end;
 procedure TManagerDB.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
- if LoadingList then
+{ if LoadingList then
  begin
   MessageBoxDB(Handle,TEXT_MES_LIST_DB_ITEMS_LOADING,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
   CanClose:=false;
- end;
+ end; }
 end;
 
 procedure TManagerDB.ConvertLinkClick(Sender: TObject);

@@ -1,6 +1,6 @@
 object SearchForm: TSearchForm
-  Left = 353
-  Top = 50
+  Left = 291
+  Top = 173
   Width = 824
   Height = 678
   ActiveControl = ShowDateOptionsLink
@@ -596,6 +596,16 @@ object SearchForm: TSearchForm
         LineColor = clBlack
         Active = False
         OnDrawBackground = dblDateDrawBackground
+      end
+      object lsDate: TLoadingSign
+        Left = 104
+        Top = 3
+        Width = 20
+        Height = 20
+        Visible = False
+        Active = True
+        ParentColor = False
+        Anchors = [akTop, akRight]
       end
     end
     object SearchPanelA: TPanel

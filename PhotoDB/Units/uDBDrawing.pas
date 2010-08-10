@@ -2,7 +2,8 @@ unit uDBDrawing;
 
 interface
 
-uses Windows, SysUtils, Graphics, UnitDBDeclare, Exif, UnitDBCommon;
+uses Windows, SysUtils, Graphics, UnitDBDeclare, Exif, UnitDBCommon, Math,
+     GraphicsBaseTypes;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
 function GetListItemBorderColor(Data : TDataObject) : TColor;

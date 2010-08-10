@@ -17,7 +17,7 @@ uses
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources,
-  MPCommonObjects, ADODB, DBLoading;
+  MPCommonObjects, ADODB, DBLoading, LoadingSign;
 
 type
   TDateRange = record
@@ -193,6 +193,7 @@ type
     SortbyCompare1: TMenuItem;
     elvDateRange: TEasyListview;
     dblDate: TDBLoading;
+    lsDate: TLoadingSign;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure Additem_(sender: TObject; Name_ : String; tag : integer );
@@ -414,6 +415,7 @@ type
     procedure elvDateRangeResize(Sender: TObject);
     procedure dblDateDrawBackground(Sender: TObject; Buffer: TBitmap);
   private
+    FLoadingDatesState : Extended;
     FSearchInfo : TSearchInfo;
     FListUpdating : boolean;
     FPropertyGroups: String;
@@ -4996,10 +4998,14 @@ var
   CurrentMonth : integer;
 begin
   dblDate.Hide;
-  
+              
+  Application.ProcessMessages;
+  lsDate.Color := elvDateRange.Color;
+  lsDate.Active := True;
+  lsDate.Visible := True;
   CurrentYear := 0;
   CurrentMonth := 0;
-  elvDateRange.Groups.Clear; 
+  elvDateRange.Groups.Clear;
   elvDateRange.Header.Columns.Clear;
   elvDateRange.Header.Columns.Add.Width := 150;
 
@@ -5032,6 +5038,8 @@ begin
     DS.Next;
   end;
   FreeDS(DS);
+  lsDate.Active := False;
+  lsDate.Visible := False;
 end;
 
 procedure TSearchForm.elvDateRangeResize(Sender: TObject);
@@ -5336,6 +5344,7 @@ begin
   Buffer.Canvas.Brush.Color := Theme_ListColor;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
+
 
 initialization
 
