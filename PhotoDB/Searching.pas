@@ -5345,7 +5345,6 @@ begin
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 
-
 initialization
 
 SearchManager := TManagerSearchs.create;

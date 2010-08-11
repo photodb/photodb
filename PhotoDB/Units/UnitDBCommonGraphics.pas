@@ -10,6 +10,7 @@ interface
     PSDTransparent = false;
     //Image processiong options
     ZoomSmoothMin = 0.4;
+    CHalf64 : Double = 0.5;
 
   procedure DoInfoListBoxDrawItem(ListBox: TListBox; Index: Integer; aRect: TRect; State: TOwnerDrawState;
     ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
@@ -40,6 +41,20 @@ interface
   procedure SelectedColor(Image : TBitmap; Color : TColor);  
 
 implementation
+
+function FastTrunc(const Value: Double): Integer; overload;
+asm
+ fld Value.Double
+ fsub CHalf64
+ fistp Result.Integer
+end;
+
+function FastRound(Sample: Double): Integer;
+asm
+ fld Sample.Double
+ frndint
+ fistp Result.Integer
+end;
 
 procedure BeginScreenUpdate(hwnd: THandle);
 begin
@@ -135,7 +150,7 @@ var
   G : Byte;
   W1, W2 : Byte;
 begin
-  W1 := Round((N / 100)*255);
+  W1 := FastRound((N / 100)*255);
   W2 := 255 - W1;
   for I := 0 to S.Height - 1 do
   begin
@@ -164,9 +179,9 @@ begin
     pd := D.ScanLine[I];
     for J := 0 to S.Width - 1 do
     begin
-      PD[j].R := (PD[J].R * W2 + PS[J].R * W1 + 127) div 255;
-      PD[j].G := (PD[J].G * W2 + PS[J].G * W1 + 127) div 255;
-      PD[j].B := (PD[J].B * W2 + PS[J].B * W1 + 127) div 255;
+      PD[j].R := (PD[J].R * W2 + PS[J].R * W1 + $7F) div $FF;
+      PD[j].G := (PD[J].G * W2 + PS[J].G * W1 + $7F) div $FF;
+      PD[j].B := (PD[J].B * W2 + PS[J].B * W1 + $7F) div $FF;
     end;
   end;
 end;
@@ -690,11 +705,11 @@ begin
    r:=0;
    g:=0;
    b:=0;
-   for k:=Round(Sh*(i-y)) to Round(Sh*(i+1-y))-1 do
+   for k:=FastRound(Sh*(i-y)) to FastRound(Sh*(i+1-y))-1 do
    begin
     if k > s_h then break;
     if k < 0 then continue;
-    for p:=Round(Sw*j) to Round(Sw*(j+1))-1 do
+    for p:=FastRound(Sw*j) to FastRound(Sw*(j+1))-1 do
     begin
      if p > s_w then break;
      inc(col);
@@ -740,13 +755,13 @@ begin
   Xd[i]:=D.scanline[i];
   try
 
-  for i := 0 to min(Round((Rect.Bottom-Rect.Top-1)*dy)-1,dh-1) do begin
-      yo := Trunc(i / dy)+Rect.Top;
-      y1r:= Trunc(i / dy) * dy;
+  for i := 0 to min(FastRound((Rect.Bottom-Rect.Top-1)*dy)-1,dh-1) do begin
+      yo := FastTrunc(i / dy)+Rect.Top;
+      y1r:= FastTrunc(i / dy) * dy;
       if yo>S.height then Break;
-    for j := 0 to min(Round((Rect.Right-Rect.Left-1)*dx)-1,dw-1) do begin
-      xo := Trunc(j / dx)+Rect.Left;
-      x1r:= Trunc(j / dx) * dx;
+    for j := 0 to min(FastRound((Rect.Right-Rect.Left-1)*dx)-1,dw-1) do begin
+      xo := FastTrunc(j / dx)+Rect.Left;
+      x1r:= FastTrunc(j / dx) * dx;
       if xo>S.Width then Continue;
       begin
        if i+y<0 then continue; 
@@ -754,15 +769,15 @@ begin
        z1 := ((Xs[yo ,xo+ 1].r - Xs[yo,xo].r)/ dx)*(j - x1r) + Xs[yo,xo].r;
        z2 := ((Xs[yo+1,xo+1].r - Xs[yo+1,xo].r) / dx)*(j - x1r) + Xs[yo+1,xo].r;
        k := (z2 - z1) / dy;
-       Xd[i+y,j+x].r := Round(i * k + z1 - y1r * k);
+       Xd[i+y,j+x].r := FastRound(i * k + z1 - y1r * k);
        z1 := ((Xs[yo ,xo+ 1].g - Xs[yo,xo].g)/ dx)*(j - x1r) + Xs[yo,xo].g;
        z2 := ((Xs[yo+1,xo+1].g - Xs[yo+1,xo].g) / dx)*(j - x1r) + Xs[yo+1,xo].g;
        k := (z2 - z1) / dy;
-       Xd[i+y,j+x].g := Round(i * k + z1 - y1r * k);
+       Xd[i+y,j+x].g := FastRound(i * k + z1 - y1r * k);
        z1 := ((Xs[yo ,xo+ 1].b - Xs[yo,xo].b)/ dx)*(j - x1r) + Xs[yo,xo].b;
        z2 := ((Xs[yo+1,xo+1].b - Xs[yo+1,xo].b) / dx)*(j - x1r) + Xs[yo+1,xo].b;
        k := (z2 - z1) / dy;
-       Xd[i+y,j+x].b := Round(i * k + z1 - y1r * k);
+       Xd[i+y,j+x].b := FastRound(i * k + z1 - y1r * k);
       end;
     end;
   end;
@@ -945,10 +960,10 @@ begin
    r:=0;
    g:=0;
    b:=0;
-   for k:=Round(Sh*i) to Round(Sh*(i+1))-1 do
+   for k:=FastRound(Sh*i) to FastRound(Sh*(i+1))-1 do
    begin
     if k>s_h-1 then continue;
-    for p:=Round(Sw*j) to Round(Sw*(j+1))-1 do
+    for p:=FastRound(Sw*j) to FastRound(Sw*(j+1))-1 do
     begin
      if p>s_w-1 then continue;
      inc(col);

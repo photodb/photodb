@@ -598,12 +598,14 @@ object SearchForm: TSearchForm
         OnDrawBackground = dblDateDrawBackground
       end
       object lsDate: TLoadingSign
-        Left = 104
+        Left = 110
         Top = 3
-        Width = 20
-        Height = 20
+        Width = 16
+        Height = 16
         Visible = False
         Active = True
+        FillPercent = 50
+        Color = clBtnFace
         ParentColor = False
         Anchors = [akTop, akRight]
       end

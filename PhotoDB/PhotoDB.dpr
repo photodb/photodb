@@ -286,16 +286,9 @@ type
 
 var
     s1 : string;
-    Reg : TBDRegistry;
-    actcode : string;
     initaproc : TInitializeAProc;
-    TablePacked : boolean;    
-    ActivKey, ActivName : String;
+    TablePacked : boolean;
     i : integer;
-
-  f : TPcharFunction;
-  Fh : pointer;
-  k : integer;
 
 function IsFalidDBFile : boolean;
 begin
@@ -561,75 +554,10 @@ begin
   end;
 
   if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
-   AExplorerFolders := TExplorerFolders.Create;
+    AExplorerFolders := TExplorerFolders.Create;
 
   TW.I.Start('GetCIDA');  
   SetSplashProgress(80);
-
-  if not FolderView then
-  for k:=1 to 10 do
-  begin
-   Fh:=GetProcAddress(KernelHandle,'GetCIDA');
-   if fh=nil then
-   begin
-    MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-    halt;
-    exit;
-   end;
-   @f:=Fh;
-   p:=f;
-  end;
-         
-  SetSplashProgress(90);
-  TW.I.Start('Initialize');
-
-  {$IFDEF DEBUG}
-  EventLog('...CHECK GetCIDA...');
-  {$ENDIF}
-  if not FolderView then
-  If not DBTerminating then
-  begin
-   for k:=1 to 10 do
-   begin
-    {$IFDEF DEBUG}
-    EventLog('...:GetCIDA('+IntToStr(k)+')...');
-    {$ENDIF}
-    Fh:=GetProcAddress(KernelHandle,'GetCIDA');
-    if fh=nil then
-    begin
-     MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-     halt;
-     exit;
-    end;
-    @f:=Fh;
-   end;
-
-   {$IFDEF DEBUG}
-   EventLog('...Get [Registration] Key and User Name...');
-   {$ENDIF}
-   Reg:=TBDRegistry.Create(REGISTRY_CLASSES,true);
-   if PortableWork then
-   begin
-    ActivKey:='\CLSID';
-    ActivName:='Key';
-   end else
-   begin
-    ActivKey:='\CLSID\'+ActivationID;
-    ActivName:='DefaultHandle';
-   end;
-   {$IFDEF DEBUG}
-   EventLog('...ActivKey = '+ActivKey);   
-   EventLog('...ActivName = '+ActivName);
-   {$ENDIF}
-   try
-    Reg.OpenKey(ActivKey,true);
-    ActCode:=Reg.ReadString(ActivName);
-   except
-    on e : Exception do EventLog(':PhotoDB() throw exception: '+e.Message);
-   end;
-   Reg.free;
-   EventLog(':FindRunningVersion()');
-  end;
 
   EventLog('...Loading menu...');
   SetSplashProgress(95);

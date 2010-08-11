@@ -425,44 +425,6 @@ end;
 procedure TImageEditor.FormCreate(Sender: TObject);
 var
   i : integer;
-
-{Function LoadLinkIcons : Boolean;
-begin
- try
- CropLink.Icon:= CropLink.Icon;
- OpenFileLink.Icon:= OpenFileLink.Icon;
- ZoomInLink.Icon:= ZoomInLink.Icon;
- ZoomOutLink.Icon:= ZoomOutLink.Icon;
- FitToSizeLink.Icon:= FitToSizeLink.Icon;
- ColorsLink.Icon:= ColorsLink.Icon;
- RedEyeLink.Icon:= RedEyeLink.Icon;
- SaveLink.Icon:= SaveLink.Icon;
- UndoLink.Icon:= UndoLink.Icon;
- RedoLink.Icon:= RedoLink.Icon;
- RotateLink.Icon:= RotateLink.Icon;
- ResizeLink.Icon:= ResizeLink.Icon;
- EffectsLink.Icon:= EffectsLink.Icon;
- TextLink.Icon:= TextLink.Icon;
- BrushLink.Icon:= BrushLink.Icon;
- FullSiseLink.Icon:= FullSiseLink.Icon;
- InsertImageLink.Icon:= InsertImageLink.Icon;
- OpenFileLink.SetDefault;
- CropLink.SetDefault;
- RotateLink.SetDefault;
- ColorsLink.SetDefault;
- ResizeLink.SetDefault;
- EffectsLink.SetDefault;
- RedEyeLink.SetDefault;
- TextLink.SetDefault;
- BrushLink.SetDefault;
- InsertImageLink.SetDefault;
- except
-  Result:=false;
-  exit;
- end;
- Result:=true;
-end;    }
-
 begin
  EXIFSection:=nil;
  NewActionsCounter:=-1;

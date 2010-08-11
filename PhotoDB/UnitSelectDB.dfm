@@ -1904,7 +1904,7 @@ object FormSelectDB: TFormSelectDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object InternalNameEdit: TEdit
         Left = 8

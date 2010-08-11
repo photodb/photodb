@@ -13,7 +13,6 @@ object ManagerDB: TManagerDB
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
-  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -25,7 +24,7 @@ object ManagerDB: TManagerDB
     Height = 612
     Align = alClient
     TabOrder = 0
-    object Panel3: TPanel
+    object PnTop: TPanel
       Left = 1
       Top = 1
       Width = 880
@@ -165,7 +164,7 @@ object ManagerDB: TManagerDB
         ItemHeight = 13
         ParentColor = True
         TabOrder = 7
-        OnChange = CbWhereField2Change
+        OnChange = CbWhereField1Change
         Items.Strings = (
           'Rating'
           'Rotate'
@@ -255,7 +254,7 @@ object ManagerDB: TManagerDB
         Text = '1'
         OnChange = RecordNumberEditChange
       end
-      object ListBox1: TListBox
+      object LbBackups: TListBox
         Left = 656
         Top = 64
         Width = 129
@@ -263,8 +262,8 @@ object ManagerDB: TManagerDB
         Style = lbOwnerDrawFixed
         ItemHeight = 20
         TabOrder = 13
-        OnContextPopup = ListBox1ContextPopup
-        OnDrawItem = ListBox1DrawItem
+        OnContextPopup = LbBackupsContextPopup
+        OnDrawItem = LbBackupsDrawItem
       end
       object PackTabelLink: TWebLink
         Left = 8
@@ -392,7 +391,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
       end
-      object ListBox2: TListBox
+      object LbDatabases: TListBox
         Left = 456
         Top = 32
         Width = 193
@@ -400,18 +399,18 @@ object ManagerDB: TManagerDB
         Style = lbOwnerDrawFixed
         ItemHeight = 20
         TabOrder = 21
-        OnContextPopup = ListBox2ContextPopup
-        OnDblClick = ListBox2DblClick
-        OnDrawItem = ListBox2DrawItem
+        OnContextPopup = LbDatabasesContextPopup
+        OnDblClick = LbDatabasesDblClick
+        OnDrawItem = LbDatabasesDrawItem
       end
-      object Button3: TButton
+      object BtnAddDB: TButton
         Left = 456
         Top = 8
         Width = 193
         Height = 17
         Caption = 'Add DB'
         TabOrder = 22
-        OnClick = Button3Click
+        OnClick = BtnAddDBClick
       end
       object DublicatesLink: TWebLink
         Left = 8
@@ -555,16 +554,14 @@ object ManagerDB: TManagerDB
     object LsLoadingDB: TLoadingSign
       Left = 3
       Top = 240
-      Width = 17
-      Height = 17
+      Width = 16
+      Height = 16
       Visible = False
-      Active = False
+      Active = True
+      FillPercent = 50
+      Color = clBtnFace
       ParentColor = False
     end
-  end
-  object DataSource1: TDataSource
-    Left = 152
-    Top = 232
   end
   object PopupMenu1: TPopupMenu
     Left = 184
@@ -758,8 +755,8 @@ object ManagerDB: TManagerDB
   end
   object DBImageList: TImageList
     BkColor = clWindow
-    Left = 489
-    Top = 153
+    Left = 497
+    Top = 129
   end
   object PopupMenu8: TPopupMenu
     Left = 529
@@ -783,11 +780,5 @@ object ManagerDB: TManagerDB
       Caption = 'Delete DB'
       OnClick = DeleteDB1Click
     end
-  end
-  object LoadDBTimer: TTimer
-    Interval = 100
-    OnTimer = LoadDBTimerTimer
-    Left = 481
-    Top = 297
   end
 end

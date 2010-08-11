@@ -556,15 +556,22 @@ object ImageEditor: TImageEditor
         Width = 68
         Height = 24
         Cursor = crHandPoint
-        Text = 'Open'
-        OnClick = OpenFile
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Open'
+        OnClick = OpenFile
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000001002000680400002600000018180000010020008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -679,13 +686,6 @@ object ImageEditor: TImageEditor
           FFFFC0007FFFC0001FFFC00007FFC00001FF800000FF800000FF800000FF8000
           01FF000001FF000003FF000003FF000007FF000007FF00000FFF00000FFF0000
           0FFF00000FFF00001FFF00001FFF00001FFF00001FFF}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object CropLink: TWebLink
         Left = 8
@@ -693,15 +693,23 @@ object ImageEditor: TImageEditor
         Width = 64
         Height = 24
         Cursor = crHandPoint
-        Text = 'Crop'
-        OnClick = CropLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Crop'
+        OnClick = CropLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -816,14 +824,6 @@ object ImageEditor: TImageEditor
           07FFF00001FFF00001FFE00001FFE00001FFE00001FFE00007FFE00207FFE000
           07FFE00007FFE00007FFE00007FFC00007FFC00007FFC00007FFC00003FFC000
           01FFE07F81FFE07FC1FFFFFFE1FFFFFFFFFFFFFFFFFF}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object RotateLink: TWebLink
         Left = 8
@@ -831,15 +831,23 @@ object ImageEditor: TImageEditor
         Width = 81
         Height = 24
         Cursor = crHandPoint
-        Text = 'Rotate'
-        OnClick = RotateLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Rotate'
+        OnClick = RotateLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -954,14 +962,6 @@ object ImageEditor: TImageEditor
           07FFFFF803FFFFFE01FFFFFF00FFFFFF80FFFFFF80FFFFFFC0FFFFFFC0FFFFFF
           C0FF8003C0FF800180FF800380FF800200FF800000FF800001FFC00003FFC000
           03FFE0000FFFE0001FFFE001FFFFF0FFFFFFFFFFFFFF}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object ResizeLink: TWebLink
         Left = 8
@@ -969,15 +969,23 @@ object ImageEditor: TImageEditor
         Width = 78
         Height = 24
         Cursor = crHandPoint
-        Text = 'Resize'
-        OnClick = ResizeLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Resize'
+        OnClick = ResizeLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1092,14 +1100,6 @@ object ImageEditor: TImageEditor
           00FF800000FF800000FF800000FF800000FF800000FF800000FF800000FF8000
           00FF800000FF800000FFF80000FFF80000FFF80000FFF80000FFF80000FFF800
           00FFF00000FFF00000FFF00000FFFFFFFFFFFFFFFFFF}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object EffectsLink: TWebLink
         Left = 8
@@ -1107,15 +1107,23 @@ object ImageEditor: TImageEditor
         Width = 88
         Height = 24
         Cursor = crHandPoint
-        Text = 'Effects'
-        OnClick = EffectsLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Effects'
+        OnClick = EffectsLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1230,14 +1238,6 @@ object ImageEditor: TImageEditor
           00FFC00000FF800000FF000000FF000000FF000000FF000000FF000000FF0000
           00FF000000FF000000FF000000FF800001FFC00001FFF00001FFFC0000FFFF80
           00FFFFFC00FFFFFC00FFFFFF00FFFFFFC1FFFFFFC1FF}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object ColorsLink: TWebLink
         Left = 8
@@ -1245,15 +1245,23 @@ object ImageEditor: TImageEditor
         Width = 75
         Height = 24
         Cursor = crHandPoint
-        Text = 'Colors'
-        OnClick = ColorsLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Colors'
+        OnClick = ColorsLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1368,14 +1376,6 @@ object ImageEditor: TImageEditor
           01FFC00001FFC00001FFC00001FFC00001FFC00001FFC00001FFC00001FFC000
           01FFC00001FFC00001FFC00001FFC00001FFC00001FFC00001FFC03E01FFC03E
           01FFC03E01FFC07E01FFFFFE01FFFFFE01FFFFFE01FF}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object RedEyeLink: TWebLink
         Left = 8
@@ -1383,15 +1383,23 @@ object ImageEditor: TImageEditor
         Width = 100
         Height = 24
         Cursor = crHandPoint
-        Text = 'Red Eyes'
-        OnClick = RedEyeLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Red Eyes'
+        OnClick = RedEyeLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1506,14 +1514,6 @@ object ImageEditor: TImageEditor
           FFFFF8003FFFE0000FFFC00003FF800001FF000000FF000000FF000000FF0000
           00FF000000FF000000FF800001FFC00003FFE0000FFFF8003FFFFFFFFFFFFFFF
           FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object TextLink: TWebLink
         Left = 8
@@ -1521,15 +1521,23 @@ object ImageEditor: TImageEditor
         Width = 66
         Height = 24
         Cursor = crHandPoint
-        Text = 'Text'
-        OnClick = TextLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Text'
+        OnClick = TextLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010001001818000001002000880900001600000028000000180000003000
           0000010020000000000060090000000000000000000000000000000000000000
@@ -1608,14 +1616,6 @@ object ImageEditor: TImageEditor
           0100F0000100E0000100C0000100C00001008000010080000100800001008000
           0100800001008000010080000100800001008000010080000100800001008000
           010080000100800001008000010080000100800001008000010080000100}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object BrushLink: TWebLink
         Left = 8
@@ -1623,15 +1623,23 @@ object ImageEditor: TImageEditor
         Width = 72
         Height = 24
         Cursor = crHandPoint
-        Text = 'Brush'
-        OnClick = BrushLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Brush'
+        OnClick = BrushLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010001001818000001002000880900001600000028000000180000003000
           0000010020000000000060090000000000000000000000000000000000000000
@@ -1710,14 +1718,6 @@ object ImageEditor: TImageEditor
           FF00F807FF00F8007F00F8000F00F8000700F8080700F807FF00F803FF00F803
           FF00FC01FF00FC007F00FE007F00FE007F00FF003F00FF801F00FF801F00FFC0
           0F00FFE00700FFF00700FFF00700FFF80F00FFFC0F00FFFE1F00FFFFFF00}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
       object InsertImageLink: TWebLink
         Left = 8
@@ -1725,15 +1725,23 @@ object ImageEditor: TImageEditor
         Width = 134
         Height = 24
         Cursor = crHandPoint
-        Text = 'Insert Image'
-        OnClick = InsertImageLinkClick
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
+        Text = 'Insert Image'
+        OnClick = InsertImageLinkClick
         BkColor = clBtnFace
         ImageIndex = 0
+        IconWidth = 24
+        IconHeight = 24
+        UseEnterColor = True
+        EnterColor = clMaroon
+        EnterBould = True
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000001002000680400002600000018180000010020008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1848,14 +1856,6 @@ object ImageEditor: TImageEditor
           1F00FF800F00FF800700FF800300FF000100FF000100FF000100FF000F00FF00
           1F25FF003FD2FF003FFFFF003FFFFF003FFFFE007FFFFE007FFFFE007FFFFC00
           7FFFF0007FFFC000FFFFC000FFE2E001FF36FC03FF05}
-        IconWidth = 24
-        IconHeight = 24
-        UseEnterColor = True
-        EnterColor = clMaroon
-        EnterBould = True
-        Enabled = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = False
       end
     end
   end
@@ -1876,6 +1876,13 @@ object ImageEditor: TImageEditor
       OnClick = ZoomInLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 24
+      IconHeight = 24
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -1990,13 +1997,6 @@ object ImageEditor: TImageEditor
         FFFF801FFFFF800FFFFF8007FFFFC0041FFFE00007FFF00003FFF80001FFFC00
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFF0000FFFF0000FFFF00
         00FFFF8001FFFFC003FFFFE007FFFFFFFFFFFFFFFFFF}
-      IconWidth = 24
-      IconHeight = 24
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object ZoomOutLink: TWebLink
       Left = 104
@@ -2008,6 +2008,13 @@ object ImageEditor: TImageEditor
       OnClick = ZoomOutLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 24
+      IconHeight = 24
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2122,13 +2129,6 @@ object ImageEditor: TImageEditor
         FFFFC01FFFFFC00FFFFFC007FFFFE0001FFFF00007FFF80001FFFC0001FFFE00
         00FFFF8000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF80
         00FFFF8001FFFFC003FFFFF007FFFFFFFFFFFFFFFFFF}
-      IconWidth = 24
-      IconHeight = 24
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object UndoLink: TWebLink
       Left = 512
@@ -2136,10 +2136,18 @@ object ImageEditor: TImageEditor
       Width = 55
       Height = 24
       Cursor = crHandPoint
+      Enabled = False
       Text = 'Undo'
       OnClick = UndoLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 24
+      IconHeight = 24
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2254,14 +2262,6 @@ object ImageEditor: TImageEditor
         FFFFFFFFFFFF800078FF800070FF800070FF8000E0FF800180FF800000FF8000
         00FFC00000FFC00001FFC00001FFC00003FFE00007FFE0001FFFE0E07FFFE1FF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      IconWidth = 24
-      IconHeight = 24
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      Enabled = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object RedoLink: TWebLink
       Left = 608
@@ -2269,10 +2269,18 @@ object ImageEditor: TImageEditor
       Width = 55
       Height = 24
       Cursor = crHandPoint
+      Enabled = False
       Text = 'Redo'
       OnClick = RedoLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 24
+      IconHeight = 24
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2387,14 +2395,6 @@ object ImageEditor: TImageEditor
         FFFFFFFFFFFF878000FF838000FF818000FF80C000FF806000FF800000FFC000
         00FFC00000FFE00000FFE00000FFF00000FFF80001FFFC0001FFFF01C1FFFFFF
         E1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      IconWidth = 24
-      IconHeight = 24
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      Enabled = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object FitToSizeLink: TWebLink
       Left = 392
@@ -2406,6 +2406,13 @@ object ImageEditor: TImageEditor
       OnClick = FitToSizeLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 24
+      IconHeight = 24
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2520,13 +2527,6 @@ object ImageEditor: TImageEditor
         FFFF801FFFFF800FFFFFC007FFFFE0000FFFF00003FFF80001FFF80001FFFE00
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFE0000FFFF0000FFFF00
         00FFFF0000FFFF8001FFFFC003FFFFF00FFFFFFFFFFF}
-      IconWidth = 24
-      IconHeight = 24
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object SaveLink: TWebLink
       Left = 8
@@ -2534,10 +2534,18 @@ object ImageEditor: TImageEditor
       Width = 54
       Height = 24
       Cursor = crHandPoint
+      Enabled = False
       Text = 'Save'
       OnClick = SaveLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 24
+      IconHeight = 24
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2652,14 +2660,6 @@ object ImageEditor: TImageEditor
         00FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC000
         00FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC000
         00FFC00000FFC00000FFC00000FFC00000FFFFFFFFFF}
-      IconWidth = 24
-      IconHeight = 24
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      Enabled = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object FullSiseLink: TWebLink
       Left = 312
@@ -2671,6 +2671,13 @@ object ImageEditor: TImageEditor
       OnClick = FullSiseLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 24
+      IconHeight = 24
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2785,13 +2792,6 @@ object ImageEditor: TImageEditor
         FFFF801FFFFF800FFFFFC007FFFFE0000FFFF00003FFF80001FFF80001FFFE00
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFE0000FFFF0000FFFF00
         00FFFF0000FFFF8001FFFFC003FFFFF00FFFFFFFFFFF}
-      IconWidth = 24
-      IconHeight = 24
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
   end
   object ScrollBar1: TScrollBar

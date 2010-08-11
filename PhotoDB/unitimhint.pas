@@ -96,8 +96,8 @@ uses searching, Language;
 
 function IsWinXP: Boolean;
 begin 
- Result := (Win32Platform = VER_PLATFORM_WIN32_NT) and 
-   (Win32MajorVersion >= 5) and (Win32MinorVersion >= 1); 
+  Result := (Win32Platform = VER_PLATFORM_WIN32_NT) and 
+    (Win32MajorVersion >= 5) and (Win32MinorVersion >= 1); 
 end; 
 
 procedure DrawHintInfo(Handle : THandle; Width,Height  : Integer; fInfo : TOneRecordInfo);
@@ -140,14 +140,13 @@ const
   CS_DROPSHADOW = $00020000; 
 begin 
   inherited;
-  if DBKernel.Readinteger('Options','PreviewSwohOptions',0)=1 then
-  if IsWinXP then
-  Params.WindowClass.Style := Params.WindowClass.Style or CS_DROPSHADOW;
+  if IsWinXP and (DBKernel.Readinteger('Options','PreviewSwohOptions', 0) = 1) then
+    Params.WindowClass.Style := Params.WindowClass.Style or CS_DROPSHADOW;
 end;
 
 procedure TImHint.Execute(Sender : TObject; Bitmaped,Transparent : Boolean; bit : tbitmap; G : TGraphic; c,w,h:integer; rect : trect; Info : TOneRecordInfo; item : TObject; funchintreal : THintRealFucntion);
 var
-  ww,hh,{ lfname, n, }fh, fw, fl, ft, lw:integer;
+  ww,hh, fh, fw, fl, ft, lw:integer;
   fname : string;
   B : TBitmap;
 begin

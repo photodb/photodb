@@ -16,9 +16,8 @@ uses
 
 type
   TManagerDB = class(TForm)
-    DataSource1: TDataSource;
     Panel2: TPanel;
-    Panel3: TPanel;
+    PnTop: TPanel;
     PopupMenu1: TPopupMenu;
     Label7: TLabel;
     CbSetField: TComboBox;
@@ -48,7 +47,7 @@ type
     DropFileTarget1: TDropFileTarget;
     DragImageList: TImageList;
     GroupsImageList: TImageList;
-    ListBox1: TListBox;
+    LbBackups: TListBox;
     Label11: TLabel;
     PopupMenu5: TPopupMenu;
     Delete1: TMenuItem;
@@ -86,8 +85,8 @@ type
     ScanforBadLinksLink: TWebLink;
     BackUpDBLink: TWebLink;
     CleaningLink: TWebLink;
-    ListBox2: TListBox;
-    Button3: TButton;
+    LbDatabases: TListBox;
+    BtnAddDB: TButton;
     DBImageList: TImageList;
     PopupMenu8: TPopupMenu;
     DeleteDB1: TMenuItem;
@@ -95,7 +94,6 @@ type
     N1: TMenuItem;
     SelectDB1: TMenuItem;
     EditDB1: TMenuItem;
-    LoadDBTimer: TTimer;
     DublicatesLink: TWebLink;
     ConvertLink: TWebLink;
     ChangePathLink: TWebLink;
@@ -110,7 +108,6 @@ type
     procedure RadioButton1Click(Sender: TObject);
     procedure CbWhereCombinatorChange(Sender: TObject);
     procedure CbWhereField1Change(Sender: TObject);
-    procedure CbWhereField2Change(Sender: TObject);
     procedure BtnExecSQLClick(Sender: TObject);
     procedure CheckSQL;
     procedure CbOperatorWhere1Change(Sender: TObject);
@@ -119,9 +116,9 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure GroupsManager1Click(Sender: TObject);
     procedure ReadBackUps;
-    procedure ListBox1DrawItem(Control: TWinControl; Index: Integer;
+    procedure LbBackupsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure ListBox1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure LbBackupsContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure Delete1Click(Sender: TObject);
     procedure Refresh1Click(Sender: TObject);
@@ -152,23 +149,21 @@ type
     procedure ElvMainContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure DeleteItemWithID(ID : integer);
-    procedure ListBox2DrawItem(Control: TWinControl; Index: Integer;
+    procedure LbDatabasesDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure Button3Click(Sender: TObject);
+    procedure BtnAddDBClick(Sender: TObject);
     procedure RefreshDBList;
-    procedure ListBox2ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure LbDatabasesContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure RenameDB1Click(Sender: TObject);
     procedure SelectDB1Click(Sender: TObject);
     procedure DeleteDB1Click(Sender: TObject);
-    procedure ListBox2DblClick(Sender: TObject);
+    procedure LbDatabasesDblClick(Sender: TObject);
     procedure DBOpened(Sender : TObject);
     procedure DBLoadDataPacket(DataList : TList);
     procedure EditDB1Click(Sender: TObject);
     procedure RecordNumberEditChange(Sender: TObject);
-    procedure LoadDBTimerTimer(Sender: TObject);
     procedure DublicatesLinkClick(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure ConvertLinkClick(Sender: TObject);
     procedure ChangePathLinkClick(Sender: TObject);
     procedure Showfileinexplorer1Click(Sender: TObject);
@@ -197,6 +192,7 @@ type
   protected             
     { protected declarations }
     procedure CreateParams(VAR Params: TCreateParams); override;
+    procedure ReleaseLoadingThread;
   public           
     { public declarations }
     procedure LoadLanguage;
@@ -295,7 +291,7 @@ begin
   EditDB1.ImageIndex   := DB_IC_NOTES;
 
   FBackUpFiles := TStringList.Create;
-  ListBox1.DoubleBuffered := True;
+  LbBackups.DoubleBuffered := True;
   UnLock;
   DropFileTarget1.Register(Self);
   DBCanDrag := False;
@@ -322,22 +318,13 @@ begin
   LoadLanguage;
   ReadBackUps;
   RefreshDBList;
+
+  InitializeQueryList;
 end;
 
 procedure TManagerDB.ComboBox1Change(Sender: TObject);
 begin
- CheckSQL;
-end;
-
-Procedure SetPCharString(var p : PChar; S : String);
-var
-  L : integer;
-begin
- l:=Length(s);
- if p<>nil then FreeMem(p);
- GetMem(p,Length(s)+1);
- p[L]:=#0;
- lstrcpyn(p,PChar(S),L+1);
+  CheckSQL;
 end;
 
 procedure TManagerDB.ChangedDBDataByID(Sender: TObject; ID: integer;
@@ -399,13 +386,7 @@ procedure TManagerDB.FormDestroy(Sender: TObject);
 var
   I : integer;
 begin
-  if FLoadingDataThread <> nil then
-  begin
-    FLoadingDataThread.Suspend;
-    FLoadingDataThread.FreeOnTerminate := True;
-    FLoadingDataThread.Terminate;    
-    FLoadingDataThread.Resume;
-  end;
+  ReleaseLoadingThread;
   FreeGroups(aGroups);
   for I := 0 to Length(GroupBitmaps) - 1 do
     GroupBitmaps[I].Free;
@@ -415,7 +396,7 @@ begin
   FBackUpFiles.Free;
   if FormManagerHint<>nil then
   begin
-   FormManagerHint.Release;
+    FormManagerHint.Release;
     if UseFreeAfterRelease then
       FormManagerHint.Free;
     FormManagerHint := nil;
@@ -466,58 +447,39 @@ end;
 procedure TManagerDB.CbWhereField1Change(Sender: TObject);
 var
   NewField : String;
+  CbOperatorWhere : TComboBox;
 begin
- NewField:=CbWhereField1.Text;
- If (GetFieldTupe(NewField)=FieldTypeInt) or (GetFieldTupe(NewField)=FieldTypeDate) then
- begin
-  CbOperatorWhere1.Items.Clear;
-  CbOperatorWhere1.Items.Add('=');
-  CbOperatorWhere1.Items.Add('>');
-  CbOperatorWhere1.Items.Add('<');
-  CbOperatorWhere1.Items.Add('<>');
- end;
- If GetFieldTupe(NewField)=FieldTypeStr then
- begin
-  CbOperatorWhere1.Items.Clear;
-  CbOperatorWhere1.Items.Add('=');
-  CbOperatorWhere1.Items.Add('<>');
-  CbOperatorWhere1.Items.Add('like');
- end;
- If GetFieldTupe(NewField)=FieldTypeBool then
- begin
-  CbOperatorWhere1.Items.Clear;
-  CbOperatorWhere1.Items.Add('=');
-  CbOperatorWhere1.Items.Add('<>');
- end;
- CheckSQL;
-end;
-//TODO: merge
-procedure TManagerDB.CbWhereField2Change(Sender: TObject);
-var
-  NewField : String;
-begin
- NewField:=CbWhereField2.Text;
- If (GetFieldTupe(NewField)=FieldTypeInt) or (GetFieldTupe(NewField)=FieldTypeDate) then
- begin
-  CbOperatorWhere2.Items.Clear;
-  CbOperatorWhere2.Items.Add('=');
-  CbOperatorWhere2.Items.Add('>');
-  CbOperatorWhere2.Items.Add('<');
-  CbOperatorWhere2.Items.Add('<>');
- end else
- begin
-  CbOperatorWhere2.Items.Clear;
-  CbOperatorWhere2.Items.Add('=');
-  CbOperatorWhere2.Items.Add('<>');
-  CbOperatorWhere2.Items.Add('like');
- end;
- If GetFieldTupe(NewField)=FieldTypeBool then
- begin
-  CbOperatorWhere2.Items.Clear;
-  CbOperatorWhere2.Items.Add('=');
-  CbOperatorWhere2.Items.Add('<>');
- end;
- CheckSQL;
+  NewField := TComboBox(Sender).Text;
+  if Sender = CbWhereField1 then
+    CbOperatorWhere := CbOperatorWhere1
+  else
+    CbOperatorWhere := CbOperatorWhere2;
+
+  case GetFieldTupe(NewField) of
+    FieldTypeInt,
+    FieldTypeDate:
+    begin
+      CbOperatorWhere.Items.Clear;
+      CbOperatorWhere.Items.Add('=');
+      CbOperatorWhere.Items.Add('>');
+      CbOperatorWhere.Items.Add('<');
+      CbOperatorWhere.Items.Add('<>');
+    end;
+    FieldTypeStr:
+    begin
+      CbOperatorWhere.Items.Clear;
+      CbOperatorWhere.Items.Add('=');
+      CbOperatorWhere.Items.Add('<>');
+      CbOperatorWhere.Items.Add('like');
+    end;
+    FieldTypeBool:
+    begin
+      CbOperatorWhere.Items.Clear;
+      CbOperatorWhere.Items.Add('=');
+      CbOperatorWhere.Items.Add('<>');
+    end;
+  end;
+  CheckSQL;
 end;
 
 function ValueToDBValue(FieldName, Value : String) : String;
@@ -602,7 +564,7 @@ begin
   ManagerDB.Release;
   if UseFreeAfterRelease then
     ManagerDB.Free;
-  ManagerDB:=nil;
+  ManagerDB := nil;
 end;
 
 procedure TManagerDB.GroupsManager1Click(Sender: TObject);
@@ -637,7 +599,7 @@ begin
   Rename1.Caption:=TEXT_MES_RENAME;
   RecreateIDExLink.Text:=TEXT_MES_RECTEATE_IDEX_CAPTION;
   ScanforBadLinksLink.Text:=TEXT_MES_BAD_LINKS_CAPTION;
-  Button3.Caption:=TEXT_MES_DO_ADD_DB;
+  BtnAddDB.Caption:=TEXT_MES_DO_ADD_DB;
   EditDB1.Caption:=TEXT_MES_EDIT;
   SelectDB1.Caption:=TEXT_MES_SELECT_DB; 
   DeleteDB1.Caption:=TEXT_MES_DELETE;
@@ -662,10 +624,10 @@ end;
 
 procedure TManagerDB.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);
- Params.WndParent := GetDesktopWindow;
- with params do
- ExStyle := ExStyle or WS_EX_APPWINDOW;
+  inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TManagerDB.ReadBackUps;
@@ -674,13 +636,13 @@ var
 begin
  FBackUpFiles.Clear;
  GetValidMDBFilesInFolder(GetAppDataDirectory+BackUpFolder,true,FBackUpFiles);
- ListBox1.Clear;
+ LbBackups.Clear;
  for i:=0 to FBackUpFiles.Count-1 do
- ListBox1.Items.Add(ExtractFileName(FBackUpFiles[i]));
+ LbBackups.Items.Add(ExtractFileName(FBackUpFiles[i]));
 
 end;
 
-procedure TManagerDB.ListBox1DrawItem(Control: TWinControl; Index: Integer;
+procedure TManagerDB.LbBackupsDrawItem(Control: TWinControl; Index: Integer;
   Rect: TRect; State: TOwnerDrawState);
 var
   LB : TListBox;
@@ -691,16 +653,16 @@ begin
  DrawIconEx(LB.Canvas.Handle,Rect.Left+2,Rect.Top+2,UnitDBKernel.icons[DB_IC_LOADFROMFILE+1],16,16,0,0,DI_NORMAL);
 end;
 
-procedure TManagerDB.ListBox1ContextPopup(Sender: TObject;
+procedure TManagerDB.LbBackupsContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   index, i  : integer;
 begin
- index:=ListBox1.ItemAtPos(MousePos,true);
+ index:=LbBackups.ItemAtPos(MousePos,true);
  if index=-1 then
  begin
-  for i:=0 to ListBox1.Items.Count-1 do
-  ListBox1.Selected[i]:=false;
+  for i:=0 to LbBackups.Items.Count-1 do
+  LbBackups.Selected[i]:=false;
   Refresh1.Visible:=true;
   Restore1.Visible:=false;
   Rename1.Visible:=false;
@@ -713,9 +675,9 @@ begin
   Delete1.Visible:=true;
  end;
  if index<>-1 then
- ListBox1.Selected[index]:=true else PopupMenu5.Tag:=0;
+ LbBackups.Selected[index]:=true else PopupMenu5.Tag:=0;
  PopupMenu5.Tag:=index;
- PopupMenu5.Popup(ListBox1.ClientToScreen(MousePos).X,ListBox1.ClientToScreen(MousePos).Y);
+ PopupMenu5.Popup(LbBackups.ClientToScreen(MousePos).X,LbBackups.ClientToScreen(MousePos).Y);
 end;
 
 procedure TManagerDB.Delete1Click(Sender: TObject);
@@ -811,8 +773,8 @@ var
   C : integer;
   ItemData : TDBPopupMenuInfoRecord;
 begin
-  ListBox2.Enabled:=false;
-  aGroups:=GetRegisterGroupList(true);
+  LbDatabases.Enabled:=false;
+  aGroups:=GetRegisterGroupList(True);
   SetLength(GroupBitmaps,Length(aGroups));
   for i:=0 to Length(aGroups)-1 do
   begin
@@ -833,14 +795,7 @@ begin
   elvMain.DoubleBuffered:=true;
   elvMain.ControlStyle := elvMain.ControlStyle-[csDoubleClicks];
 
-  if FLoadingDataThread <> nil then
-  begin
-    FLoadingDataThread.Suspend;
-    FLoadingDataThread.FreeOnTerminate := True;
-    FLoadingDataThread.Terminate;
-    FLoadingDataThread.Resume;
-  end;
-
+  ReleaseLoadingThread;
   FLoadingDataThread := TThreadLoadingManagerDB.Create(Self);
   dblData.Hide;
   dblData.Active := False;
@@ -874,11 +829,11 @@ end;
 
 procedure TManagerDB.DBOpened(Sender : TObject);
 begin
-  FLoadingDataThread.FreeOnTerminate := True;
-  FLoadingDataThread := nil;
-  LsLoadingDB.Active := False;
-  LsLoadingDB.Hide;
-  ListBox2.Enabled := True;
+   FLoadingDataThread.FreeOnTerminate := True;
+   FLoadingDataThread := nil;
+   LsLoadingDB.Active := False;
+   LsLoadingDB.Hide;
+   LbDatabases.Enabled := True;
 end;
 
 procedure TManagerDB.ElvMainAdvancedCustomDrawSubItem(
@@ -1530,7 +1485,7 @@ begin
   if FormManagerHint <> nil then
   begin
     Item := GetListViewItemAt(y);
-    if Item=nil then
+    if Item = nil then
     begin
       ShowWindow(FormManagerHint.Handle, SW_HIDE);
       Exit;
@@ -1606,7 +1561,7 @@ begin
     finally
       FreeDS(DS);
     end;
-    if Active then
+    if Active and (FormManagerHint <> nil) then
     begin
       FormManagerHint.DoubleBuffered := True;
       Application.ProcessMessages;
@@ -1742,7 +1697,7 @@ begin
   ElvMain.Repaint;
 end;
 
-procedure TManagerDB.ListBox2DrawItem(Control: TWinControl; Index: Integer;
+procedure TManagerDB.LbDatabasesDrawItem(Control: TWinControl; Index: Integer;
   Rect: TRect; State: TOwnerDrawState);
 var
   LB : TListBox;
@@ -1757,7 +1712,7 @@ begin
  DBImageList.Draw(LB.Canvas,Rect.Left+2,Rect.Top+2,Index,true);
 end;
 
-procedure TManagerDB.Button3Click(Sender: TObject);
+procedure TManagerDB.BtnAddDBClick(Sender: TObject);
 var
   DBFile : TPhotoDBFile;
 begin
@@ -1773,11 +1728,11 @@ var
   ico : TIcon;
 begin
  DBImageList.Clear;
- ListBox2.Clear;
+ LbDatabases.Clear;
  DBImageList.BkColor:=Theme_ListColor;
  for i:=0 to DBKernel.DBs.Count-1 do
  begin
-  ListBox2.Items.Add(DBKernel.DBs[i].Name);
+  LbDatabases.Items.Add(DBKernel.DBs[i].Name);
   ico:=GetSmallIconByPath(DBKernel.DBs[i].Icon);
   if ico.Empty then
   begin
@@ -1789,23 +1744,23 @@ begin
  end;
 end;
 
-procedure TManagerDB.ListBox2ContextPopup(Sender: TObject;
+procedure TManagerDB.LbDatabasesContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   index, i  : integer;
 begin
- index:=ListBox2.ItemAtPos(MousePos,true);
+ index:=LbDatabases.ItemAtPos(MousePos,true);
  if index=-1 then
  begin
-  for i:=0 to ListBox2.Items.Count-1 do
-  ListBox2.Selected[i]:=false;
+  for i:=0 to LbDatabases.Items.Count-1 do
+  LbDatabases.Selected[i]:=false;
   exit;
  end;
- DeleteDB1.Visible:=ListBox2.Items.Count>1;
+ DeleteDB1.Visible:=LbDatabases.Items.Count>1;
  if index<>-1 then
- ListBox2.Selected[index]:=true else PopupMenu8.Tag:=0;
+ LbDatabases.Selected[index]:=true else PopupMenu8.Tag:=0;
  PopupMenu8.Tag:=index;
- PopupMenu8.Popup(ListBox2.ClientToScreen(MousePos).X,ListBox2.ClientToScreen(MousePos).Y);
+ PopupMenu8.Popup(LbDatabases.ClientToScreen(MousePos).X,LbDatabases.ClientToScreen(MousePos).Y);
 end;
 
 procedure TManagerDB.RenameDB1Click(Sender: TObject);
@@ -1813,14 +1768,14 @@ var
   NewDBName : string;
   i : integer;
 begin
- NewDBName:=ListBox2.Items[PopupMenu8.Tag];
+ NewDBName:=LbDatabases.Items[PopupMenu8.Tag];
  if PromtString(TEXT_MES_NEW_NAME,TEXT_MES_ENTER_NEW_NAME_FOR_DB,NewDBName) then
  begin
   if Length(NewDBName)=0 then exit;
   for i:=1 to Length(NewDBName) do
   if NewDBName[i] in ['\','/','|'] then NewDBName[i]:=' ';
-  DBKernel.RenameDB(ListBox2.Items[PopupMenu8.Tag],NewDBName);
-  ListBox2.Items[PopupMenu8.Tag]:=NewDBName;
+  DBKernel.RenameDB(LbDatabases.Items[PopupMenu8.Tag],NewDBName);
+  LbDatabases.Items[PopupMenu8.Tag]:=NewDBName;
   RefreshDBList;
  end;
 end;
@@ -1855,26 +1810,26 @@ begin
   end;
  end;
  RefreshDBList;
- ListBox2.Refresh;
+ LbDatabases.Refresh;
 end;
 
 procedure TManagerDB.DeleteDB1Click(Sender: TObject);
 begin
- if MessageBoxDB(Handle,Format(TEXT_MES_DO_YOU_REALLY_WANT_TO_DENELE_DB_F,[ListBox2.Items[PopupMenu8.Tag]]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)=ID_OK then
+ if MessageBoxDB(Handle,Format(TEXT_MES_DO_YOU_REALLY_WANT_TO_DENELE_DB_F,[LbDatabases.Items[PopupMenu8.Tag]]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)=ID_OK then
  begin
-  DBKernel.DeleteDB(ListBox2.Items[PopupMenu8.Tag]);
+  DBKernel.DeleteDB(LbDatabases.Items[PopupMenu8.Tag]);
   RefreshDBList;
  end;
 end;
 
-procedure TManagerDB.ListBox2DblClick(Sender: TObject);
+procedure TManagerDB.LbDatabasesDblClick(Sender: TObject);
 var
   index  : integer;
   MousePos : TPoint;
 begin
  GetCursorPos(MousePos);
- MousePos:=ListBox2.ScreenToClient(MousePos);
- index:=ListBox2.ItemAtPos(MousePos,true);
+ MousePos:=LbDatabases.ScreenToClient(MousePos);
+ index:=LbDatabases.ItemAtPos(MousePos,true);
  if index>=0 then
  begin
   ChangeDBOptions(DBKernel.DBs[index]);
@@ -1886,9 +1841,9 @@ procedure TManagerDB.EditDB1Click(Sender: TObject);
 var
   index : integer;
 begin
- index:=PopupMenu8.Tag;
- ChangeDBOptions(DBKernel.DBs[index]);
- RefreshDBList;
+  Index := PopupMenu8.Tag;
+  ChangeDBOptions(DBKernel.DBs[index]);
+  RefreshDBList;
 end;
 
 procedure TManagerDB.RecordNumberEditChange(Sender: TObject);
@@ -1915,55 +1870,34 @@ begin
   ElvMain.Refresh;
 end;
 
-procedure TManagerDB.LoadDBTimerTimer(Sender: TObject);
-begin
-  ElvMain.Items.BeginUpdate;
-  try
-    LoadDBTimer.Enabled:=false;
-    InitializeQueryList;
-  finally
-    ElvMain.Items.EndUpdate;
-  end;
-end;
-
 procedure TManagerDB.DublicatesLinkClick(Sender: TObject);
 begin
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_OPTIMIZING_DUBLICATES_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
- DBkernel.WriteBool('StartUp','OptimizeDublicates',True);
-end;
-
-procedure TManagerDB.FormCloseQuery(Sender: TObject;
-  var CanClose: Boolean);
-begin
-{ if LoadingList then
- begin
-  MessageBoxDB(Handle,TEXT_MES_LIST_DB_ITEMS_LOADING,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
-  CanClose:=false;
- end; }
+  if ID_OK=MessageBoxDB(Handle,TEXT_MES_OPTIMIZING_DUBLICATES_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
+    DBkernel.WriteBool('StartUp','OptimizeDublicates',True);
 end;
 
 procedure TManagerDB.ConvertLinkClick(Sender: TObject);
 begin
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_CONVERTING_DB_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
- DBkernel.WriteBool('StartUp','ConvertDB',True);
+  if ID_OK=MessageBoxDB(Handle,TEXT_MES_CONVERTING_DB_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
+    DBkernel.WriteBool('StartUp', 'ConvertDB', True);
 end;
 
 procedure TManagerDB.ChangePathLinkClick(Sender: TObject);
 begin
- DoChangeDBPath;
+  DoChangeDBPath;
 end;
 
 procedure TManagerDB.Showfileinexplorer1Click(Sender: TObject);
 var
   Path : string;
 begin
- Path:=FBackUpFiles[PopupMenu5.Tag];
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetOldPath(Path);
-  SetPath(GetDirectory(Path));
-  Show;
- end;
+  Path := FBackUpFiles[PopupMenu5.Tag];
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetOldPath(Path);
+    SetPath(GetDirectory(Path));
+    Show;
+  end;
 end;
 
 procedure TManagerDB.ElvMainData(Sender: TObject; Item: TListItem);
@@ -1983,6 +1917,17 @@ procedure TManagerDB.ElvMainResize(Sender: TObject);
 begin
   dblData.Left := ElvMain.Left + (ElvMain.Left + ElvMain.Width) div 2 - dblData.Width div 2;
   dblData.Top := ElvMain.Top + (ElvMain.Height) div 2 - dblData.Height div 2;
+end;
+
+procedure TManagerDB.ReleaseLoadingThread;
+begin
+  if FLoadingDataThread <> nil then
+  begin
+    FLoadingDataThread.Suspend;
+    FLoadingDataThread.FreeOnTerminate := True;
+    FLoadingDataThread.Terminate;    
+    FLoadingDataThread.Resume;
+  end;
 end;
 
 end.

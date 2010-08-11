@@ -1239,7 +1239,6 @@ Const
  TEXT_MES_RUN_EXPLORER_AT_ATARTUP = 'Запускать проводник при запуске';
  TEXT_MES_USE_SPECIAL_FOLDER = 'Использовать папку';
  TEXT_MES_NO_ADD_SMALL_FILES_WITH_WH = 'Не добавлять в БД файлы, размером меньше:';
- TEXT_MES_LIST_DB_ITEMS_LOADING = 'Нельзя закрыть окно пока происходит загрузка списка!';
 
  TEXT_MES_SORT_BY_FILE_NUMBER = 'Сортировать по номеру файла';
  TEXT_MES_SORT_BY_MODIFIED = 'Сортировать по дате изменения';

@@ -7,8 +7,8 @@ uses Classes, SyncObjs;
 type
   TManagerObjects = class(TObject)
   private
-     FObjects : TList;
-     FSycn    : TCriticalSection;
+    FObjects : TList;
+    FSycn    : TCriticalSection;
   public
     constructor Create;
     destructor Destroy; override;
@@ -16,7 +16,7 @@ type
     procedure AddObj(Obj : TObject);
     procedure RemoveObj(Obj : TObject);
     function IsObj(Obj : TObject) : Boolean;
-    function ObjCount : Integer;
+    function Count : Integer;
   end;
 
 var
@@ -74,7 +74,7 @@ begin
   end;
 end;
 
-function TManagerObjects.ObjCount: Integer;
+function TManagerObjects.Count: Integer;
 begin
   Result := FObjects.Count;
 end;
