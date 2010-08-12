@@ -1,7 +1,7 @@
 object SearchForm: TSearchForm
   Left = 291
   Top = 173
-  Width = 824
+  Width = 821
   Height = 678
   ActiveControl = ShowDateOptionsLink
   Caption = 'Search'
@@ -22,6 +22,9 @@ object SearchForm: TSearchForm
   OnDeactivate = FormDeactivate
   OnResize = FormResize
   OnShow = FormShow
+  DesignSize = (
+    805
+    640)
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
@@ -923,7 +926,7 @@ object SearchForm: TSearchForm
     Tag = 1
     Left = 153
     Top = 25
-    Width = 655
+    Width = 652
     Height = 615
     Align = alClient
     BevelInner = bvRaised
@@ -1109,24 +1112,24 @@ object SearchForm: TSearchForm
   object CoolBar1: TCoolBar
     Left = 0
     Top = 0
-    Width = 808
+    Width = 805
     Height = 25
     AutoSize = True
     Bands = <
       item
-        Control = ToolBar1
+        Control = TbMain
         ImageIndex = -1
         MinHeight = 21
-        Width = 804
+        Width = 801
       end>
-    object ToolBar1: TToolBar
+    object TbMain: TToolBar
       Left = 9
       Top = 0
-      Width = 791
+      Width = 788
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 57
-      Caption = 'ToolBar1'
+      Caption = 'TbMain'
       EdgeBorders = []
       List = True
       TabOrder = 0
@@ -1253,6 +1256,18 @@ object SearchForm: TSearchForm
         OnClick = ToolButton12Click
       end
     end
+  end
+  object LsData: TLoadingSign
+    Left = 767
+    Top = 150
+    Width = 16
+    Height = 16
+    Visible = False
+    Active = True
+    FillPercent = 50
+    Color = clBtnFace
+    ParentColor = False
+    Anchors = [akTop, akRight]
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False

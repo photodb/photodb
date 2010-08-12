@@ -72,6 +72,7 @@ type
     procedure DoSetSearchByComparing;
     procedure GetFilter(Params : TDBQueryParams; Attr : Integer);
     procedure GetPassForFile;
+    procedure StartLoadingList;
   protected
     RatingParam, LastMonth, LastYear, LastRating : integer;
     LastChar : Char;
@@ -1005,7 +1006,7 @@ begin
   begin
    if fPictureSize=ThImageSize then
    if Assigned(FOnDone) then FOnDone(self);
-   (ThreadForm as TSearchForm).tbStopOperation.Enabled:=false;
+   (ThreadForm as TSearchForm).StopLoadingList;
    //TODO:!!!if (ThreadForm as TSearchForm).SearchByCompating then
    //TODO:!!!begin
    //TODO:!!! (ThreadForm as TSearchForm).Decremect1.Checked:=true;
@@ -1196,6 +1197,7 @@ var
   end;
 
 begin
+  Synchronize(StartLoadingList);
   FWorkQuery := GetQuery;
   try
     QueryParams := CreateQuery;
@@ -1246,6 +1248,11 @@ procedure SearchThread.SendDataPacketToForm;
 begin
   (ThreadForm as TSearchForm).LoadDataPacket(FData);
   FData.Clear;
+end;
+
+procedure SearchThread.StartLoadingList;
+begin
+  (ThreadForm as TSearchForm).StartLoadingList;
 end;
 
 end.

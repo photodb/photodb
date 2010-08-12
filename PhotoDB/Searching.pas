@@ -17,7 +17,7 @@ uses
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources,
-  MPCommonObjects, ADODB, DBLoading, LoadingSign;
+  MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar;
 
 type
   TDateRange = record
@@ -170,7 +170,7 @@ type
     ComboBoxSearchGroups: TComboBoxExDB;
     SearchEdit: TComboBoxExDB;
     CoolBar1: TCoolBar;
-    ToolBar1: TToolBar;
+    TbMain: TToolBar;
     ToolButton1: TToolButton;
     ToolBarImageList: TImageList;
     ToolButton2: TToolButton;
@@ -194,6 +194,7 @@ type
     elvDateRange: TEasyListview;
     dblDate: TDBLoading;
     lsDate: TLoadingSign;
+    LsData: TLoadingSign;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure Additem_(sender: TObject; Name_ : String; tag : integer );
@@ -452,6 +453,7 @@ type
     FPictureSize : Integer;
     FSearchByCompating : Boolean;
     FFillListInfo : TListFillInfo;
+    FW7TaskBar : ITaskbarList3;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
     function GetDateFilter : TDateRange; 
@@ -483,6 +485,8 @@ type
     procedure LoadQueryList;
     procedure LoadDataPacket(Packet : TSearchRecordArray);
     procedure EmptyFillListInfo;
+    procedure StartLoadingList;    
+    procedure StopLoadingList;
   published
     { Public declarations }
     property SortMethod : Integer read GetSortMethod;
@@ -763,15 +767,16 @@ begin
 
  TW.I.Start('S -> LoadToolBarIcons');
  LoadToolBarIcons;
- ToolBar1.ShowCaptions := True;
- ToolBar1.AutoSize := True;
+ TbMain.ShowCaptions := True;
+ TbMain.AutoSize := True;
 
  TW.I.Start('S -> RequaredDBKernelIcons');
  TLoad.Instance.RequaredDBKernelIcons;
  Image3.Picture.Graphic:=TIcon.Create;
  DBkernel.ImageList.GetIcon(DB_IC_GROUPS,Image3.Picture.Icon);
 
- TW.I.Start('S -> Create - END');
+  TW.I.Start('S -> Create - END');
+  FW7TaskBar := CreateTaskBarInstance;
 end;
 
 procedure TSearchForm.ListViewContextPopup(Sender: TObject; MousePos: TPoint;
@@ -4334,8 +4339,8 @@ begin
   ToolButton12.ImageIndex:=7;
   tbStopOperation.ImageIndex:=8;
 
-  ToolBar1.Images := ToolBarImageList;
-  ToolBar1.DisabledImages:= DisabledToolBarImageList;
+  TbMain.Images := ToolBarImageList;
+  TbMain.DisabledImages:= DisabledToolBarImageList;
 end;
 
 procedure TSearchForm.ZoomIn;
@@ -5340,9 +5345,28 @@ end;
 procedure TSearchForm.dblDateDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := Theme_ListColor;  
+  Buffer.Canvas.Pen.Color := Theme_ListColor;
   Buffer.Canvas.Brush.Color := Theme_ListColor;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
+end;
+
+procedure TSearchForm.StartLoadingList;
+begin
+  LsData.BringToFront;
+  LsData.Top := ListView.Top + 3;
+  LsData.Left := ListView.Left + ListView.Width - 16 - 2 - 3 - GetSystemMetrics(SM_CXVSCROLL);
+  LsData.Show;
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
+
+end;
+
+procedure TSearchForm.StopLoadingList;
+begin
+  LsData.Hide;
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
+  tbStopOperation.Enabled := False;
 end;
 
 initialization
