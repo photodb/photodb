@@ -103,7 +103,7 @@ var
     DelQuery : TDataSet;
   begin
    DelQuery := GetQuery;
-   SetSQL(DelQuery,'DELETE FROM '+GetDefDBName+' WHERE ID = '+IntToStr(ID));
+   SetSQL(DelQuery,'DELETE FROM $DB$ WHERE ID = '+IntToStr(ID));
    try
     ExecSQL(DelQuery);
    except
@@ -140,7 +140,7 @@ begin
  Locked:=false;
  TerminatingOptimizeDublicates:=false;
  Table := GetQuery;
- SetSQL(Table,'Select ID, StrTh, FFileName, Name From '+GetDefDBName+' ORDER BY ID');
+ SetSQL(Table,'Select ID, StrTh, FFileName, Name From $DB$ ORDER BY ID');
  try
   Table.Active:=true;
   RecordCount:=CommonDBSupport.GetRecordsCount(dbname);
@@ -168,8 +168,8 @@ begin
   paramno:=0;
   if (GetDBType(dbname)=DB_TYPE_MDB) then
   begin
-   if WideSearch then FromDB:=GetDefDBname else
-   FromDB:='(Select * from '+GetDefDBname+' where StrThCrc=:StrThCrc)';
+   if WideSearch then FromDB:='$DB$' else
+   FromDB:='(Select * from $DB$ where StrThCrc=:StrThCrc)';
 
    SetSQL(Query,'SELECT * FROM '+FromDB+' WHERE StrTh = :StrTh ORDER BY ID');
    SetIntParam(Query,nextparam,StringCRC(Table.FieldByName('StrTh').AsString));
@@ -177,7 +177,7 @@ begin
    SetStrParam(Query,nextparam,Table.FieldByName('StrTh').AsString);
   end else
   begin
-   SetSQL(Query,'SELECT * FROM '+GetDefDBname+' WHERE StrTh = :StrTh ORDER BY ID');
+   SetSQL(Query,'SELECT * FROM $DB$ WHERE StrTh = :StrTh ORDER BY ID');
    SetStrParam(Query,nextparam,Table.FieldByName('StrTh').AsString);
   end;
 
@@ -366,7 +366,7 @@ begin
   SetStr:=SetStr+'FolderCRC=:FolderCRC';
 
   SetQuery:=GetQuery;
-  SQLText:='Update '+GetDefDBname+' Set '+SetStr+' Where ID = '+IntToStr(ID);
+  SQLText:='Update $DB$ Set '+SetStr+' Where ID = '+IntToStr(ID);
   SetSQL(SetQuery,SQLText);
 
   SetStrParam(SetQuery,nextparam,AnsiLowerCase(FileName));

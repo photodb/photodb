@@ -120,7 +120,7 @@ var
 begin
 
   FTable:=GetQuery;
-  SetSQL(FTable,'Select ID, Access, KeyWords from '+GetDefDBName+' order by ID desc');
+  SetSQL(FTable,'Select ID, Access, KeyWords from $DB$ order by ID desc');
 
  ProgressForm:=GetProgressWindow;
  ProgressForm.OneOperation:=true;

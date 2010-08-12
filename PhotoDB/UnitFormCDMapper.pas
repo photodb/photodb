@@ -232,7 +232,7 @@ begin
   if CD<>nil then
   begin
    DS:=GetQuery;
-   SetSQL(DS,'Select ID,FFileName from '+GetDefDBName+' where FFileName Like "%::'+AnsiLowerCase(PCDClass(CDMappingListView.Selected.Data).Name)+'::%"');
+   SetSQL(DS,'Select ID,FFileName from $DB$ where FFileName Like "%::'+AnsiLowerCase(PCDClass(CDMappingListView.Selected.Data).Name)+'::%"');
 
    try
     DS.Open;

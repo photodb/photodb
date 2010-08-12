@@ -17,7 +17,7 @@ uses
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
   uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils, uListViewUtils, uDBDrawing;
+  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -621,7 +621,8 @@ type
      DefaultSort : integer;
      DirectoryWatcher : TWachDirectoryClass;
      FShellTreeView : TShellTreeView;
-     FGoToLastSavedPath : Boolean;
+     FGoToLastSavedPath : Boolean;   
+     FW7TaskBar : ITaskbarList3;
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
@@ -998,6 +999,7 @@ begin
     DBkernel.WriteString('Explorer','Patch',NewPath);
     DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
   end;
+  FW7TaskBar := CreateTaskBarInstance;
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
@@ -1631,7 +1633,7 @@ begin
    DS:=GetQuery;
    Folder:=fFilesInfo[PmItemPopup.tag].FileName;
    FormatDir(Folder);
-   SetSQL(DS,'Select count(*) as CountField from '+GetDefDBName+' where (FFileName Like :FolderA)');
+   SetSQL(DS,'Select count(*) as CountField from $DB$ where (FFileName Like :FolderA)');
    SetStrParam(DS,0,normalizeDBStringLike('%'+Folder+'%'));
    DS.Open;
    if DS.FieldByName('CountField').AsInteger=0 then
@@ -2178,31 +2180,34 @@ begin
  end;
 end;
 
-procedure TExplorerForm.BeginUpdate();
+procedure TExplorerForm.BeginUpdate;
 begin
-  If not UpdatingList then
-  if ListView1<>nil then
+  if not UpdatingList then
   begin
-   ListView1.Groups[0].Visible:=false;
-   ListView1.Cursor:=CrHourGlass;
-   UpdatingList:=True;
-   ListView1.BeginUpdate;
+    ListView1.Groups[0].Visible:=false;
+    ListView1.Cursor:=CrHourGlass;
+    UpdatingList:=True;
+    ListView1.BeginUpdate;
   end;
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;
 
-procedure TExplorerForm.EndUpdate();
+procedure TExplorerForm.EndUpdate;
 begin
   if UpdatingList then
   begin
-   ListView1.EndUpdate;
-   ListView1.Groups[0].Visible := True;
-   ListView1.Groups.EndUpdate(true);
-   ListView1.Realign;
-   ListView1.Repaint;
-   ListView1.Cursor:=CrDefault;
-   ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
-   UpdatingList:=false;
-  end;
+    ListView1.EndUpdate;
+    ListView1.Groups[0].Visible := True;
+    ListView1.Groups.EndUpdate(true);
+    ListView1.Realign;
+    ListView1.Repaint;
+    ListView1.Cursor:=CrDefault;
+    ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options', 'UseHotSelect', True);
+    UpdatingList := False;
+  end;      
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
 end;
 
 procedure TExplorerForm.Open1Click(Sender: TObject);
@@ -7142,7 +7147,7 @@ begin
  Query:=GetQuery;
  Folder:=GetCurrentPath;
  FormatDir(Folder);
- SetSQL(Query,'Select count(*) as CountField From '+GetDefDBname+' where (FFileName Like :FolderA)');
+ SetSQL(Query,'Select count(*) as CountField From $DB$ where (FFileName Like :FolderA)');
  SetStrParam(Query,0,'%'+Folder+normalizeDBStringLike('%\%'));
  Query.Open;
  if Query.FieldByName('CountField').AsInteger>0 then

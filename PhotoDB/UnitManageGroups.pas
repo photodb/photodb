@@ -279,7 +279,7 @@ begin
   With SearchManager.NewSearch do
   begin
    SearchEdit.Text:=':Group('+Groups[(Sender As TmenuItem).Owner.Tag].GroupName+'):';
-   Button1.OnClick(Sender);
+   WlStartStop.OnClick(Sender);
    Show;
   end;
   Close;

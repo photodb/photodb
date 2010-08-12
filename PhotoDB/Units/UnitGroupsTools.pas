@@ -91,7 +91,7 @@ begin
  if GetDBType=DB_TYPE_MDB then
  begin
   Table:=GetQuery;
-  SetSQL(Table,'Select ID, Groups from '+GetDefDBname);
+  SetSQL(Table,'Select ID, Groups from $DB$');
  end;
 
  ProgressWindow := GetProgressWindow;
@@ -111,7 +111,7 @@ begin
    begin
     UnitGroupsWork.ReplaceGroups(sGroupToDelete,sGroupToAdd,Groups);
     FQuery:=GetQuery;
-    SetSQL(FQuery,'UPDATE '+GetDefDBname+' SET Groups=:Groups where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
+    SetSQL(FQuery,'UPDATE $DB$ SET Groups=:Groups where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
     SetStrParam(FQuery,0,Groups);
     ExecSQL(FQuery);
     FreeDS(FQuery);
@@ -152,7 +152,7 @@ begin
  if GetDBType=DB_TYPE_MDB then
  begin
   Table:=GetQuery;
-  SetSQL(Table,'Select ID, Groups from '+GetDefDBname);
+  SetSQL(Table,'Select ID, Groups from $DB$');
  end;
 
  ProgressWindow := GetProgressWindow;
@@ -174,13 +174,13 @@ begin
     if GetDBType=DB_TYPE_MDB then
     begin
      FQuery:=GetQuery;
-     SetSQL(FQuery,'UPDATE '+GetDefDBname+' SET Groups=:Groups where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
+     SetSQL(FQuery,'UPDATE $DB$ SET Groups=:Groups where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
      SetStrParam(FQuery,0,Groups);
      ExecSQL(FQuery);
     end;
 
     //checking
-    SetSQL(FQuery,'Select Groups from '+GetDefDBname+' where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
+    SetSQL(FQuery,'Select Groups from $DB$ where ID='+IntToStr(Table.FieldByName('ID').AsInteger));
     FQuery.Open;
     if Groups<>FQuery.FieldByName('Groups').AsString then
     MessageBoxDB(GetActiveFormHandle,Format(TEXT_MES_ERROR_MOVING_GROUP_F,[GroupToMove.GroupName,GroupToMove.GroupCode,IntoGroup.GroupName,IntoGroup.GroupCode]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);

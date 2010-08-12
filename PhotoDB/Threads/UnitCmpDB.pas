@@ -263,10 +263,10 @@ begin
   StrTh:=FSourceTable.FieldByName('StrTh').AsString;
 
   if GetDBType=DB_TYPE_MDB then
-  FromDB:='(Select * from '+ GetDefDBname + ' Where StrThCrc = '+IntToStr(Integer(StringCRC(StrTh)))+')' else
-  FromDB:=GetDefDBname;
+  FromDB:='(Select * from $DB$ Where StrThCrc = '+IntToStr(Integer(StringCRC(StrTh)))+')' else
+  FromDB:='$DB$';
 
-  SetSQL(FQuery,'Select * from '+ GetDefDBname + ' Where StrTh = :StrTh');
+  SetSQL(FQuery,'Select * from $DB$ Where StrTh = :StrTh');
   SetStrParam(FQuery,0,StrTh);
   FQuery.Open;
   Updated:=false;
@@ -283,7 +283,7 @@ begin
     if Length(IDinfo.IDs)>0 then
     begin
      FQuery.Active:=false;
-     _sqlexectext:='Select * from '+ GetDefDBName + ' Where ID in (';
+     _sqlexectext:='Select * from $DB$ Where ID in (';
      s:='';
      for i:=0 to Length(IDinfo.IDs)-1 do
      begin
@@ -365,7 +365,7 @@ begin
       res:=AddWordsA( KeyWords_, KeyWords);
       if res then
       begin
-       _sqlexectext:='Update '+GetDefDBname;
+       _sqlexectext:='Update $DB$';
        _sqlexectext:=_sqlexectext+ ' Set KeyWords="'+KeyWords+'"';
        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger);
        post(_sqlexectext);
@@ -391,7 +391,7 @@ begin
       AddGroupsToGroups(Groups_,Groups);
       if not CompareGroups(OldGroups,Groups_) then
       begin
-       _sqlexectext:='Update '+GetDefDBname;
+       _sqlexectext:='Update $DB$';
        _sqlexectext:=_sqlexectext+ ' Set Groups="'+Groups_+'"';
        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
        post(_sqlexectext);
@@ -406,7 +406,7 @@ begin
       if (FQuery.fieldByName('Rotated').AsInteger=0) and
       (FSourceTable.fieldByName('Rotated').AsInteger>0) then
       begin
-       _sqlexectext:='Update '+GetDefDBname;
+       _sqlexectext:='Update $DB$';
        _sqlexectext:=_sqlexectext+ ' Set Rotated='+inttostr(FSourceTable.fieldByName('Rotated').AsInteger)+'';
        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
        post(_sqlexectext);
@@ -421,7 +421,7 @@ begin
       if (FQuery.fieldByName('Rating').AsInteger=0) and
       (FSourceTable.fieldByName('Rating').AsInteger>0) then
       begin
-       _sqlexectext:='Update '+GetDefDBname;
+       _sqlexectext:='Update $DB$';
        _sqlexectext:=_sqlexectext+ ' Set Rating='+inttostr(FSourceTable.fieldByName('Rating').AsInteger)+'';
        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
        post(_sqlexectext);
@@ -436,7 +436,7 @@ begin
       if (FQuery.fieldByName('IsDate').AsBoolean=False) and
       (FSourceTable.fieldByName('IsDate').AsBoolean=True) then
       begin
-       _sqlexectext:='Update '+GetDefDBname;
+       _sqlexectext:='Update $DB$';
        _sqlexectext:=_sqlexectext+ ' Set IsDate=:IsDate, DateToAdd=:DateToAdd';
        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
        FPostQuery:=GetQuery;
@@ -472,7 +472,7 @@ begin
       end;
       if res then
       begin
-       _sqlexectext:='Update '+GetDefDBname;
+       _sqlexectext:='Update $DB$';
        _sqlexectext:=_sqlexectext+ ' Set Comment ="'+NormalizeDBString(r)+'"';
        _sqlexectext:=_sqlexectext+ ' Where ID = '+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
        post(_sqlexectext);
@@ -500,7 +500,7 @@ begin
        end;
        if res then
        begin
-        _sqlexectext:='Update '+GetDefDBname;
+        _sqlexectext:='Update $DB$';
         _sqlexectext:=_sqlexectext+ ' Set Links ="'+NormalizeDBString(CodeLinksInfo(DLinks))+'"';
         _sqlexectext:=_sqlexectext+ ' Where ID = '+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
         post(_sqlexectext);

@@ -363,7 +363,7 @@ begin
  Query := GetQuery;
  try
   Query.Active:=false;
-  SetSQL(Query,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
+  SetSQL(Query,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
   SetStrParam(Query,0,delnakl(AnsiLowerCase(FFileName)));
   Query.active:=true;
   if Query.RecordCount<>0 then

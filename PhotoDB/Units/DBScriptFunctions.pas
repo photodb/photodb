@@ -141,7 +141,7 @@ begin
  fQuery:=GetQuery;
  fQuery.Active:=false;
  FileName:=NormalizeDBString(AnsiLowerCase(FileName));
- SetSQL(fQuery,'Update '+GetDefDBname+' Set FFileName="'+FileName+'" WHERE ID='+inttostr(ID));
+ SetSQL(fQuery,'Update $DB$ Set FFileName="'+FileName+'" WHERE ID='+inttostr(ID));
  try
   ExecSQL(fQuery);
  except

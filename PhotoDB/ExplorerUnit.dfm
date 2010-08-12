@@ -1,5 +1,5 @@
 object ExplorerForm: TExplorerForm
-  Left = 146
+  Left = 118
   Top = 81
   Width = 878
   Height = 647

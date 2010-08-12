@@ -166,7 +166,7 @@ begin
   mdbfields:=',FolderCRC,StrThCRC';       //
   mdbvalues:=',:FolderCRC,:StrThCRC';         //
  end;
- sql:='insert into '+GetDefDBname;
+ sql:='insert into $DB$';
  sql:=sql+' (Name,FFileName,FileSize,DateToAdd,Thum,StrTh,KeyWords,Owner,Collection,Access,Width,Height,Comment,Attr,Rotated,Rating,IsDate,Include,aTime,IsTime,Links,Groups'+mdbfields+') ';
  sql:=sql+' values (:Name,:FFileName,:FileSize,:DateToAdd,:Thum,:StrTh,:KeyWords,:Owner,:Collection,:Access,:Width,:Height,:Comment,:Attr,:Rotated,:Rating,:IsDate,:Include,:aTime,:IsTime,:Links,:Groups'+mdbvalues+') ';
  SetSQL(fQuery,sql);
@@ -238,8 +238,8 @@ begin
    if LastInseredID=0 then
    begin
     if GetDBType=DB_TYPE_MDB then
-    SetSQL(fQuery,Format('Select ID from (Select * from %s where FolderCRC=%d) where FFileName like :FFileName',[GetDefDBname,Integer(crc)])) else
-    SetSQL(fQuery,Format('Select ID from %s where FFileName like :FFileName',[GetDefDBname]));
+    SetSQL(fQuery,Format('Select ID from (Select * from $DB$ where FolderCRC=%d) where FFileName like :FFileName',[Integer(crc)])) else
+    SetSQL(fQuery,Format('Select ID from $DB$ where FFileName like :FFileName',[]));
     SetStrParam(fQuery,0,Delnakl(normalizeDBStringLike(NormalizeDBString(AnsiLowerCase(Path)))));
     try
      fQuery.Open;
@@ -274,7 +274,7 @@ var
  Function GetRecordsCount : integer;
  begin
    DemoTable:=GetQuery(dbname);
-   SetSQL(DemoTable,'Select Count(*) as CountOfRecs from '+GetDefDBname);
+   SetSQL(DemoTable,'Select Count(*) as CountOfRecs from $DB$');
    DemoTable.Open;
    Result:=Demotable.FieldByName('CountOfRecs').AsInteger;
    FreeDS(Demotable);
@@ -397,7 +397,7 @@ begin
     begin
      AddFileToDB;
      fQuery:=GetQuery;
-     SetSQL(fQuery,'Update '+GetDefDBname+' Set Attr=:Attr Where StrTh=:s');
+     SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
      SetIntParam(fQuery,0,db_attr_dublicate);
      SetStrParam(fQuery,1,Res.ImTh);
      try
@@ -420,7 +420,7 @@ begin
       UpdateMovedDBRecord(IntIDResult,FFiles[FileNumber]);
       DoEventReplace(IntIDResult,FFiles[FileNumber]);
       fQuery:=GetQuery;
-      SetSQL(fQuery,'DELETE FROM '+GetDefDBname+' WHERE StrTh=:s and ID<>:ID');
+      SetSQL(fQuery,'DELETE FROM $DB$ WHERE StrTh=:s and ID<>:ID');
       SetStrParam(fQuery,0,Res.ImTh);
       SetIntParam(fQuery,1,IntIDResult);
       try
@@ -453,7 +453,7 @@ begin
   begin
    AddFileToDB;
    fQuery:=GetQuery;
-   SetSQL(fQuery,'Update '+GetDefDBname+' Set Attr = :Attr Where StrTh = :s');
+   SetSQL(fQuery,'Update $DB$ Set Attr = :Attr Where StrTh = :s');
    SetIntParam(fQuery,0,db_attr_dublicate);
    SetStrParam(fQuery,1,Res.ImTh);
    try
@@ -530,7 +530,7 @@ begin
     begin
      AddFileToDB;
      fQuery:=GetQuery;
-     SetSQL(fQuery,'Update '+GetDefDBname+' Set Attr=:Attr Where StrTh=:s');
+     SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
      SetIntParam(fQuery,0,db_attr_dublicate);
      SetStrParam(fQuery,1,Res.ImTh);
      try
@@ -548,7 +548,7 @@ begin
      AutoAnswerSetted:=true;
      AddFileToDB;
      fQuery:=GetQuery;
-     SetSQL(fQuery,'Update '+GetDefDBname+' Set Attr=:Attr Where StrTh=:s');
+     SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
      SetIntParam(fQuery,0,db_attr_dublicate);
      SetStrParam(fQuery,1,Res.ImTh);
      try
@@ -579,7 +579,7 @@ begin
    begin
     AddFileToDB;
     fQuery:=GetQuery;
-    SetSQL(fQuery,'Update '+GetDefDBname+' Set Attr=:Attr Where StrTh=:s');
+    SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
     SetIntParam(fQuery,0,db_attr_dublicate);
     SetStrParam(fQuery,1,Res.ImTh);
     try

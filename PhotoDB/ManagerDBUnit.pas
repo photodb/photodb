@@ -508,10 +508,10 @@ begin
   try
     if RadioButton1.Checked then
     begin
-      SQL:='Update '+GetDefDBname+' Set '+CbSetField.Text+' = '+ValueToDBValue(CbSetField.Text,Edit2.Text);
+      SQL:='Update $DB$ Set '+CbSetField.Text+' = '+ValueToDBValue(CbSetField.Text,Edit2.Text);
     end else
     begin
-      SQL:='Delete from '+GetDefDBName;
+      SQL:='Delete from $DB$';
     end;
     SQL:=SQL+' Where ';
     SQL:=SQL+'('+CbWhereField1.Text+' '+CbOperatorWhere1.Text+' '+ValueToDBValue(CbWhereField1.Text,Edit3.Text)+')';
@@ -1014,7 +1014,7 @@ var
   B : Boolean;
   ItemData : TDBPopupMenuInfoRecord;
 begin
-  _sqlexectext := 'Select ID, FFileName, Rating, Comment, Rotated, Access, KeyWords, Groups, Links, DateToAdd, aTime, IsDate, IsTime, FileSize, Include from ' + GetDefDBName;
+  _sqlexectext := 'Select ID, FFileName, Rating, Comment, Rotated, Access, KeyWords, Groups, Links, DateToAdd, aTime, IsDate, IsTime, FileSize, Include from $DB$';
   _sqlexectext := _sqlexectext+' where ID in (';
 
   B := True;
@@ -1246,7 +1246,7 @@ begin
           ItemData.IsDate := IsDate;
           FQuery := GetQuery;
           try
-            SetSQL(FQuery,Format('Update ' + GetDefDBname + ' Set DateToAdd = :Date, aTime = :Time, IsTime = :IsTime, IsDate = :IsDate Where ID = %d', [ItemData.ID]));
+            SetSQL(FQuery,Format('Update $DB$ Set DateToAdd = :Date, aTime = :Time, IsTime = :IsTime, IsDate = :IsDate Where ID = %d', [ItemData.ID]));
             SetDateParam(FQuery, 'Date', Date);
             SetDateParam(FQuery, 'Time', Time);
             SetBoolParam(FQuery, 2, IsTime);
@@ -1368,7 +1368,7 @@ begin
   ItemData.Rating := NewRating;
   FQuery := GetQuery;
   try
-    SetSQL(FQuery,Format('Update ' + GetDefDBname + ' Set Rating = %d Where ID = %d', [NewRating, ItemData.ID]));
+    SetSQL(FQuery,Format('Update $DB$ Set Rating = %d Where ID = %d', [NewRating, ItemData.ID]));
     ExecSQL(FQuery);
   finally
     FreeDS(FQuery);
@@ -1388,7 +1388,7 @@ begin
   ItemData.Rotation := NewRotate;
   FQuery := GetQuery;  
   try
-    SetSQL(FQuery,Format('Update ' + GetDefDBname + ' Set Rotated = %d Where ID = %d', [NewRotate, ItemData.ID]));
+    SetSQL(FQuery,Format('Update $DB$ Set Rotated = %d Where ID = %d', [NewRotate, ItemData.ID]));
     ExecSQL(FQuery);
   finally
     FreeDS(FQuery);
@@ -1435,7 +1435,7 @@ begin
 
   Query := GetQuery;
   try
-    SetSQL(Query,'Update ' + GetDefDBName + ' SET KeyWords = :KeyWords, Groups = :KeyWords WHERE ID = :ID');
+    SetSQL(Query,'Update $DB$ SET KeyWords = :KeyWords, Groups = :KeyWords WHERE ID = :ID');
     SetStrParam(Query, 0, KeyWords);
     SetStrParam(Query, 1, G);
     SetIntParam(Query, 2, ItemData.ID);
@@ -1514,7 +1514,7 @@ begin
         Exit;
       end;
       try
-        SetSQL(DS,'Select FFileName, Thum from '+GetDefDBName+' WHERE ID = '+IntToStr(ItemData.ID));
+        SetSQL(DS,'Select FFileName, Thum from $DB$ WHERE ID = '+IntToStr(ItemData.ID));
         DS.Open;
       except
         ShowWindow(FormManagerHint.Handle, SW_HIDE);

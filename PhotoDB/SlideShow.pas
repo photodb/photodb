@@ -1284,7 +1284,7 @@ begin
  for i := 0 to List.Count-1 do
  begin
   FileName:=List[i];
-  SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
+  SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
   SetStrParam(fQuery,0,Delnakl(NormalizeDBStringLike(AnsiLowerCase(FileName))));
   fQuery.active:=true;
   if fQuery.RecordCount<>0 then
@@ -1356,7 +1356,7 @@ begin
   DS := GetQuery;
   try
     FileName := CurrentInfo.ItemFileNames[FileNo];
-    SetSQL(DS,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
+    SetSQL(DS,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
     SetStrParam(DS, 0, DelNakl(AnsiLowerCase(FileName)));
     DS.Active := True;
     if DS.RecordCount=0 then
@@ -2851,7 +2851,7 @@ begin
    fQuery:=GetQuery;
    try
      DeleteID:=CurrentInfo.ItemIds[CurrentFileNumber];
-     SQL_:=Format('DELETE FROM %s WHERE ID = %d', [GetDefDBname, CurrentInfo.ItemIds[CurrentFileNumber]]);
+     SQL_:=Format('DELETE FROM $DB$ WHERE ID = %d', [CurrentInfo.ItemIds[CurrentFileNumber]]);
      SetSQL(fQuery,SQL_);
      ExecSQL(fQuery);
    finally

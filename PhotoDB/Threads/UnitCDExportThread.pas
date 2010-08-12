@@ -223,7 +223,7 @@ begin
    UnformatDir(Directory);
    CalcStringCRC32(AnsiLowerCase(Directory),crc);
 
-   SetSQL(DS,'Update '+GetDefDBName+' Set FFileName = :FileName, FolderCRC = :FolderCRC Where ID = :ID');
+   SetSQL(DS,'Update $DB$ Set FFileName = :FileName, FolderCRC = :FolderCRC Where ID = :ID');
    SetStrParam(DS,0,DBRemapping[i].FileName);
    SetIntParam(DS,1,Integer(Crc));
    SetIntParam(DS,2,DBRemapping[i].ID);
@@ -288,7 +288,7 @@ begin
 
      CalcStringCRC32(AnsiLowerCase(Directory),crc);
 
-     SetSQL(DS,'Select * from '+GetDefDBName+'  Where ID = :ID');
+     SetSQL(DS,'Select * from $DB$  Where ID = :ID');
      SetIntParam(DS,0,DBRemapping[i].ID);
      try
       DS.Open;

@@ -278,7 +278,8 @@ uses
   uDBImages in 'Units\uDBImages.pas',
   uList64 in 'Units\uList64.pas',
   uThreadLoadingManagerDB in 'Threads\uThreadLoadingManagerDB.pas',
-  uW7TaskBar in 'Units\uW7TaskBar.pas';
+  uW7TaskBar in 'Units\uW7TaskBar.pas',
+  uDBHint in 'Units\uDBHint.pas';
 
 {$R *.res}
 

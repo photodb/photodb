@@ -3,12 +3,11 @@ unit uW7TaskBar;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, AppEvnts, StdCtrls, ComCtrls, ComObj, ShlObj, ActiveX;
+  Windows, ComObj, ShlObj, ActiveX;
 
 const
   CLSID_TaskbarList: TGUID = '{56fdf344-fd6d-11d0-958a-006097c9a090}';
-  IID_ITaskbarList: TGUID = '{56FDF342-FD6D-11d0-958A-006097C9A090}';
+  IID_ITaskbarList : TGUID = '{56FDF342-FD6D-11d0-958A-006097C9A090}';
   IID_ITaskbarList2: TGUID = '{602D4995-B13A-429b-A66E-1935E44F4317}';
   IID_ITaskbarList3: TGUID = '{ea1afb91-9e28-4b86-90e9-9e9f8a5eefaf}';
 

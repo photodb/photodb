@@ -551,7 +551,7 @@ begin
  idlabel.text:=inttostr(id);
  CommentMemo.Cursor:=CrDefault;
  CommentMemo.PopupMenu:=nil;
- SetSQL(WorkQuery,'SELECT * FROM '+GetDefDBName+' WHERE ID='+inttostr(ID));
+ SetSQL(WorkQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(ID));
  WorkQuery.Active:=true;
  WorkQuery.First;
  if WorkQuery.RecordCount=0 then no_file:=true;
@@ -953,7 +953,7 @@ begin
 
   if ReadCHInclude then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set Include = :Include Where ID in (';
+   _sqlexectext:='Update $DB$ Set Include = :Include Where ID in (';
    for I := 0 to FFilesInfo.Count - 1 do
      if i=0 then
        _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' '
@@ -973,7 +973,7 @@ begin
 
   if not Rating1.Islayered then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set Rating = :Rating Where ID in (';
+   _sqlexectext:='Update $DB$ Set Rating = :Rating Where ID in (';
    for I := 0 to FFilesInfo.Count - 1 do
    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
@@ -1017,7 +1017,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update '+GetDefDBName+' Set KeyWords = "'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set KeyWords = "'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
@@ -1058,7 +1058,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update '+GetDefDBName+' Set Groups = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set Groups = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
     WorkQuery.Close;
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
@@ -1098,7 +1098,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update '+GetDefDBName+' Set Links = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set Links = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
    end;
@@ -1112,7 +1112,7 @@ begin
   begin
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
-   _sqlexectext:='Update '+GetDefDBName+' Set Comment = "'+normalizeDBString(CommentMemo.Text)+'" Where ID in (';
+   _sqlexectext:='Update $DB$ Set Comment = "'+normalizeDBString(CommentMemo.Text)+'" Where ID in (';
    for I := 0 to FFilesInfo.Count - 1 do
    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
@@ -1136,7 +1136,7 @@ begin
    FQuery := GetQuery;
    if IsDatePanel.Visible then
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set IsDate = :IsDate Where ';
+    _sqlexectext:='Update $DB$ Set IsDate = :IsDate Where ';
     for I := 0 to FFilesInfo.Count - 1 do
     if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
     _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
@@ -1150,7 +1150,7 @@ begin
     DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
    end else
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (';
+    _sqlexectext:='Update $DB$ Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (';
     for I := 0 to FFilesInfo.Count - 1 do
     if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
     _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
@@ -1174,7 +1174,7 @@ begin
   begin
    if IsTimePanel.Visible then
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set IsTime = :IsTime Where ID in (';
+    _sqlexectext:='Update $DB$ Set IsTime = :IsTime Where ID in (';
     for I := 0 to FFilesInfo.Count - 1 do
     if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
     _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
@@ -1188,7 +1188,7 @@ begin
     DBKernel.DoIDEvent(Sender,FFilesInfo[I].ID,[EventID_Param_IsTime],EventInfo);
    end else
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set aTime = :aTime, IsTime = True Where ID in (';
+    _sqlexectext:='Update $DB$ Set aTime = :aTime, IsTime = True Where ID in (';
     for I := 0 to FFilesInfo.Count - 1 do
     if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
     _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
@@ -1226,7 +1226,7 @@ begin
 
  if FShowInfoType=SHOW_INFO_ID then
  begin
-  _sqlexectext:='Update '+GetDefDBName;
+  _sqlexectext:='Update $DB$';
   _sqlexectext:=_sqlexectext+' set Comment="'+normalizeDBString(CommentMemo.text)+'" , KeyWords="'+normalizeDBString(KeyWordsMemo.text)+'" , Rating = ' + inttostr(Rating1.Rating)+' , Owner = "'+normalizeDBString(OwnerMemo.text)+'" , Collection = "'+normalizeDBString(CollectionMemo.text)+'", DateToAdd = :Date, IsDate = :IsDate, Groups = "'+NormalizeDBString(CodeGroups(FNowGroups))+'", Include = :Include, Links = "'+NormalizeDBString(CodeLinksInfo(FPropertyLinks))+'", aTime = :aTime , IsTime = :IsTime';
   _sqlexectext:=_sqlexectext+ ' Where ID=:ID';
   WorkQuery.active:=false;
@@ -1686,7 +1686,7 @@ begin
 
 
   FirstID:=True;
-  SQL:='Select ID, FFileName, Comment, Owner, Collection, Rotated, Access, Rating, DateToAdd, aTime, IsDate, IsTime, Groups, FileSize, KeyWords, Width, Height, Thum, Include, Links FROM '+GetDefDBName+' Where ID in (';
+  SQL:='Select ID, FFileName, Comment, Owner, Collection, Rotated, Access, Rating, DateToAdd, aTime, IsDate, IsTime, Groups, FileSize, KeyWords, Width, Height, Thum, Include, Links FROM $DB$ Where ID in (';
   for i:=1 to m do
   begin
    Dec(aLeft);
@@ -2998,7 +2998,7 @@ var
 begin
  NewSearch:=SearchManager.NewSearch;
  NewSearch.SearchEdit.Text:=':Group('+FNowGroups[PopupMenu9.Tag].GroupName+'):';
- NewSearch.Button1.OnClick(Sender);
+ NewSearch.WlStartStop.OnClick(Sender);
  NewSearch.Show;
 end;
 
@@ -3275,7 +3275,7 @@ begin
  LinksInfo[0].LinkValue:=CodeExtID(CurrentItemInfo.ItemImTh);
  ReplaceLinks('',CodeLinksInfo(LinksInfo),Info.ItemLinks);
  Query := GetQuery;
- SetSQL(Query,Format('UPDATE %s Set Links = :Links where ID = %d',[GetDefDBName,Info.ItemId]));
+ SetSQL(Query,Format('UPDATE $DB$ Set Links = :Links where ID = %d',[Info.ItemId]));
  SetStrParam(Query,0,Info.ItemLinks);
  ExecSQL(Query);
  FreeDS(Query);
@@ -3316,7 +3316,7 @@ begin
  LinksInfo[0].LinkValue:=CodeExtID(CurrentItemInfo.ItemImTh);
  ReplaceLinks('',CodeLinksInfo(LinksInfo),Info.ItemLinks);
  Query := GetQuery;
- SetSQL(Query,Format('UPDATE %s Set Links = :Links where ID = %d',[GetDefDBName,Info.ItemId]));
+ SetSQL(Query,Format('UPDATE $DB$ Set Links = :Links where ID = %d',[Info.ItemId]));
  SetStrParam(Query,0,Info.ItemLinks);
  ExecSQL(Query);
  FreeDS(Query);

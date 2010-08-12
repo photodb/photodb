@@ -1755,7 +1755,7 @@ begin
    s:=FileName;
   end;
   CalcStringCRC32(Folder,crc);
-  DBStr:='(Select * from '+GetDefDBName+' where FolderCRC='+inttostr(Integer(crc))+')';
+  DBStr:='(Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+')';
   CalcStringCRC32(AnsiLowerCase(s),crc);
   SetSQL(fQuery,'SELECT * FROM '+DBStr+' WHERE FFileName = :ffilename');
 
@@ -2238,7 +2238,7 @@ var
 begin     
   Result := nil;
  FQuery := GetQuery;
- SetSQL(FQuery,'SELECT * FROM '+GetDefDBname+' WHERE ID = :ID');
+ SetSQL(FQuery,'SELECT * FROM $DB$ WHERE ID = :ID');
  SetIntParam(FQuery,0,ID);
  FQuery.Open;
  if FQuery.RecordCount<>1 then
@@ -2266,8 +2266,8 @@ begin
   Result:=nil;
  FQuery := GetQuery;
  if GetDBType=DB_TYPE_MDB then
- FromDB:='(Select * from '+GetDefDBname+' where StrThCrc = '+IntToStr(Integer(StringCRC(StrTh)))+')';
- SetSQL(FQuery,'SELECT * FROM '+GetDefDBname+' WHERE StrTh = :StrTh');
+ FromDB:='(Select * from $DB$ where StrThCrc = '+IntToStr(Integer(StringCRC(StrTh)))+')';
+ SetSQL(FQuery,'SELECT * FROM $DB$ WHERE StrTh = :StrTh');
  SetStrParam(FQuery,0,StrTh);
  FQuery.Open;
  if FQuery.RecordCount<>1 then
@@ -2369,10 +2369,10 @@ begin
   UnFormatDir(DBFolder);
   CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
 
-  if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+  if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
   if FolderView then
   begin
-   SetSQL(FQuery,'Select * From '+GetDefDBname+' where FolderCRC = :crc');
+   SetSQL(FQuery,'Select * From $DB$ where FolderCRC = :crc');
    s:=DBFolder;
    Delete(s,1,Length(ProgramDir));
    UnformatDir(s);
@@ -2514,7 +2514,7 @@ begin
   begin
    Delete(DBFolder,1,Length(ProgramDir));
   end;
-  SetSQL(FQuery,'Select ID, FFileName From '+GetDefDBname+' where (FFileName Like :FolderA)');
+  SetSQL(FQuery,'Select ID, FFileName From $DB$ where (FFileName Like :FolderA)');
   SetStrParam(FQuery,0,'%'+DBFolder+'%');
 
   fQuery.Active:=true;
@@ -2557,7 +2557,7 @@ begin
        NewPath:=AnsiLowerCase(s+ExtractFileName(FQuery.FieldByName('FFileName').AsString));
       end;
       int:=integer(crc);                                                                                                                         
-      sql:='UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(NormalizeDBString(NewPath))+'" , FolderCRC = '+IntToStr(int)+' where ID = '+inttostr(fQuery.FieldByName('ID').AsInteger);
+      sql:='UPDATE $DB$ SET FFileName="'+AnsiLowerCase(NormalizeDBString(NewPath))+'" , FolderCRC = '+IntToStr(int)+' where ID = '+inttostr(fQuery.FieldByName('ID').AsInteger);
       SetSQL(SetQuery,sql);
      end;
      ExecSQL(SetQuery);
@@ -2668,7 +2668,7 @@ begin
     acrc:='';
    end;
    fQuery.Active:=false;
-   SetSQL(fQuery,'UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(NewFileName)+'", Name="'+ExtractFileName(NewFileName)+'" '+acrc+' WHERE (ID='+inttostr(ID)+')');
+   SetSQL(fQuery,'UPDATE $DB$ SET FFileName="'+AnsiLowerCase(NewFileName)+'", Name="'+ExtractFileName(NewFileName)+'" '+acrc+' WHERE (ID='+inttostr(ID)+')');
    if GetDBType=DB_TYPE_MDB then
    SetIntParam(fQuery,0,Integer(crc));
    ExecSQL(fQuery);
@@ -2727,7 +2727,7 @@ var
 begin
   fQuery:=GetQuery;
   fQuery.Active:=false;
-  SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
+  SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
   if FolderView then
   Delete(FileName,1,Length(ProgramDir));
   SetStrParam(fQuery,0,Delnakl(NormalizeDBStringLike(AnsiLowerCase(FileName))));
@@ -2750,7 +2750,7 @@ var
 begin
   fQuery:=GetQuery;
   fQuery.Active:=false;
-  SetSQL(fQuery,'SELECT FFileName FROM '+GetDefDBname+' WHERE ID = :ID');
+  SetSQL(fQuery,'SELECT FFileName FROM $DB$ WHERE ID = :ID');
   SetIntParam(fQuery,0,ID);
   try
    fQuery.active:=true;
@@ -2831,17 +2831,17 @@ end;
 
 procedure SetRotate(ID, Rotate: integer);
 begin
-  ExecuteQuery(Format('Update %s Set Rotated=%d Where ID=%d', [GetDefDBname, Rotate, ID]));
+  ExecuteQuery(Format('Update $DB$ Set Rotated=%d Where ID=%d', [Rotate, ID]));
 end;
 
 procedure SetAttr(ID, Attr: integer);
 begin
-  ExecuteQuery(Format('Update %s Set Attr=%d Where ID=%d', [GetDefDBname, Attr, ID]));
+  ExecuteQuery(Format('Update $DB$ Set Attr=%d Where ID=%d', [Attr, ID]));
 end;
 
 procedure SetRating(ID, Rating: integer);
 begin
-  ExecuteQuery(Format('Update %s Set Rating=%d Where ID=%d', [GetDefDBname, Rating, ID]));
+  ExecuteQuery(Format('Update $DB$ Set Rating=%d Where ID=%d', [Rating, ID]));
 end;
 
 procedure UpdateMovedDBRecord(ID : integer; FileName : string);
@@ -2850,7 +2850,7 @@ var
 begin
   MDBstr:=', FolderCRC = '+IntToStr(Integer(FilePathCRC(FileName)));
 
-  ExecuteQuery('UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(FileName)+'", Name ="'+ExtractFileName(FileName)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+')');
+  ExecuteQuery('UPDATE $DB$ SET FFileName="'+AnsiLowerCase(FileName)+'", Name ="'+ExtractFileName(FileName)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+')');
 end;
 
 procedure UpdateDeletedDBRecord(ID : integer; filename : string);
@@ -2869,7 +2869,7 @@ begin
    int:=Integer(crc);
    MDBstr:=', FolderCRC = '+IntToStr(int);
   end;
-  SetSQL(fQuery,'UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(filename)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+') AND (Attr='+inttostr(db_attr_not_exists)+')');
+  SetSQL(fQuery,'UPDATE $DB$ SET FFileName="'+AnsiLowerCase(filename)+'", Attr='+inttostr(db_access_none)+MDBstr+' WHERE (ID='+inttostr(ID)+') AND (Attr='+inttostr(db_attr_not_exists)+')');
   ExecSQL(fQuery);
  except
  end;
@@ -2899,8 +2899,8 @@ var
 begin
  fQuery:=GetQuery;
  if GetDBType=DB_TYPE_MDB then
- FromDB:='(Select ID, FFileName, Attr from '+GetDefDBname+' where StrThCrc = '+IntToStr(Integer(StringCRC(ImageTh)))+')' else
- FromDB:='SELECT ID, FFileName, Attr FROM '+GetDefDBname+' WHERE StrTh = :str ';
+ FromDB:='(Select ID, FFileName, Attr from $DB$ where StrThCrc = '+IntToStr(Integer(StringCRC(ImageTh)))+')' else
+ FromDB:='SELECT ID, FFileName, Attr FROM $DB$ WHERE StrTh = :str ';
 
  SetSQL(fQuery,FromDB);
  if GetDBType<>DB_TYPE_MDB then
@@ -2948,7 +2948,7 @@ begin
  fQuery:=GetQuery;
  fQuery.Active:=false;
 
- SetSQL(fQuery,'SELECT ID, FFileName, Attr, StrTh, Thum FROM '+GetDefDBname+' WHERE FFileName like :str ');
+ SetSQL(fQuery,'SELECT ID, FFileName, Attr, StrTh, Thum FROM $DB$ WHERE FFileName like :str ');
  s:=FileName;
  if FolderView then
  Delete(s,1,Length(ProgramDir));
@@ -3062,7 +3062,7 @@ begin
  sql:='';
  if GetDBType=DB_TYPE_MDB then
  begin
-  FromDB:='(SELECT ID, FFileName, Attr, StrTh FROM '+GetDefDBname+' WHERE ';
+  FromDB:='(SELECT ID, FFileName, Attr, StrTh FROM $DB$ WHERE ';
   for i:=1 to l do
   begin
    if i=1 then
@@ -3070,7 +3070,7 @@ begin
    sql:=sql+Format(' or (StrThCrc = :strcrc%d) ',[i]);
   end;
   FromDB:=FromDB+sql+')';
- end else FromDB:=GetDefDBname;
+ end else FromDB:='$DB$';
 
  sql:='SELECT ID, FFileName, Attr, StrTh FROM '+FromDB+' WHERE ';
 
@@ -3296,12 +3296,12 @@ end;
 
 procedure SetPrivate(ID: integer);
 begin             
-  ExecuteQuery(Format('Update %s Set Access=%d WHERE ID=%d', [GetDefDBname, db_access_private, ID]));
+  ExecuteQuery(Format('Update $DB$ Set Access=%d WHERE ID=%d', [db_access_private, ID]));
 end;
 
 procedure UnSetPrivate(ID: integer);
 begin
-  ExecuteQuery(Format('Update %s Set Access=%d WHERE ID=%d', [GetDefDBname, db_access_none, ID]));
+  ExecuteQuery(Format('Update $DB$ Set Access=%d WHERE ID=%d', [db_access_none, ID]));
 end;
 
 procedure CopyFilesToClipboard(FileList: string);
@@ -4020,7 +4020,7 @@ begin
  if not DBKernel.ReadBool('Options','CheckUpdateLinks',false) then exit;
  FQuery := GetQuery;
  OldImageThCode:=CodeExtID(OldImageTh);
- SetSQL(FQuery,'Select ID, Links from '+GetDefDBName+' where Links like "%'+OldImageThCode+'%"');
+ SetSQL(FQuery,'Select ID, Links from $DB$ where Links like "%'+OldImageThCode+'%"');
  try
   FQuery.Active:=true;
  except
@@ -4064,7 +4064,7 @@ begin
   for i:=0 to Length(IDs)-1 do
   begin
    Link:=CodeLinksInfo(info[i]);
-   SetSQL(Table,'Update '+GetDefDBName+' set Links="'+Link+'" where ID = '+IntToStr(IDs[i]));
+   SetSQL(Table,'Update $DB$ set Links="'+Link+'" where ID = '+IntToStr(IDs[i]));
    ExecSQL(Table);
   end;
 end;
@@ -4127,7 +4127,7 @@ begin
  if GetDBType=DB_TYPE_MDB then
  begin
    Table:=GetQuery;
-   SetSQL(Table,'Select StrTh,Attr from '+GetDefDBName+' where ID = '+IntToStr(ID));
+   SetSQL(Table,'Select StrTh,Attr from $DB$ where ID = '+IntToStr(ID));
    try
     Table.Open;
     OldImTh:=Table.FieldByName('StrTh').AsString;
@@ -4217,7 +4217,7 @@ begin
    end;
 
    if _SetSql[Length(_SetSql)]=',' then _SetSql:=Copy(_SetSql,1,Length(_SetSql)-1);
-    SetSQL(Table,'Update '+GetDefDBName+' Set '+_SetSql+' where ID = '+IntToStr(ID));
+    SetSQL(Table,'Update $DB$ Set '+_SetSql+' where ID = '+IntToStr(ID));
     if FolderView then
     Path:=folder+ExtractFilename(AnsiLowerCase(FileName)) else
     Path:=AnsiLowerCase(FileName);
@@ -5920,7 +5920,7 @@ var
 begin
  if not DBInDebug then exit;
  DS:=GetQuery;
- SetSQL(DS,'SELECT * FROM '+GetDefDBName+' WHERE id = '+IntToStr(ID));
+ SetSQL(DS,'SELECT * FROM $DB$ WHERE id = '+IntToStr(ID));
  DS.Open;
  s:='';
  for i:=0 to DS.Fields.Count-1 do

@@ -89,6 +89,7 @@ type
     BitmapParam : TBitmap;
     procedure Execute; override;
     procedure LoadImages;
+    procedure UpdateQueryEstimateCount;
     procedure SendDataPacketToForm;
   public
     constructor Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
@@ -175,7 +176,8 @@ begin
       FData.Free;
     end;
   finally
-    SynchronizeEx(DoOnDone);
+    if not FSearchParams.IsEstimate then
+      SynchronizeEx(DoOnDone);
   end;
 
   Exit;
@@ -571,6 +573,14 @@ const
    fields_names[fields_names_count]:=FieldName;
   end;
 
+  function FIELDS : string;
+  begin
+    if FSearchParams.IsEstimate then
+      Result := 'COUNT(*)'
+    else
+      Result := '*';
+  end;
+
 begin
   Result := TDBQueryParams.Create;
  QueryType:=QT_NONE;
@@ -595,7 +605,7 @@ begin
   begin
    systemquery:=true;
    QueryType:=QT_DELETED;
-   Result.Query:='SELECT * FROM '+GetDefDBName+' WHERE ';
+   Result.Query:= Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
    GetFilter(Result, db_attr_not_exists);
   end;
 
@@ -603,7 +613,7 @@ begin
   begin
    QueryType:=QT_DUBLICATES;
    SystemQuery:=true;
-   Result.Query:='SELECT * FROM '+GetDefDBName+' WHERE ';
+   Result.Query:= Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
    GetFilter(Result, db_attr_dublicate);
   end;
 
@@ -611,7 +621,7 @@ begin
   begin
    QueryType:=QT_GROUP;
    SystemQuery:=true;
-   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where (Groups like "'+GroupSearchByGroupName(Copy(sysaction,7,length(sysaction)-7))+'")';
    GetFilter(Result, db_attr_norm);
   end;
@@ -622,7 +632,7 @@ begin
    SystemQuery:=true;
    stemp:=Copy(sysaction,6,length(sysaction)-6);
    stemp:=NormalizeDBString(stemp);
-   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where (KeyWords like "%'+stemp+'%") or (Comment like "%'+stemp+'%") or (FFileName like "%'+stemp+'%")';
    GetFilter(Result, db_attr_norm);
   end;
@@ -633,7 +643,7 @@ begin
    SystemQuery:=true;
    stemp:=Copy(sysaction,6,length(sysaction)-6);
    stemp:=NormalizeDBString(stemp);
-   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where (FolderCRC = 0)';
    GetFilter(Result, db_attr_norm);
   end;
@@ -642,7 +652,7 @@ begin
   begin
    QueryType:=QT_ONE_TEXT;
    SystemQuery:=true;
-   Result.Query:='SELECT * FROM '+GetDefDBName;
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
   end;
 
@@ -651,16 +661,16 @@ begin
    QueryType:=QT_ONE_TEXT;
    SystemQuery:=true;
    fSpecQuery:=GetQuery;
-   Result.Query:='SELECT * FROM '+GetDefDBName;
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
 
-   SetSQL(fSpecQuery,'Update '+GetDefDBName+' Set Comment="" where Comment is null');
+   SetSQL(fSpecQuery,'Update $DB$ Set Comment="" where Comment is null');
    ExecSQL(fSpecQuery);
-   SetSQL(fSpecQuery,'Update '+GetDefDBName+' Set KeyWords="" where KeyWords is null');
+   SetSQL(fSpecQuery,'Update $DB$ Set KeyWords="" where KeyWords is null');
    ExecSQL(fSpecQuery);
-   SetSQL(fSpecQuery,'Update '+GetDefDBName+' Set Groups="" where Groups is null');
+   SetSQL(fSpecQuery,'Update $DB$ Set Groups="" where Groups is null');
    ExecSQL(fSpecQuery);
-   SetSQL(fSpecQuery,'Update '+GetDefDBName+' Set Links="" where Links is null');
+   SetSQL(fSpecQuery,'Update $DB$ Set Links="" where Links is null');
    ExecSQL(fSpecQuery);
    FreeDS(fSpecQuery);
   end;
@@ -672,7 +682,7 @@ begin
    stemp:='';
    for i:=1 to 200 do
    stemp:=stemp+'_';
-   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where not (StrTh like "'+stemp+'")';
    GetFilter(Result, db_attr_norm);
   end;
@@ -681,7 +691,7 @@ begin
   begin
    QueryType:=QT_ONE_TEXT;
    SystemQuery:=true;
-   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where (Links like "%[%]%{%}%;%" )';
    GetFilter(Result, db_attr_norm);
   end;
@@ -730,7 +740,7 @@ begin
    SystemQuery:=true;
    stemp:=Copy(sysaction,9,length(sysaction)-9);
    stemp:=NormalizeDBString(stemp);
-   Result.Query:='SELECT * FROM '+GetDefDBName+'';
+   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
    Result.Query:=Result.Query+' where (KeyWords like "%'+stemp+'%") ';
    GetFilter(Result, db_attr_norm);
   end;
@@ -744,7 +754,7 @@ begin
    UnFormatDir(Folder);
    Folder:=AnsiLowerCase(Folder);
 
-   if GetDBType=DB_TYPE_MDB then Result.Query:='Select * From (Select * from '+GetDefDBname+' where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)';
+   Result.Query:=Format('Select %s From (Select %s from $DB$ where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)', [FIELDS]);
 
    if not FSearchParams.ShowPrivate then Result.Query:=Result.Query+' and (Access<>'+inttostr(db_access_private)+')';
 
@@ -764,12 +774,12 @@ begin
 
 
    fSpecQuery := GetQuery;
-   SetSQL(fSpecQuery,'SELECT StrTh FROM '+GetDefDBname+' WHERE ID = '+IntToStr(id));
+   SetSQL(fSpecQuery,'SELECT StrTh FROM $DB$ WHERE ID = '+IntToStr(id));
    fSpecQuery.Open;
    StrTh:=fSpecQuery.FieldByName('StrTh').AsString;
    FreeDS(fSpecQuery);
 
-   Result.Query:='SELECT * FROM '+GetDefDBName+' WHERE StrTh = :str';
+   Result.Query:= Format('SELECT %s FROM $DB$ WHERE StrTh = :str', [FIELDS]);
 
    if not FSearchParams.ShowPrivate then Result.Query:=Result.Query+' and (Access<>'+inttostr(db_access_private)+')';
 
@@ -801,7 +811,7 @@ begin
    SetLength(IthIds,0);
    for j:=1 to n do
    begin
-    SQLText:='SELECT ID FROM '+GetDefDBName+' WHERE ';
+    SQLText:='SELECT ID FROM $DB$ WHERE ';
     m:=Math.Min(Left,Math.Min(L,AllocImThBy));
     fSpecQuery.Active:=false;
     for i:=1 to m do
@@ -826,7 +836,7 @@ begin
    end;
    FreeDS(fSpecQuery);
    first:=true;
-   Result.Query:='SELECT * FROM '+GetDefDBName+' Where (';
+   Result.Query:= Format('SELECT %s FROM $DB$ Where (', [FIELDS]);
    for i:=0 to Length(IthIds)-1 do
    begin
     if first then
@@ -937,13 +947,10 @@ begin
     end;
     sqltext:=sqltext+')';
 
-
-    Result.Query:='SELECT * FROM '+GetDefDBName;
-
-
+                           
+    Result.Query:= Format('SELECT %s FROM $DB$ ', [FIELDS]);
     Result.Query:=Result.Query+Format(' where %s and (%s)', [Format(' ((Rating >= %d) AND (Rating <= %d)) ',[FSearchParams.RatingFrom, FSearchParams.RatingTo]),
                                                       sqltext]);
-
 
     if FSearchParams.GroupName<>'' then
     Result.Query:=Result.Query+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
@@ -986,7 +993,7 @@ begin
      sqltext:=sqltext+' (ID='+s1+') OR';
     end;
     sqltext:=sqltext+' (ID=0))';
-    Result.Query:='SELECT * FROM '+GetDefDBName;
+    Result.Query:= Format('SELECT %s FROM $DB$ ', [FIELDS]);
     Result.Query:=Result.Query+' where ('+sqltext+')';
     
     if FSearchParams.GroupName<>'' then
@@ -1099,17 +1106,21 @@ begin
   if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
     SqlQuery := SqlQuery + ' and (Include=TRUE) ';
 
-  SortDirection := '';
-  if FSearchParams.SortDecrement then
-    SortDirection := ' DESC';
-    
-  case FSearchParams.SortMethod of
-    SM_TITLE :     Result := SqlQuery + ' ORDER BY Name'      + SortDirection;
-    SM_DATE_TIME : Result := SqlQuery + ' ORDER BY DateToAdd' + SortDirection+', aTime' + SortDirection;
-    SM_RATING:     Result := SqlQuery + ' ORDER BY Rating'    + SortDirection;
-    SM_FILE_SIZE:  Result := SqlQuery + ' ORDER BY FileSize'  + SortDirection;
-    SM_SIZE:       Result := SqlQuery + ' ORDER BY Width'     + SortDirection;
-  end;
+  if not FSearchParams.IsEstimate then
+  begin
+    SortDirection := '';
+    if FSearchParams.SortDecrement then
+      SortDirection := ' DESC';
+
+    case FSearchParams.SortMethod of
+      SM_TITLE :     Result := SqlQuery + ' ORDER BY Name'      + SortDirection;
+      SM_DATE_TIME : Result := SqlQuery + ' ORDER BY DateToAdd' + SortDirection+', aTime' + SortDirection;
+      SM_RATING:     Result := SqlQuery + ' ORDER BY Rating'    + SortDirection;
+      SM_FILE_SIZE:  Result := SqlQuery + ' ORDER BY FileSize'  + SortDirection;
+      SM_SIZE:       Result := SqlQuery + ' ORDER BY Width'     + SortDirection;
+    end;
+  end else
+    Result := SqlQuery
 end;
 
 procedure SearchThread.DoSetSearchByComparing;
@@ -1196,13 +1207,17 @@ var
     end;
   end;
 
-begin
-  Synchronize(StartLoadingList);
-  FWorkQuery := GetQuery;
+begin          
+  if not FSearchParams.IsEstimate then
+    SynchronizeEx(StartLoadingList);
+  FWorkQuery := GetQuery(FSearchParams.IsEstimate);
   try
-    QueryParams := CreateQuery;
-    TADOQuery(FWorkQuery).CursorType := ctOpenForwardOnly;
-    TADOQuery(FWorkQuery).CursorLocation := clUseServer;
+    QueryParams := CreateQuery;    
+    if not FSearchParams.IsEstimate then
+    begin
+      TADOQuery(FWorkQuery).CursorType := ctOpenForwardOnly;
+      TADOQuery(FWorkQuery).CursorLocation := clUseServer;
+    end;
     TADOQuery(FWorkQuery).LockType := ltReadOnly;
     QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '''', ' ', [rfReplaceAll]);
     QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '\', ' ', [rfReplaceAll]);
@@ -1221,7 +1236,7 @@ begin
       end;
     end;
 
-    if not FWorkQuery.IsEmpty then
+    if not FWorkQuery.IsEmpty and not FSearchParams.IsEstimate then
     begin
       FLastPacketTime := GetTickCount;
       while not FWorkQuery.Eof do
@@ -1239,6 +1254,12 @@ begin
       end;
       SynchronizeEx(SendDataPacketToForm);
     end;
+
+    if FSearchParams.IsEstimate then
+    begin
+      IntParam := FWorkQuery.Fields[0].AsInteger;
+      SynchronizeEx(UpdateQueryEstimateCount);
+    end;
   finally
     FWorkQuery.Free;
   end;
@@ -1253,6 +1274,11 @@ end;
 procedure SearchThread.StartLoadingList;
 begin
   (ThreadForm as TSearchForm).StartLoadingList;
+end;
+
+procedure SearchThread.UpdateQueryEstimateCount;
+begin
+  (ThreadForm as TSearchForm).UpdateQueryEstimateCount(IntParam);
 end;
 
 end.

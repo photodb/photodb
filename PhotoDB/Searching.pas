@@ -53,7 +53,7 @@ type
 
 type
   TSearchForm = class(TThreadForm)
-    Panel1: TPanel;
+    PnLeft: TPanel;
     Image1: TImage;
     Splitter1: TSplitter;
     SaveWindowPos1: TSaveWindowPos;
@@ -112,7 +112,6 @@ type
     SearchPanelB: TPanel;
     PbProgress: TDmProgress;
     Label7: TLabel;
-    Button1: TButton;
     pnDateRange: TPanel;
     PopupMenu8: TPopupMenu;
     OpeninExplorer1: TMenuItem;
@@ -195,6 +194,10 @@ type
     dblDate: TDBLoading;
     lsDate: TLoadingSign;
     LsData: TLoadingSign;
+    TmrSearchResultsCount: TTimer;
+    TmrQueryHintClose: TTimer;
+    WlStartStop: TWebLink;
+    LsSearchResults: TLoadingSign;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure Additem_(sender: TObject; Name_ : String; tag : integer );
@@ -415,6 +418,10 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure elvDateRangeResize(Sender: TObject);
     procedure dblDateDrawBackground(Sender: TObject; Buffer: TBitmap);
+    procedure SearchEditChange(Sender: TObject);
+    procedure TmrSearchResultsCountTimer(Sender: TObject);
+    procedure elvDateRangeItemSelectionChanged(Sender: TCustomEasyListview;
+      Item: TEasyItem);
   private
     FLoadingDatesState : Extended;
     FSearchInfo : TSearchInfo;
@@ -485,8 +492,10 @@ type
     procedure LoadQueryList;
     procedure LoadDataPacket(Packet : TSearchRecordArray);
     procedure EmptyFillListInfo;
+    procedure StartSearchThread(IsEstimate : Boolean);
     procedure StartLoadingList;    
     procedure StopLoadingList;
+    procedure UpdateQueryEstimateCount(Count : Integer);
   published
     { Public declarations }
     property SortMethod : Integer read GetSortMethod;
@@ -530,7 +539,6 @@ uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
 
 procedure TSearchForm.DoSearchNow(Sender: TObject);
 var
-  WideSearch : TSearchQuery;
   FScript : TScript;
   ScriptString : string;
   ImagesCount : Integer;
@@ -558,10 +566,10 @@ begin
   end;
 
 
-  DateRange := GetDateFilter;
+ DateRange := GetDateFilter;
 
- Button1.OnClick:= BreakOperation;
- Button1.Caption:=TEXT_MES_STOP;
+ WlStartStop.OnClick:= BreakOperation;
+ WlStartStop.Text:=TEXT_MES_STOP;
  PbProgress.Text:=TEXT_MES_STOPING+'...';
  Label7.Caption:=TEXT_MES_CALCULATING+'...';
  If Creating then Exit;
@@ -573,7 +581,21 @@ begin
   PbProgress.Text:=TEXT_MES_QUERY_EX;
                                        
   ListView.ShowGroupMargins := DBKernel.Readbool('Options', 'UseGroupsInSearch', True);
-  
+
+  LsSearchResults.Hide;
+  NewFormState;
+  TbStopOperation.Enabled := True;
+              
+  EmptyFillListInfo;
+  StartSearchThread(False);
+
+  AddNewSearchListEntry;
+end;   
+
+procedure TSearchForm.StartSearchThread(IsEstimate : Boolean);
+var
+  WideSearch : TSearchQuery;
+begin
   //TODO: free object
   WideSearch := TSearchQuery.Create;
   WideSearch.Query := SearchEdit.Text;
@@ -587,13 +609,9 @@ begin
   WideSearch.ShowPrivate := TwButton1.Pushed;
   WideSearch.SortDecrement := SortDecrement;
   WideSearch.SortMethod := SortMethod;
-  NewFormState;
-  TbStopOperation.Enabled:=true;
-
-  EmptyFillListInfo;
-
+  WideSearch.IsEstimate := IsEstimate;
+  TmrSearchResultsCount.Enabled := False;
   SearchThread.Create(Self, StateID, WideSearch, BreakOperation, FPictureSize);
-  AddNewSearchListEntry;
 end;
 
 procedure TSearchForm.Edit1_KeyPress(Sender: TObject; var Key: Char);
@@ -624,7 +642,7 @@ var
   Menus : array[0..n-1] of TMenuItem;
   i : integer;
   MainMenuScript : string;
-begin  
+begin
   TW.I.Start('S -> FormCreate');
   FilesToDrag := TStringList.Create;
   FSearchInfo := TSearchInfo.Create;
@@ -734,7 +752,7 @@ begin
  end;
  Menus[0].Enabled:=false;
  ListView.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
- Panel1.Width:=DBKernel.ReadInteger('Search','LeftPanelWidth',150);
+ PnLeft.Width:=DBKernel.ReadInteger('Search','LeftPanelWidth',150);
  FBitmapImageList := TBitmapImageList.Create;
  TW.I.Start('S -> RegisterMainForm');
  FormManager.RegisterMainForm(Self);
@@ -976,7 +994,7 @@ begin
   delete(s,1,5);
   id:=strtointdef(s,-1);
   if id<0 then exit;
-  _sqlexectext:='Update '+GetDefDBName;
+  _sqlexectext:='Update $DB$';
   s1:=normalizeDBString(memo2.lines.Text);
   s2:=normalizeDBString(memo1.lines.Text);
   s3:=normalizeDBString(FPropertyGroups);
@@ -1003,7 +1021,7 @@ begin
  begin
   FUpdatingDB:=true;
   Save.Enabled:=false;
-  Button1.Enabled:=false;
+  WlStartStop.Enabled:=false;
   ListView.Enabled:=false;
 
   Memo1.Enabled:=false;
@@ -1033,7 +1051,7 @@ begin
   //[BEGIN] Date Support
   If not PanelValueIsDateSets.Visible then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set DateToAdd = :Date Where ';
+   _sqlexectext:='Update $DB$ Set DateToAdd = :Date Where ';
    For i:=0 to Length(SelectedInfo.Ids)-1 do
    if i=0 then _sqlexectext:=_sqlexectext+' (ID='+inttostr(SelectedInfo.Ids[i])+')' else
    _sqlexectext:=_sqlexectext+' OR (ID='+inttostr(SelectedInfo.Ids[i])+')';
@@ -1047,7 +1065,7 @@ begin
   end;
   if not PanelValueIsDateSets.Visible then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set IsDate = :IsDate Where ';
+   _sqlexectext:='Update $DB$ Set IsDate = :IsDate Where ';
    For i:=0 to Length(SelectedInfo.Ids)-1 do
    if i=0 then _sqlexectext:=_sqlexectext+' (ID='+inttostr(SelectedInfo.Ids[i])+')' else
    _sqlexectext:=_sqlexectext+' OR (ID='+inttostr(SelectedInfo.Ids[i])+')';
@@ -1065,7 +1083,7 @@ begin
   //[BEGIN] Time Support
   If not PanelValueIsTimeSets.Visible then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set aTime = :aTime Where ';
+   _sqlexectext:='Update $DB$ Set aTime = :aTime Where ';
    For i:=0 to Length(SelectedInfo.Ids)-1 do
    if i=0 then _sqlexectext:=_sqlexectext+' (ID='+inttostr(SelectedInfo.Ids[i])+')' else
    _sqlexectext:=_sqlexectext+' OR (ID='+inttostr(SelectedInfo.Ids[i])+')';
@@ -1079,7 +1097,7 @@ begin
   end;
   if not PanelValueIsTimeSets.Visible then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set IsTime = :IsTime Where ID in (';
+   _sqlexectext:='Update $DB$ Set IsTime = :IsTime Where ID in (';
    for i:=0 to Length(SelectedInfo.Ids)-1 do
    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(SelectedInfo.Ids[i])+' ' else
    _sqlexectext:=_sqlexectext+' , '+inttostr(SelectedInfo.Ids[i])+'';
@@ -1098,7 +1116,7 @@ begin
   //[BEGIN] Rating Support
   if not Rating1.Islayered then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set Rating = :Rating Where ID in (';
+   _sqlexectext:='Update $DB$ Set Rating = :Rating Where ID in (';
    for i:=0 to Length(SelectedInfo.Ids)-1 do
    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(SelectedInfo.Ids[i])+' ' else
    _sqlexectext:=_sqlexectext+' , '+inttostr(SelectedInfo.Ids[i])+'';
@@ -1116,7 +1134,7 @@ begin
   //[BEGIN] Comment Support
   if not Memo2.ReadOnly then
   begin
-   _sqlexectext:='Update '+GetDefDBName+' Set Comment = "'+normalizeDBString(Memo2.Text)+'" Where ID in (';
+   _sqlexectext:='Update $DB$ Set Comment = "'+normalizeDBString(Memo2.Text)+'" Where ID in (';
    for i:=0 to Length(SelectedInfo.Ids)-1 do
    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(SelectedInfo.Ids[i])+' ' else
    _sqlexectext:=_sqlexectext+' , '+inttostr(SelectedInfo.Ids[i])+'';
@@ -1160,7 +1178,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update '+GetDefDBName+' Set KeyWords ="'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set KeyWords ="'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
@@ -1200,7 +1218,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update '+GetDefDBName+' Set Groups ="'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set Groups ="'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
    ExecSQL(WorkQuery);
@@ -1213,7 +1231,7 @@ begin
   //[END] Groups Support
   FUpdatingDB:=false;
   ListView.Enabled:=true;
-  Button1.Enabled:=true;
+  WlStartStop.Enabled:=true;
 
   Memo1.Enabled:=true;
   Memo2.Enabled:=true;
@@ -1257,7 +1275,7 @@ begin
  if not (item.imageindex<=0) then
  begin
   SelectQuery.Active:=false;
-  SetSQL(SelectQuery,'SELECT * FROM '+GetDefDBName+' WHERE ID='+inttostr(ID));
+  SetSQL(SelectQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(ID));
   SelectQuery.active:=true;
   if TBlobField(SelectQuery.FieldByName('thum'))=nil then
   begin
@@ -1338,7 +1356,7 @@ begin
  if GetlistitembyID(ID).imageindex=0 then
  begin
   SelectQuery.Active:=false;
-  SetSQL(SelectQuery,'SELECT * FROM '+GetDefDBName+' WHERE ID='+inttostr(ID));
+  SetSQL(SelectQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(ID));
   SelectQuery.active:=true;
   if TBlobField(SelectQuery.FieldByName('thum'))=nil then
   begin
@@ -1402,7 +1420,7 @@ begin
  begin
   getlistitembyid(Id).ImageIndex:=1;
   SelectQuery.active:=false;
-  SetSQL(SelectQuery,'UPDATE '+GetDefDBName+' SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID='+inttostr(id));
+  SetSQL(SelectQuery,'UPDATE $DB$ SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID='+inttostr(id));
   ExecSQL(SelectQuery);
   DBKernel.DoIDEvent(nil,id,[EventID_Param_Delete],EventInfo);
  end;
@@ -1455,7 +1473,7 @@ end;
 
 procedure TSearchForm.FormDestroy(Sender: TObject);
 begin
- DBKernel.WriteInteger('Search','LeftPanelWidth',Panel1.Width);
+ DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
  aScript.Free;
  FreeDS(SelectQuery);
@@ -1485,8 +1503,8 @@ begin
  if tbStopOperation.Enabled then
  tbStopOperation.Click;
  PbProgress.Text:=TEXT_MES_STOPING+'...';
- Button1.Onclick:= Search;
- Button1.Caption:=TEXT_MES_SEARCH;
+ WlStartStop.Onclick:= Search;
+ WlStartStop.Text:=TEXT_MES_SEARCH;
  PbProgress.Text:=TEXT_MES_DONE;
  PbProgress.Position:=0;
  ListView.Show;
@@ -2039,6 +2057,8 @@ begin
 end;
 
 procedure TSearchForm.initialization_;
+var
+  SearchIcon : HIcon;
 begin
  TW.I.Start('S -> initialization_');
  DBCanDrag:=false;
@@ -2049,8 +2069,11 @@ begin
  DoShowSelectInfo;
  ListView.Canvas.Pen.Color:=$0;
  ListView.Canvas.brush.Color:=$0;
- button1.onclick:= Search;
- button1.caption:=TEXT_MES_SEARCH;
+ WlStartStop.onclick:= Search;
+ SearchIcon := LoadImage(DBKernel.IconDllInstance, 'EXPLORER_SEARCH_SMALL', IMAGE_ICON, 16, 16, 0);
+ WlStartStop.LoadFromHIcon(SearchIcon);
+ DestroyIcon(SearchIcon);
+ WlStartStop.Text:=TEXT_MES_SEARCH;
  Label7.Caption:=TEXT_MES_NO_RES;
  PbProgress.Text:=TEXT_MES_NO_RES;
  SaveWindowPos1.Key:=RegRoot+'Searching';
@@ -2827,7 +2850,7 @@ begin
  if GetDBType=DB_TYPE_MDB then
  begin
   DS:=GetQuery;
-  SetSQL(DS, 'Select count(*) as Coun from '+GetDefDBname);
+  SetSQL(DS, 'Select count(*) as Coun from $DB$');
   DS.Open;
   xHint(DS);
   FreeDS(DS);
@@ -3130,7 +3153,7 @@ begin
   ComboBoxSearchGroups.ItemIndex := i;
   break;
  end;
- if Button1.Caption<>TEXT_MES_STOP then DoSearchNow(nil);
+ if WlStartStop.Text<>TEXT_MES_STOP then DoSearchNow(nil);
 end;
 
 procedure TSearchForm.SortbyID1Click(Sender: TObject);
@@ -3532,7 +3555,7 @@ begin
   if ListView.Selection.First<>nil then
   indent:=ListView.Selection.First.Tag;
 
-  SetSQL(SelectQuery,'SELECT * FROM '+GetDefDBName+' WHERE ID='+inttostr(indent));
+  SetSQL(SelectQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(indent));
   SelectQuery.active:=true;
   lockwindowupdate(Handle);
   Label2.Caption:=Format(TEXT_MES_ID_FORMATA,[inttostr(indent)]);
@@ -4166,7 +4189,7 @@ end;
 
 procedure TSearchForm.ComboBoxSearchGroupsSelect(Sender: TObject);
 begin
-  if Button1.Caption<>TEXT_MES_STOP then
+  if WlStartStop.Text<>TEXT_MES_STOP then
     DoSearchNow(nil);
 end;
 
@@ -4273,7 +4296,7 @@ var
   aTop, N, LastIndex : Integer;
 begin
   LastIndex := ComboBoxSearchGroups.ItemIndex;
-  aTop := ClientHeight - ComboBoxSearchGroups.Top - ComboBoxSearchGroups.Height - Panel1.Top;
+  aTop := ClientHeight - ComboBoxSearchGroups.Top - ComboBoxSearchGroups.Height - PnLeft.Top;
   N := Max(5, aTop div 32);
   if N <> ComboBoxSearchGroups.DropDownCount then
   begin
@@ -4931,7 +4954,7 @@ begin
   TADOQuery(DS).CursorLocation := clUseClient;
   TADOQuery(DS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
   TADOQuery(DS).LockType := ltReadOnly;
-  SetSQL(DS, 'SELECT DISTINCT DateToAdd FROM ' + GetDefDBname + ' WHERE IsDate = True ORDER BY DateToAdd DESC');
+  SetSQL(DS, 'SELECT DISTINCT DateToAdd FROM $DB$ WHERE IsDate = True ORDER BY DateToAdd DESC');
   TADOQuery(DS).OnFetchProgress := FetchProgress;
 
   TOpenQueryThread.Create(False, DS, DBRangeOpened);
@@ -5312,7 +5335,8 @@ begin
   ListView.BeginUpdate;
   try
     for I := 0 to Packet.Count - 1 do
-      AddItemInListViewByGroups(Packet.ExtractAt(0), True);
+      AddItemInListViewByGroups(Packet[I], True);
+    Packet.ClearList;
   finally
     ListView.EndUpdate;
   end;
@@ -5358,7 +5382,6 @@ begin
   LsData.Show;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
-
 end;
 
 procedure TSearchForm.StopLoadingList;
@@ -5366,7 +5389,35 @@ begin
   LsData.Hide;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
-  tbStopOperation.Enabled := False;
+  TbStopOperation.Enabled := False;
+end;
+
+procedure TSearchForm.SearchEditChange(Sender: TObject);
+begin
+  WlStartStop.Text := TEXT_MES_SEARCH;
+  LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
+  LsSearchResults.Show;
+
+  TmrSearchResultsCount.Enabled := False;
+  TmrSearchResultsCount.Enabled := True;
+end;
+
+procedure TSearchForm.TmrSearchResultsCountTimer(Sender: TObject);
+begin                   
+  TmrSearchResultsCount.Enabled := False;
+  StartSearchThread(True)
+end;
+
+procedure TSearchForm.UpdateQueryEstimateCount(Count: Integer);
+begin
+  LsSearchResults.Hide;
+  WlStartStop.Text := Format(TEXT_MES_SEARCH_WITH_COUNT, [Count]);
+end;
+
+procedure TSearchForm.elvDateRangeItemSelectionChanged(
+  Sender: TCustomEasyListview; Item: TEasyItem);
+begin
+  SearchEditChange(Sender);
 end;
 
 initialization

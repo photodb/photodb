@@ -152,7 +152,7 @@ function QueryParamsCount(Query : TDataSet) : integer;
 
 function GetQueryText(Query : TDataSet) : string;
 procedure AssignParams(S,D : TDataSet);
-function GetDefDBName : string;
+//function GetDefDBName : string;
 function GetBlobStream(F : TField; Mode : TBlobStreamMode) : TStream;
 procedure AssignParam(Query : TDataSet; index : integer; Value : TPersistent);
 
@@ -180,9 +180,12 @@ function GetPathCRC(FileFullPath : string) : Integer;
 
 implementation
 
-//{$IFNDEF DEBUG}
  uses UnitGroupsWork;
-//{$ENDIF}
+
+function GetDefDBName : string;
+begin
+ if GetDBType(dbname)=DB_TYPE_MDB then Result:='ImageTable';
+end;
 
 function GetBlobStream(F : TField; Mode : TBlobStreamMode) : TStream;
 begin
@@ -284,6 +287,7 @@ begin
   try
    if (SQL is TADOQuery) then
    begin
+    SQLText := StringReplace(SQLText, '$DB$', GetDefDBName, [rfReplaceAll, rfIgnoreCase]);
     (SQL as TADOQuery).SQL.Text:=SQLText;
     (SQL as TADOQuery).Parameters.ParseSQL((SQL as TADOQuery).SQL.Text, true);
    end;
@@ -801,12 +805,6 @@ begin
  if DS=nil then exit;
  if DS is TADOQuery then begin Connection:=(DS as TADOQuery).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADOQuery).Connection.Free;} exit; end;
  if DS is TADODataSet then begin Connection:=(DS as TADODataSet).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADODataSet).Connection.Free;} exit; end;
-end;
-
-//TODO: remove function, replace on %DB% in queries
-function GetDefDBName : string;
-begin
- if GetDBType(dbname)=DB_TYPE_MDB then Result:='ImageTable';
 end;
 
 function OpenConnection(ConnectionString: AnsiString): Integer;  

@@ -1,6 +1,6 @@
 object SearchForm: TSearchForm
-  Left = 291
-  Top = 173
+  Left = 369
+  Top = 48
   Width = 821
   Height = 678
   ActiveControl = ShowDateOptionsLink
@@ -28,16 +28,16 @@ object SearchForm: TSearchForm
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
-    Left = 150
+    Left = 180
     Top = 25
     Height = 615
     MinSize = 135
     OnCanResize = Splitter1CanResize
   end
-  object Panel1: TPanel
+  object PnLeft: TPanel
     Left = 0
     Top = 25
-    Width = 150
+    Width = 180
     Height = 615
     Align = alLeft
     ParentColor = True
@@ -189,15 +189,15 @@ object SearchForm: TSearchForm
     end
     object PropertyPanel: TPanel
       Left = 1
-      Top = 435
-      Width = 148
+      Top = 441
+      Width = 178
       Height = 326
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 4
       DesignSize = (
-        148
+        178
         326)
       object Label2: TLabel
         Left = 8
@@ -287,7 +287,7 @@ object SearchForm: TSearchForm
         Tag = 1
         Left = 8
         Top = 155
-        Width = 137
+        Width = 167
         Height = 70
         Anchors = [akLeft, akTop, akRight]
         Font.Charset = RUSSIAN_CHARSET
@@ -307,7 +307,7 @@ object SearchForm: TSearchForm
         Tag = 1
         Left = 8
         Top = 247
-        Width = 137
+        Width = 167
         Height = 50
         Anchors = [akLeft, akTop, akRight]
         Font.Charset = RUSSIAN_CHARSET
@@ -326,7 +326,7 @@ object SearchForm: TSearchForm
         OnKeyPress = Memo1KeyPress
       end
       object Save: TButton
-        Left = 80
+        Left = 110
         Top = 301
         Width = 65
         Height = 17
@@ -339,7 +339,7 @@ object SearchForm: TSearchForm
         Tag = 1
         Left = 8
         Top = 50
-        Width = 137
+        Width = 167
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BevelEdges = []
@@ -357,7 +357,7 @@ object SearchForm: TSearchForm
       object IsDatePanel: TPanel
         Left = 8
         Top = 50
-        Width = 137
+        Width = 167
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BevelInner = bvLowered
@@ -370,7 +370,7 @@ object SearchForm: TSearchForm
       object PanelValueIsDateSets: TPanel
         Left = 8
         Top = 50
-        Width = 137
+        Width = 167
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BevelInner = bvLowered
@@ -393,7 +393,7 @@ object SearchForm: TSearchForm
         Tag = 1
         Left = 8
         Top = 75
-        Width = 137
+        Width = 167
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         Date = 38548.001314189820000000
@@ -408,7 +408,7 @@ object SearchForm: TSearchForm
       object IsTimePanel: TPanel
         Left = 8
         Top = 75
-        Width = 137
+        Width = 167
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BevelInner = bvLowered
@@ -421,7 +421,7 @@ object SearchForm: TSearchForm
       object PanelValueIsTimeSets: TPanel
         Left = 8
         Top = 75
-        Width = 137
+        Width = 167
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BevelInner = bvLowered
@@ -443,7 +443,7 @@ object SearchForm: TSearchForm
       object ComboBoxSelGroups: TComboBoxExDB
         Left = 8
         Top = 100
-        Width = 137
+        Width = 167
         Height = 22
         ItemsEx = <>
         Anchors = [akLeft, akTop, akRight]
@@ -464,8 +464,8 @@ object SearchForm: TSearchForm
     end
     object ExplorerPanel: TPanel
       Left = 1
-      Top = 761
-      Width = 148
+      Top = 767
+      Width = 178
       Height = 15
       Align = alClient
       ParentColor = True
@@ -474,9 +474,9 @@ object SearchForm: TSearchForm
     end
     object SearchPanelB: TPanel
       Left = 1
-      Top = 377
-      Width = 148
-      Height = 58
+      Top = 401
+      Width = 178
+      Height = 40
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
@@ -485,11 +485,11 @@ object SearchForm: TSearchForm
       ShowHint = True
       TabOrder = 2
       DesignSize = (
-        148
-        58)
+        178
+        40)
       object Label7: TLabel
         Left = 8
-        Top = 20
+        Top = 4
         Width = 30
         Height = 13
         Caption = 'Result'
@@ -502,8 +502,8 @@ object SearchForm: TSearchForm
       end
       object PbProgress: TDmProgress
         Left = 8
-        Top = 36
-        Width = 137
+        Top = 20
+        Width = 167
         Height = 18
         Anchors = [akLeft, akTop, akRight]
         MaxValue = 100
@@ -519,21 +519,11 @@ object SearchForm: TSearchForm
         View = dm_pr_cool
         Inverse = False
       end
-      object Button1: TButton
-        Left = 8
-        Top = 0
-        Width = 73
-        Height = 17
-        Caption = 'Search!'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 0
-      end
     end
     object pnDateRange: TPanel
       Left = 1
-      Top = 153
-      Width = 148
+      Top = 177
+      Width = 178
       Height = 224
       Align = alTop
       BevelOuter = bvNone
@@ -541,12 +531,12 @@ object SearchForm: TSearchForm
       TabOrder = 1
       Visible = False
       DesignSize = (
-        148
+        178
         224)
       object elvDateRange: TEasyListview
         Left = 8
         Top = 0
-        Width = 137
+        Width = 167
         Height = 217
         Anchors = [akLeft, akTop, akRight, akBottom]
         CacheDoubleBufferBits = False
@@ -588,6 +578,7 @@ object SearchForm: TSearchForm
         TabOrder = 0
         View = elsReport
         OnItemClick = elvDateRangeItemClick
+        OnItemSelectionChanged = elvDateRangeItemSelectionChanged
         OnMouseDown = elvDateRangeMouseDown
         OnResize = elvDateRangeResize
       end
@@ -601,7 +592,7 @@ object SearchForm: TSearchForm
         OnDrawBackground = dblDateDrawBackground
       end
       object lsDate: TLoadingSign
-        Left = 110
+        Left = 140
         Top = 3
         Width = 16
         Height = 16
@@ -616,16 +607,16 @@ object SearchForm: TSearchForm
     object SearchPanelA: TPanel
       Left = 1
       Top = 1
-      Width = 148
-      Height = 152
+      Width = 178
+      Height = 176
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 0
       OnContextPopup = SearchPanelAContextPopup
       DesignSize = (
-        148
-        152)
+        178
+        176)
       object Label1: TLabel
         Left = 8
         Top = 5
@@ -642,7 +633,7 @@ object SearchForm: TSearchForm
       end
       object Image3: TImage
         Left = 124
-        Top = 51
+        Top = 75
         Width = 16
         Height = 16
         OnClick = Image3Click
@@ -739,21 +730,21 @@ object SearchForm: TSearchForm
       end
       object RtgQueryRating: TRating
         Left = 8
-        Top = 50
+        Top = 74
         Width = 96
         Height = 16
         Cursor = crHandPoint
         Rating = 0
         RatingRange = 0
         BkColor = clInactiveCaption
-        OnChange = Memo1Change
+        OnChange = SearchEditChange
         Islayered = False
         Layered = 100
         ImageCanRegenerate = True
       end
       object TwButton1: TTwButton
         Left = 105
-        Top = 50
+        Top = 74
         Width = 16
         Height = 16
         Cursor = crHandPoint
@@ -798,13 +789,14 @@ object SearchForm: TSearchForm
         ParentColor = False
         Color = clInactiveCaption
         OnlyMainImage = True
+        OnChange = SearchEditChange
         IsLayered = False
         Layered = 100
         ImageCanRegenerate = True
       end
       object ShowDateOptionsLink: TWebLink
         Left = 8
-        Top = 132
+        Top = 156
         Width = 113
         Height = 16
         Cursor = crHandPoint
@@ -822,7 +814,7 @@ object SearchForm: TSearchForm
       end
       object SortLink: TWebLink
         Left = 8
-        Top = 114
+        Top = 138
         Width = 68
         Height = 16
         Cursor = crHandPoint
@@ -841,8 +833,8 @@ object SearchForm: TSearchForm
       end
       object ComboBoxSearchGroups: TComboBoxExDB
         Left = 8
-        Top = 70
-        Width = 137
+        Top = 94
+        Width = 167
         Height = 38
         ItemsEx = <>
         Style = csExDropDownList
@@ -861,7 +853,7 @@ object SearchForm: TSearchForm
       object SearchEdit: TComboBoxExDB
         Left = 8
         Top = 24
-        Width = 137
+        Width = 167
         Height = 22
         AutoCompleteOptions = []
         ItemsEx = <>
@@ -870,7 +862,10 @@ object SearchForm: TSearchForm
         ItemHeight = 16
         ParentColor = True
         ParentCtl3D = False
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 5
+        OnChange = SearchEditChange
         OnDropDown = SearchEditDropDown
         OnKeyPress = Edit1_KeyPress
         OnSelect = SearchEditSelect
@@ -920,13 +915,46 @@ object SearchForm: TSearchForm
           0000FFFF00000180000000000000000000000000000000010000000300000003
           000080030000800300008003000081030000C3870000FFFF0000FFFF0000}
       end
+      object WlStartStop: TWebLink
+        Left = 8
+        Top = 50
+        Width = 160
+        Height = 16
+        Cursor = crHandPoint
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clInactiveCaptionText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        PopupMenu = SortingPopupMenu
+        Text = 'Search (54600 '#1088#1077#1079#1091#1083#1100#1090#1072#1090#1086#1074')'
+        OnClick = Image4_Click
+        BkColor = 14653050
+        ImageIndex = 0
+        IconWidth = 16
+        IconHeight = 16
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
+      end
+      object LsSearchResults: TLoadingSign
+        Left = 160
+        Top = 50
+        Width = 16
+        Height = 16
+        Visible = False
+        Active = True
+        FillPercent = 50
+      end
     end
   end
   object BackGroundSearchPanel: TPanel
     Tag = 1
-    Left = 153
+    Left = 183
     Top = 25
-    Width = 652
+    Width = 622
     Height = 615
     Align = alClient
     BevelInner = bvRaised
@@ -1258,8 +1286,8 @@ object SearchForm: TSearchForm
     end
   end
   object LsData: TLoadingSign
-    Left = 767
-    Top = 150
+    Left = 775
+    Top = 30
     Width = 16
     Height = 16
     Visible = False
@@ -1676,5 +1704,17 @@ object SearchForm: TSearchForm
     OnPopup = PopupMenuZoomDropDownPopup
     Left = 489
     Top = 89
+  end
+  object TmrSearchResultsCount: TTimer
+    Enabled = False
+    OnTimer = TmrSearchResultsCountTimer
+    Left = 129
+    Top = 26
+  end
+  object TmrQueryHintClose: TTimer
+    Enabled = False
+    Interval = 3000
+    Left = 161
+    Top = 26
   end
 end

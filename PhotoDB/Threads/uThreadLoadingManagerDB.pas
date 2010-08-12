@@ -51,7 +51,7 @@ begin
       TADOQuery(FQuery).CursorType := ctOpenForwardOnly;
       TADOQuery(FQuery).CursorLocation := clUseClient;
       TADOQuery(FQuery).LockType := ltReadOnly;
-      SqlText:='SELECT ID FROM ' + GetDefDBName + ' ORDER BY ID';
+      SqlText:='SELECT ID FROM $DB$ ORDER BY ID';
       SetSQL(FQuery, SqlText);
       FQuery.Open;
 

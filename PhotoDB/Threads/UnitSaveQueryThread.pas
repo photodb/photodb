@@ -259,10 +259,10 @@ var
   begin
    AndWhere:=' and not (FFileName like :FolderB) ';
    CalcStringCRC32(AnsiLowerCase(LocationFolder),crc);
-   FromSQL:='(Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+')';
+   FromSQL:='(Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+')';
   end else
   begin
-   FromSQL:=GetDefDBname;
+   FromSQL:='$DB$';
    AndWhere:='';
   end;
   if GetDBType=DB_TYPE_MDB then SetSQL(FQuery,'Select * From '+FromSQL+' where (FFileName Like :FolderA)'+AndWhere);

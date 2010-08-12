@@ -428,6 +428,7 @@ object UpdateDBForm: TUpdateDBForm
     Top = 152
     Width = 385
     Height = 18
+    Visible = False
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
@@ -439,7 +440,6 @@ object UpdateDBForm: TUpdateDBForm
     CoolColor = 38400
     Color = clBlack
     View = dm_pr_cool
-    Visible = False
     Inverse = False
   end
   object WebLinkOpenImage: TWebLink
@@ -449,6 +449,7 @@ object UpdateDBForm: TUpdateDBForm
     Width = 79
     Height = 16
     Cursor = crHandPoint
+    Enabled = False
     Text = 'Open Image'
     OnClick = WebLinkOpenImageClick
     BkColor = clWhite
@@ -458,9 +459,8 @@ object UpdateDBForm: TUpdateDBForm
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
-    Enabled = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
   end
   object WebLinkOpenFolder: TWebLink
     Tag = -1
@@ -469,6 +469,7 @@ object UpdateDBForm: TUpdateDBForm
     Width = 79
     Height = 16
     Cursor = crHandPoint
+    Enabled = False
     Text = 'Open Folder'
     OnClick = WebLinkOpenFolderClick
     BkColor = clWhite
@@ -478,9 +479,8 @@ object UpdateDBForm: TUpdateDBForm
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
-    Enabled = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
   end
   object ButtonClose: TWebLink
     Tag = -1
@@ -499,7 +499,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
   end
   object ButtonBreak: TWebLink
     Tag = -1
@@ -512,6 +512,13 @@ object UpdateDBForm: TUpdateDBForm
     OnClick = ButtonBreakClick
     BkColor = clWhite
     ImageIndex = 0
+    IconWidth = 16
+    IconHeight = 16
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = False
+    TopIconIncrement = 0
+    ImageCanRegenerate = True
     Icon.Data = {
       0000010001001010000001002000680400001600000028000000100000002000
       0000010020000000000040040000000000000000000000000000000000000000
@@ -549,13 +556,6 @@ object UpdateDBForm: TUpdateDBForm
       000000000000000000000000000000000000000000000000000000000000FFFF
       0000F00F0000E0070000C0030000808100008061000080210000801100008801
       0000840100008601000081010000C0030000E0070000F00F0000FFFF0000}
-    IconWidth = 16
-    IconHeight = 16
-    UseEnterColor = False
-    EnterColor = clBlack
-    EnterBould = False
-    TopIconIncrement = 0
-    ImageCanRegenerate = False
   end
   object ButtonRunStop: TWebLink
     Tag = -1
@@ -574,7 +574,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
   end
   object ShowHistoryLink: TWebLink
     Tag = -1
@@ -593,7 +593,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
   end
   object WebLinkOptions: TWebLink
     Tag = -1
@@ -612,7 +612,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
   end
   object PopupMenu1: TPopupMenu
     Left = 144

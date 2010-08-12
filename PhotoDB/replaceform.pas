@@ -207,7 +207,7 @@ begin
  listview1.Clear;
  CurrentFileName:= Filename;
  WorkQuery.Active:=false;
- SetSQL(WorkQuery,'SELECT * FROM '+GetDefDBName+' WHERE StrTh = :str ');
+ SetSQL(WorkQuery,'SELECT * FROM $DB$ WHERE StrTh = :str ');
  SetStrParam(WorkQuery,0,thimg);
  WorkQuery.active:=true;
  if WorkQuery.RecordCount=0 then
@@ -259,7 +259,7 @@ const
 begin
  fQuery:=GetQuery;
  fQuery.Active:=false;
- SetSQl(fQuery,'SELECT * FROM '+GetDefDBname+' WHERE ID='+IntToStr(ID));
+ SetSQl(fQuery,'SELECT * FROM $DB$ WHERE ID='+IntToStr(ID));
  fQuery.Active:=true;
  current_id_show:=fQuery.FieldByName('ID').AsInteger;
  DB_ID.text:=IntToStr(ID);
@@ -646,7 +646,7 @@ begin
   begin
    fQuery:=GetQuery;
    fQuery.active:=false;
-   SQL_:='DELETE FROM '+GetDefDBname+' WHERE (ID = '+IntToStr(PopupMenu1.Tag)+')';
+   SQL_:='DELETE FROM $DB$ WHERE (ID = '+IntToStr(PopupMenu1.Tag)+')';
    SetSQL(fQuery,SQL_);
    try
     ExecSQL(fQuery);

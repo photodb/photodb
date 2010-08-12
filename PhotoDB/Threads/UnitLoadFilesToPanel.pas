@@ -116,7 +116,7 @@ begin
  Left:=L;
  for j:=1 to n do
  begin
-  SQLText:='SELECT * FROM '+GetDefDBname+' WHERE ';
+  SQLText:='SELECT * FROM $DB$ WHERE ';
   m:=Min(Left,Min(L,AllocBy));
   for i:=1 to m do
   begin
@@ -268,10 +268,10 @@ begin
  begin
   fQuery.Active:=False;
   if fbyid then
-   SetSQL(fQuery,'SELECT * FROM '+GetDefDBname+' WHERE ID = '+inttostr(id))
+   SetSQL(fQuery,'SELECT * FROM $DB$ WHERE ID = '+inttostr(id))
   else
   begin
-   SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
+   SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
    s:=FileName;
    if FolderView then
    Delete(s,1,Length(ProgramDir));

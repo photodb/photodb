@@ -37,13 +37,13 @@ begin
  if GetDBType=DB_TYPE_MDB then
  begin
   Query:=GetQuery;
-  SetSQL(Query,'Select thum from '+GetDefDBName+'  where ID = '+IntToStr(ID));
+  SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
   Query.Open;
   jpeg:=TJPEGImage.Create;
   jpeg.Assign(Query.FieldByName('thum'));
   ms:=CryptGraphicImage(jpeg,Password);
   jpeg.Free;
-  SetSQL(Query,'Update '+GetDefDBName+' Set thum=:thum where ID = '+IntToStr(ID));
+  SetSQL(Query,'Update $DB$ Set thum=:thum where ID = '+IntToStr(ID));
   LoadParamFromStream(Query,0,ms,ftBlob);
   ms.free;
   ExecSQL(Query);
@@ -63,11 +63,11 @@ begin
   if GetDBType=DB_TYPE_MDB then
   begin
    Query:=GetQuery;
-   SetSQL(Query,'Select thum from '+GetDefDBName+'  where ID = '+IntToStr(ID));
+   SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
    Query.Open;
    try
     jpeg:=DeCryptBlobStreamJPG(Query.FieldByName('thum'),Password) as TJpegImage;
-    SetSQL(Query,'Update '+GetDefDBName+' Set thum=:thum where ID = '+IntToStr(ID));
+    SetSQL(Query,'Update $DB$ Set thum=:thum where ID = '+IntToStr(ID));
     AssignParam(Query,0,jpeg);
     jpeg.Free;
    except

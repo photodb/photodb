@@ -449,7 +449,7 @@ begin
    //[BEGIN] Date Support
    If IsDate then
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set DateToAdd = :Date, IsDate = TRUE Where ID in (';
+    _sqlexectext:='Update $DB$ Set DateToAdd = :Date, IsDate = TRUE Where ID in (';
     FirstID:=True;
     for i:=0 to FInfo.Count-1 do
     if finfo[i].Selected then
@@ -470,7 +470,7 @@ begin
     DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Date,EventID_Param_IsDate],EventInfo);
    end else
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set IsDate = FALSE Where ID in (';
+    _sqlexectext:='Update $DB$ Set IsDate = FALSE Where ID in (';
     FirstID:=True;
     for i:=0 to FInfo.Count - 1 do
     if finfo[i].Selected then
@@ -492,7 +492,7 @@ begin
    //[BEGIN] Time Support
    If IsTime then
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set aTime = :aTime, IsTime = TRUE Where ID in (';
+    _sqlexectext:='Update $DB$ Set aTime = :aTime, IsTime = TRUE Where ID in (';
     FirstID:=True;
     for i:=0 to FInfo.Count - 1 do
     if finfo[i].Selected then
@@ -513,7 +513,7 @@ begin
     DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Time,EventID_Param_IsTime],EventInfo);
    end else
    begin
-    _sqlexectext:='Update '+GetDefDBName+' Set IsTime = FALSE Where ID in (';
+    _sqlexectext:='Update $DB$ Set IsTime = FALSE Where ID in (';
     FirstID:=True;
     for i:=0 to FInfo.Count-1 do
     if finfo[i].Selected then
@@ -592,7 +592,7 @@ begin
   if finfo[i].Attr=db_attr_dublicate then
   begin
    fQuery:=GetQuery;
-   SQL_:='SELECT FFileName, ID FROM '+GetDefDBName+''+' WHERE (ID<>'+IntToStr(finfo[i].ID)+') AND (StrTh=(SELECT StrTh FROM '+GetDefDBName+' WHERE ID = '+IntToStr(finfo[i].ID)+'))';
+   SQL_:='SELECT FFileName, ID FROM $DB$ WHERE (ID<>'+IntToStr(finfo[i].ID)+') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = '+IntToStr(finfo[i].ID)+'))';
    SetSQL(fQuery,SQL_);
    fQuery.Open;
    fQuery.First;
@@ -605,10 +605,10 @@ begin
     fQuery.Next;
    end;
    fQuery.Close;
-   SQL_:='DELETE FROM '+GetDefDBName+''+' WHERE (ID<>'+IntToStr(finfo[i].ID)+') AND (StrTh=(SELECT StrTh FROM '+GetDefDBName+' WHERE ID = '+IntToStr(finfo[i].ID)+'))';
+   SQL_:='DELETE FROM $DB$ WHERE (ID<>'+IntToStr(finfo[i].ID)+') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = '+IntToStr(finfo[i].ID)+'))';
    SetSQL(fQuery,SQL_);
    ExecSQL(fQuery);
-   SQL_:='UPDATE '+GetDefDBName+''+' SET Attr = '+IntToStr(db_attr_norm)+' WHERE (ID='+IntToStr(finfo[i].ID)+')';
+   SQL_:='UPDATE $DB$ SET Attr = '+IntToStr(db_attr_norm)+' WHERE (ID='+IntToStr(finfo[i].ID)+')';
    SetSQL(fQuery,SQL_);
    ExecSQL(fQuery);
    EventInfo.Attr:=db_attr_norm;
@@ -645,7 +645,7 @@ begin
  If ID_OK=MessageBoxDB(GetActiveFormHandle,TEXT_MES_DEL_FROM_DB_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   fQuery:=GetQuery;
-  SQL_:='UPDATE '+GetDefDBName+''+' SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID in (';
+  SQL_:='UPDATE $DB$ SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID in (';
   FirstID:=True;
   for i:=0 to finfo.Count-1 do
   if finfo[i].Selected then
@@ -689,7 +689,7 @@ begin
  begin
   fQuery:=GetQuery;
   fQuery.active:=false;
-  SQL_:='DELETE FROM '+GetDefDBName+''+' WHERE ID in (';
+  SQL_:='DELETE FROM $DB$ WHERE ID in (';
   FirstID:=True;
   for i:=0 to finfo.Count - 1 do
   if finfo[i].Selected then
@@ -731,7 +731,7 @@ begin
   Query := GetQuery;
   ID:=GetIdByFileName(FInfo[fInfo.Position].FileName);
   if ID=0 then exit;
-  SetSQL(Query,'SELECT * from '+GetDefDBName+' where ID='+IntToStr(ID));
+  SetSQL(Query,'SELECT * from $DB$ where ID='+IntToStr(ID));
   Query.Open;
   if GetImagePasswordFromUserBlob(Query.FieldByName('thum'),FInfo[fInfo.Position].FileName)<>'' then
   DBKernel.DoIDEvent(Sender,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
@@ -908,7 +908,7 @@ begin
    end;
    ProgressForm.xPosition:=ProgressForm.xPosition+1;
    {!!!}   Application.ProcessMessages;
-   _sqlexectext:='Update '+GetDefDBName+' Set KeyWords = "'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+   _sqlexectext:='Update $DB$ Set KeyWords = "'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
    fQuery.active:=false;
    SetSQL(fQuery,_sqlexectext);
    ExecSQL(fQuery);
@@ -950,7 +950,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update '+GetDefDBName+' Set Groups = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set Groups = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
     fQuery.active:=false;
     SetSQL(fQuery,_sqlexectext);
     ExecSQL(fQuery);
@@ -1259,7 +1259,7 @@ begin
   system.delete(str,1,1);
   NewRating:=StrToInt(str);
   fQuery:=GetQuery;
-  SQL_:='Update '+GetDefDBName+' Set Rating='+inttostr(NewRating)+' Where ID in (';
+  SQL_:='Update $DB$ Set Rating='+inttostr(NewRating)+' Where ID in (';
 
   FirstID:=True;
   for i:=0 to finfo.Count-1 do

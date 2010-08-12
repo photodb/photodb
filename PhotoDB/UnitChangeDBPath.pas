@@ -177,7 +177,7 @@ var
 
 begin          
  WorkQuery:=GetQuery;
- _sqlexectext:='Select FFileName from '+GetDefDBName+' order by FFileName';
+ _sqlexectext:='Select FFileName from $DB$ order by FFileName';
  SetSQL(WorkQuery,_sqlexectext);
  DBInOpening:=true;
  TOpenQueryThread.Create(false,WorkQuery,DBOpened);
@@ -254,7 +254,7 @@ begin
   ToPath:=Edit1.Text;
   FormatDir(ToPath);
   WorkQuery:=GetQuery;
-  _sqlexectext:='Select ID,FFileName from '+GetDefDBName;
+  _sqlexectext:='Select ID,FFileName from $DB$';
   SetSQL(WorkQuery,_sqlexectext);
   DBInOpening:=true;
   TOpenQueryThread.Create(false,WorkQuery,DBOpened);
@@ -301,7 +301,7 @@ begin
      CalcStringCRC32(AnsiLowerCase(NewDir),CRC);
      if not CheckBox1.Checked or FileExists(NewPath)  then
      begin
-      _sqlexectext:='UPDATE '+GetDefDBname+' SET FFileName="'+AnsiLowerCase(NormalizeDBString(NewPath))+'" , FolderCRC = '+Format('%d',[crc])+' where ID = '+IntToStr(WorkQuery.FieldByName('ID').AsInteger);
+      _sqlexectext:='UPDATE $DB$ SET FFileName="'+AnsiLowerCase(NormalizeDBString(NewPath))+'" , FolderCRC = '+Format('%d',[crc])+' where ID = '+IntToStr(WorkQuery.FieldByName('ID').AsInteger);
       SetSQL(TempQuery,_sqlexectext);
       try
        ExecSQL(TempQuery);

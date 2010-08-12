@@ -318,10 +318,10 @@ begin
       try
         ShowInfo(TEXT_MES_GETTING_INFO_FROM_DB,1,0);
 
-        if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+        if (GetDBType=DB_TYPE_MDB) and not FolderView then SetSQL(FQuery,'Select * From (Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
         if FolderView then
         begin
-         SetSQL(FQuery,'Select * From '+GetDefDBname+' where FolderCRC = :crc');
+         SetSQL(FQuery,'Select * From $DB$ where FolderCRC = :crc');
          s:=FFolder;
          Delete(s,1,Length(ProgramDir));
          UnformatDir(s);
@@ -908,9 +908,9 @@ begin
         Query := GetQuery(False);
                 
         if ExplorerInfo.ShowPrivate then
-          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From '+GetDefDBname+' where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
+          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
         else
-          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From '+GetDefDBname+' where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
+          SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
 
         SetStrParam(Query,0,'%'+DBFolder+'%');
         SetStrParam(Query,1,'%'+DBFolder+'%\%');
@@ -1604,7 +1604,7 @@ begin
   UnFormatDir(Folder);
   CalcStringCRC32(AnsiLowerCase(Folder),crc);
 
-  SetSQL(fQuery,'SELECT * FROM ' + GetDefDBName + ' WHERE FolderCRC = '+IntToStr(GetPathCRC(FFolder))+' AND FFileName LIKE :FFileName');
+  SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FFolder))+' AND FFileName LIKE :FFileName');
 
   
  SetStrParam(FQuery,0,'%'+normalizeDBStringLike(NormalizeDBString(AnsiLowercase(FFolder)))+'%');

@@ -99,7 +99,7 @@ begin
    break;
   end;
   if Termitating then break;
-  _sqlexectext:='Select * from '+GetDefDBName+' where ID=(Select MIN(ID) from '+GetDefDBName+' where ID>'+IntToStr(lastID)+')';
+  _sqlexectext:='Select * from $DB$ where ID=(Select MIN(ID) from $DB$ where ID>'+IntToStr(lastID)+')';
 
   SetSQL(FTable,_sqlexectext);
   FTable.Open;
@@ -134,7 +134,7 @@ begin
     if int<>FTable.FieldByName('FolderCRC').AsInteger then
     begin
      SetQuery:=GetQuery;
-     SetSQL(SetQuery,'Update '+GetDefDBName+' Set FolderCRC=:FolderCRC Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
+     SetSQL(SetQuery,'Update $DB$ Set FolderCRC=:FolderCRC Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
      SetIntParam(SetQuery,0,crc);
      ExecSQL(SetQuery);
 
@@ -154,7 +154,7 @@ begin
        if (GetDBType(fDBname)=DB_TYPE_MDB) then
        begin
         SetQuery:=GetQuery;
-        SetSQL(SetQuery,'Delete from '+GetDefDBName+' Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
+        SetSQL(SetQuery,'Delete from $DB$ Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
         ExecSQL(SetQuery);
         FreeDS(SetQuery);
        end else
@@ -167,7 +167,7 @@ begin
      end;
      fQuery.Active:=false;
 
-     SetSQL(fQuery,'UPDATE '+GetDefDBName+' SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID='+inttostr(FTable.FieldByName('ID').AsInteger));
+     SetSQL(fQuery,'UPDATE $DB$ SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID='+inttostr(FTable.FieldByName('ID').AsInteger));
      ExecSQL(fQuery);
     end else
     begin
@@ -186,7 +186,7 @@ begin
    If s<>AnsiLowerCase(s) then
    begin
      SetQuery:=GetQuery;
-     SetSQL(SetQuery,'UPDATE '+GetDefDBName+' Set FFileName=:FFileName Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
+     SetSQL(SetQuery,'UPDATE $DB$ Set FFileName=:FFileName Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
      SetStrParam(SetQuery,0,AnsiLowerCase(s));
      ExecSQL(SetQuery);
      FreeDS(SetQuery);
@@ -216,7 +216,7 @@ begin
        _sqlexectext:=_sqlexectext+'IsDate=:IsDate,';
        _sqlexectext:=_sqlexectext+'IsTime=:IsTime';
        SetQuery:=GetQuery;
-       SetSQL(SetQuery,'Update '+GetDefDBName+' Set '+_sqlexectext+' where ID = '+IntToStr(FTable.FieldByName('ID').AsInteger));
+       SetSQL(SetQuery,'Update $DB$ Set '+_sqlexectext+' where ID = '+IntToStr(FTable.FieldByName('ID').AsInteger));
        SetDateParam(SetQuery,'DateToAdd',DateToAdd);
        SetDateParam(SetQuery,'aTime',aTime);
        SetBoolParam(SetQuery,2,IsDate);
@@ -238,13 +238,13 @@ begin
 
    if (GetDBType(dbname)=DB_TYPE_MDB) then
    begin
-    FromDB:='(Select * from '+GetDefDBname+' where StrThCrc=:StrThCrc)';
+    FromDB:='(Select * from $DB$ where StrThCrc=:StrThCrc)';
     SetSQL(fQuery,'SELECT * FROM '+FromDB+' WHERE StrTh = :StrTh ORDER BY ID');
     SetIntParam(fQuery,0,StringCRC(FTable.FieldByName('StrTh').AsString));
     SetStrParam(fQuery,1,FTable.FieldByName('StrTh').AsString);
    end else
    begin
-    SetSQL(fQuery,'SELECT * FROM '+GetDefDBname+' WHERE StrTh = :StrTh ORDER BY ID');
+    SetSQL(fQuery,'SELECT * FROM $DB$ WHERE StrTh = :StrTh ORDER BY ID');
     SetStrParam(fQuery,0,FTable.FieldByName('StrTh').AsString);
    end;
 
@@ -307,7 +307,7 @@ begin
 
  Result:=0;
  DS := GetQuery;
- SetSQL(DS,'SELECT count(*) as DB_Count from '+GetDefDBName);
+ SetSQL(DS,'SELECT count(*) as DB_Count from $DB$');
  try
   DS.Open;
   Result:=DS.FieldByName('DB_Count').AsInteger;

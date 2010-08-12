@@ -434,7 +434,7 @@ var
 begin
  NewSearch:=SearchManager.NewSearch;
  NewSearch.SearchEdit.Text:=':Group('+fGroups[PopupMenu1.Tag].GroupName+'):';
- NewSearch.Button1.OnClick(Sender);
+ NewSearch.WlStartStop.OnClick(Sender);
  NewSearch.Show;
 end;
 

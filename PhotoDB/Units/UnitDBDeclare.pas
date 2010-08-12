@@ -208,7 +208,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Clear;
+    procedure Clear;              
+    procedure ClearList;
     procedure DeleteAt(Index : Integer);  
     function ExtractAt(Index : Integer) : TSearchRecord;
     function AddNew : TSearchRecord;
@@ -281,6 +282,7 @@ type
     DateTo : TDateTime;
     SortMethod : Integer;
     SortDecrement : Boolean;
+    IsEstimate : Boolean;
     function EqualsTo(AQuery : TSearchQuery) : Boolean;
   end;
 
@@ -302,6 +304,11 @@ var
 begin
   for I := 0 to FList.Count - 1 do
     TSearchRecord(FList[I]).Free;
+  FList.Clear;
+end;
+
+procedure TSearchRecordArray.ClearList;
+begin
   FList.Clear;
 end;
 

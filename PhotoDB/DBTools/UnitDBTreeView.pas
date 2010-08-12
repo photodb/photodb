@@ -249,8 +249,8 @@ begin
 
   WorkTable:=GetQuery;
   TempTable:=GetQuery;
-  SetSQL(WorkTable,'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from '+GetDefDBName);
-  SetSQL(TempTable,'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from '+GetDefDBName);
+  SetSQL(WorkTable,'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
+  SetSQL(TempTable,'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
   TOpenQueryThread.Create(false,WorkTable,DBOpened);
   OpenProgress:=GetProgressWindow;
   OpenProgress.OneOperation:=true;

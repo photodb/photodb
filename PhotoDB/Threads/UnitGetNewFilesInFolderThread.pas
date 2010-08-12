@@ -98,7 +98,7 @@ begin
  DBFolder:=AnsiLowerCase(Directory);
  DBFolder:=NormalizeDBString(DBFolder);
 
- if GetDBType=DB_TYPE_MDB then SetSQL(DS,'Select FFileName From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+ if GetDBType=DB_TYPE_MDB then SetSQL(DS,'Select FFileName From (Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
 
  SetStrParam(DS,0,'%'+DBFolder+'%');
  SetStrParam(DS,1,'%'+DBFolder+'%\%');
@@ -124,7 +124,7 @@ begin
  DBFolder:=AnsiLowerCase(FFolder);
  DBFolder:=NormalizeDBString(DBFolder);
  FQuery:=GetQuery;
- if GetDBType=DB_TYPE_MDB then SetSQL(FQuery,'Select FFileName From (Select * from '+GetDefDBname+' where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+ if GetDBType=DB_TYPE_MDB then SetSQL(FQuery,'Select FFileName From (Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
 
  SetStrParam(FQuery,0,'%'+DBFolder+'%');
  SetStrParam(FQuery,1,'%'+DBFolder+'%\%');

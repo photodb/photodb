@@ -194,13 +194,13 @@ begin
 
  fSpecQuery:=GetQuery(NewFileName);
  try
-  SetSQL(fSpecQuery, 'Update '+GetDefDBName+' Set Comment="" where Comment is null');
+  SetSQL(fSpecQuery, 'Update $DB$ Set Comment="" where Comment is null');
   ExecSQL(fSpecQuery);
-  SetSQL(fSpecQuery, 'Update '+GetDefDBName+' Set KeyWords="" where KeyWords is null');
+  SetSQL(fSpecQuery, 'Update $DB$ Set KeyWords="" where KeyWords is null');
   ExecSQL(fSpecQuery);
-  SetSQL(fSpecQuery, 'Update '+GetDefDBName+' Set Groups="" where Groups is null');
+  SetSQL(fSpecQuery, 'Update $DB$ Set Groups="" where Groups is null');
   ExecSQL(fSpecQuery);
-  SetSQL(fSpecQuery, 'Update '+GetDefDBName+' Set Links="" where Links is null');
+  SetSQL(fSpecQuery, 'Update $DB$ Set Links="" where Links is null');
   ExecSQL(fSpecQuery);
  finally
   FreeDS(fSpecQuery);
