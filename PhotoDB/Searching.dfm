@@ -1,6 +1,6 @@
 object SearchForm: TSearchForm
-  Left = 369
-  Top = 48
+  Left = 459
+  Top = 60
   Width = 821
   Height = 678
   ActiveControl = ShowDateOptionsLink
@@ -189,7 +189,7 @@ object SearchForm: TSearchForm
     end
     object PropertyPanel: TPanel
       Left = 1
-      Top = 441
+      Top = 397
       Width = 178
       Height = 326
       Align = alTop
@@ -464,7 +464,7 @@ object SearchForm: TSearchForm
     end
     object ExplorerPanel: TPanel
       Left = 1
-      Top = 767
+      Top = 723
       Width = 178
       Height = 15
       Align = alClient
@@ -474,9 +474,9 @@ object SearchForm: TSearchForm
     end
     object SearchPanelB: TPanel
       Left = 1
-      Top = 401
+      Top = 396
       Width = 178
-      Height = 40
+      Height = 1
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
@@ -486,10 +486,10 @@ object SearchForm: TSearchForm
       TabOrder = 2
       DesignSize = (
         178
-        40)
+        1)
       object Label7: TLabel
         Left = 8
-        Top = 4
+        Top = 2
         Width = 30
         Height = 13
         Caption = 'Result'
@@ -502,7 +502,7 @@ object SearchForm: TSearchForm
       end
       object PbProgress: TDmProgress
         Left = 8
-        Top = 20
+        Top = 18
         Width = 167
         Height = 18
         Anchors = [akLeft, akTop, akRight]
@@ -524,7 +524,7 @@ object SearchForm: TSearchForm
       Left = 1
       Top = 177
       Width = 178
-      Height = 224
+      Height = 219
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
@@ -532,7 +532,7 @@ object SearchForm: TSearchForm
       Visible = False
       DesignSize = (
         178
-        224)
+        219)
       object elvDateRange: TEasyListview
         Left = 8
         Top = 0
@@ -583,7 +583,7 @@ object SearchForm: TSearchForm
         OnResize = elvDateRangeResize
       end
       object dblDate: TDBLoading
-        Left = 45
+        Left = 61
         Top = 72
         Width = 63
         Height = 64
@@ -918,17 +918,10 @@ object SearchForm: TSearchForm
       object WlStartStop: TWebLink
         Left = 8
         Top = 50
-        Width = 160
+        Width = 133
         Height = 16
         Cursor = crHandPoint
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        PopupMenu = SortingPopupMenu
-        Text = 'Search (54600 '#1088#1077#1079#1091#1083#1100#1090#1072#1090#1086#1074')'
-        OnClick = Image4_Click
+        Text = 'Search (999999 Result)'
         BkColor = 14653050
         ImageIndex = 0
         IconWidth = 16

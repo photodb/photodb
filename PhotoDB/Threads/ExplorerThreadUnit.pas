@@ -767,7 +767,7 @@ begin
         if FInfo.ItemCrypted then
         begin
           FInfo.Image := DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'))) as TJpegImage;
-          if FInfo.Image <> nil then
+          if not FInfo.Image.Empty then
             FInfo.PassTag := 1;
         end else
         begin
@@ -2006,7 +2006,7 @@ begin
     end;
   end else //if ID <> 0
   begin
-    if not ((Info.PassTag = 0) and Info.ItemCrypted) then
+    if not ((Info.PassTag = 0) and Info.ItemCrypted) and not Info.Image.Empty then
     begin
       TempBitmap := TBitmap.Create;
       TempBitmap.Assign(Info.Image);

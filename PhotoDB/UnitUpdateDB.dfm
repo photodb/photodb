@@ -1,7 +1,7 @@
 object UpdateDBForm: TUpdateDBForm
   Tag = 1
-  Left = 150
-  Top = 137
+  Left = 188
+  Top = 171
   AlphaBlend = True
   AlphaBlendValue = 200
   BorderIcons = [biSystemMenu, biMinimize]

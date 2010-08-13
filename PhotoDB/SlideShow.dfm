@@ -73,14 +73,13 @@ object Viewer: TViewer
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 0
-      object ToolBar2: TToolBar
+      object TbrActions: TToolBar
         Left = 0
         Top = 0
         Width = 449
         Height = 25
         Align = alNone
         ButtonHeight = 23
-        Caption = 'ToolBar1'
         Color = clBtnFace
         DisabledImages = ImageList3
         EdgeBorders = []
@@ -211,12 +210,11 @@ object Viewer: TViewer
           ImageIndex = 11
           Style = tbsSeparator
         end
-        object ToolButton20: TToolButton
+        object TbDelete: TToolButton
           Left = 308
           Top = 2
-          Caption = 'ToolButton20'
           ImageIndex = 13
-          OnClick = ToolButton20Click
+          OnClick = TbDeleteClick
         end
         object TbSeparator5: TToolButton
           Left = 331

@@ -210,7 +210,8 @@ type
     destructor Destroy; override;
     procedure Clear;              
     procedure ClearList;
-    procedure DeleteAt(Index : Integer);  
+    procedure DeleteAt(Index : Integer);
+    procedure Add(Data : TSearchRecord);
     function ExtractAt(Index : Integer) : TSearchRecord;
     function AddNew : TSearchRecord;
     property Items[Index: Integer]: TSearchRecord read GetValueByIndex write SetValueByIndex; default;
@@ -291,6 +292,11 @@ type
 implementation
 
 { TSearchRecordArray }
+
+procedure TSearchRecordArray.Add(Data: TSearchRecord);
+begin
+  FList.Add(Data);
+end;
 
 function TSearchRecordArray.AddNew: TSearchRecord;
 begin

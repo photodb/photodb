@@ -1031,7 +1031,7 @@ begin
   if ImHint<>nil then
   ImHint.Close;
   if Item.Index>fFilesInfo.Count-1 then exit;
-  If (fFilesInfo[Item.Index].Access=db_access_private) then exit;
+
   SetForegroundWindow(Self.Handle);
   SetLength(fFilesToDrag,0);
   fpopupdown:=true;
@@ -3594,44 +3594,56 @@ begin
 end;
 
 procedure TExplorerForm.Cut2Click(Sender: TObject);
-Var
-  i, index : integer;
-  File_List : TStrings;
+var
+  I, Index : integer;
+  FileList : TStrings;
 begin
-  File_List:=TStringList.Create;
- For i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
- begin
-  Index:=ItemIndexToMenuIndex(i);
-  File_List.Add(ProcessPath(fFilesInfo[index].FileName));
- end;
- Copy_Move(false,File_List);
- File_List.Free;
+  FileList := TStringList.Create;
+  try
+    for I := 0 to ListView1.Items.Count - 1 do
+    if ListView1.Items[I].Selected then
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      FileList.Add(ProcessPath(fFilesInfo[Index].FileName));
+    end;
+    Copy_Move(False, FileList);
+  finally
+    FileList.Free;
+  end;
+end;
+      
+procedure TExplorerForm.ShowProgress;
+begin
+  FStatusProgress.Show;
+
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
 end;
 
 procedure TExplorerForm.HideProgress;
 begin
- fStatusProgress.Hide;
+  FStatusProgress.Hide;
+  
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
 end;
 
 procedure TExplorerForm.SetProgressMax(Value: Integer);
 begin
- fStatusProgress.Max:=Value;
+  FStatusProgress.Max := Value;
 end;
 
 procedure TExplorerForm.SetProgressPosition(Value: Integer);
 begin
- fStatusProgress.Position:=Value;
+  FStatusProgress.Position := Value;
+
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressValue(Handle, Value, FStatusProgress.Max);
 end;
 
 procedure TExplorerForm.SetStatusText(Text: string);
 begin
- StatusBar1.Panels[0].Text:=Text;
-end;
-
-procedure TExplorerForm.ShowProgress();
-begin
-   fStatusProgress.Show;
+  StatusBar1.Panels[0].Text := Text;
 end;
 
 procedure TExplorerForm.Button1Click(Sender: TObject);

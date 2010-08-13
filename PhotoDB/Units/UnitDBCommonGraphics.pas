@@ -4,13 +4,12 @@ interface
 
  uses Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics, GraphicEx,
       DmProgress, UnitDBDeclare, Language, JPEG, CommCtrl, UnitDBCommon,
-      GraphicsBaseTypes, GIFImage, Effects, Math;
+      GraphicsBaseTypes, GIFImage, Effects, Math, uMath;
 
  const
     PSDTransparent = false;
     //Image processiong options
     ZoomSmoothMin = 0.4;
-    CHalf64 : Double = 0.5;
 
   procedure DoInfoListBoxDrawItem(ListBox: TListBox; Index: Integer; aRect: TRect; State: TOwnerDrawState;
     ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
@@ -41,20 +40,6 @@ interface
   procedure SelectedColor(Image : TBitmap; Color : TColor);  
 
 implementation
-
-function FastTrunc(const Value: Double): Integer; overload;
-asm
- fld Value.Double
- fsub CHalf64
- fistp Result.Integer
-end;
-
-function FastRound(Sample: Double): Integer;
-asm
- fld Sample.Double
- frndint
- fistp Result.Integer
-end;
 
 procedure BeginScreenUpdate(hwnd: THandle);
 begin
@@ -150,7 +135,7 @@ var
   G : Byte;
   W1, W2 : Byte;
 begin
-  W1 := FastRound((N / 100)*255);
+  W1 := Round((N / 100)*255);
   W2 := 255 - W1;
   for I := 0 to S.Height - 1 do
   begin
@@ -432,9 +417,9 @@ begin
       XD := J + X;  
       if (XD >= DW) then
         Break;
-      pD[XD].r := pS[j].r;
-      pD[XD].g := pS[j].g;
-      pD[XD].b := pS[j].b;
+      pD[XD].R := pS[J].R;
+      pD[XD].G := pS[J].G;
+      pD[XD].B := pS[J].B;
     end;
   end;
 end;
@@ -463,11 +448,11 @@ begin
   DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
   DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
 
-  for i:=0 to PNG.Height-1 do
+  for I := 0 to PNG.Height - 1 do
   begin
     AddrS := AddrLineS;
     AddrD := AddrLineD;
-    for j:=0 to PNG.Width-1 do
+    for J := 0 to PNG.Width - 1 do
     begin
       S := PRGB32(AddrS);
       D := PRGB(AddrD);
@@ -487,21 +472,21 @@ end;
 
 procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
 var
-  i, j : integer;
+  I, J : integer;
   p : PARGB;
-  r, g, b : byte;
+  R, G, B : Byte;
 begin
-  r := GetRValue(Color);
-  g := GetGValue(Color);
-  b := GetBValue(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
   for i:=0 to Bitmap.Height-1 do
   begin
-    p:=Bitmap.ScanLine[i];
+    p:=Bitmap.ScanLine[I];
     for j:=0 to Bitmap.Width-1 do
     begin
-      p[j].r := r;
-      p[j].g := g;
-      p[j].b := b;
+      p[j].R := R;
+      p[j].G := G;
+      p[j].B := B;
     end;
   end;
 end;
@@ -529,9 +514,9 @@ begin
     begin      
       W1 := PS[J].L;
       W2 := 255 - W1;
-      PD[J].R := (R * W2 + PS[J].R * W1 + 127) div 255;
-      PD[J].G := (G * W2 + PS[J].G * W1 + 127) div 255;
-      PD[J].B := (B * W2 + PS[J].B * W1 + 127) div 255;
+      PD[J].R := (R * W2 + PS[J].R * W1 + $7F) div $FF;
+      PD[J].G := (G * W2 + PS[J].G * W1 + $7F) div $FF;
+      PD[J].B := (B * W2 + PS[J].B * W1 + $7F) div $FF;
     end;
   end;
 end;
@@ -705,11 +690,11 @@ begin
    r:=0;
    g:=0;
    b:=0;
-   for k:=FastRound(Sh*(i-y)) to FastRound(Sh*(i+1-y))-1 do
+   for k:=Round(Sh*(i-y)) to Round(Sh*(i+1-y))-1 do
    begin
     if k > s_h then break;
     if k < 0 then continue;
-    for p:=FastRound(Sw*j) to FastRound(Sw*(j+1))-1 do
+    for p:=Round(Sw*j) to Round(Sw*(j+1))-1 do
     begin
      if p > s_w then break;
      inc(col);
@@ -755,11 +740,11 @@ begin
   Xd[i]:=D.scanline[i];
   try
 
-  for i := 0 to min(FastRound((Rect.Bottom-Rect.Top-1)*dy)-1,dh-1) do begin
+  for i := 0 to min(Round((Rect.Bottom-Rect.Top-1)*dy)-1,dh-1) do begin
       yo := FastTrunc(i / dy)+Rect.Top;
       y1r:= FastTrunc(i / dy) * dy;
       if yo>S.height then Break;
-    for j := 0 to min(FastRound((Rect.Right-Rect.Left-1)*dx)-1,dw-1) do begin
+    for j := 0 to min(Round((Rect.Right-Rect.Left-1)*dx)-1,dw-1) do begin
       xo := FastTrunc(j / dx)+Rect.Left;
       x1r:= FastTrunc(j / dx) * dx;
       if xo>S.Width then Continue;
@@ -769,15 +754,15 @@ begin
        z1 := ((Xs[yo ,xo+ 1].r - Xs[yo,xo].r)/ dx)*(j - x1r) + Xs[yo,xo].r;
        z2 := ((Xs[yo+1,xo+1].r - Xs[yo+1,xo].r) / dx)*(j - x1r) + Xs[yo+1,xo].r;
        k := (z2 - z1) / dy;
-       Xd[i+y,j+x].r := FastRound(i * k + z1 - y1r * k);
+       Xd[i+y,j+x].r := Round(i * k + z1 - y1r * k);
        z1 := ((Xs[yo ,xo+ 1].g - Xs[yo,xo].g)/ dx)*(j - x1r) + Xs[yo,xo].g;
        z2 := ((Xs[yo+1,xo+1].g - Xs[yo+1,xo].g) / dx)*(j - x1r) + Xs[yo+1,xo].g;
        k := (z2 - z1) / dy;
-       Xd[i+y,j+x].g := FastRound(i * k + z1 - y1r * k);
+       Xd[i+y,j+x].g := Round(i * k + z1 - y1r * k);
        z1 := ((Xs[yo ,xo+ 1].b - Xs[yo,xo].b)/ dx)*(j - x1r) + Xs[yo,xo].b;
        z2 := ((Xs[yo+1,xo+1].b - Xs[yo+1,xo].b) / dx)*(j - x1r) + Xs[yo+1,xo].b;
        k := (z2 - z1) / dy;
-       Xd[i+y,j+x].b := FastRound(i * k + z1 - y1r * k);
+       Xd[i+y,j+x].b := Round(i * k + z1 - y1r * k);
       end;
     end;
   end;
@@ -960,10 +945,10 @@ begin
    r:=0;
    g:=0;
    b:=0;
-   for k:=FastRound(Sh*i) to FastRound(Sh*(i+1))-1 do
+   for k:=Round(Sh*i) to Round(Sh*(i+1))-1 do
    begin
     if k>s_h-1 then continue;
-    for p:=FastRound(Sw*j) to FastRound(Sw*(j+1))-1 do
+    for p:=Round(Sw*j) to Round(Sw*(j+1))-1 do
     begin
      if p>s_w-1 then continue;
      inc(col);

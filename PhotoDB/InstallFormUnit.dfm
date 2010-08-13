@@ -1,6 +1,6 @@
 object InstallForm: TInstallForm
   Left = 330
-  Top = 168
+  Top = 210
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Install PhotoDB'

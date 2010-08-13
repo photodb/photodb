@@ -2,7 +2,7 @@ unit UnitResampleFilters;
 
 interface
 
-uses Math, Windows, Graphics, SysUtils, GraphicsBaseTypes;
+uses Math, Windows, Graphics, SysUtils, GraphicsBaseTypes, uMath;
 
   // Sample filters for use with Stretch()
   function SplineFilter(Value: Single): Single;
@@ -91,8 +91,8 @@ implementation
 // Bell filter
 function BellFilter(Value: Single): Single;
 begin
- if (Value < 0.0) then
-    Value := -Value;
+  if Value < 0 then
+    Value := - Value;
   if (Value < 0.5) then
     Result := 0.75 - Sqr(Value)
   else if (Value < 1.5) then
@@ -119,8 +119,8 @@ end;
 function HermiteFilter(Value: Single): Single;
 begin
   // f(t) = 2|t|^3 - 3|t|^2 + 1, -1 <= t <= 1
-  if (Value < 0.0) then
-    Value := -Value;
+  if Value < 0 then
+    Value := - Value;
   if (Value < 1.0) then
     Result := (2.0 * Value - 3.0) * Sqr(Value) + 1.0
   else
@@ -134,13 +134,13 @@ function Lanczos3Filter(Value: Single): Single;
     if (Value <> 0.0) then
     begin
       Value := Value * Pi;
-      Result := sin(Value) / Value
+      Result := Sin(Value) / Value
     end else
       Result := 1.0;
   end;
 begin
-  if (Value < 0.0) then
-    Value := -Value;
+  if Value < 0 then
+    Value := - Value;
   if (Value < 3.0) then
     Result := SinC(Value) * SinC(Value / 3.0)
   else
@@ -154,8 +154,8 @@ const
 var
   tt			: single;
 begin
-  if (Value < 0.0) then
-    Value := -Value;
+  if Value < 0 then
+    Value := - Value;
   tt := Sqr(Value);
   if (Value < 1.0) then
   begin
@@ -180,8 +180,8 @@ function SplineFilter(Value: Single): Single;
 var
   tt			: single;
 begin
-  if (Value < 0.0) then
-    Value := -Value;
+  if Value < 0 then
+    Value := - Value;
   if (Value < 1.0) then
   begin
     tt := Sqr(Value);
@@ -292,13 +292,13 @@ begin
       for i := 0 to DstWidth-1 do
       begin
         contrib^[i].n := 0;
-        GetMem(contrib^[i].p, trunc(width * 2.0 + 1) * sizeof(TContributor));
+        GetMem(contrib^[i].p, FastTrunc(width * 2.0 + 1) * sizeof(TContributor));
         center := i / xscale;
         // Original code:
-        // left := ceil(center - width);
-        // right := floor(center + width);
-        left := floor(center - width);
-        right := ceil(center + width);
+        // left := FastCeil(center - width);
+        // right := FastFloor(center + width);
+        left := FastFloor(center - width);
+        right := FastCeil(center + width);
         for j := left to right do
         begin
           weight := filter((center - j) / fscale) / fscale;
@@ -323,13 +323,13 @@ begin
       for i := 0 to DstWidth-1 do
       begin
         contrib^[i].n := 0;
-        GetMem(contrib^[i].p, trunc(fwidth * 2.0 + 1) * sizeof(TContributor));
+        GetMem(contrib^[i].p, FastTrunc(fwidth * 2.0 + 1) * sizeof(TContributor));
         center := i / xscale;
         // Original code:
-        // left := ceil(center - fwidth);
-        // right := floor(center + fwidth);
-        left := floor(center - fwidth);
-        right := ceil(center + fwidth);
+        // left := FastCeil(center - fwidth);
+        // right := FastFloor(center + fwidth);
+        left := FastFloor(center - fwidth);
+        right := FastCeil(center + fwidth);
         for j := left to right do
         begin
           weight := filter(center - j);
@@ -382,19 +382,19 @@ begin
         else if (rgb.r < 0.0) then
           color.r := 0
         else
-          color.r := round(rgb.r);
+          color.r := Round(rgb.r);
         if (rgb.g > 255.0) then
           color.g := 255
         else if (rgb.g < 0.0) then
           color.g := 0
         else
-          color.g := round(rgb.g);
+          color.g := Round(rgb.g);
         if (rgb.b > 255.0) then
           color.b := 255
         else if (rgb.b < 0.0) then
           color.b := 0
         else
-          color.b := round(rgb.b);
+          color.b := Round(rgb.b);
 {$IFDEF USE_SCANLINE}
         // Set new pixel value
         DestPixel^ := color;
@@ -430,13 +430,13 @@ begin
       for i := 0 to DstHeight-1 do
       begin
         contrib^[i].n := 0;
-        GetMem(contrib^[i].p, trunc(width * 2.0 + 1) * sizeof(TContributor)); 
+        GetMem(contrib^[i].p, FastTrunc(width * 2.0 + 1) * sizeof(TContributor));
         center := i / yscale;
         // Original code:
-        // left := ceil(center - width);
-        // right := floor(center + width);
-        left := floor(center - width);
-        right := ceil(center + width);
+        // left := FastCeil(center - width);
+        // right := FastFloor(center + width);
+        left := FastFloor(center - width);
+        right := FastCeil(center + width);
         for j := left to right do
         begin
           weight := filter((center - j) / fscale) / fscale;
@@ -461,13 +461,13 @@ begin
       for i := 0 to DstHeight-1 do
       begin
         contrib^[i].n := 0;
-        GetMem(contrib^[i].p, trunc(fwidth * 2.0 + 1) * sizeof(TContributor));
+        GetMem(contrib^[i].p, FastTrunc(fwidth * 2.0 + 1) * sizeof(TContributor));
         center := i / yscale;
         // Original code:
-        // left := ceil(center - fwidth);
-        // right := floor(center + fwidth);
-        left := floor(center - fwidth);
-        right := ceil(center + fwidth);
+        // left := FastCeil(center - fwidth);
+        // right := FastFloor(center + fwidth);
+        left := FastFloor(center - fwidth);
+        right := FastCeil(center + fwidth);
         for j := left to right do
         begin
           weight := filter(center - j);
@@ -529,19 +529,19 @@ begin
         else if (rgb.r < 0.0) then
           color.r := 0
         else
-          color.r := round(rgb.r);
+          color.r := Round(rgb.r);
         if (rgb.g > 255.0) then
           color.g := 255
         else if (rgb.g < 0.0) then
           color.g := 0
         else
-          color.g := round(rgb.g);
+          color.g := Round(rgb.g);
         if (rgb.b > 255.0) then
           color.b := 255
         else if (rgb.b < 0.0) then
           color.b := 0
         else
-          color.b := round(rgb.b);
+          color.b := Round(rgb.b);
 {$IFDEF USE_SCANLINE}
         DestPixel^ := color;
         inc(integer(DestPixel), DestDelta);

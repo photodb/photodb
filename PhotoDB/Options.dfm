@@ -23,7 +23,6 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 409
     Height = 441
-    PageIndex = 5
     TabFont.Charset = DEFAULT_CHARSET
     TabFont.Color = clBtnText
     TabFont.Height = -11
