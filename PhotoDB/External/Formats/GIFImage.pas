@@ -4638,14 +4638,14 @@ var
 
   function GrayScalePalette: hPalette;
   var
-    i			: integer;
+    i			: Byte;
     Pal			: TMaxLogPalette;
   begin
     Pal.palVersion := $0300;
     Pal.palNumEntries := 256;
     for i := 0 to 255 do
     begin
-      with (Pal.palPalEntry[i]) do
+      with Pal.palPalEntry[i] do
       begin
         peRed := i;
         peGreen := i;
@@ -4668,7 +4668,7 @@ var
     Pal.palNumEntries := 2;
     for i := 0 to 1 do
     begin
-      with (Pal.palPalEntry[i]) do
+      with Pal.palPalEntry[i] do
       begin
         peRed := Values[i];
         peGreen := Values[i];
@@ -4691,7 +4691,7 @@ var
     Pal.palNumEntries := 4;
     for i := 0 to 3 do
     begin
-      with (Pal.palPalEntry[i]) do
+      with Pal.palPalEntry[i] do
       begin
         peRed := Values[i];
         peGreen := Values[i];
