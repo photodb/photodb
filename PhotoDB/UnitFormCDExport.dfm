@@ -1,9 +1,9 @@
 object FormCDExport: TFormCDExport
   Left = 297
   Top = 164
-  Width = 724
-  Height = 505
   Caption = 'CD Export'
+  ClientHeight = 471
+  ClientWidth = 716
   Color = clBtnFace
   Constraints.MinHeight = 370
   Constraints.MinWidth = 700
@@ -22,8 +22,8 @@ object FormCDExport: TFormCDExport
   object CDListView: TListView
     Left = 0
     Top = 185
-    Width = 708
-    Height = 169
+    Width = 716
+    Height = 173
     Align = alClient
     Columns = <
       item
@@ -48,14 +48,18 @@ object FormCDExport: TFormCDExport
     OnDblClick = CDListViewDblClick
     OnEdited = CDListViewEdited
     OnEditing = CDListViewEditing
+    ExplicitWidth = 708
+    ExplicitHeight = 169
   end
   object PanelBottom: TPanel
     Left = 0
-    Top = 354
-    Width = 708
+    Top = 358
+    Width = 716
     Height = 113
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 354
+    ExplicitWidth = 708
     object LabelExportDirectory: TLabel
       Left = 8
       Top = 8
@@ -122,11 +126,12 @@ object FormCDExport: TFormCDExport
   object PanelTop: TPanel
     Left = 0
     Top = 0
-    Width = 708
+    Width = 716
     Height = 185
     Align = alTop
     TabOrder = 2
     OnResize = PanelTopResize
+    ExplicitWidth = 708
     object LabelInfo: TLabel
       Left = 64
       Top = 8
@@ -477,10 +482,8 @@ object FormCDExport: TFormCDExport
           Caption = '\'
         end>
       Style = csExDropDownList
-      ItemHeight = 16
       TabOrder = 0
       OnSelect = ComboBoxPathListSelect
-      DropDownCount = 8
       ShowDropDownMenu = True
       LastItemIndex = 0
       ShowEditIndex = 0

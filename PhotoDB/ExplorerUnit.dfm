@@ -4345,8 +4345,6 @@ object ExplorerForm: TExplorerForm
     Align = alLeft
     ParentColor = True
     TabOrder = 0
-    ExplicitTop = 42
-    ExplicitHeight = 531
     object CloseButtonPanel: TPanel
       Left = 1
       Top = 1
@@ -4379,7 +4377,6 @@ object ExplorerForm: TExplorerForm
       ParentCtl3D = False
       TabOrder = 1
       OnResize = PropertyPanelResize
-      ExplicitHeight = 508
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
@@ -4402,7 +4399,6 @@ object ExplorerForm: TExplorerForm
         Color = clInactiveCaption
         TabOrder = 0
         OnResize = ScrollBox1Resize
-        ExplicitHeight = 508
         object TypeLabel: TLabel
           Left = 8
           Top = 136
@@ -5868,7 +5864,7 @@ object ExplorerForm: TExplorerForm
     Left = 480
     Top = 80
   end
-  object DropFileSource1: TDropFileSource
+  object DropFileSourceMain: TDropFileSource
     DragTypes = [dtCopy, dtMove, dtLink]
     Images = DragImageList
     ShowImage = True

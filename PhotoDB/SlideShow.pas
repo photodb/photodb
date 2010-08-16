@@ -2353,9 +2353,19 @@ end;
 
 procedure TViewer.DropFileTarget1Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
+var
+  FileList : TStringList;
 begin
- if not DBCanDrag then
- LoadListImages(DropFileTarget1.Files as TStringList);
+  if not DBCanDrag then
+  begin
+    FileList := TStringList.Create;
+    try
+      DropFileTarget1.Files.AssignTo(FileList);
+      LoadListImages(FileList);
+    finally
+      FileList.Free;
+    end;
+  end;
 end;
 
 procedure TViewer.ReloadCurrent;

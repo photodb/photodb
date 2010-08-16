@@ -440,7 +440,7 @@ var
 
 type
   TGIFVersion = (gvUnknown, gv87a, gv89a);
-  TGIFVersionRec = array[0..2] of char;
+  TGIFVersionRec = array[0..2] of AnsiChar;
 
 const
   GIFVersions : array[gv87a..gv89a] of TGIFVersionRec = ('87a', '89a');
@@ -743,7 +743,7 @@ type
     FMask		: HBitmap;
     FNeedMask		: boolean;
     FLocalPalette	: HPalette;
-    FData		: PChar;
+    FData		: PByte;
     FDataSize		: integer;
     FColorMap		: TGIFColorMap;
     FImageDescriptor	: TImageDescriptor;
@@ -809,7 +809,7 @@ type
     property Interlaced: boolean read GetInterlaced write SetInterlaced;
     property ColorMap: TGIFColorMap read FColorMap;
     property ActiveColorMap: TGIFColorMap read GetActiveColorMap;
-    property Data: PChar read FData;
+    property Data: PByte read FData;
     property DataSize: integer read FDataSize;
     property Extensions: TGIFExtensionList read FExtensions;
     property Version: TGIFVersion read GetVersion;
@@ -953,8 +953,8 @@ type
 //                      TGIFApplicationExtension
 //
 ////////////////////////////////////////////////////////////////////////////////
-  TGIFIdentifierCode = array[0..7] of char;
-  TGIFAuthenticationCode = array[0..2] of char;
+  TGIFIdentifierCode = array[0..7] of AnsiChar;
+  TGIFAuthenticationCode = array[0..2] of AnsiChar;
   TGIFApplicationRec = packed record
     Identifier		: TGIFIdentifierCode;
     Authentication	: TGIFAuthenticationCode;
@@ -2777,7 +2777,7 @@ type
     FColors		: integer;
   public
     constructor Create(Palette: hPalette); virtual;
-    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; virtual; abstract;
+    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; virtual; abstract;
     property Colors: integer read FColors;
   end;
 
@@ -2807,7 +2807,7 @@ type
   public
     constructor Create(Palette: hPalette); override;
     destructor Destroy; override;
-    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
   end;
 
   // TSlowColorLookup implements a precise but very slow generic color mapper.
@@ -2821,35 +2821,35 @@ type
   public
     constructor Create(Palette: hPalette); override;
     destructor Destroy; override;
-    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
   end;
 
   // TNetscapeColorLookup maps colors to the netscape 6*6*6 color cube.
   TNetscapeColorLookup = class(TColorLookup)
   public
     constructor Create(Palette: hPalette); override;
-    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
   end;
 
   // TGrayWindowsLookup maps colors to 4 shade palette.
   TGrayWindowsLookup = class(TSlowColorLookup)
   public
     constructor Create(Palette: hPalette); override;
-    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
   end;
 
   // TGrayScaleLookup maps colors to a uniform 256 shade palette.
   TGrayScaleLookup = class(TColorLookup)
   public
     constructor Create(Palette: hPalette); override;
-    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
   end;
 
   // TMonochromeLookup maps colors to a black/white palette.
   TMonochromeLookup = class(TColorLookup)
   public
     constructor Create(Palette: hPalette); override;
-    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
   end;
 
 constructor TColorLookup.Create(Palette: hPalette);
@@ -2893,7 +2893,7 @@ begin
 end;
 
 // Map color to arbitrary palette
-function TFastColorLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TFastColorLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte;
 var
   i			: integer;
   InverseIndex		: integer;
@@ -2905,7 +2905,7 @@ begin
   InverseIndex := (Red SHR 3) OR ((Green AND $F8) SHL 2) OR ((Blue AND $F8) SHL 7);
 
   if (FInverseLookup^[InverseIndex] <> -1) then
-    Result := char(FInverseLookup^[InverseIndex])
+    Result := FInverseLookup^[InverseIndex]
   else
   begin
     // Sequential scan for nearest color to minimize euclidian distance
@@ -2921,7 +2921,7 @@ begin
           MinColor := i;
         end;
       end;
-    Result := char(MinColor);
+    Result := MinColor;
     FInverseLookup^[InverseIndex] := MinColor;
   end;
 
@@ -2954,9 +2954,9 @@ begin
 end;
 
 // Map color to arbitrary palette
-function TSlowColorLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TSlowColorLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte;
 begin
-  Result := char(GetNearestPaletteIndex(FPalette, Red OR (Green SHL 8) OR (Blue SHL 16)));
+  Result := GetNearestPaletteIndex(FPalette, Red OR (Green SHL 8) OR (Blue SHL 16));
   if (FPaletteEntries <> nil) then
     with FPaletteEntries^[ord(Result)] do
     begin
@@ -2973,12 +2973,12 @@ begin
 end;
 
 // Map color to netscape 6*6*6 color cube
-function TNetscapeColorLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TNetscapeColorLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte;
 begin
   R := (Red+3) DIV 51;
   G := (Green+3) DIV 51;
   B := (Blue+3) DIV 51;
-  Result := char(B + 6*G + 36*R);
+  Result := B + 6*G + 36*R;
   R := R * 51;
   G := G * 51;
   B := B * 51;
@@ -2991,7 +2991,7 @@ begin
 end;
 
 // Convert color to windows grays
-function TGrayWindowsLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TGrayWindowsLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte;
 begin
   Result := inherited Lookup(MulDiv(Red, 77, 256),
     MulDiv(Green, 150, 256), MulDiv(Blue, 29, 256), R, G, B);
@@ -3004,12 +3004,12 @@ begin
 end;
 
 // Convert color to grayscale
-function TGrayScaleLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TGrayScaleLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte;
 begin
-  Result := char((Blue*29 + Green*150 + Red*77) DIV 256);
-  R := ord(Result);
-  G := ord(Result);
-  B := ord(Result);
+  Result := (Blue*29 + Green*150 + Red*77) DIV 256;
+  R := Result;
+  G := Result;
+  B := Result;
 end;
 
 constructor TMonochromeLookup.Create(Palette: hPalette);
@@ -3019,17 +3019,17 @@ begin
 end;
 
 // Convert color to black/white
-function TMonochromeLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TMonochromeLookup.Lookup(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte;
 begin
   if ((Blue*29 + Green*150 + Red*77) > 32512) then
   begin
-    Result := #1;
+    Result := 1;
     R := 255;
     G := 255;
     B := 255;
   end else
   begin
-    Result := #0;
+    Result := 0;
     R := 0;
     G := 0;
     B := 0;
@@ -3051,7 +3051,7 @@ type
     Width		: integer;
   public
     constructor Create(AWidth: integer; Lookup: TColorLookup); virtual;
-    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; virtual;
+    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; virtual;
     procedure NextLine; virtual;
     procedure NextColumn;
 
@@ -3086,7 +3086,7 @@ type
   public
     constructor Create(AWidth: integer; Lookup: TColorLookup); override;
     destructor Destroy; override;
-    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
     procedure NextLine; override;
   end;
 
@@ -3117,7 +3117,7 @@ type
   public
     constructor Create(AWidth: integer; Lookup: TColorLookup); override;
     destructor Destroy; override;
-    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
     procedure NextLine; override;
   end;
 
@@ -3173,7 +3173,7 @@ type
   public
     constructor Create(AWidth: integer; Lookup: TColorLookup); override;
     destructor Destroy; override;
-    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
     procedure NextLine; override;
   end;
 
@@ -3195,7 +3195,7 @@ type
   public
     constructor Create(AWidth: integer; Lookup: TColorLookup); override;
     destructor Destroy; override;
-    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char; override;
+    function Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte; override;
     procedure NextLine; override;
   end;
 
@@ -3212,7 +3212,7 @@ begin
   FColumn := 0;
 end;
 
-function TDitherEngine.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TDitherEngine.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): Byte;
 begin
   // Map color to palette
   Result := FLookup.Lookup(Red, Green, Blue, R, G, B);
@@ -3279,7 +3279,7 @@ end;
   {$DEFINE R_PLUS}
   {$RANGECHECKS OFF}
 {$ENDIF}
-function TFloydSteinbergDitherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TFloydSteinbergDitherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): byte;
 var
   BelowNextError	: TErrorTerm;
   Delta			: TErrorTerm;
@@ -3487,7 +3487,7 @@ end;
   {$DEFINE R_PLUS}
   {$RANGECHECKS OFF}
 {$ENDIF}
-function T5by3Ditherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function T5by3Ditherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): byte;
 var
   ColorR		,
   ColorG		,
@@ -3821,7 +3821,7 @@ end;
   {$DEFINE R_PLUS}
   {$RANGECHECKS OFF}
 {$ENDIF}
-function TSteveArcheDitherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TSteveArcheDitherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): byte;
 var
   ColorR		,
   ColorG		,
@@ -4044,7 +4044,7 @@ end;
   {$DEFINE R_PLUS}
   {$RANGECHECKS OFF}
 {$ENDIF}
-function TBurkesDitherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): char;
+function TBurkesDitherer.Dither(Red, Green, Blue: BYTE; var R, G, B: BYTE): byte;
 var
   ErrorR		,
   ErrorG		,
@@ -4629,7 +4629,7 @@ var
   SrcScanLine		,
   Src			: PRGBTriple;
   DstScanLine		,
-  Dst			: PChar;
+  Dst			: PByte;
   BGR			: TRGBTriple;
 {$ifdef DEBUG_DITHERPERFORMANCE}
   TimeStart		,
@@ -5469,7 +5469,7 @@ end;
 procedure TGIFGlobalColorMap.BuildHistogram(var Histogram: TColormapHistogram);
 var
   Pixel			,
-  LastPixel		: PChar;
+  LastPixel		: PByte;
   i			: integer;
 begin
   (*
@@ -5501,7 +5501,7 @@ end;
 procedure TGIFGlobalColorMap.MapImages(var Map: TColormapReverse);
 var
   Pixel			,
-  LastPixel		: PChar;
+  LastPixel		: PByte;
   i			: integer;
 begin
   for i := 0 to FHeader.Image.Images.Count-1 do
@@ -5515,7 +5515,7 @@ begin
       *)
       while (Pixel < LastPixel) do
       begin
-        Pixel^ := chr(Map[ord(Pixel^)]);
+        Pixel^ := Map[ord(Pixel^)];
         inc(Pixel);
       end;
 
@@ -5587,7 +5587,7 @@ end;
 
 type
   TGIFHeaderRec = packed record
-    Signature: array[0..2] of char; { contains 'GIF' }
+    Signature: array[0..2] of AnsiChar; { contains 'GIF' }
     Version: TGIFVersionRec;   { '87a' or '89a' }
   end;
 
@@ -5738,7 +5738,7 @@ end;
 procedure TGIFLocalColorMap.BuildHistogram(var Histogram: TColormapHistogram);
 var
   Pixel			,
-  LastPixel		: PChar;
+  LastPixel		: PByte;
   i			: integer;
 begin
   Pixel := FSubImage.Data;
@@ -5766,7 +5766,7 @@ end;
 procedure TGIFLocalColorMap.MapImages(var Map: TColormapReverse);
 var
   Pixel			,
-  LastPixel		: PChar;
+  LastPixel		: PByte;
 begin
   Pixel := FSubImage.Data;
   LastPixel := Pixel + FSubImage.Width * FSubImage.Height;
@@ -5776,7 +5776,7 @@ begin
   *)
   while (Pixel < LastPixel) do
   begin
-    Pixel^ := chr(Map[ord(Pixel^)]);
+    Pixel^ := Map[ord(Pixel^)];
     inc(Pixel);
   end;
 
@@ -5818,7 +5818,7 @@ var
   firstcode, oldcode	: integer;
   buf			: array[0..257] of BYTE;
 
-  Dest			: PChar;
+  Dest			: PByte;
   v			,
   xpos, ypos, pass	: integer;
 
@@ -6095,7 +6095,7 @@ begin
           v := readLZW;
           if (v < 0) then
             exit;
-          Dest^ := char(v);
+          Dest^ := v;
           Inc(Dest);
         end;
         Inc(ypos, step);
@@ -6115,7 +6115,7 @@ begin
         v := readLZW;
         if (v < 0) then
           exit;
-        Dest^ := char(v);
+        Dest^ := v;
         Inc(Dest);
       end;
     end;
@@ -6533,7 +6533,7 @@ type
     Width		,		// Width of image in pixels
     Height		: integer;	// height of image in pixels
     Interlace		: boolean;	// Interlace flag (True = interlaced image)
-    Data		: PChar;	// Pointer to pixel data
+    Data		: PByte;	// Pointer to pixel data
     GIFStream		: TGIFWriter;	// Output buffer
 
     OutputBucket	: longInt;	// Output bit bucket
@@ -6548,7 +6548,7 @@ type
     EOFCode		: CodeInt;	// Special output code to signal EOF
     BaseCode		: CodeInt;	// ...
 
-    Pixel		: PChar;	// Pointer to current pixel
+    Pixel		: PByte;	// Pointer to current pixel
 
     cX			,		// Current X counter (Width - X)
     Y			: integer;	// Current Y
@@ -6561,7 +6561,7 @@ type
     procedure DoCompress; virtual; abstract;
   public
     procedure Compress(AStream: TStream; ABitsPerPixel: integer;
-      AWidth, AHeight: integer; AInterlace: boolean; AData: PChar; AMaxColor: integer);
+      AWidth, AHeight: integer; AInterlace: boolean; AData: PByte; AMaxColor: integer);
     property Warning: TGIFWarning read FOnWarning write FOnWarning;
   end;
 
@@ -6682,7 +6682,7 @@ end;
 
 
 procedure TGIFEncoder.Compress(AStream: TStream; ABitsPerPixel: integer;
-  AWidth, AHeight: integer; AInterlace: boolean; AData: PChar; AMaxColor: integer);
+  AWidth, AHeight: integer; AInterlace: boolean; AData: PByte; AMaxColor: integer);
 const
   EndBlockByte		= $00;			// End of block marker
 {$ifdef DEBUG_COMPRESSPERFORMANCE}
@@ -7115,7 +7115,7 @@ end;
 
 procedure TLZWEncoder.DoCompress;
 var
-  Color			: char;
+  Color			: Byte;
   NewKey		: KeyInt;
   NewCode		: CodeInt;
 
@@ -7478,8 +7478,8 @@ var
   ColorLookup		: TColorLookup;
   Ditherer		: TDitherEngine;
   DIBResult		: TDIB;
-  Src			: PChar;
-  Dst			: PChar;
+  Src			: PByte;
+  Dst			: PByte;
 
   Row			: integer;
   Color			: TGIFColor;
@@ -7490,9 +7490,9 @@ var
   WasTransparent	: boolean;
   MappedTransparentIndex: char;
 
-  MaskBits		: PChar;
-  MaskDest		: PChar;
-  MaskRow		: PChar;
+  MaskBits		: PByte;
+  MaskDest		: PByte;
+  MaskRow		: PByte;
   MaskRowWidth		,
   MaskRowBitWidth	: integer;
   Bit			,
@@ -7598,7 +7598,7 @@ begin
 
             if (IsTransparent) and (Index = TransparentIndex) then
             begin
-              MaskDest^ := char(byte(MaskDest^) OR Bit);
+              MaskDest^ := MaskDest^ OR Bit;
               WasTransparent := True;
               Ditherer.NextColumn;
             end else
@@ -7670,14 +7670,14 @@ var
   ScanLineRow		: Integer;
   DIBResult		: TDIB;
   DestScanLine		,
-  Src			: PChar;
+  Src			: PByte;
   TransparentIndex	: byte;
   IsTransparent		: boolean;
   WasTransparent	: boolean;
 
-  MaskBits		: PChar;
-  MaskDest		: PChar;
-  MaskRow		: PChar;
+  MaskBits		: PByte;
+  MaskDest		: PByte;
+  MaskRow		: PByte;
   MaskRowWidth		: integer;
   Col			: integer;
   MaskByte		: byte;
@@ -7753,7 +7753,7 @@ begin
             for Col := 0 to Width-1 do
             begin
               // Set a bit in the mask if the pixel is transparent
-              if (Src^ = char(TransparentIndex)) then
+              if (Src^ = TransparentIndex) then
                 MaskByte := MaskByte OR Bit;
 
               Bit := Bit SHR 1;
@@ -7762,7 +7762,7 @@ begin
                 // Store a mask byte for each 8 pixels
                 Bit := $80;
                 WasTransparent := WasTransparent or (MaskByte <> 0);
-                MaskDest^ := char(MaskByte);
+                MaskDest^ := MaskByte;
                 inc(MaskDest);
                 MaskByte := 0;
               end;
@@ -7772,7 +7772,7 @@ begin
             if (MaskByte <> 0) then
             begin
               WasTransparent := True;
-              MaskDest^ := char(MaskByte);
+              MaskDest^ := MaskByte;
             end;
             Inc(MaskRow, MaskRowWidth);
           end else
@@ -8091,7 +8091,7 @@ var
   DIBSource		: TDIB;
   ABitmap		: TBitmap;
 
-  procedure Import8Bit(Dest: PChar);
+  procedure Import8Bit(Dest: PByte);
   var
     y			: integer;
   begin
@@ -8112,10 +8112,10 @@ var
     end;
   end;
 
-  procedure Import4Bit(Dest: PChar);
+  procedure Import4Bit(Dest: PByte);
   var
     x, y		: integer;
-    Scanline		: PChar;
+    Scanline		: PByte;
   begin
     // Copy colormap
     FColorMap.ImportPalette(FBitmap.Palette);
@@ -8128,10 +8128,10 @@ var
       for x := 0 to Width-1 do
       begin
         if (x AND $01 = 0) then
-          Dest^ := chr(ord(ScanLine^) SHR 4)
+          Dest^ := ScanLine^ SHR 4
         else
         begin
-          Dest^ := chr(ord(ScanLine^) AND $0F);
+          Dest^ := ScanLine^ AND $0F;
           inc(ScanLine);
         end;
         inc(Dest);
@@ -8139,7 +8139,7 @@ var
     end;
   end;
 
-  procedure Import1Bit(Dest: PChar);
+  procedure Import1Bit(Dest: PByte);
   var
     x, y		: integer;
     Scanline		: PChar;
@@ -8165,7 +8165,7 @@ var
           Byte := ord(ScanLine^);
           inc(Scanline);
         end;
-        Dest^ := chr((Byte AND $80) SHR 7);
+        Dest^ := (Byte AND $80) SHR 7;
         Byte := Byte SHL 1;
         inc(Dest);
         dec(Bit);
@@ -8174,7 +8174,7 @@ var
     end;
   end;
 
-  procedure Import24Bit(Dest: PChar);
+  procedure Import24Bit(Dest: PByte);
   type
     TCacheEntry = record
       Color		: TColor;
@@ -8223,7 +8223,7 @@ var
             break;
           if (Cache[i].Color = Pixel) then
           begin
-            Dest^ := chr(Cache[i].Index);
+            Dest^ := Cache[i].Index;
             LastEntry := i;
             goto NextPixel;
           end;
@@ -8233,7 +8233,7 @@ var
             dec(i);
         until (i = LastEntry);
         // Color not found in cache, do it the slow way instead
-        Dest^ := chr(FColorMap.AddUnique(Pixel));
+        Dest^ := FColorMap.AddUnique(Pixel);
         // Add color and index to cache
         LastEntry := (LastEntry + 1) AND (CacheSize-1);
         Cache[LastEntry].Color := Pixel;
@@ -8840,11 +8840,11 @@ var
   WasTransparent	: boolean;
   i			: integer;
   NewSize		: integer;
-  NewData		: PChar;
+  NewData		: PByte;
   NewWidth		,
   NewHeight		: integer;
   pSource		,
-  pDest			: PChar;
+  pDest			: PByte;
 begin
   if (Empty) or (not Transparent) then
     exit;
@@ -8920,7 +8920,7 @@ begin
     Newheight := CropBottom - CropTop + 1;
     NewSize := NewWidth * NewHeight;
     GetMem(NewData, NewSize);
-    pSource := PChar(integer(FData) + CropTop * Width + CropLeft);
+    pSource := PByte(integer(FData) + CropTop * Width + CropLeft);
     pDest := NewData;
     for i := 0 to NewHeight-1 do
     begin
@@ -10859,7 +10859,7 @@ end;
 function THistogram.ProcessSubImage(Image: TGIFSubImage): boolean;
 var
   Size			: integer;
-  Pixel			: PChar;
+  Pixel			: PByte;
   IsTransparent		,
   WasTransparent	: boolean;
   OldTransparentColorIndex: byte;
@@ -10891,7 +10891,7 @@ begin
       // Check for invalid color index
       if (ord(Pixel^) >= FCount) then
       begin
-        Pixel^ := #0; // ***FIXME*** Isn't this an error condition?
+        Pixel^ := 0; // ***FIXME*** Isn't this an error condition?
         Image.Warning(gsWarning, sInvalidColor);
       end;
 
@@ -10955,7 +10955,7 @@ procedure THistogram.MapImages(UseTransparency: boolean; NewTransparentColorInde
 var
   i			: integer;
   Size			: integer;
-  Pixel			: PChar;
+  Pixel			: PByte;
   ReverseMap		: array[byte] of byte;
   IsTransparent		: boolean;
   OldTransparentColorIndex: byte;
@@ -10990,10 +10990,10 @@ begin
       begin
         // Map transparent pixels to the new transparent color index and...
         if (IsTransparent) and (ord(Pixel^) = OldTransparentColorIndex) then
-          Pixel^ := char(NewTransparentColorIndex)
+          Pixel^ := NewTransparentColorIndex
         else
           // ... all other pixels to their new color index
-          Pixel^ := char(ReverseMap[ord(Pixel^)]);
+          Pixel^ := ReverseMap[Pixel^];
         dec(size);
         inc(Pixel);
       end;
@@ -11480,7 +11480,7 @@ var
   Prog			,
   MaxProg		: integer;
 
-  function Scan(Buf: PChar; Value: Byte; Count: integer): boolean; assembler;
+  function Scan(Buf: PByte; Value: Byte; Count: integer): boolean; assembler;
   asm
     PUSH	EDI
     MOV		EDI, Buf

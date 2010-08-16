@@ -11,13 +11,13 @@ uses
   Network, GraphicCrypt, AddSessionPasswordUnit, UnitCrypting,
   ShellContextMenu, ShlObj, DropSource, DropTarget, Clipbrd, GraphicsCool,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
-  EasyListview, ScPanel, MPCommonUtilities, MPCommonObjects, DragDropFile, 
+  EasyListview, ScPanel, MPCommonUtilities, MPCommonObjects,
   DragDrop, UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
   uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar;
+  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, DragDropFile;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -134,7 +134,7 @@ type
     Tile1: TMenuItem;
     RefreshID1: TMenuItem;
     DropFileTarget1: TDropFileTarget;
-    DropFileSource1: TDropFileSource;
+    DropFileSourceMain: TDropFileSource;
     DragImageList: TImageList;
     DropFileTarget2: TDropFileTarget;
     GroupManager1: TMenuItem;
@@ -1843,8 +1843,8 @@ begin
     fDBDragPoint:=ListView1.ScreenToClient(fDBDragPoint);
     ImW:=(EasyRect.IconRect.Right-EasyRect.IconRect.Left) div 2 - ImW div 2;
     ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
-    DropFileSource1.ImageHotSpotX:=Min(MaxW,Max(1,fDBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
-    DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,fDBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView1.Scrollbars.ViewableViewportRect.Top));
+    DropFileSourceMain.ImageHotSpotX:=Min(MaxW,Max(1,fDBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
+    DropFileSourceMain.ImageHotSpotY:=Min(MaXH,Max(1,fDBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView1.Scrollbars.ViewableViewportRect.Top));
 
    end else
    begin          
@@ -1856,13 +1856,13 @@ begin
      Icon48.Free;
     end else
     DragImageList.AddIcon(Image.Icon);
-    DropFileSource1.ImageHotSpotX:=DragImageList.Width div 2;
-    DropFileSource1.ImageHotSpotY:=DragImageList.Height div 2;
+    DropFileSourceMain.ImageHotSpotX:=DragImageList.Width div 2;
+    DropFileSourceMain.ImageHotSpotY:=DragImageList.Height div 2;
    end;
    SetSelected(nil);
-   DropFileSource1.Files.Clear;
+   DropFileSourceMain.Files.Clear;
    for i:=0 to Length(fFilesToDrag)-1 do
-   DropFileSource1.Files.Add(fFilesToDrag[i]);
+   DropFileSourceMain.Files.Add(fFilesToDrag[i]);
    ListView1.Refresh;
    SelfDraging:=true;
 
@@ -1872,7 +1872,7 @@ begin
    ImHint.close;
    hinttimer.Enabled:=false;
    FWasDragAndDrop:=true;
-   DropFileSource1.Execute;
+   DropFileSourceMain.Execute;
    SelfDraging:=false;
    DropFileTarget1.Files.clear;
    fDBCanDrag:=true;
@@ -5539,7 +5539,8 @@ var
 //  _AutoRename, _Break : boolean;
 begin
  outdrag:=false;
- DropInfo:=DropFileTarget1.Files;
+ DropInfo:= TStringList.Create;
+ DropFileTarget1.Files.AssignTo(DropInfo);
 
  if ssRight in LastShift then
  begin

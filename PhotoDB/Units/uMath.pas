@@ -6,7 +6,7 @@ const
  CHalf64 : Double = 0.5;
 
 function FastTrunc(const Value: Double): Integer; overload;
-//function FastRound(Sample: Double): Integer;   
+function FastRound(Sample: Double): Integer;
 function FastCeil(const X: Double): Integer;
 function FastFloor(const X: Double): Integer;
 procedure FastAbs(var Value: Double);
@@ -43,12 +43,12 @@ asm
  fistp Result.Integer
 end;
 
-{function FastRound(Sample: Double): Integer;
+function FastRound(Sample: Double): Integer;
 asm
  fld Sample.Double
  frndint
  fistp Result.Integer
-end;   }
+end;
 
 procedure FastAbs(var Value: Double);
 var

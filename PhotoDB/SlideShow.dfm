@@ -1,11 +1,11 @@
 object Viewer: TViewer
   Left = 303
   Top = 90
-  Width = 653
-  Height = 518
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
   Caption = 'View'
+  ClientHeight = 484
+  ClientWidth = 645
   Color = clBtnFace
   Constraints.MinHeight = 100
   Constraints.MinWidth = 100
@@ -82,7 +82,6 @@ object Viewer: TViewer
         ButtonHeight = 23
         Color = clBtnFace
         DisabledImages = ImageList3
-        EdgeBorders = []
         HotImages = ImageList2
         Images = ImageList1
         ParentColor = False

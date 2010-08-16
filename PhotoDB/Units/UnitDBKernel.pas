@@ -1890,21 +1890,35 @@ procedure TDBKernel.LoadDBs;
 var
   Reg : TBDRegistry;
   List : TStrings;
-  i : integer;
+  I, DBType : Integer;
+  Icon, FileName : string;
 begin
- FDBs := TPhotoDBFiles.Create;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- Reg.OpenKey(RegRoot+'dbs',true);
- List:=TStringList.Create;
- Reg.GetKeyNames(List);
- for i:=0 to List.Count-1 do
- begin
-  Reg.CloseKey;
-  Reg.OpenKey(RegRoot+'dbs\'+List[i],true);
-  FDBs.Add(List[i], Reg.ReadString('Icon'), Reg.ReadString('FileName'), Reg.ReadInteger('Type'));
- end;
- Reg.Free;
- List.Free;
+  FDBs := TPhotoDBFiles.Create;
+
+  List:=TStringList.Create;
+  try
+    Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+    try
+      Reg.OpenKey(RegRoot + 'dbs', True);
+      Reg.GetKeyNames(List);
+      for I := 0 to List.Count - 1 do
+      begin
+        Reg.CloseKey;
+        Reg.OpenKey(RegRoot + 'dbs\' + List[I], True);
+        if Reg.ValueExists('Icon') and Reg.ValueExists('FileName') and Reg.ValueExists('Type') then
+        begin
+          Icon := Reg.ReadString('Icon');
+          FileName := Reg.ReadString('FileName');
+          DBType := Reg.ReadInteger('Type');
+          FDBs.Add(List[I], Icon, FileName, DBType);
+        end;
+      end;
+    finally
+      Reg.Free;
+    end;
+  finally
+    List.Free;
+  end;
 end;
 
 procedure TDBKernel.MoveDB(OldDBFile, NewDBFile: string);

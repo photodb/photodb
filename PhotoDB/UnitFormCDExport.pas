@@ -288,9 +288,17 @@ end;
 
 procedure TFormCDExport.DropFileTarget1Drop(Sender: TObject;
   ShiftState: TShiftState; APoint: TPoint; var Effect: Integer);
+var
+  FileList : TStrings;
 begin
- Mapping.AddRealItemsToCurrentDirectory(DropFileTarget1.Files);
- DrawCurrentDirectory(CDListView);
+  FileList := TStringList.Create;
+  try
+    DropFileTarget1.Files.AssignTo(FileList);
+    Mapping.AddRealItemsToCurrentDirectory(FileList);
+    DrawCurrentDirectory(CDListView);
+  finally
+    FileList.Free;
+  end;
 end;
 
 procedure TFormCDExport.ButtonCreateDirectoryClick(Sender: TObject);
