@@ -97,15 +97,15 @@ type
       FSwap               : boolean;
       FDate: TDateTime;
       FTime: TDateTime;
-      function  ReadAsci(const Offset, Count: Cardinal): String;
-      function  ReadRatio(const Offset: Cardinal; frac: boolean): String; overload;
+      function  ReadAsci(const Offset, Count: Cardinal): AnsiString;
+      function  ReadRatio(const Offset: Cardinal; frac: boolean): AnsiString; overload;
       function  ReadRatio(const Offset: Cardinal): single; overload;
       procedure ReadTag(var tag: TIfdTag);
       procedure Init;
     function ReadLongIntValue(const Offset: Cardinal): LongInt;
     public
       constructor Create;
-      procedure ReadFromFile(const FileName: AnsiString);
+      procedure ReadFromFile(const FileName: string);
 
       property Valid: Boolean read FValid;
       property ImageDesc: String read FImageDesc;
@@ -193,7 +193,7 @@ begin
 end;
 
 
-function TExif.ReadAsci(const Offset, Count: Cardinal): String;
+function TExif.ReadAsci(const Offset, Count: Cardinal): AnsiString;
 var
   fp: LongInt;
   i: Word;
@@ -239,7 +239,7 @@ begin
 
 end;
 
-function TExif.ReadRatio(const Offset: Cardinal; frac: boolean): String;
+function TExif.ReadRatio(const Offset: Cardinal; frac: boolean): AnsiString;
 var
   fp: LongInt;
   nom,denom: cardinal;
@@ -339,11 +339,11 @@ begin
 end;
 
 
-procedure TExif.ReadFromFile(const FileName: AnsiString);
+procedure TExif.ReadFromFile(const FileName: string);
 const
-  orient   : Array[1..9] of String=('Normal','Mirrored','Rotated 180','Rotated 180, mirrored','Rotated 90 left, mirrored','Rotated 90 right','Rotated 90 right, mirrored','Rotated 90 left','Unknown');
-  ExplType : Array[1..9] of String=('Unknown','Manual Control','Normal Program','Aperture Priority', 'Shutter Priority', 'Creative Program','Action Program','Portrait Mode','Landscape Mode');
-  Meter    : Array[0..7] of String=('Unknown','Average','Center Weighted Average','Spot','Multi Spot','Pattern','Partial','Other');
+  orient   : Array[1..9] of AnsiString=('Normal','Mirrored','Rotated 180','Rotated 180, mirrored','Rotated 90 left, mirrored','Rotated 90 right','Rotated 90 right, mirrored','Rotated 90 left','Unknown');
+  ExplType : Array[1..9] of AnsiString=('Unknown','Manual Control','Normal Program','Aperture Priority', 'Shutter Priority', 'Creative Program','Action Program','Portrait Mode','Landscape Mode');
+  Meter    : Array[0..7] of AnsiString=('Unknown','Average','Center Weighted Average','Spot','Multi Spot','Pattern','Partial','Other');
 var
   j:      TMarker;
   ifd:    TIFDHeader;
@@ -353,9 +353,9 @@ var
   n:      Single;
   SOI:    Word; //2 bytes SOI marker. FF D8 (Start Of Image)
   IfdCnt: Word;
-  Tmp   : string;
+  Tmp   : AnsiString;
   yyyy,mm,dd : Word;
-  D, T : String;
+  D, T : AnsiString;
   DT : TDateTime;
 begin
   if not FileExists(FileName) then exit;

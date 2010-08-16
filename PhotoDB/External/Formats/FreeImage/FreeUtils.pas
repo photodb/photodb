@@ -56,7 +56,7 @@ uses StrUtils;
 
 function FIU_GetFIFType(filename: string): FREE_IMAGE_FORMAT;
 begin
-  Result:=FreeImage_GetFileType(PWideChar(filename),0);
+  Result:=FreeImage_GetFileType(PAnsiChar(filename),0);
 end;
 
 function FIU_GetFIFDescription(fif: FREE_IMAGE_FORMAT): string;

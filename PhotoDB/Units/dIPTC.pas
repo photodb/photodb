@@ -27,20 +27,20 @@ const dIPTCVersion = '1.03d';
       TagArrayGrowth = 25;
 type
 
-  StrFunct = function (instr:string): string;
+  StrFunct = function (instr:AnsiString): AnsiString;
 
   TTagEntry = record
     TID: integer;        // TagTableID - EXIF use
     TType: word;         // tag type
     ICode: Word;         // iptc code
     Tag: word;           // primary key
-    Name: string;        // searchable
-    Desc: string;        // translatable
-    Code: string;        // decode capability
-    Data: string;        // display value
-    Raw: string;         // unprocessed value
+    Name: AnsiString;        // searchable
+    Desc: AnsiString;        // translatable
+    Code: AnsiString;        // decode capability
+    Data: AnsiString;        // display value
+    Raw: AnsiString;         // unprocessed value
     PRaw: integer;       // pointer to unprocessed
-    FormatS:string;      // Format string
+    FormatS:AnsiString;      // Format string
     Size: integer;       // used by ITPC module
     CallBack: StrFunct;  // formatting string
   end;

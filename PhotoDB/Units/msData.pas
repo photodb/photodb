@@ -33,7 +33,7 @@ type
         isTiff:boolean;
         IMGparent:tImageInfo;
         makerOffset:integer;
-        gblUCMaker:string ;
+        gblUCMaker:AnsiString ;
         function ReadMSData(var DR:TImageInfo):boolean;
         constructor Create(tiffFlag:boolean; p:tImageInfo);
      end;
@@ -42,11 +42,11 @@ type
      //  More complex fields can be formatted with a
      //  callback function.  Declare them here and insert
      //  the code in the implemenetation section.
-     Function NikonLens(instr:string) :string;
-     Function NikonColorMode(instr:string) :string;
-     Function CanonExp1(instr:string) :string;
-     Function CanonExp2(instr:string) :string;
-     Function CanonCustom1(instr:string) :string;
+     Function NikonLens(instr:AnsiString) :AnsiString;
+     Function NikonColorMode(instr:AnsiString) :AnsiString;
+     Function CanonExp1(instr:AnsiString) :AnsiString;
+     Function CanonExp2(instr:AnsiString) :AnsiString;
+     Function CanonCustom1(instr:AnsiString) :AnsiString;
 
 const
      Nikon1Table : array [0..10] of TTagEntry =
@@ -299,10 +299,10 @@ const
      ((Tag: $00;      Name:'ModelID';  Desc:'ModelID'),
       (Tag: $0E00;    Name:'PIMdata';  Desc:'PIMdata')) ;
 
-function StrBefore( xx,target : string):string;
-function StrAfter( xx,target : string):string;
-function StrNth( xx:string ; delim:string ; n:integer ):string;
-function StrCount( xx:string ; delim:string ):integer;
+function StrBefore( xx,target : AnsiString):AnsiString;
+function StrAfter( xx,target : AnsiString):AnsiString;
+function StrNth( xx:AnsiString ; delim:AnsiString ; n:integer ):AnsiString;
+function StrCount( xx:AnsiString ; delim:AnsiString ):integer;
 
 implementation
 
@@ -311,7 +311,7 @@ implementation
 //
 //  Ok, Ok, usually you'd have a parser do the
 //  work but hey - this is just a simple example
-Function NikonColorMode(instr:string) :string;
+Function NikonColorMode(instr:AnsiString) :AnsiString;
 begin
   instr := copy(instr,2,5);
   result := instr;
@@ -325,9 +325,9 @@ begin
     result := 'Mode 3 (sRGB): higher saturation'
 end;
 
-Function NikonLens(instr:string) :string;
+Function NikonLens(instr:AnsiString) :AnsiString;
 var i,sl:integer;
-    tb:string;
+    tb:AnsiString;
     MaxSp,MinSp,MaxFL,MinFL:double;
 begin
    sl := length(DexifDataSep);
@@ -350,9 +350,9 @@ begin
 end;
 
 const cr = #13#10;
-type strArray = array of string;
+type strArray = array of AnsiString;
 
-function StrBefore( xx,target : string):string;
+function StrBefore( xx,target : AnsiString):AnsiString;
 var i:integer;
 begin
   i := pos(target,xx);
@@ -362,7 +362,7 @@ begin
     result := copy(xx,1,i-1)
 end;
 
-function StrAfter( xx,target : string):string;
+function StrAfter( xx,target : AnsiString):AnsiString;
 var i:integer;
 begin
   i := pos(target,xx);
@@ -376,7 +376,7 @@ begin
     result := copy(xx,i+length(target),length(xx)-length(target)-i+1)
 end;
 
-function StrNth( xx:string ; delim:string ; n:integer ):string;
+function StrNth( xx:AnsiString ; delim:AnsiString ; n:integer ):AnsiString;
 var i:integer;
 begin
   for i := 2 to n do
@@ -384,7 +384,7 @@ begin
   Result := strBefore(xx,delim);
 end;
 
-function StrCount( xx:string ; delim:string ):integer;
+function StrCount( xx:AnsiString ; delim:AnsiString ):integer;
 var i:integer;
 begin
   i := 0;
@@ -396,8 +396,8 @@ begin
   Result := i;
 end;
 
-Function aPick(info:string; item:integer; decodeStr:string):string;
-var s,r:string;
+Function aPick(info:AnsiString; item:integer; decodeStr:AnsiString):AnsiString;
+var s,r:AnsiString;
 begin
   try
     s := StrNth(info,',',item+1);
@@ -408,8 +408,8 @@ begin
   result := r;
 end;
 
-Function CustBld(fname:string; item:integer; decodeStr:string):string;
-var valStr:string;
+Function CustBld(fname:AnsiString; item:integer; decodeStr:AnsiString):AnsiString;
+var valStr:AnsiString;
 begin
   valStr := DecodeField(decodeStr,inttostr(item));
   if trim(valStr) <> '' then
@@ -421,8 +421,8 @@ begin
     result := '';
 end;
 
-Function CustNth(instr, fname:string; item:integer):string;
-var valStr:string;
+Function CustNth(instr, fname:AnsiString; item:integer):AnsiString;
+var valStr:AnsiString;
 begin
   valStr := StrNth(instr,DexifDecodeSep,item);
   if trim(valStr) <> '' then
@@ -434,8 +434,8 @@ begin
     result := '';
 end;
 
-Function CustAPick(instr, fname:string; item:integer; decodeStr:string):string;
-var valStr:string;
+Function CustAPick(instr, fname:AnsiString; item:integer; decodeStr:AnsiString):AnsiString;
+var valStr:AnsiString;
 begin
   valStr := aPick(instr, item, decodeStr);
   if trim(valStr) <> '' then
@@ -468,7 +468,7 @@ const
       '3:Av-priority,4:Manual,5:A-DEP';
   CanonFocus2 = '0:Single,1:Continuous';
 
-Function CanonExp1(instr:string) :string;
+Function CanonExp1(instr:AnsiString) :AnsiString;
 var s:string;
 begin
   rawDefered := true;
@@ -506,7 +506,7 @@ const
               '32:1 EV,44:1.33 EV,48:1.50 EV,52:1.67 EV,'+
               '64:2 EV';
 
-Function CanonExp2(instr:string) :string;
+Function CanonExp2(instr:AnsiString) :AnsiString;
 var s:string;
 begin
   rawDefered := true;
@@ -538,7 +538,7 @@ Const
   CanonSetBtn = '0:Not assigned,1:Change quality,2:Change ISO speed,'+
                  '3:Select parameters';
 
-Function CanonCustom1(instr:string) :string;
+Function CanonCustom1(instr:AnsiString) :AnsiString;
 var fn,s,r:string;
     fnct,data,i,j:integer;
 begin
@@ -600,7 +600,7 @@ begin
 end;
 
 function TmsInfo.ReadMSData(var DR:TImageInfo):boolean;
-var UCMaker,tmp,tmp2:string;
+var UCMaker,tmp,tmp2:AnsiString;
     MMode:boolean;
     x:integer;
 begin

@@ -74,7 +74,7 @@ type
     // methods
     function Clone: TFreeTag;
     function IsValid: Boolean; override;
-    function ToString(Model: FREE_IMAGE_MDMODEL; Make: PChar = nil): string;
+    function ToString(Model: FREE_IMAGE_MDMODEL; Make: PAnsiChar = nil): string;
 
     // properties
     property Key: string read GetKey write SetKey;
@@ -772,7 +772,7 @@ end;
 function TFreeBitmap.GetMetadata(Model: FREE_IMAGE_MDMODEL;
   const Key: string; var Tag: TFreeTag): Boolean;
 begin
-  Result := FreeImage_GetMetaData(Model, FDib, PChar(Key), Tag.FTag);
+  Result := FreeImage_GetMetaData(Model, FDib, PAnsiChar(Key), Tag.FTag);
 end;
 
 function TFreeBitmap.GetMetadataCount(Model: FREE_IMAGE_MDMODEL): Cardinal;
@@ -876,11 +876,11 @@ var
 begin
 
   // check the file signature and get its format
-  fif := FreeImage_GetFileType(PChar(Filename), 0);
+  fif := FreeImage_GetFileTypeU(PWideChar(Filename), 0);
   if fif = FIF_UNKNOWN then
     // no signature?
     // try to guess the file format from the file extention
-    fif := FreeImage_GetFIFFromFilename(PChar(FileName));
+    fif := FreeImage_GetFIFFromFilenameU(PWideChar(FileName));
 
     // check that the plugin has reading capabilities ...
     if (fif <> FIF_UNKNOWN) and FreeImage_FIFSupportsReading(FIF) then
@@ -890,7 +890,7 @@ begin
         FreeImage_Unload(dib);
 
       // load the file
-      FDib := FreeImage_Load(fif, PChar(FileName), Flag);
+      FDib := FreeImage_LoadU(fif, PWideChar(FileName), Flag);
 
       Change;
       Result := IsValid;
@@ -1261,9 +1261,9 @@ begin
   Result := False;
 
   // try to guess the file format from the file extension
-  fif := FreeImage_GetFIFFromFilename(PChar(Filename));
+  fif := FreeImage_GetFIFFromFilename(PAnsiChar(Filename));
   if CanSave(fif) then
-    Result := FreeImage_Save(fif, FDib, PChar(FileName), Flag);
+    Result := FreeImage_Save(fif, FDib, PAnsiChar(FileName), Flag);
 end;
 
 function TFreeBitmap.SaveToHandle(fif: FREE_IMAGE_FORMAT; IO: PFreeImageIO;
@@ -1351,7 +1351,7 @@ end;
 function TFreeBitmap.SetMetadata(Model: FREE_IMAGE_MDMODEL;
   const Key: string; Tag: TFreeTag): Boolean;
 begin
-  Result := FreeImage_SetMetadata(Model, FDib, PChar(Key), Tag.Tag);
+  Result := FreeImage_SetMetadata(Model, FDib, PAnsiChar(Key), Tag.Tag);
 end;
 
 function TFreeBitmap.SetPixelColor(X, Y: Cardinal;
@@ -1904,14 +1904,14 @@ begin
   Result := False;
 
   // try to guess the file format from the filename
-  fif := FreeImage_GetFIFFromFilename(PChar(FileName));
+  fif := FreeImage_GetFIFFromFilename(PAnsiChar(FileName));
 
   // check for supported file types
   if (fif <> FIF_UNKNOWN) and (not fif in [FIF_TIFF, FIF_ICO, FIF_GIF]) then
     Exit;
 
   // open the stream
-  FMPage := FreeImage_OpenMultiBitmap(fif, PChar(FileName), CreateNew, ReadOnly, FMemoryCache, Flags);
+  FMPage := FreeImage_OpenMultiBitmap(fif, PAnsiChar(FileName), CreateNew, ReadOnly, FMemoryCache, Flags);
 
   Result := FMPage <> nil;  
 end;
@@ -2083,7 +2083,7 @@ end;
 procedure TFreeTag.SetDescription(const Value: string);
 begin
   if IsValid then
-    FreeImage_SetTagDescription(FTag, PChar(Value));
+    FreeImage_SetTagDescription(FTag, PAnsiChar(Value));
 end;
 
 procedure TFreeTag.SetID(const Value: Word);
@@ -2095,7 +2095,7 @@ end;
 procedure TFreeTag.SetKey(const Value: string);
 begin
   if IsValid then
-    FreeImage_SetTagKey(FTag, PChar(Value));
+    FreeImage_SetTagKey(FTag, PAnsiChar(Value));
 end;
 
 procedure TFreeTag.SetLength(const Value: Cardinal);
@@ -2116,7 +2116,7 @@ begin
     FreeImage_SetTagValue(FTag, Value);
 end;
 
-function TFreeTag.ToString(Model: FREE_IMAGE_MDMODEL; Make: PChar): string;
+function TFreeTag.ToString(Model: FREE_IMAGE_MDMODEL; Make: PAnsiChar): string;
 begin
   Result := FreeImage_TagToString(Model, FTag, Make);
 end;

@@ -51,14 +51,14 @@ type
       function Get16u(oset: integer): word;
       function Get32s(oset: integer): Longint;
       function Get32u(oset: integer): Longword;
-      function Put32s(data: Integer): string;
-      procedure WriteInt16(var buff:string;int,posn:integer);
-      procedure WriteInt32(var buff:string;int,posn:longint);
-      function GetDataBuff: string;
-      procedure SetDataBuff(const Value: string);
-      property DataBuff:string read GetDataBuff write SetDataBuff;
+      function Put32s(data: Integer): AnsiString;
+      procedure WriteInt16(var buff:AnsiString;int,posn:integer);
+      procedure WriteInt32(var buff:AnsiString;int,posn:longint);
+      function GetDataBuff: AnsiString;
+      procedure SetDataBuff(const Value: AnsiString);
+      property DataBuff:AnsiString read GetDataBuff write SetDataBuff;
    private
-      llData: string;
+      llData: AnsiString;
    end;
 
   TimgData = class;
@@ -66,8 +66,8 @@ type
   private
     function GetTagElement(TagID: integer): TTagEntry;
     procedure SetTagElement(TagID: integer; const Value: TTagEntry);
-    function GetTagByName(TagName: string): TTagEntry;
-    procedure SetTagByName(TagName: string; const Value: TTagEntry);
+    function GetTagByName(TagName: AnsiString): TTagEntry;
+    procedure SetTagByName(TagName: AnsiString; const Value: TTagEntry);
     procedure TagWriteThru16(te: ttagentry; NewVal16: word);
     procedure TagWriteThru32(te: ttagentry; NewVal32: longint);
     procedure pushDirStack(dirStart, offsetbase: Integer);
@@ -85,18 +85,18 @@ type
     Height,Width,HPosn,WPosn: integer;
     FlashUsed: integer;
     BuildList: integer;
-    MakerNote: string;
+    MakerNote: AnsiString;
     TiffFmt: boolean;
-    Comments: string;
+    Comments: AnsiString;
     CommentPosn: integer;
     CommentSize: integer;
-    SoftWare: string;
+    SoftWare: AnsiString;
 // DateTime tag locations
     dt_oset:integer;
     dt_orig_oset:integer;
     dt_digi_oset:integer;
 // Add support for thumbnail
-    ThumbTrace:string;
+    ThumbTrace: AnsiString;
     ThumbStart: integer;
     ThumbLength: integer;
     ThumbType: integer;
@@ -106,74 +106,74 @@ type
 //  Added the following elements to make the
 //  structure a little more code-friendly
     TraceLevel: integer;
-    TraceStr: string;
-    msTraceStr: string;
+    TraceStr: AnsiString;
+    msTraceStr: AnsiString;
     msAvailable: boolean;
     msName:string;
     MakerOffset : integer; 
-    procedure SetExifSoftware( Software:string);
+    procedure SetExifSoftware( Software:AnsiString);
     property ITagArray[TagID:integer]: TTagEntry
         read GetTagElement write SetTagElement; default;
-    property Data[TagName:string]: TTagEntry
+    property Data[TagName:AnsiString]: TTagEntry
         read GetTagByName write SetTagByName;
 
     Constructor Create( p:timgdata; buildCode:integer =GenAll);
     procedure Assign(source:TImageInfo);
 //  The following functions format this structure into a string
-    function  toString:string;   //  Summerizes in a single line
-    function  toLongString:string;
-    procedure SetExifComment(newComment: string);
+    function  toString:AnsiString;   //  Summerizes in a single line
+    function  toLongString:AnsiString;
+    procedure SetExifComment(newComment: AnsiString);
 //  The following functions manage the date
     function  GetImgDateTime: TDateTime;
     function  ExtrDateTime(oset: integer): TDateTime;
-    function  ExifDateToDateTime(dstr: string): TDateTime;
+    function  ExifDateToDateTime(dstr: AnsiString): TDateTime;
     procedure SetDateTimeStr(oset: integer; TimeIn: TDateTime);
     procedure AdjDateTime(days, hours, mins, secs: integer);
     procedure OverwriteDateTime(InTime: tdatetime);   //  Contains embedded CR/LFs
-    procedure ProcessHWSpecific(MakerBuff:string;
+    procedure ProcessHWSpecific(MakerBuff:AnsiString;
                   TagTbl:Array of TTagEntry;
                   DirStart:longint;
                   MakerOffset:Longint;
                   spOffset:integer = 0);
     Procedure ProcessThumbnail;
-    Procedure AddMSTag(fname,fstr:string;fType:word);
+    Procedure AddMSTag(fname,fstr:AnsiString;fType:word);
     Procedure ProcessExifDir(DirStart, OffsetBase, ExifLength: longint;
-             tagType:integer = ExifTag; prefix:string='');
-    function CvtInt(buff: string): longint;
-    Function FormatNumber(buffer: string; fmt: integer; fmtStr:string;
-      decodeStr: string=''): string;
-    Function GetNumber(buffer: string; fmt: integer): double;
+             tagType:integer = ExifTag; prefix:AnsiString='');
+    function CvtInt(buff: AnsiString): longint;
+    Function FormatNumber(buffer: AnsiString; fmt: integer; fmtStr:AnsiString;
+      decodeStr: AnsiString=''): AnsiString;
+    Function GetNumber(buffer: AnsiString; fmt: integer): double;
     procedure removeThumbnail;
     procedure AdjExifSize(nh,nw:longint);
-    Function LookupTag(SearchStr:string):integer; virtual;
-    Function LookupTagVal(SearchStr:string):string; virtual;
-    Function LookupTagDefn(item: string): integer;
-    Function LookupTagByDesc(SearchStr: string): integer;
+    Function LookupTag(SearchStr:AnsiString):integer; virtual;
+    Function LookupTagVal(SearchStr:AnsiString):AnsiString; virtual;
+    Function LookupTagDefn(item: AnsiString): integer;
+    Function LookupTagByDesc(SearchStr: AnsiString): integer;
     function AddTagToArray(nextTag: iTag): integer;
     function AddTagToThumbArray(nextTag: iTag): integer;
     Procedure ResetIterator;
     Function IterateFoundTags(TagId:integer; var retVal:TTagEntry):boolean;
-    Function GetTagByDesc(SearchStr: string): TTagEntry;
+    Function GetTagByDesc(SearchStr: AnsiString): TTagEntry;
     Function HasThumbnail:boolean;
     function IterateFoundThumbTags(TagId: integer;
       var retVal: TTagEntry): boolean;
     procedure ResetThumbIterator;
     procedure Calc35Equiv;
     function EXIFArrayToXML: tstringlist;
-    function LookupTagInt(SearchStr: string): integer;
-    function GetRawFloat(tagName: string): double;
-    function GetRawInt(tagName: string): integer;
+    function LookupTagInt(SearchStr: AnsiString): integer;
+    function GetRawFloat(tagName: AnsiString): double;
+    function GetRawInt(tagName: AnsiString): integer;
     function LookupRatio: double;
     destructor Destroy; override;
-    function WriteThruInt(tname: string; value: Integer): boolean;
-    function WriteThruString(tname, value: String): boolean;
+    function WriteThruInt(tname: AnsiString; value: Integer): boolean;
+    function WriteThruString(tname, value: AnsiString): boolean;
   private
     iterator:integer;
     iterThumb:integer;
   end; // TInfoData
 
   tSection = record
-    data: string;
+    data: ansistring;
     dtype:integer;
     size:longint;
     base:longint;
@@ -204,10 +204,10 @@ type
         constructor Create(buildCode: integer = GenAll);
         function SaveExif(var jfs2:tstream):longint;
         function ReadExifInfo(fname:string):boolean;
-        Procedure MakeIPTCSegment(buff:string);
-        Procedure MakeCommentSegment(buff:string);
-        function  GetCommentStr:string;
-        Function  GetCommentSegment:string;
+        Procedure MakeIPTCSegment(buff:AnsiString);
+        Procedure MakeCommentSegment(buff:AnsiString);
+        function  GetCommentStr:AnsiString;
+        Function  GetCommentSegment:AnsiString;
         function ProcessFile(const FileName:string):boolean;
         function ReadJpegSections (var f: tstream):boolean;
         function ReadJpegFile(const FileName:string):boolean;
@@ -242,19 +242,19 @@ type
 
   // these function variables can be overridden to
   // alter the default formatting for various data types
-  tfmtInt  = function (inInt:integer):string;
-  tfmtReal = function (inReal:double):string;
-  tfmtFrac = function (inNum,inDen:integer):string;
+  tfmtInt  = function (inInt:integer):AnsiString;
+  tfmtReal = function (inReal:double):AnsiString;
+  tfmtFrac = function (inNum,inDen:integer):AnsiString;
 
   // These formatting functions can be used elsewhere
-  function defIntFmt (inInt:integer):string;
-  function defRealFmt(inReal:double):string;
-  function defFracFmt(inNum,inDen:integer):string;
-  function fmtRational( num,den:integer):string;
+  function defIntFmt (inInt:integer):AnsiString;
+  function defRealFmt(inReal:double):AnsiString;
+  function defFracFmt(inNum,inDen:integer):AnsiString;
+  function fmtRational( num,den:integer):AnsiString;
 
   function getbyte( var f : tstream) : byte;
-  function DecodeField(DecodeStr, idx: string): string;
-  function CvtTime(instr: string): string;
+  function DecodeField(DecodeStr, idx: AnsiString): AnsiString;
+  function CvtTime(instr: AnsiString): AnsiString;
 
 Var
    DexifDataSep   : string = ', ';
@@ -360,19 +360,19 @@ Const
      ( Tag: 0;        Desc: 'Unknown')
     );
 
-   Function CvtIrrational( instr:string ):double;
-   Function LookupType(idx:integer):string;
+   Function CvtIrrational( instr:AnsiString ):double;
+   Function LookupType(idx:integer):AnsiString;
 
-   Function MakePrintable(s:string):string;
+   Function MakePrintable(s:AnsiString):AnsiString;
 
    //  Formatting callbacks
-   Function GpsPosn(instr:string) :string;
-   Function GenCompConfig(instr:string): string;
-   Function ExposCallBack(instr: string): string;
-   Function FlashCallBack(instr: string): string;
-   Function ExtractComment(instr: string): string;
-   Function SSpeedCallBack(instr: string): string;
-   Function xpTranslate(instr: string): string;
+   Function GpsPosn(instr:AnsiString) :AnsiString;
+   Function GenCompConfig(instr:AnsiString): AnsiString;
+   Function ExposCallBack(instr: AnsiString): AnsiString;
+   Function FlashCallBack(instr: AnsiString): AnsiString;
+   Function ExtractComment(instr: AnsiString): AnsiString;
+   Function SSpeedCallBack(instr: AnsiString): AnsiString;
+   Function xpTranslate(instr: AnsiString): AnsiString;
 
 const
 //--------------------------------------------------------------------------
@@ -766,10 +766,10 @@ begin
   end;
 end;
 
-Function InsertSpaces(instr:string):string;
+Function InsertSpaces(instr:AnsiString):string;
 var i:integer;
   rslt:string;
-  tc:char;
+  tc:Ansichar;
   lastUc:boolean;
 begin
   LastUC := true;
@@ -821,7 +821,7 @@ begin
   end;
 end;
 
-Function CvtIrrational( instr:string ):double;
+Function CvtIrrational( instr:AnsiString ):double;
 var b1,b2:string;
     intMult,op:integer;
 begin
@@ -856,7 +856,7 @@ begin
     end;
 end;
 
-function LookupType(idx:integer):string;
+function LookupType(idx:integer):AnsiString;
 var i:integer;
 begin
   result := 'Unknown';
@@ -884,13 +884,13 @@ end;
 
 //  This function returns the index of a tag name
 //  in the tag buffer.
-Function TImageInfo.LookupTag(SearchStr:string):integer;
+Function TImageInfo.LookupTag(SearchStr:AnsiString):integer;
 var i: integer;
 begin
- SearchStr := UpperCase(SearchStr);
+ SearchStr := AnsiUpperCase(SearchStr);
  result := -1;
  for i := 0 to fiTagCount-1 do
-   if UpperCase(fiTagArray[i].Name) = SearchStr then
+   if AnsiUpperCase(fiTagArray[i].Name) = SearchStr then
    begin
      result := i;
      break;
@@ -899,13 +899,13 @@ end;
 
 //  This function returns the data value for a
 //  given tag name.
-Function TImageInfo.LookupTagVal(SearchStr:string):string;
+Function TImageInfo.LookupTagVal(SearchStr:AnsiString):AnsiString;
 var i: integer;
 begin
- SearchStr := UpperCase(SearchStr);
+ SearchStr := AnsiUpperCase(SearchStr);
  result := '';
  for i := 0 to fiTagCount-1 do
-   if UpperCase(fiTagArray[i].Name) = SearchStr then
+   if AnsiUpperCase(fiTagArray[i].Name) = SearchStr then
    begin
      result := fiTagArray[i].Data;
      break;
@@ -914,13 +914,13 @@ end;
 
 //  This function returns the data value for a
 //  given tag name.
-Function TImageInfo.LookupTagInt(SearchStr:string):integer;
+Function TImageInfo.LookupTagInt(SearchStr:AnsiString):integer;
 var i: integer;
 begin
- SearchStr := UpperCase(SearchStr);
+ SearchStr := AnsiUpperCase(SearchStr);
  result := -1;
  for i := 0 to fiTagCount-1 do
-   if UpperCase(fiTagArray[i].Name) = SearchStr then
+   if AnsiUpperCase(fiTagArray[i].Name) = SearchStr then
    begin
      result := strtoint(fiTagArray[i].Data);
      break;
@@ -930,20 +930,20 @@ end;
 //  This function returns the index of a tag name
 //  in the tag buffer. It searches by the description
 //  which is most likely to be used as a label
-Function TImageInfo.LookupTagByDesc(SearchStr:string):integer;
+Function TImageInfo.LookupTagByDesc(SearchStr:AnsiString):integer;
 var i: integer;
 begin
- SearchStr := UpperCase(SearchStr);
+ SearchStr := AnsiUpperCase(SearchStr);
  result := -1;
  for i := 0 to FITagCount-1 do
-   if UpperCase(fiTagArray[i].Desc) = SearchStr then
+   if AnsiUpperCase(fiTagArray[i].Desc) = SearchStr then
    begin
      result := i;
      break;
    end;
 end;
 
-Function TImageInfo.GetTagByDesc(SearchStr:string):TTagEntry;
+Function TImageInfo.GetTagByDesc(SearchStr:AnsiString):TTagEntry;
 var i:integer;
 begin
   i := LookupTagByDesc(SearchStr);
@@ -955,7 +955,7 @@ end;
 
 //  This function returns the index of a tag definition
 //  for a given tag name.
-function TImageInfo.LookupTagDefn(item: string): integer;
+function TImageInfo.LookupTagDefn(item: AnsiString): integer;
 var i:integer;
 begin
   result := -1;
@@ -1001,7 +1001,7 @@ begin
   end;
 end;
 
-function LookupCode(idx:integer;TagType:integer=ExifTag):string; overload;
+function LookupCode(idx:integer;TagType:integer=ExifTag):AnsiString; overload;
 var i:integer;
 begin
   result := '';
@@ -1017,7 +1017,7 @@ begin
   end;
 end;
 
-function LookupCode(idx:integer;TagTbl:array of TTagEntry):string; overload;
+function LookupCode(idx:integer;TagTbl:array of TTagEntry):AnsiString; overload;
 var i:integer;
 begin
   result := '';
@@ -1030,7 +1030,7 @@ end;
 // Careful : this function's arguments are always
 // evaluated which may have unintended side-effects
 // (thanks to Jan Derk for pointing this out)
-function siif( const cond:boolean; const s1:string; const s2:string=''):string;
+function siif( const cond:boolean; const s1:AnsiString; const s2:AnsiString=''):AnsiString;
 begin
   if cond
     then result := s1
@@ -1056,15 +1056,15 @@ end;
 
 const BadVal = -1;
 
-function TImageInfo.ExifDateToDateTime(dstr:string):TDateTime;
+function TImageInfo.ExifDateToDateTime(dstr:AnsiString):TDateTime;
 type
   TConvert= packed record
-     year: Array [1..4] of char; f1:char;
-     mon:  Array [1..2] of Char; f2:char;
-     day:  Array [1..2] of Char; f3:char;
-     hr:   Array [1..2] of Char; f4:char;
-     min:  Array [1..2] of Char; f5:char;
-     sec:  Array [1..2] of Char;
+     year: Array [1..4] of ansichar; f1:ansichar;
+     mon:  Array [1..2] of ansichar; f2:ansichar;
+     day:  Array [1..2] of ansichar; f3:ansichar;
+     hr:   Array [1..2] of ansichar; f4:ansichar;
+     min:  Array [1..2] of ansichar; f5:ansichar;
+     sec:  Array [1..2] of ansichar;
   end;
   PConvert= ^TConvert;
 begin
@@ -1082,7 +1082,7 @@ begin
 end;
 
 function TImageInfo.ExtrDateTime(oset:integer):TDateTime;
-var tmpStr:string;
+var tmpStr:AnsiString;
 begin
   tmpStr := copy(parent.exifSegment^.data,oset,19);
   result := ExifDateToDateTime(tmpStr);
@@ -1090,7 +1090,7 @@ end;
 
 //  2001:01:09 16:17:32
 Procedure TImageInfo.SetDateTimeStr(oset:integer; TimeIn:TDateTime);
-var tmp:string;
+var tmp:AnsiString;
   i:integer;
 begin
   tmp := FormatDateTime('yyyy:mm:dd hh:nn:ss',TimeIn);
@@ -1144,9 +1144,9 @@ begin
     SetDateTimeStr(dt_digi_oset,InTime);
 end;
 
-Function CvtTime(instr:string) :string;
+Function CvtTime(instr:AnsiString) :AnsiString;
 var i,sl:integer;
-    tb:string;
+    tb:AnsiString;
     tHours,tMin,tSec:double;
 begin
    sl := length(DexifDataSep);
@@ -1167,9 +1167,9 @@ begin
 end;
 
 
-Function GenCompConfig(instr:string) :string;
+Function GenCompConfig(instr:AnsiString) :AnsiString;
 var i,ti:integer;
-    ts:string;
+    ts:AnsiString;
 begin
   ts := '';
   for i := 1+1 to 4+1 do  // skip first char...
@@ -1188,9 +1188,9 @@ begin
   result := ts;
 end;
 
-Function GpsPosn(instr:string) :string;
+Function GpsPosn(instr:AnsiString) :AnsiString;
 var i,sl:integer;
-    tb:string;
+    tb:AnsiString;
     gDegree,gMin,gSec:double;
 begin
    sl := length(DexifDataSep);
@@ -1224,9 +1224,9 @@ begin
    end;
 end;
 
-function DecodeField(DecodeStr,idx:string):string;
+function DecodeField(DecodeStr,idx:AnsiString):AnsiString;
 var stPos:integer;
-    ts:string;
+    ts:AnsiString;
 begin
    result := '';
    idx := DexifDecodeSep+trim(idx)+':';   // ease parsing
@@ -1269,7 +1269,7 @@ begin
   result := fIThumbCount-1;
 end;
 
-function TImageInfo.CvtInt(buff:string):longint;
+function TImageInfo.CvtInt(buff:AnsiString):longint;
 var i:integer;
     r:Int64;
 begin
@@ -1286,8 +1286,8 @@ begin
   result := longint(r);
 end;
 
-function TImageInfo.FormatNumber(buffer:string;fmt:integer;
-    fmtStr:string;decodeStr:string=''):string;
+function TImageInfo.FormatNumber(buffer:AnsiString;fmt:integer;
+    fmtStr:AnsiString;decodeStr:AnsiString=''):AnsiString;
 var buff2,os:string;
     i,vlen:integer;
     tmp,tmp2:longint;
@@ -1350,7 +1350,7 @@ begin
   result := os;
 end;
 
-function TImageInfo.GetNumber(buffer:string;fmt:integer):double;
+function TImageInfo.GetNumber(buffer:AnsiString;fmt:integer):double;
 var os:double;
     tmp:longint;
     dbl:double absolute tmp;
@@ -1381,8 +1381,8 @@ begin
   result := os;
 end;
 
-function MakePrintable(s:string):string;
-var r:string;
+function MakePrintable(s:AnsiString):AnsiString;
+var r:AnsiString;
   i:integer;
 begin
   for i := 1 to min(length(s),50) do
@@ -1393,8 +1393,8 @@ begin
   result := r;
 end;
 
-function MakeHex(s:string):string;
-var r:string;
+function MakeHex(s:AnsiString):AnsiString;
+var r:AnsiString;
   i:integer;
 begin
   for i := 1 to min(length(s),16) do
@@ -1429,14 +1429,14 @@ end;
 // Process one of the nested EXIF directories.
 //--------------------------------------------------------------------------
 procedure  TImageInfo.ProcessExifDir(DirStart, OffsetBase, ExifLength: longint;
-  tagType:integer = ExifTag; prefix:string='');
+  tagType:integer = ExifTag; prefix:AnsiString='');
 var ByteCount:integer;
   tag,TFormat,components:integer;
   de,DirEntry,OffsetVal,NumDirEntries,ValuePtr,subDirStart:Longint;
-  RawStr,Fstr,transStr:string;
+  RawStr,Fstr,transStr:AnsiString;
   msInfo: tmsInfo;
   lookupE, newE: TTagEntry;
-  tmpTR:string;
+  tmpTR:AnsiString;
 begin
   pushDirStack(dirStart,OffsetBase);
   NumDirEntries := Get16u(DirStart);
@@ -1620,7 +1620,7 @@ begin
   end;
 end;
 
-Procedure TImageInfo.AddMSTag(fname,fstr:string;fType:word);
+Procedure TImageInfo.AddMSTag(fname,fstr:AnsiString;fType:word);
 var  newE: TTagEntry;
 begin
   if BuildList in [GenList,GenAll] then
@@ -1658,12 +1658,12 @@ begin
     SetLength(ExifSegment^.data,newSize);
     ExifSegment^.size := newSize;
   // size calculations should really be moved to save routine
-    ExifSegment^.data[1] := char(newSize div 256);
-    ExifSegment^.data[2] := char(newSize mod 256);
+    ExifSegment^.data[1] := ansichar(newSize div 256);
+    ExifSegment^.data[2] := ansichar(newSize mod 256);
   end;
 end;
 
-procedure TImageInfo.ProcessHWSpecific(MakerBuff:string;
+procedure TImageInfo.ProcessHWSpecific(MakerBuff:AnsiString;
                 TagTbl:Array of TTagEntry;
                 DirStart:longint;
                 MakerOffset:Longint;
@@ -1801,13 +1801,13 @@ begin
 end;
 
 
-Function ExtractComment(instr: string): string;
+Function ExtractComment(instr: AnsiString): AnsiString;
 begin
 //  CommentHeader := copy(instr,1,8);  // fixed length string
   result := copy(instr,9,maxint);
 end;
 
-Function FlashCallBack(instr: string): string;
+Function FlashCallBack(instr: AnsiString): AnsiString;
 var tmp: integer;
     tmpS: string;
 begin
@@ -1824,7 +1824,7 @@ begin
   result := tmps;
 end;
 
-function ExposCallBack(instr: string):string;
+function ExposCallBack(instr: AnsiString):AnsiString;
 var expoTime:double;
 begin
   expoTime := strToFloat(instr);
@@ -1834,7 +1834,7 @@ begin
 // corrected by M. Schwaiger - adding ".5" is senseless when using "round"!
 end;
 
-function SSpeedCallBack(instr: string):string;
+function SSpeedCallBack(instr: AnsiString):AnsiString;
 var expoTime:double;
 begin
   expoTime := CvtIrrational(instr);
@@ -1844,23 +1844,23 @@ begin
       format(' (1/%d)',[round(1/ExpoTime)]),'');
 end;
 
-function xpTranslate(instr: string):string;
+function xpTranslate(instr: AnsiString):AnsiString;
 var i:integer;
-    ts:string;
-    cv:char;
+    ts:AnsiString;
+    cv:ansichar;
 begin
   ts := '';
   for i := 1 to StrCount(instr,',') do
     if odd(i) then
     begin
-       cv := chr(strtoint(StrNth(instr,',',i)));
+       cv := ansichar(strtoint(StrNth(instr,',',i)));
        if cv <> #0 then
          ts := ts+cv;
     end;
   result := ts;
 end;
 
-function TImageInfo.toLongString: string;
+function TImageInfo.toLongString: AnsiString;
 var tmpStr:string;
 begin
   if parent.ExifSegment = nil then
@@ -1912,7 +1912,7 @@ begin
   end;
 end;
 
-function TImageInfo.toString: string;
+function TImageInfo.toString: AnsiString;
 begin
   if parent.ExifSegment = nil then
     result := ''
@@ -1931,12 +1931,12 @@ The following methods write data back into the
 EXIF buffer.
 *************************************************)
 
-procedure TImageInfo.SetExifComment( newComment:string);
+procedure TImageInfo.SetExifComment( newComment:AnsiString);
 begin
   WriteThruString('UserComment','ASCII'#0#0#0+newComment);
 end;
 
-procedure TImageInfo.SetExifSoftware( Software:string);
+procedure TImageInfo.SetExifSoftware( Software:AnsiString);
 begin
   WriteThruString('Software',Software);
 end;
@@ -1962,7 +1962,7 @@ begin
   parent.WriteInt16(parent.ExifSegment^.data,newVal32,te.praw);
 end;
 
-function TImageInfo.WriteThruInt(tname:string;value:longint):boolean;
+function TImageInfo.WriteThruInt(tname:AnsiString;value:longint):boolean;
 var te:ttagentry;
   vlen:integer;
 begin
@@ -1981,7 +1981,7 @@ begin
      result := false;    // don't recognize the type
 end;
 
-function TImageInfo.WriteThruString(tname:string;value:String):boolean;
+function TImageInfo.WriteThruString(tname:AnsiString;value:AnsiString):boolean;
 var te:ttagentry;
   i,sPosition:integer;
 begin
@@ -2036,7 +2036,7 @@ begin
   fITagArray[TagID] := Value;
 end;
 
-function TImageInfo.GetTagByName(TagName: string): TTagEntry;
+function TImageInfo.GetTagByName(TagName: AnsiString): TTagEntry;
 var i:integer;
 begin
   i := LookupTag(TagName);
@@ -2046,7 +2046,7 @@ begin
     result := EmptyEntry;
 end;
 
-procedure TImageInfo.SetTagByName(TagName: string; const Value: TTagEntry);
+procedure TImageInfo.SetTagByName(TagName: AnsiString; const Value: TTagEntry);
 var i:integer;
 begin
   i := LookupTag(TagName);
@@ -2100,7 +2100,7 @@ begin
    iterThumb := 0;
 end;
 
-function TImageInfo.GetRawFloat( tagName: string ):double;
+function TImageInfo.GetRawFloat( tagName: AnsiString ):double;
 var tiq :TTagEntry;
 begin
   tiq := GetTagByName( tagName );
@@ -2109,7 +2109,7 @@ begin
     else result := GetNumber(tiq.Raw, tiq.TType);
 end;
 
-function TImageInfo.GetRawInt( tagName: string ):integer;
+function TImageInfo.GetRawInt( tagName: AnsiString ):integer;
 begin
   result := round(GetRawFloat(tagName));
 end;
@@ -2218,45 +2218,45 @@ end;
 // Here we implement the Endian Independent layer.  Outside
 // of these methods we don't care about endian issues.
 //--------------------------------------------------------------------------
-function tEndInd.GetDataBuff: string;
+function tEndInd.GetDataBuff: AnsiString;
 begin
   result := llData;
 end;
 
-procedure tEndInd.SetDataBuff(const Value: string);
+procedure tEndInd.SetDataBuff(const Value: AnsiString);
 begin
   llData := Value;
 end;
 
-procedure tEndInd.WriteInt16(var buff:string;int,posn:integer);
+procedure tEndInd.WriteInt16(var buff:AnsiString;int,posn:integer);
 begin
   if MotorolaOrder then
   begin
-    buff[posn+1] := char(int mod 256);
-    buff[posn] := char(int div 256);
+    buff[posn+1] := ansichar(int mod 256);
+    buff[posn] := ansichar(int div 256);
   end
   else
   begin
-    buff[posn] := char(int mod 256);
-    buff[posn+1] := char(int div 256);
+    buff[posn] := ansichar(int mod 256);
+    buff[posn+1] := ansichar(int div 256);
   end
 end;
 
-procedure tEndInd.WriteInt32(var buff:string;int,posn:longint);
+procedure tEndInd.WriteInt32(var buff:AnsiString;int,posn:longint);
 begin
   if MotorolaOrder then
   begin
-    buff[posn+3] := char(int mod 256);
-    buff[posn+2] := char((int shr 8) mod 256);
-    buff[posn+1] := char((int shr 16) mod  256);
-    buff[posn]   := char((int shr 24) mod 256);
+    buff[posn+3] := ansichar(int mod 256);
+    buff[posn+2] := ansichar((int shr 8) mod 256);
+    buff[posn+1] := ansichar((int shr 16) mod  256);
+    buff[posn]   := ansichar((int shr 24) mod 256);
   end
   else
   begin
-    buff[posn] := char(int mod 256);
-    buff[posn+1] := char((int shr 8) mod 256);
-    buff[posn+2] := char((int shr 16) mod  256);
-    buff[posn+3] := char((int shr 24) mod 256);
+    buff[posn] := ansichar(int mod 256);
+    buff[posn+1] := ansichar((int shr 8) mod 256);
+    buff[posn+2] := ansichar((int shr 16) mod  256);
+    buff[posn+3] := ansichar((int shr 24) mod 256);
   end
 end;
 
@@ -2295,7 +2295,7 @@ end;
 //--------------------------------------------------------------------------
 // Convert a 32 bit unsigned value from file's native byte order
 //--------------------------------------------------------------------------
-function tEndInd.Put32s(data:Longint):string;
+function tEndInd.Put32s(data:Longint):AnsiString;
 var  data2:integer;
      buffer:string[4] absolute data2;
      bbuff:Ansichar;
@@ -2326,7 +2326,7 @@ end;
 // decodes the segments.  Further parsing isthen passed on to
 // the TImageInfo (for EXIF) and TIPTCData objects
 //--------------------------------------------------------------------------
-Procedure TImgData.MakeIPTCSegment(buff:string);
+Procedure TImgData.MakeIPTCSegment(buff:AnsiString);
 var bl:integer;
 begin
   bl := length(buff)+2;
@@ -2340,7 +2340,7 @@ begin
   IPTCSegment^.dtype := M_IPTC;
 end;
 
-Procedure TImgData.MakeCommentSegment(buff:string);
+Procedure TImgData.MakeCommentSegment(buff:AnsiString);
 var bl:integer;
 begin
   bl := length(buff)+2;
@@ -2354,7 +2354,7 @@ begin
   CommentSegment^.dtype := M_COM;
 end;
 
-Function TImgData.GetCommentSegment:string;
+Function TImgData.GetCommentSegment:AnsiString;
 begin
   result := '';
   if CommentSegment <> nil then
@@ -2544,8 +2544,8 @@ begin
   HeaderSegment := nil;
 end;
 
-function TImgData.GetCommentStr:string;
-var buffer:string;
+function TImgData.GetCommentStr:AnsiString;
+var buffer:AnsiString;
     bufLen:integer;
 begin
   buffer := CommentSegment^.Data;
@@ -2656,8 +2656,8 @@ begin
       DType := marker;
       Size := itemlen;
       setlength(data,itemlen);
-      data[1] := chr(lh);
-      data[2] := chr(ll);
+      data[1] := AnsiChar(lh);
+      data[2] := AnsiChar(ll);
       try
         F.Read(data[3],itemlen-2);
       except
@@ -2926,12 +2926,12 @@ begin
   result := buff;
 end;
 
-function defIntFmt (inInt:integer):string;
+function defIntFmt (inInt:integer):AnsiString;
 begin
   result := IntToStr(inInt)
 end;
 
-function defRealFmt(inReal:double):string;
+function defRealFmt(inReal:double):AnsiString;
 begin
   result := FloatToStr(inReal);
 end;
@@ -2949,7 +2949,7 @@ begin
 end;
 
 
-function fmtRational( num,den:integer):string;
+function fmtRational( num,den:integer):AnsiString;
 var
   gcdVal,intPart,fracPart,newNum,newDen: integer;
   outStr:String;
@@ -2970,7 +2970,7 @@ begin
   result := trim(outstr);  // trim cleans up extra space
 end;
 
-function defFracFmt(inNum,inDen:integer):string;
+function defFracFmt(inNum,inDen:integer):AnsiString;
 begin
   result := format('%d/%d',[inNum,inDen]);
  // result := fmtRational(inNum,inDen);

@@ -310,10 +310,10 @@ type
   PPluginStruct = ^PluginStruct;
 
   FI_InitProc = procedure(Plugin: PPluginStruct; Format_ID: Integer); stdcall;
-  FI_FormatProc = function: PChar; stdcall;
-  FI_DescriptionProc = function: PChar; stdcall;
-  FI_ExtensionListProc = function: PChar; stdcall;
-  FI_RegExprProc = function: PChar; stdcall;
+  FI_FormatProc = function: PAnsiChar; stdcall;
+  FI_DescriptionProc = function: PAnsiChar; stdcall;
+  FI_ExtensionListProc = function: PAnsiChar; stdcall;
+  FI_RegExprProc = function: PAnsiChar; stdcall;
   FI_OpenProc = function(IO: PFreeImageIO; Handle: FI_Handle; Read: Boolean): Pointer; stdcall;
   FI_CloseProc = procedure(IO: PFreeImageIO; Handle: FI_Handle; Data: Pointer); stdcall;
   FI_PageCountProc = function(IO: PFreeImageIO; Handle: FI_Handle; Data: Pointer): Integer; stdcall;
@@ -321,7 +321,7 @@ type
   FI_LoadProc = function(IO: PFreeImageIO; Handle: FI_Handle; Page, Flags: Integer; data: pointer): PFIBITMAP; stdcall;
   FI_SaveProc = function(IO: PFreeImageIO; Dib: PFIBITMAP; Handle: FI_Handle; Page, Flags: Integer; Data: Pointer): Boolean; stdcall;
   FI_ValidateProc = function(IO: PFreeImageIO; Handle: FI_Handle): Boolean; stdcall;
-  FI_MimeProc = function: PChar; stdcall;
+  FI_MimeProc = function: PAnsiChar; stdcall;
   FI_SupportsExportBPPProc = function(Bpp: integer): boolean; stdcall;
   FI_SupportsExportTypeProc = function(AType: FREE_IMAGE_TYPE): Boolean; stdcall;
   FI_SupportsICCProfilesProc = function: Boolean; stdcall;
@@ -410,15 +410,15 @@ procedure FreeImage_DeInitialise; stdcall; external FIDLL name '_FreeImage_DeIni
 // Version routines ---------------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_GetVersion : PChar; stdcall; external FIDLL name '_FreeImage_GetVersion@0';
-function FreeImage_GetCopyrightMessage : PChar; stdcall; external FIDLL name '_FreeImage_GetCopyrightMessage@0';
+function FreeImage_GetVersion : PAnsiChar; stdcall; external FIDLL name '_FreeImage_GetVersion@0';
+function FreeImage_GetCopyrightMessage : PAnsiChar; stdcall; external FIDLL name '_FreeImage_GetCopyrightMessage@0';
 
 // --------------------------------------------------------------------------
 // Message output functions -------------------------------------------------
 // --------------------------------------------------------------------------
 
-procedure FreeImage_OutPutMessageProc(fif: Integer; fmt: PChar); stdcall; external FIDLL name 'FreeImage_OutputMessageProc';
-type FreeImage_OutputMessageFunction = function(fif: FREE_IMAGE_FORMAT; msg: PChar): pointer; stdcall;
+procedure FreeImage_OutPutMessageProc(fif: Integer; fmt: PAnsiChar); stdcall; external FIDLL name 'FreeImage_OutputMessageProc';
+type FreeImage_OutputMessageFunction = function(fif: FREE_IMAGE_FORMAT; msg: PAnsiChar): pointer; stdcall;
 procedure FreeImage_SetOutputMessage(omf: FreeImage_OutputMessageFunction); stdcall; external FIDLL name '_FreeImage_SetOutputMessage@4';
 
 // --------------------------------------------------------------------------
@@ -434,10 +434,10 @@ procedure FreeImage_Unload(dib: PFIBITMAP); stdcall; external FIDLL name '_FreeI
 // Load / Save routines -----------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_Load(fif: FREE_IMAGE_FORMAT; const filename: PChar; flags: integer = 0): PFIBITMAP; stdcall; external FIDLL name '_FreeImage_Load@12';
+function FreeImage_Load(fif: FREE_IMAGE_FORMAT; const filename: PAnsiChar; flags: integer = 0): PFIBITMAP; stdcall; external FIDLL name '_FreeImage_Load@12';
 function FreeImage_LoadU(fif: FREE_IMAGE_FORMAT; const filename: PWideChar; flags: Integer = 0): PFIBITMAP; stdcall; external FIDLL name '_FreeImage_LoadU@12';
 function FreeImage_LoadFromHandle(fif: FREE_IMAGE_FORMAT; io: PFreeImageIO; handle: fi_handle; flags: integer = 0): PFIBITMAP; stdcall; external FIDLL name '_FreeImage_LoadFromHandle@16';
-function FreeImage_Save(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; filename: PChar; flags: integer = 0): Boolean; stdcall; external FIDLL name '_FreeImage_Save@16';
+function FreeImage_Save(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; filename: PAnsiChar; flags: integer = 0): Boolean; stdcall; external FIDLL name '_FreeImage_Save@16';
 function FreeImage_SaveU(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; const filename: PWideChar; flags: Integer = 0): Boolean; stdcall; external FIDLL name '_FreeImage_SaveU@16';
 function FreeImage_SaveToHandle(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; io : PFreeImageIO; handle : fi_handle; flags : integer = 0) : Boolean; stdcall; external FIDLL name '_FreeImage_SaveToHandle@20';
 
@@ -457,18 +457,18 @@ function FreeImage_AcquireMemory(stream: PFIMEMORY; var data: PByte; var size_in
 // Plugin Interface ---------------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_RegisterLocalPlugin(proc_address: FI_InitProc; format, description, extension, regexpr: PChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_RegisterLocalPlugin@20';
-function FreeImage_RegisterExternalPlugin(path, format, description, extension, regexpr: PChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_RegisterExternalPlugin@20';
+function FreeImage_RegisterLocalPlugin(proc_address: FI_InitProc; format, description, extension, regexpr: PAnsiChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_RegisterLocalPlugin@20';
+function FreeImage_RegisterExternalPlugin(path, format, description, extension, regexpr: PAnsiChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_RegisterExternalPlugin@20';
 function FreeImage_GetFIFCount: Integer; stdcall; external FIDLL name '_FreeImage_GetFIFCount@0';
 procedure FreeImage_SetPluginEnabled(fif: FREE_IMAGE_FORMAT; enable: Boolean); stdcall; external FIDLL Name '_FreeImage_SetPluginEnabled@8';
 function FreeImage_IsPluginEnabled(fif: FREE_IMAGE_FORMAT): Integer; stdcall; external FIDLL Name '_FreeImage_IsPluginEnabled@4';
-function FreeImage_GetFIFFromFormat(const format: PChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL Name '_FreeImage_GetFIFFromFormat@4';
-function FreeImage_GetFIFFromMime(const format: PChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL Name '_FreeImage_GetFIFFromMime@4';
-function FreeImage_GetFormatFromFIF(fif: FREE_IMAGE_FORMAT): PChar; stdcall; external FIDLL Name '_FreeImage_GetFormatFromFIF@4';
-function FreeImage_GetFIFExtensionList(fif: FREE_IMAGE_FORMAT): PChar; stdcall; external FIDLL Name '_FreeImage_GetFIFExtensionList@4';
-function FreeImage_GetFIFDescription(fif: FREE_IMAGE_FORMAT): PChar; stdcall; external FIDLL Name '_FreeImage_GetFIFDescription@4';
-function FreeImage_GetFIFRegExpr(fif: FREE_IMAGE_FORMAT): PChar; stdcall; external FIDLL Name '_FreeImage_GetFIFRegExpr@4';
-function FreeImage_GetFIFFromFilename(const fname: PChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL Name '_FreeImage_GetFIFFromFilename@4';
+function FreeImage_GetFIFFromFormat(const format: PAnsiChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL Name '_FreeImage_GetFIFFromFormat@4';
+function FreeImage_GetFIFFromMime(const format: PAnsiChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL Name '_FreeImage_GetFIFFromMime@4';
+function FreeImage_GetFormatFromFIF(fif: FREE_IMAGE_FORMAT): PAnsiChar; stdcall; external FIDLL Name '_FreeImage_GetFormatFromFIF@4';
+function FreeImage_GetFIFExtensionList(fif: FREE_IMAGE_FORMAT): PAnsiChar; stdcall; external FIDLL Name '_FreeImage_GetFIFExtensionList@4';
+function FreeImage_GetFIFDescription(fif: FREE_IMAGE_FORMAT): PAnsiChar; stdcall; external FIDLL Name '_FreeImage_GetFIFDescription@4';
+function FreeImage_GetFIFRegExpr(fif: FREE_IMAGE_FORMAT): PAnsiChar; stdcall; external FIDLL Name '_FreeImage_GetFIFRegExpr@4';
+function FreeImage_GetFIFFromFilename(const fname: PAnsiChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL Name '_FreeImage_GetFIFFromFilename@4';
 function FreeImage_GetFIFFromFilenameU(const fname:PWideChar): FREE_IMAGE_FORMAT; stdcall; external FIDLL Name '_FreeImage_GetFIFFromFilenameU@4';
 function FreeImage_FIFSupportsReading(fif: FREE_IMAGE_FORMAT): Boolean; stdcall; external FIDLL Name '_FreeImage_FIFSupportsReading@4';
 function FreeImage_FIFSupportsWriting(fif: FREE_IMAGE_FORMAT): Boolean; stdcall; external FIDLL Name '_FreeImage_FIFSupportsWriting@4';
@@ -480,7 +480,7 @@ function FreeImage_FIFSupportsExportType(fif: FREE_IMAGE_FORMAT; image_type: FRE
 // Multipaging interface ----------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_OpenMultiBitmap(fif: FREE_IMAGE_FORMAT; filename: PChar; create_new, read_only, keep_cache_in_memory: Boolean; flags: integer = 0): PFIMULTIBITMAP; stdcall; external FIDLL Name '_FreeImage_OpenMultiBitmap@24';
+function FreeImage_OpenMultiBitmap(fif: FREE_IMAGE_FORMAT; filename: PAnsiChar; create_new, read_only, keep_cache_in_memory: Boolean; flags: integer = 0): PFIMULTIBITMAP; stdcall; external FIDLL Name '_FreeImage_OpenMultiBitmap@24';
 function FreeImage_CloseMultiBitmap(bitmap: PFIMULTIBITMAP; flags: Integer = 0): Boolean; stdcall; external FIDLL Name '_FreeImage_CloseMultiBitmap@8';
 function FreeImage_GetPageCount(bitmap: PFIMULTIBITMAP): Integer; stdcall; external FIDLL Name '_FreeImage_GetPageCount@4';
 procedure FreeImage_AppendPage(bitmap: PFIMULTIBITMAP; data: PFIBITMAP); stdcall; external FIDLL Name '_FreeImage_AppendPage@8';
@@ -495,7 +495,7 @@ function FreeImage_GetLockedPageNumbers(bitmap: PFIMULTIBITMAP; var pages: Integ
 // Filetype request routines ------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_GetFileType(const filename: PChar; size: Integer): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_GetFileType@8';
+function FreeImage_GetFileType(const filename: PAnsiChar; size: Integer): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_GetFileType@8';
 function FreeImage_GetFileTypeU(const filename: PWideChar; size: Integer): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_GetFileTypeU@8';
 function FreeImage_GetFileTypeFromHandle(io: PFreeImageIO; handle: FI_Handle; size: Integer = 0): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_GetFileTypeFromHandle@12';
 function FreeImage_GetFileTypeFromMemory(stream: PFIMEMORY; size: Integer = 0): FREE_IMAGE_FORMAT; stdcall; external FIDLL name '_FreeImage_GetFileTypeFromMemory@8'; 
@@ -511,8 +511,8 @@ function FreeImage_GetImageType(dib: PFIBITMAP): FREE_IMAGE_TYPE; stdcall; exter
 // --------------------------------------------------------------------------
 
 function FreeImage_IsLittleEndian: Boolean; stdcall; external FIDLL name '_FreeImage_IsLittleEndian@0';
-function FreeImage_LookupX11Color(const szColor: PChar; var nRed, nGreen, nBlue: PByte): Boolean; stdcall; external FIDLL name '_FreeImage_LookupX11Color@16';
-function FreeImage_LookupSVGColor(const szColor: PChar; var nRed, nGreen, nBlue: PByte): Boolean; stdcall; external FIDLL name '_FreeImage_LookupSVGColor@16';
+function FreeImage_LookupX11Color(const szColor: PAnsiChar; var nRed, nGreen, nBlue: PByte): Boolean; stdcall; external FIDLL name '_FreeImage_LookupX11Color@16';
+function FreeImage_LookupSVGColor(const szColor: PAnsiChar; var nRed, nGreen, nBlue: PByte): Boolean; stdcall; external FIDLL name '_FreeImage_LookupSVGColor@16';
 
 // --------------------------------------------------------------------------
 // Pixels access routines ---------------------------------------------------
@@ -666,16 +666,16 @@ procedure FreeImage_DeleteTag(tag: PFITAG); stdcall; external FIDLL name '_FreeI
 function FreeImage_CloneTag(tag: PFITAG): PFITAG; stdcall; external FIDLL name '_FreeImage_CloneTag@4';
 
 // tag getters and setters
-function FreeImage_GetTagKey(tag: PFITAG): PChar; stdcall; external FIDLL name '_FreeImage_GetTagKey@4';
-function FreeImage_GetTagDescription(tag: PFITAG): PChar; stdcall; external FIDLL name '_FreeImage_GetTagDescription@4';
+function FreeImage_GetTagKey(tag: PFITAG): PAnsiChar; stdcall; external FIDLL name '_FreeImage_GetTagKey@4';
+function FreeImage_GetTagDescription(tag: PFITAG): PAnsiChar; stdcall; external FIDLL name '_FreeImage_GetTagDescription@4';
 function FreeImage_GetTagID(tag: PFITAG): Word; stdcall; external FIDLL name '_FreeImage_GetTagID@4';
 function FreeImage_GetTagType(tag: PFITAG): FREE_IMAGE_MDTYPE; stdcall; external FIDLL name '_FreeImage_GetTagType@4';
 function FreeImage_GetTagCount(tag: PFITAG): DWORD; stdcall; external FIDLL name '_FreeImage_GetTagCount@4';
 function FreeImage_GetTagLength(tag: PFITAG): DWORD; stdcall; external FIDLL name '_FreeImage_GetTagLength@4';
 function FreeImage_GetTagValue(tag: PFITAG): Pointer; stdcall; external FIDLL name '_FreeImage_GetTagValue@4';
 
-function FreeImage_SetTagKey(tag: PFITAG; const key: PChar): Boolean; stdcall; external FIDLL name '_FreeImage_SetTagKey@8';
-function FreeImage_SetTagDescription(tag: PFITAG; const description: PChar): Boolean; stdcall; external FIDLL name '_FreeImage_SetTagDescription@8';
+function FreeImage_SetTagKey(tag: PFITAG; const key: PAnsiChar): Boolean; stdcall; external FIDLL name '_FreeImage_SetTagKey@8';
+function FreeImage_SetTagDescription(tag: PFITAG; const description: PAnsiChar): Boolean; stdcall; external FIDLL name '_FreeImage_SetTagDescription@8';
 function FreeImage_SetTagID(tag: PFITAG; id: Word): Boolean; stdcall; external FIDLL name '_FreeImage_SetTagID@8';
 function FreeImage_SetTagType(tag: PFITAG; atype: FREE_IMAGE_MDTYPE): Boolean; stdcall; external FIDLL name '_FreeImage_SetTagType@8';
 function FreeImage_SetTagCount(tag: PFITAG; count: DWORD): Boolean; stdcall; external FIDLL name '_FreeImage_SetTagCount@8';
@@ -688,14 +688,14 @@ function FreeImage_FindNextMetadata(mdhandle: PFIMETADATA; var tag: PFITAG): Boo
 procedure FreeImage_FindCloseMetadata(mdhandle: PFIMETADATA); stdcall; external FIDLL name '_FreeImage_FindCloseMetadata@4';
 
 // metadata setter and getter
-function FreeImage_SetMetadata(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PChar; tag: PFITAG): Boolean; stdcall; external FIDLL name '_FreeImage_SetMetadata@16';
-function FreeImage_GetMetaData(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PChar; var tag: PFITAG): Boolean; stdcall; external FIDLL name '_FreeImage_GetMetadata@16';
+function FreeImage_SetMetadata(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PAnsiChar; tag: PFITAG): Boolean; stdcall; external FIDLL name '_FreeImage_SetMetadata@16';
+function FreeImage_GetMetaData(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PAnsiChar; var tag: PFITAG): Boolean; stdcall; external FIDLL name '_FreeImage_GetMetadata@16';
 
 // helpers
 function FreeImage_GetMetadataCount(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP): Cardinal; stdcall; external FIDLL name '_FreeImage_GetMetadataCount@8';
 
 // tag to C string conversion
-function FreeImage_TagToString(model: FREE_IMAGE_MDMODEL; tag: PFITAG; Make: PChar = nil): PChar; stdcall; external FIDLL name '_FreeImage_TagToString@12';
+function FreeImage_TagToString(model: FREE_IMAGE_MDMODEL; tag: PFITAG; Make: PAnsiChar = nil): PAnsiChar; stdcall; external FIDLL name '_FreeImage_TagToString@12';
 
 // --------------------------------------------------------------------------
 // Image manipulation toolkit -----------------------------------------------
@@ -706,7 +706,7 @@ function FreeImage_RotateClassic(dib: PFIBITMAP; angle: Double): PFIBITMAP; stdc
 function FreeImage_RotateEx(dib: PFIBITMAP; angle, x_shift, y_shift, x_origin, y_origin: Double; use_mask: Boolean): PFIBITMAP; stdcall; external FIDLL name '_FreeImage_RotateEx@48';
 function FreeImage_FlipHorizontal(dib: PFIBITMAP): Boolean; stdcall; external FIDLL name '_FreeImage_FlipHorizontal@4';
 function FreeImage_FlipVertical(dib: PFIBITMAP): Boolean; stdcall; external FIDLL name '_FreeImage_FlipVertical@4';
-function FreeImage_JPEGTransform(const src_file: PChar; const dst_file: PChar; operation: FREE_IMAGE_JPEG_OPERATION; perfect: Boolean = False): Boolean; stdcall; external FIDLL name '_FreeImage_JPEGTransform@16';
+function FreeImage_JPEGTransform(const src_file: PAnsiChar; const dst_file: PAnsiChar; operation: FREE_IMAGE_JPEG_OPERATION; perfect: Boolean = False): Boolean; stdcall; external FIDLL name '_FreeImage_JPEGTransform@16';
 
 // upsampling / downsampling
 function FreeImage_Rescale(dib: PFIBITMAP; dst_width, dst_height: Integer; filter: FREE_IMAGE_FILTER): PFIBITMAP; stdcall; external FIDLL name '_FreeImage_Rescale@16';
