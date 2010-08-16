@@ -184,7 +184,7 @@ type
     ToolButton9: TToolButton;
     MakeFolderViewer1: TMenuItem;
     Number1: TMenuItem;
-    Edit1: TComboBoxEx;
+    CbPathEdit: TComboBoxEx;
     AutoCompliteTimer: TTimer;
     RatingPopupMenu1: TPopupMenu;
     N00: TMenuItem;
@@ -301,7 +301,7 @@ type
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
     Function ListView1Selected : TEasyItem;
     Function ItemAtPos(X,Y : integer): TEasyItem;
-    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
+    procedure CbPathEditKeyPress(Sender: TObject; var Key: Char);
     procedure Exit1Click(Sender: TObject);
     procedure PageScroller2Resize(Sender: TObject);
     procedure CloseButtonPanelResize(Sender: TObject);
@@ -498,7 +498,7 @@ type
     procedure MakeFolderViewer1Click(Sender: TObject);
     procedure AutoCompliteTimerTimer(Sender: TObject);
     procedure ComboBox1DropDown;
-    procedure Edit1KeyDown(Sender: TObject; var Key: Word;
+    procedure CbPathEditKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure EasyListview2KeyAction(Sender: TCustomEasyListview;
         var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
@@ -897,8 +897,8 @@ begin
   MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
 
   Lock:=false;
-  FWndOrigin := Edit1.WindowProc;
-  Edit1.WindowProc := ComboWNDProc;
+  FWndOrigin := CbPathEdit.WindowProc;
+  CbPathEdit.WindowProc := ComboWNDProc;
   SlashHandled:=false;
 
   TW.I.Start('aScript');
@@ -2241,14 +2241,14 @@ begin
  end;
 end;
 
-procedure TExplorerForm.Edit1KeyPress(Sender: TObject; var Key: Char);
+procedure TExplorerForm.CbPathEditKeyPress(Sender: TObject; var Key: Char);
 var
   s : string;
 begin
  If key=#13 then
  begin
   Key:=#0;
-  SetStringPath(Edit1.text,false);
+  SetStringPath(CbPathEdit.text,false);
  end;
  if (key=':') or (key='\') then
  begin
@@ -2257,11 +2257,11 @@ begin
    SlashHandled:=false;
    exit;
   end;
-  s:=Edit1.Text;
+  s:=CbPathEdit.Text;
   FormatDir(s);
   if ComboPath<>GetDirectory(s) then
   begin
-   ComboPath:=GetDirectory(Edit1.Text);
+   ComboPath:=GetDirectory(CbPathEdit.Text);
    ComboBox1DropDown;
   end;
  end;
@@ -2274,7 +2274,7 @@ end;
 
 procedure TExplorerForm.PageScroller2Resize(Sender: TObject);
 begin
- Edit1.Width:=CoolBar1.Width-ImButton1.Width-Label2.Width-ToolButton9.Width-ImButton1.Width;
+ CbPathEdit.Width:=CoolBar1.Width-ImButton1.Width-Label2.Width-ToolButton9.Width-ImButton1.Width;
 end;
 
 procedure TExplorerForm.CloseButtonPanelResize(Sender: TObject);
@@ -3114,7 +3114,7 @@ Showmessage(Inttostr(Msg.message)); }
 
  if Msg.message=256 then
  if msg.wparam=220 then
- if Length(Edit1.Text)>3 then
+ if Length(CbPathEdit.Text)>3 then
  begin
   SlashHandled:=true;
   ComboBox1DropDown;
@@ -3123,13 +3123,13 @@ Showmessage(Inttostr(Msg.message)); }
 
  if msg.message=512 then
  begin
-  FEditHandle:=GetWindow(GetWindow(Edit1.Handle, GW_CHILD), GW_CHILD);
+  FEditHandle:=GetWindow(GetWindow(CbPathEdit.Handle, GW_CHILD), GW_CHILD);
   if FEditHandle=GetWindow(msg.hwnd, GW_CHILD) then
   begin
-   if ComboPath<>GetDirectory(Edit1.Text) then
+   if ComboPath<>GetDirectory(CbPathEdit.Text) then
    begin
    AutoCompliteTimer.Enabled:=true;
-   ComboPath:=GetDirectory(Edit1.Text);
+   ComboPath:=GetDirectory(CbPathEdit.Text);
    end;
   end;
  end;
@@ -5008,7 +5008,7 @@ begin
 
   Caption:=MyComputer;
 
-  Edit1.text:=MyComputer;
+  CbPathEdit.text:=MyComputer;
   ThreadType:=THREAD_TYPE_MY_COMPUTER;
  end;
  If (WPath.PType=EXPLORER_ITEM_FOLDER) or (WPath.PType=EXPLORER_ITEM_DRIVE) or (WPath.PType=EXPLORER_ITEM_SHARE) then
@@ -5017,25 +5017,25 @@ begin
   UnFormatDir(s);
 
   Caption:=S;
-  Edit1.text:=Path;
+  CbPathEdit.text:=Path;
  end;
  If WPath.PType=EXPLORER_ITEM_NETWORK then
  begin
 
   Caption:=Path;
-  Edit1.text:=Path;
+  CbPathEdit.text:=Path;
   ThreadType:=THREAD_TYPE_NETWORK;
  end;
  If WPath.PType=EXPLORER_ITEM_WORKGROUP then
  begin
   Caption:=Path;
-  Edit1.text:=Path;
+  CbPathEdit.text:=Path;
   ThreadType:=THREAD_TYPE_WORKGROUP;
  end;
  If WPath.PType=EXPLORER_ITEM_COMPUTER then
  begin
   Caption:=Path;
-  Edit1.text:=Path;
+  CbPathEdit.text:=Path;
   ThreadType:=THREAD_TYPE_COMPUTER;
  end;
  S := Path;
@@ -5674,13 +5674,13 @@ begin
  s:=Path;
   If (s='') or (AnsiLowerCase(s)=AnsiLowerCase(MyComputer)) then
   begin
-   Edit1.text:=MyComputer;
+   CbPathEdit.text:=MyComputer;
    SetNewPath(s,ChangeTreeView);
    Exit;
   end;
   If (AnsiLowerCase(s)=AnsiLowerCase(TEXT_MES_NETWORK)) then
   begin
-   Edit1.text:=TEXT_MES_NETWORK;
+   CbPathEdit.text:=TEXT_MES_NETWORK;
    SetNewPathW(ExplorerPath(TEXT_MES_NETWORK,EXPLORER_ITEM_NETWORK),false);
    Exit;
   end;
@@ -7121,7 +7121,7 @@ end;
 
 procedure TExplorerForm.ImButton1Click(Sender: TObject);
 begin
- SetStringPath(Edit1.text,false);
+ SetStringPath(CbPathEdit.text,false);
 end;
 
 procedure TExplorerForm.CorrectPath(Src: array of string; Dest: string);
@@ -7175,7 +7175,7 @@ var
 begin
  AutoCompliteTimer.Enabled:=false;
  ComboBox1DropDown;
- FEditHandle:=GetWindow(GetWindow(Edit1.Handle, GW_CHILD), GW_CHILD);
+ FEditHandle:=GetWindow(GetWindow(CbPathEdit.Handle, GW_CHILD), GW_CHILD);
  SendMessage(FEditHandle,256,39,39);
 end;
 
@@ -7207,27 +7207,27 @@ var
   end;
 
 begin
- s:=Trim(Edit1.Text);
+ s:=Trim(CbPathEdit.Text);
  if Length(s)<4 then s:=GetDirectory(s);
  if not CheckFileExistsWithSleep(s,true) then exit;
  x:=GetDirListing(s);
- s:=Edit1.Text;
+ s:=CbPathEdit.Text;
  Lock:=true;
- Edit1.Items.Clear;
+ CbPathEdit.Items.Clear;
  for i:=0 to Length(x)-1 do
- Edit1.Items.Add(x[i]);
+ CbPathEdit.Items.Add(x[i]);
  Lock:=false;
- Edit1.Text:=s;
+ CbPathEdit.Text:=s;
 end;
 
-procedure TExplorerForm.Edit1KeyDown(Sender: TObject; var Key: Word;
+procedure TExplorerForm.CbPathEditKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   dir : string;
   i, c : integer;
 begin
  if Key=16 then exit;
- dir:=Edit1.Text;
+ dir:=CbPathEdit.Text;
  if Length(Dir)>2 then
  if Dir[1]='\' then
  begin

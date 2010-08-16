@@ -1929,7 +1929,7 @@ object PropertiesForm: TPropertiesForm
       ReadOnly = True
       TabOrder = 10
     end
-    object LabelPach: TMemo
+    object LabelPath: TMemo
       Tag = 11
       Left = 8
       Top = 40
@@ -1937,8 +1937,14 @@ object PropertiesForm: TPropertiesForm
       Height = 41
       BorderStyle = bsNone
       Color = clBtnFace
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
       Lines.Strings = (
         '<data>')
+      ParentFont = False
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 1
@@ -2009,7 +2015,7 @@ object PropertiesForm: TPropertiesForm
       Islayered = False
       Layered = 100
       OnMouseDown = Rating1MouseDown
-      ImageCanRegenerate = False
+      ImageCanRegenerate = True
     end
     object DateEdit: TDateTimePicker
       Tag = 1

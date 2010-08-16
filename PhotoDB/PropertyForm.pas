@@ -71,7 +71,7 @@ type
     LabelName: TMemo;
     SizeLabel: TMemo;
     IDLabel: TMemo;
-    LabelPach: TMemo;
+    LabelPath: TMemo;
     widthmemo: TMemo;
     heightmemo: TMemo;
     CollectionMemo: TMemo;
@@ -645,7 +645,7 @@ begin
  caption:=TEXT_MES_PROPERTY+' - '+ Trim(WorkQuery.FieldByName('Name').AsString);
  KeyWordsMemo.Text:=WorkQuery.FieldByName('KeyWords').AsString;
  LabelName.Text:=Trim(WorkQuery.FieldByName('Name').AsString);
- LabelPach.Text:=LongFileName(WorkQuery.FieldByName('FFileName').AsString);
+ LabelPath.Text:=LongFileName(WorkQuery.FieldByName('FFileName').AsString);
  SizeLabel.text:=SizeInTextA(WorkQuery.FieldByName('FileSize').AsInteger);
  widthmemo.text:=IntToStr(WorkQuery.FieldByName('Width').AsInteger)+'px.';
  heightmemo.text:=IntToStr(WorkQuery.FieldByName('Height').AsInteger)+'px.';
@@ -736,8 +736,8 @@ begin
  if no_file then exit;
  With ExplorerManager.NewExplorer(False) do
  begin
-  SetOldPath(LabelPach.text);
-  SetPath(GetDirectory(LabelPach.text));
+  SetOldPath(LabelPath.text);
+  SetPath(GetDirectory(LabelPath.text));
   Show;
  end;
 // ShellExecute(0, 'open', PChar('explorer'), PChar('/select,"'+LabelPach.text+'"'), nil, SW_SHOWNORMAL);
@@ -843,9 +843,9 @@ begin
     TempImage.Free;
     DragImage.Free;
     DropFileSource1.Files.Clear;
-    if FileExists(ProcessPath(LabelPach.Text)) then
+    if FileExists(ProcessPath(LabelPath.Text)) then
     begin
-     DropFileSource1.Files.Add(ProcessPath(LabelPach.Text));
+     DropFileSource1.Files.Add(ProcessPath(LabelPath.Text));
      DropFileSource1.Execute;
     end;
   end;
@@ -1267,7 +1267,7 @@ var
   FirstName : Boolean;
 begin
  if FShowInfoType<>SHOW_INFO_IDS then
- CopyFilesToClipboard(LabelPach.Text) else
+ CopyFilesToClipboard(LabelPath.Text) else
  begin
   FirstName:=True;
   s:='';
@@ -1289,7 +1289,7 @@ end;
 
 procedure TPropertiesForm.Shell1Click(Sender: TObject);
 begin
- ShellExecute(0, Nil,Pchar(LabelPach.Text), Nil, Nil, SW_NORMAL);
+ ShellExecute(0, Nil,Pchar(LabelPath.Text), Nil, Nil, SW_NORMAL);
 end;
 
 procedure TPropertiesForm.Show1Click(Sender: TObject);
@@ -1404,7 +1404,7 @@ begin
 
  LabelName.text:=ExtractFileName(FileName);
 
- LabelPach.Text:=LongFileName(FileName);
+ LabelPath.Text:=LongFileName(FileName);
 
  Label3.Hide;
  CommentMemo.Hide;
@@ -1772,12 +1772,12 @@ begin
  LabelName.Text:=TEXT_MES_VAR_FILES;
  if IsVariousArStrings(ArDir) then
  begin
-  LabelPach.Text:=TEXT_MES_VAR_LOCATION;
+  LabelPath.Text:=TEXT_MES_VAR_LOCATION;
  end else
  begin
   s:=ArDir[0];
   UnFormatDir(s);
-  LabelPach.Text:=format(TEXT_MES_ALL_IN,[LongFileName(s)]);
+  LabelPath.Text:=format(TEXT_MES_ALL_IN,[LongFileName(s)]);
  end;
 
  CurrentItemInfo.ItemRating := FFilesInfo.StatRating;

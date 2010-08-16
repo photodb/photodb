@@ -4843,16 +4843,22 @@ object ExplorerForm: TExplorerForm
         Caption = 'ToolButton9'
         Style = tbsSeparator
       end
-      object Edit1: TComboBoxEx
+      object CbPathEdit: TComboBoxEx
         Left = 49
         Top = 0
         Width = 568
         Height = 22
         AutoCompleteOptions = [acoAutoSuggest]
         ItemsEx = <>
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         TabOrder = 1
-        OnKeyDown = Edit1KeyDown
-        OnKeyPress = Edit1KeyPress
+        OnKeyDown = CbPathEditKeyDown
+        OnKeyPress = CbPathEditKeyPress
       end
       object ImButton1: TImButton
         Left = 617

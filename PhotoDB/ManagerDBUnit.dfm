@@ -1,9 +1,9 @@
 object ManagerDB: TManagerDB
   Left = 100
   Top = 98
-  Width = 898
-  Height = 650
   Caption = 'ManagerDB'
+  ClientHeight = 616
+  ClientWidth = 890
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,14 +20,14 @@ object ManagerDB: TManagerDB
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 882
-    Height = 612
+    Width = 890
+    Height = 616
     Align = alClient
     TabOrder = 0
     object PnTop: TPanel
       Left = 1
       Top = 1
-      Width = 880
+      Width = 888
       Height = 216
       Align = alTop
       TabOrder = 0
@@ -65,7 +65,6 @@ object ManagerDB: TManagerDB
         Width = 65
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         ParentColor = True
         TabOrder = 0
         OnChange = ComboBox1Change
@@ -97,7 +96,6 @@ object ManagerDB: TManagerDB
         Width = 89
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         ParentColor = True
         TabOrder = 2
         OnChange = CbWhereField1Change
@@ -138,7 +136,6 @@ object ManagerDB: TManagerDB
         Width = 49
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         ParentColor = True
         TabOrder = 5
         OnChange = CbWhereCombinatorChange
@@ -161,7 +158,6 @@ object ManagerDB: TManagerDB
         Width = 89
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         ParentColor = True
         TabOrder = 7
         OnChange = CbWhereField1Change
@@ -185,7 +181,6 @@ object ManagerDB: TManagerDB
         Width = 49
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         ParentColor = True
         TabOrder = 8
         OnChange = CbOperatorWhere1Change
@@ -202,7 +197,6 @@ object ManagerDB: TManagerDB
         Width = 49
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         ParentColor = True
         TabOrder = 9
         OnChange = CbOperatorWhere1Change
@@ -470,8 +464,8 @@ object ManagerDB: TManagerDB
     object ElvMain: TListView
       Left = 1
       Top = 217
-      Width = 880
-      Height = 394
+      Width = 888
+      Height = 398
       Align = alClient
       Columns = <
         item

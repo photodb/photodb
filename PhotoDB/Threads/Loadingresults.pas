@@ -1057,7 +1057,7 @@ begin
   Result:=Result+' AND ((DateToAdd >= :MinDate ) and (DateToAdd <= :MaxDate ) and IsDate=True) ';
 
   Params.AddDateTimeParam('MinDate', Trunc(FSearchParams.DateFrom)); 
-  Params.AddDateTimeParam('MaxDate', Trunc(FSearchParams.DateTo));
+  Params.AddDateTimeParam('MaxDate', Trunc(FSearchParams.DateTo) + 1);
 
   begin
    Result:=Result+' AND ((Rating>='+IntToStr(FSearchParams.RatingFrom)+') and (Rating<='+IntToStr(FSearchParams.RatingTo)+')) ';

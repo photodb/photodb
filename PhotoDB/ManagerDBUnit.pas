@@ -189,11 +189,11 @@ type
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
     function GetListViewItemAt(y : integer): TListItem;
-  protected             
+  protected
     { protected declarations }
     procedure CreateParams(VAR Params: TCreateParams); override;
     procedure ReleaseLoadingThread;
-  public           
+  public
     { public declarations }
     procedure LoadLanguage;
   end;
@@ -339,11 +339,11 @@ begin
     ItemData := TDBPopupMenuInfoRecord.Create;
     ItemData.ID := Value.ID;
     ItemData.InfoLoaded := False;
-    FData.Add(ItemData);  
+    FData.Add(ItemData);
     elvMain.Items.Add;
     Exit;
   end;
- 
+
   if EventID_Param_DB_Changed in params then
   begin
     elvMain.Clear;
@@ -601,7 +601,7 @@ begin
   ScanforBadLinksLink.Text:=TEXT_MES_BAD_LINKS_CAPTION;
   BtnAddDB.Caption:=TEXT_MES_DO_ADD_DB;
   EditDB1.Caption:=TEXT_MES_EDIT;
-  SelectDB1.Caption:=TEXT_MES_SELECT_DB; 
+  SelectDB1.Caption:=TEXT_MES_SELECT_DB;
   DeleteDB1.Caption:=TEXT_MES_DELETE;
   RenameDB1.Caption:=TEXT_MES_RENAME;
   ConvertLink.Text:=TEXT_MES_CONVERT_DB;
@@ -766,10 +766,7 @@ end;
 procedure TManagerDB.InitializeQueryList;
 var
   I, W, H : integer;
-  WorkQuery : TDataSet;
-  _sqlexectext : string;
   B : TBitmap;
-  FormProgress : TProgressActionForm;
   C : integer;
   ItemData : TDBPopupMenuInfoRecord;
 begin
@@ -811,7 +808,7 @@ begin
   elvMain.Items.BeginUpdate;
   try
     for I := 0 to DataList.Count - 1 do
-    begin             
+    begin
       FData.Add(DataList[I]);
       ElvMain.Items.Add;
     end;
@@ -845,7 +842,7 @@ var
   Caption : string;
   aRect : TRect;
   j, i : integer;
-  G : TGroups;    
+  G : TGroups;
   ItemData : TDBPopupMenuInfoRecord;
 Const
   DrawTextOpt = DT_NOPREFIX+DT_CENTER+DT_WORDBREAK+DT_EDITCONTROL;
@@ -895,7 +892,7 @@ begin
   Sender.Canvas.LineTo(aRect.Left, aRect.Bottom);
   if not ItemData.InfoLoaded then
     GetData(Item.Index);
-  
+
   if not ItemData.InfoLoaded then
     Exit;
 
@@ -1200,7 +1197,7 @@ begin
       P := ElvMain.ScreenToClient(P);
       Item := GetListViewItemAt(P.Y);
       if Item = nil then
-        Exit;  
+        Exit;
       ItemData := TDBPopupMenuInfoRecord(Item.Data);
       SetLength(G, 0);
       if ShiftKeyDown then
@@ -1379,14 +1376,14 @@ end;
 procedure TManagerDB.R04Click(Sender: TObject);
 var
   Index, NewRotate : integer;
-  FQuery : TDataSet;       
+  FQuery : TDataSet;
   ItemData : TDBPopupMenuInfoRecord;
 begin
   Index := PopupMenuRotate.Tag;
-  NewRotate := (Sender as TMenuItem).Tag;     
+  NewRotate := (Sender as TMenuItem).Tag;
   ItemData := TDBPopupMenuInfoRecord(ElvMain.Items[Index].Data);
   ItemData.Rotation := NewRotate;
-  FQuery := GetQuery;  
+  FQuery := GetQuery;
   try
     SetSQL(FQuery,Format('Update $DB$ Set Rotated = %d Where ID = %d', [NewRotate, ItemData.ID]));
     ExecSQL(FQuery);
@@ -1415,7 +1412,7 @@ var
   EventInfo : TEventValues;
   G, KeyWords : String;
   Groups : TGroups;
-  Query : TDataSet;   
+  Query : TDataSet;
   ItemData : TDBPopupMenuInfoRecord;
 begin
   if ElvMain.Selected = nil then
@@ -1425,7 +1422,7 @@ begin
   KeyWords := ItemData.KeyWords;
   G := ItemData.Groups;
   Groups := EnCodeGroups(G);
-  DBChangeGroups(Groups, KeyWords);                
+  DBChangeGroups(Groups, KeyWords);
   if (G = ItemData.Groups) and (KeyWords = ItemData.KeyWords) then
     Exit;
   G := CodeGroups(Groups);
@@ -1476,7 +1473,7 @@ var
   DS : TDataSet;
   JPG : TJpegImage;
   B : TBitmap;
-  Pass : string;  
+  Pass : string;
   ItemData : TDBPopupMenuInfoRecord;
 begin
   if FormManagerHint = nil then
@@ -1505,7 +1502,7 @@ begin
       FormManagerHint.Top := P.Y;
     if ElvMain.Items.Count <= Item.Index then
       Exit;
-      
+
     DS:=GetQuery;
     try
       if not ItemData.InfoLoaded then
@@ -1650,7 +1647,7 @@ begin
   MenuInfo := GetMenuInfoByID(ItemData.ID);
   if MenuInfo.Count = 1 then
     DoProcessPath(MenuInfo[0].FileName);
-    
+
   MenuInfo.IsPlusMenu:=False;
   MenuInfo.IsListItem:=False;
   MenuInfo.AttrExists:=false;
@@ -1824,17 +1821,16 @@ end;
 
 procedure TManagerDB.LbDatabasesDblClick(Sender: TObject);
 var
-  index  : integer;
-  MousePos : TPoint;
+  Index: Integer;
+  MousePos: TPoint;
 begin
- GetCursorPos(MousePos);
- MousePos:=LbDatabases.ScreenToClient(MousePos);
- index:=LbDatabases.ItemAtPos(MousePos,true);
- if index>=0 then
- begin
-  ChangeDBOptions(DBKernel.DBs[index]);
- end;
- RefreshDBList;
+  GetCursorPos(MousePos);
+  MousePos := LbDatabases.ScreenToClient(MousePos);
+  Index := LbDatabases.ItemAtPos(MousePos, True);
+  if Index >= 0 then
+    ChangeDBOptions(DBkernel.DBs[index]);
+
+  RefreshDBList;
 end;
 
 procedure TManagerDB.EditDB1Click(Sender: TObject);
@@ -1908,7 +1904,7 @@ end;
 procedure TManagerDB.dblDataDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := Theme_ListColor;  
+  Buffer.Canvas.Pen.Color := Theme_ListColor;
   Buffer.Canvas.Brush.Color := Theme_ListColor;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
@@ -1925,11 +1921,9 @@ begin
   begin
     FLoadingDataThread.Suspend;
     FLoadingDataThread.FreeOnTerminate := True;
-    FLoadingDataThread.Terminate;    
+    FLoadingDataThread.Terminate;
     FLoadingDataThread.Resume;
   end;
 end;
 
 end.
-
-
