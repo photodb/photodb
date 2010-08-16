@@ -506,8 +506,8 @@ type
         Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
     procedure ListView1Resize(Sender : TObject);
     procedure N05Click(Sender: TObject);
-    procedure EasyListview1DblClick(Sender: TCustomEasyListview;
-      Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
+    procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
+      ShiftState: TShiftState; var Handled: Boolean);
     procedure EasyListview1ItemThumbnailDraw(
         Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
         ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
@@ -516,8 +516,8 @@ type
     procedure ScrollBox1Reallign(Sender: TObject);
     procedure BackGround(Sender: TObject; x, y, w, h: integer;
         Bitmap: TBitmap);
-    procedure Listview1IncrementalSearch(Item: TEasyCollectionItem;
-        const SearchBuffer: WideString; var CompareResult: Integer);
+    procedure Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
+      var CompareResult: Integer);
 
     procedure EasyListview1ItemImageDraw(Sender: TCustomEasyListview;
       Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
@@ -7303,8 +7303,8 @@ begin
  Listview1.BackGround.OffsetY:=ListView1.Height-Listview1.BackGround.Image.Height;
 end;
 
-procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;
-      Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
+procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
+      ShiftState: TShiftState; var Handled: Boolean);
 begin
  ListView1DblClick(Sender);
 end;
@@ -7397,8 +7397,8 @@ begin
  ScrollBox1.GetBackGround(x,y,w,h,Bitmap);
 end;
 
-procedure TExplorerForm.Listview1IncrementalSearch(Item: TEasyCollectionItem;
-  const SearchBuffer: WideString; var CompareResult: Integer);
+procedure TExplorerForm.Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
+      var CompareResult: Integer);
 var
   CompareStr: WideString;
 begin

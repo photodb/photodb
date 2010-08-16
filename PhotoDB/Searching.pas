@@ -367,8 +367,8 @@ type
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
     function ListViewSelected : TEasyItem;
     function ItemAtPos(X,Y : integer): TEasyItem;
-    procedure EasyListviewDblClick(Sender: TCustomEasyListview;
-      Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
+    procedure EasyListviewDblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
+      ShiftState: TShiftState; var Handled: Boolean);
     procedure EasyListviewItemSelectionChanged(
       Sender: TCustomEasyListview; Item: TEasyItem);
     procedure EasyListviewKeyAction(Sender: TCustomEasyListview;
@@ -376,8 +376,8 @@ type
     procedure EasyListviewItemEdited(Sender: TCustomEasyListview;
       Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
     procedure N05Click(Sender: TObject);
-    procedure ListviewIncrementalSearch(Item: TEasyCollectionItem;
-        const SearchBuffer: WideString; var CompareResult: Integer);
+    procedure ListviewIncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
+      var CompareResult: Integer);
     procedure ShowDateOptionsLinkClick(Sender: TObject);
     procedure LoadSizes;
     function FileNameExistsInList(FileName : string) : boolean;
@@ -3758,8 +3758,8 @@ begin
   end;
 end;
 
-procedure TSearchForm.EasyListViewDblClick(Sender: TCustomEasyListview;
-      Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
+procedure TSearchForm.EasyListViewDblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
+      ShiftState: TShiftState; var Handled: Boolean);
 begin
   ListViewDblClick(Sender);
 end;
@@ -3824,8 +3824,8 @@ begin
   LsSearchResults.Color := ListView.Color;
 end;
 
-procedure TSearchForm.ListViewIncrementalSearch(Item: TEasyCollectionItem;
-  const SearchBuffer: WideString; var CompareResult: Integer);
+procedure TSearchForm.ListViewIncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
+      var CompareResult: Integer);
 var
   CompareStr: WideString;
 begin

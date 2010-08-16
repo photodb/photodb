@@ -4816,9 +4816,9 @@ object ExplorerForm: TExplorerForm
     ShowHint = True
     OnResize = PageScroller2Resize
     object ToolBar2: TToolBar
-      Left = 12
+      Left = 11
       Top = 0
-      Width = 850
+      Width = 855
       Height = 20
       AutoSize = True
       ButtonHeight = 20

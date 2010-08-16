@@ -1,10 +1,10 @@
 object SearchForm: TSearchForm
   Left = 459
   Top = 60
-  Width = 821
-  Height = 678
   ActiveControl = ShowDateOptionsLink
   Caption = 'Search'
+  ClientHeight = 640
+  ClientWidth = 805
   Color = clInactiveCaption
   Constraints.MinHeight = 180
   Constraints.MinWidth = 310
@@ -447,7 +447,6 @@ object SearchForm: TSearchForm
         Height = 22
         ItemsEx = <>
         Anchors = [akLeft, akTop, akRight]
-        ItemHeight = 16
         ParentColor = True
         PopupMenu = PopupMenu4
         TabOrder = 10
@@ -539,7 +538,12 @@ object SearchForm: TSearchForm
         Width = 167
         Height = 217
         Anchors = [akLeft, akTop, akRight, akBottom]
-        CacheDoubleBufferBits = False
+        Ctl3D = True
+        EditManager.Font.Charset = DEFAULT_CHARSET
+        EditManager.Font.Color = clWindowText
+        EditManager.Font.Height = -11
+        EditManager.Font.Name = 'MS Shell Dlg 2'
+        EditManager.Font.Style = []
         UseDockManager = False
         DragManager.AutoScroll = False
         DragManager.MouseButton = []
@@ -553,6 +557,10 @@ object SearchForm: TSearchForm
         GroupFont.Height = -11
         GroupFont.Name = 'MS Shell Dlg 2'
         GroupFont.Style = []
+        Header.Columns.Items = {
+          0600000001000000110000005445617379436F6C756D6E53746F726564FFFECE
+          00060000008008000101000100000000000001A4000000FFFFFF1F0001000000
+          00000000000000000000000000000000}
         Header.Font.Charset = DEFAULT_CHARSET
         Header.Font.Color = clWindowText
         Header.Font.Height = -11
@@ -560,6 +568,7 @@ object SearchForm: TSearchForm
         Header.Font.Style = []
         PaintInfoGroup.BandFullWidth = True
         PaintInfoGroup.MarginBottom.CaptionIndent = 4
+        ParentCtl3D = False
         ParentFont = False
         Scrollbars.HorzEnabled = False
         ShowGroupMargins = True
@@ -839,13 +848,11 @@ object SearchForm: TSearchForm
         ItemsEx = <>
         Style = csExDropDownList
         Anchors = [akLeft, akTop, akRight]
-        ItemHeight = 16
         ParentColor = True
         TabOrder = 4
         OnDropDown = ComboBoxSearchGroupsDropDown
         OnSelect = ComboBoxSearchGroupsSelect
         Images = SearchGroupsImageList
-        DropDownCount = 8
         ShowDropDownMenu = True
         LastItemIndex = 0
         ShowEditIndex = -1
@@ -859,7 +866,6 @@ object SearchForm: TSearchForm
         ItemsEx = <>
         Anchors = [akLeft, akTop, akRight]
         Ctl3D = True
-        ItemHeight = 16
         ParentColor = True
         ParentCtl3D = False
         ParentShowHint = False
@@ -1141,24 +1147,23 @@ object SearchForm: TSearchForm
         Control = TbMain
         ImageIndex = -1
         MinHeight = 21
-        Width = 801
+        Width = 799
       end>
     object TbMain: TToolBar
-      Left = 9
+      Left = 11
       Top = 0
-      Width = 788
+      Width = 790
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 57
       Caption = 'TbMain'
-      EdgeBorders = []
       List = True
       TabOrder = 0
       Transparent = True
       Wrapable = False
       object TbSearch: TToolButton
         Left = 0
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Search'
         ImageIndex = 2
@@ -1166,7 +1171,7 @@ object SearchForm: TSearchForm
       end
       object ToolButton15: TToolButton
         Left = 12
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton15'
         ImageIndex = 5
@@ -1174,14 +1179,14 @@ object SearchForm: TSearchForm
       end
       object TbStopOperation: TToolButton
         Left = 20
-        Top = 2
+        Top = 0
         AutoSize = True
         ImageIndex = 5
         OnClick = TbStopOperationClick
       end
       object ToolButton6: TToolButton
         Left = 32
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton6'
         ImageIndex = 4
@@ -1189,7 +1194,7 @@ object SearchForm: TSearchForm
       end
       object ToolButton9: TToolButton
         Left = 40
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Sorting'
         DropdownMenu = SortingPopupMenu
@@ -1197,7 +1202,7 @@ object SearchForm: TSearchForm
       end
       object ToolButton8: TToolButton
         Left = 52
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton8'
         ImageIndex = 4
@@ -1205,7 +1210,7 @@ object SearchForm: TSearchForm
       end
       object ToolButton1: TToolButton
         Left = 60
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Zoom In'
         ImageIndex = 0
@@ -1213,7 +1218,7 @@ object SearchForm: TSearchForm
       end
       object ToolButton2: TToolButton
         Left = 72
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Zoom out'
         DropdownMenu = PopupMenuZoomDropDown
@@ -1222,56 +1227,56 @@ object SearchForm: TSearchForm
         OnClick = ToolButton2Click
       end
       object ToolButton11: TToolButton
-        Left = 99
-        Top = 2
+        Left = 105
+        Top = 0
         Width = 8
         Caption = 'ToolButton11'
         ImageIndex = 4
         Style = tbsSeparator
       end
       object ToolButton10: TToolButton
-        Left = 107
-        Top = 2
+        Left = 113
+        Top = 0
         AutoSize = True
         Caption = 'Groups'
         ImageIndex = 4
         OnClick = GroupsManager1Click
       end
       object ToolButton7: TToolButton
-        Left = 119
-        Top = 2
+        Left = 125
+        Top = 0
         Width = 8
         Caption = 'ToolButton7'
         ImageIndex = 4
         Style = tbsSeparator
       end
       object ToolButton4: TToolButton
-        Left = 127
-        Top = 2
+        Left = 133
+        Top = 0
         AutoSize = True
         Caption = 'Save'
         ImageIndex = 2
         OnClick = SaveResults1Click
       end
       object ToolButton5: TToolButton
-        Left = 139
-        Top = 2
+        Left = 145
+        Top = 0
         AutoSize = True
         Caption = 'Load'
         ImageIndex = 3
         OnClick = LoadResults1Click
       end
       object ToolButton13: TToolButton
-        Left = 151
-        Top = 2
+        Left = 157
+        Top = 0
         Width = 8
         Caption = 'ToolButton13'
         ImageIndex = 5
         Style = tbsSeparator
       end
       object ToolButton12: TToolButton
-        Left = 159
-        Top = 2
+        Left = 165
+        Top = 0
         Caption = 'Explorer'
         ImageIndex = 4
         OnClick = ToolButton12Click

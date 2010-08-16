@@ -151,15 +151,15 @@ type
     procedure EasyListview1ItemThumbnailDraw(
       Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
-    procedure EasyListview1DblClick(Sender: TCustomEasyListview;
-      Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
+    procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
+      ShiftState: TShiftState; var Handled: Boolean);
     procedure EasyListview1ItemSelectionChanged(
       Sender: TCustomEasyListview; Item: TEasyItem);
     Procedure ListView1Resize(Sender : TObject);
     procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure Listview1IncrementalSearch(Item: TEasyCollectionItem;
-      const SearchBuffer: WideString; var CompareResult: Integer);
+    procedure Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
+      var CompareResult: Integer);
     Function ListView1Selected : TEasyItem;
     Function ItemAtPos(X,Y : integer): TEasyItem;
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
@@ -305,9 +305,9 @@ begin
      ListView1.IncrementalSearch.Enabled:=true;
      ListView1.OnItemThumbnailDraw:=EasyListview1ItemThumbnailDraw;
 
-     ListView1.OnDblClick:=EasyListview1DblClick;
+     ListView1.OnDblClick := EasyListview1DblClick;
 
-     ListView1.OnIncrementalSearch:=Listview1IncrementalSearch;
+     ListView1.OnIncrementalSearch := Listview1IncrementalSearch;
      ListView1.OnMouseDown:=ListView1MouseDown;
      ListView1.OnMouseUp:=ListView1MouseUp;
      ListView1.OnMouseMove:=ListView1MouseMove;
@@ -1291,10 +1291,10 @@ begin
  end;
 end;
 
-procedure TFormCont.EasyListview1DblClick(Sender: TCustomEasyListview;
-    Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState);
+procedure TFormCont.EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
+  ShiftState: TShiftState; var Handled: Boolean);
 begin
- ListView1DblClick(Sender);
+  ListView1DblClick(Sender);
 end;
 
 procedure TFormCont.EasyListview1ItemSelectionChanged(
@@ -1832,8 +1832,8 @@ begin
   ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
 end;
 
-procedure TFormCont.Listview1IncrementalSearch(Item: TEasyCollectionItem;
-  const SearchBuffer: WideString; var CompareResult: Integer);
+procedure TFormCont.Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
+  var CompareResult: Integer);
 var
   CompareStr: WideString;
 begin

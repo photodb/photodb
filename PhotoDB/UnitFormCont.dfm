@@ -1,9 +1,9 @@
 object FormCont: TFormCont
   Left = 231
   Top = 193
-  Width = 484
-  Height = 402
   Caption = 'Panel'
+  ClientHeight = 364
+  ClientWidth = 468
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

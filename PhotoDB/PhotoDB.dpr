@@ -205,7 +205,6 @@ uses
   UnitDBKernel in 'Units\UnitDBKernel.pas',
   CmpUnit in 'Units\CmpUnit.pas',
   DBCMenu in 'Units\DBCMenu.pas',
-  win32crc in 'Units\win32crc.pas',
   ExplorerTypes in 'Units\ExplorerTypes.pas',
   UnitGroupsWork in 'Units\UnitGroupsWork.pas',
   Language in 'Units\Language.pas',
