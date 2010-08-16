@@ -1675,7 +1675,7 @@ object OptionsForm: TOptionsForm
     SetOnlyPosition = True
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 272
-    Top = 40
+    Left = 392
+    Top = 56
   end
 end

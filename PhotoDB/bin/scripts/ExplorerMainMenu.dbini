@@ -96,16 +96,13 @@
   };
  };
 
- if ($CanShowPrivate=true) 
+ $State=ShowPrivateNow;
+ if ($State=true) 
  {
-  $State=ShowPrivateNow;
-  if ($State=true) 
-  {
-   CreateItemDefChecked("TEXT_MES_SHOW_ONLY_COMMON",DB_IC_COMMON,"HidePrivate;",false,true,false,0);
-  }; else
-  {
-   CreateItemDefChecked("TEXT_MES_SHOW_PRIVATE",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
-  };
+  CreateItemDefChecked("TEXT_MES_SHOW_ONLY_COMMON",DB_IC_COMMON,"HidePrivate;",false,true,false,0);
+ }; else
+ {
+  CreateItemDefChecked("TEXT_MES_SHOW_PRIVATE",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
  };
  CreateItemDefChecked("-",0,"",false,false,false,0);
  CreateItemDefChecked("TEXT_MES_VIEW",DB_IC_SORT,"",false,true,false,-1);

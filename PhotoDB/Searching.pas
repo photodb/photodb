@@ -200,19 +200,14 @@ type
     LsSearchResults: TLoadingSign;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
-    procedure Additem_(sender: TObject; Name_ : String; tag : integer );
     procedure FormCreate(Sender: TObject);
     procedure ListViewContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure ListViewMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ListViewDblClick(Sender: TObject);
-
     procedure SlideShow1Click(Sender: TObject);
     procedure SaveClick(Sender: TObject);
-    procedure DeleteItemFromDBByID(Id : integer);
-    procedure load_thum_(Sender: TObject);
-
     function GetSelectedTstrings :  Tstrings;
     procedure FormDestroy(Sender: TObject);
     procedure reloadtheme(Sender: TObject);
@@ -365,7 +360,6 @@ type
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
     procedure ListViewSelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
     function GetListItemByID(ID : integer) : TEasyItem;
-    function GetItemNO(item : TEasyItem):integer;
     function GetSelecteditemNO(item : TEasyItem):integer;
     function ItemIndex(item : TEasyItem) : integer;
     procedure ListViewEdited(Sender: TObject; Item: TEasyItem;
@@ -438,7 +432,6 @@ type
     LoadingThItem, ShLoadingThItem : TEasyItem;
     SelectQuery : TDataSet;                  
     FBitmapImageList : TBitmapImageList;  
-//    FData : TSearchRecordArray;
     MouseDowned : Boolean;
     RenameResult : Boolean;
     PopupHandled : Boolean;
@@ -620,16 +613,6 @@ begin
     Key := #0;
     DoSearchNow(Sender);
   end;
-end;
-
-procedure TSearchForm.Additem_(Sender: TObject; Name_ : String; Tag : integer );
-var
-  New : TEasyItem;
-begin
- New := ListView.Items.Add;
- New.Tag:=Tag;
- New.ImageIndex:=0;
- New.Caption:=Name_;
 end;
 
 procedure TSearchForm.FormCreate(Sender: TObject);
@@ -1247,13 +1230,6 @@ begin
  Save.Enabled:=false;
 end;
 
-procedure TSearchForm.load_thum_(Sender: TObject);
-begin
- PbProgress.Text:=TEXT_MES_PROGRESS_PR;
- PbProgress.Position:=0;
-end;
-
-
 procedure TSearchForm.RefreshThumItemByID(ID : integer);
 var
   BS : TStream;
@@ -1413,20 +1389,6 @@ begin
  end;
 end;
 
-procedure TSearchForm.DeleteItemFromDBByID(Id: integer);
-var
-  EventInfo : TEventValues;
-begin
- if GetlistitembyID(Id)<>nil then
- begin
-  getlistitembyid(Id).ImageIndex:=1;
-  SelectQuery.active:=false;
-  SetSQL(SelectQuery,'UPDATE $DB$ SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID='+inttostr(id));
-  ExecSQL(SelectQuery);
-  DBKernel.DoIDEvent(nil,id,[EventID_Param_Delete],EventInfo);
- end;
-end;
-
 function TSearchForm.GetListItemByID(ID : integer) : TEasyItem;
 var
   i : integer;
@@ -1514,22 +1476,6 @@ begin
     Result.Add(GetSearchRecordFromItemData(ListView.Items[I]).FileName);
 end;
 
-function TSearchForm.GetItemNO(item : TEasyItem) : integer;
-var
-  i : integer;
-begin
- result:=0;
- if ListView.Items.Count=0 then exit;
- for i:=0 to ListView.Items.Count-1 do
- begin
-  if ListView.Items[i]=item then
-  begin
-   Result:=i;
-   break;
-  end;
- end;
-end;
-
 function TSearchForm.GetSelectedItemNO(item : TEasyItem) : integer;
 var
   i, c : integer;
@@ -1556,13 +1502,15 @@ end;
 
 procedure TSearchForm.ManageDB1Click(Sender: TObject);
 begin
- DoManager;
+  DoManager;
 end;
 
 procedure TSearchForm.RefreshInfoByID(ID : integer);
 begin
- if FCurrentSelectedID<>ID then exit;
- ListViewSelectItem(nil,GetlistitembyID(ID),true);
+  if FCurrentSelectedID <> ID then
+    Exit;
+    
+  ListViewSelectItem(nil, GetlistitembyID(ID), true);
 end;
 
 procedure TSearchForm.Memo1Change(Sender: TObject);
@@ -1684,7 +1632,6 @@ begin
           end;
           RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(False, Self, StateID, nil, FPictureSize, FilesToUpdate, True));
         end;
-
 
         ListView.Items[I].Invalidate(False);
       end;
@@ -2023,7 +1970,6 @@ begin
  N04.ImageIndex:=DB_IC_RATING_4;
  N05.ImageIndex:=DB_IC_RATING_5;
 
-
  ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EDIT_DATE+1]);
 
  TW.I.Start('S -> BackGroundSearchPanelResize');
@@ -2162,7 +2108,7 @@ end;
 
 procedure TSearchForm.Help1Click(Sender: TObject);
 begin
- DoAbout;
+  DoAbout;
 end;
 
 procedure TSearchForm.ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -2176,15 +2122,18 @@ end;
 
 procedure TSearchForm.RenameCurrentItem(Sender: TObject);
 begin
- if ListView.Selection.First=nil then exit;
- ListView.EditManager.Enabled:=true;
+  if ListView.Selection.First = nil then
+    Exit;
+  ListView.EditManager.Enabled:=true;
 end;
 
 procedure TSearchForm.ListViewKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key =  #13 then ListViewDblClick(Sender);
-  if Key in Unusedchar then key:=#0;
-  //TODO: context menu popup
+  if Key =  #13 then
+    ListViewDblClick(Sender);
+    
+  if Key in Unusedchar then
+    Key:=#0;
 end;
 
 procedure TSearchForm.ListViewEdited(Sender: TObject; Item: TEasyItem;
@@ -2215,21 +2164,20 @@ end;
 procedure TSearchForm.ListViewKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  if ListViewSelected = nil then
+    Exit;
 
- if ListViewSelected=nil then exit;
+  if (Ord(Key) = VK_F2) and (GetSelectionCount = 1) then
+  begin
+    ListView.EditManager.Enabled := True;
+    ListView.Selection.First.Edit;
+  end;
 
- if Ord(Key) = VK_F2 then
- if GetSelectionCount=1 then
+  if Active then
+    Application.HideHint;
 
-
-  ListView.EditManager.Enabled:=true;
-  ListView.Selection.First.Edit;
-
- if Active then
- Application.HideHint;
- if ImHint<>nil then
- if not UnitImHint.closed then
- ImHint.close;
+  if (ImHint <> nil) and not UnitImHint.closed then
+    ImHint.close;
 end;
 
 procedure TSearchForm.Explorer1Click(Sender: TObject);
@@ -3640,12 +3588,12 @@ procedure TSearchForm.SpecialLocation1Click(Sender: TObject);
 var
   Dir : string;
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_FOLDER_IMPORT_PHOTOS,Dolphin_DB.UseSimpleSelectFolderDialog);
- If DirectoryExists(dir) then
- begin
-  FormatDir(Dir);
-  GetPhotosFromFolder(Dir)
- end;
+  Dir:=UnitDBFileDialogs.DBSelectDir(Handle, TEXT_MES_SEL_FOLDER_IMPORT_PHOTOS, Dolphin_DB.UseSimpleSelectFolderDialog);
+  if DirectoryExists(dir) then
+  begin
+    FormatDir(Dir);
+    GetPhotosFromFolder(Dir)
+  end;
 end;
 
 procedure TSearchForm.GetPhotosFromDrive2Click(Sender: TObject);

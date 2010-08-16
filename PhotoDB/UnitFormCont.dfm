@@ -1256,7 +1256,7 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object GroupBox1: TGroupBox
         Left = 8
@@ -1318,7 +1318,7 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object ExCopyLink: TWebLink
         Left = 9
@@ -1336,7 +1336,7 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
       object WebLink1: TWebLink
         Left = 8
@@ -1354,7 +1354,7 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = False
+        ImageCanRegenerate = True
       end
     end
     object Panel4: TPanel

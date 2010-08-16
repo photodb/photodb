@@ -641,7 +641,7 @@ procedure CreateMSAccessDatabase(FileName: string);
 var
   DAO: Variant;
   i: integer; 
-const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine'); 
+const Engines: array[0..3] of string = ('DAO.DBEngine.40', 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine'); 
 
   function CheckClass(OLEClassName: string): boolean;
   var
@@ -653,12 +653,12 @@ const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'D
     Result:=Res = S_OK;
   end;
 begin 
-  for i := 0 to 2 do 
+  for I := 0 to 2 do 
     if CheckClass(Engines[i]) then
       begin 
         DAO := CreateOleObject(Engines[i]); 
         DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 32);
-        exit;
+        Exit;
       end;
   raise Exception.Create('DAO engine could not be initialized'); 
 end; 

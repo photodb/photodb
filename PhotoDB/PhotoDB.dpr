@@ -714,8 +714,6 @@ begin
 
    TW.I.Start('DEMO');
 
-//TODO if LoadingAboutForm<>nil then
-//TODO   TAboutForm(LoadingAboutForm).DmProgress1.Position:=8;
  if not FolderView then
  If not DBTerminating then
  if not DBInDebug then

@@ -85,7 +85,7 @@ type
     procedure InternalNameEditChange(Sender: TObject);
   private            
    ImageOptions : TImageDBOptions;
-   DBFile : TPhotoDBFile;
+   FDBFile : TPhotoDBFile;
    Step : integer;           
    Image : TJpegImage;
    fOptions : integer;
@@ -144,17 +144,18 @@ end;
 
 procedure TFormSelectDB.FormCreate(Sender: TObject);
 begin
- ImageOptions:=CommonDBSupport.GetDefaultImageDBOptions;
- ImageOptions.Version:=0; //VERSION SETTED AFTER PROCESSING IMAGES
- Image:=TJpegImage.Create;
- Image.Assign(ImagePreview.Picture.Graphic);
- SetDefaultIcon;
- ListBox1.ItemIndex:=0;
- Step:=0;
- LoadLanguage;
- DBKernel.RecreateThemeToForm(Self);
- DBKernel.RegisterForm(Self);
- RefreshDBList;
+  FDBFile := TPhotoDBFile.Create;
+  ImageOptions:=CommonDBSupport.GetDefaultImageDBOptions;
+  ImageOptions.Version:=0; //VERSION SETTED AFTER PROCESSING IMAGES
+  Image:=TJpegImage.Create;
+  Image.Assign(ImagePreview.Picture.Graphic);
+  SetDefaultIcon;
+  ListBox1.ItemIndex:=0;
+  Step:=0;
+  LoadLanguage;
+  DBKernel.RecreateThemeToForm(Self);
+  DBKernel.RegisterForm(Self);
+  RefreshDBList;
 end;
 
 procedure TFormSelectDB.LoadLanguage;
@@ -303,8 +304,8 @@ begin
  begin
   if Edit2.Text<>TEXT_MES_NO_DB_FILE then
   begin
-   DBFile.FileName:=Edit2.Text;
-   DBFile.Name:=Edit1.Text;
+   FDBFile.FileName:=Edit2.Text;
+   FDBFile.Name:=Edit1.Text;
    DoSelectStep(30);
   end else
   begin
@@ -345,7 +346,7 @@ var
   i : Integer;
   ico : TIcon;
 begin
- s:=DBFile.Icon;
+ s:=FDBFile.Icon;
  i:=Pos(',',s);
  FileName:=Copy(s,1,i-1);
  Icon:=Copy(s,i+1,Length(s)-i);
@@ -353,7 +354,7 @@ begin
  ChangeIconDialog(Handle,FileName,IconIndex);
  if FileName<>'' then
  Icon:=FileName+','+IntToStr(IconIndex);
- DBFile.Icon:=Icon;
+ FDBFile.Icon:=Icon;
  ico:=GetSmallIconByPath(Icon);
  ImageIconPreview.Picture.Icon.Assign(ico);
  ImageIconPreview2.Picture.Icon.Assign(ico);
@@ -402,13 +403,13 @@ procedure TFormSelectDB.SetDefaultIcon(path : string = '');
 var
   ico : TIcon;
 begin
- if path='' then path:=GetDirectory(GetProgramPath)+'Icons.dll,121';
- DBFile.Icon:=path;
- ico:=GetSmallIconByPath(path);
- ImageIconPreview.Picture.Icon.Assign(ico);   
- ImageIconPreview2.Picture.Icon.Assign(ico);
- ImageIconPreview.Refresh;
- ico.free;
+  if path='' then path:=GetDirectory(GetProgramPath)+'Icons.dll,121';
+  FDBFile.Icon:=path;
+  ico:=GetSmallIconByPath(path);
+  ImageIconPreview.Picture.Icon.Assign(ico);
+  ImageIconPreview2.Picture.Icon.Assign(ico);
+  ImageIconPreview.Refresh;
+  ico.free;
 end;
 
 procedure TFormSelectDB.ListBox1Click(Sender: TObject);
@@ -550,9 +551,9 @@ begin
  Memo1.Clear;
  Memo1.Lines.Add(TEXT_MES_NEW_DB_WILL_CREATE_WITH_THIS_OPTIONS);
  Memo1.Lines.Add('');
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_NAME_FORMAT,[DBFile.Name]));
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_PATH_FORMAT,[DBFile.FileName]));
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_ICON_FORMAT,[DBFile.Icon]));   
+ Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_NAME_FORMAT,[FDBFile.Name]));
+ Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_PATH_FORMAT,[FDBFile.FileName]));
+ Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_ICON_FORMAT,[FDBFile.Icon]));
  Memo1.Lines.Add('');
  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_SIZE_FORMAT,[ImageOptions.ThSize]));
  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_QUALITY_FORMAT,[ImageOptions.DBJpegCompressionQuality]));
@@ -598,9 +599,9 @@ begin
 
    CreateExampleDB(FileName,Application.ExeName+',0',GetDirectory(Application.ExeName));
 
-   DBFile.Name:=DBkernel.NewDBName(TEXT_MES_DEFAULT_DB_NAME);
-   DBFile.FileName:=FileName;
-   DBFile.Icon:=Application.ExeName+',0';
+   FDBFile.Name:=DBkernel.NewDBName(TEXT_MES_DEFAULT_DB_NAME);
+   FDBFile.FileName:=FileName;
+   FDBFile.Icon:=Application.ExeName+',0';
    DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
    
    MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);

@@ -8,7 +8,7 @@ uses
   DropSource, DropTarget, UnitDBkernel, DB, AppEvnts, UnitDBDeclare,
   UnitUpdateDBObject, UnitTimeCounter, DragDrop, DragDropFile, WebLink,
   GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon,
-  UnitDBCommonGraphics, DmMemo;
+  UnitDBCommonGraphics, DmMemo, uW7TaskBar;
 
 type
   TUpdateDBForm = class(TForm)
@@ -84,19 +84,21 @@ type
     procedure WebLinkOpenFolderClick(Sender: TObject);
     procedure TimerTerminateTimer(Sender: TObject);
   private
-   FImage : TLayeredBitmap;
-   FImageInv : TLayeredBitmap;
-   FImageHourGlass : TLayeredBitmap;
-   FImagePos : integer;
-   FImagePosStep : integer;
-   FCurrentImage : TBitmap;
-   FCurrentFileName : string;
-   FAddObject : TUpdaterDB;
-   BadHistory : TStrings;
-   LastIDImage : integer;
-   LastFileName : String;  
-   TimeCounter: TTimeCounter;
-   FInfoStr : string;
+    FImage : TLayeredBitmap;
+    FImageInv : TLayeredBitmap;
+    FImageHourGlass : TLayeredBitmap;
+    FImagePos : integer;
+    FImagePosStep : integer;
+    FCurrentImage : TBitmap;
+    FCurrentFileName : string;
+    FAddObject : TUpdaterDB;
+    BadHistory : TStrings;
+    LastIDImage : integer;
+    LastFileName : String;  
+    TimeCounter: TTimeCounter;
+    FInfoStr : string;
+    FProgressMessage : Cardinal; 
+    FW7TaskBar : ITaskbarList3;
   procedure WMMouseDown(var s : Tmessage); message WM_LButtonDown;
     { Private declarations }
   public        
@@ -187,8 +189,11 @@ begin
    end;
  end;
 
- FImageHourGlass:= TLayeredBitmap.Create();
- FImageHourGlass.LoadFromHIcon(ImageHourGlass.Picture.Icon.Handle, 48, 48);
+  FImageHourGlass:= TLayeredBitmap.Create();
+  FImageHourGlass.LoadFromHIcon(ImageHourGlass.Picture.Icon.Handle, 48, 48);
+
+  FProgressMessage := RegisterWindowMessage('SLIDE_SHOW_PROGRESS');
+  PostMessage(Handle, FProgressMessage, 0, 0);
 end;
 
 procedure TUpdateDBForm.Stayontop1Click(Sender: TObject);
@@ -459,21 +464,22 @@ end;
 
 procedure TUpdateDBForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
-  const SC_DragMove = $F012;
-
-  procedure Doit;
-  begin
-   Perform(wm_nclbuttondown,HTcaption,Msg.lparam);
-   Handled:=true;
-  end;
-  
+const
+  SC_DragMove = $F012;
 begin
- if (msg.message=wm_lbuttondown) then
- begin
-  if (msg.hwnd=FilesLabel.Handle) then doit;
-  if (msg.hwnd=DmMemo1.Handle) then doit;
-  if (msg.hwnd=ProgressBar.Handle) then doit;
- end;
+  if Msg.Message = FProgressMessage then
+    FW7TaskBar := CreateTaskBarInstance;
+
+  if (Msg.Message = WM_LBUTTONDOWN) then
+  begin
+    if (Msg.hwnd = FilesLabel.Handle)
+    or (Msg.hwnd = DmMemo1.Handle)
+    or (Msg.hwnd = ProgressBar.Handle) then
+    begin
+      Perform(WM_NCLBUTTONDOWN, HTcaption, Msg.lparam);
+      Handled := True;
+    end;
+  end;
 end;
 
 // LastIDImage
@@ -522,7 +528,6 @@ begin
  ProgressBar.Position:=0;
  ProgressBar.Text:=TEXT_MES_DONE;
  FilesLabel.Text:=TEXT_MES_NO_FILE_TO_ADD;
- //TimeLabel.Caption:='';
 end;
 
 procedure TUpdateDBForm.SetBeginUpdation(Sender: TObject);
@@ -531,7 +536,9 @@ begin
  ProgressBar.Position:=0;
  ProgressBar.Text:=TEXT_MES_ADDING_FILE_PR;
  FilesLabel.Text:=TEXT_MES_NOW_FILE;
- //TimeLabel.Caption:='';
+
+ if FW7TaskBar <> nil then
+   FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;
 
 procedure TUpdateDBForm.SetTimeText(Text: string);
@@ -541,7 +548,12 @@ end;
 
 procedure TUpdateDBForm.SetPosition(Value: integer);
 begin
- ProgressBar.Position:=Value;
+  ProgressBar.Position := Value;
+  if FW7TaskBar <> nil then
+  begin
+    FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+    FW7TaskBar.SetProgressValue(Handle, Value, ProgressBar.MaxValue);
+  end;
 end;
 
 procedure TUpdateDBForm.SetFileName(FileName: string);

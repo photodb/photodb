@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=C:\Program Files\Photo DataBase
+OutputDir=bin
 UnitOutputDir=dcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -136,3 +136,18 @@ ProductVersion=2.3
 Comments=Содержит Ваши фотографии
 Home Page=http://photodb.illusdolphin.net
 E-Mail=illusdolphin@gmail.com
+[HistoryLists\hlConditionals]
+Count=1
+Item0=PHOTODB,LOG
+[HistoryLists\hlUnitAliases]
+Count=1
+Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;C:\Program Files\Borland\Delphi7\Source\DragDrop\Components;External\Controls\DragDrop\Components;External\Controls\OLE_DRAG;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Resources;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\External\Formats\DelphiDcraw
+[HistoryLists\hlUnitOutputDirectory]
+Count=1
+Item0=dcu
+[HistoryLists\hlOutputDirectorry]
+Count=1
+Item0=bin
