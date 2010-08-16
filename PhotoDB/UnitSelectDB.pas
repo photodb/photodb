@@ -602,7 +602,7 @@ begin
    FDBFile.Name:=DBkernel.NewDBName(TEXT_MES_DEFAULT_DB_NAME);
    FDBFile.FileName:=FileName;
    FDBFile.Icon:=Application.ExeName+',0';
-   DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
+   DBKernel.AddDB(FDBFile.Name,FDBFile.FileName,FDBFile.Icon);
    
    MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
    Close;
@@ -611,15 +611,15 @@ begin
 
  if Step=40 then
  begin
-  DBkernel.CreateDBbyName(DBFile.FileName);
-  CommonDBSupport.ADOCreateSettingsTable(DBFile.FileName);
+  DBkernel.CreateDBbyName(FDBFile.FileName);
+  CommonDBSupport.ADOCreateSettingsTable(FDBFile.FileName);
   ImageOptions.Description:=Edit5.Text;
-  CommonDBSupport.UpdateImageSettings(DBFile.FileName,ImageOptions);
+  CommonDBSupport.UpdateImageSettings(FDBFile.FileName,ImageOptions);
   if CheckBox3.Checked then
-  CreateExampleGroups(DBFile.FileName,Application.ExeName+',0',GetDirectory(Application.ExeName));
+  CreateExampleGroups(FDBFile.FileName,Application.ExeName+',0',GetDirectory(Application.ExeName));
   if CheckBox1.Checked then
-  DBkernel.SetDataBase(DBFile.FileName);
-  MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[DBFile.FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+  DBkernel.SetDataBase(FDBFile.FileName);
+  MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FDBFile.FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
   Close;
   exit;
  end;
@@ -630,7 +630,7 @@ begin
   begin
    if CheckBox2.Checked then
    DBKernel.SetDataBase(DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName);
-   DBFile:=DBKernel.DBs[ComboBoxExDB1.ItemIndex];
+   FDBFile:=DBKernel.DBs[ComboBoxExDB1.ItemIndex];
    Close;
    exit;
   end else
@@ -641,10 +641,10 @@ begin
      
  if Step=22 then
  begin
-  if DBkernel.TestDB(DBFile.FileName) then
-  begin  
+  if DBkernel.TestDB(FDBFile.FileName) then
+  begin
    //TODO:
-   DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
+   DBKernel.AddDB(FDBFile.Name,FDBFile.FileName,FDBFile.Icon);
    Close;
    exit;
   end else
@@ -735,7 +735,7 @@ begin
   DBTestOK:=DBKernel.TestDB(FileName);
   if DBTestOK then
   begin
-   DBFile.FileName:=FileName;
+   FDBFile.FileName:=FileName;
    Edit3.Text:=FileName;
    Edit4.Text:=DBkernel.StringDBVersion(DBkernel.TestDBEx(FileName));
   end else
@@ -748,8 +748,8 @@ end;
 procedure TFormSelectDB.Button2Click(Sender: TObject);
 begin
  //TODO:
- if DBKernel.ValidDBVersion(DBFile.FileName,DBKernel.TestDBEx(DBFile.FileName)) then
-  ChangeDBOptions('',DBFile.FileName) else
+ if DBKernel.ValidDBVersion(FDBFile.FileName,DBKernel.TestDBEx(FDBFile.FileName)) then
+  ChangeDBOptions('',FDBFile.FileName) else
  begin
   MessageBoxDB(Handle,TEXT_MES_SELECT_DB_AT_FIRST,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
  end;
@@ -757,9 +757,9 @@ end;
 
 procedure TFormSelectDB.WebLink1Click(Sender: TObject);
 begin
- if DBKernel.TestDBEx(DBFile.FileName)>0 then
+ if DBKernel.TestDBEx(FDBFile.FileName)>0 then
  begin
-  ConvertDB(DBFile.FileName);
+  ConvertDB(FDBFile.FileName);
  end else
  begin
   MessageBoxDB(Handle,TEXT_MES_SELECT_DB_AT_FIRST,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
@@ -768,7 +768,7 @@ end;
 
 function TFormSelectDB.GetResultDB: TPhotoDBFile;
 begin
- Result:=DBFile;
+ Result:=FDBFile;
 end;
 
 procedure TFormSelectDB.SetOptions(Options: Integer);
@@ -787,7 +787,7 @@ end;
 
 procedure TFormSelectDB.InternalNameEditChange(Sender: TObject);
 begin
- DBFile.Name:=InternalNameEdit.Text;
+ FDBFile.Name:=InternalNameEdit.Text;
 end;
 
 end.
