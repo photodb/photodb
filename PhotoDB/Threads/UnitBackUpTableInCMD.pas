@@ -53,10 +53,16 @@ begin
  CreateDirA(GetAppDataDirectory+BackUpFolder);
  try
   FSOut := TFileStream.Create(dbname,fmOpenRead);
-  FSIn := TFileStream.Create(GetAppDataDirectory+BackUpFolder+ExtractFileName(dbname),fmOpenWrite or fmCreate);
-  FSIn.CopyFrom(FSOut,FSOut.Size);
-  FSIn.Free;
-  FSOut.Free;
+  try
+    FSIn := TFileStream.Create(GetAppDataDirectory+BackUpFolder+ExtractFileName(dbname),fmOpenWrite or fmCreate);
+    try
+      FSIn.CopyFrom(FSOut, FSOut.Size);
+    finally
+      FSIn.Free;
+    end;
+  finally
+    FSOut.Free;
+  end;
  except
   FStrParam:=TEXT_MES_ERROR;
   FIntParam:=LINE_INFO_ERROR;

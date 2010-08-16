@@ -614,7 +614,7 @@ Procedure CopyFiles( Handle : Hwnd; Src : array of string;
   Dest : string; Move : Boolean; AutoRename : Boolean; CallBack : TCorrectPathProc = nil; ExplorerForm : TForm = nil);
 function DeleteFiles( Handle : HWnd; Names : array of string; ToRecycle : Boolean ) : Integer;
 Function GetCDVolumeLabel(CDName : Char) : String;
-function DriveState(driveletter: Char): TDriveState;
+function DriveState(driveletter: AnsiChar): TDriveState;
 Procedure ShowMyComputerProperties(Hwnd : THandle);
 function KillTask(ExeFileName: string): integer;
 Procedure LoadNickJpegImage(Image : TImage);
@@ -3819,7 +3819,7 @@ begin
   Result:=VolumeName;
 end;
 
-function DriveState(driveletter: Char): TDriveState;
+function DriveState(driveletter: AnsiChar): TDriveState;
 var
   mask: string[6];
   sRec: TSearchRec;
@@ -3870,7 +3870,7 @@ begin
        cbSize := sizeof( cmd );
        fMask := 0;
        hwnd := 0;
-       lpVerb := PChar( 'Properties' );
+       lpVerb := PAnsiChar( 'Properties' );
        nShow := SW_SHOWNORMAL;
       end;
       hr := mnu.InvokeCommand( cmd );
@@ -4407,7 +4407,7 @@ begin
  end;
 end;
 
-function SendMail(const From, Dest, Subject, Text, FileName: PChar;
+function SendMail(const From, Dest, Subject, Text, FileName: PAnsiChar;
 Outlook: boolean):Integer;
 var
   Message: TMapiMessage;
@@ -4471,7 +4471,7 @@ begin
  body:=TStringList.Create;
  body.add('Error body:');
  body.add(ErrorValue);
- SendMail('',ProgramMail,Pchar('Error in program ['+Error+']'),Pchar(body.text),'',true);
+ SendMail('',ProgramMail,PAnsichar('Error in program ['+Error+']'),PAnsichar(body.text),'',true);
  body.free;
 end;
 
@@ -5586,10 +5586,10 @@ begin
     Result := ''
   else
   begin
-    l := MultiByteToWideChar(codePage, MB_PRECOMPOSED, PChar(@s[1]), - 1, nil, 0);
+    l := MultiByteToWideChar(codePage, MB_PRECOMPOSED, PAnsiChar(@s[1]), - 1, nil, 0);
     SetLength(Result, l - 1);
     if l > 1 then
-      MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PChar(@s[1]),
+      MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PAnsiChar(@s[1]),
         - 1, PWideChar(@Result[1]), l - 1);
   end;
 end; { StringToWideString }
@@ -6132,7 +6132,6 @@ begin
   end;
  end;
 end;
-
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons,Icon: integer): integer; overload;
 begin

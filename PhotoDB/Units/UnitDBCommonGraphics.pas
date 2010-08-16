@@ -440,8 +440,8 @@ begin
   B := GetBValue(BackGroundColor);
   if Bitmap.PixelFormat <> pf24bit then
     Bitmap.PixelFormat := pf24bit;
-  Bitmap.Width:=PNG.Width;
-  Bitmap.Height:=PNG.Height;
+  Bitmap.Width := PNG.Width;
+  Bitmap.Height := PNG.Height;
 
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
@@ -458,9 +458,9 @@ begin
       D := PRGB(AddrD);
       W1 := S.L;
       W2 := 255 - W1;
-      D.R := (R * W2 + S.R * W1 + 127) div 255;
-      D.G := (G * W2 + S.G * W1 + 127) div 255;
-      D.B := (B * W2 + S.B * W1 + 127) div 255;
+      D.R := (R * W2 + S.R * W1 + $7F) div $FF;
+      D.G := (G * W2 + S.G * W1 + $7F) div $FF;
+      D.B := (B * W2 + S.B * W1 + $7F) div $FF;
 
       AddrS := AddrS + 4;
       AddrD := AddrD + 3;
@@ -479,10 +479,10 @@ begin
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);
-  for i:=0 to Bitmap.Height-1 do
+  for I := 0 to Bitmap.Height - 1 do
   begin
-    p:=Bitmap.ScanLine[I];
-    for j:=0 to Bitmap.Width-1 do
+    p := Bitmap.ScanLine[I];
+    for J := 0 to Bitmap.Width - 1 do
     begin
       p[j].R := R;
       p[j].G := G;

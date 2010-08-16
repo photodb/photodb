@@ -69,7 +69,7 @@ begin
   FSubThreads := TList.Create;
   FParentThread := nil;
   GOM.AddObj(Self);
-  inherited Create(False);
+  inherited Create(True);
 end;
 
 destructor TThreadEx.Destroy;

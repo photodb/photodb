@@ -186,7 +186,7 @@ var
  FE, EM : Boolean;
  crc : cardinal;
  s : string;
- p : PansiChar;
+ p : Integer;
 
 begin        
   FreeOnTerminate := True;
@@ -387,8 +387,8 @@ begin
             s:=ExtractFileExt(SearchRec.Name);
             Delete(s,1,1);
             s:='|'+AnsiUpperCase(s)+'|';
-            p:=StrPos(PChar(SupportedExt),PChar(s));
-            EM:=p<>nil;
+            p:=Pos(s, SupportedExt);
+            EM:=p<>0;
            end;
            If FShowFiles then
            if ExplorerInfo.ShowSimpleFiles then
@@ -849,7 +849,7 @@ Var
   c:Integer;
   FE, EM : boolean;
   s : string;
-  p : PAnsiChar;
+  p : Integer;
   crc : Cardinal;
 
   function FileInFiles(FileName : String) : Boolean;
@@ -962,8 +962,8 @@ begin
               s := ExtractFileExt(SearchRec.Name);
               Delete(s, 1, 1);
               s:= '|' + AnsiUpperCase(s) + '|';
-              p := StrPos(PChar(SupportedExt), PChar(s));
-              EM := p <> nil;
+              p := Pos(s, SupportedExt);
+              EM := p <> 0;
 
               if FE and EM and not FileInFiles(CurrentFile + SearchRec.Name) and not (FileInPrivateFiles(CurrentFile + SearchRec.Name) and not ExplorerInfo.ShowPrivate) then
               if ShowFileIfHidden(CurrentFile + SearchRec.Name) then
@@ -1401,7 +1401,7 @@ begin
       GUIDParam := FFiles[i].SID;
       CurrentFile := FFiles[i].FileName;
       MakeFolderImage(CurrentFile);
-      DS := Dolphin_DB.DriveState(CurrentFile[1]);
+      DS := Dolphin_DB.DriveState(AnsiString(CurrentFile)[1]);
       if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
         DriveNameParam:=GetCDVolumeLabel(CurrentFile[1])+' ('+CurrentFile[1]+':)'
       else

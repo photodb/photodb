@@ -4,13 +4,13 @@ interface
 
 uses Windows, SysUtils, Classes;
 
-Function FillNetLevel(xxx: PNetResourceA; list: TStrings) : Word;
+Function FillNetLevel(xxx: PNetResourceW; list: TStrings) : Word;
 Function FindAllComputers(Workgroup: string; Computers : TStrings) : Cardinal;
 Function GetResourceParent(ComputerName : String) : String;
 
 implementation
 
-Function FillNetLevel(xxx: PNetResourceA; list: TStrings) : Word;
+Function FillNetLevel(xxx: PNetResourceW; list: TStrings) : Word;
 Type
     PNRArr = ^TNRArr; 
     TNRArr = array[0..59] of TNetResource;

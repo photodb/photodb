@@ -3516,7 +3516,7 @@ begin
  If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_REMOVABLE) then
  begin
   NewItem := TMenuItem.Create(Item);
-  DS:=DriveState(Chr(i));
+  DS:=DriveState(AnsiChar(Chr(i)));
   If (DS=dolphin_db.DS_DISK_WITH_FILES) or (DS=dolphin_db.DS_EMPTY_DISK) then
   begin
    S:=GetCDVolumeLabel(Chr(i));
@@ -3558,7 +3558,7 @@ begin
  If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_CDROM) then
  begin
   NewItem := TMenuItem.Create(Item);
-  DS:=Dolphin_DB.DriveState(Chr(i));
+  DS:=Dolphin_DB.DriveState(AnsiChar(Chr(i)));
   inc(C);
   If (DS=dolphin_db.DS_DISK_WITH_FILES) or (DS=dolphin_db.DS_EMPTY_DISK) then
   begin

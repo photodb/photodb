@@ -1,10 +1,10 @@
 object ExplorerForm: TExplorerForm
   Left = 148
   Top = 101
-  Width = 878
-  Height = 647
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
+  ClientHeight = 593
+  ClientWidth = 870
   Color = clInactiveCaption
   Constraints.MinHeight = 200
   Font.Charset = DEFAULT_CHARSET
@@ -25,10 +25,12 @@ object ExplorerForm: TExplorerForm
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 135
-    Top = 42
-    Height = 527
+    Top = 47
+    Height = 526
     Constraints.MaxWidth = 100
     OnCanResize = Splitter1CanResize
+    ExplicitTop = 42
+    ExplicitHeight = 527
   end
   object NormalImages: TImage
     Left = 0
@@ -4337,12 +4339,14 @@ object ExplorerForm: TExplorerForm
   end
   object MainPanel: TPanel
     Left = 0
-    Top = 42
+    Top = 47
     Width = 135
-    Height = 527
+    Height = 526
     Align = alLeft
     ParentColor = True
     TabOrder = 0
+    ExplicitTop = 42
+    ExplicitHeight = 531
     object CloseButtonPanel: TPanel
       Left = 1
       Top = 1
@@ -4367,7 +4371,7 @@ object ExplorerForm: TExplorerForm
       Left = 1
       Top = 22
       Width = 133
-      Height = 504
+      Height = 503
       Align = alClient
       BevelOuter = bvNone
       Color = clInactiveCaption
@@ -4375,11 +4379,12 @@ object ExplorerForm: TExplorerForm
       ParentCtl3D = False
       TabOrder = 1
       OnResize = PropertyPanelResize
+      ExplicitHeight = 508
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
         Width = 133
-        Height = 504
+        Height = 503
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -4397,6 +4402,7 @@ object ExplorerForm: TExplorerForm
         Color = clInactiveCaption
         TabOrder = 0
         OnResize = ScrollBox1Resize
+        ExplicitHeight = 508
         object TypeLabel: TLabel
           Left = 8
           Top = 136
@@ -4785,8 +4791,8 @@ object ExplorerForm: TExplorerForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 569
-    Width = 862
+    Top = 573
+    Width = 870
     Height = 20
     Panels = <
       item
@@ -4799,37 +4805,36 @@ object ExplorerForm: TExplorerForm
   object CoolBar1: TCoolBar
     Left = 0
     Top = 25
-    Width = 862
-    Height = 17
+    Width = 870
+    Height = 22
     AutoSize = True
     Bands = <
       item
         Control = ToolBar2
         ImageIndex = -1
-        MinHeight = 15
-        Width = 858
+        MinHeight = 20
+        Width = 864
       end>
     EdgeBorders = [ebLeft, ebRight, ebBottom]
     ParentShowHint = False
     ShowHint = True
     OnResize = PageScroller2Resize
     object ToolBar2: TToolBar
-      Left = 9
+      Left = 12
       Top = 0
-      Width = 845
-      Height = 15
+      Width = 850
+      Height = 20
       AutoSize = True
-      ButtonHeight = 13
+      ButtonHeight = 20
       Caption = 'ToolBar2'
       DockSite = True
-      EdgeBorders = []
       TabOrder = 0
       Wrapable = False
       object Label2: TLabel
         Left = 0
-        Top = 2
+        Top = 0
         Width = 41
-        Height = 13
+        Height = 20
         Alignment = taCenter
         Caption = 'Address '
         Enabled = False
@@ -4837,27 +4842,25 @@ object ExplorerForm: TExplorerForm
       end
       object ToolButton9: TToolButton
         Left = 41
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton9'
         Style = tbsSeparator
       end
       object Edit1: TComboBoxEx
         Left = 49
-        Top = 2
+        Top = 0
         Width = 568
         Height = 22
         AutoCompleteOptions = [acoAutoSuggest]
         ItemsEx = <>
-        ItemHeight = 16
         TabOrder = 1
         OnKeyDown = Edit1KeyDown
         OnKeyPress = Edit1KeyPress
-        DropDownCount = 8
       end
       object ImButton1: TImButton
         Left = 617
-        Top = 2
+        Top = 0
         Width = 20
         Height = 20
         ImageNormal.Data = {
@@ -5056,9 +5059,9 @@ object ExplorerForm: TExplorerForm
   end
   object WaitingPanel: TPanel
     Left = 138
-    Top = 42
-    Width = 724
-    Height = 527
+    Top = 47
+    Width = 732
+    Height = 526
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
@@ -5067,7 +5070,7 @@ object ExplorerForm: TExplorerForm
   object CoolBar2: TCoolBar
     Left = 0
     Top = 0
-    Width = 862
+    Width = 870
     Height = 25
     AutoSize = True
     Bands = <
@@ -5075,17 +5078,16 @@ object ExplorerForm: TExplorerForm
         Control = ToolBar1
         ImageIndex = -1
         MinHeight = 21
-        Width = 858
+        Width = 864
       end>
     object ToolBar1: TToolBar
-      Left = 9
+      Left = 12
       Top = 0
-      Width = 845
+      Width = 850
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 48
       Color = clInactiveCaption
-      EdgeBorders = []
       List = True
       ParentColor = False
       ParentShowHint = False
@@ -5096,7 +5098,7 @@ object ExplorerForm: TExplorerForm
       OnMouseMove = ToolBar1MouseMove
       object ToolButton1: TToolButton
         Left = 0
-        Top = 2
+        Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuBack
         ImageIndex = 0
@@ -5104,8 +5106,8 @@ object ExplorerForm: TExplorerForm
         OnClick = SpeedButton1Click
       end
       object ToolButton2: TToolButton
-        Left = 27
-        Top = 2
+        Left = 31
+        Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuForward
         ImageIndex = 2
@@ -5113,70 +5115,70 @@ object ExplorerForm: TExplorerForm
         OnClick = SpeedButton2Click
       end
       object ToolButton3: TToolButton
-        Left = 54
-        Top = 2
+        Left = 62
+        Top = 0
         AutoSize = True
         ImageIndex = 1
         OnClick = SpeedButton3Click
       end
       object ToolButton4: TToolButton
-        Left = 66
-        Top = 2
+        Left = 74
+        Top = 0
         Width = 8
         Caption = 'ToolButton3'
         ImageIndex = 10
         Style = tbsSeparator
       end
       object ToolButton5: TToolButton
-        Left = 74
-        Top = 2
+        Left = 82
+        Top = 0
         AutoSize = True
         Caption = 'Cut'
         ImageIndex = 3
         OnClick = Cut3Click
       end
       object ToolButton6: TToolButton
-        Left = 86
-        Top = 2
+        Left = 94
+        Top = 0
         AutoSize = True
         Caption = 'Copy'
         ImageIndex = 4
         OnClick = Copy3Click
       end
       object ToolButton7: TToolButton
-        Left = 98
-        Top = 2
+        Left = 106
+        Top = 0
         AutoSize = True
         Caption = 'Paste'
         ImageIndex = 5
         OnClick = Paste3Click
       end
       object ToolButton17: TToolButton
-        Left = 110
-        Top = 2
+        Left = 118
+        Top = 0
         Width = 8
         Caption = 'ToolButton17'
         ImageIndex = 7
         Style = tbsSeparator
       end
       object ToolButton8: TToolButton
-        Left = 118
-        Top = 2
+        Left = 126
+        Top = 0
         AutoSize = True
         ImageIndex = 6
         OnClick = DeleteLinkClick
       end
       object ToolButton10: TToolButton
-        Left = 130
-        Top = 2
+        Left = 138
+        Top = 0
         Width = 8
         Caption = 'ToolButton10'
         ImageIndex = 7
         Style = tbsSeparator
       end
       object ToolButtonView: TToolButton
-        Left = 138
-        Top = 2
+        Left = 146
+        Top = 0
         AutoSize = True
         DropdownMenu = PopupMenu5
         ImageIndex = 7
@@ -5184,23 +5186,23 @@ object ExplorerForm: TExplorerForm
         OnClick = ToolButtonViewClick
       end
       object ToolButton11: TToolButton
-        Left = 165
-        Top = 2
+        Left = 177
+        Top = 0
         Width = 8
         Caption = 'ToolButton11'
         ImageIndex = 7
         Style = tbsSeparator
       end
       object ToolButton13: TToolButton
-        Left = 173
-        Top = 2
+        Left = 185
+        Top = 0
         AutoSize = True
         ImageIndex = 8
         OnClick = ToolButton13Click
       end
       object ToolButton14: TToolButton
-        Left = 185
-        Top = 2
+        Left = 197
+        Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
         ImageIndex = 9
@@ -5208,46 +5210,46 @@ object ExplorerForm: TExplorerForm
         OnClick = ToolButton14Click
       end
       object ToolButton20: TToolButton
-        Left = 212
-        Top = 2
+        Left = 228
+        Top = 0
         Width = 8
         Caption = 'ToolButton20'
         ImageIndex = 13
         Style = tbsSeparator
       end
       object ToolButton18: TToolButton
-        Left = 220
-        Top = 2
+        Left = 236
+        Top = 0
         AutoSize = True
         ImageIndex = 12
         OnClick = ToolButton18Click
       end
       object ToolButton12: TToolButton
-        Left = 232
-        Top = 2
+        Left = 248
+        Top = 0
         Width = 8
         Caption = 'ToolButton12'
         ImageIndex = 7
         Style = tbsSeparator
       end
       object ToolButton15: TToolButton
-        Left = 240
-        Top = 2
+        Left = 256
+        Top = 0
         AutoSize = True
         ImageIndex = 10
         OnClick = GoToSearchWindow1Click
       end
       object ToolButton16: TToolButton
-        Left = 252
-        Top = 2
+        Left = 268
+        Top = 0
         Width = 8
         Caption = 'ToolButton16'
         ImageIndex = 8
         Style = tbsSeparator
       end
       object ToolButton19: TToolButton
-        Left = 260
-        Top = 2
+        Left = 276
+        Top = 0
         AutoSize = True
         Caption = 'Options'
         ImageIndex = 11

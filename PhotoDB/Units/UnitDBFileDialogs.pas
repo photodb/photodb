@@ -41,7 +41,7 @@ type
    function GetFilterIndex : integer;
    function FileName : string;
    procedure SetFileName(FileName : string);
-   procedure SetOption(Option : TFileDialogOptions);
+   procedure SetOption(Option : VistaFileDialogs.TFileDialogOptions);
    procedure EnableMultyFileChooseWithDirectory;
    function GetFiles : TStrings;
    procedure EnableChooseWithDirectory;
@@ -139,7 +139,7 @@ implementation
    if DirectoryExists(SelectedRoot) then
    OpenDialog.SetFileName(SelectedRoot);
    
-   OpenDialog.SetOption([fdoPickFolders]);
+   OpenDialog.SetOption([VistaFileDialogs.fdoPickFolders]);
    if OpenDialog.Execute then
    Result:=OpenDialog.FileName;
    OpenDialog.Free;
@@ -242,9 +242,11 @@ begin
 
    if isFilterMask then
    begin
-    FileType:=VistaFileDialogs.TFileSaveDialog(Dialog).FileTypes.Add();
-    FileType.DisplayName:=FilterStr;
-    FileType.FileMask:=FilterMask;
+    with VistaFileDialogs.TFileSaveDialog(Dialog).FileTypes.Add() do
+    begin
+    DisplayName:=FilterStr;
+    FileMask:=FilterMask;
+    end;
    end;
    IsFilterMask:=not IsFilterMask;
    p:=i+1;
@@ -291,7 +293,7 @@ procedure DBOpenDialog.EnableChooseWithDirectory;
 begin
  if CanUseVistaDlg then
  begin
-  VistaFileDialogs.TFileOpenDialog(Dialog).Options:=VistaFileDialogs.TFileOpenDialog(Dialog).Options+[fdoPickFolders,fdoStrictFileTypes];
+  VistaFileDialogs.TFileOpenDialog(Dialog).Options:=VistaFileDialogs.TFileOpenDialog(Dialog).Options+[VistaFileDialogs.fdoPickFolders,VistaFileDialogs.fdoStrictFileTypes];
   VistaFileDialogs.TFileOpenDialog(Dialog).Files
  end else
  begin
@@ -303,7 +305,7 @@ procedure DBOpenDialog.EnableMultyFileChooseWithDirectory;
 begin
  if CanUseVistaDlg then
  begin
-  VistaFileDialogs.TFileOpenDialog(Dialog).Options:=VistaFileDialogs.TFileOpenDialog(Dialog).Options+[fdoPickFolders,fdoForceFileSystem,fdoAllowMultiSelect,fdoPathMustExist,fdoFileMustExist,fdoForcePreviewPaneOn];
+  VistaFileDialogs.TFileOpenDialog(Dialog).Options:=VistaFileDialogs.TFileOpenDialog(Dialog).Options+[VistaFileDialogs.fdoPickFolders,VistaFileDialogs.fdoForceFileSystem,VistaFileDialogs.fdoAllowMultiSelect,VistaFileDialogs.fdoPathMustExist,VistaFileDialogs.fdoFileMustExist,VistaFileDialogs.fdoForcePreviewPaneOn];
   VistaFileDialogs.TFileOpenDialog(Dialog).Files
  end else
  begin
@@ -374,7 +376,7 @@ var
   FilterMask : string;
   StrTemp : string;
   IsFilterMask : boolean;
-  FileType : TFileTypeItem;
+  FileType : VistaFileDialogs.TFileTypeItem;
 begin
  fFilter := value;
  if CanUseVistaDlg then
@@ -418,7 +420,7 @@ begin
  end;
 end;
 
-procedure DBOpenDialog.SetOption(Option: TFileDialogOptions);
+procedure DBOpenDialog.SetOption(Option: VistaFileDialogs.TFileDialogOptions);
 begin
  if CanUseVistaDlg then
  begin
@@ -434,7 +436,7 @@ begin
  if CanUseVistaDlg then
  begin
   Dialog:=VistaFileDialogs.TFileOpenDialog.Create(nil);
-  VistaFileDialogs.TFileOpenDialog(Dialog).Options := VistaFileDialogs.TFileOpenDialog(Dialog).Options + [fdoForcePreviewPaneOn];
+  VistaFileDialogs.TFileOpenDialog(Dialog).Options := VistaFileDialogs.TFileOpenDialog(Dialog).Options + [VistaFileDialogs.fdoForcePreviewPaneOn];
  end else
  begin
   Dialog:=ExtDlgs.TOpenPictureDialog.Create(nil);
@@ -499,7 +501,7 @@ var
   FilterMask : string;
   StrTemp : string;
   IsFilterMask : boolean;
-  FileType : TFileTypeItem;
+  FileType : VistaFileDialogs.TFileTypeItem;
 begin
  fFilter := value;
  if CanUseVistaDlg then
@@ -551,7 +553,7 @@ begin
  if CanUseVistaDlg then
  begin
   Dialog:=VistaFileDialogs.TFileSaveDialog.Create(nil);
-  VistaFileDialogs.TFileSaveDialog(Dialog).Options := VistaFileDialogs.TFileSaveDialog(Dialog).Options + [fdoForcePreviewPaneOn]; 
+  VistaFileDialogs.TFileSaveDialog(Dialog).Options := VistaFileDialogs.TFileSaveDialog(Dialog).Options + [VistaFileDialogs.fdoForcePreviewPaneOn];
   VistaFileDialogs.TFileSaveDialog(Dialog).OnTypeChange:=OnFilterIndexChanged;
  end else
  begin
@@ -622,7 +624,7 @@ var
   FilterMask : string;
   StrTemp : string;
   IsFilterMask : boolean;
-  FileType : TFileTypeItem;
+  FileType : VistaFileDialogs.TFileTypeItem;
 begin
  fFilter := value;
  if CanUseVistaDlg then

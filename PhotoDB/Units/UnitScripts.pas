@@ -294,7 +294,6 @@ type
     Procedure RemoveScript(ID : string);
     Function ScriptExists(ID : string) : Boolean;
     Function GetScriptByID(ID : string) : TScript;
-   published
   end;
 
 {$EXTERNALSYM CoCreateGuid}
@@ -568,7 +567,7 @@ var
   Value : TValue;
 begin
   Result:='';
-  if not IsVariable(ValueName) and (ValueName[1]='"') and (ValueName[Length(ValueName)]='"') then
+  if not IsVariable(ValueName) and (ValueName <> '') and (ValueName[1]='"') and (ValueName[Length(ValueName)]='"') then
     Result:=AnsiDequotedStr(ValueName, '"')
   else
   begin

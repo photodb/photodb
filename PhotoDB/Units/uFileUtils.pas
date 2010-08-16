@@ -51,7 +51,7 @@ end;
 function SetDirectoryWriteRights(lPath : String): Dword;
 var
   pDACL: PACL;
-  pEA: PEXPLICIT_ACCESS_A;
+  pEA: PEXPLICIT_ACCESS_W;
   R: DWORD;
 begin
   pEA := AllocMem(SizeOf(EXPLICIT_ACCESS));

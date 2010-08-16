@@ -55,9 +55,9 @@ function AddAssociatedIcon(Path : string; ImageList : TImageList; var IconsCount
 function GetUSBDrives : TArrayOfString;
 function GetCDROMDrives : TArrayOfString;
 function GetAllDrives : TArrayOfString;
-function DriveState(driveletter: Char): TSDriveState;
-Function GetCDVolumeLabel(CDName : Char) : String;
-function GetDriveName(Drive, DefString : string) : string;
+function DriveState(driveletter: AnsiChar): TSDriveState;
+Function GetCDVolumeLabel(CDName : AnsiChar) : String;
+function GetDriveName(Drive : AnsiString; DefString : string) : string;
 function GetMyPicturesFolder : string;
 function GetMyDocumentsFolder : string;    
 function GetProgramFolder : string;
@@ -490,7 +490,7 @@ end;
 procedure CopyFileSynch(S,D : string);
 begin
  try
-  Windows.CopyFileA(PChar(S),PChar(D),true);
+  Windows.CopyFileW(PChar(S),PChar(D),true);
  except
  end;
 end;
@@ -873,7 +873,7 @@ begin
  SetErrorMode(oldMode);
 end;
 
-function DriveState(driveletter: Char): TSDriveState;
+function DriveState(driveletter: AnsiChar): TSDriveState;
 var
   mask: string[6];
   sRec: TSearchRec;
@@ -897,7 +897,7 @@ begin
   SetErrorMode(oldMode);
 end;
 
-Function GetCDVolumeLabel(CDName : Char) : String;
+Function GetCDVolumeLabel(CDName : AnsiChar) : String;
 var
   VolumeName,
   FileSystemName : array [0..MAX_PATH-1] of Char;
@@ -924,7 +924,7 @@ begin
   SetErrorMode(oldMode);
 end;
 
-function GetDriveName(Drive, DefString : string) : string;
+function GetDriveName(Drive : AnsiString; DefString : string) : string;
 var
   DS :  TSDriveState;
   S : string;      

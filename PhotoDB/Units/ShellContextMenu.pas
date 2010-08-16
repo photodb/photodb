@@ -166,7 +166,7 @@ var
    Attr,L:Cardinal;
    fPM:LongBool;
    ICmd:integer;
-   ZVerb: array[0..1023] of char;
+   ZVerb: array[0..1023] of ansichar;
    Verb: string;
    Handled:Boolean;
    SCV:IShellCommandVerb;
@@ -244,7 +244,7 @@ begin
      begin
       cbSize:=SizeOf(CMD);
       hWND:=WC.Handle;
-      lpVerb:=MakeIntResource(ICmd);
+      lpVerb:=PAnsiChar(MakeIntResource(ICmd));
       nShow:=SW_SHOWNORMAL;
      end;
      R_H:=SetErrorShell(0); //Ставим

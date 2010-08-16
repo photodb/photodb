@@ -155,7 +155,7 @@ var
 begin
   lpIconImage:=nil;
   // Find the group resource which lists its images
-  hRsrc := FindResource(hLib, PAnsiChar(NameRes), RT_GROUP_ICON);
+  hRsrc := FindResource(hLib, PChar(NameRes), RT_GROUP_ICON);
   // Load and Lock to get a pointer to a GRPICONDIR
   hGlobal := LoadResource(hLib, hRsrc);
   lpGrpIconDir := LockResource(hGlobal);

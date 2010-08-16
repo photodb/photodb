@@ -2,15 +2,10 @@ unit CommonDBSupport;
 
 interface
 
-//{$DEFINE DEBUG}
-
 uses
-{$IFNDEF DEBUG}
-Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
-UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon,
-{$ENDIF}
  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
- UnitINI;
+ UnitINI, Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
+ UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon;
 
 const
 
@@ -641,7 +636,7 @@ procedure CreateMSAccessDatabase(FileName: string);
 var
   DAO: Variant;
   i: integer; 
-const Engines: array[0..3] of string = ('DAO.DBEngine.40', 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine'); 
+const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
 
   function CheckClass(OLEClassName: string): boolean;
   var
@@ -657,7 +652,7 @@ begin
     if CheckClass(Engines[i]) then
       begin 
         DAO := CreateOleObject(Engines[i]); 
-        DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 32);
+        DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
         Exit;
       end;
   raise Exception.Create('DAO engine could not be initialized'); 

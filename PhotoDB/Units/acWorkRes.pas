@@ -644,7 +644,7 @@ begin
   else           c3 := OPEN_EXISTING;
   if GetVersion and $80000000 = 0 then
        result := CreateFileW(fileName,                            c1, c2, nil, c3, 0, 0)
-  else result := CreateFileA(pchar(string(wideString(fileName))), c1, c2, nil, c3, 0, 0);
+  else result := CreateFileA(pansichar(string(wideString(fileName))), c1, c2, nil, c3, 0, 0);
 end;
 
 function BeginUpdateResourceW(fileName: PWideChar; delExistingRes: bool; Write : boolean = true) : dword; stdcall;
@@ -1210,7 +1210,7 @@ begin
     // Копирование делается, для того чтобы не возникала ошибка не
     // возможно открыть файл, когда файл загружен
 // alx 20.07.04 if CopyFileW(exeFile, PWideChar(WideString(Buffer + tmpFile)), False) then try
-    if CopyFile(PChar(PWideToString(exeFile)), PAnsiChar(Buffer + tmpFile), False) then try
+    if CopyFile(PChar(PWideToString(exeFile)), PWideChar(Buffer + tmpFile), False) then try
       exeFile:= PWideChar(WideString(Buffer + tmpFile));
       hUpdateRes:= BeginUpdateResourceW(exeFile, False);
       if hUpdateRes <> 0 then
@@ -1302,7 +1302,7 @@ begin
   if Windows.GetTempPath(SizeOf(Buffer), Buffer) > 0 then
     // Копирование делается, для того чтобы не возникала ошибка не
     // возможно открыть файл, когда файл загружен
-    if CopyFile(PChar(PWideToString(exeFile)), PAnsiChar(Buffer + tmpFile), False) then try
+    if CopyFile(PChar(PWideToString(exeFile)), PWideChar(Buffer + tmpFile), False) then try
       exeFile:= PWideChar(WideString(Buffer + tmpFile));
       hUpdateRes:= BeginUpdateResourceW(exeFile, False);
       if hUpdateRes <> 0 then
@@ -1339,14 +1339,14 @@ begin
   iSize:= Length(sStr) + 1;
   iNewSize:= iSize * 2;
   pw:= AllocMem(iNewSize);
-  MultiByteToWideChar(CP_ACP, 0, PChar(sStr), iSize, pw, iNewSize);
+  MultiByteToWideChar(CP_ACP, 0, PAnsiChar(sStr), iSize, pw, iNewSize);
   Result:= pw;
 end;
 
 function PWideToString(pw: PWideChar): string;
 // Преобразование PWideChar в String
 var
-  p: PChar;
+  p: PAnsiChar;
   iLen: Integer;
 begin
   iLen:= lstrlenw(pw) + 1;

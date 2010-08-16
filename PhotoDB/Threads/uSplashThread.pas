@@ -170,8 +170,6 @@ var
   Instance : Thandle;
   Msg: TMsg; // declare this too, for later
 begin
-  FreeOnTerminate := True;
-
   SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
   SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
 

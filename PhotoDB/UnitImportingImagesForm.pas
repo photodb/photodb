@@ -192,13 +192,13 @@ begin
  ComboBox1.Items.Add(TEXT_MES_REPLACE_ALL);
  ComboBox1.ItemIndex:=0;
 
- Label9.Caption:=TEXT_MES_IF_CONFLICT_IMPORTING_DO;
+{ Label9.Caption:=TEXT_MES_IF_CONFLICT_IMPORTING_DO;
  Label10.Caption:=TEXT_MES_CALCULATION_IMAGES;
  Label11.Caption:=Format(TEXT_MES_CURRENT_SIZE_F,[SizeInTextA(FullSize)]);
  Label12.Caption:=Format(TEXT_MES_IMAGES_COUNT_F,[ImageCounter]);
  Button8.Caption:=TEXT_MES_BREAK_BUTTON;
  Button9.Caption:=TEXT_MES_PAUSE;
- Button10.Caption:=TEXT_MES_FINISH;
+ Button10.Caption:=TEXT_MES_FINISH;}
 end;
 
 procedure TFormImportingImages.Button3Click(Sender: TObject);

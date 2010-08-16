@@ -585,7 +585,7 @@ begin
        AboutForm:=nil;
       end;
       begin
-       ImportImages(dbname);
+       //ImportImages(dbname);
        DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
       end;
      end else

@@ -2298,7 +2298,7 @@ end;
 function tEndInd.Put32s(data:Longint):string;
 var  data2:integer;
      buffer:string[4] absolute data2;
-     bbuff:char;
+     bbuff:Ansichar;
 begin
   data2 := data;
   if MotorolaOrder then

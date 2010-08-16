@@ -56,7 +56,7 @@ implementation
 
 function CreateTaskBarInstance : ITaskbarList3;
 begin
-  if CoCreateInstance(CLSID_TaskbarList, nil, CLSCTX_INPROC_SERVER or
+  if CoCreateInstance(IID_ITaskbarList3, nil, CLSCTX_INPROC_SERVER or
     CLSCTX_LOCAL_SERVER, IUnknown, Result) = S_OK then
     if Result.HrInit <> S_OK then
     begin
