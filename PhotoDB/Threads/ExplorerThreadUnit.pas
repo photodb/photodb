@@ -2042,7 +2042,7 @@ end;
 
 procedure TExplorerThread.ProcessThreadPreviews;
 begin       
-  TW.I.Start('<ProcessThreadPreviews>');
+  Priority := tpLower;
   while True do
   begin
     IsTerminated := False;

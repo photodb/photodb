@@ -3661,10 +3661,9 @@ begin
 end;
 
 procedure JPEGScale(Graphic : TGraphic; Width, Height: Integer);
-Var
+var
   ScaleX, ScaleY, Scale :Extended;
 begin
- try
  If (Graphic Is TJpegImage) Then
  begin
   ScaleX:=Graphic.Width/Width;
@@ -3678,8 +3677,6 @@ begin
   (Graphic As TJpegImage).Scale:=jsQuarter;
   If Scale>=8 then
   (Graphic As TJpegImage).Scale:=jsEighth;
- end;
- except
  end;
 end;
 

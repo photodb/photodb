@@ -89,28 +89,28 @@ object Viewer: TViewer
         Transparent = True
         object TbBack: TToolButton
           Left = 0
-          Top = 2
+          Top = 0
           Caption = 'Back'
           ImageIndex = 1
           OnClick = SpeedButton3Click
         end
         object TbForward: TToolButton
           Left = 23
-          Top = 2
+          Top = 0
           Caption = 'Forward'
           ImageIndex = 0
           OnClick = SpeedButton4Click
         end
         object TbSeparator1: TToolButton
           Left = 46
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 2
           Style = tbsSeparator
         end
         object TbFitToWindow: TToolButton
           Left = 54
-          Top = 2
+          Top = 0
           Caption = 'FitToWindow'
           Grouped = True
           ImageIndex = 2
@@ -119,7 +119,7 @@ object Viewer: TViewer
         end
         object TbRealSize: TToolButton
           Left = 77
-          Top = 2
+          Top = 0
           Caption = 'RealSize'
           Grouped = True
           ImageIndex = 3
@@ -128,28 +128,28 @@ object Viewer: TViewer
         end
         object TbSlideShow: TToolButton
           Left = 100
-          Top = 2
+          Top = 0
           Caption = 'SlideShow'
           ImageIndex = 4
           OnClick = TbSlideShowClick
         end
         object TbFullScreen: TToolButton
           Left = 123
-          Top = 2
+          Top = 0
           Caption = 'FullScreen'
           ImageIndex = 7
           OnClick = FullScreen1Click
         end
         object TbSeparator2: TToolButton
           Left = 146
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 5
           Style = tbsSeparator
         end
         object TbZoomOut: TToolButton
           Left = 154
-          Top = 2
+          Top = 0
           Caption = 'ZoomOut'
           Grouped = True
           ImageIndex = 5
@@ -158,7 +158,7 @@ object Viewer: TViewer
         end
         object TbZoomIn: TToolButton
           Left = 177
-          Top = 2
+          Top = 0
           Caption = 'ZoomIn'
           Grouped = True
           ImageIndex = 6
@@ -167,14 +167,14 @@ object Viewer: TViewer
         end
         object TbSeparator3: TToolButton
           Left = 200
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 7
           Style = tbsSeparator
         end
         object TbPageNumber: TToolButton
           Left = 208
-          Top = 2
+          Top = 0
           Caption = 'PageNumber'
           DropdownMenu = PopupMenuPageSelecter
           ImageIndex = 22
@@ -182,7 +182,7 @@ object Viewer: TViewer
         end
         object TbSeparatorPageNumber: TToolButton
           Left = 246
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
@@ -190,76 +190,76 @@ object Viewer: TViewer
         end
         object TbRotateCCW: TToolButton
           Left = 254
-          Top = 2
+          Top = 0
           Caption = 'RotateCCW'
           ImageIndex = 8
           OnClick = RotateCCW1Click
         end
         object TbRotateCW: TToolButton
           Left = 277
-          Top = 2
+          Top = 0
           Caption = 'RotateCW'
           ImageIndex = 9
           OnClick = RotateCW1Click
         end
         object TbSeparator4: TToolButton
           Left = 300
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
         end
         object TbDelete: TToolButton
           Left = 308
-          Top = 2
+          Top = 0
           ImageIndex = 13
           OnClick = TbDeleteClick
         end
         object TbSeparator5: TToolButton
           Left = 331
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
         end
         object TbPrint: TToolButton
           Left = 339
-          Top = 2
+          Top = 0
           Caption = 'Print'
           ImageIndex = 12
           OnClick = Print1Click
         end
         object TbSeparator6: TToolButton
           Left = 362
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
         end
         object TbRating: TToolButton
           Left = 370
-          Top = 2
+          Top = 0
           Caption = 'Rating'
           ImageIndex = 14
           OnClick = TbRatingClick
         end
         object TbSeparator7: TToolButton
           Left = 393
-          Top = 2
+          Top = 0
           Width = 8
           ImageIndex = 12
           Style = tbsSeparator
         end
         object TbEditImage: TToolButton
           Left = 401
-          Top = 2
+          Top = 0
           Caption = 'Edit Image'
           ImageIndex = 11
           OnClick = ImageEditor1Click
         end
         object TbInfo: TToolButton
           Left = 424
-          Top = 2
+          Top = 0
           Caption = 'Info'
           ImageIndex = 10
           OnClick = Properties1Click

@@ -234,6 +234,7 @@ type
     { Private declarations }
   protected
     procedure CreateParams(VAR Params: TCreateParams); override;
+    procedure WndProc(var Message: TMessage); override;
   public        
     WaitingList : boolean;
     fCurrentPage : integer;
@@ -1378,13 +1379,45 @@ begin
   end;
 end;
 
+procedure TViewer.WndProc(var Message: TMessage);
+begin
+  inherited;
+
+  if Message.Msg = WM_COMMAND then
+  begin
+    if Message.WParamLo = 40001 then
+      Previous_(Self);
+
+    if Message.WParamLo = 40002 then
+      Next_(Self);
+  end;
+end;
+
 procedure TViewer.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
+var
+  FButtons: array[0..1] of TThumbButton;
 begin    
   if msg.message = FProgressMessage then
   begin
     FW7TaskBar := CreateTaskBarInstance;
-    SetProgressPosition(CurrentFileNumber + 1, Length(CurrentInfo.ItemFileNames));
+    if FW7TaskBar <> nil then
+    begin
+      FButtons[0].iId := 40001;
+      FButtons[0].dwFlags := THBF_ENABLED;
+      FButtons[0].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
+	    StringToWideChar(TEXT_MES_BACK, FButtons[0].szTip, 260);
+	    FButtons[0].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
+
+	    FButtons[1].iId := 40002;
+	    FButtons[1].dwFlags := THBF_ENABLED;
+	    FButtons[1].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
+	    StringToWideChar(TEXT_MES_NEXT, FButtons[1].szTip, 260);
+	    FButtons[1].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
+      FW7TaskBar.ThumbBarAddButtons(Handle, 2, @FButtons);
+
+      SetProgressPosition(CurrentFileNumber + 1, Length(CurrentInfo.ItemFileNames));
+    end;
   end;
 
  if not Active then Exit;
