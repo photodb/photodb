@@ -6,6 +6,13 @@ interface
       DmProgress, UnitDBDeclare, Language, JPEG, CommCtrl, UnitDBCommon,
       GraphicsBaseTypes, GIFImage, Effects, Math, uMath;
 
+
+ type
+   TJPEGX = class(TJpegImage)
+   public
+     function InnerBitmap : TBitmap;
+   end;
+
  const
     PSDTransparent = false;
     //Image processiong options
@@ -33,11 +40,11 @@ interface
   procedure Rotate180A(var im : tbitmap);
   procedure Rotate270A(var im : tbitmap);
   procedure Rotate90A(var im : tbitmap);
-  procedure FillColorEx(Bitmap : TBitmap; Color : TColor);  
+  procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
   procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
   procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
-  procedure GrayScale(Image : TBitmap);  
-  procedure SelectedColor(Image : TBitmap; Color : TColor);  
+  procedure GrayScale(Image : TBitmap);
+  procedure SelectedColor(Image : TBitmap; Color : TColor);
 
 implementation
 
@@ -114,7 +121,7 @@ var
   P : PARGB;
 begin
   Image.PixelFormat := pf24bit;
-   
+
   for i := 0 to Image.Height - 1 do
   begin
     p := Image.ScanLine[I];
@@ -414,7 +421,7 @@ begin
     pD:=Bitmap.ScanLine[YD];
     for J := 0 to SW - 1 do
     begin
-      XD := J + X;  
+      XD := J + X;
       if (XD >= DW) then
         Break;
       pD[XD].R := pS[J].R;
@@ -511,7 +518,7 @@ begin
     PD := D.ScanLine[I];
     PS := S.ScanLine[I];
     for J:=0 to S.Width - 1 do
-    begin      
+    begin
       W1 := PS[J].L;
       W2 := 255 - W1;
       PD[J].R := (R * W2 + PS[J].R * W1 + $7F) div $FF;
@@ -586,76 +593,96 @@ begin
  end;
 end;
 
-procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround : TColor);
+procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 var
-  PNG : TPNGGraphic;
-  BMP : TBitmap;
+  PNG: TPNGGraphic;
+  BMP: TBitmap;
+  JPEG: TJpegImage;
+  I, J: Integer;
+  PS, PD: PARGB;
 begin
- if Image is TPNGGraphic then
- begin
-  PNG:=(Image as TPNGGraphic);
-  if PNG.PixelFormat=pf32bit then
+  if Image is TPNGGraphic then
   begin
-   if (Bitmap.Width<>Image.Width) or (Image.Height<>Bitmap.Height) then
-   begin
-    Bitmap.Width:=Image.Width;
-    Bitmap.Height:=Image.Height;
-   end;
-   LoadPNGImage32bit(Image as TPNGGraphic,Bitmap,BackGround);
-   exit;
+    PNG := (Image as TPNGGraphic);
+    if PNG.PixelFormat = pf32bit then
+    begin
+      if (Bitmap.Width <> Image.Width) or (Image.Height <> Bitmap.Height) then
+      begin
+        Bitmap.Width := Image.Width;
+        Bitmap.Height := Image.Height;
+      end;
+      LoadPNGImage32bit(Image as TPNGGraphic, Bitmap, BackGround);
+      Exit;
+    end;
   end;
- end;
- if Image is TBitmap then
- if not (Image is TPSDGraphic) or PSDTransparent then
- if (Image as TBitmap).PixelFormat=pf32bit then
- begin
-  BMP:=(Image as TBitmap);
-  if (Bitmap.Width<>Image.Width) or (Image.Height<>Bitmap.Height) then
-  begin
-   Bitmap.Width:=Image.Width;
-   Bitmap.Height:=Image.Height;
-  end;
-  LoadBMPImage32bit(BMP,Bitmap,BackGround);
-  exit;
- end;
+  if Image is TBitmap then
+    if not(Image is TPSDGraphic) or PSDTransparent then
+      if (Image as TBitmap).PixelFormat = pf32bit then
+      begin
+        BMP := (Image as TBitmap);
+        if (Bitmap.Width <> Image.Width) or (Image.Height <> Bitmap.Height) then
+        begin
+          Bitmap.Width := Image.Width;
+          Bitmap.Height := Image.Height;
+        end;
+        LoadBMPImage32bit(BMP, Bitmap, BackGround);
+        Exit;
+      end;
 
- if Image is TGIFImage then
- begin
-  if not (Image as TGIFImage).Images[0].Empty then
-  if (Image as TGIFImage).Images[0].Transparent then
+  if Image is TGIFImage then
   begin
-   Bitmap.Assign(Image);
-   if (Image as TGIFImage).Images[0].GraphicControlExtension<>nil then
-   LoadGIFImage32bit((Image as TGIFImage).Images[0],Bitmap,(Image as TGIFImage).Images[0].GraphicControlExtension.TransparentColorIndex,BackGround);
-   exit;
+    if not(Image as TGIFImage).Images[0].Empty then
+      if (Image as TGIFImage).Images[0].Transparent then
+      begin
+        Bitmap.Assign(Image);
+        if (Image as TGIFImage).Images[0].GraphicControlExtension <> nil then
+          LoadGIFImage32bit((Image as TGIFImage).Images[0], Bitmap, (Image as TGIFImage).Images[0].GraphicControlExtension.TransparentColorIndex, BackGround);
+        Exit;
+      end;
   end;
- end;
- Bitmap.Assign(Image);
+  if Image is TJpegImage then
+  begin
+    JPEG := TJpegImage(Image);
+    JPEG.Performance := jpBestSpeed;
+    JPEG.DIBNeeded;
+    BMP := TJPEGX(JPEG).InnerBitmap;
+    Bitmap.PixelFormat := pf24bit;
+    Bitmap.Width := BMP.Width;
+    Bitmap.Height := BMP.Height;
+    for I := 0 to BMP.Height - 1 do
+    begin
+      PD := Bitmap.ScanLine[I];
+      PS := BMP.ScanLine[I];
+      for J := 0 to Bitmap.Width - 1 do
+        PD[J] := PS[J];
+    end;
+    exit;
+  end;
+  Bitmap.Assign(Image);
 end;
 
 procedure DoResize(Width,Height : integer; S,D : TBitmap);
 begin
- if (Width=0) or (Height=0) then exit;
- if (S.Width=0) or (S.Height=0) then exit;
- if (Width/S.Width>1) or (Height/S.Height>1) then
- begin
-  Interpolate(0,0,Width,Height,Rect(0,0,S.Width,S.Height),S,D);
- end else
- begin
-  if ((S.Width div Width>=8) or (S.Height div Height>=8)) and (S.Width>2) and (S.Height>2) then
+  if (Width = 0) or (Height = 0) then
+    Exit;
+  if (S.Width = 0) or (S.Height = 0) then
+    Exit;
+
+  if (Width / S.Width > 1) or (Height / S.Height > 1) then
+    Interpolate(0, 0, Width, Height, Rect(0, 0, S.Width, S.Height), S, D)
+  else
   begin
-   QuickReduce(Width,Height,S,D)
-  end else
-  begin
-   if Width/S.Width>ZoomSmoothMin then
-   begin
-    SmoothResize(Width,Height,S,D);
-   end else
-   begin
-    StretchCool(Width,Height,S,D);
-   end;
+    if ((S.Width div Width >= 8) or (S.Height div Height >= 8)) and
+      (S.Width > 2) and (S.Height > 2) then
+      QuickReduce(Width, Height, S, D)
+    else
+    begin
+      if Width / S.Width > ZoomSmoothMin then
+        SmoothResize(Width, Height, S, D)
+      else
+        StretchCool(Width, Height, S, D);
+    end;
   end;
- end;
 end;
 
 procedure StretchCool(x, y, Width, Height : Integer; var S, D : TBitmap);
@@ -672,7 +699,7 @@ begin
  if width+x>d.Width then
  d.Width:=width+x;
  if Height+y>d.Height then
- d.Height:=height+y; 
+ d.Height:=height+y;
  Sh:=S.height/height;
  Sw:=S.width/width;
  Sheight1:=S.height-1;
@@ -749,7 +776,7 @@ begin
       x1r:= FastTrunc(j / dx) * dx;
       if xo>S.Width then Continue;
       begin
-       if i+y<0 then continue; 
+       if i+y<0 then continue;
        if j+x<0 then continue;
        z1 := ((Xs[yo ,xo+ 1].r - Xs[yo,xo].r)/ dx)*(j - x1r) + Xs[yo,xo].r;
        z2 := ((Xs[yo+1,xo+1].r - Xs[yo+1,xo].r) / dx)*(j - x1r) + Xs[yo+1,xo].r;
@@ -772,84 +799,84 @@ end;
 
 procedure Rotate180A(var im : tbitmap);
 var
-  i, j : integer;
-  p1, p2 : pargb;
-  image : Tbitmap;
+  I, J: Integer;
+  p1, p2: PARGB;
+  Image: TBitmap;
 begin
- im.PixelFormat:=pf24bit;
- image:=Tbitmap.create;
- image.PixelFormat:=pf24bit;
- image.Assign(im);
- for i:=0 to image.Height-1 do
- begin
-  p1:=image.ScanLine[i];
-  p2:=im.ScanLine[image.Height-i-1];
-  for j:=0 to image.Width-1 do
+  im.PixelFormat := pf24bit;
+  Image := TBitmap.Create;
+  Image.PixelFormat := pf24bit;
+  Image.Assign(im);
+  for I := 0 to Image.Height - 1 do
   begin
-   p2[j].r:=p1[image.Width-1-j].r;
-   p2[j].g:=p1[image.Width-1-j].g;
-   p2[j].b:=p1[image.Width-1-j].b;
+    p1 := Image.ScanLine[I];
+    p2 := im.ScanLine[Image.Height - I - 1];
+    for J := 0 to Image.Width - 1 do
+    begin
+      p2[J].R := p1[Image.Width - 1 - J].R;
+      p2[J].G := p1[Image.Width - 1 - J].G;
+      p2[J].B := p1[Image.Width - 1 - J].B;
+    end;
   end;
- end;
- image.free;
+  Image.Free;
 end;
 
-procedure Rotate270A(var im : tbitmap);
+procedure Rotate270A(var im: TBitmap);
 var
- i, j : integer;
- p1 : pargb;
- p : array of pargb;
- image : tbitmap;
+  I, J: Integer;
+  p1: PARGB;
+  p: array of PARGB;
+  Image: TBitmap;
 begin
- im.PixelFormat:=pf24bit;
- image:=tbitmap.create;
- image.PixelFormat:=pf24bit;
- image.Assign(im);
- im.Width:=image.Height;
- im.Height:=image.Width;
- setlength(p,image.Width);
- for i:=0 to image.Width-1 do
- p[i]:=im.ScanLine[image.Width-1-i];
- for i:=0 to image.Height-1 do
- begin
-  p1:=image.ScanLine[i];
-  for j:=0 to image.Width-1 do
+  im.PixelFormat := pf24bit;
+  Image := TBitmap.Create;
+  Image.PixelFormat := pf24bit;
+  Image.Assign(im);
+  im.Width := Image.Height;
+  im.Height := Image.Width;
+  SetLength(p, Image.Width);
+  for I := 0 to Image.Width - 1 do
+    p[I] := im.ScanLine[Image.Width - 1 - I];
+  for I := 0 to Image.Height - 1 do
   begin
-   p[j,i].r:=p1[j].r;
-   p[j,i].g:=p1[j].g;
-   p[j,i].b:=p1[j].b;
+    p1 := Image.ScanLine[I];
+    for J := 0 to Image.Width - 1 do
+    begin
+      p[J, I].R := p1[J].R;
+      p[J, I].G := p1[J].G;
+      p[J, I].B := p1[J].B;
+    end;
   end;
- end;
- image.Free;
+  Image.Free;
 end;
 
-procedure Rotate90A(var im : tbitmap);
+procedure Rotate90A(var im: TBitmap);
 var
- i, j : integer;
- p1 : pargb;
- p : array of pargb;
- image : tbitmap;
+  I, J: Integer;
+  p1: PARGB;
+  p: array of PARGB;
+  Image: TBitmap;
 begin
- im.PixelFormat:=pf24bit;
- image:=TBitmap.create;
- image.PixelFormat:=pf24bit;
- image.Assign(im);
- im.Width:=image.Height;
- im.Height:=image.Width;
- setlength(p,image.Width);
- for i:=0 to image.Width-1 do
- p[i]:=im.ScanLine[i];
- for i:=0 to image.Height-1 do
- begin
-  p1:=image.ScanLine[image.Height-i-1];
-  for j:=0 to image.Width-1 do
+  im.PixelFormat := pf24bit;
+  Image := TBitmap.Create;
+  Image.PixelFormat := pf24bit;
+  Image.Assign(im);
+  im.Width := Image.Height;
+  im.Height := Image.Width;
+  SetLength(p, Image.Width);
+  for I := 0 to Image.Width - 1 do
+    p[I] := im.ScanLine[I];
+  for I := 0 to Image.Height - 1 do
   begin
-   p[j,i].r:=p1[j].r;
-   p[j,i].g:=p1[j].g;
-   p[j,i].b:=p1[j].b;
+    p1 := Image.ScanLine[Image.Height - I - 1];
+    for J := 0 to Image.Width - 1 do
+    begin
+      p[J, I].R := p1[J].R;
+      p[J, I].G := p1[J].G;
+      p[J, I].B := p1[J].B;
+    end;
   end;
- end;
- image.Free;
+  Image.Free;
 end;
 
 procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
@@ -858,10 +885,10 @@ var
  bufw, bufh, outw, outh : integer;
  sumr, sumb, sumg, pixcnt : dword;
  adrIn, adrOut, adrLine0, deltaLine, deltaLine2 : Integer;
-begin    
+begin
  {$R-}
  if BmpIn.PixelFormat <> pf24bit then
-   BmpIn.PixelFormat := pf24bit;   
+   BmpIn.PixelFormat := pf24bit;
  if BmpOut.PixelFormat <> pf24bit then
    BmpOut.PixelFormat := pf24bit;
  BmpOut.Width := NewWidth;
@@ -967,12 +994,21 @@ begin
  end;
 end;
 
-Procedure QuickReduceWide(Width, Height : integer; Var S,D : TBitmap);
+procedure QuickReduceWide(Width, Height : integer; Var S,D : TBitmap);
 begin
- if (Width=0) or (Height=0) then exit;
- if ((S.Width div Width>=8) or (S.Height div Height>=8)) and (S.Width>2) and (S.Height>2) then
- QuickReduce(Width,Height,S,D) else
- StretchCool(Width,Height,S,D)
+  if (Width=0) or (Height=0) then
+    Exit;
+  if ((S.Width div Width>=8) or (S.Height div Height>=8)) and (S.Width>2) and (S.Height>2) then
+    QuickReduce(Width,Height,S,D)
+  else
+    StretchCool(Width,Height,S,D)
+end;
+
+{ TJPEGX }
+
+function TJPEGX.InnerBitmap: TBitmap;
+begin
+  Result := Bitmap;
 end;
 
 end.

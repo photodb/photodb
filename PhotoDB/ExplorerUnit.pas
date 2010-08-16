@@ -853,6 +853,8 @@ begin
   ListView1.OnItemImageDraw := EasyListview1ItemImageDraw;
   ListView1.OnItemImageDrawIsCustom := EasyListview1ItemImageDrawIsCustom;
   ListView1.OnItemImageGetSize := EasyListview1ItemImageGetSize;
+  ListView1.Header.DragManager.Enabled := False;
+  ListView1.DragManager.Enabled := False;
   ListView1.Header.Columns.Add;
   ListView1.Groups.Add;
 
