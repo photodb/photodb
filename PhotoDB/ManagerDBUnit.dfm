@@ -1,6 +1,6 @@
 object ManagerDB: TManagerDB
-  Left = 100
-  Top = 98
+  Left = 240
+  Top = 328
   Caption = 'ManagerDB'
   ClientHeight = 616
   ClientWidth = 890
@@ -11,7 +11,7 @@ object ManagerDB: TManagerDB
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Position = poScreenCenter
+  Position = poDesigned
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -522,9 +522,15 @@ object ManagerDB: TManagerDB
           MinWidth = 10
           Width = 60
         end>
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
       HideSelection = False
       LargeImages = ImlMain
       OwnerData = True
+      ParentFont = False
       SmallImages = ImlMain
       StateImages = ImlMain
       TabOrder = 1

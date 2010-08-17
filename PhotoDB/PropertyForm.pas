@@ -1017,7 +1017,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set KeyWords = "'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set KeyWords = '+NormalizeDBString(List[i].Value)+' Where ID in ('+IDs+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
@@ -1058,7 +1058,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set Groups = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set Groups = '+normalizeDBString(List[i].Value)+' Where ID in ('+IDs+')';
     WorkQuery.Close;
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
@@ -1098,7 +1098,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set Links = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set Links = '+normalizeDBString(List[i].Value)+' Where ID in ('+IDs+')';
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
    end;
@@ -1112,7 +1112,7 @@ begin
   begin
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
-   _sqlexectext:='Update $DB$ Set Comment = "'+normalizeDBString(CommentMemo.Text)+'" Where ID in (';
+   _sqlexectext:='Update $DB$ Set Comment = '+normalizeDBString(CommentMemo.Text)+' Where ID in (';
    for I := 0 to FFilesInfo.Count - 1 do
    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(FFilesInfo[I].ID)+' ' else
    _sqlexectext:=_sqlexectext+' , '+inttostr(FFilesInfo[I].ID)+'';
@@ -1227,7 +1227,7 @@ begin
  if FShowInfoType=SHOW_INFO_ID then
  begin
   _sqlexectext:='Update $DB$';
-  _sqlexectext:=_sqlexectext+' set Comment="'+normalizeDBString(CommentMemo.text)+'" , KeyWords="'+normalizeDBString(KeyWordsMemo.text)+'" , Rating = ' + inttostr(Rating1.Rating)+' , Owner = "'+normalizeDBString(OwnerMemo.text)+'" , Collection = "'+normalizeDBString(CollectionMemo.text)+'", DateToAdd = :Date, IsDate = :IsDate, Groups = "'+NormalizeDBString(CodeGroups(FNowGroups))+'", Include = :Include, Links = "'+NormalizeDBString(CodeLinksInfo(FPropertyLinks))+'", aTime = :aTime , IsTime = :IsTime';
+  _sqlexectext:=_sqlexectext+' set Comment='+normalizeDBString(CommentMemo.text)+' , KeyWords='+normalizeDBString(KeyWordsMemo.text)+' , Rating = ' + inttostr(Rating1.Rating)+' , Owner = '+normalizeDBString(OwnerMemo.text)+' , Collection = '+normalizeDBString(CollectionMemo.text)+', DateToAdd = :Date, IsDate = :IsDate, Groups = '+NormalizeDBString(CodeGroups(FNowGroups))+', Include = :Include, Links = '+NormalizeDBString(CodeLinksInfo(FPropertyLinks))+', aTime = :aTime , IsTime = :IsTime';
   _sqlexectext:=_sqlexectext+ ' Where ID=:ID';
   WorkQuery.active:=false;
   SetSQL(WorkQuery,_sqlexectext);

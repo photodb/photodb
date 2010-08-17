@@ -1150,9 +1150,9 @@ object SearchForm: TSearchForm
         Width = 799
       end>
     object TbMain: TToolBar
-      Left = 11
+      Left = 12
       Top = 0
-      Width = 790
+      Width = 785
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 57
@@ -1227,7 +1227,7 @@ object SearchForm: TSearchForm
         OnClick = ToolButton2Click
       end
       object ToolButton11: TToolButton
-        Left = 105
+        Left = 103
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -1235,7 +1235,7 @@ object SearchForm: TSearchForm
         Style = tbsSeparator
       end
       object ToolButton10: TToolButton
-        Left = 113
+        Left = 111
         Top = 0
         AutoSize = True
         Caption = 'Groups'
@@ -1243,7 +1243,7 @@ object SearchForm: TSearchForm
         OnClick = GroupsManager1Click
       end
       object ToolButton7: TToolButton
-        Left = 125
+        Left = 123
         Top = 0
         Width = 8
         Caption = 'ToolButton7'
@@ -1251,7 +1251,7 @@ object SearchForm: TSearchForm
         Style = tbsSeparator
       end
       object ToolButton4: TToolButton
-        Left = 133
+        Left = 131
         Top = 0
         AutoSize = True
         Caption = 'Save'
@@ -1259,7 +1259,7 @@ object SearchForm: TSearchForm
         OnClick = SaveResults1Click
       end
       object ToolButton5: TToolButton
-        Left = 145
+        Left = 143
         Top = 0
         AutoSize = True
         Caption = 'Load'
@@ -1267,7 +1267,7 @@ object SearchForm: TSearchForm
         OnClick = LoadResults1Click
       end
       object ToolButton13: TToolButton
-        Left = 157
+        Left = 155
         Top = 0
         Width = 8
         Caption = 'ToolButton13'
@@ -1275,7 +1275,7 @@ object SearchForm: TSearchForm
         Style = tbsSeparator
       end
       object ToolButton12: TToolButton
-        Left = 165
+        Left = 163
         Top = 0
         Caption = 'Explorer'
         ImageIndex = 4

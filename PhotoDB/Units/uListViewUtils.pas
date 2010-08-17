@@ -5,6 +5,12 @@ interface
 uses
   Windows, Classes, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls;
 
+type
+  TEasyCollectionItemX = class(TEasyCollectionItem)
+  public
+    function GetDisplayRect : TRect;
+  end;
+
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer): TEasyItem;
@@ -39,7 +45,7 @@ begin
     begin
       FillChar(RectArray, SizeOf(RectArray), #0);
       try
-        RectArray.BoundsRect := Item.DisplayRect;    
+        RectArray.BoundsRect := TEasyCollectionItemX(Item).GetDisplayRect;
         if ListView = 0 then
           InflateRect(RectArray.BoundsRect, -Item.Border, -Item.Border);
 
@@ -135,6 +141,13 @@ begin
    end;
    Inc(i)
   end
+end;
+
+{ TEasyCollectionItemX }
+
+function TEasyCollectionItemX.GetDisplayRect: TRect;
+begin
+  Result := DisplayRect;
 end;
 
 end.

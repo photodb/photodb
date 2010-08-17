@@ -663,6 +663,7 @@ begin
   FPictureSize := ThImageSize;
   LoadSizes();
 
+  ListView.Font.Name := 'Tahoma';
   ListView.HotTrack.Color := Theme_ListFontColor;
   ListView.HotTrack.Cursor := CrArrow;
   ListView.IncrementalSearch.Enabled := True;
@@ -1560,7 +1561,8 @@ var
   RefreshParams : TEventFields;
   FilesToUpdate : TSearchRecordArray;
   I, ReRotation : Integer;
-  SearchRecord : TSearchRecord;
+  SearchRecord  : TSearchRecord;
+  DataObject    : TDataObject;
 begin
 
   if EventID_Repaint_ImageList in params then
@@ -1600,7 +1602,9 @@ begin
       if EventID_Param_Include in params then
       begin
         SearchRecord.Include := Value.Include;
-        TDataObject(ListView.Items[I].Data).Include := Value.Include;
+        DataObject := TDataObject(ListView.Items[I].Data);
+        DataObject.Include := Value.Include;
+        ListView.Items[I].BorderColor := GetListItemBorderColor(DataObject);
       end;
       if EventID_Param_Attr in params then SearchRecord.Attr := Value.Attr;
       if EventID_Param_IsDate in params then SearchRecord.IsDate := Value.IsDate;
@@ -2369,7 +2373,7 @@ begin
       if (Msg.wParam = Ord('a')) and CtrlKeyDown and not FUpdatingDB then
         SelectAll1Click(Nil);
       if (Msg.wParam = Ord('s')) and CtrlKeyDown and tbStopOperation.Enabled then
-        tbStopOperationClick(nil);
+        TbStopOperationClick(nil);
 
     end;
   end;
@@ -3712,7 +3716,6 @@ begin
 
   R1 := ARect;
 
-  ListView.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
   Data := TSearchRecord(TDataObject(Item.Data).Data);
   if Item.ImageIndex > -1 then
   begin
@@ -3971,7 +3974,7 @@ begin
   begin
     SearchRecord := GetSearchRecordFromItemData(ListView.Items[I]);
     r:=Rect(ListView.ClientRect.Left + RV.Left, ListView.ClientRect.Top + RV.Top, ListView.ClientRect.Right + RV.Left, ListView.ClientRect.Bottom + RV.Top);
-    if RectInRect(R, ListView.Items[i].DisplayRect) then
+    if RectInRect(R, TEasyCollectionItemX(ListView.Items[i]).GetDisplayRect) then
     begin
       SetLength(Result, Length(Result) + 1);
       Result[Length(Result) - 1] := SearchRecord.FileName;
@@ -3990,7 +3993,7 @@ begin
   for I := 0 to ListView.Items.Count - 1 do
   begin
     r:=Rect(ListView.ClientRect.Left + RV.Left, ListView.ClientRect.Top + RV.Top, ListView.ClientRect.Right + RV.Left, ListView.ClientRect.Bottom + RV.Top);
-    if RectInRect(R, ListView.Items[I].DisplayRect) then
+    if RectInRect(R, TEasyCollectionItemX(ListView.Items[I]).GetDisplayRect) then
     begin
       if ListView.Items[I].Selected then
       begin
@@ -5204,6 +5207,8 @@ begin
   DataObject.Include := SearchRecord.Include;
   DataObject.Data := SearchRecord;
   new := ListView.Items.Add(DataObject);
+  if not DataObject.Include then
+    new.BorderColor := GetListItemBorderColor(DataObject);
   new.Tag := SearchRecord.ID;
   if ReplaceBitmap then
   begin

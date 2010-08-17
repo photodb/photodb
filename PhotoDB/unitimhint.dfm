@@ -9,7 +9,7 @@ object ImHint: TImHint
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
@@ -37,18 +37,24 @@ object ImHint: TImHint
   object Label1: TLabel
     Left = 3
     Top = 176
-    Width = 87
-    Height = 13
+    Width = 150
+    Height = 17
     BiDiMode = bdLeftToRight
     Caption = 'Name or Comment'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     ParentBiDiMode = False
+    ParentFont = False
     WordWrap = True
     OnMouseMove = Label2MouseMove
   end
   object Label2: TLabel
     Left = 3
     Top = 192
-    Width = 70
+    Width = 71
     Height = 13
     Caption = 'Width x Height'
     OnMouseMove = Label2MouseMove
@@ -56,7 +62,7 @@ object ImHint: TImHint
   object Label3: TLabel
     Left = 3
     Top = 208
-    Width = 45
+    Width = 44
     Height = 13
     Caption = 'Size label'
     OnMouseMove = Label2MouseMove

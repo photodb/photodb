@@ -2,7 +2,7 @@ unit UnitTimeCounter;
 
 interface
 
-uses WIndows, ExtCtrls, DateUtils, math;
+uses WIndows, ExtCtrls, DateUtils, Math;
 
 type
   TTimeCounter = class(TObject)

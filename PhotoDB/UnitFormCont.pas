@@ -571,6 +571,7 @@ begin
    if item<>nil then
    if item.Data<>nil then
    Boolean(TDataObject(item.Data).Include):=Value.Include;
+   item.BorderColor := GetListItemBorderColor(TDataObject(item.Data));
   end;
  end;
 
@@ -643,6 +644,7 @@ begin
 
  new.Tag:=Info.ItemId;
  new.Data:=TDataObject.Create;
+ new.BorderColor := GetListItemBorderColor(TDataObject(new.Data));
  TDataObject(new.Data).Include:=Info.ItemInclude;
 
  new.Caption:=ExtractFileName(Info.ItemFileName);
@@ -1259,9 +1261,6 @@ begin
   r1:=ARect;
   if Item.ImageIndex<0 then exit;
 
-  
-  ListView1.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
-
   b:=TBitmap.Create;
   b.PixelFormat:=pf24bit;
   b.Width:=fPictureSize;
@@ -1328,7 +1327,7 @@ begin
  for i:=0 to ListView1.Items.Count-1 do
  begin
   r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,ListView1.Items[i].DisplayRect) then
+  if RectInRect(r,TEasyCollectionItemX(ListView1.Items[i]).GetDisplayRect) then
   begin
    SetLength(Result,Length(Result)+1);
    Result[Length(Result)-1]:=Data[i].FileName;
@@ -2042,7 +2041,7 @@ begin
  for i:=0 to ListView1.Items.Count-1 do
  begin
   r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,ListView1.Items[i].DisplayRect) then
+  if RectInRect(r,TEasyCollectionItemX(ListView1.Items[i]).GetDisplayRect) then
   begin
    if ListView1.Items[i].Selected then
    begin

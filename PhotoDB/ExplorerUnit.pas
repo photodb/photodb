@@ -5,7 +5,7 @@ interface
 uses
   acDlgSelect, CommCtrl, ActiveX, ExplorerTypes, DBCMenu, UnitDBKernel, UnitINI,
   ShellApi, dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts, 
+  Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts,
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
   Network, GraphicCrypt, AddSessionPasswordUnit, UnitCrypting,
@@ -293,7 +293,6 @@ type
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     Procedure SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
-    procedure ListView1DblClick(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
     Procedure BeginUpdate();
     Procedure EndUpdate();
@@ -553,7 +552,7 @@ type
     procedure MapCD1Click(Sender: TObject);
     procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-   private     
+   private
      ExtIcons : TBitmapImageList;
      FBitmapImageList : TBitmapImageList;
      FWindowID : TGUID;
@@ -565,7 +564,7 @@ type
 
      FPictureSize : integer;
      ListView : integer;
-     ListView1 : TEasyListView;
+     ElvMain : TEasyListView;
      aScript : TScript;
      MainMenuScript : string;
      RefreshIDList : TArInteger;
@@ -621,7 +620,7 @@ type
      DefaultSort : integer;
      DirectoryWatcher : TWachDirectoryClass;
      FShellTreeView : TShellTreeView;
-     FGoToLastSavedPath : Boolean;   
+     FGoToLastSavedPath : Boolean;
      FW7TaskBar : ITaskbarList3;
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
@@ -642,7 +641,7 @@ type
      function IsSelectedVisible: boolean;
      function TreeView : TShellTreeView;
      procedure CreateBackgrounds;
-   public         
+   public
      NoLockListView : boolean;
      Procedure LoadLanguage;
      function ExitstExtInIcons(Ext : String) : boolean;
@@ -721,7 +720,7 @@ end;
 procedure TExplorerForm.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
-  
+
   Params.WndParent := GetDesktopWindow;
   with params do
     ExStyle := ExStyle or WS_EX_APPWINDOW;
@@ -730,7 +729,7 @@ end;
 procedure TExplorerForm.ShellTreeView1Change(Sender: TObject;
   Node: TTreeNode);
 begin
-  if ListView1 <> nil then
+  if ElvMain <> nil then
     SetStringPath(TreeView.Path, True);
 end;
 
@@ -758,18 +757,18 @@ var
   Bitmap, ExplorerBackgroundBMP : TBitmap;
   ExplorerBackground : TPNGGraphic;
 begin
-  ListView1.BackGround.Image := TBitmap.Create;
-  ListView1.BackGround.Image.PixelFormat := pf24bit;
-  ListView1.BackGround.Image.Width := 150;
-  ListView1.BackGround.Image.Height := 150;
-  FillColorEx(ListView1.BackGround.Image, Theme_ListColor);
+  ElvMain.BackGround.Image := TBitmap.Create;
+  ElvMain.BackGround.Image.PixelFormat := pf24bit;
+  ElvMain.BackGround.Image.Width := 150;
+  ElvMain.BackGround.Image.Height := 150;
+  FillColorEx(ElvMain.BackGround.Image, Theme_ListColor);
 
   ExplorerBackground := GetExplorerBackground;
   try
     ExplorerBackgroundBMP := TBitmap.Create;
     try
       LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme_ListColor);
-      ListView1.BackGround.Image.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
+      ElvMain.BackGround.Image.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
 
       LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ColorToRGB(ScrollBox1.Color));
       Bitmap:=TBitmap.Create();
@@ -806,57 +805,58 @@ begin
 
   TW.I.Start('ListView1');
 
-  ListView1:=TEasyListView.Create(self);
-  ListView1.Parent := Self;
-  ListView1.Align := AlClient;
+  ElvMain:=TEasyListView.Create(self);
+  ElvMain.Parent := Self;
+  ElvMain.Align := AlClient;
 
   MouseDowned:=false;
   PopupHandled:=false;
-  ListView1.BackGround.Enabled:=true;
-  ListView1.BackGround.Tile:=false;
-  ListView1.BackGround.AlphaBlend:=true;
-  ListView1.BackGround.OffsetTrack:=true;
-  ListView1.BackGround.BlendAlpha:=220;
-             
+  ElvMain.BackGround.Enabled:=true;
+  ElvMain.BackGround.Tile:=false;
+  ElvMain.BackGround.AlphaBlend:=true;
+  ElvMain.BackGround.OffsetTrack:=true;
+  ElvMain.BackGround.BlendAlpha:=220;
+
   CreateBackgrounds;
 
-  ListView1.HotTrack.Color := Theme_ListFontColor;
-  ListView1.Font.Color := 0;
-  ListView1.View := elsThumbnail;
-  ListView1.DragKind := dkDock;
-  ListView1.Selection.MouseButton := [];
-  ListView1.Selection.AlphaBlend := True;
-  ListView1.Selection.AlphaBlendSelRect := True;
-  ListView1.Selection.MultiSelect := True;
-  ListView1.Selection.RectSelect := True;
-  ListView1.Selection.EnableDragSelect := True;
-  ListView1.Selection.TextColor := Theme_ListFontColor;
+  ElvMain.HotTrack.Color := Theme_ListFontColor;
+  ElvMain.Font.Color := 0;
+  ElvMain.View := elsThumbnail;
+  ElvMain.DragKind := dkDock;
+  ElvMain.Selection.MouseButton := [];
+  ElvMain.Selection.AlphaBlend := True;
+  ElvMain.Selection.AlphaBlendSelRect := True;
+  ElvMain.Selection.MultiSelect := True;
+  ElvMain.Selection.RectSelect := True;
+  ElvMain.Selection.EnableDragSelect := True;
+  ElvMain.Selection.TextColor := Theme_ListFontColor;
 
-  ListView1.HotTrack.Cursor := CrArrow;
-  ListView1.Selection.FullCellPaint := DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-  ListView1.Selection.RoundRectRadius := DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
+  ElvMain.HotTrack.Cursor := CrArrow;
+  ElvMain.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
+  ElvMain.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
 
-  ListView1.IncrementalSearch.Enabled := True;
-  ListView1.IncrementalSearch.ItemType := eisiInitializedOnly;
-  ListView1.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
-  ListView1.OnDblClick := EasyListview1DblClick;
-  ListView1.OnExit := ListView1Exit;
-  ListView1.OnMouseDown := ListView1MouseDown;
-  ListView1.OnMouseUp := ListView1MouseUp;
-  ListView1.OnMouseMove := ListView1MouseMove;
-  ListView1.OnItemSelectionChanged := EasyListview1ItemSelectionChanged;
-  ListView1.OnIncrementalSearch := Listview1IncrementalSearch;
-  ListView1.OnMouseWheel := ListView1MouseWheel;
-  ListView1.OnKeyAction := EasyListview2KeyAction;
-  ListView1.OnItemEdited := self.EasyListview1ItemEdited;
-  ListView1.OnResize := ListView1Resize;
-  ListView1.OnItemImageDraw := EasyListview1ItemImageDraw;
-  ListView1.OnItemImageDrawIsCustom := EasyListview1ItemImageDrawIsCustom;
-  ListView1.OnItemImageGetSize := EasyListview1ItemImageGetSize;
-  ListView1.Header.DragManager.Enabled := False;
-  ListView1.DragManager.Enabled := False;
-  ListView1.Header.Columns.Add;
-  ListView1.Groups.Add;
+  ElvMain.Font.Name := 'Tahoma';
+  ElvMain.IncrementalSearch.Enabled := True;
+  ElvMain.IncrementalSearch.ItemType := eisiInitializedOnly;
+  ElvMain.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
+  ElvMain.OnDblClick := EasyListview1DblClick;
+  ElvMain.OnExit := ListView1Exit;
+  ElvMain.OnMouseDown := ListView1MouseDown;
+  ElvMain.OnMouseUp := ListView1MouseUp;
+  ElvMain.OnMouseMove := ListView1MouseMove;
+  ElvMain.OnItemSelectionChanged := EasyListview1ItemSelectionChanged;
+  ElvMain.OnIncrementalSearch := Listview1IncrementalSearch;
+  ElvMain.OnMouseWheel := ListView1MouseWheel;
+  ElvMain.OnKeyAction := EasyListview2KeyAction;
+  ElvMain.OnItemEdited := self.EasyListview1ItemEdited;
+  ElvMain.OnResize := ListView1Resize;
+  ElvMain.OnItemImageDraw := EasyListview1ItemImageDraw;
+  ElvMain.OnItemImageDrawIsCustom := EasyListview1ItemImageDrawIsCustom;
+  ElvMain.OnItemImageGetSize := EasyListview1ItemImageGetSize;
+  ElvMain.Header.DragManager.Enabled := False;
+  ElvMain.DragManager.Enabled := False;
+  ElvMain.Header.Columns.Add;
+  ElvMain.Groups.Add;
 
   TLoad.Instance.RequaredDBSettings;
   FPictureSize:=ThImageSize;
@@ -867,7 +867,7 @@ begin
 
   Activation1.Visible:=not FolderView;
   Help2.Visible:=not FolderView;
-  
+
   FWindowID:=GetGUID;
   SetLength(RefreshIDList,0);
 
@@ -883,9 +883,9 @@ begin
   fDBCanDragW:=false;
   image1.Picture.Bitmap:=nil;
   DropFileTarget2.Register(Self);
-  DropFileTarget1.Register(ListView1);
+  DropFileTarget1.Register(ElvMain);
 
-  ListView1.HotTrack.Enabled := DBKernel.Readbool('Options','UseHotSelect',true);
+  ElvMain.HotTrack.Enabled := DBKernel.Readbool('Options','UseHotSelect',true);
   FormManager.RegisterMainForm(Self);
   fStatusProgress := CreateProgressBar(StatusBar1, 1);
   fStatusProgress.Visible:=false;
@@ -946,7 +946,7 @@ begin
 
     TW.I.Start('Script read');
     SetNamedValueStr(aScript, '$dbname', dbname);
-    MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');  
+    MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');
     TW.I.Start('Script Execure');
     Menu := nil;
     LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
@@ -979,7 +979,7 @@ begin
   DBKernel.RegisterForm(Self);
   MainPanel.DoubleBuffered:=true;
   PropertyPanel.DoubleBuffered:=true;
-  ListView1.DoubleBuffered:=true;
+  ElvMain.DoubleBuffered:=true;
   ScrollBox1.DoubleBuffered:=true;
 
   ToolBar2.ButtonHeight:=22;
@@ -1021,11 +1021,11 @@ begin
   HintTimer.Enabled:=false;
   fDBCanDrag:=false;
 
-  Item := ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y), ListView);
+  Item := ItemByPointImage(ElvMain, Point(MousePos.x,MousePos.y), ListView);
   VitrualKey:=((MousePos.x=-1) and (MousePos.y=-1));
- if (Item=nil) or VitrualKey then Item:=ListView1.Selection.First;
+ if (Item=nil) or VitrualKey then Item:=ElvMain.Selection.First;
 
- r :=  Listview1.Scrollbars.ViewableViewportRect;
+ r :=  ElvMain.Scrollbars.ViewableViewportRect;
  if (Item<>nil) and (Item.SelectionHitPt(Point(MousePos.x+r.Left,MousePos.y+r.Top), eshtClickSelect) or VitrualKey) then
  begin
   Loadingthitem:= nil;
@@ -1040,25 +1040,25 @@ begin
   if not (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
   begin
    PmItemPopup.Tag:=ItemIndexToMenuIndex(Item.Index);
-   PmItemPopup.Popup(ListView1.clienttoscreen(MousePos).X ,ListView1.clienttoscreen(MousePos).y);
+   PmItemPopup.Popup(ElvMain.clienttoscreen(MousePos).X ,ElvMain.clienttoscreen(MousePos).y);
   end else
   begin
    Screen.Cursor:=CrDefault;
    if ListView1Selected<>nil then
    begin
     SetLength(FileNames,0);
-    for i:=0 to ListView1.Items.Count-1 do
-    If ListView1.Items[i].Selected then
+    for i:=0 to ElvMain.Items.Count-1 do
+    If ElvMain.Items[i].Selected then
     begin
      index:=ItemIndexToMenuIndex(i);
      SetLength(FileNames,Length(FileNames)+1);
      FileNames[Length(FileNames)-1]:=fFilesInfo[index].FileName;
     end;
-    GetProperties(FileNames,MousePos,ListView1);
+    GetProperties(FileNames,MousePos,ElvMain);
    end;
   end;
  end else
-   PmListPopup.Popup(ListView1.clienttoscreen(MousePos).X ,ListView1.clienttoscreen(MousePos).y);
+   PmListPopup.Popup(ElvMain.clienttoscreen(MousePos).X ,ElvMain.clienttoscreen(MousePos).y);
 end;
 
 procedure TExplorerForm.SlideShow1Click(Sender: TObject);
@@ -1113,14 +1113,14 @@ begin
    PropertyManager.NewSimpleProperty.ExecuteEx(ArInt) else
    begin
     SetLength(Files,0);
-    for i:=0 to ListView1.Items.Count-1 do
-    If ListView1.Items[i].Selected then
+    for i:=0 to ElvMain.Items.Count-1 do
+    If ElvMain.Items[i].Selected then
     begin
      index:=ItemIndexToMenuIndex(i);
      SetLength(Files,Length(Files)+1);
      Files[Length(Files)-1]:=fFilesInfo[index].FileName;
     end;
-    GetPropertiesWindows(Files,ListView1);
+    GetPropertiesWindows(Files,ElvMain);
    end;
   end else
   begin
@@ -1133,14 +1133,14 @@ begin
  end else
  begin
   SetLength(Files,0);
-  for i:=0 to ListView1.Items.Count-1 do
-  If ListView1.Items[i].Selected then
+  for i:=0 to ElvMain.Items.Count-1 do
+  If ElvMain.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
    SetLength(Files,Length(Files)+1);
    Files[Length(Files)-1]:=fFilesInfo[index].FileName;
   end;
-  GetPropertiesWindows(Files,ListView1);
+  GetPropertiesWindows(Files,ElvMain);
  end;
 end;
 
@@ -1159,7 +1159,7 @@ begin
  MakeFolderViewer2.Visible:=false;
  MapCD1.Visible:=false;
  If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_DRIVE then
- begin          
+ begin
   DBitem1.Visible:=false;
   Print1.Visible:=false;
   RefreshID1.Visible:=false;
@@ -1192,7 +1192,7 @@ begin
   Shell1.Visible:=True;
  end;
  If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_FOLDER then
- begin         
+ begin
   DBitem1.Visible:=false;
   MakeFolderViewer2.Visible:=not FolderView;
   Print1.Visible:=false;
@@ -1229,8 +1229,8 @@ begin
   Shell1.Visible:=True;
  end;
  If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
- begin   
-  DBitem1.Visible:=true;            
+ begin
+  DBitem1.Visible:=true;
   StenoGraphia1.Visible:=true;
   AddHiddenInfo1.Visible:= (SelCount=1);
   ExtractHiddenInfo1.Visible:=True;
@@ -1298,7 +1298,7 @@ begin
  end;
 
  If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_NETWORK then
- begin        
+ begin
   DBitem1.Visible:=false;
   StenoGraphia1.Visible:=false;
   Print1.Visible:=false;
@@ -1327,7 +1327,7 @@ begin
  end;
 
  If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_WORKGROUP then
- begin        
+ begin
   DBitem1.Visible:=false;
   StenoGraphia1.Visible:=false;
   Print1.Visible:=false;
@@ -1356,7 +1356,7 @@ begin
  end;
 
  If fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_COMPUTER then
- begin          
+ begin
   DBitem1.Visible:=false;
   StenoGraphia1.Visible:=false;
   Print1.Visible:=false;
@@ -1393,9 +1393,9 @@ begin
   ImageEditor2.Visible:=false;
   RefreshID1.Visible:=false;
   Rotate1.Visible:=false;
-  SetasDesktopWallpaper1.Visible:=false; 
+  SetasDesktopWallpaper1.Visible:=false;
   Convert1.Visible:=false;
-  Resize1.Visible:=false; 
+  Resize1.Visible:=false;
   CryptFile1.Visible:=false;
   ResetPassword1.Visible:=false;
   EnterPassword1.Visible:=false;
@@ -1413,7 +1413,7 @@ begin
   Shell1.Visible:=false;
  end;
 
- Item:=ItemAtPos(ListView1.ScreenToClient(Point).X,ListView1.ScreenToClient(Point).y);
+ Item:=ItemAtPos(ElvMain.ScreenToClient(Point).X,ElvMain.ScreenToClient(Point).y);
  if PmItemPopup.tag<0 then exit;
  For i:=DBitem1.MenuIndex+1 to N8.MenuIndex-1 do
  PmItemPopup.Items.Delete(DBitem1.MenuIndex+1);
@@ -1452,8 +1452,8 @@ Var
   File_List : TStrings;
 begin
  File_List:=TStringList.Create;
- For i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ For i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   File_List.Add(ProcessPath(fFilesInfo[index].FileName));
@@ -1472,18 +1472,18 @@ begin
  if SelCount=1 then
  if ListView1Selected<>nil then
  begin
-  ListView1.SetFocus;
+  ElvMain.SetFocus;
 
-  ListView1.EditManager.Enabled:=true;
-  ListView1.Selection.First.Edit;
+  ElvMain.EditManager.Enabled:=true;
+  ElvMain.Selection.First.Edit;
 
  end;
  if SelCount>1 then
  begin
   Files := TStringList.Create;
-  For i:=0 to ListView1.Items.Count-1 do
+  For i:=0 to ElvMain.Items.Count-1 do
   begin
-   if ListView1.Items[i].Selected then
+   if ElvMain.Items[i].Selected then
    begin
    ItemIndex:=ItemIndexToMenuIndex(i);
    if (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_EXEFILE) or (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_FOLDER) then
@@ -1507,8 +1507,8 @@ var
 begin
  If SelCount=0 then Exit;
  SetLength(S,0);
- For i:=0 to ListView1.Items.Count-1 do
- if ListView1.Items[i].Selected then
+ For i:=0 to ElvMain.Items.Count-1 do
+ if ElvMain.Items[i].Selected then
  begin
   Index := ItemIndexToMenuIndex(i);
   SetLength(S,Length(S)+1);
@@ -1532,11 +1532,11 @@ begin
  UpdaterDB:=TUpdaterDB.Create;
  If ListView1Selected<>nil then
  begin
-  For i:=0 to ListView1.Items.Count-1 do
+  For i:=0 to ElvMain.Items.Count-1 do
   begin
-  
-  if i>ListView1.Items.Count-1 then exit;
-  if ListView1.Items[i].Selected then
+
+  if i>ElvMain.Items.Count-1 then exit;
+  if ElvMain.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
    if index>fFilesInfo.Count-1 then exit;
@@ -1554,7 +1554,7 @@ begin
    If ID_OK=MessageBoxDB(Handle,TEXT_MES_ADD_DRIVE,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
    begin
     UpdaterDB.AddDirectory(fFilesInfo[index].FileName,nil);
-    Continue; 
+    Continue;
    end;
   end;
  end;
@@ -1573,8 +1573,8 @@ var
   i : integer;
   b : TBitmap;
 begin
-  ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-  ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
+  ElvMain.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
+  ElvMain.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
   ListView1SelectItem(Sender,ListView1Selected,ListView1Selected=nil);
   for i:=0 to Length(UserLinks)-1 do
   begin
@@ -1659,8 +1659,8 @@ var
   Index, i : integer;
 begin
  GetCursorPos(p);
- p1:=Listview1.ScreenToClient(p);
- if (not Active) or (not Listview1.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (shloadingthitem<>loadingthitem) then
+ p1:=ElvMain.ScreenToClient(p);
+ if (not Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (shloadingthitem<>loadingthitem) then
  begin
   HintTimer.Enabled:=false;
   Exit;
@@ -1676,12 +1676,12 @@ begin
   if not loadingthitem.Selected then
   begin
    if not (CtrlKeyDown or ShiftKeyDown) then
-   for i:=0 to Listview1.Items.Count-1 do
-   if Listview1.Items[i].Selected then
-   if loadingthitem<>Listview1.Items[i] then
-   Listview1.Items[i].Selected:=false;
+   for i:=0 to ElvMain.Items.Count-1 do
+   if ElvMain.Items[i].Selected then
+   if loadingthitem<>ElvMain.Items[i] then
+   ElvMain.Items[i].Selected:=false;
    if ShiftKeyDown then
-    Listview1.Selection.SelectRange(loadingthitem,Listview1.Selection.FocusedItem,false,false) else
+    ElvMain.Selection.SelectRange(loadingthitem,ElvMain.Selection.FocusedItem,false,false) else
    if not ShiftKeyDown then
    begin
     loadingthitem.Selected:=true;
@@ -1708,8 +1708,8 @@ var
   p, p1 : tpoint;
 begin
  GetCursorPos(p);
- p1:=listview1.ScreenToClient(p);
- result:=not ((not self.Active) or (not listview1.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
+ p1:=ElvMain.ScreenToClient(p);
+ result:=not ((not self.Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
 end;
 
 procedure TExplorerForm.ListView1MouseMove(Sender: TObject;
@@ -1745,15 +1745,15 @@ begin
    p:=fDBDragPoint;
    DragImageList.Clear;
 
-   if ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y)<>nil then
-   Image:=FBitmapImageList[ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y).ImageIndex] else
+   if ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y)<>nil then
+   Image:=FBitmapImageList[ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y).ImageIndex] else
    if Listview1Selected<>nil then
    Image:=FBitmapImageList[Listview1Selected.ImageIndex];
-   
-   item:=ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y);
+
+   item:=ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y);
    if item=nil then exit;
-   if Listview1.Selection.FocusedItem=nil then
-   Listview1.Selection.FocusedItem:=item;
+   if ElvMain.Selection.FocusedItem=nil then
+   ElvMain.Selection.FocusedItem:=item;
    Case ListView of
     LV_THUMBS     : begin DragImageList.Height:=ThSize; DragImageList.Width:=ThSize;  end;
     LV_ICONS      : begin DragImageList.Height:=32; DragImageList.Width:=32;  end;
@@ -1769,20 +1769,20 @@ begin
     //Creating Draw image
     TempImage:=TBitmap.create;
     TempImage.PixelFormat:=pf32bit;
-    TempImage.Width:=fPictureSize+Min(ListView1.Selection.Count,10)*7+5;//r.Right;
-    TempImage.Height:=fPictureSize+Min(ListView1.Selection.Count,10)*7+45+1;//r.Bottom;/
+    TempImage.Width:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+5;//r.Right;
+    TempImage.Height:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+45+1;//r.Bottom;/
     MaxH:=0;
     MaxW:=0;
     TempImage.Canvas.Brush.Color := 0;
     TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
 
-    if ListView1.Selection.Count<2 then
+    if ElvMain.Selection.Count<2 then
     begin
      DragImage:=nil;
      if item<>nil then
      DragImage:=FBitmapImageList[item.ImageIndex].Bitmap else
-     if ListView1.Selection.First<>nil then
-     DragImage:=FBitmapImageList[Listview1.Selection.First.ImageIndex].Bitmap;
+     if ElvMain.Selection.First<>nil then
+     DragImage:=FBitmapImageList[ElvMain.Selection.First.ImageIndex].Bitmap;
 
      DragImage:=RemoveBlackColor(DragImage);
      TempImage.Canvas.Draw(0,0, DragImage);
@@ -1794,7 +1794,7 @@ begin
      DragImage.Free;
     end else
     begin
-     SelectedItem:=Listview1.Selection.First;
+     SelectedItem:=ElvMain.Selection.First;
      n:=1;
      for i:=1 to 9 do
      begin
@@ -1808,7 +1808,7 @@ begin
        if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
        DragImage.Free;
       end;
-      SelectedItem:=Listview1.Selection.Next(SelectedItem);
+      SelectedItem:=ElvMain.Selection.Next(SelectedItem);
       if SelectedItem=nil then break;
      end;
      DragImage:=FBitmapImageList[Item.ImageIndex].Bitmap;
@@ -1819,7 +1819,7 @@ begin
      ImH:=DragImage.Height;
      ImW:=DragImage.Width;
      DragImage.Free;
-    end;                   
+    end;
     if not IsWindowsVista then
     TempImage.Canvas.Font.Color:=$000010 else
     TempImage.Canvas.Font.Color:=$000001;
@@ -1841,15 +1841,15 @@ begin
     DragImageList.Add(TempImage,nil);
     TempImage.Free;
 
-    item.ItemRectArray(nil,ListView1.Canvas,EasyRect);
-    fDBDragPoint:=ListView1.ScreenToClient(fDBDragPoint);
+    item.ItemRectArray(nil,ElvMain.Canvas,EasyRect);
+    fDBDragPoint:=ElvMain.ScreenToClient(fDBDragPoint);
     ImW:=(EasyRect.IconRect.Right-EasyRect.IconRect.Left) div 2 - ImW div 2;
     ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
     DropFileSourceMain.ImageHotSpotX:=Min(MaxW,Max(1,fDBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
-    DropFileSourceMain.ImageHotSpotY:=Min(MaXH,Max(1,fDBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView1.Scrollbars.ViewableViewportRect.Top));
+    DropFileSourceMain.ImageHotSpotY:=Min(MaXH,Max(1,fDBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ElvMain.Scrollbars.ViewableViewportRect.Top));
 
    end else
-   begin          
+   begin
     if ListView=LV_TILE then
     begin
      Icon48:=TIcon48.Create;
@@ -1865,7 +1865,7 @@ begin
    DropFileSourceMain.Files.Clear;
    for i:=0 to Length(fFilesToDrag)-1 do
    DropFileSourceMain.Files.Add(fFilesToDrag[i]);
-   ListView1.Refresh;
+   ElvMain.Refresh;
    SelfDraging:=true;
 
    Application.HideHint;
@@ -1892,8 +1892,8 @@ begin
   if WindowFromPoint(p)=ImHint.Handle then exit;
  end;
 
- if loadingthitem=ItemByPointImage(ListView1,Point(X,Y), ListView) then exit;
- loadingthitem:=ItemByPointImage(ListView1,Point(X,Y));
+ if loadingthitem=ItemByPointImage(ElvMain,Point(X,Y), ListView) then exit;
+ loadingthitem:=ItemByPointImage(ElvMain,Point(X,Y));
 
  if loadingthitem=nil then
  begin
@@ -1913,9 +1913,9 @@ begin
   Index:=ItemIndexToMenuIndex(loadingthitem.index);
   If fFilesInfo.Count=0 then Exit;
   if DBKernel.Readbool('Options','AllowPreview',True) then
-  listview1.showhint:=false{ not fileexists(fFilesInfo[Index].FileName)} else
-  listview1.showhint:=false;
-  ListView1.Hint:=fFilesInfo[Index].Comment;
+  ElvMain.showhint:=false{ not fileexists(fFilesInfo[Index].FileName)} else
+  ElvMain.showhint:=false;
+  ElvMain.Hint:=fFilesInfo[Index].Comment;
  end;
 end;
 
@@ -2009,139 +2009,6 @@ begin
   end
 end;
 
-procedure TExplorerForm.ListView1DblClick(Sender: TObject);
-var
-  MousePos : TPoint;
-  Capt, dir, ShellDir, LinkPath : string;
-  MenuInfo : TDBPopupMenuInfo;
-  info : TRecordsInfo;
-  Index : Integer;
-  p,p1 : TPoint;
-  Item : TObject;
-
-  procedure RestoreSelected;
-  begin
-   fDBCanDrag:=false;
-   fDBCanDragW:=false;
-  end;
-
-begin
-
-  GetCursorPos(p1);
-  p:=ListView1.ScreenToClient(p1);
-  if ItemByPointStar(Listview1,p,fPictureSize)<>nil then
-  begin
-   Index:=ItemAtPos(p.x,p.y).Index;
-   Index:=ItemIndexToMenuIndex(index);
-   RatingPopupMenu1.Tag:=fFilesInfo[Index].ID;
-   if RatingPopupMenu1.Tag>0 then
-   begin
-    Application.HideHint;
-    if ImHint<>nil then
-    if not UnitImHint.Closed then
-    ImHint.Close;
-    self.loadingthitem:=nil;
-    RatingPopupMenu1.Popup(p1.x,p1.y);
-    exit;
-   end;
-  end;
-
- FDblClicked:=true;
- fDBCanDrag:=false;
- fDBCanDragW:=false;
- SetLength(fFilesToDrag,0);
- Application.HideHint;
- if ImHint<>nil then
- if not UnitImHint.Closed then
- ImHint.Close;
- HintTimer.Enabled:=false;
-              
- GetCursorPos(p1);
- p:=ListView1.ScreenToClient(p1);
- Item:=ItemByPointImage(ListView1, Point(p.x,p.y), ListView);
- if (Item=nil) and (Sender=nil) then Item:= ListView1Selected;
-
- if Item<>nil then
- if ListView1Selected<>nil then
- begin
-  Capt:=ListView1Selected.Caption;
-  getcursorpos(MousePos);
-  Index:=ListView1Selected.index;
-  Index:=ItemIndexToMenuIndex(index);
-  if Index>fFilesInfo.Count-1 then exit;
-  if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FOLDER) then
-  begin
-   dir:=fFilesInfo[Index].FileName;
-   FormatDir(dir);
-   SetNewPath(dir,false);
-   exit;
-  end;
-  if fFilesInfo[Index].FileType=EXPLORER_ITEM_DRIVE then
-  begin
-   SetNewPath(fFilesInfo[Index].FileName,false);
-   exit;
-  end;
-  if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
-  begin
-   MenuInfo:=GetCurrentPopUpMenuInfo(ListView1Selected);
-   If Viewer=nil then
-   Application.CreateForm(TViewer, Viewer);
-   DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
-   Viewer.Execute(Sender,info);
-   Viewer.Show;
-   RestoreSelected;
-   exit;
-  end;
-  if fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE then
-  begin
-   if GetExt(fFilesInfo[Index].FileName)<>'LNK' then
-   begin
-    ShellDir:=GetDirectory(fFilesInfo[Index].FileName);
-    UnFormatDir(ShellDir);
-    ShellExecute(Handle, Nil,Pchar(fFilesInfo[Index].FileName), Nil, PChar(ShellDir), SW_NORMAL);
-    RestoreSelected;
-    exit;
-   end else 
-   begin
-    LinkPath:=ResolveShortcut(Handle,fFilesInfo[Index].FileName);
-    if LinkPath='' then exit;
-    if DirectoryExists(LinkPath) then
-    begin
-     SetStringPath(LinkPath,false);
-     exit;
-    end else
-    begin
-     if ExtInMask(SupportedExt,GetExt(LinkPath)) then
-     begin
-      MenuInfo:=GetCurrentPopUpMenuInfo(ListView1Selected);
-      If Viewer=nil then
-      Application.CreateForm(TViewer, Viewer);
-      DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
-      Viewer.Execute(Sender,info);
-      RestoreSelected;
-      exit;
-     end;
-     ShellDir:=GetDirectory(LinkPath);
-     UnFormatDir(ShellDir);
-     ShellExecute(Handle, Nil,Pchar(LinkPath), Nil, PChar(ShellDir), SW_NORMAL);
-     RestoreSelected;
-     exit;
-    end;
-
-   end;
-  end;
-
-  case fFilesInfo[Index].FileType of
-    EXPLORER_ITEM_NETWORK,
-    EXPLORER_ITEM_WORKGROUP,
-    EXPLORER_ITEM_COMPUTER,
-    EXPLORER_ITEM_SHARE:
-      SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName, fFilesInfo[Index].FileType), False);
-  end;
-
- end;
-end;
-
 procedure TExplorerForm.SpeedButton3Click(Sender: TObject);
 var
   dir: string;
@@ -2186,10 +2053,10 @@ procedure TExplorerForm.BeginUpdate;
 begin
   if not UpdatingList then
   begin
-    ListView1.Groups[0].Visible:=false;
-    ListView1.Cursor:=CrHourGlass;
+    ElvMain.Groups[0].Visible:=false;
+    ElvMain.Cursor:=CrHourGlass;
     UpdatingList:=True;
-    ListView1.BeginUpdate;
+    ElvMain.BeginUpdate;
   end;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
@@ -2199,22 +2066,24 @@ procedure TExplorerForm.EndUpdate;
 begin
   if UpdatingList then
   begin
-    ListView1.EndUpdate;
-    ListView1.Groups[0].Visible := True;
-    ListView1.Groups.EndUpdate(true);
-    ListView1.Realign;
-    ListView1.Repaint;
-    ListView1.Cursor:=CrDefault;
-    ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options', 'UseHotSelect', True);
+    ElvMain.EndUpdate;
+    ElvMain.Groups[0].Visible := True;
+    ElvMain.Groups.EndUpdate(true);
+    ElvMain.Realign;
+    ElvMain.Repaint;
+    ElvMain.Cursor:=CrDefault;
+    ElvMain.HotTrack.Enabled:=DBKernel.Readbool('Options', 'UseHotSelect', True);
     UpdatingList := False;
-  end;      
+  end;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
 end;
 
 procedure TExplorerForm.Open1Click(Sender: TObject);
+var
+  Handled : Boolean;
 begin
- ListView1DblClick(nil);
+  EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
 function TExplorerForm.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
@@ -2226,7 +2095,7 @@ begin
   Result := TDBPopupMenuInfo.Create;
   Result.IsListItem:=false;
   Result.IsPlusMenu:=false;
-  for i:=0 to ListView1.Items.Count-1 do
+  for i:=0 to ElvMain.Items.Count-1 do
   begin
     ItemIndex := ItemIndexToMenuIndex(i);
     if ItemIndex > fFilesInfo.Count-1 then
@@ -2234,10 +2103,10 @@ begin
     if fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE then
     begin
      MenuRecord := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[ItemIndex]);
-     MenuRecord.Selected := ListView1.Items[i].Selected;
+     MenuRecord.Selected := ElvMain.Items[i].Selected;
      Result.Add(MenuRecord);
      if Item <> nil then
-       if ListView1.Items[I].Selected then
+       if ElvMain.Items[I].Selected then
          Result.Position := Result.Count - 1;
   end;
  end;
@@ -2305,7 +2174,7 @@ var
 begin
  if EventID_Repaint_ImageList in params then
  begin
-  ListView1.Refresh;
+  ElvMain.Refresh;
   exit;
  end;
  if ID=-2 then exit;
@@ -2330,14 +2199,14 @@ begin
     bit := TBitmap.Create;
     bit.PixelFormat:=pf24bit;
     bit.Assign(Value.JPEGImage);
-    
+
     if FBitmapImageList[fFilesInfo[i].ImageIndex].IsBitmap then
     FBitmapImageList[fFilesInfo[i].ImageIndex].Bitmap.Free;
-    
+
     FBitmapImageList[fFilesInfo[i].ImageIndex].IsBitmap:=true;
     FBitmapImageList[fFilesInfo[i].ImageIndex].Bitmap:=bit;
    end;
-   ListView1.Refresh;
+   ElvMain.Refresh;
    break;
   end;
   exit;
@@ -2381,12 +2250,14 @@ begin
     if EventID_Param_Include in params then
     begin
      index:=MenuIndexToItemIndex(i);
-     if index<ListView1.Items.Count-1 then
-     if ListView1.Items[i].Data<>nil then
-     Boolean(TDataObject(ListView1.Items[i].Data).Include):=Value.Include;
+     if index<ElvMain.Items.Count-1 then
+     if ElvMain.Items[i].Data<>nil then
+     Boolean(TDataObject(ElvMain.Items[i].Data).Include):=Value.Include;
 
      fFilesInfo[i].Include:=Value.Include;
-     ListView1.Refresh;
+
+     ElvMain.Items[i].BorderColor := GetListItemBorderColor(TDataObject(ElvMain.Items[i].Data));
+     ElvMain.Refresh;
     end;
     break;
    end;
@@ -2400,19 +2271,19 @@ begin
    if fFilesInfo[i].ID=ID then
    begin
     index:=MenuIndexToItemIndex(i);
-    if ListView1.Items[index].ImageIndex>-1 then
-      ApplyRotate(FBitmapImageList[ListView1.Items[index].ImageIndex].Bitmap, ReRotation);
+    if ElvMain.Items[index].ImageIndex>-1 then
+      ApplyRotate(FBitmapImageList[ElvMain.Items[index].ImageIndex].Bitmap, ReRotation);
 
    end;
   end;
  end;
- 
+
  ImParams:=[EventID_Param_Refresh,EventID_Param_Rotate,EventID_Param_Rating,EventID_Param_Private,EventID_Param_Access];
  If ImParams*params<>[] then
  begin
-  ListView1.Refresh;
+  ElvMain.Refresh;
  end;
-       
+
  if [EventID_Param_DB_Changed] * params<>[] then
  begin
   FPictureSize:=Dolphin_DB.ThImageSize;
@@ -2425,7 +2296,7 @@ begin
  RefreshItemByName(Value.NewName);
  if [EventID_Param_DB_Changed,EventID_Param_Refresh_Window] * params<>[] then
  begin
-  ListView1.Selection.ClearAll;
+  ElvMain.Selection.ClearAll;
   RefreshLinkClick(RefreshLink);
  end;
 end;
@@ -2443,7 +2314,7 @@ end;
 
 procedure TExplorerForm.SelectAll1Click(Sender: TObject);
 begin
- ListView1.Selection.SelectAll;
+ ElvMain.Selection.SelectAll;
 end;
 
 procedure TExplorerForm.Refresh2Click(Sender: TObject);
@@ -2488,7 +2359,7 @@ begin
  info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
  info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
  info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
- info.View:=ListView;  
+ info.View:=ListView;
  info.PictureSize:=fPictureSize;
  if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
  TExplorerThread.Create(fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,StateID);
@@ -2516,7 +2387,7 @@ begin
  info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
  info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
  info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
- info.View:=ListView;    
+ info.View:=ListView;
  info.PictureSize:=fPictureSize;
  if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
  TExplorerThread.Create(fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,StateID);
@@ -2596,7 +2467,7 @@ begin
 //  if ListView=LV_THUMBS then
   begin
    itemsel:=Item;
-   r :=  Listview1.Scrollbars.ViewableViewportRect;
+   r :=  ElvMain.Scrollbars.ViewableViewportRect;
    ItemByMouseDown:=false;
    if itemsel<>nil then
    if itemsel.SelectionHitPt(Point(x+r.Left,y+r.Top), eshtClickSelect) then
@@ -2606,12 +2477,12 @@ begin
     if not itemsel.Selected then
     begin
      if [ssCtrl,ssShift]*Shift=[] then
-     for i:=0 to Listview1.Items.Count-1 do
-     if Listview1.Items[i].Selected then
-     if itemsel<>Listview1.Items[i] then
-     Listview1.Items[i].Selected:=false;
+     for i:=0 to ElvMain.Items.Count-1 do
+     if ElvMain.Items[i].Selected then
+     if itemsel<>ElvMain.Items[i] then
+     ElvMain.Items[i].Selected:=false;
      if [ssShift]*Shift<>[] then
-      Listview1.Selection.SelectRange(itemsel,Listview1.Selection.FocusedItem,false,false) else
+      ElvMain.Selection.SelectRange(itemsel,ElvMain.Selection.FocusedItem,false,false) else
      begin
       ItemSelectedByMouseDown:=true;
       itemsel.Selected:=true;
@@ -2635,15 +2506,15 @@ begin
     SetLength(fFilesToDrag,0);
     SetLength(FListDragItems,0);
     GetCursorPos(fDBDragPoint);
-    For i:=0 to ListView1.Items.Count-1 do
-    if ListView1.Items[i].Selected then
+    For i:=0 to ElvMain.Items.Count-1 do
+    if ElvMain.Items[i].Selected then
     begin
      index:=ItemIndexToMenuIndex(i);
      if index>fFilesInfo.Count-1 then exit;
      if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_SHARE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_DRIVE) then
      begin
       SetLength(FListDragItems,Length(FListDragItems)+1);
-      FListDragItems[Length(FListDragItems)-1]:=ListView1.Items[i];
+      FListDragItems[Length(FListDragItems)-1]:=ElvMain.Items[i];
       SetLength(fFilesToDrag,Length(fFilesToDrag)+1);
       fFilesToDrag[Length(fFilesToDrag)-1]:=fFilesInfo[index].FileName;
      end;
@@ -2668,20 +2539,20 @@ begin
     if (Shift=[]) and item.Selected then
     if ItemByMouseDown then
     begin
-     for i:=0 to Listview1.Items.Count-1 do
-     if Listview1.Items[i].Selected then
-     if item<>Listview1.Items[i] then
-     Listview1.Items[i].Selected:=false;
-    end;         
-    if not (ebcsDragSelecting in Listview1.States) then 
+     for i:=0 to ElvMain.Items.Count-1 do
+     if ElvMain.Items[i].Selected then
+     if item<>ElvMain.Items[i] then
+     ElvMain.Items[i].Selected:=false;
+    end;
+    if not (ebcsDragSelecting in ElvMain.States) then
     if ([ssCtrl]*Shift<>[]) and not ItemSelectedByMouseDown  then
     item.Selected:=false;
-   end;        
+   end;
 
  if MouseDowned then
  if Button=mbRight then
  begin
-  ListView1ContextPopup(ListView1,Point(X,Y),Handled);
+  ListView1ContextPopup(ElvMain,Point(X,Y),Handled);
   PopupHandled:=true;
  end;
 
@@ -2694,10 +2565,10 @@ begin
 
   SetSelected(nil);
 
-  for j:=0 to ListView1.Items.Count-1 do
+  for j:=0 to ElvMain.Items.Count-1 do
   begin
    for i:=0 to Length(FListDragItems)-1 do
-   if FListDragItems[i]=ListView1.Items[j] then
+   if FListDragItems[i]=ElvMain.Items[j] then
    begin
     FListDragItems[i].Selected:=True;
     if i<>0 then
@@ -2744,8 +2615,8 @@ begin
  info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
  info.View:=ListView;
  info.PictureSize:=fPictureSize;
- For i:=0 to ListView1.Items.Count-1 do
- if ListView1.Items[i].Selected then
+ For i:=0 to ElvMain.Items.Count-1 do
+ if ElvMain.Items[i].Selected then
  begin
   Index := ItemIndexToMenuIndex(i);
   if (fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE) then
@@ -2918,15 +2789,15 @@ begin
 
   if Big then FFilesInfo[i].isBigImage:=true;
 
-  if index>ListView1.Items.Count-1 then exit;
-  c:=ListView1.Items[index].ImageIndex;
-  if ListView1.Items[index].Data<>nil then
+  if index>ElvMain.Items.Count-1 then exit;
+  c:=ElvMain.Items[index].ImageIndex;
+  if ElvMain.Items[index].Data<>nil then
   begin
-   Boolean(TDataObject(ListView1.Items[index].Data).Include):=Include;
+   Boolean(TDataObject(ElvMain.Items[index].Data).Include):=Include;
   end else
   begin
-   ListView1.Items[index].Data:=TDataObject.Create;
-   TDataObject(ListView1.Items[index].Data).Include:=Include;
+   ElvMain.Items[index].Data:=TDataObject.Create;
+   TDataObject(ElvMain.Items[index].Data).Include:=Include;
   end;
   if c=-1 then
   begin
@@ -2947,7 +2818,7 @@ begin
   FBitmapImageList[c].Bitmap:=Bitmap;
   FBitmapImageList[c].SelfReleased:=true;
 
-  Listview1.Items[index].Invalidate(False);
+  ElvMain.Items[index].Invalidate(False);
 
   If FFilesInfo[i].FileType=EXPLORER_ITEM_FOLDER then
   If FFilesInfo[i].FileName=FSelectedInfo.FileName then
@@ -2965,15 +2836,15 @@ begin
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   index:=MenuIndexToItemIndex(i);
-  if index>ListView1.Items.Count-1 then exit;
-  c:=ListView1.Items[index].ImageIndex;
-  if ListView1.Items[index].Data<>nil then
+  if index>ElvMain.Items.Count-1 then exit;
+  c:=ElvMain.Items[index].ImageIndex;
+  if ElvMain.Items[index].Data<>nil then
   begin
-   TDataObject(ListView1.Items[index].Data).Include:=Include;
+   TDataObject(ElvMain.Items[index].Data).Include:=Include;
   end else
   begin
-   ListView1.Items[index].Data:=TDataObject.Create;
-   TDataObject(ListView1.Items[index].Data).Include:=Include;
+   ElvMain.Items[index].Data:=TDataObject.Create;
+   TDataObject(ElvMain.Items[index].Data).Include:=Include;
   end;
   if FBitmapImageList[c].IsBitmap then
   FBitmapImageList[c].Bitmap.Free else
@@ -2983,7 +2854,7 @@ begin
   FBitmapImageList[c].SelfReleased:=true;
 
 
-  Listview1.Items[index].Invalidate(False);
+  ElvMain.Items[index].Invalidate(False);
 
   If FFilesInfo[i].FileType=EXPLORER_ITEM_FOLDER then
   If FFilesInfo[i].FileName=FSelectedInfo.FileName then
@@ -3029,15 +2900,17 @@ begin
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
   if LockItems then
-  if ListView1.Groups[0].Visible then
-  if ListView1.Items.Count=0 then ListView1.Groups[0].Visible:=false;
+  if ElvMain.Groups[0].Visible then
+  if ElvMain.Items.Count=0 then ElvMain.Groups[0].Visible:=false;
 
   LockDrawIcon:=true;
 
   Data:=TDataObject.Create;
   Data.Include:=FFilesInfo[i].Include;
 
-  Result:=ListView1.Items.Add(Data);
+  Result:=ElvMain.Items.Add(Data);
+  if not Data.Include then
+    Result.BorderColor := GetListItemBorderColor(Data);
   Result.Tag:=FFilesInfo[i].FileType;
   Result.ImageIndex:=FFilesInfo[i].ImageIndex;
 
@@ -3047,13 +2920,13 @@ begin
   if IsEqualGUID(FileGUID, NewFileNameGUID) then
   begin
    Result.Selected:=true;
-   Result.Focused:=true;  
-   ListView1.EditManager.Enabled:=true;
+   Result.Focused:=true;
+   ElvMain.EditManager.Enabled:=true;
    Result.Edit;
    NewFileNameGUID:=GetGUID;
   end;
   LockDrawIcon:=false;
-  if ListView1.Groups[0].Visible then
+  if ElvMain.Groups[0].Visible then
   Result.Invalidate(False);
   Break;
  end;
@@ -3068,51 +2941,56 @@ begin
  for I := 0 to FFilesInfo.Count - 1 do
  if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
  begin
-  if ListView1.Groups[0].Visible then
-  if ListView1.Items.Count=0 then ListView1.Groups[0].Visible:=false;
-  
-  LockDrawIcon:=true; 
+  if ElvMain.Groups[0].Visible then
+  if ElvMain.Items.Count=0 then ElvMain.Groups[0].Visible:=false;
+
+  LockDrawIcon:=true;
   Data:=TDataObject.Create;
   Data.Include:=True;
-  Result:=ListView1.Items.Add(Data);
+  Result:=ElvMain.Items.Add(Data);
+  if not Data.Include then
+    Result.BorderColor := GetListItemBorderColor(Data);
   Result.Tag:=FFilesInfo[i].FileType;
 
   Result.ImageIndex:=FFilesInfo[i].ImageIndex;
   Result.Caption:=Caption;
 
   LockDrawIcon:=false;
-  if ListView1.Groups[0].Visible then
+  if ElvMain.Groups[0].Visible then
   Result.Invalidate(False);
   Break;
  end;
 end;
 
 procedure TExplorerForm.ListView1KeyPress(Sender: TObject; var Key: Char);
+var
+  Handled : Boolean;
 begin
- If key=#13 then ListView1DblClick(nil);
+  if Key = Chr(VK_RETURN) then
+    EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
 procedure TExplorerForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
- FEditHandle : THandle;
- b : boolean;
- i : integer;
+  FEditHandle : THandle;
+  InternalHandled : boolean;
+  i : integer;
 begin
-{if Msg.message<>0 then
-if Msg.message<>15 then
-if Msg.message<>512 then
-if Msg.message<>275 then
-if Msg.message<>675 then
-if Msg.message<>256 then
-if Msg.message<>257 then
-if Msg.message<>45056 then
-if Msg.message<>45057 then
-if Msg.message<>160 then
-if Msg.message<>1060 then
-if Msg.message<>280 then
-if Msg.message<>8448 then
-Showmessage(Inttostr(Msg.message)); }
+ {if Msg.message<>0 then
+ if Msg.message<>15 then
+ if Msg.message<>512 then
+ if Msg.message<>275 then
+ if Msg.message<>675 then
+ if Msg.message<>256 then
+ if Msg.message<>257 then
+ if Msg.message<>45056 then
+ if Msg.message<>45057 then
+ if Msg.message<>160 then
+ if Msg.message<>1060 then
+ if Msg.message<>280 then
+ if Msg.message<>8448 then
+ Showmessage(Inttostr(Msg.message)); }
 
  if Msg.message=256 then
  if msg.wparam=220 then
@@ -3121,7 +2999,6 @@ Showmessage(Inttostr(Msg.message)); }
   SlashHandled:=true;
   ComboBox1DropDown;
  end;
-
 
  if msg.message=512 then
  begin
@@ -3136,7 +3013,7 @@ Showmessage(Inttostr(Msg.message)); }
   end;
  end;
 
- if Msg.hwnd=ListView1.Handle then
+ if Msg.hwnd = ElvMain.Handle then
  begin
   if UpdatingList then
   begin
@@ -3163,7 +3040,7 @@ Showmessage(Inttostr(Msg.message)); }
    if Msg.wParam>0 then i:=1 else i:=-1;
    if CtrlKeyDown then
    begin
-    ListView1MouseWheel(ListView1,[ssCtrl],i,Point(0,0),b);
+    ListView1MouseWheel(ElvMain,[ssCtrl],i,Point(0,0),InternalHandled);
     Msg.message:=0;
    end;
   end;
@@ -3177,9 +3054,9 @@ Showmessage(Inttostr(Msg.message)); }
   end;
 
  end;
-       
+
  if Msg.message=256 then
- begin         
+ begin
   WindowsMenuTickCount:=GetTickCount;
   if (Msg.wParam=37) and CtrlKeyDown then SpeedButton1Click(nil);
   if (Msg.wParam=39) and CtrlKeyDown then SpeedButton2Click(nil);
@@ -3189,7 +3066,7 @@ Showmessage(Inttostr(Msg.message)); }
   if (Msg.wParam=116) then SetPath(GetCurrentPath);
  end;
 
- if Msg.hwnd=ListView1.Handle then
+ if Msg.hwnd=ElvMain.Handle then
  if Msg.message=256 then
  begin
   WindowsMenuTickCount:=GetTickCount;
@@ -3201,33 +3078,33 @@ Showmessage(Inttostr(Msg.message)); }
 
    end else
    begin
-    ListView1ContextPopup(nil,ListView1.ClientToScreen(Point(ListView1.Left,ListView1.Top)),b);
+    ListView1ContextPopup(nil,ElvMain.ClientToScreen(Point(ElvMain.Left,ElvMain.Top)),InternalHandled);
    end;
 
   end;
 
   //93-context menu button
-  if (Msg.wParam=93) then
+  if (Msg.wParam = VK_APPS) then
   begin
-   ListView1ContextPopup(ListView1,Point(-1,-1),b);
+    ListView1ContextPopup(ElvMain, Point(-1,-1), InternalHandled);
   end;
 
-  //109-
-  if (Msg.wParam=109) then ZoomIn; 
-  //107+
-  if (Msg.wParam=107) then ZoomOut;
+    if (Msg.wParam = VK_SUBTRACT) then
+      ZoomIn;
+    if (Msg.wParam = VK_ADD) then
+      ZoomOut;
 
-  if (Msg.wParam=113) then If ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then begin PmItemPopup.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index); Rename1Click(nil); end;
+    if (Msg.wParam=113) then If ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then begin PmItemPopup.Tag:=ItemIndexToMenuIndex(ListView1Selected.Index); Rename1Click(nil); end;
 
-  if (Msg.wParam=46) and ShiftKeyDown then begin DeleteFiles(False); Exit; end;
-  if (Msg.wParam=46) then DeleteFiles(True);
-  if (Msg.wParam=67) and CtrlKeyDown then Copy3Click(Nil);
-  if (Msg.wParam=88) and CtrlKeyDown then Cut3Click(Nil);
-  if (Msg.wParam=86) and CtrlKeyDown then Paste3Click(Nil);
-  if (Msg.wParam=65) and CtrlKeyDown then SelectAll1Click(nil);
+    if (Msg.wParam=46) and ShiftKeyDown then begin DeleteFiles(False); Exit; end;
+    if (Msg.wParam = VK_DELETE) then
+      DeleteFiles(True);
 
- //  if (Msg.wParam=13) and AltKeyDown then Properties1Click(Nil);
- end;
+    if (Msg.wParam=67) and CtrlKeyDown then Copy3Click(Nil);
+    if (Msg.wParam=88) and CtrlKeyDown then Cut3Click(Nil);
+    if (Msg.wParam=86) and CtrlKeyDown then Paste3Click(Nil);
+    if (Msg.wParam=65) and CtrlKeyDown then SelectAll1Click(nil);
+  end;
 end;
 
 procedure TExplorerForm.Back1Click(Sender: TObject);
@@ -3282,7 +3159,7 @@ begin
   LockItems;
   try
     MenuIndex:=ItemIndexToMenuIndex(Index);
-    ListView1.Items.Delete(Index);
+    ElvMain.Items.Delete(Index);
     fFilesInfo.Delete(MenuIndex);
   finally
     UnLockItems;
@@ -3295,10 +3172,10 @@ var
   p_i : pinteger;
 begin
   p_i:=@i;
- for i:=0 to listview1.Items.Count-1 do
+ for i:=0 to ElvMain.Items.Count-1 do
  begin
-  if i>listview1.Items.Count-1 then break;
-  if listview1.Items[i].Selected then
+  if i>ElvMain.Items.Count-1 then break;
+  if ElvMain.Items[i].Selected then
   begin
    DeleteItemWithIndex(i);
    p_i^:=i-1;
@@ -3342,9 +3219,9 @@ begin
   end;
  FILE_ACTION_REMOVED:
   begin
-   if ListView1=nil then exit;
-   if ListView1.Items=nil then exit;
-   for i:=0 to ListView1.Items.Count-1 do
+   if ElvMain=nil then exit;
+   if ElvMain.Items=nil then exit;
+   for i:=0 to ElvMain.Items.Count-1 do
    begin
     index:=ItemIndexToMenuIndex(i);
     if index>fFilesInfo.Count-1 then exit;
@@ -3367,7 +3244,7 @@ begin
   begin
    i:=FileNameToID(pInfo[k].FNewFileName);
    if not UpdatingNow(i) then
-   begin          
+   begin
     AddUpdateID(i);
     //if ProcessedFilesCollection.ExistsFile(pInfo[k].FNewFileName)<>nil then
     RefreshItemByNameA(pInfo[k].FNewFileName);
@@ -3376,9 +3253,9 @@ begin
   end;
  FILE_ACTION_RENAMED_NEW_NAME:
   begin
-   if ListView1=nil then exit;
-   if ListView1.Items=nil then exit;
-   for i:=0 to ListView1.Items.Count-1 do
+   if ElvMain=nil then exit;
+   if ElvMain.Items=nil then exit;
+   for i:=0 to ElvMain.Items.Count-1 do
    begin
     index:=ItemIndexToMenuIndex(i);
     if index>fFilesInfo.Count-1 then exit;
@@ -3386,7 +3263,7 @@ begin
     begin
      If (not DirectoryExists(pInfo[k].FOldFileName) and DirectoryExists(pInfo[k].FNewFileName)) or (not FileExists(pInfo[k].FOldFileName) and FileExists(pInfo[k].FNewFileName)) then
      begin
-      ListView1.Items[i].Caption:=ExtractFileName(pInfo[k].FNewFileName);
+      ElvMain.Items[i].Caption:=ExtractFileName(pInfo[k].FNewFileName);
       fFilesInfo[index].FileName:=pInfo[k].FNewFileName;
       if fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE then
       if not ExtInMask(SupportedExt,GetExt(pInfo[k].FNewFileName)) then
@@ -3402,13 +3279,13 @@ begin
       if GetExt(pInfo[k].FOldFileName)<>GetExt(pInfo[k].FNewFileName) then
       RefreshItemA(i);
       if AnsiLowerCase(FSelectedInfo.FileName)=AnsiLowerCase(pInfo[k].FOldFileName) then
-      ListView1SelectItem(ListView1,ListView1Selected,ListView1Selected=nil);
+      ListView1SelectItem(ElvMain,ListView1Selected,ListView1Selected=nil);
      end else RenamefileWithDB(pInfo[k].FOldFileName,pInfo[k].FNewFileName, fFilesInfo[index].ID,true);
      Continue;
     end;
    end;
   end;
- end;  
+ end;
 end;
 
 procedure TExplorerForm.LoadInfoAboutFiles(Info : TExplorerFileInfos);
@@ -3451,7 +3328,7 @@ var
   I, n : Integer;
 begin
   Result := 0;
-  n := ListView1.Items[Index].ImageIndex;
+  n := ElvMain.Items[Index].ImageIndex;
   for I := 0 to fFilesInfo.Count - 1 do
   begin
     if fFilesInfo[I].ImageIndex = n then
@@ -3468,9 +3345,9 @@ Var
 begin
  Result:=0;
  n:=fFilesInfo[Index].ImageIndex;
- For i:=0 to ListView1.Items.Count-1 do
+ For i:=0 to ElvMain.Items.Count-1 do
  begin
-  If ListView1.Items[i].ImageIndex=n then
+  If ElvMain.Items[i].ImageIndex=n then
   begin
    Result:=i;
    Break;
@@ -3504,7 +3381,7 @@ end;
 procedure TExplorerForm.FormShow(Sender: TObject);
 begin
  NotSetOldPath:=false;
- ListView1.SetFocus;
+ ElvMain.SetFocus;
 end;
 
 procedure TExplorerForm.NewWindow1Click(Sender: TObject);
@@ -3602,8 +3479,8 @@ var
 begin
   FileList := TStringList.Create;
   try
-    for I := 0 to ListView1.Items.Count - 1 do
-    if ListView1.Items[I].Selected then
+    for I := 0 to ElvMain.Items.Count - 1 do
+    if ElvMain.Items[I].Selected then
     begin
       Index := ItemIndexToMenuIndex(I);
       FileList.Add(ProcessPath(fFilesInfo[Index].FileName));
@@ -3613,7 +3490,7 @@ begin
     FileList.Free;
   end;
 end;
-      
+
 procedure TExplorerForm.ShowProgress;
 begin
   FStatusProgress.Show;
@@ -3625,7 +3502,7 @@ end;
 procedure TExplorerForm.HideProgress;
 begin
   FStatusProgress.Hide;
-  
+
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
 end;
@@ -3653,7 +3530,7 @@ begin
  FIsExplorer:=false;
  ListView1SelectItem(Sender, ListView1Selected, True);
  PropertyPanel.Show;
- CloseButtonPanel.Hide;                 
+ CloseButtonPanel.Hide;
  DBkernel.WriteInteger('Explorer','LeftPanelWidthExplorer',MainPanel.Width);
  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
  ExplorerPanel1.Visible:=True;
@@ -4036,7 +3913,7 @@ begin
   DeleteLink.Top:=PropertiesLink.Top;
  end;
 
- if ListView1.Items.Count<400 then
+ if ElvMain.Items.Count<400 then
  begin
   if ((FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_DRIVE)) and (SelCount=0) then
   begin
@@ -4045,8 +3922,8 @@ begin
   begin
    b:=false;
    if fFilesInfo.Count<>0 then
-   For i:=0 to ListView1.Items.Count-1 do
-   if ListView1.Items[i].Selected then
+   For i:=0 to ElvMain.Items.Count-1 do
+   if ElvMain.Items[i].Selected then
    begin
     Index := ItemIndexToMenuIndex(i);
     if ((fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE) and (fFilesInfo[Index].ID=0)) or ((fFilesInfo[Index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_DRIVE)) then
@@ -4158,7 +4035,7 @@ begin
   UserLinks[i].Hide;
  end;
  IsReallignInfo:=false;
- 
+
  ScrollBox1.Updating:=false;
  ScrollBox1Reallign(nil);
  ScrollBox1.Realign;
@@ -4180,14 +4057,14 @@ var
   EndDir : String;
   i, index : integer;
   S : Array of String;
-  DlgCaption : String; 
+  DlgCaption : String;
 //  _AutoRename, _Break : boolean;
 begin
  SetLength(S,0);
  If SelCount<>0 then
  begin
-  For i:=0 to ListView1.Items.Count-1 do
-  If ListView1.Items[i].Selected then
+  For i:=0 to ElvMain.Items.Count-1 do
+  If ElvMain.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
    if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_EXEFILE) then
@@ -4221,8 +4098,8 @@ begin
  SetLength(S,0);
  If SelCount<>0 then
  begin
-  For i:=0 to ListView1.Items.Count-1 do
-  If ListView1.Items[i].Selected then
+  For i:=0 to ElvMain.Items.Count-1 do
+  If ElvMain.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
    SetLength(S,Length(s)+1);
@@ -4330,14 +4207,14 @@ end;
 constructor TManagerExplorer.Create;
 begin
   FSync := TCriticalSection.Create;
-  FExplorers := TList.Create; 
+  FExplorers := TList.Create;
   FForms := TList.Create;
   fShowPrivate:=false;
 end;
 
 destructor TManagerExplorer.Destroy;
 begin
-  FExplorers.Free;  
+  FExplorers.Free;
   FForms.Free;
   FSync.Free;
   inherited;
@@ -4362,7 +4239,7 @@ function TManagerExplorer.GetExplorerBySID(SID: String): TExplorerForm;
 var
   i : Integer;
 begin
-  Result := nil; 
+  Result := nil;
   FSync.Enter;
   try
     for i := 0 to FExplorers.Count - 1 do
@@ -4378,10 +4255,10 @@ end;
 
 function TManagerExplorer.GetExplorerNumber(
   Explorer: TExplorerForm): Integer;
-begin     
+begin
   FSync.Enter;
   try
-    Result := FExplorers.IndexOf(Explorer);    
+    Result := FExplorers.IndexOf(Explorer);
   finally
     FSync.Leave;
   end;
@@ -4392,13 +4269,13 @@ var
   i : integer;
   b : Boolean;
   S : string;
-begin   
+begin
   Result:=TStringList.Create;
   FSync.Enter;
   try
     for i:=0 to FExplorers.Count - 1 do
       Result.Add(TForm(FExplorers[i]).Caption);
-   
+
     repeat
       b:=False;
       For i:=0 to Result.Count-2 do
@@ -4426,7 +4303,7 @@ begin
 end;
 
 function TManagerExplorer.IsExplorerForm(Explorer: TForm): Boolean;
-begin  
+begin
   FSync.Enter;
   try
     Result := FForms.IndexOf(Explorer) <> -1;
@@ -4452,7 +4329,7 @@ begin
 end;
 
 procedure TManagerExplorer.RemoveExplorer(Explorer: TExplorerForm);
-begin     
+begin
   FSync.Enter;
   try
     FExplorers.Remove(Explorer);
@@ -4467,7 +4344,7 @@ var
   s,s1 : string;
   i : integer;
   oldMode: Cardinal;
-begin         
+begin
  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
  if Explorer then
  EventLog('SetNewPath "'+Path+'" <Explorer>') else EventLog('SetNewPath "'+Path+'"');
@@ -4482,14 +4359,14 @@ begin
    Delete(S,1,2);
    If Pos('\',S)=0 then
    begin
-    SetNewPathW(ExplorerPath('\\'+s,EXPLORER_ITEM_COMPUTER),false); 
+    SetNewPathW(ExplorerPath('\\'+s,EXPLORER_ITEM_COMPUTER),false);
     SetErrorMode(oldMode);
     Exit;
    end;
   end;
   If (AnsiLowerCase(Path)=AnsiLowerCase(MyComputer)) or (Path='') then
   begin
-   SetNewPathW(ExplorerPath('',EXPLORER_ITEM_MYCOMPUTER),false);  
+   SetNewPathW(ExplorerPath('',EXPLORER_ITEM_MYCOMPUTER),false);
    SetErrorMode(oldMode);
    Exit;
   end;
@@ -4522,7 +4399,7 @@ begin
     end;
     if Pos('\',S)=0 then
     SetNewPathW(ExplorerPath('\\'+s,EXPLORER_ITEM_SHARE),false) else
-    SetNewPathW(ExplorerPath('\\'+s,EXPLORER_ITEM_FOLDER),false);  
+    SetNewPathW(ExplorerPath('\\'+s,EXPLORER_ITEM_FOLDER),false);
     SetErrorMode(oldMode);
     Exit;
    end;
@@ -4732,7 +4609,7 @@ begin
  MyPicturesLink.Text:=TEXT_MES_MY_PICTURES;
  MyDocumentsLink.Text:=TEXT_MES_MY_DOCUMENTS;
  DesktopLink.Text:=TEXT_MES_DESKTOP;
- MyComputerLink.Text:=TEXT_MES_MY_COMPUTER;  
+ MyComputerLink.Text:=TEXT_MES_MY_COMPUTER;
  AddLink.Text:=TEXT_MES_ADD_OBJECT;
 
  Label1.Caption:=TEXT_MES_IMAGE_PRIVIEW;
@@ -5042,7 +4919,7 @@ begin
  end;
  S := Path;
  NewFormState;
- if ListView1<>nil then
+ if ElvMain<>nil then
  begin
   fCurrentPath:=Path;
   fCurrentTypePath:=WPath.PType;
@@ -5071,11 +4948,11 @@ begin
  try
   SelectTimer.Enabled:=false;
 
-  if ListView1<>nil then
+  if ElvMain<>nil then
   begin
-   ListView1.Items.Clear;
-   ListView1.Groups.Add;
-  end;   
+   ElvMain.Items.Clear;
+   ElvMain.Groups.Add;
+  end;
 
   DoSelectItem;
   FBitmapImageList.Clear;
@@ -5086,14 +4963,14 @@ begin
  Info.PictureSize:=fPictureSize;
 // BeginUpdate;
 
-  if ListView1<>nil then
+  if ElvMain<>nil then
   Case ListView of
-   LV_THUMBS     : begin ListView1.View:=elsThumbnail; end;
-   LV_ICONS      : begin ListView1.View:=elsIcon; end;
-   LV_SMALLICONS : begin ListView1.View:=elsSmallIcon; end;
-   LV_TITLES     : begin ListView1.View:=elsList; end;
-   LV_TILE       : begin ListView1.View:=elsTile; end;
-   LV_GRID       : begin ListView1.View:=elsGrid; end;
+   LV_THUMBS     : begin ElvMain.View:=elsThumbnail; end;
+   LV_ICONS      : begin ElvMain.View:=elsIcon; end;
+   LV_SMALLICONS : begin ElvMain.View:=elsSmallIcon; end;
+   LV_TITLES     : begin ElvMain.View:=elsList; end;
+   LV_TILE       : begin ElvMain.View:=elsTile; end;
+   LV_GRID       : begin ElvMain.View:=elsGrid; end;
   end;
 
  UpdaterInfo.IsUpdater:=false;
@@ -5109,7 +4986,7 @@ begin
  info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
  info.View:=ListView;
  EventLog('ExplorerThread');
- if ListView1<>nil then
+ if ElvMain<>nil then
  begin
   ToolButton18.Enabled:=true;
   TExplorerThread.Create(Path,FileMask,ThreadType,info,self,UpdaterInfo,StateID);
@@ -5126,8 +5003,8 @@ begin
  end;
  DropFileTarget1.Unregister;
  if (WPath.PType=EXPLORER_ITEM_FOLDER) or (WPath.PType=EXPLORER_ITEM_DRIVE) or (WPath.PType=EXPLORER_ITEM_SHARE) then
- DropFileTarget1.Register(ListView1);
- 
+ DropFileTarget1.Register(ElvMain);
+
  if not NotSetOldPath then
  begin
   FOldPatch:=Path;
@@ -5204,7 +5081,7 @@ begin
  begin
 
   GetCursorPos(p);
-  p:=ListView1.ScreenToClient(p);
+  p:=ElvMain.ScreenToClient(p);
   ListItem:=ItemAtPos(p.x,p.y);
   if ListView1Selected=ListItem then
   begin
@@ -5273,7 +5150,7 @@ var
  Options : TCryptImageThreadOptions;
  ItemFileNames : TArStrings;
  ItemIDs : TArInteger;
- ItemSelected : TArBoolean;  
+ ItemSelected : TArBoolean;
  Password : string;
 begin
  Password:=DBKernel.FindPasswordForCryptImageFile(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName));
@@ -5288,8 +5165,8 @@ begin
  for i:=0 to fFilesInfo.Count-1 do
    ItemSelected[i] := False;
 
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   ItemFileNames[index]:=ProcessPath(fFilesInfo[index].FileName);
@@ -5329,8 +5206,8 @@ begin
   for I:=0 to fFilesInfo.Count-1 do
    ItemSelected[I] := False;
 
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   ItemFileNames[index]:=ProcessPath(fFilesInfo[index].FileName);
@@ -5373,8 +5250,8 @@ var
   ImageList : TArStrings;
   IDList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   SetLength(ImageList,Length(ImageList)+1);
@@ -5391,8 +5268,8 @@ var
   ImageList : TArStrings;
   IDList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   SetLength(ImageList,Length(ImageList)+1);
@@ -5441,8 +5318,8 @@ var
   ImageList : TArStrings;
   IDList, RotateList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   SetLength(ImageList,Length(ImageList)+1);
@@ -5462,8 +5339,8 @@ var
   ImageList : TArStrings;
   IDList, RotateList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   SetLength(ImageList,Length(ImageList)+1);
@@ -5482,8 +5359,8 @@ var
   ImageList : TArStrings;
   IDList, RotateList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   SetLength(ImageList,Length(ImageList)+1);
@@ -5512,8 +5389,8 @@ begin
   for I := 0 to fFilesInfo.Count - 1 do
   ItemSelected[I] := False;
 
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   ItemFileNames[index]:=fFilesInfo[index].FileName;
@@ -5537,7 +5414,7 @@ var
   p  : TProcessInformation;
   Str, Params : String;
   DropInfo : TStrings;
-  Pnt : TPoint;   
+  Pnt : TPoint;
 //  _AutoRename, _Break : boolean;
 begin
  outdrag:=false;
@@ -5664,7 +5541,7 @@ begin
   try
     fScript.Description:='Set path script';
     SetNamedValueStr(fScript,'$Path',Path);
-    ExecuteScript(nil,fScript,ScriptString,c,nil);  
+    ExecuteScript(nil,fScript,ScriptString,c,nil);
     Path:=GetNamedValueString(fScript,'$Path');
   finally
     fScript.Free;
@@ -5740,7 +5617,7 @@ begin
  if HelpNO=1 then
  begin
   HelpTimer.Enabled:=false;
-  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_1,Point(0,0),ListView1,Help1NextClick,TEXT_MES_NEXT_HELP,Help1CloseClick);
+  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_1,Point(0,0),ElvMain,Help1NextClick,TEXT_MES_NEXT_HELP,Help1CloseClick);
  end;
  if HelpNO=2 then
  begin
@@ -5750,8 +5627,8 @@ begin
  if HelpNO=4 then
  begin
   HelpTimer.Enabled:=false;
-  DoHelpHint(TEXT_MES_HELP_HINT,TEXT_MES_HELP_3,Point(0,0),ListView1);
-  HelpNO:=0; 
+  DoHelpHint(TEXT_MES_HELP_HINT,TEXT_MES_HELP_3,Point(0,0),ElvMain);
+  HelpNO:=0;
   DBKernel.WriteBool('HelpSystem','CheckRecCount',False);
  end;
 end;
@@ -5820,14 +5697,14 @@ procedure TExplorerForm.ImageEditor2Click(Sender: TObject);
 var
   i, index : integer;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   With EditorsManager.NewEditor do
   begin
    Application.ProcessMessages;
-   Show;          
+   Show;
    Application.ProcessMessages;
    OpenFileName(fFilesInfo[index].FileName);
   end;
@@ -5856,8 +5733,8 @@ var
   ImageList : TArStrings;
   IDList, RotateList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   SetLength(ImageList,Length(ImageList)+1);
@@ -5876,8 +5753,8 @@ var
   Files : TStrings;
 begin
  Files := TStringList.Create;
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   if fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE then
@@ -6013,14 +5890,14 @@ var
   i, index : integer;
   Files : array of String;
   UpDir, Dir, NewDir, Temp : String;
-  l1, l2 : integer;        
+  l1, l2 : integer;
 begin
  Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SELECT_PLACE_TO_COPY,Dolphin_DB.UseSimpleSelectFolderDialog);
  if Dir<>'' then
  begin
   SetLength(Files,0);
-  for i:=0 to ListView1.Items.Count-1 do
-  If ListView1.Items[i].Selected then
+  for i:=0 to ElvMain.Items.Count-1 do
+  If ElvMain.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
    SetLength(Files,Length(Files)+1);
@@ -6205,7 +6082,7 @@ Var
 begin
  if rdown then
  fDBCanDrag:=false;
- if ListView1<>nil then
+ if ElvMain<>nil then
  begin
   FSelectedInfo.FileType:=GetCurrentPathW.PType;
   If SelCount<2 then
@@ -6330,7 +6207,7 @@ begin
 
        Canvas.Draw(0,0,TempBitmap);
        TempBitmap.Free;
-       
+
        Dx:=5;
        For i:=1 to 2 do
        For j:=1 to 2 do
@@ -6393,8 +6270,8 @@ begin
     FSelectedInfo.Size:=0;
     if SelCount<1000 then
     begin
-     For i:=0 to ListView1.Items.Count-1 do
-     if ListView1.Items[i].Selected then
+     For i:=0 to ElvMain.Items.Count-1 do
+     if ElvMain.Items[i].Selected then
      begin
       Index := ItemIndexToMenuIndex(i);
       if FSelectedInfo.FileType<>EXPLORER_ITEM_MYCOMPUTER then
@@ -6588,7 +6465,7 @@ begin
  for i:=0 to fFilesInfo.Count - 1 do
  begin
   index:=MenuIndexToItemIndex(i);
-  if ListView1.Items[index].Selected then
+  if ElvMain.Items[index].Selected then
   begin
    if fFilesInfo[i].ID=0 then
    begin
@@ -6707,12 +6584,12 @@ var
 begin
   Result := TStringList.Create;
   b := False;
-  rv :=  Listview1.Scrollbars.ViewableViewportRect;
+  rv :=  ElvMain.Scrollbars.ViewableViewportRect;
 
-  for I := 0 to ListView1.Items.Count - 1 do
+  for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    Listview1.Items[I].ItemRectArray(Listview1.Header.FirstColumn, Listview1.Canvas, RectArray);
-    r := Rect(ListView1.ClientRect.Left+rv.Left, ListView1.ClientRect.Top + rv.Top,ListView1.ClientRect.Right + rv.Left, ListView1.ClientRect.Bottom + rv.Top);
+    ElvMain.Items[I].ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
+    r := Rect(ElvMain.ClientRect.Left+rv.Left, ElvMain.ClientRect.Top + rv.Top,ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
 
     if RectInRect(r, RectArray.BoundsRect) then
     begin
@@ -6740,7 +6617,7 @@ begin
       for I := 0 to Result.Count - 1 do
         if t[i] then
           TempResult.Add(Result[I]);
-          
+
       Result.Assign(TempResult);
     finally
       TempResult.Free;
@@ -6773,7 +6650,7 @@ begin
  SetBoolAttr(aScript,'$CanBack',fHistory.CanBack);
  SetBoolAttr(aScript,'$CanForward',fHistory.CanForward);
  SetBoolAttr(aScript,'$CanPaste',CanPaste);
- SetNamedValue(aScript,'$ItemsCount',IntToStr(ListView1.Items.Count));
+ SetNamedValue(aScript,'$ItemsCount',IntToStr(ElvMain.Items.Count));
  SetNamedValueStr(aScript,'$Path',GetCurrentPath);
 end;
 
@@ -6785,7 +6662,7 @@ end;
 
 function TExplorerForm.SelCount: integer;
 begin
- Result:= ListView1.Selection.Count;
+ Result:= ElvMain.Selection.Count;
 end;
 
 function TExplorerForm.SelectedIndex: integer;
@@ -6814,8 +6691,8 @@ var
   i, index : integer;
 begin
  Result:=true;
- For i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ For i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   index:=ItemIndexToMenuIndex(i);
   if not CanCopyFileByType(fFilesInfo[index].FileType) then
@@ -6824,7 +6701,7 @@ begin
    break;
   end;
  end;
- if ListView1.Items.Count=0 then
+ if ElvMain.Items.Count=0 then
  if not CanCopyFileByType(GetCurrentPathW.PType) then Result:=false;
 end;
 
@@ -6844,8 +6721,8 @@ var
 begin
  SetLength(Result,0);
 
-  for i:=0 to ListView1.Items.Count-1 do
-  If ListView1.Items[i].Selected then
+  for i:=0 to ElvMain.Items.Count-1 do
+  If ElvMain.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
    if CanCopyFileByType(fFilesInfo[index].FileType) then
@@ -7011,7 +6888,7 @@ var
           inc(P);
          end;
          while L_Less_Than_R(Pivot,X[Q],aType) do
-         begin           
+         begin
           if q=m then break;
           dec(Q);
          end;
@@ -7038,20 +6915,20 @@ begin
 
  if not NoLockListView then UpdatingList:=true;
 
- if not NoLockListView then ListView1.Groups.BeginUpdate(false);
+ if not NoLockListView then ElvMain.Groups.BeginUpdate(false);
 
  try
- l:=ListView1.Items.Count;//Length(fFilesInfo);
+ l:=ElvMain.Items.Count;//Length(fFilesInfo);
 
  SetLength(SIs,L);
  SetLength(LI,L);
 
  for i:=0 to l-1 do
  begin
-  LI[i].Caption:=ListView1.Items[i].Caption;
-  LI[i].Indent:=ListView1.Items[i].Tag;
-  LI[i].Data:=ListView1.Items[i].Data;
-  LI[i].ImageIndex:=ListView1.Items[i].ImageIndex;
+  LI[i].Caption:=ElvMain.Items[i].Caption;
+  LI[i].Indent:=ElvMain.Items[i].Tag;
+  LI[i].Data:=ElvMain.Items[i].Data;
+  LI[i].ImageIndex:=ElvMain.Items[i].ImageIndex;
 
   index:=ItemIndexToMenuIndex(i);
   Case (Sender as TMenuItem).Tag of
@@ -7087,7 +6964,7 @@ begin
    0:    aType:=4;
    1,2 : aType:=1;
    3:    aType:=3;
-   4:    aType:=2;    
+   4:    aType:=2;
    5:    aType:=5;
    else
      aType:=0;
@@ -7097,16 +6974,16 @@ begin
 
  for i:=0 to l-1 do
  begin
-  ListView1.Items[i].Caption:=LI[SIs[i].ID].Caption;
-  ListView1.Items[i].Tag:=LI[SIs[i].ID].Indent;
-  ListView1.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
-  ListView1.Items[i].Data:=LI[SIs[i].ID].Data;
+  ElvMain.Items[i].Caption:=LI[SIs[i].ID].Caption;
+  ElvMain.Items[i].Tag:=LI[SIs[i].ID].Indent;
+  ElvMain.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
+  ElvMain.Items[i].Data:=LI[SIs[i].ID].Data;
  end;
  except
   on e : Exception do EventLog(':TExplorerForm.FileName1Click() throw exception: '+e.Message);
  end;
 
- if not NoLockListView then ListView1.Groups.EndUpdate;
+ if not NoLockListView then ElvMain.Groups.EndUpdate;
  if not NoLockListView then UpdatingList:=false;
 end;
 
@@ -7156,7 +7033,7 @@ var
   Folder : string;
   FileList : TArStrings;
 begin
- SetLength(FileList,1); 
+ SetLength(FileList,1);
  FileList[0]:=GetCurrentPath;
  IncludeSub:=false;
  Query:=GetQuery;
@@ -7257,12 +7134,12 @@ end;
 
 Function TExplorerForm.ListView1Selected : TEasyItem;
 begin
- Result:= ListView1.Selection.First;
+ Result:= ElvMain.Selection.First;
 end;
 
 Function TExplorerForm.ItemAtPos(X,Y : integer): TEasyItem;
 begin
- Result:=ItemByPointImage(Listview1,Point(x,y), ListView);
+ Result:=ItemByPointImage(ElvMain,Point(x,y), ListView);
 end;
 
 procedure TExplorerForm.EasyListview2KeyAction(Sender: TCustomEasyListview;
@@ -7282,7 +7159,7 @@ begin
  s:=NewValue;
  RenameResult:=true;
  ListView1Edited(Sender,Item,s);
- ListView1.EditManager.Enabled:=false;
+ ElvMain.EditManager.Enabled:=false;
  Accept:=RenameResult;
  if not Accept then
  begin
@@ -7294,21 +7171,156 @@ procedure TExplorerForm.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
-  Dolphin_DB.SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
-  EventInfo.Rating:=(Sender as TMenuItem).Tag;
-  DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
+  Dolphin_DB.SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
+  EventInfo.Rating := (Sender as TMenuItem).Tag;
+  DBKernel.DoIDEvent(Sender, RatingPopupMenu1.Tag, [EventID_Param_Rating],
+    EventInfo);
 end;
 
-procedure TExplorerForm.ListView1Resize(Sender : TObject);
+procedure TExplorerForm.ListView1Resize(Sender: TObject);
 begin
- Listview1.BackGround.OffsetX:=ListView1.Width-Listview1.BackGround.Image.Width;
- Listview1.BackGround.OffsetY:=ListView1.Height-Listview1.BackGround.Image.Height;
+  ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
+  ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
 end;
 
-procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
-      ShiftState: TShiftState; var Handled: Boolean);
+procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;
+  Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState;
+  var Handled: Boolean);
+var
+  Capt, dir, ShellDir, LinkPath: string;
+  MenuInfo: TDBPopupMenuInfo;
+  info: TRecordsInfo;
+  Index: Integer;
+  p, p1: TPoint;
+  Item: TObject;
+
+  procedure RestoreSelected;
+  begin
+    fDBCanDrag := false;
+    fDBCanDragW := false;
+  end;
+
 begin
- ListView1DblClick(Sender);
+
+  GetCursorPos(p1);
+  p := ElvMain.ScreenToClient(p1);
+  if ItemByPointStar(ElvMain, p, FPictureSize) <> nil then
+  begin
+    Index := ItemAtPos(p.X, p.Y).Index;
+    Index := ItemIndexToMenuIndex(index);
+    RatingPopupMenu1.Tag := fFilesInfo[Index].ID;
+    if RatingPopupMenu1.Tag > 0 then
+    begin
+      Application.HideHint;
+      if ImHint <> nil then
+        if not UnitImHint.closed then
+          ImHint.Close;
+      self.loadingthitem := nil;
+      RatingPopupMenu1.Popup(p1.X, p1.Y);
+      Exit;
+    end;
+  end;
+
+  FDblClicked := true;
+  fDBCanDrag := false;
+  fDBCanDragW := false;
+  SetLength(fFilesToDrag, 0);
+  Application.HideHint;
+  if ImHint <> nil then
+    if not UnitImHint.closed then
+      ImHint.Close;
+  HintTimer.Enabled := false;
+
+  GetCursorPos(p1);
+  p := ElvMain.ScreenToClient(p1);
+  Item := ItemByPointImage(ElvMain, Point(p.X, p.Y), ListView);
+  if (Item = nil) and (Sender = nil) then
+    Item := ListView1Selected;
+
+  if Item <> nil then
+    if ListView1Selected <> nil then
+    begin
+      Capt := ListView1Selected.Caption;
+      GetCursorPos(MousePos);
+      Index := ListView1Selected.index;
+      Index := ItemIndexToMenuIndex(index);
+      if Index > fFilesInfo.Count - 1 then
+        Exit;
+      if (fFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
+      begin
+        dir := fFilesInfo[Index].FileName;
+        FormatDir(dir);
+        SetNewPath(dir, false);
+        Exit;
+      end;
+      if fFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
+      begin
+        SetNewPath(fFilesInfo[Index].FileName, false);
+        Exit;
+      end;
+      if fFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
+      begin
+        MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
+        If Viewer = nil then
+          Application.CreateForm(TViewer, Viewer);
+        DBPopupMenuInfoToRecordsInfo(MenuInfo, info);
+        Viewer.Execute(Sender, info);
+        Viewer.Show;
+        RestoreSelected;
+        Exit;
+      end;
+      if fFilesInfo[Index].FileType = EXPLORER_ITEM_FILE then
+      begin
+        if GetExt(fFilesInfo[Index].FileName) <> 'LNK' then
+        begin
+          ShellDir := GetDirectory(fFilesInfo[Index].FileName);
+          UnFormatDir(ShellDir);
+          ShellExecute(Handle, Nil, PChar(fFilesInfo[Index].FileName), Nil,
+            PChar(ShellDir), SW_NORMAL);
+          RestoreSelected;
+          Exit;
+        end
+        else
+        begin
+          LinkPath := ResolveShortcut(Handle, fFilesInfo[Index].FileName);
+          if LinkPath = '' then
+            Exit;
+          if DirectoryExists(LinkPath) then
+          begin
+            SetStringPath(LinkPath, false);
+            Exit;
+          end
+          else
+          begin
+            if ExtInMask(SupportedExt, GetExt(LinkPath)) then
+            begin
+              MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
+              If Viewer = nil then
+                Application.CreateForm(TViewer, Viewer);
+              DBPopupMenuInfoToRecordsInfo(MenuInfo, info);
+              Viewer.Execute(Sender, info);
+              RestoreSelected;
+              Exit;
+            end;
+            ShellDir := GetDirectory(LinkPath);
+            UnFormatDir(ShellDir);
+            ShellExecute(Handle, Nil, PChar(LinkPath), Nil, PChar(ShellDir),
+              SW_NORMAL);
+            RestoreSelected;
+            Exit;
+          end;
+
+        end;
+      end;
+
+      case fFilesInfo[Index].FileType of
+        EXPLORER_ITEM_NETWORK, EXPLORER_ITEM_WORKGROUP, EXPLORER_ITEM_COMPUTER,
+          EXPLORER_ITEM_SHARE:
+          SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName,
+              fFilesInfo[Index].FileType), false);
+      end;
+
+    end;
 end;
 
 procedure TExplorerForm.EasyListview1ItemThumbnailDraw(
@@ -7325,13 +7337,11 @@ begin
   r1:=ARect;
   if Item.ImageIndex<0 then exit;
 
-  ListView1.PaintInfoItem.FBorderColor := GetListItemBorderColor(TDataObject(Item.Data));
-
   b:=TBitmap.Create;
   b.PixelFormat:=pf24bit;
   b.Width:=fPictureSize;
   b.Height:=fPictureSize;
-  FillRectNoCanvas(b,ListView1.Canvas.Brush.Color);
+  FillRectNoCanvas(b,ElvMain.Canvas.Brush.Color);
 
   w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
   h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
@@ -7373,10 +7383,10 @@ end;
 
 procedure TExplorerForm.SetSelected(NewSelected: TEasyItem);
 begin
- ListView1.Selection.GroupSelectBeginUpdate;
- ListView1.Selection.ClearAll;
- if NewSelected<>nil then NewSelected.Selected:=true;    
- ListView1.Selection.GroupSelectEndUpdate;
+ ElvMain.Selection.GroupSelectBeginUpdate;
+ ElvMain.Selection.ClearAll;
+ if NewSelected<>nil then NewSelected.Selected:=true;
+ ElvMain.Selection.GroupSelectEndUpdate;
 end;
 
 procedure TExplorerForm.ScrollBox1Reallign(Sender: TObject);
@@ -7449,7 +7459,7 @@ end;
 procedure TExplorerForm.SmallIcons1Click(Sender: TObject);
 begin
  ListView:=LV_SMALLICONS;
- SmallIcons1.Checked:=true;  
+ SmallIcons1.Checked:=true;
  SmallIcons2.Checked:=true;
  Reload;
 end;
@@ -7461,7 +7471,7 @@ end;
 
 procedure TExplorerForm.Icons1Click(Sender: TObject);
 begin
- Icons1.Checked:=true; 
+ Icons1.Checked:=true;
  Icons2.Checked:=true;
  ListView:=LV_ICONS;
  Reload;
@@ -7469,7 +7479,7 @@ end;
 
 procedure TExplorerForm.List1Click(Sender: TObject);
 begin
- List1.Checked:=true; 
+ List1.Checked:=true;
  List2.Checked:=true;
  ListView:=LV_TITLES;
  Reload;
@@ -7477,7 +7487,7 @@ end;
 
 procedure TExplorerForm.Tile2Click(Sender: TObject);
 begin
- Tile2.Checked:=true; 
+ Tile2.Checked:=true;
  Tile3.Checked:=true;
  ListView:=LV_TILE;
  Reload;
@@ -7501,7 +7511,7 @@ end;
 
 procedure TExplorerForm.Thumbnails1Click(Sender: TObject);
 begin
- Thumbnails1.Checked:=true;  
+ Thumbnails1.Checked:=true;
  Thumbnails2.Checked:=true;
  ListView:=LV_THUMBS;
  Reload;
@@ -7520,8 +7530,8 @@ begin
  if ListView1Selected<>nil then
  begin
   SetLength(FileList,0);
-  for i:=0 to ListView1.Items.Count-1 do
-  If ListView1.Items[i].Selected then
+  for i:=0 to ElvMain.Items.Count-1 do
+  If ElvMain.Items[i].Selected then
   begin
    index:=ItemIndexToMenuIndex(i);
    if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) then
@@ -7546,7 +7556,7 @@ procedure TExplorerForm.ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
   if not (ssCtrl in Shift) then exit;
-  
+
   if WheelDelta<0 then
     ZoomIn
   else
@@ -7559,37 +7569,37 @@ procedure TExplorerForm.ZoomIn;
 var
   SelectedVisible : boolean;
 begin
- ListView1.BeginUpdate;
+ ElvMain.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  if FPictureSize>40 then FPictureSize:=FPictureSize-10;
  LoadSizes;
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+ ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+ ElvMain.Groups.ReIndexItems;
+ ElvMain.Groups.Rebuild(true);
 
  if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+ ElvMain.Selection.First.MakeVisible(emvTop);
+ ElvMain.EndUpdate();
 end;
 
 procedure TExplorerForm.ZoomOut;
 var
   SelectedVisible : boolean;
-begin                 
- ListView1.BeginUpdate;
+begin
+ ElvMain.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  if FPictureSize<550 then FPictureSize:=FPictureSize+10;
  LoadSizes;
  BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;   
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+ BigImagesTimer.Enabled:=true;
+ ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+ ElvMain.Groups.ReIndexItems;
+ ElvMain.Groups.Rebuild(true);
  if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+ ElvMain.Selection.First.MakeVisible(emvTop);
+ ElvMain.EndUpdate();
 end;
 
 
@@ -7598,7 +7608,7 @@ var
   Info: TExplorerViewInfo;
   UpdaterInfo: TUpdaterInfo;
   i : integer;
-begin             
+begin
  BigImagesTimer.Enabled:=false;
  if ListView<>LV_THUMBS then exit;
  info.View:=ListView;
@@ -7615,7 +7625,7 @@ begin
  info.View:=ListView;
  Info.PictureSize:=fPictureSize;
  NewFormState;
- 
+
  ToolButton18.Enabled:=true;
  TExplorerThread.Create('::BIGIMAGES','',THREAD_TYPE_BIG_IMAGES,info,self,UpdaterInfo,StateID);
  for i:=0 to fFilesInfo.Count-1 do
@@ -7692,7 +7702,7 @@ var
 begin
  if SelCount=1 then
  begin
-  Index:=ItemIndexToMenuIndex(ListView1Selected.Index);  
+  Index:=ItemIndexToMenuIndex(ListView1Selected.Index);
   DoDeSteno(fFilesInfo[Index].FileName);
  end;
 end;
@@ -7717,7 +7727,7 @@ var
     ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
 
-begin   
+begin
   UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
   ToolBarNormalImageList.Clear;
   ConvertTo32BitImageList(ToolBarNormalImageList);
@@ -7738,7 +7748,7 @@ begin
  AddIcon('EXPLORER_VIEW');
  AddIcon('EXPLORER_ZOOM_OUT');
  AddIcon('EXPLORER_ZOOM_IN');
- AddIcon('EXPLORER_SEARCH');   
+ AddIcon('EXPLORER_SEARCH');
  AddIcon('EXPLORER_OPTIONS');
  AddIcon('EXPLORER_BREAK');
 
@@ -7748,17 +7758,17 @@ procedure TExplorerForm.LoadToolBarGrayedIcons();
 var
   Ico : TIcon;
   UseSmallIcons : Boolean;
-         
+
   procedure AddIcon(Name : String);
   begin
    if UseSmallIcons then Name:=Name+'_SMALL';
    ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
   end;
-  
-begin                  
+
+begin
   ToolBarDisabledImageList.Clear;
   ConvertTo32BitImageList(ToolBarDisabledImageList);
-                  
+
   UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
   if UseSmallIcons then
   begin
@@ -7777,9 +7787,9 @@ begin
  AddIcon('EXPLORER_ZOOM_OUT_GRAY');
  AddIcon('EXPLORER_ZOOM_IN_GRAY');
  AddIcon('EXPLORER_SEARCH_GRAY');
- AddIcon('EXPLORER_OPTIONS_GRAY');  
+ AddIcon('EXPLORER_OPTIONS_GRAY');
  AddIcon('EXPLORER_BREAK_GRAY');
-                                      
+
 end;
 
 procedure TExplorerForm.ToolButton18Click(Sender: TObject);
@@ -7808,13 +7818,13 @@ var
 begin
  Result:=false;
  SetLength(t,0);
- rv :=  Listview1.Scrollbars.ViewableViewportRect;
- for i:=0 to ListView1.Items.Count-1 do
+ rv :=  ElvMain.Scrollbars.ViewableViewportRect;
+ for i:=0 to ElvMain.Items.Count-1 do
  begin
-  r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,ListView1.Items[i].DisplayRect) then
+  r:=Rect(ElvMain.ClientRect.Left+rv.Left,ElvMain.ClientRect.Top+rv.Top,ElvMain.ClientRect.Right+rv.Left,ElvMain.ClientRect.Bottom+rv.Top);
+  if RectInRect(r,TEasyCollectionItemX(ElvMain.Items[i]).GetDisplayRect) then
   begin
-   if ListView1.Items[i].Selected then
+   if ElvMain.Items[i].Selected then
    begin
     Result:=true;
     exit;
@@ -7825,8 +7835,8 @@ end;
 
 procedure TExplorerForm.LoadSizes;
 begin
- ListView1.CellSizes.Thumbnail.Width := FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height := FPictureSize+36;
+ ElvMain.CellSizes.Thumbnail.Width := FPictureSize+10;
+ ElvMain.CellSizes.Thumbnail.Height := FPictureSize+36;
 end;
 
 procedure TExplorerForm.PopupMenuZoomDropDownPopup(Sender: TObject);
@@ -7840,20 +7850,20 @@ procedure TExplorerForm.BigSizeCallBack(Sender: TObject; SizeX,
 var
   SelectedVisible : boolean;
 begin
- ListView1.BeginUpdate;
+ ElvMain.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  FPictureSize:=SizeX;
  LoadSizes();
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;
 
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+ ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+ ElvMain.Groups.ReIndexItems;
+ ElvMain.Groups.Rebuild(true);
 
  if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+ ElvMain.Selection.First.MakeVisible(emvTop);
+ ElvMain.EndUpdate();
 end;
 
 procedure TExplorerForm.MapCD1Click(Sender: TObject);
@@ -7888,7 +7898,7 @@ begin
   FSync.Enter;
   try
     if (Index > -1) and (Index < FExplorers.Count) then
-      Result := FExplorers[Index];      
+      Result := FExplorers[Index];
   finally
     FSync.Leave;
   end;
@@ -7919,7 +7929,7 @@ begin
   FormLoadEnd:=false;
   NoLockListView:=false;
   FPictureSize:=ThImageSize;
-  ListView1:=nil;
+  ElvMain:=nil;
   FBitmapImageList := TBitmapImageList.Create;
   ExtIcons:= TBitmapImageList.Create;
   fHistory:=TStringsHistoryW.Create;
@@ -7930,7 +7940,7 @@ begin
   FReadingFolderNumber:=0;
   FChangeHistoryOnChPath:=true;
   CopyInstances:=0;
-  FGoToLastSavedPath := GoToLastSavedPath; 
+  FGoToLastSavedPath := GoToLastSavedPath;
   inherited Create(AOwner);
 end;
 
@@ -8035,10 +8045,10 @@ begin
  Size1.ImageIndex:=DB_IC_RESIZE;
  Type1.ImageIndex:=DB_IC_ATYPE;
  Modified1.ImageIndex:=DB_IC_CLOCK;
- MakeFolderViewer1.ImageIndex:=DB_IC_SAVE_AS_TABLE; 
+ MakeFolderViewer1.ImageIndex:=DB_IC_SAVE_AS_TABLE;
  MakeFolderViewer2.ImageIndex:=DB_IC_SAVE_AS_TABLE;
  Number1.ImageIndex:=DB_IC_RENAME;
-                                   
+
  RatingPopupMenu1.Images:=DBkernel.ImageList;
 
  N00.ImageIndex:=DB_IC_DELETE_INFO;
@@ -8051,7 +8061,7 @@ begin
  StenoGraphia1.ImageIndex:=DB_IC_STENO;
  AddHiddenInfo1.ImageIndex:=DB_IC_STENO;
  ExtractHiddenInfo1.ImageIndex:=DB_IC_DESTENO;
- 
+
  View3.ImageIndex:=DB_IC_SORT;
  MapCD1.ImageIndex:=DB_IC_CD_MAPPING;
 
@@ -8076,7 +8086,7 @@ end;
 destructor TExplorerForm.Destroy;
 begin
   fHistory.Free;
-  inherited;    
+  inherited;
   fFilesInfo.Free;
 end;
 

@@ -368,7 +368,6 @@
 			<DCCReference Include="Units\UnitDBKernel.pas"/>
 			<DCCReference Include="Units\CmpUnit.pas"/>
 			<DCCReference Include="Units\DBCMenu.pas"/>
-			<DCCReference Include="Units\win32crc.pas"/>
 			<DCCReference Include="Units\ExplorerTypes.pas"/>
 			<DCCReference Include="Units\UnitGroupsWork.pas"/>
 			<DCCReference Include="Units\Language.pas"/>
@@ -444,6 +443,17 @@
 			<DCCReference Include="Units\uW7TaskBar.pas"/>
 			<DCCReference Include="Units\uDBHint.pas"/>
 			<DCCReference Include="Units\uMath.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\ASN1.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\CPU.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\CRC.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECCipher.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECData.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECFmt.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECHash.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECRandom.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECUtil.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\TypInfoEx.pas"/>
+			<DCCReference Include="Units\uStrongCrypt.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

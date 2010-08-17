@@ -166,7 +166,7 @@ uses
   GIFImage in 'External\Formats\GIFImage.pas',
   PNG_IO in 'External\Formats\PNG_IO.pas',
   PngDef in 'External\Formats\PngDef.pas',
-  PngImage in 'External\Formats\PNGImage.pas',
+  PNGImage in 'External\Formats\PNGImage.pas',
   ColorToolUnit in 'ImageEditor\ColorToolUnit.pas',
   CropToolUnit in 'ImageEditor\CropToolUnit.pas',
   EffectsToolThreadUnit in 'ImageEditor\EffectsToolThreadUnit.pas',
@@ -216,7 +216,7 @@ uses
   ShellContextMenu in 'Units\ShellContextMenu.pas',
   ImageConverting in 'Units\ImageConverting.pas',
   DDraw in 'Units\DDraw.pas',
-  OLE2 in 'Units\ole2.pas',
+  ole2 in 'Units\ole2.pas',
   DXCommon in 'Units\DXCommon.pas',
   Exif in 'Units\Exif.pas',
   UnitLinksSupport in 'Units\UnitLinksSupport.pas',
@@ -279,7 +279,18 @@ uses
   uThreadLoadingManagerDB in 'Threads\uThreadLoadingManagerDB.pas',
   uW7TaskBar in 'Units\uW7TaskBar.pas',
   uDBHint in 'Units\uDBHint.pas',
-  uMath in 'Units\uMath.pas';
+  uMath in 'Units\uMath.pas',
+  ASN1 in 'External\Crypt\DECv5.2\ASN1.pas',
+  CPU in 'External\Crypt\DECv5.2\CPU.pas',
+  CRC in 'External\Crypt\DECv5.2\CRC.pas',
+  DECCipher in 'External\Crypt\DECv5.2\DECCipher.pas',
+  DECData in 'External\Crypt\DECv5.2\DECData.pas',
+  DECFmt in 'External\Crypt\DECv5.2\DECFmt.pas',
+  DECHash in 'External\Crypt\DECv5.2\DECHash.pas',
+  DECRandom in 'External\Crypt\DECv5.2\DECRandom.pas',
+  DECUtil in 'External\Crypt\DECv5.2\DECUtil.pas',
+  TypInfoEx in 'External\Crypt\DECv5.2\TypInfoEx.pas',
+  uStrongCrypt in 'Units\uStrongCrypt.pas';
 
 {$R *.res}
 

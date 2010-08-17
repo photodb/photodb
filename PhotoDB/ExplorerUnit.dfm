@@ -4351,7 +4351,13 @@ object ExplorerForm: TExplorerForm
       Width = 133
       Height = 21
       Align = alTop
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
       ParentColor = True
+      ParentFont = False
       TabOrder = 0
       Visible = False
       OnResize = CloseButtonPanelResize
@@ -4402,9 +4408,15 @@ object ExplorerForm: TExplorerForm
         object TypeLabel: TLabel
           Left = 8
           Top = 136
-          Width = 50
+          Width = 49
           Height = 13
           Caption = 'TypeLabel'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
         end
         object TasksLabel: TLabel
           Tag = 1
@@ -4423,9 +4435,15 @@ object ExplorerForm: TExplorerForm
         object SizeLabel: TLabel
           Left = 8
           Top = 152
-          Width = 46
+          Width = 44
           Height = 13
           Caption = 'SizeLabel'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
         end
         object RatingLabel: TLabel
           Left = 8
@@ -4433,6 +4451,12 @@ object ExplorerForm: TExplorerForm
           Width = 31
           Height = 13
           Caption = 'Rating'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
         end
         object OtherPlacesLabel: TLabel
           Tag = 1
@@ -4452,13 +4476,13 @@ object ExplorerForm: TExplorerForm
           Tag = 1
           Left = 8
           Top = 128
-          Width = 64
+          Width = 62
           Height = 13
           Caption = 'NameLabel'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
-          Font.Name = 'MS Sans Serif'
+          Font.Name = 'Tahoma'
           Font.Style = [fsBold]
           ParentFont = False
           WordWrap = True
@@ -4482,31 +4506,55 @@ object ExplorerForm: TExplorerForm
         object IDLabel: TLabel
           Left = 8
           Top = 176
-          Width = 37
+          Width = 36
           Height = 13
           Caption = 'IDLabel'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
         end
         object DimensionsLabel: TLabel
           Left = 8
           Top = 144
-          Width = 80
+          Width = 78
           Height = 13
           Caption = 'DimensionsLabel'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
         end
         object DBInfoLabel: TLabel
           Tag = 2
           Left = 8
           Top = 168
-          Width = 71
+          Width = 73
           Height = 13
           Caption = 'DataBase Info:'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
         end
         object AccessLabel: TLabel
           Left = 8
           Top = 208
-          Width = 61
+          Width = 58
           Height = 13
           Caption = 'AccessLabel'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
         end
         object SlideShowLink: TWebLink
           Left = 5
@@ -4816,9 +4864,9 @@ object ExplorerForm: TExplorerForm
     ShowHint = True
     OnResize = PageScroller2Resize
     object ToolBar2: TToolBar
-      Left = 11
+      Left = 12
       Top = 0
-      Width = 855
+      Width = 850
       Height = 20
       AutoSize = True
       ButtonHeight = 20
@@ -5083,9 +5131,9 @@ object ExplorerForm: TExplorerForm
         Width = 864
       end>
     object ToolBar1: TToolBar
-      Left = 11
+      Left = 12
       Top = 0
-      Width = 855
+      Width = 850
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 48
@@ -5108,7 +5156,7 @@ object ExplorerForm: TExplorerForm
         OnClick = SpeedButton1Click
       end
       object ToolButton2: TToolButton
-        Left = 33
+        Left = 31
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuForward
@@ -5117,14 +5165,14 @@ object ExplorerForm: TExplorerForm
         OnClick = SpeedButton2Click
       end
       object ToolButton3: TToolButton
-        Left = 66
+        Left = 62
         Top = 0
         AutoSize = True
         ImageIndex = 1
         OnClick = SpeedButton3Click
       end
       object ToolButton4: TToolButton
-        Left = 78
+        Left = 74
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
@@ -5132,7 +5180,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton5: TToolButton
-        Left = 86
+        Left = 82
         Top = 0
         AutoSize = True
         Caption = 'Cut'
@@ -5140,7 +5188,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Cut3Click
       end
       object ToolButton6: TToolButton
-        Left = 98
+        Left = 94
         Top = 0
         AutoSize = True
         Caption = 'Copy'
@@ -5148,7 +5196,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Copy3Click
       end
       object ToolButton7: TToolButton
-        Left = 110
+        Left = 106
         Top = 0
         AutoSize = True
         Caption = 'Paste'
@@ -5156,7 +5204,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Paste3Click
       end
       object ToolButton17: TToolButton
-        Left = 122
+        Left = 118
         Top = 0
         Width = 8
         Caption = 'ToolButton17'
@@ -5164,14 +5212,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton8: TToolButton
-        Left = 130
+        Left = 126
         Top = 0
         AutoSize = True
         ImageIndex = 6
         OnClick = DeleteLinkClick
       end
       object ToolButton10: TToolButton
-        Left = 142
+        Left = 138
         Top = 0
         Width = 8
         Caption = 'ToolButton10'
@@ -5179,7 +5227,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButtonView: TToolButton
-        Left = 150
+        Left = 146
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenu5
@@ -5188,7 +5236,7 @@ object ExplorerForm: TExplorerForm
         OnClick = ToolButtonViewClick
       end
       object ToolButton11: TToolButton
-        Left = 183
+        Left = 177
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -5196,14 +5244,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton13: TToolButton
-        Left = 191
+        Left = 185
         Top = 0
         AutoSize = True
         ImageIndex = 8
         OnClick = ToolButton13Click
       end
       object ToolButton14: TToolButton
-        Left = 203
+        Left = 197
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
@@ -5212,7 +5260,7 @@ object ExplorerForm: TExplorerForm
         OnClick = ToolButton14Click
       end
       object ToolButton20: TToolButton
-        Left = 236
+        Left = 228
         Top = 0
         Width = 8
         Caption = 'ToolButton20'
@@ -5220,14 +5268,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton18: TToolButton
-        Left = 244
+        Left = 236
         Top = 0
         AutoSize = True
         ImageIndex = 12
         OnClick = ToolButton18Click
       end
       object ToolButton12: TToolButton
-        Left = 256
+        Left = 248
         Top = 0
         Width = 8
         Caption = 'ToolButton12'
@@ -5235,14 +5283,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton15: TToolButton
-        Left = 264
+        Left = 256
         Top = 0
         AutoSize = True
         ImageIndex = 10
         OnClick = GoToSearchWindow1Click
       end
       object ToolButton16: TToolButton
-        Left = 276
+        Left = 268
         Top = 0
         Width = 8
         Caption = 'ToolButton16'
@@ -5250,7 +5298,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButton19: TToolButton
-        Left = 284
+        Left = 276
         Top = 0
         AutoSize = True
         Caption = 'Options'

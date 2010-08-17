@@ -1898,8 +1898,14 @@ object PropertiesForm: TPropertiesForm
       Height = 17
       BorderStyle = bsNone
       Color = clBtnFace
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
       Lines.Strings = (
         '<data>')
+      ParentFont = False
       ReadOnly = True
       TabOrder = 0
     end

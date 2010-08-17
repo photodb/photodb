@@ -1377,7 +1377,7 @@ begin
     if (aTag mod 1000)<100 then
    end;
    Font.Color:=Theme_memoeditFontcolor;
-   if Tag div 10000>0 then Font.Name:='Times New Roman';  
+   if Tag div 10000>0 then Font.Name:='Tahoma';
    SetVistaContentFonts(Font,1);
    //tag:=n;
   end;

@@ -390,17 +390,22 @@ end;
 
 procedure TUpdateDBForm.ButtonRunStopClick(Sender: TObject);
 begin
- if FAddObject.Pause then
- begin
-  FAddObject.DoUnPause;
-  SetIcon(ButtonRunStop,'UPDATER_PAUSE');
-  ButtonRunStop.Text:=TEXT_MES_PAUSE;
- end else begin
- //TODO icon
-  FAddObject.DoPause;    
-  SetIcon(ButtonRunStop,'UPDATER_PLAY');
-  ButtonRunStop.Text:=TEXT_MES_UNPAUSE;
- end;
+  if FAddObject.Pause then
+  begin
+    FAddObject.DoUnPause;
+    SetIcon(ButtonRunStop,'UPDATER_PAUSE');
+    ButtonRunStop.Text:=TEXT_MES_PAUSE;
+    if FW7TaskBar <> nil then
+      FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+  end else
+  begin
+    //TODO icon
+    FAddObject.DoPause;
+    SetIcon(ButtonRunStop,'UPDATER_PLAY');
+    ButtonRunStop.Text:=TEXT_MES_UNPAUSE;
+    if FW7TaskBar <> nil then
+      FW7TaskBar.SetProgressState(Handle, TBPF_PAUSED);
+  end;
 end;
 
 procedure TUpdateDBForm.ButtonBreakClick(Sender: TObject);
@@ -623,13 +628,14 @@ end;
 
 procedure TUpdateDBForm.SetIcon(Link : TWebLink; Name : String);
 var
-  Ico : TIcon;
+  Ico : HIcon;
 begin
- Ico:=TIcon.Create;
- Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
- Link.Icon := Ico;
- Link.Icon := Link.Icon;
- Link.SetDefault;
+  Ico := LoadIcon(DBKernel.IconDllInstance, PChar(Name));
+  try
+    Link.LoadFromHIcon(Ico);
+  finally
+    DestroyIcon(Ico);
+  end;
 end;
 
 procedure TUpdateDBForm.LoadToolBarIcons();
