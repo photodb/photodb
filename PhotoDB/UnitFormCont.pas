@@ -1000,6 +1000,7 @@ begin
    DropFileSource1.ImageHotSpotX:=Min(MaxW,Max(1,DBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
    DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,DBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView1.Scrollbars.ViewableViewportRect.Top));
 
+   DropFileSource1.ImageIndex := 0;
    DropFileSource1.Execute;
    DBCanDrag:=false;
   end;

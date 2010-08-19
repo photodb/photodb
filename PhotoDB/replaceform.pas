@@ -508,6 +508,7 @@ begin
    DragImageList.Height:=DragImage.Height;
    DragImageList.Add(DragImage,nil);
    DragImage.free;
+   DropFileSource1.ImageIndex := 0;
    DropFileSource1.Execute;
  end;
 end;
@@ -531,6 +532,7 @@ begin
   DragImageList.Height:=DragImage.Height;
   DragImageList.Add(DragImage,nil);
   DragImage.free;
+  DropFileSource1.ImageIndex := 0;
   DropFileSource1.Execute;
  end;
 end;
@@ -552,6 +554,7 @@ begin
    DragImageList.Height:=DragImage.Height;
    DragImageList.Add(DragImage,nil);
    DragImage.free;
+   DropFileSource1.ImageIndex := 0;
    DropFileSource1.Execute;
   end;
 end;

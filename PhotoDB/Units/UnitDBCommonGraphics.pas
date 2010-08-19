@@ -636,7 +636,6 @@ begin
     Dest.Assign(Src);
 end;
 
-
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 var
   PNG: TPNGGraphic;

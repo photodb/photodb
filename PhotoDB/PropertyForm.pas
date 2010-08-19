@@ -832,7 +832,11 @@ begin
      DropFileSource1.Files.Add(ProcessPath(FFilesInfo[I].FileName));
      c:=true;
     end;
-    if c then DropFileSource1.Execute;
+    if c then
+    begin
+      DropFileSource1.ImageIndex := 0;
+      DropFileSource1.Execute;
+    end;
   end else
   begin
     DragImageList.Clear;
@@ -849,6 +853,7 @@ begin
     if FileExists(ProcessPath(LabelPath.Text)) then
     begin
      DropFileSource1.Files.Add(ProcessPath(LabelPath.Text));
+     DropFileSource1.ImageIndex := 0;
      DropFileSource1.Execute;
     end;
   end;

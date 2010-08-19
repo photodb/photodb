@@ -372,6 +372,7 @@ begin
   TempImage.Free;
 
   DragImage.free;
+  DropFileSource1.ImageIndex := 0;
   DropFileSource1.Execute;
   CanClosed:=true;
  end;

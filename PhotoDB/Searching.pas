@@ -1805,7 +1805,7 @@ begin
    ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
    DropFileSource1.ImageHotSpotX:=Min(MaxW,Max(1,DBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
    DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,DBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView.Scrollbars.ViewableViewportRect.Top));
-
+   DropFileSource1.ImageIndex := 0;
    DropFileSource1.Execute;
    DBCanDrag:=false;
   end;

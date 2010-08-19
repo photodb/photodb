@@ -1847,7 +1847,6 @@ begin
     ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
     DropFileSourceMain.ImageHotSpotX:=Min(MaxW,Max(1,fDBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
     DropFileSourceMain.ImageHotSpotY:=Min(MaXH,Max(1,fDBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ElvMain.Scrollbars.ViewableViewportRect.Top));
-
    end else
    begin
     if ListView=LV_TILE then
@@ -1874,6 +1873,7 @@ begin
    ImHint.close;
    hinttimer.Enabled:=false;
    FWasDragAndDrop:=true;
+   DropFileSourceMain.ImageIndex := 0;
    DropFileSourceMain.Execute;
    SelfDraging:=false;
    DropFileTarget1.Files.clear;

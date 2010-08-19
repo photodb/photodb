@@ -1150,22 +1150,22 @@ begin
     DragImage := TBitmap.Create;
     DragImage.PixelFormat:=pf24bit;
     DropFileSource1.ShowImage:=not WaitImageTimer.Enabled and FImageExists;
+
     DragImage.Width:=100;
     DragImage.Height:=100;
     w:=FbImage.Width;
     h:=FbImage.Height;
     ProportionalSize(100,100,w,h);
     DoResize(w,h,FbImage,DragImage);
-    DragImageList.Masked:=false;
     DragImageList.Width:=w;
     DragImageList.Height:=h;
 
     TempImage:=RemoveBlackColor(DragImage);
-    DragImageList.Add(TempImage,nil);
+    DragImageList.Add(TempImage,TempImage);
     TempImage.Free;
-
-    DragImage.free;
+    DropFileSource1.ImageIndex := 0;
     DropFileSource1.Execute;
+    DragImage.free;
     FormPaint(Self);
    end;
    DBCanDrag:=false;
