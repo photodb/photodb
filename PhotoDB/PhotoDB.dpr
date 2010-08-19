@@ -847,6 +847,8 @@ begin
     ExecuteQuery(s1);
   end;
 
+
+  AllowDragAndDrop;
   Application.Run;
 
 end.

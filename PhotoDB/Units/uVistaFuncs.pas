@@ -2,7 +2,10 @@ unit uVistaFuncs;
 
 interface
 
-uses Forms, Windows, Graphics;
+uses Forms, Windows, Graphics, uConstants, Messages;
+
+type
+  TChangeWindowMessageFilter = function(msg: Cardinal; action: Word): BOOL; stdcall;
 
 function IsWindowsVista: Boolean;  
 procedure SetVistaFonts(const AForm: TCustomForm);
@@ -13,6 +16,7 @@ function CompositingEnabled: Boolean;
 function TaskDialog(Handle: THandle; AContent, ATitle,ADescription: string; Buttons,Icon: integer): integer;
 procedure SetVistaTreeView(const AHandle: THandle);
 function TaskDialogEx(Handle: THandle; AContent, ATitle,ADescription : string; Buttons,Icon: integer; NoVista : boolean): integer;
+procedure AllowDragAndDrop;
 
 const
   VistaFont = 'Segoe UI'; 
@@ -73,6 +77,27 @@ procedure SetVistaTreeView(const AHandle: THandle);
 begin
   if IsWindowsVista then
     SetWindowTheme(AHandle, 'explorer', nil);
+end;
+
+procedure AllowDragAndDrop;
+var
+  User32Handle : THandle;
+  ChangeWindowMessageFilter : TChangeWindowMessageFilter;
+  I : Integer;
+
+const
+   MSGFLT_ALLOW = 1;
+begin
+  User32Handle := LoadLibrary(user32);
+  @ChangeWindowMessageFilter := GetProcAddress(User32Handle, 'ChangeWindowMessageFilter');
+  if Assigned(ChangeWindowMessageFilter) then
+  begin
+    //WM_COMMAND for taskbar
+    ChangeWindowMessageFilter (WM_COMMAND, MSGFLT_ALLOW);
+    ChangeWindowMessageFilter (WM_DROPFILES, MSGFLT_ALLOW);
+    ChangeWindowMessageFilter (WM_COPYDATA, MSGFLT_ALLOW);
+    ChangeWindowMessageFilter ($0049, MSGFLT_ALLOW);
+  end;
 end;
 
 procedure SetVistaFonts(const AForm: TCustomForm);

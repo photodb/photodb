@@ -56,9 +56,7 @@
 			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
 			<DCC_DebugInformation>false</DCC_DebugInformation>
 		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_2)'!=''">
-			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
-		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''"/>
 		<ItemGroup>
 			<DelphiCompile Include="DragDropD2010.dpk">
 				<MainSource>MainSource</MainSource>

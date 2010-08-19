@@ -13,13 +13,13 @@ function GetSearchWait : TPNGGraphic;
 function GetDateRangeImage : TPNGGraphic;
               
 {$R Logo.res}    
-{$R WindowsXPMan.res}
 {$R slideshow_load.res}
 {$R directory_large.res}
 {$R ExplorerBackground.res}
 {$R SearchBackground.res}   
 {$R SearchWait.res}
 {$R DateRange.res}
+{$R Manifest.res}
 
 implementation
 

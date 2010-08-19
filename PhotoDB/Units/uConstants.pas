@@ -49,6 +49,7 @@ const
   {$ENDIF}
   
 const
+    WM_DROPFILES = $0233;
     WM_COPYDATA = $004A;
     FIXIDEX = True;
 

@@ -60,7 +60,7 @@ begin
   brushInfo.lbColor := 0;
 
   if IsFirstDraw then
-  begin             
+  begin
     Brush := CreateBrushIndirect(brushInfo);
     FillRect(DrawDC, Rect(0, 0, SplWidth, SplHeight), Brush);
     DeleteObject(Brush);
@@ -79,7 +79,7 @@ begin
       end;
     finally
       J.Free;
-    end;        
+    end;
     InfoText := TStringList.Create;
     try
       InfoText.Add(ProductName);
@@ -104,16 +104,17 @@ begin
       SetTextColor(DrawDC, clWhite);
       hf := CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Times New Roman');
       oldFont := SelectObject(DrawDC, hf);
-      DrawTextA(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);  
-      SelectObject(DrawDC, oldFont);  
+      DrawTextA(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);
+      SelectObject(DrawDC, oldFont);
       if(hf > 0) then
         DeleteObject(hf);
     finally
       InfoText.Free;
     end;
+
     IsFirstDraw := False;
   end;
-    
+
   TP := TDmProgress.Create(nil);
   try
     TP.Visible := False;

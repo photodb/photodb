@@ -1748,7 +1748,7 @@ var
 begin
   C := TopIndex;
   for I := 0 to FVisibleFiles.Count - 1 do
-    for j := TopIndex to FFiles.Count - 1 do
+    for J := TopIndex to FFiles.Count - 1 do
       if FFiles[J].Tag = 0 then
       begin
         if IsEqualGUID(StringToGUID(FVisibleFiles[I]), FFiles[J].SID) then
