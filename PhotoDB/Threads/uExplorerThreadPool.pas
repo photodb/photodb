@@ -17,6 +17,7 @@ type
     class function Instance : TExplorerThreadPool;
     procedure ExtractImage(Sender : TThreadEx; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);   
     procedure ExtractDirectoryPreview(Sender : TThreadEx; DirectoryPath: string; FileID : TGUID);
+    procedure ExtractBigImage(Sender : TThreadEx; FileName: string; Rotated : Integer; FileID : TGUID);
   end;
 
 implementation
@@ -111,6 +112,46 @@ begin
       Avaliablethread.FFileID := FileID;
       Avaliablethread.FThreadPreviewMode := THREAD_PREVIEW_MODE_IMAGE;
       Avaliablethread.FPreviewInProgress := True;  
+      Thread.RegisterSubThread(Avaliablethread);
+      TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
+      Avaliablethread.Resume;
+    end
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TExplorerThreadPool.ExtractBigImage(Sender: TThreadEx;
+  FileName: string; Rotated: Integer; FileID: TGUID);
+var
+  Thread : TExplorerThread;
+  Avaliablethread : TExplorerThread;
+begin
+  FSync.Enter;
+  try
+    Thread := Sender as TExplorerThread;
+    if Thread = nil then
+      raise Exception.Create('Sender is not TExplorerThread!');
+
+    ThreadsCheck(Sender);
+
+    if FAvaliableThreadList.Count > 0 then
+    begin
+      Avaliablethread := FAvaliableThreadList[0];
+      FAvaliableThreadList.Remove(Avaliablethread);
+      FBusyThreadList.Add(Avaliablethread);
+      Avaliablethread.Priority := tpNormal;
+      Avaliablethread.ThreadForm := Sender.ThreadForm;
+      Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
+      Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
+      Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
+      Avaliablethread.StateID := Thread.StateID;
+      Avaliablethread.FInfo.ItemFileName := FileName;
+      Avaliablethread.FInfo.ItemRotate := Rotated;
+      Avaliablethread.IsCryptedFile := False;
+      Avaliablethread.FFileID := FileID;
+      Avaliablethread.FThreadPreviewMode := THREAD_PREVIEW_MODE_BIG_IMAGE;
+      Avaliablethread.FPreviewInProgress := True;
       Thread.RegisterSubThread(Avaliablethread);
       TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
       Avaliablethread.Resume;

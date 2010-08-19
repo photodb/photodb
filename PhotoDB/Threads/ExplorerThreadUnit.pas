@@ -123,6 +123,7 @@ type
     procedure SetIconForFileByExt;
     procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
+    procedure ExtractBigPreview(FileName : string; Rotated : Integer);
     procedure ProcessThreadPreviews;
   protected
     function IsVirtualTerminate : Boolean; override;
@@ -1662,7 +1663,7 @@ procedure TExplorerThread.ReplaceImageInExplorerB;
 begin
   if ExplorerInfo.View=LV_THUMBS then
   begin
-    FSender.ReplaceBitmap(TempBitmap,GUIDParam,true,BooleanParam)
+    FSender.ReplaceBitmap(TempBitmap, GUIDParam, True, BooleanParam)
   end else
     FSender.ReplaceIcon(fIcon,GUIDParam,true);
 end;
@@ -1763,14 +1764,8 @@ end;
 procedure TExplorerThread.DoLoadBigImages;
 var
   i, InfoPosition : integer;
-  FPic : TPicture;
-  PassWord : String;
-  fbit : TBitmap;
-  w, h : integer;
   ProcNum : integer;
 begin
-  FPic:=nil;
- 
   while ExplorerUpdateBigImageThreadsCount > ProcessorCount do
     Sleep(10);
 
@@ -1784,128 +1779,123 @@ begin
     ShowInfo(FFiles.Count ,0);
     InfoPosition:=0;
  
-    for i:=0 to FFiles.Count - 1 do
+    for I := 0 to FFiles.Count - 1 do
     begin
              
-    Inc(InfoPosition);
-    ShowInfo(InfoPosition);
+      Inc(InfoPosition);
+      ShowInfo(InfoPosition);
 
-    if i mod 5=0 then
-    begin
-     SynchronizeEx(GetVisibleFiles);
-     VisibleUp(i);
-    end;
-
-    GUIDParam := FFiles[i].SID;
-  
-    BooleanResult:=false;
-
-    if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
-    begin
-     SynchronizeEx(FileNeededAW);
-  
-     //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
-     if not LoadingAllBigImages then
-       BooleanResult := True;
-
-     if IsTerminated then break;
-     if not FileExists(ProcessPath(FFiles[i].FileName)) then continue;
-     if BooleanResult then
-     begin
-      try
-       FPic := TPicture.Create;
-      except
-       if FPic<>nil then
-       FPic.Free;
-       FPic:=nil;
-       continue;
+      if I mod 5 = 0 then
+      begin
+       SynchronizeEx(GetVisibleFiles);
+       VisibleUp(I);
       end;
-      try
-       if GraphicCrypt.ValidCryptGraphicFile(ProcessPath(FFiles[i].FileName)) then
-       begin
-        PassWord:=DBKernel.FindPasswordForCryptImageFile(ProcessPath(FFiles[i].FileName));
-        if PassWord='' then
-        begin
-         if FPic<>nil then FPic.Free;
-         FPic:=nil;
-         continue;
-        end;
-        FPic.Graphic:=GraphicCrypt.DeCryptGraphicFile(ProcessPath(FFiles[i].FileName),PassWord);
-       end else
-       begin
-        if IsRAWImageFile(FFiles[i].FileName) then
-        begin
-         Fpic.Graphic:=TRAWImage.Create;
-         if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(ProcessPath(FFiles[i].FileName),ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
-         FPic.Graphic.LoadFromFile(ProcessPath(FFiles[i].FileName));
-        end else
-        FPic.LoadFromFile(ProcessPath(FFiles[i].FileName));
-       end;
-      except
-       if FPic<>nil then
-       FPic.Free;
-       FPic:=nil;
-       continue;
-       end;
-      fbit:=TBitmap.Create;
-      fbit.PixelFormat:=pf24bit;
-      JPEGScale(Fpic.Graphic,ExplorerInfo.PictureSize,ExplorerInfo.PictureSize);
 
-      if Min(Fpic.Height,Fpic.Width)>1 then
-      try
-       LoadImageX(Fpic.Graphic,fbit,Theme_ListColor);
-      except
+      GUIDParam := FFiles[i].SID;
+
+      if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
+      begin
+
+        BooleanResult := False;
+        //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
+        if not LoadingAllBigImages then
+          BooleanResult := True
+        else
+          SynchronizeEx(FileNeededAW);
+
+        if IsTerminated then Break;
+
+        if ProcessorCount > 1 then
+          TExplorerThreadPool.Instance.ExtractBigImage(Self, CurrentFile, FFiles[i].Rotate, GUIDParam)
+        else
+          ExtractBigPreview(CurrentFile, FFiles[i].Rotate);
       end;
-      Fpic.Free;
-      Fpic:=nil;
 
-      TempBitmap:=TBitmap.create;
-      TempBitmap.PixelFormat:=pf24bit;
-      w:=fbit.Width;
-      h:=fbit.Height;
-      ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize,w,h);
-      TempBitmap.Width:=w;
-      TempBitmap.Height:=h;
-      try
-       DoResize(w,h,fbit,TempBitmap);
-      except
+
+      //directories
+      if FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
+      begin
+        BooleanResult := False;
+        SynchronizeEx(FileNeededAW);
+        CurrentFile := FFiles[i].FileName;
+
+        //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
+        if not LoadingAllBigImages then
+          BooleanResult := True;
+
+        if IsTerminated then break;
+
+        if BooleanResult and ExplorerInfo.ShowThumbNailsForFolders then
+          ExtractDirectoryPreview(CurrentFile, GUIDParam);
       end;
-      FreeAndNil(fbit);
-
-      ApplyRotate(TempBitmap, FFiles[i].Rotate );
-
-      BooleanParam:=LoadingAllBigImages;
-      SynchronizeEx(ReplaceImageInExplorerB);
-
-     end;
-    end;
-
-    BooleanResult:=false;
-
-    //directories
-    if FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
-    begin
-     SynchronizeEx(FileNeededAW);
-     CurrentFile:=FFiles[i].FileName;
-
-     //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
-     if not LoadingAllBigImages then BooleanResult:=true;
-
-     if IsTerminated then break;
-
-     if BooleanResult then
-     if ExplorerInfo.ShowThumbNailsForFolders then
-     try
-      ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
-     except
-     end;
-    end;
     end;
     SynchronizeEx(DoStopSearch);
     HideProgress;
     ShowInfo('');
   finally
     Dec(ExplorerUpdateBigImageThreadsCount);
+  end;
+end;
+
+procedure TExplorerThread.ExtractBigPreview(FileName : string; Rotated : Integer);
+var
+  FPic : TPicture;
+  PassWord : String;
+  FBit : TBitmap;
+  W, H : Integer;
+begin
+  FileName := ProcessPath(FileName);
+
+  if not FileExists(FileName) then
+    Exit;
+
+  if BooleanResult then
+  begin
+    FPic := TPicture.Create;
+    try
+      if GraphicCrypt.ValidCryptGraphicFile(FileName) then
+      begin
+        PassWord:=DBKernel.FindPasswordForCryptImageFile(FileName);
+        if PassWord = '' then
+          Exit;
+
+        FPic.Graphic := GraphicCrypt.DeCryptGraphicFile(FileName, PassWord);
+      end else
+      begin
+        if IsRAWImageFile(FileName) then
+        begin
+          Fpic.Graphic := TRAWImage.Create;
+          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
+            FPic.Graphic.LoadFromFile(FileName);
+        end else
+          FPic.LoadFromFile(FileName);
+      end;
+
+      FBit := TBitmap.Create;
+      try
+        FBit.PixelFormat:=pf24bit;
+        JPEGScale(FPic.Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+
+        if Min(Fpic.Height, Fpic.Width)>1 then
+          LoadImageX(Fpic.Graphic,Fbit,Theme_ListColor);
+
+        TempBitmap := TBitmap.create;
+        TempBitmap.PixelFormat := pf24bit;
+        W := FBit.Width;
+        H := FBit.Height;
+        ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize, W, H);
+        TempBitmap.Width := W;
+        TempBitmap.Height := H;
+        DoResize(W, H, FBit, TempBitmap);
+      finally
+        FBit.Free;
+      end;
+      ApplyRotate(TempBitmap, Rotated);
+      BooleanParam := LoadingAllBigImages;
+      SynchronizeEx(ReplaceImageInExplorerB);
+    finally
+      FPic.Free;
+    end;
   end;
 end;
 
@@ -2063,6 +2053,9 @@ begin
 
           if FThreadPreviewMode = THREAD_PREVIEW_MODE_DIRECTORY then
             ReplaceThumbImageToFolder(FInfo.ItemFileName, FFileID);
+
+          if FThreadPreviewMode = THREAD_PREVIEW_MODE_BIG_IMAGE then
+             ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate);
 
           FThreadPreviewMode := 0;
 
