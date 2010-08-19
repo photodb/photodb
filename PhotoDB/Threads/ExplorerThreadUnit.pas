@@ -123,7 +123,7 @@ type
     procedure SetIconForFileByExt;
     procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
-    procedure ExtractBigPreview(FileName : string; Rotated : Integer);
+    procedure ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
     procedure ProcessThreadPreviews;
   protected
     function IsVirtualTerminate : Boolean; override;
@@ -1805,10 +1805,13 @@ begin
 
         if IsTerminated then Break;
 
-        if ProcessorCount > 1 then
-          TExplorerThreadPool.Instance.ExtractBigImage(Self, CurrentFile, FFiles[i].Rotate, GUIDParam)
-        else
-          ExtractBigPreview(CurrentFile, FFiles[i].Rotate);
+        if BooleanResult then
+        begin
+          if ProcessorCount > 1 then
+            TExplorerThreadPool.Instance.ExtractBigImage(Self, FFiles[i].FileName, FFiles[i].Rotate, GUIDParam)
+          else
+            ExtractBigPreview(CurrentFile, FFiles[i].Rotate, GUIDParam);
+        end;
       end;
 
 
@@ -1837,7 +1840,7 @@ begin
   end;
 end;
 
-procedure TExplorerThread.ExtractBigPreview(FileName : string; Rotated : Integer);
+procedure TExplorerThread.ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
 var
   FPic : TPicture;
   PassWord : String;
@@ -1845,57 +1848,57 @@ var
   W, H : Integer;
 begin
   FileName := ProcessPath(FileName);
+  GUIDParam := FileGUID;
 
   if not FileExists(FileName) then
     Exit;
 
-  if BooleanResult then
-  begin
-    FPic := TPicture.Create;
-    try
-      if GraphicCrypt.ValidCryptGraphicFile(FileName) then
-      begin
-        PassWord:=DBKernel.FindPasswordForCryptImageFile(FileName);
-        if PassWord = '' then
-          Exit;
+  CurrentFile := FileName;
 
-        FPic.Graphic := GraphicCrypt.DeCryptGraphicFile(FileName, PassWord);
+  FPic := TPicture.Create;
+  try
+    if GraphicCrypt.ValidCryptGraphicFile(FileName) then
+    begin
+      PassWord:=DBKernel.FindPasswordForCryptImageFile(FileName);
+      if PassWord = '' then
+        Exit;
+
+      FPic.Graphic := GraphicCrypt.DeCryptGraphicFile(FileName, PassWord);
+    end else
+    begin
+      if IsRAWImageFile(FileName) then
+      begin
+        Fpic.Graphic := TRAWImage.Create;
+        if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
+          FPic.Graphic.LoadFromFile(FileName);
       end else
-      begin
-        if IsRAWImageFile(FileName) then
-        begin
-          Fpic.Graphic := TRAWImage.Create;
-          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
-            FPic.Graphic.LoadFromFile(FileName);
-        end else
-          FPic.LoadFromFile(FileName);
-      end;
-
-      FBit := TBitmap.Create;
-      try
-        FBit.PixelFormat:=pf24bit;
-        JPEGScale(FPic.Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
-
-        if Min(Fpic.Height, Fpic.Width)>1 then
-          LoadImageX(Fpic.Graphic,Fbit,Theme_ListColor);
-
-        TempBitmap := TBitmap.create;
-        TempBitmap.PixelFormat := pf24bit;
-        W := FBit.Width;
-        H := FBit.Height;
-        ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize, W, H);
-        TempBitmap.Width := W;
-        TempBitmap.Height := H;
-        DoResize(W, H, FBit, TempBitmap);
-      finally
-        FBit.Free;
-      end;
-      ApplyRotate(TempBitmap, Rotated);
-      BooleanParam := LoadingAllBigImages;
-      SynchronizeEx(ReplaceImageInExplorerB);
-    finally
-      FPic.Free;
+        FPic.LoadFromFile(FileName);
     end;
+
+    FBit := TBitmap.Create;
+    try
+      FBit.PixelFormat:=pf24bit;
+      JPEGScale(FPic.Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+
+      if Min(Fpic.Height, Fpic.Width)>1 then
+        LoadImageX(Fpic.Graphic,Fbit,Theme_ListColor);
+
+      TempBitmap := TBitmap.create;
+      TempBitmap.PixelFormat := pf24bit;
+      W := FBit.Width;
+      H := FBit.Height;
+      ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize, W, H);
+      TempBitmap.Width := W;
+      TempBitmap.Height := H;
+      DoResize(W, H, FBit, TempBitmap);
+    finally
+      FBit.Free;
+    end;
+    ApplyRotate(TempBitmap, Rotated);
+    BooleanParam := LoadingAllBigImages;
+    SynchronizeEx(ReplaceImageInExplorerB);
+  finally
+    FPic.Free;
   end;
 end;
 
@@ -2055,7 +2058,7 @@ begin
             ReplaceThumbImageToFolder(FInfo.ItemFileName, FFileID);
 
           if FThreadPreviewMode = THREAD_PREVIEW_MODE_BIG_IMAGE then
-             ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate);
+             ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate, FFileID);
 
           FThreadPreviewMode := 0;
 
@@ -2098,4 +2101,3 @@ finalization
  FreeAndNil(AExplorerFolders);
  
 end.
- 
