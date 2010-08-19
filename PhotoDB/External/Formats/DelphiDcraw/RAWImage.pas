@@ -26,7 +26,7 @@ type
     procedure LoadFromFile(const Filename: string); override;
     function LoadThumbnailFromFile(const FileName : string; Width, Height : Integer) : boolean;
     procedure Assign(Source : TPersistent); override;
-    Property LoadHalfSize : boolean read fLoadHalfSize write SetLoadHalfSize;
+    property LoadHalfSize : boolean read FLoadHalfSize write SetLoadHalfSize;
   end;
        
   TRAWExifRecord = class(TObject)
@@ -196,6 +196,7 @@ var
 begin
   RawBitmap := TFreeWinBitmap.Create;
   try
+    //TODO: FLoadHalfSize param
     RawBitmap.LoadFromStream(Stream, RAW_PREVIEW);
     RawBitmap.ConvertTo24Bits;
     fWidth := RawBitmap.GetWidth;

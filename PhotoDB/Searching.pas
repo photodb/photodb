@@ -62,11 +62,11 @@ type
     SearchPanelA: TPanel;
     Label1: TLabel;
     RtgQueryRating: TRating;
-    TwButton1: TTwButton;
+    TwbPrivate: TTwButton;
     PropertyPanel: TPanel;
     Label2: TLabel;
     Label8: TLabel;
-    Rating1: TRating;
+    RatingEdit: TRating;
     Label4: TLabel;
     Label6: TLabel;
     Memo2: TMemo;
@@ -198,6 +198,7 @@ type
     TmrQueryHintClose: TTimer;
     WlStartStop: TWebLink;
     LsSearchResults: TLoadingSign;
+    TwlIncludeAllImages: TTwButton;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
@@ -251,7 +252,7 @@ type
     procedure SetPath(Value : String);
     procedure SearchPanelAContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    procedure Rating1MouseDown(Sender: TObject);
+    procedure RatingEditMouseDown(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -598,9 +599,10 @@ begin
   WideSearch.RatingTo := Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange);
   WideSearch.DateFrom := Min(GetDateFilter.DateFrom, GetDateFilter.DateTo);
   WideSearch.DateTo := Max(GetDateFilter.DateFrom, GetDateFilter.DateTo);
-  WideSearch.ShowPrivate := TwButton1.Pushed;
+  WideSearch.ShowPrivate := TwbPrivate.Pushed;
   WideSearch.SortDecrement := SortDecrement;
   WideSearch.SortMethod := SortMethod;
+  WideSearch.ShowAllImages := TwlIncludeAllImages.Pushed;
   WideSearch.IsEstimate := IsEstimate;
   TmrSearchResultsCount.Enabled := False;
   SearchThread.Create(Self, StateID, WideSearch, BreakOperation, FPictureSize);
@@ -980,7 +982,7 @@ begin
   s1:=normalizeDBString(memo2.lines.Text);
   s2:=normalizeDBString(memo1.lines.Text);
   s3:=normalizeDBString(FPropertyGroups);
-  _sqlexectext:=_sqlexectext+' Set Comment='+s1+' , KeyWords='+s2+', Rating='+inttostr(rating1.Rating)+', DateToAdd = :Date, IsDate = :IsDate, aTime = :aTime, IsTime = :IsTime, Groups = '+s3;
+  _sqlexectext:=_sqlexectext+' Set Comment='+s1+' , KeyWords='+s2+', Rating='+inttostr(RatingEdit.Rating)+', DateToAdd = :Date, IsDate = :IsDate, aTime = :aTime, IsTime = :IsTime, Groups = '+s3;
 
   _sqlexectext:=_sqlexectext+ ' Where ID=:ID';
   WorkQuery.active:=false;
@@ -994,7 +996,7 @@ begin
   ExecSQL(WorkQuery);
   EventInfo.Comment:=memo2.lines.Text;
   EventInfo.KeyWords:=memo1.lines.Text;
-  EventInfo.Rating:=rating1.Rating;
+  EventInfo.Rating:=RatingEdit.Rating;
   EventInfo.Groups:=FPropertyGroups;
   EventInfo.Date:=DateTimePicker1.DateTime;
   EventInfo.IsDate:=not IsDatePanel.Visible;
@@ -1011,7 +1013,7 @@ begin
   ComboBoxSelGroups.Enabled:=false;
   DateTimePicker1.Enabled:=false;
   DateTimePicker4.Enabled:=false;
-  Rating1.Enabled:=false;
+  RatingEdit.Enabled:=false;
 
   xCount:=0;
   ProgressForm:=nil;
@@ -1096,7 +1098,7 @@ begin
   //[END] Time Support
 
   //[BEGIN] Rating Support
-  if not Rating1.Islayered then
+  if not RatingEdit.Islayered then
   begin
    _sqlexectext:='Update $DB$ Set Rating = :Rating Where ID in (';
    for i:=0 to Length(SelectedInfo.Ids)-1 do
@@ -1105,9 +1107,9 @@ begin
    _sqlexectext:=_sqlexectext+')';
    WorkQuery.active:=false;
    SetSQL(WorkQuery,_sqlexectext);
-   SetIntParam(WorkQuery,0,Rating1.Rating);
+   SetIntParam(WorkQuery,0,RatingEdit.Rating);
    ExecSQL(WorkQuery);
-   EventInfo.Rating:=Rating1.Rating;
+   EventInfo.Rating:=RatingEdit.Rating;
    For i:=0 to Length(SelectedInfo.Ids)-1 do
    DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_Rating],EventInfo);
   end;
@@ -1219,7 +1221,7 @@ begin
   ComboBoxSelGroups.Enabled:=true;
   DateTimePicker1.Enabled:=true;
   DateTimePicker4.Enabled:=true;
-  Rating1.Enabled:=true;
+  RatingEdit.Enabled:=true;
   if ProgressForm<>nil then
   begin
    ProgressForm.Release;
@@ -1244,6 +1246,7 @@ var
   Exists : integer;
   SearchRecord : TSearchRecord;
 begin
+  //TODO: WTF?
   Password:='';
   item:=GetListItemByID(ID);
   if item=nil then exit;
@@ -1264,7 +1267,8 @@ begin
    Password:=DBKernel.FindPasswordForCryptBlobStream(SelectQuery.FieldByName('thum'));
    if Password<>'' then
    begin
-    J:=TJpegImage(DeCryptBlobStreamJPG(SelectQuery.FieldByName('thum'),Password));
+    J:=TJpegImage.Create;
+    DeCryptBlobStreamJPG(SelectQuery.FieldByName('thum'),Password, J);
     SearchRecord.Crypted:=true;
    end else
    begin
@@ -1345,7 +1349,8 @@ begin
    Password:=DBKernel.FindPasswordForCryptBlobStream(SelectQuery.FieldByName('thum'));
    if Password<>'' then
    begin
-    J:=TJPEGImage(DeCryptBlobStreamJPG(SelectQuery.FieldByName('thum'),Password));
+    J:=TJPEGImage.Create;
+    DeCryptBlobStreamJPG(SelectQuery.FieldByName('thum'),Password, J);
     SearchRecord.Crypted:=true;
    end else
    begin
@@ -1536,16 +1541,16 @@ procedure TSearchForm.Memo1Change(Sender: TObject);
 begin
  if GetSelectionCount>1 then
  begin
-  if ReadCHTime or ReadCHDate or not rating1.Islayered or (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) or VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
+  if ReadCHTime or ReadCHDate or not RatingEdit.Islayered or (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) or VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
   Save.Enabled:=true else Save.Enabled:=false;
-  if not rating1.Islayered then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
+  if not RatingEdit.Islayered then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
   if (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
   if VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) then Label5.Font.Style:=Label5.Font.Style+[fsBold] else Label5.Font.Style:=Label5.Font.Style-[fsBold];
  end else
  begin
-  if ReadCHTime or ReadCHDate or (CurrentItemInfo.ItemRating<>Rating1.Rating) or (CurrentItemInfo.ItemComment<>Memo2.text) or VariousKeyWords(CurrentItemInfo.ItemKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
+  if ReadCHTime or ReadCHDate or (CurrentItemInfo.ItemRating<>RatingEdit.Rating) or (CurrentItemInfo.ItemComment<>Memo2.text) or VariousKeyWords(CurrentItemInfo.ItemKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
   Save.Enabled:=true else Save.Enabled:=false;
-  if (CurrentItemInfo.ItemRating<>Rating1.Rating) then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
+  if (CurrentItemInfo.ItemRating<>RatingEdit.Rating) then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
   if (CurrentItemInfo.ItemComment<>Memo2.text) then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
   if VariousKeyWords(CurrentItemInfo.ItemKeyWords,Memo1.text) then Label5.Font.Style:=Label5.Font.Style+[fsBold] else Label5.Font.Style:=Label5.Font.Style-[fsBold];
  end;
@@ -1727,7 +1732,7 @@ begin
    if ListView.Selection.Count<2 then
    begin
     DragImage:=nil;
-    if item<>nil then
+    if (item <> nil) and (item.ImageIndex <> -1) then
     DragImage:=GetImageByIndex(item) else
     if ListView.Selection.First<>nil then
     DragImage:=GetImageByIndex(ListView.Selection.First);
@@ -2308,9 +2313,9 @@ begin
  PopupMenu1.Popup(SearchPanelA.ClientToScreen(MousePos).X,SearchPanelA.ClientToScreen(MousePos).Y);
 end;
 
-procedure TSearchForm.Rating1MouseDown(Sender: TObject);
+procedure TSearchForm.RatingEditMouseDown(Sender: TObject);
 begin
-  if Rating1.islayered then Rating1.islayered:=false;
+  if RatingEdit.islayered then RatingEdit.islayered:=false;
   Memo1Change(Sender);
 end;
 
@@ -2550,13 +2555,13 @@ end;
 
 procedure TSearchForm.Ratingnotsets1Click(Sender: TObject);
 begin
- Rating1.Islayered:=True;
+ RatingEdit.Islayered:=True;
  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.PopupMenu5Popup(Sender: TObject);
 begin
- Ratingnotsets1.Visible:=not Rating1.Islayered and not FUpdatingDB;
+ Ratingnotsets1.Visible:=not RatingEdit.Islayered and not FUpdatingDB;
  if GetSelectionCount<2 then Ratingnotsets1.Visible:=False;
 end;
 
@@ -3377,9 +3382,9 @@ begin
   end;
   lockwindowupdate(Handle);
   SelectedInfo.CommonRating:=MaxStatInt(ArInt);
-  rating1.Rating:=SelectedInfo.CommonRating;
-  rating1.Islayered:=True;
-  rating1.layered:=100;
+  RatingEdit.Rating:=SelectedInfo.CommonRating;
+  RatingEdit.Islayered:=True;
+  RatingEdit.layered:=100;
 
   CurrentItemInfo.ItemDate:=MaxStatDate(ArDates);
   CurrentItemInfo.ItemIsDate:=MaxStatBool(ArIsDates);
@@ -3431,7 +3436,7 @@ begin
   FCurrentSelectedID:=-1;
   FreeDS(WorkQuery);
  end else begin
-  rating1.Islayered:=false;
+  RatingEdit.Islayered:=false;
   SelectQuery.Active:=false;
 
   indent:=0;
@@ -3445,8 +3450,8 @@ begin
   Label4.Caption:=Format(TEXT_MES_SIZE_FORMATA,[sizeintextA(SelectQuery.FieldByName('FileSize').asinteger)]);
   memo1.Lines.text:=SelectQuery.FieldByName('KeyWords').asstring;
   memo2.Lines.text:=SelectQuery.FieldByName('Comment').asstring;
-  Rating1.Rating:=SelectQuery.FieldByName('Rating').asinteger;
-  CurrentItemInfo.ItemRating:=Rating1.Rating;
+  RatingEdit.Rating:=SelectQuery.FieldByName('Rating').asinteger;
+  CurrentItemInfo.ItemRating:=RatingEdit.Rating;
 
   ListView.Hint := SelectQuery.FieldByName('Comment').asstring;
   FCurrentSelectedID:=SelectQuery.FieldByName('ID').AsInteger;

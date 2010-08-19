@@ -405,9 +405,13 @@ begin
     DrawAttributes(B,102,0,0,0,TempTable.FieldByName('FFileName').AsString,true,Exists);
    end else
    begin
-    J:=DeCryptBlobStreamJPG(TempTable.FieldByName('thum'),PassWord) as TJpegImage;
-    B.Canvas.Draw(50-J.Width div 2,50 - J.Height div 2,J);
-    J.Free;
+    J:= TJpegImage.Create;
+    try
+      DeCryptBlobStreamJPG(TempTable.FieldByName('thum'),PassWord,J);
+      B.Canvas.Draw(50-J.Width div 2,50 - J.Height div 2,J);
+    finally
+      J.Free;
+    end;
     Exists:=0;
     DrawAttributes(B,102,TempTable.FieldByName('Rating').AsInteger,TempTable.FieldByName('Rotated').AsInteger,TempTable.FieldByName('Access').AsInteger,TempTable.FieldByName('FFileName').AsString,ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')),Exists);
    end;

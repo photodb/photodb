@@ -104,10 +104,9 @@ var
   Password, SQLText, s : string;
   n, i, j, L, Left, m : integer;
   r : extended;
-  FImage : TJpegImage;
+  JPEG : TJpegImage;
 const AllocBy = 50;
 begin
- FImage:=nil;
  fQuery.Active:=false;
  L:=Length(IDs);
  n:=Trunc(L/AllocBy);
@@ -150,29 +149,26 @@ begin
     FInfo.ItemImTh:=fQuery.fieldByName('StrTh').AsString;
     if TBlobField(fQuery.FieldByName('thum'))=nil then Continue;
 
-    if ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')) then
-    begin
-     Password:=DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'));
-     if Password<>'' then
-     FImage:=DeCryptBlobStreamJPG(fQuery.FieldByName('thum'),Password) as TJpegImage;
-    end else
-    begin
-     FImage:=TJpegImage.Create;
-     fbs:=GetBlobStream(fQuery.FieldByName('thum'),bmRead);
-     try
-      if fbs.Size<>0 then
-      FImage.LoadFromStream(fbs) else
-     except
-      FImage.Free;
-      FImage:=nil;
-     end;
-     fbs.Free;
-    end;
-    if FImage<>nil then
-    begin
-     NewItem(FImage); 
-     FImage.free;
-     FImage:=nil;
+    JPEG := TJpegImage.Create;
+    try
+      if ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')) then
+      begin
+        Password:=DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'));
+        if Password <> '' then
+          DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), Password, JPEG);
+      end else
+      begin
+        FBS:=GetBlobStream(fQuery.FieldByName('thum'), bmRead);
+        try
+          JPEG.LoadFromStream(fbs);
+        finally
+          FBS.Free;
+        end;
+      end;
+      if not JPEG.Empty then
+        NewItem(JPEG);
+    finally
+      JPEG.free;
     end;
 
     fQuery.Next;
@@ -261,6 +257,7 @@ var
   Password, s : string;
   CryptFile : boolean;
   c : integer;
+  JPEG : TJPEGImage;
 begin
  c:=0;
  Result:=nil;
@@ -316,7 +313,15 @@ begin
   begin
    Password:=DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'));
    if Password<>'' then
-   Result.Graphic:=DeCryptBlobStreamJPG(fQuery.FieldByName('thum'),Password) as TJpegImage else
+   begin
+     JPEG := TJpegImage.Create;
+     try
+       DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), Password, JPEG);
+       Result.Graphic := JPEG;
+     finally
+       JPEG.Free;
+     end;
+   end else
    begin
     Result.Free;
     Result:=nil;

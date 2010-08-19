@@ -315,9 +315,9 @@ end;
 
 procedure FindRunningVersion;
 var
-  HSemaphore : THandle;  
+  HSemaphore : THandle;
   Rec : TRecToPass;
-  MessageToSent : string; 
+  MessageToSent : string;
   cd : TCopyDataStruct;
 begin
   HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DBID));
@@ -352,7 +352,7 @@ exports
 begin
 {
  //Command line
- 
+
  /OPTIMIZE_DUBLICTES
  /SHOWBADLINKS
  /RECREATETHTABLE
@@ -363,14 +363,14 @@ begin
  /SAFEMODE
  /UNINSTALL
  /EXPLORER
- /GETPHOTOS 
+ /GETPHOTOS
  /NOLOGO
  /NoPrevVersion
- /NoFaultCheck  
- /NoFullRun 
+ /NoFaultCheck
+ /NoFullRun
  /Execute "c:\script.dbscript"
  /NoVistaMsg
- /NoVistaFileDlg   
+ /NoVistaFileDlg
  /SelectDB "DBFile"
  /SelectDB "DBName"
  /SelectDBPermanent
@@ -378,444 +378,475 @@ begin
  /ADD "directory"
  /AddPass "pass1!pass2!..."
  /Logging
- /SQLExec   
+ /SQLExec
  /SQLExecFile
 }
-  TW.I.Start('START');
+  TW.i.Start('START');
 
   EventLog('');
   EventLog('');
   EventLog('');
-  EventLog(Format('Program running! [%s]',[ProductName]));
+  EventLog(Format('Program running! [%s]', [ProductName]));
 
-  //Lazy init enviroment procedure  
-  TW.I.Start('TScriptEnviroments');
+  // Lazy init enviroment procedure
+  TW.i.Start('TScriptEnviroments');
   TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
 
   LOGGING_ENABLED := GetParamStrDBBool('/Logging');
   if LOGGING_ENABLED then
-    EventLog(Format('Program logging enabled!! [%s]',[ProductName]))
+    EventLog(Format('Program logging enabled!! [%s]', [ProductName]))
   else
     EventLog('Program logging DISABLED! Run program with param "/Logging"');
-    
-  //PREPAIRING ----------------------------------------------------
 
-  TablePacked:=false;
+  // PREPAIRING ----------------------------------------------------
+
+  TablePacked := False;
   if GetParamStrDBBool('/SLEEP') then
     Sleep(1000);
 
   SetSplashProgress(5);
-  TW.I.Start('InitializeDBLoadScript');
+  TW.i.Start('InitializeDBLoadScript');
   InitializeDBLoadScript;
   // INITIALIZAING APPLICATION
 
   if GetDBViewMode then
   begin
     FolderView := True;
-    //TODO: !!! UseScripts := False;
+    // TODO: !!! UseScripts := False;
   end;
 
   SetSplashProgress(10);
-  TW.I.Start('Application.Initialize');
+  TW.i.Start('Application.Initialize');
   Application.Initialize;
   SetSplashProgress(15);
 
   EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
-  //INSTALL ----------------------------------------------------
+  // INSTALL ----------------------------------------------------
 
-  if not FolderView then
-  if not Emulation then
-  if not DBInDebug then
+  if not FolderView and not Emulation and not DBInDebug then
   begin
-   EventLog('...INSTALL COMPARING...');
-   If not ThisFileInstalled then
-   begin
-    if (AnsiUpperCase(ExtractFileName(Application.ExeName))<>'SETUP.EXE') and not EmulationInstall then
+    EventLog('...INSTALL COMPARING...');
+    If not ThisFileInstalled then
     begin
-     if ID_YES=MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_PROGRAMM_NOT_INSTALLED,TEXT_MES_ERROR,TD_BUTTON_YESNO,TD_ICON_ERROR) then
-     begin
-      EventLog('Loading Kernel.dll');
-      KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
-      if KernelHandle=0 then
+      if (AnsiUpperCase(ExtractFileName(Application.ExeName))
+          <> 'SETUP.EXE') and not EmulationInstall then
       begin
-       EventLog('KernelHandle IS 0 -> exit');
-       MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-       Halt;
+        if ID_YES = MessageBoxDB(dolphin_db.GetActiveFormHandle,
+          TEXT_MES_PROGRAMM_NOT_INSTALLED, TEXT_MES_ERROR, TD_BUTTON_YESNO,
+          TD_ICON_ERROR) then
+        begin
+          EventLog('Loading Kernel.dll');
+          KernelHandle := loadlibrary(PChar(ProgramDir + 'Kernel.dll'));
+          if KernelHandle = 0 then
+          begin
+            EventLog('KernelHandle IS 0 -> exit');
+            MessageBoxDB(dolphin_db.GetActiveFormHandle,
+              TEXT_MES_ERROR_KERNEL_DLL, TEXT_MES_ERROR, TD_BUTTON_OK,
+              TD_ICON_ERROR);
+            Halt;
+          end;
+          DBKernel := TDBKernel.Create;
+          DBKernel.LoadColorTheme;
+          Application.CreateForm(TInstallForm, InstallForm);
+          Application.Restore;
+          EventLog(':InstallForm.SetQuickSelfInstallOption()');
+          InstallForm.SetQuickSelfInstallOption;
+          InstallForm.ShowModal;
+          InstallForm.Release;
+          if UseFreeAfterRelease then
+            InstallForm.free;
+          InstallForm := nil;
+          DBTerminating := True;
+          Halt;
+        end
+        else
+        begin
+          DBTerminating := True;
+          Halt;
+        end;
+      end
+      else
+      begin
+        EventLog('Loading Kernel.dll');
+        KernelHandle := loadlibrary(PChar(ProgramDir + 'Kernel.dll'));
+        if KernelHandle = 0 then
+        begin
+          EventLog('KernelHandle IS 0 -> exit');
+          MessageBoxDB(dolphin_db.GetActiveFormHandle,
+            TEXT_MES_ERROR_KERNEL_DLL, TEXT_MES_ERROR, TD_BUTTON_OK,
+            TD_ICON_ERROR);
+          Halt;
+        end;
+        DBKernel := TDBKernel.Create;
+        DBKernel.LoadColorTheme;
+        if Length(GetDirectory(Application.ExeName)) > 200 then
+        begin
+          MessageBoxDB(dolphin_db.GetActiveFormHandle,
+            PChar(Format(TEXT_MES_PATH_TOO_LONG,
+                [GetDirectory(Application.ExeName)])), TEXT_MES_WARNING,
+            TD_BUTTON_OK, TD_ICON_WARNING);
+        end;
+        Application.CreateForm(TInstallForm, InstallForm);
+        Application.Restore;
+        InstallForm.ShowModal;
+        InstallForm.Release;
+        if UseFreeAfterRelease then
+          InstallForm.free;
+        InstallForm := nil;
+        Halt;
       end;
-      DBKernel:=TDBKernel.Create;
-      DBKernel.LoadColorTheme;
-      Application.CreateForm(TInstallForm, InstallForm);
-  Application.Restore;
-      EventLog(':InstallForm.SetQuickSelfInstallOption()');
-      InstallForm.SetQuickSelfInstallOption;
-      InstallForm.ShowModal;
-      InstallForm.Release;
-      if UseFreeAfterRelease then InstallForm.free;
-      InstallForm:=nil;
-      DBTerminating:=True;
-      Halt;
-     end else
-     begin
-      DBTerminating:=True;
-      Halt;
-     end;
-    end else
-    begin               
-     EventLog('Loading Kernel.dll');
-     KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
-     if KernelHandle=0 then
-     begin                
-      EventLog('KernelHandle IS 0 -> exit');
-      MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-      Halt;
-     end;
-     DBKernel:=TDBKernel.Create;
-     DBKernel.LoadColorTheme;
-     if Length(GetDirectory(Application.ExeName))>200 then
-     begin  
-      MessageBoxDB(Dolphin_DB.GetActiveFormHandle,PChar(Format(TEXT_MES_PATH_TOO_LONG,[GetDirectory(Application.ExeName)])),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-     end;
-     Application.CreateForm(TInstallForm, InstallForm);
-     Application.Restore;
-     InstallForm.ShowModal;
-     InstallForm.Release;
-     if UseFreeAfterRelease then InstallForm.free;
-     InstallForm:=nil;
-     Halt;
     end;
-   end;
   end;
-           
-  //UNINSTALL ----------------------------------------------------
-           
+
+  // UNINSTALL ----------------------------------------------------
+
   EventLog('...UNINSTALL COMPARING...');
-  If ThisFileInstalled and GetParamStrDBBool('/UNINSTALL') and not DBTerminating then
+  If ThisFileInstalled and GetParamStrDBBool('/UNINSTALL')
+    and not DBTerminating then
   begin
-   If ID_YES=MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_UNINSTALL_CONFIRM,TEXT_MES_WARNING,TD_BUTTON_YESNO,TD_ICON_WARNING) then
-   begin
-    AExplorerFolders.Free;
-    AExplorerFolders:=nil;
-    Application.CreateForm(TUnInstallForm, UnInstallForm);
-    Application.Restore;
-    UnInstallForm.ShowModal;
-    UnInstallForm.Release;
-    if UseFreeAfterRelease then UnInstallForm.free;
-    UnInstallForm:=nil;
-   end;
-   Halt;
+    If ID_YES = MessageBoxDB(dolphin_db.GetActiveFormHandle,
+      TEXT_MES_UNINSTALL_CONFIRM, TEXT_MES_WARNING, TD_BUTTON_YESNO,
+      TD_ICON_WARNING) then
+    begin
+      AExplorerFolders.free;
+      AExplorerFolders := nil;
+      Application.CreateForm(TUnInstallForm, UnInstallForm);
+      Application.Restore;
+      UnInstallForm.ShowModal;
+      UnInstallForm.Release;
+      if UseFreeAfterRelease then
+        UnInstallForm.free;
+      UnInstallForm := nil;
+    end;
+    Halt;
   end;
-                  
+
   EventLog('TDBKernel.Create');
   DBKernel := TDBKernel.Create;
-  TW.I.Start('DBKernel.LogIn');
+  TW.i.Start('DBKernel.LogIn');
   DBKernel.LogIn('', '', True);
   TLoad.Instance.StartDBKernelIconsThread;
   TLoad.Instance.StartDBSettingsThread;
   SetSplashProgress(25);
 
-  TW.I.Start('FindRunningVersion');
+  TW.i.Start('FindRunningVersion');
   if not GetParamStrDBBool('/NoPrevVersion') then
     FindRunningVersion;
-                    
-  TW.I.Start('SetSplashProgress 35');
+
+  TW.i.Start('SetSplashProgress 35');
   SetSplashProgress(35);
 
-  //This is main form of application
-  TW.I.Start('TFormManager Create');
+  // This is main form of application
+  TW.i.Start('TFormManager Create');
   Application.CreateForm(TFormManager, FormManager);
   Application.ShowMainForm := False;
 
-  TW.I.Start('SetSplashProgress 50');
+  TW.i.Start('SetSplashProgress 50');
   SetSplashProgress(50);
 
-  TW.I.Start('Kernel');
-  //CHECK DEMO MODE ----------------------------------------------------
+  TW.i.Start('Kernel');
+  // CHECK DEMO MODE ----------------------------------------------------
   if not DBTerminating then
   begin
-   EventLog('Loading Kernel.dll');
-   if not FolderView then
-   KernelHandle := Loadlibrary(PChar(ProgramDir+'Kernel.dll')); 
-   TW.I.Start('StartCRCCheckThread');
-   TLoad.Instance.StartCRCCheckThread;
-   EventLog(':DBKernel.InitRegModule');
-   TW.I.Start('InitRegModule');
-   //TODO: LATER!!!! DBKernel.InitRegModule;
-   EventLog(':DBKernel.LoadColorTheme');
-   TW.I.Start('DBKernel.LoadColorThem');
-   DBKernel.LoadColorTheme;
-  end;                 
-   TW.I.Start('SetSplashProgress 70');
+    EventLog('Loading Kernel.dll');
+    if not FolderView then
+      KernelHandle := loadlibrary(PChar(ProgramDir + 'Kernel.dll'));
+    TW.i.Start('StartCRCCheckThread');
+    TLoad.Instance.StartCRCCheckThread;
+    EventLog(':DBKernel.InitRegModule');
+    TW.i.Start('InitRegModule');
+    // TODO: LATER!!!! DBKernel.InitRegModule;
+    EventLog(':DBKernel.LoadColorTheme');
+    TW.i.Start('DBKernel.LoadColorThem');
+    DBKernel.LoadColorTheme;
+  end;
+  TW.i.Start('SetSplashProgress 70');
   SetSplashProgress(70);
 
   if not FolderView then
+    if not DBTerminating then
+      If IsInstalling then
+      begin
+        EventLog('IsInstalling IS true -> exit');
+        MessageBoxDB(GetActiveFormHandle, TEXT_MES_SETUP_RUNNING,
+          TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+        Application.Terminate;
+        DBTerminating := True;
+      end;
   if not DBTerminating then
-  If IsInstalling then
-  begin     
-   EventLog('IsInstalling IS true -> exit');
-   MessageBoxDB(GetActiveFormHandle,TEXT_MES_SETUP_RUNNING,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-   Application.Terminate;
-   DBTerminating:=True;
-  end;
-  if not DBTerminating then
-  if not FolderView then
-  if KernelHandle=0 then
-  begin
-   EventLog('KernelHandle IS 0 -> exit');
-   MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   Halt;
-  end;
+    if not FolderView then
+      if KernelHandle = 0 then
+      begin
+        EventLog('KernelHandle IS 0 -> exit');
+        MessageBoxDB(dolphin_db.GetActiveFormHandle, TEXT_MES_ERROR_KERNEL_DLL,
+          TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+        Halt;
+      end;
 
   if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
     AExplorerFolders := TExplorerFolders.Create;
 
-  TW.I.Start('GetCIDA');  
+  TW.i.Start('GetCIDA');
   SetSplashProgress(80);
 
   EventLog('...Loading menu...');
   SetSplashProgress(95);
 
-  TW.I.Start('LoadingAboutForm.Free');
+  TW.i.Start('LoadingAboutForm.Free');
   EventLog('...LOGGING...');
   if not FolderView then
-  if not DBInDebug then
-  if not DBTerminating then
-  If DBKernel.ProgramInDemoMode then
-  begin
-   SplashThread.Terminate;
-   EventLog('Loading About...');
-   if AboutForm= nil then
-   Application.CreateForm(TAboutForm, AboutForm);
-   AboutForm.Execute;
-   AboutForm.Release;
-   if UseFreeAfterRelease then AboutForm.Free;
-   AboutForm:=nil;
-  end;
-                   
-  TW.I.Start('CHECK APPDATA DIRECTORY');
-  //GROUPS CHECK + MENU----------------------------------------------------
+    if not DBInDebug then
+      if not DBTerminating then
+        If DBKernel.ProgramInDemoMode then
+        begin
+          SplashThread.Terminate;
+          EventLog('Loading About...');
+          if AboutForm = nil then
+            Application.CreateForm(TAboutForm, AboutForm);
+          AboutForm.Execute;
+          AboutForm.Release;
+          if UseFreeAfterRelease then
+            AboutForm.free;
+          AboutForm := nil;
+        end;
+
+  TW.i.Start('CHECK APPDATA DIRECTORY');
+  // GROUPS CHECK + MENU----------------------------------------------------
   EventLog('...GROUPS CHECK + MENU...');
-  TW.I.Start('IsValidGroupsTable');
+  TW.i.Start('IsValidGroupsTable');
 
   try
-  if not DBTerminating then
-  if not IsValidGroupsTable then
-  if ThisFileInstalled then
-    CreateGroupsTable;
+    if not DBTerminating then
+      if not IsValidGroupsTable then
+        if ThisFileInstalled then
+          CreateGroupsTable;
   except
-    on e : Exception do EventLog(':PhotoDB() throw exception: '+e.Message);
+    on e: Exception do
+      EventLog(':PhotoDB() throw exception: ' + e.Message);
   end;
-  //DB FAULT ----------------------------------------------------
-         
-  TW.I.Start('CHECKS');
+  // DB FAULT ----------------------------------------------------
+
+  TW.i.Start('CHECKS');
 
   if not FolderView then
-  if not DBTerminating then
-  if not GetParamStrDBBool('/NoFaultCheck') then
-  if (DBKernel.ReadProperty('Starting', 'ApplicationStarted')='1') and not DBInDebug then
-  begin
-   EventLog('Application terminated...');
-   if ID_OK=MessageBoxDB(FormManager.Handle,TEXT_MES_APPLICATION_FAILED,TEXT_MES_ERROR,TD_BUTTON_OKCANCEL,TD_ICON_ERROR) then
-   begin
-    SplashThread.Terminate;
-    TablePacked:=true;
-    DBkernel.WriteBool('StartUp','Pack',False);
-    Application.CreateForm(TCMDForm, CMDForm);
-    CMDForm.PackPhotoTable;
-    CMDForm.Release;
-    if UseFreeAfterRelease then CMDForm.Free;
-    CMDForm:=nil;
-   end;
-  end;
+    if not DBTerminating then
+      if not GetParamStrDBBool('/NoFaultCheck') then
+        if (DBKernel.ReadProperty('Starting', 'ApplicationStarted') = '1')
+          and not DBInDebug then
+        begin
+          EventLog('Application terminated...');
+          if ID_OK = MessageBoxDB(FormManager.Handle, TEXT_MES_APPLICATION_FAILED, TEXT_MES_ERROR, TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
+          begin
+            SplashThread.Terminate;
+            TablePacked := True;
+            DBKernel.WriteBool('StartUp', 'Pack', False);
+            Application.CreateForm(TCMDForm, CMDForm);
+            CMDForm.PackPhotoTable;
+            CMDForm.Release;
+            if UseFreeAfterRelease then
+              CMDForm.Free;
+            CMDForm := nil;
+          end;
+        end;
 
-  //SERVICES ----------------------------------------------------
-
-  if not DBTerminating then
-  if GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp','ConvertDB',False) then
-  if not TablePacked then
-  begin
-   SplashThread.Terminate;
-   EventLog('Converting...');
-   DBkernel.WriteBool('StartUp','ConvertDB',False);
-   ConvertDB(dbname);
-  end;
+  // SERVICES ----------------------------------------------------
 
   if not DBTerminating then
-  if GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp','Pack',False) then
-  if not TablePacked then
-  begin
-   SplashThread.Terminate;
-   EventLog('Packing...');
-   DBkernel.WriteBool('StartUp','Pack',False);
-   Application.CreateForm(TCMDForm, CMDForm);
-   CMDForm.PackPhotoTable;
-   CMDForm.Release;
-   if UseFreeAfterRelease then CMDForm.Free;
-   CMDForm:=nil;
-  end;
+    if GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp',
+      'ConvertDB', False) then
+      if not TablePacked then
+      begin
+        SplashThread.Terminate;
+        EventLog('Converting...');
+        DBKernel.WriteBool('StartUp', 'ConvertDB', False);
+        ConvertDB(dbname);
+      end;
 
   if not DBTerminating then
-  if GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp','BackUp',False) then
-  if not TablePacked then
-  begin   
-   SplashThread.Terminate;
-   EventLog('BackUp...');
-   DBkernel.WriteBool('StartUp','BackUp',False);
-   Application.CreateForm(TCMDForm, CMDForm);
-   CMDForm.BackUpTable;
-   CMDForm.Release;
-   if UseFreeAfterRelease then CMDForm.Free;
-   CMDForm:=nil;
-  end;
+    if GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp', 'Pack', False) then
+      if not TablePacked then
+      begin
+        SplashThread.Terminate;
+        EventLog('Packing...');
+        DBKernel.WriteBool('StartUp', 'Pack', False);
+        Application.CreateForm(TCMDForm, CMDForm);
+        CMDForm.PackPhotoTable;
+        CMDForm.Release;
+        if UseFreeAfterRelease then
+          CMDForm.free;
+        CMDForm := nil;
+      end;
 
   if not DBTerminating then
-  if GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp','RecreateIDEx',False) then
-  begin
-   SplashThread.Terminate;
-   EventLog('Recreating thumbs in Table...');
-   DBkernel.WriteBool('StartUp','RecreateIDEx',False);
-   Application.CreateForm(TCMDForm, CMDForm);
-   CMDForm.RecreateImThInPhotoTable;
-   CMDForm.Release;
-   if UseFreeAfterRelease then CMDForm.Free;
-   CMDForm:=nil;
-  end;
-  
-  if not DBTerminating then
-  if GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp','ScanBadLinks',False) then
-  begin    
-   SplashThread.Terminate;
-   EventLog('Show Bad Links in table...');
-   DBkernel.WriteBool('StartUp','ScanBadLinks',False);
-   Application.CreateForm(TCMDForm, CMDForm);
-   CMDForm.ShowBadLinks;
-   CMDForm.Release;
-   if UseFreeAfterRelease then CMDForm.Free;
-   CMDForm:=nil;
-  end;
+    if GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp', 'BackUp', False) then
+      if not TablePacked then
+      begin
+        SplashThread.Terminate;
+        EventLog('BackUp...');
+        DBKernel.WriteBool('StartUp', 'BackUp', False);
+        Application.CreateForm(TCMDForm, CMDForm);
+        CMDForm.BackUpTable;
+        CMDForm.Release;
+        if UseFreeAfterRelease then
+          CMDForm.free;
+        CMDForm := nil;
+      end;
 
   if not DBTerminating then
-  if GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp','OptimizeDublicates',False) then
-  begin     
-   SplashThread.Terminate;
-   EventLog('Optimizingdublicates in table...');
-   DBkernel.WriteBool('StartUp','OptimizeDublicates',False);
-   Application.CreateForm(TCMDForm, CMDForm);
-   CMDForm.OptimizeDublicates;
-   CMDForm.Release;
-   if UseFreeAfterRelease then CMDForm.Free;
-   CMDForm:=nil;
-  end;
-  
+    if GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp', 'RecreateIDEx', False) then
+    begin
+      SplashThread.Terminate;
+      EventLog('Recreating thumbs in Table...');
+      DBKernel.WriteBool('StartUp', 'RecreateIDEx', False);
+      Application.CreateForm(TCMDForm, CMDForm);
+      CMDForm.RecreateImThInPhotoTable;
+      CMDForm.Release;
+      if UseFreeAfterRelease then
+        CMDForm.free;
+      CMDForm := nil;
+    end;
+
   if not DBTerminating then
-  if DBKernel.ReadBool('StartUp','Restore',False) then
-  begin      
-   SplashThread.Terminate;
-   DBkernel.WriteBool('StartUp','Restore',False);
-   EventLog('Restoring Table...'+DBkernel.ReadString('StartUp','RestoreFile'));
-   Application.CreateForm(TCMDForm, CMDForm);
-   CMDForm.RestoreTable(DBkernel.ReadString('StartUp','RestoreFile'));
-   CMDForm.Release;
-   if UseFreeAfterRelease then CMDForm.Free;
-   CMDForm:=nil;
-  end;
+    if GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp', 'ScanBadLinks', False) then
+    begin
+      SplashThread.Terminate;
+      EventLog('Show Bad Links in table...');
+      DBKernel.WriteBool('StartUp', 'ScanBadLinks', False);
+      Application.CreateForm(TCMDForm, CMDForm);
+      CMDForm.ShowBadLinks;
+      CMDForm.Release;
+      if UseFreeAfterRelease then
+        CMDForm.free;
+      CMDForm := nil;
+    end;
 
- //DEMO? ----------------------------------------------------
+  if not DBTerminating then
+    if GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp', 'OptimizeDublicates', False) then
+    begin
+      SplashThread.Terminate;
+      EventLog('Optimizingdublicates in table...');
+      DBKernel.WriteBool('StartUp', 'OptimizeDublicates', False);
+      Application.CreateForm(TCMDForm, CMDForm);
+      CMDForm.OptimizeDublicates;
+      CMDForm.Release;
+      if UseFreeAfterRelease then
+        CMDForm.free;
+      CMDForm := nil;
+    end;
 
-   TW.I.Start('DEMO');
+  if not DBTerminating then
+    if DBKernel.ReadBool('StartUp', 'Restore', False) then
+    begin
+      SplashThread.Terminate;
+      DBKernel.WriteBool('StartUp', 'Restore', False);
+      EventLog('Restoring Table...' + DBKernel.ReadString('StartUp', 'RestoreFile'));
+      Application.CreateForm(TCMDForm, CMDForm);
+      CMDForm.RestoreTable(DBKernel.ReadString('StartUp', 'RestoreFile'));
+      CMDForm.Release;
+      if UseFreeAfterRelease then
+        CMDForm.free;
+      CMDForm := nil;
+    end;
 
- if not FolderView then
- If not DBTerminating then
- if not DBInDebug then
- if not Emulation then
- begin
-  EventLog('Verifyng....');
+  // DEMO? ----------------------------------------------------
 
-  TLoad.Instance.RequaredCRCCheck;
-  @initAproc := GetProcAddress(KernelHandle,'InitializeA');
-  if not initAproc(PChar(Application.ExeName)) then
-  begin
-   MessageBoxDB(GetActiveFormHandle,TEXT_MES_APPLICATION_NOT_VALID,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   DBTerminating:=True;
-   Application.Terminate;
-  end;
- end;
+  TW.i.Start('DEMO');
 
-  TW.I.Start('LoadingAboutForm.FREE');
+  if not FolderView then
+    If not DBTerminating then
+      if not DBInDebug then
+        if not Emulation then
+        begin
+          EventLog('Verifyng....');
 
-  //PREPAIRING RUNNING DB ----------------------------------------
-                
+          TLoad.Instance.RequaredCRCCheck;
+          @initaproc := GetProcAddress(KernelHandle, 'InitializeA');
+          if not initaproc(PChar(Application.ExeName)) then
+          begin
+            MessageBoxDB(GetActiveFormHandle, TEXT_MES_APPLICATION_NOT_VALID,
+              TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+            DBTerminating := True;
+            Application.Terminate;
+          end;
+        end;
+
+  TW.i.Start('LoadingAboutForm.FREE');
+
+  // PREPAIRING RUNNING DB ----------------------------------------
+
   SetSplashProgress(100);
-  
+
   If DBTerminating then
-  Application.ShowMainForm:=False;
+    Application.ShowMainForm := False;
   If not DBTerminating then
   begin
     EventLog('Form manager...');
-    TW.I.Start('Form manager...');
+    TW.i.Start('Form manager...');
     FormManager.Load;
   end;
-            
- //THEMES AND RUNNING DB ---------------------------------------------
-                 
-  TW.I.Start('THEMES AND RUNNING DB');
 
- If not DBTerminating then
- begin                  
-  EventLog('Theme...');
-  DBKernel.LoadColorTheme;
-  EventLog('Run manager...');
-  if not GetParamStrDBBool('/NoFullRun') then
-    FormManager.Run(SplashThread);
+  // THEMES AND RUNNING DB ---------------------------------------------
+
+  TW.i.Start('THEMES AND RUNNING DB');
 
   If not DBTerminating then
   begin
-   if AnsiUpperCase(ParamStr(1))='/GETPHOTOS' then
-   if ParamStr(2)<>'' then
-   GetPhotosFromDrive(ParamStr(2)[1]);
+    EventLog('Theme...');
+    DBKernel.LoadColorTheme;
+    EventLog('Run manager...');
+    if not GetParamStrDBBool('/NoFullRun') then
+      FormManager.Run(SplashThread);
+
+    if not DBTerminating then
+    begin
+      if AnsiUpperCase(ParamStr(1)) = '/GETPHOTOS' then
+        if ParamStr(2) <> '' then
+          GetPhotosFromDrive(ParamStr(2)[1]);
+    end;
   end;
- end;
- EventLog('Application Started!...');
+  EventLog('Application Started!...');
 
- if GetParamStrDBBool('/Execute') then
- begin
-  ExecuteScriptFile(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Execute'),'"'));
- end;
+  if GetParamStrDBBool('/Execute') then
+  begin
+    ExecuteScriptFile(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Execute'), '"'));
+  end;
 
- if GetParamStrDBBool('/AddPass') then
- begin
-  DBKernel.GetPasswordsFromParams;
- end;
+  if GetParamStrDBBool('/AddPass') then
+  begin
+    DBKernel.GetPasswordsFromParams;
+  end;
 
- s1 := SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Add'),'"');
- 
- if (s1 <> '') and FileExistsEx(s1) then
- begin
-   if UpdaterDB = nil then
-     UpdaterDB := TUpdaterDB.Create;
-   FormManager.RegisterMainForm(UpdaterDB.Form);
-   UpdaterDB.AddFile(s1);
- end;
+  s1 := SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Add'), '"');
 
- if (s1 <> '') and DirectoryExists(s1) then
- begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
-  FormManager.RegisterMainForm(UpdaterDB.Form);
-  UpdaterDB.AddDirectory(s1,nil);
- end;
+  if (s1 <> '') and FileExistsEx(s1) then
+  begin
+    if UpdaterDB = nil then
+      UpdaterDB := TUpdaterDB.Create;
+    FormManager.RegisterMainForm(UpdaterDB.Form);
+    UpdaterDB.AddFile(s1);
+  end;
 
- if GetParamStrDBBool('/SQLExec') then
- begin
-  ExecuteQuery(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'),'"'));
- end;
-   
- if GetParamStrDBBool('/SQLExecFile') then
- begin
-  s1:=SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'),'"');
-  s1:=ReadTextFileInString(s1);
-  ExecuteQuery(s1);
- end;   
+  if (s1 <> '') and DirectoryExists(s1) then
+  begin
+    if UpdaterDB = nil then
+      UpdaterDB := TUpdaterDB.Create;
+    FormManager.RegisterMainForm(UpdaterDB.Form);
+    UpdaterDB.AddDirectory(s1, nil);
+  end;
 
- Application.Run;
+  if GetParamStrDBBool('/SQLExec') then
+  begin
+    ExecuteQuery(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'), '"'));
+  end;
+
+  if GetParamStrDBBool('/SQLExecFile') then
+  begin
+    s1 := SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'), '"');
+    s1 := ReadTextFileInString(s1);
+    ExecuteQuery(s1);
+  end;
+
+  Application.Run;
+
 end.

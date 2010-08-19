@@ -267,7 +267,7 @@ object SearchForm: TSearchForm
         Font.Style = [fsUnderline]
         ParentFont = False
       end
-      object Rating1: TRating
+      object RatingEdit: TRating
         Left = 8
         Top = 32
         Width = 96
@@ -280,7 +280,7 @@ object SearchForm: TSearchForm
         OnChange = Memo1Change
         Islayered = False
         Layered = 100
-        OnMouseDown = Rating1MouseDown
+        OnMouseDown = RatingEditMouseDown
         ImageCanRegenerate = True
       end
       object Memo2: TMemo
@@ -641,8 +641,8 @@ object SearchForm: TSearchForm
         PopupMenu = InsertSpesialQueryPopupMenu
       end
       object Image3: TImage
-        Left = 124
-        Top = 75
+        Left = 145
+        Top = 74
         Width = 16
         Height = 16
         OnClick = Image3Click
@@ -751,7 +751,7 @@ object SearchForm: TSearchForm
         Layered = 100
         ImageCanRegenerate = True
       end
-      object TwButton1: TTwButton
+      object TwbPrivate: TTwButton
         Left = 105
         Top = 74
         Width = 16
@@ -946,6 +946,58 @@ object SearchForm: TSearchForm
         Visible = False
         Active = True
         FillPercent = 50
+      end
+      object TwlIncludeAllImages: TTwButton
+        Left = 123
+        Top = 74
+        Width = 16
+        Height = 16
+        Cursor = crHandPoint
+        Hint = 'Show private photos'
+        Icon.Data = {
+          0000010001001010000001002000680400001600000028000000100000002000
+          0000010020000000000040040000000000000000000000000000000000000000
+          000000000000E2ECF913AAC8ED55AAC8ED55AAB4C00500000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          000000000000AAC8ED3F43B4F1FF1678D7FF001E431500000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          000000000000AAC8ED3F43B4F1FF1678D7FF001E431500000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          000000000000AAC8ED3F43B4F1FF1678D7FF001E431500000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          000000000000AAC8ED3F43B4F1FF1678D7FF001E43150000000000000000F3D8
+          AA55E5A840FFE5A840FFE5A840FFE5A840FFC2B9AA0C00000000000000000000
+          000000000000AAC8ED3F43B4F1FF1678D7FF001E431500000000F3D8AA55E5A8
+          40FFFEFCF1FFFEFCF1FFFEFCF1FFE5A840FFF3D8AA5500000000000000000000
+          000000000000AAC8ED3F43B4F1FF1678D7FF001E4315F3D8AA55E5A840FFFEFC
+          F1FFFFF7CAFFFFF6C4FFFEFCF1FFE5A840FFF3D8AA5500000000000000000000
+          000000000000CFD0CA48E5A840FFE5A840FFE5A840FFE5A840FFFEFCF1FFFFF2
+          BEFFFFF1BAFFFFF1BAFFFEFCF1FFE5A840FFF3D8AA5500000000000000000000
+          000000000000F3D8AA55E5A840FFFEFCF1FFFEFCF1FFFFF9E4FFFFECB7FFFFE8
+          A8FFFFE8A8FFFFE8A8FFFEFCF1FFE5A840FFF3D8AA5500000000000000000000
+          000000000000F3D8AA55E5A840FFFEFCF1FFFFDD97FFFFDB8FFFFFDB8FFFFFDB
+          8FFFFFDB8FFFFFDB8FFFFEFCF1FFE5A840FFF3D8AA5500000000000000000000
+          000000000000F3D8AA55E5A840FFFEFCF1FFFFCB72FFFFCB72FFFFCB72FFFFD9
+          95FFFFD995FFFFDEA4FFFFE0AAFFE5A840FFF3D8AA5500000000000000000000
+          000000000000F3D8AA55E5A840FFFEFCF1FFFFC76AFFFFC76AFFFFC76CFFFFC7
+          6AFFFFC76AFFE5A840FFE5A840FFE5A840FFF3D8AA5500000000000000000000
+          000000000000F3D8AA55E5A840FFFEFCF1FFFFC76AFFFFC76AFFFFC76AFFEBBE
+          71F0E5A840FFF3D8AA55F3D8AA55F3D8AA550000000000000000000000000000
+          000000000000F3D8AA55E5A840FFFEFCF1FFFFC76AFFFFC76AFFFFC76AFFE5A8
+          40FFF3D8AA550000000000000000000000000000000000000000000000000000
+          000000000000F3D8AA55E5A840FFE5A840FFE5A840FFE5A840FFE5A840FFF3D8
+          AA55000000000000000000000000000000000000000000000000000000000000
+          000000000000F5F0E70FF1D7AB48F3D8AA55F3D8AA3FE1CDAA5AF3D8AA550000
+          000000000000000000000000000000000000000000000000000000000000C3FF
+          0000C3FF0000C3FF0000C3FF0000C3030000C2030000C0030000C0030000C003
+          0000C0030000C0030000C0030000C0070000C03F0000C07F0000C0FF0000}
+        ParentColor = False
+        Color = clInactiveCaption
+        OnlyMainImage = True
+        OnChange = SearchEditChange
+        IsLayered = False
+        Layered = 100
+        ImageCanRegenerate = True
       end
     end
   end
@@ -1150,9 +1202,9 @@ object SearchForm: TSearchForm
         Width = 799
       end>
     object TbMain: TToolBar
-      Left = 12
+      Left = 11
       Top = 0
-      Width = 785
+      Width = 790
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 57
@@ -1227,7 +1279,7 @@ object SearchForm: TSearchForm
         OnClick = ToolButton2Click
       end
       object ToolButton11: TToolButton
-        Left = 103
+        Left = 105
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -1235,7 +1287,7 @@ object SearchForm: TSearchForm
         Style = tbsSeparator
       end
       object ToolButton10: TToolButton
-        Left = 111
+        Left = 113
         Top = 0
         AutoSize = True
         Caption = 'Groups'
@@ -1243,7 +1295,7 @@ object SearchForm: TSearchForm
         OnClick = GroupsManager1Click
       end
       object ToolButton7: TToolButton
-        Left = 123
+        Left = 125
         Top = 0
         Width = 8
         Caption = 'ToolButton7'
@@ -1251,7 +1303,7 @@ object SearchForm: TSearchForm
         Style = tbsSeparator
       end
       object ToolButton4: TToolButton
-        Left = 131
+        Left = 133
         Top = 0
         AutoSize = True
         Caption = 'Save'
@@ -1259,7 +1311,7 @@ object SearchForm: TSearchForm
         OnClick = SaveResults1Click
       end
       object ToolButton5: TToolButton
-        Left = 143
+        Left = 145
         Top = 0
         AutoSize = True
         Caption = 'Load'
@@ -1267,7 +1319,7 @@ object SearchForm: TSearchForm
         OnClick = LoadResults1Click
       end
       object ToolButton13: TToolButton
-        Left = 155
+        Left = 157
         Top = 0
         Width = 8
         Caption = 'ToolButton13'
@@ -1275,7 +1327,7 @@ object SearchForm: TSearchForm
         Style = tbsSeparator
       end
       object ToolButton12: TToolButton
-        Left = 163
+        Left = 165
         Top = 0
         Caption = 'Explorer'
         ImageIndex = 4

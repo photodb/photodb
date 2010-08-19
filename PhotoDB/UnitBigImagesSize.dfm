@@ -76,7 +76,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = False
+      ImageCanRegenerate = True
     end
   end
   object TimerActivate: TTimer

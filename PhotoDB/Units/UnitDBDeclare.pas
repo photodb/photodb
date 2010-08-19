@@ -284,6 +284,7 @@ type
     SortMethod : Integer;
     SortDecrement : Boolean;
     IsEstimate : Boolean;
+    ShowAllImages : Boolean;
     function EqualsTo(AQuery : TSearchQuery) : Boolean;
   end;
 

@@ -30,55 +30,67 @@ uses JPEG, CommonDBSupport;
 function CryptDBRecordByID(ID : integer; Password : String) : integer;
 var
   Query : TDataSet;
-  jpeg : TJPEGImage;
-  ms : TMemoryStream;
+  JPEG : TJPEGImage;
+  MS : TMemoryStream;
 begin
- Result:=CRYPT_RESULT_UNDEFINED;
- if GetDBType=DB_TYPE_MDB then
- begin
-  Query:=GetQuery;
-  SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
-  Query.Open;
-  jpeg:=TJPEGImage.Create;
-  jpeg.Assign(Query.FieldByName('thum'));
-  ms:=CryptGraphicImage(jpeg,Password);
-  jpeg.Free;
-  SetSQL(Query,'Update $DB$ Set thum=:thum where ID = '+IntToStr(ID));
-  LoadParamFromStream(Query,0,ms,ftBlob);
-  ms.free;
-  ExecSQL(Query);
-  FreeDS(Query);
-  Result:=CRYPT_RESULT_OK;
- end;
+  Result := CRYPT_RESULT_UNDEFINED;
+  if GetDBType=DB_TYPE_MDB then
+  begin
+    Query:=GetQuery;
+    try
+      SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
+      Query.Open;
+      JPEG:=TJPEGImage.Create;
+      try
+        JPEG.Assign(Query.FieldByName('thum'));
+        MS := TMemoryStream.Create;
+        try
+          CryptGraphicImage(JPEG, Password, MS);
+          SetSQL(Query, 'Update $DB$ Set thum = :thum where ID = ' + IntToStr(ID));
+          LoadParamFromStream(Query, 0, MS, ftBlob);
+        finally
+          MS.Free;
+        end;
+      finally
+        JPEG.Free;
+      end;
+      ExecSQL(Query);
+    finally
+      FreeDS(Query);
+    end;
+    Result:=CRYPT_RESULT_OK;
+  end;
 end;
 
 function ResetPasswordDBRecordByID(ID : integer; Password : String) : integer;
 var
   Query : TDataSet;
-  jpeg : TJPEGImage;
+  JPEG : TJPEGImage;
 begin
- Result:=CRYPT_RESULT_UNDEFINED;
- try
+  Result := CRYPT_RESULT_UNDEFINED;
 
-  if GetDBType=DB_TYPE_MDB then
+  if GetDBType = DB_TYPE_MDB then
   begin
-   Query:=GetQuery;
-   SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
-   Query.Open;
-   try
-    jpeg:=DeCryptBlobStreamJPG(Query.FieldByName('thum'),Password) as TJpegImage;
-    SetSQL(Query,'Update $DB$ Set thum=:thum where ID = '+IntToStr(ID));
-    AssignParam(Query,0,jpeg);
-    jpeg.Free;
-   except
-   end;
-   ExecSQL(Query);
-   FreeDS(Query);
-   Result:=CRYPT_RESULT_OK;
+    Query := GetQuery;
+    try
+      SetSQL(Query, 'Select thum from $DB$ where ID = ' + IntToStr(ID));
+      Query.Open;
+      JPEG := TJpegImage.Create;
+      try
+        if DeCryptBlobStreamJPG(Query.FieldByName('thum'), Password, JPEG) then
+        begin
+          SetSQL(Query,'Update $DB$ Set thum = :thum where ID = ' + IntToStr(ID));
+          AssignParam(Query, 0, JPEG);
+          ExecSQL(Query);
+        end;
+      finally
+        JPEG.Free;
+      end;
+    finally
+      FreeDS(Query);
+    end;
+    Result := CRYPT_RESULT_OK;
   end;
- except
-  //ingore exception!!!
- end;
 end;
 
 function CryptImageByFileName(FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;

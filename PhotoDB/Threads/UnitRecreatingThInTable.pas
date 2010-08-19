@@ -106,11 +106,15 @@ var
     begin
      if info.Crypt or Crypting then
      begin
-      ms:=CryptGraphicImage(info.Jpeg,info.Password);
-      BF:=TBlobField(Table.FieldByName('thum'));
-      ms.Seek(0,soFromBeginning);
-      BF.LoadFromStream(ms);
-      ms.free;
+      MS := TMemoryStream.Create;
+      try
+        CryptGraphicImage(Info.Jpeg, Info.Password, MS);
+        BF := TBlobField(Table.FieldByName('thum'));
+        MS.Seek(0, soFromBeginning);
+        BF.LoadFromStream(ms);
+      finally
+        MS.free;
+      end;
      end else
      Table.FieldByName('thum').Assign(info.Jpeg);
     end;

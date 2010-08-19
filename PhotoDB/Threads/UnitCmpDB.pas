@@ -126,13 +126,10 @@ begin
   begin
    Pass:='';
    Pass:=DBkernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('Thum'));
-   if Pass='' then
-   begin
-    FJPEG  := TJPEGImage.Create;
-   end else
-   begin
-    FJPEG:=DeCryptBlobStreamJPG(fQuery.FieldByName('Thum'),Pass) as TJPEGImage;
-   end;
+   FJPEG  := TJPEGImage.Create;
+   if Pass <> '' then
+     DeCryptBlobStreamJPG(fQuery.FieldByName('Thum'),Pass, FJPEG);
+
   end else
   begin
    FJPEG  := TJPEGImage.Create;
@@ -197,20 +194,14 @@ var
 
   procedure LoadCurrentJpeg;
   begin
+    JPEG := TJpegImage.Create;
     if ValidCryptBlobStreamJPG(FSourceTable.FieldByName('thum')) then
     begin
-     pass:=DBKernel.FindPasswordForCryptBlobStream(FSourceTable.FieldByName('thum'));
-     if pass='' then
-     begin
-     end else
-     begin
-      JPEG:=DeCryptBlobStreamJPG(FSourceTable.FieldByName('thum'),pass) as TJpegImage;
-     end;
+      pass := DBKernel.FindPasswordForCryptBlobStream(FSourceTable.FieldByName('thum'));
+      if pass <> '' then
+        DeCryptBlobStreamJPG(FSourceTable.FieldByName('thum'), pass, JPEG);
     end else
-    begin
-     JPEG := TJpegImage.Create;
-     JPEG.Assign(FSourceTable.FieldByName('thum'));
-    end;
+      JPEG.Assign(FSourceTable.FieldByName('thum'));
   end;
 
 begin

@@ -124,7 +124,7 @@ TOneRecordInfo = record
     ItemIsDates : TArBoolean;
     ItemIsTimes : TArBoolean;
     ItemCrypted : TArBoolean;
-    ItemInclude : TArBoolean;   
+    ItemInclude : TArBoolean;
     ItemLinks : TArStrings;
     Position : Integer;
     Tag : Integer;
@@ -159,7 +159,7 @@ type
     constructor CreateFromContRecord(ContRecord : TImageContRecord);
     constructor CreateFromSlideShowInfo(Info : TRecordsInfo; Position : Integer);
     constructor CreateFromSearchRecord(Info : TSearchRecord);
-    constructor CreateFromExplorerInfo(Info : TExplorerFileInfo);  
+    constructor CreateFromExplorerInfo(Info : TExplorerFileInfo);
     constructor CreateFromRecordInfo(RI : TOneRecordInfo);
   end;
 
@@ -287,7 +287,7 @@ type
     Size : Integer;
     UsedFileNameSearch : boolean;
     ChangedRotate : array of Boolean;
-    IsError : boolean;                  
+    IsError : boolean;
     ErrorText : String;
   end;
 
@@ -403,7 +403,7 @@ type
     Icon : string;
     UseSubMenu : Boolean;
     end;
-    
+
   TUserMenuItemArray = array of TUserMenuItem;
 
 
@@ -439,7 +439,7 @@ type
    RightEffective : byte;
   end;
 
-const CSIDL_COMMON_APPDATA = $0023; 
+const CSIDL_COMMON_APPDATA = $0023;
       CSIDL_MYMUSIC = $0013;
       CSIDL_MYPICTURES = $0014;  //FONTS
       CSIDL_LOCAL = $0022;
@@ -475,7 +475,7 @@ const CSIDL_COMMON_APPDATA = $0023;
         ProductVersion_2_0 = '2.0';
         ProgramShortCutFile_2_0 = ProductName_2_0+'.lnk';
         HelpShortCutFile_2_0 = TEXT_MES_HELP+'.lnk';
-                                                      
+
   //2.1
         ProductName_2_1 = 'Photo DataBase 2.1';
         StartMenuProgramsPath_2_1 = 'Photo DB v2.1';
@@ -523,7 +523,7 @@ resourcestring
     SNotSupported = 'This function is not supported by your version of Windows';
 
 
-var 
+var
     DBName : string;
     Theme_ListSelectColor, Theme_MainColor, Theme_MainFontColor, Theme_ListColor,
     Theme_ListFontColor, Theme_MemoEditColor, Theme_MemoEditFontColor, Theme_LabelFontColor,
@@ -726,7 +726,7 @@ function DateModify(FileName : string) : TDateTime;
 
 function GettingProcNum: integer;  //Win95 or later and NT3.1 or later
 function GetWindowsUserName: string;
-Procedure GetPhotosNamesFromDrive(Dir, Mask: String; var Files : TStrings; var MaxFilesCount : integer; MaxFilesSearch : Integer; CallBack : TCallBackProgressEvent = nil);  
+Procedure GetPhotosNamesFromDrive(Dir, Mask: String; var Files : TStrings; var MaxFilesCount : integer; MaxFilesSearch : Integer; CallBack : TCallBackProgressEvent = nil);
 function EXIFDateToDate(DateTime : String) : TDateTime;
 function EXIFDateToTime(DateTime : String) : TDateTime;
 function RemoveBlackColor(im : TBitmap) : TBitmap;
@@ -740,9 +740,9 @@ function GetGraphicFilter : string;
 function GetNeededRotation(OldRotation, NewRotation : integer) : Integer;
 procedure ExecuteQuery(SQL : string);
 function ReadTextFileInString(FileName : string) : string;
-function CompareImagesByGistogramm(Image1, Image2 : TBitmap) : Byte;  
+function CompareImagesByGistogramm(Image1, Image2 : TBitmap) : Byte;
 procedure ApplyRotate(Bitmap : TBitmap; RotateValue : Integer);
-function CenterPos(W1, W2 : Integer) : Integer;    
+function CenterPos(W1, W2 : Integer) : Integer;
 
 var
   GetAnyValidDBFileInProgramFolderCounter : Integer;
@@ -857,7 +857,7 @@ end;
 
 Function LongFileName(ShortName: String): String;
 Var
-  SR: TSearchRec; 
+  SR: TSearchRec;
 Begin
   Result := '';
   If (pos ('\\', ShortName) + pos ('*', ShortName) +
@@ -878,17 +878,17 @@ Begin
     SysUtils.FindClose(SR);  { the SysUtils, not the WinProcs procedure! }
     { directory up (cut before '\') }
     ShortName := ExtractFileDir (ShortName);
-    If length (ShortName) <= 2 Then 
+    If length (ShortName) <= 2 Then
     Begin
       Break;  { ShortName contains drive letter followed by ':' }
-    End; 
+    End;
   End;
   Result := AnsiUpperCase(ExtractFileDrive (ShortName)) + Result;
 end;
 
 function LongFileNameW(ShortName: String): String;
 Var
-  SR: TSearchRec; 
+  SR: TSearchRec;
 Begin
   Result := '';
   If (pos ('\\', ShortName) + pos ('*', ShortName) +
@@ -904,10 +904,10 @@ Begin
     SysUtils.FindClose(SR);  { the SysUtils, not the WinProcs procedure! }
     { directory up (cut before '\') }
     ShortName := ExtractFileDir (ShortName);
-    If length (ShortName) <= 2 Then 
+    If length (ShortName) <= 2 Then
     Begin
       Break;  { ShortName contains drive letter followed by ':' }
-    End; 
+    End;
   End;
   Result := AnsiUpperCase(ExtractFileDrive (ShortName)) + Result;
 end;
@@ -932,7 +932,7 @@ if not OpenThreadToken(GetCurrentThread(),TOKEN_QUERY,true,hToken)
    if not OpenProcessToken(GetCurrentProcess(),TOKEN_QUERY,hToken)
     then exit;
   end;
- // Вывываем GetTokenInformation для получения размера буфера 
+ // Вывываем GetTokenInformation для получения размера буфера
  if not GetTokenInformation(hToken, TokenUser, nil, 0, cbBuf)
   then if GetLastError()<> ERROR_INSUFFICIENT_BUFFER
    then begin
@@ -1207,13 +1207,13 @@ var
   fReg : TBDRegistry;
   f : TBooleanFunction;
   h: Thandle;
-  ProcH : pointer;   
+  ProcH : pointer;
   FileName : String;
 begin
  Result:=false;
  fReg:=TBDRegistry.Create(REGISTRY_ALL_USERS,true);
  try
-  fReg.OpenKey(RegRoot,true);  
+  fReg.OpenKey(RegRoot,true);
   FileName:=AnsiLowerCase(freg.ReadString('DataBase'));
   if PortableWork then
   if FileName<>'' then FileName[1]:=Application.ExeName[1];
@@ -1257,7 +1257,7 @@ begin
   freg.DeleteKey('\PhotoDB.IthFile\');
   freg.DeleteKey('\Directory\Shell\PhDBBrowse\');
   freg.DeleteKey('\Drive\Shell\PhDBBrowse\');
-  except    
+  except
    on e : Exception do
    begin
     EventLog(':DeleteRegistryEntries() throw exception: '+e.Message);
@@ -1306,7 +1306,7 @@ begin
   FReg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\ShowPicturesOnArrival',True);
   FReg.DeleteValue('PhotoDBgetPhotosHandler');
   Result:=true;
- except     
+ except
   on e : Exception do EventLog(':DeleteRegistryEntries() throw exception: '+e.Message);
  end;
  FReg.free;
@@ -1338,7 +1338,7 @@ begin
   freg.WriteString('Folder',GetDirectory(filename));
   freg.WriteString('DBDefaultName',DBName);
   freg.WriteString('DBUserName',UserName);
- except   
+ except
   on e : Exception do
   begin
    EventLog(':RegInstallApplication() throw exception: '+e.Message);
@@ -1347,7 +1347,7 @@ begin
   end;
  end;
  freg.free;
-           
+
  if PortableWork then exit;
 
  freg:=TBDRegistry.Create(REGISTRY_ALL_USERS);
@@ -1368,7 +1368,7 @@ begin
   end;
  end;
  freg.free;
-            
+
  freg:=TBDRegistry.Create(REGISTRY_CLASSES);
  try
   freg.OpenKey('\.photodb',true);
@@ -1574,7 +1574,7 @@ begin
       Reg.CloseKey;
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\Shell\Open\Command',True);
       Reg.WriteString('','"'+GetDirectory(FileName)+'PhotoDB.exe" "%1"');
-      Reg.CloseKey;          
+      Reg.CloseKey;
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\DefaultIcon',True);
       Reg.WriteString('',''+GetDirectory(filename)+'PhotoDB.exe,0');
       Reg.CloseKey;
@@ -1588,10 +1588,10 @@ begin
       Reg.CloseKey;
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\Shell\Open\Command',True);
       Reg.WriteString('','"'+GetDirectory(filename)+'PhotoDB.exe" "%1"');
-      Reg.CloseKey;    
+      Reg.CloseKey;
       Reg.OpenKey('\PhotoDB.'+Exts[i].Ext+'\DefaultIcon',True);
       Reg.WriteString('',''+GetDirectory(filename)+'PhotoDB.exe,0');
-      Reg.CloseKey;   
+      Reg.CloseKey;
       DeleteExtInfo(Exts[i].Ext);
      end;
     end;
@@ -1727,45 +1727,44 @@ begin
  Reg.free;
 end;
 
-Function GetInfoByFileNameA(FileName : string; LoadThum : boolean) : TOneRecordInfo;
+function GetInfoByFileNameA(FileName : string; LoadThum : Boolean) : TOneRecordInfo;
 var
-  fQuery : TDataSet;
-  fbs : TStream;
-  i : integer;
-  b : boolean;
-  Folder, DBStr, s : string;
-  crc : Cardinal;
+  FQuery : TDataSet;
+  FBS : TStream;
+  I : Integer;
+  B : Boolean;
+  Folder, QueryString, S : string;
+  CRC : Cardinal;
+  JPEG : TJPEGImage;
 begin
- fQuery:=GetQuery;
- fQuery.Active:=false;
- UnProcessPath(FileName);
-
-  UnFormatDir(Folder);
-  if FolderView then
-  begin
-   Folder:=GetDirectory(FileName);
-   Delete(Folder,1,Length(ProgramDir));
-   UnFormatDir(Folder);
-   s:=FileName;
-   Delete(s,1,Length(ProgramDir));
-  end else
-  begin
-   Folder:=GetDirectory(FileName);
-   UnFormatDir(Folder);
-   s:=FileName;
-  end;
-  CalcStringCRC32(Folder,crc);
-  DBStr:='(Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+')';
-  CalcStringCRC32(AnsiLowerCase(s),crc);
-  SetSQL(fQuery,'SELECT * FROM '+DBStr+' WHERE FFileName = :ffilename');
-
- SetStrParam(fQuery,0,AnsiLowerCase(s));
- For i:=1 to 20 do
- begin
-  b:=true;
+  FQuery:=GetQuery;
   try
-   fQuery.active:=true;
-  except
+    FileName := AnsiLowerCase(FileName);
+    UnProcessPath(FileName);
+
+    if FolderView then
+    begin
+      Folder:=GetDirectory(FileName);
+      Delete(Folder, 1, Length(ProgramDir));
+      UnFormatDir(Folder);
+      S := FileName;
+      Delete(s, 1, Length(ProgramDir));
+    end else
+    begin
+      Folder:=GetDirectory(FileName);
+      UnFormatDir(Folder);
+      S := FileName;
+    end;
+    CalcStringCRC32(Folder, CRC);
+    QueryString := 'Select * from $DB$ where FolderCRC=' + IntToStr(Integer(CRC)) + ' and Name = :name';
+    SetSQL(FQuery, QueryString);
+    SetStrParam(FQuery, 0, ExtractFileName(S));
+    for I := 1 to 20 do
+    begin
+      B := True;
+      try
+        FQuery.active := True;
+      except
    if not fQuery.active then b:=false;
   end;
   if b then break;
@@ -1800,8 +1799,14 @@ begin
    if ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')) then
    begin
     try
-     Result.Image:=DeCryptBlobStreamJPG(fQuery.FieldByName('thum'),DBkernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'))) as TJpegImage;
-     Result.ItemCrypted:=true;
+      JPEG := TJpegImage.Create;
+      try
+        DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBkernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum')), JPEG);
+        Result.Image:= JPEG;
+      finally
+        JPEG.Free;
+      end;
+      Result.ItemCrypted:=true;
      if Result.Image<>nil then Result.tag:=1;
     except
     end;
@@ -1818,7 +1823,9 @@ begin
    end;
   end;
  end;
- FreeDS(fQuery);
+  finally
+    FreeDS(fQuery);
+  end;
 end;
 
 Function RecordsInfoNil : TRecordsInfo;
@@ -2221,7 +2228,7 @@ begin
     RI.Position:=0;
   end else
   begin}
-  RI:=RecordsInfoNil; 
+  RI:=RecordsInfoNil;
   RI.Position := DBP.Position;
     for i:=0 to DBP.Count - 1 do
     if DBP[i].Selected or (FilesSelected <= 1) then
@@ -2235,7 +2242,7 @@ function GetMenuInfoByID(ID : Integer) : TDBPopupMenuInfo;
 var
   FQuery : TDataSet;
   MenuRecord : TDBPopupMenuInfoRecord;
-begin     
+begin
   Result := nil;
  FQuery := GetQuery;
  SetSQL(FQuery,'SELECT * FROM $DB$ WHERE ID = :ID');
@@ -2260,9 +2267,9 @@ end;
 function GetMenuInfoByStrTh(StrTh : string) : TDBPopupMenuInfo;
 var
   FQuery : TDataSet;
-  FromDB : string; 
+  FromDB : string;
   MenuRecord : TDBPopupMenuInfoRecord;
-begin        
+begin
   Result:=nil;
  FQuery := GetQuery;
  if GetDBType=DB_TYPE_MDB then
@@ -2330,7 +2337,7 @@ Var
  crc : Cardinal;
  FE, EM : boolean;
  p : PChar;
- PSupportedExt : PChar;   
+ PSupportedExt : PChar;
 
  function IsFileBlocked(FileName : String) : Boolean;
  var
@@ -2344,7 +2351,7 @@ Var
    break;
   end;
  end;
- 
+
 begin
 
   If FileExists(BeginFile) then
@@ -2491,7 +2498,7 @@ end;
 procedure RenameFolderWithDB(OldFileName, NewFileName :string; ask : boolean = true);
 var
   ProgressWindow : TProgressActionForm;
-  fQuery, SetQuery : TDataSet;        
+  fQuery, SetQuery : TDataSet;
   EventInfo : TEventValues;
   crc : Cardinal;
   i, int : integer;
@@ -2556,7 +2563,7 @@ begin
        FormatDir(s);
        NewPath:=AnsiLowerCase(s+ExtractFileName(FQuery.FieldByName('FFileName').AsString));
       end;
-      int:=integer(crc);                                                                                                                         
+      int:=integer(crc);
       sql:='UPDATE $DB$ SET FFileName="'+AnsiLowerCase(NormalizeDBString(NewPath))+'" , FolderCRC = '+IntToStr(int)+' where ID = '+inttostr(fQuery.FieldByName('ID').AsInteger);
       SetSQL(SetQuery,sql);
      end;
@@ -2855,7 +2862,7 @@ end;
 
 procedure UpdateDeletedDBRecord(ID : integer; filename : string);
 var
-  fQuery : TDataSet; 
+  fQuery : TDataSet;
   crc : cardinal;
   int : integer;
   MDBstr : string;
@@ -3003,18 +3010,16 @@ begin
   begin
    Pass:='';
    Pass:=DBkernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('Thum'));
-   if Pass='' then
-   begin
-    FJPEG  := TJPEGImage.Create;
-   end else
-   begin
-    FJPEG:=DeCryptBlobStreamJPG(fQuery.FieldByName('Thum'),Pass) as TJPEGImage;
-   end;
+   FJPEG  := TJPEGImage.Create;
+   if Pass <> '' then
+     DeCryptBlobStreamJPG(fQuery.FieldByName('Thum'),Pass,FJPEG);
+
   end else
   begin
    FJPEG  := TJPEGImage.Create;
    FJPEG.Assign(fQuery.FieldByName('Thum'));
   end;
+  //FJPEG.FREE ??? TODO: check
   res:=CompareImages(FJPEG,G,rot);
   xrot[i-1]:=rot;
   val[i-1]:=(res.ByGistogramm>1) or (res.ByPixels>1);
@@ -3262,10 +3267,10 @@ begin
    thbmp.assign(result.Jpeg);
   except
    on e : Exception do
-   begin     
+   begin
     EventLog(':GetImageIDW() throw exception: '+e.Message);
     Result.IsError:=true;
-    Result.ErrorText:=e.Message;  
+    Result.ErrorText:=e.Message;
     thbmp.Width:=Result.Jpeg.Width;
     thbmp.Height:=Result.Jpeg.Height;
     FillRectNoCanvas(thbmp,$0);
@@ -3295,7 +3300,7 @@ begin
 end;
 
 procedure SetPrivate(ID: integer);
-begin             
+begin
   ExecuteQuery(Format('Update $DB$ Set Access=%d WHERE ID=%d', [db_access_private, ID]));
 end;
 
@@ -3307,17 +3312,17 @@ end;
 procedure CopyFilesToClipboard(FileList: string);
 var
   DropFiles: PDropFiles;
-  hGlobal: THandle;  
-  iLen: Integer;  
-begin  
-  iLen := Length(FileList) + 2;  
+  hGlobal: THandle;
+  iLen: Integer;
+begin
+  iLen := Length(FileList) + 2;
   FileList := FileList + #0#0;
-  hGlobal := GlobalAlloc(GMEM_SHARE or GMEM_MOVEABLE or GMEM_ZEROINIT,  
-    SizeOf(TDropFiles) + iLen);  
+  hGlobal := GlobalAlloc(GMEM_SHARE or GMEM_MOVEABLE or GMEM_ZEROINIT,
+    SizeOf(TDropFiles) + iLen);
   if (hGlobal = 0) then raise Exception.Create('Could not allocate memory.');
-  begin  
-    DropFiles := GlobalLock(hGlobal);  
-    DropFiles^.pFiles := SizeOf(TDropFiles);  
+  begin
+    DropFiles := GlobalLock(hGlobal);
+    DropFiles^.pFiles := SizeOf(TDropFiles);
     Move(FileList[1], (PChar(DropFiles) + SizeOf(TDropFiles))^, iLen);
     GlobalUnlock(hGlobal);
     Clipboard.SetAsHandle(CF_HDROP, hGlobal);
@@ -3586,7 +3591,7 @@ begin
  fs.Read(Pointer(x)^,14);
  if (x[1]=ord('F')) and (x[2]=ord('I')) and (x[3]=ord('L')) and (x[4]=ord('E')) and (x[5]=ord('-')) and (x[6]=ord('I')) and (x[7]=ord('M')) and (x[8]=ord('T')) and (x[9]=ord('H')) and (x[10]=ord('S')) and (x[11]=ord('-')) and  (x[12]=ord('V')) and (x[13]=ord('1')) then
  v1:=true else
- begin   
+ begin
   fs.free;
   exit;
  end;
@@ -3693,11 +3698,11 @@ begin
 end;
 
 function MrsGetFileType(strFilename: string): string;
-var 
+var
   FileInfo: TSHFileInfo;
 begin
-  FillChar(FileInfo, SizeOf(FileInfo), #0); 
-  SHGetFileInfo(PChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME); 
+  FillChar(FileInfo, SizeOf(FileInfo), #0);
+  SHGetFileInfo(PChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
   Result := FileInfo.szTypeName;
 end;
 
@@ -3761,47 +3766,47 @@ end;
 
 function DeleteFiles( Handle : HWnd; Names : array of string; ToRecycle : Boolean ) : Integer;
 var
-  SHFileOpStruct : TSHFileOpStruct; 
-  Src : TBuffer; 
-begin 
-  CreateBuffer( Names, Src ); 
-  with SHFileOpStruct do 
-    begin 
-      Wnd := Handle; 
-      wFunc := FO_DELETE; 
-      pFrom := Pointer( Src ); 
-      pTo := nil; 
-      fFlags := 0; 
-      if ToRecycle then fFlags := FOF_ALLOWUNDO; 
-      fAnyOperationsAborted := False; 
-      hNameMappings := nil; 
-      lpszProgressTitle := nil; 
-    end; 
-  Result := SHFileOperation( SHFileOpStruct ); 
-  Src := nil; 
+  SHFileOpStruct : TSHFileOpStruct;
+  Src : TBuffer;
+begin
+  CreateBuffer( Names, Src );
+  with SHFileOpStruct do
+    begin
+      Wnd := Handle;
+      wFunc := FO_DELETE;
+      pFrom := Pointer( Src );
+      pTo := nil;
+      fFlags := 0;
+      if ToRecycle then fFlags := FOF_ALLOWUNDO;
+      fAnyOperationsAborted := False;
+      hNameMappings := nil;
+      lpszProgressTitle := nil;
+    end;
+  Result := SHFileOperation( SHFileOpStruct );
+  Src := nil;
 end;
 
 function SilentDeleteFiles( Handle : HWnd; Names : array of string; ToRecycle : Boolean; HideErrors : boolean = false ) : Integer;
 var
-  SHFileOpStruct : TSHFileOpStruct; 
-  Src : TBuffer; 
-begin 
-  CreateBuffer( Names, Src ); 
-  with SHFileOpStruct do 
-    begin 
-      Wnd := Handle; 
+  SHFileOpStruct : TSHFileOpStruct;
+  Src : TBuffer;
+begin
+  CreateBuffer( Names, Src );
+  with SHFileOpStruct do
+    begin
+      Wnd := Handle;
       wFunc := FO_DELETE;
-      pFrom := Pointer( Src ); 
-      pTo := nil; 
+      pFrom := Pointer( Src );
+      pTo := nil;
       fFlags := FOF_NOCONFIRMATION;
       if HideErrors then fFlags:=fFlags or FOF_SILENT or FOF_NOERRORUI;
       if ToRecycle then fFlags := fFlags or FOF_ALLOWUNDO;
       fAnyOperationsAborted := False;
-      hNameMappings := nil; 
-      lpszProgressTitle := nil; 
-    end; 
-  Result := SHFileOperation( SHFileOpStruct ); 
-  Src := nil; 
+      hNameMappings := nil;
+      lpszProgressTitle := nil;
+    end;
+  Result := SHFileOperation( SHFileOpStruct );
+  Src := nil;
 end;
 
 Function GetCDVolumeLabel(CDName : Char) : String;
@@ -3886,25 +3891,25 @@ begin
 end;
 
 function KillTask(ExeFileName: string): integer;
-const  
+const
   PROCESS_TERMINATE=$0001;
-var  
-  ContinueLoop: BOOL;  
+var
+  ContinueLoop: BOOL;
   FSnapshotHandle: THandle;
-  FProcessEntry32: TProcessEntry32;  
-begin  
+  FProcessEntry32: TProcessEntry32;
+begin
   result := 0;
   FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   FProcessEntry32.dwSize := Sizeof(FProcessEntry32);
   ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
   while integer(ContinueLoop) <> 0 do
-  begin  
+  begin
     if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) = UpperCase(ExeFileName))
      or (UpperCase(FProcessEntry32.szExeFile) =UpperCase(ExeFileName))) then
       Result := Integer(TerminateProcess(OpenProcess(PROCESS_TERMINATE, BOOL(0),FProcessEntry32.th32ProcessID), 0));
-    ContinueLoop := Process32Next(FSnapshotHandle,  FProcessEntry32);  
-  end;  
-  CloseHandle(FSnapshotHandle);  
+    ContinueLoop := Process32Next(FSnapshotHandle,  FProcessEntry32);
+  end;
+  CloseHandle(FSnapshotHandle);
 end;
 
 Procedure LoadNickJpegImage(Image : TImage);
@@ -4065,7 +4070,7 @@ begin
    ExecSQL(Table);
   end;
 end;
-                                                                                                            
+
 Procedure UpdateImageRecord(FileName: String; ID : Integer);
 begin
  UpdateImageRecordEx(FileName, ID, nil);
@@ -4132,7 +4137,7 @@ begin
     Table.Close;
     _SetSql:='FFileName=:FFileName,';
     _SetSql:=_SetSql+'Name=:Name,';
-    _SetSql:=_SetSql+'StrTh=:StrTh,'; 
+    _SetSql:=_SetSql+'StrTh=:StrTh,';
     _SetSql:=_SetSql+'StrThCrc=:StrThCrc,';
     _SetSql:=_SetSql+'thum=:thum,';
 
@@ -4142,7 +4147,7 @@ begin
 
     if not FolderView then
     begin
-     folder:=GetDirectory(FileName);  
+     folder:=GetDirectory(FileName);
      UnProcessPath(folder);
      UnFormatDir(folder);
      CalcStringCRC32(AnsiLowerCase(folder),crc);
@@ -4176,13 +4181,13 @@ begin
        EventInfo.IsTime:=True;
        EF:=[EventID_Param_Date,EventID_Param_Time, EventID_Param_IsDate ,
        EventID_Param_IsTime];
-       DoDBkernelEvent(nil,ID,EF,EventInfo);    
+       DoDBkernelEvent(nil,ID,EF,EventInfo);
        _SetSql:=_SetSql+'DateToAdd=:DateToAdd,';
        _SetSql:=_SetSql+'aTime=:aTime,';
        _SetSql:=_SetSql+'IsDate=:IsDate,';
        _SetSql:=_SetSql+'IsTime=:IsTime,';
       end;
-     except      
+     except
       on e : Exception do EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: '+e.Message);
      end;
      Exif.Free;
@@ -4223,14 +4228,18 @@ begin
     SetStrParam(Table,next,Path);
 
     SetStrParam(Table,next,ExtractFileName(FileName));
-    SetStrParam(Table,next,Res.ImTh);                    
+    SetStrParam(Table,next,Res.ImTh);
     SetIntParam(Table,next,Integer(StringCRC(Res.ImTh)));
     //if crypted file not password entered
     if Res.Crypt or (Res.Password<>'') then
     begin
-     ms:=CryptGraphicImage(Res.Jpeg,Res.Password);
-     LoadParamFromStream(Table,next,ms,ftBlob);
-     ms.free;
+     MS := TMemoryStream.Create;
+     try
+       CryptGraphicImage(Res.Jpeg, Res.Password, MS);
+       LoadParamFromStream(Table, next, MS, ftBlob);
+     finally
+       MS.free;
+     end;
     end else
     AssignParam(Table,next,Res.Jpeg);
     if UpdateDateTime then
@@ -4241,7 +4250,7 @@ begin
      SetBoolParam(Table,next,IsTime);
     end;
     ExecSQL(Table);
-   except  
+   except
     on e : Exception do EventLog(':UpdateImageRecordEx()/ExecSQL throw exception: '+e.Message);
    end;
    Res.Jpeg.Free;
@@ -4249,7 +4258,7 @@ begin
    UpdateImageThInLinks(OldImTh, Res.ImTh);
    exit;
  end;
- 
+
  //----
  Table := GetTable;
  Table.Active:=true;
@@ -4286,12 +4295,12 @@ begin
       EventID_Param_IsTime];
       DoDBkernelEvent(nil,ID,EF,EventInfo);
      end;
-    except 
+    except
      on e : Exception do EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: '+e.Message);
     end;
     Exif.Free;
    end;
-   
+
    if Res.Crypt then
    CryptBlobStream(Table.FieldByName('thum'),Res.Password);
 
@@ -4416,7 +4425,7 @@ var
     FillChar(Sender, SizeOf(Sender), 0);
     Sender.ulRecipClass := MAPI_ORIG;
     Sender.lpszAddress := From;
-                                               
+
     FillChar(Recipient, SizeOf(Recipient), 0);
     Recipient.ulRecipClass := MAPI_TO;
     Recipient.lpszAddress := Dest;
@@ -4536,7 +4545,7 @@ var
   ps : PARGB;
   LGray, LR, LG, LB : byte;
 begin
- 
+
  /// сканирование изображение и подведение статистики
  for i:=0 to 255 do
  begin
@@ -4556,7 +4565,7 @@ begin
    LGray:=Round(0.3*LR+0.59*LG+0.11*LB);
    inc(Result.Gray[LGray]);
    inc(Result.Red[LR]);
-   inc(Result.Green[LG]); 
+   inc(Result.Green[LG]);
    inc(Result.Blue[LB]);
   end;
  end;
@@ -4584,11 +4593,11 @@ begin
  begin
   if max<Result.Blue[i] then
   begin
-   max:=Result.Blue[i];    
+   max:=Result.Blue[i];
    Result.Max:=i;
   end;
  end;
-                   
+
  /// в основном диапозоне 0..100
  for i:=0 to 255 do
  begin
@@ -4653,7 +4662,7 @@ begin
    break;
   end;
  end;
- 
+
 end;
 
 function CompareImagesByGistogramm(Image1, Image2 : TBitmap) : Byte;
@@ -4664,7 +4673,7 @@ var
   Data1, Data2, Data : TGistogrammData;
   mx_r,mx_b,mx_g : integer;
   ResultExt : Extended;
-  
+
   function AbsByte(b1,b2 : integer) : integer;
   begin
    //if b1<b2 then Result:=b2-b1 else Result:=b1-b2;
@@ -4684,7 +4693,7 @@ var
    /// выкидываем пики резкие и сглаживаем гистограмму
    for j:=0 to InterpolateWidth-1 do
    begin
-    ar[j]:=0;  
+    ar[j]:=0;
     ag[j]:=0;
     ab[j]:=0;
    end;
@@ -4729,7 +4738,7 @@ begin
  Data1:=Gistogramma(Image1.Width,Image1.Height,PRGBArr);
 
  //???GetGistogrammBitmapX(150,0,Data1.Red,a,a).SaveToFile('c:\w1.bmp');
-                   
+
  SetLength(PRGBArr,Image2.Height);
  for i:=0 to Image2.Height-1 do
  PRGBArr[i]:=Image2.ScanLine[i];
@@ -4743,7 +4752,7 @@ begin
   Data.Blue[i]:=AbsByte(Data1.Blue[i],Data2.Blue[i]);
   Data.Red[i]:=AbsByte(Data1.Red[i],Data2.Red[i]);
  end;
-          
+
  //???GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w.bmp');
 
  RemovePicks;
@@ -4782,7 +4791,7 @@ begin
   if diff=0 then ResultExt:=ResultExt*1.02;
   if diff=1 then ResultExt:=ResultExt*1.01;
   if diff=2 then ResultExt:=ResultExt*1.001;
- end;                             
+ end;
  //Result in 0..10000
  if ResultExt>10000 then ResultExt:=10000;
  Result:=Round(Power(101,ResultExt/10000)-1); //Result in 0..100
@@ -4827,7 +4836,7 @@ var
    begin
     X[i,j,k]:=Abs(Image1[i,j,k]-Image2[i,j,k]);
    end;
-   
+
    for i:=0 to 99 do
    for j:=0 to 99 do
    begin
@@ -4844,7 +4853,7 @@ var
 begin
  if Image1.Empty or Image2.Empty then
  begin
-  Result.ByGistogramm:=0;     
+  Result.ByGistogramm:=0;
   Result.ByPixels:=0;
   exit;
  end;
@@ -4887,7 +4896,7 @@ begin
   Interpolate(0,0,100,100,Rect(0,0,b2.Width,b2.Height),b2,b2_0);
   b2.free;
   FillArray(b2_0,x2_0);
- end;      
+ end;
  if not Quick then
  Result.ByGistogramm:=CompareImagesByGistogramm(b1_,b2_0);
  b1_.free;
@@ -4938,106 +4947,106 @@ end;
 
 function GetIdeDiskSerialNumber : String;
 type
-  TSrbIoControl = packed record 
+  TSrbIoControl = packed record
     HeaderLength : ULONG;
-    Signature : Array[0..7] of Char; 
-    Timeout : ULONG; 
-    ControlCode : ULONG; 
-    ReturnCode : ULONG; 
-    Length : ULONG; 
-  end; 
-  SRB_IO_CONTROL = TSrbIoControl; 
-  PSrbIoControl = ^TSrbIoControl; 
+    Signature : Array[0..7] of Char;
+    Timeout : ULONG;
+    ControlCode : ULONG;
+    ReturnCode : ULONG;
+    Length : ULONG;
+  end;
+  SRB_IO_CONTROL = TSrbIoControl;
+  PSrbIoControl = ^TSrbIoControl;
 
-  TIDERegs = packed record 
-    bFeaturesReg : Byte; // Used for specifying SMART "commands". 
-    bSectorCountReg : Byte; // IDE sector count register 
-    bSectorNumberReg : Byte; // IDE sector number register 
-    bCylLowReg : Byte; // IDE low order cylinder value 
-    bCylHighReg : Byte; // IDE high order cylinder value 
-    bDriveHeadReg : Byte; // IDE drive/head register 
-    bCommandReg : Byte; // Actual IDE command. 
-    bReserved : Byte; // reserved for future use. Must be zero. 
-  end; 
-  IDEREGS = TIDERegs; 
-  PIDERegs = ^TIDERegs; 
+  TIDERegs = packed record
+    bFeaturesReg : Byte; // Used for specifying SMART "commands".
+    bSectorCountReg : Byte; // IDE sector count register
+    bSectorNumberReg : Byte; // IDE sector number register
+    bCylLowReg : Byte; // IDE low order cylinder value
+    bCylHighReg : Byte; // IDE high order cylinder value
+    bDriveHeadReg : Byte; // IDE drive/head register
+    bCommandReg : Byte; // Actual IDE command.
+    bReserved : Byte; // reserved for future use. Must be zero.
+  end;
+  IDEREGS = TIDERegs;
+  PIDERegs = ^TIDERegs;
 
-  TSendCmdInParams = packed record 
-    cBufferSize : DWORD; // Buffer size in bytes 
-    irDriveRegs : TIDERegs; // Structure with drive register values. 
-    bDriveNumber : Byte; // Physical drive number to send command to (0,1,2,3). 
-    bReserved : Array[0..2] of Byte; // Reserved for future expansion. 
-    dwReserved : Array[0..3] of DWORD; // For future use. 
-    bBuffer : Array[0..0] of Byte; // Input buffer. 
-  end; 
-  SENDCMDINPARAMS = TSendCmdInParams; 
-  PSendCmdInParams = ^TSendCmdInParams; 
+  TSendCmdInParams = packed record
+    cBufferSize : DWORD; // Buffer size in bytes
+    irDriveRegs : TIDERegs; // Structure with drive register values.
+    bDriveNumber : Byte; // Physical drive number to send command to (0,1,2,3).
+    bReserved : Array[0..2] of Byte; // Reserved for future expansion.
+    dwReserved : Array[0..3] of DWORD; // For future use.
+    bBuffer : Array[0..0] of Byte; // Input buffer.
+  end;
+  SENDCMDINPARAMS = TSendCmdInParams;
+  PSendCmdInParams = ^TSendCmdInParams;
 
-  TIdSector = packed record 
-    wGenConfig : Word; 
-    wNumCyls : Word; 
-    wReserved : Word; 
-    wNumHeads : Word; 
-    wBytesPerTrack : Word; 
-    wBytesPerSector : Word; 
-    wSectorsPerTrack : Word; 
-    wVendorUnique : Array[0..2] of Word; 
-    sSerialNumber : Array[0..19] of Char; 
-    wBufferType : Word; 
-    wBufferSize : Word; 
-    wECCSize : Word; 
-    sFirmwareRev : Array[0..7] of Char; 
-    sModelNumber : Array[0..39] of Char; 
-    wMoreVendorUnique : Word; 
-    wDoubleWordIO : Word; 
-    wCapabilities : Word; 
-    wReserved1 : Word; 
-    wPIOTiming : Word; 
-    wDMATiming : Word; 
-    wBS : Word; 
-    wNumCurrentCyls : Word; 
-    wNumCurrentHeads : Word; 
-    wNumCurrentSectorsPerTrack : Word; 
-    ulCurrentSectorCapacity : ULONG; 
-    wMultSectorStuff : Word; 
-    ulTotalAddressableSectors : ULONG; 
-    wSingleWordDMA : Word; 
-    wMultiWordDMA : Word; 
-    bReserved : Array[0..127] of Byte; 
-  end; 
-  PIdSector = ^TIdSector; 
+  TIdSector = packed record
+    wGenConfig : Word;
+    wNumCyls : Word;
+    wReserved : Word;
+    wNumHeads : Word;
+    wBytesPerTrack : Word;
+    wBytesPerSector : Word;
+    wSectorsPerTrack : Word;
+    wVendorUnique : Array[0..2] of Word;
+    sSerialNumber : Array[0..19] of Char;
+    wBufferType : Word;
+    wBufferSize : Word;
+    wECCSize : Word;
+    sFirmwareRev : Array[0..7] of Char;
+    sModelNumber : Array[0..39] of Char;
+    wMoreVendorUnique : Word;
+    wDoubleWordIO : Word;
+    wCapabilities : Word;
+    wReserved1 : Word;
+    wPIOTiming : Word;
+    wDMATiming : Word;
+    wBS : Word;
+    wNumCurrentCyls : Word;
+    wNumCurrentHeads : Word;
+    wNumCurrentSectorsPerTrack : Word;
+    ulCurrentSectorCapacity : ULONG;
+    wMultSectorStuff : Word;
+    ulTotalAddressableSectors : ULONG;
+    wSingleWordDMA : Word;
+    wMultiWordDMA : Word;
+    bReserved : Array[0..127] of Byte;
+  end;
+  PIdSector = ^TIdSector;
 
-const 
-  IDE_ID_FUNCTION = $EC; 
-  IDENTIFY_BUFFER_SIZE = 512; 
-  DFP_RECEIVE_DRIVE_DATA = $0007c088; 
-  IOCTL_SCSI_MINIPORT = $0004d008; 
+const
+  IDE_ID_FUNCTION = $EC;
+  IDENTIFY_BUFFER_SIZE = 512;
+  DFP_RECEIVE_DRIVE_DATA = $0007c088;
+  IOCTL_SCSI_MINIPORT = $0004d008;
   IOCTL_SCSI_MINIPORT_IDENTIFY = $001b0501;
-  DataSize = sizeof(TSendCmdInParams)-1+IDENTIFY_BUFFER_SIZE; 
-  BufferSize = SizeOf(SRB_IO_CONTROL)+DataSize; 
-  W9xBufferSize = IDENTIFY_BUFFER_SIZE+16; 
+  DataSize = sizeof(TSendCmdInParams)-1+IDENTIFY_BUFFER_SIZE;
+  BufferSize = SizeOf(SRB_IO_CONTROL)+DataSize;
+  W9xBufferSize = IDENTIFY_BUFFER_SIZE+16;
 var
-  hDevice : THandle; 
-  cbBytesReturned : DWORD; 
-  pInData : PSendCmdInParams; 
-  pOutData : Pointer; // PSendCmdInParams; 
-  Buffer : Array[0..BufferSize-1] of Byte; 
-  srbControl : TSrbIoControl absolute Buffer; 
+  hDevice : THandle;
+  cbBytesReturned : DWORD;
+  pInData : PSendCmdInParams;
+  pOutData : Pointer; // PSendCmdInParams;
+  Buffer : Array[0..BufferSize-1] of Byte;
+  srbControl : TSrbIoControl absolute Buffer;
 
-  procedure ChangeByteOrder( var Data; Size : Integer ); 
-  var ptr : PChar; 
-      i : Integer; 
-      c : Char; 
-  begin 
-    ptr := @Data; 
-    for i := 0 to (Size shr 1)-1 do 
-    begin 
-      c := ptr^; 
-      ptr^ := (ptr+1)^; 
-      (ptr+1)^ := c; 
-      Inc(ptr,2); 
-    end; 
-  end; 
+  procedure ChangeByteOrder( var Data; Size : Integer );
+  var ptr : PChar;
+      i : Integer;
+      c : Char;
+  begin
+    ptr := @Data;
+    for i := 0 to (Size shr 1)-1 do
+    begin
+      c := ptr^;
+      ptr^ := (ptr+1)^;
+      (ptr+1)^ := c;
+      Inc(ptr,2);
+    end;
+  end;
 
 begin
  if PortableWork then
@@ -5045,77 +5054,77 @@ begin
   Result:=GetIdeDiskSerialNumberW;
   exit;
  end;
-  Result := ''; 
-  FillChar(Buffer,BufferSize,#0); 
-  if Win32Platform=VER_PLATFORM_WIN32_NT then 
-    begin // Windows NT, Windows 2000 
-      // Get SCSI port handle 
-      hDevice := CreateFile( '\\.\Scsi0:', GENERIC_READ or GENERIC_WRITE, 
-        FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING, 0, 0 ); 
-      if hDevice=INVALID_HANDLE_VALUE then Exit; 
-      try 
-        srbControl.HeaderLength := SizeOf(SRB_IO_CONTROL); 
-        System.Move('SCSIDISK',srbControl.Signature,8); 
-        srbControl.Timeout := 2; 
-        srbControl.Length := DataSize; 
-        srbControl.ControlCode := IOCTL_SCSI_MINIPORT_IDENTIFY; 
-        pInData := PSendCmdInParams(PChar(@Buffer)+SizeOf(SRB_IO_CONTROL)); 
-        pOutData := pInData; 
-        with pInData^ do 
-        begin 
-          cBufferSize := IDENTIFY_BUFFER_SIZE; 
-          bDriveNumber := 0; 
-          with irDriveRegs do 
-          begin 
-            bFeaturesReg := 0; 
-            bSectorCountReg := 1; 
-            bSectorNumberReg := 1; 
-            bCylLowReg := 0; 
-            bCylHighReg := 0; 
-            bDriveHeadReg := $A0; 
-            bCommandReg := IDE_ID_FUNCTION; 
-          end; 
-        end; 
-        if not DeviceIoControl( hDevice, IOCTL_SCSI_MINIPORT, @Buffer, 
-          BufferSize, @Buffer, BufferSize, cbBytesReturned, nil ) then Exit; 
-      finally 
-        CloseHandle(hDevice); 
-      end; 
-    end 
+  Result := '';
+  FillChar(Buffer,BufferSize,#0);
+  if Win32Platform=VER_PLATFORM_WIN32_NT then
+    begin // Windows NT, Windows 2000
+      // Get SCSI port handle
+      hDevice := CreateFile( '\\.\Scsi0:', GENERIC_READ or GENERIC_WRITE,
+        FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING, 0, 0 );
+      if hDevice=INVALID_HANDLE_VALUE then Exit;
+      try
+        srbControl.HeaderLength := SizeOf(SRB_IO_CONTROL);
+        System.Move('SCSIDISK',srbControl.Signature,8);
+        srbControl.Timeout := 2;
+        srbControl.Length := DataSize;
+        srbControl.ControlCode := IOCTL_SCSI_MINIPORT_IDENTIFY;
+        pInData := PSendCmdInParams(PChar(@Buffer)+SizeOf(SRB_IO_CONTROL));
+        pOutData := pInData;
+        with pInData^ do
+        begin
+          cBufferSize := IDENTIFY_BUFFER_SIZE;
+          bDriveNumber := 0;
+          with irDriveRegs do
+          begin
+            bFeaturesReg := 0;
+            bSectorCountReg := 1;
+            bSectorNumberReg := 1;
+            bCylLowReg := 0;
+            bCylHighReg := 0;
+            bDriveHeadReg := $A0;
+            bCommandReg := IDE_ID_FUNCTION;
+          end;
+        end;
+        if not DeviceIoControl( hDevice, IOCTL_SCSI_MINIPORT, @Buffer,
+          BufferSize, @Buffer, BufferSize, cbBytesReturned, nil ) then Exit;
+      finally
+        CloseHandle(hDevice);
+      end;
+    end
   else
     begin // Windows 95 OSR2, Windows 98
       hDevice := CreateFile( '\\.\SMARTVSD', 0, 0, nil, CREATE_NEW, 0, 0 );
-      if hDevice=INVALID_HANDLE_VALUE then Exit; 
-      try 
-        pInData := PSendCmdInParams(@Buffer); 
-        pOutData := PChar(@pInData^.bBuffer); 
-        with pInData^ do 
-        begin 
-          cBufferSize := IDENTIFY_BUFFER_SIZE; 
-          bDriveNumber := 0; 
-          with irDriveRegs do 
-          begin 
-            bFeaturesReg := 0; 
-            bSectorCountReg := 1; 
-            bSectorNumberReg := 1; 
-            bCylLowReg := 0; 
-            bCylHighReg := 0; 
-            bDriveHeadReg := $A0; 
-            bCommandReg := IDE_ID_FUNCTION; 
-          end; 
-        end; 
-        if not DeviceIoControl( hDevice, DFP_RECEIVE_DRIVE_DATA, pInData,  
-           SizeOf(TSendCmdInParams)-1, pOutData, W9xBufferSize, 
-           cbBytesReturned, nil ) then Exit; 
-      finally 
-        CloseHandle(hDevice); 
-      end; 
-    end; 
-    with PIdSector(PChar(pOutData)+16)^ do 
-    begin 
-      ChangeByteOrder(sSerialNumber,SizeOf(sSerialNumber)); 
-      SetString(Result,sSerialNumber,SizeOf(sSerialNumber)); 
-    end; 
+      if hDevice=INVALID_HANDLE_VALUE then Exit;
+      try
+        pInData := PSendCmdInParams(@Buffer);
+        pOutData := PChar(@pInData^.bBuffer);
+        with pInData^ do
+        begin
+          cBufferSize := IDENTIFY_BUFFER_SIZE;
+          bDriveNumber := 0;
+          with irDriveRegs do
+          begin
+            bFeaturesReg := 0;
+            bSectorCountReg := 1;
+            bSectorNumberReg := 1;
+            bCylLowReg := 0;
+            bCylHighReg := 0;
+            bDriveHeadReg := $A0;
+            bCommandReg := IDE_ID_FUNCTION;
+          end;
+        end;
+        if not DeviceIoControl( hDevice, DFP_RECEIVE_DRIVE_DATA, pInData,
+           SizeOf(TSendCmdInParams)-1, pOutData, W9xBufferSize,
+           cbBytesReturned, nil ) then Exit;
+      finally
+        CloseHandle(hDevice);
+      end;
+    end;
+    with PIdSector(PChar(pOutData)+16)^ do
+    begin
+      ChangeByteOrder(sSerialNumber,SizeOf(sSerialNumber));
+      SetString(Result,sSerialNumber,SizeOf(sSerialNumber));
+    end;
 end;
 
 procedure Delay(msecs : Longint);
@@ -5516,7 +5525,7 @@ begin
   else
   begin
     sl := TStringList.Create;
-    // Decode string 
+    // Decode string
     while iPos <> 0 Do
     begin
       sl.Add(Copy(sHelp, 1, (iPos - 1)));
@@ -5525,7 +5534,7 @@ begin
     end;
     if sHelp <> '' Then
     begin
-      sl.Add(sHelp); 
+      sl.Add(sHelp);
     End;
     // Encode string
     sFile := sl[sl.Count - 1];
@@ -5601,7 +5610,7 @@ function CreateShortcutW(SourceFileName, ShortcutName: string;  // the file the 
 var
   MyObject: IUnknown;
   MySLink: IShellLink;
-  MyPFile: IPersistFile; 
+  MyPFile: IPersistFile;
   Directory, LinkName: string;
   WFileName: String;
   Reg: TRegIniFile;
@@ -5610,33 +5619,33 @@ var
 begin
 
   MyObject := CreateComObject(CLSID_ShellLink);
-  MySLink := MyObject as IShellLink; 
-  MyPFile := MyObject as IPersistFile; 
+  MySLink := MyObject as IShellLink;
+  MyPFile := MyObject as IPersistFile;
 
   MySLink.SetPath(PChar(SourceFileName));
-  MySLink.SetArguments(PChar(Parameters)); 
-  MySLink.SetDescription(PChar(Description)); 
+  MySLink.SetArguments(PChar(Parameters));
+  MySLink.SetDescription(PChar(Description));
 
-  LinkName := ChangeFileExt(ShortcutName, '.lnk'); 
+  LinkName := ChangeFileExt(ShortcutName, '.lnk');
   LinkName := ExtractFileName(LinkName);
 
-  // Quicklauch 
-  if Location = _QUICKLAUNCH then 
-  begin 
+  // Quicklauch
+  if Location = _QUICKLAUNCH then
+  begin
     Reg := TRegIniFile.Create(QUICK_LAUNCH_ROOT);
-    try 
-      Directory := Reg.ReadString('MapGroups', 'Quick Launch', ''); 
-    finally 
-      Reg.Free; 
+    try
+      Directory := Reg.ReadString('MapGroups', 'Quick Launch', '');
+    finally
+      Reg.Free;
     end;
-  end 
-  else 
-  // Other locations 
-  begin 
+  end
+  else
+  // Other locations
+  begin
     Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-    try 
-    case Location of 
-      _OTHERFOLDER : Directory := SubFolder; 
+    try
+    case Location of
+      _OTHERFOLDER : Directory := SubFolder;
       _DESKTOP     : Directory := Reg.ReadString('Shell Folders', 'Desktop', '');
       _STARTMENU   : Directory := Reg.ReadString('Shell Folders', 'Start Menu', '');
       _SENDTO      : Directory := Reg.ReadString('Shell Folders', 'SendTo', '');
@@ -5644,7 +5653,7 @@ begin
     end;
     finally
       Reg.Free;
-    end; 
+    end;
   end;
 
   if Directory <> '' then
@@ -5655,7 +5664,7 @@ begin
       CreateDir(Directory + '\' + SubFolder);
       WFileName := Directory + '\' + SubFolder + '\' + LinkName;
       end
-    else 
+    else
       WFileName := Directory + '\' + LinkName;
     if WorkingDir = '' then
       MySLink.SetWorkingDirectory(PChar(ExtractFilePath(SourceFileName)))
@@ -5677,7 +5686,7 @@ begin
     except
     end;
     Result := WFileName;
-  end; 
+  end;
 end;
 
 procedure HideFromTaskBar(handle : Thandle);
@@ -6016,16 +6025,16 @@ end;
 
 function GetWindowsUserName: string;
 const
- cnMaxUserNameLen = 254; 
+ cnMaxUserNameLen = 254;
 var
- sUserName: string; 
- dwUserNameLen: DWORD; 
+ sUserName: string;
+ dwUserNameLen: DWORD;
 begin
- dwUserNameLen := cnMaxUserNameLen - 1; 
- SetLength(sUserName, cnMaxUserNameLen); 
- GetUserName(PChar(sUserName), dwUserNameLen); 
- SetLength(sUserName, dwUserNameLen); 
- Result := sUserName; 
+ dwUserNameLen := cnMaxUserNameLen - 1;
+ SetLength(sUserName, cnMaxUserNameLen);
+ GetUserName(PChar(sUserName), dwUserNameLen);
+ SetLength(sUserName, dwUserNameLen);
+ Result := sUserName;
 end;
 
 //SupportedExt
@@ -6097,7 +6106,7 @@ var
 //  yyyy,mm,dd : Word;
   T : String;
   DT : TDateTime;
-begin   
+begin
  Result:=0;
  if TryStrToTime(DateTime,DT) then
  begin
@@ -6184,7 +6193,7 @@ var
  FormatsString, StrTemp : string;
  p,i : integer;
  RAWFormats : string;
- 
+
   procedure AddGraphicFormat(FormatName : string; Extensions : string; LastExtension : Boolean);
   begin
     FormatsString:=FormatsString+FormatName+' ('+Extensions+')'+'|'+Extensions;
@@ -6200,9 +6209,9 @@ begin
  RAWFormats:='';
  if GraphicFilterString='' then
  begin
-  AddGraphicFormat('JPEG Image File','*.jpg;*.jpeg;*.jfif;*.jpe;*.thm',false);  
-  AddGraphicFormat('Tiff images','*.tiff;*.tif;*.fax',false);           
-  AddGraphicFormat('Portable network graphic images','*.png',false);           
+  AddGraphicFormat('JPEG Image File','*.jpg;*.jpeg;*.jfif;*.jpe;*.thm',false);
+  AddGraphicFormat('Tiff images','*.tiff;*.tif;*.fax',false);
+  AddGraphicFormat('Portable network graphic images','*.png',false);
   AddGraphicFormat('GIF Images','*.gif',false);
 
   if IsRAWSupport then
@@ -6213,21 +6222,21 @@ begin
    begin
     StrTemp:=copy(RAWImages,p,i-p);
 
-    RAWFormats:=RAWFormats+'*.'+AnsiLowerCase(StrTemp);  
+    RAWFormats:=RAWFormats+'*.'+AnsiLowerCase(StrTemp);
     if i <> Length(RAWImages) then RAWFormats:=RAWFormats+';';
     p:=i+1;
    end;
    AddGraphicFormat('Camera RAW Images',RAWFormats,false);
   end;
 
-  AddGraphicFormat('Bitmaps','*.bmp;*.rle;*.dib',false);    
+  AddGraphicFormat('Bitmaps','*.bmp;*.rle;*.dib',false);
   AddGraphicFormat('Photoshop images','*.psd;*.pdd',false);
   AddGraphicFormat('Truevision images','*.win;*.vst;*.vda;*.tga;*.icb',false);
   AddGraphicFormat('ZSoft Paintbrush images','*.pcx;*.pcc;*.scr',false);
   AddGraphicFormat('Alias/Wavefront images','*.rpf;*.rla',false);
   AddGraphicFormat('SGI true color images','*.sgi;*.rgba;*.rgb;*.bw',false);
   AddGraphicFormat('Portable map images','*.ppm;*.pgm;*.pbm',false);
-  AddGraphicFormat('Autodesk images','*.cel;*.pic',false);            
+  AddGraphicFormat('Autodesk images','*.cel;*.pic',false);
   AddGraphicFormat('Kodak Photo-CD images','*.pcd',false);
   AddGraphicFormat('Dr. Halo images','*.cut',false);
   AddGraphicFormat('Paintshop Pro images','*.psp',true);
@@ -6297,7 +6306,7 @@ begin
     Exit;
  try
   FS:=TFileStream.Create(FileName, fmOpenRead);
- except   
+ except
   on e : Exception do
   begin
    EventLog(':ReadTextFileInString() throw exception: '+e.Message);
@@ -6384,7 +6393,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetCommonLinks: TLinksInfo;   
+function TDBPopupMenuInfo.GetCommonLinks: TLinksInfo;
 var
   LL : TStringList;
   I : Integer;
@@ -6549,7 +6558,7 @@ end;
 procedure TDBPopupMenuInfo.SetPosition(const Value: Integer);
 var
   I : Integer;
-begin        
+begin
   for I := 0 to Count - 1 do
     Self[I].IsCurrent := False;
   Self[Value].IsCurrent := True;
@@ -6559,7 +6568,7 @@ end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromContRecord(
   ContRecord: TImageContRecord);
-begin                         
+begin
   ID         := ContRecord.ID;
   FileName   := ProcessPath(ContRecord.FileName);
   Comment    := ContRecord.Comment;
@@ -6580,7 +6589,7 @@ begin
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromDS(DS : TDataSet);
-begin       
+begin
    InfoLoaded := True;
    Selected   := True;
    ID         := DS.FieldByName('ID').AsInteger;
@@ -6635,14 +6644,14 @@ begin
   Rotation   := RI.ItemRotate;
   Rating     := RI.ItemRating;
   Access     := RI.ItemAccess;
-  Date       := RI.ItemDate;   
+  Date       := RI.ItemDate;
   Time       := RI.ItemTime;
   IsDate     := RI.ItemIsDate;
   IsTime     := RI.ItemIsTime;
   Crypted    := RI.ItemCrypted;
   KeyWords   := RI.ItemKeyWords;
   InfoLoaded := RI.Loaded;
-  Include    := RI.ItemInclude;  
+  Include    := RI.ItemInclude;
   Links      := RI.ItemLinks;
 end;
 

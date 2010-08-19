@@ -197,11 +197,12 @@ begin
   IsTime:=GetBoolParam(fQuery,19);
   if Crypted then
   begin
-   M:=CryptGraphicImage(Jpeg,Password);
-   if M<>nil then
-   begin
-    LoadParamFromStream(fQuery,4,M,ftBlob);
-    M.Free;
+   M := TMemoryStream.Create;
+   try
+     CryptGraphicImage(Jpeg, Password, M);
+     LoadParamFromStream(fQuery,4,M,ftBlob);
+   finally
+     M.Free;
    end;
   end else
   AssignParam(fQuery,4,Jpeg);

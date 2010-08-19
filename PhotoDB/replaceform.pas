@@ -149,7 +149,10 @@ begin
    Password:=GetImagePasswordFromUserBlob(WorkQuery.FieldByName('thum'),WorkQuery.FieldByName('FFileName').AsString);
   end;
   if Password<>'' then
-  J:=TJpegImage(DeCryptBlobStreamJPG(WorkQuery.FieldByName('thum'),Password)) else
+  begin
+  J:=TJpegImage.Create;
+  DeCryptBlobStreamJPG(WorkQuery.FieldByName('thum'),Password,J)
+  end else
   begin
    bit.free;
    exit;
@@ -254,6 +257,7 @@ var
   fQuery : TDataSet;
   Exists, w,h : integer;
   TempBitmap, fBit : TBitmap;
+  JPEG : TJpegImage;
 const
   ListItemPreviewSize = 100;
 begin
@@ -292,7 +296,15 @@ begin
    Password:=GetImagePasswordFromUserBlob(fQuery.FieldByName('thum'),fQuery.FieldByName('FFileName').AsString);
   end;
   if Password<>'' then
-  pic.Graphic:=DeCryptBlobStreamJPG(fQuery.FieldByName('thum'),Password) else
+  begin
+    JPEG := TJpegImage.Create;
+    try
+      DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), Password, JPEG);
+      pic.Graphic := JPEG;
+    finally
+      JPEG.Free;
+    end;
+  end else
   begin   
    EventLog('TDBReplaceForm::ReadDBInfoByID()/Password==null --> exit');
    bit.free;

@@ -518,6 +518,7 @@ var
   FBS : TStream;
   fBit, B1, TempBitmap : tbitmap;
   fpic : Tpicture;
+  JPEG : TJpegImage;
   fRotate : integer;
   PassWord : String;
   Exists, w, h : integer;
@@ -591,7 +592,9 @@ begin
    exit;
   end else
   begin
-   FPic.Graphic:=DeCryptBlobStreamJPG(WorkQuery.FieldByName('thum'),PassWord);
+   JPEG := TJpegImage.Create;
+   DeCryptBlobStreamJPG(WorkQuery.FieldByName('thum'), PassWord, JPEG);
+   FPic.Graphic:= JPEG;
   end;
   FCurrentPass:=PassWord;
  end else

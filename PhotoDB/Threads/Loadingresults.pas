@@ -1104,6 +1104,7 @@ var
 
 begin
   if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
+  if not FSearchParams.ShowAllImages then
     SqlQuery := SqlQuery + ' and (Include=TRUE) ';
 
   if not FSearchParams.IsEstimate then

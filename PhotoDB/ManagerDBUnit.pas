@@ -1527,32 +1527,31 @@ begin
         FormManagerHint.Image1.Picture.Bitmap := TBitmap.Create;
         FormManagerHint.Image1.Picture.Bitmap.PixelFormat := pf24bit;
       end;
-      if ValidCryptBlobStreamJPG(DS.FieldByName('Thum')) then
-      begin
-        pass := DBKernel.FindPasswordForCryptBlobStream(DS.FieldByName('Thum'));
-        if pass='' then
+      JPG := TJpegImage.Create;
+      try
+        if ValidCryptBlobStreamJPG(DS.FieldByName('Thum')) then
         begin
-          ShowWindow(FormManagerHint.Handle, SW_HIDE);
-          Exit;
+          pass := DBKernel.FindPasswordForCryptBlobStream(DS.FieldByName('Thum'));
+          if pass = '' then
+          begin
+            ShowWindow(FormManagerHint.Handle, SW_HIDE);
+            Exit;
+          end else
+            DeCryptBlobStreamJPG(DS.FieldByName('Thum'), pass, JPG);
         end else
-        begin
-          JPG := DeCryptBlobStreamJPG(DS.FieldByName('Thum'),pass) as TJPegImage;
-        end;
-      end else
-      begin
-        JPG := TJpegImage.Create;
-        JPG.Assign(DS.FieldByName('Thum'));
-      end;
+          JPG.Assign(DS.FieldByName('Thum'));
 
-      B:= FormManagerHint.image1.Picture.Graphic as TBitmap;
-      B.Width:=ThSize;
-      B.Height:=ThSize;
-      B.Canvas.Pen.Color:=Theme_MainColor;
-      B.Canvas.Brush.Color:=Theme_MainColor;
-      B.Canvas.Rectangle(0,0,B.Width,B.Height);
-      B.Canvas.Pen.Color:=Theme_ListColor;
-      B.canvas.Draw(ThSize div 2 - JPG.Width div 2,ThSize div 2 - JPG.Height div 2,JPG);
-      JPG.Free;
+        B:= FormManagerHint.image1.Picture.Graphic as TBitmap;
+        B.Width:=ThSize;
+        B.Height:=ThSize;
+        B.Canvas.Pen.Color:=Theme_MainColor;
+        B.Canvas.Brush.Color:=Theme_MainColor;
+        B.Canvas.Rectangle(0,0,B.Width,B.Height);
+        B.Canvas.Pen.Color:=Theme_ListColor;
+        B.canvas.Draw(ThSize div 2 - JPG.Width div 2,ThSize div 2 - JPG.Height div 2,JPG);
+      finally
+        JPG.Free;
+      end;
       ApplyRotate(B, ItemData.Rotation);
       DrawAttributes(B, ThSize, ItemData.Rating, ItemData.Rotation, ItemData.Access, DS.FieldByName('FFileName').AsString, ValidCryptBlobStreamJPG(DS.FieldByName('Thum')), ItemData.Exists, ItemData.ID);
     finally

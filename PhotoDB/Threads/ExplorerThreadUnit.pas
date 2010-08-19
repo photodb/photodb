@@ -404,12 +404,12 @@ begin
            if ExplorerInfo.ShowImageFiles then
            If FE and EM and ExplorerInfo.ShowImageFiles then
            begin
-            AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_IMAGE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,false{ValidCryptGraphicFileA(FFolder+SearchRec.Name)},true);
+            AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_IMAGE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,false,true);
             Continue;
            end;
            If (SearchRec.Attr and faDirectory<>0) and ExplorerInfo.ShowFolders then
            begin
-            AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FOLDER, -1, GetGUID,0,0,0,0,0{SearchRec.Size},'','','',0,false,true,true);
+            AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FOLDER, -1, GetGUID,0,0,0,0,0,'','','',0,false,true,true);
             Continue;
            end;  
           end;   
@@ -729,6 +729,7 @@ var
   FBS : TStream;
   CryptedFile : Boolean;
   Info : TOneRecordInfo;
+  JPEG : TJpegImage;
 begin
   TempBitmap := nil;
   IsBigImage := False;
@@ -766,7 +767,9 @@ begin
       begin
         if FInfo.ItemCrypted then
         begin
-          FInfo.Image := DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'))) as TJpegImage;
+          JPEG := TJpegImage.Create;
+          DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum')), JPEG);
+          FInfo.Image := JPEG;
           if not FInfo.Image.Empty then
             FInfo.PassTag := 1;
         end else
@@ -1042,7 +1045,10 @@ begin
         begin
           Password := DBKernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'));
           if Password <> '' then
-            FJPEG := DeCryptBlobStreamJPG(Query.FieldByName('thum'),Password) as TJPEGImage
+          begin
+            FJPEG := TJpegImage.Create;
+            DeCryptBlobStreamJPG(Query.FieldByName('thum'), Password, FJPEG);
+          end
           else
             Continue;
         end else
