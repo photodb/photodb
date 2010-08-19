@@ -77,8 +77,14 @@ uses CommonDBSupport, Dolphin_DB;
 
 function GetGraphicClass(EXT: String; ToSave: Boolean): TGraphicClass;
 begin
+
+  Result := nil;
+
+  if EXT = '' then
+    Exit;
+
+  EXT := StringReplace(EXT, '.', '', [rfReplaceAll]);
   EXT := AnsiLowerCase(EXT);
-  result := nil;
   if EXT = 'bmp' then
     result := TBitmap
   else if EXT = 'jpg' then
@@ -181,9 +187,9 @@ var
   I : Integer;
 begin
   for I := 1 to Length(Str) do
-    CharAray[I] := AnsiChar(Str[I]);
+    CharAray[I - 1] := AnsiChar(Str[I]);
 
-  CharAray[Length(Str) + 1] := #0;
+  CharAray[Length(Str)] := #0;
 end;
 
 procedure CryptArrayByteV1(X : TByteArray; Magic : Cardinal; Password : AnsiString);
@@ -289,7 +295,7 @@ begin
   try
     SetLength(X, FS.Size);
     FS.Read(GraphicHeader, SizeOf(GraphicHeader));
-    if GraphicHeader.ID <> PhotoDBFileHeaderID then
+    if GraphicHeader.ID = PhotoDBFileHeaderID then
       Exit;
 
     FS.Seek(0, soFromBeginning);
@@ -351,9 +357,8 @@ begin
   Result := DeCryptGraphicFileEx(FileName, Password, Pages, LoadFullRAW, Page);
 end;
 
-function DecryptStreamToByteArray(Stream : TStream; GraphicHeader: TGraphicCryptFileHeader; Password : string; var X : TByteArray) : Boolean;
+function DecryptStreamToByteArray(Stream : TStream; GraphicHeader: TGraphicCryptFileHeader; Password : string; var X : TByteArray; var GraphicHeaderV1: TGraphicCryptFileHeaderV1) : Boolean;
 var
-  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   AnsiPassword : AnsiString;
   FileCRC, CRC : Cardinal;
   I, LPass : Integer;
@@ -420,6 +425,7 @@ var
   TempStream: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
+  GraphicClass : TGraphicClass;
 begin
   Result := nil;
 
@@ -432,7 +438,7 @@ begin
     if GraphicHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
-    if not DecryptStreamToByteArray(FS, GraphicHeader, Password, X) then
+    if not DecryptStreamToByteArray(FS, GraphicHeader, Password, X, GraphicHeaderV1) then
       Exit;
 
     TempStream := TMemoryStream.Create;
@@ -440,7 +446,11 @@ begin
       TempStream.Seek(0, soFromBeginning);
       TempStream.WriteBuffer(Pointer(X)^, length(X));
       SetLength(X, 0);
-      Result := GetGraphicClass(GetExt(GraphicHeaderV1.CFileName), False).Create;
+      GraphicClass := GetGraphicClass(ExtractFileExt(GraphicHeaderV1.CFileName), False);
+      if GraphicClass = nil then
+        Exit;
+
+      Result := GraphicClass.Create;
       TempStream.Seek(0, soFromBeginning);
 
       if (Result is TRAWImage) then
@@ -471,6 +481,7 @@ var
   FS: TFileStream;
   X: TByteArray;
   GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   FA: Integer;
 begin
   Result := false;
@@ -486,7 +497,7 @@ begin
     if GraphicHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
-    if not DecryptStreamToByteArray(FS, GraphicHeader, Password, X) then
+    if not DecryptStreamToByteArray(FS, GraphicHeader, Password, X, GraphicHeaderV1) then
       Exit;
 
   finally
@@ -527,7 +538,7 @@ begin
     if GraphicHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
-    if not DecryptStreamToByteArray(FS, GraphicHeader, OldPass, X) then
+    if not DecryptStreamToByteArray(FS, GraphicHeader, OldPass, X, GraphicHeaderV1) then
       Exit;
 
   finally
@@ -664,6 +675,7 @@ var
   X: TByteArray;
   MS: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
 begin
   Result := False;
   FBS := GetBlobStream(DF, bmRead);
@@ -673,7 +685,7 @@ begin
     if GraphicHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
-    if not DecryptStreamToByteArray(FBS, GraphicHeader, Password, X) then
+    if not DecryptStreamToByteArray(FBS, GraphicHeader, Password, X, GraphicHeaderV1) then
       Exit;
 
     MS := TMemoryStream.Create;
@@ -748,7 +760,7 @@ begin
     if GraphicHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
-    if not DecryptStreamToByteArray(FBS, GraphicHeader, Password, X) then
+    if not DecryptStreamToByteArray(FBS, GraphicHeader, Password, X, GraphicHeaderV1) then
       Exit;
   finally
     FBS.Free;

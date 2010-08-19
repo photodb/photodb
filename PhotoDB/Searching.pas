@@ -857,6 +857,9 @@ begin
   MouseDowned := Button = mbRight;
   SelectedItem := Item;
   ItemByMouseDown := False;
+  if Item = nil then
+    ListView.Selection.ClearAll;
+
   if (Button = mbLeft) and (SelectedItem <> nil) then
   begin
     ItemSelectedByMouseDown := False;

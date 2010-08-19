@@ -119,6 +119,7 @@ object ImHint: TImHint
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = []
+    AutoRegister = False
     OptimizedMove = True
     Left = 104
     Top = 72

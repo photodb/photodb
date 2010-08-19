@@ -1959,7 +1959,8 @@ begin
         if Password <> '' then
         begin
           Fpic.Graphic := DeCryptGraphicFile(Info.ItemFileName, Password);
-          Info.PassTag := 1;
+          if (Fpic.Graphic <> nil) and not Fpic.Graphic.Empty then
+            Info.PassTag := 1;
         end else
         begin
           Info.PassTag := 0;
