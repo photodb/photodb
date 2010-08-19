@@ -15,8 +15,15 @@ function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; Li
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
+procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
 
 implementation
+
+procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
+begin
+  ListView.CellSizes.Thumbnail.Width := ImageSize + 10;
+  ListView.CellSizes.Thumbnail.Height := ImageSize + 40;
+end;
 
 function GetListViewHeaderHeight(ListView: TListView): Integer;
 var

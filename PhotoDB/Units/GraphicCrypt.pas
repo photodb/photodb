@@ -201,8 +201,8 @@ begin
     XCos[I] := Round(255 * Cos(TMagicByte(Magic)[I mod 4] + I));
 
   for I := 0 to length(x) - 1 do
-    x[I] := x[I] xor (TMagicByte(Magic)[I mod 4] xor Byte
-        (Password[I mod LPass + 1])) xor xcos[I mod 1024];
+    X[I] := X[I] xor (TMagicByte(Magic)[I mod 4] xor Byte
+        (Password[I mod LPass + 1])) xor XCos[I mod 1024];
   {$IFDEF CKRANGE}
   {$UNDEF CKRANGE}
   {$R+}

@@ -80,7 +80,7 @@ begin
        Fbit.PixelFormat:=pf24bit;
        TempBit:=TBitmap.Create;
        TempBit.PixelFormat:=pf24bit;
-       TempBit.Assign(Info.Image);
+       AssignJpeg(TempBit, Info.Image);
        w:=TempBit.Width;
        h:=TempBit.Height;
        ProportionalSize(ThSizeExplorerPreview,ThSizeExplorerPreview,w,h);
@@ -97,7 +97,7 @@ begin
       begin        
        TempBit:=TBitmap.Create;
        TempBit.PixelFormat:=pf24bit;
-       TempBit.Assign(Info.Image);
+       AssignJpeg(TempBit, Info.Image);
        DrawImageEx(TempBitmap, TempBit, ThSizeExplorerPreview div 2 - Info.Image.Width div 2, ThSizeExplorerPreview div 2 - Info.Image.Height div 2);
        TempBit.Free;
        Info.Image.Free;
@@ -163,7 +163,7 @@ begin
        TempBit.PixelFormat:=pf24bit;
        w:=TempBit.Width;
        h:=TempBit.Height;
-       If Max(w,h)<ThSizeExplorerPreview then Fbit.Assign(TempBit) else
+       If Max(w,h)<ThSizeExplorerPreview then AssignBitmap(Fbit, TempBit) else
        begin
         ProportionalSize(ThSizeExplorerPreview,ThSizeExplorerPreview,w,h);
         try

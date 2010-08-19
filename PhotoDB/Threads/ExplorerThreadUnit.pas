@@ -1064,7 +1064,7 @@ begin
         fbmp := TBitmap.Create;
         try
           JPEGScale(fJpeg, SmallImageSize, SmallImageSize);
-          fbmp.Assign(fJpeg);
+          AssignJpeg(FBmp, FJpeg);
           fJpeg.Free;
           fbmp.PixelFormat := pf24bit;
           ApplyRotate(fbmp, Query.FieldByName('Rotated').AsInteger);
@@ -1108,7 +1108,8 @@ begin
             fbmp.PixelFormat := pf24bit;
             bmp := TBitmap.Create;
             try
-              bmp.Assign(pic.Graphic);
+              AssignGraphic(BMP, Pic.Graphic);
+
               bmp.PixelFormat := pf24bit;
               DoResize(W, H, bmp, fbmp);
               DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
@@ -1168,7 +1169,7 @@ begin
  if ExplorerInfo.SaveThumbNailsForFolders then
  begin
   fFolderImages.Images[FcountOfFolderImage]:=TBitmap.create;
-  fFolderImages.Images[FcountOfFolderImage].Assign(fbmp);
+  AssignBitmap(fFolderImages.Images[FcountOfFolderImage], Fbmp);
  end;
  StretchCoolW(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Source.Width, Source.Height), Source, Bitmap);
 end;
@@ -1804,7 +1805,8 @@ begin
      SynchronizeEx(FileNeededAW);
   
      //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
-     if not LoadingAllBigImages then BooleanResult:=true;
+     if not LoadingAllBigImages then
+       BooleanResult := True;
 
      if IsTerminated then break;
      if not FileExists(ProcessPath(FFiles[i].FileName)) then continue;
@@ -1988,7 +1990,7 @@ begin
           TempBitmap := TBitmap.Create;
           TempBitmap.PixelFormat := pf24bit;
           if Max(W, H) < ThImageSize then
-            TempBitmap.Assign(TempBit)
+            AssignBitmap(TempBitmap, TempBit)
           else
           begin
             ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
@@ -2015,7 +2017,7 @@ begin
     if not ((Info.PassTag = 0) and Info.ItemCrypted) and not Info.Image.Empty then
     begin
       TempBitmap := TBitmap.Create;
-      TempBitmap.Assign(Info.Image);
+      AssignJpeg(TempBitmap, Info.Image);
     end else
     begin
       Fbit := TBitmap.Create;

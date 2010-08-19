@@ -1199,7 +1199,7 @@ var
       begin
         Data.Bitmap := TBitmap.Create;
         Data.Bitmap.PixelFormat := pf24bit;
-        Data.Bitmap.Assign(JPEG);
+        AssignJpeg(Data.Bitmap, JPEG);
         ApplyRotate(Data.Bitmap, Data.Rotation);
       end else
         Data.Bitmap := nil;

@@ -157,7 +157,7 @@ begin
     if PNG.PixelFormat=pf32bit then
     begin
      LoadPNGImage32bit(PNG,Bitmap,TransparentColor);
-    end else Bitmap.Assign(Picture.Graphic);
+    end else AssignGraphic(Bitmap, Picture.Graphic);
    end else
    begin
     if (Picture.Graphic is TBitmap) then
@@ -168,9 +168,9 @@ begin
       begin
        FTransparent := True;
        LoadBMPImage32bit(Picture.Graphic as TBitmap,Bitmap,TransparentColor);
-      end else Bitmap.Assign(Picture.Graphic);
-     end else Bitmap.Assign(Picture.Graphic);   
-    end else Bitmap.Assign(Picture.Graphic);
+      end else AssignGraphic(Bitmap, Picture.Graphic);
+     end else AssignGraphic(Bitmap, Picture.Graphic);
+    end else AssignGraphic(Bitmap, Picture.Graphic);
    end;
    Bitmap.PixelFormat:=pf24bit;
   except

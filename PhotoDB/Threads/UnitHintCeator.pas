@@ -223,7 +223,7 @@ begin
      FTransparent:=true;
      LoadPNGImage32bit(PNG,fbmp,Theme_MainColor);
     end else
-    fbmp.Assign(G);
+      AssignGraphic(FBMP, G);
    end;
 
    if not (G is TPNGGraphic) and not (G is TGIFImage) then
@@ -236,9 +236,9 @@ begin
       begin
        FTransparent:=true;
        LoadBMPImage32bit(G as TBitmap,fbmp,Theme_MainColor);
-      end else fbmp.Assign(G);
-     end else fbmp.Assign(G);
-    end else fbmp.Assign(G);
+      end else AssignGraphic(FBMP, G);
+     end else AssignGraphic(FBMP, G);
+    end else AssignGraphic(FBMP, G);
    end;
    DoResize(fw,fh,fbmp,fb);
    fbmp.free;
@@ -265,7 +265,7 @@ begin
      FTransparent:=true;
      LoadPNGImage32bit(PNG,fb,Theme_MainColor);
     end else
-    fb.Assign(G);
+      AssignGraphic(FB, G);
    end;
    if not (G is TPNGGraphic) and not (G is TGIFImage) then
    begin
@@ -275,8 +275,8 @@ begin
      begin
       FTransparent:=true;
       LoadBMPImage32bit(G as TBitmap,fb,Theme_MainColor);
-     end else fb.Assign(G);
-    end else fb.Assign(G);
+     end else AssignGraphic(FB, G);
+    end else AssignGraphic(FB, G);
    end;
   end;
   ApplyRotate(fb, fRotate);

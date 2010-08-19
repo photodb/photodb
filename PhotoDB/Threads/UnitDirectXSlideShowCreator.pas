@@ -202,7 +202,7 @@ begin
   begin
   Image:=TBitmap.Create;
   try
-   Image.Assign(Picture.Graphic);
+    AssignGraphic(Image, Picture.Graphic);
   except
    Image.Free;
    Picture.Free;

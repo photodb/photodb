@@ -2458,11 +2458,13 @@ var
   r : TRect;
   item, itemsel: TEasyItem;
 begin
-  ItemsDeselected:=false;
-  Item:=ItemAtPos(x,y);
-  FWasDragAndDrop:=false;
+  ItemsDeselected := False;
+  FWasDragAndDrop := False;
+  Item := ItemAtPos(x,y);
 
   MouseDowned:=Button=mbRight;
+  if Item = nil then
+     ElvMain.Selection.ClearAll;
 
 //  if ListView=LV_THUMBS then
   begin
@@ -2495,13 +2497,8 @@ begin
 
   if ((Button = mbLeft) or (Button = mbRight)) and (Item<>nil) and not FDblClicked then
   begin
-    if Button = mbRight then
-    begin
-     rdown:=true
-    end else
-    begin
-     rdown:=false;
-    end;
+    rdown:=Button = mbRight;
+
     fDBCanDrag:=True;
     SetLength(fFilesToDrag,0);
     SetLength(FListDragItems,0);
@@ -2636,7 +2633,7 @@ Var
   i : integer;
   index : Integer;
 begin
- For i:=0 to fFilesInfo.Count-1 do
+ for i:=0 to fFilesInfo.Count-1 do
  begin
   if fFilesInfo[i].ID=ID then
   begin
@@ -7349,8 +7346,8 @@ begin
 
   b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList[Item.ImageIndex].Bitmap);
 
-  r.Left:=r1.Left-2;
-  r.Top:=r1.Top-2;
+  r.Left:=r1.Left-2-1;
+  r.Top:=r1.Top-2-1;
 
   index:=ItemIndexToMenuIndex(Item.Index);
 
@@ -7835,8 +7832,7 @@ end;
 
 procedure TExplorerForm.LoadSizes;
 begin
- ElvMain.CellSizes.Thumbnail.Width := FPictureSize+10;
- ElvMain.CellSizes.Thumbnail.Height := FPictureSize+36;
+  SetLVThumbnailSize(ElvMain, FPictureSize);
 end;
 
 procedure TExplorerForm.PopupMenuZoomDropDownPopup(Sender: TObject);

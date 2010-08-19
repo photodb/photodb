@@ -3868,8 +3868,7 @@ end;
 
 procedure TSearchForm.LoadSizes();
 begin
-  ListView.CellSizes.Thumbnail.Width := FPictureSize + 10;
-  ListView.CellSizes.Thumbnail.Height := FPictureSize + 36;
+  SetLVThumbnailSize(ListView, FPictureSize);
 end;
 
 function TSearchForm.FileNameExistsInList(FileName : string) : Boolean;

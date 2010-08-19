@@ -45,6 +45,9 @@ interface
   procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
   procedure GrayScale(Image : TBitmap);
   procedure SelectedColor(Image : TBitmap; Color : TColor);
+  procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
+  procedure AssignBitmap(Dest : TBitmap; Src : TBitmap);
+  procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
 
 implementation
 
@@ -593,13 +596,51 @@ begin
  end;
 end;
 
+procedure AssignBitmap(Dest : TBitmap; Src : TBitmap);
+var
+  I, J: Integer;
+  PS, PD: PARGB;
+begin
+  Src.PixelFormat := pf24bit;
+  Dest.PixelFormat := pf24bit;
+  Dest.Width := Src.Width;
+  Dest.Height := Src.Height;
+  for I := 0 to Src.Height - 1 do
+  begin
+    PD := Dest.ScanLine[I];
+    PS := Src.ScanLine[I];
+    for J := 0 to Src.Width - 1 do
+      PD[J] := PS[J];
+  end;
+end;
+
+procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
+var
+  I, J: Integer;
+  PS, PD: PARGB;
+  BMP: TBitmap;
+begin
+  JPEG.Performance := jpBestSpeed;
+  JPEG.DIBNeeded;
+  BMP := TJPEGX(JPEG).InnerBitmap;
+  AssignBitmap(Bitmap, BMP);
+end;
+
+procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
+begin
+  if Src is TJpegImage then
+    AssignJpeg(Dest, TJpegImage(Src))
+  else if Src is TBitmap then
+    AssignBitmap(Dest, TBitmap(Src))
+  else
+    Dest.Assign(Src);
+end;
+
+
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 var
   PNG: TPNGGraphic;
   BMP: TBitmap;
-  JPEG: TJpegImage;
-  I, J: Integer;
-  PS, PD: PARGB;
 begin
   if Image is TPNGGraphic then
   begin
@@ -640,25 +681,7 @@ begin
         Exit;
       end;
   end;
-  if Image is TJpegImage then
-  begin
-    JPEG := TJpegImage(Image);
-    JPEG.Performance := jpBestSpeed;
-    JPEG.DIBNeeded;
-    BMP := TJPEGX(JPEG).InnerBitmap;
-    Bitmap.PixelFormat := pf24bit;
-    Bitmap.Width := BMP.Width;
-    Bitmap.Height := BMP.Height;
-    for I := 0 to BMP.Height - 1 do
-    begin
-      PD := Bitmap.ScanLine[I];
-      PS := BMP.ScanLine[I];
-      for J := 0 to Bitmap.Width - 1 do
-        PD[J] := PS[J];
-    end;
-    exit;
-  end;
-  Bitmap.Assign(Image);
+  AssignGraphic(Bitmap, Image);
 end;
 
 procedure DoResize(Width,Height : integer; S,D : TBitmap);

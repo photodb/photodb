@@ -371,7 +371,7 @@ begin
    end;
   end else
   begin
-   B.Assign(Graphic);
+    AssignGraphic(B, Graphic);
   end;
   w:=B.Width;
   h:=B.Height;

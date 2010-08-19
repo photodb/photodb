@@ -4,7 +4,7 @@ interface
 
 uses
    Classes, Windows, Messages, JPEG, Graphics, DmProgress, uTime,
-   uConstants, uResources, Language;
+   uConstants, uResources, Language, UnitDBCommonGraphics;
 
 type
   TSplashThread = class(TThread)
@@ -72,7 +72,7 @@ begin
         BMP.Canvas.Pen.Color := 0;
         BMP.Height := SplHeight;
         BMP.Width := SplWidth;
-        BMP.Assign(J);
+        AssignJpeg(BMP, J);
         BitBlt(DrawDC, 200, 0, SplWidth, SplHeight, BMP.Canvas.Handle, 0, 0, SRCCOPY);
       finally
         BMP.Free;

@@ -12,8 +12,8 @@ type
 
   TRAWImage = class(TBitmap)
   protected
-    fWidth : integer;
-    fHeight : integer;
+    FWidth : Integer;
+    FHeight : Integer;
     fLoadHalfSize: boolean;
     function GetWidth : integer; override;
     function GetHeight : integer; override;
@@ -147,7 +147,7 @@ begin
     //for crypting - loading private variables width and height
     FWidth := (Source as TRAWImage).FWidth;
     FHeight := (Source as TRAWImage).FHeight;
-    fLoadHalfSize:=(Source as TRAWImage).FLoadHalfSize;
+    FLoadHalfSize:=(Source as TRAWImage).FLoadHalfSize;
   end;
   inherited Assign(Source);
 end;

@@ -192,6 +192,7 @@ type
   FBitmapImageList : TBitmapImageList;
   procedure LoadLanguage;
   procedure LoadToolBarIcons();
+  procedure LoadSizes;
 
     { Public declarations }
   end;
@@ -297,8 +298,8 @@ begin
      ListView1.Selection.EnableDragSelect:=true;
      ListView1.Selection.TextColor:=Theme_ListFontColor;
 
-     ListView1.CellSizes.Thumbnail.Width:=ThSizePanelPreview+12;
-     ListView1.CellSizes.Thumbnail.Height:=ThSizePanelPreview+38;
+     fPictureSize := ThSizePanelPreview;
+     LoadSizes;
      ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
      ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
 
@@ -1210,6 +1211,11 @@ begin
  ToolButton6.Caption:=TEXT_MES_CLOSE;
 end;
 
+procedure TFormCont.LoadSizes;
+begin
+  SetLVThumbnailSize(ListView1, fPictureSize);
+end;
+
 procedure TFormCont.CreateParams(var Params: TCreateParams);
 begin
  Inherited CreateParams(Params);  
@@ -1348,8 +1354,7 @@ begin
  ListView1.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  FPictureSize:=SizeX;
- ListView1.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height:=FPictureSize+36;
+ LoadSizes;
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;
 
@@ -1921,8 +1926,7 @@ begin
  ListView1.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  if FPictureSize>40 then FPictureSize:=FPictureSize-10;
- ListView1.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height:=FPictureSize+36;
+ LoadSizes;
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;
  ListView1.Scrollbars.ReCalculateScrollbars(false,true);
@@ -1941,8 +1945,7 @@ begin
  ListView1.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  if FPictureSize<550 then FPictureSize:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Width:=FPictureSize+10;
- ListView1.CellSizes.Thumbnail.Height:=FPictureSize+36;  
+ LoadSizes;
  BigImagesTimer.Enabled:=false;
  BigImagesTimer.Enabled:=true;   
  ListView1.Scrollbars.ReCalculateScrollbars(false,true);
