@@ -37,8 +37,8 @@ object ImHint: TImHint
   object Label1: TLabel
     Left = 3
     Top = 176
-    Width = 150
-    Height = 17
+    Width = 88
+    Height = 13
     BiDiMode = bdLeftToRight
     Caption = 'Name or Comment'
     Font.Charset = DEFAULT_CHARSET

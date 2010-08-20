@@ -5146,7 +5146,7 @@ object ExplorerForm: TExplorerForm
       Transparent = True
       Wrapable = False
       OnMouseMove = ToolBar1MouseMove
-      object ToolButton1: TToolButton
+      object TbBack: TToolButton
         Left = 0
         Top = 0
         AutoSize = True
@@ -5155,7 +5155,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsDropDown
         OnClick = SpeedButton1Click
       end
-      object ToolButton2: TToolButton
+      object TbForward: TToolButton
         Left = 33
         Top = 0
         AutoSize = True

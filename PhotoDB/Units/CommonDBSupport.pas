@@ -67,6 +67,7 @@ const
     FQuery : string;
   public
     function AddDateTimeParam(Name : string; Value : TDateTime) : TDBDateTimeParam;
+    function AddIntParam(Name : string; Value : Integer) : TDBIntegerParam;
     constructor Create; 
     destructor Destroy; override;
     procedure ApplyToDS(DS : TDataSet);
@@ -1016,6 +1017,15 @@ begin
   FParamList.Add(Result);
 end;
 
+function TDBQueryParams.AddIntParam(Name: string;
+  Value: Integer): TDBIntegerParam;
+begin
+  Result := TDBIntegerParam.Create;
+  Result.Name := Name;
+  Result.Value := Value;
+  FParamList.Add(Result);
+end;
+
 procedure TDBQueryParams.ApplyToDS(DS: TDataSet);
 var
   I : Integer;
@@ -1033,6 +1043,8 @@ begin
     begin
       if DBParam is TDBDateTimeParam then
         Paramert.Value := TDBDateTimeParam(DBParam).Value;
+      if DBParam is TDBIntegerParam then
+        Paramert.Value := TDBIntegerParam(DBParam).Value;
     end;
   end;
 end;

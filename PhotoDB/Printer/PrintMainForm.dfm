@@ -1,9 +1,9 @@
 object PrintForm: TPrintForm
   Left = 175
   Top = 207
-  Width = 769
-  Height = 625
   Caption = 'PrintForm'
+  ClientHeight = 587
+  ClientWidth = 753
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,10 +21,11 @@ object PrintForm: TPrintForm
     Left = 0
     Top = 0
     Width = 169
-    Height = 529
+    Height = 527
     Align = alLeft
     TabOrder = 0
     OnResize = ToolsPanelResize
+    ExplicitHeight = 529
     object BaseImage: TImage
       Left = 0
       Top = 0
@@ -314,12 +315,13 @@ object PrintForm: TPrintForm
     end
     object Panel3: TPanel
       Left = 1
-      Top = 424
+      Top = 422
       Width = 167
       Height = 104
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
+      ExplicitTop = 424
       object Label4: TLabel
         Left = 54
         Top = 57
@@ -350,7 +352,6 @@ object PrintForm: TPrintForm
         Width = 49
         Height = 21
         Enabled = False
-        ItemHeight = 13
         TabOrder = 1
         Text = 'sm'
         OnChange = ComboBox2Change
@@ -412,11 +413,12 @@ object PrintForm: TPrintForm
   end
   object BottomPanel: TPanel
     Left = 0
-    Top = 529
+    Top = 527
     Width = 753
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 529
     object OkButtonPanel: TPanel
       Left = 567
       Top = 1
@@ -450,9 +452,10 @@ object PrintForm: TPrintForm
     Left = 635
     Top = 0
     Width = 118
-    Height = 529
+    Height = 527
     Align = alRight
     TabOrder = 2
+    ExplicitHeight = 529
     object Label2: TLabel
       Left = 8
       Top = 200
@@ -502,10 +505,18 @@ object PrintForm: TPrintForm
       Width = 60
       Height = 16
       Cursor = crHandPoint
+      Enabled = False
       Text = 'Zoom In'
       OnClick = ZoomInLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 16
+      IconHeight = 16
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000000000
@@ -543,14 +554,6 @@ object PrintForm: TPrintForm
         0000000000000000000000000000000000000000000000000000000000000FFF
         FFFF07FFFFFF01FFFFFF00FFFFFF008FFFFFC003FFFFE001FFFFF000FFFFF800
         FFFFF000FFFFF000FFFFF000FFFFF800FFFFF801FFFFFC03FFFFFFFFFFFF}
-      IconWidth = 16
-      IconHeight = 16
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      Enabled = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object ZoomOutLink: TWebLink
       Left = 8
@@ -558,10 +561,18 @@ object PrintForm: TPrintForm
       Width = 68
       Height = 16
       Cursor = crHandPoint
+      Enabled = False
       Text = 'Zoom Out'
       OnClick = ZoomOutLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 16
+      IconHeight = 16
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000000000
@@ -599,14 +610,6 @@ object PrintForm: TPrintForm
         00000000000000000000000000000000000000000000000000000000000087FF
         FFFF83FFFFFF81FFFFFF80FFFFFF804FFFFFC001FFFFE001FFFFF000FFFFF800
         FFFFF800FFFFF800FFFFF800FFFFF800FFFFFC01FFFFFE03FFFFFFFFFFFF}
-      IconWidth = 16
-      IconHeight = 16
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      Enabled = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object FullSizeLink: TWebLink
       Left = 8
@@ -614,10 +617,18 @@ object PrintForm: TPrintForm
       Width = 60
       Height = 16
       Cursor = crHandPoint
+      Enabled = False
       Text = 'Full Size'
       OnClick = FullSizeLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 16
+      IconHeight = 16
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000001A19
@@ -655,14 +666,6 @@ object PrintForm: TPrintForm
         6B9BB5907CE2B28D7EDA8F685F923822233400000000000000000000000007FF
         FFFF03FFFFFF01FFFFFF00FFFFFF8087FFFFC003FFFFE001FFFFF000FFFFF800
         FFFFF000FFFFF000FFFFF000FFFFF000FFFFF800FFFFFC01FFFFFE07FFFF}
-      IconWidth = 16
-      IconHeight = 16
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      Enabled = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object FitToSizeLink: TWebLink
       Left = 8
@@ -670,10 +673,18 @@ object PrintForm: TPrintForm
       Width = 64
       Height = 16
       Cursor = crHandPoint
+      Enabled = False
       Text = 'Fit Image'
       OnClick = FitToSizeLinkClick
       BkColor = clBtnFace
       ImageIndex = 0
+      IconWidth = 16
+      IconHeight = 16
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000001A19
@@ -711,14 +722,6 @@ object PrintForm: TPrintForm
         6B9BB5907CE2B28D7EDA8F685F923822233400000000000000000000000007FF
         FFFF03FFFFFF01FFFFFF00FFFFFF8087FFFFC003FFFFE001FFFFF000FFFFF800
         FFFFF000FFFFF000FFFFF000FFFFF000FFFFF800FFFFFC01FFFFFE07FFFF}
-      IconWidth = 16
-      IconHeight = 16
-      UseEnterColor = False
-      EnterColor = clBlack
-      EnterBould = False
-      Enabled = False
-      TopIconIncrement = 0
-      ImageCanRegenerate = False
     end
     object ComboBox1: TComboBox
       Left = 8
@@ -726,7 +729,6 @@ object PrintForm: TPrintForm
       Width = 105
       Height = 21
       Enabled = False
-      ItemHeight = 13
       TabOrder = 5
       Text = '1'
       OnClick = ComboBox1Click
@@ -751,15 +753,16 @@ object PrintForm: TPrintForm
     Left = 169
     Top = 0
     Width = 466
-    Height = 529
+    Height = 527
     Zoom = 100.000000000000000000
     Align = alClient
     PopupMenu = PopupMenu1
     OnResize = FastScrollingImage1Resize
+    ExplicitHeight = 529
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 570
+    Top = 568
     Width = 753
     Height = 19
     Panels = <
@@ -769,6 +772,7 @@ object PrintForm: TPrintForm
       item
         Width = 150
       end>
+    ExplicitTop = 570
   end
   object StaticText1: TStaticText
     Left = 248

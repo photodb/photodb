@@ -48,6 +48,7 @@ interface
   procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
   procedure AssignBitmap(Dest : TBitmap; Src : TBitmap);
   procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
+  procedure RemoveBlackColor(Bitmap : TBitmap);
 
 implementation
 
@@ -1024,6 +1025,22 @@ begin
     QuickReduce(Width,Height,S,D)
   else
     StretchCool(Width,Height,S,D)
+end;
+
+procedure RemoveBlackColor(Bitmap : TBitmap);
+var
+  I, J : integer;
+  P : PARGB;
+begin
+  for I := 0 to Bitmap.Height - 1 do
+  begin
+    P := Bitmap.ScanLine[I];
+    for J := 0 to Bitmap.Width - 1 do
+    begin
+      if (P[J].R = 0) and (P[J].G = 0) and (P[J].B = 0) then
+        P[J].G := 1;
+    end;
+  end;
 end;
 
 { TJPEGX }

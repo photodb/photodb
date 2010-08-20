@@ -247,8 +247,8 @@ type
     ExtractHiddenInfo1: TMenuItem;
     CoolBar2: TCoolBar;
     ToolBar1: TToolBar;
-    ToolButton1: TToolButton;
-    ToolButton2: TToolButton;
+    TbBack: TToolButton;
+    TbForward: TToolButton;
     ToolButton3: TToolButton;
     ToolButton4: TToolButton;
     ToolButton5: TToolButton;
@@ -527,6 +527,7 @@ type
     procedure EasyListview1ItemImageGetSize(Sender: TCustomEasyListview;
      Item: TEasyItem; Column: TEasyColumn; var ImageWidth,
       ImageHeight: Integer);
+    function ListViewTypeToSize(ListViewType : Integer) : Integer;
     procedure SmallIcons1Click(Sender: TObject);
     procedure Icons1Click(Sender: TObject);
     procedure List1Click(Sender: TObject);
@@ -594,9 +595,9 @@ type
      FOldPatch : String;
      FOldPatchType : Integer;
      fFilesToDrag : TArStrings;
-     fDBCanDrag : Boolean;
+     FDBCanDrag : Boolean;
      fDBCanDragW : Boolean;
-     fDBDragPoint : TPoint;
+     FDBDragPoint : TPoint;
      UpdatingList : Boolean;
      GlobalLock : Boolean;
      FIsExplorer : Boolean;
@@ -890,8 +891,8 @@ begin
   fStatusProgress := CreateProgressBar(StatusBar1, 1);
   fStatusProgress.Visible:=false;
   fHistory.OnHistoryChange:=HistoryChanged;
-  ToolButton1.Enabled:=false;
-  ToolButton2.Enabled:=false;
+  TbBack.Enabled:=false;
+  TbForward.Enabled:=false;
   DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
   DBKernel.RegisterChangesID(Sender,ChangedDBDataByID);
 
@@ -1019,7 +1020,7 @@ begin
   rdown:=false;
   FDblClicked:=false;
   HintTimer.Enabled:=false;
-  fDBCanDrag:=false;
+  FDBCanDrag:=false;
 
   Item := ItemByPointImage(ElvMain, Point(MousePos.x,MousePos.y), ListView);
   VitrualKey:=((MousePos.x=-1) and (MousePos.y=-1));
@@ -1084,7 +1085,7 @@ end;
 
 procedure TExplorerForm.Shell1Click(Sender: TObject);
 begin
- ShellExecute(0, Nil,PChar(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName)), Nil, Nil, SW_NORMAL);
+  ShellExecute(Handle, nil, PWideChar(ProcessPath(fFilesInfo[PmItemPopup.tag].FileName)), nil, nil, SW_NORMAL);
 end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);
@@ -1715,208 +1716,241 @@ end;
 procedure TExplorerForm.ListView1MouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
-  P : Tpoint;
+  Pos, MousePos : TPoint;
   Index : Integer;
-  Icon48 :TIcon48;
-  i, n, MaxH, MaxW, ImH,ImW : integer;
+  Icon48 : TIcon48;
+  I, N, MaxH, MaxW, ImH, ImW : integer;
   Image : TBitmapImageListImage;
-  smintL,smintR : SmallInt;
-  TempImage, DragImage : TBitmap;
-  SelectedItem, item: TEasyItem;
+  LButtonState, RButtonState : SmallInt;
+  TempImage, DragImage, Bitmap : TBitmap;
+  SelectedItem, Item: TEasyItem;
   FileName : string;
   R : TRect;
   EasyRect : TEasyRectArrayObject;
-Const
-  DrawTextOpt = DT_NOPREFIX+DT_WORDBREAK+DT_CENTER;
+
+const
+  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
+
 begin
- PopupHandled:=false;
+  PopupHandled := False;
 
- smintL:=GetAsyncKeystate(VK_LBUTTON);
- smintR:=GetAsyncKeystate(VK_RBUTTON);
+  LButtonState := GetAsyncKeystate(VK_LBUTTON);
+  RButtonState := GetAsyncKeystate(VK_RBUTTON);
 
- If fDBCanDrag then
- if not outdrag then
- begin
-  GetCursorPos(p);
-  If (Abs(fDBDragPoint.x-p.x)>3) or (Abs(fDBDragPoint.y-p.y)>3) then
-  if (smintR<>0) or (smintL<>0) then
-
+  GetCursorPos(MousePos);
+  if FDBCanDrag and not outdrag then
   begin
-   p:=fDBDragPoint;
-   DragImageList.Clear;
-
-   if ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y)<>nil then
-   Image:=FBitmapImageList[ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y).ImageIndex] else
-   if Listview1Selected<>nil then
-   Image:=FBitmapImageList[Listview1Selected.ImageIndex];
-
-   item:=ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y);
-   if item=nil then exit;
-   if ElvMain.Selection.FocusedItem=nil then
-   ElvMain.Selection.FocusedItem:=item;
-   Case ListView of
-    LV_THUMBS     : begin DragImageList.Height:=ThSize; DragImageList.Width:=ThSize;  end;
-    LV_ICONS      : begin DragImageList.Height:=32; DragImageList.Width:=32;  end;
-    LV_SMALLICONS : begin DragImageList.Height:=16; DragImageList.Width:=16;  end;
-    LV_TITLES     : begin DragImageList.Height:=16; DragImageList.Width:=16;  end;
-    LV_TILE       : begin DragImageList.Height:=48; DragImageList.Width:=48;  end;
-    LV_GRID       : begin DragImageList.Height:=32; DragImageList.Width:=32;  end;
-   end;
-
-   if Image.IsBitmap then
-   begin
-
-    //Creating Draw image
-    TempImage:=TBitmap.create;
-    TempImage.PixelFormat:=pf32bit;
-    TempImage.Width:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+5;//r.Right;
-    TempImage.Height:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+45+1;//r.Bottom;/
-    MaxH:=0;
-    MaxW:=0;
-    TempImage.Canvas.Brush.Color := 0;
-    TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
-
-    if ElvMain.Selection.Count<2 then
+    if (Abs(FDBDragPoint.X - MousePos.X) > 3) or (Abs(FDBDragPoint.Y - MousePos.Y) > 3) then
+    if (RButtonState <> 0) or (LButtonState <> 0) then
     begin
-     DragImage:=nil;
-     if item<>nil then
-     DragImage:=FBitmapImageList[item.ImageIndex].Bitmap else
-     if ElvMain.Selection.First<>nil then
-     DragImage:=FBitmapImageList[ElvMain.Selection.First.ImageIndex].Bitmap;
+      Pos := ElvMain.ScreenToClient(FDBDragPoint);
+      DragImageList.Clear;
 
-     DragImage:=RemoveBlackColor(DragImage);
-     TempImage.Canvas.Draw(0,0, DragImage);
-     n:=0;
-     MaxH:=DragImage.Height;
-     MaxW:=DragImage.Width;
-     ImH:=DragImage.Height;
-     ImW:=DragImage.Width;
-     DragImage.Free;
-    end else
-    begin
-     SelectedItem:=ElvMain.Selection.First;
-     n:=1;
-     for i:=1 to 9 do
-     begin
-      if SelectedItem<>item then
+      if ItemAtPos(Pos.X, Pos.Y)<>nil then
+        Image := FBitmapImageList[ItemAtPos(Pos.X, Pos.Y).ImageIndex]
+      else if Listview1Selected<>nil then
+        Image := FBitmapImageList[Listview1Selected.ImageIndex]
+      else
+        Image := nil;
+
+      Item := ItemAtPos(Pos.X, Pos.Y);
+      if Item = nil then
+        Exit;
+      if ElvMain.Selection.FocusedItem = nil then
+        ElvMain.Selection.FocusedItem := Item;
+
+      DragImageList.Height := ListViewTypeToSize(ListView);
+      DragImageList.Width := ListViewTypeToSize(ListView);
+
+      if Image.IsBitmap then
       begin
-       DragImage:=FBitmapImageList[SelectedItem.ImageIndex].Bitmap;
-       DragImage:=RemoveBlackColor(DragImage);
-       TempImage.Canvas.Draw(n,n, DragImage);
-       Inc(n,7);
-       if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
-       if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
-       DragImage.Free;
+        //Creating Draw image
+        TempImage := TBitmap.Create;
+        try
+          TempImage.PixelFormat := pf32bit;
+          TempImage.Width := FPictureSize + Min(ElvMain.Selection.Count, 10) * 7 + 5;
+          TempImage.Height := FPictureSize + Min(ElvMain.Selection.Count, 10) * 7 + 45 + 1;
+          MaxH := 0;
+          MaxW := 0;
+          TempImage.Canvas.Brush.Color := 0;
+          TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
+
+          if ElvMain.Selection.Count<2 then
+          begin
+            if item <> nil then
+              Bitmap := FBitmapImageList[item.ImageIndex].Bitmap
+            else if ElvMain.Selection.First <> nil then
+              Bitmap := FBitmapImageList[ElvMain.Selection.First.ImageIndex].Bitmap
+            else
+              Bitmap := nil;
+
+            if Bitmap <> nil then
+            begin
+              DragImage := TBitmap.Create;
+              try
+                DragImage.Assign(Bitmap);
+                RemoveBlackColor(DragImage);
+                TempImage.Canvas.Draw(0, 0, DragImage);
+                N := 0;
+                MaxH := DragImage.Height;
+                MaxW := DragImage.Width;
+                ImH := DragImage.Height;
+                ImW := DragImage.Width;
+              finally
+                DragImage.Free;
+              end;
+            end;
+          end else
+          begin
+            SelectedItem:=ElvMain.Selection.First;
+            N := 1;
+            for I := 1 to 9 do
+            begin
+              if SelectedItem<>item then
+              begin
+                Bitmap := FBitmapImageList[SelectedItem.ImageIndex].Bitmap;
+                if Bitmap <> nil then
+                begin
+                  DragImage := TBitmap.Create;
+                  try
+                    RemoveBlackColor(DragImage);
+                    TempImage.Canvas.Draw(N, N, DragImage);
+                    Inc(N, 7);
+                    if DragImage.Height + N> MaxH then
+                      MaxH := DragImage.Height + N;
+                    if DragImage.Width + N>MaxW then
+                      MaxW := DragImage.Width + N;
+                  finally
+                    DragImage.Free;
+                  end;
+                end;
+              end;
+              SelectedItem := ElvMain.Selection.Next(SelectedItem);
+              if SelectedItem=nil then
+                Break;
+            end;
+            Bitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
+            if Bitmap <> nil then
+            begin
+              DragImage := TBitmap.Create;
+              try
+                RemoveBlackColor(DragImage);
+                TempImage.Canvas.Draw(N, N, DragImage);
+                if DragImage.Height + N > MaxH then
+                  MaxH := DragImage.Height + N;
+                if DragImage.Width + N > MaxW then
+                  MaxW := DragImage.Width + N;
+                ImH := DragImage.Height;
+                ImW := DragImage.Width;
+              finally
+                DragImage.Free;
+              end;
+            end;
+          end;
+          if not IsWindowsVista then
+            TempImage.Canvas.Font.Color:=$000010
+          else
+            TempImage.Canvas.Font.Color:=$000001;
+
+          R := Rect(0, MaxH + 3, MaxW, TempImage.Height);
+
+          Index := ItemIndexToMenuIndex(Item.index);
+          if Index < fFilesInfo.Count then
+            FileName := Item.Caption;
+
+          TempImage.Canvas.Brush.Style := bsClear;
+          DrawTextA(TempImage.Canvas.Handle, PChar(FileName), Length(FileName), R, DrawTextOpt);
+
+          DragImageList.Clear;
+          DragImageList.Height := TempImage.Height;
+          DragImageList.Width := TempImage.Width;
+          if not IsWindowsVista then
+          DragImageList.BkColor := $0;
+          DragImageList.Add(TempImage, nil);
+        finally
+          TempImage.Free;
+        end;
+
+        Item.ItemRectArray(nil, ElvMain.Canvas, EasyRect);
+        FDBDragPoint:=ElvMain.ScreenToClient(FDBDragPoint);
+        ImW := (EasyRect.IconRect.Right - EasyRect.IconRect.Left) div 2 - ImW div 2;
+        ImH := (EasyRect.IconRect.Bottom - EasyRect.IconRect.Top) div 2 - ImH div 2;
+        DropFileSourceMain.ImageHotSpotX := Min(MaxW, Max(1, FDBDragPoint.X - EasyRect.IconRect.Left + n - ImW));
+        DropFileSourceMain.ImageHotSpotY := Min(MaXH, Max(1, FDBDragPoint.Y - EasyRect.IconRect.Top+  n - ImH + ElvMain.Scrollbars.ViewableViewportRect.Top));
+      end else
+      begin
+        if ListView=LV_TILE then
+        begin
+          Icon48:=TIcon48.Create;
+          Icon48.Assign(Image.Icon);
+          DragImageList.AddIcon(Icon48);
+          Icon48.Free;
+        end else
+          DragImageList.AddIcon(Image.Icon);
+
+        DropFileSourceMain.ImageHotSpotX := DragImageList.Width div 2;
+        DropFileSourceMain.ImageHotSpotY := DragImageList.Height div 2;
       end;
-      SelectedItem:=ElvMain.Selection.Next(SelectedItem);
-      if SelectedItem=nil then break;
-     end;
-     DragImage:=FBitmapImageList[Item.ImageIndex].Bitmap;
-     DragImage:=RemoveBlackColor(DragImage);
-     TempImage.Canvas.Draw(n,n, DragImage);
-     if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
-     if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
-     ImH:=DragImage.Height;
-     ImW:=DragImage.Width;
-     DragImage.Free;
+
+      SetSelected(nil);
+      DropFileSourceMain.Files.Clear;
+      for I := 0 to Length(fFilesToDrag) - 1 do
+        DropFileSourceMain.Files.Add(fFilesToDrag[I]);
+      ElvMain.Refresh;
+      SelfDraging := True;
+
+      Application.HideHint;
+      if ImHint <> nil then
+        if not UnitImHint.Closed then
+          ImHint.Close;
+
+      HintTimer.Enabled := False;
+      FWasDragAndDrop := True;
+      DropFileSourceMain.ImageIndex := 0;
+      DropFileSourceMain.Execute;
+      SelfDraging := False;
+      DropFileTarget1.Files.clear;
+      FDBCanDrag := True;
+      ListView1MouseUp(Sender, mbLeft, Shift, X, Y);
+      SetLength(FListDragItems, 0);
+      FDBCanDrag:=False;
     end;
-    if not IsWindowsVista then
-    TempImage.Canvas.Font.Color:=$000010 else
-    TempImage.Canvas.Font.Color:=$000001;
-
-    R:=Rect(0,MaxH+3,MaxW,TempImage.Height);
-
-    Index:=ItemIndexToMenuIndex(Item.index);
-    if Index < fFilesInfo.Count then
-      FileName := Item.Caption;
-
-    TempImage.Canvas.Brush.Style:=bsClear;
-    DrawTextA(TempImage.Canvas.Handle, PChar(FileName), Length(FileName), R, DrawTextOpt);
-
-    DragImageList.Clear;
-    DragImageList.Height:=TempImage.Height;
-    DragImageList.Width:=TempImage.Width;
-    if not IsWindowsVista then
-    DragImageList.BkColor:=$0;
-    DragImageList.Add(TempImage,nil);
-    TempImage.Free;
-
-    item.ItemRectArray(nil,ElvMain.Canvas,EasyRect);
-    fDBDragPoint:=ElvMain.ScreenToClient(fDBDragPoint);
-    ImW:=(EasyRect.IconRect.Right-EasyRect.IconRect.Left) div 2 - ImW div 2;
-    ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
-    DropFileSourceMain.ImageHotSpotX:=Min(MaxW,Max(1,fDBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
-    DropFileSourceMain.ImageHotSpotY:=Min(MaXH,Max(1,fDBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ElvMain.Scrollbars.ViewableViewportRect.Top));
-   end else
-   begin
-    if ListView=LV_TILE then
-    begin
-     Icon48:=TIcon48.Create;
-     Icon48.Assign(Image.Icon);
-     DragImageList.AddIcon(Icon48);
-     Icon48.Free;
-    end else
-    DragImageList.AddIcon(Image.Icon);
-    DropFileSourceMain.ImageHotSpotX:=DragImageList.Width div 2;
-    DropFileSourceMain.ImageHotSpotY:=DragImageList.Height div 2;
-   end;
-   SetSelected(nil);
-   DropFileSourceMain.Files.Clear;
-   for i:=0 to Length(fFilesToDrag)-1 do
-   DropFileSourceMain.Files.Add(fFilesToDrag[i]);
-   ElvMain.Refresh;
-   SelfDraging:=true;
-
-   Application.HideHint;
-   if ImHint<>nil then
-   if not UnitImHint.closed then
-   ImHint.close;
-   hinttimer.Enabled:=false;
-   FWasDragAndDrop:=true;
-   DropFileSourceMain.ImageIndex := 0;
-   DropFileSourceMain.Execute;
-   SelfDraging:=false;
-   DropFileTarget1.Files.clear;
-   fDBCanDrag:=true;
-   ListView1MouseUp(Sender,mbLeft,Shift,X,Y);
-   SetLength(FListDragItems,0);
-   fDBCanDrag:=false;
   end;
- end;
 
-// loadingthitem:=ItemAtPos(X,Y);
-
- if ImHint<>nil then
- begin
-  GetCursorPos(p);
-  if WindowFromPoint(p)=ImHint.Handle then exit;
- end;
-
- if loadingthitem=ItemByPointImage(ElvMain,Point(X,Y), ListView) then exit;
- loadingthitem:=ItemByPointImage(ElvMain,Point(X,Y));
-
- if loadingthitem=nil then
- begin
-  Application.HideHint;
   if ImHint<>nil then
-  if not UnitImHint.closed then
-  ImHint.close;
-  hinttimer.Enabled:=false;
- end else begin
-  hinttimer.Enabled:=false;
-  if self.Active then
   begin
-   if DBKernel.Readbool('Options','AllowPreview',True) then
-   HintTimer.Enabled:=true;
-   shloadingthitem:=loadingthitem;
+    if WindowFromPoint(MousePos) = ImHint.Handle then
+      Exit;
   end;
-  Index:=ItemIndexToMenuIndex(loadingthitem.index);
-  If fFilesInfo.Count=0 then Exit;
-  if DBKernel.Readbool('Options','AllowPreview',True) then
-  ElvMain.showhint:=false{ not fileexists(fFilesInfo[Index].FileName)} else
-  ElvMain.showhint:=false;
-  ElvMain.Hint:=fFilesInfo[Index].Comment;
- end;
+
+  if Loadingthitem = ItemByPointImage(ElvMain, Point(X,Y), ListView) then
+    Exit;
+
+  Loadingthitem := ItemByPointImage(ElvMain, Point(X,Y));
+
+  if loadingthitem=nil then
+  begin
+    Application.HideHint;
+    if ImHint<>nil then
+      if not UnitImHint.closed then
+        ImHint.close;
+    HintTimer.Enabled:=false;
+  end else
+  begin
+    HintTimer.Enabled:=false;
+    if Self.Active then
+    begin
+      if DBKernel.Readbool('Options', 'AllowPreview', True) then
+        HintTimer.Enabled := True;
+      shloadingthitem := loadingthitem;
+    end;
+    Index := ItemIndexToMenuIndex(loadingthitem.Index);
+    if fFilesInfo.Count=0 then
+      Exit;
+
+    ElvMain.ShowHint := False;
+    ElvMain.Hint:=fFilesInfo[Index].Comment;
+  end;
 end;
 
 procedure TExplorerForm.SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
@@ -1981,32 +2015,6 @@ begin
   end;
   if AnsiLowerCase(info.ItemFileName) = AnsiLowerCase(FSelectedInfo.FileName) then
     ListView1SelectItem(nil, nil, False);
-end;
-
-function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; FPictureSize : integer): TEasyItem;
-var
-  i: Integer;
-  r : TRect;
-  RectArray: TEasyRectArrayObject;
-  t,l, a,b : integer;
-begin
-  Result := nil;
-  i := 0;
-  r :=  EasyListview.Scrollbars.ViewableViewportRect;
-  ViewportPoint.X:=ViewportPoint.X+r.Left;
-  ViewportPoint.Y:=ViewportPoint.Y+r.Top;
-  while not Assigned(Result) and (i < EasyListview.Items.Count) do
-  begin
-      EasyListview.Items[i].ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
-      a:=EasyListview.CellSizes.Thumbnail.Width - 35;
-      b:=0;
-      t:=RectArray.IconRect.Top;
-      l:=RectArray.IconRect.Left;
-      r:=Rect(a+l,b+t,a+22+l,b+t+18);
-      if PtInRect(r, ViewportPoint) then
-       Result := EasyListview.Items[i];
-    Inc(i)
-  end
 end;
 
 procedure TExplorerForm.SpeedButton3Click(Sender: TObject);
@@ -2401,8 +2409,8 @@ var
   MenuBackInfo, MenuForwardInfo : TArExplorerPath;
   i : integer;
 begin
- ToolButton1.Enabled:=fHistory.CanBack;
- ToolButton2.Enabled:=fHistory.CanForward;
+ TbBack.Enabled:=fHistory.CanBack;
+ TbForward.Enabled:=fHistory.CanForward;
  PopupMenuBack.Items.Clear;
  PopupMenuForward.Items.Clear;
  if fHistory.CanBack then
@@ -2499,10 +2507,10 @@ begin
   begin
     rdown:=Button = mbRight;
 
-    fDBCanDrag:=True;
+    FDBCanDrag:=True;
     SetLength(fFilesToDrag,0);
     SetLength(FListDragItems,0);
-    GetCursorPos(fDBDragPoint);
+    GetCursorPos(FDBDragPoint);
     For i:=0 to ElvMain.Items.Count-1 do
     if ElvMain.Items[i].Selected then
     begin
@@ -2516,7 +2524,7 @@ begin
       fFilesToDrag[Length(fFilesToDrag)-1]:=fFilesInfo[index].FileName;
      end;
     end;
-    If Length(fFilesToDrag)=0 then fDBCanDrag:=false;
+    If Length(fFilesToDrag)=0 then FDBCanDrag:=false;
   end;
   FDblClicked:=false;
 end;
@@ -2555,9 +2563,9 @@ begin
 
  MouseDowned:=false;
 
- if fDBCanDrag and ItemsDeselected then
+ if FDBCanDrag and ItemsDeselected then
  begin
-  If (abs(fDBDragPoint.x-x)>3) or (abs(fDBDragPoint.y-y)>3) then
+  If (abs(FDBDragPoint.x-x)>3) or (abs(FDBDragPoint.y-y)>3) then
   if not FWasDragAndDrop then exit;
 
   SetSelected(nil);
@@ -2580,7 +2588,7 @@ begin
  end;
  SetLength(fFilesToDrag,0);
  SetLength(FListDragItems,0);
- fDBCanDrag:=false;
+ FDBCanDrag:=false;
  fDBCanDragW:=false;
 end;
 
@@ -2588,7 +2596,7 @@ procedure TExplorerForm.ListView1Exit(Sender: TObject);
 begin
  rdown:=false;
  FDblClicked:=false;
- fDBCanDrag:=false;
+ FDBCanDrag:=false;
  fDBCanDragW:=false;
  SetLength(fFilesToDrag,0);
 end;
@@ -2758,7 +2766,7 @@ end;
 
 procedure TExplorerForm.FormDeactivate(Sender: TObject);
 begin
-  fDBCanDrag:=false;
+  FDBCanDrag:=false;
   fDBCanDragW:=false;
   HintTimer.Enabled:=False;
 end;
@@ -2880,11 +2888,11 @@ var
 begin
   for I := FFilesInfo.Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
-     begin
-      FBitmapImageList.AddIcon(Icon, SelfReleased);
-      FFilesInfo[I].ImageIndex:=FBitmapImageList.Count - 1;
-      Break;
-     end;
+      begin
+        FBitmapImageList.AddIcon(Icon, SelfReleased);
+        FFilesInfo[I].ImageIndex:=FBitmapImageList.Count - 1;
+        Break;
+      end;
 end;
 
 function TExplorerForm.AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
@@ -3020,7 +3028,7 @@ begin
    begin
     SetLength(fFilesToDrag,0);
     SetLength(FListDragItems,0);
-    fDBCanDrag:=false;
+    FDBCanDrag:=false;
     fDBCanDragW:=false;
     Msg.message:=0;
    end;
@@ -4767,8 +4775,8 @@ begin
  ToolButton7.Caption:=TEXT_MES_PASTE;
 // NO LABEL  ToolButton8.Caption:=TEXT_MES_DELETE;
  ToolButton19.Caption:=TEXT_MES_OPTIONS;
- ToolButton1.Hint:=TEXT_MES_GO_BACK;
- ToolButton2.Hint:=TEXT_MES_GO_FORWARD;
+ TbBack.Hint:=TEXT_MES_GO_BACK;
+ TbForward.Hint:=TEXT_MES_GO_FORWARD;
  ToolButton3.Hint:=TEXT_MES_GO_UP;
  ToolButton5.Hint:=TEXT_MES_CUT;
  ToolButton6.Hint:=TEXT_MES_COPY;
@@ -4855,7 +4863,7 @@ begin
  UpdaterInfo.ProcHelpAfterUpdate:=nil;
  EventLog('SetNewPathW "'+WPath.Path+'"');
  fDBCanDragW:=false;
- fDBCanDrag:=false;
+ FDBCanDrag:=false;
  OldDir:=GetCurrentPath;
  Path:=WPath.Path;
  ThreadType:=THREAD_TYPE_FOLDER;
@@ -5068,11 +5076,11 @@ begin
 
  if not (smintL<>0) and not (smintR<>0) then
  begin
-  fDBCanDrag:=false;
+  FDBCanDrag:=false;
   fDBCanDragW:=false;
   exit;
  end;
- if (fDBCanDrag or fDBCanDragW) and not rdown then
+ if (FDBCanDrag or fDBCanDragW) and not rdown then
  if (smintL<>0) or (smintR<>0) then
  if (SelfDraging or outdrag) then
  begin
@@ -5422,7 +5430,7 @@ begin
  begin
   Move1.Visible:=not SelfDraging;
   fDBCanDragW:=false;
-  fDBCanDrag:=false;
+  FDBCanDrag:=false;
   LastListViewSelCount := SelCount;
   LastListViewSelected := ListView1Selected;
   DragFilesPopup.Assign(DropInfo);
@@ -5506,12 +5514,12 @@ begin
  LastShift:=ShiftState;
  if not SelfDraging then
  outdrag:=true;
- fDBCanDrag:=true;
+ FDBCanDrag:=true;
 end;
 
 procedure TExplorerForm.DropFileTarget1Leave(Sender: TObject);
 begin
-  fDBCanDrag:=false;
+  FDBCanDrag:=false;
   outdrag:=false;
 end;
 
@@ -5601,7 +5609,7 @@ begin
      Application.CreateForm(TViewer,Viewer);
      Viewer.ShowFile(S);
     end else
-    ShellExecute(0, Nil,Pchar(s), Nil, Nil, SW_NORMAL);
+    ShellExecute(Handle, nil, PWideChar(s), nil, nil, SW_NORMAL);
    end else
    if not ChangeTreeView then
    MessageBoxDB(Handle,Format(TEXT_MES_DIR_NOT_FOUND,[s]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_ERROR);
@@ -6078,7 +6086,7 @@ Var
   TempBitmap : TBitmap;
 begin
  if rdown then
- fDBCanDrag:=false;
+ FDBCanDrag:=false;
  if ElvMain<>nil then
  begin
   FSelectedInfo.FileType:=GetCurrentPathW.PType;
@@ -7193,7 +7201,7 @@ var
 
   procedure RestoreSelected;
   begin
-    fDBCanDrag := false;
+    FDBCanDrag := false;
     fDBCanDragW := false;
   end;
 
@@ -7219,7 +7227,7 @@ begin
   end;
 
   FDblClicked := true;
-  fDBCanDrag := false;
+  FDBCanDrag := false;
   fDBCanDragW := false;
   SetLength(fFilesToDrag, 0);
   Application.HideHint;
@@ -7272,8 +7280,8 @@ begin
         begin
           ShellDir := GetDirectory(fFilesInfo[Index].FileName);
           UnFormatDir(ShellDir);
-          ShellExecute(Handle, Nil, PChar(fFilesInfo[Index].FileName), Nil,
-            PChar(ShellDir), SW_NORMAL);
+          ShellExecute(Handle, nil, PWideChar(fFilesInfo[Index].FileName), nil,
+            PWideChar(ShellDir), SW_NORMAL);
           RestoreSelected;
           Exit;
         end
@@ -7301,7 +7309,7 @@ begin
             end;
             ShellDir := GetDirectory(LinkPath);
             UnFormatDir(ShellDir);
-            ShellExecute(Handle, Nil, PChar(LinkPath), Nil, PChar(ShellDir),
+            ShellExecute(Handle, nil, PWideChar(LinkPath), nil, PWideChar(ShellDir),
               SW_NORMAL);
             RestoreSelected;
             Exit;
@@ -7400,10 +7408,10 @@ begin
  UserLinks[i].RefreshBuffer;
 end;
 
-procedure TExplorerForm.BackGround(Sender: TObject; x, y, w, h: integer;
+procedure TExplorerForm.BackGround(Sender: TObject; X, Y, W, H: integer;
   Bitmap: TBitmap);
 begin
- ScrollBox1.GetBackGround(x,y,w,h,Bitmap);
+  ScrollBox1.GetBackGround(X, Y, W, H, Bitmap);
 end;
 
 procedure TExplorerForm.Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
@@ -7411,9 +7419,12 @@ procedure TExplorerForm.Listview1IncrementalSearch(Item: TEasyCollectionItem; co
 var
   CompareStr: WideString;
 begin
-  if UpdatingList then exit;
-  if Item=nil then exit;
-  CompareStr := Item.Caption;
+  if UpdatingList then
+    Exit;
+  if Item=nil then
+    Exit;
+
+  Comparestr := Item.Caption;
   SetLength(CompareStr, Length(SearchBuffer));
 
   if IsUnicode then
@@ -7426,10 +7437,11 @@ procedure TExplorerForm.EasyListview1ItemImageDraw(Sender: TCustomEasyListview;
   Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
   const RectArray: TEasyRectArrayObject; AlphaBlender: TEasyAlphaBlender);
 begin
- if Item.Data=nil then exit;
- if FBitmapImageList[Item.ImageIndex].Icon<>nil then
- ACanvas.Draw(RectArray.IconRect.Left,RectArray.IconRect.Top,
-  FBitmapImageList[Item.ImageIndex].Icon);
+  if Item.Data = nil then
+    Exit;
+
+  if FBitmapImageList[Item.ImageIndex].Icon <> nil then
+  ACanvas.Draw(RectArray.IconRect.Left, RectArray.IconRect.Top, FBitmapImageList[Item.ImageIndex].Icon);
 end;
 
 procedure TExplorerForm.EasyListview1ItemImageDrawIsCustom(
@@ -7439,18 +7451,24 @@ begin
   IsCustom := ListView <> LV_THUMBS;
 end;
 
+function TExplorerForm.ListViewTypeToSize(ListViewType : Integer) : Integer;
+begin
+  case ListViewType of
+    LV_THUMBS     : Result := ThSize;
+    LV_ICONS      : Result := 32;
+    LV_SMALLICONS : Result := 16;
+    LV_TITLES     : Result := 16;
+    LV_TILE       : Result := 48;
+    LV_GRID       : Result := 32;
+  end;
+end;
+
 procedure TExplorerForm.EasyListview1ItemImageGetSize(Sender: TCustomEasyListview;
   Item: TEasyItem; Column: TEasyColumn; var ImageWidth,
   ImageHeight: Integer);
 begin
- Case ListView of
-  LV_THUMBS     : begin end;
-  LV_ICONS      : begin ImageHeight:=32; ImageWidth:=32;  end;
-  LV_SMALLICONS : begin ImageHeight:=16; ImageWidth:=16;  end;
-  LV_TITLES     : begin ImageHeight:=16; ImageWidth:=16;  end;
-  LV_TILE       : begin ImageHeight:=48; ImageWidth:=48;  end;
-  LV_GRID       : begin ImageHeight:=32; ImageWidth:=32;  end;
-  end;
+  ImageHeight := ListViewTypeToSize(ListView);
+  ImageWidth := ListViewTypeToSize(ListView);
 end;
 
 procedure TExplorerForm.SmallIcons1Click(Sender: TObject);

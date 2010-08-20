@@ -736,14 +736,13 @@ end;
 
 procedure TPropertiesForm.Button2Click(Sender: TObject);
 begin
- if no_file then exit;
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetOldPath(LabelPath.text);
-  SetPath(GetDirectory(LabelPath.text));
-  Show;
- end;
-// ShellExecute(0, 'open', PChar('explorer'), PChar('/select,"'+LabelPach.text+'"'), nil, SW_SHOWNORMAL);
+  if no_file then exit;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetOldPath(LabelPath.text);
+    SetPath(GetDirectory(LabelPath.text));
+    Show;
+  end;
 end;
 
 procedure TPropertiesForm.FormCreate(Sender: TObject);
@@ -803,61 +802,42 @@ procedure TPropertiesForm.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   DragImage : TBitmap;
-  i : integer;
-  c : boolean;     
-  TempImage : TBitmap;
+  I : Integer;
 begin
- if (Button = mbLeft) then
- begin
-  if FShowInfoType=SHOW_INFO_IDS then
+  if (Button = mbLeft) then
   begin
     DragImageList.Clear;
+    DragImageList.Masked := False;
+
     DragImage := TBitmap.Create;
-    DragImage.PixelFormat:=pf24bit;
-    DragImage.Assign(Image1.Picture.Graphic);
-    DragImageList.Masked:=false;
-    DragImageList.Width:=DragImage.Width;
-    DragImageList.Height:=DragImage.Height;
-
-    TempImage:=RemoveBlackColor(DragImage);
-    DragImageList.Add(TempImage,nil);
-    TempImage.Free;
-
-    DragImage.Free;
-    DropFileSource1.Files.Clear;
-    c:=false;
-    for I := 0 to FFilesInfo.Count - 1 do
-    if FileExists(ProcessPath(FFilesInfo[I].FileName)) then
-    begin
-     DropFileSource1.Files.Add(ProcessPath(FFilesInfo[I].FileName));
-     c:=true;
+    try
+      DragImage.PixelFormat := pf24bit;
+      DragImage.Assign(Image1.Picture.Graphic);
+      DragImageList.Width := DragImage.Width;
+      DragImageList.Height := DragImage.Height;
+      RemoveBlackColor(DragImage);
+      DragImageList.Add(DragImage, nil);
+    finally
+      DragImage.Free;
     end;
-    if c then
+
+    DropFileSource1.Files.Clear;
+    if FShowInfoType = SHOW_INFO_IDS then
+    begin
+      for I := 0 to FFilesInfo.Count - 1 do
+        if FileExists(ProcessPath(FFilesInfo[I].FileName)) then
+         DropFileSource1.Files.Add(ProcessPath(FFilesInfo[I].FileName));
+    end else
+    begin
+      if FileExists(ProcessPath(LabelPath.Text)) then
+        DropFileSource1.Files.Add(ProcessPath(LabelPath.Text));
+    end;
+    if DropFileSource1.Files.Count > 0 then
     begin
       DropFileSource1.ImageIndex := 0;
       DropFileSource1.Execute;
     end;
-  end else
-  begin
-    DragImageList.Clear;
-    DragImage := TBitmap.Create;
-    DragImage.PixelFormat:=pf24bit;
-    DragImage.Assign(Image1.Picture.Graphic);
-    DragImageList.Width:=DragImage.Width;
-    DragImageList.Height:=DragImage.Height;
-    TempImage:=RemoveBlackColor(DragImage);
-    DragImageList.Add(TempImage,nil);
-    TempImage.Free;
-    DragImage.Free;
-    DropFileSource1.Files.Clear;
-    if FileExists(ProcessPath(LabelPath.Text)) then
-    begin
-     DropFileSource1.Files.Add(ProcessPath(LabelPath.Text));
-     DropFileSource1.ImageIndex := 0;
-     DropFileSource1.Execute;
-    end;
   end;
- end;
 end;
 
 procedure TPropertiesForm.CommentMemoChange(Sender: TObject);
@@ -1270,34 +1250,29 @@ end;
 
 procedure TPropertiesForm.Copy1Click(Sender: TObject);
 var
-  i : integer;
-  S : string;
-  FirstName : Boolean;
+  I : Integer;
+  FileList : TStrings;
 begin
- if FShowInfoType<>SHOW_INFO_IDS then
- CopyFilesToClipboard(LabelPath.Text) else
- begin
-  FirstName:=True;
-  s:='';
-  For i:=0 to FFilesInfo.Count - 1 do
-  begin
-   If FileExists(FFilesInfo[I].FileName) then
-   if FirstName then
-   begin
-    s:=FFilesInfo[I].FileName;
-    FirstName:=false;
-   end else
-    s:=s+#0+FFilesInfo[I].FileName;
+  FileList := TStringList.Create;
+  try
+    if FShowInfoType <> SHOW_INFO_IDS then
+      FileList.Add(LabelPath.Text)
+    else
+    begin
+    for i:=0 to FFilesInfo.Count - 1 do
+     if FileExists(FFilesInfo[I].FileName) then
+       FileList.Add(FFilesInfo[I].FileName);
+
+    end;
+    Copy_Move(True, FileList);
+  finally
+    FileList.Free;
   end;
-  s:=s+#0#0;
-  If Length(s)>2 then
-  CopyFilesToClipboard(S);
- end;
 end;
 
 procedure TPropertiesForm.Shell1Click(Sender: TObject);
 begin
- ShellExecute(0, Nil,Pchar(LabelPath.Text), Nil, Nil, SW_NORMAL);
+  ShellExecute(Handle, nil, PWideChar(LabelPath.Text), nil, nil, SW_NORMAL);
 end;
 
 procedure TPropertiesForm.Show1Click(Sender: TObject);
@@ -2458,7 +2433,7 @@ begin
    ViewFile(TIRA.FileNames[0]);
   end;
   LINK_TYPE_IMAGE : ViewFile(LI[n].LinkValue);
-  LINK_TYPE_FILE : begin s:=GetDirectory(LI[n].LinkValue); ShellExecute(0, Nil,PChar(LI[n].LinkValue), Nil, Pchar(s), SW_NORMAL); end;
+  LINK_TYPE_FILE : begin s:=GetDirectory(LI[n].LinkValue); ShellExecute(Handle, nil, PWideChar(LI[n].LinkValue), nil, PWideChar(S), SW_NORMAL); end;
   LINK_TYPE_FOLDER :
   begin
    DN:=LI[n].LinkValue;

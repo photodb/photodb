@@ -751,11 +751,10 @@ begin
    systemquery:=true;
 
    Folder:=copy(sysaction,8,length(sysaction)-8);
-   UnFormatDir(Folder);
-   Folder:=AnsiLowerCase(Folder);
+   FormatDir(Folder);
 
-   Result.Query:=Format('Select %s From (Select %s from $DB$ where FolderCRC=:crc) where (FFileName Like :ffilenameA) and not (FFileName like :ffilenameB)', [FIELDS]);
-
+   Result.Query:=Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
+   Result.AddIntParam('CRC', GetPathCRC(Folder));
    if not FSearchParams.ShowPrivate then Result.Query:=Result.Query+' and (Access<>'+inttostr(db_access_private)+')';
 
    foptions:=SPSEARCH_SHOWFOLDER;

@@ -293,7 +293,7 @@ var
   old_rect:Trect;
   CurrentInfo : TRecordsInfo;
   fcsrbmp, fnewcsrbmp, fnowcsrbmp : TBitmap;
-  OldPoint : TPoint;
+  FOldPoint : TPoint;
   WaitGrayScale : Integer;
   WaitImage : TBitmap;
   IncGrayScale : integer = 20;
@@ -829,7 +829,7 @@ end;
 
 procedure TViewer.Shell1Click(Sender: TObject);
 begin
-  ShellExecute(0, Nil,Pchar(CurrentInfo.ItemFileNames[CurrentFileNumber]), Nil, Nil, SW_NORMAL);
+  ShellExecute(Handle, nil, PWideChar(CurrentInfo.ItemFileNames[CurrentFileNumber]), nil, nil, SW_NORMAL);
 end;
 
 function delnakl(s:string):string;
@@ -1132,47 +1132,51 @@ end;
 procedure TViewer.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
-  p : TPoint;
+  P : TPoint;
   DragImage : TBitmap;
-  w,h : integer;
-  TempImage : TBitmap;
+  W, H : Integer;
 begin
- If DBCanDrag then
- begin
-  GetCursorPos(p);
-  If (Abs(DBDragPoint.x-p.x)>5) or (Abs(DBDragPoint.y-p.y)>5) then
+  if DBCanDrag then
   begin
-   DropFileSource1.Files.Clear;
-   if Length(CurrentInfo.ItemFileNames)>0 then
-   begin
-    DropFileSource1.Files.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
-    DragImageList.Clear;
-    DragImage := TBitmap.Create;
-    DragImage.PixelFormat:=pf24bit;
-    DropFileSource1.ShowImage:=not WaitImageTimer.Enabled and FImageExists;
+    GetCursorPos(P);
+    if (Abs(DBDragPoint.X - P.X) > 5) or (Abs(DBDragPoint.Y - P.Y) > 5) then
+    begin
+      DropFileSource1.Files.Clear;
+      if Length(CurrentInfo.ItemFileNames)>0 then
+      begin
+        DropFileSource1.Files.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+        DragImageList.Clear;
+        DragImage := TBitmap.Create;
+        try
+          DragImage.PixelFormat := pf24bit;
+          DropFileSource1.ShowImage := not WaitImageTimer.Enabled and FImageExists;
 
-    DragImage.Width:=100;
-    DragImage.Height:=100;
-    w:=FbImage.Width;
-    h:=FbImage.Height;
-    ProportionalSize(100,100,w,h);
-    DoResize(w,h,FbImage,DragImage);
-    DragImageList.Width:=w;
-    DragImageList.Height:=h;
+          DragImage.Width := 100;
+          DragImage.Height := 100;
+          W := FbImage.Width;
+          H := FbImage.Height;
+          ProportionalSize(100, 100, W, H);
+          DoResize(W, H, FbImage, DragImage);
+          DragImageList.Width := W;
+          DragImageList.Height := H;
 
-    TempImage:=RemoveBlackColor(DragImage);
-    DragImageList.Add(TempImage,TempImage);
-    TempImage.Free;
-    DropFileSource1.ImageIndex := 0;
-    DropFileSource1.Execute;
-    DragImage.free;
-    FormPaint(Self);
-   end;
-   DBCanDrag:=false;
+          RemoveBlackColor(DragImage);
+          DragImageList.Add(DragImage, DragImage);
+          DropFileSource1.ImageIndex := 0;
+          DropFileSource1.Execute;
+        finally
+          DragImage.Free;
+        end;
+        FormPaint(Self);
+      end;
+      DBCanDrag := False;
+    end;
   end;
- end;
- if (Abs(OldPoint.X-x)<5) and (Abs(OldPoint.y-y)<5) then Exit;
- OldPoint:=Point(x,y);
+
+  if (Abs(FOldPoint.X-x)<5) and (Abs(FOldPoint.y-y)<5) then
+    Exit;
+
+  FOldPoint := Point(X, Y);
 end;
 
 procedure TViewer.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
@@ -1848,8 +1852,16 @@ begin
 end;
 
 procedure TViewer.Copy1Click(Sender: TObject);
+var
+  FileList : TStrings;
 begin
- CopyFilesToClipboard(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+  FileList := TStrings.Create;
+  try
+    FileList.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+    Copy_Move(True, FileList);
+  finally
+     FileList.Free;
+  end;
 end;
 
 procedure TViewer.FormMouseDown(Sender: TObject; Button: TMouseButton;

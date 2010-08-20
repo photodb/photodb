@@ -550,7 +550,6 @@ function GetImageIDWEx(images: TArStrings; UseFileNameScanning : Boolean; OnlyIm
 function GetImageIDTh(ImageTh: string): TImageDBRecordA;
 procedure SetPrivate(ID: integer);
 procedure UnSetPrivate(ID: integer);
-procedure CopyFilesToClipboard(FileList: string);
 
 function SizeInTextA(Size : int64) : String;
 procedure UpdateDeletedDBRecord(ID : integer; FileName : string);
@@ -592,7 +591,6 @@ Function RecordInfoOneA(Name : string; ID, Rotate,Rating,Access, Size : integer;
 procedure AddRecordsInfoOne(Var D : TRecordsInfo; Name : string; ID, Rotate,Rating,Access : integer; Comment, KeyWords, Owner_, Collection, Groups : string; Date : TDateTime; IsDate, IsTime : Boolean; Time : TTime; Crypt, Loaded, Include : Boolean; Links : string);
 procedure SetRecordsInfoOne(Var D : TRecordsInfo; n : integer; Name : string; ID, Rotate,Rating,Access : integer; Comment, Groups : string; Date : TDateTime; IsDate, IsTime: Boolean; Time : TDateTime; Crypt, Include : Boolean; Links : string);
 function RecordsInfoOne(Name : string; ID, Rotate,Rating,Access : integer; Comment, KeyWords, Owner_, Collection, Groups : string; Date : TDateTime; Isdate, IsTime: Boolean; Time : TDateTime; Crypt, Loaded, Include : Boolean; Links : string) : TRecordsInfo;
-//function DBPopupMenuInfoOne(Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TTime; Crypt : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string) : TDBPopupMenuInfo;
 function GetRecordsFromOne(Info : TOneRecordInfo) : TRecordsInfo;
 function GetRecordFromRecords(Info : TRecordsInfo; N : Integer) : TOneRecordInfo;
 procedure SetRecordToRecords(Info : TRecordsInfo; N : Integer; Rec : TOneRecordInfo);
@@ -600,9 +598,6 @@ procedure CopyRecordsInfo(var S,D : TRecordsInfo);
 function RecordsInfoNil : TRecordsInfo;
 procedure AddToRecordsInfoOneInfo(var Infos : TRecordsInfo; Info : TOneRecordInfo);
 procedure DBPopupMenuInfoToRecordsInfo(var DBP : TDBPopupMenuInfo;var RI : TRecordsInfo);
-//procedure AddDBPopupMenuInfoOne(var Info : TDBPopupMenuInfo; Filename, Comment, Groups : string; ID,Size,Rotate,Rating,Access : integer; Date : TDateTime; IsDate, IsTime : Boolean; Time : TDateTime; Crypted : Boolean; KeyWords : String; Loaded, Include : Boolean; Links : string);
-//function DBPopupMenuInfoNil : TDBPopupMenuInfo;
-//procedure RecordInfoOneToDBPopupMenuInfo(var RI : TOneRecordInfo; var DBP : TDBPopupMenuInfo);
 function GetInfoByFileNameA(FileName : string; LoadThum : boolean) : TOneRecordInfo;
 function GetMenuInfoByID(ID : Integer) : TDBPopupMenuInfo;
 function GetMenuInfoByStrTh(StrTh : string) : TDBPopupMenuInfo;
@@ -689,7 +684,7 @@ procedure LoadDblFromfile(FileName : string; var IDs : TArInteger; var Files : T
 function SaveListTofile(FileName : string; IDs : TArInteger; Files : TArStrings) : boolean;
 function IsWallpaper(FileName : String) : boolean;
 procedure LoadFIlesFromClipBoard(var Effects : Integer; files : TStrings);
-procedure Copy_Move(FCM:Boolean;File_List:TStrings);
+procedure Copy_Move(Copy: Boolean; FileList: TStrings);
 function GetProgramFilesDir: string;
 procedure deldir(dir : String; mask : string);
 function Mince(PathToMince: String; InSpace: Integer): String;
@@ -729,7 +724,6 @@ function GetWindowsUserName: string;
 Procedure GetPhotosNamesFromDrive(Dir, Mask: String; var Files : TStrings; var MaxFilesCount : integer; MaxFilesSearch : Integer; CallBack : TCallBackProgressEvent = nil);
 function EXIFDateToDate(DateTime : String) : TDateTime;
 function EXIFDateToTime(DateTime : String) : TDateTime;
-function RemoveBlackColor(im : TBitmap) : TBitmap;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons,Icon: integer): integer; overload;
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: integer): integer; overload;
@@ -3309,26 +3303,6 @@ begin
   ExecuteQuery(Format('Update $DB$ Set Access=%d WHERE ID=%d', [db_access_none, ID]));
 end;
 
-procedure CopyFilesToClipboard(FileList: string);
-var
-  DropFiles: PDropFiles;
-  hGlobal: THandle;
-  iLen: Integer;
-begin
-  iLen := Length(FileList) + 2;
-  FileList := FileList + #0#0;
-  hGlobal := GlobalAlloc(GMEM_SHARE or GMEM_MOVEABLE or GMEM_ZEROINIT,
-    SizeOf(TDropFiles) + iLen);
-  if (hGlobal = 0) then raise Exception.Create('Could not allocate memory.');
-  begin
-    DropFiles := GlobalLock(hGlobal);
-    DropFiles^.pFiles := SizeOf(TDropFiles);
-    Move(FileList[1], (PChar(DropFiles) + SizeOf(TDropFiles))^, iLen);
-    GlobalUnlock(hGlobal);
-    Clipboard.SetAsHandle(CF_HDROP, hGlobal);
-  end;
-end;
-
 function xorstrings(s1,s2:string):string;
 var
   i : integer;
@@ -3691,7 +3665,7 @@ var
 begin
   ZeroMemory(Addr(SExInfo),SizeOf(SExInfo));
   SExInfo.cbSize := SizeOf(SExInfo);
-  SExInfo.lpFile := PChar(FName);
+  SExInfo.lpFile := PWideChar(FName);
   SExInfo.lpVerb := 'Properties';
   SExInfo.fMask  := SEE_MASK_INVOKEIDLIST;
   ShellExecuteEx(Addr(SExInfo));
@@ -3702,7 +3676,7 @@ var
   FileInfo: TSHFileInfo;
 begin
   FillChar(FileInfo, SizeOf(FileInfo), #0);
-  SHGetFileInfo(PChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
+  SHGetFileInfo(PWideChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
   Result := FileInfo.szTypeName;
 end;
 
@@ -3743,7 +3717,7 @@ begin
     wFunc := FO_COPY;
     if Move then wFunc := FO_MOVE;
     pFrom := Pointer( SrcBuf );
-    pTo := PChar( Dest );
+    pTo := PWideChar( Dest );
     fFlags := 0;
     if AutoRename then
       fFlags := FOF_RENAMEONCOLLISION;
@@ -3972,40 +3946,40 @@ var
   b : array[0..2048] of char;
 begin
  i := 1;
- Result := ExtractAssociatedIcon(Application.Handle, StrLCopy(b,PChar(FileName),SizeOf(b)-1),i);
+ Result := ExtractAssociatedIcon(Application.Handle, StrLCopy(b,PWideChar(FileName),SizeOf(b)-1),i);
 end;
 
-function ExtractAssociatedIcon_W(FileName :String; IconIndex : Word) :HICON;
+function ExtractAssociatedIcon_W(FileName : string; IconIndex : Word) :HICON;
 var
   b : array[0..2048] of char;
 begin
- Result := ExtractAssociatedIcon(Application.Handle, StrLCopy(b,PChar(FileName),SizeOf(b)-1),IconIndex);
+ Result := ExtractAssociatedIcon(Application.Handle, StrLCopy(b, PWideChar(FileName), SizeOf(b)-1), IconIndex);
 end;
 
 Procedure DoHelp;
 begin
-  ShellExecute(0, Nil, 'http://photodb.illusdolphin.net', Nil, Nil, SW_NORMAL);
+  ShellExecute(0, nil, 'http://photodb.illusdolphin.net', nil, nil, SW_NORMAL);
 end;
 
 Procedure DoUpdateHelp;
 begin
- if FileExists(ProgramDir+'Help\photodb_updating.htm') then
- ShellExecute(0, Nil,PChar(ProgramDir+'Help\photodb_updating.htm'), Nil, Nil, SW_NORMAL);
+ if FileExists(ProgramDir + 'Help\photodb_updating.htm') then
+   ShellExecute(0, nil, PWideChar(ProgramDir + 'Help\photodb_updating.htm'), nil, nil, SW_NORMAL);
 end;
 
-Procedure DoHomePage;
+procedure DoHomePage;
 begin
- ShellExecute(0, Nil,Pchar(HomeURL), Nil, Nil, SW_NORMAL);
+ ShellExecute(0, nil, PWideChar(HomeURL), nil, nil, SW_NORMAL);
 end;
 
-Procedure DoHomeContactWithAuthor;
+procedure DoHomeContactWithAuthor;
 begin
- ShellExecute(0, Nil,Pchar('mailto:'+ProgramMail+'?subject='''''+ProductName+''''''), Nil, Nil, SW_NORMAL);
+  ShellExecute(0, nil, PWideChar('mailto:'+ProgramMail+'?subject='''''+ProductName+''''''), nil, nil, SW_NORMAL);
 end;
 
-Procedure DoGetCode(S : String);
+procedure DoGetCode(S : String);
 begin
- ShellExecute(0, Nil,Pchar('mailto:'+ProgramMail+'?subject='''''+ProductName+''''' REGISTRATION CODE = '''''+s+''''''), Nil, Nil, SW_NORMAL);
+  ShellExecute(0, nil, PWideChar('mailto:'+ProgramMail+'?subject='''''+ProductName+''''' REGISTRATION CODE = '''''+s+''''''), nil, nil, SW_NORMAL);
 end;
 
 procedure UpdateImageThInLinks(OldImageTh, NewImageTh : String);
@@ -5357,58 +5331,62 @@ begin
  end;
 end;
 
-procedure Copy_Move(FCM:Boolean;File_List:TStrings);
-var hGlobal,shGlobal:THandle;
-   DropFiles:PDropFiles;
-   REff:Cardinal;
-   dwEffect:^Word;
-   rSize,i:Integer;
-   c:PChar;
+procedure Copy_Move(Copy : Boolean; FileList : TStrings);
+var
+  hGlobal, shGlobal: THandle;
+  DropFiles: PDropFiles;
+  REff: Cardinal;
+  dwEffect: ^Word;
+  rSize, iLen, I: Integer;
+  Files : string;
 begin
-i:=File_List.Count;
-if (i=0)or(OpenClipboard(Application.Handle)=false) then exit;
-try
- EmptyClipboard();
- rSize:=sizeof(TDropFiles);
- repeat
-  dec(i);
-  rSize:=rSize+Length(trim(File_List.Strings[i]))+1;
- until (i=0);
- inc(rSize);
- hGlobal:=GlobalAlloc(GMEM_SHARE or GMEM_MOVEABLE or GMEM_ZEROINIT,rSize);
- if hGlobal<>0 then
-  begin
-   DropFiles:=GlobalLock(hGlobal);
-   DropFiles.pFiles:=sizeof(TDropFiles);
-   DropFiles.fNC:=false;
-   DropFiles.fWide:=False;
-   i:=File_List.Count;
-   c:=PChar(DropFiles);
-   c:=c+DropFiles.pFiles;
-   repeat
-    dec(i);
-    StrCopy(c,PChar(trim(File_List.Strings[i])));
-    c:=c+Length(trim(File_List.Strings[i]))+1;
-   until (i=0);
-   GlobalUnlock(hGlobal);
-   shGlobal:=SetClipboardData(CF_HDROP,hGlobal);
-   if (shGlobal<>0) then
+  if (FileList.Count = 0) or (OpenClipboard(Application.Handle) = False) then
+    Exit;
+
+  Files := '';
+  //File1#0File2#0#0
+  for I := 0 to FileList.Count - 1 do
+    Files := Files + FileList[I] + #0;
+  Files := Files + #0;
+  iLen := Length(Files);
+
+  try
+    EmptyClipboard;
+    rSize := SizeOf(TDropFiles) + SizeOf(Char) * iLen;
+    hGlobal := GlobalAlloc(GMEM_SHARE or GMEM_MOVEABLE or GMEM_ZEROINIT, rSize);
+    if hGlobal <> 0 then
     begin
-     hGlobal:=GlobalAlloc(GMEM_MOVEABLE,sizeof(dwEffect));
-     if hGlobal<>0 then
+      DropFiles := GlobalLock(hGlobal);
+      DropFiles.pFiles := SizeOf(TDropFiles);
+      DropFiles.fNC := False;
+      DropFiles.fWide := True;
+
+      Move(Files[1], (PByte(DropFiles) + SizeOf(TDropFiles))^, iLen * SizeOf(Char));
+
+      GlobalUnlock(hGlobal);
+      shGlobal := SetClipboardData(CF_HDROP, hGlobal);
+      if (shGlobal <> 0) then
       begin
-       dwEffect:=GlobalLock(hGlobal);
-       If FCM then dwEffect^:=DROPEFFECT_COPY else
-       dwEffect^:=DROPEFFECT_MOVE;
-       GlobalUnlock(hGlobal);
-       REff:=RegisterClipboardFormat(PChar('Preferred DropEffect'));//'CFSTR_PREFERREDDROPEFFECT'));
-       SetClipboardData(REff,hGlobal)
+        hGlobal := GlobalAlloc(GMEM_MOVEABLE, SizeOf(dwEffect));
+        if hGlobal <> 0 then
+        begin
+          dwEffect := GlobalLock(hGlobal);
+
+          if Copy then
+            dwEffect^ := DROPEFFECT_COPY
+          else
+            dwEffect^ := DROPEFFECT_MOVE;
+
+          GlobalUnlock(hGlobal);
+
+          REff := RegisterClipboardFormat(PWideChar('Preferred DropEffect'));//'CFSTR_PREFERREDDROPEFFECT'));
+          SetClipboardData(REff, hGlobal)
+        end;
       end;
     end;
+  finally
+    CloseClipboard;
   end;
-finally
- CloseClipboard();
-end;
 end;
 
 function GetProgramFilesDirByKeyStr(KeyStr: string): string;
@@ -6119,29 +6097,9 @@ begin
  end;
 end;
 
-function RemoveBlackColor(im : tbitmap) : TBitmap;
-var
-  i, j : integer;
-  p : pargb;
-begin
- im.PixelFormat:=pf24bit;
- Result:=TBitmap.create;
- Result.PixelFormat:=pf24bit;
- Result.Assign(im);
- for i:=0 to Result.Height-1 do
- begin
-  p:=Result.ScanLine[i];
-  for j:=0 to Result.Width-1 do
-  begin
-   if (p[j].r=0) and (p[j].g=0) and (p[j].b=0) then
-   p[j].g := 1;
-  end;
- end;
-end;
-
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons,Icon: integer): integer; overload;
 begin
- Result:=TaskDialogEx(Handle,AContent,Title,ADescription,Buttons,Icon,GetParamStrDBBool('NoVistaMsg'));
+  Result := TaskDialogEx(Handle,AContent,Title,ADescription,Buttons,Icon,GetParamStrDBBool('NoVistaMsg'));
 end;
 
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: integer): integer; overload;

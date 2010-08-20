@@ -436,6 +436,8 @@ var
 begin
 
   Item:=ItemAtPos(x,y);
+  if Item = nil then
+    Listview1.Selection.ClearAll;
 
   MouseDowned:=Button=mbRight;
   itemsel:=Item;    
@@ -896,8 +898,9 @@ Const
 
   function GetImageByIndex(index : integer) : TBitmap;
   begin
-   Result:=FBitmapImageList[index].Bitmap;
-   Result:=RemoveBlackColor(Result);
+    Result := TBitmap.Create;
+    Result.Assign(FBitmapImageList[index].Bitmap);
+    RemoveBlackColor(Result);
   end;
 
 begin

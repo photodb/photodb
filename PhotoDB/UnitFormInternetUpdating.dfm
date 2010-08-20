@@ -50,13 +50,13 @@ object FormInternetUpdating: TFormInternetUpdating
     Width = 88
     Height = 13
     Cursor = crHandPoint
-    Text = 'Download now'
-    OnClick = WebLink1Click
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
+    Text = 'Download now'
+    OnClick = WebLink1Click
     BkColor = clBtnFace
     ImageIndex = 0
     IconWidth = 0
@@ -65,6 +65,7 @@ object FormInternetUpdating: TFormInternetUpdating
     EnterColor = clNavy
     EnterBould = True
     TopIconIncrement = 0
+    ImageCanRegenerate = False
   end
   object RichEdit1: TRichEdit
     Left = 8
@@ -75,6 +76,12 @@ object FormInternetUpdating: TFormInternetUpdating
     BevelOuter = bvNone
     BorderStyle = bsNone
     Color = clBtnFace
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
     PlainText = True
     ReadOnly = True
     ScrollBars = ssVertical
@@ -96,6 +103,7 @@ object FormInternetUpdating: TFormInternetUpdating
     EnterColor = clNavy
     EnterBould = True
     TopIconIncrement = 0
+    ImageCanRegenerate = False
   end
   object DestroyTimer: TTimer
     Enabled = False

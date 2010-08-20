@@ -328,20 +328,20 @@ end;
 
 procedure TDBPopupMenu.CopyItemPopUpMenu_(Sender: TObject);
 var
-  c, i : integer;
-  files : string;
+  I : integer;
+  FileList : TStrings;
 begin
- files:='';
- c:=0;
- for i:=0 to finfo.Count-1 do
- if finfo[i].Selected then
- if FileExists(finfo[I].FileName) then
- begin
-  if c<>0 then files:=files+#0;
-  files:=files+finfo[I].FileName;
-  inc(c);
- end;
- CopyFilesToClipboard(files);
+  FileList := TStrings.Create;
+  try
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].Selected then
+        if FileExists(FInfo[I].FileName) then
+          FileList.Add(FInfo[I].FileName);
+
+    Copy_Move(True, FileList);
+  finally
+    FileList.Free;
+  end;
 end;
 
 constructor TDBPopupMenu.create;
@@ -1318,7 +1318,7 @@ begin
  begin
   s:=GetDirectory(Finfo[i].FileName);
   UnFormatDir(s);
-  if ShellExecute(0, Nil,Pchar(ProcessPath(Finfo[i].FileName)), Nil, Pchar(s), SW_NORMAL)<32 then
+  if ShellExecute(0, nil, PWideChar(ProcessPath(Finfo[i].FileName)), nil, PWideChar(s), SW_NORMAL)<32 then
   EventLog(':TDBPopupMenu::ShellExecutePopUpMenu()/ShellExecute return < 32, path = '+Finfo[i].FileName);
  end;
 end;
@@ -1357,7 +1357,7 @@ begin
  end;
  ExeFile:=FUserMenu[(Sender as TMenuItem).Tag].EXEFile;
  ExeParams:=StringReplace(FUserMenu[(Sender as TMenuItem).Tag].Params,'%1',params,[rfReplaceAll,rfIgnoreCase]);
- if ShellExecute(0,nil,PChar(ExeFile),Pchar(ExeParams),nil,SW_SHOWNORMAL)<32 then
+ if ShellExecute(0,nil,PWideChar(ExeFile),PWideChar(ExeParams),nil,SW_SHOWNORMAL)<32 then
  EventLog(':TDBPopupMenu::UserMenuItemPopUpMenu()/ShellExecute return < 32, path = '+ExeFile+' params = '+ExeParams);
 end;
 

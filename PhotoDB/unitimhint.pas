@@ -78,7 +78,7 @@ var
   citem : TObject;
   currentfilename : string;
   goin : boolean;
-  drag_ : boolean;
+  FDragDrop : boolean;
   fhintreal : THintRealFucntion;
   FOwner : TForm;
   CurrentInfo : TOneRecordInfo;
@@ -163,7 +163,7 @@ begin
  CItem:=item;
  GoIn:=false;
  Timer3.Enabled:=true;
- Drag_:=true;
+ FDragDrop:=true;
  CurrentInfo:=Info;
  CurrentFileName:=Info.ItemFileName;
  if not Assigned(FuncHintReal) then exit;
@@ -344,39 +344,43 @@ end;
 procedure TImHint.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  DragImage, S, TempImage : TBitmap;
-  w,h : Integer;
+  DragImage, S : TBitmap;
+  W, H : Integer;
 begin
- if not drag_ then exit;
- if (Button = mbLeft) then
- begin
-  CanClosed:=false;
-  DragImageList.Clear;
-  DropFileSource1.Files.Clear;
-  DropFileSource1.Files.Add(CurrentFileName);
-  DragImage:=TBitmap.Create;
-  DragImage.PixelFormat:=pf24bit;
-  if FBitmaped then
-  s:=Image1.Picture.Bitmap else
-  s:=DoubleBuffer;
-  w:=s.Width;
-  h:=s.Height;
-  ProportionalSize(100,100,w,h);
-  DoResize(w,h,S,DragImage);
-  DragImageList.Masked:=false;
-  DragImageList.Width:=DragImage.Width;
-  DragImageList.Height:=DragImage.Height;
+  if not FDragDrop then
+    Exit;
 
-  TempImage:=RemoveBlackColor(DragImage);
-  DragImageList.Add(TempImage,nil);
-  TempImage.Free;
+  if (Button = mbLeft) then
+  begin
+    CanClosed := False;
+    DragImageList.Clear;
+    DropFileSource1.Files.Clear;
+    DropFileSource1.Files.Add(CurrentFileName);
+    if FBitmaped then
+      S := Image1.Picture.Bitmap
+    else
+      S := DoubleBuffer;
+    W := S.Width;
+    H := S.Height;
+    ProportionalSize(100, 100, W, H);
+    DragImage:=TBitmap.Create;
+    try
+      DragImage.PixelFormat := pf24bit;
+      DoResize(W, H, S, DragImage);
+      DragImageList.Masked := False;
+      DragImageList.Width := DragImage.Width;
+      DragImageList.Height := DragImage.Height;
 
-  DragImage.free;
-  DropFileSource1.ImageIndex := 0;
-  DropFileSource1.Execute;
-  CanClosed:=true;
- end;
- Timer3.Enabled:=true;
+      RemoveBlackColor(DragImage);
+      DragImageList.Add(DragImage, nil);
+    finally
+      DragImage.Free;
+    end;
+    DropFileSource1.ImageIndex := 0;
+    DropFileSource1.Execute;
+    CanClosed := True;
+  end;
+  Timer3.Enabled := True;
 end;
 
 procedure TImHint.Timer1Timer(Sender: TObject);
@@ -425,7 +429,7 @@ begin
  if citem <>nil then
  begin
   Timer3.Enabled:=false;
-  drag_:=true;
+  FDragDrop:=true;
   MenuInfo := TDBPopupMenuInfo.Create;
   MenuRecord := TDBPopupMenuInfoRecord.CreateFromRecordInfo(CurrentInfo);
   MenuInfo.Add(MenuRecord);
@@ -433,7 +437,7 @@ begin
   TDBPopupMenu.Instance.Execute(Image1.ClientToScreen(MousePos).x,Image1.ClientToScreen(MousePos).y,MenuInfo);
   Self.HideShadow;
   if not closed then Timer2.Enabled:=true;
-  drag_:=false;
+  FDragDrop:=false;
  end
 end;
 

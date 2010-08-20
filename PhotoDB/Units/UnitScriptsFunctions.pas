@@ -668,21 +668,21 @@ var
   Dir, CmdLine : string;
   p : TProcessInformation;
 begin
- CmdLine := '"' + ExeFile + '" ' + Params;
- Dir:=GetDirectory(ExeFile);
- UnformatDir(Dir);
- FillChar( Si, SizeOf( Si ) , 0 );
- with Si do begin
-  cb := SizeOf( Si);
-  dwFlags := startf_UseShowWindow;
-  wShowWindow := 4;
- end;
- CreateProcess(nil,PChar(CmdLine),nil,nil,false,CREATE_DEFAULT_ERROR_MODE,nil,PChar(Dir),si,p);
+  CmdLine := '"' + ExeFile + '" ' + Params;
+  Dir:=GetDirectory(ExeFile);
+  UnformatDir(Dir);
+  FillChar( Si, SizeOf( Si ) , 0 );
+  with Si do begin
+    cb := SizeOf( Si);
+    dwFlags := startf_UseShowWindow;
+    wShowWindow := 4;
+  end;
+  CreateProcess(nil, PWideChar(CmdLine), nil, nil, False, CREATE_DEFAULT_ERROR_MODE, nil, PWideChar(Dir), si, p);
 end;
 
 procedure Exec(FileName : string);
 begin
- ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOW)
+ ShellExecute(0, 'open', PWideChar(FileName), nil, nil, SW_SHOW)
 end;
 
 Procedure aCopyFile(FromFile, ToDir : string);

@@ -1396,17 +1396,18 @@ object FormCont: TFormCont
         Control = ToolBar1
         ImageIndex = -1
         MinHeight = 26
-        Width = 468
+        Width = 466
       end>
     EdgeInner = esNone
     EdgeOuter = esNone
     object ToolBar1: TToolBar
-      Left = 9
+      Left = 11
       Top = 0
-      Width = 455
-      Height = 26
+      Width = 457
+      Height = 30
       AutoSize = True
-      ButtonWidth = 64
+      ButtonHeight = 30
+      ButtonWidth = 70
       Caption = 'ToolBar1'
       Images = ToolBarImageList
       List = True
@@ -1416,7 +1417,7 @@ object FormCont: TFormCont
       Wrapable = False
       object ToolButton1: TToolButton
         Left = 0
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Resize'
         ImageIndex = 0
@@ -1424,7 +1425,7 @@ object FormCont: TFormCont
       end
       object ToolButton2: TToolButton
         Left = 63
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Convert'
         ImageIndex = 1
@@ -1432,7 +1433,7 @@ object FormCont: TFormCont
       end
       object ToolButton3: TToolButton
         Left = 131
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Export'
         ImageIndex = 2
@@ -1440,7 +1441,7 @@ object FormCont: TFormCont
       end
       object ToolButton4: TToolButton
         Left = 192
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Copy'
         ImageIndex = 3
@@ -1448,7 +1449,7 @@ object FormCont: TFormCont
       end
       object ToolButton7: TToolButton
         Left = 247
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton7'
         ImageIndex = 5
@@ -1456,14 +1457,14 @@ object FormCont: TFormCont
       end
       object ToolButton8: TToolButton
         Left = 255
-        Top = 2
+        Top = 0
         AutoSize = True
         ImageIndex = 5
         OnClick = ToolButton8Click
       end
       object ToolButton9: TToolButton
         Left = 289
-        Top = 2
+        Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
         ImageIndex = 6
@@ -1471,31 +1472,31 @@ object FormCont: TFormCont
         OnClick = ToolButton9Click
       end
       object ToolButton11: TToolButton
-        Left = 338
-        Top = 2
+        Left = 344
+        Top = 0
         Width = 8
         Caption = 'ToolButton11'
         ImageIndex = 5
         Style = tbsSeparator
       end
       object ToolButton10: TToolButton
-        Left = 346
-        Top = 2
+        Left = 352
+        Top = 0
         AutoSize = True
         ImageIndex = 5
         OnClick = ToolButton10Click
       end
       object ToolButton5: TToolButton
-        Left = 380
-        Top = 2
+        Left = 386
+        Top = 0
         Width = 8
         Caption = 'ToolButton5'
         ImageIndex = 4
         Style = tbsSeparator
       end
       object ToolButton6: TToolButton
-        Left = 388
-        Top = 2
+        Left = 394
+        Top = 0
         AutoSize = True
         Caption = 'Close'
         ImageIndex = 4
