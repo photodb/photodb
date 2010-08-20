@@ -94,7 +94,7 @@ var
   lpNetResource,lpNet: PNetResource;
   cbBuffer: DWORD;
   dwNetType: Cardinal;
-  lpProviderName: Pchar;
+  lpProviderName: PWideChar;
 begin
  cbBuffer:=1000;
  dwNetType:= WNNC_NET_LANMAN;
@@ -109,7 +109,7 @@ begin
   lpNetResource^.dwDisplayType:=0;
   lpNetResource^.dwUsage:=0;
   lpNetResource^.lpComment:=nil;
-  lpNetResource^.lpRemoteName:=PChar(ComputerName);
+  lpNetResource^.lpRemoteName:=PWideChar(ComputerName);
   lpNetResource^.dwType:=RESOURCETYPE_ANY;
   lpNetResource^.lpProvider:=lpProviderName;
   if WNetGetResourceParent(lpNetResource,lpNet,cbBuffer)=0 then

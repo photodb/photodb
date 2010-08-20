@@ -176,8 +176,8 @@ begin
  CheckBox2.Checked:=DBKernel.Readbool('Options','AutoSaveINIPasswords',false);
  LoadLanguage;
  Password:='';
- PassIcon:=TIcon.Create;
- PassIcon.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar('PASSWORD'));
+  PassIcon := TIcon.Create;
+  PassIcon.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar('PASSWORD'));
 end;
 
 procedure TPassWordForm.LoadLanguage;
@@ -383,7 +383,7 @@ begin
 
  DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,PassIcon.Handle,16,16,0,0,DI_NORMAL);
  aRect.Left:=aRect.Left+20;
- DrawText(ListBox.Canvas.Handle,PChar(Text),Length(Text), aRect,DT_NOPREFIX+DT_LEFT+DT_WORDBREAK);
+ DrawText(ListBox.Canvas.Handle,PWideChar(Text),Length(Text), aRect,DT_NOPREFIX+DT_LEFT+DT_WORDBREAK);
 
 end;
 

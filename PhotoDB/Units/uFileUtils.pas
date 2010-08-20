@@ -35,7 +35,7 @@ function FileExistsEx(const FileName :TFileName) : Boolean;
 var
   Code :DWORD;
 begin
-  Code := GetFileAttributes(PChar(FileName));
+  Code := GetFileAttributes(PWideChar(FileName));
   Result := (Code <> DWORD(-1)) and (Code and FILE_ATTRIBUTE_DIRECTORY = 0);
 end;
 
@@ -60,7 +60,7 @@ GENERIC_READ, GRANT_ACCESS, SUB_OBJECTS_ONLY_INHERIT);
   R := SetEntriesInAcl(1, pEA, nil, pDACL);
   if R = ERROR_SUCCESS then
   begin
-    if SetNamedSecurityInfo(PChar(lPath), SE_FILE_OBJECT,
+    if SetNamedSecurityInfo(PWideChar(lPath), SE_FILE_OBJECT,
 DACL_SECURITY_INFORMATION, nil, nil, pDACL, nil) <> ERROR_SUCCESS then
       result := 2
     else
@@ -75,7 +75,7 @@ function GetSpecialFolder(hWindow: HWND; Folder: Integer): String;
 var
   pMalloc: IMalloc;
   pidl: PItemIDList;
-  Path: PChar;
+  Path: PWideChar;
 begin
   // get IMalloc interface pointer
   if (SHGetMalloc(pMalloc) <> S_OK) then
@@ -95,7 +95,7 @@ end;
 
 function GetSpecialFolder2(FolderID : longint) : string;
 var
-  Path : pchar;
+  Path : PWideChar;
   idList : PItemIDList;
 begin
   GetMem(Path, MAX_PATH);

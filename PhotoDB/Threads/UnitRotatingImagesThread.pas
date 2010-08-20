@@ -446,7 +446,7 @@ end;
 procedure TRotatingImagesThread.ShowError;
 begin
  //TODO: MessageBoxDB
- IntParam:=Application.MessageBox(PChar(StrParam),PChar(TEXT_MES_ERROR), MB_ICONERROR or MB_ABORTRETRYIGNORE);
+ IntParam:=Application.MessageBox(PWideChar(StrParam),PWideChar(TEXT_MES_ERROR), MB_ICONERROR or MB_ABORTRETRYIGNORE);
 end;
 
 procedure TRotatingImagesThread.DoDBKernelEvent;

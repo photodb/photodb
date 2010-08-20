@@ -206,13 +206,13 @@ end;
 
 procedure TFormHistory.LoadToolBarIcons;
 var
-  index : integer;
+  Index : Integer;
 
   procedure AddIcon(Name : String);
   begin
-   Icons[index]:=TIcon.Create;
-   Icons[index].Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-   Inc(index);
+    Icons[Index] := TIcon.Create;
+    Icons[Index].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Inc(Index);
   end;
 
 begin

@@ -615,7 +615,7 @@ begin
  Canvas.Brush.Color:=ClWhite;
  Canvas.Font.Style:=[];
 
- DrawTextA(Canvas.Handle, PChar(FilesLabel.Text), Length(FilesLabel.Text), R, DrawTextOpt);
+ DrawTextA(Canvas.Handle, PWideChar(FilesLabel.Text), Length(FilesLabel.Text), R, DrawTextOpt);
 
  if FCurrentImage<>nil then
  Canvas.Draw(10+50-FCurrentImage.Width div 2,10+50-FCurrentImage.Height div 2,FCurrentImage);
@@ -630,7 +630,7 @@ procedure TUpdateDBForm.SetIcon(Link : TWebLink; Name : String);
 var
   Ico : HIcon;
 begin
-  Ico := LoadIcon(DBKernel.IconDllInstance, PChar(Name));
+  Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
   try
     Link.LoadFromHIcon(Ico);
   finally

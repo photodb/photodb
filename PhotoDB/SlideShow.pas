@@ -1409,13 +1409,13 @@ begin
     begin
       FButtons[0].iId := 40001;
       FButtons[0].dwFlags := THBF_ENABLED;
-      FButtons[0].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
+      FButtons[0].hIcon := LoadImage(DBKernel.IconDllInstance, PWideChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
 	    StringToWideChar(TEXT_MES_BACK, FButtons[0].szTip, 260);
 	    FButtons[0].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
 
 	    FButtons[1].iId := 40002;
 	    FButtons[1].dwFlags := THBF_ENABLED;
-	    FButtons[1].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
+	    FButtons[1].hIcon := LoadImage(DBKernel.IconDllInstance, PWideChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
 	    StringToWideChar(TEXT_MES_NEXT, FButtons[1].szTip, 260);
 	    FButtons[1].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
       FW7TaskBar.ThumbBarAddButtons(Handle, 2, @FButtons);
@@ -2237,7 +2237,7 @@ begin
  for i:=0 to 1 do
  for j:=0 to 22 do
  begin
-  icons[i,j] := LoadImage(DBKernel.IconDllInstance, PChar(Names[i, j]), IMAGE_ICON, 16, 16, 0);
+  icons[i,j] := LoadImage(DBKernel.IconDllInstance, PWideChar(Names[I, J]), IMAGE_ICON, 16, 16, 0);
  end;
   TW.I.Start('FindComponent');
 

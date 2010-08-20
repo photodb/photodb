@@ -535,24 +535,25 @@ end;
 
 procedure TFormConvertingDB.LoadToolBarIcons;
 var
-  index : integer;
+  Index : Integer;
 
   procedure AddIcon(Name : String);
   begin
-   Icons[index]:=TIcon.Create;
-   Icons[index].Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-   Inc(index);
+    Icons[Index] := TIcon.Create;
+    Icons[Index].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Inc(Index);
   end;
+
 begin
- index:=0;
- SetLength(Icons,7);
- AddIcon('CMD_OK');
- AddIcon('CMD_ERROR');
- AddIcon('CMD_WARNING');
- AddIcon('CMD_PLUS');
- AddIcon('CMD_PROGRESS');
- AddIcon('CMD_DB');
- AddIcon('ADMINTOOLS');
+  Index := 0;
+  SetLength(Icons, 7);
+  AddIcon('CMD_OK');
+  AddIcon('CMD_ERROR');
+  AddIcon('CMD_WARNING');
+  AddIcon('CMD_PLUS');
+  AddIcon('CMD_PROGRESS');
+  AddIcon('CMD_DB');
+  AddIcon('ADMINTOOLS');
 end;
 
 procedure TFormConvertingDB.ApplicationEvents1Message(var Msg: tagMSG;

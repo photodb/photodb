@@ -883,7 +883,7 @@ begin
     r2 := Item.DisplayRect(drBounds);
     r2 := Rect(r2.Left, r2.Top, aRect.Left, aRect.Bottom);
     r2.Top := r2.Top + 2;
-    DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), r2, DrawTextOpt);
+    DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), r2, DrawTextOpt);
   end;
   Sender.Canvas.Brush.Style := bsClear;
   ListView_GetSubItemRect(elvMain.Handle, Item.Index, SubItem, 0, @aRect);
@@ -904,14 +904,14 @@ begin
     begin
       elvMain.Canvas.Font.Color := $808080;
       aRect.Top := aRect.Top + 2;
-      DrawText(Sender.Canvas.Handle, PChar(ItemData.KeyWords), Length(ItemData.KeyWords), aRect, DrawTextOpt);
+      DrawText(Sender.Canvas.Handle, PWideChar(ItemData.KeyWords), Length(ItemData.KeyWords), aRect, DrawTextOpt);
       elvMain.Canvas.Font.Color:=$0;
     end;
     3:
     begin
       elvMain.Canvas.Font.Color := $FF8080;
       aRect.Top := aRect.Top + 2;
-      DrawText(Sender.Canvas.Handle, PChar(ItemData.Comment), Length(ItemData.Comment), aRect, DrawTextOpt);
+      DrawText(Sender.Canvas.Handle, PWideChar(ItemData.Comment), Length(ItemData.Comment), aRect, DrawTextOpt);
       elvMain.Canvas.Font.Color := $0;
     end;
     7:
@@ -934,12 +934,12 @@ begin
       if ItemData.IsDate then
       begin
         Caption := FormatDateTime('yyyy.mm.dd', ItemData.Date);
-        DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
+        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
       end else
       begin
         elvMain.Canvas.Font.Color := $808080;
         Caption := TEXT_MES_NO_DATE_1;
-        DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
+        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
         elvMain.Canvas.Font.Color := $0;
       end;
     end;
@@ -949,12 +949,12 @@ begin
       if ItemData.IsTime then
       begin
         Caption:=FormatDateTime('hh.mm.ss', ItemData.Time);
-        DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
+        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
       end else
       begin
         elvMain.Canvas.Font.Color:=$808080;
         Caption:=TEXT_MES_TIME_NOT_EXISTS;
-        DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
+        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
         elvMain.Canvas.Font.Color:=$0;
       end;
     end;
@@ -962,7 +962,7 @@ begin
     begin
       Caption := IntToStr(ItemData.FileSize);
       aRect.Top := aRect.Top + 2;
-      DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
+      DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
     end;
     4:
     begin
@@ -975,11 +975,11 @@ begin
       aRect.Top := aRect.Top + 2;
       if ItemData.Include then
       begin
-        DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
+        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
       end else
       begin
         elvMain.Canvas.Font.Color := $808080;
-        DrawText(Sender.Canvas.Handle, PChar(Caption), Length(Caption), aRect, DrawTextOpt);
+        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
         elvMain.Canvas.Font.Color := $0;
       end;
     end;

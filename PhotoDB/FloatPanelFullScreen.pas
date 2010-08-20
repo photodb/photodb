@@ -82,8 +82,8 @@ begin
  for i:=0 to 1 do
  for j:=0 to 4 do
  begin
-  icons[i,j]:=TIcon.Create;
-  icons[i,j].Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Names[i,j]));
+  icons[i,j] := TIcon.Create;
+  icons[i,j].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Names[I, J]));
  end;
  imlists[0]:=NormalImageList;
  imlists[1]:=HotImageList;

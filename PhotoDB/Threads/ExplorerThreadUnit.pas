@@ -212,7 +212,7 @@ begin
 
     if (FThreadType = THREAD_TYPE_THREAD_PREVIEW) then
     begin     
-      FEvent := CreateEvent(nil, False, False, PChar(GUIDToString(GetGUID)));
+      FEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
       TW.I.Start('CreateEvent: ' + IntToStr(FEvent));
       try
         ProcessThreadPreviews;

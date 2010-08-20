@@ -1132,11 +1132,11 @@ var
   hSemaphore : THandle;
 begin
   Result:=false;
-  hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBBeginInstallID) );
+  hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBBeginInstallID) );
   if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin
     Result:=true;
-    hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBEndInstallID));
+    hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBEndInstallID));
     if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
     begin
       Result:=false;
@@ -1148,12 +1148,12 @@ end;
 
 procedure DoBeginInstall;
 begin
-  CreateSemaphore( nil, 0, 1, PChar(DBBeginInstallID) );
+  CreateSemaphore( nil, 0, 1, PWideChar(DBBeginInstallID) );
 end;
 
 procedure DoEndInstall;
 begin
-  CreateSemaphore( nil, 0, 1, PChar(DBEndInstallID) );
+  CreateSemaphore( nil, 0, 1, PWideChar(DBEndInstallID) );
 end;
 
 Function IsNewVersion : boolean;
@@ -1173,7 +1173,7 @@ begin
   FileName[1]:=Application.Exename[1];
   If FileExists(FileName) then
   begin
-   h:=LoadLibrary(Pchar(FileName));
+   h:=LoadLibrary(PWideChar(FileName));
    If h<>0 then
    begin
     ProcH:=GetProcAddress(h,'FileVersion');
@@ -1213,7 +1213,7 @@ begin
   if FileName<>'' then FileName[1]:=Application.ExeName[1];
   If FileExists(FileName) then
   begin
-   h:=loadlibrary(Pchar(FileName));
+   h:=loadlibrary(PWideChar(FileName));
    If h<>0 then
    begin
     ProcH:=GetProcAddress(h,'IsFalidDBFile');
@@ -3790,7 +3790,7 @@ var
   VolumeSerialNo : DWord;
   MaxComponentLength,FileSystemFlags: Cardinal;
 begin
-  GetVolumeInformation(Pchar(CDName+':\'),VolumeName,MAX_PATH,@VolumeSerialNo,
+  GetVolumeInformation(PWideChar(CDName+':\'),VolumeName,MAX_PATH,@VolumeSerialNo,
   MaxComponentLength,FileSystemFlags, FileSystemName,MAX_PATH);
   Result:=VolumeName;
 end;
@@ -4429,7 +4429,7 @@ begin
    MAPI_FLAG:=MAPI_DIALOG
   else
    MAPI_FLAG:=0;
-  MAPIModule := LoadLibrary(PChar(MAPIDLL));
+  MAPIModule := LoadLibrary(PWideChar(MAPIDLL));
   if MAPIModule = 0 then
     Result := -1
   else
@@ -4468,7 +4468,7 @@ begin
  ico1:=0;
  Result := TIcon.create;
  try
-  ExtractIconEx(Pchar(Path),IconIndex,ico1,ico2,1);
+  ExtractIconEx(PWideChar(Path),IconIndex,ico1,ico2,1);
  except
  end;
  if Big then
@@ -4912,7 +4912,7 @@ var
   MaxComponentLength,
     FileSystemFlags: Cardinal;
 begin
-  GetVolumeInformation( PChar(Copy(Application.ExeName,1,3)),
+  GetVolumeInformation( PWideChar(Copy(Application.ExeName,1,3)),
   VolumeName, MAX_PATH, @VolumeSerialNo,
     MaxComponentLength, FileSystemFlags,
     FileSystemName, MAX_PATH);
@@ -5600,9 +5600,9 @@ begin
   MySLink := MyObject as IShellLink;
   MyPFile := MyObject as IPersistFile;
 
-  MySLink.SetPath(PChar(SourceFileName));
-  MySLink.SetArguments(PChar(Parameters));
-  MySLink.SetDescription(PChar(Description));
+  MySLink.SetPath(PWideChar(SourceFileName));
+  MySLink.SetArguments(PWideChar(Parameters));
+  MySLink.SetDescription(PWideChar(Description));
 
   LinkName := ChangeFileExt(ShortcutName, '.lnk');
   LinkName := ExtractFileName(LinkName);
@@ -5645,13 +5645,13 @@ begin
     else
       WFileName := Directory + '\' + LinkName;
     if WorkingDir = '' then
-      MySLink.SetWorkingDirectory(PChar(ExtractFilePath(SourceFileName)))
+      MySLink.SetWorkingDirectory(PWideChar(ExtractFilePath(SourceFileName)))
     else
-      MySLink.SetWorkingDirectory(PChar(WorkingDir));
+      MySLink.SetWorkingDirectory(PWideChar(WorkingDir));
 
     try
 
-     WideFileName:= StringToWideString(WFileName,CP_ACP);
+     WideFileName:= StringToWideString(WFileName, CP_ACP);
 
      FS:=nil;
      try
@@ -6003,16 +6003,16 @@ end;
 
 function GetWindowsUserName: string;
 const
- cnMaxUserNameLen = 254;
+  cnMaxUserNameLen = 254;
 var
- sUserName: string;
- dwUserNameLen: DWORD;
+  sUserName: string;
+  dwUserNameLen: DWORD;
 begin
- dwUserNameLen := cnMaxUserNameLen - 1;
- SetLength(sUserName, cnMaxUserNameLen);
- GetUserName(PChar(sUserName), dwUserNameLen);
- SetLength(sUserName, dwUserNameLen);
- Result := sUserName;
+  dwUserNameLen := cnMaxUserNameLen - 1;
+  SetLength(sUserName, cnMaxUserNameLen);
+  GetUserName(PWideChar(sUserName), dwUserNameLen);
+  SetLength(sUserName, dwUserNameLen);
+  Result := sUserName;
 end;
 
 //SupportedExt

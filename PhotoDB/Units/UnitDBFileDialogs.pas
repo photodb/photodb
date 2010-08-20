@@ -102,11 +102,11 @@ implementation
  begin
   Result := '';
   try
-   i := Windows.GetEnvironmentVariable(PChar(VarName), nil, 0);
+   i := Windows.GetEnvironmentVariable(PWideChar(VarName), nil, 0);
    if i > 0 then
    begin
     SetLength(Result, i);
-    GetEnvironmentVariable(Pchar(VarName), PChar(Result), i);
+    GetEnvironmentVariable(PWideChar(VarName), PWideChar(Result), i);
    end;
   except
    Result := '';

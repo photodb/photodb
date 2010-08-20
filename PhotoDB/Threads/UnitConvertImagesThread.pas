@@ -397,7 +397,7 @@ end;
 procedure TConvertImagesThread.ShowWriteErrorWindow;
 begin
  //TODO: IntParam:=MessageBoxDB(FSender.Handle,TEXT_MES_ERROR,Format(TEXT_MES_WRITE_ERROR_F,[StrParam]),'', TD_BUTTON_ABORT_RETRY_IGNORE,TD_ICON_ERROR);
- IntParam:=Application.MessageBox(PChar(Format(TEXT_MES_WRITE_ERROR_F,[StrParam])),TEXT_MES_ERROR, MB_ICONERROR or MB_ABORTRETRYIGNORE);
+ IntParam:=Application.MessageBox(PWideChar(Format(TEXT_MES_WRITE_ERROR_F,[StrParam])),TEXT_MES_ERROR, MB_ICONERROR or MB_ABORTRETRYIGNORE);
 end;
 
 end.

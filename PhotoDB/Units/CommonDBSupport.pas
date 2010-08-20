@@ -871,10 +871,10 @@ begin
            TempPath:=ExtractFilePath(DatabaseName); 
            if TempPath='' Then TempPath:=GetCurrentDir; 
            //получаем имя временного файла 
-           GetTempFileName(PChar(TempPath),'mdb',0,TempName); 
+           GetTempFileName(PWideChar(TempPath),'mdb',0,TempName);
            Name:=StrPas(TempName);
        end; 
-       DeleteFile(PChar(Name));// этого файла не должно существовать :))
+       DeleteFile(Name);// этого файла не должно существовать :))
        Dest := Provider + 'Data Source=' + Name;
        if Password<>'' then begin
            Src := Src + ';Jet OLEDB:Database Password=' + Password;
@@ -888,7 +888,7 @@ begin
            V:=0; 
        end; 
        if DestDatabaseName='' then begin // т.к. выходная база не указана
-           DeleteFile(PChar(DatabaseName)); //то удаляем не упакованную базу
+           DeleteFile(DatabaseName); //то удаляем не упакованную базу
            RenameFile(Name,DatabaseName); // и переименовываем упакованную базу 
        end; 
    except

@@ -386,7 +386,7 @@ begin
   btext.Canvas.Font.Color:={ $0}Theme_ListFontColor;
   btext.Canvas.Font.Size:=10;
   textrect := Rect(5,0,(btext.Width div 4)*2-3,r2.Bottom);
-  DrawText(btext.Canvas.Handle, PChar(acaption), Length(acaption), textrect, DrawTextOpt+DT_LEFT);
+  DrawText(btext.Canvas.Handle, PWideChar(acaption), Length(acaption), textrect, DrawTextOpt+DT_LEFT);
   size:=btext.Canvas.TextHeight(acaption);
   btext.Canvas.Font.Size:=8;
 
@@ -397,30 +397,30 @@ begin
    btext.Canvas.Font.Style:=[fsbold];
    btext.Canvas.Font.Color:={ $FF4040} Theme_ListFontColor xor $FF0000;
    textrect := Rect((btext.Width div 4)*2+5,0,(btext.Width div 4)*3,btext.height);
-   DrawText(btext.Canvas.Handle, PChar(TEXT_MES_KEYWORDS+':'), Length(TEXT_MES_KEYWORDS+':'), textrect, DrawTextOpt+DT_LEFT);
+   DrawText(btext.Canvas.Handle, PWideChar(TEXT_MES_KEYWORDS+':'), Length(TEXT_MES_KEYWORDS+':'), textrect, DrawTextOpt+DT_LEFT);
   end;
   if Length(axGroups)>0 then
   begin
    btext.Canvas.Font.Style:=[fsbold];
    btext.Canvas.Font.Color:=Theme_ListFontColor xor $008000;
    textrect := Rect((btext.Width div 4)*3+5,0,btext.Width,btext.height);
-   DrawText(btext.Canvas.Handle, PChar(TEXT_MES_GROUPS+':'), Length(TEXT_MES_GROUPS+':'), textrect, DrawTextOpt+DT_LEFT);
+   DrawText(btext.Canvas.Handle, PWideChar(TEXT_MES_GROUPS+':'), Length(TEXT_MES_GROUPS+':'), textrect, DrawTextOpt+DT_LEFT);
   end;
   btext.Canvas.Font.Style:=[];
   btext.Canvas.Font.Color:= BothPercent(Theme_ListColor,Theme_ListFontColor,40);
   textrect:=rect(8,size,(btext.Width  div 4)*2-8,btext.Height);
-  DrawText(btext.Canvas.Handle, PChar(atext), Length(atext), textrect, DrawTextOpt1+DT_LEFT);
+  DrawText(btext.Canvas.Handle, PWideChar(atext), Length(atext), textrect, DrawTextOpt1+DT_LEFT);
 
   if Length(aKeyWords)>0 then
   begin
    textrect:=rect((btext.Width  div 4)*2+8,size,(btext.Width div 4)*3-8,btext.Height);
-   DrawText(btext.Canvas.Handle, PChar(akeyWords), Length(akeyWords), textrect, DrawTextOpt1+DT_LEFT);
+   DrawText(btext.Canvas.Handle, PWideChar(akeyWords), Length(akeyWords), textrect, DrawTextOpt1+DT_LEFT);
   end;
 
   if Length(axGroups)>0 then
   begin
    textrect:=rect((btext.Width div 4)*3+8,size,btext.Width-3,btext.Height);
-   DrawText(btext.Canvas.Handle, PChar(aGroups), Length(aGroups), textrect, DrawTextOpt1+DT_LEFT);
+   DrawText(btext.Canvas.Handle, PWideChar(aGroups), Length(aGroups), textrect, DrawTextOpt1+DT_LEFT);
   end;
   Sender.Canvas.Draw(r2.Left,r2.Top,btext);
   btext.free;
@@ -501,10 +501,12 @@ var
 
   procedure AddIcon(Name : String);
   begin
-   if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then Name:=Name+'_SMALL';
-   Ico:=TIcon.Create;
-   Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-   ToolBarImageList.AddIcon(Ico);
+    if DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False) then
+      Name := Name + '_SMALL';
+
+    Ico := TIcon.Create;
+    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ToolBarImageList.AddIcon(Ico);
   end;
   
 begin

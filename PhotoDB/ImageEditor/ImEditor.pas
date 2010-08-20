@@ -2339,13 +2339,13 @@ begin
          EXIFSection.ExifObj.WriteThruInt('Orientation',1); //Normal orientation!!!
          EXIFSection.ExifObj.AdjExifSize(CurrentImage.Width,CurrentImage.Height);
         except
-         MessageBoxDB(Handle, PChar(Format(TEXT_MES_CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+         MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
         end;
        end;  
        try
         EXIFSection.WriteEXIFJpeg((Image as TJPEGImage),FileName);
        except
-        MessageBoxDB(Handle, PChar(Format(TEXT_MES_CANT_WRITE_EXIF_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+        MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_EXIF_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
        end;
       end else
       begin
@@ -2353,7 +2353,7 @@ begin
       end;
       fSaved:=true;
      except
-      MessageBoxDB(Handle, PChar(Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
      end;
      Image.Free;
      {$IFDEF PHOTODB}

@@ -139,7 +139,7 @@ begin
 
  if DBKernel=nil then
  begin
-  KernelHandle:=loadlibrary(PChar(ProgramDir+'Kernel.dll'));
+  KernelHandle := LoadLibrary(PWideChar(ProgramDir+'Kernel.dll'));
   if KernelHandle=0 then
   begin
    MessageBoxDB(Handle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
@@ -238,7 +238,7 @@ begin
    ImageIndex:=PlacesImageList.Count-1;
    Caption:=Mince(NewPlace,30);
    GetMem(p,Length(NewPlace)+1);
-   lstrcpyn(p,PChar(NewPlace),Length(NewPlace)+1);
+   lstrcpyn(p, PWideChar(NewPlace), Length(NewPlace)+1);
    Data:=p;
   end;
  end;
@@ -397,7 +397,7 @@ begin
   3 : UpdateObject.AutoAnswer:=Result_replace_all;
  end;
  UpdateObject.Auto:=false;
- UpdateObject.AddDirectory(PChar(PlacesListView.Items[0].Data),FileFounded);
+ UpdateObject.AddDirectory(PWideChar(PlacesListView.Items[0].Data),FileFounded);
  Label10.Visible:=true;
  Label11.Visible:=true;
  Label12.Visible:=true;
@@ -419,7 +419,7 @@ procedure TFormImportingImages.DirectoryAdded(Sender: TObject);
 begin
  PlacesListView.Items[0].Delete;
  if PlacesListView.Items.Count>0 then
- UpdateObject.AddDirectory(PChar(PlacesListView.Items[0].Data),FileFounded)
+ UpdateObject.AddDirectory(PWideChar(PlacesListView.Items[0].Data),FileFounded)
  else begin
   if UpdateObject.GetCount=0 then
   begin

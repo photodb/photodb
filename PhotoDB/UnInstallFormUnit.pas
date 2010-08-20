@@ -62,7 +62,7 @@ var
   i : integer;
   hSemaphore : THandle;
 begin
- hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBID));
+ hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
  if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
  begin
   MessageBoxDB(GetActiveFormHandle, TEXT_MES_CLOSE_OPENED_PROGRAM,TEXT_MES_UNINSTALL,TD_BUTTON_OK,TD_ICON_WARNING);

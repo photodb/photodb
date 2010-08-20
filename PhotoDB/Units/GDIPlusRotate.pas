@@ -281,12 +281,12 @@ begin
   FileNameTemp:=aGetTempFileName(FileName);
   GdipSaveImageToFile(nativeImage,PWideChar(FileNameTemp),@clsid,PIP);
   GdipDisposeImage(nativeImage);
-  DeleteFile(PChar(aFileName));
+  DeleteFile(PWideChar(aFileName));
   RenameFile(FileNameTemp,aFileName);
  end else
  begin
   If FileExists(OtherFile) then
-  DeleteFile(PChar(OtherFile));
+  DeleteFile(PWideChar(OtherFile));
   FileNameTemp:=OtherFile;
   GdipSaveImageToFile(nativeImage,PWideChar(FileNameTemp),@clsid,PIP);
   GdipDisposeImage(nativeImage);

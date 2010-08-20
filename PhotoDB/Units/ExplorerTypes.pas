@@ -493,7 +493,7 @@ begin
  FreeOnTerminate:=true;
  fNewFileName:='';
 
- hDir := CreateFile (Pchar(FDirectory),GENERIC_READ,FILE_SHARE_READ or FILE_SHARE_WRITE
+ hDir := CreateFile (PWideChar(FDirectory),GENERIC_READ,FILE_SHARE_READ or FILE_SHARE_WRITE
  or FILE_SHARE_DELETE,nil,OPEN_EXISTING,FILE_FLAG_BACKUP_SEMANTICS,0);
  if hDir = INVALID_HANDLE_VALUE then exit;
  GetMem(lpBuf,BUF_SIZE);

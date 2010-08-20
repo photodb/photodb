@@ -1859,7 +1859,7 @@ begin
             FileName := Item.Caption;
 
           TempImage.Canvas.Brush.Style := bsClear;
-          DrawTextA(TempImage.Canvas.Handle, PChar(FileName), Length(FileName), R, DrawTextOpt);
+          DrawTextA(TempImage.Canvas.Handle, PWideChar(FileName), Length(FileName), R, DrawTextOpt);
 
           DragImageList.Clear;
           DragImageList.Height := TempImage.Height;
@@ -5501,7 +5501,7 @@ begin
     Params:='';
     For i:=0 to DropInfo.Count-1 do
     Params:=' "'+DropInfo[i]+'" ';
-    CreateProcess(nil,PChar('"'+FFilesInfo[index].FileName+'"'+Params),nil,nil,false,CREATE_DEFAULT_ERROR_MODE,nil,PChar(Str),si,p);
+    CreateProcess(nil, PWideChar('"'+FFilesInfo[index].FileName+'"'+Params),nil,nil,false,CREATE_DEFAULT_ERROR_MODE,nil,PWideChar(Str),si,p);
    end;
   end;
  end;
@@ -7739,7 +7739,7 @@ var
   procedure AddIcon(Name : String);
   begin
     if UseSmallIcons then Name:=Name+'_SMALL';
-    ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
+    ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
   end;
 
 begin
@@ -7776,8 +7776,10 @@ var
 
   procedure AddIcon(Name : String);
   begin
-   if UseSmallIcons then Name:=Name+'_SMALL';
-   ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
+    if UseSmallIcons then
+      Name := Name + '_SMALL';
+
+    ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
   end;
 
 begin
@@ -7789,21 +7791,21 @@ begin
   begin
     ToolBarDisabledImageList.Width:=16;
     ToolBarDisabledImageList.Height:=16;
-   end;
+  end;
 
- AddIcon('EXPLORER_BACK_GRAY');
- AddIcon('EXPLORER_UP_GRAY');
- AddIcon('EXPLORER_GO_GRAY');
- AddIcon('EXPLORER_CUT_GRAY');
- AddIcon('EXPLORER_COPY_GRAY');
- AddIcon('EXPLORER_PASTE_GRAY');
- AddIcon('EXPLORER_DELETE_GRAY');
- AddIcon('EXPLORER_VIEW_GRAY');
- AddIcon('EXPLORER_ZOOM_OUT_GRAY');
- AddIcon('EXPLORER_ZOOM_IN_GRAY');
- AddIcon('EXPLORER_SEARCH_GRAY');
- AddIcon('EXPLORER_OPTIONS_GRAY');
- AddIcon('EXPLORER_BREAK_GRAY');
+  AddIcon('EXPLORER_BACK_GRAY');
+  AddIcon('EXPLORER_UP_GRAY');
+  AddIcon('EXPLORER_GO_GRAY');
+  AddIcon('EXPLORER_CUT_GRAY');
+  AddIcon('EXPLORER_COPY_GRAY');
+  AddIcon('EXPLORER_PASTE_GRAY');
+  AddIcon('EXPLORER_DELETE_GRAY');
+  AddIcon('EXPLORER_VIEW_GRAY');
+  AddIcon('EXPLORER_ZOOM_OUT_GRAY');
+  AddIcon('EXPLORER_ZOOM_IN_GRAY');
+  AddIcon('EXPLORER_SEARCH_GRAY');
+  AddIcon('EXPLORER_OPTIONS_GRAY');
+  AddIcon('EXPLORER_BREAK_GRAY');
 
 end;
 

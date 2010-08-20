@@ -139,7 +139,7 @@ begin
  CheckBox6.Visible:=False;//TODO: delete FileExists(ProgramDir+'BdeInst.dll');
 
  Label1.Caption:=ProductName;
- hSemaphore := CreateSemaphore( nil, 0, 1, pchar(DBID));
+ hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
  If ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) THEN
  begin
   MessageBoxDB(Handle,TEXT_MES_4,TEXT_MES_SETUP,TD_BUTTON_OK,TD_ICON_ERROR);

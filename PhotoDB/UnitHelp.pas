@@ -522,14 +522,15 @@ end;
 
 procedure THelpPopup.Copy1Click(Sender: TObject);
 begin
- ClipBoard.SetTextBuf(PChar(DmMemo1.Text));
+  ClipBoard.SetTextBuf(PWideChar(DmMemo1.Text));
 end;
 
 procedure THelpPopup.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
- //ESC
- if Key = 27 then Close();
+  //ESC
+  if Key = 27 then
+    Close();
 end;
 
 end.

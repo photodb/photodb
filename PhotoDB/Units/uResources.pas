@@ -30,7 +30,7 @@ var
   MyResS : Integer;
 begin
   Result:=nil;
-  MyRes := FindResource(HInstance,PChar(ResName), RT_RCDATA);
+  MyRes := FindResource(HInstance, PWideChar(ResName), RT_RCDATA);
   if MyRes <> 0 then begin
     MyResS := SizeOfResource(HInstance,MyRes);
     MyRes := LoadResource(HInstance,MyRes);

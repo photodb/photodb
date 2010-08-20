@@ -69,7 +69,7 @@ begin
   Caption := AHint;
   Canvas.Font := Screen.HintFont;
   FBitmap.Canvas.Font := Screen.HintFont;
-  DrawText(Canvas.Handle, PChar(Caption), Length(Caption), Rect, DT_CALCRECT  or DT_NOPREFIX);
+  DrawText(Canvas.Handle, PWideChar(Caption), Length(Caption), Rect, DT_CALCRECT  or DT_NOPREFIX);
   case HintStyle of
     hsVista:
       begin
@@ -147,7 +147,7 @@ begin
         CaptionRect := Rect(5, 3, Width, Height);
       end;
   end;
-  DrawText(FBitmap.Canvas.Handle, PChar(Caption), Length(Caption), CaptionRect, DT_WORDBREAK or DT_NOPREFIX);
+  DrawText(FBitmap.Canvas.Handle, PWideChar(Caption), Length(Caption), CaptionRect, DT_WORDBREAK or DT_NOPREFIX);
   BitBlt(Canvas.Handle, 0, 0, Width, Height, FBitmap.Canvas.Handle, 0, 0, SRCCOPY);
 end;
 

@@ -2672,7 +2672,7 @@ end;
 
 function aMessageBox(Text, Caption : string; params : integer) : integer;
 begin
- Result:=Application.MessageBox(PChar(Text), PChar(Caption), params);
+ Result:=Application.MessageBox(PWideChar(Text), PWideChar(Caption), params);
 end;
 
 function ReplaceString(Str : string; WhatReplase, ToReplase : string) : string;

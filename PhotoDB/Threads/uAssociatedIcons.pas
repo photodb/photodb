@@ -155,7 +155,7 @@ var
 begin
   lpIconImage:=nil;
   // Find the group resource which lists its images
-  hRsrc := FindResource(hLib, PChar(NameRes), RT_GROUP_ICON);
+  hRsrc := FindResource(hLib, PWideChar(NameRes), RT_GROUP_ICON);
   // Load and Lock to get a pointer to a GRPICONDIR
   hGlobal := LoadResource(hLib, hRsrc);
   lpGrpIconDir := LockResource(hGlobal);
@@ -208,7 +208,7 @@ begin
     if (Size = 32) then Flags := Flags or SHGFI_LARGEICON;
     if (Size = 16) then Flags := Flags or SHGFI_SMALLICON;
 
-    SHGetFileInfo(PChar(Path), 0, FileInfo, SizeOf(FileInfo), Flags or SHGFI_TYPENAME);
+    SHGetFileInfo(PWideChar(Path), 0, FileInfo, SizeOf(FileInfo), Flags or SHGFI_TYPENAME);
     Result := TIcon.Create;
     if (Size < 48) then
     begin

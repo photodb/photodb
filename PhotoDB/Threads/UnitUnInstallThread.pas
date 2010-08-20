@@ -238,7 +238,7 @@ begin
     If FileExists(fdir+OldPlugInImagesFolder+SearchRec.Name) then
     begin
      try
-      dllhandle:=LoadLibrary(PChar(fdir+OldPlugInImagesFolder+SearchRec.Name));
+      dllhandle:=LoadLibrary(PWideChar(fdir+OldPlugInImagesFolder+SearchRec.Name));
       if dllhandle<>0 then
       begin
        SetString(s, Buffer, LoadString(dllhandle, 3, Buffer, sizeof(Buffer)));

@@ -482,10 +482,7 @@ begin
         DBKernel.LoadColorTheme;
         if Length(GetDirectory(Application.ExeName)) > 200 then
         begin
-          MessageBoxDB(dolphin_db.GetActiveFormHandle,
-            PChar(Format(TEXT_MES_PATH_TOO_LONG,
-                [GetDirectory(Application.ExeName)])), TEXT_MES_WARNING,
-            TD_BUTTON_OK, TD_ICON_WARNING);
+          MessageBoxDB(Dolphin_DB.GetActiveFormHandle, PWideChar(Format(TEXT_MES_PATH_TOO_LONG, [GetDirectory(Application.ExeName)])), TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
         end;
         Application.CreateForm(TInstallForm, InstallForm);
         Application.Restore;
@@ -551,7 +548,7 @@ begin
   begin
     EventLog('Loading Kernel.dll');
     if not FolderView then
-      KernelHandle := loadlibrary(PChar(ProgramDir + 'Kernel.dll'));
+      KernelHandle := LoadLibrary(PWideChar(ProgramDir + 'Kernel.dll'));
     TW.i.Start('StartCRCCheckThread');
     TLoad.Instance.StartCRCCheckThread;
     EventLog(':DBKernel.InitRegModule');

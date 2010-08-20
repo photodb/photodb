@@ -222,7 +222,7 @@ begin
    aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
    InfoText:=TEXT_MES_PROSESSING_;
    ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PChar(InfoText),Length(InfoText), r ,0);
+   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
    if FProgressEnabled then
    begin
     TempProgress.Text:='';
@@ -242,7 +242,7 @@ begin
    aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
    InfoText:=Infos[index];
    ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PChar(InfoText),Length(InfoText), r ,0);
+   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
    ListBox.Canvas.Font.Style:=[];
   end;
   DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexProcessedRecord].Handle,16,16,0,0,DI_NORMAL);
@@ -258,7 +258,7 @@ begin
    aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
    InfoText:=Infos[index];
    ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PChar(InfoText),Length(InfoText), r ,0);
+   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
    ListBox.Canvas.Font.Style:=[];
   end;
 
@@ -274,7 +274,7 @@ begin
    aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
    InfoText:=Infos[index];
    ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PChar(InfoText),Length(InfoText), r ,0);
+   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
    ListBox.Canvas.Font.Style:=[];
 
   DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexAdminToolsRecord].Handle,16,16,0,0,DI_NORMAL);
@@ -293,7 +293,7 @@ begin
    aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
    InfoText:=Infos[index];
    ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PChar(InfoText),Length(InfoText), r ,0);
+   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
    ListBox.Canvas.Font.Style:=[];
   end;
 
@@ -310,7 +310,7 @@ begin
   aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
   InfoText:=TEXT_MES_WARNING+':';
   ListBox.Canvas.Font.Style:=[fsBold];
-  DrawText(ListBox.Canvas.Handle,PChar(InfoText),Length(InfoText), r ,0);
+  DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
   ListBox.Canvas.Font.Style:=[];
  end;
 
@@ -323,11 +323,11 @@ begin
   aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
   InfoText:=TEXT_MES_ERROR+':';
   ListBox.Canvas.Font.Style:=[fsBold];
-  DrawText(ListBox.Canvas.Handle,PChar(InfoText),Length(InfoText), r ,0);
+  DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
   ListBox.Canvas.Font.Style:=[];
  end;
 
- DrawText(ListBox.Canvas.Handle,PChar(Text),Length(Text), aRect,DT_NOPREFIX+DT_LEFT+DT_WORDBREAK);
+ DrawText(ListBox.Canvas.Handle,PWideChar(Text),Length(Text), aRect,DT_NOPREFIX+DT_LEFT+DT_WORDBREAK);
 end;
 
 function CalcBitmapToJPEGCompressSize(Bitmap : TBitmap; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;

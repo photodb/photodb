@@ -266,12 +266,12 @@ end;
 function ImageFile(FileName : string) : boolean;
 var
   s : string;
-  p : PChar;
+  p : PWideChar;
 begin
  s:=ExtractFileExt(FileName);
  Delete(s,1,1);
  s:='|'+AnsiUpperCase(s)+'|';
- p:=StrPos(PChar(SupportedExt),PChar(s));
+ p:=StrPos(PWideChar(SupportedExt),PWideChar(s));
  Result:=p<>nil;
 end;
 

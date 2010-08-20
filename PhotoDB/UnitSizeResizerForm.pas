@@ -326,7 +326,7 @@ begin
      except
       on e : Exception do
       begin
-       res:=Application.MessageBox(PChar(Format(TEXT_MES_WRITE_ERROR_F,[e.Message])),PChar(TEXT_MES_ERROR), MB_ICONERROR or MB_ABORTRETRYIGNORE);
+       res:=Application.MessageBox(PWideChar(Format(TEXT_MES_WRITE_ERROR_F,[e.Message])), PWideChar(TEXT_MES_ERROR), MB_ICONERROR or MB_ABORTRETRYIGNORE);
        if res=IDABORT then
        begin
         NewGraphic.free;
@@ -418,7 +418,7 @@ begin
      except
       on e : Exception do
       begin
-       res:=Application.MessageBox(PChar(Format(TEXT_MES_WRITE_ERROR_F,[e.Message])),TEXT_MES_ERROR, MB_ICONERROR or MB_ABORTRETRYIGNORE);
+       res:=Application.MessageBox(PWideChar(Format(TEXT_MES_WRITE_ERROR_F,[e.Message])),TEXT_MES_ERROR, MB_ICONERROR or MB_ABORTRETRYIGNORE);
        if res=IDABORT then
        begin
         NewGraphic.free;

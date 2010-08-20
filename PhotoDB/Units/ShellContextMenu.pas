@@ -142,7 +142,7 @@ var
   WndClass: TWndClass;
 begin
   FillChar(WndClass, SizeOf(WndClass), #0);
-  WndClass.lpszClassName := PChar(IcmCallbackWnd);
+  WndClass.lpszClassName := PWideChar(IcmCallbackWnd);
   WndClass.lpfnWndProc := @MenuCallback;
   WndClass.hInstance := HInstance;
   Windows.RegisterClass(WndClass);

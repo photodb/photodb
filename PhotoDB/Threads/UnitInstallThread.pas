@@ -926,7 +926,7 @@ begin
   dwFlags := startf_UseShowWindow;
   wShowWindow := 4;
  end;
- CreateProcess(nil,PChar('"'+FEndDirectory+'PhotoDB.exe" "/SLEEP"'),nil,nil,false,CREATE_DEFAULT_ERROR_MODE,nil,PChar(S),si,p);
+ CreateProcess(nil, PWideChar('"'+FEndDirectory+'PhotoDB.exe" "/SLEEP"'),nil,nil,false,CREATE_DEFAULT_ERROR_MODE,nil, PWideChar(S),si,p);
 end;
 
 procedure InstallThread.DoPause;

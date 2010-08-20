@@ -620,11 +620,11 @@ begin
  if cdsHot in State then
  begin
   Sender.Canvas.Font.Style:=[fsUnderline];
-  DrawText(Sender.Canvas.Handle, PChar(Item.Caption), Length(Item.Caption), r2, DrawTextOpt);
+  DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), r2, DrawTextOpt);
  end else
  begin
   Sender.Canvas.Font.Style:=[];
-  DrawText(Sender.Canvas.Handle, PChar(Item.Caption), Length(Item.Caption), r2, DrawTextOpt);
+  DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), r2, DrawTextOpt);
  end;
  end;
  Sender.Canvas.Draw(r1.Left+((r1.Right-r1.Left) div 2 - ListItemPreviewSize div 2),r1.Top,b);

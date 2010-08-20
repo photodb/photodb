@@ -2110,7 +2110,7 @@ end;
 
 procedure TDBKernel.InitIconDll;
 begin
-  IconDllInstance := LoadLibrary(PChar(ProgramDir + 'icons.dll'));
+  IconDllInstance := LoadLibrary(PWideChar(ProgramDir + 'Icons.dll'));
   if IconDllInstance = 0 then
   begin
    EventLog('icons IS missing -> exit');
@@ -2202,7 +2202,7 @@ var
 
   function LoadIcon(Instance : HINST; ResName : string) : HIcon;
   begin
-    Result := LoadImage(Instance, PChar(ResName), IMAGE_ICON, 16, 16, 0);
+    Result := LoadImage(Instance, PWideChar(ResName), IMAGE_ICON, 16, 16, 0);
   end;   
 
 begin

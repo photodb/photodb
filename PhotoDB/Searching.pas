@@ -1642,7 +1642,7 @@ begin
             FileName := SearchRecord.FileName;
             Rotation := SearchRecord.Rotation;
           end;
-          RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(False, Self, StateID, nil, FPictureSize, FilesToUpdate, True));
+          RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, StateID, nil, FPictureSize, FilesToUpdate, True));
         end;
 
         ListView.Items[I].Invalidate(False);
@@ -1802,7 +1802,7 @@ begin
         R := Rect(0, MaxH + 3, MaxW, TempImage.Height);
         TempImage.Canvas.Brush.Style := bsClear;
         FileName := ListView.Selection.FocusedItem.Caption;
-        DrawTextA(TempImage.Canvas.Handle, PChar(FileName), Length(FileName), R, DrawTextOpt);
+        DrawTextA(TempImage.Canvas.Handle, PWideChar(FileName), Length(FileName), R, DrawTextOpt);
 
         DragImageList.Clear;
         DragImageList.Height:=TempImage.Height;
@@ -3789,7 +3789,7 @@ begin
       DrawIconEx(TmpBitmap.Canvas.Handle, FPictureSize-16, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_DUBLICAT+1], 16, 16, 0, 0, DI_NORMAL);
       TmpStr := Format('%d%%\%d%%', [Round(Data.CompareResult.ByPixels), Round(Data.CompareResult.ByGistogramm)]);
       R1 := Rect(fPictureSize - 16 - TmpBitmap.Canvas.TextWidth(TmpStr) - 3, TmpBitmap.Height - 16,fPictureSize - 16, TmpBitmap.Height);
-      DrawTextA(TmpBitmap.Canvas.Handle, PChar(TmpStr), Length(TmpStr), R1, DT_VCENTER + DT_CENTER);
+      DrawTextA(TmpBitmap.Canvas.Handle, PWideChar(TmpStr), Length(TmpStr), R1, DT_VCENTER + DT_CENTER);
     end;
 
     ACanvas.Draw(R.Left, R.Top, TmpBitmap);
@@ -3993,7 +3993,7 @@ begin
   for I := 0 to ListView.Items.Count - 1 do
     Data.Add(GetSearchRecordFromItemData(ListView.Items[I]));
     
-  RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(True, Self, StateID, nil, FPictureSize, Data));
+  RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, StateID, nil, FPictureSize, Data));
 end;
 
 function TSearchForm.GetVisibleItems: TArStrings;
@@ -4239,7 +4239,7 @@ var
   procedure AddIcon(Name : String);
   begin
     if UseSmallIcons then Name:=Name+'_SMALL';
-    ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
+    ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
   end;
 
   procedure AddDisabledIcon(Name : String);
@@ -4249,7 +4249,7 @@ var
     if UseSmallIcons then
       Name := Name + '_SMALL';
     for I := 1 to 9 do
-      ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PChar(Name)));
+      ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
   end;
 
 begin

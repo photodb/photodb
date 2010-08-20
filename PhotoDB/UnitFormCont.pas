@@ -973,7 +973,7 @@ begin
    R:=Rect(0,MaxH+3,MaxW,TempImage.Height);
    TempImage.Canvas.Brush.Style:=bsClear;
    FileName:=ExtractFileName(Data[Item.Index].FileName);
-   DrawTextA(TempImage.Canvas.Handle, PChar(FileName), Length(FileName), R, DrawTextOpt);
+   DrawTextA(TempImage.Canvas.Handle, PWideChar(FileName), Length(FileName), R, DrawTextOpt);
 
    DragImageList.Clear;
    DragImageList.Height:=TempImage.Height;
@@ -1860,17 +1860,18 @@ var
 
   procedure AddIcon(Name : String);
   begin
-   Ico:=TIcon.Create;
-   Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-   ToolBarImageList.AddIcon(Ico);
+    Ico := TIcon.Create;
+    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ToolBarImageList.AddIcon(Ico);
   end;
 
   procedure AddDisabledIcon(Name : String);
   begin
-   Ico:=TIcon.Create;
-   Ico.Handle:=LoadIcon(DBKernel.IconDllInstance,PChar(Name));
-   ToolBarDisabledImageList.AddIcon(Ico);
+    Ico := TIcon.Create;
+    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ToolBarDisabledImageList.AddIcon(Ico);
   end;
+
 begin
         
  ConvertTo32BitImageList(ToolBarImageList);
