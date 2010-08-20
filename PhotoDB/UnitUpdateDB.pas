@@ -8,7 +8,7 @@ uses
   DropSource, DropTarget, UnitDBkernel, DB, AppEvnts, UnitDBDeclare,
   UnitUpdateDBObject, UnitTimeCounter, DragDrop, DragDropFile, WebLink,
   GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon,
-  UnitDBCommonGraphics, DmMemo, uW7TaskBar;
+  UnitDBCommonGraphics, DmMemo, uW7TaskBar, GraphicsBaseTypes;
 
 type
   TUpdateDBForm = class(TForm)
@@ -94,12 +94,12 @@ type
     FAddObject : TUpdaterDB;
     BadHistory : TStrings;
     LastIDImage : integer;
-    LastFileName : String;  
+    LastFileName : string;
     TimeCounter: TTimeCounter;
     FInfoStr : string;
     FProgressMessage : Cardinal; 
     FW7TaskBar : ITaskbarList3;
-  procedure WMMouseDown(var s : Tmessage); message WM_LButtonDown;
+    procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
     { Private declarations }
   public        
    FullSize : Int64;

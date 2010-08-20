@@ -41,7 +41,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
     Height = 176
     Align = alClient
     TabOrder = 1
-    object RadioGroup1: TRadioGroup
+    object RgPictureSize: TRadioGroup
       Left = 1
       Top = 1
       Width = 111
@@ -50,19 +50,19 @@ object BigImagesSizeForm: TBigImagesSizeForm
       Caption = 'Big Images Size:'
       ItemIndex = 1
       Items.Strings = (
-        '50x50'
-        '100x100'
-        '150x150'
-        '200x200'
-        '250x250'
+        'Other (215x215)'
         '300x300'
-        'Other (215x215)')
+        '250x250'
+        '200x200'
+        '150x150'
+        '100x100'
+        '50x50')
       TabOrder = 0
-      OnClick = RadioGroup1Click
+      OnClick = RgPictureSizeClick
     end
     object CloseLink: TWebLink
-      Left = 40
-      Top = 152
+      Left = 56
+      Top = 151
       Width = 47
       Height = 16
       Cursor = crHandPoint
@@ -77,6 +77,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
       EnterBould = False
       TopIconIncrement = 0
       ImageCanRegenerate = True
+      UseSpecIconSize = True
     end
   end
   object TimerActivate: TTimer

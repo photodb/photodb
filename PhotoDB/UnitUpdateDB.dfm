@@ -461,6 +461,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = True
+    UseSpecIconSize = True
   end
   object WebLinkOpenFolder: TWebLink
     Tag = -1
@@ -481,6 +482,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = True
+    UseSpecIconSize = True
   end
   object ButtonClose: TWebLink
     Tag = -1
@@ -500,6 +502,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = True
+    UseSpecIconSize = True
   end
   object ButtonBreak: TWebLink
     Tag = -1
@@ -556,6 +559,7 @@ object UpdateDBForm: TUpdateDBForm
       000000000000000000000000000000000000000000000000000000000000FFFF
       0000F00F0000E0070000C0030000808100008061000080210000801100008801
       0000840100008601000081010000C0030000E0070000F00F0000FFFF0000}
+    UseSpecIconSize = True
   end
   object ButtonRunStop: TWebLink
     Tag = -1
@@ -575,6 +579,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = True
+    UseSpecIconSize = True
   end
   object ShowHistoryLink: TWebLink
     Tag = -1
@@ -594,6 +599,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = True
+    UseSpecIconSize = True
   end
   object WebLinkOptions: TWebLink
     Tag = -1
@@ -613,6 +619,7 @@ object UpdateDBForm: TUpdateDBForm
     EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = True
+    UseSpecIconSize = True
   end
   object PopupMenu1: TPopupMenu
     Left = 144
