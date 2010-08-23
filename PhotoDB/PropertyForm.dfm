@@ -1678,7 +1678,7 @@ object PropertiesForm: TPropertiesForm
       colorto = clWhite
       OrientarionHorizontal = True
     end
-    object RadioGroup1: TRadioGroup
+    object RgGistogrammChannel: TRadioGroup
       Left = 7
       Top = 183
       Width = 281
@@ -1691,12 +1691,12 @@ object PropertiesForm: TPropertiesForm
         'Green chanel'
         'Blue chanel')
       TabOrder = 0
-      OnClick = RadioGroup1Click
+      OnClick = RgGistogrammChannelClick
     end
   end
   object ExifPanel: TPanel
-    Left = 8
-    Top = 136
+    Left = 278
+    Top = 8
     Width = 297
     Height = 353
     TabOrder = 3
@@ -1714,8 +1714,8 @@ object PropertiesForm: TPropertiesForm
     end
   end
   object GeneralPanel: TPanel
-    Left = 8
-    Top = 136
+    Left = 279
+    Top = 8
     Width = 297
     Height = 353
     TabOrder = 2
@@ -2330,8 +2330,8 @@ object PropertiesForm: TPropertiesForm
   end
   object PopupMenu8: TPopupMenu
     OnPopup = PopupMenu8Popup
-    Left = 272
-    Top = 16
+    Left = 232
+    Top = 8
     object Addnewlink1: TMenuItem
       Caption = 'Add new link'
       OnClick = Addnewlink1Click

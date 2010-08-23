@@ -54,13 +54,13 @@ end;
 procedure TFloatPanel.ToolButton4Click(Sender: TObject);
 begin
  Viewer.Pause;
- Viewer.SpeedButton3Click(Sender);
+ Viewer.PreviousImageClick(Sender);
 end;
 
 procedure TFloatPanel.ToolButton5Click(Sender: TObject);
 begin
  Viewer.Pause;
- Viewer.SpeedButton4Click(Sender);
+ Viewer.NextImageClick(Sender);
 end;
 
 procedure TFloatPanel.ToolButton7Click(Sender: TObject);

@@ -27,7 +27,6 @@ object FloatPanel: TFloatPanel
     ButtonWidth = 27
     Caption = 'ToolBar1'
     DisabledImages = DisabledImageList
-    EdgeBorders = []
     HotImages = HotImageList
     Images = NormalImageList
     TabOrder = 0

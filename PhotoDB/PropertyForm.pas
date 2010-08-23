@@ -15,7 +15,7 @@ uses
   UnitCDMappingSupport, uDBDrawing, uFileUtils;
 
 type
- TShowInfoType=(SHOW_INFO_FILE_NAME,SHOW_INFO_ID,SHOW_INFO_IDS);
+ TShowInfoType=(SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
 
 type
   TPropertiesForm = class(TForm)
@@ -86,7 +86,7 @@ type
     ValueListEditor1: TValueListEditor;
     GistogrammPanel: TPanel;
     GistogrammImage: TImage;
-    RadioGroup1: TRadioGroup;
+    RgGistogrammChannel: TRadioGroup;
     Label2: TLabel;
     Label5: TLabel;
     DmGradient1: TDmGradient;
@@ -207,7 +207,7 @@ type
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure ReadExifData;
-    procedure RadioGroup1Click(Sender: TObject);
+    procedure RgGistogrammChannelClick(Sender: TObject);
     procedure ResetBold;
     procedure ValueListEditor1ContextPopup(Sender: TObject;
       MousePos: TPoint; var Handled: Boolean);
@@ -272,44 +272,42 @@ type
     procedure AddOriginalImThAndAddProcessngToOriginalImTh1Click(
       Sender: TObject);
     procedure PopupMenu3Popup(Sender: TObject);
-
   private
-  LinkDropFiles : TStrings;
-  EditLinkForm : TForm;
-  Links : array of TWebLink;
-  FReadingInfo : Boolean;
-  fSaving : boolean;
-  WorkQuery : TDataSet;
-  FOldGroups, FNowGroups : TGroups;     
-  FShowenRegGroups : TGroups;
-  FPropertyLinks, ItemLinks : TLinksInfo;
-  FFilesInfo : TDBPopupMenuInfo;           
-  FMenuRecord : TDBPopupMenuInfoRecord;
-  SelectedInfo : TSelectedInfo;
-  RegGroups : TGroups;
-  adding_now, editing_info, no_file : boolean;
-  FDateTimeInFileExists : Boolean;
-  FFileDate, FFileTime : TDateTime;
-  DestroyCounter : integer;
+    LinkDropFiles : TStrings;
+    EditLinkForm : TForm;
+    Links : array of TWebLink;
+    FReadingInfo : Boolean;
+    fSaving : boolean;
+    WorkQuery : TDataSet;
+    FOldGroups, FNowGroups : TGroups;
+    FShowenRegGroups : TGroups;
+    FPropertyLinks, ItemLinks : TLinksInfo;
+    FFilesInfo : TDBPopupMenuInfo;
+    FMenuRecord : TDBPopupMenuInfoRecord;
+    SelectedInfo : TSelectedInfo;
+    RegGroups : TGroups;
+    adding_now, editing_info, no_file : Boolean;
+    FDateTimeInFileExists : Boolean;
+    FFileDate, FFileTime : TDateTime;
+    DestroyCounter : integer;
   protected
-  procedure CreateParams(VAR Params: TCreateParams); override;
-  procedure WMActivate(var Message: TWMActivate); message WM_ACTIVATE;
-  procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
-
+    procedure CreateParams(var Params: TCreateParams); override;
+    procedure WMActivate(var message: TWMActivate); message WM_ACTIVATE;
+    procedure WMSyscommand(var message: TWmSysCommand); message WM_SYSCOMMAND;
     { Private declarations }
-  public      
-  SID : TGUID;
-  FShowInfoType : TShowInfoType;
-  CurrentItemInfo : TOneRecordInfo;
-  FCurrentPass : String;
-  GistogrammData : TGistogrammData;
-  Procedure LoadLanguage;
-  function ReadCHInclude : Boolean;
-  function ReadCHLinks : Boolean;
-  function ReadCHDate : Boolean;
-  function ReadCHTime : Boolean;
-  procedure OnDoneLoadingImage(Sender: TObject);
-  procedure OnDoneLoadGistogrammData(Sender: TObject);
+  public
+    SID: TGUID;
+    FShowInfoType: TShowInfoType;
+    CurrentItemInfo: TOneRecordInfo;
+    FCurrentPass: string;
+    GistogrammData: TGistogrammData;
+    procedure LoadLanguage;
+    function ReadCHInclude: Boolean;
+    function ReadCHLinks: Boolean;
+    function ReadCHDate: Boolean;
+    function ReadCHTime: Boolean;
+    procedure OnDoneLoadingImage(Sender: TObject);
+    procedure OnDoneLoadGistogrammData(Sender: TObject);
     { Public declarations }
   end;
 
@@ -323,14 +321,13 @@ type
     function NewIDProperty(ID : Integer) : TPropertiesForm;
     function NewFileProperty(FileName : string) : TPropertiesForm;
 
-    Procedure AddProperty(aProperty : TPropertiesForm);
-    Procedure RemoveProperty(aProperty : TPropertiesForm);
+    procedure AddProperty(aProperty : TPropertiesForm);
+    procedure RemoveProperty(aProperty : TPropertiesForm);
     function IsPropertyForm(aProperty: TForm): Boolean;
     function PropertyCount : Integer;
     function GetAnySimpleProperty : TPropertiesForm;
     function GetPropertyByID(ID : integer) : TPropertiesForm;
     function GetPropertyByFileName(FileName : string): TPropertiesForm;
-   published
   end;
 
 var
@@ -366,12 +363,12 @@ end;
 function TPropertyManager.GetAnySimpleProperty: TPropertiesForm;
 begin
   if PropertyCount = 0 then
-    Result:=NewSimpleProperty
+    Result := NewSimpleProperty
   else
-    Result:=FPropertys[0];
+    Result := FPropertys[0];
 end;
 
-function TPropertyManager.GetPropertyByID(ID : integer): TPropertiesForm;
+function TPropertyManager.GetPropertyByID(ID : Integer): TPropertiesForm;
 var
   I : Integer;
 begin
@@ -404,39 +401,53 @@ begin
   Result := FPropertys.IndexOf(aProperty) > -1;
 end;
 
-function TPropertyManager.NewFileProperty(
-  FileName: string): TPropertiesForm;
+function TPropertyManager.NewFileProperty(FileName: string): TPropertiesForm;
 begin
-  if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
+  if not DBKernel.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
   begin
-    if PropertyCount > 0 then Result := FPropertys[0] else Application.CreateForm(TPropertiesForm, Result);
+    if PropertyCount > 0 then
+      Result := FPropertys[0]
+    else
+      Application.CreateForm(TPropertiesForm, Result);
   end else
   begin
     Result := GetPropertyByFileName(FileName);
-    if Result <> nil then Exit else Result := NewSimpleProperty;
+    if Result <> nil then
+      Exit
+    else
+      Result := NewSimpleProperty;
   end;
 end;
 
 function TPropertyManager.NewIDProperty(ID: Integer): TPropertiesForm;
 begin
-  if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
+  if not DBKernel.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
   begin
-    if PropertyCount>0 then Result := FPropertys[0] else Application.CreateForm(TPropertiesForm, Result);
+    if PropertyCount>0 then
+      Result := FPropertys[0]
+    else
+      Application.CreateForm(TPropertiesForm, Result);
   end else
   begin
     Result := GetPropertyByID(ID);
-    if Result <> nil then Exit else Result := NewSimpleProperty;
+    if Result <> nil then
+      Exit
+    else
+      Result := NewSimpleProperty;
   end;
 end;
 
 function TPropertyManager.NewSimpleProperty: TPropertiesForm;
 begin
-  if not DBKernel.Readbool('Options','AllowManyInstancesOfProperty',true) then
+  if not DBKernel.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
   begin
-    if PropertyCount > 0 then Result := FPropertys[0] else Application.CreateForm(TPropertiesForm, Result);
+    if PropertyCount > 0 then
+      Result := FPropertys[0]
+    else
+      Application.CreateForm(TPropertiesForm, Result);
   end else
   begin
-    Application.CreateForm(TPropertiesForm,Result);
+    Application.CreateForm(TPropertiesForm, Result);
   end;
 end;
 
@@ -450,68 +461,69 @@ begin
   FPropertys.Remove(aProperty);
 end;
 
-  function TPropertiesForm.ReadCHInclude : Boolean;
+function TPropertiesForm.ReadCHInclude: Boolean;
+begin
+  Result := False;
+  if FShowInfoType = SHOW_INFO_ID then
+    Result := (CurrentItemInfo.ItemInclude <> CheckBox1.Checked);
+  if FShowInfoType = SHOW_INFO_IDS then
   begin
-   Result:=false;
-   if FShowInfoType=SHOW_INFO_ID then
-   Result:=(CurrentItemInfo.ItemInclude<>CheckBox1.Checked);
-   if FShowInfoType=SHOW_INFO_IDS then
-   begin
     if (SelectedInfo.IsVaruousInclude) then
     begin
-     if (CheckBox1.State<>cbGrayed) then
-     begin
-      Result:=true;
-      exit;
-     end;
-    end else
+      if (CheckBox1.State <> CbGrayed) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end
+    else
     begin
-     if (SelectedInfo.Include) and (CheckBox1.State=cbUnChecked) or
-        (not SelectedInfo.Include) and (CheckBox1.State=cbChecked) then
-     begin
-      Result:=true;
-      exit;
-     end
+      if (SelectedInfo.Include) and (CheckBox1.State = CbUnChecked) or (not SelectedInfo.Include) and
+        (CheckBox1.State = CbChecked) then
+      begin
+        Result := True;
+        Exit;
+      end
     end;
-   end;
   end;
+end;
 
-  function TPropertiesForm.ReadCHLinks : Boolean;
-  begin
-   Result:=not CompareLinks(FPropertyLinks,ItemLinks,true);
-  end;
+function TPropertiesForm.ReadCHLinks : Boolean;
+begin
+ Result:=not CompareLinks(FPropertyLinks,ItemLinks,true);
+end;
 
-  function TPropertiesForm.ReadCHDate : Boolean;
-  begin
-   Result:=false;
+function TPropertiesForm.ReadCHDate : Boolean;
+begin
+ Result:=false;
 {   if FShowInfoType=SHOW_INFO_FILE_NAME then
-   Result:=FDateTimeInFileExists;  }
-   if FShowInfoType=SHOW_INFO_ID then
-   begin
-    Result:=(((CurrentItemInfo.ItemIsDate<>not IsDatePanel.Visible) or (CurrentItemInfo.ItemDate<>DateEdit.DateTime)) and not DateSets.Visible);
-   end;
-   if FShowInfoType=SHOW_INFO_IDS then
-   begin
-    Result:= ((CurrentItemInfo.ItemIsDate<>not IsDatePanel.Visible) or(CurrentItemInfo.ItemDate<>DateEdit.DateTime) or (SelectedInfo.IsVariousDates)) and not DateSets.Visible;
-   end;
-  end;
+ Result:=FDateTimeInFileExists;  }
+ if FShowInfoType=SHOW_INFO_ID then
+ begin
+  Result:=(((CurrentItemInfo.ItemIsDate<>not IsDatePanel.Visible) or (CurrentItemInfo.ItemDate<>DateEdit.DateTime)) and not DateSets.Visible);
+ end;
+ if FShowInfoType=SHOW_INFO_IDS then
+ begin
+  Result:= ((CurrentItemInfo.ItemIsDate<>not IsDatePanel.Visible) or(CurrentItemInfo.ItemDate<>DateEdit.DateTime) or (SelectedInfo.IsVariousDates)) and not DateSets.Visible;
+ end;
+end;
 
-  function TPropertiesForm.ReadCHTime : Boolean;
-  var
-    VarTime : Boolean;
-  begin
-   Result:=false;
-   if FShowInfoType=SHOW_INFO_ID then
-   begin
-    VarTime:=Abs(CurrentItemInfo.ItemTime-TimeOf(TimeEdit.Time))>1/(24*60*60*3);
-    Result:=(((CurrentItemInfo.ItemIsTime<>not IsTimePanel.Visible) or VarTime) and not TimeSets.Visible);
-   end;
-   if FShowInfoType=SHOW_INFO_IDS then
-   begin
-    VarTime:=Abs(CurrentItemInfo.ItemTime-TimeOf(TimeEdit.Time))>1/(24*60*60*3);
-    Result:= ((CurrentItemInfo.ItemIsTime<>not IsTimePanel.Visible) or VarTime or (SelectedInfo.IsVariousTimes)) and not TimeSets.Visible;
-   end;
-  end;
+function TPropertiesForm.ReadCHTime : Boolean;
+var
+  VarTime : Boolean;
+begin
+ Result:=false;
+ if FShowInfoType=SHOW_INFO_ID then
+ begin
+  VarTime:=Abs(CurrentItemInfo.ItemTime-TimeOf(TimeEdit.Time))>1/(24*60*60*3);
+  Result:=(((CurrentItemInfo.ItemIsTime<>not IsTimePanel.Visible) or VarTime) and not TimeSets.Visible);
+ end;
+ if FShowInfoType=SHOW_INFO_IDS then
+ begin
+  VarTime:=Abs(CurrentItemInfo.ItemTime-TimeOf(TimeEdit.Time))>1/(24*60*60*3);
+  Result:= ((CurrentItemInfo.ItemIsTime<>not IsTimePanel.Visible) or VarTime or (SelectedInfo.IsVariousTimes)) and not TimeSets.Visible;
+ end;
+end;
 
 procedure TPropertiesForm.Execute(ID: integer);
 var
@@ -603,7 +615,7 @@ begin
   try
    if FBS.Size<>0 then
    FPic.Graphic.LoadFromStream(FBS) else
-  except      
+  except
    on e : Exception do EventLog(':TPropertiesForm::Execute()/LoadFromStream throw exception: '+e.Message);
   end;
   FBS.Free;
@@ -612,7 +624,7 @@ begin
 
  //Resizing if picture too big
  if (FPic.Graphic.Width>ThSizeExplorerPreview) or (FPic.Graphic.Height>ThSizeExplorerPreview) then
- begin          
+ begin
   TempBitmap:=TBitmap.Create;
   TempBitmap.Assign(FPic.Graphic);
   w:=TempBitmap.Width;
@@ -706,7 +718,7 @@ begin
  begin
   ListBox1.Refresh;
   ListBox2.Refresh;
- end;   
+ end;
  ImageLoadingFile.Visible:=false;
  Show;
 
@@ -755,7 +767,7 @@ begin
  PropertyManager.AddProperty(self);
  ListBox1.DoubleBuffered:=true;
  ListBox2.DoubleBuffered:=true;
- FreeGroups(RegGroups);          
+ FreeGroups(RegGroups);
  FreeGroups(FShowenRegGroups);
 
  EditLinkForm:=nil;
@@ -922,7 +934,7 @@ begin
   Inc(xCount);
 
   if not CommentMemo.ReadOnly then
-  Inc(xCount); 
+  Inc(xCount);
 
   if ReadCHLinks then
   Inc(xCount);
@@ -1420,14 +1432,14 @@ begin
  Options.FileName:=FileName;
  Options.OnDone:=OnDoneLoadingImage;
  Options.SID:=SID;
- Options.Owner:=Self;      
+ Options.Owner:=Self;
  TPropertyLoadImageThread.Create(false,Options);
 
 
  WidthMemo.Text:=TEXT_MES_LOADING___;
  HeightMemo.Text:=TEXT_MES_LOADING___;
 
- 
+
  SizeLabel.text:=SizeInTextA(GetFileSize(FileName));
  Button3.Caption:=TEXT_MES_ADD_FILE;
  Button2.Visible:=True;
@@ -1519,7 +1531,7 @@ begin
  DropFileTarget1.Unregister;
  SaveWindowPos1.SavePosition;
  DBKernel.UnRegisterForm(Self);
- DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);   
+ DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
 end;
 
 procedure TPropertiesForm.UpdateTheme(Sender: TObject);
@@ -1701,8 +1713,8 @@ begin
    MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
    MenuRecord.Selected := True;
    FFilesInfo.Add(MenuRecord);
-   
-   Size := Size + WorkQuery.FieldByName('FileSize').AsInteger; 
+
+   Size := Size + WorkQuery.FieldByName('FileSize').AsInteger;
    ArWidth[i+len]:=WorkQuery.FieldByName('Width').AsInteger;
    ArHeight[i+len]:=WorkQuery.FieldByName('Height').AsInteger;
    ArDir[i+len]:=GetDirectory(MenuRecord.FileName);
@@ -1818,9 +1830,9 @@ begin
  DBItem1.Visible:=True;
  FFilesInfo.IsListItem:=False;
  CommentMemoChange(nil);
- Button2.Visible:=false;   
+ Button2.Visible:=false;
  ImageLoadingFile.Visible:=false;
- Show;    
+ Show;
  SID:=GetGUID;
 end;
 
@@ -1845,7 +1857,7 @@ begin
  SaveWindowPos1.SavePosition;
  if EditLinkForm<>nil then
  EditLinkForm.Close;
- 
+
  Hide;
  if FSaving then
  begin
@@ -2012,11 +2024,11 @@ begin
 
  Label2.Caption:=TEXT_MES_GISTOGRAMM_IMAGE+':';
  Label5.Caption:=Format(TEXT_MES_EFFECTIVE_RANGE_F,[0,0]);
- RadioGroup1.Caption:=TEXT_MES_CHANEL;
- RadioGroup1.Items[0]:=TEXT_MES_CHANEL_GRAY;
- RadioGroup1.Items[1]:=TEXT_MES_CHANEL_R;
- RadioGroup1.Items[2]:=TEXT_MES_CHANEL_G;
- RadioGroup1.Items[3]:=TEXT_MES_CHANEL_B;
+ RgGistogrammChannel.Caption:=TEXT_MES_CHANEL;
+ RgGistogrammChannel.Items[0]:=TEXT_MES_CHANEL_GRAY;
+ RgGistogrammChannel.Items[1]:=TEXT_MES_CHANEL_R;
+ RgGistogrammChannel.Items[2]:=TEXT_MES_CHANEL_G;
+ RgGistogrammChannel.Items[3]:=TEXT_MES_CHANEL_B;
  CopyCurrent1.Caption:=TEXT_MES_COPY_CURRENT_ROW;
  CopyAll1.Caption:=TEXT_MES_COPY_ALL_INFO;
  CheckBox1.Caption:=TEXT_MES_INCLUDE_IN_BASE_SEARCH;
@@ -2148,11 +2160,11 @@ begin
    AllowChange:=false;
    exit;
   end;
-  RadioGroup1.ItemIndex:=0;
+  RgGistogrammChannel.ItemIndex:=0;
   //ReadHistogrammData;
 
   if not GistogrammData.Loaded then
-  begin               
+  begin
    Options.FileName:=CurrentItemInfo.ItemFileName;
    Options.Owner:=self;
    Options.SID:=SID;
@@ -2212,7 +2224,7 @@ var
    ValueListEditor1.InsertRow(Key,FloatToStr(Value),true);
   end;
 
-begin          
+begin
   ValueListEditor1.Strings.Clear;
 
   if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(CurrentItemInfo.ItemFileName) then
@@ -2284,9 +2296,9 @@ begin
     ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
-procedure TPropertiesForm.RadioGroup1Click(Sender: TObject);
+procedure TPropertiesForm.RgGistogrammChannelClick(Sender: TObject);
 begin
- Case RadioGroup1.ItemIndex of
+ Case RgGistogrammChannel.ItemIndex of
   0: DmGradient1.ColorTo:=$FFFFFF;
   1: DmGradient1.ColorTo:=$0000FF;
   2: DmGradient1.ColorTo:=$00FF00;
@@ -2805,7 +2817,7 @@ begin
 
    TextOut(Rect.Left+21, Rect.Top+3, (Control as TListBox).Items[Index]);
   end;
- except   
+ except
    on e : Exception do EventLog(':TPropertiesForm.ListBox2DrawItem() throw exception: '+e.Message);
  end;
 end;
@@ -3171,11 +3183,11 @@ end;
 procedure TPropertiesForm.AddImThLink1Click(Sender: TObject);
 var
   Info : TOneRecordInfo;
-  LinkInfo : TLinkInfo;  
+  LinkInfo : TLinkInfo;
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ GetInfoByFileNameA(LinkDropFiles[0], False, Info);
  if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_PROCESSING;
@@ -3200,11 +3212,11 @@ end;
 procedure TPropertiesForm.AddOriginalImTh1Click(Sender: TObject);
 var
   Info : TOneRecordInfo;
-  LinkInfo : TLinkInfo;     
+  LinkInfo : TLinkInfo;
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ GetInfoByFileNameA(LinkDropFiles[0],False, Info);
  if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_ORIGINAL;
@@ -3235,7 +3247,7 @@ var
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ GetInfoByFileNameA(LinkDropFiles[0],False, Info);
  if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_PROCESSING;
@@ -3276,7 +3288,7 @@ var
   i : integer;
   b : boolean;
 begin
- Info:=GetInfoByFileNameA(LinkDropFiles[0],False);
+ GetInfoByFileNameA(LinkDropFiles[0],False,Info);
  if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
  LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
  LinkInfo.LinkName:=TEXT_MES_ORIGINAL;
@@ -3321,34 +3333,39 @@ end;
 procedure TPropertiesForm.OnDoneLoadGistogrammData(Sender: TObject);
 var
   Bitmap : TBitmap;
-  MinC, MaxC : integer;
+  MinC, MaxC: Integer;
 begin
- if Sender is TPropertyLoadGistogrammThread then
- GistogrammData.Loaded:=true;
- Bitmap:=nil;
- if GistogrammImage.Picture.Bitmap=nil then GistogrammImage.Picture.Bitmap:=TBitmap.Create;
- Case RadioGroup1.ItemIndex of
-   0: Bitmap:=GetGistogrammBitmapW(130,GistogrammData.Gray,MinC,MaxC);
-   1: Bitmap:=GetGistogrammBitmapW(130,GistogrammData.Red,MinC,MaxC);
-   2: Bitmap:=GetGistogrammBitmapW(130,GistogrammData.Green,MinC,MaxC);
-   3: Bitmap:=GetGistogrammBitmapW(130,GistogrammData.Blue,MinC,MaxC);
- end;
- if Bitmap<>nil then
- begin
-  GistogrammImage.Picture.Bitmap.Assign(Bitmap);
-  Bitmap.Free;
-  Label5.Caption:=Format(TEXT_MES_EFFECTIVE_RANGE_F,[MinC,MaxC]);
- end;
+  if Sender is TPropertyLoadGistogrammThread then
+    GistogrammData.Loaded := True;
+
+  Bitmap := TBitmap.Create;
+  try
+    case RgGistogrammChannel.ItemIndex of
+      0:
+        GetGistogrammBitmapW(130, GistogrammData.Gray, MinC, MaxC, Bitmap);
+      1:
+        GetGistogrammBitmapW(130, GistogrammData.Red, MinC, MaxC, Bitmap);
+      2:
+        GetGistogrammBitmapW(130, GistogrammData.Green, MinC, MaxC, Bitmap);
+      3:
+        GetGistogrammBitmapW(130, GistogrammData.Blue, MinC, MaxC, Bitmap);
+    end;
+
+    Label5.Caption := Format(TEXT_MES_EFFECTIVE_RANGE_F, [MinC, MaxC]);
+    GistogrammImage.Picture.Bitmap := Bitmap;
+  finally
+    Bitmap.Free;
+  end;
 end;
 
 procedure TPropertiesForm.WMActivate(var Message: TWMActivate);
 begin
- if (Message.Active = WA_ACTIVE) and not IsWindowEnabled(Handle) and IsWindowsVista then
- begin
-  SetActiveWindow(Application.Handle);
-  Message.Result := 0;
- end else
-  inherited;
+  if (Message.Active = WA_ACTIVE) and not IsWindowEnabled(Handle) and IsWindowsVista then
+  begin
+    SetActiveWindow(Application.Handle);
+    Message.Result := 0;
+  end else
+    inherited;
 end;
 
 procedure TPropertiesForm.WMSyscommand(var Message: TWmSysCommand);
@@ -3375,6 +3392,6 @@ PropertyManager := TPropertyManager.Create;
 
 finalization
 
-PropertyManager.Free;
+FreeAndNil(PropertyManager);
 
 end.

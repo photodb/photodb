@@ -92,14 +92,14 @@ object Viewer: TViewer
           Top = 0
           Caption = 'Back'
           ImageIndex = 1
-          OnClick = SpeedButton3Click
+          OnClick = PreviousImageClick
         end
         object TbForward: TToolButton
           Left = 23
           Top = 0
           Caption = 'Forward'
           ImageIndex = 0
-          OnClick = SpeedButton4Click
+          OnClick = NextImageClick
         end
         object TbSeparator1: TToolButton
           Left = 46
@@ -115,7 +115,7 @@ object Viewer: TViewer
           Grouped = True
           ImageIndex = 2
           Style = tbsCheck
-          OnClick = ToolButton5Click
+          OnClick = FitToWindowClick
         end
         object TbRealSize: TToolButton
           Left = 77
@@ -124,7 +124,7 @@ object Viewer: TViewer
           Grouped = True
           ImageIndex = 3
           Style = tbsCheck
-          OnClick = ToolButton4Click
+          OnClick = RealSizeClick
         end
         object TbSlideShow: TToolButton
           Left = 100
@@ -274,11 +274,11 @@ object Viewer: TViewer
     object Next1: TMenuItem
       Caption = 'Next'
       Default = True
-      OnClick = SpeedButton4Click
+      OnClick = NextImageClick
     end
     object Previous1: TMenuItem
       Caption = 'Previous'
-      OnClick = SpeedButton3Click
+      OnClick = PreviousImageClick
     end
     object MTimer1: TMenuItem
       Caption = 'Timer'
@@ -298,11 +298,11 @@ object Viewer: TViewer
     end
     object RealSize1: TMenuItem
       Caption = 'Real Size'
-      OnClick = ToolButton4Click
+      OnClick = RealSizeClick
     end
     object BestSize1: TMenuItem
       Caption = 'Best Size'
-      OnClick = ToolButton5Click
+      OnClick = FitToWindowClick
     end
     object N5: TMenuItem
       Caption = '-'

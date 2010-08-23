@@ -1257,6 +1257,7 @@ object FormCont: TFormCont
         EnterBould = False
         TopIconIncrement = 0
         ImageCanRegenerate = True
+        UseSpecIconSize = True
       end
       object GroupBox1: TGroupBox
         Left = 8
@@ -1319,6 +1320,7 @@ object FormCont: TFormCont
         EnterBould = False
         TopIconIncrement = 0
         ImageCanRegenerate = True
+        UseSpecIconSize = True
       end
       object ExCopyLink: TWebLink
         Left = 9
@@ -1337,6 +1339,7 @@ object FormCont: TFormCont
         EnterBould = False
         TopIconIncrement = 0
         ImageCanRegenerate = True
+        UseSpecIconSize = True
       end
       object WebLink1: TWebLink
         Left = 8
@@ -1355,6 +1358,7 @@ object FormCont: TFormCont
         EnterBould = False
         TopIconIncrement = 0
         ImageCanRegenerate = True
+        UseSpecIconSize = True
       end
     end
     object Panel4: TPanel

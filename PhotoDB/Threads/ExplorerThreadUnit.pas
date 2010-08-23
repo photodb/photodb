@@ -786,7 +786,14 @@ begin
       end;
     end;
   end else
-    FInfo := GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS);
+  begin
+    FInfo.Image := TJpegImage.Create;
+    try
+      GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS, FInfo);
+    finally
+      FreeAndNil(FInfo);
+    end;
+  end;
     
   FInfo.Loaded := True;
   FInfo.Tag := EXPLORER_ITEM_IMAGE;

@@ -1,10 +1,10 @@
 object FormHistory: TFormHistory
   Left = 250
   Top = 223
-  Width = 392
-  Height = 329
   BorderStyle = bsSizeToolWin
   Caption = 'FormHistory'
+  ClientHeight = 295
+  ClientWidth = 376
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,7 +40,7 @@ object FormHistory: TFormHistory
     Left = 0
     Top = 57
     Width = 376
-    Height = 202
+    Height = 204
     Style = lbOwnerDrawVariable
     Align = alClient
     ItemHeight = 13
@@ -52,12 +52,13 @@ object FormHistory: TFormHistory
   end
   object Panel2: TPanel
     Left = 0
-    Top = 259
+    Top = 261
     Width = 376
     Height = 34
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitTop = 259
     object Panel3: TPanel
       Left = 240
       Top = 0

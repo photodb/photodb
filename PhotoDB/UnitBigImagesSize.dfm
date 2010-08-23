@@ -61,7 +61,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
       OnClick = RgPictureSizeClick
     end
     object CloseLink: TWebLink
-      Left = 56
+      Left = 48
       Top = 151
       Width = 47
       Height = 16

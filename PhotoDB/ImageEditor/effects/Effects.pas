@@ -94,7 +94,7 @@ function GistogrammR(S : TBitmap; var Terminated : boolean; CallBack : TBaseEffe
 function Gistogramma(S : TBitmap; var Terminated : boolean; CallBack : TBaseEffectCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
 
 function GetGistogrammBitmap(Height : integer; SBitmap : TBitmap; Options : byte; var MinC, MaxC : Integer) : TBitmap;
-function GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
+procedure GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer; Bitmap : TBitmap);
 function GetGistogrammBitmapX(Height,d : integer; G : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
 
 //new effects from ScineLineFX
@@ -237,7 +237,7 @@ var
  i,j:integer;
  ps, pd : PARGB;
  Terminating : boolean;
-begin 
+begin
  S.PixelFormat:=pf24bit;
  D.PixelFormat:=pf24bit;
  D.Width:=S.Width;
@@ -281,7 +281,7 @@ var
   dx: integer;
   c, cD: TColor3;
   sR, sG, sB: integer;
-  dR, dG, dB: integer; 
+  dR, dG, dB: integer;
   eR, eG, eB: integer;
   Terminating : boolean;
 
@@ -516,7 +516,7 @@ var
   p : PARGB;
   r,g,b : Byte;
   Terminating: Boolean;
-  
+
 begin
  D.Width := S.Width;
  D.Height := S.Height;
@@ -593,7 +593,7 @@ begin
   D.Assign(S);
   Exit;
  end;
- 
+
  SetLength(dp,d.Height);
  for i := 0 to D.Height-1 do
  dp[i]:=d.ScanLine[i];
@@ -641,29 +641,29 @@ end;
 
 procedure Sharpen(S, D: TBitmap; alpha: Single; CallBack : TBaseEffectCallBackProc = nil);
 //to sharpen, alpha must be >1.
-//pixelformat pf24bit 
-//sharpens sbm to tbm 
-var 
-  i, j, k: integer; 
-  sr: array[0..2] of PByte; 
+//pixelformat pf24bit
+//sharpens sbm to tbm
+var
+  i, j, k: integer;
+  sr: array[0..2] of PByte;
   st: array[0..4] of pRGBTriple;
-  tr: PByte; 
-  tt, p: pRGBTriple; 
-  beta: Single; 
-  inta, intb: integer; 
-  bmh, bmw: integer; 
-  re, gr, bl: integer; 
-  BytesPerScanline: integer; 
+  tr: PByte;
+  tt, p: pRGBTriple;
+  beta: Single;
+  inta, intb: integer;
+  bmh, bmw: integer;
+  re, gr, bl: integer;
+  BytesPerScanline: integer;
   Terminating : boolean;
 begin
   Terminating:=false;
   //sharpening is blending of the current pixel
-  //with the average of the surrounding ones, 
+  //with the average of the surrounding ones,
   //but with a negative weight for the average
   Assert((S.Width > 2) and (S.Height > 2), 'Bitmap must be at least 3x3');
   Assert((alpha > 1) and (alpha < 6), 'Alpha must be >1 and <6');
-  beta := (alpha - 1) / 5; //we assume alpha>1 and beta<1 
-  intb := round(beta * $10000); 
+  beta := (alpha - 1) / 5; //we assume alpha>1 and beta<1
+  intb := round(beta * $10000);
   inta := round(alpha * $10000); //integer scaled alpha and beta
   S.PixelFormat := pf24bit;
   D.PixelFormat := pf24bit;
@@ -673,87 +673,87 @@ begin
   bmh := S.Height - 2;
   BytesPerScanline := (((bmw + 2) * 24 + 31) and not 31) div 8;
   tr := D.Scanline[0];
-  tt := pRGBTriple(tr); 
+  tt := pRGBTriple(tr);
   sr[0] := S.Scanline[0];
-  st[0] := pRGBTriple(sr[0]); 
-  for j := 0 to bmw + 1 do 
-  begin 
-    tt^ := st[0]^; 
-    inc(tt); inc(st[0]); //first row unchanged 
-  end; 
+  st[0] := pRGBTriple(sr[0]);
+  for j := 0 to bmw + 1 do
+  begin
+    tt^ := st[0]^;
+    inc(tt); inc(st[0]); //first row unchanged
+  end;
   sr[1] := PByte(integer(sr[0]) - BytesPerScanline);
-  sr[2] := PByte(integer(sr[1]) - BytesPerScanline); 
+  sr[2] := PByte(integer(sr[1]) - BytesPerScanline);
   for i := 1 to bmh do
   begin
     if i mod 50=0 then
     If Assigned(CallBack) then CallBack(Round(100*i/bmh),Terminating);
     if Terminating then Break;
-    Dec(tr, BytesPerScanline); 
-    tt := pRGBTriple(tr); 
-    st[0] := pRGBTriple(integer(sr[0]) + 3); //top 
-    st[1] := pRGBTriple(sr[1]); //left 
-    st[2] := pRGBTriple(integer(sr[1]) + 3); //center 
-    st[3] := pRGBTriple(integer(sr[1]) + 6); //right 
-    st[4] := pRGBTriple(integer(sr[2]) + 3); //bottom 
-    tt^ := st[1]^; //1st col unchanged 
-    for j := 1 to bmw do 
-    begin 
-    //calcutate average weighted by -beta 
-      re := 0; gr := 0; bl := 0; 
-      for k := 0 to 4 do 
-      begin 
+    Dec(tr, BytesPerScanline);
+    tt := pRGBTriple(tr);
+    st[0] := pRGBTriple(integer(sr[0]) + 3); //top
+    st[1] := pRGBTriple(sr[1]); //left
+    st[2] := pRGBTriple(integer(sr[1]) + 3); //center
+    st[3] := pRGBTriple(integer(sr[1]) + 6); //right
+    st[4] := pRGBTriple(integer(sr[2]) + 3); //bottom
+    tt^ := st[1]^; //1st col unchanged
+    for j := 1 to bmw do
+    begin
+    //calcutate average weighted by -beta
+      re := 0; gr := 0; bl := 0;
+      for k := 0 to 4 do
+      begin
         re := re + st[k]^.rgbtRed;
         gr := gr + st[k]^.rgbtGreen;
         bl := bl + st[k]^.rgbtBlue;
-        inc(st[k]); 
-      end; 
-      re := (intb * re + $7FFF) shr 16; 
-      gr := (intb * gr + $7FFF) shr 16; 
-      bl := (intb * bl + $7FFF) shr 16; 
+        inc(st[k]);
+      end;
+      re := (intb * re + $7FFF) shr 16;
+      gr := (intb * gr + $7FFF) shr 16;
+      bl := (intb * bl + $7FFF) shr 16;
     //add center pixel weighted by alpha
       p := pRGBTriple(st[1]); //after inc, st[1] is at center
       re := (inta * p^.rgbtRed + $7FFF) shr 16 - re;
       gr := (inta * p^.rgbtGreen + $7FFF) shr 16 - gr;
       bl := (inta * p^.rgbtBlue + $7FFF) shr 16 - bl;
     //clamp and move into target pixel
-      inc(tt); 
-      if re < 0 then 
-        re := 0 
-      else 
-        if re > 255 then 
-          re := 255; 
-      if gr < 0 then 
-        gr := 0 
-      else 
-        if gr > 255 then 
-          gr := 255; 
-      if bl < 0 then 
-        bl := 0 
-      else 
-        if bl > 255 then 
-          bl := 255; 
-      //this looks stupid, but avoids function calls 
+      inc(tt);
+      if re < 0 then
+        re := 0
+      else
+        if re > 255 then
+          re := 255;
+      if gr < 0 then
+        gr := 0
+      else
+        if gr > 255 then
+          gr := 255;
+      if bl < 0 then
+        bl := 0
+      else
+        if bl > 255 then
+          bl := 255;
+      //this looks stupid, but avoids function calls
 
       tt^.rgbtRed := re;
       tt^.rgbtGreen := gr;
       tt^.rgbtBlue := bl;
-    end; 
-    inc(tt); 
-    inc(st[1]); 
-    tt^ := st[1]^; //Last col unchanged 
-    sr[0] := sr[1]; 
-    sr[1] := sr[2]; 
-    Dec(sr[2], BytesPerScanline); 
-  end; 
-  // copy last row 
-  Dec(tr, BytesPerScanline); 
-  tt := pRGBTriple(tr); 
+    end;
+    inc(tt);
+    inc(st[1]);
+    tt^ := st[1]^; //Last col unchanged
+    sr[0] := sr[1];
+    sr[1] := sr[2];
+    Dec(sr[2], BytesPerScanline);
+  end;
+  // copy last row
+  Dec(tr, BytesPerScanline);
+  tt := pRGBTriple(tr);
   st[1] := pRGBTriple(sr[1]);
-  for j := 0 to bmw + 1 do 
-  begin 
-    tt^ := st[1]^; 
-    inc(tt); inc(st[1]); 
-  end; 
+  for j := 0 to bmw + 1 do
+  begin
+    tt^ := st[1]^;
+    inc(tt); inc(st[1]);
+  end;
 end;
 
 procedure Blocks(S, D: TBitmap; Hor, Ver, MaxOffset:
@@ -874,7 +874,7 @@ var
   I, J: Integer;
   PS, PD : PARGB;
   RuleArrayR, RuleArrayG, RuleArrayB : array[0..255] of byte;
-begin            
+begin
   S.PixelFormat := pf24bit;
   D.PixelFormat := pf24bit;
   D.Width := S.Width;
@@ -906,13 +906,13 @@ end;
 procedure SetRGBChannelValue(Image: TBitmap; Red, Green, Blue: Integer);
 var
   I, J: Integer;
-  PD : PARGB;   
+  PD : PARGB;
   RuleArrayR, RuleArrayG, RuleArrayB : array[0..255] of byte;
 begin
  Image.PixelFormat := pf24bit;
   if (Red = 0) and (Green = 0) and (Blue = 0) then
     Exit;
-    
+
   for I := 0 to 255 do
   begin
     RuleArrayR[I] := Round(Min(255, Max(0, I * (1 + (Red/100)))));
@@ -1220,7 +1220,7 @@ begin
 //    mR := 128;
 //    mG := 128;
     mB := 128;
-  end   
+  end
   else
   begin
 //     tr := 0;
@@ -1681,7 +1681,7 @@ begin
   end;
  end;
 end;
- 
+
 procedure FlipVertical(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 var
   i,j : integer;
@@ -1715,11 +1715,11 @@ end;
 procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil);
 type TRGB = record
        B, G, R: Byte;
-     end; 
+     end;
      pRGB = ^TRGB;
-     pByteArray = ^TByteArray; 
-     TByteArray = array[0..32767] of Byte; 
-     TRectList = array [1..4] of TPoint; 
+     pByteArray = ^TByteArray;
+     TByteArray = array[0..32767] of Byte;
+     TRectList = array [1..4] of TPoint;
 
 var x, y, W, H, v1, v2: Integer;
     Dest, Src: pRGB;
@@ -1728,53 +1728,53 @@ var x, y, W, H, v1, v2: Integer;
     Terminating : boolean;
     p : PARGB;
     rgb : TRGB;
-  procedure SinCos(AngleRad: Double; var ASin, ACos: Double); 
-  begin 
-    ASin := Sin(AngleRad); 
-    ACos := Cos(AngleRad); 
-  end; 
+  procedure SinCos(AngleRad: Double; var ASin, ACos: Double);
+  begin
+    ASin := Sin(AngleRad);
+    ACos := Cos(AngleRad);
+  end;
 
-  function RotateRect(const Rect: TRect; const Center: TPoint; Angle: Double): TRectList; 
-  var DX, DY: Integer; 
-      SinAng, CosAng: Double; 
-    function RotPoint(PX, PY: Integer): TPoint; 
-    begin 
-      DX := PX - Center.x; 
-      DY := PY - Center.y; 
-      Result.x := Center.x + Round(DX * CosAng - DY * SinAng); 
-      Result.y := Center.y + Round(DX * SinAng + DY * CosAng); 
-    end; 
+  function RotateRect(const Rect: TRect; const Center: TPoint; Angle: Double): TRectList;
+  var DX, DY: Integer;
+      SinAng, CosAng: Double;
+    function RotPoint(PX, PY: Integer): TPoint;
+    begin
+      DX := PX - Center.x;
+      DY := PY - Center.y;
+      Result.x := Center.x + Round(DX * CosAng - DY * SinAng);
+      Result.y := Center.y + Round(DX * SinAng + DY * CosAng);
+    end;
   begin
     SinCos(Angle * (Pi / 180), SinAng, CosAng);
-    Result[1] := RotPoint(Rect.Left, Rect.Top); 
-    Result[2] := RotPoint(Rect.Right, Rect.Top); 
-    Result[3] := RotPoint(Rect.Right, Rect.Bottom); 
-    Result[4] := RotPoint(Rect.Left, Rect.Bottom); 
-  end; 
+    Result[1] := RotPoint(Rect.Left, Rect.Top);
+    Result[2] := RotPoint(Rect.Right, Rect.Top);
+    Result[3] := RotPoint(Rect.Right, Rect.Bottom);
+    Result[4] := RotPoint(Rect.Left, Rect.Bottom);
+  end;
 
-  function Min(A, B: Integer): Integer; 
-  begin 
-    if A < B then Result := A 
-             else Result := B; 
-  end; 
+  function Min(A, B: Integer): Integer;
+  begin
+    if A < B then Result := A
+             else Result := B;
+  end;
 
-  function Max(A, B: Integer): Integer; 
-  begin 
-    if A > B then Result := A 
-             else Result := B; 
-  end; 
+  function Max(A, B: Integer): Integer;
+  begin
+    if A > B then Result := A
+             else Result := B;
+  end;
 
-  function GetRLLimit(const RL: TRectList): TRect; 
-  begin 
-    Result.Left := Min(Min(RL[1].x, RL[2].x), Min(RL[3].x, RL[4].x)); 
-    Result.Top := Min(Min(RL[1].y, RL[2].y), Min(RL[3].y, RL[4].y)); 
-    Result.Right := Max(Max(RL[1].x, RL[2].x), Max(RL[3].x, RL[4].x)); 
-    Result.Bottom := Max(Max(RL[1].y, RL[2].y), Max(RL[3].y, RL[4].y)); 
-  end; 
+  function GetRLLimit(const RL: TRectList): TRect;
+  begin
+    Result.Left := Min(Min(RL[1].x, RL[2].x), Min(RL[3].x, RL[4].x));
+    Result.Top := Min(Min(RL[1].y, RL[2].y), Min(RL[3].y, RL[4].y));
+    Result.Right := Max(Max(RL[1].x, RL[2].x), Max(RL[3].x, RL[4].x));
+    Result.Bottom := Max(Max(RL[1].y, RL[2].y), Max(RL[3].y, RL[4].y));
+  end;
 
-  procedure Rotate; 
-  var x, y, xr, yr, yp: Integer; 
-      ACos, ASin: Double; 
+  procedure Rotate;
+  var x, y, xr, yr, yp: Integer;
+      ACos, ASin: Double;
       Lim: TRect;
   begin
    W := Bmp.Width;
@@ -1823,16 +1823,16 @@ begin
   try
     Bmp.Assign(Bitmap);
     W := Bitmap.Width - 1;
-    H := Bitmap.Height - 1; 
-    if Frac(Angle) <> 0.0 
-      then Rotate 
-      else 
-    case Trunc(Angle) of 
-      -360, 0, 360, 720: Exit; 
+    H := Bitmap.Height - 1;
+    if Frac(Angle) <> 0.0
+      then Rotate
+      else
+    case Trunc(Angle) of
+      -360, 0, 360, 720: Exit;
       90, 270: begin
-        Bitmap.Width := H + 1; 
+        Bitmap.Width := H + 1;
         Bitmap.Height := W + 1;
-        SetLength(VertArray, H + 1); 
+        SetLength(VertArray, H + 1);
         v1 := 0;
         v2 := 0;
         if Angle = 90.0 then v1 := H
@@ -1859,9 +1859,9 @@ begin
 
 
 
-        end 
-      end; 
-      180: begin 
+        end
+      end;
+      180: begin
         for y := 0 to H do
         begin
          Dest := Bitmap.ScanLine[y];
@@ -1877,12 +1877,12 @@ begin
          If Assigned(CallBack) then CallBack(Round(100*y/Bitmap.Height),Terminating);
          if Terminating then Break;
         end;
-      end; 
-      else Rotate; 
+      end;
+      else Rotate;
     end;
-  finally 
-    Bmp.Free; 
-  end; 
+  finally
+    Bmp.Free;
+  end;
 end;
 
 procedure XXX2Resize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
@@ -1890,13 +1890,13 @@ var
 h,w,x,y,xP,yP,xpnew,
 yP2,xP2:     Integer;
 yp2e,xp2e : extended;
-Read,Read2:  PByteArray;  
+Read,Read2:  PByteArray;
 t,z,z2,iz2:  Integer;
-pc:PBytearray;  
+pc:PBytearray;
 w1,w2,w3,w4: Integer;
 src,Dst : Tbitmap;
 
-Col1r,col1g,col1b,Col2r,col2g,col2b:   byte;  
+Col1r,col1g,col1b,Col2r,col2g,col2b:   byte;
 begin
 
  w:=Width;
@@ -1930,37 +1930,37 @@ begin
     else
       Read2:=src.ScanLine [yp];   }
 
-    pc:=Dst.scanline[y];  
+    pc:=Dst.scanline[y];
     z2:=yP and $7FFF;
     iz2:=$8000-z2;
     for x:=0 to Dst.Width-1 do
     begin
 //      t:=Round(xp2e*x);
       t:=xp shr 15;
-      Col1r:=Read[t*3];  
-      Col1g:=Read[t*3+1];  
-      Col1b:=Read[t*3+2];  
-      Col2r:=Read2[t*3];  
-      Col2g:=Read2[t*3+1];  
-      Col2b:=Read2[t*3+2];  
-      z:=xP and $7FFF;  
-      w2:=(z*iz2)shr 15;  
-      w1:=iz2-w2;  
-      w4:=(z*z2)shr 15;  
-      w3:=z2-w4;  
-      pc[x*3+2]:=  
-        (Col1b*w1+Read[(t+1)*3+2]*w2+  
-         Col2b*w3+Read2[(t+1)*3+2]*w4)shr 15;  
-      pc[x*3+1]:=  
-        (Col1g*w1+Read[(t+1)*3+1]*w2+  
-         Col2g*w3+Read2[(t+1)*3+1]*w4)shr 15;  
-      pc[x*3]:=  
-        (Col1r*w1+Read2[(t+1)*3]*w2+  
-         Col2r*w3+Read2[(t+1)*3]*w4)shr 15;  
+      Col1r:=Read[t*3];
+      Col1g:=Read[t*3+1];
+      Col1b:=Read[t*3+2];
+      Col2r:=Read2[t*3];
+      Col2g:=Read2[t*3+1];
+      Col2b:=Read2[t*3+2];
+      z:=xP and $7FFF;
+      w2:=(z*iz2)shr 15;
+      w1:=iz2-w2;
+      w4:=(z*z2)shr 15;
+      w3:=z2-w4;
+      pc[x*3+2]:=
+        (Col1b*w1+Read[(t+1)*3+2]*w2+
+         Col2b*w3+Read2[(t+1)*3+2]*w4)shr 15;
+      pc[x*3+1]:=
+        (Col1g*w1+Read[(t+1)*3+1]*w2+
+         Col2g*w3+Read2[(t+1)*3+1]*w4)shr 15;
+      pc[x*3]:=
+        (Col1r*w1+Read2[(t+1)*3]*w2+
+         Col2r*w3+Read2[(t+1)*3]*w4)shr 15;
       Inc(xP,xP2);
     end;
     Inc(yP,yP2);
-  end;  
+  end;
 end;
 
 procedure XXX1Resize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
@@ -2732,70 +2732,71 @@ begin
  Result.Canvas.LineTo(MaxC,Height-d);
 end;
 
-function GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
+procedure GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer; Bitmap : TBitmap);
 var
-  i, j,  xc : integer;
-  x, MaxCount : Cardinal;
-  GE : array[0..255] of extended;
+  I, J, Xc: Integer;
+  X, MaxCount: Cardinal;
+  GE: array [0 .. 255] of Extended;
 begin
- Result:=TBitmap.create;
- Result.PixelFormat:=pf24bit;
+  Bitmap.PixelFormat := Pf24bit;
 
- MaxCount:=1;
+  MaxCount := 1;
 
- for i:=0 to 255 do
- if Source[i]>MaxCount then
- begin
-  x:=Source[i] div 2;
-  xc:=0;
-  for j:=0 to 255 do
-  if i<>j then
-  if Source[j]>x then inc(xc);
-  if xc>5 then
-  MaxCount:=Source[i];
- end;
+  for I := 0 to 255 do
+    if Source[I] > MaxCount then
+    begin
+      X := Source[I] div 2;
+      Xc := 0;
+      for J := 0 to 255 do
+        if I <> J then
+          if Source[J] > X then
+            Inc(Xc);
+      if Xc > 5 then
+        MaxCount := Source[I];
+    end;
 
- if MaxCount=1 then
- begin
-  for i:=0 to 255 do
-  if Source[i]>MaxCount then
-  MaxCount:=Source[i];
- end;
-
- for i:=0 to 255 do
- GE[i]:=Source[i]/MaxCount;
- MinC:=0;
- for i:=0 to 255 do
- begin
-  if GE[i]>0.05 then
+  if MaxCount = 1 then
   begin
-   MinC:=i;
-   break;
+    for I := 0 to 255 do
+      if Source[I] > MaxCount then
+        MaxCount := Source[I];
   end;
- end;
- MaxC:=0;
- for i:=255 downto 0 do
- begin
-  if GE[i]>0.05 then
+
+  for I := 0 to 255 do
+    GE[I] := Source[I] / MaxCount;
+
+  MinC := 0;
+  for I := 0 to 255 do
   begin
-   MaxC:=i;
-   break;
+    if GE[I] > 0.05 then
+    begin
+      MinC := I;
+      Break;
+    end;
   end;
- end;
- Result.Width:=256;
- Result.Height:=Height;
- Result.Canvas.Rectangle(0,0,256,Height);
- for i:=0 to 255 do
- begin
-  Result.Canvas.MoveTo(i+1,Height);
-  Result.Canvas.LineTo(i+1,Height-Round(Height*GE[i]));
- end;
- Result.Canvas.Pen.Color:=$888888;
- Result.Canvas.MoveTo(MinC,0);
- Result.Canvas.LineTo(MinC,Height);
- Result.Canvas.Pen.Color:=$888888;
- Result.Canvas.MoveTo(MaxC,0);
- Result.Canvas.LineTo(MaxC,Height);
+  MaxC := 0;
+  for I := 255 downto 0 do
+  begin
+    if GE[I] > 0.05 then
+    begin
+      MaxC := I;
+      Break;
+    end;
+  end;
+  Bitmap.Width := 256;
+  Bitmap.Height := Height;
+  Bitmap.Canvas.Rectangle(0, 0, 256, Height);
+  for I := 0 to 255 do
+  begin
+    Bitmap.Canvas.MoveTo(I + 1, Height);
+    Bitmap.Canvas.LineTo(I + 1, Height - Round(Height * GE[I]));
+  end;
+  Bitmap.Canvas.Pen.Color := $888888;
+  Bitmap.Canvas.MoveTo(MinC, 0);
+  Bitmap.Canvas.LineTo(MinC, Height);
+  Bitmap.Canvas.Pen.Color := $888888;
+  Bitmap.Canvas.MoveTo(MaxC, 0);
+  Bitmap.Canvas.LineTo(MaxC, Height);
 end;
 
 procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);

@@ -171,7 +171,7 @@ type
   procedure CreateParams(VAR Params: TCreateParams); override;
     { Private declarations }
   public
-   WindowID : TGUID;   
+   WindowID : TGUID;
    SID : TGUID;
    BigImagesSID : TGUID;
    procedure DoStopLoading(CID: TGUID);
@@ -183,7 +183,7 @@ type
    function GetVisibleItems : TArStrings;
    function FileNameExistsInList(FileName : string) : boolean;
    procedure ReplaseBitmapWithPath(FileName : string; Bitmap : TBitmap);
-   procedure AddThread;         
+   procedure AddThread;
    procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
   private
    fPictureSize : integer;
@@ -208,11 +208,12 @@ type
     Procedure FreePanel(Panel : TFormCont);
     Procedure AddPanel(Panel : TFormCont);
     Procedure RemovePanel(Panel : TFormCont);
-    Function GetPanelsTexts : TStrings;
+    procedure GetPanelsTexts(List : TStrings);
     Function ExistsPanel(Panel : TForm; CID : TGUID) : Boolean;
     Function Count : integer;
     function IsPanelForm(Panel: TForm): Boolean;
     property Items[Index: Integer]: TFormCont read GetPanelByIndex; default;
+    procedure FillSendToPanelItems(MenuItem : TMenuItem; OnClick : TNotifyEvent);
   end;
 
 
@@ -239,7 +240,7 @@ begin
  Index:=GetListItemByID(id).Index;
  SetLength(fData,1);
  fData[0]:=Data[Index];
- 
+
  TPanelLoadingBigImagesThread.Create(false,self,BigImagesSID,nil,fPictureSize,Copy(fData));
 end;
 
@@ -284,7 +285,7 @@ begin
 
      ListView1.Font.Color:=0;
      ListView1.View:=elsThumbnail;
-     ListView1.DragKind:=dkDock;       
+     ListView1.DragKind:=dkDock;
      ListView1.HotTrack.Color:=Theme_ListFontColor;
 
      ListView1.Selection.FullRowSelect:=true;
@@ -315,9 +316,9 @@ begin
      ListView1.OnItemSelectionChanged:=EasyListview1ItemSelectionChanged;
      ListView1.OnMouseWheel:=ListView1MouseWheel;
      ListView1.OnResize:=ListView1Resize;
-     ListView1.Groups.Add;    
+     ListView1.Groups.Add;
      ListView1.HotTrack.Cursor:=CrArrow;
-                       
+
    ConvertTo32BitImageList(DragImageList);
 
  WindowID:=GetGUID;
@@ -354,7 +355,7 @@ begin
  WebLink2.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CONVERT+1]);
  ExportLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EXPORT_IMAGES+1]);
  ExCopyLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);
-                                 
+
  RatingPopupMenu1.Images:=DBkernel.ImageList;
 
  N00.ImageIndex:=DB_IC_DELETE_INFO;
@@ -367,7 +368,7 @@ begin
  WebLink2.Top:=WebLink1.Top+WebLink1.Height+5;
  ExportLink.Top:=WebLink2.Top+WebLink2.Height+5;
  ExCopyLink.Top:=ExportLink.Top+ExportLink.Height+5;
-                           
+
  DBkernel.RegisterForm(self);
  LoadToolBarIcons;
 end;
@@ -389,7 +390,7 @@ var
 begin
  if CopyFilesSynchCount>0 then WindowsMenuTickCount:=GetTickCount;
 
- Item:=ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y)); 
+ Item:=ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y));
  if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ListView1.Selection.First;
 
  HintTimer.Enabled:=false;
@@ -440,7 +441,7 @@ begin
     Listview1.Selection.ClearAll;
 
   MouseDowned:=Button=mbRight;
-  itemsel:=Item;    
+  itemsel:=Item;
   ItemByMouseDown:=false;
   if (Button = mbLeft) then
   if itemsel<>nil then
@@ -513,7 +514,7 @@ begin
  ListView1.Groups.BeginUpdate(true);
  for i:=0 to ListView1.Items.Count-1 do
  begin
-  if i>ListView1.Items.Count-1 then break;  
+  if i>ListView1.Items.Count-1 then break;
   if ListView1.Items[i].Selected then
   begin
    FBitmapImageList.Delete(ListView1.Items[i].ImageIndex);
@@ -537,13 +538,13 @@ var
   i, ReRotation : integer;
   item: TEasyItem;
   RefreshParams : TEventFields;
-begin  
+begin
  if EventID_Repaint_ImageList in params then
  begin
   ListView1.Refresh;
   exit;
  end;
- 
+
  if ID=-2 then exit;
 
  For i:=0 to Length(Data)-1 do
@@ -647,8 +648,8 @@ begin
 
  new.Tag:=Info.ItemId;
  new.Data:=TDataObject.Create;
- new.BorderColor := GetListItemBorderColor(TDataObject(new.Data));
  TDataObject(new.Data).Include:=Info.ItemInclude;
+ new.BorderColor := GetListItemBorderColor(TDataObject(new.Data));
 
  new.Caption:=ExtractFileName(Info.ItemFileName);
 
@@ -694,7 +695,7 @@ begin
   ExportLink.Visible:=false;
   ExCopyLink.Visible:=false;
   Panel3.Visible:=false;
-  ToolButton1.Enabled:=false;  
+  ToolButton1.Enabled:=false;
   ToolButton2.Enabled:=false;
   ToolButton3.Enabled:=false;
   ToolButton4.Enabled:=false;
@@ -711,10 +712,10 @@ begin
   DoResize(w,h,FBitmapImageList[Item.ImageIndex].Bitmap,Image);
   image1.Picture.Bitmap.Assign(Image);
   Image.Free;
-  
+
   LabelName.Caption:=ExtractFileName(Data[Item.Index].FileName);// else
   LabelID.Caption:=Format(TEXT_MES_ID_FORMATA,[IntToStr(Data[Item.Index].ID)]);
-  Panel3.Visible:=true; 
+  Panel3.Visible:=true;
   WebLink1.Visible:=true;
   WebLink2.Visible:=true;
   ExportLink.Visible:=true;
@@ -853,7 +854,7 @@ begin
  index:=LoadingThItem.index;
  if index<0 then exit;
  HintTimer.Enabled:=false;
- 
+
  if FPictureSize>=Dolphin_DB.ThHintSize then exit;
  UnitHintCeator.fitem:= LoadingThItem;
  UnitHintCeator.fInfo:=RecordInfoOne(ProcessPath(Data[Index].FileName),Data[Index].ID,Data[Index].Rotation,Data[Index].Rating,Data[Index].Access,Data[Index].FileSize,Data[index].Comment,Data[index].KeyWords,'','',Data[index].Groups,Data[index].Date,Data[index].IsDate ,Data[index].IsTime,Data[index].Time, Data[index].Crypted, Data[index].Include, true, Data[index].Links);
@@ -1008,7 +1009,7 @@ begin
    DBCanDrag:=false;
   end;
  end;
- 
+
  if LoadingThItem=ItemAtPos(X,Y) then exit;
  LoadingThItem:=ItemAtPos(X,Y);
  if LoadingThItem= nil then
@@ -1106,7 +1107,7 @@ begin
  OpenDialog:=DBOpenDialog.Create;
  OpenDialog.Filter:='All supported (*.ids,*.dbl)|*.dbl;*.ids|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl';
  OpenDialog.FilterIndex:=1;
- 
+
  if FilePushed then OpenDialog.SetFileName(FilePushedName);
 
  if FilePushed or OpenDialog.Execute then
@@ -1114,7 +1115,7 @@ begin
   if GetExt(OpenDialog.FileName)='IDS' then
   begin
    fids_:=LoadIDsFromfileA(OpenDialog.FileName);
-   SetLength(param,1);     
+   SetLength(param,1);
    Setlength(b,1);
    LoadFilesToPanel.Create(false,param,fids_,b,false,true,self);
   end;
@@ -1208,7 +1209,7 @@ begin
  ExCopyLink.Text:=TEXT_MES_EX_COPY;
  GroupBox1.Caption:=TEXT_MES_PHOTO;
 
- ToolButton1.Caption:=TEXT_MES_SIZE;  
+ ToolButton1.Caption:=TEXT_MES_SIZE;
  ToolButton2.Caption:=TEXT_MES_TYPE;
  ToolButton3.Caption:=TEXT_MES_EXPORT;
  ToolButton4.Caption:=TEXT_MES_EX_COPY;
@@ -1222,7 +1223,7 @@ end;
 
 procedure TFormCont.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);  
+ Inherited CreateParams(Params);
  Params.WndParent := GetDesktopWindow;
  with params do
  ExStyle := ExStyle or WS_EX_APPWINDOW;
@@ -1250,7 +1251,7 @@ var
 begin
  SetLength(Param,1);
  Param[0]:=FileName;
- Setlength(b,1);         
+ Setlength(b,1);
  Setlength(ids,1);
  LoadFilesToPanel.Create(false,param,ids,b,false,false,self);
 end;
@@ -1417,33 +1418,65 @@ begin
 
 end;
 
+procedure TManagePanels.FillSendToPanelItems(MenuItem: TMenuItem; OnClick : TNotifyEvent);
+var
+  PanelsTexts: TStrings;
+  SendToPanel: TMenuItem;
+  I: Integer;
+  MenuitemSeparator: TMenuItem;
+  MenuitemSentToNew: TMenuItem;
+begin
+  for I := 1 to MenuItem.Count - 1 do
+    MenuItem.Delete(1);
+
+  PanelsTexts := TStringList.Create;
+  try
+    GetPanelsTexts(PanelsTexts);
+    for I := 0 to PanelsTexts.Count - 1 do
+    begin
+      SendToPanel := TMenuItem.Create(MenuItem);
+      SendToPanel.Caption := PanelsTexts[I];
+      SendToPanel.OnClick := OnClick;
+      SendToPanel.ImageIndex := DB_IC_SENDTO;
+      SendToPanel.Tag := I;
+      MenuItem.Add(SendToPanel);
+    end;
+    MenuitemSeparator := TMenuItem.Create(MenuItem);
+    MenuitemSeparator.Caption := '-';
+    MenuItem.Add(MenuitemSeparator);
+    MenuitemSentToNew := TMenuitem.Create(MenuItem);
+    MenuitemSentToNew.Caption := TEXT_MES_NEW_PANEL;
+    MenuitemSentToNew.OnClick := OnClick;
+    MenuitemSentToNew.ImageIndex := DB_IC_SENDTO;
+    MenuitemSentToNew.Tag := -1;
+    MenuItem.Add(MenuitemSentToNew);
+  finally
+    PanelsTexts.Free;
+  end;
+end;
+
 procedure TManagePanels.FreePanel(Panel: TFormCont);
 begin
 //
 end;
 
-function TManagePanels.GetPanelsTexts: TStrings;
+procedure TManagePanels.GetPanelsTexts(List : TStrings);
 var
-  i : integer;
-  b : Boolean;
-  S : string;
-begin   
- Result:=TStringList.Create;
+  I: Integer;
+  B: Boolean;
+begin
+  for I := 0 to FPanels.Count - 1 do
+    List.Add(Self[I].Caption);
 
- for i := 0 to FPanels.Count - 1 do
-   Result.Add(Self[i].Caption);
-   
- Repeat
- b:=False;
-  For i:=0 to Result.Count-2 do
-  If Comparestr(Result[i],Result[i+1])>0 then
-  begin
-   S:=Result[i];
-   Result[i]:=Result[i+1];
-   Result[i+1]:=S;
-   b:=True;
-  end;
- Until not b;
+  repeat
+    B := False;
+    for I := 0 to List.Count - 2 do
+      if Comparestr(List[I], List[I + 1]) > 0 then
+      begin
+        List.Exchange(I, I + 1);
+        B := True;
+      end;
+  until not B;
 end;
 
 Function TManagePanels.NewPanel : TFormCont;
@@ -1507,7 +1540,7 @@ end;
 procedure TFormCont.ListView1DblClick(Sender: TObject);
 var
   MenuInfo : TDBPopupMenuInfo;
-  info : TRecordsInfo;   
+  info : TRecordsInfo;
   p,p1 : TPoint;
   Item : TEasyItem;
 begin
@@ -1560,7 +1593,7 @@ begin
  if Msg.hwnd=ListView1.Handle then
  begin
 
-  
+
   //middle mouse button
   if Msg.message=519 then
   begin
@@ -1624,7 +1657,7 @@ begin
    LoadFromFile1Click(nil);
   end;
  end;
- SetLength(ids,1);  
+ SetLength(ids,1);
  SetLength(b,1);
  LoadFilesToPanel.Create(false,param,ids,b,false,false,self);
 end;
@@ -1642,7 +1675,7 @@ begin
   ImageList[Length(ImageList)-1]:=ProcessPath(Data[i].FileName);
   SetLength(IDList,Length(IDList)+1);
   IDList[Length(IDList)-1]:=Data[i].ID;
- end; 
+ end;
  ResizeImages(ImageList,IDList);
 end;
 
@@ -1800,8 +1833,8 @@ begin
      if Listview1.Items[i].Selected then
      if item<>Listview1.Items[i] then
      Listview1.Items[i].Selected:=false;
-    end;                    
-    if not (ebcsDragSelecting in Listview1.States) then 
+    end;
+    if not (ebcsDragSelecting in Listview1.States) then
     if ([ssCtrl]*Shift<>[]) and not ItemSelectedByMouseDown and (Button=mbLeft) then
     item.Selected:=false;
    end;
@@ -1873,10 +1906,10 @@ var
   end;
 
 begin
-        
+
  ConvertTo32BitImageList(ToolBarImageList);
  ConvertTo32BitImageList(ToolBarDisabledImageList);
- 
+
  AddIcon('PANEL_RESIZE');
  AddIcon('PANEL_CONVERT');
  AddIcon('PANEL_EXPORT');
@@ -1898,14 +1931,14 @@ begin
  ToolButton1.Enabled:=false;
  ToolButton2.Enabled:=false;
  ToolButton3.Enabled:=false;
- ToolButton4.Enabled:=false; 
+ ToolButton4.Enabled:=false;
  ToolButton10.Enabled:=false;
 
  ToolButton1.ImageIndex:=0;
  ToolButton2.ImageIndex:=1;
  ToolButton3.ImageIndex:=2;
  ToolButton4.ImageIndex:=3;
- ToolButton5.ImageIndex:=4;    
+ ToolButton5.ImageIndex:=4;
  ToolButton8.ImageIndex:=5;
  ToolButton9.ImageIndex:=6;
  ToolButton10.ImageIndex:=7;
@@ -1915,12 +1948,12 @@ begin
 end;
 
 procedure TFormCont.ToolButton8Click(Sender: TObject);
-begin    
+begin
  ZoomIn;
 end;
 
 procedure TFormCont.ToolButton9Click(Sender: TObject);
-begin   
+begin
  ZoomOut;
 end;
 
@@ -1946,13 +1979,13 @@ end;
 procedure TFormCont.ZoomOut;
 var
   SelectedVisible : boolean;
-begin                 
+begin
  ListView1.BeginUpdate;
  SelectedVisible:=IsSelectedVisible;
  if FPictureSize<550 then FPictureSize:=FPictureSize+10;
  LoadSizes;
  BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;   
+ BigImagesTimer.Enabled:=true;
  ListView1.Scrollbars.ReCalculateScrollbars(false,true);
  ListView1.Groups.ReIndexItems;
  ListView1.Groups.Rebuild(true);
@@ -1978,7 +2011,7 @@ procedure TFormCont.BigImagesTimerTimer(Sender: TObject);
 begin
  BigImagesTimer.Enabled:=false;
  BigImagesSID:=GetGUID;
-                 
+
  ToolButton10.Enabled:=true;
 
  //тут начинается загрузка больших картинок

@@ -182,18 +182,21 @@ begin
   //if user haven't rights to get FileName its only possible way to know
   SetBoolAttr(aScript,'$FileExists',FileExists(Info[Info.Position].FileName));
 
-// END Access section
+  // END Access section
   SetBoolAttr(aScript,'$IsCurrentFile',IsCurrentFile);
 
   LoadVariablesNo(info.Position);
 
   PanelsTexts := TStringList.Create;
-  PanelsTexts.Assign(UnitFormCont.ManagerPanels.GetPanelsTexts);
-  SetLength(aPanelTexts,PanelsTexts.Count);
-  for i:=0 to PanelsTexts.Count-1 do
-  aPanelTexts[i]:=PanelsTexts[i];
-  PanelsTexts.free;
-  SetNamedValueArrayStrings(aScript,'$Panels',aPanelTexts);
+  try
+    ManagerPanels.GetPanelsTexts(PanelsTexts);
+    SetLength(aPanelTexts,PanelsTexts.Count);
+    for i:=0 to PanelsTexts.Count-1 do
+    aPanelTexts[i]:=PanelsTexts[i];
+    SetNamedValueArrayStrings(aScript,'$Panels',aPanelTexts);
+  finally
+    PanelsTexts.Free;
+  end;
   GroupsList := TStringList.Create;
   for i:=0 to FInfo.Count-1 do
   if FInfo[i].Selected then

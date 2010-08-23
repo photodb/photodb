@@ -598,7 +598,7 @@ procedure CopyRecordsInfo(var S,D : TRecordsInfo);
 function RecordsInfoNil : TRecordsInfo;
 procedure AddToRecordsInfoOneInfo(var Infos : TRecordsInfo; Info : TOneRecordInfo);
 procedure DBPopupMenuInfoToRecordsInfo(var DBP : TDBPopupMenuInfo;var RI : TRecordsInfo);
-function GetInfoByFileNameA(FileName : string; LoadThum : boolean) : TOneRecordInfo;
+function GetInfoByFileNameA(FileName : string; LoadThum : Boolean; var Info : TOneRecordInfo) : Boolean;
 function GetMenuInfoByID(ID : Integer) : TDBPopupMenuInfo;
 function GetMenuInfoByStrTh(StrTh : string) : TDBPopupMenuInfo;
 {END DB Types}
@@ -1721,17 +1721,35 @@ begin
  Reg.free;
 end;
 
-function GetInfoByFileNameA(FileName : string; LoadThum : Boolean) : TOneRecordInfo;
+function TryOpenCDS(DS : TDataSet) : Boolean;
+var
+  I : Integer;
+begin
+  Result := False;
+  for I := 1 to 20 do
+  begin
+    Result := True;
+    try
+      DS.Active := True;
+    except
+      Result := False;
+    end;
+    if Result then Break;
+    Sleep(DelayExecuteSQLOperation);
+  end;
+end;
+
+function GetInfoByFileNameA(FileName : string; LoadThum : Boolean; var Info : TOneRecordInfo) : Boolean;
 var
   FQuery : TDataSet;
   FBS : TStream;
-  I : Integer;
   B : Boolean;
   Folder, QueryString, S : string;
   CRC : Cardinal;
-  JPEG : TJPEGImage;
+  JPEG : TJpegImage;
 begin
-  FQuery:=GetQuery;
+  Result := False;
+  FQuery := GetQuery;
   try
     FileName := AnsiLowerCase(FileName);
     UnProcessPath(FileName);
@@ -1753,106 +1771,94 @@ begin
     QueryString := 'Select * from $DB$ where FolderCRC=' + IntToStr(Integer(CRC)) + ' and Name = :name';
     SetSQL(FQuery, QueryString);
     SetStrParam(FQuery, 0, ExtractFileName(S));
-    for I := 1 to 20 do
+    TryOpenCDS(FQuery);
+
+    if not TryOpenCDS(FQuery) or (FQuery.RecordCount = 0) then
     begin
-      B := True;
-      try
-        FQuery.active := True;
-      except
-   if not fQuery.active then b:=false;
-  end;
-  if b then break;
-  sleep(DelayExecuteSQLOperation);
- end;
- if not b then
- begin
-  FreeDS(fQuery);
-  Result:=RecordInfoOne(FileName,0,0,0,0,0,'','','','','',0,false,false,0,ValidCryptGraphicFile(ProcessPath(FileName)),true,false,'');
-  Result.ItemLinks:='';
-  Result.ItemImTh:='';
-  Result.Image:=nil;
-  Exit;
- end;
- if fQuery.RecordCount=0 then
- begin
-  Result:=RecordInfoOne(FileName,0,0,0,0,0,'','','','','',0,false,false,0,ValidCryptGraphicFile(ProcessPath(FileName)),true,true,'');
-  Result.ItemLinks:=fQuery.FieldByName('Links').AsString;
-  Result.ItemImTh:=fQuery.FieldByName('StrTh').AsString;
-  Result.Image:=nil;
- end else
- begin
-  Result:=RecordInfoOne(fQuery.FieldByName('FFileName').AsString,fQuery.FieldByName('ID').AsInteger,fQuery.FieldByName('Rotated').AsInteger,fQuery.FieldByName('Rating').AsInteger, fQuery.FieldByName('Access').AsInteger, fQuery.FieldByName('FileSize').AsInteger,fQuery.FieldByName('Comment').AsString,fQuery.FieldByName('KeyWords').AsString, fQuery.FieldByName('Owner').AsString, fQuery.FieldByName('Collection').AsString, fQuery.FieldByName('Groups').AsString, fQuery.FieldByName('DateToAdd').AsDateTime, fQuery.FieldByName('IsDate').AsBoolean , fQuery.FieldByName('IsTime').AsBoolean, fQuery.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')), fQuery.FieldByName('Include').AsBoolean,true,fQuery.FieldByName('Links').AsString);
-  Result.ItemHeight:=fQuery.FieldByName('Height').AsInteger;
-  Result.ItemWidth:=fQuery.FieldByName('Width').AsInteger;
-  Result.ItemLinks:=fQuery.FieldByName('Links').AsString;
-  Result.ItemImTh:=fQuery.FieldByName('StrTh').AsString;
-  Result.Tag:=EXPLORER_ITEM_IMAGE;
-  If LoadThum then
-  begin
-   Result.Image:=TJpegImage.Create;
-   if ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')) then
-   begin
-    try
-      JPEG := TJpegImage.Create;
-      try
-        DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBkernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum')), JPEG);
-        Result.Image:= JPEG;
-      finally
-        JPEG.Free;
+      Pointer(JPEG) := Pointer(Info.Image);
+      Info := RecordInfoOne(FileName,0,0,0,0,0,'','','','','',0,false,false,0,ValidCryptGraphicFile(ProcessPath(FileName)),true,false,'');
+      Info.ItemLinks := '';
+      Info.ItemImTh := '';
+      Pointer(Info.Image) := Pointer(JPEG);
+      Exit;
+    end;
+
+    Result := True;
+    Pointer(JPEG) := Pointer(Info.Image);
+    Info := RecordInfoOne(fQuery.FieldByName('FFileName').AsString,fQuery.FieldByName('ID').AsInteger,
+      fQuery.FieldByName('Rotated').AsInteger,fQuery.FieldByName('Rating').AsInteger,
+      fQuery.FieldByName('Access').AsInteger, fQuery.FieldByName('FileSize').AsInteger,
+      fQuery.FieldByName('Comment').AsString,fQuery.FieldByName('KeyWords').AsString,
+      fQuery.FieldByName('Owner').AsString, fQuery.FieldByName('Collection').AsString,
+      FQuery.FieldByName('Groups').AsString, FQuery.FieldByName('DateToAdd').AsDateTime,
+      FQuery.FieldByName('IsDate').AsBoolean, FQuery.FieldByName('IsTime').AsBoolean,
+      FQuery.FieldByName('aTime').AsDateTime, ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')),
+      FQuery.FieldByName('Include').AsBoolean, True, FQuery.FieldByName('Links').AsString);
+    Info.ItemHeight := FQuery.FieldByName('Height').AsInteger;
+    Info.ItemWidth := FQuery.FieldByName('Width').AsInteger;
+    Info.ItemLinks := FQuery.FieldByName('Links').AsString;
+    Info.ItemImTh := FQuery.FieldByName('StrTh').AsString;
+    Info.Tag := EXPLORER_ITEM_IMAGE;
+    Pointer(Info.Image) := Pointer(JPEG);
+
+    if LoadThum then
+    begin
+      if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
+      begin
+        DeCryptBlobStreamJPG(FQuery.FieldByName('thum'),
+          DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum')), Info.Image);
+        Info.ItemCrypted := True;
+       if not Info.Image.Empty then
+         Info.Tag := 1;
+
+      end else
+      begin
+        FBS := GetBlobStream(FQuery.FieldByName('thum'), bmRead);
+        try
+          Info.Image.LoadFromStream(FBS);
+        finally
+          FBS.Free;
+        end;
       end;
-      Result.ItemCrypted:=true;
-     if Result.Image<>nil then Result.tag:=1;
-    except
     end;
-   end else
-   begin
-    if TBlobField(fQuery.FieldByName('thum'))=nil then begin FreeDS(fQuery); exit; end;
-    fbs:=GetBlobStream(fQuery.FieldByName('thum'),bmRead);
-    try
-     if fbs.Size<>0 then
-     Result.Image.loadfromStream(fbs) else
-    except
-    end;
-    fbs.Free;
-   end;
-  end;
- end;
   finally
     FreeDS(fQuery);
   end;
 end;
 
-Function RecordsInfoNil : TRecordsInfo;
+function RecordsInfoNil : TRecordsInfo;
 begin
- Result.Position:=0;
- Result.Tag:=0;
- SetLength(Result.ItemFileNames,0);
- SetLength(Result.ItemIds,0);
- SetLength(Result.ItemRotates,0);
- SetLength(Result.ItemRatings,0);
- SetLength(Result.ItemAccesses,0);
- SetLength(Result.ItemComments,0);
- SetLength(Result.ItemOwners,0);
- SetLength(Result.ItemKeyWords,0);
- SetLength(Result.ItemCollections,0);
- SetLength(Result.ItemDates,0);
- SetLength(Result.ItemIsDates,0);
- SetLength(Result.ItemIsTimes,0);
- SetLength(Result.ItemTimes,0);
- SetLength(Result.ItemGroups,0);
- SetLength(Result.ItemCrypted,0);
- SetLength(Result.LoadedImageInfo,0);
- SetLength(Result.ItemInclude,0);
- SetLength(Result.ItemLinks,0);
+  Result.Position := 0;
+  Result.Tag := 0;
+  SetLength(Result.ItemFileNames, 0);
+  SetLength(Result.ItemIds, 0);
+  SetLength(Result.ItemRotates, 0);
+  SetLength(Result.ItemRatings, 0);
+  SetLength(Result.ItemAccesses, 0);
+  SetLength(Result.ItemComments, 0);
+  SetLength(Result.ItemOwners, 0);
+  SetLength(Result.ItemKeyWords, 0);
+  SetLength(Result.ItemCollections, 0);
+  SetLength(Result.ItemDates, 0);
+  SetLength(Result.ItemIsDates, 0);
+  SetLength(Result.ItemIsTimes, 0);
+  SetLength(Result.ItemTimes, 0);
+  SetLength(Result.ItemGroups, 0);
+  SetLength(Result.ItemCrypted, 0);
+  SetLength(Result.LoadedImageInfo, 0);
+  SetLength(Result.ItemInclude, 0);
+  SetLength(Result.ItemLinks, 0);
 end;
 
-Function RecordsInfoOne(Name : string; ID, Rotate,Rating,Access : integer; Comment, KeyWords, Owner_, Collection, Groups : string; Date : TDateTime; IsDate, IsTime: Boolean; Time : TDateTime; Crypt, Loaded, Include : Boolean; Links : string) : TRecordsInfo;
+function RecordsInfoOne(name: string; ID, Rotate, Rating, Access: Integer;
+  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean;
+  Time: TDateTime; Crypt, Loaded, Include: Boolean; Links: string): TRecordsInfo;
 begin
- Result.Position:=0;
- Result.Tag:=0;
- SetLength(Result.ItemFileNames,1);
- SetLength(Result.ItemIds,1);
- SetLength(Result.ItemRotates,1);
+  Result.Position := 0;
+  Result.Tag := 0;
+  SetLength(Result.ItemFileNames, 1);
+  SetLength(Result.ItemIds, 1);
+  SetLength(Result.ItemRotates,1);
  SetLength(Result.ItemRatings,1);
  SetLength(Result.ItemAccesses,1);
  SetLength(Result.ItemComments,1);
@@ -2207,46 +2213,39 @@ end;
 
 Procedure DBPopupMenuInfoToRecordsInfo(var DBP : TDBPopupMenuInfo; var RI : TRecordsInfo);
 var
-  i, FilesSelected:integer;
+  I, FilesSelected:integer;
 begin
   FilesSelected:=0;
-  for i:=0 to DBP.Count - 1 do
-    if DBP[i].Selected then
+  for I := 0 to DBP.Count - 1 do
+    if DBP[I].Selected then
       inc(FilesSelected);
 
-{  if FilesSelected <= 1 then
-  begin
-    RI:=RecordsInfoFromArrays(DBP.ItemFileNames_,DBP.ItemIDs_,DBP.ItemRotations_,DBP.ItemRatings_, DBP.ItemAccess_,DBP.ItemComments_,DBP.ItemKeyWords_,DBP.ItemGroups_,DBP.ItemDates_,DBP.ItemIsDates_,DBP.ItemIsTimes_,DBP.ItemTimes_,DBP.ItemCrypted_,DBP.ItemLoaded_,DBP.ItemInclude_,DBP.ItemLinks_);
-    if FilesSelected=1 then
-    RI.Position:=DBP.Position else
-    RI.Position:=0;
-  end else
-  begin}
-  RI:=RecordsInfoNil;
+  RI := RecordsInfoNil;
   RI.Position := DBP.Position;
-    for i:=0 to DBP.Count - 1 do
-    if DBP[i].Selected or (FilesSelected <= 1) then
+    for I :=0 to DBP.Count - 1 do
+    if DBP[I].Selected or (FilesSelected <= 1) then
     begin
-      AddRecordsInfoOne(RI,DBP[i].FileName,DBP[i].ID,DBP[i].Rotation, DBP[i].Rating, DBP[i].Access, DBP[i].Comment,'','','',DBP[i].Groups,DBP[i].Date,DBP[i].IsDate,DBP[i].IsTime,DBP[i].Time,DBP[i].Crypted,DBP[i].InfoLoaded,DBP[i].Include,DBP[i].Links);
+      AddRecordsInfoOne(RI, DBP[I].FileName, DBP[I].ID, DBP[I].Rotation, DBP[I].Rating, DBP[I].Access, DBP[I].Comment,
+        '', '', '', DBP[I].Groups, DBP[I].Date, DBP[I].IsDate, DBP[I].IsTime, DBP[I].Time, DBP[I].Crypted,
+        DBP[I].InfoLoaded, DBP[I].Include, DBP[I].Links);
     end;
- // end;
 end;
 
-function GetMenuInfoByID(ID : Integer) : TDBPopupMenuInfo;
+function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
 var
-  FQuery : TDataSet;
-  MenuRecord : TDBPopupMenuInfoRecord;
+  FQuery: TDataSet;
+  MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := nil;
- FQuery := GetQuery;
- SetSQL(FQuery,'SELECT * FROM $DB$ WHERE ID = :ID');
- SetIntParam(FQuery,0,ID);
- FQuery.Open;
- if FQuery.RecordCount<>1 then
- begin
-  FreeDS(FQuery);
-  exit;
- end;
+  FQuery := GetQuery;
+  SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
+  SetIntParam(FQuery, 0, ID);
+  FQuery.Open;
+  if FQuery.RecordCount <> 1 then
+  begin
+    FreeDS(FQuery);
+    Exit;
+  end;
   Result := TDBPopupMenuInfo.Create;
   MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
   Result.Add(MenuRecord);
@@ -3680,7 +3679,7 @@ begin
   Result := FileInfo.szTypeName;
 end;
 
-procedure CreateBuffer( Names : array of string; var P : TBuffer );
+procedure CreateBuffer(Names : array of string; var P : TBuffer );
 var
   I : Integer;
   S : string;
@@ -6547,26 +6546,34 @@ begin
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromDS(DS : TDataSet);
+var
+  ThumbField : TField;
 begin
-   InfoLoaded := True;
-   Selected   := True;
-   ID         := DS.FieldByName('ID').AsInteger;
-   KeyWords   := DS.FieldByName('KeyWords').AsString;
-   FileName   := ProcessPath(DS.FieldByName('FFileName').AsString);
-   FileSize   := DS.FieldByName('FileSize').AsInteger;
-   Rotation   := DS.FieldByName('Rotated').AsInteger;
-   Rating     := DS.FieldByName('Rating').AsInteger;
-   Access     := DS.FieldByName('Access').AsInteger;
-   Attr       := DS.FieldByName('Attr').AsInteger;
-   Comment    := DS.FieldByName('Comment').AsString;
-   Date       := DS.FieldByName('DateToAdd').AsDateTime;
-   Time       := DS.FieldByName('aTime').AsDateTime;
-   IsDate     := DS.FieldByName('IsDate').AsBoolean;
-   IsTime     := DS.FieldByName('IsTime').AsBoolean;
-   Groups     := DS.FieldByName('Groups').AsString;
-   Crypted    := ValidCryptBlobStreamJPG(DS.FieldByName('Thum'));
-   Include    := DS.FieldByName('Include').AsBoolean;
-   Links      := DS.FieldByName('Links').AsString;
+  InfoLoaded := True;
+  Selected   := True;
+  ID         := DS.FieldByName('ID').AsInteger;
+  KeyWords   := DS.FieldByName('KeyWords').AsString;
+  FileName   := ProcessPath(DS.FieldByName('FFileName').AsString);
+  FileSize   := DS.FieldByName('FileSize').AsInteger;
+  Rotation   := DS.FieldByName('Rotated').AsInteger;
+  Rating     := DS.FieldByName('Rating').AsInteger;
+  Access     := DS.FieldByName('Access').AsInteger;
+  Attr       := DS.FieldByName('Attr').AsInteger;
+  Comment    := DS.FieldByName('Comment').AsString;
+  Date       := DS.FieldByName('DateToAdd').AsDateTime;
+  Time       := DS.FieldByName('aTime').AsDateTime;
+  IsDate     := DS.FieldByName('IsDate').AsBoolean;
+  IsTime     := DS.FieldByName('IsTime').AsBoolean;
+  Groups     := DS.FieldByName('Groups').AsString;
+
+  ThumbField := DS.FindField('Thum');
+  if ThumbField <> nil then
+    Crypted  := ValidCryptBlobStreamJPG(ThumbField)
+  else
+    Crypted := False;
+
+  Include    := DS.FieldByName('Include').AsBoolean;
+  Links      := DS.FieldByName('Links').AsString;
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromExplorerInfo(

@@ -651,7 +651,7 @@ begin
  LoadCurrentImage(false,true); }
  if Viewer=nil then exit;
  Viewer.Pause;
- Viewer.SpeedButton4Click(nil);
+ Viewer.NextImageClick(nil);
 end;
 
 procedure TDirectShowForm.FormMouseUp(Sender: TObject;
@@ -697,7 +697,7 @@ begin
    if Viewer<>nil then
    begin
     Viewer.Pause;
-    Viewer.SpeedButton3Click(nil);
+    Viewer.PreviousImageClick(nil);
    end;
   end;
   if (Msg.wParam=39) or (Msg.wParam=32) then
@@ -705,7 +705,7 @@ begin
    if Viewer<>nil then
    begin
     Viewer.Pause;
-    Viewer.SpeedButton4Click(nil);
+    Viewer.NextImageClick(nil);
    end;
   end;
   if Msg.wParam=27 then
@@ -720,14 +720,14 @@ begin
   if Viewer<>nil then
   begin
    Viewer.Pause;
-   Viewer.SpeedButton3Click(nil);
+   Viewer.PreviousImageClick(nil);
   end;
  end else
  begin
   if Viewer<>nil then
   begin
    Viewer.Pause;
-   Viewer.SpeedButton4Click(nil);
+   Viewer.NextImageClick(nil);
   end;
  end;
 end;

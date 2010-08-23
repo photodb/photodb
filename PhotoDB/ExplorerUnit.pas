@@ -212,7 +212,7 @@ type
     MoveToLink: TWebLink;
     Label1: TLabel;
     ImageEditorLink: TWebLink;
-    Image1: TImage;
+    ImPreview: TImage;
     IDLabel: TLabel;
     DimensionsLabel: TLabel;
     DesktopLink: TWebLink;
@@ -374,7 +374,7 @@ type
     procedure Button1Click(Sender: TObject);
     Procedure SetPanelInfo(Info : TOneRecordInfo; FileGUID : TGUID);
     Procedure SetPanelImage(Image : TBitmap; FileGUID : TGUID);
-    procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure PropertyPanelResize(Sender: TObject);
     procedure ReallignInfo;
@@ -385,7 +385,7 @@ type
     procedure ExplorerPanel1Click(Sender: TObject);
     Procedure SetNewPath(Path : String; Explorer : Boolean);
     procedure GoToSearchWindow1Click(Sender: TObject);
-    procedure Image1DblClick(Sender: TObject);
+    procedure ImPreviewDblClick(Sender: TObject);
     procedure Copy3Click(Sender: TObject);
     procedure Cut3Click(Sender: TObject);
     procedure Options1Click(Sender: TObject);
@@ -882,7 +882,7 @@ begin
   FIsExplorer:=false;
   SetLength(FListDragItems,0);
   fDBCanDragW:=false;
-  image1.Picture.Bitmap:=nil;
+  ImPreview.Picture.Bitmap := nil;
   DropFileTarget2.Register(Self);
   DropFileTarget1.Register(ElvMain);
 
@@ -3547,26 +3547,25 @@ procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
   begin
-    Image1.Picture.Bitmap.Assign(Image);
-    Image1.Refresh;
+    ImPreview.Picture.Graphic := Image;
   end;
 end;
 
 procedure TExplorerForm.SetPanelInfo(Info: TOneRecordInfo;
-  FIleGUID: TGUID);
+  FileGUID: TGUID);
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
   begin
-    FSelectedInfo.Width:=Info.ItemWidth;
-    FSelectedInfo.Height:=Info.ItemHeight;
-    FSelectedInfo.Id:=Info.ItemId;
-    FSelectedInfo.Rating:=Info.ItemRating;
-    FSelectedInfo.Access:=Info.ItemAccess;
+    FSelectedInfo.Width := Info.ItemWidth;
+    FSelectedInfo.Height := Info.ItemHeight;
+    FSelectedInfo.Id := Info.ItemId;
+    FSelectedInfo.Rating := Info.ItemRating;
+    FSelectedInfo.Access := Info.ItemAccess;
     ReallignInfo;
   end;
 end;
 
-procedure TExplorerForm.Image1ContextPopup(Sender: TObject;
+procedure TExplorerForm.ImPreviewContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 Var
    item: TEasyItem;
@@ -3586,9 +3585,9 @@ begin
   if ImHint<>nil then
   ImHint.close;
   PmItemPopup.Tag:=ItemIndexToMenuIndex(Item.Index);
-  PmItemPopup.Popup(Image1.clienttoscreen(MousePos).X ,Image1.clienttoscreen(MousePos).y);
+  PmItemPopup.Popup(ImPreview.clienttoscreen(MousePos).X ,ImPreview.clienttoscreen(MousePos).y);
  end else begin
-  PmListPopup.Popup(Image1.clienttoscreen(MousePos).X ,Image1.clienttoscreen(MousePos).y);
+  PmListPopup.Popup(ImPreview.clienttoscreen(MousePos).X ,ImPreview.clienttoscreen(MousePos).y);
  end;
 end;
 
@@ -4428,7 +4427,7 @@ begin
  NewSearch.SetFocus;
 end;
 
-procedure TExplorerForm.Image1DblClick(Sender: TObject);
+procedure TExplorerForm.ImPreviewDblClick(Sender: TObject);
 Var
   MenuInfo : TDBPopupMenuInfo;
   Info : TRecordsInfo;
@@ -5551,10 +5550,9 @@ begin
   finally
     fScript.Free;
   end;
- if Path=#8 then
- begin
-  exit;
- end;
+  if Path=#8 then
+    exit;
+
  s:=Path;
   If (s='') or (AnsiLowerCase(s)=AnsiLowerCase(MyComputer)) then
   begin
@@ -6153,20 +6151,19 @@ begin
    FSelectedInfo._GUID:=FileSID;
    if FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE then
    begin
-    TExplorerThumbnailCreator.Create(False,FileName,FileSID,Self);
+    TExplorerThumbnailCreator.Create(FileName,FileSID,Self);
     if HelpNo=2 then
     HelpTimer.Enabled:=True;
    end;
-   if image1.Picture.Bitmap=nil then
-   image1.Picture.Bitmap:=TBitmap.create;
    If not PropertyPanel.Visible then
    begin
     ReallignToolInfo;
     exit;
    end;
    ReallignInfo;
+   ImPreview.Picture.Graphic:=TBitmap.create;
    try
-    With image1.Picture.Bitmap do
+    With ImPreview.Picture.Bitmap do
     begin
      Width:=ThSizeExplorerPreview;
      Height:=ThSizeExplorerPreview;
@@ -6232,7 +6229,7 @@ begin
      end;
      If (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE) then
      begin
-      With image1.Picture.Bitmap do
+      With ImPreview.Picture.Bitmap do
       begin
        Width:=ThSizeExplorerPreview;
        height:=ThSizeExplorerPreview;
@@ -6260,7 +6257,7 @@ begin
    end;
   end else
   begin
-   With image1.Picture.Bitmap do
+   With ImPreview.Picture.Bitmap do
    begin
     FSelectedInfo._GUID:=GetGUID;
     Width:=ThSizeExplorerPreview;
@@ -6418,39 +6415,8 @@ begin
 end;
 
 procedure TExplorerForm.SendTo1Click(Sender: TObject);
-var
-  item : TMenuItem;
-  PanelsTexts : TStrings;
-  _SendToMenus : array of TMenuItem;
-  i : integer;
-  _menuitem_nil1 : TMenuItem;
-  _menuitem_send_to_new : TMenuItem;
 begin
- item:=Sender as TMenuItem;
- for i:=1 to Item.Count-1 do
- Item.Delete(1);
-
- PanelsTexts := TStringList.Create;
- PanelsTexts.Assign(UnitFormCont.ManagerPanels.GetPanelsTexts);
- SetLength(_SendToMenus,PanelsTexts.Count);
- for i:=0 to Length(_SendToMenus)-1 do
- begin
-  _SendToMenus[i]:=TMenuItem.Create(item);
-  _SendToMenus[i].Caption:=PanelsTexts[i];
-  _SendToMenus[i].OnClick:=SendToItemPopUpMenu_;
-  _SendToMenus[i].ImageIndex:=DB_IC_SENDTO;
-  _SendToMenus[i].Tag:=i;
- end;
- _menuitem_nil1:=TMenuItem.Create(item);
- _menuitem_nil1.Caption:='-';
- _menuitem_send_to_new:=Tmenuitem.Create(item);
- _menuitem_send_to_new.Caption:=TEXT_MES_NEW_PANEL;
- _menuitem_send_to_new.OnClick:=SendToItemPopUpMenu_;
- _menuitem_send_to_new.ImageIndex:=DB_IC_SENDTO;
- _menuitem_send_to_new.Tag:=-1;
- item.Add(_SendToMenus);
- item.Add(_menuitem_nil1);
- item.Add(_menuitem_send_to_new);
+  ManagerPanels.FillSendToPanelItems(Sender as TMenuItem, SendToItemPopUpMenu_);
 end;
 
 procedure TExplorerForm.SendToItemPopUpMenu_(Sender: TObject);

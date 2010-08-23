@@ -2,184 +2,172 @@ unit UnitExplorerThumbnailCreatorThread;
 
 interface
 
-uses GraphicCrypt, Windows, Graphics, Classes, Dolphin_DB, ExplorerUnit,
-     SysUtils, Math, ComObj, ActiveX, ShlObj,CommCtrl,RAWImage, uDBDrawing,
+uses GraphicCrypt, Windows, Graphics, Classes, Dolphin_DB, ExplorerUnit, JPEG,
+     SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
      Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, UnitDBCommon;
 
 type
   TExplorerThumbnailCreator = class(TThread)
   private
-   FFileSID : TGUID;
-   FFileName : String;
-   TempBitmap : TBitmap;
-   Info : TOneRecordInfo;
-   FOwner : TExplorerForm;
-   GraphicParam : TGraphic;
-   Fpic : Tpicture;
-   Fbit, TempBit : TBitmap;
-   SendInfo : TOneRecordInfo;
-   StringParam : String;
+    FFileSID: TGUID;
+    FFileName: string;
+    TempBitmap: TBitmap;
+    Info: TOneRecordInfo;
+    FOwner: TExplorerForm;
+    GraphicParam: TGraphic;
+    Fpic: Tpicture;
+    Fbit, TempBit: TBitmap;
+    StringParam: string;
   protected
     procedure Execute; override;
     procedure SetInfo;
     procedure SetImage;
-    procedure DrawAttributes;
-    procedure FindPassword;
+    procedure DoDrawAttributes;
   public
-    constructor Create(CreateSuspennded: Boolean; FileName : string; FileSID: TGUID; Owner : TExplorerForm);
+    constructor Create(FileName: string; FileSID: TGUID; Owner: TExplorerForm);
   end;
 
 implementation
 
-uses Searching, FormManegerUnit, ExplorerThreadUnit;
+uses ExplorerThreadUnit;
 
 { TExplorerThumbnailCreator }
 
-constructor TExplorerThumbnailCreator.Create(CreateSuspennded: Boolean;
-  FileName : string; FileSID: TGUID; Owner : TExplorerForm);
+constructor TExplorerThumbnailCreator.Create(FileName : string; FileSID: TGUID; Owner : TExplorerForm);
 begin
- inherited Create(True);
- FFileName := FileName;
- FFileSID := FileSID;                                                                   
- FOwner := Owner;
- Priority:=tpLowest;
- If not CreateSuspennded then Resume;
-end;
-
-procedure TExplorerThumbnailCreator.DrawAttributes;
-var
-  Exists : integer;
-begin
- Exists:=1;
- uDBDrawing.DrawAttributes(TempBitmap, ThSizeExplorerPreview,info.ItemRating,info.ItemRotate,info.ItemAccess,info.ItemFileName,info.ItemCrypted,Exists,info.ItemId);
+  inherited Create(True);
+  FFileName := FileName;
+  FFileSID := FileSID;
+  FOwner := Owner;
+  Priority := tpLowest;
+  Resume;
 end;
 
 procedure TExplorerThumbnailCreator.Execute;
 var
-  w, h : Integer;
-begin       
-  FreeOnTerminate:=True;
+  W, H : Integer;
+  Password : string;
+begin
+  FreeOnTerminate := True;
   CoInitialize(nil);
   try
-    TempBitmap:=Tbitmap.create;
-    try                     
-      TempBitmap.PixelFormat:=pf24Bit;      
+    TempBitmap := TBitmap.Create;
+    try
+      TempBitmap.PixelFormat:=pf24Bit;
       TempBitmap.Width := ThSizeExplorerPreview;
       TempBitmap.Height := ThSizeExplorerPreview;
       FillColorEx(TempBitmap, Theme_MainColor);
 
-      Info:=GetInfoByFileNameA(FFileName,true);
+      Info.Image := TJPEGImage.Create;
+      try
+        GetInfoByFileNameA(FFileName, True, Info);
 
-      If Info.Image<>nil then
-      begin
-
-      SendInfo:=Info;
-      if (Info.Image.Width>ThSizeExplorerPreview) or (Info.Image.Height>ThSizeExplorerPreview) then
-      begin
-       Fbit:=TBitmap.create;
-       Fbit.PixelFormat:=pf24bit;
-       TempBit:=TBitmap.Create;
-       TempBit.PixelFormat:=pf24bit;
-       AssignJpeg(TempBit, Info.Image);
-       w:=TempBit.Width;
-       h:=TempBit.Height;
-       ProportionalSize(ThSizeExplorerPreview,ThSizeExplorerPreview,w,h);
-       try
-        DoResize(w,h,TempBit,Fbit);
-       except
-       end;
-       TempBit.free;
-
-       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2 - Fbit.Width div 2, ThSizeExplorerPreview div 2 - Fbit.Height div 2);
-
-       Info.Image.Free;
-      end else
-      begin        
-       TempBit:=TBitmap.Create;
-       TempBit.PixelFormat:=pf24bit;
-       AssignJpeg(TempBit, Info.Image);
-       DrawImageEx(TempBitmap, TempBit, ThSizeExplorerPreview div 2 - Info.Image.Width div 2, ThSizeExplorerPreview div 2 - Info.Image.Height div 2);
-       TempBit.Free;
-       Info.Image.Free;
-      end;
-      ApplyRotate(TempBitmap, Info.ItemRotate);
-      end else
-      begin
-       DoProcessPath(FFileName);
-       if FolderView then
-       if not FileExists(FFileName) then
-       FFileName:=ProgramDir+FFileName;
-
-       If FileExists(FFileName) and ExtInMask(SupportedExt,GetExt(FFileName)) then
-       Fpic:=TPicture.Create else exit;
-       try
-        if ValidCryptGraphicFile(FFileName) then
+        if not Info.Image.Empty then
         begin
-        Info.ItemCrypted:=true;
-        StringParam:=FFileName;
-        Synchronize(FindPassword);
-         try
-          if StringParam<>'' then
-          Fpic.Graphic:=DeCryptGraphicFile(FFileName,StringParam) else
+          if (Info.Image.Width > ThSizeExplorerPreview) or (Info.Image.Height > ThSizeExplorerPreview) then
           begin
-           Fpic.Free; 
-           CoUninitialize;
-           exit;
+            TempBit := TBitmap.Create;
+            try
+              TempBit.PixelFormat := Pf24bit;
+              AssignJpeg(TempBit, Info.Image);
+              W := TempBit.Width;
+              H := TempBit.Height;
+              ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
+              FBit := TBitmap.Create;
+              try
+                FBit.PixelFormat := Pf24bit;
+                DoResize(W, H, TempBit, Fbit);
+                DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2 - Fbit.Width div 2,
+                  ThSizeExplorerPreview div 2 - Fbit.Height div 2);
+              finally
+                FBit.Free;
+              end;
+            finally
+              TempBit.Free;
+            end;
+          end else
+          begin
+            TempBit := TBitmap.Create;
+            try
+              TempBit.PixelFormat := Pf24bit;
+              AssignJpeg(TempBit, Info.Image);
+              DrawImageEx(TempBitmap, TempBit, ThSizeExplorerPreview div 2 - Info.Image.Width div 2,
+                ThSizeExplorerPreview div 2 - Info.Image.Height div 2);
+            finally
+              TempBit.Free;
+            end;
           end;
-         except
-          Fpic.Free;
-          CoUninitialize;
-          exit;
-         end;
+          ApplyRotate(TempBitmap, Info.ItemRotate);
         end else
         begin
-         if IsRAWImageFile(FFileName) then
-         begin
-          Fpic.Graphic:=TRAWImage.Create;
-          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FFileName,ThSizeExplorerPreview,ThSizeExplorerPreview) then
-          Fpic.Graphic.LoadFromFile(FFileName);
-         end else
-         Fpic.LoadFromFile(FFileName);
+          DoProcessPath(FFileName);
+          if FolderView then
+          if not FileExists(FFileName) then
+            FFileName := ProgramDir + FFileName;
+
+          if FileExists(FFileName) and ExtInMask(SupportedExt, GetExt(FFileName)) then
+            FPic := TPicture.Create
+          else
+            Exit;
+
+          try
+            if ValidCryptGraphicFile(FFileName) then
+            begin
+              Info.ItemCrypted := True;
+              Password := DBKernel.FindPasswordForCryptImageFile(FFileName);
+
+              if StringParam <> '' then
+                FPic.Graphic:=DeCryptGraphicFile(FFileName,StringParam)
+              else
+                Exit;
+            end else
+            begin
+              if IsRAWImageFile(FFileName) then
+              begin
+                FPic.Graphic := TRAWImage.Create;
+                if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FFileName,ThSizeExplorerPreview,ThSizeExplorerPreview) then
+                  FPic.Graphic.LoadFromFile(FFileName);
+             end else
+               FPic.LoadFromFile(FFileName);
+            end;
+
+            FBit:=TBitmap.Create;
+            try
+              FBit.PixelFormat := pf24bit;
+              Info.ItemHeight := FPic.Graphic.Height;
+              Info.ItemWidth := FPic.Graphic.Width;
+              JPEGScale(FPic.Graphic, ThSizeExplorerPreview, ThSizeExplorerPreview);
+
+              TempBit := TBitmap.Create;
+              try
+                if Min(Fpic.Height, Fpic.Width) > 1 then
+                  LoadImageX(FPic.Graphic, TempBit, Theme_MainColor);
+
+                TempBit.PixelFormat := pf24bit;
+                W := TempBit.Width;
+                H := TempBit.Height;
+                if Max(W,H) < ThSizeExplorerPreview then
+                  AssignBitmap(FBit, TempBit)
+                else begin
+                  ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
+                  DoResize(W, H, TempBit, FBit);
+                end;
+              finally
+                TempBit.Free;
+              end;
+              DrawImageEx(TempBitmap, FBit, ThSizeExplorerPreview div 2 - FBit.Width div 2, ThSizeExplorerPreview div 2 - FBit.height div 2);
+            finally
+              FBit.Free;
+            end;
+          finally
+            FPic.Free;
+          end;
         end;
-    
-       except
-        Fpic.Free;  
-        CoUninitialize;
-        exit;
-       end;
-       Fbit:=TBitmap.create;
-       Fbit.PixelFormat:=pf24bit;
-       TempBit:=TBitmap.create;
-       SendInfo.ItemHeight:=Fpic.Graphic.Height;
-       SendInfo.ItemWidth:=Fpic.Graphic.Width;
-       JPEGScale(Fpic.Graphic,ThSizeExplorerPreview,ThSizeExplorerPreview);
-       if Min(Fpic.Height,Fpic.Width)>1 then
-       try
-        LoadImageX(Fpic.Graphic,TempBit,Theme_MainColor);
-       except
-        on e : Exception do EventLog(':TExplorerThumbnailCreator::Execute()/LoadImageX throw exception: '+e.Message);
-       end;
-       Fpic.Free;
-       TempBit.PixelFormat:=pf24bit;
-       w:=TempBit.Width;
-       h:=TempBit.Height;
-       If Max(w,h)<ThSizeExplorerPreview then AssignBitmap(Fbit, TempBit) else
-       begin
-        ProportionalSize(ThSizeExplorerPreview,ThSizeExplorerPreview,w,h);
-        try
-         DoResize(w,h,TempBit,Fbit);
-        except
-        end;
-       end;
-       TempBit.Free;
-       DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2-Fbit.Width div 2, ThSizeExplorerPreview div 2-Fbit.height div 2);
-       Fbit.free;
-      end;
-      Synchronize(DrawAttributes);
-      try
-      Synchronize(SetInfo);
-      Synchronize(SetImage);
-      except
+        Synchronize(DoDrawAttributes);
+        Synchronize(SetInfo);
+        Synchronize(SetImage);
+      finally
+        Info.Image.Free;
       end;
     finally
       TempBitmap.free;
@@ -189,21 +177,25 @@ begin
   end;
 end;
 
-procedure TExplorerThumbnailCreator.FindPassword;
+procedure TExplorerThumbnailCreator.DoDrawAttributes;
+var
+  Exists : integer;
 begin
- StringParam:=DBKernel.FindPasswordForCryptImageFile(StringParam);
+  Exists := 1;
+  DrawAttributes(TempBitmap, ThSizeExplorerPreview, Info.ItemRating, Info.ItemRotate, Info.ItemAccess,
+    Info.ItemFileName, Info.ItemCrypted, Exists, Info.ItemId);
 end;
 
 procedure TExplorerThumbnailCreator.SetImage;
 begin
- If ExplorerManager.IsExplorer(FOwner) then
- (FOwner as TExplorerForm).SetPanelImage(TempBitmap, FFileSID);
+  if ExplorerManager.IsExplorer(FOwner) then
+    (FOwner as TExplorerForm).SetPanelImage(TempBitmap, FFileSID);
 end;
 
 procedure TExplorerThumbnailCreator.SetInfo;
 begin
- If ExplorerManager.IsExplorer(FOwner) then
- (FOwner as TExplorerForm).SetPanelInfo(SendInfo, FFileSID);
+  if ExplorerManager.IsExplorer(FOwner) then
+    (FOwner as TExplorerForm).SetPanelInfo(Info, FFileSID);
 end;
 
 end.

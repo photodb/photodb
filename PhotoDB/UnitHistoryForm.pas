@@ -119,7 +119,7 @@ begin
  if n<0 then exit;
  If Viewer=nil then
  Application.CreateForm(TViewer,Viewer);
- OneInfo:=GetInfoByFileNameA(FileList[n],false);
+ GetInfoByFileNameA(FileList[n],false,OneInfo);
  Info:=GetRecordsFromOne(OneInfo);
  Viewer.Execute(Sender,Info);
 end;
@@ -146,7 +146,7 @@ var
 begin
  If Viewer=nil then
  Application.CreateForm(TViewer,Viewer);
- OneInfo:=GetInfoByFileNameA(FileList[PopupMenu1.Tag],false);
+ GetInfoByFileNameA(FileList[PopupMenu1.Tag],false,OneInfo);
  Info:=GetRecordsFromOne(OneInfo);
  Viewer.Execute(Sender,Info);
 end;

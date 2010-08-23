@@ -79,13 +79,13 @@ type
    constructor Create;
    destructor Destroy; override;
    function CreateDirectory(Directory : string): Boolean;
-   function GoUp : Boolean;                        
+   function GoUp : Boolean;
    function SelectDirectory(Directory : string) : Boolean;
    function DirectoryExists(Directory : string) : Boolean;
    function FileExists(FileName : string) : Boolean;
    procedure AddRealItemsToCurrentDirectory(Files : TStrings);
    function AddRealDirectory(Directory : string; CallBackProc : TCallBackProgressEvent) : Boolean;
-   function AddRealFile(FileName : string) : Boolean;         
+   function AddRealFile(FileName : string) : Boolean;
    function AddImageFile(Path : TDBFilePath) : Boolean;
    function TextReadLevel : TStrings;
    function CheckName(FileName : string) : string;
@@ -102,10 +102,10 @@ type
    function GetCDSizeWithDirectory(Directory : PCDIndexMappingDirectory) : int64;
    procedure SortLevel(Level : TList);
    function GetCurrentUpperDirectories : TStrings;
-   procedure SelectRoot;                           
+   procedure SelectRoot;
    procedure SelectPath(Path : string);
    procedure Copy(Files : TList);
-   procedure Cut(Files : TList);        
+   procedure Cut(Files : TList);
    procedure Paste;
    procedure ClearClipBoard;
    function CloneItem(Item : PCDIndexMappingDirectory): PCDIndexMappingDirectory;
@@ -113,7 +113,7 @@ type
    function DirectoryHasDBFiles(Directory : PCDIndexMappingDirectory) : boolean;
    function DeleteOriginalStructure(OnProgress : TCallBackProgressEvent) : boolean;
    function GetRoot : PCDIndexMappingDirectory;
-   function PlaceMapFile(Directory : string) : Boolean;   
+   function PlaceMapFile(Directory : string) : Boolean;
    class function ReadMapFile(FileName : string) : TCDIndexInfo;
   published
    property CDLabel : String read fCDLabel Write SetCDLabel;
@@ -133,7 +133,7 @@ type
 
  TCDDBMapping = class(TObject)
   private
-   CDLoadedList : TList; 
+   CDLoadedList : TList;
    CDFindedList : TList;
   public
    constructor Create;
@@ -220,7 +220,7 @@ implementation
   FindClose(SearchRec);
  end;
 
- 
+
  function AddCDLocation(CDName : string = '') : string;
  var
   OpenDialog : DBOpenDialog;
@@ -334,7 +334,7 @@ begin
   Image.Parent:=CurrentDir;
   Image.IsReal:=true;
   Image.DB_ID:=Path.ID;
-  Image.RealFileName:=nil;    
+  Image.RealFileName:=nil;
   Image.FileSize:=GetFileSizeByName(Path.FileName);
   SetPCharString(Image.RealFileName,Path.FileName);
   CurrentDir.Files.Add(Image);
@@ -342,7 +342,7 @@ begin
  end;
 end;
 
-//todo: recursive add files! 
+//todo: recursive add files!
 function TCDIndexMapping.AddRealDirectory(Directory: string; CallBackProc : TCallBackProgressEvent): Boolean;
 Var
  Found  : integer;
@@ -384,7 +384,7 @@ begin
   if Assigned(CallBackProc) then CallBackProc(Self, Info);
   if Info.Terminate then break;
  end;
- SysUtils.FindClose(SearchRec);    
+ SysUtils.FindClose(SearchRec);
  GoUp;
  Result:=true;
 end;
@@ -414,20 +414,21 @@ end;
 
 procedure TCDIndexMapping.AddRealItemsToCurrentDirectory(Files: TStrings);
 var
-  i : integer;
-  info : TOneRecordInfo;
+  I: Integer;
+  Info: TOneRecordInfo;
 begin
- for i:=0 to Files.Count-1 do
- begin
-  if SysUtils.DirectoryExists(Files[i]) then AddRealDirectory(Files[i],nil);
-  if SysUtils.FileExists(Files[i]) then
-  begin             
-   info:=Dolphin_DB.GetInfoByFileNameA(Files[i],false);
-   if Info.ItemId<=0 then
-   AddRealFile(Files[i]) else
-   AddImageFile(DBFilePath(Info.ItemFileName,Info.ItemId));
+  for I := 0 to Files.Count - 1 do
+  begin
+    if SysUtils.DirectoryExists(Files[I]) then
+      AddRealDirectory(Files[I], nil);
+    if FileExistsEx(Files[I]) then
+    begin
+      if not Dolphin_DB.GetInfoByFileNameA(Files[I], False, Info) then
+        AddRealFile(Files[I])
+      else
+        AddImageFile(DBFilePath(Info.ItemFileName, Info.ItemId));
+    end;
   end;
- end;
 end;
 
 function TCDIndexMapping.CheckName(FileName: string): string;
@@ -502,7 +503,7 @@ var
   i : integer;
   DirectoryName, FileName : string;
   info : TProgressCallBackInfo;
-begin      
+begin
  Result:=true;
  for i:=0 to PDirectory.Files.Count-1 do
  if PCDIndexMappingDirectory(PDirectory.Files[i]).IsFile then
@@ -529,7 +530,7 @@ begin
    end;
   end;
  end;
- 
+
  for i:=0 to PDirectory.Files.Count-1 do
  if not PCDIndexMappingDirectory(PDirectory.Files[i]).IsFile then
  begin
@@ -540,7 +541,7 @@ begin
   if not SysUtils.DirectoryExists(DirectoryName) then
   if not CreateDir(DirectoryName) then
   begin
-   Result:=false; 
+   Result:=false;
    exit;
   end;
   CreateStructureToDirectoryWithDirectory(DirectoryName,PDirectory.Files[i],OnProgress);
@@ -790,7 +791,7 @@ begin
   SortLevel(Level);
   SortLevel(List);
  end;
- //for i:=List.Count-1 downto 0 do  
+ //for i:=List.Count-1 downto 0 do
  for i:=0 to List.Count-1 do
  Level.Insert(0,List[i]);
  if Changed then SortLevel(Level);
@@ -876,11 +877,11 @@ var
 begin
  GetMem(aItem,SizeOf(TCDIndexMappingDirectory));
  aItem.Files:=TList.Create;
- aItem.Name:=Item.Name;      
+ aItem.Name:=Item.Name;
  aItem.IsFile:=Item.IsFile;
  aItem.Parent:=Item.Parent;
  aItem.IsReal:=Item.IsReal;
- aItem.DB_ID:=Item.DB_ID;  
+ aItem.DB_ID:=Item.DB_ID;
  aItem.FileSize:=Item.FileSize;
  aItem.RealFileName:=nil;
  SetPCharString(aItem.RealFileName,String(Item.RealFileName));
@@ -945,7 +946,7 @@ end;
 function TCDIndexMapping.DeleteOriginalStructureWithDirectory(
   PDirectory: PCDIndexMappingDirectory; OnProgress : TCallBackProgressEvent): Boolean;
 var
-  i : integer;   
+  i : integer;
   info : TProgressCallBackInfo;
 begin
  Result:=true;
@@ -985,7 +986,7 @@ begin
  end;
 
  SysUtils.RemoveDir(PDirectory.RealFileName);
-end;   
+end;
 
 function TCDIndexMapping.GetRoot: PCDIndexMappingDirectory;
 begin
@@ -1012,7 +1013,7 @@ begin
   Result:=false;
   exit;
  end;
- FillChar(Header,SizeOf(Header),#0);  
+ FillChar(Header,SizeOf(Header),#0);
  FillChar(HeaderV1,SizeOf(HeaderV1),#0);
  Header.ID:='PHOTODB_CD_INDEX';
  Header.Version:=1;
@@ -1027,7 +1028,7 @@ begin
  end;
  FS.Free;
 end;
-      
+
 class function TCDIndexMapping.ReadMapFile(FileName: string): TCDIndexInfo;
 var
   Header : TCDIndexFileHeader;
