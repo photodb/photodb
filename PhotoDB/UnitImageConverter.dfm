@@ -183,7 +183,6 @@ object FormConvertImages: TFormConvertImages
     Width = 233
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
     OnSelect = ComboBox2Select
   end

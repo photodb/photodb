@@ -94,7 +94,6 @@ begin
  Skip:=PassWordForm.Skip;
  Result:=PassWordForm.Password;
  PassWordForm.Release;
- if UseFreeAfterRelease then PassWordForm.Free;
 end;
 
 function GetImagePasswordFromUser(FileName : String) : String;
@@ -111,7 +110,6 @@ begin
  PassWordForm.ShowModal;
  Result:=PassWordForm.Password;
  PassWordForm.Release;
- if UseFreeAfterRelease then PassWordForm.Free;
 end;
 
 function GetImagePasswordFromUserEx(FileName : String; out AskAgain : boolean) : String;
@@ -129,7 +127,6 @@ begin
  AskAgain:=not PassWordForm.CheckBox3.Checked;
  Result:=PassWordForm.Password;
  PassWordForm.Release;
- if UseFreeAfterRelease then PassWordForm.Free;
 end;
 
 function GetImagePasswordFromUserBlob(DF : TField; FileName : String) : String;

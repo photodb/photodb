@@ -43,7 +43,6 @@ begin
  StartString:=FormStringPromt.Edit1.Text;
  Result:=FormStringPromt.Ok;
  FormStringPromt.Release;
- if UseFreeAfterRelease then FormStringPromt.Free;
 end;
 
 procedure TFormStringPromt.FormCreate(Sender: TObject);

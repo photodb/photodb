@@ -2339,14 +2339,18 @@ end;
 
 procedure TViewer.Resize1Click(Sender: TObject);
 var
-  ImageList : TArStrings;
-  IDList : TArInteger;
+  I: Integer;
+  List: TDBPopupMenuInfo;
+  ImageInfo: TDBPopupMenuInfoRecord;
 begin
- SetLength(ImageList,1);
- SetLength(IDList,1);
- ImageList[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
- IDList[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
- ResizeImages(ImageList,IDList);
+  List := TDBPopupMenuInfo.Create;
+  try
+    ImageInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
+    List.Add(ImageInfo);
+    ResizeImages(List);
+  finally
+    List.Free;
+  end;
 end;
 
 procedure TViewer.FormContextPopup(Sender: TObject; MousePos: TPoint;
@@ -2405,7 +2409,6 @@ begin
  FormManager.UnRegisterMainForm(self);
  DBKernel.UnRegisterChangesID(Self,ChangedDBDataByID);
  Release;
- if UseFreeAfterRelease then Free;
  Viewer:=nil;
 end;
 
@@ -3079,8 +3082,8 @@ begin
     Panel := ManagerPanels.NewPanel;
 
   Panel.Show;
-  LoadFilesToPanel.Create(False, InfoNames, InfoIDs, Infoloaded, True, True, Panel);
-  LoadFilesToPanel.Create(False, InfoNames, InfoIDs, Infoloaded, True, False, Panel);
+  LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, Panel);
+  LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, Panel);
 end;
 
 procedure TViewer.NewPanel1Click(Sender: TObject);

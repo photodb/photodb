@@ -32,12 +32,10 @@ object FormSelectGroup: TFormSelectGroup
     Width = 204
     Height = 24
     ItemsEx = <>
-    ItemHeight = 16
     ParentColor = True
     TabOrder = 0
     Text = 'ComboBoxEx1'
     Images = GroupsImageList
-    DropDownCount = 8
   end
   object Button1: TButton
     Left = 134

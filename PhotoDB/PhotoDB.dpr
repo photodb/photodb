@@ -290,7 +290,8 @@ uses
   DECRandom in 'External\Crypt\DECv5.2\DECRandom.pas',
   DECUtil in 'External\Crypt\DECv5.2\DECUtil.pas',
   TypInfoEx in 'External\Crypt\DECv5.2\TypInfoEx.pas',
-  uStrongCrypt in 'Units\uStrongCrypt.pas';
+  uStrongCrypt in 'Units\uStrongCrypt.pas',
+  jpegdec in 'Units\jpegdec.pas';
 
 {$R *.res}
 
@@ -449,13 +450,11 @@ begin
           DBKernel := TDBKernel.Create;
           DBKernel.LoadColorTheme;
           Application.CreateForm(TInstallForm, InstallForm);
-          Application.Restore;
+  Application.Restore;
           EventLog(':InstallForm.SetQuickSelfInstallOption()');
           InstallForm.SetQuickSelfInstallOption;
           InstallForm.ShowModal;
           InstallForm.Release;
-          if UseFreeAfterRelease then
-            InstallForm.free;
           InstallForm := nil;
           DBTerminating := True;
           Halt;
@@ -488,8 +487,6 @@ begin
         Application.Restore;
         InstallForm.ShowModal;
         InstallForm.Release;
-        if UseFreeAfterRelease then
-          InstallForm.free;
         InstallForm := nil;
         Halt;
       end;
@@ -512,8 +509,6 @@ begin
       Application.Restore;
       UnInstallForm.ShowModal;
       UnInstallForm.Release;
-      if UseFreeAfterRelease then
-        UnInstallForm.free;
       UnInstallForm := nil;
     end;
     Halt;
@@ -603,8 +598,6 @@ begin
             Application.CreateForm(TAboutForm, AboutForm);
           AboutForm.Execute;
           AboutForm.Release;
-          if UseFreeAfterRelease then
-            AboutForm.free;
           AboutForm := nil;
         end;
 
@@ -641,8 +634,6 @@ begin
             Application.CreateForm(TCMDForm, CMDForm);
             CMDForm.PackPhotoTable;
             CMDForm.Release;
-            if UseFreeAfterRelease then
-              CMDForm.Free;
             CMDForm := nil;
           end;
         end;
@@ -670,8 +661,6 @@ begin
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.PackPhotoTable;
         CMDForm.Release;
-        if UseFreeAfterRelease then
-          CMDForm.free;
         CMDForm := nil;
       end;
 
@@ -685,8 +674,6 @@ begin
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.BackUpTable;
         CMDForm.Release;
-        if UseFreeAfterRelease then
-          CMDForm.free;
         CMDForm := nil;
       end;
 
@@ -699,8 +686,6 @@ begin
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.RecreateImThInPhotoTable;
       CMDForm.Release;
-      if UseFreeAfterRelease then
-        CMDForm.free;
       CMDForm := nil;
     end;
 
@@ -713,8 +698,6 @@ begin
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.ShowBadLinks;
       CMDForm.Release;
-      if UseFreeAfterRelease then
-        CMDForm.free;
       CMDForm := nil;
     end;
 
@@ -727,8 +710,6 @@ begin
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.OptimizeDublicates;
       CMDForm.Release;
-      if UseFreeAfterRelease then
-        CMDForm.free;
       CMDForm := nil;
     end;
 
@@ -741,8 +722,6 @@ begin
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.RestoreTable(DBKernel.ReadString('StartUp', 'RestoreFile'));
       CMDForm.Release;
-      if UseFreeAfterRelease then
-        CMDForm.free;
       CMDForm := nil;
     end;
 
@@ -844,8 +823,10 @@ begin
     ExecuteQuery(s1);
   end;
 
-
+  TW.i.Start('AllowDragAndDrop');
   AllowDragAndDrop;
+
+  TW.i.Start('Application.Run');
   Application.Run;
 
 end.

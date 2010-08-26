@@ -545,7 +545,6 @@ procedure TGetToPersonalFolderForm.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TGetToPersonalFolderForm.FormClose(Sender: TObject;

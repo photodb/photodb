@@ -1012,7 +1012,6 @@ procedure TDirectShowForm.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
  DirectShowForm:=nil;
 end;
 

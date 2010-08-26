@@ -289,7 +289,6 @@ object InstallForm: TInstallForm
       Width = 73
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       ItemIndex = 0
       TabOrder = 9
       Text = 'Access'

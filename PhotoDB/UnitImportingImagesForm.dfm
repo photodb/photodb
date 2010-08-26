@@ -763,7 +763,6 @@ object FormImportingImages: TFormImportingImages
       Width = 257
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       ItemIndex = 1
       TabOrder = 7
       Text = 'Add All'

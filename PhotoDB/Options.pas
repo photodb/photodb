@@ -1348,7 +1348,6 @@ begin
  SaveWindowPos1.SavePosition;
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
  OptionsForm:=nil;
 end;
 

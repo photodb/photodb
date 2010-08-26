@@ -108,8 +108,6 @@ begin
  Application.CreateForm(TFormConvertingDB, FormConvertingDB);
  FormConvertingDB.Execute(FileName);
  FormConvertingDB.Release;
- if UseFreeAfterRelease then
- FormConvertingDB.Free;
 end;
 
 {$R *.dfm}

@@ -755,40 +755,45 @@ end;
 
 procedure TExplorerForm.CreateBackgrounds;
 var
-  Bitmap, ExplorerBackgroundBMP : TBitmap;
+  Background, Bitmap, ExplorerBackgroundBMP : TBitmap;
   ExplorerBackground : TPNGGraphic;
 begin
-  ElvMain.BackGround.Image := TBitmap.Create;
-  ElvMain.BackGround.Image.PixelFormat := pf24bit;
-  ElvMain.BackGround.Image.Width := 150;
-  ElvMain.BackGround.Image.Height := 150;
-  FillColorEx(ElvMain.BackGround.Image, Theme_ListColor);
-
-  ExplorerBackground := GetExplorerBackground;
+  Background := TBitmap.Create;
   try
-    ExplorerBackgroundBMP := TBitmap.Create;
+    Background.PixelFormat := pf24bit;
+    Background.Width := 150;
+    Background.Height := 150;
+    FillColorEx(Background, Theme_ListColor);
+    ExplorerBackground := GetExplorerBackground;
     try
-      LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme_ListColor);
-      ElvMain.BackGround.Image.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
+      ExplorerBackgroundBMP := TBitmap.Create;
+      try
+        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme_ListColor);
+        ElvMain.BackGround.Image.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
 
-      LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ColorToRGB(ScrollBox1.Color));
-      Bitmap:=TBitmap.Create();
-      Bitmap.PixelFormat := pf24bit;
-      Bitmap.Width := 120;
-      Bitmap.Height := 150;
-      Bitmap.Canvas.Brush.Color := ScrollBox1.Color;
-      Bitmap.Canvas.Pen.Color := ScrollBox1.Color;
-      Bitmap.Canvas.Rectangle(0, 0, 120, 150);
-      Bitmap.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
-      ScrollBox1.BackGround.PixelFormat := pf24bit;
-      ScrollBox1.BackGround.Width := 120;
-      ScrollBox1.BackGround.Height := 150;
-      DrawTransparent(Bitmap, ScrollBox1.BackGround, 40);
+        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ColorToRGB(ScrollBox1.Color));
+        Bitmap:=TBitmap.Create;
+        Bitmap.PixelFormat := pf24bit;
+        Bitmap.Width := 120;
+        Bitmap.Height := 150;
+        Bitmap.Canvas.Brush.Color := ScrollBox1.Color;
+        Bitmap.Canvas.Pen.Color := ScrollBox1.Color;
+        Bitmap.Canvas.Rectangle(0, 0, 120, 150);
+        Bitmap.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
+
+        ScrollBox1.BackGround.PixelFormat := pf24bit;
+        ScrollBox1.BackGround.Width := 120;
+        ScrollBox1.BackGround.Height := 150;
+        DrawTransparent(Bitmap, ScrollBox1.BackGround, 40);
+      finally
+        ExplorerBackgroundBMP.Free;
+      end;
     finally
-      ExplorerBackgroundBMP.Free;
+      ExplorerBackground.Free;
     end;
+    ElvMain.BackGround.Image := Background;
   finally
-    ExplorerBackground.Free;
+    Background.Free;
   end;
 end;
 
@@ -2317,7 +2322,6 @@ begin
  ImHint.close;
  hinttimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TExplorerForm.SelectAll1Click(Sender: TObject);
@@ -5250,20 +5254,23 @@ end;
 
 procedure TExplorerForm.Resize1Click(Sender: TObject);
 var
-  i, index : integer;
-  ImageList : TArStrings;
-  IDList : TArInteger;
+  I, Index: Integer;
+  List: TDBPopupMenuInfo;
+  ImageInfo: TDBPopupMenuInfoRecord;
 begin
- for i:=0 to ElvMain.Items.Count-1 do
- If ElvMain.Items[i].Selected then
- begin
-  index:=ItemIndexToMenuIndex(i);
-  SetLength(ImageList,Length(ImageList)+1);
-  ImageList[Length(ImageList)-1]:=ProcessPath(fFilesInfo[index].FileName);
-  SetLength(IDList,Length(IDList)+1);
-  IDList[Length(IDList)-1]:=fFilesInfo[index].ID;
- end;
- ResizeImages(ImageList,IDList);
+  List := TDBPopupMenuInfo.Create;
+  try
+    for I := 0 to ElvMain.Items.Count - 1 do
+      if ElvMain.Items[I].Selected then
+      begin
+        Index := ItemIndexToMenuIndex(I);
+        ImageInfo := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[Index]);
+        List.Add(ImageInfo);
+      end;
+    ResizeImages(List);
+  finally
+    List.Free;
+  end;
 end;
 
 procedure TExplorerForm.Convert1Click(Sender: TObject);
@@ -6453,15 +6460,15 @@ begin
  end;
  If NumberOfPanel>=0 then
  begin
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
  end;
  If NumberOfPanel<0 then
  begin
   Panel:=ManagerPanels.NewPanel;
   Panel.Show;
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,Panel);
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,Panel);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,true,Panel);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,false,Panel);
  end;
 end;
 

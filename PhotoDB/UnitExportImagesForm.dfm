@@ -198,7 +198,6 @@ object ExportImagesForm: TExportImagesForm
     Width = 193
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
     OnClick = ComboBox2Click
   end
@@ -342,7 +341,6 @@ object ExportImagesForm: TExportImagesForm
       Top = 140
       Width = 145
       Height = 21
-      ItemHeight = 13
       TabOrder = 7
       Text = '50%'
       Items.Strings = (

@@ -41,7 +41,6 @@ begin
  Application.CreateForm(TSavingTableForm,SavingTableForm);
  SavingTableForm.Execute(Query,FileName,SubFolders,FileList);
  SavingTableForm.Release;
- if UseFreeAfterRelease then SavingTableForm.Free;
 end;
 
 Procedure TSavingTableForm.Execute(Query : TDataSet; FileName : String; SubFolders : boolean; FileList : TArStrings);

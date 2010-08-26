@@ -229,7 +229,6 @@ procedure TFullScreenView.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
  FullScreenView:=nil;
 end;
 

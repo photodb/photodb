@@ -274,8 +274,6 @@ begin
  Application.CreateForm(TSetupProgressForm, SetupProgressForm);
  SetupProgressForm.ShowModal;
  SetupProgressForm.Release;
- if UseFreeAfterRelease then
- SetupProgressForm.Free;
  SetupProgressForm:=nil;
 end;
 

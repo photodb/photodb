@@ -1208,7 +1208,6 @@ begin
   if ProgressForm<>nil then
   begin
    ProgressForm.Release;
-   if UseFreeAfterRelease then ProgressForm.Free;
   end;
 
   UnLockImput;
@@ -3100,7 +3099,6 @@ begin
  if (DestroyCounter<3) and (DestroyCounter<>0) then exit;
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TPropertiesForm.ChangedDBDataGroups(Sender: TObject; ID: integer;

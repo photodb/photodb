@@ -592,7 +592,6 @@ procedure CmpDBTh.ThreadExit;
 begin
  ImportProgressForm.Close;
  ImportProgressForm.Release;
- if UseFreeAfterRelease then ImportProgressForm.Free;
 end;
 
 end.

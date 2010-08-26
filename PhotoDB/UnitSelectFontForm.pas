@@ -45,7 +45,6 @@ begin
  Application.CreateForm(TFormSelectFont, FormSelectFont);
  Result:=FormSelectFont.Execute(OldFont,NewFont);
  FormSelectFont.Release;
- if UseFreeAfterRelease then FormSelectFont.Free;
 end;
 
 procedure TFormSelectFont.Button2Click(Sender: TObject);

@@ -454,7 +454,6 @@ procedure THelpPopup.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure THelpPopup.FormClose(Sender: TObject; var Action: TCloseAction);

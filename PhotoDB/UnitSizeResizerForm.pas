@@ -11,56 +11,45 @@ uses
 
 type
   TFormSizeResizer = class(TForm)
-    ComboBox2: TComboBox;
-    RadioButton1: TRadioButton;
-    RadioButton2: TRadioButton;
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
-    Button4: TButton;
-    GroupBox1: TGroupBox;
-    RadioButton01: TRadioButton;
-    RadioButton03: TRadioButton;
-    RadioButton04: TRadioButton;
-    RadioButton02: TRadioButton;
-    Edit1: TEdit;
-    Edit2: TEdit;
-    Label1: TLabel;
-    CheckBox1: TCheckBox;
-    ComboBox1: TComboBox;
-    RadioButton05: TRadioButton;
-    Image1: TImage;
+    DdConvert: TComboBox;
+    BtJPEGOptions: TButton;
+    BtOk: TButton;
+    BtCancel: TButton;
+    BtSaveAsDefault: TButton;
     Label2: TLabel;
-    GroupBox2: TGroupBox;
-    RadioButton001: TRadioButton;
-    RadioButton002: TRadioButton;
-    Width: TLabel;
-    CheckBox2: TCheckBox;
-    Edit3: TEdit;
-    Button5: TButton;
-    procedure Button3Click(Sender: TObject);
+    EdSavePath: TEdit;
+    BtChangeDirectory: TButton;
+    DdResizeAction: TComboBox;
+    EdWidth: TEdit;
+    EdHeight: TEdit;
+    Label4: TLabel;
+    CbAspectRatio: TCheckBox;
+    CbConvert: TCheckBox;
+    CbAddSuffix: TCheckBox;
+    CbResize: TCheckBox;
+    CbRotate: TCheckBox;
+    DdRotate: TComboBox;
+    EdImageName: TEdit;
+    procedure BtCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure Edit1Exit(Sender: TObject);
-    procedure ComboBox1Exit(Sender: TObject);
-    procedure Edit2KeyPress(Sender: TObject; var Key: Char);
-    procedure ComboBox1Change(Sender: TObject);
-    procedure CheckBox2Click(Sender: TObject);
-    procedure Button5Click(Sender: TObject);
-    procedure ComboBox2Click(Sender: TObject);
+    procedure BtJPEGOptionsClick(Sender: TObject);
+    procedure BtOkClick(Sender: TObject);
+    procedure BtSaveAsDefaultClick(Sender: TObject);
+    procedure EdWidthExit(Sender: TObject);
+    procedure EdHeightKeyPress(Sender: TObject; var Key: Char);
+    procedure BtChangeDirectoryClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
+    FData : TDBPopupMenuInfo;
     { Private declarations }
   public
-    FImageList : TArStrings;
-    FIDList : TArInteger;
-    procedure GetFileList(ImageList : TArStrings; IDList : TArInteger);
+    procedure SetInfo(List : TDBPopupMenuInfo);
     procedure LoadLanguage;
+    procedure ProcessImages;
     { Public declarations }
   end;
 
-Procedure ResizeImages(ImageList : TArStrings; IDList : TArInteger);
+procedure ResizeImages(List : TDBPopupMenuInfo);
 
 implementation
 
@@ -68,101 +57,82 @@ uses UnitJPEGOptions, ProgressActionUnit;
 
 {$R *.dfm}
 
-Procedure ResizeImages(ImageList : TArStrings; IDList : TArInteger);
+procedure ResizeImages(List : TDBPopupMenuInfo);
 var
   FormSizeResizer: TFormSizeResizer;
 begin
   Application.CreateForm(TFormSizeResizer, FormSizeResizer);
-  FormSizeResizer.GetFileList(ImageList,IDList);
-  FormSizeResizer.ShowModal;
-  FormSizeResizer.Release;
-  if UseFreeAfterRelease then FormSizeResizer.Free;
+  FormSizeResizer.SetInfo(List);
+  FormSizeResizer.Show;
 end;
 
-procedure TFormSizeResizer.Button3Click(Sender: TObject);
+procedure TFormSizeResizer.BtCancelClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFormSizeResizer.FormCreate(Sender: TObject);
 var
-  Formats : TArGraphicClass;
-  i : integer;
-  Description, Mask : String;
+  Formats: TArGraphicClass;
+  I: Integer;
+  Description, Mask: string;
 begin
- LoadLanguage;
- DBkernel.RecreateThemeToForm(Self);
- ComboBox2.Clear;
- Formats:=GetConvertableImageClasses;
- for i:=0 to Length(Formats)-1 do
- begin
-  if Formats[i]<>TGIFImage then
+  FData := TDBPopupMenuInfo.Create;
+  LoadLanguage;
+  DBkernel.RecreateThemeToForm(Self);
+  Formats := GetConvertableImageClasses;
+  for I := 0 to Length(Formats) - 1 do
   begin
-   if Formats[i]<>TiffImageUnit.TTiffGraphic then
-   Description:=GraphicEx.FileFormatList.GetDescription(Formats[i]) else
-   Description:='Tiff Image';
-  end else
-  Description:='GIF Image';
-  if Formats[i]<>TBitmap then
-  Mask:=GraphicFileMask(Formats[i]) else
-  Mask:='*.bmp;*.dib';
-  ComboBox2.Items.Add(Description+'  ('+Mask+')')
- end;
- Edit1.Text:=IntToStr(DBKernel.ReadInteger('Convert options','Width',1024));
- Edit2.Text:=IntToStr(DBKernel.ReadInteger('Convert options','Height',768));
- ComboBox2.ItemIndex:=DBKernel.ReadInteger('Convert options','Format',0);
- ComboBox1.Text:=DBKernel.ReadString('Convert options','Zoom');
- RadioButton01.Checked:=DBKernel.ReadBool('Convert options','100x100',true);
- RadioButton02.Checked:=DBKernel.ReadBool('Convert options','200x200',false);
- RadioButton03.Checked:=DBKernel.ReadBool('Convert options','600x800',false);
- RadioButton04.Checked:=DBKernel.ReadBool('Convert options','XXXxXXX',false);
- RadioButton05.Checked:=DBKernel.ReadBool('Convert options','Use zom',false);
- CheckBox1.Checked:=DBKernel.ReadBool('Convert options','Save Ratio',true);
- RadioButton1.Checked:=DBKernel.ReadBool('Convert options','Original Format',true);
- RadioButton2.Checked:=DBKernel.ReadBool('Convert options','Convert',false);
- RadioButton001.Checked:=DBKernel.ReadBool('Convert options','Replace',false);
- RadioButton002.Checked:=DBKernel.ReadBool('Convert options','New',true);
+    if Formats[I] <> TGIFImage then
+    begin
+      if Formats[I] <> TiffImageUnit.TTiffGraphic then
+        Description := GraphicEx.FileFormatList.GetDescription(Formats[I])
+      else
+        Description := 'Tiff Image';
+    end
+    else
+      Description := 'GIF Image';
+    if Formats[I] <> TBitmap then
+      Mask := GraphicFileMask(Formats[I])
+    else
+      Mask := '*.bmp;*.dib';
+    DdConvert.Items.Add(Description + '  (' + Mask + ')')
+  end;
 
+  //TODO: Edit1.Text:=IntToStr(DBKernel.ReadInteger('Convert options','Width',1024));
 end;
 
-procedure TFormSizeResizer.Button1Click(Sender: TObject);
+procedure TFormSizeResizer.FormDestroy(Sender: TObject);
 begin
- SetJPEGOptions;
+  FData.Free;
 end;
 
-procedure TFormSizeResizer.Button2Click(Sender: TObject);
+procedure TFormSizeResizer.BtJPEGOptionsClick(Sender: TObject);
+begin
+  SetJPEGOptions;
+end;
+
+procedure TFormSizeResizer.BtOkClick(Sender: TObject);
 var
-  OldGraphic, NewGraphic : TGraphic;
-  BitmapGraphic, Temp : TBitmap;
-  i, ImageSizeW, ImageSizeH, w, h, j, res : integer;
-  NewGraphicClass : TGraphicClass;
-  Password, NewEXT, FileName, OldEXT, FileDir, EndDir : string;
-  EventInfo : TEventValues;
-  b : boolean;
-  ProgressWindow : TProgressActionForm;
-
- function GetZoom : real;
- var
-   s : string;
-   i : integer;
- begin
-  s:=ComboBox1.Text;
-  for i:=Length(s) downto 1 do
-  if not (s[i] in abs_cifr) then delete(s,i,1);
-  Result:=StrToFloatDef(s,50)/100;;
- end;
+  OldGraphic, NewGraphic: TGraphic;
+  BitmapGraphic, Temp: TBitmap;
+  I, ImageSizeW, ImageSizeH, W, H, J, Res: Integer;
+  NewGraphicClass: TGraphicClass;
+  Password, NewEXT, FileName, OldEXT, FileDir, EndDir: string;
+  EventInfo: TEventValues;
+  B: Boolean;
+  ProgressWindow: TProgressActionForm;
 
 begin
 
- 
- if ComboBox2.ItemIndex<0 then
- begin
-  MessageBoxDB(Handle,TEXT_MES_CHOOSE_FORMAT,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  ComboBox2.SetFocus;
-  exit;
- end;
+  if DdConvert.ItemIndex<0 then
+  begin
+    MessageBoxDB(Handle,TEXT_MES_CHOOSE_FORMAT, TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+    DdConvert.SetFocus;
+    Exit;
+  end;
 
- ProgressWindow:=GetProgressWindow;
+{ ProgressWindow:=GetProgressWindow;
  ProgressWindow.OneOperation:=false;
  ProgressWindow.OperationCount:=1;
  ProgressWindow.OperationPosition:=1;
@@ -403,7 +373,7 @@ begin
      (NewGraphic as TJPEGImage).ProgressiveEncoding:=DBKernel.ReadBool('','JPEGProgressiveMode',false);
     end;
 
-    
+
     b:=false;
     Repeat
      j:=1;
@@ -453,112 +423,72 @@ begin
  end;
  ProgressWindow.Release;
  ProgressWindow.Free;
- Close;
+ Close;          }
 end;
 
-procedure TFormSizeResizer.GetFileList(ImageList: TArStrings;
-  IDList: TArInteger);
+procedure TFormSizeResizer.SetInfo(List : TDBPopupMenuInfo);
+var
+  I : Integer;
 begin
- FImageList:=ImageList;
- FIDList:=IDList;
+  for I := 0 to List.Count - 1 do
+    FData.Add(List[I].Copy);
 end;
 
-procedure TFormSizeResizer.Button4Click(Sender: TObject);
+procedure TFormSizeResizer.BtSaveAsDefaultClick(Sender: TObject);
 begin
- DBKernel.WriteInteger('Convert options','Width',StrToIntDef(Edit1.text,1024));
- DBKernel.WriteInteger('Convert options','Height',StrToIntDef(Edit2.text,768));
- DBKernel.WriteInteger('Convert options','Format',ComboBox2.ItemIndex);
- DBKernel.WriteString('Convert options','Zoom',ComboBox1.Text);
- DBKernel.WriteBool('Convert options','100x100',RadioButton01.Checked);
- DBKernel.WriteBool('Convert options','200x200',RadioButton02.Checked);
- DBKernel.WriteBool('Convert options','600x800',RadioButton03.Checked);
- DBKernel.WriteBool('Convert options','XXXxXXX',RadioButton04.Checked);
- DBKernel.WriteBool('Convert options','Use zom',RadioButton05.Checked);
- DBKernel.WriteBool('Convert options','Save Ratio',CheckBox1.Checked);
- DBKernel.WriteBool('Convert options','Original Format',RadioButton1.Checked);
- DBKernel.WriteBool('Convert options','Convert',RadioButton2.Checked);
- DBKernel.WriteBool('Convert options','Replace',RadioButton001.Checked);
- DBKernel.WriteBool('Convert options','New',RadioButton002.Checked);
+  //TODO: DBKernel.WriteInteger('Convert options','Width',StrToIntDef(Edit1.text,1024));
 end;
 
-procedure TFormSizeResizer.Edit1Exit(Sender: TObject);
+procedure TFormSizeResizer.EdWidthExit(Sender: TObject);
 begin
- (Sender as TEdit).Text:=IntToStr(Min(Max(StrToIntDef((Sender as TEdit).Text,100),5),5000));
-end;
-
-procedure TFormSizeResizer.ComboBox1Exit(Sender: TObject);
-
- function GetZoom : real;
- var
-   s : string;
-   i : integer;
- begin
-  s:=ComboBox1.Text;
-  for i:=Length(s) downto 1 do
-  if not (s[i] in abs_cifr) then delete(s,i,1);
-  Result:=StrToFloatDef(s,75)/100;
-  if Result<0.05 then Result:=0.05;
-  if Result>1 then Result:=1;
- end;
-
-begin
- ComboBox1.Text:=IntToStr(Round(GetZoom*100))+'%';
+  (Sender as TEdit).Text := IntToStr(Min(Max(StrToIntDef((Sender as TEdit).Text,100),5),5000));
 end;
 
 procedure TFormSizeResizer.LoadLanguage;
 begin
- Caption:=TEXT_MES_CHANGE_SIZE_CAPTION;
- Label2.Caption:=TEXT_MES_CHANGE_SIZE_INFO;
- GroupBox1.Caption:=TEXT_MES_CHANGE_SIZE;
- RadioButton01.Caption:=TEXT_MES_CHANGE_SIZE_100x100;
- RadioButton02.Caption:=TEXT_MES_CHANGE_SIZE_200x200;
- RadioButton03.Caption:=TEXT_MES_CHANGE_SIZE_600x800;
- RadioButton04.Caption:=TEXT_MES_CHANGE_SIZE_CUSTOM;
- Width.Caption:=TEXT_MES_WIDTH;
- Label1.Caption:=TEXT_MES_HEIGHT;
- CheckBox1.Caption:=TEXT_MES_SAVE_ASPECT_RATIO;
- RadioButton05.Caption:=TEXT_MES_USE_ZOOM;
- RadioButton1.Caption:=TEXT_MES_TRY_KEEP_ORIGINAL_FORMAT;
- RadioButton2.Caption:=TEXT_MES_CONVERT_TO;
- Button1.Caption:=TEXT_MES_JPEG_OPTIONS;
- GroupBox2.Caption:=TEXT_MES_FILE_ACTIONS;
- RadioButton001.Caption:=TEXT_MES_REPLACE_IMAGES;
- RadioButton002.Caption:=TEXT_MES_MAKE_NEW_IMAGES;
- Button4.Caption:=TEXT_MES_SAVE_SETTINGS_BY_DEFAULT;
- Button3.Caption:=TEXT_MES_CANCEL;
- Button2.Caption:=TEXT_MES_OK;
- CheckBox2.Caption:=TEXT_MES_USE_ANOTHER_FOLDER;
+  Caption := TEXT_MES_CHANGE_SIZE_CAPTION;
+  Label2.Caption := TEXT_MES_CHANGE_SIZE_INFO;
+  CbResize.Caption := TEXT_MES_CHANGE_SIZE;
+
+  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_SMALL);
+  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_MEDIUM);
+  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_LARGE);
+  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_THUMBNAILS);
+  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_POCKET_PC);
+  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [25]));
+  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [50]));
+  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [75]));
+  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [150]));
+  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [200]));
+  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [400]));
+  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_CUSTOM);
+
+  CbAspectRatio.Caption := TEXT_MES_SAVE_ASPECT_RATIO;
+  CbConvert.Caption := TEXT_MES_CONVERT_TO;
+  BtJPEGOptions.Caption := TEXT_MES_JPEG_OPTIONS;
+  BtSaveAsDefault.Caption := TEXT_MES_SAVE_SETTINGS_BY_DEFAULT;
+  BtCancel.Caption := TEXT_MES_CANCEL;
+  BtOk.Caption := TEXT_MES_OK;
 end;
 
-procedure TFormSizeResizer.Edit2KeyPress(Sender: TObject; var Key: Char);
+procedure TFormSizeResizer.ProcessImages;
 begin
- if key in ['0'..'9'] then
- RadioButton04.Checked:=true;
+
 end;
 
-procedure TFormSizeResizer.ComboBox1Change(Sender: TObject);
+procedure TFormSizeResizer.EdHeightKeyPress(Sender: TObject; var Key: Char);
 begin
- RadioButton05.Checked:=true; 
+  if not (Key in ['0'..'9']) then
+    Key := #0;
 end;
 
-procedure TFormSizeResizer.CheckBox2Click(Sender: TObject);
-begin
- Edit3.Enabled:=CheckBox2.Checked;
- Button5.Enabled:=CheckBox2.Checked;
-end;
-
-procedure TFormSizeResizer.Button5Click(Sender: TObject);
+procedure TFormSizeResizer.BtChangeDirectoryClick(Sender: TObject);
 var
-  Dir : string;
+  Directory: string;
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_FOLDER_FOR_IMAGES,Dolphin_DB.UseSimpleSelectFolderDialog);
- if DirectoryExists(dir) then
- Edit3.Text:=dir;
-end;
-
-procedure TFormSizeResizer.ComboBox2Click(Sender: TObject);
-begin
- RadioButton2.Checked:=true;
+  Directory := UnitDBFileDialogs.DBSelectDir(Handle, TEXT_MES_SEL_FOLDER_FOR_IMAGES, UseSimpleSelectFolderDialog);
+  if DirectoryExists(Directory) then
+    EdSavePath.Text := Directory;
 end;
 
 end.

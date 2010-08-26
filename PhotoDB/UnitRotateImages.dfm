@@ -4,8 +4,8 @@ object FormRotateImages: TFormRotateImages
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
   Caption = 'Rotate Images'
-  ClientHeight = 361
-  ClientWidth = 337
+  ClientHeight = 424
+  ClientWidth = 544
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -176,7 +176,6 @@ object FormRotateImages: TFormRotateImages
     Width = 217
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
     OnClick = ComboBox2Click
   end

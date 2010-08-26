@@ -965,7 +965,6 @@ begin
   end;
   ProgressForm.Close;
   ProgressForm.Release;
-  if UseFreeAfterRelease then ProgressForm.Free;
   FBusy:=false;
 end;
 
@@ -1232,15 +1231,15 @@ begin
  end;
  If NumberOfPanel>=0 then
  begin
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
  end;
  If NumberOfPanel<0 then
  begin
   Panel:=ManagerPanels.NewPanel;
   Panel.Show;
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,true,Panel);
-  LoadFilesToPanel.Create(false,InfoNames,InfoIDs,Infoloaded,true,false,Panel);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,true,Panel);
+  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,false,Panel);
  end;
 end;
 

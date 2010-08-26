@@ -66,6 +66,7 @@ object FormInternetUpdating: TFormInternetUpdating
     EnterBould = True
     TopIconIncrement = 0
     ImageCanRegenerate = False
+    UseSpecIconSize = True
   end
   object RichEdit1: TRichEdit
     Left = 8
@@ -104,6 +105,7 @@ object FormInternetUpdating: TFormInternetUpdating
     EnterBould = True
     TopIconIncrement = 0
     ImageCanRegenerate = False
+    UseSpecIconSize = True
   end
   object DestroyTimer: TTimer
     Enabled = False

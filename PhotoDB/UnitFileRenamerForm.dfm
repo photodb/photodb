@@ -1,9 +1,9 @@
 object FormFastFileRenamer: TFormFastFileRenamer
   Left = 201
   Top = 125
-  Width = 393
-  Height = 389
   Caption = 'FormFastFileRenamer'
+  ClientHeight = 351
+  ClientWidth = 377
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,7 +20,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
     Left = 0
     Top = 73
     Width = 377
-    Height = 249
+    Height = 247
     Align = alClient
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
     PopupMenu = PopupMenu1
@@ -79,7 +79,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Top = 24
       Width = 225
       Height = 21
-      ItemHeight = 13
       TabOrder = 2
       OnChange = Edit1Change
     end
@@ -108,13 +107,13 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Width = 110
       Height = 16
       Cursor = crHandPoint
-      Text = 'Conflict of FileNames! '
-      OnClick = WebLinkWarningClick
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
+      Text = 'Conflict of FileNames! '
+      OnClick = WebLinkWarningClick
       BkColor = clRed
       ImageIndex = 0
       IconWidth = 0
@@ -124,11 +123,12 @@ object FormFastFileRenamer: TFormFastFileRenamer
       EnterBould = False
       TopIconIncrement = 0
       ImageCanRegenerate = False
+      UseSpecIconSize = True
     end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 322
+    Top = 320
     Width = 377
     Height = 31
     Align = alBottom

@@ -581,7 +581,6 @@ begin
       if AboutForm<>nil then
       begin
        AboutForm.Release;
-       if UseFreeAfterRelease then AboutForm.Free;
        AboutForm:=nil;
       end;
       begin
@@ -668,8 +667,8 @@ begin
    Dolphin_DB.LoadDblFromfile(FileNameA,fids_,param);
    FormCont:=ManagerPanels.NewPanel;
    SetLength(B,0);
-   LoadFilesToPanel.Create(false,param,fids_,B,false,true,FormCont);
-   LoadFilesToPanel.Create(false,param,fids_,B,false,false,FormCont);     
+   LoadFilesToPanel.Create(param,fids_,B,false,true,FormCont);
+   LoadFilesToPanel.Create(param,fids_,B,false,false,FormCont);
    FormCont.Show;
    ActivateApplication(FormCont.Handle);
    exit;
@@ -679,7 +678,7 @@ begin
    fids_:=LoadIDsFromfileA(FileNameA);
    setlength(param,1);
    FormCont:=ManagerPanels.NewPanel;
-   LoadFilesToPanel.Create(false,param,fids_,B,false,true,FormCont);
+   LoadFilesToPanel.Create(param,fids_,B,false,true,FormCont);
    FormCont.Show;
    ActivateApplication(FormCont.Handle);
   end else

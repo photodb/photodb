@@ -864,7 +864,6 @@ object FormConvertingDB: TFormConvertingDB
       Width = 417
       Height = 201
       Style = lbOwnerDrawVariable
-      ItemHeight = 16
       TabOrder = 1
       OnDrawItem = InfoListBoxDrawItem
     end
@@ -873,6 +872,7 @@ object FormConvertingDB: TFormConvertingDB
       Top = 328
       Width = 100
       Height = 18
+      Visible = False
       MaxValue = 100
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 16711808
@@ -884,7 +884,6 @@ object FormConvertingDB: TFormConvertingDB
       CoolColor = 38400
       Color = clBlack
       View = dm_pr_cool
-      Visible = False
       Inverse = False
     end
   end
@@ -974,7 +973,6 @@ object FormConvertingDB: TFormConvertingDB
       Width = 113
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       ItemIndex = 1
       TabOrder = 0
       Text = 'ThSize'
@@ -1883,7 +1881,6 @@ object FormConvertingDB: TFormConvertingDB
       Width = 113
       Height = 21
       AutoComplete = False
-      ItemHeight = 13
       ItemIndex = 3
       TabOrder = 2
       Text = '150'

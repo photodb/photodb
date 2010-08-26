@@ -442,7 +442,6 @@ procedure TEditGroupsForm.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TEditGroupsForm.CheckBox3Click(Sender: TObject);

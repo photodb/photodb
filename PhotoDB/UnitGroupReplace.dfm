@@ -32,7 +32,6 @@ object FormGroupReplace: TFormGroupReplace
       Width = 91
       Height = 21
       Enabled = False
-      ItemHeight = 13
       ParentColor = True
       PopupMenu = PopupMenu1
       TabOrder = 2

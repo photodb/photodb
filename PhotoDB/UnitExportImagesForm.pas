@@ -86,7 +86,6 @@ begin
   ExportImagesForm.GetFileList(ImageList,IDList,RotateList);
   ExportImagesForm.ShowModal;
   ExportImagesForm.Release;
-  if UseFreeAfterRelease then ExportImagesForm.Free;
 end;
 
 procedure TExportImagesForm.FormCreate(Sender: TObject);
@@ -161,9 +160,9 @@ begin
  Caption:=TEXT_MES_EXPORT_IMAGES;
  Label2.Caption:=TEXT_MES_EXPORT_IMAGES_INFO;
  GroupBox1.Caption:=TEXT_MES_CHANGE_SIZE;
- RadioButton01.Caption:=TEXT_MES_CHANGE_SIZE_100x100;
- RadioButton02.Caption:=TEXT_MES_CHANGE_SIZE_200x200;
- RadioButton03.Caption:=TEXT_MES_CHANGE_SIZE_600x800;
+ //TODO:RadioButton01.Caption:=TEXT_MES_CHANGE_SIZE_100x100;
+ //TODO:RadioButton02.Caption:=TEXT_MES_CHANGE_SIZE_200x200;
+ //TODO:RadioButton03.Caption:=TEXT_MES_CHANGE_SIZE_600x800;
  RadioButton04.Caption:=TEXT_MES_CHANGE_SIZE_CUSTOM;
  Width.Caption:=TEXT_MES_WIDTH;
  Label1.Caption:=TEXT_MES_HEIGHT;

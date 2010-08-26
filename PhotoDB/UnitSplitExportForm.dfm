@@ -1,9 +1,9 @@
 object SplitExportForm: TSplitExportForm
   Left = 203
   Top = 157
-  Width = 486
-  Height = 427
   Caption = 'SplitExportForm'
+  ClientHeight = 389
+  ClientWidth = 470
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

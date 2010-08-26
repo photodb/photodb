@@ -196,8 +196,7 @@ end;
 procedure TExportForm.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
- if UseFreeAfterRelease then Release;
- ExportForm.Free;
+ Release;
  ExportForm:=nil;
 end;
 

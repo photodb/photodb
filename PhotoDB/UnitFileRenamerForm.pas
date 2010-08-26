@@ -74,7 +74,6 @@ begin
  FormFastFileRenamer.SetFiles(Files,IDS);
  FormFastFileRenamer.ShowModal;
  FormFastFileRenamer.Release;
- if UseFreeAfterRelease then FormFastFileRenamer.Free;
 end;
 
 { TFormFastFileRenamer }

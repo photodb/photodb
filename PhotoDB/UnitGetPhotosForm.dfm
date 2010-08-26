@@ -285,7 +285,6 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 97
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     ItemIndex = 0
     TabOrder = 7
     Text = 'Move'
@@ -399,6 +398,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Top = 328
     Width = 225
     Height = 18
+    Visible = False
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
@@ -410,7 +410,6 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     CoolColor = 38400
     Color = clBlack
     View = dm_pr_cool
-    Visible = False
     Inverse = False
   end
   object DestroyTimer: TTimer

@@ -105,7 +105,6 @@ begin
  end;
  FormManageGroups.Execute;
  FormManageGroups.Release;
- if UseFreeAfterRelease then FormManageGroups.Free;
  FormManageGroups:=nil;
 end;
 

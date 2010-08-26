@@ -207,7 +207,6 @@ begin
  DestroyTimer.Enabled:=false;
  ImportDataBaseForm:=nil;
  Release;
- if UseFreeAfterRelease then Free; 
 end;
 
 procedure TImportDataBaseForm.FormClose(Sender: TObject;

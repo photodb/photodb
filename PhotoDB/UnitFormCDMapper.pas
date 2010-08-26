@@ -106,7 +106,6 @@ procedure TFormCDMapper.TimerDestroyTimer(Sender: TObject);
 begin
  TimerDestroy.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TFormCDMapper.LoadLanguage;

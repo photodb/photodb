@@ -81,7 +81,6 @@ begin
  RotateWithoutPromt:=DBKernel.Readbool('Options','RotateWithoutPromt',true);
  if v and not RotateWithoutPromt then FormRotateImages.ShowModal else FormRotateImages.Button2Click(nil);
  FormRotateImages.Release;
- if UseFreeAfterRelease then FormRotateImages.Free;
 end;
 
 procedure TFormRotateImages.Button1Click(Sender: TObject);

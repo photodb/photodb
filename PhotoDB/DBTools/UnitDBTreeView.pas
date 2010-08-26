@@ -294,8 +294,6 @@ begin
   Until not DBInOpening;
   TempTable.First;
   OpenProgress.Release;
-  if UseFreeAfterRelease then
-  OpenProgress.Free;
   
  Show;
  Button1Click(self);
@@ -307,7 +305,6 @@ begin
  begin
   DestroyTimer.Enabled:=false;
   Release;
-  if UseFreeAfterRelease then Free;
  end;
 end;
 

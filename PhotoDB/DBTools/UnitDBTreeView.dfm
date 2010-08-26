@@ -1,9 +1,9 @@
 object FormCreateDBFileTree: TFormCreateDBFileTree
   Left = 87
   Top = 134
-  Width = 531
-  Height = 404
   Caption = 'FormCreateDBFileTree'
+  ClientHeight = 366
+  ClientWidth = 515
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

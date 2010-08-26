@@ -1,10 +1,10 @@
 object FormListOfKeyWords: TFormListOfKeyWords
   Left = 211
   Top = 171
-  Width = 320
-  Height = 395
   BorderStyle = bsSizeToolWin
   Caption = 'List of KeyWords'
+  ClientHeight = 361
+  ClientWidth = 304
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,7 +24,7 @@ object FormListOfKeyWords: TFormListOfKeyWords
     Left = 0
     Top = 57
     Width = 304
-    Height = 268
+    Height = 270
     Align = alClient
     ItemHeight = 13
     TabOrder = 0
@@ -33,12 +33,13 @@ object FormListOfKeyWords: TFormListOfKeyWords
   end
   object Panel1: TPanel
     Left = 0
-    Top = 325
+    Top = 327
     Width = 304
     Height = 34
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = 323
     object Panel2: TPanel
       Left = 172
       Top = 0

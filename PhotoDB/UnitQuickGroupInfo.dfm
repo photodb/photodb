@@ -262,7 +262,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Width = 255
     Height = 22
     ItemsEx = <>
-    ItemHeight = 16
     ParentColor = True
     PopupMenu = PopupMenu2
     TabOrder = 7
@@ -270,7 +269,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     OnKeyPress = ComboBoxEx1KeyPress
     OnSelect = ComboBoxEx1Select
     Images = GroupsImageList
-    DropDownCount = 8
   end
   object CheckBox2: TCheckBox
     Left = 4

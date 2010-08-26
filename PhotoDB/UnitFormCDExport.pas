@@ -179,7 +179,6 @@ procedure TFormCDExport.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TFormCDExport.FormClose(Sender: TObject;

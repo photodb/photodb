@@ -31,7 +31,7 @@ type
   BooleanResult : Boolean;
   IntParam : integer;
   BooleanParam : Boolean;
-  StringParam : String;   
+  StringParam : String;
   GUIDParam : TGUID;
   CurrentFile : String;
   IconParam : TIcon;
@@ -53,7 +53,9 @@ type
   IsBigImage : boolean;
   LoadingAllBigImages : boolean;
   FullFolderPicture : TPNGGraphic;
-   { Private declarations }
+  FSyncEvent : THandle;
+  FMultiProcessorWork : Boolean;
+  { Private declarations }
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
@@ -129,7 +131,7 @@ type
     function IsVirtualTerminate : Boolean; override;
   public
     FUpdaterInfo : TUpdaterInfo;
-    ExplorerInfo : TExplorerViewInfo;   
+    ExplorerInfo : TExplorerViewInfo;
     FInfo : TOneRecordInfo;
     IsCryptedFile : Boolean;
     FFileID : TGUID;
@@ -139,6 +141,7 @@ type
     constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
+    property SyncEvent : THandle read FSyncEvent;
   end;
 
 type
@@ -157,22 +160,23 @@ uses Language, FormManegerUnit, UnitViewerThread, CommonDBSupport, uExplorerThre
 
 Constructor TExplorerThread.Create(Folder,
   Mask: string; ThreadType : Integer; Info: TExplorerViewInfo; Sender : TExplorerForm; UpdaterInfo: TUpdaterInfo; SID : TGUID);
-begin             
- inherited Create(Sender, SID);
- FThreadType:= ThreadType;
- FSender:=Sender;
- FFolder := Folder;
- Fmask := Mask;
- FCID:=SID;
- ExplorerInfo:= Info;
- FShowFiles := True;
- FUpdaterInfo := UpdaterInfo;
- FullFolderPicture := nil;
- FVisibleFiles := nil;
- FEvent := 0;
- FPreviewInProgress := False;
- if ThreadType <> THREAD_TYPE_THREAD_PREVIEW then
-   Start;
+begin
+  inherited Create(Sender, SID);
+  FThreadType := ThreadType;
+  FSender := Sender;
+  FFolder := Folder;
+  Fmask := Mask;
+  FCID := SID;
+  ExplorerInfo := Info;
+  FShowFiles := True;
+  FUpdaterInfo := UpdaterInfo;
+  FullFolderPicture := nil;
+  FVisibleFiles := nil;
+  FEvent := 0;
+  FPreviewInProgress := False;
+  FThreadPreviewMode := 0;
+  // if ThreadType <> THREAD_TYPE_THREAD_PREVIEW then
+  Start;
 end;
 
 procedure TExplorerThread.Execute;
@@ -189,7 +193,7 @@ var
  s : string;
  p : Integer;
 
-begin        
+begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
@@ -211,17 +215,19 @@ begin
     end;
 
     if (FThreadType = THREAD_TYPE_THREAD_PREVIEW) then
-    begin     
+    begin
       FEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
+      FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
       TW.I.Start('CreateEvent: ' + IntToStr(FEvent));
       try
         ProcessThreadPreviews;
       finally
         CloseHandle(FEvent);
+        CloseHandle(FSyncEvent);
       end;
       Exit;
     end;
-       
+
     if (FThreadType = THREAD_TYPE_BIG_IMAGES) then
     begin
       ShowProgress;
@@ -245,19 +251,19 @@ begin
       Dec(UpdaterCount);
       Exit;
     end;
- 
+
     if (FThreadType=THREAD_TYPE_FILE) then
     begin
       UpdateSimpleFile;
       Exit;
     end;
-    
+
     if (FThreadType=THREAD_TYPE_FOLDER_UPDATE) then
     begin
       UpdateFolder;
       Exit;
     end;
- 
+
     ShowInfo(TEXT_MES_INITIALIZATION+'...', 1, 0);
     FFolderBitmap := nil;
     FSelected := nil;
@@ -268,14 +274,14 @@ begin
      SynchronizeEx(DoStopSearch);
      Exit;
     end;
-    
+
     if (FThreadType=THREAD_TYPE_NETWORK) then
     begin
       LoadNetWorkFolder;
       SynchronizeEx(DoStopSearch);
       Exit;
     end;
-    
+
     if (FThreadType=THREAD_TYPE_WORKGROUP) then
     begin
       LoadWorkgroupFolder;
@@ -288,7 +294,7 @@ begin
       SynchronizeEx(DoStopSearch);
      Exit;
     end;
-    
+
     UnformatDir(FFolder);
     if not DirectoryExists(FFolder) then
     begin
@@ -298,18 +304,18 @@ begin
       SynchronizeEx(ExplorerBack);
       Exit;
     end;
-          
+
     TW.I.Start('<EXPLORER THREAD>');
     PrivateFiles := TStringList.Create;
     try
       SynchronizeEx(BeginUpdate);
-      
+
       DBFolderToSearch:=FFolder;
       UnProcessPath(DBFolderToSearch);
       DBFolderToSearch:=AnsiLowerCase(DBFolderToSearch);
       UnFormatDir(DBFolderToSearch);
       CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
-      FormatDir(DBFolderToSearch);                                    
+      FormatDir(DBFolderToSearch);
       FormatDir(FFolder);
       FFiles:=TExplorerFileInfos.Create;
 
@@ -333,7 +339,7 @@ begin
          SetStrParam(FQuery,0,'%'+DBFolderToSearch+'%');
          SetStrParam(FQuery,1,'%'+DBFolderToSearch+'%\%');
         end;
-        
+
         for I:=1 to 20 do
         begin
          try
@@ -354,13 +360,13 @@ begin
           begin
             if FQuery.FieldByName('Access').AsInteger=db_access_private then
               PrivateFiles.Add(AnsiLowerCase(ExtractFileName(FQuery.FieldByName('FFileName').AsString)));
-            
+
             FQuery.Next;
           end;
           PrivateFiles.Sort;
         end;
-                                     
-        ShowInfo(TEXT_MES_READING_FOLDER,1,0);   
+
+        ShowInfo(TEXT_MES_READING_FOLDER,1,0);
         FilesReadedCount:=0;
         FilesWithoutIcons:=0;
         FE := False;
@@ -372,7 +378,7 @@ begin
          if IsTerminated then Break;
          try
          if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
-         begin     
+         begin
           FA := SearchRec.Attr and FaHidden;
           If ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
           begin
@@ -412,15 +418,15 @@ begin
            begin
             AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FOLDER, -1, GetGUID,0,0,0,0,0,'','','',0,false,true,true);
             Continue;
-           end;  
-          end;   
+           end;
+          end;
          end;
          finally
           Found := SysUtils.FindNext(SearchRec);
          end;
         end;
         FindClose(SearchRec);
-        
+
         ShowInfo(TEXT_MES_LOADING_INFO, 1, 0);
         ShowProgress;
         SynchronizeEx(InfoToExplorerForm);
@@ -433,7 +439,7 @@ begin
          begin
            if IsTerminated then Break;
            GUIDParam:=FFiles[i].SID;
-           Inc(InfoPosition); 
+           Inc(InfoPosition);
            if i mod 10 = 0 then
              ShowInfo(InfoPosition);
            CurrentFile := FFiles[i].FileName;
@@ -480,9 +486,9 @@ begin
           begin
             TW.I.Start('GetVisibleFiles');
             SynchronizeEx(GetVisibleFiles);
-            VisibleUp(i); 
+            VisibleUp(i);
             TW.I.Start('GetVisibleFiles - end');
-          end;   
+          end;
           Priority := tpNormal;
 
           if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
@@ -575,13 +581,13 @@ end;
 
 procedure TExplorerThread.InfoToExplorerForm;
 begin
-  if not IsTerminated then 
+  if not IsTerminated then
     FSender.LoadInfoAboutFiles(FFiles);
 end;
 
 
 procedure TExplorerThread.FileNeededAW;
-begin    
+begin
   BooleanResult := False;
   If not IsTerminated then
   begin
@@ -682,7 +688,7 @@ begin
  end;
 
  SynchronizeEx(AddImageFileImageToExplorer);
- SynchronizeEx(AddImageFileItemToExplorer); 
+ SynchronizeEx(AddImageFileItemToExplorer);
 end;
 
 procedure TExplorerThread.DrawImageIcon;
@@ -794,7 +800,7 @@ begin
       FreeAndNil(FInfo);
     end;
   end;
-    
+
   FInfo.Loaded := True;
   FInfo.Tag := EXPLORER_ITEM_IMAGE;
 
@@ -869,7 +875,7 @@ Var
   end;
 
   function FileInPrivateFiles(FileName : String) : Boolean;
-  begin          
+  begin
     Result := FPrivateFileNames.IndexOf(AnsiLowerCase(FileName)) > -1;
   end;
 
@@ -883,7 +889,7 @@ Var
    end;
   end;
 
-begin          
+begin
   ps := ExplorerInfo.PictureSize;
   _y := Round((564-68)*ps/1200);
   SmallImageSize := Round(_y/1.05);
@@ -917,7 +923,7 @@ begin
         FormatDir(DBFolder);
 
         Query := GetQuery(False);
-                
+
         if ExplorerInfo.ShowPrivate then
           SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
         else
@@ -997,7 +1003,7 @@ begin
             Found := SysUtils.FindNext(SearchRec);
           end;
           FindClose(SearchRec);
-        end; 
+        end;
         if Count + Nbr = 0 then
           Exit;
       end;
@@ -1144,7 +1150,7 @@ begin
       fFolderImages.FileDates[i] := FilesDatesInFolder[i];
     AExplorerFolders.SaveFolderImages(fFolderImages, SmallImageSize, SmallImageSize);
   end;
-           
+
   GUIDParam := DirctoryID;
   SynchronizeEx(ReplaceFolderImage);
 end;
@@ -1282,7 +1288,7 @@ end;
 
 procedure TExplorerThread.MakeTempBitmapSmall;
 begin
- TempBitmap:=Tbitmap.Create;  
+ TempBitmap:=Tbitmap.Create;
  TempBitmap.PixelFormat:=pf24Bit;
  TempBitmap.Width:=FIcoSize;
  TempBitmap.Height:=FIcoSize;
@@ -1302,7 +1308,7 @@ begin
     if FolderView then
       AddPathStr := ProgramDir
     else
-      AddPathStr := '';   
+      AddPathStr := '';
     Fquery.First;
     for I := 1 to Fquery.RecordCount do
     begin
@@ -1465,7 +1471,7 @@ begin
     begin
       GUIDParam := FFiles[I].SID;
       CurrentFile := FFiles[I].FileName;
-                            
+
       IconParam := nil;
       FindIcon(DBKernel.IconDllInstance,'WORKGROUP',FIcoSize,32,IconParam);
 
@@ -1504,7 +1510,7 @@ begin
   ShowInfo(TEXT_MES_READING_WORKGROUP,1,0);
   FFiles := TExplorerFileInfos.Create;
   try
-    ComputerList:=TStringList.Create;   
+    ComputerList:=TStringList.Create;
     try
       if (FindAllComputers(FFolder,ComputerList)<>0) and (ComputerList.Count=0) then
       begin
@@ -1610,7 +1616,7 @@ var
 begin
  if FUpdaterInfo.ID<>0 then
  UpdateImageRecord(FFolder,FUpdaterInfo.ID);
- FQuery:=GetQuery;                               
+ FQuery:=GetQuery;
  UnProcessPath(FFolder);
  if FolderView then FFolder:=ExtractFileName(FFolder);
 
@@ -1621,7 +1627,7 @@ begin
 
   SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FFolder))+' AND FFileName LIKE :FFileName');
 
-  
+
  SetStrParam(FQuery,0,'%'+normalizeDBStringLike(NormalizeDBString(AnsiLowercase(FFolder)))+'%');
  try
   FQuery.Active:=True;
@@ -1781,14 +1787,14 @@ begin
   try
     if LoadingAllBigImages then
       SynchronizeEx(GetAllFiles);
-                
+
     ShowInfo(TEXT_MES_LOADING_BIG_IMAGES);
     ShowInfo(FFiles.Count ,0);
     InfoPosition:=0;
- 
+
     for I := 0 to FFiles.Count - 1 do
     begin
-             
+
       Inc(InfoPosition);
       ShowInfo(InfoPosition);
 
@@ -1944,7 +1950,7 @@ procedure TExplorerThread.ExtractImage(Info: TOneRecordInfo; CryptedFile : Boole
 var
   W, H : integer;
   FPic : TPicture;
-  Password : string;  
+  Password : string;
   TempBit, Fbit : TBitmap;
 begin
   if Info.ItemId = 0 then
@@ -2038,10 +2044,10 @@ begin
   end;
   if Info.Image <> nil then
     Info.Image.Free;
-    
+
   if not ((Info.PassTag = 0) and Info.ItemCrypted) then
     ApplyRotate(TempBitmap, Info.ItemRotate);
-  
+
   if FThreadType = THREAD_TYPE_IMAGE then
     IsBigImage := False; //сбрасываем флаг для того чтобы перезагрузилась картинка
 
@@ -2050,8 +2056,8 @@ begin
 end;
 
 procedure TExplorerThread.ProcessThreadPreviews;
-begin       
-  Priority := tpLower;
+begin
+  FPreviewInProgress := True;
   while True do
   begin
     IsTerminated := False;
@@ -2069,19 +2075,23 @@ begin
 
           FThreadPreviewMode := 0;
 
+          TW.I.Start('UnRegisterSubThread: ' + IntToStr(FEvent));
           if GOM.IsObj(ParentThread) then
             ParentThread.UnRegisterSubThread(Self);
         except
           on e : Exception do
             EventLog('TExplorerThread.ProcessThreadImages' + e.Message);
         end;
-      finally 
+      finally
         TW.I.Start('SetEvent: ' + IntToStr(FEvent));
+        FPreviewInProgress := False;
         SetEvent(FEvent);
       end;
     finally
-      TW.I.Start('Suspend: ' + IntToStr(FEvent));
-      Suspend;
+      TW.I.Start('Suspended: ' + IntToStr(FEvent));
+      WaitForSingleObject(FSyncEvent, INFINITE);
+      TW.I.Start('Resumed: ' + IntToStr(FEvent));
+      FPreviewInProgress := True;
     end;
   end;
 end;
@@ -2106,5 +2116,5 @@ initialization
 finalization
 
  FreeAndNil(AExplorerFolders);
- 
+
 end.

@@ -69,7 +69,6 @@ begin
  Application.CreateForm(TFormChangeGroup,FormChangeGroup);
  FormChangeGroup.Execute(Group.GroupCode);
  FormChangeGroup.Release;
- if UseFreeAfterRelease then FormChangeGroup.Free;
 end;
 
 procedure TFormChangeGroup.FormCreate(Sender: TObject);

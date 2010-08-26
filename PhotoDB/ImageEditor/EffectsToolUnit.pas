@@ -300,7 +300,6 @@ begin
   if not ExEffectForm.Execute(Self,Image,NewImage,ExEffects[item.Indent-Length(BaseEffects)],OutFilterInitialString) then
   NewImage:=nil;
   ExEffectForm.Release;
-  if UseFreeAfterRelease then ExEffectForm.Free;
 
   if ApplyOnDone then
   begin

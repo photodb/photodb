@@ -82,7 +82,6 @@ procedure TFormCDMapInfo.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TFormCDMapInfo.Button1Click(Sender: TObject);

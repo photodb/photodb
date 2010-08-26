@@ -4,21 +4,24 @@ interface
 
 uses Classes, Windows, SysUtils, SyncObjs;
 
-{$DEFINE _PROFILER}
-{$DEFINE _MULTITHREAD}
+{$DEFINE _STARTUP}
+{$DEFINE PROFILER}
+{$DEFINE _MULTIFILES}
+{$DEFINE MULTITHREAD}
 
 type
   TW = class(TObject)
-  private    
+  private
 {$IFDEF PROFILER}
-    FS : TFileStream; 
+    FS : TFileStream;
+    SW : TStreamWriter;
 {$ENDIF}
     FStart : TDateTime;
     FMessageThreadID : THandle;
     FStartUp : TDateTime;
     IsRuning : Boolean;
     FName : string;
-    FThreadID : THandle;  
+    FThreadID : THandle;
 {$IFDEF MULTITHREAD}
     FSync : TCriticalSection;
 {$ENDIF}
@@ -41,28 +44,30 @@ var
 { TW }
 
 constructor TW.Create(ThreadID : THandle);
-begin        
+begin
 {$IFDEF MULTITHREAD}
-    FSync := TCriticalSection.Create;
+  FSync := TCriticalSection.Create;
 {$ENDIF}
   FThreadID := ThreadID;
   IsRuning := False;
   FStartUp := Now;
   if MainThreadID = ThreadID then
     FThreadID := 0;
-{$IFDEF MULTITHREAD}
+{$IFNDEF MULTIFILES}
   FThreadID := 0;
 {$ENDIF}
 
 {$IFDEF PROFILER}
-  FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate);
+  FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate or fmShareDenyWrite);
+  SW := TStreamWriter.Create(FS, TEncoding.UTF8);
 {$ENDIF}
 end;
 
 destructor TW.Destroy;
-begin    
+begin
 {$IFDEF PROFILER}
-  FS.Free;   
+  SW.Free;
+  FS.Free;
 {$ENDIF}
 {$IFDEF MULTITHREAD}
   FSync.Free;
@@ -85,12 +90,14 @@ begin
       W := TList.Create;
 
     CurrentThreadID := GetCurrentThreadID;
-{$IFNDEF MULTITHREAD}
+    if MainThreadID = CurrentThreadID then
+      CurrentThreadID := 0;
+{$IFNDEF MULTIFILES}
     CurrentThreadID := 0;
 {$ENDIF}
     for I := 0 to W.Count - 1 do
       if TW(W[I]).ThreadID = CurrentThreadID then
-         Result := W[I];  
+         Result := W[I];
 
     if Result = nil then
     begin
@@ -105,7 +112,7 @@ end;
 procedure TW.Start(Name: string);
 begin
 {$IFNDEF PROFILER}
-  Exit; 
+  Exit;
 {$ENDIF}
 {$IFDEF MULTITHREAD}
   FSync.Enter;
@@ -117,7 +124,7 @@ begin
   FName := Name;
   FStart := Now;
   FMessageThreadID := GetCurrentThreadID;
-  IsRuning := True;  
+  IsRuning := True;
 {$IFDEF MULTITHREAD}
   finally
     FSync.leave;
@@ -131,21 +138,24 @@ var
   Delta : Integer;
 begin
   IsRuning := False;
-  Delta := Round((Now - FStart)*24*60*60*1000);
+  Delta := Round((Now - FStart) * 24 * 60 * 60 * 1000);
+{$IFDEF STARTUP}
   if Delta > 0 then
+{$ENDIF}
   begin
-    Info := Format('%s = %d ms. (%d ms.)%s', [FName, Delta , Round((Now - FStartUp)*24*60*60*1000), #13#10]);
+    Info := Format('%s = %d ms. (%d ms.)', [FName, Delta , Round((Now - FStartUp) * 24 * 60 * 60 * 1000)]);
 {$IFDEF MULTITHREAD}
-    Info := IntToStr(FMessageThreadID) + ':' + Info;
+    Info := IntToStr(FMessageThreadID) + ': ' + Info;
 {$ENDIF}
 {$IFDEF PROFILER}
-    FS.Write(Info[1], Length(Info));  
+    SW.Write(Info);
+    SW.WriteLine;
 {$ENDIF}
   end;
 end;
 
 initialization
-  
+
   TW.I.Start('initialization');
 
 end.

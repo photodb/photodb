@@ -12,7 +12,7 @@ uses
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
-  uListViewUtils, uDBDrawing, uFileUtils;
+  uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx;
 
 type
   TFormCont = class(TThreadForm)
@@ -49,23 +49,22 @@ type
     ExportLink: TWebLink;
     ExCopyLink: TWebLink;
     Rename1: TMenuItem;
-    ImageBackGround: TImage;
     CoolBar1: TCoolBar;
     ToolBar1: TToolBar;
-    ToolButton1: TToolButton;
+    TbResize: TToolButton;
     ToolBarImageList: TImageList;
-    ToolButton2: TToolButton;
-    ToolButton3: TToolButton;
-    ToolButton4: TToolButton;
+    TbConvert: TToolButton;
+    TbExport: TToolButton;
+    TbCopy: TToolButton;
     ToolButton5: TToolButton;
     ToolButton6: TToolButton;
-    ToolButton7: TToolButton;
-    ToolButton8: TToolButton;
-    ToolButton9: TToolButton;
+    TbSeparator: TToolButton;
+    TbZoomIn: TToolButton;
+    TbZoomOut: TToolButton;
     BigImagesTimer: TTimer;
     WebLink1: TWebLink;
     RedrawTimer: TTimer;
-    ToolButton10: TToolButton;
+    TbStop: TToolButton;
     ToolButton11: TToolButton;
     ToolBarDisabledImageList: TImageList;
     TerminateTimer: TTimer;
@@ -121,10 +120,10 @@ type
     procedure ListView1SelectItem(Sender: TObject; Item: TEasyItem;
       Selected: Boolean);
     function GetListItemByID( ID : integer): TEasyItem;
-    procedure ToolButton8Click(Sender: TObject);
-    procedure ToolButton9Click(Sender: TObject);
+    procedure TbZoomInClick(Sender: TObject);
+    procedure TbZoomOutClick(Sender: TObject);
     procedure BigImagesTimerTimer(Sender: TObject);
-    procedure ToolButton10Click(Sender: TObject);
+    procedure TbStopClick(Sender: TObject);
     procedure TerminateTimerTimer(Sender: TObject);
     procedure N05Click(Sender: TObject);
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
@@ -133,7 +132,7 @@ type
     PopupHandled : boolean;
     LoadingThItem, ShLoadingThItem : TEasyItem;
 
-    ListView1 : TEasyListView;
+    ElvMain : TEasyListView;
     FilePushed : boolean;
     FilePushedName : string;
 
@@ -171,55 +170,54 @@ type
   procedure CreateParams(VAR Params: TCreateParams); override;
     { Private declarations }
   public
-   WindowID : TGUID;
-   SID : TGUID;
-   BigImagesSID : TGUID;
-   procedure DoStopLoading(CID: TGUID);
-   function IsSelectedVisible: boolean;
-   procedure AddFileName(FileName: String);
-   function GetPictureSize : integer;
-   procedure ZoomOut;
-   procedure ZoomIn;
-   function GetVisibleItems : TArStrings;
-   function FileNameExistsInList(FileName : string) : boolean;
-   procedure ReplaseBitmapWithPath(FileName : string; Bitmap : TBitmap);
-   procedure AddThread;
-   procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
-  private
-   fPictureSize : integer;
-   fThreadCount : integer;
-  published
-  FBitmapImageList : TBitmapImageList;
-  procedure LoadLanguage;
-  procedure LoadToolBarIcons();
-  procedure LoadSizes;
-
     { Public declarations }
+    WindowID: TGUID;
+    SID: TGUID;
+    BigImagesSID: TGUID;
+    procedure DoStopLoading(CID: TGUID);
+    function IsSelectedVisible: Boolean;
+    procedure AddFileName(FileName: string);
+    procedure ZoomOut;
+    procedure ZoomIn;
+    function GetVisibleItems: TArStrings;
+    function FileNameExistsInList(FileName: string): Boolean;
+    procedure ReplaseBitmapWithPath(FileName: string; Bitmap: TBitmap);
+    procedure AddThread;
+    procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
+    procedure LoadLanguage;
+    procedure LoadToolBarIcons;
+    procedure LoadSizes;
+    procedure CreateBackgroundImage;
+  private
+    FPictureSize : integer;
+    FThreadCount : integer;
+    FBitmapImageList : TBitmapImageList;
+  published
+    property PictureSize : Integer read FPictureSize;
   end;
 
   TManagePanels = class(TObject)
-   Private
-    FPanels : TList;
+  private
+    FPanels: TList;
     function GetPanelByIndex(Index: Integer): TFormCont;
-   Public
+  public
     constructor Create;
     destructor Destroy; override;
-    Function NewPanel : TFormCont;
-    Procedure FreePanel(Panel : TFormCont);
-    Procedure AddPanel(Panel : TFormCont);
-    Procedure RemovePanel(Panel : TFormCont);
-    procedure GetPanelsTexts(List : TStrings);
-    Function ExistsPanel(Panel : TForm; CID : TGUID) : Boolean;
-    Function Count : integer;
+    function PanelIndex(Panel: TFormCont) : Integer;
+    function NewPanel: TFormCont;
+    procedure FreePanel(Panel: TFormCont);
+    procedure AddPanel(Panel: TFormCont);
+    procedure RemovePanel(Panel: TFormCont);
+    procedure GetPanelsTexts(List: TStrings);
+    function ExistsPanel(Panel: TForm; CID: TGUID): Boolean;
+    function Count: Integer;
     function IsPanelForm(Panel: TForm): Boolean;
-    property Items[Index: Integer]: TFormCont read GetPanelByIndex; default;
-    procedure FillSendToPanelItems(MenuItem : TMenuItem; OnClick : TNotifyEvent);
+    property Items[index: Integer]: TFormCont read GetPanelByIndex; default;
+    procedure FillSendToPanelItems(MenuItem: TMenuItem; OnClick: TNotifyEvent);
   end;
 
-
 var
-  FormsCount_ : integer = 0;
-  ManagerPanels : TmanagePanels;
+  ManagerPanels : TManagePanels;
 
 implementation
 
@@ -244,139 +242,153 @@ begin
  TPanelLoadingBigImagesThread.Create(false,self,BigImagesSID,nil,fPictureSize,Copy(fData));
 end;
 
-procedure TFormCont.FormCreate(Sender: TObject);
+procedure TFormCont.CreateBackgroundImage;
 var
-  i : integer;
+  BackgroundImage : TPNGGraphic;
+  Bitmap, SearchBackgroundBMP : TBitmap;
 begin
- FilePushedName:='';
- fThreadCount:=0;
- SID:=GetGUID;
- BigImagesSID:=GetGUID;
- fPictureSize:=ThSizePanelPreview;
- DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
- ListView1 := TEasyListView.Create(self);
- ListView1.Parent:=self;
- ListView1.Align:=AlClient;
+  Bitmap := TBitmap.Create;
+  try
+    Bitmap.PixelFormat := Pf24bit;
+    Bitmap.Canvas.Brush.Color := Theme_ListColor;
+    Bitmap.Canvas.Pen.Color := Theme_ListColor;
+    Bitmap.Width := 120;
+    Bitmap.Height := 120;
 
-     MouseDowned:=false;
-     PopupHandled:=false;
-     ListView1.BackGround.Enabled:=true;
-     ListView1.BackGround.Tile:=false;
-     ListView1.BackGround.AlphaBlend:=true;
-     ListView1.BackGround.OffsetTrack:=true;
-     ListView1.BackGround.BlendAlpha:=220;
-     ListView1.BackGround.Image:=TBitmap.create;
-     ListView1.BackGround.Image.PixelFormat:=pf24bit;
-     ListView1.BackGround.Image.Width:=120;
-     ListView1.BackGround.Image.Height:=120;
-     ListView1.BackGround.Image.Canvas.Brush.Color:=Theme_ListColor;
-     ListView1.BackGround.Image.Canvas.Pen.Color:=Theme_ListColor;
-     ListView1.BackGround.Image.Canvas.Rectangle(0,0,120,120);
-
-     for i:=1 to 20 do
-     begin
+    BackgroundImage := GetImagePanelImage;
+    try
+      SearchBackgroundBMP := TBitmap.Create;
       try
-       ListView1.BackGround.Image.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
-       break;
-      except
-       Sleep(50);
-      end;
-     end;
+        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme_ListColor);
+        Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
+      finally
+        SearchBackgroundBMP.Free;
+       end;
+    finally
+      BackgroundImage.Free;
+    end;
+    ElvMain.BackGround.Image := Bitmap;
+  finally
+    Bitmap.Free;
+  end;
+end;
 
-     ListView1.Font.Color:=0;
-     ListView1.View:=elsThumbnail;
-     ListView1.DragKind:=dkDock;
-     ListView1.HotTrack.Color:=Theme_ListFontColor;
+procedure TFormCont.FormCreate(Sender: TObject);
+begin
+  FilePushedName := '';
+  FThreadCount := 0;
+  SID := GetGUID;
+  BigImagesSID := GetGUID;
+  FPictureSize := ThSizePanelPreview;
+  DBKernel.RegisterProcUpdateTheme(UpdateTheme, Self);
+  ElvMain := TEasyListView.Create(Self);
+  ElvMain.Parent := Self;
+  ElvMain.Align := AlClient;
 
-     ListView1.Selection.FullRowSelect:=true;
-     ListView1.Selection.UseFocusRect:=true;
+  MouseDowned := False;
+  PopupHandled := False;
+  ElvMain.BackGround.Enabled := True;
+  ElvMain.BackGround.Tile := False;
+  ElvMain.BackGround.AlphaBlend := True;
+  ElvMain.BackGround.OffsetTrack := True;
+  ElvMain.BackGround.BlendAlpha := 220;
+  CreateBackgroundImage;
 
-     ListView1.Selection.MouseButton:= [cmbRight];
-     ListView1.Selection.AlphaBlend:=true;
-     ListView1.Selection.AlphaBlendSelRect:=true;
-     ListView1.Selection.MultiSelect:=true;
-     ListView1.Selection.RectSelect:=true;
-     ListView1.Selection.EnableDragSelect:=true;
-     ListView1.Selection.TextColor:=Theme_ListFontColor;
+  ElvMain.Font.Color := 0;
+  ElvMain.View := ElsThumbnail;
+  ElvMain.DragKind := DkDock;
+  ElvMain.HotTrack.Color := Theme_ListFontColor;
 
-     fPictureSize := ThSizePanelPreview;
-     LoadSizes;
-     ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-     ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
+  ElvMain.Selection.FullRowSelect := True;
+  ElvMain.Selection.UseFocusRect := True;
 
-     ListView1.IncrementalSearch.Enabled:=true;
-     ListView1.OnItemThumbnailDraw:=EasyListview1ItemThumbnailDraw;
+  ElvMain.Selection.MouseButton := [CmbRight];
+  ElvMain.Selection.AlphaBlend := True;
+  ElvMain.Selection.AlphaBlendSelRect := True;
+  ElvMain.Selection.MultiSelect := True;
+  ElvMain.Selection.RectSelect := True;
+  ElvMain.Selection.EnableDragSelect := True;
+  ElvMain.Selection.TextColor := Theme_ListFontColor;
 
-     ListView1.OnDblClick := EasyListview1DblClick;
+  FPictureSize := ThSizePanelPreview;
+  LoadSizes;
+  ElvMain.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
+  ElvMain.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
 
-     ListView1.OnIncrementalSearch := Listview1IncrementalSearch;
-     ListView1.OnMouseDown:=ListView1MouseDown;
-     ListView1.OnMouseUp:=ListView1MouseUp;
-     ListView1.OnMouseMove:=ListView1MouseMove;
-     ListView1.OnItemSelectionChanged:=EasyListview1ItemSelectionChanged;
-     ListView1.OnMouseWheel:=ListView1MouseWheel;
-     ListView1.OnResize:=ListView1Resize;
-     ListView1.Groups.Add;
-     ListView1.HotTrack.Cursor:=CrArrow;
+  ElvMain.IncrementalSearch.Enabled := True;
+  ElvMain.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
 
-   ConvertTo32BitImageList(DragImageList);
+  ElvMain.OnDblClick := EasyListview1DblClick;
 
- WindowID:=GetGUID;
- FilePushed:=false;
- LoadLanguage;
+  ElvMain.OnIncrementalSearch := Listview1IncrementalSearch;
+  ElvMain.OnMouseDown := ListView1MouseDown;
+  ElvMain.OnMouseUp := ListView1MouseUp;
+  ElvMain.OnMouseMove := ListView1MouseMove;
+  ElvMain.OnItemSelectionChanged := EasyListview1ItemSelectionChanged;
+  ElvMain.OnMouseWheel := ListView1MouseWheel;
+  ElvMain.OnResize := ListView1Resize;
+  ElvMain.Groups.Add;
+  ElvMain.HotTrack.Cursor := CrArrow;
 
+  ConvertTo32BitImageList(DragImageList);
 
- ListView1.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
+  WindowID := GetGUID;
+  FilePushed := False;
+  LoadLanguage;
 
- DropFileTarget2.Register(Self);
- FBitmapImageList := TBitmapImageList.Create;
- ManagerPanels.AddPanel(self);
- DBkernel.RecreateThemeToForm(self);
- ListView1.DoubleBuffered:=true;
- inc(FormsCount_);
- Caption:=format(TEXT_MES_PANEL_CAPTION,[inttostr(FormsCount_)]);
- Tag:=FormsCount_;
- DBKernel.RegisterChangesID(self,ChangedDBDataByID);
- PopupMenu1.Images:=DBKernel.ImageList;
- Copy1.ImageIndex:=DB_IC_COPY;
- Paste1.ImageIndex:=DB_IC_PASTE;
- LoadFromFile1.ImageIndex:=DB_IC_LOADFROMFILE;
- SaveToFile1.ImageIndex:=DB_IC_SAVETOFILE;
- SelectAll1.ImageIndex:=DB_IC_SELECTALL;
- Close1.ImageIndex:=DB_IC_EXIT;
- Clear1.ImageIndex:=DB_IC_DELETE_INFO;
- SlideShow1.ImageIndex:=DB_IC_SLIDE_SHOW;
+  ElvMain.HotTrack.Enabled := DBKernel.Readbool('Options', 'UseHotSelect', True);
 
- Rename1.ImageIndex:=DB_IC_RENAME;
+  DropFileTarget2.register(Self);
+  FBitmapImageList := TBitmapImageList.Create;
+  ManagerPanels.AddPanel(Self);
+  DBkernel.RecreateThemeToForm(Self);
+  ElvMain.DoubleBuffered := True;
 
- Label2.Caption:=TEXT_MES_ACTIONS+':';
- Rename1.Caption:=TEXT_MES_RENAME;
- WebLink1.LoadFromHIcon(UnitDBKernel.icons[DB_IC_RESIZE+1]);
- WebLink2.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CONVERT+1]);
- ExportLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EXPORT_IMAGES+1]);
- ExCopyLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);
+  ManagerPanels.AddPanel(Self);
 
- RatingPopupMenu1.Images:=DBkernel.ImageList;
+  Caption := Format(TEXT_MES_PANEL_CAPTION, [Inttostr(ManagerPanels.PanelIndex(Self) + 1)]);
 
- N00.ImageIndex:=DB_IC_DELETE_INFO;
- N01.ImageIndex:=DB_IC_RATING_1;
- N02.ImageIndex:=DB_IC_RATING_2;
- N03.ImageIndex:=DB_IC_RATING_3;
- N04.ImageIndex:=DB_IC_RATING_4;
- N05.ImageIndex:=DB_IC_RATING_5;
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  PopupMenu1.Images := DBKernel.ImageList;
+  Copy1.ImageIndex := DB_IC_COPY;
+  Paste1.ImageIndex := DB_IC_PASTE;
+  LoadFromFile1.ImageIndex := DB_IC_LOADFROMFILE;
+  SaveToFile1.ImageIndex := DB_IC_SAVETOFILE;
+  SelectAll1.ImageIndex := DB_IC_SELECTALL;
+  Close1.ImageIndex := DB_IC_EXIT;
+  Clear1.ImageIndex := DB_IC_DELETE_INFO;
+  SlideShow1.ImageIndex := DB_IC_SLIDE_SHOW;
 
- WebLink2.Top:=WebLink1.Top+WebLink1.Height+5;
- ExportLink.Top:=WebLink2.Top+WebLink2.Height+5;
- ExCopyLink.Top:=ExportLink.Top+ExportLink.Height+5;
+  Rename1.ImageIndex := DB_IC_RENAME;
 
- DBkernel.RegisterForm(self);
- LoadToolBarIcons;
+  Label2.Caption := TEXT_MES_ACTIONS + ':';
+  Rename1.Caption := TEXT_MES_RENAME;
+  WebLink1.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
+  WebLink2.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
+  ExportLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EXPORT_IMAGES + 1]);
+  ExCopyLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COPY + 1]);
+
+  RatingPopupMenu1.Images := DBkernel.ImageList;
+
+  N00.ImageIndex := DB_IC_DELETE_INFO;
+  N01.ImageIndex := DB_IC_RATING_1;
+  N02.ImageIndex := DB_IC_RATING_2;
+  N03.ImageIndex := DB_IC_RATING_3;
+  N04.ImageIndex := DB_IC_RATING_4;
+  N05.ImageIndex := DB_IC_RATING_5;
+
+  WebLink2.Top := WebLink1.Top + WebLink1.Height + 5;
+  ExportLink.Top := WebLink2.Top + WebLink2.Height + 5;
+  ExCopyLink.Top := ExportLink.Top + ExportLink.Height + 5;
+
+  DBkernel.RegisterForm(Self);
+  LoadToolBarIcons;
 end;
 
 procedure TFormCont.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- ManagerPanels.RemovePanel(self);
- TerminateTimer.Enabled:=true;
+  ManagerPanels.RemovePanel(Self);
+  TerminateTimer.Enabled := True;
 end;
 
 procedure TFormCont.ListView1ContextPopup(Sender: TObject;
@@ -390,8 +402,8 @@ var
 begin
  if CopyFilesSynchCount>0 then WindowsMenuTickCount:=GetTickCount;
 
- Item:=ItemByPointImage(ListView1, Point(MousePos.x,MousePos.y));
- if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ListView1.Selection.First;
+ Item:=ItemByPointImage(ElvMain, Point(MousePos.x,MousePos.y));
+ if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ElvMain.Selection.First;
 
  HintTimer.Enabled:=false;
  if item <>nil then
@@ -413,7 +425,7 @@ begin
    menus[0].Tag:=item.Index;
    menus[0].ImageIndex:=DB_IC_DELETE_INFO;
    menus[0].OnClick:=DeleteIndexItemFromPopUpMenu;
-   TDBPopupMenu.Instance.ExecutePlus(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y,Info,menus);
+   TDBPopupMenu.Instance.ExecutePlus(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info,menus);
   end else
   begin
    SetLength(FileNames,0);
@@ -423,9 +435,9 @@ begin
     SetLength(FileNames,Length(FileNames)+1);
     FileNames[Length(FileNames)-1]:=Info[i].FileName;
    end;
-   GetProperties(FileNames,MousePos,ListView1);
+   GetProperties(FileNames,MousePos,ElvMain);
   end;
- end else PopupMenu1.Popup(ListView1.ClientToScreen(MousePos).x,ListView1.ClientToScreen(MousePos).y);
+ end else PopupMenu1.Popup(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y);
 end;
 
 procedure TFormCont.ListView1MouseDown(Sender: TObject;
@@ -438,7 +450,7 @@ begin
 
   Item:=ItemAtPos(x,y);
   if Item = nil then
-    Listview1.Selection.ClearAll;
+    ElvMain.Selection.ClearAll;
 
   MouseDowned:=Button=mbRight;
   itemsel:=Item;
@@ -450,12 +462,12 @@ begin
    if not itemsel.Selected then
    begin
     if [ssCtrl,ssShift]*Shift=[] then
-    for i:=0 to Listview1.Items.Count-1 do
-    if Listview1.Items[i].Selected then
-    if itemsel<>Listview1.Items[i] then
-    Listview1.Items[i].Selected:=false;
+    for i:=0 to ElvMain.Items.Count-1 do
+    if ElvMain.Items[i].Selected then
+    if itemsel<>ElvMain.Items[i] then
+    ElvMain.Items[i].Selected:=false;
     if [ssShift]*Shift<>[] then
-     Listview1.Selection.SelectRange(itemsel,Listview1.Selection.FocusedItem,false,false) else
+     ElvMain.Selection.SelectRange(itemsel,ElvMain.Selection.FocusedItem,false,false) else
     begin
      ItemSelectedByMouseDown:=true;
      itemsel.Selected:=true;
@@ -474,7 +486,7 @@ begin
     MenuInfo:=Self.GetCurrentPopUpMenuInfo(Item);
     SetLength(FilesToDrag,0);
     For i:=0 to MenuInfo.Count-1 do
-    if ListView1.Items[i].Selected then
+    if ElvMain.Items[i].Selected then
     If FileExists(MenuInfo[I].FileName) then
     begin
      SetLength(FilesToDrag,Length(FilesToDrag)+1);
@@ -488,16 +500,16 @@ procedure TFormCont.DeleteIndexItemByID(ID : integer);
 var
   i, j : integer;
 begin
- for i:=0 to ListView1.Items.Count-1 do
+ for i:=0 to ElvMain.Items.Count-1 do
  begin
-  if i>ListView1.Items.Count-1 then break;
+  if i>ElvMain.Items.Count-1 then break;
   if Data[i].ID=ID then
   begin
-   ListView1.Items.Delete(i);
-   FBitmapImageList.Delete(ListView1.Items[i].ImageIndex);
-   for j:=i to listView1.Items.Count-1 do
+   ElvMain.Items.Delete(i);
+   FBitmapImageList.Delete(ElvMain.Items[i].ImageIndex);
+   for j:=i to ElvMain.Items.Count-1 do
    begin
-    ListView1.Items[j].ImageIndex:=ListView1.Items[j].ImageIndex-1;
+    ElvMain.Items[j].ImageIndex:=ElvMain.Items[j].ImageIndex-1;
     Data[j]:=Data[j+1];
    end;
    SetLength(Data,Length(Data)-1);
@@ -511,18 +523,18 @@ var
   p_i : pinteger;
 begin
  p_i:=@i;
- ListView1.Groups.BeginUpdate(true);
- for i:=0 to ListView1.Items.Count-1 do
+ ElvMain.Groups.BeginUpdate(true);
+ for i:=0 to ElvMain.Items.Count-1 do
  begin
-  if i>ListView1.Items.Count-1 then break;
-  if ListView1.Items[i].Selected then
+  if i>ElvMain.Items.Count-1 then break;
+  if ElvMain.Items[i].Selected then
   begin
-   FBitmapImageList.Delete(ListView1.Items[i].ImageIndex);
-   ListView1.Items.Delete(i);
-   ListView1.Groups.Rebuild(true);
-   for j:=i to listView1.Items.Count-1 do
+   FBitmapImageList.Delete(ElvMain.Items[i].ImageIndex);
+   ElvMain.Items.Delete(i);
+   ElvMain.Groups.Rebuild(true);
+   for j:=i to ElvMain.Items.Count-1 do
    begin
-    ListView1.Items[j].ImageIndex:=ListView1.Items[j].ImageIndex-1;
+    ElvMain.Items[j].ImageIndex:=ElvMain.Items[j].ImageIndex-1;
     Data[j]:=Data[j+1];
    end;
    SetLength(Data,Length(Data)-1);
@@ -530,7 +542,7 @@ begin
   end;
  end;
  Sender.Free;
- ListView1.Groups.EndUpdate;
+ ElvMain.Groups.EndUpdate;
 end;
 
 procedure TFormCont.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
@@ -541,7 +553,7 @@ var
 begin
  if EventID_Repaint_ImageList in params then
  begin
-  ListView1.Refresh;
+  ElvMain.Refresh;
   exit;
  end;
 
@@ -584,9 +596,9 @@ begin
   for i:=0 to Length(Data)-1 do
   if Data[i].ID=ID then
   begin
-   if ListView1.Items[i].ImageIndex>-1 then
+   if ElvMain.Items[i].ImageIndex>-1 then
    begin
-     ApplyRotate(FBitmapImageList[ListView1.Items[i].ImageIndex].Bitmap, ReRotation);
+     ApplyRotate(FBitmapImageList[ElvMain.Items[i].ImageIndex].Bitmap, ReRotation);
    end;
   end;
  end;
@@ -597,7 +609,7 @@ begin
   //TODO: normal image
   RefreshItemByID(id);
  end;
- if (EventID_Param_Include in params) then ListView1.Refresh;
+ if (EventID_Param_Include in params) then ElvMain.Refresh;
  if (EventID_Param_Delete in params) then
  begin
   DeleteIndexItemByID(ID);
@@ -613,7 +625,7 @@ begin
    Data[i].IsTime:=Value.IsTime;
    Data[i].Date:=Value.Date;
    Data[i].Time:=Value.Time;
-   ListView1.Refresh;
+   ElvMain.Refresh;
    break;
   end;
   exit;
@@ -622,7 +634,7 @@ begin
  RefreshParams:=[EventID_Param_Private,EventID_Param_Rotate,EventID_Param_Name,EventID_Param_Rating,EventID_Param_Crypt];
  if RefreshParams*params<>[] then
  begin
-  ListView1.Repaint;
+  ElvMain.Repaint;
  end;
 
  if [EventID_Param_DB_Changed] * params<>[] then
@@ -634,17 +646,19 @@ end;
 procedure TFormCont.AddNewItem(Image : Tbitmap; Info : TOneRecordInfo);
 var
   New: TEasyItem;
-  L : integer;
+  L: Integer;
 begin
- if Info.ItemId<>0 then
- begin
-  if ExistsItemById(Info.ItemId) then exit;
- end else
- begin
-  if ExistsItemByFileName(Info.ItemFileName) then exit;
- end;
+  if Info.ItemId <> 0 then
+  begin
+    if ExistsItemById(Info.ItemId) then
+      Exit;
+  end else
+  begin
+    if ExistsItemByFileName(Info.ItemFileName) then
+      Exit;
+  end;
 
- new := ListView1.Items.Add;
+ new := ElvMain.Items.Add;
 
  new.Tag:=Info.ItemId;
  new.Data:=TDataObject.Create;
@@ -695,10 +709,10 @@ begin
   ExportLink.Visible:=false;
   ExCopyLink.Visible:=false;
   Panel3.Visible:=false;
-  ToolButton1.Enabled:=false;
-  ToolButton2.Enabled:=false;
-  ToolButton3.Enabled:=false;
-  ToolButton4.Enabled:=false;
+  TbResize.Enabled:=false;
+  TbConvert.Enabled:=false;
+  TbExport.Enabled:=false;
+  TbCopy.Enabled:=false;
  end else
  begin
   if image1.Picture.Bitmap<>nil then
@@ -720,10 +734,10 @@ begin
   WebLink2.Visible:=true;
   ExportLink.Visible:=true;
   ExCopyLink.Visible:=true;
-  ToolButton1.Enabled:=true;
-  ToolButton2.Enabled:=true;
-  ToolButton3.Enabled:=true;
-  ToolButton4.Enabled:=true;
+  TbResize.Enabled:=true;
+  TbConvert.Enabled:=true;
+  TbExport.Enabled:=true;
+  TbCopy.Enabled:=true;
   LabelSize.Visible:=true;
   LabelSize.Caption:=Format(TEXT_MES_D_ITEMS,[SelCount]);
  end;
@@ -737,15 +751,15 @@ end;
 
 procedure TFormCont.SelectAll1Click(Sender: TObject);
 begin
- ListView1.Selection.SelectAll;
- ListView1.SetFocus;
+ ElvMain.Selection.SelectAll;
+ ElvMain.SetFocus;
 end;
 
 procedure TFormCont.Clear1Click(Sender: TObject);
 begin
  SetLength(Data,0);
  FBitmapImageList.Clear;
- ListView1.Items.Clear;
+ ElvMain.Items.Clear;
 end;
 
 procedure TFormCont.SaveToFile1Click(Sender: TObject);
@@ -834,8 +848,8 @@ var
   p, p1 : tpoint;
 begin
  getcursorpos(p);
- p1:=listview1.ScreenToClient(p);
- result:=not ((not self.Active) or (not listview1.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
+ p1:=ElvMain.ScreenToClient(p);
+ result:=not ((not self.Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
 end;
 
 procedure TFormCont.HinttimerTimer(Sender: TObject);
@@ -844,8 +858,8 @@ var
   index, i : integer;
 begin
  GetCursorPos(p);
- p1:=ListView1.ScreenToClient(p);
- if (not self.Active) or (not ListView1.Focused) or (ItemAtPos(p1.X,p1.y)<>LoadingThItem) or (shloadingthitem<>loadingthitem) then
+ p1:=ElvMain.ScreenToClient(p);
+ if (not self.Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>LoadingThItem) or (shloadingthitem<>loadingthitem) then
  begin
   HintTimer.Enabled:=false;
   exit;
@@ -868,12 +882,12 @@ begin
   if not LoadingThItem.Selected then
   begin
    if not (CtrlKeyDown or ShiftKeyDown) then
-   for i:=0 to Listview1.Items.Count-1 do
-   if Listview1.Items[i].Selected then
-   if LoadingThItem<>Listview1.Items[i] then
-   Listview1.Items[i].Selected:=false;
+   for i:=0 to ElvMain.Items.Count-1 do
+   if ElvMain.Items[i].Selected then
+   if LoadingThItem<>ElvMain.Items[i] then
+   ElvMain.Items[i].Selected:=false;
    if ShiftKeyDown then
-   Listview1.Selection.SelectRange(loadingthitem,Listview1.Selection.FocusedItem,false,false) else
+   ElvMain.Selection.SelectRange(loadingthitem,ElvMain.Selection.FocusedItem,false,false) else
    if not ShiftKeyDown then
    begin
     LoadingThItem.Selected:=true;
@@ -913,27 +927,27 @@ begin
 
    p:=DBDragPoint;
 
-   item:=ItemAtPos(ListView1.ScreenToClient(p).x,ListView1.ScreenToClient(p).y);
+   item:=ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y);
    if item=nil then exit;
-   if Listview1.Selection.FocusedItem=nil then
-   Listview1.Selection.FocusedItem:=item;
+   if ElvMain.Selection.FocusedItem=nil then
+   ElvMain.Selection.FocusedItem:=item;
    //Creating Draw image
    TempImage:=TBitmap.create;
    TempImage.PixelFormat:=pf32bit;
-   TempImage.Width:=fPictureSize+Min(ListView1.Selection.Count,10)*7+5;
-   TempImage.Height:=fPictureSize+Min(ListView1.Selection.Count,10)*7+45+1;
+   TempImage.Width:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+5;
+   TempImage.Height:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+45+1;
    MaxH:=0;
    MaxW:=0;
    TempImage.Canvas.Brush.Color := 0;
    TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
 
-   if ListView1.Selection.Count<2 then
+   if ElvMain.Selection.Count<2 then
    begin
     DragImage:=nil;
     if item<>nil then
     DragImage:=GetImageByIndex(item.ImageIndex) else
-    if ListView1.Selection.First<>nil then
-    DragImage:=GetImageByIndex(Listview1.Selection.First.ImageIndex);
+    if ElvMain.Selection.First<>nil then
+    DragImage:=GetImageByIndex(ElvMain.Selection.First.ImageIndex);
 
     TempImage.Canvas.Draw(0,0, DragImage);
     n:=0;
@@ -944,7 +958,7 @@ begin
     DragImage.Free;
    end else
    begin
-    SelectedItem:=Listview1.Selection.First;
+    SelectedItem:=ElvMain.Selection.First;
     n:=1;
     for i:=1 to 9 do
     begin
@@ -957,10 +971,10 @@ begin
       if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
       DragImage.Free;
      end;
-     SelectedItem:=Listview1.Selection.Next(SelectedItem);
+     SelectedItem:=ElvMain.Selection.Next(SelectedItem);
      if SelectedItem=nil then break;
     end;
-    DragImage:=GetImageByIndex(Listview1.Selection.FocusedItem.ImageIndex);
+    DragImage:=GetImageByIndex(ElvMain.Selection.FocusedItem.ImageIndex);
     TempImage.Canvas.Draw(n,n, DragImage);
     if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
     if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
@@ -987,7 +1001,7 @@ begin
    DropFileSource1.Files.Clear;
    for i:=0 to Length(FilesToDrag)-1 do
    DropFileSource1.Files.Add(FilesToDrag[i]);
-   ListView1.Refresh;
+   ElvMain.Refresh;
 
    Application.HideHint;
    if ImHint<>nil then
@@ -995,14 +1009,14 @@ begin
    ImHint.close;
    HintTimer.Enabled:=false;
 
-   item.ItemRectArray(nil,ListView1.Canvas,EasyRect);
+   item.ItemRectArray(nil,ElvMain.Canvas,EasyRect);
 
-   DBDragPoint:=ListView1.ScreenToClient(DBDragPoint);
+   DBDragPoint:=ElvMain.ScreenToClient(DBDragPoint);
 
    ImW:=(EasyRect.IconRect.Right-EasyRect.IconRect.Left) div 2 - ImW div 2;
    ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
    DropFileSource1.ImageHotSpotX:=Min(MaxW,Max(1,DBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
-   DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,DBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ListView1.Scrollbars.ViewableViewportRect.Top));
+   DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,DBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ElvMain.Scrollbars.ViewableViewportRect.Top));
 
    DropFileSource1.ImageIndex := 0;
    DropFileSource1.Execute;
@@ -1040,11 +1054,11 @@ var
   i : integer;
 begin
  result:=nil;
- for i:=0 to listview1.Items.Count-1 do
+ for i:=0 to ElvMain.Items.Count-1 do
  begin
-  if ListView1.Items[i].Tag=ID then
+  if ElvMain.Items[i].Tag=ID then
   begin
-   Result:=listview1.Items[i];
+   Result:=ElvMain.Items[i];
    break;
   end;
  end;
@@ -1093,7 +1107,7 @@ begin
   end;
   Setlength(param,1);
   Setlength(b,1);
-  LoadFilesToPanel.Create(false,param,fids_,b,false,true,self);
+  LoadFilesToPanel.Create(param,fids_,b,false,true,self);
 end;
 
 procedure TFormCont.LoadFromFile1Click(Sender: TObject);
@@ -1117,13 +1131,13 @@ begin
    fids_:=LoadIDsFromfileA(OpenDialog.FileName);
    SetLength(param,1);
    Setlength(b,1);
-   LoadFilesToPanel.Create(false,param,fids_,b,false,true,self);
+   LoadFilesToPanel.Create(param,fids_,b,false,true,self);
   end;
   if GetExt(OpenDialog.FileName)='DBL' then
   begin
    LoadDblFromfile(OpenDialog.FileName,fids_,param);
-   LoadFilesToPanel.Create(false,param,fids_,b,false,true,self);
-   LoadFilesToPanel.Create(false,param,fids_,b,false,false,self);
+   LoadFilesToPanel.Create(param,fids_,b,false,true,self);
+   LoadFilesToPanel.Create(param,fids_,b,false,false,self);
   end;
  end;
  OpenDialog.Free;
@@ -1132,28 +1146,28 @@ end;
 
 procedure TFormCont.SlideShow1Click(Sender: TObject);
 var
-  Info : TRecordsInfo;
-  DBInfo : TDBPopupMenuInfo;
+  Info: TRecordsInfo;
+  DBInfo: TDBPopupMenuInfo;
 begin
- Info:=RecordsInfoNil;
- DBInfo:=GetCurrentPopUpMenuInfo(nil);
- DBPopupMenuInfoToRecordsInfo(DBInfo,Info);
- If Viewer=nil then
- Application.CreateForm(TViewer,Viewer);
- Viewer.Execute(Sender,Info);
+  Info := RecordsInfoNil;
+  DBInfo := GetCurrentPopUpMenuInfo(nil);
+  DBPopupMenuInfoToRecordsInfo(DBInfo, Info);
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  Viewer.Execute(Sender, Info);
 end;
 
 function TFormCont.ExistsItemById(id: integer): boolean;
 var
-  i : integer;
+  I: Integer;
 begin
- result:=false;
- for i:=1 to ListView1.Items.Count do
- if ListView1.Items[i-1].Tag=ID then
- begin
-  Result:=true;
-  break;
- end;
+  Result := False;
+  for I := 1 to ElvMain.Items.Count do
+    if ElvMain.Items[I - 1].Tag = ID then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
 function TFormCont.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
@@ -1171,8 +1185,8 @@ begin
     MenuRecord := TDBPopupMenuInfoRecord.CreateFromContRecord(Data[i]);
     Result.Add(MenuRecord);
   end;
- For i:=0 to ListView1.Items.Count-1 do
- Result[i].Selected:=ListView1.Items[i].Selected;
+ For i:=0 to ElvMain.Items.Count-1 do
+ Result[i].Selected:=ElvMain.Items[i].Selected;
 
  Result.Position:=0;
  If Item=nil then
@@ -1194,31 +1208,31 @@ end;
 
 procedure TFormCont.LoadLanguage;
 begin
- Label1.Caption:=TEXT_MES_QUICK_INFO+':';
- SlideShow1.Caption:= TEXT_MES_SLIDE_SHOW;
- SelectAll1.Caption:= TEXT_MES_SELECT_ALL;
- Copy1.Caption:=TEXT_MES_COPY ;
- Paste1.Caption:= TEXT_MES_PASTE ;
- LoadFromFile1.Caption:= TEXT_MES_LOAD_FROM_FILE;
- SaveToFile1.Caption:= TEXT_MES_SAVE_TO_FILE;
- Clear1.Caption:= TEXT_MES_CLEAR;
- Close1.Caption:= TEXT_MES_CLOSE;
- WebLink1.Text:=TEXT_MES_SIZE;
- WebLink2.Text:=TEXT_MES_TYPE;
- ExportLink.Text:=TEXT_MES_EXPORT;
- ExCopyLink.Text:=TEXT_MES_EX_COPY;
- GroupBox1.Caption:=TEXT_MES_PHOTO;
+  Label1.Caption := TEXT_MES_QUICK_INFO + ':';
+  SlideShow1.Caption := TEXT_MES_SLIDE_SHOW;
+  SelectAll1.Caption := TEXT_MES_SELECT_ALL;
+  Copy1.Caption := TEXT_MES_COPY;
+  Paste1.Caption := TEXT_MES_PASTE;
+  LoadFromFile1.Caption := TEXT_MES_LOAD_FROM_FILE;
+  SaveToFile1.Caption := TEXT_MES_SAVE_TO_FILE;
+  Clear1.Caption := TEXT_MES_CLEAR;
+  Close1.Caption := TEXT_MES_CLOSE;
+  WebLink1.Text := TEXT_MES_SIZE;
+  WebLink2.Text := TEXT_MES_TYPE;
+  ExportLink.Text := TEXT_MES_EXPORT;
+  ExCopyLink.Text := TEXT_MES_EX_COPY;
+  GroupBox1.Caption := TEXT_MES_PHOTO;
 
- ToolButton1.Caption:=TEXT_MES_SIZE;
- ToolButton2.Caption:=TEXT_MES_TYPE;
- ToolButton3.Caption:=TEXT_MES_EXPORT;
- ToolButton4.Caption:=TEXT_MES_EX_COPY;
- ToolButton6.Caption:=TEXT_MES_CLOSE;
+  TbResize.Caption := TEXT_MES_SIZE;
+  TbConvert.Caption := TEXT_MES_TYPE;
+  TbExport.Caption := TEXT_MES_EXPORT;
+  TbCopy.Caption := TEXT_MES_EX_COPY;
+  ToolButton6.Caption := TEXT_MES_CLOSE;
 end;
 
 procedure TFormCont.LoadSizes;
 begin
-  SetLVThumbnailSize(ListView1, fPictureSize);
+  SetLVThumbnailSize(ElvMain, fPictureSize);
 end;
 
 procedure TFormCont.CreateParams(var Params: TCreateParams);
@@ -1253,7 +1267,7 @@ begin
  Param[0]:=FileName;
  Setlength(b,1);
  Setlength(ids,1);
- LoadFilesToPanel.Create(false,param,ids,b,false,false,self);
+ LoadFilesToPanel.Create(param,ids,b,false,false,self);
 end;
 
 procedure TFormCont.EasyListview1ItemThumbnailDraw(
@@ -1310,19 +1324,14 @@ end;
 procedure TFormCont.EasyListview1ItemSelectionChanged(
   Sender: TCustomEasyListview; Item: TEasyItem);
 begin
- if Item<>nil then
- ListView1SelectItem(Sender,Item,Item.Selected);
+  if Item <> nil then
+    ListView1SelectItem(Sender, Item, Item.Selected);
 end;
 
 procedure TFormCont.ListView1Resize(Sender: TObject);
 begin
- Listview1.BackGround.OffsetX:=ListView1.Width-Listview1.BackGround.Image.Width;
- Listview1.BackGround.OffsetY:=ListView1.Height-Listview1.BackGround.Image.Height;
-end;
-
-function TFormCont.GetPictureSize: integer;
-begin
- Result:=fPictureSize;
+ ElvMain.BackGround.OffsetX:=ElvMain.Width-ElvMain.BackGround.Image.Width;
+ ElvMain.BackGround.OffsetY:=ElvMain.Height-ElvMain.BackGround.Image.Height;
 end;
 
 function TFormCont.GetVisibleItems: TArStrings;
@@ -1334,11 +1343,11 @@ var
 begin
  SetLength(Result,0);
  SetLength(t,0);
- rv :=  Listview1.Scrollbars.ViewableViewportRect;
- for i:=0 to ListView1.Items.Count-1 do
+ rv :=  ElvMain.Scrollbars.ViewableViewportRect;
+ for i:=0 to ElvMain.Items.Count-1 do
  begin
-  r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,TEasyCollectionItemX(ListView1.Items[i]).GetDisplayRect) then
+  r:=Rect(ElvMain.ClientRect.Left+rv.Left,ElvMain.ClientRect.Top+rv.Top,ElvMain.ClientRect.Right+rv.Left,ElvMain.ClientRect.Bottom+rv.Top);
+  if RectInRect(r,TEasyCollectionItemX(ElvMain.Items[i]).GetDisplayRect) then
   begin
    SetLength(Result,Length(Result)+1);
    Result[Length(Result)-1]:=Data[i].FileName;
@@ -1348,36 +1357,36 @@ end;
 
 procedure TFormCont.AddThread;
 begin
- Inc(fThreadCount);
+  Inc(FThreadCount);
 end;
 
 procedure TFormCont.BigSizeCallBack(Sender: TObject; SizeX,
   SizeY: integer);
 var
-  SelectedVisible : boolean;
+  SelectedVisible: Boolean;
 begin
- ListView1.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- FPictureSize:=SizeX;
- LoadSizes;
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;
+  ElvMain.BeginUpdate;
+  try
+    SelectedVisible := IsSelectedVisible;
+    FPictureSize := SizeX;
+    LoadSizes;
+    BigImagesTimer.Enabled := False;
+    BigImagesTimer.Enabled := True;
 
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+    ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
+    ElvMain.Groups.ReIndexItems;
+    ElvMain.Groups.Rebuild(True);
 
- if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+    if SelectedVisible then
+      ElvMain.Selection.First.MakeVisible(EmvTop);
+  finally
+    ElvMain.EndUpdate;
+  end;
 end;
 
 { TmanagePanels }
 
-procedure TmanagePanels.AddPanel(Panel: TFormCont);
-var
-  i : integer;
-  b : boolean;
+procedure TManagePanels.AddPanel(Panel: TFormCont);
 begin
   if FPanels.IndexOf(Panel) > -1 then
     Exit;
@@ -1387,15 +1396,15 @@ end;
 
 function TManagePanels.Count: integer;
 begin
- Result := FPanels.Count;
+  Result := FPanels.Count;
 end;
 
-constructor TmanagePanels.Create;
+constructor TManagePanels.Create;
 begin
   FPanels := TList.Create;
 end;
 
-destructor TmanagePanels.Destroy;
+destructor TManagePanels.Destroy;
 begin
   FPanels.Free;
 end;
@@ -1527,6 +1536,11 @@ begin
  end;
 end;
 
+function TManagePanels.PanelIndex(Panel: TFormCont): Integer;
+begin
+  FPanels.Indexof(Panel);
+end;
+
 procedure TManagePanels.RemovePanel(Panel: TFormCont);
 begin
   FPanels.Remove(Panel);
@@ -1539,83 +1553,83 @@ end;
 
 procedure TFormCont.ListView1DblClick(Sender: TObject);
 var
-  MenuInfo : TDBPopupMenuInfo;
-  info : TRecordsInfo;
-  p,p1 : TPoint;
-  Item : TEasyItem;
+  MenuInfo: TDBPopupMenuInfo;
+  Info: TRecordsInfo;
+  Pos, MousePos: TPoint;
+  Item: TEasyItem;
 begin
 
-  GetCursorPos(p1);
-  p:=ListView1.ScreenToClient(p1);
-  Item := ItemByPointStar(Listview1,p, fPictureSize);
-  if Item<>nil then
+  GetCursorPos(MousePos);
+  Pos := ElvMain.ScreenToClient(MousePos);
+  Item := ItemByPointStar(ElvMain, Pos, FPictureSize);
+  if Item <> nil then
   begin
-   if ItemAtPos(p.x,p.y).Tag<>0 then
+    if ItemAtPos(Pos.X, Pos.Y).Tag <> 0 then
     begin
-    RatingPopupMenu1.Tag:=ItemAtPos(p.x,p.y).Tag;
-    Application.HideHint;
-    if ImHint<>nil then
-    if not UnitImHint.Closed then
-    ImHint.Close;
-    LoadingThitem:=nil;
-    RatingPopupMenu1.Popup(p1.x,p1.y);
-    exit;
-   end;
+      RatingPopupMenu1.Tag := ItemAtPos(Pos.X, Pos.Y).Tag;
+      Application.HideHint;
+      if (ImHint <> nil) and not not UnitImHint.Closed then
+        ImHint.Close;
+      LoadingThitem := nil;
+      RatingPopupMenu1.Popup(MousePos.X, MousePos.Y);
+      Exit;
+    end;
   end;
 
- Application.HideHint;
- if ImHint<>nil then
- if not UnitImHint.closed then
- ImHint.close;
- HintTimer.Enabled:=false;
- if ListView1Selected<>nil then
- begin
-  MenuInfo:=GetCurrentPopUpMenuInfo(ListView1Selected);
-  If Viewer=nil then
-  Application.CreateForm(TViewer,Viewer);
-  DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
-  Viewer.execute(Sender,info);
- end;
+  Application.HideHint;
+  if ImHint <> nil then
+    if not UnitImHint.Closed then
+      ImHint.Close;
+  HintTimer.Enabled := False;
+  if ListView1Selected <> nil then
+  begin
+    MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
+    if Viewer = nil then
+      Application.CreateForm(TViewer, Viewer);
+    DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
+    Viewer.Execute(Sender, Info);
+  end;
 end;
 
 procedure TFormCont.ListView1KeyPress(Sender: TObject; var Key: Char);
 begin
- if key=#13 then
- ListView1DblClick(Sender);
+  if Key = Char(VK_RETURN) then
+    ListView1DblClick(Sender);
 end;
 
 procedure TFormCont.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
-  i : integer;
-  b : Boolean;
+  I: Integer;
+  B: Boolean;
 begin
- if Msg.hwnd=ListView1.Handle then
- begin
-
-
-  //middle mouse button
-  if Msg.message=519 then
+  if Msg.Hwnd = ElvMain.Handle then
   begin
-   Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
-   BigImagesSizeForm.Execute(self,fPictureSize,BigSizeCallBack);
-   Msg.message:=0;
-  end;
 
-  if Msg.message=WM_MOUSEWHEEL then
-  begin
-   if Msg.wParam>0 then i:=1 else i:=-1;
-   if CtrlKeyDown then
-   begin
-    ListView1MouseWheel(ListView1,[ssCtrl],i,Point(0,0),b);
-    Msg.message:=0;
-   end;
-  end;
-  if Msg.message=516 then
-  begin
-   WindowsMenuTickCount:=gettickCount;
-  end;
-  if Msg.message=256 then
+    // middle mouse button
+    if Msg.message = WM_MBUTTONDOWN then
+    begin
+      Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
+      BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
+      Msg.message := 0;
+    end;
+
+    if Msg.message = WM_MOUSEWHEEL then
+    begin
+      if Msg.WParam > 0 then
+        I := 1
+      else
+        I := -1;
+      if CtrlKeyDown then
+      begin
+        ListView1MouseWheel(ElvMain, [SsCtrl], I, Point(0, 0), B);
+        Msg.message := 0;
+      end;
+    end;
+    if Msg.message = WM_RBUTTONDOWN then
+      WindowsMenuTickCount := GettickCount;
+
+  if Msg.message=WM_KEYDOWN then
   begin
    WindowsMenuTickCount:=GetTickCount;
 
@@ -1626,7 +1640,7 @@ begin
    //93-context menu button
    if (Msg.wParam=93) then
    begin
-    ListView1ContextPopup(ListView1,Point(-1,-1),b);
+    ListView1ContextPopup(ElvMain,Point(-1,-1),b);
    end;
 
    if (Msg.wParam=46) then DeleteIndexItemFromPopUpMenu(nil);
@@ -1659,24 +1673,27 @@ begin
  end;
  SetLength(ids,1);
  SetLength(b,1);
- LoadFilesToPanel.Create(false,param,ids,b,false,false,self);
+ LoadFilesToPanel.Create(param,ids,b,false,false,self);
 end;
 
 procedure TFormCont.WebLink1Click(Sender: TObject);
 var
-  i : integer;
-  ImageList : TArStrings;
-  IDList : TArInteger;
+  I: Integer;
+  List: TDBPopupMenuInfo;
+  ImageInfo: TDBPopupMenuInfoRecord;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
- begin
-  SetLength(ImageList,Length(ImageList)+1);
-  ImageList[Length(ImageList)-1]:=ProcessPath(Data[i].FileName);
-  SetLength(IDList,Length(IDList)+1);
-  IDList[Length(IDList)-1]:=Data[i].ID;
- end;
- ResizeImages(ImageList,IDList);
+  List := TDBPopupMenuInfo.Create;
+  try
+    for I := 0 to ElvMain.Items.Count - 1 do
+      if ElvMain.Items[I].Selected then
+      begin
+        ImageInfo := TDBPopupMenuInfoRecord.CreateFromContRecord(Data[I]);
+        List.Add(ImageInfo);
+      end;
+    ResizeImages(List);
+  finally
+    List.Free;
+  end;
 end;
 
 procedure TFormCont.WebLink2Click(Sender: TObject);
@@ -1685,8 +1702,8 @@ var
   ImageList : TArStrings;
   IDList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   SetLength(ImageList,Length(ImageList)+1);
   ImageList[Length(ImageList)-1]:=ProcessPath(Data[i].FileName);
@@ -1702,8 +1719,8 @@ var
   ImageList : TArStrings;
   IDList, RotateList : TArInteger;
 begin
- for i:=0 to ListView1.Items.Count-1 do
- If ListView1.Items[i].Selected then
+ for i:=0 to ElvMain.Items.Count-1 do
+ If ElvMain.Items[i].Selected then
  begin
   SetLength(ImageList,Length(ImageList)+1);
   ImageList[Length(ImageList)-1]:=ProcessPath(Data[i].FileName);
@@ -1755,8 +1772,8 @@ begin
  begin
   SetLength(DestWide,0);
   FormatDir(Dir);
-  for i:=0 to ListView1.Items.Count-1 do
-  If ListView1.Items[i].Selected then
+  for i:=0 to ElvMain.Items.Count-1 do
+  If ElvMain.Items[i].Selected then
   begin
    FileName:=ProcessPath(Data[i].FileName);
    Temp:=GetDirectory(FileName);
@@ -1780,97 +1797,80 @@ end;
 
 procedure TFormCont.PopupMenu1Popup(Sender: TObject);
 begin
- SlideShow1.Visible:=ListView1.Items.Count<>0;
- SelectAll1.Visible:=ListView1.Items.Count<>0;
- Copy1.Visible:=ListView1.Items.Count<>0;
- SaveToFile1.Visible:=ListView1.Items.Count<>0;
- Clear1.Visible:=ListView1.Items.Count<>0;
+  SlideShow1.Visible := ElvMain.Items.Count > 0;
+  SelectAll1.Visible := ElvMain.Items.Count > 0;
+  Copy1.Visible := ElvMain.Items.Count > 0;
+  SaveToFile1.Visible := ElvMain.Items.Count > 0;
+  Clear1.Visible := ElvMain.Items.Count > 0;
 end;
 
 procedure TFormCont.Rename1Click(Sender: TObject);
 var
-  s : string;
+  S: string;
 begin
- s:=Caption;
- if PromtString(TEXT_MES_ENTER_TEXT,TEXT_MES_ENTER_CAPTION_OF_PANEL,s) then
- Caption:=s;
+  S := Caption;
+  if PromtString(TEXT_MES_ENTER_TEXT, TEXT_MES_ENTER_CAPTION_OF_PANEL, S) then
+    Caption := S;
 end;
 
-Function TFormCont.SelCount : integer;
+function TFormCont.SelCount: Integer;
 begin
- Result:= ListView1.Selection.Count;
+  Result := ElvMain.Selection.Count;
 end;
 
-Function TFormCont.ListView1Selected : TEasyItem;
+function TFormCont.ListView1Selected: TEasyItem;
 begin
-  Result:= ListView1.Selection.First;
+  Result := ElvMain.Selection.First;
 end;
 
-function TFormCont.ItemAtPos(X,Y : integer): TEasyItem;
+function TFormCont.ItemAtPos(X, Y: Integer): TEasyItem;
 var
-  r : TRect;
+  R: TRect;
 begin
- r :=  Listview1.Scrollbars.ViewableViewportRect;
- Result:=Listview1.Groups[0].ItemByPoint(Point(r.left+x,r.top+y));
+  R := ElvMain.Scrollbars.ViewableViewportRect;
+  Result := ElvMain.Groups[0].ItemByPoint(Point(R.Left + X, R.Top + Y));
 end;
 
 procedure TFormCont.ListView1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  Handled : boolean;
-  i : integer;
-  item: TEasyItem;
+  Handled: Boolean;
+  I: Integer;
+  Item: TEasyItem;
 begin
 
-   item:=self.ItemAtPos(X,Y);
-   if item<>nil then
-   if item.Selected then
-   begin
-    if (Shift=[]) and item.Selected then
-    if ItemByMouseDown then
+  Item := Self.ItemAtPos(X, Y);
+  if Item <> nil then
+    if Item.Selected then
     begin
-     for i:=0 to Listview1.Items.Count-1 do
-     if Listview1.Items[i].Selected then
-     if item<>Listview1.Items[i] then
-     Listview1.Items[i].Selected:=false;
+      if (Shift = []) and Item.Selected then
+        if ItemByMouseDown then
+        begin
+          for I := 0 to ElvMain.Items.Count - 1 do
+            if ElvMain.Items[I].Selected then
+              if Item <> ElvMain.Items[I] then
+                ElvMain.Items[I].Selected := False;
+        end;
+      if not(EbcsDragSelecting in ElvMain.States) then
+        if ([SsCtrl] * Shift <> []) and not ItemSelectedByMouseDown and (Button = MbLeft) then
+          Item.Selected := False;
     end;
-    if not (ebcsDragSelecting in Listview1.States) then
-    if ([ssCtrl]*Shift<>[]) and not ItemSelectedByMouseDown and (Button=mbLeft) then
-    item.Selected:=false;
-   end;
 
- if MouseDowned then
- if Button=mbRight then
- begin
-  ListView1ContextPopup(ListView1,Point(X,Y),Handled);
-  PopupHandled:=true;
- end;
+  if MouseDowned then
+    if Button = MbRight then
+    begin
+      ListView1ContextPopup(ElvMain, Point(X, Y), Handled);
+      PopupHandled := True;
+    end;
 
- MouseDowned:=false;
+  MouseDowned := False;
 end;
 
 procedure TFormCont.UpdateTheme(Sender: TObject);
-var
-  b : TBitmap;
 begin
-
-  if ListView1<>nil then
-  begin
-   if ListView1.BackGround.Image<>nil then
-   ListView1.BackGround.Image:=nil;
-   b:=TBitmap.create;
-   b.PixelFormat:=pf24bit;
-   b.Width:=150;
-   b.Height:=150;
-   b.Canvas.Brush.Color:=ListView1.Color;
-   b.Canvas.Pen.Color:=ListView1.Color;
-   b.Canvas.Rectangle(0,0,150,150);
-   b.Canvas.Draw(0,0,ImageBackGround.Picture.Graphic);
-   ListView1.BackGround.Image:=b;
-   b.Free;
-  end;
-  ListView1.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-  ListView1.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
+  CreateBackgroundImage;
+  ElvMain.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
+  ElvMain.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
 end;
 
 procedure TFormCont.Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
@@ -1907,166 +1907,172 @@ var
 
 begin
 
- ConvertTo32BitImageList(ToolBarImageList);
- ConvertTo32BitImageList(ToolBarDisabledImageList);
+  ConvertTo32BitImageList(ToolBarImageList);
+  ConvertTo32BitImageList(ToolBarDisabledImageList);
 
- AddIcon('PANEL_RESIZE');
- AddIcon('PANEL_CONVERT');
- AddIcon('PANEL_EXPORT');
- AddIcon('PANEL_COPY');
- AddIcon('PANEL_CLOSE');
- AddIcon('PANEL_ZOOM_OUT');
- AddIcon('PANEL_ZOOM_IN');
- AddIcon('PANEL_BREAK');
+  AddIcon('PANEL_RESIZE');
+  AddIcon('PANEL_CONVERT');
+  AddIcon('PANEL_EXPORT');
+  AddIcon('PANEL_COPY');
+  AddIcon('PANEL_CLOSE');
+  AddIcon('PANEL_ZOOM_OUT');
+  AddIcon('PANEL_ZOOM_IN');
+  AddIcon('PANEL_BREAK');
 
- AddDisabledIcon('PANEL_RESIZE_GRAY');
- AddDisabledIcon('PANEL_CONVERT_GRAY');
- AddDisabledIcon('PANEL_EXPORT_GRAY');
- AddDisabledIcon('PANEL_COPY_GRAY');
- AddDisabledIcon('PANEL_CLOSE');
- AddDisabledIcon('PANEL_ZOOM_OUT');
- AddDisabledIcon('PANEL_ZOOM_IN');
- AddDisabledIcon('PANEL_BREAK_GRAY');
+  AddDisabledIcon('PANEL_RESIZE_GRAY');
+  AddDisabledIcon('PANEL_CONVERT_GRAY');
+  AddDisabledIcon('PANEL_EXPORT_GRAY');
+  AddDisabledIcon('PANEL_COPY_GRAY');
+  AddDisabledIcon('PANEL_CLOSE');
+  AddDisabledIcon('PANEL_ZOOM_OUT');
+  AddDisabledIcon('PANEL_ZOOM_IN');
+  AddDisabledIcon('PANEL_BREAK_GRAY');
 
- ToolButton1.Enabled:=false;
- ToolButton2.Enabled:=false;
- ToolButton3.Enabled:=false;
- ToolButton4.Enabled:=false;
- ToolButton10.Enabled:=false;
+  TbResize.Enabled := False;
+  TbConvert.Enabled := False;
+  TbExport.Enabled := False;
+  TbCopy.Enabled := False;
+  TbStop.Enabled := False;
 
- ToolButton1.ImageIndex:=0;
- ToolButton2.ImageIndex:=1;
- ToolButton3.ImageIndex:=2;
- ToolButton4.ImageIndex:=3;
- ToolButton5.ImageIndex:=4;
- ToolButton8.ImageIndex:=5;
- ToolButton9.ImageIndex:=6;
- ToolButton10.ImageIndex:=7;
+  TbResize.ImageIndex    := 0;
+  TbConvert.ImageIndex   := 1;
+  TbExport.ImageIndex    := 2;
+  TbCopy.ImageIndex      := 3;
+  ToolButton5.ImageIndex := 4;
+  TbZoomIn.ImageIndex    := 5;
+  TbZoomOut.ImageIndex   := 6;
+  TbStop.ImageIndex      := 7;
 
- ToolBar1.Images := ToolBarImageList;
- ToolBar1.DisabledImages := ToolBarDisabledImageList;
+  ToolBar1.Images := ToolBarImageList;
+  ToolBar1.DisabledImages := ToolBarDisabledImageList;
 end;
 
-procedure TFormCont.ToolButton8Click(Sender: TObject);
+procedure TFormCont.TbZoomInClick(Sender: TObject);
 begin
- ZoomIn;
+  ZoomIn;
 end;
 
-procedure TFormCont.ToolButton9Click(Sender: TObject);
+procedure TFormCont.TbZoomOutClick(Sender: TObject);
 begin
- ZoomOut;
+  ZoomOut;
 end;
 
 procedure TFormCont.ZoomIn;
 var
-  SelectedVisible : boolean;
+  SelectedVisible : Boolean;
 begin
- ListView1.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- if FPictureSize>40 then FPictureSize:=FPictureSize-10;
- LoadSizes;
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
+  ElvMain.BeginUpdate;
+  try
+    SelectedVisible := IsSelectedVisible;
+    if FPictureSize > 40 then
+      FPictureSize := FPictureSize - 10;
+    LoadSizes;
+    BigImagesTimer.Enabled := False;
+    BigImagesTimer.Enabled := True;
+    ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
+    ElvMain.Groups.ReIndexItems;
+    ElvMain.Groups.Rebuild(True);
 
- if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+    if SelectedVisible then
+      ElvMain.Selection.First.MakeVisible(EmvTop);
+  finally
+    ElvMain.EndUpdate;
+  end;
 end;
 
 procedure TFormCont.ZoomOut;
 var
-  SelectedVisible : boolean;
+  SelectedVisible : Boolean;
 begin
- ListView1.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- if FPictureSize<550 then FPictureSize:=FPictureSize+10;
- LoadSizes;
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;
- ListView1.Scrollbars.ReCalculateScrollbars(false,true);
- ListView1.Groups.ReIndexItems;
- ListView1.Groups.Rebuild(true);
- if SelectedVisible then
- ListView1.Selection.First.MakeVisible(emvTop);
- ListView1.EndUpdate();
+  ElvMain.BeginUpdate;
+  try
+    SelectedVisible := IsSelectedVisible;
+    if FPictureSize < 550 then
+      FPictureSize := FPictureSize + 10;
+    LoadSizes;
+    BigImagesTimer.Enabled := False;
+    BigImagesTimer.Enabled := True;
+    ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
+    ElvMain.Groups.ReIndexItems;
+    ElvMain.Groups.Rebuild(True);
+    if SelectedVisible then
+      ElvMain.Selection.First.MakeVisible(EmvTop);
+  finally
+    ElvMain.EndUpdate();
+  end;
 end;
 
 procedure TFormCont.ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
- if not (ssCtrl in Shift) then exit;
- if WheelDelta<0 then
- begin
-  ZoomIn;
- end else
- begin
-  ZoomOut;
- end;
+  if not(SsCtrl in Shift) then
+    Exit;
+
+  if WheelDelta < 0 then
+    ZoomIn
+  else
+    ZoomOut;
 end;
 
 procedure TFormCont.BigImagesTimerTimer(Sender: TObject);
 begin
- BigImagesTimer.Enabled:=false;
- BigImagesSID:=GetGUID;
+  BigImagesTimer.Enabled := False;
+  BigImagesSID := GetGUID;
 
- ToolButton10.Enabled:=true;
+  TbStop.Enabled := True;
 
- //тут начинается загрузка больших картинок
- TPanelLoadingBigImagesThread.Create(false,self,BigImagesSID,nil,fPictureSize,Copy(Data));
+  // тут начинается загрузка больших картинок
+  TPanelLoadingBigImagesThread.Create(False, Self, BigImagesSID, nil, FPictureSize, Copy(Data));
 end;
 
-function TFormCont.FileNameExistsInList(FileName : string) : boolean;
+function TFormCont.FileNameExistsInList(FileName: string): Boolean;
 var
-  i : integer;
+  I: Integer;
 begin
- FileName:=AnsiLowerCase(FileName);
- Result:=false;
- for i:=0 to Length(Data)-1 do
- begin
-  if AnsiLowerCase(Data[i].FileName)=FileName then
+  FileName := AnsiLowerCase(FileName);
+  Result := False;
+  for I := 0 to Length(Data) - 1 do
   begin
-   Result:=true;
-   break;
+    if AnsiLowerCase(Data[I].FileName) = FileName then
+    begin
+      Result := True;
+      Break;
+    end;
   end;
- end;
 end;
 
 procedure TFormCont.ReplaseBitmapWithPath(FileName : string; Bitmap : TBitmap);
 var
-  i : integer;
+  I : integer;
 begin
- FileName:=AnsiLowerCase(FileName);
- for i:=0 to Length(Data)-1 do
- begin
-  if AnsiLowerCase(Data[i].FileName)=FileName then
+ FileName:= AnsiLowerCase(FileName);
+  for I := 0 to Length(Data) - 1 do
   begin
-   FBitmapImageList[i].Bitmap.Assign(Bitmap);
-   ListView1.Refresh;
-   break;
+    if AnsiLowerCase(Data[I].FileName) = FileName then
+    begin
+      FBitmapImageList[I].Bitmap.Assign(Bitmap);
+      ElvMain.Refresh;
+      Break;
+    end;
   end;
- end;
 end;
 
-procedure TFormCont.ToolButton10Click(Sender: TObject);
+procedure TFormCont.TbStopClick(Sender: TObject);
 begin
- SID:=Dolphin_DB.GetGUID;
- BigImagesSID:=Dolphin_DB.GetGUID;
- ToolButton10.Enabled:=false;
- //todo: break
+  SID := GetGUID;
+  BigImagesSID := GetGUID;
+  TbStop.Enabled := False;
 end;
 
 procedure TFormCont.DoStopLoading(CID: TGUID);
 begin
- if IsEqualGUID(CID, SID) or IsEqualGUID(CID, BigImagesSID) then
- begin
-  if IsEqualGUID(CID, SID) then
-    Dec(fThreadCount);
-  if fThreadCount=0 then
-    ToolButton10.Enabled:=false;
- end;
+  if IsEqualGUID(CID, SID) or IsEqualGUID(CID, BigImagesSID) then
+  begin
+    if IsEqualGUID(CID, SID) then
+      Dec(FThreadCount);
+    if FThreadCount = 0 then
+      TbStop.Enabled := False;
+  end;
 end;
 
 function TFormCont.IsSelectedVisible: boolean;
@@ -2078,13 +2084,13 @@ var
 begin
  Result:=false;
  SetLength(t,0);
- rv :=  Listview1.Scrollbars.ViewableViewportRect;
- for i:=0 to ListView1.Items.Count-1 do
+ rv :=  ElvMain.Scrollbars.ViewableViewportRect;
+ for i:=0 to ElvMain.Items.Count-1 do
  begin
-  r:=Rect(ListView1.ClientRect.Left+rv.Left,ListView1.ClientRect.Top+rv.Top,ListView1.ClientRect.Right+rv.Left,ListView1.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,TEasyCollectionItemX(ListView1.Items[i]).GetDisplayRect) then
+  r:=Rect(ElvMain.ClientRect.Left+rv.Left,ElvMain.ClientRect.Top+rv.Top,ElvMain.ClientRect.Right+rv.Left,ElvMain.ClientRect.Bottom+rv.Top);
+  if RectInRect(r,TEasyCollectionItemX(ElvMain.Items[i]).GetDisplayRect) then
   begin
-   if ListView1.Items[i].Selected then
+   if ElvMain.Items[i].Selected then
    begin
     Result:=true;
     exit;
@@ -2097,7 +2103,6 @@ procedure TFormCont.TerminateTimerTimer(Sender: TObject);
 begin
  TerminateTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TFormCont.N05Click(Sender: TObject);

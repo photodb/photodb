@@ -57,7 +57,6 @@ object FormSelectFont: TFormSelectFont
     Width = 185
     Height = 185
     Style = lbOwnerDrawVariable
-    ItemHeight = 16
     TabOrder = 0
     OnClick = ListBox1Click
     OnDrawItem = ListBox1DrawItem

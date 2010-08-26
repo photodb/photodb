@@ -114,8 +114,6 @@ begin
  FormImportingImages.Execute(FileName);
  if Application.MainForm<>FormImportingImages then
  FormImportingImages.Release;
- if UseFreeAfterRelease then
- FormImportingImages.Free;
 end;
 
 procedure TFormImportingImages.Execute(FileName: string);

@@ -37,7 +37,7 @@ type
   public
     Name : string;
   end;
-  
+
   TSearchInfo = class(TObject)
   private
     FList : TList;
@@ -300,7 +300,7 @@ type
     procedure RefreshThumItemByID(ID : integer);
     procedure NewSearch1Click(Sender: TObject);
     procedure GetUpdates1Click(Sender: TObject);
-    
+
     procedure HelpNextClick(Sender: TObject);
     procedure HelpCloseClick(Sender : TObject; var CanClose : Boolean);
     procedure HelpActivationNextClick(Sender: TObject);
@@ -428,11 +428,11 @@ type
     FUpdatingDB : Boolean;
     DestroyCounter : Integer;
     GroupsLoaded : Boolean;
-    FShellTreeView : TShellTreeView;  
+    FShellTreeView : TShellTreeView;
     ListView: TEasyListView;
     LoadingThItem, ShLoadingThItem : TEasyItem;
-    SelectQuery : TDataSet;                  
-    FBitmapImageList : TBitmapImageList;  
+    SelectQuery : TDataSet;
+    FBitmapImageList : TBitmapImageList;
     MouseDowned : Boolean;
     RenameResult : Boolean;
     PopupHandled : Boolean;
@@ -455,7 +455,7 @@ type
     FW7TaskBar : ITaskbarList3;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
-    function GetDateFilter : TDateRange; 
+    function GetDateFilter : TDateRange;
     procedure AddItemInListViewByGroups(SearchRecord : TSearchRecord; ReplaceBitmap : Boolean);
     procedure RebuildQueryList;
     function GetSortMethod: Integer;
@@ -480,12 +480,12 @@ type
     procedure ZoomOut;
     procedure ReRecreateGroupsList;
     procedure DoSetSearchByComparing;
-    procedure SaveQueryList;          
+    procedure SaveQueryList;
     procedure LoadQueryList;
     procedure LoadDataPacket(Packet : TSearchRecordArray);
     procedure EmptyFillListInfo;
     procedure StartSearchThread(IsEstimate : Boolean);
-    procedure StartLoadingList;    
+    procedure StartLoadingList;
     procedure StopLoadingList;
     procedure UpdateQueryEstimateCount(Count : Integer);
   published
@@ -556,7 +556,7 @@ begin
   finally
     FScript.Free;
   end;
-        
+
   LsSearchResults.Color := ListView.Color;
 
  DateRange := GetDateFilter;
@@ -566,24 +566,24 @@ begin
  PbProgress.Text:=TEXT_MES_STOPING+'...';
  Label7.Caption:=TEXT_MES_CALCULATING+'...';
  If Creating then Exit;
- 
+
   ListView.Items.Clear;
   FBitmapImageList.Clear;
   PbProgress.Text:=TEXT_MES_INITIALIZE+'...';
   PbProgress.position:=0;
   PbProgress.Text:=TEXT_MES_QUERY_EX;
-                                       
+
   ListView.ShowGroupMargins := DBKernel.Readbool('Options', 'UseGroupsInSearch', True);
 
   LsSearchResults.Hide;
   NewFormState;
   TbStopOperation.Enabled := True;
-              
+
   EmptyFillListInfo;
   StartSearchThread(False);
 
   AddNewSearchListEntry;
-end;   
+end;
 
 procedure TSearchForm.StartSearchThread(IsEstimate : Boolean);
 var
@@ -720,7 +720,7 @@ begin
   DestroyCounter := 0;
   FHelpTimerStarted := False;
   FUpdatingDB:=false;
-                  
+
   DropFileTarget2.Register(SearchEdit);
   DropFileTarget1.Register(Self);
 
@@ -746,9 +746,9 @@ begin
  end;
  try
   initialization_;
- except    
+ except
    on e : Exception do EventLog(':TSearchForm::FormCreate() throw exception: '+e.Message);
- end;                
+ end;
  TW.I.Start('S -> DBKernel.RegisterForm');
  DBKernel.RegisterForm(self);
 
@@ -795,7 +795,7 @@ var
 begin
   if CopyFilesSynchCount > 0 then
     WindowsMenuTickCount := GetTickCount;
-    
+
   HintTimer.Enabled := False;
   Item:=ItemByPointImage(ListView, Point(MousePos.x, MousePos.y));
   if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ListView.Selection.First;
@@ -826,7 +826,7 @@ begin
   end else
   begin
     FileList := TStringList.Create;
-    
+
     if ListView.Selection.First = nil then
       FilesCount := ListView.Items.Count
     else
@@ -835,7 +835,7 @@ begin
         FileList := GetAllFiles
       else
         FileList := GetSelectedTstrings;
-        
+
         FilesCount := FileList.Count;
         FileList.Free;
     end;
@@ -878,7 +878,7 @@ begin
       end;
     end else
       ItemByMouseDown:=true;
-      
+
     SelectedItem.Focused:=True;
   end;
 
@@ -1184,7 +1184,7 @@ begin
    ProgressForm.xPosition:=0;
    for i:=0 to ListView.Items.Count-1 do
    if ListView.Items[i].Selected then
-   begin    
+   begin
      SearchRecord := GetSearchRecordFromItemData(ListView.Items[I]);
      Groups:=SearchRecord.Groups;
     ReplaceGroups(SelectedInfo.Groups,FPropertyGroups,Groups);
@@ -1228,7 +1228,6 @@ begin
   if ProgressForm<>nil then
   begin
    ProgressForm.Release;
-   if UseFreeAfterRelease then ProgressForm.Free;
   end;
   DoShowSelectInfo;
  end;
@@ -1315,7 +1314,7 @@ begin
   J.free;
   SearchRecord.Rotation:=SelectQuery.FieldByName('Rotated').AsInteger;
   ApplyRotate(bit, SearchRecord.Rotation);
- 
+
   fname:=Trim(SelectQuery.FieldByName('Name').asstring);
   for i:= Length(fname) downto 1 do
   begin
@@ -1451,7 +1450,7 @@ begin
 end;
 
 procedure TSearchForm.Reloadtheme(Sender: TObject);
-begin   
+begin
   DBKernel.RecreateThemeToForm(self);
   Application.HintColor:=Theme_MainColor;
 end;
@@ -1518,7 +1517,7 @@ procedure TSearchForm.RefreshInfoByID(ID : integer);
 begin
   if FCurrentSelectedID <> ID then
     Exit;
-    
+
   ListViewSelectItem(nil, GetlistitembyID(ID), true);
 end;
 
@@ -1565,7 +1564,7 @@ begin
 end;
 
 procedure TSearchForm.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
-var              
+var
   RefreshParams : TEventFields;
   FilesToUpdate : TSearchRecordArray;
   I, ReRotation : Integer;
@@ -1578,7 +1577,7 @@ begin
 
   else if EventID_Param_GroupsChanged in params then
     ReRecreateGroupsList
-    
+
   else
   if EventID_Param_DB_Changed in params then
   begin
@@ -2172,7 +2171,7 @@ procedure TSearchForm.ListViewKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key =  #13 then
     ListViewDblClick(Sender);
-    
+
   if Key in Unusedchar then
     Key:=#0;
 end;
@@ -2187,7 +2186,7 @@ begin
 
   if S = ExtractFileName(SearchRecord.FileName) then
     Exit;
-    
+
   begin
     if GetExt(S) <> GetExt(SearchRecord.FileName) then
     if FileExists(SearchRecord.FileName) then
@@ -2358,7 +2357,7 @@ var
   TmpBool : Boolean;
 begin
   if (Msg.message = WM_KEYDOWN) and (SearchEdit.Focused) and (Msg.wParam = VK_RETURN) then
-  begin     
+  begin
     Handled := True;
     Msg.Message := 0;
     DoSearchNow(nil);
@@ -2696,7 +2695,7 @@ begin
  SortbySize1.Caption:=TEXT_MES_SORT_BY_SIZE;
 
  SortbyCompare1.Caption:=TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
- 
+
  Increment1.Caption:=TEXT_MES_SORT_INCREMENT;
  Decremect1.Caption:=TEXT_MES_SORT_DECREMENT;
 
@@ -2973,7 +2972,7 @@ begin
   if not FHelpTimerStarted then
     HelpTimer.Enabled := True;
   FHelpTimerStarted := True;
- 
+
   SearchEdit.SetFocus;
 end;
 
@@ -3132,18 +3131,18 @@ end;
 
 procedure TSearchForm.Decremect1Click(Sender: TObject);
 begin
- Decremect1.Checked:=true;
- SortLink.Icon:=Image6.Picture.Icon;
- SortLink.RefreshBuffer;
- SortingClick(Sender);
+  Decremect1.Checked := True;
+  SortLink.Icon := Image6.Picture.Icon;
+  SortLink.RefreshBuffer;
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.Increment1Click(Sender: TObject);
 begin
- Increment1.Checked:=true;
- SortLink.Icon:=Image5.Picture.Icon;
- SortLink.RefreshBuffer;
- SortingClick(Sender);
+  Increment1.Checked := True;
+  SortLink.Icon := Image5.Picture.Icon;
+  SortLink.RefreshBuffer;
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.GetPhotosClick(Sender: TObject);
@@ -3231,24 +3230,27 @@ end;
 procedure TSearchForm.InsertSpesialQueryPopupMenuItemClick(
   Sender: TObject);
 begin
- case (Sender as TMenuItem).Tag of
- 1 : SearchEdit.Text:=':DeletedFiles:';
- 2 : SearchEdit.Text:=':Dublicates:';
- end;
+  case (Sender as TMenuItem).Tag of
+    1:
+      SearchEdit.Text := ':DeletedFiles:';
+    2:
+      SearchEdit.Text := ':Dublicates:';
+  end;
 end;
 
 procedure TSearchForm.DeleteSelected;
 var
-  i : integer;
+  I: Integer;
 begin
- if PbProgress.Position<>0 then exit;
- ListView.Groups.BeginUpdate(false);
- for i:=ListView.Items.Count-1 downto 0 do
- if ListView.Items[i].Selected then
- begin
-  DeleteItemByID(ListView.Items[i].Tag);
- end;
- ListView.Groups.EndUpdate(false);
+  ListView.Groups.BeginUpdate(False);
+  try
+    for I := ListView.Items.Count - 1 downto 0 do
+      if ListView.Items[I].Selected then
+        DeleteItemByID(ListView.Items[I].Tag);
+
+  finally
+    ListView.Groups.EndUpdate(False);
+  end;
 end;
 
 procedure TSearchForm.HidePanelTimerTimer(Sender: TObject);
@@ -3384,7 +3386,7 @@ begin
   SetLength(ArIsTimes,0);
   SetLength(ArInt,0);
   SetLength(ArStr,0);
-  
+
   KeyWordList := TStringList.Create;
   ArGroups := TStringList.Create;
 
@@ -3686,7 +3688,6 @@ begin
  if (DestroyCounter<3) and (DestroyCounter<>0) then exit;
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TSearchForm.View2Click(Sender: TObject);
@@ -3905,13 +3906,13 @@ end;
 
 function TSearchForm.FileNameExistsInList(FileName : string) : Boolean;
 var
-  I : Integer;   
+  I : Integer;
   SearchRecord : TSearchRecord;
-begin          
+begin
   Result := False;
   FileName := AnsiLowerCase(FileName);
   for I := 0 to ListView.Items.Count - 1 do
-  begin     
+  begin
     SearchRecord := GetSearchRecordFromItemData(ListView.Items[I]);
     if AnsiLowerCase(SearchRecord.FileName) = FileName then
     begin
@@ -3992,7 +3993,7 @@ begin
   Data := TSearchRecordArray.Create;
   for I := 0 to ListView.Items.Count - 1 do
     Data.Add(GetSearchRecordFromItemData(ListView.Items[I]));
-    
+
   RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, StateID, nil, FPictureSize, Data));
 end;
 
@@ -4079,7 +4080,7 @@ begin
      Groups:=GetRegisterGroupList(True, False);
      if GroupsLoaded then
        Exit;
-       
+
      for I := 0 to Length(Groups) - 1 do
      begin
       B := TBitmap.Create;
@@ -4133,12 +4134,12 @@ begin
     SearchEdit.ShowDropDownMenu := True;
   end;
 end;
-          
+
 procedure TSearchForm.RebuildQueryList;
 var
   I, GroupIndex : Integer;
   GroupImage, GroupImageSmall : TBitmap;
-  Group : TGroupInfo;  
+  Group : TGroupInfo;
   GroupName : string;
 begin
   SearchEdit.ItemsEx.Clear;
@@ -4344,7 +4345,7 @@ begin
 end;
 
 procedure TSearchForm.ReRecreateGroupsList();
-begin            
+begin
   SearchEdit.ShowDropDownMenu := False;
   GroupsLoaded := False;
   LoadGroupsList;
@@ -4409,7 +4410,7 @@ var
   aType : Byte;
   Data : TSearchRecord;
 type
-  SortList = array of TEasyItem;     
+  SortList = array of TEasyItem;
 
   TSortItem = record                 {This defines the objects being sorted.}
     ID : Integer;
@@ -4417,9 +4418,9 @@ type
     ValueStr : string;
     ValueDouble : Double;
    end;
-                      
+
   TSortItems = array of TSortItem;  {This is an array of objects to be sorted.}
-  
+
   aListItem = record
     Caption : string;
     Indent : Integer;
@@ -4428,7 +4429,7 @@ type
    end;
 
   aListItems = array of aListItem;
-  
+
 var
   SIs : TSortItems;
   LI : aListItems;
@@ -4502,7 +4503,7 @@ var
           Inc(P);
          end;
          while L_Less_Than_R(Pivot, X[Q], aType) do
-         begin           
+         begin
            if Q = M then break;
            Dec(Q);
          end;
@@ -4660,7 +4661,7 @@ var
   FNow : TDateTime;
 begin
   RegQueryRootPath := 'Search\DB_' + DBKernel.GetDataBaseName + '\Query';
-  
+
   QueryCount := DBKernel.ReadInteger(RegQueryRootPath, 'Count', 0);
   FNow := Now;
   for I := QueryCount - 1 downto 0 do
@@ -4700,7 +4701,7 @@ begin
   RtgQueryRating.Rating := FSearchInfo[0].RatingFrom;
   RtgQueryRating.RatingRange := FSearchInfo[0].RatingTo;
   SearchEdit.Text := FSearchInfo[0].Query;
-  
+
 end;
 
 procedure TSearchForm.SaveQueryList;
@@ -4715,12 +4716,12 @@ begin
   for I := 0 to Min(MaxQueriesToSave, FSearchInfo.Count) - 1 do
   begin
     RegQueryPath := RegQueryRootPath + IntToStr(I);
-    DBKernel.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingFrom); 
+    DBKernel.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingFrom);
     DBKernel.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingTo);
     DBKernel.WriteDateTime(RegQueryPath, 'DateFrom', FSearchInfo[I].DateFrom);
     DBKernel.WriteDateTime(RegQueryPath, 'DateFrom', FSearchInfo[I].DateTo);
-    DBKernel.WriteString(RegQueryPath, 'GroupName', FSearchInfo[I].GroupName); 
-    DBKernel.WriteString(RegQueryPath, 'Query', FSearchInfo[I].Query);         
+    DBKernel.WriteString(RegQueryPath, 'GroupName', FSearchInfo[I].GroupName);
+    DBKernel.WriteString(RegQueryPath, 'Query', FSearchInfo[I].Query);
     DBKernel.WriteInteger(RegQueryPath, 'SortMethod', FSearchInfo[I].SortMethod);
     DBKernel.WriteBool(RegQueryPath, 'SortDesc', FSearchInfo[I].SortDecrement);
   end;
@@ -4732,7 +4733,7 @@ begin
   begin
     FShellTreeView := TShellTreeView.Create(Self);
     FShellTreeView.Parent := ExplorerPanel;
-    FShellTreeView.Align := alClient;  
+    FShellTreeView.Align := alClient;
     FShellTreeView.AutoRefresh := False;
     FShellTreeView.PopupMenu := PopupMenu8;
     FShellTreeView.RightClickSelect := True;
@@ -4748,26 +4749,31 @@ end;
 procedure TSearchForm.CreateBackground;
 var
   BackgroundImage : TPNGGraphic;
-  SearchBackgroundBMP : TBitmap;
+  Bitmap, SearchBackgroundBMP : TBitmap;
 begin
-  ListView.BackGround.Image := TBitmap.Create;
-  ListView.BackGround.Image.PixelFormat := pf24bit;
-  ListView.BackGround.Image.Width := 150;
-  ListView.BackGround.Image.Height := 150;
-  ListView.BackGround.Image.Canvas.Brush.Color := Theme_ListColor;
-  ListView.BackGround.Image.Canvas.Pen.Color := Theme_ListColor;
-  ListView.BackGround.Image.Canvas.Rectangle(0,0,150,150);
-  BackgroundImage := GetSearchBackground;
+  Bitmap := TBitmap.Create;
   try
-    SearchBackgroundBMP := TBitmap.Create;
+    Bitmap.PixelFormat := pf24bit;
+    Bitmap.Width := 150;
+    Bitmap.Height := 150;
+    Bitmap.Canvas.Brush.Color := Theme_ListColor;
+    Bitmap.Canvas.Pen.Color := Theme_ListColor;
+    Bitmap.Canvas.Rectangle(0,0,150,150);
+    BackgroundImage := GetSearchBackground;
     try
-      LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme_ListColor);
-      ListView.BackGround.Image.Canvas.Draw(0, 0, SearchBackgroundBMP);
+      SearchBackgroundBMP := TBitmap.Create;
+      try
+        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme_ListColor);
+        Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
+      finally
+        SearchBackgroundBMP.Free;
+       end;
     finally
-      SearchBackgroundBMP.Free;
-     end;
+      BackgroundImage.Free;
+    end;
+    ListView.BackGround.Image := Bitmap;
   finally
-    BackgroundImage.Free;
+    Bitmap.Free;
   end;
 end;
 
@@ -4791,7 +4797,7 @@ begin
     Tmp := Self[I];
     if (Tmp.RatingFrom = RatingFrom) and (Tmp.RatingTo = RatingTo)
        and (Tmp.DateFrom = DateFrom) and (Tmp.DateTo = DateTo)
-       and (Tmp.GroupName = GroupName) and (Tmp.Query = Query)  
+       and (Tmp.GroupName = GroupName) and (Tmp.Query = Query)
        and (Tmp.SortMethod = SortMethod) and (Tmp.SortDecrement = SortDecrement) then
     begin
       //Move to first record
@@ -4876,7 +4882,7 @@ begin
   elvDateRange.Refresh;
 
   DS := GetQuery(True);
-                                
+
   TADOQuery(DS).CursorType := ctOpenForwardOnly;
   TADOQuery(DS).CursorLocation := clUseClient;
   TADOQuery(DS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
@@ -4953,7 +4959,7 @@ var
   CurrentMonth : integer;
 begin
   dblDate.Hide;
-              
+
   Application.ProcessMessages;
   lsDate.Color := elvDateRange.Color;
   lsDate.Active := True;
@@ -5174,7 +5180,7 @@ begin
           end else
         begin
          if SearchRecord.FileSize < 1024 * 1024 * 100 then
-         begin                                  
+         begin
            i10 := Trunc(SearchRecord.FileSize / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
            if (Abs(FFillListInfo.LastSize - SearchRecord.FileSize) > 1024 * 1024 * 10) and (SearchRecord.FileSize > 1024 * 1024 * 10) or (FFillListInfo.LastSize = 0)  then
              with ListView.Groups.Add do
@@ -5196,7 +5202,7 @@ begin
        end;
      end;
    end;
-          
+
     if SortMethod = SM_TITLE then
     if ExtractFileName(SearchRecord.FileName)<>'' then
     begin
@@ -5334,7 +5340,7 @@ begin
 end;
 
 procedure TSearchForm.TmrSearchResultsCountTimer(Sender: TObject);
-begin                   
+begin
   TmrSearchResultsCount.Enabled := False;
   StartSearchThread(True)
 end;

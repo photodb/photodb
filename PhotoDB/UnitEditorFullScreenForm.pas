@@ -79,7 +79,6 @@ end;
 procedure TEditorFullScreenForm.DestroyTimerTimer(Sender: TObject);
 begin
  EditorFullScreenForm.Release;
- if UseFreeAfterRelease then EditorFullScreenForm.Free;
  EditorFullScreenForm:=nil;
 end;
 

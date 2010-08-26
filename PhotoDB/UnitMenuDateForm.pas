@@ -65,7 +65,6 @@ begin
  Application.CreateForm(TFormMenuDateEdit,FormMenuDateEdit);
  FormMenuDateEdit.Execute(Date,IsDate,Changed,Time,IsTime);
  FormMenuDateEdit.Release;
- if UseFreeAfterRelease then FormMenuDateEdit.Free;
 end;
 
 procedure TFormMenuDateEdit.Execute(var Date: TDateTime; var IsDate : Boolean;

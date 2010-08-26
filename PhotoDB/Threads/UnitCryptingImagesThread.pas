@@ -81,7 +81,6 @@ procedure TCryptingImagesThread.DestroyProgress;
 begin
  (ProgressWindow as TProgressActionForm).WindowCanClose:=true;
  ProgressWindow.Release;
- if UseFreeAfterRelease then ProgressWindow.Free;
 end;
 
 procedure TCryptingImagesThread.DoDBkernelEvent;

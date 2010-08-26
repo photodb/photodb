@@ -84,7 +84,6 @@ begin
  Application.CreateForm(TFormGroupReplace, FormGroupReplace);
  FormGroupReplace.ExecuteWithDBGroupsIn(Group,Action,Options,FileName);
  FormGroupReplace.Release;
- if UseFreeAfterRelease then FormGroupReplace.Free;
 end;
 
 procedure GroupReplaceNotExists(Group: TGroup;
@@ -95,7 +94,6 @@ begin
  Application.CreateForm(TFormGroupReplace, FormGroupReplace);
  FormGroupReplace.ExecuteNoDBGroupsIn(Group,Action,Options,FileName);
  FormGroupReplace.Release;
- if UseFreeAfterRelease then FormGroupReplace.Free;
 end;
 
 procedure TFormGroupReplace.RadioButton2Click(Sender: TObject);

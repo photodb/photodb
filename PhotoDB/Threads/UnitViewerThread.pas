@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, SysUtils, Forms,
   GIFImage, GraphicEx, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
-  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils;
+  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, {jpegdec,} JPEG;
 
 type
   TViewerThread = class(TThread)
@@ -78,6 +78,9 @@ procedure TViewerThread.Execute;
 var
   PNG : TPNGGraphic;
   TransparentColor : TColor;
+  GraphicClass : TGraphicClass;
+  MS : TMemoryStream;
+  BMP : TBitmap;
 begin
  FPages:=0;        
  FInfo.ItemFileName:=FFileName;
@@ -110,7 +113,24 @@ begin
     exit;
    end else
    begin
-    if GetGraphicClass(GetExt(FFileName),false)=TiffImageUnit.TTiffGraphic then
+    GraphicClass := GetGraphicClass(GetExt(FFileName), False);
+   { if (GraphicClass = TJpegImage) and FFullImage then
+    begin
+      MS := TMemoryStream.Create;
+      try
+        MS.LoadFromFile(FFileName);
+        Bmp := JpegDecode(MS.Memory, MS.Size);
+        if Bmp = nil then
+          Picture.LoadFromFile(FFileName)
+        else
+          Picture.Graphic := Bmp;
+
+        if Bmp <> nil then
+          Bmp.Free;
+      finally
+        MS.Free;
+      end;
+    end else }if GraphicClass = TiffImageUnit.TTiffGraphic then
     begin
      Picture.Graphic:=TiffImageUnit.TTiffGraphic.Create;
      (Picture.Graphic as TiffImageUnit.TTiffGraphic).Page:=fPage;

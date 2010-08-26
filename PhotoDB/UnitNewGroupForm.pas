@@ -76,7 +76,6 @@ begin
  Application.CreateForm(TNewGroupForm, NewGroupForm);
  NewGroupForm.Execute;
  NewGroupForm.Release;
- if UseFreeAfterRelease then NewGroupForm.Free;
  NewGroupForm:=nil;
 end;
 
@@ -87,7 +86,6 @@ begin
  Application.CreateForm(TNewGroupForm, NewGroupForm);
  NewGroupForm.ExecuteA(GroupName,GroupCode);
  NewGroupForm.Release;
- if UseFreeAfterRelease then NewGroupForm.Free;
  NewGroupForm:=nil;
 end;
 
@@ -98,7 +96,6 @@ begin
  Application.CreateForm(TNewGroupForm, NewGroupForm);
  NewGroupForm.ExecuteB(GroupCode,Image,Created,GroupName);
  NewGroupForm.Release;
- if UseFreeAfterRelease then NewGroupForm.Free;
  NewGroupForm:=nil;
 end;
 

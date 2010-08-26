@@ -229,8 +229,6 @@ begin
  if FForm<>nil then
  begin
   FForm.Release;
-  if UseFreeAfterRelease then
-  FForm.Free;
  end;
 
  fProcessScript.Free;
@@ -446,8 +444,6 @@ begin
  end;
 
  ProgressWindow.Release;
- if UseFreeAfterRelease then
- ProgressWindow.Free;
 end;
 
 procedure TUpdaterDB.SaveWork;

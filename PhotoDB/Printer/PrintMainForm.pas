@@ -655,7 +655,6 @@ procedure TPrintForm.TerminateTimesTimer(Sender: TObject);
 begin
  TerminateTimes.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 function TPrintForm.GetSampleType: TPrintSampleSizeOne;

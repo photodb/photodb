@@ -53,7 +53,6 @@ begin
  Result.CryptFileName:=CryptImageForm.CryptFileName;
  Result.SaveFileCRC:=CryptImageForm.SaveFileCRC; 
  CryptImageForm.Release;
- if UseFreeAfterRelease then CryptImageForm.Free;
 end;
 
 procedure TCryptImageForm.FormCreate(Sender: TObject);

@@ -263,7 +263,6 @@ procedure TSplitExportForm.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
  Split_Opened:=false;
 end;
 
@@ -400,7 +399,6 @@ begin
   end;
 
   ProgressWindow.Release;
-  if UseFreeAfterRelease then ProgressWindow.Free;
 
   Close;
  end;

@@ -714,7 +714,6 @@ begin
  if not CanClosed then exit;
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
  ImHint:=nil;
 end;
 

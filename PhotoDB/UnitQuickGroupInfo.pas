@@ -73,7 +73,6 @@ begin
  Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
  FormQuickGroupInfo.Execute(Group,CloseOwner,Owner);
  FormQuickGroupInfo.Release;
- if UseFreeAfterRelease then FormQuickGroupInfo.Free;
 end;
 
 Procedure ShowGroupInfo(Group : TGroup; CloseOwner : Boolean; Owner : TForm);
@@ -83,7 +82,6 @@ begin
  Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
  FormQuickGroupInfo.Execute(Group,CloseOwner,Owner);
  FormQuickGroupInfo.Release;
- if UseFreeAfterRelease then FormQuickGroupInfo.Free;
 end;
 
 procedure TFormQuickGroupInfo.Button1Click(Sender: TObject);

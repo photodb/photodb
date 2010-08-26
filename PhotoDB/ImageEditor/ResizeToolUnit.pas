@@ -201,7 +201,7 @@ begin
  RadioButton100x100.Top:=20;
  RadioButton100x100.Left:=Left;
  RadioButton100x100.Width:=170;
- RadioButton100x100.Caption:=TEXT_MES_CHANGE_SIZE_100x100;
+ //TODO:RadioButton100x100.Caption:=TEXT_MES_CHANGE_SIZE_100x100;
  RadioButton100x100.Parent:=AOwner as TWinControl;
  RadioButton100x100.OnClick:=ChangeSize;
 
@@ -209,7 +209,7 @@ begin
  RadioButton200x200.Top:=RadioButton100x100.Top+RadioButton100x100.Height+5;
  RadioButton200x200.Left:=Left;
  RadioButton200x200.Width:=170;
- RadioButton200x200.Caption:=TEXT_MES_CHANGE_SIZE_200x200;
+ //TODO:RadioButton200x200.Caption:=TEXT_MES_CHANGE_SIZE_200x200;
  RadioButton200x200.Parent:=AOwner as TWinControl;
  RadioButton200x200.OnClick:=ChangeSize;
 
@@ -217,7 +217,7 @@ begin
  RadioButton600x800.Top:=RadioButton200x200.Top+RadioButton200x200.Height+5;
  RadioButton600x800.Left:=Left;
  RadioButton600x800.Width:=170;
- RadioButton600x800.Caption:=TEXT_MES_CHANGE_SIZE_600x800;
+ //TODO:RadioButton600x800.Caption:=TEXT_MES_CHANGE_SIZE_600x800;
  RadioButton600x800.Parent:=AOwner as TWinControl;
  RadioButton600x800.OnClick:=ChangeSize;
 

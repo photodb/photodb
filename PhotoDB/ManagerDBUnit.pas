@@ -397,8 +397,6 @@ begin
   if FormManagerHint<>nil then
   begin
     FormManagerHint.Release;
-    if UseFreeAfterRelease then
-      FormManagerHint.Free;
     FormManagerHint := nil;
   end;
   DropFileTarget1.Unregister;
@@ -562,8 +560,6 @@ end;
 procedure TManagerDB.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   ManagerDB.Release;
-  if UseFreeAfterRelease then
-    ManagerDB.Free;
   ManagerDB := nil;
 end;
 

@@ -11,6 +11,7 @@ function GetExplorerBackground : TPNGGraphic;
 function GetSearchBackground : TPNGGraphic;     
 function GetSearchWait : TPNGGraphic;          
 function GetDateRangeImage : TPNGGraphic;
+function GetImagePanelImage : TPNGGraphic;
               
 {$R Logo.res}    
 {$R slideshow_load.res}
@@ -20,6 +21,8 @@ function GetDateRangeImage : TPNGGraphic;
 {$R SearchWait.res}
 {$R DateRange.res}
 {$R Manifest.res}
+{$R Manifest.res}
+{$R ImagePanelBackground.res}
 
 implementation
 
@@ -91,6 +94,11 @@ end;
 function GetDateRangeImage : TPNGGraphic;
 begin
   Result := LoadPNGFromRES('DATERANGE');
+end;
+
+function GetImagePanelImage : TPNGGraphic;
+begin
+  Result := LoadPNGFromRES('IMAGEPANELBACKGROUND');
 end;
 
 function GetLogoPicture : TJpegImage;

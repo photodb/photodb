@@ -1,13 +1,13 @@
 object FormManageGroups: TFormManageGroups
   Left = 388
   Top = 147
-  Width = 613
-  Height = 440
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSizeToolWin
   Caption = 'Manage Groups'
+  ClientHeight = 386
+  ClientWidth = 597
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -28,7 +28,7 @@ object FormManageGroups: TFormManageGroups
     Left = 0
     Top = 44
     Width = 597
-    Height = 340
+    Height = 342
     Align = alClient
     BorderStyle = bsNone
     Columns = <
@@ -50,6 +50,7 @@ object FormManageGroups: TFormManageGroups
     OnContextPopup = ImageContextPopup
     OnCustomDrawItem = ListView1CustomDrawItem
     OnDblClick = ListView1DblClick
+    ExplicitHeight = 340
   end
   object CoolBar1: TCoolBar
     Left = 0
@@ -73,7 +74,6 @@ object FormManageGroups: TFormManageGroups
       ButtonHeight = 38
       ButtonWidth = 79
       Caption = 'ToolBar1'
-      EdgeBorders = []
       Images = ToolBarImageList
       List = True
       ShowCaptions = True

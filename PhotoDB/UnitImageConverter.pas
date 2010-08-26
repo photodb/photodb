@@ -56,7 +56,6 @@ begin
   FormConvertImages.GetFileList(ImageList,IDList);
   FormConvertImages.ShowModal;
   FormConvertImages.Release;
-  if UseFreeAfterRelease then FormConvertImages.Free;
 end;
 
 procedure TFormConvertImages.FormCreate(Sender: TObject);

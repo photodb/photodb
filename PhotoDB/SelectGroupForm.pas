@@ -42,7 +42,6 @@ begin
   Application.CreateForm(TFormSelectGroup, FormSelectGroup);
   Result:=FormSelectGroup.Execute(Group);
   FormSelectGroup.Release;
-  if UseFreeAfterRelease then FormSelectGroup.Free;
 end;
 
 procedure TFormSelectGroup.FormCreate(Sender: TObject);

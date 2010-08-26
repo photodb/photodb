@@ -50,21 +50,20 @@ const
 var
   ThreadHandles : array[0 .. MAX - 1] of THandle;
   I : Integer;
-  s : string;
+  S : string;
 begin
-  if FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX, ProcessorCount) then
+  if FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX, ProcessorCount + 1) then
     FAvaliableThreadList.Add(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, TExplorerThread(Thread).ExplorerInfo, TExplorerForm(Thread.ThreadForm), TExplorerThread(Thread).FUpdaterInfo, Thread.StateID));
 
   while FAvaliableThreadList.Count = 0 do
   begin
     for I := FBusyThreadList.Count - 1 downto 0 do
     begin   
-      if TExplorerThread(FBusyThreadList[I]).Suspended then
+      if not TExplorerThread(FBusyThreadList[I]).FPreviewInProgress then
       begin
         FAvaliableThreadList.Add(FBusyThreadList[I]);
         FBusyThreadList.Delete(I);
-      end else
-        TExplorerThread(FBusyThreadList[I]).Resume;
+      end;
     end;
 
     if FAvaliableThreadList.Count > 0 then
@@ -73,12 +72,12 @@ begin
     for I := 0 to FBusyThreadList.Count - 1 do
       ThreadHandles[I] := TExplorerThread(FBusyThreadList[I]).FEvent;
 
-    s := 'WaitForMultipleObjects: ' + IntToStr(FBusyThreadList.Count) + ' - ';
+    S := 'WaitForMultipleObjects: ' + IntToStr(FBusyThreadList.Count) + ' - ';
     for I := 0 to FBusyThreadList.Count - 1 do
-      s := s + ',' + IntToStr(TExplorerThread(FBusyThreadList[I]).FEvent);
-    TW.I.Start(s);
-    WaitForMultipleObjects(FBusyThreadList.Count, @ThreadHandles[0], False, 1000);
-    Sleep(1);
+      S := S + ',' + IntToStr(TExplorerThread(FBusyThreadList[I]).FEvent);
+    TW.I.Start(S);
+    WaitForMultipleObjects(FBusyThreadList.Count, @ThreadHandles[0], False, INFINITE);
+
     TW.I.Start('WaitForMultipleObjects END');
   end;
 end;
@@ -114,7 +113,7 @@ begin
       Avaliablethread.FPreviewInProgress := True;  
       Thread.RegisterSubThread(Avaliablethread);
       TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
-      Avaliablethread.Resume;
+      SetEvent(TExplorerThread(Avaliablethread).SyncEvent);
     end
   finally
     FSync.Leave;
@@ -154,7 +153,7 @@ begin
       Avaliablethread.FPreviewInProgress := True;
       Thread.RegisterSubThread(Avaliablethread);
       TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
-      Avaliablethread.Resume;
+      SetEvent(TExplorerThread(Avaliablethread).SyncEvent);
     end
   finally
     FSync.Leave;
@@ -193,7 +192,7 @@ begin
       Avaliablethread.FPreviewInProgress := True;
       Thread.RegisterSubThread(Avaliablethread);
       TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
-      Avaliablethread.Resume;
+      SetEvent(TExplorerThread(Avaliablethread).SyncEvent);
     end
   finally
     FSync.Leave;

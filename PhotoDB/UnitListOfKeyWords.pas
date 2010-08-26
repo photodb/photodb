@@ -157,15 +157,12 @@ begin
     Application.ProcessMessages;
    Until not DBInOpening;  
    OpenProgress.Release;
-   if UseFreeAfterRelease then
-   OpenProgress.Free;
    FTable.First;
   end;
 
  except
   FreeDS(FTable);
   ProgressForm.Release;
-  if UseFreeAfterRelease then ProgressForm.Free;
   MessageBoxDB(Handle,Format(TEXT_MES_OPEN_TABLE_ERROR_F,[dbname]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
   exit;
  end;
@@ -203,7 +200,6 @@ begin
 
  ListBox1.Items:=AllList;
  ProgressForm.Release;
- if UseFreeAfterRelease then ProgressForm.Free;
  FTable.Close;
  FreeDS(FTable);
  Show;
@@ -229,7 +225,6 @@ procedure TFormListOfKeyWords.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TFormListOfKeyWords.FormClose(Sender: TObject;

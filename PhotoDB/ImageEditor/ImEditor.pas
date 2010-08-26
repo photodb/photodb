@@ -1964,7 +1964,6 @@ begin
  DBkernel.UnRegisterForm(self);
  FormManager.UnRegisterMainForm(Self);
  ActionForm.Release;
- if UseFreeAfterRelease then ActionForm.Free;
  {$ENDIF}
  SaveWindowPos1.SavePosition;
  CurrentImage.Free;
@@ -2526,7 +2525,6 @@ begin
  DestroyTimer.Enabled:=false;
  EditorsManager.RemoveEditor(self);
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TImageEditor.SetCloseOnFailture(const Value: boolean);

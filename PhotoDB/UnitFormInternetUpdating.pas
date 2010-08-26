@@ -60,7 +60,6 @@ procedure TFormInternetUpdating.DestroyTimerTimer(Sender: TObject);
 begin
  DestroyTimer.Enabled:=false;
  Release;
- if UseFreeAfterRelease then Free;
 end;
 
 procedure TFormInternetUpdating.FormClose(Sender: TObject;
