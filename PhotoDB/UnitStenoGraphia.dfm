@@ -130,7 +130,6 @@ object FormSteno: TFormSteno
     Width = 345
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     ItemIndex = 1
     TabOrder = 5
     Text = 'Normal Size (Recomended)'

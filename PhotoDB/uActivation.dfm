@@ -184,7 +184,7 @@ object ActivateForm: TActivateForm
       524E93D12927A0FD2B8E5C9794D84BEEF94750949F5A04F5ACAD5BD687B56340
       51405141FFD9}
   end
-  object Edit1: TEdit
+  object EdProgramCode: TEdit
     Left = 8
     Top = 24
     Width = 161
@@ -201,7 +201,7 @@ object ActivateForm: TActivateForm
     TabOrder = 0
     Text = '<data>'
   end
-  object Edit2: TEdit
+  object EdActicationCode: TEdit
     Left = 8
     Top = 104
     Width = 161
@@ -235,7 +235,7 @@ object ActivateForm: TActivateForm
     TabOrder = 3
     OnClick = Button2Click
   end
-  object Edit3: TEdit
+  object EdUserName: TEdit
     Left = 8
     Top = 64
     Width = 161

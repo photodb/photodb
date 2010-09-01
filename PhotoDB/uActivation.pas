@@ -1,4 +1,4 @@
-unit activation;
+unit uActivation;
 
 interface
 
@@ -9,13 +9,13 @@ uses
 
 type
   TActivateForm = class(TForm)
-    Edit1: TEdit;
+    EdProgramCode: TEdit;
     Label1: TLabel;
-    Edit2: TEdit;
+    EdActicationCode: TEdit;
     Label2: TLabel;
     Button1: TButton;
     Button2: TButton;
-    Edit3: TEdit;
+    EdUserName: TEdit;
     Label3: TLabel;
     Image1: TImage;
     Button3: TButton;
@@ -31,7 +31,7 @@ type
     procedure HelpTimer2Timer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-  private        
+  private
     Hs, Nm : string;
     procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
     { Private declarations }
@@ -42,30 +42,38 @@ type
     { Public declarations }
   end;
 
-var
-  ActivateForm: TActivateForm;
+procedure ShowActivationDialog;
 
 implementation
 
-uses language, UnitHelp, FormManegerUnit;
+uses Language, UnitHelp, FormManegerUnit;
+
+procedure ShowActivationDialog;
+var
+  ActivateForm: TActivateForm;
+begin
+ if ActivateForm = nil then
+    Application.CreateForm(TActivateForm, ActivateForm);
+  ActivateForm.Execute;
+  ActivateForm.Release;
+end;
 
 {$R *.dfm}
 
 procedure TActivateForm.FormCreate(Sender: TObject);
-begin   
- LoadLanguage;
- Hs := DBKernel.ReadActivateKey;
- if not FolderView then
- Nm := DBKernel.ReadRegName;
- Edit1.text:=DBKernel.ApplicationCode;
+begin
+  LoadLanguage;
+  Hs := DBKernel.ReadActivateKey;
+  if not FolderView then
+    Nm := DBKernel.ReadRegName;
+  EdProgramCode.Text := DBKernel.ApplicationCode;
 
- if not FolderView then
- if not DBKernel.ProgramInDemoMode then
- begin
-  Edit2.text:=DBKernel.ReadActivateKey;
-  Edit3.text:=DBKernel.ReadRegName;
- end;
-
+  if not FolderView then
+    if not DBKernel.ProgramInDemoMode then
+    begin
+      EdActicationCode.Text := DBKernel.ReadActivateKey;
+      EdUserName.Text := DBKernel.ReadRegName;
+    end;
 end;
 
 procedure TActivateForm.Button2Click(Sender: TObject);
@@ -74,8 +82,8 @@ var
 begin
   if FolderView then
     Exit;
-  Nm := Edit3.text;
-  Hs := Edit2.text;
+  Nm := EdUserName.text;
+  Hs := EdActicationCode.text;
   Reg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     Reg.OpenKey('\CLSID\' + ActivationID, True);
@@ -105,73 +113,74 @@ end;
 
 procedure TActivateForm.LoadLanguage;
 begin
- Label1.Caption:=TEXT_MES_PROGRAM_CODE;
- Label2.Caption:=TEXT_MES_ACTIVATION_KEY;
- Label3.Caption:=TEXT_MES_ACTIVATION_NAME;
- Button1.Caption:=TEXT_MES_CANCEL;
- Button2.Caption:=TEXT_MES_SET_CODE;
- Caption:=TEXT_MES_ACTIVATION_CAPTION;
- Button3.Caption:=TEXT_MES_GET_CODE;
+  Label1.Caption := TEXT_MES_PROGRAM_CODE;
+  Label2.Caption := TEXT_MES_ACTIVATION_KEY;
+  Label3.Caption := TEXT_MES_ACTIVATION_NAME;
+  Button1.Caption := TEXT_MES_CANCEL;
+  Button2.Caption := TEXT_MES_SET_CODE;
+  Caption := TEXT_MES_ACTIVATION_CAPTION;
+  Button3.Caption := TEXT_MES_GET_CODE;
 end;
 
 procedure TActivateForm.Button3Click(Sender: TObject);
 begin
- DoGetCode(Edit1.Text);
- if HelpActivationNO=4 then
- begin
-  HelpTimer2.Enabled:=true;
- end;
+  DoGetCode(EdProgramCode.Text);
+  if HelpActivationNO = 4 then
+  begin
+    HelpTimer2.Enabled := True;
+  end;
 end;
 
 procedure TActivateForm.HelpTimerTimer(Sender: TObject);
 begin
- HelpTimer.Enabled:=false;
- if DBkernel.GetDemoMode then
- if HelpActivationNO=3 then
- DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_3,Point(0,0),Button3,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick);
+  HelpTimer.Enabled := False;
+  if DBkernel.GetDemoMode then
+    if HelpActivationNO = 3 then
+      DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT, TEXT_MES_HELP_ACTIVATION_3, Point(0, 0), Button3,
+        HelpActivationNextClick, TEXT_MES_NEXT_HELP, HelpActivationCloseClick);
 end;
 
 procedure TActivateForm.HelpActivationCloseClick(Sender: TObject;
   var CanClose: Boolean);
 begin
- CanClose:=ID_OK=MessageBoxDB(GetActiveFormHandle,TEXT_MES_CLOSE_HELP,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_INFORMATION);
- if CanClose then
- begin
-  HelpActivationNO:=0;
-  DBKernel.WriteBool('HelpSystem','ActivationHelp',False);
- end;
+  CanClose := ID_OK = MessageBoxDB(GetActiveFormHandle, TEXT_MES_CLOSE_HELP, TEXT_MES_CONFIRM, TD_BUTTON_OKCANCEL,
+    TD_ICON_INFORMATION);
+  if CanClose then
+  begin
+    HelpActivationNO := 0;
+    DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
+  end;
 end;
 
 procedure TActivateForm.HelpActivationNextClick(Sender: TObject);
 begin
- HelpActivationNO:=HelpActivationNO+1;
+  Inc(HelpActivationNO);
 end;
 
 procedure TActivateForm.HelpTimer2Timer(Sender: TObject);
 begin
- if not Active then exit;
- HelpTimer2.Enabled:=false;
- DoHelpHint(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_4,Point(0,0),Edit2);
- HelpActivationNO:=0;
- DBKernel.WriteBool('HelpSystem','ActivationHelp',False);
+  if not Active then
+    Exit;
+  HelpTimer2.Enabled := False;
+  DoHelpHint(TEXT_MES_HELP_HINT, TEXT_MES_HELP_ACTIVATION_4, Point(0, 0), EdActicationCode);
+  HelpActivationNO := 0;
+  DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
 end;
 
 procedure TActivateForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   if not FolderView then
-  DBKernel.SetActivateKey(Nm, Hs);
-  FormManager.UnRegisterMainForm(ActivateForm)
+    DBKernel.SetActivateKey(Nm, Hs);
+  FormManager.UnRegisterMainForm(Self);
 end;
 
 procedure TActivateForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  //ESC
-  if Key = 27 then Close();
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 initialization
-
- ActivateForm:=nil;
 
 end.

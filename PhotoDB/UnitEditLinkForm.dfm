@@ -248,21 +248,19 @@ object FormEditLink: TFormEditLink
     Height = 22
     ItemsEx = <>
     Style = csExDropDownList
-    ItemHeight = 16
     TabOrder = 5
     OnChange = Edit1Change
     OnKeyPress = ComboBox1KeyPress
     Images = LinkImageList
     DropDownCount = 10
     ShowDropDownMenu = True
+    LastItemIndex = 0
+    ShowEditIndex = -1
   end
   object DropFileTarget1: TDropFileTarget
-    Dragtypes = [dtCopy, dtMove, dtLink]
-    GetDataOnEnter = False
+    DragTypes = [dtCopy, dtMove, dtLink]
     OnDrop = DropFileTarget1Drop
-    ShowImage = True
     OptimizedMove = True
-    AllowAsyncTransfer = False
     Left = 80
     Top = 56
   end

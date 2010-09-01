@@ -459,8 +459,8 @@ begin
     try
      if Password<>'' then
      if RadioButton001.Checked and (GetExt(FImageList[i])=GetExt(FileName)) then
-     CryptGraphicFileV1(FImageList[i],Password,0) else
-     CryptGraphicFileV1(FileName,Password,0);
+     CryptGraphicFileV2(FImageList[i],Password,0) else
+     CryptGraphicFileV2(FileName,Password,0);
     except
     end;
 
@@ -550,7 +550,7 @@ begin
     NewGraphic.free;
     try
      if Password<>'' then
-     CryptGraphicFileV1(FileName,Password,0);
+     CryptGraphicFileV2(FileName,Password,0);
     except
     end;
 

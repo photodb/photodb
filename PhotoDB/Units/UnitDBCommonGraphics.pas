@@ -2,10 +2,10 @@ unit UnitDBCommonGraphics;
 
 interface
 
- uses Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics, GraphicEx,
-      DmProgress, UnitDBDeclare, Language, JPEG, CommCtrl, UnitDBCommon,
-      GraphicsBaseTypes, GIFImage, Effects, Math, uMath;
-
+ uses Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics,
+      GraphicEx, ShellApi, JPEG, CommCtrl,
+      DmProgress, UnitDBDeclare, Language, UnitDBCommon, SysUtils,
+      GraphicsBaseTypes, GIFImage, Effects, Math, uMath, RAWImage;
 
  type
    TJPEGX = class(TJpegImage)
@@ -37,9 +37,9 @@ interface
   Procedure QuickReduceWide(Width, Height : integer; Var S,D : TBitmap);
   procedure DoResize(Width,Height : integer; S,D : TBitmap);
   procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap);
-  procedure Rotate180A(var im : tbitmap);
-  procedure Rotate270A(var im : tbitmap);
-  procedure Rotate90A(var im : tbitmap);
+  procedure Rotate180A(im : TBitmap);
+  procedure Rotate270A(im : TBitmap);
+  procedure Rotate90A(im : TBitmap);
   procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
   procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
   procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
@@ -49,6 +49,9 @@ interface
   procedure AssignBitmap(Dest : TBitmap; Src : TBitmap);
   procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
   procedure RemoveBlackColor(Bitmap : TBitmap);
+  function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
+  procedure SetIconToPictureFromPath(Picture : TPicture; IconPath : string);
+  procedure AddIconToListFromPath(ImageList : TImageList; IconPath : string);
 
 implementation
 
@@ -132,9 +135,9 @@ begin
     for J:=0 to Image.Width - 1 do
     begin
       C := (p[J].R * 77 + p[J].G * 151 + p[J].B * 28) shr 8;
-      p[J].r := C;
-      p[J].g := C;
-      p[J].b := C;
+      p[J].R := C;
+      p[J].G := C;
+      p[J].B := C;
     end;
   end;
 end;
@@ -428,9 +431,7 @@ begin
       XD := J + X;
       if (XD >= DW) then
         Break;
-      pD[XD].R := pS[J].R;
-      pD[XD].G := pS[J].G;
-      pD[XD].B := pS[J].B;
+      pD[XD] := pS[J];
     end;
   end;
 end;
@@ -606,6 +607,7 @@ begin
   Dest.PixelFormat := pf24bit;
   Dest.Width := Src.Width;
   Dest.Height := Src.Height;
+
   for I := 0 to Src.Height - 1 do
   begin
     PD := Dest.ScanLine[I];
@@ -617,20 +619,19 @@ end;
 
 procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
 var
-  I, J: Integer;
-  PS, PD: PARGB;
   BMP: TBitmap;
 begin
   JPEG.Performance := jpBestSpeed;
   JPEG.DIBNeeded;
-  BMP := TJPEGX(JPEG).InnerBitmap;
-  AssignBitmap(Bitmap, BMP);
+  AssignBitmap(Bitmap, TJPEGX(JPEG).InnerBitmap);
 end;
 
 procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
 begin
   if Src is TJpegImage then
     AssignJpeg(Dest, TJpegImage(Src))
+  else if Src is TRAWImage then
+    Dest.Assign(TRAWImage(Src))
   else if Src is TBitmap then
     AssignBitmap(Dest, TBitmap(Src))
   else
@@ -820,7 +821,7 @@ begin
   end;
 end;
 
-procedure Rotate180A(var im : tbitmap);
+procedure Rotate180A(im : tbitmap);
 var
   I, J: Integer;
   p1, p2: PARGB;
@@ -835,16 +836,12 @@ begin
     p1 := Image.ScanLine[I];
     p2 := im.ScanLine[Image.Height - I - 1];
     for J := 0 to Image.Width - 1 do
-    begin
-      p2[J].R := p1[Image.Width - 1 - J].R;
-      p2[J].G := p1[Image.Width - 1 - J].G;
-      p2[J].B := p1[Image.Width - 1 - J].B;
-    end;
+      p2[J] := p1[Image.Width - 1 - J];
   end;
   Image.Free;
 end;
 
-procedure Rotate270A(var im: TBitmap);
+procedure Rotate270A(im: TBitmap);
 var
   I, J: Integer;
   p1: PARGB;
@@ -864,16 +861,13 @@ begin
   begin
     p1 := Image.ScanLine[I];
     for J := 0 to Image.Width - 1 do
-    begin
-      p[J, I].R := p1[J].R;
-      p[J, I].G := p1[J].G;
-      p[J, I].B := p1[J].B;
-    end;
+      p[J, I] := p1[J];
+
   end;
   Image.Free;
 end;
 
-procedure Rotate90A(var im: TBitmap);
+procedure Rotate90A(im: TBitmap);
 var
   I, J: Integer;
   p1: PARGB;
@@ -893,11 +887,8 @@ begin
   begin
     p1 := Image.ScanLine[Image.Height - I - 1];
     for J := 0 to Image.Width - 1 do
-    begin
-      p[J, I].R := p1[J].R;
-      p[J, I].G := p1[J].G;
-      p[J, I].B := p1[J].B;
-    end;
+      p[J, I] := p1[J];
+
   end;
   Image.Free;
 end;
@@ -1037,7 +1028,7 @@ begin
     P := Bitmap.ScanLine[I];
     for J := 0 to Bitmap.Width - 1 do
     begin
-      if (P[J].R = 0) and (P[J].G = 0) and (P[J].B = 0) then
+      if (P[J].R + P[J].G + P[J].B = 0)then
         P[J].G := 1;
     end;
   end;
@@ -1048,6 +1039,60 @@ end;
 function TJPEGX.InnerBitmap: TBitmap;
 begin
   Result := Bitmap;
+end;
+
+function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
+var
+  Path, Icon: string;
+  IconIndex, I: Integer;
+  Ico1, Ico2: HIcon;
+begin
+  I := Pos(',', IconPath);
+  Path := Copy(IconPath, 1, I - 1);
+  Icon := Copy(IconPath, I + 1, Length(IconPath) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  Ico1 := 0;
+
+  ExtractIconEx(PWideChar(Path), IconIndex, Ico1, Ico2, 1);
+
+  if Big then
+  begin
+    Result := Ico1;
+    if Ico2 <> 0 then
+      DestroyIcon(Ico2);
+  end
+  else
+  begin
+    Result := Ico2;
+    if Ico1 <> 0 then
+      DestroyIcon(Ico1);
+  end;
+end;
+
+procedure SetIconToPictureFromPath(Picture : TPicture; IconPath : string);
+var
+  Icon : TIcon;
+begin
+  Icon := TIcon.Create;
+  try
+    Icon.Handle := ExtractSmallIconByPath(IconPath);
+    Picture.Graphic := Icon;
+  finally
+    Icon.Free;
+  end;
+end;
+
+procedure AddIconToListFromPath(ImageList : TImageList; IconPath : string);
+var
+  Icon : TIcon;
+begin
+  Icon := TIcon.Create;
+  try
+    Icon.Handle := ExtractSmallIconByPath(IconPath);
+    ImageList.AddIcon(Icon);
+  finally
+    Icon.Free;
+  end;
 end;
 
 end.

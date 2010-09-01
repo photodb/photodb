@@ -19,39 +19,39 @@ object CryptImageForm: TCryptImageForm
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object LbPassword: TLabel
     Left = 8
     Top = 8
     Width = 146
     Height = 13
     Caption = 'Enter password for image here:'
   end
-  object Label2: TLabel
+  object LbPasswordConfirm: TLabel
     Left = 8
     Top = 56
     Width = 160
     Height = 13
     Caption = 'ReEnter password for image here:'
   end
-  object Button1: TButton
+  object BtCancel: TButton
     Left = 136
     Top = 174
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 6
-    OnClick = Button1Click
+    OnClick = BtCancelClick
   end
-  object Button2: TButton
+  object BtOk: TButton
     Left = 216
     Top = 174
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 7
-    OnClick = Button2Click
+    OnClick = BtOkClick
   end
-  object CheckBox2: TCheckBox
+  object CbSaveCRC: TCheckBox
     Left = 8
     Top = 120
     Width = 281
@@ -60,7 +60,7 @@ object CryptImageForm: TCryptImageForm
     Enabled = False
     TabOrder = 3
   end
-  object CheckBox3: TCheckBox
+  object CbSavePasswordForSession: TCheckBox
     Left = 8
     Top = 136
     Width = 281
@@ -70,7 +70,7 @@ object CryptImageForm: TCryptImageForm
     State = cbChecked
     TabOrder = 4
   end
-  object CheckBox4: TCheckBox
+  object CbSavePasswordPermanent: TCheckBox
     Left = 8
     Top = 152
     Width = 281
@@ -78,7 +78,7 @@ object CryptImageForm: TCryptImageForm
     Caption = 'Save Password for in settings (NOT recommend)'
     TabOrder = 5
   end
-  object Edit1: TEdit
+  object EdPassword: TEdit
     Left = 8
     Top = 24
     Width = 281
@@ -91,9 +91,9 @@ object CryptImageForm: TCryptImageForm
     ParentFont = False
     PasswordChar = '*'
     TabOrder = 0
-    OnKeyPress = Edit1KeyPress
+    OnKeyPress = EdPasswordKeyPress
   end
-  object Edit2: TEdit
+  object EdPasswordConfirm: TEdit
     Left = 8
     Top = 72
     Width = 281
@@ -106,15 +106,15 @@ object CryptImageForm: TCryptImageForm
     ParentFont = False
     PasswordChar = '*'
     TabOrder = 1
-    OnKeyPress = Edit1KeyPress
+    OnKeyPress = EdPasswordKeyPress
   end
-  object CheckBox6: TCheckBox
+  object CbShowPassword: TCheckBox
     Left = 8
     Top = 104
     Width = 281
     Height = 17
     Caption = 'Show password'
     TabOrder = 2
-    OnClick = CheckBox6Click
+    OnClick = CbShowPasswordClick
   end
 end

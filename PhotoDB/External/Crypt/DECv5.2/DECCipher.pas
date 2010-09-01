@@ -1240,7 +1240,8 @@ begin
     begin
       if Assigned(Progress) then Progress.Process(Min, Max, Pos);
       Bytes := BufferSize;
-      if Bytes > Size then Bytes := Size;
+      if Bytes > Size then
+        Bytes := Size;
       Source.ReadBuffer(Buffer[1], Bytes);
       Proc(Buffer[1], Buffer[1], Bytes);
       Dest.WriteBuffer(Buffer[1], Bytes);

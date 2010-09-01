@@ -23,7 +23,7 @@ procedure InitEnviroment(Enviroment : TScriptEnviroment);
 implementation
 
 uses ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
-CommonDBSupport, Activation, UnitInternetUpdate, UnitManageGroups, about,
+CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
 UnitUpdateDB, Searching, ManagerDBUnit, Options, ImEditor, UnitFormCont,
 ExplorerUnit, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
 SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
@@ -34,9 +34,7 @@ UnitFormCDMapper, UnitFormCDExport;
 
 procedure DoActivation;
 begin
- if ActivateForm=nil then
- Application.CreateForm(TActivateForm,ActivateForm);
- ActivateForm.Execute;
+  ShowActivationDialog;
 end;
 
 procedure GetUpdates(ShowInfo : boolean);
@@ -46,9 +44,7 @@ end;
 
 procedure DoAbout;
 begin
- if AboutForm= nil then
- Application.CreateForm(TAboutForm,AboutForm);
- AboutForm.Execute;
+  ShowAbout;
 end;
 
 function ReadScriptFile(FileName : string) : string;
@@ -788,7 +784,7 @@ end;
 
 function CryptGraphicFile(FileName, Password : string) : boolean;
 begin
- Result:=CryptGraphicFileV1(FileName, Password, 0);
+ Result:=CryptGraphicFileV2(FileName, Password, 0);
 end;
 
 function aPromtString(Caption, Text, InitialString : String) : string;

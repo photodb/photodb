@@ -9,15 +9,15 @@ uses
 
 type
   TBigImagesSizeForm = class(TForm)
-    TrackBar1: TTrackBar;
+    TrbImageSize: TTrackBar;
     Panel1: TPanel;
     RgPictureSize: TRadioGroup;
-    CloseLink: TWebLink;
+    LnkClose: TWebLink;
     TimerActivate: TTimer;
-    procedure CloseLinkClick(Sender: TObject);
+    procedure LnkCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RgPictureSizeClick(Sender: TObject);
-    procedure TrackBar1Change(Sender: TObject);
+    procedure TrbImageSizeChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
     procedure TimerActivateTimer(Sender: TObject);
@@ -26,9 +26,9 @@ type
     procedure FormShow(Sender: TObject);
   private
     LockChange : boolean;
-    fCallBack: TCallBackBigSizeProc;
-    fOwner : TForm;
-    TimerActivated : boolean;
+    FCallBack: TCallBackBigSizeProc;
+    FOwner: TForm;
+    TimerActivated: Boolean;
     procedure LoadLanguage;
     { Private declarations }
   public
@@ -52,23 +52,23 @@ procedure TBigImagesSizeForm.LoadLanguage;
 begin
   Caption := TEXT_MES_BIG_IMAGE_FORM_SELECT;
   RgPictureSize.Caption := TEXT_MES_BIG_IMAGE_SIZES;
-  CloseLink.Text := TEXT_MES_CLOSE;
+  LnkClose.Text := TEXT_MES_CLOSE;
   RgPictureSize.Items[0] := Format(TEXT_MES_OTHER_BIG_SIZE_F,[BigThSize,BigThSize]);
 end;
 
-procedure TBigImagesSizeForm.CloseLinkClick(Sender: TObject);
+procedure TBigImagesSizeForm.LnkCloseClick(Sender: TObject);
 begin
-  if Destroying then exit;
-  Destroying:=true;
+  if Destroying then
+    Exit;
+  Destroying := True;
   Release;
-  Free;
 end;
 
 procedure TBigImagesSizeForm.FormCreate(Sender: TObject);
 begin
   FCallBack := nil;
 
-  CloseLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
+  LnkClose.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
 
   RgPictureSize.HandleNeeded;
   RgPictureSize.DoubleBuffered := True;
@@ -90,7 +90,7 @@ begin
     Exit;
 
   case RgPictureSize.ItemIndex of
-    0: BigThSize :=TrackBar1.Position * 10 + 40;
+    0: BigThSize := TrbImageSize.Position * 10 + 40;
     1: BigThSize := 300;
     2: BigThSize := 250;
     3: BigThSize := 200;
@@ -101,7 +101,7 @@ begin
 
   FCallBack(Self, BigThSize, BigThSize);
   LockChange := True;
-  TrackBar1.Position:=50-(BigThSize div 10-4);
+  TrbImageSize.Position := 50 - (BigThSize div 10 - 4);
   LockChange := False;
 end;
 
@@ -119,7 +119,7 @@ begin
   end;
 end;
 
-procedure TBigImagesSizeForm.TrackBar1Change(Sender: TObject);
+procedure TBigImagesSizeForm.TrbImageSizeChange(Sender: TObject);
 begin
   BeginScreenUpdate(RgPictureSize.Buttons[0].Handle);
   try
@@ -128,7 +128,7 @@ begin
 
     LockChange := True;
     RgPictureSize.ItemIndex := 0;
-    BigThSize := (50 - TrackBar1.Position) * 10 + 40;
+    BigThSize := (50 - TrbImageSize.Position) * 10 + 40;
     RgPictureSize.Buttons[0].Caption := Format(TEXT_MES_OTHER_BIG_SIZE_F, [BigThSize, BigThSize]);
 
     FCallBack(Self, BigThSize, BigThSize);
@@ -154,14 +154,14 @@ begin
 
   LockChange := True;
   BigThSize := aPictureSize;
-  TrackBar1.Position := 50 - (BigThSize div 10 - 4);
-  p.y := p.y - 10 - Round((TrackBar1.Height - 20) * TrackBar1.Position / TrackBar1.Max);
+  TrbImageSize.Position := 50 - (BigThSize div 10 - 4);
+  p.y := p.y - 10 - Round((TrbImageSize.Height - 20) * TrbImageSize.Position / TrbImageSize.Max);
 
   if p.y < 0 then
   begin
     Left := p.X;
     p.X := 10;
-    p.y := 10 + Round((TrackBar1.Height - 20) * TrackBar1.Position / TrackBar1.Max);
+    p.y := 10 + Round((TrbImageSize.Height - 20) * TrbImageSize.Position / TrbImageSize.Max);
     Top := 0;
     p := ClientToScreen(p);
     SetCursorPos(p.X, p.y);
@@ -184,24 +184,24 @@ end;
 
 procedure TBigImagesSizeForm.FormDeactivate(Sender: TObject);
 begin
-  if not TimerActivated then exit;
-  if Destroying then exit;
-  Destroying:=true;
+  if not TimerActivated then
+    Exit;
+  if Destroying then
+    Exit;
+  Destroying := True;
   Release;
-  Free;
 end;
 
 procedure TBigImagesSizeForm.TimerActivateTimer(Sender: TObject);
 begin
-  TimerActivate.Enabled:=false;
-  TimerActivated:=true;
+  TimerActivate.Enabled := False;
+  TimerActivated := True;
 end;
 
 procedure TBigImagesSizeForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
- //ESC
- if Key = 27 then
+ if Key = VK_ESCAPE then
    Deactivate;
 end;
 
@@ -211,7 +211,7 @@ var
 begin
   ActivateApplication(Self.Handle);
   GetCursorPos(p);
-  TrackBar1.SetFocus;
+  TrbImageSize.SetFocus;
   if GetAsyncKeystate(VK_MBUTTON)<>0 then
     Exit;
   if GetAsyncKeystate(VK_LBUTTON) <> 0 then

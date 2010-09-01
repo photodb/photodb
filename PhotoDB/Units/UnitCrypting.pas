@@ -106,7 +106,7 @@ begin
  end;
 
  if FileExists(FileName) then
- if not CryptGraphicFileV1(FileName, Password, Options) then
+ if not CryptGraphicFileV2(FileName, Password, Options) then
  begin
   Result:=CRYPT_RESULT_FAILED_CRYPT_FILE;
   exit;

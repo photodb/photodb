@@ -1688,7 +1688,6 @@ object FormSelectDB: TFormSelectDB
       Width = 153
       Height = 21
       AutoComplete = False
-      ItemHeight = 13
       ItemIndex = 3
       TabOrder = 2
       Text = '150'
@@ -1768,11 +1767,9 @@ object FormSelectDB: TFormSelectDB
         Height = 22
         ItemsEx = <>
         Style = csExDropDownList
-        ItemHeight = 16
         TabOrder = 0
         OnChange = ComboBoxExDB1Change
         Images = DBImageList
-        DropDownCount = 8
         ShowDropDownMenu = True
         LastItemIndex = 0
         ShowEditIndex = -1
@@ -1905,6 +1902,7 @@ object FormSelectDB: TFormSelectDB
         EnterBould = False
         TopIconIncrement = 0
         ImageCanRegenerate = True
+        UseSpecIconSize = True
       end
       object InternalNameEdit: TEdit
         Left = 8

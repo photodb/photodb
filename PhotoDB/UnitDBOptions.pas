@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Dolphin_DB, StdCtrls, CommonDBSupport, WebLink, Language,
-  UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, ExtCtrls;
+  UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, ExtCtrls, UnitDBCommonGraphics;
 
 type
   TFormDBOptions = class(TForm)
@@ -40,16 +40,16 @@ type
     procedure Button1Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
-  private       
-   ImageOptions : TImageDBOptions;
-   DBFile : TPhotoDBFile;
-   fname : String;
+  private
+    ImageOptions: TImageDBOptions;
+    DBFile: TPhotoDBFile;
+    FName: string;
     { Private declarations }
   public
-   procedure LoadLanguage;
-   procedure Execute(Options : TPhotoDBFile);
-   procedure ReadSettingsFromDB;
-   procedure SetDefaultIcon(path : string = '');
+    procedure LoadLanguage;
+    procedure Execute(Options: TPhotoDBFile);
+    procedure ReadSettingsFromDB;
+    procedure SetDefaultIcon(Path: string = '');
     { Public declarations }
   end;
 
@@ -68,14 +68,16 @@ var
   Options : TPhotoDBFile;
 begin
   Application.CreateForm(TFormDBOptions, FormDBOptions);
-  Options := TPhotoDBFile.Create;
-  Options.Name:=Name;
-  Options.Icon:='';
-  Options.FileName:=FileName;
-  Options.FileType:=0;
-  FormDBOptions.Execute(Options);
-  FormDBOptions.Release;
-  FormDBOptions.Free;
+  try
+    Options := TPhotoDBFile.Create;
+    Options.Name := Name;
+    Options.Icon := '';
+    Options.FileName := FileName;
+    Options.FileType := 0;
+    FormDBOptions.Execute(Options);
+  finally
+    FormDBOptions.Release;
+  end;
 end;
 
 procedure ChangeDBOptions(Options : TPhotoDBFile);  overload;
@@ -83,25 +85,27 @@ var
   FormDBOptions: TFormDBOptions;
 begin
   Application.CreateForm(TFormDBOptions, FormDBOptions);
-  FormDBOptions.Execute(Options);
-  FormDBOptions.Release;
-  FormDBOptions.Free;
+  try
+    FormDBOptions.Execute(Options);
+  finally
+    FormDBOptions.Release;
+  end;
 end;
 
 procedure TFormDBOptions.Execute(Options : TPhotoDBFile);
 begin
- fName:=Options.Name;
- DBFile.FileName:=Options.FileName;
- ReadSettingsFromDB;        
- SetDefaultIcon(Options.Icon);    
- GroupBoxIcon.Visible:=true;
- ShowModal;
+  FName := Options.name;
+  DBFile.FileName := Options.FileName;
+  ReadSettingsFromDB;
+  SetDefaultIcon(Options.Icon);
+  GroupBoxIcon.Visible := True;
+  ShowModal;
 end;
 
 procedure TFormDBOptions.FormCreate(Sender: TObject);
 begin
  DBKernel.RecreateThemeToForm(Self);
- LoadLanguage;          
+ LoadLanguage;
  DBKernel.RegisterForm(Self);
 end;
 
@@ -120,7 +124,7 @@ begin
  Button4.Caption:=TEXT_MES_CHANGE_FILE_LOCATION;
  Label3.Caption:=TEXT_MES_CONVERTATION_PANEL_PREVIEW_SIZE_INFO;
  Label4.Caption:=TEXT_MES_CONVERTATION_HINT_SIZE_INFO;
- Label5.Caption:=TEXT_MES_CONVERTATION_TH_SIZE;       
+ Label5.Caption:=TEXT_MES_CONVERTATION_TH_SIZE;
  Label6.Caption:=TEXT_MES_CONVERTATION_JPEG_QUALITY;
  WebLink1.Text:=TEXT_MES_PRESS_THIS_LINK_TO_CONVERT_DB;
  Button2.Caption:=TEXT_MES_CANCEL;
@@ -147,7 +151,7 @@ begin
   SetOldPath(DBFile.FileName);
   SetPath(GetDirectory(DBFile.FileName));
   Show;
- end; 
+ end;
 end;
 
 procedure TFormDBOptions.Button1Click(Sender: TObject);
@@ -157,14 +161,14 @@ var
 
   procedure DisableControls;
   begin
-   Button1.Enabled:=false;  
-   Button2.Enabled:=false; 
+   Button1.Enabled:=false;
+   Button2.Enabled:=false;
    Button3.Enabled:=false;
    Button4.Enabled:=false;
-   Button5.Enabled:=false;  
+   Button5.Enabled:=false;
    Edit1.Enabled:=false;
    Edit2.Enabled:=false;
-   ComboBox1.Enabled:=false;   
+   ComboBox1.Enabled:=false;
    ComboBox2.Enabled:=false;
    WebLink1.Enabled:=false;
   end;
@@ -202,7 +206,7 @@ var
   FA : integer;
   OpenDialog : DBOpenDialog;
   FileName : string;
-begin         
+begin
  OpenDialog := DBOpenDialog.Create;
  OpenDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
 
@@ -221,7 +225,7 @@ begin
   FA:=FileGetAttr(FileName);
   if (fa and SysUtils.faReadOnly)<>0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);       
+   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
    OpenDialog.Free;
    exit;
   end;
@@ -244,7 +248,7 @@ begin
   DBFile.FileName:=FileName;
   if fName<>'' then
   DBKernel.AddDB(fName,DBFile.FileName,DBFile.Icon);
- end;    
+ end;
  OpenDialog.Free;
 end;
 
@@ -286,38 +290,36 @@ end;
 
 procedure TFormDBOptions.Button5Click(Sender: TObject);
 var
-  FileName : String;
-  IconIndex : integer;
-  s,  Icon : String;
-  i : Integer;
-  ico : TIcon;
+  FileName: string;
+  IconIndex: Integer;
+  S, Icon: string;
+  I: Integer;
+  Ico: TIcon;
 begin
- if not Button5.Enabled then exit;
- s:=DBFile.Icon;
- i:=Pos(',',s);
- FileName:=Copy(s,1,i-1);
- Icon:=Copy(s,i+1,Length(s)-i);
- IconIndex:=StrToIntDef(Icon,0);
- ChangeIconDialog(Handle,FileName,IconIndex);
- if FileName<>'' then
- Icon:=FileName+','+IntToStr(IconIndex);
- DBFile.Icon:=Icon;
- ico:=GetSmallIconByPath(Icon);
- ImageIconPreview.Picture.Icon.Assign(ico);
- ImageIconPreview.Refresh;
- ico.free;
+  if not Button5.Enabled then
+    Exit;
+  S := DBFile.Icon;
+  I := Pos(',', S);
+  FileName := Copy(S, 1, I - 1);
+  Icon := Copy(S, I + 1, Length(S) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  ChangeIconDialog(Handle, FileName, IconIndex);
+  if FileName <> '' then
+    Icon := FileName + ',' + IntToStr(IconIndex);
+  DBFile.Icon := Icon;
+
+
+  SetIconToPictureFromPath(ImageIconPreview.Picture, Icon);
 end;
 
 procedure TFormDBOptions.SetDefaultIcon(path : string = '');
 var
-  ico : TIcon;
+  Ico: TIcon;
 begin
- if path='' then path:=GetDirectory(GetProgramPath)+'Icons.dll,121';
- DBFile.Icon:=path;
- ico:=GetSmallIconByPath(path);
- ImageIconPreview.Picture.Icon.Assign(ico);
- ImageIconPreview.Refresh;
- ico.free;
+  if Path = '' then
+    Path := GetDirectory(GetProgramPath) + 'Icons.dll,121';
+  DBFile.Icon := Path;
+  SetIconToPictureFromPath(ImageIconPreview.Picture, Path);
 end;
 
 end.

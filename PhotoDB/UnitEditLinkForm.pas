@@ -61,9 +61,9 @@ function AddNewLink(Add : Boolean; var info : TLinksInfo; Proc : TSetLinkProcedu
 var
   FormEditLink: TFormEditLink;
 begin
- Application.CreateForm(TFormEditLink, FormEditLink);
- FormEditLink.Execute(Add,info,Proc,OnClose);
- Result:=FormEditLink;
+  Application.CreateForm(TFormEditLink, FormEditLink);
+  FormEditLink.Execute(Add, Info, Proc, OnClose);
+  Result := FormEditLink;
 end;
 
 { TFormEditLink }
@@ -168,16 +168,16 @@ var
   OpenDialog : DBOpenDialog;
   OpenPictureDialog : DBOpenPictureDialog;
 begin
- 
+
  Case ComboBox1.ItemIndex of
   LINK_TYPE_ID:
-  begin               
+  begin
    OpenPictureDialog:=DBOpenPictureDialog.Create;
    OpenPictureDialog.Filter:=Dolphin_DB.GetGraphicFilter;
    if OpenPictureDialog.Execute then
    begin
     Edit2.Text:=IntToStr(GetIdByFileName(OpenPictureDialog.FileName));
-   end;   
+   end;
    OpenPictureDialog.Free;
   end;
   LINK_TYPE_IMAGE:
@@ -199,12 +199,12 @@ begin
    if S<>'' then Edit2.Text:=S;
   end;
   LINK_TYPE_ID_EXT:
-  begin              
+  begin
    OpenPictureDialog:=DBOpenPictureDialog.Create;
    OpenPictureDialog.Filter:=Dolphin_DB.GetGraphicFilter;
    if OpenPictureDialog.Execute then
    begin
-    Edit2.Text:=CodeExtID(GetImageIDW(OpenPictureDialog.FileName,false).ImTh);  
+    Edit2.Text:=CodeExtID(GetImageIDW(OpenPictureDialog.FileName,false).ImTh);
     OpenPictureDialog.Free;
    end;
   end;
@@ -318,20 +318,20 @@ end;
 procedure TFormEditLink.ComboBox1KeyPress(Sender: TObject; var Key: Char);
 begin
  if (Key='[') or (Key=']') or (Key='{') or (Key='}') then
- Key:='_';
+   Key:='_';
 end;
 
 procedure TFormEditLink.Edit2KeyPress(Sender: TObject; var Key: Char);
 begin
  if (Key=';') then
- Key:='_';
+   Key:='_';
 end;
 
 procedure TFormEditLink.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
- //ESC
- if Key = 27 then Close();
+ if Key = VK_ESCAPE then
+   Close;
 end;
 
 end.

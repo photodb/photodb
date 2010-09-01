@@ -44,13 +44,13 @@ uses
   replaceform in 'replaceform.pas' {DBReplaceForm},
   unitimhint in 'unitimhint.pas' {ImHint},
   SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
-  activation in 'activation.pas' {ActivateForm},
+  uActivation in 'uActivation.pas' {ActivateForm},
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
   InstallFormUnit in 'InstallFormUnit.pas' {InstallForm},
   SetupProgressUnit in 'SetupProgressUnit.pas' {SetupProgressForm},
   UnInstallFormUnit in 'UnInstallFormUnit.pas' {UnInstallForm},
   UnitUpdateDB in 'UnitUpdateDB.pas' {UpdateDBForm},
-  about in 'about.pas' {AboutForm},
+  uAbout in 'uAbout.pas' {AboutForm},
   FormManegerUnit in 'FormManegerUnit.pas' {FormManager},
   ManagerDBUnit in 'ManagerDBUnit.pas' {ManagerDB},
   CMDUnit in 'CMDUnit.pas' {CMDForm},
@@ -590,16 +590,8 @@ begin
   if not FolderView then
     if not DBInDebug then
       if not DBTerminating then
-        If DBKernel.ProgramInDemoMode then
-        begin
-          SplashThread.Terminate;
-          EventLog('Loading About...');
-          if AboutForm = nil then
-            Application.CreateForm(TAboutForm, AboutForm);
-          AboutForm.Execute;
-          AboutForm.Release;
-          AboutForm := nil;
-        end;
+        if DBKernel.ProgramInDemoMode then
+          TSplashThread(SplashThread).ShowDemoInfo;
 
   TW.i.Start('CHECK APPDATA DIRECTORY');
   // GROUPS CHECK + MENU----------------------------------------------------

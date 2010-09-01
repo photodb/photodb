@@ -2478,7 +2478,7 @@ begin
   end;
   {$IFDEF PHOTODB}
   if FilePassWord<>'' then
-  GraphicCrypt.CryptGraphicFileV1(FileName,FilePassWord,0);
+  GraphicCrypt.CryptGraphicFileV2(FileName,FilePassWord,0);
   {$ENDIF}
  end;  
  SavePictureDialog.Free;

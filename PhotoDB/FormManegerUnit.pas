@@ -7,7 +7,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms,  uVistaFuncs, UnitDBNullQueryThread, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
-  UnitDBCommon, uLogger, uConstants, uFileUtils, uTime;
+  UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread;
 
 type
   TFormManager = class(TForm)
@@ -59,7 +59,7 @@ const
 implementation
 
 uses Language, UnitCleanUpThread, ExplorerUnit, Searching, SlideShow,
-DBSelectUnit, Activation, UnitUpdateDB, UnitInternetUpdate, About,
+DBSelectUnit, uActivation, UnitUpdateDB, UnitInternetUpdate, uAbout,
 UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
 UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
 
@@ -99,14 +99,6 @@ var
   Reg : TBDRegistry;
   days : integer;
   d1 : tdatetime;
-
- procedure EnterCode;
- begin
-  If DBTerminating then exit;
-  if ActivateForm=nil then
-  Application.CreateForm(TActivateForm,ActivateForm);
-  Application.Run;
- end;
 
 begin
  if DBKernel.ProgramInDemoMode and not DBInDebug then
@@ -190,16 +182,6 @@ begin
 try
  EventLog(':TFormManager::Run()...');
  DBKernel.WriteProperty('Starting','ApplicationStarted','1');
- if EnteringCodeNeeded then
- begin
-  if ActivateForm=nil then
-  Application.CreateForm(TActivateForm,ActivateForm);
-  CloseLoadingForm;
-  ActivateForm.Show;
-  //ActivateApplication(ActivateForm.Handle);
-  RegisterMainForm(ActivateForm);
-  exit;
- end;
 
  ParamStr1:=ParamStr(1);
  ParamStr2:=Paramstr(2);
@@ -578,11 +560,8 @@ begin
     begin
      if CommonDBSupport.GetRecordsCount(dbname)=0 then
      begin
-      if AboutForm<>nil then
-      begin
-       AboutForm.Release;
-       AboutForm:=nil;
-      end;
+      if SplashThread <> nil then
+        SplashThread.Terminate;
       begin
        //ImportImages(dbname);
        DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);

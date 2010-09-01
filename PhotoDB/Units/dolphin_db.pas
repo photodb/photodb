@@ -29,28 +29,28 @@ const
   Pwd_engldown = 'qwertyuiopasdfghjklzxcvbnm';
   Pwd_cifr = '0123456789';
   Pwd_spec = '!#$%&()=?@<>|{[]}/\*~+#;:.-_';
-  Abs_engl: set of Char = ['a' .. 'z', 'A' .. 'Z'];
-  Abs_rus: set of Char = ['à' .. 'ß', 'à' .. 'ß'];
-  Abs_cifr: set of Char = ['0' .. '9'];
-  Abs_hex: set of Char = ['a' .. 'e', 'A' .. 'E', '0' .. '9'];
-  Abs_englUp: set of Char = ['A' .. 'Z'];
-  Abs_rusUp: set of Char = ['À' .. 'ß'];
-  Abs_englDown: set of Char = ['a' .. 'z'];
-  Abs_rusDown: set of Char = ['à' .. 'ÿ'];
+  Abs_engl: set of AnsiChar = ['a' .. 'z', 'A' .. 'Z'];
+  Abs_rus: set of AnsiChar = ['à' .. 'ß', 'à' .. 'ß'];
+  Abs_cifr: set of AnsiChar = ['0' .. '9'];
+  Abs_hex: set of AnsiChar = ['a' .. 'e', 'A' .. 'E', '0' .. '9'];
+  Abs_englUp: set of AnsiChar = ['A' .. 'Z'];
+  Abs_rusUp: set of AnsiChar = ['À' .. 'ß'];
+  Abs_englDown: set of AnsiChar = ['a' .. 'z'];
+  Abs_rusDown: set of AnsiChar = ['à' .. 'ÿ'];
 
   SHELL_FOLDERS_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\Explorer';
   QUICK_LAUNCH_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\GrpConv';
 
-  Cifri: set of Char = ['0' .. '9'];
+  Cifri: set of AnsiChar = ['0' .. '9'];
 
-  Unusedchar: set of Char = ['''', '/', '|', '\', '<', '>', '"', '?', '*', ':'];
-  Unusedchar_folders: set of Char = ['''', '/', '|', '<', '>', '"', '?', '*', ':'];
+  Unusedchar: set of AnsiChar = ['''', '/', '|', '\', '<', '>', '"', '?', '*', ':'];
+  Unusedchar_folders: set of AnsiChar = ['''', '/', '|', '<', '>', '"', '?', '*', ':'];
   Abs_alldb = ['0' .. '9', 'à' .. 'ÿ', 'À' .. 'ß', '¸', '¨', 'a' .. 'z', 'A' .. 'Z', '/', '|', '\', '<', '>', '''',
     '?', '*', ':'];
 
-  Validchars: set of Char = ['a' .. 'z', 'A' .. 'Z', '[', ']', '-', '_', '!', ':', ';', '\', '/', '.', ',', ' ',
+  Validchars: set of AnsiChar = ['a' .. 'z', 'A' .. 'Z', '[', ']', '-', '_', '!', ':', ';', '\', '/', '.', ',', ' ',
     '0' .. '9'];
-  Validcharsmdb: set of Char = ['a' .. 'z', 'A' .. 'Z', '[', ']', '-', '_', '!', ':', ';', '\', '/', '.', ',', ' ',
+  Validcharsmdb: set of AnsiChar = ['a' .. 'z', 'A' .. 'Z', '[', ']', '-', '_', '!', ':', ';', '\', '/', '.', ',', ' ',
     '0' .. '9', ' ', 'à' .. 'ÿ', 'À' .. 'ß'];
 
 const
@@ -224,6 +224,7 @@ type
 type
   PCopyDataStruct = ^TCopyDataStruct;
 
+  //TODO:!!!
   TCopyDataStruct = record
     DwData: LongInt;
     CbData: LongInt;
@@ -282,7 +283,7 @@ type
   TImageDBRecordA = record
     IDs: array of Integer;
     FileNames: array of string;
-    ImTh: string[210];
+    ImTh: string;
     Count: Integer;
     Attr: array of Integer;
     Jpeg: TJpegImage;
@@ -677,7 +678,6 @@ procedure RotateDBImage90(ID: Integer; OldRotation: Integer);
 procedure RotateDBImage180(ID: Integer; OldRotation: Integer);
 
 procedure DBError(ErrorValue, Error: string);
-function GetSmallIconByPath(IconPath: string; Big: Boolean = False): TIcon;
 
 function GetExt(Filename: string): string;
 function GetFileSizeByName(FileName: string): Int64;
@@ -772,7 +772,7 @@ var
 implementation
 
 uses UnitPasswordForm, UnitWindowsCopyFilesThread,
-  CommonDBSupport, Activation, UnitInternetUpdate, UnitManageGroups, About,
+  CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
   UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit;
 
@@ -4661,38 +4661,8 @@ begin
   Body := TStringList.Create;
   Body.Add('Error body:');
   Body.Add(ErrorValue);
-  SendMail('', ProgramMail, PAnsichar('Error in program [' + Error + ']'), PAnsichar(Body.Text), '', True);
+  SendMail('', ProgramMail, PAnsiChar('Error in program [' + Error + ']'), PAnsichar(Body.Text), '', True);
   Body.Free;
-end;
-
-function GetSmallIconByPath(IconPath: string; Big: Boolean = False): TIcon;
-var
-  Path, Icon: string;
-  IconIndex, I: Integer;
-  Ico1, Ico2: HIcon;
-begin
-  I := Pos(',', IconPath);
-  Path := Copy(IconPath, 1, I - 1);
-  Icon := Copy(IconPath, I + 1, Length(IconPath) - I);
-  IconIndex := StrToIntDef(Icon, 0);
-  Ico1 := 0;
-  Result := TIcon.Create;
-  try
-    ExtractIconEx(PWideChar(Path), IconIndex, Ico1, Ico2, 1);
-  except
-  end;
-  if Big then
-  begin
-    Result.Handle := Ico1;
-    if Ico2 <> 0 then
-      DestroyIcon(Ico2);
-  end
-  else
-  begin
-    Result.Handle := Ico2;
-    if Ico1 <> 0 then
-      DestroyIcon(Ico1);
-  end;
 end;
 
 procedure StretchA(Width, Height: Integer; var S, D: TBitmap);
@@ -4857,7 +4827,7 @@ end;
 function CompareImagesByGistogramm(Image1, Image2: TBitmap): Byte;
 var
   PRGBArr: PARGBArray;
-  I, A: Integer;
+  I: Integer;
   Diff: Byte;
   Data1, Data2, Data: TGistogrammData;
   Mx_r, Mx_b, Mx_g: Integer;
@@ -5340,7 +5310,7 @@ end;
 
 procedure Delay(Msecs: Longint);
 var
-  FirstTick: Longint;
+  FirstTick: Cardinal;
 begin
   FirstTick := GetTickCount;
   repeat
@@ -6206,7 +6176,7 @@ begin
       Result := True;
       for I := 1 to Length(Str) do
       begin
-        if not(Str[I] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+        if not CharInSet(Str[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
         begin
           Result := False;
           Break;
@@ -6222,7 +6192,7 @@ begin
       if Result <> '' then
         for I := 1 to Length(Result) do
         begin
-          if (Result[I] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+          if not CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
           begin
             Delete(Result, 1, I - 1);
             Break;
@@ -6230,7 +6200,7 @@ begin
         end;
       for I := 1 to Length(Result) do
       begin
-        if not(Result[I] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+        if not CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
         begin
           Result := Copy(Result, 1, I - 1);
           Break;
@@ -6249,46 +6219,46 @@ begin
     Result := AnsiCompareStr(Text1, Text2);
   end;
 
-  function FileTime2DateTime(FT: _FileTime): TDateTime;
-  var
-    FileTime: _SystemTime;
-  begin
-    FileTimeToLocalFileTime(FT, FT);
-    FileTimeToSystemTime(FT, FileTime);
-    Result := EncodeDate(FileTime.WYear, FileTime.WMonth, FileTime.WDay) + EncodeTime(FileTime.WHour, FileTime.WMinute,
-      FileTime.WSecond, FileTime.WMilliseconds);
-  end;
+function FileTime2DateTime(FT: _FileTime): TDateTime;
+var
+  FileTime: _SystemTime;
+begin
+  FileTimeToLocalFileTime(FT, FT);
+  FileTimeToSystemTime(FT, FileTime);
+  Result := EncodeDate(FileTime.WYear, FileTime.WMonth, FileTime.WDay) + EncodeTime(FileTime.WHour, FileTime.WMinute,
+    FileTime.WSecond, FileTime.WMilliseconds);
+end;
 
-  function DateModify(FileName: string): TDateTime;
-  var
-    Ts: TSearchRec;
-  begin
-    Result := 0;
-    if FindFirst(FileName, FaAnyFile, Ts) = 0 then
-      Result := FileTime2DateTime(Ts.FindData.FtLastWriteTime);
-  end;
+function DateModify(FileName: string): TDateTime;
+var
+  Ts: TSearchRec;
+begin
+  Result := 0;
+  if FindFirst(FileName, FaAnyFile, Ts) = 0 then
+    Result := FileTime2DateTime(Ts.FindData.FtLastWriteTime);
+end;
 
-  function GettingProcNum: Integer; // Win95 or later and NT3.1 or later
-  var
-    Struc: _SYSTEM_INFO;
-  begin
-    GetSystemInfo(Struc);
-    Result := Struc.DwNumberOfProcessors;
-  end;
+function GettingProcNum: Integer; // Win95 or later and NT3.1 or later
+var
+  Struc: _SYSTEM_INFO;
+begin
+  GetSystemInfo(Struc);
+  Result := Struc.DwNumberOfProcessors;
+end;
 
-  function GetWindowsUserName: string;
-  const
-    CnMaxUserNameLen = 254;
-  var
-    SUserName: string;
-    DwUserNameLen: DWORD;
-  begin
-    DwUserNameLen := CnMaxUserNameLen - 1;
-    SetLength(SUserName, CnMaxUserNameLen);
-    GetUserName(PWideChar(SUserName), DwUserNameLen);
-    SetLength(SUserName, DwUserNameLen);
-    Result := SUserName;
-  end;
+function GetWindowsUserName: string;
+const
+  CnMaxUserNameLen = 254;
+var
+  SUserName: string;
+  DwUserNameLen: DWORD;
+begin
+  DwUserNameLen := CnMaxUserNameLen - 1;
+  SetLength(SUserName, CnMaxUserNameLen);
+  GetUserName(PWideChar(SUserName), DwUserNameLen);
+  SetLength(SUserName, DwUserNameLen);
+  Result := SUserName;
+end;
 
   // SupportedExt
   procedure GetPhotosNamesFromDrive(Dir, Mask: string; var Files: TStrings; var MaxFilesCount: Integer;
@@ -6729,7 +6699,6 @@ begin
     I: Integer;
     List: TList64;
   begin
-    Result := 0;
     List := TList64.Create;
     try
       for I := 0 to Count - 1 do
@@ -6745,7 +6714,6 @@ begin
     I: Integer;
     List: TList64;
   begin
-    Result := False;
     List := TList64.Create;
     try
       for I := 0 to Count - 1 do
@@ -6761,7 +6729,6 @@ begin
     I: Integer;
     List: TList64;
   begin
-    Result := False;
     List := TList64.Create;
     try
       for I := 0 to Count - 1 do
@@ -6777,7 +6744,6 @@ begin
     I: Integer;
     List: TList64;
   begin
-    Result := 0;
     List := TList64.Create;
     try
       for I := 0 to Count - 1 do
@@ -6793,7 +6759,6 @@ begin
     I: Integer;
     List: TList64;
   begin
-    Result := 0;
     List := TList64.Create;
     try
       for I := 0 to Count - 1 do

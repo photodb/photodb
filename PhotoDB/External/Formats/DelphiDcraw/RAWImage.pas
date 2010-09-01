@@ -3,7 +3,7 @@ unit RAWImage;
 interface
 
 uses  Windows, Messages, SysUtils, Graphics, Classes, FileCtrl, GraphicEX, Forms,
-      uScript, UnitScripts, UnitDBCommonGraphics, uConstants, uFileUtils, uTime,
+      uScript, UnitScripts, uConstants, uFileUtils, uTime,
       FreeBitmap, FreeImage, GraphicsBaseTypes;
 
   {$DEFINE USEPHOTODB}
@@ -75,6 +75,7 @@ var
   LoadScript : string;    
   LoadInteger : integer;
   aFS : TFileStream;
+  aSR : TStreamReader;
   _i : integer;
   _s : string;
   _p : integer;
@@ -329,9 +330,13 @@ initialization
       LoadScript := '';
       aFS := TFileStream.Create(ProgramDir+'scripts\LoadRAW.dbini',fmOpenRead);
       try
-        SetLength(LoadScript, aFS.Size);
-        aFS.Read(LoadScript[1], aFS.Size);
-        LoadScript := StringReplace(LoadScript, #13#10, '  ', [rfReplaceAll]);
+        aSR := TStreamReader.Create(aFS);
+        try
+          LoadScript := aSR.ReadToEnd;
+          LoadScript := StringReplace(LoadScript, #13#10, '  ', [rfReplaceAll]);
+        finally
+          aSR.Free;
+        end;
       finally
         aFS.Free;
       end;

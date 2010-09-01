@@ -8,7 +8,7 @@ uses
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask, uFileUtils,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
   UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons, uLogger, uConstants,
-  UnitDBCommon;
+  UnitDBCommon, UnitDBCommonGraphics;
 
 type
   TOptionsForm = class(TForm)
@@ -280,7 +280,7 @@ var
   Found  : integer;
   SearchRec : TSearchRec;
   Directory : string;
-begin    
+begin
  List:= TStringList.Create;
  List.Clear;
  Directory:=ProgramDir;
@@ -375,7 +375,7 @@ begin
  if NewTab=4 then
  begin
   CheckBox14.Checked:=DBKernel.Readbool('Options','AutoSaveSessionPasswords',true);
-  CheckBox15.Checked:=DBKernel.Readbool('Options','AutoSaveINIPasswords',false); 
+  CheckBox15.Checked:=DBKernel.Readbool('Options','AutoSaveINIPasswords',false);
   Edit10.Text:=IntToStr(DBKernel.ReadInteger('Options','BackUpdays',7));
  end;
 
@@ -452,9 +452,9 @@ begin
     FUserMenu[Length(FUserMenu)-1].Params:=Params;
     FUserMenu[Length(FUserMenu)-1].Icon:=Icon;
     FUserMenu[Length(FUserMenu)-1].UseSubMenu:=UseSubMenu;
-    Ico:=GetSmallIconByPath(Icon);
-    ImageList1.AddIcon(Ico);
-    Ico.free;
+
+    AddIconToListFromPath(ImageList1, Icon);
+
     with ListView1.Items.Add do
     begin
      ImageIndex:=ImageList1.Count-1;
@@ -473,7 +473,8 @@ begin
   Edit8.Text:=DBKernel.ReadString('','UserMenuIcon');
   if Edit8.Text='' then
   Edit8.Text:='%SystemRoot%\system32\shell32.dll,126';
-  Image2.Picture.Icon:=GetSmallIconByPath(Edit8.Text);
+
+  SetIconToPictureFromPath(Image2.Picture, Edit8.Text);
  end;
 
 end;
@@ -521,10 +522,10 @@ begin
   Shape4.Brush.Color:=Theme_MainFontColor;
   Shape7.Brush.Color:=Theme_memoeditcolor;
   Shape5.Brush.Color:=Theme_memoeditfontcolor;
-  Shape6.Brush.Color:=Theme_Labelfontcolor;   
+  Shape6.Brush.Color:=Theme_Labelfontcolor;
   Shape8.Brush.Color:=Theme_ListSelectColor;
   Shape9.Brush.Color:=Theme_ProgressBackColor;
-  Shape10.Brush.Color:=Theme_ProgressFontColor;  
+  Shape10.Brush.Color:=Theme_ProgressFontColor;
   Shape11.Brush.Color:=Theme_ProgressFillColor;
 end;
 
@@ -610,7 +611,7 @@ var
   Exts : TInstallExts;
   i : integer;
   reg : TBDRegistry;
-  S : TStrings;   
+  S : TStrings;
   EventInfo : TEventValues;
 begin
   if ReloadData then
@@ -650,7 +651,7 @@ begin
    DBKernel.WriteBool('Options','Explorer_ShowThumbnailsForImages',CheckBox12.Checked);
    DBKernel.WriteBool('Options','ShowEXIFMarker',CheckBox20.Checked);
    DBKernel.WriteBool('Options','ShowOtherPlaces',CheckBox21.Checked);
-   
+
    ExplorerManager.ShowEXIF:=CheckBox20.Checked;
    ExplorerManager.ShowQuickLinks:=CheckBox21.Checked;
    SetLength(Exts,CheckListBox1.Items.Count);
@@ -698,7 +699,7 @@ begin
   if FLoadedPages[4] then
   begin
    DBKernel.WriteBool('Options','AutoSaveSessionPasswords',CheckBox14.Checked);
-   DBKernel.WriteBool('Options','AutoSaveINIPasswords',CheckBox15.Checked);  
+   DBKernel.WriteBool('Options','AutoSaveINIPasswords',CheckBox15.Checked);
    DBKernel.WriteInteger('Options','BackUpdays',StrToIntDef(Edit10.Text,7));
   end;
 //  5 :
@@ -988,7 +989,7 @@ begin
    DBkernel.LoadThemeFromFile(FThemeList[i]);
    try
     DBkernel.ReloadGlobalTheme;
-   except    
+   except
     on e : Exception do EventLog(':TOptionsForm::ListBox1DblClick()\ReloadGlobalTheme throw exception: '+e.Message);
    end;
    LoadColorsToWindow;
@@ -1151,7 +1152,6 @@ end;
 
 procedure TOptionsForm.Addnewcommand1Click(Sender: TObject);
 var
-  Ico : TIcon;
   OpenDialog : DBOpenDialog;
 const
   DefaultIcon = '%SystemRoot%\system32\shell32.dll,0';
@@ -1170,9 +1170,9 @@ begin
   FUserMenu[Length(FUserMenu)-1].Icon:=OpenDialog.FileName+',0' else
   FUserMenu[Length(FUserMenu)-1].Icon:=DefaultIcon;
   FUserMenu[Length(FUserMenu)-1].UseSubMenu:=true;
-  Ico:=GetSmallIconByPath(FUserMenu[Length(FUserMenu)-1].Icon);
-  ImageList1.AddIcon(Ico);
-  Ico.free;
+
+  AddIconToListFromPath(ImageList1, FUserMenu[Length(FUserMenu)-1].Icon);
+
   with ListView1.Items.Add do
   begin
    ImageIndex:=ImageList1.Count-1;
@@ -1240,18 +1240,25 @@ end;
 
 procedure TOptionsForm.Button13Click(Sender: TObject);
 var
-  ico : TIcon;
+  Ico: TIcon;
 begin
- if ListView1.Selected=nil then exit;
- FUserMenu[ListView1.Selected.index].Caption:=Edit6.Text;
- FUserMenu[ListView1.Selected.index].Icon:=Edit5.Text;
- FUserMenu[ListView1.Selected.index].EXEFile:=Edit4.Text;
- FUserMenu[ListView1.Selected.index].Params:=Edit9.Text;
- FUserMenu[ListView1.Selected.index].UseSubMenu:=CheckBox16.Checked;
- ListView1.Selected.Caption:=Edit6.Text;
- Ico:=GetSmallIconByPath(Edit5.Text);
- ImageList1.ReplaceIcon(ListView1.Selected.Index,ico);
- Ico.free;
+  if ListView1.Selected = nil then
+    Exit;
+
+  FUserMenu[ListView1.Selected.index].Caption := Edit6.Text;
+  FUserMenu[ListView1.Selected.index].Icon := Edit5.Text;
+  FUserMenu[ListView1.Selected.index].EXEFile := Edit4.Text;
+  FUserMenu[ListView1.Selected.index].Params := Edit9.Text;
+  FUserMenu[ListView1.Selected.index].UseSubMenu := CheckBox16.Checked;
+  ListView1.Selected.Caption := Edit6.Text;
+
+  Ico := TIcon.Create;
+  try
+    Ico.Handle := ExtractSmallIconByPath(Edit5.Text);
+    ImageList1.ReplaceIcon(ListView1.Selected.index, Ico);
+  finally
+    Ico.Free;
+  end;
 end;
 
 procedure TOptionsForm.Edit6KeyPress(Sender: TObject; var Key: Char);
@@ -1267,21 +1274,21 @@ end;
 
 procedure TOptionsForm.Button15Click(Sender: TObject);
 var
-  FileName : String;
-  IconIndex : integer;
-  s,  Icon : String;
-  i : Integer;
+  FileName: string;
+  IconIndex: Integer;
+  S, Icon: string;
+  I: Integer;
 begin
- s:=Edit8.text;
- i:=Pos(',',s);
- FileName:=Copy(s,1,i-1);
- Icon:=Copy(s,i+1,Length(s)-i);
- IconIndex:=StrToIntDef(Icon,0);
- ChangeIconDialog(handle,FileName,IconIndex);
- if FileName<>'' then
- Edit8.text:=FileName+','+IntToStr(IconIndex);
- if Image2.Picture.Icon<>nil then
- Image2.Picture.Icon:=GetSmallIconByPath(Edit8.text);
+  S := Edit8.Text;
+  I := Pos(',', S);
+  FileName := Copy(S, 1, I - 1);
+  Icon := Copy(S, I + 1, Length(S) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  ChangeIconDialog(Handle, FileName, IconIndex);
+  if FileName <> '' then
+    Edit8.Text := FileName + ',' + IntToStr(IconIndex);
+
+  SetIconToPictureFromPath(Image2.Picture, Icon);
 end;
 
 procedure TOptionsForm.Button17Click(Sender: TObject);
@@ -1363,7 +1370,7 @@ end;
 
 procedure TOptionsForm.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);  
+ Inherited CreateParams(Params);
  Params.WndParent := GetDesktopWindow;
  with params do
  ExStyle := ExStyle or WS_EX_APPWINDOW;
@@ -1378,7 +1385,7 @@ begin
  if item=nil then
  begin
   Up1.Visible:=false;
-  Down1.Visible:=false;  
+  Down1.Visible:=false;
   DeleteItem1.Visible:=false;
   Rename1.Visible:=false;
  end else
@@ -1412,9 +1419,7 @@ begin
    FPlaces[Length(FPlaces)-1].MyDocuments:=true;
    FPlaces[Length(FPlaces)-1].MyPictures:=true;
    FPlaces[Length(FPlaces)-1].OtherFolder:=true;
-   Ico:=GetSmallIconByPath(DefaultIcon);
-   PlacesImageList.AddIcon(Ico);
-   Ico.free;
+   AddIconToListFromPath(PlacesImageList, DefaultIcon);
    with PlacesListView.Items.AddItem(nil) do
    begin
     ImageIndex:=PlacesImageList.Count-1;
@@ -1486,9 +1491,9 @@ begin
     FPlaces[Length(FPlaces)-1].MyDocuments:=fMyDocuments;
     FPlaces[Length(FPlaces)-1].MyPictures:=fMyPictures;
     FPlaces[Length(FPlaces)-1].OtherFolder:=fOtherFolder;
-    Ico:=GetSmallIconByPath(fIcon);
-    PlacesImageList.AddIcon(Ico);
-    Ico.free;
+
+    AddIconToListFromPath(PlacesImageList, fIcon);
+
     with PlacesListView.Items.Add do
     begin
      ImageIndex:=PlacesImageList.Count-1;
@@ -1570,25 +1575,30 @@ end;
 
 procedure TOptionsForm.Button23Click(Sender: TObject);
 var
-  FileName : String;
-  IconIndex : integer;
-  s,  Icon : String;
-  i, index : Integer;
-  ico : TIcon;
+  FileName: string;
+  IconIndex: Integer;
+  S, Icon: string;
+  I, index: Integer;
+  Ico: TIcon;
 begin
- if PlacesListView.Selected=nil then exit;
- index:=PlacesListView.Selected.Index;
- s:=FPlaces[index].Icon;
- i:=Pos(',',s);
- FileName:=Copy(s,1,i-1);
- Icon:=Copy(s,i+1,Length(s)-i);
- IconIndex:=StrToIntDef(Icon,0);
- ChangeIconDialog(handle,FileName,IconIndex);
- if FileName<>'' then
- FPlaces[index].Icon:=FileName+','+IntToStr(IconIndex);
- ico:=GetSmallIconByPath(FPlaces[index].Icon);
- PlacesImageList.ReplaceIcon(index,ico);
- ico.free;
+  if PlacesListView.Selected = nil then
+    Exit;
+  index := PlacesListView.Selected.index;
+  S := FPlaces[index].Icon;
+  I := Pos(',', S);
+  FileName := Copy(S, 1, I - 1);
+  Icon := Copy(S, I + 1, Length(S) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  ChangeIconDialog(Handle, FileName, IconIndex);
+  if FileName <> '' then
+    FPlaces[index].Icon := FileName + ',' + IntToStr(IconIndex);
+  Ico := TIcon.Create;
+  try
+    Ico.Handle := ExtractSmallIconByPath(FPlaces[index].Icon);
+    PlacesImageList.ReplaceIcon(index, Ico);
+  finally
+    Ico.Free;
+  end;
 end;
 
 procedure TOptionsForm.DeleteItem1Click(Sender: TObject);
@@ -1684,7 +1694,7 @@ begin
   begin
    if FileRegisteredOnInstalledApplication(reg.ReadString('')) then
    CheckListBox1.State[i-1]:=cbChecked else
-   CheckListBox1.State[i-1]:=cbGrayed;      
+   CheckListBox1.State[i-1]:=cbGrayed;
   end;
   Reg.CloseKey;
  end;

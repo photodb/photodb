@@ -102,11 +102,9 @@ object DBSelect: TDBSelect
     Height = 22
     ItemsEx = <>
     Style = csExDropDownList
-    ItemHeight = 16
     TabOrder = 7
     OnSelect = ComboBoxExDB1Select
     Images = DBImageList
-    DropDownCount = 8
     ShowDropDownMenu = True
     LastItemIndex = 0
     ShowEditIndex = -1

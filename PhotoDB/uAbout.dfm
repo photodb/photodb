@@ -14,7 +14,6 @@ object AboutForm: TAboutForm
   KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
-  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDblClick = FormDblClick
   OnKeyDown = FormKeyDown
@@ -27,7 +26,7 @@ object AboutForm: TAboutForm
     Height = 433
     Enabled = False
   end
-  object Memo1: TMemo
+  object MemoInfo: TMemo
     Left = 8
     Top = 8
     Width = 185
@@ -62,7 +61,7 @@ object AboutForm: TAboutForm
     ReadOnly = True
     TabOrder = 0
   end
-  object Memo2: TMemo
+  object MemoRegistrationInfo: TMemo
     Left = 8
     Top = 320
     Width = 185
@@ -87,13 +86,13 @@ object AboutForm: TAboutForm
     ReadOnly = True
     TabOrder = 1
   end
-  object CloseButton: TImButton
+  object ImbClose: TImButton
     Left = 435
     Top = 8
     Width = 21
     Height = 21
     ImageNormal.Data = {
-      07544269746D6170D20B0000424DD20B00000000000036080000280000001500
+      07544269746D6170DE070000424DDE0700000000000042040000280000001500
       00001500000001001000030000009C0300000000000000000000000100000000
       0000007C0000E00300001F000000000000000000800000800000008080008000
       00008000800080800000C0C0C000C0DCC000F0CAA60033000000000033003300
@@ -158,7 +157,7 @@ object AboutForm: TAboutForm
       1D5BDF7BFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7F
       FF7FFF7F1D5B3A0D0000}
     ImageEnter.Data = {
-      07544269746D6170D20B0000424DD20B00000000000036080000280000001500
+      07544269746D6170DE070000424DDE0700000000000042040000280000001500
       00001500000001001000030000009C0300000000000000000000000100000000
       0000007C0000E00300001F000000000000000000800000800000008080008000
       00008000800080800000C0C0C000C0DCC000F0CAA60033000000000033003300
@@ -223,7 +222,7 @@ object AboutForm: TAboutForm
       BD4ADF7BFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7F
       FF7FDF7BBD4AF9000000}
     ImageClick.Data = {
-      07544269746D6170D20B0000424DD20B00000000000036080000280000001500
+      07544269746D6170DE070000424DDE0700000000000042040000280000001500
       00001500000001001000030000009C0300000000000000000000000100000000
       0000007C0000E00300001F000000000000000000800000800000008080008000
       00008000800080800000C0C0C000C0DCC000F0CAA60033000000000033003300
@@ -288,7 +287,7 @@ object AboutForm: TAboutForm
       FD52DF7BFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7F
       FF7FDF7BFD52F9000000}
     ImageDisabled.Data = {
-      07544269746D6170D20B0000424DD20B00000000000036080000280000001500
+      07544269746D6170DE070000424DDE0700000000000042040000280000001500
       00001500000001001000030000009C0300000000000000000000000100000000
       0000007C0000E00300001F000000000000000000800000800000008080008000
       00008000800080800000C0C0C000C0DCC000F0CAA60033000000000033003300
@@ -352,12 +351,12 @@ object AboutForm: TAboutForm
       F739F739F739F739F739D739D739D739D739D739D639D7393B3A1B3200005C01
       1B325C3A5C3E5C3E5C3E5C3E5C3E5C3E5C3E5C3E5C3E5C3E5C3E5C3E5C3E5C3E
       5C3E5C3A1B32D9000000}
-    OnClick = CloseButtonClick
+    OnClick = ImbCloseClick
     Transparent = False
     View = DmIm_Close
     Enabled = True
     ShowCaption = False
-    Caption = 'CloseButton'
+    Caption = 'ImbClose'
     FontNormal.Charset = DEFAULT_CHARSET
     FontNormal.Color = clWindowText
     FontNormal.Height = -11
@@ -380,37 +379,13 @@ object AboutForm: TAboutForm
     CoolColorSize = 3
     VirtualDraw = False
   end
-  object Button1: TButton
-    Left = 8
-    Top = 432
+  object BtShowActivationForm: TButton
+    Left = 9
+    Top = 430
     Width = 185
     Height = 17
     Caption = 'Open activation form'
     TabOrder = 3
-    OnClick = Button1Click
-  end
-  object Button2: TButton
-    Left = 8
-    Top = 432
-    Width = 185
-    Height = 17
-    Caption = 'Close [5]'
-    Enabled = False
-    TabOrder = 4
-    Visible = False
-    OnClick = Button2Click
-  end
-  object Timer1: TTimer
-    Enabled = False
-    OnTimer = Timer1Timer
-    Left = 8
-    Top = 8
-  end
-  object LoadingTimer: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = LoadingTimerTimer
-    Left = 40
-    Top = 8
+    OnClick = BtShowActivationFormClick
   end
 end

@@ -9,30 +9,30 @@ uses
 
 type
   TCryptImageForm = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
-    CheckBox4: TCheckBox;
-    Label1: TLabel;
-    Label2: TLabel;
-    Edit1: TEdit;
-    Edit2: TEdit;
-    CheckBox6: TCheckBox;
+    BtCancel: TButton;
+    BtOk: TButton;
+    CbSaveCRC: TCheckBox;
+    CbSavePasswordForSession: TCheckBox;
+    CbSavePasswordPermanent: TCheckBox;
+    LbPassword: TLabel;
+    LbPasswordConfirm: TLabel;
+    EdPassword: TEdit;
+    EdPasswordConfirm: TEdit;
+    CbShowPassword: TCheckBox;
     procedure FormCreate(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure CheckBox6Click(Sender: TObject);
-    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
-    procedure Button1Click(Sender: TObject);
+    procedure BtOkClick(Sender: TObject);
+    procedure CbShowPasswordClick(Sender: TObject);
+    procedure EdPasswordKeyPress(Sender: TObject; var Key: Char);
+    procedure BtCancelClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
   public
-  FFileName : String;
-  Password : String;
-  SaveFileCRC : Boolean;
-  CryptFileName : Boolean;
-  procedure LoadLanguage;
+    FFileName: string;
+    Password: string;
+    SaveFileCRC: Boolean;
+    CryptFileName: Boolean;
+    procedure LoadLanguage;
     { Public declarations }
   end;
 
@@ -46,100 +46,96 @@ function GetPassForCryptImageFile(FileName : String) : TCryptImageOptions;
 var
   CryptImageForm: TCryptImageForm;
 begin
- Application.CreateForm(TCryptImageForm, CryptImageForm);
- CryptImageForm.FFileName:=FileName;
- CryptImageForm.ShowModal;
- Result.Password:=CryptImageForm.Password;
- Result.CryptFileName:=CryptImageForm.CryptFileName;
- Result.SaveFileCRC:=CryptImageForm.SaveFileCRC; 
- CryptImageForm.Release;
+  Application.CreateForm(TCryptImageForm, CryptImageForm);
+  try
+    CryptImageForm.FFileName := FileName;
+    CryptImageForm.ShowModal;
+    Result.Password := CryptImageForm.Password;
+    Result.CryptFileName := CryptImageForm.CryptFileName;
+    Result.SaveFileCRC := CryptImageForm.SaveFileCRC;
+  finally
+    CryptImageForm.Release;
+  end;
 end;
 
 procedure TCryptImageForm.FormCreate(Sender: TObject);
 begin
- DBkernel.RecreateThemeToForm(Self);
- CheckBox3.Checked:=DBKernel.Readbool('Options','AutoSaveSessionPasswords',true);
- CheckBox4.Checked:=DBKernel.Readbool('Options','AutoSaveINIPasswords',false);
- SaveFileCRC := false;
- CryptFileName := false;
- Password:='';
- LoadLanguage;
+  DBkernel.RecreateThemeToForm(Self);
+  CbSavePasswordForSession.Checked := DBKernel.Readbool('Options', 'AutoSaveSessionPasswords', True);
+  CbSavePasswordPermanent.Checked := DBKernel.Readbool('Options', 'AutoSaveINIPasswords', False);
+  SaveFileCRC := False;
+  CryptFileName := False;
+  Password := '';
+  LoadLanguage;
 end;
 
-procedure TCryptImageForm.Button2Click(Sender: TObject);
+procedure TCryptImageForm.BtOkClick(Sender: TObject);
 begin
- if Edit1.Text='' then Exit;
- if CheckBox6.Checked then
- begin
-  Password:=Edit1.text;
-  SaveFileCRC := CheckBox2.Checked;
-  if CheckBox3.Checked then DBKernel.AddTemporaryPasswordInSession(Password);
-  if CheckBox4.Checked then DBKernel.SavePassToINIDirectory(Password);
-  Close;
- end else
- begin
-  if Edit1.text=Edit2.text  then
+  if EdPassword.Text = '' then
+    Exit;
+
+  if not CbShowPassword.Checked and (EdPassword.Text <> EdPasswordConfirm.Text) then
   begin
-   Password:=Edit1.text;
-   SaveFileCRC := CheckBox2.Checked;
-   if CheckBox3.Checked then DBKernel.AddTemporaryPasswordInSession(Password);
-   if CheckBox4.Checked then DBKernel.SavePassToINIDirectory(Password);
-   Close;
-  end else
-  begin
-   MessageBoxDB(Handle,TEXT_MES_PASSWORDS_DIFFERENT,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+    MessageBoxDB(Handle, TEXT_MES_PASSWORDS_DIFFERENT, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+    Exit;
   end;
- end;
+
+  Password:= EdPassword.Text;
+  SaveFileCRC := CbSaveCRC.Checked;
+  if CbSavePasswordForSession.Checked then
+    DBKernel.AddTemporaryPasswordInSession(Password);
+  if CbSavePasswordPermanent.Checked then
+    DBKernel.SavePassToINIDirectory(Password);
+  Close;
 end;
 
-procedure TCryptImageForm.CheckBox6Click(Sender: TObject);
+procedure TCryptImageForm.CbShowPasswordClick(Sender: TObject);
 begin
- if CheckBox6.Checked then
- begin
-  Edit1.PasswordChar:=#0;
-  Edit2.Hide;
-  Label2.Hide;
- end else
- begin
-  Edit1.PasswordChar:='*';
-  Edit2.Show;
-  Label2.Show;
- end;
+  if CbShowPassword.Checked then
+  begin
+    EdPassword.PasswordChar := #0;
+    EdPasswordConfirm.Hide;
+    LbPasswordConfirm.Hide;
+  end
+  else
+  begin
+    EdPassword.PasswordChar := '*';
+    EdPasswordConfirm.Show;
+    LbPasswordConfirm.Show;
+  end;
 end;
 
-procedure TCryptImageForm.Edit1KeyPress(Sender: TObject; var Key: Char);
+procedure TCryptImageForm.EdPasswordKeyPress(Sender: TObject; var Key: Char);
 begin
- if key=#13 then
- begin
-  Key:=#0;
-  Button2Click(Sender);
- end;
+  if Key = Char(VK_RETURN) then
+  begin
+    Key := #0;
+    BtCancelClick(Sender);
+  end;
 end;
 
-procedure TCryptImageForm.Button1Click(Sender: TObject);
+procedure TCryptImageForm.BtCancelClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TCryptImageForm.LoadLanguage;
 begin
- Label1.Caption:=TEXT_MES_ENTER_IM_PASSWORD;
- Label2.Caption:=TEXT_MES_REENTER_IM_PASSWORD;
- Caption:=TEXT_MES_CRYPT_IMAGE;
- Button1.Caption:=TEXT_MES_CANCEL;
- Button2.Caption:=TEXT_MES_OK;
- CheckBox2.Caption:=TEXT_MES_SAVE_CRC;
- CheckBox3.Caption:=TEXT_MES_SAVE_PASS_SESSION;
- CheckBox4.Caption:=TEXT_MES_SAVE_PASS_IN_INI_DIRECTORY;
- CheckBox6.Caption:=TEXT_MES_SHOW_PASSWORD;
+  LbPassword.Caption := TEXT_MES_ENTER_IM_PASSWORD;
+  LbPasswordConfirm.Caption := TEXT_MES_REENTER_IM_PASSWORD;
+  Caption := TEXT_MES_CRYPT_IMAGE;
+  BtCancel.Caption := TEXT_MES_CANCEL;
+  BtOk.Caption := TEXT_MES_OK;
+  CbSaveCRC.Caption := TEXT_MES_SAVE_CRC;
+  CbSavePasswordForSession.Caption := TEXT_MES_SAVE_PASS_SESSION;
+  CbSavePasswordPermanent.Caption := TEXT_MES_SAVE_PASS_IN_INI_DIRECTORY;
+  CbShowPassword.Caption := TEXT_MES_SHOW_PASSWORD;
 end;
 
 procedure TCryptImageForm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
- if Key=#27 then
- begin
-  Close;
- end;
+  if Key = Char(VK_ESCAPE) then
+    Close;
 end;
 
 end.

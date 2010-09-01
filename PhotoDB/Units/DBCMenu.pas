@@ -65,7 +65,6 @@ type TDBPopupMenu = class
  Procedure ScriptExecuted(Sender : TObject);
  Function GetGroupImageInImageList(GroupCode : string) : integer;
  Function LoadVariablesNo(int : integer) : integer;
-  published
  end;
 
  procedure ReloadIDMenu;
@@ -178,7 +177,7 @@ begin
 
   SetIntAttr(aScript,'$MenuLength',Info.Count);
   SetIntAttr(aScript,'$Position',Info.Position);
-  
+
   //if user haven't rights to get FileName its only possible way to know
   SetBoolAttr(aScript,'$FileExists',FileExists(Info[Info.Position].FileName));
 
@@ -269,14 +268,20 @@ begin
    _user_group_menu.Caption:=TEXT_MES_USER_SUBMENU;
    icon:=DBKernel.ReadString('','UserMenuIcon');
    if icon='' then icon:='%SystemRoot%\system32\shell32.dll,126';
-   Ico:=GetSmallIconByPath(Icon);
-   if not Ico.Empty then
-   begin
-    inc(FExtImagesInImageList);
-    DBkernel.ImageList.AddIcon(ico);
-    _user_group_menu.ImageIndex:=DBkernel.ImageList.Count-1;
-   end else
-   _user_group_menu.ImageIndex:=DB_IC_COMPUTER;
+   Ico := TIcon.Create;
+    try
+      Ico.Handle := ExtractSmallIconByPath(Icon);
+      if not Ico.Empty then
+      begin
+        Inc(FExtImagesInImageList);
+        DBkernel.ImageList.AddIcon(Ico);
+        _user_group_menu.ImageIndex := DBkernel.ImageList.Count - 1;
+      end
+      else
+        _user_group_menu.ImageIndex := DB_IC_COMPUTER;
+    finally
+      Ico.Free;
+    end;
 
   end;
   for i:=0 to Length(FUserMenu)-1 do
@@ -289,15 +294,20 @@ begin
     _user_group_menu.Add(_user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1]);
     _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1].Tag:=i;
     _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1].OnClick:=UserMenuItemPopUpMenu_;
-    Ico:=GetSmallIconByPath(FUserMenu[i].Icon);
-    if not Ico.Empty then
-    begin
-     inc(FExtImagesInImageList);
-     DBkernel.ImageList.AddIcon(ico);
-     _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1].ImageIndex:=DBkernel.ImageList.Count-1;
-    end else
-    _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1].ImageIndex:=DB_IC_COMPUTER;
-    Ico.Free;
+    Ico := TIcon.Create;
+    try
+      Ico.Handle := ExtractSmallIconByPath(FUserMenu[I].Icon);
+      if not Ico.Empty then
+      begin
+        Inc(FExtImagesInImageList);
+        DBkernel.ImageList.AddIcon(Ico);
+        _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].ImageIndex := DBkernel.ImageList.Count - 1;
+      end
+      else
+        _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].ImageIndex := DB_IC_COMPUTER;
+    finally
+      Ico.Free;
+    end;
    end else
    begin
     SetLength(_user_menu, Length(_user_menu)+1);
@@ -305,15 +315,20 @@ begin
     _user_menu[Length(_user_menu)-1].Caption:=FUserMenu[i].Caption;
     _user_menu[Length(_user_menu)-1].Tag:=i;
     _user_menu[Length(_user_menu)-1].OnClick:=UserMenuItemPopUpMenu_;
-    Ico:=GetSmallIconByPath(FUserMenu[i].Icon);
-    if not Ico.Empty then
-    begin
-     inc(FExtImagesInImageList);
-     DBkernel.ImageList.AddIcon(ico);
-     _user_menu[Length(_user_menu)-1].ImageIndex:=DBkernel.ImageList.Count-1;
-    end else
-    _user_menu[Length(_user_menu)-1].ImageIndex:=DB_IC_COMPUTER;
-    Ico.Free;
+    Ico := TIcon.Create;
+    try
+      Ico.Handle := ExtractSmallIconByPath(FUserMenu[I].Icon);
+      if not Ico.Empty then
+      begin
+        Inc(FExtImagesInImageList);
+        DBkernel.ImageList.AddIcon(Ico);
+        _user_menu[Length(_user_menu) - 1].ImageIndex := DBkernel.ImageList.Count - 1;
+      end
+      else
+        _user_menu[Length(_user_menu) - 1].ImageIndex := DB_IC_COMPUTER;
+    finally
+      Ico.Free;
+    end;
    end;
   end;
   if c>0 then
@@ -334,7 +349,7 @@ var
   I : integer;
   FileList : TStrings;
 begin
-  FileList := TStrings.Create;
+  FileList := TStringList.Create;
   try
     for I := 0 to FInfo.Count - 1 do
       if FInfo[I].Selected then
@@ -353,7 +368,7 @@ begin
 
   FBusy:=false;
   aScript := TScript.Create('');
-  aScript.Description:='ID Menu'; 
+  aScript.Description:='ID Menu';
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SearchFolderPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SearchFolderPopUpMenu_);
@@ -394,7 +409,7 @@ end;
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);
 var
  Options : TCryptImageThreadOptions;
- Opt : TCryptImageOptions;   
+ Opt : TCryptImageOptions;
  CryptOptions : integer;
 begin
  Opt:=GetPassForCryptImageFile(TEXT_MES_SELECTED_OBJECTS);
@@ -546,7 +561,7 @@ var
  Options : TCryptImageThreadOptions;
  ItemFileNames : TArStrings;
  ItemIDs : TArInteger;
- ItemSelected : TArBoolean;  
+ ItemSelected : TArBoolean;
  Password : string;
 begin
 
@@ -774,7 +789,7 @@ begin
  FInfo:=info;
  if Finfo.Count=0 then exit;
   begin
-  
+
   _popupmenu.Images:=DBKernel.imageList;
   _popupmenu.Items.Clear;
   AddDBContMenu(_popupmenu.items,finfo);
@@ -1394,4 +1409,3 @@ begin
 end;
 
 end.
-

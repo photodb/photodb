@@ -86,7 +86,6 @@ object FormDBOptions: TFormDBOptions
     Top = 168
     Width = 145
     Height = 21
-    ItemHeight = 13
     ItemIndex = 2
     TabOrder = 2
     Text = '75'
@@ -122,7 +121,6 @@ object FormDBOptions: TFormDBOptions
     Top = 216
     Width = 145
     Height = 21
-    ItemHeight = 13
     ItemIndex = 3
     TabOrder = 5
     Text = '400'
@@ -166,6 +164,7 @@ object FormDBOptions: TFormDBOptions
     EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = False
+    UseSpecIconSize = True
   end
   object Edit5: TEdit
     Left = 8

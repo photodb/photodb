@@ -116,8 +116,8 @@ begin
               Info.ItemCrypted := True;
               Password := DBKernel.FindPasswordForCryptImageFile(FFileName);
 
-              if StringParam <> '' then
-                FPic.Graphic:=DeCryptGraphicFile(FFileName,StringParam)
+              if Password <> '' then
+                FPic.Graphic:=DeCryptGraphicFile(FFileName, Password)
               else
                 Exit;
             end else

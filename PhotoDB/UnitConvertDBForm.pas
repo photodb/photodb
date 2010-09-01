@@ -7,7 +7,8 @@ uses
   Dialogs, StdCtrls, ExtCtrls, DmProgress, ComCtrls, Dolphin_DB, 
   uVistaFuncs, jpeg, Spin, UnitRecreatingThInTable, CommonDBSupport, Menus,
   ExtDlgs, Graphics, UnitPasswordKeeper, UnitDBDeclare, AppEvnts,
-  UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon;
+  UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon,
+  uSplashThread;
 
 type
   TFormConvertingDB = class(TForm)
@@ -99,7 +100,7 @@ procedure ConvertDB(FileName : string);
 
 implementation
 
-uses UnitDBKernel, Language, ConvertDBThreadUnit, About, CMDUnit;
+uses UnitDBKernel, Language, ConvertDBThreadUnit, uAbout, CMDUnit;
 
 procedure ConvertDB(FileName : string);
 var
@@ -118,7 +119,8 @@ procedure TFormConvertingDB.Execute(FileName: string);
 var
   DBVer : integer;
 begin
- if AboutForm<>nil then AboutForm.WaitEnabled:=false;
+ if SplashThread <> nil then
+   SplashThread.Terminate;
  FFileName:=FileName;
  RadioButton1.Enabled:=False;// TODO: !!! BDEInstalled;
  Edit2.Text:=FFileName;

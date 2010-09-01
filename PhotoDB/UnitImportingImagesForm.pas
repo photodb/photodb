@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, Menus, DmProgress, Dolphin_DB, ComCtrls,
   acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
-  UnitDBCommon;
+  UnitDBCommon, UnitDBCommonGraphics;
 
 type
   TFormImportingImages = class(TForm)
@@ -154,7 +154,7 @@ begin
  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
 
  AddFolder(Reg.ReadString('Shell Folders', 'My Pictures', ''));
- 
+
  Reg.Free;
  LoadLanguage;
  PlacesListView.Columns[0].Caption:=TEXT_MES_FOLDERS_TO_ADD;
@@ -184,7 +184,7 @@ begin
  Label6.Caption:=TEXT_MES_IMPORTING_IMAGES_THIRD_STEP;
  Button7.Caption:=TEXT_MES_START_NOW;
  ComboBox1.Clear;
- ComboBox1.Items.Add(TEXT_MES_AKS_ME);  
+ ComboBox1.Items.Add(TEXT_MES_AKS_ME);
  ComboBox1.Items.Add(TEXT_MES_ADD_ALL);
  ComboBox1.Items.Add(TEXT_MES_SKIP_ALL);
  ComboBox1.Items.Add(TEXT_MES_REPLACE_ALL);
@@ -223,23 +223,20 @@ end;
 
 procedure TFormImportingImages.AddFolder(NewPlace : string);
 var
-  Ico : TIcon;
-  p : Pointer;
+  P: Pointer;
 begin
- if DirectoryExists(NewPlace) then
- begin
-  Ico:=GetSmallIconByPath(DefaultIcon);
-  PlacesImageList.AddIcon(Ico);
-  Ico.free;
-  with PlacesListView.Items.AddItem(nil) do
+  if DirectoryExists(NewPlace) then
   begin
-   ImageIndex:=PlacesImageList.Count-1;
-   Caption:=Mince(NewPlace,30);
-   GetMem(p,Length(NewPlace)+1);
-   lstrcpyn(p, PWideChar(NewPlace), Length(NewPlace)+1);
-   Data:=p;
+    AddIconToListFromPath(PlacesImageList, DefaultIcon);
+    with PlacesListView.Items.AddItem(nil) do
+    begin
+      ImageIndex := PlacesImageList.Count - 1;
+      Caption := Mince(NewPlace, 30);
+      GetMem(P, Length(NewPlace) + 1);
+      Lstrcpyn(P, PWideChar(NewPlace), Length(NewPlace) + 1);
+      Data := P;
+    end;
   end;
- end;
 end;
 
 procedure TFormImportingImages.Button4Click(Sender: TObject);
@@ -270,7 +267,7 @@ begin
  if PopupMenu1.Tag<>-1 then
  if PlacesListView.Selected<>nil then
  PopupMenu1.Tag:=PlacesListView.Selected.Index;
- 
+
  if PopupMenu1.Tag<>-1 then
  begin
   PlacesImageList.Delete(PopupMenu1.Tag);
@@ -317,7 +314,7 @@ begin
  begin
   Panel2.Visible:=true;
   Panel3.Visible:=false;
-  Button7.Visible:=false; 
+  Button7.Visible:=false;
   Button1.Visible:=true;
   Step:=2;
  end;
@@ -327,11 +324,11 @@ procedure TFormImportingImages.Button6Click(Sender: TObject);
 var
   SaveDialog : DBSaveDialog;
   FileName : string;
-begin        
+begin
   SaveDialog:=DBSaveDialog.Create;
   SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
   SaveDialog.FilterIndex:=0;
- 
+
  if SaveDialog.Execute then
  begin
   FileName:=SaveDialog.FileName;
@@ -381,11 +378,11 @@ begin
  DBKernel.WriteString('Options','NoAddSmallImagesWidth',Edit1.text);
  DBKernel.WriteString('Options','NoAddSmallImagesHeight',Edit2.text);
 
- 
+
  UpdateObject := TUpdaterDB.Create(false);
 
- UpdateObject.OwnerFormSetMaxValue:=SetMaxValue; 
- UpdateObject.OwnerFormSetPosition:=SetPosition;  
+ UpdateObject.OwnerFormSetMaxValue:=SetMaxValue;
+ UpdateObject.OwnerFormSetPosition:=SetPosition;
  UpdateObject.OnDirectoryAdded:=DirectoryAdded;
  UpdateObject.SetDone:=OnDone;
 

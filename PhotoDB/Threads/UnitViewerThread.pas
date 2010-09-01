@@ -26,7 +26,7 @@ type
   FBooleanResult : Boolean;
   FInfo : TOneRecordInfo;
   FUpdateInfo : boolean;
-  FPage : Word;          
+  FPage : Word;
   FPages : Word;
     { Private declarations }
   protected
@@ -82,17 +82,21 @@ var
   MS : TMemoryStream;
   BMP : TBitmap;
 begin
- FPages:=0;        
- FInfo.ItemFileName:=FFileName;
- if FullScreenNow then
- TransparentColor:=0 else TransparentColor:=Theme_MainColor;
- FTransparent:=false;
- FreeOnTerminate:=true;
- if not FileExistsEx(FFileName) then
- begin
-  SetNOImageAsynch;
-  exit;
- end;
+  FPages := 0;
+  Priority := TpHigher;
+  FInfo.ItemFileName := FFileName;
+  if FullScreenNow then
+    TransparentColor := 0
+  else
+    TransparentColor := Theme_MainColor;
+
+  FTransparent := False;
+  FreeOnTerminate := True;
+  if not FileExistsEx(FFileName) then
+  begin
+    SetNOImageAsynch;
+    Exit;
+  end;
 
  GetPassword;
  if Crypted and (PassWord='') then
@@ -287,7 +291,7 @@ begin
  if Viewer<>nil then
  if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then begin
   RealImageHeight:=FRealHeight;
-  RealImageWidth:=FRealWidth;    
+  RealImageWidth:=FRealWidth;
   RealZoomInc:=FRealZoomScale;
   if FUpdateInfo then
   Viewer.UpdateInfo(FSID,FInfo);
@@ -394,7 +398,7 @@ begin
   Query.Close;
  finally
   FreeDS(Query);
- end;              
+ end;
  FInfo.ItemFileName:=FFileName;
  finally
    CoUnInitialize;

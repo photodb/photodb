@@ -21,7 +21,6 @@ function GetImagePanelImage : TPNGGraphic;
 {$R SearchWait.res}
 {$R DateRange.res}
 {$R Manifest.res}
-{$R Manifest.res}
 {$R ImagePanelBackground.res}
 
 implementation

@@ -154,7 +154,7 @@ begin
 
     //fixing EXIF
 
-    if Password<>'' then CryptGraphicFileV1(fOptions.Files[i],Password,0);
+    if Password<>'' then CryptGraphicFileV2(fOptions.Files[i],Password,0);
 
     FileSetAttr(fOptions.Files[i],oldattr);
 
@@ -181,7 +181,7 @@ begin
     if fOptions.RotateCCW then RotateGDIPlusJPEGFile(fOptions.Files[i],EncoderValueTransformRotate270,true,FileName);
     if fOptions.RotateCW then RotateGDIPlusJPEGFile(fOptions.Files[i],EncoderValueTransformRotate90,true,FileName);
     if fOptions.Rotate180 then RotateGDIPlusJPEGFile(fOptions.Files[i],EncoderValueTransformRotate180,true,FileName);
-    if Password<>'' then CryptGraphicFileV1(FileName,Password,0);
+    if Password<>'' then CryptGraphicFileV2(FileName,Password,0);
     FileSetAttr(fOptions.Files[i],oldattr);
     //
     EventInfo.Name:=FileName;
@@ -285,8 +285,8 @@ begin
     NewGraphic.free;
     if Password<>'' then
     if fOptions.ReplaceImages and (GetExt(fOptions.Files[i])=GetExt(FileName)) then
-    CryptGraphicFileV1(fOptions.Files[i],Password,0) else
-    CryptGraphicFileV1(FileName,Password,0);
+    CryptGraphicFileV2(fOptions.Files[i],Password,0) else
+    CryptGraphicFileV2(FileName,Password,0);
    except
    end;
    if fOptions.ReplaceImages then
@@ -375,7 +375,7 @@ begin
    NewGraphic.free;
    try
     if Password<>'' then
-    CryptGraphicFileV1(FileName,Password,0);
+    CryptGraphicFileV2(FileName,Password,0);
    except
    end;
   end;

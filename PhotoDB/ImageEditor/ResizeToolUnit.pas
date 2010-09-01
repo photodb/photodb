@@ -98,7 +98,7 @@ var
   s:=ComboBoxPercent.Text;
   if s='' then s:='100';
   for i:=Length(s) downto 1 do
-  if not (s[i] in abs_cifr) then Delete(s,i,1);
+  if not CharInSet(s[i], abs_cifr) then Delete(s,i,1);
   Result:=StrToFloatDef(s,50)/100;
  end;
 

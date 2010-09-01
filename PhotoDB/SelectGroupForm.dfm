@@ -17,7 +17,7 @@ object FormSelectGroup: TFormSelectGroup
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object LbInfo: TLabel
     Left = 8
     Top = 8
     Width = 201
@@ -26,7 +26,7 @@ object FormSelectGroup: TFormSelectGroup
     Caption = 'Please, select group:'
     WordWrap = True
   end
-  object ComboBoxEx1: TComboBoxEx
+  object CbeGroupList: TComboBoxEx
     Left = 6
     Top = 41
     Width = 204
@@ -34,26 +34,26 @@ object FormSelectGroup: TFormSelectGroup
     ItemsEx = <>
     ParentColor = True
     TabOrder = 0
-    Text = 'ComboBoxEx1'
+    Text = 'CbeGroupList'
     Images = GroupsImageList
   end
-  object Button1: TButton
+  object BtOk: TButton
     Left = 134
     Top = 68
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtOkClick
   end
-  object Button2: TButton
+  object BtCancel: TButton
     Left = 53
     Top = 68
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtCancelClick
   end
   object GroupsImageList: TImageList
     Height = 18

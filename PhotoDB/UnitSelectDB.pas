@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, Language, 
+  Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, Language,
   UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, jpeg, CommonDBSupport,
   UnitDBCommonGraphics, ImgList, ComCtrls, ComboBoxExDB, WebLink,
   UnitDBCommon;
@@ -83,24 +83,25 @@ type
     procedure Button2Click(Sender: TObject);
     procedure WebLink1Click(Sender: TObject);
     procedure InternalNameEditChange(Sender: TObject);
-  private            
-   ImageOptions : TImageDBOptions;
-   FDBFile : TPhotoDBFile;
-   Step : integer;           
-   Image : TJpegImage;
-   fOptions : integer;
-   procedure DoSelectStep(NewStep : integer);
+  private
     { Private declarations }
+    ImageOptions: TImageDBOptions;
+    FDBFile: TPhotoDBFile;
+    Step: Integer;
+    Image: TJpegImage;
+    FOptions: Integer;
+    procedure DoSelectStep(NewStep: Integer);
   public
-  procedure LoadLanguage;
-  procedure SetDefaultIcon(path : string = '');
-  procedure WriteNewDBOptions;
-  procedure RefreshDBList;
-  procedure SetOptions(Options : Integer);
-  function GetResultDB :  TPhotoDBFile;
     { Public declarations }
+    procedure LoadLanguage;
+    procedure SetDefaultIcon(Path: string = '');
+    procedure WriteNewDBOptions;
+    procedure RefreshDBList;
+    procedure SetOptions(Options: Integer);
+    function GetResultDB: TPhotoDBFile;
+    procedure SetIconImage(Icon: string);
   end;
-                                    
+
 const
   SELECT_DB_OPTION_NONE = 0;
   SELECT_DB_OPTION_GET_DB = 1;
@@ -119,16 +120,18 @@ var
   FormSelectDB: TFormSelectDB;
 begin
   Application.CreateForm(TFormSelectDB, FormSelectDB);
-  FormSelectDB.SetOptions(Options);
-  FormSelectDB.ShowModal;
-  Result:=FormSelectDB.GetResultDB;
-  FormSelectDB.Release;
-  FormSelectDB.Free;
+  try
+    FormSelectDB.SetOptions(Options);
+    FormSelectDB.ShowModal;
+    Result := FormSelectDB.GetResultDB;
+  finally
+    FormSelectDB.Release;
+  end;
 end;
 
 procedure TFormSelectDB.CancelButtonClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFormSelectDB.RadioGroup1Click(Sender: TObject);
@@ -181,7 +184,7 @@ begin
  Button4.Caption:=TEXT_MES_SELECT_DB_FILE;
  Label4.Caption:=TEXT_MES_ICON_PREVIEW+':';
  Button5.Caption:=TEXT_MES_SELECT_ICON;
- Edit1.Text:= TEXT_MES_DB_NAME_PATTERN; 
+ Edit1.Text:= TEXT_MES_DB_NAME_PATTERN;
  Edit2.Text:= TEXT_MES_NO_DB_FILE;
  Label5.Caption:=TEXT_MES_OPTIONS+':';
  Label6.Caption:=TEXT_MES_VALUE+':';
@@ -189,15 +192,15 @@ begin
  GroupBox2.Caption:=TEXT_MES_SELECT_DB;
  Label7.Caption:=TEXT_MES_SELECT_DB_FROM_LIST+':';
 
- CheckBox1.Caption:=TEXT_MES_USE_AS_DEFAULT_DB; 
+ CheckBox1.Caption:=TEXT_MES_USE_AS_DEFAULT_DB;
  CheckBox2.Caption:=TEXT_MES_USE_AS_DEFAULT_DB;
 
  GroupBox3.Caption:=TEXT_MES_SELECT_FILE_ON_HARD_DISK;
- Label9.Caption:=TEXT_MES_FILE_NAME;                     
+ Label9.Caption:=TEXT_MES_FILE_NAME;
  Label11.Caption:=TEXT_MES_DB_TYPE;
  Label14.Caption:=TEXT_MES_ICON_PREVIEW+':';
  Button1.Caption:=TEXT_MES_SELECT_ICON;
- Button2.Caption:=TEXT_MES_CHANGE_DB_OPTIONS;      
+ Button2.Caption:=TEXT_MES_CHANGE_DB_OPTIONS;
  Button3.Caption:=TEXT_MES_SELECT_DB_FILE;
  Label15.Caption:=TEXT_MES_DB_DESCRIPTION;
 
@@ -224,7 +227,7 @@ begin
  if Step=20 then
  Result:=1;
  if Step=30 then
- Result:=20;  
+ Result:=20;
  if Step=40 then
  Result:=30;
 end;
@@ -232,14 +235,14 @@ end;
 procedure TFormSelectDB.DoSelectStep(NewStep : integer);
 begin
  if (NewStep=1) then
- begin             
+ begin
   NextButton.Enabled:=true;
   PanelStep10.Visible:=true;
   PanelStep20.Visible:=false;
-  PanelStep21.Visible:=false;    
+  PanelStep21.Visible:=false;
   PanelStep22.Visible:=false;
   Step:=1;
-  BackButton.Enabled:=false;  
+  BackButton.Enabled:=false;
   FinishButton.Enabled:=false;
  end;
  if (NewStep=20) then
@@ -249,33 +252,33 @@ begin
   PanelStep30.Visible:=false;
   Step:=20;
   BackButton.Enabled:=true;
- end;  
+ end;
  if (NewStep=21) then
- begin       
+ begin
   NextButton.Enabled:=false;
   PanelStep10.Visible:=false;
   PanelStep21.Visible:=true;
   Step:=21;
-  BackButton.Enabled:=true;  
+  BackButton.Enabled:=true;
   FinishButton.Enabled:=true;
   ComboBoxExDB1Change(Self);
- end;  
+ end;
  if (NewStep=22) then
- begin          
+ begin
   NextButton.Enabled:=false;
   PanelStep10.Visible:=false;
   PanelStep22.Visible:=true;
   Step:=22;
-  BackButton.Enabled:=true;  
+  BackButton.Enabled:=true;
   FinishButton.Enabled:=true;
  end;
  if (NewStep=30) then
  begin
   PanelStep20.Visible:=false;
-  PanelStep30.Visible:=true;  
+  PanelStep30.Visible:=true;
   PanelStep40.Visible:=false;
   Step:=30;
-  BackButton.Enabled:=true;  
+  BackButton.Enabled:=true;
   FinishButton.Enabled:=false;
  end;
  if (NewStep=40) then
@@ -321,7 +324,7 @@ begin
     DoSelectStep(20);
    end;
   1:
-   begin  
+   begin
     DoSelectStep(22);
    end;
   2:
@@ -335,31 +338,26 @@ end;
 
 procedure TFormSelectDB.FormDestroy(Sender: TObject);
 begin
- DBKernel.UnRegisterForm(Self);
+  DBKernel.UnRegisterForm(Self);
 end;
 
 procedure TFormSelectDB.Button5Click(Sender: TObject);
 var
-  FileName : String;
-  IconIndex : integer;
-  s,  Icon : String;
-  i : Integer;
-  ico : TIcon;
+  FileName: string;
+  IconIndex: Integer;
+  S, Icon: string;
+  I: Integer;
 begin
- s:=FDBFile.Icon;
- i:=Pos(',',s);
- FileName:=Copy(s,1,i-1);
- Icon:=Copy(s,i+1,Length(s)-i);
- IconIndex:=StrToIntDef(Icon,0);
- ChangeIconDialog(Handle,FileName,IconIndex);
- if FileName<>'' then
- Icon:=FileName+','+IntToStr(IconIndex);
- FDBFile.Icon:=Icon;
- ico:=GetSmallIconByPath(Icon);
- ImageIconPreview.Picture.Icon.Assign(ico);
- ImageIconPreview2.Picture.Icon.Assign(ico);
- ImageIconPreview.Refresh;
- ico.free;
+  S := FDBFile.Icon;
+  I := Pos(',', S);
+  FileName := Copy(S, 1, I - 1);
+  Icon := Copy(S, I + 1, Length(S) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  ChangeIconDialog(Handle, FileName, IconIndex);
+  if FileName <> '' then
+    Icon := FileName + ',' + IntToStr(IconIndex);
+  FDBFile.Icon := Icon;
+  SetIconImage(Icon);
 end;
 
 procedure TFormSelectDB.Button4Click(Sender: TObject);
@@ -400,16 +398,27 @@ begin
 end;
 
 procedure TFormSelectDB.SetDefaultIcon(path : string = '');
-var
-  ico : TIcon;
 begin
-  if path='' then path:=GetDirectory(GetProgramPath)+'Icons.dll,121';
-  FDBFile.Icon:=path;
-  ico:=GetSmallIconByPath(path);
-  ImageIconPreview.Picture.Icon.Assign(ico);
-  ImageIconPreview2.Picture.Icon.Assign(ico);
-  ImageIconPreview.Refresh;
-  ico.free;
+  if Path = '' then
+    Path := GetDirectory(GetProgramPath) + 'Icons.dll,121';
+  FDBFile.Icon := Path;
+  SetIconImage(Path);
+end;
+
+procedure TFormSelectDB.SetIconImage(Icon: string);
+var
+  Ico: TIcon;
+begin
+  Ico := TIcon.Create;
+  try
+    Ico.Handle := ExtractSmallIconByPath(Icon);
+    ImageIconPreview.Picture.Graphic := Ico;
+    ImageIconPreview2.Picture.Graphic := Ico;
+    ImageIconPreview.Refresh;
+    ImageIconPreview2.Refresh;
+  finally
+    Ico.Free;
+  end;
 end;
 
 procedure TFormSelectDB.ListBox1Click(Sender: TObject);
@@ -455,14 +464,14 @@ begin
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThSize);
    end;
-  2: 
-   begin                                                
+  2:
+   begin
     Label13.Caption:=TEXT_MES_CONVERTATION_PANEL_PREVIEW_SIZE_INFO;
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThSizePanelPreview);
    end;
   3:
-   begin                                            
+   begin
     Label13.Caption:=TEXT_MES_CONVERTATION_HINT_SIZE_INFO;
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThHintSize);
@@ -514,7 +523,7 @@ ThHintSize
    ImageOptions.ThHintSize:=Size;
   end;
  end;
-                       
+
  ImageSize:=CalcJpegResampledSize(Image, ImageOptions.ThSize, ImageOptions.DBJpegCompressionQuality, Jpeg);
  if (ListBox1.ItemIndex=0) or (ListBox1.ItemIndex=1) then
  begin
@@ -526,9 +535,9 @@ ThHintSize
    CalcJpegResampledSize(Image, ImageOptions.ThSizePanelPreview, ImageOptions.DBJpegCompressionQuality, Jpeg);
    ImagePreview.Picture.Assign(Jpeg);
   end else
-  begin    
+  begin
    w:=Image.Width;
-   h:=Image.Height; 
+   h:=Image.Height;
    Bitmap:=TBitmap.Create;
    Bitmap.Assign(Image);
    ProportionalSize(ImageOptions.ThHintSize,ImageOptions.ThHintSize,w,h);
@@ -603,7 +612,7 @@ begin
    FDBFile.FileName:=FileName;
    FDBFile.Icon:=Application.ExeName+',0';
    DBKernel.AddDB(FDBFile.Name,FDBFile.FileName,FDBFile.Icon);
-   
+
    MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
    Close;
   end;
@@ -638,7 +647,7 @@ begin
    MessageBoxDB(Handle,Format(TEXT_MES_ERROR_DB_FILE_F,[DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]),TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
   end;
  end;
-     
+
  if Step=22 then
  begin
   if DBkernel.TestDB(FDBFile.FileName) then
@@ -656,37 +665,39 @@ end;
 
 procedure TFormSelectDB.RefreshDBList;
 var
-  i : integer;
-  ico : TIcon;
+  I: Integer;
+  Ico: TIcon;
 begin
- ComboBoxExDB1.Clear;
- DBImageList.Clear;
- DBImageList.BkColor:=Theme_ListColor;
+  ComboBoxExDB1.Clear;
+  DBImageList.Clear;
+  DBImageList.BkColor := Theme_ListColor;
 
- for i:=0 to DBKernel.DBs.Count-1 do
- begin
-  With ComboBoxExDB1.ItemsEx.Add do
+  for I := 0 to DBKernel.DBs.Count - 1 do
   begin
-   Caption:=DBKernel.DBs[i].Name;
-   ImageIndex:=i+1;
-  end;
-  ico:=GetSmallIconByPath(DBKernel.DBs[i].Icon);
-  if ico.Empty then
-  begin
-   ico.Free;
-   ico:=GetSmallIconByPath(Application.ExeName+',0');
-  end;
-  DBImageList.AddIcon(ico);
-  ico.Free;
- end;
+    with ComboBoxExDB1.ItemsEx.Add do
+    begin
+      Caption := DBKernel.DBs[I].name;
+      ImageIndex := I + 1;
+    end;
+    Ico := TIcon.Create;
+    try
+      Ico.Handle := ExtractSmallIconByPath(DBKernel.DBs[I].Icon);
+      if Ico.Empty then
+        Ico.Handle := ExtractSmallIconByPath(Application.ExeName + ',0');
 
- ComboBoxExDB1.ItemIndex :=0;
- ComboBoxExDB1Change(nil);
+      DBImageList.AddIcon(Ico);
+    finally
+      Ico.Free;
+    end;
+  end;
+
+  ComboBoxExDB1.ItemIndex := 0;
+  ComboBoxExDB1Change(nil);
 end;
 
 procedure TFormSelectDB.ComboBoxExDB1Change(Sender: TObject);
 begin
- SelectDBFileNameEdit.Text:=DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName;
+  SelectDBFileNameEdit.Text := DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName;
 end;
 
 procedure TFormSelectDB.Button3Click(Sender: TObject);
@@ -697,7 +708,7 @@ var
   OpenDialog : DBOpenDialog;
   FileName : string;
   DBTestOK : boolean;
-begin         
+begin
  OpenDialog := DBOpenDialog.Create;
 
  OpenDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
@@ -717,7 +728,7 @@ begin
   FA:=FileGetAttr(FileName);
   if (fa and SysUtils.faReadOnly)<>0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);       
+   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
    OpenDialog.Free;
    exit;
   end;

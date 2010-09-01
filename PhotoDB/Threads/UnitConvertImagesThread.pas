@@ -241,8 +241,8 @@ begin
     NewGraphic.free;
     if Password<>'' then
     if fOptions.ReplaceImages and (GetExt(fOptions.ImageList[i])=GetExt(FileName)) then
-    CryptGraphicFileV1(fOptions.ImageList[i],Password,0) else
-    CryptGraphicFileV1(FileName,Password,0);
+    CryptGraphicFileV2(fOptions.ImageList[i],Password,0) else
+    CryptGraphicFileV2(FileName,Password,0);
    except
    end;
    if fOptions.ReplaceImages then
@@ -329,7 +329,7 @@ begin
    NewGraphic.free;
    try
     if Password<>'' then
-    CryptGraphicFileV1(FileName,Password,0);
+    CryptGraphicFileV2(FileName,Password,0);
    except
    end;
   end;

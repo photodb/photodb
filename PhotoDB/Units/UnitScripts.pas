@@ -299,7 +299,6 @@ type
 {$EXTERNALSYM CoCreateGuid}
 function CoCreateGuid(out guid: TGUID): HResult; stdcall;
 
-
 const
   ole32    = 'ole32.dll';
 
@@ -307,7 +306,7 @@ const
      InitScriptFunction : Pointer = nil;
      ScriptsManager : TScriptsManager = nil;
 
-function CoCreateGuid;                  external ole32 name 'CoCreateGuid';    
+function CoCreateGuid; external ole32 name 'CoCreateGuid';
 function ReadFile(FileName : string) : string;
 function IsVariable(const s : string) : Boolean;
 

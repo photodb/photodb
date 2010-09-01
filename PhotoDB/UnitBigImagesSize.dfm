@@ -21,7 +21,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object TrackBar1: TTrackBar
+  object TrbImageSize: TTrackBar
     Left = 0
     Top = 0
     Width = 45
@@ -32,7 +32,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
     Orientation = trVertical
     Position = 1
     TabOrder = 0
-    OnChange = TrackBar1Change
+    OnChange = TrbImageSizeChange
   end
   object Panel1: TPanel
     Left = 45
@@ -60,14 +60,14 @@ object BigImagesSizeForm: TBigImagesSizeForm
       TabOrder = 0
       OnClick = RgPictureSizeClick
     end
-    object CloseLink: TWebLink
+    object LnkClose: TWebLink
       Left = 48
       Top = 151
       Width = 47
       Height = 16
       Cursor = crHandPoint
       Text = 'Close'
-      OnClick = CloseLinkClick
+      OnClick = LnkCloseClick
       BkColor = clWhite
       ImageIndex = 0
       IconWidth = 16

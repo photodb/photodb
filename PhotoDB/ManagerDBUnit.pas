@@ -1706,34 +1706,35 @@ end;
 
 procedure TManagerDB.BtnAddDBClick(Sender: TObject);
 var
-  DBFile : TPhotoDBFile;
+  DBFile: TPhotoDBFile;
 begin
- DBFile:=DoChooseDBFile();
- if DBKernel.TestDB(DBFile.FileName) then
- DBKernel.AddDB(DBFile.Name,DBFile.FileName,DBFile.Icon);
- RefreshDBList;
+  DBFile := DoChooseDBFile;
+  if DBKernel.TestDB(DBFile.FileName) then
+    DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
+  RefreshDBList;
 end;
 
 procedure TManagerDB.RefreshDBList;
 var
-  i : integer;
-  ico : TIcon;
+  I: Integer;
+  Ico: TIcon;
 begin
- DBImageList.Clear;
- LbDatabases.Clear;
- DBImageList.BkColor:=Theme_ListColor;
- for i:=0 to DBKernel.DBs.Count-1 do
- begin
-  LbDatabases.Items.Add(DBKernel.DBs[i].Name);
-  ico:=GetSmallIconByPath(DBKernel.DBs[i].Icon);
-  if ico.Empty then
+  DBImageList.Clear;
+  LbDatabases.Clear;
+  DBImageList.BkColor := Theme_ListColor;
+  for I := 0 to DBKernel.DBs.Count - 1 do
   begin
-   ico.Free;
-   ico:=GetSmallIconByPath(Application.ExeName+',0');
+    LbDatabases.Items.Add(DBKernel.DBs[I].name);
+    Ico := TIcon.Create;
+    try
+      Ico.Handle := ExtractSmallIconByPath(DBKernel.DBs[I].Icon);
+      if Ico.Empty then
+        Ico.Handle := ExtractSmallIconByPath(Application.ExeName + ',0');
+      DBImageList.AddIcon(Ico);
+    finally
+      Ico.Free;
+    end;
   end;
-  DBImageList.AddIcon(ico);
-  ico.Free;
- end;
 end;
 
 procedure TManagerDB.LbDatabasesContextPopup(Sender: TObject;

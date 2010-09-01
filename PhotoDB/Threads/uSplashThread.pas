@@ -12,6 +12,8 @@ type
     { Private declarations }
   protected
     procedure Execute; override;
+  public
+    procedure ShowDemoInfo;
   end;
 
 var
@@ -217,7 +219,13 @@ begin
     UnregisterClass(ClassName, Instance);
   end;      
   TW.I.Start('SPLASH THREAD END');
+  SplashThread := nil;
 end; // ShowSplashWindow
+
+procedure TSplashThread.ShowDemoInfo;
+begin
+  //TODO:
+end;
 
 initialization
 

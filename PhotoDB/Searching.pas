@@ -519,7 +519,7 @@ implementation
 uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
      PropertyForm, ReplaceForm, CleaningForm, Options, UnitLoadFilesToPanel,
      UnitHintCeator, UnitImHint, DBSelectUnit, UnitFormCont,
-     About, activation, ExplorerUnit, InstallFormUnit, UnitUpdateDB,
+     uAbout, uActivation, ExplorerUnit, InstallFormUnit, UnitUpdateDB,
      UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm , UnitQuickGroupInfo,
      UnitGroupReplace, UnitSavingTableForm, UnitInternetUpdate, UnitHelp,
      ImEditor, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
@@ -663,7 +663,7 @@ begin
   ListView.GroupFont.Color := Theme_ListFontColor;
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
-  LoadSizes();
+  LoadSizes;
 
   ListView.Font.Name := 'Tahoma';
   ListView.HotTrack.Color := Theme_ListFontColor;
@@ -3303,16 +3303,12 @@ end;
 
 procedure TSearchForm.Activation2Click(Sender: TObject);
 begin
-  if ActivateForm = nil then
-    Application.CreateForm(TActivateForm,ActivateForm);
-  ActivateForm.Execute;
+  ShowActivationDialog;
 end;
 
 procedure TSearchForm.About2Click(Sender: TObject);
 begin
-  if AboutForm = nil then
-    Application.CreateForm(TAboutForm,AboutForm);
-  AboutForm.Execute;
+  ShowAbout;
 end;
 
 procedure TSearchForm.HomePage2Click(Sender: TObject);

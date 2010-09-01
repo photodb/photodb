@@ -4,9 +4,9 @@ interface
 
 uses
   Dolphin_DB, Searching, UnitDBKernel, Windows, Messages, SysUtils, Variants,
-  Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, DB, 
+  Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, DB,
   ExtCtrls, uVistaFuncs, UnitConvertDBForm, ComCtrls, ComboBoxExDB, ImgList,
-  UnitDBFileDialogs, UnitDBDeclare;
+  UnitDBFileDialogs, UnitDBDeclare, UnitDBCommonGraphics;
 
 type
   TDBSelect = class(TForm)
@@ -34,11 +34,11 @@ type
     procedure ComboBoxExDB1Select(Sender: TObject);
   private
     DBFile : TPhotoDBFile;
-    Procedure DoControlsReallign;  
+    Procedure DoControlsReallign;
     procedure RefreshDBList;
     { Private declarations }
   public
-    AddDB : boolean;   
+    AddDB : boolean;
     EditDB : boolean;
     EditOldDBName : string;
   Procedure LoadLanguage;
@@ -72,7 +72,7 @@ var
   FA : integer;
   OpenDialog : DBOpenDialog;
   FileName : string;
-begin         
+begin
  OpenDialog := DBOpenDialog.Create;
  OpenDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
 
@@ -91,7 +91,7 @@ begin
   FA:=FileGetAttr(FileName);
   if (fa and SysUtils.faReadOnly)<>0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);       
+   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
    OpenDialog.Free;
    exit;
   end;
@@ -112,7 +112,7 @@ begin
   //?if DBTestOK then
   //?Edit1.Text:= FileName else
   Edit1.Text:=TEXT_MES_NO_DB_FILE;
- end;    
+ end;
  OpenDialog.Free;
 end;
 
@@ -229,7 +229,7 @@ end;
 
 procedure TDBSelect.LoadLanguage;
 begin
- Edit1.Text:= TEXT_MES_NO_DB_FILE; 
+ Edit1.Text:= TEXT_MES_NO_DB_FILE;
  Edit2.Text:= TEXT_MES_DB_NAME_PATTERN;
  Button1.Caption:= TEXT_MES_OPEN;
  Button2.Caption:= TEXT_MES_EXIT;
@@ -242,37 +242,40 @@ end;
 
 procedure TDBSelect.Image1Click(Sender: TObject);
 var
-  FileName : String;
-  IconIndex : integer;
-  s,  Icon : String;
-  i : Integer;
-  ico : TIcon;
+  FileName: string;
+  IconIndex: Integer;
+  S, Icon: string;
+  I: Integer;
+  Ico: TIcon;
 begin
- s:=DBFile.Icon;
- i:=Pos(',',s);
- FileName:=Copy(s,1,i-1);
- Icon:=Copy(s,i+1,Length(s)-i);
- IconIndex:=StrToIntDef(Icon,0);
- ChangeIconDialog(handle,FileName,IconIndex);
- if FileName<>'' then
- Icon:=FileName+','+IntToStr(IconIndex);
- DBFile.Icon:=Icon;
- ico:=GetSmallIconByPath(Icon);
- Image1.Picture.Icon.Assign(ico);
- Image1.Refresh;
- ico.free;
+  S := DBFile.Icon;
+  I := Pos(',', S);
+  FileName := Copy(S, 1, I - 1);
+  Icon := Copy(S, I + 1, Length(S) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  ChangeIconDialog(Handle, FileName, IconIndex);
+  if FileName <> '' then
+    Icon := FileName + ',' + IntToStr(IconIndex);
+  DBFile.Icon := Icon;
+  Ico := TIcon.Create;
+  SetIconToPictureFromPath(Image1.Picture, Icon);
 end;
 
 procedure TDBSelect.SetDefaultIcon(path : string = '');
 var
-  ico : TIcon;
+  Ico: TIcon;
 begin
- if path='' then path:=GetProgramPath+',0';
- DBFile.Icon:=path;
- ico:=GetSmallIconByPath(path);
- Image1.Picture.Icon.Assign(ico);
- Image1.Refresh;
- ico.free;
+  if Path = '' then
+    Path := GetProgramPath + ',0';
+  DBFile.Icon := Path;
+  Ico := TIcon.Create;
+  try
+    Ico.Handle := ExtractSmallIconByPath(Path);
+    Image1.Picture.Graphic := Ico;
+    Image1.Refresh;
+  finally
+    Ico.Free;
+  end;
 end;
 
 procedure TDBSelect.DoControlsReallign;
@@ -285,7 +288,7 @@ begin
  CheckBox1.Top:=Edit2.Top+Edit2.Height+3;
  Label1.Top:=CheckBox1.Top+CheckBox1.Height+3;
  ComboBoxExDB1.Top:=Label1.Top+Label1.Height+3;
- 
+
  Button2.Top:=ComboBoxExDB1.Top+ComboBoxExDB1.Height+5;
  Button3.Top:=ComboBoxExDB1.Top+ComboBoxExDB1.Height+5;
 
@@ -294,46 +297,54 @@ end;
 
 procedure TDBSelect.RefreshDBList;
 var
-  i : integer;
-  ico : TIcon;
+  I: Integer;
+  Ico: TIcon;
 begin
- ComboBoxExDB1.Clear;
- DBImageList.Clear;
- DBImageList.BkColor:=Theme_ListColor;
+  ComboBoxExDB1.Clear;
+  DBImageList.Clear;
+  DBImageList.BkColor := Theme_ListColor;
 
- With ComboBoxExDB1.ItemsEx.Add do
- begin
-  Caption:=TEXT_MES_NEW_DB_FILE;
-  ImageIndex:=0;
- end;
- ico:=GetSmallIconByPath(Application.ExeName+',0');
- DBImageList.AddIcon(ico);
- ico.Free;
-
- for i:=0 to DBKernel.DBs.Count - 1 do
- begin
-  With ComboBoxExDB1.ItemsEx.Add do
+  with ComboBoxExDB1.ItemsEx.Add do
   begin
-   Caption:=DBKernel.DBs[i].Name;
-   ImageIndex:=i+1;
+    Caption := TEXT_MES_NEW_DB_FILE;
+    ImageIndex := 0;
   end;
-  ico:=GetSmallIconByPath(DBKernel.DBs[i].Icon);
-  if ico.Empty then
-  begin
-   ico.Free;
-   ico:=GetSmallIconByPath(Application.ExeName+',0');
-  end;
-  DBImageList.AddIcon(ico);
-  ico.Free;
- end;
 
- ComboBoxExDB1.ItemIndex :=0;
+  Ico := TIcon.Create;
+  try
+    Ico.Handle := ExtractSmallIconByPath(Application.ExeName + ',0');
+    DBImageList.AddIcon(Ico);
+  finally
+    Ico.Free;
+  end;
+
+  for I := 0 to DBKernel.DBs.Count - 1 do
+  begin
+    with ComboBoxExDB1.ItemsEx.Add do
+    begin
+      Caption := DBKernel.DBs[I].name;
+      ImageIndex := I + 1;
+    end;
+
+    Ico := TIcon.Create;
+    try
+      Ico.Handle := ExtractSmallIconByPath(DBKernel.DBs[I].Icon);
+      if Ico.Empty then
+        Ico.Handle := ExtractSmallIconByPath(Application.ExeName + ',0');
+      DBImageList.AddIcon(Ico);
+    finally
+      Ico.Free;
+    end;
+  end;
+
+  ComboBoxExDB1.ItemIndex := 0;
 end;
 
 procedure TDBSelect.ComboBoxExDB1Select(Sender: TObject);
 var
   DB : TPhotoDBFile;
   DBVersion, DialogResult : integer;
+  Ico : TIcon;
 begin
  if ComboBoxExDB1.ItemIndex>0 then
  begin
@@ -361,7 +372,13 @@ begin
   //?begin
    Edit1.Text:= DB.FileName;
    Edit2.Text:= DB.Name;
-   Image1.Picture.Icon:=GetSmallIconByPath(DB.Icon);
+   Ico := TIcon.Create;
+   try
+     Ico.Handle := ExtractSmallIconByPath(DB.Icon);
+     Image1.Picture.Icon := Ico;
+   finally
+     Ico.Free;
+   end;
   //?end else
   Edit1.Text:=TEXT_MES_NO_DB_FILE;
 
@@ -375,3 +392,9 @@ begin
 end;
 
 end.
+
+
+
+
+
+

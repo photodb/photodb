@@ -693,7 +693,7 @@ implementation
 uses Language, UnitUpdateDB, ExplorerThreadUnit, Searching,
      SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
      FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
-     about, activation, UnitPasswordForm, UnitCryptImageForm,
+     uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
      UnitFileRenamerForm, UnitImageConverter, UnitSizeResizerForm, ImEditor,
      UnitRotateImages, UnitManageGroups, UnitInternetUpdate, UnitHelp,
      UnitExportImagesForm, UnitGetPhotosForm, UnitFormCont,
@@ -4797,9 +4797,7 @@ end;
 
 procedure TExplorerForm.Help1Click(Sender: TObject);
 begin
- if AboutForm = nil then
- Application.CreateForm(TAboutForm,AboutForm);
- AboutForm.Execute;
+  ShowAbout;
 end;
 
 procedure TExplorerForm.PopupMenu8Popup(Sender: TObject);
@@ -5132,9 +5130,7 @@ end;
 
 procedure TExplorerForm.Activation1Click(Sender: TObject);
 begin
- if ActivateForm=nil then
- Application.CreateForm(TActivateForm,ActivateForm);
- ActivateForm.Execute;
+  ShowActivationDialog;
 end;
 
 procedure TExplorerForm.Help2Click(Sender: TObject);
@@ -5996,9 +5992,9 @@ begin
     FPlaces[Length(FPlaces)-1].MyDocuments:=fMyDocuments;
     FPlaces[Length(FPlaces)-1].MyPictures:=fMyPictures;
     FPlaces[Length(FPlaces)-1].OtherFolder:=fOtherFolder;
-    Ico:=GetSmallIconByPath(fIcon,true);
+    Ico:= TIcon.Create;
+    Ico.Handle := ExtractSmallIconByPath(fIcon,true);
     UserLinks[Length(UserLinks)-1].Icon:=Ico;
-    Ico.free;
    end;
   end;
   S.free;
@@ -7744,7 +7740,6 @@ end;
 
 procedure TExplorerForm.LoadToolBarGrayedIcons();
 var
-  Ico : TIcon;
   UseSmallIcons : Boolean;
 
   procedure AddIcon(Name : String);
