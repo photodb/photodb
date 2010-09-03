@@ -2379,11 +2379,19 @@ begin
       Msg.message := 0;
     end;
 
-    if (Msg.message = WM_MOUSEWHEEL) and CtrlKeyDown then
+    if (Msg.message = WM_MOUSEWHEEL) then
     begin
-      if Msg.wParam > 0 then i := 1 else i := -1;
-      ListViewMouseWheel(ListView, [ssCtrl], i, Point(0,0), TmpBool);
-      Msg.message := 0;
+      if CtrlKeyDown then
+      begin
+        if Msg.wParam > 0 then i := 1 else i := -1;
+        ListViewMouseWheel(ListView, [ssCtrl], i, Point(0,0), TmpBool);
+        Msg.message := 0;
+      end;
+
+      Application.HideHint;
+      if ImHint <> nil then
+        if not UnitImHint.Closed then
+          ImHint.Close;
     end;
 
     if Msg.message = WM_KEYDOWN then

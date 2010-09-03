@@ -3044,18 +3044,27 @@ begin
    WindowsMenuTickCount:=GetTickCount;
   end;
 
-  if Msg.message=WM_MOUSEWHEEL then
+  if Msg.message = WM_MOUSEWHEEL then
   begin
-   if Msg.wParam>0 then i:=1 else i:=-1;
-   if CtrlKeyDown then
-   begin
-    ListView1MouseWheel(ElvMain,[ssCtrl],i,Point(0,0),InternalHandled);
-    Msg.message:=0;
-   end;
+    if CtrlKeyDown then
+    begin
+      if Msg.WParam > 0 then
+        I := 1
+      else
+        I := -1;
+      ListView1MouseWheel(ElvMain, [SsCtrl], I, Point(0, 0), InternalHandled);
+
+      Msg.message := 0;
+    end;
+
+      Application.HideHint;
+      if ImHint <> nil then
+        if not UnitImHint.Closed then
+          ImHint.Close;
   end;
 
-  //middle mouse button
-  if Msg.message=519 then
+    // middle mouse button
+    if Msg.message = 519 then
   begin
    Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
    BigImagesSizeForm.Execute(self,fPictureSize,BigSizeCallBack);

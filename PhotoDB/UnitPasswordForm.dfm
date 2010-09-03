@@ -19,7 +19,7 @@ object PassWordForm: TPassWordForm
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object LbTitle: TLabel
     Left = 8
     Top = 8
     Width = 305
@@ -28,7 +28,7 @@ object PassWordForm: TPassWordForm
     Caption = 'Enter password for image here:'
     WordWrap = True
   end
-  object Label2: TLabel
+  object LbInfo: TLabel
     Left = 8
     Top = 160
     Width = 305
@@ -38,7 +38,7 @@ object PassWordForm: TPassWordForm
     Visible = False
     WordWrap = True
   end
-  object Edit1: TEdit
+  object EdPassword: TEdit
     Left = 8
     Top = 42
     Width = 305
@@ -51,27 +51,27 @@ object PassWordForm: TPassWordForm
     ParentFont = False
     PasswordChar = '*'
     TabOrder = 0
-    OnKeyPress = Edit1KeyPress
+    OnKeyPress = EdPasswordKeyPress
   end
-  object Button1: TButton
+  object BtCancel: TButton
     Left = 160
     Top = 130
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtCancelClick
   end
-  object Button2: TButton
+  object BtOk: TButton
     Left = 240
     Top = 130
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtOkClick
   end
-  object CheckBox1: TCheckBox
+  object CbSavePassToSession: TCheckBox
     Left = 8
     Top = 74
     Width = 305
@@ -81,7 +81,7 @@ object PassWordForm: TPassWordForm
     State = cbChecked
     TabOrder = 3
   end
-  object CheckBox2: TCheckBox
+  object CbSavePassPermanent: TCheckBox
     Left = 8
     Top = 90
     Width = 305
@@ -89,7 +89,7 @@ object PassWordForm: TPassWordForm
     Caption = 'Save Password for in settings (NOT recommend)'
     TabOrder = 4
   end
-  object CheckBox3: TCheckBox
+  object CbDoNotAskAgain: TCheckBox
     Left = 8
     Top = 105
     Width = 305
@@ -97,7 +97,7 @@ object PassWordForm: TPassWordForm
     Caption = 'Do not ask again'
     TabOrder = 5
   end
-  object Button3: TButton
+  object BtCancelForFiles: TButton
     Left = 8
     Top = 130
     Width = 145
@@ -105,7 +105,7 @@ object PassWordForm: TPassWordForm
     Caption = 'Cancel For:'
     TabOrder = 6
     Visible = False
-    OnClick = Button3Click
+    OnClick = BtCancelForFilesClick
   end
   object InfoListBox: TListBox
     Left = 8
@@ -114,13 +114,13 @@ object PassWordForm: TPassWordForm
     Height = 193
     Style = lbOwnerDrawVariable
     ItemHeight = 13
-    PopupMenu = PopupMenu1
+    PopupMenu = PmCopyFileList
     TabOrder = 7
     Visible = False
     OnDrawItem = InfoListBoxDrawItem
     OnMeasureItem = InfoListBoxMeasureItem
   end
-  object Button4: TButton
+  object BtHideDetails: TButton
     Left = 8
     Top = 416
     Width = 305
@@ -128,9 +128,9 @@ object PassWordForm: TPassWordForm
     Caption = 'Hide Detailes'
     TabOrder = 8
     Visible = False
-    OnClick = Button4Click
+    OnClick = BtHideDetailsClick
   end
-  object PopupMenu1: TPopupMenu
+  object PmCopyFileList: TPopupMenu
     Left = 120
     Top = 248
     object CopyText1: TMenuItem
@@ -138,7 +138,7 @@ object PassWordForm: TPassWordForm
       OnClick = CopyText1Click
     end
   end
-  object PopupMenu2: TPopupMenu
+  object PmCloseAction: TPopupMenu
     Left = 160
     Top = 184
     object CloseDialog1: TMenuItem

@@ -7,14 +7,14 @@ uses
   Variants, Classes, Graphics, Controls, Forms, GIFImage, Math,
   Dialogs, StdCtrls, ExtCtrls, ImButton, ComCtrls, ActiveX,
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
-  DragDrop, UnitDBCommon, UnitDBCommonGraphics;
+  DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory;
 
 type
   TImHint = class(TForm)
     Image1: TImage;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
+    LbDescription: TLabel;
+    LbSize: TLabel;
+    LbFileSize: TLabel;
     Timer1: TTimer;
     Timer2: TTimer;
     Timer3: TTimer;
@@ -30,7 +30,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure FormHide(Sender: TObject);
-    procedure hideshadow;
+    procedure HideShadow;
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Timer1Timer(Sender: TObject);
@@ -39,7 +39,7 @@ type
     procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure Timer3Timer(Sender: TObject);
-    procedure Label2MouseMove(Sender: TObject; Shift: TShiftState; X,
+    procedure LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure UpdateTheme(Sender: TObject);
@@ -56,20 +56,19 @@ type
     function GetFirstImageNO: integer;
     procedure DestroyTimerTimer(Sender: TObject);
   private
-  AnimatedImage : TGraphic;
-  SlideNO : Integer;
-  ValidImages : integer;
-  AnimatedBuffer : TBitmap;
-  FBitmaped : Boolean;
-  FTransparent : Boolean;
-  DoubleBuffer : TBitmap;
-  CanClosed : Boolean;
     { Private declarations }
+    AnimatedImage : TGraphic;
+    SlideNO : Integer;
+    ValidImages : integer;
+    AnimatedBuffer : TBitmap;
+    FBitmaped : Boolean;
+    FTransparent : Boolean;
+    DoubleBuffer : TBitmap;
+    CanClosed : Boolean;
   public
-    protected
-    procedure CreateParams(var Params: TCreateParams); override;
-
     { Public declarations }
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   end;
 
 var
@@ -83,22 +82,22 @@ var
   FOwner : TForm;
   CurrentInfo : TOneRecordInfo;
 
-  const
-    CS_DROPSHADOW = $00020000;
+const
+  CS_DROPSHADOW = $00020000;
 
 implementation
 
-uses searching, Language;
+uses Searching, Language;
 
 {$R *.dfm}
 
 { TImHint }
 
 function IsWinXP: Boolean;
-begin 
-  Result := (Win32Platform = VER_PLATFORM_WIN32_NT) and 
-    (Win32MajorVersion >= 5) and (Win32MinorVersion >= 1); 
-end; 
+begin
+  Result := (Win32Platform = VER_PLATFORM_WIN32_NT) and
+    (Win32MajorVersion >= 5) and (Win32MinorVersion >= 1);
+end;
 
 procedure DrawHintInfo(Handle : THandle; Width,Height  : Integer; fInfo : TOneRecordInfo);
 var
@@ -137,8 +136,8 @@ end;
 
 procedure TImHint.CreateParams(var Params: TCreateParams);
 const
-  CS_DROPSHADOW = $00020000; 
-begin 
+  CS_DROPSHADOW = $00020000;
+begin
   inherited;
   if IsWinXP and (DBKernel.Readinteger('Options','PreviewSwohOptions', 0) = 1) then
     Params.WindowClass.Style := Params.WindowClass.Style or CS_DROPSHADOW;
@@ -243,32 +242,32 @@ begin
  fh:=hh+6;
  if ww=0 then ww:=1;
 // n:=(lfname div ww)+1;
- label1.top:=hh+6;
+ LbDescription.top:=hh+6;
 
  if ww<100 then
  begin
-  if label1.Canvas.TextWidth(fname)<ThHintSize then lw:=Max(ww,50) else
+  if LbDescription.Canvas.TextWidth(fname)<ThHintSize then lw:=Max(ww,50) else
   lw:=100;
  end else
  begin
   lw:=ww;
  end;
- label1.constraints.maxwidth:=lw;
- label1.constraints.minwidth:=lw;
+ LbDescription.constraints.maxwidth:=lw;
+ LbDescription.constraints.minwidth:=lw;
 
- label1.Caption:=fname;
- fh:=fh+label1.Height+3;
- label2.Top:=fh;
- label2.caption:=format(TEXT_MES_DIMENSIONS,[inttostr(w),inttostr(h)]);
- fh:=fh-label2.Font.Height+3;
- label3.Top:=fh;
- label3.caption:=format(TEXT_MES_SIZE_FORMAT,[sizeintextA(Info.ItemSize)]);
- fh:=fh-label3.Font.Height+3;
+ LbDescription.Caption:=fname;
+ fh:=fh+LbDescription.Height+3;
+ LbSize.Top:=fh;
+ LbSize.caption:=format(TEXT_MES_DIMENSIONS,[inttostr(w),inttostr(h)]);
+ fh:=fh-LbSize.Font.Height+3;
+ LbFileSize.Top:=fh;
+ LbFileSize.caption:=format(TEXT_MES_SIZE_FORMAT,[sizeintextA(Info.ItemSize)]);
+ fh:=fh-LbFileSize.Font.Height+3;
 
  if FTransparent then
- ClientWidth:=Min(Max(Max(Max(fw+2,label1.Width+6),Label2.Width+6),Label3.Width+6),ThHintSize+8)
+ ClientWidth:=Min(Max(Max(Max(fw+2,LbDescription.Width+6),LbSize.Width+6),LbFileSize.Width+6),ThHintSize+8)
  else
- ClientWidth:=Min(Max(Max(Max(fw,label1.Width+6),Label2.Width+6),Label3.Width+6),ThHintSize+6);
+ ClientWidth:=Min(Max(Max(Max(fw,LbDescription.Width+6),LbSize.Width+6),LbFileSize.Width+6),ThHintSize+6);
 
  Clientheight:=fh;
  if rect.Top+fh+10>screen.height then ft:=rect.Top-20-fh else ft:=rect.Top+10;
@@ -301,8 +300,8 @@ end;
 
 procedure TImHint.FormClick(Sender: TObject);
 begin
- Timer2.Enabled:=true;
- close;
+  Timer2.Enabled := True;
+  Close;
 end;
 
 procedure TImHint.FormCreate(Sender: TObject);
@@ -332,10 +331,10 @@ end;
 
 procedure TImHint.FormHide(Sender: TObject);
 begin
- hideshadow;
+  HideShadow;
 end;
 
-procedure TImHint.hideshadow;
+procedure TImHint.HideShadow;
 begin
  if DBKernel.ReadInteger('Options','PreviewSwohOptions',0)=1 then
  SetClassLong(Handle,GCL_STYLE, GetClassLong(Handle, GCL_STYLE) or CS_DROPSHADOW) ;
@@ -362,7 +361,7 @@ begin
       S := DoubleBuffer;
     W := S.Width;
     H := S.Height;
-    ProportionalSize(100, 100, W, H);
+    ProportionalSize(ThSize, ThSize, W, H);
     DragImage:=TBitmap.Create;
     try
       DragImage.PixelFormat := pf24bit;
@@ -398,7 +397,7 @@ begin
  if DBKernel.readinteger('Options','PreviewSwohOptions',0)=0{ and self.visible} then
  begin
   Timer1.Enabled:=false;
-  hideshadow;
+  HideShadow;
   self.AlphaBlendValue:=max(self.AlphaBlendValue-40,0);
   if self.AlphaBlendValue<=0 then
   begin
@@ -435,7 +434,7 @@ begin
   MenuInfo.Add(MenuRecord);
   MenuInfo.AttrExists:=false;
   TDBPopupMenu.Instance.Execute(Image1.ClientToScreen(MousePos).x,Image1.ClientToScreen(MousePos).y,MenuInfo);
-  Self.HideShadow;
+  HideShadow;
   if not closed then Timer2.Enabled:=true;
   FDragDrop:=false;
  end
@@ -462,53 +461,53 @@ begin
  GoIn:=false;
 end;
 
-procedure TImHint.Label2MouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TImHint.LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
- GoIn:=true;
+  GoIn := True;
 end;
 
 procedure TImHint.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- if FOwner<>nil then
- if FOwner.FormStyle=fsStayOnTop then
- FOwner.SetFocus;
- FOwner:=nil;
- if AnimatedBuffer<>nil then
- AnimatedBuffer.free;
- AnimatedBuffer:=nil;
- ImageFrameTimer.Enabled:=false;
- if DoubleBuffer<>nil then
- DoubleBuffer.free;
- DoubleBuffer:=nil;
- DestroyTimer.Enabled:=true;
+  if FOwner<>nil then
+  if FOwner.FormStyle=fsStayOnTop then
+  FOwner.SetFocus;
+  FOwner:=nil;
+  F(AnimatedBuffer);
+  F(DoubleBuffer);
+  ImageFrameTimer.Enabled:=false;
+  DestroyTimer.Enabled:=true;
 end;
 
 procedure TImHint.UpdateTheme(Sender: TObject);
 begin
- DBKernel.RecreateThemeToForm(ImHint);
+  DBKernel.RecreateThemeToForm(ImHint);
 end;
 
 procedure TImHint.FormDestroy(Sender: TObject);
 begin
- DropFileTarget1.Unregister;
- DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
- DBkernel.UnRegisterForm(ImHint);
+  DropFileTarget1.Unregister;
+  DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
+  DBkernel.UnRegisterForm(ImHint);
 end;
 
 procedure TImHint.FormKeyPress(Sender: TObject; var Key: Char);
 begin
- If key=#27 then Close;
+  if Key = Char(VK_ESCAPE) then
+    Close;
 end;
 
 procedure TImHint.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
- if Closed then Exit;
- if Msg.message=256 then
- begin
-  if Msg.wParam=27 then Close;
- end;
+  if Closed then
+    Exit;
+
+  if Msg.message = WM_KEYDOWN then
+  begin
+    if Msg.WParam = VK_ESCAPE then
+      Close;
+  end;
 end;
 
 function TImHint.GetNextImageNO: integer;

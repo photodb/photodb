@@ -12,7 +12,7 @@ uses
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
-  uResources, UnitDBCommon, uW7TaskBar;
+  uResources, UnitDBCommon, uW7TaskBar, uMemory;
 
 type
   TRotatingImageInfo = record
@@ -382,7 +382,7 @@ begin
   AnimatedBuffer.PixelFormat:=pf24bit;
   MTimer1.Caption:=TEXT_MES_SLIDE_STOP_TIMER;
   MTimer1.ImageIndex:=DB_IC_PAUSE;
-  color:=$0;
+
   SaveWindowPos1.Key:=RegRoot+'SlideShow';
   SaveWindowPos1.SetPosition;
   PopupMenu1.Images:=DBKernel.imageList;
@@ -838,15 +838,13 @@ begin
   DropFileTarget1.Unregister;
   DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
   SaveWindowPos1.SavePosition;
-  FreeAndNil(FbImage);
-  FreeAndNil(DrawImage);
-  FreeAndNil(WaitImage);
-  FreeAndNil(fCsrBmp);
-  FreeAndNil(fNewCsrBmp);
-  FreeAndNil(fNowCsrBmp);
-
-  if AnimatedBuffer<>nil then
-    FreeAndNil(AnimatedBuffer);
+  F(FbImage);
+  F(DrawImage);
+  F(WaitImage);
+  F(fCsrBmp);
+  F(fNewCsrBmp);
+  F(fNowCsrBmp);
+  F(AnimatedBuffer);
 end;
 
 procedure TViewer.SpeedButton5Click(Sender: TObject);
@@ -1388,81 +1386,83 @@ begin
     end;
   end;
 
- if not Active then Exit;
- if SlideShowNow then Exit;
- if FullScreenNow then Exit;
- if Msg.message=256 then
- begin
-  WindowsMenuTickCount:=GetTickCount;
+  if not Active or SlideShowNow or FullScreenNow then
+    Exit;
 
-  if Msg.wParam=37 then PreviousImageClick(nil);
-  if Msg.wParam=39 then NextImageClick(nil);
+    if Msg.message = WM_KEYDOWN then
+    begin
+      WindowsMenuTickCount := GetTickCount;
 
-  if Msg.hwnd=Self.Handle then
-  if Msg.wParam=27 then Close;
+      if Msg.WParam = VK_LEFT then
+        PreviousImageClick(nil);
 
-  if (Msg.wParam=46) then TbDeleteClick(nil);
+      if Msg.WParam = VK_RIGHT then
+        NextImageClick(nil);
 
-  if (Msg.wParam=Byte('F')) and CtrlKeyDown then FitToWindowClick(nil);
-  if (Msg.wParam=Byte('A')) and CtrlKeyDown then RealSizeClick(nil);
-  if (Msg.wParam=Byte('S')) and CtrlKeyDown then TbSlideShowClick(nil);
-  if (Msg.wParam=Byte(#13)) and CtrlKeyDown then FullScreen1Click(nil);
-  if (Msg.wParam=Byte('I')) and CtrlKeyDown then TbZoomOutClick(nil);
-  if (Msg.wParam=Byte('O')) and CtrlKeyDown then TbZoomInClick(nil);
-  if (Msg.wParam=Byte('L')) and CtrlKeyDown then RotateCCW1Click(nil);
-  if (Msg.wParam=Byte('R')) and CtrlKeyDown then RotateCW1Click(nil);
-  if (Msg.wParam=Byte('D')) and CtrlKeyDown then TbDeleteClick(nil);
-  if (Msg.wParam=Byte('P')) and CtrlKeyDown then Print1Click(nil);
-  if ((Msg.wParam=Byte('0')) or (Msg.wParam=Byte(VK_NUMPAD0))) and CtrlKeyDown then N51Click(N01);
-  if ((Msg.wParam=Byte('1')) or (Msg.wParam=Byte(VK_NUMPAD1))) and CtrlKeyDown then N51Click(N11);
-  if ((Msg.wParam=Byte('2')) or (Msg.wParam=Byte(VK_NUMPAD2))) and CtrlKeyDown then N51Click(N21);
-  if ((Msg.wParam=Byte('3')) or (Msg.wParam=Byte(VK_NUMPAD3))) and CtrlKeyDown then N51Click(N31);
-  if ((Msg.wParam=Byte('4')) or (Msg.wParam=Byte(VK_NUMPAD4))) and CtrlKeyDown then N51Click(N41);
-  if ((Msg.wParam=Byte('5')) or (Msg.wParam=Byte(VK_NUMPAD5))) and CtrlKeyDown then N51Click(N51);
-  if (Msg.wParam=Byte('E')) and CtrlKeyDown then ImageEditor1Click(nil);
-  if (Msg.wParam=Byte('Z')) and CtrlKeyDown then Properties1Click(nil);
-  if (Msg.wParam=Byte(' ')) then Next_(nil);
+      if Msg.Hwnd = Handle then
+        if Msg.WParam = VK_ESCAPE then
+          Close;
 
-  Msg.message:=0;
- end;
- if (Msg.message=516) or (Msg.message=517) then
- if (Msg.hwnd=BottomImage.Handle) or (Msg.hwnd=TbrActions.Handle) or (Msg.hwnd=ScrollBar1.Handle) or (Msg.hwnd=ScrollBar2.Handle) then
- begin
-  Msg.message:=0;
- end;
+      if (Msg.WParam = VK_DELETE) then
+        TbDeleteClick(nil);
 
+      if (Msg.wParam = Byte(' ')) then
+        Next_(nil);
 
-{if Msg.message<>0 then
-if Msg.message<>15 then
-if Msg.message<>512 then
-if Msg.message<>275 then
-if Msg.message<>675 then
-if Msg.message<>256 then
-if Msg.message<>257 then
-if Msg.message<>45056 then
-if Msg.message<>45057 then
-if Msg.message<>160 then
-if Msg.message<>1060 then
-if Msg.message<>280 then
-if Msg.message<>8448 then
-if Msg.message<>49411 then
-Showmessage(Inttostr(Msg.message));     }
- if FullScreenNow then exit;
- if Msg.message<>522 then exit;
- if not ZoomerOn then
- begin
-  if Msg.wParam>0 then Previous_(nil) else Next_(nil);
- end else
- begin
-  if Msg.wParam>0 then TbZoomOutClick(nil) else TbZoomInClick(nil);
- end;
+      if CtrlKeyDown then
+      begin
+        if Msg.wParam = Byte('F') then FitToWindowClick(nil);
+        if Msg.wParam = Byte('A') then RealSizeClick(nil);
+        if Msg.wParam = Byte('S') then TbSlideShowClick(nil);
+        if Msg.wParam = VK_RETURN then FullScreen1Click(nil);
+        if Msg.wParam = Byte('I') then TbZoomOutClick(nil);
+        if Msg.wParam = Byte('O') then TbZoomInClick(nil);
+        if Msg.wParam = Byte('L') then RotateCCW1Click(nil);
+        if Msg.wParam = Byte('R') then RotateCW1Click(nil);
+        if Msg.wParam = Byte('D') then TbDeleteClick(nil);
+        if Msg.wParam = Byte('P') then Print1Click(nil);
+        if Msg.wParam = Byte('E') then ImageEditor1Click(nil);
+        if Msg.wParam = Byte('Z') then Properties1Click(nil);
+
+        if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N51Click(N01);
+        if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N51Click(N11);
+        if (Msg.wParam = Byte('2')) or (Msg.wParam = Byte(VK_NUMPAD2)) then N51Click(N21);
+        if (Msg.wParam = Byte('3')) or (Msg.wParam = Byte(VK_NUMPAD3)) then N51Click(N31);
+        if (Msg.wParam = Byte('4')) or (Msg.wParam = Byte(VK_NUMPAD4)) then N51Click(N41);
+        if (Msg.wParam = Byte('5')) or (Msg.wParam = Byte(VK_NUMPAD5)) then N51Click(N51);
+      end;
+
+    Msg.message:=0;
+  end;
+
+  if (Msg.message = WM_RBUTTONDOWN) or (Msg.message = WM_RBUTTONUP) then
+    if (Msg.Hwnd = BottomImage.Handle) or (Msg.Hwnd = TbrActions.Handle) or (Msg.Hwnd = ScrollBar1.Handle) or
+      (Msg.Hwnd = ScrollBar2.Handle) then
+      Msg.message := 0;
+
+  if (Msg.message = WM_MOUSEWHEEL) then
+  begin
+    if not ZoomerOn then
+    begin
+      if Msg.WParam > 0 then
+        Previous_(nil)
+      else
+        Next_(nil);
+    end else
+    begin
+      if Msg.WParam > 0 then
+        TbZoomOutClick(nil)
+      else
+        TbZoomInClick(nil);
+    end;
+  end;
 end;
 
 procedure TViewer.UpdateTheme(Sender: TObject);
 begin
- RecreateDrawImage(self);
- RecreateImLists;
- TbrActions.Refresh;
+  RecreateDrawImage(Self);
+  RecreateImLists;
+  TbrActions.Refresh;
 end;
 
 procedure TViewer.ShowFolderA(FileName : string; ShowPrivate : Boolean);
@@ -2246,9 +2246,8 @@ begin
     TW.I.Start('DestroyIcon');
     for I := 0 to 1 do
       for J := 0 to 22 do
-      begin
         DestroyIcon(Icons[I, J]);
-      end;
+
   finally
     B.Free;
   end;

@@ -4,7 +4,7 @@ interface
 
 uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
   JPEG, PngImage, PngDef, TiffImageUnit, uFileUtils,
-  GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil,
+  GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil, DECCipher,
   GIFImage, DB;
 
 type
@@ -50,6 +50,7 @@ type
     Seed: TSeed;
     FileSize: Int64;
     PassCRC: Cardinal;
+    Algorith: Cardinal;
     CRCFileExists: Boolean;
     CRCFile: Cardinal;
     TypeExtract: Byte;
@@ -326,7 +327,7 @@ begin
     Result[I + 1] := Seed[I + 1];
 end;
 
-procedure WriteCryptHeaderV2(Stream : TStream; Src : TMemoryStream; FileName : AnsiString; Password : AnsiString; Options: Integer; var Seed : Binary);
+procedure WriteCryptHeaderV2(Stream : TStream; Src : TMemoryStream; FileName : AnsiString; Password : string; Options: Integer; var Seed : Binary);
 var
   FileCRC : Cardinal;
   GraphicHeader: TGraphicCryptFileHeader;
@@ -347,6 +348,7 @@ begin
   GraphicHeader.DBVersion := 0;
   Stream.Write(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
   GraphicHeaderV2.Version := 1;
+  GraphicHeaderV2.Algorith := ValidCipher(nil).Identity;
   GraphicHeaderV2.FileSize := Src.Size;
   CalcStringCRC32(Password, GraphicHeaderV2.PassCRC);
   GraphicHeaderV2.TypeExtract := 0;
@@ -400,6 +402,7 @@ var
   FileCRC: Cardinal;
   Seed : Binary;
   FA: Integer;
+  ACipher: TDECCipherClass;
 begin
   Result := False;
 
@@ -479,6 +482,7 @@ var
   X : TByteArray;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
+  Chipper : TDECCipherClass;
 begin
   Result := False;
   if GraphicHeader.Version = 1 then
@@ -541,7 +545,8 @@ begin
     if GraphicHeaderV2.Displacement > 0 then
       Stream.Seek(GraphicHeaderV2.Displacement, soCurrent);
 
-    DeCryptStreamV2(Stream, MS, Password, SeedToBinary(GraphicHeaderV2.Seed), GraphicHeaderV2.FileSize);
+    Chipper := CipherByIdentity(GraphicHeaderV2.Algorith);
+    DeCryptStreamV2(Stream, MS, Password, SeedToBinary(GraphicHeaderV2.Seed), GraphicHeaderV2.FileSize, Chipper);
     Result := True;
   end;
 end;
@@ -640,6 +645,7 @@ begin
 
     FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
     try
+      MS.Seek(0, soFromBeginning);
       FS.CopyFrom(MS, MS.Size);
     finally
       FS.Free;

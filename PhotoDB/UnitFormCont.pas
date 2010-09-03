@@ -1616,37 +1616,43 @@ begin
 
     if Msg.message = WM_MOUSEWHEEL then
     begin
-      if Msg.WParam > 0 then
-        I := 1
-      else
-        I := -1;
       if CtrlKeyDown then
       begin
+        if Msg.WParam > 0 then
+          I := 1
+        else
+          I := -1;
         ListView1MouseWheel(ElvMain, [SsCtrl], I, Point(0, 0), B);
         Msg.message := 0;
       end;
+
+      Application.HideHint;
+      if ImHint <> nil then
+        if not UnitImHint.Closed then
+          ImHint.Close;
     end;
     if Msg.message = WM_RBUTTONDOWN then
       WindowsMenuTickCount := GettickCount;
 
-  if Msg.message=WM_KEYDOWN then
-  begin
-   WindowsMenuTickCount:=GetTickCount;
+    if Msg.message = WM_KEYDOWN then
+    begin
+      WindowsMenuTickCount := GetTickCount;
 
-   //109-
-   if (Msg.wParam=109) then ZoomIn;
-   //107+
-   if (Msg.wParam=107) then ZoomOut;
-   //93-context menu button
-   if (Msg.wParam=93) then
-   begin
-    ListView1ContextPopup(ElvMain,Point(-1,-1),b);
-   end;
+      if (Msg.WParam = VK_SUBTRACT) then
+        ZoomIn;
+      if (Msg.WParam = VK_ADD) then
+        ZoomOut;
 
-   if (Msg.wParam=46) then DeleteIndexItemFromPopUpMenu(nil);
-   if (Msg.wParam=65) and CtrlKeyDown then SelectAll1Click(Nil);
+      // 93-context menu button
+      if (Msg.WParam = VK_APPS) then
+        ListView1ContextPopup(ElvMain, Point(-1, -1), B);
+
+      if (Msg.WParam = VK_DELETE) then
+        DeleteIndexItemFromPopUpMenu(nil);
+      if (Msg.WParam = Ord('a')) and CtrlKeyDown then
+        SelectAll1Click(nil);
+    end;
   end;
- end;
 end;
 
 procedure TFormCont.DropFileTarget2Drop(Sender: TObject;

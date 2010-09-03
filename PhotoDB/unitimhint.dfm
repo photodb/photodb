@@ -21,7 +21,7 @@ object ImHint: TImHint
   OnDestroy = FormDestroy
   OnHide = FormHide
   OnKeyPress = FormKeyPress
-  OnMouseMove = Label2MouseMove
+  OnMouseMove = LbSizeMouseMove
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
@@ -32,9 +32,9 @@ object ImHint: TImHint
     OnClick = FormClick
     OnContextPopup = Image1ContextPopup
     OnMouseDown = Image1MouseDown
-    OnMouseMove = Label2MouseMove
+    OnMouseMove = LbSizeMouseMove
   end
-  object Label1: TLabel
+  object LbDescription: TLabel
     Left = 3
     Top = 176
     Width = 88
@@ -49,23 +49,23 @@ object ImHint: TImHint
     ParentBiDiMode = False
     ParentFont = False
     WordWrap = True
-    OnMouseMove = Label2MouseMove
+    OnMouseMove = LbSizeMouseMove
   end
-  object Label2: TLabel
+  object LbSize: TLabel
     Left = 3
     Top = 192
     Width = 71
     Height = 13
     Caption = 'Width x Height'
-    OnMouseMove = Label2MouseMove
+    OnMouseMove = LbSizeMouseMove
   end
-  object Label3: TLabel
+  object LbFileSize: TLabel
     Left = 3
     Top = 208
     Width = 44
     Height = 13
     Caption = 'Size label'
-    OnMouseMove = Label2MouseMove
+    OnMouseMove = LbSizeMouseMove
   end
   object PaintBox1: TPaintBox
     Left = 3
@@ -76,7 +76,7 @@ object ImHint: TImHint
     OnClick = FormClick
     OnContextPopup = Image1ContextPopup
     OnMouseDown = Image1MouseDown
-    OnMouseMove = Label2MouseMove
+    OnMouseMove = LbSizeMouseMove
     OnPaint = PaintBox1Paint
   end
   object Timer1: TTimer

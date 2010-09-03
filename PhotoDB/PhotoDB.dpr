@@ -291,7 +291,8 @@ uses
   DECUtil in 'External\Crypt\DECv5.2\DECUtil.pas',
   TypInfoEx in 'External\Crypt\DECv5.2\TypInfoEx.pas',
   uStrongCrypt in 'Units\uStrongCrypt.pas',
-  jpegdec in 'Units\jpegdec.pas';
+  jpegdec in 'Units\jpegdec.pas',
+  uMemory in 'Units\uMemory.pas';
 
 {$R *.res}
 

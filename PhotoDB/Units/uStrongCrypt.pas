@@ -21,7 +21,7 @@ procedure CryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
                         AHash: TDECHashClass = nil);
 procedure DeCryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
                         DataSize : Int64;
-                        ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;
+                        ACipher: TDECCipherClass; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
 
 implementation
@@ -33,7 +33,7 @@ begin
   ACipher := ValidCipher(ACipher);
   AHash := ValidHash(AHash);
 
-  with TCipher_Blowfish.Create do
+  with ACipher.Create do
   try
     Mode := CmCTSx;
     Init(AHash.KDFx(Password, Seed, Context.KeySize));
@@ -45,7 +45,7 @@ end;
 
 procedure DeCryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
                         DataSize : Int64;
-                        ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;
+                        ACipher: TDECCipherClass; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
 begin
   ACipher := ValidCipher(ACipher);

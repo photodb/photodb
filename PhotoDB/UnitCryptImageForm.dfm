@@ -16,6 +16,7 @@ object CryptImageForm: TCryptImageForm
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96
   TextHeight = 13
@@ -116,5 +117,29 @@ object CryptImageForm: TCryptImageForm
     Caption = 'Show password'
     TabOrder = 2
     OnClick = CbShowPasswordClick
+  end
+  object WblMethod: TWebLink
+    Left = 8
+    Top = 178
+    Width = 84
+    Height = 16
+    Cursor = crHandPoint
+    PopupMenu = PmCryptMethod
+    Text = 'BlowFish - 56'
+    OnClick = WblMethodClick
+    BkColor = clBtnFace
+    ImageIndex = 0
+    IconWidth = 16
+    IconHeight = 16
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = True
+    TopIconIncrement = 0
+    ImageCanRegenerate = True
+    UseSpecIconSize = True
+  end
+  object PmCryptMethod: TPopupMenu
+    Left = 112
+    Top = 168
   end
 end
