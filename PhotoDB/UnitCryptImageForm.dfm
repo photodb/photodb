@@ -5,7 +5,7 @@ object CryptImageForm: TCryptImageForm
   BorderStyle = bsToolWindow
   Caption = 'CryptImageForm'
   ClientHeight = 202
-  ClientWidth = 295
+  ClientWidth = 324
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,6 +18,9 @@ object CryptImageForm: TCryptImageForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
+  DesignSize = (
+    324
+    202)
   PixelsPerInch = 96
   TextHeight = 13
   object LbPassword: TLabel
@@ -35,55 +38,66 @@ object CryptImageForm: TCryptImageForm
     Caption = 'ReEnter password for image here:'
   end
   object BtCancel: TButton
-    Left = 136
+    Left = 165
     Top = 174
     Width = 75
     Height = 25
+    Anchors = [akTop, akRight]
     Caption = 'Cancel'
     TabOrder = 6
     OnClick = BtCancelClick
+    ExplicitLeft = 136
   end
   object BtOk: TButton
-    Left = 216
+    Left = 245
     Top = 174
     Width = 75
     Height = 25
+    Anchors = [akTop, akRight]
     Caption = 'Ok'
     TabOrder = 7
     OnClick = BtOkClick
+    ExplicitLeft = 216
   end
   object CbSaveCRC: TCheckBox
     Left = 8
     Top = 120
-    Width = 281
+    Width = 310
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Save CRC for file'
     Enabled = False
     TabOrder = 3
+    ExplicitWidth = 281
   end
   object CbSavePasswordForSession: TCheckBox
     Left = 8
     Top = 136
-    Width = 281
+    Width = 310
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Save Password for all session'
     Checked = True
     State = cbChecked
     TabOrder = 4
+    ExplicitWidth = 281
   end
   object CbSavePasswordPermanent: TCheckBox
     Left = 8
     Top = 152
-    Width = 281
+    Width = 310
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Save Password for in settings (NOT recommend)'
     TabOrder = 5
+    ExplicitWidth = 281
   end
   object EdPassword: TEdit
     Left = 8
     Top = 24
-    Width = 281
+    Width = 310
     Height = 32
+    Anchors = [akLeft, akTop, akRight]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -19
@@ -93,12 +107,14 @@ object CryptImageForm: TCryptImageForm
     PasswordChar = '*'
     TabOrder = 0
     OnKeyPress = EdPasswordKeyPress
+    ExplicitWidth = 281
   end
   object EdPasswordConfirm: TEdit
     Left = 8
     Top = 72
-    Width = 281
+    Width = 310
     Height = 32
+    Anchors = [akLeft, akTop, akRight]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -19
@@ -108,15 +124,18 @@ object CryptImageForm: TCryptImageForm
     PasswordChar = '*'
     TabOrder = 1
     OnKeyPress = EdPasswordKeyPress
+    ExplicitWidth = 281
   end
   object CbShowPassword: TCheckBox
     Left = 8
     Top = 104
-    Width = 281
+    Width = 310
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Show password'
     TabOrder = 2
     OnClick = CbShowPasswordClick
+    ExplicitWidth = 281
   end
   object WblMethod: TWebLink
     Left = 8

@@ -52,8 +52,7 @@ procedure ShowActivationDialog;
 var
   ActivateForm: TActivateForm;
 begin
- if ActivateForm = nil then
-    Application.CreateForm(TActivateForm, ActivateForm);
+  Application.CreateForm(TActivateForm, ActivateForm);
   ActivateForm.Execute;
   ActivateForm.Release;
 end;

@@ -60,6 +60,8 @@ type
     TypeFileNameExtract: Byte;
     FileNameCRC: Cardinal;
     Displacement: Cardinal;
+    Reserved : Cardinal;
+    Reserved2 : Cardinal;
   end;
 
   TDBInfoInGraphicFile = record
@@ -537,6 +539,8 @@ begin
     Result := True;
   end else if GraphicHeader.Version = 2 then
   begin
+    StrongCryptInit;
+
     Stream.Read(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
     CalcStringCRC32(Password, CRC);
     if GraphicHeaderV2.PassCRC <> CRC then

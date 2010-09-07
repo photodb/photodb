@@ -49,10 +49,12 @@ procedure ShowAbout;
 var
   AboutForm : TAboutForm;
 begin
-  if AboutForm = nil then
-    Application.CreateForm(TAboutForm, AboutForm);
-  AboutForm.Execute;
-  AboutForm.Release;
+  Application.CreateForm(TAboutForm, AboutForm);
+  try
+    AboutForm.Execute;
+  finally
+    AboutForm.Release;
+  end;
 end;
 
 { TAboutForm }
@@ -120,7 +122,7 @@ end;
 
 procedure TAboutForm.Execute;
 begin
- if FolderView then
+  if FolderView then
   begin
     BtShowActivationForm.Visible := False;
     MemoRegistrationInfo.Clear;
@@ -128,8 +130,6 @@ begin
     ShowModal;
     Exit;
   end;
-
-  BtShowActivationForm.Visible := DBkernel.ProgramInDemoMode;
 
   LoadRegistrationData;
   ShowModal;

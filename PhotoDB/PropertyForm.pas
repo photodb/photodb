@@ -12,7 +12,7 @@ uses
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uDBDrawing, uFileUtils;
+  UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading;
 
 type
  TShowInfoType=(SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -55,49 +55,13 @@ type
     DropFileTarget1: TDropFileTarget;
     DragImageList: TImageList;
     TabbedNotebook1: TTabbedNotebook;
-    GeneralPanel: TPanel;
-    LabelName1: TLabel;
-    RatingLabel1: TLabel;
-    DateLabel1: TLabel;
-    IDLabel1: TLabel;
-    Label1: TLabel;
-    Label4: TLabel;
-    SizeLabel1: TLabel;
-    WidthLabel: TLabel;
-    Heightlabel: TLabel;
-    CollectionLabel: TLabel;
-    OwnerLabel: TLabel;
-    KeyWordsMemo: TMemo;
-    LabelName: TMemo;
-    SizeLabel: TMemo;
-    IDLabel: TMemo;
-    LabelPath: TMemo;
-    widthmemo: TMemo;
-    heightmemo: TMemo;
-    CollectionMemo: TMemo;
-    OwnerMemo: TMemo;
-    Rating1: TRating;
-    DateEdit: TDateTimePicker;
-    IsDatePanel: TPanel;
-    Button1: TButton;
-    Button3: TButton;
+    BtDone: TButton;
+    BtSave: TButton;
     Button2: TButton;
-    ExifPanel: TPanel;
-    ValueListEditor1: TValueListEditor;
-    GistogrammPanel: TPanel;
-    GistogrammImage: TImage;
-    RgGistogrammChannel: TRadioGroup;
-    Label2: TLabel;
-    Label5: TLabel;
-    DmGradient1: TDmGradient;
     CopyEXIFPopupMenu: TPopupMenu;
     CopyCurrent1: TMenuItem;
     CopyAll1: TMenuItem;
-    AdditionalPanel: TPanel;
-    CheckBox1: TCheckBox;
     ImageList1: TImageList;
-    Label6: TLabel;
-    LinksScrollBox: TScrollBox;
     PopupMenu7: TPopupMenu;
     PopupMenu8: TPopupMenu;
     Open1: TMenuItem;
@@ -110,19 +74,7 @@ type
     N6: TMenuItem;
     Up1: TMenuItem;
     Down1: TMenuItem;
-    GroupsPanel: TPanel;
-    Button4: TButton;
-    Button5: TButton;
-    Label8: TLabel;
-    ListBox1: TListBox;
-    Label9: TLabel;
-    Image3: TImage;
-    ListBox2: TListBox;
-    Button6: TButton;
-    Button7: TButton;
     RegGroupsImageList: TImageList;
-    TimeLabel: TLabel;
-    TimeEdit: TDateTimePicker;
     PopupMenu9: TPopupMenu;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
@@ -133,18 +85,12 @@ type
     QuickInfo1: TMenuItem;
     PopupMenu10: TPopupMenu;
     Clear1: TMenuItem;
-    IsTimePanel: TPanel;
     MoveToGroup1: TMenuItem;
     PopupMenu11: TPopupMenu;
     Timenotsets1: TMenuItem;
     TimeExists1: TMenuItem;
-    DateSets: TPanel;
-    TimeSets: TPanel;
     TimenotExists1: TMenuItem;
     DestroyTimer: TTimer;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
-    Label7: TLabel;
     DropFileTarget2: TDropFileTarget;
     PopupMenu3: TPopupMenu;
     AddImThLink1: TMenuItem;
@@ -154,16 +100,65 @@ type
     N8: TMenuItem;
     AddOriginalImTh1: TMenuItem;
     AddOriginalImThAndAddProcessngToOriginalImTh1: TMenuItem;
-    ImageLoadingFile: TImage;
+    ImageLoadingFile: TDBLoading;
+    CollectionLabel: TLabel;
+    CollectionMemo: TMemo;
+    DateEdit: TDateTimePicker;
+    DateLabel1: TLabel;
+    DateSets: TPanel;
+    Heightlabel: TLabel;
+    heightmemo: TMemo;
+    IDLabel: TMemo;
+    IDLabel1: TLabel;
+    IsDatePanel: TPanel;
+    IsTimePanel: TPanel;
+    KeyWordsMemo: TMemo;
+    Label1: TLabel;
+    Label4: TLabel;
+    LabelName: TMemo;
+    LabelName1: TLabel;
+    LabelPath: TMemo;
+    OwnerLabel: TLabel;
+    OwnerMemo: TMemo;
+    Rating1: TRating;
+    RatingLabel1: TLabel;
+    SizeLabel: TMemo;
+    SizeLabel1: TLabel;
+    TimeEdit: TDateTimePicker;
+    TimeLabel: TLabel;
+    TimeSets: TPanel;
+    WidthLabel: TLabel;
+    widthmemo: TMemo;
+    Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
+    CheckBox2: TCheckBox;
+    CheckBox3: TCheckBox;
+    Image3: TImage;
+    label7: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    ListBox1: TListBox;
+    ListBox2: TListBox;
+    ValueListEditor1: TValueListEditor;
+    DmGradient1: TDmGradient;
+    GistogrammImage: TImage;
+    Label2: TLabel;
+    Label5: TLabel;
+    RgGistogrammChannel: TRadioGroup;
+    CheckBox1: TCheckBox;
+    Label6: TLabel;
+    LinksScrollBox: TScrollBox;
     procedure Execute(ID : integer);
-    procedure Button1Click(Sender: TObject);
+    procedure BtDoneClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure CommentMemoChange(Sender: TObject);
     procedure Image1DblClick(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure BtSaveClick(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
     procedure Shell1Click(Sender: TObject);
     procedure Show1Click(Sender: TObject);
@@ -560,7 +555,7 @@ begin
  DBKernel.UnRegisterChangesIDbyID(Self,ChangedDBDataByID,CurrentItemInfo.ItemId);
  DBKernel.RegisterChangesIDbyID(Self,ChangedDBDataByID,CurrentItemInfo.ItemId);
  DBitem1.Visible:=true;
- Button3.Caption:=TEXT_MES_SAVE;
+ BtSave.Caption:=TEXT_MES_SAVE;
  idlabel.text:=inttostr(id);
  CommentMemo.Cursor:=CrDefault;
  CommentMemo.PopupMenu:=nil;
@@ -568,7 +563,7 @@ begin
  WorkQuery.Active:=true;
  WorkQuery.First;
  if WorkQuery.RecordCount=0 then no_file:=true;
- If not no_file then Button3.Enabled:=false;
+ If not no_file then BtSave.Enabled:=false;
  CurrentItemInfo.ItemFileName:=ProcessPath(WorkQuery.FieldByName('FFileName').AsString);
  fbit:=TBitmap.create;
  fbit.PixelFormat:=pf24bit;
@@ -728,7 +723,7 @@ begin
  SID:=GetGUID;
 end;
 
-procedure TPropertiesForm.Button1Click(Sender: TObject);
+procedure TPropertiesForm.BtDoneClick(Sender: TObject);
 begin
  if EditLinkForm<>nil then
  begin
@@ -867,13 +862,13 @@ begin
 
  if FShowInfoType=SHOW_INFO_ID then
  if CHDate or CHTime or (CurrentItemInfo.ItemOwner<>OwnerMemo.text) or (CurrentItemInfo.ItemCollections<>CollectionMemo.text) or (CurrentItemInfo.ItemRating<>Rating1.Rating) or (CurrentItemInfo.ItemComment<>CommentMemo.text) or VariousKeyWords(CurrentItemInfo.ItemKeyWords,KeyWordsMemo.Text) or not CompareGroups(FOldGroups,FNowGroups)or CHInclude or CHLinks then
- Button3.Enabled:=True else Button3.Enabled:=False;
+ BtSave.Enabled:=True else BtSave.Enabled:=False;
 
  if FShowInfoType=SHOW_INFO_IDS then
  if CHDate or CHTime or (not Rating1.Islayered) or (not CommentMemo.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (CommentMemo.Text<>SelectedInfo.CommonComment)) or VariousKeyWords(CurrentItemInfo.ItemKeyWords,KeyWordsMemo.Text) or not CompareGroups(FOldGroups,FNowGroups) or CHInclude or CHLinks then
- Button3.Enabled:=True else Button3.Enabled:=False;
+ BtSave.Enabled:=True else BtSave.Enabled:=False;
  if FShowInfoType=SHOW_INFO_FILE_NAME then
- Button3.Enabled:=false;
+ BtSave.Enabled:=false;
  if FShowInfoType<>SHOW_INFO_IDS then
  if CurrentItemInfo.ItemComment<>CommentMemo.Text then Label3.Font.Style:=Label3.Font.Style+[fsBold] else Label3.Font.Style:=Label3.Font.Style-[fsBold];
  if FShowInfoType=SHOW_INFO_IDS then
@@ -900,7 +895,7 @@ begin
  end;
 end;
 
-procedure TPropertiesForm.Button3Click(Sender: TObject);
+procedure TPropertiesForm.BtSaveClick(Sender: TObject);
 var
   _sqlexectext, CommonKeyWords, KeyWords, CommonGroups, SGroups, SLinks : string;
   SLinkInfo : TLinksInfo;
@@ -923,7 +918,7 @@ begin
  begin
   xCount:=0;
   LockImput;
-  Button3.Enabled:=false;
+  BtSave.Enabled:=false;
 
   ProgressForm:=nil;
   CommonKeyWords:=CurrentItemInfo.ItemKeyWords;
@@ -1211,7 +1206,7 @@ begin
   end;
 
   UnLockImput;
-  Button3.Enabled:=true;
+  BtSave.Enabled:=true;
   if Visible then
   begin
     SetLength(IDArray, FFilesInfo.Count);
@@ -1440,7 +1435,7 @@ begin
 
 
  SizeLabel.text:=SizeInTextA(GetFileSize(FileName));
- Button3.Caption:=TEXT_MES_ADD_FILE;
+ BtSave.Caption:=TEXT_MES_ADD_FILE;
  Button2.Visible:=True;
 
  ImageLoadingFile.Visible:=true;
@@ -1450,7 +1445,7 @@ end;
 procedure TPropertiesForm.BeginAdding(Sender: TObject);
 begin
  Image1DblClick(Sender);
- Button3.Enabled:=false;
+ BtSave.Enabled:=false;
  adding_now:=true;
 end;
 
@@ -1649,7 +1644,7 @@ begin
  CheckBox1.AllowGrayed:=true;
  TabbedNotebook1.PageIndex:=0;
  if Length(IDs)=0 then Exit;
- Button3.Caption:=TEXT_MES_SAVE;
+ BtSave.Caption:=TEXT_MES_SAVE;
  Image2.Visible:=false;
  DateEdit.Enabled:=true;
  TimeEdit.Enabled:=true;
@@ -1837,7 +1832,7 @@ end;
 
 procedure TPropertiesForm.FormShow(Sender: TObject);
 begin
- Button1.SetFocus;
+  BtDone.SetFocus;
 end;
 
 procedure TPropertiesForm.GroupsManager1Click(Sender: TObject);
@@ -1996,8 +1991,8 @@ begin
  IDLabel1.Caption:= TEXT_MES_ID;
  Label1.Caption:= TEXT_MES_KEYWORDS;
  Button2.Caption:= TEXT_MES_FIND_TARGET;
- Button3.Caption:= TEXT_MES_SAVE;
- Button1.Caption:= TEXT_MES_CANCEL;
+ BtSave.Caption:= TEXT_MES_SAVE;
+ BtDone.Caption:= TEXT_MES_CANCEL;
  Shell1.Caption:= TEXT_MES_SHELL;
  Show1.Caption:= TEXT_MES_SHOW;
  Copy1.Caption:= TEXT_MES_COPY;
@@ -2093,11 +2088,7 @@ begin
  Case NewTab of
  0 :
  begin
-  ExifPanel.Hide;
-  GeneralPanel.Show;
-  GistogrammPanel.Hide;
-  AdditionalPanel.Hide;
-  GroupsPanel.Hide;
+
  end;
  1 :
  begin
@@ -2112,11 +2103,6 @@ begin
    exit;
   end;
   RecreateGroupsList;
-  GeneralPanel.Hide;
-  ExifPanel.Hide;
-  AdditionalPanel.Hide;
-  GistogrammPanel.Hide;
-  GroupsPanel.Show;
  end;
  2 :
  begin
@@ -2136,11 +2122,6 @@ begin
    exit;
   end;
   ReadExifData;
-  GeneralPanel.Hide;
-  ExifPanel.Show;
-  AdditionalPanel.Hide;
-  GistogrammPanel.Hide;
-  GroupsPanel.Hide;
  end;
  3 :
  begin
@@ -2171,11 +2152,6 @@ begin
    TPropertyLoadGistogrammThread.Create(false,Options);
    OnDoneLoadGistogrammData(self);
   end;
-  GeneralPanel.Hide;
-  ExifPanel.Hide;
-  AdditionalPanel.Hide;
-  GistogrammPanel.Show;
-  GroupsPanel.Hide;
  end;
  4:
  begin
@@ -2190,11 +2166,6 @@ begin
    exit;
   end;
   ReadLinks;
-  GeneralPanel.Hide;
-  ExifPanel.Hide;
-  AdditionalPanel.Show;
-  GroupsPanel.Hide;
-  GistogrammPanel.Hide;
  end;
  end;
 end;

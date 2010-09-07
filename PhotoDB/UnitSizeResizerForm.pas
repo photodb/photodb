@@ -7,10 +7,10 @@ uses
   Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, ImageConverting, Math,uVistaFuncs,
   JPEG, GIFImage, GraphicEx, Language, UnitDBkernel, GraphicCrypt,
   acDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
-  UnitDBCommon, UnitDBCommonGraphics;
+  UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm;
 
 type
-  TFormSizeResizer = class(TForm)
+  TFormSizeResizer = class(TDBForm)
     DdConvert: TComboBox;
     BtJPEGOptions: TButton;
     BtOk: TButton;
@@ -22,7 +22,7 @@ type
     DdResizeAction: TComboBox;
     EdWidth: TEdit;
     EdHeight: TEdit;
-    Label4: TLabel;
+    LbSizeSeparator: TLabel;
     CbAspectRatio: TCheckBox;
     CbConvert: TCheckBox;
     CbAddSuffix: TCheckBox;
@@ -30,6 +30,9 @@ type
     CbRotate: TCheckBox;
     DdRotate: TComboBox;
     EdImageName: TEdit;
+    CbWatermark: TCheckBox;
+    DdeWatermarkPattern: TComboBoxEx;
+    ImlWatermarkPatterns: TImageList;
     procedure BtCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtJPEGOptionsClick(Sender: TObject);
@@ -39,13 +42,23 @@ type
     procedure EdHeightKeyPress(Sender: TObject; var Key: Char);
     procedure BtChangeDirectoryClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure CbConvertClick(Sender: TObject);
+    procedure CbRotateClick(Sender: TObject);
+    procedure CbResizeClick(Sender: TObject);
+    procedure DdResizeActionChange(Sender: TObject);
+    procedure DdConvertChange(Sender: TObject);
+    procedure CbWatermarkClick(Sender: TObject);
   private
     FData : TDBPopupMenuInfo;
-    { Private declarations }
-  public
-    procedure SetInfo(List : TDBPopupMenuInfo);
+    //My descrioption
     procedure LoadLanguage;
     procedure ProcessImages;
+    procedure CheckValidForm;
+    { Private declarations }
+  protected
+    function GetFormID : string; override;
+  public
+    procedure SetInfo(List : TDBPopupMenuInfo);
     { Public declarations }
   end;
 
@@ -77,9 +90,10 @@ var
   I: Integer;
   Description, Mask: string;
 begin
-  FData := TDBPopupMenuInfo.Create;
   LoadLanguage;
+  FData := TDBPopupMenuInfo.Create;
   DBkernel.RecreateThemeToForm(Self);
+
   Formats := GetConvertableImageClasses;
   for I := 0 to Length(Formats) - 1 do
   begin
@@ -107,6 +121,11 @@ begin
   FData.Free;
 end;
 
+function TFormSizeResizer.GetFormID: string;
+begin
+  Result := 'ConvertImage';
+end;
+
 procedure TFormSizeResizer.BtJPEGOptionsClick(Sender: TObject);
 begin
   SetJPEGOptions;
@@ -122,12 +141,11 @@ var
   EventInfo: TEventValues;
   B: Boolean;
   ProgressWindow: TProgressActionForm;
-
 begin
 
-  if DdConvert.ItemIndex<0 then
+  if DdConvert.ItemIndex < 0 then
   begin
-    MessageBoxDB(Handle,TEXT_MES_CHOOSE_FORMAT, TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+    MessageBoxDB(Handle, TEXT_MES_CHOOSE_FORMAT, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
     DdConvert.SetFocus;
     Exit;
   end;
@@ -439,16 +457,66 @@ begin
   //TODO: DBKernel.WriteInteger('Convert options','Width',StrToIntDef(Edit1.text,1024));
 end;
 
-procedure TFormSizeResizer.EdWidthExit(Sender: TObject);
+procedure TFormSizeResizer.CbConvertClick(Sender: TObject);
 begin
-  (Sender as TEdit).Text := IntToStr(Min(Max(StrToIntDef((Sender as TEdit).Text,100),5),5000));
+  DdConvert.Enabled := CbConvert.Checked;
+  CheckValidForm;
 end;
 
+procedure TFormSizeResizer.CbResizeClick(Sender: TObject);
+begin
+  DdResizeAction.Enabled := CbResize.Checked;
+  CheckValidForm;
+end;
+
+procedure TFormSizeResizer.CbRotateClick(Sender: TObject);
+begin
+  DdRotate.Enabled := CbRotate.Checked;
+  CheckValidForm;
+end;
+
+procedure TFormSizeResizer.CbWatermarkClick(Sender: TObject);
+begin
+  DdeWatermarkPattern.Enabled := CbWatermark.Checked;
+  CheckValidForm;
+end;
+
+procedure TFormSizeResizer.CheckValidForm;
+var
+  Valid : Boolean;
+begin
+  Valid := CbConvert.Checked or CbResize.Checked or CbRotate.Checked or CbWatermark.Checked;
+  BtOk.Enabled := Valid;
+  BtSaveAsDefault.Enabled := Valid;
+end;
+
+procedure TFormSizeResizer.DdConvertChange(Sender: TObject);
+begin
+  BtJPEGOptions.Enabled := DdConvert.Enabled and (DdConvert.ItemIndex = 0);
+end;
+
+procedure TFormSizeResizer.DdResizeActionChange(Sender: TObject);
+begin
+  EdWidth.Enabled := DdResizeAction.Enabled and (DdResizeAction.ItemIndex = DdResizeAction.Items.Count - 1);
+  EdHeight.Enabled := EdWidth.Enabled;
+  LbSizeSeparator.Enabled := EdWidth.Enabled;
+end;
+
+procedure TFormSizeResizer.EdWidthExit(Sender: TObject);
+begin
+  (Sender as TEdit).Text := IntToStr(Min(Max(StrToIntDef((Sender as TEdit).Text, 100), 5), 5000));
+end;
+
+/// <summary>
+/// My comment here
+/// </summary>
 procedure TFormSizeResizer.LoadLanguage;
 begin
-  Caption := TEXT_MES_CHANGE_SIZE_CAPTION;
+  Caption := L('Change Image');
   Label2.Caption := TEXT_MES_CHANGE_SIZE_INFO;
   CbResize.Caption := TEXT_MES_CHANGE_SIZE;
+
+  CbWatermark.Caption := L('Add Watermark');
 
   DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_SMALL);
   DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_MEDIUM);
@@ -462,6 +530,11 @@ begin
   DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [200]));
   DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [400]));
   DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_CUSTOM);
+
+  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_EXIF);
+  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_LEFT);
+  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_RIGHT);
+  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_180);
 
   CbAspectRatio.Caption := TEXT_MES_SAVE_ASPECT_RATIO;
   CbConvert.Caption := TEXT_MES_CONVERT_TO;

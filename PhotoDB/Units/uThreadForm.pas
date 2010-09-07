@@ -2,10 +2,10 @@ unit uThreadForm;
 
 interface
 
-uses Classes, Forms, SyncObjs, Dolphin_DB;
+uses Classes, Forms, SyncObjs, Dolphin_DB, uDBForm;
 
 type
-  TThreadForm = class(TForm)
+  TThreadForm = class(TDBForm)
   private
     FThreadList : TList;
     FSync : TCriticalSection;

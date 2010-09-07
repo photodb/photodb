@@ -1,11 +1,11 @@
 object FormSizeResizer: TFormSizeResizer
-  Left = 320
-  Top = 110
+  Left = 366
+  Top = 205
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
   Caption = 'Change image(s) size'
   ClientHeight = 464
-  ClientWidth = 334
+  ClientWidth = 426
   Color = clBtnFace
   Constraints.MinWidth = 340
   Font.Charset = DEFAULT_CHARSET
@@ -18,64 +18,68 @@ object FormSizeResizer: TFormSizeResizer
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    334
+    426
     464)
   PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
     Left = 8
     Top = 8
-    Width = 318
-    Height = 41
+    Width = 398
+    Height = 49
     AutoSize = False
     Caption = 
       'You can resize you image(s) and convert they in other graphic fo' +
       'rmat, which you can select in combobox follow:'
     WordWrap = True
   end
-  object Label4: TLabel
-    Left = 271
+  object LbSizeSeparator: TLabel
+    Left = 362
     Top = 336
     Width = 7
     Height = 13
     Anchors = [akRight, akBottom]
     Caption = 'X'
-    ExplicitLeft = 290
+    Enabled = False
+    ExplicitLeft = 350
   end
   object DdConvert: TComboBox
-    Left = 88
+    Left = 128
     Top = 279
-    Width = 135
+    Width = 178
     Height = 21
     Style = csDropDownList
     Anchors = [akLeft, akRight, akBottom]
+    Enabled = False
     TabOrder = 0
-    ExplicitWidth = 154
+    OnChange = DdConvertChange
   end
   object BtJPEGOptions: TButton
-    Left = 229
+    Left = 312
     Top = 278
-    Width = 97
+    Width = 106
     Height = 22
     Anchors = [akRight, akBottom]
     Caption = 'JPEG Optinons'
+    DoubleBuffered = False
+    Enabled = False
+    ParentDoubleBuffered = False
     TabOrder = 1
     OnClick = BtJPEGOptionsClick
-    ExplicitLeft = 248
   end
   object BtOk: TButton
-    Left = 251
+    Left = 343
     Top = 433
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
+    Enabled = False
     TabOrder = 2
     OnClick = BtOkClick
-    ExplicitLeft = 270
   end
   object BtCancel: TButton
-    Left = 170
+    Left = 262
     Top = 433
     Width = 75
     Height = 25
@@ -83,7 +87,6 @@ object FormSizeResizer: TFormSizeResizer
     Caption = 'Cancel'
     TabOrder = 3
     OnClick = BtCancelClick
-    ExplicitLeft = 189
   end
   object BtSaveAsDefault: TButton
     Left = 8
@@ -98,86 +101,84 @@ object FormSizeResizer: TFormSizeResizer
   object EdSavePath: TEdit
     Left = 8
     Top = 406
-    Width = 293
+    Width = 385
     Height = 21
     Anchors = [akLeft, akRight, akBottom]
-    Enabled = False
     ReadOnly = True
     TabOrder = 5
     Text = 'C:\'
-    ExplicitWidth = 312
   end
   object BtChangeDirectory: TButton
-    Left = 307
+    Left = 399
     Top = 406
     Width = 19
     Height = 22
     Anchors = [akRight, akBottom]
     Caption = '...'
-    Enabled = False
     TabOrder = 6
     OnClick = BtChangeDirectoryClick
-    ExplicitLeft = 326
   end
   object DdResizeAction: TComboBox
-    Left = 88
+    Left = 128
     Top = 333
-    Width = 126
+    Width = 178
     Height = 21
     Style = csDropDownList
     Anchors = [akLeft, akRight, akBottom]
+    DropDownCount = 20
+    Enabled = False
     TabOrder = 7
-    ExplicitWidth = 145
+    OnChange = DdResizeActionChange
   end
   object EdWidth: TEdit
-    Left = 224
+    Left = 312
     Top = 333
     Width = 41
     Height = 21
     Anchors = [akRight, akBottom]
+    Enabled = False
     TabOrder = 8
     Text = '1024'
     OnExit = EdWidthExit
     OnKeyPress = EdHeightKeyPress
-    ExplicitLeft = 243
   end
   object EdHeight: TEdit
-    Left = 284
+    Left = 377
     Top = 333
     Width = 41
     Height = 21
     Anchors = [akRight, akBottom]
+    Enabled = False
     TabOrder = 9
     Text = '768'
     OnExit = EdWidthExit
     OnKeyPress = EdHeightKeyPress
-    ExplicitLeft = 303
   end
   object CbAspectRatio: TCheckBox
-    Left = 88
-    Top = 360
-    Width = 237
+    Left = 128
+    Top = 362
+    Width = 290
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Preserve aspect ratio'
     Checked = True
     State = cbChecked
     TabOrder = 10
-    ExplicitWidth = 256
   end
   object CbConvert: TCheckBox
     Left = 8
     Top = 280
-    Width = 64
+    Width = 114
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'Convert:'
     TabOrder = 11
+    OnClick = CbConvertClick
   end
   object CbAddSuffix: TCheckBox
-    Left = 88
-    Top = 380
-    Width = 238
+    Left = 128
+    Top = 383
+    Width = 290
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Add filename suffix'
@@ -188,39 +189,64 @@ object FormSizeResizer: TFormSizeResizer
   object CbResize: TCheckBox
     Left = 8
     Top = 336
-    Width = 64
+    Width = 114
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'Resize:'
     TabOrder = 13
+    OnClick = CbResizeClick
   end
   object CbRotate: TCheckBox
     Left = 8
     Top = 308
-    Width = 64
+    Width = 114
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'Rotate:'
     TabOrder = 14
+    OnClick = CbRotateClick
   end
   object DdRotate: TComboBox
-    Left = 88
+    Left = 128
     Top = 306
-    Width = 135
+    Width = 178
     Height = 21
     Style = csDropDownList
     Anchors = [akLeft, akRight, akBottom]
+    Enabled = False
     TabOrder = 15
-    ExplicitWidth = 154
   end
   object EdImageName: TEdit
     Left = 8
-    Top = 251
-    Width = 316
+    Top = 221
+    Width = 410
     Height = 21
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 16
-    Text = 'EdImageName'
-    ExplicitWidth = 336
+    Text = 'Image Name'
+  end
+  object CbWatermark: TCheckBox
+    Left = 8
+    Top = 252
+    Width = 114
+    Height = 17
+    Anchors = [akLeft, akRight, akBottom]
+    Caption = 'Add watermark'
+    TabOrder = 17
+    OnClick = CbWatermarkClick
+  end
+  object DdeWatermarkPattern: TComboBoxEx
+    Left = 128
+    Top = 251
+    Width = 290
+    Height = 22
+    ItemsEx = <>
+    Style = csExDropDownList
+    TabOrder = 18
+    Images = ImlWatermarkPatterns
+  end
+  object ImlWatermarkPatterns: TImageList
+    Left = 352
+    Top = 168
   end
 end

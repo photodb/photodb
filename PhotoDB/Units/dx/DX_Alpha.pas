@@ -548,15 +548,15 @@ begin
   FirstImage.Canvas.Pen.Color:=ClBlack;
   FirstImage.PixelFormat:=pf24bit;
   FirstImage.Canvas.Rectangle(0,0,FirstImage.width,FirstImage.Height);
-  if (FbImage.width>fnewcsrbmp.width) or (FbImage.Height>fnewcsrbmp.Height) then
+  if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
   begin
-   if FbImage.width/FbImage.Height<fnewcsrbmp.width/fnewcsrbmp.Height then
+   if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
    begin
-    fh:=fnewcsrbmp.Height;
-    fw:=round(fnewcsrbmp.Height*(FbImage.width/fbImage.Height));
+    fh:=FNewCsrBmp.Height;
+    fw:=round(FNewCsrBmp.Height*(FbImage.width/fbImage.Height));
    end else begin
-    fw:=fnewcsrbmp.width;
-    fh:=round(fnewcsrbmp.width*(FbImage.Height/fbImage.width));
+    fw:=FNewCsrBmp.width;
+    fh:=round(FNewCsrBmp.width*(FbImage.Height/fbImage.width));
    end;
   end else begin
    fh:=FbImage.Height;

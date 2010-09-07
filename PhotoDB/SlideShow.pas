@@ -292,7 +292,7 @@ var
   old_width,old_height, old_top,old_left : integer;
   old_rect:Trect;
   CurrentInfo : TRecordsInfo;
-  fcsrbmp, fnewcsrbmp, fnowcsrbmp : TBitmap;
+  Fcsrbmp, FNewCsrBmp, Fnowcsrbmp : TBitmap;
   FOldPoint : TPoint;
   WaitGrayScale : Integer;
   WaitImage : TBitmap;
@@ -362,20 +362,20 @@ begin
   FbImage.PixelFormat:=pf24bit;
   drawimage.PixelFormat:=pf24bit;
   TW.I.Start('fcsrbmp');
-  fcsrbmp := TBitmap.create;
-  fcsrbmp.PixelFormat:=pf24bit;
-  fcsrbmp.Canvas.Brush.Color:=0;
-  fcsrbmp.Canvas.pen.Color:=0;
+  Fcsrbmp := TBitmap.create;
+  Fcsrbmp.PixelFormat:=pf24bit;
+  Fcsrbmp.Canvas.Brush.Color:=0;
+  Fcsrbmp.Canvas.pen.Color:=0;
   TW.I.Start('fnewcsrbmp');
   WaitImage := TBitmap.create;
   WaitImage.PixelFormat:=pf24bit;
-  fnewcsrbmp := TBitmap.create;
-  fnewcsrbmp.PixelFormat:=pf24bit;
-  fnewcsrbmp.Canvas.Brush.Color:=0;
-  fnewcsrbmp.Canvas.pen.Color:=0;
-  fnowcsrbmp := TBitmap.create;
-  fnowcsrbmp.PixelFormat:=pf24bit;
-  fnowcsrbmp.Assign(fnewcsrbmp);
+  FNewCsrBmp := TBitmap.create;
+  FNewCsrBmp.PixelFormat:=pf24bit;
+  FNewCsrBmp.Canvas.Brush.Color:=0;
+  FNewCsrBmp.Canvas.pen.Color:=0;
+  Fnowcsrbmp := TBitmap.create;
+  Fnowcsrbmp.PixelFormat:=pf24bit;
+  Fnowcsrbmp.Assign(FNewCsrBmp);
 
   TW.I.Start('AnimatedBuffer');
   AnimatedBuffer := TBitmap.create;
@@ -836,14 +836,14 @@ procedure TViewer.FormDestroy(Sender: TObject);
 begin
   CurrentInfo := RecordsInfoNil;
   DropFileTarget1.Unregister;
-  DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
+  DBkernel.UnRegisterProcUpdateTheme(UpdateTheme, Self);
   SaveWindowPos1.SavePosition;
   F(FbImage);
   F(DrawImage);
   F(WaitImage);
-  F(fCsrBmp);
-  F(fNewCsrBmp);
-  F(fNowCsrBmp);
+  F(Fcsrbmp);
+  F(FNewCsrBmp);
+  F(Fnowcsrbmp);
   F(AnimatedBuffer);
 end;
 
@@ -919,18 +919,18 @@ var
 begin
  if not SlideShowNow then
  begin
-  fcsrbmp.Assign(fnowcsrbmp);
-  fnewcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);
+  Fcsrbmp.Assign(Fnowcsrbmp);
+  FNewCsrBmp.Canvas.Rectangle(0,0,FNewCsrBmp.width,FNewCsrBmp.Height);
   if (FbImage.Height=0) or (FbImage.width=0) then exit;
-  if (FbImage.width>fnewcsrbmp.width) or (FbImage.Height>fnewcsrbmp.Height) then
+  if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
   begin
-   if FbImage.width/FbImage.Height<fnewcsrbmp.width/fnewcsrbmp.Height then
+   if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
    begin
-    fh:=fnewcsrbmp.Height;
-    fw:=round(fnewcsrbmp.Height*(FbImage.width/fbImage.Height));
+    fh:=FNewCsrBmp.Height;
+    fw:=round(FNewCsrBmp.Height*(FbImage.width/fbImage.Height));
    end else begin
-    fw:=fnewcsrbmp.width;
-    fh:=round(fnewcsrbmp.width*(FbImage.Height/fbImage.width));
+    fw:=FNewCsrBmp.width;
+    fh:=round(FNewCsrBmp.width*(FbImage.Height/fbImage.width));
    end;
   end else begin
    fh:=FbImage.Height;
@@ -941,22 +941,22 @@ begin
   x2:=Screen.Width div 2 + fw div 2;
   y2:=Screen.Height div 2 + fh div 2;
   If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
-  StretchCool(x1,y1,x2-x1,y2-y1,FbImage,fNewCsrBmp) else
-  fNewCsrBmp.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
+  StretchCool(x1,y1,x2-x1,y2-y1,FbImage,FNewCsrBmp) else
+  FNewCsrBmp.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
  end else
  begin
   if DirectShowForm=nil then exit;
-  fnewcsrbmp.Canvas.Rectangle(0,0,fnewcsrbmp.width,fnewcsrbmp.Height);
+  FNewCsrBmp.Canvas.Rectangle(0,0,FNewCsrBmp.width,FNewCsrBmp.Height);
   if (FbImage.Height=0) or (FbImage.width=0) then exit;
-  if (FbImage.width>fnewcsrbmp.width) or (FbImage.Height>fnewcsrbmp.Height) then
+  if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
   begin
-   if FbImage.width/FbImage.Height<fnewcsrbmp.width/fnewcsrbmp.Height then
+   if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
    begin
-    fh:=fnewcsrbmp.Height;
-    fw:=round(fnewcsrbmp.Height*(FbImage.width/fbImage.Height));
+    fh:=FNewCsrBmp.Height;
+    fw:=round(FNewCsrBmp.Height*(FbImage.width/fbImage.Height));
    end else begin
-    fw:=fnewcsrbmp.width;
-    fh:=round(fnewcsrbmp.width*(FbImage.Height/fbImage.width));
+    fw:=FNewCsrBmp.width;
+    fh:=round(FNewCsrBmp.width*(FbImage.Height/fbImage.width));
    end;
   end else begin
    fh:=FbImage.Height;
@@ -967,14 +967,14 @@ begin
   x2:=Screen.Width div 2 + fw div 2;
   y2:=Screen.Height div 2 + fh div 2;
   If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
-  StretchCool(x1,y1,x2-x1,y2-y1,FbImage,fNewCsrBmp) else
-  fNewCsrBmp.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
+  StretchCool(x1,y1,x2-x1,y2-y1,FbImage,FNewCsrBmp) else
+  FNewCsrBmp.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
   if DirectShowForm.FirstLoad then
   begin
-   DirectShowForm.SetFirstImage(fNewCsrBmp);
+   DirectShowForm.SetFirstImage(FNewCsrBmp);
   end else
   begin
-   DirectShowForm.NewImage(fNewCsrBmp);
+   DirectShowForm.NewImage(FNewCsrBmp);
   end;
  end;
 end;
@@ -1625,8 +1625,8 @@ begin
    begin
     FbImage.Canvas.Brush.Color:=Theme_MainColor;
     FbImage.Canvas.pen.Color:=Theme_MainColor;
-    if fNewCsrBMP<>nil then
-    fNewCsrBMP.Canvas.Rectangle(0,0,fNewCsrBMP.width,fNewCsrBMP.Height);
+    if FNewCsrBmp<>nil then
+    FNewCsrBmp.Canvas.Rectangle(0,0,FNewCsrBmp.width,FNewCsrBmp.Height);
     FbImage.Width:=170;
     FbImage.Height:=170;
     FbImage.Canvas.Rectangle(0,0,FbImage.width,FbImage.Height);
@@ -1818,7 +1818,7 @@ procedure TViewer.Copy1Click(Sender: TObject);
 var
   FileList : TStrings;
 begin
-  FileList := TStrings.Create;
+  FileList := TStringList.Create;
   try
     FileList.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
     Copy_Move(True, FileList);
@@ -2338,7 +2338,6 @@ end;
 
 procedure TViewer.Resize1Click(Sender: TObject);
 var
-  I: Integer;
   List: TDBPopupMenuInfo;
   ImageInfo: TDBPopupMenuInfoRecord;
 begin

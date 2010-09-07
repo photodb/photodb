@@ -292,7 +292,11 @@ uses
   TypInfoEx in 'External\Crypt\DECv5.2\TypInfoEx.pas',
   uStrongCrypt in 'Units\uStrongCrypt.pas',
   jpegdec in 'Units\jpegdec.pas',
-  uMemory in 'Units\uMemory.pas';
+  uMemory in 'Units\uMemory.pas',
+  uDBForm in 'Units\uDBForm.pas',
+  uTranslate in 'Units\uTranslate.pas',
+  MSXML2_TLB in 'External\Xml\MSXML2_TLB.pas',
+  OmniXML_MSXML in 'External\Xml\OmniXML_MSXML.pas';
 
 {$R *.res}
 
@@ -302,7 +306,6 @@ type
 var
     s1 : string;
     initaproc : TInitializeAProc;
-    TablePacked : boolean;
     i : integer;
 
 function IsFalidDBFile : boolean;
@@ -402,7 +405,6 @@ begin
 
   // PREPAIRING ----------------------------------------------------
 
-  TablePacked := False;
   if GetParamStrDBBool('/SLEEP') then
     Sleep(1000);
 
@@ -622,7 +624,6 @@ begin
           if ID_OK = MessageBoxDB(FormManager.Handle, TEXT_MES_APPLICATION_FAILED, TEXT_MES_ERROR, TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
           begin
             SplashThread.Terminate;
-            TablePacked := True;
             DBKernel.WriteBool('StartUp', 'Pack', False);
             Application.CreateForm(TCMDForm, CMDForm);
             CMDForm.PackPhotoTable;
@@ -636,39 +637,36 @@ begin
   if not DBTerminating then
     if GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp',
       'ConvertDB', False) then
-      if not TablePacked then
-      begin
-        SplashThread.Terminate;
-        EventLog('Converting...');
-        DBKernel.WriteBool('StartUp', 'ConvertDB', False);
-        ConvertDB(dbname);
-      end;
+    begin
+      SplashThread.Terminate;
+      EventLog('Converting...');
+      DBKernel.WriteBool('StartUp', 'ConvertDB', False);
+      ConvertDB(dbname);
+    end;
 
   if not DBTerminating then
     if GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp', 'Pack', False) then
-      if not TablePacked then
-      begin
-        SplashThread.Terminate;
-        EventLog('Packing...');
-        DBKernel.WriteBool('StartUp', 'Pack', False);
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.PackPhotoTable;
-        CMDForm.Release;
-        CMDForm := nil;
-      end;
+    begin
+      SplashThread.Terminate;
+      EventLog('Packing...');
+      DBKernel.WriteBool('StartUp', 'Pack', False);
+      Application.CreateForm(TCMDForm, CMDForm);
+      CMDForm.PackPhotoTable;
+      CMDForm.Release;
+      CMDForm := nil;
+    end;
 
   if not DBTerminating then
     if GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp', 'BackUp', False) then
-      if not TablePacked then
-      begin
-        SplashThread.Terminate;
-        EventLog('BackUp...');
-        DBKernel.WriteBool('StartUp', 'BackUp', False);
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.BackUpTable;
-        CMDForm.Release;
-        CMDForm := nil;
-      end;
+    begin
+      SplashThread.Terminate;
+      EventLog('BackUp...');
+      DBKernel.WriteBool('StartUp', 'BackUp', False);
+      Application.CreateForm(TCMDForm, CMDForm);
+      CMDForm.BackUpTable;
+      CMDForm.Release;
+      CMDForm := nil;
+    end;
 
   if not DBTerminating then
     if GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp', 'RecreateIDEx', False) then

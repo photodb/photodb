@@ -72,25 +72,25 @@ type
       Shift: TShiftState);
   private
     { Private declarations }
-  FGroups : TGroups;
-  FRegGroups : TGroups;
-  FShowenRegGroups : TGroups;
-  FSetGroups : TGroups;
-  FNewKeyWords : String;
-  FResult : Boolean;
-  FOldGroups : TGroups;
-  FOldKeyWords : String;
-  function aGetGroupByCode(GroupCode : String) : integer;
-  procedure ChangedDBDataGroups(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
+    FGroups: TGroups;
+    FRegGroups: TGroups;
+    FShowenRegGroups: TGroups;
+    FSetGroups: TGroups;
+    FNewKeyWords: string;
+    FResult: Boolean;
+    FOldGroups: TGroups;
+    FOldKeyWords: string;
+    function AGetGroupByCode(GroupCode: string): Integer;
+    procedure ChangedDBDataGroups(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
 
   public
-  Procedure Execute(var Groups : TGroups; var KeyWords : String; CanNew : Boolean = true);
-  Procedure LoadLanguage;
+    procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True);
+    procedure LoadLanguage;
     { Public declarations }
   end;
 
-Procedure DBChangeGroups(var Groups : TGroups; var KeyWords : String; CanNew : Boolean = true); overload;
-Procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : Boolean = true); overload;
+procedure DBChangeGroups(var Groups : TGroups; var KeyWords : String; CanNew : Boolean = true); overload;
+procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : Boolean = true); overload;
 
 implementation
 
@@ -103,21 +103,29 @@ uses UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
 
 Procedure DBChangeGroups(var Groups : TGroups; var KeyWords : String; CanNew : Boolean = true);
 var
-  EditGroupsForm : TEditGroupsForm;
+  EditGroupsForm: TEditGroupsForm;
 begin
- Application.CreateForm(TEditGroupsForm, EditGroupsForm);
- EditGroupsForm.Execute(Groups,KeyWords,CanNew);
+  Application.CreateForm(TEditGroupsForm, EditGroupsForm);
+  try
+    EditGroupsForm.Execute(Groups, KeyWords, CanNew);
+  finally
+    EditGroupsForm.Release;
+  end;
 end;
 
 Procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : Boolean = true);
 var
-  FEditGroupsForm : TEditGroupsForm;
-  Groups : TGroups;
+  FEditGroupsForm: TEditGroupsForm;
+  Groups: TGroups;
 begin
- Groups:=EncodeGroups(SGroups);
- Application.CreateForm(TEditGroupsForm, FEditGroupsForm);
- FEditGroupsForm.Execute(Groups,KeyWords,CanNew);
- SGroups:=CodeGroups(Groups);
+  Groups := EncodeGroups(SGroups);
+  Application.CreateForm(TEditGroupsForm, FEditGroupsForm);
+  try
+    FEditGroupsForm.Execute(Groups, KeyWords, CanNew);
+  finally
+    FEditGroupsForm.Release;
+  end;
+  SGroups := CodeGroups(Groups);
 end;
 
 procedure TEditGroupsForm.Execute(var Groups: TGroups; var KeyWords : String; CanNew : Boolean = true);
@@ -612,7 +620,7 @@ begin
   //удаляем группу изтекущих
 
   RemoveGroupFromGroups(FSetGroups,FSetGroups[i]);
-  
+
   ListBox1.Items.Delete(i);
 
  end;

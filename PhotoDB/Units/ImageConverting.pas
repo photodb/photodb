@@ -2,33 +2,34 @@ unit ImageConverting;
 
 interface
 
- uses SysUtils, Classes, Graphics, Dolphin_DB,
-     JPEG, GraphicEx, GIFImage, PNGDef, TiffImageUnit,
-     uFileUtils;
+uses SysUtils, Classes, Graphics, Dolphin_DB,
+  JPEG, GraphicEx, GIFImage, PNGDef, TiffImageUnit,
+  UFileUtils;
 
- type TArGraphicClass = array of TGraphicClass;
+type
+  TArGraphicClass = array of TGraphicClass;
 
-function GetConvertableImageClasses : TArGraphicClass;
-function GetConvertedFileName(FileName, NewEXT  : string) : string;
-function ConvertableImageClass(Graphic : TGraphicClass) : Boolean;
-function GetConvertedFileNameWithDir(FileName, Dir, NewEXT  : string) : string;
+function GetConvertableImageClasses: TArGraphicClass;
+function GetConvertedFileName(FileName, NewEXT: string): string;
+function ConvertableImageClass(Graphic: TGraphicClass): Boolean;
+function GetConvertedFileNameWithDir(FileName, Dir, NewEXT: string): string;
 
 implementation
 
 function ConvertableImageClass(Graphic : TGraphicClass) : Boolean;
-var
-  i : integer;
-  Gpaphics : TArGraphicClass;
-begin
- Result:=false;
- Gpaphics:=GetConvertableImageClasses;
- for i:=0 to Length(Gpaphics)-1 do
- if Gpaphics[i]=Graphic then
+ var
+   I: Integer;
+   Gpaphics: TArGraphicClass;
  begin
-  Result:=true;
-  exit;
+   Result := False;
+   Gpaphics := GetConvertableImageClasses;
+   for I := 0 to Length(Gpaphics) - 1 do
+     if Gpaphics[I] = Graphic then
+     begin
+       Result := True;
+       Exit;
+     end;
  end;
-end;
 
 function GetConvertableImageClasses : TArGraphicClass;
 
@@ -39,66 +40,57 @@ function GetConvertableImageClasses : TArGraphicClass;
  end;
 
 begin
- AddClass(TBitmap);
- AddClass(TJPEGImage);
- AddClass(TGIFImage);
-// AddClass(TPSDGraphic);
-// AddClass(TPNGGraphic);
-// AddClass(TIcon);
-// AddClass(TMetaFile);
- AddClass(TTargaGraphic);
- if PNG_CAN_SAVE then
- AddClass(TPngGraphic);
- AddClass(TiffImageUnit.TTIFFGraphic);
-// AddClass(TEPSGraphic);
-// AddClass(TPCXGraphic);
-// AddClass(TRLAGraphic);
-// AddClass(TSGIGraphic);
-// AddClass(TPCDGraphic);
-// AddClass(TPPMGraphic);
-// AddClass(TAutodeskGraphic);
-// AddClass(TCUTGraphic);
-// AddClass(TPSPGraphic);
+  InitPNG;
+
+  AddClass(TJPEGImage);
+  if PNG_CAN_SAVE then
+    AddClass(TPngGraphic);
+  AddClass(TiffImageUnit.TTIFFGraphic);
+  AddClass(TGIFImage);
+  AddClass(TBitmap);
+  AddClass(TTargaGraphic);
 end;
 
 function GetConvertedFileName(FileName, NewEXT  : string) : string;
 var
-  s, dir : string;
-  i : integer;
+  S, Dir: string;
+  I: Integer;
 begin
- Result:=FileName;
- dir:=GetDirectory(Result);
- ChangeFileExt(Result,NewEXT);
- Result:=dir+GetFileNameWithoutExt(Result)+'.'+AnsiLowerCase(NewEXT);
- if not FileExists(Result) then exit;
- s:=dir+ExtractFileName(Result);
- i:=1;
- While (FileExists(s)) do
- begin
-  s:=dir+GetFileNameWithoutExt(Result)+' ('+IntToStr(i)+').'+NewEXT;
-  inc(i);
- end;
- Result:=s;
+  Result := FileName;
+  Dir := GetDirectory(Result);
+  ChangeFileExt(Result, NewEXT);
+  Result := Dir + GetFileNameWithoutExt(Result) + '.' + AnsiLowerCase(NewEXT);
+  if not FileExists(Result) then
+    Exit;
+  S := Dir + ExtractFileName(Result);
+  I := 1;
+  while (FileExists(S)) do
+  begin
+    S := Dir + GetFileNameWithoutExt(Result) + ' (' + IntToStr(I) + ').' + NewEXT;
+    Inc(I);
+  end;
+  Result := S;
 end;
 
 function GetConvertedFileNameWithDir(FileName, Dir, NewEXT  : string) : string;
 var
-  s : string;
-  i : integer;
+  S: string;
+  I: Integer;
 begin
- Result:=FileName;
- FormatDir(Dir);
- ChangeFileExt(Result,NewEXT);
- Result:=dir+GetFileNameWithoutExt(Result)+'.'+AnsiLowerCase(NewEXT);
- if not FileExists(Result) then exit;
- s:=dir+ExtractFileName(Result);
- i:=1;
- While (FileExists(s)) do
- begin
-  s:=dir+GetFileNameWithoutExt(Result)+' ('+IntToStr(i)+').'+NewEXT;
-  inc(i);
- end;
- Result:=s;
+  Result := FileName;
+  FormatDir(Dir);
+  ChangeFileExt(Result, NewEXT);
+  Result := Dir + GetFileNameWithoutExt(Result) + '.' + AnsiLowerCase(NewEXT);
+  if not FileExists(Result) then
+    Exit;
+  S := Dir + ExtractFileName(Result);
+  I := 1;
+  while (FileExists(S)) do
+  begin
+    S := Dir + GetFileNameWithoutExt(Result) + ' (' + IntToStr(I) + ').' + NewEXT;
+    Inc(I);
+  end;
+  Result := S;
 end;
 
 end.

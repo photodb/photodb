@@ -5,15 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt, Language,
-  uVistaFuncs, WebLink, Menus, uMemory,
-  TypInfo,
-  CPU,
-  CRC,
-  DECUtil,
-  DECFmt,
-  DECHash,
-  DECCipher,
-  DECRandom;
+  uVistaFuncs, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher;
 
 type
   TCryptImageForm = class(TForm)
@@ -44,11 +36,11 @@ type
     procedure FillChiperList;
     procedure SelectChipperClick(Sender: TObject);
   public
+    { Public declarations }
     FFileName: string;
     Password: string;
     SaveFileCRC: Boolean;
     CryptFileName: Boolean;
-    { Public declarations }
   end;
 
 function GetPassForCryptImageFile(FileName : String) : TCryptImageOptions;
@@ -80,7 +72,7 @@ procedure TCryptImageForm.FillChiperList;
     ChipperName : string;
   begin
     ChipperName := StringReplace(Chiper.ClassType.ClassName, 'TCipher_', '', [rfReplaceAll]);
-    Result := ChipperName + ' - ' + IntToStr(Chiper.Context.KeySize);
+    Result := ChipperName + ' - ' + IntToStr(Chiper.Context.KeySize * Chiper.Context.BlockSize );
   end;
 
   function DoEnumClasses(Data: Pointer; ClassType: TDECClass): Boolean;
@@ -94,14 +86,15 @@ procedure TCryptImageForm.FillChiperList;
     begin
       Chiper := CipherByIdentity(ClassType.Identity).Create;
       try
-        if Chiper.Context.KeySize > 16 then
+        if Chiper.Context.KeySize * Chiper.Context.BlockSize > 16 then
         begin
           MenuItem.Caption := GetChipperName(Chiper);
           MenuItem.Tag := Integer(Chiper.Identity);
           MenuItem.OnClick := TCryptImageForm(Data).SelectChipperClick;
           TCryptImageForm(Data).PmCryptMethod.Items.Add(MenuItem);
         end;
-        if ClassType.Identity = DBKernel.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity)) then
+        if (TCryptImageForm(Data).PmCryptMethod.Items.Count = 0)
+           or (ClassType.Identity = DBKernel.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity))) then
           MenuItem.Click;
       finally
         Chiper.Free;
@@ -110,36 +103,7 @@ procedure TCryptImageForm.FillChiperList;
   end;
 
 begin
-  TCipher_Blowfish.Register;
-  TCipher_Twofish.Register;
-  TCipher_IDEA.Register;
-  TCipher_CAST256.Register;
-  TCipher_Mars.Register;
-  TCipher_RC4.Register;
-  TCipher_RC6.Register;
-  TCipher_Rijndael.Register;
-  TCipher_Square.Register;
-  TCipher_SCOP.Register;
-  TCipher_Sapphire.Register;
-  TCipher_1DES.Register;
-  TCipher_2DES.Register;
-  TCipher_3DES.Register;
-  TCipher_2DDES.Register;
-  TCipher_3DDES.Register;
-  TCipher_3TDES.Register;
-  TCipher_3Way.Register;
-  TCipher_Cast128.Register;
-  TCipher_Gost.Register;
-  TCipher_Misty.Register;
-  TCipher_NewDES.Register;
-  TCipher_Q128.Register;
-  TCipher_RC2.Register;
-  TCipher_RC5.Register;
-  TCipher_SAFER.Register;
-  TCipher_Shark.Register;
-  TCipher_Skipjack.Register;
-  TCipher_TEA.Register;
-  TCipher_TEAN.Register;
+  StrongCryptInit;
 
   DECEnumClasses(@DoEnumClasses, Self);
   //Set default chipper class

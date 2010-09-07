@@ -7419,7 +7419,7 @@ begin
     Exit;
 
   if FBitmapImageList[Item.ImageIndex].Icon <> nil then
-  ACanvas.Draw(RectArray.IconRect.Left, RectArray.IconRect.Top, FBitmapImageList[Item.ImageIndex].Icon);
+    ACanvas.Draw(RectArray.IconRect.Left, RectArray.IconRect.Top, FBitmapImageList[Item.ImageIndex].Icon);
 end;
 
 procedure TExplorerForm.EasyListview1ItemImageDrawIsCustom(
