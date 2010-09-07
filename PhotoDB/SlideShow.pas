@@ -577,7 +577,7 @@ begin
      begin
       if RealImageWidth*RealImageHeight<>0 then
       begin
-       if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATED_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATED_270) then
+       if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_270) then
        z:=min(fw/RealImageHeight,fh/RealImageWidth) else
        z:=min(fw/RealImageWidth,fh/RealImageHeight);
       end else z:=1;
@@ -674,7 +674,7 @@ begin
      begin
       if RealImageWidth*RealImageHeight<>0 then
       begin
-       if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATED_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATED_270) then
+       if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_270) then
        z:=min(fw/RealImageHeight,fh/RealImageWidth) else
        z:=min(fw/RealImageWidth,fh/RealImageHeight);
       end else z:=1;
@@ -728,7 +728,7 @@ begin
   begin
    if ZoomerOn then z:=RealZoomInc*Zoom else
    begin
-    if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATED_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATED_270) then
+    if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_270) then
     z:=min(fw/RealImageHeight,fh/RealImageWidth) else
     z:=min(fw/RealImageWidth,fh/RealImageHeight);
    end;
@@ -2265,7 +2265,7 @@ begin
  ImageList[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
  IDList[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
  RotateList[0]:=CurrentInfo.ItemRotates[CurrentFileNumber];
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_270,true);
+ RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_270,true);
 
  LockEventRotateFileList.Add(AnsiLowerCase(ImageList[0]));
  Rotate270A(FbImage);
@@ -2287,7 +2287,7 @@ begin
  ImageList[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
  IDList[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
  RotateList[0]:=CurrentInfo.ItemRotates[CurrentFileNumber];
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_90,true);
+ RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_90,true);
 
  LockEventRotateFileList.Add(AnsiLowerCase(ImageList[0]));
 
@@ -2311,7 +2311,7 @@ begin
  ImageList[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
  IDList[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
  RotateList[0]:=CurrentInfo.ItemRotates[CurrentFileNumber];
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_180,true);
+ RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_180,true);
 end;
 
 procedure TViewer.Stretch1Click(Sender: TObject);
@@ -2619,10 +2619,10 @@ begin
  im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas,r,im.Images[SlideNO].Transparent,false);
  if CurrentFileNumber<=Length(CurrentInfo.ItemRotates)-1 then
  case CurrentInfo.ItemRotates[CurrentFileNumber] of
-  DB_IMAGE_ROTATED_0 : FbImage.Assign(AnimatedBuffer);
-  DB_IMAGE_ROTATED_90 : Rotate90(AnimatedBuffer,FbImage);
-  DB_IMAGE_ROTATED_180 : Rotate180(AnimatedBuffer,FbImage);
-  DB_IMAGE_ROTATED_270: Rotate270(AnimatedBuffer,FbImage)
+  DB_IMAGE_ROTATE_0 : FbImage.Assign(AnimatedBuffer);
+  DB_IMAGE_ROTATE_90 : Rotate90(AnimatedBuffer,FbImage);
+  DB_IMAGE_ROTATE_180 : Rotate180(AnimatedBuffer,FbImage);
+  DB_IMAGE_ROTATE_270: Rotate270(AnimatedBuffer,FbImage)
  end;
  RecreateDrawImage(nil);
  ImageFrameTimer.Enabled:=false;

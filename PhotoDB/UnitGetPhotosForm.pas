@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, Language, EXIF, Dolphin_DB,
   acDlgSelect, Math, UnitUpdateDBObject, UnitScanImportPhotosThread,
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
-  UnitDBDeclare, UnitDBFileDialogs;
+  UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon;
 
 type
   TGetImagesOptions = record
@@ -173,7 +173,7 @@ begin
  Files := TStringList.Create;
  MaxFiles:=500;
  FilesSearch:=4;
- GetPhotosNamesFromDrive(Pach,SupportedExt,Files,MaxFiles,FilesSearch);
+ GetPhotosNamesFromDrive(Pach, SupportedExt,Files,MaxFiles,FilesSearch);
  if Files.Count=0 then
  begin
   MaxFiles:=500;

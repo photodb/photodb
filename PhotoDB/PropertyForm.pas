@@ -12,7 +12,7 @@ uses
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading;
+  UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon;
 
 type
  TShowInfoType=(SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, SysUtils, Forms,
   GIFImage, GraphicEx, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
-  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, {jpegdec,} JPEG;
+  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG;
 
 type
   TViewerThread = class(TThread)

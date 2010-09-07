@@ -26,7 +26,7 @@ type
   public
     constructor Create(ScopeNode : IXMLDOMNode);
     destructor Destroy; override;
-    function Translate(Original : string) : string;
+    function Translate(Original: string; out ATranslate : string): Boolean;
     property Scope : string read FScope write FScope;
     property Items[Index : Integer] : TTranslate read GetTranslate; default;
   end;
@@ -40,12 +40,12 @@ type
     function GetLanguage: string;
   protected
     procedure LoadTranslationList;
-    function LocateString(Original, Scope : string) : string;
+    function LocateString(const Original, Scope : string) : string;
   public
     destructor Destroy; override;
     class function Instance : TTranslateManager;
-    function Translate(StringToTranslate: string) : string; overload;
-    function Translate(StringToTranslate, Scope: string) : string; overload;
+    function Translate(const StringToTranslate: string) : string; overload;
+    function Translate(const StringToTranslate, Scope: string) : string; overload;
     property Language : string read GetLanguage;
   end;
 
@@ -117,7 +117,7 @@ begin
   end;
 end;
 
-function TTranslateManager.LocateString(Original, Scope: string): string;
+function TTranslateManager.LocateString(const Original, Scope: string): string;
 var
   I : Integer;
   FScope : TLanguageScope;
@@ -128,18 +128,21 @@ begin
     FScope := TLanguageScope(FTranslateList[I]);
     if FScope.Scope = Scope then
     begin
-      Result := FScope.Translate(Original);
-      Break;
+      if FScope.Translate(Original, Result) then
+        Break
+      else
+        if Scope <> '' then
+          Result := LocateString(Original, '');
     end;
   end;
 end;
 
-function TTranslateManager.Translate(StringToTranslate, Scope: string): string;
+function TTranslateManager.Translate(const StringToTranslate, Scope: string): string;
 begin
   Result := LocateString(StringToTranslate, Scope);
 end;
 
-function TTranslateManager.Translate(StringToTranslate: string): string;
+function TTranslateManager.Translate(const StringToTranslate: string): string;
 begin
   Result := LocateString(StringToTranslate, '');
 end;
@@ -184,18 +187,21 @@ begin
   end;
 end;
 
-function TLanguageScope.Translate(Original: string): string;
+function TLanguageScope.Translate(Original: string; out ATranslate : string): Boolean;
 var
   I : Integer;
   Translate : TTranslate;
 begin
+  Result := False;
+  ATranslate := Original;
   for I := 0 to FTranslateList.Count - 1 do
   begin
     Translate := FTranslateList[I];
     if Translate.FOriginal = Original then
     begin
-      Result := Translate.FTranslate;
-      Break;
+      ATranslate := Translate.FTranslate;
+      Result := True;
+      Exit;
     end;
   end;
 end;

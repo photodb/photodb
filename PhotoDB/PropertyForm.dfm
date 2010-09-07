@@ -221,7 +221,6 @@ object PropertiesForm: TPropertiesForm
     TabFont.Style = []
     TabOrder = 1
     OnChange = TabbedNotebook1Change
-    ExplicitHeight = 376
     object TTabPage
       Left = 4
       Top = 24
@@ -494,7 +493,7 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 296
         Width = 281
-        Height = 45
+        Height = 27
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -503,7 +502,6 @@ object PropertiesForm: TPropertiesForm
         ScrollBars = ssVertical
         TabOrder = 7
         OnChange = CommentMemoChange
-        ExplicitHeight = 49
       end
       object LabelName: TMemo
         Tag = 11
@@ -1300,12 +1298,13 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 8
         Width = 281
-        Height = 327
+        Height = 309
         Anchors = [akLeft, akTop, akRight, akBottom]
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
         TabOrder = 0
         OnContextPopup = ValueListEditor1ContextPopup
         ExplicitWidth = 271
+        ExplicitHeight = 327
         ColWidths = (
           100
           175)
@@ -1396,7 +1395,7 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 48
         Width = 281
-        Height = 287
+        Height = 269
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PopupMenu8
         TabOrder = 1

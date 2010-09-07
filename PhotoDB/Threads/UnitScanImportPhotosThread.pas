@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Messages, Forms, Dolphin_DB, EXIF, RawImage, SysUtils,
-  Language, UnitDBDeclare, DateUtils;
+  Language, UnitDBDeclare, DateUtils, UnitDBCommon;
 
 type
   TScanImportPhotosThreadOptions = record

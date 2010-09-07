@@ -76,9 +76,9 @@ begin
   end;
 
   case Rotate of
-    DB_IMAGE_ROTATED_90: DrawIconEx(Bitmap.Canvas.Handle,  60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_90 + 1], 16, 16, 0, 0, DI_NORMAL);
-    DB_IMAGE_ROTATED_180: DrawIconEx(Bitmap.Canvas.Handle, 60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_180 + 1], 16, 16, 0, 0, DI_NORMAL);
-    DB_IMAGE_ROTATED_270: DrawIconEx(Bitmap.Canvas.Handle, 60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_270 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_90: DrawIconEx(Bitmap.Canvas.Handle,  60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_90 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_180: DrawIconEx(Bitmap.Canvas.Handle, 60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_180 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_270: DrawIconEx(Bitmap.Canvas.Handle, 60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_270 + 1], 16, 16, 0, 0, DI_NORMAL);
   end;
   if Access = db_access_private then
     DrawIconEx(Bitmap.Canvas.Handle, 40 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_PRIVATE + 1], 16, 16, 0, 0, DI_NORMAL);

@@ -423,7 +423,7 @@ begin
           $010F: FMake:=ReadAsci(tag.Offset+off0, tag.Count);
   // Model
           $0110: FModel:=ReadAsci(tag.Offset+off0, tag.Count);
-  // Orientation
+  // Orientatin
           $0112: begin
                    FOrientation:= tag.Offset;
                    if FOrientation in [1..8] then

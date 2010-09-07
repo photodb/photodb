@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SysUtils, CommonDBSupport, DB, Dolphin_DB, win32crc, UnitDBDeclare,
-  uFileUtils;
+  uFileUtils, UnitDBCommon;
 
 type
   TGetNewFilesInFolderThread = class(TThread)

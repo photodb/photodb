@@ -625,7 +625,7 @@ end;
 
 //----------------- filter functions for stretching --------------------------------------------------------------------
 
-function HermiteFilter(Value: Single): Single;
+function HermiteFilter(Value: Single): Single; inline;
 
 // f(t) = 2|t|^3 - 3|t|^2 + 1, -1 <= t <= 1
 
@@ -637,7 +637,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function BoxFilter(Value: Single): Single;
+function BoxFilter(Value: Single): Single; inline;
 
 // This filter is also known as 'nearest neighbour' Filter.
 
@@ -648,7 +648,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TriangleFilter(Value: Single): Single;
+function TriangleFilter(Value: Single): Single; inline;
 
 // aka 'linear' or 'bilinear' filter
 
@@ -660,7 +660,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function BellFilter(Value: Single): Single;
+function BellFilter(Value: Single): Single; inline;
 
 begin
   if Value < 0 then Value := -Value;
@@ -676,7 +676,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function SplineFilter(Value: Single): Single;
+function SplineFilter(Value: Single): Single; inline;
 
 // B-spline filter
 
@@ -701,11 +701,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function Lanczos3Filter(Value: Single): Single;
+function Lanczos3Filter(Value: Single): Single; inline;
 
   //--------------- local function --------------------------------------------
 
-  function SinC(Value: Single): Single;
+  function SinC(Value: Single): Single; inline;
 
   begin
     if Value <> 0 then
@@ -726,7 +726,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function MitchellFilter(Value: Single): Single;
+function MitchellFilter(Value: Single): Single; inline;
 
 const
   B = 1 / 3;

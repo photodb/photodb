@@ -6,7 +6,7 @@ uses
   Registry, UnitInstallThread, acDlgSelect, Dolphin_db, Windows, Messages,
   SysUtils, Variants, Classes, Graphics, Controls, Forms, uVistaFuncs,
   Dialogs, StdCtrls, jpeg, ExtCtrls, DmProgress, CheckLst, Menus, AppEvnts,
-  UnitDBFileDialogs, uConstants, uFileUtils;
+  UnitDBFileDialogs, uConstants, uFileUtils, UnitDBCommon;
 
 type
   TInstallForm = class(TForm)

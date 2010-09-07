@@ -4,42 +4,44 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB, uDBForm,
   Language;
 
 type
- TDBJPEGOptions = record
- ProgressiveMode : boolean;
- Compression : integer;
- end;
+  TDBJPEGOptions = record
+    ProgressiveMode: Boolean;
+    Compression: Integer;
+  end;
 
 type
-  TFormJpegOptions = class(TForm)
-    OK: TButton;
-    Cancel: TButton;
+  TFormJpegOptions = class(TDBForm)
+    BtOK: TButton;
+    BtCancel: TButton;
     Image1: TImage;
-    Label2: TLabel;
-    GroupBox1: TGroupBox;
-    TrackBar1: TTrackBar;
-    CheckBox1: TCheckBox;
-    Label1: TLabel;
-    CheckBox2: TCheckBox;
+    LbInfo: TLabel;
+    GbJPEGOption: TGroupBox;
+    TbCompressionRate: TTrackBar;
+    CbProgressiveMove: TCheckBox;
+    lbCompressionRate: TLabel;
+    CbOptimizeToSize: TCheckBox;
     Edit1: TEdit;
-    Label3: TLabel;
+    LbKb: TLabel;
     procedure FormCreate(Sender: TObject);
-    procedure CancelClick(Sender: TObject);
-    procedure TrackBar1Change(Sender: TObject);
-    procedure OKClick(Sender: TObject);
-    procedure CheckBox2Click(Sender: TObject);
+    procedure BtCancelClick(Sender: TObject);
+    procedure TbCompressionRateChange(Sender: TObject);
+    procedure BtOKClick(Sender: TObject);
+    procedure CbOptimizeToSizeClick(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
   private
-  FSection : String;
+    FSection: string;
     { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
-  procedure LoadLanguage;
-  procedure SetSection(Section : String);
-  procedure Execute(Section : String);
+    procedure LoadLanguage;
+    procedure SetSection(Section: string);
+    procedure Execute(Section: string);
     { Public declarations }
   end;
 
@@ -80,36 +82,41 @@ begin
     Close;
 end;
 
-procedure TFormJpegOptions.CancelClick(Sender: TObject);
+function TFormJpegOptions.GetFormID: string;
+begin
+  Result := 'JPEG';
+end;
+
+procedure TFormJpegOptions.BtCancelClick(Sender: TObject);
 begin
   Close;
 end;
 
-procedure TFormJpegOptions.TrackBar1Change(Sender: TObject);
+procedure TFormJpegOptions.TbCompressionRateChange(Sender: TObject);
 begin
-  Label1.Caption := Format(TEXT_MES_JPEG_COMPRESS, [TrackBar1.Position * 5]);
+  lbCompressionRate.Caption := Format(L('JPEG compression (%d%%):'), [TbCompressionRate.Position * 5]);
 end;
 
-procedure TFormJpegOptions.OKClick(Sender: TObject);
+procedure TFormJpegOptions.BtOKClick(Sender: TObject);
 begin
-  DBKernel.WriteInteger(FSection, 'JPEGCompression', TrackBar1.Position * 5);
-  DBKernel.WriteBool(FSection, 'JPEGProgressiveMode', CheckBox1.Checked);
+  DBKernel.WriteInteger(FSection, 'JPEGCompression', TbCompressionRate.Position * 5);
+  DBKernel.WriteBool(FSection, 'JPEGProgressiveMode', CbProgressiveMove.Checked);
   DBKernel.WriteInteger(FSection, 'JPEGOptimizeSize', StrToIntDef(Edit1.Text, 100));
-  DBKernel.WriteBool(FSection, 'JPEGOptimizeMode', CheckBox2.Checked);
+  DBKernel.WriteBool(FSection, 'JPEGOptimizeMode', CbOptimizeToSize.Checked);
   Close;
 end;
 
 procedure TFormJpegOptions.LoadLanguage;
 begin
-  Caption := TEXT_MES_JPEG_CAPTION;
-  Label2.Caption := TEXT_MES_JPEG_INFO;
-  GroupBox1.Caption := TEXT_MES_JPEG;
-  TrackBar1Change(Self);
-  CheckBox1.Caption := TEXT_MES_JPEG_PROGRESSIVE_MODE;
-  Cancel.Caption := TEXT_MES_CANCEL;
-  Ok.Caption := TEXT_MES_OK;
-  CheckBox2.Caption := TEXT_MES_OPTIMIZE_TO_FILE_SIZE;
-  Label3.Caption := TEXT_MES_KB;
+  Caption := L('JPEG compression');
+  LbInfo.Caption := L('Choose JPEG mode and compression rate:');
+  GbJPEGOption.Caption := L('JPEG');
+  TbCompressionRateChange(Self);
+  CbProgressiveMove.Caption := L('Progressive mode');
+  BtCancel.Caption := L('Cancel');
+  BtOk.Caption := L('Ok');
+  CbOptimizeToSize.Caption := L('Optimize to size:');
+  LbKb.Caption := L('Kb');
 end;
 
 procedure TFormJpegOptions.SetSection(Section: String);
@@ -120,24 +127,24 @@ end;
 procedure TFormJpegOptions.Execute(Section: String);
 begin
   SetSection(Section);
-  TrackBar1.Position := DBKernel.ReadInteger(FSection, 'JPEGCompression', 75) div 5;
-  CheckBox1.Checked := DBKernel.ReadBool(FSection, 'JPEGProgressiveMode', False);
+  TbCompressionRate.Position := DBKernel.ReadInteger(FSection, 'JPEGCompression', 75) div 5;
+  CbProgressiveMove.Checked := DBKernel.ReadBool(FSection, 'JPEGProgressiveMode', False);
   Edit1.Text := IntToStr(DBKernel.ReadInteger(FSection, 'JPEGOptimizeSize', 100));
-  CheckBox2.Checked := DBKernel.ReadBool(FSection, 'JPEGOptimizeMode', False);
-  CheckBox2Click(nil);
+  CbOptimizeToSize.Checked := DBKernel.ReadBool(FSection, 'JPEGOptimizeMode', False);
+  CbOptimizeToSizeClick(nil);
   ShowModal;
 end;
 
-procedure TFormJpegOptions.CheckBox2Click(Sender: TObject);
+procedure TFormJpegOptions.CbOptimizeToSizeClick(Sender: TObject);
 begin
-  Edit1.Enabled := CheckBox2.Checked;
-  TrackBar1.Enabled := not CheckBox2.Checked;
+  Edit1.Enabled := CbOptimizeToSize.Checked;
+  TbCompressionRate.Enabled := not CbOptimizeToSize.Checked;
 end;
 
 procedure TFormJpegOptions.Edit1KeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = Char(VK_RETURN) then
-    OKClick(Sender);
+    BtOKClick(Sender);
 end;
 
 end.

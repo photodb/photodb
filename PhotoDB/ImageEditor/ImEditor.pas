@@ -18,7 +18,7 @@ uses
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
   UnitCrypting, GraphicEx, GraphicsCool, uScript, UnitScripts, PngImage, TiffImageUnit,
   RAWImage, DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
-  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger
+  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, ImageConverting
 {$ENDIF}
   ;
 

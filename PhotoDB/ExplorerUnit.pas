@@ -5345,7 +5345,7 @@ begin
   SetLength(RotateList,Length(RotateList)+1);
   RotateList[Length(RotateList)-1]:=fFilesInfo[index].Rotate;
  end;
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_270);
+ RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_270);
 end;
 
 
@@ -5366,7 +5366,7 @@ begin
   SetLength(RotateList,Length(RotateList)+1);
   RotateList[Length(RotateList)-1]:=fFilesInfo[index].Rotate;
  end;
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_90);
+ RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_90);
 end;
 
 procedure TExplorerForm.Rotateon1801Click(Sender: TObject);
@@ -5386,7 +5386,7 @@ begin
   SetLength(RotateList,Length(RotateList)+1);
   RotateList[Length(RotateList)-1]:=fFilesInfo[index].Rotate;
  end;
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_180);
+ RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_180);
 end;
 
 procedure TExplorerForm.RefreshID1Click(Sender: TObject);
@@ -5759,7 +5759,7 @@ begin
   SetLength(RotateList,Length(RotateList)+1);
   RotateList[Length(RotateList)-1]:=fFilesInfo[index].Rotate;
  end;
- ExportImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_90);
+ ExportImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_90);
 end;
 
 procedure TExplorerForm.PrintLinkClick(Sender: TObject);

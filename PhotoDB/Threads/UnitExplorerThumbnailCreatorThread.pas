@@ -117,7 +117,8 @@ begin
               Password := DBKernel.FindPasswordForCryptImageFile(FFileName);
 
               if Password <> '' then
-                FPic.Graphic:=DeCryptGraphicFile(FFileName, Password)
+                //TODO: Memory leaks!!!
+                FPic.Graphic := DeCryptGraphicFile(FFileName, Password)
               else
                 Exit;
             end else

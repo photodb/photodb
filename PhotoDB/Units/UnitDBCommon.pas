@@ -15,6 +15,11 @@ procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightT
 function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
 function ProgramDir : string;
 
+var
+  RAWImages: string = 'CR2|';
+  TempRAWMask: string = '|THUMB|JPG|TIFF|PBB|';
+  SupportedExt : String = '|BMP|JFIF|JPG|JPE|JPEG|RLE|DIB|WIN|VST|VDA|TGA|ICB|TIFF|TIF|FAX|EPS|PCC|PCX|RPF|RLA|SGI|RGBA|RGB|BW|PSD|PDD|PPM|PGM|PBM|CEL|PIC|PCD|GIF|CUT|PSP|PNG|THM|';
+
 implementation
 
 var

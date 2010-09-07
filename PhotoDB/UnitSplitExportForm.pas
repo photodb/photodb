@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, DropSource, DropTarget, Dolphin_DB,
    Language, acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
-  DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger;
+  DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger,
+  UnitDBCommon;
 
 type
   TSplitExportForm = class(TForm)

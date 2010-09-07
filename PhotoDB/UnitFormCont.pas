@@ -1735,7 +1735,7 @@ begin
   SetLength(RotateList,Length(RotateList)+1);
   RotateList[Length(RotateList)-1]:=Data[i].Rotation;
  end;
- ExportImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATED_90);
+ ExportImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_90);
 end;
 
 procedure TFormCont.ExCopyLinkClick(Sender: TObject);

@@ -74,7 +74,6 @@ const
   CRYPT_OPTIONS_SAVE_CRC = 1;
   PhotoDBFileHeaderID = '.PHDBCRT';
 
-function GetGraphicClass(EXT: string; ToSave: Boolean): TGraphicClass;
 function CryptGraphicFileV2(FileName: string; Password: AnsiString; Options: Integer): Boolean;
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
   LoadFullRAW: Boolean = false; Page: Word = 0): TGraphic;
@@ -95,114 +94,7 @@ procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest : TMemoryS
 
 implementation
 
-uses CommonDBSupport, Dolphin_DB;
-
-function GetGraphicClass(EXT: String; ToSave: Boolean): TGraphicClass;
-begin
-
-  Result := nil;
-
-  if EXT = '' then
-    Exit;
-
-  EXT := StringReplace(EXT, '.', '', [rfReplaceAll]);
-  EXT := AnsiLowerCase(EXT);
-  if EXT = 'bmp' then
-    result := TBitmap
-  else if EXT = 'jpg' then
-    result := TJpegImage
-  else if EXT = 'thm' then
-    result := TJpegImage
-  else if EXT = 'jpeg' then
-    result := TJpegImage
-  else if EXT = 'ico' then
-    result := TIcon
-  else if EXT = 'wmf' then
-    result := TMetaFile
-  else if EXT = 'emf' then
-    result := TMetaFile
-  else if EXT = 'jfif' then
-    result := TJpegImage
-  else if EXT = 'jpe' then
-    result := TJpegImage
-  else if EXT = 'rle' then
-    result := TBitmap
-  else if EXT = 'dib' then
-    result := TBitmap
-{$IFNDEF EXT}
-  else if EXT = 'win' then
-    result := TTargaGraphic
-  else if EXT = 'vst' then
-    result := TTargaGraphic
-  else if EXT = 'vda' then
-    result := TTargaGraphic
-  else if EXT = 'tga' then
-    result := TTargaGraphic
-  else if EXT = 'icb' then
-    result := TTargaGraphic
-  else if EXT = 'tiff' then
-    result := TiffImageUnit.TTIFFGraphic
-  else if EXT = 'tif' then
-    result := TiffImageUnit.TTIFFGraphic
-  else if EXT = 'fax' then
-    result := TiffImageUnit.TTIFFGraphic
-  else if EXT = 'eps' then
-    result := TEPSGraphic
-  else if EXT = 'pcx' then
-    result := TPCXGraphic
-  else if EXT = 'pcc' then
-    result := TPCXGraphic
-  else if EXT = 'scr' then
-    result := TPCXGraphic
-  else if EXT = 'rpf' then
-    result := TRLAGraphic
-  else if EXT = 'rla' then
-    result := TRLAGraphic
-  else if EXT = 'sgi' then
-    result := TSGIGraphic
-  else if EXT = 'rgba' then
-    result := TSGIGraphic
-  else if EXT = 'rgb' then
-    result := TSGIGraphic
-  else if EXT = 'bw' then
-    result := TSGIGraphic
-  else if EXT = 'psd' then
-    result := TPSDGraphic
-  else if EXT = 'pdd' then
-    result := TPSDGraphic
-  else if EXT = 'ppm' then
-    result := TPPMGraphic
-  else if EXT = 'pgm' then
-    result := TPPMGraphic
-  else if EXT = 'pbm' then
-    result := TPPMGraphic
-  else if EXT = 'cel' then
-    result := TAutodeskGraphic
-  else if EXT = 'pic' then
-    result := TAutodeskGraphic
-  else if EXT = 'pcd' then
-    result := TPCDGraphic
-  else if EXT = 'gif' then
-    result := TGIFImage
-  else if EXT = 'cut' then
-    result := TCUTGraphic
-  else if EXT = 'psp' then
-    result := TPSPGraphic
-
-  else if Pos('|' + AnsiUpperCase(EXT) + '|', RAWImages) > -1 then
-    result := TRAWImage
-
-  else if EXT = 'png' then
-  begin
-    if ToSave then
-      result := PngImage.TPNGGraphic
-    else
-      result := GraphicEx.TPNGGraphic;
-  end;
-  // PNG_CAN_SAVE MANUALLY processing
-  // else if Ext = 'png' then begin if PNG_CAN_SAVE then Result := PngImage.TPNGGraphic else  Result := GraphicEx.TPNGGraphic;  end;
-{$ENDIF}
-end;
+uses CommonDBSupport, ImageConverting, Dolphin_DB;
 
 procedure FillCharArray(var CharAray : TFileNameUnicode; Str : String);
 var

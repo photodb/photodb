@@ -4,35 +4,39 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, ImageConverting, Math,uVistaFuncs,
+  Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, ImageConverting, Math, uVistaFuncs,
   JPEG, GIFImage, GraphicEx, Language, UnitDBkernel, GraphicCrypt,
   acDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
-  UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm;
+  UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
+  DmProgress, uW7TaskBar;
 
 type
   TFormSizeResizer = class(TDBForm)
-    DdConvert: TComboBox;
-    BtJPEGOptions: TButton;
     BtOk: TButton;
     BtCancel: TButton;
     BtSaveAsDefault: TButton;
-    Label2: TLabel;
-    EdSavePath: TEdit;
-    BtChangeDirectory: TButton;
-    DdResizeAction: TComboBox;
-    EdWidth: TEdit;
-    EdHeight: TEdit;
-    LbSizeSeparator: TLabel;
-    CbAspectRatio: TCheckBox;
-    CbConvert: TCheckBox;
-    CbAddSuffix: TCheckBox;
-    CbResize: TCheckBox;
-    CbRotate: TCheckBox;
-    DdRotate: TComboBox;
+    LbInfo: TLabel;
     EdImageName: TEdit;
+    ImlWatermarkPatterns: TImageList;
+    LsMain: TLoadingSign;
+    PrbMain: TDmProgress;
+    PnOptions: TPanel;
     CbWatermark: TCheckBox;
     DdeWatermarkPattern: TComboBoxEx;
-    ImlWatermarkPatterns: TImageList;
+    CbConvert: TCheckBox;
+    DdConvert: TComboBox;
+    BtJPEGOptions: TButton;
+    DdRotate: TComboBox;
+    CbRotate: TCheckBox;
+    CbResize: TCheckBox;
+    DdResizeAction: TComboBox;
+    EdWidth: TEdit;
+    LbSizeSeparator: TLabel;
+    EdHeight: TEdit;
+    CbAspectRatio: TCheckBox;
+    CbAddSuffix: TCheckBox;
+    EdSavePath: TEdit;
+    BtChangeDirectory: TButton;
     procedure BtCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtJPEGOptionsClick(Sender: TObject);
@@ -50,6 +54,9 @@ type
     procedure CbWatermarkClick(Sender: TObject);
   private
     FData : TDBPopupMenuInfo;
+    FW7TaskBar : ITaskbarList3;
+    FDataCount : Integer;
+    FProcessingParams : TProcessingParams;
     //My descrioption
     procedure LoadLanguage;
     procedure ProcessImages;
@@ -59,6 +66,7 @@ type
     function GetFormID : string; override;
   public
     procedure SetInfo(List : TDBPopupMenuInfo);
+    procedure ThreadEnd;
     { Public declarations }
   end;
 
@@ -66,7 +74,7 @@ procedure ResizeImages(List : TDBPopupMenuInfo);
 
 implementation
 
-uses UnitJPEGOptions, ProgressActionUnit;
+uses UnitJPEGOptions, uImageConvertThread;
 
 {$R *.dfm}
 
@@ -113,7 +121,7 @@ begin
     DdConvert.Items.Add(Description + '  (' + Mask + ')')
   end;
 
-  //TODO: Edit1.Text:=IntToStr(DBKernel.ReadInteger('Convert options','Width',1024));
+  FW7TaskBar := CreateTaskBarInstance;
 end;
 
 procedure TFormSizeResizer.FormDestroy(Sender: TObject);
@@ -140,62 +148,59 @@ var
   Password, NewEXT, FileName, OldEXT, FileDir, EndDir: string;
   EventInfo: TEventValues;
   B: Boolean;
-  ProgressWindow: TProgressActionForm;
+
+const
+  Rotations : array[-1..3] of Integer = (DB_IMAGE_ROTATE_UNKNOWN, DB_IMAGE_ROTATE_EXIF, DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_180);
+
+  function CheckFileTypes : Boolean;
+  var
+    GraphicClass : TGraphicClass;
+    I : Integer;
+  begin
+    Result := True;
+    for I := 0 to FData.Count - 1 do
+    begin
+      GraphicClass := GetGraphicClass(ExtractFileExt(FData[I].FileName), True);
+      Result := Result and ConvertableImageClass(GraphicClass);
+    end;
+  end;
+
 begin
 
-  if DdConvert.ItemIndex < 0 then
+  if not CheckFileTypes and (DdConvert.ItemIndex < 0) then
   begin
     MessageBoxDB(Handle, TEXT_MES_CHOOSE_FORMAT, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
-    DdConvert.SetFocus;
     Exit;
   end;
 
-{ ProgressWindow:=GetProgressWindow;
- ProgressWindow.OneOperation:=false;
- ProgressWindow.OperationCount:=1;
- ProgressWindow.OperationPosition:=1;
- ProgressWindow.MaxPosCurrentOperation:=Length(FImageList);
- ProgressWindow.xPosition:=0;
- ProgressWindow.Show;
- Hide;
- Application.ProcessMessages;
+  //change form state
+  PnOptions.Hide;
+  BtSaveAsDefault.Hide;
+  BtOk.Hide;
+  PrbMain.Top := BtCancel.Top - BtCancel.Height - 5;
+  PrbMain.Show;
+  EdImageName.Top := PrbMain.Top - EdImageName.Height - 5;
+  BtCancel.Left := PrbMain.Left + PrbMain.Width - BtCancel.Width;
+  ClientHeight := ClientHeight - PnOptions.Height - 5;
 
- ImageSizeW:=0;
- ImageSizeH:=0;
- if RadioButton01.Checked then
- begin
-  ImageSizeW:=100;
-  ImageSizeH:=100;
- end;
- if RadioButton02.Checked then
- begin
-  ImageSizeW:=200;
-  ImageSizeH:=200;
- end;
- if RadioButton03.Checked then
- begin
-  ImageSizeW:=800;
-  ImageSizeH:=600;
- end;
- if RadioButton03.Checked then
- begin
-  ImageSizeW:=800;
-  ImageSizeH:=600;
- end;
- if RadioButton04.Checked then
- begin
-  ImageSizeW:=StrToIntDef(Edit1.Text,100);
-  ImageSizeH:=StrToIntDef(Edit2.Text,100);
- end;
- if RadioButton05.Checked then
- begin
-  ImageSizeW:=0;
-  ImageSizeH:=0;
- end;
+  //init progress
+  LsMain.Show;
+  FDataCount := FData.Count;
+  if FW7TaskBar <> nil then
+  begin
+    FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+    FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);
+  end;
+  PrbMain.MaxValue := FDataCount;
+
+  FProcessingParams.Rotation := Rotations[DdRotate.ItemIndex];
+
+  for I := 1 to Min(FData.Count, ProcessorCount) do
+    TImageConvertThread.Create(Self, FData.Extract(0), FProcessingParams);
+
+{
  for i:=0 to Length(FImageList)-1 do
  begin
-  ProgressWindow.xPosition:=i+1;
-  Application.ProcessMessages;
   if RadioButton1.Checked then
   begin
    OldEXT:=AnsiLowerCase(GetExt(FImageList[i]));
@@ -291,11 +296,6 @@ begin
      (NewGraphic as TJPEGImage).ProgressiveEncoding:=DBKernel.ReadBool('','JPEGProgressiveMode',false);
     end;
 
-
-
-
-
-
     b:=false;
     Repeat
      j:=1;
@@ -334,15 +334,6 @@ begin
      end;
     until j=1;
     if b then continue;
-
-
-
-
-
-
-
-
-
 
     NewGraphic.free;
     try
@@ -439,8 +430,6 @@ begin
   except
   end;
  end;
- ProgressWindow.Release;
- ProgressWindow.Free;
  Close;          }
 end;
 
@@ -450,6 +439,18 @@ var
 begin
   for I := 0 to List.Count - 1 do
     FData.Add(List[I].Copy);
+end;
+
+procedure TFormSizeResizer.ThreadEnd;
+begin
+  PrbMain.Position := FDataCount - FData.Count;
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);
+
+  if FData.Count > 0 then
+    TImageConvertThread.Create(Self, FData.Extract(0), FProcessingParams)
+  else
+    Close;
 end;
 
 procedure TFormSizeResizer.BtSaveAsDefaultClick(Sender: TObject);
@@ -513,35 +514,40 @@ end;
 procedure TFormSizeResizer.LoadLanguage;
 begin
   Caption := L('Change Image');
-  Label2.Caption := TEXT_MES_CHANGE_SIZE_INFO;
-  CbResize.Caption := TEXT_MES_CHANGE_SIZE;
+  LbInfo.Caption := L('You can change image size, convert image to another format, rotate image and add custom watermark.');
 
   CbWatermark.Caption := L('Add Watermark');
+  CbConvert.Caption := L('Convert');
 
-  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_SMALL);
-  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_MEDIUM);
-  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_LARGE);
-  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_THUMBNAILS);
-  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_POCKET_PC);
-  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [25]));
-  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [50]));
-  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [75]));
-  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [150]));
-  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [200]));
-  DdResizeAction.Items.Add(Format(TEXT_MES_CHANGE_SIZE_RESIZE_TO, [400]));
-  DdResizeAction.Items.Add(TEXT_MES_CHANGE_SIZE_CUSTOM);
+  CbResize.Caption := L('Resize');
+  DdResizeAction.Items.Add(L('Small (640x480)'));
+  DdResizeAction.Items.Add(L('Medium (800x600)'));
+  DdResizeAction.Items.Add(L('Big (1024x768)'));
+  DdResizeAction.Items.Add(L('Thumbnails (128x124)'));
+  DdResizeAction.Items.Add(L('Pocket PC (240õ320)'));
+  DdResizeAction.Items.Add(Format(L('Size: %d%%'), [25]));
+  DdResizeAction.Items.Add(Format(L('Size: %d%%'), [50]));
+  DdResizeAction.Items.Add(Format(L('Size: %d%%'), [75]));
+  DdResizeAction.Items.Add(Format(L('Size: %d%%'), [150]));
+  DdResizeAction.Items.Add(Format(L('Size: %d%%'), [200]));
+  DdResizeAction.Items.Add(Format(L('Size: %d%%'), [400]));
+  DdResizeAction.Items.Add(L('Custom size:'));
 
-  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_EXIF);
-  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_LEFT);
-  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_RIGHT);
-  DdRotate.Items.Add(TEXT_MES_IM_ROTATE_180);
+  CbRotate.Caption := L('Rotate');
+  DdRotate.Items.Add(L('By EXIF'));
+  DdRotate.Items.Add(L('Left'));
+  DdRotate.Items.Add(L('Right'));
+  DdRotate.Items.Add(L('180 grad'));
 
-  CbAspectRatio.Caption := TEXT_MES_SAVE_ASPECT_RATIO;
-  CbConvert.Caption := TEXT_MES_CONVERT_TO;
-  BtJPEGOptions.Caption := TEXT_MES_JPEG_OPTIONS;
-  BtSaveAsDefault.Caption := TEXT_MES_SAVE_SETTINGS_BY_DEFAULT;
-  BtCancel.Caption := TEXT_MES_CANCEL;
-  BtOk.Caption := TEXT_MES_OK;
+  CbAspectRatio.Caption := L('Save aspect ratio');
+  CbAddSuffix.Caption := L('Add filename suffix');
+  BtJPEGOptions.Caption := L('JPEG Options');
+  BtSaveAsDefault.Caption := L('Save settings by default');
+
+  PrbMain.Text := L('Processing... (&%%)');
+
+  BtCancel.Caption := L('Cancel');
+  BtOk.Caption := L('Ok');
 end;
 
 procedure TFormSizeResizer.ProcessImages;
@@ -551,7 +557,7 @@ end;
 
 procedure TFormSizeResizer.EdHeightKeyPress(Sender: TObject; var Key: Char);
 begin
-  if not (Key in ['0'..'9']) then
+  if not CharInSet(Key, ['0'..'9']) then
     Key := #0;
 end;
 

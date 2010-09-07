@@ -4,13 +4,14 @@ interface
 
 uses Windows, Classes, SysUtils, ACLApi, AccCtrl,  ShlObj, ActiveX, uConstants,
      VRSIShortCuts;
-                                                
-function GetAppDataDirectory: string; 
-function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string; 
+
+function GetAppDataDirectory: string;
+function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
 function FileExistsEx(const FileName :TFileName) :Boolean;
 procedure UnFormatDir(var FileName : string);
 procedure FormatDir(var FileName : string);
 function GetFileDateTime(FileName: string): TDateTime;
+function GetFileNameWithoutExt(FileName: string): string;
 
 implementation
 
@@ -30,6 +31,34 @@ begin
     FileName := FileName + '\'
 end;
 
+function GetFileNameWithoutExt(FileName: string): string;
+var
+  I, N: Integer;
+begin
+  Result := '';
+  if Filename = '' then
+    Exit;
+  N := 0;
+  for I := Length(Filename) - 1 downto 1 do
+    if Filename[I] = '\' then
+    begin
+      N := I;
+      Break;
+    end;
+  Delete(Filename, 1, N);
+  if Filename <> '' then
+    if Filename[Length(Filename)] = '\' then
+      Delete(Filename, Length(Filename), 1);
+  for I := Length(Filename) downto 1 do
+  begin
+    if Filename[I] = '.' then
+    begin
+      FileName := Copy(Filename, 1, I - 1);
+      Break;
+    end;
+  end;
+  Result := FileName;
+end;
 
 function FileExistsEx(const FileName :TFileName) : Boolean;
 var

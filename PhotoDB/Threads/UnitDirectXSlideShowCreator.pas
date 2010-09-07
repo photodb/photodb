@@ -221,7 +221,7 @@ begin
   w:=Image.Width;
   h:=Image.Height;
   Case FInfo.Rotate of
-   DB_IMAGE_ROTATED_0 :
+   DB_IMAGE_ROTATE_0 :
     begin
      ProportionalSize(Screen.Width,Screen.Height,w,h);
      if Image.Width<>0 then
@@ -241,17 +241,17 @@ begin
      end;
 
     end;
-   DB_IMAGE_ROTATED_270 :
+   DB_IMAGE_ROTATE_270 :
     begin
      ProportionalSize(Screen.Width,Screen.Height,h,w);
      StretchCoolEx270(Screen.Width div 2-h div 2, Screen.Height div 2-w div 2,w,h,Image,ScreenImage,$000000)
     end;
-   DB_IMAGE_ROTATED_90 :
+   DB_IMAGE_ROTATE_90 :
     begin
      ProportionalSize(Screen.Width,Screen.Height,h,w);
      StretchCoolEx90(Screen.Width div 2-h div 2, Screen.Height div 2-w div 2,w,h,Image,ScreenImage,$000000)
     end;
-   DB_IMAGE_ROTATED_180 :
+   DB_IMAGE_ROTATE_180 :
     begin
      ProportionalSize(Screen.Width,Screen.Height,w,h);
      StretchCoolEx180(Screen.Width div 2-w div 2, Screen.Height div 2-h div 2,w,h,Image,ScreenImage,$000000)

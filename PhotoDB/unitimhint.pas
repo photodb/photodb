@@ -113,9 +113,9 @@ begin
  end;
  Dec(sm,20);
  Case fInfo.ItemRotate of
-  DB_IMAGE_ROTATED_90: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_180: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_270: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATE_90: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATE_180: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATE_270: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
  else Inc(sm,20);
  end;
  Dec(sm,20);
@@ -204,7 +204,7 @@ begin
    end;
  end else
  begin
-  if (Info.ItemRotate=DB_IMAGE_ROTATED_0) or (Info.ItemRotate=DB_IMAGE_ROTATED_180) then
+  if (Info.ItemRotate=DB_IMAGE_ROTATE_0) or (Info.ItemRotate=DB_IMAGE_ROTATE_180) then
   begin
    ww:=G.width;
    hh:=G.height;
@@ -669,18 +669,18 @@ begin
  if FTransparent then
  begin
   case CurrentInfo.ItemRotate of
-    DB_IMAGE_ROTATED_0: StretchCoolEx0(1,1,DoubleBuffer.Width-2,DoubleBuffer.Height-2,AnimatedBuffer,DoubleBuffer,0);
-    DB_IMAGE_ROTATED_90: StretchCoolEx90(1,1,DoubleBuffer.Height-2,DoubleBuffer.Width-2,AnimatedBuffer,DoubleBuffer,0);
-    DB_IMAGE_ROTATED_180: StretchCoolEx180(1,1,DoubleBuffer.Width-2,DoubleBuffer.Height-2,AnimatedBuffer,DoubleBuffer,0);
-    DB_IMAGE_ROTATED_270: StretchCoolEx270(1,1,DoubleBuffer.Height-2,DoubleBuffer.Width-2,AnimatedBuffer,DoubleBuffer,0);
+    DB_IMAGE_ROTATE_0: StretchCoolEx0(1,1,DoubleBuffer.Width-2,DoubleBuffer.Height-2,AnimatedBuffer,DoubleBuffer,0);
+    DB_IMAGE_ROTATE_90: StretchCoolEx90(1,1,DoubleBuffer.Height-2,DoubleBuffer.Width-2,AnimatedBuffer,DoubleBuffer,0);
+    DB_IMAGE_ROTATE_180: StretchCoolEx180(1,1,DoubleBuffer.Width-2,DoubleBuffer.Height-2,AnimatedBuffer,DoubleBuffer,0);
+    DB_IMAGE_ROTATE_270: StretchCoolEx270(1,1,DoubleBuffer.Height-2,DoubleBuffer.Width-2,AnimatedBuffer,DoubleBuffer,0);
   end;
  end else
  begin
   case CurrentInfo.ItemRotate of
-    DB_IMAGE_ROTATED_0: StretchCoolEx0(0,0,DoubleBuffer.Width,DoubleBuffer.Height,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATED_90: StretchCoolEx90(0,0,DoubleBuffer.Height,DoubleBuffer.Width,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATED_180: StretchCoolEx180(0,0,DoubleBuffer.Width,DoubleBuffer.Height,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATED_270: StretchCoolEx270(0,0,DoubleBuffer.Height,DoubleBuffer.Width,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_0: StretchCoolEx0(0,0,DoubleBuffer.Width,DoubleBuffer.Height,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_90: StretchCoolEx90(0,0,DoubleBuffer.Height,DoubleBuffer.Width,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_180: StretchCoolEx180(0,0,DoubleBuffer.Width,DoubleBuffer.Height,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_270: StretchCoolEx270(0,0,DoubleBuffer.Height,DoubleBuffer.Width,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
   end;
  end;
 

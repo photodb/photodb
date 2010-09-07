@@ -6,7 +6,7 @@ uses
    ReplaceForm, UnitDBKernel, Windows, dolphin_db, Classes, UnitUpdateDB, Forms,
   SysUtils, DB, GraphicCrypt, dialogs, Exif, DateUtils, CommonDBSupport,
   win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
-  UnitDBDeclare;
+  UnitDBDeclare, UnitDBCommon;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -99,7 +99,7 @@ type
     CryptFileWithoutPassChecked : Boolean;
     fAutoAnswer : integer = -1;
 
-function SQL_AddFileToDB(Path : string; Crypted : boolean; JPEG : TJpegImage; ImTh, KeyWords, Comment, Password : String; OrWidth, OrHeight : integer; var Date, Time : TDateTime; var IsTime : Boolean; Rating : integer = 0; Rotated : integer = DB_IMAGE_ROTATED_0; Links : string = ''; Access : integer = 0; Groups : string = '') : boolean;
+function SQL_AddFileToDB(Path : string; Crypted : boolean; JPEG : TJpegImage; ImTh, KeyWords, Comment, Password : String; OrWidth, OrHeight : integer; var Date, Time : TDateTime; var IsTime : Boolean; Rating : integer = 0; Rotated : integer = DB_IMAGE_ROTATE_0; Links : string = ''; Access : integer = 0; Groups : string = '') : boolean;
 
 implementation
 
@@ -141,7 +141,7 @@ begin
   if Assigned(FOnDone) then FOnDone(Self);
 end;
 
-function SQL_AddFileToDB(Path : string; Crypted : boolean; JPEG : TJpegImage; ImTh, KeyWords, Comment, Password : String; OrWidth, OrHeight : integer; var Date, Time : TDateTime; var IsTime : Boolean; Rating : integer = 0; Rotated : integer = DB_IMAGE_ROTATED_0; Links : string = ''; Access : integer = 0; Groups : string = '') : boolean;
+function SQL_AddFileToDB(Path : string; Crypted : boolean; JPEG : TJpegImage; ImTh, KeyWords, Comment, Password : String; OrWidth, OrHeight : integer; var Date, Time : TDateTime; var IsTime : Boolean; Rating : integer = 0; Rotated : integer = DB_IMAGE_ROTATE_0; Links : string = ''; Access : integer = 0; Groups : string = '') : boolean;
 var
   Exif : TExif;
   sql, mdbfields, mdbvalues : string;
@@ -179,6 +179,7 @@ begin
    Exif.ReadFromFile(Path);
    Date:=Exif.Date;
    Time:=Exif.Time;
+   Rotated := ExifOrientationToRatation(Exif.Orientation);
   except
   end;
   Exif.Free;
@@ -520,7 +521,7 @@ begin
      if res.UsedFileNameSearch then
      begin
       if res.ChangedRotate[0] then
-      SetRotate(res.ids[0],DB_IMAGE_ROTATED_0);
+      SetRotate(res.ids[0],DB_IMAGE_ROTATE_0);
       Synchronize(UpdateCurrent);
      end;
      DoEventReplace(res.ids[0],FFiles[FileNumber]);

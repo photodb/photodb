@@ -161,55 +161,55 @@ object FormJpegOptions: TFormJpegOptions
       0000001F0000003F0000003F0000003F0000003F0000003F0000007F0000007F
       000000FF}
   end
-  object Label2: TLabel
+  object LbInfo: TLabel
     Left = 64
     Top = 8
-    Width = 161
+    Width = 181
     Height = 49
     AutoSize = False
     Caption = 'Select JPEG compress options:'
     WordWrap = True
   end
-  object Label3: TLabel
+  object LbKb: TLabel
     Left = 209
     Top = 101
     Width = 33
     Height = 13
     Caption = 'KBytes'
   end
-  object OK: TButton
+  object BtOK: TButton
     Left = 168
     Top = 240
     Width = 75
     Height = 25
     Caption = 'OK'
     TabOrder = 0
-    OnClick = OKClick
+    OnClick = BtOKClick
   end
-  object Cancel: TButton
+  object BtCancel: TButton
     Left = 88
     Top = 240
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 1
-    OnClick = CancelClick
+    OnClick = BtCancelClick
   end
-  object GroupBox1: TGroupBox
+  object GbJPEGOption: TGroupBox
     Left = 8
     Top = 128
     Width = 241
     Height = 105
     Caption = 'JPEG'
     TabOrder = 2
-    object Label1: TLabel
+    object lbCompressionRate: TLabel
       Left = 8
       Top = 16
       Width = 119
       Height = 13
       Caption = 'JPEG Compression (75%)'
     end
-    object TrackBar1: TTrackBar
+    object TbCompressionRate: TTrackBar
       Left = 8
       Top = 32
       Width = 225
@@ -217,9 +217,9 @@ object FormJpegOptions: TFormJpegOptions
       Max = 20
       Position = 15
       TabOrder = 0
-      OnChange = TrackBar1Change
+      OnChange = TbCompressionRateChange
     end
-    object CheckBox1: TCheckBox
+    object CbProgressiveMove: TCheckBox
       Left = 8
       Top = 72
       Width = 217
@@ -228,14 +228,14 @@ object FormJpegOptions: TFormJpegOptions
       TabOrder = 1
     end
   end
-  object CheckBox2: TCheckBox
+  object CbOptimizeToSize: TCheckBox
     Left = 8
     Top = 72
     Width = 241
     Height = 17
     Caption = 'Optimize to File Size'
     TabOrder = 3
-    OnClick = CheckBox2Click
+    OnClick = CbOptimizeToSizeClick
   end
   object Edit1: TEdit
     Left = 8

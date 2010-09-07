@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, ActiveX, CommonDBSupport, DB, Forms,
-  UnitGroupsWork, uVistaFuncs, Dolphin_DB, UnitDBDeclare;
+  UnitGroupsWork, uVistaFuncs, Dolphin_DB, UnitDBDeclare, uFileUtils;
 
 type
   TConvertDBThread = class(TThread)
@@ -179,7 +179,7 @@ begin
 
  FFileName:=SysUtils.StringReplace(FFileName,'$','',[rfReplaceAll]);
 
- NewFileName:=GetDirectory(FFileName)+Dolphin_Db.GetFileNameWithoutExt(FFileName);
+ NewFileName:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName);
  if FToMDB then NewFileName:=NewFileName+'.photodb' else
  NewFileName:=NewFileName+'.db';
 

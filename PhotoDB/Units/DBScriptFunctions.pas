@@ -5,7 +5,8 @@ interface
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      ReplaseLanguageInScript, Forms, Classes, SysUtils, Registry, GraphicCrypt,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
-     Math, uScript, UnitCDMappingSupport, uFileUtils;
+     Math, uScript, UnitCDMappingSupport, uFileUtils, ImageConverting,
+     UnitDBCommon;
 
 procedure DoActivation;
 procedure GetUpdates(ShowInfo : boolean);

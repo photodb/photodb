@@ -11,7 +11,7 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants, uList64,
-      UnitLinksSupport, EasyListView, ExplorerTypes;
+      UnitLinksSupport, EasyListView, ExplorerTypes, ImageConverting;
 
 const
   DBInDebug = True;
@@ -62,10 +62,12 @@ const
 
 const
 
-  DB_IMAGE_ROTATED_0 = 0;
-  DB_IMAGE_ROTATED_90 = 1;
-  DB_IMAGE_ROTATED_180 = 2;
-  DB_IMAGE_ROTATED_270 = 3;
+  DB_IMAGE_ROTATE_UNKNOWN = -1;
+  DB_IMAGE_ROTATE_0       = 0;
+  DB_IMAGE_ROTATE_90      = 1;
+  DB_IMAGE_ROTATE_180     = 2;
+  DB_IMAGE_ROTATE_270     = 3;
+  DB_IMAGE_ROTATE_EXIF    = 4;
 
   Result_Invalid                    = -1;
   Result_Add                        =  0;
@@ -194,6 +196,7 @@ type
     destructor Destroy; override;
     procedure Add(MenuRecord: TDBPopupMenuInfoRecord);
     procedure Clear;
+    function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
     property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex; default;
     property IsListItem: Boolean read FIsListItem write FIsListItem;
     property AttrExists: Boolean read FAttrExists write FAttrExists;
@@ -448,6 +451,11 @@ type
     RightEffective: Byte;
   end;
 
+  TProcessingParams = record
+    Rotation : Integer;
+  end;
+
+
 const
   CSIDL_COMMON_APPDATA = $0023;
   CSIDL_MYMUSIC = $0013;
@@ -493,11 +501,6 @@ const
   ProgramShortCutFile_2_1 = ProductName_2_1 + '.lnk';
   HelpShortCutFile_2_1 = TEXT_MES_HELP + '.lnk';
   // [END]
-
-var
-  RAWImages: string = 'CR2|';
-  TempRAWMask: string = '|THUMB|JPG|TIFF|PBB|';
-  SupportedExt : String = '|BMP|JFIF|JPG|JPE|JPEG|RLE|DIB|WIN|VST|VDA|TGA|ICB|TIFF|TIF|FAX|EPS|PCC|PCX|RPF|RLA|SGI|RGBA|RGB|BW|PSD|PDD|PPM|PGM|PBM|CEL|PIC|PCD|GIF|CUT|PSP|PNG|THM|';
 
 const
   DBID = '{E1446065-CB87-440D-9315-6FA356F921B6}'; // B5
@@ -688,9 +691,7 @@ function SidToStr(Sid: PSID): WideString;
 function GetDirectory(FileName: string): string;
 function ExtinMask(Mask: string; Ext: string): Boolean;
 
-function GetFileNameWithoutExt(Filename: string): string;
 function GetFileSize(FileName: string): Int64;
-// function GetCPUSpeed(interval:integer):real;
 
 function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
@@ -765,6 +766,7 @@ function ReadTextFileInString(FileName: string): string;
 function CompareImagesByGistogramm(Image1, Image2: TBitmap): Byte;
 procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
 function CenterPos(W1, W2: Integer): Integer;
+function ExifOrientationToRatation(Orientation : Integer) : Integer;
 
 var
   GetAnyValidDBFileInProgramFolderCounter: Integer;
@@ -775,6 +777,16 @@ uses UnitPasswordForm, UnitWindowsCopyFilesThread,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
   UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit;
+
+function ExifOrientationToRatation(Orientation : Integer) : Integer;
+const
+  Orientations : array[1..9] of Integer = (0, 0, 2, 2, 3, 3, 1, 1, 0);
+begin
+  if Orientation in [1..9] then
+    Result := Orientations[Orientation]
+  else
+    Result := 0;
+end;
 
 function CenterPos(W1, W2: Integer): Integer;
 begin
@@ -1072,33 +1084,6 @@ begin
  end;
 end;
 
-function GetFileNameWithoutExt(filename : string) : string;
-var
-  i, n : integer;
-begin
- Result:='';
- If filename='' then exit;
- n:=0;
- for i:=length(filename)-1 downto 1 do
- If filename[i]='\' then
- begin
-  n:=i;
-  break;
- end;
- delete(filename,1,n);
- If filename<>'' then
- If filename[Length(filename)]='\' then
- Delete(filename,Length(filename),1);
- For i:=Length(filename) Downto 1 do
- begin
-  if filename[i]='.' then
-  begin
-   FileName:=Copy(filename,1,i-1);
-   Break;
-  end;
- end;
- Result:=FileName;
-end;
 
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
 var
@@ -4538,14 +4523,14 @@ begin
   if ID <> 0 then
   begin
     case OldRotation of
-      DB_IMAGE_ROTATED_0:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_270;
-      DB_IMAGE_ROTATED_90:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_0;
-      DB_IMAGE_ROTATED_180:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_90;
-      DB_IMAGE_ROTATED_270:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_180;
+      DB_IMAGE_ROTATE_0:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_270;
+      DB_IMAGE_ROTATE_90:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_0;
+      DB_IMAGE_ROTATE_180:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_90;
+      DB_IMAGE_ROTATE_270:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_180;
     end;
     SetRotate(ID, EventInfo.Rotate);
     DBKernel.DoIDEvent(nil, ID, [EventID_Param_Rotate], EventInfo);
@@ -4559,14 +4544,14 @@ begin
   if ID <> 0 then
   begin
     case OldRotation of
-      DB_IMAGE_ROTATED_0:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_90;
-      DB_IMAGE_ROTATED_90:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_180;
-      DB_IMAGE_ROTATED_180:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_270;
-      DB_IMAGE_ROTATED_270:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_0;
+      DB_IMAGE_ROTATE_0:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_90;
+      DB_IMAGE_ROTATE_90:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_180;
+      DB_IMAGE_ROTATE_180:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_270;
+      DB_IMAGE_ROTATE_270:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_0;
     end;
     SetRotate(ID, EventInfo.Rotate);
     DBKernel.DoIDEvent(nil, ID, [EventID_Param_Rotate], EventInfo);
@@ -4580,14 +4565,14 @@ begin
   if ID <> 0 then
   begin
     case OldRotation of
-      DB_IMAGE_ROTATED_0:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_180;
-      DB_IMAGE_ROTATED_90:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_270;
-      DB_IMAGE_ROTATED_180:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_0;
-      DB_IMAGE_ROTATED_270:
-        EventInfo.Rotate := DB_IMAGE_ROTATED_90;
+      DB_IMAGE_ROTATE_0:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_180;
+      DB_IMAGE_ROTATE_90:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_270;
+      DB_IMAGE_ROTATE_180:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_0;
+      DB_IMAGE_ROTATE_270:
+        EventInfo.Rotate := DB_IMAGE_ROTATE_90;
     end;
     SetRotate(ID, EventInfo.Rotate);
     DBKernel.DoIDEvent(nil, ID, [EventID_Param_Rotate], EventInfo);
@@ -6478,25 +6463,25 @@ end;
       DB_IMAGE_ROTATED_180 = 2;
       DB_IMAGE_ROTATED_270 = 3;
       }
-    ROT[DB_IMAGE_ROTATED_0, DB_IMAGE_ROTATED_0] := DB_IMAGE_ROTATED_0;
-    ROT[DB_IMAGE_ROTATED_0, DB_IMAGE_ROTATED_90] := DB_IMAGE_ROTATED_90;
-    ROT[DB_IMAGE_ROTATED_0, DB_IMAGE_ROTATED_180] := DB_IMAGE_ROTATED_180;
-    ROT[DB_IMAGE_ROTATED_0, DB_IMAGE_ROTATED_270] := DB_IMAGE_ROTATED_270;
+    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_0;
+    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_90;
+    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_180;
+    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_270;
 
-    ROT[DB_IMAGE_ROTATED_90, DB_IMAGE_ROTATED_0] := DB_IMAGE_ROTATED_270;
-    ROT[DB_IMAGE_ROTATED_90, DB_IMAGE_ROTATED_90] := DB_IMAGE_ROTATED_0;
-    ROT[DB_IMAGE_ROTATED_90, DB_IMAGE_ROTATED_180] := DB_IMAGE_ROTATED_90;
-    ROT[DB_IMAGE_ROTATED_90, DB_IMAGE_ROTATED_270] := DB_IMAGE_ROTATED_180;
+    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_270;
+    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_0;
+    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_90;
+    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_180;
 
-    ROT[DB_IMAGE_ROTATED_180, DB_IMAGE_ROTATED_0] := DB_IMAGE_ROTATED_180;
-    ROT[DB_IMAGE_ROTATED_180, DB_IMAGE_ROTATED_90] := DB_IMAGE_ROTATED_270;
-    ROT[DB_IMAGE_ROTATED_180, DB_IMAGE_ROTATED_180] := DB_IMAGE_ROTATED_0;
-    ROT[DB_IMAGE_ROTATED_180, DB_IMAGE_ROTATED_270] := DB_IMAGE_ROTATED_90;
+    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_180;
+    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_270;
+    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_0;
+    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_90;
 
-    ROT[DB_IMAGE_ROTATED_270, DB_IMAGE_ROTATED_0] := DB_IMAGE_ROTATED_90;
-    ROT[DB_IMAGE_ROTATED_270, DB_IMAGE_ROTATED_90] := DB_IMAGE_ROTATED_180;
-    ROT[DB_IMAGE_ROTATED_270, DB_IMAGE_ROTATED_180] := DB_IMAGE_ROTATED_270;
-    ROT[DB_IMAGE_ROTATED_270, DB_IMAGE_ROTATED_270] := DB_IMAGE_ROTATED_0;
+    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_90;
+    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_180;
+    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_270;
+    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_0;
 
     Result := ROT[OldRotation, NewRotation];
   end;
@@ -6551,11 +6536,11 @@ end;
   procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
   begin
     case RotateValue of
-      DB_IMAGE_ROTATED_270:
+      DB_IMAGE_ROTATE_270:
         Rotate270A(Bitmap);
-      DB_IMAGE_ROTATED_90:
+      DB_IMAGE_ROTATE_90:
         Rotate90A(Bitmap);
-      DB_IMAGE_ROTATED_180:
+      DB_IMAGE_ROTATE_180:
         Rotate180A(Bitmap);
     end;
   end;
@@ -6588,7 +6573,13 @@ end;
     inherited;
   end;
 
-  function TDBPopupMenuInfo.GetCommonGroups: string;
+  function TDBPopupMenuInfo.Extract(Index: Integer): TDBPopupMenuInfoRecord;
+begin
+  Result := FData[Index];
+  FData.Delete(Index);
+end;
+
+function TDBPopupMenuInfo.GetCommonGroups: string;
   var
     SL: TStringList;
     I: Integer;

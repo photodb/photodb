@@ -66,9 +66,9 @@ begin
  Application.CreateForm(TFormRotateImages, FormRotateImages);
  FormRotateImages.GetFileList(ImageList,IDList,RotateList, Viewer);
  Case BeginRotate of
-   DB_IMAGE_ROTATED_270  : FormRotateImages.RadioButton01.Checked:=true;
-   DB_IMAGE_ROTATED_90 : FormRotateImages.RadioButton02.Checked:=true;
-   DB_IMAGE_ROTATED_180 : FormRotateImages.RadioButton03.Checked:=true;
+   DB_IMAGE_ROTATE_270  : FormRotateImages.RadioButton01.Checked:=true;
+   DB_IMAGE_ROTATE_90 : FormRotateImages.RadioButton02.Checked:=true;
+   DB_IMAGE_ROTATE_180 : FormRotateImages.RadioButton03.Checked:=true;
  end;
  v:=false;
  for i:=0 to Length(IDList)-1 do

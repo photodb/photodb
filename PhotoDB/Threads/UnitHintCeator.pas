@@ -6,7 +6,7 @@ uses
   dolphin_db, UnitDBKernel, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, RAWImage,
-  ExtCtrls, jpeg, db, GraphicCrypt, UnitDBCommon;
+  ExtCtrls, jpeg, db, GraphicCrypt, UnitDBCommon, ImageConverting;
 
 type
   HintCeator = class(TThread)
@@ -93,9 +93,9 @@ begin
  end;
  Dec(sm,20);
  Case fInfo.ItemRotate of
-  DB_IMAGE_ROTATED_90: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_180: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATED_270: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATE_90: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATE_180: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
+  DB_IMAGE_ROTATE_270: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
  else Inc(sm,20);
  end;
  Dec(sm,20);

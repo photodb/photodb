@@ -5,13 +5,13 @@ interface
 uses Math, Windows, Graphics, SysUtils, GraphicsBaseTypes, uMath;
 
   // Sample filters for use with Stretch()
-  function SplineFilter(Value: Single): Single;
-  function BellFilter(Value: Single): Single;
-  function TriangleFilter(Value: Single): Single;
-  function BoxFilter(Value: Single): Single;
-  function HermiteFilter(Value: Single): Single;
-  function Lanczos3Filter(Value: Single): Single;
-  function MitchellFilter(Value: Single): Single;
+  function SplineFilter(Value: Single): Single; inline;
+  function BellFilter(Value: Single): Single; inline;
+  function TriangleFilter(Value: Single): Single; inline;
+  function BoxFilter(Value: Single): Single; inline;
+  function HermiteFilter(Value: Single): Single; inline;
+  function Lanczos3Filter(Value: Single): Single; inline;
+  function MitchellFilter(Value: Single): Single; inline;
 
 {$DEFINE USE_SCANLINE}
 
@@ -129,7 +129,7 @@ end;
 
 // Lanczos3 filter
 function Lanczos3Filter(Value: Single): Single;
- function SinC(Value: Single): Single;
+ function SinC(Value: Single): Single; inline;
   begin
     if (Value <> 0.0) then
     begin

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, SaveInfoToImage, ShlObj,
   Dolphin_DB, Math, ImageConverting, PngImage, PngDef, GraphicEx, uVistaFuncs,
-  GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport;
+  GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils;
 
 type
   TFormSteno = class(TForm)

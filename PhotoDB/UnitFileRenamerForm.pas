@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus, Dolphin_DB,
-  Language, DB, WebLink, uVistaFuncs, UnitDBDeclare;
+  Language, DB, WebLink, uVistaFuncs, UnitDBDeclare, uFileUtils;
 
 type
   TFormFastFileRenamer = class(TForm)
