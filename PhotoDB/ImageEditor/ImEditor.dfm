@@ -1876,7 +1876,6 @@ object ImageEditor: TImageEditor
     Height = 41
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 694
     object ZoomInLink: TWebLink
       Left = 208
       Top = 8

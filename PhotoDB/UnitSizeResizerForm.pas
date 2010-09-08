@@ -8,7 +8,7 @@ uses
   JPEG, GIFImage, GraphicEx, Language, UnitDBkernel, GraphicCrypt,
   acDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
   UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
-  DmProgress, uW7TaskBar;
+  DmProgress, uW7TaskBar, PngImage, uGOM, uWatermarkOptions;
 
 type
   TFormSizeResizer = class(TDBForm)
@@ -22,7 +22,6 @@ type
     PrbMain: TDmProgress;
     PnOptions: TPanel;
     CbWatermark: TCheckBox;
-    DdeWatermarkPattern: TComboBoxEx;
     CbConvert: TCheckBox;
     DdConvert: TComboBox;
     BtJPEGOptions: TButton;
@@ -37,6 +36,7 @@ type
     CbAddSuffix: TCheckBox;
     EdSavePath: TEdit;
     BtChangeDirectory: TButton;
+    BtWatermarkOptions: TButton;
     procedure BtCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtJPEGOptionsClick(Sender: TObject);
@@ -52,6 +52,8 @@ type
     procedure DdResizeActionChange(Sender: TObject);
     procedure DdConvertChange(Sender: TObject);
     procedure CbWatermarkClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure BtWatermarkOptionsClick(Sender: TObject);
   private
     FData : TDBPopupMenuInfo;
     FW7TaskBar : ITaskbarList3;
@@ -59,16 +61,18 @@ type
     FProcessingParams : TProcessingParams;
     //My descrioption
     procedure LoadLanguage;
-    procedure ProcessImages;
     procedure CheckValidForm;
     { Private declarations }
   protected
     function GetFormID : string; override;
   public
     procedure SetInfo(List : TDBPopupMenuInfo);
-    procedure ThreadEnd;
+    procedure ThreadEnd(EndProcessing : Boolean);
     { Public declarations }
   end;
+
+  const
+    ConvertImageID = 'ConvertImage';
 
 procedure ResizeImages(List : TDBPopupMenuInfo);
 
@@ -92,6 +96,12 @@ begin
   Close;
 end;
 
+procedure TFormSizeResizer.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  GOM.RemoveObj(Self);
+  Release;
+end;
+
 procedure TFormSizeResizer.FormCreate(Sender: TObject);
 var
   Formats: TArGraphicClass;
@@ -105,23 +115,29 @@ begin
   Formats := GetConvertableImageClasses;
   for I := 0 to Length(Formats) - 1 do
   begin
-    if Formats[I] <> TGIFImage then
-    begin
-      if Formats[I] <> TiffImageUnit.TTiffGraphic then
-        Description := GraphicEx.FileFormatList.GetDescription(Formats[I])
-      else
-        Description := 'Tiff Image';
-    end
+    if Formats[I] = TiffImageUnit.TTiffGraphic then
+      Description := 'Tiff Image'
+    else if Formats[I] = TGIFImage then
+      Description := 'GIF Image'
+    else if Formats[I] = PngImage.TPNGGraphic then
+      Description := 'PNG Image'
     else
-      Description := 'GIF Image';
-    if Formats[I] <> TBitmap then
-      Mask := GraphicFileMask(Formats[I])
+      Description := GraphicEx.FileFormatList.GetDescription(Formats[I]);
+
+    if Formats[I] = TiffImageUnit.TTiffGraphic then
+      Mask := '*.tiff'
+    else if Formats[I] = TBitmap then
+      Mask := '*.bmp'
+    else if Formats[I] = PngImage.TPNGGraphic then
+      Mask := '*.png'
     else
-      Mask := '*.bmp;*.dib';
-    DdConvert.Items.Add(Description + '  (' + Mask + ')')
+      Mask := GraphicFileMask(Formats[I]);
+
+    DdConvert.Items.AddObject(Description + '  (' + Mask + ')', TObject(I));
   end;
 
   FW7TaskBar := CreateTaskBarInstance;
+  GOM.AddObj(Self);
 end;
 
 procedure TFormSizeResizer.FormDestroy(Sender: TObject);
@@ -131,23 +147,17 @@ end;
 
 function TFormSizeResizer.GetFormID: string;
 begin
-  Result := 'ConvertImage';
+  Result := ConvertImageID;
 end;
 
 procedure TFormSizeResizer.BtJPEGOptionsClick(Sender: TObject);
 begin
-  SetJPEGOptions;
+  SetJPEGOptions(ConvertImageID);
 end;
 
 procedure TFormSizeResizer.BtOkClick(Sender: TObject);
 var
-  OldGraphic, NewGraphic: TGraphic;
-  BitmapGraphic, Temp: TBitmap;
-  I, ImageSizeW, ImageSizeH, W, H, J, Res: Integer;
-  NewGraphicClass: TGraphicClass;
-  Password, NewEXT, FileName, OldEXT, FileDir, EndDir: string;
-  EventInfo: TEventValues;
-  B: Boolean;
+  I : Integer;
 
 const
   Rotations : array[-1..3] of Integer = (DB_IMAGE_ROTATE_UNKNOWN, DB_IMAGE_ROTATE_EXIF, DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_180);
@@ -162,6 +172,17 @@ const
     begin
       GraphicClass := GetGraphicClass(ExtractFileExt(FData[I].FileName), True);
       Result := Result and ConvertableImageClass(GraphicClass);
+    end;
+  end;
+
+  function GeneratePreffix : string;
+  var
+    S : string;
+  begin
+    Result := '_';
+    if CbResize.Checked then
+    begin
+      S := DdResizeAction.Text;
     end;
   end;
 
@@ -193,244 +214,88 @@ begin
   end;
   PrbMain.MaxValue := FDataCount;
 
+  //fill params of processing
+  FProcessingParams.Rotate := CbRotate.Checked;
   FProcessingParams.Rotation := Rotations[DdRotate.ItemIndex];
+  if DdConvert.ItemIndex = -1 then
+    FProcessingParams.GraphicClass := nil
+  else
+    FProcessingParams.GraphicClass := GetConvertableImageClasses[DdConvert.ItemIndex];
+
+  FProcessingParams.Resize := CbResize.Checked;
+  FProcessingParams.ResizeToSize := (DdResizeAction.ItemIndex in [0..4]) or (DdResizeAction.ItemIndex = DdResizeAction.Items.Count - 1);
+  if (FProcessingParams.ResizeToSize) then
+  begin
+    case DdResizeAction.ItemIndex of
+      0:
+      begin
+        FProcessingParams.Width := 640;
+        FProcessingParams.height := 480;
+      end;
+      1:
+      begin
+        FProcessingParams.Width := 800;
+        FProcessingParams.height := 600;
+      end;
+      2:
+      begin
+        FProcessingParams.Width := 1024;
+        FProcessingParams.height := 768;
+      end;
+      3:
+      begin
+        FProcessingParams.Width := 128;
+        FProcessingParams.height := 124;
+      end;
+      4:
+      begin
+        FProcessingParams.Width := 320;
+        FProcessingParams.height := 240;
+      end;
+      else
+        FProcessingParams.Width := Min(Max(StrToIntDef(EdWidth.Text, 100), 5), 5000);
+        FProcessingParams.height := Min(Max(StrToIntDef(EdHeight.Text, 100), 5), 5000);
+    end;
+  end else
+  begin
+    case DdResizeAction.ItemIndex - 4 of
+      0:
+        FProcessingParams.PercentResize := 25;
+      1:
+        FProcessingParams.PercentResize := 50;
+      2:
+        FProcessingParams.PercentResize := 75;
+      3:
+        FProcessingParams.PercentResize := 150;
+      4:
+        FProcessingParams.PercentResize := 200;
+      5:
+        FProcessingParams.PercentResize := 400;
+    end;
+  end;
+
+  FProcessingParams.AddWatermark := CbWatermark.Checked;
+  //TODO:
+  if CbWatermark.Checked then
+  begin
+    FProcessingParams.WatermarkOptions.Text := 'Test copyright';
+    FProcessingParams.WatermarkOptions.Color := clWhite;
+    FProcessingParams.WatermarkOptions.Transparenty := 25;
+    FProcessingParams.WatermarkOptions.BlockCountX := 3;
+    FProcessingParams.WatermarkOptions.BlockCountY := 3;
+  end;
+
+  FProcessingParams.SaveAspectRation := CbAspectRatio.Checked;
+  if CbAddSuffix.Checked then
+    FProcessingParams.Preffix := GeneratePreffix
+  else
+    FProcessingParams.Preffix := '';
+
+  FProcessingParams.WorkDirectory := EdSavePath.Text;
 
   for I := 1 to Min(FData.Count, ProcessorCount) do
     TImageConvertThread.Create(Self, FData.Extract(0), FProcessingParams);
 
-{
- for i:=0 to Length(FImageList)-1 do
- begin
-  if RadioButton1.Checked then
-  begin
-   OldEXT:=AnsiLowerCase(GetExt(FImageList[i]));
-   if ConvertableImageClass(GetGraphicClass(OldEXT,false)) then
-   begin
-    NewGraphicClass:=GetGraphicClass(OldEXT,true);
-    NewEXT:=OldEXT;
-   end else
-   begin
-    if GetConvertableImageClasses[ComboBox2.ItemIndex]=TBitmap then
-    NewEXT:='bmp' else
-    if GetConvertableImageClasses[ComboBox2.ItemIndex]=TJPEGImage then
-    NewEXT:='jpg' else
-    NewEXT:=GraphicExtension(GetConvertableImageClasses[ComboBox2.ItemIndex]);
-    NewGraphicClass:=GetGraphicClass(NewEXT,true);
-   end;
-  end else
-  begin
-// NewEXT:=GraphicExtension(GetConvertableImageClasses[ComboBox2.ItemIndex]);
-   if GetConvertableImageClasses[ComboBox2.ItemIndex]=TBitmap then
-   NewEXT:='bmp' else
-   if GetConvertableImageClasses[ComboBox2.ItemIndex]=TJPEGImage then
-   NewEXT:='jpg' else
-   NewEXT:=GraphicExtension(GetConvertableImageClasses[ComboBox2.ItemIndex]);
-   NewGraphicClass:=GetGraphicClass(NewEXT,true);
-  end;
-  Password:='';
-  if ValidCryptGraphicFile(FImageList[i]) then
-  begin
-   Password:=DBkernel.FindPasswordForCryptImageFile(FImageList[i]);
-   if Password='' then Continue;
-  end;
-  NewGraphic:=NewGraphicClass.Create;
-  OldGraphic:=nil;
-  Temp:=nil;
-  try
-   if Password='' then
-   begin
-    OldGraphic:=GetGraphicClass(GetExt(FImageList[i]),false).Create;
-    OldGraphic.LoadFromFile(FImageList[i])
-   end else
-   OldGraphic:=DeCryptGraphicFile(FImageList[i],Password);
-   Temp := TBitmap.Create;
-   Temp.Assign(OldGraphic);
-   Temp.PixelFormat:=pf24bit;
-  except
-   if OldGraphic<>nil then OldGraphic.Free;
-   ProgressWindow.Release;
-   ProgressWindow.Free;
-   Close;
-   exit;
-  end;
-  OldGraphic.Free;
-  try
-   BitmapGraphic:= TBitmap.Create;
-   BitmapGraphic.PixelFormat:=pf24bit;
-   w:=Temp.Width;
-   h:=Temp.Height;
-   if RadioButton05.Checked then
-   begin
-    ImageSizeW:=Round(w*GetZoom);
-    ImageSizeH:=Round(h*GetZoom);
-   end;
-   If (w<ImageSizeW) and (h<ImageSizeH) then BitmapGraphic.Assign(Temp) else
-   begin
-    if CheckBox1.Checked then
-    ProportionalSize(ImageSizeW,ImageSizeH,w,h);
-    try
-     if not CheckBox1.Checked then
-     DoResize(ImageSizeW,ImageSizeH,Temp,BitmapGraphic) else
-     DoResize(w,h,Temp,BitmapGraphic);
-    except
-    end;
-   end;
-   Temp.free;
-   NewGraphic.Assign(BitmapGraphic);
-   BitmapGraphic.Free;
-
-   FileDir:=GetDirectory(FImageList[i]);
-   EndDir:=Edit3.Text;
-   FormatDir(EndDir);
-
-   if (AnsiLowerCase(FileDir)=AnsiLowerCase(EndDir)) or not CheckBox2.Checked then
-   begin
-    FileName:=GetConvertedFileName(FImageList[i],NewEXT);
-    if RadioButton001.Checked then
-    begin
-     RenameFile(FImageList[i],FileName);
-    end;
-    if NewGraphic is TJPEGImage then
-    begin
-     (NewGraphic as TJPEGImage).CompressionQuality:=DBKernel.ReadInteger('','JPEGCompression',75);
-     (NewGraphic as TJPEGImage).ProgressiveEncoding:=DBKernel.ReadBool('','JPEGProgressiveMode',false);
-    end;
-
-    b:=false;
-    Repeat
-     j:=1;
-     try
-      SetLastError(0);
-
-
-     if RadioButton001.Checked and (GetExt(FImageList[i])=GetExt(FileName)) then
-     NewGraphic.SaveToFile(FImageList[i]) else
-     NewGraphic.SaveToFile(FileName);
-
-
-      if (GetLastError<>0) and (GetLastError<>183) and (GetLastError<>6) then
-      raise Exception.Create('Error code = '+IntToStr(GetLastError));
-      //j:=0;
-     except
-      on e : Exception do
-      begin
-       res:=Application.MessageBox(PWideChar(Format(TEXT_MES_WRITE_ERROR_F,[e.Message])), PWideChar(TEXT_MES_ERROR), MB_ICONERROR or MB_ABORTRETRYIGNORE);
-       if res=IDABORT then
-       begin
-        NewGraphic.free;
-        ProgressWindow.Release;
-        ProgressWindow.Free;
-        Close;
-        exit;
-       end;
-       if res=IDRETRY then j:=0;
-       if res=IDIGNORE then
-       begin
-        b:=true;
-        NewGraphic.free;
-        break;
-       end;
-      end;
-     end;
-    until j=1;
-    if b then continue;
-
-    NewGraphic.free;
-    try
-     if Password<>'' then
-     if RadioButton001.Checked and (GetExt(FImageList[i])=GetExt(FileName)) then
-     CryptGraphicFileV1(FImageList[i],Password,0) else
-     CryptGraphicFileV1(FileName,Password,0);
-    except
-    end;
-
-    if RadioButton001.Checked then
-    begin
-     try
-      if (GetExt(FImageList[i])=GetExt(FileName)) then
-      DeleteFile(FileName) else
-      DeleteFile(FImageList[i]);
-     except
-     end;
-     if (GetExt(FImageList[i])=GetExt(FileName)) then
-     begin
-      UpdateImageRecord(FImageList[i],FIDList[i]);
-      EventInfo.Name:=FImageList[i];
-      EventInfo.NewName:=FImageList[i];
-      DBKernel.DoIDEvent(self,FIDList[i],[EventID_Param_Image],EventInfo);
-     end else
-     begin
-      UpdateMovedDBRecord(FIDList[i],FileName);
-      UpdateImageRecord(FileName,FIDList[i]);
-      EventInfo.Name:=FImageList[i];
-      EventInfo.NewName:=FileName;
-      DBKernel.DoIDEvent(self,FIDList[i],[EventID_Param_Name],EventInfo);
-      EventInfo.Name:=FileName;
-      EventInfo.NewName:=FileName;
-      DBKernel.DoIDEvent(self,FIDList[i],[EventID_Param_Image],EventInfo);
-     end;
-    end
-   end else
-   begin
-
-    if RadioButton001.Checked then
-    FileName:=EndDir+GetFileNameWithoutExt(FImageList[i])+'.'+NewEXT else
-    FileName:=GetConvertedFileNameWithDir(FImageList[i],EndDir,NewEXT);
-    if NewGraphic is TJPEGImage then
-    begin
-     (NewGraphic as TJPEGImage).CompressionQuality:=DBKernel.ReadInteger('','JPEGCompression',75);
-     (NewGraphic as TJPEGImage).ProgressiveEncoding:=DBKernel.ReadBool('','JPEGProgressiveMode',false);
-    end;
-
-
-    b:=false;
-    Repeat
-     j:=1;
-     try
-      SetLastError(0);
-
-      NewGraphic.SaveToFile(FileName);
-
-      if (GetLastError<>0) and (GetLastError<>183) and (GetLastError<>6) then
-      raise Exception.Create('Error code = '+IntToStr(GetLastError));
-     // j:=0;
-     except
-      on e : Exception do
-      begin
-       res:=Application.MessageBox(PWideChar(Format(TEXT_MES_WRITE_ERROR_F,[e.Message])),TEXT_MES_ERROR, MB_ICONERROR or MB_ABORTRETRYIGNORE);
-       if res=IDABORT then
-       begin
-        NewGraphic.free;
-        ProgressWindow.Release;
-        ProgressWindow.Free;
-        Close;
-        exit;
-       end;
-       if res=IDRETRY then j:=0;
-       if res=IDIGNORE then
-       begin
-        b:=true;
-        NewGraphic.free;
-        break;
-       end;
-      end;
-     end;
-    until j=1;
-    if b then continue;
-
-    NewGraphic.free;
-    try
-     if Password<>'' then
-     CryptGraphicFileV1(FileName,Password,0);
-    except
-    end;
-
-   end;
-
-  except
-  end;
- end;
- Close;          }
 end;
 
 procedure TFormSizeResizer.SetInfo(List : TDBPopupMenuInfo);
@@ -439,15 +304,18 @@ var
 begin
   for I := 0 to List.Count - 1 do
     FData.Add(List[I].Copy);
+
+  if FData.Count > 0 then
+    EdSavePath.Text := ExtractFileDir(FData[0].FileName);
 end;
 
-procedure TFormSizeResizer.ThreadEnd;
+procedure TFormSizeResizer.ThreadEnd(EndProcessing : Boolean);
 begin
   PrbMain.Position := FDataCount - FData.Count;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);
 
-  if FData.Count > 0 then
+  if (FData.Count > 0) and not EndProcessing then
     TImageConvertThread.Create(Self, FData.Extract(0), FProcessingParams)
   else
     Close;
@@ -456,6 +324,11 @@ end;
 procedure TFormSizeResizer.BtSaveAsDefaultClick(Sender: TObject);
 begin
   //TODO: DBKernel.WriteInteger('Convert options','Width',StrToIntDef(Edit1.text,1024));
+end;
+
+procedure TFormSizeResizer.BtWatermarkOptionsClick(Sender: TObject);
+begin
+  ShowWatermarkOptions;
 end;
 
 procedure TFormSizeResizer.CbConvertClick(Sender: TObject);
@@ -478,7 +351,7 @@ end;
 
 procedure TFormSizeResizer.CbWatermarkClick(Sender: TObject);
 begin
-  DdeWatermarkPattern.Enabled := CbWatermark.Checked;
+  BtWatermarkOptions.Enabled := CbWatermark.Checked;
   CheckValidForm;
 end;
 
@@ -509,7 +382,7 @@ begin
 end;
 
 /// <summary>
-/// My comment here
+/// LoadLanguage
 /// </summary>
 procedure TFormSizeResizer.LoadLanguage;
 begin
@@ -517,6 +390,7 @@ begin
   LbInfo.Caption := L('You can change image size, convert image to another format, rotate image and add custom watermark.');
 
   CbWatermark.Caption := L('Add Watermark');
+  BtWatermarkOptions.Caption := L('Watermark Options');
   CbConvert.Caption := L('Convert');
 
   CbResize.Caption := L('Resize');
@@ -548,11 +422,6 @@ begin
 
   BtCancel.Caption := L('Cancel');
   BtOk.Caption := L('Ok');
-end;
-
-procedure TFormSizeResizer.ProcessImages;
-begin
-
 end;
 
 procedure TFormSizeResizer.EdHeightKeyPress(Sender: TObject; var Key: Char);

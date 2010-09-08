@@ -15,6 +15,7 @@ object FormSizeResizer: TFormSizeResizer
   Font.Style = []
   OldCreateOrder = False
   Position = poDesigned
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
@@ -43,8 +44,6 @@ object FormSizeResizer: TFormSizeResizer
     Enabled = False
     TabOrder = 0
     OnClick = BtOkClick
-    ExplicitLeft = 344
-    ExplicitTop = 470
   end
   object BtCancel: TButton
     Left = 242
@@ -55,8 +54,6 @@ object FormSizeResizer: TFormSizeResizer
     Caption = 'Cancel'
     TabOrder = 1
     OnClick = BtCancelClick
-    ExplicitLeft = 263
-    ExplicitTop = 470
   end
   object BtSaveAsDefault: TButton
     Left = 8
@@ -67,7 +64,6 @@ object FormSizeResizer: TFormSizeResizer
     Caption = 'Save settings as default'
     TabOrder = 2
     OnClick = BtSaveAsDefaultClick
-    ExplicitTop = 470
   end
   object EdImageName: TEdit
     Left = 8
@@ -79,8 +75,6 @@ object FormSizeResizer: TFormSizeResizer
     ReadOnly = True
     TabOrder = 3
     Text = 'Image Name'
-    ExplicitTop = 259
-    ExplicitWidth = 411
   end
   object LsMain: TLoadingSign
     Left = 370
@@ -91,7 +85,6 @@ object FormSizeResizer: TFormSizeResizer
     Active = True
     FillPercent = 0
     Anchors = [akTop, akRight]
-    ExplicitLeft = 391
   end
   object PrbMain: TDmProgress
     Left = 8
@@ -121,8 +114,6 @@ object FormSizeResizer: TFormSizeResizer
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 6
-    ExplicitTop = 286
-    ExplicitWidth = 427
     DesignSize = (
       406
       178)
@@ -147,19 +138,6 @@ object FormSizeResizer: TFormSizeResizer
       TabOrder = 0
       OnClick = CbWatermarkClick
     end
-    object DdeWatermarkPattern: TComboBoxEx
-      Left = 129
-      Top = 5
-      Width = 267
-      Height = 22
-      ItemsEx = <>
-      Style = csExDropDownList
-      Anchors = [akLeft, akRight, akBottom]
-      TabOrder = 1
-      Images = ImlWatermarkPatterns
-      ExplicitTop = 40
-      ExplicitWidth = 290
-    end
     object CbConvert: TCheckBox
       Left = 8
       Top = 35
@@ -167,9 +145,8 @@ object FormSizeResizer: TFormSizeResizer
       Height = 17
       Anchors = [akLeft, akBottom]
       Caption = 'Convert:'
-      TabOrder = 2
+      TabOrder = 1
       OnClick = CbConvertClick
-      ExplicitTop = 70
     end
     object DdConvert: TComboBox
       Left = 128
@@ -179,10 +156,8 @@ object FormSizeResizer: TFormSizeResizer
       Style = csDropDownList
       Anchors = [akLeft, akRight, akBottom]
       Enabled = False
-      TabOrder = 3
+      TabOrder = 2
       OnChange = DdConvertChange
-      ExplicitTop = 69
-      ExplicitWidth = 179
     end
     object BtJPEGOptions: TButton
       Left = 292
@@ -194,10 +169,8 @@ object FormSizeResizer: TFormSizeResizer
       DoubleBuffered = False
       Enabled = False
       ParentDoubleBuffered = False
-      TabOrder = 4
+      TabOrder = 3
       OnClick = BtJPEGOptionsClick
-      ExplicitLeft = 313
-      ExplicitTop = 68
     end
     object DdRotate: TComboBox
       Left = 128
@@ -207,9 +180,7 @@ object FormSizeResizer: TFormSizeResizer
       Style = csDropDownList
       Anchors = [akLeft, akRight, akBottom]
       Enabled = False
-      TabOrder = 5
-      ExplicitTop = 96
-      ExplicitWidth = 179
+      TabOrder = 4
     end
     object CbRotate: TCheckBox
       Left = 8
@@ -218,9 +189,8 @@ object FormSizeResizer: TFormSizeResizer
       Height = 17
       Anchors = [akLeft, akBottom]
       Caption = 'Rotate:'
-      TabOrder = 6
+      TabOrder = 5
       OnClick = CbRotateClick
-      ExplicitTop = 98
     end
     object CbResize: TCheckBox
       Left = 8
@@ -229,9 +199,8 @@ object FormSizeResizer: TFormSizeResizer
       Height = 17
       Anchors = [akLeft, akBottom]
       Caption = 'Resize:'
-      TabOrder = 7
+      TabOrder = 6
       OnClick = CbResizeClick
-      ExplicitTop = 126
     end
     object DdResizeAction: TComboBox
       Left = 128
@@ -242,10 +211,8 @@ object FormSizeResizer: TFormSizeResizer
       Anchors = [akLeft, akRight, akBottom]
       DropDownCount = 20
       Enabled = False
-      TabOrder = 8
+      TabOrder = 7
       OnChange = DdResizeActionChange
-      ExplicitTop = 123
-      ExplicitWidth = 179
     end
     object EdWidth: TEdit
       Left = 292
@@ -254,12 +221,10 @@ object FormSizeResizer: TFormSizeResizer
       Height = 21
       Anchors = [akRight, akBottom]
       Enabled = False
-      TabOrder = 9
+      TabOrder = 8
       Text = '1024'
       OnExit = EdWidthExit
       OnKeyPress = EdHeightKeyPress
-      ExplicitLeft = 313
-      ExplicitTop = 123
     end
     object EdHeight: TEdit
       Left = 357
@@ -268,12 +233,10 @@ object FormSizeResizer: TFormSizeResizer
       Height = 21
       Anchors = [akRight, akBottom]
       Enabled = False
-      TabOrder = 10
+      TabOrder = 9
       Text = '768'
       OnExit = EdWidthExit
       OnKeyPress = EdHeightKeyPress
-      ExplicitLeft = 378
-      ExplicitTop = 123
     end
     object CbAspectRatio: TCheckBox
       Left = 128
@@ -284,9 +247,7 @@ object FormSizeResizer: TFormSizeResizer
       Caption = 'Preserve aspect ratio'
       Checked = True
       State = cbChecked
-      TabOrder = 11
-      ExplicitTop = 152
-      ExplicitWidth = 291
+      TabOrder = 10
     end
     object CbAddSuffix: TCheckBox
       Left = 128
@@ -297,9 +258,7 @@ object FormSizeResizer: TFormSizeResizer
       Caption = 'Add filename suffix'
       Checked = True
       State = cbChecked
-      TabOrder = 12
-      ExplicitTop = 170
-      ExplicitWidth = 291
+      TabOrder = 11
     end
     object EdSavePath: TEdit
       Left = 8
@@ -308,10 +267,8 @@ object FormSizeResizer: TFormSizeResizer
       Height = 21
       Anchors = [akLeft, akRight, akBottom]
       ReadOnly = True
-      TabOrder = 13
+      TabOrder = 12
       Text = 'C:\'
-      ExplicitTop = 192
-      ExplicitWidth = 386
     end
     object BtChangeDirectory: TButton
       Left = 379
@@ -320,10 +277,21 @@ object FormSizeResizer: TFormSizeResizer
       Height = 22
       Anchors = [akRight, akBottom]
       Caption = '...'
-      TabOrder = 14
+      TabOrder = 13
       OnClick = BtChangeDirectoryClick
-      ExplicitLeft = 400
-      ExplicitTop = 191
+    end
+    object BtWatermarkOptions: TButton
+      Left = 128
+      Top = 7
+      Width = 158
+      Height = 22
+      Anchors = [akRight, akBottom]
+      Caption = 'Watermark Optinons'
+      DoubleBuffered = False
+      Enabled = False
+      ParentDoubleBuffered = False
+      TabOrder = 14
+      OnClick = BtWatermarkOptionsClick
     end
   end
   object ImlWatermarkPatterns: TImageList

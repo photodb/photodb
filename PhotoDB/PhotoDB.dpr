@@ -297,7 +297,8 @@ uses
   uTranslate in 'Units\uTranslate.pas',
   MSXML2_TLB in 'External\Xml\MSXML2_TLB.pas',
   OmniXML_MSXML in 'External\Xml\OmniXML_MSXML.pas',
-  uImageConvertThread in 'Threads\uImageConvertThread.pas';
+  uImageConvertThread in 'Threads\uImageConvertThread.pas',
+  uWatermarkOptions in 'uWatermarkOptions.pas' {FrmWatermarkOptions};
 
 {$R *.res}
 
@@ -322,9 +323,10 @@ end;
 procedure FindRunningVersion;
 var
   HSemaphore : THandle;
-  Rec : TRecToPass;
   MessageToSent : string;
-  cd : TCopyDataStruct;
+  CD : TCopyDataStruct;
+  Buf: Pointer;
+  P : PByte;
 begin
   HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DBID));
   if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
@@ -337,16 +339,24 @@ begin
       else
         MessageToSent := ParamStr(1) + #0 + ParamStr(2);
 
-      rec.s := MessageToSent;
-      rec.i := 32;
-      cd.dwData := 3232;
-      cd.cbData := SizeOf(Rec);
-      cd.lpData := @Rec;
-      if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
-        Halt
-      else
-        if ID_YES <> MessageBoxDB(0, TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED, TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then
-          Halt;
+        cd.dwData := WM_COPYDATA_ID;
+        cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
+        GetMem(Buf, cd.cbData);
+        try
+          P := PByte(Buf);
+          Integer(P) := Integer(P) + SizeOf(TMsgHdr);
+
+          StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
+          cd.lpData := Buf;
+          if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
+            Halt
+          else
+            if ID_YES <> MessageBoxDB(0, TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED, TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then
+              Halt;
+        finally
+          FreeMem(Buf);
+        end;
+
     end;
   end;
 end;
@@ -356,6 +366,7 @@ exports
   FileVersion name 'FileVersion';
 
 begin
+  //ReportMemoryLeaksOnShutdown := True;
 {
  //Command line
 

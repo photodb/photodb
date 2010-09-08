@@ -25,7 +25,7 @@ type
     LockCleaning : Boolean;
     EnteringCodeNeeded : Boolean;
     procedure ExitApplication;
-    procedure WMCopyData(var m : TMessage); message WM_COPYDATA;
+    procedure WMCopyData(var Msg : TWMCopyData); message WM_COPYDATA;
     procedure InitializeActivation;
   public
     constructor Create(AOwner : TComponent);  override;
@@ -582,7 +582,7 @@ begin
   TW.I.Start('TInternetUpdate - Create');
 end;
 
-procedure TFormManager.WMCopyData(var m: TMessage);
+procedure TFormManager.WMCopyData(var Msg: TWMCopyData);
 var
   Param : TArStrings;
   fids_ : TArInteger;
@@ -591,97 +591,108 @@ var
   FormCont : TFormCont;
   B : TArBoolean;
   Info : TRecordsInfo;
+  Data : Pointer;
 begin
- S :=PRecToPass(PCopyDataStruct(m.LParam)^.lpData)^.s;
- For i:=1 to Length(s) do
- If s[i]=#0 then
- begin
-  FileNameA:=Copy(S,1,i-1);
-  FileNameB:=Copy(S,i+1,Length(S)-i);
- end;
- if not CheckFileExistsWithMessageEx(FileNameA,false) then
- begin
-  If AnsiUpperCase(FileNameA)='/EXPLORER' then
+
+  if Msg.CopyDataStruct.dwData = WM_COPYDATA_ID then
   begin
-   If CheckFileExistsWithMessageEx(LongFileName(filenameB),true) then
-   begin
-    With ExplorerManager.NewExplorer(False) do
-    begin
-     SetPath(LongFileName(FileNameB));
-     Show;                           
-     ActivateApplication(Handle);
-    end;
-   end;
+    Data := PByte(Msg.CopyDataStruct.lpData) + SizeOf(TMsgHdr);
+    SetString(S, PWideChar(Data), (Msg.CopyDataStruct.cbData - SizeOf(TMsgHdr) - 1) div SizeOf(WideChar));
+
+     For i:=1 to Length(s) do
+     If s[i]=#0 then
+     begin
+      FileNameA:=Copy(S,1,i-1);
+      FileNameB:=Copy(S,i+1,Length(S)-i);
+     end;
+     if not CheckFileExistsWithMessageEx(FileNameA,false) then
+     begin
+      If AnsiUpperCase(FileNameA)='/EXPLORER' then
+      begin
+       If CheckFileExistsWithMessageEx(LongFileName(filenameB),true) then
+       begin
+        With ExplorerManager.NewExplorer(False) do
+        begin
+         SetPath(LongFileName(FileNameB));
+         Show;
+         ActivateApplication(Handle);
+        end;
+       end;
+      end else
+      begin
+       if AnsiUpperCase(filenameA)='/GETPHOTOS' then
+       if FileNameB<>'' then
+       begin
+        GetPhotosFromDrive(FileNameB[1]);
+        Exit;
+       end;
+       With SearchManager.GetAnySearch do
+       begin
+        Show;
+        ActivateApplication(Handle);
+       end;
+       Exit;
+      end;
+     end;
+     If ExtInMask(SupportedExt,GetExt(FileNameA)) then
+     begin
+      if Viewer=nil then Application.CreateForm(TViewer, Viewer);
+      FileNameA:=LongFileName(FileNameA);
+      GetFileListByMask(FileNameA,SupportedExt,info,n,True);
+      SlideShow.UseOnlySelf:=true;
+      ShowWindow(Viewer.Handle,SW_RESTORE);
+      Viewer.Execute(Self,info);
+      Viewer.Show;
+      ActivateApplication(Viewer.Handle);
+     end else
+     If (AnsiUpperCase(FileNameA)<>'/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA,false) then
+     begin
+      if GetExt(FileNameA)='DBL' then
+      begin
+       Dolphin_DB.LoadDblFromfile(FileNameA,fids_,param);
+       FormCont:=ManagerPanels.NewPanel;
+       SetLength(B,0);
+       LoadFilesToPanel.Create(param,fids_,B,false,true,FormCont);
+       LoadFilesToPanel.Create(param,fids_,B,false,false,FormCont);
+       FormCont.Show;
+       ActivateApplication(FormCont.Handle);
+       exit;
+      end;
+      if GetExt(filenameA)='IDS' then
+      begin
+       fids_:=LoadIDsFromfileA(FileNameA);
+       setlength(param,1);
+       FormCont:=ManagerPanels.NewPanel;
+       LoadFilesToPanel.Create(param,fids_,B,false,true,FormCont);
+       FormCont.Show;
+       ActivateApplication(FormCont.Handle);
+      end else
+      begin
+       if GetExt(FileNameA)='ITH' then
+       begin
+        With SearchManager.NewSearch do
+        begin
+          SearchEdit.Text:=':ThFile('+filenameA+'):';
+          DoSearchNow(Self);
+          Show;
+          ActivateApplication(Handle);
+        end;
+        exit;
+       end else
+       begin
+        With SearchManager.GetAnySearch do
+        begin
+         Show;
+         ActivateApplication(Handle);
+        end;
+       end;
+      end;
+     end;
+
+
   end else
-  begin
-   if AnsiUpperCase(filenameA)='/GETPHOTOS' then
-   if FileNameB<>'' then
-   begin
-    GetPhotosFromDrive(FileNameB[1]);
-    Exit;
-   end;
-   With SearchManager.GetAnySearch do
-   begin
-    Show;
-    ActivateApplication(Handle);
-   end;
-   Exit;
-  end;
- end;
- If ExtInMask(SupportedExt,GetExt(FileNameA)) then
- begin
-  if Viewer=nil then Application.CreateForm(TViewer, Viewer);
-  FileNameA:=LongFileName(FileNameA);
-  GetFileListByMask(FileNameA,SupportedExt,info,n,True);
-  SlideShow.UseOnlySelf:=true;
-  ShowWindow(Viewer.Handle,SW_RESTORE);
-  Viewer.Execute(Self,info);
-  Viewer.Show;
-  ActivateApplication(Viewer.Handle);
- end else
- If (AnsiUpperCase(FileNameA)<>'/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA,false) then
- begin
-  if GetExt(FileNameA)='DBL' then
-  begin
-   Dolphin_DB.LoadDblFromfile(FileNameA,fids_,param);
-   FormCont:=ManagerPanels.NewPanel;
-   SetLength(B,0);
-   LoadFilesToPanel.Create(param,fids_,B,false,true,FormCont);
-   LoadFilesToPanel.Create(param,fids_,B,false,false,FormCont);
-   FormCont.Show;
-   ActivateApplication(FormCont.Handle);
-   exit;
-  end;
-  if GetExt(filenameA)='IDS' then
-  begin
-   fids_:=LoadIDsFromfileA(FileNameA);
-   setlength(param,1);
-   FormCont:=ManagerPanels.NewPanel;
-   LoadFilesToPanel.Create(param,fids_,B,false,true,FormCont);
-   FormCont.Show;
-   ActivateApplication(FormCont.Handle);
-  end else
-  begin
-   if GetExt(FileNameA)='ITH' then
-   begin
-    With SearchManager.NewSearch do
-    begin
-      SearchEdit.Text:=':ThFile('+filenameA+'):';
-      DoSearchNow(Self);
-      Show;                    
-      ActivateApplication(Handle);
-    end;
-    exit;
-   end else
-   begin
-    With SearchManager.GetAnySearch do
-    begin
-     Show;     
-     ActivateApplication(Handle);
-    end;
-   end;
-  end;
- end;
+    Dispatch(Msg);
+
 end;
 
 constructor TFormManager.Create(AOwner: TComponent);

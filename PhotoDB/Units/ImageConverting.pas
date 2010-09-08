@@ -14,6 +14,7 @@ function GetConvertedFileName(FileName, NewEXT: string): string;
 function ConvertableImageClass(Graphic: TGraphicClass): Boolean;
 function GetConvertedFileNameWithDir(FileName, Dir, NewEXT: string): string;
 function GetGraphicClass(EXT: String; ToSave: Boolean): TGraphicClass;
+function GetGraphicExtForSave(GraphicClass : TGraphicClass) : string;
 
 implementation
 
@@ -153,11 +154,30 @@ begin
 
   AddClass(TJPEGImage);
   if PNG_CAN_SAVE then
-    AddClass(TPngGraphic);
+    AddClass(PngImage.TPNGGraphic);
   AddClass(TiffImageUnit.TTIFFGraphic);
   AddClass(TGIFImage);
   AddClass(TBitmap);
   AddClass(TTargaGraphic);
+end;
+
+function GetGraphicExtForSave(GraphicClass : TGraphicClass) : string;
+begin
+  if GraphicClass = TJPEGImage then
+    Result := '.jpg'
+  else if GraphicClass = PngImage.TPNGGraphic then
+    Result := '.png'
+  else if GraphicClass = TiffImageUnit.TTIFFGraphic then
+    Result := '.tiff'
+  else if GraphicClass = TGIFImage then
+    Result := '.gif'
+  else if GraphicClass = TBitmap then
+    Result := '.bmp'
+  else if GraphicClass = TTargaGraphic then
+    Result := '.tga'
+  else
+    raise Exception.Create(GraphicClass.ClassName + ' is unsupported!');
+
 end;
 
 function GetConvertedFileName(FileName, NewEXT  : string) : string;

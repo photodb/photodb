@@ -132,7 +132,7 @@ begin
                FPic.LoadFromFile(FFileName);
             end;
 
-            FBit:=TBitmap.Create;
+            FBit := TBitmap.Create;
             try
               FBit.PixelFormat := pf24bit;
               Info.ItemHeight := FPic.Graphic.Height;

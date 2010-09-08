@@ -225,20 +225,10 @@ type
   TBuffer = array of Char;
 
 type
-  PCopyDataStruct = ^TCopyDataStruct;
-
-  //TODO:!!!
-  TCopyDataStruct = record
-    DwData: LongInt;
-    CbData: LongInt;
-    LpData: Pointer;
-  end;
-
-  PRecToPass = ^TRecToPass;
-
-  TRecToPass = packed record
-    S: string[255];
-    I: Integer;
+  PMsgHdr = ^TMsgHdr;
+  TMsgHdr = packed record
+    MsgSize : Integer;
+    Data : PChar;
   end;
 
 type
@@ -451,10 +441,32 @@ type
     RightEffective: Byte;
   end;
 
-  TProcessingParams = record
-    Rotation : Integer;
+  TWatermarkOptions = record
+    Text : string;
+    BlockCountX : Integer;
+    BlockCountY : Integer;
+    Transparenty : Byte;
+    Color : TColor;
+    FontName : string;
+    IsBold : Boolean;
+    IsItalic : Boolean;
   end;
 
+  TProcessingParams = record
+    Rotation: Integer;
+    ResizeToSize: Boolean;
+    Width : Integer;
+    Height : Integer;
+    Resize : Boolean;
+    Rotate : Boolean;
+    PercentResize : Integer;
+    GraphicClass : TGraphicClass;
+    SaveAspectRation : Boolean;
+    Preffix : string;
+    WorkDirectory : string;
+    AddWatermark : Boolean;
+    WatermarkOptions : TWatermarkOptions;
+  end;
 
 const
   CSIDL_COMMON_APPDATA = $0023;
@@ -780,7 +792,7 @@ uses UnitPasswordForm, UnitWindowsCopyFilesThread,
 
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
 const
-  Orientations : array[1..9] of Integer = (0, 0, 2, 2, 3, 3, 1, 1, 0);
+  Orientations : array[1..9] of Integer = (0, 0, 2, 2, 1, 1, 3, 3, 0);
 begin
   if Orientation in [1..9] then
     Result := Orientations[Orientation]

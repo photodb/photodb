@@ -25,9 +25,6 @@ uses
 Type TTool=(ToolNone,ToolPen,ToolCrop,ToolRotate,ToolResize,ToolEffects,
 ToolColor,ToolRedEye, ToolText, ToolBrush, ToolInsertImage);
 
-type
-  TCompresJPEGToSizeCallback = procedure(CurrentSize, CompressionRate : integer; var break : boolean) of object;
-
 {$DEFINE PICTURE24BITMODE}
 
 type
@@ -276,51 +273,6 @@ uses UnitEditorFullScreenForm
 {$R *.dfm}
 {$R cursors.res}
 //{$R editor.res}
-
-Function CompresJPEGToSize(jS : TGraphic; var ToSize : integer; Progressive : boolean; var CompressionRate : integer; CallBack : TCompresJPEGToSizeCallback = nil) : TJPEGImage;
-var
- ms : TMemoryStream;
- jd : TJPEGImage;
- max_size, cur_size, cur_cr, cur_cr_inc : integer;
- isbreak : boolean;
-begin
- max_size:=ToSize;
- cur_cr:=50;
- cur_cr_inc:=50;
- isbreak:=false;
- repeat
-  jd:= TJpegImage.Create;
-  jd.Assign(js);
-  jd.CompressionQuality:=cur_cr;
-  jd.ProgressiveEncoding:=Progressive;
-  jd.ProgressiveDisplay:=Progressive;
-  jd.Compress;
-  ms:=TMemoryStream.Create;
-  jd.SaveToStream(ms);
-  ms.Seek(0,soFromBeginning);
-  cur_size:=ms.Size;
-  if Assigned(CallBack) then CallBack(cur_size,cur_cr,isbreak);
-  if isbreak then
-  begin
-   Result:=nil;
-   jd.free;
-   ms.free;
-   CompressionRate:=-1;
-   ToSize:=-1;
-   exit;
-  end;
-  if ((cur_size<max_size) and (cur_cr_inc=1)) or (cur_cr=1) then begin ms.free; break; end;
-  cur_cr_inc:=Round(cur_cr_inc / 2);
-  if cur_cr_inc<1 then cur_cr_inc:=1;
-  if cur_size<max_size then begin cur_cr:=cur_cr+cur_cr_inc; end else cur_cr:=cur_cr-cur_cr_inc;
-  if (cur_size<max_size) and (cur_cr=99) then cur_cr_inc:=2;
-  jd.free;
-  ms.free;
- until false;
- CompressionRate:=cur_cr;
- ToSize:=cur_size;
- Result:=jd;
-end;
 
 procedure DisableControls(Window : TImageEditor);
 
@@ -2293,42 +2245,16 @@ begin
       if not ForseSave then
       if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
       Replace:=true;
-      {$IFDEF PHOTODB}
       ID:=GetIdByFileName(FileName);
-      {$ENDIF}
      end;
-     {$IFDEF PHOTODB}
-      if DBKernel.ReadBool('','JPEGOptimizeMode',false) then
-      begin
-       if not ForseSave then SetJPEGOptions;
-       to_size:=DBKernel.ReadInteger('','JPEGOptimizeSize',100)*1024;
-       Image:=CompresJPEGToSize(CurrentImage,to_size,DBKernel.ReadBool('','JPEGProgressiveMode',false),cr);
-      end else
-      begin
-       Image:=TJPEGImage.Create;
-       Image.Assign(CurrentImage);
-      end;
 
-     {$ENDIF}
-
-     {$IFNDEF PHOTODB}
      Image:=TJPEGImage.Create;
      Image.Assign(CurrentImage);
-     {$ENDIF}
+     if not ForseSave then
+        SetJPEGOptions('ImageEditor');
 
-     (Image as TJPEGImage).ProgressiveEncoding:=true;
-     {$IFNDEF PHOTODB}
-     (Image as TJPEGImage).CompressionQuality:=75;
-     {$ENDIF}
-     {$IFDEF PHOTODB}
-     if not DBKernel.ReadBool('','JPEGOptimizeMode',false) then
-     begin
-      if not ForseSave then SetJPEGOptions;
-      (Image as TJPEGImage).CompressionQuality:=DBKernel.ReadInteger('','JPEGCompression',75);
-      (Image as TJPEGImage).ProgressiveEncoding:=DBKernel.ReadBool('','JPEGProgressiveMode',false);
-      (Image as TJPEGImage).ProgressiveDisplay:=DBKernel.ReadBool('','JPEGProgressiveMode',false);
-     end;
-     {$ENDIF}
+     SetJPEGGraphicSaveOptions('ImageEditor', Image);
+
      try
       if EXIFSection<>nil then
       begin

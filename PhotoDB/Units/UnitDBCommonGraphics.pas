@@ -52,8 +52,103 @@ interface
   function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
   procedure SetIconToPictureFromPath(Picture : TPicture; IconPath : string);
   procedure AddIconToListFromPath(ImageList : TImageList; IconPath : string);
+  procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : string; AAngle : Integer; Color : TColor; Transparent : Byte);
 
 implementation
+
+procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : string; AAngle : Integer; Color : TColor; Transparent : Byte);
+var
+  lf: TLogFont;
+  I, J : Integer;
+  X, Y, Width, Height, W, H, TextLength : Integer;
+  Angle : Integer;
+  Mask : TBitmap;
+  PS, PD : PARGB;
+  R, G, B : Byte;
+  L, L1 : Byte;
+begin
+  if Text = '' then
+    Exit;
+  Bitmap.PixelFormat := pf24bit;
+  Width := Round(Bitmap.Width / XBlocks);
+  Height := Round(Bitmap.Height / YBlocks);
+  TextLength := Round(Sqrt(Width * Width + Height * Height));
+  Angle :=  Round(10 * 180 * ArcTan(Height / Width) / PI);
+
+  FillChar(lf, SizeOf(lf), 0);
+  Color := ColorToRGB(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+
+  with lf do begin
+    // Ширина буквы
+    lfWidth := Round(TextLength * 0.9 / Length(Text));
+    // Высота буквы
+    lfHeight := Round(lfWidth * 1.5);
+    // Угол наклона в десятых градуса
+    if AAngle < 0 then
+      lfEscapement := Angle
+    else
+      lfEscapement := AAngle;
+     // Жирность 0..1000, 0 - по умолчанию
+    lfWeight := 1000;
+    // Курсив
+    lfItalic := 0;
+    // Подчеркнут
+    lfUnderline := 0;
+    // Зачеркнут
+    lfStrikeOut := 0;
+    // CharSet
+    lfCharSet := DEFAULT_CHARSET;
+    lfQuality := ANTIALIASED_QUALITY;
+    // Название шрифта
+    StrCopy(lfFaceName, 'Arial');
+  end;
+
+  Mask := TBitmap.Create;
+  try
+    Mask.PixelFormat := pf24bit;
+    Mask.Width := Bitmap.Width;
+    Mask.Height := Bitmap.Height;
+
+    for I := 0 to Mask.Height - 1 do
+    begin
+      PS := Mask.ScanLine[I];
+      FillChar(PS[0], Mask.Width * 3, $FF);
+    end;
+
+    //TODO: thread-safe ?
+    Mask.Canvas.Font.Handle := CreateFontIndirect(lf);
+    Mask.Canvas.Font.Color := clBlack;
+    W := Mask.Canvas.TextWidth(Text);
+    H := Mask.Canvas.TextHeight(Text);
+    for I := 1 to XBlocks do
+      for J := 1 to YBlocks do
+      begin
+        X := (I - 1) * Width + Round(Width * 0.05);
+        Y := (J - 1) * Height - Round(Height * 0.05);
+        Mask.Canvas.TextOut(X, Y + Height - H, Text);
+      end;
+
+    for I := 0 to Bitmap.Height - 1 do
+    begin
+      PS := Mask.ScanLine[I];
+      PD := Bitmap.ScanLine[I];
+      for J := 0 to Bitmap.Width - 1 do
+      begin
+        L := 255 - PS[J].R;
+        L := L * Transparent div 255;
+        L1 := 255 - L;
+        PD[J].R := (PD[J].R * L1 + R * L + $7F) div 255;
+        PD[J].G := (PD[J].G * L1 + G * L + $7F) div 255;
+        PD[J].B := (PD[J].B * L1+ B * L + $7F) div 255;
+      end;
+    end;
+  finally
+    Mask.Free;
+  end;
+end;
 
 procedure BeginScreenUpdate(hwnd: THandle);
 begin

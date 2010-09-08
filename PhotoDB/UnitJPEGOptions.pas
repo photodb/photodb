@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB, uDBForm,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB, uDBForm, JPEG,
   Language;
 
 type
@@ -12,6 +12,9 @@ type
     ProgressiveMode: Boolean;
     Compression: Integer;
   end;
+
+type
+  TCompresJPEGToSizeCallback = procedure(CurrentSize, CompressionRate: Integer; var Break: Boolean) of object;
 
 type
   TFormJpegOptions = class(TDBForm)
@@ -47,8 +50,96 @@ type
 
 procedure SetJPEGOptions; overload;
 procedure SetJPEGOptions(Section : String); overload;
+procedure SetJPEGGraphicSaveOptions(Section : string; Graphic : TGraphic);
+function CompresJPEGToSize(JS: TGraphic; var ToSize : Integer; Progressive : Boolean; var CompressionRate : Integer;
+  CallBack: TCompresJPEGToSizeCallback = nil) : Boolean;
 
 implementation
+
+function CompresJPEGToSize(JS: TGraphic; var ToSize : Integer; Progressive : Boolean; var CompressionRate : Integer;
+  CallBack: TCompresJPEGToSizeCallback = nil) : Boolean;
+var
+  Ms: TMemoryStream;
+  Jd: TJPEGImage;
+  Max_size, Cur_size, Cur_cr, Cur_cr_inc: Integer;
+  IsBreak: Boolean;
+begin
+  Result := False;
+  Max_size := ToSize;
+  Cur_cr := 50;
+  Cur_cr_inc := 50;
+  IsBreak := False;
+  Jd := TJpegImage.Create;
+  try
+    repeat
+      Jd.Assign(Js);
+      Jd.CompressionQuality := Cur_cr;
+      Jd.ProgressiveEncoding := Progressive;
+      Jd.Compress;
+      Ms := TMemoryStream.Create;
+      try
+        Jd.SaveToStream(Ms);
+        Cur_size := Ms.Size;
+
+        if Assigned(CallBack) then
+          CallBack(Cur_size, Cur_cr, IsBreak);
+
+        if IsBreak then
+        begin
+          CompressionRate := -1;
+          ToSize := -1;
+          Exit;
+        end;
+
+        if ((Cur_size < Max_size) and (Cur_cr_inc = 1)) or (Cur_cr = 1) then
+          Break;
+
+        Cur_cr_inc := Round(Cur_cr_inc / 2);
+        if Cur_cr_inc < 1 then
+          Cur_cr_inc := 1;
+        if Cur_size < Max_size then
+        begin
+          Cur_cr := Cur_cr + Cur_cr_inc;
+        end
+        else
+          Cur_cr := Cur_cr - Cur_cr_inc;
+        if (Cur_size < Max_size) and (Cur_cr = 99) then
+          Cur_cr_inc := 2;
+
+      finally
+        Ms.Free;
+      end;
+    until False;
+  finally
+    JD.Free;
+  end;
+
+  CompressionRate := Cur_cr;
+  ToSize := Cur_size;
+  Result := True;
+end;
+
+procedure SetJPEGGraphicSaveOptions(Section : string; Graphic : TGraphic);
+var
+  OptimizeToSize : Integer;
+  Progressive : Boolean;
+  Compression : Integer;
+begin
+  if Graphic is TJPEGImage then
+  begin
+    OptimizeToSize := DBKernel.ReadInteger(Section, 'JPEGOptimizeSize', 100) * 1024;
+    Progressive := DBKernel.ReadBool(Section, 'JPEGProgressiveMode', False);
+
+    if DBKernel.ReadBool(Section, 'JPEGOptimizeMode', False) then
+      CompresJPEGToSize(Graphic, OptimizeToSize, Progressive, Compression)
+    else
+      Compression := DBKernel.ReadInteger(Section, 'JPEGCompression', 75);
+
+   (Graphic as TJPEGImage).CompressionQuality := Compression;
+   (Graphic as TJPEGImage).ProgressiveEncoding := Progressive;
+   (Graphic as TJPEGImage).Compress;
+  end;
+end;
 
 {$R *.dfm}
 

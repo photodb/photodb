@@ -1626,7 +1626,7 @@ function GDICheck(Value: Cardinal): Cardinal;
 {$endif}
 var
   ErrorCode		: integer;
-  Buf			: array [byte] of char;
+  Buf			: array [byte] of Char;
 
   function ReturnAddr: Pointer;
   // From classes.pas
@@ -1767,7 +1767,7 @@ begin
     begin
       dec(size, b);
       WriteByte(Stream, b);
-      Stream.Write(PChar(s)^, b);
+      Stream.Write(PAnsiChar(s)^, b);
       delete(s, 1, b);
       if (b > size) then
         b := size;
@@ -1786,7 +1786,7 @@ end;
 procedure ReadStrings(Stream: TStream; Text: TStrings);
 var
   size			: BYTE;
-  buf			: array[0..255] of char;
+  buf			: array[0..255] of AnsiChar;
 begin
   Text.Clear;
   if (Stream.Read(size, 1) <> 1) then
@@ -2546,7 +2546,7 @@ begin
 
     if biHeight > 0 then  // bottom-up DIB
       Row := biHeight - Row - 1;
-    Result := PChar(Cardinal(FDIBBits) + Cardinal(Row) * AlignBit(biWidth, biBitCount, 32));
+    Result := PAnsiChar(Cardinal(FDIBBits) + Cardinal(Row) * AlignBit(biWidth, biBitCount, 32));
   end;
 {$else}
   Result := FBitmap.ScanLine[Row];
@@ -6335,7 +6335,7 @@ type
     FOnWarning		: TGIFWarning;
     FStream		: TStream;
     FOnProgress		: TNotifyEvent;
-    FBuffer		: array [BYTE] of Char;
+    FBuffer		: array [BYTE] of AnsiChar;
     FBufferCount	: integer;
 
   protected
@@ -6399,7 +6399,7 @@ end;
 function TGIFReader.Read(var Buffer; Count: Longint): Longint;
 var
   n			: integer;
-  Dst			: PChar;
+  Dst			: PAnsiChar;
   size			: BYTE;
 begin
   Dst := @Buffer;
@@ -6481,7 +6481,7 @@ begin
   if (FBufferCount <= 0) then
     exit;
 
-  FBuffer[0] := char(FBufferCount-1); // Block size excluding the count
+  FBuffer[0] := AnsiChar(FBufferCount-1); // Block size excluding the count
   FStream.WriteBuffer(FBuffer, FBufferCount);
   FBufferCount := 1; // Reserve first byte of buffer for length
   FOutputDirty := False;
@@ -6490,7 +6490,7 @@ end;
 function TGIFWriter.Write(const Buffer; Count: Longint): Longint;
 var
   n			: integer;
-  Src			: PChar;
+  Src			: PAnsiChar;
 begin
   Result := Count;
   FOutputDirty := True;
@@ -7488,7 +7488,7 @@ var
   TransparentIndex	: byte;
   IsTransparent		: boolean;
   WasTransparent	: boolean;
-  MappedTransparentIndex: char;
+  MappedTransparentIndex: AnsiChar;
 
   MaskBits		: PByte;
   MaskDest		: PByte;
@@ -7541,7 +7541,7 @@ begin
         IsTransparent := True;
         TransparentIndex := GraphicControlExtension.TransparentColorIndex;
         Color := ColMap[ord(TransparentIndex)];
-        MappedTransparentIndex := char(Color.Blue DIV 51 +
+        MappedTransparentIndex := AnsiChar(Color.Blue DIV 51 +
           MulDiv(6, Color.Green, 51) + MulDiv(36, Color.Red, 51)+1);
       end;
 
@@ -7995,7 +7995,7 @@ function TGIFSubImage.GetPixel(x, y: integer): BYTE;
 begin
   if (x < 0) or (x > Width-1) then
     Error(sBadPixelCoordinates);
-  Result := BYTE(PChar(longInt(Scanline[y]) + x)^);
+  Result := BYTE(PAnsiChar(longInt(Scanline[y]) + x)^);
 end;
 
 function TGIFSubImage.GetScanline(y: integer): pointer;
@@ -8142,7 +8142,7 @@ var
   procedure Import1Bit(Dest: PByte);
   var
     x, y		: integer;
-    Scanline		: PChar;
+    Scanline		: PAnsiChar;
     Bit			: integer;
     Byte		: integer;
   begin
@@ -8285,7 +8285,7 @@ var
     i			,
     j			: integer;
     GIFPixel		,
-    MaskPixel		: PChar;
+    MaskPixel		: PAnsiChar;
     WasTransparent	: boolean;
     GCE			: TGIFGraphicControlExtension;
   begin
@@ -8310,7 +8310,7 @@ var
           // Change all unmasked pixels to transparent
           if (MaskPixel^ <> #0) then
           begin
-            GIFPixel^ := chr(TransparentIndex);
+            GIFPixel^ := AnsiChar(TransparentIndex);
             WasTransparent := True;
           end;
           inc(MaskPixel);
@@ -8953,7 +8953,7 @@ var
   X			,
   Y			: integer;
   pSource		,
-  pDest			: PChar;
+  pDest			: PAnsiChar;
   pSourceMap		,
   pDestMap		: PColorMap;
   GCE			: TGIFGraphicControlExtension;
@@ -9037,16 +9037,16 @@ begin
 
   for Y := MergeRect.Top - Top to MergeRect.Bottom - Top-1 do
   begin
-    pSource := PChar(integer(Previous.Scanline[PreviousY]) + MergeRect.Left - Previous.Left);
-    pDest := PChar(integer(Scanline[Y]) + MergeRect.Left - Left);
+    pSource := PAnsiChar(integer(Previous.Scanline[PreviousY]) + MergeRect.Left - Previous.Left);
+    pDest := PAnsiChar(integer(Scanline[Y]) + MergeRect.Left - Left);
 
     for X := MergeRect.Left to MergeRect.Right-1 do
     begin
       // Ignore pixels if either this frame's or the previous frame's pixel is transparent
       if (
             not(
-              ((not NeedTransparentColorIndex) and (pDest^ = char(DestIndex))) or
-              ((SourceTransparent) and (pSource^ = char(SourceIndex)))
+              ((not NeedTransparentColorIndex) and (pDest^ = AnsiChar(DestIndex))) or
+              ((SourceTransparent) and (pSource^ = AnsiChar(SourceIndex)))
             )
           ) and (
             // Replace same colored pixels with transparency
@@ -9059,7 +9059,7 @@ begin
           NeedTransparentColorIndex := False;
           DestIndex := GetTransparentColorIndex;
         end;
-        pDest^ := char(DestIndex);
+        pDest^ := AnsiChar(DestIndex);
       end;
       inc(pDest);
       inc(pSource);
@@ -9738,7 +9738,7 @@ procedure TGIFApplicationExtension.SetAuthentication(const Value: string);
 begin
   if (Length(Value) < sizeof(TGIFAuthenticationCode)) then
     FillChar(FIdent.Authentication, sizeof(TGIFAuthenticationCode), 32);
-  StrLCopy(@(FIdent.Authentication[0]), PChar(Value), sizeof(TGIFAuthenticationCode));
+  StrLCopy(@(FIdent.Authentication[0]), PAnsiChar(Value), sizeof(TGIFAuthenticationCode));
 end;
 
 function TGIFApplicationExtension.GetIdentifier: string;
@@ -9750,7 +9750,7 @@ procedure TGIFApplicationExtension.SetIdentifier(const Value: string);
 begin
   if (Length(Value) < sizeof(TGIFIdentifierCode)) then
     FillChar(FIdent.Identifier, sizeof(TGIFIdentifierCode), 32);
-  StrLCopy(@(FIdent.Identifier[0]), PChar(Value), sizeof(TGIFIdentifierCode));
+  StrLCopy(@(FIdent.Identifier[0]), PAnsiChar(Value), sizeof(TGIFIdentifierCode));
 end;
 
 procedure TGIFApplicationExtension.SaveToStream(Stream: TStream);

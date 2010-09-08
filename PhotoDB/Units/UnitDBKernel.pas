@@ -18,7 +18,7 @@ type
    FChar : Char;
     procedure SetChar(const Value: Char);
   public
-  constructor Create; 
+  constructor Create;
   Destructor Destroy; override;
   published
   Property Char_ : Char Read FChar Write SetChar;
@@ -31,7 +31,7 @@ type
   DB_VER_2_0 = 3;
   DB_VER_2_1 = 4;
   DB_VER_2_2 = 5;
- 
+
 DB_IC_SHELL          = 0;
 DB_IC_SLIDE_SHOW     = 1;
 DB_IC_REFRESH_THUM   = 2;
@@ -138,17 +138,17 @@ DB_IC_TREE           = 102;
 DB_IC_CANCEL_ACTION  = 103;
 DB_IC__DB            = 104;
 DB_IC__MDB           = 105;
-DB_IC_SORT           = 106;   
-DB_IC_FILTER         = 107;   
+DB_IC_SORT           = 106;
+DB_IC_FILTER         = 107;
 DB_IC_CLOCK          = 108;
 DB_IC_ATYPE          = 109;
-DB_IC_MAIN           = 110;   
-DB_IC_APPLY_ACTION   = 111;   
-DB_IC_RELOADING      = 112;    
+DB_IC_MAIN           = 110;
+DB_IC_APPLY_ACTION   = 111;
+DB_IC_RELOADING      = 112;
 DB_IC_STENO          = 113;
-DB_IC_DESTENO        = 114;    
+DB_IC_DESTENO        = 114;
 DB_IC_SPLIT          = 115;
-DB_IC_CD_EXPORT      = 116;    
+DB_IC_CD_EXPORT      = 116;
 DB_IC_CD_MAPPING     = 117;
 DB_IC_CD_IMAGE       = 118;
 
@@ -216,7 +216,7 @@ type TDBKernel = class(TObject)
     fDBUserHash: integer;
     FTheme: TDbTheme;
     FForms : array of TForm;
-    FThemeNotifys : array of TNotifyEvent; 
+    FThemeNotifys : array of TNotifyEvent;
     FThemeNotifysForms : array of TForm;
     FApplicationKey : String;
     Chars : array[1..100] of TCharObject;
@@ -232,7 +232,7 @@ type TDBKernel = class(TObject)
     procedure SetImageList(const Value: TImageList);
     procedure SetTheme(const Value: TDbTheme);
     { Private declarations }
-  public              
+  public
   IconDllInstance : THandle;
   constructor Create;
   destructor Destroy; override;
@@ -339,7 +339,7 @@ constructor TDBKernel.Create;
 var
   i : integer;
 begin
-  inherited;      
+  inherited;
   FSych := TCriticalSection.Create;
   FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
@@ -402,11 +402,17 @@ var
   i:integer;
   fXevents : TDBEventsIDArray;
 begin
- If not ProgramInDemoMode then
- if not DBInDebug then
- begin
-  if CharToInt(GetCodeChar(1))+CharToInt(GetCodeChar(2))<>15 then exit;
- end;            
+  if Sender = nil then
+    raise Exception.Create('Sender is null!');
+
+  if GetCurrentThreadId <> MainThreadID then
+    raise Exception.Create('DoIDEvent call not from main thread! Sender: ' + Sender.ClassName);
+
+  if not ProgramInDemoMode then
+    if not DBInDebug then
+      if CharToInt(GetCodeChar(1)) + CharToInt(GetCodeChar(2)) <> 15 then
+        Exit;
+
  if length(fevents)=0 then exit;
  SetLength(fXevents,length(fevents));
  for i:=0 to length(fevents)-1 do
@@ -477,7 +483,7 @@ function TDBKernel.Readbool(Key, Name: string; default : boolean): boolean;
 var
   Reg : TBDRegistry;
   Value : string;
-begin         
+begin
   Result := Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Value := AnsiLowerCase(reg.ReadString(Name));
@@ -488,7 +494,7 @@ end;
 function TDBKernel.ReadRealBool(Key, Name: string; Default : boolean): Boolean;
 var
   Reg : TBDRegistry;
-begin         
+begin
   Result := Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Result := Reg.ReadBool(Name);
@@ -498,7 +504,7 @@ function TDBKernel.ReadboolW(Key, Name: string; Default : boolean): boolean;
 var
   Reg : TBDRegistry;
   Value : string;
-begin     
+begin
   Result := Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
   Value := AnsiLowerCase(Reg.ReadString(Name));
@@ -509,8 +515,8 @@ end;
 function TDBKernel.ReadInteger(Key, Name : string; Default : integer): integer;
 var
   Reg : TBDRegistry;
-begin               
-  Result:=Default;           
+begin
+  Result:=Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Result := StrToIntDef(reg.ReadString(Name), Default);
 end;
@@ -519,7 +525,7 @@ function TDBKernel.ReadDateTime(Key, Name : string; Default : TDateTime): TDateT
 var
   Reg : TBDRegistry;
 begin
-  Result:=Default;             
+  Result:=Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   if Reg.ValueExists(Name) then
     Result:=Reg.ReadDateTime(Name);
@@ -529,7 +535,7 @@ function TDBKernel.ReadProperty(Key, Name: string): string;
 var
   Reg : TBDRegistry;
 begin
-  Result := '';     
+  Result := '';
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
   Result := Reg.ReadString(Name);
 end;
@@ -537,8 +543,8 @@ end;
 function TDBKernel.ReadString(Key, Name: string): string;
 var
   Reg : TBDRegistry;
-begin        
-  Result := '';                   
+begin
+  Result := '';
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Result:=Reg.ReadString(Name);
 end;
@@ -546,8 +552,8 @@ end;
 function TDBKernel.ReadKeys(Key: string): TStrings;
 var
   Reg : TBDRegistry;
-begin     
-  Result:=TStringList.Create;    
+begin
+  Result:=TStringList.Create;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Reg.GetKeyNames(Result);
 end;
@@ -555,8 +561,8 @@ end;
 function TDBKernel.ReadValues(Key: string): TStrings;
 var
   Reg : TBDRegistry;
-begin           
-  Result:=TStringList.Create;    
+begin
+  Result:=TStringList.Create;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Reg.GetValueNames(Result);
 end;
@@ -714,7 +720,7 @@ begin
     exit;
    end;
   end;
-  
+
   try
    FTestTable.First;
    FTestTable.FieldByName('ID').AsInteger;
@@ -841,20 +847,20 @@ begin
       FreeDS(FTestTable);
       exit;
      end;
-     try                                                          
+     try
       FTestTable.FieldByName('Version').AsString;
       FTestTable.FieldByName('DBJpegCompressionQuality').AsString;
       FTestTable.FieldByName('ThSizePanelPreview').AsInteger;
       FTestTable.FieldByName('ThImageSize').AsInteger;
       FTestTable.FieldByName('ThHintSize').AsInteger;
-     except    
+     except
       on e : Exception do
       begin
        EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: '+e.Message);
        FreeDS(FTestTable);
        exit;
       end;
-     end; 
+     end;
      Result:=DB_VER_2_2;
     end;
     FreeDS(FTestTable);
@@ -945,7 +951,7 @@ end;
 procedure TDBKernel.WriteProperty(Key, Name, Value: string);
 var
   Reg : TBDRegistry;
-begin            
+begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
   Reg.WriteString(Name, Value);
 end;
@@ -961,7 +967,7 @@ end;
 procedure TDBKernel.WriteStringW(Key, Name, value: string);
 var
   Reg : TBDRegistry;
-begin                               
+begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
   Reg.WriteString(Name, Value);
 end;
@@ -977,7 +983,7 @@ end;
 function TDBKernel.GetDataBase: string;
 var
   Reg : TBDRegistry;
-begin                
+begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
   Result:=Reg.ReadString('DBDefaultName');
 end;
@@ -1010,7 +1016,7 @@ begin
   on e : Exception do EventLog(':TDBKernel::SetDataBase() throw exception: '+e.Message);
  end;
  dbname:=DBname_;
- Reg.Free;   
+ Reg.Free;
  ReadDBOptions;
 end;
 
@@ -1112,7 +1118,7 @@ end;
 
 function TDBKernel.ReadRegName: string;
 var
-  Reg : TBDRegistry; 
+  Reg : TBDRegistry;
   Key : String;
 begin
  Reg:=TBDRegistry.Create(REGISTRY_CLASSES);
@@ -1345,7 +1351,7 @@ begin
 
   if Form.Components[i-1] is TWebLink then
   with (Form.Components[i-1] as TWebLink) do
-  begin    
+  begin
    SetVistaContentFonts(Font,1);
    if Tag>-1 then
    begin
@@ -1554,7 +1560,7 @@ begin
  begin
   SetLength(FForms,length(FForms)+1);
   FForms[length(FForms)-1]:=Form;
-  
+
   if IsWindowsVista then
   SetVistaFonts(Form);
  end;
@@ -1692,7 +1698,7 @@ begin
  begin
   Chars[i].free;
   Chars[i]:=nil;
- end; 
+ end;
  for i:=1 to 16 do
  sootv[i]:=0;
  for i:=1 to 16 do
@@ -1743,7 +1749,7 @@ end;
 procedure TDBKernel.AddTemporaryPasswordInSession(Pass: String);
 var
   I : integer;
-begin     
+begin
   FSych.Enter;
   try
     for I := 0 to FPasswodsInSession.Count - 1 do
@@ -1756,7 +1762,7 @@ begin
 end;
 
 procedure TDBKernel.ClearTemporaryPasswordsInSession;
-begin     
+begin
   FSych.Enter;
   try
     FPasswodsInSession.Clear;
@@ -1769,7 +1775,7 @@ function TDBKernel.FindPasswordForCryptImageFile(FileName: String): String;
 var
   I : Integer;
 begin
-  Result := '';   
+  Result := '';
   FSych.Enter;
   try
     FileName := ProcessPath(FileName);
@@ -1794,7 +1800,7 @@ function TDBKernel.FindPasswordForCryptBlobStream(DF : TField): String;
 var
   I : Integer;
 begin
-  Result := '';    
+  Result := '';
   FSych.Enter;
   try
     for I := 0 to FPasswodsInSession.Count - 1 do
@@ -2065,7 +2071,7 @@ begin
  end;
  Reg.Free;
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try   
+ try
   Reg.DeleteKey(RegRoot+'dbs\'+OldDBName);
  except
   on e : Exception do EventLog(':TDBKernel::RenameDB() throw exception: '+e.Message);
@@ -2077,14 +2083,14 @@ end;
 function TDBKernel.DeleteDB(DBName: string): boolean;
 var
   Reg : TBDRegistry;
-begin   
+begin
  Result:=false;
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  try
   Reg.DeleteKey(RegRoot+'dbs\'+DBName);
  except
   on e : Exception do EventLog(':TDBKernel::DeleteDB() throw exception: '+e.Message);
- end;  
+ end;
  Reg.Free;
  LoadDBs;
 end;
@@ -2096,7 +2102,7 @@ begin
   DB_VER_1_8 : Result:='Paradox DB v1.8';
   DB_VER_1_9 : Result:='Paradox DB v1.9';
   DB_VER_2_0 : Result:='Paradox DB v2.0';
-  DB_VER_2_1 : Result:='Access DB v2.1';   
+  DB_VER_2_1 : Result:='Access DB v2.1';
   DB_VER_2_2 : Result:='Access DB v2.2';
  end;
 end;
@@ -2150,7 +2156,7 @@ begin
   begin
    if DBs[i].Name=ParamDBFile then
    begin
-    DBName:=DBs[i].FileName;   
+    DBName:=DBs[i].FileName;
     if GetParamStrDBBool('/SelectDBPermanent') then
     DBKernel.SetDataBase(DBName);
     exit;
@@ -2203,7 +2209,7 @@ var
   function LoadIcon(Instance : HINST; ResName : string) : HIcon;
   begin
     Result := LoadImage(Instance, PWideChar(ResName), IMAGE_ICON, 16, 16, 0);
-  end;   
+  end;
 
 begin
   FImageList:=TImageList.Create(nil);
@@ -2319,22 +2325,22 @@ begin
   icons[105] := LoadIcon(IconDllInstance,'XDB');
   icons[106] := LoadIcon(IconDllInstance,'XMDB');
   icons[107] := LoadIcon(IconDllInstance,'SORT');
-  icons[108] := LoadIcon(IconDllInstance,'FILTER');  
+  icons[108] := LoadIcon(IconDllInstance,'FILTER');
   icons[109] := LoadIcon(IconDllInstance,'CLOCK');
   icons[110] := LoadIcon(IconDllInstance,'ATYPE');
   icons[111] := LoadIcon(HInstance,'MAINICON');
   icons[112] := LoadIcon(IconDllInstance,'APPLY_ACTION');
-  icons[113] := LoadIcon(IconDllInstance,'RELOADING');      
+  icons[113] := LoadIcon(IconDllInstance,'RELOADING');
   icons[114] := LoadIcon(IconDllInstance,'STENO');
-  icons[115] := LoadIcon(IconDllInstance,'DESTENO');     
-  icons[116] := LoadIcon(IconDllInstance,'SPLIT');        
+  icons[115] := LoadIcon(IconDllInstance,'DESTENO');
+  icons[116] := LoadIcon(IconDllInstance,'SPLIT');
   icons[117] := LoadIcon(IconDllInstance,'CD_EXPORT');
   icons[118] := LoadIcon(IconDllInstance,'CD_MAPPING');
   icons[119] := LoadIcon(IconDllInstance,'CD_IMAGE');
 
   //disabled items are bad
   //ConvertTo32BitImageList(FImageList);
-  
+
   for i:=1 to IconsCount do
     ImageList_ReplaceIcon(FImageList.Handle, -1, icons[i]);
 end;
@@ -2365,5 +2371,5 @@ finalization
  begin
   FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(dbname));
  end;
- 
+
 end.

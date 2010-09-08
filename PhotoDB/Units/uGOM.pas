@@ -2,7 +2,7 @@ unit uGOM;
 
 interface
 
-uses Classes, SyncObjs;
+uses Classes, SysUtils, SyncObjs;
 
 type
   TManagerObjects = class(TObject)
@@ -33,6 +33,9 @@ begin
   try
     if FObjects.IndexOf(Obj) > -1 then
       Exit;
+
+    if Obj = nil then
+      raise Exception.Create('Obj  is null!');
 
     FObjects.Add(Obj);
   finally
