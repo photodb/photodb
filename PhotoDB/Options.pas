@@ -618,7 +618,7 @@ begin
   begin
    if MessageBoxDB(Handle,TEXT_MES_RELOAD_DATA,TEXT_MES_INFORMATION,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION)=ID_OK then
    begin
-    DBKernel.DoIDEvent(nil,0,[EventID_Param_Refresh_Window],EventInfo);
+    DBKernel.DoIDEvent(Self,0,[EventID_Param_Refresh_Window],EventInfo);
    end;
   end;
 // Case TabbedNotebook1.PageIndex of

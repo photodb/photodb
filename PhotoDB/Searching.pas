@@ -2197,7 +2197,7 @@ begin
         Exit;
       end;
     end;
-    RenameResult := RenameFileWithDB(SearchRecord.FileName,GetDirectory(SearchRecord.FileName) + S, SearchRecord.ID, False);
+    RenameResult := RenameFileWithDB(Self, SearchRecord.FileName,GetDirectory(SearchRecord.FileName) + S, SearchRecord.ID, False);
   end;
 end;
 

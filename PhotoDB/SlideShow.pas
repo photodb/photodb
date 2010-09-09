@@ -2952,13 +2952,13 @@ begin
    if Length(CurrentInfo.ItemFileNames)=0 then
    begin
     Close;
-    DBKernel.DoIDEvent(nil,DeleteID,[EventID_Param_Delete],EventInfo);
+    DBKernel.DoIDEvent(Self,DeleteID,[EventID_Param_Delete],EventInfo);
     Exit;
    end;
    if CurrentFileNumber>Length(ItemFileNames)-1 then CurrentFileNumber:=Length(ItemFileNames)-1;
   end;
   if CurrentInfo.ItemIds[CurrentFileNumber] <> 0 then
-    DBKernel.DoIDEvent(nil,DeleteID,[EventID_Param_Delete],EventInfo);
+    DBKernel.DoIDEvent(Self,DeleteID,[EventID_Param_Delete],EventInfo);
   if Length(CurrentInfo.ItemFileNames)<2 then
   begin
    TbBack.Enabled := False;

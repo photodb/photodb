@@ -154,7 +154,7 @@ var
 begin
  EventInfo.ID := IntParam;
  EventInfo.Image:=nil;
- DBKernel.DoIDEvent(nil,IntParam,[EventID_Param_Image],EventInfo);
+ DBKernel.DoIDEvent(Self,IntParam,[EventID_Param_Image],EventInfo);
 end;
 
 procedure TRefreshDBRecordsThread.RemoveFileFromUpdatingList;
@@ -166,7 +166,7 @@ procedure TRefreshDBRecordsThread.DoDBkernelEventRefreshList;
 var
   EventInfo : TEventValues;
 begin
- DBKernel.DoIDEvent(nil,IntParam,[EventID_Repaint_ImageList],EventInfo);
+ DBKernel.DoIDEvent(Self,IntParam,[EventID_Repaint_ImageList],EventInfo);
 end;
 
 procedure TRefreshDBRecordsThread.OnDBKernelEventProcedure(Sender: TObject;

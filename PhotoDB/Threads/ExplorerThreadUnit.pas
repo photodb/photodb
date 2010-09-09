@@ -11,7 +11,7 @@ uses
  EasyListview, GraphicsCool, uVistaFuncs, uResources,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
  uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
- UnitExplorerLoadSIngleImageThread, uConstants;
+ UnitExplorerLoadSIngleImageThread, uConstants, uMemory;
 
 type
   TExplorerThread = class(TThreadEx)
@@ -1197,10 +1197,12 @@ procedure TExplorerThread.AddFile;
 Var
   Ext_ : String;
   IsExt_  : Boolean;
+  FFiles : TExplorerFileInfos;
 begin
  if FolderView then if AnsiLowerCase(ExtractFileName(FUpdaterInfo.FileName))='folderdb.ldb' then exit;
 
  FFiles := TExplorerFileInfos.Create;
+ try
  Ext_:=GetExt(FUpdaterInfo.FileName);
  IsExt_:= ExtInMask(SupportedExt,Ext_);
  If DirectoryExists(FUpdaterInfo.FileName) then
@@ -1235,6 +1237,9 @@ begin
    ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
   except
   end;
+ end;
+ finally
+   F(FFiles);
  end;
 end;
 

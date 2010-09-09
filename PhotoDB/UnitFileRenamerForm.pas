@@ -188,7 +188,7 @@ begin
  try
   OldFile:=GetDirectory(FFiles[i-1])+ValueListEditor1.Cells[0,i];
   NewFile:=GetDirectory(FFiles[i-1])+ValueListEditor1.Cells[1,i];
-  Dolphin_DB.RenamefileWithDB(OldFile,NewFile,fIDS[i-1],false);
+  Dolphin_DB.RenamefileWithDB(Self, OldFile,NewFile,fIDS[i-1],false);
  except
   on e : Exception do MessageBoxDB(Handle,Format(TEXT_MES_UNABLE_TO_RENAME_FILE_TO_FILE_F,[OldFile,NewFile,e.Message]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
  end;

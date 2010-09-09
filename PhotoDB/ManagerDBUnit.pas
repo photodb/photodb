@@ -1782,7 +1782,7 @@ begin
  FileName:=DBKernel.DBs[PopupMenu8.Tag].FileName;
  if DBKernel.TestDB(FileName) then
  begin
-  SelectDB(FileName);
+  SelectDB(Self, FileName);
  end else
  begin
   if not FileExists(FileName) then

@@ -17,8 +17,8 @@ const
   CRYPT_RESULT_ALREADY_CRYPT     = 7;
   CRYPT_RESULT_ALREADY_DECRYPT   = 8;
 
-function CryptImageByFileName(FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
-function ResetPasswordImageByFileName(FileName: String; ID: integer; Password : String; DoEvent : boolean = true) : integer;
+function CryptImageByFileName(Caller : TObject; FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
+function ResetPasswordImageByFileName(Caller : TObject; FileName: String; ID: integer; Password : String) : integer;
 function CryptTStrings(TS : TStrings; Pass : String) : String;
 function DeCryptTStrings(S : String; Pass : String) : TStrings;
 function CryptDBRecordByID(ID : integer; Password : String) : integer;
@@ -93,7 +93,7 @@ begin
   end;
 end;
 
-function CryptImageByFileName(FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
+function CryptImageByFileName(Caller : TObject; FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
 var
   info : TEventValues;
 begin
@@ -118,59 +118,43 @@ begin
  end;
 
  if Result=CRYPT_RESULT_UNDEFINED then info.Crypt:=true else info.Crypt:=false;
- 
- if ID<>0 then
- if DoEvent then
- DBKernel.DoIDEvent(nil,ID,[EventID_Param_Crypt],info) else
- begin
-  info.NewName:=FileName;  
-  if DoEvent then
-  DBKernel.DoIDEvent(nil,ID,[EventID_Param_Name],info)
- end;
- if Result=CRYPT_RESULT_UNDEFINED then Result:=CRYPT_RESULT_OK;
+
+  if ID <> 0 then
+    if DoEvent then
+      DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Crypt], Info)
+    else
+    begin
+      Info.NewName := FileName;
+      if DoEvent then
+        DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Name], Info)
+    end;
+  if Result = CRYPT_RESULT_UNDEFINED then
+    Result := CRYPT_RESULT_OK;
 end;
 
-function ResetPasswordImageByFileName(FileName: String; ID: integer; Password : String; DoEvent : boolean = true) : integer;
-var
-  info : TEventValues;
+function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string): Integer;
+
 begin
- info.Crypt:=false;
- Result:=CRYPT_RESULT_UNDEFINED;
- if not ValidCryptGraphicFile(FileName) and FileExists(FileName) then
- begin
-  Result:=CRYPT_RESULT_ALREADY_DECRYPT;
-  exit;
- end;
-      
- if FileExists(FileName) then
- if not ResetPasswordInGraphicFile(FileName, Password) then
- begin
-  Result:=CRYPT_RESULT_FAILED_CRYPT_FILE;
-  exit;
- end;
+  Result := CRYPT_RESULT_OK;
+  if not ValidCryptGraphicFile(FileName) and FileExists(FileName) then
+  begin
+    Result := CRYPT_RESULT_ALREADY_DECRYPT;
+    Exit;
+  end;
 
- if ID<>0 then
- if ResetPasswordDBRecordByID(ID, Password)<>CRYPT_RESULT_OK then
- begin
-  Result:=CRYPT_RESULT_FAILED_CRYPT_DB;
- end;
+  if FileExists(FileName) then
+    if not ResetPasswordInGraphicFile(FileName, Password) then
+    begin
+      Result := CRYPT_RESULT_FAILED_CRYPT_FILE;
+      Exit;
+    end;
 
+  if ID <> 0 then
+    if ResetPasswordDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
+    begin
+      Result := CRYPT_RESULT_FAILED_CRYPT_DB;
+    end;
 
- if Result=CRYPT_RESULT_UNDEFINED then info.Crypt:=false else info.Crypt:=true;
-
- if ID<>0 then
- begin
-  if DoEvent then
-  DBKernel.DoIDEvent(nil,ID,[EventID_Param_Crypt],info)
- end else
- begin
-  info.NewName:=FileName;  
-  if DoEvent then
-  DBKernel.DoIDEvent(nil,ID,[EventID_Param_Name],info)
- end;
- 
- if Result=CRYPT_RESULT_UNDEFINED then
- Result:=CRYPT_RESULT_OK;
 end;
 
 function DeCryptTStrings(S : String; Pass : String) : TStrings;

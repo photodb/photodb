@@ -603,7 +603,7 @@ function NormalizeDBString(S: string): string;
 function HardwareStringToCode(Hs: string): string;
 function CodeToActivateCode(S: string): string;
 function GetuserString: string;
-function RenameFileWithDB(OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
+function RenameFileWithDB(Caller : TObject; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 function GetGUID: TGUID;
 procedure GetFileListByMask(BeginFile, Mask: string;
   { var list : tstrings; } out Info: TRecordsInfo; var N: Integer; ShowPrivate: Boolean);
@@ -688,9 +688,9 @@ procedure UpdateImageRecord(FileName: string; ID: Integer);
 procedure UpdateImageRecordEx(FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
 procedure SetDesktopWallpaper(FileName: string; WOptions: Byte);
 
-procedure RotateDBImage270(ID: Integer; OldRotation: Integer);
-procedure RotateDBImage90(ID: Integer; OldRotation: Integer);
-procedure RotateDBImage180(ID: Integer; OldRotation: Integer);
+procedure RotateDBImage270(Caller : TObject; ID: Integer; OldRotation: Integer);
+procedure RotateDBImage90(Caller : TObject; ID: Integer; OldRotation: Integer);
+procedure RotateDBImage180(Caller : TObject; ID: Integer; OldRotation: Integer);
 
 procedure DBError(ErrorValue, Error: string);
 
@@ -743,13 +743,13 @@ procedure DoUpdateHelp;
 function GetProcessMemory: Integer;
 function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean;
 function GetProgramPath: string;
-procedure SelectDB(DB: string);
+procedure SelectDB(Caller : TObject; DB: string);
 procedure CopyFullRecordInfo(ID: Integer);
 
 function LoadActionsFromfileA(FileName: string): TArStrings;
 
 function SaveActionsTofile(FileName: string; Actions: TArstrings): Boolean;
-procedure RenameFolderWithDB(OldFileName, NewFileName: string; Ask: Boolean = True);
+procedure RenameFolderWithDB(Caller : TObject; OldFileName, NewFileName: string; Ask: Boolean = True);
 function GetDBViewMode: Boolean;
 function GetDBFileName(FileName, DBName: string): string;
 // procedure CompareStrThs(Th1, Th2 : string);
@@ -2571,7 +2571,7 @@ begin
   FindClose(SearchRec);
 end;
 
-procedure RenameFolderWithDB(OldFileName, NewFileName: string; Ask: Boolean = True);
+procedure RenameFolderWithDB(Caller : TObject; OldFileName, NewFileName: string; Ask: Boolean = True);
 var
   ProgressWindow: TProgressActionForm;
   FQuery, SetQuery: TDataSet;
@@ -2649,7 +2649,7 @@ begin
             ExecSQL(SetQuery);
             EventInfo.name := OldPath;
             EventInfo.NewName := NewPath;
-            DBKernel.DoIDEvent(nil, 0, [EventID_Param_Name], EventInfo);
+            DBKernel.DoIDEvent(Caller, 0, [EventID_Param_Name], EventInfo);
             try
 
               if I < 10 then
@@ -2686,7 +2686,7 @@ begin
     if Length(Dirs) > 0 then
     begin
       for I := 0 to Length(Dirs) - 1 do
-        RenameFolderWithDB(OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
+        RenameFolderWithDB(Caller, OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
     end;
   end;
   if DirectoryExists(NewFileName) then
@@ -2695,12 +2695,12 @@ begin
     if Length(Dirs) > 0 then
     begin
       for I := 0 to Length(Dirs) - 1 do
-        RenameFolderWithDB(OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
+        RenameFolderWithDB(Caller, OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
     end;
   end;
 end;
 
-function RenameFileWithDB(OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
+function RenameFileWithDB(Caller : TObject; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 var
   FQuery: TDataSet;
   EventInfo: TEventValues;
@@ -2761,17 +2761,17 @@ begin
     end;
     FreeDS(FQuery);
   end;
-  RenameFolderWithDB(OldFileName, NewFileName);
+  RenameFolderWithDB(Caller, OldFileName, NewFileName);
 
   if OnlyBD then
   begin
-    DBKernel.DoIDEvent(nil, ID, [EventID_Param_Name], EventInfo);
+    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Name], EventInfo);
     Exit;
   end;
 
   EventInfo.name := OldFileName;
   EventInfo.NewName := NewFileName;
-  DBKernel.DoIDEvent(nil, ID, [EventID_Param_Name], EventInfo);
+  DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Name], EventInfo);
 end;
 
 function ActivationID: string;
@@ -4528,7 +4528,7 @@ begin
   ActiveDesktop.ApplyChanges(AD_APPLY_ALL or AD_APPLY_FORCE);
 end;
 
-procedure RotateDBImage270(ID: Integer; OldRotation: Integer);
+procedure RotateDBImage270(Caller : TObject; ID: Integer; OldRotation: Integer);
 var
   EventInfo: TEventValues;
 begin
@@ -4545,11 +4545,11 @@ begin
         EventInfo.Rotate := DB_IMAGE_ROTATE_180;
     end;
     SetRotate(ID, EventInfo.Rotate);
-    DBKernel.DoIDEvent(nil, ID, [EventID_Param_Rotate], EventInfo);
+    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
 
-procedure RotateDBImage90(ID: Integer; OldRotation: Integer);
+procedure RotateDBImage90(Caller : TObject; ID: Integer; OldRotation: Integer);
 var
   EventInfo: TEventValues;
 begin
@@ -4566,11 +4566,11 @@ begin
         EventInfo.Rotate := DB_IMAGE_ROTATE_0;
     end;
     SetRotate(ID, EventInfo.Rotate);
-    DBKernel.DoIDEvent(nil, ID, [EventID_Param_Rotate], EventInfo);
+    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
 
-procedure RotateDBImage180(ID: Integer; OldRotation: Integer);
+procedure RotateDBImage180(Caller : TObject; ID: Integer; OldRotation: Integer);
 var
   EventInfo: TEventValues;
 begin
@@ -4587,7 +4587,7 @@ begin
         EventInfo.Rotate := DB_IMAGE_ROTATE_90;
     end;
     SetRotate(ID, EventInfo.Rotate);
-    DBKernel.DoIDEvent(nil, ID, [EventID_Param_Rotate], EventInfo);
+    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
 
@@ -5980,7 +5980,7 @@ begin
     Result := Application.ExeName;
   end;
 
-  procedure SelectDB(DB: string);
+  procedure SelectDB(Caller : TObject; DB: string);
   var
     EventInfo: TEventValues;
     DBVersion: Integer;
@@ -6004,7 +6004,7 @@ begin
         DBKernel.SetDataBase(DB);
         EventInfo.name := Dbname;
         LastInseredID := 0;
-        DBKernel.DoIDEvent(nil, 0, [EventID_Param_DB_Changed], EventInfo);
+        DBKernel.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
       end
       else
       begin

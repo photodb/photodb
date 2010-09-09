@@ -8,7 +8,8 @@ uses
   JPEG, GIFImage, GraphicEx, Language, UnitDBkernel, GraphicCrypt,
   acDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
   UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
-  DmProgress, uW7TaskBar, PngImage, uGOM, uWatermarkOptions;
+  DmProgress, uW7TaskBar, PngImage, uGOM, uWatermarkOptions,
+  UnitPropeccedFilesSupport;
 
 type
   TFormSizeResizer = class(TDBForm)
@@ -67,7 +68,7 @@ type
     function GetFormID : string; override;
   public
     procedure SetInfo(List : TDBPopupMenuInfo);
-    procedure ThreadEnd(EndProcessing : Boolean);
+    procedure ThreadEnd(Data : TDBPopupMenuInfoRecord; EndProcessing : Boolean);
     { Public declarations }
   end;
 
@@ -194,6 +195,9 @@ begin
     Exit;
   end;
 
+  for I := 0 to FData.Count - 1 do
+    ProcessedFilesCollection.AddFile(FData[I].FileName);
+
   //change form state
   PnOptions.Hide;
   BtSaveAsDefault.Hide;
@@ -309,8 +313,10 @@ begin
     EdSavePath.Text := ExtractFileDir(FData[0].FileName);
 end;
 
-procedure TFormSizeResizer.ThreadEnd(EndProcessing : Boolean);
+procedure TFormSizeResizer.ThreadEnd(Data : TDBPopupMenuInfoRecord; EndProcessing : Boolean);
 begin
+  ProcessedFilesCollection.RemoveFile(Data.FileName);
+
   PrbMain.Position := FDataCount - FData.Count;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);

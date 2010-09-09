@@ -6,7 +6,7 @@ uses
   Windows, Classes, Graphics, Forms, SysUtils, Dolphin_db, GraphicCrypt,
   ImageConverting, Exif, uLogger, GraphicEx, UnitDBCommon, uMemory, uFileUtils,
   PngImage, uGOM, uDBForm, Dialogs, UnitDBDeclare, JPEG, UnitJPEGOptions,
-  UnitDBCommonGraphics;
+  UnitDBCommonGraphics, GDIPlusRotate;
 
 type
   TImageConvertThread = class(TThread)
@@ -51,25 +51,180 @@ var
   Original : TBitmap;
   Exif : TExif;
   W, H, Width, Height : Integer;
+  Crypted : Boolean;
+  MS, MD : TMemoryStream;
+  FS : TFileStream;
+
+  procedure FixEXIFRotate;
+  begin
+    if FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF then
+    begin
+      Exif := TExif.Create;
+      try
+        Exif.ReadFromFile(FData.FileName);
+        FProcessingParams.Rotation := ExifOrientationToRatation(Exif.Orientation);
+      except
+        on e : Exception do
+          EventLog(e.Message);
+      end;
+      Exif.Free;
+    end;
+  end;
+
+const
+  MODE_GDI_PLUS_CRYPT = 0;
+  MODE_GDI_PLUS      = 1;
+  MODE_CUSTOM        = 2;
+
+  procedure SaveFile(Mode : Integer);
+  begin
+
+    repeat
+      try
+        SetLastError(0);
+
+        case mode of
+          MODE_GDI_PLUS_CRYPT:
+            begin
+              FS := TFileStream.Create(FileName, fmCreate);
+              try
+                MD.Seek(0, soFromBeginning);
+                CryptStream(MD, FS, Password, CRYPT_OPTIONS_SAVE_CRC, FileName);
+              finally
+                FS.Free;
+              end;
+            end;
+
+          MODE_GDI_PLUS:
+            begin
+              case FProcessingParams.Rotation of
+                DB_IMAGE_ROTATE_270:
+                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate270, True, FileName);
+                DB_IMAGE_ROTATE_90:
+                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate90, True, FileName);
+                DB_IMAGE_ROTATE_180:
+                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate180, True, FileName);
+              end;
+            end;
+
+          MODE_CUSTOM:
+            begin
+              NewGraphic.SaveToFile(FileName);
+
+              if Password <> '' then
+                CryptGraphicFileV2(FileName, Password, CRYPT_OPTIONS_SAVE_CRC);
+            end;
+        end;
+
+        if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) then
+          raise Exception.Create('Error code = ' + IntToStr(GetLastError));
+        Exit;
+      except
+        on e : Exception do
+        begin
+
+          if not GOM.IsObj(FOwner) then
+             Exit;
+
+          FErrorMessage := e.Message;
+          Synchronize(ShowWriteError);
+
+          if FDialogResult = IDABORT then
+          begin
+            FEndProcessing := True;
+            Exit;
+          end else if FDialogResult = IDRETRY then
+            Continue
+          else if FDialogResult = IDIGNORE then
+            Exit;
+        end;
+      end;
+    until False;
+
+    if (AnsiLowerCase(FileName) = AnsiLowerCase(FData.FileName)) then
+      Synchronize(NotifyDB);
+  end;
+
 begin
   FreeOnTerminate := True;
   FEndProcessing := False;
   try
+
     GraphicClass := GetGraphicClass(ExtractFileExt(FData.FileName), False);
     if GraphicClass = nil then
       Exit;
 
+    Crypted := ValidCryptGraphicFile(FData.FileName);
+    if Crypted then
+    begin
+      Password := DBKernel.FindPasswordForCryptImageFile(FData.FileName);
+      if Password = '' then
+        Exit;
+    end;
+
+    if FProcessingParams.GraphicClass = nil then
+      NewGraphicClass := GraphicClass
+    else
+      NewGraphicClass := FProcessingParams.GraphicClass;
+
+    FileName := FProcessingParams.WorkDirectory;
+    FileName := FileName + '\' + GetFileNameWithoutExt(FData.FileName) + FProcessingParams.Preffix;
+    FileName := FileName + GetGraphicExtForSave(NewGraphicClass);
+
+    if FProcessingParams.Rotate then
+      InitGDIPlus;
+
+    //if only rotate and JPEG image -> rotate only with GDI+
+    if FProcessingParams.Rotate
+      and DBKernel.Readbool('Options', 'UseGDIPlus', GDIPlusPresent)
+      and not FProcessingParams.ResizeToSize
+      and not FProcessingParams.AddWatermark
+      and (NewGraphicClass = GraphicClass)
+      and (GraphicClass = TJPEGImage) then
+    begin
+      FixEXIFRotate;
+
+      MS := TMemoryStream.Create;
+      try
+        if Crypted then
+        begin
+          if not DecryptFileToStream(FData.FileName, Password, MS) then
+            Exit;
+
+          MD := TMemoryStream.Create;
+          try
+            case FProcessingParams.Rotation of
+              DB_IMAGE_ROTATE_270:
+                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate270);
+              DB_IMAGE_ROTATE_90:
+                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate90);
+              DB_IMAGE_ROTATE_180:
+                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate180);
+            end;
+
+            SaveFile(MODE_GDI_PLUS_CRYPT);
+
+          finally
+            MD.Free;
+          end;
+        end else
+          SaveFile(MODE_GDI_PLUS);
+
+      finally
+        MS.Free;
+      end;
+
+      if (AnsiLowerCase(FileName) = AnsiLowerCase(FData.FileName)) then
+        Synchronize(NotifyDB);
+
+      Exit;
+    end;
+
     Graphic := GraphicClass.Create;
     try
-      if ValidCryptGraphicFile(FData.FileName) then
+      if Crypted then
       begin
-        Password := DBKernel.FindPasswordForCryptImageFile(FData.FileName);
-        if Password = '' then
-          Exit;
-
-        //TODO: refactor
-        Graphic.Free;
-        Graphic := nil;
+        F(Graphic);
 
         Graphic := DeCryptGraphicFile(FData.FileName, Password);
       end else
@@ -108,18 +263,7 @@ begin
         //apply rotation to image - quick process
         if FProcessingParams.Rotate then
         begin
-          if FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF then
-          begin
-            Exif := TExif.Create;
-            try
-              Exif.ReadFromFile(FData.FileName);
-              FProcessingParams.Rotation := ExifOrientationToRatation(Exif.Orientation);
-            except
-              on e : Exception do
-                EventLog(e.Message);
-            end;
-            Exif.Free;
-          end;
+          FixEXIFRotate;
 
           if FProcessingParams.Rotation <> DB_IMAGE_ROTATE_UNKNOWN then
             ApplyRotate(Original, FProcessingParams.Rotation);
@@ -134,11 +278,6 @@ begin
             FProcessingParams.WatermarkOptions.Transparenty);
 
         //save
-        if FProcessingParams.GraphicClass = nil then
-          NewGraphicClass := GraphicClass
-        else
-          NewGraphicClass := FProcessingParams.GraphicClass;
-
         NewGraphic := NewGraphicClass.Create;
         try
           NewGraphic.Assign(Original);
@@ -146,46 +285,7 @@ begin
 
           SetJPEGGraphicSaveOptions(ConvertImageID, NewGraphic);
 
-          FileName := FProcessingParams.WorkDirectory;
-          FileName := FileName + '\' + GetFileNameWithoutExt(FData.FileName) + FProcessingParams.Preffix;
-          FileName := FileName + GetGraphicExtForSave(NewGraphicClass);
-
-          Repeat
-            try
-              SetLastError(0);
-
-              NewGraphic.SaveToFile(FileName);
-
-              if Password <> '' then
-                CryptGraphicFileV2(FileName, Password, CRYPT_OPTIONS_SAVE_CRC);
-
-              if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) then
-                raise Exception.Create('Error code = ' + IntToStr(GetLastError));
-              Exit;
-            except
-              on e : Exception do
-              begin
-
-                if not GOM.IsObj(FOwner) then
-                   Exit;
-
-                FErrorMessage := e.Message;
-                Synchronize(ShowWriteError);
-
-                if FDialogResult = IDABORT then
-                begin
-                  FEndProcessing := True;
-                  Exit;
-                end else if FDialogResult = IDRETRY then
-                  Continue
-                else if FDialogResult = IDIGNORE then
-                  Exit;
-            end;
-           end;
-          until False;
-
-          if (AnsiLowerCase(FileName) = AnsiLowerCase(FData.FileName)) then
-            Synchronize(NotifyDB);
+          SaveFile(MODE_CUSTOM);
 
         finally
           F(NewGraphic);
@@ -198,8 +298,8 @@ begin
       F(Graphic);
     end;
   finally
-    F(FData);
     Synchronize(OnEnd);
+    F(FData);
   end;
 end;
 
@@ -217,7 +317,7 @@ procedure TImageConvertThread.OnEnd;
 begin
   if not GOM.IsObj(FOwner) then
      Exit;
-  TFormSizeResizer(FOwner).ThreadEnd(FEndProcessing);
+  TFormSizeResizer(FOwner).ThreadEnd(FData, FEndProcessing);
 end;
 
 procedure TImageConvertThread.ShowWriteError;

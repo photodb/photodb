@@ -14,7 +14,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
-  PopupMenu = PopupMenu1
+  PopupMenu = PmDate
   Position = poScreenCenter
   OnCreate = FormCreate
   OnKeyPress = FormKeyPress
@@ -399,7 +399,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
       00000000FFFF0000E00F0000C0070001800300160001D4E70001F5FF0E01F5FF
       1C01F5FF1801F5FF1041F5FF00C1F5FF0181F5FF0203F5FF8003F5FFC007F5FF
       E05FF5FF}
-    PopupMenu = PopupMenu2
+    PopupMenu = PmTime
     OnDblClick = TimeExists1Click
   end
   object Label3: TLabel
@@ -414,38 +414,38 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
     ParentFont = False
-    PopupMenu = PopupMenu2
+    PopupMenu = PmTime
     OnDblClick = TimeExists1Click
   end
-  object MonthCalendar1: TMonthCalendar
+  object McDate: TMonthCalendar
     Left = 0
     Top = 0
     Width = 162
     Height = 154
-    Date = 38187.618968067130000000
-    PopupMenu = PopupMenu1
+    Date = 38187.745693935180000000
+    PopupMenu = PmDate
     TabOrder = 0
-    OnDblClick = Button1Click
+    OnDblClick = BtOKClick
   end
-  object Button1: TButton
+  object BtOK: TButton
     Left = 88
     Top = 184
     Width = 67
     Height = 17
     Caption = 'Ok'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtOKClick
   end
-  object Button2: TButton
+  object BtCancel: TButton
     Left = 12
     Top = 184
     Width = 67
     Height = 17
     Caption = 'Cancel'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtCancelClick
   end
-  object DateTimePicker1: TDateTimePicker
+  object DtpTime: TDateTimePicker
     Left = 0
     Top = 160
     Width = 161
@@ -455,11 +455,11 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Time = 38544.728351956010000000
     Kind = dtkTime
     ParentBiDiMode = False
-    PopupMenu = PopupMenu2
+    PopupMenu = PmTime
     TabOrder = 3
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
+  object PmDate: TPopupMenu
+    OnPopup = PmDatePopup
     object GoToCurrentDate1: TMenuItem
       Caption = 'Go To Current Date'
       OnClick = GoToCurrentDate1Click
@@ -473,8 +473,8 @@ object FormMenuDateEdit: TFormMenuDateEdit
       OnClick = DateExists1Click
     end
   end
-  object PopupMenu2: TPopupMenu
-    OnPopup = PopupMenu2Popup
+  object PmTime: TPopupMenu
+    OnPopup = PmTimePopup
     Left = 32
     object GoToCurrentTime1: TMenuItem
       Caption = 'Go To Current Time'

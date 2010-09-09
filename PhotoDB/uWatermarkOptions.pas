@@ -11,6 +11,9 @@ type
     LbBlocksX: TLabel;
     ColorBox1: TColorBox;
     SeBlocksX: TSpinEdit;
+    LbTextColor: TLabel;
+    SeBlocksY: TSpinEdit;
+    LbBlocksY: TLabel;
   private
     { Private declarations }
   public

@@ -665,7 +665,7 @@ begin
    SetSQL(fQuery,SQL_);
    try
     ExecSQL(fQuery);
-    DBKernel.DoIDEvent(nil,PopupMenu1.Tag,[EventID_Param_Delete],EventInfo);
+    DBKernel.DoIDEvent(Self,PopupMenu1.Tag,[EventID_Param_Delete],EventInfo);
     FreeDS(fQuery);
     ListView1.Items.Delete(i-1);
    except

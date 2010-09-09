@@ -422,7 +422,7 @@ begin
  Options.Password := Opt.Password;
  Options.CryptOptions := CryptOptions;
  Options.Action := ACTION_CRYPT_IMAGES;
- TCryptingImagesThread.Create(False, Options);
+ TCryptingImagesThread.Create(Options);
 end;
 
 procedure TDBPopupMenu.DateItemPopUpMenu_(Sender: TObject);
@@ -591,7 +591,7 @@ begin
  Options.Action:=ACTION_DECRYPT_IMAGES;
  Options.Password:=Password;
  Options.CryptOptions:=0;
- TCryptingImagesThread.Create(false, Options);
+ TCryptingImagesThread.Create(Options);
 end;
 
 procedure TDBPopupMenu.DeleteDublicatesItemPopUpMenu_(Sender: TObject);
@@ -630,7 +630,7 @@ begin
    SetSQL(fQuery,SQL_);
    ExecSQL(fQuery);
    EventInfo.Attr:=db_attr_norm;
-   DBKernel.DoIDEvent(nil,finfo[i].ID,[EventID_Param_Attr],EventInfo);
+   DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Attr],EventInfo);
    SetLength(S,1);
    for j:=0 to length(Files)-1 do
    begin
@@ -644,7 +644,7 @@ begin
       end;
      end;
     end;
-    DBKernel.DoIDEvent(nil,IDs[j],[EventID_Param_Delete],EventInfo);
+    DBKernel.DoIDEvent(Sender,IDs[j],[EventID_Param_Delete],EventInfo);
    end;
    FreeDS(fQuery);
   end;
@@ -689,7 +689,7 @@ begin
      end;
     end;
    end;
-   DBKernel.DoIDEvent(nil,finfo[i].ID,[EventID_Param_Delete],EventInfo);
+   DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Delete],EventInfo);
   end;
   FreeDS(fQuery);
  end;
@@ -721,7 +721,7 @@ begin
   ExecSQL(fQuery);
   for i:=0 to finfo.Count - 1 do
   if finfo[i].Selected then
-  DBKernel.DoIDEvent(nil,finfo[i].ID,[EventID_Param_Delete],EventInfo);
+  DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Delete],EventInfo);
   FreeDS(fQuery);
  end;
 end;

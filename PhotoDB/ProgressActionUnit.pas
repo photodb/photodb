@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, DmProgress, Language, Dolphin_DB, AppEvnts,
-  uVistaFuncs;
+  uVistaFuncs, uGOM, uMemory;
 
 type
   TProgressActionForm = class(TForm)
@@ -45,126 +45,127 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     { Private declarations }
   public
-  WindowID : TGUID;
-  Closed : Boolean;
-  WindowCanClose : boolean;
-  Procedure DoShow;
-  Procedure SetMaxOneValue(Value : int64);
-  Procedure SetMaxTwoValue(Value : int64);
-  Procedure ReCount;
-  Procedure LoadLanguage;
-  Procedure SetAlternativeText(Text : String);
-   constructor Create(AOwner: TComponent; Background : boolean); reintroduce;
+    WindowID: TGUID;
+    Closed: Boolean;
+    WindowCanClose: Boolean;
+    procedure DoShow;
+    procedure SetMaxOneValue(Value: Int64);
+    procedure SetMaxTwoValue(Value: Int64);
+    procedure ReCount;
+    procedure LoadLanguage;
+    procedure SetAlternativeText(Text: string);
+    constructor Create(AOwner: TComponent; Background: Boolean); reintroduce;
   published
-  Property OneOperation : boolean read FOneOperation Write SetOneOperation;
-  Property xPosition : int64 read FPosition write SetPosition;
-  Property MaxPosCurrentOperation : int64 read FMaxPosCurrentOperation write SetMaxPosCurrentOperation;
-  Property Loading : boolean read FLoading write SetLoading default true;
-  Property OperationCount : int64 read FOperationCount write SetOperationCount;
-  Property OperationPosition : int64 read FOperationPosition write SetOperationPosition;
-  Property CanClosedByUser : Boolean read FCanClosedByUser write SetCanClosedByUser default false;
+    property OneOperation: Boolean read FOneOperation write SetOneOperation;
+    property XPosition: Int64 read FPosition write SetPosition;
+    property MaxPosCurrentOperation: Int64 read FMaxPosCurrentOperation write SetMaxPosCurrentOperation;
+    property Loading: Boolean read FLoading write SetLoading default True;
+    property OperationCount: Int64 read FOperationCount write SetOperationCount;
+    property OperationPosition: Int64 read FOperationPosition write SetOperationPosition;
+    property CanClosedByUser: Boolean read FCanClosedByUser write SetCanClosedByUser default False;
     { Public declarations }
   end;
 
   TArForms = array of TForm;
 
   TManagerProgresses = class(TObject)
-   Private
-    FForms : TArForms;
-   Public
-    Constructor Create;
-    Destructor Destroy; override;
-    Function NewProgress : TProgressActionForm;
-    Procedure AddProgress(Progress : TForm);
-    Procedure RemoveProgress(Progress : TForm);
-    Property Progresses : TArForms Read FForms;
-    Function IsProgress(Progress : TProgressActionForm) : Boolean;
-    Function ProgressCount : Integer;
-   published
+  private
+    FForms: TList;
+    function GetItem(Index: Integer): TProgressActionForm;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function NewProgress: TProgressActionForm;
+    procedure AddProgress(Progress: TForm);
+    procedure RemoveProgress(Progress: TForm);
+    function IsProgress(Progress: TProgressActionForm): Boolean;
+    function ProgressCount: Integer;
+    property Items[Index : Integer] : TProgressActionForm read GetItem; default;
   end;
 
-function GetProgressWindow(Background : boolean = false) : TProgressActionForm;
+function GetProgressWindow(Background: Boolean = False): TProgressActionForm;
 
 var
-  ManagerProgresses : TManagerProgresses;
+  ManagerProgresses : TManagerProgresses = nil;
 
 implementation
 
 {$R *.dfm}
 
-function GetProgressWindow(Background : boolean = false) : TProgressActionForm;
+function GetProgressWindow(Background: Boolean = False): TProgressActionForm;
 begin
- Result:=TProgressActionForm.Create(Application,Background);
-// Application.CreateForm(TProgressActionForm,Result);
+  Result := TProgressActionForm.Create(Application, Background);
 end;
 
 procedure TProgressActionForm.DoShow;
 begin
- if not CanClosedByUser then
- Del_close_btn(Handle);
- if not Visible then
- begin
-  Show;
-  SetFocus;
-  Invalidate;
-  Refresh;
-  Repaint;
- end;
+  if not CanClosedByUser then
+    Del_close_btn(Handle);
+  if not Visible then
+  begin
+    Show;
+    SetFocus;
+    Invalidate;
+    Refresh;
+    Repaint;
+  end;
 end;
 
 procedure TProgressActionForm.FormCreate(Sender: TObject);
 begin
- WindowCanClose:=false;
- Closed:=false;
- WindowID:=GetGUID;
- ManagerProgresses.AddProgress(self);
- DBKernel.RecreateThemeToForm(self);
- LoadLanguage;
- FLoading:=false;
- FCanClosedByUser:=false;
- DoubleBuffered:=true;
+  WindowCanClose := False;
+  Closed := False;
+  WindowID := GetGUID;
+  ManagerProgresses.AddProgress(Self);
+  DBKernel.RecreateThemeToForm(Self);
+  LoadLanguage;
+  FLoading := False;
+  FCanClosedByUser := False;
+  DoubleBuffered := True;
+  GOM.AddObj(Self);
 end;
 
 procedure TProgressActionForm.LoadLanguage;
 begin
- Label3.Caption:=TEXT_MES_WAIT_ACTION;
- Label2.Caption:=TEXT_MES_TASKS+':';
- Label1.Caption:=TEXT_MES_CURRENT_ACTION+':';
- Caption:=TEXT_MES_PROGRESS_FORM;
- OperationCounter.Text:=TEXT_MES_DEFAULT_PROGRESS_TEXT;
- OperationProgress.Text:=TEXT_MES_DEFAULT_PROGRESS_TEXT;
+  Label3.Caption := TEXT_MES_WAIT_ACTION;
+  Label2.Caption := TEXT_MES_TASKS + ':';
+  Label1.Caption := TEXT_MES_CURRENT_ACTION + ':';
+  Caption := TEXT_MES_PROGRESS_FORM;
+  OperationCounter.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
+  OperationProgress.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
 end;
 
 procedure TProgressActionForm.ReCount;
 begin
- if OneOperation then
- begin
-  OperationProgress.MaxValue:=FMaxPosCurrentOperation;
-  OperationProgress.Position:=FPosition;
-  OperationCounter.MaxValue:=FMaxPosCurrentOperation;
-  OperationCounter.Position:=FPosition;
- end else
- begin
-  OperationProgress.MaxValue:=FMaxPosCurrentOperation;
-  OperationProgress.Position:=FPosition;
-  OperationCounter.MaxValue:=FOperationCount;
-  OperationCounter.Position:=FOperationPosition;
- end;
+  if OneOperation then
+  begin
+    OperationProgress.MaxValue := FMaxPosCurrentOperation;
+    OperationProgress.Position := FPosition;
+    OperationCounter.MaxValue := FMaxPosCurrentOperation;
+    OperationCounter.Position := FPosition;
+  end
+  else
+  begin
+    OperationProgress.MaxValue := FMaxPosCurrentOperation;
+    OperationProgress.Position := FPosition;
+    OperationCounter.MaxValue := FOperationCount;
+    OperationCounter.Position := FOperationPosition;
+  end;
 end;
 
-procedure TProgressActionForm.SetAlternativeText(Text: String);
+procedure TProgressActionForm.SetAlternativeText(Text: string);
 begin
- Label3.Caption:=Text;
+  Label3.Caption := Text;
 end;
 
-procedure TProgressActionForm.SetLoading(const Value: boolean);
+procedure TProgressActionForm.SetLoading(const Value: Boolean);
 begin
   FLoading := Value;
 end;
 
-procedure TProgressActionForm.SetMaxOneValue(Value: int64);
+procedure TProgressActionForm.SetMaxOneValue(Value: Int64);
 begin
-//
+  //
 end;
 
 procedure TProgressActionForm.SetMaxPosCurrentOperation(
@@ -202,13 +203,12 @@ begin
   ReCount;
 end;
 
-procedure TProgressActionForm.ApplicationEvents1Message(var Msg: tagMSG;
-  var Handled: Boolean);
+procedure TProgressActionForm.ApplicationEvents1Message(var Msg: TagMSG; var Handled: Boolean);
 begin
- if not CanClosedByUser then
- if Active then
- if Msg.message=260 then
- Msg.message:=0;
+  if not CanClosedByUser then
+    if Active then
+      if Msg.message = 260 then
+        Msg.message := 0;
 end;
 
 procedure TProgressActionForm.SetCanClosedByUser(const Value: Boolean);
@@ -219,48 +219,30 @@ end;
 { TManagerProgresses }
 
 procedure TManagerProgresses.AddProgress(Progress: TForm);
-var
-  i : integer;
-  b : boolean;
 begin
- b:=false;
- For i:=0 to Length(FForms)-1 do
- if FForms[i]=Progress then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FForms,Length(FForms)+1);
-  FForms[Length(FForms)-1]:=Progress;
- end;
+  if FForms.IndexOf(Progress) < 0 then
+    FForms.Add(Progress)
 end;
-
 
 constructor TManagerProgresses.Create;
 begin
-  SetLength(FForms,0);
+  FForms := TList.Create;
 end;
 
 destructor TManagerProgresses.Destroy;
 begin
-  SetLength(FForms,0);
+  F(FForms);
   inherited;
 end;
 
-function TManagerProgresses.IsProgress(
-  Progress: TProgressActionForm): Boolean;
-var
-  i : Integer;
+function TManagerProgresses.GetItem(Index: Integer): TProgressActionForm;
 begin
- Result:=False;
- For i:=0 to Length(FForms)-1 do
- if FForms[i]=Progress then
- Begin
-  Result:=True;
-  Break;
- End;
+  Result := FForms[Index];
+end;
+
+function TManagerProgresses.IsProgress(Progress: TProgressActionForm): Boolean;
+begin
+  Result := FForms.IndexOf(Progress) > -1;
 end;
 
 function TManagerProgresses.NewProgress: TProgressActionForm;
@@ -270,75 +252,69 @@ end;
 
 function TManagerProgresses.ProgressCount: Integer;
 begin
- Result:=Length(FForms);
+  Result := FForms.Count;
 end;
 
 procedure TManagerProgresses.RemoveProgress(Progress: TForm);
-var
-  i, j : integer;
 begin
- For i:=0 to Length(FForms)-1 do
- if FForms[i]=Progress then
- begin
-  For j:=i to Length(FForms)-2 do
-  FForms[j]:=FForms[j+1];
-  SetLength(FForms,Length(FForms)-1);
-  break;
- end;
+  FForms.Remove(Progress)
 end;
 
 procedure TProgressActionForm.FormDestroy(Sender: TObject);
 begin
- ManagerProgresses.RemoveProgress(Self);
+  GOM.RemoveObj(Self);
+  ManagerProgresses.RemoveProgress(Self);
 end;
 
 procedure TProgressActionForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
- if CanClosedByUser then
- begin
-  Closed:=ID_YES=MessageBoxDB(Handle,TEXT_MES_DO_YOU_REALLY_WANT_CANCEL_OPERATION,TEXT_MES_QUESTION,TD_BUTTON_YESNO,TD_ICON_QUESTION);
-  CanClose:=WindowCanClose;
- end;
+  if CanClosedByUser then
+  begin
+    Closed := ID_YES = MessageBoxDB(Handle, TEXT_MES_DO_YOU_REALLY_WANT_CANCEL_OPERATION, TEXT_MES_QUESTION,
+      TD_BUTTON_YESNO, TD_ICON_QUESTION);
+    CanClose := WindowCanClose;
+  end;
 end;
 
 constructor TProgressActionForm.Create(AOwner: TComponent; Background : boolean);
 begin
- inherited Create(AOwner);
- fBackground:=Background;
- if Background then
- begin
-  Position :=poDefault;
- end else Position := poScreenCenter;
+  inherited Create(AOwner);
+  FBackground := Background;
+  if Background then
+    Position := PoDefault
+  else
+    Position := PoScreenCenter;
 end;
 
 procedure TProgressActionForm.FormShow(Sender: TObject);
 begin
- if fBackground then
- begin
-  Top := Screen.WorkAreaHeight-Height;
-  Left := Screen.WorkAreaWidth-Width;
-   //TODO: in options
-  AlphaBlend:=true;
-  AlphaBlendValue:=220;
- end;
+  if FBackground then
+  begin
+    Top := Screen.WorkAreaHeight - Height;
+    Left := Screen.WorkAreaWidth - Width;
+    // TODO: in options
+    AlphaBlend := True;
+    AlphaBlendValue := 220;
+  end;
 end;
 
 procedure TProgressActionForm.CreateParams(var Params: TCreateParams);
 begin
- inherited CreateParams(Params);
- if IsWindowsVista then
- Params.ExStyle := Params.ExStyle and not WS_EX_TOOLWINDOW or WS_EX_APPWINDOW;
+  inherited CreateParams(Params);
+  if IsWindowsVista then
+    Params.ExStyle := Params.ExStyle and not WS_EX_TOOLWINDOW or WS_EX_APPWINDOW;
 end;
 
-procedure TProgressActionForm.WMActivate(var Message: TWMActivate);
+procedure TProgressActionForm.WMActivate(var message: TWMActivate);
 begin
- if (Message.Active = WA_ACTIVE) and not IsWindowEnabled(Handle) and IsWindowsVista then
- begin
-  SetActiveWindow(Application.Handle);
-  Message.Result := 0;
- end else
-  inherited;
+  if (message.Active = WA_ACTIVE) and not IsWindowEnabled(Handle) and IsWindowsVista then
+  begin
+    SetActiveWindow(Application.Handle);
+    message.Result := 0;
+  end
+  else
+    inherited;
 end;
 
 procedure TProgressActionForm.WMSyscommand(var Message: TWmSysCommand);
@@ -361,19 +337,19 @@ end;
 
 procedure TProgressActionForm.FormPaint(Sender: TObject);
 begin
- if not Active then
- begin
-  OperationCounter.DoPaintOnXY(Canvas,OperationCounter.Left,OperationCounter.Top);
-  OperationProgress.DoPaintOnXY(Canvas,OperationProgress.Left,OperationProgress.Top);
- end;
+  if not Active then
+  begin
+    OperationCounter.DoPaintOnXY(Canvas, OperationCounter.Left, OperationCounter.Top);
+    OperationProgress.DoPaintOnXY(Canvas, OperationProgress.Left, OperationProgress.Top);
+  end;
 end;
 
 initialization
 
-ManagerProgresses := TManagerProgresses.create;
+  ManagerProgresses := TManagerProgresses.Create;
 
 finalization
 
-ManagerProgresses.free;
+  ManagerProgresses.Free;
 
 end.

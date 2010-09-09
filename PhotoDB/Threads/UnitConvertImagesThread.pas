@@ -90,7 +90,7 @@ procedure TConvertImagesThread.DoDBkernelEventRefreshList;
 var
   EventInfo : TEventValues;
 begin
- DBKernel.DoIDEvent(nil,IntParam,[EventID_Repaint_ImageList],EventInfo);
+ DBKernel.DoIDEvent(Self,IntParam,[EventID_Repaint_ImageList],EventInfo);
 end;
 
 procedure TConvertImagesThread.DoOnDone;

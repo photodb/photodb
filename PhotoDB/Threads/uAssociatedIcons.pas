@@ -3,20 +3,20 @@ unit uAssociatedIcons;
 interface
 
 uses
-Windows,
-Classes,
-SysUtils,
-Graphics,
-ComObj,
-ActiveX,
-ShlObj,
-VirtualSystemImageLists,
-CommCtrl,
-ShellAPI,
-Forms,
-Dolphin_DB,
-SyncObjs,
-Registry;
+  Windows,
+  Classes,
+  SysUtils,
+  Graphics,
+  ComObj,
+  ActiveX,
+  ShlObj,
+  VirtualSystemImageLists,
+  CommCtrl,
+  ShellAPI,
+  Forms,
+  Dolphin_DB,
+  SyncObjs,
+  Registry;
 
 type
   TAssociatedIcons = record
@@ -33,7 +33,7 @@ type
     UnLoadingListEXT : TStringList;
     FVirtualSysImages : VirtualSysImages;
     FSync : TCriticalSection;
-    procedure Initialize;   
+    procedure Initialize;
     function SetPath(const Value: string) : PItemIDList;
   public
     class function Instance : TAIcons;
@@ -46,7 +46,7 @@ type
     function IsVarIcon(FileName : String; Size : integer): boolean;
     procedure Clear;
   end;
-            
+
 procedure FindIcon(hLib :cardinal; NameRes :string; Size, ColorDepth :Byte; var Icon :TIcon);
 function VarIco(Ext : string) : boolean;
 
@@ -65,40 +65,31 @@ var
   s : string;
   i : integer;
 begin
- Result:=false;
- if Ext='.scr' then
- begin
-  Result:=true;
-  exit;
- end;
- if Ext='.exe' then
- begin
-  Result:=true;
-  exit;
- end;
- if Ext='' then begin Result:=true; exit; end;
- reg := Tregistry.Create;
- reg.RootKey:=Windows.HKEY_CLASSES_ROOT;
- if not reg.OpenKey('\'+ext,false) then
- begin
-  reg.CloseKey;
-  reg.Free;
-  exit;
- end;
- s:=reg.ReadString('');
- reg.CloseKey;
- if not reg.OpenKey('\'+s+'\DefaultIcon',false)  then
- begin
-  reg.CloseKey;
-  reg.Free;
-  exit;
- end;
- s:=reg.ReadString('');
- for i:=length(s) downto 1 do
- if (s[i]='''') or( s[i]='"') or( s[i]=' ') then delete(s,i,1);
- if s='%1' then result:=true;
- reg.Closekey;
- reg.Free;
+  Result := False;
+  if  (Ext = '') or Ext = ('.scr') or (Ext = '.exe') then
+  begin
+    Result := True;
+    Exit;
+  end;
+
+ Reg := TRegistry.Create;
+  try
+    Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    if not Reg.OpenKey('\' + Ext, False) then
+      Exit;
+    S := Reg.ReadString('');
+    Reg.CloseKey;
+    if not Reg.OpenKey('\' + S + '\DefaultIcon', False) then
+      Exit;
+    S := Reg.ReadString('');
+    for I := Length(S) downto 1 do
+      if (S[I] = '''') or (S[I] = '"') or (S[I] = ' ') then
+        Delete(S, I, 1);
+    if S = '%1' then
+      Result := True;
+  finally
+    Reg.Free;
+  end;
 end;
 
 function TAIcons.SetPath(const Value: string) : PItemIDList;
@@ -197,7 +188,7 @@ var
   FileInfo: TSHFileInfo;
   Flags: Integer;
   PathPidl: PItemIDList;
-begin     
+begin
   FSync.Enter;
   try
     Result := nil;
@@ -227,7 +218,7 @@ begin
 end;
 
 function TAIcons.AddIconByExt(FileName, EXT: string; Size : integer) : integer;
-begin     
+begin
   FSync.Enter;
   try
     Result:=Length(FAssociatedIcons)-1;
@@ -242,7 +233,7 @@ begin
 end;
 
 constructor TAIcons.Create;
-begin           
+begin
   if SHGetDesktopFolder(FIDesktopFolder) <> NOERROR then
      raise Exception.Create('Error in call SHGetDesktopFolder!');
   inherited;
@@ -268,7 +259,7 @@ function TAIcons.GetIconByExt(FileName: String; IsFolder : boolean; Size : integ
 var
   n, i : integer;
   Ext : String;
-begin     
+begin
   FSync.Enter;
   try
     Result:=nil;
@@ -349,7 +340,7 @@ end;
 procedure TAIcons.Clear;
 var
   i : Integer;
-begin    
+begin
   FSync.Enter;
   try
     for i:=0 to length(FAssociatedIcons)-1 do
@@ -358,7 +349,7 @@ begin
         FAssociatedIcons[i].Icon.Free;
     end;
     SetLength(FAssociatedIcons,0);
-    Initialize;  
+    Initialize;
   finally
     FSync.Leave;
   end;

@@ -1652,10 +1652,10 @@ begin
      RenameResult:=false;
     end;
    end else
-   RenameResult:=RenamefileWithDB(fFilesInfo[PmItemPopup.tag].FileName,GetDirectory(fFilesInfo[PmItemPopup.tag].FileName)+s, fFilesInfo[PmItemPopup.tag].ID,false);
+   RenameResult:=RenamefileWithDB(Self, fFilesInfo[PmItemPopup.tag].FileName,GetDirectory(fFilesInfo[PmItemPopup.tag].FileName)+s, fFilesInfo[PmItemPopup.tag].ID,false);
    FreeDS(DS);
   end else
-  RenameResult:=RenamefileWithDB(fFilesInfo[PmItemPopup.tag].FileName,GetDirectory(fFilesInfo[PmItemPopup.tag].FileName)+s, fFilesInfo[PmItemPopup.tag].ID,false);
+  RenameResult:=RenamefileWithDB(Self, fFilesInfo[PmItemPopup.tag].FileName,GetDirectory(fFilesInfo[PmItemPopup.tag].FileName)+s, fFilesInfo[PmItemPopup.tag].ID,false);
  end;
 end;
 
@@ -3298,7 +3298,7 @@ begin
       RefreshItemA(i);
       if AnsiLowerCase(FSelectedInfo.FileName)=AnsiLowerCase(pInfo[k].FOldFileName) then
       ListView1SelectItem(ElvMain,ListView1Selected,ListView1Selected=nil);
-     end else RenamefileWithDB(pInfo[k].FOldFileName,pInfo[k].FNewFileName, fFilesInfo[index].ID,true);
+     end else RenamefileWithDB(Self, pInfo[k].FOldFileName,pInfo[k].FNewFileName, fFilesInfo[index].ID,true);
      Continue;
     end;
    end;
@@ -5192,7 +5192,7 @@ begin
  Options.Action:=ACTION_DECRYPT_IMAGES;
  Options.Password:=Password;
  Options.CryptOptions:=0;
- TCryptingImagesThread.Create(false, Options);
+ TCryptingImagesThread.Create(Options);
 
 end;
 
@@ -5233,7 +5233,7 @@ begin
  Options.Action:=ACTION_CRYPT_IMAGES;
  Options.Password:=Opt.Password;
  Options.CryptOptions:=CryptOptions;
- TCryptingImagesThread.Create(false, Options);
+ TCryptingImagesThread.Create(Options);
 end;
 
 procedure TExplorerForm.Addsessionpassword1Click(Sender: TObject);
@@ -6998,12 +6998,12 @@ begin
   if DirectoryExists(fn) then
   begin
    adest:=Dest+'\'+ExtractFileName(Src[i]);
-   RenameFolderWithDB(Src[i],adest,false);
+   RenameFolderWithDB(Self, Src[i],adest,false);
   end;
   if FileExists(fn) then
   begin
    adest:=Dest+'\'+ExtractFileName(Src[i]);
-   RenameFileWithDB(Src[i],adest,GetIDByFileName(Src[i]),true);
+   RenameFileWithDB(Self, Src[i],adest,GetIDByFileName(Src[i]),true);
   end;
  end;
  Dec(CopyInstances);

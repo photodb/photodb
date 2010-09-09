@@ -115,9 +115,9 @@ begin
   end;
   if (fOptions.IDs[i]<>0) and not fOptions.RotateEvenIfFileInDB then
   begin
-   if fOptions.RotateCCW then RotateDBImage270(fOptions.IDs[i],fOptions.Rotate[i]);
-   if fOptions.RotateCW  then RotateDBImage90(fOptions.IDs[i],fOptions.Rotate[i]);
-   if fOptions.Rotate180 then RotateDBImage180(fOptions.IDs[i],fOptions.Rotate[i]);
+   if fOptions.RotateCCW then RotateDBImage270(Self, fOptions.IDs[i],fOptions.Rotate[i]);
+   if fOptions.RotateCW  then RotateDBImage90(Self, fOptions.IDs[i],fOptions.Rotate[i]);
+   if fOptions.Rotate180 then RotateDBImage180(Self, fOptions.IDs[i],fOptions.Rotate[i]);
    Continue;
   end;
 
@@ -126,7 +126,7 @@ begin
    Password:='';
    if ValidCryptGraphicFile(fOptions.Files[i]) then
    begin
-    Password:=DBkernel.FindPasswordForCryptImageFile(fOptions.Files[i]);
+    Password:=DBKernel.FindPasswordForCryptImageFile(fOptions.Files[i]);
     if Password='' then Continue else
     ResetPasswordInGraphicFile(fOptions.Files[i],Password);
    end;
@@ -439,7 +439,7 @@ procedure TRotatingImagesThread.DoDBkernelEventRefreshList;
 var
   EventInfo : TEventValues;
 begin
- DBKernel.DoIDEvent(nil,IntParam,[EventID_Repaint_ImageList],EventInfo);
+ DBKernel.DoIDEvent(Self,IntParam,[EventID_Repaint_ImageList],EventInfo);
 end;
 
 procedure TRotatingImagesThread.ShowError;

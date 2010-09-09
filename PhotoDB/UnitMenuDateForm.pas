@@ -4,46 +4,49 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, Menus, ExtCtrls, DateUtils;
+  Dialogs, ComCtrls, StdCtrls, Menus, ExtCtrls, DateUtils, uDBForm;
 
 type
-  TFormMenuDateEdit = class(TForm)
-    MonthCalendar1: TMonthCalendar;
-    Button1: TButton;
-    Button2: TButton;
-    PopupMenu1: TPopupMenu;
+  TFormMenuDateEdit = class(TDBForm)
+    McDate: TMonthCalendar;
+    BtOK: TButton;
+    BtCancel: TButton;
+    PmDate: TPopupMenu;
     GoToCurrentDate1: TMenuItem;
     DateNotExists1: TMenuItem;
     DateExists1: TMenuItem;
     Image1: TImage;
     Label1: TLabel;
     Label2: TLabel;
-    DateTimePicker1: TDateTimePicker;
-    PopupMenu2: TPopupMenu;
+    DtpTime: TDateTimePicker;
+    PmTime: TPopupMenu;
     GoToCurrentTime1: TMenuItem;
     TimeNotExists1: TMenuItem;
     TimeExists1: TMenuItem;
     Image2: TImage;
     Label3: TLabel;
     procedure FormCreate(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure BtOKClick(Sender: TObject);
+    procedure BtCancelClick(Sender: TObject);
     procedure GoToCurrentDate1Click(Sender: TObject);
     procedure DateNotExists1Click(Sender: TObject);
     procedure DateExists1Click(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
+    procedure PmDatePopup(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure GoToCurrentTime1Click(Sender: TObject);
     procedure TimeNotExists1Click(Sender: TObject);
     procedure TimeExists1Click(Sender: TObject);
-    procedure PopupMenu2Popup(Sender: TObject);
+    procedure PmTimePopup(Sender: TObject);
   private
-  FChanged : Boolean;
     { Private declarations }
+    FChanged : Boolean;
+  protected
+    function GetFormID : string; override;
   public
-  procedure Execute(var Date : TDateTime; var IsDate : Boolean; out Changed : Boolean; var Time : TDateTime; var IsTime : Boolean);
-  Procedure LoadLanguage;
+    procedure Execute(var Date: TDateTime; var IsDate: Boolean; out Changed: Boolean; var Time: TDateTime;
+      var IsTime: Boolean);
+    procedure LoadLanguage;
     { Public declarations }
   end;
 
@@ -57,121 +60,132 @@ uses Language, Dolphin_DB;
 
 { TFormMenuDateEdit }
 
-procedure ChangeDate(var Date : TDateTime; var IsDate : Boolean;
-  out Changed : Boolean; var Time : TDateTime; var IsTime : Boolean);
+procedure ChangeDate(var Date: TDateTime; var IsDate: Boolean; out Changed: Boolean; var Time: TDateTime;
+  var IsTime: Boolean);
 var
   FormMenuDateEdit: TFormMenuDateEdit;
 begin
- Application.CreateForm(TFormMenuDateEdit,FormMenuDateEdit);
- FormMenuDateEdit.Execute(Date,IsDate,Changed,Time,IsTime);
- FormMenuDateEdit.Release;
+  Application.CreateForm(TFormMenuDateEdit, FormMenuDateEdit);
+  try
+    FormMenuDateEdit.Execute(Date, IsDate, Changed, Time, IsTime);
+  finally
+    FormMenuDateEdit.Release;
+  end;
 end;
 
-procedure TFormMenuDateEdit.Execute(var Date: TDateTime; var IsDate : Boolean;
-  out Changed: Boolean; var Time : TDateTime; var IsTime : Boolean);
+procedure TFormMenuDateEdit.Execute(var Date: TDateTime; var IsDate: Boolean; out Changed: Boolean;
+  var Time: TDateTime; var IsTime: Boolean);
 begin
- MonthCalendar1.Date := Date;
- MonthCalendar1.Visible := IsDate;
- DateTimePicker1.Time:= Time;
- DateTimePicker1.Visible := IsTime;
- ShowModal;
- If FChanged then
- begin
-  Date := MonthCalendar1.Date;
-  IsDate := MonthCalendar1.Visible;
-  Time := TimeOf(DateTimePicker1.Time);
-  IsTime := DateTimePicker1.Visible;
- end;
- Changed:=FChanged;
+  McDate.Date := Date;
+  McDate.Visible := IsDate;
+  DtpTime.Time := Time;
+  DtpTime.Visible := IsTime;
+  ShowModal;
+  if FChanged then
+  begin
+    Date := McDate.Date;
+    IsDate := McDate.Visible;
+    Time := TimeOf(DtpTime.Time);
+    IsTime := DtpTime.Visible;
+  end;
+  Changed := FChanged;
 end;
 
 procedure TFormMenuDateEdit.FormCreate(Sender: TObject);
 begin
- FChanged := false;
- LoadLanguage;
+  FChanged := False;
+  LoadLanguage;
 end;
 
-procedure TFormMenuDateEdit.Button1Click(Sender: TObject);
+procedure TFormMenuDateEdit.BtOKClick(Sender: TObject);
 begin
- FChanged:=True;
- Close;
+  FChanged := True;
+  Close;
 end;
 
-procedure TFormMenuDateEdit.Button2Click(Sender: TObject);
+procedure TFormMenuDateEdit.BtCancelClick(Sender: TObject);
 begin
- Close;
+  Close;
+end;
+
+function TFormMenuDateEdit.GetFormID: string;
+begin
+  Result := 'DateChange';
 end;
 
 procedure TFormMenuDateEdit.GoToCurrentDate1Click(Sender: TObject);
 begin
- MonthCalendar1.Date:=Now;
+  McDate.Date := Now;
 end;
 
 procedure TFormMenuDateEdit.DateNotExists1Click(Sender: TObject);
 begin
- MonthCalendar1.Visible:=False;
+  McDate.Visible := False;
 end;
 
 procedure TFormMenuDateEdit.DateExists1Click(Sender: TObject);
 begin
- MonthCalendar1.Visible:=True;
+  McDate.Visible := True;
 end;
 
-procedure TFormMenuDateEdit.PopupMenu1Popup(Sender: TObject);
+procedure TFormMenuDateEdit.PmDatePopup(Sender: TObject);
 begin
- GoToCurrentDate1.Visible:=MonthCalendar1.Visible;
- DateNotExists1.Visible:=MonthCalendar1.Visible;
- DateExists1.Visible:=not MonthCalendar1.Visible;
+  GoToCurrentDate1.Visible := McDate.Visible;
+  DateNotExists1.Visible := McDate.Visible;
+  DateExists1.Visible := not McDate.Visible;
 end;
 
 procedure TFormMenuDateEdit.FormShow(Sender: TObject);
 begin
- if Button2.Enabled then
- Button2.SetFocus else Button1.SetFocus;
+  if BtCancel.Enabled then
+    BtCancel.SetFocus
+  else
+    BtOK.SetFocus;
 end;
 
 procedure TFormMenuDateEdit.FormKeyPress(Sender: TObject; var Key: Char);
 begin
- if key=#27 then Close;
+  if Key = Char(VK_ESCAPE) then
+    Close;
 end;
 
 procedure TFormMenuDateEdit.LoadLanguage;
 begin
- Caption := TEXT_MES_CHANGE_DATE_CAPTION;
- GoToCurrentDate1.Caption:=TEXT_MES_GO_TO_CURRENT_DATE_ITEM;
- DateNotExists1.Caption:=TEXT_MES_DATE_NOT_EXISTS_ITEM;
- DateExists1.Caption:=TEXT_MES_DATE_EXISTS_ITEM;
- Label1.Caption:=TEXT_MES_DATE_NOT_EXISTS_BOX;
- Label2.Caption:=TEXT_MES_DATE_BOX_TEXT_TO_SET_DATE;
- Button1.Caption:=TEXT_MES_OK;
- Button2.Caption:=TEXT_MES_CANCEL;
+  Caption := L('Change date and time');
+  GoToCurrentDate1.Caption := L('Go to current date');
+  DateNotExists1.Caption := L('Date not sets');
+  DateExists1.Caption := L('Date set');
+  Label1.Caption := L('Date not set');
+  Label2.Caption := L('Choose "Date set" in popup menu');
+  BtOK.Caption := L('Ok');
+  BtCancel.Caption := L('Cancel');
 
- GoToCurrentTime1.Caption:=TEXT_MES_GO_TO_CURRENT_TIME;
- TimeNotExists1.Caption:=TEXT_MES_TIME_NOT_EXISTS;
- TimeExists1.Caption:=TEXT_MES_TIME_EXISTS;
- Label3.Caption:=TEXT_MES_TIME_NOT_SETS;
+  GoToCurrentTime1.Caption := L('Go to current time');
+  TimeNotExists1.Caption := L('Time not set');
+  TimeExists1.Caption := L('Time set');
+  Label3.Caption := L('Time not set');
 end;
 
 procedure TFormMenuDateEdit.GoToCurrentTime1Click(Sender: TObject);
 begin
- DateTimePicker1.Time:=Now;
+  DtpTime.Time := Now;
 end;
 
 procedure TFormMenuDateEdit.TimeNotExists1Click(Sender: TObject);
 begin
- DateTimePicker1.Visible:=false;
+  DtpTime.Visible := False;
 end;
 
 procedure TFormMenuDateEdit.TimeExists1Click(Sender: TObject);
 begin
- DateTimePicker1.Visible:=true;
+  DtpTime.Visible := True;
 end;
 
-procedure TFormMenuDateEdit.PopupMenu2Popup(Sender: TObject);
+procedure TFormMenuDateEdit.PmTimePopup(Sender: TObject);
 begin
- GoToCurrentTime1.Visible:=DateTimePicker1.Visible;
- TimeNotExists1.Visible:=DateTimePicker1.Visible;
- TimeExists1.Visible:=not DateTimePicker1.Visible;
+  GoToCurrentTime1.Visible := DtpTime.Visible;
+  TimeNotExists1.Visible := DtpTime.Visible;
+  TimeExists1.Visible := not DtpTime.Visible;
 end;
 
 end.

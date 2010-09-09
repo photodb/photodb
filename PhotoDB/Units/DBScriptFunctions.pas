@@ -580,9 +580,9 @@ begin
  begin
   for i:=0 to ManagerProgresses.ProgressCount-1 do
   begin
-   if CID=GUIDToString(TProgressActionForm(ManagerProgresses.Progresses[i]).WindowID) then
+   if CID=GUIDToString(ManagerProgresses[I].WindowID) then
    begin
-    Result:=TProgressActionForm(ManagerProgresses.Progresses[i]);
+    Result:=ManagerProgresses[I];
     break;
    end;
   end;
