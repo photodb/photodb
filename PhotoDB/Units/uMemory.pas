@@ -2,10 +2,12 @@ unit uMemory;
 
 interface
 
-uses SysUtils, Classes;
+uses SysUtils, Classes, OLE2;
 
 //Free object instance with check
 procedure F(var Obj); inline;
+//Release object with check
+procedure R(var Intf);
 //Free list items and then free list object
 procedure FreeList(var obj);
 
@@ -15,6 +17,18 @@ procedure F(var Obj);
 begin
   if TObject(Obj) <> nil then
     FreeAndNil(Obj);
+end;
+
+procedure R(var Intf);
+var
+  I : IUnknown;
+begin
+  if IUnknown(Intf) <> nil then
+  begin
+    I := IUnknown(Intf);
+    Pointer(Intf) := nil;
+    I.Release;
+  end;
 end;
 
 procedure FreeList(var obj);

@@ -26,22 +26,22 @@ uses SlideShow, SysUtils;
 
 constructor TSlideShowScanDirectoryThread.Create(
   Sender: TThreadForm; SID : TGUID; aBaseFileName: string);
-begin         
+begin
   inherited Create(Sender, SID);
-  fSID := SID;
-  fSender:=Sender;
-  BaseFileName:=aBaseFileName;
+  FSID := SID;
+  FSender := Sender;
+  BaseFileName := ABaseFileName;
   Start;
 end;
 
 procedure TSlideShowScanDirectoryThread.Execute;
 var
-  n : integer;
+  N : integer;
 begin
   FreeOnTerminate:=true;
   CoInitialize(nil);
   try
-    GetFileListByMask(BaseFileName, SupportedExt,Info, n, true);
+    GetFileListByMask(BaseFileName, SupportedExt,Info, N, true);
     SynchronizeEx(SynchNotify);
   finally
     CoUninitialize;

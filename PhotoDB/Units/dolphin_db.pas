@@ -3100,9 +3100,7 @@ begin
         Exit;
       end
       else
-      begin
-        G := GraphicCrypt.DeCryptGraphicFile(FileName, Pass);
-      end;
+        G := DeCryptGraphicFile(FileName, Pass);
     end
     else
     begin

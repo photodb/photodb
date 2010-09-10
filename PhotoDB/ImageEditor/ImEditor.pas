@@ -1054,7 +1054,7 @@ begin
      if EXIFSection.HasThumbnail then
      begin
       EXIFSection.ExifObj.ProcessThumbnail;
-      EXIFSection.ExifObj.removeThumbnail;
+      EXIFSection.ExifObj.RemoveThumbnail;
      end;
     except
      if EXIFSection<>nil then

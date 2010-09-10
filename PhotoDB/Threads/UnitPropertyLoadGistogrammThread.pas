@@ -3,8 +3,9 @@ unit UnitPropertyLoadGistogrammThread;
 interface
 
 uses
-  Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage, 
-  Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes;
+  Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
+  Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes,
+  ImageConverting, uMemory;
 
 type
   TPropertyLoadGistogrammThreadOptions = record
@@ -16,21 +17,19 @@ type
 
 type
   TPropertyLoadGistogrammThread = class(TThread)
-  private   
-   fOptions : TPropertyLoadGistogrammThreadOptions;
-   fPic : TPicture;
-   StrParam : String;
-   Password : String;
-   Data : TGistogrammData;
+  private
     { Private declarations }
+    FOptions: TPropertyLoadGistogrammThreadOptions;
+    StrParam: string;
+    Password: string;
+    Data: TGistogrammData;
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean;
-      Options : TPropertyLoadGistogrammThreadOptions);
-    procedure GetCurrentpassword;  
+    constructor Create(Options : TPropertyLoadGistogrammThreadOptions);
+    procedure GetCurrentpassword;
     procedure GetPasswordFromUserSynch;
-    procedure SetGistogrammData;        
+    procedure SetGistogrammData;
     procedure DoOnDone;
   end;
 
@@ -40,12 +39,10 @@ uses PropertyForm, UnitPasswordForm;
 
 { TPropertyLoadGistogrammThread }
 
-constructor TPropertyLoadGistogrammThread.Create(CreateSuspennded: Boolean;
-  Options: TPropertyLoadGistogrammThreadOptions);
+constructor TPropertyLoadGistogrammThread.Create(Options: TPropertyLoadGistogrammThreadOptions);
 begin
- inherited Create(true);
- fOptions := Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 function Gistogramma(w,h : integer; S : PARGBArray) : TGistogrammData;
@@ -62,15 +59,15 @@ begin
     Result.Blue[I] := 0;
   end;
 
-  for I:=0 to H - 1 do
+  for I := 0 to H - 1 do
   begin
-    ps := S[i];
-    for j:=0 to W-1 do
+    Ps := S[I];
+    for J := 0 to W - 1 do
     begin
-      LR := ps[j].r;
-      LG := ps[j].g;
-      LB := ps[j].b;
-      LGray:= (ps[j].R * 77 + ps[j].G * 151 + ps[j].B * 28) shr 8;
+      LR := ps[J].R;
+      LG := ps[J].G;
+      LB := ps[J].B;
+      LGray:= (LR * 77 + LG * 151 + LB * 28) shr 8;
       Inc(Result.Gray[LGray]);
       Inc(Result.Red[LR]);
       Inc(Result.Green[LG]);
@@ -80,73 +77,81 @@ begin
 end;
 
 procedure TPropertyLoadGistogrammThread.DoOnDone;
-begin          
- if PropertyManager.IsPropertyForm(fOptions.Owner) then
- if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
- fOptions.OnDone(self);
+begin
+  if PropertyManager.IsPropertyForm(FOptions.Owner) then
+    if IsEqualGUID((FOptions.Owner as TPropertiesForm).SID, FOptions.SID) then
+      FOptions.OnDone(Self);
 end;
 
 procedure TPropertyLoadGistogrammThread.Execute;
 var
-  Bitmap : TBitmap;
-  Terminated : Boolean;
-  PRGBArr : PARGBArray;
-  i : integer;
+  Bitmap: TBitmap;
+  Terminated: Boolean;
+  PRGBArr: PARGBArray;
+  I: Integer;
+  Graphic: TGraphic;
+  GraphicClass : TGraphicClass;
 begin
- FreeOnTerminate:=true;
+  FreeOnTerminate := True;
+  try
+    GraphicClass := GetGraphicClass(ExtractFileExt(fOptions.FileName), False);
+    if GraphicClass = nil then
+      Exit;
 
- fPic := TPicture.Create;
- try
-  if ValidCryptGraphicFile(fOptions.FileName) then
-  begin
-   PassWord:=DBkernel.FindPasswordForCryptImageFile(fOptions.FileName);
-   Synchronize(GetCurrentpassword);
-   if ValidPassInCryptGraphicFile(fOptions.FileName,StrParam) then
-   PassWord:=StrParam;
-   if PassWord='' then
-   begin
-    StrParam:=fOptions.FileName;
-    Synchronize(GetPasswordFromUserSynch);
-    PassWord:=StrParam;
-   end;
-   if PassWord<>'' then
-   begin
-    fPic.Graphic:=DeCryptGraphicFile(fOptions.FileName,PassWord);
-   end
-   else
-   begin
-    fPic.free;
-    Exit;
-   end
-  end else
-  fPic.LoadFromFile(fOptions.FileName);
- except
-  fPic.free;
-  Exit;
- End;
- if fPic.Graphic is TJPEGImage then
- begin
-  if fPic.Graphic.Width*fPic.Graphic.Height>640*480 then
-  JPEGScale(fPic.Graphic,640,480);
- end;
- Bitmap := TBitmap.Create;
- Bitmap.Assign(fPic.Graphic);   
- Bitmap.PixelFormat:=pf24bit;
- fPic.Free;
- SetLength(PRGBArr,Bitmap.Height);
- for i:=0 to Bitmap.Height-1 do
- PRGBArr[i]:=Bitmap.ScanLine[i];
- Data:=Gistogramma(Bitmap.Width,Bitmap.Height,PRGBArr);
- Bitmap.Free;
- Synchronize(SetGistogrammData);
- Synchronize(DoOnDone);
+    Graphic := GraphicClass.Create;
+    try
+      if ValidCryptGraphicFile(FOptions.FileName) then
+      begin
+        PassWord := DBkernel.FindPasswordForCryptImageFile(FOptions.FileName);
+        Synchronize(GetCurrentpassword);
+        if ValidPassInCryptGraphicFile(FOptions.FileName, StrParam) then
+          PassWord := StrParam;
+        if PassWord = '' then
+        begin
+          StrParam := FOptions.FileName;
+          Synchronize(GetPasswordFromUserSynch);
+          PassWord := StrParam;
+        end;
+        if PassWord <> '' then
+        begin
+          F(Graphic);
+          Graphic := DeCryptGraphicFile(FOptions.FileName, PassWord);
+        end else
+          Exit;
+      end else
+        Graphic.LoadFromFile(fOptions.FileName);
+
+      if Graphic is TJPEGImage then
+      begin
+        if Graphic.Width * Graphic.Height > 640 * 480 then
+          JPEGScale(Graphic, 640, 480);
+      end;
+      Bitmap := TBitmap.Create;
+      try
+        Bitmap.Assign(Graphic);
+        F(Graphic);
+        Bitmap.PixelFormat := pf24bit;
+        SetLength(PRGBArr, Bitmap.Height);
+        for I := 0 to Bitmap.Height - 1 do
+          PRGBArr[I] := Bitmap.ScanLine[I];
+        Data := Gistogramma(Bitmap.Width, Bitmap.Height, PRGBArr);
+      finally
+        Bitmap.Free;
+      end;
+      Synchronize(SetGistogrammData);
+    finally
+      F(Graphic);
+    end;
+  finally
+    Synchronize(DoOnDone);
+  end;
 end;
 
 procedure TPropertyLoadGistogrammThread.GetCurrentpassword;
 begin
   if PropertyManager.IsPropertyForm(fOptions.Owner) then
     if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
-      StrParam:=(fOptions.Owner as TPropertiesForm).FCurrentPass;
+      StrParam := (fOptions.Owner as TPropertiesForm).FCurrentPass;
 end;
 
 procedure TPropertyLoadGistogrammThread.GetPasswordFromUserSynch;
@@ -158,9 +163,9 @@ end;
 
 procedure TPropertyLoadGistogrammThread.SetGistogrammData;
 begin
-  if PropertyManager.IsPropertyForm(fOptions.Owner) then
-    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
-     (fOptions.Owner as TPropertiesForm).GistogrammData:=Data;
+  if PropertyManager.IsPropertyForm(FOptions.Owner) then
+    if IsEqualGUID((FOptions.Owner as TPropertiesForm).SID, FOptions.SID) then
+      (FOptions.Owner as TPropertiesForm).GistogrammData := Data;
 end;
 
 end.

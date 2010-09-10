@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, SaveInfoToImage, ShlObj,
   Dolphin_DB, Math, ImageConverting, PngImage, PngDef, GraphicEx, uVistaFuncs,
-  GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils;
+  GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils, uMemory;
 
 type
   TFormSteno = class(TForm)
@@ -394,6 +394,7 @@ end;
 procedure TFormSteno.LoadImage(FileName: String; CloseIfOk : boolean = false);
 var
   Password : string;
+  Graphic : TGraphic;
 begin
 
  if ValidCryptGraphicFile(FileName) then
@@ -404,7 +405,12 @@ begin
 
   if Password<>'' then
   begin
-   Image1.Picture.Graphic:=DeCryptGraphicFile(FileName,Password);
+    Graphic := DeCryptGraphicFile(FileName,Password);
+    try
+      Image1.Picture.Graphic:= Graphic;
+    finally
+      F(Graphic);
+    end;
    ImagePassword:=Password;
   end else
   begin

@@ -8,7 +8,7 @@ uses
  Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
  Dialogs, Controls, ComObj, ActiveX, ShlObj,CommCtrl, Registry,
  GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
- EasyListview, GraphicsCool, uVistaFuncs, uResources,
+ EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
  uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
  UnitExplorerLoadSIngleImageThread, uConstants, uMemory;
@@ -845,31 +845,32 @@ end;
 
 procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
 Var
-  Found, Count, Dx, i, j, x, y, w, h, ps, index : integer;
-  SearchRec : TSearchRec;
-  Files : array[1..4] of string;
-  bmp : TBitmap;
-  FFolderImagesResult : TFolderImages;
-  FFastDirectoryLoading, OK : Boolean;
-  Pic : TPicture;
-  Query : TDataSet;
-  RecNos : array[1..4] of integer;
-  FilesInFolder : array[1..4] of string;
-  FilesDatesInFolder : array[1..4] of TDateTime;
-  CountFilesInFolder : Integer;
-  FFileNames, FPrivateFileNames : TStringList;
-  DBFolder, Password : String;
-  RecCount, SmallImageSize, deltax, deltay, _x, _y : Integer;
-  fbs : TStream;
-  fJpeg : TJpegImage;
-  Nbr : Integer;
-  c:Integer;
-  FE, EM : boolean;
-  s : string;
-  p : Integer;
-  crc : Cardinal;
+  Found, Count, Dx, i, j, x, y, w, H, Ps, index: Integer;
+  SearchRec: TSearchRec;
+  Files: array [1 .. 4] of string;
+  Bmp: TBitmap;
+  FFolderImagesResult: TFolderImages;
+  FFastDirectoryLoading, OK: Boolean;
+  Query: TDataSet;
+  RecNos: array [1 .. 4] of Integer;
+  FilesInFolder: array [1 .. 4] of string;
+  FilesDatesInFolder: array [1 .. 4] of TDateTime;
+  CountFilesInFolder: Integer;
+  FFileNames, FPrivateFileNames: TStringList;
+  DBFolder, Password: string;
+  RecCount, SmallImageSize, Deltax, Deltay, _x, _y: Integer;
+  Fbs: TStream;
+  FJpeg: TJpegImage;
+  Nbr: Integer;
+  C: Integer;
+  FE, EM: Boolean;
+  S: string;
+  P: Integer;
+  Crc: Cardinal;
+  Graphic : TGraphic;
+  GraphicClass : TGraphicClass;
 
-  function FileInFiles(FileName : String) : Boolean;
+  function FileInFiles(FileName: String) : Boolean;
   begin
     Result := FFileNames.IndexOf(AnsiLowerCase(FileName)) > -1;
   end;
@@ -1092,49 +1093,58 @@ begin
         end;
       end else
       begin
-        Pic := TPicture.Create;
+
+        GraphicClass := GetGraphicClass(ExtractFileExt(Files[Index]), False);
+        if GraphicClass = nil then
+          Continue;
+
+        Graphic := GraphicClass.Create;
         try
           if ValidCryptGraphicFile(Files[Index]) then
           begin
-            Password := DBkernel.FindPasswordForCryptImageFile(Files[Index]);
+            Password := DBKernel.FindPasswordForCryptImageFile(Files[Index]);
             if Password<>'' then
-              Pic.Graphic := DeCryptGraphicFile(Files[Index], Password)
-            else
+            begin
+              F(Graphic);
+              Graphic := DeCryptGraphicFile(Files[Index], Password);
+            end;
+
+            if Graphic = nil then
               Continue;
           end else
           begin
-            if IsRAWImageFile(Files[Index]) then
+            if Graphic is TRAWImage then
             begin
-              Pic.Graphic := TRAWImage.Create;
-              if not (pic.Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index],SmallImageSize, SmallImageSize) then
-                Pic.Graphic.LoadFromFile(Files[Index]);
+              if not (Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index], SmallImageSize, SmallImageSize) then
+                Graphic.LoadFromFile(Files[Index]);
             end else
-              Pic.LoadFromFile(Files[Index]);
+              Graphic.LoadFromFile(Files[Index]);
           end;
           _y := Round((564-68)*ps/1200);
-          SmallImageSize := Round(_y/1.05);
-          JPEGScale(pic.Graphic, SmallImageSize, SmallImageSize);
-          W := pic.Width;
-          H := pic.Height;
-          ProportionalSize(SmallImageSize, SmallImageSize, w, h);
-          fbmp := TBitmap.create;
+          SmallImageSize := Round(_y / 1.05);
+          JPEGScale(Graphic, SmallImageSize, SmallImageSize);
+          W := Graphic.Width;
+          H := Graphic.Height;
+          ProportionalSize(SmallImageSize, SmallImageSize, W, H);
+          Fbmp := TBitmap.Create;
           try
             fbmp.PixelFormat := pf24bit;
             bmp := TBitmap.Create;
             try
-              AssignGraphic(BMP, Pic.Graphic);
+              AssignGraphic(BMP, Graphic);
+              F(Graphic);
 
               bmp.PixelFormat := pf24bit;
-              DoResize(W, H, bmp, fbmp);
+              DoResize(W, H, BMP, FBMP);
               DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
             finally
-              bmp.Free;
+              F(BMP);
             end;
           finally
-            fbmp.free;
+            F(FBMP);
           end;
         finally
-          pic.Free;
+          F(Graphic);
         end;
       end;
     end;
@@ -1860,7 +1870,8 @@ end;
 
 procedure TExplorerThread.ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
 var
-  FPic : TPicture;
+  Graphic : TGraphic;
+  GraphicClass : TGraphicClass;
   PassWord : String;
   FBit : TBitmap;
   W, H : Integer;
@@ -1873,7 +1884,11 @@ begin
 
   CurrentFile := FileName;
 
-  FPic := TPicture.Create;
+  GraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+  if GraphicClass = nil then
+    Exit;
+
+  Graphic := GraphicClass.Create;
   try
     if GraphicCrypt.ValidCryptGraphicFile(FileName) then
     begin
@@ -1881,42 +1896,42 @@ begin
       if PassWord = '' then
         Exit;
 
-      FPic.Graphic := GraphicCrypt.DeCryptGraphicFile(FileName, PassWord);
+      F(Graphic);
+      Graphic := DeCryptGraphicFile(FileName, PassWord);
     end else
     begin
-      if IsRAWImageFile(FileName) then
+      if Graphic is TRAWImage then
       begin
-        Fpic.Graphic := TRAWImage.Create;
-        if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
-          FPic.Graphic.LoadFromFile(FileName);
+        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
+          Graphic.LoadFromFile(FileName);
       end else
-        FPic.LoadFromFile(FileName);
+        Graphic.LoadFromFile(FileName);
     end;
 
     FBit := TBitmap.Create;
     try
       FBit.PixelFormat:=pf24bit;
-      JPEGScale(FPic.Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+      JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
 
-      if Min(Fpic.Height, Fpic.Width)>1 then
-        LoadImageX(Fpic.Graphic,Fbit,Theme_ListColor);
-
+      if Min(Graphic.Height, Graphic.Width)>1 then
+        LoadImageX(Graphic,Fbit,Theme_ListColor);
+      F(Graphic);
       TempBitmap := TBitmap.create;
       TempBitmap.PixelFormat := pf24bit;
       W := FBit.Width;
       H := FBit.Height;
-      ProportionalSize(ExplorerInfo.PictureSize,ExplorerInfo.PictureSize, W, H);
+      ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
       TempBitmap.Width := W;
       TempBitmap.Height := H;
       DoResize(W, H, FBit, TempBitmap);
     finally
-      FBit.Free;
+      F(FBit);
     end;
     ApplyRotate(TempBitmap, Rotated);
     BooleanParam := LoadingAllBigImages;
     SynchronizeEx(ReplaceImageInExplorerB);
   finally
-    FPic.Free;
+    F(Graphic);
   end;
 end;
 
@@ -1954,13 +1969,18 @@ end;
 procedure TExplorerThread.ExtractImage(Info: TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
 var
   W, H : integer;
-  FPic : TPicture;
+  Graphic : TGraphic;
+  GraphicClass : TGraphicClass;
   Password : string;
   TempBit, Fbit : TBitmap;
 begin
   if Info.ItemId = 0 then
   begin
-    Fpic := TPicture.Create;
+    GraphicClass := GetGraphicClass(ExtractFileExt(Info.ItemFileName), False);
+    if GraphicClass = nil then
+       Exit;
+
+    Graphic := GraphicClass.Create;
     try
       if CryptedFile then
       begin
@@ -1969,8 +1989,9 @@ begin
         Password := DBKernel.FindPasswordForCryptImageFile(Info.ItemFileName);
         if Password <> '' then
         begin
-          Fpic.Graphic := DeCryptGraphicFile(Info.ItemFileName, Password);
-          if (Fpic.Graphic <> nil) and not Fpic.Graphic.Empty then
+          F(Graphic);
+          Graphic := DeCryptGraphicFile(Info.ItemFileName, Password);
+          if (Graphic <> nil) and not Graphic.Empty then
             Info.PassTag := 1;
         end else
         begin
@@ -1978,13 +1999,12 @@ begin
         end;
       end else
       begin
-        if IsRAWImageFile(Info.ItemFileName) then
+        if Graphic is TRAWImage then
         begin
-          Fpic.Graphic := TRAWImage.Create;
-          if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(Info.ItemFileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
-            Fpic.Graphic.LoadFromFile(Info.ItemFileName);
+          if not (Graphic as TRAWImage).LoadThumbnailFromFile(Info.ItemFileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
+            Graphic.LoadFromFile(Info.ItemFileName);
         end else
-          Fpic.LoadFromFile(Info.ItemFileName);
+          Graphic.LoadFromFile(Info.ItemFileName);
         IsBigImage := True;
       end;
       if not ((Info.PassTag = 0) and Info.ItemCrypted) then
@@ -1992,9 +2012,9 @@ begin
         TempBit := TBitmap.create;
         try
           TempBit.PixelFormat := pf24bit;
-          JPEGScale(Fpic.Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
-          if Min(FPic.Height, FPic.Width) > 1 then
-            LoadImageX(Fpic.Graphic, TempBit, Theme_ListColor);
+          JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+          LoadImageX(Graphic, TempBit, Theme_ListColor);
+          F(Graphic);
 
           W := TempBit.Width;
           H := TempBit.Height;
@@ -2018,11 +2038,11 @@ begin
           MakeTempBitmap;
           SynchronizeEx(DrawImageToTempBitmapCenter);
         finally
-          GraphicParam.Free;
+          F(GraphicParam);
         end;
       end;
     finally
-      FPic.Free;
+      F(Graphic);
     end;
   end else //if ID <> 0
   begin
@@ -2040,15 +2060,14 @@ begin
           MakeTempBitmap;
           SynchronizeEx(DrawImageToTempBitmapCenter);
         finally
-          GraphicParam.Free;
+          F(GraphicParam);
         end;
       finally
-        Fbit.free;
+        F(Fbit);
       end;
     end;
   end;
-  if Info.Image <> nil then
-    Info.Image.Free;
+  F(Info.Image);
 
   if not ((Info.PassTag = 0) and Info.ItemCrypted) then
     ApplyRotate(TempBitmap, Info.ItemRotate);

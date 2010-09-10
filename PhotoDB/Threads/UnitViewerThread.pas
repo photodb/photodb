@@ -5,29 +5,30 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, SysUtils, Forms,
   GIFImage, GraphicEx, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
-  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG;
+  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG,
+  uMemory;
 
 type
   TViewerThread = class(TThread)
   private
-  FFileName : String;
-  FRotate : Byte;
-  FFullImage : Boolean;
-  FBeginZoom : Extended;
-  FSID : TGUID;
-  Picture : TPicture;
-  PassWord : String;
-  Crypted : Boolean;
-  FRealWidth, FRealHeight : Integer;
-  FRealZoomScale : Extended;
-  Bitmap : TBitmap;
-  FIsForward : Boolean;
-  FTransparent : Boolean;
-  FBooleanResult : Boolean;
-  FInfo : TOneRecordInfo;
-  FUpdateInfo : boolean;
-  FPage : Word;
-  FPages : Word;
+    FFileName: string;
+    FRotate: Byte;
+    FFullImage: Boolean;
+    FBeginZoom: Extended;
+    FSID: TGUID;
+    Graphic: TGraphic;
+    PassWord: string;
+    Crypted: Boolean;
+    FRealWidth, FRealHeight: Integer;
+    FRealZoomScale: Extended;
+    Bitmap: TBitmap;
+    FIsForward: Boolean;
+    FTransparent: Boolean;
+    FBooleanResult: Boolean;
+    FInfo: TOneRecordInfo;
+    FUpdateInfo: Boolean;
+    FPage: Word;
+    FPages: Word;
     { Private declarations }
   protected
     procedure Execute; override;
@@ -98,17 +99,21 @@ begin
     Exit;
   end;
 
- GetPassword;
- if Crypted and (PassWord='') then
- begin
-  SetNOImageAsynch;
-  exit;
- end;
- Picture := TPicture.Create;
+  GetPassword;
+  if Crypted and (PassWord = '') then
+  begin
+    SetNOImageAsynch;
+    Exit;
+  end;
+ Graphic := TGraphic.Create;
+  try
+
+
  try
   if PassWord<>'' then
   begin
-   Picture.Graphic:=DeCryptGraphicFileEx(FFileName,PassWord,fPages,false,fPage);
+   F(Graphic);
+   Graphic:=DeCryptGraphicFileEx(FFileName,PassWord,fPages,false,fPage);
   end else
   begin
    if Crypted and (PassWord='') then
@@ -118,50 +123,30 @@ begin
    end else
    begin
     GraphicClass := GetGraphicClass(GetExt(FFileName), False);
-   { if (GraphicClass = TJpegImage) and FFullImage then
+    if GraphicClass = TiffImageUnit.TTiffGraphic then
     begin
-      MS := TMemoryStream.Create;
-      try
-        MS.LoadFromFile(FFileName);
-        Bmp := JpegDecode(MS.Memory, MS.Size);
-        if Bmp = nil then
-          Picture.LoadFromFile(FFileName)
-        else
-          Picture.Graphic := Bmp;
-
-        if Bmp <> nil then
-          Bmp.Free;
-      finally
-        MS.Free;
-      end;
-    end else }if GraphicClass = TiffImageUnit.TTiffGraphic then
-    begin
-     Picture.Graphic:=TiffImageUnit.TTiffGraphic.Create;
-     (Picture.Graphic as TiffImageUnit.TTiffGraphic).Page:=fPage;
-     (Picture.Graphic as TiffImageUnit.TTiffGraphic).LoadFromFile(FFileName);
+     Graphic:=TiffImageUnit.TTiffGraphic.Create;
+     (Graphic as TiffImageUnit.TTiffGraphic).Page:=fPage;
+     (Graphic as TiffImageUnit.TTiffGraphic).LoadFromFile(FFileName);
     end else
-    Picture.LoadFromFile(FFileName);
+    Graphic.LoadFromFile(FFileName);
    end;
   end;
  except
-  Picture.Free;
   SetNOImageAsynch;
   exit;
  end;
  if FUpdateInfo then
  UpdateRecord;
-{ if not TestThread then
- begin
-  Picture.Free;
-  SetNOImageAsynch;
-  exit;
- end;   }
- FRealWidth:=Picture.Graphic.Width;
- FRealHeight:=Picture.Graphic.Height;
+
+
+
+ FRealWidth:=Graphic.Width;
+ FRealHeight:=Graphic.Height;
  if not FFullImage then
- JPEGScale(Picture.Graphic,Screen.Width,Screen.Height);
- FRealZoomScale:=FRealWidth/Picture.Graphic.Width;
- if Picture.Graphic is TGIFImage then
+ JPEGScale(Graphic,Screen.Width,Screen.Height);
+ FRealZoomScale:=FRealWidth/Graphic.Width;
+ if Graphic is TGIFImage then
  begin
   SetAnimatedImageAsynch;
  end else
@@ -169,50 +154,47 @@ begin
   Bitmap := TBitmap.Create;
   try
    if PassWord='' then
-   if Picture.Graphic is TiffImageUnit.TTiffGraphic then
+   if Graphic is TiffImageUnit.TTiffGraphic then
    begin
-    fPages:=(Picture.Graphic as TiffImageUnit.TTiffGraphic).Pages;
-    //TODO: (Picture.Graphic as TiffImageUnit.TTiffGraphic).GetPagesCount()
+    fPages:=(Graphic as TiffImageUnit.TTiffGraphic).Pages;
+    //TODO: (Graphic as TiffImageUnit.TTiffGraphic).GetPagesCount()
    end;
-   if Picture.Graphic is TPNGGraphic then
+   if Graphic is TPNGGraphic then
    begin
     FTransparent:=true;
-    PNG:=(Picture.Graphic as TPNGGraphic);
+    PNG:=(Graphic as TPNGGraphic);
     if PNG.PixelFormat=pf32bit then
     begin
      LoadPNGImage32bit(PNG,Bitmap,TransparentColor);
-    end else AssignGraphic(Bitmap, Picture.Graphic);
+    end else AssignGraphic(Bitmap, Graphic);
    end else
    begin
-    if (Picture.Graphic is TBitmap) then
+    if (Graphic is TBitmap) then
     begin
-     if not (Picture.Graphic is TPSDGraphic) or PSDTransparent then
+     if not (Graphic is TPSDGraphic) or PSDTransparent then
      begin
-      if (Picture.Graphic as TBitmap).PixelFormat=pf32bit then
+      if (Graphic as TBitmap).PixelFormat=pf32bit then
       begin
        FTransparent := True;
-       LoadBMPImage32bit(Picture.Graphic as TBitmap,Bitmap,TransparentColor);
-      end else AssignGraphic(Bitmap, Picture.Graphic);
-     end else AssignGraphic(Bitmap, Picture.Graphic);
-    end else AssignGraphic(Bitmap, Picture.Graphic);
+       LoadBMPImage32bit(Graphic as TBitmap,Bitmap,TransparentColor);
+      end else AssignGraphic(Bitmap, Graphic);
+     end else AssignGraphic(Bitmap, Graphic);
+    end else AssignGraphic(Bitmap, Graphic);
    end;
    Bitmap.PixelFormat:=pf24bit;
   except
-   Picture.Free;
    Bitmap.Free;
    SetNOImageAsynch;
    exit;
   end;
-  Picture.Free;
-{  if not TestThread then
-  begin
-   Bitmap.Free;
-   SetNOImageAsynch;
-   exit;
-  end; }
-  ApplyRotate(Bitmap, FRotate);
-  SetStaticImageAsynch;
- end;
+
+      ApplyRotate(Bitmap, FRotate);
+      SetStaticImageAsynch;
+    end;
+  finally
+    F(Graphic);
+  end;
+
 end;
 
 procedure TViewerThread.GetPassword;
@@ -259,8 +241,9 @@ begin
   if FUpdateInfo then
   Viewer.UpdateInfo(FSID, FInfo);
   Viewer.SetFullImageState(FFullImage,FBeginZoom,1,0);
-  Viewer.SetAnimatedImage(Picture);
- end else Picture.Free;
+  Viewer.SetAnimatedImage(Graphic);
+  Pointer(Graphic) := nil;
+ end;
 end;
 
 procedure TViewerThread.SetAnimatedImageAsynch;
@@ -282,7 +265,6 @@ begin
    end;
    sleep(10);
   until false;
-  Picture.Free;
  end;
 end;
 

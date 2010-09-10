@@ -6,7 +6,7 @@ uses
  SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms,
  CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
  UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
- UnitDBCommon, uLogger;
+ UnitDBCommon, uLogger, ImageConverting, uMemory;
 
 type
   LoadFilesToPanel = class(TThread)
@@ -29,7 +29,7 @@ type
     { Private declarations }
   protected
     procedure Execute; override;
-    function GetInfoByFileNameOrID(FileName : string; ID, N : integer) : TPicture;
+    procedure GetInfoByFileNameOrID(FileName : string; ID, N : integer; out Graphic : TGraphic);
     Procedure NewItem(Graphic : TGraphic);
     procedure AddToPanel;
     procedure CreateItemsByID(IDs : TArInteger);
@@ -125,6 +125,7 @@ begin
   try
    fQuery.active:=true;
   except
+   //TODO: review
    FreeDS(fQuery);
    exit;
   end;
@@ -190,7 +191,7 @@ end;
 procedure LoadFilesToPanel.Execute;
 var
   i ,l : integer;
-  pic : TPicture;
+  Graphic : TGraphic;
   Data : TImageContRecordArray;
 begin
  FreeOnTerminate:=true;
@@ -198,6 +199,7 @@ begin
  if fbyid then l:=Length(fIDs) else l:=Length(FFiles);
 
  FQuery := GetQuery;
+ try
  SetLength(fRotates,Max(Length(fIDs),Length(FFiles)));
  if not fbyid then
  begin
@@ -217,23 +219,26 @@ begin
    fbit.Width:=fPictureSize;
    fbit.Height:=fPictureSize;
    if fbyid then
-   pic:=GetInfoByFileNameOrID(ffiles[0],Fids[i],i) else
-   pic:=GetInfoByFileNameOrID(ffiles[i],Fids[0],i);
-   fRotates[i]:=FInfo.ItemRotate;
-   if not FValidThread then break;
-   if pic<>nil then
-   begin
-    NewItem(pic.Graphic);
-    pic.Free;
-    pic:=nil;
+     GetInfoByFileNameOrID(ffiles[0],Fids[i],i, Graphic)
+   else
+     GetInfoByFileNameOrID(ffiles[i],Fids[0],i, Graphic);
+   try
+     fRotates[i]:=FInfo.ItemRotate;
+     if not FValidThread then
+       Break;
+     if Assigned(Graphic) then
+      NewItem(Graphic);
+
+   finally
+     F(Graphic);
    end;
   end;
  end else
- begin
   CreateItemsByID(Fids);
+
+ finally
+   FreeDS(FQuery);
  end;
- FQuery.Close;
- FreeDS(FQuery);
 
  Synchronize(GetSIDFromForm);
  ////////////////////////////////////
@@ -242,7 +247,7 @@ begin
   SetLength(Data,Length(FFiles));
   for i:=0 to Length(FFiles)-1 do
   Data[i].FileName:=FFiles[i];
-  UnitPanelLoadingBigImagesThread.TPanelLoadingBigImagesThread.Create(false,FOwner,(FOwner as TFormCont).BigImagesSID,nil,fPictureSize,Copy(Data));
+  UnitPanelLoadingBigImagesThread.TPanelLoadingBigImagesThread.Create(FOwner,(FOwner as TFormCont).BigImagesSID,nil,fPictureSize,Copy(Data));
  end else
  begin
   Synchronize(DoStopLoading);
@@ -250,136 +255,144 @@ begin
 
 end;
 
-function LoadFilesToPanel.GetInfoByFileNameOrID(FileName: string; ID, N  : integer) : TPicture;
+procedure LoadFilesToPanel.GetInfoByFileNameOrID(FileName: string; ID, N  : integer; out Graphic : TGraphic);
 var
-  Password, s : string;
-  CryptFile : boolean;
-  c : integer;
-  JPEG : TJPEGImage;
+  Password, S: string;
+  CryptFile: Boolean;
+  C: Integer;
+  JPEG: TJPEGImage;
+  GraphicClass : TGraphicClass;
 begin
- c:=0;
- Result:=nil;
- if not (FUseLoaded and not fbyid and (FArLoaded[N]=true)) then
- begin
-  fQuery.Active:=False;
-  if fbyid then
-   SetSQL(fQuery,'SELECT * FROM $DB$ WHERE ID = '+inttostr(id))
-  else
+  C := 0;
+  if not(FUseLoaded and not Fbyid and (FArLoaded[N] = True)) then
   begin
-   SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
-   s:=FileName;
-   if FolderView then
-   Delete(s,1,Length(ProgramDir));
-   SetStrParam(fQuery,0,delnakl(normalizeDBStringLike(NormalizeDBString(AnsiLowerCase(s)))));
+    FQuery.Active := False;
+    if Fbyid then
+      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = ' + Inttostr(Id))
+    else
+    begin
+      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
+          + ' AND FFileName LIKE :FFileName');
+      S := FileName;
+      if FolderView then
+        Delete(S, 1, Length(ProgramDir));
+      SetStrParam(FQuery, 0, Delnakl(NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(S)))));
+    end;
+    FQuery.Active := True;
+    C := FQuery.RecordCount;
   end;
-  fQuery.active:=true;
-  c:=fQuery.RecordCount;
- end;
- if (c=0) then
- begin
-  CryptFile:=ValidCryptGraphicFile(FileName);
-  FInfo:=RecordInfoOne(FileName,0,0,0,0,0,'','','','','',0,false,false,0,CryptFile,true,true,'');
-  Result := TPicture.Create;
-  if CryptFile then
-  begin
-   Password:=DBKernel.FindPasswordForCryptImageFile(FileName);
-   if Password='' then
-   begin
-    Result.Free;
-    Result:=nil;
-    exit;
-   end;
-   Result.Graphic:=DeCryptGraphicFile(FileName,Password);
-  end else
-  begin
 
-   if IsRAWImageFile(FileName) then
-   begin
-    Result.Graphic:=TRAWImage.Create;
-    if not (Result.Graphic as TRAWImage).LoadThumbnailFromFile(FileName,fPictureSize,fPictureSize) then
-    Result.Graphic.LoadFromFile(FileName);
-   end else
-   Result.LoadFromFile(FileName);
-  end;
-  JPEGScale(Result.Graphic,fPictureSize,fPictureSize);
- end else
- begin
-  FInfo:=RecordInfoOne(fQuery.fieldByName('FFileName').AsString,fQuery.fieldByName('ID').AsInteger,fQuery.fieldByName('Rotated').AsInteger,fQuery.fieldByName('Rating').AsInteger,fQuery.fieldByName('Access').AsInteger,fQuery.fieldByName('FileSize').AsInteger,fQuery.fieldByName('Comment').AsString,fQuery.fieldByName('KeyWords').AsString,fQuery.fieldByName('Owner').AsString,fQuery.fieldByName('Collection').AsString,fQuery.fieldByName('Groups').AsString,fQuery.fieldByName('DateToAdd').AsDateTime,fQuery.fieldByName('IsDate').AsBoolean,fQuery.fieldByName('IsTime').AsBoolean,fQuery.fieldByName('aTime').AsDateTime, ValidCryptBlobStreamJPG(fQuery.fieldByName('thum')),fQuery.fieldByName('Include').AsBoolean,true,fQuery.FieldByName('Links').AsString);
-  FInfo.ItemImTh:=fQuery.fieldByName('StrTh').AsString;
-  if TBlobField(fQuery.FieldByName('thum'))=nil then exit;
-  if ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')) then
+  GraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+  if GraphicClass = nil then
+    Exit;
+
+  Graphic := GraphicClass.Create;
+
+  if (C = 0) then
   begin
-   Password:=DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'));
-   if Password<>'' then
-   begin
-     JPEG := TJpegImage.Create;
-     try
-       DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), Password, JPEG);
-       Result.Graphic := JPEG;
-     finally
-       JPEG.Free;
-     end;
-   end else
-   begin
-    Result.Free;
-    Result:=nil;
-   end;
+    CryptFile := ValidCryptGraphicFile(FileName);
+    FInfo := RecordInfoOne(FileName, 0, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, CryptFile, True, True, '');
+    if CryptFile then
+    begin
+      Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+      if Password = '' then
+        Exit;
+
+      F(Graphic);
+      Graphic := DeCryptGraphicFile(FileName, Password);
+    end else
+    begin
+      if Graphic is TRAWImage then
+      begin
+        if not(Graphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
+          Graphic.LoadFromFile(FileName);
+      end
+      else
+        Graphic.LoadFromFile(FileName);
+    end;
+    JPEGScale(Graphic, FPictureSize, FPictureSize);
   end else
   begin
-   Result:=TPicture.Create;
-   Result.Graphic:=TJpegImage.Create;
-   fbs:=GetBlobStream(fQuery.FieldByName('thum'),bmRead);
-   try
-    if fbs.Size<>0 then
-    Result.Graphic.LoadFromStream(fbs) else
-   except
-    Result.Free;
-    Result:=nil;
-   end;
-   fbs.Free;
+    FInfo := RecordInfoOne(FQuery.FieldByName('FFileName').AsString, FQuery.FieldByName('ID').AsInteger,
+      FQuery.FieldByName('Rotated').AsInteger, FQuery.FieldByName('Rating').AsInteger,
+      FQuery.FieldByName('Access').AsInteger, FQuery.FieldByName('FileSize').AsInteger,
+      FQuery.FieldByName('Comment').AsString, FQuery.FieldByName('KeyWords').AsString,
+      FQuery.FieldByName('Owner').AsString, FQuery.FieldByName('Collection').AsString,
+      FQuery.FieldByName('Groups').AsString, FQuery.FieldByName('DateToAdd').AsDateTime,
+      FQuery.FieldByName('IsDate').AsBoolean, FQuery.FieldByName('IsTime').AsBoolean,
+      FQuery.FieldByName('aTime').AsDateTime, ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')),
+      FQuery.FieldByName('Include').AsBoolean, True, FQuery.FieldByName('Links').AsString);
+    FInfo.ItemImTh := FQuery.FieldByName('StrTh').AsString;
+    if TBlobField(FQuery.FieldByName('thum')) = nil then
+      Exit;
+
+    if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
+    begin
+      Password := DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum'));
+      if Password <> '' then
+      begin
+        JPEG := TJpegImage.Create;
+        try
+          DeCryptBlobStreamJPG(FQuery.FieldByName('thum'), Password, JPEG);
+          F(Graphic);
+          Graphic := JPEG;
+          JPEG := nil;
+        finally
+          JPEG.Free;
+        end;
+      end;
+    end else
+    begin
+      Graphic := TJpegImage.Create;
+      Fbs := GetBlobStream(FQuery.FieldByName('thum'), BmRead);
+      try
+        if Fbs.Size <> 0 then
+          Graphic.LoadFromStream(Fbs) finally Fbs.Free;
+      end;
+    end;
   end;
- end;
 end;
 
 procedure LoadFilesToPanel.GetPictureSize;
 begin
- if ManagerPanels.ExistsPanel(FOwner,fSID) then
- fPictureSize:=(fOwner as TFormCont).PictureSize  else FValidThread:=false;
+  if ManagerPanels.ExistsPanel(FOwner, FSID) then
+    FPictureSize := (FOwner as TFormCont).PictureSize
+  else
+    FValidThread := False;
 end;
 
 procedure LoadFilesToPanel.GetSIDFromForm;
 begin
- if ManagerPanels.ExistsPanel(FOwner,fSID) then
- fSID:=(fOwner as TFormCont).SID else FValidThread:=false;
+  if ManagerPanels.ExistsPanel(FOwner, FSID) then
+    FSID := (FOwner as TFormCont).SID
+  else
+    FValidThread := False;
 end;
 
 procedure LoadFilesToPanel.NewItem(Graphic : TGraphic);
 var
-  B : TBitmap;
-  w,h : integer;
+  B: TBitmap;
+  W, H: Integer;
 begin
-  if Graphic=nil then exit;
-  B:=TBitmap.create;
-  if Min(Graphic.Height,Graphic.Width)>1 then
-  begin
-   try
-    LoadImageX(Graphic,B,Theme_ListColor);
-   except
-    on e : Exception do EventLog(':LoadFilesToPanel::NewItem()/LoadImageX throw exception: '+e.Message);
-   end;
-  end else
-  begin
-    AssignGraphic(B, Graphic);
+  B := TBitmap.Create;
+  try
+    LoadImageX(Graphic, B, Theme_ListColor);
+    W := B.Width;
+    H := B.Height;
+    ProportionalSize(FPictureSize, FPictureSize, W, H);
+    FBit := TBitmap.Create;
+    try
+      DoResize(W, H, B, Fbit);
+      F(B);
+      ApplyRotate(Fbit, FInfo.ItemRotate);
+      Synchronize(AddToPanel);
+      FBit := nil;
+    finally
+      F(FBit);
+    end;
+  finally
+    B.Free;
   end;
-  w:=B.Width;
-  h:=B.Height;
-  ProportionalSize(fPictureSize,fPictureSize,w,h);
-  fbit:=TBitmap.create;
-  DoResize(w,h,B,fbit);
-  B.Free;
-  ApplyRotate(fbit, FInfo.ItemRotate);
-
- Synchronize(AddToPanel);
 end;
 
 end.

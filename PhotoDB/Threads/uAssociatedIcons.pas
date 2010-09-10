@@ -66,7 +66,7 @@ var
   i : integer;
 begin
   Result := False;
-  if  (Ext = '') or Ext = ('.scr') or (Ext = '.exe') then
+  if  (Ext = '') or (Ext = '.scr') or (Ext = '.exe') then
   begin
     Result := True;
     Exit;

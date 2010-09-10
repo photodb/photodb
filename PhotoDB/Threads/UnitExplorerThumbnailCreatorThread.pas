@@ -4,7 +4,8 @@ interface
 
 uses GraphicCrypt, Windows, Graphics, Classes, Dolphin_DB, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
-     Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, UnitDBCommon;
+     Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, UnitDBCommon,
+     ImageConverting, uMemory;
 
 type
   TExplorerThumbnailCreator = class(TThread)
@@ -15,8 +16,8 @@ type
     Info: TOneRecordInfo;
     FOwner: TExplorerForm;
     GraphicParam: TGraphic;
-    Fpic: Tpicture;
-    Fbit, TempBit: TBitmap;
+    FGraphic: TGraphic;
+    FBit, TempBit: TBitmap;
     StringParam: string;
   protected
     procedure Execute; override;
@@ -47,6 +48,8 @@ procedure TExplorerThumbnailCreator.Execute;
 var
   W, H : Integer;
   Password : string;
+  GraphicClass : TGraphicClass;
+
 begin
   FreeOnTerminate := True;
   CoInitialize(nil);
@@ -105,11 +108,14 @@ begin
           if not FileExists(FFileName) then
             FFileName := ProgramDir + FFileName;
 
-          if FileExists(FFileName) and ExtInMask(SupportedExt, GetExt(FFileName)) then
-            FPic := TPicture.Create
-          else
+          if not (FileExists(FFileName) and ExtInMask(SupportedExt, GetExt(FFileName))) then
             Exit;
 
+          GraphicClass := GetGraphicClass(ExtractFileExt(FFileName), False);
+          if GraphicClass = nil then
+            Exit;
+
+          FGraphic := GraphicClass.Create;
           try
             if ValidCryptGraphicFile(FFileName) then
             begin
@@ -117,33 +123,33 @@ begin
               Password := DBKernel.FindPasswordForCryptImageFile(FFileName);
 
               if Password <> '' then
+              begin
                 //TODO: Memory leaks!!!
-                FPic.Graphic := DeCryptGraphicFile(FFileName, Password)
-              else
+                F(FGraphic);
+                FGraphic := DeCryptGraphicFile(FFileName, Password)
+              end else
                 Exit;
             end else
             begin
-              if IsRAWImageFile(FFileName) then
+              if FGraphic is TRAWImage then
               begin
-                FPic.Graphic := TRAWImage.Create;
-                if not (Fpic.Graphic as TRAWImage).LoadThumbnailFromFile(FFileName,ThSizeExplorerPreview,ThSizeExplorerPreview) then
-                  FPic.Graphic.LoadFromFile(FFileName);
-             end else
-               FPic.LoadFromFile(FFileName);
+                if not(FGraphic as TRAWImage).LoadThumbnailFromFile(FFileName, ThSizeExplorerPreview, ThSizeExplorerPreview) then
+                  FGraphic.LoadFromFile(FFileName);
+              end else
+                FGraphic.LoadFromFile(FFileName);
             end;
 
             FBit := TBitmap.Create;
             try
               FBit.PixelFormat := pf24bit;
-              Info.ItemHeight := FPic.Graphic.Height;
-              Info.ItemWidth := FPic.Graphic.Width;
-              JPEGScale(FPic.Graphic, ThSizeExplorerPreview, ThSizeExplorerPreview);
+              Info.ItemHeight := FGraphic.Height;
+              Info.ItemWidth := FGraphic.Width;
+              JPEGScale(FGraphic, ThSizeExplorerPreview, ThSizeExplorerPreview);
 
               TempBit := TBitmap.Create;
               try
-                if Min(Fpic.Height, Fpic.Width) > 1 then
-                  LoadImageX(FPic.Graphic, TempBit, Theme_MainColor);
-
+                LoadImageX(FGraphic, TempBit, Theme_MainColor);
+                F(FGraphic);
                 TempBit.PixelFormat := pf24bit;
                 W := TempBit.Width;
                 H := TempBit.Height;
@@ -154,24 +160,24 @@ begin
                   DoResize(W, H, TempBit, FBit);
                 end;
               finally
-                TempBit.Free;
+                F(TempBit);
               end;
               DrawImageEx(TempBitmap, FBit, ThSizeExplorerPreview div 2 - FBit.Width div 2, ThSizeExplorerPreview div 2 - FBit.height div 2);
             finally
-              FBit.Free;
+              F(FBit);
             end;
           finally
-            FPic.Free;
+            F(FGraphic);
           end;
         end;
         Synchronize(DoDrawAttributes);
         Synchronize(SetInfo);
         Synchronize(SetImage);
       finally
-        Info.Image.Free;
+        F(Info.Image);
       end;
     finally
-      TempBitmap.free;
+      F(TempBitmap);
     end;
   finally
     CoUninitialize;

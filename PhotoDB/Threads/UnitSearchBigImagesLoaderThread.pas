@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Classes, Forms, Dolphin_DB, SysUtils, Graphics, GraphicCrypt, Math,
-  RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon,
-  UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx;
+  RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, ImageConverting,
+  UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx, uMemory;
 
 type
   TSearchBigImagesLoaderThread = class(TThreadEx)
@@ -81,7 +81,8 @@ end;
 procedure TSearchBigImagesLoaderThread.Execute;
 var
   I : Integer;
-  FPic : TPicture;
+  FGraphicClass : TGraphicClass;
+  FGraphic : TGraphic;
   PassWord, FileName : String;
   FBit, TempBitmap : TBitmap;
   W, H : integer;
@@ -114,7 +115,8 @@ begin
 
     FileName := ProcessPath(FData[I].FileName);
 
-    FPic := TPicture.Create;
+    FGraphicClass := GetGraphicClass(ExtractFileExt(FData[I].FileName), False);
+    FGraphic := FGraphicClass.Create;
     try
 
       if GraphicCrypt.ValidCryptGraphicFile(FileName) then
@@ -123,25 +125,26 @@ begin
         if PassWord = '' then
           Continue;
 
-        FPic.Graphic := GraphicCrypt.DeCryptGraphicFile(FileName, PassWord);
+        F(FGraphic);
+        FGraphic := DeCryptGraphicFile(FileName, PassWord);
       end else
       begin
-        if IsRAWImageFile(StrParam) then
+        if FGraphic is TRAWImage then
         begin
-          FPic.Graphic := TRAWImage.Create;
-          if not (FPic.Graphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
-            FPic.Graphic.LoadFromFile(FileName);
+          if not (FGraphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
+            (FGraphic as TRAWImage).LoadFromFile(FileName);
         end else
-          FPic.LoadFromFile(FileName);
+          FGraphic.LoadFromFile(FileName);
+
       end;
 
       FBit := TBitmap.Create;
       try
         FBit.PixelFormat := pf24bit;
-        JPEGScale(FPic.Graphic, FPictureSize, FPictureSize);
+        JPEGScale(FGraphic, FPictureSize, FPictureSize);
 
-        if Min(FPic.Height, FPic.Width) > 1 then
-          LoadImageX(FPic.Graphic, FBit, Theme_ListColor);
+        if Min(FGraphic.Height, FGraphic.Width) > 1 then
+          LoadImageX(FGraphic, FBit, Theme_ListColor);
 
         TempBitmap:=TBitmap.Create;
         try
@@ -157,13 +160,13 @@ begin
 
           SynchronizeEx(ReplaceBigBitmap);
         finally
-          TempBitmap.Free;
+          F(TempBitmap);
         end;
       finally
-        FBit.Free;
+        F(FBit);
       end;
     finally
-      FreeAndNil(FPic);
+      F(FGraphic);
     end;
 
     FI := I + 1;

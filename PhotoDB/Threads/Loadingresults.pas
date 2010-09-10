@@ -206,7 +206,7 @@ begin
           if PassWord='' then
             Exit;
 
-          pic.Graphic:=GraphicCrypt.DeCryptGraphicFile(fSpsearch_ScanFile,PassWord);
+          Graphic:=DeCryptGraphicFile(fSpsearch_ScanFile,PassWord);
         end else
         begin
           Pic.LoadFromFile(fSpsearch_ScanFile);

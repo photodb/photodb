@@ -200,7 +200,7 @@ type
     FImageExists: Boolean;
     FStaticImage: Boolean;
     FLoading: Boolean;
-    AnimatedImage : TPicture;
+    AnimatedImage : TGraphic;
     SlideNO : Integer;
     AnimatedBuffer : TBitmap;
     FValidImages: Integer;
@@ -249,7 +249,7 @@ type
     procedure RecreateImLists;
     function GetSID : TGUID;
     procedure SetStaticImage(Image : TBitmap; Transparent : Boolean);
-    procedure SetAnimatedImage(Image : TPicture);
+    procedure SetAnimatedImage(Image : TGraphic);
     procedure NextSlide;
     function GetFirstImageNO : integer;
     function GetNextImageNO : integer;
@@ -2475,18 +2475,18 @@ begin
   if Length(CurrentInfo.ItemFileNames)=0 then TbSlideShow.Enabled:=false;
 end;
 
-procedure TViewer.SetAnimatedImage(Image: TPicture);
+procedure TViewer.SetAnimatedImage(Image: TGraphic);
 var
  i : integer;
  im : TGifImage;
 begin
+  F(AnimatedImage);
+  AnimatedImage:=Image;
  FCurrentlyLoadedFile:=CurrentInfo.ItemFileNames[CurrentFileNumber];
  ForwardThreadExists:=false;
  StaticImage:=False;
  ImageExists:=True;
  Loading:=False;
- if AnimatedImage<>nil then AnimatedImage.Free;
- AnimatedImage:=Image;
  if not ZoomerOn  then Cursor:=crDefault;
  TbFitToWindow.Enabled:=true;
  TbRealSize.Enabled:=true;
@@ -2509,7 +2509,7 @@ begin
  ReAllignScrolls(False,Point(0,0));
  SlideNO:=-1;
  ZoomerOn:=false;
- im:=(AnimatedImage.Graphic as TGIFImage);
+ im:=(AnimatedImage as TGIFImage);
  ValidImages:=0;
  TransparentImage:=false;
  for i:=0 to im.Images.count-1 do
@@ -2559,7 +2559,7 @@ begin
  begin
   SlideNO:=GetNextImageNO;
  end;
- r:=(AnimatedImage.Graphic as TGIFImage).Images[SlideNO].BoundsRect;
+ r:=(AnimatedImage as TGIFImage).Images[SlideNO].BoundsRect;
  if FullScreenNow then
  begin
   AnimatedBuffer.Canvas.Brush.Color:=0;
@@ -2569,7 +2569,7 @@ begin
   AnimatedBuffer.Canvas.Brush.Color:=Theme_MainColor;
   AnimatedBuffer.Canvas.Pen.Color:=Theme_MainColor;
  end;
- im:=(AnimatedImage.Graphic as TGIFImage);
+ im:=(AnimatedImage as TGIFImage);
  TimerEnabled:=false;
  PreviousNumber:=GetPreviousImageNO;
  DisposalMethod:=dmNone;
@@ -2644,8 +2644,8 @@ begin
  Result:=0;
  if ValidImages=0 then Result:=0 else
  begin
-  for i:=0 to (AnimatedImage.Graphic as TGIFImage).Images.count-1 do
-  if not (AnimatedImage.Graphic as TGIFImage).Images[i].Empty then
+  for i:=0 to (AnimatedImage as TGIFImage).Images.count-1 do
+  if not (AnimatedImage as TGIFImage).Images[i].Empty then
   begin
    Result:=i;
    break;
@@ -2659,7 +2659,7 @@ var
 begin
  if ValidImages=0 then Result:=0 else
  begin
-  im:=(AnimatedImage.Graphic as TGIFImage);
+  im:=(AnimatedImage as TGIFImage);
   Result:=SlideNO;
   inc(Result);
   if Result>=im.Images.Count then
@@ -2679,7 +2679,7 @@ var
 begin
  if ValidImages=0 then Result:=0 else
  begin
-  im:=(AnimatedImage.Graphic as TGIFImage);
+  im:=(AnimatedImage as TGIFImage);
   Result:=SlideNO;
   dec(Result);
   if Result<0 then
@@ -2699,7 +2699,7 @@ var
 begin
  if ValidImages=0 then Result:=0 else
  begin
-  im:=(AnimatedImage.Graphic as TGIFImage);
+  im:=(AnimatedImage as TGIFImage);
   Result:=NO;
   inc(Result);
   if Result>=im.Images.Count then
@@ -2719,7 +2719,7 @@ var
 begin
  if ValidImages=0 then Result:=0 else
  begin
-  im:=(AnimatedImage.Graphic as TGIFImage);
+  im:=(AnimatedImage as TGIFImage);
   Result:=NO;
   dec(Result);
   if Result<0 then

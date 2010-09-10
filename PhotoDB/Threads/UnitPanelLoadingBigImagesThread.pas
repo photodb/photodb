@@ -5,25 +5,25 @@ interface
 uses
   Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt, Dolphin_DB,
   UnitDBDeclare, RAWImage, UnitDBCommonGraphics, UnitDBCommon,
-  UnitCDMappingSupport, uLogger;
+  UnitCDMappingSupport, uLogger, ImageConverting, uMemory;
 
 type
   TPanelLoadingBigImagesThread = class(TThread)
-  private     
-  { Private declarations }
-   fSender: TForm;
-   fSID : TGUID;
-   fOnDone: TNotifyEvent;
-   fPictureSize : integer;
-   fFiles : TImageContRecordArray;   
-   FVisibleFiles : TArStrings;
-   BoolParam : boolean;
-   StrParam : String;
-   OldInformationText : String;
-   intparam : integer;
-   BitmapParam : TBitmap;
-   FI : integer;
-   FUpdating : boolean;
+  private
+    { Private declarations }
+    FSender: TForm;
+    FSID: TGUID;
+    FOnDone: TNotifyEvent;
+    FPictureSize: Integer;
+    FFiles: TImageContRecordArray;
+    FVisibleFiles: TArStrings;
+    BoolParam: Boolean;
+    StrParam: string;
+    OldInformationText: string;
+    Intparam: Integer;
+    BitmapParam: TBitmap;
+    FI: Integer;
+    FUpdating: Boolean;
     ////////////////////////////////
     procedure VisibleUp(TopIndex: integer);
     procedure FileNameExists;
@@ -31,16 +31,16 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID;
+    constructor Create(Sender : TForm; SID : TGUID;
       aOnDone : TNotifyEvent; PictureSize : integer; Files : TImageContRecordArray; Updating : boolean = false);
-    procedure ReplaceBigBitmap;     
+    procedure ReplaceBigBitmap;
     procedure DoStopLoading;
     destructor Destroy; override;
   end;
 
-  var
-    PanelUpdateBigImageThreadsCount : integer = 0;
-    PanelUpdateBigImageThreadsCountByID : integer = 0;
+var
+  PanelUpdateBigImageThreadsCount: Integer = 0;
+  PanelUpdateBigImageThreadsCountByID: Integer = 0;
 
 implementation
 
@@ -48,17 +48,16 @@ uses UnitFormCont;
 
 { TPanelLoadingBigImagesThread }
 
-constructor TPanelLoadingBigImagesThread.Create(CreateSuspennded: Boolean; Sender : TForm; SID : TGUID;
+constructor TPanelLoadingBigImagesThread.Create(Sender : TForm; SID : TGUID;
       aOnDone : TNotifyEvent; PictureSize : integer; Files : TImageContRecordArray; Updating : boolean = false);
 begin
- inherited create(true);
- fSender:=Sender;
- fSID:=SID;
- fOnDone:=aOnDone;
- fPictureSize:=PictureSize;
- fFiles:=Files;
- FUpdating:=Updating;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FSender := Sender;
+  FSID := SID;
+  FOnDone := AOnDone;
+  FPictureSize := PictureSize;
+  FFiles := Files;
+  FUpdating := Updating;
 end;
 
 procedure TPanelLoadingBigImagesThread.VisibleUp(TopIndex: integer);
@@ -78,130 +77,117 @@ begin
    FFiles[j]:=temp;
    inc(c);
   end;
- end;   
+ end;
 end;
 
 procedure TPanelLoadingBigImagesThread.Execute;
 var
-  i : integer;
-  FPic : TPicture;
-  PassWord : String;
-  fbit, TempBitmap : TBitmap;
-  w, h : integer;
-  ProcNum : integer;
+  I: Integer;
+  GraphicClass: TGraphicClass;
+  Graphic: TGraphic;
+  PassWord: string;
+  FBit, TempBitmap: TBitmap;
+  W, H: Integer;
 begin
- FPic:=nil;
- ProcNum:=GettingProcNum;
- FreeOnTerminate:=True;
+  FreeOnTerminate := True;
 
-
- if not fUpdating then
- begin
-
-  Repeat
-   sleep(100);
-  until PanelUpdateBigImageThreadsCount<(ProcNum+1);
-
-  PanelUpdateBigImageThreadsCount:=PanelUpdateBigImageThreadsCount+1;
-
-  for i:=0 to Length(FFiles)-1 do
+  if not FUpdating then
   begin
 
-   if i mod 5=0 then
-   begin
-    Priority:=tpNormal;
-    Synchronize(GetVisibleFiles);
-    VisibleUp(i);
-    Sleep(5);
-   end;
+    repeat
+      Sleep(100);
+    until PanelUpdateBigImageThreadsCount < (ProcessorCount + 1);
 
-   StrParam:=FFiles[i].FileName;
-   Synchronize(FileNameExists);
-   if BoolParam then
-   begin
-    try
-     FPic := TPicture.Create;
-    except
-     if FPic<>nil then
-     FPic.Free;
-     FPic:=nil;
-     continue;
-    end;
-    try
-     if GraphicCrypt.ValidCryptGraphicFile(ProcessPath(StrParam)) then
-     begin
-      PassWord:=DBKernel.FindPasswordForCryptImageFile(StrParam);
-      if PassWord='' then
+    PanelUpdateBigImageThreadsCount := PanelUpdateBigImageThreadsCount + 1;
+
+    for I := 0 to Length(FFiles) - 1 do
+    begin
+
+      if I mod 5 = 0 then
       begin
-       if FPic<>nil then FPic.Free;
-       FPic:=nil;
-       continue;
+        Priority := TpNormal;
+        Synchronize(GetVisibleFiles);
+        VisibleUp(I);
+        Sleep(5);
       end;
-      FPic.Graphic:=GraphicCrypt.DeCryptGraphicFile(ProcessPath(StrParam),PassWord);
-     end else
-     begin
-      if IsRAWImageFile(StrParam) then
+
+      StrParam := FFiles[I].FileName;
+      Synchronize(FileNameExists);
+      if BoolParam then
       begin
-       FPic.Graphic:=TRAWImage.Create;
-       if not (FPic.Graphic as TRAWImage).LoadThumbnailFromFile(StrParam,FPictureSize,FPictureSize) then
-       FPic.Graphic.LoadFromFile(ProcessPath(StrParam));
-      end else
-      FPic.LoadFromFile(ProcessPath(StrParam));
-     end;
-    except
-     if FPic<>nil then
-     FPic.Free;
-     FPic:=nil;
-     continue;
-     end;
-    fbit:=nil;
-    fbit:=TBitmap.create;
-    fbit.PixelFormat:=pf24bit;
-    JPEGScale(Fpic.Graphic,FPictureSize,FPictureSize);
 
-    if Min(Fpic.Height,Fpic.Width)>1 then
-    try
-     LoadImageX(Fpic.Graphic,fbit,Theme_ListColor);
-    except
-     on e : Exception do EventLog(':TPanelLoadingBigImagesThread::Execute()/LoadImageX throw exception: '+e.Message);
+        GraphicClass := GetGraphicClass(ExtractFileExt(StrParam), False);
+        if GraphicClass = nil then
+          Continue;
+        Graphic := GraphicClass.Create;
+
+        try
+          if GraphicCrypt.ValidCryptGraphicFile(ProcessPath(StrParam)) then
+          begin
+            PassWord := DBKernel.FindPasswordForCryptImageFile(StrParam);
+            if PassWord = '' then
+              Continue;
+
+            F(Graphic);
+            Graphic := DeCryptGraphicFile(ProcessPath(StrParam), PassWord);
+          end else
+          begin
+            if Graphic is TRAWImage then
+            begin
+              if not(Graphic as TRAWImage).LoadThumbnailFromFile(StrParam, FPictureSize, FPictureSize) then
+                Graphic.LoadFromFile(ProcessPath(StrParam));
+            end
+            else
+              Graphic.LoadFromFile(ProcessPath(StrParam));
+          end;
+
+          JPEGScale(Graphic, FPictureSize, FPictureSize);
+          Fbit := TBitmap.Create;
+          try
+            Fbit.PixelFormat := Pf24bit;
+
+            LoadImageX(Graphic, Fbit, Theme_ListColor);
+            F(Graphic);
+            TempBitmap := TBitmap.Create;
+            try
+              TempBitmap.PixelFormat := Pf24bit;
+              W := Fbit.Width;
+              H := Fbit.Height;
+              ProportionalSize(FPictureSize, FPictureSize, W, H);
+              TempBitmap.Width := W;
+              TempBitmap.Height := H;
+              DoResize(W, H, Fbit, TempBitmap);
+              F(FBit);
+
+              ApplyRotate(TempBitmap, FFiles[I].Rotation);
+              BitmapParam := TempBitmap;
+              FI := I + 1;
+              IntParam := FI;
+
+              Synchronize(ReplaceBigBitmap);
+            finally
+              F(TempBitmap);
+            end;
+          finally
+            F(Fbit);
+          end;
+
+        finally
+          F(Graphic);
+        end;
+
+      end;
     end;
-    Fpic.Free;
-    Fpic:=nil;
+  end else
+  begin
+    repeat
+      Sleep(100);
+    until PanelUpdateBigImageThreadsCountByID < (ProcessorCount + 1);
 
-    TempBitmap:=TBitmap.create;
-    TempBitmap.PixelFormat:=pf24bit;
-    w:=fbit.Width;
-    h:=fbit.Height;
-    ProportionalSize(FPictureSize,FPictureSize,w,h);
-    TempBitmap.Width:=w;
-    TempBitmap.Height:=h;
-    try
-     DoResize(w,h,fbit,TempBitmap);
-    except
-    end;
-    fbit.Free;
-    fbit:=nil;
-
-    ApplyRotate(TempBitmap, fFiles[i].Rotation);
-    BitmapParam:=TempBitmap;
-    FI:=i+1;
-    IntParam:=FI;
-
-    Synchronize(ReplaceBigBitmap);
-    TempBitmap.Free;
-   end;
+    PanelUpdateBigImageThreadsCountByID := PanelUpdateBigImageThreadsCountByID + 1;
+    // ?
   end;
- end else
- begin
-  Repeat
-   sleep(100);
-  until PanelUpdateBigImageThreadsCountByID<(ProcNum+1);
-
-  PanelUpdateBigImageThreadsCountByID:=PanelUpdateBigImageThreadsCountByID+1;
-  //?
-
- end;
- Synchronize(DoStopLoading);
+  Synchronize(DoStopLoading);
 end;
 
 procedure TPanelLoadingBigImagesThread.FileNameExists;
@@ -215,42 +201,37 @@ end;
 
 procedure TPanelLoadingBigImagesThread.GetVisibleFiles;
 begin
-  If ManagerPanels.IsPanelForm(FSender) then
+  if ManagerPanels.IsPanelForm(FSender) then
   begin
-    FVisibleFiles:=(FSender as TFormCont).GetVisibleItems;
+    FVisibleFiles := (FSender as TFormCont).GetVisibleItems;
     if not FSender.Active then
-      Priority:=tpLowest;
+      Priority := TpLowest;
   end
 end;
 
 destructor TPanelLoadingBigImagesThread.Destroy;
 begin
- if not fUpdating then
- begin
-  Dec(PanelUpdateBigImageThreadsCount);
- end else
- begin
-  Dec(PanelUpdateBigImageThreadsCountByID);
- end;
- inherited Destroy;
+  if not FUpdating then
+    Dec(PanelUpdateBigImageThreadsCount)
+  else
+    Dec(PanelUpdateBigImageThreadsCountByID);
+
+  inherited Destroy;
 end;
 
 procedure TPanelLoadingBigImagesThread.ReplaceBigBitmap;
 begin
   if ManagerPanels.IsPanelForm(FSender) then
     if IsEqualGUID((FSender as TFormCont).BigImagesSID, FSID) then
-    begin
       (FSender as TFormCont).ReplaseBitmapWithPath(StrParam,BitmapParam);
-    end;
 end;
 
 procedure TPanelLoadingBigImagesThread.DoStopLoading;
 begin
- if ManagerPanels.ExistsPanel(FSender,fSID) then
- (FSender as TFormCont).DoStopLoading(fSID) else
- begin
-  exit;
- end;
+  if ManagerPanels.ExistsPanel(FSender, FSID) then
+    (FSender as TFormCont).DoStopLoading(FSID)
+  else
+    Exit;
 end;
 
 end.

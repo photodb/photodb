@@ -493,12 +493,21 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 296
         Width = 281
-        Height = 27
+        Height = 0
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvNone
         BorderStyle = bsNone
         Lines.Strings = (
-          '<keywords>')
+          '<'
+          'k'
+          'e'
+          'y'
+          'w'
+          'o'
+          'r'
+          'd'
+          's'
+          '>')
         ScrollBars = ssVertical
         TabOrder = 7
         OnChange = CommentMemoChange
@@ -1289,8 +1298,6 @@ object PropertiesForm: TPropertiesForm
       Left = 4
       Top = 24
       Caption = 'Exif'
-      ExplicitWidth = 289
-      ExplicitHeight = 15
       DesignSize = (
         297
         344)
@@ -1298,7 +1305,7 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 8
         Width = 281
-        Height = 309
+        Height = 273
         Anchors = [akLeft, akTop, akRight, akBottom]
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
         TabOrder = 0
@@ -1314,8 +1321,6 @@ object PropertiesForm: TPropertiesForm
       Left = 4
       Top = 24
       Caption = 'Gistogramm'
-      ExplicitWidth = 289
-      ExplicitHeight = 15
       DesignSize = (
         297
         344)
@@ -1369,8 +1374,6 @@ object PropertiesForm: TPropertiesForm
       Left = 4
       Top = 24
       Caption = 'Additional'
-      ExplicitWidth = 289
-      ExplicitHeight = 15
       DesignSize = (
         297
         344)
@@ -1395,7 +1398,7 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 48
         Width = 281
-        Height = 269
+        Height = 233
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PopupMenu8
         TabOrder = 1

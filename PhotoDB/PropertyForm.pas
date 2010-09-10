@@ -1427,7 +1427,7 @@ begin
  Options.OnDone:=OnDoneLoadingImage;
  Options.SID:=SID;
  Options.Owner:=Self;
- TPropertyLoadImageThread.Create(false,Options);
+ TPropertyLoadImageThread.Create(Options);
 
 
  WidthMemo.Text:=TEXT_MES_LOADING___;
@@ -2149,7 +2149,7 @@ begin
    Options.Owner:=self;
    Options.SID:=SID;
    Options.OnDone:=OnDoneLoadGistogrammData;
-   TPropertyLoadGistogrammThread.Create(false,Options);
+   TPropertyLoadGistogrammThread.Create(Options);
    OnDoneLoadGistogrammData(self);
   end;
  end;

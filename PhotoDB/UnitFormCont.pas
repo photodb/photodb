@@ -12,7 +12,7 @@ uses
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
-  uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx;
+  uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx, TwButton;
 
 type
   TFormCont = class(TThreadForm)
@@ -29,8 +29,6 @@ type
     Panel3: TPanel;
     SaveDialog1: TSaveDialog;
     Panel4: TPanel;
-    SpeedButton2: TSpeedButton;
-    SpeedButton1: TSpeedButton;
     Hinttimer: TTimer;
     SlideShow1: TMenuItem;
     ImageList1: TImageList;
@@ -76,6 +74,7 @@ type
     N04: TMenuItem;
     N05: TMenuItem;
     PopupMenuZoomDropDown: TPopupMenu;
+    TwWindowsPos: TTwButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefreshItemByID( ID: integer);
@@ -90,7 +89,6 @@ type
     procedure SelectAll1Click(Sender: TObject);
     procedure Clear1Click(Sender: TObject);
     procedure SaveToFile1Click(Sender: TObject);
-    procedure SpeedButton2Click(Sender: TObject);
     procedure HinttimerTimer(Sender: TObject);
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -127,6 +125,7 @@ type
     procedure TerminateTimerTimer(Sender: TObject);
     procedure N05Click(Sender: TObject);
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
+    procedure TwWindowsPosChange(Sender: TObject);
   private
     MouseDowned : Boolean;
     PopupHandled : boolean;
@@ -230,16 +229,16 @@ uses language, Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
 
 { TFormCont }
 
-procedure TFormCont.RefreshItemByID(ID: integer);
+procedure TFormCont.RefreshItemByID(ID: Integer);
 var
-  Index : integer;
-  fData : TImageContRecordArray;
+  Index: Integer;
+  FData: TImageContRecordArray;
 begin
- Index:=GetListItemByID(id).Index;
- SetLength(fData,1);
- fData[0]:=Data[Index];
+  Index := GetListItemByID(Id).index;
+  SetLength(FData, 1);
+  FData[0] := Data[index];
 
- TPanelLoadingBigImagesThread.Create(false,self,BigImagesSID,nil,fPictureSize,Copy(fData));
+  TPanelLoadingBigImagesThread.Create(Self, BigImagesSID, nil, FPictureSize, Copy(FData));
 end;
 
 procedure TFormCont.CreateBackgroundImage;
@@ -832,15 +831,6 @@ begin
  end;
  SaveDialog.Free;
  FilePushed:=false;
-end;
-
-procedure TFormCont.SpeedButton2Click(Sender: TObject);
-begin
- DropFileTarget2.Unregister;
- if SpeedButton2.Down then
- FormStyle:=fsStayOnTop else
- FormStyle:=fsNormal;
- DropFileTarget2.Register(Panel1);
 end;
 
 function TFormCont.hintrealA(item: TObject): boolean;
@@ -2028,7 +2018,7 @@ begin
   TbStop.Enabled := True;
 
   // тут начинается загрузка больших картинок
-  TPanelLoadingBigImagesThread.Create(False, Self, BigImagesSID, nil, FPictureSize, Copy(Data));
+  TPanelLoadingBigImagesThread.Create(Self, BigImagesSID, nil, FPictureSize, Copy(Data));
 end;
 
 function TFormCont.FileNameExistsInList(FileName: string): Boolean;
@@ -2109,6 +2099,16 @@ procedure TFormCont.TerminateTimerTimer(Sender: TObject);
 begin
  TerminateTimer.Enabled:=false;
  Release;
+end;
+
+procedure TFormCont.TwWindowsPosChange(Sender: TObject);
+begin
+ DropFileTarget2.Unregister;
+ if TwWindowsPos.Pushed then
+    FormStyle := FsStayOnTop
+  else
+    FormStyle := FsNormal;
+  DropFileTarget2.Register(Panel1);
 end;
 
 procedure TFormCont.N05Click(Sender: TObject);

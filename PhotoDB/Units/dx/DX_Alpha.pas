@@ -967,7 +967,7 @@ begin
  info.Manager:=FManager;
  info.Form:=self;
  DirectDraw4.CreateSurface (SurfaceDesc, info.Buffer, nil);
- TDirectXSlideShowCreator.Create(false,Info,XForward,Next);
+ TDirectXSlideShowCreator.Create(Info,XForward,Next);
 end;
 
 procedure TDirectShowForm.DoClose;

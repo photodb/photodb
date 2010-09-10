@@ -4,77 +4,78 @@ interface
 
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
-  GraphicsCool, Language, Effects, UnitDBCommonGraphics;
+  GraphicsCool, Language, Effects, UnitDBCommonGraphics, uMemory,
+  ImageConverting;
 
 type
   TDirectXSlideShowCreator = class(TThread)
   private
-  FInfo : TDirectXSlideShowCreatorInfo;
-  Picture : TPicture;
-  Image : TBitmap;
-  ScreenImage : TBitmap;
-  FilePassword : String;
-  FCallBackAction : Byte;
-  FSynchBitmap : TBitmap;
-  r: TRect;
-  fx: TDDBltFx;
-  FXForward : Boolean;
-  FNext : boolean;
-  BooleanParam : Boolean;
-  Paused : Boolean;
+    FInfo: TDirectXSlideShowCreatorInfo;
+    Graphic: TGraphic;
+    Image: TBitmap;
+    ScreenImage: TBitmap;
+    FilePassword: string;
+    FCallBackAction: Byte;
+    FSynchBitmap: TBitmap;
+    R: TRect;
+    Fx: TDDBltFx;
+    FXForward: Boolean;
+    FNext: Boolean;
+    BooleanParam: Boolean;
+    Paused: Boolean;
     { Private declarations }
   protected
-   procedure DoCallBack(Action : Byte);
-   procedure DoCallBackSynch;
-   procedure Execute; override;
-   function PackColor(Color: TColor): TColor;
-   function CenterBmp (Buffer: IDirectDrawSurface4; Bitmap: TBitmap; Rect: TRect): TRect;
-   procedure ReplaceTransform;
-   procedure DoExit;
-   procedure DoExitSynch;
-   procedure CenterBmpSynch;
-   procedure Btl;
-   function Ready : boolean;
-   function ExitReady : boolean;
-   procedure IFPause;
+    procedure DoCallBack(Action: Byte);
+    procedure DoCallBackSynch;
+    procedure Execute; override;
+    function PackColor(Color: TColor): TColor;
+    function CenterBmp(Buffer: IDirectDrawSurface4; Bitmap: TBitmap; Rect: TRect): TRect;
+    procedure ReplaceTransform;
+    procedure DoExit;
+    procedure DoExitSynch;
+    procedure CenterBmpSynch;
+    procedure Btl;
+    function Ready: Boolean;
+    function ExitReady: Boolean;
+    procedure IFPause;
   public
-   constructor Create(CreateSuspennded: Boolean; Info : TDirectXSlideShowCreatorInfo; XForward, Next : Boolean);
-   destructor Destroy; override;
+    constructor Create(Info: TDirectXSlideShowCreatorInfo; XForward, Next: Boolean);
+    destructor Destroy; override;
   end;
 
   TArThreads = array of TDirectXSlideShowCreator;
 
   TThreadDestroyDXObjects = record
-   DirectDraw4: IDirectDraw4;
-   PrimarySurface: IDirectDrawSurface4;
-   Offscreen: IDirectDrawSurface4;
-   Buffer : IDirectDrawSurface4;
-   Clpr: IDirectDrawClipper;
-   TransSrc1, TransSrc2 : PByteArr;
-   Form : TForm;
+    DirectDraw4: IDirectDraw4;
+    PrimarySurface: IDirectDrawSurface4;
+    Offscreen: IDirectDrawSurface4;
+    Buffer: IDirectDrawSurface4;
+    Clpr: IDirectDrawClipper;
+    TransSrc1, TransSrc2: PByteArr;
+    Form: TForm;
   end;
 
+  //TODO: Synchronisation!!!
   TDirectXSlideShowCreatorManager = class(TObject)
-   Private
-    FThreads : TArThreads;
-    FObjects : TThreadDestroyDXObjects;
-    FFreeOnExit : Boolean;
-   Public
-    Constructor Create;
-    Destructor Destroy; override;
-    Procedure AddThread(Thread : TDirectXSlideShowCreator);
-    Procedure RemoveThread(Thread : TDirectXSlideShowCreator);
-    Function IsThread(Thread : TDirectXSlideShowCreator) : Boolean;
-    Function ThreadCount : Integer;
-    Procedure SetDXObjects(Objects : TThreadDestroyDXObjects);
-    Procedure FreeOnExit;
-   published
+  private
+    FThreads: TList;
+    FObjects: TThreadDestroyDXObjects;
+    FFreeOnExit: Boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure AddThread(Thread: TDirectXSlideShowCreator);
+    procedure RemoveThread(Thread: TDirectXSlideShowCreator);
+    function IsThread(Thread: TDirectXSlideShowCreator): Boolean;
+    function ThreadCount: Integer;
+    procedure SetDXObjects(Objects: TThreadDestroyDXObjects);
+    procedure FreeOnExit;
   end;
 
-  const
-    CallBack_Failture = 0;
-    CallBack_SetImage = 1;
-    CallBack_Next     = 2;
+const
+  CallBack_Failture = 0;
+  CallBack_SetImage = 1;
+  CallBack_Next = 2;
 
 implementation
 
@@ -91,64 +92,65 @@ end;
 
 procedure TDirectXSlideShowCreator.CenterBmpSynch;
 var
-  dc: HDC;
+  Dc: HDC;
 begin
- if  (FSynchBitmap = nil) then exit;
- if FInfo.Buffer=nil then exit;
- FInfo.Buffer.GetDC (DC);
- BitBlt(dc,0,0,Screen.Width,Screen.Height, FSynchBitmap.Canvas.Handle,0,0,SRCCOPY);
- FInfo.Buffer.ReleaseDC (DC);
+  if (FSynchBitmap = nil) or (FInfo.Buffer = nil) then
+    Exit;
+
+  FInfo.Buffer.GetDC(DC);
+  BitBlt(Dc, 0, 0, Screen.Width, Screen.Height, FSynchBitmap.Canvas.Handle, 0, 0, SRCCOPY);
+  FInfo.Buffer.ReleaseDC(DC);
 end;
 
-constructor TDirectXSlideShowCreator.Create(CreateSuspennded: Boolean;
-  Info: TDirectXSlideShowCreatorInfo; XForward, Next : Boolean);
+constructor TDirectXSlideShowCreator.Create(Info: TDirectXSlideShowCreatorInfo; XForward, Next : Boolean);
 begin
- inherited Create(True);
- FInfo:=Info;
- FXForward := XForward;
- FNext:=Next;
- FreeOnTerminate:=true;
- (FInfo.Manager as TDirectXSlideShowCreatorManager).AddThread(self);
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FInfo := Info;
+  FXForward := XForward;
+  FNext := Next;
+  FreeOnTerminate := True;
+  (FInfo.Manager as TDirectXSlideShowCreatorManager).AddThread(Self);
 end;
 
 procedure TDirectXSlideShowCreator.DoCallBack(Action : Byte);
 begin
- FCallBackAction:=Action;
- if Action=CallBack_Next then sleep(500);
- Synchronize(DoCallBackSynch)
+  FCallBackAction := Action;
+  if Action = CallBack_Next then
+    Sleep(100);
+  Synchronize(DoCallBackSynch)
 end;
 
 procedure TDirectXSlideShowCreator.DoCallBackSynch;
 var
-  CallbackInfo : TCallbackInfo;
+  CallbackInfo: TCallbackInfo;
 begin
- CallbackInfo.Action:=FCallBackAction;
- CallbackInfo.ForwardThread:=false;
- if (CallBack_Next=CallbackInfo.Action) and FXForward then
- begin
-  DirectShowForm.ForwardThreadExists:=false;
-  CallbackInfo.ForwardThread:=true;
- end;
- CallbackInfo.Direction:=FNext;
- FInfo.CallBack(CallbackInfo);
+  CallbackInfo.Action := FCallBackAction;
+  CallbackInfo.ForwardThread := False;
+  if (CallBack_Next = CallbackInfo.Action) and FXForward then
+  begin
+    DirectShowForm.ForwardThreadExists := False;
+    CallbackInfo.ForwardThread := True;
+  end;
+  CallbackInfo.Direction := FNext;
+  FInfo.CallBack(CallbackInfo);
 end;
 
 procedure TDirectXSlideShowCreator.DoExit;
 begin
- Synchronize(IFPause);
- Paused:=BooleanParam;
- if FXForward or Paused then
- begin
-  Repeat
-   If ExitReady then break;
-   if Ready then break;
-   Sleep(50);
-  until false;
- end;
- Synchronize(DoExitSynch);
- FInfo.Buffer.Release;
- FreeMem(FInfo.TempSrc)
+  Synchronize(IFPause);
+  Paused := BooleanParam;
+  if FXForward or Paused then
+  begin
+    repeat
+      if ExitReady or Ready then
+        Break;
+
+      Sleep(50);
+    until False;
+  end;
+  Synchronize(DoExitSynch);
+  FInfo.Buffer.Release;
+  FreeMem(FInfo.TempSrc)
 end;
 
 procedure TDirectXSlideShowCreator.DoExitSynch;
@@ -164,53 +166,57 @@ end;
 
 procedure TDirectXSlideShowCreator.Execute;
 var
-  w, h : integer;
-  LoadingPicture : Boolean;
-  Zoom : Extended;
-  TempImage : TBitmap;
+  W, H: Integer;
+  LoadingPicture: Boolean;
+  Zoom: Extended;
+  TempImage: TBitmap;
+  GraphicClass : TGraphicClass;
 
 const
-  text_out = TEXT_MES_CREATING+'...';
-  text_error_out = TEXT_MES_UNABLE_SHOW_FILE;
+  Text_out = TEXT_MES_CREATING + '...';
+  Text_error_out = TEXT_MES_UNABLE_SHOW_FILE;
 
 begin
- LoadingPicture:=true;
- if ValidCryptGraphicFile(FInfo.FileName) then
- begin
-  FilePassword:=DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
-  if FilePassword='' then
-  begin
-   LoadingPicture:=false;
-  end;
- end;
- if LoadingPicture then
- begin
-  Picture := TPicture.Create;
+  LoadingPicture := True;
   try
-   if ValidCryptGraphicFile(FInfo.FileName) then
-   begin
-    Picture.Graphic:=DeCryptGraphicFile(FInfo.FileName,FilePassword);
-   end else
-   Picture.LoadFromFile(FInfo.FileName);
-   JPEGScale(Picture.Graphic,Screen.Width,Screen.Height);
-  except
-   Picture.Free;
-   LoadingPicture:=false;
-  end;
- end;
- if LoadingPicture then
-  begin
-  Image:=TBitmap.Create;
-  try
-    AssignGraphic(Image, Picture.Graphic);
-  except
-   Image.Free;
-   Picture.Free;
-   LoadingPicture:=false;
-  end;
- end;
- if LoadingPicture then
- Picture.Free;
+    if ValidCryptGraphicFile(FInfo.FileName) then
+    begin
+      FilePassword := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+      if FilePassword = '' then
+      begin
+        LoadingPicture := False;
+        Exit;
+      end;
+    end;
+
+    if LoadingPicture then
+    begin
+      GraphicClass := GetGraphicClass(ExtractFileExt(FInfo.FileName), False);
+
+      if GraphicClass = nil then
+      begin
+        LoadingPicture := False;
+        Exit;
+      end;
+
+      Graphic := GraphicClass.Create;
+      try
+        if ValidCryptGraphicFile(FInfo.FileName) then
+        begin
+          F(Graphic);
+          Graphic := DeCryptGraphicFile(FInfo.FileName, FilePassword);
+        end else
+          Graphic.LoadFromFile(FInfo.FileName);
+        JPEGScale(Graphic, Screen.Width, Screen.Height);
+
+        Image := TBitmap.Create;
+        try
+          AssignGraphic(Image, Graphic);
+          F(Graphic);
+
+
+
+
  ScreenImage := TBitmap.Create;
  ScreenImage.Canvas.Pen.Color:=0;
  ScreenImage.Canvas.Brush.Color:=0;
@@ -275,28 +281,46 @@ begin
   ReplaceTransform;
  except
  end;
- DoExit;
+
+
+
+        finally
+          Image.Free;
+        end;
+
+      finally
+        F(Graphic);
+        LoadingPicture := False;
+      end;
+    end;
+
+  finally
+    DoExit;
+  end;
 end;
 
 function TDirectXSlideShowCreator.PackColor(Color: TColor): TColor;
-var r, g, b: integer;
+var
+  R, G, B: Integer;
 begin
-  Color := ColorToRGB (Color);
-  b := (Color shr 16) and $FF;
-  g := (Color shr 8) and $FF;
-  r := Color and $FF;
-  if FInfo.BPP = 16 then begin
-     r := r shr 3;
-     g := g shr 3;
-     b := b shr 3;
+  Color := ColorToRGB(Color);
+  B := (Color shr 16) and $FF;
+  G := (Color shr 8) and $FF;
+  R := Color and $FF;
+  if FInfo.BPP = 16 then
+  begin
+    R := R shr 3;
+    G := G shr 3;
+    B := B shr 3;
   end;
-  Result := (r shl FInfo.RBM) or (g shl FInfo.GBM) or (b shl FInfo.BBM);
+  Result := (R shl FInfo.RBM) or (G shl FInfo.GBM) or (B shl FInfo.BBM);
 end;
 
 procedure UnLock (Buffer: IDirectDrawSurface4);
 begin
-  if Buffer = nil then exit;
-  Buffer.UnLock (nil);
+  if Buffer = nil then
+    Exit;
+  Buffer.UnLock(nil);
 end;
 
 procedure LockRead (Buffer: IDirectDrawSurface4; var SurfaceDesc: TDDSurfaceDesc2);
@@ -320,31 +344,32 @@ begin
 end;
 
 procedure TDirectXSlideShowCreator.ReplaceTransform;
-var
-  dd: TDDSurfaceDesc2;
-  TransSize, TransPitch, TransHeight : integer;
-begin
- if FInfo.Buffer=nil then exit;
- LockRead(FInfo.Buffer, dd);
- TransPitch := dd.lPitch;
- TransHeight := dd.dwHeight;
- TransSize := TransHeight * TransPitch;
- if FInfo.TempSrc=nil then
- GetMem (FInfo.TempSrc, TransSize);
- CopyMemory (FInfo.TempSrc, dd.lpSurface, TransSize - 1);
- UnLock (FInfo.Buffer);
-end;
+ var
+   Dd: TDDSurfaceDesc2;
+   TransSize, TransPitch, TransHeight: Integer;
+ begin
+   if FInfo.Buffer = nil then
+     Exit;
+   LockRead(FInfo.Buffer, Dd);
+   TransPitch := Dd.LPitch;
+   TransHeight := Dd.DwHeight;
+   TransSize := TransHeight * TransPitch;
+   if FInfo.TempSrc = nil then
+     GetMem(FInfo.TempSrc, TransSize);
+   CopyMemory(FInfo.TempSrc, Dd.LpSurface, TransSize - 1);
+   UnLock(FInfo.Buffer);
+ end;
 
 destructor TDirectXSlideShowCreator.Destroy;
 begin
- (FInfo.Manager as TDirectXSlideShowCreatorManager).RemoveThread(self);
- inherited;
+   (FInfo.Manager as TDirectXSlideShowCreatorManager).RemoveThread(Self);
+   inherited;
 end;
 
 procedure TDirectXSlideShowCreator.Btl;
 begin
- if FInfo.Buffer<>nil then
- FInfo.Buffer.Blt (@r, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @fx);
+  if FInfo.Buffer <> nil then
+    FInfo.Buffer.Blt(@R, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @Fx);
 end;
 
 function TDirectXSlideShowCreator.Ready: boolean;
@@ -390,99 +415,60 @@ end;
 
 procedure TDirectXSlideShowCreatorManager.AddThread(
 Thread: TDirectXSlideShowCreator);
-var
-  i : integer;
-  b : boolean;
 begin
- b:=false;
- For i:=0 to Length(FThreads)-1 do
- if FThreads[i]=Thread then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FThreads,Length(FThreads)+1);
-  FThreads[Length(FThreads)-1]:=Thread;
- end;
+  if FThreads.IndexOf(Thread) < 0 then
+    FThreads.Add(Thread);
+
 end;
 
 constructor TDirectXSlideShowCreatorManager.Create;
 begin
- SetLength(FThreads,0);
- FFreeOnExit:=false;
+  FThreads := TList.Create;
+  FFreeOnExit := False;
 end;
 
 destructor TDirectXSlideShowCreatorManager.Destroy;
 begin
- SetLength(FThreads,0);
- if FFreeOnExit then
- begin
-  FObjects.Buffer.Release;
-  FObjects.Buffer := nil;
-  FObjects.Offscreen.Release;
-  FObjects.Offscreen := nil;
-  FObjects.PrimarySurface.Release;
-  FObjects.PrimarySurface := nil;
-  FObjects.Clpr.Release;
-  FObjects.Clpr:=nil;
-  FObjects.DirectDraw4.Release;
-  FObjects.DirectDraw4 := nil;
-  FObjects.Form.Close;
- end;
- inherited;
+  F(FThreads);
+  if FFreeOnExit then
+  begin
+    R(FObjects.Buffer);
+    R(FObjects.Offscreen);
+    R(FObjects.PrimarySurface);
+    R(FObjects.Clpr);
+    R(FObjects.DirectDraw4);
+    FObjects.Form.Close;
+  end;
+  inherited;
 end;
 
 procedure TDirectXSlideShowCreatorManager.FreeOnExit;
 begin
- FFreeOnExit:=true;
+  FFreeOnExit := True;
 end;
 
 function TDirectXSlideShowCreatorManager.IsThread(
   Thread: TDirectXSlideShowCreator): Boolean;
-var
-  i : Integer;
 begin
- Result:=False;
- For i:=0 to Length(FThreads)-1 do
- if FThreads[i]=Thread then
- begin
-  Result:=True;
-  Break;
- end;
+  Result := FThreads.IndexOf(Thread) > -1;
 end;
 
 procedure TDirectXSlideShowCreatorManager.RemoveThread(
   Thread: TDirectXSlideShowCreator);
-var
-  i, j : integer;
 begin
- For i:=0 to Length(FThreads)-1 do
- if FThreads[i]=Thread then
- begin
-  For j:=i to Length(FThreads)-2 do
-  FThreads[j]:=FThreads[j+1];
-  SetLength(FThreads,Length(FThreads)-1);
-  break;
- end;
- if (Length(FThreads)=0) and FFreeOnExit then Free;
+  FThreads.Remove(Thread);
+  if (FThreads.Count = 0) and FFreeOnExit then
+    Free;
 end;
 
 procedure TDirectXSlideShowCreatorManager.SetDXObjects(Objects : TThreadDestroyDXObjects);
 begin
- FObjects:=Objects;
+  FObjects:=Objects;
 end;
 
 function TDirectXSlideShowCreatorManager.ThreadCount: Integer;
 begin
- Result:=Length(FThreads);
+  Result := FThreads.Count;
 end;
 
 end.
-
-
-
-
-
-

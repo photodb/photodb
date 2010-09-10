@@ -41,7 +41,7 @@ interface
   procedure Rotate270A(im : TBitmap);
   procedure Rotate90A(im : TBitmap);
   procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
-  procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
+  procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
   procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
   procedure GrayScale(Image : TBitmap);
   procedure SelectedColor(Image : TBitmap; Color : TColor);
@@ -501,7 +501,7 @@ begin
   end;
 end;
 
-procedure DrawImageEx(Bitmap, Image : TBitmap; X, Y : Integer);
+procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
 var
   I, J,
   XD, YD,
@@ -510,17 +510,17 @@ var
   pS : PARGB;
   pD : PARGB;
 begin
-  DH := Bitmap.Height;
-  DW := Bitmap.Width;
-  SH := Image.Height;
-  SW := Image.Width;
+  DH := Dest.Height;
+  DW := Dest.Width;
+  SH := Src.Height;
+  SW := Src.Width;
   for I := 0 to SH - 1 do
   begin
     YD := I + Y;
     if (YD >= DH) then
       Break;
-    pS:=Image.ScanLine[I];
-    pD:=Bitmap.ScanLine[YD];
+    pS := Src.ScanLine[I];
+    pD := Dest.ScanLine[YD];
     for J := 0 to SW - 1 do
     begin
       XD := J + X;

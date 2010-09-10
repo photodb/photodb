@@ -3,35 +3,33 @@ unit UnitPropertyLoadImageThread;
 interface
 
 uses
-  Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage, 
-  Dolphin_DB, UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics;
+  Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
+  Dolphin_DB, UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics,
+  uMemory, GraphicsCool;
 
 type
   TPropertyLoadImageThreadOptions = record
-   FileName : String;
-   Owner : TForm;
-   SID : TGUID;
-   OnDone : TNotifyEvent;
+    FileName: string;
+    Owner: TForm;
+    SID: TGUID;
+    OnDone: TNotifyEvent;
   end;
 
 type
   TPropertyLoadImageThread = class(TThread)
   private
-   fOptions : TPropertyLoadImageThreadOptions;
-   fPic : TPicture;
-   StrParam : String;
-   IntParamW : integer;
-   IntParamH : integer; 
-   Password : string;
-   BitmapParam : TBitmap;
-   DrawBitmapParam : TBitmap;
-
     { Private declarations }
+    FOptions: TPropertyLoadImageThreadOptions;
+    FPic: TPicture;
+    StrParam: string;
+    IntParamW: Integer;
+    IntParamH: Integer;
+    Password: string;
+    BitmapParam: TBitmap;
   protected
-    procedure Execute; override;  
+    procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean;
-      Options : TPropertyLoadImageThreadOptions);
+    constructor Create(Options : TPropertyLoadImageThreadOptions);
     procedure SetCurrentPassword;
     procedure GetPasswordFromUserSynch;
     procedure SetImage;
@@ -44,94 +42,107 @@ uses PropertyForm, UnitPasswordForm;
 
 { TPropertyLoadImageThread }
 
-constructor TPropertyLoadImageThread.Create(CreateSuspennded: Boolean;
-  Options: TPropertyLoadImageThreadOptions);
+constructor TPropertyLoadImageThread.Create(Options: TPropertyLoadImageThreadOptions);
 begin
- inherited create(true);
- fOptions:=Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 procedure TPropertyLoadImageThread.Execute;
 var
-  fb, fb1, TempBitmap : TBitmap;
+  Fb, Fb1, TempBitmap: TBitmap;
+  Graphic : TGraphic;
+  GraphicClass : TGraphicClass;
 begin
- FreeOnTerminate:=True;
- fPic:=TPicture.create;
- try
-  if ValidCryptGraphicFile(fOptions.FileName) then
-  begin
-   PassWord:=DBkernel.FindPasswordForCryptImageFile(fOptions.FileName);
-   if PassWord='' then
-   begin
-    StrParam:=fOptions.FileName;
-    Synchronize(GetPasswordFromUserSynch);
-    PassWord:=StrParam;
-   end;
-   if PassWord<>'' then
-   begin
-    fPic.Graphic:=DeCryptGraphicFile(fOptions.FileName,PassWord);
-    StrParam:=PassWord;
-    Synchronize(SetCurrentPassword);
-   end
-   else
-   begin
-    fPic.free;
-    Exit;
-   end
-  end else
-  begin
-   if IsRAWImageFile(fOptions.FileName) then
-   begin
-    fPic.Graphic:=TRAWImage.Create;
-    if not (fPic.Graphic as TRAWImage).LoadThumbnailFromFile(fOptions.FileName,ThSizePropertyPreview,ThSizePropertyPreview) then
-    fPic.Graphic.LoadFromFile(fOptions.FileName);
-   end else
-   fPic.LoadFromFile(fOptions.FileName);
+  FreeOnTerminate := True;
+  FPic := TPicture.Create;
+  try
+    if ValidCryptGraphicFile(FOptions.FileName) then
+    begin
+      PassWord := DBkernel.FindPasswordForCryptImageFile(FOptions.FileName);
+      if PassWord = '' then
+      begin
+        StrParam := FOptions.FileName;
+        Synchronize(GetPasswordFromUserSynch);
+        PassWord := StrParam;
+      end;
+      if PassWord <> '' then
+      begin
+        F(Graphic);
+        Graphic := DeCryptGraphicFile(FOptions.FileName, PassWord);
+        StrParam := PassWord;
+        Synchronize(SetCurrentPassword);
+      end else
+        Exit;
+    end else
+    begin
+      if Graphic is TRAWImage then
+      begin
+        if not(Graphic as TRAWImage).LoadThumbnailFromFile(FOptions.FileName, ThSizePropertyPreview,
+          ThSizePropertyPreview) then
+          Graphic.LoadFromFile(FOptions.FileName);
+      end else
+        Graphic.LoadFromFile(FOptions.FileName);
+    end;
+
+    IntParamW := Graphic.Width;
+    IntParamH := Graphic.Height;
+    Synchronize(SetSizes);
+
+    JPEGScale(Graphic,ThSizePropertyPreview, ThSizePropertyPreview);
+
+    FB := TBitmap.Create;
+    try
+      FB.PixelFormat := Pf24bit;
+
+      FB1 := TBitmap.Create;
+      try
+        FB1.PixelFormat := pf24bit;
+        FB1.Width := ThSizePropertyPreview;
+        FB1.Height := ThSizePropertyPreview;
+
+        if FPic.Graphic.Width > FPic.Graphic.Height then
+        begin
+          FB.Width := ThSizePropertyPreview;
+          FB.Height := Round(ThSizePropertyPreview * (Graphic.Height / Graphic.Width));
+        end
+        else
+        begin
+          FB.Width := Round(ThSizePropertyPreview * (Graphic.Width / Graphic.Height));
+          FB.Height := ThSizePropertyPreview;
+        end;
+
+       TempBitmap:=TBitmap.Create;
+       try
+          TempBitmap.Assign(Graphic);
+          F(Graphic);
+          DoResize(FB.Width, FB.Height, TempBitmap, FB);
+          F(TempBitmap);
+
+          BitmapParam := FB1;
+
+          FillRectNoCanvas(FB1, Theme_MainColor);
+
+          DrawImageEx(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,
+            ThSizePropertyPreview div 2 - FB.Height div 2);
+
+          Synchronize(SetImage);
+        finally
+          F(TempBitmap);
+        end;
+      finally
+        F(FB1);
+      end;
+    finally
+      F(FB);
+    end;
+  finally
+    F(Graphic);
   end;
- except
-  fPic.free;
-  Exit;
- End;
-
- IntParamW:=fPic.Graphic.Width;
- IntParamH:=fPic.Graphic.Height;
- Synchronize(SetSizes);
-
- JPEGScale(fPic.Graphic,ThSizePropertyPreview,ThSizePropertyPreview);
-
- fb:=Graphics.TBitmap.create;
- fb.PixelFormat:=pf24bit;
-
- fb1:=Graphics.Tbitmap.create;
- fb1.PixelFormat:=pf24bit;
- fb1.Width:=ThSizePropertyPreview;
- fb1.Height:=ThSizePropertyPreview;
-
- if fPic.Graphic.Width>fPic.Graphic.Height then
- begin
-  fb.Width:=ThSizePropertyPreview;
-  fb.Height:=round(ThSizePropertyPreview*(fPic.Graphic.Height/fPic.Graphic.Width));
- end else
- begin
-  fb.Width:=round(ThSizePropertyPreview*(fPic.Graphic.Width/fPic.Graphic.Height));
-  fb.Height:=ThSizePropertyPreview;
- end;
-
- TempBitmap:=TBitmap.Create;
- TempBitmap.Assign(fpic.Graphic);
- DoResize(fb.Width,fb.Height,TempBitmap,fb);
- TempBitmap.Free;
- BitmapParam:=fb1;
- DrawBitmapParam:=fb;
- Synchronize(SetImage);
- fb1.Free;
- fpic.Free;
- fb.free;
 end;
 
 procedure TPropertyLoadImageThread.GetPasswordFromUserSynch;
-begin                     
+begin
   if PropertyManager.IsPropertyForm(fOptions.Owner) then
     if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
        StrParam:=GetImagePasswordFromUser(StrParam);
@@ -148,27 +159,18 @@ procedure TPropertyLoadImageThread.SetImage;
 begin
   if PropertyManager.IsPropertyForm(fOptions.Owner) then
     if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
-     begin
-
-      BitmapParam.Canvas.Brush.color:=Theme_MainColor;
-      BitmapParam.Canvas.Pen.color:=Theme_MainColor;
-      BitmapParam.Canvas.Rectangle(0,0,ThSizePropertyPreview,ThSizePropertyPreview);
-      BitmapParam.Canvas.Draw(ThSizePropertyPreview div 2-DrawBitmapParam.Width div 2,ThSizePropertyPreview div 2- DrawBitmapParam.Height div 2,DrawBitmapParam);
-      if PassWord<>'' then DrawIconEx(BitmapParam.Canvas.Handle,20,0,UnitDBKernel.icons[DB_IC_KEY+1],18,18,0,0,DI_NORMAL);
-      DrawIconEx(BitmapParam.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_NEW+1],18,18,0,0,DI_NORMAL);
-
-      With (fOptions.Owner as TPropertiesForm) do
       begin
-       ImageLoadingFile.Visible:=false;
-       if not (image1.Picture.Graphic is Graphics.TBitmap) then
-       begin
-        if image1.Picture.Graphic<>nil then image1.Picture.Graphic.free else
-        image1.Picture.bitmap:=Graphics.Tbitmap.create;
-       end;
-       image1.Picture.bitmap.Assign(BitmapParam);
-       image1.Refresh;
+        if PassWord <> '' then
+          DrawIconEx(BitmapParam.Canvas.Handle, 20, 0, UnitDBKernel.Icons[DB_IC_KEY + 1], 18, 18, 0, 0, DI_NORMAL);
+        DrawIconEx(BitmapParam.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_NEW + 1], 18, 18, 0, 0, DI_NORMAL);
+
+        with (FOptions.Owner as TPropertiesForm) do
+        begin
+          ImageLoadingFile.Visible := False;
+          Image1.Picture.Graphic := BitmapParam;
+          Image1.Refresh;
+        end;
       end;
-     end;
 end;
 
 procedure TPropertyLoadImageThread.SetSizes;
