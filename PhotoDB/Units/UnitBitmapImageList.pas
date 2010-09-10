@@ -6,12 +6,16 @@ uses Classes, Graphics;
 
 type
   TBitmapImageListImage = class
+  private
+    function GetGraphic: TGraphic;
+  published
   public
     Bitmap : TBitmap;
     IsBitmap : Boolean;
     Icon : TIcon;
     SelfReleased : Boolean;
     Ext : string;
+    property Graphic : TGraphic read GetGraphic;
  end;
 
 type
@@ -128,6 +132,16 @@ function TBitmapImageList.GetBitmapByIndex(
   Index: Integer): TBitmapImageListImage;
 begin
   Result := FImages[Index];
+end;
+
+{ TBitmapImageListImage }
+
+function TBitmapImageListImage.GetGraphic: TGraphic;
+begin
+  if IsBitmap then
+    Result := Bitmap
+  else
+    Result := Icon;
 end;
 
 end.

@@ -105,7 +105,14 @@ begin
     SetNOImageAsynch;
     Exit;
   end;
- Graphic := TGraphic.Create;
+  GraphicClass := GetGraphicClass(GetExt(FFileName), False);
+  if GraphicClass = nil then
+  begin
+    SetNOImageAsynch;
+    Exit;
+  end;
+
+ Graphic := GraphicClass.Create;
   try
 
 
@@ -122,10 +129,8 @@ begin
     exit;
    end else
    begin
-    GraphicClass := GetGraphicClass(GetExt(FFileName), False);
-    if GraphicClass = TiffImageUnit.TTiffGraphic then
+    if Graphic is TiffImageUnit.TTiffGraphic then
     begin
-     Graphic:=TiffImageUnit.TTiffGraphic.Create;
      (Graphic as TiffImageUnit.TTiffGraphic).Page:=fPage;
      (Graphic as TiffImageUnit.TTiffGraphic).LoadFromFile(FFileName);
     end else

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
   Dolphin_DB, UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics,
-  uMemory, GraphicsCool;
+  uMemory, GraphicsCool, ImageConverting;
 
 type
   TPropertyLoadImageThreadOptions = record
@@ -55,7 +55,11 @@ var
   GraphicClass : TGraphicClass;
 begin
   FreeOnTerminate := True;
-  FPic := TPicture.Create;
+  GraphicClass := GetGraphicClass(ExtractFileExt(FOptions.FileName), False);
+  if GraphicClass = nil then
+    Exit;
+
+  Graphic := GraphicClass.Create;
   try
     if ValidCryptGraphicFile(FOptions.FileName) then
     begin

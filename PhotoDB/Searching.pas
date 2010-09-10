@@ -650,16 +650,9 @@ begin
   ListView.Font.Color:=0;
   ListView.View:=elsThumbnail;
   ListView.DragKind:=dkDock;
-  ListView.Selection.MouseButton:= [cmbRight];
 
-  ListView.Selection.FullCellPaint := DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-  ListView.Selection.RoundRectRadius := DBKernel.ReadInteger('Options','UseListViewRoundRectSize', 3);
-  ListView.Selection.AlphaBlend := True;
-  ListView.Selection.AlphaBlendSelRect := True;
-  ListView.Selection.MultiSelect := True;
-  ListView.Selection.RectSelect := True;
-  ListView.Selection.EnableDragSelect := True;
-  ListView.Selection.TextColor := Theme_ListFontColor;
+  SetLVSelection(ListView);
+
   ListView.GroupFont.Color := Theme_ListFontColor;
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
@@ -901,23 +894,27 @@ end;
 
 procedure TSearchForm.ListViewDblClick(Sender: TObject);
 var
-  MenuInfo : TDBPopupMenuInfo;
-  info : TRecordsInfo;
-  p,p1 : TPoint;
+  MenuInfo: TDBPopupMenuInfo;
+  Info: TRecordsInfo;
+  P, P1: TPoint;
+  Item: TEasyItem;
+  Graphic : TGraphic;
 begin
-
-  GetCursorPos(p1);
-  p:=ListView.ScreenToClient(p1);
-  if ItemByPointStar(ListView,p, fPictureSize)<>nil then
+  GetCursorPos(P1);
+  P := ListView.ScreenToClient(P1);
+  Item := ItemByPointImage(ListView, P);
+  if (Item <> nil) and (Item.ImageIndex > -1) then
   begin
-   RatingPopupMenu1.Tag:=ItemAtPos(p.x,p.y).Tag;
-   Application.HideHint;
-   if ImHint<>nil then
-   if not UnitImHint.Closed then
-   ImHint.Close;
-   LoadingThitem:=nil;
-   RatingPopupMenu1.Popup(p1.x,p1.y);
-   exit;
+    if ItemByPointStar(ListView, P, FPictureSize, FBitmapImageList[Item.ImageIndex].Graphic) <> nil then
+    begin
+      RatingPopupMenu1.Tag := ItemAtPos(P.X, P.Y).Tag;
+      Application.HideHint;
+      if (ImHint <> nil) and not UnitImHint.Closed then
+        ImHint.Close;
+      LoadingThitem := nil;
+      RatingPopupMenu1.Popup(P1.X, P1.Y);
+      Exit;
+    end;
   end;
 
  if Active then
@@ -1475,12 +1472,12 @@ begin
   ListView.SetFocus;
 end;
 
-function TSearchForm.GetAllFiles: Tstrings;
+function TSearchForm.GetAllFiles: TStrings;
 var
   I : Integer;
 begin
   Result := TStringList.Create;
-  for I := 0 to ListView.Items.Count do
+  for I := 0 to ListView.Items.Count - 1 do
     Result.Add(GetSearchRecordFromItemData(ListView.Items[I]).FileName);
 end;
 
@@ -3746,49 +3743,15 @@ procedure TSearchForm.EasyListViewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  R, R1 : TRect;
-  TmpBitmap : TBitmap;
-  w,h : integer;
-  TmpStr : string;
   Data : TSearchRecord;
-  Image : TBitmapImageListImage;
+  ThBitmap : TBitmap;
+  Rating : Integer;
+  W, H, ImageW, ImageH, X, Y : Integer;
 begin
   if FListUpdating or (Item.Data = nil) then
     Exit;
 
-  R1 := ARect;
-
-  Data := TSearchRecord(TDataObject(Item.Data).Data);
-  if Item.ImageIndex > -1 then
-  begin
-    Image := FBitmapImageList[Item.ImageIndex];
-    W := Image.Bitmap.Width;
-    H := Image.Bitmap.Height;
-    ProportionalSizeA(FPictureSize, FPictureSize , W, H);
-  end else
-    Image := nil;
-
-  TmpBitmap := TBitmap.Create;
-  try
-    TmpBitmap.PixelFormat := pf24bit;
-    TmpBitmap.Width := FPictureSize;
-    TmpBitmap.Height := FPictureSize;
-    FillRectNoCanvas(TmpBitmap, ListView.Canvas.Brush.Color);
-
-    if Item.ImageIndex >- 1 then
-      TmpBitmap.Canvas.StretchDraw(Rect(FPictureSize div 2 - W div 2, FPictureSize div 2 - H div 2, W+(FPictureSize div 2 - W div 2),H + (FPictureSize div 2 - H div 2)), Image.Bitmap)
-    else
-      //TODO: move ICON to resources
-      TmpBitmap.Canvas.Draw(FPictureSize div 2 - image1.picture.Graphic.Width div 2,fPictureSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
-
-    R.Left := R1.Left - 2;
-    R.Top := R1.Top - 2;
-
-    DrawAttributes(TmpBitmap, FPictureSize, Data.Rating, Data.Rotation, Data.Access, Data.FileName, Data.Crypted,Data.Exists,1);
-
-    if ProcessedFilesCollection.ExistsFile(Data.FileName) <> nil then
-      DrawIconEx(TmpBitmap.Canvas.Handle, 2, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
-
+{
     if (Data.CompareResult.ByGistogramm > 0) or (Data.CompareResult.ByPixels > 0) then
     begin
       DrawIconEx(TmpBitmap.Canvas.Handle, FPictureSize-16, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_DUBLICAT+1], 16, 16, 0, 0, DI_NORMAL);
@@ -3796,11 +3759,34 @@ begin
       R1 := Rect(fPictureSize - 16 - TmpBitmap.Canvas.TextWidth(TmpStr) - 3, TmpBitmap.Height - 16,fPictureSize - 16, TmpBitmap.Height);
       DrawTextA(TmpBitmap.Canvas.Handle, PWideChar(TmpStr), Length(TmpStr), R1, DT_VCENTER + DT_CENTER);
     end;
+ }
 
-    ACanvas.Draw(R.Left, R.Top, TmpBitmap);
-  finally
-    TmpBitmap.free;
-  end;
+  if Item.ImageIndex < 0 then
+    Exit;
+
+  Data := TSearchRecord(TDataObject(Item.Data).Data);
+
+  ThBitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
+
+  W := ARect.Right - ARect.Left;
+  H := ARect.Bottom - ARect.Top;
+  ImageW := ThBitmap.Width;
+  ImageH := ThBitmap.Height;
+  ProportionalSize(W, H, ImageW, ImageH);
+
+  X := ARect.Left + W div 2 - ImageW div 2;
+  Y := ARect.Bottom - ImageH;
+
+  ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThBitmap);
+  if ProcessedFilesCollection.ExistsFile(Data.FileName) <> nil then
+    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
+
+  Rating := Data.Rating;
+  if (Data.Rating = 0) and (esosHotTracking in Item.State) then
+    Rating := -1;
+
+  DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, Data.Rotation, Data.Access, Data.FileName, Data.Crypted, Data.Exists, Data.ID);
+
 end;
 
 procedure TSearchForm.EasyListViewDblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
@@ -3858,6 +3844,7 @@ procedure TSearchForm.ListViewResize(Sender : TObject);
 begin
   ListView.BackGround.OffsetX := ListView.Width-ListView.BackGround.Image.Width;
   ListView.BackGround.OffsetY := ListView.Height-ListView.BackGround.Image.Height;
+  LoadSizes;
 end;
 
 procedure TSearchForm.UpdateTheme(Sender: TObject);

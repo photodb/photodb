@@ -298,21 +298,10 @@ begin
   ElvMain.DragKind := DkDock;
   ElvMain.HotTrack.Color := Theme_ListFontColor;
 
-  ElvMain.Selection.FullRowSelect := True;
-  ElvMain.Selection.UseFocusRect := True;
-
-  ElvMain.Selection.MouseButton := [CmbRight];
-  ElvMain.Selection.AlphaBlend := True;
-  ElvMain.Selection.AlphaBlendSelRect := True;
-  ElvMain.Selection.MultiSelect := True;
-  ElvMain.Selection.RectSelect := True;
-  ElvMain.Selection.EnableDragSelect := True;
-  ElvMain.Selection.TextColor := Theme_ListFontColor;
+  SetLVSelection(ElvMain);
 
   FPictureSize := ThSizePanelPreview;
   LoadSizes;
-  ElvMain.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
-  ElvMain.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
 
   ElvMain.IncrementalSearch.Enabled := True;
   ElvMain.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
@@ -1264,45 +1253,39 @@ procedure TFormCont.EasyListview1ItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  r, r1 : TRect;
-  b : TBitmap;
-  w,h, index, ind : integer;
-  Exists : integer;
+  Index : Integer;
+  ThBitmap : TBitmap;
+  Rating, W, H, X, Y, ImageW, ImageH : Integer;
 begin
- index:=0;
- ind:=0;
- if Item.Data=nil then exit;
- try
-  r1:=ARect;
-  if Item.ImageIndex<0 then exit;
+  if Item.Data = nil then
+    Exit;
 
-  b:=TBitmap.Create;
-  b.PixelFormat:=pf24bit;
-  b.Width:=fPictureSize;
-  b.Height:=fPictureSize;
-  FillRectNoCanvas(b,Theme_ListColor);
+  if Item.ImageIndex < 0 then
+    Exit;
 
-  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
-  ProportionalSize(fPictureSize,fPictureSize,w,h);
-  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList[Item.ImageIndex].Bitmap);
+  Index:=Item.Index;
 
-  r.Left:=r1.Left-2;
-  r.Top:=r1.Top-2;
-  index:=Item.Index;
-  DrawAttributes(b,fPictureSize,Data[index].Rating,Data[index].Rotation,Data[index].Access,Data[index].FileName,Data[index].Crypted,Data[index].Exists,Data[index].ID);
+  ThBitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
 
-  if ProcessedFilesCollection.ExistsFile(Data[index].FileName)<>nil then
-  DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
+  W := ARect.Right - ARect.Left;
+  H := ARect.Bottom - ARect.Top;
+  ImageW := ThBitmap.Width;
+  ImageH := ThBitmap.Height;
+  ProportionalSize(W, H, ImageW, ImageH);
 
+  X := ARect.Left + W div 2 - ImageW div 2;
+  Y := ARect.Bottom - ImageH;
 
-  ACanvas.Draw(r.Left,r.Top,b);
+  ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThBitmap);
+  if ProcessedFilesCollection.ExistsFile(Data[Index].FileName) <> nil then
+    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
 
-  b.free;
+  Rating := Data[Index].Rating;
+  if (Data[Index].Rating = 0) and (Data[Index].ID > 0) and (esosHotTracking in Item.State) then
+    Rating := -1;
 
- except
-   on e : Exception do EventLog(':TFormCont::EasyListview1ItemThumbnailDraw() throw exception: '+e.Message);
- end;
+  DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, Data[Index].Rotation, Data[Index].Access, Data[Index].FileName, Data[Index].Crypted, Data[Index].Exists, Data[Index].ID);
+
 end;
 
 procedure TFormCont.EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
@@ -1320,8 +1303,9 @@ end;
 
 procedure TFormCont.ListView1Resize(Sender: TObject);
 begin
- ElvMain.BackGround.OffsetX:=ElvMain.Width-ElvMain.BackGround.Image.Width;
- ElvMain.BackGround.OffsetY:=ElvMain.Height-ElvMain.BackGround.Image.Height;
+  ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
+  ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
+  LoadSizes;
 end;
 
 function TFormCont.GetVisibleItems: TArStrings;
@@ -1551,18 +1535,22 @@ begin
 
   GetCursorPos(MousePos);
   Pos := ElvMain.ScreenToClient(MousePos);
-  Item := ItemByPointStar(ElvMain, Pos, FPictureSize);
-  if Item <> nil then
+  Item := ItemAtPos(Pos.X, Pos.Y);
+  if (Item <> nil) and (Item.ImageIndex > -1) then
   begin
-    if ItemAtPos(Pos.X, Pos.Y).Tag <> 0 then
+    Item := ItemByPointStar(ElvMain, Pos, FPictureSize, FBitmapImageList[Item.ImageIndex].Graphic);
+    if Item <> nil then
     begin
-      RatingPopupMenu1.Tag := ItemAtPos(Pos.X, Pos.Y).Tag;
-      Application.HideHint;
-      if (ImHint <> nil) and not not UnitImHint.Closed then
-        ImHint.Close;
-      LoadingThitem := nil;
-      RatingPopupMenu1.Popup(MousePos.X, MousePos.Y);
-      Exit;
+      if ItemAtPos(Pos.X, Pos.Y).Tag <> 0 then
+      begin
+        RatingPopupMenu1.Tag := ItemAtPos(Pos.X, Pos.Y).Tag;
+        Application.HideHint;
+        if (ImHint <> nil) and not not UnitImHint.Closed then
+          ImHint.Close;
+        LoadingThitem := nil;
+        RatingPopupMenu1.Popup(MousePos.X, MousePos.Y);
+        Exit;
+      end;
     end;
   end;
 

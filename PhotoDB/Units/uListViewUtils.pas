@@ -3,7 +3,8 @@ unit uListViewUtils;
 interface
 
 uses
-  Windows, Classes, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls;
+  Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls, Math,
+  UnitDBCommon, Dolphin_DB;
 
 type
   TEasyCollectionItemX = class(TEasyCollectionItem)
@@ -13,16 +14,46 @@ type
 
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
-function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer): TEasyItem;
+function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
 procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
+procedure SetLVSelection(ListView : TEasyListView);
 
 implementation
 
-procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
+procedure SetLVSelection(ListView : TEasyListView);
 begin
-  ListView.CellSizes.Thumbnail.Width := ImageSize + 10;
+  ListView.Selection.MouseButton := [];
+  ListView.Selection.AlphaBlend := True;
+  ListView.Selection.AlphaBlendSelRect := True;
+  ListView.Selection.MultiSelect := True;
+  ListView.Selection.RectSelect := True;
+  ListView.Selection.EnableDragSelect := True;
+  ListView.Selection.FullItemPaint := True;
+  ListView.Selection.Gradient := True;
+  ListView.Selection.GradientColorBottom := clGradientActiveCaption;
+  ListView.Selection.GradientColorTop := clGradientInactiveCaption;
+  ListView.Selection.RoundRect := True;
+  ListView.Selection.UseFocusRect := False;
+  ListView.Selection.TextColor := Theme_ListFontColor;
+  ListView.PaintInfoItem.ShowBorder := False;
+  ListView.HotTrack.Cursor := CrArrow;
+end;
+
+procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
+const
+  LVWidthBetweenItems = 20;
+var
+  CountOfItemsX, ThWidth, AddSize : Integer;
+  CellWidth : Integer;
+begin
+  ThWidth := ImageSize + 10 + 6;
+  CountOfItemsX := Max(1, Trunc((ListView.Width - LVWidthBetweenItems) / ThWidth));
+  AddSize := ListView.Width - LVWidthBetweenItems - ThWidth * CountOfItemsX;
+
+  ListView.CellSizes.Thumbnail.Width := ThWidth + AddSize div CountOfItemsX;
   ListView.CellSizes.Thumbnail.Height := ImageSize + 40;
+  ListView.Selection.RoundRectRadius := ImageSize div 10;
 end;
 
 function GetListViewHeaderHeight(ListView: TListView): Integer;
@@ -34,8 +65,7 @@ begin
   FillChar(WindowPlacement, SizeOf(WindowPlacement), 0);
   WindowPlacement.Length := SizeOf(WindowPlacement);
   GetWindowPlacement(Header_Handle, @WindowPlacement);
-  Result  := WindowPlacement.rcNormalPosition.Bottom -
-    WindowPlacement.rcNormalPosition.Top;
+  Result  := WindowPlacement.rcNormalPosition.Bottom - WindowPlacement.rcNormalPosition.Top;
 end;
 
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
@@ -77,7 +107,7 @@ begin
         // Calcuate the Text rectangle based on the current text
         // **********
         RectArray.TextRect := RectArray.LabelRect;
-        // Leave room for a small border between edge of the selection rect and text    
+        // Leave room for a small border between edge of the selection rect and text
         if ListView = 0 then
           InflateRect(RectArray.TextRect, -2, -2);
 
@@ -89,64 +119,73 @@ end;
 
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
 var
-  i: Integer;
-  r : TRect;
+  I: Integer;
+  R: TRect;
   RectArray: TEasyRectArrayObject;
-  aCanvas : TCanvas;
+  ACanvas: TCanvas;
   Metrics: TTextMetric;
 begin
   Result := nil;
-  i := 0;
-  r :=  EasyListview.Scrollbars.ViewableViewportRect;
-  ViewportPoint.X:=ViewportPoint.X+r.Left;
-  ViewportPoint.Y:=ViewportPoint.Y+r.Top;
-  aCanvas:=EasyListview.Canvas;
-  GetTextMetrics(aCanvas.Handle, Metrics);
+  I := 0;
+  R := EasyListview.Scrollbars.ViewableViewportRect;
+  ViewportPoint.X := ViewportPoint.X + R.Left;
+  ViewportPoint.Y := ViewportPoint.Y + R.Top;
+  ACanvas := EasyListview.Canvas;
+  GetTextMetrics(ACanvas.Handle, Metrics);
 
-  while not Assigned(Result) and (i < EasyListview.Items.Count) do
+  while not Assigned(Result) and (I < EasyListview.Items.Count) do
   begin
-     ItemRectArray(EasyListview.Items[i],Metrics.tmHeight,RectArray);
+    ItemRectArray(EasyListview.Items[I], Metrics.TmHeight, RectArray);
 
-     if ListView = 0 then
-     begin
+    if ListView = 0 then
+    begin
       if PtInRect(RectArray.IconRect, ViewportPoint) then
-       Result := EasyListview.Items[i] else
-      if PtInRect(RectArray.TextRect, ViewportPoint) then
-       Result := EasyListview.Items[i];
-    end else
-      if PtInRect(RectArray.BoundsRect, ViewportPoint) then
-       Result := EasyListview.Items[i];
+        Result := EasyListview.Items[I]
+      else if PtInRect(RectArray.TextRect, ViewportPoint) then
+        Result := EasyListview.Items[I];
+    end
+    else if PtInRect(RectArray.BoundsRect, ViewportPoint) then
+      Result := EasyListview.Items[I];
 
-    Inc(i);
+    Inc(I);
   end
 end;
 
-function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer): TEasyItem;
+function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 var
-  i: Integer;
-  r : TRect;
+  I: Integer;
+  R: TRect;
   RectArray: TEasyRectArrayObject;
-  t,l, a,b : integer;
+  T, L, A, B, W, H, Y: Integer;
+  ImageW, ImageH : Integer;
 begin
   Result := nil;
-  i := 0;
-  r :=  EasyListview.Scrollbars.ViewableViewportRect;
-  ViewportPoint.X:=ViewportPoint.X+r.Left;
-  ViewportPoint.Y:=ViewportPoint.Y+r.Top;
-  while not Assigned(Result) and (i < EasyListview.Items.Count) do
+  I := 0;
+  R := EasyListview.Scrollbars.ViewableViewportRect;
+  ViewportPoint.X := ViewportPoint.X + R.Left;
+  ViewportPoint.Y := ViewportPoint.Y + R.Top;
+  while not Assigned(Result) and (I < EasyListview.Items.Count) do
   begin
-   if EasyListview.Items[i].Visible then
-   begin
-      EasyListview.Items[i].ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
-      a:=EasyListview.CellSizes.Thumbnail.Width - 35;
-      b:=0;
-      t:=RectArray.IconRect.Top;
-      l:=RectArray.IconRect.Left;
-      r:=Rect(a+l,b+t,a+22+l,b+t+18);
-      if PtInRect(r, ViewportPoint) then
-       Result := EasyListview.Items[i];
-   end;
-   Inc(i)
+    if EasyListview.Items[I].Visible then
+    begin
+      EasyListview.Items[I].ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
+      A := EasyListview.CellSizes.Thumbnail.Width - 35;
+      B := 0;
+
+      W := RectArray.IconRect.Right - RectArray.IconRect.Left;
+      H := RectArray.IconRect.Bottom - RectArray.IconRect.Top;
+      ImageW := Image.Width;
+      ImageH := Image.Height;
+      ProportionalSize(W, H, ImageW, ImageH);
+      Y := RectArray.IconRect.Bottom - ImageH;
+
+      T := Max(RectArray.IconRect.Top, Y - 16);
+      L := RectArray.IconRect.Left;
+      R := Rect(A + L, B + T, A + 22 + L, B + T + 18);
+      if PtInRect(R, ViewportPoint) then
+        Result := EasyListview.Items[I];
+    end;
+    Inc(I)
   end
 end;
 

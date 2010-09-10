@@ -829,17 +829,7 @@ begin
   ElvMain.Font.Color := 0;
   ElvMain.View := elsThumbnail;
   ElvMain.DragKind := dkDock;
-  ElvMain.Selection.MouseButton := [];
-  ElvMain.Selection.AlphaBlend := True;
-  ElvMain.Selection.AlphaBlendSelRect := True;
-  ElvMain.Selection.MultiSelect := True;
-  ElvMain.Selection.RectSelect := True;
-  ElvMain.Selection.EnableDragSelect := True;
-  ElvMain.Selection.TextColor := Theme_ListFontColor;
-
-  ElvMain.HotTrack.Cursor := CrArrow;
-  ElvMain.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
-  ElvMain.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
+  SetLVSelection(ElvMain);
 
   ElvMain.Font.Name := 'Tahoma';
   ElvMain.IncrementalSearch.Enabled := True;
@@ -7164,6 +7154,7 @@ procedure TExplorerForm.ListView1Resize(Sender: TObject);
 begin
   ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
   ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
+  LoadSizes;
 end;
 
 procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;
@@ -7172,35 +7163,40 @@ procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;
 var
   Capt, dir, ShellDir, LinkPath: string;
   MenuInfo: TDBPopupMenuInfo;
-  info: TRecordsInfo;
-  Index: Integer;
-  p, p1: TPoint;
+  Info: TRecordsInfo;
+  index: Integer;
+  P, P1: TPoint;
   Item: TObject;
+  EasyItem : TEasyItem;
 
   procedure RestoreSelected;
   begin
-    FDBCanDrag := false;
-    fDBCanDragW := false;
+    FDBCanDrag := False;
+    FDBCanDragW := False;
   end;
 
 begin
 
-  GetCursorPos(p1);
-  p := ElvMain.ScreenToClient(p1);
-  if ItemByPointStar(ElvMain, p, FPictureSize) <> nil then
+  GetCursorPos(P1);
+  P := ElvMain.ScreenToClient(p1);
+  EasyItem := ItemAtPos(P.X, P.Y);
+  if (EasyItem <> nil) and (EasyItem.ImageIndex > -1) then
   begin
-    Index := ItemAtPos(p.X, p.Y).Index;
-    Index := ItemIndexToMenuIndex(index);
-    RatingPopupMenu1.Tag := fFilesInfo[Index].ID;
-    if RatingPopupMenu1.Tag > 0 then
+    if ItemByPointStar(ElvMain, p, FPictureSize, FBitmapImageList[EasyItem.ImageIndex].Graphic) <> nil then
     begin
-      Application.HideHint;
-      if ImHint <> nil then
-        if not UnitImHint.closed then
-          ImHint.Close;
-      self.loadingthitem := nil;
-      RatingPopupMenu1.Popup(p1.X, p1.Y);
-      Exit;
+      Index := ItemAtPos(p.X, p.Y).Index;
+      Index := ItemIndexToMenuIndex(index);
+      RatingPopupMenu1.Tag := fFilesInfo[Index].ID;
+      if RatingPopupMenu1.Tag > 0 then
+      begin
+        Application.HideHint;
+        if ImHint <> nil then
+          if not UnitImHint.closed then
+            ImHint.Close;
+        self.loadingthitem := nil;
+        RatingPopupMenu1.Popup(p1.X, p1.Y);
+        Exit;
+      end;
     end;
   end;
 
@@ -7272,13 +7268,12 @@ begin
           begin
             SetStringPath(LinkPath, false);
             Exit;
-          end
-          else
+          end else
           begin
             if ExtInMask(SupportedExt, GetExt(LinkPath)) then
             begin
               MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
-              If Viewer = nil then
+              if Viewer = nil then
                 Application.CreateForm(TViewer, Viewer);
               DBPopupMenuInfoToRecordsInfo(MenuInfo, info);
               Viewer.Execute(Sender, info);
@@ -7287,8 +7282,7 @@ begin
             end;
             ShellDir := GetDirectory(LinkPath);
             UnFormatDir(ShellDir);
-            ShellExecute(Handle, nil, PWideChar(LinkPath), nil, PWideChar(ShellDir),
-              SW_NORMAL);
+            ShellExecute(Handle, nil, PWideChar(LinkPath), nil, PWideChar(ShellDir), SW_NORMAL);
             RestoreSelected;
             Exit;
           end;
@@ -7310,52 +7304,43 @@ procedure TExplorerForm.EasyListview1ItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  r, r1 : TRect;
   b : TBitmap;
-  w,h, index, ind : integer;
-  Exists : integer;
+  ThBitmap : TBitmap;
+  W, H, index : Integer;
+  Exists : Integer;
+  X, Y : Integer;
+  ImageW, ImageH : Integer;
+  Rating : Integer;
 begin
- if Item.Data=nil then exit;
- try
-  r1:=ARect;
-  if Item.ImageIndex<0 then exit;
+  if Item.Data = nil then
+    Exit;
+  if Item.ImageIndex < 0 then
+    Exit;
 
-  b:=TBitmap.Create;
-  b.PixelFormat:=pf24bit;
-  b.Width:=fPictureSize;
-  b.Height:=fPictureSize;
-  FillRectNoCanvas(b,ElvMain.Canvas.Brush.Color);
+  Index := ItemIndexToMenuIndex(Item.Index);
+  ThBitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
 
-  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
-  ProportionalSize(fPictureSize,fPictureSize,w,h);
+  W := ARect.Right - ARect.Left;
+  H := ARect.Bottom - ARect.Top;
+  ImageW := ThBitmap.Width;
+  ImageH := ThBitmap.Height;
+  ProportionalSize(W, H, ImageW, ImageH);
 
-  b.Canvas.StretchDraw(Rect(fPictureSize div 2 - w div 2,fPictureSize div 2 - h div 2,w+(fPictureSize div 2 - w div 2),h+(fPictureSize div 2 - h div 2)),FBitmapImageList[Item.ImageIndex].Bitmap);
+  X := ARect.Left + W div 2 - ImageW div 2;
+  Y := ARect.Bottom - ImageH;
 
-  r.Left:=r1.Left-2-1;
-  r.Top:=r1.Top-2-1;
+  ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThBitmap);
+  if ProcessedFilesCollection.ExistsFile(FFilesInfo[index].FileName)<>nil then
+    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
 
-  index:=ItemIndexToMenuIndex(Item.Index);
+  Exists := 1;
+  Rating := FFilesInfo[index].Rating;
+  if (FFilesInfo[index].Rating = 0) and (FFilesInfo[index].ID <> 0) and (esosHotTracking in Item.State) then
+    Rating := -1;
 
-  Exists:=1;
-  if fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE then
-  DrawAttributes(b,fPictureSize,fFilesInfo[index].Rating,fFilesInfo[index].Rotate,fFilesInfo[index].Access,fFilesInfo[index].FileName,fFilesInfo[index].Crypted,Exists,fFilesInfo[index].id);
-  if ProcessedFilesCollection.ExistsFile(fFilesInfo[index].FileName)<>nil then
-  DrawIconEx(b.Canvas.Handle,2,b.Height-18,UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
+  if fFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
+    DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, FFilesInfo[index].Rotate, FFilesInfo[index].Access, FFilesInfo[index].FileName, FFilesInfo[index].Crypted, Exists, FFilesInfo[index].ID);
 
-  ACanvas.Draw(r.Left,r.Top,b);
-  b.free;
-
- except
-  on e : Exception do
-  begin
-   LockItems;
-   MessageBoxDB(Handle,Format('Error in Explorer (Drawing image item!)'#13'%s',[e.Message]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   if Item<>nil then
-   MessageBoxDB(Handle,Format('Index = %d, ImageIndex = %d, ind = %s, menuind = %d',[Item.Index,Item.ImageIndex,ind,index]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   Close;
-  end;
- end;
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(

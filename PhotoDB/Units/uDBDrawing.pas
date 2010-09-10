@@ -6,6 +6,7 @@ uses Windows, SysUtils, Graphics, UnitDBDeclare, Exif, UnitDBCommon, Math,
      GraphicsBaseTypes;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
+procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
 function GetListItemBorderColor(Data : TDataObject) : TColor;
 function RectInRect(const R1, R2 : TRect) : Boolean;
 
@@ -13,16 +14,22 @@ implementation
 
 uses UnitDBKernel, Dolphin_DB, ExplorerUnit;
 
-procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating,Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
+procedure DrawAttributes(Bitmap : TBitmap; PistureSize : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
 var
-  FExif : TExif;
-  failture : boolean;
-  DeltaX : integer;
-  FE : boolean;
+  DeltaX : Integer;
 begin
   DeltaX := PistureSize - 100;
+  DrawAttributesEx(Bitmap.Canvas.Handle, DeltaX, 0, Rating, Rotate, Access, FileName, Crypted, Exists, ID);
+end;
+
+procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
+var
+  FExif : TExif;
+  Failture : Boolean;
+  FE : boolean;
+begin
   if ID = 0 then
-    DrawIconEx(Bitmap.Canvas.Handle, 0 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_NEW+1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(HCanvas, 0 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_NEW+1], 16, 16, 0, 0, DI_NORMAL);
 
   FE:=true;
   if Exists = 0 then
@@ -55,9 +62,9 @@ begin
       if FExif.Valid and not failture then
       begin
         if Id=0 then
-          DrawIconEx(Bitmap.Canvas.Handle, 20 + DeltaX, 0, UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL)
+          DrawIconEx(HCanvas, 20 + DeltaX, DeltaY, UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL)
         else
-          DrawIconEx(Bitmap.Canvas.Handle, 0 + DeltaX, 0,  UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL);
+          DrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL);
       end;
     finally
       FExif.Free;
@@ -65,30 +72,31 @@ begin
   end;
 
   if Crypted then
-    DrawIconEx(Bitmap.Canvas.Handle, 20 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_KEY + 1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(HCanvas, 20 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_KEY + 1], 16, 16, 0, 0, DI_NORMAL);
 
   case Rating of
-    1: DrawIconEx(Bitmap.Canvas.Handle, 80 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_RATING_1 + 1], 16, 16, 0, 0, DI_NORMAL);
-    2: DrawIconEx(Bitmap.Canvas.Handle, 80 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_RATING_2 + 1], 16, 16, 0, 0, DI_NORMAL);
-    3: DrawIconEx(Bitmap.Canvas.Handle, 80 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_RATING_3 + 1], 16, 16, 0, 0, DI_NORMAL);
-    4: DrawIconEx(Bitmap.Canvas.Handle, 80 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_RATING_4 + 1], 16, 16, 0, 0, DI_NORMAL);
-    5: DrawIconEx(Bitmap.Canvas.Handle, 80 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_RATING_5 + 1], 16, 16, 0, 0, DI_NORMAL);
+    -1: DrawIconEx(HCanvas, 80 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_RATING_STAR + 1], 16, 16, 0, 0, DI_NORMAL);
+    1:  DrawIconEx(HCanvas, 80 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_RATING_1 + 1], 16, 16, 0, 0, DI_NORMAL);
+    2:  DrawIconEx(HCanvas, 80 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_RATING_2 + 1], 16, 16, 0, 0, DI_NORMAL);
+    3:  DrawIconEx(HCanvas, 80 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_RATING_3 + 1], 16, 16, 0, 0, DI_NORMAL);
+    4:  DrawIconEx(HCanvas, 80 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_RATING_4 + 1], 16, 16, 0, 0, DI_NORMAL);
+    5:  DrawIconEx(HCanvas, 80 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_RATING_5 + 1], 16, 16, 0, 0, DI_NORMAL);
   end;
 
   case Rotate of
-    DB_IMAGE_ROTATE_90: DrawIconEx(Bitmap.Canvas.Handle,  60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_90 + 1], 16, 16, 0, 0, DI_NORMAL);
-    DB_IMAGE_ROTATE_180: DrawIconEx(Bitmap.Canvas.Handle, 60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_180 + 1], 16, 16, 0, 0, DI_NORMAL);
-    DB_IMAGE_ROTATE_270: DrawIconEx(Bitmap.Canvas.Handle, 60 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_ROTETED_270 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_90: DrawIconEx(HCanvas,  60 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_ROTETED_90 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_180: DrawIconEx(HCanvas, 60 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_ROTETED_180 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_270: DrawIconEx(HCanvas, 60 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_ROTETED_270 + 1], 16, 16, 0, 0, DI_NORMAL);
   end;
   if Access = db_access_private then
-    DrawIconEx(Bitmap.Canvas.Handle, 40 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_PRIVATE + 1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(HCanvas, 40 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_PRIVATE + 1], 16, 16, 0, 0, DI_NORMAL);
 
   if not FE then
   begin
     if Copy(FileName,1,2) = '::' then
-      DrawIconEx(Bitmap.Canvas.Handle, 0 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_CD_IMAGE + 1], 16, 16, 0, 0, DI_NORMAL)
+      DrawIconEx(HCanvas, 0 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_CD_IMAGE + 1], 16, 16, 0, 0, DI_NORMAL)
     else
-      DrawIconEx(Bitmap.Canvas.Handle, 0 + DeltaX, 0, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 16, 16, 0, 0, DI_NORMAL);
+      DrawIconEx(HCanvas, 0 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 16, 16, 0, 0, DI_NORMAL);
   end;
 end;
 
