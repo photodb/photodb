@@ -2,57 +2,60 @@ unit ExplorerTypes;
 
 interface
 
-uses Forms, SysUtils, Windows, Graphics, 
-     Messages, Classes, DB, GraphicsCool, JPEG, SyncObjs,
-     UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uFileUtils;
+uses Forms, SysUtils, Windows, Graphics,
+  Messages, Classes, DB, GraphicsCool, JPEG, SyncObjs,
+  UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, UFileUtils,
+  UMemory;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
+
   TFileNotifyInformation = record
-    NextEntryOffset : DWORD;
-    Action          : DWORD;
-    FileNameLength  : DWORD;
-    FileName        : array[0..0] of WideChar;
+    NextEntryOffset: DWORD;
+    Action: DWORD;
+    FileNameLength: DWORD;
+    FileName: array [0 .. 0] of WideChar;
   end;
 
 const
-  FILE_LIST_DIRECTORY   = $0001;
+  FILE_LIST_DIRECTORY = $0001;
 
 type
- TExplorerViewInfo = record
- ShowPrivate : boolean;
- ShowFolders : boolean;
- ShowSimpleFiles : boolean;
- ShowImageFiles : boolean;
- ShowHiddenFiles : boolean;
- ShowAttributes : Boolean;
- ShowThumbNailsForFolders : boolean;
- SaveThumbNailsForFolders : boolean;
- ShowThumbNailsForImages : boolean;
- OldFolderName : String;
- View : integer;
- PictureSize : integer;
- end;
-
-Type TUpdaterInfo = record
- FileName : String;
- IsUpdater : Boolean;
- ID : integer;
- ProcHelpAfterUpdate : TNotifyEvent;
- NewFileItem : Boolean;
- end;
-
-Type
-  TFolderImages = record
-  Images : array[1..4] of TBitmap;
-  FileNames : array[1..4] of string;
-  FileDates : array[1..4] of TDateTime;
-  Directory : string;
-  Width : integer;
-  Height : integer;
+  TExplorerViewInfo = record
+    ShowPrivate: Boolean;
+    ShowFolders: Boolean;
+    ShowSimpleFiles: Boolean;
+    ShowImageFiles: Boolean;
+    ShowHiddenFiles: Boolean;
+    ShowAttributes: Boolean;
+    ShowThumbNailsForFolders: Boolean;
+    SaveThumbNailsForFolders: Boolean;
+    ShowThumbNailsForImages: Boolean;
+    OldFolderName: string;
+    View: Integer;
+    PictureSize: Integer;
   end;
 
-Const
+type
+  TUpdaterInfo = record
+    FileName: string;
+    IsUpdater: Boolean;
+    ID: Integer;
+    ProcHelpAfterUpdate: TNotifyEvent;
+    NewFileItem: Boolean;
+  end;
+
+type
+  TFolderImages = record
+    Images: array [1 .. 4] of TBitmap;
+    FileNames: array [1 .. 4] of string;
+    FileDates: array [1 .. 4] of TDateTime;
+    Directory: string;
+    Width: Integer;
+    Height: Integer;
+  end;
+
+const
   EXPLORER_ITEM_FOLDER     = 0;
   EXPLORER_ITEM_IMAGE      = 1;
   EXPLORER_ITEM_FILE       = 2;
@@ -87,34 +90,34 @@ Const
   LV_ICONS      = 1;
   LV_SMALLICONS = 2;
   LV_TITLES     = 3;
-  LV_TILE       = 4; 
+  LV_TILE       = 4;
   LV_GRID       = 5;
 
-Type TExplorerPath = Record
-  Path : String;
-  PType : Integer;
-  Tag : integer;
+type
+  TExplorerPath = record
+    Path: string;
+    PType: Integer;
+    Tag: Integer;
   end;
 
   TArExplorerPath = array of TExplorerPath;
 
-{Type
-  PStringA = ^String;    }
-
 type
- // Структура с информацией об изменении в файловой системе (передается в callback процедуру)
+  // Структура с информацией об изменении в файловой системе (передается в callback процедуру)
 
   PInfoCallback = ^TInfoCallback;
+
   TInfoCallback = record
-    FAction      : Integer; // тип изменения (константы FILE_ACTION_XXX)
-//    FDrive       : string;  // диск, на котором было изменение
-    FOldFileName : string;  // имя файла до переименования
-    FNewFileName : string;  // имя файла после переименования
+    FAction: Integer; // тип изменения (константы FILE_ACTION_XXX)
+    // FDrive       : string;  // диск, на котором было изменение
+    FOldFileName: string; // имя файла до переименования
+    FNewFileName: string; // имя файла после переименования
   end;
+
   TInfoCallBackDirectoryChangedArray = array of TInfoCallback;
 
   // callback процедура, вызываемая при изменении в файловой системе
-  TWatchFileSystemCallback = procedure (pInfo: TInfoCallBackDirectoryChangedArray) of object;
+  TWatchFileSystemCallback = procedure(PInfo: TInfoCallBackDirectoryChangedArray) of object;
 
   TNotifyDirectoryChangeW = Procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of Object;
 
@@ -128,45 +131,46 @@ type
     Access : Integer;
     Rating : Integer;
     FileSize : Int64;
-    Comment : string;
-    KeyWords : string;
-    Date : TDateTime;
-    Time : TDateTime;
-    ImageIndex : Integer;
-    Owner : string;
-    Groups : string;
-    Collections : string;
-    IsDate : Boolean;
-    IsTime : Boolean;
-    Crypted : Boolean;
-    Tag : Integer;
-    Loaded : Boolean;
-    Include : Boolean;
-    Links : string;
-    isBigImage : Boolean;
-    function Clone : TExplorerFileInfo;
+    Comment: string;
+    KeyWords: string;
+    Date: TDateTime;
+    Time: TDateTime;
+    ImageIndex: Integer;
+    Owner: string;
+    Groups: string;
+    Collections: string;
+    IsDate: Boolean;
+    IsTime: Boolean;
+    Crypted: Boolean;
+    Tag: Integer;
+    Loaded: Boolean;
+    Include: Boolean;
+    Links: string;
+    IsBigImage: Boolean;
+    function Clone: TExplorerFileInfo;
   end;
 
   TExplorerFileInfos = class(TObject)
   private
-    FItems : TList;
-    function GeInfoByIndex(Index: Integer): TExplorerFileInfo;
+    FItems: TList;
+    function GeInfoByIndex(index: Integer): TExplorerFileInfo;
     function GetCount: Integer;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Add(Info : TExplorerFileInfo);
-    procedure Remove(Info : TExplorerFileInfo);
-    procedure Delete(I : Integer);
+    procedure Add(Info: TExplorerFileInfo);
+    procedure Remove(Info: TExplorerFileInfo);
+    procedure Delete(I: Integer);
     procedure Clear;
-    procedure Exchange(Index1, Index2 : Integer);
-    procedure Assign(Source : TExplorerFileInfos);
-    function Clone : TExplorerFileInfos;
-    property Count : Integer read GetCount;
-    property Items[Index: Integer]: TExplorerFileInfo read GeInfoByIndex; default;
+    procedure Exchange(Index1, Index2: Integer);
+    procedure Assign(Source: TExplorerFileInfos);
+    function Clone: TExplorerFileInfos;
+    property Count: Integer read GetCount;
+    property Items[index: Integer]: TExplorerFileInfo read GeInfoByIndex; default;
   end;
 
-Procedure AddOneExplorerFileInfo(Infos : TExplorerFileInfos; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+procedure AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
+  SID: TGUID; ID, Rating, Rotate, Access, FileSize: Integer; Comment, KeyWords, Groups: string; Date : TDateTime; IsDate, Crypted, Include : Boolean);
 
 type
   TExplorerThreadNotifyDirectoryChange = class(TThread)
@@ -177,124 +181,109 @@ type
    FOwner : TForm;
    FOnNotifyFile : TNotifyDirectoryChangeW;
    Terminating : Boolean;
-   FOldFileName : TArStrings;
-   FNewFileName : String;
-   FAction : TArInteger;
-   protected
+    FOldFileName: TArStrings;
+    FNewFileName: string;
+    FAction: TArInteger;
+  protected
     procedure Execute; override;
     procedure NotifyFile;
   public
-    constructor Create(CreateSuspennded: Boolean; Owner : TForm; Directory : string; OnNotify : TNotifyDirectoryChangeW; SID : string; ParentSID : Pointer);
+    constructor Create(CreateSuspennded: Boolean; Owner: TForm; Directory: string; OnNotify: TNotifyDirectoryChangeW;
+      SID: string; ParentSID: Pointer);
   end;
 
 type
   TStringsHistoryW = class(TObject)
-  fArray : array of TExplorerPath;
-  fposition : integer;
-  fStrings : integer;
+    FArray: array of TExplorerPath;
+    Fposition: Integer;
+    FStrings: Integer;
   private
-    fOnChange: TNotifyEvent;
-  procedure SetOnChange(const Value: TNotifyEvent);
+    FOnChange: TNotifyEvent;
+    procedure SetOnChange(const Value: TNotifyEvent);
     { Private declarations }
   public
-  constructor create;
-  destructor Destroy; override;
-  procedure Add(Path : TExplorerPath);
-  Function CanBack : boolean;
-  Function CanForward : boolean;
-  Function GetCurrentPos : integer;
-  Function DoBack : TExplorerPath;
-  Function DoForward : TExplorerPath;
-  Property OnHistoryChange : TNotifyEvent read fOnChange write SetOnChange;
-  Function LastPath : TExplorerPath;
-  Function GetBackHistory : TArExplorerPath;
-  Function GetForwardHistory : TArExplorerPath;
-  Procedure Clear;
+    constructor Create;
+    destructor Destroy; override;
+    procedure Add(Path: TExplorerPath);
+    function CanBack: Boolean;
+    function CanForward: Boolean;
+    function GetCurrentPos: Integer;
+    function DoBack: TExplorerPath;
+    function DoForward: TExplorerPath;
+    property OnHistoryChange: TNotifyEvent read FOnChange write SetOnChange;
+    function LastPath: TExplorerPath;
+    function GetBackHistory: TArExplorerPath;
+    function GetForwardHistory: TArExplorerPath;
+    procedure Clear;
     { Public declarations }
   end;
 
-Type
+type
   TExplorerFolders = class(TObject)
-  Private
-    FImages : Array of TFolderImages;
+  private
+    FImages: array of TFolderImages;
     FSaveFoldersToDB: Boolean;
-    FDBName : String;
-    FSync : TCriticalSection;
+    FDBName: string;
+    FSync: TCriticalSection;
     procedure SetSaveFoldersToDB(const Value: Boolean);
-  Public
-    Constructor Create;
-    Destructor Destroy; override;
-  Published
-    Procedure SaveFolderImages(FolderImages : TFolderImages; Width : integer; Height : integer);
-    Function GetFolderImages(Directory : String; Width : integer; Height : integer) : TFolderImages;
-    Property SaveFoldersToDB : Boolean Read FSaveFoldersToDB Write SetSaveFoldersToDB;
-    procedure CheckFolder(Folder : String);
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    procedure SaveFolderImages(FolderImages: TFolderImages; Width: Integer; Height: Integer);
+    function GetFolderImages(Directory: string; Width: Integer; Height: Integer): TFolderImages;
+    property SaveFoldersToDB: Boolean read FSaveFoldersToDB write SetSaveFoldersToDB;
+    procedure CheckFolder(Folder: string);
     procedure Clear;
   end;
 
 type
   TIcon48 = class(TIcon)
-  protected  
+  protected
     function GetHeight: Integer; override;
     function GetWidth: Integer; override;
-end;
+  end;
 
-//function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
-function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
+function ExplorerPath(Path: string; PType: Integer): TExplorerPath;
 
 var
-  LockedFiles : array[1..2] of String;
+  LockedFiles: array [1 .. 2] of String;
   LockTime : TDateTime;
 
 implementation
 
 uses ExplorerUnit;
 
-function ExplorerPath(Path : String; PType : Integer) : TExplorerPath;
+function ExplorerPath(Path : string; PType: Integer): TExplorerPath;
 begin
- Result.Path:=Path;
- Result.PType:=PType;
+  Result.Path := Path;
+  Result.PType := PType;
 end;
-
-{function GetRecordFromExplorerInfo(Info : TExplorerFileInfos; N : Integer) : TOneRecordInfo;
-begin
- Result.ItemFileName:= Info[N].FileName;
- Result.ItemId:= Info[N].ID;
- Result.ItemRotate:= Info[N].Rotate;
- Result.ItemRating:= Info[N].Rating;
- Result.ItemAccess:= Info[N].Access;
- Result.ItemComment:= Info[N].Comment;
- Result.ItemKeyWords:= Info[N].KeyWords;
- Result.ItemOwner:= Info[N].Owner;
- Result.ItemCollections:= Info[N].Collections;
- Result.ItemDate:= Info[N].Date;
- Result.ItemIsDate:= Info[N].IsDate;
- Result.ItemGroups:= Info[N].Groups;
-end;        }
 
 { TExplorerFolders }
 
-procedure TExplorerFolders.CheckFolder(Folder: String);
+procedure TExplorerFolders.CheckFolder(Folder: string);
 var
-  i, k, l: integer;
-begin 
+  I, K, L: Integer;
+begin
   FSync.Enter;
   try
-   For i:=0 to Length(FImages)-1 do
-   begin
-    If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(Folder) then
-    for k:=1 to 4 do
-    if FImages[i].FileNames[k]='' then
+    for I := 0 to Length(FImages) - 1 do
     begin
-     for l:=1 to 4 do
-     if FImages[i].Images[l]<>nil then FImages[i].Images[l].free;
-     for l:=i to Length(FImages)-2 do
-     FImages[l]:=FImages[l+1];
-     if Length(FImages)>0 then
-     SetLength(FImages,Length(FImages)-1);
-     break;
+      if AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(Folder) then
+      for k:=1 to 4 do
+      if FImages[I].FileNames[K] = '' then
+      begin
+        for L := 1 to 4 do
+          F(FImages[I].Images[L]);
+
+        for L := I to Length(FImages) - 2 do
+          FImages[L] := FImages[L + 1];
+        if Length(FImages) > 0 then
+          SetLength(FImages, Length(FImages) - 1);
+        Break;
+      end;
     end;
-   end;
   finally
     FSync.Leave;
   end;
@@ -302,14 +291,13 @@ end;
 
 procedure TExplorerFolders.Clear;
 var
-  I, J :integer;
+  I, J: Integer;
 begin
   FSync.Enter;
   try
     for I := 0 to Length(FImages) - 1 do
       for J := 1 to 4 do
-        if FImages[I].Images[J] <> nil then
-          FImages[I].Images[J].Free;
+        F(FImages[I].Images[J]);
     SetLength(FImages, 0);
   finally
     FSync.Leave;
@@ -332,114 +320,117 @@ end;
 
 function TExplorerFolders.GetFolderImages(
   Directory: String; Width : integer; Height : integer): TFolderImages;
-Var
+var
   i, j, k, w, h : integer;
   b : Boolean;
-begin   
+begin
   FSync.Enter;
   try
-  FormatDir(Directory);
-  Result.Directory:='';
-  for i:=1 to 4 do Result.Images[i]:=nil;
- For i:=0 to Length(FImages)-1 do
- begin
-  If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(Directory) then
-  if Width<=FImages[i].Width then
-  begin
-   b:=true;
-   for k:=1 to 4 do
-   if FImages[i].FileNames[k]<>'' then
-   if not FileExists(FImages[i].FileNames[k]) then
-   begin
-    b:=false;
-    break;
-   end;
-   if b then
-   for k:=1 to 4 do
-   if FImages[i].FileNames[k]<>'' then
-   if FImages[i].FileDates[k]<>GetFileDateTime(FImages[i].FileNames[k]) then
-   begin
-    b:=false;
-    break;
-   end;
-   if b then
-   begin
-    Result.Directory:=Directory;
-    For j:=1 to 4 do
-    Begin
-     Result.Images[j]:=TBitmap.create;
+    FormatDir(Directory);
+    Result.Directory := '';
+    for I := 1 to 4 do
+      F(Result.Images[I]);
 
-     if FImages[i].Images[j]<>nil then
-     begin
-      w:=FImages[i].Images[j].Width;
-      h:=FImages[i].Images[j].height;
-      ProportionalSize(Width,Height,w,h);
-      DoResize(w,h,FImages[i].Images[j],Result.Images[j]);
-     end;
+    for I := 0 to Length(FImages)-1 do
+    begin
+      if (AnsiLowerCase(FImages[I].Directory) = AnsiLowerCase(Directory))
+        and (Width <= FImages[i].Width) then
+      begin
+        B := True;
+        for K := 1 to 4 do
+          if FImages[I].FileNames[K]<>'' then
+            if not FileExists(FImages[I].FileNames[K]) then
+            begin
+              B := False;
+              Break;
+            end;
+        if B then
+          for k:=1 to 4 do
+            if FImages[I].FileNames[K] <> '' then
+              if FImages[I].FileDates[K] <> GetFileDateTime(FImages[I].FileNames[K]) then
+              begin
+                B := False;
+                Break;
+              end;
+        if B then
+        begin
+          Result.Directory := Directory;
+          for J := 1 to 4 do
+          begin
+            Result.Images[J] := TBitmap.create;
+            if FImages[I].Images[J] <> nil then
+            begin
+              W := FImages[I].Images[J].Width;
+              H := FImages[I].Images[J].height;
+              ProportionalSize(Width, Height, W, H);
+              DoResize(W, H, FImages[i].Images[j], Result.Images[j]);
+            end;
+          end;
+        end;
+      end;
     end;
-   end;
-  end;
-  end;
   finally
     FSync.Leave;
   end;
 end;
 
 procedure TExplorerFolders.SaveFolderImages(FolderImages: TFolderImages;
-  Width : integer; Height : integer);
-Var
-  i, j : integer;
-  b : Boolean;
+  Width : Integer; Height : Integer);
+var
+  I, J : integer;
+  B : Boolean;
+  L : Integer;
 begin
   FSync.Enter;
   try
-   b:=false;   
-   FormatDir(FolderImages.Directory);
-   For i:=0 to Length(FImages)-1 do
-   begin
-    If AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(FolderImages.Directory) then
-    if FImages[i].Width<Width then
-    begin       
-     FImages[i].Width:=Width;
-     FImages[i].Height:=Height;
-     FImages[i].Directory:=FolderImages.Directory;
-     for j:=1 to 4 do
-     FImages[i].FileNames[j]:=FolderImages.FileNames[j];
-     for j:=1 to 4 do
-     FImages[i].FileDates[j]:=FolderImages.FileDates[j];
-     for j:=1 to 4 do
-     if FImages[i].Images[j]<>nil then
-     FImages[i].Images[j].free;
-     for j:=1 to 4 do
-     begin
-      If FolderImages.Images[j]=nil then break;
-      FImages[i].Images[j]:=TBitmap.create;
-      FImages[i].Images[j].Assign(FolderImages.Images[j]);
-      FImages[i].Images[j].PixelFormat:=pf24bit;
+    B := False;
+    FormatDir(FolderImages.Directory);
+    for I := 0 to Length(FImages) - 1 do
+    begin
+      if AnsiLowerCase(FImages[I].Directory) = AnsiLowerCase(FolderImages.Directory) then
+      if FImages[I].Width < Width then
+      begin
+        FImages[I].Width := Width;
+        FImages[I].Height := Height;
+        FImages[I].Directory := FolderImages.Directory;
+        for J := 1 to 4 do
+          FImages[I].FileNames[J] := FolderImages.FileNames[J];
+        for J := 1 to 4 do
+          FImages[I].FileDates[J] := FolderImages.FileDates[J];
+        for J := 1 to 4 do
+          F(FImages[I].Images[J]);
+
+        for J := 1 to 4 do
+        begin
+          if FolderImages.Images[J] = nil then
+            Break;
+          FImages[I].Images[J] := TBitmap.Create;
+          AssignBitmap(FImages[I].Images[J], FolderImages.Images[J]);
+        end;
+        B := True;
+        Break;
      end;
-     B:=true;
-     Break;
-    end;
    end;
-   If not b and (FolderImages.Images[1]<>nil) then
+   if not B and (FolderImages.Images[1] <> nil) then
    begin
-    SetLength(FImages,Length(FImages)+1);
-    FImages[Length(FImages)-1].Width:=Width;
-    FImages[Length(FImages)-1].Height:=Height;
-    FImages[Length(FImages)-1].Directory:=FolderImages.Directory;
-    For i:=1 to 4 do
-    FImages[Length(FImages)-1].FileNames[i]:=FolderImages.FileNames[i];
-    For i:=1 to 4 do
-    FImages[Length(FImages)-1].FileDates[i]:=FolderImages.FileDates[i];
-    For i:=1 to 4 do
-    FImages[Length(FImages)-1].Images[i]:=nil;
-    For i:=1 to 4 do
-    Begin
-     If FolderImages.Images[i]=nil then break;
-     FImages[Length(FImages)-1].Images[i]:=TBitmap.Create;
-     FImages[Length(FImages)-1].Images[i].Assign(FolderImages.Images[i]);
-     FImages[Length(FImages)-1].Images[i].PixelFormat:=pf24bit;
-    End;
+     SetLength(FImages, Length(FImages) + 1);
+     L := Length(FImages) - 1;
+     FImages[L].Width := Width;
+     FImages[L].Height := Height;
+     FImages[L].Directory := FolderImages.Directory;
+     for I := 1 to 4 do
+       FImages[L].FileNames[I] := FolderImages.FileNames[I];
+     for I := 1 to 4 do
+       FImages[L].FileDates[I] := FolderImages.FileDates[I];
+     for I := 1 to 4 do
+       FImages[L].Images[i]:=nil;
+     for I := 1 to 4 do
+     begin
+       if FolderImages.Images[I] = nil then
+         Break;
+       FImages[L].Images[I] := TBitmap.Create;
+       AssignBitmap(FImages[L].Images[I], FolderImages.Images[I]);
+     end;
    end;
   finally
     FSync.Leave;
@@ -530,7 +521,7 @@ begin
     Break;
    end;
    if b then Break;
-   if c then Continue; 
+   if c then Continue;
    case PFileNotifyInformation(Ptr).Action of
      FILE_ACTION_ADDED,FILE_ACTION_REMOVED,FILE_ACTION_MODIFIED,FILE_ACTION_RENAMED_OLD_NAME:
       begin

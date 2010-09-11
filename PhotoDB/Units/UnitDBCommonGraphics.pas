@@ -29,6 +29,7 @@ interface
   function CalcBitmapToJPEGCompressSize(Bitmap : TBitmap; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
   procedure ConvertTo32BitImageList(const ImageList: TImageList);
   procedure LoadImageX(Image : TGraphic; Bitmap : TBitmap; BackGround : TColor);
+  procedure LoadPNGImageTransparent(PNG : TPNGGraphic; Bitmap : TBitmap);
   procedure LoadPNGImage32bit(PNG : TPNGGraphic; Bitmap : TBitmap; BackGroundColor : TColor);
   procedure LoadBMPImage32bit(S : TBitmap; D : TBitmap; BackGroundColor : TColor);
   procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
@@ -528,6 +529,46 @@ begin
         Break;
       pD[XD] := pS[J];
     end;
+  end;
+end;
+
+procedure LoadPNGImageTransparent(PNG : TPNGGraphic; Bitmap : TBitmap);
+var
+  I, J : Integer;
+  DeltaS, DeltaD : Integer;
+  AddrLineS, AddrLineD : Integer;
+  AddrS, AddrD : Integer;
+  S : PRGB32;
+  D : PRGB32;
+begin
+  if Bitmap.PixelFormat <> pf32bit then
+    Bitmap.PixelFormat := pf32bit;
+  Bitmap.Width := PNG.Width;
+  Bitmap.Height := PNG.Height;
+
+  AddrLineS := Integer(PNG.ScanLine[0]);
+  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+
+  for I := 0 to PNG.Height - 1 do
+  begin
+    AddrS := AddrLineS;
+    AddrD := AddrLineD;
+    for J := 0 to PNG.Width - 1 do
+    begin
+      S := PRGB32(AddrS);
+      D := PRGB32(AddrD);
+      D.R := S.R;
+      D.G := S.G;
+      D.B := S.B;
+      D.L := S.L;
+
+      AddrS := AddrS + 4;
+      AddrD := AddrD + 4;
+    end;
+    AddrLineS := AddrLineS + DeltaS;
+    AddrLineD := AddrLineD + DeltaD;
   end;
 end;
 

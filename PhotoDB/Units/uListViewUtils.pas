@@ -179,7 +179,7 @@ begin
       ProportionalSize(W, H, ImageW, ImageH);
       Y := RectArray.IconRect.Bottom - ImageH;
 
-      T := Max(RectArray.IconRect.Top, Y - 16);
+      T := Max(RectArray.IconRect.Top, Y - 20);
       L := RectArray.IconRect.Left;
       R := Rect(A + L, B + T, A + 22 + L, B + T + 18);
       if PtInRect(R, ViewportPoint) then

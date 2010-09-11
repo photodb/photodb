@@ -2804,18 +2804,9 @@ begin
    FFilesInfo[i].ImageIndex:=FBitmapImageList.Count-1;
    c:=FBitmapImageList.Count-1;
   end;
-  if FBitmapImageList[c].IsBitmap then
-  begin
-   if FBitmapImageList[c].Bitmap<>nil then
-   FBitmapImageList[c].Bitmap.Free
-  end else
-  if FBitmapImageList[c].SelfReleased then
-  begin
-   if FBitmapImageList[c].Icon<>nil then
-   FBitmapImageList[c].Icon.Free;
-  end;
-  FBitmapImageList[c].Bitmap:=Bitmap;
-  FBitmapImageList[c].SelfReleased:=true;
+
+  FBitmapImageList[c].Graphic := Bitmap;
+  FBitmapImageList[c].SelfReleased := True;
 
   ElvMain.Items[index].Invalidate(False);
 
@@ -2845,13 +2836,8 @@ begin
    ElvMain.Items[index].Data:=TDataObject.Create;
    TDataObject(ElvMain.Items[index].Data).Include:=Include;
   end;
-  if FBitmapImageList[c].IsBitmap then
-  FBitmapImageList[c].Bitmap.Free else
-  if FBitmapImageList[c].SelfReleased then
-  FBitmapImageList[c].Icon.Free;
-  FBitmapImageList[c].Icon:=Icon;
+  FBitmapImageList[c].Graphic := Icon;
   FBitmapImageList[c].SelfReleased:=true;
-
 
   ElvMain.Items[index].Invalidate(False);
 
@@ -7304,13 +7290,14 @@ procedure TExplorerForm.EasyListview1ItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  b : TBitmap;
-  ThBitmap : TBitmap;
+  ThGraphic : TGraphic;
   W, H, index : Integer;
   Exists : Integer;
   X, Y : Integer;
+  CTD, CBD, DY : Integer;
   ImageW, ImageH : Integer;
   Rating : Integer;
+  ClientRect : TRect;
 begin
   if Item.Data = nil then
     Exit;
@@ -7318,18 +7305,41 @@ begin
     Exit;
 
   Index := ItemIndexToMenuIndex(Item.Index);
-  ThBitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
+  ThGraphic := FBitmapImageList[Item.ImageIndex].Graphic;
 
   W := ARect.Right - ARect.Left;
   H := ARect.Bottom - ARect.Top;
-  ImageW := ThBitmap.Width;
-  ImageH := ThBitmap.Height;
+  ImageW := ThGraphic.Width;
+  ImageH := ThGraphic.Height;
   ProportionalSize(W, H, ImageW, ImageH);
 
   X := ARect.Left + W div 2 - ImageW div 2;
   Y := ARect.Bottom - ImageH;
 
-  ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThBitmap);
+  if (ThGraphic is TBitmap) and (TBitmap(ThGraphic).PixelFormat = pf32Bit) and HasMMX then
+  begin
+    ClientRect := TEasyListView(Sender).Scrollbars.ViewableViewportRect;
+
+    CTD := 0;
+    CBD := 0;
+    if Y < ClientRect.Top then
+      CTD := ClientRect.Top - Y;
+
+    DY := ClientRect.Top;
+
+    if Y + ThGraphic.Height > ClientRect.Bottom then
+      CBD := ClientRect.Bottom - (Y + ThGraphic.Height);
+
+    if Y - DY < 0 then
+      DY := Y;
+
+    MPCommonUtilities.AlphaBlend(TBitmap(ThGraphic).Canvas.Handle, ACanvas.Handle,
+            Rect(0, CTD, ThGraphic.Width, ThGraphic.Height + CBD), Point(X, Y - DY),
+            cbmPerPixelAlpha, $FF, ColorToRGB(Sender.Color))
+  end
+  else
+    ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThGraphic);
+
   if ProcessedFilesCollection.ExistsFile(FFilesInfo[index].FileName)<>nil then
     DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
 

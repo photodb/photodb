@@ -175,23 +175,22 @@ begin
   FEvent := 0;
   FPreviewInProgress := False;
   FThreadPreviewMode := 0;
-  // if ThreadType <> THREAD_TYPE_THREAD_PREVIEW then
   Start;
 end;
 
 procedure TExplorerThread.Execute;
 var
- Found, FilesReadedCount  : integer;
- SearchRec : TSearchRec;
- i : integer;
- DBFolder, DBFolderToSearch, FileMask : String;
- InfoPosition : Integer;
- PrivateFiles : TStringList;
- fa : Integer;
- FE, EM : Boolean;
- crc : cardinal;
- s : string;
- p : Integer;
+  Found, FilesReadedCount: Integer;
+  SearchRec: TSearchRec;
+  I: Integer;
+  DBFolder, DBFolderToSearch, FileMask: string;
+  InfoPosition: Integer;
+  PrivateFiles: TStringList;
+  Fa: Integer;
+  FE, EM: Boolean;
+  Crc: Cardinal;
+  S: string;
+  P: Integer;
 
 begin
   FreeOnTerminate := True;
@@ -246,7 +245,7 @@ begin
         until False;
       end;
       Inc(UpdaterCount);
-      LoadingAllBigImages:=false; //грузятся не все файлы заново а только текущий
+      LoadingAllBigImages := False; //грузятся не все файлы заново а только текущий
       UpdateFile;
       Dec(UpdaterCount);
       Exit;
@@ -627,13 +626,8 @@ end;
 
 procedure TExplorerThread.AddDirectoryImageToExplorer;
 begin
- If not IsTerminated then
- begin
-  if ExplorerInfo.View=LV_THUMBS then
-    FSender.AddBitmap(FFolderBitmap, GUIDParam)
-  else
-    FSender.AddIcon(fIcon, True, GUIDParam);
- end
+  if not IsTerminated then
+    FSender.AddIcon(FIcon, True, GUIDParam);
 end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorerW;
@@ -655,40 +649,26 @@ end;
 procedure TExplorerThread.AddImageFileToExplorer;
 var
   EXT : String;
-  b : boolean;
 begin
- b:=false;
- EXT := AnsiLowerCase(ExtractFileExt(CurrentFile));
- IntIconParam:=0;
- if (EXT='.exe') or (EXT='.scr') then
- begin
-  b:=true;
-  ficon:=TAIcons.Instance.GetIconByExt('file.exe',false,FIcoSize,true);
-  inc(FilesWithoutIcons);
-  IntIconParam:=1;
- end else
- begin
-  if TAIcons.Instance.IsVarIcon(CurrentFile, FIcoSize) then
+  EXT := AnsiLowerCase(ExtractFileExt(CurrentFile));
+  IntIconParam := 0;
+  if (EXT = '.exe') or (EXT = '.scr') then
   begin
-   b:=true;
-   ficon:=TAIcons.Instance.GetIconByExt('file.___',false,FIcoSize,true);
-   inc(FilesWithoutIcons);
-   IntIconParam:=1;
-  end;
- end;
-  if not b then
-    ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false);
+    Ficon := TAIcons.Instance.GetIconByExt('file.exe', False, FIcoSize, True);
+    Inc(FilesWithoutIcons);
+    IntIconParam := 1;
+  end else if TAIcons.Instance.IsVarIcon(CurrentFile, FIcoSize) then
+  begin
+    begin
+      Ficon := TAIcons.Instance.GetIconByExt('file.___', False, FIcoSize, True);
+      Inc(FilesWithoutIcons);
+      IntIconParam := 1;
+    end;
+  end else
+    Ficon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
 
- if ExplorerInfo.View=LV_THUMBS then
- begin
-  MakeTempBitmapSmall;
-  IconParam:=ficon;
-  SynchronizeEx(DrawImageIconSmall);
-  ficon.free;
- end;
-
- SynchronizeEx(AddImageFileImageToExplorer);
- SynchronizeEx(AddImageFileItemToExplorer);
+  SynchronizeEx(AddImageFileImageToExplorer);
+  SynchronizeEx(AddImageFileItemToExplorer);
 end;
 
 procedure TExplorerThread.DrawImageIcon;
@@ -706,11 +686,7 @@ end;
 procedure TExplorerThread.AddImageFileImageToExplorer;
 begin
   if not IsTerminated then
-  begin
-    if ExplorerInfo.View=LV_THUMBS then
-    FSender.AddBitmap(TempBitmap, GUIDParam) else
-    FSender.AddIcon(fIcon,true,GUIDParam);
-  end;
+    FSender.AddIcon(FIcon, True, GUIDParam);
 end;
 
 procedure TExplorerThread.AddIconFileImageToExplorer;
@@ -956,7 +932,7 @@ begin
                 OK := false;
               if OK then
               begin
-                if Nbr<4 then
+                if Nbr < 4 then
                 begin
                   inc(Nbr);
                   RecNos[Nbr] := Query.RecNo;
@@ -1080,7 +1056,7 @@ begin
         try
           JPEGScale(fJpeg, SmallImageSize, SmallImageSize);
           AssignJpeg(FBmp, FJpeg);
-          fJpeg.Free;
+          F(fJpeg);
           fbmp.PixelFormat := pf24bit;
           ApplyRotate(fbmp, Query.FieldByName('Rotated').AsInteger);
 
@@ -1179,8 +1155,8 @@ begin
 
    Bit32 := TBitmap.Create;
    try
-     LoadPNGImage32bit(FullFolderPicture, Bit32, Theme_ListColor);
-     StretchCoolW(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, Bitmap);
+     LoadPNGImageTransparent(FullFolderPicture, Bit32);
+     StretchCoolW32(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, Bitmap);
    finally
      Bit32.Free;
     end;
@@ -1189,13 +1165,13 @@ end;
 
 procedure TExplorerThread.DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
 begin
- If not fFastDirectoryLoading then
- if ExplorerInfo.SaveThumbNailsForFolders then
- begin
-  fFolderImages.Images[FcountOfFolderImage]:=TBitmap.create;
-  AssignBitmap(fFolderImages.Images[FcountOfFolderImage], Fbmp);
- end;
- StretchCoolW(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Source.Width, Source.Height), Source, Bitmap);
+  if not fFastDirectoryLoading then
+  if ExplorerInfo.SaveThumbNailsForFolders then
+  begin
+    FFolderImages.Images[FcountOfFolderImage] := TBitmap.create;
+    AssignBitmap(FFolderImages.Images[FcountOfFolderImage], FBmp);
+  end;
+  StretchCoolW24To32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Source.Width, Source.Height), Source, Bitmap);
 end;
 
 procedure TExplorerThread.ReplaceFolderImage;
@@ -1282,32 +1258,24 @@ end;
 
 procedure TExplorerThread.MakeFolderImage(Folder: String);
 begin
-  ficon:=TAIcons.Instance.GetIconByExt(Folder,true, FIcoSize,false);
-  if ExplorerInfo.View=LV_THUMBS then
-  begin
-   SynchronizeEx(MakeFolderBitmap);
-   ficon.Free;
-  end else
-  begin
-   //icon present and its all!
-  end;
+  FIcon:=TAIcons.Instance.GetIconByExt(Folder,true, FIcoSize,false);
 end;
 
 procedure TExplorerThread.MakeTempBitmap;
 begin
- TempBitmap := Tbitmap.Create;
- TempBitmap.PixelFormat := pf24Bit;
- TempBitmap.Width := ExplorerInfo.PictureSize;
- TempBitmap.Height := ExplorerInfo.PictureSize;
+  TempBitmap := Tbitmap.Create;
+  TempBitmap.PixelFormat := Pf24Bit;
+  TempBitmap.Width := ExplorerInfo.PictureSize;
+  TempBitmap.Height := ExplorerInfo.PictureSize;
 end;
 
 procedure TExplorerThread.MakeTempBitmapSmall;
 begin
- TempBitmap:=Tbitmap.Create;
- TempBitmap.PixelFormat:=pf24Bit;
- TempBitmap.Width:=FIcoSize;
- TempBitmap.Height:=FIcoSize;
- FillRectNocanvas(TempBitmap, Theme_ListColor);
+  TempBitmap := Tbitmap.Create;
+  TempBitmap.PixelFormat := Pf24Bit;
+  TempBitmap.Width := FIcoSize;
+  TempBitmap.Height := FIcoSize;
+  FillRectNocanvas(TempBitmap, Theme_ListColor);
 end;
 
 function TExplorerThread.FindInQuery(FileName: String) : Boolean;
@@ -1417,16 +1385,16 @@ procedure TExplorerThread.LoadMyComputerFolder;
 Var
   i : Integer;
   DS :  TDriveState;
-  oldMode: Cardinal;
+  OldMode: Cardinal;
 begin
   HideProgress;
   SynchronizeEx(BeginUpdate);
   ShowInfo(TEXT_MES_READING_MY_COMPUTER, 1, 0);
   FFiles := TExplorerFileInfos.Create;
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  for I := ord('C') to ord('Z') do
-  if (GetDriveType(PChar(Chr(i)+':\'))=2) or (GetDriveType(pchar(Chr(i)+':\'))=3) or (GetDriveType(PChar(Chr(i)+':\'))=5) then
-    AddOneExplorerFileInfo(FFiles,Chr(i)+':\', EXPLORER_ITEM_DRIVE, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  for I := Ord('C') to Ord('Z') do
+    if (GetDriveType(PChar(Chr(I) + ':\'))=2) or (GetDriveType(PChar(Chr(i)+':\'))=3) or (GetDriveType(PChar(Chr(i)+':\'))=5) then
+      AddOneExplorerFileInfo(FFiles, Chr(i)+':\', EXPLORER_ITEM_DRIVE, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
 
   AddOneExplorerFileInfo(FFiles,TEXT_MES_NETWORK, EXPLORER_ITEM_NETWORK, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
   SynchronizeEx(InfoToExplorerForm);
@@ -1434,28 +1402,25 @@ begin
   begin
     if FFiles[I].FileType = EXPLORER_ITEM_DRIVE then
     begin
-      GUIDParam := FFiles[i].SID;
-      CurrentFile := FFiles[i].FileName;
+      GUIDParam := FFiles[I].SID;
+      CurrentFile := FFiles[I].FileName;
       MakeFolderImage(CurrentFile);
-      DS := Dolphin_DB.DriveState(AnsiString(CurrentFile)[1]);
+      DS := DriveState(AnsiString(CurrentFile)[1]);
       if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-        DriveNameParam:=GetCDVolumeLabel(CurrentFile[1])+' ('+CurrentFile[1]+':)'
+        DriveNameParam := GetCDVolumeLabel(CurrentFile[1]) + ' (' + CurrentFile[1] + ':)'
       else
-        DriveNameParam:=MrsGetFileType(CurrentFile[1]+':\')+' ('+CurrentFile[1]+':)';
+        DriveNameParam := MrsGetFileType(CurrentFile[1] + ':\') + ' (' + CurrentFile[1] + ':)';
       AddDriveToExplorer;
     end;
-    if FFiles[i].FileType=EXPLORER_ITEM_NETWORK then
+    if FFiles[I].FileType = EXPLORER_ITEM_NETWORK then
     begin
       GUIDParam := FFiles[I].SID;
       CurrentFile := FFiles[I].FileName;
 
       IconParam := nil;
       FindIcon(DBKernel.IconDllInstance, 'NETWORK', FIcoSize, 32, IconParam);
-      if ExplorerInfo.View <> LV_THUMBS then
-        fIcon := IconParam; //for not-thumbnails views
+      FIcon := IconParam;
       MakeImageWithIcon;
-      if ExplorerInfo.View = LV_THUMBS then
-        IconParam.Free;
     end;
   end;
  SetErrorMode(oldMode);
@@ -1490,11 +1455,8 @@ begin
       IconParam := nil;
       FindIcon(DBKernel.IconDllInstance,'WORKGROUP',FIcoSize,32,IconParam);
 
-      if ExplorerInfo.View<>LV_THUMBS then
-        fIcon:=IconParam; //for not-thumbnails views
+      fIcon:=IconParam;
       MakeImageWithIcon;
-      if ExplorerInfo.View=LV_THUMBS then
-       IconParam.Free;
 
     end;
   finally
@@ -1506,13 +1468,8 @@ end;
 
 procedure TExplorerThread.MakeImageWithIcon;
 begin
- if ExplorerInfo.View=LV_THUMBS then
- begin
-  MakeTempBitmapSmall;
-  SynchronizeEx(DrawImageIconSmall);
- end;
- SynchronizeEx(AddImageFileImageToExplorer);
- SynchronizeEx(AddImageFileItemToExplorer);
+  SynchronizeEx(AddImageFileImageToExplorer);
+  SynchronizeEx(AddImageFileItemToExplorer);
 end;
 
 procedure TExplorerThread.LoadWorkgroupFolder;
@@ -1550,11 +1507,8 @@ begin
      IconParam := nil;
      FindIcon(DBKernel.IconDllInstance,'COMPUTER',FIcoSize,32,IconParam);
 
-     if ExplorerInfo.View<>LV_THUMBS then
-       fIcon:=IconParam; //for not-thumbnails views
+     FIcon:=IconParam;
      MakeImageWithIcon;
-     if ExplorerInfo.View=LV_THUMBS then
-       IconParam.Free;
     end;
   finally
     FFiles.Free;
@@ -1587,7 +1541,7 @@ begin
         Exit;
       end;
       for i:=0 to ShareList.Count-1 do
-        AddOneExplorerFileInfo(FFiles,ShareList[i], EXPLORER_ITEM_SHARE, -1, GetGUID,0,0,0,0,0,'','','',0,false,false,true);
+        AddOneExplorerFileInfo(FFiles, ShareList[I], EXPLORER_ITEM_SHARE, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0, False, False, True);
       SynchronizeEx(InfoToExplorerForm);
     finally
       ShareList.Free;
@@ -1598,14 +1552,9 @@ begin
       CurrentFile := FFiles[i].FileName;
 
       IconParam:=nil;
-
       FindIcon(DBKernel.IconDllInstance, 'SHARE', FIcoSize, 32, IconParam);
-
-      if ExplorerInfo.View<>LV_THUMBS then
-        fIcon:=IconParam; //for not-thumbnails views
+      FIcon:=IconParam;
       MakeImageWithIcon;
-      if ExplorerInfo.View=LV_THUMBS then
-        IconParam.Free;
     end;
   finally
     FFiles.Free;
@@ -1689,29 +1638,18 @@ end;
 
 procedure TExplorerThread.ReplaceImageInExplorerB;
 begin
-  if ExplorerInfo.View=LV_THUMBS then
+  if TempBitmap <> nil then
   begin
     FSender.ReplaceBitmap(TempBitmap, GUIDParam, True, BooleanParam)
   end else
-    FSender.ReplaceIcon(fIcon,GUIDParam,true);
+    FSender.ReplaceIcon(FIcon, GUIDParam, true);
 end;
 
 procedure TExplorerThread.MakeIconForFile;
 begin
- MakeTempBitmapSmall;
- FillRectNoCanvas(TempBitmap,Dolphin_DB.Theme_ListColor);
-
- ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false);
- if self.ExplorerInfo.View=LV_THUMBS then
- begin
-  IconParam:=ficon;
-  try
-  SynchronizeEx(DrawImageIconSmall);
-  except
-  end;
-  ficon.free;
- end;
- SynchronizeEx(ReplaceImageInExplorerB);
+  TempBitmap := nil;
+  FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
+  SynchronizeEx(ReplaceImageInExplorerB);
 end;
 
 procedure TExplorerThread.UpdateSimpleFile;

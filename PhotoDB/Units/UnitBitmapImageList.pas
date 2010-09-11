@@ -2,20 +2,21 @@ unit UnitBitmapImageList;
 
 interface
 
-uses Classes, Graphics;
+uses Classes, Graphics, uMemory;
 
 type
   TBitmapImageListImage = class
   private
     function GetGraphic: TGraphic;
-  published
+    procedure SetGraphic(const Value: TGraphic);
   public
     Bitmap : TBitmap;
     IsBitmap : Boolean;
     Icon : TIcon;
     SelfReleased : Boolean;
     Ext : string;
-    property Graphic : TGraphic read GetGraphic;
+    constructor Create;
+    property Graphic : TGraphic read GetGraphic write SetGraphic;
  end;
 
 type
@@ -64,9 +65,7 @@ var
   Item : TBitmapImageListImage;
 begin      
   Item := TBitmapImageListImage.Create;
-  Item.Bitmap := nil;
-  Item.Icon := Icon;
-  Item.IsBitmap := False;
+  Item.Graphic := Icon;
   Item.SelfReleased := SelfReleased;
   Item.Ext := Ext;
   FImages.Add(Item);
@@ -74,22 +73,11 @@ end;
 
 procedure TBitmapImageList.Clear;
 var
-  I : integer;
-  Item : TBitmapImageListImage;
+  I : Integer;
 begin
   for I := 0 to FImages.Count - 1 do
-  begin
-    Item := FImages[I];
-    if Item.SelfReleased then
-    begin
-      if Item.Bitmap <> nil then
-        Item.Bitmap.Free;
-    end else
-    begin
-      if Item.Icon <> nil then
-        Item.Icon.Free;
-    end;
-  end;
+    TBitmapImageListImage(FImages[I]).Graphic := nil;
+
   FImages.Clear;
 end;
 
@@ -109,13 +97,7 @@ var
   Item : TBitmapImageListImage;
 begin
   Item := FImages[Index];
-
-  if Item.Bitmap <> nil then
-    Item.Bitmap.Free;
-    
-  if Item.SelfReleased and (Item.Icon <> nil) then
-    Item.Icon.Free;
-
+  Item.Graphic := nil;
   Item.Free;
 
   FImages.Delete(Index);
@@ -136,12 +118,34 @@ end;
 
 { TBitmapImageListImage }
 
+constructor TBitmapImageListImage.Create;
+begin
+  Bitmap := nil;
+  Icon := nil;
+  SelfReleased := False;
+  IsBitmap := True;
+end;
+
 function TBitmapImageListImage.GetGraphic: TGraphic;
 begin
   if IsBitmap then
     Result := Bitmap
   else
     Result := Icon;
+end;
+
+procedure TBitmapImageListImage.SetGraphic(const Value: TGraphic);
+begin
+  if SelfReleased then
+  begin
+    F(Bitmap);
+    F(Icon);
+  end;
+  IsBitmap := Value is TBitmap;
+  if IsBitmap then
+    Bitmap := Value as TBitmap
+  else
+    Icon := Value as TIcon;
 end;
 
 end.
