@@ -225,8 +225,6 @@ object PropertiesForm: TPropertiesForm
       Left = 4
       Top = 24
       Caption = 'General'
-      ExplicitWidth = 289
-      ExplicitHeight = 15
       DesignSize = (
         297
         344)
@@ -530,7 +528,6 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
         ReadOnly = True
         TabOrder = 8
-        ExplicitWidth = 215
       end
       object LabelPath: TMemo
         Tag = 11
@@ -640,8 +637,6 @@ object PropertiesForm: TPropertiesForm
       Left = 4
       Top = 24
       Caption = 'Groups'
-      ExplicitWidth = 289
-      ExplicitHeight = 15
       object Image3: TImage
         Left = 8
         Top = 8
@@ -1305,13 +1300,11 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 8
         Width = 281
-        Height = 273
+        Height = 255
         Anchors = [akLeft, akTop, akRight, akBottom]
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
         TabOrder = 0
         OnContextPopup = ValueListEditor1ContextPopup
-        ExplicitWidth = 271
-        ExplicitHeight = 327
         ColWidths = (
           100
           175)
@@ -1398,11 +1391,10 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 48
         Width = 281
-        Height = 233
+        Height = 215
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PopupMenu8
         TabOrder = 1
-        ExplicitHeight = 297
       end
     end
   end
@@ -1415,8 +1407,6 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Done'
     TabOrder = 4
     OnClick = BtDoneClick
-    ExplicitLeft = 569
-    ExplicitTop = 648
   end
   object BtSave: TButton
     Left = 131
@@ -1428,8 +1418,6 @@ object PropertiesForm: TPropertiesForm
     Enabled = False
     TabOrder = 3
     OnClick = BtSaveClick
-    ExplicitLeft = 472
-    ExplicitTop = 647
   end
   object Button2: TButton
     Left = 43
@@ -1440,8 +1428,6 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Find Target'
     TabOrder = 2
     OnClick = Button2Click
-    ExplicitLeft = 384
-    ExplicitTop = 647
   end
   object ImageLoadingFile: TDBLoading
     Left = 27
@@ -1581,8 +1567,8 @@ object PropertiesForm: TPropertiesForm
     Left = 424
   end
   object DragImageList: TImageList
-    BlendColor = clFuchsia
-    BkColor = clFuchsia
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
     Left = 488
   end
   object CopyEXIFPopupMenu: TPopupMenu

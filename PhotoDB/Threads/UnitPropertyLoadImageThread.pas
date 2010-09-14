@@ -20,7 +20,6 @@ type
   private
     { Private declarations }
     FOptions: TPropertyLoadImageThreadOptions;
-    FPic: TPicture;
     StrParam: string;
     IntParamW: Integer;
     IntParamH: Integer;
@@ -105,7 +104,7 @@ begin
         FB1.Width := ThSizePropertyPreview;
         FB1.Height := ThSizePropertyPreview;
 
-        if FPic.Graphic.Width > FPic.Graphic.Height then
+        if Graphic.Width > Graphic.Height then
         begin
           FB.Width := ThSizePropertyPreview;
           FB.Height := Round(ThSizePropertyPreview * (Graphic.Height / Graphic.Width));

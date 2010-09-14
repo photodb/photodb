@@ -642,11 +642,13 @@ begin
 
   MouseDowned := False;
   PopupHandled := False;
+
   ListView.BackGround.Enabled := True;
   ListView.BackGround.Tile := False;
   ListView.BackGround.AlphaBlend := True;
   ListView.BackGround.OffsetTrack := True;
   ListView.BackGround.BlendAlpha := 220;
+
   ListView.Font.Color:=0;
   ListView.View:=elsThumbnail;
   ListView.DragKind:=dkDock;
@@ -678,7 +680,6 @@ begin
   ListView.Header.Columns.Add;
   CreateBackground;
 
-  ConvertTo32BitImageList(DragImageList);
   DBKernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   tbStopOperation.Enabled := False;
 
@@ -1656,58 +1657,13 @@ procedure TSearchForm.ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   Pos, MousePos : Tpoint;
-  I, N, MaxH, MaxW, ImH, ImW : integer;
-  TempImage, DragImage : TBitmap;
+  I : Integer;
   SelectedItem, item: TEasyItem;
-  FileName : string;
-  R : TRect;
-  EasyRect : TEasyRectArrayObject;
   Data : TSearchRecord;
-Const
-  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
-
-  function GetPictureSize : integer;
-  var
-    I : Integer;
-    Item : TEasyItem;
-    pass : String;
-    SearchRecord : TSearchRecord;
-  begin
-    Result := Dolphin_DB.ThSize;
-    Item := ListView.Selection.First;
-    for I := 0 to ListView.Selection.Count - 1 do
-    begin
-      SearchRecord := GetSearchRecordFromItemData(Item);
-      if not SearchRecord.Crypted then
-      begin
-        Result := FPictureSize;
-        Exit;
-      end else
-      begin
-        pass:=DBkernel.FindPasswordForCryptImageFile(SearchRecord.FileName);
-        if Pass<>'' then
-        begin
-          Result := FPictureSize;
-          Exit;
-        end;
-      end;
-      Item:=ListView.Selection.Next(Item);
-      if Item = nil then Exit;
-    end;
-  end;
-
-  procedure GetImageByIndex(ListItem : TEasyItem; Bitmap : TBitmap);
-  var
-    SearchRecord : TSearchRecord;
-  begin
-    SearchRecord := GetSearchRecordFromItemData(ListItem);
-    if FBitmapImageList[ListItem.ImageIndex].Bitmap <> nil then
-      Bitmap.Assign(FBitmapImageList[ListItem.ImageIndex].Bitmap);
-    RemoveBlackColor(Bitmap);
-  end;
+  SpotX, SpotY : Integer;
 
 begin
-  PopupHandled:=false;
+  PopupHandled := False;
 
   GetCursorPos(MousePos);
   if DBCanDrag then
@@ -1722,94 +1678,8 @@ begin
       if ListView.Selection.FocusedItem=  nil then
         ListView.Selection.FocusedItem := item;
 
-      //Creating Draw image
-      TempImage := TBitmap.Create;
-      try
-        TempImage.PixelFormat := pf32bit;
-        TempImage.Width := FPictureSize + Min(ListView.Selection.Count, 10) * 7 + 5;
-        TempImage.Height := FPictureSize + Min(ListView.Selection.Count, 10) * 7 + 45 + 1;
-        MaxH := 0;
-        MaxW := 0;
-        TempImage.Canvas.Brush.Color := 0;
-        TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
-
-        if ListView.Selection.Count < 2 then
-        begin
-          DragImage := TBitmap.Create;
-          try
-            if (item <> nil) and (item.ImageIndex <> -1) then
-              GetImageByIndex(item, DragImage)
-            else
-              if ListView.Selection.First <> nil then
-                GetImageByIndex(ListView.Selection.First, DragImage);
-
-            TempImage.Canvas.Draw(0, 0, DragImage);
-            N := 0;
-            MaxH := DragImage.Height;
-            MaxW := DragImage.Width;
-            ImH := DragImage.Height;
-            ImW := DragImage.Width;
-          finally
-            DragImage.Free;
-          end;
-        end else
-        begin
-          SelectedItem := ListView.Selection.First;
-          N := 1;
-          for I := 1 to 9 do
-          begin
-            if SelectedItem <> item then
-            begin
-              DragImage := TBitmap.Create;
-              try
-                GetImageByIndex(SelectedItem, DragImage);
-                TempImage.Canvas.Draw(N, N, DragImage);
-                Inc(N, 7);
-                if DragImage.Height + N > MaxH then
-                  MaxH := DragImage.Height + N;
-                if DragImage.Width + N > MaxW then
-                  MaxW := DragImage.Width + N;
-              finally
-                DragImage.Free;
-              end;
-            end;
-            SelectedItem := ListView.Selection.Next(SelectedItem);
-            if SelectedItem = nil then
-              Break;
-          end;
-          DragImage := TBitmap.Create;
-          try
-            GetImageByIndex(ListView.Selection.FocusedItem, DragImage);
-            TempImage.Canvas.Draw(N, N, DragImage);
-            if DragImage.Height + N > MaxH then
-              MaxH := DragImage.Height + N;
-            if DragImage.Width + N > MaxW then
-              MaxW := DragImage.Width + N;
-            ImH := DragImage.Height;
-            ImW := DragImage.Width;
-          finally
-            DragImage.Free;
-          end;
-        end;
-        if not IsWindowsVista then
-          TempImage.Canvas.Font.Color:=$000010
-        else
-          TempImage.Canvas.Font.Color:=$000001;
-        R := Rect(0, MaxH + 3, MaxW, TempImage.Height);
-        TempImage.Canvas.Brush.Style := bsClear;
-        FileName := ListView.Selection.FocusedItem.Caption;
-        DrawTextA(TempImage.Canvas.Handle, PWideChar(FileName), Length(FileName), R, DrawTextOpt);
-
-        DragImageList.Clear;
-        DragImageList.Height:=TempImage.Height;
-        DragImageList.Width:=TempImage.Width;
-        if not IsWindowsVista then
-          DragImageList.BkColor := 0;
-
-        DragImageList.Add(TempImage,nil);
-      finally
-        TempImage.Free;
-      end;
+      DBDragPoint := ListView.ScreenToClient(DBDragPoint);
+      CreateDragImage(ListView, DragImageList, FBitmapImageList, Item.Caption, DBDragPoint, SpotX, SpotY);
 
       DropFileSource1.Files.Clear;
       for I := 0 to FilesToDrag.Count - 1 do
@@ -1823,14 +1693,8 @@ begin
 
       HintTimer.Enabled := False;
 
-      Item.ItemRectArray(nil, ListView.Canvas, EasyRect);
-
-      DBDragPoint := ListView.ScreenToClient(DBDragPoint);
-
-      ImW := (EasyRect.IconRect.Right - EasyRect.IconRect.Left) div 2 - ImW div 2;
-      ImH := (EasyRect.IconRect.Bottom - EasyRect.IconRect.Top) div 2 - ImH div 2;
-      DropFileSource1.ImageHotSpotX := Min(MaxW, Max(1, DBDragPoint.X - EasyRect.IconRect.Left+ N - ImW));
-      DropFileSource1.ImageHotSpotY := Min(MaXH, Max(1, DBDragPoint.Y - EasyRect.IconRect.Top+ N- ImH + ListView.Scrollbars.ViewableViewportRect.Top));
+      DropFileSource1.ImageHotSpotX := SpotX;
+      DropFileSource1.ImageHotSpotY := SpotY;
       DropFileSource1.ImageIndex := 0;
       DropFileSource1.Execute;
       DBCanDrag := False;
@@ -3744,48 +3608,29 @@ procedure TSearchForm.EasyListViewItemThumbnailDraw(
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
   Data : TSearchRecord;
-  ThBitmap : TBitmap;
-  Rating : Integer;
-  W, H, ImageW, ImageH, X, Y : Integer;
+  Y : Integer;
 begin
   if FListUpdating or (Item.Data = nil) then
     Exit;
 
-{
-    if (Data.CompareResult.ByGistogramm > 0) or (Data.CompareResult.ByPixels > 0) then
-    begin
-      DrawIconEx(TmpBitmap.Canvas.Handle, FPictureSize-16, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_DUBLICAT+1], 16, 16, 0, 0, DI_NORMAL);
-      TmpStr := Format('%d%%\%d%%', [Round(Data.CompareResult.ByPixels), Round(Data.CompareResult.ByGistogramm)]);
-      R1 := Rect(fPictureSize - 16 - TmpBitmap.Canvas.TextWidth(TmpStr) - 3, TmpBitmap.Height - 16,fPictureSize - 16, TmpBitmap.Height);
-      DrawTextA(TmpBitmap.Canvas.Handle, PWideChar(TmpStr), Length(TmpStr), R1, DT_VCENTER + DT_CENTER);
-    end;
- }
+{ //TODO:
+  if (Data.CompareResult.ByGistogramm > 0) or (Data.CompareResult.ByPixels > 0) then
+  begin
+    DrawIconEx(TmpBitmap.Canvas.Handle, FPictureSize-16, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_DUBLICAT+1], 16, 16, 0, 0, DI_NORMAL);
+    TmpStr := Format('%d%%\%d%%', [Round(Data.CompareResult.ByPixels), Round(Data.CompareResult.ByGistogramm)]);
+    R1 := Rect(fPictureSize - 16 - TmpBitmap.Canvas.TextWidth(TmpStr) - 3, TmpBitmap.Height - 16,fPictureSize - 16, TmpBitmap.Height);
+    DrawTextA(TmpBitmap.Canvas.Handle, PWideChar(TmpStr), Length(TmpStr), R1, DT_VCENTER + DT_CENTER);
+  end; }
 
   if Item.ImageIndex < 0 then
     Exit;
 
   Data := TSearchRecord(TDataObject(Item.Data).Data);
 
-  ThBitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
-
-  W := ARect.Right - ARect.Left;
-  H := ARect.Bottom - ARect.Top;
-  ImageW := ThBitmap.Width;
-  ImageH := ThBitmap.Height;
-  ProportionalSize(W, H, ImageW, ImageH);
-
-  X := ARect.Left + W div 2 - ImageW div 2;
-  Y := ARect.Bottom - ImageH;
-
-  ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThBitmap);
-  if ProcessedFilesCollection.ExistsFile(Data.FileName) <> nil then
-    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
-
-  Rating := Data.Rating;
-  if (Data.Rating = 0) and (esosHotTracking in Item.State) then
-    Rating := -1;
-
-  DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, Data.Rotation, Data.Access, Data.FileName, Data.Crypted, Data.Exists, Data.ID);
+  DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
+                     FBitmapImageList, Y,
+                     True, Data.ID, Data.FileName, Data.Rating, Data.Rotation,
+                     Data.Access, Data.Crypted, data.Exists);
 
 end;
 

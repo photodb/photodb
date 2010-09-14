@@ -12,7 +12,8 @@ uses
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
-  uResources, UnitDBCommon, uW7TaskBar, uMemory;
+  uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
+  uListViewUtils;
 
 type
   TRotatingImageInfo = record
@@ -1096,7 +1097,9 @@ procedure TViewer.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
 var
   P : TPoint;
   DragImage : TBitmap;
+  BitmapImageList : TBitmapImageList;
   W, H : Integer;
+  FileName : string;
 begin
   if DBCanDrag then
   begin
@@ -1104,38 +1107,39 @@ begin
     if (Abs(DBDragPoint.X - P.X) > 5) or (Abs(DBDragPoint.Y - P.Y) > 5) then
     begin
       DropFileSource1.Files.Clear;
-      if Length(CurrentInfo.ItemFileNames)>0 then
+      if Length(CurrentInfo.ItemFileNames) > 0 then
       begin
-        DropFileSource1.Files.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
-        DragImageList.Clear;
-        DragImage := TBitmap.Create;
-        try
-          DragImage.PixelFormat := pf24bit;
-          DropFileSource1.ShowImage := not WaitImageTimer.Enabled and FImageExists;
+        FileName := CurrentInfo.ItemFileNames[CurrentFileNumber];
+        DropFileSource1.Files.Add(FileName);
 
-          DragImage.Width := 100;
-          DragImage.Height := 100;
+        BitmapImageList := TBitmapImageList.Create;
+        try
+          DropFileSource1.ShowImage := FImageExists;
           W := FbImage.Width;
           H := FbImage.Height;
-          ProportionalSize(100, 100, W, H);
-          DoResize(W, H, FbImage, DragImage);
-          DragImageList.Width := W;
-          DragImageList.Height := H;
-
-          RemoveBlackColor(DragImage);
-          DragImageList.Add(DragImage, DragImage);
-          DropFileSource1.ImageIndex := 0;
-          DropFileSource1.Execute;
+          ProportionalSize(ThImageSize, ThImageSize, W, H);
+          DragImage := TBitmap.Create;
+          try
+            DoResize(W, H, FbImage, DragImage);
+            BitmapImageList.AddBitmap(DragImage, False);
+            CreateDragImageEx(nil, DragImageList, BitmapImageList, clGradientActiveCaption,
+              clGradientInactiveCaption, clHighlight, Font, ExtractFileName(FileName));
+          finally
+            F(DragImage);
+          end;
         finally
-          DragImage.Free;
+          F(BitmapImageList);
         end;
+
+        DropFileSource1.ImageIndex := 0;
+        DropFileSource1.Execute;
         FormPaint(Self);
       end;
       DBCanDrag := False;
     end;
   end;
 
-  if (Abs(FOldPoint.X-x)<5) and (Abs(FOldPoint.y-y)<5) then
+  if (Abs(FOldPoint.X - X) < 5) and (Abs(FOldPoint.Y - Y) < 5) then
     Exit;
 
   FOldPoint := Point(X, Y);
@@ -1508,6 +1512,7 @@ var
   TempInfo : TOneRecordInfo;
   LoadImage : TPNGGraphic;
   LoadImageBMP : TBitmap;
+  FOldImageExists : Boolean;
 
 const
   text_out = TEXT_MES_GENERATING;
@@ -1520,6 +1525,7 @@ begin
  //Loading:=true;
  FullScreenNow:=false;
  SlideShowNow:=false;
+ FOldImageExists := ImageExists;
  ImageExists:=false;
  ImageFrameTimer.Enabled:=false;
  TW.I.Start('ToolButton1.Enabled');
@@ -1656,7 +1662,7 @@ begin
   begin
    Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
    DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
-
+   FImageExists := FOldImageExists;
    TbRotateCW.Enabled:=TbRotateCCW.Enabled;
   end;
  end;

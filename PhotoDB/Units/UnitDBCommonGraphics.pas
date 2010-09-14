@@ -43,6 +43,9 @@ interface
   procedure Rotate90A(im : TBitmap);
   procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
   procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
+  procedure DrawImageEx32(Dest32, Src32 : TBitmap; X, Y : Integer);
+  procedure DrawImageEx24To32(Dest32, Src24 : TBitmap; X, Y : Integer; NewTransparent : Byte = 0);
+  procedure FillTransparentColor(Bitmap : TBitmap; Color : TColor; TransparentValue : Byte = 0);
   procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
   procedure GrayScale(Image : TBitmap);
   procedure SelectedColor(Image : TBitmap; Color : TColor);
@@ -54,8 +57,235 @@ interface
   procedure SetIconToPictureFromPath(Picture : TPicture; IconPath : string);
   procedure AddIconToListFromPath(ImageList : TImageList; IconPath : string);
   procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : string; AAngle : Integer; Color : TColor; Transparent : Byte);
+  procedure DrawText32Bit(Bitmap32 : TBitmap; Text : string; Font : TFont; ARect : TRect; DrawTextOptions : Cardinal);
+  procedure DrawColorMaskTo32Bit(Dest, Mask : TBitmap; Color : TColor; X, Y : Integer);
+  procedure DrawShadowTo24BitImage(Dest32, Src24 : TBitmap; Transparenty : Byte = 0);
+  procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 0);
+  procedure InverseTransparenty(Bitmap32: TBitmap);
 
 implementation
+
+procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 0);
+var
+  BitRound : TBitmap;
+  PR : PARGB;
+  PD : PARGB32;
+  I, J : Integer;
+  RF, GF, BF, RT, GT, BT, R, G, B, W, W1 : Byte;
+  RB, GB, BB : Byte;
+  S : Integer;
+begin
+  ColorFrom := ColorToRGB(ColorFrom);
+  ColorTo := ColorToRGB(ColorTo);
+  BorderColor := ColorToRGB(BorderColor);
+  RF := GetRValue(ColorFrom);
+  GF := GetGValue(ColorFrom);
+  BF := GetBValue(ColorFrom);
+  RT := GetRValue(ColorTo);
+  GT := GetGValue(ColorTo);
+  BT := GetBValue(ColorTo);
+  RB := GetRValue(BorderColor);
+  GB := GetGValue(BorderColor);
+  BB := GetBValue(BorderColor);
+  if BB = 255 then
+    BB := 254;
+  BorderColor := RGB(RB, GB, BB);
+  Dest32.PixelFormat := pf32Bit;
+  BitRound := TBitmap.Create;
+  try
+    BitRound.PixelFormat := pf24Bit;
+    BitRound.Width := Dest32.Width;
+    BitRound.Height := Dest32.Height;
+    BitRound.Canvas.Brush.Color := clWhite;
+    BitRound.Canvas.Pen.Color := clWhite;
+    BitRound.Canvas.Rectangle(0, 0, Dest32.Width, Dest32.Height);
+    BitRound.Canvas.Brush.Color := clBlack;
+    BitRound.Canvas.Pen.Color := BorderColor;
+    Windows.RoundRect(BitRound.Canvas.Handle, Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, RoundRect, RoundRect);
+
+    for I := 0 to Dest32.Height - 1 do
+    begin
+      PR := BitRound.ScanLine[I];
+      PD := Dest32.ScanLine[I];
+      if (Rect.Top > I) or (I > Rect.Bottom) then
+         Continue;
+
+      W := Round(255 * (I + 1 - Rect.Top) / (Rect.Bottom - Rect.Top));
+      W1 := 255 - W;
+      R := (RF * W + RT * W1 + $7F) div 255;
+      G := (GF * W + GT * W1 + $7F) div 255;
+      B := (BF * W + BT * W1 + $7F) div 255;
+      for J := 0 to Dest32.Width - 1 do
+      begin
+        S := (PR[J].R + PR[J].G + PR[J].B);
+        if S <> 765 then //White
+        begin
+          PD[J].L := 255;
+          //black - gradient
+          if S = 0 then
+          begin
+            PD[J].R := R;
+            PD[J].G := G;
+            PD[J].B := B;
+          end else //border
+          begin
+            PD[J].R := RB;
+            PD[J].G := GB;
+            PD[J].B := BB;
+          end;
+        end;
+      end;
+    end;
+
+  finally
+    BitRound.Free;
+  end;
+end;
+
+procedure DrawShadowTo24BitImage(Dest32, Src24 : TBitmap; Transparenty : Byte = 0);
+var
+  I, J : Integer;
+  PSA : array of PARGB;
+  PDA : array of PARGB32;
+  SH, SW : Integer;
+const
+  SHADOW : array[0..6, 0..6] of byte =
+  ((8,14,22,26,22,14,8),
+  (14,255,255,255,52,28,14),
+  (22,255,255,255,94,52,22),
+  (26,255,255,255,124,66,26),
+  (22,52,94,{124}94,94,52,22),
+  (14,28,52,66,52,28,14),
+  (8,14,22,26,22,14,8));
+
+begin
+  //set new image size
+  Dest32.PixelFormat := pf32Bit;
+  Src24.PixelFormat := pf24Bit;
+  SW := Src24.Width;
+  SH := Src24.Height;
+  Dest32.Width := SW + 4;
+  Dest32.Height := SH + 4;
+  SetLength(PSA, Src24.Height);
+  SetLength(PDA, Dest32.Height);
+
+  //buffer scanlines
+  for I := 0 to Src24.Height - 1 do
+    PSA[I] := Src24.ScanLine[I];
+
+  for I := 0 to Dest32.Height - 1 do
+    PDA[I] := Dest32.ScanLine[I];
+
+  //min size of shadow - 5x5 px
+  //top-left
+  for I := 0 to 2 do
+    for J := 0 to 2 do
+    begin
+      PDA[I][J].R := 0;
+      PDA[I][J].G := 0;
+      PDA[I][J].B := 0;
+      PDA[I][J].L := SHADOW[I, J];
+    end;
+
+  //top-bottom
+  for I := 3 to Src24.Height do
+  begin
+    PDA[I][0].R := 0;
+    PDA[I][0].G := 0;
+    PDA[I][0].B := 0;
+    PDA[I][0].L := SHADOW[3, 0];
+    for J := 0 to 2 do
+    begin
+      PDA[I][J + SW + 1].R := 0;
+      PDA[I][J + SW + 1].G := 0;
+      PDA[I][J + SW + 1].B := 0;
+      PDA[I][J + SW + 1].L := SHADOW[4, 2 - J];
+    end;
+  end;
+
+  //left-right
+  for I := 3 to Src24.Width do
+  begin
+    PDA[0][I].R := 0;
+    PDA[0][I].G := 0;
+    PDA[0][I].B := 0;
+    PDA[0][I].L := SHADOW[0, 3];
+    for J := 0 to 2 do
+    begin
+      PDA[J + SH + 1][I].R := 0;
+      PDA[J + SH + 1][I].G := 0;
+      PDA[J + SH + 1][I].B := 0;
+      PDA[J + SH + 1][I].L := SHADOW[4, 2 - J];
+    end;
+  end;
+
+  //left-bottom
+  for I := 0 to 2 do
+    for J := 0 to 2 do
+    begin
+      PDA[I + SH + 1][J].R := 0;
+      PDA[I + SH + 1][J].G := 0;
+      PDA[I + SH + 1][J].B := 0;
+      PDA[I + SH + 1][J].L := SHADOW[I + 4, J];
+    end;
+
+  //top-right
+  for I := 0 to 2 do
+    for J := 0 to 2 do
+    begin
+      PDA[I][J + SW + 1].R := 0;
+      PDA[I][J + SW + 1].G := 0;
+      PDA[I][J + SW + 1].B := 0;
+      PDA[I][J + SW + 1].L := SHADOW[I, J + 4];
+    end;
+
+  //bottom-right
+  for I := 0 to 2 do
+    for J := 0 to 2 do
+    begin
+      PDA[I + SH + 1][J + SW + 1].R := 0;
+      PDA[I + SH + 1][J + SW + 1].G := 0;
+      PDA[I + SH + 1][J + SW + 1].B := 0;
+      PDA[I + SH + 1][J + SW + 1].L := SHADOW[I + 4, J + 4];
+    end;
+
+  //and draw image
+  for I := 0 to Src24.Height - 1 do
+  begin
+    for J := 0 to Src24.Width - 1 do
+    begin
+      PDA[I + 1][J + 1].R := PSA[I][J].R;
+      PDA[I + 1][J + 1].G := PSA[I][J].G;
+      PDA[I + 1][J + 1].B := PSA[I][J].B;
+      PDA[I + 1][J + 1].L := 255;
+    end;
+  end;
+end;
+
+procedure DrawText32Bit(Bitmap32 : TBitmap; Text : string; Font : TFont; ARect : TRect; DrawTextOptions : Cardinal);
+var
+  I, J : Integer;
+  P : PARGB;
+  Bitmap : TBitmap;
+  R : TRect;
+begin
+  Bitmap32.PixelFormat := pf32bit;
+  Bitmap := TBitmap.Create;
+  try
+    Bitmap.PixelFormat := pf24Bit;
+    Bitmap.Canvas.Font.Assign(Font);
+    Bitmap.Canvas.Font.Color := ClBlack;
+    Bitmap.Canvas.Brush.Color := clWhite;
+    Bitmap.Canvas.Pen.Color := clWhite;
+    Bitmap.Width := ARect.Right - ARect.Left;
+    Bitmap.Height := ARect.Bottom - ARect.Top;
+    R := Rect(0, 0, Bitmap.Width, Bitmap.Height);
+    DrawText(Bitmap.Canvas.Handle, PWideChar(Text), Length(Text), R, DrawTextOptions);
+    DrawColorMaskTo32Bit(Bitmap32, Bitmap, Font.Color, ARect.Left, ARect.Top);
+  finally
+    Bitmap.Free;
+  end;
+end;
 
 procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : string; AAngle : Integer; Color : TColor; Transparent : Byte);
 var
@@ -502,6 +732,132 @@ begin
   end;
 end;
 
+procedure DrawColorMaskTo32Bit(Dest, Mask : TBitmap; Color : TColor; X, Y : Integer);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW  : integer;
+  pS : PARGB;
+  pD : PARGB32;
+  R, G, B, W, W1 : Byte;
+begin
+  Dest.PixelFormat := pf32bit;
+  Mask.PixelFormat := pf24bit;
+  Color := ColorToRGB(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+  DH := Dest.Height;
+  DW := Dest.Width;
+  SH := Mask.Height;
+  SW := Mask.Width;
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS := Mask.ScanLine[I];
+    pD := Dest.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;
+      if (XD >= DW) then
+        Break;
+
+      W1 := pS[J].R;
+      W := 255 - W1;
+      pD[XD].R := (R * W + pD[XD].R * W1 + $7F) div $FF;
+      pD[XD].G := (G * W + pD[XD].G * W1 + $7F) div $FF;
+      pD[XD].B := (B * W + pD[XD].B * W1 + $7F) div $FF;
+      pD[XD].L := ($FF * W + pD[XD].L * W1 + $7F) div $FF;
+    end;
+  end;
+end;
+
+procedure DrawImageEx24To32(Dest32, Src24 : TBitmap; X, Y : Integer; NewTransparent : Byte = 0);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW  : integer;
+  pS : PARGB;
+  pD : PARGB32;
+begin
+  DH := Dest32.Height;
+  DW := Dest32.Width;
+  SH := Src24.Height;
+  SW := Src24.Width;
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS := Src24.ScanLine[I];
+    pD := Dest32.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;
+      if (XD >= DW) then
+        Break;
+      pD[XD].R := pS[J].R;
+      pD[XD].G := pS[J].G;
+      pD[XD].B := pS[J].B;
+      pD[XD].L := NewTransparent;
+    end;
+  end;
+end;
+
+procedure InverseTransparenty(Bitmap32: TBitmap);
+var
+  I, J : Integer;
+  P : PARGB32;
+begin
+  Bitmap32.PixelFormat := pf32Bit;
+  for I := 0 to Bitmap32.Height - 1 do
+  begin
+    P := Bitmap32.ScanLine[I];
+    for J := 0 to Bitmap32.Width - 1 do
+      P[J].L := 255 - P[J].L;
+  end;
+end;
+
+procedure DrawImageEx32(Dest32, Src32 : TBitmap; X, Y : Integer);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW  : Integer;
+  W1, W : Byte;
+  pD, pS : PARGB32;
+begin
+  DH := Dest32.Height;
+  DW := Dest32.Width;
+  SH := Src32.Height;
+  SW := Src32.Width;
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS := Src32.ScanLine[I];
+    pD := Dest32.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;
+      if (XD >= DW) then
+        Break;
+
+      W1 := pS[J].L;
+      W := 255 - W1;
+      pD[XD].R := (pD[XD].R * W + pS[J].R * W1 + $7F) div $FF;
+      pD[XD].G := (pD[XD].G * W + pS[J].G * W1 + $7F) div $FF;
+      pD[XD].B := (pD[XD].B * W + pS[J].B * W1 + $7F) div $FF;
+      pD[XD].L := Max(W1, PD[XD].L);
+    end;
+  end;
+end;
+
 procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
 var
   I, J,
@@ -583,6 +939,7 @@ var
   S : PRGB32;
   D : PRGB;
 begin
+  BackGroundColor := ColorToRGB(BackGroundColor);
   R := GetRValue(BackGroundColor);
   G := GetGValue(BackGroundColor);
   B := GetBValue(BackGroundColor);
@@ -618,12 +975,36 @@ begin
   end;
 end;
 
+procedure FillTransparentColor(Bitmap : TBitmap; Color : TColor; TransparentValue : Byte = 0);
+var
+  I, J : integer;
+  p : PARGB32;
+  R, G, B : Byte;
+begin
+  Bitmap.PixelFormat := pf32Bit;
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+  for I := 0 to Bitmap.Height - 1 do
+  begin
+    p := Bitmap.ScanLine[I];
+    for J := 0 to Bitmap.Width - 1 do
+    begin
+      p[j].R := R;
+      p[j].G := G;
+      p[j].B := B;
+      p[j].L := TransparentValue;
+    end;
+  end;
+end;
+
 procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
 var
   I, J : integer;
   p : PARGB;
   R, G, B : Byte;
 begin
+  Bitmap.PixelFormat := pf24Bit;
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);

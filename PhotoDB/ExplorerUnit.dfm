@@ -3821,6 +3821,8 @@ object ExplorerForm: TExplorerForm
     Top = 80
   end
   object DragImageList: TImageList
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
     Height = 102
     Width = 102
     Left = 448

@@ -124,7 +124,6 @@ begin
 
               if Password <> '' then
               begin
-                //TODO: Memory leaks!!!
                 F(FGraphic);
                 FGraphic := DeCryptGraphicFile(FFileName, Password)
               end else

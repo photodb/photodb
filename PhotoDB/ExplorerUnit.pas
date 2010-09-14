@@ -17,7 +17,7 @@ uses
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
   uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, DragDropFile;
+  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, DragDropFile, uMemory;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -746,7 +746,7 @@ begin
       LoadFilesFromClipBoard(Effects, Files);
       ToolButton7.Enabled := Files.Count > 0;
     finally
-      Files.free;
+      Files.Free;
     end;
     if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
       ToolButton7.Enabled := False;
@@ -755,45 +755,42 @@ end;
 
 procedure TExplorerForm.CreateBackgrounds;
 var
-  Background, Bitmap, ExplorerBackgroundBMP : TBitmap;
   ExplorerBackground : TPNGGraphic;
+  Bitmap, BitmapList, ExplorerBackgroundBMP : TBitmap;
 begin
-  Background := TBitmap.Create;
+  Bitmap := TBitmap.Create;
   try
-    Background.PixelFormat := pf24bit;
-    Background.Width := 150;
-    Background.Height := 150;
-    FillColorEx(Background, Theme_ListColor);
+    Bitmap.PixelFormat := pf24bit;
+    Bitmap.Width := 150;
+    Bitmap.Height := 150;
+    Bitmap.Canvas.Brush.Color := Theme_ListColor;
+    Bitmap.Canvas.Pen.Color := Theme_ListColor;
+    Bitmap.Canvas.Rectangle(0, 0, 150, 150);
     ExplorerBackground := GetExplorerBackground;
     try
       ExplorerBackgroundBMP := TBitmap.Create;
       try
         LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme_ListColor);
-        ElvMain.BackGround.Image.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
-
-        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ColorToRGB(ScrollBox1.Color));
-        Bitmap:=TBitmap.Create;
-        Bitmap.PixelFormat := pf24bit;
-        Bitmap.Width := 120;
-        Bitmap.Height := 150;
-        Bitmap.Canvas.Brush.Color := ScrollBox1.Color;
-        Bitmap.Canvas.Pen.Color := ScrollBox1.Color;
-        Bitmap.Canvas.Rectangle(0, 0, 120, 150);
         Bitmap.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
 
+        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ScrollBox1.Color);
+
         ScrollBox1.BackGround.PixelFormat := pf24bit;
-        ScrollBox1.BackGround.Width := 120;
+        ScrollBox1.BackGround.Width := 130;
         ScrollBox1.BackGround.Height := 150;
-        DrawTransparent(Bitmap, ScrollBox1.BackGround, 40);
+        ScrollBox1.BackGround.Canvas.Brush.Color := ScrollBox1.Color;
+        ScrollBox1.BackGround.Canvas.Pen.Color := ScrollBox1.Color;
+        ScrollBox1.BackGround.Canvas.Rectangle(0, 0, ScrollBox1.BackGround.Width, ScrollBox1.BackGround.Height);
+        DrawTransparent(ExplorerBackgroundBMP, ScrollBox1.BackGround, 40);
       finally
         ExplorerBackgroundBMP.Free;
-      end;
+       end;
     finally
       ExplorerBackground.Free;
     end;
-    ElvMain.BackGround.Image := Background;
+    ElvMain.BackGround.Image := Bitmap;
   finally
-    Background.Free;
+    Bitmap.Free;
   end;
 end;
 
@@ -815,15 +812,15 @@ begin
   ElvMain.Parent := Self;
   ElvMain.Align := AlClient;
 
-  MouseDowned:=false;
-  PopupHandled:=false;
-  ElvMain.BackGround.Enabled:=true;
-  ElvMain.BackGround.Tile:=false;
-  ElvMain.BackGround.AlphaBlend:=true;
-  ElvMain.BackGround.OffsetTrack:=true;
-  ElvMain.BackGround.BlendAlpha:=220;
+  MouseDowned:=False;
+  PopupHandled := False;
 
-  CreateBackgrounds;
+  ElvMain.BackGround.Enabled := True;
+  ElvMain.BackGround.Tile := False;
+  ElvMain.BackGround.AlphaBlend := True;
+  ElvMain.BackGround.OffsetTrack := True;
+  ElvMain.BackGround.BlendAlpha := 220;
+
 
   ElvMain.HotTrack.Color := Theme_ListFontColor;
   ElvMain.Font.Color := 0;
@@ -859,7 +856,6 @@ begin
   LoadSizes;
 
   TW.I.Start('ConvertTo32BitImageList');
-  ConvertTo32BitImageList(DragImageList);
 
   Activation1.Visible:=not FolderView;
   Help2.Visible:=not FolderView;
@@ -998,6 +994,7 @@ begin
     DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
   end;
   FW7TaskBar := CreateTaskBarInstance;
+  CreateBackgrounds;
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
@@ -1712,19 +1709,10 @@ procedure TExplorerForm.ListView1MouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
   Pos, MousePos : TPoint;
-  Index : Integer;
-  Icon48 : TIcon48;
-  I, N, MaxH, MaxW, ImH, ImW : integer;
-  Image : TBitmapImageListImage;
+  I, Index : Integer;
   LButtonState, RButtonState : SmallInt;
-  TempImage, DragImage, Bitmap : TBitmap;
-  SelectedItem, Item: TEasyItem;
-  FileName : string;
-  R : TRect;
-  EasyRect : TEasyRectArrayObject;
-
-const
-  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
+  Item: TEasyItem;
+  SpotX, SpotY : Integer;
 
 begin
   PopupHandled := False;
@@ -1733,20 +1721,12 @@ begin
   RButtonState := GetAsyncKeystate(VK_RBUTTON);
 
   GetCursorPos(MousePos);
-  if FDBCanDrag and not outdrag then
+  if FDBCanDrag and not OutDrag then
   begin
     if (Abs(FDBDragPoint.X - MousePos.X) > 3) or (Abs(FDBDragPoint.Y - MousePos.Y) > 3) then
     if (RButtonState <> 0) or (LButtonState <> 0) then
     begin
       Pos := ElvMain.ScreenToClient(FDBDragPoint);
-      DragImageList.Clear;
-
-      if ItemAtPos(Pos.X, Pos.Y)<>nil then
-        Image := FBitmapImageList[ItemAtPos(Pos.X, Pos.Y).ImageIndex]
-      else if Listview1Selected<>nil then
-        Image := FBitmapImageList[Listview1Selected.ImageIndex]
-      else
-        Image := nil;
 
       Item := ItemAtPos(Pos.X, Pos.Y);
       if Item = nil then
@@ -1754,138 +1734,14 @@ begin
       if ElvMain.Selection.FocusedItem = nil then
         ElvMain.Selection.FocusedItem := Item;
 
-      DragImageList.Height := ListViewTypeToSize(ListView);
-      DragImageList.Width := ListViewTypeToSize(ListView);
+      FDBDragPoint := ElvMain.ScreenToClient(FDBDragPoint);
+      CreateDragImage(ElvMain, DragImageList, FBitmapImageList, Item.Caption, FDBDragPoint, SpotX, SpotY);
 
-      if Image.IsBitmap then
-      begin
-        //Creating Draw image
-        TempImage := TBitmap.Create;
-        try
-          TempImage.PixelFormat := pf32bit;
-          TempImage.Width := FPictureSize + Min(ElvMain.Selection.Count, 10) * 7 + 5;
-          TempImage.Height := FPictureSize + Min(ElvMain.Selection.Count, 10) * 7 + 45 + 1;
-          MaxH := 0;
-          MaxW := 0;
-          TempImage.Canvas.Brush.Color := 0;
-          TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
-
-          if ElvMain.Selection.Count<2 then
-          begin
-            if item <> nil then
-              Bitmap := FBitmapImageList[item.ImageIndex].Bitmap
-            else if ElvMain.Selection.First <> nil then
-              Bitmap := FBitmapImageList[ElvMain.Selection.First.ImageIndex].Bitmap
-            else
-              Bitmap := nil;
-
-            if Bitmap <> nil then
-            begin
-              DragImage := TBitmap.Create;
-              try
-                DragImage.Assign(Bitmap);
-                RemoveBlackColor(DragImage);
-                TempImage.Canvas.Draw(0, 0, DragImage);
-                N := 0;
-                MaxH := DragImage.Height;
-                MaxW := DragImage.Width;
-                ImH := DragImage.Height;
-                ImW := DragImage.Width;
-              finally
-                DragImage.Free;
-              end;
-            end;
-          end else
-          begin
-            SelectedItem:=ElvMain.Selection.First;
-            N := 1;
-            for I := 1 to 9 do
-            begin
-              if SelectedItem<>item then
-              begin
-                Bitmap := FBitmapImageList[SelectedItem.ImageIndex].Bitmap;
-                if Bitmap <> nil then
-                begin
-                  DragImage := TBitmap.Create;
-                  try
-                    RemoveBlackColor(DragImage);
-                    TempImage.Canvas.Draw(N, N, DragImage);
-                    Inc(N, 7);
-                    if DragImage.Height + N> MaxH then
-                      MaxH := DragImage.Height + N;
-                    if DragImage.Width + N>MaxW then
-                      MaxW := DragImage.Width + N;
-                  finally
-                    DragImage.Free;
-                  end;
-                end;
-              end;
-              SelectedItem := ElvMain.Selection.Next(SelectedItem);
-              if SelectedItem=nil then
-                Break;
-            end;
-            Bitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
-            if Bitmap <> nil then
-            begin
-              DragImage := TBitmap.Create;
-              try
-                RemoveBlackColor(DragImage);
-                TempImage.Canvas.Draw(N, N, DragImage);
-                if DragImage.Height + N > MaxH then
-                  MaxH := DragImage.Height + N;
-                if DragImage.Width + N > MaxW then
-                  MaxW := DragImage.Width + N;
-                ImH := DragImage.Height;
-                ImW := DragImage.Width;
-              finally
-                DragImage.Free;
-              end;
-            end;
-          end;
-          if not IsWindowsVista then
-            TempImage.Canvas.Font.Color:=$000010
-          else
-            TempImage.Canvas.Font.Color:=$000001;
-
-          R := Rect(0, MaxH + 3, MaxW, TempImage.Height);
-
-          Index := ItemIndexToMenuIndex(Item.index);
-          if Index < fFilesInfo.Count then
-            FileName := Item.Caption;
-
-          TempImage.Canvas.Brush.Style := bsClear;
-          DrawTextA(TempImage.Canvas.Handle, PWideChar(FileName), Length(FileName), R, DrawTextOpt);
-
-          DragImageList.Clear;
-          DragImageList.Height := TempImage.Height;
-          DragImageList.Width := TempImage.Width;
-          if not IsWindowsVista then
-          DragImageList.BkColor := $0;
-          DragImageList.Add(TempImage, nil);
-        finally
-          TempImage.Free;
-        end;
-
-        Item.ItemRectArray(nil, ElvMain.Canvas, EasyRect);
-        FDBDragPoint:=ElvMain.ScreenToClient(FDBDragPoint);
-        ImW := (EasyRect.IconRect.Right - EasyRect.IconRect.Left) div 2 - ImW div 2;
-        ImH := (EasyRect.IconRect.Bottom - EasyRect.IconRect.Top) div 2 - ImH div 2;
-        DropFileSourceMain.ImageHotSpotX := Min(MaxW, Max(1, FDBDragPoint.X - EasyRect.IconRect.Left + n - ImW));
-        DropFileSourceMain.ImageHotSpotY := Min(MaXH, Max(1, FDBDragPoint.Y - EasyRect.IconRect.Top+  n - ImH + ElvMain.Scrollbars.ViewableViewportRect.Top));
-      end else
-      begin
-        if ListView=LV_TILE then
-        begin
-          Icon48:=TIcon48.Create;
-          Icon48.Assign(Image.Icon);
-          DragImageList.AddIcon(Icon48);
-          Icon48.Free;
-        end else
-          DragImageList.AddIcon(Image.Icon);
-
-        DropFileSourceMain.ImageHotSpotX := DragImageList.Width div 2;
-        DropFileSourceMain.ImageHotSpotY := DragImageList.Height div 2;
-      end;
+      //TODO: spot point
+      //ImW := (EasyRect.IconRect.Right - EasyRect.IconRect.Left) div 2 - ImW div 2;
+      //ImH := (EasyRect.IconRect.Bottom - EasyRect.IconRect.Top) div 2 - ImH div 2;
+      DropFileSourceMain.ImageHotSpotX := SpotX;//Min(MaxW, Max(1, FDBDragPoint.X - EasyRect.IconRect.Left + n - ImW));
+      DropFileSourceMain.ImageHotSpotY := SpotY;//Min(MaXH, Max(1, FDBDragPoint.Y - EasyRect.IconRect.Top+  n - ImH + ElvMain.Scrollbars.ViewableViewportRect.Top));
 
       SetSelected(nil);
       DropFileSourceMain.Files.Clear;
@@ -1906,9 +1762,9 @@ begin
       SelfDraging := False;
       DropFileTarget1.Files.clear;
       FDBCanDrag := True;
-      ListView1MouseUp(Sender, mbLeft, Shift, X, Y);
+      ListView1MouseUp(Sender, MbLeft, Shift, X, Y);
       SetLength(FListDragItems, 0);
-      FDBCanDrag:=False;
+      FDBCanDrag := False;
     end;
   end;
 
@@ -7290,14 +7146,9 @@ procedure TExplorerForm.EasyListview1ItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  ThGraphic : TGraphic;
-  W, H, index : Integer;
+  Index, Y : Integer;
   Exists : Integer;
-  X, Y : Integer;
-  CTD, CBD, DY : Integer;
-  ImageW, ImageH : Integer;
-  Rating : Integer;
-  ClientRect : TRect;
+  Info : TExplorerFileInfo;
 begin
   if Item.Data = nil then
     Exit;
@@ -7305,52 +7156,11 @@ begin
     Exit;
 
   Index := ItemIndexToMenuIndex(Item.Index);
-  ThGraphic := FBitmapImageList[Item.ImageIndex].Graphic;
+  Info := FFilesInfo[Index];
 
-  W := ARect.Right - ARect.Left;
-  H := ARect.Bottom - ARect.Top;
-  ImageW := ThGraphic.Width;
-  ImageH := ThGraphic.Height;
-  ProportionalSize(W, H, ImageW, ImageH);
-
-  X := ARect.Left + W div 2 - ImageW div 2;
-  Y := ARect.Bottom - ImageH;
-
-  if (ThGraphic is TBitmap) and (TBitmap(ThGraphic).PixelFormat = pf32Bit) and HasMMX then
-  begin
-    ClientRect := TEasyListView(Sender).Scrollbars.ViewableViewportRect;
-
-    CTD := 0;
-    CBD := 0;
-    if Y < ClientRect.Top then
-      CTD := ClientRect.Top - Y;
-
-    DY := ClientRect.Top;
-
-    if Y + ThGraphic.Height > ClientRect.Bottom then
-      CBD := ClientRect.Bottom - (Y + ThGraphic.Height);
-
-    if Y - DY < 0 then
-      DY := Y;
-
-    MPCommonUtilities.AlphaBlend(TBitmap(ThGraphic).Canvas.Handle, ACanvas.Handle,
-            Rect(0, CTD, ThGraphic.Width, ThGraphic.Height + CBD), Point(X, Y - DY),
-            cbmPerPixelAlpha, $FF, ColorToRGB(Sender.Color))
-  end
-  else
-    ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThGraphic);
-
-  if ProcessedFilesCollection.ExistsFile(FFilesInfo[index].FileName)<>nil then
-    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
-
-  Exists := 1;
-  Rating := FFilesInfo[index].Rating;
-  if (FFilesInfo[index].Rating = 0) and (FFilesInfo[index].ID <> 0) and (esosHotTracking in Item.State) then
-    Rating := -1;
-
-  if fFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
-    DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, FFilesInfo[index].Rotate, FFilesInfo[index].Access, FFilesInfo[index].FileName, FFilesInfo[index].Crypted, Exists, FFilesInfo[index].ID);
-
+  DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
+    Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.FileName,
+    Info.Rating, Info.Rotate, Info.Access, Info.Crypted, Exists);
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(

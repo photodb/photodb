@@ -28,7 +28,7 @@ type
     constructor Create;
     destructor Destroy; override;
   public
-    function AddBitmap(Bitmap : TBitmap) : Integer;
+    function AddBitmap(Bitmap : TBitmap; CopyPointer : Boolean = True) : Integer;
     procedure AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '');
     procedure Clear;
     function Count : Integer;
@@ -40,17 +40,22 @@ implementation
 
 { BitmapImageList }
 
-function TBitmapImageList.AddBitmap(Bitmap: TBitmap) : Integer;
+function TBitmapImageList.AddBitmap(Bitmap: TBitmap; CopyPointer : Boolean = True) : Integer;
 var
   Item : TBitmapImageListImage;
 begin    
-  Item := TBitmapImageListImage.Create;  
+  Item := TBitmapImageListImage.Create;
   Item.IsBitmap := True;
   Item.Icon := nil;     
   Item.Ext := '';
   if Bitmap <> nil then
   begin
-    Pointer(Item.Bitmap) := Pointer(Bitmap);
+    if CopyPointer then
+      Pointer(Item.Bitmap) := Pointer(Bitmap)
+    else begin
+      Item.Bitmap := TBitmap.Create;
+      Item.Bitmap.Assign(Bitmap);
+    end;
     Item.SelfReleased := True;
   end else
   begin

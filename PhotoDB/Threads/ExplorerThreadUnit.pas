@@ -3,59 +3,59 @@ unit ExplorerThreadUnit;
 interface
 
 uses
- Jpeg, DB, GraphicEx, ExplorerTypes, ImgList,
- UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, windows, ComCtrls,
- Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
- Dialogs, Controls, ComObj, ActiveX, ShlObj,CommCtrl, Registry,
- GIFImage, Exif, GraphicsBaseTypes, win32crc, RAWImage,  UnitDBDeclare,
- EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
- UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
- uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
- UnitExplorerLoadSIngleImageThread, uConstants, uMemory;
+  Jpeg, DB, GraphicEx, ExplorerTypes, ImgList,
+  UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, Windows, ComCtrls,
+  Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
+  Dialogs, Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
+  GIFImage, Exif, GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
+  EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
+  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
+  uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
+  UnitExplorerLoadSIngleImageThread, uConstants, uMemory;
 
 type
   TExplorerThread = class(TThreadEx)
   private
-  FFolder : String;
-  Fmask : String;
-  ficon : ticon;
-  FCID : TGUID;
-  TempBitmap : TBitmap;
-  fbmp : tbitmap;
-  FSelected : TEasyItem;
-  FFolderBitmap : TBitmap;
-  fFolderImages : TFolderImages;
-  FcountOfFolderImage : Integer;
-  fFastDirectoryLoading : Boolean;
-  FFiles : TExplorerFileInfos;
-  BooleanResult : Boolean;
-  IntParam : integer;
-  BooleanParam : Boolean;
-  StringParam : String;
-  GUIDParam : TGUID;
-  CurrentFile : String;
-  IconParam : TIcon;
-  GraphicParam : TGraphic;
-  FShowFiles : Boolean;
-  FQuery : TDataSet;
-  FInfoText : String;
-  FInfoMax : integer;
-  FInfoPosition : Integer;
-  SetText, Setmax, SetPos : Boolean;
-  ProgressVisible : Boolean;
-  DriveNameParam : String;
-  FThreadType : Integer;
-  StrParam : String;
-  FIcoSize : integer;
-  FilesWithoutIcons, IntIconParam : Integer;
-  CurrentInfoPos : Integer;
-  FVisibleFiles : TStrings;
-  IsBigImage : boolean;
-  LoadingAllBigImages : boolean;
-  FullFolderPicture : TPNGGraphic;
-  FSyncEvent : THandle;
-  FMultiProcessorWork : Boolean;
-  { Private declarations }
+    { Private declarations }
+    FFolder: string;
+    FMask: string;
+    FIcon: Ticon;
+    FCID: TGUID;
+    TempBitmap: TBitmap;
+    FBmp: Tbitmap;
+    FSelected: TEasyItem;
+    FFolderBitmap: TBitmap;
+    FFolderImages: TFolderImages;
+    FCountOfFolderImage: Integer;
+    FFastDirectoryLoading: Boolean;
+    FFiles: TExplorerFileInfos;
+    BooleanResult: Boolean;
+    IntParam: Integer;
+    BooleanParam: Boolean;
+    StringParam: string;
+    GUIDParam: TGUID;
+    CurrentFile: string;
+    IconParam: TIcon;
+    GraphicParam: TGraphic;
+    FShowFiles: Boolean;
+    FQuery: TDataSet;
+    FInfoText: string;
+    FInfoMax: Integer;
+    FInfoPosition: Integer;
+    SetText, Setmax, SetPos: Boolean;
+    ProgressVisible: Boolean;
+    DriveNameParam: string;
+    FThreadType: Integer;
+    StrParam: string;
+    FIcoSize: Integer;
+    FilesWithoutIcons, IntIconParam: Integer;
+    CurrentInfoPos: Integer;
+    FVisibleFiles: TStrings;
+    IsBigImage: Boolean;
+    LoadingAllBigImages: Boolean;
+    FullFolderPicture: TPNGGraphic;
+    FSyncEvent: THandle;
+    FMultiProcessorWork : Boolean;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;

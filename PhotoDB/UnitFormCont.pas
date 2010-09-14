@@ -880,147 +880,70 @@ end;
 procedure TFormCont.ListView1MouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 var
-  p : Tpoint;
-  i, n, MaxH, MaxW, ImH,ImW : integer;
-  TempImage, DragImage : TBitmap;
-  SelectedItem, item: TEasyItem;
-  FileName : string;
+  p : TPoint;
+  I : Integer;
+  SelectedItem, Item: TEasyItem;
   R : TRect;
-  EasyRect : TEasyRectArrayObject;
-Const
-  DrawTextOpt = DT_NOPREFIX+DT_WORDBREAK+DT_CENTER;
-
-  function GetImageByIndex(index : integer) : TBitmap;
-  begin
-    Result := TBitmap.Create;
-    Result.Assign(FBitmapImageList[index].Bitmap);
-    RemoveBlackColor(Result);
-  end;
-
+  SpotX, SpotY : Integer;
 begin
- If DBCanDrag then
- begin
-  GetCursorPos(p);
-  If (abs(DBDragPoint.x-p.x)>3) or (abs(DBDragPoint.y-p.y)>3) then
+  if DBCanDrag then
   begin
-
-   p:=DBDragPoint;
-
-   item:=ItemAtPos(ElvMain.ScreenToClient(p).x,ElvMain.ScreenToClient(p).y);
-   if item=nil then exit;
-   if ElvMain.Selection.FocusedItem=nil then
-   ElvMain.Selection.FocusedItem:=item;
-   //Creating Draw image
-   TempImage:=TBitmap.create;
-   TempImage.PixelFormat:=pf32bit;
-   TempImage.Width:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+5;
-   TempImage.Height:=fPictureSize+Min(ElvMain.Selection.Count,10)*7+45+1;
-   MaxH:=0;
-   MaxW:=0;
-   TempImage.Canvas.Brush.Color := 0;
-   TempImage.Canvas.FillRect(Rect(0, 0, TempImage.Width, TempImage.Height));
-
-   if ElvMain.Selection.Count<2 then
-   begin
-    DragImage:=nil;
-    if item<>nil then
-    DragImage:=GetImageByIndex(item.ImageIndex) else
-    if ElvMain.Selection.First<>nil then
-    DragImage:=GetImageByIndex(ElvMain.Selection.First.ImageIndex);
-
-    TempImage.Canvas.Draw(0,0, DragImage);
-    n:=0;
-    MaxH:=DragImage.Height;
-    MaxW:=DragImage.Width;
-    ImH:=DragImage.Height;
-    ImW:=DragImage.Width;
-    DragImage.Free;
-   end else
-   begin
-    SelectedItem:=ElvMain.Selection.First;
-    n:=1;
-    for i:=1 to 9 do
+    GetCursorPos(P);
+    if (Abs(DBDragPoint.X - P.X) > 3) or (Abs(DBDragPoint.Y - P.Y) > 3) then
     begin
-     if SelectedItem<>item then
-     begin
-      DragImage:=GetImageByIndex(SelectedItem.ImageIndex);
-      TempImage.Canvas.Draw(n,n, DragImage);
-      Inc(n,7);
-      if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
-      if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
-      DragImage.Free;
-     end;
-     SelectedItem:=ElvMain.Selection.Next(SelectedItem);
-     if SelectedItem=nil then break;
+
+      P := DBDragPoint;
+
+      Item := ItemAtPos(ElvMain.ScreenToClient(P).X, ElvMain.ScreenToClient(P).Y);
+      if Item = nil then
+        Exit;
+      if ElvMain.Selection.FocusedItem = nil then
+        ElvMain.Selection.FocusedItem := Item;
+
+      DBDragPoint := ElvMain.ScreenToClient(DBDragPoint);
+      CreateDragImage(ElvMain, DragImageList, FBitmapImageList, Item.Caption, DBDragPoint, SpotX, SpotY);
+
+      DropFileSource1.Files.Clear;
+      for I := 0 to Length(FilesToDrag) - 1 do
+        DropFileSource1.Files.Add(FilesToDrag[I]);
+      ElvMain.Refresh;
+
+      Application.HideHint;
+      if ImHint <> nil then
+        if not UnitImHint.Closed then
+          ImHint.Close;
+      HintTimer.Enabled := False;
+
+      DropFileSource1.ImageHotSpotX := SpotX;
+      DropFileSource1.ImageHotSpotY := SpotY;
+
+      DropFileSource1.ImageIndex := 0;
+      DropFileSource1.Execute;
+      DBCanDrag := False;
     end;
-    DragImage:=GetImageByIndex(ElvMain.Selection.FocusedItem.ImageIndex);
-    TempImage.Canvas.Draw(n,n, DragImage);
-    if DragImage.Height+n>MaxH then MaxH:=DragImage.Height+n;
-    if DragImage.Width+n>MaxW then MaxW:=DragImage.Width+n;
-    ImH:=DragImage.Height;
-    ImW:=DragImage.Width;
-    DragImage.Free;
-   end;
-   if not IsWindowsVista then
-   TempImage.Canvas.Font.Color:=$000010 else
-   TempImage.Canvas.Font.Color:=$000001;
-   R:=Rect(0,MaxH+3,MaxW,TempImage.Height);
-   TempImage.Canvas.Brush.Style:=bsClear;
-   FileName:=ExtractFileName(Data[Item.Index].FileName);
-   DrawTextA(TempImage.Canvas.Handle, PWideChar(FileName), Length(FileName), R, DrawTextOpt);
-
-   DragImageList.Clear;
-   DragImageList.Height:=TempImage.Height;
-   DragImageList.Width:=TempImage.Width;
-   if not IsWindowsVista then
-   DragImageList.BkColor:=0;
-   DragImageList.Add(TempImage,nil);
-   TempImage.Free;
-
-   DropFileSource1.Files.Clear;
-   for i:=0 to Length(FilesToDrag)-1 do
-   DropFileSource1.Files.Add(FilesToDrag[i]);
-   ElvMain.Refresh;
-
-   Application.HideHint;
-   if ImHint<>nil then
-   if not UnitImHint.closed then
-   ImHint.close;
-   HintTimer.Enabled:=false;
-
-   item.ItemRectArray(nil,ElvMain.Canvas,EasyRect);
-
-   DBDragPoint:=ElvMain.ScreenToClient(DBDragPoint);
-
-   ImW:=(EasyRect.IconRect.Right-EasyRect.IconRect.Left) div 2 - ImW div 2;
-   ImH:=(EasyRect.IconRect.Bottom-EasyRect.IconRect.Top) div 2 - ImH div 2;
-   DropFileSource1.ImageHotSpotX:=Min(MaxW,Max(1,DBDragPoint.X-EasyRect.IconRect.Left+n-ImW));
-   DropFileSource1.ImageHotSpotY:=Min(MaXH,Max(1,DBDragPoint.Y-EasyRect.IconRect.Top+n-ImH+ElvMain.Scrollbars.ViewableViewportRect.Top));
-
-   DropFileSource1.ImageIndex := 0;
-   DropFileSource1.Execute;
-   DBCanDrag:=false;
   end;
- end;
 
- if LoadingThItem=ItemAtPos(X,Y) then exit;
- LoadingThItem:=ItemAtPos(X,Y);
- if LoadingThItem= nil then
- begin
-  Application.HideHint;
-  if ImHint<>nil then
-  if not UnitImHint.closed then
-  ImHint.close;
-  HintTimer.Enabled:=false;
- end else begin
-  HintTimer.Enabled:=false;
-  if self.Active then
+  if LoadingThItem = ItemAtPos(X, Y) then
+    Exit;
+  LoadingThItem := ItemAtPos(X, Y);
+  if LoadingThItem = nil then
   begin
-   if DBKernel.Readbool('Options','AllowPreview',True) then
-   HintTimer.Enabled:=true;
-   ShLoadingThItem:=LoadingThItem;
+    Application.HideHint;
+    if ImHint <> nil then
+      if not UnitImHint.Closed then
+        ImHint.Close;
+    HintTimer.Enabled := False;
+  end
+  else
+  begin
+    HintTimer.Enabled := False;
+    if Self.Active then
+    begin
+      if DBKernel.Readbool('Options', 'AllowPreview', True) then
+        HintTimer.Enabled := True;
+      ShLoadingThItem := LoadingThItem;
+    end;
   end;
- end;
 end;
 
 procedure TFormCont.FormDeactivate(Sender: TObject);
@@ -1216,10 +1139,10 @@ end;
 
 procedure TFormCont.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);
- Params.WndParent := GetDesktopWindow;
- with params do
- ExStyle := ExStyle or WS_EX_APPWINDOW;
+  inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with Params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 function TFormCont.ExistsItemByFileName(FileName: string): Boolean;
@@ -1253,9 +1176,8 @@ procedure TFormCont.EasyListview1ItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  Index : Integer;
-  ThBitmap : TBitmap;
-  Rating, W, H, X, Y, ImageW, ImageH : Integer;
+  Y : Integer;
+  Info : TImageContRecord;
 begin
   if Item.Data = nil then
     Exit;
@@ -1263,29 +1185,11 @@ begin
   if Item.ImageIndex < 0 then
     Exit;
 
-  Index:=Item.Index;
+  Info := Data[Item.Index];
 
-  ThBitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
-
-  W := ARect.Right - ARect.Left;
-  H := ARect.Bottom - ARect.Top;
-  ImageW := ThBitmap.Width;
-  ImageH := ThBitmap.Height;
-  ProportionalSize(W, H, ImageW, ImageH);
-
-  X := ARect.Left + W div 2 - ImageW div 2;
-  Y := ARect.Bottom - ImageH;
-
-  ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), ThBitmap);
-  if ProcessedFilesCollection.ExistsFile(Data[Index].FileName) <> nil then
-    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.icons[DB_IC_RELOADING+1],16,16,0,0,DI_NORMAL);
-
-  Rating := Data[Index].Rating;
-  if (Data[Index].Rating = 0) and (Data[Index].ID > 0) and (esosHotTracking in Item.State) then
-    Rating := -1;
-
-  DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, Data[Index].Rotation, Data[Index].Access, Data[Index].FileName, Data[Index].Crypted, Data[Index].Exists, Data[Index].ID);
-
+  DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
+    True, Info.ID, Info.FileName,
+    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Exists);
 end;
 
 procedure TFormCont.EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;

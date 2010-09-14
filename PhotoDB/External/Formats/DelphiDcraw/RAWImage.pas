@@ -197,8 +197,10 @@ var
 begin
   RawBitmap := TFreeWinBitmap.Create;
   try
-    //TODO: FLoadHalfSize param
-    RawBitmap.LoadFromStream(Stream, RAW_PREVIEW);
+    if FLoadHalfSize then
+      RawBitmap.LoadFromStream(Stream, RAW_PREVIEW)
+    else
+      RawBitmap.LoadFromStream(Stream, RAW_DISPLAY);
     RawBitmap.ConvertTo24Bits;
     fWidth := RawBitmap.GetWidth;
     fHeight := RawBitmap.GetHeight;

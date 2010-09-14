@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls, Math,
-  UnitDBCommon, Dolphin_DB;
+  UnitDBCommon, Dolphin_DB, UnitBitmapImageList, UnitDBCommonGraphics, uMemory,
+  MPCommonUtilities, uDBDrawing, TLayered_Bitmap;
 
 type
   TEasyCollectionItemX = class(TEasyCollectionItem)
@@ -18,8 +19,293 @@ function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; Pic
 function GetListViewHeaderHeight(ListView: TListView): Integer;
 procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
 procedure SetLVSelection(ListView : TEasyListView);
+procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : TEasyItem;
+                             ARect : TRect; BImageList : TBitmapImageList; var Y : Integer;
+                             ShowInfo : Boolean; ID : Integer;
+                             FileName : string; Rating : Integer;
+                             Rotate : Integer; Access : Integer;
+                             Crypted : Boolean; var Exists : Integer);
+
+procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList; Caption : string;
+                          DragPoint : TPoint; var SpotX, SpotY : Integer);
+procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string); overload;
+procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string;
+  DragPoint : TPoint; var SpotX, SpotY : Integer); overload;
+
 
 implementation
+
+uses UnitPropeccedFilesSupport, UnitDBKernel;
+
+procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : TEasyItem;
+                             ARect : TRect; BImageList : TBitmapImageList; var Y : Integer;
+                             ShowInfo : Boolean; ID : Integer;
+                             FileName : string; Rating : Integer;
+                             Rotate : Integer; Access : Integer;
+                             Crypted : Boolean; var Exists : Integer);
+
+var
+  Graphic : TGraphic;
+  W, H : Integer;
+  ImageW, ImageH : Integer;
+  X : Integer;
+  TempBmp : TBitmap;
+  CTD, CBD, DY : Integer;
+  ClientRect : TRect;
+begin
+  Graphic := BImageList[Item.ImageIndex].Graphic;
+
+  W := ARect.Right - ARect.Left;
+  H := ARect.Bottom - ARect.Top;
+  ImageW := Graphic.Width;
+  ImageH := Graphic.Height;
+  ProportionalSize(W, H, ImageW, ImageH);
+
+  X := ARect.Left + W div 2 - ImageW div 2;
+  Y := ARect.Bottom - ImageH;
+
+  TempBmp := nil;
+  try
+    if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf24Bit) then
+    begin
+      TempBmp := TBitmap.Create;
+      DrawShadowTo24BitImage(TempBmp, TBitmap(Graphic));
+      Graphic := TempBmp;
+    end;
+
+    if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) and HasMMX then
+    begin
+      ClientRect := ListView.Scrollbars.ViewableViewportRect;
+
+      CTD := 0;
+      CBD := 0;
+      if Y < ClientRect.Top then
+        CTD := ClientRect.Top - Y;
+
+      DY := ClientRect.Top;
+
+      if Y + Graphic.Height > ClientRect.Bottom then
+        CBD := ClientRect.Bottom - (Y + Graphic.Height);
+
+      if Y - DY < 0 then
+        DY := Y;
+
+      MPCommonUtilities.AlphaBlend(TBitmap(Graphic).Canvas.Handle, ACanvas.Handle,
+              Rect(0, CTD, Graphic.Width, Graphic.Height + CBD), Point(X, Y - DY),
+              cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color))
+    end else
+      ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), Graphic);
+
+  finally
+    F(TempBmp);
+  end;
+
+  if ProcessedFilesCollection.ExistsFile(FileName) <> nil then
+    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.Icons[DB_IC_RELOADING + 1], 16, 16, 0, 0, DI_NORMAL);
+
+  Exists := 1;
+  if (Rating = 0) and (ID <> 0) and (esosHotTracking in Item.State) then
+    Rating := -1;
+
+  if ShowInfo then
+    DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, Rotate, Access, FileName, Crypted, Exists, ID);
+end;
+
+procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
+          Caption : string;
+          DragPoint : TPoint; var SpotX, SpotY : Integer);
+begin
+  CreateDragImageEx(ListView, DImageList, SImageList,
+    ListView.Selection.GradientColorBottom, ListView.Selection.GradientColorTop,
+    ListView.Selection.Color, ListView.Font, Caption, DragPoint, SpotX, SpotY);
+end;
+
+procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string);
+var
+  X, Y : Integer;
+  Point : TPoint;
+begin
+  CreateDragImageEx(ListView, DImageList, SImageList, GradientFrom, GradientTo, SelectionColor,
+    Font, Caption, Point, X, Y);
+end;
+
+procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string;
+  DragPoint : TPoint; var SpotX, SpotY : Integer);
+var
+  DragImage, TempImage : TBitmap;
+  SelCount : Integer;
+  SelectedItem : TEasyItem;
+  I, N, MaxH, MaxW, ImH, ImW, FSelCount, ItemsSelected : Integer;
+  W, H : Integer;
+  ImageW, ImageH, X, Y : Integer;
+  Graphic : TGraphic;
+  ARect, R, SelectionRect : TRect;
+  LBitmap : TLayeredBitmap;
+  AFont : TFont;
+  Items : array of TEasyItem;
+  EasyRect : TEasyRectArrayObject;
+
+const
+  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
+  ImageMoveLength = 7;
+  ImagePadding = 10;
+  RoundRadius = 8;
+
+begin
+  TempImage := TBitmap.Create;
+  try
+    TempImage.PixelFormat := pf32bit;
+
+    SelectedItem := nil;
+
+    SetLength(Items, 0);
+    if ListView <> nil then
+    begin
+      ItemsSelected := ListView.Selection.Count;
+      FSelCount := Min(9, ItemsSelected);
+
+      SelectedItem := ListView.Selection.First;
+
+      SelectedItem := ListView.Selection.First;
+      for I := 1 to FSelCount do
+      begin
+        if ListView.Selection.FocusedItem <> SelectedItem then
+        begin
+          SetLength(Items, Length(Items) + 1);
+          Items[Length(Items) - 1] := SelectedItem;
+        end;
+        SelectedItem := ListView.Selection.Next(SelectedItem);
+      end;
+      SetLength(Items, Length(Items) + 1);
+      Items[Length(Items) - 1] := ListView.Selection.FocusedItem;
+      FSelCount := Length(Items);
+    end else
+      ItemsSelected := SImageList.Count;
+
+    FSelCount := Min(9, ItemsSelected);
+
+    MaxH := 50;
+    MaxW := 50;
+    N := ImagePadding - ImageMoveLength;
+    for I := 1 to FSelCount do
+    begin
+      Inc(N, ImageMoveLength);
+
+      if ListView <> nil then
+        Graphic := SImageList[Items[I - 1].ImageIndex].Graphic
+      else
+        Graphic := SImageList[I - 1].Graphic;
+
+      MaxH := Max(MaxH, N + Graphic.Height);
+      MaxW := Max(MaxW, N + Graphic.Width);
+    end;
+    Inc(MaxH, ImagePadding);
+    Inc(MaxW, ImagePadding);
+
+    TempImage.Width := MaxW;
+    TempImage.Height := MaxH + TempImage.Canvas.TextHeight('Iy') + 5 * 2;
+    FillTransparentColor(TempImage, ClBlack, 1);
+    SelectionRect := Rect(0, 0, TempImage.Width, TempImage.Height);
+
+    DrawRoundGradientVert(TempImage, SelectionRect, GradientFrom, GradientTo, SelectionColor, RoundRadius, 1);
+
+    N := ImagePadding - ImageMoveLength;
+
+    if ListView <> nil then
+      SelectedItem := ListView.Selection.First;
+    for I := 1 to FSelCount do
+    begin
+      Inc(N, ImageMoveLength);
+      if ListView <> nil then
+        Graphic := SImageList[Items[I - 1].ImageIndex].Graphic
+      else
+        Graphic := SImageList[I - 1].Graphic;
+
+      if Graphic is TBitmap then
+      begin
+        if TBitmap(Graphic).PixelFormat = pf24bit then
+        begin
+          DragImage := TBitmap.Create;
+          try
+            DrawShadowTo24BitImage(DragImage, Graphic as TBitmap, 1);
+            DrawImageEx32(TempImage, DragImage, N, N);
+          finally
+            DragImage.Free;
+          end;
+        end else if TBitmap(Graphic).PixelFormat = pf32bit then
+        begin
+          DrawImageEx32(TempImage, Graphic as TBitmap, N, N);
+        end;
+      end else if Graphic is TIcon then
+      begin
+        LBitmap := TLayeredBitmap.Create;
+        try
+          LBitmap.LoadFromHIcon(TIcon(Graphic).Handle, TIcon(Graphic).Height, TIcon(Graphic).Width);
+          InverseTransparenty(LBitmap);
+          DrawImageEx32(TempImage, LBitmap, N, N);
+        finally
+          LBitmap.Free;
+        end;
+      end;
+
+    end;
+
+    R := Rect(0, MaxH + 3, MaxW, TempImage.Height);
+
+    DrawText32Bit(TempImage, Caption, Font, R, DrawTextOpt);
+    if ItemsSelected > 1 then
+    begin
+      AFont := TFont.Create;
+      try
+        AFont.Assign(Font);
+        AFont.Style := [fsBold];
+        AFont.Size := AFont.Size + 2;
+        AFont.Color := clHighlightText;
+        W := TempImage.Canvas.TextWidth(IntToStr(ItemsSelected));
+        H := TempImage.Canvas.TextHeight(IntToStr(ItemsSelected));
+        Inc(W, 10);
+        Inc(H, 10);
+        R := Rect(5, 5, 5 + W, 5 + H);
+        DrawRoundGradientVert(TempImage, R, clBlack, clHighlight, clHighlightText, RoundRadius, 1);
+        DrawText32Bit(TempImage, IntToStr(ItemsSelected), AFont, R, DT_CENTER or DT_VCENTER);
+      finally
+        AFont.Free;
+      end;
+    end;
+
+    if ListView <> nil then
+    begin
+      Graphic := SImageList.Items[ListView.Selection.FocusedItem.ImageIndex].Graphic;
+
+      ListView.Selection.FocusedItem.ItemRectArray(nil, ListView.Canvas, EasyRect);
+      ARect := EasyRect.IconRect;
+
+      W := ARect.Right - ARect.Left;
+      H := ARect.Bottom - ARect.Top;
+      ImageW := Graphic.Width;
+      ImageH := Graphic.Height;
+      ProportionalSize(W, H, ImageW, ImageH);
+
+      X := ARect.Left + W div 2 - ImageW div 2;
+      Y := ARect.Bottom - ImageH;
+
+      SpotX := Min(MaxW, Max(1, DragPoint.X + N - X));
+      SpotY := Min(MaxH, Max(1, DragPoint.Y + N - Y + ListView.Scrollbars.ViewableViewportRect.Top));
+    end;
+
+    DImageList.Clear;
+
+    DImageList.Height := TempImage.Height;
+    DImageList.Width := TempImage.Width;
+    DImageList.Add(TempImage, nil);
+  finally
+    TempImage.Free;
+  end;
+end;
 
 procedure SetLVSelection(ListView : TEasyListView);
 begin

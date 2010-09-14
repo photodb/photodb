@@ -12,7 +12,8 @@ uses
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon;
+  UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
+  UnitBitmapImageList, uListViewUtils;
 
 type
  TShowInfoType=(SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -810,23 +811,12 @@ procedure TPropertiesForm.Image1MouseDown(Sender: TObject; Button: TMouseButton;
 var
   DragImage : TBitmap;
   I : Integer;
+  BitmapImageList : TBitmapImageList;
 begin
   if (Button = mbLeft) then
   begin
     DragImageList.Clear;
     DragImageList.Masked := False;
-
-    DragImage := TBitmap.Create;
-    try
-      DragImage.PixelFormat := pf24bit;
-      DragImage.Assign(Image1.Picture.Graphic);
-      DragImageList.Width := DragImage.Width;
-      DragImageList.Height := DragImage.Height;
-      RemoveBlackColor(DragImage);
-      DragImageList.Add(DragImage, nil);
-    finally
-      DragImage.Free;
-    end;
 
     DropFileSource1.Files.Clear;
     if FShowInfoType = SHOW_INFO_IDS then
@@ -841,6 +831,22 @@ begin
     end;
     if DropFileSource1.Files.Count > 0 then
     begin
+
+      BitmapImageList := TBitmapImageList.Create;
+      try
+        DragImage := TBitmap.Create;
+        try
+          DragImage.Assign(Image1.Picture.Graphic);
+          BitmapImageList.AddBitmap(DragImage, False);
+          CreateDragImageEx(nil, DragImageList, BitmapImageList, clGradientActiveCaption,
+            clGradientInactiveCaption, clHighlight, Font, ExtractFileName(DropFileSource1.Files[0]));
+        finally
+          F(DragImage);
+        end;
+      finally
+        F(BitmapImageList);
+      end;
+
       DropFileSource1.ImageIndex := 0;
       DropFileSource1.Execute;
     end;

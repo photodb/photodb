@@ -1524,6 +1524,8 @@ object SearchForm: TSearchForm
     Top = 128
   end
   object DragImageList: TImageList
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
     Height = 102
     Width = 102
     Left = 258

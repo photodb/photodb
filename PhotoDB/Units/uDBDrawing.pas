@@ -34,7 +34,7 @@ begin
   FE:=true;
   if Exists = 0 then
   begin
-    FE:=FileExists(FileName);
+    FE := FileExists(FileName);
     if FE then
       Exists := 1
     else
