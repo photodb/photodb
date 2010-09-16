@@ -13,16 +13,16 @@ type
   HintCeator = class(TThread)
   private
     { Private declarations }
-    Fbmp, Fb: Tbitmap;
+    //Fbmp, Fb: Tbitmap;
     Graphic: TGraphic;
-    Fh, Fw: Integer;
+    //Fh, Fw: Integer;
     FOriginalWidth: Integer;
     FOriginalHeight: Integer;
-    FSelfItem: TObject;
+    //FSelfItem: TObject;
     BooleanResult: Boolean;
-    ValidImages: Integer;
-    GIF: TGIFImage;
-    BitmapParam: TBitmap;
+    //ValidImages: Integer;
+    //GIF: TGIFImage;
+    //BitmapParam: TBitmap;
 
     FStateID: TGUID;
     FInfo : TDBPopupMenuInfoRecord;
@@ -86,7 +86,8 @@ var
   I : Integer;
   Crypted : Boolean;
   FilePass: string;
-  Bitmap : TBitmap;
+  Bitmap, FB : TBitmap;
+  FW, FH : Integer;
 begin
   FreeOnTerminate := True;
 
@@ -147,104 +148,43 @@ begin
       JPEGScale(Graphic, ThHintSize, ThHintSize);
       Bitmap := TBitmap.Create;
       try
-        Bitmap.PixelFormat := pf24Bit;
-        Bitmap.Assign(Graphic);
+        AssignGraphic(Bitmap, Graphic);
+
+        if not CheckThreadState then
+          exit;
+
         F(Graphic);
         FW := Bitmap.Width;
         FH := Bitmap.Height;
         ProportionalSize(ThHintSize, ThHintSize, FW, FH);
 
+        FB := TBitmap.Create;
+        try
+          FB.PixelFormat := Bitmap.PixelFormat;
+
+          DoResize(FW, FH, Bitmap, FB);
+
+          if not CheckThreadState then
+            exit;
+
+          ApplyRotate(FB, FInfo.Rotation);
+
+          if not CheckThreadState then
+            exit;
+
+          Graphic := FB;
+          FB := nil;
+          Synchronize(DoShowHint);
+        finally
+          F(FB);
+        end;
       finally
-        Bitmap.Free;
+        F(Bitmap);
       end;
     end;
-
   finally
     F(Graphic);
   end;
-
-{
-  fb.Width:=fw;
-  fb.Height:=fh;
-  If Max(FOriginalWidth,FOriginalHeight)>ThHintSize then
-  begin
-   fbmp:=Tbitmap.create;
-   fbmp.PixelFormat:=pf24bit;
-   fbmp.Width:=G.Width;
-   fbmp.height:=G.height;
-   if G is TGIFImage then
-   begin
-    GIF:=G as TGIFImage;
-    BitmapParam:=fbmp;
-    Synchronize(GIFDraw);
-   end;
-   if G is TPNGGraphic then
-   begin
-    PNG:=(G as TPNGGraphic);
-    if PNG.PixelFormat=pf32bit then
-    begin
-     LoadPNGImage32bit(PNG,fbmp,Theme_MainColor);
-    end else
-      AssignGraphic(FBMP, G);
-   end;
-
-   if not (G is TPNGGraphic) and not (G is TGIFImage) then
-   begin
-    if (G is TBitmap) then
-    begin
-     if not (G is TPSDGraphic) or PSDTransparent then
-     begin
-      if (G as TBitmap).PixelFormat=pf32bit then
-      begin
-       LoadBMPImage32bit(G as TBitmap,fbmp,Theme_MainColor);
-      end else AssignGraphic(FBMP, G);
-     end else AssignGraphic(FBMP, G);
-    end else AssignGraphic(FBMP, G);
-   end;
-   DoResize(fw,fh,fbmp,fb);
-   fbmp.free;
-  end else
-  begin
-   if G is TGIFImage then
-   begin
-    fb.PixelFormat:=pf24bit;
-    fb.Width:=G.Width;
-    fb.height:=G.height;
-    GIF:=G as TGIFImage;
-    BitmapParam:=fb;
-    Synchronize(GIFDraw);
-   end;
-   if G is TPNGGraphic then
-   begin
-    PNG:=(G as TPNGGraphic);
-    if PNG.PixelFormat=pf32bit then
-    begin
-     fb:=Tbitmap.create;
-     fb.PixelFormat:=pf24bit;
-     fb.Width:=G.Width;
-     fb.height:=G.height;
-     LoadPNGImage32bit(PNG,fb,Theme_MainColor);
-    end else
-      AssignGraphic(FB, G);
-   end;
-   if not (G is TPNGGraphic) and not (G is TGIFImage) then
-   begin
-    if (G is TBitmap) then
-    begin
-     if (G as TBitmap).PixelFormat=pf32bit then
-     begin
-      LoadBMPImage32bit(G as TBitmap,fb,Theme_MainColor);
-     end else AssignGraphic(FB, G);
-    end else AssignGraphic(FB, G);
-   end;
-  end;
-  ApplyRotate(fb, FInfo.Rotation);
-  //Synchronize(DrawHintInfo);
-  if not CheckThreadState then
-    exit;
-  Synchronize(ok);
- end;  }
-
 end;
 
 procedure HintCeator.GIFDraw;
@@ -252,7 +192,7 @@ var
   i : integer;
   FTransparent : Boolean;
 begin
- BitmapParam.Canvas.Pen.Color:=Theme_MainColor;
+ {BitmapParam.Canvas.Pen.Color:=Theme_MainColor;
  BitmapParam.Canvas.Brush.Color:=Theme_MainColor;
  BitmapParam.Canvas.Rectangle(0,0,BitmapParam.Width,BitmapParam.Height);
  for i:=0 to GIF.Images.Count-1 do
@@ -261,7 +201,7 @@ begin
   FTransparent:=GIF.Images[i].Transparent;
   GIF.Images[i].Draw(BitmapParam.Canvas,Rect(0,0,GIF.Width,GIF.Height),FTransparent,false);
   break;
- end;
+ end;  }
 end;
 
 function HintCeator.CheckThreadState: boolean;
@@ -280,13 +220,9 @@ procedure HintCeator.DoShowHint;
 var
   ImHint : TImHint;
 begin
-  if FB <> nil then
-  begin
-    Graphic:= FB;
-    FB := nil;
-  end;
   Application.CreateForm(TImHint, ImHint);
   ImHint.Execute(FOwner, Graphic, FOriginalWidth, FOriginalHeight, FInfo, FPoint, FHintCheckProc);
+  Graphic := nil;
 end;
 
 { THintManager }

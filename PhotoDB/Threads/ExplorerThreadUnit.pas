@@ -989,7 +989,6 @@ begin
       FPrivateFileNames.Free;
     end;
 
-
     Dx:=4;
 
     TempBitmap := TBitmap.Create;
@@ -1057,7 +1056,6 @@ begin
           JPEGScale(fJpeg, SmallImageSize, SmallImageSize);
           AssignJpeg(FBmp, FJpeg);
           F(fJpeg);
-          fbmp.PixelFormat := pf24bit;
           ApplyRotate(fbmp, Query.FieldByName('Rotated').AsInteger);
 
           w := fbmp.Width;
@@ -1104,13 +1102,11 @@ begin
           ProportionalSize(SmallImageSize, SmallImageSize, W, H);
           Fbmp := TBitmap.Create;
           try
-            fbmp.PixelFormat := pf24bit;
             bmp := TBitmap.Create;
             try
               AssignGraphic(BMP, Graphic);
               F(Graphic);
 
-              bmp.PixelFormat := pf24bit;
               DoResize(W, H, BMP, FBMP);
               DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
             finally
@@ -1156,7 +1152,7 @@ begin
    Bit32 := TBitmap.Create;
    try
      LoadPNGImageTransparent(FullFolderPicture, Bit32);
-     StretchCoolW32(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, Bitmap);
+     StretchCoolW32(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, Bitmap, 1);
    finally
      Bit32.Free;
     end;
@@ -1171,7 +1167,10 @@ begin
     FFolderImages.Images[FcountOfFolderImage] := TBitmap.create;
     AssignBitmap(FFolderImages.Images[FcountOfFolderImage], FBmp);
   end;
-  StretchCoolW24To32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Source.Width, Source.Height), Source, Bitmap);
+  if Source.PixelFormat = pf32Bit then
+    StretchCoolW32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Source.Width, Source.Height), Source, Bitmap)
+  else
+    StretchCoolW24To32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Source.Width, Source.Height), Source, Bitmap);
 end;
 
 procedure TExplorerThread.ReplaceFolderImage;

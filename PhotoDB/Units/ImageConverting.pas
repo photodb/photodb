@@ -111,16 +111,17 @@ begin
   else if EXT = 'psp' then
     result := TPSPGraphic
 
-  else if Pos('|' + AnsiUpperCase(EXT) + '|', RAWImages) > -1 then
-    result := TRAWImage
-
   else if EXT = 'png' then
   begin
     if ToSave then
       result := PngImage.TPNGGraphic
     else
       result := GraphicEx.TPNGGraphic;
-  end;
+  end
+
+  else if Pos('|' + AnsiUpperCase(EXT) + '|', RAWImages) > -1 then
+    result := TRAWImage
+
   // PNG_CAN_SAVE MANUALLY processing
   // else if Ext = 'png' then begin if PNG_CAN_SAVE then Result := PngImage.TPNGGraphic else  Result := GraphicEx.TPNGGraphic;  end;
 {$ENDIF}

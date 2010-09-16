@@ -14,7 +14,7 @@ type
   TImHint = class(TDBForm)
     TimerShow: TTimer;
     TimerHide: TTimer;
-    Timer3: TTimer;
+    TimerHintCheck: TTimer;
     ApplicationEvents1: TApplicationEvents;
     DropFileSourceMain: TDropFileSource;
     DragImageList: TImageList;
@@ -31,7 +31,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    procedure Timer3Timer(Sender: TObject);
+    procedure TimerHintCheckTimer(Sender: TObject);
     procedure LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -62,6 +62,7 @@ type
     FClosed : Boolean;
     FWidth : Integer;
     FHeight : Integer;
+    FAlphaBlend : Byte;
     procedure CreateFormImage;
   protected
     function GetFormID : string; override;
@@ -174,12 +175,12 @@ begin
   FFormBuffer.Height := Height;
   FillTransparentColor(FFormBuffer, clBlack, 0);
   DrawRoundGradientVert(FFormBuffer, Rect(0, 0, Width, Height),
-    clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 100);
+    clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 220);
   Bitmap := TBitmap.Create;
 
   TextHeight := Canvas.TextHeight('Iy');
   try
-    DrawShadowTo24BitImage(Bitmap, ImageBuffer);
+    DrawShadowToImage(Bitmap, ImageBuffer);
     DrawImageEx32(FFormBuffer, Bitmap, 5, 5);
     R.Left := 5;
     R.Right := FFormBuffer.Width - 5;
@@ -192,7 +193,7 @@ begin
     R.Bottom := R.Bottom + TextHeight + 5;
     R.Top := R.Top + TextHeight + 5;
     DrawText32Bit(FFormBuffer, SImageSize, Font, R, 0);
-    RenderForm(Self, FFormBuffer, 255);
+    RenderForm(Self, FFormBuffer, FAlphaBlend);
   finally
     Bitmap.Free;
   end;
@@ -221,7 +222,7 @@ begin
   TimerHide.Enabled := False;
   TimerShow.Enabled := False;
   GoIn := False;
-  Timer3.Enabled := True;
+  TimerHintCheck.Enabled := True;
   FDragDrop := True;
   CurrentInfo := Info;
 
@@ -237,9 +238,6 @@ begin
   ProportionalSize(ThHintSize, ThHintSize, Ww, Hh);
 
   ImageBuffer := TBitmap.Create;
-  ImageBuffer.PixelFormat := Pf24bit;
-  ImageBuffer.Width := Width;
-  ImageBuffer.Height := Height;
   AnimatedBuffer := TBitmap.Create;
   AnimatedBuffer.PixelFormat := Pf24bit;
   AnimatedBuffer.Width := G.Width;
@@ -256,7 +254,7 @@ begin
   ClientWidth := FW;
   ClientHeight := FH;
 
-  //WTF?
+  //fix window position
   Rect := Classes.Rect(Pos.X, Pos.Y, Pos.X + 100, Pos.Y + 100);
   if Rect.Top + Fh + 10 > Screen.Height then
     Ft := Rect.Top - 20 - Fh
@@ -273,8 +271,11 @@ begin
   Top := Ft;
   Left := Fl;
 
+  FAlphaBlend := 0;
   if DBKernel.ReadInteger('Options', 'PreviewSwohOptions', 0) = 0 then
-    TimerShow.Enabled := True;
+    TimerShow.Enabled := True
+  else
+    FAlphaBlend := 255;
 
   if Fowner <> nil then
     if Fowner.FormStyle = Fsstayontop then
@@ -286,6 +287,10 @@ begin
     SlideNO := -1;
     ImageFrameTimer.Interval := 1;
     ImageFrameTimer.Enabled := True;
+    ImageBuffer.Width := G.Width;
+    ImageBuffer.Height := G.Height;
+    //Draw first slide
+    ImageFrameTimerTimer(Self);
   end else
   begin
     ImageBuffer.Assign(G);
@@ -324,10 +329,7 @@ begin
   R := Rect(Self.Left, Self.Top, Self.Left + Self.Width, Self.Top + Self.Height);
   Getcursorpos(P);
   if not PtInRect(R, P) then
-  begin
     TimerHide.Enabled := True;
-    // close;
-  end;
 end;
 
 procedure TImHint.Image1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -371,46 +373,43 @@ begin
     DropFileSourceMain.Execute;
     CanClosed := True;
   end;
-  Timer3.Enabled := True;
+  TimerHintCheck.Enabled := True;
 end;
 
 procedure TImHint.TimerShowTimer(Sender: TObject);
 begin
- if DBKernel.readinteger('Options','PreviewSwohOptions',0)=0 then
- begin
-  //AlphaBlendValue:=min(self.AlphaBlendValue+40,255);
-  //if AlphaBlendValue>=255 then
-  TimerShow.Enabled:=false;
- end;
+  FAlphaBlend := Min(FAlphaBlend + 40, 255);
+  if FAlphaBlend >= 255 then
+    TimerShow.Enabled := False;
+  CreateFormImage;
 end;
 
 procedure TImHint.TimerHideTimer(Sender: TObject);
 begin
- if DBKernel.readinteger('Options','PreviewSwohOptions',0)=0{ and self.visible} then
- begin
-  TimerShow.Enabled:=false;
-  //AlphaBlendValue:=max(self.AlphaBlendValue-40,0);
-  if AlphaBlendValue<=0 then
+  TimerShow.Enabled := False;
+  FAlphaBlend := Max(FAlphaBlend - 40, 0);
+  if FAlphaBlend = 0 then
   begin
-   TimerHide.Enabled:=false;
-   close;
-  end;
- end;
+    TimerHide.Enabled:=false;
+    Close;
+  end else
+    CreateFormImage;
 end;
 
 procedure TImHint.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
  if FClosed then
    Exit;
- {
-  if (AlphaBlendValue > 0) and (DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 0) then
+
+  if (FAlphaBlend > 0) and (DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 0) then
   begin
     TimerHide.Enabled := True;
     CanClose := False;
-  end
-  else if DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 1 then
-    RecreateWnd;          }
-  Timer3.Enabled := False;
+  end else
+    if DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 1 then
+      RecreateWnd; //WFT?
+
+  TimerHintCheck.Enabled := False;
   FClosed := True;
 end;
 
@@ -419,7 +418,7 @@ procedure TImHint.Image1ContextPopup(Sender: TObject; MousePos: TPoint;
 var
   MenuInfo: TDBPopupMenuInfo;
 begin
-  Timer3.Enabled := False;
+  TimerHintCheck.Enabled := False;
   FDragDrop := True;
   MenuInfo := TDBPopupMenuInfo.Create;
   MenuInfo.Add(CurrentInfo);
@@ -432,24 +431,24 @@ begin
   FDragDrop := False;
 end;
 
-procedure TImHint.Timer3Timer(Sender: TObject);
+procedure TImHint.TimerHintCheckTimer(Sender: TObject);
 var
-  p : tpoint;
-  r : trect;
+  P: Tpoint;
+  R: Trect;
 begin
- if FClosed then
- begin
-  Timer3.enabled:=false;
-  Exit;
- end;
- if not goin then exit;
- r:=rect(self.left,self.top,self.left+self.width, self.top+self.height);
- getcursorpos(p);
- if not PtInRect(r,p) then
- begin
-  TimerHide.Enabled:=true;
- end;
- GoIn:=false;
+  if FClosed then
+  begin
+    TimerHintCheck.Enabled := False;
+    Exit;
+  end;
+  if not Goin then
+    Exit;
+  R := Rect(Left, Top, Left + Width, Top + Height);
+  Getcursorpos(P);
+  if not PtInRect(R, P) then
+    TimerHide.Enabled := True;
+
+  GoIn := False;
 end;
 
 procedure TImHint.LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -503,71 +502,74 @@ end;
 
 function TImHint.GetNextImageNO: integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=SlideNO;
-  inc(Result);
-  if Result>=im.Images.Count then
-  begin
-   Result:=0;
-  end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetNextImageNOX(Result);
-  end;
+  Im := (AnimatedImage as TGIFImage);
+  Result := SlideNO;
+  Inc(Result);
+  if Result >= Im.Images.Count then
+    Result := 0;
+
+  if Im.Images[Result].Empty then
+    Result := GetNextImageNOX(Result);
+
 end;
 
 function TImHint.GetNextImageNOX(NO: Integer): integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=NO;
-  inc(Result);
-  if Result>=im.Images.Count then
-  begin
-   Result:=0;
-  end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetNextImageNOX(Result);
-  end;
+  Im := (AnimatedImage as TGIFImage);
+  Result := NO;
+  Inc(Result);
+  if Result >= Im.Images.Count then
+    Result := 0;
+
+  if Im.Images[Result].Empty then
+    Result := GetNextImageNOX(Result);
 end;
 
 function TImHint.GetPreviousImageNO: integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=SlideNO;
-  dec(Result);
-  if Result<0 then
-  begin
-   Result:=im.Images.Count-1;
-  end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetPreviousImageNOX(Result);
-  end;
+  Im := (AnimatedImage as TGIFImage);
+  Result := SlideNO;
+  Dec(Result);
+  if Result < 0 then
+    Result := Im.Images.Count - 1;
+
+  if Im.Images[Result].Empty then
+    Result := GetPreviousImageNOX(Result);
 end;
 
 function TImHint.GetPreviousImageNOX(NO: Integer): integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=NO;
-  dec(Result);
-  if Result<0 then
-  begin
-   Result:=im.Images.Count-1;
-  end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetPreviousImageNOX(Result);
-  end;
+  Im := (AnimatedImage as TGIFImage);
+  Result := NO;
+  Dec(Result);
+  if Result < 0 then
+    Result := Im.Images.Count - 1;
+
+  if Im.Images[Result].Empty then
+    Result := GetPreviousImageNOX(Result);
 end;
+
+function TImHint.GetFirstImageNO: integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to (AnimatedImage as TGIFImage).Images.Count - 1 do
+    if not(AnimatedImage as TGIFImage).Images[I].Empty then
+    begin
+      Result := I;
+      Break;
+    end;
+end;
+
 
 procedure TImHint.ImageFrameTimerTimer(Sender: TObject);
 var
@@ -584,88 +586,83 @@ begin
     Exit;
   DisposalMethod := DmNone;
 
- if SlideNO=-1 then
- begin
-  SlideNO:=GetFirstImageNO;
- end else
- begin
-  SlideNO:=GetNextImageNO;
- end;
- r:=(AnimatedImage as TGIFImage).Images[SlideNO].BoundsRect;
- AnimatedBuffer.Canvas.Brush.Color:=Theme_MainColor;
- AnimatedBuffer.Canvas.Pen.Color:=Theme_MainColor;
- im:=(AnimatedImage as TGIFImage);
- TimerEnabled:=false;
- PreviousNumber:=GetPreviousImageNO;
- if im.Animate then
- if im.Images.Count>1 then
- begin
- gsi:=im.Images[SlideNO];
- if gsi.Empty then exit;
- if im.Images[PreviousNumber].Empty then DisposalMethod:=dmNone else
- begin
-  if im.Images[PreviousNumber].GraphicControlExtension<>nil then
-  DisposalMethod:=im.Images[PreviousNumber].GraphicControlExtension.Disposal else
-  DisposalMethod:=dmNone;
- end;
-// DisposalMethod:=dmNone;
- if im.Images[SlideNO].GraphicControlExtension<>nil then
- del:=im.Images[SlideNO].GraphicControlExtension.Delay*10;
- if del=10 then del:=100;
- if del=0 then del:=100;
- TimerEnabled:=True;
- end else
- DisposalMethod:=dmNone;
- if SlideNO=0 then DisposalMethod:=dmBackground else
- if (DisposalMethod=dmBackground) then
- begin
-  bounds_:=im.Images[PreviousNumber].BoundsRect;
-  AnimatedBuffer.Canvas.Pen.Color:=Theme_MainColor;
-  AnimatedBuffer.Canvas.Brush.Color:=Theme_MainColor;
-  AnimatedBuffer.Canvas.Rectangle(bounds_);
- end;
- if DisposalMethod=dmPrevious then
- begin
-  c:=SlideNO;
-  dec(c);
-  if c<0 then
-  c:=im.Images.Count-1;
-  im.Images[c].StretchDraw(AnimatedBuffer.Canvas,r,im.Images[SlideNO].Transparent,false);
- end;
- im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas,r,im.Images[SlideNO].Transparent,false);
+  if SlideNO = -1 then
+    SlideNO := GetFirstImageNO
+  else
+    SlideNO := GetNextImageNO;
 
- ImageBuffer.Canvas.Pen.Color:=Theme_MainColor;
- ImageBuffer.Canvas.Brush.Color:=Theme_MainColor;
- ImageBuffer.Canvas.Rectangle(0,0,ImageBuffer.Width,ImageBuffer.Height);
+  R := (AnimatedImage as TGIFImage).Images[SlideNO].BoundsRect;
+  AnimatedBuffer.Canvas.Brush.Color := Theme_MainColor;
+  AnimatedBuffer.Canvas.Pen.Color := Theme_MainColor;
+  Im := (AnimatedImage as TGIFImage);
+  TimerEnabled := False;
+  PreviousNumber := GetPreviousImageNO;
+  if (Im.Animate) and (Im.Images.Count > 1) then
+  begin
+    Gsi := Im.Images[SlideNO];
+    if Gsi.Empty then
+      Exit;
+    if Im.Images[PreviousNumber].Empty then
+      DisposalMethod := DmNone
+    else begin
+      if Im.Images[PreviousNumber].GraphicControlExtension <> nil then
+        DisposalMethod := Im.Images[PreviousNumber].GraphicControlExtension.Disposal
+      else
+        DisposalMethod := DmNone;
+    end;
 
+    if Im.Images[SlideNO].GraphicControlExtension <> nil then
+      Del := Im.Images[SlideNO].GraphicControlExtension.Delay * 10;
+    if Del = 10 then
+      Del := 100;
+    if Del = 0 then
+      Del := 100;
+    TimerEnabled := True;
+  end
+  else
+    DisposalMethod := DmNone;
+  if SlideNO = 0 then
+    DisposalMethod := DmBackground
+  else if (DisposalMethod = DmBackground) then
+  begin
+    Bounds_ := Im.Images[PreviousNumber].BoundsRect;
+    AnimatedBuffer.Canvas.Pen.Color := Theme_MainColor;
+    AnimatedBuffer.Canvas.Brush.Color := Theme_MainColor;
+    AnimatedBuffer.Canvas.Rectangle(Bounds_);
+  end;
+  if DisposalMethod = DmPrevious then
+  begin
+    C := SlideNO;
+    Dec(C);
+    if C < 0 then
+      C := Im.Images.Count - 1;
+    Im.Images[C].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+  end;
+  Im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+
+  ImageBuffer.Canvas.Pen.Color := Theme_MainColor;
+  ImageBuffer.Canvas.Brush.Color := Theme_MainColor;
+  ImageBuffer.Canvas.Rectangle(0, 0, ImageBuffer.Width, ImageBuffer.Height);
 
   case CurrentInfo.Rotation of
-    DB_IMAGE_ROTATE_0: StretchCoolEx0(0,0,ImageBuffer.Width,ImageBuffer.Height,AnimatedBuffer,ImageBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATE_90: StretchCoolEx90(0,0,ImageBuffer.Height,ImageBuffer.Width,AnimatedBuffer,ImageBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATE_180: StretchCoolEx180(0,0,ImageBuffer.Width,ImageBuffer.Height,AnimatedBuffer,ImageBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATE_270: StretchCoolEx270(0,0,ImageBuffer.Height,ImageBuffer.Width,AnimatedBuffer,ImageBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_0:
+      StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme_MainColor);
+    DB_IMAGE_ROTATE_90:
+      StretchCoolEx90(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme_MainColor);
+    DB_IMAGE_ROTATE_180:
+      StretchCoolEx180(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme_MainColor);
+    DB_IMAGE_ROTATE_270:
+      StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme_MainColor);
   end;
 
-
- DrawHintInfo(ImageBuffer.Canvas.Handle,ImageBuffer.Width,ImageBuffer.Height,CurrentInfo);
- CreateFormImage;
- ImageFrameTimer.Enabled:=false;
- ImageFrameTimer.Interval:=del;
- if not TimerEnabled then ImageFrameTimer.Enabled:=false else
- ImageFrameTimer.Enabled:=true;
-end;
-
-function TImHint.GetFirstImageNO: integer;
-var
-  i : Integer;
-begin
- Result:=-1;
-  for i:=0 to (AnimatedImage as TGIFImage).Images.count-1 do
-  if not (AnimatedImage as TGIFImage).Images[i].Empty then
-  begin
-   Result:=i;
-   break;
-  end;
+  DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
+  CreateFormImage;
+  ImageFrameTimer.Enabled := False;
+  ImageFrameTimer.Interval := Del;
+  if not TimerEnabled then
+    ImageFrameTimer.Enabled := False
+  else
+    ImageFrameTimer.Enabled := True;
 end;
 
 function TImHint.GetFormID: string;

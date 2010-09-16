@@ -39,9 +39,9 @@ object ImHint: TImHint
     Left = 40
     Top = 8
   end
-  object Timer3: TTimer
+  object TimerHintCheck: TTimer
     Interval = 50
-    OnTimer = Timer3Timer
+    OnTimer = TimerHintCheckTimer
     Left = 72
     Top = 8
   end

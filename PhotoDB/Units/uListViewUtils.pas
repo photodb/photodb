@@ -127,7 +127,7 @@ begin
     if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf24Bit) then
     begin
       TempBmp := TBitmap.Create;
-      DrawShadowTo24BitImage(TempBmp, TBitmap(Graphic));
+      DrawShadowToImage(TempBmp, TBitmap(Graphic));
       Graphic := TempBmp;
     end;
 
@@ -263,7 +263,7 @@ begin
     FillTransparentColor(TempImage, ClBlack, 1);
     SelectionRect := Rect(0, 0, TempImage.Width, TempImage.Height);
 
-    DrawRoundGradientVert(TempImage, SelectionRect, GradientFrom, GradientTo, SelectionColor, RoundRadius, 1);
+    DrawRoundGradientVert(TempImage, SelectionRect, GradientFrom, GradientTo, SelectionColor, RoundRadius);
 
     N := ImagePadding - ImageMoveLength;
 
@@ -283,7 +283,7 @@ begin
         begin
           DragImage := TBitmap.Create;
           try
-            DrawShadowTo24BitImage(DragImage, Graphic as TBitmap, 1);
+            DrawShadowToImage(DragImage, Graphic as TBitmap, 1);
             DrawImageEx32(TempImage, DragImage, N, N);
           finally
             DragImage.Free;
@@ -322,7 +322,7 @@ begin
         Inc(W, 10);
         Inc(H, 10);
         R := Rect(5, 5, 5 + W, 5 + H);
-        DrawRoundGradientVert(TempImage, R, clBlack, clHighlight, clHighlightText, RoundRadius, 1);
+        DrawRoundGradientVert(TempImage, R, clBlack, clHighlight, clHighlightText, RoundRadius);
         DrawText32Bit(TempImage, IntToStr(ItemsSelected), AFont, R, DT_CENTER or DT_VCENTER);
       finally
         AFont.Free;

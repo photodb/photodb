@@ -1699,9 +1699,12 @@ var
   Item : TeasyItem;
   Index : Integer;
 begin
+  Result := False;
   GetCursorPos(P);
   P1 := ElvMain.ScreenToClient(P);
   Item := ItemAtPos(P1.X, P1.Y);
+  if Item = nil then
+    Exit;
   Index := ItemIndexToMenuIndex(Item.Index);
   Result := not((not Self.Active) or (not ElvMain.Focused) or (Item <> LastMouseItem) or
       (Item = nil) or (fFilesInfo[Index].FileName <> Info.FileName));

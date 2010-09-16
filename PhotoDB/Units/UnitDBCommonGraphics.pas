@@ -38,9 +38,9 @@ interface
   Procedure QuickReduceWide(Width, Height : integer; Var S,D : TBitmap);
   procedure DoResize(Width,Height : integer; S,D : TBitmap);
   procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap);
-  procedure Rotate180A(im : TBitmap);
-  procedure Rotate270A(im : TBitmap);
-  procedure Rotate90A(im : TBitmap);
+  procedure Rotate180A(Bitmap : TBitmap);
+  procedure Rotate270A(Bitmap : TBitmap);
+  procedure Rotate90A(Bitmap : TBitmap);
   procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
   procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
   procedure DrawImageEx32(Dest32, Src32 : TBitmap; X, Y : Integer);
@@ -59,13 +59,45 @@ interface
   procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : string; AAngle : Integer; Color : TColor; Transparent : Byte);
   procedure DrawText32Bit(Bitmap32 : TBitmap; Text : string; Font : TFont; ARect : TRect; DrawTextOptions : Cardinal);
   procedure DrawColorMaskTo32Bit(Dest, Mask : TBitmap; Color : TColor; X, Y : Integer);
-  procedure DrawShadowTo24BitImage(Dest32, Src24 : TBitmap; Transparenty : Byte = 0);
-  procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 0);
+  procedure DrawShadowToImage(Dest32, Src : TBitmap; Transparenty : Byte = 0);
+  procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 220);
   procedure InverseTransparenty(Bitmap32: TBitmap);
 
 implementation
 
-procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 0);
+function MaxI8(A, B : Byte) : Byte; inline; overload;
+begin
+  if A > B then
+    Result := A
+  else
+    Result := B;
+end;
+
+function MinI8(A, B : Byte) : Byte; inline; overload;
+begin
+  if A > B then
+    Result := B
+  else
+    Result := A;
+end;
+
+function MaxI32(A, B : Integer) : Integer; inline; overload;
+begin
+  if A > B then
+    Result := A
+  else
+    Result := B;
+end;
+
+function MinI32(A, B : Integer) : Integer; inline; overload;
+begin
+  if A > B then
+    Result := B
+  else
+    Result := A;
+end;
+
+procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 220);
 var
   BitRound : TBitmap;
   PR : PARGB;
@@ -120,7 +152,7 @@ begin
         S := (PR[J].R + PR[J].G + PR[J].B);
         if S <> 765 then //White
         begin
-          PD[J].L := 255;
+          PD[J].L := TransparentValue;
           //black - gradient
           if S = 0 then
           begin
@@ -142,18 +174,23 @@ begin
   end;
 end;
 
-procedure DrawShadowTo24BitImage(Dest32, Src24 : TBitmap; Transparenty : Byte = 0);
+procedure DrawShadowToImage(Dest32, Src : TBitmap; Transparenty : Byte = 0);
 var
   I, J : Integer;
-  PSA : array of PARGB;
+  PS : PARGB;
+  PS32 : PARGB32;
   PDA : array of PARGB32;
   SH, SW : Integer;
+  AddrLineD, DeltaD, AddrD : Integer;
+  PD : PRGB32;
+  W, W1 : Byte;
+
 const
   SHADOW : array[0..6, 0..6] of byte =
   ((8,14,22,26,22,14,8),
-  (14,255,255,255,52,28,14),
-  (22,255,255,255,94,52,22),
-  (26,255,255,255,124,66,26),
+  (14,0,0,0,52,28,14),
+  (22,0,0,0,94,52,22),
+  (26,0,0,0,124,66,26),
   (22,52,94,{124}94,94,52,22),
   (14,28,52,66,52,28,14),
   (8,14,22,26,22,14,8));
@@ -161,18 +198,16 @@ const
 begin
   //set new image size
   Dest32.PixelFormat := pf32Bit;
-  Src24.PixelFormat := pf24Bit;
-  SW := Src24.Width;
-  SH := Src24.Height;
+  SW := Src.Width;
+  SH := Src.Height;
   Dest32.Width := SW + 4;
   Dest32.Height := SH + 4;
-  SetLength(PSA, Src24.Height);
   SetLength(PDA, Dest32.Height);
 
-  //buffer scanlines
-  for I := 0 to Src24.Height - 1 do
-    PSA[I] := Src24.ScanLine[I];
+  AddrLineD := Integer(Dest32.ScanLine[0]);
+  DeltaD := Integer(Dest32.ScanLine[1])- AddrLineD;
 
+  //buffer scanlines
   for I := 0 to Dest32.Height - 1 do
     PDA[I] := Dest32.ScanLine[I];
 
@@ -188,7 +223,7 @@ begin
     end;
 
   //top-bottom
-  for I := 3 to Src24.Height do
+  for I := 3 to Src.Height do
   begin
     PDA[I][0].R := 0;
     PDA[I][0].G := 0;
@@ -204,7 +239,7 @@ begin
   end;
 
   //left-right
-  for I := 3 to Src24.Width do
+  for I := 3 to Src.Width do
   begin
     PDA[0][I].R := 0;
     PDA[0][I].G := 0;
@@ -250,14 +285,44 @@ begin
     end;
 
   //and draw image
-  for I := 0 to Src24.Height - 1 do
+  if Src.PixelFormat <> pf32bit then
   begin
-    for J := 0 to Src24.Width - 1 do
+    Src.PixelFormat := pf24bit;
+    AddrLineD := AddrLineD + DeltaD;
+    for I := 0 to Src.Height - 1 do
     begin
-      PDA[I + 1][J + 1].R := PSA[I][J].R;
-      PDA[I + 1][J + 1].G := PSA[I][J].G;
-      PDA[I + 1][J + 1].B := PSA[I][J].B;
-      PDA[I + 1][J + 1].L := 255;
+      PS := Src.ScanLine[I];
+      AddrD := AddrLineD + 4; //from second fixel
+      for J := 0 to Src.Width - 1 do
+      begin
+        PD := PRGB32(AddrD);
+        PD.R := PS[J].R;
+        PD.G := PS[J].G;
+        PD.B := PS[J].B;
+        PD.L := 255;
+        AddrD := AddrD + 4;
+      end;
+      AddrLineD := AddrLineD + DeltaD;
+    end;
+  end else
+  begin
+    AddrLineD := AddrLineD + DeltaD;
+    for I := 0 to Src.Height - 1 do
+    begin
+      PS32 := Src.ScanLine[I];
+      AddrD := AddrLineD + 4; //from second fixel
+      for J := 0 to Src.Width - 1 do
+      begin
+        PD := PRGB32(AddrD);
+        W := PS32[J].L;
+        W1 := 255 - W;
+        PD.R := (PD.R * W1 + PS32[J].R * W + $7F) div $FF;
+        PD.G := (PD.G * W1 + PS32[J].G * W + $7F) div $FF;
+        PD.B := (PD.B * W1 + PS32[J].B * W + $7F) div $FF;
+        PD.L := W;
+        AddrD := AddrD + 4;
+      end;
+      AddrLineD := AddrLineD + DeltaD;
     end;
   end;
 end;
@@ -848,12 +913,12 @@ begin
       if (XD >= DW) then
         Break;
 
-      W1 := pS[J].L;
-      W := 255 - W1;
-      pD[XD].R := (pD[XD].R * W + pS[J].R * W1 + $7F) div $FF;
-      pD[XD].G := (pD[XD].G * W + pS[J].G * W1 + $7F) div $FF;
-      pD[XD].B := (pD[XD].B * W + pS[J].B * W1 + $7F) div $FF;
-      pD[XD].L := Max(pD[XD].L, W1);
+      W := pS[J].L;
+      W1 := 255 - W;
+      pD[XD].R := (pD[XD].R * W1 + pS[J].R * W + $7F) div $FF;
+      pD[XD].G := (pD[XD].G * W1 + pS[J].G * W + $7F) div $FF;
+      pD[XD].B := (pD[XD].B * W1 + pS[J].B * W + $7F) div $FF;
+      pD[XD].L := SumL(pD[XD].L, W);
     end;
   end;
 end;
@@ -894,8 +959,6 @@ var
   DeltaS, DeltaD : Integer;
   AddrLineS, AddrLineD : Integer;
   AddrS, AddrD : Integer;
-  S : PRGB32;
-  D : PRGB32;
 begin
   if Bitmap.PixelFormat <> pf32bit then
     Bitmap.PixelFormat := pf32bit;
@@ -913,12 +976,7 @@ begin
     AddrD := AddrLineD;
     for J := 0 to PNG.Width - 1 do
     begin
-      S := PRGB32(AddrS);
-      D := PRGB32(AddrD);
-      D.R := S.R;
-      D.G := S.G;
-      D.B := S.B;
-      D.L := S.L;
+      PInteger(AddrD)^ := PInteger(AddrS)^;
 
       AddrS := AddrS + 4;
       AddrD := AddrD + 4;
@@ -1119,18 +1177,36 @@ procedure AssignBitmap(Dest : TBitmap; Src : TBitmap);
 var
   I, J: Integer;
   PS, PD: PARGB;
+  PS32, PD32: PARGB32;
 begin
-  Src.PixelFormat := pf24bit;
-  Dest.PixelFormat := pf24bit;
-  Dest.Width := Src.Width;
-  Dest.Height := Src.Height;
-
-  for I := 0 to Src.Height - 1 do
+  if Src.PixelFormat <> pf32bit then
   begin
-    PD := Dest.ScanLine[I];
-    PS := Src.ScanLine[I];
-    for J := 0 to Src.Width - 1 do
-      PD[J] := PS[J];
+    Src.PixelFormat := pf24bit;
+    Dest.PixelFormat := pf24bit;
+    Dest.Width := Src.Width;
+    Dest.Height := Src.Height;
+
+    for I := 0 to Src.Height - 1 do
+    begin
+      PD := Dest.ScanLine[I];
+      PS := Src.ScanLine[I];
+      for J := 0 to Src.Width - 1 do
+        PD[J] := PS[J];
+    end;
+  end else
+  begin
+    Src.PixelFormat := pf32bit;
+    Dest.PixelFormat := pf32bit;
+    Dest.Width := Src.Width;
+    Dest.Height := Src.Height;
+
+    for I := 0 to Src.Height - 1 do
+    begin
+      PD32 := Dest.ScanLine[I];
+      PS32 := Src.ScanLine[I];
+      for J := 0 to Src.Width - 1 do
+        PD32[J] := PS32[J];
+    end;
   end;
 end;
 
@@ -1145,6 +1221,11 @@ end;
 
 procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
 begin
+  if (Src is TBitmap) and (TBitmap(Src).PixelFormat = pf32Bit) then
+    Dest.PixelFormat := pf32Bit
+  else
+    Dest.PixelFormat := pf24Bit;
+
   if Src is TJpegImage then
     AssignJpeg(Dest, TJpegImage(Src))
   else if Src is TRAWImage then
@@ -1160,7 +1241,7 @@ var
   PNG: TPNGGraphic;
   BMP: TBitmap;
 begin
-  if Image is TPNGGraphic then
+ { if Image is TPNGGraphic then
   begin
     PNG := (Image as TPNGGraphic);
     if PNG.PixelFormat = pf32bit then
@@ -1186,7 +1267,7 @@ begin
         end;
         LoadBMPImage32bit(BMP, Bitmap, BackGround);
         Exit;
-      end;
+      end;}
 
   if Image is TGIFImage then
   begin
@@ -1218,7 +1299,7 @@ begin
       QuickReduce(Width, Height, S, D)
     else
     begin
-      if Width / S.Width > ZoomSmoothMin then
+      if (Width / S.Width > ZoomSmoothMin) and (S.PixelFormat <> pf32bit) then
         SmoothResize(Width, Height, S, D)
       else
         StretchCool(Width, Height, S, D);
@@ -1338,76 +1419,132 @@ begin
   end;
 end;
 
-procedure Rotate180A(im : tbitmap);
+procedure Rotate180A(Bitmap : TBitmap);
 var
   I, J: Integer;
-  p1, p2: PARGB;
+  PS, PD: PARGB;
+  PS32, PD32: PARGB32;
   Image: TBitmap;
 begin
-  im.PixelFormat := pf24bit;
   Image := TBitmap.Create;
-  Image.PixelFormat := pf24bit;
-  Image.Assign(im);
-  for I := 0 to Image.Height - 1 do
-  begin
-    p1 := Image.ScanLine[I];
-    p2 := im.ScanLine[Image.Height - I - 1];
-    for J := 0 to Image.Width - 1 do
-      p2[J] := p1[Image.Width - 1 - J];
+  try
+    if Bitmap.PixelFormat <> pf32bit then
+    begin
+      Bitmap.PixelFormat := pf24bit;
+      Image.Assign(Bitmap);
+      for I := 0 to Image.Height - 1 do
+      begin
+        PS := Image.ScanLine[I];
+        PD := Bitmap.ScanLine[Image.Height - I - 1];
+        for J := 0 to Image.Width - 1 do
+          PD[J] := PS[Image.Width - 1 - J];
+      end;
+    end else
+    begin
+      Image.Assign(Bitmap);
+      for I := 0 to Image.Height - 1 do
+      begin
+        PS32 := Image.ScanLine[I];
+        PD32 := Bitmap.ScanLine[Image.Height - I - 1];
+        for J := 0 to Image.Width - 1 do
+          PD32[J] := PS32[Image.Width - 1 - J];
+      end;
+    end;
+  finally
+    Image.Free;
   end;
-  Image.Free;
 end;
 
-procedure Rotate270A(im: TBitmap);
+procedure Rotate270A(Bitmap: TBitmap);
 var
   I, J: Integer;
-  p1: PARGB;
-  p: array of PARGB;
+  PS: PARGB;
+  PS32: PARGB32;
+  PA: array of PARGB;
+  PA32: array of PARGB32;
   Image: TBitmap;
 begin
-  im.PixelFormat := pf24bit;
   Image := TBitmap.Create;
-  Image.PixelFormat := pf24bit;
-  Image.Assign(im);
-  im.Width := Image.Height;
-  im.Height := Image.Width;
-  SetLength(p, Image.Width);
-  for I := 0 to Image.Width - 1 do
-    p[I] := im.ScanLine[Image.Width - 1 - I];
-  for I := 0 to Image.Height - 1 do
-  begin
-    p1 := Image.ScanLine[I];
-    for J := 0 to Image.Width - 1 do
-      p[J, I] := p1[J];
-
+  try
+    if Bitmap.PixelFormat <> pf32bit then
+    begin
+      Image.PixelFormat := pf24bit;
+      Image.Assign(Bitmap);
+      Bitmap.Width := Image.Height;
+      Bitmap.Height := Image.Width;
+      SetLength(PA, Image.Width);
+      for I := 0 to Bitmap.Height - 1 do
+        PA[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
+      for I := 0 to Image.Height - 1 do
+      begin
+        PS := Image.ScanLine[I];
+        for J := 0 to Image.Width - 1 do
+          PA[J, I] := PS[J];
+      end;
+    end else
+    begin
+      Image.Assign(Bitmap);
+      Bitmap.Width := Image.Height;
+      Bitmap.Height := Image.Width;
+      SetLength(PA, Image.Width);
+      for I := 0 to Bitmap.Height - 1 do
+        PA32[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
+      for I := 0 to Image.Height - 1 do
+      begin
+        PS32 := Image.ScanLine[I];
+        for J := 0 to Image.Width - 1 do
+          PA32[J, I] := PS32[J];
+      end;
+    end;
+  finally
+    Image.Free;
   end;
-  Image.Free;
 end;
 
-procedure Rotate90A(im: TBitmap);
+procedure Rotate90A(Bitmap: TBitmap);
 var
   I, J: Integer;
-  p1: PARGB;
-  p: array of PARGB;
+  PS: PARGB;
+  PS32: PARGB32;
+  PA: array of PARGB;
+  PA32: array of PARGB32;
   Image: TBitmap;
 begin
-  im.PixelFormat := pf24bit;
   Image := TBitmap.Create;
-  Image.PixelFormat := pf24bit;
-  Image.Assign(im);
-  im.Width := Image.Height;
-  im.Height := Image.Width;
-  SetLength(p, Image.Width);
-  for I := 0 to Image.Width - 1 do
-    p[I] := im.ScanLine[I];
-  for I := 0 to Image.Height - 1 do
-  begin
-    p1 := Image.ScanLine[Image.Height - I - 1];
-    for J := 0 to Image.Width - 1 do
-      p[J, I] := p1[J];
-
+  try
+    if Image.PixelFormat <> pf32bit then
+    begin
+      Bitmap.PixelFormat := pf24bit;
+      Image.Assign(Bitmap);
+      Bitmap.Width := Image.Height;
+      Bitmap.Height := Image.Width;
+      SetLength(PA, Image.Width);
+      for I := 0 to Image.Width - 1 do
+        PA[I] := Bitmap.ScanLine[I];
+      for I := 0 to Image.Height - 1 do
+      begin
+        PS := Image.ScanLine[Image.Height - I - 1];
+        for J := 0 to Image.Width - 1 do
+          PA[J, I] := PS[J];
+      end;
+    end else
+    begin
+      Image.Assign(Bitmap);
+      Bitmap.Width := Image.Height;
+      Bitmap.Height := Image.Width;
+      SetLength(PA, Image.Width);
+      for I := 0 to Image.Width - 1 do
+        PA32[I] := Bitmap.ScanLine[I];
+      for I := 0 to Image.Height - 1 do
+      begin
+        PS32 := Image.ScanLine[Image.Height - I - 1];
+        for J := 0 to Image.Width - 1 do
+          PA32[J, I] := PS32[J];
+      end;
+    end;
+  finally
+    Image.Free;
   end;
-  Image.Free;
 end;
 
 procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
@@ -1418,10 +1555,8 @@ var
  adrIn, adrOut, adrLine0, deltaLine, deltaLine2 : Integer;
 begin
  {$R-}
- if BmpIn.PixelFormat <> pf24bit then
-   BmpIn.PixelFormat := pf24bit;
- if BmpOut.PixelFormat <> pf24bit then
-   BmpOut.PixelFormat := pf24bit;
+ BmpIn.PixelFormat := pf24bit;
+ BmpOut.PixelFormat := pf24bit;
  BmpOut.Width := NewWidth;
  BmpOut.Height := NewHeight;
  bufw := BmpIn.Width;
@@ -1472,57 +1607,104 @@ begin
  end;
 end;
 
-procedure StretchCool(Width, Height : integer; var S,D : TBitmap);
+procedure StretchCool(Width, Height : Integer; var S, D : TBitmap);
 var
-  i, j, k, p : Integer;
-  p1 : PARGB;
-  col, r, g, b, Sheight1, s_h, s_w : integer;
-  Sh, Sw : Extended;
-  Xp : array of PARGB;
+  I, J, K, F : Integer;
+  P : PARGB;
+  XP : array of PARGB;
+  P32 : PARGB32;
+  XP32 : array of PARGB32;
+  Count, R, G, B, L, Sheight1, SHI, SWI : Integer;
+  SH, SW : Extended;
 begin
- If Width=0 then exit;
- If Height=0 then exit;
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- D.Width:=Width;
- D.Height:=Height;
- Sh:=S.Height/Height;
- Sw:=S.Width/Width;
- Sheight1:=S.height-1;
- SetLength(Xp,S.height);
- s_h:=S.Height;
- s_w:=S.Width;
- for i:=0 to Sheight1 do
- Xp[i]:=S.ScanLine[i];
- for i:=0 to Height-1 do
- begin
-  p1:=D.ScanLine[i];
-  for j:=0 to Width-1 do
+  if Width + Height = 0 then
+    Exit;
+
+  if S.PixelFormat = pf32bit then
+    D.PixelFormat := pf32bit
+  else
   begin
-   col:=0;
-   r:=0;
-   g:=0;
-   b:=0;
-   for k:=Round(Sh*i) to Round(Sh*(i+1))-1 do
-   begin
-    if k>s_h-1 then continue;
-    for p:=Round(Sw*j) to Round(Sw*(j+1))-1 do
-    begin
-     if p>s_w-1 then continue;
-     inc(col);
-     inc(r,Xp[k,p].r);
-     inc(g,Xp[k,p].g);
-     inc(b,Xp[k,p].b);
-    end;
-   end;
-   if col<>0 then
-   begin
-    p1[j].r:=r div col;
-    p1[j].g:=g div col;
-    p1[j].b:=b div col;
-   end;
+    S.PixelFormat := pf24bit;
+    D.PixelFormat := pf24bit;
   end;
- end;
+  D.Width := Width;
+  D.Height := Height;
+  SH := S.Height / Height;
+  SW := S.Width / Width;
+  Sheight1 := S.height - 1;
+  SHI := S.Height;
+  SWI := S.Width;
+
+  if S.PixelFormat = pf24bit then
+  begin
+    SetLength(XP, S.height);
+    for I := 0 to Sheight1 do
+      XP[I] := S.ScanLine[I];
+
+    for I := 0 to Height - 1 do
+    begin
+      P := D.ScanLine[I];
+      for J := 0 to Width - 1 do
+      begin
+        Count := 0;
+        R := 0;
+        G := 0;
+        B := 0;
+        for K := Round(SH * I) to MinI32(SHI - 1, Round(SH * (I + 1)) - 1) do
+        begin
+          for F := Round(SW * J) to MinI32(SWI - 1, Round(SW * (J + 1)) - 1) do
+          begin
+            Inc(Count);
+            Inc(R, XP[K, F].R);
+            Inc(G, XP[K, F].G);
+            Inc(B, XP[K, F].B);
+          end;
+        end;
+        if Count <> 0 then
+        begin
+          P[J].R := R div Count;
+          P[J].G := G div Count;
+          P[J].B := B div Count;
+        end;
+      end;
+    end;
+  end else
+  begin
+    SetLength(XP32, S.height);
+    for I := 0 to Sheight1 do
+      XP32[I] := S.ScanLine[I];
+
+    for I := 0 to Height - 1 do
+    begin
+      P32 := D.ScanLine[I];
+      for J := 0 to Width - 1 do
+      begin
+        Count := 0;
+        R := 0;
+        G := 0;
+        B := 0;
+        L := 0;
+        for K := Round(SH * I) to MinI32(SHI - 1, Round(SH * (I + 1)) - 1) do
+        begin
+          for F := Round(SW * J) to MinI32(SWI - 1, Round(SW * (J + 1)) - 1) do
+          begin
+            Inc(Count);
+            Inc(R, XP32[K, F].R);
+            Inc(G, XP32[K, F].G);
+            Inc(B, XP32[K, F].B);
+            Inc(L, XP32[K, F].L);
+          end;
+        end;
+        if Count <> 0 then
+        begin
+          P32[J].R := R div Count;
+          P32[J].G := G div Count;
+          P32[J].B := B div Count;
+          P32[J].L := L div Count;
+        end;
+      end;
+    end;
+  end;
 end;
 
 procedure QuickReduceWide(Width, Height : integer; Var S,D : TBitmap);
