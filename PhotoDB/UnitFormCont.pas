@@ -12,7 +12,8 @@ uses
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
-  uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx, TwButton;
+  uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx, TwButton,
+  uGOM;
 
 type
   TFormCont = class(TThreadForm)
@@ -129,7 +130,7 @@ type
   private
     MouseDowned : Boolean;
     PopupHandled : boolean;
-    LoadingThItem, ShLoadingThItem : TEasyItem;
+    LastMouseItem, ItemWithHint : TEasyItem;
 
     ElvMain : TEasyListView;
     FilePushed : boolean;
@@ -143,7 +144,6 @@ type
     WindowsMenuTickCount : Cardinal;
     ItemByMouseDown : Boolean;
     ItemSelectedByMouseDown : Boolean;
-    function hintrealA(item: TObject): boolean;
     procedure DeleteIndexItemByID(ID : integer);
 
     procedure EasyListview1ItemThumbnailDraw(
@@ -187,6 +187,7 @@ type
     procedure LoadToolBarIcons;
     procedure LoadSizes;
     procedure CreateBackgroundImage;
+    function HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
   private
     FPictureSize : integer;
     FThreadCount : integer;
@@ -371,6 +372,7 @@ begin
 
   DBkernel.RegisterForm(Self);
   LoadToolBarIcons;
+  GOM.AddObj(Self);
 end;
 
 procedure TFormCont.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -396,10 +398,10 @@ begin
  HintTimer.Enabled:=false;
  if item <>nil then
  begin
-  loadingthitem:= nil;
+  LastMouseItem:= nil;
   application.HideHint;
-  if ImHint<>nil then
-  ImHint.close;
+  THintManager.Instance.CloseHint;
+
   hinttimer.Enabled:=false;
   info:=GetCurrentPopUpMenuInfo(item);
   info.AttrExists:=false;
@@ -687,9 +689,9 @@ var
   Image : TBitmap;
   w,h : integer;
 begin
- Application.HideHint;
- if ImHint<>nil then
- ImHint.close;
+  Application.HideHint;
+  THintManager.Instance.CloseHint;
+
  if Selected=false then
  begin
   WebLink1.Visible:=false;
@@ -822,59 +824,60 @@ begin
  FilePushed:=false;
 end;
 
-function TFormCont.hintrealA(item: TObject): boolean;
+function TFormCont.HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
 var
-  p, p1 : tpoint;
+  P, P1: Tpoint;
 begin
- getcursorpos(p);
- p1:=ElvMain.ScreenToClient(p);
- result:=not ((not self.Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
+  GetCursorPos(P);
+  P1 := ElvMain.ScreenToClient(P);
+
+  Result := not((not Self.Active) or (not ElvMain.Focused) or (ItemAtPos(P1.X, P1.Y) <> LastMouseItem) or
+      (ItemAtPos(P1.X, P1.Y) = nil) {//TODO: or (Item <> Loadingthitem)});
 end;
 
 procedure TFormCont.HinttimerTimer(Sender: TObject);
 var
   p, p1 : TPoint;
   index, i : integer;
+  MenuRecord : TDBPopupMenuInfoRecord;
 begin
- GetCursorPos(p);
- p1:=ElvMain.ScreenToClient(p);
- if (not self.Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>LoadingThItem) or (shloadingthitem<>loadingthitem) then
- begin
-  HintTimer.Enabled:=false;
-  exit;
- end;
- if LoadingThItem=nil then exit;
- index:=LoadingThItem.index;
- if index<0 then exit;
- HintTimer.Enabled:=false;
+  GetCursorPos(P);
+  P1 := ElvMain.ScreenToClient(P);
+  if (not Self.Active) or (not ElvMain.Focused) or (ItemAtPos(P1.X, P1.Y) <> LastMouseItem) or
+    (ItemWithHint <> LastMouseItem) then
+  begin
+    HintTimer.Enabled := False;
+    Exit;
+  end;
+  if LastMouseItem = nil then
+    Exit;
+  index := LastMouseItem.index;
+  if index < 0 then
+    Exit;
+  if FPictureSize >= ThHintSize then
+    Exit;
 
- if FPictureSize>=Dolphin_DB.ThHintSize then exit;
- UnitHintCeator.fitem:= LoadingThItem;
- UnitHintCeator.fInfo:=RecordInfoOne(ProcessPath(Data[Index].FileName),Data[Index].ID,Data[Index].Rotation,Data[Index].Rating,Data[Index].Access,Data[Index].FileSize,Data[index].Comment,Data[index].KeyWords,'','',Data[index].Groups,Data[index].Date,Data[index].IsDate ,Data[index].IsTime,Data[index].Time, Data[index].Crypted, Data[index].Include, true, Data[index].Links);
- UnitHintCeator.threct:=rect(p.X,p.Y,p.x+100,p.Y+100);
- UnitHintCeator.work_.Add(ProcessPath(Data[LoadingThItem.index].FileName));
- UnitHintCeator.hr:=HintRealA;
- UnitHintCeator.Owner:=Self;
+  HintTimer.Enabled := False;
+
+  MenuRecord := TDBPopupMenuInfoRecord.CreateFromContRecord(Data[Index]);
+  THintManager.Instance.CreateHintWindow(Self, MenuRecord, P, HintCallBack);
 
   if not (CtrlKeyDown or ShiftKeyDown) then
-  if DBKernel.Readbool('Options','UseHotSelect',true) then
-  if not LoadingThItem.Selected then
-  begin
-   if not (CtrlKeyDown or ShiftKeyDown) then
-   for i:=0 to ElvMain.Items.Count-1 do
-   if ElvMain.Items[i].Selected then
-   if LoadingThItem<>ElvMain.Items[i] then
-   ElvMain.Items[i].Selected:=false;
-   if ShiftKeyDown then
-   ElvMain.Selection.SelectRange(loadingthitem,ElvMain.Selection.FocusedItem,false,false) else
-   if not ShiftKeyDown then
-   begin
-    LoadingThItem.Selected:=true;
-   end;
-  end;
-  LoadingThItem.Focused:=true;
+    if DBKernel.Readbool('Options', 'UseHotSelect', True) then
+      if not LastMouseItem.Selected then
+      begin
+        if not(CtrlKeyDown or ShiftKeyDown) then
+          for I := 0 to ElvMain.Items.Count - 1 do
+            if ElvMain.Items[I].Selected then
+              if LastMouseItem <> ElvMain.Items[I] then
+                ElvMain.Items[I].Selected := False;
+        if ShiftKeyDown then
+          ElvMain.Selection.SelectRange(LastMouseItem, ElvMain.Selection.FocusedItem, False, False)
+        else if not ShiftKeyDown then
+          LastMouseItem.Selected := True;
 
- HintCeator.Create(false);
+      end;
+  LastMouseItem.Focused := True;
 end;
 
 procedure TFormCont.ListView1MouseMove(Sender: TObject; Shift: TShiftState;
@@ -909,9 +912,7 @@ begin
       ElvMain.Refresh;
 
       Application.HideHint;
-      if ImHint <> nil then
-        if not UnitImHint.Closed then
-          ImHint.Close;
+      THintManager.Instance.CloseHint;
       HintTimer.Enabled := False;
 
       DropFileSource1.ImageHotSpotX := SpotX;
@@ -923,25 +924,27 @@ begin
     end;
   end;
 
-  if LoadingThItem = ItemAtPos(X, Y) then
+  if THintManager.Instance.HintAtPoint(P) <> nil then
     Exit;
-  LoadingThItem := ItemAtPos(X, Y);
-  if LoadingThItem = nil then
+
+  Item := ItemByPointImage(ElvMain, Point(X,Y));
+
+  if LastMouseItem = Item then
+    Exit;
+
+  Application.HideHint;
+  THintManager.Instance.CloseHint;
+  HintTimer.Enabled := False;
+
+  if (Item <> nil) then
   begin
-    Application.HideHint;
-    if ImHint <> nil then
-      if not UnitImHint.Closed then
-        ImHint.Close;
+    LastMouseItem := Item;
     HintTimer.Enabled := False;
-  end
-  else
-  begin
-    HintTimer.Enabled := False;
-    if Self.Active then
+    if Active then
     begin
       if DBKernel.Readbool('Options', 'AllowPreview', True) then
         HintTimer.Enabled := True;
-      ShLoadingThItem := LoadingThItem;
+      ItemWithHint := LastMouseItem;
     end;
   end;
 end;
@@ -968,6 +971,7 @@ end;
 
 procedure TFormCont.FormDestroy(Sender: TObject);
 begin
+  GOM.RemoveObj(Self);
  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
  DropFileTarget2.Unregister;
  FBitmapImageList.Free;
@@ -1449,9 +1453,8 @@ begin
       begin
         RatingPopupMenu1.Tag := ItemAtPos(Pos.X, Pos.Y).Tag;
         Application.HideHint;
-        if (ImHint <> nil) and not not UnitImHint.Closed then
-          ImHint.Close;
-        LoadingThitem := nil;
+        THintManager.Instance.CloseHint;
+        LastMouseItem := nil;
         RatingPopupMenu1.Popup(MousePos.X, MousePos.Y);
         Exit;
       end;
@@ -1459,9 +1462,7 @@ begin
   end;
 
   Application.HideHint;
-  if ImHint <> nil then
-    if not UnitImHint.Closed then
-      ImHint.Close;
+  THintManager.Instance.CloseHint;
   HintTimer.Enabled := False;
   if ListView1Selected <> nil then
   begin
@@ -1509,9 +1510,7 @@ begin
       end;
 
       Application.HideHint;
-      if ImHint <> nil then
-        if not UnitImHint.Closed then
-          ImHint.Close;
+      THintManager.Instance.CloseHint;
     end;
     if Msg.message = WM_RBUTTONDOWN then
       WindowsMenuTickCount := GettickCount;

@@ -1,4 +1,4 @@
-unit unitimhint;
+unit UnitImHint;
 
 interface
 
@@ -7,34 +7,27 @@ uses
   Variants, Classes, Graphics, Controls, Forms, GIFImage, Math,
   Dialogs, StdCtrls, ExtCtrls, ImButton, ComCtrls, ActiveX,
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
-  DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory;
+  DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory, uDBForm,
+  UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator;
 
 type
-  TImHint = class(TForm)
-    Image1: TImage;
-    LbDescription: TLabel;
-    LbSize: TLabel;
-    LbFileSize: TLabel;
-    Timer1: TTimer;
-    Timer2: TTimer;
+  TImHint = class(TDBForm)
+    TimerShow: TTimer;
+    TimerHide: TTimer;
     Timer3: TTimer;
     ApplicationEvents1: TApplicationEvents;
-    DropFileSource1: TDropFileSource;
+    DropFileSourceMain: TDropFileSource;
     DragImageList: TImageList;
-    DropFileTarget1: TDropFileTarget;
-    PaintBox1: TPaintBox;
+    DropFileTargetMain: TDropFileTarget;
     ImageFrameTimer: TTimer;
-    DestroyTimer: TTimer;
-    procedure execute(Sender : TObject; Bitmaped,Transparent : Boolean; bit : tbitmap; G : TGraphic; c,w,h:integer; rect : trect; Info : TOneRecordInfo; item : TObject; funchintreal : THintRealFucntion);
+    procedure Execute(Sender : TForm; G : TGraphic; W, H : Integer; Info : TDBPopupMenuInfoRecord; Pos : TPoint; CheckFunction : THintCheckFunction);
     procedure FormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
-    procedure FormHide(Sender: TObject);
-    procedure HideShadow;
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure Timer1Timer(Sender: TObject);
-    procedure Timer2Timer(Sender: TObject);
+    procedure TimerShowTimer(Sender: TObject);
+    procedure TimerHideTimer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
@@ -51,39 +44,30 @@ type
     function GetNextImageNOX(NO: Integer): integer;
     function GetPreviousImageNO: integer;
     function GetPreviousImageNOX(NO: Integer): integer;
-    procedure PaintBox1Paint(Sender: TObject);
     procedure ImageFrameTimerTimer(Sender: TObject);
     function GetFirstImageNO: integer;
-    procedure DestroyTimerTimer(Sender: TObject);
   private
     { Private declarations }
     AnimatedImage : TGraphic;
     SlideNO : Integer;
-    ValidImages : integer;
     AnimatedBuffer : TBitmap;
-    FBitmaped : Boolean;
-    FTransparent : Boolean;
-    DoubleBuffer : TBitmap;
+    ImageBuffer : TBitmap;
     CanClosed : Boolean;
+    FFormBuffer : TBitmap;
+    CurrentInfo : TDBPopupMenuInfoRecord;
+    FDragDrop : Boolean;
+    FOwner : TForm;
+    GoIn : Boolean;
+    FCheckFunction : THintCheckFunction;
+    FClosed : Boolean;
+    FWidth : Integer;
+    FHeight : Integer;
+    procedure CreateFormImage;
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
-  protected
-    procedure CreateParams(var Params: TCreateParams); override;
   end;
-
-var
-  ImHint: TImHint;
-  Closed : boolean = false;
-  citem : TObject;
-  currentfilename : string;
-  goin : boolean;
-  FDragDrop : boolean;
-  fhintreal : THintRealFucntion;
-  FOwner : TForm;
-  CurrentInfo : TOneRecordInfo;
-
-const
-  CS_DROPSHADOW = $00020000;
 
 implementation
 
@@ -93,257 +77,264 @@ uses Searching, Language;
 
 { TImHint }
 
-function IsWinXP: Boolean;
-begin
-  Result := (Win32Platform = VER_PLATFORM_WIN32_NT) and
-    (Win32MajorVersion >= 5) and (Win32MinorVersion >= 1);
-end;
-
-procedure DrawHintInfo(Handle : THandle; Width,Height  : Integer; fInfo : TOneRecordInfo);
+procedure RenderForm(Form : TForm; Bitmap32 : TBitmap; Transparenty : Byte);
 var
-  sm, y : Integer;
+  zSize: TSize;
+  zPoint: TPoint;
+  zBf: TBlendFunction;
+  TopLeft: TPoint;
 begin
- y:=Height-18;
- sm:=Width-2;
- if (Width<80) or (Height<60) then exit;
- If fInfo.ItemAccess=db_access_private then
- begin
-  Dec(sm,20);
-  DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_PRIVATE+1],16,16,0,0,DI_NORMAL);
- end;
- Dec(sm,20);
- Case fInfo.ItemRotate of
-  DB_IMAGE_ROTATE_90: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATE_180: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATE_270: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
- else Inc(sm,20);
- end;
- Dec(sm,20);
- Case fInfo.ItemRating of
-  1: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_1+1],16,16,0,0,DI_NORMAL);
-  2: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_2+1],16,16,0,0,DI_NORMAL);
-  3: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_3+1],16,16,0,0,DI_NORMAL);
-  4: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_4+1],16,16,0,0,DI_NORMAL);
-  5: DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_5+1],16,16,0,0,DI_NORMAL);
- else Inc(sm,20);
- end;
- If FInfo.ItemCrypted then
- begin
-  Dec(sm,20);
-  DrawIconEx(Handle,sm,y,UnitDBKernel.icons[DB_IC_KEY+1],16,16,0,0,DI_NORMAL);
- end;
-end;
+  SetWindowLong(Form.Handle, GWL_EXSTYLE,
+    GetWindowLong(Form.Handle, GWL_EXSTYLE) or WS_EX_LAYERED);
 
-procedure TImHint.CreateParams(var Params: TCreateParams);
-const
-  CS_DROPSHADOW = $00020000;
-begin
-  inherited;
-  if IsWinXP and (DBKernel.Readinteger('Options','PreviewSwohOptions', 0) = 1) then
-    Params.WindowClass.Style := Params.WindowClass.Style or CS_DROPSHADOW;
-end;
+  Form.Width := Bitmap32.Width;
+  Form.Height := Bitmap32.Height;
 
-procedure TImHint.Execute(Sender : TObject; Bitmaped,Transparent : Boolean; bit : tbitmap; G : TGraphic; c,w,h:integer; rect : trect; Info : TOneRecordInfo; item : TObject; funchintreal : THintRealFucntion);
-var
-  ww,hh, fh, fw, fl, ft, lw:integer;
-  fname : string;
-  B : TBitmap;
-begin
- FTransparent:=Transparent;
- FBitmaped:=Bitmaped;
- ImageFrameTimer.Enabled:=false;
- ValidImages:=c;
- AnimatedBuffer:=nil;
- CanClosed:=true;
- if Sender is TForm then fOwner:=Sender as TForm else fOwner:=nil;
- Closed:=true;
- Timer2.Enabled:=false;
- Timer1.Enabled:=false;
- CItem:=item;
- GoIn:=false;
- Timer3.Enabled:=true;
- FDragDrop:=true;
- CurrentInfo:=Info;
- CurrentFileName:=Info.ItemFileName;
- if not Assigned(FuncHintReal) then exit;
- if not FuncHintReal(item) then exit;
- if Info.ItemComment<>'' then
- fname:=Info.ItemComment else fname:=ExtractFileName(Info.ItemFileName);
- if Bitmaped then
- begin
-{} if Image1.Picture.Bitmap=nil then
-{} Image1.Picture.Bitmap:=Tbitmap.create;
-   if Transparent then
-   begin
-    B := TBitmap.Create;
-    B.Width:=bit.width+2;
-    B.Height:=bit.height+2;
-    B.PixelFormat:=pf24bit;
-    b.Canvas.Brush.Color:=0;
-    b.Canvas.Pen.Color:=0;
-    b.Canvas.Rectangle(0,0,B.Width,B.Height);
-    B.Canvas.Draw(1,1,bit);
-    Image1.Picture.Bitmap.Assign(b);
-    b.Free;
-   end else
-   begin
-{}  Image1.Picture.Bitmap.Assign(bit);
-   end;
-   Image1.Visible:=true;
-   PaintBox1.Visible:=false;
-   ww:=bit.width;
-   hh:=bit.height;
-   if Transparent then
-   begin
-    Image1.Width:=ww+2;
-    Image1.Height:=hh+2;
-   end else
-   begin
-    Image1.Width:=ww;
-    Image1.Height:=hh;
-   end;
- end else
- begin
-  if (Info.ItemRotate=DB_IMAGE_ROTATE_0) or (Info.ItemRotate=DB_IMAGE_ROTATE_180) then
+  zSize.cx := Bitmap32.Width;
+  zSize.cy := Bitmap32.Height;
+  zPoint := Point(0, 0);
+
+  with zBf do
   begin
-   ww:=G.width;
-   hh:=G.height;
+    BlendOp := AC_SRC_OVER;
+    BlendFlags := 0;
+    AlphaFormat := AC_SRC_ALPHA;
+    SourceConstantAlpha := Transparenty;
+  end;
+  TopLeft := Form.BoundsRect.TopLeft;
+
+  UpdateLayeredWindow(Form.Handle, GetDC(0), @TopLeft, @zSize,
+    Bitmap32.Canvas.Handle, @zPoint, 0, @zBf, ULW_ALPHA);
+end;
+
+procedure DrawHintInfo(Handle : THandle; Width,Height  : Integer; fInfo : TDBPopupMenuInfoRecord);
+var
+  Sm, Y: Integer;
+begin
+  Y := Height - 18;
+  Sm := Width - 2;
+  if (Width < 80) or (Height < 60) then
+    Exit;
+  if FInfo.Access = Db_access_private then
+  begin
+    Dec(Sm, 20);
+    DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_PRIVATE + 1], 16, 16, 0, 0, DI_NORMAL);
+  end;
+  Dec(Sm, 20);
+  case FInfo.Rotation of
+    DB_IMAGE_ROTATE_90:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_ROTETED_90 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_180:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_ROTETED_180 + 1], 16, 16, 0, 0, DI_NORMAL);
+    DB_IMAGE_ROTATE_270:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_ROTETED_270 + 1], 16, 16, 0, 0, DI_NORMAL);
+    else
+      Inc(Sm, 20);
+  end;
+  Dec(Sm, 20);
+  case FInfo.Rating of
+    1:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_1 + 1], 16, 16, 0, 0, DI_NORMAL);
+    2:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_2 + 1], 16, 16, 0, 0, DI_NORMAL);
+    3:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_3 + 1], 16, 16, 0, 0, DI_NORMAL);
+    4:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_4 + 1], 16, 16, 0, 0, DI_NORMAL);
+    5:
+      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_5 + 1], 16, 16, 0, 0, DI_NORMAL);
+  else
+    Inc(Sm, 20);
+  end;
+  if FInfo.Crypted then
+  begin
+    Dec(Sm, 20);
+    DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_KEY + 1], 16, 16, 0, 0, DI_NORMAL);
+  end;
+end;
+
+procedure TImHint.CreateFormImage;
+var
+  Bitmap : TBitmap;
+  SFileSize,
+  SImageSize,
+  SImageName : string;
+  TextHeight : Integer;
+  R : TRect;
+begin
+
+  if CurrentInfo.Comment <> '' then
+    SImageName := CurrentInfo.Comment
+  else
+    SImageName := ExtractFileName(CurrentInfo.FileName);
+  SImageSize := Format(L('Image size: %d x %d'), [FWidth, FHeight]);
+  SFileSize := Format(L('File size: %s'), [SizeintextA(CurrentInfo.FileSize)]);
+
+  FFormBuffer.Width := Width;
+  FFormBuffer.Height := Height;
+  FillTransparentColor(FFormBuffer, clBlack, 0);
+  DrawRoundGradientVert(FFormBuffer, Rect(0, 0, Width, Height),
+    clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 100);
+  Bitmap := TBitmap.Create;
+
+  TextHeight := Canvas.TextHeight('Iy');
+  try
+    DrawShadowTo24BitImage(Bitmap, ImageBuffer);
+    DrawImageEx32(FFormBuffer, Bitmap, 5, 5);
+    R.Left := 5;
+    R.Right := FFormBuffer.Width - 5;
+    R.Top := 5 + Bitmap.Height + 5;
+    R.Bottom := 5 + Bitmap.Height + TextHeight + 5;
+    DrawText32Bit(FFormBuffer, SImageName, Font, R, 0);
+    R.Bottom := R.Bottom + TextHeight + 5;
+    R.Top := R.Top + TextHeight + 5;
+    DrawText32Bit(FFormBuffer, SFileSize, Font, R, 0);
+    R.Bottom := R.Bottom + TextHeight + 5;
+    R.Top := R.Top + TextHeight + 5;
+    DrawText32Bit(FFormBuffer, SImageSize, Font, R, 0);
+    RenderForm(Self, FFormBuffer, 255);
+  finally
+    Bitmap.Free;
+  end;
+
+end;
+
+procedure TImHint.Execute(Sender : TForm; G : TGraphic; W, H : Integer; Info : TDBPopupMenuInfoRecord; Pos : TPoint; CheckFunction : THintCheckFunction);
+var
+  WW, HH, FH, FW, FL, FT, LW: Integer;
+  B: TBitmap;
+  Rect : TRect;
+begin
+  FCheckFunction := CheckFunction;
+  FOwner := Sender;
+  FWidth := W;
+  FHeight := H;
+  if not GOM.IsObj(FOwner) then
+    Exit;
+  if not FCheckFunction(Info) then
+    Exit;
+
+  ImageFrameTimer.Enabled := False;
+  AnimatedBuffer := nil;
+  CanClosed := True;
+
+  TimerHide.Enabled := False;
+  TimerShow.Enabled := False;
+  GoIn := False;
+  Timer3.Enabled := True;
+  FDragDrop := True;
+  CurrentInfo := Info;
+
+  if (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_180) then
+  begin
+    WW := G.Width;
+    HH := G.Height;
   end else
   begin
-   hh:=G.width;
-   ww:=G.height;
+    HH := G.Width;
+    WW := G.Height;
   end;
-  ProportionalSize(ThHintSize,ThHintSize,ww,hh);
-  if Transparent then
+  ProportionalSize(ThHintSize, ThHintSize, Ww, Hh);
+
+  ImageBuffer := TBitmap.Create;
+  ImageBuffer.PixelFormat := Pf24bit;
+  ImageBuffer.Width := Width;
+  ImageBuffer.Height := Height;
+  AnimatedBuffer := TBitmap.Create;
+  AnimatedBuffer.PixelFormat := Pf24bit;
+  AnimatedBuffer.Width := G.Width;
+  AnimatedBuffer.Height := G.Height;
+  AnimatedBuffer.Canvas.Brush.Color := Theme_MainColor;
+  AnimatedBuffer.Canvas.Pen.Color := Theme_MainColor;
+  AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
+  AnimatedImage := G;
+
+  FW := Max(100, WW + 10 + 2);
+  FH := HH + 10;
+  Inc(FH, 3 * (5 + Canvas.TextHeight('Iy')) + 5);
+
+  ClientWidth := FW;
+  ClientHeight := FH;
+
+  //WTF?
+  Rect := Classes.Rect(Pos.X, Pos.Y, Pos.X + 100, Pos.Y + 100);
+  if Rect.Top + Fh + 10 > Screen.Height then
+    Ft := Rect.Top - 20 - Fh
+  else
+    Ft := Rect.Top + 10;
+  if Rect.Left + Fw + 10 > Screen.Width then
+    Fl := Rect.Left - 20 - Fw
+  else
+    Fl := Rect.Left + 10;
+  if Ft < 0 then
+    Ft := 200;
+  if Fl < 0 then
+    Fl := 200;
+  Top := Ft;
+  Left := Fl;
+
+  if DBKernel.ReadInteger('Options', 'PreviewSwohOptions', 0) = 0 then
+    TimerShow.Enabled := True;
+
+  if Fowner <> nil then
+    if Fowner.FormStyle = Fsstayontop then
+      SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE);
+  FClosed := False;
+
+  if (G is TGIFImage) and ((G as TGIFImage).Images.Count > 1) then
   begin
-   PaintBox1.Width:=ww+2;
-   PaintBox1.Height:=hh+2;
+    SlideNO := -1;
+    ImageFrameTimer.Interval := 1;
+    ImageFrameTimer.Enabled := True;
   end else
   begin
-   PaintBox1.Width:=ww;
-   PaintBox1.Height:=hh;
+    ImageBuffer.Assign(G);
   end;
-  DoubleBuffer := TBitmap.Create;
-  DoubleBuffer.PixelFormat:=pf24bit;
-  DoubleBuffer.Width:=PaintBox1.Width;
-  DoubleBuffer.Height:=PaintBox1.Height;
-  AnimatedBuffer:=TBitmap.create;
-  AnimatedBuffer.PixelFormat:=pf24bit;
-  AnimatedBuffer.Width:=G.width;
-  AnimatedBuffer.Height:=G.Height;
-  AnimatedBuffer.Canvas.Brush.Color:=Theme_MainColor;
-  AnimatedBuffer.Canvas.Pen.Color:=Theme_MainColor;
-  AnimatedBuffer.Canvas.Rectangle(0,0,AnimatedBuffer.Width,AnimatedBuffer.Height);
-  AnimatedImage:=G;
-  Image1.Visible:=false;
-  PaintBox1.Visible:=true;
- end;
- fw:=ww+6;
- fh:=hh+6;
- if ww=0 then ww:=1;
-// n:=(lfname div ww)+1;
- LbDescription.top:=hh+6;
 
- if ww<100 then
- begin
-  if LbDescription.Canvas.TextWidth(fname)<ThHintSize then lw:=Max(ww,50) else
-  lw:=100;
- end else
- begin
-  lw:=ww;
- end;
- LbDescription.constraints.maxwidth:=lw;
- LbDescription.constraints.minwidth:=lw;
-
- LbDescription.Caption:=fname;
- fh:=fh+LbDescription.Height+3;
- LbSize.Top:=fh;
- LbSize.caption:=format(TEXT_MES_DIMENSIONS,[inttostr(w),inttostr(h)]);
- fh:=fh-LbSize.Font.Height+3;
- LbFileSize.Top:=fh;
- LbFileSize.caption:=format(TEXT_MES_SIZE_FORMAT,[sizeintextA(Info.ItemSize)]);
- fh:=fh-LbFileSize.Font.Height+3;
-
- if FTransparent then
- ClientWidth:=Min(Max(Max(Max(fw+2,LbDescription.Width+6),LbSize.Width+6),LbFileSize.Width+6),ThHintSize+8)
- else
- ClientWidth:=Min(Max(Max(Max(fw,LbDescription.Width+6),LbSize.Width+6),LbFileSize.Width+6),ThHintSize+6);
-
- Clientheight:=fh;
- if rect.Top+fh+10>screen.height then ft:=rect.Top-20-fh else ft:=rect.Top+10;
- if rect.left+fw+10>screen.Width then fl:=rect.left-20-fw else fl:=rect.left+10;
- if ft<0 then ft:=200;
- if fl<0 then fl:=200;
- Top:=ft;
- left:=fl;
- if FuncHintReal(item) then
- begin
- if DBKernel.readinteger('Options','PreviewSwohOptions',0)=0 then
- begin
-  AlphaBlend:=true;
-  AlphaBlendValue:=0;
-  Timer1.Enabled:=true;
- end else AlphaBlend:=false;
- ShowWindow(Self.Handle,SW_SHOWNOACTIVATE);
- if fowner<>nil then
- if fowner.FormStyle=fsstayontop then
- SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE);
- Closed:=false;
- end;
- if not Bitmaped then
- begin
-  SlideNO:=-1;
-  ImageFrameTimer.Interval:=1;
-  ImageFrameTimer.Enabled:=true;
- end;
+  CreateFormImage;
+  ShowWindow(Handle, SW_SHOWNOACTIVATE);
 end;
 
 procedure TImHint.FormClick(Sender: TObject);
 begin
-  Timer2.Enabled := True;
+  TimerHide.Enabled := True;
   Close;
 end;
 
 procedure TImHint.FormCreate(Sender: TObject);
 begin
- CanClosed:=true;
- AnimatedBuffer:=nil;
- DropFileTarget1.Register(self);
- DBkernel.RecreateThemeToForm(ImHint);
- DBkernel.RegisterForm(ImHint);
- DBkernel.RegisterProcUpdateTheme(UpdateTheme,self);
- Closed:=true;
+  CanClosed := True;
+  AnimatedBuffer := nil;
+  DropFileTargetMain.Register(Self);
+  DBkernel.RegisterForm(Self);
+  DBkernel.RegisterProcUpdateTheme(UpdateTheme, Self);
+  FClosed := True;
+
+  BorderStyle := bsNone;
+  FFormBuffer := TBitmap.Create;
+  FFormBuffer.PixelFormat := pf32Bit;
+  THintManager.Instance.RegisterHint(Self);
 end;
 
 procedure TImHint.CMMOUSELEAVE(var Message: TWMNoParams);
 var
-  p : tpoint;
-  r : trect;
+  P : tpoint;
+  R : trect;
 begin
- r:=rect(self.left,self.top,self.left+self.width, self.top+self.height);
- getcursorpos(p);
- if not PtInRect(r,p) then
- begin
-  Timer2.Enabled:=true;
-//  close;
- end;
-end;
-
-procedure TImHint.FormHide(Sender: TObject);
-begin
-  HideShadow;
-end;
-
-procedure TImHint.HideShadow;
-begin
- if DBKernel.ReadInteger('Options','PreviewSwohOptions',0)=1 then
- SetClassLong(Handle,GCL_STYLE, GetClassLong(Handle, GCL_STYLE) or CS_DROPSHADOW) ;
+  R := Rect(Self.Left, Self.Top, Self.Left + Self.Width, Self.Top + Self.Height);
+  Getcursorpos(P);
+  if not PtInRect(R, P) then
+  begin
+    TimerHide.Enabled := True;
+    // close;
+  end;
 end;
 
 procedure TImHint.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  DragImage, S : TBitmap;
+  DragImage : TBitmap;
+  FImageList : TBitmapImageList;
   W, H : Integer;
 begin
   if not FDragDrop then
@@ -353,55 +344,55 @@ begin
   begin
     CanClosed := False;
     DragImageList.Clear;
-    DropFileSource1.Files.Clear;
-    DropFileSource1.Files.Add(CurrentFileName);
-    if FBitmaped then
-      S := Image1.Picture.Bitmap
-    else
-      S := DoubleBuffer;
-    W := S.Width;
-    H := S.Height;
-    ProportionalSize(ThSize, ThSize, W, H);
-    DragImage:=TBitmap.Create;
-    try
-      DragImage.PixelFormat := pf24bit;
-      DoResize(W, H, S, DragImage);
-      DragImageList.Masked := False;
-      DragImageList.Width := DragImage.Width;
-      DragImageList.Height := DragImage.Height;
+    DropFileSourceMain.Files.Clear;
+    DropFileSourceMain.Files.Add(CurrentInfo.FileName);
 
-      RemoveBlackColor(DragImage);
-      DragImageList.Add(DragImage, nil);
+    FImageList := TBitmapImageList.Create;
+    try
+      W := ImageBuffer.Width;
+      H := ImageBuffer.Height;
+      ProportionalSize(ThSize, ThSize, W, H);
+      DragImage:=TBitmap.Create;
+      try
+        DragImage.PixelFormat := pf24bit;
+        DoResize(W, H, ImageBuffer, DragImage);
+
+        FImageList.AddBitmap(DragImage, False);
+        CreateDragImageEx(nil, DragImageList, FImageList, clGradientActiveCaption,
+          clGradientInactiveCaption, clHighlight, Font, ExtractFileName(CurrentInfo.FileName));
+
+      finally
+        DragImage.Free;
+      end;
     finally
-      DragImage.Free;
+      FImageList.Free;
     end;
-    DropFileSource1.ImageIndex := 0;
-    DropFileSource1.Execute;
+    DropFileSourceMain.ImageIndex := 0;
+    DropFileSourceMain.Execute;
     CanClosed := True;
   end;
   Timer3.Enabled := True;
 end;
 
-procedure TImHint.Timer1Timer(Sender: TObject);
+procedure TImHint.TimerShowTimer(Sender: TObject);
 begin
  if DBKernel.readinteger('Options','PreviewSwohOptions',0)=0 then
  begin
-  self.AlphaBlendValue:=min(self.AlphaBlendValue+40,255);
-  if self.AlphaBlendValue>=255 then
-  Timer1.Enabled:=false;
+  //AlphaBlendValue:=min(self.AlphaBlendValue+40,255);
+  //if AlphaBlendValue>=255 then
+  TimerShow.Enabled:=false;
  end;
 end;
 
-procedure TImHint.Timer2Timer(Sender: TObject);
+procedure TImHint.TimerHideTimer(Sender: TObject);
 begin
  if DBKernel.readinteger('Options','PreviewSwohOptions',0)=0{ and self.visible} then
  begin
-  Timer1.Enabled:=false;
-  HideShadow;
-  self.AlphaBlendValue:=max(self.AlphaBlendValue-40,0);
-  if self.AlphaBlendValue<=0 then
+  TimerShow.Enabled:=false;
+  //AlphaBlendValue:=max(self.AlphaBlendValue-40,0);
+  if AlphaBlendValue<=0 then
   begin
-   Timer2.Enabled:=false;
+   TimerHide.Enabled:=false;
    close;
   end;
  end;
@@ -409,35 +400,36 @@ end;
 
 procedure TImHint.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
- if Closed then exit;
- if (self.AlphaBlendValue>0) and (DBKernel.readinteger('Options','PreviewSwohOptions',0)=0) {and self.visible} then
- begin
-  Timer2.Enabled:=true;
-  CanClose:=false;
- end else if DBKernel.readinteger('Options','PreviewSwohOptions',0)=1 then RecreateWnd;
- Timer3.Enabled:=false;
- closed:=true;
+ if FClosed then
+   Exit;
+ {
+  if (AlphaBlendValue > 0) and (DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 0) then
+  begin
+    TimerHide.Enabled := True;
+    CanClose := False;
+  end
+  else if DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 1 then
+    RecreateWnd;          }
+  Timer3.Enabled := False;
+  FClosed := True;
 end;
 
 procedure TImHint.Image1ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
-  MenuInfo : TDBPopupMenuInfo;
-  MenuRecord : TDBPopupMenuInfoRecord;
+  MenuInfo: TDBPopupMenuInfo;
 begin
- if citem <>nil then
- begin
-  Timer3.Enabled:=false;
-  FDragDrop:=true;
+  Timer3.Enabled := False;
+  FDragDrop := True;
   MenuInfo := TDBPopupMenuInfo.Create;
-  MenuRecord := TDBPopupMenuInfoRecord.CreateFromRecordInfo(CurrentInfo);
-  MenuInfo.Add(MenuRecord);
-  MenuInfo.AttrExists:=false;
-  TDBPopupMenu.Instance.Execute(Image1.ClientToScreen(MousePos).x,Image1.ClientToScreen(MousePos).y,MenuInfo);
-  HideShadow;
-  if not closed then Timer2.Enabled:=true;
-  FDragDrop:=false;
- end
+  MenuInfo.Add(CurrentInfo);
+  MenuInfo.AttrExists := False;
+  MenuInfo.ListItem := nil;
+  MenuInfo.IsListItem := False;
+  TDBPopupMenu.Instance.Execute(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y, MenuInfo);
+  if not FClosed then
+    TimerHide.Enabled := True;
+  FDragDrop := False;
 end;
 
 procedure TImHint.Timer3Timer(Sender: TObject);
@@ -445,7 +437,7 @@ var
   p : tpoint;
   r : trect;
 begin
- if Closed then
+ if FClosed then
  begin
   Timer3.enabled:=false;
   Exit;
@@ -455,8 +447,7 @@ begin
  getcursorpos(p);
  if not PtInRect(r,p) then
  begin
-  Timer2.Enabled:=true;
-//  Close;
+  TimerHide.Enabled:=true;
  end;
  GoIn:=false;
 end;
@@ -469,26 +460,26 @@ end;
 
 procedure TImHint.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if FOwner<>nil then
-  if FOwner.FormStyle=fsStayOnTop then
-  FOwner.SetFocus;
-  FOwner:=nil;
+  THintManager.Instance.UnRegisterHint(Self);
+  if GOM.IsObj(FOwner) then
+    if FOwner.FormStyle = FsStayOnTop then
+      FOwner.SetFocus;
   F(AnimatedBuffer);
-  F(DoubleBuffer);
-  ImageFrameTimer.Enabled:=false;
-  DestroyTimer.Enabled:=true;
+  F(ImageBuffer);
+  ImageFrameTimer.Enabled := False;
+  Release;
 end;
 
 procedure TImHint.UpdateTheme(Sender: TObject);
 begin
-  DBKernel.RecreateThemeToForm(ImHint);
+  DBKernel.RecreateThemeToForm(Self);
 end;
 
 procedure TImHint.FormDestroy(Sender: TObject);
 begin
-  DropFileTarget1.Unregister;
+  DropFileTargetMain.Unregister;
   DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
-  DBkernel.UnRegisterForm(ImHint);
+  DBkernel.UnRegisterForm(Self);
 end;
 
 procedure TImHint.FormKeyPress(Sender: TObject; var Key: Char);
@@ -500,7 +491,7 @@ end;
 procedure TImHint.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
-  if Closed then
+  if FClosed then
     Exit;
 
   if Msg.message = WM_KEYDOWN then
@@ -514,8 +505,6 @@ function TImHint.GetNextImageNO: integer;
 var
   im : TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
   im:=(AnimatedImage as TGIFImage);
   Result:=SlideNO;
   inc(Result);
@@ -527,15 +516,12 @@ begin
   begin
    Result:=GetNextImageNOX(Result);
   end;
- end;
 end;
 
 function TImHint.GetNextImageNOX(NO: Integer): integer;
 var
   im : TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
   im:=(AnimatedImage as TGIFImage);
   Result:=NO;
   inc(Result);
@@ -547,15 +533,12 @@ begin
   begin
    Result:=GetNextImageNOX(Result);
   end;
- end;
 end;
 
 function TImHint.GetPreviousImageNO: integer;
 var
   im : TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
   im:=(AnimatedImage as TGIFImage);
   Result:=SlideNO;
   dec(Result);
@@ -567,15 +550,12 @@ begin
   begin
    Result:=GetPreviousImageNOX(Result);
   end;
- end;
 end;
 
 function TImHint.GetPreviousImageNOX(NO: Integer): integer;
 var
   im : TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
   im:=(AnimatedImage as TGIFImage);
   Result:=NO;
   dec(Result);
@@ -587,30 +567,23 @@ begin
   begin
    Result:=GetPreviousImageNOX(Result);
   end;
- end;
-end;
-
-procedure TImHint.PaintBox1Paint(Sender: TObject);
-begin
- if DoubleBuffer<>nil then
- begin
-  PaintBox1.Canvas.Draw(0,0,DoubleBuffer);
- end;
 end;
 
 procedure TImHint.ImageFrameTimerTimer(Sender: TObject);
 var
-  c, PreviousNumber : integer;
-  r, bounds_  : TRect;
-  im : TGifImage;
-  DisposalMethod : TDisposalMethod;
-  del : integer;
-  TimerEnabled:Boolean;
-  gsi : TGIFSubImage;
+  C, PreviousNumber: Integer;
+  R, Bounds_: TRect;
+  Im: TGifImage;
+  DisposalMethod: TDisposalMethod;
+  Del: Integer;
+  TimerEnabled: Boolean;
+  Gsi: TGIFSubImage;
 begin
- del:=100;
- if Closed or FBitmaped then exit;
- DisposalMethod:=dmNone;
+  Del := 100;
+  if FClosed then
+    Exit;
+  DisposalMethod := DmNone;
+
  if SlideNO=-1 then
  begin
   SlideNO:=GetFirstImageNO;
@@ -660,32 +633,22 @@ begin
   im.Images[c].StretchDraw(AnimatedBuffer.Canvas,r,im.Images[SlideNO].Transparent,false);
  end;
  im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas,r,im.Images[SlideNO].Transparent,false);
- if FTransparent then
- DoubleBuffer.Canvas.Pen.Color:=0 else
- DoubleBuffer.Canvas.Pen.Color:=Theme_MainColor;
- DoubleBuffer.Canvas.Brush.Color:=Theme_MainColor;
- DoubleBuffer.Canvas.Rectangle(0,0,DoubleBuffer.Width,DoubleBuffer.Height);
 
- if FTransparent then
- begin
-  case CurrentInfo.ItemRotate of
-    DB_IMAGE_ROTATE_0: StretchCoolEx0(1,1,DoubleBuffer.Width-2,DoubleBuffer.Height-2,AnimatedBuffer,DoubleBuffer,0);
-    DB_IMAGE_ROTATE_90: StretchCoolEx90(1,1,DoubleBuffer.Height-2,DoubleBuffer.Width-2,AnimatedBuffer,DoubleBuffer,0);
-    DB_IMAGE_ROTATE_180: StretchCoolEx180(1,1,DoubleBuffer.Width-2,DoubleBuffer.Height-2,AnimatedBuffer,DoubleBuffer,0);
-    DB_IMAGE_ROTATE_270: StretchCoolEx270(1,1,DoubleBuffer.Height-2,DoubleBuffer.Width-2,AnimatedBuffer,DoubleBuffer,0);
-  end;
- end else
- begin
-  case CurrentInfo.ItemRotate of
-    DB_IMAGE_ROTATE_0: StretchCoolEx0(0,0,DoubleBuffer.Width,DoubleBuffer.Height,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATE_90: StretchCoolEx90(0,0,DoubleBuffer.Height,DoubleBuffer.Width,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATE_180: StretchCoolEx180(0,0,DoubleBuffer.Width,DoubleBuffer.Height,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
-    DB_IMAGE_ROTATE_270: StretchCoolEx270(0,0,DoubleBuffer.Height,DoubleBuffer.Width,AnimatedBuffer,DoubleBuffer,Theme_MainColor);
-  end;
- end;
+ ImageBuffer.Canvas.Pen.Color:=Theme_MainColor;
+ ImageBuffer.Canvas.Brush.Color:=Theme_MainColor;
+ ImageBuffer.Canvas.Rectangle(0,0,ImageBuffer.Width,ImageBuffer.Height);
 
- DrawHintInfo(DoubleBuffer.Canvas.Handle,DoubleBuffer.Width,DoubleBuffer.Height,CurrentInfo);
- PaintBox1.Canvas.Draw(0,0,DoubleBuffer);
+
+  case CurrentInfo.Rotation of
+    DB_IMAGE_ROTATE_0: StretchCoolEx0(0,0,ImageBuffer.Width,ImageBuffer.Height,AnimatedBuffer,ImageBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_90: StretchCoolEx90(0,0,ImageBuffer.Height,ImageBuffer.Width,AnimatedBuffer,ImageBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_180: StretchCoolEx180(0,0,ImageBuffer.Width,ImageBuffer.Height,AnimatedBuffer,ImageBuffer,Theme_MainColor);
+    DB_IMAGE_ROTATE_270: StretchCoolEx270(0,0,ImageBuffer.Height,ImageBuffer.Width,AnimatedBuffer,ImageBuffer,Theme_MainColor);
+  end;
+
+
+ DrawHintInfo(ImageBuffer.Canvas.Handle,ImageBuffer.Width,ImageBuffer.Height,CurrentInfo);
+ CreateFormImage;
  ImageFrameTimer.Enabled:=false;
  ImageFrameTimer.Interval:=del;
  if not TimerEnabled then ImageFrameTimer.Enabled:=false else
@@ -697,27 +660,19 @@ var
   i : Integer;
 begin
  Result:=-1;
- if ValidImages=0 then Result:=0 else
- begin
   for i:=0 to (AnimatedImage as TGIFImage).Images.count-1 do
   if not (AnimatedImage as TGIFImage).Images[i].Empty then
   begin
    Result:=i;
    break;
   end;
- end;
 end;
 
-procedure TImHint.DestroyTimerTimer(Sender: TObject);
+function TImHint.GetFormID: string;
 begin
- if not CanClosed then exit;
- DestroyTimer.Enabled:=false;
- Release;
- ImHint:=nil;
+  Result := 'Hint';
 end;
 
 initialization
-
-ImHint:=nil;
 
 end.

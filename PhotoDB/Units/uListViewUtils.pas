@@ -13,6 +13,38 @@ type
     function GetDisplayRect : TRect;
   end;
 
+  TEasySelectionManagerX = class(TEasyOwnedPersistent)
+  private
+    FAlphaBlend: Boolean;
+    FAlphaBlendSelRect: Boolean;
+    FBlendAlphaImage: Byte;
+    FBlendAlphaSelRect: Byte;
+    FBlendAlphaTextRect: Byte;
+    FBlendColorIcon: TColor;
+    FBlendColorSelRect: TColor;
+    FBlendIcon: Boolean;
+    FBlurAlphaBkGnd: Boolean;
+    FBorderColor: TColor;
+    FBorderColorSelRect: TColor;
+    FColor: TColor;
+    FCount: Integer;
+    FFocusedColumn: TEasyColumn;
+    FFocusedItem: TEasyItem;
+    FAnchorItem: TEasyItem;
+    FFocusedGroup: TEasyGroup;
+    FEnabled: Boolean;
+    FForceDefaultBlend: Boolean;
+    FFullCellPaint: Boolean;
+    FFullItemPaint: Boolean;
+    FFullRowSelect: Boolean;
+    FGradient: Boolean;
+    FGradientColorBottom: TColor;
+    FGradientColorTop: TColor;
+  public
+    property AGradientColorBottom : TColor write FGradientColorBottom;
+    property AGradientColorTop : TColor write FGradientColorTop;
+  end;
+
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
@@ -54,6 +86,8 @@ var
   TempBmp : TBitmap;
   CTD, CBD, DY : Integer;
   ClientRect : TRect;
+  RectArray: TEasyRectArrayObject;
+  ColorFrom, ColorTo : TColor;
 begin
   Graphic := BImageList[Item.ImageIndex].Graphic;
 
@@ -65,6 +99,28 @@ begin
 
   X := ARect.Left + W div 2 - ImageW div 2;
   Y := ARect.Bottom - ImageH;
+
+  if (esosHotTracking in Item.State) then
+  begin
+    if (Rating = 0) and (ID <> 0) then
+      Rating := -1;
+
+    if not Item.Selected then
+    begin
+      Item.ItemRectArray(nil, ACanvas, RectArray);
+      //HACK!
+      ColorFrom := ListView.Selection.GradientColorTop;
+      ColorTo := ListView.Selection.GradientColorBottom;
+      TEasySelectionManagerX(ListView.Selection).AGradientColorTop := ColorDiv2(ColorDiv2(ColorDiv2(ColorFrom, ListView.Color), ListView.Color), ListView.Color);
+      TEasySelectionManagerX(ListView.Selection).AGradientColorBottom := ColorDiv2(ColorDiv2(ColorDiv2(ColorTo, ListView.Color ), ListView.Color), ListView.Color);
+
+      Item.View.PaintSelectionRect(Item, nil, Item.Caption, RectArray, ACanvas, RectArray.BoundsRect, True);
+
+      //HACK!
+      TEasySelectionManagerX(ListView.Selection).AGradientColorTop := ColorFrom;
+      TEasySelectionManagerX(ListView.Selection).AGradientColorBottom := ColorTo;
+    end;
+  end;
 
   TempBmp := nil;
   try
@@ -104,10 +160,6 @@ begin
 
   if ProcessedFilesCollection.ExistsFile(FileName) <> nil then
     DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.Icons[DB_IC_RELOADING + 1], 16, 16, 0, 0, DI_NORMAL);
-
-  Exists := 1;
-  if (Rating = 0) and (ID <> 0) and (esosHotTracking in Item.State) then
-    Rating := -1;
 
   if ShowInfo then
     DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, Rotate, Access, FileName, Crypted, Exists, ID);
@@ -154,6 +206,7 @@ const
   ImageMoveLength = 7;
   ImagePadding = 10;
   RoundRadius = 8;
+  MaxItems = 6;
 
 begin
   TempImage := TBitmap.Create;
@@ -166,11 +219,10 @@ begin
     if ListView <> nil then
     begin
       ItemsSelected := ListView.Selection.Count;
-      FSelCount := Min(9, ItemsSelected);
+      FSelCount := Min(MaxItems, ItemsSelected);
 
       SelectedItem := ListView.Selection.First;
 
-      SelectedItem := ListView.Selection.First;
       for I := 1 to FSelCount do
       begin
         if ListView.Selection.FocusedItem <> SelectedItem then
@@ -183,10 +235,10 @@ begin
       SetLength(Items, Length(Items) + 1);
       Items[Length(Items) - 1] := ListView.Selection.FocusedItem;
       FSelCount := Length(Items);
-    end else
+    end else begin
       ItemsSelected := SImageList.Count;
-
-    FSelCount := Min(9, ItemsSelected);
+      FSelCount := Min(MaxItems, ItemsSelected);
+    end;
 
     MaxH := 50;
     MaxW := 50;
@@ -339,7 +391,7 @@ begin
 
   ListView.CellSizes.Thumbnail.Width := ThWidth + AddSize div CountOfItemsX;
   ListView.CellSizes.Thumbnail.Height := ImageSize + 40;
-  ListView.Selection.RoundRectRadius := ImageSize div 10;
+  ListView.Selection.RoundRectRadius := Min(10, ImageSize div 10);
 end;
 
 function GetListViewHeaderHeight(ListView: TListView): Integer;

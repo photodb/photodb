@@ -853,7 +853,7 @@ begin
       pD[XD].R := (pD[XD].R * W + pS[J].R * W1 + $7F) div $FF;
       pD[XD].G := (pD[XD].G * W + pS[J].G * W1 + $7F) div $FF;
       pD[XD].B := (pD[XD].B * W + pS[J].B * W1 + $7F) div $FF;
-      pD[XD].L := Max(W1, PD[XD].L);
+      pD[XD].L := Max(pD[XD].L, W1);
     end;
   end;
 end;

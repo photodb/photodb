@@ -8,16 +8,17 @@ uses
   Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts,
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
-  Network, GraphicCrypt, AddSessionPasswordUnit, UnitCrypting,
-  ShellContextMenu, ShlObj, DropSource, DropTarget, Clipbrd, GraphicsCool,
+  Network, GraphicCrypt, UnitCrypting, DropSource, DragDropFile, DragDrop,
+  DropTarget, ScPanel, AddSessionPasswordUnit, uGOM,
+  ShellContextMenu, ShlObj, Clipbrd, GraphicsCool,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
-  EasyListview, ScPanel, MPCommonUtilities, MPCommonObjects,
-  DragDrop, UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
+  EasyListview, MPCommonUtilities, MPCommonObjects,
+  UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
   uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, DragDropFile, uMemory;
+  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, uMemory;
 
 type
   TExplorerForm = class(TThreadForm)
@@ -289,7 +290,7 @@ type
       var S: String);
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure HintTimerTimer(Sender: TObject);
-    function hintrealA(item: TObject): boolean;
+    function hintrealA(Info: TDBPopupMenuInfoRecord): Boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     Procedure SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
@@ -583,7 +584,7 @@ type
 
      MouseDowned : Boolean;
      PopupHandled : boolean;
-     loadingthitem, shloadingthitem : TEasyItem;
+     LastMouseItem, ItemWithHint : TEasyItem;
      LastListViewSelected : TEasyItem;
      FListDragItems : array of TEasyItem;
 
@@ -746,7 +747,7 @@ begin
       LoadFilesFromClipBoard(Effects, Files);
       ToolButton7.Enabled := Files.Count > 0;
     finally
-      Files.Free;
+      F(Files);
     end;
     if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
       ToolButton7.Enabled := False;
@@ -995,6 +996,7 @@ begin
   end;
   FW7TaskBar := CreateTaskBarInstance;
   CreateBackgrounds;
+  GOM.AddObj(Self);
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
@@ -1021,10 +1023,9 @@ begin
  r :=  ElvMain.Scrollbars.ViewableViewportRect;
  if (Item<>nil) and (Item.SelectionHitPt(Point(MousePos.x+r.Left,MousePos.y+r.Top), eshtClickSelect) or VitrualKey) then
  begin
-  Loadingthitem:= nil;
+  LastMouseItem:= nil;
   Application.HideHint;
-  if ImHint<>nil then
-  ImHint.Close;
+  THintManager.Instance.CloseHint;
   if Item.Index>fFilesInfo.Count-1 then exit;
 
   SetForegroundWindow(Self.Handle);
@@ -1581,27 +1582,27 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
- DirectoryWatcher.StopWatch;
- DirectoryWatcher.Free;
- aScript.Free;
- DragFilesPopup.Free;
- FBitmapImageList.Free;
- ExtIcons.Free;
- NewFormState;
- SaveWindowPos1.SavePosition;
- DropFileTarget2.Unregister;
- DropFileTarget1.Unregister;
- DBKernel.UnRegisterChangesID(Sender,ChangedDBDataByID);
- DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
+  DirectoryWatcher.StopWatch;
+  DirectoryWatcher.Free;
+  aScript.Free;
+  DragFilesPopup.Free;
+  FBitmapImageList.Free;
+  ExtIcons.Free;
+  NewFormState;
+  SaveWindowPos1.SavePosition;
+  DropFileTarget2.Unregister;
+  DropFileTarget1.Unregister;
+  DBKernel.UnRegisterChangesID(Sender,ChangedDBDataByID);
+  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
 
- DBkernel.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
+  DBkernel.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
 
- DBkernel.WriteString('Explorer','Patch',GetCurrentPathW.Path);
- DBkernel.WriteInteger('Explorer','PatchType',GetCurrentPathW.PType);
- fStatusProgress.free;
- FormManager.UnRegisterMainForm(Self);
- DBKernel.UnRegisterForm(self);
-
+  DBkernel.WriteString('Explorer','Patch',GetCurrentPathW.Path);
+  DBkernel.WriteInteger('Explorer','PatchType',GetCurrentPathW.PType);
+  fStatusProgress.free;
+  FormManager.UnRegisterMainForm(Self);
+  DBKernel.UnRegisterForm(self);
+  GOM.RemoveObj(Self);
 end;
 
 procedure TExplorerForm.ListView1Edited(Sender: TObject; Item: TEasyItem;
@@ -1650,59 +1651,60 @@ procedure TExplorerForm.HintTimerTimer(Sender: TObject);
 var
   p, p1:tpoint;
   Index, i : integer;
+  MenuInfo : TDBPopupMenuInfoRecord;
 begin
  GetCursorPos(p);
  p1:=ElvMain.ScreenToClient(p);
- if (not Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (shloadingthitem<>loadingthitem) then
+ if (not Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>LastMouseItem) or (ItemWithHint<>LastMouseItem) then
  begin
   HintTimer.Enabled:=false;
   Exit;
  end;
- if Loadingthitem=nil then exit;
- Index:=Loadingthitem.index;
+ if LastMouseItem=nil then exit;
+ Index:=LastMouseItem.index;
  if Index<0 then exit;
  Index:=ItemIndexToMenuIndex(index);
  if Index>fFilesInfo.Count-1 then exit;
 
   if not (CtrlKeyDown or ShiftKeyDown) then
   if DBKernel.Readbool('Options','UseHotSelect',true) then
-  if not loadingthitem.Selected then
+  if not LastMouseItem.Selected then
   begin
    if not (CtrlKeyDown or ShiftKeyDown) then
    for i:=0 to ElvMain.Items.Count-1 do
    if ElvMain.Items[i].Selected then
-   if loadingthitem<>ElvMain.Items[i] then
+   if LastMouseItem<>ElvMain.Items[i] then
    ElvMain.Items[i].Selected:=false;
    if ShiftKeyDown then
-    ElvMain.Selection.SelectRange(loadingthitem,ElvMain.Selection.FocusedItem,false,false) else
+    ElvMain.Selection.SelectRange(LastMouseItem,ElvMain.Selection.FocusedItem,false,false) else
    if not ShiftKeyDown then
    begin
-    loadingthitem.Selected:=true;
+    LastMouseItem.Selected:=true;
    end;
   end;
-  loadingthitem.Focused:=true;
+  LastMouseItem.Focused:=true;
 
- if not ExtInMask(SupportedExt,GetExt(fFilesInfo[Index].FileName)) then begin exit; end;
+ if not ExtInMask(SupportedExt,GetExt(FFilesInfo[Index].FileName)) then begin exit; end;
 
  If not FileExists(fFilesInfo[Index].FileName) then exit;
  HintTimer.Enabled:=false;
- UnitHintCeator.fitem:= loadingthitem;
- UnitHintCeator.threct:=rect(p.X,p.Y,p.x+100,p.Y+100);
- UnitHintCeator.fInfo:=RecordInfoOne(fFilesInfo[Index].FileName,fFilesInfo[Index].ID,fFilesInfo[Index].Rotate,fFilesInfo[Index].Rating, fFilesInfo[Index].Access, fFilesInfo[Index].FileSize, fFilesInfo[index].Comment, fFilesInfo[index].KeyWords,fFilesInfo[index].Owner,fFilesInfo[index].Collections,fFilesInfo[index].Groups,fFilesInfo[index].Date,fFilesInfo[index].IsDate,fFilesInfo[index].IsTime,fFilesInfo[index].Time,fFilesInfo[index].Crypted,fFilesInfo[index].Include,fFilesInfo[index].Loaded,fFilesInfo[index].Links);
- UnitHintCeator.work_.Add(fFilesInfo[Index].FileName);
- UnitHintCeator.hr:=self.hintrealA;
- UnitHintCeator.Owner:=self;
 
- HintCeator.Create(false);
+  MenuInfo := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[Index]);
+  THintManager.Instance.CreateHintWindow(Self, MenuInfo, P, HintRealA);
 end;
 
-function TExplorerForm.hintrealA(item: TObject): boolean;
+function TExplorerForm.hintrealA(Info: TDBPopupMenuInfoRecord): Boolean;
 var
-  p, p1 : tpoint;
+  P, P1 : TPoint;
+  Item : TeasyItem;
+  Index : Integer;
 begin
- GetCursorPos(p);
- p1:=ElvMain.ScreenToClient(p);
- result:=not ((not self.Active) or (not ElvMain.Focused) or (ItemAtPos(p1.X,p1.y)<>loadingthitem) or (ItemAtPos(p1.X,p1.y)=nil) or (item<>loadingthitem));
+  GetCursorPos(P);
+  P1 := ElvMain.ScreenToClient(P);
+  Item := ItemAtPos(P1.X, P1.Y);
+  Index := ItemIndexToMenuIndex(Item.Index);
+  Result := not((not Self.Active) or (not ElvMain.Focused) or (Item <> LastMouseItem) or
+      (Item = nil) or (fFilesInfo[Index].FileName <> Info.FileName));
 end;
 
 procedure TExplorerForm.ListView1MouseMove(Sender: TObject;
@@ -1737,11 +1739,8 @@ begin
       FDBDragPoint := ElvMain.ScreenToClient(FDBDragPoint);
       CreateDragImage(ElvMain, DragImageList, FBitmapImageList, Item.Caption, FDBDragPoint, SpotX, SpotY);
 
-      //TODO: spot point
-      //ImW := (EasyRect.IconRect.Right - EasyRect.IconRect.Left) div 2 - ImW div 2;
-      //ImH := (EasyRect.IconRect.Bottom - EasyRect.IconRect.Top) div 2 - ImH div 2;
-      DropFileSourceMain.ImageHotSpotX := SpotX;//Min(MaxW, Max(1, FDBDragPoint.X - EasyRect.IconRect.Left + n - ImW));
-      DropFileSourceMain.ImageHotSpotY := SpotY;//Min(MaXH, Max(1, FDBDragPoint.Y - EasyRect.IconRect.Top+  n - ImH + ElvMain.Scrollbars.ViewableViewportRect.Top));
+      DropFileSourceMain.ImageHotSpotX := SpotX;
+      DropFileSourceMain.ImageHotSpotY := SpotY;
 
       SetSelected(nil);
       DropFileSourceMain.Files.Clear;
@@ -1751,9 +1750,7 @@ begin
       SelfDraging := True;
 
       Application.HideHint;
-      if ImHint <> nil then
-        if not UnitImHint.Closed then
-          ImHint.Close;
+      THintManager.Instance.CloseHint;
 
       HintTimer.Enabled := False;
       FWasDragAndDrop := True;
@@ -1768,39 +1765,34 @@ begin
     end;
   end;
 
-  if ImHint<>nil then
-  begin
-    if WindowFromPoint(MousePos) = ImHint.Handle then
-      Exit;
-  end;
-
-  if Loadingthitem = ItemByPointImage(ElvMain, Point(X,Y), ListView) then
+  if THintManager.Instance.HintAtPoint(MousePos) <> nil then
     Exit;
 
-  Loadingthitem := ItemByPointImage(ElvMain, Point(X,Y));
+  Item := ItemByPointImage(ElvMain, Point(X,Y), ListView);
 
-  if loadingthitem=nil then
+  if LastMouseItem = Item then
+    Exit;
+
+  Application.HideHint;
+  THintManager.Instance.CloseHint;
+  HintTimer.Enabled := False;
+
+  if (Item <> nil) then
   begin
-    Application.HideHint;
-    if ImHint<>nil then
-      if not UnitImHint.closed then
-        ImHint.close;
-    HintTimer.Enabled:=false;
-  end else
-  begin
-    HintTimer.Enabled:=false;
-    if Self.Active then
+    LastMouseItem := Item;
+    HintTimer.Enabled := False;
+    if Active then
     begin
       if DBKernel.Readbool('Options', 'AllowPreview', True) then
         HintTimer.Enabled := True;
-      shloadingthitem := loadingthitem;
+      ItemWithHint := LastMouseItem;
     end;
-    Index := ItemIndexToMenuIndex(loadingthitem.Index);
+    Index := ItemIndexToMenuIndex(LastMouseItem.Index);
     if fFilesInfo.Count=0 then
       Exit;
 
     ElvMain.ShowHint := False;
-    ElvMain.Hint:=fFilesInfo[Index].Comment;
+    ElvMain.Hint := FFilesInfo[Index].Comment;
   end;
 end;
 
@@ -2163,11 +2155,10 @@ end;
 procedure TExplorerForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
- ExplorerManager.RemoveExplorer(Self);
- if ImHint<>nil then
- ImHint.close;
- hinttimer.Enabled:=false;
- Release;
+  ExplorerManager.RemoveExplorer(Self);
+  THintManager.Instance.CloseHint;
+  Hinttimer.Enabled:=false;
+  Release;
 end;
 
 procedure TExplorerForm.SelectAll1Click(Sender: TObject);
@@ -2889,24 +2880,22 @@ begin
       Msg.message := 0;
     end;
 
-      Application.HideHint;
-      if ImHint <> nil then
-        if not UnitImHint.Closed then
-          ImHint.Close;
+    Application.HideHint;
+    THintManager.Instance.CloseHint;
   end;
 
-    // middle mouse button
+  // middle mouse button
     if Msg.message = 519 then
-  begin
-   Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
-   BigImagesSizeForm.Execute(self,fPictureSize,BigSizeCallBack);
-   Msg.message:=0;
+    begin
+     Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
+      BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
+      Msg.message := 0;
+    end;
+
   end;
 
- end;
-
- if Msg.message=256 then
- begin
+  if Msg.message = 256 then
+  begin
   WindowsMenuTickCount:=GetTickCount;
   if (Msg.wParam=37) and CtrlKeyDown then SpeedButton1Click(nil);
   if (Msg.wParam=39) and CtrlKeyDown then SpeedButton2Click(nil);
@@ -3425,10 +3414,9 @@ begin
  Item:=ListView1Selected;
  if Item<>nil then
  begin
-  loadingthitem:= nil;
+  LastMouseItem:= nil;
   Application.HideHint;
-  if ImHint<>nil then
-  ImHint.close;
+  THintManager.Instance.CloseHint;
   PmItemPopup.Tag:=ItemIndexToMenuIndex(Item.Index);
   PmItemPopup.Popup(ImPreview.clienttoscreen(MousePos).X ,ImPreview.clienttoscreen(MousePos).y);
  end else begin
@@ -4293,17 +4281,14 @@ var
   P : TPoint;
   R : TRect;
 begin
- if ImHint=nil then Exit;
- R:=rect(ImHint.left,ImHint.top,ImHint.left+ImHint.width, ImHint.top+ImHint.height);
- GetCursorPos(p);
- if PtInRect(r,p) then
- begin
-  Exit;
- end;
- LoadingthItem:= nil;
- Application.HideHint;
- ImHint.Close;
- hinttimer.Enabled:=false;
+  GetCursorPos(p);
+  if THintManager.Instance.HintAtPoint(P) <> nil then
+    Exit;
+
+  LastMouseItem:= nil;
+  Application.HideHint;
+  THintManager.Instance.CloseHint;
+  Hinttimer.Enabled := False;
 end;
 
 procedure TExplorerForm.Copy3Click(Sender: TObject);
@@ -5070,7 +5055,7 @@ end;
 
 procedure TExplorerForm.Addsessionpassword1Click(Sender: TObject);
 begin
- AddSessionPassword;
+  AddSessionPassword;
 end;
 
 procedure TExplorerForm.EnterPassword1Click(Sender: TObject);
@@ -7032,10 +7017,8 @@ begin
       if RatingPopupMenu1.Tag > 0 then
       begin
         Application.HideHint;
-        if ImHint <> nil then
-          if not UnitImHint.closed then
-            ImHint.Close;
-        self.loadingthitem := nil;
+        THintManager.Instance.CloseHint;
+        LastMouseItem := nil;
         RatingPopupMenu1.Popup(p1.X, p1.Y);
         Exit;
       end;
@@ -7047,9 +7030,7 @@ begin
   fDBCanDragW := false;
   SetLength(fFilesToDrag, 0);
   Application.HideHint;
-  if ImHint <> nil then
-    if not UnitImHint.closed then
-      ImHint.Close;
+  THintManager.Instance.CloseHint;
   HintTimer.Enabled := false;
 
   GetCursorPos(p1);
@@ -7158,6 +7139,7 @@ begin
   Index := ItemIndexToMenuIndex(Item.Index);
   Info := FFilesInfo[Index];
 
+  Exists := 1;
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.FileName,
     Info.Rating, Info.Rotate, Info.Access, Info.Crypted, Exists);

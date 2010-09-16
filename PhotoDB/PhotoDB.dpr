@@ -298,7 +298,8 @@ uses
   MSXML2_TLB in 'External\Xml\MSXML2_TLB.pas',
   OmniXML_MSXML in 'External\Xml\OmniXML_MSXML.pas',
   uImageConvertThread in 'Threads\uImageConvertThread.pas',
-  uWatermarkOptions in 'uWatermarkOptions.pas' {FrmWatermarkOptions};
+  uWatermarkOptions in 'uWatermarkOptions.pas' {FrmWatermarkOptions},
+  AddSessionPasswordUnit in 'AddSessionPasswordUnit.pas' {AddSessionPasswordForm};
 
 {$R *.res}
 

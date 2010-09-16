@@ -3,207 +3,170 @@ unit UnitHintCeator;
 interface
 
 uses
-  dolphin_db, UnitDBKernel, Windows, Messages, SysUtils, Variants, Classes,
+  Windows, Messages, SysUtils, Classes, ExtCtrls, JPEG, DB,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
-  Dialogs, StdCtrls, ComCtrls, ShellCtrls, DmProgress, RAWImage,
-  ExtCtrls, jpeg, db, GraphicCrypt, UnitDBCommon, ImageConverting;
+  Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage,
+  GraphicCrypt, UnitDBCommon, ImageConverting, uGOM,
+  uMemory, SyncObjs, dolphin_db, UnitDBKernel;
 
 type
   HintCeator = class(TThread)
   private
-   ffile : string;
-   fbmp,fb:tbitmap;
-   G : TGraphic;
-   fh,fw:integer;
-   ffilesize : integer;
-   finfo_width:integer;
-   finfo_height:integer;
-   fthrect : trect;
-   FilePass : string;
-   fSelfItem : TObject;
-   frotate : integer;
-   fhintreal : THintRealFucntion;
-   FOwner : TForm;
-   BooleanResult : Boolean;
-   FHasAnimatedImage : Boolean;
-   ValidImages : integer;
-   FTransparent : boolean;
-   GIF : TGIFImage;
-   BitmapParam : TBitmap;
-  function isvalidth_thread:boolean;
-  procedure isvalidth_threada;
-  procedure doexit;
-  procedure ok;
-  procedure DrawHintInfo;
-  procedure GIFDraw;
     { Private declarations }
+    Fbmp, Fb: Tbitmap;
+    Graphic: TGraphic;
+    Fh, Fw: Integer;
+    FOriginalWidth: Integer;
+    FOriginalHeight: Integer;
+    FSelfItem: TObject;
+    BooleanResult: Boolean;
+    ValidImages: Integer;
+    GIF: TGIFImage;
+    BitmapParam: TBitmap;
+
+    FStateID: TGUID;
+    FInfo : TDBPopupMenuInfoRecord;
+    FOwner : TForm;
+    FHintCheckProc : THintCheckFunction;
+    FPoint : TPoint;
+    function CheckThreadState: Boolean;
+    procedure CheckThreadStateSync;
+    procedure DoShowHint;
+    procedure GIFDraw;
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean);
+    constructor Create(AOwner : TForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
+      Point : TPoint; HintCheckProc : THintCheckFunction);
   end;
 
-  var
-  work_ : tstrings;
-  active : boolean;
-  threct : trect;
-  fitem : TObject;
-  hr : THintRealFucntion;
-  Owner : TForm;
-  fInfo : TOneRecordInfo;
+  THintManager = class(TObject)
+  private
+    FStateID : TGUID;
+    FSync : TCriticalSection;
+    FHints : TList;
+    constructor Create;
+  public
+    destructor Destroy; override;
+    class function Instance : THintManager;
+    procedure CreateHintWindow(Owner : TForm; Info : TDBPopupMenuInfoRecord;
+      Point : TPoint; HintCheckProc : THintCheckFunction);
+    procedure NewState;
+    procedure RegisterHint(HintWindow : TForm);
+    procedure UnRegisterHint(HintWindow : TForm);
+    procedure CloseHint;
+    function HintAtPoint(Point : TPoint) : TForm;
+  end;
 
 implementation
 
-uses searching, unitimhint, FormManegerUnit, UnitViewerThread;
+uses UnitImHint;
+
+var
+  HintManager : THintManager = nil;
 
 { HintcCeator }
 
-constructor HintCeator.Create(CreateSuspennded: Boolean);
+constructor HintCeator.Create(AOwner : TForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
+                              Point : TPoint; HintCheckProc : THintCheckFunction);
 begin
- Inherited Create(true);
- FilePass:='';
- if ValidCryptGraphicFile(work_[work_.count-1]) then
- begin
-  FilePass:=DBKernel.FindPasswordForCryptImageFile(work_[work_.count-1]);
-  if FilePass='' then Terminate;
- end;
- if not CreateSuspennded then Resume;
-end;
-
-procedure HintCeator.DoExit;
-begin
- if not FHasAnimatedImage then
- FreeAndNil(G);
- FreeAndNil(fb);
- active:=false;
-end;
-
-procedure HintCeator.DrawHintInfo;
-var
-  sm, y : Integer;
-begin
- fb.PixelFormat:=pf24bit;
- y:=fb.Height-18;
- sm:=fb.Width-2;
- if (fb.Width<80) or (fb.Height<60) then exit;
- If fInfo.ItemAccess=db_access_private then
- begin
-  Dec(sm,20);
-  DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_PRIVATE+1],16,16,0,0,DI_NORMAL);
- end;
- Dec(sm,20);
- Case fInfo.ItemRotate of
-  DB_IMAGE_ROTATE_90: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_90+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATE_180: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_180+1],16,16,0,0,DI_NORMAL);
-  DB_IMAGE_ROTATE_270: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_ROTETED_270+1],16,16,0,0,DI_NORMAL);
- else Inc(sm,20);
- end;
- Dec(sm,20);
- Case fInfo.ItemRating of
-  1: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_1+1],16,16,0,0,DI_NORMAL);
-  2: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_2+1],16,16,0,0,DI_NORMAL);
-  3: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_3+1],16,16,0,0,DI_NORMAL);
-  4: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_4+1],16,16,0,0,DI_NORMAL);
-  5: DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_RATING_5+1],16,16,0,0,DI_NORMAL);
- else Inc(sm,20);
- end;
- If FInfo.ItemCrypted then
- begin
-  Dec(sm,20);
-  DrawIconEx(fb.Canvas.Handle,sm,y,UnitDBKernel.icons[DB_IC_KEY+1],16,16,0,0,DI_NORMAL);
- end;
+  inherited Create(False);
+  FOwner := AOwner;
+  FStateID := AStateID;
+  FInfo := AInfo;
+  FPoint := Point;
+  FHintCheckProc := HintCheckProc;
+  Graphic := nil;
 end;
 
 procedure HintCeator.Execute;
 var
   PNG : TPNGGraphic;
-  i : Integer;
+  GraphicClass : TGraphicClass;
+  I : Integer;
+  Crypted : Boolean;
+  FilePass: string;
+  Bitmap : TBitmap;
 begin
- FTransparent:=false;
- FHasAnimatedImage:=false;
- if Terminated then exit;
- FOwner := Owner;
- FreeOnTerminate:=true;
- frotate:=fInfo.ItemRotate;
- fthrect:=threct;
- fselfitem:=fitem;
- fhintreal:=hr;
- ffile:=work_[work_.count-1];
- if not fileexists(ffile) then exit;
- active:=true;
- fbmp:=nil;
- G:=nil;
- fb:=nil;
- fb:=Tbitmap.create;
- fb.PixelFormat:=pf24bit;
- fw:=ThHintSize;
- fh:=ThHintSize;
- fb.Canvas.Brush.Color:=Theme_MainColor;
- fb.Canvas.Pen.Color:=Theme_MainColor;
- fb.Canvas.Rectangle(0,0,fw,fh);
- G:=nil;
- if not isvalidth_thread then begin doexit; exit; end;
- if not fileexists(ffile) then begin doexit; exit; end;
- if extinmask(SupportedExt,getext(ffile)) then
- begin
-  FFileSize:=GetFileSizeByName(ffile);
+  FreeOnTerminate := True;
+
+  if not FileExists(FInfo.FileName) then
+    Exit;
+
+  GraphicClass := GetGraphicClass(ExtractFileExt(FInfo.FileName), False);
+  if GraphicClass = nil then
+    Exit;
+
+  Graphic := GraphicClass.Create;
   try
-   if ValidCryptGraphicFile(ffile) then
-   begin
-    try
-     G:=DeCryptGraphicFile(ffile,FilePass);
-     FInfo.ItemCrypted:=true;
-    except
-     if G<>nil then G.Free;
-     exit;
-    end;
-   end else
-   begin
-    FInfo.ItemCrypted:=false;
-    if IsRAWImageFile(ffile) then
+    Crypted := False;
+    FilePass := '';
+    if ValidCryptGraphicFile(FInfo.FileName) then
     begin
-     G:=TRAWImage.Create;
-     if not (G as TRAWImage).LoadThumbnailFromFile(ffile, ThHintSize, ThHintSize) then
-     G.LoadFromFile(ffile);
+      FilePass := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+      if FilePass = '' then
+        Exit;
+    end;
+
+    if not CheckThreadState then
+      Exit;
+
+    FInfo.FileSize := GetFileSizeByName(FInfo.FileName);
+
+    if not CheckThreadState then
+      Exit;
+
+    if Crypted then
+    begin
+      F(Graphic);
+      Graphic := DeCryptGraphicFile(FInfo.FileName, FilePass);
+      if Graphic = nil then
+        Exit;
     end else
     begin
-     G:=GetGraphicClass(GetExt(FFile),false).Create;
-     G.LoadFromFile(ffile);
+      if Graphic is TRAWImage then
+      begin
+        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
+          Graphic.LoadFromFile(FInfo.FileName);
+      end else
+        Graphic.LoadFromFile(FInfo.FileName);
     end;
-   end;
-  except
-   if G<>nil then G.Free;
-   exit;
+
+    if not CheckThreadState then
+      Exit;
+
+    FOriginalWidth := Graphic.Width;
+    FOriginalHeight := Graphic.Height;
+
+    if (Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 0) then
+    begin
+      Synchronize(DoShowHint);
+      Exit;
+    end else
+    begin
+      JPEGScale(Graphic, ThHintSize, ThHintSize);
+      Bitmap := TBitmap.Create;
+      try
+        Bitmap.PixelFormat := pf24Bit;
+        Bitmap.Assign(Graphic);
+        F(Graphic);
+        FW := Bitmap.Width;
+        FH := Bitmap.Height;
+        ProportionalSize(ThHintSize, ThHintSize, FW, FH);
+
+      finally
+        Bitmap.Free;
+      end;
+    end;
+
+  finally
+    F(Graphic);
   end;
-  finfo_width:=G.width;
-  finfo_height:=G.height;
-  JPEGScale(G,ThHintSize,ThHintSize);
-  if not isvalidth_thread then begin doexit; exit; end;
-  fw:=G.Width;
-  fh:=G.Height;
-  if G is TGIFImage then
-  begin
-   GIF:=(G as TGIFImage);
-   ValidImages:=0;
-   for i:=0 to GIF.Images.count-1 do
-   begin
-    if not GIF.Images[i].Empty then
-    ValidImages:=ValidImages+1;
-    if not GIF.Images[i].Empty then
-    if GIF.Images[i].Transparent then FTransparent:=true;
-   end;
-   if ValidImages>1 then
-   begin
-    FHasAnimatedImage:=true;
-    Synchronize(ok);
-    DoExit;
-    exit;
-   end;
-  end;
-  ProportionalSize(ThHintSize,ThHintSize,fw,fh);
+
+{
   fb.Width:=fw;
   fb.Height:=fh;
-  If Max(finfo_width,finfo_Height)>ThHintSize then
+  If Max(FOriginalWidth,FOriginalHeight)>ThHintSize then
   begin
    fbmp:=Tbitmap.create;
    fbmp.PixelFormat:=pf24bit;
@@ -220,7 +183,6 @@ begin
     PNG:=(G as TPNGGraphic);
     if PNG.PixelFormat=pf32bit then
     begin
-     FTransparent:=true;
      LoadPNGImage32bit(PNG,fbmp,Theme_MainColor);
     end else
       AssignGraphic(FBMP, G);
@@ -234,7 +196,6 @@ begin
      begin
       if (G as TBitmap).PixelFormat=pf32bit then
       begin
-       FTransparent:=true;
        LoadBMPImage32bit(G as TBitmap,fbmp,Theme_MainColor);
       end else AssignGraphic(FBMP, G);
      end else AssignGraphic(FBMP, G);
@@ -262,7 +223,6 @@ begin
      fb.PixelFormat:=pf24bit;
      fb.Width:=G.Width;
      fb.height:=G.height;
-     FTransparent:=true;
      LoadPNGImage32bit(PNG,fb,Theme_MainColor);
     end else
       AssignGraphic(FB, G);
@@ -273,23 +233,24 @@ begin
     begin
      if (G as TBitmap).PixelFormat=pf32bit then
      begin
-      FTransparent:=true;
       LoadBMPImage32bit(G as TBitmap,fb,Theme_MainColor);
      end else AssignGraphic(FB, G);
     end else AssignGraphic(FB, G);
    end;
   end;
-  ApplyRotate(fb, fRotate);
-  Synchronize(DrawHintInfo);
-  if not isvalidth_thread then begin DoExit; exit; end;
+  ApplyRotate(fb, FInfo.Rotation);
+  //Synchronize(DrawHintInfo);
+  if not CheckThreadState then
+    exit;
   Synchronize(ok);
- end;
- DoExit;
+ end;  }
+
 end;
 
 procedure HintCeator.GIFDraw;
 var
   i : integer;
+  FTransparent : Boolean;
 begin
  BitmapParam.Canvas.Pen.Color:=Theme_MainColor;
  BitmapParam.Canvas.Brush.Color:=Theme_MainColor;
@@ -303,29 +264,111 @@ begin
  end;
 end;
 
-function HintCeator.isvalidth_thread: boolean;
+function HintCeator.CheckThreadState: boolean;
 begin
- Synchronize(isvalidth_threada);
- Result:=BooleanResult;
+  Synchronize(CheckThreadStateSync);
+  Result := BooleanResult;
 end;
 
-procedure HintCeator.isvalidth_threada;
+procedure HintCeator.CheckThreadStateSync;
 begin
- if work_[work_.count-1]=ffile then BooleanResult:=true else BooleanResult:=false;
- if assigned(fhintreal) then
- if fhintreal(fitem) = false then exit;
+  if GOM.IsObj(FOwner) then
+    BooleanResult := FHintCheckProc(FInfo);
 end;
 
-procedure HintCeator.ok;
+procedure HintCeator.DoShowHint;
+var
+  ImHint : TImHint;
 begin
- fInfo.ItemSize:=ffilesize;
- if ImHint=nil then
- Application.CreateForm(TImHint, ImHint);
- ImHint.Execute(FOwner,not FHasAnimatedImage,FTransparent,fb,G,ValidImages,finfo_width,finfo_height,fthrect, fInfo, fselfitem, fhintreal);
+  if FB <> nil then
+  begin
+    Graphic:= FB;
+    FB := nil;
+  end;
+  Application.CreateForm(TImHint, ImHint);
+  ImHint.Execute(FOwner, Graphic, FOriginalWidth, FOriginalHeight, FInfo, FPoint, FHintCheckProc);
 end;
 
-initialization
+{ THintManager }
 
-work_:=TStringList.Create;
+procedure THintManager.CloseHint;
+var
+  I : Integer;
+begin
+  for I := 0 to FHints.Count - 1 do
+    TForm(FHints[I]).Close;
+end;
+
+constructor THintManager.Create;
+begin
+  FHints := TList.Create;
+  FSync := TCriticalSection.Create;
+end;
+
+procedure THintManager.CreateHintWindow(Owner: TForm;
+  Info: TDBPopupMenuInfoRecord; Point: TPoint; HintCheckProc : THintCheckFunction);
+begin
+  FSync.Enter;
+  try
+    NewState;
+    HintCeator.Create(Owner, FStateID, Info, Point, HintCheckProc);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+destructor THintManager.Destroy;
+begin
+  FSync.Free;
+  FHints.Free;
+  inherited;
+end;
+
+function THintManager.HintAtPoint(Point: TPoint): TForm;
+var
+  I : Integer;
+  R : TRect;
+  HintWindow : TForm;
+begin
+  Result := nil;
+  for I := 0 to FHints.Count - 1 do
+  begin
+    HintWindow := FHints[I];
+    R := Rect(HintWindow.Left, HintWindow.Top, HintWindow.Left + HintWindow.Width, HintWindow.Top + HintWindow.Height);
+    if PtInRect(R, Point) then
+    begin
+      Result := HintWindow;
+      Exit;
+    end;
+  end;
+end;
+
+class function THintManager.Instance: THintManager;
+begin
+  if HintManager = nil then
+    HintManager := THintManager.Create;
+
+  Result := HintManager;
+end;
+
+procedure THintManager.NewState;
+begin
+  FSync.Enter;
+  try
+    CreateGUID(FStateID);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure THintManager.RegisterHint(HintWindow: TForm);
+begin
+  FHints.Add(HintWindow);
+end;
+
+procedure THintManager.UnRegisterHint(HintWindow: TForm);
+begin
+  FHints.Remove(HintWindow);
+end;
 
 end.

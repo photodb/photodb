@@ -234,7 +234,7 @@ type
 type
   ShortcutType = (_DESKTOP, _QUICKLAUNCH, _SENDTO, _STARTMENU, _OTHERFOLDER, _PROGRAMS);
 
-  THintRealFucntion = function(Item: TObject): Boolean of object;
+  THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
   TPCharFunctionA = function(S: Pchar): PChar;
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
@@ -779,6 +779,7 @@ function CompareImagesByGistogramm(Image1, Image2: TBitmap): Byte;
 procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
 function CenterPos(W1, W2: Integer): Integer;
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
+function IsWinXP: Boolean;
 
 var
   GetAnyValidDBFileInProgramFolderCounter: Integer;
@@ -789,6 +790,12 @@ uses UnitPasswordForm, UnitWindowsCopyFilesThread,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
   UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit;
+
+function IsWinXP: Boolean;
+begin
+  Result := (Win32Platform = VER_PLATFORM_WIN32_NT) and
+    (Win32MajorVersion >= 5) and (Win32MinorVersion >= 1);
+end;
 
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
 const
@@ -5315,6 +5322,8 @@ end;
 
 function ColorDiv2(Color1, COlor2: TColor): TColor;
 begin
+  Color1 := ColorToRGB(Color1);
+  Color2 := ColorToRGB(Color2);
   Result := RGB((GetRValue(Color1) + GetRValue(Color2)) div 2, (GetGValue(Color1) + GetGValue(Color2)) div 2,
     (GetBValue(Color1) + GetBValue(Color2)) div 2);
 end;

@@ -3,8 +3,8 @@ object ImHint: TImHint
   Top = 134
   BorderStyle = bsNone
   Caption = 'ImHint'
-  ClientHeight = 224
-  ClientWidth = 153
+  ClientHeight = 197
+  ClientWidth = 211
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,79 +17,25 @@ object ImHint: TImHint
   OnClick = FormClick
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
+  OnContextPopup = Image1ContextPopup
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnHide = FormHide
   OnKeyPress = FormKeyPress
+  OnMouseDown = Image1MouseDown
   OnMouseMove = LbSizeMouseMove
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
-    Left = 3
-    Top = 3
-    Width = 145
-    Height = 161
-    OnClick = FormClick
-    OnContextPopup = Image1ContextPopup
-    OnMouseDown = Image1MouseDown
-    OnMouseMove = LbSizeMouseMove
-  end
-  object LbDescription: TLabel
-    Left = 3
-    Top = 176
-    Width = 88
-    Height = 13
-    BiDiMode = bdLeftToRight
-    Caption = 'Name or Comment'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentBiDiMode = False
-    ParentFont = False
-    WordWrap = True
-    OnMouseMove = LbSizeMouseMove
-  end
-  object LbSize: TLabel
-    Left = 3
-    Top = 192
-    Width = 71
-    Height = 13
-    Caption = 'Width x Height'
-    OnMouseMove = LbSizeMouseMove
-  end
-  object LbFileSize: TLabel
-    Left = 3
-    Top = 208
-    Width = 44
-    Height = 13
-    Caption = 'Size label'
-    OnMouseMove = LbSizeMouseMove
-  end
-  object PaintBox1: TPaintBox
-    Left = 3
-    Top = 3
-    Width = 105
-    Height = 105
-    Visible = False
-    OnClick = FormClick
-    OnContextPopup = Image1ContextPopup
-    OnMouseDown = Image1MouseDown
-    OnMouseMove = LbSizeMouseMove
-    OnPaint = PaintBox1Paint
-  end
-  object Timer1: TTimer
+  object TimerShow: TTimer
     Enabled = False
     Interval = 25
-    OnTimer = Timer1Timer
+    OnTimer = TimerShowTimer
     Left = 8
     Top = 8
   end
-  object Timer2: TTimer
+  object TimerHide: TTimer
     Enabled = False
     Interval = 25
-    OnTimer = Timer2Timer
+    OnTimer = TimerHideTimer
     Left = 40
     Top = 8
   end
@@ -104,7 +50,7 @@ object ImHint: TImHint
     Left = 104
     Top = 8
   end
-  object DropFileSource1: TDropFileSource
+  object DropFileSourceMain: TDropFileSource
     DragTypes = [dtCopy]
     Images = DragImageList
     ShowImage = True
@@ -112,12 +58,12 @@ object ImHint: TImHint
     Top = 72
   end
   object DragImageList: TImageList
-    BlendColor = clFuchsia
-    BkColor = clFuchsia
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
     Left = 40
     Top = 72
   end
-  object DropFileTarget1: TDropFileTarget
+  object DropFileTargetMain: TDropFileTarget
     DragTypes = []
     AutoRegister = False
     OptimizedMove = True
@@ -130,12 +76,5 @@ object ImHint: TImHint
     OnTimer = ImageFrameTimerTimer
     Left = 8
     Top = 72
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 8
-    Top = 120
   end
 end
