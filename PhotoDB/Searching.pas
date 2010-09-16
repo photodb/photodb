@@ -452,6 +452,7 @@ type
     FSearchByCompating : Boolean;
     FFillListInfo : TListFillInfo;
     FW7TaskBar : ITaskbarList3;
+    FCanBackgroundSearch: Boolean;
     function HintRealA(Info : TDBPopupMenuInfoRecord) : Boolean;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
@@ -628,6 +629,7 @@ var
   MainMenuScript : string;
 begin
   TW.I.Start('S -> FormCreate');
+  FCanBackgroundSearch := False;
   FilesToDrag := TStringList.Create;
   FSearchInfo := TSearchInfo.Create;
   fListUpdating:=false;
@@ -761,6 +763,8 @@ begin
 
   TW.I.Start('S -> LoadQueryList');
   LoadQueryList;
+  FCanBackgroundSearch := True;
+  SearchEditChange(Self);
 
  TW.I.Start('S -> LoadToolBarIcons');
  LoadToolBarIcons;
@@ -5150,6 +5154,8 @@ end;
 
 procedure TSearchForm.SearchEditChange(Sender: TObject);
 begin
+  if not FCanBackgroundSearch then
+    Exit;
   WlStartStop.Text := TEXT_MES_SEARCH;
   LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
   LsSearchResults.Color := SearchPanelA.Color;

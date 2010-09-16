@@ -63,6 +63,7 @@ type
     FWidth : Integer;
     FHeight : Integer;
     FAlphaBlend : Byte;
+    FInternalClose: Boolean;
     procedure CreateFormImage;
   protected
     function GetFormID : string; override;
@@ -308,6 +309,7 @@ end;
 
 procedure TImHint.FormCreate(Sender: TObject);
 begin
+  FInternalClose := False;
   CanClosed := True;
   AnimatedBuffer := nil;
   DropFileTargetMain.Register(Self);
@@ -391,6 +393,7 @@ begin
   if FAlphaBlend = 0 then
   begin
     TimerHide.Enabled:=false;
+    FInternalClose := True;
     Close;
   end else
     CreateFormImage;
@@ -398,8 +401,14 @@ end;
 
 procedure TImHint.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
- if FClosed then
-   Exit;
+  if FInternalClose then
+    Exit;
+
+  if FClosed then
+  begin
+    CanClose := False;
+    Exit;
+  end;
 
   if (FAlphaBlend > 0) and (DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 0) then
   begin
@@ -411,6 +420,18 @@ begin
 
   TimerHintCheck.Enabled := False;
   FClosed := True;
+end;
+
+procedure TImHint.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  THintManager.Instance.UnRegisterHint(Self);
+  if GOM.IsObj(FOwner) then
+    if FOwner.FormStyle = FsStayOnTop then
+      FOwner.SetFocus;
+  F(AnimatedBuffer);
+  F(ImageBuffer);
+  ImageFrameTimer.Enabled := False;
+  Release;
 end;
 
 procedure TImHint.Image1ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -455,18 +476,6 @@ procedure TImHint.LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
   GoIn := True;
-end;
-
-procedure TImHint.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  THintManager.Instance.UnRegisterHint(Self);
-  if GOM.IsObj(FOwner) then
-    if FOwner.FormStyle = FsStayOnTop then
-      FOwner.SetFocus;
-  F(AnimatedBuffer);
-  F(ImageBuffer);
-  ImageFrameTimer.Enabled := False;
-  Release;
 end;
 
 procedure TImHint.UpdateTheme(Sender: TObject);
@@ -570,7 +579,6 @@ begin
     end;
 end;
 
-
 procedure TImHint.ImageFrameTimerTimer(Sender: TObject);
 var
   C, PreviousNumber: Integer;
@@ -580,7 +588,9 @@ var
   Del: Integer;
   TimerEnabled: Boolean;
   Gsi: TGIFSubImage;
+  TickCountStart: Cardinal;
 begin
+  TickCountStart := GetTickCount;
   Del := 100;
   if FClosed then
     Exit;
@@ -658,7 +668,7 @@ begin
   DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
   CreateFormImage;
   ImageFrameTimer.Enabled := False;
-  ImageFrameTimer.Interval := Del;
+  ImageFrameTimer.Interval := Max(Del div 2, Del - GetTickCount - TickCountStart);
   if not TimerEnabled then
     ImageFrameTimer.Enabled := False
   else
