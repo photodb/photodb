@@ -158,6 +158,7 @@ type
     Include: Boolean;
     Links: string; // ??? not for common use yet
     Exists: Integer; // for drawing in lists
+    LongImageID: AnsiString;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromContRecord(ContRecord: TImageContRecord);
     constructor CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
@@ -191,6 +192,8 @@ type
     function GetCommonLinks: TLinksInfo;
     function GetPosition: Integer;
     procedure SetPosition(const Value: Integer);
+    function GetStatInclude: Boolean;
+    function GetCommonComments: string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -210,10 +213,12 @@ type
     property StatTime: TDateTime read GetStatTime;
     property StatIsDate: Boolean read GetStatIsDate;
     property StatIsTime: Boolean read GetStatIsTime;
+    property StatInclude: Boolean read GetStatInclude;
     property IsPlusMenu: Boolean read FIsPlusMenu write FIsPlusMenu;
     property CommonKeyWords: string read GetCommonKeyWords;
     property CommonGroups: string read GetCommonGroups;
     property CommonLinks: TLinksInfo read GetCommonLinks;
+    property CommonComments: string read GetCommonComments;
     property Position: Integer read GetPosition write SetPosition;
     property ListItem: TEasyItem read FListItem write FListItem;
     // TODO: +  PlusMenu : TArMenuitem;
@@ -6564,234 +6569,256 @@ end;
     end;
   end;
 
-  { TDBPopupMenuInfo }
+{ TDBPopupMenuInfo }
 
-  procedure TDBPopupMenuInfo.Add(MenuRecord: TDBPopupMenuInfoRecord);
-  begin
-    FData.Add(MenuRecord);
-  end;
+procedure TDBPopupMenuInfo.Add(MenuRecord: TDBPopupMenuInfoRecord);
+begin
+  FData.Add(MenuRecord);
+end;
 
-  procedure TDBPopupMenuInfo.Clear;
-  var
-    I: Integer;
-  begin
-    for I := 0 to FData.Count - 1 do
-      TDBPopupMenuInfoRecord(FData[I]).Free;
-    FData.Clear;
-  end;
+procedure TDBPopupMenuInfo.Clear;
+var
+  I: Integer;
+begin
+  for I := 0 to FData.Count - 1 do
+    TDBPopupMenuInfoRecord(FData[I]).Free;
+  FData.Clear;
+end;
 
-  constructor TDBPopupMenuInfo.Create;
-  begin
-    FData := TList.Create;
-  end;
+constructor TDBPopupMenuInfo.Create;
+begin
+  FData := TList.Create;
+end;
 
-  destructor TDBPopupMenuInfo.Destroy;
-  begin
-    Clear;
-    FData.Free;
-    inherited;
-  end;
+destructor TDBPopupMenuInfo.Destroy;
+begin
+  Clear;
+  FData.Free;
+  inherited;
+end;
 
-  function TDBPopupMenuInfo.Extract(Index: Integer): TDBPopupMenuInfoRecord;
+function TDBPopupMenuInfo.Extract(Index: Integer): TDBPopupMenuInfoRecord;
 begin
   Result := FData[Index];
   FData.Delete(Index);
 end;
 
+function TDBPopupMenuInfo.GetCommonComments: string;
+begin
+  Result := '';
+  if (Count > 0) and not IsVariousComments then
+    Result := Self[0].Comment;
+end;
+
 function TDBPopupMenuInfo.GetCommonGroups: string;
-  var
-    SL: TStringList;
-    I: Integer;
-  begin
-    SL := TStringList.Create;
-    try
-      for I := 0 to Count - 1 do
-        SL.Add(Self[I].Groups);
-      Result := UnitGroupsWork.GetCommonGroups(SL);
-    finally
-      SL.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetCommonKeyWords: string;
-  var
-    KL: TStringList;
-    I: Integer;
-  begin
-    KL := TStringList.Create;
-    try
-      for I := 0 to Count - 1 do
-        KL.Add(Self[I].KeyWords);
-      Result := GetCommonWordsA(KL);
-    finally
-      KL.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetCommonLinks: TLinksInfo;
-  var
-    LL: TStringList;
-    I: Integer;
-  begin
-    LL := TStringList.Create;
-    try
-      for I := 0 to Count - 1 do
-        LL.Add(Self[I].Links);
-      Result := UnitLinksSupport.GetCommonLinks(LL);
-    finally
-      LL.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetCount: Integer;
-  begin
-    Result := FData.Count;
-  end;
-
-  function TDBPopupMenuInfo.GetIsVariousComments: Boolean;
-  var
-    I: Integer;
-  begin
-    Result := False;
-    if Count > 1 then
-      for I := 1 to Count - 1 do
-        if Self[0].Comment <> Self[I].Comment then
-          Result := True;
-  end;
-
-  function TDBPopupMenuInfo.GetIsVariousDate: Boolean;
-  var
-    I: Integer;
-  begin
-    Result := False;
-    if Count > 1 then
-      for I := 1 to Count - 1 do
-        if Self[0].Date <> Self[I].Date then
-          Result := True;
-  end;
-
-  function TDBPopupMenuInfo.GetIsVariousInclude: Boolean;
-  var
-    I: Integer;
-  begin
-    Result := False;
-    if Count > 1 then
-      for I := 1 to Count - 1 do
-        if Self[0].Include <> Self[I].Include then
-          Result := True;
-  end;
-
-  function TDBPopupMenuInfo.GetIsVariousTime: Boolean;
-  var
-    I: Integer;
-  begin
-    Result := False;
-    if Count > 1 then
-      for I := 1 to Count - 1 do
-        if Self[0].Time <> Self[I].Time then
-          Result := True;
-  end;
-
-  function TDBPopupMenuInfo.GetPosition: Integer;
-  var
-    I: Integer;
-  begin
-    Result := -1;
-    if Count > 0 then
-      Result := 0;
-    for I := 1 to Count - 1 do
-      if Self[I].IsCurrent then
-        Result := I;
-  end;
-
-  function TDBPopupMenuInfo.GetStatDate: TDateTime;
-  var
-    I: Integer;
-    List: TList64;
-  begin
-    List := TList64.Create;
-    try
-      for I := 0 to Count - 1 do
-        List.Add(Self[I].Date);
-      Result := List.MaxStatDateTime;
-    finally
-      List.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetStatIsDate: Boolean;
-  var
-    I: Integer;
-    List: TList64;
-  begin
-    List := TList64.Create;
-    try
-      for I := 0 to Count - 1 do
-        List.Add(Self[I].IsDate);
-      Result := List.MaxStatBoolean;
-    finally
-      List.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetStatIsTime: Boolean;
-  var
-    I: Integer;
-    List: TList64;
-  begin
-    List := TList64.Create;
-    try
-      for I := 0 to Count - 1 do
-        List.Add(Self[I].IsTime);
-      Result := List.MaxStatBoolean;
-    finally
-      List.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetStatRating: Integer;
-  var
-    I: Integer;
-    List: TList64;
-  begin
-    List := TList64.Create;
-    try
-      for I := 0 to Count - 1 do
-        List.Add(Self[I].Rating);
-      Result := List.MaxStatInteger;
-    finally
-      List.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetStatTime: TDateTime;
-  var
-    I: Integer;
-    List: TList64;
-  begin
-    List := TList64.Create;
-    try
-      for I := 0 to Count - 1 do
-        List.Add(Self[I].Time);
-      Result := List.MaxStatDateTime;
-    finally
-      List.Free;
-    end;
-  end;
-
-  function TDBPopupMenuInfo.GetValueByIndex(index: Integer): TDBPopupMenuInfoRecord;
-  begin
-    Result := FData[index];
-  end;
-
-  procedure TDBPopupMenuInfo.SetPosition(const Value: Integer);
-  var
-    I: Integer;
-  begin
+var
+  SL: TStringList;
+  I: Integer;
+begin
+  SL := TStringList.Create;
+  try
     for I := 0 to Count - 1 do
-      Self[I].IsCurrent := False;
-    Self[Value].IsCurrent := True;
+      SL.Add(Self[I].Groups);
+    Result := UnitGroupsWork.GetCommonGroups(SL);
+  finally
+    SL.Free;
   end;
+end;
+
+function TDBPopupMenuInfo.GetCommonKeyWords: string;
+var
+  KL: TStringList;
+  I: Integer;
+begin
+  KL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      KL.Add(Self[I].KeyWords);
+    Result := GetCommonWordsA(KL);
+  finally
+    KL.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetCommonLinks: TLinksInfo;
+var
+  LL: TStringList;
+  I: Integer;
+begin
+  LL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      LL.Add(Self[I].Links);
+    Result := UnitLinksSupport.GetCommonLinks(LL);
+  finally
+    LL.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetCount: Integer;
+begin
+  Result := FData.Count;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousComments: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Comment <> Self[I].Comment then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousDate: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Date <> Self[I].Date then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousInclude: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Include <> Self[I].Include then
+        Result := True;
+  end;
+
+function TDBPopupMenuInfo.GetIsVariousTime: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Time <> Self[I].Time then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetPosition: Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  if Count > 0 then
+    Result := 0;
+  for I := 1 to Count - 1 do
+    if Self[I].IsCurrent then
+      Result := I;
+end;
+
+function TDBPopupMenuInfo.GetStatDate: TDateTime;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Date);
+    Result := List.MaxStatDateTime;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatInclude: Boolean;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Include);
+    Result := List.MaxStatBoolean;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatIsDate: Boolean;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].IsDate);
+    Result := List.MaxStatBoolean;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatIsTime: Boolean;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].IsTime);
+    Result := List.MaxStatBoolean;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatRating: Integer;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Rating);
+    Result := List.MaxStatInteger;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetStatTime: TDateTime;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Time);
+    Result := List.MaxStatDateTime;
+  finally
+    List.Free;
+  end;
+end;
+
+function TDBPopupMenuInfo.GetValueByIndex(index: Integer): TDBPopupMenuInfoRecord;
+begin
+  Result := FData[index];
+end;
+
+procedure TDBPopupMenuInfo.SetPosition(const Value: Integer);
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+    Self[I].IsCurrent := False;
+  Self[Value].IsCurrent := True;
+end;
 
   { TDBPopupMenuInfoRecord }
 
@@ -6858,8 +6885,8 @@ begin
   IsDate := DS.FieldByName('IsDate').AsBoolean;
   IsTime := DS.FieldByName('IsTime').AsBoolean;
   Groups := DS.FieldByName('Groups').AsString;
-
-  ThumbField := DS.FindField('Thum');
+  LongImageID := DS.FieldByName('Groups').AsString;
+  ThumbField := DS.FindField('StrTh');
   if ThumbField <> nil then
     Crypted := ValidCryptBlobStreamJPG(ThumbField)
   else

@@ -4541,9 +4541,9 @@ begin
   begin
     RegQueryPath := RegQueryRootPath + IntToStr(I);
     DBKernel.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingFrom);
-    DBKernel.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingTo);
+    DBKernel.WriteInteger(RegQueryPath, 'RatingTo', FSearchInfo[I].RatingTo);
     DBKernel.WriteDateTime(RegQueryPath, 'DateFrom', FSearchInfo[I].DateFrom);
-    DBKernel.WriteDateTime(RegQueryPath, 'DateFrom', FSearchInfo[I].DateTo);
+    DBKernel.WriteDateTime(RegQueryPath, 'DateTo', FSearchInfo[I].DateTo);
     DBKernel.WriteString(RegQueryPath, 'GroupName', FSearchInfo[I].GroupName);
     DBKernel.WriteString(RegQueryPath, 'Query', FSearchInfo[I].Query);
     DBKernel.WriteInteger(RegQueryPath, 'SortMethod', FSearchInfo[I].SortMethod);

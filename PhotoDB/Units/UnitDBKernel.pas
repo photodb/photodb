@@ -229,7 +229,6 @@ type TDBKernel = class(TObject)
     FRegistryCache : TDBRegistryCache;
     FSych : TCriticalSection;
     procedure LoadDBs;
-    procedure SetImageList(const Value: TImageList);
     procedure SetTheme(const Value: TDbTheme);
     { Private declarations }
   public
@@ -238,7 +237,7 @@ type TDBKernel = class(TObject)
   destructor Destroy; override;
   published
   property DBs : TPhotoDBFiles read FDBs;
-  Property ImageList : TImageList read FImageList Write SetImageList;
+  Property ImageList : TImageList read FImageList;
   procedure UnRegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
   procedure UnRegisterChangesIDByID(Sender : TObject; Event_ : DBChangesIDEvent; id : integer);
   procedure RegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
@@ -647,11 +646,6 @@ begin
   fevents[length(fevents)-1].sender:=Sender;
   fevents[length(fevents)-1].DBChangeIDArrayesEvents:=Event_;
  end;
-end;
-
-procedure TDBKernel.SetImageList(const Value: TImageList);
-begin
-  FImageList.assign(Value);
 end;
 
 function TDBKernel.TestDB(DBName_: string; OpenInThread : boolean = false): boolean;

@@ -1300,7 +1300,7 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 8
         Width = 281
-        Height = 255
+        Height = 237
         Anchors = [akLeft, akTop, akRight, akBottom]
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
         TabOrder = 0
@@ -1391,7 +1391,7 @@ object PropertiesForm: TPropertiesForm
         Left = 8
         Top = 48
         Width = 281
-        Height = 215
+        Height = 197
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PopupMenu8
         TabOrder = 1

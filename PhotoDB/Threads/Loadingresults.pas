@@ -21,12 +21,12 @@ const
   SM_DATE_TIME  = 2;
   SM_RATING     = 3;
   SM_FILE_SIZE  = 4;
-  SM_SIZE       = 5; 
+  SM_SIZE       = 5;
   SM_COMPARING  = 6;
 
 type
   SearchThread = class(TThreadEx)
-  private    
+  private
     { Private declarations }
     fQuery: TDataSet;
     FI : integer;
@@ -101,11 +101,6 @@ type
     SPSEARCH_SHOWSIMILAR = 3;
     MIN_PACKET_TIME = 500;
 
-{procedure AddItemInListViewByGroups(ListView : TEasyListView; ID : Integer; SortMethod : integer;
-      SortDecrement : boolean; ShowGroups : boolean; SizeParam : int64; FileNameParam : string; RatingParam : integer;
-      DateTimeParam : TDateTime; Include : Boolean; var LastSize : int64; var LastChar : Char; var LastRating : integer;
-      var LastMonth : integer; var LastYear : integer); }
-
 implementation
 
 uses FormManegerUnit, Searching, UnitGroupsWork, Language;
@@ -116,10 +111,10 @@ begin
 
   FPictureSize := PictureSize;
   LastChar := #0;
-  SizeParam :=0;
+  SizeParam := 0;
   FileNameParam := '';
-  LastYear:=0;
-  FOnDone:=OnDone;
+  LastYear := 0;
+  FOnDone := OnDone;
   FSearchParams := SearchParams;
   Start;
 end;
@@ -152,7 +147,7 @@ var
   rot : integer;
   crc : Cardinal;
   paramno : integer;
-  Count : integer;  
+  Count : integer;
     fBS : TStream;
 
   function NextParam : integer;
@@ -161,10 +156,10 @@ var
    inc(paramno);
   end;
 
-begin    
+begin
   FreeOnTerminate := True;
   try
-    ParamNo:=0; 
+    ParamNo:=0;
     //#8 - invalid query identify, needed from script executing
     if FSearchParams.Query = #8 then
       Exit;
@@ -376,7 +371,7 @@ begin
          end;
          FreeDS(fspecquery);
        end;
-      
+
        try
 
          CheckForm;
@@ -393,7 +388,7 @@ begin
        CheckForm;
        fData := TSearchRecordArray.Create;
        if not Terminated then
-       begin      
+       begin
          fQuery.Last;
          for I := 1 to fQuery.RecordCount do
            fData.AddNew;
@@ -497,7 +492,7 @@ begin
   finally
     FreeDS(fQuery);
   end;
-  
+
   ///???SynchronizeEx(ProgressNull);
   SynchronizeEx(DoOnDone); *)
 end;
@@ -763,7 +758,7 @@ begin
    fspsearch_showfolderid:=StrToIntDef(Copy(sysaction,8,length(sysaction)-8),0);
    GetFilter(Result, db_attr_norm);
   end;
-  
+
   if AnsiLowerCase(copy(sysaction,1,7))=AnsiLowerCase('similar') then
   begin
    QueryType:=QT_SIMILAR;
@@ -946,7 +941,7 @@ begin
     end;
     sqltext:=sqltext+')';
 
-                           
+
     Result.Query:= Format('SELECT %s FROM $DB$ ', [FIELDS]);
     Result.Query:=Result.Query+Format(' where %s and (%s)', [Format(' ((Rating >= %d) AND (Rating <= %d)) ',[FSearchParams.RatingFrom, FSearchParams.RatingTo]),
                                                       sqltext]);
@@ -994,7 +989,7 @@ begin
     sqltext:=sqltext+' (ID=0))';
     Result.Query:= Format('SELECT %s FROM $DB$ ', [FIELDS]);
     Result.Query:=Result.Query+' where ('+sqltext+')';
-    
+
     if FSearchParams.GroupName<>'' then
     Result.Query:=Result.Query+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
    end;
@@ -1046,21 +1041,23 @@ end;
 
 procedure SearchThread.GetWideSearchOptions(Params : TDBQueryParams);
 var
-  Result : string;
+  Result: string;
 begin
- Result:='';
+  Result := '';
 
-  if not FSearchParams.ShowPrivate then Result:=Result+' AND (Access=0)' else
-  Result:=Result+' AND (Attr<>'+inttostr(db_attr_not_exists)+')';
-  
-  Result:=Result+' AND ((DateToAdd >= :MinDate ) and (DateToAdd <= :MaxDate ) and IsDate=True) ';
+  Result := Result + ' AND ((Rating>=' + IntToStr(FSearchParams.RatingFrom) + ') and (Rating<=' + IntToStr
+    (FSearchParams.RatingTo) + ')) ';
 
-  Params.AddDateTimeParam('MinDate', Trunc(FSearchParams.DateFrom)); 
+  Result := Result + ' AND ((DateToAdd >= :MinDate ) and (DateToAdd <= :MaxDate ) and IsDate=True) ';
+
+  Params.AddDateTimeParam('MinDate', Trunc(FSearchParams.DateFrom));
   Params.AddDateTimeParam('MaxDate', Trunc(FSearchParams.DateTo) + 1);
 
-  begin
-   Result:=Result+' AND ((Rating>='+IntToStr(FSearchParams.RatingFrom)+') and (Rating<='+IntToStr(FSearchParams.RatingTo)+')) ';
-  end;
+  if not FSearchParams.ShowPrivate then
+    Result := Result + ' AND (Access = 0)'
+  else
+    Result := Result + ' AND (Attr<>' + Inttostr(Db_attr_not_exists) + ')';
+
   Params.Query := Params.Query + Result;
 end;
 
@@ -1207,12 +1204,12 @@ var
     end;
   end;
 
-begin          
+begin
   if not FSearchParams.IsEstimate then
     SynchronizeEx(StartLoadingList);
   FWorkQuery := GetQuery(FSearchParams.IsEstimate);
   try
-    QueryParams := CreateQuery;    
+    QueryParams := CreateQuery;
     if not FSearchParams.IsEstimate then
     begin
       TADOQuery(FWorkQuery).CursorType := ctOpenForwardOnly;
@@ -1240,14 +1237,14 @@ begin
     begin
       FLastPacketTime := GetTickCount;
       while not FWorkQuery.Eof do
-      begin      
+      begin
         if Terminated then
           Break;
         AddItem(FWorkQuery);
 
         if GetTickCount - FLastPacketTime > MIN_PACKET_TIME then
         begin
-          SynchronizeEx(SendDataPacketToForm); 
+          SynchronizeEx(SendDataPacketToForm);
           FLastPacketTime := GetTickCount;
         end;
         FWorkQuery.Next;

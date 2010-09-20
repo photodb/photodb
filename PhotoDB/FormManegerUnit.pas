@@ -406,9 +406,8 @@ begin
     Inc(FCheckCount);
     if (FCheckCount = 10) then //after 1sec. set normal priority
     begin
-//     SetProcessAffinityMask(MainThreadID, StartProcessorMask);
-     SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
-     SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
+      SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
+      SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
     end;
     if CanCheckViewerInMainForms then
     begin

@@ -7869,8 +7869,8 @@ end;
 destructor TExplorerForm.Destroy;
 begin
   fHistory.Free;
-  inherited;
   fFilesInfo.Free;
+  inherited;
 end;
 
 initialization

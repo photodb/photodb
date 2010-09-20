@@ -307,7 +307,6 @@ begin
     TW.I.Start('<EXPLORER THREAD>');
     PrivateFiles := TStringList.Create;
     try
-      SynchronizeEx(BeginUpdate);
 
       DBFolderToSearch:=FFolder;
       UnProcessPath(DBFolderToSearch);
@@ -320,7 +319,7 @@ begin
 
       DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
       ShowInfo(TEXT_MES_CONNECTING_TO_DB,1,0);
-      FQuery:=GetQuery;
+      FQuery := GetQuery;
       try
         ShowInfo(TEXT_MES_GETTING_INFO_FROM_DB,1,0);
 
@@ -425,6 +424,7 @@ begin
          end;
         end;
         FindClose(SearchRec);
+        SynchronizeEx(BeginUpdate);
 
         ShowInfo(TEXT_MES_LOADING_INFO, 1, 0);
         ShowProgress;

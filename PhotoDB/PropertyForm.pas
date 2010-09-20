@@ -16,7 +16,7 @@ uses
   UnitBitmapImageList, uListViewUtils;
 
 type
- TShowInfoType=(SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
+  TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
 
 type
   TPropertiesForm = class(TForm)
@@ -280,21 +280,22 @@ type
     FPropertyLinks, ItemLinks : TLinksInfo;
     FFilesInfo : TDBPopupMenuInfo;
     FMenuRecord : TDBPopupMenuInfoRecord;
-    SelectedInfo : TSelectedInfo;
     RegGroups : TGroups;
     adding_now, editing_info, no_file : Boolean;
     FDateTimeInFileExists : Boolean;
     FFileDate, FFileTime : TDateTime;
     DestroyCounter : integer;
+    function GetImageID: Integer;
+    function GetFileName: string;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WMActivate(var message: TWMActivate); message WM_ACTIVATE;
     procedure WMSyscommand(var message: TWmSysCommand); message WM_SYSCOMMAND;
     { Private declarations }
   public
+    { Public declarations }
     SID: TGUID;
     FShowInfoType: TShowInfoType;
-    CurrentItemInfo: TOneRecordInfo;
     FCurrentPass: string;
     GistogrammData: TGistogrammData;
     procedure LoadLanguage;
@@ -304,7 +305,8 @@ type
     function ReadCHTime: Boolean;
     procedure OnDoneLoadingImage(Sender: TObject);
     procedure OnDoneLoadGistogrammData(Sender: TObject);
-    { Public declarations }
+    property ImageID : Integer read GetImageID;
+    property FileName : string read GetFileName;
   end;
 
   TPropertyManager = class(TObject)
@@ -316,7 +318,6 @@ type
     function NewSimpleProperty : TPropertiesForm;
     function NewIDProperty(ID : Integer) : TPropertiesForm;
     function NewFileProperty(FileName : string) : TPropertiesForm;
-
     procedure AddProperty(aProperty : TPropertiesForm);
     procedure RemoveProperty(aProperty : TPropertiesForm);
     function IsPropertyForm(aProperty: TForm): Boolean;
@@ -371,7 +372,7 @@ begin
   Result := nil;
   for I := 0 to FPropertys.Count - 1 do
     if TPropertiesForm(FPropertys[I]).FShowInfoType = SHOW_INFO_ID then
-      if TPropertiesForm(FPropertys[I]).CurrentItemInfo.ItemId = ID then
+      if TPropertiesForm(FPropertys[I]).ImageID = ID then
   begin
     Result := FPropertys[i];
     Exit;
@@ -385,7 +386,7 @@ begin
   Result := nil;
   for I := 0 to FPropertys.Count - 1 do
     if TPropertiesForm(FPropertys[i]).FShowInfoType = SHOW_INFO_FILE_NAME then
-      if AnsiLowerCase(TPropertiesForm(FPropertys[i]).CurrentItemInfo.ItemFileName) = AnsiLowerCase(FileName) then
+      if AnsiLowerCase(TPropertiesForm(FPropertys[i]).FileName) = AnsiLowerCase(FileName) then
       begin
         Result := FPropertys[i];
         Exit;
@@ -461,10 +462,10 @@ function TPropertiesForm.ReadCHInclude: Boolean;
 begin
   Result := False;
   if FShowInfoType = SHOW_INFO_ID then
-    Result := (CurrentItemInfo.ItemInclude <> CheckBox1.Checked);
+    Result := (FFilesInfo[0].Include <> CheckBox1.Checked);
   if FShowInfoType = SHOW_INFO_IDS then
   begin
-    if (SelectedInfo.IsVaruousInclude) then
+    if (FFilesInfo.IsVariousInclude) then
     begin
       if (CheckBox1.State <> CbGrayed) then
       begin
@@ -474,7 +475,7 @@ begin
     end
     else
     begin
-      if (SelectedInfo.Include) and (CheckBox1.State = CbUnChecked) or (not SelectedInfo.Include) and
+      if (FFilesInfo.StatInclude) and (CheckBox1.State = CbUnChecked) or (not FFilesInfo.StatInclude) and
         (CheckBox1.State = CbChecked) then
       begin
         Result := True;
@@ -486,75 +487,76 @@ end;
 
 function TPropertiesForm.ReadCHLinks : Boolean;
 begin
- Result:=not CompareLinks(FPropertyLinks,ItemLinks,true);
+  Result := not CompareLinks(FPropertyLinks, ItemLinks, True);
 end;
 
 function TPropertiesForm.ReadCHDate : Boolean;
 begin
- Result:=false;
-{   if FShowInfoType=SHOW_INFO_FILE_NAME then
- Result:=FDateTimeInFileExists;  }
- if FShowInfoType=SHOW_INFO_ID then
- begin
-  Result:=(((CurrentItemInfo.ItemIsDate<>not IsDatePanel.Visible) or (CurrentItemInfo.ItemDate<>DateEdit.DateTime)) and not DateSets.Visible);
- end;
- if FShowInfoType=SHOW_INFO_IDS then
- begin
-  Result:= ((CurrentItemInfo.ItemIsDate<>not IsDatePanel.Visible) or(CurrentItemInfo.ItemDate<>DateEdit.DateTime) or (SelectedInfo.IsVariousDates)) and not DateSets.Visible;
- end;
+  Result := False;
+  if FShowInfoType = SHOW_INFO_ID then
+    Result := (((FFilesInfo[0].IsDate <> not IsDatePanel.Visible) or
+          (FFilesInfo[0].Date <> DateEdit.DateTime)) and not DateSets.Visible);
+
+  if FShowInfoType = SHOW_INFO_IDS then
+    Result := ((FFilesInfo.StatIsDate <> not IsDatePanel.Visible) or
+        (FFilesInfo.StatDate <> DateEdit.DateTime) or (FFilesInfo.IsVariousDate))
+      and not DateSets.Visible;
+
 end;
 
 function TPropertiesForm.ReadCHTime : Boolean;
 var
   VarTime : Boolean;
 begin
- Result:=false;
- if FShowInfoType=SHOW_INFO_ID then
- begin
-  VarTime:=Abs(CurrentItemInfo.ItemTime-TimeOf(TimeEdit.Time))>1/(24*60*60*3);
-  Result:=(((CurrentItemInfo.ItemIsTime<>not IsTimePanel.Visible) or VarTime) and not TimeSets.Visible);
- end;
- if FShowInfoType=SHOW_INFO_IDS then
- begin
-  VarTime:=Abs(CurrentItemInfo.ItemTime-TimeOf(TimeEdit.Time))>1/(24*60*60*3);
-  Result:= ((CurrentItemInfo.ItemIsTime<>not IsTimePanel.Visible) or VarTime or (SelectedInfo.IsVariousTimes)) and not TimeSets.Visible;
- end;
+  Result := False;
+  if FShowInfoType = SHOW_INFO_ID then
+  begin
+    VarTime := Abs(FFilesInfo[0].Time - TimeOf(TimeEdit.Time)) > 1 / (24 * 60 * 60 * 3);
+    Result := (((FFilesInfo[0].IsTime <> not IsTimePanel.Visible) or VarTime) and not TimeSets.Visible);
+  end;
+  if FShowInfoType = SHOW_INFO_IDS then
+  begin
+    VarTime := Abs(FFilesInfo.StatTime - TimeOf(TimeEdit.Time)) > 1 / (24 * 60 * 60 * 3);
+    Result := ((FFilesInfo.StatIsTime <> not IsTimePanel.Visible) or VarTime or (FFilesInfo.IsVariousTime))
+      and not TimeSets.Visible;
+  end;
 end;
 
 procedure TPropertiesForm.Execute(ID: integer);
 var
-  FBS : TStream;
-  fBit, B1, TempBitmap : tbitmap;
-  fpic : Tpicture;
-  JPEG : TJpegImage;
-  fRotate : integer;
-  PassWord : String;
-  Exists, w, h : integer;
+  FBS: TStream;
+  FBit, B1, TempBitmap: TBitmap;
+  Fpic: Tpicture;
+  JPEG: TJpegImage;
+  PassWord: string;
+  Exists, W, H: Integer;
+  DataRecord : TDBPopupMenuInfoRecord;
 begin
- try
- if fSaving then
- begin
-  SetFocus;
-  exit;
- end;
+  try
+    if FSaving then
+    begin
+      SetFocus;
+      Exit;
+    end;
 
- if EditLinkForm<>nil then
- EditLinkForm.Close;
+    if EditLinkForm <> nil then
+      EditLinkForm.Close;
+
  editing_info:=false;
  FReadingInfo:=true;
  FCurrentPass:='';
  CheckBox1.AllowGrayed:=false;
  ResetBold;
- if CurrentItemInfo.ItemId<>id then
+ if ImageID<>id then
  TabbedNotebook1.PageIndex:=0;
  DateEdit.Enabled:=true;
  TimeEdit.Enabled:=true;
  Image2.Visible:=false;
  FShowInfoType:=SHOW_INFO_ID;
- CurrentItemInfo.ItemId:=id;
+
  DBKernel.UnRegisterChangesID(Self,ChangedDBDataByID);
- DBKernel.UnRegisterChangesIDbyID(Self,ChangedDBDataByID,CurrentItemInfo.ItemId);
- DBKernel.RegisterChangesIDbyID(Self,ChangedDBDataByID,CurrentItemInfo.ItemId);
+ DBKernel.UnRegisterChangesIDbyID(Self,ChangedDBDataByID,ID);
+ DBKernel.RegisterChangesIDbyID(Self,ChangedDBDataByID,ID);
  DBitem1.Visible:=true;
  BtSave.Caption:=TEXT_MES_SAVE;
  idlabel.text:=inttostr(id);
@@ -565,7 +567,7 @@ begin
  WorkQuery.First;
  if WorkQuery.RecordCount=0 then no_file:=true;
  If not no_file then BtSave.Enabled:=false;
- CurrentItemInfo.ItemFileName:=ProcessPath(WorkQuery.FieldByName('FFileName').AsString);
+
  fbit:=TBitmap.create;
  fbit.PixelFormat:=pf24bit;
  b1:=TBitmap.create;
@@ -642,67 +644,60 @@ begin
  b1.Canvas.Rectangle(0,0,ThSizePropertyPreview,ThSizePropertyPreview);
  b1.Canvas.Draw(ThSizePropertyPreview div 2-fbit.Width div 2,ThSizePropertyPreview div 2 - fbit.Height div 2,fbit);
 
- frotate:=WorkQuery.FieldByName('Rotated').AsInteger;
- CurrentItemInfo.ItemRotate:=frotate;
- ApplyRotate(B1, frotate);
+  DataRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+  FFilesInfo.Clear;
+  FFilesInfo.Add(DataRecord);
+ ApplyRotate(B1, DataRecord.Rotation);
  Exists:=0;
- DrawAttributes(b1,100,WorkQuery.FieldByName('Rating').asinteger,WorkQuery.FieldByName('Rotated').asinteger,WorkQuery.FieldByName('Access').asinteger,WorkQuery.FieldByName('FFileName').AsString,ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')),Exists,ID);
- if Image1.Picture.Bitmap=nil then
- Image1.Picture.Bitmap:=TBitmap.create;
- Image1.Picture.Bitmap.Assign(b1);
+ DrawAttributes(b1,100 ,DataRecord.Rating, DataRecord.Rotation, DataRecord.Access, DataRecord.FileName, ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')), Exists, DataRecord.ID);
+
+ Image1.Picture.Bitmap := b1;
  b1.free;
  fbit.Free;
  fpic.free;
  caption:=TEXT_MES_PROPERTY+' - '+ Trim(WorkQuery.FieldByName('Name').AsString);
- KeyWordsMemo.Text:=WorkQuery.FieldByName('KeyWords').AsString;
- LabelName.Text:=Trim(WorkQuery.FieldByName('Name').AsString);
- LabelPath.Text:=LongFileName(WorkQuery.FieldByName('FFileName').AsString);
- SizeLabel.text:=SizeInTextA(WorkQuery.FieldByName('FileSize').AsInteger);
+ KeyWordsMemo.Text:=DataRecord.KeyWords;
+ LabelName.Text:=ExtractFileName(DataRecord.FileName);
+ LabelPath.Text:=DataRecord.FileName;
+ SizeLabel.text:=SizeInTextA(DataRecord.FileSize);
  widthmemo.text:=IntToStr(WorkQuery.FieldByName('Width').AsInteger)+'px.';
  heightmemo.text:=IntToStr(WorkQuery.FieldByName('Height').AsInteger)+'px.';
- Rating1.Rating:=WorkQuery.FieldByName('Rating').AsInteger;
+ Rating1.Rating:=DataRecord.Rating;
  Rating1.Islayered:=false;
  DateSets.Visible:=false;
  TimeSets.Visible:=false;
- CurrentItemInfo.ItemImTh:=WorkQuery.FieldByName('StrTh').AsString;
- CurrentItemInfo.ItemRating:=WorkQuery.FieldByName('Rating').AsInteger;
- CurrentItemInfo.ItemKeyWords:=WorkQuery.FieldByName('KeyWords').AsString;
- CurrentItemInfo.ItemComment:=WorkQuery.FieldByName('Comment').AsString;
- CollectionMemo.text:=Trim(WorkQuery.FieldByName('Collection').AsString);
- CurrentItemInfo.ItemCollections:=Trim(WorkQuery.FieldByName('Collection').AsString);
- OwnerMemo.text:=Trim(WorkQuery.FieldByName('Owner').AsString);
- CurrentItemInfo.ItemOwner:=Trim(WorkQuery.FieldByName('Owner').AsString);
- CurrentItemInfo.ItemDate:=WorkQuery.FieldByName('DateToAdd').AsDateTime;
- DateEdit.DateTime:=CurrentItemInfo.ItemDate;
- CurrentItemInfo.ItemIsDate:=WorkQuery.FieldByName('IsDate').AsBoolean;
- CurrentItemInfo.ItemIsTime:=WorkQuery.FieldByName('IsTime').AsBoolean;
- CurrentItemInfo.ItemTime:=WorkQuery.FieldByName('aTime').AsDateTime;
- TimeEdit.Time:=CurrentItemInfo.ItemTime;
- CheckBox1.Checked:=WorkQuery.FieldByName('Include').AsBoolean;
- CurrentItemInfo.ItemInclude:=WorkQuery.FieldByName('Include').AsBoolean;
- IsDatePanel.Visible:=not CurrentItemInfo.ItemIsDate;
- IsTimePanel.Visible:=not CurrentItemInfo.ItemIsTime;
- if length(WorkQuery.FieldByName('Comment').AsString)>5 then
+
+ CollectionMemo.text:=DBkernel.GetDataBaseName;
+
+ OwnerMemo.text:=DBkernel.ReadRegName;
+
+ DateEdit.DateTime:= DataRecord.Date;
+ TimeEdit.Time:=DataRecord.Time;
+ CheckBox1.Checked:=DataRecord.Include;
+ IsDatePanel.Visible:=not DataRecord.IsDate;
+ IsTimePanel.Visible:=not DataRecord.IsTime;
+ if length(DataRecord.Comment)>5 then
  begin
   CommentMemo.Show;
   Label3.Show;
-  CommentMemo.text:=WorkQuery.FieldByName('Comment').AsString
+  CommentMemo.text:=DataRecord.Comment;
  end else
  begin
   CommentMemo.text:='';
   CommentMemo.Hide;
   Label3.Hide;
  end;
- ItemLinks:=ParseLinksInfo(WorkQuery.FieldByName('Links').AsString);
+ ItemLinks:=ParseLinksInfo(DataRecord.Links);
  FPropertyLinks:=CopyLinksInfo(ItemLinks);
 
- FNowGroups:=UnitGroupsWork.EncodeGroups(WorkQuery.FieldByName('Groups').AsString);
+ FNowGroups:=UnitGroupsWork.EncodeGroups(DataRecord.Groups);
  FOldGroups:=CopyGroups(FNowGroups);
 
  DateSets.Visible:=false;
  TimeSets.Visible:=false;
  FFilesInfo:= TDBPopupMenuInfo.Create;
  FMenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+ FFilesInfo.Clear;
  FFilesInfo.Add(FMenuRecord);
  FFilesInfo.AttrExists:=false;
  CommentMemoChange(nil);
@@ -755,6 +750,7 @@ end;
 
 procedure TPropertiesForm.FormCreate(Sender: TObject);
 begin
+  FFilesInfo := TDBPopupMenuInfo.Create;
  WorkQuery:=GetQuery;
  DestroyCounter:=0;
  GistogrammData.Loaded:=false;
@@ -860,33 +856,31 @@ var
   CHTime : boolean;
   CHDate : boolean;
 begin
- if not editing_info then exit;
- CHLinks:=ReadCHLinks;
- CHTime:=ReadCHTime;
- CHDate:=ReadCHDate;
- CHInclude:=ReadCHInclude;
+  if not Editing_info then
+    Exit;
+  CHLinks := ReadCHLinks;
+  CHTime := ReadCHTime;
+  CHDate := ReadCHDate;
+  CHInclude := ReadCHInclude;
 
  if FShowInfoType=SHOW_INFO_ID then
- if CHDate or CHTime or (CurrentItemInfo.ItemOwner<>OwnerMemo.text) or (CurrentItemInfo.ItemCollections<>CollectionMemo.text) or (CurrentItemInfo.ItemRating<>Rating1.Rating) or (CurrentItemInfo.ItemComment<>CommentMemo.text) or VariousKeyWords(CurrentItemInfo.ItemKeyWords,KeyWordsMemo.Text) or not CompareGroups(FOldGroups,FNowGroups)or CHInclude or CHLinks then
+ if CHDate or CHTime or (FFilesInfo[0].Rating<>Rating1.Rating) or (FFilesInfo[0].Comment<>CommentMemo.text) or VariousKeyWords(FFilesInfo[0].KeyWords,KeyWordsMemo.Text) or not CompareGroups(FOldGroups,FNowGroups)or CHInclude or CHLinks then
  BtSave.Enabled:=True else BtSave.Enabled:=False;
 
  if FShowInfoType=SHOW_INFO_IDS then
- if CHDate or CHTime or (not Rating1.Islayered) or (not CommentMemo.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (CommentMemo.Text<>SelectedInfo.CommonComment)) or VariousKeyWords(CurrentItemInfo.ItemKeyWords,KeyWordsMemo.Text) or not CompareGroups(FOldGroups,FNowGroups) or CHInclude or CHLinks then
+ if CHDate or CHTime or (not Rating1.Islayered) or (not CommentMemo.ReadOnly and FFilesInfo.IsVariousComments) or (not FFilesInfo.IsVariousComments and (CommentMemo.Text<>FFilesInfo.CommonComments)) or VariousKeyWords(FFilesInfo.CommonKeyWords, KeyWordsMemo.Text) or not CompareGroups(FOldGroups,FNowGroups) or CHInclude or CHLinks then
  BtSave.Enabled:=True else BtSave.Enabled:=False;
  if FShowInfoType=SHOW_INFO_FILE_NAME then
  BtSave.Enabled:=false;
  if FShowInfoType<>SHOW_INFO_IDS then
- if CurrentItemInfo.ItemComment<>CommentMemo.Text then Label3.Font.Style:=Label3.Font.Style+[fsBold] else Label3.Font.Style:=Label3.Font.Style-[fsBold];
+ if FFilesInfo.CommonComments<>CommentMemo.Text then Label3.Font.Style:=Label3.Font.Style+[fsBold] else Label3.Font.Style:=Label3.Font.Style-[fsBold];
  if FShowInfoType=SHOW_INFO_IDS then
- if (not CommentMemo.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (CommentMemo.Text<>SelectedInfo.CommonComment)) then Label3.Font.Style:=Label3.Font.Style+[fsBold] else Label3.Font.Style:=Label3.Font.Style-[fsBold];
- if VariousKeyWords(CurrentItemInfo.ItemKeyWords,KeyWordsMemo.text) then Label1.Font.Style:=Label1.Font.Style+[fsBold] else Label1.Font.Style:=Label1.Font.Style-[fsBold];
- if CurrentItemInfo.ItemRating<>Rating1.Rating then RatingLabel1.Font.Style:=RatingLabel1.Font.Style+[fsBold] else RatingLabel1.Font.Style:=RatingLabel1.Font.Style-[fsBold];
- if (CurrentItemInfo.ItemCollections<>CollectionMemo.text) then CollectionLabel.Font.Style:=CollectionLabel.Font.Style+[fsBold] else CollectionLabel.Font.Style:=CollectionLabel.Font.Style-[fsBold];
- if (CurrentItemInfo.ItemOwner<>OwnerMemo.text) then OwnerLabel.Font.Style:=OwnerLabel.Font.Style+[fsBold] else OwnerLabel.Font.Style:=OwnerLabel.Font.Style-[fsBold];
+ if (not CommentMemo.ReadOnly and FFilesInfo.IsVariousComments) or (not FFilesInfo.IsVariousComments and (CommentMemo.Text<>FFilesInfo.CommonComments)) then Label3.Font.Style:=Label3.Font.Style+[fsBold] else Label3.Font.Style:=Label3.Font.Style-[fsBold];
+ if VariousKeyWords(FFilesInfo.CommonKeyWords,KeyWordsMemo.text) then Label1.Font.Style:=Label1.Font.Style+[fsBold] else Label1.Font.Style:=Label1.Font.Style-[fsBold];
+ if FFilesInfo.StatRating<>Rating1.Rating then RatingLabel1.Font.Style:=RatingLabel1.Font.Style+[fsBold] else RatingLabel1.Font.Style:=RatingLabel1.Font.Style-[fsBold];
  if ReadCHDate then DateLabel1.Font.Style:=DateLabel1.Font.Style+[fsBold] else DateLabel1.Font.Style:=DateLabel1.Font.Style-[fsBold];
  if ReadCHTime then TimeLabel.Font.Style:=TimeLabel.Font.Style+[fsBold] else TimeLabel.Font.Style:=TimeLabel.Font.Style-[fsBold];
-// if not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then GroupsLabel.Font.Style:=GroupsLabel.Font.Style+[fsBold] else GroupsLabel.Font.Style:=GroupsLabel.Font.Style-[fsBold];
- if {(CurrentItemInfo.ItemInclude<>CheckBox1.Checked)}CHInclude then CheckBox1.Font.Style:=CheckBox1.Font.Style+[fsBold] else CheckBox1.Font.Style:=CheckBox1.Font.Style-[fsBold];
+ if CHInclude then CheckBox1.Font.Style:=CheckBox1.Font.Style+[fsBold] else CheckBox1.Font.Style:=CheckBox1.Font.Style-[fsBold];
  if CHLinks then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
  if CHInclude then CheckBox1.Font.Style:=CheckBox1.Font.Style+[fsBold] else CheckBox1.Font.Style:=CheckBox1.Font.Style-[fsBold];
 end;
@@ -903,7 +897,7 @@ end;
 
 procedure TPropertiesForm.BtSaveClick(Sender: TObject);
 var
-  _sqlexectext, CommonKeyWords, KeyWords, CommonGroups, SGroups, SLinks : string;
+  _sqlexectext, CommonGroups, KeyWords, SGroups, SLinks : string;
   SLinkInfo : TLinksInfo;
   i, j : integer;
   EventInfo : TEventValues;
@@ -927,9 +921,7 @@ begin
   BtSave.Enabled:=false;
 
   ProgressForm:=nil;
-  CommonKeyWords:=CurrentItemInfo.ItemKeyWords;
-
-  If VariousKeyWords(KeywordsMemo.Text,CommonKeyWords) then
+  If VariousKeyWords(KeywordsMemo.Text,FFilesInfo.CommonKeyWords) then
   Inc(xCount);
   If not CompareGroups(FNowGroups,FOldGroups) then
   Inc(xCount);
@@ -990,9 +982,7 @@ begin
   //[END] Rating Support
 
   //[BEGIN] KeyWords Support
-  CommonKeyWords:=CurrentItemInfo.ItemKeyWords;
-
-  If VariousKeyWords(KeywordsMemo.Text,CommonKeyWords) then
+  If VariousKeyWords(KeywordsMemo.Text,FFilesInfo.CommonKeyWords) then
   begin
    FreeSQLList(List);
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
@@ -1000,7 +990,7 @@ begin
    for I := 0 to FFilesInfo.Count - 1 do
    begin
     KeyWords:=FFilesInfo[I].KeyWords;
-    ReplaceWords(CurrentItemInfo.ItemKeyWords, KeywordsMemo.Text, KeyWords);
+    ReplaceWords(FFilesInfo.CommonKeyWords, KeywordsMemo.Text, KeyWords);
     if VariousKeyWords(KeyWords,FFilesInfo[I].KeyWords) then
     begin
      AddQuery(List,KeyWords,FFilesInfo[I].ID);
@@ -1109,7 +1099,7 @@ begin
   //[BEGIN] Commnet Support
 
   if not CommentMemo.ReadOnly then
-  if CommentMemo.Text<>SelectedInfo.Comment then
+  if CommentMemo.Text<>FFilesInfo.CommonComments then
   begin
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
    ProgressForm.xPosition:=0;
@@ -1232,11 +1222,11 @@ begin
   WorkQuery.active:=false;
   SetSQL(WorkQuery,_sqlexectext);
   SetDateParam(WorkQuery,'Date',DateEdit.DateTime);
-  SetIntParam(WorkQuery,5,CurrentItemInfo.ItemId);  //Must be LAST PARAM!
   SetBoolParam(WorkQuery,1,not IsDatePanel.Visible);
   SetBoolParam(WorkQuery,2,CheckBox1.Checked);
   SetDateParam(WorkQuery,'aTime',TimeOf(TimeEdit.Time));
   SetBoolParam(WorkQuery,4,not IsTimePanel.Visible);
+  SetIntParam(WorkQuery,5,ImageId);  //Must be LAST PARAM!
 
 
   ExecSQL(WorkQuery);
@@ -1251,12 +1241,12 @@ begin
   EventInfo.Time:=TimeOf(TimeEdit.Time);
   EventInfo.IsDate:=not IsDatePanel.Visible;
   EventInfo.IsTime:=not IsTimePanel.Visible;
-  DBKernel.DoIDEvent(Sender,CurrentItemInfo.ItemId,[EventID_Param_Comment,EventID_Param_KeyWords,EventID_Param_Rating,EventID_Param_Owner,EventID_Param_Collection,EventID_Param_Date,EventID_Param_Time,EventID_Param_IsDate,EventID_Param_IsTime,EventID_Param_Groups,EventID_Param_Include],EventInfo);
+  DBKernel.DoIDEvent(Sender,ImageId,[EventID_Param_Comment,EventID_Param_KeyWords,EventID_Param_Rating,EventID_Param_Owner,EventID_Param_Collection,EventID_Param_Date,EventID_Param_Time,EventID_Param_IsDate,EventID_Param_IsTime,EventID_Param_Groups,EventID_Param_Include],EventInfo);
  end else
  begin
   If UpdaterDB=nil then
   UpdaterDB:=TUpdaterDB.Create;
-  UpdaterDB.AddFile(CurrentItemInfo.ItemFileName);
+  UpdaterDB.AddFile(FileName);
  end;
 end;
 
@@ -1289,12 +1279,12 @@ end;
 
 procedure TPropertiesForm.Show1Click(Sender: TObject);
 var
-  Info : TRecordsInfo;
+  Info: TRecordsInfo;
 begin
- If Viewer=nil then
- Application.CreateForm(TViewer,Viewer);
- if FShowInfoType=SHOW_INFO_IDS then DBPopupMenuInfoToRecordsInfo(FFilesInfo,Info) else Info:=GetRecordsFromOne(CurrentItemInfo);
- Viewer.Execute(Sender,Info);
+  DBPopupMenuInfoToRecordsInfo(FFilesInfo, Info);
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  Viewer.Execute(Sender, Info);
 end;
 
 procedure TPropertiesForm.Searchforit1Click(Sender: TObject);
@@ -1304,15 +1294,15 @@ var
 begin
  if FShowInfoType=SHOW_INFO_ID then
  begin
-  if FileExists(CurrentItemInfo.ItemFileName) then
+  if FileExists(FileName) then
   begin
    NewSearch:=SearchManager.NewSearch;
    NewSearch.Show;
-   NewSearch.SearchEdit.Text:=inttostr(CurrentItemInfo.ItemId)+'$';
+   NewSearch.SearchEdit.Text:=inttostr(ImageId)+'$';
    NewSearch.DoSearchNow(nil);
   end else
   begin
-   pr:=GetImageIDW(CurrentItemInfo.ItemFileName,true);
+   pr:=GetImageIDW(FileName,true);
    if pr.Count<>0 then
    begin
     Execute(pr.ids[0]);
@@ -1322,7 +1312,7 @@ begin
    end;
   end;
  end else begin
-  pr:=GetImageIDW(CurrentItemInfo.ItemFileName,true);
+  pr:=GetImageIDW(FileName,true);
   if pr.Count<>0 then
   begin
    Execute(pr.ids[0]);
@@ -1338,6 +1328,7 @@ var
   Exif : TExif;
   RAWExif : TRAWExif;
   Options : TPropertyLoadImageThreadOptions;
+  Rec: TDBPopupMenuInfoRecord;
 begin
  if fSaving  then
  begin
@@ -1380,14 +1371,18 @@ begin
  FCurrentPass:='';
  TabbedNotebook1.PageIndex:=0;
  caption:=TEXT_MES_PROPERTY+' - '+ ExtractFileName(FileName);
- CurrentItemInfo.ItemRotate:=0;
  no_file:=false;
 
  FShowInfoType:=SHOW_INFO_FILE_NAME;
  DBitem1.Visible:=false;
  DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
  Editing_info:=false;
- CurrentItemInfo.ItemFileName:=FileName;
+
+
+ Rec := TDBPopupMenuInfoRecord.Create;
+ Rec.FileName := FileName;
+ FFilesInfo.Clear;
+ FFilesInfo.Add(Rec);
  OwnerMemo.ReadOnly:=true;
 
  Rating1.Enabled:=false;
@@ -1460,7 +1455,7 @@ var
   PR : TImageDBRecordA;
 begin
  adding_now:=false;
- pr:=getimageIDW(CurrentItemInfo.ItemFileName,false);
+ pr:=getimageIDW(FileName,false);
  if pr.count<>0 then
  begin
   Execute(pr.ids[0]);
@@ -1488,7 +1483,7 @@ begin
      begin
       Exit;
      end;
-     if id=CurrentItemInfo.ItemId then Execute(ID);
+     if id=ImageId then Execute(ID);
     end;
     SHOW_INFO_IDS:
     begin
@@ -1498,12 +1493,12 @@ begin
     end;
     SHOW_INFO_FILE_NAME:
     begin
-     If (AnsiLowerCase(Value.NewName)=AnsiLowerCase(CurrentItemInfo.ItemFileName)) and FileExists(Value.NewName) then
+     If (AnsiLowerCase(Value.NewName)=AnsiLowerCase(FileName)) and FileExists(Value.NewName) then
      begin
-      ID_:=GetIdByFileName(CurrentItemInfo.ItemFileName);
+      ID_:=GetIdByFileName(FileName);
       if ID_=0 then ExecuteFileNoEx(Value.NewName) else Execute(ID_);
      end;
-     If (AnsiLowerCase(Value.Name)=AnsiLowerCase(CurrentItemInfo.ItemFileName)) then
+     If (AnsiLowerCase(Value.Name)=AnsiLowerCase(FileName)) then
      if FileExists(Value.NewName) and not FileExists(Value.Name) then ExecuteFileNoEx(Value.NewName)
     end;
   end;
@@ -1512,11 +1507,11 @@ end;
 
 procedure TPropertiesForm.PopupMenu1Popup(Sender: TObject);
 begin
- Shell1.Visible:=FileExists(CurrentItemInfo.ItemFileName);
+ Shell1.Visible:=FileExists(FileName);
  if FShowInfoType<>SHOW_INFO_IDS then
- Show1.Visible:=FileExists(CurrentItemInfo.ItemFileName);
+ Show1.Visible:=FileExists(FileName);
  if FShowInfoType<>SHOW_INFO_IDS then Show1.Visible:=True;
- Copy1.Visible:=FileExists(CurrentItemInfo.ItemFileName);
+ Copy1.Visible:=FileExists(FileName);
  if FShowInfoType=SHOW_INFO_IDS then
  Copy1.Visible:=True;
  DBItem1.Clear;
@@ -1526,55 +1521,44 @@ end;
 
 procedure TPropertiesForm.FormDestroy(Sender: TObject);
 begin
- LinkDropFiles.Free;
- FreeDS(WorkQuery);
- DropFileTarget1.Unregister;
- SaveWindowPos1.SavePosition;
- DBKernel.UnRegisterForm(Self);
- DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
+  LinkDropFiles.Free;
+  FreeDS(WorkQuery);
+  DropFileTarget1.Unregister;
+  SaveWindowPos1.SavePosition;
+  DBKernel.UnRegisterForm(Self);
+  DBkernel.UnRegisterProcUpdateTheme(UpdateTheme, Self);
+  F(FFilesInfo);
 end;
 
 procedure TPropertiesForm.UpdateTheme(Sender: TObject);
 begin
- if Visible then
- begin
-  if FShowInfoType=SHOW_INFO_FILE_NAME then ExecuteFileNoEx(CurrentItemInfo.ItemFileName);
-  if FShowInfoType=SHOW_INFO_ID then Execute(CurrentItemInfo.ItemId);
- end;
+  if Visible then
+  begin
+    if FShowInfoType = SHOW_INFO_FILE_NAME then
+      ExecuteFileNoEx(FileName);
+    if FShowInfoType = SHOW_INFO_ID then
+      Execute(ImageId);
+  end;
 end;
 
 procedure TPropertiesForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
- if not Active then exit;
+  if not Active then
+    Exit;
 
- if Msg.hwnd=ListBox1.Handle then
- if Msg.message=256 then
- if Msg.wParam=46 then
- begin
-  //???if not DBkernel.UserRights.SetInfo then
-  //???Button7Click(nil);
- end;
-
- //???if not DBkernel.UserRights.SetInfo then
- //???If (Msg.hwnd=CheckBox1.Handle) or (Msg.hwnd=CheckBox3.Handle) or (Msg.hwnd=CheckBox3.Handle) then
- //???begin
- //??? If Msg.message=513 then Msg.message:=0;
- //??? If Msg.message=515 then Msg.message:=0;
- //???end;
-
- if Msg.message=256 then
- begin
-  if Msg.wParam=27 then Close;
- end;
-
- if (Msg.hwnd=DateEdit.Handle) or (Msg.hwnd=TimeEdit.Handle) then
- begin
-  if msg.message=513 then
+  if Msg.message = WM_KEYDOWN then
   begin
-    CommentMemoChange(nil);
+    if Msg.WParam = VK_ESCAPE then
+      Close;
   end;
- end;
+
+  if (Msg.Hwnd = DateEdit.Handle) or (Msg.Hwnd = TimeEdit.Handle) then
+  begin
+    if Msg.message = WM_LBUTTONDOWN then
+      CommentMemoChange(Self);
+
+  end;
 end;
 
 procedure TPropertiesForm.Datenotexists1Click(Sender: TObject);
@@ -1596,19 +1580,7 @@ end;
 procedure TPropertiesForm.ReloadGroups;
 var
   i : integer;
-  SmallB : TBitmap;
   GroupImageValid : Boolean;
-
-  procedure CreateDefaultGroupImage;
-  begin
-   SmallB.Width:=16;
-   SmallB.Height:=16;
-   SmallB.Canvas.Pen.Color:=Theme_MainColor;
-   SmallB.Canvas.Brush.Color:=Theme_MainColor;
-   SmallB.Canvas.Rectangle(0,0,16,16);
-   DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
-   GroupImageValid:=true;
-  end;
 
 begin
  ListBox1.Clear;
@@ -1620,13 +1592,13 @@ end;
 
 procedure TPropertiesForm.ComboBox1_KeyPress(Sender: TObject; var Key: Char);
 begin
- Key:=#0;
+  Key := #0;
 end;
 
 procedure TPropertiesForm.ExecuteEx(IDs: TArInteger);
 var
   b : Graphics.TBitmap;
-  s, CommonKeyWords,  SQL : String;
+  s, SQL : String;
   ArDir : TArStrings;
   FirstID : boolean;
   i, n, m, aLeft, num, len, k : integer;
@@ -1712,9 +1684,10 @@ begin
   begin
    MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
    MenuRecord.Selected := True;
+   FFilesInfo.Clear;
    FFilesInfo.Add(MenuRecord);
 
-   Size := Size + WorkQuery.FieldByName('FileSize').AsInteger;
+   Size := Size + MenuRecord.FileSize;
    ArWidth[i+len]:=WorkQuery.FieldByName('Width').AsInteger;
    ArHeight[i+len]:=WorkQuery.FieldByName('Height').AsInteger;
    ArDir[i+len]:=GetDirectory(MenuRecord.FileName);
@@ -1738,8 +1711,6 @@ begin
   SizeLAbel.Text:=SizeInTextA(Size);
   OwnerMemo.Text:=TEXT_MES_NOT_AVALIABLE;
   CollectionMemo.Text:=TEXT_MES_NOT_AVALIABLE;
-  CurrentItemInfo.ItemOwner:=TEXT_MES_NOT_AVALIABLE;
-  CurrentItemInfo.ItemCollections:=TEXT_MES_NOT_AVALIABLE;
   OwnerMemo.ReadOnly:=True;
   CommentMemo.PopupMenu:=nil;
   CollectionMemo.ReadOnly:=True;
@@ -1747,11 +1718,8 @@ begin
  if FFilesInfo.IsVariousInclude then
  begin
   CheckBox1.State:=cbGrayed;
-  SelectedInfo.IsVaruousInclude:=true;
  end else
  begin
-  SelectedInfo.IsVaruousInclude:=false;
-  SelectedInfo.Include:=FFilesInfo[0].Include;
   if FFilesInfo[0].Include then
   CheckBox1.State:=cbChecked else
   CheckBox1.State:=cbUnChecked;
@@ -1775,52 +1743,30 @@ begin
   LabelPath.Text:=format(TEXT_MES_ALL_IN,[LongFileName(s)]);
  end;
 
- CurrentItemInfo.ItemRating := FFilesInfo.StatRating;
- Rating1.Rating := CurrentItemInfo.ItemRating;
+ Rating1.Rating := FFilesInfo.StatRating;
  Rating1.Islayered := True;
  Rating1.layered := 100;
- CurrentItemInfo.ItemDate := FFilesInfo.StatDate;
- CurrentItemInfo.ItemTime := FFilesInfo.StatTime;
- TimeEdit.Time := CurrentItemInfo.ItemTime;
- CurrentItemInfo.ItemIsDate := FFilesInfo.StatIsDate;
- CurrentItemInfo.ItemIsTime := FFilesInfo.StatIsTime;
- SelectedInfo.IsDate:=CurrentItemInfo.ItemIsDate;
- SelectedInfo.IsTime:=CurrentItemInfo.ItemIsTime;
- SelectedInfo.Date:=CurrentItemInfo.ItemDate;
- DateEdit.DateTime:=CurrentItemInfo.ItemDate;
- IsDatePanel.Visible:=not SelectedInfo.IsDate;
- IsTimePanel.Visible:=not SelectedInfo.IsTime;
+ TimeEdit.Time := FFilesInfo.StatTime;
+ DateEdit.DateTime:=FFilesInfo.StatDate;
+ IsDatePanel.Visible:=not FFilesInfo.StatIsDate;
+ IsTimePanel.Visible:=not FFilesInfo.StatIsTime;
 
  DateSets.Visible := FFilesInfo.StatIsDate or FFilesInfo.IsVariousDate;
  TimeSets.Visible := FFilesInfo.StatIsTime or FFilesInfo.IsVariousDate;
 
- SelectedInfo.IsVariousDates:=DateSets.Visible;
- SelectedInfo.IsVariousTimes:=TimeSets.Visible;
-
- CommonKeyWords:=FFilesInfo.CommonKeyWords;
- SelectedInfo.CommonKeyWords:=CommonKeyWords;
- KeyWordsMemo.Text:=CommonKeyWords;
- CurrentItemInfo.ItemKeyWords:=CommonKeyWords;
+ KeyWordsMemo.Text:=FFilesInfo.CommonKeyWords;
  IDLabel.Text:=format(TEXT_MES_SELECTED_ITEMS,[IntToStr(FFilesInfo.Count)]);
  CommentMemo.Cursor:=CrDefault;
- SelectedInfo.IsVariousComments:=FFilesInfo.IsVariousComments;
- if SelectedInfo.IsVariousComments then
+
+ if FFilesInfo.IsVariousComments then
  begin
-  SelectedInfo.CommonComment:=TEXT_MES_VAR_COM;
-  CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
   CommentMemo.ReadOnly:=True;
   CommentMemo.Cursor:=CrHandPoint;
   CommentMemo.PopupMenu:=PopupMenu6;
- end else
- begin
-  SelectedInfo.CommonComment:=FFilesInfo[0].Comment;
-  CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
  end;
- CommentMemo.Text:=SelectedInfo.CommonComment;
+ CommentMemo.Text:=FFilesInfo.CommonComments;
 
- CurrentItemInfo.ItemGroups:=FFilesInfo.CommonGroups;
-
- FNowGroups:=UnitGroupsWork.EncodeGroups(CurrentItemInfo.ItemGroups);
+ FNowGroups:=UnitGroupsWork.EncodeGroups(FFilesInfo.CommonGroups);
  FOldGroups:=CopyGroups(FNowGroups);
 
  ItemLinks:=FFilesInfo.CommonLinks;
@@ -1869,7 +1815,7 @@ begin
  PropertyManager.RemoveProperty(self);
  DBKernel.UnRegisterChangesID(Self,ChangedDBDataGroups);
  DBKernel.UnRegisterChangesID(Self,ChangedDBDataByID);
- DBKernel.UnRegisterChangesIDbyID(Self,ChangedDBDataByID,CurrentItemInfo.ItemId);
+ DBKernel.UnRegisterChangesIDbyID(Self,ChangedDBDataByID,ImageId);
 end;
 
 procedure TPropertiesForm.SetValue1Click(Sender: TObject);
@@ -1904,8 +1850,6 @@ begin
  CommentMemo.ReadOnly:=False;
  CommentMemo.Cursor:=CrDefault;
  CommentMemo.Text:='';
- SelectedInfo.CommonComment:='';
- CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
  CommentMemoChange(Sender);
 end;
 
@@ -1925,8 +1869,6 @@ begin
  CommentMemo.ReadOnly:=True;
  CommentMemo.Cursor:=CrHandPoint;
  CommentMemo.Text:=TEXT_MES_VAR_COM;
- SelectedInfo.CommonComment:=TEXT_MES_VAR_COM;
- CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
  CommentMemoChange(Sender);
 end;
 
@@ -2122,7 +2064,7 @@ begin
    AllowChange:=false;
    exit;
   end;
-  if not FileExists(CurrentItemInfo.ItemFileName) then
+  if not FileExists(FileName) then
   begin
    AllowChange:=false;
    exit;
@@ -2141,7 +2083,7 @@ begin
    AllowChange:=false;
    exit;
   end;
-  if not FileExists(CurrentItemInfo.ItemFileName) then
+  if not FileExists(FileName) then
   begin
    AllowChange:=false;
    exit;
@@ -2151,7 +2093,7 @@ begin
 
   if not GistogrammData.Loaded then
   begin
-   Options.FileName:=CurrentItemInfo.ItemFileName;
+   Options.FileName:=FileName;
    Options.Owner:=self;
    Options.SID:=SID;
    Options.OnDone:=OnDoneLoadGistogrammData;
@@ -2203,9 +2145,9 @@ var
 begin
   ValueListEditor1.Strings.Clear;
 
-  if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(CurrentItemInfo.ItemFileName) then
+  if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FileName) then
   begin
-    RAWExif:=ReadRAWExif(CurrentItemInfo.ItemFileName);
+    RAWExif:=ReadRAWExif(FileName);
     if RAWExif.isEXIF then
     begin
       ValueListEditor1.InsertRow('RAW Info:','',true);
@@ -2219,7 +2161,7 @@ begin
     ex := TExif.Create;
     try
       try
-        ex.ReadFromFile(CurrentItemInfo.ItemFileName);
+        ex.ReadFromFile(FileName);
         if ex.Valid then
         begin
           xInsert('Make: ',ex.Make);
@@ -2958,6 +2900,20 @@ begin
  DBChangeGroup(Group);
 end;
 
+function TPropertiesForm.GetFileName: string;
+begin
+  Result := '';
+  if FFilesInfo.Count > 0 then
+    Result := FFilesInfo[0].FileName;
+end;
+
+function TPropertiesForm.GetImageID: Integer;
+begin
+  Result := 0;
+  if FFilesInfo.Count > 0 then
+    Result := FFilesInfo[0].ID;
+end;
+
 procedure TPropertiesForm.GroupManeger1Click(Sender: TObject);
 begin
   ExecuteGroupManager;
@@ -3242,7 +3198,8 @@ begin
  SetLength(LinksInfo,1);
  LinksInfo[0].LinkType:=LINK_TYPE_ID_EXT;
  LinksInfo[0].LinkName:=TEXT_MES_ORIGINAL;
- LinksInfo[0].LinkValue:=CodeExtID(CurrentItemInfo.ItemImTh);
+ //TODO:[0]
+ LinksInfo[0].LinkValue:=CodeExtID(FFilesInfo[0].LongImageID);
  ReplaceLinks('',CodeLinksInfo(LinksInfo),Info.ItemLinks);
  Query := GetQuery;
  SetSQL(Query,Format('UPDATE $DB$ Set Links = :Links where ID = %d',[Info.ItemId]));
@@ -3283,7 +3240,8 @@ begin
  SetLength(LinksInfo,1);
  LinksInfo[0].LinkType:=LINK_TYPE_ID_EXT;
  LinksInfo[0].LinkName:=TEXT_MES_PROCESSING;
- LinksInfo[0].LinkValue:=CodeExtID(CurrentItemInfo.ItemImTh);
+ //TODO:[0]
+ LinksInfo[0].LinkValue:=CodeExtID(FFilesInfo[0].LongImageID);
  ReplaceLinks('',CodeLinksInfo(LinksInfo),Info.ItemLinks);
  Query := GetQuery;
  SetSQL(Query,Format('UPDATE $DB$ Set Links = :Links where ID = %d',[Info.ItemId]));
@@ -3363,10 +3321,10 @@ end;
 
 initialization
 
-PropertyManager := TPropertyManager.Create;
+  PropertyManager := TPropertyManager.Create;
 
 finalization
 
-FreeAndNil(PropertyManager);
+  F(PropertyManager);
 
 end.
