@@ -7,12 +7,12 @@ uses
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, ExtDlgs, Jpeg, Dolphin_DB,
   Menus, GraphicEx, Gifimage, Math, ComCtrls, ImgList, GraphicSelectEx,
   uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, uConstants,
-  uFileUtils;
+  uFileUtils, uMemory, uDBForm;
 
 type
-  TNewGroupForm = class(TForm)
+  TNewGroupForm = class(TDBForm)
     Image1: TImage;
-    Edit1: TEdit;
+    EdName: TEdit;
     Memo1: TMemo;
     Button1: TButton;
     Button2: TButton;
@@ -24,7 +24,7 @@ type
     CheckBox1: TCheckBox;
     Label1: TLabel;
     Label2: TLabel;
-    ComboBoxEx1: TComboBoxEx;
+    CbeGroupList: TComboBoxEx;
     Label3: TLabel;
     GroupsImageList: TImageList;
     CheckBox2: TCheckBox;
@@ -39,26 +39,28 @@ type
     procedure RelodDllNames;
     procedure GraphicSelect1ImageSelect(Sender: TObject; Bitmap: TBitmap);
     procedure LoadFromFile1Click(Sender: TObject);
-    procedure ComboBoxEx1DropDown(Sender: TObject);
-    procedure ComboBoxEx1KeyPress(Sender: TObject; var Key: Char);
-    procedure ComboBoxEx1DblClick(Sender: TObject);
-    procedure ComboBoxEx1Select(Sender: TObject);
+    procedure CbeGroupListDropDown(Sender: TObject);
+    procedure CbeGroupListKeyPress(Sender: TObject; var Key: Char);
+    procedure CbeGroupListDblClick(Sender: TObject);
+    procedure CbeGroupListSelect(Sender: TObject);
     procedure ReloadGroups;
   private
-  FExecuteA : Boolean;
-  FExecuteW : Boolean;
-  FNewGroupName, FGroupCode : String;
-  FCreated : Boolean;
-  FNewRelatedGroups : String;
+    FExecuteA: Boolean;
+    FExecuteW: Boolean;
+    FNewGroupName, FGroupCode: string;
+    FCreated: Boolean;
+    FNewRelatedGroups: string;
     { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
-  Procedure LoadLanguage;
+    procedure LoadLanguage;
     { Public declarations }
   end;
 
-Procedure CreateNewGroupDialog;
-Procedure CreateNewGroupDialogA(GroupName,GroupCode : String);
-Procedure CreateNewGroupDialogB(GroupCode: String; Image : TJpegImage; out Created : Boolean; out GroupName : String);
+procedure CreateNewGroupDialog;
+procedure CreateNewGroupDialogA(GroupName, GroupCode: string);
+procedure CreateNewGroupDialogB(GroupCode: string; Image: TJpegImage; out Created: Boolean; out GroupName: string);
 
 implementation
 
@@ -70,54 +72,51 @@ Procedure CreateNewGroupDialog;
 var
   NewGroupForm: TNewGroupForm;
 begin
- if not IsValidGroupsTable then
- if ThisFileInstalled or DBInDebug then
- CreateGroupsTable;
- Application.CreateForm(TNewGroupForm, NewGroupForm);
- NewGroupForm.Execute;
- NewGroupForm.Release;
- NewGroupForm:=nil;
+  if not IsValidGroupsTable then
+  if ThisFileInstalled or DBInDebug then
+  CreateGroupsTable;
+  Application.CreateForm(TNewGroupForm, NewGroupForm);
+  NewGroupForm.Execute;
+  R(NewGroupForm);
 end;
 
 Procedure CreateNewGroupDialogA(GroupName,GroupCode : String);
 var
   NewGroupForm: TNewGroupForm;
 begin
- Application.CreateForm(TNewGroupForm, NewGroupForm);
- NewGroupForm.ExecuteA(GroupName,GroupCode);
- NewGroupForm.Release;
- NewGroupForm:=nil;
+  Application.CreateForm(TNewGroupForm, NewGroupForm);
+  NewGroupForm.ExecuteA(GroupName,GroupCode);
+  R(NewGroupForm);
 end;
 
 Procedure CreateNewGroupDialogB(GroupCode: String; Image : TJpegImage; out Created : Boolean; out GroupName : String);
 var
   NewGroupForm: TNewGroupForm;
 begin
- Application.CreateForm(TNewGroupForm, NewGroupForm);
- NewGroupForm.ExecuteB(GroupCode,Image,Created,GroupName);
- NewGroupForm.Release;
- NewGroupForm:=nil;
+  Application.CreateForm(TNewGroupForm, NewGroupForm);
+  NewGroupForm.ExecuteB(GroupCode,Image,Created,GroupName);
+  R(NewGroupForm);
 end;
 
 procedure TNewGroupForm.Image1Click(Sender: TObject);
 var
-  p : Tpoint;
+  P: TPoint;
 begin
-  GetCursorPos(p);
-  GraphicSelect1.RequestPicture(p.X,p.y);
+  GetCursorPos(P);
+  GraphicSelect1.RequestPicture(P.X, P.Y);
 end;
 
 procedure TNewGroupForm.Button2Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TNewGroupForm.Execute;
 begin
- FExecuteA:=false;
- FNewRelatedGroups:='';
- ReloadGroups;
- ShowModal;
+  FExecuteA := False;
+  FNewRelatedGroups := '';
+  ReloadGroups;
+  ShowModal;
 end;
 
 procedure TNewGroupForm.Button1Click(Sender: TObject);
@@ -125,12 +124,12 @@ var
   Group : TGroup;
   EventInfo : TEventValues;
 begin
- if GroupNameExists(Edit1.text) then
+ if GroupNameExists(EdName.text) then
  begin
   MessageBoxDB(Handle,TEXT_MES_GROUP_ALREADY_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
   Exit;
  end;
- Group.GroupName:=Edit1.text;
+ Group.GroupName:=EdName.text;
  Group.GroupImage:=TJpegImage.Create;
  if not FExecuteA then Group.GroupCode:=CreateNewGroupCode else
  Group.GroupCode:=FGroupCode;
@@ -146,10 +145,10 @@ begin
  Group.IncludeInQuickList:=CheckBox2.Checked;
  Group.GroupDate:=0;
  AddGroup(Group);
- if GroupNameExists(Edit1.text) then
+ if GroupNameExists(EdName.text) then
  begin
   FCreated:=true;
-  FNewGroupName:=Edit1.text;
+  FNewGroupName:=EdName.text;
  end;
  FreeGroup(Group);
  DBKernel.DoIDEvent(Self,0,[EventID_Param_GroupsChanged],EventInfo);
@@ -158,27 +157,27 @@ end;
 
 procedure TNewGroupForm.FormCreate(Sender: TObject);
 begin
- DBKernel.RecreateThemeToForm(Self);
- LoadLanguage;
- RelodDllNames;
+  DBKernel.RecreateThemeToForm(Self);
+  LoadLanguage;
+  RelodDllNames;
 end;
 
-procedure TNewGroupForm.ExecuteA(GroupName, GroupCode: String);
+procedure TNewGroupForm.ExecuteA(GroupName, GroupCode: string);
 begin
- Edit1.Text:=GroupName;
- Edit1.ReadOnly:=True;
- FExecuteA:=True;
- FExecuteW:=False;
- FGroupCode:=GroupCode;
- FNewRelatedGroups:='';
- ReloadGroups;
- ShowModal;
+  EdName.Text := GroupName;
+  EdName.readonly := True;
+  FExecuteA := True;
+  FExecuteW := False;
+  FGroupCode := GroupCode;
+  FNewRelatedGroups := '';
+  ReloadGroups;
+  ShowModal;
 end;
 
 procedure TNewGroupForm.ExecuteB(GroupCode: String; Image : TJpegImage; out Created : Boolean; out GroupName : String);
 begin
- Edit1.Text:=TEXT_MES_NEW_GROUP;;
- Edit1.ReadOnly:=false;
+  EdName.Text := TEXT_MES_NEW_GROUP;
+  EdName.readonly := False;
  if image<>nil then
  begin
   Image1.Picture.Graphic:=TJpegImage.Create;
@@ -195,20 +194,20 @@ end;
 
 procedure TNewGroupForm.LoadLanguage;
 begin
- Caption := TEXT_MES_CREATE_GROUP_CAPTION;
- Button1.Caption:= TEXT_MES_OK;
- Button2.Caption:= TEXT_MES_CANCEL;
- RadioButton1.Caption:= TEXT_MES_COMMON_GROUP;
- RadioButton2.Caption:= TEXT_MES_PRIVATE_GROUP;
- Memo1.Text := TEXT_MES_GROUP_COMMENTA;
- Memo2.Text:='';
- Edit1.Text:=TEXT_MES_NEW_GROUP_NAME;
- LoadFromFile1.Caption:=TEXT_MES_LOAD_FROM_FILE;
- CheckBox1.Caption:=TEXT_MES_AUTO_ADD_KEYWORDS;
- Label2.Caption:=TEXT_MES_COMMENTS_FOR_GROUP;
- Label1.Caption:=TEXT_MES_KEYWORDS_FOR_GROUP;
- CheckBox2.Caption:=TEXT_MES_INCLUDE_IN_QUICK_LISTS;
- Label3.Caption:=TEXT_MES_RELATED_GROUPS+':';
+  Caption := TEXT_MES_CREATE_GROUP_CAPTION;
+  Button1.Caption := TEXT_MES_OK;
+  Button2.Caption := TEXT_MES_CANCEL;
+  RadioButton1.Caption := TEXT_MES_COMMON_GROUP;
+  RadioButton2.Caption := TEXT_MES_PRIVATE_GROUP;
+  Memo1.Text := TEXT_MES_GROUP_COMMENTA;
+  Memo2.Text := '';
+  EdName.Text := TEXT_MES_NEW_GROUP_NAME;
+  LoadFromFile1.Caption := TEXT_MES_LOAD_FROM_FILE;
+  CheckBox1.Caption := TEXT_MES_AUTO_ADD_KEYWORDS;
+  Label2.Caption := TEXT_MES_COMMENTS_FOR_GROUP;
+  Label1.Caption := TEXT_MES_KEYWORDS_FOR_GROUP;
+  CheckBox2.Caption := TEXT_MES_INCLUDE_IN_QUICK_LISTS;
+  Label3.Caption := TEXT_MES_RELATED_GROUPS + ':';
 end;
 
 procedure TNewGroupForm.RelodDllNames;
@@ -242,32 +241,41 @@ begin
  GraphicSelect1.Showgaleries:=true;
 end;
 
+function TNewGroupForm.GetFormID: string;
+begin
+  Result := 'NewGroup';
+end;
+
 procedure TNewGroupForm.GraphicSelect1ImageSelect(Sender: TObject;
   Bitmap: TBitmap);
 var
-  b : TBitmap;
-  h, w : integer;
+  B: TBitmap;
+  H, W: Integer;
 begin
- b:=TBitmap.Create;
- b.PixelFormat:=pf24bit;
- w:=Bitmap.Width;
- h:=Bitmap.Height;
- If Max(w,h)<48 then B.Assign(Bitmap) else
- begin
-  ProportionalSize(48,48,w,h);
-  StretchCool(w,h,Bitmap,b);
- end;
- Image1.Picture.Graphic.Assign(b);
- b.free;
- Image1.Refresh;
+  B := TBitmap.Create;
+  try
+    B.PixelFormat := Pf24bit;
+    W := Bitmap.Width;
+    H := Bitmap.Height;
+    if Max(W, H) < 48 then
+      B.Assign(Bitmap)
+    else
+    begin
+      ProportionalSize(48, 48, W, H);
+      StretchCool(W, H, Bitmap, B);
+    end;
+    Image1.Picture.Graphic := B;
+  finally
+    B.Free;
+  end;
 end;
 
 procedure TNewGroupForm.LoadFromFile1Click(Sender: TObject);
 begin
- LoadNickJpegImage(Image1);
+  LoadNickJpegImage(Image1);
 end;
 
-procedure TNewGroupForm.ComboBoxEx1DropDown(Sender: TObject);
+procedure TNewGroupForm.CbeGroupListDropDown(Sender: TObject);
 var
   i : integer;
   Group : TGroup;
@@ -309,63 +317,60 @@ begin
   end;
   GroupsImageList.Add(SmallB,nil);
   SmallB.Free;
-  With ComboBoxEx1.ItemsEx[i] do
+  With CbeGroupList.ItemsEx[i] do
   begin
    if GroupImageValud then
    ImageIndex:=i+1 else ImageIndex:=0;
   end;
  end;
-// ComboBoxEx1.ItemIndex:=ComboBoxEx1.ItemsEx.Count-1;
- if ComboBoxEx1.ItemsEx.Count<>0 then
- With ComboBoxEx1.ItemsEx[ComboBoxEx1.ItemsEx.Count-1] do ImageIndex:=0;
+ if CbeGroupList.ItemsEx.Count<>0 then
+ With CbeGroupList.ItemsEx[CbeGroupList.ItemsEx.Count-1] do ImageIndex:=0;
 end;
 
-procedure TNewGroupForm.ComboBoxEx1KeyPress(Sender: TObject;
+procedure TNewGroupForm.CbeGroupListKeyPress(Sender: TObject;
   var Key: Char);
 begin
- Key:=#0;
+  Key := #0;
 end;
 
-procedure TNewGroupForm.ComboBoxEx1DblClick(Sender: TObject);
+procedure TNewGroupForm.CbeGroupListDblClick(Sender: TObject);
 var
   KeyWords : string;
 begin
- DBChangeGroups(FNewRelatedGroups, KeyWords);
+  DBChangeGroups(FNewRelatedGroups, KeyWords);
 end;
 
-procedure TNewGroupForm.ComboBoxEx1Select(Sender: TObject);
+procedure TNewGroupForm.CbeGroupListSelect(Sender: TObject);
 var
   KeyWords : string;
 begin
  Application.ProcessMessages;
- if ComboBoxEx1.ItemsEx.Count=0 then exit;
- if (ComboBoxEx1.Text=ComboBoxEx1.Items[ComboBoxEx1.Items.Count-1]) then
+ if CbeGroupList.ItemsEx.Count=0 then exit;
+ if (CbeGroupList.Text=CbeGroupList.Items[CbeGroupList.Items.Count-1]) then
  begin
   DBChangeGroups(FNewRelatedGroups,KeyWords,false);
   Application.ProcessMessages;
   ReloadGroups;
  end else
  begin
-  ShowGroupInfo(ComboBoxEx1.Text,false,nil);
+  ShowGroupInfo(CbeGroupList.Text,false,nil);
  end;
- ComboBoxEx1.ItemIndex:=-1;
- ComboBoxEx1.Text:=TEXT_MES_GROUPSA;
+ CbeGroupList.ItemIndex:=-1;
+ CbeGroupList.Text:=TEXT_MES_GROUPSA;
 end;
 
 procedure TNewGroupForm.ReloadGroups;
 var
-  i : integer;
-  FCurrentGroups : TGroups;
+  I: Integer;
+  FCurrentGroups: TGroups;
 begin
- FCurrentGroups:=EncodeGroups(FNewRelatedGroups);
- ComboBoxEx1.Items.Clear;
- For i:=0 to Length(FCurrentGroups)-1 do
- begin
-  ComboBoxEx1.Items.Add(FCurrentGroups[i].GroupName);
- end;
+  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  CbeGroupList.Items.Clear;
+  for I := 0 to Length(FCurrentGroups) - 1 do
+    CbeGroupList.Items.Add(FCurrentGroups[I].GroupName);
 
- ComboBoxEx1.Items.Add(TEXT_MES_MANAGEA);
- ComboBoxEx1.Text:=TEXT_MES_GROUPSA;
+  CbeGroupList.Items.Add(L('Manage'));
+  CbeGroupList.Text := L('Groups');
 end;
 
 end.

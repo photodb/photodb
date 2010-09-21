@@ -102,7 +102,7 @@ object NewGroupForm: TNewGroupForm
     Height = 13
     Caption = 'Related Groups:'
   end
-  object Edit1: TEdit
+  object EdName: TEdit
     Left = 60
     Top = 12
     Width = 201
@@ -181,20 +181,18 @@ object NewGroupForm: TNewGroupForm
     Caption = 'Auto Add keyWords'
     TabOrder = 7
   end
-  object ComboBoxEx1: TComboBoxEx
+  object CbeGroupList: TComboBoxEx
     Left = 8
     Top = 208
     Width = 255
     Height = 22
     ItemsEx = <>
-    ItemHeight = 16
     TabOrder = 8
-    OnDblClick = ComboBoxEx1DblClick
-    OnDropDown = ComboBoxEx1DropDown
-    OnKeyPress = ComboBoxEx1KeyPress
-    OnSelect = ComboBoxEx1Select
+    OnDblClick = CbeGroupListDblClick
+    OnDropDown = CbeGroupListDropDown
+    OnKeyPress = CbeGroupListKeyPress
+    OnSelect = CbeGroupListSelect
     Images = GroupsImageList
-    DropDownCount = 8
   end
   object CheckBox2: TCheckBox
     Left = 8

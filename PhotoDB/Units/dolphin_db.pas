@@ -11,7 +11,8 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants, uList64,
-      UnitLinksSupport, EasyListView, ExplorerTypes, ImageConverting;
+      UnitLinksSupport, EasyListView, ExplorerTypes, ImageConverting,
+      uMemory;
 
 const
   DBInDebug = True;
@@ -6990,9 +6991,12 @@ initialization
   LastInseredID := 0;
   GraphicFilterString := '';
   ProcessorCount := GettingProcNum;
+  if ProcessorCount > 2 then
+    NeverSleepOnMMThreadContention := True;
 
 finalization
 
-CoUninitialize;
+  CoUninitialize;
+  F(DBKernel);
 
 end.

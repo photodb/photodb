@@ -2383,8 +2383,7 @@ end;
 
 procedure TPropertiesForm.PopupMenu8Popup(Sender: TObject);
 begin
- AddNewlink1.Visible:=EditLinkForm=nil;
- AddNewlink1.Visible:=AddNewlink1.Visible and not fSaving;
+  AddNewlink1.Visible := (EditLinkForm = nil) and not FSaving;
 end;
 
 procedure TPropertiesForm.SetLinkInfo(Sender: TObject; ID: String;
@@ -2490,63 +2489,72 @@ end;
 
 procedure TPropertiesForm.RecreateGroupsList;
 var
-  i, size : integer;
-  SmallB, B : TBitmap;
-//  GroupImageValud : Boolean;
+  I, Size: Integer;
+  SmallB, B: TBitmap;
 begin
- FreeGroups(RegGroups);
- FreeGroups(FShowenRegGroups);
- RegGroups:=GetRegisterGroupList(True);
- RegGroupsImageList.Clear;
- SmallB := TBitmap.Create;
- SmallB.PixelFormat:=pf24bit;
- SmallB.Width:=16;
- SmallB.Height:=18;
- SmallB.Canvas.Pen.Color:=ClBtnFace;
- SmallB.Canvas.Brush.Color:=ClBtnFace;
- SmallB.Canvas.Rectangle(0,0,16,18);
- DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
- RegGroupsImageList.Add(SmallB,nil);
- SmallB.Free;
- LstAvaliableGroups.Clear;
- for i:=0 to Length(RegGroups)-1 do
- begin
+  FreeGroups(RegGroups);
+  FreeGroups(FShowenRegGroups);
+  RegGroups := GetRegisterGroupList(True);
+  RegGroupsImageList.Clear;
   SmallB := TBitmap.Create;
-  SmallB.PixelFormat:=pf24bit;
-  SmallB.Canvas.Brush.Color:=ClBtnFace;
-  if RegGroups[i].GroupImage<>nil then
-  if not RegGroups[i].GroupImage.Empty then
-  begin
-   B := TBitmap.Create;
-   B.PixelFormat:=pf24bit;
-   size:=Max(RegGroups[i].GroupImage.Width,RegGroups[i].GroupImage.Height);
-   B.Canvas.Brush.Color:=ClBtnFace;
-   B.Canvas.Pen.Color:=ClBtnFace;
-   B.Width:=size;
-   B.Height:=size;
-   B.Canvas.Rectangle(0,0,size,size);
-   B.Canvas.Draw(B.Width div 2 - RegGroups[i].GroupImage.Width div 2, B.Height div 2 - RegGroups[i].GroupImage.Height div 2,RegGroups[i].GroupImage);
-   DoResize(16,16,B,SmallB);
-   B.Free;
-   SmallB.Height:=18;
+  try
+    SmallB.PixelFormat := pf24bit;
+    SmallB.Width := 16;
+    SmallB.Height := 18;
+    SmallB.Canvas.Pen.Color := ClBtnFace;
+    SmallB.Canvas.Brush.Color := ClBtnFace;
+    SmallB.Canvas.Rectangle(0, 0, 16, 18);
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+    RegGroupsImageList.Add(SmallB, nil);
+  finally
+    SmallB.Free;
   end;
-  RegGroupsImageList.Add(SmallB,nil);
-  if RegGroups[i].IncludeInQuickList or CbShowAllGroups.Checked then
-  begin
-   UnitGroupsWork.AddGroupToGroups(FShowenRegGroups,RegGroups[i]);
-   LstAvaliableGroups.Items.Add(RegGroups[i].GroupName);
 
+  LstAvaliableGroups.Clear;
+  for I := 0 to Length(RegGroups) - 1 do
+  begin
+    SmallB := TBitmap.Create;
+    try
+      SmallB.PixelFormat := pf24bit;
+      SmallB.Canvas.Brush.Color := ClBtnFace;
+      if RegGroups[I].GroupImage <> nil then
+        if not RegGroups[I].GroupImage.Empty then
+        begin
+          B := TBitmap.Create;
+          try
+            B.PixelFormat := Pf24bit;
+            Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
+            B.Canvas.Brush.Color := ClBtnFace;
+            B.Canvas.Pen.Color := ClBtnFace;
+            B.Width := Size;
+            B.Height := Size;
+            B.Canvas.Rectangle(0, 0, Size, Size);
+            B.Canvas.Draw(B.Width div 2 - RegGroups[I].GroupImage.Width div 2,
+              B.Height div 2 - RegGroups[I].GroupImage.Height div 2, RegGroups[I].GroupImage);
+            DoResize(16, 16, B, SmallB);
+          finally
+            B.Free;
+          end;
+          SmallB.Height := 18;
+        end;
+      RegGroupsImageList.Add(SmallB, nil);
+      if RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
+      begin
+        UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
+        LstAvaliableGroups.Items.Add(RegGroups[I].GroupName);
+      end;
+    finally
+      SmallB.Free;
+    end;
   end;
-  SmallB.Free;
- end;
- lstCurrentGroups.Refresh;
+  LstCurrentGroups.Refresh;
 end;
 
 procedure TPropertiesForm.LstAvaliableGroupsDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
-  n, i : Integer;
-  xNewGroups : TGroups;
+  N, I: Integer;
+  XNewGroups: TGroups;
 
   function NewGroup(GroupCode : String) : Boolean;
   var
@@ -2646,57 +2654,57 @@ end;
 
 procedure TPropertiesForm.lstCurrentGroupsDblClick(Sender: TObject);
 var
-  i : integer;
-  Group : TGroup;
+  I: Integer;
+  Group: TGroup;
 begin
- if fSaving then Exit;
- for i:=0 to (Sender as TListBox).Items.Count-1 do
- if (Sender as TListBox).Selected[i] then
- begin
-  Group:=GetGroupByGroupCode(FNowGroups[i].GroupCode,false);
-  ShowGroupInfo(Group,false,nil);
-  Break;
- end;
+  if FSaving then
+    Exit;
+  for I := 0 to (Sender as TListBox).Items.Count - 1 do
+    if (Sender as TListBox).Selected[I] then
+    begin
+      Group := GetGroupByGroupCode(FNowGroups[I].GroupCode, False);
+      ShowGroupInfo(Group, False, nil);
+      Break;
+    end;
 end;
 
 procedure TPropertiesForm.Button6Click(Sender: TObject);
 var
-  i : integer;
+  I: Integer;
 
-  Procedure AddGroup(Group : TGroup);
+  procedure AddGroup(Group: TGroup);
   var
-    FRelatedGroups : TGroups;
-    OldGroups, Groups : TGroups;
-    TempGroup : TGroup;
-    i : integer;
-    KeyWords : String;
+    FRelatedGroups: TGroups;
+    OldGroups, Groups: TGroups;
+    TempGroup: TGroup;
+    I: Integer;
+    KeyWords: string;
   begin
-   FRelatedGroups:=EncodeGroups(Group.RelatedGroups);
-   OldGroups:=CopyGroups(FNowGroups);
-   Groups:=CopyGroups(OldGroups);
-   AddGroupToGroups(Groups,Group);
-   AddGroupsToGroups(Groups,FRelatedGroups);
-   FNowGroups:=CopyGroups(Groups);
-   RemoveGroupsFromGroups(Groups,OldGroups);
-   for i:=0 to Length(Groups)-1 do
-   begin
-    lstCurrentGroups.Items.Add(Groups[i].GroupName);
-    TempGroup:=GetGroupByGroupCode(Groups[i].GroupCode,false);
-    KeyWords:=KeyWordsMemo.Text;
-    AddWordsA(TempGroup.GroupKeyWords,KeyWords);
-    KeyWordsMemo.Text:=KeyWords;
-   end;
+    FRelatedGroups := EncodeGroups(Group.RelatedGroups);
+    OldGroups := CopyGroups(FNowGroups);
+    Groups := CopyGroups(OldGroups);
+    AddGroupToGroups(Groups, Group);
+    AddGroupsToGroups(Groups, FRelatedGroups);
+    FNowGroups := CopyGroups(Groups);
+    RemoveGroupsFromGroups(Groups, OldGroups);
+    for I := 0 to Length(Groups) - 1 do
+    begin
+      LstCurrentGroups.Items.Add(Groups[I].GroupName);
+      TempGroup := GetGroupByGroupCode(Groups[I].GroupCode, False);
+      KeyWords := KeyWordsMemo.Text;
+      AddWordsA(TempGroup.GroupKeyWords, KeyWords);
+      KeyWordsMemo.Text := KeyWords;
+    end;
   end;
 
 begin
- for i:=0 to LstAvaliableGroups.Items.Count-1 do
- if LstAvaliableGroups.Selected[i] then
- begin
-  AddGroup(FShowenRegGroups[i]);
- end;
- lstCurrentGroups.Invalidate;
- LstAvaliableGroups.Invalidate;
- CommentMemoChange(Sender);
+  for I := 0 to LstAvaliableGroups.Items.Count - 1 do
+    if LstAvaliableGroups.Selected[I] then
+      AddGroup(FShowenRegGroups[I]);
+
+  LstCurrentGroups.Invalidate;
+  LstAvaliableGroups.Invalidate;
+  CommentMemoChange(Sender);
 end;
 
 procedure TPropertiesForm.Button7Click(Sender: TObject);
@@ -2759,17 +2767,17 @@ end;
 
 procedure TPropertiesForm.Clear1Click(Sender: TObject);
 begin
- lstCurrentGroups.Clear;
- FreeGroups(FNowGroups);
- CommentMemoChange(Sender);
- lstCurrentGroups.Invalidate;
- LstAvaliableGroups.Invalidate;
+  lstCurrentGroups.Clear;
+  FreeGroups(FNowGroups);
+  CommentMemoChange(Sender);
+  LstCurrentGroups.Invalidate;
+  LstAvaliableGroups.Invalidate;
 end;
 
 procedure TPropertiesForm.CbShowAllGroupsClick(Sender: TObject);
 begin
- RecreateGroupsList;
- DBKernel.WriteBool('Propetry','ShowAllGroups', CbShowAllGroups.Checked);
+  RecreateGroupsList;
+  DBKernel.WriteBool('Propetry', 'ShowAllGroups', CbShowAllGroups.Checked);
 end;
 
 procedure TPropertiesForm.LstAvaliableGroupsDblClick(Sender: TObject);
@@ -2793,15 +2801,15 @@ end;
 
 procedure TPropertiesForm.CreateGroup1Click(Sender: TObject);
 begin
- CreateNewGroupDialogA(FNowGroups[PopupMenu9.Tag].GroupName,FNowGroups[PopupMenu9.Tag].GroupCode);
+  CreateNewGroupDialogA(FNowGroups[PopupMenu9.Tag].GroupName,FNowGroups[PopupMenu9.Tag].GroupCode);
 end;
 
 procedure TPropertiesForm.ChangeGroup1Click(Sender: TObject);
 var
   Group : TGroup;
 begin
- Group := GetGroupByGroupCode(FNowGroups[PopupMenu9.Tag].GroupCode,false);
- DBChangeGroup(Group);
+  Group := GetGroupByGroupCode(FNowGroups[PopupMenu9.Tag].GroupCode,false);
+  DBChangeGroup(Group);
 end;
 
 function TPropertiesForm.GetFileName: string;
@@ -2832,30 +2840,30 @@ procedure TPropertiesForm.SearchForGroup1Click(Sender: TObject);
 var
   NewSearch : TSearchForm;
 begin
- NewSearch:=SearchManager.NewSearch;
- NewSearch.SearchEdit.Text:=':Group('+FNowGroups[PopupMenu9.Tag].GroupName+'):';
- NewSearch.WlStartStop.OnClick(Sender);
- NewSearch.Show;
+  NewSearch := SearchManager.NewSearch;
+  NewSearch.SearchEdit.Text := ':Group(' + FNowGroups[PopupMenu9.Tag].GroupName + '):';
+  NewSearch.WlStartStop.OnClick(Sender);
+  NewSearch.Show;
 end;
 
 procedure TPropertiesForm.QuickInfo1Click(Sender: TObject);
 begin
- ShowGroupInfo(FNowGroups[PopupMenu9.Tag],false,nil);
+  ShowGroupInfo(FNowGroups[PopupMenu9.Tag], False, nil);
 end;
 
 procedure TPropertiesForm.PopupMenu9Popup(Sender: TObject);
 begin
  if GroupWithCodeExists(FNowGroups[PopupMenu9.Tag].GroupCode) then
- begin
-  CreateGroup1.Visible:=False;
-  MoveToGroup1.Visible:=False;
-  ChangeGroup1.Visible:=True;
- end else
- begin
-  CreateGroup1.Visible:=True;
-  MoveToGroup1.Visible:=True;
-  ChangeGroup1.Visible:=False;
- end;
+  begin
+    CreateGroup1.Visible := False;
+    MoveToGroup1.Visible := False;
+    ChangeGroup1.Visible := True;
+  end else
+  begin
+    CreateGroup1.Visible := True;
+    MoveToGroup1.Visible := True;
+    ChangeGroup1.Visible := False;
+  end;
 end;
 
 procedure TPropertiesForm.CbRemoveKeywordsForGroupsClick(Sender: TObject);
@@ -2877,45 +2885,45 @@ end;
 procedure TPropertiesForm.ChangedDBDataGroups(Sender: TObject; ID: integer;
   params: TEventFields; Value: TEventValues);
 begin
- if EventID_Param_GroupsChanged in params then
- begin
-  RecreateGroupsList;
-  Exit;
- end;
+  if EventID_Param_GroupsChanged in Params then
+  begin
+    RecreateGroupsList;
+    Exit;
+  end;
 end;
 
 procedure TPropertiesForm.LockImput;
 begin
- fSaving := true;
- R(EditLinkForm);
- CommentMemo.Enabled:=False;
- OwnerMemo.Enabled:=False;
- CollectionMemo.Enabled:=False;
- RatingEdit.Enabled:=False;
- KeyWordsMemo.Enabled:=False;
- DateEdit.Enabled:=False;
- TimeEdit.Enabled:=False;
- CbInclude.Enabled:=False;
- LstAvaliableGroups.Enabled:=False;
- lstCurrentGroups.Enabled:=False;
- Button6.Enabled:=False;
- Button7.Enabled:=False;
+  FSaving := True;
+  R(EditLinkForm);
+  CommentMemo.Enabled := False;
+  OwnerMemo.Enabled := False;
+  CollectionMemo.Enabled := False;
+  RatingEdit.Enabled := False;
+  KeyWordsMemo.Enabled := False;
+  DateEdit.Enabled := False;
+  TimeEdit.Enabled := False;
+  CbInclude.Enabled := False;
+  LstAvaliableGroups.Enabled := False;
+  LstCurrentGroups.Enabled := False;
+  Button6.Enabled := False;
+  Button7.Enabled := False;
 end;
 
 procedure TPropertiesForm.UnLockImput;
 begin
- fSaving := False;
- OwnerMemo.Enabled := True;
- CollectionMemo.Enabled := True;
- RatingEdit.Enabled := True;
- KeyWordsMemo.Enabled := True;
- DateEdit.Enabled := True;
- TimeEdit.Enabled := True;
- CbInclude.Enabled := True;
- LstAvaliableGroups.Enabled := True;
- lstCurrentGroups.Enabled := True;
- Button6.Enabled := True;
- Button7.Enabled := True;
+  FSaving := False;
+  OwnerMemo.Enabled := True;
+  CollectionMemo.Enabled := True;
+  RatingEdit.Enabled := True;
+  KeyWordsMemo.Enabled := True;
+  DateEdit.Enabled := True;
+  TimeEdit.Enabled := True;
+  CbInclude.Enabled := True;
+  LstAvaliableGroups.Enabled := True;
+  LstCurrentGroups.Enabled := True;
+  Button6.Enabled := True;
+  Button7.Enabled := True;
 end;
 
 procedure TPropertiesForm.PopupMenu10Popup(Sender: TObject);

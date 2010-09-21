@@ -9,20 +9,20 @@ type
   THintStyle = (hsXP, hsVista);
 
 type
-   TDBHintWindow = class(THintWindow)
-   private
+  TDBHintWindow = class(THintWindow)
+  private
     FBitmap: TBitmap;
     FRegion: THandle;
     procedure FreeRegion;
-   protected
-    procedure CreateParams (var Params: TCreateParams); override;
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
     procedure Paint; override;
-    procedure Erase(var Message: TMessage); message WM_ERASEBKGND;
-   public
-     constructor Create(AOwner: TComponent); override;
-     destructor Destroy; override;
-     procedure ActivateHint(Rect: TRect; const AHint: String); Override;
-   end;
+    procedure Erase(var message: TMessage); message WM_ERASEBKGND;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure ActivateHint(Rect: TRect; const AHint: string); override;
+  end;
 
 var
   HintStyle: THintStyle = hsVista;

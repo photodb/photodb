@@ -1,6 +1,6 @@
 program PhotoDB;
 
-{$DEFINE DEBUG}
+{$DESCRIPTION 'Photo DB v2.3'}
 
 uses
   uInit in 'Units\uInit.pas',
@@ -367,7 +367,7 @@ exports
   FileVersion name 'FileVersion';
 
 begin
-  //ReportMemoryLeaksOnShutdown := True;
+//  ReportMemoryLeaksOnShutdown := True;
 {
  //Command line
 

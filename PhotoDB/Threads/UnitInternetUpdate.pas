@@ -21,13 +21,13 @@ type
   public
    constructor Create(CreateSuspennded: Boolean; NeedsInformation : Boolean);
   end;
-     
+
 type
   HINTERNET = Pointer;
 
   TInternetOpen = function(lpszAgent: PChar; dwAccessType: DWORD;
   lpszProxy, lpszProxyBypass: PChar; dwFlags: DWORD): HINTERNET; stdcall;
-          
+
   TInternetOpenUrl = function(hInet: HINTERNET; lpszUrl: PChar;
   lpszHeaders: PChar; dwHeadersLength: DWORD; dwFlags: DWORD;
   dwContext: DWORD): HINTERNET; stdcall;
@@ -38,7 +38,7 @@ type
   TInternetCloseHandle = function(hInet: HINTERNET): BOOL; stdcall;
 const
 
-  INTERNET_OPEN_TYPE_PRECONFIG        = 0;  { use registry configuration }   
+  INTERNET_OPEN_TYPE_PRECONFIG        = 0;  { use registry configuration }
   INTERNET_FLAG_RELOAD = $80000000;                 { retrieve the original item }
   wininet = 'wininet.dll';
 
@@ -50,10 +50,10 @@ implementation
 uses UnitFormInternetUpdating, Language;
 
 function DownloadFile(const Url: string): string;
-var 
+var
   NetHandle: HINTERNET;
-  UrlHandle: HINTERNET; 
-  Buffer: array[0..1024] of char; 
+  UrlHandle: HINTERNET;
+  Buffer: array[0..1024] of char;
   BytesRead: cardinal;
   InternetOpen : TInternetOpen;
   InternetOpenUrl : TInternetOpenUrl;
@@ -64,7 +64,7 @@ begin
   WinInetHandle := LoadLibrary(wininet);
   @InternetOpen := GetProcAddress(WinInetHandle, 'InternetOpen');
   @InternetOpenUrl := GetProcAddress(WinInetHandle, 'InternetOpenUrl');
-  @InternetReadFile := GetProcAddress(WinInetHandle, 'InternetReadFile');  
+  @InternetReadFile := GetProcAddress(WinInetHandle, 'InternetReadFile');
   @InternetCloseHandle := GetProcAddress(WinInetHandle, 'InternetCloseHandle');
   Result := '';
   NetHandle := InternetOpen(ProductName, INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
@@ -72,25 +72,25 @@ begin
     begin
       UrlHandle := InternetOpenUrl(NetHandle, PChar(Url), nil, 0, INTERNET_FLAG_RELOAD, 0);
       if Assigned(UrlHandle) then
-{ UrlHandle правильный? Начинаем загрузку } 
+{ UrlHandle правильный? Начинаем загрузку }
         begin
-          FillChar(Buffer, SizeOf(Buffer), 0); 
-          repeat 
-            Result := Result + Buffer; 
-            FillChar(Buffer, SizeOf(Buffer), 0); 
+          FillChar(Buffer, SizeOf(Buffer), 0);
+          repeat
+            Result := Result + Buffer;
+            FillChar(Buffer, SizeOf(Buffer), 0);
             InternetReadFile(UrlHandle, @Buffer, SizeOf(Buffer), BytesRead);
-          until BytesRead = 0; 
+          until BytesRead = 0;
           InternetCloseHandle(UrlHandle);
-        end 
-      else 
+        end
+      else
         begin
-{ UrlHandle неправильный. Генерируем исключительную ситуацию. } 
+{ UrlHandle неправильный. Генерируем исключительную ситуацию. }
 //          raise Exception.CreateFmt('Cannot open URL %s', [Url]);
         end;
 
       InternetCloseHandle(NetHandle);
-    end 
-  else                      
+    end
+  else
 { NetHandle недопустимый. Генерируем исключительную ситуацию }
    EventLog(':DownloadFile() throw exception: Unable to initialize Wininet');
 end;
@@ -110,22 +110,23 @@ var
   i : integer;
   D : TDateTime;
 begin
- if UpdatingWorking then exit;
  FreeOnTerminate:=True;
+ if UpdatingWorking then exit;
  UpdatingWorking:=true;
  Sleep(5000);
- D:=DBKernel.ReadDateTime('','LastUpdating',now);
- if (now-D<7) and not FNeedsInformation then
- begin
-  UpdatingWorking:=false;
-  exit;
- end;
- 
- S:=TStringList.Create;
- try
-  S.Text:=DownloadFile(HomeURL+UpdateFileName);
- except        
-  on e : Exception do EventLog(':TInternetUpdate::Execute() throw exception: '+e.Message);
+ D:=DBKernel.ReadDateTime('', 'LastUpdating', Now);
+  if (Now - D < 7) and not FNeedsInformation then
+  begin
+    UpdatingWorking := False;
+    Exit;
+  end;
+
+  S := TStringList.Create;
+  try
+  try
+    S.Text := DownloadFile(HomeURL + UpdateFileName);
+  except
+    on E: Exception do EventLog(':TInternetUpdate::Execute() throw exception: '+e.Message);
  end;
  if S.Text='' then
  try
@@ -155,7 +156,9 @@ begin
    end else if FNeedsInformation then Inform(TEXT_MES_NO_UPDATES);
   end else if FNeedsInformation then Inform(TEXT_MES_CANNOT_FIND_SITE);
  end else if FNeedsInformation then Inform(TEXT_MES_CANNOT_FIND_SITE);
- S.free;
+  finally
+    S.free;
+  end;
  UpdatingWorking:=false;
 end;
 

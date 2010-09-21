@@ -3,7 +3,7 @@ unit UnitDBCommonGraphics;
 interface
 
  uses Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics,
-      GraphicEx, ShellApi, JPEG, CommCtrl,
+      GraphicEx, ShellApi, JPEG, CommCtrl, uMemory,
       DmProgress, UnitDBDeclare, Language, UnitDBCommon, SysUtils,
       GraphicsBaseTypes, GIFImage, Effects, Math, uMath, RAWImage;
 
@@ -726,24 +726,33 @@ end;
 
 function CalcBitmapToJPEGCompressSize(Bitmap : TBitmap; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
 var
-  Jpeg : TJpegImage;
-  ms:TMemoryStream;
+  Jpeg: TJpegImage;
+  ms: TMemoryStream;
 begin
- Jpeg := TJpegImage.Create;
- Jpeg.Assign(Bitmap);
- if CompressionRate<1 then CompressionRate:=1;
- if CompressionRate>100 then CompressionRate:=100;
- Jpeg.CompressionQuality:=CompressionRate;
- Jpeg.Compress;
+  Jpeg := TJpegImage.Create;
+  try
+    Jpeg.Assign(Bitmap);
+    if CompressionRate < 1 then
+      CompressionRate := 1;
+    if CompressionRate > 100 then
+      CompressionRate := 100;
+    Jpeg.CompressionQuality := CompressionRate;
+    Jpeg.Compress;
 
- ms:=TMemoryStream.Create;
- Jpeg.SaveToStream(ms);
- Jpeg.Free;
- JpegImageResampled:=TJpegImage.Create;
- ms.Seek(0,soFromBeginning);
- JpegImageResampled.LoadFromStream(ms);
- Result:=ms.Size;
- ms.Free;
+    ms:=TMemoryStream.Create;
+    try
+      Jpeg.SaveToStream(ms);
+      F(Jpeg);
+      JpegImageResampled := TJpegImage.Create;
+      ms.Seek(0, soFromBeginning);
+      JpegImageResampled.LoadFromStream(ms);
+      Result := ms.Size;
+    finally
+      F(ms);
+    end;
+  finally
+    F(Jpeg);
+  end;
 end;
 
 function CalcJpegResampledSize(Jpeg : TJpegImage; Size : integer; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
@@ -1241,34 +1250,6 @@ var
   PNG: TPNGGraphic;
   BMP: TBitmap;
 begin
- { if Image is TPNGGraphic then
-  begin
-    PNG := (Image as TPNGGraphic);
-    if PNG.PixelFormat = pf32bit then
-    begin
-      if (Bitmap.Width <> Image.Width) or (Image.Height <> Bitmap.Height) then
-      begin
-        Bitmap.Width := Image.Width;
-        Bitmap.Height := Image.Height;
-      end;
-      LoadPNGImage32bit(Image as TPNGGraphic, Bitmap, BackGround);
-      Exit;
-    end;
-  end;
-  if Image is TBitmap then
-    if not(Image is TPSDGraphic) or PSDTransparent then
-      if (Image as TBitmap).PixelFormat = pf32bit then
-      begin
-        BMP := (Image as TBitmap);
-        if (Bitmap.Width <> Image.Width) or (Image.Height <> Bitmap.Height) then
-        begin
-          Bitmap.Width := Image.Width;
-          Bitmap.Height := Image.Height;
-        end;
-        LoadBMPImage32bit(BMP, Bitmap, BackGround);
-        Exit;
-      end;}
-
   if Image is TGIFImage then
   begin
     if not(Image as TGIFImage).Images[0].Empty then
@@ -1759,8 +1740,7 @@ begin
     Result := Ico1;
     if Ico2 <> 0 then
       DestroyIcon(Ico2);
-  end
-  else
+  end else
   begin
     Result := Ico2;
     if Ico1 <> 0 then

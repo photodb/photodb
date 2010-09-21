@@ -207,7 +207,6 @@ object PropertiesForm: TPropertiesForm
     TabOrder = 0
     OnChange = CommentMemoChange
     OnDblClick = CommentMemoDblClick
-    ExplicitWidth = 185
   end
   object BtDone: TButton
     Left = 246
@@ -218,8 +217,6 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Done'
     TabOrder = 3
     OnClick = BtDoneClick
-    ExplicitLeft = 228
-    ExplicitTop = 490
   end
   object BtSave: TButton
     Left = 149
@@ -231,8 +228,6 @@ object PropertiesForm: TPropertiesForm
     Enabled = False
     TabOrder = 2
     OnClick = BtSaveClick
-    ExplicitLeft = 131
-    ExplicitTop = 489
   end
   object Button2: TButton
     Left = 61
@@ -243,8 +238,6 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Find Target'
     TabOrder = 1
     OnClick = Button2Click
-    ExplicitLeft = 43
-    ExplicitTop = 489
   end
   object ImageLoadingFile: TDBLoading
     Left = 27
@@ -268,8 +261,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitHeight = 381
       DesignSize = (
         313
         350)
@@ -441,7 +432,6 @@ object PropertiesForm: TPropertiesForm
         ScrollBars = ssVertical
         TabOrder = 11
         OnChange = CommentMemoChange
-        ExplicitHeight = 79
       end
       object IDLabel: TMemo
         Tag = 11
@@ -454,7 +444,7 @@ object PropertiesForm: TPropertiesForm
         Lines.Strings = (
           '<data>')
         ReadOnly = True
-        TabOrder = 10
+        TabOrder = 9
       end
       object heightmemo: TMemo
         Tag = 11
@@ -467,7 +457,7 @@ object PropertiesForm: TPropertiesForm
         Lines.Strings = (
           '<data>')
         ReadOnly = True
-        TabOrder = 8
+        TabOrder = 7
       end
       object widthmemo: TMemo
         Tag = 11
@@ -480,7 +470,7 @@ object PropertiesForm: TPropertiesForm
         Lines.Strings = (
           '<data>')
         ReadOnly = True
-        TabOrder = 9
+        TabOrder = 8
       end
       object SizeLabel: TMemo
         Tag = 11
@@ -493,7 +483,7 @@ object PropertiesForm: TPropertiesForm
         Lines.Strings = (
           '<data>')
         ReadOnly = True
-        TabOrder = 7
+        TabOrder = 6
       end
       object TimeEdit: TDateTimePicker
         Left = 72
@@ -508,7 +498,7 @@ object PropertiesForm: TPropertiesForm
         Color = clBtnFace
         DateFormat = dfLong
         Kind = dtkTime
-        TabOrder = 6
+        TabOrder = 5
         OnChange = CommentMemoChange
       end
       object DateEdit: TDateTimePicker
@@ -525,7 +515,7 @@ object PropertiesForm: TPropertiesForm
         Checked = False
         Color = clBtnFace
         DateFormat = dfLong
-        TabOrder = 5
+        TabOrder = 4
         OnChange = CommentMemoChange
       end
       object RatingEdit: TRating
@@ -613,7 +603,6 @@ object PropertiesForm: TPropertiesForm
     object TsGroups: TTabSheet
       Caption = 'Groups'
       ImageIndex = 1
-      ExplicitHeight = 381
       DesignSize = (
         313
         350)
@@ -1198,7 +1187,6 @@ object PropertiesForm: TPropertiesForm
         TabOrder = 0
         OnDblClick = LstAvaliableGroupsDblClick
         OnDrawItem = LstAvaliableGroupsDrawItem
-        ExplicitHeight = 214
       end
       object Button7: TButton
         Left = 116
@@ -1234,7 +1222,6 @@ object PropertiesForm: TPropertiesForm
         OnContextPopup = lstCurrentGroupsContextPopup
         OnDblClick = lstCurrentGroupsDblClick
         OnDrawItem = LstAvaliableGroupsDrawItem
-        ExplicitHeight = 206
       end
       object CbShowAllGroups: TCheckBox
         Left = 3
@@ -1284,7 +1271,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitHeight = 381
       DesignSize = (
         313
         350)
@@ -1306,7 +1292,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitHeight = 381
       DesignSize = (
         313
         350)
@@ -1359,7 +1344,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitHeight = 381
       DesignSize = (
         313
         350)

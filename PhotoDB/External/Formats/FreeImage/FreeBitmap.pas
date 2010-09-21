@@ -621,7 +621,7 @@ constructor TFreeBitmap.Create(ImageType: FREE_IMAGE_TYPE; Width, Height,
   Bpp: Integer);
 begin
   inherited Create;
-
+  FreeImageInit;
   FDib := nil;
   if (Width > 0) and (Height > 0) and (Bpp > 0) then
     SetSize(ImageType, Width, Height, Bpp);

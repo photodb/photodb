@@ -2,11 +2,11 @@ unit uFastLoad;
 
 interface
 
-uses WIndows, SysUtils, UnitDBThread, uTime;
+uses WIndows, SysUtils, UnitDBThread, uTime, uMemory;
 
 type
   TLoad = class(TObject)
-  private  
+  private
     //FAST LOAD
     LoadDBKernelIconsThread,
     LoadDBSettingsThread,
@@ -21,16 +21,16 @@ type
     procedure StartCRCCheckThread;
     //Requareds
     procedure RequaredCRCCheck;
-    procedure RequaredDBKernelIcons;  
+    procedure RequaredDBKernelIcons;
     procedure RequaredDBSettings;
   end;
 
 implementation
 
 uses
-UnitLoadDBSettingsThread,
-UnitLoadDBKernelIconsThread,
-UnitLoadCRCCheckThread;
+  UnitLoadDBSettingsThread,
+  UnitLoadDBKernelIconsThread,
+  UnitLoadCRCCheckThread;
 
 var
   SLoadInstance : TLoad = nil;
@@ -46,8 +46,10 @@ end;
 
 destructor TLoad.Destroy;
 begin
-
-end; 
+  F(LoadDBKernelIconsThread);
+  F(LoadDBSettingsThread);
+  F(LoadCRCCheckThread);
+end;
 
 procedure TLoad.StartDBKernelIconsThread;
 begin
@@ -69,17 +71,17 @@ end;
 
 procedure TLoad.StartCRCCheckThread;
 begin
- LoadCRCCheckThread := TLoadCRCCheckThread.Create(False);
+  LoadCRCCheckThread := TLoadCRCCheckThread.Create(False);
 end;
 
 procedure TLoad.RequaredCRCCheck;
-begin    
+begin
   TW.I.Start('TLoad.RequaredCRCCheck');
   if LoadCRCCheckThread <> nil then
   begin
     if not LoadCRCCheckThread.IsTerminated then
       WaitForSingleObject(LoadCRCCheckThread.Handle, INFINITE);
-    FreeAndNil(LoadCRCCheckThread);
+    F(LoadCRCCheckThread);
   end;
 end;
 
@@ -90,7 +92,7 @@ begin
   begin
     if not LoadDBKernelIconsThread.IsTerminated then
       WaitForSingleObject(LoadDBKernelIconsThread.Handle, INFINITE);
-    FreeAndNil(LoadDBKernelIconsThread);
+    F(LoadDBKernelIconsThread);
   end;
 end;
 
@@ -101,8 +103,14 @@ begin
   begin
     if not LoadDBSettingsThread.IsTerminated then
       WaitForSingleObject(LoadDBSettingsThread.Handle, INFINITE);
-    FreeAndNil(LoadDBSettingsThread);
+    F(LoadDBSettingsThread);
   end;
 end;
+
+initialization
+
+finalization
+
+  F(SLoadInstance);
 
 end.
