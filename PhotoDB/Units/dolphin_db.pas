@@ -2326,7 +2326,7 @@ var
   FQuery: TDataSet;
   MenuRecord: TDBPopupMenuInfoRecord;
 begin
-  Result := nil;
+  Result := TDBPopupMenuInfo.Create;
   FQuery := GetQuery;
   try
     SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
@@ -2335,7 +2335,6 @@ begin
     if FQuery.RecordCount <> 1 then
       Exit;
 
-    Result := TDBPopupMenuInfo.Create;
     MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
     Result.Add(MenuRecord);
     Result.ListItem := nil;

@@ -5,7 +5,7 @@ interface
 uses Windows, SysUtils;
 
 function ConvertUniversalFloatToLocal(s: string): string;
-function PosExS(SubStr: string; const Str: string; index: integer = 1): integer;
+function PosExS(SubStr: string; const Str: string; index: integer = 1): Integer;
 
 implementation
 

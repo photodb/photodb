@@ -55,7 +55,7 @@ function WordExists(Words_ : TStrings; s: string) : boolean;
 procedure GetCommonWords(A,B : Tstrings; var D : Tstrings);
 Function WordsToString(Words : TStrings) : String;
 {$IFNDEF EXT}
-Function GetCommonWordsA(Words : TStringList): String;
+function GetCommonWordsA(Words : TStringList): String;
 procedure DeleteWords(var Words : String; WordsToDelete : String); overload;
 Procedure ReplaceWords(A,B : String; var D : string);
 function VariousKeyWords(S1, S2 : String) : Boolean;
@@ -67,7 +67,7 @@ function MaxStatInt(Ints : TArInteger):Integer;
 function MaxStatDate(Dates : TArDateTime) : TDateTime;
 function MaxStatTime(Times : TArTime) : TDateTime;
 
-Function IsVariousArStrings(Ar : TArStrings) : Boolean;
+Function IsVariousArStrings(Ar : TStrings) : Boolean;
 Function IsVariousArInteger(Ar : TArInteger) : Boolean;
 function IsVariousDate(Dates : TArDateTime) : Boolean;
 function IsVariousArBoolean(Ar : TArBoolean) : Boolean;
@@ -293,7 +293,7 @@ var
 begin
   if Words.Count = 0 then
     Exit;
-    
+
   Common:=TStringList.create;
   Temp:=TStringList.create;
   Str:=TStringList.create;
@@ -428,7 +428,7 @@ Var
   DatesStat[Length(DatesStat)-1].Time:=Time;
   DatesStat[Length(DatesStat)-1].Count:=0;
  end;
-begin    
+begin
  Result:=0;
  If length(Times)=0 then exit;
  SetLength(Stat,0);
@@ -471,7 +471,7 @@ Var
   IntStat[Length(IntStat)-1].Int:=Int;
   IntStat[Length(IntStat)-1].Count:=0;
  end;
-begin     
+begin
  Result:=0;
  If length(Ints)=0 then exit;
  SetLength(Stat,0);
@@ -584,7 +584,7 @@ Var
   BoolStat[Length(BoolStat)-1].Bool:=Bool;
   BoolStat[Length(BoolStat)-1].Count:=0;
  end;
-begin     
+begin
  Result:=false;
  If length(Bools)=0 then exit;
  SetLength(Stat,0);
@@ -616,20 +616,21 @@ begin
  end;
 end;
 
-Function IsVariousArStrings(Ar : TArStrings) : Boolean;
+function IsVariousArStrings(Ar: TStrings): Boolean;
 var
-  i : integer;
-  s : string;
+  I: Integer;
+  S: string;
 begin
- Result:=False;
- if length(Ar)=0 then exit;
- s:=Ar[0];
- for i:=1 to length(Ar)-1 do
- if s<>Ar[i] then
- begin
-  Result:=True;
-  Break;
- end;
+  Result := False;
+  if Ar.Count = 0 then
+    Exit;
+  S := Ar[0];
+  for I := 1 to Ar.Count - 1 do
+    if S <> Ar[I] then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
 function IsVariousArBoolean(Ar : TArBoolean) : Boolean;

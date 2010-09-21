@@ -66,8 +66,6 @@ type
     { Public declarations }
   end;
 
-  TArForms = array of TForm;
-
   TManagerProgresses = class(TObject)
   private
     FForms: TList;

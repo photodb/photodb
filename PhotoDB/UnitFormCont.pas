@@ -13,7 +13,7 @@ uses
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
   uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx, TwButton,
-  uGOM;
+  uGOM, Rating;
 
 type
   TFormCont = class(TThreadForm)

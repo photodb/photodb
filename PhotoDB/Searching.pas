@@ -3202,7 +3202,7 @@ var
   size : int64;
   KeyWordList : TStringList;
   CommonKeyWords : String;
-  ArStr : TArStrings;
+  ArComments : TStringList;
   ArDates : TArDateTime;
   ArIsDates : TArBoolean;
   ArIsTimes : TArBoolean;
@@ -3238,8 +3238,7 @@ begin
   SetLength(ArIsDates,0);
   SetLength(ArIsTimes,0);
   SetLength(ArInt,0);
-  SetLength(ArStr,0);
-
+  ArComments := TStringList.Create;
   KeyWordList := TStringList.Create;
   ArGroups := TStringList.Create;
 
@@ -3258,8 +3257,8 @@ begin
 
    SetLength(ArInt,Length(ArInt)+1);
    ArInt[Length(ArInt)-1]:=SearchRecord.Rating;
-   SetLength(ArStr,Length(ArStr)+1);
-   ArStr[Length(ArStr)-1]:=SearchRecord.Comments;
+   ArComments.Add(SearchRecord.Comments);
+
    SetLength(ArIsDates,Length(ArIsDates)+1);
    ArIsDates[Length(ArIsDates)-1]:=SearchRecord.IsDate;
    SetLength(ArIsTimes,Length(ArIsTimes)+1);
@@ -3297,7 +3296,7 @@ begin
   Label4.Caption:=Format(TEXT_MES_SIZE_FORMATA,[sizeintextA(size)]);
   Label2.Caption:=TEXT_MES_ITEMS+' = '+inttostr(GetSelectionCount);
   Memo1.Lines.text:=CommonKeyWords;
-  SelectedInfo.IsVariousComments:=IsVariousArStrings(ArStr);
+  SelectedInfo.IsVariousComments:=IsVariousArStrings(ArComments);
   if SelectedInfo.IsVariousComments then
   begin
    SelectedInfo.CommonComment:=TEXT_MES_VAR_COM;
@@ -3305,7 +3304,7 @@ begin
    Memo2.PopupMenu:=PopupMenu6;
   end else
   begin
-   SelectedInfo.CommonComment:=ArStr[0];
+   SelectedInfo.CommonComment:=ArComments[0];
    CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
   end;
   if SelectedInfo.IsVariousComments then

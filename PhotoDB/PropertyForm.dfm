@@ -2,8 +2,8 @@ object PropertiesForm: TPropertiesForm
   Left = 510
   Top = 98
   Caption = 'Property'
-  ClientHeight = 523
-  ClientWidth = 319
+  ClientHeight = 531
+  ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,8 +18,8 @@ object PropertiesForm: TPropertiesForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    319
-    523)
+    337
+    531)
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
@@ -34,7 +34,7 @@ object PropertiesForm: TPropertiesForm
     OnDblClick = Image1DblClick
     OnMouseDown = Image1MouseDown
   end
-  object Label3: TLabel
+  object LabelComment: TLabel
     Left = 120
     Top = 8
     Width = 47
@@ -195,7 +195,7 @@ object PropertiesForm: TPropertiesForm
     Tag = 1
     Left = 120
     Top = 32
-    Width = 185
+    Width = 203
     Height = 73
     Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
@@ -207,64 +207,83 @@ object PropertiesForm: TPropertiesForm
     TabOrder = 0
     OnChange = CommentMemoChange
     OnDblClick = CommentMemoDblClick
+    ExplicitWidth = 185
   end
-  object TabbedNotebook1: TTabbedNotebook
-    Left = 8
-    Top = 113
-    Width = 305
-    Height = 372
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    TabFont.Charset = DEFAULT_CHARSET
-    TabFont.Color = clBtnText
-    TabFont.Height = -11
-    TabFont.Name = 'MS Sans Serif'
-    TabFont.Style = []
+  object BtDone: TButton
+    Left = 246
+    Top = 498
+    Width = 83
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Done'
+    TabOrder = 3
+    OnClick = BtDoneClick
+    ExplicitLeft = 228
+    ExplicitTop = 490
+  end
+  object BtSave: TButton
+    Left = 149
+    Top = 497
+    Width = 91
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Save'
+    Enabled = False
+    TabOrder = 2
+    OnClick = BtSaveClick
+    ExplicitLeft = 131
+    ExplicitTop = 489
+  end
+  object Button2: TButton
+    Left = 61
+    Top = 497
+    Width = 81
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Find Target'
     TabOrder = 1
-    OnChange = TabbedNotebook1Change
-    object TTabPage
-      Left = 4
-      Top = 24
+    OnClick = Button2Click
+    ExplicitLeft = 43
+    ExplicitTop = 489
+  end
+  object ImageLoadingFile: TDBLoading
+    Left = 27
+    Top = 32
+    Width = 63
+    Height = 64
+    LineColor = clBlack
+    Active = True
+  end
+  object PcMain: TPageControl
+    Left = 8
+    Top = 114
+    Width = 321
+    Height = 378
+    ActivePage = TsGeneral
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    DoubleBuffered = True
+    MultiLine = True
+    ParentDoubleBuffered = False
+    TabOrder = 5
+    OnChange = PcMainChange
+    object TsGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitHeight = 381
       DesignSize = (
-        297
-        344)
-      object CollectionLabel: TLabel
+        313
+        350)
+      object LabelKeywords: TLabel
         Left = 8
-        Top = 108
-        Width = 46
+        Top = 280
+        Width = 52
         Height = 13
-        Caption = 'Collection'
+        Caption = 'KeyWords:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object DateLabel1: TLabel
-        Left = 8
-        Top = 152
-        Width = 23
-        Height = 13
-        Caption = 'Date'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object Heightlabel: TLabel
-        Left = 8
-        Top = 224
-        Width = 28
-        Height = 13
-        Caption = 'Heigh'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
+        Font.Style = []
         ParentFont = False
       end
       object IDLabel1: TLabel
@@ -277,98 +296,7 @@ object PropertiesForm: TPropertiesForm
         Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object Label1: TLabel
-        Left = 8
-        Top = 280
-        Width = 52
-        Height = 13
-        Caption = 'KeyWords:'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object Label4: TLabel
-        Left = 8
-        Top = 24
-        Width = 46
-        Height = 13
-        Caption = 'Full pach:'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object LabelName1: TLabel
-        Left = 8
-        Top = 8
-        Width = 28
-        Height = 13
-        Caption = 'Name'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object OwnerLabel: TLabel
-        Left = 8
-        Top = 88
-        Width = 31
-        Height = 13
-        Caption = 'Owner'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object RatingLabel1: TLabel
-        Left = 8
-        Top = 128
-        Width = 31
-        Height = 13
-        Caption = 'Rating'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object SizeLabel1: TLabel
-        Left = 8
-        Top = 205
-        Width = 20
-        Height = 13
-        Caption = 'Size'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object TimeLabel: TLabel
-        Left = 8
-        Top = 178
-        Width = 23
-        Height = 13
-        Caption = 'Time'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
+        Font.Style = []
         ParentFont = False
       end
       object WidthLabel: TLabel
@@ -381,159 +309,272 @@ object PropertiesForm: TPropertiesForm
         Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
+        Font.Style = []
         ParentFont = False
       end
-      object CollectionMemo: TMemo
-        Tag = 11
-        Left = 72
-        Top = 108
-        Width = 217
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
-        TabOrder = 0
-        OnChange = CommentMemoChange
-      end
-      object DateEdit: TDateTimePicker
-        Tag = 1
-        Left = 72
-        Top = 152
-        Width = 217
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelEdges = []
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        BiDiMode = bdRightToLeftNoAlign
-        Date = 38153.564945740740000000
-        Time = 38153.564945740740000000
-        Color = clBtnFace
-        DateFormat = dfLong
+      object Heightlabel: TLabel
+        Left = 8
+        Top = 224
+        Width = 28
+        Height = 13
+        Caption = 'Heigh'
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ParentBiDiMode = False
-        ParentColor = True
         ParentFont = False
-        PopupMenu = PopupMenu2
-        TabOrder = 1
-        OnChange = DateEditChange
       end
-      object DateSets: TPanel
-        Left = 72
-        Top = 151
-        Width = 217
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelInner = bvLowered
-        Caption = '<date is sets>'
-        PopupMenu = PopupMenu2
-        TabOrder = 2
-        OnDblClick = DateSetsDblClick
+      object SizeLabel1: TLabel
+        Left = 8
+        Top = 205
+        Width = 20
+        Height = 13
+        Caption = 'Size'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
       end
-      object heightmemo: TMemo
+      object DateLabel1: TLabel
+        Left = 8
+        Top = 152
+        Width = 23
+        Height = 13
+        Caption = 'Date'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object TimeLabel: TLabel
+        Left = 8
+        Top = 178
+        Width = 23
+        Height = 13
+        Caption = 'Time'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object RatingLabel1: TLabel
+        Left = 8
+        Top = 128
+        Width = 31
+        Height = 13
+        Caption = 'Rating'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object CollectionLabel: TLabel
+        Left = 8
+        Top = 108
+        Width = 46
+        Height = 13
+        Caption = 'Collection'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object OwnerLabel: TLabel
+        Left = 8
+        Top = 88
+        Width = 31
+        Height = 13
+        Caption = 'Owner'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object Label4: TLabel
+        Left = 3
+        Top = 24
+        Width = 43
+        Height = 13
+        Caption = 'Full path:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object LabelName1: TLabel
+        Left = 3
+        Top = 8
+        Width = 28
+        Height = 13
+        Caption = 'Name'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object KeyWordsMemo: TMemo
         Tag = 11
-        Left = 72
-        Top = 242
-        Width = 217
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
+        Left = 8
+        Top = 296
+        Width = 302
+        Height = 48
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        BevelInner = bvNone
         BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
-        ReadOnly = True
-        TabOrder = 3
+        ScrollBars = ssVertical
+        TabOrder = 11
+        OnChange = CommentMemoChange
+        ExplicitHeight = 79
       end
       object IDLabel: TMemo
         Tag = 11
         Left = 72
         Top = 261
-        Width = 217
+        Width = 238
         Height = 15
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
         Lines.Strings = (
           '<data>')
         ReadOnly = True
-        TabOrder = 4
+        TabOrder = 10
       end
-      object IsDatePanel: TPanel
-        Left = 73
-        Top = 151
-        Width = 216
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelInner = bvLowered
-        Caption = '<no date>'
-        PopupMenu = PopupMenu2
-        TabOrder = 5
-        OnDblClick = IsDatePanelDblClick
-      end
-      object IsTimePanel: TPanel
-        Left = 72
-        Top = 178
-        Width = 217
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelInner = bvLowered
-        Caption = '<no time>'
-        PopupMenu = PopupMenu11
-        TabOrder = 6
-        OnDblClick = IsTimePanelDblClick
-      end
-      object KeyWordsMemo: TMemo
-        Tag = 11
-        Left = 8
-        Top = 296
-        Width = 281
-        Height = 0
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        BevelInner = bvNone
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<'
-          'k'
-          'e'
-          'y'
-          'w'
-          'o'
-          'r'
-          'd'
-          's'
-          '>')
-        ScrollBars = ssVertical
-        TabOrder = 7
-        OnChange = CommentMemoChange
-      end
-      object LabelName: TMemo
+      object heightmemo: TMemo
         Tag = 11
         Left = 72
-        Top = 9
-        Width = 225
+        Top = 242
+        Width = 238
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
         Lines.Strings = (
           '<data>')
-        ParentFont = False
         ReadOnly = True
         TabOrder = 8
       end
+      object widthmemo: TMemo
+        Tag = 11
+        Left = 72
+        Top = 224
+        Width = 238
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        BorderStyle = bsNone
+        Lines.Strings = (
+          '<data>')
+        ReadOnly = True
+        TabOrder = 9
+      end
+      object SizeLabel: TMemo
+        Tag = 11
+        Left = 72
+        Top = 205
+        Width = 238
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        BorderStyle = bsNone
+        Lines.Strings = (
+          '<data>')
+        ReadOnly = True
+        TabOrder = 7
+      end
+      object TimeEdit: TDateTimePicker
+        Left = 72
+        Top = 178
+        Width = 238
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        Date = 38544.841692523150000000
+        Time = 38544.841692523150000000
+        ShowCheckbox = True
+        Checked = False
+        Color = clBtnFace
+        DateFormat = dfLong
+        Kind = dtkTime
+        TabOrder = 6
+        OnChange = CommentMemoChange
+      end
+      object DateEdit: TDateTimePicker
+        Left = 72
+        Top = 151
+        Width = 238
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelEdges = []
+        BevelInner = bvNone
+        Date = 38153.564945740740000000
+        Time = 38153.564945740740000000
+        ShowCheckbox = True
+        Checked = False
+        Color = clBtnFace
+        DateFormat = dfLong
+        TabOrder = 5
+        OnChange = CommentMemoChange
+      end
+      object RatingEdit: TRating
+        Left = 72
+        Top = 128
+        Width = 96
+        Height = 16
+        Cursor = crHandPoint
+        PopupMenu = PopupMenu5
+        Rating = 0
+        RatingRange = 0
+        BkColor = clWindow
+        OnChange = CommentMemoChange
+        Islayered = False
+        Layered = 100
+        OnMouseDown = RatingEditMouseDown
+        ImageCanRegenerate = True
+      end
+      object CollectionMemo: TMemo
+        Tag = 11
+        Left = 72
+        Top = 108
+        Width = 230
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        BorderStyle = bsNone
+        Lines.Strings = (
+          '<data>')
+        TabOrder = 3
+        OnChange = CommentMemoChange
+      end
+      object OwnerMemo: TMemo
+        Tag = 11
+        Left = 72
+        Top = 88
+        Width = 230
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        BorderStyle = bsNone
+        Lines.Strings = (
+          '<data>')
+        TabOrder = 2
+        OnChange = CommentMemoChange
+      end
       object LabelPath: TMemo
         Tag = 11
-        Left = 8
+        Left = 3
         Top = 40
-        Width = 281
+        Width = 307
         Height = 41
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -547,98 +588,37 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
         ReadOnly = True
         ScrollBars = ssVertical
-        TabOrder = 9
+        TabOrder = 1
       end
-      object OwnerMemo: TMemo
+      object LabelName: TMemo
         Tag = 11
         Left = 72
-        Top = 88
-        Width = 217
+        Top = 9
+        Width = 238
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
         Lines.Strings = (
           '<data>')
-        TabOrder = 10
-        OnChange = CommentMemoChange
-      end
-      object Rating1: TRating
-        Left = 72
-        Top = 128
-        Width = 96
-        Height = 16
-        Cursor = crHandPoint
-        PopupMenu = PopupMenu5
-        Rating = 0
-        RatingRange = 0
-        BkColor = clBtnFace
-        OnChange = CommentMemoChange
-        Islayered = False
-        Layered = 100
-        OnMouseDown = Rating1MouseDown
-        ImageCanRegenerate = True
-      end
-      object SizeLabel: TMemo
-        Tag = 11
-        Left = 72
-        Top = 205
-        Width = 217
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
+        ParentFont = False
         ReadOnly = True
-        TabOrder = 12
-      end
-      object TimeEdit: TDateTimePicker
-        Left = 73
-        Top = 179
-        Width = 216
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        Date = 38544.841692523150000000
-        Time = 38544.841692523150000000
-        Color = clBtnFace
-        DateFormat = dfLong
-        Kind = dtkTime
-        ParentColor = True
-        PopupMenu = PopupMenu11
-        TabOrder = 13
-        OnChange = TimeEditChange
-      end
-      object TimeSets: TPanel
-        Left = 73
-        Top = 179
-        Width = 216
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelInner = bvLowered
-        Caption = '<time is sets>'
-        PopupMenu = PopupMenu11
-        TabOrder = 14
-        OnDblClick = TimeSetsDblClick
-      end
-      object widthmemo: TMemo
-        Tag = 11
-        Left = 72
-        Top = 224
-        Width = 217
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
-        ReadOnly = True
-        TabOrder = 15
+        TabOrder = 0
       end
     end
-    object TTabPage
-      Left = 4
-      Top = 24
+    object TsGroups: TTabSheet
       Caption = 'Groups'
+      ImageIndex = 1
+      ExplicitHeight = 381
+      DesignSize = (
+        313
+        350)
       object Image3: TImage
-        Left = 8
+        Left = 3
         Top = 8
         Width = 65
         Height = 65
@@ -1177,7 +1157,7 @@ object PropertiesForm: TPropertiesForm
         OnDblClick = GroupManeger1Click
       end
       object label7: TLabel
-        Left = 80
+        Left = 67
         Top = 8
         Width = 209
         Height = 65
@@ -1189,7 +1169,7 @@ object PropertiesForm: TPropertiesForm
       end
       object Label8: TLabel
         Tag = 2
-        Left = 8
+        Left = 3
         Top = 74
         Width = 83
         Height = 13
@@ -1197,32 +1177,40 @@ object PropertiesForm: TPropertiesForm
       end
       object Label9: TLabel
         Tag = 2
-        Left = 178
+        Left = 171
         Top = 73
         Width = 74
         Height = 13
         Caption = 'Current Groups:'
       end
-      object Button4: TButton
-        Left = 8
-        Top = 320
-        Width = 89
-        Height = 25
-        Caption = 'New Group'
+      object LstAvaliableGroups: TListBox
+        Left = 3
+        Top = 90
+        Width = 107
+        Height = 183
+        Style = lbOwnerDrawFixed
+        Anchors = [akLeft, akTop, akBottom]
+        ItemHeight = 20
+        Items.Strings = (
+          '<Data>')
+        MultiSelect = True
+        ParentColor = True
         TabOrder = 0
-        OnClick = Button4Click
+        OnDblClick = LstAvaliableGroupsDblClick
+        OnDrawItem = LstAvaliableGroupsDrawItem
+        ExplicitHeight = 214
       end
-      object Button5: TButton
-        Left = 104
-        Top = 320
-        Width = 89
-        Height = 25
-        Caption = 'Manager'
+      object Button7: TButton
+        Left = 116
+        Top = 111
+        Width = 49
+        Height = 17
+        Caption = '<--'
         TabOrder = 1
-        OnClick = Button5Click
+        OnClick = Button7Click
       end
       object Button6: TButton
-        Left = 122
+        Left = 116
         Top = 88
         Width = 49
         Height = 17
@@ -1230,95 +1218,107 @@ object PropertiesForm: TPropertiesForm
         TabOrder = 2
         OnClick = Button6Click
       end
-      object Button7: TButton
-        Left = 122
-        Top = 112
-        Width = 49
-        Height = 17
-        Caption = '<--'
-        TabOrder = 3
-        OnClick = Button7Click
-      end
-      object CheckBox2: TCheckBox
-        Left = 8
-        Top = 300
-        Width = 281
-        Height = 17
-        Caption = 'Remove KeyWords For Group'
-        TabOrder = 4
-        OnClick = CheckBox2Click
-      end
-      object CheckBox3: TCheckBox
-        Left = 8
-        Top = 284
-        Width = 281
-        Height = 17
-        Caption = 'Show All Groups'
-        TabOrder = 5
-        OnClick = CheckBox3Click
-      end
-      object ListBox1: TListBox
-        Left = 178
-        Top = 90
+      object lstCurrentGroups: TListBox
+        Left = 171
+        Top = 92
         Width = 111
-        Height = 191
+        Height = 175
         Style = lbOwnerDrawFixed
+        Anchors = [akLeft, akTop, akBottom]
         ItemHeight = 20
         Items.Strings = (
           '<Data>')
         MultiSelect = True
         ParentColor = True
-        TabOrder = 6
-        OnContextPopup = ListBox1ContextPopup
-        OnDblClick = ListBox1DblClick
-        OnDrawItem = ListBox2DrawItem
+        TabOrder = 3
+        OnContextPopup = lstCurrentGroupsContextPopup
+        OnDblClick = lstCurrentGroupsDblClick
+        OnDrawItem = LstAvaliableGroupsDrawItem
+        ExplicitHeight = 206
       end
-      object ListBox2: TListBox
-        Left = 8
-        Top = 90
-        Width = 107
-        Height = 191
-        Style = lbOwnerDrawFixed
-        ItemHeight = 20
-        Items.Strings = (
-          '<Data>')
-        MultiSelect = True
-        ParentColor = True
+      object CbShowAllGroups: TCheckBox
+        Left = 3
+        Top = 279
+        Width = 281
+        Height = 17
+        Anchors = [akLeft, akBottom]
+        Caption = 'Show All Groups'
+        TabOrder = 4
+        OnClick = CbShowAllGroupsClick
+        ExplicitTop = 310
+      end
+      object CbRemoveKeywordsForGroups: TCheckBox
+        Left = 3
+        Top = 297
+        Width = 281
+        Height = 17
+        Anchors = [akLeft, akBottom]
+        Caption = 'Remove KeyWords For Group'
+        TabOrder = 5
+        OnClick = CbRemoveKeywordsForGroupsClick
+        ExplicitTop = 328
+      end
+      object BtnNewGroup: TButton
+        Left = 3
+        Top = 320
+        Width = 89
+        Height = 25
+        Anchors = [akLeft, akBottom]
+        Caption = 'New Group'
+        TabOrder = 6
+        OnClick = BtnNewGroupClick
+        ExplicitTop = 351
+      end
+      object BtnManageGroups: TButton
+        Left = 99
+        Top = 320
+        Width = 89
+        Height = 25
+        Anchors = [akLeft, akBottom]
+        Caption = 'Manager'
         TabOrder = 7
-        OnDblClick = ListBox2DblClick
-        OnDrawItem = ListBox2DrawItem
+        OnClick = BtnManageGroupsClick
+        ExplicitTop = 351
       end
     end
-    object TTabPage
-      Left = 4
-      Top = 24
-      Caption = 'Exif'
+    object TsEXIF: TTabSheet
+      Caption = 'EXIF'
+      ImageIndex = 2
+      ExplicitHeight = 381
       DesignSize = (
-        297
-        344)
-      object ValueListEditor1: TValueListEditor
-        Left = 8
-        Top = 8
-        Width = 281
-        Height = 237
+        313
+        350)
+      object VleExif: TValueListEditor
+        Left = 3
+        Top = 3
+        Width = 307
+        Height = 344
         Anchors = [akLeft, akTop, akRight, akBottom]
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
         TabOrder = 0
-        OnContextPopup = ValueListEditor1ContextPopup
+        OnContextPopup = VleExifContextPopup
+        ExplicitHeight = 375
         ColWidths = (
           100
-          175)
+          201)
       end
     end
-    object TTabPage
-      Left = 4
-      Top = 24
+    object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
+      ImageIndex = 3
+      ExplicitHeight = 381
       DesignSize = (
-        297
-        344)
-      object DmGradient1: TDmGradient
-        Left = 8
+        313
+        350)
+      object Label5: TLabel
+        Left = 3
+        Top = 327
+        Width = 111
+        Height = 13
+        Caption = 'Effective range - 0..255'
+      end
+      object DgGistogramm: TDmGradient
+        Left = 3
         Top = 160
         Width = 257
         Height = 15
@@ -1327,29 +1327,22 @@ object PropertiesForm: TPropertiesForm
         OrientarionHorizontal = True
       end
       object GistogrammImage: TImage
-        Left = 8
+        Left = 3
         Top = 24
         Width = 256
         Height = 130
       end
       object Label2: TLabel
-        Left = 8
-        Top = 8
+        Left = 3
+        Top = 5
         Width = 89
         Height = 13
         Caption = 'Gistogramm image:'
       end
-      object Label5: TLabel
-        Left = 8
-        Top = 328
-        Width = 111
-        Height = 13
-        Caption = 'Effective range - 0..255'
-      end
       object RgGistogrammChannel: TRadioGroup
-        Left = 7
+        Left = 3
         Top = 183
-        Width = 281
+        Width = 307
         Height = 138
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Chanel'
@@ -1363,24 +1356,24 @@ object PropertiesForm: TPropertiesForm
         OnClick = RgGistogrammChannelClick
       end
     end
-    object TTabPage
-      Left = 4
-      Top = 24
+    object TsAdditional: TTabSheet
       Caption = 'Additional'
+      ImageIndex = 4
+      ExplicitHeight = 381
       DesignSize = (
-        297
-        344)
-      object Label6: TLabel
-        Left = 8
+        313
+        350)
+      object LbLinks: TLabel
+        Left = 3
         Top = 32
         Width = 74
         Height = 13
         Caption = 'Links for Photo:'
       end
-      object CheckBox1: TCheckBox
-        Left = 8
+      object CbInclude: TCheckBox
+        Left = 3
         Top = 9
-        Width = 281
+        Width = 307
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Include in base search item'
@@ -1388,54 +1381,16 @@ object PropertiesForm: TPropertiesForm
         OnClick = CommentMemoChange
       end
       object LinksScrollBox: TScrollBox
-        Left = 8
+        Left = 3
         Top = 48
-        Width = 281
-        Height = 197
+        Width = 307
+        Height = 299
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PopupMenu8
         TabOrder = 1
+        ExplicitHeight = 330
       end
     end
-  end
-  object BtDone: TButton
-    Left = 228
-    Top = 490
-    Width = 83
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Done'
-    TabOrder = 4
-    OnClick = BtDoneClick
-  end
-  object BtSave: TButton
-    Left = 131
-    Top = 489
-    Width = 91
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Save'
-    Enabled = False
-    TabOrder = 3
-    OnClick = BtSaveClick
-  end
-  object Button2: TButton
-    Left = 43
-    Top = 489
-    Width = 81
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Find Target'
-    TabOrder = 2
-    OnClick = Button2Click
-  end
-  object ImageLoadingFile: TDBLoading
-    Left = 27
-    Top = 32
-    Width = 63
-    Height = 64
-    LineColor = clBlack
-    Active = True
   end
   object PopupMenu1: TPopupMenu
     OnPopup = PopupMenu1Popup
@@ -1470,38 +1425,12 @@ object PropertiesForm: TPropertiesForm
     Left = 40
     Top = 8
   end
-  object PopupMenu2: TPopupMenu
-    OnPopup = PopupMenu2Popup
-    Left = 72
-    Top = 8
-    object Datenotexists1: TMenuItem
-      Caption = 'Date not exists'
-      OnClick = Datenotexists1Click
-    end
-    object DateExists1: TMenuItem
-      Caption = 'Date Exists'
-      OnClick = DateExists1Click
-    end
-    object Datenotsets1: TMenuItem
-      Caption = 'Date not sets'
-      OnClick = Datenotsets1Click
-    end
-  end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = True
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
     Left = 104
     Top = 8
-  end
-  object PopupMenu4: TPopupMenu
-    OnPopup = PopupMenu4Popup
-    Left = 136
-    Top = 8
-    object SetValue1: TMenuItem
-      Caption = 'Set Value'
-      OnClick = SetValue1Click
-    end
   end
   object PopupMenu5: TPopupMenu
     OnPopup = PopupMenu5Popup
@@ -1635,13 +1564,13 @@ object PropertiesForm: TPropertiesForm
     end
   end
   object RegGroupsImageList: TImageList
-    Left = 312
-    Top = 48
+    Left = 288
+    Top = 16
   end
   object PopupMenu9: TPopupMenu
     OnPopup = PopupMenu9Popup
-    Left = 344
-    Top = 48
+    Left = 288
+    Top = 56
     object MenuItem1: TMenuItem
       Caption = 'Delete Item'
       OnClick = Button7Click
@@ -1682,29 +1611,6 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Clear'
       OnClick = Clear1Click
     end
-  end
-  object PopupMenu11: TPopupMenu
-    OnPopup = PopupMenu11Popup
-    Left = 312
-    object TimenotExists1: TMenuItem
-      Caption = 'Time not Exists'
-      OnClick = TimenotExists1Click
-    end
-    object TimeExists1: TMenuItem
-      Caption = 'Time Exists'
-      OnClick = TimeExists1Click
-    end
-    object Timenotsets1: TMenuItem
-      Caption = 'Time not sets'
-      OnClick = Timenotsets1Click
-    end
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = DestroyTimerTimer
-    Left = 200
-    Top = 8
   end
   object DropFileTarget2: TDropFileTarget
     DragTypes = [dtCopy, dtMove, dtLink]

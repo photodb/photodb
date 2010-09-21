@@ -10,18 +10,17 @@ uses  win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
  Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
    EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
-   uConstants, CommCtrl, uTime, UnitINI, SyncObjs;
+   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory;
 
 type
   TCharObject = class (TObject)
   private
-   FChar : Char;
+    FChar: Char;
     procedure SetChar(const Value: Char);
   public
-  constructor Create;
-  Destructor Destroy; override;
-  published
-  Property Char_ : Char Read FChar Write SetChar;
+    constructor Create;
+    destructor Destroy; override;
+    property Char_: Char read FChar write SetChar;
   end;
 
  const
@@ -215,7 +214,7 @@ type TDBKernel = class(TObject)
     fDBUserPassword: string;
     fDBUserHash: integer;
     FTheme: TDbTheme;
-    FForms : array of TForm;
+    FForms : TList;
     FThemeNotifys : array of TNotifyEvent;
     FThemeNotifysForms : array of TForm;
     FApplicationKey : String;
@@ -340,6 +339,7 @@ var
 begin
   inherited;
   FSych := TCriticalSection.Create;
+  FForms := TList.Create;
   FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
   for i := 1 to 100 do
@@ -393,6 +393,7 @@ begin
   FreeIconDll;
   FRegistryCache.Free;
   FSych.Free;
+  F(FForms);
   inherited;
 end;
 
@@ -1537,54 +1538,28 @@ begin
 end;
 
 procedure TDBKernel.RegisterForm(Form: TForm);
-var
-  i : integer;
-  isform : boolean;
 begin
- isform:=false;
- For i:=0 to length(FForms)-1 do
- begin
-  if FForms[i]=form then
-  begin
-   isform:=true;
-   break;
-  end;
- end;
- If not isform then
- begin
-  SetLength(FForms,length(FForms)+1);
-  FForms[length(FForms)-1]:=Form;
+  if FForms.IndexOf(Form) > -1 then
+    Exit;
+
+  FForms.Add(Form);
 
   if IsWindowsVista then
-  SetVistaFonts(Form);
- end;
+    SetVistaFonts(Form);
 end;
 
 procedure TDBKernel.UnRegisterForm(Form: TForm);
-var
-  i, j : integer;
 begin
- For i:=0 to length(FForms)-1 do
- begin
-  If FForms[i]=Form then
-  begin
-   For j:=i to length(FForms)-2 do
-   FForms[j]:=FForms[j+1];
-   SetLength(FForms,length(FForms)-1);
-   Exit;
-  end
- end;
+  FForms.Remove(Form);
 end;
 
 procedure TDBKernel.ReloadGlobalTheme;
 var
-  i : integer;
+  I: Integer;
 begin
- For i:=0 to length(FForms)-1 do
- begin
-  RecreateThemeToForm(FForms[i]);
- end;
- DoProcGlobalTheme;
+  for I := 0 to FForms.Count - 1 do
+    RecreateThemeToForm(TForm(FForms[I]));
+  DoProcGlobalTheme;
 end;
 
 procedure TDBKernel.RegisterProcUpdateTheme(Proc: TNotifyEvent; Form : TForm);

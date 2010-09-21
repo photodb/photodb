@@ -34,6 +34,7 @@ type
     function GetMaxStatInt64: Int64;
     function GetMaxStatInteger: Integer;    
     function GetMaxStatBoolean: Boolean;
+    function GetHasVarValues: Boolean;
   protected
     function Get(Index: Integer): Int64;
     procedure Grow; virtual;
@@ -71,6 +72,7 @@ type
     property MaxStatInteger : Integer read GetMaxStatInteger;  
     property MaxStatDateTime : TDateTime read GetMaxStatDateTime;  
     property MaxStatBoolean : Boolean read GetMaxStatBoolean;
+    property HasVarValues: Boolean read GetHasVarValues;
   end;
 
 implementation
@@ -160,6 +162,23 @@ begin
   if (Index < 0) or (Index >= FCount) then
     Error(@SListIndexError, Index);
   Result := FList^[Index];
+end;
+
+function TList64.GetHasVarValues: Boolean;
+var
+  FirstValue: Int64;
+  I: Integer;
+begin
+  Result := False;
+  if Count = 0 then
+    Exit;
+  FirstValue := Get(0);
+  for I := 1 to Count - 1 do
+    if FirstValue <> Get(I) then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
 procedure TList64.Grow;

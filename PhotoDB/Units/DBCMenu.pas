@@ -27,45 +27,45 @@ type TDBPopupMenu = class
     class function Instance : TDBPopupMenu;
     constructor Create;
     destructor Destroy; override;
-    Procedure ShowItemPopUpMenu_(Sender : TObject);
- Procedure ShellExecutePopUpMenu_(Sender : TObject);
- Procedure SearchFolderPopUpMenu_(Sender : TObject);
- Procedure DeleteLItemPopUpMenu_(Sender : TObject);
- Procedure DeleteItemPopUpMenu_(Sender : TObject);
- Procedure RefreshThumItemPopUpMenu_(Sender : TObject);
- Procedure PropertyItemPopUpMenu_(Sender : TObject);
- Procedure ScanImageItemPopUpMenu_(Sender : TObject);
- Procedure SetRatingItemPopUpMenu_(Sender : TObject);
- Procedure SetRotateItemPopUpMenu_(Sender : TObject);
- Procedure PrivateItemPopUpMenu_(Sender : TObject);
- Procedure RenameItemPopUpMenu_(Sender : TObject);
- Procedure CopyItemPopUpMenu_(Sender : TObject);
- Procedure SendToItemPopUpMenu_(Sender : TObject);
- Procedure ExplorerPopUpMenu_(Sender : TObject);
- Procedure GroupsPopUpMenu_(Sender : TObject);
- Procedure DateItemPopUpMenu_(Sender : TObject);
- Procedure CryptItemPopUpMenu_(Sender : TObject);
- Procedure DeCryptItemPopUpMenu_(Sender : TObject);
- Procedure QuickGroupInfoPopUpMenu_(Sender : TObject);
- Procedure EnterPasswordItemPopUpMenu_(Sender : TObject);
- Procedure ImageEditorItemPopUpMenu_(Sender : TObject);
- Procedure WallpaperStretchItemPopUpMenu_(Sender : TObject);
- Procedure WallpaperCenterItemPopUpMenu_(Sender : TObject);
- Procedure WallpaperTileItemPopUpMenu_(Sender : TObject);
- Procedure RefreshIDItemPopUpMenu_(Sender : TObject);
- Procedure ShowDublicatesItemPopUpMenu_(Sender : TObject);
- Procedure DeleteDublicatesItemPopUpMenu_(Sender : TObject);
- Procedure UserMenuItemPopUpMenu_(Sender : TObject);
- Procedure PrintItemPopUpMenu_(Sender : TObject);
- Procedure Execute(x,y : integer; info : TDBPopupMenuInfo);
- Procedure ExecutePlus(x,y : integer; info : TDBPopupMenuInfo; Menus : TArMenuitem);
- Procedure AddDBContMenu(item : tmenuitem; info : TDBPopupMenuInfo);
- Procedure AddUserMenu(item : tmenuitem; Insert : Boolean; Index : integer);
- Procedure SetInfo(Info : TDBPopupMenuInfo);
- Procedure ScriptExecuted(Sender : TObject);
- Function GetGroupImageInImageList(GroupCode : string) : integer;
- Function LoadVariablesNo(int : integer) : integer;
- end;
+    procedure ShowItemPopUpMenu_(Sender : TObject);
+    procedure ShellExecutePopUpMenu_(Sender: TObject);
+    procedure SearchFolderPopUpMenu_(Sender: TObject);
+    procedure DeleteLItemPopUpMenu_(Sender: TObject);
+    procedure DeleteItemPopUpMenu_(Sender: TObject);
+    procedure RefreshThumItemPopUpMenu_(Sender: TObject);
+    procedure PropertyItemPopUpMenu_(Sender: TObject);
+    procedure ScanImageItemPopUpMenu_(Sender: TObject);
+    procedure SetRatingItemPopUpMenu_(Sender: TObject);
+    procedure SetRotateItemPopUpMenu_(Sender: TObject);
+    procedure PrivateItemPopUpMenu_(Sender: TObject);
+    procedure RenameItemPopUpMenu_(Sender: TObject);
+    procedure CopyItemPopUpMenu_(Sender: TObject);
+    procedure SendToItemPopUpMenu_(Sender: TObject);
+    procedure ExplorerPopUpMenu_(Sender: TObject);
+    procedure GroupsPopUpMenu_(Sender: TObject);
+    procedure DateItemPopUpMenu_(Sender: TObject);
+    procedure CryptItemPopUpMenu_(Sender: TObject);
+    procedure DeCryptItemPopUpMenu_(Sender: TObject);
+    procedure QuickGroupInfoPopUpMenu_(Sender: TObject);
+    procedure EnterPasswordItemPopUpMenu_(Sender: TObject);
+    procedure ImageEditorItemPopUpMenu_(Sender: TObject);
+    procedure WallpaperStretchItemPopUpMenu_(Sender: TObject);
+    procedure WallpaperCenterItemPopUpMenu_(Sender: TObject);
+    procedure WallpaperTileItemPopUpMenu_(Sender: TObject);
+    procedure RefreshIDItemPopUpMenu_(Sender: TObject);
+    procedure ShowDublicatesItemPopUpMenu_(Sender: TObject);
+    procedure DeleteDublicatesItemPopUpMenu_(Sender: TObject);
+    procedure UserMenuItemPopUpMenu_(Sender: TObject);
+    procedure PrintItemPopUpMenu_(Sender: TObject);
+    procedure Execute(X, Y: Integer; Info: TDBPopupMenuInfo);
+    procedure ExecutePlus(X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
+    procedure AddDBContMenu(Item: Tmenuitem; Info: TDBPopupMenuInfo);
+    procedure AddUserMenu(Item: Tmenuitem; Insert: Boolean; index: Integer);
+    procedure SetInfo(Info: TDBPopupMenuInfo);
+    procedure ScriptExecuted(Sender: TObject);
+    function GetGroupImageInImageList(GroupCode: string): Integer;
+    function LoadVariablesNo(int : Integer) : integer;
+  end;
 
  procedure ReloadIDMenu;
 
@@ -88,25 +88,26 @@ uses ExplorerUnit, PropertyForm, SlideShow, Searching, UnitFormCont,
 
 procedure ReloadIDMenu;
 begin
- MenuScript:=ReadScriptFile('scripts\IDMenu.dbini');
+  MenuScript := ReadScriptFile('Scripts\IDMenu.dbini');
 end;
 
 procedure TDBPopupMenu.AddDBContMenu(item: TMenuItem;
   info: TDBPopupMenuInfo);
 var
-  I : integer;
-  isrecord, IsFile, IsCurrentFile : boolean;
-  PanelsTexts : TStrings;
-  MenuGroups : TGroups;
-  GroupsList : TStringList;
-  StrGroups, script : String;
-  BusyMenu, ErrorMenu : TMenuItem;
-  OnlyCurrentDBinfoSelected : Boolean;
-  NoDBInfoNeeded : boolean;
-  aPanelTexts, aGroupsNames, aGroupsCodes : TArrayOfString;
+  I: Integer;
+  Isrecord, IsFile, IsCurrentFile: Boolean;
+  PanelsTexts: TStrings;
+  MenuGroups: TGroups;
+  GroupsList: TStringList;
+  StrGroups, Script: string;
+  BusyMenu, ErrorMenu: TMenuItem;
+  OnlyCurrentDBinfoSelected: Boolean;
+  NoDBInfoNeeded: Boolean;
+  APanelTexts, AGroupsNames, AGroupsCodes: TArrayOfString;
 
-Const
+const
   ShowGroupsInContextMenu = True;
+
 begin
  if FBusy then
  begin
