@@ -146,7 +146,6 @@ type
     Procedure UpdateRecord(FileNo: integer);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
-    procedure UpdateTheme(Sender: TObject);
     procedure WaitImageTimerTimer(Sender: TObject);
     Procedure DoWaitToImage(Sender: TObject);
     Procedure EndWaitToImage(Sender: TObject);
@@ -420,9 +419,6 @@ begin
   Tools1.ImageIndex:=DB_IC_OTHER_TOOLS;
   NewPanel1.ImageIndex:=DB_IC_PANEL;
 
-  TW.I.Start('RecreateThemeToForm');
-  DBKernel.RecreateThemeToForm(Self);
-  DBkernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
   TW.I.Start('LoadLanguage');
   LoadLanguage;
@@ -837,7 +833,6 @@ procedure TViewer.FormDestroy(Sender: TObject);
 begin
   CurrentInfo := RecordsInfoNil;
   DropFileTarget1.Unregister;
-  DBkernel.UnRegisterProcUpdateTheme(UpdateTheme, Self);
   SaveWindowPos1.SavePosition;
   F(FbImage);
   F(DrawImage);
@@ -1460,13 +1455,6 @@ begin
         TbZoomInClick(nil);
     end;
   end;
-end;
-
-procedure TViewer.UpdateTheme(Sender: TObject);
-begin
-  RecreateDrawImage(Self);
-  RecreateImLists;
-  TbrActions.Refresh;
 end;
 
 procedure TViewer.ShowFolderA(FileName : string; ShowPrivate : Boolean);

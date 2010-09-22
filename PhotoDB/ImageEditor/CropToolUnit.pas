@@ -252,7 +252,7 @@ begin
  SaveSettingsLink.Top:=ComboBoxProp.Top+ComboBoxProp.Height+10;
  SaveSettingsLink.Left:=10;
  SaveSettingsLink.Visible:=true;
- SaveSettingsLink.BkColor:=ClBtnface;
+ SaveSettingsLink.Color:=ClBtnface;
  SaveSettingsLink.OnClick:=DoSaveSettings;
  SaveSettingsLink.Icon:=IcoSave;
  IcoSave.free;
@@ -268,7 +268,7 @@ begin
  MakeItLink.Top:=SaveSettingsLink.Top+SaveSettingsLink.Height+5;
  MakeItLink.Left:=10;
  MakeItLink.Visible:=true;
- MakeItLink.BkColor:=ClBtnface;
+ MakeItLink.Color:=ClBtnface;
  MakeItLink.OnClick:=DoMakeImage;
  MakeItLink.Icon:=IcoOK;     
  MakeItLink.ImageCanRegenerate:=True;
@@ -280,7 +280,7 @@ begin
  CloseLink.Top:=MakeItLink.Top+MakeItLink.Height+5;
  CloseLink.Left:=10;
  CloseLink.Visible:=true;
- CloseLink.BkColor:=ClBtnface;
+ CloseLink.Color:=ClBtnface;
  CloseLink.OnClick:=ClosePanelEvent;
  CloseLink.Icon:=IcoCancel;
  IcoCancel.Free;

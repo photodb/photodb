@@ -124,6 +124,15 @@ begin
 
   TempBmp := nil;
   try
+    if (Graphic is TBitmap) and
+      (TBitmap(Graphic).Width > W) or (TBitmap(Graphic).Height > H) then
+    begin
+      TempBmp := TBitmap.Create;
+      ProportionalSizeA(W, H, ImageW, ImageH);
+      StretchCool(ImageW, ImageH, TBitmap(Graphic), TempBmp);
+      Graphic := TempBmp;
+    end;
+
     if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf24Bit) then
     begin
       TempBmp := TBitmap.Create;

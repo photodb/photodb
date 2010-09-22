@@ -153,9 +153,10 @@ object FormDBOptions: TFormDBOptions
     Width = 246
     Height = 13
     Cursor = crHandPoint
+    ParentColor = False
+    Color = clWhite
     Text = 'To change thumbnail size and quality press this link'
     OnClick = WebLink1Click
-    BkColor = clBtnFace
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0

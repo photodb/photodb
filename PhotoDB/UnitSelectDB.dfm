@@ -1893,7 +1893,6 @@ object FormSelectDB: TFormSelectDB
         Cursor = crHandPoint
         Text = 'To convert DB to other format press this link'
         OnClick = WebLink1Click
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 0
         IconHeight = 0

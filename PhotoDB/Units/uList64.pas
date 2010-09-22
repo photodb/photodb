@@ -492,8 +492,8 @@ var
     end;
     C := Length(Stat);
     SetLength(Stat, C + 1);
-    Stat[C - 1].Value := Value;
-    Stat[C - 1].Count := 0;
+    Stat[C].Value := Value;
+    Stat[C].Count := 1;
   end;
   
 begin    

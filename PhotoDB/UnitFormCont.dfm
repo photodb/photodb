@@ -49,7 +49,6 @@ object FormCont: TFormCont
         Cursor = crHandPoint
         Text = 'Type'
         OnClick = WebLink2Click
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -112,7 +111,6 @@ object FormCont: TFormCont
         Cursor = crHandPoint
         Text = 'Export'
         OnClick = ExportLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -131,7 +129,6 @@ object FormCont: TFormCont
         Cursor = crHandPoint
         Text = 'Copy'
         OnClick = ExCopyLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -150,7 +147,6 @@ object FormCont: TFormCont
         Cursor = crHandPoint
         Text = 'Size'
         OnClick = WebLink1Click
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -250,8 +246,8 @@ object FormCont: TFormCont
           000000000000000000000000000000000000000000000000000000000000FFFF
           0000CC3F0000C01F0000E01F0000E01F0000C01F0000C01F0000C00F0000C001
           0000E0000000FF000000FF800000FF800000FF810000FFC30000FFFF0000}
-        ParentColor = False
         Color = clBtnFace
+        ParentColor = False
         OnlyMainImage = False
         OnChange = TwWindowsPosChange
         IsLayered = False

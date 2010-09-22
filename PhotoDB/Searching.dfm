@@ -3,9 +3,9 @@ object SearchForm: TSearchForm
   Top = 60
   ActiveControl = ShowDateOptionsLink
   Caption = 'Search'
-  ClientHeight = 640
+  ClientHeight = 715
   ClientWidth = 805
-  Color = clInactiveCaption
+  Color = clBtnFace
   Constraints.MinHeight = 180
   Constraints.MinWidth = 310
   Font.Charset = DEFAULT_CHARSET
@@ -24,21 +24,22 @@ object SearchForm: TSearchForm
   OnShow = FormShow
   DesignSize = (
     805
-    640)
+    715)
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 180
     Top = 25
-    Height = 615
+    Height = 690
     MinSize = 135
     OnCanResize = Splitter1CanResize
+    ExplicitHeight = 615
   end
   object PnLeft: TPanel
     Left = 0
     Top = 25
     Width = 180
-    Height = 615
+    Height = 690
     Align = alLeft
     ParentColor = True
     ParentShowHint = False
@@ -276,12 +277,12 @@ object SearchForm: TSearchForm
         PopupMenu = PopupMenu5
         Rating = 2
         RatingRange = 0
-        BkColor = clInactiveCaption
         OnChange = Memo1Change
         Islayered = False
         Layered = 100
         OnMouseDown = RatingEditMouseDown
         ImageCanRegenerate = True
+        CanSelectRange = False
       end
       object Memo2: TMemo
         Tag = 1
@@ -347,7 +348,7 @@ object SearchForm: TSearchForm
         BevelOuter = bvNone
         Date = 38153.582815208330000000
         Time = 38153.582815208330000000
-        Color = clInactiveCaption
+        Color = clBtnFace
         DateFormat = dfLong
         ParentColor = True
         PopupMenu = PopupMenu3
@@ -398,7 +399,7 @@ object SearchForm: TSearchForm
         Anchors = [akLeft, akTop, akRight]
         Date = 38548.001314189820000000
         Time = 38548.001314189820000000
-        Color = clInactiveCaption
+        Color = clBtnFace
         Kind = dtkTime
         ParentColor = True
         PopupMenu = PopupMenu11
@@ -608,7 +609,6 @@ object SearchForm: TSearchForm
         Visible = False
         Active = True
         FillPercent = 50
-        Color = clBtnFace
         ParentColor = False
         Anchors = [akTop, akRight]
       end
@@ -745,11 +745,11 @@ object SearchForm: TSearchForm
         Cursor = crHandPoint
         Rating = 0
         RatingRange = 0
-        BkColor = clInactiveCaption
         OnChange = SearchEditChange
         Islayered = False
         Layered = 100
         ImageCanRegenerate = True
+        CanSelectRange = True
       end
       object TwbPrivate: TTwButton
         Left = 105
@@ -795,8 +795,8 @@ object SearchForm: TSearchForm
           529C21202131525152211014100800000000000000000000000000000000F83F
           0000F81F0000E00F0000F00F0000F80F0000F8070000F0030000E0010000C001
           0000C0010000C0010000C0010000C0010000E0030000F0070000F80F0000}
+        Color = clBtnFace
         ParentColor = False
-        Color = clInactiveCaption
         OnlyMainImage = True
         OnChange = SearchEditChange
         IsLayered = False
@@ -811,7 +811,6 @@ object SearchForm: TSearchForm
         Cursor = crHandPoint
         Text = 'Show Date Options'
         OnClick = ShowDateOptionsLinkClick
-        BkColor = 14653050
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -831,7 +830,6 @@ object SearchForm: TSearchForm
         PopupMenu = SortingPopupMenu
         Text = 'Sort by ID'
         OnClick = Image4_Click
-        BkColor = 14653050
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -930,7 +928,6 @@ object SearchForm: TSearchForm
         Height = 16
         Cursor = crHandPoint
         Text = 'Search (999999 Result)'
-        BkColor = 14653050
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -942,8 +939,8 @@ object SearchForm: TSearchForm
         UseSpecIconSize = True
       end
       object LsSearchResults: TLoadingSign
-        Left = 160
-        Top = 50
+        Left = 147
+        Top = 52
         Width = 16
         Height = 16
         Visible = False
@@ -994,8 +991,6 @@ object SearchForm: TSearchForm
           000000000000000000000000000000000000000000000000000000000000C3FF
           0000C3FF0000C3FF0000C3FF0000C3030000C2030000C0030000C0030000C003
           0000C0030000C0030000C0030000C0070000C03F0000C07F0000C0FF0000}
-        ParentColor = False
-        Color = clInactiveCaption
         OnlyMainImage = True
         OnChange = SearchEditChange
         IsLayered = False
@@ -1009,7 +1004,7 @@ object SearchForm: TSearchForm
     Left = 183
     Top = 25
     Width = 622
-    Height = 615
+    Height = 690
     Align = alClient
     BevelInner = bvRaised
     BevelOuter = bvNone
@@ -1739,7 +1734,7 @@ object SearchForm: TSearchForm
     ShareImages = True
     Width = 32
     Left = 225
-    Top = 120
+    Top = 128
   end
   object SearchImageList: TImageList
     Left = 513

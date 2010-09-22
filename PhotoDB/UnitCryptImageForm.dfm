@@ -46,7 +46,6 @@ object CryptImageForm: TCryptImageForm
     Caption = 'Cancel'
     TabOrder = 6
     OnClick = BtCancelClick
-    ExplicitLeft = 136
   end
   object BtOk: TButton
     Left = 245
@@ -57,7 +56,6 @@ object CryptImageForm: TCryptImageForm
     Caption = 'Ok'
     TabOrder = 7
     OnClick = BtOkClick
-    ExplicitLeft = 216
   end
   object CbSaveCRC: TCheckBox
     Left = 8
@@ -68,7 +66,6 @@ object CryptImageForm: TCryptImageForm
     Caption = 'Save CRC for file'
     Enabled = False
     TabOrder = 3
-    ExplicitWidth = 281
   end
   object CbSavePasswordForSession: TCheckBox
     Left = 8
@@ -80,7 +77,6 @@ object CryptImageForm: TCryptImageForm
     Checked = True
     State = cbChecked
     TabOrder = 4
-    ExplicitWidth = 281
   end
   object CbSavePasswordPermanent: TCheckBox
     Left = 8
@@ -90,7 +86,6 @@ object CryptImageForm: TCryptImageForm
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Save Password for in settings (NOT recommend)'
     TabOrder = 5
-    ExplicitWidth = 281
   end
   object EdPassword: TEdit
     Left = 8
@@ -107,7 +102,6 @@ object CryptImageForm: TCryptImageForm
     PasswordChar = '*'
     TabOrder = 0
     OnKeyPress = EdPasswordKeyPress
-    ExplicitWidth = 281
   end
   object EdPasswordConfirm: TEdit
     Left = 8
@@ -124,7 +118,6 @@ object CryptImageForm: TCryptImageForm
     PasswordChar = '*'
     TabOrder = 1
     OnKeyPress = EdPasswordKeyPress
-    ExplicitWidth = 281
   end
   object CbShowPassword: TCheckBox
     Left = 8
@@ -135,7 +128,6 @@ object CryptImageForm: TCryptImageForm
     Caption = 'Show password'
     TabOrder = 2
     OnClick = CbShowPasswordClick
-    ExplicitWidth = 281
   end
   object WblMethod: TWebLink
     Left = 8
@@ -146,7 +138,6 @@ object CryptImageForm: TCryptImageForm
     PopupMenu = PmCryptMethod
     Text = 'BlowFish - 56'
     OnClick = WblMethodClick
-    BkColor = clBtnFace
     ImageIndex = 0
     IconWidth = 16
     IconHeight = 16

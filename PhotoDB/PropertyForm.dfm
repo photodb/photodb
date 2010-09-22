@@ -3,7 +3,7 @@ object PropertiesForm: TPropertiesForm
   Top = 98
   Caption = 'Property'
   ClientHeight = 531
-  ClientWidth = 337
+  ClientWidth = 323
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,7 +18,7 @@ object PropertiesForm: TPropertiesForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    337
+    323
     531)
   PixelsPerInch = 96
   TextHeight = 13
@@ -28,7 +28,7 @@ object PropertiesForm: TPropertiesForm
     Width = 100
     Height = 100
     Center = True
-    PopupMenu = PopupMenu1
+    PopupMenu = PmItem
     Proportional = True
     Stretch = True
     OnDblClick = Image1DblClick
@@ -195,21 +195,21 @@ object PropertiesForm: TPropertiesForm
     Tag = 1
     Left = 120
     Top = 32
-    Width = 203
+    Width = 189
     Height = 73
     Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
     Color = clBtnFace
     Lines.Strings = (
       '<data>')
-    PopupMenu = PopupMenu6
+    PopupMenu = PmComment
     ScrollBars = ssVertical
     TabOrder = 0
     OnChange = CommentMemoChange
     OnDblClick = CommentMemoDblClick
   end
   object BtDone: TButton
-    Left = 246
+    Left = 232
     Top = 498
     Width = 83
     Height = 25
@@ -219,7 +219,7 @@ object PropertiesForm: TPropertiesForm
     OnClick = BtDoneClick
   end
   object BtSave: TButton
-    Left = 149
+    Left = 135
     Top = 497
     Width = 91
     Height = 25
@@ -229,15 +229,15 @@ object PropertiesForm: TPropertiesForm
     TabOrder = 2
     OnClick = BtSaveClick
   end
-  object Button2: TButton
-    Left = 61
+  object BtnFind: TButton
+    Left = 47
     Top = 497
     Width = 81
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Find Target'
     TabOrder = 1
-    OnClick = Button2Click
+    OnClick = BtnFindClick
   end
   object ImageLoadingFile: TDBLoading
     Left = 27
@@ -250,7 +250,7 @@ object PropertiesForm: TPropertiesForm
   object PcMain: TPageControl
     Left = 8
     Top = 114
-    Width = 321
+    Width = 307
     Height = 378
     ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -262,10 +262,10 @@ object PropertiesForm: TPropertiesForm
     object TsGeneral: TTabSheet
       Caption = 'General'
       DesignSize = (
-        313
+        299
         350)
       object LabelKeywords: TLabel
-        Left = 8
+        Left = 3
         Top = 280
         Width = 52
         Height = 13
@@ -278,7 +278,7 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object IDLabel1: TLabel
-        Left = 8
+        Left = 3
         Top = 261
         Width = 11
         Height = 13
@@ -291,7 +291,7 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object WidthLabel: TLabel
-        Left = 8
+        Left = 3
         Top = 242
         Width = 28
         Height = 13
@@ -304,7 +304,7 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object Heightlabel: TLabel
-        Left = 8
+        Left = 3
         Top = 224
         Width = 28
         Height = 13
@@ -317,7 +317,7 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object SizeLabel1: TLabel
-        Left = 8
+        Left = 3
         Top = 205
         Width = 20
         Height = 13
@@ -330,8 +330,8 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object DateLabel1: TLabel
-        Left = 8
-        Top = 152
+        Left = 3
+        Top = 151
         Width = 23
         Height = 13
         Caption = 'Date'
@@ -343,7 +343,7 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object TimeLabel: TLabel
-        Left = 8
+        Left = 3
         Top = 178
         Width = 23
         Height = 13
@@ -356,8 +356,8 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object RatingLabel1: TLabel
-        Left = 8
-        Top = 128
+        Left = 3
+        Top = 127
         Width = 31
         Height = 13
         Caption = 'Rating'
@@ -369,7 +369,7 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object CollectionLabel: TLabel
-        Left = 8
+        Left = 3
         Top = 108
         Width = 46
         Height = 13
@@ -382,8 +382,8 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
       end
       object OwnerLabel: TLabel
-        Left = 8
-        Top = 88
+        Left = 3
+        Top = 89
         Width = 31
         Height = 13
         Caption = 'Owner'
@@ -396,7 +396,7 @@ object PropertiesForm: TPropertiesForm
       end
       object Label4: TLabel
         Left = 3
-        Top = 24
+        Top = 21
         Width = 43
         Height = 13
         Caption = 'Full path:'
@@ -409,7 +409,7 @@ object PropertiesForm: TPropertiesForm
       end
       object LabelName1: TLabel
         Left = 3
-        Top = 8
+        Top = 2
         Width = 28
         Height = 13
         Caption = 'Name'
@@ -422,9 +422,9 @@ object PropertiesForm: TPropertiesForm
       end
       object KeyWordsMemo: TMemo
         Tag = 11
-        Left = 8
+        Left = 3
         Top = 296
-        Width = 302
+        Width = 293
         Height = 48
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvNone
@@ -437,7 +437,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 261
-        Width = 238
+        Width = 224
         Height = 15
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -450,7 +450,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 242
-        Width = 238
+        Width = 224
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -463,7 +463,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 224
-        Width = 238
+        Width = 224
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -476,7 +476,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 205
-        Width = 238
+        Width = 224
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -488,7 +488,7 @@ object PropertiesForm: TPropertiesForm
       object TimeEdit: TDateTimePicker
         Left = 72
         Top = 178
-        Width = 238
+        Width = 224
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         Date = 38544.841692523150000000
@@ -504,7 +504,7 @@ object PropertiesForm: TPropertiesForm
       object DateEdit: TDateTimePicker
         Left = 72
         Top = 151
-        Width = 238
+        Width = 224
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BevelEdges = []
@@ -524,21 +524,22 @@ object PropertiesForm: TPropertiesForm
         Width = 96
         Height = 16
         Cursor = crHandPoint
-        PopupMenu = PopupMenu5
+        PopupMenu = PmRatingNotAvaliable
+        ParentColor = False
         Rating = 0
         RatingRange = 0
-        BkColor = clWindow
         OnChange = CommentMemoChange
         Islayered = False
         Layered = 100
         OnMouseDown = RatingEditMouseDown
         ImageCanRegenerate = True
+        CanSelectRange = False
       end
       object CollectionMemo: TMemo
         Tag = 11
         Left = 72
         Top = 108
-        Width = 230
+        Width = 216
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -551,7 +552,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 88
-        Width = 230
+        Width = 216
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -564,7 +565,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 3
         Top = 40
-        Width = 307
+        Width = 293
         Height = 41
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -584,7 +585,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 9
-        Width = 238
+        Width = 224
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -604,7 +605,7 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Groups'
       ImageIndex = 1
       DesignSize = (
-        313
+        299
         350)
       object Image3: TImage
         Left = 3
@@ -1145,7 +1146,7 @@ object PropertiesForm: TPropertiesForm
           FFFFFFFF}
         OnDblClick = GroupManeger1Click
       end
-      object label7: TLabel
+      object LbGroupsEditInfo: TLabel
         Left = 67
         Top = 8
         Width = 209
@@ -1156,7 +1157,7 @@ object PropertiesForm: TPropertiesForm
           'ton to remove them'
         WordWrap = True
       end
-      object Label8: TLabel
+      object LbAvaliableGroups: TLabel
         Tag = 2
         Left = 3
         Top = 74
@@ -1164,7 +1165,7 @@ object PropertiesForm: TPropertiesForm
         Height = 13
         Caption = 'Avaliable Groups:'
       end
-      object Label9: TLabel
+      object LbCurrentGroups: TLabel
         Tag = 2
         Left = 171
         Top = 73
@@ -1232,7 +1233,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Show All Groups'
         TabOrder = 4
         OnClick = CbShowAllGroupsClick
-        ExplicitTop = 310
       end
       object CbRemoveKeywordsForGroups: TCheckBox
         Left = 3
@@ -1243,7 +1243,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Remove KeyWords For Group'
         TabOrder = 5
         OnClick = CbRemoveKeywordsForGroupsClick
-        ExplicitTop = 328
       end
       object BtnNewGroup: TButton
         Left = 3
@@ -1254,7 +1253,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'New Group'
         TabOrder = 6
         OnClick = BtnNewGroupClick
-        ExplicitTop = 351
       end
       object BtnManageGroups: TButton
         Left = 99
@@ -1265,35 +1263,33 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Manager'
         TabOrder = 7
         OnClick = BtnManageGroupsClick
-        ExplicitTop = 351
       end
     end
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
       DesignSize = (
-        313
+        299
         350)
       object VleExif: TValueListEditor
         Left = 3
         Top = 3
-        Width = 307
+        Width = 293
         Height = 344
         Anchors = [akLeft, akTop, akRight, akBottom]
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
         TabOrder = 0
         OnContextPopup = VleExifContextPopup
-        ExplicitHeight = 375
         ColWidths = (
           100
-          201)
+          187)
       end
     end
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
       DesignSize = (
-        313
+        299
         350)
       object Label5: TLabel
         Left = 3
@@ -1327,7 +1323,7 @@ object PropertiesForm: TPropertiesForm
       object RgGistogrammChannel: TRadioGroup
         Left = 3
         Top = 183
-        Width = 307
+        Width = 293
         Height = 138
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Chanel'
@@ -1345,7 +1341,7 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Additional'
       ImageIndex = 4
       DesignSize = (
-        313
+        299
         350)
       object LbLinks: TLabel
         Left = 3
@@ -1357,7 +1353,7 @@ object PropertiesForm: TPropertiesForm
       object CbInclude: TCheckBox
         Left = 3
         Top = 9
-        Width = 307
+        Width = 293
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Include in base search item'
@@ -1367,17 +1363,16 @@ object PropertiesForm: TPropertiesForm
       object LinksScrollBox: TScrollBox
         Left = 3
         Top = 48
-        Width = 307
+        Width = 293
         Height = 299
         Anchors = [akLeft, akTop, akRight, akBottom]
-        PopupMenu = PopupMenu8
+        PopupMenu = PmAddLink
         TabOrder = 1
-        ExplicitHeight = 330
       end
     end
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
+  object PmItem: TPopupMenu
+    OnPopup = PmItemPopup
     Left = 8
     Top = 8
     object Shell1: TMenuItem
@@ -1406,29 +1401,29 @@ object PropertiesForm: TPropertiesForm
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
-    Left = 40
-    Top = 8
+    Left = 16
+    Top = 456
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = True
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 104
-    Top = 8
+    Left = 48
+    Top = 456
   end
-  object PopupMenu5: TPopupMenu
-    OnPopup = PopupMenu5Popup
-    Left = 168
+  object PmRatingNotAvaliable: TPopupMenu
+    OnPopup = PmRatingNotAvaliablePopup
+    Left = 72
     Top = 8
     object Ratingnotsets1: TMenuItem
       Caption = 'Rating not sets'
       OnClick = Ratingnotsets1Click
     end
   end
-  object PopupMenu6: TPopupMenu
-    OnPopup = PopupMenu6Popup
-    Left = 8
-    Top = 40
+  object PmComment: TPopupMenu
+    OnPopup = PmCommentPopup
+    Left = 40
+    Top = 8
     object SetComent1: TMenuItem
       Caption = 'Set Coment'
       OnClick = CommentMemoDblClick
@@ -1472,21 +1467,24 @@ object PropertiesForm: TPropertiesForm
     Images = DragImageList
     ShowImage = True
     AllowAsyncTransfer = True
-    Left = 456
+    Left = 200
+    Top = 80
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = []
     OptimizedMove = True
-    Left = 424
+    Left = 168
+    Top = 80
   end
   object DragImageList: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
-    Left = 488
+    Left = 144
+    Top = 456
   end
   object CopyEXIFPopupMenu: TPopupMenu
-    Left = 160
-    Top = 72
+    Left = 168
+    Top = 8
     object CopyCurrent1: TMenuItem
       Caption = 'Copy Current'
       OnClick = CopyCurrent1Click
@@ -1497,13 +1495,13 @@ object PropertiesForm: TPropertiesForm
     end
   end
   object ImageList1: TImageList
-    Left = 208
-    Top = 56
+    Left = 80
+    Top = 456
   end
-  object PopupMenu7: TPopupMenu
-    OnPopup = PopupMenu7Popup
-    Left = 240
-    Top = 56
+  object PmLinks: TPopupMenu
+    OnPopup = PmLinksPopup
+    Left = 200
+    Top = 8
     object Open1: TMenuItem
       Caption = 'Open'
       OnClick = Open1Click
@@ -1538,9 +1536,9 @@ object PropertiesForm: TPropertiesForm
       OnClick = Delete1Click
     end
   end
-  object PopupMenu8: TPopupMenu
-    OnPopup = PopupMenu8Popup
-    Left = 232
+  object PmAddLink: TPopupMenu
+    OnPopup = PmAddLinkPopup
+    Left = 104
     Top = 8
     object Addnewlink1: TMenuItem
       Caption = 'Add new link'
@@ -1548,13 +1546,13 @@ object PropertiesForm: TPropertiesForm
     end
   end
   object RegGroupsImageList: TImageList
-    Left = 288
-    Top = 16
+    Left = 112
+    Top = 456
   end
-  object PopupMenu9: TPopupMenu
-    OnPopup = PopupMenu9Popup
-    Left = 288
-    Top = 56
+  object PopupMenuGroups: TPopupMenu
+    OnPopup = PopupMenuGroupsPopup
+    Left = 200
+    Top = 40
     object MenuItem1: TMenuItem
       Caption = 'Delete Item'
       OnClick = Button7Click
@@ -1587,10 +1585,10 @@ object PropertiesForm: TPropertiesForm
       OnClick = QuickInfo1Click
     end
   end
-  object PopupMenu10: TPopupMenu
-    OnPopup = PopupMenu10Popup
-    Left = 376
-    Top = 48
+  object PmClear: TPopupMenu
+    OnPopup = PmClearPopup
+    Left = 136
+    Top = 8
     object Clear1: TMenuItem
       Caption = 'Clear'
       OnClick = Clear1Click
@@ -1601,11 +1599,13 @@ object PropertiesForm: TPropertiesForm
     GetDataOnEnter = True
     OnDrop = DropFileTarget2Drop
     OptimizedMove = True
-    Left = 392
+    Left = 136
+    Top = 80
   end
-  object PopupMenu3: TPopupMenu
-    OnPopup = PopupMenu3Popup
-    Left = 360
+  object PmImageConnect: TPopupMenu
+    OnPopup = PmImageConnectPopup
+    Left = 168
+    Top = 40
     object AddImThProcessingImageAndAddOriginalToProcessingPhoto1: TMenuItem
       Caption = 'AddProcessingImThAndAddOriginalToProcessingImTh'
       OnClick = AddImThProcessingImageAndAddOriginalToProcessingPhoto1Click

@@ -1252,7 +1252,7 @@ begin
   if Form.Components[i-1] is TRating then
   with (Form.Components[i-1] as TRating) do
   begin
-   BkColor:=Theme_MainColor;
+   Color:=Theme_MainColor;
   end;
   if Form.Components[i-1] is TTwButton then
   with (Form.Components[i-1] as TTwButton) do
@@ -1350,7 +1350,7 @@ begin
    SetVistaContentFonts(Font,1);
    if Tag>-1 then
    begin
-    bkcolor:=Theme_MainColor;
+    color:=Theme_MainColor;
     font.color:=Theme_MainFontColor;
     If Tag=1 then Font.Style:=[fsBold];
     If Tag=2 then Font.Style:=[fsUnderline];

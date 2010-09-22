@@ -267,7 +267,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Pack Table'
         OnClick = PackTabelLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -286,7 +285,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Export Table'
         OnClick = ExportTableLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -305,7 +303,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Import Table'
         OnClick = ImportTableLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -324,7 +321,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Recreate IDEx'
         OnClick = RecreateIDExLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -343,7 +339,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Scan for Bad Links'
         OnClick = ScanforBadLinksLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -362,7 +357,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'BackUp DB'
         OnClick = BackUpDBLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -381,7 +375,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Cleaning'
         OnClick = CleaningLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -421,7 +414,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Optimizing Dublicates'
         OnClick = DublicatesLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -440,7 +432,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Convert DB'
         OnClick = ConvertLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -459,7 +450,6 @@ object ManagerDB: TManagerDB
         Cursor = crHandPoint
         Text = 'Change Path in DB (if files was moved)'
         OnClick = ChangePathLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16

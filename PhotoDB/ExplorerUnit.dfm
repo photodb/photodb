@@ -5,7 +5,7 @@ object ExplorerForm: TExplorerForm
   Caption = 'DB Explorer'
   ClientHeight = 593
   ClientWidth = 870
-  Color = clInactiveCaption
+  Color = clBtnFace
   Constraints.MinHeight = 200
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2279,7 +2279,6 @@ object ExplorerForm: TExplorerForm
         BevelOuter = bvNone
         FullRepaint = False
         Caption = 'ScrollBox1'
-        Color = clInactiveCaption
         TabOrder = 0
         OnResize = ScrollBox1Resize
         object TypeLabel: TLabel
@@ -2442,7 +2441,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Slide Show'
           OnClick = SlideShowLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2461,7 +2459,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Open'
           OnClick = Open1Click
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2480,7 +2477,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Rename'
           OnClick = Rename1Click
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2499,7 +2495,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Refresh'
           OnClick = RefreshLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2518,7 +2513,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Properties'
           OnClick = PropertiesLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2537,7 +2531,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Print'
           OnClick = PrintLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2557,7 +2550,6 @@ object ExplorerForm: TExplorerForm
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Pictures'
           OnClick = MyPicturesLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2577,7 +2569,6 @@ object ExplorerForm: TExplorerForm
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Documents'
           OnClick = MyDocumentsLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2597,7 +2588,6 @@ object ExplorerForm: TExplorerForm
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Computer'
           OnClick = MyComputerLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2616,7 +2606,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Move To'
           OnClick = MoveToLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2635,7 +2624,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Image Editor'
           OnClick = ImageEditorLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2655,7 +2643,6 @@ object ExplorerForm: TExplorerForm
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'Desktop'
           OnClick = DesktopLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2674,7 +2661,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Delete'
           OnClick = DeleteLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2693,7 +2679,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Copy To'
           OnClick = CopyToLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2712,7 +2697,6 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Add Object'
           OnClick = AddLinkClick
-          BkColor = clInactiveCaption
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16

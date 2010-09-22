@@ -112,9 +112,10 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
+      ParentColor = False
+      Color = clRed
       Text = 'Conflict of FileNames! '
       OnClick = WebLinkWarningClick
-      BkColor = clRed
       ImageIndex = 0
       IconWidth = 0
       IconHeight = 16

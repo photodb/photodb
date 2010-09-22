@@ -57,7 +57,6 @@ object FormInternetUpdating: TFormInternetUpdating
     Font.Style = [fsBold]
     Text = 'Download now'
     OnClick = WebLink1Click
-    BkColor = clBtnFace
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0
@@ -96,7 +95,6 @@ object FormInternetUpdating: TFormInternetUpdating
     Cursor = crHandPoint
     Text = 'Home Page'
     OnClick = WebLink2Click
-    BkColor = clBtnFace
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0

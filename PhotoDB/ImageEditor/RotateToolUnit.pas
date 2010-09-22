@@ -165,7 +165,7 @@ begin
  MakeItLink.Parent:=Self;
  MakeItLink.Text:=TEXT_MES_IM_APPLY;
  MakeItLink.Visible:=true;
- MakeItLink.BkColor:=ClBtnface;
+ MakeItLink.Color:=ClBtnface;
  MakeItLink.OnClick:=DoMakeImage;
  MakeItLink.Icon:=IcoOK;     
  MakeItLink.ImageCanRegenerate:=True;
@@ -177,7 +177,7 @@ begin
  CloseLink.Parent:=Self;
  CloseLink.Text:=TEXT_MES_IM_CLOSE_TOOL_PANEL;
  CloseLink.Visible:=true;
- CloseLink.BkColor:=ClBtnface;
+ CloseLink.Color:=ClBtnface;
  CloseLink.OnClick:=ClosePanelEvent;
  CloseLink.Icon:=IcoCancel;      
  CloseLink.ImageCanRegenerate:=True;  

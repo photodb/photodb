@@ -23,7 +23,7 @@ type
     Image1: TImage;
     CommentMemo: TMemo;
     LabelComment: TLabel;
-    PopupMenu1: TPopupMenu;
+    PmItem: TPopupMenu;
     Shell1: TMenuItem;
     Show1: TMenuItem;
     Copy1: TMenuItem;
@@ -32,9 +32,9 @@ type
     DBItem1: TMenuItem;
     ApplicationEvents1: TApplicationEvents;
     SaveWindowPos1: TSaveWindowPos;
-    PopupMenu5: TPopupMenu;
+    PmRatingNotAvaliable: TPopupMenu;
     Ratingnotsets1: TMenuItem;
-    PopupMenu6: TPopupMenu;
+    PmComment: TPopupMenu;
     SetComent1: TMenuItem;
     Comentnotsets1: TMenuItem;
     N2: TMenuItem;
@@ -51,13 +51,13 @@ type
     DragImageList: TImageList;
     BtDone: TButton;
     BtSave: TButton;
-    Button2: TButton;
+    BtnFind: TButton;
     CopyEXIFPopupMenu: TPopupMenu;
     CopyCurrent1: TMenuItem;
     CopyAll1: TMenuItem;
     ImageList1: TImageList;
-    PopupMenu7: TPopupMenu;
-    PopupMenu8: TPopupMenu;
+    PmLinks: TPopupMenu;
+    PmAddLink: TPopupMenu;
     Open1: TMenuItem;
     OpenFolder1: TMenuItem;
     Change1: TMenuItem;
@@ -69,7 +69,7 @@ type
     Up1: TMenuItem;
     Down1: TMenuItem;
     RegGroupsImageList: TImageList;
-    PopupMenu9: TPopupMenu;
+    PopupMenuGroups: TPopupMenu;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     CreateGroup1: TMenuItem;
@@ -77,11 +77,11 @@ type
     GroupManeger1: TMenuItem;
     SearchForGroup1: TMenuItem;
     QuickInfo1: TMenuItem;
-    PopupMenu10: TPopupMenu;
+    PmClear: TPopupMenu;
     Clear1: TMenuItem;
     MoveToGroup1: TMenuItem;
     DropFileTarget2: TDropFileTarget;
-    PopupMenu3: TPopupMenu;
+    PmImageConnect: TPopupMenu;
     AddImThLink1: TMenuItem;
     N7: TMenuItem;
     Cancel1: TMenuItem;
@@ -121,13 +121,13 @@ type
     LabelName1: TLabel;
     LabelName: TMemo;
     Image3: TImage;
-    label7: TLabel;
-    Label8: TLabel;
+    LbGroupsEditInfo: TLabel;
+    LbAvaliableGroups: TLabel;
     LstAvaliableGroups: TListBox;
     Button7: TButton;
     Button6: TButton;
     lstCurrentGroups: TListBox;
-    Label9: TLabel;
+    LbCurrentGroups: TLabel;
     CbShowAllGroups: TCheckBox;
     CbRemoveKeywordsForGroups: TCheckBox;
     BtnNewGroup: TButton;
@@ -143,7 +143,7 @@ type
     VleExif: TValueListEditor;
     procedure Execute(ID : integer);
     procedure BtDoneClick(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure BtnFindClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -161,7 +161,7 @@ type
 
     procedure ChangedDBDataGroups(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
 
-    procedure PopupMenu1Popup(Sender: TObject);
+    procedure PmItemPopup(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
@@ -173,9 +173,9 @@ type
     procedure RatingEditMouseDown(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Ratingnotsets1Click(Sender: TObject);
-    procedure PopupMenu5Popup(Sender: TObject);
+    procedure PmRatingNotAvaliablePopup(Sender: TObject);
     procedure CommentMemoDblClick(Sender: TObject);
-    procedure PopupMenu6Popup(Sender: TObject);
+    procedure PmCommentPopup(Sender: TObject);
     procedure Comentnotsets1Click(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
     procedure Cut1Click(Sender: TObject);
@@ -194,11 +194,11 @@ type
     procedure LinkOnPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure Delete1Click(Sender: TObject);
     procedure LinkClick(Sender: TObject);
-    procedure PopupMenu7Popup(Sender: TObject);
+    procedure PmLinksPopup(Sender: TObject);
     procedure Change1Click(Sender: TObject);
     procedure SetLinkInfo(Sender : TObject; ID : String; Info : TLinkInfo; N : integer; Action : Integer);
     procedure CloseEditLinkForm(Form : TForm; ID : String);
-    procedure PopupMenu8Popup(Sender: TObject);
+    procedure PmAddLinkPopup(Sender: TObject);
     procedure Open1Click(Sender: TObject);
     procedure OpenFolder1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
@@ -222,12 +222,12 @@ type
     procedure GroupManeger1Click(Sender: TObject);
     procedure SearchForGroup1Click(Sender: TObject);
     procedure QuickInfo1Click(Sender: TObject);
-    procedure PopupMenu9Popup(Sender: TObject);
+    procedure PopupMenuGroupsPopup(Sender: TObject);
     procedure CbRemoveKeywordsForGroupsClick(Sender: TObject);
     procedure MoveToGroup1Click(Sender: TObject);
     procedure LockImput;
     procedure UnLockImput;
-    procedure PopupMenu10Popup(Sender: TObject);
+    procedure PmClearPopup(Sender: TObject);
     procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
     procedure AddImThLink1Click(Sender: TObject);
@@ -236,24 +236,24 @@ type
       Sender: TObject);
     procedure AddOriginalImThAndAddProcessngToOriginalImTh1Click(
       Sender: TObject);
-    procedure PopupMenu3Popup(Sender: TObject);
+    procedure PmImageConnectPopup(Sender: TObject);
     procedure PcMainChange(Sender: TObject);
   private
-    LinkDropFiles : TStrings;
-    EditLinkForm : TForm;
-    Links : array of TWebLink;
-    FReadingInfo : Boolean;
-    fSaving : boolean;
-    FOldGroups, FNowGroups : TGroups;
-    FShowenRegGroups : TGroups;
-    FPropertyLinks, ItemLinks : TLinksInfo;
-    FFilesInfo : TDBPopupMenuInfo;
-    FMenuRecord : TDBPopupMenuInfoRecord;
-    RegGroups : TGroups;
-    adding_now, editing_info, no_file : Boolean;
-    FDateTimeInFileExists : Boolean;
-    FFileDate, FFileTime : TDateTime;
-    DestroyCounter : integer;
+    LinkDropFiles: TStrings;
+    EditLinkForm: TForm;
+    Links: array of TWebLink;
+    FReadingInfo: Boolean;
+    FSaving: Boolean;
+    FOldGroups, FNowGroups: TGroups;
+    FShowenRegGroups: TGroups;
+    FPropertyLinks, ItemLinks: TLinksInfo;
+    FFilesInfo: TDBPopupMenuInfo;
+    FMenuRecord: TDBPopupMenuInfoRecord;
+    RegGroups: TGroups;
+    Adding_now, Editing_info, No_file: Boolean;
+    FDateTimeInFileExists: Boolean;
+    FFileDate, FFileTime: TDateTime;
+    DestroyCounter: Integer;
     function GetImageID: Integer;
     function GetFileName: string;
   protected
@@ -413,9 +413,7 @@ begin
     else
       Application.CreateForm(TPropertiesForm, Result);
   end else
-  begin
     Application.CreateForm(TPropertiesForm, Result);
-  end;
 end;
 
 function TPropertyManager.PropertyCount: Integer;
@@ -525,7 +523,7 @@ begin
     DBKernel.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBKernel.RegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBitem1.Visible := True;
-    BtSave.Caption := TEXT_MES_SAVE;
+    BtSave.Caption := L('Save');
     CommentMemo.Cursor := CrDefault;
     CommentMemo.PopupMenu := nil;
     WorkQuery := GetQuery;
@@ -622,7 +620,7 @@ begin
       end;
 
       Idlabel.Text := Inttostr(Id);
-      Caption := TEXT_MES_PROPERTY + ' - ' + Trim(WorkQuery.FieldByName('Name').AsString);
+      Caption := L('Properties') + ' - ' + Trim(WorkQuery.FieldByName('Name').AsString);
       KeyWordsMemo.Text := DataRecord.KeyWords;
       LabelName.Text := ExtractFileName(DataRecord.FileName);
       LabelPath.Text := DataRecord.FileName;
@@ -665,7 +663,7 @@ begin
       FFilesInfo.Add(FMenuRecord);
       FFilesInfo.AttrExists := False;
       CommentMemoChange(nil);
-      Button2.Visible := True;
+      BtnFind.Visible := True;
       ReloadGroups;
       Editing_info := True;
       FReadingInfo := False;
@@ -682,7 +680,7 @@ begin
   except
     on E: Exception do
     begin
-      MessageBoxDB(Handle, 'Error on geting info:'#13 + E.message, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+      MessageBoxDB(Handle, L('Error getting info:') + #13 + E.message, L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
       Close;
     end;
   end;
@@ -695,7 +693,7 @@ begin
   Close;
 end;
 
-procedure TPropertiesForm.Button2Click(Sender: TObject);
+procedure TPropertiesForm.BtnFindClick(Sender: TObject);
 begin
   if no_file then exit;
   with ExplorerManager.NewExplorer(False) do
@@ -731,8 +729,8 @@ begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
   DBkernel.RegisterForm(Self);
   TimeEdit.ParentColor := True;
-  PopupMenu1.Images := DBKernel.ImageList;
-  PopupMenu7.Images := DBKernel.ImageList;
+  PmItem.Images := DBKernel.ImageList;
+  PmLinks.Images := DBKernel.ImageList;
   Shell1.ImageIndex := DB_IC_SHELL;
   Show1.ImageIndex := DB_IC_SLIDE_SHOW;
   Copy1.ImageIndex := DB_IC_COPY_ITEM;
@@ -1099,7 +1097,7 @@ begin
         end;
       end;// [END] Commnet Support
 
-  // [BEGIN] Date Support
+      // [BEGIN] Date Support
       if DateEdit.Enabled then
       begin
         FQuery := GetQuery;
@@ -1377,11 +1375,11 @@ begin
   CommentMemo.Cursor := CrDefault;
   RatingEdit.Rating := 0;
   Image2.Visible := False;
-  CollectionMemo.Text := TEXT_MES_NOT_AVALIABLE;
+  CollectionMemo.Text := L('Not avaliable');
   CollectionMemo.readonly := True;
-  IDLabel.Text := TEXT_MES_NOT_AVALIABLE;
-  KeyWordsMemo.Text := TEXT_MES_NOT_AVALIABLE;
-  OwnerMemo.Text := TEXT_MES_NOT_AVALIABLE;
+  IDLabel.Text := L('Not avaliable');
+  KeyWordsMemo.Text := L('Not avaliable');
+  OwnerMemo.Text := L('Not avaliable');
   KeyWordsMemo.readonly := True;
 
   DateEdit.Enabled := False;
@@ -1404,12 +1402,12 @@ begin
   ImageLoadingFile.Visible := True;
   TPropertyLoadImageThread.Create(Options);
 
-  WidthMemo.Text := TEXT_MES_LOADING___;
-  HeightMemo.Text := TEXT_MES_LOADING___;
+  WidthMemo.Text := L('Loading...');
+  HeightMemo.Text := L('Loading...');
 
   SizeLabel.Text := SizeInTextA(GetFileSize(FileName));
-  BtSave.Caption := TEXT_MES_ADD_FILE;
-  Button2.Visible := True;
+  BtSave.Caption := L('Add file');
+  BtnFind.Visible := True;
 
   Show;
 end;
@@ -1479,7 +1477,7 @@ begin
   end;
 end;
 
-procedure TPropertiesForm.PopupMenu1Popup(Sender: TObject);
+procedure TPropertiesForm.PmItemPopup(Sender: TObject);
 begin
   Shell1.Visible := FileExists(FileName);
   if FShowInfoType <> SHOW_INFO_IDS then
@@ -1629,9 +1627,12 @@ begin
       try
         WorkQuery.Active := True;
       except
-        MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_SHOW_INFO_ABOUT_SELECTED_FILES, TEXT_MES_ERROR, TD_BUTTON_OK,
-          TD_ICON_ERROR);
-        Exit;
+        on e : Exception do
+        begin
+          MessageBoxDB(Handle, L('Unable to load info: ') +  e.Message, L('Error'), TD_BUTTON_OK,
+            TD_ICON_ERROR);
+          Exit;
+        end;
       end;
 
       DirectoryList := TStringList.Create;
@@ -1660,7 +1661,7 @@ begin
   end;
   if FFilesInfo.Count = 0 then
   begin
-    MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_SHOW_INFO_ABOUT_SELECTED_FILES, TEXT_MES_ERROR, TD_BUTTON_OK,
+    MessageBoxDB(Handle, L('Unable to load info: ') + L('No DB records found!'), L('Error'), TD_BUTTON_OK,
       TD_ICON_ERROR);
     Exit;
   end;
@@ -1670,10 +1671,10 @@ begin
     Exit;
   end;
 
-  Caption := TEXT_MES_PROPERTY + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + TEXT_MES_AND_OTHERS;
+  Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
   SizeLAbel.Text := SizeInTextA(Size);
-  OwnerMemo.Text := TEXT_MES_NOT_AVALIABLE;
-  CollectionMemo.Text := TEXT_MES_NOT_AVALIABLE;
+  OwnerMemo.Text := L('Not avaliable');
+  CollectionMemo.Text := L('Not avaliable');
   OwnerMemo.readonly := True;
   CommentMemo.PopupMenu := nil;
   CollectionMemo.readonly := True;
@@ -1689,23 +1690,23 @@ begin
   end;
 
   if WidthList.HasVarValues then
-    WidthMemo.Text := TEXT_MES_VAR_WIDTH
+    WidthMemo.Text := L('Width differens')
   else
-    WidthMemo.Text := Format(TEXT_MES_ALL_PX, [IntToStr(WidthList[0])]);
+    WidthMemo.Text := Format(L('All - %spx.'), [IntToStr(WidthList[0])]);
 
   if HeightList.HasVarValues then
-    HeightMemo.Text := TEXT_MES_VAR_HEIGHT
+    HeightMemo.Text := L('Height differens')
   else
-    HeightMemo.Text := Format(TEXT_MES_ALL_PX, [IntToStr(HeightList[0])]);
+    HeightMemo.Text := Format(L('All - %spx.'), [IntToStr(HeightList[0])]);
 
-  LabelName.Text := TEXT_MES_VAR_FILES;
+  LabelName.Text := L('Diffrent files');
   if IsVariousArStrings(DirectoryList) then
-    LabelPath.Text := TEXT_MES_VAR_LOCATION
+    LabelPath.Text := L('Different directories')
   else
   begin
     S := DirectoryList[0];
     UnFormatDir(S);
-    LabelPath.Text := Format(TEXT_MES_ALL_IN, [LongFileName(S)]);
+    LabelPath.Text := Format(L('All in %s'), [LongFileName(S)]);
   end;
 
   RatingEdit.Rating := FFilesInfo.StatRating;
@@ -1718,14 +1719,14 @@ begin
   TimeEdit.Checked := FFilesInfo.StatIsTime or FFilesInfo.IsVariousDate;
 
   KeyWordsMemo.Text := FFilesInfo.CommonKeyWords;
-  IDLabel.Text := Format(TEXT_MES_SELECTED_ITEMS, [IntToStr(FFilesInfo.Count)]);
+  IDLabel.Text := Format(L('Selected %d items'), [FFilesInfo.Count]);
   CommentMemo.Cursor := CrDefault;
 
   if FFilesInfo.IsVariousComments then
   begin
     CommentMemo.readonly := True;
     CommentMemo.Cursor := CrHandPoint;
-    CommentMemo.PopupMenu := PopupMenu6;
+    CommentMemo.PopupMenu := PmComment;
   end;
   CommentMemo.Text := FFilesInfo.CommonComments;
 
@@ -1739,7 +1740,7 @@ begin
   DBItem1.Visible := True;
   FFilesInfo.IsListItem := False;
   CommentMemoChange(Self);
-  Button2.Visible := False;
+  BtnFind.Visible := False;
   ImageLoadingFile.Visible := False;
   Show;
   SID := GetGUID;
@@ -1757,7 +1758,8 @@ end;
 
 procedure TPropertiesForm.RatingEditMouseDown(Sender: TObject);
 begin
-  if RatingEdit.islayered then RatingEdit.islayered:=false;
+  if RatingEdit.Islayered then
+    RatingEdit.Islayered := False;
   CommentMemoChange(Sender);
 end;
 
@@ -1779,7 +1781,7 @@ begin
   CommentMemoChange(Sender);
 end;
 
-procedure TPropertiesForm.PopupMenu5Popup(Sender: TObject);
+procedure TPropertiesForm.PmRatingNotAvaliablePopup(Sender: TObject);
 begin
   if FShowInfoType = SHOW_INFO_FILE_NAME then
   begin
@@ -1804,7 +1806,7 @@ begin
   CommentMemoChange(Sender);
 end;
 
-procedure TPropertiesForm.PopupMenu6Popup(Sender: TObject);
+procedure TPropertiesForm.PmCommentPopup(Sender: TObject);
 begin
   SetComent1.Visible := CommentMemo.readonly and (FShowInfoType = SHOW_INFO_FILE_NAME);
   Comentnotsets1.Visible := not CommentMemo.ReadOnly;
@@ -1819,7 +1821,7 @@ procedure TPropertiesForm.Comentnotsets1Click(Sender: TObject);
 begin
   CommentMemo.readonly := True;
   CommentMemo.Cursor := CrHandPoint;
-  CommentMemo.Text := TEXT_MES_VAR_COM;
+  CommentMemo.Text := L('Different comments');
   CommentMemoChange(Sender);
 end;
 
@@ -1854,79 +1856,78 @@ begin
   LabelComment.Caption := L('Comments') + ':';
   LabelName1.Caption := L('Name') + ':';
   Label4.Caption := L('Full path') + ':';
- OwnerLabel.Caption:=TEXT_MES_OWNER;
- CollectionLabel.Caption:=TEXT_MES_COLLECTION;
- RatingLabel1.Caption:=TEXT_MES_RATING;
- DateLabel1.Caption:=TEXT_MES_DATE;
- SizeLabel1.Caption:= TEXT_MES_SIZE;
- WidthLabel.Caption:= TEXT_MES_WIDTH;
- Heightlabel.Caption:= TEXT_MES_HEIGHT;
- IDLabel1.Caption:= TEXT_MES_ID;
- LabelKeywords.Caption:= TEXT_MES_KEYWORDS;
- Button2.Caption:= TEXT_MES_FIND_TARGET;
- BtSave.Caption:= TEXT_MES_SAVE;
- BtDone.Caption:= TEXT_MES_CANCEL;
- Shell1.Caption:= TEXT_MES_SHELL;
- Show1.Caption:= TEXT_MES_SHOW;
- Copy1.Caption:= TEXT_MES_COPY;
- DBItem1.Caption:= TEXT_MES_DBITEM;
- Searchforit1.Caption:= TEXT_MES_SEARCH_FOR_IT;
+  OwnerLabel.Caption := L('Owner') + ':';
+  CollectionLabel.Caption := L('Collection') + ':';
+  RatingLabel1.Caption := L('Rating') + ':';
+  DateLabel1.Caption := L('Date') + ':';
+  SizeLabel1.Caption := L('Size') + ':';
+  WidthLabel.Caption := L('Width') + ':';
+  Heightlabel.Caption := L('Height') + ':';
+  IDLabel1.Caption := L('ID') + ':';
+  LabelKeywords.Caption := L('Keywords') + ':';
+  BtnFind.Caption := L('Find');
+  BtSave.Caption := L('Save');
+  BtDone.Caption := L('Cancel');
+  Shell1.Caption := L('Execute');
+  Show1.Caption := L('Show');
+  Copy1.Caption := L('Copy');
+  DBItem1.Caption := L('DB Item');
+  Searchforit1.Caption := L('Find item');
 
- Ratingnotsets1.Caption:=TEXT_MES_RATING_NOT_SETS;
- SetComent1.Caption:=TEXT_MES_SET_COM;
- Comentnotsets1.Caption:=TEXT_MES_SET_COM_NOT;
- SelectAll1.Caption:=TEXT_MES_SELECT_ALL;
- Cut1.Caption:=TEXT_MES_CUT;
- Copy2.Caption:=TEXT_MES_COPY;
- Paste1.Caption:=TEXT_MES_PASTE;
- Undo1.Caption:=TEXT_MES_UNDO;
- PcMain.Pages[0].Caption:=TEXT_MES_GENERAL;
- PcMain.Pages[1].Caption:=TEXT_MES_GROUPS;
- PcMain.Pages[2].Caption:=TEXT_MES_EXIF;
- PcMain.Pages[3].Caption:=TEXT_MES_GISTOGRAMM;
- PcMain.Pages[4].Caption:=TEXT_MES_ADDITIONAL_PROPERTY;
+  Ratingnotsets1.Caption := L('Rating not sets');
+  SetComent1.Caption := L('Set comment');
+  Comentnotsets1.Caption := L('Comment not exists');
+  SelectAll1.Caption := L('Select all');
+  Cut1.Caption := L('Cut');
+  Copy2.Caption := L('Copy');
+  Paste1.Caption := L('Paste');
+  Undo1.Caption := L('Undo');
+  PcMain.Pages[0].Caption := L('General');
+  PcMain.Pages[1].Caption := L('Groups');
+  PcMain.Pages[2].Caption := L('EXIF');
+  PcMain.Pages[3].Caption := L('Gistogramm');
+  PcMain.Pages[4].Caption := L('Additional');
 
- Label2.Caption:=TEXT_MES_GISTOGRAMM_IMAGE+':';
- Label5.Caption:=Format(TEXT_MES_EFFECTIVE_RANGE_F,[0,0]);
- RgGistogrammChannel.Caption:=TEXT_MES_CHANEL;
- RgGistogrammChannel.Items[0]:=TEXT_MES_CHANEL_GRAY;
- RgGistogrammChannel.Items[1]:=TEXT_MES_CHANEL_R;
- RgGistogrammChannel.Items[2]:=TEXT_MES_CHANEL_G;
- RgGistogrammChannel.Items[3]:=TEXT_MES_CHANEL_B;
- CopyCurrent1.Caption:=TEXT_MES_COPY_CURRENT_ROW;
- CopyAll1.Caption:=TEXT_MES_COPY_ALL_INFO;
- CbInclude.Caption:=TEXT_MES_INCLUDE_IN_BASE_SEARCH;
- LbLinks.Caption:=TEXT_MES_LINKS_FOR_PHOTOS+':';
- Addnewlink1.Caption:=TEXT_MES_ADD_LINK;
+  Label2.Caption := L('Gistogramm image') + ':';
+  Label5.Caption := Format(L('Effective range: %d..%d'), [0, 0]);
+  RgGistogrammChannel.Caption := L('Channel');
+  RgGistogrammChannel.Items[0] := L('Gray');
+  RgGistogrammChannel.Items[1] := L('Red channel');
+  RgGistogrammChannel.Items[2] := L('Green channel');
+  RgGistogrammChannel.Items[3] := L('Blue channel');
+  CopyCurrent1.Caption := L('Copy line');
+  CopyAll1.Caption := L('Copy all information');
+  CbInclude.Caption := L('Include in base search');
+  LbLinks.Caption := L('Links for photo(s)') + ':';
+  Addnewlink1.Caption := L('Add link');
 
- Open1.Caption:=TEXT_MES_OPEN;
- OpenFolder1.Caption:=TEXT_MES_OPEN_FOLDER;
- Up1.Caption:=TEXT_MES_ITEM_UP;
- Down1.Caption:=TEXT_MES_ITEM_DOWN;
- Change1.Caption:=TEXT_MES_CHANGE_LINK;
- Delete1.Caption:=TEXT_MES_DELETE;
- BtnManageGroups.Caption := TEXT_MES_GROUP_MANAGER_BUTTON;
- BtnNewGroup.Caption := TEXT_MES_NEW_GROUP_BUTTON;
- Label8.Caption := TEXT_MES_AVALIABLE_GROUPS;
- Label9.Caption := TEXT_MES_CURRENT_GROUPS;
- Clear1.Caption := TEXT_MES_CLEAR;
- MenuItem1.Caption := TEXT_MES_DELETE_ITEM;
- CreateGroup1.Caption := TEXT_MES_GREATE_GROUP;
- ChangeGroup1.Caption := TEXT_MES_CHANGE_GROUP;
- GroupManeger1.Caption := TEXT_MES_GROUPS_MANAGER;
- QuickInfo1.Caption :=  TEXT_MES_QUICK_INFO;
- SearchForGroup1.Caption:=TEXT_MES_SEARCH_FOR_GROUP;
- CbShowAllGroups.Caption:=TEXT_MES_SHOW_ALL_GROUPS;
- CbRemoveKeywordsForGroups.Caption:=TEXT_MES_DELETE_UNUSED_KEY_WORDS;
- MoveToGroup1.Caption:=TEXT_MES_MOVE_TO_GROUP;
+  Open1.Caption := L('Open');
+  OpenFolder1.Caption := L('Open folder');
+  Up1.Caption := L('Move up');
+  Down1.Caption := L('Move down');
+  Change1.Caption := L('Change');
+  Delete1.Caption := L('Delete');
+  BtnManageGroups.Caption := L('Manage');
+  BtnNewGroup.Caption := L('New group');
+  LbAvaliableGroups.Caption := L('Avaliable groups') + ':';
+  LbCurrentGroups.Caption := L('Current groups') + ':';
+  Clear1.Caption := L('Clear');
+  MenuItem1.Caption := L('Delete');
+  CreateGroup1.Caption := L('Create group');
+  ChangeGroup1.Caption := L('Change group');
+  GroupManeger1.Caption := L('Group manager');
+  QuickInfo1.Caption := L('Info');
+  SearchForGroup1.Caption := L('Search group photos');
+  CbShowAllGroups.Caption := L('Show all groups');
+  CbRemoveKeywordsForGroups.Caption := L('Remove unused keywords');
+  MoveToGroup1.Caption := L('Move to group');
 
- label7.Caption:=TEXT_MES_GROUPS_EDIT_INFO;
-
- Cancel1.Caption:=TEXT_MES_CANCEL;
- AddImThProcessingImageAndAddOriginalToProcessingPhoto1.Caption:=TEXT_MES_ADD_PROC_IMTH_AND_ADD_ORIG_TO_PROC_PHOTO;
- AddImThLink1.Caption:=TEXT_MES_ADD_PROC_IMTH;
- AddOriginalImThAndAddProcessngToOriginalImTh1.Caption:=TEXT_MES_ADD_ORIG_IMTH_AND_ADD_PROC_TO_ORIG_PHOTO;
- AddOriginalImTh1.Caption:=TEXT_MES_ADD_ORIG_IMTH;
+  LbGroupsEditInfo.Caption := L('Use button "-->" to add new groups or button "<--" to remove them');
+  Cancel1.Caption := L('Cancel');
+  AddImThProcessingImageAndAddOriginalToProcessingPhoto1.Caption := TEXT_MES_ADD_PROC_IMTH_AND_ADD_ORIG_TO_PROC_PHOTO;
+  AddImThLink1.Caption := TEXT_MES_ADD_PROC_IMTH;
+  AddOriginalImThAndAddProcessngToOriginalImTh1.Caption := TEXT_MES_ADD_ORIG_IMTH_AND_ADD_PROC_TO_ORIG_PHOTO;
+  AddOriginalImTh1.Caption := TEXT_MES_ADD_ORIG_IMTH;
 end;
 
 procedure TPropertiesForm.PcMainChange(Sender: TObject);
@@ -1935,89 +1936,34 @@ var
   NewTab: Integer;
 begin
   NewTab := PcMain.ActivePageIndex;
- Case NewTab of
- 0 :
- begin
+  case NewTab of
+    1:
+      begin
+        RecreateGroupsList;
+      end;
+    2:
+      begin
+        ReadExifData;
+      end;
+    3:
+      begin
+        RgGistogrammChannel.ItemIndex := 0;
 
- end;
- 1 :
- begin
-  if FReadingInfo then
-  begin
-   //AllowChange:=false;
-   exit;
+        if not GistogrammData.Loaded then
+        begin
+          Options.FileName := FileName;
+          Options.Owner := Self;
+          Options.SID := SID;
+          Options.OnDone := OnDoneLoadGistogrammData;
+          TPropertyLoadGistogrammThread.Create(Options);
+          OnDoneLoadGistogrammData(Self);
+        end;
+      end;
+    4:
+      begin
+        ReadLinks;
+      end;
   end;
-  if FShowInfoType=SHOW_INFO_FILE_NAME then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  RecreateGroupsList;
- end;
- 2 :
- begin
-  if FReadingInfo then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  if FShowInfoType=SHOW_INFO_IDS then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  if not FileExists(FileName) then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  ReadExifData;
- end;
- 3 :
- begin
-  if FReadingInfo then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  if FShowInfoType=SHOW_INFO_IDS then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  if not FileExists(FileName) then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  RgGistogrammChannel.ItemIndex:=0;
-  //ReadHistogrammData;
-
-  if not GistogrammData.Loaded then
-  begin
-   Options.FileName:=FileName;
-   Options.Owner:=self;
-   Options.SID:=SID;
-   Options.OnDone:=OnDoneLoadGistogrammData;
-   TPropertyLoadGistogrammThread.Create(Options);
-   OnDoneLoadGistogrammData(self);
-  end;
- end;
- 4:
- begin
-  if FReadingInfo then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  if FShowInfoType=SHOW_INFO_FILE_NAME then
-  begin
-   //AllowChange:=false;
-   exit;
-  end;
-  ReadLinks;
- end;
- end;
 end;
 
 procedure TPropertiesForm.ReadExifData;
@@ -2049,15 +1995,18 @@ begin
 
   if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FileName) then
   begin
-    RAWExif:=ReadRAWExif(FileName);
-    if RAWExif.isEXIF then
-    begin
-      VleEXIF.InsertRow('RAW Info:','',true);
-      for I := 0 to RAWExif.Count - 1 do
-        xInsert(Format('%s: ', [RAWExif[i].Description]), RAWExif[i].Value);
-    end else
-      VleEXIF.InsertRow('Info:',TEXT_MES_NO_EXIF_HEADER,true);
-    RAWExif.Free;
+    RAWExif := ReadRAWExif(FileName);
+    try
+      if RAWExif.isEXIF then
+      begin
+        VleEXIF.InsertRow('RAW Info:', '', True);
+        for I := 0 to RAWExif.Count - 1 do
+          xInsert(Format('%s: ', [RAWExif[i].Description]), RAWExif[i].Value);
+      end else
+        VleEXIF.InsertRow('Info:', L('Exif header not found'), True);
+    finally
+      RAWExif.Free;
+    end;
   end else
   begin
     Exif := TExif.Create;
@@ -2066,41 +2015,45 @@ begin
         Exif.ReadFromFile(FileName);
         if Exif.Valid then
         begin
-          xInsert('Make: ',Exif.Make);
-          xInsert('Model: ',Exif.Model);
-          xInsert('Image Desk: ',Exif.ImageDesc);
-          xInsert('Copyright: ',Exif.Copyright);
-          xInsert('DateTime: ',Exif.DateTime);
-          xInsert('Original DateTime: ',Exif.DateTimeOriginal);
-          xInsert('Created DateTime: ',Exif.DateTimeDigitized);
-          xInsert('UserComments: ',Exif.UserComments);
-          xInsert('Software: ',Exif.Software);
-          xInsert('Artist: ',Exif.Artist);
+          XInsert('Make: ', Exif.Make);
+          XInsert('Model: ', Exif.Model);
+          XInsert('Image Desk: ', Exif.ImageDesc);
+          XInsert('Copyright: ', Exif.Copyright);
+          XInsert('DateTime: ', Exif.DateTime);
+          XInsert('Original DateTime: ', Exif.DateTimeOriginal);
+          XInsert('Created DateTime: ', Exif.DateTimeDigitized);
+          XInsert('UserComments: ', Exif.UserComments);
+          XInsert('Software: ', Exif.Software);
+          XInsert('Artist: ', Exif.Artist);
           if Byte(Exif.Orientation) <> 0 then
-            VleEXIF.InsertRow('Orientation: ',Format('%d (%s)', [Byte(Exif.Orientation), Exif.OrientationDesc]), True);
-          xInsert('Exposure: ',Exif.Exposure);
-          if Exif.ExposureProgram<>0 then
-            VleEXIF.InsertRow('Exposure Program: ',Format('%d (%s)',[Exif.ExposureProgram, Exif.ExposureProgramDesc]), True);
-          xInsert('Fstops: ',Exif.FStops);
-          xInsert('ShutterSpeed: ',Exif.ShutterSpeed);
-          xInsert('Aperture: ',Exif.Aperture);
-          xInsert('MaxAperture: ',Exif.MaxAperture);
-          xInsert('Compressed BPP: ',Exif.CompressedBPP);
-          xInsertInt('ISO speed: ',Exif.ISO);
-          xInsertInt('PixelXDimension: ',Exif.PixelXDimension);
-          xInsertInt('PixelYDimension: ',Exif.PixelYDimension);
-          xInsertInt('XResolution: ',Exif.XResolution);
-          xInsertInt('YResolution: ',Exif.YResolution);
-          xInsertInt('MeteringMode: ',Exif.MeteringMode);
-          xInsert('MeteringMethod: ',Exif.MeteringMethod);
-          xInsert('Orientation: ',Exif.OrientationDesc);
+            VleEXIF.InsertRow('Orientation: ', Format('%d (%s)', [Byte(Exif.Orientation), Exif.OrientationDesc]), True);
+          XInsert('Exposure: ', Exif.Exposure);
+          if Exif.ExposureProgram <> 0 then
+            VleEXIF.InsertRow('Exposure Program: ',
+              Format('%d (%s)', [Exif.ExposureProgram, Exif.ExposureProgramDesc]), True);
+          XInsert('Fstops: ', Exif.FStops);
+          XInsert('ShutterSpeed: ', Exif.ShutterSpeed);
+          XInsert('Aperture: ', Exif.Aperture);
+          XInsert('MaxAperture: ', Exif.MaxAperture);
+          XInsert('Compressed BPP: ', Exif.CompressedBPP);
+          XInsertInt('ISO speed: ', Exif.ISO);
+          XInsertInt('PixelXDimension: ', Exif.PixelXDimension);
+          XInsertInt('PixelYDimension: ', Exif.PixelYDimension);
+          XInsertInt('XResolution: ', Exif.XResolution);
+          XInsertInt('YResolution: ', Exif.YResolution);
+          XInsertInt('MeteringMode: ', Exif.MeteringMode);
+          XInsert('MeteringMethod: ', Exif.MeteringMethod);
+          XInsert('Orientation: ', Exif.OrientationDesc);
           if Exif.LightSource <> 0 then
-            VleEXIF.InsertRow('LightSource: ',Format('%d (%s)',[Exif.LightSource, Exif.LightSourceDesc]),true);
+            VleEXIF.InsertRow('LightSource: ', Format('%d (%s)', [Exif.LightSource, Exif.LightSourceDesc]), True);
           if Exif.Flash <> 0 then
-            VleEXIF.InsertRow('Flash: ',Format('%d (%s)',[Exif.Flash, Exif.FlashDesc]),true);
-        end else
-          VleEXIF.InsertRow('Info:',TEXT_MES_NO_EXIF_HEADER, True);
+            VleEXIF.InsertRow('Flash: ', Format('%d (%s)', [Exif.Flash, Exif.FlashDesc]), True);
+        end
+        else
+          VleEXIF.InsertRow('Info:', TEXT_MES_NO_EXIF_HEADER, True);
       except
+        on e : Exception do
+          Eventlog(e.Message);
       end;
     finally
       Exif.free;
@@ -2170,210 +2123,258 @@ end;
 
 procedure TPropertiesForm.ReadLinks;
 var
-  LI : TLinksInfo;
-  i : integer;
-  Icon : TIcon;
+  LI: TLinksInfo;
+  I: Integer;
+  Icon: TIcon;
 begin
- for i:=0 to Length(Links)-1 do
- Links[i].Free;
- LI:=CopyLinksInfo(FPropertyLinks);
- SetLength(Links,Length(LI));
- for i:=0 to Length(LI)-1 do
- begin
-  Links[i]:=TWebLink.Create(LinksScrollBox);
-  Links[i].Width:=0;
-  Links[i].Left:=10;
-  Links[i].Height:=19;
-  Links[i].Top:=i*(19+5)+10;
-  Links[i].Parent:=LinksScrollBox;
-  if LI[i].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT<>0 then
-  Links[i].Font.Color:=ColorDiv2(clBtnFace, clWindowText) else
-  Links[i].Font.Color:=clWindowText;
+  for I := 0 to Length(Links) - 1 do
+    Links[I].Free;
+  LI := CopyLinksInfo(FPropertyLinks);
+  SetLength(Links, Length(LI));
+  for I := 0 to Length(LI) - 1 do
+  begin
+    Links[I] := TWebLink.Create(LinksScrollBox);
+    Links[I].Width := 0;
+    Links[I].Left := 10;
+    Links[I].Height := 19;
+    Links[I].Top := I * (19 + 5) + 10;
+    Links[I].Parent := LinksScrollBox;
+    if LI[I].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT <> 0 then
+      Links[I].Font.Color := ColorDiv2(ClBtnFace, ClWindowText)
+    else
+      Links[I].Font.Color := ClWindowText;
 
-  Links[i].BkColor:=LinksScrollBox.Color;
-  Links[i].Width:=LinksScrollBox.Width-10;
-  Links[i].Text:=LI[i].LinkName;
-  Links[i].Tag:= i;
-  Links[i].OnClick:=LinkClick;
-  Links[i].OnContextPopup:=LinkOnPopup;
-  Links[i].ImageCanRegenerate:=true;
-   //
-  Icon := TIcon.Create;
+    Links[I].Color := LinksScrollBox.Color;
+    Links[I].Width := LinksScrollBox.Width - 10;
+    Links[I].Text := LI[I].LinkName;
+    Links[I].Tag := I;
+    Links[I].OnClick := LinkClick;
+    Links[I].OnContextPopup := LinkOnPopup;
+    Links[I].ImageCanRegenerate := True;
+    //
+    Icon := TIcon.Create;
 
-  case LI[i].LinkType of
-  LINK_TYPE_ID : Icon.Handle:=UnitDBKernel.Icons[DB_IC_SLIDE_SHOW+1];
-  LINK_TYPE_ID_EXT : Icon.Handle:=UnitDBKernel.Icons[DB_IC_NOTES+1];
-  LINK_TYPE_IMAGE : Icon.Handle:=UnitDBKernel.Icons[DB_IC_DESKTOP+1];
-  LINK_TYPE_FILE : Icon.Handle:=UnitDBKernel.Icons[DB_IC_SHELL+1];
-  LINK_TYPE_FOLDER : Icon.Handle:=UnitDBKernel.Icons[DB_IC_DIRECTORY+1];
-  LINK_TYPE_TXT : Icon.Handle:=UnitDBKernel.Icons[DB_IC_TEXT_FILE+1];
-  LINK_TYPE_HTML : Icon.Handle:=UnitDBKernel.Icons[DB_IC_SLIDE_SHOW+1];
+    case LI[I].LinkType of
+      LINK_TYPE_ID:
+        Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+      LINK_TYPE_ID_EXT:
+        Icon.Handle := UnitDBKernel.Icons[DB_IC_NOTES + 1];
+      LINK_TYPE_IMAGE:
+        Icon.Handle := UnitDBKernel.Icons[DB_IC_DESKTOP + 1];
+      LINK_TYPE_FILE:
+        Icon.Handle := UnitDBKernel.Icons[DB_IC_SHELL + 1];
+      LINK_TYPE_FOLDER:
+        Icon.Handle := UnitDBKernel.Icons[DB_IC_DIRECTORY + 1];
+      LINK_TYPE_TXT:
+        Icon.Handle := UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1];
+      LINK_TYPE_HTML:
+        Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+    end;
+    Links[I].Icon := Icon;
+    Icon.Free;
+    Links[I].Visible := True;
   end;
-  Links[i].Icon := Icon;
-  Icon.Free;
-  Links[i].Visible:=true;
- end;
- CommentMemoChange(self);
+  CommentMemoChange(Self);
 end;
 
 procedure TPropertiesForm.Addnewlink1Click(Sender: TObject);
 var
-  LI : TLinksInfo;
+  LI: TLinksInfo;
 begin
- LI:=CopyLinksInfo(FPropertyLinks);
- EditLinkForm:=AddNewLink(true,FPropertyLinks, SetLinkInfo, CloseEditLinkForm);
+  LI := CopyLinksInfo(FPropertyLinks);
+  EditLinkForm := AddNewLink(True, FPropertyLinks, SetLinkInfo, CloseEditLinkForm);
 end;
 
 procedure TPropertiesForm.LinkOnPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
- Handled:=true;
- PopupMenu7.Tag:=TWebLink(Sender).Tag;
- MousePos:=TWebLink(Sender).ClientToScreen(MousePos);
- PopupMenu7.Popup(MousePos.X,MousePos.Y);
+  Handled := True;
+  PmLinks.Tag := TWebLink(Sender).Tag;
+  MousePos := TWebLink(Sender).ClientToScreen(MousePos);
+  PmLinks.Popup(MousePos.X, MousePos.Y);
 end;
 
 procedure TPropertiesForm.Delete1Click(Sender: TObject);
 begin
- DeleteLinkAtPos(FPropertyLinks,PopupMenu7.Tag);
- ReadLinks;
+  DeleteLinkAtPos(FPropertyLinks, PmLinks.Tag);
+  ReadLinks;
 end;
 
 procedure TPropertiesForm.LinkClick(Sender: TObject);
 var
-  n : integer;
-  LI : TLinksInfo;
-  TIRA : TImageDBRecordA;
-  p : TPoint;
-  s, DN : string;
+  N: Integer;
+  LI: TLinksInfo;
+  TIRA: TImageDBRecordA;
+  P: TPoint;
+  S, DN: string;
 
- procedure ViewFile(FileName : String);
- begin
-  If Viewer=nil then
-  Application.CreateForm(TViewer,Viewer);
-  Viewer.ShowFile(FileName);
- end;
+  procedure ViewFile(FileName: string);
+  begin
+    if Viewer = nil then
+      Application.CreateForm(TViewer, Viewer);
+    Viewer.ShowFile(FileName);
+  end;
 
 begin
- GetCursorPos(p);
- n:=TWebLink(Sender).Tag;
- LI:=CopyLinksInfo(FPropertyLinks);
- Case LI[n].LinkType of
-  LINK_TYPE_ID : ViewFile(GetFileNameById(StrToIntDef(LI[n].LinkValue,0)));
-  LINK_TYPE_ID_EXT :
-  begin
-   TIRA:=getimageIDTh(DeCodeExtID(LI[n].LinkValue));
-   if TIRA.count>0 then
-   ViewFile(TIRA.FileNames[0]);
-  end;
-  LINK_TYPE_IMAGE : ViewFile(LI[n].LinkValue);
-  LINK_TYPE_FILE : begin s:=GetDirectory(LI[n].LinkValue); ShellExecute(Handle, nil, PWideChar(LI[n].LinkValue), nil, PWideChar(S), SW_NORMAL); end;
-  LINK_TYPE_FOLDER :
-  begin
-   DN:=LI[n].LinkValue;
-   UnFormatDir(DN);
-   if (DN<>'') and not DirectoryExists(DN) then
-   begin
-    MessageBoxDB(Handle,Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F,[DN]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-    Exit;
-   end;
-   With ExplorerManager.NewExplorer(False) do
-   begin
-    SetPath(LI[n].LinkValue);
-    Show;
-    SetFocus;
-   end;
-  end;
-  LINK_TYPE_TXT : DoHelpHint(LI[n].LinkName,LI[n].LinkValue,p,Links[n]);
-  LINK_TYPE_HTML : ;
+  GetCursorPos(P);
+  N := TWebLink(Sender).Tag;
+  LI := CopyLinksInfo(FPropertyLinks);
+  case LI[N].LinkType of
+    LINK_TYPE_ID:
+      ViewFile(GetFileNameById(StrToIntDef(LI[N].LinkValue, 0)));
+    LINK_TYPE_ID_EXT:
+      begin
+        TIRA := GetimageIDTh(DeCodeExtID(LI[N].LinkValue));
+        if TIRA.Count > 0 then
+          ViewFile(TIRA.FileNames[0]);
+      end;
+    LINK_TYPE_IMAGE:
+      ViewFile(LI[N].LinkValue);
+    LINK_TYPE_FILE:
+      begin
+        S := GetDirectory(LI[N].LinkValue);
+        ShellExecute(Handle, nil, PWideChar(LI[N].LinkValue), nil, PWideChar(S), SW_NORMAL);
+      end;
+    LINK_TYPE_FOLDER:
+      begin
+        DN := LI[N].LinkValue;
+        UnFormatDir(DN);
+        if (DN <> '') and not DirectoryExists(DN) then
+        begin
+          MessageBoxDB(Handle, Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F, [DN]), TEXT_MES_WARNING, TD_BUTTON_OK,
+            TD_ICON_WARNING);
+          Exit;
+        end;
+        with ExplorerManager.NewExplorer(False) do
+        begin
+          SetPath(LI[N].LinkValue);
+          Show;
+          SetFocus;
+        end;
+      end;
+    LINK_TYPE_TXT:
+      DoHelpHint(LI[N].LinkName, LI[N].LinkValue, P, Links[N]);
+    LINK_TYPE_HTML:
+      ;
   end;
 end;
 
-procedure TPropertiesForm.PopupMenu7Popup(Sender: TObject);
+procedure TPropertiesForm.PmLinksPopup(Sender: TObject);
 var
-  MenuInfo : TDBPopupMenuInfo;
-  n, ID : integer;
-  LI : TLinksInfo;
+  MenuInfo: TDBPopupMenuInfo;
+  N, ID: Integer;
+  LI: TLinksInfo;
 
-  Procedure DoExit;
+  procedure DoExit;
   begin
-   if LI[n].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT<>0 then
-   begin
-    Open1.Visible:=false; OpenFolder1.Visible:=false; IDMenu1.Visible:=false; Up1.Visible:=false; Down1.Visible:=false;
-   end;
-   Change1.Visible:=Change1.Visible and not fSaving;
-   Delete1.Visible:=Delete1.Visible and  not fSaving;
-
-   Up1.Visible:=Up1.Visible and not fSaving;
-   Down1.Visible:=Down1.Visible and not fSaving;
+    if LI[N].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT <> 0 then
+    begin
+      Open1.Visible := False;
+      OpenFolder1.Visible := False;
+      IDMenu1.Visible := False;
+      Up1.Visible := False;
+      Down1.Visible := False;
+    end;
+    Change1.Visible := Change1.Visible and not FSaving;
+    Delete1.Visible := Delete1.Visible and not FSaving;
+    Up1.Visible := Up1.Visible and not FSaving;
+    Down1.Visible := Down1.Visible and not FSaving;
 
   end;
 
 begin
 
- Change1.Visible:=EditLinkForm=nil;
- Delete1.Visible:=EditLinkForm=nil;
- n:=PopupMenu7.Tag;
- Up1.Visible:=n<>0;
- Down1.Visible:=n<>Length(FPropertyLinks)-1;
- LI:=CopyLinksInfo(FPropertyLinks);
+  Change1.Visible := EditLinkForm = nil;
+  Delete1.Visible := EditLinkForm = nil;
+  N := PmLinks.Tag;
+  Up1.Visible := N <> 0;
+  Down1.Visible := N <> Length(FPropertyLinks) - 1;
+  LI := CopyLinksInfo(FPropertyLinks);
 
- case LI[n].LinkType of
-  LINK_TYPE_ID : begin Open1.Visible:=true; OpenFolder1.Visible:=true; end;
-  LINK_TYPE_ID_EXT : begin Open1.Visible:=true; OpenFolder1.Visible:=true; end;
-  LINK_TYPE_IMAGE : begin Open1.Visible:=true; OpenFolder1.Visible:=true; end;
-  LINK_TYPE_FILE : begin Open1.Visible:=true; OpenFolder1.Visible:=true; end;
-  LINK_TYPE_FOLDER : begin Open1.Visible:=false; OpenFolder1.Visible:=true; end;
-  LINK_TYPE_TXT : begin Open1.Visible:=true; OpenFolder1.Visible:=false; end;
-  LINK_TYPE_HTML : begin Open1.Visible:=false; OpenFolder1.Visible:=false; end;
- end;
+  case LI[N].LinkType of
+    LINK_TYPE_ID:
+      begin
+        Open1.Visible := True;
+        OpenFolder1.Visible := True;
+      end;
+    LINK_TYPE_ID_EXT:
+      begin
+        Open1.Visible := True;
+        OpenFolder1.Visible := True;
+      end;
+    LINK_TYPE_IMAGE:
+      begin
+        Open1.Visible := True;
+        OpenFolder1.Visible := True;
+      end;
+    LINK_TYPE_FILE:
+      begin
+        Open1.Visible := True;
+        OpenFolder1.Visible := True;
+      end;
+    LINK_TYPE_FOLDER:
+      begin
+        Open1.Visible := False;
+        OpenFolder1.Visible := True;
+      end;
+    LINK_TYPE_TXT:
+      begin
+        Open1.Visible := True;
+        OpenFolder1.Visible := False;
+      end;
+    LINK_TYPE_HTML:
+      begin
+        Open1.Visible := False;
+        OpenFolder1.Visible := False;
+      end;
+  end;
 
- if LI[n].LinkType=LINK_TYPE_ID then
- if LI[n].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT=0 then
- begin
-  IDMenu1.Visible:=true;
-  ID:=StrToIntDef(LI[n].LinkValue,0);
-  MenuInfo:=GetMenuInfoByID(ID);
-  MenuInfo.IsPlusMenu:=False;
-  MenuInfo.IsListItem:=False;
-  MenuInfo.AttrExists:=false;
-  IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(ID)]);
-  TDBPopupMenu.Instance.AddDBContMenu(IDMenu1,MenuInfo);
+  if LI[N].LinkType = LINK_TYPE_ID then
+    if LI[N].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT = 0 then
+    begin
+      IDMenu1.Visible := True;
+      ID := StrToIntDef(LI[N].LinkValue, 0);
+      MenuInfo := GetMenuInfoByID(ID);
+      MenuInfo.IsPlusMenu := False;
+      MenuInfo.IsListItem := False;
+      MenuInfo.AttrExists := False;
+      IDMenu1.Caption := Format(TEXT_MES_DBITEM_FORMAT, [Inttostr(ID)]);
+      TDBPopupMenu.Instance.AddDBContMenu(IDMenu1, MenuInfo);
+      DoExit;
+      Exit;
+    end;
+  if LI[N].LinkType = LINK_TYPE_ID_EXT then
+    if LI[N].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT = 0 then
+    begin
+      IDMenu1.Visible := True;
+      MenuInfo := GetMenuInfoByStrTh(DeCodeExtID(LI[N].LinkValue));
+      MenuInfo.IsPlusMenu := False;
+      MenuInfo.IsListItem := False;
+      MenuInfo.AttrExists := False;
+      if MenuInfo.Count > 0 then
+        IDMenu1.Caption := Format(TEXT_MES_DBITEM_FORMAT, [Inttostr(MenuInfo[0].ID)])
+      else
+        IDMenu1.Caption := Format(TEXT_MES_DBITEM_FORMAT, [Inttostr(0)]);
+      TDBPopupMenu.Instance.AddDBContMenu(IDMenu1, MenuInfo);
+      DoExit;
+      Exit;
+    end;
+  IDMenu1.Visible := False;
   DoExit;
-  exit;
- end;
- if LI[n].LinkType=LINK_TYPE_ID_EXT then
- if LI[n].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT=0 then
- begin
-  IDMenu1.Visible:=true;
-  MenuInfo:=GetMenuInfoByStrTh(DeCodeExtID(LI[n].LinkValue));
-  MenuInfo.IsPlusMenu:=False;
-  MenuInfo.IsListItem:=False;
-  MenuInfo.AttrExists:=false;
-  if MenuInfo.Count > 0 then
-  IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(MenuInfo[0].ID)]) else
-  IDMenu1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(0)]);
-  TDBPopupMenu.Instance.AddDBContMenu(IDMenu1,MenuInfo);
-  DoExit;
-  exit;
- end;
- IDMenu1.Visible:=false;
- DoExit;
 end;
 
 procedure TPropertiesForm.Change1Click(Sender: TObject);
 var
-  LI : TLinksInfo;
-  i, n : integer;
+  LI: TLinksInfo;
+  I, N: Integer;
 begin
- n:=PopupMenu7.Tag;
- LI:=CopyLinksInfo(FPropertyLinks);
- for i:=0 to Length(LI)-1 do
- begin
-  LI[i].Tag:=LI[i].Tag or LINK_TAG_NONE;
- end;
- LI[n].Tag:=LI[n].Tag or LINK_TAG_SELECTED;
- EditLinkForm:=AddNewLink(false,LI, SetLinkInfo, CloseEditLinkForm);
+  N := PmLinks.Tag;
+  LI := CopyLinksInfo(FPropertyLinks);
+  for I := 0 to Length(LI) - 1 do
+    LI[I].Tag := LI[I].Tag or LINK_TAG_NONE;
+
+  LI[N].Tag := LI[N].Tag or LINK_TAG_SELECTED;
+  EditLinkForm := AddNewLink(False, LI, SetLinkInfo, CloseEditLinkForm);
 end;
 
 procedure TPropertiesForm.CloseEditLinkForm(Form: TForm; ID: String);
@@ -2381,7 +2382,7 @@ begin
   R(EditLinkForm);
 end;
 
-procedure TPropertiesForm.PopupMenu8Popup(Sender: TObject);
+procedure TPropertiesForm.PmAddLinkPopup(Sender: TObject);
 begin
   AddNewlink1.Visible := (EditLinkForm = nil) and not FSaving;
 end;
@@ -2389,92 +2390,101 @@ end;
 procedure TPropertiesForm.SetLinkInfo(Sender: TObject; ID: String;
   Info: TLinkInfo; N: integer; Action : Integer);
 begin
- Case Action of
-  LINK_PROC_ACTION_ADD :
-   begin
-    SetLength(FPropertyLinks,Length(FPropertyLinks)+1);
-    FPropertyLinks[Length(FPropertyLinks)-1]:=Info;
-   end;
-  LINK_PROC_ACTION_MODIFY :
-   begin
-    FPropertyLinks[N]:=Info;
-   end;
- end;
- ReadLinks;
- SetFocus;
+  case Action of
+    LINK_PROC_ACTION_ADD:
+      begin
+        SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+        FPropertyLinks[Length(FPropertyLinks) - 1] := Info;
+      end;
+    LINK_PROC_ACTION_MODIFY:
+      begin
+        FPropertyLinks[N] := Info;
+      end;
+  end;
+  ReadLinks;
+  SetFocus;
 end;
 
 procedure TPropertiesForm.Open1Click(Sender: TObject);
 var
-  n : integer;
+  N: Integer;
 begin
- n:=PopupMenu7.Tag;
- Links[n].OnClick(Links[n]);
+  N := PmLinks.Tag;
+  Links[N].OnClick(Links[N]);
 end;
 
 procedure TPropertiesForm.OpenFolder1Click(Sender: TObject);
 var
-  n : integer;
-  FN, DN : String;
-  TIRA : TImageDBRecordA;
+  N: Integer;
+  FN, DN: string;
+  TIRA: TImageDBRecordA;
 begin
- n:=PopupMenu7.Tag;
- DN:='';
- FN:='';
- Case FPropertyLinks[n].LinkType of
-  LINK_TYPE_ID : FN:=GetFileNameById(StrToIntDef(FPropertyLinks[n].LinkValue,0));
-  LINK_TYPE_ID_EXT :
-  begin
-   TIRA:=GetImageIDTh(DeCodeExtID(FPropertyLinks[n].LinkValue));
-   if TIRA.count>0 then
-   FN:=TIRA.FileNames[0];
+  N := PmLinks.Tag;
+  DN := '';
+  FN := '';
+  case FPropertyLinks[N].LinkType of
+    LINK_TYPE_ID:
+      FN := GetFileNameById(StrToIntDef(FPropertyLinks[N].LinkValue, 0));
+    LINK_TYPE_ID_EXT:
+      begin
+        TIRA := GetImageIDTh(DeCodeExtID(FPropertyLinks[N].LinkValue));
+        if TIRA.Count > 0 then
+          FN := TIRA.FileNames[0];
+      end;
+    LINK_TYPE_IMAGE:
+      FN := FPropertyLinks[N].LinkValue;
+    LINK_TYPE_FILE:
+      FN := FPropertyLinks[N].LinkValue;
+    LINK_TYPE_FOLDER:
+      DN := FPropertyLinks[N].LinkValue;
+    LINK_TYPE_TXT:
+      Exit;
+    LINK_TYPE_HTML:
+      Exit;
+  else
+    Exit;
   end;
-  LINK_TYPE_IMAGE : FN:=FPropertyLinks[n].LinkValue;
-  LINK_TYPE_FILE : FN:=FPropertyLinks[n].LinkValue;
-  LINK_TYPE_FOLDER : DN:=FPropertyLinks[n].LinkValue;
-  LINK_TYPE_TXT : exit;
-  LINK_TYPE_HTML : exit;
-  else exit;
- end;
- if DN='' then DN:=GetDirectory(FN);
- UnFormatDir(DN);
- if (DN<>'') and not DirectoryExists(DN) then
- begin
-  MessageBoxDB(Handle,Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F,[DN]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  Exit;
- end;
- With ExplorerManager.NewExplorer(False) do
- begin
-  if FN<>'' then
-  SetOldPath(FN);
-  SetPath(DN);
-  Show;
-  SetFocus;
- end;
+  if DN = '' then
+    DN := GetDirectory(FN);
+  UnFormatDir(DN);
+  if (DN <> '') and not DirectoryExists(DN) then
+  begin
+    MessageBoxDB(Handle, Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F, [DN]), TEXT_MES_WARNING, TD_BUTTON_OK,
+      TD_ICON_WARNING);
+    Exit;
+  end;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    if FN <> '' then
+      SetOldPath(FN);
+    SetPath(DN);
+    Show;
+    SetFocus;
+  end;
 end;
 
 procedure TPropertiesForm.Up1Click(Sender: TObject);
 var
-  temp : TLinkInfo;
-  n : integer;
+  Temp: TLinkInfo;
+  N: Integer;
 begin
- n:=PopupMenu7.Tag;
- temp:=FPropertyLinks[n-1];
- FPropertyLinks[n-1]:=FPropertyLinks[n];
- FPropertyLinks[n]:=temp;
- ReadLinks;
+  N := PmLinks.Tag;
+  Temp := FPropertyLinks[N - 1];
+  FPropertyLinks[N - 1] := FPropertyLinks[N];
+  FPropertyLinks[N] := Temp;
+  ReadLinks;
 end;
 
 procedure TPropertiesForm.Down1Click(Sender: TObject);
 var
-  temp : TLinkInfo;
-  n : integer;
+  Temp: TLinkInfo;
+  N: Integer;
 begin
- n:=PopupMenu7.Tag;
- temp:=FPropertyLinks[n+1];
- FPropertyLinks[n+1]:=FPropertyLinks[n];
- FPropertyLinks[n]:=temp;
- ReadLinks;
+  N := PmLinks.Tag;
+  Temp := FPropertyLinks[N + 1];
+  FPropertyLinks[N + 1] := FPropertyLinks[N];
+  FPropertyLinks[N] := Temp;
+  ReadLinks;
 end;
 
 procedure TPropertiesForm.BtnManageGroupsClick(Sender: TObject);
@@ -2556,100 +2566,105 @@ var
   N, I: Integer;
   XNewGroups: TGroups;
 
-  function NewGroup(GroupCode : String) : Boolean;
+  function NewGroup(GroupCode: string): Boolean;
   var
-    j : integer;
+    J: Integer;
   begin
-   Result:=false;
-   for j:=0 to Length(xNewGroups)-1 do
-   if xNewGroups[j].GroupCode=GroupCode then
-   begin
-    Result:=true;
-    Break;
-   end;
+    Result := False;
+    for J := 0 to Length(XNewGroups) - 1 do
+      if XNewGroups[J].GroupCode = GroupCode then
+      begin
+        Result := True;
+        Break;
+      end;
   end;
 
-  function GroupExists(GroupCode : String) : Boolean;
+  function GroupExists(GroupCode: string): Boolean;
   var
-    j : integer;
+    J: Integer;
   begin
-   Result:=false;
-   for j:=0 to Length(FNowGroups)-1 do
-   if FNowGroups[j].GroupCode=GroupCode then
-   begin
-    Result:=true;
-    Break;
-   end;
+    Result := False;
+    for J := 0 to Length(FNowGroups) - 1 do
+      if FNowGroups[J].GroupCode = GroupCode then
+      begin
+        Result := True;
+        Break;
+      end;
   end;
 
 begin
- if FShowInfoType=SHOW_INFO_FILE_NAME then exit;
- if Control=lstCurrentGroups then
- begin
-  xNewGroups:=CopyGroups(FNowGroups);
-  RemoveGroupsFromGroups(xNewGroups,FOldGroups);
- end else
- begin
-  xNewGroups:=CopyGroups(FOldGroups);
-  RemoveGroupsFromGroups(xNewGroups,FNowGroups);
- end;
- try
-  if Index=-1 then exit;
-  with (Control as TListBox).Canvas do
+  if FShowInfoType = SHOW_INFO_FILE_NAME then
+    Exit;
+  if Control = LstCurrentGroups then
   begin
-   FillRect(Rect);
-   n:=-1;
-   if Control=lstCurrentGroups then
-   begin
-    for i:=0 to Length(RegGroups)-1 do
-    begin
-     if RegGroups[i].GroupCode=FNowGroups[Index].GroupCode then
-     begin
-      n:=i+1;
-      break;
-     end;
-    end
-   end else
-   begin
-    for i:=0 to Length(RegGroups)-1 do
-    begin
-     if RegGroups[i].GroupName=(Control as TListBox).Items[Index] then
-     begin
-      n:=i+1;
-      break;
-     end;
-    end
-   end;
-
-   RegGroupsImageList.Draw((Control as TListBox).Canvas,Rect.Left+2,Rect.Top+2,max(0,n));
-   if n=-1 then
-   begin
-    DrawIconEx((Control as TListBox).Canvas.Handle,Rect.Left+10,Rect.Top+8,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],8,8,0,0,DI_NORMAL);
-   end;
-   if Control=lstCurrentGroups then
-   if NewGroup(FNowGroups[Index].GroupCode) then
-   (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style+[fsBold] else (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style-[fsBold];
-
-   if Control=LstAvaliableGroups then
-   if n>-1 then
-   if NewGroup(RegGroups[n-1].GroupCode) then
-    (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style+[fsBold] else
-    begin
-     if GroupExists(FShowenRegGroups[Index].GroupCode) then
-     begin
-      (Control as TListBox).Canvas.Font.Color:=ColorDiv2(Theme_ListFontColor,Theme_MemoEditColor);
-     end else
-     begin
-      (Control as TListBox).Canvas.Font.Color:=Theme_ListFontColor;
-     end;
-    (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style-[fsBold];
-   end;
-
-   TextOut(Rect.Left+21, Rect.Top+3, (Control as TListBox).Items[Index]);
+    XNewGroups := CopyGroups(FNowGroups);
+    RemoveGroupsFromGroups(XNewGroups, FOldGroups);
+  end else
+  begin
+    XNewGroups := CopyGroups(FOldGroups);
+    RemoveGroupsFromGroups(XNewGroups, FNowGroups);
   end;
- except
-   on e : Exception do EventLog(':TPropertiesForm.ListBox2DrawItem() throw exception: '+e.Message);
- end;
+  try
+    if index = -1 then
+      Exit;
+    with (Control as TListBox).Canvas do
+    begin
+      FillRect(Rect);
+      N := -1;
+      if Control = LstCurrentGroups then
+      begin
+        for I := 0 to Length(RegGroups) - 1 do
+        begin
+          if RegGroups[I].GroupCode = FNowGroups[index].GroupCode then
+          begin
+            N := I + 1;
+            Break;
+          end;
+        end
+      end else
+      begin
+        for I := 0 to Length(RegGroups) - 1 do
+        begin
+          if RegGroups[I].GroupName = (Control as TListBox).Items[index] then
+          begin
+            N := I + 1;
+            Break;
+          end;
+        end
+      end;
+
+      RegGroupsImageList.Draw((Control as TListBox).Canvas, Rect.Left + 2, Rect.Top + 2, Max(0, N));
+      if N = -1 then
+      begin
+        DrawIconEx((Control as TListBox).Canvas.Handle, Rect.Left + 10, Rect.Top + 8,
+          UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
+      end;
+      if Control = LstCurrentGroups then
+        if NewGroup(FNowGroups[index].GroupCode) then
+          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
+        else
+          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
+
+      if Control = LstAvaliableGroups then
+        if N > -1 then
+          if NewGroup(RegGroups[N - 1].GroupCode) then
+            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
+          else
+          begin
+            if GroupExists(FShowenRegGroups[index].GroupCode) then
+              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme_ListFontColor, Theme_MemoEditColor)
+            else
+              (Control as TListBox).Canvas.Font.Color := Theme_ListFontColor;
+
+            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
+          end;
+
+      TextOut(Rect.Left + 21, Rect.Top + 3, (Control as TListBox).Items[index]);
+    end;
+  except
+    on E: Exception do
+      EventLog(':TPropertiesForm.ListBox2DrawItem() throw exception: ' + E.message);
+  end;
 end;
 
 procedure TPropertiesForm.lstCurrentGroupsDblClick(Sender: TObject);
@@ -2742,27 +2757,29 @@ procedure TPropertiesForm.lstCurrentGroupsContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   ItemNo : Integer;
-  i : integer;
+  I: Integer;
 begin
- if fSaving then Exit;
- ItemNo:=lstCurrentGroups.ItemAtPos(MousePos,True);
- If ItemNo<>-1 then
- begin
-  if not lstCurrentGroups.Selected[ItemNo] then
+  if FSaving then
+    Exit;
+  ItemNo := LstCurrentGroups.ItemAtPos(MousePos, True);
+  if ItemNo <> -1 then
   begin
-   lstCurrentGroups.Selected[ItemNo]:=True;
-   for i:=0 to lstCurrentGroups.Items.Count-1 do
-   if i<>ItemNo then
-   lstCurrentGroups.Selected[i]:=false;
+    if not LstCurrentGroups.Selected[ItemNo] then
+    begin
+      LstCurrentGroups.Selected[ItemNo] := True;
+      for I := 0 to LstCurrentGroups.Items.Count - 1 do
+        if I <> ItemNo then
+          LstCurrentGroups.Selected[I] := False;
+    end;
+    PopupMenuGroups.Tag := ItemNo;
+    PopupMenuGroups.Popup(LstCurrentGroups.ClientToScreen(MousePos).X, LstCurrentGroups.ClientToScreen(MousePos).Y);
+  end
+  else
+  begin
+    for I := 0 to LstCurrentGroups.Items.Count - 1 do
+      LstCurrentGroups.Selected[I] := False;
+    PmClear.Popup(LstCurrentGroups.ClientToScreen(MousePos).X, LstCurrentGroups.ClientToScreen(MousePos).Y);
   end;
-  PopupMenu9.Tag:=ItemNo;
-  PopupMenu9.Popup(lstCurrentGroups.ClientToScreen(MousePos).X,lstCurrentGroups.ClientToScreen(MousePos).Y);
- end else
- begin
-  for i:=0 to lstCurrentGroups.Items.Count-1 do
-  lstCurrentGroups.Selected[i]:=false;
-  PopupMenu10.Popup(lstCurrentGroups.ClientToScreen(MousePos).X,lstCurrentGroups.ClientToScreen(MousePos).Y);
- end;
 end;
 
 procedure TPropertiesForm.Clear1Click(Sender: TObject);
@@ -2801,14 +2818,14 @@ end;
 
 procedure TPropertiesForm.CreateGroup1Click(Sender: TObject);
 begin
-  CreateNewGroupDialogA(FNowGroups[PopupMenu9.Tag].GroupName,FNowGroups[PopupMenu9.Tag].GroupCode);
+  CreateNewGroupDialogA(FNowGroups[PopupMenuGroups.Tag].GroupName, FNowGroups[PopupMenuGroups.Tag].GroupCode);
 end;
 
 procedure TPropertiesForm.ChangeGroup1Click(Sender: TObject);
 var
   Group : TGroup;
 begin
-  Group := GetGroupByGroupCode(FNowGroups[PopupMenu9.Tag].GroupCode,false);
+  Group := GetGroupByGroupCode(FNowGroups[PopupMenuGroups.Tag].GroupCode, False);
   DBChangeGroup(Group);
 end;
 
@@ -2841,24 +2858,25 @@ var
   NewSearch : TSearchForm;
 begin
   NewSearch := SearchManager.NewSearch;
-  NewSearch.SearchEdit.Text := ':Group(' + FNowGroups[PopupMenu9.Tag].GroupName + '):';
+  NewSearch.SearchEdit.Text := ':Group(' + FNowGroups[PopupMenuGroups.Tag].GroupName + '):';
   NewSearch.WlStartStop.OnClick(Sender);
   NewSearch.Show;
 end;
 
 procedure TPropertiesForm.QuickInfo1Click(Sender: TObject);
 begin
-  ShowGroupInfo(FNowGroups[PopupMenu9.Tag], False, nil);
+  ShowGroupInfo(FNowGroups[PopupMenuGroups.Tag], False, nil);
 end;
 
-procedure TPropertiesForm.PopupMenu9Popup(Sender: TObject);
+procedure TPropertiesForm.PopupMenuGroupsPopup(Sender: TObject);
 begin
- if GroupWithCodeExists(FNowGroups[PopupMenu9.Tag].GroupCode) then
+ if GroupWithCodeExists(FNowGroups[PopupMenuGroups.Tag].GroupCode) then
   begin
     CreateGroup1.Visible := False;
     MoveToGroup1.Visible := False;
     ChangeGroup1.Visible := True;
-  end else
+  end
+  else
   begin
     CreateGroup1.Visible := True;
     MoveToGroup1.Visible := True;
@@ -2877,7 +2895,7 @@ var
 begin
   if SelectGroup(ToGroup) then
   begin
-    MoveGroup(FNowGroups[PopupMenu9.Tag], ToGroup);
+    MoveGroup(FNowGroups[PopupMenuGroups.Tag], ToGroup);
     MessageBoxDB(Handle, TEXT_MES_RELOAD_INFO, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_INFORMATION);
   end;
 end;
@@ -2926,7 +2944,7 @@ begin
   Button7.Enabled := True;
 end;
 
-procedure TPropertiesForm.PopupMenu10Popup(Sender: TObject);
+procedure TPropertiesForm.PmClearPopup(Sender: TObject);
 begin
  Clear1.Visible:=(lstCurrentGroups.Items.Count<>0) and not fSaving;
 end;
@@ -2935,159 +2953,163 @@ procedure TPropertiesForm.DropFileTarget2Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 begin
  if FShowInfoType<>SHOW_INFO_FILE_NAME then
- if DropFileTarget2.Files.Count=1 then
- begin
-  SetFocus;
-  Point:=LinksScrollBox.ClientToScreen(Point);
-  LinkDropFiles.Assign(DropFileTarget2.Files);
-  PopupMenu3.Popup(Point.X,Point.Y);
- end;
+    if DropFileTarget2.Files.Count = 1 then
+    begin
+      SetFocus;
+      Point := LinksScrollBox.ClientToScreen(Point);
+      LinkDropFiles.Assign(DropFileTarget2.Files);
+      PmImageConnect.Popup(Point.X, Point.Y);
+    end;
 end;
 
 procedure TPropertiesForm.AddImThLink1Click(Sender: TObject);
 var
   Info : TOneRecordInfo;
-  LinkInfo : TLinkInfo;
-  i : integer;
-  b : boolean;
+  LinkInfo: TLinkInfo;
+  I: Integer;
+  B: Boolean;
 begin
- GetInfoByFileNameA(LinkDropFiles[0], False, Info);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
- LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
- LinkInfo.LinkName:=TEXT_MES_PROCESSING;
- LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
- b:=true;
- for i:=0 to Length(FPropertyLinks)-1 do
- if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
- begin
-  b:=False;
-  break;
- end;
- if b then
- begin
-  SetLength(FPropertyLinks,Length(FPropertyLinks)+1);
-  FPropertyLinks[Length(FPropertyLinks)-1]:=LinkInfo;
- end;
- ReadLinks;
- SetFocus;
+  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+  if Info.ItemImTh = '' then
+    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
+  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+  LinkInfo.LinkName := TEXT_MES_PROCESSING;
+  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
+  B := True;
+  for I := 0 to Length(FPropertyLinks) - 1 do
+    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    begin
+      B := False;
+      Break;
+    end;
+  if B then
+  begin
+    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+  end;
+  ReadLinks;
+  SetFocus;
 end;
 
 procedure TPropertiesForm.AddOriginalImTh1Click(Sender: TObject);
 var
   Info : TOneRecordInfo;
-  LinkInfo : TLinkInfo;
-  i : integer;
-  b : boolean;
+  LinkInfo: TLinkInfo;
+  I: Integer;
+  B: Boolean;
 begin
- GetInfoByFileNameA(LinkDropFiles[0],False, Info);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
- LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
- LinkInfo.LinkName:=TEXT_MES_ORIGINAL;
- LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
- b:=true;
- for i:=0 to Length(FPropertyLinks)-1 do
- if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
- begin
-  b:=False;
-  break;
- end;
- if b then
- begin
-  SetLength(FPropertyLinks,Length(FPropertyLinks)+1);
-  FPropertyLinks[Length(FPropertyLinks)-1]:=LinkInfo;
- end;
- ReadLinks;
- SetFocus;
+  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+  if Info.ItemImTh = '' then
+    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
+  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+  LinkInfo.LinkName := TEXT_MES_ORIGINAL;
+  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
+  B := True;
+  for I := 0 to Length(FPropertyLinks) - 1 do
+    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    begin
+      B := False;
+      Break;
+    end;
+  if B then
+  begin
+    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+  end;
+  ReadLinks;
+  SetFocus;
 end;
 
 procedure TPropertiesForm.AddImThProcessingImageAndAddOriginalToProcessingPhoto1Click(
   Sender: TObject);
 var
   Info : TOneRecordInfo;
-  LinkInfo : TLinkInfo;
-  LinksInfo : TLinksInfo;
-  Query : TDataSet;
-  i : integer;
-  b : boolean;
+  LinkInfo: TLinkInfo;
+  LinksInfo: TLinksInfo;
+  Query: TDataSet;
+  I: Integer;
+  B: Boolean;
 begin
- GetInfoByFileNameA(LinkDropFiles[0],False, Info);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
- LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
- LinkInfo.LinkName:=TEXT_MES_PROCESSING;
- LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
- b:=true;
- for i:=0 to Length(FPropertyLinks)-1 do
- if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
- begin
-  b:=False;
-  break;
- end;
- if b then
- begin
-  SetLength(FPropertyLinks,Length(FPropertyLinks)+1);
-  FPropertyLinks[Length(FPropertyLinks)-1]:=LinkInfo;
- end;
- SetLength(LinksInfo,1);
- LinksInfo[0].LinkType:=LINK_TYPE_ID_EXT;
- LinksInfo[0].LinkName:=TEXT_MES_ORIGINAL;
- //TODO:[0]
- LinksInfo[0].LinkValue:=CodeExtID(FFilesInfo[0].LongImageID);
- ReplaceLinks('',CodeLinksInfo(LinksInfo),Info.ItemLinks);
- Query := GetQuery;
- SetSQL(Query,Format('UPDATE $DB$ Set Links = :Links where ID = %d',[Info.ItemId]));
- SetStrParam(Query,0,Info.ItemLinks);
- ExecSQL(Query);
- FreeDS(Query);
- ReadLinks;
- SetFocus;
+  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+  if Info.ItemImTh = '' then
+    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
+  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+  LinkInfo.LinkName := TEXT_MES_PROCESSING;
+  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
+  B := True;
+  for I := 0 to Length(FPropertyLinks) - 1 do
+    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    begin
+      B := False;
+      Break;
+    end;
+  if B then
+  begin
+    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+  end;
+  SetLength(LinksInfo, 1);
+  LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
+  LinksInfo[0].LinkName := TEXT_MES_ORIGINAL;
+  // TODO:[0]
+  LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
+  ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.ItemLinks);
+  Query := GetQuery;
+  SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ItemId]));
+  SetStrParam(Query, 0, Info.ItemLinks);
+  ExecSQL(Query);
+  FreeDS(Query);
+  ReadLinks;
+  SetFocus;
 end;
 
 procedure TPropertiesForm.AddOriginalImThAndAddProcessngToOriginalImTh1Click(
   Sender: TObject);
 var
   Info : TOneRecordInfo;
-  LinkInfo : TLinkInfo;
-  LinksInfo : TLinksInfo;
-  Query : TDataSet;
-  i : integer;
-  b : boolean;
+  LinkInfo: TLinkInfo;
+  LinksInfo: TLinksInfo;
+  Query: TDataSet;
+  I: Integer;
+  B: Boolean;
 begin
- GetInfoByFileNameA(LinkDropFiles[0],False,Info);
- if Info.ItemImTh='' then Info.ItemImTh:=GetImageIDW(LinkDropFiles[0],False).ImTh;
- LinkInfo.LinkType:=LINK_TYPE_ID_EXT;
- LinkInfo.LinkName:=TEXT_MES_ORIGINAL;
- LinkInfo.LinkValue:=CodeExtID(Info.ItemImTh);
- b:=true;
- for i:=0 to Length(FPropertyLinks)-1 do
- if FPropertyLinks[i].LinkName=TEXT_MES_PROCESSING then
- begin
-  b:=False;
-  break;
- end;
- if b then
- begin
-  SetLength(FPropertyLinks,Length(FPropertyLinks)+1);
-  FPropertyLinks[Length(FPropertyLinks)-1]:=LinkInfo;
- end;
- SetLength(LinksInfo,1);
- LinksInfo[0].LinkType:=LINK_TYPE_ID_EXT;
- LinksInfo[0].LinkName:=TEXT_MES_PROCESSING;
- //TODO:[0]
- LinksInfo[0].LinkValue:=CodeExtID(FFilesInfo[0].LongImageID);
- ReplaceLinks('',CodeLinksInfo(LinksInfo),Info.ItemLinks);
- Query := GetQuery;
- SetSQL(Query,Format('UPDATE $DB$ Set Links = :Links where ID = %d',[Info.ItemId]));
- SetStrParam(Query,0,Info.ItemLinks);
- ExecSQL(Query);
- FreeDS(Query);
- ReadLinks;
- SetFocus;
+  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+  if Info.ItemImTh = '' then
+    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
+  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+  LinkInfo.LinkName := TEXT_MES_ORIGINAL;
+  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
+  B := True;
+  for I := 0 to Length(FPropertyLinks) - 1 do
+    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    begin
+      B := False;
+      Break;
+    end;
+  if B then
+  begin
+    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+  end;
+  SetLength(LinksInfo, 1);
+  LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
+  LinksInfo[0].LinkName := TEXT_MES_PROCESSING;
+  // TODO:[0]
+  LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
+  ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.ItemLinks);
+  Query := GetQuery;
+  SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ItemId]));
+  SetStrParam(Query, 0, Info.ItemLinks);
+  ExecSQL(Query);
+  FreeDS(Query);
+  ReadLinks;
+  SetFocus;
 end;
 
-procedure TPropertiesForm.PopupMenu3Popup(Sender: TObject);
+procedure TPropertiesForm.PmImageConnectPopup(Sender: TObject);
 begin
- AddImThProcessingImageAndAddOriginalToProcessingPhoto1.Visible:=(FShowInfoType=SHOW_INFO_ID);
- AddOriginalImThAndAddProcessngToOriginalImTh1.Visible:=(FShowInfoType=SHOW_INFO_ID);
+  AddImThProcessingImageAndAddOriginalToProcessingPhoto1.Visible := (FShowInfoType = SHOW_INFO_ID);
+  AddOriginalImThAndAddProcessngToOriginalImTh1.Visible := (FShowInfoType = SHOW_INFO_ID);
 end;
 
 procedure TPropertiesForm.OnDoneLoadingImage(Sender: TObject);
@@ -3116,7 +3138,7 @@ begin
         GetGistogrammBitmapW(130, GistogrammData.Blue, MinC, MaxC, Bitmap);
     end;
 
-    Label5.Caption := Format(TEXT_MES_EFFECTIVE_RANGE_F, [MinC, MaxC]);
+    Label5.Caption := Format(L('Effective range: %d..%d'), [MinC, MaxC]);
     GistogrammImage.Picture.Bitmap := Bitmap;
   finally
     Bitmap.Free;

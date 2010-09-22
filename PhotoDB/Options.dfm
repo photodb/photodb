@@ -1606,14 +1606,6 @@ object OptionsForm: TOptionsForm
       OnClick = Default1Click
     end
   end
-  object ShellChangeNotifier1: TShellChangeNotifier
-    NotifyFilters = [nfFileNameChange]
-    Root = 'C:\'
-    WatchSubTree = False
-    OnChange = ShellChangeNotifier1Change
-    Left = 40
-    Top = 448
-  end
   object PopupMenu2: TPopupMenu
     Left = 121
     Top = 453

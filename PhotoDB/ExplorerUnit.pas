@@ -1572,7 +1572,7 @@ begin
   ListView1SelectItem(Sender,ListView1Selected,ListView1Selected=nil);
   for i:=0 to Length(UserLinks)-1 do
   begin
-   UserLinks[i].BkColor:=Theme_MainColor;
+   UserLinks[i].Color:=Theme_MainColor;
    UserLinks[i].Font.Color:=Theme_MainFontColor;
    UserLinks[i].Refresh;
   end;
@@ -5806,7 +5806,7 @@ begin
     UserLinks[Length(UserLinks)-1].Text:=fName;
     UserLinks[Length(UserLinks)-1].Tag:=Length(UserLinks)-1;
     UserLinks[Length(UserLinks)-1].OnClick:=UserDefinedPlaceClick;
-    UserLinks[Length(UserLinks)-1].BkColor:=Theme_MainColor;
+    UserLinks[Length(UserLinks)-1].Color:=Theme_MainColor;
     UserLinks[Length(UserLinks)-1].Font.Color:=Theme_MainFontColor;
     UserLinks[Length(UserLinks)-1].EnterBould:=false;
     UserLinks[Length(UserLinks)-1].IconWidth:=16;

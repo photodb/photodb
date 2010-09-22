@@ -68,7 +68,6 @@ object BigImagesSizeForm: TBigImagesSizeForm
       Cursor = crHandPoint
       Text = 'Close'
       OnClick = LnkCloseClick
-      BkColor = clWhite
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16

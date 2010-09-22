@@ -563,7 +563,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Open'
         OnClick = OpenFile
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -702,7 +701,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Crop'
         OnClick = CropLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -841,7 +839,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Rotate'
         OnClick = RotateLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -980,7 +977,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Resize'
         OnClick = ResizeLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -1119,7 +1115,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Effects'
         OnClick = EffectsLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -1258,7 +1253,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Colors'
         OnClick = ColorsLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -1397,7 +1391,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Red Eyes'
         OnClick = RedEyeLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -1536,7 +1529,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Text'
         OnClick = TextLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -1639,7 +1631,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Brush'
         OnClick = BrushLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -1742,7 +1733,6 @@ object ImageEditor: TImageEditor
         Font.Style = [fsBold]
         Text = 'Insert Image'
         OnClick = InsertImageLinkClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 24
         IconHeight = 24
@@ -1884,7 +1874,6 @@ object ImageEditor: TImageEditor
       Cursor = crHandPoint
       Text = 'Zoom In'
       OnClick = ZoomInLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24
@@ -2017,7 +2006,6 @@ object ImageEditor: TImageEditor
       Cursor = crHandPoint
       Text = 'Zoom Out'
       OnClick = ZoomOutLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24
@@ -2151,7 +2139,6 @@ object ImageEditor: TImageEditor
       Enabled = False
       Text = 'Undo'
       OnClick = UndoLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24
@@ -2285,7 +2272,6 @@ object ImageEditor: TImageEditor
       Enabled = False
       Text = 'Redo'
       OnClick = RedoLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24
@@ -2418,7 +2404,6 @@ object ImageEditor: TImageEditor
       Cursor = crHandPoint
       Text = 'Fit To Size'
       OnClick = FitToSizeLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24
@@ -2552,7 +2537,6 @@ object ImageEditor: TImageEditor
       Enabled = False
       Text = 'Save'
       OnClick = SaveLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24
@@ -2685,7 +2669,6 @@ object ImageEditor: TImageEditor
       Cursor = crHandPoint
       Text = 'Full Size'
       OnClick = FullSiseLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24
@@ -2885,19 +2868,19 @@ object ImageEditor: TImageEditor
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\ImageEditor'
-    Left = 184
+    Left = 192
     Top = 48
   end
   object DestroyTimer: TTimer
     Enabled = False
     Interval = 10
     OnTimer = DestroyTimerTimer
-    Left = 248
+    Left = 232
     Top = 48
   end
   object PopupMenu1: TPopupMenu
     OnPopup = PopupMenu1Popup
-    Left = 280
+    Left = 272
     Top = 48
     object OpenFile1: TMenuItem
       Caption = 'Open File'
