@@ -9,14 +9,14 @@ uses
 type
   TRefreshIDRecordThreadOptions = record
    Files : TArStrings;
-   IDs : TArInteger;   
+   IDs : TArInteger;
    Selected : TArBoolean;
   end;
 
 type
   TRefreshDBRecordsThread = class(TThread)
   private
-    fOptions: TRefreshIDRecordThreadOptions;   
+    fOptions: TRefreshIDRecordThreadOptions;
     ProgressWindow : TForm;
     BoolParam : boolean;
     Count : integer;
@@ -30,9 +30,9 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; Options: TRefreshIDRecordThreadOptions); 
-    procedure InitializeProgress;    
-    procedure DestroyProgress;   
+    constructor Create(CreateSuspennded: Boolean; Options: TRefreshIDRecordThreadOptions);
+    procedure InitializeProgress;
+    procedure DestroyProgress;
     procedure IfBreakOperation;
     procedure SetProgressPosition(Position : integer);
     procedure SetProgressPositionSynch;
@@ -52,16 +52,15 @@ uses ProgressActionUnit;
 constructor TRefreshDBRecordsThread.Create(CreateSuspennded: Boolean;
   Options: TRefreshIDRecordThreadOptions);
 var
-  i : integer;
+  I: Integer;
 begin
- inherited create(true);
- fOptions:=Options;
- for i:=0 to Length(Options.Files)-1 do    
- if Options.IDs[i]<>0 then
- if Options.Selected[i] then
- ProcessedFilesCollection.AddFile(Options.Files[i]);
- DoDBkernelEventRefreshList;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
+  for I := 0 to Length(Options.Files) - 1 do
+    if Options.IDs[I] <> 0 then
+      if Options.Selected[I] then
+        ProcessedFilesCollection.AddFile(Options.Files[I]);
+  DoDBkernelEventRefreshList;
 end;
 
 procedure TRefreshDBRecordsThread.Execute;
@@ -72,7 +71,7 @@ begin
  FreeOnTerminate:=true;
  Count:=0;
  for i:=0 to Length(fOptions.IDs)-1 do
- if fOptions.Selected[i] then    
+ if fOptions.Selected[i] then
  if fOptions.IDs[i]<>0 then
  inc(Count);
  Synchronize(InitializeProgress);
@@ -81,7 +80,7 @@ begin
  begin
   if fOptions.IDs[i]<>0 then
   if fOptions.Selected[i] then
-  begin   
+  begin
    Synchronize(IfBreakOperation);
    if BoolParam then
    begin
@@ -103,7 +102,7 @@ begin
    end;
    IntParam:=fOptions.IDs[i];
    StrParam:=fOptions.Files[i];
-   Synchronize(RemoveFileFromUpdatingList);    
+   Synchronize(RemoveFileFromUpdatingList);
    Synchronize(DoDBkernelEventRefreshList);
    Synchronize(DoDBkernelEvent);
   end;

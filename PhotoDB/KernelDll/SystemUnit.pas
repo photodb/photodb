@@ -508,6 +508,7 @@ function IntToHex(Value: Integer; Digits: Integer): string;
 procedure InitPlatformId;
 function IntToStr(Value: Integer): string;
 function GetIdeDiskSerialNumber : String;
+function Trim(const S: string): string;
 
 implementation
 
@@ -1590,7 +1591,12 @@ asm
         CALL    CvtInt
         MOV     EDX, ESI
         POP     EAX            // result ptr
+{$IF DEFINED(Unicode)}
+        CALL    System.@UStrFromPCharLen
+{$ELSE}
+        PUSH    DefaultSystemCodePage
         CALL    System.@LStrFromPCharLen
+{$IFEND}
         ADD     ESP, 32
         POP     ESI
 end;
@@ -1607,9 +1613,28 @@ asm
         CALL    CvtInt
         MOV     EDX, ESI
         POP     EAX            // result ptr
+{$IF DEFINED(Unicode)}
+        CALL    System.@UStrFromPCharLen
+{$ELSE}
+        PUSH    DefaultSystemCodePage
         CALL    System.@LStrFromPCharLen
+{$IFEND}
         ADD     ESP, 16
         POP     ESI
+end;
+
+function Trim(const S: string): string;
+var
+  I, L: Integer;
+begin
+  L := Length(S);
+  I := 1;
+  while (I <= L) and (S[I] <= ' ') do Inc(I);
+  if I > L then Result := '' else
+  begin
+    while S[L] <= ' ' do Dec(L);
+    Result := Copy(S, I, L - I + 1);
+  end;
 end;
 
 

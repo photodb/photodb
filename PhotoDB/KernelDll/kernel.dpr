@@ -1,21 +1,23 @@
 library Kernel;
 
-uses   
-  win32crc in 'win32crc.pas', 
-  SystemUnit in 'SystemUnit.pas';
+uses
+  Math,
+  SysUtils,
+  win32crc in 'win32crc.pas',
+  SystemUnit in 'SystemUnit.pas',
+  FileCRC in 'FileCRC.pas';
 
 //{$DEFINE ENGL}
 {$DEFINE RUS}
 
-var a : boolean = false;
+var
+  A: Boolean = False;
 
-const ProgramCRC = $04CC696C;
-      DEBUG_BUILD = false;
+const
+  DEBUG_BUILD = False;
 
 var
   s : String;
-  si : Tstartupinfo;
-  p  : Tprocessinformation;
 
 const
   RegRoot : string = 'Software\Photo DataBase\';
@@ -23,14 +25,14 @@ const
 
 {$R *.res}
 
-function CharToInt(ch : char):Integer;
+function CharToInt(Ch: Char): Integer;
 begin
- Result:=HexToIntDef(ch,0);
+  Result := HexToIntDef(Ch, 0);
 end;
 
-function IntToChar(int : Integer):char;
+function IntToChar(Int: Integer): Char;
 begin
- result:=IntToHex(int,1)[1];
+  Result := IntToHex(Int, 1)[1];
 end;
 
 function NormalizeFileName(s : Pchar) : Pchar;
@@ -84,11 +86,20 @@ begin
  end;
 end;
 
-function GetCIDA : Pchar;
+procedure GetCIDA(Buffer : PAnsiChar; Size : Integer);
+var
+  S: AnsiString;
+  I, MinSize: Integer;
 begin
-// result:='{C644082F-1009-49B9-8C71-4AFDC3C477F0}'; v1.9
- result:='{A047B261-5FFC-48D7-A450-6FDE374308E4}';
- If a then Result:=PChar(IntToStr(Random(100000)));
+  S := '{A047B261-5FFC-48D7-A450-6FDE374308E4}';
+  if A then
+    S := IntToStr(Random(MaxInt));
+
+  MinSize := Min(Length(S), Size) - 1;
+  for I := 0 to MinSize - 1 do
+    Buffer[I] := S[I + 1];
+
+  Buffer[MinSize] := #0;
 end;
 
 function ApplicationCode: string;
@@ -119,19 +130,31 @@ begin
  Result:=Code;
 end;
 
+function GetCID : string;
+var
+  Buffer : PAnsiChar;
+
+const
+  MaxBufferSize = 255;
+
+begin
+  GetMem(Buffer, MaxBufferSize);
+  GetCIDA(Buffer, MaxBufferSize);
+  Result := Trim(Buffer);
+  FreeMem(Buffer);
+end;
+
 function GetWindowsName : boolean;
 var
   i, Sum : integer;
-  ar : array[1..16] of integer;
-  Str, ActCode, s, key, hs, cs : string;
-  n : Cardinal;
+  Str, ActCode, s : string;
 begin
- ActCode:=ReadStringW(HKEY_CLASSES_ROOT,'\CLSID\'+GetCIDA,'DefaultHandle');
+ ActCode:=ReadStringW(HKEY_CLASSES_ROOT,'\CLSID\'+GetCID,'DefaultHandle');
  if Length(ActCode)<16 then actcode:='0000000000000000';
  S:=ApplicationCode;
-             
+
  Result:=false;
- 
+
  if DEBUG_BUILD then
  begin
   exit;
@@ -156,16 +179,15 @@ begin
  end;
 end;
 
-exports             
- Initialize name 'Initialize',
- InitializeA name 'InitializeA',
- GetCIDA name 'GetCIDA',
- GetWindowsName name 'GetWindowsName',
- NormalizeFileName name 'NormalizeFileName';
+exports
+  Initialize name 'Initialize',
+  InitializeA name 'InitializeA',
+  GetCIDA name 'GetCIDA',
+  GetWindowsName name 'GetWindowsName',
+  NormalizeFileName name 'NormalizeFileName';
 
 begin
- InitPlatformId;
+  InitPlatformId;
+  Randomize;
 
 end.
-
-

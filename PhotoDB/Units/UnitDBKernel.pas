@@ -210,9 +210,6 @@ type TDBKernel = class(TObject)
     FPasswodsInSession : TStrings;
     FEvents : TDBEventsIDArray;
     FImageList: TImageList;
-    fDBUserName: string;
-    fDBUserPassword: string;
-    fDBUserHash: integer;
     FTheme: TDbTheme;
     FForms : TList;
     FThemeNotifys : array of TNotifyEvent;
@@ -231,93 +228,91 @@ type TDBKernel = class(TObject)
     procedure SetTheme(const Value: TDbTheme);
     { Private declarations }
   public
-  IconDllInstance : THandle;
-  constructor Create;
-  destructor Destroy; override;
-  published
-  property DBs : TPhotoDBFiles read FDBs;
-  Property ImageList : TImageList read FImageList;
-  procedure UnRegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
-  procedure UnRegisterChangesIDByID(Sender : TObject; Event_ : DBChangesIDEvent; id : integer);
-  procedure RegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
-  procedure UnRegisterChangesIDBySender(Sender : TObject);
-  procedure RegisterChangesIDbyID(Sender : TObject; Event_ : DBChangesIDEvent; id : integer);
-  procedure DoIDEvent(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
-  function TestDB(DBName_ : string; OpenInThread : boolean = false) : boolean;
-  function ReadProperty(Key, Name : string) : string;
-  procedure DeleteKey(Key: string);
-  procedure WriteProperty(Key, Name, value : string);
-  procedure WriteBool(Key, Name : string; value : boolean);
-  procedure WriteBoolW(Key, Name : string; value : boolean);
-  procedure WriteInteger(Key, Name: string; value: integer);
-  procedure WriteStringW(Key, Name, value: string);
-  procedure WriteString(Key, Name: string; value: string);
-  procedure WriteDateTime(Key, Name : String; Value: TDateTime);
-  function ReadKeys(Key: string): TStrings;
-  function ReadValues(Key: string): TStrings;
-  function ReadBool(Key, Name : string; default : boolean): boolean;
-  function ReadRealBool(Key, Name: string; default : boolean): boolean;
-  function ReadboolW(Key, Name: string; default : boolean): boolean;
-  function ReadInteger(Key, Name : string; default : integer): integer;
-  function ReadString(Key, Name : string): string;
-  function ReadStringW(Key, Name: string): string;
-  function ReadDateTime(Key, Name : string; default : TdateTime): TDateTime;
-  procedure BackUpTable;
-  procedure LoadColorTheme;
-  Procedure SaveCurrentColorTheme;
-  Function LogIn(UserName, Password : string; AutoLogin : boolean) : integer;
-  Function CreateDBbyName(FileName : string) : integer;
-  Function GetDataBase : string;
-  function GetDataBaseName: string;
-  procedure SetDataBase(DBname_ : string);
-  Property Theme : TDbTheme Read FTheme Write SetTheme;
-  Procedure SetActivateKey(aName, aKey : String);
-  Function ReadActivateKey : String;
-  Function GetDemoMode : Boolean;
-  Function ReadRegName : string;
-  Procedure RecreateThemeToForm(Form : TForm);
-  Procedure SaveThemeToFile(FileName : string);
-  Procedure LoadThemeFromFile(FileName : string);
-  Procedure RegisterForm(Form : TForm);
-  Procedure UnRegisterForm(Form : TForm);
-  Procedure ReloadGlobalTheme;
-  Procedure RegisterProcUpdateTheme(Proc : TNotifyEvent; Form : TForm);
-  Procedure UnRegisterProcUpdateTheme(Proc : TNotifyEvent; Form : TForm);
-  Procedure DoProcGlobalTheme;
-  Function GetTemporaryFolder : String;
-  Function ApplicationCode : String;
-  Procedure SaveApplicationCode(Key : String);
-  Function GetCodeChar(n : integer) : char;
-  Function ProgramInDemoMode : Boolean;
-  Procedure InitRegModule;
-  procedure AddTemporaryPasswordInSession(Pass : String);
-  function FindPasswordForCryptImageFile(FileName : String) : String;
-  procedure ClearTemporaryPasswordsInSession;
-  function FindPasswordForCryptBlobStream(DF : TField): String;
-  procedure SavePassToINIDirectory(Pass : String);
-  procedure LoadINIPasswords;
-  procedure SaveINIPasswords;
-  procedure ClearINIPasswords;
-  procedure ThreadOpenResult(Result: boolean);
-  procedure AddDB(DBName, DBFile, DBIco : string; Force : boolean = false);
-  function RenameDB(OldDBName, NewDBName : string) : boolean;
-  function DeleteDB(DBName : string) : boolean;
-  procedure DeleteValues(Key: string);
-  function TestDBEx(DBName_: string; OpenInThread : boolean = false): integer;
-  function StringDBVersion(DBVersion : integer) : string;
-  procedure MoveDB(OldDBFile, NewDBFile : string);
-  function DBExists(DBName : string) : boolean;
-  function NewDBName(DBNamePattern : string) : string;
-  function ValidDBVersion(DBFile: string; DBVersion : integer) : boolean;
-  procedure InitIconDll;
-  procedure FreeIconDll;
-  procedure ReadDBOptions;
-  procedure DoSelectDB;
-  procedure GetPasswordsFromParams;
-  procedure LoadIcons;
-      { Public declarations }
-  published
-    property ImageOptions : TImageDBOptions read fImageOptions;
+    { Public declarations }
+    IconDllInstance : THandle;
+    constructor Create;
+    destructor Destroy; override;
+    property DBs: TPhotoDBFiles read FDBs;
+    property ImageList: TImageList read FImageList;
+    procedure UnRegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
+    procedure UnRegisterChangesIDByID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
+    procedure RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
+    procedure UnRegisterChangesIDBySender(Sender: TObject);
+    procedure RegisterChangesIDbyID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
+    procedure DoIDEvent(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    function TestDB(DBName_: string; OpenInThread: Boolean = False): Boolean;
+    function ReadProperty(Key, name: string): string;
+    procedure DeleteKey(Key: string);
+    procedure WriteProperty(Key, name, Value: string);
+    procedure WriteBool(Key, name: string; Value: Boolean);
+    procedure WriteBoolW(Key, name: string; Value: Boolean);
+    procedure WriteInteger(Key, name: string; Value: Integer);
+    procedure WriteStringW(Key, name, Value: string);
+    procedure WriteString(Key, name: string; Value: string);
+    procedure WriteDateTime(Key, name: string; Value: TDateTime);
+    function ReadKeys(Key: string): TStrings;
+    function ReadValues(Key: string): TStrings;
+    function ReadBool(Key, name: string; default: Boolean): Boolean;
+    function ReadRealBool(Key, name: string; default: Boolean): Boolean;
+    function ReadboolW(Key, name: string; default: Boolean): Boolean;
+    function ReadInteger(Key, name: string; default: Integer): Integer;
+    function ReadString(Key, name: string): string;
+    function ReadStringW(Key, name: string): string;
+    function ReadDateTime(Key, name: string; default: TdateTime): TDateTime;
+    procedure BackUpTable;
+    procedure LoadColorTheme;
+    procedure SaveCurrentColorTheme;
+    function LogIn(UserName, Password: string; AutoLogin: Boolean): Integer;
+    function CreateDBbyName(FileName: string): Integer;
+    function GetDataBase: string;
+    function GetDataBaseName: string;
+    procedure SetDataBase(DBname_: string);
+    property Theme: TDbTheme read FTheme write SetTheme;
+    procedure SetActivateKey(AName, AKey: string);
+    function ReadActivateKey: string;
+    function GetDemoMode: Boolean;
+    function ReadRegName: string;
+    procedure RecreateThemeToForm(Form: TForm);
+    procedure SaveThemeToFile(FileName: string);
+    procedure LoadThemeFromFile(FileName: string);
+    procedure RegisterForm(Form: TForm);
+    procedure UnRegisterForm(Form: TForm);
+    procedure ReloadGlobalTheme;
+    procedure RegisterProcUpdateTheme(Proc: TNotifyEvent; Form: TForm);
+    procedure UnRegisterProcUpdateTheme(Proc: TNotifyEvent; Form: TForm);
+    procedure DoProcGlobalTheme;
+    function GetTemporaryFolder: string;
+    function ApplicationCode: string;
+    procedure SaveApplicationCode(Key: string);
+    function GetCodeChar(N: Integer): Char;
+    function ProgramInDemoMode: Boolean;
+    procedure InitRegModule;
+    procedure AddTemporaryPasswordInSession(Pass: string);
+    function FindPasswordForCryptImageFile(FileName: string): string;
+    procedure ClearTemporaryPasswordsInSession;
+    function FindPasswordForCryptBlobStream(DF: TField): string;
+    procedure SavePassToINIDirectory(Pass: string);
+    procedure LoadINIPasswords;
+    procedure SaveINIPasswords;
+    procedure ClearINIPasswords;
+    procedure ThreadOpenResult(Result: Boolean);
+    procedure AddDB(DBName, DBFile, DBIco: string; Force: Boolean = False);
+    function RenameDB(OldDBName, NewDBName: string): Boolean;
+    function DeleteDB(DBName: string): Boolean;
+    procedure DeleteValues(Key: string);
+    function TestDBEx(DBName_: string; OpenInThread: Boolean = False): Integer;
+    function StringDBVersion(DBVersion: Integer): string;
+    procedure MoveDB(OldDBFile, NewDBFile: string);
+    function DBExists(DBName: string): Boolean;
+    function NewDBName(DBNamePattern: string): string;
+    function ValidDBVersion(DBFile: string; DBVersion: Integer): Boolean;
+    procedure InitIconDll;
+    procedure FreeIconDll;
+    procedure ReadDBOptions;
+    procedure DoSelectDB;
+    procedure GetPasswordsFromParams;
+    procedure LoadIcons;
+    property ImageOptions: TImageDBOptions read FImageOptions;
   end;
 
   var Icons : TDbKernelArrayIcons;
@@ -471,12 +466,10 @@ end;
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 function TDBKernel.LogIn(UserName, Password: string; AutoLogin : boolean): integer;
-var
-  fQuery : TDataSet;
-  s1, s2 : string;
 begin
   DoSelectDB;
   LoadINIPasswords;
+  Result := 0;
 end;
 
 function TDBKernel.Readbool(Key, Name: string; default : boolean): boolean;
@@ -495,7 +488,6 @@ function TDBKernel.ReadRealBool(Key, Name: string; Default : boolean): Boolean;
 var
   Reg : TBDRegistry;
 begin
-  Result := Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Result := Reg.ReadBool(Name);
 end;
@@ -516,7 +508,6 @@ function TDBKernel.ReadInteger(Key, Name : string; Default : integer): integer;
 var
   Reg : TBDRegistry;
 begin
-  Result:=Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Result := StrToIntDef(reg.ReadString(Name), Default);
 end;
@@ -700,7 +691,7 @@ begin
    if OpenInThread then
    begin
     ThreadOpenResultWork:=false;
-    TActiveTableThread.Create(false,FTestTable,true,ThreadOpenResult);
+    TActiveTableThread.Create(FTestTable,true,ThreadOpenResult);
     Repeat
      Application.ProcessMessages;
      Sleep(50);
@@ -1824,8 +1815,8 @@ begin
   end;
   s:=HexStringToString(s);
   if Length(s)>0 then
-  begin
-   FINIPasswods:=DeCryptTStrings(s,fDBUserPassword)
+  begin                             //TODO:!
+   FINIPasswods:=DeCryptTStrings(s, 'dbpass')
   end else
   FINIPasswods:=TStringList.Create;
  except
@@ -1840,8 +1831,8 @@ var
 begin
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  try
-  Reg.OpenKey(GetRegRootKey,true);
-  s:=CryptTStrings(FINIPasswods,fDBUserPassword);
+  Reg.OpenKey(GetRegRootKey,true);//todo!
+  s:=CryptTStrings(FINIPasswods, 'dbpass');
   s:=StringToHexString(s);
   Reg.WriteString('INI',s);
  except
@@ -2025,6 +2016,7 @@ begin
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
  try
   Reg.OpenKey(RegRoot+'dbs\'+OldDBName,true);
+  DB :=  TPhotoDBFile.Create;
   DB.Name:=OldDBName;
   DB.Icon:=Reg.ReadString('icon');
   DB.FileName:=Reg.ReadString('FileName');

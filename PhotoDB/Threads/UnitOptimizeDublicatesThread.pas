@@ -12,18 +12,17 @@ type
   FStrParam : String;
   FIntParam : Integer;
   ResArray : TImageDBRecordAArray;
-  fOptions : TOptimizeDublicatesThreadOptions;  
+  fOptions : TOptimizeDublicatesThreadOptions;
   ProgressInfo : TProgressCallBackInfo;
     { Private declarations }
   protected
     procedure Execute; override;
     procedure DoExit;
     procedure TextOut;
-    procedure TextOutEx; 
-    procedure DoProgress;  
+    procedure TextOutEx;
+    procedure DoProgress;
   public
-    constructor Create(CreateSuspennded: Boolean;
-            Options : TOptimizeDublicatesThreadOptions);
+    constructor Create(Options : TOptimizeDublicatesThreadOptions);
   end;
 
 var
@@ -35,17 +34,15 @@ uses CMDUnit;
 
 { TThreadOptimizeDublicates }
 
-constructor TThreadOptimizeDublicates.Create(CreateSuspennded: Boolean;
-  Options: TOptimizeDublicatesThreadOptions);
+constructor TThreadOptimizeDublicates.Create(Options: TOptimizeDublicatesThreadOptions);
 begin
- inherited Create(true);
- fOptions:=Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 procedure TThreadOptimizeDublicates.DoExit;
 begin
- fOptions.OnEnd(Self);
+  FOptions.OnEnd(Self);
 end;
 
 procedure TThreadOptimizeDublicates.DoProgress;
@@ -63,7 +60,7 @@ var
   Include, Locked, Cont, FE : Boolean;
   crc : Cardinal;
   FromDB : string;
-  f : File;    
+  f : File;
   WideSearch : boolean;
 
   procedure DoUpdate;
@@ -173,7 +170,7 @@ begin
 
    SetSQL(Query,'SELECT * FROM '+FromDB+' WHERE StrTh = :StrTh ORDER BY ID');
    SetIntParam(Query,nextparam,StringCRC(Table.FieldByName('StrTh').AsString));
-   if not WideSearch then 
+   if not WideSearch then
    SetStrParam(Query,nextparam,Table.FieldByName('StrTh').AsString);
   end else
   begin
@@ -248,8 +245,8 @@ begin
   begin
    if FileExists(Query.FieldByName('FFileName').AsString) then
    begin
-    FileName:=Query.FieldByName('FFileName').AsString; 
-    StrTh:=Query.FieldByName('StrTh').AsString;     
+    FileName:=Query.FieldByName('FFileName').AsString;
+    StrTh:=Query.FieldByName('StrTh').AsString;
     ID:=Query.FieldByName('ID').AsInteger;
     FE:=true;
     break;
@@ -352,7 +349,7 @@ begin
   SetStr:='FFileName=:FFileName,';
   SetStr:=SetStr+'Name=:Name,';
   SetStr:=SetStr+'StrTh=:StrTh,';
-  if GetDBType=DB_TYPE_MDB then    
+  if GetDBType=DB_TYPE_MDB then
   SetStr:=SetStr+'StrThCrc=:StrThCrc,';
   SetStr:=SetStr+'KeyWords=:KeyWords,';
   SetStr:=SetStr+'Comment=:Comment,';
@@ -360,7 +357,7 @@ begin
   SetStr:=SetStr+'Groups=:Groups,';
   SetStr:=SetStr+'Access=:Access,';
   SetStr:=SetStr+'Include=:Include,';
-  SetStr:=SetStr+'Rating=:Rating,';  ;  
+  SetStr:=SetStr+'Rating=:Rating,';  ;
   SetStr:=SetStr+'Attr=:Attr,';
   if GetDBType=DB_TYPE_MDB then
   SetStr:=SetStr+'FolderCRC=:FolderCRC';
@@ -426,7 +423,7 @@ begin
 end;
 
 procedure TThreadOptimizeDublicates.TextOut;
-begin            
+begin
  fOptions.WriteLineProc(Self,FStrParam,FIntParam);
 end;
 

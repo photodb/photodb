@@ -11,7 +11,7 @@ type
   private
   FStrParam : String;
   FIntParam : integer;
-  fOptions : TShowBadLinksThreadOptions;  
+  fOptions : TShowBadLinksThreadOptions;
   ProgressInfo : TProgressCallBackInfo;
     { Private declarations }
   protected
@@ -21,12 +21,11 @@ type
     procedure TextOutEx;
     procedure DoProgress;
   public
-    constructor Create(CreateSuspennded: Boolean;
-            Options : TShowBadLinksThreadOptions);
+    constructor Create(Options : TShowBadLinksThreadOptions);
   end;
 
 var
-  TerminatingShowBadLinks : boolean;
+  TerminatingShowBadLinks: Boolean;
 
 implementation
 
@@ -34,22 +33,20 @@ Uses CmdUnit;
 
 { TThreadShowBadLinks }
 
-constructor TThreadShowBadLinks.Create(CreateSuspennded: Boolean;
-  Options: TShowBadLinksThreadOptions);
+constructor TThreadShowBadLinks.Create(Options: TShowBadLinksThreadOptions);
 begin
- inherited create(true);
- fOptions:=Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 procedure TThreadShowBadLinks.DoExit;
 begin
- fOptions.OnEnd(Self);
+  FOptions.OnEnd(Self);
 end;
 
 procedure TThreadShowBadLinks.DoProgress;
 begin
- FOptions.OnProgress(Self,ProgressInfo);
+  FOptions.OnProgress(Self, ProgressInfo);
 end;
 
 procedure TThreadShowBadLinks.Execute;
@@ -78,7 +75,7 @@ begin
   FreeDS(Table);
   Synchronize(DoExit);
   exit;
- end;                
+ end;
  FIntParam:=LINE_INFO_OK;
  FStrParam:=TEXT_MES_BAD_LINKS_TABLE_WORKING;
  Synchronize(TextOutEx);
@@ -150,9 +147,9 @@ begin
 end;
 
 procedure TThreadShowBadLinks.TextOutEx;
-begin             
+begin
  fOptions.WriteLnLineProc(Self,FStrParam,FIntParam);
 end;
 
 end.
- 
+

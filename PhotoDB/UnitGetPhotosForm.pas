@@ -114,7 +114,7 @@ type
   end;
 
   TItemRecordOptions = record
-   StringDate : string[240];   
+   StringDate : string[240];
    Date : TDateTime;
    Options : integer;
    Tag : integer;
@@ -168,7 +168,7 @@ var
   Files : TStrings;
   FEXIF : TEXIF;
   Dates : array[1..4] of TDateTime;
-  i, MaxFiles, FilesSearch : integer; 
+  i, MaxFiles, FilesSearch : integer;
 begin
  Files := TStringList.Create;
  MaxFiles:=500;
@@ -298,11 +298,11 @@ begin
   Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
   Edit2.Text:=Reg.ReadString('Shell Folders', 'My Pictures', '');
   Reg.Free;
- end;            
+ end;
  OptionsImageList.BkColor:=Theme_ListColor;
  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_SENDTO+1]);
  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_UP+1]);
- ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DOWN+1]);  
+ ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DOWN+1]);
  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DELETE_INFO+1]);
  PopupMenu1.Images:=DBKernel.ImageList;
 
@@ -314,7 +314,7 @@ begin
  MergeDown1.ImageIndex:=DB_IC_DOWN;
  DontCopy1.ImageIndex:=DB_IC_DELETE_INFO;
  ShowImages1.ImageIndex:=DB_IC_SLIDE_SHOW;
- 
+
  CheckBox1.Checked:=DBKernel.ReadBool('GetPhotos','OpenFolder',true);
  CheckBox3.Checked:=DBKernel.ReadBool('GetPhotos','AddPhotos',true);
  if DBKernel.ReadString('GetPhotos','MaskFolder')<>'' then
@@ -418,9 +418,9 @@ begin
   CheckBox1.Enabled:=false;
   CheckBox3.Enabled:=false;
   ListView1.Enabled:=false;
-  Button1.Enabled:=false;    
-  Button2.Enabled:=false; 
-  Button3.Enabled:=false;  
+  Button1.Enabled:=false;
+  Button2.Enabled:=false;
+  Button3.Enabled:=false;
   Button4.Enabled:=false;
   Button5.Enabled:=false;
 
@@ -430,7 +430,7 @@ begin
    ItemOptions:=TItemRecordOptions(ListView1.Items[i].Data^);
    if ItemOptions.Options=DIRECTORY_OPTION_DATE_EXCLUDE then continue;
    Options:=OptionsArray[i];
-   
+
    Folder:=Options.ToFolder;
    FormatDir(Folder);
    Folder:=Folder+FormatFolderName(Options.FolderMask,Options.Comment,Options.Date);
@@ -454,12 +454,12 @@ begin
     SetPath(Folder);
     Show;
     SetFocus;
-   end;    
+   end;
    //TODO:
    //WHAT IT??????
    GetFileNameById(0);
    Delay(1500);
-   //////////////////  
+   //////////////////
    SetLength(FFiles,Files.Count);
    for j:=0 to Files.Count-1 do
    FFiles[j]:=Files[j];
@@ -563,7 +563,7 @@ begin
  Options.OnEnd:=OnEndScanFolder;
  Options.Owner:=self;
  Options.OnProgress:=OnLoadingFilesCallBackEvent;
- TScanImportPhotosThread.Create(false,Options); 
+ TScanImportPhotosThread.Create(false,Options);
  ProgressBar.Visible:=true;
  Button5.Visible:=false;
 end;
@@ -648,21 +648,21 @@ var
   var
     r,g,b: byte;
   begin
-   Color1:=ColorToRGB(Color1) and $00FFFFFF;   
+   Color1:=ColorToRGB(Color1) and $00FFFFFF;
    Color2:=ColorToRGB(Color2) and $00FFFFFF;
    r:=(GetRValue(Color1)*2+GetRValue(Color2)) div 3;
    g:=(GetGValue(Color1)*2+GetGValue(Color2)) div 3;
    b:=(GetBValue(Color1)*2+GetBValue(Color2)) div 3;
    Result:=RGB(r,g,b);
   end;
-  
+
 begin
  for i:=0 to 1 do
  begin
   ListView_GetSubItemRect(ListView1.Handle,Item.Index,i,0,@aRect);
 
   if Item.Selected then
-  begin                  
+  begin
    Sender.Canvas.Brush.Color:=Theme_ListSelectColor;
    Sender.Canvas.Pen.Color:=Theme_ListSelectColor;
   end else
@@ -676,7 +676,7 @@ begin
    begin
     Sender.Canvas.Brush.Color:=MergeColors(Theme_ListColor,clGreen);
     Sender.Canvas.Pen.Color:=MergeColors(Theme_ListColor,clGreen);
-   end;  
+   end;
    if TItemRecordOptions(Item.Data^).Tag=-1 then
    begin
     Sender.Canvas.Brush.Color:=MergeColors(Theme_ListColor,clBlue);
@@ -696,7 +696,7 @@ end;
 procedure TGetToPersonalFolderForm.ExtendedButtonClick(Sender: TObject);
 begin
  if ExtendedMode then
- begin      
+ begin
   ExtendedMode:=false;
   DateTimePicker1.Enabled:=true;
   Edit1.Enabled:=true;
@@ -722,7 +722,7 @@ begin
   CheckBox1.Checked:=DefaultOptions.OpenFolder;
   CheckBox3.Checked:=DefaultOptions.AddFolder;
 
-  Width:=273; 
+  Width:=273;
   Button2.Left:=104;
   Button1.Left:=176;
   Button5.Visible:=false;
@@ -819,7 +819,7 @@ end;
 procedure TGetToPersonalFolderForm.MergeDown1Click(Sender: TObject);
 begin
  fDataList[PopupMenu1.Tag].Options:=DIRECTORY_OPTION_DATE_WITH_DOWN;
- TItemRecordOptions(ListView1.Items[PopupMenu1.Tag].Data^).Options:=DIRECTORY_OPTION_DATE_WITH_DOWN;  
+ TItemRecordOptions(ListView1.Items[PopupMenu1.Tag].Data^).Options:=DIRECTORY_OPTION_DATE_WITH_DOWN;
  OptionsArray[PopupMenu1.Tag]:=OptionsArray[PopupMenu1.Tag+1];
  RecountGroups;
  ListView1.Refresh;
@@ -864,7 +864,7 @@ begin
   if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_SINGLE) and (NextRecord.Options=DIRECTORY_OPTION_DATE_WITH_UP) then
   begin
    Continue;
-  end;    
+  end;
   if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_WITH_UP) and (NextRecord.Options=DIRECTORY_OPTION_DATE_WITH_UP) then
   begin
    Continue;
@@ -931,7 +931,7 @@ var
           inc(P);
          end;
          while L_Less_Than_R(Pivot,X[Q]) do
-         begin           
+         begin
           if q=m then break;
           dec(Q);
          end;
@@ -1006,7 +1006,7 @@ var
   Options : TGetImagesOptions;
 begin
  if (Item<>nil) and Selected then
- begin        
+ begin
   DateTimePicker1.Enabled:=true;
   Edit1.Enabled:=true;
   Memo1.Enabled:=true;
@@ -1043,7 +1043,7 @@ begin
   Edit3.Enabled:=false;
   ComboBox2.Enabled:=false;
   CheckBox1.Enabled:=false;
-  CheckBox3.Enabled:=false; 
+  CheckBox3.Enabled:=false;
  end;
 end;
 
@@ -1055,32 +1055,34 @@ var
   TempSysTime: TSystemTime;
   FineDate: array[0..255] of Char;
 begin
- S:=Mask;
- if S='' then S:='%yy:mm:dd';
- S:=StringReplace(S,'%yy:mm:dd',FormatDateTime('yy.mm.dd',Date),[rfReplaceAll,rfIgnoreCase]);
- DateTimeToSystemTime(Date,TempSysTime);
- GetDateFormat(LOCALE_USER_DEFAULT,  DATE_USE_ALT_CALENDAR,  @TempSysTime,  'dddd, d MMMM yyyy ', @FineDate,  255);
- S:=StringReplace(S,'%YMD',FineDate+TEXT_MES_YEAR_A,[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%coment',Comment,[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%yyyy',FormatDateTime('yyyy',Date),[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%yy',FormatDateTime('yy',Date),[rfReplaceAll,rfIgnoreCase]);
- GetDateFormat(LOCALE_USER_DEFAULT,  DATE_USE_ALT_CALENDAR,  @TempSysTime,  'dd MMMM', @FineDate,  255);
- S:=StringReplace(S,'%mmmdd',FineDate,[rfReplaceAll,rfIgnoreCase]);
- GetDateFormat(LOCALE_USER_DEFAULT,  DATE_USE_ALT_CALENDAR,  @TempSysTime,  'd MMMM', @FineDate,  255);
- S:=StringReplace(S,'%mmmd',FineDate,[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%mmm',FormatDateTime('mmm',Date),[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%mm',FormatDateTime('mm',Date),[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%m',FormatDateTime('m',Date),[rfReplaceAll,rfIgnoreCase]);
- GetDateFormat(LOCALE_USER_DEFAULT,  DATE_USE_ALT_CALENDAR,  @TempSysTime,  'dddd', @FineDate,  255);
- S:=StringReplace(S,'%dddd',FineDate,[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%ddd',FormatDateTime('ddd',Date),[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%dd',FormatDateTime('dd',Date),[rfReplaceAll,rfIgnoreCase]);
- S:=StringReplace(S,'%d',FormatDateTime('d',Date),[rfReplaceAll,rfIgnoreCase]);
- for i:=Length(S) downto 1 do
- if (s[i] in unusedchar_folders) then
- Delete(S,i,1);
- if S='' then S:=FormatDateTime('yy.mm.dd',Date);
- Result:=S;
+  S := Mask;
+  if S = '' then
+    S := '%yy:mm:dd';
+  S := StringReplace(S, '%yy:mm:dd', FormatDateTime('yy.mm.dd', Date), [RfReplaceAll, RfIgnoreCase]);
+  DateTimeToSystemTime(Date, TempSysTime);
+  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'dddd, d MMMM yyyy ', @FineDate, 255);
+  S := StringReplace(S, '%YMD', FineDate + TEXT_MES_YEAR_A, [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%coment', Comment, [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%yyyy', FormatDateTime('yyyy', Date), [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%yy', FormatDateTime('yy', Date), [RfReplaceAll, RfIgnoreCase]);
+  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'dd MMMM', @FineDate, 255);
+  S := StringReplace(S, '%mmmdd', FineDate, [RfReplaceAll, RfIgnoreCase]);
+  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM', @FineDate, 255);
+  S := StringReplace(S, '%mmmd', FineDate, [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%mmm', FormatDateTime('mmm', Date), [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%mm', FormatDateTime('mm', Date), [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%m', FormatDateTime('m', Date), [RfReplaceAll, RfIgnoreCase]);
+  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'dddd', @FineDate, 255);
+  S := StringReplace(S, '%dddd', FineDate, [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%ddd', FormatDateTime('ddd', Date), [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%dd', FormatDateTime('dd', Date), [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S,'%d',FormatDateTime('d',Date),[rfReplaceAll,rfIgnoreCase]);
+  for I := Length(S) downto 1 do
+    if (CharInSet(S[I], Unusedchar_folders)) then
+      Delete(S, I, 1);
+  if S = '' then
+    S := FormatDateTime('yy.mm.dd', Date);
+  Result := S;
 end;
 
 end.

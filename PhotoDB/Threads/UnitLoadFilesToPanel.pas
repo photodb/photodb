@@ -62,7 +62,7 @@ constructor LoadFilesToPanel.Create(Files: TArStrings; IDs : TArInteger; ArLoade
 var
   I: Integer;
 begin
- inherited Create(True);
+ inherited Create(False);
 
  //enable stop button
  (Owner as TFormCont).TbStop.Enabled:=true;
@@ -94,7 +94,6 @@ begin
  FUseLoaded:=UseLoaded;
  fbyid := ByID;
  FOwner:=Owner;
- Resume;
 end;
 
 procedure LoadFilesToPanel.CreateItemsByID(IDs: TArInteger);

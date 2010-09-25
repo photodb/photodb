@@ -115,7 +115,6 @@ type
    function GetRoot : PCDIndexMappingDirectory;
    function PlaceMapFile(Directory : string) : Boolean;
    class function ReadMapFile(FileName : string) : TCDIndexInfo;
-  published
    property CDLabel : String read fCDLabel Write SetCDLabel;
  end;
 
@@ -550,11 +549,9 @@ begin
 end;
 
 function TCDIndexMapping.CurrentLevel: PCDIndexMappingDirectory;
-var
-  i : integer;
 begin
- SortLevel(CurrentDir.Files);
- Result:=CurrentDir;
+  SortLevel(CurrentDir.Files);
+  Result := CurrentDir;
 end;
 
 function TCDIndexMapping.DeleteDirectory(Directory: string): Boolean;
@@ -748,8 +745,6 @@ procedure TCDIndexMapping.SortLevel(Level: TList);
 var
   i : integer;
   Changed : boolean;
-  DirOnUp, FNOK : boolean;
-  CmpResult, DirResult : integer;
   List : TList;
   LevelSize : integer;
 begin

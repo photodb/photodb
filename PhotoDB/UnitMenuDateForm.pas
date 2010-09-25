@@ -44,10 +44,10 @@ type
   protected
     function GetFormID : string; override;
   public
+    { Public declarations }
     procedure Execute(var Date: TDateTime; var IsDate: Boolean; out Changed: Boolean; var Time: TDateTime;
       var IsTime: Boolean);
     procedure LoadLanguage;
-    { Public declarations }
   end;
 
 procedure ChangeDate(var Date : TDateTime; var IsDate : Boolean; out Changed : Boolean; var Time : TDateTime; var IsTime : Boolean);

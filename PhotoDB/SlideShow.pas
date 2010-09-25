@@ -17,9 +17,9 @@ uses
 
 type
   TRotatingImageInfo = record
-   FileName : string;
-   Rotating : integer;
-   Enabled : boolean;
+    FileName: string;
+    Rotating: Integer;
+    Enabled: Boolean;
   end;
 
 type
@@ -196,6 +196,7 @@ type
     procedure NewPanel1Click(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
   private
+    { Private declarations }
     WindowsMenuTickCount : Cardinal;
     FImageExists: Boolean;
     FStaticImage: Boolean;
@@ -231,14 +232,16 @@ type
     procedure SendToItemPopUpMenu(Sender: TObject);
     procedure OnPageSelecterClick(Sender: TObject);
     procedure SetDisplayRating(const Value: Integer);
-    { Private declarations }
   protected
+    { Protected declarations }
     procedure CreateParams(VAR Params: TCreateParams); override;
     procedure WndProc(var Message: TMessage); override;
   public
-    WaitingList : boolean;
-    fCurrentPage : integer;
-    fPageCount : integer;
+    { Public declarations }
+    WaitingList: Boolean;
+    FCurrentPage: Integer;
+    FPageCount: Integer;
+    CursorZoomIn, CursorZoomOut: HIcon;
     procedure ExecuteDirectoryWithFileOnThread(FileName : String);
     function Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
     function ExecuteW(Sender: TObject; Info : TRecordsInfo; LoadBaseFile : String) : boolean;
@@ -278,43 +281,41 @@ type
     Property TransparentImage : Boolean read FTransparentImage write SetTransparentImage;
     Property CurrentlyLoadedFile : String read FCurrentlyLoadedFile write SetCurrentlyLoadedFile;
     Property Play : boolean read FPlay write SetPlay;
-    { Public declarations }
   end;
 
 var
   Viewer: TViewer;
-  FbImage : Tbitmap;
-  CurrentFileNumber : integer;
-  DrawImage : TBitmap;
-  FullScreenNow, SlideShowNow : boolean;
-  DBCanDrag : Boolean;
-  DBDragPoint : TPoint;
-  old_width,old_height, old_top,old_left : integer;
-  old_rect:Trect;
-  CurrentInfo : TRecordsInfo;
-  Fcsrbmp, FNewCsrBmp, Fnowcsrbmp : TBitmap;
-  FOldPoint : TPoint;
-  WaitGrayScale : Integer;
-  WaitImage : TBitmap;
-  IncGrayScale : integer = 20;
-  UseOnlySelf : Boolean = false;
-  Zoom : real = 1;
-  ZoomerOn : Boolean = false;
-  RealZoomInc : Extended = 1;
-  CursorZoomIn, CursorZoomOut : HIcon;
-  RealImageWidth : Integer = 0;
-  RealImageHeight : Integer = 0;
-  UseOnlyDefaultDraw : Boolean = false;
-  DelTwo : integer = 2;
-  FSID : TGUID;
+  FbImage: Tbitmap;
+  CurrentFileNumber: Integer;
+  DrawImage: TBitmap;
+  FullScreenNow, SlideShowNow: Boolean;
+  DBCanDrag: Boolean;
+  DBDragPoint: TPoint;
+  Old_width, Old_height, Old_top, Old_left: Integer;
+  Old_rect: Trect;
+  CurrentInfo: TRecordsInfo;
+  Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
+  FOldPoint: TPoint;
+  WaitGrayScale: Integer;
+  WaitImage: TBitmap;
+  IncGrayScale: Integer = 20;
+  UseOnlySelf: Boolean = False;
+  Zoom: Real = 1;
+  ZoomerOn: Boolean = False;
+  RealZoomInc: Extended = 1;
+  RealImageWidth: Integer = 0;
+  RealImageHeight: Integer = 0;
+  UseOnlyDefaultDraw: Boolean = False;
+  DelTwo: Integer = 2;
+  FSID: TGUID;
 
-  Const
-    CursorZoomInNo = 130;
-    CursorZoomOutNo = 131;
+const
+  CursorZoomInNo = 130;
+  CursorZoomOutNo = 131;
 
 implementation
 
-uses  Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
+uses Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
   ExplorerUnit, FloatPanelFullScreen, UnitRotateImages, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
@@ -331,7 +332,7 @@ begin
   FRotatingImageInfo.Enabled := False;
   WaitingList := False;
   LastZValue := 1;
-  LockEventRotateFileList := TstringList.Create;
+  LockEventRotateFileList := TStringList.Create;
   RatingPopupMenu.Images := DBKernel.ImageList;
   N01.ImageIndex := DB_IC_DELETE_INFO;
   N11.ImageIndex := DB_IC_RATING_1;
@@ -502,8 +503,8 @@ begin
 
    Result:=true;
    if not RealZoom then
-   TViewerThread.Create(False,FileName,Rotate,FullImage,1,FSID,false,false, fCurrentPage) else
-   TViewerThread.Create(False,FileName,Rotate,FullImage,BeginZoom,FSID,false,false, fCurrentPage);
+   TViewerThread.Create(FileName,Rotate,FullImage,1,FSID,false,false, fCurrentPage) else
+   TViewerThread.Create(FileName,Rotate,FullImage,BeginZoom,FSID,false,false, fCurrentPage);
    ForwardThreadExists:=false;
   end else ForwardThreadNeeds:=true;
  end else
@@ -2801,7 +2802,7 @@ begin
   n:=0;
   ForwardThreadExists:=true;
   ForwardThreadFileName:=CurrentInfo.ItemFileNames[n];
-  TViewerThread.Create(False,CurrentInfo.ItemFileNames[n],CurrentInfo.ItemRotates[n],false,1,ForwardThreadSID,true,not CurrentInfo.LoadedImageInfo[n], 0);
+  TViewerThread.Create(CurrentInfo.ItemFileNames[n],CurrentInfo.ItemRotates[n],false,1,ForwardThreadSID,true,not CurrentInfo.LoadedImageInfo[n], 0);
  end;
 end;
 
@@ -2832,16 +2833,16 @@ end;
 
 procedure TViewer.TbSlideShowClick(Sender: TObject);
 begin
- if CurrentInfo.Position=-1 then exit;
- if Loading then exit;
- SlideShowNow:=true;
- SlideTimer.Enabled:=false;
- Play:=false;
- WaitImageTimer.Enabled:=false;
- Application.CreateForm(TDirectShowForm, DirectShowForm);
- MTimer1.ImageIndex:=DB_IC_PLAY;
- MTimer1Click(Sender);
- DirectShowForm.Execute(Sender);
+  if Loading or (CurrentInfo.Position = -1) then
+    Exit;
+  SlideShowNow := True;
+  SlideTimer.Enabled := False;
+  Play := False;
+  WaitImageTimer.Enabled := False;
+  Application.CreateForm(TDirectShowForm, DirectShowForm);
+  MTimer1.ImageIndex := DB_IC_PLAY;
+  MTimer1Click(Sender);
+  DirectShowForm.Execute(Sender);
 end;
 
 procedure TViewer.SlideTimerTimer(Sender: TObject);

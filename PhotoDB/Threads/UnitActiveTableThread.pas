@@ -6,22 +6,20 @@ uses
   ActiveX, Classes, DB;
 
 type
-
   TNotifyBoolEvent = procedure(Result: boolean) of object;
 
-type
   TActiveTableThread = class(TThread)
   private
-  FTable : TDataSet;
-  FActive : boolean;
-  FOnEnd : TNotifyBoolEvent;
-  ActiveOk : boolean;
     { Private declarations }
+    FTable: TDataSet;
+    FActive: Boolean;
+    FOnEnd: TNotifyBoolEvent;
+    ActiveOk: Boolean;
   protected
     procedure Execute; override;
   public
-   constructor Create(CreateSuspennded: Boolean; Table : TDataSet; Active : boolean; OnEnd : TNotifyBoolEvent);
-   procedure DoOnEnd;
+    constructor Create(Table: TDataSet; Active: Boolean; OnEnd: TNotifyBoolEvent);
+    procedure DoOnEnd;
   end;
 
 implementation
@@ -30,36 +28,37 @@ uses CommonDBSupport;
 
 { TActiveTableThread }
 
-constructor TActiveTableThread.Create(CreateSuspennded: Boolean;
+constructor TActiveTableThread.Create(
   Table: TDataSet; Active: boolean; OnEnd: TNotifyBoolEvent);
 begin
- inherited Create(True);
- FTable:=Table;
- FActive:=Active;
- FOnEnd:=OnEnd;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FTable := Table;
+  FActive := Active;
+  FOnEnd := OnEnd;
 end;
 
 procedure TActiveTableThread.DoOnEnd;
 begin
- if Assigned(FOnEnd) then FOnEnd(ActiveOk);
+  if Assigned(FOnEnd) then
+    FOnEnd(ActiveOk);
 end;
 
 procedure TActiveTableThread.Execute;
 begin
- ActiveOk:=false;
- try
+  ActiveOk := False;
   CoInitialize(nil);
-  
-  ActiveOk:=ActiveTable(FTable,FActive);
-
- except
-  ActiveOk:=false;
-  Synchronize(DoOnEnd);
-  exit;
- end;
- ActiveOk:=true;
- Synchronize(DoOnEnd);
+  try
+    try
+      ActiveOk := ActiveTable(FTable, FActive);
+    except
+      ActiveOk := False;
+      Exit;
+    end;
+    ActiveOk := True;
+  finally
+    Synchronize(DoOnEnd);
+    CoUninitialize;
+  end;
 end;
 
 end.

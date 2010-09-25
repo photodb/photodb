@@ -23,7 +23,7 @@ type
     procedure SetValue(const Value: Integer);
     { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -66,7 +66,7 @@ type
   private
    { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
    { Public declarations }
@@ -77,7 +77,7 @@ type
   private
    { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
    { Public declarations }
@@ -88,7 +88,7 @@ type
   private
    { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
    { Public declarations }
@@ -99,7 +99,7 @@ type
   private
    { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
    { Public declarations }
@@ -110,7 +110,7 @@ type
   private
    { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function GetBestValue: integer; override;
@@ -122,7 +122,7 @@ type
   private
    { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function GetBestValue : integer; override;
@@ -134,7 +134,7 @@ type
   private
    { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function GetBestValue : integer; override;
@@ -202,7 +202,7 @@ begin
  FEffect(S,D,50) else FEffect(S,D,GetBestValue);
 end;
 
-class function TExEffectOneParamCustom.ID: ShortString;
+class function TExEffectOneParamCustom.ID: string;
 begin
   Result:='{99AB2B0A-B2A9-461D-A4E4-F799442E8A58}';
 end;
@@ -256,14 +256,13 @@ constructor TExEffectOneParamCustomThread.Create(AOwner: TObject;
   Effect: TEffectOneIntParam; CreateSuspended: Boolean; S: TBitmap;
   Int: Integer; SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
- FAOwner := AOwner;
- FEffect:=Effect;
- FS := S;
- FInt := Int;
- FSID := SID;
- FOnExit := OnExit;
- if not CreateSuspended then Resume;
+  inherited Create(False);
+  FAOwner := AOwner;
+  FEffect := Effect;
+  FS := S;
+  FInt := Int;
+  FSID := SID;
+  FOnExit := OnExit;
 end;
 
 procedure TExEffectOneParamCustomThread.Execute;
@@ -332,7 +331,7 @@ begin
   inherited;
 end;
 
-class function TGrayScaleEffect.ID: ShortString;
+class function TGrayScaleEffect.ID: string;
 begin
  Result:='{BE5AE21F-5F27-4ADE-AAAF-FB9A8F591C08}';
 end;
@@ -355,7 +354,7 @@ begin
   inherited;
 end;
 
-class function TSepeaEffect.ID: ShortString;
+class function TSepeaEffect.ID: string;
 begin
  Result:='{DE6F7AEB-BDE7-4D36-859A-656645A7FBBC}';
 end;
@@ -378,7 +377,7 @@ begin
   inherited;
 end;
 
-class function TAddColorNoiseEffect.ID: ShortString;
+class function TAddColorNoiseEffect.ID: string;
 begin
  Result:='{4FFBD84A-DA88-4A50-96CF-929951489DB8}';
 end;
@@ -401,7 +400,7 @@ begin
   inherited;
 end;
 
-class function TAddMonoNoiseEffect.ID: ShortString;
+class function TAddMonoNoiseEffect.ID: string;
 begin
 Result:='{483B513B-2EAD-467C-A738-9A3B7BF446D0}';
 end;
@@ -429,7 +428,7 @@ begin
  Result:=20;
 end;
 
-class function TFishEyeEffect.ID: ShortString;
+class function TFishEyeEffect.ID: string;
 begin
  Result:='{1FED9DDE-0B92-48B8-8C73-1D90901A8DE9}';
 end;
@@ -457,7 +456,7 @@ begin
  Result:=10;
 end;
 
-class function TSplitBlurEffect.ID: ShortString;
+class function TSplitBlurEffect.ID: string;
 begin
  Result:='{1017603E-3059-4604-9AFD-E942F1C8B38E}';
 end;
@@ -485,7 +484,7 @@ begin
  Result:=10;
 end;
 
-class function TTwistEffect.ID: ShortString;
+class function TTwistEffect.ID: string;
 begin
  Result:='{33EC7CD0-5512-490C-AE6E-4D38C564BF3E}';
 end;

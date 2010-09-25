@@ -258,7 +258,7 @@ uses
   uLogger in 'Units\uLogger.pas',
   uConstants in 'Units\uConstants.pas',
   uFileUtils in 'Units\uFileUtils.pas',
-  uScript in 'KernelDll\uScript.pas',
+  uScript in 'Units\uScript.pas',
   uStringUtils in 'Units\uStringUtils.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
   UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas',
@@ -307,9 +307,10 @@ type
     TInitializeAProc = function(s:PChar) : boolean;
 
 var
-    s1 : string;
-    initaproc : TInitializeAProc;
-    i : integer;
+    S1: string;
+{$IFDEF LICENCE}
+    Initaproc: TInitializeAProc;
+{$ENDIF}
 
 function IsFalidDBFile : boolean;
 begin
@@ -731,25 +732,24 @@ begin
 
   // DEMO? ----------------------------------------------------
 
-  TW.i.Start('DEMO');
+  TW.I.Start('DEMO');
 
+  {$IFDEF LICENCE}
   if not FolderView then
-    If not DBTerminating then
-      if not DBInDebug then
-        if not Emulation then
-        begin
-          EventLog('Verifyng....');
+  begin
+    EventLog('Verifyng....');
 
-          TLoad.Instance.RequaredCRCCheck;
-          @initaproc := GetProcAddress(KernelHandle, 'InitializeA');
-          if not initaproc(PChar(Application.ExeName)) then
-          begin
-            MessageBoxDB(GetActiveFormHandle, TEXT_MES_APPLICATION_NOT_VALID,
-              TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
-            DBTerminating := True;
-            Application.Terminate;
-          end;
-        end;
+    TLoad.Instance.RequaredCRCCheck;
+    @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
+    if not Initaproc(PChar(Application.ExeName)) then
+    begin
+      SplashThread.Terminate;
+      MessageBoxDB(GetActiveFormHandle, TEXT_MES_APPLICATION_NOT_VALID, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+      DBTerminating := True;
+      Application.Terminate;
+    end;
+  end;
+  {$ENDIF}
 
   TW.i.Start('LoadingAboutForm.FREE');
 
@@ -826,6 +826,9 @@ begin
     s1 := ReadTextFileInString(s1);
     ExecuteQuery(s1);
   end;
+
+  if GetParamStrDBBool('/CPU1') then
+    ProcessorCount := 1;
 
   TW.i.Start('AllowDragAndDrop');
   AllowDragAndDrop;

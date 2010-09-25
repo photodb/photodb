@@ -14,7 +14,7 @@ type TExEffect = class(TObject)
   public
    constructor Create; virtual;
    destructor Destroy; override;
-   class function ID : ShortString; virtual;
+   class function ID : string; virtual;
    function GetProperties : string; virtual;
    procedure SetProperties(Properties : string); virtual;
    function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; virtual;
@@ -95,7 +95,7 @@ begin
   inherited;
 end;
 
-class function TExEffect.ID: ShortString;
+class function TExEffect.ID: string;
 begin
  Result:='{005943F7-CD7E-4B79-8D1A-0489C47C85A0}';
 end;

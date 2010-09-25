@@ -70,11 +70,11 @@ end;
 
 procedure TFloatPanel.RecreateImLists;
 var
-  icons : array [0..1,0..4] of TIcon;
-  c, i, j, k, l : integer;
-  b : TBitmap;
-  imlists : array [0..2] of TImageList;
-  lb : TLayeredBitmap;
+  Icons: array [0 .. 1, 0 .. 4] of TIcon;
+  I, J: Integer;
+  B: TBitmap;
+  Imlists: array [0 .. 2] of TImageList;
+  Lb: TLayeredBitmap;
 Const
   Names : array [0..1,0..4] of String = (('Z_PLAY_NORM','Z_PAUSE_NORM','Z_PREVIOUS_NORM','Z_NEXT_NORM','Z_CLOSE_NORM'),('Z_PLAY_HOT','Z_PAUSE_HOT','Z_PREVIOUS_HOT','Z_NEXT_HOT','Z_CLOSE_HOT'));
 

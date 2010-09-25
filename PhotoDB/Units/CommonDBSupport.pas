@@ -907,8 +907,6 @@ begin
 end;
 
 Procedure InitializeDBLoadScript;
-var
-  LoadInteger : integer;
 begin
  EventLog(':InitializeDBLoadScript()');
  if DBLoadInitialized then exit;

@@ -1524,13 +1524,10 @@ end;
 procedure TPropertiesForm.ReloadGroups;
 var
   I: Integer;
-  GroupImageValid: Boolean;
-
 begin
   LstCurrentGroups.Clear;
   for I := 0 to Length(FNowGroups) - 1 do
     LstCurrentGroups.Items.Add(FNowGroups[I].GroupName);
-
 end;
 
 procedure TPropertiesForm.ComboBox1_KeyPress(Sender: TObject; var Key: Char);
@@ -1561,6 +1558,12 @@ begin
   end;
   R(EditLinkForm);
   ResetBold;
+
+  DirectoryList := TStringList.Create;
+  WidthList := TList64.Create;
+  HeightList := TList64.Create;
+  try
+
   CbInclude.AllowGrayed := True;
   PcMain.ActivePageIndex := 0;
   if Length(IDs) = 0 then
@@ -1634,10 +1637,6 @@ begin
           Exit;
         end;
       end;
-
-      DirectoryList := TStringList.Create;
-      WidthList := TList64.Create;
-      HeightList := TList64.Create;
 
       WorkQuery.First;
       for I := 0 to WorkQuery.RecordCount - 1 do
@@ -1742,6 +1741,11 @@ begin
   CommentMemoChange(Self);
   BtnFind.Visible := False;
   ImageLoadingFile.Visible := False;
+  finally
+    F(DirectoryList);
+    F(WidthList);
+    F(HeightList);
+  end;
   Show;
   SID := GetGUID;
 end;

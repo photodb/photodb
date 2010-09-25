@@ -57,7 +57,6 @@ begin
   try
     Thread.OnTerminate := ThreadTerminated;
     FThreadList.Add(Thread);
-    Thread.Resume;
   finally
     FSync.Leave;
   end;

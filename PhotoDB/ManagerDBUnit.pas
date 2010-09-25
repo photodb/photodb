@@ -191,7 +191,7 @@ type
     function GetListViewItemAt(y : integer): TListItem;
   protected
     { protected declarations }
-    procedure CreateParams(VAR Params: TCreateParams); override;
+    procedure CreateParams(var Params: TCreateParams); override;
     procedure ReleaseLoadingThread;
   public
     { public declarations }
@@ -763,8 +763,6 @@ procedure TManagerDB.InitializeQueryList;
 var
   I, W, H : integer;
   B : TBitmap;
-  C : integer;
-  ItemData : TDBPopupMenuInfoRecord;
 begin
   LbDatabases.Enabled:=false;
   aGroups:=GetRegisterGroupList(True);
@@ -1766,7 +1764,8 @@ begin
  begin
   if Length(NewDBName)=0 then exit;
   for i:=1 to Length(NewDBName) do
-  if NewDBName[i] in ['\','/','|'] then NewDBName[i]:=' ';
+  if CharInSet(NewDBName[I], ['\', '/', '|']) then
+    NewDBName[I] := ' ';
   DBKernel.RenameDB(LbDatabases.Items[PopupMenu8.Tag],NewDBName);
   LbDatabases.Items[PopupMenu8.Tag]:=NewDBName;
   RefreshDBList;

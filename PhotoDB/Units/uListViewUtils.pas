@@ -392,7 +392,6 @@ const
   LVWidthBetweenItems = 20;
 var
   CountOfItemsX, ThWidth, AddSize : Integer;
-  CellWidth : Integer;
 begin
   ThWidth := ImageSize + 10 + 6;
   CountOfItemsX := Max(1, Trunc((ListView.Width - LVWidthBetweenItems) / ThWidth));

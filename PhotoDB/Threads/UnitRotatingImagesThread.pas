@@ -26,12 +26,12 @@ type
 
 type
   TRotatingImagesThread = class(TThread)
-  private          
+  private
      fOptions:  TRotatingImagesThreadOptions ;
      BoolParam : boolean;
-     IntParam : integer; 
-     StrParam : string;      
-     Count : integer; 
+     IntParam : integer;
+     StrParam : string;
+     Count : integer;
      ProgressWindow : TForm;
      EventInfo : TEventValues;
      Params : TEventFields;
@@ -39,13 +39,13 @@ type
   protected
     procedure Execute; override;
     procedure InitializeProgress;
-    procedure DestroyProgress;   
+    procedure DestroyProgress;
     procedure IfBreakOperation;
     procedure SetProgressPosition(Position : integer);
     procedure SetProgressPositionSynch;
-    procedure RemoveFileFromUpdatingList;  
+    procedure RemoveFileFromUpdatingList;
     procedure DoDBkernelEventRefreshList;
-    procedure ShowError;                     
+    procedure ShowError;
     procedure ShowErrorRights;
     procedure DoDBKernelEvent;
   public
@@ -61,14 +61,13 @@ uses ProgressActionUnit, ExplorerTypes;
 constructor TRotatingImagesThread.Create(CreateSuspennded: Boolean;
   Options: TRotatingImagesThreadOptions);
 var
-  i : integer;
+  I: Integer;
 begin
- inherited create(true);
- fOptions:=Options;
- for i:=0 to Length(Options.Files)-1 do
- ProcessedFilesCollection.AddFile(Options.Files[i]);
- DoDBkernelEventRefreshList;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
+  for I := 0 to Length(Options.Files) - 1 do
+    ProcessedFilesCollection.AddFile(Options.Files[I]);
+  DoDBkernelEventRefreshList;
 end;
 
 procedure TRotatingImagesThread.Execute;
@@ -192,7 +191,7 @@ begin
    end;
   end else
   begin
-  
+
   Password:='';
   if ValidCryptGraphicFile(fOptions.Files[i]) then
   begin
@@ -351,7 +350,7 @@ begin
      except
       on e : Exception do
       begin
-       
+
        StrParam:=Format(TEXT_MES_WRITE_ERROR_F,[e.Message]);
        Synchronize(ShowError);
        if IntParam=IDABORT then

@@ -170,7 +170,7 @@ type
   end;
 
 type
-  TDBPopupMenuInfo = class
+  TDBPopupMenuInfo = class(TObject)
   private
     FData: TList;
     FAttrExists: Boolean;
@@ -198,7 +198,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Add(MenuRecord: TDBPopupMenuInfoRecord);
+    procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
+    procedure Add(FileName: string); overload;
     procedure Clear;
     function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
     property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex; default;
@@ -301,7 +302,8 @@ type
   TStringFunction = function: string;
   TIntegerFunction = function: Integer;
   TBooleanFunction = function: Boolean;
-  TPcharFunction = function: Pchar;
+  TPAnsiCharFunction = function: PAnsiChar;
+  TCIDProcedure = procedure(Buffferm: PAnsiChar; BuffesSize : Integer);
 
   TDbFileInfoA = record
     ID: Integer;
@@ -310,18 +312,6 @@ type
     FileName: string;
     Comment: string;
   end;
-
-  TAddFileInfo = record
-    Rotate: Integer;
-    Rating: Integer;
-    Access: Integer;
-    Comment: string;
-    Owner: string;
-    Collection: string;
-    KeyWords: string;
-  end;
-
-  TAddFileInfoArray = array of TAddFileInfo;
 
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
@@ -577,7 +567,7 @@ var
 function ActivationID: string;
 function GetImageIDW(Image: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
-function GetImageIDWEx(Images: TArStrings; UseFileNameScanning: Boolean;
+function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
   OnlyImTh: Boolean = False): TImageDBRecordAArray;
 
 function GetImageIDTh(ImageTh: string): TImageDBRecordA;
@@ -1824,7 +1814,6 @@ function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; var Info: TOneR
 var
   FQuery: TDataSet;
   FBS: TStream;
-  B: Boolean;
   Folder, QueryString, S: string;
   CRC: Cardinal;
   JPEG: TJpegImage;
@@ -2351,7 +2340,6 @@ end;
 function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
 var
   FQuery: TDataSet;
-  FromDB: string;
   MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := nil;
@@ -2788,20 +2776,26 @@ end;
 
 function ActivationID: string;
 var
-  F: TPCharFunction;
-  Fh: Pointer;
-  Activation: PChar;
+  P: TCIDProcedure;
+  PAddr: Pointer;
+  Buffer : PAnsiChar;
+
+const
+  MaxBufferSize = 255;
+
 begin
-  Fh := GetProcAddress(KernelHandle, 'GetCIDA');
-  if Fh = nil then
+  PAddr := GetProcAddress(KernelHandle, 'GetCIDA');
+  if PAddr = nil then
   begin
     ShowMessage(TEXT_MES_ERROR_KERNEL_DLL);
     Halt;
     Exit;
   end;
-  @F := Fh;
-  Activation := F();
-  Result := Copy(Activation, 1, Length(Activation));
+  @P := PAddr;
+  GetMem(Buffer, MaxBufferSize);
+  P(Buffer, MaxBufferSize);
+  Result := Trim(Buffer);
+  FreeMem(Buffer);
 end;
 
 function NormalizeDBString(S: string): string;
@@ -3176,7 +3170,7 @@ begin
   end;
 end;
 
-function GetimageIDWEx(Images: TArStrings; UseFileNameScanning: Boolean;
+function GetimageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
   OnlyImTh: Boolean = False): TImageDBRecordAArray;
 var
   K, I, L, Len: Integer;
@@ -3184,11 +3178,11 @@ var
   Sql, Temp, FromDB: string;
   ThImS: TImageDBRecordAArray;
 begin
-  L := Length(Images);
+  L := Images.Count;
   SetLength(ThImS, L);
   SetLength(Result, L);
   for I := 0 to L - 1 do
-    ThImS[I] := GetImageIDW(Images[I], UseFileNameScanning, True);
+    ThImS[I] := GetImageIDW(Images[I].FileName, UseFileNameScanning, True);
   FQuery := GetQuery;
   FQuery.Active := False;
   Sql := '';
@@ -5364,14 +5358,14 @@ end;
 function ValidDBPath(DBPath: string): Boolean;
 var
   I: Integer;
-  X: set of Char;
+  X: set of AnsiChar;
 begin
   Result := True;
   X := [];
   if GetDBType(DBPath) = DB_TYPE_MDB then
     X := Validcharsmdb;
   for I := 1 to Length(DBPath) do
-    if not(DBPath[I] in Validchars) then
+    if not CharInSet(DBPath[I], Validchars) then
     begin
       DBPath[I] := '?';
       Result := False;
@@ -5471,7 +5465,7 @@ begin
   if (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
     (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('L')) and (X[9] = Ord('S')) and (X[10] = Ord('T')) and
     (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-    V1 := True
+    //V1 := True
   else
   begin
     FS.Free;
@@ -5821,7 +5815,6 @@ begin
     Directory, LinkName: string;
     WFileName: string;
     Reg: TRegIniFile;
-    WideFileName: WideString;
     FS: TFileStream;
   begin
 
@@ -5885,14 +5878,12 @@ begin
 
       try
 
-        WideFileName := StringToWideString(WFileName, CP_ACP);
-
         FS := nil;
         try
           FS := TFileStream.Create(SourceFileName, FmShareExclusive);
         except
         end;
-        MyPFile.Save(PWideChar(WideFileName), False);
+        MyPFile.Save(PWideChar(WFileName), False);
         if FS <> nil then
           FS.Free;
 
@@ -6097,7 +6088,7 @@ begin
     if (X[1] = Ord('D')) and (X[2] = Ord('B')) and (X[3] = Ord('A')) and (X[4] = Ord('C')) and (X[5] = Ord('T')) and
       (X[6] = Ord('I')) and (X[7] = Ord('O')) and (X[8] = Ord('N')) and (X[9] = Ord('S')) and (X[10] = Ord('-')) and
       (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-      V1 := True
+      //V1 := True
     else
     begin
       Fs.Free;
@@ -6576,6 +6567,15 @@ begin
   FData.Add(MenuRecord);
 end;
 
+procedure TDBPopupMenuInfo.Add(FileName: string);
+var
+  MenuRecord: TDBPopupMenuInfoRecord;
+begin
+  MenuRecord:= TDBPopupMenuInfoRecord.Create;
+  MenuRecord.FileName := FileName;
+  Add(MenuRecord);
+end;
+
 procedure TDBPopupMenuInfo.Clear;
 var
   I: Integer;
@@ -6991,8 +6991,8 @@ initialization
   LastInseredID := 0;
   GraphicFilterString := '';
   ProcessorCount := GettingProcNum;
-  if ProcessorCount > 2 then
-    NeverSleepOnMMThreadContention := True;
+//  if ProcessorCount > 2 then
+//    NeverSleepOnMMThreadContention := True;
 
 finalization
 

@@ -19,7 +19,6 @@ type
     FVisibleFiles: TArStrings;
     BoolParam: Boolean;
     StrParam: string;
-    OldInformationText: string;
     Intparam: Integer;
     BitmapParam: TBitmap;
     FI: Integer;

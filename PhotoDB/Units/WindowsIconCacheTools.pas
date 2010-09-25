@@ -40,7 +40,7 @@ unit WindowsIconCacheTools;
    RemoteBufferAddr := nil;
    hProcess := OpenProcess(PROCESS_ALL_ACCESS, FALSE, Pid);
    if (hProcess = 0) then
-     RaiseLastWin32Error;
+     RaiseLastOSError;
 
    Result := VirtualAllocEx(hProcess,
                              nil,
@@ -104,7 +104,6 @@ unit WindowsIconCacheTools;
    i, ItemsCount : integer;
    Apoint : TPoint;
    key : HKEY;
-   Dummy : integer;
  begin
    ItemsCount := SendMessage(LVH, LVM_GETITEMCOUNT, 0, 0);
    Base := RemoteAddr;
@@ -246,7 +245,6 @@ unit WindowsIconCacheTools;
   procedure BroadcastChanges;
  var
    success: DWORD;
-   i : integer;
  begin
    SendMessageTimeout(HWND_BROADCAST,
                       WM_SETTINGCHANGE,

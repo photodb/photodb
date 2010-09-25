@@ -289,10 +289,7 @@ end;
 
 procedure CryptStream(S, D : TStream; Password : string; Options: Integer; FileName : string);
 var
-  GraphicHeaderV2: TGraphicCryptFileHeaderV2;
-  FileCRC: Cardinal;
   Seed : Binary;
-  ACipher: TDECCipherClass;
 begin
   WriteCryptHeaderV2(D, S, FileName, Password, Options, Seed);
   CryptStreamV2(S, D, Password, Seed);
@@ -387,9 +384,9 @@ begin
   Result := False;
   if GraphicHeader.Version = 1 then
   begin
-    AnsiPassword := Password;
+    AnsiPassword := AnsiString(Password);
     Stream.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
-    CalcStringCRC32(AnsiPassword, CRC);
+    CalcAnsiStringCRC32(AnsiPassword, CRC);
     if GraphicHeaderV1.PassCRC <> CRC then
       Exit;
 
@@ -479,7 +476,6 @@ function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Wor
 var
   FS: TFileStream;
   MS: TMemoryStream;
-  TempStream: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
   GraphicClass : TGraphicClass;
 begin
@@ -534,9 +530,7 @@ function ResetPasswordInGraphicFile(FileName, Password: String): Boolean;
 var
   FS: TFileStream;
   MS: TMemoryStream;
-  X: TByteArray;
   GraphicHeader: TGraphicCryptFileHeader;
-  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   FA: Integer;
 begin
   Result := false;
@@ -584,7 +578,6 @@ var
   FS: TFileStream;
   MS: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
-  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   FA : Cardinal;
   Seed : Binary;
 begin
@@ -634,7 +627,6 @@ var
   GraphicHeader: TGraphicCryptFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
-  I: Integer;
 begin
   Result := False;
 
@@ -650,7 +642,7 @@ begin
     if GraphicHeader.Version = 1 then
     begin
       FS.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
-      CalcStringCRC32(Password, CRC);
+      CalcAnsiStringCRC32(AnsiString(Password), CRC);
       Result := GraphicHeaderV1.PassCRC = CRC;
     end;
 
@@ -690,6 +682,7 @@ var
   FS: TFileStream;
   GraphicHeader: TGraphicCryptFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
+  GraphicHeaderV2: TGraphicCryptFileHeaderV2;
 begin
   Result := 0;
 
@@ -702,8 +695,16 @@ begin
     FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
     if GraphicHeader.ID = PhotoDBFileHeaderID then
     begin
-      FS.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
-      Result := GraphicHeaderV1.PassCRC;
+      if GraphicHeader.Version = 1 then
+      begin
+        FS.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
+        Result := GraphicHeaderV1.PassCRC;
+      end;
+      if GraphicHeader.Version = 2 then
+      begin
+        FS.Read(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
+        Result := GraphicHeaderV2.PassCRC;
+      end;
     end;
   finally
     FS.Free;
@@ -715,7 +716,6 @@ var
   FBS: TStream;
   MS: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
-  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   Seed : Binary;
 begin
   Result := False;
@@ -749,10 +749,8 @@ end;
 function DeCryptBlobStreamJPG(DF: TField; Password: string; JPEG: TJpegImage) : Boolean;
 var
   FBS: TStream;
-  X: TByteArray;
   MS: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
-  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
 begin
   Result := False;
 
@@ -785,7 +783,6 @@ var
   FBS: TStream;
   GraphicHeader: TGraphicCryptFileHeader;
 begin
-  Result := False;
   FBS := GetBlobStream(DF, bmRead);
   try
     FBS.Seek(0, soFromBeginning);
@@ -815,7 +812,7 @@ begin
     if GraphicHeader.Version = 1 then
     begin
       FBS.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
-      CalcStringCRC32(Password, CRC);
+      CalcAnsiStringCRC32(AnsiString(Password), CRC);
       Result := GraphicHeaderV1.PassCRC = CRC;
     end;
 

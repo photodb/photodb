@@ -24,17 +24,16 @@ uses SysUtils;
 
 constructor TerminationApplication.Create(CreateSuspennded: Boolean);
 begin
- inherited Create(True);
- FCurrentApplicationName:=ExtractFileName(Application.ExeName);
- If not CreateSuspennded then Resume;
+  inherited Create(False);
+  FCurrentApplicationName := ExtractFileName(Application.ExeName);
 end;
 
 procedure TerminationApplication.Execute;
-begin 
+begin
  Sleep(10000);
  EventLog(':TerminationApplication::Execute()/KillTask...');
  KillTask(FCurrentApplicationName);
 end;
 
 end.
- 
+

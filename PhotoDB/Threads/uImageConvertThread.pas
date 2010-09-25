@@ -46,7 +46,6 @@ var
   Graphic, NewGraphic : TGraphic;
   GraphicClass, NewGraphicClass : TGraphicClass;
   Password : string;
-  Extension : string;
   FileName : string;
   Original : TBitmap;
   Exif : TExif;

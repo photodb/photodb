@@ -86,7 +86,6 @@ end;
 procedure TPropertyLoadGistogrammThread.Execute;
 var
   Bitmap: TBitmap;
-  Terminated: Boolean;
   PRGBArr: PARGBArray;
   I: Integer;
   Graphic: TGraphic;

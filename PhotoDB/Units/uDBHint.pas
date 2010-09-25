@@ -63,8 +63,6 @@ begin
 end;
 
 procedure TDBHintWindow.ActivateHint(Rect: TRect; const AHint: String);
-var
-  i: Integer;
 begin
   Caption := AHint;
   Canvas.Font := Screen.HintFont;

@@ -209,7 +209,7 @@ end;
 
 Function ExtractTag(var start:integer):iTag;
 var blen,x,tagId,code,i:integer;
-    dmy,tmp:iTag;
+    tmp:iTag;
 begin
   FillChar(tmp,sizeof(iTag),0);
   code := byte(buffer[start]);
@@ -632,7 +632,6 @@ end;
 function GetTimeZoneBias:longint;
 var
   TZoneInfo: TTimeZoneInformation;
-  TimeZoneBias: longint;
 begin
   GetTimeZoneInformation(TZoneInfo);
   result := TZoneInfo.Bias;

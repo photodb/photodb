@@ -3,35 +3,33 @@ unit UnitUpdateDBThread;
 interface
 
 uses
-   ReplaceForm, UnitDBKernel, Windows, dolphin_db, Classes, UnitUpdateDB, Forms,
-  SysUtils, DB, GraphicCrypt, dialogs, Exif, DateUtils, CommonDBSupport,
-  win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
-  UnitDBDeclare, UnitDBCommon;
+  ReplaceForm, UnitDBKernel, Windows, Dolphin_db, Classes, UnitUpdateDB, Forms,
+  SysUtils, DB, GraphicCrypt, Dialogs, Exif, DateUtils, CommonDBSupport,
+  Win32crc, Jpeg, UnitUpdateDBObject, UVistaFuncs, ULogger, UFileUtils,
+  UnitDBDeclare, UnitDBCommon, UMemory;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
 
-type
   UpdateDBThread = class(TThread)
   private
-  FFiles : TArStrings;
-  FOnDone : TNotifyEvent;
-  fTerminating : PBoolean;
-  fPause : PBoolean;
-  StringParam : String;
-  IntResult, IntIDResult : Integer;
-  FCurrentImageDBRecord : TImageDBRecordA;
-  fSender : TUpdaterDB;
-  ResArray : TImageDBRecordAArray;
-  IDParam : integer;
-  NameParam : String;
-  fInfo : TAddFileInfoArray;
-  FUseFileNameScaning : Boolean;
-  FileNumber : integer;
-  Time, Date: TDateTime;
-  IsTime : Boolean;
-  FNoLimit : boolean;
     { Private declarations }
+    FOnDone: TNotifyEvent;
+    FTerminating: PBoolean;
+    FPause: PBoolean;
+    StringParam: string;
+    IntResult, IntIDResult: Integer;
+    FCurrentImageDBRecord: TImageDBRecordA;
+    FSender: TUpdaterDB;
+    ResArray: TImageDBRecordAArray;
+    IDParam: Integer;
+    NameParam: string;
+    FInfo: TDBPopupMenuInfo;
+    FUseFileNameScaning: Boolean;
+    FileNumber: Integer;
+    Time, Date: TDateTime;
+    IsTime: Boolean;
+    FNoLimit: Boolean;
   protected
     procedure Execute; override;
   public
@@ -39,7 +37,6 @@ type
     Procedure DoOnDone;
     procedure ExecuteReplaceDialog;
     procedure AddAutoAnswer;
-    procedure DoExit;
     procedure SetImages;
     procedure DoEventReplace(ID : Integer; Name : String);
     procedure DoEventReplaceSynch;
@@ -47,85 +44,75 @@ type
     procedure CryptFileWithoutPass;
     function Res : TImageDBRecordA;
     procedure FileProcessed;
-    constructor Create(CreateSuspennded: Boolean; Sender : TUpdaterDB;
-      FileNames : TArStrings; Info : TAddFileInfoArray; OnDone : TNotifyEvent;
+    constructor Create(Sender : TUpdaterDB;
+      Info : TDBPopupMenuInfo; OnDone : TNotifyEvent;
       AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
       Pause: PBoolean; NoLimit : boolean = false);
   end;
 
-type TValueObject = Class(TObject)
+type
+  TValueObject = class(TObject)
   private
     FTIntValue: Integer;
-    FSTStrValue : TStrings;
+    FSTStrValue: TStrings;
     FTBoolValue: Boolean;
     procedure SetTIntValue(const Value: Integer);
     procedure SetTStrValue(const Value: TStrings);
     procedure SetTBoolValue(const Value: Boolean);
-    public
-       Constructor Create;
-       Destructor Destroy; override;
-    published
-    Property TIntValue : Integer read FTIntValue Write SetTIntValue;
-    Property TStrValue : TStrings read FSTStrValue Write SetTStrValue;
-    Property TBoolValue : Boolean read FTBoolValue Write SetTBoolValue;
-    end;
-
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    property TIntValue: Integer read FTIntValue write SetTIntValue;
+    property TStrValue: TStrings read FSTStrValue write SetTStrValue;
+    property TBoolValue: Boolean read FTBoolValue write SetTBoolValue;
+  end;
 
 type
   DirectorySizeThread = class(TThread)
   private
-  FDirectory, StrParam : string;
-  FObject : TValueObject;
-  FOnDone : TNotifyEvent;
-  FTerminating : PBoolean;
-  IntParam : integer;
-  FOnFileFounded : TFileFoundedEvent;
-  FProcessFileEvent : TFileProcessProcedureOfObject;
     { Private declarations }
+    FDirectory, StrParam: string;
+    FObject: TValueObject;
+    FOnDone: TNotifyEvent;
+    FTerminating: PBoolean;
+    IntParam: Integer;
+    FOnFileFounded: TFileFoundedEvent;
+    FProcessFileEvent: TFileProcessProcedureOfObject;
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; Directory : string;
-    OnDone : TNotifyEvent; Terminating: PBoolean;
-    OnFileFounded : TFileFoundedEvent; ProcessFileEvent : TFileProcessProcedureOfObject = nil);
+    constructor Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean;
+      OnFileFounded: TFileFoundedEvent; ProcessFileEvent: TFileProcessProcedureOfObject = nil);
     procedure DoOnDone;
-    procedure DoFileProcessed;  
+    procedure DoFileProcessed;
     procedure DoOnFileFounded;
     function GetDirectory(DirectoryName: string; var Files : TStrings; Terminating : PBoolean):integer;
   end;
 
-  var
-    ShowMessageAboutLimit : boolean;
-    CryptFileWithoutPassChecked : Boolean;
-    fAutoAnswer : integer = -1;
+var
+  ShowMessageAboutLimit: Boolean = True;
+  CryptFileWithoutPassChecked: Boolean = False;
+  FAutoAnswer: Integer = -1;
 
-function SQL_AddFileToDB(Path : string; Crypted : boolean; JPEG : TJpegImage; ImTh, KeyWords, Comment, Password : String; OrWidth, OrHeight : integer; var Date, Time : TDateTime; var IsTime : Boolean; Rating : integer = 0; Rotated : integer = DB_IMAGE_ROTATE_0; Links : string = ''; Access : integer = 0; Groups : string = '') : boolean;
+function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh, KeyWords, Comment, Password: string;
+  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsTime: Boolean; Rating: Integer = 0;
+  Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 
 implementation
 
-Uses Language;
+uses Language;
 
 { UpdateDBThread }
 
-constructor UpdateDBThread.Create(CreateSuspennded: Boolean; Sender : TUpdaterDB;
-  FileNames : TArStrings; Info : TAddFileInfoArray; OnDone: TNotifyEvent;
+constructor UpdateDBThread.Create(Sender : TUpdaterDB;
+  Info : TDBPopupMenuInfo; OnDone: TNotifyEvent;
   AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
   Pause: PBoolean; NoLimit : boolean = false);
-var
-  i : integer;
 begin
-  Inherited Create(True);
+  Inherited Create(False);
+  FInfo := Info; //Copy pointer to self
 
-  SetLength(FFiles,Length(FileNames));
-  for i:=0 to Length(FileNames)-1 do
-  FFiles[i]:=FileNames[i];
-  SetLength(fInfo,Length(Info));
-  for i:=0 to Length(Info)-1 do
-  begin
-   fInfo[i]:=Info[i];
-   fInfo[i].KeyWords:='';
-  end;
-  
   FOnDone := OnDone;
   fTerminating := Terminating;
   fPause := Pause;
@@ -133,7 +120,6 @@ begin
   FSender := Sender;
   FNoLimit := NoLimit;
   FUseFileNameScaning:=UseFileNameScaning;
-  if not CreateSuspennded then Resume;
 end;
 
 procedure UpdateDBThread.DoOnDone;
@@ -141,691 +127,629 @@ begin
   if Assigned(FOnDone) then FOnDone(Self);
 end;
 
-function SQL_AddFileToDB(Path : string; Crypted : boolean; JPEG : TJpegImage; ImTh, KeyWords, Comment, Password : String; OrWidth, OrHeight : integer; var Date, Time : TDateTime; var IsTime : Boolean; Rating : integer = 0; Rotated : integer = DB_IMAGE_ROTATE_0; Links : string = ''; Access : integer = 0; Groups : string = '') : boolean;
+function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh, KeyWords, Comment, Password: string;
+  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsTime: Boolean; Rating: Integer = 0;
+  Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 var
-  Exif : TExif;
-  sql, mdbfields, mdbvalues : string;
-  fQuery : TDataSet;
-  M : TMemoryStream;
-  folder : string;
-  CRC,StrThCrc : Cardinal;
+  Exif: TExif;
+  Sql: string;
+  FQuery: TDataSet;
+  M: TMemoryStream;
+  CRC, StrThCrc: Cardinal;
 begin
- Result:=false;
- if DBKernel.ReadBool('Options','NoAddSmallImages',true) then
- begin
-  if (DBKernel.ReadInteger('Options','NoAddSmallImagesWidth',64)>OrWidth) or
-  (DBKernel.ReadInteger('Options','NoAddSmallImagesHeight',64)>OrHeight) then
+  Result := False;
+  if DBKernel.ReadBool('Options', 'NoAddSmallImages', True) then
   begin
-   exit;
-   //small images - no photos
+    if (DBKernel.ReadInteger('Options', 'NoAddSmallImagesWidth', 64) > OrWidth) or (DBKernel.ReadInteger('Options',
+        'NoAddSmallImagesHeight', 64) > OrHeight) then
+      // small images - no photos
+      Exit;
   end;
- end;
- fQuery := GetQuery;
- if GetDBType=DB_TYPE_MDB then
- begin
-  mdbfields:=',FolderCRC,StrThCRC';       //
-  mdbvalues:=',:FolderCRC,:StrThCRC';         //
- end;
- sql:='insert into $DB$';
- sql:=sql+' (Name,FFileName,FileSize,DateToAdd,Thum,StrTh,KeyWords,Owner,Collection,Access,Width,Height,Comment,Attr,Rotated,Rating,IsDate,Include,aTime,IsTime,Links,Groups'+mdbfields+') ';
- sql:=sql+' values (:Name,:FFileName,:FileSize,:DateToAdd,:Thum,:StrTh,:KeyWords,:Owner,:Collection,:Access,:Width,:Height,:Comment,:Attr,:Rotated,:Rating,:IsDate,:Include,:aTime,:IsTime,:Links,:Groups'+mdbvalues+') ';
- SetSQL(fQuery,sql);
- SetStrParam(fQuery,0,ExtractFileName(Path));
- SetStrParam(fQuery,1,AnsiLowerCase(Path));
- SetIntParam(fQuery,2,Dolphin_DB.GetFileSize(Path));
-  Exif := TExif.Create;
-  Date:=0;
+
+  FQuery := GetQuery;
   try
-   Exif.ReadFromFile(Path);
-   Date:=Exif.Date;
-   Time:=Exif.Time;
-   Rotated := ExifOrientationToRatation(Exif.Orientation);
-  except
-  end;
-  Exif.Free;
-  SetBoolParam(fQuery,16,true);
-  if Date=0 then
-  begin
-   SetDateParam(fQuery,'DateToAdd',Now);
-   SetDateParam(fQuery,'aTime',TimeOf(Now));
-   SetBoolParam(fQuery,19,false);
-  end else
-  begin
-   SetDateParam(fQuery,'DateToAdd',Date);
-   SetDateParam(fQuery,'aTime',TimeOf(Time));
-   SetBoolParam(fQuery,19,true);
-  end;
-  IsTime:=GetBoolParam(fQuery,19);
-  if Crypted then
-  begin
-   M := TMemoryStream.Create;
-   try
-     CryptGraphicImage(Jpeg, Password, M);
-     LoadParamFromStream(fQuery,4,M,ftBlob);
-   finally
-     M.Free;
-   end;
-  end else
-  AssignParam(fQuery,4,Jpeg);
-  SetStrParam(fQuery,5,ImTh);
-  SetStrParam(fQuery,6,KeyWords);
-  SetStrParam(fQuery,7,InstalledUserName);
-  SetStrParam(fQuery,8,'PhotoAlbum');
-  SetIntparam(fQuery,9,Access);
-  SetIntparam(fQuery,10,OrWidth);
-  SetIntparam(fQuery,11,OrHeight);
-
-  SetStrParam(fQuery,12,Comment);
-  SetIntParam(fQuery,13,db_attr_norm);
-  SetIntParam(fQuery,14,Rotated);
-  SetIntParam(fQuery,15,Rating);
-  SetBoolParam(fQuery,17,true);
-
-  SetStrParam(fQuery,20,Links);  
-  SetStrParam(fQuery,21,Groups);
-
-  if GetDBType=DB_TYPE_MDB then
-  begin
-   folder:=GetDirectory(AnsiLowerCase(Path));
-   UnFormatDir(folder);
-   CalcStringCRC32(folder,crc);
-   {$R-}
-   SetIntParam(fQuery,22,crc);
- 
-   CalcStringCRC32(ImTh,StrThCrc);
-   SetIntParam(fQuery,23,StrThCrc);
-  end;
-  try
-   ExecSQL(fQuery);
-   if LastInseredID=0 then
-   begin
-    if GetDBType=DB_TYPE_MDB then
-    SetSQL(fQuery,Format('Select ID from (Select * from $DB$ where FolderCRC=%d) where FFileName like :FFileName',[Integer(crc)])) else
-    SetSQL(fQuery,Format('Select ID from $DB$ where FFileName like :FFileName',[]));
-    SetStrParam(fQuery,0,Delnakl(normalizeDBStringLike(NormalizeDBString(AnsiLowerCase(Path)))));
+    Sql := 'insert into $DB$';
+    Sql := Sql +
+      ' (Name,FFileName,FileSize,DateToAdd,Thum,StrTh,KeyWords,Owner,Collection,Access,Width,Height,Comment,Attr,Rotated,Rating,IsDate,Include,aTime,IsTime,Links,Groups,FolderCRC,StrThCRC)';
+    Sql := Sql +
+      ' values (:Name,:FFileName,:FileSize,:DateToAdd,:Thum,:StrTh,:KeyWords,:Owner,:Collection,:Access,:Width,:Height,:Comment,:Attr,:Rotated,:Rating,:IsDate,:Include,:aTime,:IsTime,:Links,:Groups,:FolderCRC,:StrThCRC) ';
+    SetSQL(FQuery, Sql);
+    SetStrParam(FQuery, 0, ExtractFileName(Path));
+    SetStrParam(FQuery, 1, AnsiLowerCase(Path));
+    SetIntParam(FQuery, 2, GetFileSize(Path));
+    Exif := TExif.Create;
     try
-     fQuery.Open;
-     if fQuery.RecordCount>0 then
-     LastInseredID:=fQuery.FieldByName('ID').AsInteger;
-    except
+      Date := 0;
+      try
+        Exif.ReadFromFile(Path);
+        Date := Exif.Date;
+        Time := Exif.Time;
+        Rotated := ExifOrientationToRatation(Exif.Orientation);
+      except
+        on e : Exception do
+          Eventlog('Reading EXIF failed: ' + e.Message);
+      end;
+    finally
+      Exif.Free;
     end;
-   end else inc(LastInseredID);
-   except
+    SetBoolParam(FQuery, 16, True);
+    if Date = 0 then
+    begin
+      SetDateParam(FQuery, 'DateToAdd', Now);
+      SetDateParam(FQuery, 'aTime', TimeOf(Now));
+      SetBoolParam(FQuery, 19, False);
+    end else
+    begin
+      SetDateParam(FQuery, 'DateToAdd', Date);
+      SetDateParam(FQuery, 'aTime', TimeOf(Time));
+      SetBoolParam(FQuery, 19, True);
+    end;
+    IsTime := GetBoolParam(FQuery, 19);
+    if Crypted then
+    begin
+      M := TMemoryStream.Create;
+      try
+        CryptGraphicImage(Jpeg, Password, M);
+        LoadParamFromStream(FQuery, 4, M, FtBlob);
+      finally
+        M.Free;
+      end;
+    end else
+      AssignParam(FQuery, 4, Jpeg);
+
+    SetStrParam(FQuery, 5, ImTh);
+    SetStrParam(FQuery, 6, KeyWords);
+    SetStrParam(FQuery, 7, InstalledUserName);
+    SetStrParam(FQuery, 8, 'PhotoAlbum');
+    SetIntparam(FQuery, 9, Access);
+    SetIntparam(FQuery, 10, OrWidth);
+    SetIntparam(FQuery, 11, OrHeight);
+    SetStrParam(FQuery, 12, Comment);
+    SetIntParam(FQuery, 13, Db_attr_norm);
+    SetIntParam(FQuery, 14, Rotated);
+    SetIntParam(FQuery, 15, Rating);
+    SetBoolParam(FQuery, 17, True);
+    SetStrParam(FQuery, 20, Links);
+    SetStrParam(FQuery, 21, Groups);
+
+  {$R-}
+    SetIntParam(FQuery, 22, GetPathCRC(Path));
+
+    CalcStringCRC32(ImTh, StrThCrc);
+    SetIntParam(FQuery, 23, StrThCrc);
+    try
+      ExecSQL(FQuery);
+      if LastInseredID = 0 then
+      begin
+        SetSQL(FQuery, Format('SELECT ID FROM $DB$ where FolderCRC=%d AND FFileName like :FFileName', [Integer(Crc)]));
+
+        SetStrParam(FQuery, 0, Delnakl(NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(Path)))));
+        try
+          FQuery.Open;
+          if FQuery.RecordCount > 0 then
+            LastInseredID := FQuery.FieldByName('ID').AsInteger;
+        except
+          on e : Exception do
+            Eventlog('Error getting count of DB items: ' + e.Message);
+        end;
+      end else
+        Inc(LastInseredID);
+    except
+      on e : Exception do
+        Eventlog('Error adding file to DB: ' + e.Message);
+    end;
+  finally
+    FreeDS(FQuery);
   end;
-  FreeDS(fQuery);
-  Result:=true;
- end;
+  Result := True;
+end;
 
 procedure UpdateDBThread.Execute;
 var
-  DemoTable : TDataSet;
-  fQuery : TDataSet;
-  Counter : integer;
-  AutoAnswerSetted : boolean;
-  ModuleAddress : Pointer;
-  BooleanFunct : TBooleanFunction;
+  DemoTable: TDataSet;
+  FQuery: TDataSet;
+  Counter: Integer;
+  AutoAnswerSetted: Boolean;
 
- Procedure AddFileToDB;
- begin
-  if SQL_AddFileToDB(FFiles[FileNumber],Res.Crypt,Res.Jpeg,
-  res.ImTh ,FInfo[FileNumber].KeyWords, FInfo[FileNumber].Comment,Res.Password,
-  res.OrWidth,res.OrHeight,Date,Time,IsTime) then
-  Synchronize(SetImages) else begin ResArray[FileNumber].Jpeg.Free; ResArray[FileNumber].Jpeg:=nil; end;
- end;
+  procedure AddFileToDB;
+  begin
+    if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
+      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsTime) then
+      Synchronize(SetImages)
+    else
+      F(ResArray[FileNumber].Jpeg);
 
- Function GetRecordsCount : integer;
- begin
-   DemoTable:=GetQuery(dbname);
-   SetSQL(DemoTable,'Select Count(*) as CountOfRecs from $DB$');
-   DemoTable.Open;
-   Result:=Demotable.FieldByName('CountOfRecs').AsInteger;
-   FreeDS(Demotable);
- end;
+  end;
+
+  function GetRecordsCount: Integer;
+  begin
+    DemoTable := GetQuery(Dbname);
+    try
+      SetSQL(DemoTable, 'Select Count(*) as RecordCount from $DB$');
+      DemoTable.Open;
+      Result := Demotable.FieldByName('RecordCount').AsInteger;
+    finally
+      FreeDS(Demotable);
+    end;
+  end;
 
 begin
- FreeOnTerminate:=true;
- FileNumber:=0;
- AutoAnswerSetted:=false;
-
- if not DBInDebug then     
- if not Emulation then
- if not FNoLimit then
- begin
-
-  if DBKernel.GetDemoMode then
-  begin
-   if GetRecordsCount>LimitDemoRecords then
-   begin
-    if ShowMessageAboutLimit then
-    begin
-     Synchronize(limiterror);
-     ShowMessageAboutLimit:=false;
-    end;
-    EventLog(':Limit of records! --> exit updating DB');
-    DoExit;
-    Exit;
-   end;
-  end;    
-
-  ModuleAddress:=GetProcAddress(KernelHandle,'GetWindowsName');
-  if ModuleAddress=nil then
-  begin     
-   EventLog(':UpdateDBThread::Execute()/GetWindowsName not found!');
-   DoExit;
-   exit;
-  end;
-  @BooleanFunct:=ModuleAddress;
-
+  FreeOnTerminate := True;
   try
-   if BooleanFunct then
-   begin
-    if GetRecordsCount>LimitDemoRecords then
+
+    FileNumber := 0;
+    AutoAnswerSetted := False;
+
+{$IFDEF LICENCE}
+    if DBKernel.GetDemoMode then
     begin
-     EventLog(':Limit of records! --> exit updating DB');
-     DoExit;
-     exit;
-    end;
-   end;
-  except    
-   on e : Exception do
-   begin
-    EventLog(':UpdateDBThread::Execute()/BooleanFunct throw exception: '+e.Message);
-    // BooleanFunct Error
-    DoExit;
-    exit;
-   end;
-  end;
-
- end;
-
- ResArray:=getimageIDWEx(FFiles,FUseFileNameScaning);
-
- for Counter:=1 to Length(FFiles) do
- begin
-
- If Res.Jpeg<>nil then
- begin
-
- If (Res.count=1) and ((Res.Attr[0]=db_attr_not_exists) or (res.FileNames[0]<>FFiles[FileNumber])) and (AnsiLowerCase(res.FileNames[0])=AnsiLowerCase(FFiles[FileNumber])) then
- begin
-  Synchronize(FileProcessed);
-  UpdateMovedDBRecord(res.ids[0],FFiles[FileNumber]);
-  DoEventReplace(Res.Ids[0],FFiles[FileNumber]);
-//  DoExit;
-//  Exit;
- end;
-
- IntResult:=Result_invalid;
-
- If (Res.count>1) then
- begin
-  If not ((fAutoAnswer=Result_skip_all) or (fAutoAnswer=Result_add_all)) then
-  begin
-   FCurrentImageDBRecord:=res;
-   StringParam:=res.ImTh;
-   Synchronize(ExecuteReplaceDialog);
-   Case IntResult of
-     Result_invalid:
-     Begin
-//      DoExit;
-//      exit;
-     End;
-     Result_skip:
-     Begin
-//      DoExit;
-//      exit;
-     End;
-     Result_Add_All:
-     Begin
-      FAutoAnswer:=Result_Add_all;
-      Synchronize(AddAutoAnswer);
-     End;
-     Result_skip_all:
-     begin
-      FAutoAnswer:=Result_skip_all;
-      AutoAnswerSetted:=true;
-      Synchronize(AddAutoAnswer);
-//      DoExit;
-//      exit;
-     end;
-     Result_replace:
-     begin
-      UpdateMovedDBRecord(IntIDResult,FFiles[FileNumber]);
-      DoEventReplace(IntIDResult,FFiles[FileNumber]);
-//      DoExit;
-//      exit;
-     end;
-   Result_Add:
-    begin
-     AddFileToDB;
-     fQuery:=GetQuery;
-     SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-     SetIntParam(fQuery,0,db_attr_dublicate);
-     SetStrParam(fQuery,1,Res.ImTh);
-     try
-      ExecSQL(fQuery);
-     except    
-      on e : Exception do EventLog(':UpdateDBThread::Execute()/Result_Add/ExecSQL throw exception: '+e.Message);
-     end;
-     FreeDS(fQuery);
-//     DoExit;
-//     exit;
-    end;
-  Result_Delete_File:
-   begin
-    DeleteFile(FFiles[FileNumber]);
-//    DoExit;
-//    exit;
-   end;
-   Result_Replace_And_Del_Dublicates:
-    begin
-      UpdateMovedDBRecord(IntIDResult,FFiles[FileNumber]);
-      DoEventReplace(IntIDResult,FFiles[FileNumber]);
-      fQuery:=GetQuery;
-      SetSQL(fQuery,'DELETE FROM $DB$ WHERE StrTh=:s and ID<>:ID');
-      SetStrParam(fQuery,0,Res.ImTh);
-      SetIntParam(fQuery,1,IntIDResult);
-      try
-       ExecSQL(fQuery);
-      except    
-      on e : Exception do EventLog(':UpdateDBThread::Execute()/Result_Replace_And_Del_Dublicates/ExecSQL throw exception: '+e.Message);
+      if GetRecordsCount > LimitDemoRecords then
+      begin
+        if ShowMessageAboutLimit then
+        begin
+          Synchronize(Limiterror);
+          ShowMessageAboutLimit := False;
+        end;
+        EventLog(':Limit of records! --> exit updating DB');
+        Exit;
       end;
-      FreeDS(fQuery);
-//      DoExit;
-//      exit;
-     end;
     end;
-//   DoExit;
-//   Exit;
-  end else
-  begin
-  if FAutoAnswer=Result_replace_All then
-   begin
-    UpdateMovedDBRecord(IntIDResult,FFiles[FileNumber]);
-    DoEventReplace(IntIDResult,FFiles[FileNumber]);
-//    DoExit;
-//    exit;
-   end;
-   if FAutoAnswer=Result_skip_all then
-   begin
-//    DoExit;
-//    exit;
-   end;
-  if FAutoAnswer=Result_add_All then
-  begin
-   AddFileToDB;
-   fQuery:=GetQuery;
-   SetSQL(fQuery,'Update $DB$ Set Attr = :Attr Where StrTh = :s');
-   SetIntParam(fQuery,0,db_attr_dublicate);
-   SetStrParam(fQuery,1,Res.ImTh);
-   try
-    ExecSQL(fQuery);
-   except
-    on e : Exception do EventLog(':UpdateDBThread::Execute()/Result_add_All/ExecSQL throw exception: '+e.Message);
-   end;
-   fQuery.Free;
-//   DoExit;
-//   exit;
+{$ENDIF}
+
+    ResArray := GetimageIDWEx(FInfo, FUseFileNameScaning);
+
+    for Counter := 1 to FInfo.Count do
+    begin
+
+      if Res.Jpeg <> nil then
+      begin
+        if (Res.Count = 1) and ((Res.Attr[0] = Db_attr_not_exists) or (Res.FileNames[0] <> FInfo[FileNumber].FileName)) and
+          (AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(FInfo[FileNumber].FileName)) then
+        begin
+          Synchronize(FileProcessed);
+          UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
+          DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
+        end;
+
+        IntResult := Result_invalid;
+
+        if (Res.Count > 1) then
+        begin
+          if not((FAutoAnswer = Result_skip_all) or (FAutoAnswer = Result_add_all)) then
+          begin
+            FCurrentImageDBRecord := Res;
+            StringParam := Res.ImTh;
+            Synchronize(ExecuteReplaceDialog);
+            case IntResult of
+              Result_Add_All:
+                begin
+                  FAutoAnswer := Result_Add_all;
+                  Synchronize(AddAutoAnswer);
+                end;
+              Result_skip_all:
+                begin
+              FAutoAnswer := Result_skip_all;
+                  AutoAnswerSetted := True;
+                  Synchronize(AddAutoAnswer);
+                end;
+              Result_replace:
+                begin
+                  UpdateMovedDBRecord(IntIDResult, FInfo[FileNumber].FileName);
+                  DoEventReplace(IntIDResult, FInfo[FileNumber].FileName);
+                end;
+              Result_Add:
+                begin
+                  AddFileToDB;
+                  FQuery := GetQuery;
+                  try
+                    SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
+                    SetIntParam(FQuery, 0, Db_attr_dublicate);
+                    SetStrParam(FQuery, 1, Res.ImTh);
+                    try
+                      ExecSQL(FQuery);
+                    except
+                      on E: Exception do
+                        EventLog(':UpdateDBThread::Execute()/Result_Add/ExecSQL throw exception: ' + E.message);
+                    end;
+                  finally
+                    FreeDS(FQuery);
+                  end;
+                end;
+              Result_Delete_File:
+                begin
+                  DeleteFile(FInfo[FileNumber].FileName);
+                end;
+              Result_Replace_And_Del_Dublicates:
+                begin
+                  UpdateMovedDBRecord(IntIDResult, FInfo[FileNumber].FileName);
+                  DoEventReplace(IntIDResult, FInfo[FileNumber].FileName);
+                  FQuery := GetQuery;
+                  try
+                    SetSQL(FQuery, 'DELETE FROM $DB$ WHERE StrTh=:s and ID<>:ID');
+                    SetStrParam(FQuery, 0, Res.ImTh);
+                    SetIntParam(FQuery, 1, IntIDResult);
+                    try
+                      ExecSQL(FQuery);
+                    except
+                      on E: Exception do
+                        EventLog(
+                          ':UpdateDBThread::Execute()/Result_Replace_And_Del_Dublicates/ExecSQL throw exception: ' +
+                            E.message);
+                    end;
+                  finally
+                    FreeDS(FQuery);
+                  end;
+                end;
+            end;
+          end else
+          begin
+            if FAutoAnswer = Result_replace_All then
+            begin
+              UpdateMovedDBRecord(IntIDResult, FInfo[FileNumber].FileName);
+              DoEventReplace(IntIDResult, FInfo[FileNumber].FileName);
+            end;
+            if FAutoAnswer = Result_add_All then
+            begin
+              AddFileToDB;
+              FQuery := GetQuery;
+              try
+                SetSQL(FQuery, 'Update $DB$ Set Attr = :Attr Where StrTh = :s');
+                SetIntParam(FQuery, 0, Db_attr_dublicate);
+                SetStrParam(FQuery, 1, Res.ImTh);
+                try
+                  ExecSQL(FQuery);
+                except
+                  on E: Exception do
+                    EventLog(':UpdateDBThread::Execute()/Result_add_All/ExecSQL throw exception: ' + E.message);
+                end;
+              finally
+                FreeDS(FQuery);
+              end;
+            end;
+          end;
+        end;
+
+        if (Res.Count = 1) and (AnsiLowerCase(Res.FileNames[0]) <> AnsiLowerCase(FInfo[FileNumber].FileName)) then
+        begin
+
+          if not((FAutoAnswer = Result_skip_all) or (FAutoAnswer = Result_replace_All) or (FAutoAnswer = Result_add_all)) then
+          begin
+            FCurrentImageDBRecord := Res;
+            StringParam := Res.ImTh;
+            Synchronize(ExecuteReplaceDialog);
+
+            case IntResult of
+              Result_skip_all:
+                begin
+                  FAutoAnswer := Result_skip_all;
+                  Synchronize(AddAutoAnswer);
+                  AutoAnswerSetted := True;
+                end;
+              Result_Delete_File:
+                begin
+                  DeleteFile(FInfo[FileNumber].FileName);
+                end;
+              Result_replace_all:
+                begin
+                  FAutoAnswer := Result_replace_All;
+                  Synchronize(AddAutoAnswer);
+                  AutoAnswerSetted := True;
+                  UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
+                  DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
+                end;
+              Result_replace:
+                begin
+                  UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
+                  if Res.UsedFileNameSearch then
+                  begin
+                    if Res.ChangedRotate[0] then
+                      SetRotate(Res.Ids[0], DB_IMAGE_ROTATE_0);
+                    Synchronize(UpdateCurrent);
+                  end;
+                  DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
+                end;
+              Result_Add:
+                begin
+                  AddFileToDB;
+                  FQuery := GetQuery;
+                  try
+                    SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
+                    SetIntParam(FQuery, 0, Db_attr_dublicate);
+                    SetStrParam(FQuery, 1, Res.ImTh);
+                    try
+                      ExecSQL(FQuery);
+                    except
+                      on E: Exception do
+                        Eventlog('Update attribute failed: ' + E.message);
+                    end;
+                  finally
+                    FreeDS(FQuery);
+                  end;
+                end;
+              Result_Add_All:
+                begin
+                  FAutoAnswer := Result_Add_All;
+                  Synchronize(AddAutoAnswer);
+                  AutoAnswerSetted := True;
+                  AddFileToDB;
+                  FQuery := GetQuery;
+                  try
+                    SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
+                    SetIntParam(FQuery, 0, Db_attr_dublicate);
+                    SetStrParam(FQuery, 1, Res.ImTh);
+                    try
+                      ExecSQL(FQuery);
+                    except
+                      on E: Exception do
+                        EventLog(':UpdateDBThread::Execute()/Result_Add_All2/ExecSQL throw exception: ' + E.message);
+                    end;
+                  finally
+                    FreeDS(FQuery);
+                  end;
+                end;
+            end;
+          end;
+          if not AutoAnswerSetted then
+          begin
+            if FAutoAnswer = Result_replace_All then
+            begin
+              UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
+              DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
+            end;
+            if FAutoAnswer = Result_skip_all then
+            begin
+            end;
+            if FAutoAnswer = Result_Add_All then
+            begin
+              AddFileToDB;
+              FQuery := GetQuery;
+              try
+                SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
+                SetIntParam(FQuery, 0, Db_attr_dublicate);
+                SetStrParam(FQuery, 1, Res.ImTh);
+                try
+                  ExecSQL(FQuery);
+                except
+                  on E: Exception do
+                    EventLog(':UpdateDBThread::Execute()/Result_replace_All3/ExecSQL throw exception: ' + E.message);
+                end;
+              finally
+                FreeDS(FQuery);
+              end;
+            end;
+          end;
+        end;
+        AutoAnswerSetted := False;
+
+        if Res.Count = 0 then
+          AddFileToDB;
+      end else
+      begin
+        Synchronize(CryptFileWithoutPass);
+      end;
+      if Res.Jpeg <> nil then
+        Res.Jpeg.Free;
+      Inc(FileNumber);
+    end;
+
+  finally
+    Synchronize(DoOnDone);
   end;
-  end;
- end;
-
- If (Res.count=1) and (AnsiLowerCase(res.FileNames[0])<>AnsiLowerCase(FFiles[FileNumber])) then
- begin
-
-  If not ((fAutoAnswer=Result_skip_all) or (fAutoAnswer=Result_replace_All) or (fAutoAnswer=Result_add_all)) then
-  begin
-   FCurrentImageDBRecord:=res;
-   StringParam:=res.ImTh;
-   Synchronize(ExecuteReplaceDialog);
-
-
-  Case IntResult of
-   Result_invalid:
-    Begin
-//     DoExit;
-//     exit;
-    End;
-   Result_skip:
-    Begin
-//     DoExit;
-//     exit;
-    End;
-   Result_skip_all:
-    begin
-     FAutoAnswer:=Result_skip_all;
-     Synchronize(AddAutoAnswer);
-     AutoAnswerSetted:=true;
-//     DoExit;
-//     exit;
-    end;
-   Result_Delete_File:
-    begin
-     DeleteFile(FFiles[FileNumber]);
-//     DoExit;
-//     exit;
-    end;
-   Result_replace_all:
-    begin
-     FAutoAnswer:=Result_replace_All;
-     Synchronize(AddAutoAnswer);
-     AutoAnswerSetted:=true;
-     UpdateMovedDBRecord(res.ids[0],FFiles[FileNumber]);
-     DoEventReplace(res.ids[0],FFiles[FileNumber]);
-//     DoExit;
-//     exit;
-    end;
-   Result_replace:
-    begin
-     UpdateMovedDBRecord(res.ids[0],FFiles[FileNumber]);
-     if res.UsedFileNameSearch then
-     begin
-      if res.ChangedRotate[0] then
-      SetRotate(res.ids[0],DB_IMAGE_ROTATE_0);
-      Synchronize(UpdateCurrent);
-     end;
-     DoEventReplace(res.ids[0],FFiles[FileNumber]);
-//     DoExit;
-//     exit;
-    end;
-   Result_Add:
-    begin
-     AddFileToDB;
-     fQuery:=GetQuery;
-     SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-     SetIntParam(fQuery,0,db_attr_dublicate);
-     SetStrParam(fQuery,1,Res.ImTh);
-     try
-      ExecSQL(fQuery);
-     except
-     end;
-     FreeDS(fQuery);
-//     DoExit;
-//     exit;
-    end;
-   Result_Add_All:
-    begin
-     FAutoAnswer:=Result_Add_All;
-     Synchronize(AddAutoAnswer);
-     AutoAnswerSetted:=true;
-     AddFileToDB;
-     fQuery:=GetQuery;
-     SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-     SetIntParam(fQuery,0,db_attr_dublicate);
-     SetStrParam(fQuery,1,Res.ImTh);
-     try
-      ExecSQL(fQuery);
-     except  
-      on e : Exception do EventLog(':UpdateDBThread::Execute()/Result_Add_All2/ExecSQL throw exception: '+e.Message);
-     end;
-     FreeDS(fQuery);
-//     DoExit;
-//     exit;
-    end;
-
-   end;
-
-  end;
-
-  if not AutoAnswerSetted then
-  begin
-   if FAutoAnswer=Result_replace_All then
-   begin
-    UpdateMovedDBRecord(res.ids[0],FFiles[FileNumber]);
-    DoEventReplace(res.ids[0],FFiles[FileNumber]);
-   end;
-   if FAutoAnswer=Result_skip_all then
-   begin
-   end;
-   if FAutoAnswer=Result_Add_All then
-   begin
-    AddFileToDB;
-    fQuery:=GetQuery;
-    SetSQL(fQuery,'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-    SetIntParam(fQuery,0,db_attr_dublicate);
-    SetStrParam(fQuery,1,Res.ImTh);
-    try
-     ExecSQL(fQuery);
-    except   
-      on e : Exception do EventLog(':UpdateDBThread::Execute()/Result_replace_All3/ExecSQL throw exception: '+e.Message);
-    end;
-    FreeDS(fQuery);
-   end;
-  end;
- end;
- AutoAnswerSetted:=false;
-
-
- If Res.count=0 then
- begin
-  AddFileToDB;
-//  DoExit;
-//  Exit;
- end;
-
- end else
- begin
-  Synchronize(CryptFileWithoutPass);
- end;
- if Res.Jpeg<>nil then
- Res.Jpeg.free;
- inc(FileNumber);
- end;
-// Synchronize(SetImages);
-
-
- Synchronize(DoOnDone);
-
 end;
 
 procedure UpdateDBThread.LimitError;
 begin
- MessageBoxDB(GetActiveFormHandle,Format(TEXT_MES_LIMIT_RECS,[inttostr(LimitDemoRecords)]),TEXT_MES_NEEDS_ACTIVATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+  MessageBoxDB(GetActiveFormHandle, Format(TEXT_MES_LIMIT_RECS, [Inttostr(LimitDemoRecords)]),
+    TEXT_MES_NEEDS_ACTIVATION, TD_BUTTON_OK, TD_ICON_INFORMATION);
 end;
 
 procedure UpdateDBThread.ExecuteReplaceDialog;
 begin
- if DBReplaceForm=nil then
- Application.CreateForm(TDBReplaceForm, DBReplaceForm);
- DBReplaceForm.ExecuteToAdd(FFiles[FileNumber],0,StringParam,@IntResult,@IntIDResult,FCurrentImageDBRecord);
+  if DBReplaceForm = nil then
+    Application.CreateForm(TDBReplaceForm, DBReplaceForm);
+  DBReplaceForm.ExecuteToAdd(FInfo[FileNumber].FileName, 0, StringParam, @IntResult, @IntIDResult, FCurrentImageDBRecord);
 end;
 
 procedure UpdateDBThread.AddAutoAnswer;
 begin
- Fsender.AutoAnswer:=FAutoAnswer;
-end;
-
-procedure UpdateDBThread.DoExit;
-begin
- Synchronize(DoOnDone);
+  FSender.AutoAnswer := FAutoAnswer;
 end;
 
 procedure UpdateDBThread.DoEventReplace(ID: Integer; Name: String);
 begin
- IDParam := ID;
- NameParam := Name;
- Synchronize(DoEventReplaceSynch);
+  IDParam := ID;
+  NameParam := name;
+  Synchronize(DoEventReplaceSynch);
 end;
 
 procedure UpdateDBThread.DoEventReplaceSynch;
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
- try
-  EventInfo.NewName:=NameParam;
-  EventInfo.ID:=IDParam;
-  DBKernel.DoIDEvent(Self,IDParam,[EventID_Param_Name],EventInfo);
- except  
-  on e : Exception do EventLog(':UpdateDBThread::DoEventReplaceSynch() throw exception: '+e.Message);
- end;
+  try
+    EventInfo.NewName := NameParam;
+    EventInfo.ID := IDParam;
+    DBKernel.DoIDEvent(Self, IDParam, [EventID_Param_Name], EventInfo);
+  except
+    on E: Exception do
+      EventLog(':UpdateDBThread::DoEventReplaceSynch() throw exception: ' + E.message);
+  end;
 end;
 
 procedure UpdateDBThread.UpdateCurrent;
 begin
- UpdateImageRecord(FFiles[FileNumber],res.ids[0]);
+  UpdateImageRecord(FInfo[FileNumber].FileName, Res.Ids[0]);
 end;
 
 procedure UpdateDBThread.CryptFileWithoutPass;
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
- EventInfo.Name:=FFiles[FileNumber];
- DBKernel.DoIDEvent(Self,-1,[EventID_Param_Add_Crypt_WithoutPass],EventInfo);
- CryptFileWithoutPassChecked:=true;
+  EventInfo.name := FInfo[FileNumber].FileName;
+  DBKernel.DoIDEvent(Self, -1, [EventID_Param_Add_Crypt_WithoutPass], EventInfo);
+  CryptFileWithoutPassChecked := True;
 end;
 
 function UpdateDBThread.Res: TImageDBRecordA;
 begin
- Result:=ResArray[FileNumber];
+  Result := ResArray[FileNumber];
 end;
 
 procedure UpdateDBThread.SetImages;
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
- EventInfo.Name:=AnsiLowerCase(FFiles[FileNumber]);
- EventInfo.ID:=LastInseredID;
- EventInfo.Rotate:=0;
- EventInfo.Rating:=0;
- EventInfo.Comment:='';
- EventInfo.KeyWords:='';
- EventInfo.Access:=0;
- EventInfo.Attr:=0;
- EventInfo.Date:=Date;
- EventInfo.IsDate:=true;
- EventInfo.IsTime:=IsTime;
- EventInfo.Time:=TimeOf(Time);
- EventInfo.Image:=nil;
- EventInfo.Groups:='';
- EventInfo.JPEGImage:=Res.Jpeg;
- EventInfo.Crypt:=Res.Crypt;
- EventInfo.Include:=true;    
- DBKernel.DoIDEvent(Self,LastInseredID,[SetNewIDFileData],EventInfo);
- Res.Jpeg.Free;
- ResArray[FileNumber].Jpeg:=nil;
+  EventInfo.name := AnsiLowerCase(FInfo[FileNumber].FileName);
+  EventInfo.ID := LastInseredID;
+  EventInfo.Rotate := 0;
+  EventInfo.Rating := 0;
+  EventInfo.Comment := '';
+  EventInfo.KeyWords := '';
+  EventInfo.Access := 0;
+  EventInfo.Attr := 0;
+  EventInfo.Date := Date;
+  EventInfo.IsDate := True;
+  EventInfo.IsTime := IsTime;
+  EventInfo.Time := TimeOf(Time);
+  EventInfo.Image := nil;
+  EventInfo.Groups := '';
+  EventInfo.JPEGImage := Res.Jpeg;
+  EventInfo.Crypt := Res.Crypt;
+  EventInfo.Include := True;
+  DBKernel.DoIDEvent(Self, LastInseredID, [SetNewIDFileData], EventInfo);
+  if Res.Jpeg <> nil then
+    Res.Jpeg.Free;
+  ResArray[FileNumber].Jpeg := nil;
 end;
 
 procedure UpdateDBThread.FileProcessed;
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
- EventInfo.Name:=AnsiLowerCase(FFiles[FileNumber]);
- EventInfo.ID:=LastInseredID;
- EventInfo.Rotate:=0;
- EventInfo.Rating:=0;
- EventInfo.Comment:='';
- EventInfo.KeyWords:='';
- EventInfo.Access:=0;
- EventInfo.Attr:=0;
- EventInfo.Date:=Date;
- EventInfo.IsDate:=true;
- EventInfo.IsTime:=IsTime;
- EventInfo.Time:=TimeOf(Time);
- EventInfo.Image:=nil;
- EventInfo.Groups:='';
- EventInfo.JPEGImage:=Res.Jpeg;
- EventInfo.Crypt:=Res.Crypt;
- EventInfo.Include:=true;     
- DBKernel.DoIDEvent(Self,LastInseredID,[EventID_FileProcessed],EventInfo);
+  EventInfo.name := AnsiLowerCase(FInfo[FileNumber].FileName);
+  EventInfo.ID := LastInseredID;
+  EventInfo.Rotate := 0;
+  EventInfo.Rating := 0;
+  EventInfo.Comment := '';
+  EventInfo.KeyWords := '';
+  EventInfo.Access := 0;
+  EventInfo.Attr := 0;
+  EventInfo.Date := Date;
+  EventInfo.IsDate := True;
+  EventInfo.IsTime := IsTime;
+  EventInfo.Time := TimeOf(Time);
+  EventInfo.Image := nil;
+  EventInfo.Groups := '';
+  EventInfo.JPEGImage := Res.Jpeg;
+  EventInfo.Crypt := Res.Crypt;
+  EventInfo.Include := True;
+  DBKernel.DoIDEvent(Self, LastInseredID, [EventID_FileProcessed], EventInfo);
 end;
 
 { DirectorySizeThread }
 
 function DirectorySizeThread.GetDirectory(DirectoryName: string; var Files : TStrings; Terminating : PBoolean):integer;
-Var
- Found  : integer;
- SearchRec : TSearchRec;
- FileName : string;
+var
+  Found: Integer;
+  SearchRec: TSearchRec;
+  FileName: string;
 begin
-  result:=0;
-  if Terminating^ then exit;
-  if not DirectoryExists(DirectoryName) then exit;
-  If DirectoryName[length(DirectoryName)]<>'\' then DirectoryName:=DirectoryName+'\';
-  Found := FindFirst(DirectoryName+'*.*', faAnyFile, SearchRec);
+  Result := 0;
+  if Terminating^ then
+    Exit;
+  if not DirectoryExists(DirectoryName) then
+    Exit;
+  if DirectoryName[Length(DirectoryName)] <> '\' then
+    DirectoryName := DirectoryName + '\';
+  Found := FindFirst(DirectoryName + '*.*', FaAnyFile, SearchRec);
   while Found = 0 do
   begin
-   if Terminating^ then
-   begin
-    FindClose(SearchRec);
-    exit;
-   end;
-   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-   begin
-    If FileExists(DirectoryName+SearchRec.Name) and ExtInMask(SupportedExt,GetExt(DirectoryName+SearchRec.Name)) then
+    if Terminating^ then
     begin
-     Result:=Result+SearchRec.Size;
-     FileName:=DirectoryName+SearchRec.Name;
-     StrParam:=FileName;
-     Synchronize(DoFileProcessed);
-     FileName:=StrParam;
-     Files.Add(FileName);
-     IntParam:=SearchRec.Size;
-     Synchronize(DoOnFileFounded);
-    end else If DirectoryExists(DirectoryName+SearchRec.Name) then Result:=Result+GetDirectory(DirectoryName+SearchRec.Name, Files, Terminating);
-   end;
-   Found := SysUtils.FindNext(SearchRec);
+      FindClose(SearchRec);
+      Exit;
+    end;
+    if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+    begin
+      if FileExists(DirectoryName + SearchRec.Name) and ExtInMask(SupportedExt, GetExt(DirectoryName + SearchRec.Name)) then
+      begin
+        Result := Result + SearchRec.Size;
+        FileName := DirectoryName + SearchRec.Name;
+        StrParam := FileName;
+        Synchronize(DoFileProcessed);
+        FileName := StrParam;
+        Files.Add(FileName);
+        IntParam := SearchRec.Size;
+        Synchronize(DoOnFileFounded);
+      end
+      else if DirectoryExists(DirectoryName + SearchRec.Name) then
+        Result := Result + GetDirectory(DirectoryName + SearchRec.Name, Files, Terminating);
+    end;
+    Found := SysUtils.FindNext(SearchRec);
   end;
   FindClose(SearchRec);
 end;
 
-constructor DirectorySizeThread.Create(CreateSuspennded: Boolean;
-  Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded : TFileFoundedEvent;
+constructor DirectorySizeThread.Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded : TFileFoundedEvent;
   ProcessFileEvent : TFileProcessProcedureOfObject = nil);
 begin
-  Inherited Create(true);
+  inherited Create(False);
   FDirectory := Directory;
   FTerminating := Terminating;
-  FOnFileFounded:=OnFileFounded;
-  FProcessFileEvent:=ProcessFileEvent;
+  FOnFileFounded := OnFileFounded;
+  FProcessFileEvent := ProcessFileEvent;
   FOnDone := OnDone;
-  if not CreateSuspennded then Resume;
 end;
 
 procedure DirectorySizeThread.DoOnDone;
 begin
-  If Assigned(FOnDone) then
-  FOnDone(FObject);
+  if Assigned(FOnDone) then
+    FOnDone(FObject);
 end;
 
 procedure DirectorySizeThread.Execute;
 var
-    Size : integer;
-    Files : TStrings;
+  Size: Integer;
+  Files: TStrings;
 begin
- FreeOnTerminate:=true;
- Files:=TStringList.create;
- Size:=GetDirectory(FDirectory,Files,FTerminating);
- If not FTerminating^ then
- begin
-  FObject:=TValueObject.Create;
-  FObject.FTIntValue:=Size;
-  FObject.FSTStrValue:=Files;
-  Synchronize(DoOnDone);
-  FObject.free;
- end;
+  FreeOnTerminate := True;
+  Files := TStringList.Create;
+  Size := GetDirectory(FDirectory, Files, FTerminating);
+  if not FTerminating^ then
+  begin
+    FObject := TValueObject.Create;
+    try
+      FObject.FTIntValue := Size;
+      FObject.FSTStrValue := Files;
+      Synchronize(DoOnDone);
+    finally
+      F(FObject);
+    end;
+  end;
 end;
 
 procedure DirectorySizeThread.DoFileProcessed;
 begin
- if Assigned(FProcessFileEvent) then
- FProcessFileEvent(StrParam);
+  if Assigned(FProcessFileEvent) then
+    FProcessFileEvent(StrParam);
 end;
 
 procedure DirectorySizeThread.DoOnFileFounded;
 begin
- if Assigned(FOnFileFounded) then FOnFileFounded(nil, StrParam,IntParam);
+  if Assigned(FOnFileFounded) then
+    FOnFileFounded(nil, StrParam, IntParam);
 end;
 
 { TValueObject }
 
 constructor TValueObject.Create;
 begin
- FSTStrValue:=TStringList.Create;
+  FSTStrValue := TStringList.Create;
 end;
 
 destructor TValueObject.Destroy;
 begin
- FSTStrValue.Free;
+  FSTStrValue.Free;
 end;
 
 procedure TValueObject.SetTBoolValue(const Value: Boolean);
@@ -840,12 +764,7 @@ end;
 
 procedure TValueObject.SetTStrValue(const Value: TStrings);
 begin
- FSTStrValue.Assign(Value);
+  FSTStrValue.Assign(Value);
 end;
-
-initialization
-
-ShowMessageAboutLimit:=True;
-CryptFileWithoutPassChecked:=false;
 
 end.

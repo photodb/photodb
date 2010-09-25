@@ -21,7 +21,7 @@ type
    FSID : String;
     { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -49,7 +49,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TObject; CreateSuspended: Boolean; S : TBitmap; Radius : Double; SID : string; OnExit : TBaseEffectProcThreadExit);
+    constructor Create(AOwner : TObject; S : TBitmap; Radius : Double; SID : string; OnExit : TBaseEffectProcThreadExit);
     procedure OnExit;
     procedure ImageProgress(Progress : integer; var Break: boolean);
     procedure ImageProgressSynch;
@@ -64,7 +64,7 @@ type
    FSID : String;
     { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -72,7 +72,7 @@ type
   Procedure GetPreview(S,D : TBitmap); override;
   Procedure MakeImage(Sender : TObject);
   Procedure Progress(Progress : integer; var Break: boolean);
-  Procedure ExitThread(Image : TBitmap; SID : string);   
+  Procedure ExitThread(Image : TBitmap; SID : string);
   function GetProperties : string; override;
   procedure SetProperties(Properties : string); override;
    { Public declarations }
@@ -92,7 +92,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TObject; CreateSuspended: Boolean; S : TBitmap; EffectSize: integer; SID : string; OnExit : TBaseEffectProcThreadExit);
+    constructor Create(AOwner : TObject; S : TBitmap; EffectSize: integer; SID : string; OnExit : TBaseEffectProcThreadExit);
     procedure OnExit;
     procedure ImageProgress(Progress : integer; var Break: Boolean);
     procedure ImageProgressSynch;
@@ -109,7 +109,7 @@ type
    FSID : String;
     { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -117,7 +117,7 @@ type
   Procedure GetPreview(S,D : TBitmap); override;
   Procedure MakeImage(Sender : TObject);
   Procedure Progress(Progress : integer; var Break: boolean);
-  Procedure ExitThread(Image : TBitmap; SID : string); 
+  Procedure ExitThread(Image : TBitmap; SID : string);
   function GetProperties : string; override;
   procedure SetProperties(Properties : string); override;
    { Public declarations }
@@ -159,7 +159,7 @@ type
    FSID : String;
     { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -169,7 +169,7 @@ type
   Procedure Progress(Progress : integer; var Break: boolean);
   Procedure ExitThread(Image : TBitmap; SID : string);
   procedure ColorMouseDown(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer); 
+  Shift: TShiftState; X, Y: Integer);
   function GetProperties : string; override;
   procedure SetProperties(Properties : string); override;
    { Public declarations }
@@ -212,7 +212,7 @@ type
    FSID : String;
     { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -270,7 +270,7 @@ type
    Loading : Boolean;
     { Private declarations }
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -286,7 +286,7 @@ type
   procedure ButtonMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
   procedure ButtonMouseMove(Sender: TObject; Shift: TShiftState;
-    X, Y: Integer);         
+    X, Y: Integer);
   function GetProperties : string; override;
   procedure SetProperties(Properties : string); override;
    { Public declarations }
@@ -308,7 +308,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TObject; CreateSuspended: Boolean; S : TBitmap; ColorBase, ColorNew: TColor; Size, Value : Integer; SID : string; OnExit : TBaseEffectProcThreadExit);
+    constructor Create(AOwner : TObject; S : TBitmap; ColorBase, ColorNew: TColor; Size, Value : Integer; SID : string; OnExit : TBaseEffectProcThreadExit);
     procedure OnExit;
     procedure ImageProgress(Progress : integer; var Break: boolean);
     procedure ImageProgressSynch;
@@ -346,7 +346,7 @@ type
    procedure PresentSelect(Sender : TObject);
    procedure ReloadUserPresents;
   public
-  class function ID : ShortString; override;
+  class function ID : string; override;
   constructor Create; override;
   destructor Destroy; override;
   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
@@ -356,7 +356,7 @@ type
   Procedure Progress(Progress : integer; var Break: boolean);
   Procedure ExitThread(Image : TBitmap; SID : string);
   Procedure ParamsChanged(Sender : TObject);
-  Procedure FillMatrix(Sender : TObject); 
+  Procedure FillMatrix(Sender : TObject);
   function GetProperties : string; override;
   procedure SetProperties(Properties : string); override;
    { Public declarations }
@@ -455,7 +455,7 @@ begin
  Result:='EffectSize='+IntToStr(FTrackBar.Position)+';';
 end;
 
-class function TGausBlur.ID: ShortString;
+class function TGausBlur.ID: string;
 begin
  Result:='{C7DB416B-BD8E-4F7D-8A44-309C4FA9B451}';
 end;
@@ -468,7 +468,7 @@ begin
  D.Assign(FS);
  FTrackBarlabel.Caption:=Format(EFF_TEXT_MES_GAUSS_BLUR_RADIUS,[FTrackBar.Position/10]);
  FSID:=IntToStr(random(10000));
- TGaussBlurThread.Create(self,false,D,FTrackBar.Position/10,FSID,ExitThread);
+ TGaussBlurThread.Create(self,D,FTrackBar.Position/10,FSID,ExitThread);
 end;
 
 procedure TGausBlur.Progress(Progress: integer; var Break: boolean);
@@ -485,16 +485,15 @@ end;
 { TGaussBlurThread }
 
 constructor TGaussBlurThread.Create(AOwner: TObject;
-  CreateSuspended: Boolean; S: TBitmap; Radius: Double; SID: string;
+  S: TBitmap; Radius: Double; SID: string;
   OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
+ inherited Create(False);
  FAOwner := AOwner;
  FS := S;
  FRadius := Radius;
  FSID := SID;
  FOnExit := OnExit;
- if not CreateSuspended then Resume;
 end;
 
 procedure TGaussBlurThread.Execute;
@@ -546,16 +545,15 @@ end;
 { TSharpenThread }
 
 constructor TSharpenThread.Create(AOwner: TObject;
-  CreateSuspended: Boolean; S: TBitmap; EffectSize: integer; SID: string;
+  S: TBitmap; EffectSize: integer; SID: string;
   OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
- FAOwner := AOwner;
- FS := S;
- FEffectSize := EffectSize;
- FSID := SID;
- FOnExit := OnExit;
- if not CreateSuspended then Resume;
+  inherited Create(False);
+  FAOwner := AOwner;
+  FS := S;
+  FEffectSize := EffectSize;
+  FSID := SID;
+  FOnExit := OnExit;
 end;
 
 procedure TSharpenThread.Execute;
@@ -673,7 +671,7 @@ begin
  Result:='EffectSize='+IntToStr(FTrackBar.Position)+';';
 end;
 
-class function TSharpen.ID: ShortString;
+class function TSharpen.ID: string;
 begin
  Result:='{27FEBBB0-C8F5-4493-A1EA-928221CEDB49}';
 end;
@@ -686,7 +684,7 @@ begin
  D.Assign(FS);
  FTrackBarlabel.Caption:=Format(EFF_TEXT_MES_SHARPEN_EFFECT_SIZE,[FTrackBar.Position/10]);
  FSID:=IntToStr(random(10000));
- TSharpenThread.Create(self,false,D,FTrackBar.Position+20,FSID,ExitThread);
+ TSharpenThread.Create(self,D,FTrackBar.Position+20,FSID,ExitThread);
 end;
 
 procedure TSharpen.Progress(Progress: integer; var Break: boolean);
@@ -787,7 +785,7 @@ begin
  Result:=Result+'EffectHeightSize='+IntToStr(FTrackBarHeight.Position)+';';
 end;
 
-class function TPixelsEffect.ID: ShortString;
+class function TPixelsEffect.ID: string;
 begin
  Result:='{4F530D08-B94C-4C5A-8C84-DF61210F414D}';
 end;
@@ -812,7 +810,7 @@ end;
 procedure TPixelsEffect.SetProperties(Properties: string);
 begin
  FTrackBarWidth.Position:=StrToIntDef(GetValueByName(Properties,'EffectWidthSize'),1);
- FTrackBarHeight.Position:=StrToIntDef(GetValueByName(Properties,'EffectHeightSize'),1); 
+ FTrackBarHeight.Position:=StrToIntDef(GetValueByName(Properties,'EffectHeightSize'),1);
  MakeImage(self);
 end;
 
@@ -1001,7 +999,7 @@ begin
  Result:=Result+'Color='+IntToStr(ColorChooser.Brush.Color)+';';
 end;
 
-class function TWaveEffect.ID: ShortString;
+class function TWaveEffect.ID: string;
 begin
  Result:='{9E1AE930-6903-497B-AA2F-CFABE87A10B8}';
 end;
@@ -1028,7 +1026,7 @@ begin
  FTrackBarFrequency.Position:=StrToIntDef(GetValueByName(Properties,'Frequency'),1);
  FTrackBarLength.Position:=StrToIntDef(GetValueByName(Properties,'Length'),1);
  FHorizontal.Checked:=GetBoolValueByName(Properties,'Color',true);
- ColorChooser.Brush.Color:=GetIntValueByName(Properties,'Color',1);     
+ ColorChooser.Brush.Color:=GetIntValueByName(Properties,'Color',1);
  MakeImage(self);
 end;
 
@@ -1207,7 +1205,7 @@ begin
  Result:=Result+'Color='+IntToStr(ColorChooser.Brush.Color)+';';
 end;
 
-class function TDisorderEffect.ID: ShortString;
+class function TDisorderEffect.ID: string;
 begin
  Result:='{088EC8E3-4F6B-4863-92AF-E47E5A7982A5}';
 end;
@@ -1233,7 +1231,7 @@ procedure TDisorderEffect.SetProperties(Properties: string);
 begin
  FDisorderLengthW.Position:=GetIntValueByName(Properties,'LengthW',1);
  FDisorderLengthH.Position:=GetIntValueByName(Properties,'LengthH',1);
- ColorChooser.Brush.Color:=GetIntValueByName(Properties,'Color',1);  
+ ColorChooser.Brush.Color:=GetIntValueByName(Properties,'Color',1);
  MakeImage(self);
 end;
 
@@ -1476,7 +1474,7 @@ begin
  Result:=Result+'ColorTo='+IntToStr(ColorToChooser.Brush.Color)+';';
 end;
 
-class function TReplaceColorEffect.ID: ShortString;
+class function TReplaceColorEffect.ID: string;
 begin
  Result:='{8911A34F-074F-452A-BD58-13102F049DF0}';
 end;
@@ -1491,7 +1489,7 @@ begin
  FReplaceColorSizeLabel.Caption:=Format(TEXT_MES_DISORDER_SIZE_F,[FReplaceColorSize.Position]);
  FReplaceColorValueLabel.Caption:=Format(TEXT_MES_DISORDER_F,[FReplaceColorValue.Position]);
  FSID:=IntToStr(random(10000));
- TReplaceColorEffectThread.Create(self,false,D,ColorBaseChooser.Brush.Color,ColorToChooser.Brush.Color,FReplaceColorValue.Position,FReplaceColorSize.Position,FSID,ExitThread);
+ TReplaceColorEffectThread.Create(self,D,ColorBaseChooser.Brush.Color,ColorToChooser.Brush.Color,FReplaceColorValue.Position,FReplaceColorSize.Position,FSID,ExitThread);
 end;
 
 procedure TReplaceColorEffect.Progress(Progress: integer;
@@ -1505,17 +1503,17 @@ begin
  FReplaceColorValue.Position:=GetIntValueByName(Properties,'ReplaceColorValue',1);
  FReplaceColorSize.Position:=GetIntValueByName(Properties,'ReplaceColorSize',1);
  ColorBaseChooser.Brush.Color:=GetIntValueByName(Properties,'ColorBase',1);
- ColorToChooser.Brush.Color:=GetIntValueByName(Properties,'ColorTo',1);    
+ ColorToChooser.Brush.Color:=GetIntValueByName(Properties,'ColorTo',1);
  MakeImage(self);
 end;
 
 { TReplaceColorEffectThread }
 
 constructor TReplaceColorEffectThread.Create(AOwner: TObject;
-  CreateSuspended: Boolean; S: TBitmap; ColorBase, ColorNew: TColor;
+  S: TBitmap; ColorBase, ColorNew: TColor;
   Size, Value: Integer; SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
+ inherited Create(False);
  FAOwner := AOwner;
  FS := S;
  FSize:=Size;
@@ -1524,7 +1522,6 @@ begin
  FSID := SID;
  FValue:=Value;
  FOnExit := OnExit;
- if not CreateSuspended then Resume;
 end;
 
 procedure TReplaceColorEffectThread.Execute;
@@ -1640,7 +1637,7 @@ begin
  DeviderLabel.Left:=8;
  DeviderLabel.Width:=100;
  DeviderLabel.Height:=21;
- 
+
  DeviderLabel.Visible:=true;
  DeviderEdit := TEdit.Create(Panel);
  DeviderEdit.Parent:=Panel;
@@ -1792,7 +1789,7 @@ begin
  end;
 end;
 
-class function TCustomMatrixEffect.ID: ShortString;
+class function TCustomMatrixEffect.ID: string;
 begin
  Result:='{84ABBC44-9F9D-4373-9676-6BD986B4464E}';
 end;
@@ -1917,7 +1914,7 @@ begin
  for j:=1 to 5 do
  begin
   E[i,j].Text:=GetValueByName(Properties,Format('v%d&%d',[i,j]));
- end;   
+ end;
  MakeImage(self);
 end;
 
@@ -1927,13 +1924,12 @@ constructor TCustomMatrixEffectThread.Create(AOwner: TObject;
   CreateSuspended: Boolean; S: TBitmap; M: TConvolutionMatrix; SID: string;
   OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
- FAOwner := AOwner;
- FS := S;
- FM:=M;
- FSID := SID;
- FOnExit := OnExit;
- if not CreateSuspended then Resume;
+  inherited Create(False);
+  FAOwner := AOwner;
+  FS := S;
+  FM := M;
+  FSID := SID;
+  FOnExit := OnExit;
 end;
 
 procedure TCustomMatrixEffectThread.Execute;

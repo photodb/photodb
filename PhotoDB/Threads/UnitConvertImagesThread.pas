@@ -20,7 +20,7 @@ type
 
 type
   TConvertImagesThread = class(TThread)
-  private    
+  private
     fSender : TForm;
     FSID : string;
     fOnDone : TNotifyEvent;
@@ -40,13 +40,13 @@ type
                       Options: TConvertThreadOptions);
     procedure SetProgressPosition(Position : integer);
     procedure SetProgressPositionSynch;
-    procedure ShowErrorWindow;          
+    procedure ShowErrorWindow;
     procedure ShowWriteErrorWindow;
     procedure DoDBKernelEvent;
     procedure DoOnDone;
-    procedure InitializeProgress; 
+    procedure InitializeProgress;
     procedure DestroyProgress;
-    procedure IfBreakOperation;   
+    procedure IfBreakOperation;
     procedure DoDBkernelEventRefreshList;
     procedure RemoveFileFromUpdatingList;
   end;
@@ -61,18 +61,16 @@ constructor TConvertImagesThread.Create(CreateSuspennded: Boolean;
   Sender: TForm; SID: string; OnDone: TNotifyEvent;
   Options: TConvertThreadOptions);
 var
-  i : integer;
+  I: Integer;
 begin
- inherited create(true);
- fSender:=Sender;
- fSID:=SID;
- fOnDone:=OnDone;
- fOptions:=Options;
+  inherited Create(False);
+  FSender := Sender;
+  FSID := SID;
+  FOnDone := OnDone;
+  FOptions := Options;
 
- for i:=0 to Length(Options.ImageList)-1 do
- ProcessedFilesCollection.AddFile(Options.ImageList[i]);
-
- if not CreateSuspennded then Resume;
+  for I := 0 to Length(Options.ImageList) - 1 do
+    ProcessedFilesCollection.AddFile(Options.ImageList[I]);
 end;
 
 procedure TConvertImagesThread.DestroyProgress;
@@ -100,11 +98,11 @@ end;
 
 procedure TConvertImagesThread.Execute;
 var
-  OldGraphic, NewGraphic : TGraphic;   
-  TempBitmap : TBitmap; 
+  OldGraphic, NewGraphic : TGraphic;
+  TempBitmap : TBitmap;
   Password, NewEXT, FileName, FileDir, EndDir : string;
-  NewGraphicClass : TGraphicClass;      
-  i, j, res : integer;  
+  NewGraphicClass : TGraphicClass;
+  i, j : integer;
   b : boolean;
 begin
  FreeOnTerminate:=true;
@@ -335,7 +333,7 @@ begin
   end;
 
   StrParam:=FOptions.ImageList[i];
-  Synchronize(RemoveFileFromUpdatingList);   
+  Synchronize(RemoveFileFromUpdatingList);
   Synchronize(DoDBkernelEventRefreshList);
  end;
 

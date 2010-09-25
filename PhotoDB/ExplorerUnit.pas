@@ -643,6 +643,7 @@ type
      function IsSelectedVisible: boolean;
      function TreeView : TShellTreeView;
      procedure CreateBackgrounds;
+     function GetFormID : string; override;
    public
      NoLockListView : boolean;
      Procedure LoadLanguage;
@@ -757,7 +758,7 @@ end;
 procedure TExplorerForm.CreateBackgrounds;
 var
   ExplorerBackground : TPNGGraphic;
-  Bitmap, BitmapList, ExplorerBackgroundBMP : TBitmap;
+  Bitmap, ExplorerBackgroundBMP : TBitmap;
 begin
   Bitmap := TBitmap.Create;
   try
@@ -1565,7 +1566,6 @@ end;
 procedure TExplorerForm.UpdateTheme(Sender: TObject);
 var
   i : integer;
-  b : TBitmap;
 begin
   ElvMain.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
   ElvMain.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
@@ -1964,6 +1964,11 @@ begin
          Result.Position := Result.Count - 1;
   end;
  end;
+end;
+
+function TExplorerForm.GetFormID: string;
+begin
+  Result := 'Explorer';
 end;
 
 procedure TExplorerForm.CbPathEditKeyPress(Sender: TObject; var Key: Char);
@@ -4282,7 +4287,6 @@ end;
 procedure TExplorerForm.CMMOUSELEAVE(var Message: TWMNoParams);
 var
   P : TPoint;
-  R : TRect;
 begin
   GetCursorPos(p);
   if THintManager.Instance.HintAtPoint(P) <> nil then
@@ -7228,6 +7232,8 @@ begin
     LV_TITLES     : Result := 16;
     LV_TILE       : Result := 48;
     LV_GRID       : Result := 32;
+    else
+      Result := 32;
   end;
 end;
 

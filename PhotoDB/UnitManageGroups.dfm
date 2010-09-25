@@ -26,9 +26,9 @@ object FormManageGroups: TFormManageGroups
   TextHeight = 13
   object ListView1: TNoVSBListView1
     Left = 0
-    Top = 44
+    Top = 42
     Width = 597
-    Height = 342
+    Height = 344
     Align = alClient
     BorderStyle = bsNone
     Columns = <
@@ -50,26 +50,27 @@ object FormManageGroups: TFormManageGroups
     OnContextPopup = ImageContextPopup
     OnCustomDrawItem = ListView1CustomDrawItem
     OnDblClick = ListView1DblClick
-    ExplicitHeight = 340
+    ExplicitTop = 44
+    ExplicitHeight = 342
   end
   object CoolBar1: TCoolBar
     Left = 0
     Top = 0
     Width = 597
-    Height = 44
+    Height = 42
     AutoSize = True
     Bands = <
       item
         Control = ToolBar1
         ImageIndex = -1
-        MinHeight = 40
-        Width = 593
+        MinHeight = 38
+        Width = 591
       end>
     object ToolBar1: TToolBar
-      Left = 9
+      Left = 11
       Top = 0
-      Width = 580
-      Height = 40
+      Width = 582
+      Height = 38
       AutoSize = True
       ButtonHeight = 38
       ButtonWidth = 79
@@ -79,25 +80,25 @@ object FormManageGroups: TFormManageGroups
       ShowCaptions = True
       TabOrder = 0
       Wrapable = False
-      object ToolButton5: TToolButton
+      object TbExit: TToolButton
         Left = 0
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Exit'
         ImageIndex = 3
-        OnClick = ToolButton5Click
+        OnClick = TbExitClick
       end
       object ToolButton4: TToolButton
         Left = 64
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton4'
         ImageIndex = 3
         Style = tbsSeparator
       end
-      object ToolButton1: TToolButton
+      object TbAdd: TToolButton
         Left = 72
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Add'
         ImageIndex = 0
@@ -105,7 +106,7 @@ object FormManageGroups: TFormManageGroups
       end
       object ToolButton2: TToolButton
         Left = 138
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Edit'
         ImageIndex = 1
@@ -113,7 +114,7 @@ object FormManageGroups: TFormManageGroups
       end
       object ToolButton6: TToolButton
         Left = 203
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton6'
         ImageIndex = 3
@@ -121,7 +122,7 @@ object FormManageGroups: TFormManageGroups
       end
       object ToolButton3: TToolButton
         Left = 211
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Delete'
         ImageIndex = 2
@@ -129,7 +130,7 @@ object FormManageGroups: TFormManageGroups
       end
       object ToolButton7: TToolButton
         Left = 289
-        Top = 2
+        Top = 0
         Width = 8
         Caption = 'ToolButton7'
         ImageIndex = 3
@@ -137,7 +138,7 @@ object FormManageGroups: TFormManageGroups
       end
       object ToolButton8: TToolButton
         Left = 297
-        Top = 2
+        Top = 0
         AutoSize = True
         Caption = 'Options'
         ImageIndex = 3
@@ -145,20 +146,15 @@ object FormManageGroups: TFormManageGroups
       end
     end
   end
-  object ApplicationEvents1: TApplicationEvents
-    OnMessage = ApplicationEvents1Message
-    Left = 16
-    Top = 48
-  end
   object ImageList1: TImageList
     Height = 50
     Width = 50
-    Left = 80
-    Top = 168
+    Left = 64
+    Top = 176
   end
   object MainMenu1: TMainMenu
-    Left = 184
-    Top = 88
+    Left = 64
+    Top = 224
     object File1: TMenuItem
       Caption = 'File'
       object Exit1: TMenuItem
@@ -198,7 +194,7 @@ object FormManageGroups: TFormManageGroups
   object ToolBarImageList: TImageList
     Height = 32
     Width = 32
-    Left = 272
-    Top = 128
+    Left = 64
+    Top = 272
   end
 end

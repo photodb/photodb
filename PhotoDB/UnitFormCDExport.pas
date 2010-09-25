@@ -114,7 +114,7 @@ end;
 procedure TFormCDExport.FormCreate(Sender: TObject);
 begin
  CDListView.DoubleBuffered:=true;
-                   
+
  ConvertTo32BitImageList(ImageListIcons);
  Mapping := TCDIndexMapping.Create;
  EditCDSize.Text:=SizeInTextA(Mapping.GetCDSize);
@@ -148,7 +148,7 @@ begin
  ButtonRemoveItems.Caption:=TEXT_MES_REMOVE_CD_ITEMS;
  ButtonCreateDirectory.Caption:=TEXT_MES_CREATE_DIRECTORY;
  CDListView.Columns[0].Caption:=TEXT_MES_CD_EXPORT_LIST_VIEW_LOCUMN_FILE_NAME;
- CDListView.Columns[1].Caption:=TEXT_MES_CD_EXPORT_LIST_VIEW_LOCUMN_FILE_SIZE; 
+ CDListView.Columns[1].Caption:=TEXT_MES_CD_EXPORT_LIST_VIEW_LOCUMN_FILE_SIZE;
  CDListView.Columns[2].Caption:=TEXT_MES_CD_EXPORT_LIST_VIEW_LOCUMN_DB_ID;
 
  CheckBoxDeleteFiles.Caption:=TEXT_MES_CD_EXPORT_DELETE_ORIGINAL_FILES;
@@ -252,7 +252,7 @@ begin
 
  if Item.Data=nil then
  begin
-  Mapping.GoUp;    
+  Mapping.GoUp;
   DrawCurrentDirectory(CDListView);
   exit;
  end;
@@ -365,7 +365,6 @@ end;
 
 procedure TFormCDExport.ButtonExportClick(Sender: TObject);
 var
-  Drive, Directory : string;
   DriveFreeSize : int64;
   Options : TCDExportOptions;
 begin
@@ -388,17 +387,17 @@ begin
  begin
   if ID_YES<>MessageBoxDB(Handle,TEXT_MES_CD_EXPORT_HASNT_ANY_DB_FILE,TEXT_MES_WARNING,TD_BUTTON_YESNO,TD_ICON_WARNING) then exit;
  end;
-                
+
  EnableControls(false);
  //in thread!
 
- Options.ToDirectory:=EditExportDirectory.Text;
- Options.DeleteFiles:=CheckBoxDeleteFiles.Checked;
- Options.ModifyDB:=CheckBoxModifyDB.Checked;
- Options.CreatePortableDB:=CheckBoxCreatePortableDB.Checked;
- Options.OnEnd:=OnThreadEnd;
+  Options.ToDirectory := EditExportDirectory.Text;
+  Options.DeleteFiles := CheckBoxDeleteFiles.Checked;
+  Options.ModifyDB := CheckBoxModifyDB.Checked;
+  Options.CreatePortableDB := CheckBoxCreatePortableDB.Checked;
+  Options.OnEnd := OnThreadEnd;
 
- TCDExportThread.Create(false,Mapping,Options);
+  TCDExportThread.Create(Mapping, Options);
 
 end;
 
@@ -408,7 +407,7 @@ begin
  ButtonRemoveItems.Left:=ButtonCreateDirectory.Left-ButtonRemoveItems.Width-5;
  ButtonAddItems.Left:=ButtonRemoveItems.Left-ButtonAddItems.Width-5;
  ComboBoxPathList.Width:=ButtonAddItems.Left-ComboBoxPathList.Left-5;
-                                                                      
+
  ButtonExport.Left:=PanelTop.Width-ButtonExport.Width-5;
 end;
 
@@ -454,9 +453,9 @@ end;
 procedure TFormCDExport.PopupMenuListViewPopup(Sender: TObject);
 begin
  Open1.Visible:=CDListView.SelCount>0;
- Copy1.Visible:=CDListView.SelCount>0;  
+ Copy1.Visible:=CDListView.SelCount>0;
  Cut1.Visible:=CDListView.SelCount>0;
- Paste1.Visible:=CDListView.SelCount=0;  
+ Paste1.Visible:=CDListView.SelCount=0;
  Rename1.Visible:=CDListView.SelCount=1;
  Delete1.Visible:=CDListView.SelCount>0;
 end;

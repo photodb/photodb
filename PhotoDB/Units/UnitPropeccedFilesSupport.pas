@@ -96,8 +96,6 @@ end;
 
 procedure TProcessedFilesCollection.RemoveFile(FileName: String);
 var
-  I : Integer;
-  CRC : Cardinal;
   Item : TCollectionItem;
 begin
   FSync.Enter;

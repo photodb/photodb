@@ -1,10 +1,10 @@
 object ActionsForm: TActionsForm
   Left = 241
   Top = 135
-  Width = 297
-  Height = 263
   BorderStyle = bsSizeToolWin
   Caption = 'Actions Form'
+  ClientHeight = 229
+  ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,7 +22,7 @@ object ActionsForm: TActionsForm
     Left = 0
     Top = 65
     Width = 281
-    Height = 162
+    Height = 164
     Style = lbOwnerDrawFixed
     Align = alClient
     ItemHeight = 22
@@ -42,9 +42,10 @@ object ActionsForm: TActionsForm
       Width = 81
       Height = 16
       Cursor = crHandPoint
+      ParentColor = False
+      Color = clWhite
       Text = 'Save To File'
       OnClick = SaveToFileLinkClick
-      BkColor = clWhite
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16
@@ -53,6 +54,7 @@ object ActionsForm: TActionsForm
       EnterBould = False
       TopIconIncrement = 0
       ImageCanRegenerate = False
+      UseSpecIconSize = True
     end
     object LoadFromFileLink: TWebLink
       Left = 8
@@ -60,9 +62,10 @@ object ActionsForm: TActionsForm
       Width = 90
       Height = 16
       Cursor = crHandPoint
+      ParentColor = False
+      Color = clWhite
       Text = 'Load From File'
       OnClick = LoadFromFileLinkClick
-      BkColor = clWhite
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16
@@ -71,6 +74,7 @@ object ActionsForm: TActionsForm
       EnterBould = False
       TopIconIncrement = 0
       ImageCanRegenerate = False
+      UseSpecIconSize = True
     end
     object CloseLink: TWebLink
       Left = 8
@@ -78,9 +82,10 @@ object ActionsForm: TActionsForm
       Width = 47
       Height = 16
       Cursor = crHandPoint
+      ParentColor = False
+      Color = clWhite
       Text = 'Close'
       OnClick = CloseLinkClick
-      BkColor = clWhite
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16
@@ -89,6 +94,7 @@ object ActionsForm: TActionsForm
       EnterBould = False
       TopIconIncrement = 0
       ImageCanRegenerate = False
+      UseSpecIconSize = True
     end
   end
   object ActionsImageList: TImageList

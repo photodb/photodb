@@ -28,17 +28,17 @@ type
   SearchThread = class(TThreadEx)
   private
     { Private declarations }
-    fQuery: TDataSet;
+{    fQuery: TDataSet;
     FI : integer;
-    FID : integer;
+    FID : integer;  }
     FPictureSize : integer;
 
-    fbit : TBitmap;
+ {   fbit : TBitmap;
     fpic : TPicture;
-    fthum_images_:integer;
+    fthum_images_:integer;  }
     ferrormsg : string;
     foptions : integer;
-    fInclude : Boolean;
+ {   fInclude : Boolean;  }
 
     fSpsearch_ShowFolderid : integer;
     fSpsearch_ShowFolder : string;
@@ -54,8 +54,6 @@ type
     IthIds : TArInteger;
     StrParam : String;
     IntParam : Integer;
-    procedure BeginUpdate;
-    procedure EndUpdate;
     procedure ErrorSQL;
     function CreateQuery : TDBQueryParams;
     procedure DoOnDone;
@@ -119,16 +117,6 @@ begin
   Start;
 end;
 
-procedure SearchThread.BeginUpdate;
-begin
-  (ThreadForm as TSearchForm).BeginUpdate;
-end;
-
-procedure SearchThread.EndUpdate;
-begin
-  (ThreadForm as TSearchForm).EndUpdate;
-end;
-
 procedure SearchThread.ErrorSQL;
 begin
   (ThreadForm as TSearchForm).ErrorQSL(ferrormsg);
@@ -136,7 +124,8 @@ end;
 
 procedure SearchThread.Execute;
 var
-  i, c, x : integer;
+  ParamNo: Integer;
+{  i, c, x : integer;
   fSpecQuery : TDataSet;
   PassWord,tempsql : string;
   JPEG : TJPEGImage;
@@ -146,9 +135,7 @@ var
   CmpResult : TImageCompareResult;
   rot : integer;
   crc : Cardinal;
-  paramno : integer;
-  Count : integer;
-    fBS : TStream;
+  Count : integer;    }
 
   function NextParam : integer;
   begin
@@ -867,7 +854,7 @@ begin
     if b>0 then
     stemp:=AnsiUpperCase(copy(sqltext,a+2,b-a-2));
     for i:=Length(stemp) downto 1 do
-    if not (stemp[i] in ['C','K','F','G','L']) then
+    if not CharInSet(stemp[i], ['C','K','F','G','L']) then
     Delete(stemp,i,1);
 
     for j:=1 to Length(stemp) do
@@ -976,7 +963,7 @@ begin
     sqltext:='(';
     s:=FSearchParams.Query;
     for i:=length(s) downto 1 do
-    if not (s[i] in cifri) and (s[i]<>'$') then delete(s,i,1);
+    if not CharInSet(s[i], cifri) and (s[i]<>'$') then delete(s,i,1);
     if length(s)<2 then exit;
     n:=1;
     for i:=1 to length(s) do

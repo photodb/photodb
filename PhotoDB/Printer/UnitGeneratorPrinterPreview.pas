@@ -119,21 +119,20 @@ end;
 constructor TGeneratorPrinterPreview.Create(CreateSuspennded: Boolean; Sender : TObject; SID : String; SampleType : TPrintSampleSizeOne; Files : TStrings; OnEndProc : TOnEndGeneratePrinterPreviewEvent;
 DoPrint : Boolean; Options : TGenerateImageOptions; PrintImagePerPage : integer; VirtualBitmaped : Boolean; VirtualBitmap : TBitmap; DestroyBitmap : Boolean);
 begin
- inherited Create(True);
- FSID:=SID;
- FSender := Sender;
- FFiles := TStringList.Create;
- FFiles.Assign(Files);
- FOnEndProc:=OnEndProc;
- FSampleType:=SampleType;
- FDoPrint:=DoPrint;
- FPrintImagePerPage:=PrintImagePerPage;
- FTerminating:=false;
- FOptions:=Options;
- FVirtualBitmaped := VirtualBitmaped;
- FVirtualBitmap := VirtualBitmap;
- FDestroyBitmap:=DestroyBitmap;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FSID := SID;
+  FSender := Sender;
+  FFiles := TStringList.Create;
+  FFiles.Assign(Files);
+  FOnEndProc := OnEndProc;
+  FSampleType := SampleType;
+  FDoPrint := DoPrint;
+  FPrintImagePerPage := PrintImagePerPage;
+  FTerminating := False;
+  FOptions := Options;
+  FVirtualBitmaped := VirtualBitmaped;
+  FVirtualBitmap := VirtualBitmap;
+  FDestroyBitmap := DestroyBitmap;
 end;
 
 destructor TGeneratorPrinterPreview.Destroy;
@@ -245,7 +244,7 @@ begin
  FormProgress.PValue:=@FTerminating;
  FormProgress.Show;
 end;
-                                      
+
 procedure TGeneratorPrinterPreview.HideProgressWindow;
 begin
  FormProgress.FCanClose:=true;

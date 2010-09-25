@@ -415,7 +415,6 @@ type
     procedure elvDateRangeItemSelectionChanged(Sender: TCustomEasyListview;
       Item: TEasyItem);
   private
-    FLoadingDatesState : Extended;
     FSearchInfo : TSearchInfo;
     FListUpdating : boolean;
     FPropertyGroups: String;
@@ -903,7 +902,6 @@ var
   Info: TRecordsInfo;
   P, P1: TPoint;
   Item: TEasyItem;
-  Graphic : TGraphic;
 begin
   GetCursorPos(P1);
   P := ElvMain.ScreenToClient(P1);
@@ -1660,7 +1658,7 @@ procedure TSearchForm.ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
 var
   Pos, MousePos : Tpoint;
   I : Integer;
-  SelectedItem, Item: TEasyItem;
+  Item: TEasyItem;
   Data : TSearchRecord;
   SpotX, SpotY : Integer;
 
@@ -1877,7 +1875,6 @@ end;
 procedure TSearchForm.CMMOUSELEAVE(var Message: TWMNoParams);
 var
   P: Tpoint;
-  R: Trect;
 begin
   Getcursorpos(P);
   if THintManager.Instance.HintAtPoint(P) <> nil then
@@ -2021,11 +2018,11 @@ end;
 
 procedure TSearchForm.ListViewKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key =  #13 then
+  if Key = Char(VK_RETURN) then
     ListViewDblClick(Sender);
 
-  if Key in Unusedchar then
-    Key:=#0;
+  if CharInSet(Key, Unusedchar) then
+    Key := #0;
 end;
 
 procedure TSearchForm.ListViewEdited(Sender: TObject; Item: TEasyItem;
@@ -3962,7 +3959,6 @@ procedure TSearchForm.RebuildQueryList;
 var
   I, GroupIndex : Integer;
   GroupImage, GroupImageSmall : TBitmap;
-  Group : TGroupInfo;
   GroupName : string;
 begin
   SearchEdit.ItemsEx.Clear;
@@ -4614,7 +4610,6 @@ var
   I : Integer;
   Tmp : TSearchQuery;
 begin
-  Result := nil;
   for I := 0 to Count - 1 do
   begin
     Tmp := Self[I];
@@ -4713,7 +4708,7 @@ begin
   SetSQL(DS, 'SELECT DISTINCT DateToAdd FROM $DB$ WHERE IsDate = True ORDER BY DateToAdd DESC');
   TADOQuery(DS).OnFetchProgress := FetchProgress;
 
-  TOpenQueryThread.Create(False, DS, DBRangeOpened);
+  TOpenQueryThread.Create(DS, DBRangeOpened);
 end;
 
 procedure TSearchForm.FetchProgress(DataSet: TCustomADODataSet; Progress,

@@ -176,7 +176,6 @@ var
   FTempGroup, FRegGroups, FOutRegGroups : TGroups;
   GroupsActions : TGroupsActionsW;
   PlugInsFiles, ThemesFiles : TStringList;
-  NewGroup : TGroup;
   Reg : TRegIniFile;
 
 Procedure AddCurrentFile;

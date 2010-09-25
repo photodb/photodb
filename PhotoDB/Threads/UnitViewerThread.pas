@@ -44,7 +44,7 @@ type
     procedure TestThreadSynch;
     procedure UpdateRecord;
   public
-   constructor Create(CreateSuspennded: Boolean; FileName : String; Rotate : Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
+   constructor Create(FileName : String; Rotate : Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
    destructor Destroy; override;
   end;
 
@@ -54,10 +54,9 @@ uses UnitPasswordForm, SlideShow;
 
 { TViewerThread }
 
-constructor TViewerThread.Create(CreateSuspennded: Boolean;
-  FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
+constructor TViewerThread.Create(FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
 begin
-  inherited Create(True);
+  inherited Create(False);
   FPage := Page;
   FFileName := FileName;
   FRotate := Rotate;
@@ -66,7 +65,6 @@ begin
   FSID := SID;
   FIsForward := IsForward;
   FUpdateInfo := UpdateInfo;
-  if not CreateSuspennded then Resume;
 end;
 
 destructor TViewerThread.Destroy;
@@ -80,8 +78,6 @@ var
   PNG : TPNGGraphic;
   TransparentColor : TColor;
   GraphicClass : TGraphicClass;
-  MS : TMemoryStream;
-  BMP : TBitmap;
 begin
   FPages := 0;
   Priority := TpHigher;

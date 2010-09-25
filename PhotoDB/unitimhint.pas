@@ -203,8 +203,7 @@ end;
 
 procedure TImHint.Execute(Sender : TForm; G : TGraphic; W, H : Integer; Info : TDBPopupMenuInfoRecord; Pos : TPoint; CheckFunction : THintCheckFunction);
 var
-  WW, HH, FH, FW, FL, FT, LW: Integer;
-  B: TBitmap;
+  WW, HH, FH, FW, FL, FT: Integer;
   Rect : TRect;
 begin
   FCheckFunction := CheckFunction;
@@ -485,6 +484,9 @@ end;
 
 procedure TImHint.FormDestroy(Sender: TObject);
 begin
+  F(AnimatedBuffer);
+  F(ImageBuffer);
+  F(AnimatedImage);
   DropFileTargetMain.Unregister;
   DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
   DBkernel.UnRegisterForm(Self);

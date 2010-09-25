@@ -9,15 +9,15 @@ uses
 type
   ThreadRestoreTable = class(TThread)
   private
-    fOptions : TRestoreThreadOptions;
-    StrParam : String;
-    procedure DoExit;
     { Private declarations }
+    FOptions: TRestoreThreadOptions;
+    StrParam: string;
+    procedure DoExit;
   protected
-   procedure TextOut;    
-   procedure Execute; override;
+    procedure TextOut;
+    procedure Execute; override;
   public
-   constructor Create(CreateSuspennded: Boolean; Options : TRestoreThreadOptions);
+    constructor Create(Options: TRestoreThreadOptions);
   end;
 
 implementation
@@ -31,18 +31,16 @@ begin
  CMDForm.OnEnd(Self);
 end;
 
-constructor ThreadRestoreTable.Create(CreateSuspennded: Boolean;
-        Options : TRestoreThreadOptions);
+constructor ThreadRestoreTable.Create(Options: TRestoreThreadOptions);
 begin
- inherited Create(true);
- fOptions:=Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 procedure ThreadRestoreTable.Execute;
 var
   s : String;
-  CurrentFile, FileName : String;
+  FileName : String;
 begin
  FreeOnTerminate:=True;
 
@@ -95,7 +93,7 @@ begin
    DBKernel.AddDB(GetFileNameWithoutExt(fOptions.FileName),fOptions.FileName,Application.ExeName+',0',false);
    DBKernel.SetDataBase(FileName);
  end;
- 
+
  Sleep(2000);
  Synchronize(DoExit);
 end;
@@ -107,4 +105,4 @@ begin
 end;
 
 end.
- 
+

@@ -9,16 +9,15 @@ uses
 type
   PackingTable = class(TThread)
   private
-  FText : String;
-  fOptions : TPackingTableThreadOptions;
     { Private declarations }
+    FText: string;
+    FOptions: TPackingTableThreadOptions;
   protected
     procedure AddTextLine;
     procedure DoExit;
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean;
-            Options : TPackingTableThreadOptions);
+    constructor Create(Options: TPackingTableThreadOptions);
   end;
 
 implementation
@@ -50,12 +49,10 @@ begin
 // CMDForm.OnEnd(Self);
 end;
 
-constructor PackingTable.Create(CreateSuspennded: Boolean;
-  Options: TPackingTableThreadOptions);
+constructor PackingTable.Create(Options: TPackingTableThreadOptions);
 begin
- inherited create(true);
- fOptions:=Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 end.

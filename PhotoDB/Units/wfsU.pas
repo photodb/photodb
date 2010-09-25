@@ -22,7 +22,7 @@ type
     FBytesWritte    : DWORD;
     FCompletionPort : THandle;
     FNumBytes       : Cardinal;
-    FOldFileName    : string;       
+    FOldFileName    : string;
     InfoCallback    : TInfoCallBackDirectoryChangedArray;
     fOnNeedClosing  : TNotifyEvent;
     fOnThreadClosing: TNotifyEvent;
@@ -32,7 +32,7 @@ type
   protected
     procedure Execute; override;
     procedure DoCallBack;
-    procedure TDoTerminate; 
+    procedure TDoTerminate;
     procedure DoClosingEvent;
   public
     PublicOwner : TObject;
@@ -154,39 +154,39 @@ end;
 
 constructor TWFS.Create(pName: string; pFilter: cardinal; pSubTree: boolean; pInfoCallback: TWatchFileSystemCallback; OnNeedClosing, OnThreadClosing : TNotifyEvent);
 begin
-  inherited Create(True);
-  OM.AddObj(self);
+  inherited Create(False);
+  OM.AddObj(Self);
   FreeOnTerminate:=True;
   FName:=IncludeTrailingBackslash(pName);
   FFilter:=pFilter;
   FSubTree:=pSubTree;
   FOldFileName:=EmptyStr;
   ZeroMemory(@FOverLapp, SizeOf(TOverLapped));
-  FPOverLapp:=@FOverLapp;
+  FPOverLapp := @FOverLapp;
   ZeroMemory(@FWatchBuf, SizeOf(FWatchBuf));
-  FInfoCallback:=pInfoCallback;
-  fOnNeedClosing:= OnNeedClosing;
-  fOnThreadClosing:=OnThreadClosing;
-  Resume;
+  FInfoCallback := PInfoCallback;
+  FOnNeedClosing := OnNeedClosing;
+  FOnThreadClosing := OnThreadClosing;
 end;
 
 destructor TWFS.Destroy;
 begin
-  OM.RemoveObj(self);
+  OM.RemoveObj(Self);
   try
-   PostQueuedCompletionStatus(FCompletionPort, 0, 0, nil);
-  except 
-    on e : Exception do EventLog(':TWachDirectoryClass::Destroy() throw exception: '+e.Message);
+    PostQueuedCompletionStatus(FCompletionPort, 0, 0, nil);
+  except
+    on E: Exception do
+      EventLog(':TWachDirectoryClass::Destroy() throw exception: '+e.Message);
   end;
   try
    CloseHandle(FWatchHandle);
-  except   
+  except
     on e : Exception do EventLog(':TWachDirectoryClass::Destroy() throw exception: '+e.Message);
   end;
-  FWatchHandle:=0;  
+  FWatchHandle:=0;
   try
    CloseHandle(FCompletionPort);
-  except     
+  except
     on e : Exception do EventLog(':TWachDirectoryClass::Destroy() throw exception: '+e.Message);
   end;
   FCompletionPort:=0;
@@ -209,7 +209,7 @@ end;
 
 procedure TWFS.HandleEvent;
 var
-  fInfoCallback  : TInfoCallback; 
+  fInfoCallback  : TInfoCallback;
   Ptr            : Pointer;
   FileName       : PWideChar;
   b, c           : Boolean;
@@ -295,7 +295,7 @@ begin
         FBytesWritte:=0;
         ReadDirectoryChanges(FWatchHandle, @FWatchBuf, SizeOf(FWatchBuf), FSubTree, FFilter,
                              @FBytesWritte, @FOverLapp, nil);
-       except    
+       except
         on e : Exception do EventLog(':TWachDirectoryClass::WatchEvent() throw exception: '+e.Message);
        end;
       end else Terminate;
@@ -304,19 +304,19 @@ begin
 end;
 
 procedure TWFS.DoCallBack;
-begin            
+begin
  if OM.IsObj(PublicOwner) then
  FInfoCallback(InfoCallback);
 end;
 
 procedure TWFS.TDoTerminate;
-begin      
+begin
  if OM.IsObj(PublicOwner) then
  fOnNeedClosing(self);
 end;
 
 procedure TWFS.DoClosingEvent;
-begin  
+begin
  if OM.IsObj(PublicOwner) then
  fOnThreadClosing(self);
 end;

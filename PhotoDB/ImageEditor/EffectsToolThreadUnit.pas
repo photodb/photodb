@@ -21,7 +21,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TObject; CreateSuspended: Boolean; Proc : TBaseEffectProc; S : TBitmap; SID : string; OnExit : TBaseEffectProcThreadExit; Editor : TForm);
+    constructor Create(AOwner : TObject; Proc : TBaseEffectProc; S : TBitmap; SID : string; OnExit : TBaseEffectProcThreadExit; Editor : TForm);
     Procedure CallBack(Progress : integer; var Break: boolean);
     Procedure SetProgress;
     Procedure DoExit;
@@ -49,17 +49,16 @@ begin
  if (FEditor as TImageEditor).ToolClass=FOwner then (FEditor as TImageEditor).StatusBar1.Panels[0].Text:='';
 end;
 
-constructor TBaseEffectThread.Create(AOwner : TObject; CreateSuspended: Boolean;
+constructor TBaseEffectThread.Create(AOwner : TObject;
   Proc: TBaseEffectProc; S: TBitmap; SID: string; OnExit : TBaseEffectProcThreadExit; Editor : TForm);
 begin
- inherited Create(True);
+ inherited Create(False);
  FOwner:=AOwner;
  FSID:=SID;
  FOnExit := OnExit;
  FProc:=Proc;
  BaseImage:=S;
  FEditor:=Editor;
- if not CreateSuspended then Resume;
 end;
 
 procedure TBaseEffectThread.DoExit;

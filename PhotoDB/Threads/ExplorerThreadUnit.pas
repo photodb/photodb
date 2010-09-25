@@ -55,7 +55,6 @@ type
     LoadingAllBigImages: Boolean;
     FullFolderPicture: TPNGGraphic;
     FSyncEvent: THandle;
-    FMultiProcessorWork : Boolean;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
@@ -80,7 +79,6 @@ type
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
     procedure ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
-    Procedure MakeFolderBitmap;
     Procedure DrawFolderImageBig(Bitmap : TBitmap);
     procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
     procedure ReplaceFolderImage;
@@ -385,7 +383,8 @@ begin
                Continue;
 
            inc(FilesReadedCount);
-           ShowInfo(Format(TEXT_MES_READING_FOLDER_FORMAT,[IntToStr(FilesReadedCount)]),1,0);
+           if FilesReadedCount mod 10 = 0 then
+             ShowInfo(Format(TEXT_MES_READING_FOLDER_FORMAT,[IntToStr(FilesReadedCount)]),1,0);
            If ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
            begin
             FE:=(SearchRec.Attr and faDirectory=0);
@@ -439,11 +438,11 @@ begin
            if IsTerminated then Break;
            GUIDParam:=FFiles[i].SID;
            Inc(InfoPosition);
-           if i mod 10 = 0 then
+           if InfoPosition mod 10 = 0 then
              ShowInfo(InfoPosition);
            CurrentFile := FFiles[i].FileName;
            MakeFolderImage(CurrentFile);
-           AddDirectoryToExplorer;
+           SynchronizeEx(AddDirectoryToExplorer);
          end;
         end;
         ShowInfo(TEXT_MES_LOADING_IMAGES);
@@ -453,8 +452,8 @@ begin
           if IsTerminated then Break;
           GUIDParam:=FFiles[i].SID;
           Inc(InfoPosition);
-          if i mod 10=0 then
-          ShowInfo(InfoPosition);
+          if InfoPosition mod 10 = 0 then
+            ShowInfo(InfoPosition);
           CurrentFile:=FFiles[i].FileName;
           AddImageFileToExplorer;
         end;
@@ -463,10 +462,11 @@ begin
         for I := 0 to FFiles.Count - 1 do
         If FFiles[I].FileType=EXPLORER_ITEM_FILE then
         begin
-         If IsTerminated then break;
-         GUIDParam:=FFiles[i].SID;
+          If IsTerminated then break;
+          GUIDParam:=FFiles[i].SID;
           Inc(InfoPosition);
-          ShowInfo(InfoPosition);
+          if InfoPosition mod 10 = 0 then
+            ShowInfo(InfoPosition);
           CurrentFile:=FFiles[i].FileName;
           AddImageFileToExplorer;
           FFiles[i].Tag:=IntIconParam;
@@ -564,26 +564,11 @@ begin
   AExplorerFolders.CheckFolder(FFolder);
 end;
 
-procedure TExplorerThread.MakeFolderBitmap;
-begin
- FFolderBitmap:=TBitmap.create;
-
- FFolderBitmap.PixelFormat:=pf24bit;
- FFolderBitmap.Width:=FIcoSize;
- FFolderBitmap.Height:=FIcoSize;
- FFolderBitmap.Canvas.Brush.Color:=Theme_ListColor;
- FFolderBitmap.Canvas.Pen.Color:=Theme_ListColor;
- FillRectNoCanvas(FFolderBitmap,Theme_ListColor);
- FFolderBitmap.Canvas.Draw(0,0,fIcon);
-
-end;
-
 procedure TExplorerThread.InfoToExplorerForm;
 begin
   if not IsTerminated then
     FSender.LoadInfoAboutFiles(FFiles);
 end;
-
 
 procedure TExplorerThread.FileNeededAW;
 begin
@@ -598,14 +583,14 @@ end;
 
 procedure TExplorerThread.AddDirectoryToExplorer;
 begin
- SynchronizeEx(AddDirectoryImageToExplorer);
- SynchronizeEx(AddDirectoryItemToExplorer);
+  AddDirectoryImageToExplorer;
+  AddDirectoryItemToExplorer;
 end;
 
 procedure TExplorerThread.AddDriveToExplorer;
 begin
- SynchronizeEx(AddDirectoryImageToExplorer);
- SynchronizeEx(AddDirectoryItemToExplorerW);
+  AddDirectoryImageToExplorer;
+  AddDirectoryItemToExplorerW;
 end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorer;
@@ -667,8 +652,7 @@ begin
   end else
     Ficon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
 
-  SynchronizeEx(AddImageFileImageToExplorer);
-  SynchronizeEx(AddImageFileItemToExplorer);
+  SynchronizeEx(MakeImageWithIcon);
 end;
 
 procedure TExplorerThread.DrawImageIcon;
@@ -711,7 +695,6 @@ procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : In
 var
   FBS : TStream;
   CryptedFile : Boolean;
-  Info : TOneRecordInfo;
   JPEG : TJpegImage;
 begin
   TempBitmap := nil;
@@ -803,7 +786,8 @@ begin
   if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam);
-    FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.ItemInclude, isBigImage);
+    if TempBitmap <> nil then
+      FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.ItemInclude, isBigImage)
   end;
 end;
 
@@ -851,23 +835,23 @@ Var
     Result := FFileNames.IndexOf(AnsiLowerCase(FileName)) > -1;
   end;
 
-  function FileInPrivateFiles(FileName : String) : Boolean;
+  function FileInPrivateFiles(FileName : string): Boolean;
   begin
     Result := FPrivateFileNames.IndexOf(AnsiLowerCase(FileName)) > -1;
   end;
 
-  Procedure AddFileInFolder(FileName : String);
+  procedure AddFileInFolder(FileName: string);
   begin
-   inc(CountFilesInFolder);
-   if CountFilesInFolder<5 then
-   begin
-    FilesInFolder[CountFilesInFolder]:=FileName;
-    FilesDatesInFolder[CountFilesInFolder]:=GetFileDateTime(FileName);
-   end;
+    Inc(CountFilesInFolder);
+    if CountFilesInFolder < 5 then
+    begin
+      FilesInFolder[CountFilesInFolder] := FileName;
+      FilesDatesInFolder[CountFilesInFolder] := GetFileDateTime(FileName);
+    end;
   end;
 
 begin
-  ps := ExplorerInfo.PictureSize;
+  Ps := ExplorerInfo.PictureSize;
   _y := Round((564-68)*ps/1200);
   SmallImageSize := Round(_y/1.05);
   CountFilesInFolder := 0;
@@ -906,13 +890,13 @@ begin
         else
           SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
 
-        SetStrParam(Query,0,'%'+DBFolder+'%');
-        SetStrParam(Query,1,'%'+DBFolder+'%\%');
+        SetStrParam(Query, 0, '%' + DBFolder + '%');
+        SetStrParam(Query, 1, '%' + DBFolder + '%\%');
 
         Query.Active := True;
 
-        for i:=1 to 4 do
-          RecNos[i] := 0;
+        for I := 1 to 4 do
+          RecNos[I] := 0;
 
         if not Query.IsEmpty then
         begin
@@ -934,7 +918,7 @@ begin
               begin
                 if Nbr < 4 then
                 begin
-                  inc(Nbr);
+                  Inc(Nbr);
                   RecNos[Nbr] := Query.RecNo;
                   FilesInFolder[Nbr] := Query.FieldByName('FFileName').AsString;
                   FFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
@@ -1409,7 +1393,7 @@ begin
         DriveNameParam := GetCDVolumeLabel(CurrentFile[1]) + ' (' + CurrentFile[1] + ':)'
       else
         DriveNameParam := MrsGetFileType(CurrentFile[1] + ':\') + ' (' + CurrentFile[1] + ':)';
-      AddDriveToExplorer;
+      SynchronizeEx(AddDriveToExplorer);
     end;
     if FFiles[I].FileType = EXPLORER_ITEM_NETWORK then
     begin
@@ -1467,8 +1451,8 @@ end;
 
 procedure TExplorerThread.MakeImageWithIcon;
 begin
-  SynchronizeEx(AddImageFileImageToExplorer);
-  SynchronizeEx(AddImageFileItemToExplorer);
+  AddImageFileImageToExplorer;
+  AddImageFileItemToExplorer;
 end;
 
 procedure TExplorerThread.LoadWorkgroupFolder;
@@ -1507,7 +1491,7 @@ begin
      FindIcon(DBKernel.IconDllInstance,'COMPUTER',FIcoSize,32,IconParam);
 
      FIcon:=IconParam;
-     MakeImageWithIcon;
+     SynchronizeEx(MakeImageWithIcon);
     end;
   finally
     FFiles.Free;
@@ -1553,7 +1537,7 @@ begin
       IconParam:=nil;
       FindIcon(DBKernel.IconDllInstance, 'SHARE', FIcoSize, 32, IconParam);
       FIcon:=IconParam;
-      MakeImageWithIcon;
+      SynchronizeEx(MakeImageWithIcon);
     end;
   finally
     FFiles.Free;
@@ -1574,7 +1558,7 @@ end;
 
 procedure TExplorerThread.UpdateFile;
 var
-  Folder, dbstr : string;
+  Folder : string;
   crc : Cardinal;
 begin
  if FUpdaterInfo.ID<>0 then
@@ -1729,7 +1713,6 @@ end;
 procedure TExplorerThread.DoLoadBigImages;
 var
   i, InfoPosition : integer;
-  ProcNum : integer;
 begin
   while ExplorerUpdateBigImageThreadsCount > ProcessorCount do
     Sleep(10);
@@ -1970,13 +1953,8 @@ begin
         end;
       end else
       begin
-        GraphicParam := TAIcons.Instance.GetIconByExt(Info.ItemFileName, False, FIcoSize, False);
-        try
-          MakeTempBitmap;
-          SynchronizeEx(DrawImageToTempBitmapCenter);
-        finally
-          F(GraphicParam);
-        end;
+        //do nothing - icon rests
+        TempBitmap := nil;
       end;
     finally
       F(Graphic);
@@ -2000,7 +1978,7 @@ begin
           F(GraphicParam);
         end;
       finally
-        F(Fbit);
+        F(FBit);
       end;
     end;
   end;

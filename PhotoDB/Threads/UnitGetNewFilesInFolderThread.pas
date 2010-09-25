@@ -15,7 +15,7 @@ type
   protected
     procedure Execute; override;
   public
-   constructor Create(CreateSuspennded: Boolean; Folder : string);
+   constructor Create(Folder : string);
   end;
 
   TArrayOfString = array of string;
@@ -25,12 +25,10 @@ type
 
 implementation
 
-constructor TGetNewFilesInFolderThread.Create(CreateSuspennded: Boolean;
-  Folder: string);
+constructor TGetNewFilesInFolderThread.Create(Folder: string);
 begin
- inherited Create(true);
- FFolder:=Folder;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FFolder := Folder;
 end;
 
 function GetDirImageListing(Dir : String) : TArrayOfString;

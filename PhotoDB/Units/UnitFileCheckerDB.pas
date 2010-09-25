@@ -27,7 +27,6 @@ var
   DateModifyOfFile, RegistryDate : double;
   Reg : TBDRegistry;
 begin
- Result:=CHECK_RESULT_UNDEFINED;
  
  if not FileExists(FileName) then
  begin
@@ -72,7 +71,6 @@ end;
 
 class procedure FileCheckedDB.RemoveCheckFile(FileName: string);
 var
-  DateModifyOfFile : double;
   Reg : TBDRegistry;
 begin
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);

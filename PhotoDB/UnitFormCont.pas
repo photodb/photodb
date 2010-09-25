@@ -885,8 +885,7 @@ procedure TFormCont.ListView1MouseMove(Sender: TObject; Shift: TShiftState;
 var
   p : TPoint;
   I : Integer;
-  SelectedItem, Item: TEasyItem;
-  R : TRect;
+  Item: TEasyItem;
   SpotX, SpotY : Integer;
 begin
   if DBCanDrag then
@@ -998,9 +997,10 @@ var
   param : TArStrings;
   b : TArBoolean;
 begin
-  s :=Clipboard.AsText;
-  for i:=length(s) downto 1 do
-  if not (s[i] in cifri) and (s[i]<>'$') then delete(s,i,1);
+  S := Clipboard.AsText;
+  for I := Length(S) downto 1 do
+    if not CharInSet(S[I], Cifri) and (S[I] <> '$') then
+      Delete(S, I, 1);
   if length(s)<2 then exit;
   n:=1;
   for i:=1 to length(s) do
@@ -1420,7 +1420,7 @@ end;
 
 function TManagePanels.PanelIndex(Panel: TFormCont): Integer;
 begin
-  FPanels.Indexof(Panel);
+  Result := FPanels.Indexof(Panel);
 end;
 
 procedure TManagePanels.RemovePanel(Panel: TFormCont);

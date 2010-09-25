@@ -19,8 +19,7 @@ type
     procedure TextOut;
     procedure TextOutEx;
   public
-    constructor Create(CreateSuspennded: Boolean;
-            Options : TBackUpTableThreadOptions);
+    constructor Create(Options: TBackUpTableThreadOptions);
   end;
 
 implementation
@@ -29,12 +28,10 @@ uses CMDUnit;
 
 { BackUpTableInCMD }
 
-constructor BackUpTableInCMD.Create(CreateSuspennded: Boolean;
-  Options: TBackUpTableThreadOptions);
+constructor BackUpTableInCMD.Create(Options: TBackUpTableThreadOptions);
 begin
- inherited Create(true);
- fOptions:=Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 procedure BackUpTableInCMD.DoExit;

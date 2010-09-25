@@ -98,16 +98,15 @@ end;
 constructor TInternetUpdate.Create(CreateSuspennded,
   NeedsInformation: Boolean);
 begin
- inherited Create(true);
- FNeedsInformation:=NeedsInformation;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FNeedsInformation := NeedsInformation;
 end;
 
 procedure TInternetUpdate.Execute;
 var
-  S : TStrings;
-  Vesrion, Release : Integer;
-  i : integer;
+  S: TStrings;
+  Vesrion, Release: Integer;
+  I: Integer;
   D : TDateTime;
 begin
  FreeOnTerminate:=True;

@@ -43,17 +43,17 @@ type
 //   fOnProgress : TCallBackProgressEvent;
     { Private declarations }
   protected
-    procedure Execute; override; 
-  public   
+    procedure Execute; override;
+  public
     constructor Create(CreateSuspennded: Boolean;
-      Options : TScanImportPhotosThreadOptions); 
+      Options : TScanImportPhotosThreadOptions);
     procedure AddFileToList(FileName : String; Date : TDateTime);
     procedure SetDateDataList;
     procedure SetMaxPosition(MaxPos : integer);
-    procedure SetMaxPositionSynch;  
+    procedure SetMaxPositionSynch;
     procedure SetPosition(Pos : integer);
     procedure SetPositionSynch;
-    procedure DoOnDone;   
+    procedure DoOnDone;
     procedure OnLoadingFilesCallBackEvent(Sender : TObject; var Info : TProgressCallBackInfo);
     procedure OnProgressSynch;
   end;
@@ -70,10 +70,9 @@ uses UnitGetPhotosForm;
 constructor TScanImportPhotosThread.Create(CreateSuspennded: Boolean;
   Options: TScanImportPhotosThreadOptions);
 begin
- inherited create(true);
- fOptions:=Options;
- FSID:=GetPhotosFormSID;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
+  FSID := GetPhotosFormSID;
 end;
 
 procedure TScanImportPhotosThread.AddFileToList(FileName : String; Date : TDateTime);
@@ -86,7 +85,7 @@ end;
 procedure TScanImportPhotosThread.Execute;
 var
   i : integer;
-  MaxFilesCount,MaxFilesSearch : Integer;   
+  MaxFilesCount,MaxFilesSearch : Integer;
   FEXIF : TEXIF;
   RAWExif : TRAWExif;
   FDate : TDateTime;
@@ -126,7 +125,7 @@ var
           inc(P);
          end;
          while L_Less_Than_R(Pivot,X[Q]) do
-         begin           
+         begin
           if q=m then break;
           dec(Q);
          end;
@@ -223,7 +222,7 @@ begin
 end;
 
 procedure TScanImportPhotosThread.SetPositionSynch;
-begin                         
+begin
   if IsEqualGUID(FSID, GetPhotosFormSID) then
     (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Position:=intParam;
 end;
@@ -252,7 +251,7 @@ var
 begin
  if Assigned(fOptions.OnProgress) then
  begin
-  Info.MaxValue:=-1;   
+  Info.MaxValue:=-1;
   Info.Position:=-1;
   Info.Information:=StrParam;
   Info.Terminate:=BoolParam;
@@ -262,4 +261,4 @@ begin
 end;
 
 end.
- 
+

@@ -39,9 +39,8 @@ type
     Procedure SetProgressText(Value : String);
     Procedure SetProgressTextA;
     Procedure DoExit;
-//    Procedure CopyRecordsW(OutTable, InTable : TDataSet);
   public
-    constructor Create(CreateSuspennded: Boolean; Options : TExportOptions);
+    constructor Create(Options : TExportOptions);
   end;
 
 procedure CopyRecords(OutTable, InTable: TDataSet; ExportGroups : boolean; var GroupsFounded : TGroups);
@@ -55,13 +54,11 @@ uses ExportUnit, Language, CommonDBSupport;
 
 { ExportThread }
 
-constructor ExportThread.Create(CreateSuspennded: Boolean;
-  Options: TExportOptions);
+constructor ExportThread.Create(Options: TExportOptions);
 begin
- Inherited Create(True);
- StopExport:=false;
- fOptions := Options;
- If not CreateSuspennded then Resume;
+  inherited Create(False);
+  StopExport := False;
+  FOptions := Options;
 end;
 
 procedure ExportThread.Execute;
@@ -71,10 +68,10 @@ Var
   ImageSettings : TImageDBOptions;
 begin
  FreeOnTerminate:=true;
- SetText(TEXT_MES_INITIALIZATION+'...');     
+ SetText(TEXT_MES_INITIALIZATION+'...');
  CoInitialize(nil);
  TableOut := GetTable;
- DBKernel.CreateDBbyName(FOptions.FileName);     
+ DBKernel.CreateDBbyName(FOptions.FileName);
 
  ImageSettings:=CommonDBSupport.GetImageSettingsFromTable(DBName);
  CommonDBSupport.UpdateImageSettings(FOptions.FileName,ImageSettings);
@@ -184,7 +181,7 @@ begin
    FreeDS(fSpecQuery);
   end;
  end;
- 
+
  except
  end;
  Synchronize(DoExit);
@@ -290,7 +287,7 @@ try
   begin
    folder:=GetDirectory(OutTable.FieldByName('FFileName').AsString);
    AnsiLowerCase(folder);
-   UnFormatDir(folder);                  
+   UnFormatDir(folder);
    {$R-}
    CalcStringCRC32(AnsiLowerCase(folder),crc);
    InTable.FieldByName('FolderCRC').AsInteger:=crc;
@@ -301,10 +298,10 @@ try
  if InTable.Fields.FindField('StrThCRC')<>nil then
  begin
   if OutTable.Fields.FindField('StrThCRC')<>nil then InTable.FieldByName('StrThCRC').AsInteger:=OutTable.FieldByName('StrThCRC').AsInteger else
-  begin               
+  begin
    {$R-}
    CalcStringCRC32(OutTable.FieldByName('StrTh').AsString,crc);
-   InTable.FieldByName('StrThCRC').AsInteger:=crc;    
+   InTable.FieldByName('StrThCRC').AsInteger:=crc;
    {$R+}
   end;
  end;

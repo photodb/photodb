@@ -576,20 +576,21 @@ begin
   end;
 end;
 
-function PosExR(const SubStr : Char; const Str : string; const index : integer = 1) : integer;
+function PosExR(const SubStr: Char; const Str: string; const index: Integer = 1): Integer;
 var
-  i : integer;
+  I: Integer;
 begin
- Result:=0;
- for i:=index to Length(Str) do
- begin
-  if not (Str[i] in ['0'..'9','a'..'z','A'..'Z','_',' ','$','=']) then exit;
-  if Str[i]=SubStr then
+  Result := 0;
+  for I := index to Length(Str) do
   begin
-   Result:=i;
-   break;
+    if not CharInSet(Str[I], ['0' .. '9', 'a' .. 'z', 'A' .. 'Z', '_', ' ', '$', '=']) then
+      Exit;
+    if Str[I] = SubStr then
+    begin
+      Result := I;
+      Break;
+    end;
   end;
- end;
 end;
 
 function PosNext(const SubStr : string; const Str : string; const index : integer = 1) : integer;
@@ -2611,9 +2612,7 @@ procedure ShowFunctionList(const aScript : TScript);
 var
   StatusForm : TForm;
   List : TListBox;
-  i, j : integer;
-  TempFunctions : TScriptFunctionArray;
-  TempFunct : TScriptFunction;
+  I : integer;
 
   function GetTypeName(aType : integer) : string;
   var
@@ -2824,7 +2823,6 @@ end;
 function TScriptsManager.AddScript(Script: TScript) : string;
 var
   Index : integer;
-  b : boolean;
 begin
   Index := FScripts.IndexOf(Script);
   if Index > -1 then

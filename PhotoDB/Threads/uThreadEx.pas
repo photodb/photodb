@@ -63,13 +63,13 @@ end;
 
 constructor TThreadEx.Create(AOwnerForm: TThreadForm; AState : TGUID);
 begin
+  inherited Create(False);
   FSync := TCriticalSection.Create;
   FThreadForm := AOwnerForm;
   FState := AState;
   FSubThreads := TList.Create;
   FParentThread := nil;
   GOM.AddObj(Self);
-  inherited Create(True);
 end;
 
 destructor TThreadEx.Destroy;

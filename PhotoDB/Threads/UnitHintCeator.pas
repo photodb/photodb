@@ -32,7 +32,6 @@ type
     function CheckThreadState: Boolean;
     procedure CheckThreadStateSync;
     procedure DoShowHint;
-    procedure GIFDraw;
   protected
     procedure Execute; override;
   public
@@ -81,9 +80,7 @@ end;
 
 procedure HintCeator.Execute;
 var
-  PNG : TPNGGraphic;
   GraphicClass : TGraphicClass;
-  I : Integer;
   Crypted : Boolean;
   FilePass: string;
   Bitmap, FB : TBitmap;
@@ -185,23 +182,6 @@ begin
   finally
     F(Graphic);
   end;
-end;
-
-procedure HintCeator.GIFDraw;
-var
-  i : integer;
-  FTransparent : Boolean;
-begin
- {BitmapParam.Canvas.Pen.Color:=Theme_MainColor;
- BitmapParam.Canvas.Brush.Color:=Theme_MainColor;
- BitmapParam.Canvas.Rectangle(0,0,BitmapParam.Width,BitmapParam.Height);
- for i:=0 to GIF.Images.Count-1 do
- if not GIF.Images[i].Empty then
- begin
-  FTransparent:=GIF.Images[i].Transparent;
-  GIF.Images[i].Draw(BitmapParam.Canvas,Rect(0,0,GIF.Width,GIF.Height),FTransparent,false);
-  break;
- end;  }
 end;
 
 function HintCeator.CheckThreadState: boolean;

@@ -187,7 +187,6 @@ function TAIcons.GetShellImage(Path : String; Size : integer): TIcon;
 var
   FileInfo: TSHFileInfo;
   Flags: Integer;
-  PathPidl: PItemIDList;
 begin
   FSync.Enter;
   try

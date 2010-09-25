@@ -22,7 +22,7 @@ type TRotateToolPanelClass = Class(TToolsPanelClass)
     { Private declarations }
   public
    FSID : String;
-   class function ID: ShortString; override;
+   class function ID: string; override;
    constructor Create(AOwner : TComponent); override;
    destructor Destroy; override;
    Procedure ClosePanel; override;
@@ -221,7 +221,7 @@ begin
  Result:=Result+'BkColor='+IntToStr(ColorEdit.Brush.Color)+';';
 end;
 
-class function TRotateToolPanelClass.ID: ShortString;
+class function TRotateToolPanelClass.ID: string;
 begin
  Result:='{747B3EAF-6219-4A96-B974-ABEB1405914B}';
 end;

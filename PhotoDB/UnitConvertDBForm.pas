@@ -254,7 +254,7 @@ begin
    Button3.Enabled:=false;   
    Button4.Enabled:=false;
    Button5.Visible:=true;
-   TConvertDBThread.Create(false,self,FFileName,RadioButton2.Checked,ImageOptions);
+   TConvertDBThread.Create(Self,FFileName,RadioButton2.Checked,ImageOptions);
   end;
 end;
 
@@ -288,7 +288,7 @@ begin
  Options.AddCryptFileToListProc:=PasswordKeeper.AddCryptFileToListProc;
  Options.GetAvaliableCryptFileList:=PasswordKeeper.GetAvaliableCryptFileList;
  Options.OnProgress:=ProgressCallBack;
- RecreatingThInTable.Create(False,Options);
+ RecreatingThInTable.Create(Options);
 end;
 
 procedure TFormConvertingDB.Button6Click(Sender: TObject);

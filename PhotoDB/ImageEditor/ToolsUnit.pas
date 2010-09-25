@@ -26,7 +26,7 @@ type TToolsPanelClass = class(TPanel)
     procedure SetEditor(const Value: TForm);
     { Private declarations }
   public
-  class function ID: ShortString; virtual;
+  class function ID: string; virtual;
   function GetProperties : string; virtual; abstract;
   Procedure SetProperties(Properties : String); virtual; abstract;
   function GetValueByName(Properties, Name : string) : string;
@@ -109,7 +109,7 @@ begin
  //
 end;
 
-class function TToolsPanelClass.ID: ShortString;
+class function TToolsPanelClass.ID: string;
 begin
  Result:='{73899C26-6964-494E-B5F6-46E65BD50DB7}';
 end;

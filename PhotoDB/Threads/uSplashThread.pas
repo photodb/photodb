@@ -106,7 +106,7 @@ begin
       SetTextColor(DrawDC, clWhite);
       hf := CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Times New Roman');
       oldFont := SelectObject(DrawDC, hf);
-      DrawTextA(DrawDC, PWideChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);
+      DrawText(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);
       SelectObject(DrawDC, oldFont);
       if(hf > 0) then
         DeleteObject(hf);

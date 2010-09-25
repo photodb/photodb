@@ -21,7 +21,6 @@ type
    function GetFilterIndex : integer;
    function FileName : string;  
    procedure SetFileName(FileName : string);
- published
    property FilterIndex : integer write SetFilterIndex;
    property Filter : string read fFilter write SetFilter;
  end;
@@ -45,7 +44,6 @@ type
    procedure EnableMultyFileChooseWithDirectory;
    function GetFiles : TStrings;
    procedure EnableChooseWithDirectory;
- published
    property FilterIndex : integer write SetFilterIndex;
    property Filter : string read fFilter write SetFilter;
  end;
@@ -65,7 +63,6 @@ type
    function GetFilterIndex : integer;
    function FileName : string;
    procedure SetFileName(FileName : string);
- published
    property FilterIndex : integer write SetFilterIndex;
    property Filter : string read fFilter write SetFilter;
  end;
@@ -86,7 +83,6 @@ type
    function GetFilterIndex : integer;
    function FileName : string;  
    procedure SetFileName(FileName : string);
- published
    property FilterIndex : integer write SetFilterIndex;
    property Filter : string read fFilter write SetFilter;
  end;
@@ -223,7 +219,6 @@ var
   FilterMask : string;
   StrTemp : string;
   IsFilterMask : boolean;
-  FileType : TFileTypeItem;
 begin
  fFilter := value;
  if CanUseVistaDlg then

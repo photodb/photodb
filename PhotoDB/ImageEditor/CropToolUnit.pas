@@ -67,7 +67,7 @@ type TCropToolPanelClass = Class(TToolsPanelClass)
     procedure SetProportionsWidth(const Value: Integer);
     { Private declarations }
   public
-   class function ID: ShortString; override;
+   class function ID: string; override;
    function GetProperties : string; override;
    constructor Create(AOwner : TComponent); override;
    destructor Destroy; override;
@@ -749,7 +749,7 @@ begin
  end;
 end;
 
-class function TCropToolPanelClass.ID: ShortString;
+class function TCropToolPanelClass.ID: string;
 begin
  Result:='{5AA5CA33-220E-4D1D-82C2-9195CE6DF8E4}';
 end;

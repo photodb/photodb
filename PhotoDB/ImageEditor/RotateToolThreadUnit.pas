@@ -50,16 +50,15 @@ constructor TRotateEffectThread.Create(AOwner: TObject;
   CreateSuspended: Boolean; Proc: TBaseEffectProc; S: TBitmap; SID: string;
   OnExit: TBaseEffectProcThreadExit; Angle: Double; BackColor: TColor; Editor : TObject);
 begin
- inherited Create(True);
- FOwner:=AOwner;
- FSID:=SID;
- FAngle:=Angle;
- FBackColor:=BackColor;
- FOnExit := OnExit;
- FProc:=Proc;
- BaseImage:=S;
- FEditor:=Editor;
- if not CreateSuspended then Resume;
+  inherited Create(False);
+  FOwner := AOwner;
+  FSID := SID;
+  FAngle := Angle;
+  FBackColor := BackColor;
+  FOnExit := OnExit;
+  FProc := Proc;
+  BaseImage := S;
+  FEditor := Editor;
 end;
 
 procedure TRotateEffectThread.DoExit;

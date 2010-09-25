@@ -375,8 +375,6 @@ begin
 end;
 
 procedure TImageEditor.FormCreate(Sender: TObject);
-var
-  i : integer;
 begin
  EXIFSection:=nil;
  NewActionsCounter:=-1;
@@ -2186,8 +2184,6 @@ var
   ext : string;
   {$IFDEF PHOTODB}
   ID : integer;
-  cr : integer;
-  to_size : integer;
   SavePictureDialog : DBSavePictureDialog;
   FileName : string;
   {$ENDIF}

@@ -57,17 +57,16 @@ constructor TResizeToolThread.Create(AOwner: TObject; Method : TResizeProcedure;
   CreateSuspended: Boolean; S: TBitmap; SID: string;
   OnExit: TBaseEffectProcThreadExit; ToWidth, ToHeight: Integer; Editor : TObject);
 begin
- inherited Create(True);
- FOwner:=AOwner;
- FSID:=SID;
- FOnExit := OnExit;
- BaseImage:=S;
- FToWidth:=ToWidth;
- FMethod:=Method;
- FIntMethod:=IntMethod;
- FToHeight:=ToHeight;
- FEditor:=Editor;
- if not CreateSuspended then Resume;
+  inherited Create(False);
+  FOwner := AOwner;
+  FSID := SID;
+  FOnExit := OnExit;
+  BaseImage := S;
+  FToWidth := ToWidth;
+  FMethod := Method;
+  FIntMethod := IntMethod;
+  FToHeight := ToHeight;
+  FEditor := Editor;
 end;
 
 procedure TResizeToolThread.DoExit;

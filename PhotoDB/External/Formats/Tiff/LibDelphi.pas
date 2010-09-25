@@ -336,7 +336,7 @@ end;
 
 procedure free(p: Pointer); cdecl;
 var
-  m: TMemoryManager;
+  m: TMemoryManagerEx;
 begin
   GetMemoryManager(m);
   m.FreeMem(p);
@@ -344,7 +344,7 @@ end;
 
 function malloc(s: Longint): Pointer; cdecl;
 var
-  m: TMemoryManager;
+  m: TMemoryManagerEx;
 begin
   GetMemoryManager(m);
   Result:=m.GetMem(s);

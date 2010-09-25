@@ -668,7 +668,6 @@ object FormChangeDBPath: TFormChangeDBPath
     Top = 96
     Width = 369
     Height = 21
-    ItemHeight = 13
     TabOrder = 0
     Text = 'c:\'
   end

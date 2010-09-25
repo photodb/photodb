@@ -36,19 +36,18 @@ constructor TWindowsCopyFilesThread.Create(CreateSuspennded: Boolean;
   Handle: Hwnd; Src: array of string; Dest: string; Move,
   AutoRename: Boolean; CallBack : TCorrectPathProc; OwnerExplorerForm : TForm);
 var
-  i : integer;
+  I: Integer;
 begin
- inherited create(true);
- FHandle:=Handle;
- SetLength(FSrc,Length(Src));
- for i:=0 to Length(FSrc)-1 do
- FSrc[i]:=Src[i];
- FDest:=Dest;
- FMove:=Move;
- FAutoRename:=AutoRename;
- FCallBack := CallBack;
- fOwnerExplorerForm:=OwnerExplorerForm;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FHandle := Handle;
+  SetLength(FSrc, Length(Src));
+  for I := 0 to Length(FSrc) - 1 do
+    FSrc[I] := Src[I];
+  FDest := Dest;
+  FMove := Move;
+  FAutoRename := AutoRename;
+  FCallBack := CallBack;
+  FOwnerExplorerForm := OwnerExplorerForm;
 end;
 
 procedure TWindowsCopyFilesThread.DoCallBack;

@@ -1402,7 +1402,6 @@ end;
 procedure TOptionsForm.Button24Click(Sender: TObject);
 var
   NewPlace : String;
-  Ico : TIcon;
 const
   DefaultIcon = '%SystemRoot%\system32\shell32.dll,3';
 begin
@@ -1443,7 +1442,6 @@ var
   fName, fFolderName, fIcon : string;
   fMyComputer, fMyDocuments, fMyPictures, fOtherFolder : boolean;
   i : integer;
-  Ico : TIcon;
 begin
  PlacesImageList.Clear;
  PlacesImageList.Width:=16;

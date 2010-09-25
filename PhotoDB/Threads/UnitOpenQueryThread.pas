@@ -3,53 +3,56 @@ unit UnitOpenQueryThread;
 interface
 
 uses
-  Classes, DB, CommonDBSupport, ComObj, ActiveX, ShlObj,CommCtrl;
+  Classes, DB, CommonDBSupport, ComObj, ActiveX, ShlObj, CommCtrl,
+  SysUtils, uLogger;
 
 type
   TNotifyDBOpenedEvent = procedure(Sender : TObject; DS : TDataSet) of object;
 
   TOpenQueryThread = class(TThread)
   private
-  FOnEnd : TNotifyDBOpenedEvent;
-  FQuery : TDataSet;
     { Private declarations }
+    FOnEnd: TNotifyDBOpenedEvent;
+    FQuery: TDataSet;
   protected
     procedure Execute; override;
   public
-   procedure DoOnEnd;
-   constructor Create(CreateSuspennded: Boolean; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
+    procedure DoOnEnd;
+    constructor Create(Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
   end;
 
 implementation
 
 { TOpenQueryThread }
 
-constructor TOpenQueryThread.Create(CreateSuspennded: Boolean;
-  Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
+constructor TOpenQueryThread.Create(Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
 begin
- inherited Create(True);
- FQuery:=Query;
- FOnEnd:=OnEnd;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FQuery := Query;
+  FOnEnd := OnEnd;
 end;
 
 procedure TOpenQueryThread.DoOnEnd;
 begin
- if Assigned(FOnEnd) then FOnEnd(Self, FQuery);
+  if Assigned(FOnEnd) then
+    FOnEnd(Self, FQuery);
 end;
 
 procedure TOpenQueryThread.Execute;
 begin
- FreeOnTerminate := True;
- CoInitialize(nil);
- try
-  FQuery.Open;
- except
- end;
- Synchronize(DoOnEnd);     
- CoUninitialize;
+  FreeOnTerminate := True;
+  CoInitialize(nil);
+  try
+    try
+      FQuery.Open;
+    except
+      on e : Exception do
+        Eventlog('Error opening query: ' + e.Message);
+    end;
+  finally
+    Synchronize(DoOnEnd);
+    CoUninitialize;
+  end;
 end;
-
-
 
 end.

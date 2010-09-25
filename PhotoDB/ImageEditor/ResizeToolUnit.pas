@@ -38,7 +38,7 @@ type TResizeToolPanelClass = Class(TToolsPanelClass)
     { Private declarations }
   public
    FSID : String;
-   class function ID: ShortString; override;
+   class function ID: string; override;
    constructor Create(AOwner : TComponent); override;
    destructor Destroy; override;
    Procedure ClosePanel; override;
@@ -453,7 +453,7 @@ begin
  //
 end;
 
-class function TResizeToolPanelClass.ID: ShortString;
+class function TResizeToolPanelClass.ID: string;
 begin
  Result:='{29C59707-04DA-4194-9B53-6E39185CC71E}';
 end;

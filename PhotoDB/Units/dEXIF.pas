@@ -110,7 +110,7 @@ type
     msTraceStr: AnsiString;
     msAvailable: boolean;
     msName:string;
-    MakerOffset : integer; 
+    MakerOffset : integer;
     procedure SetExifSoftware( Software:AnsiString);
     property ITagArray[TagID:integer]: TTagEntry
         read GetTagElement write SetTagElement; default;
@@ -256,10 +256,10 @@ type
   function DecodeField(DecodeStr, idx: AnsiString): AnsiString;
   function CvtTime(instr: AnsiString): AnsiString;
 
-Var
-   DexifDataSep   : string = ', ';
-   DexifDecodeSep : string = ',';
-   DexifDelim     : string = ' = ';
+var
+   DexifDataSep   : AnsiString = ', ';
+   DexifDecodeSep : AnsiString = ',';
+   DexifDelim     : AnsiString = ' = ';
    DexifDecode    : boolean = true;
    estimateValues : boolean = false;
    TiffReadLimit  : longint = 256000;
@@ -1050,7 +1050,7 @@ begin
   TraceStr        := Source.TraceStr;
   msTraceStr      := Source.msTraceStr;
   msAvailable     := Source.msAvailable;
-  msName          := Source.msName;       
+  msName          := Source.msName;
   SoftWare        := Source.SoftWare;
 end;
 
@@ -2988,27 +2988,3 @@ finalization
   ImgData.Free;
 {$ENDIF}
 end.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

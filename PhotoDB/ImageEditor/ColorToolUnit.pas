@@ -36,7 +36,7 @@ type TColorToolPanelClass = Class(TToolsPanelClass)
    procedure RefreshInfo;
 
    function GetProperties : string; override;
-   class function ID : ShortString; override;
+   class function ID : string; override;
 
    Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;       
    Procedure SetProperties(Properties : String); override;
@@ -238,7 +238,7 @@ begin
  Result:=Result+'BValue='+IntToStr(BTrackBar.Position)+';';
 end;
 
-class function TColorToolPanelClass.ID: ShortString;
+class function TColorToolPanelClass.ID: string;
 begin
  Result:='{E20DDD6C-0E5F-4A69-A689-978763DE8A0A}';
 end;

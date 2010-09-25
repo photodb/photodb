@@ -54,7 +54,6 @@ begin
   FPictureSize := PictureSize;
   FData := Data;
   FUpdating := Updating;
-  Resume;
 end;
 
 procedure TSearchBigImagesLoaderThread.VisibleUp(TopIndex: integer);

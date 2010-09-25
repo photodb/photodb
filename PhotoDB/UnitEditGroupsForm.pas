@@ -563,8 +563,8 @@ begin
    Text1:=Copy(Text,1,Min(Length(Text),w));
    Delete(Text,1,Length(Text1));
    if Text<>'' then
-   if Text1[Length(Text1)] in ['a'..'z','A'..'Z','à'..'ß','à'..'ß'] then
-   if Text[1] in ['a'..'z','A'..'Z','à'..'ß','à'..'ß'] then
+   if CharInSet(Text1[Length(Text1)], ['a'..'z','A'..'Z','à'..'ß','à'..'ß']) then
+   if CharInSet(Text[1], ['a'..'z','A'..'Z','à'..'ß','à'..'ß']) then
    Text1:=Text1+'-';
    TextOut(Rect.Left+32+5, Rect.Top+3, Text1);
    TextOut(Rect.Left+32+5, Rect.Top+3+14, Text);

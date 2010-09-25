@@ -32,7 +32,7 @@ const
   MyComputer = TEXT_MES_MY_COMPUTER;
   ProductName = 'Photo DataBase 2.3';
   StartMenuProgramsPath = 'Photo DB v2.3';
-  ProductVersion = '2.2';
+  ProductVersion = '2.3';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = TEXT_MES_HELP+'.lnk';
   WindowsMenuTime = 1000;
@@ -40,7 +40,7 @@ const
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
   {$IFDEF RUS}
   UpdateFileName = '/rus_update.txt';
-  AlternativeUpdateURL = 'http://photodb.illusdolphin.net/update?ln=ru';
+  AlternativeUpdateURL = 'http://photodb.illusdolphin.net/update?lg=ru';
   HomeURL = 'http://photodb.illusdolphin.net';
   {$ENDIF}
   {$IFDEF ENGL}

@@ -4,20 +4,20 @@ interface
 
 uses
   Classes, Graphics, Jpeg, DB, CommonDBSupport, Dolphin_DB, SysUtils,
-  GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport; 
+  GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport;
 
 type
   RecreatingThInTable = class(TThread)
   private
-    FStrParam : String;
-    FBoolParam : Boolean;
-    FIntParam : integer;
-    fOptions : TRecreatingThInTableOptions;
-    fRec : TPasswordRecord;
-    fCryptFileList : TList;
-    ImageOptions : TImageDBOptions;
-    ProgressInfo : TProgressCallBackInfo;
     { Private declarations }
+    FStrParam: string;
+    FBoolParam: Boolean;
+    FIntParam: Integer;
+    FOptions: TRecreatingThInTableOptions;
+    FRec: TPasswordRecord;
+    FCryptFileList: TList;
+    ImageOptions: TImageDBOptions;
+    ProgressInfo: TProgressCallBackInfo;
   protected
     procedure Execute; override;
     procedure DoExit;
@@ -30,7 +30,7 @@ type
     function GetAvaliableCryptFileList : TArInteger;
     procedure DoProgress;
   public
-    constructor Create(CreateSuspennded: Boolean; Options: TRecreatingThInTableOptions);
+    constructor Create(Options: TRecreatingThInTableOptions);
   end;
 
 var
@@ -55,12 +55,10 @@ begin
  Synchronize(AddCryptFileCall);
 end;
 
-constructor RecreatingThInTable.Create(CreateSuspennded: Boolean;
-  Options: TRecreatingThInTableOptions);
+constructor RecreatingThInTable.Create(Options: TRecreatingThInTableOptions);
 begin
- inherited create(true);
- fOptions:=Options;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  FOptions := Options;
 end;
 
 procedure RecreatingThInTable.DoExit;
@@ -78,7 +76,7 @@ var
   Table : TDataSet;
   info : TImageDBRecordA;
   Pass : string;
-  Crypted : Boolean;  
+  Crypted : Boolean;
   ms : TMemoryStream;
   BF : TBlobField;
   CurrentID : integer;
@@ -95,9 +93,9 @@ var
    try
     info:=GetImageIDW(Table.FieldByName('FFileName').AsString,false,true,ImageOptions.ThSize,ImageOptions.DBJpegCompressionQuality);
     if info.IsError then
-    begin   
+    begin
      FStrParam:=Format(TEXT_MES_FAILED_TH_FOR_ITEM,[Trim(Table.FieldByname('Name').AsString),info.ErrorText]);
-     FIntParam:=LINE_INFO_ERROR; 
+     FIntParam:=LINE_INFO_ERROR;
      Synchronize(TextOutEx);
      exit;
     end;
@@ -135,7 +133,7 @@ var
     info.Jpeg.free;
     FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT,[IntToStr(Table.RecNo),IntToStr(TableRecordCount),Trim(Table.FieldByname('Name').AsString)]);
     if Assigned(fOptions.OnProgress) then
-    begin              
+    begin
      ProgressInfo.MaxValue:=TableRecordCount;
      ProgressInfo.Position:=Table.RecNo;
      ProgressInfo.Information:=TEXT_MES_RECREATING_PREVIEWS;
@@ -146,7 +144,7 @@ var
     Synchronize(TextOut);
     Table.Post;
    except
-    FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_ERROR,[Table.FieldByname('Name').AsString]);  
+    FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_ERROR,[Table.FieldByname('Name').AsString]);
     FIntParam:=LINE_INFO_ERROR;
     Synchronize(TextOut);
    end;
@@ -156,7 +154,7 @@ begin
  RecreatingThInTableTerminating:=false;
  FBoolParam:=true;
  Table := GetTable(fOptions.FileName,DB_TABLE_IMAGES);
- try    
+ try
   ImageOptions:=CommonDBSupport.GetImageSettingsFromTable(fOptions.FileName);
   Table.Active:=true;
  except
@@ -181,7 +179,7 @@ begin
    begin
     FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CD_DVD_CANCELED_INFO_F,[IntToStr(Table.RecNo),IntToStr(Table.RecordCount),Trim(Table.FieldByname('Name').AsString)]);
     FIntParam:=LINE_INFO_WARNING;
-    Synchronize(TextOutEx); 
+    Synchronize(TextOutEx);
     Table.Next;
     Continue;
    end;
@@ -224,7 +222,7 @@ begin
 
      Table.Next;
      Continue;
-    end;   
+    end;
    end;
 
    //DEBUG:
@@ -267,7 +265,7 @@ begin
  Synchronize(TextOut);
 
  PackTable(fOptions.FileName);
-                               
+
  FIntParam:=LINE_INFO_OK;
  FStrParam:=TEXT_MES_PACKING_END;
  Synchronize(TextOut);

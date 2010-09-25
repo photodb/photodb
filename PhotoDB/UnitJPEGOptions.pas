@@ -37,15 +37,15 @@ type
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
   private
-    FSection: string;
     { Private declarations }
+    FSection: string;
   protected
     function GetFormID : string; override;
   public
+    { Public declarations }
     procedure LoadLanguage;
     procedure SetSection(Section: string);
     procedure Execute(Section: string);
-    { Public declarations }
   end;
 
 procedure SetJPEGOptions; overload;

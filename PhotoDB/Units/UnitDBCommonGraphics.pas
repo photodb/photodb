@@ -329,8 +329,6 @@ end;
 
 procedure DrawText32Bit(Bitmap32 : TBitmap; Text : string; Font : TFont; ARect : TRect; DrawTextOptions : Cardinal);
 var
-  I, J : Integer;
-  P : PARGB;
   Bitmap : TBitmap;
   R : TRect;
 begin
@@ -1095,8 +1093,8 @@ var
   R, G, B : byte;
 begin
   R := GetRValue(BackGroundColor);
-  B := GetGValue(BackGroundColor);
-  b := GetBValue(BackGroundColor);
+  G := GetGValue(BackGroundColor);
+  B := GetBValue(BackGroundColor);
   if D.PixelFormat <> pf24bit then
     D.PixelFormat := pf24bit;
   D.Width := S.Width;
@@ -1220,8 +1218,6 @@ begin
 end;
 
 procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
-var
-  BMP: TBitmap;
 begin
   JPEG.Performance := jpBestSpeed;
   JPEG.DIBNeeded;
@@ -1246,9 +1242,6 @@ begin
 end;
 
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
-var
-  PNG: TPNGGraphic;
-  BMP: TBitmap;
 begin
   if Image is TGIFImage then
   begin

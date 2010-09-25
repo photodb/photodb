@@ -89,7 +89,6 @@ const
 function ReadRAWExif(FileName : String) : TRAWExif;
 var
   RawBitmap : TFreeWinBitmap;
-  TagNext: TFreeTag;
   FindMetaData : PFIMETADATA;
   I : Integer;
   TagData : PFITAG;

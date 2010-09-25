@@ -15,10 +15,8 @@ type
     TempBitmap: TBitmap;
     Info: TOneRecordInfo;
     FOwner: TExplorerForm;
-    GraphicParam: TGraphic;
     FGraphic: TGraphic;
     FBit, TempBit: TBitmap;
-    StringParam: string;
   protected
     procedure Execute; override;
     procedure SetInfo;
@@ -36,12 +34,11 @@ uses ExplorerThreadUnit;
 
 constructor TExplorerThumbnailCreator.Create(FileName : string; FileSID: TGUID; Owner : TExplorerForm);
 begin
-  inherited Create(True);
+  inherited Create(False);
   FFileName := FileName;
   FFileSID := FileSID;
   FOwner := Owner;
   Priority := tpLowest;
-  Resume;
 end;
 
 procedure TExplorerThumbnailCreator.Execute;

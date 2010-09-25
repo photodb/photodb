@@ -496,8 +496,6 @@ end;
 
 procedure TFormManager.Load;
 var
-  DBVersion : integer;
-  DBFile : TPhotoDBFile; 
   DateTime : TDateTime;   
 begin
   TW.I.Start('FM -> Load');

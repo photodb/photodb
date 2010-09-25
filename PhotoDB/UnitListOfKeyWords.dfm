@@ -39,7 +39,6 @@ object FormListOfKeyWords: TFormListOfKeyWords
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 323
     object Panel2: TPanel
       Left = 172
       Top = 0

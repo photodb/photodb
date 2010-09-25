@@ -40,7 +40,7 @@ type TextToolClass = Class(TCustomSelectToolClass)
   Loading : boolean;
     { Private declarations }
   public
-   class function ID: ShortString; override;
+   class function ID: string; override;
    constructor Create(AOwner : TComponent); override;
    destructor Destroy; override;
    procedure DoEffect(Bitmap : TBitmap; aRect : TRect; FullImage : Boolean); override;
@@ -494,7 +494,7 @@ begin
 
 end;
 
-class function TextToolClass.ID: ShortString;
+class function TextToolClass.ID: string;
 begin
  Result:='{E52516CC-8235-4A1D-A135-6D84A2E298E9}';
 end;

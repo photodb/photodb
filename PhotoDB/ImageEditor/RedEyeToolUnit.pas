@@ -35,8 +35,8 @@ type TRedEyeToolPanelClass = Class(TCustomSelectToolClass)
   Procedure DoBorder(Bitmap : TBitmap; aRect : TRect); override;
   procedure EyeColorChange(Sender : TObject);
   procedure DoSaveSettings(Sender : TObject); override;
-  class function ID: ShortString; override;
-  
+  class function ID: string; override;
+
    Procedure SetProperties(Properties : String); override;
    Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
     { Public declarations }
@@ -357,7 +357,7 @@ begin
  {$ENDIF}
 end;
 
-class function TRedEyeToolPanelClass.ID: ShortString;
+class function TRedEyeToolPanelClass.ID: string;
 begin
  Result:='{3D2B384F-F4EB-457C-A11C-BDCE1C20FFFF}';
 end;

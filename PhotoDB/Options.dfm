@@ -34,6 +34,8 @@ object OptionsForm: TOptionsForm
       Left = 4
       Top = 24
       Caption = 'General'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object CheckBox4: TCheckBox
         Left = 232
         Top = 8
@@ -312,6 +314,8 @@ object OptionsForm: TOptionsForm
       Left = 4
       Top = 24
       Caption = 'Explorer'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label11: TLabel
         Left = 136
         Top = 136
@@ -533,6 +537,8 @@ object OptionsForm: TOptionsForm
       Left = 4
       Top = 24
       Caption = 'View'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object CheckBox2: TCheckBox
         Left = 7
         Top = 333
@@ -703,6 +709,8 @@ object OptionsForm: TOptionsForm
       Left = 4
       Top = 24
       Caption = 'Menu'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ListView1: TListView
         Left = 0
         Top = 8
@@ -966,6 +974,8 @@ object OptionsForm: TOptionsForm
       Left = 4
       Top = 24
       Caption = 'Security'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox2: TGroupBox
         Left = 8
         Top = 192
@@ -1365,6 +1375,8 @@ object OptionsForm: TOptionsForm
       Left = 4
       Top = 24
       Caption = 'Global'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label31: TLabel
         Left = 44
         Top = 392

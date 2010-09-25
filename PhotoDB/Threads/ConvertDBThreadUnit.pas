@@ -9,19 +9,19 @@ uses
 type
   TConvertDBThread = class(TThread)
   private
-  FFileName : string;
-  FStringParam : string;
-  FToMDB : boolean;
-  TableIn : TDataSet;
-  TableOut : TDataSet;
-  FIntParam : integer;
-  fParamStr : String;
-  FForm : TForm;
-  FGroupsFounded : TGroups;
-  FRegGroups :  TGroups;
-  FImageOptions : TImageDBOptions;
-  NewFileName : string;
     { Private declarations }
+    FFileName: string;
+    FStringParam: string;
+    FToMDB: Boolean;
+    TableIn: TDataSet;
+    TableOut: TDataSet;
+    FIntParam: Integer;
+    FParamStr: string;
+    FForm: TForm;
+    FGroupsFounded: TGroups;
+    FRegGroups: TGroups;
+    FImageOptions: TImageDBOptions;
+    NewFileName: string;
   protected
     procedure Execute; override;
     procedure DoExit;
@@ -32,33 +32,31 @@ type
     procedure SetProgressTextSynch;
     procedure SetProgressText(Value: String);
     procedure SetPositionSynch;
-    procedure SetPosition(Value: Integer);      
+    procedure SetPosition(Value: Integer);
     procedure LogSynch;
     procedure Log(Value: String);
     procedure ShowErrorMessage;
   public
-      constructor Create(CreateSuspennded: boolean; Form : TForm;
-      aDBName : string; ToMDB : boolean; ImageOptions : TImageDBOptions);
+    constructor Create(Form: TForm; ADBName: string; ToMDB: Boolean; ImageOptions: TImageDBOptions);
   end;
 
-  var
-    BreakConverting : boolean = false;
+var
+  BreakConverting: Boolean = False;
 
 implementation
 
 uses UnitDBkernel, UnitExportThread, Language,
 UnitConvertDBForm, UnitUpdateDB;
 
-constructor TConvertDBThread.Create(CreateSuspennded: boolean; Form : TForm;
+constructor TConvertDBThread.Create(Form : TForm;
   aDBName: string ; ToMDB : boolean; ImageOptions : TImageDBOptions);
 begin
- inherited Create(true);
- BreakConverting:=false;
- FFileName:=aDBName;
- FToMDB:=ToMDB;
- FForm:=Form;
- FImageOptions:=ImageOptions;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  BreakConverting := False;
+  FFileName := ADBName;
+  FToMDB := ToMDB;
+  FForm := Form;
+  FImageOptions := ImageOptions;
 end;
 
 procedure TConvertDBThread.Execute;
@@ -74,7 +72,7 @@ begin
  if FToMDB then ToFileName:=ToFileName+'.photodb' else
  ToFileName:=ToFileName+'.db';
  Log(TEXT_MES_CREATING_DB);
- DBKernel.CreateDBbyName(ToFileName);      
+ DBKernel.CreateDBbyName(ToFileName);
  Log(TEXT_MES_CREATING_DB_OK);
  if FToMDB then
  begin
@@ -82,7 +80,7 @@ begin
   Log(TEXT_MES_UPDATING_SETTINGS_OK);
  end;
  TableIn := GetTable(ToFileName, DB_TABLE_IMAGES);
- TableOut := GetTable(FFileName, DB_TABLE_IMAGES);  
+ TableOut := GetTable(FFileName, DB_TABLE_IMAGES);
  Log(TEXT_MES_OPENING_DATABASES);
  try
   TableOut.Open;
@@ -96,7 +94,7 @@ begin
    Exit;
   end;
  end;
- try     
+ try
   Log(TEXT_MES_CONVERTION_IN_PROGRESS);
   SetMaxValue(TableOut.RecordCount);
   TableOut.First;
@@ -108,9 +106,9 @@ begin
    begin
     SetText(Format(TEXT_MES_REC_FROM_RECS_FORMAT, [inttostr(TableOut.RecNo), inttostr(TableOut.RecordCount)]));
     SetPosition(TableOut.RecNo);
-   end;      
+   end;
    if pos mod 100=0 then
-   begin        
+   begin
     TableIn.Post;
    end;
    //TableIn.Last;
@@ -124,7 +122,7 @@ begin
   FreeDS(TableIn);
 
   SetText(TEXT_MES_SAVING_GROUPS+'...');
-  
+
   Log(TEXT_MES_SAVING_GROUPS);
   SetMaxValue(length(FGroupsFounded));
   SetPosition(0);
@@ -151,7 +149,7 @@ begin
  end;
  SetLength(Files, 1);
  Files[0]:=FFileName;
- CommonDBSupport.TryRemoveConnection(FFileName,true);   
+ CommonDBSupport.TryRemoveConnection(FFileName,true);
  CommonDBSupport.TryRemoveConnection(ToFileName,true);
  try
   SilentDeleteFiles(0, Files, true);
@@ -221,7 +219,7 @@ begin
 end;
 
 procedure TConvertDBThread.SetMaxValueSynch;
-begin                         
+begin
  TFormConvertingDB(FForm).TempProgress.MaxValue:=FIntParam;
  TFormConvertingDB(FForm).Progress.MaxValue:=FIntParam;
 end;
@@ -250,8 +248,8 @@ end;
 
 procedure TConvertDBThread.SetPositionSynch;
 begin
- TFormConvertingDB(FForm).Progress.Position:=FIntParam;  
- TFormConvertingDB(FForm).TempProgress.Position:=FIntParam;   
+ TFormConvertingDB(FForm).Progress.Position:=FIntParam;
+ TFormConvertingDB(FForm).TempProgress.Position:=FIntParam;
  TFormConvertingDB(FForm).InfoListBox.Repaint;
 end;
 

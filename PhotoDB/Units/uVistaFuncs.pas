@@ -83,7 +83,6 @@ procedure AllowDragAndDrop;
 var
   User32Handle : THandle;
   ChangeWindowMessageFilter : TChangeWindowMessageFilter;
-  I : Integer;
 
 const
    MSGFLT_ALLOW = 1;

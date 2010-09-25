@@ -251,7 +251,7 @@ begin
   TempTable:=GetQuery;
   SetSQL(WorkTable,'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
   SetSQL(TempTable,'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
-  TOpenQueryThread.Create(false,WorkTable,DBOpened);
+  TOpenQueryThread.Create(WorkTable,DBOpened);
   OpenProgress:=GetProgressWindow;
   OpenProgress.OneOperation:=true;
   OpenProgress.OperationCounter.Inverse:=true;
@@ -277,7 +277,7 @@ begin
   Until not DBInOpening;
   WorkTable.First;
 
-  TOpenQueryThread.Create(false,TempTable,DBOpened);
+  TOpenQueryThread.Create(TempTable,DBOpened);
   DBInOpening:=true;
   Repeat
    OpenProgress.MaxPosCurrentOperation:=100;
@@ -316,8 +316,6 @@ begin
 end;
 
 procedure TFormCreateDBFileTree.FormCreate(Sender: TObject);
-var
-  Icon : Ticon;
 begin
   DBInOpening:=true;
   DropFileTarget1.Register(self);

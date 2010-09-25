@@ -114,7 +114,7 @@ begin
  Options.FileName:=DBName;
  Options.OnEnd:=OnEnd;
  Options.WriteLineProc:=WriteLine;
- PackingTable.Create(False,Options);
+ PackingTable.Create(Options);
  Working:=True;
  CMDForm.ShowModal;
 end;
@@ -180,7 +180,7 @@ begin
  Options.GetAvaliableCryptFileList:=PasswordKeeper.GetAvaliableCryptFileList;
  Options.OnProgress:=ProgressCallBack;
  FProgressEnabled:=true;
- RecreatingThInTable.Create(False,Options);
+ RecreatingThInTable.Create(Options);
  Working:=True;
  Recreating:=True;
  CMDForm.ShowModal;
@@ -203,7 +203,7 @@ begin
  Options.OnEnd:=OnEnd;
  Options.FileName:=FileName;
 
- ThreadRestoreTable.Create(False,Options);
+ ThreadRestoreTable.Create(Options);
  Working:=True;
  Recreating:=True;
  CMDForm.ShowModal;
@@ -249,7 +249,7 @@ begin
  Options.OnProgress:=ProgressCallBack;
  FProgressEnabled:=true;
 
- TThreadShowBadLinks.Create(False, Options);
+ TThreadShowBadLinks.Create(Options);
  Working:=True;
  Recreating:=true;
  CMDForm.ShowModal;
@@ -273,7 +273,7 @@ begin
  Options.FileName:=DBName;
 
  Timer1.Enabled:=false;
- BackUpTableInCMD.Create(False, Options);
+ BackUpTableInCMD.Create(Options);
  Working:=True;
  Recreating:=True;
  CMDForm.ShowModal;
@@ -298,7 +298,7 @@ begin
  FProgressEnabled:=true;
 
  Timer1.Enabled:=false;
- TThreadOptimizeDublicates.Create(False,Options);
+ TThreadOptimizeDublicates.Create(Options);
  Working:=True;
  Recreating:=true;
  CMDForm.ShowModal;

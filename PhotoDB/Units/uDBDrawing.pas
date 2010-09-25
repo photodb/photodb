@@ -31,7 +31,6 @@ begin
   if ID = 0 then
     DrawIconEx(HCanvas, 0 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_NEW+1], 16, 16, 0, 0, DI_NORMAL);
 
-  FE:=true;
   if Exists = 0 then
   begin
     FE := FileExists(FileName);

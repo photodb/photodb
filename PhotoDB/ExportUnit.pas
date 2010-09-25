@@ -86,7 +86,7 @@ begin
  CheckBox5.Enabled:=false;
  CheckBox6.Enabled:=false;
  Working:=true;
- ExportThread.Create(false,Options);
+ ExportThread.Create(Options);
  Button3.Enabled:=true;
 end;
 

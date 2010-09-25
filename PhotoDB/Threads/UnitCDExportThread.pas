@@ -11,7 +11,7 @@ type
   TCDExportOptions = record
    ToDirectory : String;
    DeleteFiles : boolean;
-   ModifyDB : boolean;     
+   ModifyDB : boolean;
    CreatePortableDB : boolean;
    OnEnd : TNotifyEvent;
   end;
@@ -20,7 +20,7 @@ type
   TCDExportThread = class(TThread)
   private
    Mapping: TCDIndexMapping;
-   Options : TCDExportOptions; 
+   Options : TCDExportOptions;
    DBRemapping : TDBFilePathArray;
    DS : TDataSet;
    ExtDS : TDataSet;
@@ -35,9 +35,9 @@ type
    IsClosedParam : boolean;
     { Private declarations }
   protected
-    procedure Execute; override;  
+    procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; aMapping : TCDIndexMapping;
+    constructor Create(aMapping : TCDIndexMapping;
      aOptions : TCDExportOptions);
     procedure DoErrorDeletingFiles;
     procedure ShowError;
@@ -50,7 +50,7 @@ type
     procedure IfBreakOperation;
     procedure DestroyProgress;
     procedure SetProgressOperation;
-    procedure SetMaxPosition;         
+    procedure SetMaxPosition;
     procedure SetPosition;
   end;
 
@@ -60,13 +60,11 @@ uses UnitSaveQueryThread, ProgressActionUnit;
 
 { TCDExportThread }
 
-constructor TCDExportThread.Create(CreateSuspennded: Boolean;
-  aMapping: TCDIndexMapping; aOptions : TCDExportOptions);
+constructor TCDExportThread.Create(AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
 begin
- inherited create(true);
- Mapping:=aMapping;
- Options:=aOptions;
- if not CreateSuspennded then Resume;
+  inherited Create(False);
+  Mapping := AMapping;
+  Options := AOptions;
 end;
 
 procedure TCDExportThread.CreatePortableDB;
@@ -108,7 +106,7 @@ var
 
 procedure CopyRecordsW(OutTable, InTable: TDataSet; FileName : string; CRC : Cardinal);
 var
-  S,Folder : String;
+  S : String;
 begin
  InTable.FieldByName('Name').AsString:=OutTable.FieldByName('Name').AsString;
  InTable.FieldByName('FFileName').AsString:=FileName;
@@ -166,7 +164,7 @@ begin
 
  if not Mapping.CreateStructureToDirectory(Options.ToDirectory,OnProgress) then
  begin
-  Synchronize(ShowCopyError); 
+  Synchronize(ShowCopyError);
   Synchronize(DestroyProgress);
   Synchronize(DoOnEnd);
   exit;
@@ -182,7 +180,7 @@ begin
   FS.Write(Str[1],Length(Str));
   Str:='open='+Mapping.CDLabel+'.exe'#13#10;
   FS.Write(Str[1],Length(Str));
-  
+
   FS.Free;
  except
   on e : Exception do
@@ -192,9 +190,9 @@ begin
    Synchronize(ShowError);
   end;
  end;
-            
+
  IntParam:=2;
- Synchronize(SetProgressOperation);    
+ Synchronize(SetProgressOperation);
  IntParam:=0;
  Synchronize(SetPosition);
 
@@ -203,7 +201,7 @@ begin
  begin
   Synchronize(DoErrorDeletingFiles);
  end;
-           
+
  IntParam:=3;
  Synchronize(SetProgressOperation);
  if not IsClosedParam and Options.ModifyDB then
@@ -216,7 +214,7 @@ begin
   for i:=0 to Length(DBRemapping)-1 do
   begin
    IntParam:=i;
-   Synchronize(SetPosition);   
+   Synchronize(SetPosition);
    if IsClosedParam then break;
 
    Directory:=GetDirectory(DBRemapping[i].FileName);
@@ -239,7 +237,7 @@ begin
  Directory:=GetDirectory(Options.ToDirectory);
  FormatDir(Directory);
  Directory:=Directory+Mapping.CDLabel+'\';
-         
+
  IntParam:=4;
  Synchronize(SetProgressOperation);
  if not IsClosedParam and Options.CreatePortableDB then
@@ -269,14 +267,14 @@ begin
    begin
     DS:=GetQuery;
     DBUpdated:=true;
-            
+
     IntParam:=Length(DBRemapping)-1;
     Synchronize(SetMaxPosition);
-    
+
     for i:=0 to Length(DBRemapping)-1 do
-    begin        
+    begin
      IntParam:=i;
-     Synchronize(SetPosition);  
+     Synchronize(SetPosition);
      if IsClosedParam then break;
 
      Delete(DBRemapping[i].FileName,1,Length(Mapping.CDLabel)+5);
@@ -320,7 +318,7 @@ begin
   for i:=0 to length(FGroupsFounded)-1 do
   begin
    IntParam:=i;
-   Synchronize(SetPosition);  
+   Synchronize(SetPosition);
    if IsClosedParam then break;
 
    for j:=0 to length(FRegGroups)-1 do
@@ -360,7 +358,7 @@ procedure TCDExportThread.OnProgress(Sender: TObject;
   var Info: TProgressCallBackInfo);
 begin
  CopiedSize:=CopiedSize+Info.Position;
- Synchronize(SetProgressAsynch);   
+ Synchronize(SetProgressAsynch);
  Info.Terminate:=IsClosedParam;
 end;
 
@@ -369,7 +367,7 @@ begin
  With ProgressWindow as TProgressActionForm do
  begin
   xPosition:=CopiedSize;
- end;     
+ end;
  IfBreakOperation;
 end;
 

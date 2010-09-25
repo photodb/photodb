@@ -27,9 +27,8 @@ uses ManagerDBUnit;
 
 constructor TThreadLoadingManagerDB.Create(AOwner : TForm);
 begin
-  inherited Create(True);
+  inherited Create(False);
   FOwner := AOwner;
-  Resume;
 end;
 
 procedure TThreadLoadingManagerDB.DoOnEnd;

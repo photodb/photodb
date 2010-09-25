@@ -71,7 +71,7 @@ type
    Function GetCur : HIcon;
    procedure ColorClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
    procedure DoSaveSettings(Sender : TObject);
-   class function ID: ShortString; override;
+   class function ID: string; override;
    function GetProperties : string; override;
 
    Procedure SetProperties(Properties : String); override;
@@ -477,7 +477,7 @@ begin
  //
 end;
 
-class function TBrushToolClass.ID: ShortString;
+class function TBrushToolClass.ID: string;
 begin 
  Result:='{542FC0AD-A013-4973-90D4-E6D6E9F65D2C}';
 end;

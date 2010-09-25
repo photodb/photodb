@@ -16,7 +16,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean; hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM);
+    constructor Create(hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM);
     destructor Destroy; override;
   end;
 
@@ -39,7 +39,7 @@ implementation
 
    SendMessageMessageWork := True;
    SendMessageResult:=false;          
-   SendMessageThread := TSendMessageWithTimeoutThread.Create(false, hWnd, Msg, wParam, lParam);
+   SendMessageThread := TSendMessageWithTimeoutThread.Create(hWnd, Msg, wParam, lParam);
    WaitForSingleObject(SendMessageThread.Handle, 5000);
 
    Result:=SendMessageResult;
@@ -47,15 +47,14 @@ implementation
 
 { TSendMessageWithTimeoutThread }
 
-constructor TSendMessageWithTimeoutThread.Create(CreateSuspennded: Boolean;
+constructor TSendMessageWithTimeoutThread.Create(
   hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM);
 begin
- inherited Create(true);
+ inherited Create(True);
  fhWnd:= hWnd;
  fMsg:= Msg;
  fwParam:=fwParam;
  flParam:=lParam;
- if not CreateSuspennded then Resume;
 end;
 
 destructor TSendMessageWithTimeoutThread.Destroy;

@@ -181,7 +181,6 @@ end;
 function GetParamStrDBValue(param : string) : string;
 var
   Index : Integer;
-  ParamStrValue : string;
 begin
   Result := '';
   if param = '' then

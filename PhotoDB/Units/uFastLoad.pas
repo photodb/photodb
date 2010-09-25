@@ -13,7 +13,7 @@ type
     LoadCRCCheckThread : TDBThread;
   public
     constructor Create;
-    destructor Destroy;
+    destructor Destroy; override;
     class function Instance : TLoad;
     //Starts
     procedure StartDBKernelIconsThread;
@@ -49,6 +49,7 @@ begin
   F(LoadDBKernelIconsThread);
   F(LoadDBSettingsThread);
   F(LoadCRCCheckThread);
+  inherited;
 end;
 
 procedure TLoad.StartDBKernelIconsThread;

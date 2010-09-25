@@ -294,7 +294,6 @@ var
   IconIndex: Integer;
   S, Icon: string;
   I: Integer;
-  Ico: TIcon;
 begin
   if not Button5.Enabled then
     Exit;
@@ -313,8 +312,6 @@ begin
 end;
 
 procedure TFormDBOptions.SetDefaultIcon(path : string = '');
-var
-  Ico: TIcon;
 begin
   if Path = '' then
     Path := GetDirectory(GetProgramPath) + 'Icons.dll,121';

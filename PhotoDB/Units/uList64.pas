@@ -443,7 +443,7 @@ var
   Value : Int64;
 begin
   System.Move(Item, Value, SizeOf(TDateTime));
-  Add(Value);
+  Result := Add(Value);
 end;
 
 function TList64.Add(Item: Integer): Integer;   
@@ -451,8 +451,8 @@ var
   Value : Int64;
 begin
   Value := Item;
-  Add(Value);
-end;      
+  Result := Add(Value);
+end;
 
 function TList64.Add(Item: Boolean): Integer;
 var
@@ -462,7 +462,7 @@ begin
     Value := 1
   else
     Value := 0;
-  Add(Value);
+  Result := Add(Value);
 end;
 
 function TList64.GetMaxStatInt64: Int64;

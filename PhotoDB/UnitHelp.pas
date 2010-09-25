@@ -4,17 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmMemo, ImButton, ExtCtrls, Menus, clipbrd, Dolphin_DB;
+  Dialogs, StdCtrls, DmMemo, ImButton, ExtCtrls, Menus, clipbrd, Dolphin_DB,
+  GraphicsBaseTypes;
 
-Type
-  TRGB=record
-  b,g,r : byte;
-  end;
-
-    ARGB=array [0..32677] of TRGB;
-    PARGB=^ARGB;
-    PRGB = ^TRGB;
-
+type
   TCanHelpCloseProcedure = Procedure(Sender : TObject; var CanClose : Boolean) of object;
 
 type
@@ -45,7 +38,7 @@ type
     FText: TStrings;
     FSimpleText : String;
     Bitmap : TBitmap;
-    dw, dh : integer;
+    Dw, Dh: Integer;
     FNextButtonVisible: Boolean;
     FCallBack: TNotifyEvent;
     FNextText: String;
@@ -63,22 +56,24 @@ type
     procedure SetHelpCaption(const Value: String);
     { Private declarations }
   public
-  Property ActivePoint : TPoint read FActivePoint write SetActivePoint;
-  Property HelpText : String read FSimpleText write SetText;
-  Property NextButtonVisible : Boolean read FNextButtonVisible Write SetNextButtonVisible;
-  Property CallBack : TNotifyEvent read FCallBack Write SetCallBack;
-  Property OnHelpClose : TNotifyEvent read FOnHelpClose Write SetOnHelpClose;
-  Property NextText : String read FNextText write SetNextText;
-  Property CanHelpClose : TCanHelpCloseProcedure read FCanHelpClose write SetCanHelpClose;
-  Property HelpCaption : String read FHelpCaption Write SetHelpCaption;
-  procedure Refresh;
-  procedure DoDelp(HelpMessage : String; Point : TPoint);
+    property ActivePoint: TPoint read FActivePoint write SetActivePoint;
+    property HelpText: string read FSimpleText write SetText;
+    property NextButtonVisible: Boolean read FNextButtonVisible write SetNextButtonVisible;
+    property CallBack: TNotifyEvent read FCallBack write SetCallBack;
+    property OnHelpClose: TNotifyEvent read FOnHelpClose write SetOnHelpClose;
+    property NextText: string read FNextText write SetNextText;
+    property CanHelpClose: TCanHelpCloseProcedure read FCanHelpClose write SetCanHelpClose;
+    property HelpCaption: string read FHelpCaption write SetHelpCaption;
+    procedure Refresh;
+    procedure DoDelp(HelpMessage: string; Point: TPoint);
     { Public declarations }
   end;
-  
-Procedure DoHelpHint(Caption, HelpText : String; MyPoint : TPoint; Control : TControl);
-Procedure DoHelpHintCallBack(Caption, HelpText : String; MyPoint : TPoint; Control : TControl; CallBack : TNotifyEvent; Text : String);
-Procedure DoHelpHintCallBackOnCanClose(Caption, HelpText : String; MyPoint : TPoint; Control : TControl; CallBack : TNotifyEvent; Text : String; OnCanClose : TCanHelpCloseProcedure);
+
+procedure DoHelpHint(Caption, HelpText: string; MyPoint: TPoint; Control: TControl);
+procedure DoHelpHintCallBack(Caption, HelpText: string; MyPoint: TPoint; Control: TControl; CallBack: TNotifyEvent;
+  Text: string);
+procedure DoHelpHintCallBackOnCanClose(Caption, HelpText: string; MyPoint: TPoint; Control: TControl;
+  CallBack: TNotifyEvent; Text: string; OnCanClose: TCanHelpCloseProcedure);
 
 implementation
 
@@ -86,51 +81,50 @@ uses Language;
 
 {$R *.dfm}
 
-Procedure DoHelpHint(Caption, HelpText : String; MyPoint : TPoint; Control : TControl);
+procedure DoHelpHint(Caption, HelpText: string; MyPoint: TPoint; Control: TControl);
 var
   HelpPopup: THelpPopup;
 begin
- Application.CreateForm(THelpPopup, HelpPopup);
- HelpPopup.NextButtonVisible:=false;
- HelpPopup.HelpCaption:=Caption;
- if Control<>nil then
- begin
-  MyPoint:=Control.ClientToScreen(Point(Control.ClientWidth div 2,Control.Clientheight div 2));
- end;
- HelpPopup.DoDelp(HelpText,MyPoint);
+  Application.CreateForm(THelpPopup, HelpPopup);
+  HelpPopup.NextButtonVisible := False;
+  HelpPopup.HelpCaption := Caption;
+  if Control <> nil then
+    MyPoint := Control.ClientToScreen(Point(Control.ClientWidth div 2, Control.Clientheight div 2));
+
+  HelpPopup.DoDelp(HelpText, MyPoint);
 end;
 
-Procedure DoHelpHintCallBack(Caption, HelpText : String; MyPoint : TPoint; Control : TControl; CallBack : TNotifyEvent; Text : String);
+procedure DoHelpHintCallBack(Caption, HelpText: string; MyPoint: TPoint; Control: TControl; CallBack: TNotifyEvent;
+  Text: string);
 var
   HelpPopup: THelpPopup;
 begin
- Application.CreateForm(THelpPopup, HelpPopup);
- HelpPopup.NextButtonVisible:=True;
- HelpPopup.NextText:=Text;
- HelpPopup.CallBack:=CallBack;
- HelpPopup.HelpCaption:=Caption;
- if Control<>nil then
- begin
-  MyPoint:=Control.ClientToScreen(Point(Control.ClientWidth div 2,Control.Clientheight div 2));
- end;
- HelpPopup.DoDelp(HelpText,MyPoint);
+  Application.CreateForm(THelpPopup, HelpPopup);
+  HelpPopup.NextButtonVisible := True;
+  HelpPopup.NextText := Text;
+  HelpPopup.CallBack := CallBack;
+  HelpPopup.HelpCaption := Caption;
+  if Control <> nil then
+    MyPoint := Control.ClientToScreen(Point(Control.ClientWidth div 2, Control.Clientheight div 2));
+
+  HelpPopup.DoDelp(HelpText, MyPoint);
 end;
 
-Procedure DoHelpHintCallBackOnCanClose(Caption, HelpText : String; MyPoint : TPoint; Control : TControl; CallBack : TNotifyEvent; Text : String; OnCanClose : TCanHelpCloseProcedure);
+procedure DoHelpHintCallBackOnCanClose(Caption, HelpText: string; MyPoint: TPoint; Control: TControl;
+  CallBack: TNotifyEvent; Text: string; OnCanClose: TCanHelpCloseProcedure);
 var
   HelpPopup: THelpPopup;
 begin
- Application.CreateForm(THelpPopup, HelpPopup);
- HelpPopup.NextButtonVisible:=True;
- HelpPopup.NextText:=Text;
- HelpPopup.CallBack:=CallBack;
- HelpPopup.CanHelpClose:=OnCanClose;
- HelpPopup.HelpCaption:=Caption;
- if Control<>nil then
- begin
-  MyPoint:=Control.ClientToScreen(Point(Control.ClientWidth div 2,Control.Clientheight div 2));
- end;
- HelpPopup.DoDelp(HelpText,MyPoint);
+  Application.CreateForm(THelpPopup, HelpPopup);
+  HelpPopup.NextButtonVisible := True;
+  HelpPopup.NextText := Text;
+  HelpPopup.CallBack := CallBack;
+  HelpPopup.CanHelpClose := OnCanClose;
+  HelpPopup.HelpCaption := Caption;
+  if Control <> nil then
+    MyPoint := Control.ClientToScreen(Point(Control.ClientWidth div 2, Control.Clientheight div 2));
+
+  HelpPopup.DoDelp(HelpText, MyPoint);
 end;
 
 function CreateBitmapRgn(Bitmap: TBitmap; TransClr: TColorRef): hRgn;
@@ -281,9 +275,8 @@ end;
 
 function BitmapToRegion(hBmp: TBitmap; TransColor: TColor): HRGN;
 begin
- Result:=CreateBitmapRgn(hBmp,TransColor);
-end; 
-
+  Result:=CreateBitmapRgn(hBmp, TransColor);
+end;
 
 procedure THelpPopup.ColorFill(var image : tbitmap);
 var
@@ -363,15 +356,15 @@ begin
  begin
   PP[0]:=Point(dx+20,dy);
   PP[1]:=Point(dx+40,dy);
-  PP[2]:=Point(0,0);
-  PP[3]:=Point(dx+20,dy);
-  Bitmap.Canvas.Polygon(PP);
-  Bitmap.Canvas.Brush.Color:=$00FFFF;
-  Bitmap.Canvas.Pen.Color:=$00FFFF;
-  Bitmap.Canvas.MoveTo(dx+20,dy);
-  Bitmap.Canvas.LineTo(dx+40,dy);
- end;
- if (Left-FActivePoint.X>=0) and (Top-FActivePoint.y<0) then
+  PP[2]:=Point(0, 0);
+    PP[3] := Point(Dx + 20, Dy);
+    Bitmap.Canvas.Polygon(PP);
+    Bitmap.Canvas.Brush.Color := $00FFFF;
+    Bitmap.Canvas.Pen.Color := $00FFFF;
+    Bitmap.Canvas.MoveTo(Dx + 20, Dy);
+    Bitmap.Canvas.LineTo(Dx + 40, Dy);
+  end;
+  if (Left - FActivePoint.X >= 0) and (Top-FActivePoint.y<0) then
  begin
   PP[0]:=Point(dx+20,dy+dh-1);
   PP[1]:=Point(dx+40,dy+dh-1);

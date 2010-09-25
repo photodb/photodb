@@ -280,7 +280,7 @@ var
   PNG : PngImage.TPngGraphic;
   Opt : TCryptImageOptions;
   SavePictureDialog : DBSavePictureDialog;
-  FileName, SaveFileName : string;
+  FileName : string;
 begin
  if Image1.Picture.Graphic=nil then
  begin

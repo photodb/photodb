@@ -609,6 +609,7 @@ object SearchForm: TSearchForm
         Visible = False
         Active = True
         FillPercent = 50
+        Color = clBtnFace
         ParentColor = False
         Anchors = [akTop, akRight]
       end

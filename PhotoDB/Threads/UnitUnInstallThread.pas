@@ -13,7 +13,7 @@ uses
    Registry_Entries : boolean;
    Chortcuts : boolean;
    Themes : boolean;
-   PlugIns : boolean;   
+   PlugIns : boolean;
    Scripts : boolean;
    Actions : boolean;
   end;
@@ -21,18 +21,17 @@ uses
 type
   UnInstallThread = class(TThread)
   private
-  FTypeOperation, FInfo, FinfoLabel  : String;
-  FMaxSize : Integer;
-  FProgress : integer;
-  FProgressText : string;
-  FErrorString : string;
-  FExplorerFolders : TExplorerFolders;
+    FTypeOperation, FInfo, FinfoLabel: string;
+    FMaxSize: Integer;
+    FProgress: Integer;
+    FProgressText: string;
+    FErrorString: string;
     { Private declarations }
   protected
     procedure SetInfo;
     procedure SetProgress;
-    procedure exit;
-    procedure error;
+    procedure Exit;
+    procedure Error;
     procedure Execute; override;
   end;
 
@@ -313,7 +312,7 @@ begin
   Synchronize(SetProgress);
   Dolphin_db.deldir(fdir+ActionsFolder,'|DBACT|');
  end;
- 
+
  FTypeOperation:=TEXT_MES_DELETING_TEMP_FILES;
  FInfo:='...';
  FinfoLabel:='';

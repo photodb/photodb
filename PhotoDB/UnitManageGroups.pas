@@ -7,11 +7,10 @@ uses
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
   ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
-  UnitDBDeclare, uDBDrawing;
+  UnitDBDeclare, uDBDrawing, uMemory, uDBForm;
 
 type
-  TFormManageGroups = class(TForm)
-    ApplicationEvents1: TApplicationEvents;
+  TFormManageGroups = class(TDBForm)
     ListView1: TNoVSBListView1;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
@@ -27,11 +26,11 @@ type
     SelectFont1: TMenuItem;
     CoolBar1: TCoolBar;
     ToolBar1: TToolBar;
-    ToolButton1: TToolButton;
+    TbAdd: TToolButton;
     ToolButton2: TToolButton;
     ToolButton3: TToolButton;
     ToolButton4: TToolButton;
-    ToolButton5: TToolButton;
+    TbExit: TToolButton;
     ToolButton6: TToolButton;
     ToolBarImageList: TImageList;
     ToolButton7: TToolButton;
@@ -46,8 +45,6 @@ type
     Procedure MenuActionSearchForGroup(Sender : TObject);
     procedure FormDestroy(Sender: TObject);
     procedure LoadGroups;
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
     procedure ListView1CustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure FormShow(Sender: TObject);
@@ -56,28 +53,30 @@ type
     procedure Contents1Click(Sender: TObject);
     procedure ShowAll1Click(Sender: TObject);
     procedure SelectFont1Click(Sender: TObject);
-    procedure ToolButton5Click(Sender: TObject);
+    procedure TbExitClick(Sender: TObject);
     procedure ToolButton2Click(Sender: TObject);
     procedure ToolButton3Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
-  FSaving : boolean;
-  FBitmapImageList : TBitmapImageList;
-  procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     { Private declarations }
-  public                    
-  Groups : TGroups;
-  ImagePopupMenu : TPopupMenu;
-  MenuChangeGroup : TMenuItem;
-  MenuDeleteGroup : TMenuItem;
-  MenuAddGroup  : TMenuItem;
-  MenuQuickInfoGroup : TMenuItem;
-  MenuSearchForGroup : TMenuItem;
-  procedure LoadLanguage;
-  procedure Execute;         
-  procedure LoadToolBarIcons;
+    FSaving: Boolean;
+    FBitmapImageList: TBitmapImageList;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+  protected
+    function GetFormID : string; override;
+  public
     { Public declarations }
+    Groups: TGroups;
+    ImagePopupMenu: TPopupMenu;
+    MenuChangeGroup: TMenuItem;
+    MenuDeleteGroup: TMenuItem;
+    MenuAddGroup: TMenuItem;
+    MenuQuickInfoGroup: TMenuItem;
+    MenuSearchForGroup: TMenuItem;
+    procedure LoadLanguage;
+    procedure Execute;
+    procedure LoadToolBarIcons;
   end;
 
 var
@@ -94,112 +93,107 @@ uses UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo, Language,
 
 { TFormManageGroups }
 
-Procedure ExecuteGroupManager;
+procedure ExecuteGroupManager;
 begin
- if FormManageGroups=nil then
- Application.CreateForm(TFormManageGroups,FormManageGroups) else
- begin
-  FormManageGroups.Show;
-  FormManageGroups.SetFocus;
-  exit;
- end;
- FormManageGroups.Execute;
- FormManageGroups.Release;
- FormManageGroups:=nil;
+  Application.CreateForm(TFormManageGroups, FormManageGroups);
+  try
+    FormManageGroups.Execute;
+  finally
+    R(FormManageGroups);
+  end;
 end;
 
 procedure TFormManageGroups.ChangeGroup(Sender: TObject);
 begin
- DBChangeGroup(Groups[(Sender As TmenuItem).Owner.Tag]);
+  DBChangeGroup(Groups[(Sender as TmenuItem).Owner.Tag]);
 end;
 
 procedure TFormManageGroups.Execute;
 begin
- DBkernel.RecreateThemeToForm(Self);
- LoadGroups;
- if Length(Groups)>0 then
- begin
- if not Visible then
- ShowModal; end else begin
-  If ID_OK= MessageBoxDB(Handle,TEXT_MES_NO_GROUPS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+  DBkernel.RecreateThemeToForm(Self);
+  LoadGroups;
+  if Length(Groups) > 0 then
+    ShowModal
+  else
   begin
-   CreateNewGroupDialog;
+    if ID_OK = MessageBoxDB(Handle, TEXT_MES_NO_GROUPS, TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      CreateNewGroupDialog;
   end;
- end;
 end;
 
 procedure TFormManageGroups.FormCreate(Sender: TObject);
 begin
- DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
- DBKernel.RecreateThemeToForm(self);
- FSaving:=false;
- Caption:=TEXT_MES_MANAGE_GROUPS;
- ListView1.DoubleBuffered:=true;
- Width:=Min(650,Round(Screen.Width/1.3));
- ListView1.Columns[0].Caption:=TEXT_MES_GROUPS_LIST;
- FBitmapImageList:=TBitmapImageList.Create;
- MainMenu1.Images:=DBKernel.ImageList;
- Exit1.ImageIndex:=DB_IC_EXIT;
- Contents1.ImageIndex:=DB_IC_HELP;
- AddGroup1.ImageIndex:=DB_IC_NEW_SHELL;
- ShowAll1.ImageIndex:=DB_IC_EXPLORER_PANEL;
- SelectFont1.ImageIndex:=DB_IC_OPTIONS;
- LoadLanguage;
- ShowAll1.Checked:=DBKernel.ReadBool('GroupsManager','ShowAllGroups',true);
- if ShowAll1.Checked then ShowAll1.ImageIndex:=-1;
- LoadToolBarIcons;
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  DBKernel.RecreateThemeToForm(Self);
+  FSaving := False;
+  Caption := TEXT_MES_MANAGE_GROUPS;
+  ListView1.DoubleBuffered := True;
+  Width := Min(650, Round(Screen.Width / 1.3));
+  ListView1.Columns[0].Caption := TEXT_MES_GROUPS_LIST;
+  FBitmapImageList := TBitmapImageList.Create;
+  MainMenu1.Images := DBKernel.ImageList;
+  Exit1.ImageIndex := DB_IC_EXIT;
+  Contents1.ImageIndex := DB_IC_HELP;
+  AddGroup1.ImageIndex := DB_IC_NEW_SHELL;
+  ShowAll1.ImageIndex := DB_IC_EXPLORER_PANEL;
+  SelectFont1.ImageIndex := DB_IC_OPTIONS;
+  LoadLanguage;
+  ShowAll1.Checked := DBKernel.ReadBool('GroupsManager', 'ShowAllGroups', True);
+  if ShowAll1.Checked then
+    ShowAll1.ImageIndex := -1;
+  LoadToolBarIcons;
 end;
 
 procedure TFormManageGroups.ImageContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 begin
- if FSaving then exit;
- if (Sender as TListView).GetItemAt(MousePos.x,MousePos.Y)=nil then exit;
- ImagePopupMenu := TPopupMenu.Create(nil);
- ImagePopupMenu.Images:=DBKernel.ImageList;
- ImagePopupMenu.Tag:=(Sender as TListView).GetItemAt(MousePos.x,MousePos.Y).ImageIndex;
-
+  if FSaving then
+    Exit;
+  if (Sender as TListView).GetItemAt(MousePos.X, MousePos.Y) = nil then
+    Exit;
+  ImagePopupMenu := TPopupMenu.Create(nil);
+  ImagePopupMenu.Images := DBKernel.ImageList;
+  ImagePopupMenu.Tag := (Sender as TListView).GetItemAt(MousePos.X, MousePos.Y).ImageIndex;
 
   MenuChangeGroup := TMenuItem.Create(ImagePopupMenu);
-  MenuChangeGroup.Caption:=TEXT_MES_CHANGE_GROUP;
-  MenuChangeGroup.OnClick:=ChangeGroup;
-  MenuChangeGroup.ImageIndex:=DB_IC_RENAME;
+  MenuChangeGroup.Caption := TEXT_MES_CHANGE_GROUP;
+  MenuChangeGroup.OnClick := ChangeGroup;
+  MenuChangeGroup.ImageIndex := DB_IC_RENAME;
   MenuDeleteGroup := TMenuItem.Create(ImagePopupMenu);
-  MenuDeleteGroup.Caption:=TEXT_MES_DELETE_GROUP;
-  MenuDeleteGroup.OnClick:=DeleteGroup;
-  MenuDeleteGroup.ImageIndex:=DB_IC_DELETE_INFO;
+  MenuDeleteGroup.Caption := TEXT_MES_DELETE_GROUP;
+  MenuDeleteGroup.OnClick := DeleteGroup;
+  MenuDeleteGroup.ImageIndex := DB_IC_DELETE_INFO;
   MenuAddGroup := TMenuItem.Create(ImagePopupMenu);
-  MenuAddGroup.Caption:=TEXT_MES_ADD_GROUP;
-  MenuAddGroup.OnClick:=MenuActionAddGroup;
-  MenuAddGroup.ImageIndex:=DB_IC_NEW_SHELL;
+  MenuAddGroup.Caption := TEXT_MES_ADD_GROUP;
+  MenuAddGroup.OnClick := MenuActionAddGroup;
+  MenuAddGroup.ImageIndex := DB_IC_NEW_SHELL;
 
+  MenuSearchForGroup := TmenuItem.Create(ImagePopupMenu);
+  MenuSearchForGroup.Caption := TEXT_MES_SEARCH_FOR_GROUP;
+  MenuSearchForGroup.ImageIndex := DB_IC_SEARCH;
+  MenuSearchForGroup.OnClick := MenuActionSearchForGroup;
+  MenuQuickInfoGroup := TmenuItem.Create(ImagePopupMenu);
+  MenuQuickInfoGroup.Caption := TEXT_MES_QUICK_GROUP_INFO;
+  MenuQuickInfoGroup.OnClick := MenuActionQuickInfoGroup;
+  MenuQuickInfoGroup.ImageIndex := DB_IC_PROPERTIES;
 
- MenuSearchForGroup := TmenuItem.Create(ImagePopupMenu);
- MenuSearchForGroup.Caption:=TEXT_MES_SEARCH_FOR_GROUP;
- MenuSearchForGroup.ImageIndex:=DB_IC_SEARCH;
- MenuSearchForGroup.OnClick:=MenuActionSearchForGroup;
- MenuQuickInfoGroup := TmenuItem.Create(ImagePopupMenu);
- MenuQuickInfoGroup.Caption:=TEXT_MES_QUICK_GROUP_INFO;
- MenuQuickInfoGroup.OnClick:=MenuActionQuickInfoGroup;
- MenuQuickInfoGroup.ImageIndex:=DB_IC_PROPERTIES;
+  ImagePopupMenu.Items.Add(MenuChangeGroup);
+  ImagePopupMenu.Items.Add(MenuDeleteGroup);
+  ImagePopupMenu.Items.Add(MenuAddGroup);
 
-
- ImagePopupMenu.Items.Add(MenuChangeGroup);
- ImagePopupMenu.Items.Add(MenuDeleteGroup);
- ImagePopupMenu.Items.Add(MenuAddGroup);
-
- ImagePopupMenu.Items.Add(MenuSearchForGroup);
- ImagePopupMenu.Items.Add(MenuQuickInfoGroup);
- ImagePopupMenu.Popup((Sender as TControl).ClientToScreen(MousePos).X,(Sender as TControl).ClientToScreen(MousePos).Y);
- ImagePopupMenu.FreeOnRelease;
- ImagePopupMenu:=nil;
+  ImagePopupMenu.Items.Add(MenuSearchForGroup);
+  ImagePopupMenu.Items.Add(MenuQuickInfoGroup);
+  ImagePopupMenu.Popup((Sender as TControl).ClientToScreen(MousePos).X,
+    (Sender as TControl).ClientToScreen(MousePos).Y);
+  ImagePopupMenu.FreeOnRelease;
+  ImagePopupMenu := nil;
 end;
 
 procedure TFormManageGroups.FormDestroy(Sender: TObject);
 begin
- DBKernel.UnRegisterChangesID(Self,ChangedDBDataByID);
- FreeGroups(Groups);
- FBitmapImageList.Free;
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  FreeGroups(Groups);
+  FBitmapImageList.Free;
 end;
 
 procedure TFormManageGroups.LoadGroups;
@@ -207,24 +201,30 @@ var
   i : Integer;
   b : TBitmap;
 begin
- ListView1.Items.BeginUpdate;
- FreeGroups(Groups);
- Groups:=GetRegisterGroupList(True,not DBKernel.ReadBool('GroupsManager','ShowAllGroups',true));
- FBitmapImageList.Clear;
- for i:=0 to Length(Groups)-1 do
- begin
-  b := TBitmap.Create;
-  b.PixelFormat:=pf24bit;
-  b.Assign(Groups[i].GroupImage);
-  FBitmapImageList.AddBitmap(b);
- end;
- ListView1.Clear;
- for i:=0 to Length(Groups)-1 do
- with ListView1.Items.Add do
- begin
-  ImageIndex:=i;
- end;
- ListView1.Items.EndUpdate;
+  ListView1.Items.BeginUpdate;
+  try
+    FreeGroups(Groups);
+    Groups := GetRegisterGroupList(True, not DBKernel.ReadBool('GroupsManager', 'ShowAllGroups', True));
+    FBitmapImageList.Clear;
+    for I := 0 to Length(Groups) - 1 do
+    begin
+      B := TBitmap.Create;
+      try
+        B.PixelFormat := Pf24bit;
+        B.Assign(Groups[I].GroupImage);
+        FBitmapImageList.AddBitmap(B);
+      finally
+        B.Free;
+      end;
+    end;
+    ListView1.Clear;
+    for I := 0 to Length(Groups) - 1 do
+      with ListView1.Items.Add do
+        ImageIndex := I;
+
+  finally
+    ListView1.Items.EndUpdate;
+  end;
 end;
 
 procedure TFormManageGroups.DeleteGroup(Sender: TObject);
@@ -232,54 +232,46 @@ var
   EventInfo : TEventValues;
   Index : integer;
 begin
- if (Sender is TmenuItem) then
- begin
-  Index:=(Sender As TMenuItem).Owner.Tag;
- end else
- begin
-  Index:=(Sender As TComponent).Tag;
- end;
- If ID_OK=MessageBoxDB(Handle,Format(TEXT_MES_DELETE_GROUP_CONFIRM,[Groups[Index].GroupName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
- if UnitGroupsWork.DeleteGroup(Groups[Index]) then
- begin
-  If ID_OK=MessageBoxDB(Handle,Format(TEXT_MES_DELETE_GROUP_IN_TABLE_CONFIRM,[Groups[Index].GroupName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
-  begin
-   FSaving:=true;
-   UnitGroupsTools.DeleteGroup(Groups[Index]);
-   MessageBoxDB(Handle,TEXT_MES_RELOAD_INFO,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
-   FSaving:=false;
-   DBKernel.DoIDEvent(Self,0,[EventID_Param_GroupsChanged],EventInfo);
-   exit;
-  end;
-  DBKernel.DoIDEvent(Self,0,[EventID_Param_GroupsChanged],EventInfo);
- end;
+  if (Sender is TmenuItem) then
+    Index := (Sender as TMenuItem).Owner.Tag
+  else
+    Index := (Sender as TComponent).Tag;
+
+  if ID_OK = MessageBoxDB(Handle, Format(TEXT_MES_DELETE_GROUP_CONFIRM, [Groups[index].GroupName]), TEXT_MES_WARNING,
+    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    if UnitGroupsWork.DeleteGroup(Groups[index]) then
+    begin
+      if ID_OK = MessageBoxDB(Handle, Format(TEXT_MES_DELETE_GROUP_IN_TABLE_CONFIRM, [Groups[index].GroupName]),
+        TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      begin
+        FSaving := True;
+        UnitGroupsTools.DeleteGroup(Groups[index]);
+        MessageBoxDB(Handle, TEXT_MES_RELOAD_INFO, TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
+        FSaving := False;
+        DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
+        Exit;
+      end;
+      DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
+    end;
 end;
 
 procedure TFormManageGroups.MenuActionAddGroup(Sender: TObject);
 begin
- CreateNewGroupDialog;
+  CreateNewGroupDialog;
 end;
 
 procedure TFormManageGroups.MenuActionQuickInfoGroup(Sender: TObject);
 begin
- ShowGroupInfo(Groups[(Sender As TmenuItem).Owner.Tag],true,self);
-end;
-
-procedure TFormManageGroups.ApplicationEvents1Message(var Msg: tagMSG;
-  var Handled: Boolean);
-begin
-{ if Msg.message<>522 then exit;
- if Msg.wParam>0 then ScrollBox1.VertScrollBar.Position:=ScrollBox1.VertScrollBar.Position-50 else ScrollBox1.VertScrollBar.Position:=ScrollBox1.VertScrollBar.Position+50 ;
- ScrollBox1.Update;  }
+  ShowGroupInfo(Groups[(Sender as TmenuItem).Owner.Tag], True, Self);
 end;
 
 procedure TFormManageGroups.MenuActionSearchForGroup(Sender: TObject);
 begin
-  With SearchManager.NewSearch do
+  with SearchManager.NewSearch do
   begin
-   SearchEdit.Text:=':Group('+Groups[(Sender As TmenuItem).Owner.Tag].GroupName+'):';
-   WlStartStop.OnClick(Sender);
-   Show;
+    SearchEdit.Text := ':Group(' + Groups[(Sender as TmenuItem).Owner.Tag].GroupName + '):';
+    WlStartStop.OnClick(Sender);
+    Show;
   end;
   Close;
 end;
@@ -287,7 +279,8 @@ end;
 procedure TFormManageGroups.ChangedDBDataByID(Sender: TObject; ID: integer;
   params: TEventFields; Value: TEventValues);
 begin
-  if EventID_Param_GroupsChanged in params then LoadGroups;
+  if EventID_Param_GroupsChanged in params then
+    LoadGroups;
 end;
 
 procedure TFormManageGroups.ListView1CustomDrawItem(
@@ -304,7 +297,7 @@ Const DrawTextOpt = DT_EDITCONTROL;
   DrawTextOpt1 = DT_NOPREFIX+DT_WORDBREAK+DT_EDITCONTROL;
 
   ThSize : integer = 48;
-  
+
   function Darken(Color : TColor) : TColor;
   begin
    Result:=RGB(Round(0.75*GetRValue(Color)),Round(0.75*GetGValue(Color)),Round(0.75*GetBValue(Color)));
@@ -432,127 +425,137 @@ end;
 
 procedure TFormManageGroups.FormShow(Sender: TObject);
 begin
- width:=width-1;
+  Width := Width - 1;
+end;
+
+function TFormManageGroups.GetFormID: string;
+begin
+  Result := 'ManageGroups';
 end;
 
 procedure TFormManageGroups.ListView1DblClick(Sender: TObject);
 var
-  P : TPoint;
-  Item : TListItem;
-begin  
- GetCursorPos(P);
- P:=ListView1.ScreenToClient(P);
- Item:=ListView1.GetItemAt(P.X,P.Y);
- if Item<>nil then
- ShowGroupInfo(Groups[Item.ImageIndex],true,self);
+  P: TPoint;
+  Item: TListItem;
+begin
+  GetCursorPos(P);
+  P := ListView1.ScreenToClient(P);
+  Item := ListView1.GetItemAt(P.X, P.Y);
+  if Item <> nil then
+    ShowGroupInfo(Groups[Item.ImageIndex], True, Self);
 end;
 
 procedure TFormManageGroups.LoadLanguage;
 begin
- ToolButton5.Caption:=TEXT_MES_EXIT;
- ToolButton1.Caption:=TEXT_MES_ADD_GROUP;
- ToolButton2.Caption:=TEXT_MES_EDIT;
- ToolButton3.Caption:=TEXT_MES_DELETE;
- ToolButton8.Caption:=TEXT_MES_OPTIONS;
- Help1.Caption:=TEXT_MES_HELP;
- Contents1.Caption:=TEXT_MES_CONTENTS;
- Actions1.Caption:=TEXT_MES_ACTIONS;
- File1.Caption:=TEXT_MES_FILE;
- Exit1.Caption:=TEXT_MES_EXIT;
- ShowAll1.Caption:=TEXT_MES_SHOW_ALL_GROUPS;
- SelectFont1.Caption:=TEXT_MES_SELECT_FONT;
- AddGroup1.Caption:=TEXT_MES_ADD_GROUP;
+  TbExit.Caption := TEXT_MES_EXIT;
+  TbAdd.Caption := TEXT_MES_ADD_GROUP;
+  ToolButton2.Caption := TEXT_MES_EDIT;
+  ToolButton3.Caption := TEXT_MES_DELETE;
+  ToolButton8.Caption := TEXT_MES_OPTIONS;
+  Help1.Caption := TEXT_MES_HELP;
+  Contents1.Caption := TEXT_MES_CONTENTS;
+  Actions1.Caption := TEXT_MES_ACTIONS;
+  File1.Caption := TEXT_MES_FILE;
+  Exit1.Caption := TEXT_MES_EXIT;
+  ShowAll1.Caption := TEXT_MES_SHOW_ALL_GROUPS;
+  SelectFont1.Caption := TEXT_MES_SELECT_FONT;
+  AddGroup1.Caption := TEXT_MES_ADD_GROUP;
 end;
 
 procedure TFormManageGroups.Exit1Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFormManageGroups.Contents1Click(Sender: TObject);
 begin
- DoHelp;
+  DoHelp;
 end;
 
 procedure TFormManageGroups.ShowAll1Click(Sender: TObject);
 begin
- ShowAll1.Checked:=not ShowAll1.Checked;
- if ShowAll1.Checked then ShowAll1.ImageIndex:=-1 else ShowAll1.ImageIndex:=DB_IC_EXPLORER_PANEL;
- DBKernel.WriteBool('GroupsManager','ShowAllGroups',ShowAll1.Checked);
- LoadGroups;
+  ShowAll1.Checked := not ShowAll1.Checked;
+  if ShowAll1.Checked then
+    ShowAll1.ImageIndex := -1
+  else
+    ShowAll1.ImageIndex := DB_IC_EXPLORER_PANEL;
+  DBKernel.WriteBool('GroupsManager', 'ShowAllGroups', ShowAll1.Checked);
+  LoadGroups;
 end;
 
 procedure TFormManageGroups.SelectFont1Click(Sender: TObject);
 var
-  fn, NewFont : string;
+  Fn, NewFont: string;
 begin
- fn:=DBKernel.ReadString('GroupsManager','FontName');
- if fn='' then
- fn:='MS Sans Serif';
- if SelectFont(fn,NewFont) then
- DBKernel.WriteString('GroupsManager','FontName',NewFont);
- ListView1.Refresh;
+  Fn := DBKernel.ReadString('GroupsManager', 'FontName');
+  if Fn = '' then
+    Fn := 'MS Sans Serif';
+  if SelectFont(Fn, NewFont) then
+    DBKernel.WriteString('GroupsManager', 'FontName', NewFont);
+  ListView1.Refresh;
 end;
 
 procedure TFormManageGroups.LoadToolBarIcons;
 var
-  Ico : TIcon;
+  Ico: TIcon;
 
-  procedure AddIcon(Name : String);
+  procedure AddIcon(name: string);
   begin
     if DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False) then
-      Name := Name + '_SMALL';
+      name := name + '_SMALL';
 
     Ico := TIcon.Create;
-    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(name));
     ToolBarImageList.AddIcon(Ico);
   end;
-  
+
 begin
 
- ConvertTo32BitImageList(ToolBarImageList);
+  ConvertTo32BitImageList(ToolBarImageList);
 
- if DBKernel.Readbool('Options','UseSmallToolBarButtons',false) then
- begin
-  ToolBarImageList.Width:=16;
-  ToolBarImageList.Height:=16;
- end;
+  if DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False) then
+  begin
+    ToolBarImageList.Width := 16;
+    ToolBarImageList.Height := 16;
+  end;
 
- AddIcon('GROUP_EXIT');
- AddIcon('GROUP_ADD');
- AddIcon('GROUP_EDIT');
- AddIcon('GROUP_DELETE');
- AddIcon('GROUP_OPTIONS');
+  AddIcon('GROUP_EXIT');
+  AddIcon('GROUP_ADD');
+  AddIcon('GROUP_EDIT');
+  AddIcon('GROUP_DELETE');
+  AddIcon('GROUP_OPTIONS');
 
- ToolButton5.ImageIndex:=0;
- ToolButton1.ImageIndex:=1;
- ToolButton2.ImageIndex:=2;
- ToolButton3.ImageIndex:=3;
- ToolButton8.ImageIndex:=4;
+  TbExit.ImageIndex := 0;
+  TbAdd.ImageIndex := 1;
+  ToolButton2.ImageIndex := 2;
+  ToolButton3.ImageIndex := 3;
+  ToolButton8.ImageIndex := 4;
 end;
 
-procedure TFormManageGroups.ToolButton5Click(Sender: TObject);
+procedure TFormManageGroups.TbExitClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFormManageGroups.ToolButton2Click(Sender: TObject);
 begin
- if ListView1.Selected=nil then exit;
- DBChangeGroup(Groups[ListView1.Selected.Index]);
+  if ListView1.Selected = nil then
+    Exit;
+  DBChangeGroup(Groups[ListView1.Selected.index]);
 end;
 
 procedure TFormManageGroups.ToolButton3Click(Sender: TObject);
-begin   
- if ListView1.Selected=nil then exit;
- MainMenu1.Tag:=ListView1.Selected.Index;
- DeleteGroup(MainMenu1);
+begin
+  if ListView1.Selected = nil then
+    Exit;
+  MainMenu1.Tag := ListView1.Selected.index;
+  DeleteGroup(MainMenu1);
 end;
 
-procedure TFormManageGroups.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TFormManageGroups.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
- if Key = 27 then Close;
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 end.

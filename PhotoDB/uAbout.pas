@@ -28,8 +28,6 @@ type
       Shift: TShiftState);
   private
     { Private declarations }
-    Seconds : integer;
-    FStartTime : Cardinal;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
   public
     WaitEnabled : boolean;

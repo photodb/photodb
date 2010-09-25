@@ -1,16 +1,9 @@
 unit CmpUnit;
 
 interface
-//{$DEFINE EXT}
 uses
-{$IFNDEF EXT}
-Dolphin_DB,  UnitDBDeclare,
-{$ENDIF}
 
-{$IFDEF EXT}
-//dm,
-{$ENDIF}
-Classes;
+Dolphin_DB,  UnitDBDeclare, SysUtils, Classes;
 
 type
   TCompOptions = record
@@ -99,9 +92,9 @@ begin
  for i:=1 to length(s)-1 do
  begin
   if i+1>length(s)-1 then break;
-  if (not (s[i] in abs_alldb)) and (s[i+1] in abs_alldb) then
+  if (not CharInSet(s[i], abs_alldb)) and CharInSet(s[i+1], abs_alldb) then
   for j:=i+1 to length(s) do
-  if not (s[j] in abs_alldb) or (j=length(s)) then
+  if not CharInSet(s[j], abs_alldb) or (j=length(s)) then
   begin
    Words_.Add(copy(s,i+1,j-i-1));
    pi_^:=j-1;
@@ -124,15 +117,15 @@ begin
  if options.UpDown then
  Repeat
  inc(n);
- if ((s[i] in abs_englUp) or (s[i] in abs_rusUp)) and ((s[i] in abs_englDown) or (s[i] in abs_rusDown)) then
+ if (CharInSet(s[i], abs_englUp) or CharInSet(s[i], abs_rusUp)) and (CharInSet(s[i], abs_englDown) or CharInSet(s[i], abs_rusDown)) then
  insert(' ',s,i);
  until n+1>length(s);
  for i:=1 to length(s)-1 do
  begin
   if i+1>length(s)-1 then break;
-  if (not (s[i] in abs_alldb)) and (s[i+1] in abs_alldb) then
+  if (not CharInSet(s[i], abs_alldb)) and CharInSet(s[i+1], abs_alldb) then
   for j:=i+1 to length(s) do
-  if not (s[j] in abs_alldb) or (j=length(s)) then
+  if not CharInSet(s[j], abs_alldb) or (j=length(s)) then
   begin
    Words_.Add(copy(s,i+1,j-i-1));
    pi_^:=j-1;

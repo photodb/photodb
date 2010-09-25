@@ -1398,7 +1398,7 @@ begin
     SetLength(s1, fillLen);
     system.FillChar(pointer(s1)^, fillLen, byte(fillChar));
     if addLeft then begin
-      if (fillChar in ['0'..'9']) and (str <> '') and (str[1] = '-') then
+      if CharInSet(fillChar, ['0'..'9']) and (str <> '') and (str[1] = '-') then
            str := '-' + s1 + RetDelete(str, 1, 1)
       else str := s1 + str;
     end else str := str + s1;
@@ -1432,7 +1432,7 @@ function IntToHexEx(value    : integer;
                     fillChar : char    = '0') : string; overload;
 begin
   result := IntToHex(value);
-  if (minLen < 0) or (fillChar in ['0'..'9','A'..'F','a'..'f']) then begin
+  if (minLen < 0) or CharInSet(fillChar, ['0'..'9','A'..'F','a'..'f']) then begin
     _FillStr(result, abs(minLen) - Length(result), minLen > 0, fillChar);
     result := '$' + result;
   end else begin

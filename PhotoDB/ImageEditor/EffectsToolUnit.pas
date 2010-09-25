@@ -44,7 +44,7 @@ type TEffectsToolPanelClass = Class(TToolsPanelClass)
    FilterID : string;
    FilterInitialString : string;
    OutFilterInitialString : string;
-   class function ID: ShortString; override;
+   class function ID: string; override;
    function GetProperties : string; override;
    constructor Create(AOwner : TComponent); override;
    destructor Destroy; override;
@@ -240,7 +240,7 @@ begin
  Result:=FilterID+'['+OutFilterInitialString+']';
 end;
 
-class function TEffectsToolPanelClass.ID: ShortString;
+class function TEffectsToolPanelClass.ID: string;
 begin
  Result:='{2AA20ABA-9205-4655-9BCE-DF3534C4DD79}';
 end;
@@ -286,7 +286,7 @@ begin
   NewImage.Assign(Image);
   TempFilterID:=BaseEffects[item.Indent].ID;
   (Editor as TImageEditor).StatusBar1.Panels[0].Text:=Format(TEXT_MES_FILTER_WORK,[BaseEffects[item.Indent].Name]);
-  TBaseEffectThread.Create(self,false,BaseEffects[item.Indent].Proc,NewImage,FSID,SetThreadImage,Editor);
+  TBaseEffectThread.Create(self,BaseEffects[item.Indent].Proc,NewImage,FSID,SetThreadImage,Editor);
   NewImage:=nil;
  end else
  begin

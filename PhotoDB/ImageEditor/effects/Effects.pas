@@ -1260,7 +1260,6 @@ Procedure Colorize(S,D : TBitmap; Luma: Cardinal);
 var
   ps, pd : PARGB;
   i,j : integer;
-  Col : TColor;
   LumMatrix : array[0..255] of byte;
 
 begin

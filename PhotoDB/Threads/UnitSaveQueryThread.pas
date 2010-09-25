@@ -66,7 +66,7 @@ var
   FN : string;
   index : integer;
   ResIcoNameW, IcoTempNameW : PWideChar;
-  update : DWORD;               
+  update : DWORD;
   ig     : TPIconGroup;
 
   function FindIconEx(FileName : string; index : integer) : boolean;
@@ -148,7 +148,7 @@ end;
     ResIcoNameW : PWideChar;
   begin
    Result:=false;
-   try               
+   try
     update:= BeginUpdateResourceW(StringToPWide(FileName), False);
     ResIcoNameW:=GetNameIcon(update,0);
     if not LoadIconGroupResourceW(update,ResIcoNameW,OriginalIconLanguage,IcoTempNameW) then
@@ -165,7 +165,7 @@ end;
 
 function CreateMobileDBFilesInDirectory(Directory, SaveToDBName  : string) : boolean;
 var
-  NewIcon : TIcon;   
+  NewIcon : TIcon;
   IcoTempName : string;
   Language : integer;
 begin
@@ -199,20 +199,22 @@ begin
  end;
 end;
 
-Constructor TSaveQueryThread.Create(CreateSuspennded: Boolean;  Query : TDataSet; FileName : String; OwnerForm : TForm; SubFolders : boolean; FileList : TArStrings);
+constructor TSaveQueryThread.Create(CreateSuspennded: Boolean; Query: TDataSet; FileName: string; OwnerForm: TForm;
+  SubFolders: Boolean; FileList: TArStrings);
 begin
- inherited Create(True);
- FSubFolders:=SubFolders;
- FolderSave:=false;
- FFileName:=FileName;
- Fowner := OwnerForm;
- FFileList := FileList;
- if Query<>nil then
- FQuery := GetQuery else FQuery:=nil;
- FTable := nil;
- if Query<>nil then
- AssingQuery(Query, FQuery) else FolderSave:=true;
- If not CreateSuspennded then Resume;
+  inherited Create(False);
+  FSubFolders := SubFolders;
+  FolderSave := False;
+  FFileName := FileName;
+  Fowner := OwnerForm;
+  FFileList := FileList;
+  if Query <> nil then
+    FQuery := GetQuery;
+  FTable := nil;
+  if Query <> nil then
+    AssingQuery(Query, FQuery)
+  else
+    FolderSave := True;
 end;
 
 destructor TSaveQueryThread.Destroy;
@@ -349,7 +351,7 @@ begin
  CreateGroupsTableW(GroupsTableFileNameW(GetDirectory(FFileName)+SaveToDBName+'.photodb'));
 
  For i:=0 to length(FGroupsFounded)-1 do
- begin             
+ begin
   if (FOwner as TSavingTableForm).FTerminating then Break;
   SetProgress(i);
   for j:=0 to length(FRegGroups)-1 do
@@ -359,7 +361,7 @@ begin
    Break;
   end;
  end;
- 
+
  if FolderSave then
  begin
   FormatDir(FFileName);
@@ -389,7 +391,7 @@ begin
    exit;
   end;
  end;
- 
+
  DoExit;
 end;
 
@@ -427,7 +429,7 @@ begin
   s:=OutTable.FieldByName('FFileName').AsString;
   Delete(s,1,Length(DBFolder));
   InTable.FieldByName('FFileName').AsString:=s;
-   
+
   if Pos('\',s)>0 then
   Folder:=GetDirectory(s) else Folder:='';
   UnformatDir(Folder);

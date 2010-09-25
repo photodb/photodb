@@ -22,7 +22,7 @@ type
   function CheckFileExistsWithSleep(FileName : string; IsDirectory : boolean) : boolean;
 
   var
-    CheckFileExistsWithMessageWork : boolean = false;  
+    CheckFileExistsWithMessageWork : boolean = false;
     CheckFileExistsWithMessageResult : boolean = false;
 
   const
@@ -69,10 +69,9 @@ implementation
 
 constructor TFileExistsThread.Create(FileName: string; IsDirectory : boolean);
 begin
-  inherited Create(True);
-  fFileName:=FileName;
-  fIsDirectory:=IsDirectory;
-  Resume;
+  inherited Create(False);
+  FFileName := FileName;
+  FIsDirectory := IsDirectory;
 end;
 
 destructor TFileExistsThread.Destroy;
@@ -95,4 +94,4 @@ begin
 end;
 
 end.
- 
+

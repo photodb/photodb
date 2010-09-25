@@ -188,7 +188,7 @@ type
     procedure Execute; override;
     procedure NotifyFile;
   public
-    constructor Create(CreateSuspennded: Boolean; Owner: TForm; Directory: string; OnNotify: TNotifyDirectoryChangeW;
+    constructor Create(Owner: TForm; Directory: string; OnNotify: TNotifyDirectoryChangeW;
       SID: string; ParentSID: Pointer);
   end;
 
@@ -223,13 +223,11 @@ type
   private
     FImages: array of TFolderImages;
     FSaveFoldersToDB: Boolean;
-    FDBName: string;
     FSync: TCriticalSection;
     procedure SetSaveFoldersToDB(const Value: Boolean);
   public
     constructor Create;
     destructor Destroy; override;
-  published
     procedure SaveFolderImages(FolderImages: TFolderImages; Width: Integer; Height: Integer);
     function GetFolderImages(Directory: string; Width: Integer; Height: Integer): TFolderImages;
     property SaveFoldersToDB: Boolean read FSaveFoldersToDB write SetSaveFoldersToDB;
@@ -444,10 +442,10 @@ end;
 
 { TExplorerThread }
 
-constructor TExplorerThreadNotifyDirectoryChange.Create(CreateSuspennded: Boolean; Owner : TForm;
+constructor TExplorerThreadNotifyDirectoryChange.Create(Owner : TForm;
   Directory: string; OnNotify: TNotifyDirectoryChangeW; SID: string; ParentSID : Pointer);
 begin
-  inherited Create(True);
+  inherited Create(False);
   FOnNotifyFile := OnNotify;
   FDirectory := Directory;
   FormatDir(fDirectory);
@@ -455,7 +453,6 @@ begin
   FSID := SID;
   FParentSID := ParentSID;
   Terminating := false;
-  if not CreateSuspennded then Resume;
 end;
 
 procedure TExplorerThreadNotifyDirectoryChange.Execute;

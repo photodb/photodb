@@ -180,7 +180,7 @@ begin
  _sqlexectext:='Select FFileName from $DB$ order by FFileName';
  SetSQL(WorkQuery,_sqlexectext);
  DBInOpening:=true;
- TOpenQueryThread.Create(false,WorkQuery,DBOpened);
+ TOpenQueryThread.Create(WorkQuery,DBOpened);
  i:=0;
  DmProgress1.MaxValue:=100;
  DmProgress1.Inverse:=true;
@@ -221,7 +221,7 @@ procedure TFormChangeDBPath.Button3Click(Sender: TObject);
 var
   WorkQuery : TDataSet;   
   TempQuery : TDataSet;
-  i, Len, IntCRC, Count : integer;
+  i, Len, Count : integer;
   CRC : Cardinal;
   _sqlexectext, Dir, NewDir : string;
   FileName, FromPath, NewPath,ToPath : string;
@@ -257,7 +257,7 @@ begin
   _sqlexectext:='Select ID,FFileName from $DB$';
   SetSQL(WorkQuery,_sqlexectext);
   DBInOpening:=true;
-  TOpenQueryThread.Create(false,WorkQuery,DBOpened);
+  TOpenQueryThread.Create(WorkQuery,DBOpened);
   i:=0;
   Count:=0;
   DmProgress1.MaxValue:=100;

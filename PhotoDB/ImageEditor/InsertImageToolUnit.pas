@@ -33,7 +33,7 @@ type
   procedure DoSaveSettings(Sender : TObject); override;
   procedure DoLoadFileFromFile(Sender : TObject);
   procedure RecreateImage(Sender : TObject);
-  class function ID: ShortString; override;
+  class function ID: string; override;
 
   Procedure SetProperties(Properties : String); override;
   Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
@@ -375,7 +375,7 @@ begin
 
 end;
 
-class function InsertImageToolPanelClass.ID: ShortString;
+class function InsertImageToolPanelClass.ID: string;
 begin         
 Result:='{CA9E5AFD-E92D-4105-8F7B-978A6EBA9D74}';
 end;
