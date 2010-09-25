@@ -99,8 +99,7 @@ begin
     begin
       Avaliablethread := FAvaliableThreadList[0];
       FAvaliableThreadList.Remove(Avaliablethread);
-      FBusyThreadList.Add(Avaliablethread);     
-      Avaliablethread.Priority := tpNormal; 
+      FBusyThreadList.Add(Avaliablethread);
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
@@ -139,7 +138,6 @@ begin
       Avaliablethread := FAvaliableThreadList[0];
       FAvaliableThreadList.Remove(Avaliablethread);
       FBusyThreadList.Add(Avaliablethread);
-      Avaliablethread.Priority := tpNormal;
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
@@ -178,8 +176,7 @@ begin
     begin
       Avaliablethread := FAvaliableThreadList[0];
       FAvaliableThreadList.Remove(Avaliablethread);
-      FBusyThreadList.Add(Avaliablethread);     
-      Avaliablethread.Priority := tpNormal; 
+      FBusyThreadList.Add(Avaliablethread);   
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;

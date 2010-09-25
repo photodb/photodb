@@ -55,6 +55,7 @@ type
     LoadingAllBigImages: Boolean;
     FullFolderPicture: TPNGGraphic;
     FSyncEvent: THandle;
+    NewItem: TEasyItem;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
@@ -213,6 +214,7 @@ begin
 
     if (FThreadType = THREAD_TYPE_THREAD_PREVIEW) then
     begin
+      Priority := tpLowest;
       FEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
       FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
       TW.I.Start('CreateEvent: ' + IntToStr(FEvent));
@@ -488,7 +490,6 @@ begin
             VisibleUp(i);
             TW.I.Start('GetVisibleFiles - end');
           end;
-          Priority := tpNormal;
 
           if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
           begin
@@ -574,11 +575,7 @@ procedure TExplorerThread.FileNeededAW;
 begin
   BooleanResult := False;
   If not IsTerminated then
-  begin
     BooleanResult:=FSender.FileNeededW(GUIDParam);
-    if not FSender.Active then
-      Priority := tpLowest;
-  end;
 end;
 
 procedure TExplorerThread.AddDirectoryToExplorer;
@@ -595,18 +592,15 @@ end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorer;
 var
-  NewItem: TEasyItem;
   S1, S2 : String;
 begin
- NewItem:=FSender.AddItem(GUIDParam);
- S1:=ExplorerInfo.OldFolderName;
- UnformatDir(S1);
- S2:=CurrentFile;
- UnformatDir(S2);
- If AnsiLowerCase(S1)=AnsiLowerCase(S2) then
- begin
-  FSelected:=NewItem;
- end;
+  NewItem:=FSender.AddItem(GUIDParam);
+  S1:=ExplorerInfo.OldFolderName;
+  UnformatDir(S1);
+  S2:=CurrentFile;
+  UnformatDir(S2);
+  if AnsiLowerCase(S1)=AnsiLowerCase(S2) then
+    FSelected:=NewItem;
 end;
 
 procedure TExplorerThread.AddDirectoryImageToExplorer;

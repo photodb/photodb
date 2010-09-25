@@ -3,6 +3,7 @@ program PhotoDB;
 {$DESCRIPTION 'Photo DB v2.3'}
 
 uses
+  FastMM4,
   uInit in 'Units\uInit.pas',
   uTime in 'Units\uTime.pas',
   uSplashThread in 'Threads\uSplashThread.pas',
