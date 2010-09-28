@@ -546,4 +546,10 @@ begin
     Exception.CreateFmt('Index out of range : %d', [Index]);
 end;
 
+initialization
+
+finalization
+
+  TScriptEnviroments.Instance.Free;
+
 end.

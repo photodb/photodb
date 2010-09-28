@@ -12,7 +12,7 @@ uses
 type
   TFormManageGroups = class(TDBForm)
     ListView1: TNoVSBListView1;
-    ImageList1: TImageList;
+    ImlGroups: TImageList;
     MainMenu1: TMainMenu;
     File1: TMenuItem;
     Exit1: TMenuItem;
@@ -110,12 +110,10 @@ end;
 
 procedure TFormManageGroups.Execute;
 begin
-  DBkernel.RecreateThemeToForm(Self);
   LoadGroups;
   if Length(Groups) > 0 then
     ShowModal
-  else
-  begin
+  else begin
     if ID_OK = MessageBoxDB(Handle, TEXT_MES_NO_GROUPS, TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       CreateNewGroupDialog;
   end;
@@ -198,8 +196,8 @@ end;
 
 procedure TFormManageGroups.LoadGroups;
 var
-  i : Integer;
-  b : TBitmap;
+  I: Integer;
+  B: TBitmap;
 begin
   ListView1.Items.BeginUpdate;
   try
@@ -212,7 +210,7 @@ begin
       try
         B.PixelFormat := Pf24bit;
         B.Assign(Groups[I].GroupImage);
-        FBitmapImageList.AddBitmap(B);
+        FBitmapImageList.AddBitmap(B, False);
       finally
         B.Free;
       end;

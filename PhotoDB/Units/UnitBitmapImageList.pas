@@ -68,7 +68,7 @@ end;
 procedure TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased : Boolean; Ext : string = '');   
 var
   Item : TBitmapImageListImage;
-begin      
+begin
   Item := TBitmapImageListImage.Create;
   Item.Graphic := Icon;
   Item.SelfReleased := SelfReleased;
@@ -79,9 +79,14 @@ end;
 procedure TBitmapImageList.Clear;
 var
   I : Integer;
+  Item : TBitmapImageListImage;
 begin
   for I := 0 to FImages.Count - 1 do
-    TBitmapImageListImage(FImages[I]).Graphic := nil;
+  begin
+    Item := TBitmapImageListImage(FImages[I]);
+    Item.Graphic := nil;
+    F(Item);
+  end;
 
   FImages.Clear;
 end;

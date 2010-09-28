@@ -28,6 +28,7 @@ type
   public
     constructor Create(Sender : TThreadForm; SID : TGUID;
       OnDone : TNotifyEvent; PictureSize : integer; Data : TSearchRecordArray; Updating : boolean = false);
+    destructor Destroy; override;
     procedure VisibleUp(TopIndex: integer);
     procedure GetVisibleFiles;  
     procedure FileNameExists;  
@@ -218,6 +219,12 @@ end;
 procedure TSearchBigImagesLoaderThread.ReplaceBigBitmap;
 begin
  (FSender as TSearchForm).ReplaceBitmapWithPath(StrParam,BitmapParam);
+end;
+
+destructor TSearchBigImagesLoaderThread.Destroy;
+begin
+  FData.Free;
+  inherited;
 end;
 
 procedure TSearchBigImagesLoaderThread.EndLoading;

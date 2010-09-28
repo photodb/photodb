@@ -5,7 +5,7 @@ interface
 uses
  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
  UnitINI, Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
- UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon;
+ UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory;
 
 const
 
@@ -18,13 +18,13 @@ const
  DB_TABLE_LOGIN    = 3;
  DB_TABLE_SETTINGS = 4;
 
- type
+type
   TADODBConnection = class(TObject)
   public
-    ADOConnection : TADOConnection;
-    FileName : string;
-    RefCount : Integer;
-    ThreadID : THandle;
+    ADOConnection: TADOConnection;
+    FileName: string;
+    RefCount: Integer;
+    ThreadID: THandle;
   end;
 
   TADOConnections = class(TObject)
@@ -68,7 +68,7 @@ const
   public
     function AddDateTimeParam(Name : string; Value : TDateTime) : TDBDateTimeParam;
     function AddIntParam(Name : string; Value : Integer) : TDBIntegerParam;
-    constructor Create; 
+    constructor Create;
     destructor Destroy; override;
     procedure ApplyToDS(DS : TDataSet);
     property Query : string read FQuery write FQuery;
@@ -76,10 +76,9 @@ const
 
 var
   ADOConnections : TADOConnections = nil;
-  
-{$IFNDEF DEBUG}
+
+  FSync : TCriticalSection = nil;
   aScript : TScript;
-{$ENDIF}
   LoadInteger : integer;
   aFS : TFileStream;
   LoadScript : string;
@@ -92,7 +91,7 @@ var
                             'Jet OLEDB:Global Bulk Transactions=1;'+
                             'Jet OLEDB:New Database Password="";'+
                             'Jet OLEDB:Create System Database=False;'+
-                            'Jet OLEDB:Encrypt Database=False;'+        
+                            'Jet OLEDB:Encrypt Database=False;'+
                             'Jet OLEDB:Don''t Copy Locale on Compact=False;'+
                             'Jet OLEDB:Compact Without Replica Repair=False;'+
                             'Jet OLEDB:SFP=False';
@@ -109,7 +108,7 @@ var
   'Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;'+
   'Jet OLEDB:Don''t Copy Locale on Compact=False;Jet OLEDB:'+
   'Compact Without Replica Repair=False;Jet OLEDB:SFP=False';
-  
+
   MDBProvider : string = 'Microsoft.Jet.OLEDB.4.0';
 
 {$IFDEF DEBUG}
@@ -255,7 +254,7 @@ end;
 function GetDBType(dbname : string) : integer;
 begin
  Result:=DB_TYPE_UNKNOWN;
- if AnsiLowerCase(ExtractFileExt(dbname))='.mdb' then Result:=DB_TYPE_MDB;  
+ if AnsiLowerCase(ExtractFileExt(dbname))='.mdb' then Result:=DB_TYPE_MDB;
  if AnsiLowerCase(ExtractFileExt(dbname))='.photodb' then Result:=DB_TYPE_MDB;
 end;
 
@@ -288,7 +287,7 @@ begin
     (SQL as TADOQuery).Parameters.ParseSQL((SQL as TADOQuery).SQL.Text, true);
    end;
    Break;
-  except  
+  except
    on e : Exception do
    begin
     EventLog(':SetSQL() throw exception: '+e.Message);
@@ -315,7 +314,7 @@ end;
 
 function ActiveTable(Table : TDataSet; Active : boolean) : boolean;
 begin
- try       
+ try
  if (Table is TADODataSet) then (Table as TADODataSet).Active:=Active;
  except
   on e : Exception do
@@ -356,34 +355,49 @@ end;
 
 function GetQuery(TableName : string; TableType : integer; IsolateThread : Boolean = False) : TDataSet;
 begin
- Result:=nil;
- if TableType=DB_TYPE_UNKNOWN then TableType:=GetDBType;
- if TableType=DB_TYPE_MDB then
- begin
-  Result:=TADOQuery.Create(nil);
-  (Result as TADOQuery).Connection:=ADOInitialize(TableName, IsolateThread);
- end;
+  FSync.Enter;
+  try
+    Result := nil;
+    if TableType = DB_TYPE_UNKNOWN then
+      TableType := GetDBType;
+    if TableType = DB_TYPE_MDB then
+    begin
+      Result := TADOQuery.Create(nil);
+      (Result as TADOQuery).Connection := ADOInitialize(TableName, IsolateThread);
+    end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function GetTable : TDataSet;
 begin
- Result:=GetTable(dbname,DB_TABLE_IMAGES);
+  Result:=GetTable(dbname,DB_TABLE_IMAGES);
 end;
 
 function GetTable(Table : String; TableID : integer = DB_TABLE_UNKNOWN) : TDataSet;
 begin
- Result:=nil;
- if GetDBType(Table)=DB_TYPE_MDB then
- begin
+  FSync.Enter;
+  try
+    Result := nil;
+    if GetDBType(Table) = DB_TYPE_MDB then
+    begin
 
-  Result:=TADODataSet.Create(nil);
-  (Result as TADODataSet).Connection:=ADOInitialize(Table);
-  (Result as TADODataSet).CommandType:=cmdTable;
-  if TableID=DB_TABLE_GROUPS then (Result as TADODataSet).CommandText:='Groups';
-  if TableID=DB_TABLE_IMAGES then (Result as TADODataSet).CommandText:='ImageTable';
-  if TableID=DB_TABLE_LOGIN then (Result as TADODataSet).CommandText:='Login';        
-  if TableID=DB_TABLE_SETTINGS then (Result as TADODataSet).CommandText:='DBSettings';
- end;
+      Result := TADODataSet.Create(nil);
+      (Result as TADODataSet).Connection := ADOInitialize(Table);
+      (Result as TADODataSet).CommandType := CmdTable;
+      if TableID = DB_TABLE_GROUPS then
+        (Result as TADODataSet).CommandText := 'Groups';
+      if TableID = DB_TABLE_IMAGES then
+        (Result as TADODataSet).CommandText := 'ImageTable';
+      if TableID = DB_TABLE_LOGIN then
+        (Result as TADODataSet).CommandText := 'Login';
+      if TableID = DB_TABLE_SETTINGS then
+        (Result as TADODataSet).CommandText := 'DBSettings';
+    end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function GetRecordsCount(Table : string) : integer;
@@ -431,7 +445,7 @@ begin
    Result:=false;
   end;
  end;
- FreeDS(FQuery); 
+ FreeDS(FQuery);
 end;
 
 function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : boolean;
@@ -589,14 +603,14 @@ begin
  end;
  try
   ExecSQL(fQuery);
- except    
+ except
   on e : Exception do
   begin
    EventLog(':ADOCreateSettingsTable() throw exception: '+e.Message);
    Result:=false;
   end;
  end;
- FreeDS(FQuery); 
+ FreeDS(FQuery);
 end;
 
 function BDECreateGroupsTable(TableName : string) : boolean;
@@ -636,7 +650,7 @@ end;
 procedure CreateMSAccessDatabase(FileName: string);
 var
   DAO: Variant;
-  i: integer; 
+  i: integer;
 const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
 
   function CheckClass(OLEClassName: string): boolean;
@@ -648,16 +662,16 @@ const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'D
     Res := CoCreateInstance(G, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, Res);
     Result:=Res = S_OK;
   end;
-begin 
-  for I := 0 to 2 do 
+begin
+  for I := 0 to 2 do
     if CheckClass(Engines[i]) then
-      begin 
-        DAO := CreateOleObject(Engines[i]); 
+      begin
+        DAO := CreateOleObject(Engines[i]);
         DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
         Exit;
       end;
-  raise Exception.Create('DAO engine could not be initialized'); 
-end; 
+  raise Exception.Create('DAO engine could not be initialized');
+end;
 
 function ADOCreateImageTable(TableName : string) : boolean;
 var
@@ -701,7 +715,7 @@ begin
  SetSQL(fQuery,SQL);
  try
   ExecSQL(fQuery);
- except   
+ except
   on e : Exception do
   begin
    EventLog(':ADOCreateImageTable() throw exception: '+e.Message);
@@ -725,7 +739,7 @@ begin
   SQL:='CREATE INDEX aStrThCrc ON ImageTable(StrThCrc)';
   SetSQL(fQuery,SQL);
   ExecSQL(fQuery);
-                       
+
  finally
   FreeDS(fQuery);
  end;
@@ -742,6 +756,8 @@ begin
     if (ADOConnections[I].RefCount = 0) or Delete then
     begin
       ADOConnections[I].ADOConnection.Close;
+      ADOConnections[I].ADOConnection.Free;
+      ADOConnections[I].Free;
       ADOConnections.RemoveAt(I);
       exit;
     end;
@@ -750,7 +766,7 @@ end;
 
 procedure RemoveADORef(ADOConnection : TADOConnection);
 var
-  I  : integer;
+  I  : Integer;
 begin
   for I := 0 to ADOConnections.Count - 1 do
   begin
@@ -760,6 +776,8 @@ begin
       if ADOConnections[I].RefCount = 0 then
       begin
         ADOConnections[I].ADOConnection.Close;
+        ADOConnections[I].ADOConnection.Free;
+        ADOConnections[I].Free;
         ADOConnections.RemoveAt(I);
       end;
       Exit;
@@ -769,7 +787,7 @@ end;
 
 function ADOInitialize(dbname : String; ForseNewConnection : Boolean = False) : TADOConnection;
 var
-  I : integer;
+  I : Integer;
   DBConnection : TADODBConnection;
 begin
   dbname := AnsiLowerCase(dbname);
@@ -778,9 +796,9 @@ begin
     begin
       if ADOConnections[I].FileName = dbname then
       begin
-        Result:=ADOConnections[I].ADOConnection;
+        Result := ADOConnections[I].ADOConnection;
         Inc(ADOConnections[I].RefCount);
-        exit;
+        Exit;
       end;
     end;
   DBConnection := ADOConnections.Add;
@@ -790,7 +808,6 @@ begin
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname);
   DBConnection.ADOConnection.LoginPrompt := False;
   DBConnection.ADOConnection.Provider := MDBProvider;
- // DBConnection.ADOConnection.KeepConnection:=false;
   Result := DBConnection.ADOConnection;
 end;
 
@@ -798,102 +815,108 @@ procedure FreeDS(var DS : TDataSet);
 var
   Connection : TADOConnection;
 begin
- if DS=nil then exit;
- if DS is TADOQuery then begin Connection:=(DS as TADOQuery).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADOQuery).Connection.Free;} exit; end;
- if DS is TADODataSet then begin Connection:=(DS as TADODataSet).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADODataSet).Connection.Free;} exit; end;
+  FSync.Enter;
+  try
+    if DS = nil then
+      Exit;
+    if DS is TADOQuery then begin Connection:=(DS as TADOQuery).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADOQuery).Connection.Free;} exit; end;
+    if DS is TADODataSet then begin Connection:=(DS as TADODataSet).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADODataSet).Connection.Free;} exit; end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
-function OpenConnection(ConnectionString: AnsiString): Integer;  
+function OpenConnection(ConnectionString: AnsiString): Integer;
 var
-  ADODBConnection: OleVariant;  
-begin  
+  ADODBConnection: OleVariant;
+begin
   ADODBConnection := CreateOleObject('ADODB.Connection');
   ADODBConnection.CursorLocation := 3; // User client
   ADODBConnection.ConnectionString := ConnectionString;
-  Result          := 0;  
-  try  
-    ADODBConnection.Open;  
-  except  
-    Result := -1;  
-  end;  
+  Result          := 0;
+  try
+    ADODBConnection.Open;
+  except
+    Result := -1;
+  end;
 end;
 
-function DataBaseConnection_Test(bMessage: Boolean): AnsiString;  
-var  
-  asTimeout, asUserName, asPassword, asDataSource, ConnectionString: AnsiString;  
-  iReturn: Integer;  
-begin  
+function DataBaseConnection_Test(bMessage: Boolean): AnsiString;
+var
+  asTimeout, asUserName, asPassword, asDataSource, ConnectionString: AnsiString;
+  iReturn: Integer;
+begin
   asTimeout     := '150';
-  asUserName    := 'NT_Server';  
-  asPassword    := 'SA';  
+  asUserName    := 'NT_Server';
+  asPassword    := 'SA';
   asDataSource  := 'SQL Server - Photo DataBase';
 
   ConnectionString := 'Data Source = ' + asDataSource +
-    'User ID = ' + asUserName +  
+    'User ID = ' + asUserName +
     'Password = ' + asPassword +
     'Mode = Read|Write;Connect Timeout = ' + asTimeout;
-  try  
-    iReturn := OpenConnection(ConnectionString);  
+  try
+    iReturn := OpenConnection(ConnectionString);
 
-    if (bMessage) then  
-    begin  
+    if (bMessage) then
+    begin
       if (iReturn = 0) then
         MessageBox(0,'Connection OK!', 'Information', MB_OK)
-      else if (iReturn = -1) then  
+      else if (iReturn = -1) then
         MessageBox(0,'Connection Error!', 'Error', MB_ICONERROR + MB_OK);
     end;
 
-    if (iReturn = 0) then  
-      Result := ConnectionString  
-    else if (iReturn = -1) then  
-      Result := '';  
+    if (iReturn = 0) then
+      Result := ConnectionString
+    else if (iReturn = -1) then
+      Result := '';
   finally
   end;
 end;
 
 procedure CompactDatabase_JRO(DatabaseName:string;DestDatabaseName:string='';Password:string='');
 const
-   Provider = 'Provider=Microsoft.Jet.OLEDB.4.0;'; 
-var 
-  TempName : array[0..MAX_PATH] of Char; // имя временного файла 
-  TempPath : string; // путь до него 
-  Name : string; 
-  Src,Dest : WideString; 
-  V : Variant; 
+   Provider = 'Provider=Microsoft.Jet.OLEDB.4.0;';
+var
+  TempName : array[0..MAX_PATH] of Char; // имя временного файла
+  TempPath : string; // путь до него
+  Name : string;
+  Src,Dest : WideString;
+  V : Variant;
 begin
-   try 
-       Src := Provider + 'Data Source=' + DatabaseName; 
-       if DestDatabaseName<>'' then 
-           Name:=DestDatabaseName 
-       else begin 
-           // выходная база не указана - используем временный файл 
-           // получаем путь для временного файла 
-           TempPath:=ExtractFilePath(DatabaseName); 
-           if TempPath='' Then TempPath:=GetCurrentDir; 
-           //получаем имя временного файла 
+   try
+       Src := Provider + 'Data Source=' + DatabaseName;
+       if DestDatabaseName<>'' then
+           Name:=DestDatabaseName
+       else begin
+           // выходная база не указана - используем временный файл
+           // получаем путь для временного файла
+           TempPath:=ExtractFilePath(DatabaseName);
+           if TempPath='' Then TempPath:=GetCurrentDir;
+           //получаем имя временного файла
            GetTempFileName(PWideChar(TempPath),'mdb',0,TempName);
            Name:=StrPas(TempName);
-       end; 
+       end;
        DeleteFile(Name);// этого файла не должно существовать :))
        Dest := Provider + 'Data Source=' + Name;
        if Password<>'' then begin
            Src := Src + ';Jet OLEDB:Database Password=' + Password;
            Dest := Dest + ';Jet OLEDB:Database Password=' + Password;
-       end; 
+       end;
 
        V:=CreateOleObject('jro.JetEngine');
-       try 
-           V.CompactDatabase(Src,Dest);// сжимаем 
-       finally 
-           V:=0; 
-       end; 
+       try
+           V.CompactDatabase(Src,Dest);// сжимаем
+       finally
+           V:=0;
+       end;
        if DestDatabaseName='' then begin // т.к. выходная база не указана
            DeleteFile(DatabaseName); //то удаляем не упакованную базу
-           RenameFile(Name,DatabaseName); // и переименовываем упакованную базу 
-       end; 
+           RenameFile(Name,DatabaseName); // и переименовываем упакованную базу
+       end;
    except
     on e : Exception do EventLog(':CompactDatabase_JRO() throw exception: '+e.Message);
-    // выдаем сообщение об исключительной ситуации 
+    // выдаем сообщение об исключительной ситуации
    end;
 end;
 
@@ -917,7 +940,7 @@ begin
     try
     AddScriptFunction(aScript.PrivateEnviroment,'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @UnitScripts.ReadFile);
 
-  SetNamedValue(aScript,'$PortableWork','False'); 
+  SetNamedValue(aScript,'$PortableWork','False');
   SetNamedValue(aScript,'$InitialString',DBFConnectionString);
   SetNamedValue(aScript,'$Provider',MDBProvider);
   LoadScript:='';
@@ -940,7 +963,7 @@ begin
    ExecuteScript(nil, aScript, LoadScript, LoadInteger, nil);
   except
    on e : Exception do EventLog(':InitializeDBLoadScript() at Executing Script exception : '+e.Message);
-  end;        
+  end;
   TW.I.Start('InitializeDB -> Read vars');
   PortableWork:=AnsiUpperCase(GetNamedValueString(aScript,'$PortableWork'))='TRUE';
   DBFConnectionString:=GetNamedValueString(aScript,'$InitialString');
@@ -948,7 +971,7 @@ begin
   finally
     aScript.Free;
   end;
- end;   
+ end;
   TW.I.Start('InitializeDBLoadScript - end');
  EventLog(':InitializeDBLoadScript() return true');
  DBLoadInitialized:=true;
@@ -959,7 +982,8 @@ end;
 
 function TADOConnections.Add: TADODBConnection;
 begin
-  Result := FConnections[FConnections.Add(TADODBConnection.Create)];
+  Result := TADODBConnection.Create;
+  FConnections.Add(Result);
 end;
 
 constructor TADOConnections.Create;
@@ -972,10 +996,8 @@ destructor TADOConnections.Destroy;
 var
   I : Integer;
 begin
-  for I := 0 to FConnections.Count - 1 do
-    TADODBConnection(FConnections[I]).Free;
-  FConnections.Free;
-  FSync.Free;
+  FreeList(FConnections);
+  F(FSync);
   inherited;
 end;
 
@@ -1053,32 +1075,25 @@ begin
 end;
 
 destructor TDBQueryParams.Destroy;
-var
-  I : Integer;
 begin
-  for I := 0 to FParamList.Count - 1 do
-    TObject(FParamList[I]).Free;
-
-  FParamList.Free;
+  FreeList(FParamList);
   inherited;
 end;
 
 initialization
 
- ADOConnections := TADOConnections.Create;
+  FSync := TCriticalSection.Create;
+  ADOConnections := TADOConnections.Create;
 
- {$IFNDEF DEBUG}
-
- if GetDBViewMode then
- begin
-  if DBReadOnly then
-  DBFConnectionString:=DBViewConnectionString;
- end;
-
- {$ENDIF}
+  if GetDBViewMode then
+  begin
+    if DBReadOnly then
+      DBFConnectionString:=DBViewConnectionString;
+  end;
 
 finalization
 
- ADOConnections.Free;
+  F(ADOConnections);
+  F(FSync);
 
 end.

@@ -22,19 +22,12 @@ Type
   TBuffer = array [1..BufferSize] of Byte;
 
 type
-  TPasswordRecord = record
+  TPasswordRecord = class
+  public
    CRC : Cardinal;
    FileName : String; 
    ID : integer;
   end;
-
-  TPPasswordRecord = record
-   CRC : Cardinal;
-   FileName : PChar;
-   ID : Cardinal;
-  end;
-
-  PPasswordRecord = ^TPPasswordRecord;
 
   TWriteLineProcedure = procedure(Sender : TObject; Line : string; aType : integer) of object;
   TGetFilesWithoutPassProc = function(Sender : TObject) : TList of object;

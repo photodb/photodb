@@ -8,12 +8,12 @@ uses
 type
   TerminationApplication = class(TThread)
   private
-  FCurrentApplicationName : String;
+    FCurrentApplicationName: string;
     { Private declarations }
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean);
+    constructor Create;
   end;
 
 implementation
@@ -22,7 +22,7 @@ uses SysUtils;
 
 { TerminationApplication }
 
-constructor TerminationApplication.Create(CreateSuspennded: Boolean);
+constructor TerminationApplication.Create;
 begin
   inherited Create(False);
   FCurrentApplicationName := ExtractFileName(Application.ExeName);
@@ -30,10 +30,10 @@ end;
 
 procedure TerminationApplication.Execute;
 begin
- Sleep(10000);
- EventLog(':TerminationApplication::Execute()/KillTask...');
- KillTask(FCurrentApplicationName);
+  FreeOnTerminate := True;
+  Sleep(10000);
+  EventLog(':TerminationApplication::Execute()/KillTask...');
+  KillTask(FCurrentApplicationName);
 end;
 
 end.
-

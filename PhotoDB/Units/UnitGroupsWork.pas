@@ -2,13 +2,9 @@ unit UnitGroupsWork;
 
 interface
 
-//{$DEFINE EXT}
 
-uses Windows, SysUtils, Graphics,
-{$IFNDEF EXT}
-Dolphin_DB, UnitDBDeclare,
-{$ENDIF}
-jpeg, DB, Classes;
+uses Windows, SysUtils, Graphics, Dolphin_DB, UnitDBDeclare, jpeg, DB, Classes,
+  uMemory;
 
 type
   TGroup = Record
@@ -54,7 +50,7 @@ type
     ActionForKnown : TGroupAction;
     MaxAuto : Boolean;
   end;
-  
+
 
 Function CreateNewGroup(GroupName : String) : String;
 Function GroupSearchByGroupName(GroupName : String) : String;
@@ -128,17 +124,17 @@ end;
 
 Procedure FreeGroup(var Group : TGroup);
 begin
- If Group.GroupImage=nil then
- Group.GroupImage.Free;
+ if Group.GroupImage <> nil then
+    Group.GroupImage.Free;
 end;
 
 procedure FreeGroups(var Groups : TGroups);
 var
-  i : Integer;
+  I : Integer;
 begin
- For i:=0 to Length(Groups)-1 do
- FreeGroup(Groups[i]);
- SetLength(Groups,0);
+  for I := 0 to Length(Groups) - 1 do
+    FreeGroup(Groups[I]);
+  SetLength(Groups, 0);
 end;
 
 {$IFDEF EXT}
@@ -614,7 +610,7 @@ begin
    Bit.Free;
    Group.GroupImage.Compress;
   end;
-  
+
   AssignParam(Query,2,Group.GroupImage);
 
 //  else AssignParam(Query,2,nil);
@@ -771,210 +767,187 @@ end;
 Function GetGroupByGroupCode(GroupCode : String; LoadImage : Boolean) : TGroup;
 var
   Query : TDataSet;
-  JPG : TJpegImage;
   BS : TStream;
 begin
- Query := GetQuery;
- if LoadImage then
- SetSQL(Query,'Select * From '+GroupsTableName+' Where GroupCode like "'+GroupCode+'"') else
- SetSQL(Query,'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW,RelatedGroups,IncludeInQuickList From '+GroupsTableName+' Where GroupCode like "'+GroupCode+'"');
- try
-  Query.Active:=True;
- except
-  Result:=GetNilGroup;
-  FreeDS(Query);
-  Exit;
- end;
- Query.First;
- Result.GroupName:=Query.FieldByName('GroupName').AsString;
- Result.GroupCode:=Query.FieldByName('GroupCode').AsString;
- Result.GroupImage:=nil;
- If LoadImage then
- begin
-  JPG := TJpegImage.Create;
-  if TBlobField(Query.FieldByName('GroupImage'))<>nil then
-  begin
-   bs:=GetBlobStream(Query.FieldByName('GroupImage'),bmread);
-   try
-    if bs.Size<>0 then
-    JPG.loadfromStream(bs) else
-   except
-    JPG.Free;
-    JPG:=nil;
-   end;
-   if JPG<>nil then
-   begin
-    Result.GroupImage:=TJpegImage.Create;
-    Result.GroupImage.Assign(JPG);
-    JPG.Free;
-   end;
-   bs.free;
+  Query := GetQuery;
+  try
+    if LoadImage then
+      SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupCode like "' + GroupCode + '"')
+    else
+      SetSQL(Query,
+        'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW,RelatedGroups,IncludeInQuickList From '
+          + GroupsTableName + ' Where GroupCode like "' + GroupCode + '"');
+    try
+      Query.Active := True;
+    except
+      Result := GetNilGroup;
+      Exit;
+    end;
+    Query.First;
+    Result.GroupName := Query.FieldByName('GroupName').AsString;
+    Result.GroupCode := Query.FieldByName('GroupCode').AsString;
+    Result.GroupImage := nil;
+    if LoadImage then
+    begin
+      if TBlobField(Query.FieldByName('GroupImage')) <> nil then
+      begin
+        BS := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
+        try
+          Result.GroupImage := TJpegImage.Create;
+          if Bs.Size <> 0 then
+            Result.GroupImage.LoadfromStream(Bs);
+
+        finally
+          F(BS);
+        end;
+      end;
+    end;
+    Result.GroupComment := Query.FieldByName('GroupComment').AsString;
+    Result.GroupDate := Query.FieldByName('GroupDate').AsDateTime;
+    Result.GroupFaces := Query.FieldByName('GroupFaces').AsString;
+    Result.GroupAccess := Query.FieldByName('GroupAccess').AsInteger;
+    Result.GroupKeyWords := Query.FieldByName('GroupKW').AsString;
+    Result.AutoAddKeyWords := Query.FieldByName('GroupAddKW').AsBoolean;
+    Result.RelatedGroups := Query.FieldByName('RelatedGroups').AsString;
+    Result.IncludeInQuickList := Query.FieldByName('IncludeInQuickList').AsBoolean;
+
+    Query.Close;
+  finally
+    FreeDS(Query);
   end;
- end;
- Result.GroupComment:=Query.FieldByName('GroupComment').AsString;
- Result.GroupDate:=Query.FieldByName('GroupDate').AsDateTime;
- Result.GroupFaces:=Query.FieldByName('GroupFaces').AsString;
- Result.GroupAccess:=Query.FieldByName('GroupAccess').AsInteger;
- try
-  Result.GroupKeyWords:=Query.FieldByName('GroupKW').AsString;
-  Result.AutoAddKeyWords:=Query.FieldByName('GroupAddKW').AsBoolean;
-  Result.RelatedGroups:=Query.FieldByName('RelatedGroups').AsString;
-  Result.IncludeInQuickList:=Query.FieldByName('IncludeInQuickList').AsBoolean;
- except
- end;
- Query.Close;
- FreeDS(Query);
 end;
 
-Function GetGroupByGroupName(GroupName : String; LoadImage : Boolean) : TGroup;
+function GetGroupByGroupName(GroupName: string; LoadImage: Boolean): TGroup;
 begin
- Result:=GetGroupByGroupNameW(GroupName,LoadImage,dbname);
+  Result := GetGroupByGroupNameW(GroupName, LoadImage, Dbname);
 end;
 
-Function GetGroupByGroupNameW(GroupName : String; LoadImage : Boolean; FileName : String) : TGroup;
+function GetGroupByGroupNameW(GroupName: string; LoadImage: Boolean; FileName: string): TGroup;
 var
-  Query : TDataSet;
-  JPG : TJpegImage;
-  BS : TStream;
+  Query: TDataSet;
+  BS: TStream;
 begin
- Query := GetQuery(FileName);
- if LoadImage then
- SetSQL(Query,'Select * From '+GroupsTableName(FileName)+' Where GroupName like "'+GroupName+'"') else
- SetSQL(Query,'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW, RelatedGroups, IncludeInQuickList From '+GroupsTableName(FileName)+' Where GroupName like "'+GroupName+'"');
- try
-  Query.Active:=True;
- except
-  Result:=GetNilGroup;
-  FreeDS(Query);
-  Exit;
- end;
- Query.First;
- Result.GroupName:=Query.FieldByName('GroupName').AsString;
- Result.GroupCode:=Query.FieldByName('GroupCode').AsString;
- Result.GroupImage:=nil;
- If LoadImage then
- begin
-  JPG := TJpegImage.Create;
-  if TBlobField(Query.FieldByName('GroupImage'))<>nil then
-  begin
-   bs:=GetBlobStream(Query.FieldByName('GroupImage'),bmread);
-   try
-    if bs.Size<>0 then
-    JPG.loadfromStream(bs) else
-   except
-    JPG.Free;
-    JPG:=nil;
-   end;
-   if JPG<>nil then
-   begin
-    Result.GroupImage:=TJpegImage.Create;
-    Result.GroupImage.Assign(JPG);
-    JPG.Free;
-   end;
-   bs.Free;
+  Query := GetQuery(FileName);
+  try
+    if LoadImage then
+      SetSQL(Query, 'Select * From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"')
+    else
+      SetSQL(Query,
+        'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW, RelatedGroups, IncludeInQuickList From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"');
+    try
+      Query.Active := True;
+    except
+      Result := GetNilGroup;
+      Exit;
+    end;
+    Query.First;
+    Result.GroupName := Query.FieldByName('GroupName').AsString;
+    Result.GroupCode := Query.FieldByName('GroupCode').AsString;
+    Result.GroupImage := nil;
+    if LoadImage then
+    begin
+      if TBlobField(Query.FieldByName('GroupImage')) <> nil then
+      begin
+        Bs := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
+        try
+          Result.GroupImage := TJpegImage.Create;
+          Result.GroupImage.LoadfromStream(BS);
+
+        finally
+          BS.Free;
+        end;
+      end;
+    end;
+    Result.GroupComment := Query.FieldByName('GroupComment').AsString;
+    Result.GroupDate := Query.FieldByName('GroupDate').AsDateTime;
+    Result.GroupFaces := Query.FieldByName('GroupFaces').AsString;
+    Result.GroupAccess := Query.FieldByName('GroupAccess').AsInteger;
+
+    Result.GroupKeyWords := Query.FieldByName('GroupKW').AsString;
+    Result.AutoAddKeyWords := Query.FieldByName('GroupAddKW').AsBoolean;
+    Result.RelatedGroups := Query.FieldByName('RelatedGroups').AsString;
+    Result.IncludeInQuickList := Query.FieldByName('IncludeInQuickList').AsBoolean;
+  finally
+    FreeDS(Query);
   end;
- end;
- Result.GroupComment:=Query.FieldByName('GroupComment').AsString;
- Result.GroupDate:=Query.FieldByName('GroupDate').AsDateTime;
- Result.GroupFaces:=Query.FieldByName('GroupFaces').AsString;
- Result.GroupAccess:=Query.FieldByName('GroupAccess').AsInteger;
- try
-  Result.GroupKeyWords:=Query.FieldByName('GroupKW').AsString;
-  Result.AutoAddKeyWords:=Query.FieldByName('GroupAddKW').AsBoolean;
-  Result.RelatedGroups:=Query.FieldByName('RelatedGroups').AsString;
-  Result.IncludeInQuickList:=Query.FieldByName('IncludeInQuickList').AsBoolean;
- except
- end;
- Query.Close;
- FreeDS(Query);
 end;
 
-Function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; UseInclude : Boolean = false) : TGroups;
+function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; UseInclude : Boolean = false) : TGroups;
 var
   Table : TDataSet;
-  n : Integer;
-  JPG : TJpegImage;
-  BS : TStream;
-  i, j : integer;
-  Temp : TGroup;
-  b : Boolean;
+  N: Integer;
+  BS: TStream;
+  I, J: Integer;
+  Temp: TGroup;
+  B: Boolean;
 begin
- Setlength(Result,0);
- Table := GetTable(FileName,DB_TABLE_GROUPS);
- if Table=nil then exit;
- try
-  Table.Active:=True;
- except
-  FreeDS(Table);
-  Exit;
- end;
- If Table.RecordCount>0 then
- begin
-  Table.First;
-  Repeat
-   if UseInclude then
-   if not Table.FieldByName('IncludeInQuickList').AsBoolean then
-   begin
-    Table.Next;
-    Continue;
-   end;
-   n:=length(Result);
-   Setlength(Result,n+1);
-   Result[n].GroupName:=Table.FieldByName('GroupName').AsString;
-   Result[n].GroupCode:=Table.FieldByName('GroupCode').AsString;
-   Result[n].GroupImage:=nil;
-   If LoadImages then
-   begin
-    JPG := TJpegImage.Create;
-    if TBlobField(Table.FieldByName('GroupImage'))<>nil then
-    begin
-     bs:=GetBlobStream(Table.FieldByName('GroupImage'),bmread);
-     try
-      if bs.Size<>0 then
-      JPG.loadfromStream(bs) else
-     except
-      JPG.Free;
-      JPG:=nil;
-     end;
-     if JPG<>nil then
-     begin
-      Result[n].GroupImage:=TJpegImage.Create;
-      Result[n].GroupImage.Assign(JPG);
-      JPG.Free;
-     end;
+  Setlength(Result, 0);
+  Table := GetTable(FileName, DB_TABLE_GROUPS);
+  try
+    if Table = nil then
+      Exit;
+    try
+      Table.Active := True;
+    except
+      Exit;
     end;
-   end;
-   Result[n].GroupComment:=Table.FieldByName('GroupComment').AsString;
-   Result[n].GroupDate:=Table.FieldByName('GroupDate').AsDateTime;
-   Result[n].GroupFaces:=Table.FieldByName('GroupFaces').AsString;
-   Result[n].GroupAccess:=Table.FieldByName('GroupAccess').AsInteger;
-   try
-    Result[n].GroupKeyWords:=Table.FieldByName('GroupKW').AsString;
-    Result[n].AutoAddKeyWords:=Table.FieldByName('GroupAddKW').AsBoolean;
-    Result[n].RelatedGroups:=Table.FieldByName('RelatedGroups').AsString;
-    Result[n].IncludeInQuickList:=Table.FieldByName('IncludeInQuickList').AsBoolean;
-   except
-   end;
-   Table.Next;
-  Until Table.Eof;
- end;
- FreeDS(Table);
- {$IFNDEF EXT}
- if DBKernel.Readbool('Options','SortGroupsByName',true) then
- {$ENDIF}
- for i:=1 to Length(Result) do
- begin
-  b:=true;
-  for j:=0 to Length(Result)-2 do
-  if CompareStr(AnsiLowerCase(Result[j].GroupName),AnsiLowerCase(Result[j+1].GroupName))>0 then
-  begin
-   Temp:=Result[j];
-   Result[j]:=Result[j+1];
-   Result[j+1]:=Temp;
-   b:=false;
+    if Table.RecordCount > 0 then
+    begin
+      Table.First;
+      repeat
+        if UseInclude then
+          if not Table.FieldByName('IncludeInQuickList').AsBoolean then
+          begin
+            Table.Next;
+            Continue;
+          end;
+        N := Length(Result);
+        Setlength(Result, N + 1);
+        Result[N].GroupName := Table.FieldByName('GroupName').AsString;
+        Result[N].GroupCode := Table.FieldByName('GroupCode').AsString;
+        Result[N].GroupImage := nil;
+        if LoadImages then
+        begin
+          if TBlobField(Table.FieldByName('GroupImage')) <> nil then
+          begin
+            BS := GetBlobStream(Table.FieldByName('GroupImage'), Bmread);
+            try
+              Result[N].GroupImage := TJpegImage.Create;
+              Result[N].GroupImage.LoadfromStream(BS);
+            finally
+              F(BS);
+            end;
+          end;
+        end;
+        Result[N].GroupComment := Table.FieldByName('GroupComment').AsString;
+        Result[N].GroupDate := Table.FieldByName('GroupDate').AsDateTime;
+        Result[N].GroupFaces := Table.FieldByName('GroupFaces').AsString;
+        Result[N].GroupAccess := Table.FieldByName('GroupAccess').AsInteger;
+        Result[N].GroupKeyWords := Table.FieldByName('GroupKW').AsString;
+        Result[N].AutoAddKeyWords := Table.FieldByName('GroupAddKW').AsBoolean;
+        Result[N].RelatedGroups := Table.FieldByName('RelatedGroups').AsString;
+        Result[N].IncludeInQuickList := Table.FieldByName('IncludeInQuickList').AsBoolean;
+        Table.Next;
+      until Table.Eof;
+    end;
+  finally
+    FreeDS(Table);
   end;
-  if b then break;
- end;
+  if DBKernel.Readbool('Options', 'SortGroupsByName', True) then
+    for I := 1 to Length(Result) do
+    begin
+      B := True;
+      for J := 0 to Length(Result) - 2 do
+        if CompareStr(AnsiLowerCase(Result[J].GroupName), AnsiLowerCase(Result[J + 1].GroupName)) > 0 then
+        begin
+          Temp := Result[J];
+          Result[J] := Result[J + 1];
+          Result[J + 1] := Temp;
+          B := False;
+        end;
+      if B then
+        Break;
+    end;
 end;
 
 Function GetRegisterGroupList(LoadImages : Boolean; UseInclude : Boolean = false) : TGroups;

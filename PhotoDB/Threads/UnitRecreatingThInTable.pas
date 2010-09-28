@@ -4,7 +4,8 @@ interface
 
 uses
   Classes, Graphics, Jpeg, DB, CommonDBSupport, Dolphin_DB, SysUtils,
-  GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport;
+  GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport,
+  ActiveX;
 
 type
   RecreatingThInTable = class(TThread)
@@ -44,15 +45,16 @@ uses CMDUnit, Language, UnitPasswordForm;
 
 procedure RecreatingThInTable.AddCryptFileCall;
 begin
- fOptions.AddCryptFileToListProc(self,fRec);
+  FOptions.AddCryptFileToListProc(Self, FRec);
 end;
 
 procedure RecreatingThInTable.AddPasswordFile(ID: integer; FileName : string);
 begin
- fRec.FileName:=FileName;
- fRec.ID:=ID;
- fRec.CRC:=GraphicCrypt.GetPasswordCRCFromCryptGraphicFile(FileName);
- Synchronize(AddCryptFileCall);
+  FRec := TPasswordRecord.Create;
+  FRec.FileName := FileName;
+  FRec.ID := ID;
+  FRec.CRC := GraphicCrypt.GetPasswordCRCFromCryptGraphicFile(FileName);
+  Synchronize(AddCryptFileCall);
 end;
 
 constructor RecreatingThInTable.Create(Options: TRecreatingThInTableOptions);
@@ -63,30 +65,31 @@ end;
 
 procedure RecreatingThInTable.DoExit;
 begin
- if Assigned(FOptions.OnEndProcedure) then FOptions.OnEndProcedure(self);
+  if Assigned(FOptions.OnEndProcedure) then
+    FOptions.OnEndProcedure(Self);
 end;
 
 procedure RecreatingThInTable.DoProgress;
 begin
- FOptions.OnProgress(Self,ProgressInfo);
+  FOptions.OnProgress(Self, ProgressInfo);
 end;
 
 procedure RecreatingThInTable.Execute;
 var
-  Table : TDataSet;
-  info : TImageDBRecordA;
-  Pass : string;
-  Crypted : Boolean;
-  ms : TMemoryStream;
-  BF : TBlobField;
-  CurrentID : integer;
-  CryptFileList : TArInteger;
-  i : integer;
-  Bmp : TBitmap;
-  Jpeg : TJpegImage;
-  TableRecordCount : integer;
-  Crypting : boolean;
-  CRC : Cardinal;
+  Table: TDataSet;
+  Info: TImageDBRecordA;
+  Pass: string;
+  Crypted: Boolean;
+  Ms: TMemoryStream;
+  BF: TBlobField;
+  CurrentID: Integer;
+  CryptFileList: TArInteger;
+  I: Integer;
+  Bmp: TBitmap;
+  Jpeg: TJpegImage;
+  TableRecordCount: Integer;
+  Crypting: Boolean;
+  CRC: Cardinal;
 
   procedure ProcessCurrentRecord;
   begin
@@ -151,126 +154,140 @@ var
   end;
 
 begin
- RecreatingThInTableTerminating:=false;
- FBoolParam:=true;
- Table := GetTable(fOptions.FileName,DB_TABLE_IMAGES);
- try
-  ImageOptions:=CommonDBSupport.GetImageSettingsFromTable(fOptions.FileName);
-  Table.Active:=true;
- except
-  FStrParam:=TEXT_MES_RECREATINH_TH_FORMAT_ERROR;
-  FIntParam:=LINE_INFO_ERROR;
-  Synchronize(TextOut);
-  Table.Free;
-  Synchronize(DoExit);
-  exit;
- end;
- Crypting:=false;
- Table.First;
- TableRecordCount:=Table.RecordCount;
- Repeat
-  if RecreatingThInTableTerminating then Break;
-  if FileExists(Table.FieldByName('FFileName').AsString) then
-  begin
-
-   Crypted:=false;
-
-   if not StaticPath(Table.FieldByName('FFileName').AsString) then
-   begin
-    FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CD_DVD_CANCELED_INFO_F,[IntToStr(Table.RecNo),IntToStr(Table.RecordCount),Trim(Table.FieldByname('Name').AsString)]);
-    FIntParam:=LINE_INFO_WARNING;
-    Synchronize(TextOutEx);
-    Table.Next;
-    Continue;
-   end;
-
-   if ValidCryptGraphicFile(Table.FieldByName('FFileName').AsString) then
-   begin
-    Crypted:=true;
-    Pass:=DBKernel.FindPasswordForCryptImageFile(Table.FieldByName('FFileName').AsString);
-    if Pass='' then
-    begin
-     AddPasswordFile(Table.FieldByName('ID').AsInteger,Table.FieldByName('FFileName').AsString);
-     FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CRYPTED_POSTPONED,[IntToStr(Table.RecNo),IntToStr(Table.RecordCount),Trim(Table.FieldByname('Name').AsString)]);
-     FIntParam:=LINE_INFO_WARNING;
-     Synchronize(TextOutEx);
-
-     if not GraphicCrypt.ValidCryptBlobStreamJPG(Table.FieldByName('thum')) then
-     begin
-      FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CRYPTED_FIXED,[IntToStr(Table.RecNo),IntToStr(Table.RecordCount),Trim(Table.FieldByname('Name').AsString)]);
-      FIntParam:=LINE_INFO_WARNING;
-      Synchronize(TextOutEx);
-      //fixing image -> deleting it
-      Bmp:=TBitmap.Create;
-      Bmp.PixelFormat:=pf24bit;
-      Bmp.Width:=ImageOptions.ThSize;
-      Bmp.Height:=ImageOptions.ThSize;
-      FillRectNoCanvas(Bmp,0);
-      Jpeg:=TJpegImage.Create;
-      Jpeg.Assign(Bmp);
-      Bmp.Free;
-      Jpeg.CompressionQuality:=ImageOptions.DBJpegCompressionQuality;
-      Jpeg.Compress;
+  FreeOnTerminate := True;
+  CoInitialize(nil);
+  try
+    RecreatingThInTableTerminating := False;
+    FBoolParam := True;
+    Table := GetTable(FOptions.FileName, DB_TABLE_IMAGES);
+    try
       try
-       Table.Edit;
-       Table.FieldByName('thum').Assign(Jpeg);
-       Table.Post;
-       Jpeg.Free;
+        ImageOptions := CommonDBSupport.GetImageSettingsFromTable(FOptions.FileName);
+        Table.Active := True;
       except
+        FStrParam := TEXT_MES_RECREATINH_TH_FORMAT_ERROR;
+        FIntParam := LINE_INFO_ERROR;
+        Synchronize(TextOut);
+        Synchronize(DoExit);
+        Exit;
       end;
-     end;
+      Crypting := False;
+      Table.First;
+      TableRecordCount := Table.RecordCount;
+      repeat
+        if RecreatingThInTableTerminating then
+          Break;
+        if FileExists(Table.FieldByName('FFileName').AsString) then
+        begin
 
-     Table.Next;
-     Continue;
+          Crypted := False;
+
+          if not StaticPath(Table.FieldByName('FFileName').AsString) then
+          begin
+            FStrParam := Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CD_DVD_CANCELED_INFO_F,
+              [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
+            FIntParam := LINE_INFO_WARNING;
+            Synchronize(TextOutEx);
+            Table.Next;
+            Continue;
+          end;
+
+          if ValidCryptGraphicFile(Table.FieldByName('FFileName').AsString) then
+          begin
+            Crypted := True;
+            Pass := DBKernel.FindPasswordForCryptImageFile(Table.FieldByName('FFileName').AsString);
+            if Pass = '' then
+            begin
+              AddPasswordFile(Table.FieldByName('ID').AsInteger, Table.FieldByName('FFileName').AsString);
+              FStrParam := Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CRYPTED_POSTPONED,
+                [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
+              FIntParam := LINE_INFO_WARNING;
+              Synchronize(TextOutEx);
+
+              if not GraphicCrypt.ValidCryptBlobStreamJPG(Table.FieldByName('thum')) then
+              begin
+                FStrParam := Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CRYPTED_FIXED,
+                  [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
+                FIntParam := LINE_INFO_WARNING;
+                Synchronize(TextOutEx);
+                // fixing image -> deleting it
+                Bmp := TBitmap.Create;
+                Bmp.PixelFormat := Pf24bit;
+                Bmp.Width := ImageOptions.ThSize;
+                Bmp.Height := ImageOptions.ThSize;
+                FillRectNoCanvas(Bmp, 0);
+                Jpeg := TJpegImage.Create;
+                Jpeg.Assign(Bmp);
+                Bmp.Free;
+                Jpeg.CompressionQuality := ImageOptions.DBJpegCompressionQuality;
+                Jpeg.Compress;
+                try
+                  Table.Edit;
+                  Table.FieldByName('thum').Assign(Jpeg);
+                  Table.Post;
+                  Jpeg.Free;
+                except
+                end;
+              end;
+
+              Table.Next;
+              Continue;
+            end;
+          end;
+
+          // DEBUG:
+          // if not Crypted then begin Table.Next;continue; end;
+
+          ProcessCurrentRecord;
+
+          if CMD_Command_Break then
+          begin
+            FIntParam := LINE_INFO_WARNING;
+            FStrParam := Format(TEXT_MES_ACTION_BREAKED_ITEM_FORMAT, [IntToStr(Table.RecNo), IntToStr(Table.RecordCount),
+              Copy(Table.FieldByname('Name').AsString, 1, 15)]);
+            Synchronize(TextOut);
+            Break;
+          end;
+
+        end;
+        Table.Next;
+      until Table.Eof;
+
+      Synchronize(GetCryptFileList);
+      Crypting := True;
+      repeat
+
+        CryptFileList := GetAvaliableCryptFileList;
+        for I := 0 to Length(CryptFileList) - 1 do
+        begin
+          CurrentID := CryptFileList[I];
+          Table.Locate('ID', CurrentID, []);
+          ProcessCurrentRecord;
+        end;
+        Sleep(500);
+
+        // until files present in list
+        GetCryptFileList;
+      until FCryptFileList.Count = 0;
+
+    finally
+      FreeDS(Table);
     end;
-   end;
 
-   //DEBUG:
-   //if not Crypted then begin Table.Next;continue; end;
-
-   ProcessCurrentRecord;
-
-   if CMD_Command_Break then
-   begin
-    FIntParam:=LINE_INFO_WARNING;
-    FStrParam:=Format(TEXT_MES_ACTION_BREAKED_ITEM_FORMAT,[IntToStr(Table.RecNo),IntToStr(Table.RecordCount),Copy(Table.FieldByname('Name').AsString,1,15)]);
+    FIntParam := LINE_INFO_PROGRESS;
+    FStrParam := TEXT_MES_PACKING_MAIN_DB_FILE;
     Synchronize(TextOut);
-    Break;
-   end;
 
+    PackTable(FOptions.FileName);
+
+    FIntParam := LINE_INFO_OK;
+    FStrParam := TEXT_MES_PACKING_END;
+    Synchronize(TextOut);
+
+    Synchronize(DoExit);
+  finally
+    CoUninitialize;
   end;
-  Table.Next;
- Until Table.Eof;
-
- Synchronize(GetCryptFileList);
- Crypting:=true;
- Repeat
-
-  CryptFileList:=GetAvaliableCryptFileList;
-  for i:=0 to Length(CryptFileList)-1 do
-  begin
-   CurrentID:=CryptFileList[i];
-   Table.Locate('ID',CurrentID,[]);
-   ProcessCurrentRecord;
-  end;
-  Sleep(500);
-
-  //until files present in list
-  GetCryptFileList;
- until fCryptFileList.Count=0;
- FreeDS(Table);
-
- FIntParam:=LINE_INFO_PROGRESS;
- FStrParam:=TEXT_MES_PACKING_MAIN_DB_FILE;
- Synchronize(TextOut);
-
- PackTable(fOptions.FileName);
-
- FIntParam:=LINE_INFO_OK;
- FStrParam:=TEXT_MES_PACKING_END;
- Synchronize(TextOut);
-
- Synchronize(DoExit);
 end;
 
 function RecreatingThInTable.GetAvaliableCryptFileList: TArInteger;

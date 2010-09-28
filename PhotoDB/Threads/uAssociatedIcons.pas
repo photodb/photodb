@@ -16,7 +16,8 @@ uses
   Forms,
   Dolphin_DB,
   SyncObjs,
-  Registry;
+  Registry,
+  uMemory;
 
 type
   TAssociatedIcons = record
@@ -164,22 +165,25 @@ begin
   if Assigned(lpIconImage) and (lpIconImage.icHeader.biWidth = Size)
   and (lpIconImage.icHeader.biBitCount = ColorDepth) then begin
     Stream := TMemoryStream.Create;
-    Stream.Clear;
+    try
+      Stream.Clear;
 
-    ZeroMemory(@GRP, SizeOf(GRP));
-    GRP.idCount := 1;
-    GRP.idType := 1;
-    GRP.idReserved := 0;
-    GRP.idEntries[i0] := lpGrpIconDir.idEntries[i];
-    nID := SizeOf(WORD) * 3 + SizeOf(GRPICONDIRENTRY) + 2;  //$16
-    GRP.idEntries[i0].nID := nID;
-    Stream.WriteBuffer(GRP, nID);
-    Stream.WriteBuffer(lpIconImage^, GRP.idEntries[i0].dwBytesInRes);
+      ZeroMemory(@GRP, SizeOf(GRP));
+      GRP.idCount := 1;
+      GRP.idType := 1;
+      GRP.idReserved := 0;
+      GRP.idEntries[i0] := lpGrpIconDir.idEntries[i];
+      nID := SizeOf(WORD) * 3 + SizeOf(GRPICONDIRENTRY) + 2;  //$16
+      GRP.idEntries[i0].nID := nID;
+      Stream.WriteBuffer(GRP, nID);
+      Stream.WriteBuffer(lpIconImage^, GRP.idEntries[i0].dwBytesInRes);
 
-    Stream.Position := 0;
-    Icon:=TIcon.Create;
-    Icon.LoadFromStream(Stream);
-    Stream.Free;
+      Stream.Position := 0;
+      Icon:=TIcon.Create;
+      Icon.LoadFromStream(Stream);
+    finally
+      Stream.Free;
+    end;
   end;
 end;
 
@@ -246,9 +250,10 @@ destructor TAIcons.Destroy;
 var
   i : integer;
 begin
-  for i:=0 to length(FAssociatedIcons)-1 do
-  FAssociatedIcons[i].Icon.free;
-  SetLength(FAssociatedIcons,0);
+  AIcons := nil;
+  for I := 0 to Length(FAssociatedIcons) - 1 do
+    FAssociatedIcons[I].Icon.Free;
+  SetLength(FAssociatedIcons, 0);
   UnLoadingListEXT.Free;
   FSync.Free;
   inherited;
@@ -426,5 +431,10 @@ begin
 
   Result := AIcons;
 end;
+
+initialization
+
+finalization
+  F(AIcons);
 
 end.

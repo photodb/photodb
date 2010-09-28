@@ -2,7 +2,7 @@ unit uTime;
 
 interface
 
-uses Classes, Windows, SysUtils, SyncObjs;
+uses Classes, Windows, SysUtils, SyncObjs, uMemory;
 
 {$DEFINE _STARTUP}
 {$DEFINE _PROFILER}
@@ -157,5 +157,10 @@ end;
 initialization
 
   TW.I.Start('initialization');
+
+finalization
+
+  TW.I.Free;
+  F(Sync);
 
 end.

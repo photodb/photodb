@@ -37,7 +37,16 @@ begin
 end;
 
 destructor TExplorerThreadPool.Destroy;
+var
+  I : Integer;
 begin
+  ThreadsCheck(nil);
+  for I := 0 to FAvaliableThreadList.Count - 1 do
+  begin
+    TExplorerThread(FAvaliableThreadList[I]).FThreadPreviewMode := THREAD_PREVIEW_MODE_EXIT;
+    SetEvent(TExplorerThread(FAvaliableThreadList[I]).SyncEvent);
+  end;
+
   FSync.Free;
   FAvaliableThreadList.Free;
   FBusyThreadList.Free;
@@ -52,7 +61,7 @@ var
   I : Integer;
   S : string;
 begin
-  if FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX, ProcessorCount + 1) then
+  if (Thread <> nil) and (FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX, ProcessorCount + 1)) then
     FAvaliableThreadList.Add(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, TExplorerThread(Thread).ExplorerInfo, TExplorerForm(Thread.ThreadForm), TExplorerThread(Thread).FUpdaterInfo, Thread.StateID));
 
   while FAvaliableThreadList.Count = 0 do

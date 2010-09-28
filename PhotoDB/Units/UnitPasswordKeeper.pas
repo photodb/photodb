@@ -2,28 +2,30 @@ unit UnitPasswordKeeper;
 
 interface
 
-uses Windows, Classes, Dolphin_DB, win32crc, GraphicCrypt, UnitDBDeclare;
+uses Windows, Classes, Dolphin_DB, win32crc, GraphicCrypt, UnitDBDeclare,
+  SyncObjs;
 
 type
- TPasswordKeeper = class(TObject)
- private
-  PasswordList : TList;
-  OKList : TArInteger;
- public
-  constructor Create;
-  destructor Destroy; override;
-  procedure AddPassword(PasswordRecord : TPasswordRecord);
-  procedure RemoveRecordsByPasswordCRC(CRC : Cardinal);
-  function PasswordOKForRecords(Password : string) : TList;
-  function GetActiveFiles(Sender : TObject) : TList;
-  procedure AddCryptFileToListProc(Sender : TObject; Rec : TPasswordRecord);
-  function Count : integer;
-  function GetPasswords : TArCardinal;
-  procedure TryGetPasswordFromUser(PasswordCRC : Cardinal);
-  function PasswordOKForFiles(PasswordCRC: Cardinal): TArStrings;
-  function GetAvaliableCryptFileList(Sender : TObject) : TArInteger;
-  procedure AddToOKList(PasswordCRC : Cardinal);   
-end;
+  TPasswordKeeper = class(TObject)
+  private
+    PasswordList: TList;
+    OKList: TArInteger;
+    FSync: TCriticalSection;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure AddPassword(PasswordRecord: TPasswordRecord);
+    procedure RemoveRecordsByPasswordCRC(CRC: Cardinal);
+    function PasswordOKForRecords(Password: string): TList;
+    function GetActiveFiles(Sender: TObject): TList;
+    procedure AddCryptFileToListProc(Sender: TObject; Rec: TPasswordRecord);
+    function Count: Integer;
+    function GetPasswords: TArCardinal;
+    procedure TryGetPasswordFromUser(PasswordCRC: Cardinal);
+    function PasswordOKForFiles(PasswordCRC: Cardinal): TArStrings;
+    function GetAvaliableCryptFileList(Sender: TObject): TArInteger;
+    procedure AddToOKList(PasswordCRC: Cardinal);
+  end;
 
 implementation
 
@@ -31,213 +33,235 @@ uses UnitPasswordForm;
 
 { TPasswordKeeper }
 
-procedure TPasswordKeeper.AddCryptFileToListProc(Sender: TObject;
-  Rec : TPasswordRecord);
+procedure TPasswordKeeper.AddCryptFileToListProc(Sender: TObject; Rec: TPasswordRecord);
 begin
- AddPassword(Rec);
+  AddPassword(Rec);
 end;
 
 procedure TPasswordKeeper.AddPassword(PasswordRecord: TPasswordRecord);
-var
-  p : PPasswordRecord;
-  L : integer;
 begin
- GetMem(p, SizeOf(TPPasswordRecord));
- p^.CRC:=PasswordRecord.CRC;
-
- L:=Length(PasswordRecord.FileName);
- GetMem(p^.FileName,Length(PasswordRecord.FileName)+1);
- p^.FileName[L]:=#0;
- lstrcpyn(p^.FileName,PChar(PasswordRecord.FileName),L+1);
-
- PasswordList.Add(p);
+  FSync.Enter;
+  try
+    PasswordList.Add(PasswordRecord);
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TPasswordKeeper.AddToOKList(PasswordCRC: Cardinal);
 var
-  i : integer;
-  p : PPasswordRecord;
+  I: Integer;
+  P: TPasswordRecord;
 begin
- for i:=PasswordList.Count-1 downto 0 do
- begin
-  p:=PPasswordRecord(PasswordList[i]);
-  if (p^.CRC = PasswordCRC) then
-  begin
-   SetLength(OKList,Length(OKList)+1);
-   OKList[Length(OKList)-1]:=p^.ID;
+  FSync.Enter;
+  try
+    for I := PasswordList.Count - 1 downto 0 do
+    begin
+      P := TPasswordRecord(PasswordList[I]);
+      if (P.CRC = PasswordCRC) then
+      begin
+        SetLength(OKList, Length(OKList) + 1);
+        OKList[Length(OKList) - 1] := P.ID;
+      end;
+    end;
+  finally
+    FSync.Leave;
   end;
- end;
 end;
 
-function TPasswordKeeper.Count: integer;
+function TPasswordKeeper.Count: Integer;
 begin
- Result:=PasswordList.Count;
+  Result := PasswordList.Count;
 end;
 
 constructor TPasswordKeeper.Create;
 begin
- inherited Create;
- SetLength(OKList,0);
- PasswordList:= TList.Create;
+  inherited;
+  FSync:= TCriticalSection.Create;
+  SetLength(OKList, 0);
+  PasswordList := TList.Create;
 end;
 
 destructor TPasswordKeeper.Destroy;
 begin
- PasswordList.Free;
- inherited Destroy;
+  PasswordList.Free;
+  FSync.Free;
+  inherited Destroy;
 end;
 
 function TPasswordKeeper.GetActiveFiles(Sender : TObject): TList;
 var
-  i, L : integer;
-  p,Cp : PPasswordRecord;
+  I, L: Integer;
+  P, Cp: TPasswordRecord;
 begin
- Result:=TList.Create;
- for i:=PasswordList.Count-1 downto 0 do
- begin
-  p:=PPasswordRecord(PasswordList[i]);
-  GetMem(Cp, SizeOf(TPPasswordRecord));
-  Cp^.CRC:=p^.CRC;
-
-  L:=Length(p^.FileName);
-  GetMem(Cp^.FileName,Length(p^.FileName)+1);
-  Cp^.FileName[L]:=#0;
-  lstrcpyn(Cp^.FileName,p^.FileName,L+1);
-
-  Result.Add(Cp);
- end;
+  FSync.Enter;
+  try
+    Result := TList.Create;
+    for I := PasswordList.Count - 1 downto 0 do
+    begin
+      P := TPasswordRecord(PasswordList[I]);
+      Cp := TPasswordRecord.Create;
+      Cp.CRC := P.CRC;
+      Cp.FileName := P.FileName;
+      Cp.ID := P.ID;
+      Result.Add(Cp);
+    end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
-function TPasswordKeeper.GetAvaliableCryptFileList(
-  Sender: TObject): TArInteger;
+function TPasswordKeeper.GetAvaliableCryptFileList(Sender: TObject): TArInteger;
 begin
- Result:=Copy(OKList);
+  FSync.Enter;
+  try
+    Result := Copy(OKList);
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TPasswordKeeper.GetPasswords: TArCardinal;
 var
-  i : integer;
-  p : PPasswordRecord;
-  Res :  TArCardinal;
+  I: Integer;
+  P: TPasswordRecord;
+  Res: TArCardinal;
 
-  function FileCRCExists(CRC : Cardinal) : boolean;
+  function FileCRCExists(CRC: Cardinal): Boolean;
   var
-    j : integer;
+    J: Integer;
   begin
-   Result:=false;
-   for j:=0 to Length(Res)-1 do
-   if Res[j]=CRC then
-   begin
-    Result:=true;
-    break;
-   end;
+    Result := False;
+    for J := 0 to Length(Res) - 1 do
+      if Res[J] = CRC then
+      begin
+        Result := True;
+        Break;
+      end;
   end;
+
 begin
- SetLength(Res,0);
- for i:=PasswordList.Count-1 downto 0 do
- begin    
-  p:=PPasswordRecord(PasswordList[i]);
-  if not FileCRCExists(p^.CRC) then
-  begin
-   SetLength(Res,Length(Res)+1);
-   Res[Length(Res)-1]:=p^.CRC;
+  FSync.Enter;
+  try
+    SetLength(Res, 0);
+    for I := PasswordList.Count - 1 downto 0 do
+    begin
+      P := TPasswordRecord(PasswordList[I]);
+      if not FileCRCExists(P.CRC) then
+      begin
+        SetLength(Res, Length(Res) + 1);
+        Res[Length(Res) - 1] := P.CRC;
+      end;
+    end;
+    Result := Res;
+  finally
+    FSync.Leave;
   end;
- end;
- Result:=Res;
 end;
 
 function TPasswordKeeper.PasswordOKForFiles(PasswordCRC: Cardinal): TArStrings;
 var
-  i : integer;
-  p : PPasswordRecord;
+  I: Integer;
+  P: TPasswordRecord;
 begin
- SetLength(Result,0);
- for i:=PasswordList.Count-1 downto 0 do
- begin
-  p:=PPasswordRecord(PasswordList[i]);
-  if p^.CRC=PasswordCRC then
-  begin
-   SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=p^.FileName;
+  FSync.Enter;
+  try
+   SetLength(Result, 0);
+    for I := PasswordList.Count - 1 downto 0 do
+    begin
+      P := TPasswordRecord(PasswordList[I]);
+      if P.CRC = PasswordCRC then
+      begin
+        SetLength(Result, Length(Result) + 1);
+        Result[Length(Result) - 1] := P.FileName;
+      end;
+    end;
+  finally
+    FSync.Leave;
   end;
- end;
 end;
 
 function TPasswordKeeper.PasswordOKForRecords(Password: string): TList;
 var
-  CRC : Cardinal;
-  i, L : integer;
-  p,Cp : PPasswordRecord;
+  CRC: Cardinal;
+  I, L: Integer;
+  P, Cp: TPasswordRecord;
 begin
- Result:=TList.Create;
- CalcStringCRC32(Password,CRC);
- for i:=PasswordList.Count-1 downto 0 do
- begin
-  p:=PPasswordRecord(PasswordList[i]);
-  if p^.CRC=CRC then
-  begin
-   GetMem(Cp, SizeOf(TPPasswordRecord));
-   Cp^.CRC:=p^.CRC;
-
-   L:=Length(p^.FileName);
-   GetMem(Cp^.FileName,Length(p^.FileName)+1);
-   Cp^.FileName[L]:=#0;
-   lstrcpyn(Cp^.FileName,p^.FileName,L+1);
-
-   Result.Add(Cp);
+  FSync.Enter;
+  try
+    Result := TList.Create;
+    CalcStringCRC32(Password, CRC);
+    for I := PasswordList.Count - 1 downto 0 do
+    begin
+      P := TPasswordRecord(PasswordList[I]);
+      if P.CRC = CRC then
+      begin
+        Cp := TPasswordRecord.Create;
+        Cp.CRC := P.CRC;
+        Cp.FileName := P.FileName;
+        Cp.ID := P.ID;
+        Result.Add(Cp);
+        Result.Add(Cp);
+      end;
+    end;
+  finally
+    FSync.Leave;
   end;
- end;
 end;
 
 procedure TPasswordKeeper.RemoveRecordsByPasswordCRC(CRC: Cardinal);
 var
-  i : integer;     
-  p : PPasswordRecord;
+  I: Integer;
+  P: TPasswordRecord;
 begin
- for i:=PasswordList.Count-1 downto 0 do
- begin
-  p:=PPasswordRecord(PasswordList[i]);
-  if p^.CRC=CRC then
-  begin
-   PasswordList.Remove(p);
+  FSync.Enter;
+  try
+    for I := PasswordList.Count - 1 downto 0 do
+    begin
+      P := TPasswordRecord(PasswordList[I]);
+      if P.CRC = CRC then
+      begin
+        P.Free;
+        PasswordList.Remove(P);
+      end;
+    end;
+  finally
+    FSync.Leave;
   end;
- end;
 end;
 
 procedure TPasswordKeeper.TryGetPasswordFromUser(PasswordCRC: Cardinal);
 var
-  FileList : TArStrings;
-  FileOkList : TList;
-  Password : string;
-  Skip : boolean;
-  i : integer;       
-  p : PPasswordRecord;
+  FileList: TArStrings;
+  FileOkList: TList;
+  Password: string;
+  Skip: Boolean;
+  I: Integer;
+  P: TPasswordRecord;
 begin
- FileList:=PasswordOKForFiles(PasswordCRC);
- if Length(FileList)>0 then
- begin
-  Skip:=false;
-  Password:=GetImagePasswordFromUserForManyFiles(FileList,PasswordCRC,Skip);
-  if Password<>'' then
+  FileList := PasswordOKForFiles(PasswordCRC);
+  if Length(FileList) > 0 then
   begin
-   DBKernel.AddTemporaryPasswordInSession(Password);
+    Skip := False;
+    Password := GetImagePasswordFromUserForManyFiles(FileList, PasswordCRC, Skip);
+    if Password <> '' then
+    begin
+      DBKernel.AddTemporaryPasswordInSession(Password);
 
-   //moving from password list to OKpassword list FILES
+      // moving from password list to OKpassword list FILES
 
-   FileOkList:=PasswordOKForRecords(Password);
-   for i:=0 to FileOkList.Count-1 do
-   begin
-    p:=FileOkList[i];
-    AddToOKList(p^.ID);
-   end;
-   RemoveRecordsByPasswordCRC(PasswordCRC);
+      FileOkList := PasswordOKForRecords(Password);
+      for I := 0 to FileOkList.Count - 1 do
+      begin
+        P := FileOkList[I];
+        AddToOKList(P.ID);
+      end;
+      RemoveRecordsByPasswordCRC(PasswordCRC);
+    end;
+
+    if Skip then
+      RemoveRecordsByPasswordCRC(PasswordCRC);
   end;
-
-  if Skip then
-  begin
-   RemoveRecordsByPasswordCRC(PasswordCRC);
-  end;
- end;
 end;
 
 end.

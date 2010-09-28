@@ -85,6 +85,7 @@ const
   THREAD_PREVIEW_MODE_IMAGE      = 1;
   THREAD_PREVIEW_MODE_BIG_IMAGE  = 2;
   THREAD_PREVIEW_MODE_DIRECTORY  = 3;
+  THREAD_PREVIEW_MODE_EXIT       = 0;
 
   LV_THUMBS     = 0;
   LV_ICONS      = 1;
@@ -846,3 +847,5 @@ initialization
  LockedFiles[2]:='';
 
 end.
+
+

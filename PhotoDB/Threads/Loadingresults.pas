@@ -3,12 +3,12 @@ unit Loadingresults;
 interface
 
 uses
- UnitDBKernel, dolphin_db, jpeg, ComCtrls, CommCtrl, windows,
- Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs, adodb,
- GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
- UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
- UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon,
- CommonDBSupport, uFileUtils;
+  UnitDBKernel, dolphin_db, jpeg, ComCtrls, CommCtrl, windows,
+  Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs, adodb,
+  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
+  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
+  UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon,
+  CommonDBSupport, uFileUtils, uTranslate, uMemory, ActiveX;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
@@ -91,6 +91,7 @@ type
     procedure SendDataPacketToForm;
   public
     constructor Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
+    destructor Destroy; override;
   end;
 
   const
@@ -101,7 +102,7 @@ type
 
 implementation
 
-uses FormManegerUnit, Searching, UnitGroupsWork, Language;
+uses FormManegerUnit, Searching, UnitGroupsWork;
 
 constructor SearchThread.Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
 begin
@@ -145,24 +146,28 @@ var
 
 begin
   FreeOnTerminate := True;
+  CoInitialize(nil);
   try
-    ParamNo:=0;
-    //#8 - invalid query identify, needed from script executing
-    if FSearchParams.Query = #8 then
-      Exit;
-
-    FData := TSearchRecordArray.Create;
     try
-      LoadImages;
+      ParamNo:=0;
+      //#8 - invalid query identify, needed from script executing
+      if FSearchParams.Query = #8 then
+        Exit;
+
+      FData := TSearchRecordArray.Create;
+      try
+        LoadImages;
+      finally
+        FData.Free;
+      end;
     finally
-      FData.Free;
+      if not FSearchParams.IsEstimate then
+        SynchronizeEx(DoOnDone);
     end;
   finally
-    if not FSearchParams.IsEstimate then
-      SynchronizeEx(DoOnDone);
+    CoUninitialize;
   end;
 
-  Exit;
  (* fQuery := GetQuery;
   try
     //Create SELECT statment
@@ -778,7 +783,7 @@ begin
    first:=true;
    fSpecQuery := GetQuery;
    SetLength(IthIds,0);
-   SetProgressText(TEXT_MES_CONVERTING);
+   SetProgressText(TA('Converting...'));
 
    //AllocImThBy
 
@@ -986,6 +991,12 @@ begin
 
  Result.Query:=AddOptions(Result.Query);
 
+end;
+
+destructor SearchThread.Destroy;
+begin
+  F(FSearchParams);
+  inherited;
 end;
 
 procedure SearchThread.DoOnDone;
@@ -1197,6 +1208,8 @@ begin
   FWorkQuery := GetQuery(FSearchParams.IsEstimate);
   try
     QueryParams := CreateQuery;
+    try
+
     if not FSearchParams.IsEstimate then
     begin
       TADOQuery(FWorkQuery).CursorType := ctOpenForwardOnly;
@@ -1214,7 +1227,7 @@ begin
     except
       on e : Exception do
       begin
-        FErrorMsg := e.Message + #13 + TEXT_MES_QUERY_FAILED;
+        FErrorMsg := e.Message + #13 + TA('Query failed to execute!');
         SynchronizeEx(ErrorSQL);
         Exit;
       end;
@@ -1243,6 +1256,10 @@ begin
     begin
       IntParam := FWorkQuery.Fields[0].AsInteger;
       SynchronizeEx(UpdateQueryEstimateCount);
+    end;
+
+    finally
+      F(QueryParams);
     end;
   finally
     FWorkQuery.Free;

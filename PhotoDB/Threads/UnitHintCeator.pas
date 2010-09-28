@@ -13,17 +13,10 @@ type
   HintCeator = class(TThread)
   private
     { Private declarations }
-    //Fbmp, Fb: Tbitmap;
     Graphic: TGraphic;
-    //Fh, Fw: Integer;
     FOriginalWidth: Integer;
     FOriginalHeight: Integer;
-    //FSelfItem: TObject;
     BooleanResult: Boolean;
-    //ValidImages: Integer;
-    //GIF: TGIFImage;
-    //BitmapParam: TBitmap;
-
     FStateID: TGUID;
     FInfo : TDBPopupMenuInfoRecord;
     FOwner : TForm;
@@ -286,5 +279,11 @@ procedure THintManager.UnRegisterHint(HintWindow: TForm);
 begin
   FHints.Remove(HintWindow);
 end;
+
+initialization
+
+finalization
+
+  THintManager.Instance.Free;
 
 end.

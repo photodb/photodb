@@ -736,7 +736,6 @@ procedure HideFromTaskBar(Handle: Thandle);
 function RandomPwd(PWLen: Integer; StrTable: string): string;
 procedure Del_Close_btn(Handle: Thandle);
 procedure DoUpdateHelp;
-function GetProcessMemory: Integer;
 function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean;
 function GetProgramPath: string;
 procedure SelectDB(Caller : TObject; DB: string);
@@ -861,21 +860,6 @@ function StringCRC(Str: string): Cardinal;
 begin
   Result := 0;
   CalcStringCRC32(Str, Result);
-end;
-
-function GetProcessMemory: Integer;
-var
-  Pmc: PPROCESS_MEMORY_COUNTERS;
-  Cb: Integer;
-begin
-  Cb := SizeOf(_PROCESS_MEMORY_COUNTERS);
-  GetMem(Pmc, Cb);
-  Pmc^.Cb := Cb;
-  if GetProcessMemoryInfo(GetCurrentProcess(), Pmc, Cb) then
-    Result := Pmc^.WorkingSetSize
-  else
-    Result := 0;
-  FreeMem(Pmc);
 end;
 
 function GetFileSize(FileName: string): Int64;
@@ -1831,8 +1815,7 @@ begin
       UnFormatDir(Folder);
       S := FileName;
       Delete(S, 1, Length(ProgramDir));
-    end
-    else
+    end else
     begin
       Folder := GetDirectory(FileName);
       UnFormatDir(Folder);
@@ -1845,15 +1828,7 @@ begin
     TryOpenCDS(FQuery);
 
     if not TryOpenCDS(FQuery) or (FQuery.RecordCount = 0) then
-    begin
-      Pointer(JPEG) := Pointer(Info.Image);
-      Info := RecordInfoOne(FileName, 0, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0,
-        ValidCryptGraphicFile(ProcessPath(FileName)), True, False, '');
-      Info.ItemLinks := '';
-      Info.ItemImTh := '';
-      Pointer(Info.Image) := Pointer(JPEG);
       Exit;
-    end;
 
     Result := True;
     Pointer(JPEG) := Pointer(Info.Image);

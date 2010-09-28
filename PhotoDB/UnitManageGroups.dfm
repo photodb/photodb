@@ -44,14 +44,12 @@ object FormManageGroups: TFormManageGroups
     ReadOnly = True
     ParentShowHint = False
     ShowHint = False
-    SmallImages = ImageList1
+    SmallImages = ImlGroups
     TabOrder = 0
     ViewStyle = vsReport
     OnContextPopup = ImageContextPopup
     OnCustomDrawItem = ListView1CustomDrawItem
     OnDblClick = ListView1DblClick
-    ExplicitTop = 44
-    ExplicitHeight = 342
   end
   object CoolBar1: TCoolBar
     Left = 0
@@ -146,7 +144,7 @@ object FormManageGroups: TFormManageGroups
       end
     end
   end
-  object ImageList1: TImageList
+  object ImlGroups: TImageList
     Height = 50
     Width = 50
     Left = 64

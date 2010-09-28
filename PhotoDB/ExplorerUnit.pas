@@ -554,6 +554,7 @@ type
     procedure MapCD1Click(Sender: TObject);
     procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
+    procedure ClearList;
    private
      ExtIcons : TBitmapImageList;
      FBitmapImageList : TBitmapImageList;
@@ -638,8 +639,8 @@ type
      procedure CreateParams(var Params: TCreateParams); override;
      procedure ZoomIn;
      procedure ZoomOut;
-     procedure LoadToolBarGrayedIcons();
-     procedure LoadToolBarNormaIcons();
+     procedure LoadToolBarGrayedIcons;
+     procedure LoadToolBarNormaIcons;
      function IsSelectedVisible: boolean;
      function TreeView : TShellTreeView;
      procedure CreateBackgrounds;
@@ -660,11 +661,11 @@ type
   TManagerExplorer = class(TObject)
   private
     FExplorers : TList;
-    FForms : TList;
-    fShowPrivate: Boolean;
-    fShowEXIF: Boolean;
+    FForms: TList;
+    FShowPrivate: Boolean;
+    FShowEXIF: Boolean;
     FShowQuickLinks: Boolean;
-    FSync : TCriticalSection;
+    FSync: TCriticalSection;
     procedure SetShowQuickLinks(const Value: Boolean);
     function GetExplorerByIndex(Index: Integer): TExplorerForm;
   public
@@ -958,7 +959,7 @@ begin
   LoadToolBarNormaIcons;
   TW.I.Start('LoadToolBarGrayedIcons');
   LoadToolBarGrayedIcons;
- TW.I.Start('LoadToolBarGrayedIcons - end');
+  TW.I.Start('LoadToolBarGrayedIcons - end');
   ToolBar1.Images := ToolBarNormalImageList;
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
@@ -1582,13 +1583,14 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
+  NewFormState;
+  ClearList;
   DirectoryWatcher.StopWatch;
-  DirectoryWatcher.Free;
+  F(DirectoryWatcher);
   aScript.Free;
   DragFilesPopup.Free;
   FBitmapImageList.Free;
   ExtIcons.Free;
-  NewFormState;
   SaveWindowPos1.SavePosition;
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
@@ -1602,6 +1604,7 @@ begin
   fStatusProgress.free;
   FormManager.UnRegisterMainForm(Self);
   DBKernel.UnRegisterForm(self);
+  F(FFilesInfo);
   GOM.RemoveObj(Self);
 end;
 
@@ -2007,6 +2010,15 @@ begin
  CbPathEdit.Width:=CoolBar1.Width-ImButton1.Width-Label2.Width-ToolButton9.Width-ImButton1.Width;
 end;
 
+procedure TExplorerForm.ClearList;
+var
+  I : Integer;
+begin
+  for I := 0 to ElvMain.Items.Count - 1 do
+    TDataObject(ElvMain.Items[I].Data).Free;
+  ElvMain.Items.Clear;
+end;
+
 procedure TExplorerForm.CloseButtonPanelResize(Sender: TObject);
 begin
  Button1.Left:=CloseButtonPanel.Width-Button1.Width-3;
@@ -2053,7 +2065,7 @@ begin
    fFilesInfo[i].Loaded:=true;
    fFilesInfo[i].Links:='';
    fFilesInfo[i].Crypted:=GraphicCrypt.ValidCryptGraphicFile(fFilesInfo[i].FileName);
-   if FBitmapImageList[fFilesInfo[i].ImageIndex].Bitmap=nil then
+   if FBitmapImageList[fFilesInfo[i].ImageIndex].Bitmap = nil then
    begin
     bit := TBitmap.Create;
     bit.PixelFormat:=pf24bit;
@@ -2661,16 +2673,16 @@ begin
   end;
 
   FBitmapImageList[c].Graphic := Bitmap;
-  FBitmapImageList[c].SelfReleased := True;
+  FBitmapImageList[C].SelfReleased := True;
 
-  ElvMain.Items[index].Invalidate(False);
+      ElvMain.Items[index].Invalidate(False);
 
-  If FFilesInfo[i].FileType=EXPLORER_ITEM_FOLDER then
-  If FFilesInfo[i].FileName=FSelectedInfo.FileName then
-  If SelCount=1 then
-  ListView1SelectItem(nil,ListView1Selected,True);
-  Break;
- end;
+      if FFilesInfo[I].FileType = EXPLORER_ITEM_FOLDER then
+        if FFilesInfo[I].FileName = FSelectedInfo.FileName then
+          if SelCount = 1 then
+            ListView1SelectItem(nil, ListView1Selected, True);
+      Break;
+    end;
 end;
 
 procedure TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean);
@@ -2722,10 +2734,10 @@ var
   I : Integer;
 begin
   for I := FFilesInfo.Count - 1 downto 0 do
-    if IsEqualGUID(FFilesInfo[i].SID, FileGUID) then
+    if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
       begin
         FBitmapImageList.AddIcon(Icon, SelfReleased);
-        FFilesInfo[I].ImageIndex:=FBitmapImageList.Count - 1;
+        FFilesInfo[I].ImageIndex := FBitmapImageList.Count - 1;
         Break;
       end;
 end;
@@ -3143,17 +3155,13 @@ end;
 procedure TExplorerForm.AddInfoAboutFile(Info : TExplorerFileInfos);
 var
   I : Integer;
-  b : Boolean;
+  B : Boolean;
 begin
-  b:=false;
-  for I:=0 to fFilesInfo.Count-1 do
-  if fFilesInfo[i].FileName = Info[0].FileName then
-  begin
-    B:=true;
-    Break;
-  end;
-  if not B then
-    fFilesInfo.Add(Info[0].Clone);
+  for I := 0 to FFilesInfo.Count - 1 do
+    if FFilesInfo[I].FileName = Info[0].FileName then
+      Exit;
+
+  FFilesInfo.Add(Info[0].Clone);
 end;
 
 function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;
@@ -4789,7 +4797,7 @@ begin
 
   if ElvMain<>nil then
   begin
-   ElvMain.Items.Clear;
+   ClearList;
    ElvMain.Groups.Add;
   end;
 
@@ -7498,28 +7506,33 @@ end;
 
 procedure TExplorerForm.ToolButton13Click(Sender: TObject);
 begin
- ZoomIn;
+  ZoomIn;
 end;
 
 procedure TExplorerForm.ToolButton14Click(Sender: TObject);
 begin
- ZoomOut;
+  ZoomOut;
 end;
 
-procedure TExplorerForm.LoadToolBarNormaIcons();
+procedure TExplorerForm.LoadToolBarNormaIcons;
 var
   UseSmallIcons : Boolean;
 
   procedure AddIcon(Name : String);
+  var
+    Icon : HIcon;
   begin
-    if UseSmallIcons then Name:=Name+'_SMALL';
-    ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
+    if UseSmallIcons then
+      Name:=Name + '_SMALL';
+
+    Icon :=  LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, Icon);
+    DestroyIcon(Icon);
   end;
 
 begin
   UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
   ToolBarNormalImageList.Clear;
-  ConvertTo32BitImageList(ToolBarNormalImageList);
 
   if UseSmallIcons then
   begin
@@ -7548,22 +7561,25 @@ var
   UseSmallIcons : Boolean;
 
   procedure AddIcon(Name : String);
+  var
+    Icon : HIcon;
   begin
     if UseSmallIcons then
       Name := Name + '_SMALL';
 
-    ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
+    Icon :=  LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, Icon);
+    DestroyIcon(Icon);
   end;
 
 begin
   ToolBarDisabledImageList.Clear;
-  ConvertTo32BitImageList(ToolBarDisabledImageList);
 
   UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
   if UseSmallIcons then
   begin
-    ToolBarDisabledImageList.Width:=16;
-    ToolBarDisabledImageList.Height:=16;
+    ToolBarDisabledImageList.Width := 16;
+    ToolBarDisabledImageList.Height := 16;
   end;
 
   AddIcon('EXPLORER_BACK_GRAY');

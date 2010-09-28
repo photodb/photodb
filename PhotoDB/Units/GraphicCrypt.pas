@@ -223,7 +223,7 @@ begin
     Result[I + 1] := Seed[I + 1];
 end;
 
-procedure WriteCryptHeaderV2(Stream : TStream; Src : TStream; FileName : AnsiString; Password : string; Options: Integer; var Seed : Binary);
+procedure WriteCryptHeaderV2(Stream : TStream; Src : TStream; FileName : string; Password : string; Options: Integer; var Seed : Binary);
 var
   FileCRC : Cardinal;
   GraphicHeader: TGraphicCryptFileHeader;

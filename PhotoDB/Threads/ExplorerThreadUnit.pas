@@ -11,7 +11,7 @@ uses
   EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
-  UnitExplorerLoadSIngleImageThread, uConstants, uMemory;
+  UnitExplorerLoadSIngleImageThread, uConstants, uMemory, SyncObjs;
 
 type
   TExplorerThread = class(TThreadEx)
@@ -53,7 +53,6 @@ type
     FVisibleFiles: TStrings;
     IsBigImage: Boolean;
     LoadingAllBigImages: Boolean;
-    FullFolderPicture: TPNGGraphic;
     FSyncEvent: THandle;
     NewItem: TEasyItem;
   protected
@@ -146,10 +145,12 @@ type
 type
   TIconType = (itSmall, itLarge);
 
-  var
-      AExplorerFolders : TExplorerFolders = nil;
-      UpdaterCount : integer = 0;
-      ExplorerUpdateBigImageThreadsCount : integer = 0;
+var
+  AExplorerFolders : TExplorerFolders = nil;
+  UpdaterCount : integer = 0;
+  ExplorerUpdateBigImageThreadsCount : integer = 0;
+  FullFolderPicture: TPNGGraphic = nil;
+  FFolderPictureLock : TCriticalSection = nil;
 
 implementation
 
@@ -169,7 +170,6 @@ begin
   ExplorerInfo := Info;
   FShowFiles := True;
   FUpdaterInfo := UpdaterInfo;
-  FullFolderPicture := nil;
   FVisibleFiles := nil;
   FEvent := 0;
   FPreviewInProgress := False;
@@ -548,9 +548,9 @@ begin
       PrivateFiles.Free;
     end;
   finally
+    F(FullFolderPicture);
     CoUninitialize;
   end;
- // Sleep(1000);
 end;
 
 procedure TExplorerThread.BeginUpdate;
@@ -679,9 +679,9 @@ var
 begin
   if not IsTerminated then
   begin
-    NewItem:=FSender.AddItem(GUIDParam);
-    If AnsiLowerCase(ExplorerInfo.OldFolderName)=AnsiLowerCase(CurrentFile) then
-      FSelected:=NewItem;
+    NewItem := FSender.AddItem(GUIDParam);
+    If AnsiLowerCase(ExplorerInfo.OldFolderName) = AnsiLowerCase(CurrentFile) then
+      FSelected := NewItem;
   end;
 end;
 
@@ -745,14 +745,7 @@ begin
       end;
     end;
   end else
-  begin
-    FInfo.Image := TJpegImage.Create;
-    try
-      GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS, FInfo);
-    finally
-      FreeAndNil(FInfo);
-    end;
-  end;
+    GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS, FInfo);
 
   FInfo.Loaded := True;
   FInfo.Tag := EXPLORER_ITEM_IMAGE;
@@ -1122,7 +1115,15 @@ begin
   if not IsTerminated then
   begin
     if FullFolderPicture = nil then
-      FullFolderPicture := GetFolderPicture;
+    begin
+      FFolderPictureLock.Enter;
+      try
+        if FullFolderPicture = nil then
+          FullFolderPicture := GetFolderPicture;
+      finally
+        FFolderPictureLock.Leave;
+      end;
+    end;
 
    if FullFolderPicture = nil then
      Exit;
@@ -1157,66 +1158,66 @@ begin
 end;
 
 procedure TExplorerThread.AddFile;
-Var
+var
   Ext_ : String;
   IsExt_  : Boolean;
-  FFiles : TExplorerFileInfos;
+  FE : Boolean;
 begin
- if FolderView then if AnsiLowerCase(ExtractFileName(FUpdaterInfo.FileName))='folderdb.ldb' then exit;
+  FE := FileExists(FUpdaterInfo.FileName);
 
- FFiles := TExplorerFileInfos.Create;
- try
- Ext_:=GetExt(FUpdaterInfo.FileName);
- IsExt_:= ExtInMask(SupportedExt,Ext_);
- If DirectoryExists(FUpdaterInfo.FileName) then
- AddOneExplorerFileInfo(FFiles,FUpdaterInfo.FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID,0,0,0,0,GetFileSizeByName(FUpdaterInfo.FileName),'','','',0,false,false,true);
- If fileexists(FUpdaterInfo.FileName) and IsExt_ then
- AddOneExplorerFileInfo(FFiles,FUpdaterInfo.FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID,0,0,0,0,GetFileSizeByName(FUpdaterInfo.FileName),'','','',0,false,ValidCryptGraphicFile(FUpdaterInfo.FileName),true);
- If FShowFiles then
- If fileexists(FUpdaterInfo.FileName) and not IsExt_ then
- AddOneExplorerFileInfo(FFiles,FUpdaterInfo.FileName, EXPLORER_ITEM_FILE, -1, GetGUID,0,0,0,0,GetFileSizeByName(FUpdaterInfo.FileName),'','','',0,false,false,true);
- if FFiles.Count=0 then exit;
- If FFiles[0].FileType=EXPLORER_ITEM_IMAGE then
-  begin
-   GUIDParam:=FFiles[0].SID;
-   CurrentFile:=FFiles[0].FileName;
-   AddImageFileToExplorerW;           //TODO: filesize is undefined
-   ReplaceImageItemImage(CUrrentFile, FFiles[0].FileSize, GUIDParam);
-  end;
- If FFiles[0].FileType=EXPLORER_ITEM_FILE then
- begin
-  GUIDParam:=FFiles[0].SID;
-  CurrentFile:=FFiles[0].FileName;
-  AddImageFileToExplorerW;
- end;
- If FFiles[0].FileType=EXPLORER_ITEM_FOLDER then
- begin
-  GUIDParam:=FFiles[0].SID;
-  CurrentFile:=FFiles[0].FileName;
-  AddImageFileToExplorerW;
-  Sleep(2000); //wait if folder was jast created - it possible that files are currentry in copy-progress...
+  if FolderView then
+    if AnsiLowerCase(ExtractFileName(FUpdaterInfo.FileName)) = 'folderdb.ldb' then
+      Exit;
+
+  FFiles := TExplorerFileInfos.Create;
   try
-   if ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View=LV_THUMBS) then
-   ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
-  except
+    Ext_ := GetExt(FUpdaterInfo.FileName);
+    IsExt_ := ExtInMask(SupportedExt, Ext_);
+    if DirectoryExists(FUpdaterInfo.FileName) then
+      AddOneExplorerFileInfo(FFiles, FUpdaterInfo.FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0, 0, 0,
+        GetFileSizeByName(FUpdaterInfo.FileName), '', '', '', 0, False, False, True);
+    if FE and IsExt_ then
+      AddOneExplorerFileInfo(FFiles, FUpdaterInfo.FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0, 0, 0,
+        GetFileSizeByName(FUpdaterInfo.FileName), '', '', '', 0, False, ValidCryptGraphicFile(FUpdaterInfo.FileName),
+        True);
+    if FShowFiles then
+      if FE and not IsExt_ then
+        AddOneExplorerFileInfo(FFiles, FUpdaterInfo.FileName, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0, 0, 0,
+          GetFileSizeByName(FUpdaterInfo.FileName), '', '', '', 0, False, False, True);
+    if FFiles.Count = 0 then
+      Exit;
+    if FFiles[0].FileType = EXPLORER_ITEM_IMAGE then
+    begin
+      GUIDParam := FFiles[0].SID;
+      CurrentFile := FFiles[0].FileName;
+      AddImageFileToExplorerW; // TODO: filesize is undefined
+      ReplaceImageItemImage(CurrentFile, FFiles[0].FileSize, GUIDParam);
+    end;
+    if FFiles[0].FileType = EXPLORER_ITEM_FILE then
+    begin
+      GUIDParam := FFiles[0].SID;
+      CurrentFile := FFiles[0].FileName;
+      AddImageFileToExplorerW;
+    end;
+    if FFiles[0].FileType = EXPLORER_ITEM_FOLDER then
+    begin
+      GUIDParam := FFiles[0].SID;
+      CurrentFile := FFiles[0].FileName;
+      AddImageFileToExplorerW;
+      Sleep(2000); // wait if folder was jast created - it possible that files are currentry in copy-progress...
+      if ExplorerInfo.ShowThumbNailsForFolders and (ExplorerInfo.View = LV_THUMBS) then
+        ExtractDirectoryPreview(CurrentFile, GUIDParam);
+    end;
+  finally
+    F(FFiles);
   end;
- end;
- finally
-   F(FFiles);
- end;
 end;
 
 procedure TExplorerThread.AddImageFileToExplorerW;
 begin
- ficon:=TAIcons.Instance.GetIconByExt(CurrentFile,false, FIcoSize,false);
- if ExplorerInfo.View=LV_THUMBS then
- begin
-  MakeTempBitmap;
-  IconParam:=ficon;
-  SynchronizeEx(DrawImageIcon);
-  ficon.free;
- end;
- SynchronizeEx(AddImageFileItemToExplorerW);
+  TempBitmap := nil;
+  FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
+  SynchronizeEx(AddImageFileItemToExplorerW);
 end;
 
 procedure TExplorerThread.AddImageFileItemToExplorerW;
@@ -1224,12 +1225,11 @@ begin
   if not IsTerminated then
   begin
     FSender.AddInfoAboutFile(FFiles);
-    if ExplorerInfo.View=LV_THUMBS then
-    FSender.AddBitmap(TempBitmap, GUIDParam) else
-    FSender.AddIcon(ficon, true, GUIDParam);
+    FSender.AddIcon(FIcon, True, GUIDParam);
+
     if FUpdaterInfo.NewFileItem then
-    FSender.SetNewFileNameGUID(GUIDParam);
-    FSender.AddItem(GUIDParam,false);
+      FSender.SetNewFileNameGUID(GUIDParam);
+    FSender.AddItem(GUIDParam, False);
   end;
 end;
 
@@ -2006,10 +2006,13 @@ begin
           if FThreadPreviewMode = THREAD_PREVIEW_MODE_BIG_IMAGE then
              ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate, FFileID);
 
+          if FThreadPreviewMode = THREAD_PREVIEW_MODE_EXIT then
+            Exit;
+
           FThreadPreviewMode := 0;
 
           TW.I.Start('UnRegisterSubThread: ' + IntToStr(FEvent));
-          if GOM.IsObj(ParentThread) then
+          if (GOM <> nil) and GOM.IsObj(ParentThread) then
             ParentThread.UnRegisterSubThread(Self);
         except
           on e : Exception do
@@ -2044,10 +2047,13 @@ end;
 
 initialization
 
- UpdaterCount:=0;
+  UpdaterCount := 0;
+  FFolderPictureLock := TCriticalSection.Create;
 
 finalization
 
- FreeAndNil(AExplorerFolders);
+  F(FFolderPictureLock);
+  F(AExplorerFolders);
+  F(FullFolderPicture);
 
 end.

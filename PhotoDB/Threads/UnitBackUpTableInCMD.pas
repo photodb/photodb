@@ -3,16 +3,16 @@ unit UnitBackUpTableInCMD;
 interface
 
 uses
-  Classes, Language, SysUtils, Dolphin_DB, Forms, CommonDBSupport,
-  UnitDBDeclare, uConstants, uFileUtils;
+  Classes, SysUtils, Dolphin_DB, Forms, CommonDBSupport,
+  UnitDBDeclare, uConstants, uFileUtils, uTranslate;
 
 type
   BackUpTableInCMD = class(TThread)
   private
-    FStrParam : String;
-    FIntParam : integer;
-    fOptions : TBackUpTableThreadOptions;
     { Private declarations }
+    FStrParam: string;
+    FIntParam: Integer;
+    FOptions: TBackUpTableThreadOptions;
   protected
     procedure Execute; override;
     procedure DoExit;
@@ -36,52 +36,58 @@ end;
 
 procedure BackUpTableInCMD.DoExit;
 begin
- fOptions.OnEnd(Self);
-// CMDForm.OnEnd(Self);
+  if Assigned(FOptions.OnEnd) then
+    FOptions.OnEnd(Self);
 end;
 
 procedure BackUpTableInCMD.Execute;
 var
-  FSIn, FSOut : TFileStream;
-  s : string;
+  FSIn, FSOut: TFileStream;
+  S: string;
 begin
- s:=GetDirectory(Application.ExeName);
- FormatDir(S);
- CreateDirA(GetAppDataDirectory+BackUpFolder);
- try
-  FSOut := TFileStream.Create(dbname,fmOpenRead);
+  FreeOnTerminate := True;
+  S := GetDirectory(Application.ExeName);
+  FormatDir(S);
+  CreateDirA(GetAppDataDirectory + BackUpFolder);
   try
-    FSIn := TFileStream.Create(GetAppDataDirectory+BackUpFolder+ExtractFileName(dbname),fmOpenWrite or fmCreate);
+    FSOut := TFileStream.Create(Dbname, FmOpenRead or FmShareDenyNone);
     try
-      FSIn.CopyFrom(FSOut, FSOut.Size);
+      FSIn := TFileStream.Create(GetAppDataDirectory + BackUpFolder + ExtractFileName(Dbname), FmOpenWrite or FmCreate);
+      try
+        FSIn.CopyFrom(FSOut, FSOut.Size);
+      finally
+        FSIn.Free;
+      end;
     finally
-      FSIn.Free;
+      FSOut.Free;
     end;
-  finally
-    FSOut.Free;
+  except
+    on e : Exception do
+    begin
+      FStrParam := TA('Error') + ': ' + e.Message;
+      FIntParam := LINE_INFO_ERROR;
+      Synchronize(TextOut);
+      Synchronize(DoExit);
+      Exit;
+    end;
   end;
- except
-  FStrParam:=TEXT_MES_ERROR;
-  FIntParam:=LINE_INFO_ERROR;
+  FStrParam := TA('Backup process successfully ended.');
+  FIntParam := LINE_INFO_OK;
   Synchronize(TextOut);
   Synchronize(DoExit);
-  exit;
- end;
- FStrParam:=TEXT_MES_BACKUP_SUCCESS;
- FIntParam:=LINE_INFO_OK;
- Synchronize(TextOut);
- Synchronize(DoExit);
- DBkernel.WriteDateTime('Options','BackUpDateTime',Now())
+  DBkernel.WriteDateTime('Options', 'BackUpDateTime', Now)
 end;
 
 procedure BackUpTableInCMD.TextOut;
 begin
- fOptions.WriteLineProc(Self,FStrParam,FIntParam);
+  if Assigned(FOptions.WriteLineProc) then
+    FOptions.WriteLineProc(Self, FStrParam, FIntParam);
 end;
 
 procedure BackUpTableInCMD.TextOutEx;
 begin
- fOptions.WriteLnLineProc(Self,FStrParam,FIntParam);
+  if Assigned(FOptions.WriteLnLineProc) then
+    FOptions.WriteLnLineProc(Self, FStrParam, FIntParam);
 end;
 
 end.

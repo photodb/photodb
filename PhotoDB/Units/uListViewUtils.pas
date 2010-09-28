@@ -91,6 +91,12 @@ var
 begin
   Graphic := BImageList[Item.ImageIndex].Graphic;
 
+  if Graphic = nil then
+  begin
+    Item.ImageIndex := 0;
+    Exit;
+  end;
+
   W := ARect.Right - ARect.Left;
   H := ARect.Bottom - ARect.Top;
   ImageW := Graphic.Width;

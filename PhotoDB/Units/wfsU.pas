@@ -323,6 +323,10 @@ end;
 
 initialization
 
-OM := TManagerObjects.Create;
+  OM := TManagerObjects.Create;
+
+finalization
+
+  OM.Free;
 
 end.

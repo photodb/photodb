@@ -112,8 +112,8 @@ begin
  FreeOnTerminate:=True;
  if UpdatingWorking then exit;
  UpdatingWorking:=true;
- Sleep(5000);
  D:=DBKernel.ReadDateTime('', 'LastUpdating', Now);
+ Sleep(5000);
   if (Now - D < 7) and not FNeedsInformation then
   begin
     UpdatingWorking := False;

@@ -3,7 +3,7 @@ unit UnitImHint;
 interface
 
 uses
-  DBCMenu, UnitDBKernel, menus,dolphin_db, Windows, Messages, SysUtils,
+  DBCMenu, UnitDBKernel, Menus, dolphin_db, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, GIFImage, Math,
   Dialogs, StdCtrls, ExtCtrls, ImButton, ComCtrls, ActiveX,
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
@@ -35,7 +35,6 @@ type
     procedure LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure UpdateTheme(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
@@ -73,7 +72,7 @@ type
 
 implementation
 
-uses Searching, Language;
+uses Searching;
 
 {$R *.dfm}
 
@@ -287,8 +286,8 @@ begin
     SlideNO := -1;
     ImageFrameTimer.Interval := 1;
     ImageFrameTimer.Enabled := True;
-    ImageBuffer.Width := G.Width;
-    ImageBuffer.Height := G.Height;
+    ImageBuffer.Width := WW;
+    ImageBuffer.Height := HH;
     //Draw first slide
     ImageFrameTimerTimer(Self);
   end else
@@ -312,8 +311,6 @@ begin
   CanClosed := True;
   AnimatedBuffer := nil;
   DropFileTargetMain.Register(Self);
-  DBkernel.RegisterForm(Self);
-  DBkernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   FClosed := True;
 
   BorderStyle := bsNone;
@@ -477,19 +474,13 @@ begin
   GoIn := True;
 end;
 
-procedure TImHint.UpdateTheme(Sender: TObject);
-begin
-  DBKernel.RecreateThemeToForm(Self);
-end;
-
 procedure TImHint.FormDestroy(Sender: TObject);
 begin
   F(AnimatedBuffer);
   F(ImageBuffer);
   F(AnimatedImage);
   DropFileTargetMain.Unregister;
-  DBkernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
-  DBkernel.UnRegisterForm(Self);
+  DBKernel.UnRegisterForm(Self);
 end;
 
 procedure TImHint.FormKeyPress(Sender: TObject; var Key: Char);
@@ -587,7 +578,7 @@ var
   R, Bounds_: TRect;
   Im: TGifImage;
   DisposalMethod: TDisposalMethod;
-  Del: Integer;
+  Del, Delta: Integer;
   TimerEnabled: Boolean;
   Gsi: TGIFSubImage;
   TickCountStart: Cardinal;
@@ -630,8 +621,7 @@ begin
     if Del = 0 then
       Del := 100;
     TimerEnabled := True;
-  end
-  else
+  end else
     DisposalMethod := DmNone;
   if SlideNO = 0 then
     DisposalMethod := DmBackground
@@ -670,7 +660,8 @@ begin
   DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
   CreateFormImage;
   ImageFrameTimer.Enabled := False;
-  ImageFrameTimer.Interval := Max(Del div 2, Del - GetTickCount - TickCountStart);
+  Delta := Integer(GetTickCount - TickCountStart);
+  ImageFrameTimer.Interval := Max(Del div 2, Del - Delta);
   if not TimerEnabled then
     ImageFrameTimer.Enabled := False
   else

@@ -3761,6 +3761,7 @@ object ExplorerForm: TExplorerForm
     end
   end
   object ToolBarNormalImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 32
     Width = 32
     Left = 136
@@ -3781,6 +3782,7 @@ object ExplorerForm: TExplorerForm
     Top = 124
   end
   object ToolBarDisabledImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 32
     Width = 32
     Left = 169

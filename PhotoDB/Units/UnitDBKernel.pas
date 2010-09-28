@@ -5,12 +5,12 @@ interface
 //{$DEFINE ENGL}
 {$DEFINE RUS}
 
-uses  win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
- Rating, ComCtrls, StdCtrls, ExtCtrls, Forms,  Windows, Classes,
- Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
- GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
-   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
-   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory;
+uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
+  Rating, ComCtrls, StdCtrls, ExtCtrls, Forms, Windows, Classes,
+  Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
+  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, UVistaFuncs, ULogger,
+  EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
+  UConstants, CommCtrl, UTime, UnitINI, SyncObjs, UMemory;
 
 type
   TCharObject = class (TObject)
@@ -199,7 +199,8 @@ type
 
 type TDBEventsIDArray = array of DBEventsIDArray;
 
-Const IconsCount = 119;
+const
+  IconsCount = 119;
 
 type
  TDbKernelArrayIcons = array [1..IconsCount] of THandle;
@@ -322,9 +323,9 @@ function chartoint(ch : char):Integer;
 
 implementation
 
-uses dolphin_db, UnitBackUpTableThread, Language, UnitCrypting, CommonDBSupport,
-UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
-UnitCDMappingSupport;
+uses Dolphin_db, UnitBackUpTableThread, Language, UnitCrypting, CommonDBSupport,
+  UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
+  UnitBackUpTableInCMD, UnitCDMappingSupport;
 
 { TDBKernel }
 
@@ -333,6 +334,7 @@ var
   i : integer;
 begin
   inherited;
+  FDBs := nil;
   FSych := TCriticalSection.Create;
   FForms := TList.Create;
   FRegistryCache := TDBRegistryCache.Create;
@@ -378,17 +380,19 @@ end;
 
 destructor TDBKernel.destroy;
 var
-  i : integer;
+  I: Integer;
 begin
   FImageList.Free;
   FINIPasswods.Free;
   FPasswodsInSession.Free;
-  for i:=1 to 100 do
-  if Chars[i]<>nil then Chars[i].free;
+  for I := 1 to 100 do
+    if Chars[I] <> nil then
+      Chars[I].Free;
   FreeIconDll;
   FRegistryCache.Free;
   FSych.Free;
   F(FForms);
+  F(FDBs);
   inherited;
 end;
 
@@ -1464,6 +1468,7 @@ var
   Reg : TBDRegistry;
 begin
  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+ try
  if not Reg.OpenKey(GetRegRootKey+'CurrentTheme', true) then
  begin
   exit;
@@ -1480,6 +1485,9 @@ begin
  Reg.WriteString('Theme_ProgressBackColor','$'+IntToHex(Theme_ProgressBackColor,8));
  Reg.WriteString('Theme_ProgressFontColor','$'+IntToHex(Theme_ProgressFontColor,8));
  Reg.WriteString('Theme_ProgressFillColor','$'+IntToHex(Theme_ProgressFillColor,8));
+ finally
+   Reg.Free;
+ end;
 end;
 
 procedure TDBKernel.SaveThemeToFile(FileName: string);
@@ -1689,15 +1697,23 @@ begin
 end;
 
 procedure TDBKernel.BackUpTable;
+var
+   Options: TBackUpTableThreadOptions;
 begin
- if FolderView then exit;
- if Now-DBkernel.ReadDateTime('Options','BackUpDateTime',0)>DBKernel.ReadInteger('Options','BackUpdays',7) then
- begin
-  if GetDBType=DB_TYPE_MDB then
+  if FolderView then
+    Exit;
+
+  if Now - DBkernel.ReadDateTime('Options', 'BackUpDateTime', 0) > DBKernel.ReadInteger('Options', 'BackUpdays', 7) then
   begin
-   DBkernel.WriteBool('StartUp','BackUp',True);
+    Options.WriteLineProc := nil;
+    Options.WriteLnLineProc := nil;
+    Options.OnEnd := nil;
+    Options.FileName := DBName;
+
+    BackUpTableInCMD.Create(Options);
+
+    DBkernel.WriteBool('StartUp', 'BackUp', True);
   end;
- end;
 end;
 
 procedure TDBKernel.InitRegModule;
@@ -2328,9 +2344,9 @@ initialization
 
 finalization
 
- if DBKernel<>nil then
- begin
-  FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(dbname));
- end;
+if DBKernel <> nil then
+begin
+  FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(Dbname));
+end;
 
 end.

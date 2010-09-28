@@ -7,19 +7,20 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms,  uVistaFuncs, UnitDBNullQueryThread, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
-  UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread;
+  UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
+  uDBForm;
 
 type
-  TFormManager = class(TForm)
+  TFormManager = class(TDBForm)
     procedure CalledTimerTimer(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
-  private    
+  private
     { Private declarations }
     FMainForms : TList;
-    FTemtinatedActions : TTemtinatedActions;  
+    FTemtinatedActions : TTemtinatedActions;
     CanCheckViewerInMainForms : Boolean;
-    FCheckCount : Integer;     
+    FCheckCount : Integer;
     WasIde : Boolean;
     ExitAppl : Boolean;
     LockCleaning : Boolean;
@@ -47,13 +48,13 @@ var
   FormManager: TFormManager;
   TimerTerminateHandle : THandle;
   TimerCheckMainFormsHandle : THandle;
-  TimerTerminateAppHandle : THandle;    
+  TimerTerminateAppHandle : THandle;
   TimerCloseHandle : THandle;
 
 const
-  TIMER_TERMINATE = 1;  
+  TIMER_TERMINATE = 1;
   TIMER_TERMINATE_APP = 2;
-  TIMER_CHECK_MAIN_FORMS = 3;  
+  TIMER_CHECK_MAIN_FORMS = 3;
   TIMER_CLOSE = 4;
 
 implementation
@@ -105,7 +106,7 @@ begin
  begin
   try
    Reg:=TBDRegistry.Create(REGISTRY_CLASSES);
-   Reg.OpenKey('CLSID\{F70C45B3-1D2B-4FC3-829F-16E5AF6937EB}\',true);  
+   Reg.OpenKey('CLSID\{F70C45B3-1D2B-4FC3-829F-16E5AF6937EB}\',true);
    d1:=now;
    if Reg.ValueExists('VersionTimeA') then
    begin
@@ -125,7 +126,7 @@ begin
    days:=round(now-d1);
    if days<0 then
    begin
-    reg.WriteBool('VersionTimeA',true);  
+    reg.WriteBool('VersionTimeA',true);
     Reg.free;
     EnteringCodeNeeded:=true;
     MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
@@ -133,7 +134,7 @@ begin
    end;
    if (days>DemoDays) and not DBInDebug then
    begin
-    reg.WriteBool('VersionTimeA',True);   
+    reg.WriteBool('VersionTimeA',True);
     Reg.free;
     EnteringCodeNeeded:=true;
     MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
@@ -143,7 +144,7 @@ begin
   except
    on e : Exception do
    begin
-    MessageBoxDB(FormManager.Handle,Format(TEXT_MES_UNKNOWN_ERROR_F,[e.Message]),TEXT_MES_ERROR ,TD_BUTTON_OK,TD_ICON_INFORMATION);
+    MessageBoxDB(FormManager.Handle,Format(LA('Unhandled error: %s') ,[e.Message]), LA('Error') ,TD_BUTTON_OK,TD_ICON_INFORMATION);
     Exit;
    end;
   end;
@@ -227,8 +228,8 @@ try
       NewSearch.SearchEdit.Text:=Copy(s,1,500);
       NewSearch.DoSearchNow(nil);
      end;
-    end;  
-    CloseLoadingForm;         
+    end;
+    CloseLoadingForm;
     NewSearch.Show;
    end else
    begin
@@ -246,21 +247,21 @@ try
   begin
    //Default Form
    if DBKernel.ReadBool('Options','RunExplorerAtStartUp',false) then
-   begin     
+   begin
     TW.I.Start('RUN NewExplorer');
     With ExplorerManager.NewExplorer(False) do
     begin
      if DBKernel.ReadBool('Options','UseSpecialStartUpFolder',false) then
      SetPath(DBKernel.ReadString('Options','SpecialStartUpFolder')) else
-     SetNewPathW(GetCurrentPathW,false); 
-     CloseLoadingForm;   
+     SetNewPathW(GetCurrentPathW,false);
+     CloseLoadingForm;
      Show;
     end;
    end else
-   begin               
+   begin
    TW.I.Start('SearchManager.NewSearch');
     NewSearch:=SearchManager.NewSearch;
-    Application.Restore; 
+    Application.Restore;
     CloseLoadingForm;
     NewSearch.Show;
    end;
@@ -271,7 +272,7 @@ try
   begin
    With ExplorerManager.NewExplorer(False) do
    begin
-    SetPath(Directory);    
+    SetPath(Directory);
     CloseLoadingForm;
     Show;
    end;
@@ -280,8 +281,8 @@ try
    Application.Restore;
    With SearchManager.NewSearch do
    begin
-    Show;    
-    CloseLoadingForm;       
+    Show;
+    CloseLoadingForm;
    end;
   end;
  end;
@@ -327,7 +328,7 @@ Var
 begin
   if ExitAppl then exit;
     ExitAppl := True;
-      
+
   EventLog(':TFormManager::ExitApplication()...');
 
   for i := 0 to FMainForms.Count - 1 do
@@ -368,8 +369,8 @@ begin
   end;
   if ApplReadyForEnd then Break;
  until false;
-  TerminationApplication.Create(False);
-  
+  TerminationApplication.Create;
+
   FormManager := nil;
   TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 10000, @TimerProc);
   Application.Terminate;
@@ -388,18 +389,6 @@ begin
   Application.Terminate;
 end;
 
-//TODO: review IDLE
-{procedure TFormManager.ApplicationEvents1Idle(Sender: TObject;
-  var Done: Boolean);
-begin
- if WasIde then exit;
- if LockCleaning then exit;
- WasIde:=True;
- DBkernel.BackUpTable;
- if DBKernel.ReadBool('Options','AllowAutoCleaning',false) then
- CleanUpThread.Create(False);
-end;  }
-
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
 begin
   begin
@@ -409,17 +398,20 @@ begin
       SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
       SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
     end;
+    if (FCheckCount = 600) then //after 1.min. backup database
+      DBKernel.BackUpTable;
     if CanCheckViewerInMainForms then
     begin
       if (FMainForms.Count = 1) and (FMainForms[0] = Viewer) and (Viewer <> nil) then
       begin
-        CanCheckViewerInMainForms:=false;
+        CanCheckViewerInMainForms := False;
         //to prevent many messageboxes
         KillTimer(0, TimerCheckMainFormsHandle);
         try
           ActivateApplication(Viewer.Handle);
-          if ID_YES = MessageBoxDB(Viewer.Handle, TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q, TEXT_MES_WARNING,TD_BUTTON_YESNO, TD_ICON_WARNING) then
-            FMainForms.Clear;
+          //if Viewer rests - user cal puch button "Close"
+          //if ID_YES = MessageBoxDB(Viewer.Handle, TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q, TEXT_MES_WARNING,TD_BUTTON_YESNO, TD_ICON_WARNING) then
+          //  FMainForms.Clear;
         finally
            TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
         end;
@@ -496,7 +488,7 @@ end;
 
 procedure TFormManager.Load;
 var
-  DateTime : TDateTime;   
+  DateTime : TDateTime;
 begin
   TW.I.Start('FM -> Load');
  Caption:=DBID;
@@ -693,7 +685,7 @@ begin
 end;
 
 constructor TFormManager.Create(AOwner: TComponent);
-begin            
+begin
   FMainForms := TList.Create;
   WasIde := False;
   ExitAppl := False;
@@ -703,7 +695,7 @@ end;
 
 destructor TFormManager.Destroy;
 begin
-  inherited;    
+  inherited;
   FMainForms.Free;
 end;
 

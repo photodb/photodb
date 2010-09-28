@@ -3,7 +3,8 @@ unit uTranslate;
 interface
 
 uses
-  Classes, SysUtils, uLogger, uMemory, MSXML, OmniXML_MSXML;
+  Classes, SysUtils, uLogger, uMemory, MSXML, OmniXML_MSXML,
+  SyncObjs;
 
 type
   TTranslate = class(TObject)
@@ -36,6 +37,7 @@ type
   private
     FTranslate : IXMLDOMDocument;
     FTranslateList : TList;
+    FSync: TCriticalSection;
     constructor Create;
     function GetLanguage: string;
   protected
@@ -44,22 +46,45 @@ type
   public
     destructor Destroy; override;
     class function Instance : TTranslateManager;
+    procedure BeginTranslate;
+    procedure EndTranslate;
+    function TA(const StringToTranslate, Scope: string) : string; overload;
+    function TA(const StringToTranslate: string) : string; overload;
     function Translate(const StringToTranslate: string) : string; overload;
     function Translate(const StringToTranslate, Scope: string) : string; overload;
     property Language : string read GetLanguage;
   end;
+
+function TA(const StringToTranslate, Scope: string) : string; overload;
+function TA(const StringToTranslate: string) : string; overload;
 
 implementation
 
 var
   TranslateManager : TTranslateManager = nil;
 
+function TA(const StringToTranslate, Scope: string) : string; overload;
+begin
+  Result := TTranslateManager.Instance.TA(StringToTranslate, Scope);
+end;
+
+function TA(const StringToTranslate: string) : string; overload;
+begin
+  Result := TTranslateManager.Instance.TA(StringToTranslate);
+end;
+
 { TTranslateManager }
+
+procedure TTranslateManager.BeginTranslate;
+begin
+  FSync.Enter;
+end;
 
 constructor TTranslateManager.Create;
 var
   LanguagePath : string;
 begin
+  FSync:= TCriticalSection.Create;
   LanguagePath := ExtractFileDir(ParamStr(0)) + Format('\Language%s.xml', [Language]);
 
   FTranslateList := TList.Create;
@@ -76,7 +101,13 @@ end;
 destructor TTranslateManager.Destroy;
 begin
   FreeList(FTranslateList);
+  F(FSync);
   inherited;
+end;
+
+procedure TTranslateManager.EndTranslate;
+begin
+  FSync.Leave;
 end;
 
 function TTranslateManager.GetLanguage: string;
@@ -134,6 +165,26 @@ begin
         if Scope <> '' then
           Result := LocateString(Original, '');
     end;
+  end;
+end;
+
+function TTranslateManager.TA(const StringToTranslate, Scope: string): string;
+begin
+  BeginTranslate;
+  try
+    Result := Translate(StringToTranslate, Scope);
+  finally
+    EndTranslate;
+  end;
+end;
+
+function TTranslateManager.TA(const StringToTranslate: string): string;
+begin
+  BeginTranslate;
+  try
+    Result := Translate(StringToTranslate);
+  finally
+    EndTranslate;
   end;
 end;
 
@@ -213,5 +264,11 @@ begin
   FOriginal := Node.attributes.getNamedItem('name').text;
   FTranslate := Node.attributes.getNamedItem('value').text;
 end;
+
+initialization
+
+finalization
+  F(TranslateManager);
+
 
 end.

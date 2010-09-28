@@ -4,7 +4,7 @@ interface
 
 uses
    Classes, Windows, Messages, JPEG, Graphics, DmProgress, uTime,
-   uConstants, uResources, Language, UnitDBCommonGraphics;
+   uConstants, uResources, Language, UnitDBCommonGraphics, uMemory;
 
 type
   TSplashThread = class(TThread)
@@ -220,6 +220,7 @@ begin
   end;      
   TW.I.Start('SPLASH THREAD END');
   SplashThread := nil;
+  FreeOnTerminate := True;
 end; // ShowSplashWindow
 
 procedure TSplashThread.ShowDemoInfo;

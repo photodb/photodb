@@ -2,7 +2,7 @@ unit uGOM;
 
 interface
 
-uses Classes, SysUtils, SyncObjs;
+uses Classes, SysUtils, SyncObjs, uMemory;
 
 type
   TManagerObjects = class(TObject)
@@ -100,6 +100,6 @@ initialization
 
 finalization
 
-  GOM.Free;
+  F(GOM);
 
 end.

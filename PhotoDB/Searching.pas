@@ -429,7 +429,6 @@ type
     FShellTreeView : TShellTreeView;
     ElvMain: TEasyListView;
     LastMouseItem, ItemWithHint : TEasyItem;
-    SelectQuery : TDataSet;
     FBitmapImageList : TBitmapImageList;
     MouseDowned : Boolean;
     RenameResult : Boolean;
@@ -710,7 +709,6 @@ begin
   ScriptListPopupMenu.Images := DBKernel.ImageList;
   ScriptMainMenu.Images := DBKernel.ImageList;
   TW.I.Start('S -> GetQuery');
-  SelectQuery:=GetQuery(dbname);
   TW.I.Start('S -> Register');
   DestroyCounter := 0;
   FHelpTimerStarted := False;
@@ -1240,6 +1238,7 @@ var
   J : TJpegImage;
   bit : TBitmap;
   i, iItemIndex : integer;
+  SelectQuery : TDataSet;
 
   RecordInfo : TOneRecordInfo;
   Exists : integer;
@@ -1250,6 +1249,8 @@ begin
   item:=GetListItemByID(ID);
   if item=nil then exit;
 
+  SelectQuery := GetQuery;
+  try
   SearchRecord := GetSearchRecordFromItemData(item);
 
  if not (item.imageindex<=0) then
@@ -1392,6 +1393,9 @@ begin
   ElvMain.Refresh;
   item.ImageIndex:=FBitmapImageList.Count-1;
  end;
+  finally
+    FreeDS(SelectQuery);
+  end;
 end;
 
 function TSearchForm.GetListItemByID(ID : integer) : TEasyItem;
@@ -1428,23 +1432,22 @@ end;
 procedure TSearchForm.FormDestroy(Sender: TObject);
 begin
   GOM.RemoveObj(Self);
-   DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
-   DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
-   aScript.Free;
-   FreeDS(SelectQuery);
-   DropFileTarget2.Unregister;
-   DropFileTarget1.Unregister;
-   if Creating then exit;
-   DBkernel.UnRegisterForm(self);
-   DBKernel.UnRegisterChangesID(self,ChangedDBDataByID);
-   DBkernel.SaveCurrentColorTheme;
-   SaveWindowPos1.SavePosition;
-   FBitmapImageList.Free;
-   FBitmapImageList:=nil;
-   FormManager.UnRegisterMainForm(Self);
-   Creating:=true;
+  DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
+  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
+  aScript.Free;
+  DropFileTarget2.Unregister;
+  DropFileTarget1.Unregister;
+  if Creating then exit;
+  DBkernel.UnRegisterForm(self);
+  DBKernel.UnRegisterChangesID(self,ChangedDBDataByID);
+  DBkernel.SaveCurrentColorTheme;
+  SaveWindowPos1.SavePosition;
+  FBitmapImageList.Free;
+  FBitmapImageList:=nil;
+  FormManager.UnRegisterMainForm(Self);
+  Creating:=true;
 
-   FSearchInfo.Free;
+  FSearchInfo.Free;
 end;
 
 procedure TSearchForm.Reloadtheme(Sender: TObject);
@@ -1568,6 +1571,7 @@ var
   I, ReRotation : Integer;
   SearchRecord  : TSearchRecord;
   DataObject    : TDataObject;
+  SelectQuery   : TDataSet;
 begin
 
   if EventID_Repaint_ImageList in params then
@@ -1589,8 +1593,6 @@ begin
     //TODO:!!! ???? WTF?
   else if [EventID_Param_DB_Changed,EventID_Param_Refresh_Window] * params<>[] then
   begin
-    FreeDS(SelectQuery);
-    SelectQuery:=GetQuery(dbname);
     ReRecreateGroupsList;
     LoadQueryList;
     DoSearchNow(nil);
@@ -1827,7 +1829,6 @@ begin
  Caption:=ProductName+' - ['+DBkernel.GetDataBaseName+']';
 
  TW.I.Start('S -> DoShowSelectInfo');
- DoShowSelectInfo;
  ElvMain.Canvas.Pen.Color:=$0;
  ElvMain.Canvas.brush.Color:=$0;
  WlStartStop.onclick:= DoSearchNow;
@@ -3208,7 +3209,9 @@ var
   ArTimes : TArTime;
   WorkQuery : TDataSet;
   SearchRecord : TSearchRecord;
+  SelectQuery : TDataSet;
 begin
+  SelectQuery := GetQuery;
  if Active then
 
  Memo2.PopupMenu:=nil;
@@ -3320,7 +3323,6 @@ begin
   FreeDS(WorkQuery);
  end else begin
   RatingEdit.Islayered:=false;
-  SelectQuery.Active:=false;
 
   indent:=0;
   if ElvMain.Selection.First<>nil then
@@ -3366,6 +3368,7 @@ begin
   lockwindowupdate(0);
   FreeDS(WorkQuery);
  end;
+ FreeDS(SelectQuery);
 end;
 
 procedure TSearchForm.SelectTimerTimer(Sender: TObject);
@@ -5063,7 +5066,7 @@ begin
     end;
   end;
 
-  DataObject:=TDataObject.Create;
+  DataObject := TDataObject.Create;
   DataObject.Include := SearchRecord.Include;
   DataObject.Data := SearchRecord;
   new := ElvMain.Items.Add(DataObject);
@@ -5078,7 +5081,7 @@ begin
       new.ImageIndex := -1;
     SearchRecord.Bitmap := nil;
   end;
-  new.Caption:=ExtractFileName(SearchRecord.FileName);
+  new.Caption := ExtractFileName(SearchRecord.FileName);
 end;
 
 procedure TSearchForm.LoadDataPacket(Packet: TSearchRecordArray);

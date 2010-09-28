@@ -13,7 +13,7 @@ type
    FTable: TDataSet;
    fQuery : TDataSet;
    fReg : TBDRegistry;
-   FText, fDBname : string;
+   FText : string;
    FPosition : Integer;
    FMaxPosition : integer;
    lastID : integer;
@@ -52,20 +52,16 @@ var
   DateToAdd, aTime : TDateTime;
   IsDate, IsTime : boolean;
 begin
- if FolderView then exit;
  FreeOnTerminate:=True;
+ if FolderView then exit;
  Synchronize(RegisterThread);
- if not DBKernel.TestDB(DBname) then exit;
- fDBname:=DBname;
+
  If Active then exit;
  Priority:=tpIdle;
  Termitating:=false;
- Sleep(10*60000); //delay 10 minutes after start
  Active:=true;
 
- if (GetDBType(fDBname)=DB_TYPE_MDB) then
- FTable:=GetQuery; //no TABLEs with access - slow work
-
+ FTable:=GetQuery;
  fQuery:=GetQuery;
 
  fReg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
@@ -94,10 +90,6 @@ begin
   if not DBKernel.ReadBool('Options','AllowFastCleaning',False) then
   Sleep(2500);
 
-  if fDBname<>DBname then
-  begin
-   break;
-  end;
   if Termitating then break;
   _sqlexectext:='Select * from $DB$ where ID=(Select MIN(ID) from $DB$ where ID>'+IntToStr(lastID)+')';
 
@@ -118,13 +110,11 @@ begin
 
   try
 
-   if (GetDBType(fDBname)=DB_TYPE_MDB) then
-   begin
     if not StaticPath(FTable.FieldByName('FFileName').AsString) then
     begin
      Continue;
     end;
-    
+
     folder:=GetDirectory(FTable.FieldByName('FFileName').AsString);
 
     folder:=AnsiLowerCase(folder);
@@ -140,7 +130,6 @@ begin
 
      FreeDS(SetQuery);
     end;
-   end;
 
 
    if DBKernel.ReadBool('Options','DeleteNotValidRecords',True) then
@@ -151,17 +140,13 @@ begin
      begin
       if (FTable.FieldByName('Rating').AsInteger=0) and (FTable.FieldByName('Access').AsInteger<>db_access_private) and (FTable.FieldByName('Comment').AsString='') and (FTable.FieldByName('KeyWords').AsString='') and (FTable.FieldByName('Groups').AsString='') and (FTable.FieldByName('IsDate').AsBoolean=False)  then
       begin
-       if (GetDBType(fDBname)=DB_TYPE_MDB) then
-       begin
-        SetQuery:=GetQuery;
-        SetSQL(SetQuery,'Delete from $DB$ Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
-        ExecSQL(SetQuery);
-        FreeDS(SetQuery);
-       end else
-       begin
-        FTable.Edit;
-        FTable.Delete;
-       end;
+              SetQuery := GetQuery;
+              try
+                SetSQL(SetQuery, 'Delete from $DB$ Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
+                ExecSQL(SetQuery);
+              finally
+                FreeDS(SetQuery);
+              end;
        Continue;
       end;
      end;
@@ -175,12 +160,12 @@ begin
      SetAttr(FTable.FieldByName('ID').AsInteger,db_attr_norm);
     end;
    end
-  except    
+  except
    on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
   end;
 
   if Termitating then break;
-  
+
   try
    s:=FTable.FieldByName('FFileName').AsString;
    If s<>AnsiLowerCase(s) then
@@ -191,7 +176,7 @@ begin
      ExecSQL(SetQuery);
      FreeDS(SetQuery);
     end;
-  except    
+  except
    on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
   end;
 
@@ -224,7 +209,7 @@ begin
        ExecSQL(SetQuery);
        FreeDS(SetQuery);
      end;
-   except  
+   except
    on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
    end;
    Exif.Free;
@@ -270,7 +255,7 @@ begin
    if (fQuery.RecordCount=1) and  fileexists(FTable.FieldByName('FFileName').AsString) and (FTable.FieldByName('Attr').AsInteger=db_attr_dublicate) then
    SetAttr(FTable.FieldByName('ID').AsInteger,db_attr_norm);
   end;
-  except     
+  except
    on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
   end;
 
@@ -283,7 +268,7 @@ begin
  Active:=false;
  try
   Synchronize(UnRegisterThread);
- except  
+ except
    on e : Exception do EventLog(':CleanUpThread::Execute()/UnRegisterThread throw exception: '+e.Message);
  end;
 end;
@@ -356,7 +341,7 @@ begin
  TermInfo.TerminatedVerify:=@Active;
  TermInfo.Options:=TA_INFORM_AND_NT;
  TermInfo.Owner:=Self;
- FormManager.UnRegisterActionCanTerminating(TermInfo); 
+ FormManager.UnRegisterActionCanTerminating(TermInfo);
 end;
 
 procedure CleanUpThread.UpdateMaxProgress;
