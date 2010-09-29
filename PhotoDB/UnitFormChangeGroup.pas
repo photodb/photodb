@@ -7,54 +7,54 @@ uses
   Graphics, Controls, Forms, Math, UnitGroupsTools, uVistaFuncs,
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
   ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon,
-  uConstants, uFileUtils;
+  uConstants, uFileUtils, uDBForm, WatermarkedEdit;
 
 type
-  TFormChangeGroup = class(TForm)
-    Image1: TImage;
-    Edit1: TEdit;
-    Memo1: TMemo;
+  TFormChangeGroup = class(TDBForm)
+    ImgMain: TImage;
+    MemComments: TMemo;
     Button1: TButton;
     Button2: TButton;
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
-    PopupMenu1: TPopupMenu;
+    PmLoadFromFile: TPopupMenu;
     LoadFromFile1: TMenuItem;
-    Memo2: TMemo;
-    CheckBox1: TCheckBox;
+    MemKeywords: TMemo;
+    CbAddkeywords: TCheckBox;
     CommentLabel: TLabel;
     KeyWordsLabel: TLabel;
     Label3: TLabel;
     ComboBoxEx1: TComboBoxEx;
-    CheckBox2: TCheckBox;
+    CbInclude: TCheckBox;
     GroupsImageList: TImageList;
     GraphicSelect1: TGraphicSelectEx;
+    EdwName: TWatermarkedEdit;
     procedure FormCreate(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure LoadFromFile1Click(Sender: TObject);
     procedure GraphicSelect1ImageSelect(Sender: TObject; Bitmap: TBitmap);
     procedure RelodDllNames;
-    procedure Image1Click(Sender: TObject);
+    procedure ImgMainClick(Sender: TObject);
     procedure ComboBoxEx1DblClick(Sender: TObject);
     procedure ComboBoxEx1DropDown(Sender: TObject);
     procedure ComboBoxEx1KeyPress(Sender: TObject; var Key: Char);
     procedure ComboBoxEx1Select(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
+    procedure PmLoadFromFilePopup(Sender: TObject);
   private
-  FGroup : TGroup;
-  Saving : Boolean;
-  FNewRelatedGroups : String;
-  FGroupDate : TDateTime;
     { Private declarations }
+    FGroup: TGroup;
+    Saving: Boolean;
+    FNewRelatedGroups: string;
+    FGroupDate: TDateTime;
   public
-  Procedure Execute(GroupCode : String);
-  Procedure LoadLanguage;
-  procedure ReloadGroups;
     { Public declarations }
+    procedure Execute(GroupCode: string);
+    procedure LoadLanguage;
+    procedure ReloadGroups;
   end;
 
-Procedure DBChangeGroup(Group : TGroup);
+procedure DBChangeGroup(Group: TGroup);
 
 implementation
 
@@ -62,52 +62,57 @@ uses UnitDBKernel, Language, UnitQuickGroupInfo, UnitEditGroupsForm;
 
 {$R *.dfm}
 
-Procedure DBChangeGroup(Group : TGroup);
+procedure DBChangeGroup(Group: TGroup);
 var
   FormChangeGroup: TFormChangeGroup;
 begin
- Application.CreateForm(TFormChangeGroup,FormChangeGroup);
- FormChangeGroup.Execute(Group.GroupCode);
- FormChangeGroup.Release;
+  Application.CreateForm(TFormChangeGroup, FormChangeGroup);
+  try
+    FormChangeGroup.Execute(Group.GroupCode);
+  finally
+    FormChangeGroup.Release;
+  end;
 end;
 
 procedure TFormChangeGroup.FormCreate(Sender: TObject);
 begin
- Saving:=false;
- DBkernel.RecreateThemeToForm(Self);
- LoadLanguage;
- RelodDllNames;
+  Saving := False;
+  LoadLanguage;
+  RelodDllNames;
 end;
 
 Procedure TFormChangeGroup.Execute(GroupCode : String);
 var
   Group : TGroup;
 begin
- Group:=GetGroupByGroupCode(GroupCode,True);
- if Group.GroupName='' then
- begin
-  MessageBoxDB(Handle,TEXT_MES_GROUP_NOT_FOUND,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  Exit;
- end;
- FGroup:=CopyGroup(Group);
- try
- if Group.GroupImage<>nil then
-  Image1.Picture.Graphic.Assign(Group.GroupImage);
-  Edit1.Text:=Group.GroupName;
- except
- end;
- FGroupDate:=Group.GroupDate;
- Memo1.Text:=Group.GroupComment;
- Memo2.Text:=Group.GroupKeyWords;
- CheckBox1.Checked:=Group.AutoAddKeyWords;
- If Group.GroupAccess=GROUP_ACCESS_COMMON then
- RadioButton1.Checked:=True;
- If Group.GroupAccess=GROUP_ACCESS_PRIVATE then
- RadioButton2.Checked:=True;
- CheckBox2.Checked:=Group.IncludeInQuickList;
- FNewRelatedGroups:=Group.RelatedGroups;
- ReloadGroups;
- ShowModal;
+  Group := GetGroupByGroupCode(GroupCode, True);
+  if Group.GroupName = '' then
+  begin
+    MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
+  FGroup := CopyGroup(Group);
+  try
+    if Group.GroupImage <> nil then
+      ImgMain.Picture.Graphic := Group.GroupImage;
+    EdwName.Text := Group.GroupName;
+
+    FGroupDate := Group.GroupDate;
+    MemComments.Text := Group.GroupComment;
+    MemKeywords.Text := Group.GroupKeyWords;
+    CbAddkeywords.Checked := Group.AutoAddKeyWords;
+    if Group.GroupAccess = GROUP_ACCESS_COMMON then
+      RadioButton1.Checked := True;
+    if Group.GroupAccess = GROUP_ACCESS_PRIVATE then
+      RadioButton2.Checked := True;
+    CbInclude.Checked := Group.IncludeInQuickList;
+    FNewRelatedGroups := Group.RelatedGroups;
+
+  finally
+    FreeGroup(FGroup);
+  end;
+  ReloadGroups;
+  ShowModal;
 end;
 
 procedure TFormChangeGroup.Button2Click(Sender: TObject);
@@ -120,92 +125,104 @@ var
   Group : TGroup;
   EventInfo : TEventValues;
 begin
- if GroupNameExists(Edit1.text) and (FGroup.GroupName<>Edit1.text) then
- begin
-  MessageBoxDB(Handle,TEXT_MES_GROUP_ALREADY_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  Exit;
- end;
- if FGroup.GroupName<>Edit1.text then
- begin
-  if ID_OK <> MessageBoxDB(Handle,TEXT_MES_GROUP_RENAME_GROUP_CONFIRM,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
- end;
- Saving:=true;
- Edit1.Enabled:=false;
- Memo1.Enabled:=false;
- Memo2.Enabled:=false;
- CheckBox1.Enabled:=false;
- ComboBoxEx1.Enabled:=false;
- CheckBox2.Enabled:=false;
- RadioButton1.Enabled:=false;
- RadioButton2.Enabled:=false;
- Button1.Enabled:=false;
- Button2.Enabled:=false;
+  if GroupNameExists(EdwName.Text) and (FGroup.GroupName <> EdwName.Text) then
+  begin
+    MessageBoxDB(Handle, TEXT_MES_GROUP_ALREADY_EXISTS, L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
+  if FGroup.GroupName <> EdwName.Text then
+  begin
+    if ID_OK <> MessageBoxDB(Handle, TEXT_MES_GROUP_RENAME_GROUP_CONFIRM, L('Warning'), TD_BUTTON_OKCANCEL,
+      TD_ICON_WARNING) then
+      Exit;
+  end;
+  Saving := True;
+  EdwName.Enabled := False;
+  MemComments.Enabled := False;
+  MemKeywords.Enabled := False;
+  CbAddkeywords.Enabled := False;
+  ComboBoxEx1.Enabled := False;
+  CbInclude.Enabled := False;
+  RadioButton1.Enabled := False;
+  RadioButton2.Enabled := False;
+  Button1.Enabled := False;
+  Button2.Enabled := False;
 
- Group.GroupName:=Edit1.text;
- Group.GroupImage:=TJpegImage.Create;
- Group.GroupCode:=FGroup.GroupCode;
- Group.GroupDate:=FGroupDate;
- Group.GroupImage.Assign(Image1.Picture.Graphic as TJpegImage);
- Group.GroupComment:=Memo1.Text;
- Group.GroupKeyWords:=Memo2.Text;
- Group.AutoAddKeyWords:=CheckBox1.Checked;
- Group.IncludeInQuickList:=CheckBox2.Checked;
- Group.RelatedGroups:=FNewRelatedGroups;
- If RadioButton1.Checked then
- Group.GroupAccess:=GROUP_ACCESS_COMMON;
- If RadioButton2.Checked then
- Group.GroupAccess:=GROUP_ACCESS_PRIVATE;
- if UpdateGroup(Group) then
- if FGroup.GroupName<>Edit1.text then
- begin
-  RenameGroup(FGroup,Edit1.text);
-  MessageBoxDB(Handle,TEXT_MES_RELOAD_INFO,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
- end;
- FreeGroup(Group);
- DBKernel.DoIDEvent(Self,0,[EventID_Param_GroupsChanged],EventInfo);
- Close;
+  Group.GroupName := EdwName.Text;
+  Group.GroupImage := TJpegImage.Create;
+  Group.GroupCode := FGroup.GroupCode;
+  Group.GroupDate := FGroupDate;
+  Group.GroupImage.Assign(ImgMain.Picture.Graphic);
+  Group.GroupImage.JPEGNeeded;
+  Group.GroupComment := MemComments.Text;
+  Group.GroupKeyWords := MemKeywords.Text;
+  Group.AutoAddKeyWords := CbAddkeywords.Checked;
+  Group.IncludeInQuickList := CbInclude.Checked;
+  Group.RelatedGroups := FNewRelatedGroups;
+  if RadioButton1.Checked then
+    Group.GroupAccess := GROUP_ACCESS_COMMON;
+  if RadioButton2.Checked then
+    Group.GroupAccess := GROUP_ACCESS_PRIVATE;
+  if UpdateGroup(Group) then
+    if FGroup.GroupName <> EdwName.Text then
+    begin
+      RenameGroup(FGroup, EdwName.Text);
+      MessageBoxDB(Handle, TEXT_MES_RELOAD_INFO, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+    end;
+  FreeGroup(Group);
+  DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
+  Close;
 end;
 
 procedure TFormChangeGroup.LoadLanguage;
 begin
- Caption := TEXT_MES_CHANGE_GROUP_CAPTION;
- Button1.Caption:= TEXT_MES_OK;
- Button2.Caption:= TEXT_MES_CANCEL;
- RadioButton1.Caption:= TEXT_MES_COMMON_GROUP;
- RadioButton2.Caption:= TEXT_MES_PRIVATE_GROUP;
- Memo1.Text := TEXT_MES_GROUP_COMMENTA;
- Edit1.Text:=TEXT_MES_NEW_GROUP_NAME;
- LoadFromFile1.Caption:=TEXT_MES_LOAD_FROM_FILE;
- CheckBox1.Caption:=TEXT_MES_AUTO_ADD_KEYWORDS;
- KeyWordsLabel.Caption:=TEXT_MES_KEYWORDS_FOR_GROUP;
- CommentLabel.Caption:=TEXT_MES_GROUP_COMMENT;
- CheckBox2.Caption:=TEXT_MES_INCLUDE_IN_QUICK_LISTS;
- Label3.Caption:=TEXT_MES_RELATED_GROUPS+':';
+  BeginTranslate;
+  try
+    Caption := TEXT_MES_CHANGE_GROUP_CAPTION;
+    Button1.Caption := TEXT_MES_OK;
+    Button2.Caption := TEXT_MES_CANCEL;
+    RadioButton1.Caption := TEXT_MES_COMMON_GROUP;
+    RadioButton2.Caption := TEXT_MES_PRIVATE_GROUP;
+    MemComments.Text := TEXT_MES_GROUP_COMMENTA;
+    EdwName.WatermarkText := TEXT_MES_NEW_GROUP_NAME;
+    LoadFromFile1.Caption := TEXT_MES_LOAD_FROM_FILE;
+    CbAddkeywords.Caption := TEXT_MES_AUTO_ADD_KEYWORDS;
+    KeyWordsLabel.Caption := TEXT_MES_KEYWORDS_FOR_GROUP;
+    CommentLabel.Caption := TEXT_MES_GROUP_COMMENT;
+    CbInclude.Caption := TEXT_MES_INCLUDE_IN_QUICK_LISTS;
+    Label3.Caption := TEXT_MES_RELATED_GROUPS + ':';
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormChangeGroup.LoadFromFile1Click(Sender: TObject);
 begin
- LoadNickJpegImage(Image1);
+  LoadNickJpegImage(ImgMain);
 end;
 
 procedure TFormChangeGroup.GraphicSelect1ImageSelect(Sender: TObject;
   Bitmap: TBitmap);
 var
-  b : TBitmap;
-  h, w : integer;
+  B: TBitmap;
+  H, W: Integer;
 begin
- b:=TBitmap.Create;
- b.PixelFormat:=pf24bit;
- w:=Bitmap.Width;
- h:=Bitmap.Height;
- If Max(w,h)<48 then B.Assign(Bitmap) else
- begin
-  ProportionalSize(48,48,w,h);
-  DoResize(w,h,Bitmap,b);
- end;
- Image1.Picture.Graphic.Assign(b);
- b.free;
- Image1.Refresh;
+  B := TBitmap.Create;
+  try
+    B.PixelFormat := pf24bit;
+    W := Bitmap.Width;
+    H := Bitmap.Height;
+    if Max(W, H) < 48 then
+      B.Assign(Bitmap)
+    else
+    begin
+      ProportionalSize(48, 48, W, H);
+      DoResize(W, H, Bitmap, B);
+    end;
+    ImgMain.Picture.Graphic := B;
+  finally
+    B.Free;
+  end;
 end;
 
 procedure TFormChangeGroup.RelodDllNames;
@@ -239,7 +256,7 @@ begin
  GraphicSelect1.Showgaleries:=true;
 end;
 
-procedure TFormChangeGroup.Image1Click(Sender: TObject);
+procedure TFormChangeGroup.ImgMainClick(Sender: TObject);
 var
   p : Tpoint;
 begin
@@ -348,7 +365,7 @@ begin
  ComboBoxEx1.Text:=TEXT_MES_GROUPSA;
 end;
 
-procedure TFormChangeGroup.PopupMenu1Popup(Sender: TObject);
+procedure TFormChangeGroup.PmLoadFromFilePopup(Sender: TObject);
 begin
  LoadFromFile1.Visible:= not Saving;
 end;

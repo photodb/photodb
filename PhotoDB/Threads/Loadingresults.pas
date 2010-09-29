@@ -1020,7 +1020,10 @@ begin
   end;
   //Loading big images
   if fPictureSize<>ThImageSize then
-    (ThreadForm as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(ThreadForm,StateID,nil,fPictureSize,fData));
+  begin
+    (ThreadForm as TSearchForm).NewFormSubState;
+    (ThreadForm as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(ThreadForm,(ThreadForm as TSearchForm).SubStateID,nil,fPictureSize,fData, True));
+  end;
  except
  end;
 end;

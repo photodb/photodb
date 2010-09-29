@@ -2,22 +2,20 @@ unit uExplorerThreadPool;
 
 interface
 
-uses Windows, Math, Classes, SysUtils, SyncObjs, dolphin_db, ExplorerTypes, uThreadForm, uThreadEx, uTime;
+uses Windows, Math, Classes, SysUtils, SyncObjs, dolphin_db, ExplorerTypes,
+     uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory;
 
 type
-  TExplorerThreadPool = class(TObject)
-  private
-    FAvaliableThreadList : TList;
-    FBusyThreadList : TList;
-    FSync : TCriticalSection;
-    procedure ThreadsCheck(Thread : TThreadEx);
+  TExplorerThreadPool = class(TThreadPoolCustom)
+  protected
+    procedure AddNewThread(Thread : TMultiCPUThread); override;
   public
     constructor Create;
     destructor Destroy; override;
     class function Instance : TExplorerThreadPool;
-    procedure ExtractImage(Sender : TThreadEx; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);   
-    procedure ExtractDirectoryPreview(Sender : TThreadEx; DirectoryPath: string; FileID : TGUID);
-    procedure ExtractBigImage(Sender : TThreadEx; FileName: string; Rotated : Integer; FileID : TGUID);
+    procedure ExtractImage(Sender : TMultiCPUThread; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);
+    procedure ExtractDirectoryPreview(Sender : TMultiCPUThread; DirectoryPath: string; FileID : TGUID);
+    procedure ExtractBigImage(Sender : TMultiCPUThread; FileName: string; Rotated : Integer; FileID : TGUID);
   end;
 
 implementation
@@ -29,69 +27,22 @@ var
 
 { TExplorerThreadPool }
 
+procedure TExplorerThreadPool.AddNewThread(Thread: TMultiCPUThread);
+begin
+  if (Thread <> nil) and (FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX_THREADS_USE, ProcessorCount + 1)) then
+    FAvaliableThreadList.Add(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, TExplorerThread(Thread).ExplorerInfo, TExplorerForm(Thread.ThreadForm), TExplorerThread(Thread).FUpdaterInfo, Thread.StateID));
+end;
+
 constructor TExplorerThreadPool.Create;
 begin
-  FAvaliableThreadList := TList.Create;
-  FBusyThreadList := TList.Create;
-  FSync := TCriticalSection.Create;
+  inherited;
 end;
 
 destructor TExplorerThreadPool.Destroy;
-var
-  I : Integer;
 begin
-  ThreadsCheck(nil);
-  for I := 0 to FAvaliableThreadList.Count - 1 do
-  begin
-    TExplorerThread(FAvaliableThreadList[I]).FThreadPreviewMode := THREAD_PREVIEW_MODE_EXIT;
-    SetEvent(TExplorerThread(FAvaliableThreadList[I]).SyncEvent);
-  end;
-
-  FSync.Free;
-  FAvaliableThreadList.Free;
-  FBusyThreadList.Free;
-  inherited;
-end;   
-
-procedure TExplorerThreadPool.ThreadsCheck(Thread : TThreadEx);
-const
-  MAX = 4;
-var
-  ThreadHandles : array[0 .. MAX - 1] of THandle;
-  I : Integer;
-  S : string;
-begin
-  if (Thread <> nil) and (FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX, ProcessorCount + 1)) then
-    FAvaliableThreadList.Add(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, TExplorerThread(Thread).ExplorerInfo, TExplorerForm(Thread.ThreadForm), TExplorerThread(Thread).FUpdaterInfo, Thread.StateID));
-
-  while FAvaliableThreadList.Count = 0 do
-  begin
-    for I := FBusyThreadList.Count - 1 downto 0 do
-    begin   
-      if not TExplorerThread(FBusyThreadList[I]).FPreviewInProgress then
-      begin
-        FAvaliableThreadList.Add(FBusyThreadList[I]);
-        FBusyThreadList.Delete(I);
-      end;
-    end;
-
-    if FAvaliableThreadList.Count > 0 then
-      Break;
-
-    for I := 0 to FBusyThreadList.Count - 1 do
-      ThreadHandles[I] := TExplorerThread(FBusyThreadList[I]).FEvent;
-
-    S := 'WaitForMultipleObjects: ' + IntToStr(FBusyThreadList.Count) + ' - ';
-    for I := 0 to FBusyThreadList.Count - 1 do
-      S := S + ',' + IntToStr(TExplorerThread(FBusyThreadList[I]).FEvent);
-    TW.I.Start(S);
-    WaitForMultipleObjects(FBusyThreadList.Count, @ThreadHandles[0], False, INFINITE);
-
-    TW.I.Start('WaitForMultipleObjects END');
-  end;
 end;
 
-procedure TExplorerThreadPool.ExtractImage(Sender : TThreadEx; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);
+procedure TExplorerThreadPool.ExtractImage(Sender : TMultiCPUThread; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);
 var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
@@ -102,13 +53,10 @@ begin
     if Thread = nil then
       raise Exception.Create('Sender is not TExplorerThread!');
 
-    ThreadsCheck(Sender);
+    Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
 
-    if FAvaliableThreadList.Count > 0 then
+    if Avaliablethread <> nil then
     begin
-      Avaliablethread := FAvaliableThreadList[0];
-      FAvaliableThreadList.Remove(Avaliablethread);
-      FBusyThreadList.Add(Avaliablethread);
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
@@ -117,18 +65,16 @@ begin
       Avaliablethread.FInfo := Info;
       Avaliablethread.IsCryptedFile := CryptedFile;
       Avaliablethread.FFileID := FileID;
-      Avaliablethread.FThreadPreviewMode := THREAD_PREVIEW_MODE_IMAGE;
-      Avaliablethread.FPreviewInProgress := True;  
-      Thread.RegisterSubThread(Avaliablethread);
-      TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
-      SetEvent(TExplorerThread(Avaliablethread).SyncEvent);
-    end
+      Avaliablethread.Mode := THREAD_PREVIEW_MODE_IMAGE;
+
+      StartThread(Thread, Avaliablethread);
+    end;
   finally
     FSync.Leave;
   end;
 end;
 
-procedure TExplorerThreadPool.ExtractBigImage(Sender: TThreadEx;
+procedure TExplorerThreadPool.ExtractBigImage(Sender: TMultiCPUThread;
   FileName: string; Rotated: Integer; FileID: TGUID);
 var
   Thread : TExplorerThread;
@@ -140,13 +86,10 @@ begin
     if Thread = nil then
       raise Exception.Create('Sender is not TExplorerThread!');
 
-    ThreadsCheck(Sender);
+    Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
 
-    if FAvaliableThreadList.Count > 0 then
+    if Avaliablethread <> nil then
     begin
-      Avaliablethread := FAvaliableThreadList[0];
-      FAvaliableThreadList.Remove(Avaliablethread);
-      FBusyThreadList.Add(Avaliablethread);
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
@@ -156,18 +99,16 @@ begin
       Avaliablethread.FInfo.ItemRotate := Rotated;
       Avaliablethread.IsCryptedFile := False;
       Avaliablethread.FFileID := FileID;
-      Avaliablethread.FThreadPreviewMode := THREAD_PREVIEW_MODE_BIG_IMAGE;
-      Avaliablethread.FPreviewInProgress := True;
-      Thread.RegisterSubThread(Avaliablethread);
-      TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
-      SetEvent(TExplorerThread(Avaliablethread).SyncEvent);
-    end
+      Avaliablethread.Mode := THREAD_PREVIEW_MODE_BIG_IMAGE;
+
+      StartThread(Thread, Avaliablethread);
+    end;
   finally
     FSync.Leave;
   end;
 end;
 
-procedure TExplorerThreadPool.ExtractDirectoryPreview(Sender: TThreadEx;
+procedure TExplorerThreadPool.ExtractDirectoryPreview(Sender: TMultiCPUThread;
   DirectoryPath: string; FileID: TGUID);
 var
   Thread : TExplorerThread;
@@ -179,13 +120,10 @@ begin
     if Thread = nil then
       raise Exception.Create('Sender is not TExplorerThread!');
 
-    ThreadsCheck(Sender);
+    Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
 
-    if FAvaliableThreadList.Count > 0 then
+    if Avaliablethread <> nil then
     begin
-      Avaliablethread := FAvaliableThreadList[0];
-      FAvaliableThreadList.Remove(Avaliablethread);
-      FBusyThreadList.Add(Avaliablethread);   
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
@@ -194,12 +132,10 @@ begin
       Avaliablethread.FInfo.ItemFileName := DirectoryPath;
       Avaliablethread.IsCryptedFile := False;
       Avaliablethread.FFileID := FileID;
-      Avaliablethread.FThreadPreviewMode := THREAD_PREVIEW_MODE_DIRECTORY;  
-      Avaliablethread.FPreviewInProgress := True;
-      Thread.RegisterSubThread(Avaliablethread);
-      TW.I.Start('Resume thread:' + IntToStr(Avaliablethread.ThreadID));
-      SetEvent(TExplorerThread(Avaliablethread).SyncEvent);
-    end
+      Avaliablethread.Mode := THREAD_PREVIEW_MODE_DIRECTORY;
+
+      StartThread(Thread, Avaliablethread);
+    end;
   finally
     FSync.Leave;
   end;
@@ -217,7 +153,6 @@ initialization
 
 finalization
 
-  if ExplorerThreadPool <> nil then
-    FreeAndNil(ExplorerThreadPool);
+  F(ExplorerThreadPool);
 
 end.

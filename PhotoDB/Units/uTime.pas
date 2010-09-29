@@ -5,7 +5,7 @@ interface
 uses Classes, Windows, SysUtils, SyncObjs, uMemory;
 
 {$DEFINE _STARTUP}
-{$DEFINE _PROFILER}
+{$DEFINE PROFILER}
 {$DEFINE _MULTIFILES}
 {$DEFINE MULTITHREAD}
 

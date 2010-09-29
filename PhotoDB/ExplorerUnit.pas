@@ -3155,7 +3155,6 @@ end;
 procedure TExplorerForm.AddInfoAboutFile(Info : TExplorerFileInfos);
 var
   I : Integer;
-  B : Boolean;
 begin
   for I := 0 to FFilesInfo.Count - 1 do
     if FFilesInfo[I].FileName = Info[0].FileName then
@@ -7540,19 +7539,19 @@ begin
     ToolBarNormalImageList.Height:=16;
   end;
 
- AddIcon('EXPLORER_BACK');
- AddIcon('EXPLORER_UP');
- AddIcon('EXPLORER_GO');
- AddIcon('EXPLORER_CUT');
- AddIcon('EXPLORER_COPY');
- AddIcon('EXPLORER_PASTE');
- AddIcon('EXPLORER_DELETE');
- AddIcon('EXPLORER_VIEW');
- AddIcon('EXPLORER_ZOOM_OUT');
- AddIcon('EXPLORER_ZOOM_IN');
- AddIcon('EXPLORER_SEARCH');
- AddIcon('EXPLORER_OPTIONS');
- AddIcon('EXPLORER_BREAK');
+  AddIcon('EXPLORER_BACK');
+  AddIcon('EXPLORER_UP');
+  AddIcon('EXPLORER_GO');
+  AddIcon('EXPLORER_CUT');
+  AddIcon('EXPLORER_COPY');
+  AddIcon('EXPLORER_PASTE');
+  AddIcon('EXPLORER_DELETE');
+  AddIcon('EXPLORER_VIEW');
+  AddIcon('EXPLORER_ZOOM_OUT');
+  AddIcon('EXPLORER_ZOOM_IN');
+  AddIcon('EXPLORER_SEARCH');
+  AddIcon('EXPLORER_OPTIONS');
+  AddIcon('EXPLORER_BREAK');
 
 end;
 

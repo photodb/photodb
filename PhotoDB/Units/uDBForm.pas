@@ -3,29 +3,49 @@ unit uDBForm;
 interface
 
 uses
-  Forms, uTranslate;
+  Forms, Classes, uTranslate;
 
 type
   TDBForm = class(TForm)
+  private
+    FIsTranslating: Boolean;
   protected
     function GetFormID : string; virtual; abstract;
   public
+    constructor Create(AOwner : TComponent); override;
     function L(StringToTranslate : string) : string;
-    function LA(StringToTranslate : string) : string;
+    procedure BeginTranslate;
+    procedure EndTranslate;
   end;
 
 implementation
 
 { TDBForm }
 
-function TDBForm.L(StringToTranslate: string): string;
+procedure TDBForm.BeginTranslate;
 begin
-  Result := TTranslateManager.Instance.Translate(StringToTranslate, GetFormID);
+  TTranslateManager.Instance.BeginTranslate;
+  FIsTranslating := True;
 end;
 
-function TDBForm.LA(StringToTranslate: string): string;
+constructor TDBForm.Create(AOwner: TComponent);
 begin
-  Result := TTranslateManager.Instance.TA(StringToTranslate, GetFormID);
+  FIsTranslating := False;
+  inherited;
+end;
+
+procedure TDBForm.EndTranslate;
+begin
+  FIsTranslating := False;
+  TTranslateManager.Instance.EndTranslate;
+end;
+
+function TDBForm.L(StringToTranslate: string): string;
+begin
+  if FIsTranslating then
+    Result := TTranslateManager.Instance.Translate(StringToTranslate, GetFormID)
+  else
+    Result := TTranslateManager.Instance.TA(StringToTranslate, GetFormID);
 end;
 
 end.

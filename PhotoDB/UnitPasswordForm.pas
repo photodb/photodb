@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt, Language, DB,
-  uVistaFuncs, win32crc, Menus, Clipbrd, UnitDBDeclare;
+  Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt, DB,
+  uVistaFuncs, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
+  uDBForm, uTranslate;
 
 type
   PasswordType = Integer;
@@ -17,8 +18,7 @@ const
   PASS_TYPE_IMAGES_CRC = 3;
 
 type
-  TPassWordForm = class(TForm)
-    EdPassword: TEdit;
+  TPassWordForm = class(TDBForm)
     LbTitle: TLabel;
     BtCancel: TButton;
     BtOk: TButton;
@@ -34,6 +34,7 @@ type
     PmCloseAction: TPopupMenu;
     CloseDialog1: TMenuItem;
     Skipthisfiles1: TMenuItem;
+    EdPassword: TWatermarkedEdit;
     procedure FormCreate(Sender: TObject);
     procedure LoadLanguage;
     procedure BtOkClick(Sender: TObject);
@@ -60,6 +61,8 @@ type
     DialogType: PasswordType;
     Skip: Boolean;
     PassIcon: TIcon;
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
     procedure ReallignControlsEx;
@@ -84,7 +87,7 @@ begin
   Application.CreateForm(TPassWordForm, PassWordForm);
   PassWordForm.FFileName := '';
   PassWordForm.DB := nil;
-  PassWordForm.LbTitle.Caption := TEXT_MES_MANY_FALES_PASSWORD_INFO;
+  PassWordForm.LbTitle.Caption := TA('Enter password for group of files (press "Show files" to see list) here:');
   PassWordForm.FCRC := CRC;
   PassWordForm.DialogType := PASS_TYPE_IMAGES_CRC;
   PassWordForm.UseAsk := False;
@@ -104,7 +107,7 @@ begin
   Application.CreateForm(TPassWordForm, PassWordForm);
   PassWordForm.FFileName := FileName;
   PassWordForm.DB := nil;
-  PassWordForm.LbTitle.Caption := Format(TEXT_MES_ENTER_PASS_HERE, [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
   PassWordForm.UseAsk := False;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_FILE;
   PassWordForm.ReallignControlsEx;
@@ -123,7 +126,7 @@ begin
   PassWordForm.UseAsk := True;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_FILE;
   PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TEXT_MES_ENTER_PASS_HERE, [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
   PassWordForm.ShowModal;
   AskAgain := not PassWordForm.CbDoNotAskAgain.Checked;
   Result := PassWordForm.Password;
@@ -140,7 +143,7 @@ begin
   PassWordForm.UseAsk := False;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_BLOB;
   PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TEXT_MES_ENTER_PASS_HERE, [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
   PassWordForm.ShowModal;
   Result := PassWordForm.Password;
   PassWordForm.Release;
@@ -158,7 +161,7 @@ begin
   PassWordForm.FCRC := CRC;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_STENO;
   PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TEXT_MES_ENTER_PASS_HERE, [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
   PassWordForm.ShowModal;
   Result := PassWordForm.Password;
   PassWordForm.Release;
@@ -180,19 +183,25 @@ end;
 
 procedure TPassWordForm.LoadLanguage;
 begin
-  Caption := TEXT_MES_PASSWORD_NEEDED;
-  LbTitle.Caption := TEXT_MES_ENTER_PASS_HERE;
-  BtCancel.Caption := TEXT_MES_CANCEL;
-  BtOk.Caption := TEXT_MES_OK;
-  CbSavePassToSession.Caption := TEXT_MES_SAVE_PASS_SESSION;
-  CbSavePassPermanent.Caption := TEXT_MES_SAVE_PASS_IN_INI_DIRECTORY;
-  CbDoNotAskAgain.Caption := TEXT_MES_ASK_AGAIN;
-  BtCancelForFiles.Caption := TEXT_MES_SHOW_PASSWORD_FILE_LIST;
-  LbInfo.Caption := TEXT_MES_PASSWORD_FILE_LIST_INFO;
-  CloseDialog1.Caption := TEXT_MES_CLOSE_DIALOG;
-  Skipthisfiles1.Caption := TEXT_MES_SKIP_THIS_FILES;
-  BtHideDetails.Caption := TEXT_MES_CLOSE_PASSWORD_FILE_LIST;
-  CopyText1.Caption := TEXT_MES_COPY_TEXT;
+  BeginTranslate;
+  try
+    EdPassword.WatermarkText := L('Enter your password here');
+    Caption := L('Password requared');
+    LbTitle.Caption := L('Enter password to open file "%s" here:');
+    BtCancel.Caption := L('Cancel');
+    BtOk.Caption := L('OK');
+    CbSavePassToSession.Caption := L('Save password for session');
+    CbSavePassPermanent.Caption := L('Save password in settings');
+    CbDoNotAskAgain.Caption := L('Don''t ask again');
+    BtCancelForFiles.Caption := L('Show files');
+    LbInfo.Caption := L('These files have the same password (hashes are equals)');
+    CloseDialog1.Caption := L('Close');
+    Skipthisfiles1.Caption := L('Skip these files');
+    BtHideDetails.Caption := L('Hide list');
+    CopyText1.Caption := L('Copy text');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TPassWordForm.BtOkClick(Sender: TObject);
@@ -223,11 +232,8 @@ begin
     if CbSavePassPermanent.Checked then
       DBKernel.SavePassToINIDirectory(Password);
     Close;
-  end
-  else
-  begin
-    MessageBoxDB(Handle, TEXT_MES_PASSWORD_INVALID, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
-  end;
+  end else
+    MessageBoxDB(Handle, L('Password is invalid!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TPassWordForm.EdPasswordKeyPress(Sender: TObject; var Key: Char);
@@ -268,6 +274,11 @@ begin
     Password := '';
     Close;
   end;
+end;
+
+function TPassWordForm.GetFormID: string;
+begin
+  Result := 'PasswordForm';
 end;
 
 procedure TPassWordForm.ReallignControlsEx;

@@ -4,8 +4,8 @@ object FormChangeGroup: TFormChangeGroup
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Change Group'
-  ClientHeight = 302
-  ClientWidth = 268
+  ClientHeight = 338
+  ClientWidth = 328
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,9 +15,12 @@ object FormChangeGroup: TFormChangeGroup
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  DesignSize = (
+    328
+    338)
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
+  object ImgMain: TImage
     Left = 4
     Top = 4
     Width = 50
@@ -75,8 +78,8 @@ object FormChangeGroup: TFormChangeGroup
       A49FCDFA763D13C63058EA7269B26B9729A7D95940C82112869A56662490003C
       70077E95E4B3797E7C9E496316E3B0B0E76E78CD24923CAE5E476776392CC724
       D36B82ACE12D211B7E2CE9A709AD672BFE0BFAF99FFFD9}
-    PopupMenu = PopupMenu1
-    OnClick = Image1Click
+    PopupMenu = PmLoadFromFile
+    OnClick = ImgMainClick
   end
   object CommentLabel: TLabel
     Tag = 2
@@ -115,116 +118,137 @@ object FormChangeGroup: TFormChangeGroup
   object Label3: TLabel
     Tag = 2
     Left = 8
-    Top = 192
+    Top = 227
     Width = 77
     Height = 13
+    Anchors = [akLeft, akBottom]
     Caption = 'Related Groups:'
+    ExplicitTop = 192
   end
-  object Edit1: TEdit
-    Left = 60
-    Top = 12
-    Width = 201
-    Height = 35
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -24
-    Font.Name = 'Times New Roman'
-    Font.Style = []
-    ParentColor = True
-    ParentFont = False
-    TabOrder = 0
-    Text = '<NewGroupName>'
-  end
-  object Memo1: TMemo
+  object MemComments: TMemo
     Left = 4
     Top = 76
-    Width = 257
+    Width = 317
     Height = 41
+    Anchors = [akLeft, akTop, akRight]
     Lines.Strings = (
       '<Comment>')
-    ParentColor = True
-    TabOrder = 1
+    TabOrder = 0
+    ExplicitWidth = 257
   end
   object Button1: TButton
-    Left = 190
-    Top = 280
+    Left = 250
+    Top = 315
     Width = 75
     Height = 17
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
-    TabOrder = 2
+    TabOrder = 1
     OnClick = Button1Click
+    ExplicitLeft = 190
+    ExplicitTop = 280
   end
   object Button2: TButton
-    Left = 111
-    Top = 280
+    Left = 171
+    Top = 315
     Width = 75
     Height = 17
+    Anchors = [akRight, akBottom]
     Caption = 'Cancel'
-    TabOrder = 3
+    TabOrder = 2
     OnClick = Button2Click
+    ExplicitLeft = 111
+    ExplicitTop = 280
   end
   object RadioButton1: TRadioButton
     Left = 8
-    Top = 256
+    Top = 291
     Width = 113
     Height = 17
+    Anchors = [akLeft, akBottom]
     Caption = 'Common Group'
     Checked = True
-    TabOrder = 4
+    TabOrder = 3
     TabStop = True
+    ExplicitTop = 256
   end
   object RadioButton2: TRadioButton
     Left = 136
-    Top = 256
+    Top = 291
     Width = 113
     Height = 17
+    Anchors = [akLeft, akBottom]
     Caption = 'Private Group'
-    TabOrder = 5
+    TabOrder = 4
+    ExplicitTop = 256
   end
-  object Memo2: TMemo
+  object MemKeywords: TMemo
     Left = 4
     Top = 140
-    Width = 257
-    Height = 29
+    Width = 317
+    Height = 64
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Lines.Strings = (
       '<Key Words>')
-    ParentColor = True
-    TabOrder = 6
+    TabOrder = 5
+    ExplicitWidth = 257
+    ExplicitHeight = 29
   end
-  object CheckBox1: TCheckBox
+  object CbAddkeywords: TCheckBox
     Left = 8
-    Top = 173
-    Width = 249
+    Top = 208
+    Width = 252
     Height = 17
+    Anchors = [akLeft, akBottom]
     Caption = 'Auto Add keyWords'
-    TabOrder = 7
+    TabOrder = 6
+    ExplicitTop = 173
   end
   object ComboBoxEx1: TComboBoxEx
     Left = 8
-    Top = 208
-    Width = 255
+    Top = 243
+    Width = 315
     Height = 22
     ItemsEx = <>
-    ItemHeight = 16
-    TabOrder = 8
+    Anchors = [akLeft, akRight, akBottom]
+    TabOrder = 7
     OnDblClick = ComboBoxEx1DblClick
     OnDropDown = ComboBoxEx1DropDown
     OnKeyPress = ComboBoxEx1KeyPress
     OnSelect = ComboBoxEx1Select
     Images = GroupsImageList
-    DropDownCount = 8
+    ExplicitTop = 208
+    ExplicitWidth = 255
   end
-  object CheckBox2: TCheckBox
+  object CbInclude: TCheckBox
     Left = 8
-    Top = 235
-    Width = 253
+    Top = 270
+    Width = 313
     Height = 17
+    Anchors = [akLeft, akRight, akBottom]
     Caption = 'Include In Quick Lists'
-    TabOrder = 9
+    TabOrder = 8
+    ExplicitTop = 235
+    ExplicitWidth = 253
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
-    Left = 160
+  object EdwName: TWatermarkedEdit
+    Left = 60
+    Top = 8
+    Width = 260
+    Height = 37
+    Anchors = [akLeft, akTop, akRight]
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -24
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 9
+    WatermarkText = 'Enter group name'
+  end
+  object PmLoadFromFile: TPopupMenu
+    OnPopup = PmLoadFromFilePopup
+    Left = 120
     Top = 64
     object LoadFromFile1: TMenuItem
       Caption = 'Load From File'
@@ -232,8 +256,8 @@ object FormChangeGroup: TFormChangeGroup
     end
   end
   object GroupsImageList: TImageList
-    Left = 224
-    Top = 64
+    Left = 192
+    Top = 120
   end
   object GraphicSelect1: TGraphicSelectEx
     ThWidth = 48

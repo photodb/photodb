@@ -483,8 +483,7 @@ object Viewer: TViewer
     Top = 104
   end
   object DragImageList: TImageList
-    BlendColor = clFuchsia
-    BkColor = clFuchsia
+    ColorDepth = cd32Bit
     Height = 200
     Width = 200
     Left = 432

@@ -38,21 +38,6 @@ object PassWordForm: TPassWordForm
     Visible = False
     WordWrap = True
   end
-  object EdPassword: TEdit
-    Left = 8
-    Top = 42
-    Width = 305
-    Height = 32
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -19
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    PasswordChar = '*'
-    TabOrder = 0
-    OnKeyPress = EdPasswordKeyPress
-  end
   object BtCancel: TButton
     Left = 160
     Top = 130
@@ -129,6 +114,22 @@ object PassWordForm: TPassWordForm
     TabOrder = 8
     Visible = False
     OnClick = BtHideDetailsClick
+  end
+  object EdPassword: TWatermarkedEdit
+    Left = 8
+    Top = 42
+    Width = 305
+    Height = 32
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -19
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    PasswordChar = '*'
+    TabOrder = 0
+    OnKeyPress = EdPasswordKeyPress
+    WatermarkText = 'Enter your password here'
   end
   object PmCopyFileList: TPopupMenu
     Left = 120

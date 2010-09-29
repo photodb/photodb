@@ -996,6 +996,8 @@ destructor TADOConnections.Destroy;
 var
   I : Integer;
 begin
+  for I := 0 to FConnections.Count - 1 do
+    TADODBConnection(FConnections[I]).ADOConnection.Free;
   FreeList(FConnections);
   F(FSync);
   inherited;

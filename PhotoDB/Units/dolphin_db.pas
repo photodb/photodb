@@ -4047,53 +4047,55 @@ var
   FJPG: TJpegImage;
   OpenPictureDialog: DBOpenPictureDialog;
 begin
-  OpenPictureDialog := DBOpenPictureDialog.Create();
-  OpenPictureDialog.Filter := GetGraphicFilter;
-  if OpenPictureDialog.Execute then
-  begin
-    Pic := TPicture.Create;
-    try
-      Pic.LoadFromFile(OpenPictureDialog.FileName);
-    except
+  OpenPictureDialog := DBOpenPictureDialog.Create;
+  try
+    OpenPictureDialog.Filter := GetGraphicFilter;
+    if OpenPictureDialog.Execute then
+    begin
+      Pic := TPicture.Create;
+      try
+        Pic.LoadFromFile(OpenPictureDialog.FileName);
+      except
+        Pic.Free;
+        OpenPictureDialog.Free;
+        Exit;
+      end;
+      JpegScale(Pic.Graphic, 48, 48);
+      Bitmap := TBitmap.Create;
+      Bitmap.PixelFormat := Pf24Bit;
+      Bitmap.Assign(Pic.Graphic);
       Pic.Free;
-      OpenPictureDialog.Free;
-      Exit;
+      Bmp := Tbitmap.Create;
+      Bmp.PixelFormat := Pf24bit;
+      if Bitmap.Width > Bitmap.Height then
+      begin
+        if Bitmap.Width > 48 then
+          Bmp.Width := 48
+        else
+          Bmp.Width := Bitmap.Width;
+        Bmp.Height := Round(Bmp.Width * (Bitmap.Height / Bitmap.Width));
+      end else
+      begin
+        if Bitmap.Height > 48 then
+          Bmp.Height := 48
+        else
+          Bmp.Height := Bitmap.Height;
+        Bmp.Width := Round(Bmp.Height * (Bitmap.Width / Bitmap.Height));
+      end;
+      DoResize(Bmp.Width, Bmp.Height, Bitmap, Bmp);
+      Bitmap.Free;
+      Fjpg := TJPegImage.Create;
+      Fjpg.CompressionQuality := DBJpegCompressionQuality;
+      Fjpg.Assign(Bmp);
+      Fjpg.JPEGNeeded;
+      if Image.Picture.Graphic = nil then
+        Image.Picture.Graphic := TJpegImage.Create;
+      Image.Picture.Graphic.Assign(Fjpg);
+      Image.Refresh;
+      Fjpg.Free;
+      Bmp.Free;
     end;
-    JpegScale(Pic.Graphic, 48, 48);
-    Bitmap := TBitmap.Create;
-    Bitmap.PixelFormat := Pf24Bit;
-    Bitmap.Assign(Pic.Graphic);
-    Pic.Free;
-    Bmp := Tbitmap.Create;
-    Bmp.PixelFormat := Pf24bit;
-    if Bitmap.Width > Bitmap.Height then
-    begin
-      if Bitmap.Width > 48 then
-        Bmp.Width := 48
-      else
-        Bmp.Width := Bitmap.Width;
-      Bmp.Height := Round(Bmp.Width * (Bitmap.Height / Bitmap.Width));
-    end
-    else
-    begin
-      if Bitmap.Height > 48 then
-        Bmp.Height := 48
-      else
-        Bmp.Height := Bitmap.Height;
-      Bmp.Width := Round(Bmp.Height * (Bitmap.Width / Bitmap.Height));
-    end;
-    DoResize(Bmp.Width, Bmp.Height, Bitmap, Bmp);
-    Bitmap.Free;
-    Fjpg := TJPegImage.Create;
-    Fjpg.CompressionQuality := DBJpegCompressionQuality;
-    Fjpg.Assign(Bmp);
-    Fjpg.JPEGNeeded;
-    if Image.Picture.Graphic = nil then
-      Image.Picture.Graphic := TJpegImage.Create;
-    Image.Picture.Graphic.Assign(Fjpg);
-    Image.Refresh;
-    Fjpg.Free;
-    Bmp.Free;
+  finally
     OpenPictureDialog.Free;
   end;
 end;

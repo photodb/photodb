@@ -197,6 +197,7 @@ object SearchForm: TSearchForm
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 4
+      Visible = False
       DesignSize = (
         178
         326)
@@ -1529,6 +1530,7 @@ object SearchForm: TSearchForm
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = []
+    AutoRegister = False
     OptimizedMove = True
     AllowAsyncTransfer = True
     Left = 322
@@ -1613,7 +1615,7 @@ object SearchForm: TSearchForm
     end
   end
   object GroupsImageList: TImageList
-    Left = 577
+    Left = 641
   end
   object InsertSpesialQueryPopupMenu: TPopupMenu
     Left = 521
@@ -1724,6 +1726,7 @@ object SearchForm: TSearchForm
   object DropFileTarget3: TDropFileTarget
     DragTypes = [dtCopy, dtLink]
     ShowImage = False
+    AutoRegister = False
     OptimizedMove = True
     Left = 457
     Top = 128
@@ -1738,18 +1741,21 @@ object SearchForm: TSearchForm
     Top = 128
   end
   object SearchImageList: TImageList
-    Left = 513
+    Left = 569
   end
   object ToolBarImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 32
     Width = 32
-    Left = 545
+    Left = 657
+    Top = 144
   end
   object DisabledToolBarImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 32
     Width = 32
-    Left = 609
-    Top = 1
+    Left = 657
+    Top = 97
   end
   object PopupMenuZoomDropDown: TPopupMenu
     OnPopup = PopupMenuZoomDropDownPopup

@@ -16,7 +16,7 @@ uses
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
-  uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources,
+  uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources, uMemory,
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM;
 
 type
@@ -381,7 +381,7 @@ type
     procedure ShowDateOptionsLinkClick(Sender: TObject);
     procedure LoadSizes;
     function FileNameExistsInList(FileName : string) : boolean;
-    procedure ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap);
+    function ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap) : Boolean;
 
     procedure ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
@@ -469,6 +469,7 @@ type
     procedure FetchProgress(DataSet: TCustomADODataSet;
                             Progress, MaxProgress: Integer; var EventStatus: TEventStatus);
     procedure DBRangeOpened(Sender : TObject; DS : TDataSet);
+    procedure ClearItems;
     { Private declarations }
   public
     WindowID : TGUID;
@@ -566,7 +567,7 @@ begin
  Label7.Caption:=TEXT_MES_CALCULATING+'...';
  If Creating then Exit;
 
-  ElvMain.Items.Clear;
+  ClearItems;
   FBitmapImageList.Clear;
   PbProgress.Text:=TEXT_MES_INITIALIZE+'...';
   PbProgress.position:=0;
@@ -623,16 +624,17 @@ const
 
 var
   Menus : array[0..n-1] of TMenuItem;
-  i : integer;
+  I : integer;
   MainMenuScript : string;
+  Ico : TIcon;
 begin
   TW.I.Start('S -> FormCreate');
   FCanBackgroundSearch := False;
   FilesToDrag := TStringList.Create;
   FSearchInfo := TSearchInfo.Create;
-  fListUpdating:=false;
-  GroupsLoaded:=false;
-  SearchEdit.ShowDropDownMenu:=false;
+  FListUpdating := False;
+  GroupsLoaded := False;
+  SearchEdit.ShowDropDownMenu := False;
 
   SearchEdit.NullText := TEXT_MES_NULL_TEXT;
 
@@ -684,7 +686,7 @@ begin
   tbStopOperation.Enabled := False;
 
   ExplorerManager.LoadEXIF;
-  WindowID:=GetGUID;
+  WindowID := GetGUID;
   TW.I.Start('S -> TScript');
   aScript := TScript.Create('');
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
@@ -763,15 +765,18 @@ begin
   FCanBackgroundSearch := True;
   SearchEditChange(Self);
 
- TW.I.Start('S -> LoadToolBarIcons');
- LoadToolBarIcons;
- TbMain.ShowCaptions := True;
- TbMain.AutoSize := True;
+  TW.I.Start('S -> LoadToolBarIcons');
+  LoadToolBarIcons;
+  TbMain.ShowCaptions := True;
+  TbMain.AutoSize := True;
 
- TW.I.Start('S -> RequaredDBKernelIcons');
- TLoad.Instance.RequaredDBKernelIcons;
- Image3.Picture.Graphic:=TIcon.Create;
- DBkernel.ImageList.GetIcon(DB_IC_GROUPS,Image3.Picture.Icon);
+  TW.I.Start('S -> RequaredDBKernelIcons');
+  TLoad.Instance.RequaredDBKernelIcons;
+
+  Ico := TIcon.Create;
+  DBkernel.ImageList.GetIcon(DB_IC_GROUPS, Ico);
+  Image3.Picture.Graphic := Ico;
+  Ico.Free;
 
   TW.I.Start('S -> Create - END');
   FW7TaskBar := CreateTaskBarInstance;
@@ -1432,6 +1437,7 @@ end;
 procedure TSearchForm.FormDestroy(Sender: TObject);
 begin
   GOM.RemoveObj(Self);
+  ClearItems;
   DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
   DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
   aScript.Free;
@@ -1442,10 +1448,9 @@ begin
   DBKernel.UnRegisterChangesID(self,ChangedDBDataByID);
   DBkernel.SaveCurrentColorTheme;
   SaveWindowPos1.SavePosition;
-  FBitmapImageList.Free;
-  FBitmapImageList:=nil;
+  F(FBitmapImageList);
   FormManager.UnRegisterMainForm(Self);
-  Creating:=true;
+  Creating := True;
 
   FSearchInfo.Free;
 end;
@@ -1458,16 +1463,17 @@ end;
 
 procedure TSearchForm.BreakOperation(Sender: TObject);
 begin
- if tbStopOperation.Enabled then
- tbStopOperation.Click;
- PbProgress.Text:=TEXT_MES_STOPING+'...';
- WlStartStop.Onclick:= DoSearchNow;
- WlStartStop.Text:=TEXT_MES_SEARCH;
- PbProgress.Text:=TEXT_MES_DONE;
- PbProgress.Position:=0;
- ElvMain.Show;
- BackGroundSearchPanel.Hide;
- ElvMain.Groups.EndUpdate;
+  StopLoadingList;
+  if TbStopOperation.Enabled then
+    TbStopOperation.Click;
+  PbProgress.Text := TEXT_MES_STOPING + '...';
+  WlStartStop.Onclick := DoSearchNow;
+  WlStartStop.Text := TEXT_MES_SEARCH;
+  PbProgress.Text := TEXT_MES_DONE;
+  PbProgress.Position := 0;
+  ElvMain.Show;
+  BackGroundSearchPanel.Hide;
+  ElvMain.Groups.EndUpdate;
 end;
 
 procedure TSearchForm.SelectAll1Click(Sender: TObject);
@@ -1641,7 +1647,8 @@ begin
             FileName := SearchRecord.FileName;
             Rotation := SearchRecord.Rotation;
           end;
-          RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, StateID, nil, FPictureSize, FilesToUpdate, True));
+          NewFormSubState;
+          RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, FilesToUpdate, True));
         end;
 
         ElvMain.Items[I].Invalidate(False);
@@ -1650,9 +1657,25 @@ begin
   end
 end;
 
+procedure TSearchForm.ClearItems;
+var
+  I : Integer;
+  DataObject : TDataObject;
+begin
+  for I := 0 to ElvMain.Items.Count - 1 do
+  begin
+    DataObject := TDataObject(ElvMain.Items[I].Data);
+    TSearchRecord(DataObject.Data).Free;
+    DataObject.Free;
+    ElvMain.Items[I].Data := nil;
+  end;
+  ElvMain.Items.Clear;
+end;
+
 procedure TSearchForm.Memo1KeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key='"' then key:='''';
+  if Key = '"' then
+    Key := '''';
 end;
 
 procedure TSearchForm.ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -3745,7 +3768,7 @@ begin
   end;
 end;
 
-procedure TSearchForm.ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap);
+function TSearchForm.ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap) : Boolean;
 var
   I : Integer;
   SearchRecord : TSearchRecord;
@@ -3766,6 +3789,7 @@ begin
         Bitmap.Free;
       end;
       ListItem.Invalidate(True);
+      Result := True;
       Break;
     end;
   end;
@@ -3776,19 +3800,22 @@ var
   SelectedVisible : boolean;
 begin
   ElvMain.BeginUpdate;
-  SelectedVisible:=IsSelectedVisible;
-  FPictureSize:=SizeX;
-  LoadSizes();
-  BigImagesTimer.Enabled:=false;
-  BigImagesTimer.Enabled:=true;
+  try
+    SelectedVisible := IsSelectedVisible;
+    FPictureSize := SizeX;
+    LoadSizes;
+    BigImagesTimer.Enabled:=false;
+    BigImagesTimer.Enabled:=true;
 
-  ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
-  ElvMain.Groups.ReIndexItems;
-  ElvMain.Groups.Rebuild(true);
+    ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+    ElvMain.Groups.ReIndexItems;
+    ElvMain.Groups.Rebuild(true);
 
-  if SelectedVisible then
-    ElvMain.Selection.First.MakeVisible(emvTop);
-  ElvMain.EndUpdate();
+    if SelectedVisible then
+      ElvMain.Selection.First.MakeVisible(emvTop);
+  finally
+    ElvMain.EndUpdate;
+  end;
 end;
 
 procedure TSearchForm.ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -3817,7 +3844,8 @@ begin
   for I := 0 to ElvMain.Items.Count - 1 do
     Data.Add(GetSearchRecordFromItemData(ElvMain.Items[I]));
 
-  RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, StateID, nil, FPictureSize, Data));
+  NewFormSubState;
+  RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, Data, True));
 end;
 
 function TSearchForm.GetVisibleItems: TArStrings;
@@ -3873,7 +3901,7 @@ var
 begin
   SmallB := TBitmap.Create;
   try
-    SmallB.PixelFormat:=pf24bit;
+    SmallB.PixelFormat := pf24bit;
     if not LoadAllLIst then
     begin
       SearchGroupsImageList.Clear;
@@ -3894,18 +3922,20 @@ begin
         finally
           B.Free;
         end;
-       Caption:=TEXT_MES_ALL_GROUPS;
-       ImageIndex:=0;
+       Caption := TEXT_MES_ALL_GROUPS;
+       ImageIndex := 0;
       end;
       ComboBoxSearchGroups.ItemIndex:=0;
       Exit;
-     end;
-     Groups:=GetRegisterGroupList(True, False);
-     if GroupsLoaded then
-       Exit;
+    end;
+    if GroupsLoaded then
+      Exit;
 
-     for I := 0 to Length(Groups) - 1 do
-     begin
+    GroupsLoaded := True;
+    Groups := GetRegisterGroupList(True, False);
+
+    for I := 0 to Length(Groups) - 1 do
+    begin
       B := TBitmap.Create;
       try
         B.PixelFormat := pf24bit;
@@ -3932,10 +3962,11 @@ begin
         ImageIndex := I + 1;
       end;
     end;
+
+    FreeGroups(Groups);
   finally
     SmallB.Free;
   end;
-  GroupsLoaded := True;
 end;
 
 procedure TSearchForm.ComboBoxSearchGroupsSelect(Sender: TObject);
@@ -3962,8 +3993,12 @@ procedure TSearchForm.RebuildQueryList;
 var
   I, GroupIndex : Integer;
   GroupImage, GroupImageSmall : TBitmap;
-  GroupName : string;
+  GroupName: string;
+  CurrentText: string;
+  EditIndex: Integer;
 begin
+  CurrentText := SearchEdit.Text;
+  EditIndex := SearchEdit.ShowEditIndex;
   SearchEdit.ItemsEx.Clear;
   SearchImageList.Clear;
 
@@ -3999,6 +4034,8 @@ begin
       GroupImage.Free;
     end;
   end;
+  SearchEdit.Text := CurrentText;
+  SearchEdit.ShowEditIndex := EditIndex;
 end;
 
 procedure TSearchForm.AddNewSearchListEntry;
@@ -4055,40 +4092,45 @@ begin
   end;
 end;
 
-procedure TSearchForm.LoadToolBarIcons();
+procedure TSearchForm.LoadToolBarIcons;
 var
   UseSmallIcons : Boolean;
+  Ico : HIcon;
 
   procedure AddIcon(Name : String);
   begin
-    if UseSmallIcons then Name:=Name+'_SMALL';
-    ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
+    if UseSmallIcons then
+      Name := Name+ '_SMALL';
+
+    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, Ico);
+    DestroyIcon(Ico);
   end;
 
   procedure AddDisabledIcon(Name : String);
   var
-    I : integer;
+    I : Integer;
   begin
     if UseSmallIcons then
       Name := Name + '_SMALL';
+    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
     for I := 1 to 9 do
-      ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, LoadIcon(DBKernel.IconDllInstance, PWideChar(Name)));
+      ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, Ico);
+
+    DestroyIcon(Ico);
   end;
 
 begin
   UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
-  ToolButton5.Visible:=true;
+  ToolButton5.Visible := True;
 
   if UseSmallIcons then
   begin
-    ToolBarImageList.Width:=16;
-    ToolBarImageList.Height:=16;
-    DisabledToolBarImageList.Width:=16;
-    DisabledToolBarImageList.Height:=16;
+    ToolBarImageList.Width := 16;
+    ToolBarImageList.Height := 16;
+    DisabledToolBarImageList.Width := 16;
+    DisabledToolBarImageList.Height := 16;
   end;
-
-  ConvertTo32BitImageList(ToolBarImageList);
-  ConvertTo32BitImageList(DisabledToolBarImageList);
 
   AddIcon('SEARCH_FIND');
   AddIcon('SEARCH_SORT');
@@ -4220,7 +4262,6 @@ procedure TSearchForm.TbStopOperationClick(Sender: TObject);
 begin
   if tbStopOperation.Enabled then
   begin
-    tbStopOperation.Enabled := False;
     BreakOperation(Sender);
     NewFormState;
   end;
@@ -5186,6 +5227,6 @@ SearchManager := TManagerSearchs.create;
 
 finalization
 
-SearchManager.free;
+F(SearchManager);
 
 end.

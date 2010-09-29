@@ -89,12 +89,17 @@ begin
 
   FTranslateList := TList.Create;
   FTranslate := CreateXMLDoc;
+  FSync.Enter;
   try
-    FTranslate.load(LanguagePath);
-    LoadTranslationList;
-  except
-    on e : Exception do
-      EventLog(e.Message);
+    try
+      FTranslate.load(LanguagePath);
+      LoadTranslationList;
+    except
+      on e : Exception do
+        EventLog(e.Message);
+    end;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -201,9 +206,13 @@ end;
 { TLanguageScope }
 
 constructor TLanguageScope.Create(ScopeNode : IXMLDOMNode);
+var
+  NameAttr : IXMLDOMNode;
 begin
-  FTranslateList := TList.Create;   
-  FScope := ScopeNode.attributes.getNamedItem('name').text;
+  FTranslateList := TList.Create;
+  NameAttr := ScopeNode.attributes.getNamedItem('name');
+  if NameAttr <> nil then
+    FScope := NameAttr.text;
   LoadTranslateList(ScopeNode);
 end;
 
@@ -260,9 +269,17 @@ end;
 { TTranslate }
 
 constructor TTranslate.Create(Node: IXMLDOMNode);
+var
+  NameAttr : IXMLDOMNode;
+  ValueAttr : IXMLDOMNode;
 begin
-  FOriginal := Node.attributes.getNamedItem('name').text;
-  FTranslate := Node.attributes.getNamedItem('value').text;
+  NameAttr := Node.attributes.getNamedItem('name');
+  if NameAttr <> nil then
+    FOriginal := NameAttr.text;
+
+  ValueAttr := Node.attributes.getNamedItem('value');
+  if ValueAttr <> nil then
+    FTranslate := ValueAttr.text;
 end;
 
 initialization

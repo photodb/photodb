@@ -5,11 +5,13 @@ interface
 uses
   Windows, Classes, Forms, Dolphin_DB, SysUtils, Graphics, GraphicCrypt, Math,
   RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, ImageConverting,
-  UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx, uMemory;
+  UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx, uMemory,
+  uMultiCPUThreadManager;
 
 type
-  TSearchBigImagesLoaderThread = class(TThreadEx)
+  TSearchBigImagesLoaderThread = class(TMultiCPUThread)
   private
+    { Private declarations }
     FSender: TThreadForm;
     FOnDone: TNotifyEvent;
     FPictureSize : Integer;
@@ -20,167 +22,188 @@ type
     IntParam : Integer;
     BitmapParam : TBitmap;
     FI : Integer;
-    FUpdating : Boolean;
+    FMainThread : Boolean;
     FData : TSearchRecordArray;
-    { Private declarations }
+    FImageFileName : string;
+    FImageRotation : Integer;
   protected
     procedure Execute; override;
+    function IsVirtualTerminate : Boolean; override;
+    procedure DoMultiProcessorTask; override;
+    procedure ExtractBigImage(PictureSize : Integer; FileName: string; Rotation : Integer);
   public
     constructor Create(Sender : TThreadForm; SID : TGUID;
-      OnDone : TNotifyEvent; PictureSize : integer; Data : TSearchRecordArray; Updating : boolean = false);
+      OnDone : TNotifyEvent; PictureSize : Integer; Data : TSearchRecordArray; MainThread : Boolean);
     destructor Destroy; override;
     procedure VisibleUp(TopIndex: integer);
-    procedure GetVisibleFiles;  
-    procedure FileNameExists;  
-    procedure InitializeLoadingBigImages;  
+    procedure GetVisibleFiles;
+    procedure FileNameExists;
+    procedure InitializeLoadingBigImages;
     procedure SetProgressPosition;
     procedure ReplaceBigBitmap;
     procedure EndLoading;
-    procedure ValidateThread;
+    property ImageFileName : string read FImageFileName write FImageFileName;
+    property PictureSize : Integer read FPictureSize write FPictureSize;
+    property ImageRotation : Integer read FImageRotation write FImageRotation;
   end;
 
-  var
-    SearchUpdateBigImageThreadsCount : Integer = 0;
+var
+  SearchUpdateBigImageThreadsCount: Integer = 0;
 
 implementation
 
-uses Searching, Language, ExplorerThreadUnit;
+uses Searching, Language, uSearchThreadPool;
 
 constructor TSearchBigImagesLoaderThread.Create(Sender: TThreadForm; SID: TGUID; OnDone: TNotifyEvent; PictureSize: integer;
-  Data : TSearchRecordArray; Updating : Boolean = false);
-begin    
+  Data : TSearchRecordArray; MainThread : Boolean);
+begin
   inherited Create(Sender, SID);
   FSender := Sender;
   FOnDone := OnDone;
   FPictureSize := PictureSize;
   FData := Data;
-  FUpdating := Updating;
+  FMainThread := MainThread;
 end;
 
 procedure TSearchBigImagesLoaderThread.VisibleUp(TopIndex: integer);
 var
-  i, c : integer;
-  j : integer;
-  temp : TSearchRecord;
+  I, C: Integer;
+  J: Integer;
+  Temp: TSearchRecord;
 begin
- c:=TopIndex;
- for i:=0 to Length(FVisibleFiles)-1 do
- for j:=TopIndex to fData.Count-1 do
- begin
-  if FVisibleFiles[i]=fData[j].FileName then
-  begin
-   if c>=fData.Count then break;
-   temp:=fData[c];
-   fData[c]:=fData[j];
-   fData[j]:=temp;
-   inc(c);
-  end;
- end;   
+  C := TopIndex;
+  for I := 0 to Length(FVisibleFiles) - 1 do
+    for J := TopIndex to FData.Count - 1 do
+    begin
+      if FVisibleFiles[I] = FData[J].FileName then
+      begin
+        if C >= FData.Count then
+          Break;
+        Temp := FData[C];
+        FData[C] := FData[J];
+        FData[J] := Temp;
+        Inc(C);
+      end;
+    end;
 end;
 
 procedure TSearchBigImagesLoaderThread.Execute;
 var
   I : Integer;
-  FGraphicClass : TGraphicClass;
-  FGraphic : TGraphic;
-  PassWord, FileName : String;
-  FBit, TempBitmap : TBitmap;
-  W, H : integer;
 begin
   FreeOnTerminate := True;
 
-  while SearchUpdateBigImageThreadsCount < (ProcessorCount + 1) do
+  if not FMainThread then
+  begin
+    StartMultiThreadWork;
+    Exit;
+  end;
+
+  while SearchUpdateBigImageThreadsCount > (ProcessorCount + 1) do
     Sleep(10);
 
   Inc(SearchUpdateBigImageThreadsCount);
   try
 
-  if not FUpdating then
     SynchronizeEx(InitializeLoadingBigImages);
 
-  for I := 0 to FData.Count - 1 do
-  begin
-
-    if I mod 5 = 0 then
+    for I := 0 to FData.Count - 1 do
     begin
-      Priority := tpNormal;
-      Synchronize(GetVisibleFiles);
-      VisibleUp(I);
-    end;
 
-    Synchronize(ValidateThread);
-
-    if Terminated then
-      Break;
-
-    FileName := ProcessPath(FData[I].FileName);
-
-    FGraphicClass := GetGraphicClass(ExtractFileExt(FData[I].FileName), False);
-    FGraphic := FGraphicClass.Create;
-    try
-
-      if GraphicCrypt.ValidCryptGraphicFile(FileName) then
+      if I mod 5 = 0 then
       begin
-        PassWord:=DBKernel.FindPasswordForCryptImageFile(FileName);
-        if PassWord = '' then
-          Continue;
-
-        F(FGraphic);
-        FGraphic := DeCryptGraphicFile(FileName, PassWord);
-      end else
-      begin
-        if FGraphic is TRAWImage then
-        begin
-          if not (FGraphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
-            (FGraphic as TRAWImage).LoadFromFile(FileName);
-        end else
-          FGraphic.LoadFromFile(FileName);
-
+        Synchronize(GetVisibleFiles);
+        VisibleUp(I);
       end;
 
-      FBit := TBitmap.Create;
-      try
-        FBit.PixelFormat := pf24bit;
-        JPEGScale(FGraphic, FPictureSize, FPictureSize);
+      if Terminated then
+        Break;
 
-        if Min(FGraphic.Height, FGraphic.Width) > 1 then
-          LoadImageX(FGraphic, FBit, Theme_ListColor);
+      if ProcessorCount > 1 then
+        TSearchThreadPool.Instance.CreateBigImage(Self, FPictureSize, FData[I].FileName, FData[I].Rotation)
+      else
+        ExtractBigImage(FPictureSize, FData[I].FileName, FData[I].Rotation);
 
-        TempBitmap:=TBitmap.Create;
-        try
-          TempBitmap.PixelFormat := pf24bit;
-          W := FBit.Width;
-          H := FBit.Height;
-          ProportionalSize(FPictureSize, FPictureSize, W, H);
-          TempBitmap.Width := W;
-          TempBitmap.Height := H;
-          DoResize(W, H, FBit, TempBitmap);
-          ApplyRotate(TempBitmap, FData[I].Rotation);
-          BitmapParam := TempBitmap;
+      FI := I + 1;
+      IntParam := FI;
 
-          SynchronizeEx(ReplaceBigBitmap);
-        finally
-          F(TempBitmap);
-        end;
-      finally
-        F(FBit);
-      end;
-    finally
-      F(FGraphic);
-    end;
-
-    FI := I + 1;
-    IntParam := FI;
-
-    if not FUpdating then
       SynchronizeEx(SetProgressPosition);
-  end;
+    end;
 
-  if not FUpdating then
     SynchronizeEx(EndLoading);
 
   finally
     Dec(SearchUpdateBigImageThreadsCount);
+  end;
+end;
+
+procedure TSearchBigImagesLoaderThread.ExtractBigImage(PictureSize: Integer;
+  FileName: string; Rotation : Integer);
+var
+  FGraphicClass : TGraphicClass;
+  FGraphic : TGraphic;
+  PassWord : String;
+  FBit, TempBitmap : TBitmap;
+  W, H : integer;
+begin
+  FileName := ProcessPath(FileName);
+
+  FGraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+  if FGraphicClass = nil then
+    Exit;
+
+  FGraphic := FGraphicClass.Create;
+  try
+
+    if GraphicCrypt.ValidCryptGraphicFile(FileName) then
+    begin
+      PassWord:=DBKernel.FindPasswordForCryptImageFile(FileName);
+      if PassWord = '' then
+        Exit;
+
+      F(FGraphic);
+      FGraphic := DeCryptGraphicFile(FileName, PassWord);
+    end else
+    begin
+      if FGraphic is TRAWImage then
+      begin
+        if not (FGraphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
+          (FGraphic as TRAWImage).LoadFromFile(FileName);
+      end else
+        FGraphic.LoadFromFile(FileName);
+
+    end;
+
+    FBit := TBitmap.Create;
+    try
+      FBit.PixelFormat := pf24bit;
+      JPEGScale(FGraphic, PictureSize, PictureSize);
+
+      if Min(FGraphic.Height, FGraphic.Width) > 1 then
+        LoadImageX(FGraphic, FBit, Theme_ListColor);
+
+      TempBitmap:=TBitmap.Create;
+      try
+        TempBitmap.PixelFormat := pf24bit;
+        W := FBit.Width;
+        H := FBit.Height;
+        ProportionalSize(PictureSize, PictureSize, W, H);
+        TempBitmap.Width := W;
+        TempBitmap.Height := H;
+        DoResize(W, H, FBit, TempBitmap);
+        ApplyRotate(TempBitmap, Rotation);
+        BitmapParam := TempBitmap;
+        StrParam := FileName;
+        SynchronizeEx(ReplaceBigBitmap);
+        TempBitmap := BitmapParam;
+      finally
+        F(TempBitmap);
+      end;
+    finally
+      F(FBit);
+    end;
+  finally
+    F(FGraphic);
   end;
 end;
 
@@ -198,6 +221,11 @@ begin
   end;
 end;
 
+function TSearchBigImagesLoaderThread.IsVirtualTerminate: Boolean;
+begin
+  Result := not FMainThread;
+end;
+
 procedure TSearchBigImagesLoaderThread.FileNameExists;
 begin
   BoolParam := (FSender as TSearchForm).FileNameExistsInList(StrParam);
@@ -206,7 +234,6 @@ end;
 procedure TSearchBigImagesLoaderThread.GetVisibleFiles;
 begin
   FVisibleFiles:=(FSender as TSearchForm).GetVisibleItems;
-  if not FSender.Active then Priority:=tpLowest;
 end;
 
 procedure TSearchBigImagesLoaderThread.SetProgressPosition;
@@ -218,13 +245,21 @@ end;
 
 procedure TSearchBigImagesLoaderThread.ReplaceBigBitmap;
 begin
- (FSender as TSearchForm).ReplaceBitmapWithPath(StrParam,BitmapParam);
+  if (FSender as TSearchForm).ReplaceBitmapWithPath(StrParam, BitmapParam) then
+    BitmapParam := nil;
 end;
 
 destructor TSearchBigImagesLoaderThread.Destroy;
 begin
+  FData.ClearList;
   FData.Free;
   inherited;
+end;
+
+procedure TSearchBigImagesLoaderThread.DoMultiProcessorTask;
+begin
+  if Mode <> 0 then
+    ExtractBigImage(PictureSize, FImageFileName, ImageRotation);
 end;
 
 procedure TSearchBigImagesLoaderThread.EndLoading;
@@ -237,11 +272,6 @@ begin
    (FSender as TSearchForm).PbProgress.Position:=0;
    (FSender as TSearchForm).PbProgress.MaxValue:=1;
   end;
-end;
-
-procedure TSearchBigImagesLoaderThread.ValidateThread;
-begin
-  //Empty method
 end;
 
 end.

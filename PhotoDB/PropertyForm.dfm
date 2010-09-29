@@ -252,7 +252,7 @@ object PropertiesForm: TPropertiesForm
     Top = 114
     Width = 307
     Height = 378
-    ActivePage = TsGeneral
+    ActivePage = TsGroups
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -526,6 +526,7 @@ object PropertiesForm: TPropertiesForm
         Cursor = crHandPoint
         PopupMenu = PmRatingNotAvaliable
         ParentColor = False
+        Color = clBtnFace
         Rating = 0
         RatingRange = 0
         OnChange = CommentMemoChange

@@ -14,13 +14,14 @@ type
     FIsTerminated : Boolean;
     FParentThread : TThreadEx;
     FSync : TCriticalSection;
+    FSyncSuccessful : Boolean;
     function GetIsTerminated: Boolean;
     procedure SetTerminated(const Value: Boolean);
   protected
-    procedure SynchronizeEx(Method: TThreadMethod);
+    function SynchronizeEx(Method: TThreadMethod) : Boolean;
     procedure CallMethod;
     procedure Start;
-    function CheckForm : Boolean;
+    function CheckForm : Boolean; virtual;
     function IsVirtualTerminate : Boolean; virtual;
     procedure WaitForSubThreads;
   public      
@@ -41,8 +42,9 @@ implementation
 { TFormThread }
 
 procedure TThreadEx.CallMethod;
-begin   
-  if CheckForm then
+begin
+  FSyncSuccessful := CheckForm;
+  if FSyncSuccessful then
     FMethod
   else
   begin
@@ -57,8 +59,15 @@ function TThreadEx.CheckForm: Boolean;
 begin
   Result := False;
   if not IsTerminated then
+  begin
     if FThreadForm.IsActualState(FState) then
       Result := True;
+
+    if FThreadForm.Active then
+      Priority := tpLowest
+    else
+      Priority := tpIdle;
+  end;
 end;
 
 constructor TThreadEx.Create(AOwnerForm: TThreadForm; AState : TGUID);
@@ -129,12 +138,14 @@ begin
   FThreadForm.RegisterThreadAndStart(Self);
 end;
 
-procedure TThreadEx.SynchronizeEx(Method: TThreadMethod);
+function TThreadEx.SynchronizeEx(Method: TThreadMethod) : Boolean;
 begin
+  Result := False;
   if not IsTerminated then
   begin
     FMethod := Method;
     Synchronize(CallMethod);
+    Result := FSyncSuccessful;
   end;
 end;
 

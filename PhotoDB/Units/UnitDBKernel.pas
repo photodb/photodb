@@ -2189,10 +2189,10 @@ var
   end;
 
 begin
-  FImageList:=TImageList.Create(nil);
-  FImageList.Width:=16;
-  FImageList.Height:=16;
-  FImageList.BkColor:=clMenu;
+  FImageList := TImageList.Create(nil);
+  FImageList.Width := 16;
+  FImageList.Height := 16;
+  FImageList.BkColor := ClMenu;
   InitIconDll;
 
   icons[1] := LoadIcon(IconDllInstance,'SHELL');

@@ -144,7 +144,7 @@ begin
   except
    on e : Exception do
    begin
-    MessageBoxDB(FormManager.Handle,Format(LA('Unhandled error: %s') ,[e.Message]), LA('Error') ,TD_BUTTON_OK,TD_ICON_INFORMATION);
+    MessageBoxDB(FormManager.Handle,Format(L('Unhandled error: %s') ,[e.Message]), L('Error') ,TD_BUTTON_OK,TD_ICON_INFORMATION);
     Exit;
    end;
   end;

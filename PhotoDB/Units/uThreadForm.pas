@@ -10,16 +10,19 @@ type
     FThreadList : TList;
     FSync : TCriticalSection;
     FStateID : TGUID;
+    FSubStateID : TGUID;
     procedure ThreadTerminated(Sender : TObject);
   protected
     procedure TerminateAllThreads;
     procedure NewFormState;
-  public                     
+  public
+    procedure NewFormSubState;
     procedure RegisterThreadAndStart(Thread : TThread);
     function IsActualState(State : TGUID) : Boolean;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     property StateID : TGUID read FStateID;
+    property SubStateID : TGUID read FSubStateID;
   end;
 
 implementation
@@ -43,12 +46,19 @@ end;
 
 function TThreadForm.IsActualState(State: TGUID): Boolean;
 begin
-  Result := IsEqualGUID(State, FStateID);
+  //if FStateID equals - good, if not - check substate
+  Result := IsEqualGUID(State, FStateID) or IsEqualGUID(State, FSubStateID);
 end;
 
 procedure TThreadForm.NewFormState;
 begin
   FStateID := GetGUID;
+  NewFormSubState;
+end;
+
+procedure TThreadForm.NewFormSubState;
+begin
+  FSubStateID := GetGUID;
 end;
 
 procedure TThreadForm.RegisterThreadAndStart(Thread: TThread);

@@ -11,10 +11,11 @@ uses
   EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
-  UnitExplorerLoadSIngleImageThread, uConstants, uMemory, SyncObjs;
+  UnitExplorerLoadSIngleImageThread, uConstants, uMemory, SyncObjs,
+  uMultiCPUThreadManager;
 
 type
-  TExplorerThread = class(TThreadEx)
+  TExplorerThread = class(TMultiCPUThread)
   private
     { Private declarations }
     FFolder: string;
@@ -53,7 +54,6 @@ type
     FVisibleFiles: TStrings;
     IsBigImage: Boolean;
     LoadingAllBigImages: Boolean;
-    FSyncEvent: THandle;
     NewItem: TEasyItem;
   protected
     procedure GetVisibleFiles;
@@ -124,7 +124,7 @@ type
     procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
     procedure ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
-    procedure ProcessThreadPreviews;
+    procedure DoMultiProcessorTask; override;
   protected
     function IsVirtualTerminate : Boolean; override;
   public
@@ -133,13 +133,10 @@ type
     FInfo : TOneRecordInfo;
     IsCryptedFile : Boolean;
     FFileID : TGUID;
-    FThreadPreviewMode : Integer;
-    FPreviewInProgress : Boolean;
     FSender : TExplorerForm;
     constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
-    property SyncEvent : THandle read FSyncEvent;
   end;
 
 type
@@ -172,8 +169,6 @@ begin
   FUpdaterInfo := UpdaterInfo;
   FVisibleFiles := nil;
   FEvent := 0;
-  FPreviewInProgress := False;
-  FThreadPreviewMode := 0;
   Start;
 end;
 
@@ -214,16 +209,7 @@ begin
 
     if (FThreadType = THREAD_TYPE_THREAD_PREVIEW) then
     begin
-      Priority := tpLowest;
-      FEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
-      FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
-      TW.I.Start('CreateEvent: ' + IntToStr(FEvent));
-      try
-        ProcessThreadPreviews;
-      finally
-        CloseHandle(FEvent);
-        CloseHandle(FSyncEvent);
-      end;
+      StartMultiThreadWork;
       Exit;
     end;
 
@@ -1105,7 +1091,8 @@ begin
   end;
 
   GUIDParam := DirctoryID;
-  SynchronizeEx(ReplaceFolderImage);
+  if not SynchronizeEx(ReplaceFolderImage) then
+    F(TempBitmap);
 end;
 
 procedure TExplorerThread.DrawFolderImageBig(Bitmap : TBitmap);
@@ -1843,7 +1830,9 @@ begin
     end;
     ApplyRotate(TempBitmap, Rotated);
     BooleanParam := LoadingAllBigImages;
-    SynchronizeEx(ReplaceImageInExplorerB);
+
+    if not SynchronizeEx(ReplaceImageInExplorerB) then
+      F(TempBitmap);
   finally
     F(Graphic);
   end;
@@ -1988,48 +1977,16 @@ begin
   SynchronizeEx(ReplaceImageInExplorer);
 end;
 
-procedure TExplorerThread.ProcessThreadPreviews;
+procedure TExplorerThread.DoMultiProcessorTask;
 begin
-  FPreviewInProgress := True;
-  while True do
-  begin
-    IsTerminated := False;
-    try
-      try
-        try
-          if FThreadPreviewMode = THREAD_PREVIEW_MODE_IMAGE then
-            ExtractImage(FInfo, IsCryptedFile, FFileID);
+  if Mode = THREAD_PREVIEW_MODE_IMAGE then
+    ExtractImage(FInfo, IsCryptedFile, FFileID);
 
-          if FThreadPreviewMode = THREAD_PREVIEW_MODE_DIRECTORY then
-            ReplaceThumbImageToFolder(FInfo.ItemFileName, FFileID);
+  if Mode = THREAD_PREVIEW_MODE_DIRECTORY then
+    ReplaceThumbImageToFolder(FInfo.ItemFileName, FFileID);
 
-          if FThreadPreviewMode = THREAD_PREVIEW_MODE_BIG_IMAGE then
-             ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate, FFileID);
-
-          if FThreadPreviewMode = THREAD_PREVIEW_MODE_EXIT then
-            Exit;
-
-          FThreadPreviewMode := 0;
-
-          TW.I.Start('UnRegisterSubThread: ' + IntToStr(FEvent));
-          if (GOM <> nil) and GOM.IsObj(ParentThread) then
-            ParentThread.UnRegisterSubThread(Self);
-        except
-          on e : Exception do
-            EventLog('TExplorerThread.ProcessThreadImages' + e.Message);
-        end;
-      finally
-        TW.I.Start('SetEvent: ' + IntToStr(FEvent));
-        FPreviewInProgress := False;
-        SetEvent(FEvent);
-      end;
-    finally
-      TW.I.Start('Suspended: ' + IntToStr(FEvent));
-      WaitForSingleObject(FSyncEvent, INFINITE);
-      TW.I.Start('Resumed: ' + IntToStr(FEvent));
-      FPreviewInProgress := True;
-    end;
-  end;
+  if Mode = THREAD_PREVIEW_MODE_BIG_IMAGE then
+     ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate, FFileID);
 end;
 
 procedure TExplorerThread.ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);

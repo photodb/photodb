@@ -22,7 +22,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
     Width = 377
     Height = 247
     Align = alClient
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect, goThumbTracking]
     PopupMenu = PopupMenu1
     Strings.Strings = (
       '=')

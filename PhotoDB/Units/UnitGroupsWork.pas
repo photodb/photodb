@@ -373,23 +373,28 @@ end;
 Procedure AddGroupToGroups(var Groups : TGroups; Group : TGroup);
 var
   i : Integer;
-  b : Boolean;
-begin
- b:=false;
- For i:=0 to Length(Groups)-1 do
- begin
-  if Groups[i].GroupCode=Group.GroupCode then
+    B: Boolean;
   begin
-   b:=True;
-   Break;
+    B := False;
+    for I := 0 to Length(Groups) - 1 do
+    begin
+      if Groups[I].GroupCode = Group.GroupCode then
+      begin
+        B := True;
+        Break;
+      end;
+    end;
+    if not B then
+    begin
+      SetLength(Groups, Length(Groups) + 1);
+      Groups[Length(Groups) - 1] := Group;
+      if Group.GroupImage <> nil then
+      begin
+        Groups[Length(Groups) - 1].GroupImage := TJpegImage.Create;
+        Groups[Length(Groups) - 1].GroupImage.Assign(Group.GroupImage);
+      end;
+    end;
   end;
- end;
- If not b then
- begin
-  SetLength(Groups,Length(Groups)+1);
-  Groups[Length(Groups)-1]:=Group;
- end;
-end;
 
 Procedure AddGroupsToGroups(var Groups : TGroups; GroupsToAdd : TGroups);
 var

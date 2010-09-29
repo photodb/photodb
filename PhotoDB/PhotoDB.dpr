@@ -300,7 +300,9 @@ uses
   OmniXML_MSXML in 'External\Xml\OmniXML_MSXML.pas',
   uImageConvertThread in 'Threads\uImageConvertThread.pas',
   uWatermarkOptions in 'uWatermarkOptions.pas' {FrmWatermarkOptions},
-  AddSessionPasswordUnit in 'AddSessionPasswordUnit.pas' {AddSessionPasswordForm};
+  AddSessionPasswordUnit in 'AddSessionPasswordUnit.pas' {AddSessionPasswordForm},
+  uSearchThreadPool in 'Threads\uSearchThreadPool.pas',
+  uMultiCPUThreadManager in 'Threads\uMultiCPUThreadManager.pas';
 
 {$R *.res}
 

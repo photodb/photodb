@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<language name="Russian">
+  <scope name="">
+    <translate name="Ok" value="Да" />
+    <translate name="Cancel" value="Отмена" />
+    <translate name="Close" value="Закрыть" />
+    <translate name="JPEG Options" value="Настройки JPEG" />
+    <translate name="Save settings by default" value="Сохранить по умолчанию" />
+    <translate name="Processing... (&amp;%%)" value="Обработка... (&amp;%%)" />
+    <translate name="kb" value="Кб" />
+    <translate name="Mb" value="Мб" />
+    <translate name="Gb" value="Гб" />
+    <translate name="Error" value="Ошибка" />
+  </scope>
+  <scope name="JPEG">
+    <translate name="JPEG compression" value="Компрессия JPEG" />
+    <translate name="Choose JPEG mode and compression rate:" value="Выберите режим для компрессии в JPEG формат:" />
+    <translate name="Progressive mode" value="Прогрессивный режим" />
+    <translate name="JPEG compression (%d%%):" value="JPEG компрессия (%d%%):" />
+    <translate name="Optimize to size:" value="Оптимизировать под размер:" />
+  </scope>
+  <scope name="DateChange">
+    <translate name="Change date and time" value="Изменить дату и время" />
+    <translate name="Go to current date" value="Перейти к текущей дате" />
+    <translate name="Date not sets" value="Дата не установлена" />
+    <translate name="Date sets" value="Дата установлена" />
+    <translate name="Choose &quot;Date set&quot; in popup menu" value="Выберите &quot;Дата установлена&quot; в контекстном меню" />
+    <translate name="Go to current time" value="Перейти к текущему времени" />
+    <translate name="Time set" value="Время установлено" />
+    <translate name="Time not set" value="Время не установлено" />
+  </scope>
+  <scope name="ConvertImage">
+    <translate name="Change Image" value="Изменение изображения" />
+    <translate name="You can change image size, convert image to another format, rotate image and add custom watermark." value="Вы можете изменить размер изображения, повернуть его, сконвертировать в другой формат и добавить водяные отметки на изображение." />
+    <translate name="Add Watermark" value="Водяной знак" />
+    <translate name="Resize" value="Изменить размер" />
+    <translate name="Small (640x480)" value="Маленькие (640x480)" />
+    <translate name="Medium (800x600)" value="Средние (800x600)" />
+    <translate name="Big (1024x768)" value="Большие (1024x768)" />
+    <translate name="Thumbnails (128x124)" value="Предпросмотры (128x124)" />
+    <translate name="Size: %d%%" value="Размер: %d%%" />
+    <translate name="Custom size:" value="Произвольный размер:" />
+    <translate name="Rotate" value="Повернуть" />
+    <translate name="By EXIF" value="Согласно EXIF" />
+    <translate name="Left" value="Влево" />
+    <translate name="Right" value="Вправо" />
+    <translate name="180 grad" value="180 град." />
+    <translate name="Save aspect ratio" value="Сохранять пропорции" />
+    <translate name="Convert" value="Конвертировать" />
+    <translate name="Add filename suffix" value="Добавлять суффикс к имени файла" />
+    <translate name="Error writing data on disk: %s." value="Ошибка записи данных на диск: %s." />
+    <translate name="Watermark Options" value="Настнойки водяного знака" />
+  </scope>
+  <scope name="PasswordForm">
+    <translate name="Enter your password here" value="Введите пароль здесь" />
+    <translate name="Password requared" value="Необходим пароль" />
+    <translate name="Enter password to open file &quot;%s&quot; here:" value="Введите пароль для открытия файла '%s' сюда:" />
+    <translate name="Password requared" value="Необходим пароль" />
+	<translate name="Save password for session" value="Сохранить пароль на сессию" />
+	<translate name="Save password in settings" value="Сохранить пароль в настройках" />
+	<translate name="Don''t ask again" value="Больше не спрашивать" />
+	<translate name="Show files" value="Показать файлы" />
+	<translate name="These files have the same password (hashes are equals)" value="Эти файлы зашифрованы одним паролем (совпадение хэша)" />
+	<translate name="Skip these files" value="Пропустить эти файлы" />
+	<translate name="Hide list" value="Спрятать список" />
+	<translate name="Copy text" value="Копировать текст" />
+	<translate name="Enter password for group of files (press &quot;Show files&quot; to see list) here:" value="Введите пароль для группы файлов." />
+	<translate name="Enter password to file &quot;%s&quot; here:" value="Введите пароль для файла &quot;%s&quot; сюда:" />
+	<translate name="Password is invalid!" value="Пароль неверный!" />
+  </scope>
+  <scope name="Groups">
+    <translate name="Group not found!" value="Группа не найдена!" />
+  </scope>
+</language>
