@@ -4,8 +4,8 @@ interface
 
 uses Forms, SysUtils, Windows, Graphics,
   Messages, Classes, DB, GraphicsCool, JPEG, SyncObjs,
-  UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, UFileUtils,
-  UMemory;
+  UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uFileUtils,
+  uMemory;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -122,36 +122,7 @@ type
 
   TNotifyDirectoryChangeW = Procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of Object;
 
-  TExplorerFileInfo = class(TObject)
-  public
-    FileName : String;
-    SID : TGUID;
-    FileType :  Integer;
-    ID : Integer;
-    Rotate : Integer;
-    Access : Integer;
-    Rating : Integer;
-    FileSize : Int64;
-    Comment: string;
-    KeyWords: string;
-    Date: TDateTime;
-    Time: TDateTime;
-    ImageIndex: Integer;
-    Owner: string;
-    Groups: string;
-    Collections: string;
-    IsDate: Boolean;
-    IsTime: Boolean;
-    Crypted: Boolean;
-    Tag: Integer;
-    Loaded: Boolean;
-    Include: Boolean;
-    Links: string;
-    IsBigImage: Boolean;
-    function Clone: TExplorerFileInfo;
-  end;
-
-  TExplorerFileInfos = class(TObject)
+   TExplorerFileInfos = class(TObject)
   private
     FItems: TList;
     function GeInfoByIndex(index: Integer): TExplorerFileInfo;
@@ -808,37 +779,6 @@ begin
   Result := TExplorerFileInfos.Create;
   for I := 0 to Count - 1 do
     Result.Add(Self[i].Clone);
-end;
-
-{ TExplorerFileInfo }
-
-function TExplorerFileInfo.Clone: TExplorerFileInfo;
-begin
-  Result := TExplorerFileInfo.Create;
-  Result.FileName := FileName;
-  Result.SID := SID;
-  Result.FileType := FileType;
-  Result.ID := ID;
-  Result.Rotate := Rotate;
-  Result.Access := Access;
-  Result.Rating := Rating;
-  Result.FileSize := FileSize;
-  Result.Comment := Comment;
-  Result.KeyWords := KeyWords;
-  Result.Date := Date;
-  Result.Time := Time;
-  Result.ImageIndex := ImageIndex;
-  Result.Owner := Owner;
-  Result.Groups := Groups;
-  Result.Collections := Collections;
-  Result.IsDate := IsDate;
-  Result.IsTime := IsTime;
-  Result.Crypted := Crypted;
-  Result.Tag := Tag;
-  Result.Loaded := Loaded;
-  Result.Include := Include;
-  Result.Links := Links;
-  Result.isBigImage := isBigImage;
 end;
 
 initialization

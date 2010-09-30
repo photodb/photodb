@@ -80,8 +80,8 @@ type
     FQueryString : string;
     QueryType : TQueryType;
     FDateTimeParam : TDateTime;
-    FData : TSearchRecordArray;
-    fQData : TSearchRecordArray;
+    FData : TDBPopupMenuInfo;
+    fQData : TDBPopupMenuInfo;
     FOnDone : TNotifyEvent;
     FShowGroups : boolean;
     BitmapParam : TBitmap;
@@ -154,7 +154,7 @@ begin
       if FSearchParams.Query = #8 then
         Exit;
 
-      FData := TSearchRecordArray.Create;
+      FData := TDBPopupMenuInfo.Create;
       try
         LoadImages;
       finally
@@ -1000,6 +1000,8 @@ begin
 end;
 
 procedure SearchThread.DoOnDone;
+var
+  AData : TDBPopupMenuInfo;
 begin
  try
   begin
@@ -1022,7 +1024,9 @@ begin
   if fPictureSize<>ThImageSize then
   begin
     (ThreadForm as TSearchForm).NewFormSubState;
-    (ThreadForm as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(ThreadForm,(ThreadForm as TSearchForm).SubStateID,nil,fPictureSize,fData, True));
+     AData := TDBPopupMenuInfo.Create;
+     AData.Assign(FData);
+    (ThreadForm as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(ThreadForm,(ThreadForm as TSearchForm).SubStateID,nil,fPictureSize, AData, True));
   end;
  except
  end;
@@ -1140,45 +1144,26 @@ var
   procedure AddItem(S : TDataSet);
   var
     I : Integer;
-    Data : TSearchRecord;
+    SearchData : TDBPopupMenuInfoRecord;
+    SearchExtension : TSearchDataExtension;
     JPEG : TJPEGImage;
     PassWord : string;
     BS : TStream;
   begin
-    Data := FData.AddNew;
-    Data.ID := S.FieldByName('ID').asinteger;
-    Data.FileName := S.FieldByName('FFileName').AsString;
-    Data.Comments := S.FieldByName('Comment').AsString;
-    Data.FileSize := S.FieldByName('FileSize').AsInteger;
-    Data.Rotation := S.FieldByName('Rotated').AsInteger;
-    Data.ImTh := S.FieldByName('StrTh').AsString;
-    Data.Access := S.FieldByName('Access').AsInteger;
-    Data.Rating := S.FieldByName('Rating').AsInteger;
-    Data.KeyWords := S.FieldByName('KeyWords').AsString;
-    Data.Date := S.FieldByName('DateToAdd').AsDateTime;
-    Data.IsDate := S.FieldByName('IsDate').AsBoolean;
-    Data.IsTime := S.FieldByName('IsTime').AsBoolean;
-    Data.Groups := S.FieldByName('Groups').AsString;
-    Data.Attr := S.FieldByName('Attr').AsInteger;
-    Data.Time := S.FieldByName('aTime').AsDateTime;
-    Data.Links := S.FieldByName('Links').AsString;
-    Data.Width := S.FieldByName('Width').AsInteger;
-    Data.Height := S.FieldByName('Height').AsInteger;
-    Data.Crypted := ValidCryptBlobStreamJPG(S.FieldByName('thum'));
-    Data.Include := S.FieldByName('Include').AsBoolean;
-    Data.Exists := 0;
-    Data.CompareResult.ByGistogramm := 0;
-    Data.CompareResult.ByPixels := 0;
+    SearchData := TDBPopupMenuInfoRecord.CreateFromDS(S);
+    SearchExtension := TSearchDataExtension.Create;
+    SearchData.Data := SearchExtension;
+    FData.Add(SearchData);
     if (FQData <> nil) and (FQData.Count > 0) then
     begin
-     for I := 0 to fQData.Count - 1 do
-     if fQData[I].ID = Data.ID then
-       Data.CompareResult:= FQData[I].CompareResult;
+      for I := 0 to fQData.Count - 1 do
+      if fQData[I].ID = SearchData.ID then
+        SearchExtension.CompareResult:= TSearchDataExtension(FQData[I].Data).CompareResult;
     end;
 
     JPEG := TJPEGImage.Create;
     try
-      if Data.Crypted then
+      if SearchData.Crypted then
       begin
         PassWord := DBKernel.FindPasswordForCryptBlobStream(S.FieldByName('thum'));
         if PassWord <> '' then
@@ -1194,12 +1179,12 @@ var
       end;
       if not JPEG.Empty then
       begin
-        Data.Bitmap := TBitmap.Create;
-        Data.Bitmap.PixelFormat := pf24bit;
-        AssignJpeg(Data.Bitmap, JPEG);
-        ApplyRotate(Data.Bitmap, Data.Rotation);
+        SearchExtension.Bitmap := TBitmap.Create;
+        SearchExtension.Bitmap.PixelFormat := pf24bit;
+        AssignJpeg(SearchExtension.Bitmap, JPEG);
+        ApplyRotate(SearchExtension.Bitmap, SearchData.Rotation);
       end else
-        Data.Bitmap := nil;
+        SearchExtension.Bitmap := nil;
     finally
       JPEG.Free;
     end;

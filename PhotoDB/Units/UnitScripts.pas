@@ -34,12 +34,9 @@ type
   TSDriveState =(DSS_NO_DISK, DSS_UNFORMATTED_DISK, DSS_EMPTY_DISK,
     DSS_DISK_WITH_FILES);
 
-
-
   TScriptFunctionArray = array of TScriptFunction;
 
   TInitScriptFunction = function(Script : String) : string;
-
   TSimpleProcedure = procedure;
   TProcedureInteger = procedure(int : Integer);
   TProcedureIntegerInteger = procedure(int1, int2 : Integer);
@@ -2244,21 +2241,24 @@ begin
  begin
   FS:=TStringList.Create;
   try
-   FS.LoadFromFile(d);
-  except
-   exit;
+    try
+     FS.LoadFromFile(d);
+    except
+     exit;
+    end;
+    for i:=0 to FS.Count-1 do
+    begin
+     s:=FS[i];
+     p:=PosExK('//',s);
+     if p>0 then
+     begin
+      FS[i]:=Copy(S,1,p-1);
+     end;
+    end;
+    Result:=FS.Text;
+  finally
+    FS.Free;
   end;
-  for i:=0 to FS.Count-1 do
-  begin
-   s:=FS[i];
-   p:=PosExK('//',s);
-   if p>0 then
-   begin
-    FS[i]:=Copy(S,1,p-1);
-   end;
-  end;
-  Result:=FS.Text;
-  FS.Free;
   for i:=Length(Result) downto 1 do
   begin
    if Result[i]=#10 then Result[i]:=' ';

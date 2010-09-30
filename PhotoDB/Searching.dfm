@@ -1723,14 +1723,6 @@ object SearchForm: TSearchForm
     Left = 417
     Top = 88
   end
-  object DropFileTarget3: TDropFileTarget
-    DragTypes = [dtCopy, dtLink]
-    ShowImage = False
-    AutoRegister = False
-    OptimizedMove = True
-    Left = 457
-    Top = 128
-  end
   object SearchGroupsImageList: TImageList
     AllocBy = 1
     Height = 32

@@ -1510,7 +1510,7 @@ begin
   SetLength(S,Length(S)+1);
   S[Length(S)-1]:=fFilesInfo[Index].FileName
  end;
- Dolphin_db.DeleteFiles( Self.Handle, S , ToRecycle );
+ uFIleUtils.DeleteFiles( Self.Handle, S , ToRecycle );
 end;
 
 procedure TExplorerForm.Delete1Click(Sender: TObject);
@@ -4347,7 +4347,7 @@ begin
   Setlength(s,1);
   S[0]:=GetCurrentPath;
   UnFormatDir(S[0]);
-  Dolphin_db.DeleteFiles( Self.Handle, S , True );
+  uFileUtils.DeleteFiles( Handle, S , True );
  end;
 end;
 
@@ -6179,7 +6179,7 @@ begin
  If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_CDROM) then
  begin
   NewItem := TMenuItem.Create(Item);
-  DS:=Dolphin_DB.DriveState(AnsiChar(Chr(i)));
+  DS:=DriveState(AnsiChar(Chr(i)));
   inc(C);
   If (DS=DS_DISK_WITH_FILES) or (DS=DS_EMPTY_DISK) then
   begin
@@ -6220,7 +6220,7 @@ begin
  If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_REMOVABLE) then
  begin
   NewItem := TMenuItem.Create(Item);
-  DS:=Dolphin_DB.DriveState(AnsiChar(Chr(i)));
+  DS:=DriveState(AnsiChar(Chr(i)));
   If (DS=DS_DISK_WITH_FILES) or (DS=DS_EMPTY_DISK) then
   begin
    S:=GetCDVolumeLabel(Chr(i));

@@ -390,7 +390,8 @@ var
   menus : TArMenuitem;
   FileNames : TArStrings;
 begin
- if CopyFilesSynchCount>0 then WindowsMenuTickCount:=GetTickCount;
+  if CopyFilesSynchCount > 0 then
+    WindowsMenuTickCount := GetTickCount;
 
  Item:=ItemByPointImage(ElvMain, Point(MousePos.x,MousePos.y));
  if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ElvMain.Selection.First;

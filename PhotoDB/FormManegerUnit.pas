@@ -369,7 +369,7 @@ begin
   end;
   if ApplReadyForEnd then Break;
  until false;
-  TerminationApplication.Create;
+  //???TerminationApplication.Create;
 
   FormManager := nil;
   TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 10000, @TimerProc);

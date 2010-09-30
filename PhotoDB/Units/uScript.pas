@@ -2,7 +2,7 @@ unit uScript;
 
 interface
 
-uses Windows, SysUtils, Classes, uStringUtils;
+uses Windows, SysUtils, Classes, uStringUtils, uMemory;
 
 const
   VALUE_TYPE_ERROR         = 0;
@@ -242,12 +242,8 @@ begin
 end;
 
 destructor TNamedValues.Destroy;
-var
-  I  : Integer;
-begin      
-  for I := 0 to FValues.Count - 1 do
-    TValue(FValues[I]).Free;
-  FValues.Free;
+begin
+  FreeList(FValues);
   inherited;
 end;
 
@@ -477,12 +473,8 @@ begin
 end;
 
 destructor TStringFunctions.Destroy;
-var
-  I : Integer;
 begin
-  for I := 0 to FScriptFunctions.Count - 1 do
-    FreeMem(FScriptFunctions[I]);
-  FScriptFunctions.Free;
+  FreeList(FScriptFunctions);
   inherited;
 end;
 

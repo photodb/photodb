@@ -160,7 +160,7 @@ initialization
 
 finalization
 
-  TW.I.Free;
+  FreeList(W);
   F(Sync);
 
 end.

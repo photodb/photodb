@@ -3,7 +3,8 @@ unit uThreadLoadingManagerDB;
 interface
 
 uses
-  Classes, DB, Forms, CommonDBSupport, ADODB, dolphin_db;
+  Classes, DB, Forms, CommonDBSupport, ADODB, dolphin_db,
+  UnitDBDeclare;
 
 type
   TThreadLoadingManagerDB = class(TThread)

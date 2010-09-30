@@ -2,7 +2,7 @@ unit ReplaseLanguageInScript;
 
 interface
 
-uses Windows, Classes, SysUtils, dialogs;
+uses Windows, Classes, SysUtils, Dialogs, uMemory;
 
 function AddLanguageX22(script : string) : string;
 function AddLanguageX21(script : string) : string;
@@ -30,16 +30,13 @@ function AddLanguage(script : string) : string;
 
 type
 
- TTextPosRecord = record
-  Text : string[255];
+ TTextPosRecord = class
+  Text : string;
   pos : integer;
  end;
 
-
- PTextPosRecord = ^TTextPosRecord;
-
 var
-  TextPosList : TList;
+  TextPosList : TList = nil;
 
 implementation
 
@@ -47,9 +44,10 @@ procedure InitList(S : string);
 var
   SearchStr, Patt, NewStr: string;
   Offset: Integer;
-  Rec : PTextPosRecord;
+  Rec : TTextPosRecord;
   i : integer;
 begin
+  F(TextPosList);
   TextPosList:=TList.Create;
   Patt := 'TEXT_MES_';
   SearchStr := S;
@@ -58,18 +56,17 @@ begin
   begin
     Offset := AnsiPos(Patt, SearchStr);
     if Offset = 0 then
-    begin
       Break;
-    end;
-    GetMem(Rec,SizeOf(TTextPosRecord));
+
+    Rec := TTextPosRecord.Create;
     for i:=Offset to Length(S) do
     if not (s[i] in ['A'..'Z','_','0'..'9']) then
     begin
-     Rec^.Text:=Copy(SearchStr,Offset,i-Offset); 
+     Rec.Text:=Copy(SearchStr,Offset,i-Offset);
      SearchStr[Offset]:='_';
-     Rec^.pos:=Offset;
+     Rec.pos:=Offset;
      TextPosList.Add(Rec);
-     break;
+     Break;
     end; 
   end;
 end;
@@ -80,16 +77,17 @@ var
  Increment : integer;
 begin
  for i:=TextPosList.Count-1 downto 0 do
- if PTextPosRecord(TextPosList[i])^.Text=OldPattern then
+ if TTextPosRecord(TextPosList[i]).Text=OldPattern then
  begin
-  Offset:=PTextPosRecord(TextPosList[i])^.pos;
+  Offset:=TTextPosRecord(TextPosList[i]).pos;
   Delete(script,Offset,Length(OldPattern));
   Insert(NewPattern,script,Offset);
   Increment:=Length(NewPattern)-Length(OldPattern);
+  TObject(TextPosList[I]).Free;
   TextPosList.Delete(i);
   for j:=0 to TextPosList.Count-1 do
-  if PTextPosRecord(TextPosList[j])^.pos>Offset then
-  PTextPosRecord(TextPosList[j])^.pos:=PTextPosRecord(TextPosList[j])^.pos+Increment;
+  if TTextPosRecord(TextPosList[j]).pos>Offset then
+  TTextPosRecord(TextPosList[j]).pos:=TTextPosRecord(TextPosList[j]).pos+Increment;
  end;
  Result:=script;
 end;
@@ -1342,10 +1340,8 @@ Result:=ApplyChanges(script);
 end;
 
 initialization
-TextPosList:=nil;
 
 finalization
-if TextPosList<>nil then TextPosList.Free;
-TextPosList:=nil;
+  FreeList(TextPosList);
 
 end.

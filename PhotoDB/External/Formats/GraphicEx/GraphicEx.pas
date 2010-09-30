@@ -6994,6 +6994,8 @@ begin
       // first chunk must be an IHDR chunk
       FCurrentCRC := LoadAndSwapHeader;
 
+      if FRawBuffer <> nil then
+        FreeMem(FRawBuffer);
       FRawBuffer := nil;
       ColorManager.SourceOptions := [coNeedByteSwap];
       try

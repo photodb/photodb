@@ -8,7 +8,7 @@ uses
   DropTarget, DragDropFile, DragDrop, DropSource, Menus, ImgList, StdCtrls,
   ExtCtrls, ComCtrls,  Dialogs, DB, CommCtrl, JPEG, Math,
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
-  UnitDBCommonGraphics, uLogger, uDBDrawing;
+  UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils;
 
 type
   TDBReplaceForm = class(TForm)
@@ -430,7 +430,7 @@ var
 const
   FilePreviewSize = 100;
 begin
- filesize_:=GetFileSizeByName(FileName);
+ filesize_ := GetFileSizeByName(FileName);
  F_NAME.Text:=ExtractFileName(FileName);
  F_SIZE.Text:=SizeInTextA(FileSize_);
  F_PATCH.text:=FileName;

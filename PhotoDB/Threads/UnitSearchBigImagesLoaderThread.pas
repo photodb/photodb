@@ -23,7 +23,7 @@ type
     BitmapParam : TBitmap;
     FI : Integer;
     FMainThread : Boolean;
-    FData : TSearchRecordArray;
+    FData : TDBPopupMenuInfo;
     FImageFileName : string;
     FImageRotation : Integer;
   protected
@@ -33,7 +33,7 @@ type
     procedure ExtractBigImage(PictureSize : Integer; FileName: string; Rotation : Integer);
   public
     constructor Create(Sender : TThreadForm; SID : TGUID;
-      OnDone : TNotifyEvent; PictureSize : Integer; Data : TSearchRecordArray; MainThread : Boolean);
+      OnDone : TNotifyEvent; PictureSize : Integer; Data : TDBPopupMenuInfo; MainThread : Boolean);
     destructor Destroy; override;
     procedure VisibleUp(TopIndex: integer);
     procedure GetVisibleFiles;
@@ -55,7 +55,7 @@ implementation
 uses Searching, Language, uSearchThreadPool;
 
 constructor TSearchBigImagesLoaderThread.Create(Sender: TThreadForm; SID: TGUID; OnDone: TNotifyEvent; PictureSize: integer;
-  Data : TSearchRecordArray; MainThread : Boolean);
+  Data : TDBPopupMenuInfo; MainThread : Boolean);
 begin
   inherited Create(Sender, SID);
   FSender := Sender;
@@ -69,7 +69,7 @@ procedure TSearchBigImagesLoaderThread.VisibleUp(TopIndex: integer);
 var
   I, C: Integer;
   J: Integer;
-  Temp: TSearchRecord;
+  Temp: TDBPopupMenuInfoRecord;
 begin
   C := TopIndex;
   for I := 0 to Length(FVisibleFiles) - 1 do
@@ -251,7 +251,6 @@ end;
 
 destructor TSearchBigImagesLoaderThread.Destroy;
 begin
-  FData.ClearList;
   FData.Free;
   inherited;
 end;

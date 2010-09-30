@@ -8,7 +8,8 @@ uses
   Dialogs, StdCtrls, ExtCtrls, ImButton, ComCtrls, ActiveX,
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
   DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory, uDBForm,
-  UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator;
+  UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator,
+  UnitDBDeclare;
 
 type
   TImHint = class(TDBForm)

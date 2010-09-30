@@ -8,9 +8,9 @@ interface
 uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   Rating, ComCtrls, StdCtrls, ExtCtrls, Forms, Windows, Classes,
   Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
-  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, UVistaFuncs, ULogger,
+  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
-  UConstants, CommCtrl, UTime, UnitINI, SyncObjs, UMemory;
+  uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils;
 
 type
   TCharObject = class (TObject)

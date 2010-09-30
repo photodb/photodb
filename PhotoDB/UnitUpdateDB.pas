@@ -3,12 +3,13 @@ unit UnitUpdateDB;
 interface
 
 uses
-  dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp, uVistaFuncs,
-  DropSource, DropTarget, UnitDBkernel, DB, AppEvnts, UnitDBDeclare,
-  UnitUpdateDBObject, UnitTimeCounter, DragDrop, DragDropFile, WebLink,
-  GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory,
-  UnitDBCommonGraphics, DmMemo, uW7TaskBar, GraphicsBaseTypes, TwButton;
+   dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
+   Forms, Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp,
+   uVistaFuncs, DB, AppEvnts, DragDrop, DragDropFile, WebLink,
+   DropSource, DropTarget, UnitDBkernel, UnitDBDeclare,
+   UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
+   GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
+   uW7TaskBar, GraphicsBaseTypes, TwButton;
 
 type
   TUpdateDBForm = class(TForm)
@@ -288,7 +289,7 @@ begin
   FCurrentImage.Assign(Bitmap);
   Repaint;
   Bitmap.free;
-  FileSize:=Dolphin_DB.GetFileSizeByName(Value.Name);
+  FileSize:=GetFileSizeByName(Value.Name);
   TimeCounter.NextAction(FileSize);
 
   ProgressBar.Text:=Format(TEXT_MES_TIME_REM_F,[FormatDateTime('hh:mm:ss',TimeCounter.GetTimeRemaining)]);

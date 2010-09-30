@@ -3,16 +3,17 @@ unit UnitSlideShowScanDirectoryThread;
 interface
 
 uses
-  Classes, Forms, Dolphin_DB, uThreadForm, uThreadEx, ActiveX, UnitDBCommon;
+  Classes, Forms, Dolphin_DB, uThreadForm, uThreadEx, ActiveX,
+  UnitDBCommon, UnitDBDeclare;
 
 type
   TSlideShowScanDirectoryThread = class(TThreadEx)
   private
-   FSender : TForm;
-   BaseFileName : string;
-   Info : TRecordsInfo;
-   fSID : TGUID;
     { Private declarations }
+    FSender: TForm;
+    BaseFileName: string;
+    Info: TRecordsInfo;
+    FSID: TGUID;
   protected
     procedure Execute; override;
   public

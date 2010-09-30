@@ -162,7 +162,6 @@ type
     ShowDateOptionsLink: TWebLink;
     SortLink: TWebLink;
     BigImagesTimer: TTimer;
-    DropFileTarget3: TDropFileTarget;
     SearchGroupsImageList: TImageList;
     ImageAllGroups: TImage;
     SearchImageList: TImageList;
@@ -419,7 +418,6 @@ type
     FListUpdating : boolean;
     FPropertyGroups: String;
     TempFolderName : String;
-    CurrentItemInfo : TOneRecordInfo;
     FFirstTip_WND : HWND;
     WindowsMenuTickCount : Cardinal;
     FLastSelectionCount : Integer;
@@ -440,6 +438,7 @@ type
     DBCanDrag : Boolean;
     DBDragPoint : TPoint;
     FCurrentSelectedID : Integer;
+    CurrentItemInfo : TOneRecordInfo;
     SelectedInfo : TSelectedInfo;
     Creating : Boolean;
     LockChangePath : Boolean;
@@ -455,7 +454,7 @@ type
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
     function GetDateFilter : TDateRange;
-    procedure AddItemInListViewByGroups(SearchRecord : TSearchRecord; ReplaceBitmap : Boolean);
+    procedure AddItemInListViewByGroups(DataRecord : TDBPopupMenuInfoRecord; ReplaceBitmap : Boolean);
     procedure RebuildQueryList;
     function GetSortMethod: Integer;
     function GetShowGroups: Boolean;
@@ -482,7 +481,7 @@ type
     procedure DoSetSearchByComparing;
     procedure SaveQueryList;
     procedure LoadQueryList;
-    procedure LoadDataPacket(Packet : TSearchRecordArray);
+    procedure LoadDataPacket(Packet : TDBPopupMenuInfo);
     procedure EmptyFillListInfo;
     procedure StartSearchThread(IsEstimate : Boolean);
     procedure StartLoadingList;
@@ -636,8 +635,6 @@ begin
   GroupsLoaded := False;
   SearchEdit.ShowDropDownMenu := False;
 
-  SearchEdit.NullText := TEXT_MES_NULL_TEXT;
-
   ElvMain := TEasyListView.Create(Self);
   ElvMain.Parent := Self;
   ElvMain.Align := AlClient;
@@ -651,9 +648,9 @@ begin
   ElvMain.BackGround.OffsetTrack := True;
   ElvMain.BackGround.BlendAlpha := 220;
 
-  ElvMain.Font.Color:=0;
-  ElvMain.View:=elsThumbnail;
-  ElvMain.DragKind:=dkDock;
+  ElvMain.Font.Color := 0;
+  ElvMain.View := ElsThumbnail;
+  ElvMain.DragKind := DkDock;
 
   SetLVSelection(ElvMain);
 
@@ -967,7 +964,7 @@ var
   xCount : integer;
   ProgressForm : TProgressActionForm;
   WorkQuery : TDataSet;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
  WorkQuery:=GetQuery;
  If not DBkernel.ProgramInDemoMode then
@@ -1247,7 +1244,7 @@ var
 
   RecordInfo : TOneRecordInfo;
   Exists : integer;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
   //TODO: WTF?
   Password:='';
@@ -1421,7 +1418,7 @@ end;
 function TSearchForm.GetSelectedTStrings: TStrings;
 var
   I : integer;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
   Result := TStringList.Create;
 
@@ -1440,7 +1437,7 @@ begin
   ClearItems;
   DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
   DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
-  aScript.Free;
+
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
   if Creating then exit;
@@ -1448,11 +1445,13 @@ begin
   DBKernel.UnRegisterChangesID(self,ChangedDBDataByID);
   DBkernel.SaveCurrentColorTheme;
   SaveWindowPos1.SavePosition;
-  F(FBitmapImageList);
   FormManager.UnRegisterMainForm(Self);
   Creating := True;
 
-  FSearchInfo.Free;
+  F(aScript);
+  F(FilesToDrag);
+  F(FBitmapImageList);
+  F(FSearchInfo);
 end;
 
 procedure TSearchForm.Reloadtheme(Sender: TObject);
@@ -1573,9 +1572,9 @@ end;
 procedure TSearchForm.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
 var
   RefreshParams : TEventFields;
-  FilesToUpdate : TSearchRecordArray;
+  FilesToUpdate : TDBPopupMenuInfo;
   I, ReRotation : Integer;
-  SearchRecord  : TSearchRecord;
+  SearchRecord  : TDBPopupMenuInfoRecord;
   DataObject    : TDataObject;
   SelectQuery   : TDataSet;
 begin
@@ -1629,7 +1628,7 @@ begin
       if EventID_Param_Rating in params then SearchRecord.Rating := Value.Rating;
       if EventID_Param_Name in params then SearchRecord.FileName := Value.Name;
       if EventID_Param_KeyWords in params then SearchRecord.KeyWords := Value.KeyWords;
-      if EventID_Param_Comment in params then SearchRecord.Comments := Value.Comment;
+      if EventID_Param_Comment in params then SearchRecord.Comment := Value.Comment;
       if EventID_Param_Rotate in params then
       begin
         ReRotation := GetNeededRotation(SearchRecord.Rotation, Value.Rotate);
@@ -1641,12 +1640,10 @@ begin
         RefreshParams := [EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
         if (ElvMain.Items[i].ImageIndex < 0) or (RefreshParams * params <> []) then
         begin
-          FilesToUpdate := TSearchRecordArray.Create;
-          with FilesToUpdate.AddNew do
-          begin
-            FileName := SearchRecord.FileName;
+          FilesToUpdate := TDBPopupMenuInfo.Create;
+          with FilesToUpdate.Add(SearchRecord.FileName) do
             Rotation := SearchRecord.Rotation;
-          end;
+
           NewFormSubState;
           RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, FilesToUpdate, True));
         end;
@@ -1660,15 +1657,10 @@ end;
 procedure TSearchForm.ClearItems;
 var
   I : Integer;
-  DataObject : TDataObject;
 begin
   for I := 0 to ElvMain.Items.Count - 1 do
-  begin
-    DataObject := TDataObject(ElvMain.Items[I].Data);
-    TSearchRecord(DataObject.Data).Free;
-    DataObject.Free;
-    ElvMain.Items[I].Data := nil;
-  end;
+    TDataObject(ElvMain.Items[I].Data).Free;
+
   ElvMain.Items.Clear;
 end;
 
@@ -1684,7 +1676,7 @@ var
   Pos, MousePos : Tpoint;
   I : Integer;
   Item: TEasyItem;
-  Data : TSearchRecord;
+  Data : TDBPopupMenuInfoRecord;
   SpotX, SpotY : Integer;
 
 begin
@@ -1752,7 +1744,7 @@ begin
     if DBKernel.Readbool('Options', 'AllowPreview', True) then
       ElvMain.ShowHint := not FileExists(Data.FileName);
 
-    ElvMain.Hint := Data.Comments;
+    ElvMain.Hint := Data.Comment;
   end;
 
 end;
@@ -1779,7 +1771,7 @@ var
   P, P1: Tpoint;
   I: Integer;
   Item: TEasyItem;
-  DataRecord: TSearchRecord;
+  DataRecord: TDBPopupMenuInfoRecord;
   MenuInfo: TDBPopupMenuInfoRecord;
 begin
   GetCursorPos(P);
@@ -1798,8 +1790,8 @@ begin
     Exit;
 
   HintTimer.Enabled := False;
-  DataRecord := TSearchRecord(TDataObject(LastMouseItem.Data).Data);
-  MenuInfo := TDBPopupMenuInfoRecord.CreateFromSearchRecord(DataRecord);
+  DataRecord := GetSearchRecordFromItemData(LastMouseItem);
+  MenuInfo := DataRecord.Copy;
 
   THintManager.Instance.CreateHintWindow(Self, MenuInfo, P, HintRealA);
 
@@ -1972,7 +1964,7 @@ begin
 
    SetLength(ItemsImThArray, ElvMain.Items.Count);
    for I := 0 to ElvMain.Items.Count - 1 do
-     ItemsImThArray[I] := GetSearchRecordFromItemData(ElvMain.Items[I]).ImTh;
+     ItemsImThArray[I] := GetSearchRecordFromItemData(ElvMain.Items[I]).LongImageID;
 
    SaveImThsTofile(FileName,ItemsImThArray);
   end;
@@ -2052,7 +2044,7 @@ end;
 procedure TSearchForm.ListViewEdited(Sender: TObject; Item: TEasyItem;
   var S: String);
 var
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
   S := copy(S, 1, Min(Length(S), 255));
   SearchRecord := GetSearchRecordFromItemData(Item);
@@ -2100,7 +2092,7 @@ function TSearchForm.GetCurrentPopUpMenuInfo(Item : TEasyItem) : TDBPopupMenuInf
 var
   I : Integer;
   MenuRecord : TDBPopupMenuInfoRecord;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
   Result.IsListItem:=false;
@@ -2108,8 +2100,8 @@ begin
   Result.IsPlusMenu := False;
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    SearchRecord := TSearchRecord(TDataObject(ElvMain.Items[I].Data).Data);
-    MenuRecord := TDBPopupMenuInfoRecord.CreateFromSearchRecord(SearchRecord);
+    SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
+    MenuRecord := SearchRecord.Copy;
     Result.Add(MenuRecord);
   end;
  Result.Position:=0;
@@ -2317,7 +2309,6 @@ begin
     DestroyCounter:=1;
   end;
   DestroyTimer.Enabled:=true;
-  FilesToDrag.Free;
 end;
 
 procedure TSearchForm.Datenotexists1Click(Sender: TObject);
@@ -2527,17 +2518,18 @@ end;
 
 procedure TSearchForm.PopupMenu6Popup(Sender: TObject);
 begin
- SetComent1.Visible:=Memo2.ReadOnly;
- Comentnotsets1.Visible:=not Memo2.ReadOnly;
- MenuItem2.Visible:=not Memo2.ReadOnly;
- Cut1.Visible:=not Memo2.ReadOnly;
- Copy2.Visible:=not Memo2.ReadOnly;
- Paste1.Visible:=not Memo2.ReadOnly;
- Undo1.Visible:=not Memo2.ReadOnly;
+  SetComent1.Visible := Memo2.readonly;
+  Comentnotsets1.Visible := not Memo2.readonly;
+  MenuItem2.Visible := not Memo2.readonly;
+  Cut1.Visible := not Memo2.readonly;
+  Copy2.Visible := not Memo2.readonly;
+  Paste1.Visible := not Memo2.readonly;
+  Undo1.Visible := not Memo2.readonly;
 end;
 
 procedure TSearchForm.LoadLanguage;
 begin
+  SearchEdit.NullText := TEXT_MES_NULL_TEXT;
  LabelBackGroundSearching.Caption:=TEXT_MES_SERCH_PR;
  Label1.Caption:=TEXT_MES_SEARCH_TEXT;
  Label2.Caption:=TEXT_MES_IDENT;
@@ -2726,7 +2718,7 @@ end;
 procedure TSearchForm.DeleteItemByID(ID: integer);
 var
   I : Integer;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
@@ -2734,6 +2726,7 @@ begin
     if SearchRecord.ID = ID then
     begin
       //TODO: FREE DATA
+      ElvMain.Items[I].Data.Free;
       ElvMain.Items.Delete(I);
       Break;
     end;
@@ -3231,7 +3224,7 @@ var
   ArGroups : TStringList;
   ArTimes : TArTime;
   WorkQuery : TDataSet;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
   SelectQuery : TDataSet;
 begin
   SelectQuery := GetQuery;
@@ -3280,7 +3273,7 @@ begin
 
    SetLength(ArInt,Length(ArInt)+1);
    ArInt[Length(ArInt)-1]:=SearchRecord.Rating;
-   ArComments.Add(SearchRecord.Comments);
+   ArComments.Add(SearchRecord.Comment);
 
    SetLength(ArIsDates,Length(ArIsDates)+1);
    ArIsDates[Length(ArIsDates)-1]:=SearchRecord.IsDate;
@@ -3435,7 +3428,7 @@ begin
  begin
   NewItem := TMenuItem.Create(Item);
   DS:=DriveState(AnsiChar(Chr(i)));
-  If (DS=dolphin_db.DS_DISK_WITH_FILES) or (DS=dolphin_db.DS_EMPTY_DISK) then
+  If (DS=DS_DISK_WITH_FILES) or (DS=DS_EMPTY_DISK) then
   begin
    S:=GetCDVolumeLabel(Chr(i));
    if S<>'' then
@@ -3476,9 +3469,9 @@ begin
  If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_CDROM) then
  begin
   NewItem := TMenuItem.Create(Item);
-  DS:=Dolphin_DB.DriveState(AnsiChar(Chr(i)));
+  DS:=DriveState(AnsiChar(Chr(i)));
   inc(C);
-  If (DS=dolphin_db.DS_DISK_WITH_FILES) or (DS=dolphin_db.DS_EMPTY_DISK) then
+  If (DS=DS_DISK_WITH_FILES) or (DS=DS_EMPTY_DISK) then
   begin
    S:=GetCDVolumeLabel(Chr(i));
    if S<>'' then
@@ -3617,7 +3610,7 @@ procedure TSearchForm.EasyListViewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  Data : TSearchRecord;
+  Data : TDBPopupMenuInfoRecord;
   Y : Integer;
 begin
   if FListUpdating or (Item.Data = nil) then
@@ -3635,12 +3628,12 @@ begin
   if Item.ImageIndex < 0 then
     Exit;
 
-  Data := TSearchRecord(TDataObject(Item.Data).Data);
+  Data := GetSearchRecordFromItemData(Item);
 
   DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
                      FBitmapImageList, Y,
                      True, Data.ID, Data.FileName, Data.Rating, Data.Rotation,
-                     Data.Access, Data.Crypted, data.Exists);
+                     Data.Access, Data.Crypted, Data.Exists);
 
 end;
 
@@ -3753,7 +3746,7 @@ end;
 function TSearchForm.FileNameExistsInList(FileName : string) : Boolean;
 var
   I : Integer;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
   Result := False;
   FileName := AnsiLowerCase(FileName);
@@ -3771,7 +3764,7 @@ end;
 function TSearchForm.ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap) : Boolean;
 var
   I : Integer;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
   ListItem : TEasyItem;
 begin
   FileName := AnsiLowerCase(FileName);
@@ -3832,19 +3825,18 @@ end;
 procedure TSearchForm.BigImagesTimerTimer(Sender: TObject);
 var
   I : Integer;
-  Data : TSearchRecordArray;
+  Data : TDBPopupMenuInfo;
 begin
   if Self.fListUpdating then
     Exit;
   BigImagesTimer.Enabled := False;
-  //???????NewFormState;
+  NewFormSubState;
   //тут начинается загрузка больших картинок
 
-  Data := TSearchRecordArray.Create;
+  Data := TDBPopupMenuInfo.Create;
   for I := 0 to ElvMain.Items.Count - 1 do
-    Data.Add(GetSearchRecordFromItemData(ElvMain.Items[I]));
+    Data.Add(GetSearchRecordFromItemData(ElvMain.Items[I]).Copy);
 
-  NewFormSubState;
   RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, Data, True));
 end;
 
@@ -3853,7 +3845,7 @@ var
   I : integer;
   R : TRect;
   RV : TRect;
-  SearchRecord : TSearchRecord;
+  SearchRecord : TDBPopupMenuInfoRecord;
 begin
   SetLength(Result, 0);
 
@@ -4219,21 +4211,21 @@ procedure TSearchForm.ToolButton12Click(Sender: TObject);
 var
   FileName : string;
 begin
- if ElvMain.Selection.Count=0 then
- begin
-  NewExplorer;
- end else
- begin
-  With ExplorerManager.NewExplorer(False) do
+  if ElvMain.Selection.Count=0 then
   begin
-   FileName:=TSearchRecord(TDataObject(ElvMain.Selection.First.Data).Data).FileName;
-   DoProcessPath(FileName);
-   SetOldPath(FileName);
-   SetPath(ExtractFilePath(FileName));
-   Show;
-   SetFocus;
+    NewExplorer;
+  end else
+  begin
+    with ExplorerManager.NewExplorer(False) do
+    begin
+      FileName := GetSearchRecordFromItemData(ElvMain.Selection.First).FileName;
+      DoProcessPath(FileName);
+      SetOldPath(FileName);
+      SetPath(ExtractFilePath(FileName));
+      Show;
+      SetFocus;
+    end;
   end;
- end;
 end;
 
 procedure TSearchForm.SearchEditGetAdditionalImage(Sender: TObject;
@@ -4271,7 +4263,8 @@ procedure TSearchForm.SortingClick(Sender: TObject);
 var
   I, L, index, N : integer;
   aType : Byte;
-  Data : TSearchRecord;
+  Data : TDBPopupMenuInfoRecord;
+  SearchExtraInfo : TSearchDataExtension;
 type
   SortList = array of TEasyItem;
 
@@ -4416,7 +4409,7 @@ begin
         LI[I].Indent := ElvMain.Items[I].Tag;
         LI[I].Data := ElvMain.Items[I].Data;
         LI[I].ImageIndex := ElvMain.Items[I].ImageIndex;
-        Data := TSearchRecord(TDataObject(ElvMain.Items[I].Data).Data);
+        Data := GetSearchRecordFromItemData(ElvMain.Items[I]);
         index := I;
         case SortMethod of
           SM_ID: begin
@@ -4444,7 +4437,8 @@ begin
              end;
           SM_COMPARING: begin
               SIs[i].ValueStr := ExtractFileName(Data.FileName);
-              SIs[i].ValueInt := Data.CompareResult.ByPixels * 10 + Data.CompareResult.ByGistogramm;
+              SearchExtraInfo := TSearchDataExtension(Data.Data);
+              SIs[i].ValueInt := SearchExtraInfo.CompareResult.ByPixels * 10 + SearchExtraInfo.CompareResult.ByGistogramm;
              end;
         end;
         SIs[i].ID := I;
@@ -4467,8 +4461,8 @@ begin
 
         for I := 0 to L - 1 do
         begin
-          AddItemInListViewByGroups(TSearchRecord(TDataObject(LI[SIs[i].ID].Data).Data), False);
-          ElvMain.Items[i].ImageIndex:=LI[SIs[i].ID].ImageIndex;
+          AddItemInListViewByGroups(TDBPopupMenuInfoRecord(TDataObject(LI[SIs[i].ID].Data).Data), False);
+          ElvMain.Items[i].ImageIndex := LI[SIs[i].ID].ImageIndex;
           ElvMain.Items[i].Data := LI[SIs[i].ID].Data;
         end;
       except
@@ -4917,11 +4911,12 @@ begin
   end;
 end;
 
-procedure TSearchForm.AddItemInListViewByGroups(SearchRecord : TSearchRecord; ReplaceBitmap : Boolean);
+procedure TSearchForm.AddItemInListViewByGroups(DataRecord : TDBPopupMenuInfoRecord; ReplaceBitmap : Boolean);
 var
   new: TEasyItem;
   i, i10 : integer;
   DataObject : TDataObject;
+  SearchExtraInfo : TSearchDataExtension;
 begin
   if (SortMethod = 0) or not ShowGroups then
   begin
@@ -4940,9 +4935,9 @@ begin
   begin
     if not SortDecrement then
     begin
-      if (FFillListInfo.LastSize = 0) and (SearchRecord.FileSize < 100 * 1024) then
+      if (FFillListInfo.LastSize = 0) and (DataRecord.FileSize < 100 * 1024) then
       begin
-        FFillListInfo.LastSize := Max(1, SearchRecord.FileSize);
+        FFillListInfo.LastSize := Max(1, DataRecord.FileSize);
         with ElvMain.Groups.Add do
         begin
           Caption := TEXT_MES_LESS_THAN + ' ' + SizeInTextA(1024 * 100);
@@ -4950,11 +4945,11 @@ begin
         end;
       end else
       begin
-        if SearchRecord.FileSize < 1000 * 1024 then
+        if DataRecord.FileSize < 1000 * 1024 then
         begin
-          i10 := Trunc(SearchRecord.FileSize / (100 * 1024)) * 10 * 1024;
+          i10 := Trunc(DataRecord.FileSize / (100 * 1024)) * 10 * 1024;
           I := i10*10;
-          if (FFillListInfo.LastSize < i + i10) and (SearchRecord.FileSize > 100 * 1024) then
+          if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 100 * 1024) then
           with ElvMain.Groups.Add do
           begin
             FFillListInfo.LastSize := i + i10;
@@ -4963,9 +4958,9 @@ begin
           end;
         end else
         begin
-          if SearchRecord.FileSize < 1024*1024*10 then
+          if DataRecord.FileSize < 1024*1024*10 then
           begin
-            i10 := Trunc(SearchRecord.FileSize / (1024*1024))*100*1024;
+            i10 := Trunc(DataRecord.FileSize / (1024*1024))*100*1024;
             I:= Round(i10 * 10 / (1024 * 1024)) * 1024 * 1024;
             if I = 0 then
               with ElvMain.Groups.Add do
@@ -4975,7 +4970,7 @@ begin
                 Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
                 Visible := True;
               end;
-            if (FFillListInfo.LastSize < I + i10) and (SearchRecord.FileSize > 1024 * 1024) then
+            if (FFillListInfo.LastSize < I + i10) and (DataRecord.FileSize > 1024 * 1024) then
             with ElvMain.Groups.Add do
             begin
               FFillListInfo.LastSize := I + i10;
@@ -4984,9 +4979,9 @@ begin
             end;
           end else
           begin
-            if SearchRecord.FileSize < 1024 * 1024 * 100 then
+            if DataRecord.FileSize < 1024 * 1024 * 100 then
             begin
-              i10 := Trunc(SearchRecord.FileSize / (1024 * 1024 * 10)) * 1000 * 1024;
+              i10 := Trunc(DataRecord.FileSize / (1024 * 1024 * 10)) * 1000 * 1024;
               I := Round(i10 * 10 / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
               if (I = 0) then
               with ElvMain.Groups.Add do
@@ -4996,7 +4991,7 @@ begin
                 Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
                 Visible := True;
               end;
-              if (FFillListInfo.LastSize < i + i10) and (SearchRecord.FileSize > 1024 * 1024 * 10) then
+              if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 1024 * 1024 * 10) then
                 with ElvMain.Groups.Add do
                 begin
                  FFillListInfo.LastSize := I + i10;
@@ -5017,10 +5012,10 @@ begin
       end;
     end else
     begin
-      if SearchRecord.FileSize < 901*1024 then
+      if DataRecord.FileSize < 901*1024 then
       begin
-        i10:=Trunc(SearchRecord.FileSize / (1024 * 100)) * 1024 * 100;
-        if (Abs(FFillListInfo.LastSize - SearchRecord.FileSize)>1024*100) and (SearchRecord.FileSize > 0) or (FFillListInfo.LastSize = 0) then
+        i10:=Trunc(DataRecord.FileSize / (1024 * 100)) * 1024 * 100;
+        if (Abs(FFillListInfo.LastSize - DataRecord.FileSize)>1024*100) and (DataRecord.FileSize > 0) or (FFillListInfo.LastSize = 0) then
           with ElvMain.Groups.Add do
           begin
             FFillListInfo.LastSize := i10 + 1024 * 100;
@@ -5029,10 +5024,10 @@ begin
           end;
        end else
        begin
-         if SearchRecord.FileSize < 1024 * 1024 * 10 then
+         if DataRecord.FileSize < 1024 * 1024 * 10 then
          begin
-           i10 := Trunc(SearchRecord.FileSize / (1024 * 1024)) * 1024 * 1024;
-           if (Abs(FFillListInfo.LastSize - SearchRecord.FileSize) > 1024 * 1024) and (SearchRecord.FileSize > 1024 * 1024) or (FFillListInfo.LastSize = 0) then
+           i10 := Trunc(DataRecord.FileSize / (1024 * 1024)) * 1024 * 1024;
+           if (Abs(FFillListInfo.LastSize - DataRecord.FileSize) > 1024 * 1024) and (DataRecord.FileSize > 1024 * 1024) or (FFillListInfo.LastSize = 0) then
              with ElvMain.Groups.Add do
              begin
               FFillListInfo.LastSize:=i10 + 1024 * 1024;
@@ -5041,10 +5036,10 @@ begin
              end;
           end else
         begin
-         if SearchRecord.FileSize < 1024 * 1024 * 100 then
+         if DataRecord.FileSize < 1024 * 1024 * 100 then
          begin
-           i10 := Trunc(SearchRecord.FileSize / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
-           if (Abs(FFillListInfo.LastSize - SearchRecord.FileSize) > 1024 * 1024 * 10) and (SearchRecord.FileSize > 1024 * 1024 * 10) or (FFillListInfo.LastSize = 0)  then
+           i10 := Trunc(DataRecord.FileSize / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
+           if (Abs(FFillListInfo.LastSize - DataRecord.FileSize) > 1024 * 1024 * 10) and (DataRecord.FileSize > 1024 * 1024 * 10) or (FFillListInfo.LastSize = 0)  then
              with ElvMain.Groups.Add do
              begin
                FFillListInfo.LastSize := i10 + 1024 * 1024 * 10;
@@ -5066,11 +5061,11 @@ begin
    end;
 
     if SortMethod = SM_TITLE then
-    if ExtractFileName(SearchRecord.FileName)<>'' then
+    if ExtractFileName(DataRecord.FileName)<>'' then
     begin
-     if FFillListInfo.LastChar <> ExtractFilename(SearchRecord.FileName)[1] then
+     if FFillListInfo.LastChar <> ExtractFilename(DataRecord.FileName)[1] then
       begin
-        FFillListInfo.LastChar := ExtractFilename(SearchRecord.FileName)[1];
+        FFillListInfo.LastChar := ExtractFilename(DataRecord.FileName)[1];
         with ElvMain.Groups.Add do
         begin
          Caption := FFillListInfo.LastChar;
@@ -5080,60 +5075,60 @@ begin
     end;
 
     if SortMethod = SM_RATING then
-    if FFillListInfo.LastRating <> SearchRecord.Rating then
+    if FFillListInfo.LastRating <> DataRecord.Rating then
     begin
-      FFillListInfo.LastRating := SearchRecord.Rating;
+      FFillListInfo.LastRating := DataRecord.Rating;
       with ElvMain.Groups.Add do
       begin
-        if SearchRecord.Rating = 0 then
+        if DataRecord.Rating = 0 then
           Caption := TEXT_MES_NO_RATING + ':'
         else
-          Caption := TEXT_MES_RATING + ': ' + IntToStr(SearchRecord.Rating);
+          Caption := TEXT_MES_RATING + ': ' + IntToStr(DataRecord.Rating);
 
         Visible := True;
       end;
     end;
 
     if SortMethod = SM_DATE_TIME then
-    if (YearOf(SearchRecord.Date) <> FFillListInfo.LastYear) or (MonthOf(SearchRecord.Date) <> FFillListInfo.LastMonth) then
+    if (YearOf(DataRecord.Date) <> FFillListInfo.LastYear) or (MonthOf(DataRecord.Date) <> FFillListInfo.LastMonth) then
     begin
-      FFillListInfo.LastYear := YearOf(SearchRecord.Date);
-      FFillListInfo.LastMonth := MonthOf(SearchRecord.Date);
+      FFillListInfo.LastYear := YearOf(DataRecord.Date);
+      FFillListInfo.LastMonth := MonthOf(DataRecord.Date);
       with ElvMain.Groups.Add do
       begin
-        Caption := FormatDateTime('yyyy, mmmm', SearchRecord.Date);
+        Caption := FormatDateTime('yyyy, mmmm', DataRecord.Date);
         Visible := True;
       end;
     end;
   end;
 
   DataObject := TDataObject.Create;
-  DataObject.Include := SearchRecord.Include;
-  DataObject.Data := SearchRecord;
-  new := ElvMain.Items.Add(DataObject);
+  DataObject.Include := DataRecord.Include;
+  DataObject.Data := DataRecord;
+  New := ElvMain.Items.Add(DataObject);
   if not DataObject.Include then
-    new.BorderColor := GetListItemBorderColor(DataObject);
-  new.Tag := SearchRecord.ID;
+    New.BorderColor := GetListItemBorderColor(DataObject);
+  New.Tag := DataRecord.ID;
   if ReplaceBitmap then
   begin
-    if SearchRecord.Bitmap <> nil then
-      new.ImageIndex := FBitmapImageList.AddBitmap(SearchRecord.Bitmap)
+    SearchExtraInfo := TSearchDataExtension(DataRecord.Data);
+    if SearchExtraInfo.Bitmap <> nil then
+      New.ImageIndex := FBitmapImageList.AddBitmap(SearchExtraInfo.Bitmap)
     else
-      new.ImageIndex := -1;
-    SearchRecord.Bitmap := nil;
+      New.ImageIndex := -1;
+    SearchExtraInfo.Bitmap := nil;
   end;
-  new.Caption := ExtractFileName(SearchRecord.FileName);
+  New.Caption := ExtractFileName(DataRecord.FileName);
 end;
 
-procedure TSearchForm.LoadDataPacket(Packet: TSearchRecordArray);
+procedure TSearchForm.LoadDataPacket(Packet: TDBPopupMenuInfo);
 var
   I : Integer;
 begin
   ElvMain.BeginUpdate;
   try
     for I := 0 to Packet.Count - 1 do
-      AddItemInListViewByGroups(Packet[I], True);
-    Packet.ClearList;
+      AddItemInListViewByGroups(Packet.Extract(0), True);
   finally
     ElvMain.EndUpdate;
   end;

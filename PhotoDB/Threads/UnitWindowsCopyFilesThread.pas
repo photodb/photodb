@@ -3,7 +3,7 @@ unit UnitWindowsCopyFilesThread;
 interface
 
 uses
-  Classes, Windows, DBCommon, Forms;
+  Classes, Windows, DBCommon, Forms, uFileUtils;
 
 type
   TCorrectPathProc = procedure(Src : array of string; Dest : string) of object;
@@ -11,19 +11,19 @@ type
 type
   TWindowsCopyFilesThread = class(TThread)
   private
-   FHandle: Hwnd;
-   FSrc: array of string;
-   FDest: string;
-   FMove, FAutoRename: Boolean;
-   fCallBack : TCorrectPathProc;
-   fOwnerExplorerForm : TForm;
+    FHandle: Hwnd;
+    FSrc: array of string;
+    FDest: string;
+    FMove, FAutoRename: Boolean;
+    FCallBack: TCorrectPathProc;
+    FOwnerExplorerForm: TForm;
     { Private declarations }
   protected
     procedure Execute; override;
     procedure DoCallBack;
   public
-    constructor Create(CreateSuspennded: Boolean; Handle : Hwnd; Src : array of string;
-  Dest : string; Move : Boolean; AutoRename : Boolean; CallBack : TCorrectPathProc; OwnerExplorerForm : TForm);
+    constructor Create(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean;
+      AutoRename: Boolean; CallBack: TCorrectPathProc; OwnerExplorerForm: TForm);
   end;
 
 implementation
@@ -32,9 +32,8 @@ uses Dolphin_DB, ExplorerUnit;
 
 { TWindowsCopyFilesThread }
 
-constructor TWindowsCopyFilesThread.Create(CreateSuspennded: Boolean;
-  Handle: Hwnd; Src: array of string; Dest: string; Move,
-  AutoRename: Boolean; CallBack : TCorrectPathProc; OwnerExplorerForm : TForm);
+constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: array of string; Dest: string; Move, AutoRename: Boolean;
+  CallBack: TCorrectPathProc; OwnerExplorerForm: TForm);
 var
   I: Integer;
 begin
@@ -58,22 +57,24 @@ end;
 
 procedure TWindowsCopyFilesThread.Execute;
 var
-  res : boolean;
+  Res: Boolean;
 begin
- FreeOnTerminate:=true;
- res:=false;
- try
-  res:=CopyFilesSynch(0,FSrc,FDest,FMove,FAutoRename)=0;
- except
- end;
- if res then
- begin
-  if fOwnerExplorerForm<>nil then
+  FreeOnTerminate := True;
+  Res := False;
+  try
+    Res := CopyFilesSynch(0, FSrc, FDest, FMove, FAutoRename) = 0;
+  except
+  end;
+  if Res then
   begin
-   if ExplorerManager.IsExplorer(TExplorerForm(fOwnerExplorerForm)) then
-   Synchronize(DoCallBack);
-  end else Synchronize(DoCallBack);
- end;
+    if FOwnerExplorerForm <> nil then
+    begin
+      if ExplorerManager.IsExplorer(TExplorerForm(FOwnerExplorerForm)) then
+        Synchronize(DoCallBack);
+    end
+    else
+      Synchronize(DoCallBack);
+  end;
 end;
 
 end.

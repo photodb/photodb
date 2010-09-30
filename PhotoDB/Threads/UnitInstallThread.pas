@@ -511,12 +511,12 @@ begin
    if FileOptions[i] then
    begin
     if FileExists(CurrentDirectory+FileList[i]) then
-    Dolphin_DB.WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDirectory+FileList[i]);
+    WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDirectory+FileList[i]);
     if DirectoryExists(CurrentDirectory+FileList[i]) then
-    Dolphin_DB.WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDirectory);
+    WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDirectory);
    end else
    begin
-    Dolphin_DB.WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDBDirectory+FileList[i]);
+    WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDBDirectory+FileList[i]);
    end;
    inc(FBytesOfFilesCopied,GetFileSizeByName(CurrentDirectory+FileList[i]));
    FProgress:=FBytesOfFilesCopied;

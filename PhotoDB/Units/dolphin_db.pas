@@ -84,92 +84,6 @@ const
   LimitDemoRecords = 1000;
 
 type
-  TOneRecordInfo = record
-    ItemFileName: string;
-    ItemCrypted: Boolean;
-    ItemId: Integer;
-    ItemImTh: string;
-    ItemSize: Int64;
-    ItemRotate: Integer;
-    ItemRating: Integer;
-    ItemAccess: Integer;
-    ItemComment: string;
-    ItemCollections: string;
-    ItemGroups: string;
-    ItemOwner: string;
-    ItemKeyWords: string;
-    ItemDate: TDateTime;
-    ItemTime: TDateTime;
-    ItemIsDate: Boolean;
-    ItemIsTime: Boolean;
-    ItemHeight: Integer;
-    ItemWidth: Integer;
-    ItemInclude: Boolean;
-    Image: TJpegImage;
-    Tag: Integer;
-    PassTag: Integer;
-    Loaded: Boolean;
-    ItemLinks: string;
-  end;
-
-  TRecordsInfo = record
-    ItemFileNames: TArStrings;
-    ItemIds: TArInteger;
-    ItemRotates: TArInteger;
-    ItemRatings: TArInteger;
-    ItemAccesses: TArInteger;
-    ItemComments: TArStrings;
-    ItemCollections: TArStrings;
-    ItemGroups: TArStrings;
-    ItemOwners: TArStrings;
-    ItemKeyWords: TArStrings;
-    ItemDates: TArDateTime;
-    ItemTimes: TArTime;
-    ItemIsDates: TArBoolean;
-    ItemIsTimes: TArBoolean;
-    ItemCrypted: TArBoolean;
-    ItemInclude: TArBoolean;
-    ItemLinks: TArStrings;
-    Position: Integer;
-    Tag: Integer;
-    LoadedImageInfo: TArBoolean;
-  end;
-
-type
-  TDBPopupMenuInfoRecord = class
-  public
-    FileName: string;
-    Comment: string;
-    FileSize: Int64;
-    Rotation: Integer;
-    Rating: Integer;
-    ID: Integer;
-    IsCurrent: Boolean;
-    Selected: Boolean;
-    Access: Integer;
-    Date: TDateTime;
-    Time: TDateTime;
-    IsDate: Boolean;
-    IsTime: Boolean;
-    Groups: string;
-    KeyWords: string;
-    Crypted: Boolean;
-    Attr: Integer;
-    InfoLoaded: Boolean;
-    Include: Boolean;
-    Links: string; // ??? not for common use yet
-    Exists: Integer; // for drawing in lists
-    LongImageID: AnsiString;
-    constructor CreateFromDS(DS: TDataSet);
-    constructor CreateFromContRecord(ContRecord: TImageContRecord);
-    constructor CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
-    constructor CreateFromSearchRecord(Info: TSearchRecord);
-    constructor CreateFromExplorerInfo(Info: TExplorerFileInfo);
-    constructor CreateFromRecordInfo(RI: TOneRecordInfo);
-    function Copy : TDBPopupMenuInfoRecord;
-  end;
-
-type
   TDBPopupMenuInfo = class(TObject)
   private
     FData: TList;
@@ -195,14 +109,17 @@ type
     procedure SetPosition(const Value: Integer);
     function GetStatInclude: Boolean;
     function GetCommonComments: string;
+    procedure SetValueByIndex(index: Integer;
+      const Value: TDBPopupMenuInfoRecord);
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source : TDBPopupMenuInfo);
     procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
-    procedure Add(FileName: string); overload;
+    function Add(FileName: string) : TDBPopupMenuInfoRecord; overload;
     procedure Clear;
     function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
-    property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex; default;
+    property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex write SetValueByIndex; default;
     property IsListItem: Boolean read FIsListItem write FIsListItem;
     property AttrExists: Boolean read FAttrExists write FAttrExists;
     property Count: Integer read GetCount;
@@ -304,18 +221,6 @@ type
   TBooleanFunction = function: Boolean;
   TPAnsiCharFunction = function: PAnsiChar;
   TCIDProcedure = procedure(Buffferm: PAnsiChar; BuffesSize : Integer);
-
-  TDbFileInfoA = record
-    ID: Integer;
-    Rotated: Integer;
-    Access: Integer;
-    FileName: string;
-    Comment: string;
-  end;
-
-type
-  TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
-
   TDllRegisterServer = function: HResult; stdcall;
 
 const
@@ -420,8 +325,6 @@ type
   TPlaceFolderArray = array of TPlaceFolder;
 
 type
-  TCorrectPathProc = procedure(Src: array of string; Dest: string) of object;
-
   // Added in 2.2 version
 
   TCallBackBigSizeProc = procedure(Sender: TObject; SizeX, SizeY: Integer) of object;
@@ -558,7 +461,6 @@ var
   HelpActivationNO: Integer = 0;
   FExtImagesInImageList: Integer;
   LastInseredID: Integer;
-  CopyFilesSynchCount: Integer = 0;
   FolderView: Boolean = False;
   DBLoadInitialized: Boolean = False;
   FThisFileInstalled: Integer = -1;
@@ -640,19 +542,11 @@ function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
 { END DB Types }
 function NormalizeDBStringLike(S: string): string;
 procedure ShowPropertiesDialog(FName: string);
-function MrsGetFileType(StrFilename: string): string;
-procedure CopyFiles(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean;
-  CallBack: TCorrectPathProc = nil; ExplorerForm: TForm = nil);
-function DeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean): Integer;
-function GetCDVolumeLabel(CDName: Char): string;
-function DriveState(Driveletter: AnsiChar): TDriveState;
 procedure ShowMyComputerProperties(Hwnd: THandle);
 function KillTask(ExeFileName: string): Integer;
 procedure LoadNickJpegImage(Image: TImage);
 procedure DoHelp;
 procedure DoGetCode(S: string);
-function SilentDeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean;
-  HideErrors: Boolean = False): Integer;
 
 { Setup section }
 function InstalledUserName: string;
@@ -673,7 +567,6 @@ function FileRegisteredOnInstalledApplication(Value: string): Boolean;
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
 function GetDefaultDBName: string;
 
-function GetDirectorySize(Folder: string): Int64;
 
 function ExtractAssociatedIcon_(FileName: string): HICON;
 function ExtractAssociatedIcon_W(FileName: string; IconIndex: Word): HICON;
@@ -691,15 +584,11 @@ procedure RotateDBImage180(Caller : TObject; ID: Integer; OldRotation: Integer);
 procedure DBError(ErrorValue, Error: string);
 
 function GetExt(Filename: string): string;
-function GetFileSizeByName(FileName: string): Int64;
-function LongFileName(ShortName: string): string;
-function LongFileNameW(ShortName: string): string;
+
 function GetUserSID: PSID;
 function SidToStr(Sid: PSID): WideString;
 function GetDirectory(FileName: string): string;
 function ExtinMask(Mask: string; Ext: string): Boolean;
-
-function GetFileSize(FileName: string): Int64;
 
 function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
@@ -710,22 +599,14 @@ function ColorDarken(Color: TColor): TColor;
 
 function CreateDirA(Dir: string): Boolean;
 function ValidDBPath(DBPath: string): Boolean;
-function CopyFilesSynch(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean): Integer;
 function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
 
-var
-  Findleft: Integer;
-  I: Integer;
 procedure LoadDblFromfile(FileName: string; var IDs: TArInteger; var Files: TArStrings);
 function SaveListTofile(FileName: string; IDs: TArInteger; Files: TArStrings): Boolean;
 function IsWallpaper(FileName: string): Boolean;
 procedure LoadFIlesFromClipBoard(var Effects: Integer; Files: TStrings);
-procedure Copy_Move(Copy: Boolean; FileList: TStrings);
 function GetProgramFilesDir: string;
 procedure Deldir(Dir: string; Mask: string);
-function Mince(PathToMince: string; InSpace: Integer): string;
-function WindowsCopyFile(FromFile, ToDir: string): Boolean;
-function WindowsCopyFileSilent(FromFile, ToDir: string): Boolean;
 function CreateShortcutW(SourceFileName, ShortcutName: string; // the file the shortcut points to
   Location: ShortcutType; // shortcut location
   SubFolder, // subfolder of location
@@ -751,7 +632,6 @@ function GetDBFileName(FileName, DBName: string): string;
 function DBReadOnly: Boolean;
 function StringCRC(Str: string): Cardinal;
 function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
-function DateModify(FileName: string): TDateTime;
 
 function GettingProcNum: Integer; // Win95 or later and NT3.1 or later
 function GetWindowsUserName: string;
@@ -781,7 +661,7 @@ var
 
 implementation
 
-uses UnitPasswordForm, UnitWindowsCopyFilesThread,
+uses UnitPasswordForm,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
   UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit;
@@ -860,94 +740,6 @@ function StringCRC(Str: string): Cardinal;
 begin
   Result := 0;
   CalcStringCRC32(Str, Result);
-end;
-
-function GetFileSize(FileName: string): Int64;
-var
-  FS: TFileStream;
-begin
-  try
-{$I-}
-    FS := TFileStream.Create(Filename, FmOpenRead or FmShareDenyNone);
-{$I+}
-  except
-    Result := -1;
-    Exit;
-  end;
-  Result := FS.Size;
-  FS.Free;
-end;
-
-function GetFileSizeByName(FileName: string): Int64;
-var
-  FindData: TWin32FindData;
-  HFind: THandle;
-begin
-  Result := 0;
-  HFind := FindFirstFile(PChar(FileName), FindData);
-  if HFind <> INVALID_HANDLE_VALUE then
-  begin
-    Windows.FindClose(HFind);
-    if (FindData.DwFileAttributes and FILE_ATTRIBUTE_DIRECTORY) = 0 then
-      Result := FindData.NFileSizeHigh * 2 * MaxInt + FindData.NFileSizeLow;
-  end;
-end;
-
-function LongFileName(ShortName: string): string;
-var
-  SR: TSearchRec;
-begin
-  Result := '';
-  if (Pos('\\', ShortName) + Pos('*', ShortName) + Pos('?', ShortName) <> 0) or
-    (not FileExists(ShortName) and not DirectoryExists(ShortName)) or (Length(ShortName) < 4) then
-  begin
-    Result := ShortName;
-    Exit;
-  end;
-  if Pos('~1', ShortName) = 0 then
-  begin
-    Result := ShortName;
-    Exit;
-  end;
-  while FindFirst(ShortName, FaAnyFile, SR) = 0 do
-  begin
-    { next part as prefix }
-    Result := '\' + SR.name + Result;
-    SysUtils.FindClose(SR); { the SysUtils, not the WinProcs procedure! }
-    { directory up (cut before '\') }
-    ShortName := ExtractFileDir(ShortName);
-    if Length(ShortName) <= 2 then
-    begin
-      Break; { ShortName contains drive letter followed by ':' }
-    end;
-  end;
-  Result := AnsiUpperCase(ExtractFileDrive(ShortName)) + Result;
-end;
-
-function LongFileNameW(ShortName: string): string;
-var
-  SR: TSearchRec;
-begin
-  Result := '';
-  if (Pos('\\', ShortName) + Pos('*', ShortName) + Pos('?', ShortName) <> 0) or
-    (not FileExists(ShortName) and not DirectoryExists(ShortName)) or (Length(ShortName) < 4) then
-  begin
-    Result := ShortName;
-    Exit;
-  end;
-  while FindFirst(ShortName, FaAnyFile, SR) = 0 do
-  begin
-    { next part as prefix }
-    Result := '\' + SR.name + Result;
-    SysUtils.FindClose(SR); { the SysUtils, not the WinProcs procedure! }
-    { directory up (cut before '\') }
-    ShortName := ExtractFileDir(ShortName);
-    if Length(ShortName) <= 2 then
-    begin
-      Break; { ShortName contains drive letter followed by ':' }
-    end;
-  end;
-  Result := AnsiUpperCase(ExtractFileDrive(ShortName)) + Result;
 end;
 
 function GetUserSID: PSID;
@@ -1082,7 +874,6 @@ begin
   If Result then Break;
  end;
 end;
-
 
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
 var
@@ -3818,160 +3609,6 @@ begin
   ShellExecuteEx(Addr(SExInfo));
 end;
 
-function MrsGetFileType(StrFilename: string): string;
-var
-  FileInfo: TSHFileInfo;
-begin
-  FillChar(FileInfo, SizeOf(FileInfo), #0);
-  SHGetFileInfo(PWideChar(StrFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
-  Result := FileInfo.SzTypeName;
-end;
-
-procedure CreateBuffer(Names: array of string; var P: TBuffer);
-var
-  I: Integer;
-  S: string;
-begin
-  for I := 0 to Length(Names) - 1 do
-  begin
-    if S = '' then
-    begin
-      S := Names[I];
-    end
-    else
-    begin
-      S := S + #0 + Names[I];
-    end;
-  end;
-  S := S + #0#0;
-  SetLength(P, Length(S));
-  for I := 1 to Length(S) do
-    P[I - 1] := S[I];
-end;
-
-function CopyFilesSynch(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean): Integer;
-var
-  SHFileOpStruct: TSHFileOpStruct;
-  SrcBuf: TBuffer;
-begin
-  Result := -1;
-  Inc(CopyFilesSynchCount);
-  try
-    CreateBuffer(Src, SrcBuf);
-    with SHFileOpStruct do
-    begin
-      Wnd := Handle;
-      WFunc := FO_COPY;
-      if Move then
-        WFunc := FO_MOVE;
-      PFrom := Pointer(SrcBuf);
-      PTo := PWideChar(Dest);
-      FFlags := 0;
-      if AutoRename then
-        FFlags := FOF_RENAMEONCOLLISION;
-      FAnyOperationsAborted := False;
-      HNameMappings := nil;
-      LpszProgressTitle := nil;
-    end;
-    Result := SHFileOperation(SHFileOpStruct);
-    SrcBuf := nil;
-  except
-  end;
-  Dec(CopyFilesSynchCount);
-end;
-
-procedure CopyFiles(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean;
-  CallBack: TCorrectPathProc = nil; ExplorerForm: TForm = nil);
-begin
-  TWindowsCopyFilesThread.Create(False, Handle, Src, Dest, Move, AutoRename, CallBack, ExplorerForm);
-end;
-
-function DeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean): Integer;
-var
-  SHFileOpStruct: TSHFileOpStruct;
-  Src: TBuffer;
-begin
-  CreateBuffer(Names, Src);
-  with SHFileOpStruct do
-  begin
-    Wnd := Handle;
-    WFunc := FO_DELETE;
-    PFrom := Pointer(Src);
-    PTo := nil;
-    FFlags := 0;
-    if ToRecycle then
-      FFlags := FOF_ALLOWUNDO;
-    FAnyOperationsAborted := False;
-    HNameMappings := nil;
-    LpszProgressTitle := nil;
-  end;
-  Result := SHFileOperation(SHFileOpStruct);
-  Src := nil;
-end;
-
-function SilentDeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean;
-  HideErrors: Boolean = False): Integer;
-var
-  SHFileOpStruct: TSHFileOpStruct;
-  Src: TBuffer;
-begin
-  CreateBuffer(Names, Src);
-  with SHFileOpStruct do
-  begin
-    Wnd := Handle;
-    WFunc := FO_DELETE;
-    PFrom := Pointer(Src);
-    PTo := nil;
-    FFlags := FOF_NOCONFIRMATION;
-    if HideErrors then
-      FFlags := FFlags or FOF_SILENT or FOF_NOERRORUI;
-    if ToRecycle then
-      FFlags := FFlags or FOF_ALLOWUNDO;
-    FAnyOperationsAborted := False;
-    HNameMappings := nil;
-    LpszProgressTitle := nil;
-  end;
-  Result := SHFileOperation(SHFileOpStruct);
-  Src := nil;
-end;
-
-function GetCDVolumeLabel(CDName: Char): string;
-var
-  VolumeName, FileSystemName: array [0 .. MAX_PATH - 1] of Char;
-  VolumeSerialNo: DWord;
-  MaxComponentLength, FileSystemFlags: Cardinal;
-begin
-  GetVolumeInformation(PWideChar(CDName + ':\'), VolumeName, MAX_PATH, @VolumeSerialNo, MaxComponentLength,
-    FileSystemFlags, FileSystemName, MAX_PATH);
-  Result := VolumeName;
-end;
-
-function DriveState(Driveletter: AnsiChar): TDriveState;
-var
-  Mask: string[6];
-  SRec: TSearchRec;
-  OldMode: Cardinal;
-  Retcode: Integer;
-begin
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  Mask := '?:\*.*';
-  Mask[1] := Driveletter;
-{$I-} { не возбуждаем исключение при неудаче }
-  Retcode := FindFirst(Mask, FaAnyfile, SRec);
-  FindClose(SRec);
-{$I+}
-  case Retcode of
-    0:
-      Result := DS_DISK_WITH_FILES; { обнаружен по крайней мере один файл }
-    -18:
-      Result := DS_EMPTY_DISK; { никаких файлов не обнаружено, но ok }
-    -21:
-      Result := DS_NO_DISK; { DOS ERROR_NOT_READY }
-  else
-    Result := DS_UNFORMATTED_DISK; { в моей системе значение равно -1785! }
-  end;
-  SetErrorMode(OldMode);
-end;
 
 procedure ShowMyComputerProperties(Hwnd: THandle);
 var
@@ -5526,65 +5163,7 @@ begin
     end;
   end;
 
-  procedure Copy_Move(Copy: Boolean; FileList: TStrings);
-  var
-    HGlobal, ShGlobal: THandle;
-    DropFiles: PDropFiles;
-    REff: Cardinal;
-    DwEffect: ^Word;
-    RSize, ILen, I: Integer;
-    Files: string;
-  begin
-    if (FileList.Count = 0) or (OpenClipboard(Application.Handle) = False) then
-      Exit;
-
-    Files := '';
-    // File1#0File2#0#0
-    for I := 0 to FileList.Count - 1 do
-      Files := Files + FileList[I] + #0;
-    Files := Files + #0;
-    ILen := Length(Files);
-
-    try
-      EmptyClipboard;
-      RSize := SizeOf(TDropFiles) + SizeOf(Char) * ILen;
-      HGlobal := GlobalAlloc(GMEM_SHARE or GMEM_MOVEABLE or GMEM_ZEROINIT, RSize);
-      if HGlobal <> 0 then
-      begin
-        DropFiles := GlobalLock(HGlobal);
-        DropFiles.PFiles := SizeOf(TDropFiles);
-        DropFiles.FNC := False;
-        DropFiles.FWide := True;
-
-        Move(Files[1], (PByte(DropFiles) + SizeOf(TDropFiles))^, ILen * SizeOf(Char));
-
-        GlobalUnlock(HGlobal);
-        ShGlobal := SetClipboardData(CF_HDROP, HGlobal);
-        if (ShGlobal <> 0) then
-        begin
-          HGlobal := GlobalAlloc(GMEM_MOVEABLE, SizeOf(DwEffect));
-          if HGlobal <> 0 then
-          begin
-            DwEffect := GlobalLock(HGlobal);
-
-            if Copy then
-              DwEffect^ := DROPEFFECT_COPY
-            else
-              DwEffect^ := DROPEFFECT_MOVE;
-
-            GlobalUnlock(HGlobal);
-
-            REff := RegisterClipboardFormat(PWideChar('Preferred DropEffect')); // 'CFSTR_PREFERREDDROPEFFECT'));
-            SetClipboardData(REff, HGlobal)
-          end;
-        end;
-      end;
-    finally
-      CloseClipboard;
-    end;
-  end;
-
-  function GetProgramFilesDirByKeyStr(KeyStr: string): string;
+   function GetProgramFilesDirByKeyStr(KeyStr: string): string;
   var
     DwKeySize: DWORD;
     Key: HKEY;
@@ -5678,85 +5257,6 @@ begin
       Removedir(Dir);
     except
     end;
-  end;
-
-  function Mince(PathToMince: string; InSpace: Integer): string;
-  { ========================================================= }
-  // "C:\Program Files\Delphi\DDrop\TargetDemo\main.pas"
-  // "C:\Program Files\..\main.pas"
-  var
-    Sl: TStringList;
-    SHelp, SFile: string;
-    IPos: Integer;
-
-  begin
-    SHelp := PathToMince;
-    IPos := Pos('\', SHelp);
-    if IPos = 0 then
-    begin
-      Result := PathToMince;
-    end
-    else
-    begin
-      Sl := TStringList.Create;
-      // Decode string
-      while IPos <> 0 do
-      begin
-        Sl.Add(Copy(SHelp, 1, (IPos - 1)));
-        SHelp := Copy(SHelp, (IPos + 1), Length(SHelp));
-        IPos := Pos('\', SHelp);
-      end;
-      if SHelp <> '' then
-      begin
-        Sl.Add(SHelp);
-      end;
-      // Encode string
-      SFile := Sl[Sl.Count - 1];
-      Sl.Delete(Sl.Count - 1);
-      Result := '';
-      while (Length(Result + SFile) < InSpace) and (Sl.Count <> 0) do
-      begin
-        Result := Result + Sl[0] + '\';
-        Sl.Delete(0);
-      end;
-      if Sl.Count = 0 then
-      begin
-        Result := Result + SFile;
-      end
-      else
-      begin
-        Result := Result + '..\' + SFile;
-      end;
-      Sl.Free;
-    end;
-  end;
-
-  function WindowsCopyFile(FromFile, ToDir: string): Boolean;
-  var
-    F: TShFileOpStruct;
-  begin
-    F.Wnd := 0;
-    F.WFunc := FO_COPY;
-    FromFile := FromFile + #0;
-    F.PFrom := Pchar(FromFile);
-    ToDir := ToDir + #0;
-    F.PTo := Pchar(ToDir);
-    F.FFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
-    Result := ShFileOperation(F) = 0;
-  end;
-
-  function WindowsCopyFileSilent(FromFile, ToDir: string): Boolean;
-  var
-    F: TShFileOpStruct;
-  begin
-    F.Wnd := 0;
-    F.WFunc := FO_COPY;
-    FromFile := FromFile + #0;
-    F.PFrom := Pchar(FromFile);
-    ToDir := ToDir + #0;
-    F.PTo := Pchar(ToDir);
-    F.FFlags := FOF_SILENT or FOF_NOCONFIRMATION;
-    Result := ShFileOperation(F) = 0;
   end;
 
   { :Converts Ansi string to Unicode string using specified code page.
@@ -6084,135 +5584,86 @@ begin
     Fs.Free;
   end;
 
-  function GetDirectorySize(Folder: string): Int64;
-  var
-    Found: Integer;
-    SearchRec: TSearchRec;
+
+
+procedure CopyFullRecordInfo(ID: Integer);
+var
+  DS: TDataSet;
+  I: Integer;
+  S: string;
+begin
+  if not DBInDebug then
+    Exit;
+  DS := GetQuery;
+  SetSQL(DS, 'SELECT * FROM $DB$ WHERE id = ' + IntToStr(ID));
+  DS.Open;
+  S := '';
+  for I := 0 to DS.Fields.Count - 1 do
   begin
-    Result := 0;
-    try
-      if Folder[Length(Folder)] <> '\' then
-        Folder := Folder + '\';
-      Found := FindFirst(Folder + '*.*', FaAnyFile, SearchRec);
-      while Found = 0 do
-      begin
-        if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
-        begin
-          if FileExists(Folder + SearchRec.name) then
-          begin
-            try
-              Result := Result + SearchRec.FindData.NFileSizeLow + SearchRec.FindData.NFileSizeHigh * 2 * MaxInt;
-            except
-              ;
-            end;
-          end
-          else if DirectoryExists(Folder + SearchRec.name) then
-            Result := Result + GetDirectorySize(Folder + '\' + SearchRec.name);
-        end;
-        Found := SysUtils.FindNext(SearchRec);
-      end;
-      FindClose(SearchRec);
-    except
+    // if DS.FieldDefList[i].Name<>'StrTh' then
+    begin
+      if DS.Fields[I].DisplayText <> '(MEMO)' then
+        S := S + DS.FieldDefList[I].name + ' = ' + DS.Fields[I].DisplayText + #13
+      else
+        S := S + DS.FieldDefList[I].name + ' = ' + DS.Fields[I].AsString + #13;
     end;
   end;
+  MessageBoxDB(GetActiveFormHandle, S, TEXT_MES_INFORMATION, TD_BUTTON_OK, TD_ICON_INFORMATION);
+  FreeDS(DS);
+end;
 
-  procedure CopyFullRecordInfo(ID: Integer);
+function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
+var
+  S1, S2: string;
+
+  function Num(Str: string): Boolean;
   var
-    DS: TDataSet;
     I: Integer;
-    S: string;
   begin
-    if not DBInDebug then
-      Exit;
-    DS := GetQuery;
-    SetSQL(DS, 'SELECT * FROM $DB$ WHERE id = ' + IntToStr(ID));
-    DS.Open;
-    S := '';
-    for I := 0 to DS.Fields.Count - 1 do
+    Result := True;
+    for I := 1 to Length(Str) do
     begin
-      // if DS.FieldDefList[i].Name<>'StrTh' then
+      if not CharInSet(Str[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
       begin
-        if DS.Fields[I].DisplayText <> '(MEMO)' then
-          S := S + DS.FieldDefList[I].name + ' = ' + DS.Fields[I].DisplayText + #13
-        else
-          S := S + DS.FieldDefList[I].name + ' = ' + DS.Fields[I].AsString + #13;
+        Result := False;
+        Break;
       end;
     end;
-    MessageBoxDB(GetActiveFormHandle, S, TEXT_MES_INFORMATION, TD_BUTTON_OK, TD_ICON_INFORMATION);
-    FreeDS(DS);
   end;
 
-  function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
+  function TrimNum(Str: string): string;
   var
-    S1, S2: string;
-
-    function Num(Str: string): Boolean;
-    var
-      I: Integer;
-    begin
-      Result := True;
-      for I := 1 to Length(Str) do
-      begin
-        if not CharInSet(Str[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
-        begin
-          Result := False;
-          Break;
-        end;
-      end;
-    end;
-
-    function TrimNum(Str: string): string;
-    var
-      I: Integer;
-    begin
-      Result := Str;
-      if Result <> '' then
-        for I := 1 to Length(Result) do
-        begin
-          if not CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
-          begin
-            Delete(Result, 1, I - 1);
-            Break;
-          end;
-        end;
+    I: Integer;
+  begin
+    Result := Str;
+    if Result <> '' then
       for I := 1 to Length(Result) do
       begin
         if not CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
         begin
-          Result := Copy(Result, 1, I - 1);
+          Delete(Result, 1, I - 1);
           Break;
         end;
       end;
-    end;
-
-  begin
-    S1 := TrimNum(Text1);
-    S2 := TrimNum(Text2);
-    if Num(S1) or Num(S2) then
+    for I := 1 to Length(Result) do
     begin
-      Result := StrToIntDef(S1, 0) - StrToIntDef(S2, 0);
-      Exit;
+      if not CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+      begin
+        Result := Copy(Result, 1, I - 1);
+        Break;
+      end;
     end;
-    Result := AnsiCompareStr(Text1, Text2);
   end;
 
-function FileTime2DateTime(FT: _FileTime): TDateTime;
-var
-  FileTime: _SystemTime;
 begin
-  FileTimeToLocalFileTime(FT, FT);
-  FileTimeToSystemTime(FT, FileTime);
-  Result := EncodeDate(FileTime.WYear, FileTime.WMonth, FileTime.WDay) + EncodeTime(FileTime.WHour, FileTime.WMinute,
-    FileTime.WSecond, FileTime.WMilliseconds);
-end;
-
-function DateModify(FileName: string): TDateTime;
-var
-  Ts: TSearchRec;
-begin
-  Result := 0;
-  if FindFirst(FileName, FaAnyFile, Ts) = 0 then
-    Result := FileTime2DateTime(Ts.FindData.FtLastWriteTime);
+  S1 := TrimNum(Text1);
+  S2 := TrimNum(Text2);
+  if Num(S1) or Num(S2) then
+  begin
+    Result := StrToIntDef(S1, 0) - StrToIntDef(S2, 0);
+    Exit;
+  end;
+  Result := AnsiCompareStr(Text1, Text2);
 end;
 
 function GettingProcNum: Integer; // Win95 or later and NT3.1 or later
@@ -6544,13 +5995,19 @@ begin
   FData.Add(MenuRecord);
 end;
 
-procedure TDBPopupMenuInfo.Add(FileName: string);
-var
-  MenuRecord: TDBPopupMenuInfoRecord;
+function TDBPopupMenuInfo.Add(FileName: string) : TDBPopupMenuInfoRecord;
 begin
-  MenuRecord:= TDBPopupMenuInfoRecord.Create;
-  MenuRecord.FileName := FileName;
-  Add(MenuRecord);
+  Result := TDBPopupMenuInfoRecord.Create;
+  Result.FileName := FileName;
+  Add(Result);
+end;
+
+procedure TDBPopupMenuInfo.Assign(Source: TDBPopupMenuInfo);
+var
+  I: Integer;
+begin
+  for I := 0 to Source.Count - 1 do
+    FData.Add(Source[I].Copy);
 end;
 
 procedure TDBPopupMenuInfo.Clear;
@@ -6797,168 +6254,10 @@ begin
   Self[Value].IsCurrent := True;
 end;
 
-  { TDBPopupMenuInfoRecord }
-
-function TDBPopupMenuInfoRecord.Copy: TDBPopupMenuInfoRecord;
+procedure TDBPopupMenuInfo.SetValueByIndex(index: Integer;
+  const Value: TDBPopupMenuInfoRecord);
 begin
-  Result := TDBPopupMenuInfoRecord.Create;
-  Result.ID := ID;
-  Result.FileName := FileName;
-  Result.Comment := Comment;
-  Result.Groups := Groups;
-  Result.FileSize := FileSize;
-  Result.Rotation := Rotation;
-  Result.Rating := Rating;
-  Result.Access := Access;
-  Result.Date := Date;
-  Result.Time := Time;
-  Result.IsDate := IsDate;
-  Result.IsTime := IsTime;
-  Result.Crypted := Crypted;
-  Result.KeyWords := KeyWords;
-  Result.InfoLoaded := InfoLoaded;
-  Result.Include := Include;
-  Result.Links := Links;
-end;
-
-constructor TDBPopupMenuInfoRecord.CreateFromContRecord(ContRecord: TImageContRecord);
-begin
-  ID := ContRecord.ID;
-  FileName := ProcessPath(ContRecord.FileName);
-  Comment := ContRecord.Comment;
-  FileSize := ContRecord.FileSize;
-  Rotation := ContRecord.Rotation;
-  Access := ContRecord.Access;
-  Rating := ContRecord.Rating;
-  Date := ContRecord.Date;
-  Time := ContRecord.Time;
-  IsDate := ContRecord.IsDate;
-  IsTime := ContRecord.IsTime;
-  Groups := ContRecord.Groups;
-  Crypted := ContRecord.Crypted;
-  Include := ContRecord.Include;
-  KeyWords := ContRecord.KeyWords;
-  Links := ContRecord.Links;
-  InfoLoaded := True;
-end;
-
-constructor TDBPopupMenuInfoRecord.CreateFromDS(DS: TDataSet);
-var
-  ThumbField: TField;
-begin
-  InfoLoaded := True;
-  Selected := True;
-  ID := DS.FieldByName('ID').AsInteger;
-  KeyWords := DS.FieldByName('KeyWords').AsString;
-  FileName := ProcessPath(DS.FieldByName('FFileName').AsString);
-  FileSize := DS.FieldByName('FileSize').AsInteger;
-  Rotation := DS.FieldByName('Rotated').AsInteger;
-  Rating := DS.FieldByName('Rating').AsInteger;
-  Access := DS.FieldByName('Access').AsInteger;
-  Attr := DS.FieldByName('Attr').AsInteger;
-  Comment := DS.FieldByName('Comment').AsString;
-  Date := DS.FieldByName('DateToAdd').AsDateTime;
-  Time := DS.FieldByName('aTime').AsDateTime;
-  IsDate := DS.FieldByName('IsDate').AsBoolean;
-  IsTime := DS.FieldByName('IsTime').AsBoolean;
-  Groups := DS.FieldByName('Groups').AsString;
-  LongImageID := DS.FieldByName('Groups').AsString;
-  ThumbField := DS.FindField('StrTh');
-  if ThumbField <> nil then
-    Crypted := ValidCryptBlobStreamJPG(ThumbField)
-  else
-    Crypted := False;
-
-  Include := DS.FieldByName('Include').AsBoolean;
-  Links := DS.FieldByName('Links').AsString;
-end;
-
-constructor TDBPopupMenuInfoRecord.CreateFromExplorerInfo(Info: TExplorerFileInfo);
-begin
-  ID := Info.ID;
-  FileName := Info.FileName;
-  Comment := Info.Comment;
-  Groups := Info.Groups;
-  FileSize := Info.FileSize;
-  Rotation := Info.Rotate;
-  Rating := Info.Rating;
-  Access := Info.Access;
-  Date := Info.Date;
-  Time := Info.Time;
-  IsDate := Info.IsDate;
-  IsTime := Info.IsTime;
-  Crypted := Info.Crypted;
-  KeyWords := Info.KeyWords;
-  InfoLoaded := Info.Loaded;
-  Include := Info.Include;
-  Links := Info.Links;
-end;
-
-constructor TDBPopupMenuInfoRecord.CreateFromRecordInfo(RI: TOneRecordInfo);
-begin
-  FileName := RI.ItemFileName;
-  Comment := RI.ItemComment;
-  Groups := RI.ItemGroups;
-  ID := RI.ItemId;
-  FileSize := RI.ItemSize;
-  Rotation := RI.ItemRotate;
-  Rating := RI.ItemRating;
-  Access := RI.ItemAccess;
-  Date := RI.ItemDate;
-  Time := RI.ItemTime;
-  IsDate := RI.ItemIsDate;
-  IsTime := RI.ItemIsTime;
-  Crypted := RI.ItemCrypted;
-  KeyWords := RI.ItemKeyWords;
-  InfoLoaded := RI.Loaded;
-  Include := RI.ItemInclude;
-  Links := RI.ItemLinks;
-end;
-
-constructor TDBPopupMenuInfoRecord.CreateFromSearchRecord(Info: TSearchRecord);
-begin
-  FileName := ProcessPath(Info.FileName);
-  Comment := Info.Comments;
-  FileSize := Info.FileSize;
-  Rotation := Info.Rotation;
-  ID := Info.ID;
-  Access := Info.Access;
-  Rating := Info.Rating;
-  Date := Info.Date;
-  Time := Info.Time;
-  IsDate := Info.IsDate;
-  IsTime := Info.IsTime;
-  Groups := Info.Groups;
-  Crypted := Info.Crypted;
-  KeyWords := Info.KeyWords;
-  Attr := Info.Attr;
-  InfoLoaded := True;
-  Include := Info.Include;
-  Links := Info.Links;
-end;
-
-constructor TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
-begin
-  FileName := Info.ItemFileNames[Position];
-  ID := Info.ItemIds[Position];
-  Rotation := Info.ItemRotates[Position];
-  Rating := Info.ItemRatings[Position];
-  Comment := Info.ItemComments[Position];
-  Access := Info.ItemAccesses[Position];
-  Date := Info.ItemDates[Position];
-  Time := Info.ItemTimes[Position];
-  IsDate := Info.ItemIsDates[Position];
-  IsTime := Info.ItemIsTimes[Position];
-  Groups := Info.ItemGroups[Position];
-  Crypted := Info.ItemCrypted[Position];
-  KeyWords := Info.ItemKeyWords[Position];
-  Links := Info.ItemLinks[Position];
-  Selected := True;
-  InfoLoaded := True;
-  Attr := 0;
-  InfoLoaded := Info.LoadedImageInfo[Position];
-  FileSize := GetFileSizeByName(Info.ItemFileNames[Position]);
-  Include := Info.ItemInclude[Position];
+  FData[index] := Value;
 end;
 
 initialization

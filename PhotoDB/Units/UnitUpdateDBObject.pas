@@ -3,7 +3,8 @@ unit UnitUpdateDBObject;
 interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
-     Dolphin_DB, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory;
+     Dolphin_DB, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
+     uFileUtils;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;

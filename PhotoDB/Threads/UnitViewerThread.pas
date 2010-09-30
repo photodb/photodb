@@ -6,7 +6,7 @@ uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, SysUtils, Forms,
   GIFImage, GraphicEx, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG,
-  uMemory;
+  uMemory, UnitDBDeclare;
 
 type
   TViewerThread = class(TThread)

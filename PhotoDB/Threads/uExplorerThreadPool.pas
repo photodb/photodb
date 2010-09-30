@@ -2,7 +2,8 @@ unit uExplorerThreadPool;
 
 interface
 
-uses Windows, Math, Classes, SysUtils, SyncObjs, dolphin_db, ExplorerTypes,
+uses Windows, Math, Classes, SysUtils, SyncObjs,
+     dolphin_db, ExplorerTypes, UnitDBDeclare,
      uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory;
 
 type

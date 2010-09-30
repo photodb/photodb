@@ -6,8 +6,8 @@ uses
   Windows, Messages, SysUtils, Classes, ExtCtrls, JPEG, DB,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage,
-  GraphicCrypt, UnitDBCommon, ImageConverting, uGOM,
-  uMemory, SyncObjs, dolphin_db, UnitDBKernel;
+  GraphicCrypt, UnitDBCommon, ImageConverting, uGOM, uFileUtils,
+  uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare;
 
 type
   HintCeator = class(TThread)

@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, Menus, DmProgress, Dolphin_DB, ComCtrls,
   acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
-  UnitDBCommon, UnitDBCommonGraphics;
+  UnitDBCommon, UnitDBCommonGraphics, uFileUtils;
 
 type
   TFormImportingImages = class(TForm)
@@ -486,7 +486,7 @@ begin
   Edit4.Text:=Value.Name;
 
   inc(ImageProcessedCounter);
-  FileSize:=Dolphin_DB.GetFileSizeByName(Value.Name);
+  FileSize:=GetFileSizeByName(Value.Name);
   ProcessingSize:=ProcessingSize+FileSize;
   Label11.Caption:=Format(TEXT_MES_PROCESSING_SIZE_F,[SizeInTextA(ProcessingSize),SizeInTextA(FullSize)]);
   Label12.Caption:=Format(TEXT_MES_IMAGES_PROCESSED_COUNT_F,[ImageProcessedCounter,ImageCounter]);

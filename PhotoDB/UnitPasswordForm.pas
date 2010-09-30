@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt, DB,
   uVistaFuncs, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
-  uDBForm, uTranslate;
+  uDBForm, uTranslate, uFileUtils;
 
 type
   PasswordType = Integer;

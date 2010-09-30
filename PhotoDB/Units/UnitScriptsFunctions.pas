@@ -351,16 +351,6 @@ function SpilitWordsW(S : string; SplitChar : char) : TArrayOfString;
 var
   i, j : integer;
   pi_ : PInteger;
-
- procedure DelSpacesA(var S : string);
- var
-   i : integer;
- begin
-  for i:=Length(s) downto 1 do
-  if s[i]=' ' then Delete(s,i,1);
- end;
-
-
 begin
  SetLength(Result,0);
  s:=SplitChar+s+SplitChar;
@@ -380,7 +370,7 @@ begin
  end;
  for i:=0 to Length(Result)-1 do
  begin
-  DelSpacesA(Result[i]);
+   Result[i] := Trim(Result[i]);
  end;
 end;
 
