@@ -166,14 +166,16 @@ type
 
 type
   TStringsHistoryW = class(TObject)
-    FArray: array of TExplorerPath;
-    Fposition: Integer;
-    FStrings: Integer;
   private
+    { Private declarations }
+    FArray: array of TExplorerPath;
+    FPosition: Integer;
+    FStrings: Integer;
     FOnChange: TNotifyEvent;
     procedure SetOnChange(const Value: TNotifyEvent);
-    { Private declarations }
+    function GetItem(Index: Integer): TExplorerPath;
   public
+    { Public declarations }
     constructor Create;
     destructor Destroy; override;
     procedure Add(Path: TExplorerPath);
@@ -182,12 +184,13 @@ type
     function GetCurrentPos: Integer;
     function DoBack: TExplorerPath;
     function DoForward: TExplorerPath;
-    property OnHistoryChange: TNotifyEvent read FOnChange write SetOnChange;
     function LastPath: TExplorerPath;
     function GetBackHistory: TArExplorerPath;
     function GetForwardHistory: TArExplorerPath;
     procedure Clear;
-    { Public declarations }
+    property OnHistoryChange: TNotifyEvent read FOnChange write SetOnChange;
+    property Position : Integer read FPosition write FPosition;
+    property Items[Index : Integer] : TExplorerPath read GetItem; default;
   end;
 
 type
@@ -238,9 +241,9 @@ var
 begin
   FSync.Enter;
   try
-    for I := 0 to Length(FImages) - 1 do
+    for I := Length(FImages) - 1 downto 9  do
     begin
-      if AnsiLowerCase(FImages[i].Directory)=AnsiLowerCase(Folder) then
+      if AnsiLowerCase(FImages[I].Directory) = AnsiLowerCase(Folder) then
       for k:=1 to 4 do
       if FImages[I].FileNames[K] = '' then
       begin
@@ -251,7 +254,7 @@ begin
           FImages[L] := FImages[L + 1];
         if Length(FImages) > 0 then
           SetLength(FImages, Length(FImages) - 1);
-        Break;
+        Exit;
       end;
     end;
   finally
@@ -333,7 +336,7 @@ begin
               W := FImages[I].Images[J].Width;
               H := FImages[I].Images[J].height;
               ProportionalSize(Width, Height, W, H);
-              DoResize(W, H, FImages[i].Images[j], Result.Images[j]);
+              DoResize(W, H, FImages[I].Images[J], Result.Images[J]);
             end;
           end;
         end;
@@ -685,6 +688,11 @@ begin
  end;
 end;
 
+function TStringsHistoryW.GetItem(Index: Integer): TExplorerPath;
+begin
+  Result := FArray[Index];
+end;
+
 function TStringsHistoryW.LastPath: TExplorerPath;
 begin
  Result:=ExplorerPath('',0);
@@ -787,5 +795,6 @@ initialization
  LockedFiles[2]:='';
 
 end.
+
 
 

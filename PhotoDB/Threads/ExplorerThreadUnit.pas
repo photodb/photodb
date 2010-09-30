@@ -137,6 +137,7 @@ type
     constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
+    destructor Destroy; override;
   end;
 
 type
@@ -168,6 +169,7 @@ begin
   FShowFiles := True;
   FUpdaterInfo := UpdaterInfo;
   FVisibleFiles := nil;
+  FFiles := nil;
   FEvent := 0;
   Start;
 end;
@@ -301,7 +303,7 @@ begin
       CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
       FormatDir(DBFolderToSearch);
       FormatDir(FFolder);
-      FFiles:=TExplorerFileInfos.Create;
+      FFiles := TExplorerFileInfos.Create;
 
       DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
       ShowInfo(TEXT_MES_CONNECTING_TO_DB,1,0);
@@ -1089,6 +1091,8 @@ begin
       fFolderImages.FileDates[i] := FilesDatesInFolder[i];
     AExplorerFolders.SaveFolderImages(fFolderImages, SmallImageSize, SmallImageSize);
   end;
+  for i:=1 to 4 do
+    F(fFolderImages.Images[i]);
 
   GUIDParam := DirctoryID;
   if not SynchronizeEx(ReplaceFolderImage) then
@@ -1202,7 +1206,7 @@ end;
 
 procedure TExplorerThread.AddImageFileToExplorerW;
 begin
-  TempBitmap := nil;
+  F(TempBitmap);
   FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
   SynchronizeEx(AddImageFileItemToExplorerW);
 end;
@@ -1666,8 +1670,7 @@ end;
 
 procedure TExplorerThread.GetVisibleFiles;
 begin
-  if FVisibleFiles <> nil then
-    FVisibleFiles.Free;
+  F(FVisibleFiles);
   FVisibleFiles := FSender.GetVisibleItems;
 end;
 
@@ -1844,19 +1847,26 @@ begin
     FFiles:=FSender.GetAllItems;
 end;
 
+destructor TExplorerThread.Destroy;
+begin
+  F(FVisibleFiles);
+  F(FFiles);
+  inherited;
+end;
+
 procedure TExplorerThread.DoDefaultSort;
 begin
   if not IsTerminated then
   begin
-    FSender.NoLockListView:=true;
+    FSender.NoLockListView := True;
     FSender.DoDefaultSort(FCID);
-    FSender.NoLockListView:=false;
+    FSender.NoLockListView := False;
   end
 end;
 
 procedure TExplorerThread.ExplorerHasIconForExt;
 begin
-  BooleanParam:=FSender.ExitstExtInIcons(GetExt(CurrentFile));
+  BooleanParam := FSender.ExitstExtInIcons(GetExt(CurrentFile));
 end;
 
 procedure TExplorerThread.SetIconForFileByExt;
@@ -1950,19 +1960,8 @@ begin
       AssignJpeg(TempBitmap, Info.Image);
     end else
     begin
-      Fbit := TBitmap.Create;
-      try
-        Fbit.PixelFormat := pf24bit;
-        GraphicParam := TAIcons.Instance.GetIconByExt(Info.ItemFileName, False, FIcoSize, False);
-        try
-          MakeTempBitmap;
-          SynchronizeEx(DrawImageToTempBitmapCenter);
-        finally
-          F(GraphicParam);
-        end;
-      finally
-        F(FBit);
-      end;
+      TempBitmap := nil;
+      //image -> loaded icon
     end;
   end;
   F(Info.Image);

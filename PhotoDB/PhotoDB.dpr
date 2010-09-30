@@ -582,7 +582,7 @@ begin
       begin
         EventLog('IsInstalling IS true -> exit');
         MessageBoxDB(GetActiveFormHandle, TEXT_MES_SETUP_RUNNING,
-          TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+          TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         Application.Terminate;
         DBTerminating := True;
       end;
@@ -591,8 +591,8 @@ begin
       if KernelHandle = 0 then
       begin
         EventLog('KernelHandle IS 0 -> exit');
-        MessageBoxDB(dolphin_db.GetActiveFormHandle, TEXT_MES_ERROR_KERNEL_DLL,
-          TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+        MessageBoxDB(GetActiveFormHandle, TEXT_MES_ERROR_KERNEL_DLL,
+          TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         Halt;
       end;
 

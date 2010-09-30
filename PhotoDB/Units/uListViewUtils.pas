@@ -84,6 +84,7 @@ var
   ImageW, ImageH : Integer;
   X : Integer;
   TempBmp : TBitmap;
+  TempBmpShadow : TBitmap;
   CTD, CBD, DY : Integer;
   ClientRect : TRect;
   RectArray: TEasyRectArrayObject;
@@ -129,8 +130,9 @@ begin
   end;
 
   TempBmp := nil;
+  TempBmpShadow := nil;
   try
-    if (Graphic is TBitmap) and
+  if (Graphic is TBitmap) and
       (TBitmap(Graphic).Width > W) or (TBitmap(Graphic).Height > H) then
     begin
       TempBmp := TBitmap.Create;
@@ -141,9 +143,9 @@ begin
 
     if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf24Bit) then
     begin
-      TempBmp := TBitmap.Create;
-      DrawShadowToImage(TempBmp, TBitmap(Graphic));
-      Graphic := TempBmp;
+      TempBmpShadow := TBitmap.Create;
+      DrawShadowToImage(TempBmpShadow, TBitmap(Graphic));
+      Graphic := TempBmpShadow;
     end;
 
     if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) and HasMMX then
@@ -171,6 +173,7 @@ begin
 
   finally
     F(TempBmp);
+    F(TempBmpShadow);
   end;
 
   if ProcessedFilesCollection.ExistsFile(FileName) <> nil then
@@ -273,12 +276,18 @@ begin
     Inc(MaxH, ImagePadding);
     Inc(MaxW, ImagePadding);
 
-    TempImage.Width := MaxW;
-    TempImage.Height := MaxH + TempImage.Canvas.TextHeight('Iy') + 5 * 2;
+    R := Rect(3, MaxH + 3, MaxW, 1000);
+    TempImage.Canvas.Font := Font;
+    DrawText(TempImage.Canvas.Handle, PChar(Caption), Length(Caption), R, DrawTextOpt or DT_CALCRECT);
+
+    TempImage.Width := Max(MaxW, R.Right + 3);
+    TempImage.Height := Max(MaxH, R.Bottom) + 5 * 2;
     FillTransparentColor(TempImage, ClBlack, 1);
     SelectionRect := Rect(0, 0, TempImage.Width, TempImage.Height);
 
     DrawRoundGradientVert(TempImage, SelectionRect, GradientFrom, GradientTo, SelectionColor, RoundRadius);
+    R.Right := TempImage.Width;
+    DrawText32Bit(TempImage, Caption, Font, R, DrawTextOpt);
 
     N := ImagePadding - ImageMoveLength;
 
@@ -318,12 +327,8 @@ begin
           LBitmap.Free;
         end;
       end;
-
     end;
 
-    R := Rect(0, MaxH + 3, MaxW, TempImage.Height);
-
-    DrawText32Bit(TempImage, Caption, Font, R, DrawTextOpt);
     if ItemsSelected > 1 then
     begin
       AFont := TFont.Create;

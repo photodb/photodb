@@ -1,4 +1,4 @@
-unit UGOM;
+unit uGOM;
 
 interface
 
@@ -8,7 +8,7 @@ type
   TManagerObjects = class(TObject)
   private
     FObjects: TList;
-    FSycn: TCriticalSection;
+    FSync: TCriticalSection;
   public
     constructor Create;
     destructor Destroy; override;
@@ -28,7 +28,7 @@ implementation
 
 procedure TManagerObjects.AddObj(Obj: TObject);
 begin
-  FSycn.Enter;
+  FSync.Enter;
   try
     if FObjects.IndexOf(Obj) > -1 then
       Exit;
@@ -38,41 +38,41 @@ begin
 
     FObjects.Add(Obj);
   finally
-    FSycn.Leave;
+    FSync.Leave;
   end;
 end;
 
 constructor TManagerObjects.Create;
 begin
-  FSycn := TCriticalSection.Create;
+  FSync := TCriticalSection.Create;
   FObjects := TList.Create;
 end;
 
 destructor TManagerObjects.Destroy;
 begin
   FObjects.Free;
-  FSycn.Free;
+  FSync.Free;
   inherited;
 end;
 
 procedure TManagerObjects.FreeObj(Obj: TObject);
 begin
-  FSycn.Enter;
+  FSync.Enter;
   try
     RemoveObj(Obj);
     Obj.Free;
   finally
-    FSycn.Leave;
+    FSync.Leave;
   end;
 end;
 
 function TManagerObjects.IsObj(Obj: TObject): Boolean;
 begin
-  FSycn.Enter;
+  FSync.Enter;
   try
     Result := FObjects.IndexOf(Obj) > -1;
   finally
-    FSycn.Leave;
+    FSync.Leave;
   end;
 end;
 
@@ -85,20 +85,20 @@ procedure TManagerObjects.RemoveObj(Obj: TObject);
 var
   I, J: Integer;
 begin
-  FSycn.Enter;
+  FSync.Enter;
   try
     FObjects.Remove(Obj);
   finally
-    FSycn.Leave;
+    FSync.Leave;
   end;
 end;
 
 initialization
 
-GOM := TManagerObjects.Create;
+  GOM := TManagerObjects.Create;
 
 finalization
 
-F(GOM);
+  F(GOM);
 
 end.

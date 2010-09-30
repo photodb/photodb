@@ -67,6 +67,21 @@ begin
     SetEvent(TMultiCPUThread(FAvaliableThreadList[I]).FSyncEvent);
   end;
 
+  //wait for all threads
+  while FAvaliableThreadList.Count > 0 do
+  begin
+    Sleep(10);
+    for I := 0 to FAvaliableThreadList.Count - 1 do
+    begin
+      if not GOM.IsObj(FAvaliableThreadList[I]) then
+      begin
+        FAvaliableThreadList.Delete(I);
+        Break;
+      end;
+    end;
+  end;
+
+  Sleep(100);
   F(FSync);
   F(FAvaliableThreadList);
   F(FBusyThreadList);
@@ -153,8 +168,6 @@ begin
           if Mode = 0 then
             Exit;
 
-          Mode := 0;
-
           TW.I.Start('UnRegisterSubThread: ' + IntToStr(FEvent));
           if (GOM <> nil) and GOM.IsObj(ParentThread) then
             ParentThread.UnRegisterSubThread(Self);
@@ -165,11 +178,13 @@ begin
       finally
         TW.I.Start('SetEvent: ' + IntToStr(FEvent));
         WorkingInProgress := False;
-        SetEvent(FEvent);
+        if Mode > 0 then
+          SetEvent(FEvent);
       end;
     finally
       TW.I.Start('Suspended: ' + IntToStr(FEvent));
-      WaitForSingleObject(FSyncEvent, INFINITE);
+      if Mode > 0 then
+        WaitForSingleObject(FSyncEvent, INFINITE);
       TW.I.Start('Resumed: ' + IntToStr(FEvent));
       WorkingInProgress := True;
     end;
@@ -187,6 +202,8 @@ begin
   finally
     CloseHandle(FEvent);
     CloseHandle(FSyncEvent);
+    FEvent := 0;
+    FSyncEvent := 0;
   end;
 end;
 

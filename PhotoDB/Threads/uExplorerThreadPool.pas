@@ -11,8 +11,6 @@ type
   protected
     procedure AddNewThread(Thread : TMultiCPUThread); override;
   public
-    constructor Create;
-    destructor Destroy; override;
     class function Instance : TExplorerThreadPool;
     procedure ExtractImage(Sender : TMultiCPUThread; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(Sender : TMultiCPUThread; DirectoryPath: string; FileID : TGUID);
@@ -32,15 +30,6 @@ procedure TExplorerThreadPool.AddNewThread(Thread: TMultiCPUThread);
 begin
   if (Thread <> nil) and (FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX_THREADS_USE, ProcessorCount + 1)) then
     FAvaliableThreadList.Add(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, TExplorerThread(Thread).ExplorerInfo, TExplorerForm(Thread.ThreadForm), TExplorerThread(Thread).FUpdaterInfo, Thread.StateID));
-end;
-
-constructor TExplorerThreadPool.Create;
-begin
-  inherited;
-end;
-
-destructor TExplorerThreadPool.Destroy;
-begin
 end;
 
 procedure TExplorerThreadPool.ExtractImage(Sender : TMultiCPUThread; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);

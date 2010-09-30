@@ -65,8 +65,10 @@ type
     FAlphaBlend : Byte;
     FInternalClose: Boolean;
     procedure CreateFormImage;
+    function GetImageName: string;
   protected
     function GetFormID : string; override;
+    property ImageName : string read GetImageName;
   public
     { Public declarations }
   end;
@@ -159,16 +161,11 @@ procedure TImHint.CreateFormImage;
 var
   Bitmap : TBitmap;
   SFileSize,
-  SImageSize,
-  SImageName : string;
-  TextHeight : Integer;
+  SImageSize : string;
+  TextHeight, ImageNameHeight : Integer;
   R : TRect;
 begin
 
-  if CurrentInfo.Comment <> '' then
-    SImageName := CurrentInfo.Comment
-  else
-    SImageName := ExtractFileName(CurrentInfo.FileName);
   SImageSize := Format(L('Image size: %d x %d'), [FWidth, FHeight]);
   SFileSize := Format(L('File size: %s'), [SizeintextA(CurrentInfo.FileSize)]);
 
@@ -187,9 +184,15 @@ begin
     R.Right := FFormBuffer.Width - 5;
     R.Top := 5 + Bitmap.Height + 5;
     R.Bottom := 5 + Bitmap.Height + TextHeight + 5;
-    DrawText32Bit(FFormBuffer, SImageName, Font, R, 0);
-    R.Bottom := R.Bottom + TextHeight + 5;
-    R.Top := R.Top + TextHeight + 5;
+
+    R := Rect(R.Left, R.Top, R.Right, R.Top + 200); //heihgt of text up to 200 pixels
+    DrawText(Canvas.Handle, PChar(ImageName), Length(ImageName), R, DT_CALCRECT or DT_WORDBREAK);
+    ImageNameHeight := R.Bottom - R.Top;
+    //restore right
+    R.Right := FFormBuffer.Width - 5;
+    DrawText32Bit(FFormBuffer, ImageName, Font, R, DT_WORDBREAK);
+    R.Bottom := R.Bottom + ImageNameHeight + 5;
+    R.Top := R.Top + ImageNameHeight + 5;
     DrawText32Bit(FFormBuffer, SFileSize, Font, R, 0);
     R.Bottom := R.Bottom + TextHeight + 5;
     R.Top := R.Top + TextHeight + 5;
@@ -203,8 +206,9 @@ end;
 
 procedure TImHint.Execute(Sender : TForm; G : TGraphic; W, H : Integer; Info : TDBPopupMenuInfoRecord; Pos : TPoint; CheckFunction : THintCheckFunction);
 var
-  WW, HH, FH, FW, FL, FT: Integer;
+  WW, HH, FH, FW, FL, FT, TextHeight: Integer;
   Rect : TRect;
+  R : TRect;
 begin
   FCheckFunction := CheckFunction;
   FOwner := Sender;
@@ -249,7 +253,14 @@ begin
 
   FW := Max(100, WW + 10 + 2);
   FH := HH + 10;
-  Inc(FH, 3 * (5 + Canvas.TextHeight('Iy')) + 5);
+
+  TextHeight := Canvas.TextHeight('Iy');
+  R.Left := 5;
+  R.Right := FW - 5;
+  R.Top := 5 + FH + 5;
+  R.Bottom := 5 + 200;
+  DrawText(Canvas.Handle, PChar(ImageName), Length(ImageName), R, DT_WORDBREAK or DT_CALCRECT);
+  Inc(FH, 2 * (5 + TextHeight) + (5 + R.Bottom - R.Top) + 5);
 
   ClientWidth := FW;
   ClientHeight := FH;
@@ -672,6 +683,14 @@ end;
 function TImHint.GetFormID: string;
 begin
   Result := 'Hint';
+end;
+
+function TImHint.GetImageName: string;
+begin
+  if CurrentInfo.Comment <> '' then
+    Result := CurrentInfo.Comment
+  else
+    Result := ExtractFileName(CurrentInfo.FileName);
 end;
 
 initialization

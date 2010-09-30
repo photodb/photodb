@@ -628,7 +628,7 @@ type
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
+       MousePos: TPoint; var Handled: Boolean);
      procedure DoSelectItem;
      procedure SendToItemPopUpMenu_(Sender : TObject);
      procedure CorrectPath(Src : array of string; Dest : string);
@@ -1587,15 +1587,15 @@ begin
   ClearList;
   DirectoryWatcher.StopWatch;
   F(DirectoryWatcher);
-  aScript.Free;
-  DragFilesPopup.Free;
-  FBitmapImageList.Free;
-  ExtIcons.Free;
+  F(aScript);
+  F(DragFilesPopup);
+  F(FBitmapImageList);
+  F(ExtIcons);
   SaveWindowPos1.SavePosition;
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
   DBKernel.UnRegisterChangesID(Sender,ChangedDBDataByID);
-  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
+  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme, Self);
 
   DBkernel.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
 
@@ -4886,9 +4886,9 @@ var
 begin
  n:=(Sender as TMenuItem).Tag;
  FChangeHistoryOnChPath:=False;
- fHistory.fposition:=n;
+ fHistory.Position:=n;
  HistoryChanged(Sender);
- SetNewPathW(fHistory.fArray[n],false);
+ SetNewPathW(fHistory[n],false);
 end;
 
 procedure TExplorerForm.DragTimerTimer(Sender: TObject);
@@ -6004,7 +6004,9 @@ begin
     exit;
    end;
    ReallignInfo;
-   ImPreview.Picture.Graphic:=TBitmap.create;
+   TempBitmap := TBitmap.create;
+   ImPreview.Picture.Graphic:= TempBitmap;
+   TempBitmap.Free;
    try
     With ImPreview.Picture.Bitmap do
     begin
@@ -6017,7 +6019,7 @@ begin
       Canvas.Rectangle(0,0,ThImageSize,ThImageSize);
       FFolderImagesResult.Directory:='';
       For i:=1 to 4 do
-      FFolderImagesResult.Images[i]:=nil;
+        FFolderImagesResult.Images[i]:=nil;
       FFolderImagesResult:=AExplorerFolders.GetFolderImages(FileName,40,40);
       If FFolderImagesResult.Directory='' then
       begin
@@ -6069,6 +6071,9 @@ begin
         Canvas.StretchDraw(FolderImageRect,fbmp);
        end;
       end;
+
+      For i:=1 to 4 do
+        F(FFolderImagesResult.Images[i]);
      end;
      If (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE) then
      begin
@@ -7889,17 +7894,17 @@ end;
 
 destructor TExplorerForm.Destroy;
 begin
-  fHistory.Free;
-  fFilesInfo.Free;
+  FHistory.Free;
+  FFilesInfo.Free;
   inherited;
 end;
 
 initialization
 
- ExplorerManager := TManagerExplorer.Create;
+  ExplorerManager := TManagerExplorer.Create;
 
 Finalization
 
- ExplorerManager.Free;
+  F(ExplorerManager);
 
 end.

@@ -83,11 +83,11 @@ end;
 
 destructor TThreadEx.Destroy;
 begin
-  GOM.RemoveObj(Self);
   Terminate;
   WaitForSubThreads;
   FSubThreads.Free;
   FSync.Free;
+  GOM.RemoveObj(Self);
   inherited;
 end;
 
