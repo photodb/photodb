@@ -40,8 +40,8 @@ var
   Rectangle : TRect;
 begin
   hSplashProgress := ProgressValue;
-  Rectangle := Rect(0, SplHeight - 30, SplWidth, SplHeight);
-  InvalidateRect(hSplashWnd, @Rectangle, False);
+{  Rectangle := Rect(0, SplHeight - 30, SplWidth, SplHeight);
+  InvalidateRect(hSplashWnd, @Rectangle, False);      }
   PostMessage(hSplashWnd, WM_PAINT, 0, 0);
 end;
 
@@ -141,6 +141,7 @@ function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;
 var
   ps: TPaintStruct;
   DrawDC: HDC;
+  Rectangle : TRect;
 begin
   case uMsg of
     WM_DESTROY:
@@ -151,6 +152,9 @@ begin
       end;
     WM_PAINT:
       begin
+         Rectangle := Rect(0, SplHeight - 30, SplWidth, SplHeight);
+         InvalidateRect(hSplashWnd, @Rectangle, False);
+
          // note: g_Handle is the handle to our window, got from CreateWindow
          // tell Windows we're painting the window
          DrawDC := BeginPaint(hSplashWnd, ps);

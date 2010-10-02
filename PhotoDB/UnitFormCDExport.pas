@@ -108,14 +108,13 @@ end;
 
 procedure TFormCDExport.Execute;
 begin
- Show;
+  Show;
 end;
 
 procedure TFormCDExport.FormCreate(Sender: TObject);
 begin
  CDListView.DoubleBuffered:=true;
 
- ConvertTo32BitImageList(ImageListIcons);
  Mapping := TCDIndexMapping.Create;
  EditCDSize.Text:=SizeInTextA(Mapping.GetCDSize);
 

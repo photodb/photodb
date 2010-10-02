@@ -16,7 +16,6 @@ object CryptImageForm: TCryptImageForm
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   DesignSize = (
     324
@@ -87,7 +86,7 @@ object CryptImageForm: TCryptImageForm
     Caption = 'Save Password for in settings (NOT recommend)'
     TabOrder = 5
   end
-  object EdPassword: TEdit
+  object EdPassword: TWatermarkedEdit
     Left = 8
     Top = 24
     Width = 310
@@ -102,8 +101,9 @@ object CryptImageForm: TCryptImageForm
     PasswordChar = '*'
     TabOrder = 0
     OnKeyPress = EdPasswordKeyPress
+    WatermarkText = 'Password'
   end
-  object EdPasswordConfirm: TEdit
+  object EdPasswordConfirm: TWatermarkedEdit
     Left = 8
     Top = 72
     Width = 310
@@ -118,6 +118,7 @@ object CryptImageForm: TCryptImageForm
     PasswordChar = '*'
     TabOrder = 1
     OnKeyPress = EdPasswordKeyPress
+    WatermarkText = 'Password confirm'
   end
   object CbShowPassword: TCheckBox
     Left = 8

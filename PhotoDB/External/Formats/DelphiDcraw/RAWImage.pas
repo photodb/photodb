@@ -6,10 +6,7 @@ uses  Windows, Messages, SysUtils, Graphics, Classes, FileCtrl, GraphicEX, Forms
       uScript, UnitScripts, uConstants, uFileUtils, uTime,
       FreeBitmap, FreeImage, GraphicsBaseTypes;
 
-  {$DEFINE USEPHOTODB}
-
 type
-
   TRAWImage = class(TBitmap)
   protected
     FWidth : Integer;
@@ -65,10 +62,7 @@ var
 implementation
 
 uses
-  {$IFDEF USEPHOTODB}
-  Dolphin_DB, UnitDBCommon
-  {$ENDIF}
-  ;
+  Dolphin_DB, UnitDBCommon;
 
 var
   aScript : TScript;  
@@ -103,9 +97,9 @@ var
     begin
       Value := FreeImage_TagToString(I, TagData);
       if Description <> nil then
-        Result.Add(Description, Key, Value)
+        Result.Add(string(Description), string(Key), string(Value))
       else
-        Result.Add(Key, Key, Value);
+        Result.Add(string(Key), string(Key), string(Value));
     end;
   end;
 begin
@@ -329,7 +323,7 @@ initialization
     try
       AddScriptFunction(aScript.Enviroment, 'String', F_TYPE_FUNCTION_STRING_IS_STRING, @aSetString);
       LoadScript := '';
-      aFS := TFileStream.Create(ProgramDir+'scripts\LoadRAW.dbini',fmOpenRead);
+      aFS := TFileStream.Create(ProgramDir + 'scripts\LoadRAW.dbini',fmOpenRead);
       try
         aSR := TStreamReader.Create(aFS);
         try

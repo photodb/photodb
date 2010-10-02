@@ -170,7 +170,6 @@ type
     { Private declarations }
     FArray: array of TExplorerPath;
     FPosition: Integer;
-    FStrings: Integer;
     FOnChange: TNotifyEvent;
     procedure SetOnChange(const Value: TNotifyEvent);
     function GetItem(Index: Integer): TExplorerPath;

@@ -190,6 +190,7 @@ object FormManageGroups: TFormManageGroups
     end
   end
   object ToolBarImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 32
     Width = 32
     Left = 64

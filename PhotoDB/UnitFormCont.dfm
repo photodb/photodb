@@ -366,7 +366,7 @@ object FormCont: TFormCont
         ImageIndex = 4
         Style = tbsSeparator
       end
-      object ToolButton6: TToolButton
+      object TbClose: TToolButton
         Left = 394
         Top = 0
         AutoSize = True
@@ -453,6 +453,7 @@ object FormCont: TFormCont
     Top = 112
   end
   object DragImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 51
     Width = 51
     Left = 200
@@ -466,8 +467,9 @@ object FormCont: TFormCont
     Top = 112
   end
   object ToolBarImageList: TImageList
-    Left = 321
-    Top = 80
+    ColorDepth = cd32Bit
+    Left = 209
+    Top = 288
   end
   object BigImagesTimer: TTimer
     Enabled = False
@@ -479,12 +481,13 @@ object FormCont: TFormCont
   object RedrawTimer: TTimer
     Enabled = False
     Interval = 10
-    Left = 232
-    Top = 80
+    Left = 248
+    Top = 112
   end
   object ToolBarDisabledImageList: TImageList
-    Left = 376
-    Top = 168
+    ColorDepth = cd32Bit
+    Left = 304
+    Top = 288
   end
   object TerminateTimer: TTimer
     Enabled = False

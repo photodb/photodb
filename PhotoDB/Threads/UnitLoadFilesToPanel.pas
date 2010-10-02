@@ -3,7 +3,7 @@ unit UnitLoadFilesToPanel;
 interface
 
 uses
- SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms,
+ SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
  CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
  UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
  UnitDBCommon, uLogger, ImageConverting, uMemory;
@@ -20,7 +20,7 @@ type
     Fbit: TBitmap;
     FTermitated: Boolean;
     FByID: Boolean;
-    FInfo: TOneRecordInfo;
+    FInfo: TDBPopupMenuInfoRecord;
     FArLoaded: TArBoolean;
     FUseLoaded: Boolean;
     FPictureSize: Integer;
@@ -98,81 +98,87 @@ end;
 
 procedure LoadFilesToPanel.CreateItemsByID(IDs: TArInteger);
 var
-  Password, SQLText, s : string;
-  n, i, j, L, Left, m : integer;
-  r : extended;
-  JPEG : TJpegImage;
-const AllocBy = 50;
+  Password, SQLText, S: string;
+  N, I, J, L, Left, M: Integer;
+  R: Extended;
+  JPEG: TJpegImage;
+const
+  AllocBy = 50;
 begin
- fQuery.Active:=false;
- L:=Length(IDs);
- n:=Trunc(L/AllocBy);
- r:=L/AllocBy-n;
- if r>0 then inc(n);
- Left:=L;
- for j:=1 to n do
- begin
-  SQLText:='SELECT * FROM $DB$ WHERE ';
-  m:=Min(Left,Min(L,AllocBy));
-  for i:=1 to m do
+  FQuery.Active := False;
+  L := Length(IDs);
+  N := Trunc(L / AllocBy);
+  R := L / AllocBy - N;
+  if R > 0 then
+    Inc(N);
+  Left := L;
+  for J := 1 to N do
   begin
-   Dec(Left);
-   SQLText:=SQLText+' (ID='+inttostr(IDs[i-1+AllocBy*(j-1)])+') ';
-   if i<>m then SQLText:=SQLText+'or';
-  end;
-  SetSQL(fQuery,SQLText);
-  try
-   fQuery.active:=true;
-  except
-   //TODO: review
-   FreeDS(fQuery);
-   exit;
-  end;
-  if fQuery.RecordCount=0 then
-  begin
-   FInfo:=RecordInfoOne('',0,0,0,0,0,'','','','','',0,false,false,0,false,true,true,'');
-   Continue;
-  end else
-  begin
-   fQuery.First;
-   for i:=1 to fQuery.RecordCount do
-   begin
-    if not FValidThread then break;
-    s:=fQuery.fieldByName('FFileName').AsString;
-    if FolderView then
+    SQLText := 'SELECT * FROM $DB$ WHERE ';
+    M := Min(Left, Min(L, AllocBy));
+    for I := 1 to M do
     begin
-     s:=ProgramDir+s;
+      Dec(Left);
+      SQLText := SQLText + ' (ID=' + Inttostr(IDs[I - 1 + AllocBy * (J - 1)]) + ') ';
+      if I <> M then
+        SQLText := SQLText + 'or';
     end;
-    FInfo:=RecordInfoOne(s,fQuery.fieldByName('ID').AsInteger,fQuery.fieldByName('Rotated').AsInteger,fQuery.fieldByName('Rating').AsInteger,fQuery.fieldByName('Access').AsInteger,fQuery.fieldByName('FileSize').AsInteger,fQuery.fieldByName('Comment').AsString,fQuery.fieldByName('KeyWords').AsString,fQuery.fieldByName('Owner').AsString,fQuery.fieldByName('Collection').AsString,fQuery.fieldByName('Groups').AsString,fQuery.fieldByName('DateToAdd').AsDateTime,fQuery.fieldByName('IsDate').AsBoolean,fQuery.fieldByName('IsTime').AsBoolean,fQuery.fieldByName('aTime').AsDateTime, ValidCryptBlobStreamJPG(fQuery.fieldByName('thum')),fQuery.fieldByName('Include').AsBoolean,true,fQuery.FieldByName('Links').AsString);
-    FInfo.ItemImTh:=fQuery.fieldByName('StrTh').AsString;
-    if TBlobField(fQuery.FieldByName('thum'))=nil then Continue;
-
-    JPEG := TJpegImage.Create;
+    SetSQL(FQuery, SQLText);
     try
-      if ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')) then
-      begin
-        Password:=DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum'));
-        if Password <> '' then
-          DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), Password, JPEG);
-      end else
-      begin
-        FBS:=GetBlobStream(fQuery.FieldByName('thum'), bmRead);
-        try
-          JPEG.LoadFromStream(fbs);
-        finally
-          FBS.Free;
-        end;
-      end;
-      if not JPEG.Empty then
-        NewItem(JPEG);
-    finally
-      JPEG.free;
+      FQuery.Active := True;
+    except
+      // TODO: review
+      FreeDS(FQuery);
+      Exit;
     end;
+    if FQuery.RecordCount = 0 then
+    begin
+      FInfo := nil;
+      Continue;
+    end
+    else
+    begin
+      FQuery.First;
+      for I := 1 to FQuery.RecordCount do
+      begin
+        if not FValidThread then
+          Break;
+        S := FQuery.FieldByName('FFileName').AsString;
+        if FolderView then
+        begin
+          S := ProgramDir + S;
+        end;
+        FInfo := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
+        if TBlobField(FQuery.FieldByName('thum')) = nil then
+          Continue;
 
-    fQuery.Next;
-   end;
+        JPEG := TJpegImage.Create;
+        try
+          if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
+          begin
+            Password := DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum'));
+            if Password <> '' then
+              DeCryptBlobStreamJPG(FQuery.FieldByName('thum'), Password, JPEG);
+          end
+          else
+          begin
+            FBS := GetBlobStream(FQuery.FieldByName('thum'), BmRead);
+            try
+              JPEG.LoadFromStream(Fbs);
+            finally
+              FBS.Free;
+            end;
+          end;
+          if not JPEG.Empty then
+            NewItem(JPEG);
+        finally
+          JPEG.Free;
+        end;
+
+        FQuery.Next;
+      end;
+    end;
   end;
- end;
 
 end;
 
@@ -191,10 +197,12 @@ procedure LoadFilesToPanel.Execute;
 var
   i ,l : integer;
   Graphic : TGraphic;
-  Data : TImageContRecordArray;
+  Data : TDBPopupMenuInfo;
+  DataRec : TDBPopupMenuInfoRecord;
 begin
- FreeOnTerminate:=true;
-
+  FreeOnTerminate:=true;
+  CoInitialize(nil);
+  try
  if fbyid then l:=Length(fIDs) else l:=Length(FFiles);
 
  FQuery := GetQuery;
@@ -222,7 +230,7 @@ begin
    else
      GetInfoByFileNameOrID(ffiles[i],Fids[0],i, Graphic);
    try
-     fRotates[i]:=FInfo.ItemRotate;
+     fRotates[i]:=FInfo.Rotation;
      if not FValidThread then
        Break;
      if Assigned(Graphic) then
@@ -243,14 +251,26 @@ begin
  ////////////////////////////////////
  if (fPictureSize<>ThSizePanelPreview) and ManagerPanels.ExistsPanel(FOwner,fSID) then
  begin
-  SetLength(Data,Length(FFiles));
-  for i:=0 to Length(FFiles)-1 do
-  Data[i].FileName:=FFiles[i];
-  UnitPanelLoadingBigImagesThread.TPanelLoadingBigImagesThread.Create(FOwner,(FOwner as TFormCont).BigImagesSID,nil,fPictureSize,Copy(Data));
+    Data := TDBPopupMenuInfo.Create;
+    try
+      for I := 0 to Length(FFiles) - 1 do
+      begin
+        DataRec := TDBPopupMenuInfoRecord.Create;
+        DataRec.FileName := FFiles[i];
+        Data.Add(DataRec);
+      end;
+      UnitPanelLoadingBigImagesThread.TPanelLoadingBigImagesThread.Create(FOwner,(FOwner as TFormCont).BigImagesSID, nil, FPictureSize, Data);
+
+    finally
+      F(Data);
+    end;
  end else
  begin
   Synchronize(DoStopLoading);
  end;
+  finally
+    CoUninitialize;
+  end;
 
 end;
 
@@ -290,7 +310,11 @@ begin
   if (C = 0) then
   begin
     CryptFile := ValidCryptGraphicFile(FileName);
-    FInfo := RecordInfoOne(FileName, 0, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, CryptFile, True, True, '');
+    FInfo := TDBPopupMenuInfoRecord.Create;
+    FInfo.FileName := FileName;
+    FInfo.Crypted := CryptFile;
+    FInfo.Include := True;
+    FInfo.InfoLoaded := True;
     if CryptFile then
     begin
       Password := DBKernel.FindPasswordForCryptImageFile(FileName);
@@ -312,16 +336,7 @@ begin
     JPEGScale(Graphic, FPictureSize, FPictureSize);
   end else
   begin
-    FInfo := RecordInfoOne(FQuery.FieldByName('FFileName').AsString, FQuery.FieldByName('ID').AsInteger,
-      FQuery.FieldByName('Rotated').AsInteger, FQuery.FieldByName('Rating').AsInteger,
-      FQuery.FieldByName('Access').AsInteger, FQuery.FieldByName('FileSize').AsInteger,
-      FQuery.FieldByName('Comment').AsString, FQuery.FieldByName('KeyWords').AsString,
-      FQuery.FieldByName('Owner').AsString, FQuery.FieldByName('Collection').AsString,
-      FQuery.FieldByName('Groups').AsString, FQuery.FieldByName('DateToAdd').AsDateTime,
-      FQuery.FieldByName('IsDate').AsBoolean, FQuery.FieldByName('IsTime').AsBoolean,
-      FQuery.FieldByName('aTime').AsDateTime, ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')),
-      FQuery.FieldByName('Include').AsBoolean, True, FQuery.FieldByName('Links').AsString);
-    FInfo.ItemImTh := FQuery.FieldByName('StrTh').AsString;
+    FInfo := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
     if TBlobField(FQuery.FieldByName('thum')) = nil then
       Exit;
 
@@ -383,7 +398,7 @@ begin
     try
       DoResize(W, H, B, Fbit);
       F(B);
-      ApplyRotate(Fbit, FInfo.ItemRotate);
+      ApplyRotate(Fbit, FInfo.Rotation);
       Synchronize(AddToPanel);
       FBit := nil;
     finally

@@ -1001,7 +1001,7 @@ procedure TManagerDB.GetData(Index: integer);
 var
   I, J, N, L : Integer;
   WorkQuery : TDataSet;
-  _sqlexectext, s : string;
+  _sqlexectext: string;
   B : Boolean;
   ItemData : TDBPopupMenuInfoRecord;
 begin

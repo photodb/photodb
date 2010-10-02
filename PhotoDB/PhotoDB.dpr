@@ -100,7 +100,6 @@ uses
   PrinterProgress in 'Printer\PrinterProgress.pas' {FormPrinterProgress},
   UnitGetPhotosForm in 'UnitGetPhotosForm.pas' {GetToPersonalFolderForm},
   UnitFormManagerHint in 'UnitFormManagerHint.pas' {FormManagerHint},
-  UnitFormCanvasSize in 'UnitFormCanvasSize.pas' {FormCanvasSize},
   UnitActionsForm in 'Units\UnitActionsForm.pas' {ActionsForm},
   UnitSplitExportForm in 'UnitSplitExportForm.pas' {SplitExportForm},
   UnitDebugScriptForm in 'UnitDebugScriptForm.pas' {DebugScriptForm},
@@ -302,7 +301,8 @@ uses
   uWatermarkOptions in 'uWatermarkOptions.pas' {FrmWatermarkOptions},
   AddSessionPasswordUnit in 'AddSessionPasswordUnit.pas' {AddSessionPasswordForm},
   uSearchThreadPool in 'Threads\uSearchThreadPool.pas',
-  uMultiCPUThreadManager in 'Threads\uMultiCPUThreadManager.pas';
+  uMultiCPUThreadManager in 'Threads\uMultiCPUThreadManager.pas',
+  uFormListView in 'Units\uFormListView.pas';
 
 {$R *.res}
 
@@ -337,32 +337,30 @@ begin
   if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin
     CloseHandle(HSemaphore);
-    if not CheckFileExistsWithMessageEx(ParamStr(1), False) then
-    begin
-      if (AnsiUpperCase(ParamStr(1)) <> '/EXPLORER') and (AnsiUpperCase(ParamStr(1)) <> '/GETPHOTOS') and (FindWindow(nil, DBID) <> 0) then
-        MessageToSent := 'Activate'
-      else
-        MessageToSent := ParamStr(1) + #0 + ParamStr(2);
 
-        cd.dwData := WM_COPYDATA_ID;
-        cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
-        GetMem(Buf, cd.cbData);
-        try
-          P := PByte(Buf);
-          Integer(P) := Integer(P) + SizeOf(TMsgHdr);
+    if (AnsiUpperCase(ParamStr(1)) <> '/EXPLORER') and (AnsiUpperCase(ParamStr(1)) <> '/GETPHOTOS') and (FindWindow(nil, DBID) <> 0) then
+      MessageToSent := 'Activate'
+    else
+      MessageToSent := ParamStr(1) + #0 + ParamStr(2);
 
-          StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
-          cd.lpData := Buf;
-          if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
-            Halt
-          else
-            if ID_YES <> MessageBoxDB(0, TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED, TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then
-              Halt;
-        finally
-          FreeMem(Buf);
-        end;
+      cd.dwData := WM_COPYDATA_ID;
+      cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
+      GetMem(Buf, cd.cbData);
+      try
+        P := PByte(Buf);
+        Integer(P) := Integer(P) + SizeOf(TMsgHdr);
 
-    end;
+        StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
+        cd.lpData := Buf;
+        if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
+          Halt
+        else
+          if ID_YES <> MessageBoxDB(0, TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED, TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then
+            Halt;
+      finally
+        FreeMem(Buf);
+      end;
+
   end;
 end;
 

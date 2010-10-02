@@ -3,11 +3,11 @@ unit SlideShow;
 interface
 
 uses
-  FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, Searching, Shellapi,
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Shellapi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
   AppEvnts, ImgList, UnitDBKernel, FadeImage, jpeg, Win32crc, CommCtrl,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
+  FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, Searching,
   ShellContextMenu, DropSource, DropTarget, GIFImage, GraphicEx, uFileUtils,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
@@ -213,7 +213,7 @@ type
     FCurrentlyLoadedFile: String;
     FPlay: boolean;
     LockEventRotateFileList : TStrings;
-    LastZValue : extended;
+    LastZValue : Extended;
     FCreating : Boolean;
     FRotatingImageInfo : TRotatingImageInfo;
     FW7TaskBar : ITaskbarList3;
@@ -236,16 +236,26 @@ type
     { Protected declarations }
     procedure CreateParams(VAR Params: TCreateParams); override;
     procedure WndProc(var Message: TMessage); override;
+    function GetFormID : string; override;
   public
     { Public declarations }
     WaitingList: Boolean;
     FCurrentPage: Integer;
     FPageCount: Integer;
     CursorZoomIn, CursorZoomOut: HIcon;
+    DBCanDrag: Boolean;
+    DBDragPoint: TPoint;
+    Old_width, Old_height, Old_top, Old_left: Integer;
+    Old_rect: Trect;
+    FOldPoint: TPoint;
+    WaitGrayScale: Integer;
+    WaitImage: TBitmap;
+    FSID: TGUID;
     procedure ExecuteDirectoryWithFileOnThread(FileName : String);
     function Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
     function ExecuteW(Sender: TObject; Info : TRecordsInfo; LoadBaseFile : String) : boolean;
     procedure LoadLanguage;
+    procedure LoadPopupMenuLanguage;
     procedure ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
     function HeightW : Integer;
     function GetImageRectA : TRect;
@@ -266,7 +276,6 @@ type
     procedure DoSetNoDBRecord(FileName : string);
     procedure MakePagesLinks;
     procedure SetProgressPosition(Position, Max : Integer);
-
     function GetPageCaption : String;
     property DisplayRating : Integer write SetDisplayRating;
   published
@@ -285,29 +294,21 @@ type
 
 var
   Viewer: TViewer;
-  FbImage: Tbitmap;
-  CurrentFileNumber: Integer;
-  DrawImage: TBitmap;
-  FullScreenNow, SlideShowNow: Boolean;
-  DBCanDrag: Boolean;
-  DBDragPoint: TPoint;
-  Old_width, Old_height, Old_top, Old_left: Integer;
-  Old_rect: Trect;
-  CurrentInfo: TRecordsInfo;
-  Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
-  FOldPoint: TPoint;
-  WaitGrayScale: Integer;
-  WaitImage: TBitmap;
-  IncGrayScale: Integer = 20;
   UseOnlySelf: Boolean = False;
-  Zoom: Real = 1;
   ZoomerOn: Boolean = False;
+  IncGrayScale: Integer = 20;
+  Zoom: Real = 1;
   RealZoomInc: Extended = 1;
   RealImageWidth: Integer = 0;
   RealImageHeight: Integer = 0;
-  UseOnlyDefaultDraw: Boolean = False;
   DelTwo: Integer = 2;
-  FSID: TGUID;
+  UseOnlyDefaultDraw: Boolean = False;
+  CurrentInfo: TRecordsInfo;
+  FullScreenNow, SlideShowNow: Boolean;
+  DrawImage: TBitmap;
+  FBImage: Tbitmap;
+  Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
+    CurrentFileNumber: Integer;
 
 const
   CursorZoomInNo = 130;
@@ -350,7 +351,6 @@ begin
   AnimatedImage:=nil;
   FLoading:=true;
   FImageExists:=false;
-  Caption:=TEXT_MES_SLIDE_SHOW;
   DBCanDrag:=false;
   DropFileTarget1.Register(self);
   SlideTimer.Interval:=Math.Min(Math.Max(DBKernel.ReadInteger('Options','FullScreen_SlideDelay',40),1),100)*100;
@@ -569,7 +569,7 @@ begin
    ProportionalSize(Screen.Width,Screen.Height,fw,fh);
    if ImageExists then
    begin
-    If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
+    If false{DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True)} then
     begin
      if ZoomerOn then z:=RealZoomInc*Zoom else
      begin
@@ -842,6 +842,8 @@ begin
   F(FNewCsrBmp);
   F(Fnowcsrbmp);
   F(AnimatedBuffer);
+  F(AnimatedImage);
+  F(LockEventRotateFileList);
 end;
 
 procedure TViewer.SpeedButton5Click(Sender: TObject);
@@ -978,19 +980,21 @@ end;
 
 procedure TViewer.PopupMenu1Popup(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
-  MenuRecord : TDBPopupMenuInfoRecord;
-  i : integer;
+  Info: TDBPopupMenuInfo;
+  MenuRecord: TDBPopupMenuInfoRecord;
+  I: Integer;
 
- procedure InitializeInfo;
- begin
-   MenuRecord := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
-   info.Add(MenuRecord);
- end;
+  procedure InitializeInfo;
+  begin
+    MenuRecord := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
+    Info.Add(MenuRecord);
+  end;
 
 begin
+  LoadPopupMenuLanguage;
  if Length(CurrentInfo.ItemIds)=0 then exit;
  Info := TDBPopupMenuInfo.Create;
+ try
  Info.IsPlusMenu:=false;
  Info.IsListItem:=false;
  For i:=N2.MenuIndex+1 to DBItem1.MenuIndex-1 do
@@ -1039,6 +1043,9 @@ begin
 
  Tools1.Visible:=Resize1.Visible or Print1.Visible or ImageEditor1.Visible or GoToSearchWindow1.Visible;
  NewPanel1.Visible:=Tools1.Visible;
+ finally
+   F(Info);
+ end;
 end;
 
 procedure TViewer.MTimer1Click(Sender: TObject);
@@ -1303,6 +1310,48 @@ begin
  end;
 end;
 
+procedure TViewer.LoadPopupMenuLanguage;
+begin
+  BeginTranslate;
+  try
+    Next1.Caption := L('Next');
+    Previous1.Caption := L('Previous');
+    MTimer1.Caption := L('Timer');
+    Shell1.Caption := L('Execute');
+    Copy1.Caption := L('Copy');
+    FullScreen1.Caption := L('Full screen');
+    Tools1.Caption := L('Tools');
+    DBItem1.Caption := L('DB item');
+    AddToDB1.Caption := L('Add to DB');
+    GoToSearchWindow1.Caption := L('Search photos');
+    Explorer1.Caption := L('Explorer');
+    Exit1.Caption := L('Exit');
+    Onlythisfile1.Caption := L('Only this file');
+    AllFolder1.Caption := L('Full directory with this file');
+    ZoomOut1.Caption := L('Zoom in');
+    ZoomIn1.Caption := L('Zoom out');
+    RealSize1.Caption := L('Real size');
+    BestSize1.Caption := L('Fit to window');
+    Properties1.Caption := L('Properties');
+    SetasDesktopWallpaper1.Caption := L('Set as desktop wallpaper');
+    Stretch1.Caption := L('Stretch');
+    Center1.Caption := L('Center');
+    Tile1.Caption := L('Tile');
+    Rotate1.Caption := L('Rotate image');
+    RotateCCW1.Caption := L('Left');
+    RotateCW1.Caption := L('Right');
+    Rotateon1801.Caption := L('180 Degree');
+    Resize1.Caption := L('Resize');
+    SlideShow1.Caption := L('Slide show');
+    ImageEditor1.Caption := L('Image editor');
+    Print1.Caption := L('Print');
+    SendTo1.Caption := L('Send to');
+    NewPanel1.Caption := L('New panel');
+  finally
+    EndTranslate;
+  end;
+end;
+
 procedure TViewer.ShowFile(FileName: String);
 var
   Info : TRecordsInfo;
@@ -1516,7 +1565,8 @@ begin
  SlideShowNow:=false;
  FOldImageExists := ImageExists;
  ImageExists:=false;
- ImageFrameTimer.Enabled:=false;
+ if LoadBaseFile = '' then
+   ImageFrameTimer.Enabled := False;
  TW.I.Start('ToolButton1.Enabled');
  if Length(Info.ItemFileNames)=0 then
  begin
@@ -1759,7 +1809,6 @@ end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- LockEventRotateFileList.Free;
  if FullScreenView<>nil then
  Exit1Click(nil);
  if DirectShowForm<>nil then
@@ -1769,44 +1818,16 @@ end;
 
 procedure TViewer.LoadLanguage;
 begin
- Next1.Caption:= TEXT_MES_SLIDE_NEXT;
- Previous1.Caption:= TEXT_MES_SLIDE_PREVIOUS;
- MTimer1.Caption:= TEXT_MES_SLIDE_TIMER;
- Shell1.Caption:= TEXT_MES_SHELL;
- Copy1.Caption:= TEXT_MES_COPY;
- FullScreen1.Caption:= TEXT_MES_SLIDE_FULL_SCREEN;
- Tools1.Caption:=TEXT_MES_TOOLS;
- DBItem1.Caption:= TEXT_MES_DBITEM;
- AddToDB1.Caption:= TEXT_MES_ADD_TO_DB;
- GoToSearchWindow1.Caption:= TEXT_MES_GO_TO_SEARCH_WINDOW;
- Explorer1.Caption:= TEXT_MES_EXPLORER;
- Exit1.Caption:= TEXT_MES_EXIT;
- Onlythisfile1.Caption:=TEXT_MES_ADD_ONLY_THIS_FILE;
- AllFolder1.Caption:=TEXT_MES_ADD_ALL_FOLDER;
- ZoomOut1.Caption:=TEXT_MES_ZOOM_IN;
- ZoomIn1.Caption:=TEXT_MES_ZOOM_OUT;
- RealSize1.Caption:=TEXT_MES_REAL_SIZE;
- BestSize1.Caption:=TEXT_MES_BEST_SIZE;
- Properties1.Caption:=TEXT_MES_PROPERTIES;
- SetasDesktopWallpaper1.Caption:=TEXT_MES_SET_AS_DESKTOP_WALLPAPER;
- Stretch1.Caption:=TEXT_MES_BY_STRETCH;
- Center1.Caption:=TEXT_MES_BY_CENTER;
- Tile1.Caption:=TEXT_MES_BY_TILE;
- Rotate1.Caption:=TEXT_MES_ROTATE_IMAGE;
- RotateCCW1.Caption:=TEXT_MES_ROTATE_270;
- RotateCW1.Caption:=TEXT_MES_ROTATE_90;
- Rotateon1801.Caption:=TEXT_MES_ROTATE_180;
- Resize1.Caption:=TEXT_MES_RESIZE;
- SlideShow1.Caption:=TEXT_MES_DO_SLIDE_SHOW;
- ImageEditor1.Caption:=TEXT_MES_IMAGE_EDITOR;
- Print1.Caption:=TEXT_MES_PRINT;
-
- TbBack.Caption := TEXT_MES_SLIDE_PREVIOUS;
- TbForward.Caption := TEXT_MES_NEXT;
- TbInfo.Caption:=TEXT_MES_PROPERTIES;
- TbEditImage.Caption:=TEXT_MES_IMAGE_EDITOR_W;
- SendTo1.Caption:=TEXT_MES_SEND_TO;
- NewPanel1.Caption:=TEXT_MES_NEW_PANEL;
+  BeginTranslate;
+  try
+    Caption := L('Viewer');
+   {TbBack.Caption := TEXT_MES_SLIDE_PREVIOUS;
+    TbForward.Caption := TEXT_MES_NEXT;
+    TbInfo.Caption:=TEXT_MES_PROPERTIES;
+    TbEditImage.Caption:=TEXT_MES_IMAGE_EDITOR_W;}
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TViewer.Copy1Click(Sender: TObject);
@@ -2646,6 +2667,11 @@ begin
    break;
   end;
  end;
+end;
+
+function TViewer.GetFormID: string;
+begin
+  Result := 'Viewer';
 end;
 
 function TViewer.GetNextImageNO: integer;

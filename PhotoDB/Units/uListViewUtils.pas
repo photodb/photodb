@@ -133,7 +133,7 @@ begin
   TempBmpShadow := nil;
   try
   if (Graphic is TBitmap) and
-      (TBitmap(Graphic).Width > W) or (TBitmap(Graphic).Height > H) then
+      ((TBitmap(Graphic).Width > W) or (TBitmap(Graphic).Height > H)) then
     begin
       TempBmp := TBitmap.Create;
       ProportionalSizeA(W, H, ImageW, ImageH);
@@ -180,7 +180,7 @@ begin
     DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.Icons[DB_IC_RELOADING + 1], 16, 16, 0, 0, DI_NORMAL);
 
   if ShowInfo then
-    DrawAttributesEx(ACanvas.Handle, ARect.Right - 100, Max(ARect.Top, Y - 16), Rating, Rotate, Access, FileName, Crypted, Exists, ID);
+    DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Rating, Rotate, Access, FileName, Crypted, Exists, ID);
 end;
 
 procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
@@ -410,7 +410,8 @@ begin
 
   ListView.CellSizes.Thumbnail.Width := ThWidth + AddSize div CountOfItemsX;
   ListView.CellSizes.Thumbnail.Height := ImageSize + 40;
-  ListView.Selection.RoundRectRadius := Min(10, ImageSize div 10);
+  ListView.Selection.RoundRect := ListView.View = elsThumbnail;
+  ListView.Selection.RoundRectRadius := Min(10, ImageSize div 10)
 end;
 
 function GetListViewHeaderHeight(ListView: TListView): Integer;

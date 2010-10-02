@@ -4,10 +4,10 @@ interface
 
 uses Classes, Windows, SysUtils, SyncObjs, uMemory;
 
-{$DEFINE _STARTUP}
+{$DEFINE STARTUP}
 {$DEFINE PROFILER}
 {$DEFINE _MULTIFILES}
-{$DEFINE MULTITHREAD}
+{$DEFINE _MULTITHREAD}
 
 type
   TW = class(TObject)

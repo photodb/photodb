@@ -24,6 +24,7 @@ type
     function CheckForm : Boolean; virtual;
     function IsVirtualTerminate : Boolean; virtual;
     procedure WaitForSubThreads;
+    procedure CheckThreadPriority; virtual;
   public      
     FEvent : THandle;
     constructor Create(AOwnerForm : TThreadForm; AState : TGUID);
@@ -63,11 +64,16 @@ begin
     if FThreadForm.IsActualState(FState) then
       Result := True;
 
-    if FThreadForm.Active then
-      Priority := tpLowest
-    else
-      Priority := tpIdle;
+    CheckThreadPriority;
   end;
+end;
+
+procedure TThreadEx.CheckThreadPriority;
+begin
+  if FThreadForm.Active then
+    Priority := tpLowest
+  else
+    Priority := tpIdle;
 end;
 
 constructor TThreadEx.Create(AOwnerForm: TThreadForm; AState : TGUID);

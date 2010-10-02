@@ -2,8 +2,7 @@ unit DXCommon;
 
 interface
 
-//{$DEFINE ERRORFUNCS}
-
+{$DEFINE UNICODE}
 
 uses
   Windows;
@@ -18,7 +17,6 @@ type
   PCharAW = PAnsiChar;
 {$ENDIF}
 
-function IsNTandDelphiRunning : boolean;
 function RegGetStringValue(Hive: HKEY; const KeyName, ValueName: string): string;
 function ExistFile(const FileName: string): Boolean;
 
@@ -112,22 +110,6 @@ begin
   hFile := CreateFile(PChar(FileName), 0, 0, nil, OPEN_EXISTING, 0, 0);
   Result := hFile <> INVALID_HANDLE_VALUE;
   if Result = true then CloseHandle(hFile);
-end;
-
-
-function IsNTandDelphiRunning : boolean;
-var
-  OSVersion  : TOSVersionInfo;
-  AppName    : array[0..255] of char;
-begin
-  OSVersion.dwOsVersionInfoSize := sizeof(OSVersion);
-  GetVersionEx(OSVersion);
-  // Not running in NT or program is not Delphi itself ?
-  AppName[0] := #0;
-  lstrcat(AppName, PChar(ParamStr(0)));  // ParamStr(0) = Application.ExeName
-  CharUpperBuff(AppName, SizeOf(AppName));
-  result := ( (OSVersion.dwPlatformID = VER_PLATFORM_WIN32_NT) and
-              (Pos('DELPHI32.EXE', AppName) = Length(AppName) - Length('DELPHI32.EXE') + 1) );
 end;
 
 

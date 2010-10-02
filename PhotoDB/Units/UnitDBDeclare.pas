@@ -162,55 +162,6 @@ type
     ByPixels : Byte;
   end;
 
-{  TSearchRecord = class(TObject)
-  public
-    FileName : string;
-    Comments : string;
-    KeyWords : string;
-    ImTh : string;
-    Groups : string;
-    Links : string;
-    FileSize : int64;
-    Date : TDateTime;
-    Time : TDateTime;
-    IsDate : boolean;
-    IsTime : boolean;
-    Crypted : boolean;
-    Include : boolean;
-    Rotation : integer;
-    Rating : integer;
-    Access : integer;
-    Exists : integer;
-    ID : integer;
-    Selected : boolean;
-    Attr : integer;
-    CompareResult : TImageCompareResult;
-    Width : integer;
-    Height : integer;
-    Bitmap : TBitmap;
-    constructor Create;
-    destructor Destroy; override;
-  end;
-
-  TSearchRecordArray = class(TObject)
-  private
-    FList : TList;
-    function GetCount: Integer;
-    function GetValueByIndex(Index: Integer): TSearchRecord;
-    procedure SetValueByIndex(Index: Integer; const Value: TSearchRecord);
-  public
-    constructor Create;
-    destructor Destroy; override;
-    procedure Clear;              
-    procedure ClearList;
-    procedure DeleteAt(Index : Integer);
-    procedure Add(Data : TSearchRecord);
-    function ExtractAt(Index : Integer) : TSearchRecord;
-    function AddNew : TSearchRecord;
-    property Items[Index: Integer]: TSearchRecord read GetValueByIndex write SetValueByIndex; default;
-    property Count : Integer read GetCount;
-  end;       }
-
  TExplorerFileInfo = class(TObject)
   public
     FileName : String;
@@ -239,30 +190,6 @@ type
     IsBigImage: Boolean;
     function Clone: TExplorerFileInfo;
   end;
-
-  TImageContRecord = record
-   FileName : string;
-   Rating : integer;
-   Rotation : integer;
-   ID : integer;
-   Access : integer;
-   Comment : string;
-   FileSize : int64;
-   Selected : boolean;
-   Crypted : boolean;
-   Exists : integer;
-   ImTh : string;
-   Date : TDateTime;
-   IsDate : boolean;
-   Time : TDateTime;  
-   IsTime : boolean;
-   Include : boolean;
-   Links : string;
-   Groups : string;
-   KeyWords : string;
-  end;
-             
-  TImageContRecordArray = array of TImageContRecord;
 
 type
   TPhotoDBFile = class
@@ -403,10 +330,10 @@ type
     Width, Height: Integer;
     Links: string; // ??? not for common use yet
     Exists: Integer; // for drawing in lists
-    LongImageID: AnsiString;
+    LongImageID: string;
     Data: TClonableObject;
     constructor CreateFromDS(DS: TDataSet);
-    constructor CreateFromContRecord(ContRecord: TImageContRecord);
+//    constructor CreateFromContRecord(ContRecord: TImageContRecord);
     constructor CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
 //    constructor CreateFromSearchRecord(Info: TSearchRecord);
     constructor CreateFromExplorerInfo(Info: TExplorerFileInfo);
@@ -581,28 +508,6 @@ begin
     Result.Data := nil;
 end;
 
-constructor TDBPopupMenuInfoRecord.CreateFromContRecord(ContRecord: TImageContRecord);
-begin
-  ID := ContRecord.ID;
-  FileName := ContRecord.FileName;
-  Comment := ContRecord.Comment;
-  FileSize := ContRecord.FileSize;
-  Rotation := ContRecord.Rotation;
-  Access := ContRecord.Access;
-  Rating := ContRecord.Rating;
-  Date := ContRecord.Date;
-  Time := ContRecord.Time;
-  IsDate := ContRecord.IsDate;
-  IsTime := ContRecord.IsTime;
-  Groups := ContRecord.Groups;
-  Crypted := ContRecord.Crypted;
-  Include := ContRecord.Include;
-  KeyWords := ContRecord.KeyWords;
-  Links := ContRecord.Links;
-  InfoLoaded := True;
-  Data := nil;
-end;
-
 constructor TDBPopupMenuInfoRecord.CreateFromDS(DS: TDataSet);
 var
   ThumbField: TField;
@@ -681,29 +586,6 @@ begin
   Links := RI.ItemLinks;
   Data := nil;
 end;
-
-{constructor TDBPopupMenuInfoRecord.CreateFromSearchRecord(Info: TSearchRecord);
-begin
-  FileName := ProcessPath(Info.FileName);
-  Comment := Info.Comments;
-  FileSize := Info.FileSize;
-  Rotation := Info.Rotation;
-  ID := Info.ID;
-  Access := Info.Access;
-  Rating := Info.Rating;
-  Date := Info.Date;
-  Time := Info.Time;
-  IsDate := Info.IsDate;
-  IsTime := Info.IsTime;
-  Groups := Info.Groups;
-  Crypted := Info.Crypted;
-  KeyWords := Info.KeyWords;
-  Attr := Info.Attr;
-  InfoLoaded := True;
-  Include := Info.Include;
-  Links := Info.Links;
-  Data := nil;
-end;}
 
 constructor TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
 begin

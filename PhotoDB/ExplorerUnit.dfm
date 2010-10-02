@@ -3,7 +3,7 @@ object ExplorerForm: TExplorerForm
   Top = 101
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
-  ClientHeight = 593
+  ClientHeight = 613
   ClientWidth = 870
   Color = clBtnFace
   Constraints.MinHeight = 200
@@ -13,7 +13,6 @@ object ExplorerForm: TExplorerForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   KeyPreview = True
-  Menu = MainMenu1
   OldCreateOrder = False
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
@@ -26,7 +25,7 @@ object ExplorerForm: TExplorerForm
   object Splitter1: TSplitter
     Left = 135
     Top = 47
-    Height = 526
+    Height = 546
     Constraints.MaxWidth = 100
     OnCanResize = Splitter1CanResize
     ExplicitTop = 42
@@ -2218,10 +2217,11 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 47
     Width = 135
-    Height = 526
+    Height = 546
     Align = alLeft
     ParentColor = True
     TabOrder = 0
+    ExplicitHeight = 526
     object CloseButtonPanel: TPanel
       Left = 1
       Top = 1
@@ -2252,7 +2252,7 @@ object ExplorerForm: TExplorerForm
       Left = 1
       Top = 22
       Width = 133
-      Height = 503
+      Height = 523
       Align = alClient
       BevelOuter = bvNone
       Color = clInactiveCaption
@@ -2260,11 +2260,12 @@ object ExplorerForm: TExplorerForm
       ParentCtl3D = False
       TabOrder = 1
       OnResize = PropertyPanelResize
+      ExplicitHeight = 503
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
         Width = 133
-        Height = 503
+        Height = 523
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -2281,6 +2282,7 @@ object ExplorerForm: TExplorerForm
         Caption = 'ScrollBox1'
         TabOrder = 0
         OnResize = ScrollBox1Resize
+        ExplicitHeight = 503
         object TypeLabel: TLabel
           Left = 8
           Top = 136
@@ -2712,7 +2714,7 @@ object ExplorerForm: TExplorerForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 573
+    Top = 593
     Width = 870
     Height = 20
     Panels = <
@@ -2722,6 +2724,7 @@ object ExplorerForm: TExplorerForm
       item
         Width = 150
       end>
+    ExplicitTop = 573
   end
   object CoolBar1: TCoolBar
     Left = 0
@@ -2988,11 +2991,12 @@ object ExplorerForm: TExplorerForm
     Left = 138
     Top = 47
     Width = 732
-    Height = 526
+    Height = 546
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 3
+    ExplicitHeight = 526
   end
   object CoolBar2: TCoolBar
     Left = 0
@@ -3502,234 +3506,6 @@ object ExplorerForm: TExplorerForm
     OnTimer = HintTimerTimer
     Left = 200
     Top = 80
-  end
-  object MainMenu1: TMainMenu
-    Left = 232
-    Top = 80
-    object File1: TMenuItem
-      Caption = 'File'
-      object Shell2: TMenuItem
-        Caption = 'Shell'
-        Visible = False
-      end
-      object SlideShow2: TMenuItem
-        Caption = 'Slide Show'
-        Visible = False
-      end
-      object NewWindow2: TMenuItem
-        Caption = 'New Window'
-        Visible = False
-      end
-      object Exit1: TMenuItem
-        Caption = 'Exit'
-        ShortCut = 16453
-        OnClick = Exit1Click
-      end
-    end
-    object Edit2: TMenuItem
-      Caption = 'Edit'
-      OnClick = Edit2Click
-      object Back1: TMenuItem
-        Caption = 'Back'
-        ShortCut = 16450
-        OnClick = Back1Click
-      end
-      object Forward1: TMenuItem
-        Caption = 'Forward'
-        ShortCut = 16454
-        OnClick = Forward1Click
-      end
-      object Up1: TMenuItem
-        Caption = 'Up'
-        ShortCut = 16469
-        OnClick = Up1Click
-      end
-      object N4: TMenuItem
-        Caption = '-'
-      end
-      object Copy3: TMenuItem
-        Caption = 'Copy'
-        OnClick = Copy3Click
-      end
-      object Cut3: TMenuItem
-        Caption = 'Cut'
-        OnClick = Cut3Click
-      end
-      object Paste3: TMenuItem
-        Caption = 'Paste'
-        OnClick = Paste3Click
-      end
-      object N3: TMenuItem
-        Caption = '-'
-      end
-      object SelectAll2: TMenuItem
-        Caption = 'Select All'
-        ShortCut = 16449
-        OnClick = SelectAll1Click
-      end
-    end
-    object View1: TMenuItem
-      Caption = 'View'
-      object ExplorerPanel1: TMenuItem
-        Caption = 'Show Explorer Panel'
-        OnClick = ExplorerPanel1Click
-      end
-      object InfoPanel1: TMenuItem
-        Caption = 'Show Info Panel'
-        OnClick = InfoPanel1Click
-      end
-      object ShowFolders1: TMenuItem
-        Caption = 'Show Folders'
-        Visible = False
-      end
-      object ShowFiles1: TMenuItem
-        Caption = 'Show Files'
-        Visible = False
-      end
-      object ShowHidden1: TMenuItem
-        Caption = 'Show Hidden'
-        Visible = False
-      end
-      object ShowOnlyCommon1: TMenuItem
-        Caption = 'Show Only Common'
-        Visible = False
-        OnClick = ShowOnlyCommon1Click
-      end
-      object ShowPrivate1: TMenuItem
-        Caption = 'Show Private'
-        Visible = False
-        OnClick = ShowPrivate1Click
-      end
-      object N20: TMenuItem
-        Caption = '-'
-      end
-      object View3: TMenuItem
-        Caption = 'View'
-        object Thumbnails2: TMenuItem
-          Caption = 'Thumbnails'
-          Checked = True
-          GroupIndex = 1
-          RadioItem = True
-          OnClick = Thumbnails1Click
-        end
-        object Tile3: TMenuItem
-          Caption = 'Tile'
-          GroupIndex = 1
-          RadioItem = True
-          OnClick = Tile2Click
-        end
-        object Icons2: TMenuItem
-          Caption = 'Icons'
-          GroupIndex = 1
-          RadioItem = True
-          OnClick = Icons1Click
-        end
-        object List2: TMenuItem
-          Caption = 'List'
-          GroupIndex = 1
-          RadioItem = True
-          OnClick = List1Click
-        end
-        object SmallIcons2: TMenuItem
-          Caption = 'Small Icons'
-          GroupIndex = 1
-          RadioItem = True
-          OnClick = SmallIcons1Click
-        end
-      end
-    end
-    object Tools1: TMenuItem
-      Caption = 'Tools'
-      object ShowUpdater2: TMenuItem
-        Caption = 'Show Updater'
-        OnClick = ShowUpdater1Click
-      end
-      object GroupManager1: TMenuItem
-        Caption = 'Group Manager'
-        OnClick = GroupManager1Click
-      end
-      object DBManager1: TMenuItem
-        Caption = 'DB Manager'
-        OnClick = DBManager1Click
-      end
-      object NewPanel1: TMenuItem
-        Caption = 'New Panel'
-        OnClick = NewPanel1Click
-      end
-      object ImageEditor1: TMenuItem
-        Caption = 'Image Editor'
-        OnClick = ImageEditor1Click
-      end
-      object Searching1: TMenuItem
-        Caption = 'Searching'
-        OnClick = GoToSearchWindow1Click
-      end
-      object N9: TMenuItem
-        Caption = '-'
-      end
-      object Options1: TMenuItem
-        Caption = 'Options'
-        OnClick = Options1Click
-      end
-      object N11: TMenuItem
-        Caption = '-'
-        Visible = False
-      end
-      object Addsessionpassword1: TMenuItem
-        Caption = 'Add session-password'
-        Visible = False
-        OnClick = Addsessionpassword1Click
-      end
-    end
-    object GetPhotosFromDrive1: TMenuItem
-      Caption = 'Get Photos From Drive'
-      OnClick = GetPhotosFromDrive1Click
-      object RemovableDrives1: TMenuItem
-        Caption = 'Removable Drives'
-        OnClick = RemovableDrives1Click
-        object N14: TMenuItem
-          Caption = '-'
-        end
-      end
-      object CDROMDrives1: TMenuItem
-        Caption = 'CD-ROM Drives'
-        OnClick = CDROMDrives1Click
-        object N16: TMenuItem
-          Caption = '-'
-        end
-      end
-      object SpecialLocation1: TMenuItem
-        Caption = 'Special Location'
-        OnClick = SpecialLocation1Click
-      end
-    end
-    object Help1: TMenuItem
-      Caption = 'Help'
-      object Help2: TMenuItem
-        Caption = 'Help'
-        OnClick = Help2Click
-      end
-      object Activation1: TMenuItem
-        Caption = 'Activation'
-        OnClick = Activation1Click
-      end
-      object About1: TMenuItem
-        Caption = 'About'
-        OnClick = Help1Click
-      end
-      object HomePage1: TMenuItem
-        Caption = 'Home Page'
-        OnClick = HomePage1Click
-      end
-      object ContactWithAuthor1: TMenuItem
-        Caption = 'Contact With Author'
-        OnClick = ContactWithAuthor1Click
-      end
-      object GetUpdates1: TMenuItem
-        Caption = 'Get Updates'
-        OnClick = GetUpdates1Click
-      end
-    end
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False

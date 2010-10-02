@@ -119,8 +119,6 @@ type
     procedure DoLoadBigImages;
     procedure GetAllFiles;
     procedure DoDefaultSort;
-    procedure ExplorerHasIconForExt;
-    procedure SetIconForFileByExt;
     procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
     procedure ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
@@ -745,10 +743,13 @@ begin
   end;
 
   //Create image from Info!!!
-  if ProcessorCount > 1 then
-    TExplorerThreadPool.Instance.ExtractImage(Self, FInfo, CryptedFile, FileID)
-  else
-    ExtractImage(FInfo, CryptedFile, FileID);
+  if ExplorerInfo.View = LV_THUMBS then
+  begin
+    if ProcessorCount > 1 then
+      TExplorerThreadPool.Instance.ExtractImage(Self, FInfo, CryptedFile, FileID)
+    else
+      ExtractImage(FInfo, CryptedFile, FileID);
+  end;
 end;
 
 procedure TExplorerThread.DrawImageToTempBitmapCenter;
@@ -1182,7 +1183,8 @@ begin
       GUIDParam := FFiles[0].SID;
       CurrentFile := FFiles[0].FileName;
       AddImageFileToExplorerW; // TODO: filesize is undefined
-      ReplaceImageItemImage(CurrentFile, FFiles[0].FileSize, GUIDParam);
+      if ExplorerInfo.ShowThumbNailsForImages then
+        ReplaceImageItemImage(CurrentFile, FFiles[0].FileSize, GUIDParam);
     end;
     if FFiles[0].FileType = EXPLORER_ITEM_FILE then
     begin
@@ -1576,7 +1578,7 @@ begin
  if FolderView then CurrentFile:=ProgramDir+FFiles[0].FileName else
  CurrentFile:=FFiles[0].FileName;
  if ExplorerInfo.ShowThumbNailsForImages then
- ReplaceImageItemImage(FFiles[0].FileName, -1, GUIDParam); //todo: filesize is undefined
+   ReplaceImageItemImage(FFiles[0].FileName, -1, GUIDParam); //todo: filesize is undefined
  if FUpdaterInfo.ID<>0 then
  SynchronizeEx(ChangeIDImage);
  IntParam:=FUpdaterInfo.ID;
@@ -1864,16 +1866,6 @@ begin
   end
 end;
 
-procedure TExplorerThread.ExplorerHasIconForExt;
-begin
-  BooleanParam := FSender.ExitstExtInIcons(GetExt(CurrentFile));
-end;
-
-procedure TExplorerThread.SetIconForFileByExt;
-begin
-  FSender.AddIconByExt(GetExt(CurrentFile),IconParam);
-end;
-
 procedure TExplorerThread.DoStopSearch;
 begin
   FSender.DoStopLoading;
@@ -1885,7 +1877,7 @@ var
   Graphic : TGraphic;
   GraphicClass : TGraphicClass;
   Password : string;
-  TempBit, Fbit : TBitmap;
+  TempBit : TBitmap;
 begin
   if Info.ItemId = 0 then
   begin
@@ -1973,6 +1965,7 @@ begin
     IsBigImage := False; //сбрасываем флаг для того чтобы перезагрузилась картинка
 
   GUIDParam := FileID;
+  FInfo := Info;
   SynchronizeEx(ReplaceImageInExplorer);
 end;
 

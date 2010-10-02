@@ -42,7 +42,7 @@ begin
   FreeOnTerminate:=true;
   CoInitialize(nil);
   try
-    GetFileListByMask(BaseFileName, SupportedExt,Info, N, true);
+    GetFileListByMask(BaseFileName, SupportedExt, Info, N, true);
     SynchronizeEx(SynchNotify);
   finally
     CoUninitialize;

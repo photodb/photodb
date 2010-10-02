@@ -23,21 +23,18 @@ interface
     Infos : TArStrings);
   procedure BeginScreenUpdate(hwnd: THandle);
   procedure EndScreenUpdate(hwnd: THandle; erase: Boolean);
-
-
   function CalcJpegResampledSize(Jpeg : TJpegImage; Size : integer; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
   function CalcBitmapToJPEGCompressSize(Bitmap : TBitmap; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
-  procedure ConvertTo32BitImageList(const ImageList: TImageList);
   procedure LoadImageX(Image : TGraphic; Bitmap : TBitmap; BackGround : TColor);
   procedure LoadPNGImageTransparent(PNG : TPNGGraphic; Bitmap : TBitmap);
   procedure LoadPNGImage32bit(PNG : TPNGGraphic; Bitmap : TBitmap; BackGroundColor : TColor);
   procedure LoadBMPImage32bit(S : TBitmap; D : TBitmap; BackGroundColor : TColor);
   procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
-  procedure StretchCool(x, y, Width, Height : Integer; var S, D : TBitmap); overload;
-  procedure StretchCool(Width, Height : integer; var S,D : TBitmap); overload;
-  Procedure QuickReduceWide(Width, Height : integer; Var S,D : TBitmap);
+  procedure StretchCool(x, y, Width, Height : Integer; S, D : TBitmap); overload;
+  procedure StretchCool(Width, Height : integer; S,D : TBitmap); overload;
+  Procedure QuickReduceWide(Width, Height : integer; S,D : TBitmap);
   procedure DoResize(Width,Height : integer; S,D : TBitmap);
-  procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap);
+  procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; S, D : TBitmap);
   procedure Rotate180A(Bitmap : TBitmap);
   procedure Rotate270A(Bitmap : TBitmap);
   procedure Rotate90A(Bitmap : TBitmap);
@@ -531,7 +528,7 @@ begin
   end;
 end;
 
-procedure GrayScaleImage(var S, D : TBitmap; N : integer);
+procedure GrayScaleImage(S, D : TBitmap; N : integer);
 var
   i, j : integer;
   p1, p2 : Pargb;
@@ -773,34 +770,6 @@ begin
     end;
   finally
     Bitmap.Free;
-  end;
-end;
-
-procedure ConvertTo32BitImageList(const ImageList: TImageList);
-const
-  Mask: array[Boolean] of Longint = (0, ILC_MASK);
-var
-  TemporyImageList: TImageList;
-begin
-  // add to uses: commctrl, consts;
-  if Assigned(ImageList) then
-  begin
-    TemporyImageList := TImageList.Create(nil);
-    try
-      TemporyImageList.Assign(ImageList);
-      with ImageList do
-      begin
-        Masked:=false;
-        ImageList.Handle := ImageList_Create(Width, Height, ILC_COLOR32 or Mask[Masked], 0, AllocBy);
-        if not ImageList.HandleAllocated then
-        begin
-          raise EInvalidOperation.Create('HandleAllocated Failed!');
-        end;
-      end;
-      ImageList.AddImages(TemporyImageList);
-    finally
-      TemporyImageList.Free;
-    end;
   end;
 end;
 
@@ -1281,7 +1250,7 @@ begin
   end;
 end;
 
-procedure StretchCool(x, y, Width, Height : Integer; var S, D : TBitmap);
+procedure StretchCool(x, y, Width, Height : Integer; S, D : TBitmap);
 var
   i,j,k,p,Sheight1:integer;
   p1: pargb;
@@ -1336,7 +1305,7 @@ begin
  end;
 end;
 
-procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap);
+procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; S, D : TBitmap);
 var
   z1, z2: single;
   k: single;
@@ -1581,7 +1550,7 @@ begin
  end;
 end;
 
-procedure StretchCool(Width, Height : Integer; var S, D : TBitmap);
+procedure StretchCool(Width, Height : Integer; S, D : TBitmap);
 var
   I, J, K, F : Integer;
   P : PARGB;
@@ -1681,7 +1650,7 @@ begin
   end;
 end;
 
-procedure QuickReduceWide(Width, Height : integer; Var S,D : TBitmap);
+procedure QuickReduceWide(Width, Height : integer; S,D : TBitmap);
 begin
   if (Width=0) or (Height=0) then
     Exit;

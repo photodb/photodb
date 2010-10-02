@@ -73,17 +73,15 @@ procedure TFormCDMapper.FormCreate(Sender: TObject);
 var
   Icon : TIcon;
 begin
- PopupMenuCDActions.Images:=DBKernel.ImageList;
- 
- ConvertTo32BitImageList(CDImageList);
- Icon:=TIcon.Create;
- DBkernel.ImageList.GetIcon(DB_IC_CD_IMAGE,Icon);
- CDImageList.AddIcon(Icon);
- Icon.Free;
- DBKernel.RegisterForm(Self);
- DBKernel.RecreateThemeToForm(Self);
- LoadLanguage;
- RefreshCDList;
+  PopupMenuCDActions.Images:=DBKernel.ImageList;
+  Icon:=TIcon.Create;
+  DBkernel.ImageList.GetIcon(DB_IC_CD_IMAGE, Icon);
+  CDImageList.AddIcon(Icon);
+  Icon.Free;
+  DBKernel.RegisterForm(Self);
+  DBKernel.RecreateThemeToForm(Self);
+  LoadLanguage;
+  RefreshCDList;
 end;
 
 procedure TFormCDMapper.FormDestroy(Sender: TObject);

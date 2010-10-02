@@ -118,6 +118,8 @@ type
     procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
     function Add(FileName: string) : TDBPopupMenuInfoRecord; overload;
     procedure Clear;
+    procedure Exchange(Index1, Index2 : Integer);
+    procedure Delete(Index : Integer);
     function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
     property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex write SetValueByIndex; default;
     property IsListItem: Boolean read FIsListItem write FIsListItem;
@@ -514,9 +516,6 @@ procedure JPEGScale(Graphic: TGraphic; Width, Height: Integer);
 function RecordInfoOne(name: string; ID, Rotate, Rating, Access: Integer; Size: Int64;
   Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; Isdate, IsTime: Boolean; Time: TTime;
   Crypt, Include, Loaded: Boolean; Links: string): TOneRecordInfo;
-function RecordsInfoFromArrays(Names: TArstrings; IDs, Rotates, Ratings, Accesss: TArInteger;
-  Comments, KeyWords, Groups: TArstrings; Dates: TArDateTime; IsDates, IsTimes: TArBoolean; Times: TArTime;
-  Crypt, Loaded, Include: TArBoolean; Links: TArStrings): TRecordsInfo;
 function RecordInfoOneA(name: string; ID, Rotate, Rating, Access, Size: Integer;
   Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TTime;
   Crypt: Boolean; Tag: Integer; Include: Boolean; Links: string): TOneRecordInfo;
@@ -532,7 +531,6 @@ function RecordsInfoOne(name: string; ID, Rotate, Rating, Access: Integer;
 function GetRecordsFromOne(Info: TOneRecordInfo): TRecordsInfo;
 function GetRecordFromRecords(Info: TRecordsInfo; N: Integer): TOneRecordInfo;
 procedure SetRecordToRecords(Info: TRecordsInfo; N: Integer; Rec: TOneRecordInfo);
-procedure CopyRecordsInfo(var S, D: TRecordsInfo);
 function RecordsInfoNil: TRecordsInfo;
 procedure AddToRecordsInfoOneInfo(var Infos: TRecordsInfo; Info: TOneRecordInfo);
 procedure DBPopupMenuInfoToRecordsInfo(var DBP: TDBPopupMenuInfo; var RI: TRecordsInfo);
@@ -1973,90 +1971,6 @@ begin
   D.ItemLinks[L] := Links;
 end;
 
-procedure CopyArrayInt(var S, D: TArInteger);
-var
-  I: Integer;
-begin
-  SetLength(D, Length(S));
-  for I := 0 to Length(D) - 1 do
-    D[I] := S[I];
-end;
-
-procedure CopyArrayStr(var S, D: TArStrings);
-var
-  I: Integer;
-begin
-  SetLength(D, Length(S));
-  for I := 0 to Length(D) - 1 do
-    D[I] := S[I];
-end;
-
-procedure CopyArrayDate(var S, D: TArDateTime);
-var
-  I: Integer;
-begin
-  SetLength(D, Length(S));
-  for I := 0 to Length(D) - 1 do
-    D[I] := S[I];
-end;
-
-procedure CopyArrayTime(var S, D: TArTime);
-var
-  I: Integer;
-begin
-  SetLength(D, Length(S));
-  for I := 0 to Length(D) - 1 do
-    D[I] := S[I];
-end;
-
-procedure CopyArrayBool(var S, D: TArBoolean);
-var
-  I: Integer;
-begin
-  SetLength(D, Length(S));
-  for I := 0 to Length(D) - 1 do
-    D[I] := S[I];
-end;
-
-procedure CopyRecordsInfo(var S, D: TRecordsInfo);
-begin
-  D.Position := S.Position;
-  CopyArrayStr(S.ItemFileNames, D.ItemFileNames);
-  CopyArrayInt(S.ItemIds, D.ItemIds);
-  CopyArrayInt(S.ItemRatings, D.ItemRatings);
-  CopyArrayInt(S.ItemRotates, D.ItemRotates);
-  CopyArrayInt(S.ItemAccesses, D.ItemAccesses);
-  CopyArrayStr(S.ItemComments, D.ItemComments);
-  CopyArrayDate(S.ItemDates, D.ItemDates);
-  CopyArrayTime(S.ItemTimes, D.ItemTimes);
-  CopyArrayBool(S.ItemIsDates, D.ItemIsDates);
-  CopyArrayBool(S.ItemIsTimes, D.ItemIsTimes);
-  CopyArrayStr(S.ItemGroups, D.ItemGroups);
-  CopyArrayBool(S.ItemInclude, D.ItemInclude);
-end;
-
-function RecordsInfoFromArrays(Names: TArstrings; IDs, Rotates, Ratings, Accesss: TArInteger;
-  Comments, KeyWords, Groups: TArstrings; Dates: TArDateTime; IsDates, IsTimes: TArBoolean; Times: TArTime;
-  Crypt, Loaded, Include: TArBoolean; Links: TArStrings): TRecordsInfo;
-begin
-  CopyArrayStr(Names, Result.ItemFileNames);
-  CopyArrayInt(IDs, Result.ItemIds);
-  CopyArrayInt(Rotates, Result.ItemRotates);
-  CopyArrayInt(Ratings, Result.ItemRatings);
-  CopyArrayInt(Accesss, Result.ItemAccesses);
-  CopyArrayStr(Comments, Result.ItemComments);
-  CopyArrayStr(KeyWords, Result.ItemKeyWords);
-  CopyArrayDate(Dates, Result.ItemDates);
-  CopyArrayTime(Times, Result.ItemTimes);
-  CopyArrayBool(IsDates, Result.ItemIsDates);
-  CopyArrayBool(IsTimes, Result.ItemIsTimes);
-  CopyArrayStr(Groups, Result.ItemGroups);
-  CopyArrayBool(Crypt, Result.ItemCrypted);
-  CopyArrayBool(Loaded, Result.LoadedImageInfo);
-  CopyArrayBool(Include, Result.ItemInclude);
-  CopyArrayStr(Links, Result.ItemLinks);
-end;
-
 procedure DBPopupMenuInfoToRecordsInfo(var DBP: TDBPopupMenuInfo; var RI: TRecordsInfo);
 var
   I, FilesSelected: Integer;
@@ -2166,25 +2080,12 @@ var
   Folder, DBFolder, S, AddFolder: string;
   C: Integer;
   FQuery: TDataSet;
-  FBlockedFiles: TArStrings;
+  FBlockedFiles,
   List: TStrings;
   Crc: Cardinal;
   FE, EM: Boolean;
   P: PChar;
   PSupportedExt: PChar;
-
-  function IsFileBlocked(FileName: string): Boolean;
-  var
-    I: Integer;
-  begin
-    Result := False;
-    for I := 0 to Length(FBlockedFiles) - 1 do
-      if AnsiLowerCase(FBlockedFiles[I]) = AnsiLowerCase(FileName) then
-      begin
-        Result := True;
-        Break;
-      end;
-  end;
 
 begin
 
@@ -2195,117 +2096,119 @@ begin
   if Folder = '' then
     Exit;
   List := TStringlist.Create;
-  C := 0;
-  N := 0;
-  SetLength(FBlockedFiles, 0);
-  FQuery := GetQuery(True);
-  FQuery.Active := False;
-  Folder := AnsiLowerCase(Folder);
-  Formatdir(Folder);
-  Folder := AnsiLowercase(Folder);
-  DBFolder := NormalizeDBStringLike(NormalizeDBString(Folder));
-
-  if FolderView then
-    AddFolder := AnsiLowerCase(ProgramDir)
-  else
-    AddFolder := '';
-
-  UnFormatDir(DBFolder);
-  CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
-
-  if (GetDBType = DB_TYPE_MDB) and not FolderView then
-    SetSQL(FQuery, 'Select * From (Select * from $DB$ where FolderCRC=' + Inttostr(Integer(Crc)) +
-        ') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
-  if FolderView then
-  begin
-    SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
-    S := DBFolder;
-    Delete(S, 1, Length(ProgramDir));
-    UnformatDir(S);
-    CalcStringCRC32(AnsiLowerCase(S), Crc);
-    SetIntParam(FQuery, 0, Integer(Crc));
-  end else
-  begin
-    UnFormatDir(DBFolder);
-    CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
-    FormatDir(DBFolder);
-    SetStrParam(FQuery, 0, '%' + DBFolder + '%');
-    SetStrParam(FQuery, 1, '%' + DBFolder + '%\%');
-  end;
-
-  FQuery.Active := True;
-  FQuery.First;
-  SetLength(FBlockedFiles, 0);
-  for I := 1 to FQuery.RecordCount do
-  begin
-    if FQuery.FieldByName('Access').AsInteger = Db_access_private then
-    begin
-      SetLength(FBlockedFiles, Length(FBlockedFiles) + 1);
-      FBlockedFiles[Length(FBlockedFiles) - 1] := FQuery.FieldByName('FFileName').AsString;
-    end;
-    FQuery.Next;
-  end;
   try
-    BeginFile := AnsiLowerCase(BeginFile);
-    PSupportedExt := PChar(Mask); // !!!!
-    Found := FindFirst(Folder + '*.*', FaAnyFile, SearchRec);
-    while Found = 0 do
-    begin
-      // if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-      begin
-        FE := (SearchRec.Attr and FaDirectory = 0);
-        S := ExtractFileExt(SearchRec.name);
-        Delete(S, 1, 1);
-        S := '|' + AnsiUpperCase(S) + '|';
-        if PSupportedExt = '*.*' then
-          EM := True
-        else
-        begin
-          P := StrPos(PSupportedExt, PChar(S));
-          EM := P <> nil;
-        end;
-        if FE and EM and not IsFileBlocked(Folder + SearchRec.name) then
-        begin
-          Inc(C);
-          if AnsiLowerCase(Folder + SearchRec.name) = BeginFile then
-            N := C - 1;
-          List.Add(AnsiLowerCase(Folder + SearchRec.name));
-        end;
-      end;
-      Found := SysUtils.FindNext(SearchRec);
-    end;
-    FindClose(SearchRec);
-  except
-  end;
-  Info := RecordsInfoNil;
-  FQuery.First;
-  for I := 0 to List.Count - 1 do
-    AddRecordsInfoOne(Info, List[I], 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False, False, True, '');
+    C := 0;
+    N := 0;
+    FBlockedFiles := TStringList.Create;
+    try
+      FQuery := GetQuery(True);
+      try
+        Folder := AnsiLowerCase(Folder);
+        Formatdir(Folder);
+        DBFolder := NormalizeDBStringLike(NormalizeDBString(Folder));
 
-  for I := 0 to FQuery.RecordCount - 1 do
-  begin
-    for J := 0 to Length(Info.ItemFileNames) - 1 do
-    begin
-      if (AddFolder + FQuery.FieldByName('FFileName').AsString) = Info.ItemFileNames[J] then
-      begin
-        SetRecordToRecords(Info, J, LoadInfoFromDataSet(FQuery));
-        Break;
+        if FolderView then
+          AddFolder := AnsiLowerCase(ProgramDir)
+        else
+          AddFolder := '';
+
+        UnFormatDir(DBFolder);
+        CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
+
+        if (GetDBType = DB_TYPE_MDB) and not FolderView then
+          SetSQL(FQuery, 'Select * From (Select * from $DB$ where FolderCRC=' + Inttostr(Integer(Crc)) +
+              ') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+        if FolderView then
+        begin
+          SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
+          S := DBFolder;
+          Delete(S, 1, Length(ProgramDir));
+          UnformatDir(S);
+          CalcStringCRC32(AnsiLowerCase(S), Crc);
+          SetIntParam(FQuery, 0, Integer(Crc));
+        end else
+        begin
+          UnFormatDir(DBFolder);
+          CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
+          FormatDir(DBFolder);
+          SetStrParam(FQuery, 0, '%' + DBFolder + '%');
+          SetStrParam(FQuery, 1, '%' + DBFolder + '%\%');
+        end;
+
+        FQuery.Active := True;
+        FQuery.First;
+        for I := 1 to FQuery.RecordCount do
+        begin
+          if FQuery.FieldByName('Access').AsInteger = Db_access_private then
+            FBlockedFiles.Add(AnsiLowerCase(FQuery.FieldByName('FFileName').AsString));
+
+          FQuery.Next;
+        end;
+
+        BeginFile := AnsiLowerCase(BeginFile);
+        PSupportedExt := PChar(Mask); // !!!!
+        Found := FindFirst(Folder + '*.*', FaAnyFile, SearchRec);
+        while Found = 0 do
+        begin
+          FE := (SearchRec.Attr and FaDirectory = 0);
+          S := ExtractFileExt(SearchRec.name);
+          Delete(S, 1, 1);
+          S := '|' + AnsiUpperCase(S) + '|';
+          if PSupportedExt = '*.*' then
+            EM := True
+          else
+          begin
+            P := StrPos(PSupportedExt, PChar(S));
+            EM := P <> nil;
+          end;
+          if FE and EM and (FBlockedFiles.IndexOf(AnsiLowerCase(Folder + SearchRec.name)) < 0) then
+          begin
+            Inc(C);
+            if AnsiLowerCase(Folder + SearchRec.name) = BeginFile then
+              N := C - 1;
+            List.Add(AnsiLowerCase(Folder + SearchRec.name));
+          end;
+          Found := SysUtils.FindNext(SearchRec);
+        end;
+        FindClose(SearchRec);
+
+        Info := RecordsInfoNil;
+        FQuery.First;
+        for I := 0 to List.Count - 1 do
+          AddRecordsInfoOne(Info, List[I], 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False, False, True, '');
+
+        for I := 0 to FQuery.RecordCount - 1 do
+        begin
+          for J := 0 to Length(Info.ItemFileNames) - 1 do
+          begin
+            if (AddFolder + FQuery.FieldByName('FFileName').AsString) = Info.ItemFileNames[J] then
+            begin
+              SetRecordToRecords(Info, J, LoadInfoFromDataSet(FQuery));
+              Break;
+            end;
+          end;
+          FQuery.Next;
+        end;
+        for I := 0 to Length(Info.ItemFileNames) - 1 do
+        begin
+          if AnsiLowerCase(Info.ItemFileNames[I]) = AnsiLowerCase(BeginFile) then
+            Info.Position := I;
+          if not Info.LoadedImageInfo[I] then
+          begin
+            Info.ItemCrypted[I] := False; // ? !!! ValidCryptGraphicFile(Info.ItemFileNames[i]);
+            Info.LoadedImageInfo[I] := True;
+          end;
+        end;
+        FQuery.Close;
+      finally
+        FreeDS(FQuery);
       end;
+    finally
+      FBlockedFiles.Free;
     end;
-    FQuery.Next;
+  finally
+    List.Free;
   end;
-  for I := 0 to Length(Info.ItemFileNames) - 1 do
-  begin
-    if AnsiLowerCase(Info.ItemFileNames[I]) = AnsiLowerCase(BeginFile) then
-      Info.Position := I;
-    if not Info.LoadedImageInfo[I] then
-    begin
-      Info.ItemCrypted[I] := False; // ? !!! ValidCryptGraphicFile(Info.ItemFileNames[i]);
-      Info.LoadedImageInfo[I] := True;
-    end;
-  end;
-  FQuery.Close;
-  FreeDS(FQuery);
 end;
 
 function GetGUID: TGUID;
@@ -6006,8 +5909,14 @@ procedure TDBPopupMenuInfo.Assign(Source: TDBPopupMenuInfo);
 var
   I: Integer;
 begin
+  if Pointer(Source) = Pointer(Self) then
+     Exit;
+  Clear;
   for I := 0 to Source.Count - 1 do
     FData.Add(Source[I].Copy);
+
+  if Source.Position >= 0 then
+    Position := Source.Position;
 end;
 
 procedure TDBPopupMenuInfo.Clear;
@@ -6024,11 +5933,22 @@ begin
   FData := TList.Create;
 end;
 
+procedure TDBPopupMenuInfo.Delete(Index: Integer);
+begin
+  TObject(FData[Index]).Free;
+  FData.Delete(Index);
+end;
+
 destructor TDBPopupMenuInfo.Destroy;
 begin
   Clear;
   FData.Free;
   inherited;
+end;
+
+procedure TDBPopupMenuInfo.Exchange(Index1, Index2: Integer);
+begin
+  FData.Exchange(Index1, Index2);
 end;
 
 function TDBPopupMenuInfo.Extract(Index: Integer): TDBPopupMenuInfoRecord;

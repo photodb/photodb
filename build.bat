@@ -20,6 +20,10 @@ cd ExecCommand
 cd ..
 cd PhotoDB
 
+cd dcu
+del *.dcu
+cd ..
+
 move photodb.cfg photodb.cfg.safe
 "%DCC32%" photodb -D"PHOTODB,LICENCE" -Ebin -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -RResources;"%DELPHI%\Lib" -$W -$D+ -$I+ -$O+ -$Z1
 move photodb.cfg.safe photodb.cfg 

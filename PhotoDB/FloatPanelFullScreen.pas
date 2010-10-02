@@ -100,9 +100,6 @@ begin
   if i=0 then
   begin
    lb := TLayeredBitmap.Create;
-   //TODO: ????
-   {lb.LoadFromHIcon(icons[i,j].Handle);
-   lb.GrayScale;  }
    b:=TBitmap.create;
    b.Width:=16;
    b.Height:=16;

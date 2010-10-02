@@ -17,7 +17,8 @@ uses
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources, uMemory,
-  MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM;
+  MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
+  uFormListView;
 
 type
   TDateRange = record
@@ -52,7 +53,7 @@ type
   end;
 
 type
-  TSearchForm = class(TThreadForm)
+  TSearchForm = class(TListViewForm)
     PnLeft: TPanel;
     Image1: TImage;
     Splitter1: TSplitter;
@@ -210,7 +211,6 @@ type
     procedure SaveClick(Sender: TObject);
     function GetSelectedTstrings :  Tstrings;
     procedure FormDestroy(Sender: TObject);
-    procedure reloadtheme(Sender: TObject);
     procedure breakoperation(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
 
@@ -352,7 +352,6 @@ type
     procedure ScriptExecuted(Sender : TObject);
     procedure LoadExplorerValue(Sender : TObject);
     Procedure ListViewResize(Sender : TObject);
-    procedure UpdateTheme(Sender: TObject);
     function GetSelectionCount : integer;
     procedure EasyListviewItemThumbnailDraw(
       Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
@@ -386,7 +385,6 @@ type
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure BigImagesTimerTimer(Sender: TObject);
     function GetVisibleItems : TArStrings;
-    function IsSelectedVisible: boolean;
     procedure ComboBoxSearchGroupsSelect(Sender: TObject);
     procedure ComboBoxSearchGroupsDropDown(Sender: TObject);
     procedure SearchEditDropDown(Sender: TObject);
@@ -414,6 +412,7 @@ type
     procedure elvDateRangeItemSelectionChanged(Sender: TCustomEasyListview;
       Item: TEasyItem);
   private
+    { Private declarations }
     FSearchInfo : TSearchInfo;
     FListUpdating : boolean;
     FPropertyGroups: String;
@@ -459,9 +458,8 @@ type
     function GetSortMethod: Integer;
     function GetShowGroups: Boolean;
     function GetSortDecrement: Boolean;
-   { Protected declarations }
   protected
-    procedure CreateParams(var Params: TCreateParams); override;
+   { Protected declarations }
     function TreeView : TShellTreeView;
     procedure CreateBackground;
     procedure LoadDateRange;
@@ -469,7 +467,7 @@ type
                             Progress, MaxProgress: Integer; var EventStatus: TEventStatus);
     procedure DBRangeOpened(Sender : TObject; DS : TDataSet);
     procedure ClearItems;
-    { Private declarations }
+    function GetListView : TEasyListview; override;
   public
     WindowID : TGUID;
     procedure LoadGroupsList(LoadAllLIst : boolean = false);
@@ -679,7 +677,6 @@ begin
   ElvMain.Header.Columns.Add;
   CreateBackground;
 
-  DBKernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   tbStopOperation.Enabled := False;
 
   ExplorerManager.LoadEXIF;
@@ -943,15 +940,15 @@ end;
 
 procedure TSearchForm.SlideShow1Click(Sender: TObject);
 var
-  Info : TRecordsInfo;
-  DBInfo : TDBPopupMenuInfo;
+  Info: TRecordsInfo;
+  DBInfo: TDBPopupMenuInfo;
 begin
- Info:=RecordsInfoNil;
- DBInfo:=GetCurrentPopUpMenuInfo(nil);
- DBPopupMenuInfoToRecordsInfo(DBInfo, Info);
- If Viewer=nil then
- Application.CreateForm(TViewer,Viewer);
- Viewer.Execute(Sender,Info);
+  Info := RecordsInfoNil;
+  DBInfo := GetCurrentPopUpMenuInfo(nil);
+  DBPopupMenuInfoToRecordsInfo(DBInfo, Info);
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  Viewer.Execute(Sender, Info);
 end;
 
 procedure TSearchForm.SaveClick(Sender: TObject);
@@ -1436,7 +1433,6 @@ begin
   GOM.RemoveObj(Self);
   ClearItems;
   DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
-  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
 
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
@@ -1452,12 +1448,6 @@ begin
   F(FilesToDrag);
   F(FBitmapImageList);
   F(FSearchInfo);
-end;
-
-procedure TSearchForm.Reloadtheme(Sender: TObject);
-begin
-  DBKernel.RecreateThemeToForm(self);
-  Application.HintColor:=Theme_MainColor;
 end;
 
 procedure TSearchForm.BreakOperation(Sender: TObject);
@@ -1576,7 +1566,6 @@ var
   I, ReRotation : Integer;
   SearchRecord  : TDBPopupMenuInfoRecord;
   DataObject    : TDataObject;
-  SelectQuery   : TDataSet;
 begin
 
   if EventID_Repaint_ImageList in params then
@@ -1855,8 +1844,6 @@ begin
  PbProgress.Text:=TEXT_MES_NO_RES;
  SaveWindowPos1.Key:=RegRoot+'Searching';
  SaveWindowPos1.SetPosition;
- TW.I.Start('S -> Reloadtheme');
- Reloadtheme(nil);
 
  SortLink.UseSpecIconSize:=true;
  ElvMain.DoubleBuffered:=true;
@@ -2530,71 +2517,71 @@ end;
 procedure TSearchForm.LoadLanguage;
 begin
   SearchEdit.NullText := TEXT_MES_NULL_TEXT;
- LabelBackGroundSearching.Caption:=TEXT_MES_SERCH_PR;
- Label1.Caption:=TEXT_MES_SEARCH_TEXT;
- Label2.Caption:=TEXT_MES_IDENT;
- Label7.Caption:=TEXT_MES_RESULT;
- Label8.Caption:=TEXT_MES_RATING;
+  LabelBackGroundSearching.Caption := TEXT_MES_SERCH_PR;
+  Label1.Caption := TEXT_MES_SEARCH_TEXT;
+  Label2.Caption := TEXT_MES_IDENT;
+  Label7.Caption := TEXT_MES_RESULT;
+  Label8.Caption := TEXT_MES_RATING;
 
- Label4.Caption:=TEXT_MES_SIZE;
- Label6.Caption:=TEXT_MES_COMMENTS;
- Label5.Caption:=TEXT_MES_KEYWORDS;
- Save.Caption:=TEXT_MES_SAVE;
- DoSearchNow1.Caption:=TEXT_MES_DO_SEARCH_NOW;
- Panels1.Caption:=TEXT_MES_PANELS;
- Properties1.Caption:=TEXT_MES_PROPERTIES;
- Explorer2.Caption:=TEXT_MES_EXPLORER;
- EditGroups1.Caption:=TEXT_MES_EDIT_GROUPS;
- GroupsManager1.Caption:=TEXT_MES_GROUPS_MANAGER;
- Ratingnotsets1.Caption:=TEXT_MES_RATING_NOT_SETS;
- SetComent1.Caption:=TEXT_MES_SET_COM;
- Comentnotsets1.Caption:=TEXT_MES_SET_COM_NOT;
- MenuItem2.Caption:=TEXT_MES_SELECT_ALL;
- Cut1.Caption:=TEXT_MES_CUT;
- Copy2.Caption:=TEXT_MES_COPY;
- Paste1.Caption:=TEXT_MES_PASTE;
- Undo1.Caption:=TEXT_MES_UNDO;
- OpeninExplorer1.Caption:=TEXT_MES_OPEN_IN_EXPLORER;
- AddFolder1.Caption:=TEXT_MES_ADD_FOLDER;
- SortbyID1.Caption:=TEXT_MES_SORT_BY_ID;
- SortbyName1.Caption:=TEXT_MES_SORT_BY_NAME;
- SortbyDate1.Caption:=TEXT_MES_SORT_BY_DATE;
- SortbyRating1.Caption:=TEXT_MES_SORT_BY_RATING;
- SortbyFileSize1.Caption:=TEXT_MES_SORT_BY_FILESIZE;
- SortbySize1.Caption:=TEXT_MES_SORT_BY_SIZE;
+  Label4.Caption := TEXT_MES_SIZE;
+  Label6.Caption := TEXT_MES_COMMENTS;
+  Label5.Caption := TEXT_MES_KEYWORDS;
+  Save.Caption := TEXT_MES_SAVE;
+  DoSearchNow1.Caption := TEXT_MES_DO_SEARCH_NOW;
+  Panels1.Caption := TEXT_MES_PANELS;
+  Properties1.Caption := TEXT_MES_PROPERTIES;
+  Explorer2.Caption := TEXT_MES_EXPLORER;
+  EditGroups1.Caption := TEXT_MES_EDIT_GROUPS;
+  GroupsManager1.Caption := TEXT_MES_GROUPS_MANAGER;
+  Ratingnotsets1.Caption := TEXT_MES_RATING_NOT_SETS;
+  SetComent1.Caption := TEXT_MES_SET_COM;
+  Comentnotsets1.Caption := TEXT_MES_SET_COM_NOT;
+  MenuItem2.Caption := TEXT_MES_SELECT_ALL;
+  Cut1.Caption := TEXT_MES_CUT;
+  Copy2.Caption := TEXT_MES_COPY;
+  Paste1.Caption := TEXT_MES_PASTE;
+  Undo1.Caption := TEXT_MES_UNDO;
+  OpeninExplorer1.Caption := TEXT_MES_OPEN_IN_EXPLORER;
+  AddFolder1.Caption := TEXT_MES_ADD_FOLDER;
+  SortbyID1.Caption := TEXT_MES_SORT_BY_ID;
+  SortbyName1.Caption := TEXT_MES_SORT_BY_NAME;
+  SortbyDate1.Caption := TEXT_MES_SORT_BY_DATE;
+  SortbyRating1.Caption := TEXT_MES_SORT_BY_RATING;
+  SortbyFileSize1.Caption := TEXT_MES_SORT_BY_FILESIZE;
+  SortbySize1.Caption := TEXT_MES_SORT_BY_SIZE;
 
- SortbyCompare1.Caption:=TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
+  SortbyCompare1.Caption := TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
 
- Increment1.Caption:=TEXT_MES_SORT_INCREMENT;
- Decremect1.Caption:=TEXT_MES_SORT_DECREMENT;
+  Increment1.Caption := TEXT_MES_SORT_INCREMENT;
+  Decremect1.Caption := TEXT_MES_SORT_DECREMENT;
 
- Datenotexists1.Caption:=TEXT_MES_NO_DATE_1;
- DateExists1.Caption:=TEXT_MES_DATE_EX;
- Datenotsets1.Caption:=TEXT_MES_DATE_NOT_SETS;
- PanelValueIsDateSets.Caption:=TEXT_MES_VAR_VALUES;
- IsDatePanel.Caption:=TEXT_MES_NO_DATE_1;
- Setvalue1.Caption:=TEXT_MES_SET_VALUE;
- Setvalue2.Caption:=TEXT_MES_SET_VALUE;
- IsTimePanel.Caption:=TEXT_MES_TIME_NOT_EXISTS;
- PanelValueIsTimeSets.Caption:=TEXT_MES_VAR_VALUES;
+  Datenotexists1.Caption := TEXT_MES_NO_DATE_1;
+  DateExists1.Caption := TEXT_MES_DATE_EX;
+  Datenotsets1.Caption := TEXT_MES_DATE_NOT_SETS;
+  PanelValueIsDateSets.Caption := TEXT_MES_VAR_VALUES;
+  IsDatePanel.Caption := TEXT_MES_NO_DATE_1;
+  Setvalue1.Caption := TEXT_MES_SET_VALUE;
+  Setvalue2.Caption := TEXT_MES_SET_VALUE;
+  IsTimePanel.Caption := TEXT_MES_TIME_NOT_EXISTS;
+  PanelValueIsTimeSets.Caption := TEXT_MES_VAR_VALUES;
 
- Timenotsets1.Caption:=TEXT_MES_TIME_NOT_SETS;
- TimeExists1.Caption:=TEXT_MES_TIME_EXISTS;
- TimenotExists1.Caption:=TEXT_MES_TIME_NOT_EXISTS;
+  Timenotsets1.Caption := TEXT_MES_TIME_NOT_SETS;
+  TimeExists1.Caption := TEXT_MES_TIME_EXISTS;
+  TimenotExists1.Caption := TEXT_MES_TIME_NOT_EXISTS;
 
- View2.Caption:=TEXT_MES_SLIDE_SHOW;
- ShowDateOptionsLink.Text:=TEXT_MES_SHOW_DATE_OPTIONS;
+  View2.Caption := TEXT_MES_SLIDE_SHOW;
+  ShowDateOptionsLink.Text := TEXT_MES_SHOW_DATE_OPTIONS;
 
- TbSearch.Caption:=TEXT_MES_SEARCH;
- ToolButton9.Caption:=TEXT_MES_SORTING;
- ToolButton1.Caption:=TEXT_MES_ZOOM_IN;
- ToolButton2.Caption:=TEXT_MES_ZOOM_OUT;
- ToolButton10.Caption:=TEXT_MES_GROUPS;
+  TbSearch.Caption := TEXT_MES_SEARCH;
+  ToolButton9.Caption := TEXT_MES_SORTING;
+  ToolButton1.Caption := TEXT_MES_ZOOM_IN;
+  ToolButton2.Caption := TEXT_MES_ZOOM_OUT;
+  ToolButton10.Caption := TEXT_MES_GROUPS;
 
- ToolButton4.Caption:=TEXT_MES_SAVE;
- ToolButton5.Caption:=TEXT_MES_OPEN;
- ToolButton12.Caption:=TEXT_MES_EXPLORER;
- SearchEdit.StartText := TEXT_MES_ENTER_QUERY_HERE;
+  ToolButton4.Caption := TEXT_MES_SAVE;
+  ToolButton5.Caption := TEXT_MES_OPEN;
+  ToolButton12.Caption := TEXT_MES_EXPLORER;
+  SearchEdit.StartText := TEXT_MES_ENTER_QUERY_HERE;
 end;
 
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
@@ -2689,9 +2676,9 @@ end;
 
 procedure TSearchForm.AddFolder1Click(Sender: TObject);
 begin
- If UpdaterDB=nil then
- UpdaterDB:=TUpdaterDB.Create;
- UpdaterDB.AddDirectory(TempFolderName,nil);
+  if UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
+  UpdaterDB.AddDirectory(TempFolderName, nil);
 end;
 
 procedure TSearchForm.Hide1Click(Sender: TObject);
@@ -2705,16 +2692,6 @@ begin
   Accept := (NewSize >= 150) and (NewSize <= 340)
 end;
 
-procedure TSearchForm.CreateParams(var Params: TCreateParams);
-begin
-  inherited CreateParams(Params);
-  Creating := True;
-  LockChangePath := False;
-  Params.WndParent := GetDesktopWindow;
-  with params do
-    ExStyle := ExStyle or WS_EX_APPWINDOW;
-end;
-
 procedure TSearchForm.DeleteItemByID(ID: integer);
 var
   I : Integer;
@@ -2725,7 +2702,6 @@ begin
     SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
     if SearchRecord.ID = ID then
     begin
-      //TODO: FREE DATA
       ElvMain.Items[I].Data.Free;
       ElvMain.Items.Delete(I);
       Break;
@@ -3412,6 +3388,11 @@ begin
  GetListOfKeyWords;
 end;
 
+function TSearchForm.GetListView: TEasyListview;
+begin
+  Result := ElvMain;
+end;
+
 procedure TSearchForm.RemovableDrives1Click(Sender: TObject);
 var
   i : integer;
@@ -3695,15 +3676,6 @@ begin
   LoadSizes;
 end;
 
-procedure TSearchForm.UpdateTheme(Sender: TObject);
-begin
-  SortLink.SetDefault;
-  ElvMain.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
-  ElvMain.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
-  CreateBackground;
-  LsSearchResults.Color := ElvMain.Color;
-end;
-
 procedure TSearchForm.ListViewIncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
       var CompareResult: Integer);
 var
@@ -3858,28 +3830,6 @@ begin
     begin
       SetLength(Result, Length(Result) + 1);
       Result[Length(Result) - 1] := SearchRecord.FileName;
-    end;
-  end;
-end;
-
-function TSearchForm.IsSelectedVisible: boolean;
-var
-  I : integer;
-  R : TRect;
-  RV : TRect;
-begin
-  Result := False;
-  rv :=  ElvMain.Scrollbars.ViewableViewportRect;
-  for I := 0 to ElvMain.Items.Count - 1 do
-  begin
-    r:=Rect(ElvMain.ClientRect.Left + RV.Left, ElvMain.ClientRect.Top + RV.Top, ElvMain.ClientRect.Right + RV.Left, ElvMain.ClientRect.Bottom + RV.Top);
-    if RectInRect(R, TEasyCollectionItemX(ElvMain.Items[I]).GetDisplayRect) then
-    begin
-      if ElvMain.Items[I].Selected then
-      begin
-        Result := True;
-        Exit;
-      end;
     end;
   end;
 end;
@@ -5218,10 +5168,10 @@ end;
 
 initialization
 
-SearchManager := TManagerSearchs.create;
+  SearchManager := TManagerSearchs.create;
 
 finalization
 
-F(SearchManager);
+  F(SearchManager);
 
 end.

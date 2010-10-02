@@ -2,7 +2,7 @@ unit uScript;
 
 interface
 
-uses Windows, SysUtils, Classes, uStringUtils, uMemory;
+uses Windows, SysUtils, Classes, uStringUtils, uMemory, uGOM;
 
 const
   VALUE_TYPE_ERROR         = 0;
@@ -206,11 +206,12 @@ begin
   FNamedValues.GetValueByName('$LINK_TYPE_FOLDER').IntValue := 4;
   FNamedValues.GetValueByName('$LINK_TYPE_TXT').IntValue := 5;   
   FNamedValues.GetValueByName('$InvalidQuery').StrValue := #8;
-
+  GOM.AddObj(Self);
 end;
 
 destructor TScript.Destroy;
 begin
+  GOM.RemoveObj(Self);
   FPrivateEnviroment.Free;
   FCombinedEnviromentFunctionList.Free;
   FNamedValues.Free;

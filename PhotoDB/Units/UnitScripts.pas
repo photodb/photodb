@@ -16,7 +16,8 @@ interface
 {$ENDIF}
 
 uses Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs,
-     Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils;
+     Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
+     uMemory, uGOM;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -284,7 +285,6 @@ type
    private
    public
      FScripts: TList;
-
      constructor Create;
      destructor Destroy; override;
      function AddScript(Script: TScript): string;
@@ -1830,11 +1830,7 @@ const
 begin
  NewItem:=nil;
  apos:=1;
- for i:=Length(script) downto 1 do
- begin
-  if script[i]=#10 then Delete(script,i,1);
-  if script[i]=#13 then Delete(script,i,1);
- end;
+ script := StringReplace(script, #10#13 , '', [rfReplaceAll]);
  MenuItem.Clear;
  if initialize then
  for i:=1 to ImagesCount do
@@ -2179,11 +2175,8 @@ begin
   end;
   Result:=FS.Text;
   FS.Free;
-  for i:=Length(Result) downto 1 do
-  begin
-   if Result[i]=#10 then Result[i]:=' ';
-   if Result[i]=#13 then Result[i]:=' ';
-  end;
+
+  Result := StringReplace(Result, #10#13 , '', [rfReplaceAll]);
   if InitScriptFunction<>nil then
   begin
    @F:=InitScriptFunction;
@@ -2259,11 +2252,8 @@ begin
   finally
     FS.Free;
   end;
-  for i:=Length(Result) downto 1 do
-  begin
-   if Result[i]=#10 then Result[i]:=' ';
-   if Result[i]=#13 then Result[i]:=' ';
-  end;
+
+  Result := StringReplace(Result, #10#13 , '', [rfReplaceAll]);
   if InitScriptFunction<>nil then
   begin
    @F:=InitScriptFunction;
@@ -2833,7 +2823,7 @@ end;
 
 constructor TScriptsManager.Create;
 begin
- FScripts := TList.Create;
+  FScripts := TList.Create;
 end;
 
 destructor TScriptsManager.Destroy;
@@ -2841,10 +2831,11 @@ var
   I : Integer;
 begin
   for I := 0 to FScripts.Count - 1 do
-    TScript(FScripts[i]).Free;
+    if GOM.IsObj(FScripts[i]) then
+      TScript(FScripts[i]).Free;
 
- FScripts.Free;
- inherited;
+  FScripts.Free;
+  inherited;
 end;
 
 function TScriptsManager.GetScriptByID(ID: string): TScript;
@@ -2891,6 +2882,6 @@ initialization
 
 finalization
 
-  ScriptsManager.Free;
+  F(ScriptsManager);
 
 end.

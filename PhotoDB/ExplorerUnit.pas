@@ -17,11 +17,11 @@ uses
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
-  uThreadForm, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
+  uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, uMemory;
 
 type
-  TExplorerForm = class(TThreadForm)
+  TExplorerForm = class(TListViewForm)
     SizeImageList: TImageList;
     PmItemPopup: TPopupMenu;
     SlideShow1: TMenuItem;
@@ -37,14 +37,11 @@ type
     SelectAll1: TMenuItem;
     AddFile1: TMenuItem;
     HintTimer: TTimer;
-    MainMenu1: TMainMenu;
     Open1: TMenuItem;
     N1: TMenuItem;
     Refresh1: TMenuItem;
     New1: TMenuItem;
     Directory1: TMenuItem;
-    File1: TMenuItem;
-    Exit1: TMenuItem;
     MainPanel: TPanel;
     CloseButtonPanel: TPanel;
     Button1: TButton;
@@ -53,28 +50,12 @@ type
     OpenInNewWindow1: TMenuItem;
     Exit2: TMenuItem;
     N2: TMenuItem;
-    View1: TMenuItem;
     MakeNew1: TMenuItem;
     Copy2: TMenuItem;
-    Edit2: TMenuItem;
-    N3: TMenuItem;
-    SelectAll2: TMenuItem;
-    Copy3: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
-    Tools1: TMenuItem;
-    ShowUpdater2: TMenuItem;
     ShowUpdater1: TMenuItem;
-    InfoPanel1: TMenuItem;
-    ExplorerPanel1: TMenuItem;
     ApplicationEvents1: TApplicationEvents;
-    N4: TMenuItem;
-    Back1: TMenuItem;
-    Forward1: TMenuItem;
-    Up1: TMenuItem;
     NewWindow1: TMenuItem;
-    ShowFolders1: TMenuItem;
-    ShowFiles1: TMenuItem;
-    ShowHidden1: TMenuItem;
     Cut1: TMenuItem;
     Paste1: TMenuItem;
     N5: TMenuItem;
@@ -83,21 +64,9 @@ type
     Paste2: TMenuItem;
     N7: TMenuItem;
     N8: TMenuItem;
-    Cut3: TMenuItem;
-    Paste3: TMenuItem;
-    SlideShow2: TMenuItem;
-    Shell2: TMenuItem;
-    NewWindow2: TMenuItem;
     StatusBar1: TStatusBar;
     GoToSearchWindow1: TMenuItem;
-    DBManager1: TMenuItem;
-    Searching1: TMenuItem;
-    N9: TMenuItem;
-    Options1: TMenuItem;
-    ShowOnlyCommon1: TMenuItem;
-    ShowPrivate1: TMenuItem;
     OpeninSearchWindow1: TMenuItem;
-    Help1: TMenuItem;
     PopupMenu8: TPopupMenu;
     OpeninExplorer1: TMenuItem;
     AddFolder2: TMenuItem;
@@ -109,18 +78,11 @@ type
     PopupMenuBack: TPopupMenu;
     PopupMenuForward: TPopupMenu;
     DragTimer: TTimer;
-    Help2: TMenuItem;
-    Activation1: TMenuItem;
-    About1: TMenuItem;
-    HomePage1: TMenuItem;
-    ContactWithAuthor1: TMenuItem;
     SelectedImages: TImage;
     ToolBarDisabledImageList: TImageList;
     N10: TMenuItem;
     CryptFile1: TMenuItem;
     ResetPassword1: TMenuItem;
-    N11: TMenuItem;
-    Addsessionpassword1: TMenuItem;
     EnterPassword1: TMenuItem;
     Convert1: TMenuItem;
     Resize1: TMenuItem;
@@ -138,10 +100,7 @@ type
     DropFileSourceMain: TDropFileSource;
     DragImageList: TImageList;
     DropFileTarget2: TDropFileTarget;
-    GroupManager1: TMenuItem;
-    GetUpdates1: TMenuItem;
     HelpTimer: TTimer;
-    ImageEditor1: TMenuItem;
     ImageEditor2: TMenuItem;
     N13: TMenuItem;
     Othertasks1: TMenuItem;
@@ -153,20 +112,13 @@ type
     TextFile1: TMenuItem;
     Directory2: TMenuItem;
     TextFile2: TMenuItem;
-    GetPhotosFromDrive1: TMenuItem;
     Copywithfolder1: TMenuItem;
     PopupMenu4: TPopupMenu;
     Copy4: TMenuItem;
     Move1: TMenuItem;
     N15: TMenuItem;
     Cancel1: TMenuItem;
-    NewPanel1: TMenuItem;
     SelectTimer: TTimer;
-    RemovableDrives1: TMenuItem;
-    N14: TMenuItem;
-    CDROMDrives1: TMenuItem;
-    N16: TMenuItem;
-    SpecialLocation1: TMenuItem;
     N17: TMenuItem;
     SendTo1: TMenuItem;
     N18: TMenuItem;
@@ -231,13 +183,6 @@ type
     Grid1: TMenuItem;
     BigIconsImageList: TImageList;
     SmallIconsImageList: TImageList;
-    N20: TMenuItem;
-    View3: TMenuItem;
-    Thumbnails2: TMenuItem;
-    Tile3: TMenuItem;
-    Icons2: TMenuItem;
-    List2: TMenuItem;
-    SmallIcons2: TMenuItem;
     MakeFolderViewer2: TMenuItem;
     WaitingPanel: TPanel;
     BigImagesTimer: TTimer;
@@ -345,7 +290,6 @@ type
     procedure Back1Click(Sender: TObject);
     procedure Forward1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
-    procedure Edit2Click(Sender: TObject);
     procedure DeleteIndex1Click(Sender: TObject);
     procedure DeleteItemWithIndex(Index : Integer);
     Procedure DeleteFiles(ToRecycle : Boolean);
@@ -556,7 +500,6 @@ type
       Y: Integer);
     procedure ClearList;
    private
-     ExtIcons : TBitmapImageList;
      FBitmapImageList : TBitmapImageList;
      FWindowID : TGUID;
      NewFileName : String;
@@ -636,21 +579,17 @@ type
     { Private declarations }
    protected
      procedure ComboWNDProc(var Message: TMessage);
-     procedure CreateParams(var Params: TCreateParams); override;
      procedure ZoomIn;
      procedure ZoomOut;
      procedure LoadToolBarGrayedIcons;
      procedure LoadToolBarNormaIcons;
-     function IsSelectedVisible: boolean;
      function TreeView : TShellTreeView;
      procedure CreateBackgrounds;
      function GetFormID : string; override;
+     function GetListView : TEasyListview; override;
    public
      NoLockListView : boolean;
      Procedure LoadLanguage;
-     function ExitstExtInIcons(Ext : String) : boolean;
-     function GetIconByExt(Ext : String) : TIcon;
-     procedure AddIconByExt(Ext : String; Icon : TIcon);
      procedure LoadSizes();
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
      constructor Create(AOwner : TComponent; GoToLastSavedPath : Boolean); reintroduce; overload;
@@ -719,15 +658,6 @@ begin
     if Result[i] = ':' then Result[i] := '_';
     if Result[i] = '\' then Result[i] := '_';
   end;
-end;
-
-procedure TExplorerForm.CreateParams(var Params: TCreateParams);
-begin
-  inherited CreateParams(Params);
-
-  Params.WndParent := GetDesktopWindow;
-  with params do
-    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TExplorerForm.ShellTreeView1Change(Sender: TObject;
@@ -858,11 +788,6 @@ begin
   FPictureSize:=ThImageSize;
   LoadSizes;
 
-  TW.I.Start('ConvertTo32BitImageList');
-
-  Activation1.Visible:=not FolderView;
-  Help2.Visible:=not FolderView;
-
   FWindowID:=GetGUID;
   SetLength(RefreshIDList,0);
 
@@ -870,7 +795,6 @@ begin
   SetLength(FPlaces,0);
   DragFilesPopup:=TStringList.Create;
 
-  GetPhotosFromDrive1.Visible:=not FolderView;
   SelfDraging:=false;
   FDblClicked:=false;
   FIsExplorer:=false;
@@ -1416,17 +1340,21 @@ begin
 
  if DBitem1.Visible then
   begin
-  info:=GetCurrentPopUpMenuInfo(Item);
-  If item<>nil then
-  begin
-   info.IsListItem:=True;
-   info.ListItem:=Item;
+    info := GetCurrentPopUpMenuInfo(Item);
+    try
+      if Item <> nil then
+      begin
+        Info.IsListItem := True;
+        Info.ListItem := Item;
+      end;
+      Info.AttrExists := False;
+      TDBPopupMenu.Instance.AddDBContMenu(DBItem1, Info);
+    finally
+      F(Info);
+    end;
   end;
-  info.AttrExists:=false;
-  TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
- end;
 
- If fFilesInfo[PmItemPopup.tag].ID=0 then
+  if fFilesInfo[PmItemPopup.tag].ID=0 then
  begin
 //  DBitem1.Visible:=false;
   if fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
@@ -1590,7 +1518,7 @@ begin
   F(aScript);
   F(DragFilesPopup);
   F(FBitmapImageList);
-  F(ExtIcons);
+//  F(ExtIcons);
   SaveWindowPos1.SavePosition;
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
@@ -1950,28 +1878,33 @@ var
   MenuRecord : TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
-  Result.IsListItem:=false;
-  Result.IsPlusMenu:=false;
-  for i:=0 to ElvMain.Items.Count-1 do
+  Result.IsListItem := False;
+  Result.IsPlusMenu := False;
+  for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    ItemIndex := ItemIndexToMenuIndex(i);
-    if ItemIndex > fFilesInfo.Count-1 then
+    ItemIndex := ItemIndexToMenuIndex(I);
+    if ItemIndex > FFilesInfo.Count - 1 then
       Exit;
-    if fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE then
+    if FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE then
     begin
-     MenuRecord := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[ItemIndex]);
-     MenuRecord.Selected := ElvMain.Items[i].Selected;
-     Result.Add(MenuRecord);
-     if Item <> nil then
-       if ElvMain.Items[I].Selected then
-         Result.Position := Result.Count - 1;
+      MenuRecord := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[ItemIndex]);
+      MenuRecord.Selected := ElvMain.Items[I].Selected;
+      Result.Add(MenuRecord);
+      if Item <> nil then
+        if ElvMain.Items[I].Selected then
+          Result.Position := Result.Count - 1;
+    end;
   end;
- end;
 end;
 
 function TExplorerForm.GetFormID: string;
 begin
   Result := 'Explorer';
+end;
+
+function TExplorerForm.GetListView: TEasyListview;
+begin
+  Result := ElvMain;
 end;
 
 procedure TExplorerForm.CbPathEditKeyPress(Sender: TObject; var Key: Char);
@@ -2981,36 +2914,6 @@ begin
   SpeedButton3Click(Sender);
 end;
 
-procedure TExplorerForm.Edit2Click(Sender: TObject);
-var
-  Files : TStrings;
-  Effects : Integer;
-  Index : Integer;
-begin
- Back1.Enabled:=fHistory.CanBack;
- If AnsiLowerCase(GetCurrentPath)=AnsiLowerCase(MyComputer) then
- Back1.Enabled:=false;
- Forward1.Enabled:=fHistory.CanForward;
- Files:=TStringList.Create;
- LoadFIlesFromClipBoard(Effects,Files);
- if Files.Count<>0 then Paste3.Enabled:=true else Paste3.Enabled:=false;
- Files.free;
- If SelCount=0 then Paste3.Visible:=True else
- begin
-  If SelCount=1 then
-  begin
-   Index:=ItemIndexToMenuIndex(ListView1Selected.Index);
-   If (FFilesInfo[Index].FileType=EXPLORER_ITEM_DRIVE) or (FFilesInfo[Index].FileType=EXPLORER_ITEM_FOLDER) then
-   Paste3.Visible:=True else Paste3.Visible:=false;
-  end else
-  Paste3.Visible:=False;
- end;
- Cut3.Visible:=True;
- Copy3.Visible:=True;
- Paste3.Visible:=True;
- Up1.Enabled:=ToolButton3.Enabled;
-end;
-
 procedure TExplorerForm.DeleteItemWithIndex(Index: Integer);
 var
   MenuIndex : integer;
@@ -3387,8 +3290,6 @@ begin
  CloseButtonPanel.Hide;
  DBkernel.WriteInteger('Explorer','LeftPanelWidthExplorer',MainPanel.Width);
  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
- ExplorerPanel1.Visible:=True;
- InfoPanel1.Visible:=False;
  ListView1SelectItem(Sender, ListView1Selected, False);
 end;
 
@@ -4032,8 +3933,6 @@ begin
  FIsExplorer:=True;
  CloseButtonPanel.Show;
  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidthExplorer',135);
- ExplorerPanel1.Visible:=False;
- InfoPanel1.Visible:=True;
 end;
 
 { TManagerExplorer }
@@ -4496,46 +4395,11 @@ begin
  SelectAll1.Caption:= TEXT_MES_SELECT_ALL;
  GoToSearchWindow1.Caption:= TEXT_MES_GO_TO_SEARCH_WINDOW;
  Exit2.Caption:= TEXT_MES_EXIT;
- File1.Caption:= TEXT_MES_FILE;
- Shell2.Caption:= TEXT_MES_SHELL;
- SlideShow2.Caption:= TEXT_MES_SLIDE_SHOW;
- NewWindow2.Caption:= TEXT_MES_NEW_WINDOW;
- Exit1.Caption:= TEXT_MES_EXIT;
- Edit2.Caption:= TEXT_MES_EDIT;
- Back1.Caption:= TEXT_MES_BACK;
- Forward1.Caption:= TEXT_MES_FORWARD;
- Up1.Caption:= TEXT_MES_UP;
- Copy3.Caption:= TEXT_MES_COPY;
- Cut3.Caption:= TEXT_MES_CUT;
- Paste3.Caption:= TEXT_MES_PASTE;
- SelectAll2.Caption:= TEXT_MES_SELECT_ALL;
- View1.Caption:= TEXT_MES_VIEW;
- ExplorerPanel1.Caption:= TEXT_MES_SHOW_EXPLORER_PANEL;
- InfoPanel1.Caption:= TEXT_MES_SHOW_INFO_PANEL;
- ShowFolders1.Caption:= TEXT_MES_SHOW_FOLDERS;
- ShowFiles1.Caption:= TEXT_MES_SHOW_FILES;
- ShowHidden1.Caption:= TEXT_MES_SHOW_HIDDEN;
- ShowOnlyCommon1.Caption:= TEXT_MES_SHOW_ONLY_COMMON;
- ShowPrivate1.Caption:= TEXT_MES_SHOW_PRIVATE;
- Tools1.Caption:= TEXT_MES_TOOLS;
- ShowUpdater2.Caption:= TEXT_MES_SHOW_UPDATER;
- DBManager1.Caption:= TEXT_MES_SHOW_DB_MANAGER;
- Searching1.Caption:= TEXT_MES_SEARCHING;
- Options1.Caption:= TEXT_MES_OPTIONS;
-// NO LABEL  ToolButton1.Caption:=TEXT_MES_BACK;
-// NO LABEL ToolButton3.Caption:=TEXT_MES_UP;
- Help1.Caption:=TEXT_MES_HELP;
  OpeninExplorer1.Caption:=TEXT_MES_OPEN_IN_EXPLORER;
  OpeninExplorer1.Caption:=TEXT_MES_OPEN_IN_EXPLORER;
  AddFolder2.Caption:=TEXT_MES_ADD_FOLDER;
-// NO LABEL ToolButton2.Caption:=TEXT_MES_FORWARD;
 
  Label2.Caption:=TEXT_MES_ADDRESS;
- Help2.Caption:=TEXT_MES_HELP;
- Activation1.Caption:=TEXT_MES_ACTIVATION;
- About1.Caption:=TEXT_MES_ABOUT;
- HomePage1.Caption:=TEXT_MES_HOME_PAGE;
- ContactWithAuthor1.Caption:=TEXT_MES_CONTACT_WITH_AUTHOR;
  CryptFile1.Caption:=TEXT_MES_CRYPT_FILE;
  ResetPassword1.Caption:=TEXT_MES_DECRYPT_FILE;
  EnterPassword1.Caption:=TEXT_MES_ENTER_PASSWORD;
@@ -4545,15 +4409,12 @@ begin
  RotateCCW1.Caption:=TEXT_MES_ROTATE_270;
  RotateCW1.Caption:=TEXT_MES_ROTATE_90;
  Rotateon1801.Caption:=TEXT_MES_ROTATE_180;
- GroupManager1.Caption:=TEXT_MES_GROUPS_MANAGER;
  SetasDesktopWallpaper1.Caption:=TEXT_MES_SET_AS_DESKTOP_WALLPAPER;
  Stretch1.Caption:=TEXT_MES_BY_STRETCH;
  Center1.Caption:=TEXT_MES_BY_CENTER;
  Tile1.Caption:=TEXT_MES_BY_TILE;
  RefreshID1.Caption:=TEXT_MES_REFRESH_ID;
- GetUpdates1.Caption:=TEXT_MES_GET_UPDATING;
  DBInfoLabel.Caption:=TEXT_MES_DB_INFO;
- ImageEditor1.Caption:=TEXT_MES_IMAGE_EDITOR_W;
  ImageEditor2.Caption:=TEXT_MES_IMAGE_EDITOR;
 
  Othertasks1.Caption:=TEXT_MES_OTHER_TASKS;
@@ -4563,17 +4424,11 @@ begin
  OtherPlacesLabel.Caption:=TEXT_MES_OTHER_PLACES;
 
  TextFile1.Caption:=TEXT_MES_NEW_TEXT_FILE;
- GetPhotosFromDrive1.Caption:=TEXT_MES_GET_PHOTOS;
  Copywithfolder1.Caption:=TEXT_MES_COPY_WITH_FOLDER;
 
  Copy4.Caption:=TEXT_MES_COPY;
  Move1.Caption:=TEXT_MES_MOVE;
  Cancel1.Caption:=TEXT_MES_CANCEL;
- NewPanel1.Caption:=TEXT_MES_NEW_PANEL;
-
- RemovableDrives1.Caption:=TEXT_MES_REMOVABLE_DRIVES;
- CDROMDrives1.Caption:=TEXT_MES_CD_ROM_DRIVES;
- SpecialLocation1.Caption:=TEXT_MES_SPECIAL_LOCATION;
 
  SendTo1.Caption:=TEXT_MES_SEND_TO;
  View2.Caption:=TEXT_MES_SLIDE_SHOW;
@@ -4598,15 +4453,6 @@ begin
  SmallIcons1.Caption:=TEXT_MES_VIEW_LIST2;
  List1.Caption:=TEXT_MES_VIEW_LIST;
 
- Thumbnails2.Caption:=TEXT_MES_VIEW_THUMBNAILS;
- Tile3.Caption:=TEXT_MES_VIEW_TILE;
- Icons2.Caption:=TEXT_MES_VIEW_ICONS;
- SmallIcons2.Caption:=TEXT_MES_VIEW_LIST2;
- List2.Caption:=TEXT_MES_VIEW_LIST;
-
-// NO CAPTION ToolButtonView.Caption:=TEXT_MES_VIEW;
- View3.Caption:=TEXT_MES_VIEW;
-
  StenoGraphia1.Caption:=TEXT_MES_STENOGRAPHIA;
  AddHiddenInfo1.Caption:=TEXT_MES_DO_STENO;
  ExtractHiddenInfo1.Caption:=TEXT_MES_DO_DESTENO;
@@ -4616,7 +4462,6 @@ begin
  ToolButton5.Caption:=TEXT_MES_CUT;
  ToolButton6.Caption:=TEXT_MES_COPY;
  ToolButton7.Caption:=TEXT_MES_PASTE;
-// NO LABEL  ToolButton8.Caption:=TEXT_MES_DELETE;
  ToolButton19.Caption:=TEXT_MES_OPTIONS;
  TbBack.Hint:=TEXT_MES_GO_BACK;
  TbForward.Hint:=TEXT_MES_GO_FORWARD;
@@ -4807,20 +4652,36 @@ begin
  Info.OldFolderName:=FOldPatch;
  info.ShowPrivate:=ExplorerManager.ShowPrivate;
  Info.PictureSize:=fPictureSize;
-// BeginUpdate;
 
-  if ElvMain<>nil then
-  Case ListView of
-   LV_THUMBS     : begin ElvMain.View:=elsThumbnail; end;
-   LV_ICONS      : begin ElvMain.View:=elsIcon; end;
-   LV_SMALLICONS : begin ElvMain.View:=elsSmallIcon; end;
-   LV_TITLES     : begin ElvMain.View:=elsList; end;
-   LV_TILE       : begin ElvMain.View:=elsTile; end;
-   LV_GRID       : begin ElvMain.View:=elsGrid; end;
-  end;
+    case ListView of
+      LV_THUMBS:
+        begin
+          ElvMain.View := ElsThumbnail;
+        end;
+      LV_ICONS:
+        begin
+          ElvMain.View := ElsIcon;
+        end;
+      LV_SMALLICONS:
+        begin
+          ElvMain.View := ElsSmallIcon;
+        end;
+      LV_TITLES:
+        begin
+          ElvMain.View := ElsList;
+        end;
+      LV_TILE:
+        begin
+          ElvMain.View := ElsTile;
+        end;
+      LV_GRID:
+        begin
+          ElvMain.View := ElsGrid;
+        end;
+    end;
 
- UpdaterInfo.IsUpdater:=false;
- Inc(FReadingFolderNumber);
+  UpdaterInfo.IsUpdater := False;
+  Inc(FReadingFolderNumber);
 
  info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
  info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
@@ -6737,7 +6598,7 @@ begin
  if not NoLockListView then ElvMain.Groups.BeginUpdate(false);
 
  try
- l:=ElvMain.Items.Count;//Length(fFilesInfo);
+ l:=ElvMain.Items.Count;
 
  SetLength(SIs,L);
  SetLength(LI,L);
@@ -7261,19 +7122,18 @@ procedure TExplorerForm.SmallIcons1Click(Sender: TObject);
 begin
  ListView:=LV_SMALLICONS;
  SmallIcons1.Checked:=true;
- SmallIcons2.Checked:=true;
  Reload;
 end;
 
 procedure TExplorerForm.Reload;
 begin
- SetNewPathW(GetCurrentPathW,false);
+  SetNewPathW(GetCurrentPathW,false);
+  LoadSizes;
 end;
 
 procedure TExplorerForm.Icons1Click(Sender: TObject);
 begin
  Icons1.Checked:=true;
- Icons2.Checked:=true;
  ListView:=LV_ICONS;
  Reload;
 end;
@@ -7281,7 +7141,6 @@ end;
 procedure TExplorerForm.List1Click(Sender: TObject);
 begin
  List1.Checked:=true;
- List2.Checked:=true;
  ListView:=LV_TITLES;
  Reload;
 end;
@@ -7289,7 +7148,6 @@ end;
 procedure TExplorerForm.Tile2Click(Sender: TObject);
 begin
  Tile2.Checked:=true;
- Tile3.Checked:=true;
  ListView:=LV_TILE;
  Reload;
 end;
@@ -7312,15 +7170,14 @@ end;
 
 procedure TExplorerForm.Thumbnails1Click(Sender: TObject);
 begin
- Thumbnails1.Checked:=true;
- Thumbnails2.Checked:=true;
- ListView:=LV_THUMBS;
- Reload;
+  Thumbnails1.Checked := True;
+  ListView := LV_THUMBS;
+  Reload;
 end;
 
-function TExplorerForm.GetView : integer;
+function TExplorerForm.GetView: Integer;
 begin
- Result:=ListView;
+  Result := ListView;
 end;
 
 procedure TExplorerForm.MakeFolderViewer2Click(Sender: TObject);
@@ -7370,39 +7227,46 @@ procedure TExplorerForm.ZoomIn;
 var
   SelectedVisible : boolean;
 begin
- ElvMain.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- if FPictureSize>40 then FPictureSize:=FPictureSize-10;
- LoadSizes;
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;
- ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
- ElvMain.Groups.ReIndexItems;
- ElvMain.Groups.Rebuild(true);
+  ElvMain.BeginUpdate;
+  try
+     SelectedVisible := IsSelectedVisible;
+     if FPictureSize > 50 then
+       FPictureSize := FPictureSize - 10;
+     LoadSizes;
+     BigImagesTimer.Enabled:=false;
+     BigImagesTimer.Enabled:=true;
+     ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+     ElvMain.Groups.ReIndexItems;
+     ElvMain.Groups.Rebuild(true);
 
- if SelectedVisible then
- ElvMain.Selection.First.MakeVisible(emvTop);
- ElvMain.EndUpdate();
+    if SelectedVisible then
+      ElvMain.Selection.First.MakeVisible(emvTop);
+  finally
+    ElvMain.EndUpdate;
+  end;
 end;
 
 procedure TExplorerForm.ZoomOut;
 var
   SelectedVisible : boolean;
 begin
- ElvMain.BeginUpdate;
- SelectedVisible:=IsSelectedVisible;
- if FPictureSize<550 then FPictureSize:=FPictureSize+10;
- LoadSizes;
- BigImagesTimer.Enabled:=false;
- BigImagesTimer.Enabled:=true;
- ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
- ElvMain.Groups.ReIndexItems;
- ElvMain.Groups.Rebuild(true);
- if SelectedVisible then
- ElvMain.Selection.First.MakeVisible(emvTop);
- ElvMain.EndUpdate();
+  ElvMain.BeginUpdate;
+  try
+    SelectedVisible:=IsSelectedVisible;
+    if FPictureSize < 550 then
+      FPictureSize := FPictureSize + 10;
+    LoadSizes;
+    BigImagesTimer.Enabled := False;
+    BigImagesTimer.Enabled := True;
+    ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
+    ElvMain.Groups.ReIndexItems;
+    ElvMain.Groups.Rebuild(True);
+    if SelectedVisible then
+      ElvMain.Selection.First.MakeVisible(EmvTop);
+  finally
+    ElvMain.EndUpdate;
+  end;
 end;
-
 
 procedure TExplorerForm.BigImagesTimerTimer(Sender: TObject);
 var
@@ -7442,8 +7306,7 @@ end;
 
 procedure TExplorerForm.DoDefaultSort(GUID : TGUID);
 begin
-
- case DefaultSort of
+case DefaultSort of
   0: FileName1Click(FileName1);
  //1: - rating!!! no default sorting, information about sorting goes later
   2: FileName1Click(Size1);
@@ -7453,59 +7316,26 @@ begin
  end;
 end;
 
-function TExplorerForm.ExitstExtInIcons(Ext : String) : boolean;
-var
-  i : integer;
-begin
- Result:=false;
- Ext:=AnsiLowerCase(Ext);
- for i:=0 to ExtIcons.Count-1 do
- if ExtIcons[i].Ext=Ext then
- begin
-  Result:=true;
-  break;
- end;
-end;
-
-function TExplorerForm.GetIconByExt(Ext : String) : TIcon;
-var
-  i : integer;
-begin
- Result:=nil;
- Ext:=AnsiLowerCase(Ext);
- for i:=0 to ExtIcons.Count-1 do
- if ExtIcons[i].Ext=Ext then
- begin
-  Result:=ExtIcons[i].Icon;
-  break;
- end;
-end;
-
-procedure TExplorerForm.AddIconByExt(Ext : String; Icon : TIcon);
-begin
- ExtIcons.AddIcon(Icon,true,AnsiLowerCase(Ext));
-end;
-
 procedure TExplorerForm.AddHiddenInfo1Click(Sender: TObject);
 var
   Index : integer;
 begin
- if SelCount=1 then
- begin
-  Index:=ItemIndexToMenuIndex(ListView1Selected.Index);
-  DoSteno(fFilesInfo[Index].FileName);
- end;
+  if SelCount = 1 then
+  begin
+    Index := ItemIndexToMenuIndex(ListView1Selected.Index);
+    DoSteno(FFilesInfo[Index].FileName);
+  end;
 end;
 
 procedure TExplorerForm.ExtractHiddenInfo1Click(Sender: TObject);
 var
-  Index : integer;
+  Index: integer;
 begin
- if SelCount=1 then
- begin
-  Index:=ItemIndexToMenuIndex(ListView1Selected.Index);
-  DoDeSteno(fFilesInfo[Index].FileName);
- end;
+  if SelCount=1 then
+  begin
+    Index:=ItemIndexToMenuIndex(ListView1Selected.Index);
+    DoDeSteno(FFilesInfo[Index].FileName);
+  end;
 end;
 
 procedure TExplorerForm.ToolButton13Click(Sender: TObject);
@@ -7619,30 +7449,6 @@ begin
   StatusBar1.Panels[0].Text:='';
 end;
 
-function TExplorerForm.IsSelectedVisible: boolean;
-var
-  i : integer;
-  r : TRect;
-  t : array of boolean;
-  rv : TRect;
-begin
- Result:=false;
- SetLength(t,0);
- rv :=  ElvMain.Scrollbars.ViewableViewportRect;
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  r:=Rect(ElvMain.ClientRect.Left+rv.Left,ElvMain.ClientRect.Top+rv.Top,ElvMain.ClientRect.Right+rv.Left,ElvMain.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,TEasyCollectionItemX(ElvMain.Items[i]).GetDisplayRect) then
-  begin
-   if ElvMain.Items[i].Selected then
-   begin
-    Result:=true;
-    exit;
-   end;
-  end;
- end;
-end;
-
 procedure TExplorerForm.LoadSizes;
 begin
   SetLVThumbnailSize(ElvMain, FPictureSize);
@@ -7740,7 +7546,6 @@ begin
   FPictureSize:=ThImageSize;
   ElvMain:=nil;
   FBitmapImageList := TBitmapImageList.Create;
-  ExtIcons:= TBitmapImageList.Create;
   fHistory:=TStringsHistoryW.Create;
   UpdatingList:=false;
   GlobalLock := false;
@@ -7755,147 +7560,122 @@ end;
 
 procedure TExplorerForm.LoadIcons;
 begin
- PmItemPopup.Images:=DBKernel.ImageList;
- PmListPopup.Images:=DBKernel.ImageList;
- MainMenu1.Images:=DBKernel.ImageList;
- PopupMenu3.Images:=DBKernel.ImageList;
- Shell1.ImageIndex:=DB_IC_SHELL;
- SlideShow1.ImageIndex:=DB_IC_SLIDE_SHOW;
- DBitem1.ImageIndex:=DB_IC_NOTES;
- Copy1.ImageIndex:=DB_IC_COPY;
- Delete1.ImageIndex:=DB_IC_DELETE_FILE;
- Rename1.ImageIndex:=DB_IC_RENAME;
- Properties1.ImageIndex:=DB_IC_PROPERTIES;
- AddFile1.ImageIndex:=DB_IC_NEW;
- Open1.ImageIndex:=DB_IC_EXPLORER;
- Open2.ImageIndex:=DB_IC_EXPLORER;
- SelectAll1.ImageIndex:=DB_IC_SELECTALL;
- SelectAll2.ImageIndex:=DB_IC_SELECTALL;
- Copy2.ImageIndex:=DB_IC_COPY;
- Copy3.ImageIndex:=DB_IC_COPY;
- Cut1.ImageIndex:=DB_IC_CUT;
- Cut2.ImageIndex:=DB_IC_CUT;
- Cut3.ImageIndex:=DB_IC_CUT;
- Paste1.ImageIndex:=DB_IC_PASTE;
- Paste2.ImageIndex:=DB_IC_PASTE;
- Paste3.ImageIndex:=DB_IC_PASTE;
- DBManager1.ImageIndex:=DB_IC_ADMINTOOLS;
- Searching1.ImageIndex:=DB_IC_ADDTODB;
- Options1.ImageIndex:=DB_IC_OPTIONS;
- New1.ImageIndex:=DB_IC_NEW_SHELL;
- Directory1.ImageIndex:=DB_IC_NEW_DIRECTORY;
- Refresh1.ImageIndex:=DB_IC_REFRESH_THUM;
- Back1.ImageIndex:=DB_IC_SHELL_PREVIOUS;
- Forward1.ImageIndex:=DB_IC_SHELL_NEXT;
- Up1.ImageIndex:=DB_IC_SHELL_UP;
- Addfolder1.ImageIndex:=DB_IC_ADD_FOLDER;
- MakeNew1.ImageIndex:=DB_IC_NEW_SHELL;
- Refresh2.ImageIndex:=DB_IC_REFRESH_THUM;
- Exit1.ImageIndex:=DB_IC_EXIT;
- Exit2.ImageIndex:=DB_IC_EXIT;
- TextFile1.ImageIndex:=DB_IC_TEXT_FILE;
- ShowUpdater1.ImageIndex:=DB_IC_BOX;
- NewPanel1.ImageIndex:=DB_IC_PANEL;
- ShowUpdater2.ImageIndex:=DB_IC_BOX;
- OpenInNewWindow1.ImageIndex:=DB_IC_FOLDER;
- OpeninNewWindow2.ImageIndex:=DB_IC_FOLDER;
- NewWindow1.ImageIndex:=DB_IC_FOLDER;
- GoToSearchWindow1.ImageIndex:=DB_IC_ADDTODB;
- OpeninSearchWindow1.ImageIndex:=DB_IC_ADDTODB;
- ShowOnlyCommon1.ImageIndex:=DB_IC_COMMON;
- ShowPrivate1.ImageIndex:=DB_IC_PRIVATE;
- ExplorerPanel1.ImageIndex:=DB_IC_EXPLORER_PANEL;
- InfoPanel1.ImageIndex:=DB_IC_INFO_PANEL;
- PopupMenu8.Images:=DBKernel.ImageList;
- OpeninExplorer1.ImageIndex:=DB_IC_EXPLORER;
- AddFolder2.ImageIndex:=DB_IC_ADD_FOLDER;
- Help2.ImageIndex:=DB_IC_HELP;
- Activation1.ImageIndex:=DB_IC_NOTES;
- About1.ImageIndex:=DB_IC_HELP;
- HomePage1.ImageIndex:=DB_IC_NETWORK;
- ContactWithAuthor1.ImageIndex:=DB_IC_E_MAIL;
- CryptFile1.ImageIndex:=DB_IC_CRYPTIMAGE;
- ResetPassword1.ImageIndex:=DB_IC_DECRYPTIMAGE;
- EnterPassword1.ImageIndex:=DB_IC_PASSWORD;
- Convert1.ImageIndex:=DB_IC_CONVERT;
- Resize1.ImageIndex:=DB_IC_RESIZE;
- Directory2.ImageIndex:= DB_IC_NEW_DIRECTORY;
- TextFile2.ImageIndex:= DB_IC_TEXT_FILE;
- GroupManager1.ImageIndex:=DB_IC_GROUPS;
- RotateCCW1.ImageIndex:=DB_IC_ROTETED_270;
- RotateCW1.ImageIndex:=DB_IC_ROTETED_90;
- Rotateon1801.ImageIndex:=DB_IC_ROTETED_180;
- Rotate1.ImageIndex:=DB_IC_ROTETED_0;
- GetUpdates1.ImageIndex:=DB_IC_UPDATING;
- SetasDesktopWallpaper1.ImageIndex:=DB_IC_WALLPAPER;
- Stretch1.ImageIndex:=DB_IC_WALLPAPER;
- Center1.ImageIndex:=DB_IC_WALLPAPER;
- Tile1.ImageIndex:=DB_IC_WALLPAPER;
- RefreshID1.ImageIndex:=DB_IC_REFRESH_ID;
- Othertasks1.ImageIndex:=DB_IC_OTHER_TOOLS;
- ExportImages1.ImageIndex:=DB_IC_EXPORT_IMAGES;
- ImageEditor1.ImageIndex:=DB_IC_IMEDITOR;
- ImageEditor2.ImageIndex:=DB_IC_IMEDITOR;
- Print1.ImageIndex:=DB_IC_PRINTER;
- Copywithfolder1.ImageIndex:=DB_IC_COPY;
+  PmItemPopup.Images:=DBKernel.ImageList;
+  PmListPopup.Images := DBKernel.ImageList;
+  PopupMenu3.Images := DBKernel.ImageList;
+  Shell1.ImageIndex := DB_IC_SHELL;
+  SlideShow1.ImageIndex := DB_IC_SLIDE_SHOW;
+  DBitem1.ImageIndex := DB_IC_NOTES;
+  Copy1.ImageIndex := DB_IC_COPY;
+  Delete1.ImageIndex := DB_IC_DELETE_FILE;
+  Rename1.ImageIndex := DB_IC_RENAME;
+  Properties1.ImageIndex := DB_IC_PROPERTIES;
+  AddFile1.ImageIndex := DB_IC_NEW;
+  Open1.ImageIndex := DB_IC_EXPLORER;
+  Open2.ImageIndex := DB_IC_EXPLORER;
+  SelectAll1.ImageIndex := DB_IC_SELECTALL;
+  Copy2.ImageIndex := DB_IC_COPY;
+  Cut1.ImageIndex := DB_IC_CUT;
+  Cut2.ImageIndex := DB_IC_CUT;
+  Paste1.ImageIndex := DB_IC_PASTE;
+  Paste2.ImageIndex := DB_IC_PASTE;
 
- RemovableDrives1.ImageIndex:=DB_IC_USB;
- CDROMDrives1.ImageIndex:=DB_IC_CD_ROM;
- SpecialLocation1.ImageIndex:=DB_IC_DIRECTORY;
- SendTo1.ImageIndex:=DB_IC_SEND;
- View2.ImageIndex:=DB_IC_SLIDE_SHOW;
+  New1.ImageIndex := DB_IC_NEW_SHELL;
+  Directory1.ImageIndex := DB_IC_NEW_DIRECTORY;
+  Refresh1.ImageIndex := DB_IC_REFRESH_THUM;
 
- Sortby1.ImageIndex:=DB_IC_SORT;
- SetFilter1.ImageIndex:=DB_IC_FILTER;
+  Addfolder1.ImageIndex := DB_IC_ADD_FOLDER;
+  MakeNew1.ImageIndex := DB_IC_NEW_SHELL;
+  Refresh2.ImageIndex := DB_IC_REFRESH_THUM;
+  Exit2.ImageIndex := DB_IC_EXIT;
+  TextFile1.ImageIndex := DB_IC_TEXT_FILE;
+  ShowUpdater1.ImageIndex := DB_IC_BOX;
 
- Nosorting1.ImageIndex:=DB_IC_DELETE_INFO;
- FileName1.ImageIndex:=DB_IC_PROPERTIES;
- Rating1.ImageIndex:=DB_IC_RATING_STAR;
- Size1.ImageIndex:=DB_IC_RESIZE;
- Type1.ImageIndex:=DB_IC_ATYPE;
- Modified1.ImageIndex:=DB_IC_CLOCK;
- MakeFolderViewer1.ImageIndex:=DB_IC_SAVE_AS_TABLE;
- MakeFolderViewer2.ImageIndex:=DB_IC_SAVE_AS_TABLE;
- Number1.ImageIndex:=DB_IC_RENAME;
+  OpenInNewWindow1.ImageIndex := DB_IC_FOLDER;
+  OpeninNewWindow2.ImageIndex := DB_IC_FOLDER;
+  NewWindow1.ImageIndex := DB_IC_FOLDER;
+  GoToSearchWindow1.ImageIndex := DB_IC_ADDTODB;
+  OpeninSearchWindow1.ImageIndex := DB_IC_ADDTODB;
 
- RatingPopupMenu1.Images:=DBkernel.ImageList;
+  PopupMenu8.Images := DBKernel.ImageList;
+  OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
+  AddFolder2.ImageIndex := DB_IC_ADD_FOLDER;
 
- N00.ImageIndex:=DB_IC_DELETE_INFO;
- N01.ImageIndex:=DB_IC_RATING_1;
- N02.ImageIndex:=DB_IC_RATING_2;
- N03.ImageIndex:=DB_IC_RATING_3;
- N04.ImageIndex:=DB_IC_RATING_4;
- N05.ImageIndex:=DB_IC_RATING_5;
+  CryptFile1.ImageIndex := DB_IC_CRYPTIMAGE;
+  ResetPassword1.ImageIndex := DB_IC_DECRYPTIMAGE;
+  EnterPassword1.ImageIndex := DB_IC_PASSWORD;
+  Convert1.ImageIndex := DB_IC_CONVERT;
+  Resize1.ImageIndex := DB_IC_RESIZE;
+  Directory2.ImageIndex := DB_IC_NEW_DIRECTORY;
+  TextFile2.ImageIndex := DB_IC_TEXT_FILE;
+  RotateCCW1.ImageIndex := DB_IC_ROTETED_270;
+  RotateCW1.ImageIndex := DB_IC_ROTETED_90;
+  Rotateon1801.ImageIndex := DB_IC_ROTETED_180;
+  Rotate1.ImageIndex := DB_IC_ROTETED_0;
+  SetasDesktopWallpaper1.ImageIndex := DB_IC_WALLPAPER;
+  Stretch1.ImageIndex := DB_IC_WALLPAPER;
+  Center1.ImageIndex := DB_IC_WALLPAPER;
+  Tile1.ImageIndex := DB_IC_WALLPAPER;
+  RefreshID1.ImageIndex := DB_IC_REFRESH_ID;
+  Othertasks1.ImageIndex := DB_IC_OTHER_TOOLS;
+  ExportImages1.ImageIndex := DB_IC_EXPORT_IMAGES;
+  ImageEditor2.ImageIndex := DB_IC_IMEDITOR;
+  Print1.ImageIndex := DB_IC_PRINTER;
+  Copywithfolder1.ImageIndex := DB_IC_COPY;
 
- StenoGraphia1.ImageIndex:=DB_IC_STENO;
- AddHiddenInfo1.ImageIndex:=DB_IC_STENO;
- ExtractHiddenInfo1.ImageIndex:=DB_IC_DESTENO;
+  SendTo1.ImageIndex := DB_IC_SEND;
+  View2.ImageIndex := DB_IC_SLIDE_SHOW;
 
- View3.ImageIndex:=DB_IC_SORT;
- MapCD1.ImageIndex:=DB_IC_CD_MAPPING;
+  Sortby1.ImageIndex := DB_IC_SORT;
+  SetFilter1.ImageIndex := DB_IC_FILTER;
 
- TLoad.Instance.RequaredDBKernelIcons;
- SlideShowLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SLIDE_SHOW+1]);
- ShellLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL+1]);
- CopyToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COPY+1]);
- MoveToLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CUT+1]);
- RenameLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_RENAME+1]);
- PropertiesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PROPERTIES+1]);
- DeleteLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
- AddLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_NEW+1]);
- RefreshLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_REFRESH_THUM+1]);
- ImageEditorLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_IMEDITOR+1]);
- PrintLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_PRINTER+1]);
- MyPicturesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_PICTURES+1]);
- MyDocumentsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_DOCUMENTS+1]);
- MyComputerLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_MY_COMPUTER+1]);
- DesktopLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DESKTOPLINK+1]);
+  Nosorting1.ImageIndex := DB_IC_DELETE_INFO;
+  FileName1.ImageIndex := DB_IC_PROPERTIES;
+  Rating1.ImageIndex := DB_IC_RATING_STAR;
+  Size1.ImageIndex := DB_IC_RESIZE;
+  Type1.ImageIndex := DB_IC_ATYPE;
+  Modified1.ImageIndex := DB_IC_CLOCK;
+  MakeFolderViewer1.ImageIndex := DB_IC_SAVE_AS_TABLE;
+  MakeFolderViewer2.ImageIndex := DB_IC_SAVE_AS_TABLE;
+  Number1.ImageIndex := DB_IC_RENAME;
+
+  RatingPopupMenu1.Images := DBkernel.ImageList;
+
+  N00.ImageIndex := DB_IC_DELETE_INFO;
+  N01.ImageIndex := DB_IC_RATING_1;
+  N02.ImageIndex := DB_IC_RATING_2;
+  N03.ImageIndex := DB_IC_RATING_3;
+  N04.ImageIndex := DB_IC_RATING_4;
+  N05.ImageIndex := DB_IC_RATING_5;
+
+  StenoGraphia1.ImageIndex := DB_IC_STENO;
+  AddHiddenInfo1.ImageIndex := DB_IC_STENO;
+  ExtractHiddenInfo1.ImageIndex := DB_IC_DESTENO;
+
+  MapCD1.ImageIndex := DB_IC_CD_MAPPING;
+
+  TLoad.Instance.RequaredDBKernelIcons;
+  SlideShowLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
+  ShellLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
+  CopyToLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COPY + 1]);
+  MoveToLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CUT + 1]);
+  RenameLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RENAME + 1]);
+  PropertiesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PROPERTIES + 1]);
+  DeleteLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
+  AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW + 1]);
+  RefreshLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_REFRESH_THUM + 1]);
+  ImageEditorLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_IMEDITOR + 1]);
+  PrintLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PRINTER + 1]);
+  MyPicturesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_PICTURES + 1]);
+  MyDocumentsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_DOCUMENTS + 1]);
+  MyComputerLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_COMPUTER + 1]);
+  DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]);
 end;
 
 destructor TExplorerForm.Destroy;
 begin
-  FHistory.Free;
-  FFilesInfo.Free;
+  F(FHistory);
+  F(FFilesInfo);
   inherited;
 end;
 

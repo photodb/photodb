@@ -407,6 +407,7 @@ object FormCDMapper: TFormCDMapper
     Top = 8
   end
   object CDImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 16
     Top = 96
   end

@@ -4,80 +4,88 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Language, Dolphin_DB, StdCtrls;
+  Dialogs, StdCtrls, uDBForm, WatermarkedEdit;
 
 type
-  TFormStringPromt = class(TForm)
-    Edit1: TEdit;
-    Label1: TLabel;
-    Button1: TButton;
-    Button2: TButton;
+  TFormStringPromt = class(TDBForm)
+    EdString: TWatermarkedEdit;
+    LbInfo: TLabel;
+    BtnOK: TButton;
+    BtnCancel: TButton;
     procedure FormCreate(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
+    procedure BtnCancelClick(Sender: TObject);
+    procedure BtnOKClick(Sender: TObject);
+    procedure EdStringKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
-  OldStr : String;
-  Ok : boolean;
     { Public declarations }
+    OldStr: string;
+    Ok: Boolean;
   end;
 
-function PromtString(Caption, Text : String; var StartString : String) : boolean;
+function PromtString(Caption, Text : String; var StartString : String) : Boolean;
 
 implementation
 
 {$R *.dfm}
 
-function PromtString(Caption, Text : String; var StartString : String) : boolean;
+function PromtString(Caption, Text : String; var StartString : String) : Boolean;
 var
   FormStringPromt: TFormStringPromt;
 begin
- Application.CreateForm(TFormStringPromt, FormStringPromt);
- FormStringPromt.Caption:=Caption;
- FormStringPromt.Label1.Caption:=Text;
- FormStringPromt.OldStr:=StartString;
- FormStringPromt.Edit1.Text:=StartString;
- FormStringPromt.ShowModal;
- StartString:=FormStringPromt.Edit1.Text;
- Result:=FormStringPromt.Ok;
- FormStringPromt.Release;
+  Application.CreateForm(TFormStringPromt, FormStringPromt);
+  try
+    FormStringPromt.Caption := Caption;
+    FormStringPromt.LbInfo.Caption := Text;
+    FormStringPromt.OldStr := StartString;
+    FormStringPromt.EdString.Text := StartString;
+    FormStringPromt.ShowModal;
+    StartString := FormStringPromt.EdString.Text;
+    Result := FormStringPromt.Ok;
+  finally
+    FormStringPromt.Release;
+  end;
 end;
 
 procedure TFormStringPromt.FormCreate(Sender: TObject);
 begin
- Ok:=false;
- DBkernel.RecreateThemeToForm(self);
- Button2.Caption:=TEXT_MES_CANCEL;
- Button1.Caption:=TEXT_MES_OK;
+  Ok := False;
+  BtnCancel.Caption := L('Cancel');
+  BtnOK.Caption := L('Ok');
+  EdString.Text := L('Enter your text here');
+  BtnOK.Top := EdString.Top + EdString.Height + 3;
+  BtnCancel.Top := EdString.Top + EdString.Height + 3;
 
- Button1.Top:=Edit1.Top+Edit1.Height+3;
- Button2.Top:=Edit1.Top+Edit1.Height+3;
-
- ClientHeight:=Button1.Top+Button1.Height+3;
+  ClientHeight := BtnOK.Top + BtnOK.Height + 3;
 end;
 
-procedure TFormStringPromt.Button2Click(Sender: TObject);
+function TFormStringPromt.GetFormID: string;
 begin
- Ok := false;
- Close;
+  Result := '';
 end;
 
-procedure TFormStringPromt.Button1Click(Sender: TObject);
+procedure TFormStringPromt.BtnCancelClick(Sender: TObject);
 begin
-// if OldStr<>Edit1.Text then
- Ok := true;
- Close;
+  Ok := False;
+  Close;
 end;
 
-procedure TFormStringPromt.Edit1KeyPress(Sender: TObject; var Key: Char);
+procedure TFormStringPromt.BtnOKClick(Sender: TObject);
 begin
- if Key=#13 then
- begin
-  Key:=#0;
-  Button1Click(Sender);
- end;
+  Ok := True;
+  Close;
+end;
+
+procedure TFormStringPromt.EdStringKeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = Char(VK_RETURN) then
+  begin
+    Key := #0;
+    BtnOKClick(Sender);
+  end;
 end;
 
 end.

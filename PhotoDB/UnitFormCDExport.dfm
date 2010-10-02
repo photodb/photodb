@@ -48,8 +48,6 @@ object FormCDExport: TFormCDExport
     OnDblClick = CDListViewDblClick
     OnEdited = CDListViewEdited
     OnEditing = CDListViewEditing
-    ExplicitWidth = 708
-    ExplicitHeight = 169
   end
   object PanelBottom: TPanel
     Left = 0
@@ -58,8 +56,6 @@ object FormCDExport: TFormCDExport
     Height = 113
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 354
-    ExplicitWidth = 708
     object LabelExportDirectory: TLabel
       Left = 8
       Top = 8
@@ -131,7 +127,6 @@ object FormCDExport: TFormCDExport
     Align = alTop
     TabOrder = 2
     OnResize = PanelTopResize
-    ExplicitWidth = 708
     object LabelInfo: TLabel
       Left = 64
       Top = 8
@@ -578,6 +573,7 @@ object FormCDExport: TFormCDExport
     end
   end
   object ImageListIcons: TImageList
+    ColorDepth = cd32Bit
     Left = 8
     Top = 216
   end

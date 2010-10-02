@@ -5,7 +5,7 @@ interface
 uses
   Dolphin_DB, UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
-  ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math,
+  ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math, CommCtrl,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
   UnitDBDeclare, uDBDrawing, uMemory, uDBForm;
 
@@ -495,22 +495,19 @@ end;
 
 procedure TFormManageGroups.LoadToolBarIcons;
 var
-  Ico: TIcon;
+  Ico: HIcon;
 
   procedure AddIcon(name: string);
   begin
     if DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False) then
       name := name + '_SMALL';
 
-    Ico := TIcon.Create;
-    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(name));
-    ToolBarImageList.AddIcon(Ico);
+    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(name));
+    ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, Ico);
+    DestroyIcon(Ico);
   end;
 
 begin
-
-  ConvertTo32BitImageList(ToolBarImageList);
-
   if DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False) then
   begin
     ToolBarImageList.Width := 16;

@@ -15,7 +15,7 @@ type
     FSID: TGUID;
     FOnDone: TNotifyEvent;
     FPictureSize: Integer;
-    FFiles: TImageContRecordArray;
+    FData: TDBPopupMenuInfo;
     FVisibleFiles: TArStrings;
     BoolParam: Boolean;
     StrParam: string;
@@ -23,7 +23,6 @@ type
     BitmapParam: TBitmap;
     FI: Integer;
     FUpdating: Boolean;
-    ////////////////////////////////
     procedure VisibleUp(TopIndex: integer);
     procedure FileNameExists;
     procedure GetVisibleFiles;
@@ -31,7 +30,7 @@ type
     procedure Execute; override;
   public
     constructor Create(Sender : TForm; SID : TGUID;
-      aOnDone : TNotifyEvent; PictureSize : integer; Files : TImageContRecordArray; Updating : boolean = false);
+      AOnDone : TNotifyEvent; PictureSize : integer; Files : TDBPopupMenuInfo; Updating : boolean = false);
     procedure ReplaceBigBitmap;
     procedure DoStopLoading;
     destructor Destroy; override;
@@ -48,35 +47,33 @@ uses UnitFormCont;
 { TPanelLoadingBigImagesThread }
 
 constructor TPanelLoadingBigImagesThread.Create(Sender : TForm; SID : TGUID;
-      aOnDone : TNotifyEvent; PictureSize : integer; Files : TImageContRecordArray; Updating : boolean = false);
+      AOnDone : TNotifyEvent; PictureSize : integer; Files : TDBPopupMenuInfo; Updating : boolean = false);
 begin
   inherited Create(False);
+  FData := TDBPopupMenuInfo.Create;
+  FData.Assign(Files);
   FSender := Sender;
   FSID := SID;
   FOnDone := AOnDone;
   FPictureSize := PictureSize;
-  FFiles := Files;
   FUpdating := Updating;
 end;
 
 procedure TPanelLoadingBigImagesThread.VisibleUp(TopIndex: integer);
 var
-  i, c : integer;
-  j : integer;
-  temp : TImageContRecord;
+  I, C: Integer;
+  J: Integer;
 begin
- c:=TopIndex;
- for i:=0 to Length(FVisibleFiles)-1 do
- for j:=TopIndex to Length(FFiles)-1 do
- begin
-  if FVisibleFiles[i]=FFiles[j].FileName then
-  begin
-   temp:=FFiles[c];
-   FFiles[c]:=FFiles[j];
-   FFiles[j]:=temp;
-   inc(c);
-  end;
- end;
+  C := TopIndex;
+  for I := 0 to Length(FVisibleFiles) - 1 do
+    for J := TopIndex to FData.Count - 1 do
+    begin
+      if FVisibleFiles[I] = FData[J].FileName then
+      begin
+        FData.Exchange(C, J);
+        Inc(C);
+      end;
+    end;
 end;
 
 procedure TPanelLoadingBigImagesThread.Execute;
@@ -99,18 +96,16 @@ begin
 
     PanelUpdateBigImageThreadsCount := PanelUpdateBigImageThreadsCount + 1;
 
-    for I := 0 to Length(FFiles) - 1 do
+    for I := 0 to FData.Count - 1 do
     begin
 
       if I mod 5 = 0 then
       begin
-        Priority := TpNormal;
         Synchronize(GetVisibleFiles);
         VisibleUp(I);
-        Sleep(5);
       end;
 
-      StrParam := FFiles[I].FileName;
+      StrParam := FData[I].FileName;
       Synchronize(FileNameExists);
       if BoolParam then
       begin
@@ -135,8 +130,7 @@ begin
             begin
               if not(Graphic as TRAWImage).LoadThumbnailFromFile(StrParam, FPictureSize, FPictureSize) then
                 Graphic.LoadFromFile(ProcessPath(StrParam));
-            end
-            else
+            end else
               Graphic.LoadFromFile(ProcessPath(StrParam));
           end;
 
@@ -158,7 +152,7 @@ begin
               DoResize(W, H, Fbit, TempBitmap);
               F(FBit);
 
-              ApplyRotate(TempBitmap, FFiles[I].Rotation);
+              ApplyRotate(TempBitmap, FData[I].Rotation);
               BitmapParam := TempBitmap;
               FI := I + 1;
               IntParam := FI;
@@ -174,7 +168,6 @@ begin
         finally
           F(Graphic);
         end;
-
       end;
     end;
   end else
@@ -184,7 +177,6 @@ begin
     until PanelUpdateBigImageThreadsCountByID < (ProcessorCount + 1);
 
     PanelUpdateBigImageThreadsCountByID := PanelUpdateBigImageThreadsCountByID + 1;
-    // ?
   end;
   Synchronize(DoStopLoading);
 end;
@@ -216,6 +208,7 @@ begin
     Dec(PanelUpdateBigImageThreadsCountByID);
 
   inherited Destroy;
+  F(FData);
 end;
 
 procedure TPanelLoadingBigImagesThread.ReplaceBigBitmap;

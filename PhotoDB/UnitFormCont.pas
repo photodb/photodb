@@ -13,10 +13,10 @@ uses
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
   uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx, TwButton,
-  uGOM, Rating;
+  uGOM, uMemory, uFormListView, uTranslate;
 
 type
-  TFormCont = class(TThreadForm)
+  TFormCont = class(TListViewForm)
     Panel1: TPanel;
     PopupMenu1: TPopupMenu;
     SelectAll1: TMenuItem;
@@ -56,7 +56,7 @@ type
     TbExport: TToolButton;
     TbCopy: TToolButton;
     ToolButton5: TToolButton;
-    ToolButton6: TToolButton;
+    TbClose: TToolButton;
     TbSeparator: TToolButton;
     TbZoomIn: TToolButton;
     TbZoomOut: TToolButton;
@@ -79,7 +79,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefreshItemByID( ID: integer);
-    procedure AddNewItem(Image : tbitmap; Info : TOneRecordInfo);
+    procedure AddNewItem(Image : tbitmap; Info : TDBPopupMenuInfoRecord);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -94,8 +94,6 @@ type
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormDeactivate(Sender: TObject);
-
-
     procedure FormDestroy(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
     procedure Paste1Click(Sender: TObject);
@@ -115,7 +113,6 @@ type
     procedure ExCopyLinkClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
-    procedure UpdateTheme(Sender: TObject);
     procedure ListView1SelectItem(Sender: TObject; Item: TEasyItem;
       Selected: Boolean);
     function GetListItemByID( ID : integer): TEasyItem;
@@ -128,24 +125,24 @@ type
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
     procedure TwWindowsPosChange(Sender: TObject);
   private
+    { protected declarations }
     MouseDowned : Boolean;
-    PopupHandled : boolean;
+    PopupHandled : Boolean;
     LastMouseItem, ItemWithHint : TEasyItem;
-
     ElvMain : TEasyListView;
     FilePushed : boolean;
     FilePushedName : string;
-
-    Data : TImageContRecordArray;
-
-    FilesToDrag : TArStrings;
+    Data : TDBPopupMenuInfo;
+    FilesToDrag : TStringList;
     DBCanDrag : Boolean;
     DBDragPoint : TPoint;
     WindowsMenuTickCount : Cardinal;
     ItemByMouseDown : Boolean;
     ItemSelectedByMouseDown : Boolean;
+    FPictureSize : Integer;
+    FThreadCount : Integer;
+    FBitmapImageList : TBitmapImageList;
     procedure DeleteIndexItemByID(ID : integer);
-
     procedure EasyListview1ItemThumbnailDraw(
       Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
@@ -164,17 +161,16 @@ type
     Function SelCount : integer;
     procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-    { protected declarations }
   protected
-  procedure CreateParams(VAR Params: TCreateParams); override;
-    { Private declarations }
+    { Protected declarations }
+    function GetFormID : string; override;
+    function GetListView : TEasyListview; override;
   public
     { Public declarations }
     WindowID: TGUID;
     SID: TGUID;
     BigImagesSID: TGUID;
     procedure DoStopLoading(CID: TGUID);
-    function IsSelectedVisible: Boolean;
     procedure AddFileName(FileName: string);
     procedure ZoomOut;
     procedure ZoomIn;
@@ -188,10 +184,6 @@ type
     procedure LoadSizes;
     procedure CreateBackgroundImage;
     function HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
-  private
-    FPictureSize : integer;
-    FThreadCount : integer;
-    FBitmapImageList : TBitmapImageList;
   published
     property PictureSize : Integer read FPictureSize;
   end;
@@ -217,11 +209,11 @@ type
   end;
 
 var
-  ManagerPanels : TManagePanels;
+  ManagerPanels : TManagePanels = nil;
 
 implementation
 
-uses language, Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
+uses Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
      SlideShow, ExplorerUnit, UnitSizeResizerForm, UnitImageConverter,
      UnitRotateImages, UnitExportImagesForm, CommonDBSupport,
      UnitStringPromtForm, Loadingresults, UnitBigImagesSize;
@@ -233,13 +225,17 @@ uses language, Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
 procedure TFormCont.RefreshItemByID(ID: Integer);
 var
   Index: Integer;
-  FData: TImageContRecordArray;
+  FData: TDBPopupMenuInfo;
 begin
-  Index := GetListItemByID(Id).index;
-  SetLength(FData, 1);
-  FData[0] := Data[index];
+  FData := TDBPopupMenuInfo.Create;
+  try
+    Index := GetListItemByID(Id).Index;
+    FData.Add(Data[index].Copy);
 
-  TPanelLoadingBigImagesThread.Create(Self, BigImagesSID, nil, FPictureSize, Copy(FData));
+    TPanelLoadingBigImagesThread.Create(Self, BigImagesSID, nil, FPictureSize, FData);
+  finally
+    F(FData);
+  end;
 end;
 
 procedure TFormCont.CreateBackgroundImage;
@@ -275,12 +271,13 @@ end;
 
 procedure TFormCont.FormCreate(Sender: TObject);
 begin
+  Data := TDBPopupMenuInfo.Create;
+  FilesToDrag := TStringList.Create;
   FilePushedName := '';
   FThreadCount := 0;
   SID := GetGUID;
   BigImagesSID := GetGUID;
   FPictureSize := ThSizePanelPreview;
-  DBKernel.RegisterProcUpdateTheme(UpdateTheme, Self);
   ElvMain := TEasyListView.Create(Self);
   ElvMain.Parent := Self;
   ElvMain.Align := AlClient;
@@ -319,8 +316,6 @@ begin
   ElvMain.Groups.Add;
   ElvMain.HotTrack.Cursor := CrArrow;
 
-  ConvertTo32BitImageList(DragImageList);
-
   WindowID := GetGUID;
   FilePushed := False;
   LoadLanguage;
@@ -335,7 +330,7 @@ begin
 
   ManagerPanels.AddPanel(Self);
 
-  Caption := Format(TEXT_MES_PANEL_CAPTION, [Inttostr(ManagerPanels.PanelIndex(Self) + 1)]);
+  Caption := Format(L('Panel (%s)'), [Inttostr(ManagerPanels.PanelIndex(Self) + 1)]);
 
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   PopupMenu1.Images := DBKernel.ImageList;
@@ -350,8 +345,8 @@ begin
 
   Rename1.ImageIndex := DB_IC_RENAME;
 
-  Label2.Caption := TEXT_MES_ACTIONS + ':';
-  Rename1.Caption := TEXT_MES_RENAME;
+  Label2.Caption := L('Actions') + ':';
+  Rename1.Caption := L('Rename');
   WebLink1.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
   WebLink2.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
   ExportLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EXPORT_IMAGES + 1]);
@@ -370,7 +365,7 @@ begin
   ExportLink.Top := WebLink2.Top + WebLink2.Height + 5;
   ExCopyLink.Top := ExportLink.Top + ExportLink.Height + 5;
 
-  DBkernel.RegisterForm(Self);
+  DBKernel.RegisterForm(Self);
   LoadToolBarIcons;
   GOM.AddObj(Self);
 end;
@@ -412,7 +407,7 @@ begin
    info.IsListItem:=false;
    setlength(menus,1);
    menus[0]:=Tmenuitem.Create(nil);
-   menus[0].Caption:=TEXT_MES_DELETE_FROM_LIST;
+   menus[0].Caption:= L('Delete item from list');
    menus[0].Tag:=item.Index;
    menus[0].ImageIndex:=DB_IC_DELETE_INFO;
    menus[0].OnClick:=DeleteIndexItemFromPopUpMenu;
@@ -434,9 +429,9 @@ end;
 procedure TFormCont.ListView1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  i : integer;
+  I : Integer;
   MenuInfo : TDBPopupMenuInfo;
-  item, itemsel : TEasyItem;
+  Item, Itemsel: TEasyItem;
 begin
 
   Item:=ItemAtPos(x,y);
@@ -468,72 +463,71 @@ begin
    itemsel.Focused:=true;
   end;
 
-  WindowsMenuTickCount:=GetTickCount;
-  if (Button = mbLeft) and (Item<>nil) then
+  WindowsMenuTickCount := GetTickCount;
+  if (Button = MbLeft) and (Item <> nil) then
   begin
-    DBCanDrag:=True;
-    SetLength(FilesToDrag,0);
+    DBCanDrag := True;
+    FilesToDrag.Clear;
     GetCursorPos(DBDragPoint);
-    MenuInfo:=Self.GetCurrentPopUpMenuInfo(Item);
-    SetLength(FilesToDrag,0);
-    For i:=0 to MenuInfo.Count-1 do
-    if ElvMain.Items[i].Selected then
-    If FileExists(MenuInfo[I].FileName) then
-    begin
-     SetLength(FilesToDrag,Length(FilesToDrag)+1);
-     FilesToDrag[Length(FilesToDrag)-1]:=MenuInfo[I].FileName;
-    end;
-    If Length(FilesToDrag)=0 then DBCanDrag:=false;
+    MenuInfo := GetCurrentPopUpMenuInfo(Item);
+    for I := 0 to MenuInfo.Count - 1 do
+      if ElvMain.Items[I].Selected then
+        if FileExists(MenuInfo[I].FileName) then
+          FilesToDrag.Add(MenuInfo[I].FileName);
+
+    if FilesToDrag.Count = 0 then
+      DBCanDrag := False;
   end;
 end;
 
 procedure TFormCont.DeleteIndexItemByID(ID : integer);
 var
-  i, j : integer;
+  I, J: Integer;
 begin
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  if i>ElvMain.Items.Count-1 then break;
-  if Data[i].ID=ID then
+  for I := 0 to ElvMain.Items.Count - 1 do
   begin
-   ElvMain.Items.Delete(i);
-   FBitmapImageList.Delete(ElvMain.Items[i].ImageIndex);
-   for j:=i to ElvMain.Items.Count-1 do
-   begin
-    ElvMain.Items[j].ImageIndex:=ElvMain.Items[j].ImageIndex-1;
-    Data[j]:=Data[j+1];
-   end;
-   SetLength(Data,Length(Data)-1);
+    if I > ElvMain.Items.Count - 1 then
+      Break;
+    if Data[I].ID = ID then
+    begin
+      ElvMain.Items.Delete(I);
+      Data.Delete(I);
+      FBitmapImageList.Delete(ElvMain.Items[I].ImageIndex);
+      for J := I to ElvMain.Items.Count - 1 do
+        ElvMain.Items[J].ImageIndex := ElvMain.Items[J].ImageIndex - 1;
+    end;
   end;
- end;
 end;
 
 procedure TFormCont.DeleteIndexItemFromPopUpMenu(Sender: TObject);
 var
-  i, j : integer;
-  p_i : pinteger;
+  I, J: Integer;
+  P_i: Pinteger;
 begin
- p_i:=@i;
- ElvMain.Groups.BeginUpdate(true);
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  if i>ElvMain.Items.Count-1 then break;
-  if ElvMain.Items[i].Selected then
-  begin
-   FBitmapImageList.Delete(ElvMain.Items[i].ImageIndex);
-   ElvMain.Items.Delete(i);
-   ElvMain.Groups.Rebuild(true);
-   for j:=i to ElvMain.Items.Count-1 do
-   begin
-    ElvMain.Items[j].ImageIndex:=ElvMain.Items[j].ImageIndex-1;
-    Data[j]:=Data[j+1];
-   end;
-   SetLength(Data,Length(Data)-1);
-   p_i^:=i-1;
+  P_i := @I;
+  ElvMain.Groups.BeginUpdate(True);
+  try
+    for I := 0 to ElvMain.Items.Count - 1 do
+    begin
+      if I > ElvMain.Items.Count - 1 then
+        Break;
+      if ElvMain.Items[I].Selected then
+      begin
+        FBitmapImageList.Delete(ElvMain.Items[I].ImageIndex);
+        ElvMain.Items.Delete(I);
+        ElvMain.Groups.Rebuild(True);
+        Data.Delete(I);
+        for J := I to ElvMain.Items.Count - 1 do
+          ElvMain.Items[J].ImageIndex := ElvMain.Items[J].ImageIndex - 1;
+
+        P_i^ := I - 1;
+      end;
+    end;
+    //WTF?
+    Sender.Free;
+  finally
+    ElvMain.Groups.EndUpdate;
   end;
- end;
- Sender.Free;
- ElvMain.Groups.EndUpdate;
 end;
 
 procedure TFormCont.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
@@ -550,7 +544,7 @@ begin
 
  if ID=-2 then exit;
 
- For i:=0 to Length(Data)-1 do
+ For i:=0 to Data.Count-1 do
  if Data[i].ID=ID then
  begin
   if EventID_Param_Rotate in params then
@@ -584,7 +578,7 @@ begin
 
  if [EventID_Param_Rotate]*params<>[] then
  begin
-  for i:=0 to Length(Data)-1 do
+  for i:=0 to Data.Count-1 do
   if Data[i].ID=ID then
   begin
    if ElvMain.Items[i].ImageIndex>-1 then
@@ -608,7 +602,7 @@ begin
 
  if SetNewIDFileData in params then
  begin
-  for i:=0 to length(Data)-1 do
+  for i:=0 to Data.Count-1 do
   if AnsiLowerCase(Data[i].FileName)=Value.Name then
   begin
    Data[i].ID:=ID;
@@ -634,54 +628,37 @@ begin
  end;
 end;
 
-procedure TFormCont.AddNewItem(Image : Tbitmap; Info : TOneRecordInfo);
+procedure TFormCont.AddNewItem(Image : Tbitmap; Info : TDBPopupMenuInfoRecord);
 var
   New: TEasyItem;
   L: Integer;
 begin
-  if Info.ItemId <> 0 then
+  if Info = nil then
+    Exit;
+
+  if Info.Id <> 0 then
   begin
-    if ExistsItemById(Info.ItemId) then
+    if ExistsItemById(Info.Id) then
       Exit;
-  end else
+  end
+  else
   begin
-    if ExistsItemByFileName(Info.ItemFileName) then
+    if ExistsItemByFileName(Info.FileName) then
       Exit;
   end;
 
- new := ElvMain.Items.Add;
+  New := ElvMain.Items.Add;
 
- new.Tag:=Info.ItemId;
- new.Data:=TDataObject.Create;
- TDataObject(new.Data).Include:=Info.ItemInclude;
- new.BorderColor := GetListItemBorderColor(TDataObject(new.Data));
+  New.Tag := Info.ID;
+  New.Data := TDataObject.Create;
+  TDataObject(New.Data).Include := Info.Include;
+  New.BorderColor := GetListItemBorderColor(TDataObject(New.Data));
+  New.Caption := ExtractFileName(Info.FileName);
 
- new.Caption:=ExtractFileName(Info.ItemFileName);
+  Data.Add(Info.Copy);
 
- L:=Length(Data);
- SetLength(Data,Length(Data)+1);
-
- Data[L].Rotation:=Info.ItemRotate;
- Data[L].ID:=Info.ItemId;
- Data[L].FileName:=Info.ItemFileName;
- Data[L].Access:=Info.ItemAccess;
- Data[L].Rating:=Info.ItemRating;
- Data[L].FileSize:=Info.ItemSize;
- Data[L].Comment:=Info.ItemComment;
- Data[L].Date:=Info.ItemDate;
- Data[L].Time:=Info.ItemTime;
- Data[L].IsDate:=Info.ItemIsDate;
- Data[L].IsTime:=Info.ItemIsTime;
- Data[L].Groups:=Info.ItemGroups;
- Data[L].ImTh:=Info.ItemImTh;
- Data[L].Crypted:=Info.ItemCrypted;
- Data[L].Include:=Info.ItemInclude;
- Data[L].Links:=Info.ItemLinks;
- Data[L].KeyWords:=Info.ItemKeyWords;
- Data[L].Exists:=0;
-
- FBitmapImageList.AddBitmap(Image);
- New.ImageIndex:=FBitmapImageList.Count-1;
+  FBitmapImageList.AddBitmap(Image);
+  New.ImageIndex := FBitmapImageList.Count - 1;
 end;
 
 procedure TFormCont.ListView1SelectItem(Sender: TObject; Item: TEasyItem;
@@ -719,7 +696,7 @@ begin
   Image.Free;
 
   LabelName.Caption:=ExtractFileName(Data[Item.Index].FileName);// else
-  LabelID.Caption:=Format(TEXT_MES_ID_FORMATA,[IntToStr(Data[Item.Index].ID)]);
+  LabelID.Caption:=Format(L('ID = %d'),[Data[Item.Index].ID]);
   Panel3.Visible:=true;
   WebLink1.Visible:=true;
   WebLink2.Visible:=true;
@@ -730,7 +707,7 @@ begin
   TbExport.Enabled:=true;
   TbCopy.Enabled:=true;
   LabelSize.Visible:=true;
-  LabelSize.Caption:=Format(TEXT_MES_D_ITEMS,[SelCount]);
+  LabelSize.Caption:=Format(L('Items : %d'),[SelCount]);
  end;
 end;
 
@@ -748,81 +725,88 @@ end;
 
 procedure TFormCont.Clear1Click(Sender: TObject);
 begin
- SetLength(Data,0);
- FBitmapImageList.Clear;
- ElvMain.Items.Clear;
+  Data.Clear;
+  FBitmapImageList.Clear;
+  ElvMain.Items.Clear;
 end;
 
 procedure TFormCont.SaveToFile1Click(Sender: TObject);
 var
-  n : integer;
-  IDList : TArInteger;
-  FileList : TArStrings;
-  i : integer;
-  SaveDialog : DBSaveDialog;
-  FileName : string;
-  ItemsImThArray : TArStrings;
-  ItemsIDArray : TArInteger;
+  N: Integer;
+  IDList: TArInteger;
+  FileList: TArStrings;
+  I: Integer;
+  SaveDialog: DBSaveDialog;
+  FileName: string;
+  ItemsImThArray: TArStrings;
+  ItemsIDArray: TArInteger;
 begin
- SaveDialog:=DBSaveDialog.Create;
- SaveDialog.Filter:='DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
- SaveDialog.FilterIndex:=1;
+  SaveDialog := DBSaveDialog.Create;
+  SaveDialog.Filter :=
+    'DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
+  SaveDialog.FilterIndex := 1;
 
- if SaveDialog.Execute then
- begin
-  FileName:=SaveDialog.FileName;
-  n:=SaveDialog.GetFilterIndex;
-  if n=1 then
+  if SaveDialog.Execute then
   begin
-   if GetExt(FileName)<>'IDS' then
-   FileName:=FileName+'.ids';
-   if FileExists(FileName) then
-   if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
-
-   SetLength(ItemsIDArray,Length(Data));
-   for i:=0 to Length(Data)-1 do
-   ItemsIDArray[i]:=Data[i].ID;
-
-   SaveIDsTofile(FileName,ItemsIDArray);
-  end;
-  if n=2 then
-  begin
-   if GetExt(FileName)<>'DBL' then
-   FileName:=FileName+'.dbl';
-   if FileExists(FileName) then
-   if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
-   SetLength(IDList,0);
-   SetLength(FileList,0);
-   for i:=0 to Length(Data)-1 do
-   begin
-    if Data[i].ID=0 then
+    FileName := SaveDialog.FileName;
+    N := SaveDialog.GetFilterIndex;
+    if N = 1 then
     begin
-     SetLength(FileList,Length(FileList)+1);
-     FileList[Length(FileList)-1]:=Data[i].FileName;
-    end else
-    begin
-     SetLength(IDList,Length(IDList)+1);
-     IDList[Length(IDList)-1]:=Data[i].ID;
+      if GetExt(FileName) <> 'IDS' then
+        FileName := FileName + '.ids';
+      if FileExists(FileName) then
+        if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
+          TD_ICON_WARNING) then
+          Exit;
+
+      SetLength(ItemsIDArray, Data.Count);
+      for I := 0 to Data.Count - 1 do
+        ItemsIDArray[I] := Data[I].ID;
+
+      SaveIDsTofile(FileName, ItemsIDArray);
     end;
-   end;
-   SaveListTofile(FileName,IDList,FileList);
-  end;
-  if n=3 then
-  begin
-   if GetExt(FileName)<>'ITH' then
-   FileName:=FileName+'.ith';
-   if FileExists(FileName) then
-   if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
+    if N = 2 then
+    begin
+      if GetExt(FileName) <> 'DBL' then
+        FileName := FileName + '.dbl';
+      if FileExists(FileName) then
+        if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
+          TD_ICON_WARNING) then
+          Exit;
+      SetLength(IDList, 0);
+      SetLength(FileList, 0);
+      for I := 0 to Data.Count - 1 do
+      begin
+        if Data[I].ID = 0 then
+        begin
+          SetLength(FileList, Length(FileList) + 1);
+          FileList[Length(FileList) - 1] := Data[I].FileName;
+        end else
+        begin
+          SetLength(IDList, Length(IDList) + 1);
+          IDList[Length(IDList) - 1] := Data[I].ID;
+        end;
+      end;
+      SaveListTofile(FileName, IDList, FileList);
+    end;
+    if N = 3 then
+    begin
+      if GetExt(FileName) <> 'ITH' then
+        FileName := FileName + '.ith';
+      if FileExists(FileName) then
+        if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
+          TD_ICON_WARNING) then
+          Exit;
 
-   SetLength(ItemsImThArray,Length(Data));
-   for i:=0 to Length(Data)-1 do
-   ItemsImThArray[i]:=Data[i].ImTh;
+      SetLength(ItemsImThArray, Data.Count);
+      for I := 0 to Data.Count - 1 do
+        ItemsImThArray[I] := Data[I].LongImageID;
 
-   SaveImThsTofile(FileName,ItemsImThArray);
+      SaveImThsTofile(FileName, ItemsImThArray);
+    end;
   end;
- end;
- SaveDialog.Free;
- FilePushed:=false;
+  SaveDialog.Free;
+  FilePushed := False;
 end;
 
 function TFormCont.HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
@@ -833,7 +817,7 @@ begin
   P1 := ElvMain.ScreenToClient(P);
 
   Result := not((not Self.Active) or (not ElvMain.Focused) or (ItemAtPos(P1.X, P1.Y) <> LastMouseItem) or
-      (ItemAtPos(P1.X, P1.Y) = nil) {//TODO: or (Item <> Loadingthitem)});
+      (ItemAtPos(P1.X, P1.Y) = nil));
 end;
 
 procedure TFormCont.HinttimerTimer(Sender: TObject);
@@ -860,7 +844,7 @@ begin
 
   HintTimer.Enabled := False;
 
-  MenuRecord := TDBPopupMenuInfoRecord.CreateFromContRecord(Data[Index]);
+  MenuRecord := Data[Index].Copy;
   THintManager.Instance.CreateHintWindow(Self, MenuRecord, P, HintCallBack);
 
   if not (CtrlKeyDown or ShiftKeyDown) then
@@ -907,7 +891,7 @@ begin
       CreateDragImage(ElvMain, DragImageList, FBitmapImageList, Item.Caption, DBDragPoint, SpotX, SpotY);
 
       DropFileSource1.Files.Clear;
-      for I := 0 to Length(FilesToDrag) - 1 do
+      for I := 0 to FilesToDrag.Count - 1 do
         DropFileSource1.Files.Add(FilesToDrag[I]);
       ElvMain.Refresh;
 
@@ -951,43 +935,49 @@ end;
 
 procedure TFormCont.FormDeactivate(Sender: TObject);
 begin
- HintTimer.Enabled:=false;
+  HintTimer.Enabled := False;
 end;
 
-function TFormCont.GetListItemByID( ID : integer): TEasyItem;
+function TFormCont.GetListItemByID(ID: Integer): TEasyItem;
 var
-  i : integer;
+  I: Integer;
 begin
- result:=nil;
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  if ElvMain.Items[i].Tag=ID then
+  Result := nil;
+  for I := 0 to ElvMain.Items.Count - 1 do
   begin
-   Result:=ElvMain.Items[i];
-   break;
+    if ElvMain.Items[I].Tag = ID then
+    begin
+      Result := ElvMain.Items[I];
+      Break;
+    end;
   end;
- end;
+end;
+
+function TFormCont.GetListView: TEasyListview;
+begin
+  Result := ElvMain;
 end;
 
 procedure TFormCont.FormDestroy(Sender: TObject);
 begin
   GOM.RemoveObj(Self);
- DBKernel.UnRegisterProcUpdateTheme(UpdateTheme,self);
- DropFileTarget2.Unregister;
- FBitmapImageList.Free;
- DBkernel.UnRegisterForm(self);
- DBKernel.UnRegisterChangesID(Self,ChangedDBDataByID);
+  DropFileTarget2.Unregister;
+  F(Data);
+  F(FBitmapImageList);
+  F(FilesToDrag);
+  DBkernel.UnRegisterForm(Self);
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TFormCont.Copy1Click(Sender: TObject);
 var
-  i : integer;
-  s : string;
+  I: Integer;
+  S: string;
 begin
- s:='';
- for i:=0 to length(Data)-1 do
- s:=s+inttostr(Data[i].ID)+'$';
- Clipboard.AsText:=s;
+  S := '';
+  for I := 0 to Data.Count - 1 do
+    S := S + IntToStr(Data[I].ID) + '$';
+  Clipboard.AsText := S;
 end;
 
 procedure TFormCont.Paste1Click(Sender: TObject);
@@ -1079,62 +1069,67 @@ end;
 
 function TFormCont.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
 var
-  i, MenuLength : integer;
-  MenuRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
-  Result.IsListItem:=false;
-  Result.IsPlusMenu:=false;
-  MenuLength:=Length(Data);
+  Result.IsListItem := False;
+  Result.IsPlusMenu := False;
 
-  for i:=0 to MenuLength-1 do
-  begin
-    MenuRecord := TDBPopupMenuInfoRecord.CreateFromContRecord(Data[i]);
-    Result.Add(MenuRecord);
-  end;
- For i:=0 to ElvMain.Items.Count-1 do
- Result[i].Selected:=ElvMain.Items[i].Selected;
+  for I := 0 to Data.Count - 1 do
+    Result.Add(Data[I].Copy);
 
- Result.Position:=0;
- If Item=nil then
- begin
- end else begin
-  If SelCount=1 then
+  for I := 0 to ElvMain.Items.Count - 1 do
+    Result[I].Selected := ElvMain.Items[I].Selected;
+
+  Result.Position := 0;
+  if Item <> nil then
   begin
-   Result.IsListItem:=true;
-   Result.ListItem:=ListView1Selected;
-   Result.Position:=ListView1Selected.Index;
+    if SelCount = 1 then
+    begin
+      Result.IsListItem := True;
+      Result.ListItem := ListView1Selected;
+      Result.Position := ListView1Selected.index;
+    end;
+    if SelCount > 1 then
+      Result.Position := Item.index;
+
   end;
-  If SelCount>1 then
-  begin
-   Result.Position:=Item.Index;
-  end;
- end;
 end;
 
 
+function TFormCont.GetFormID: string;
+begin
+  Result := 'Panel';
+end;
+
 procedure TFormCont.LoadLanguage;
 begin
-  Label1.Caption := TEXT_MES_QUICK_INFO + ':';
-  SlideShow1.Caption := TEXT_MES_SLIDE_SHOW;
-  SelectAll1.Caption := TEXT_MES_SELECT_ALL;
-  Copy1.Caption := TEXT_MES_COPY;
-  Paste1.Caption := TEXT_MES_PASTE;
-  LoadFromFile1.Caption := TEXT_MES_LOAD_FROM_FILE;
-  SaveToFile1.Caption := TEXT_MES_SAVE_TO_FILE;
-  Clear1.Caption := TEXT_MES_CLEAR;
-  Close1.Caption := TEXT_MES_CLOSE;
-  WebLink1.Text := TEXT_MES_SIZE;
-  WebLink2.Text := TEXT_MES_TYPE;
-  ExportLink.Text := TEXT_MES_EXPORT;
-  ExCopyLink.Text := TEXT_MES_EX_COPY;
-  GroupBox1.Caption := TEXT_MES_PHOTO;
+  BeginTranslate;
+  try
+    Label1.Caption := L('Info') + ':';
+    SlideShow1.Caption := L('View');
+    SelectAll1.Caption := L('Select all');
+    Copy1.Caption := L('Copy');
+    Paste1.Caption := L('Paste');
+    LoadFromFile1.Caption := L('Load from file');
+    SaveToFile1.Caption := L('Save to file');
+    Clear1.Caption := L('Clear');
+    Close1.Caption := L('Close');
+    WebLink1.Text := L('Resize');
+    WebLink2.Text := L('Convert');
+    ExportLink.Text := L('Export');
+    ExCopyLink.Text := L('Copy');
+    GroupBox1.Caption := L('Photo');
 
-  TbResize.Caption := TEXT_MES_SIZE;
-  TbConvert.Caption := TEXT_MES_TYPE;
-  TbExport.Caption := TEXT_MES_EXPORT;
-  TbCopy.Caption := TEXT_MES_EX_COPY;
-  ToolButton6.Caption := TEXT_MES_CLOSE;
+    TbResize.Caption := L('Resize');
+    TbConvert.Caption := L('Convert');
+    TbExport.Caption := L('Export');
+    TbCopy.Caption := L('Copy');
+    TbClose.Caption := L('Close');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormCont.LoadSizes;
@@ -1142,39 +1137,31 @@ begin
   SetLVThumbnailSize(ElvMain, fPictureSize);
 end;
 
-procedure TFormCont.CreateParams(var Params: TCreateParams);
-begin
-  inherited CreateParams(Params);
-  Params.WndParent := GetDesktopWindow;
-  with Params do
-    ExStyle := ExStyle or WS_EX_APPWINDOW;
-end;
-
 function TFormCont.ExistsItemByFileName(FileName: string): Boolean;
 var
-  i : integer;
+  I: Integer;
 begin
- result:=false;
- FileName:=AnsiLowerCase(FileName);
- for i:=0 to Length(Data)-1 do
- if AnsiLowerCase(Data[i].FileName)=FileName then
- begin
-  Result:=true;
-  break;
- end;
+  Result := False;
+  FileName := AnsiLowerCase(FileName);
+  for I := 0 to Data.Count - 1 do
+    if AnsiLowerCase(Data[I].FileName) = FileName then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
 procedure TFormCont.AddFileName(FileName: String);
 var
-  Param : TArStrings;
-  Ids : TArInteger;
-  b : TArBoolean;
+  Param: TArStrings;
+  Ids: TArInteger;
+  B: TArBoolean;
 begin
- SetLength(Param,1);
- Param[0]:=FileName;
- Setlength(b,1);
- Setlength(ids,1);
- LoadFilesToPanel.Create(param,ids,b,false,false,self);
+  SetLength(Param, 1);
+  Param[0] := FileName;
+  Setlength(B, 1);
+  Setlength(Ids, 1);
+  LoadFilesToPanel.Create(Param, Ids, B, False, False, Self);
 end;
 
 procedure TFormCont.EasyListview1ItemThumbnailDraw(
@@ -1182,7 +1169,7 @@ procedure TFormCont.EasyListview1ItemThumbnailDraw(
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
   Y : Integer;
-  Info : TImageContRecord;
+  Info : TDBPopupMenuInfoRecord;
 begin
   if Item.Data = nil then
     Exit;
@@ -1219,23 +1206,24 @@ end;
 
 function TFormCont.GetVisibleItems: TArStrings;
 var
-  i : integer;
-  r : TRect;
-  t : array of boolean;
-  rv : TRect;
+  I: Integer;
+  R: TRect;
+  T: array of Boolean;
+  Rv: TRect;
 begin
- SetLength(Result,0);
- SetLength(t,0);
- rv :=  ElvMain.Scrollbars.ViewableViewportRect;
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  r:=Rect(ElvMain.ClientRect.Left+rv.Left,ElvMain.ClientRect.Top+rv.Top,ElvMain.ClientRect.Right+rv.Left,ElvMain.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,TEasyCollectionItemX(ElvMain.Items[i]).GetDisplayRect) then
+  SetLength(Result, 0);
+  SetLength(T, 0);
+  Rv := ElvMain.Scrollbars.ViewableViewportRect;
+  for I := 0 to ElvMain.Items.Count - 1 do
   begin
-   SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=Data[i].FileName;
+    R := Rect(ElvMain.ClientRect.Left + Rv.Left, ElvMain.ClientRect.Top + Rv.Top, ElvMain.ClientRect.Right + Rv.Left,
+      ElvMain.ClientRect.Bottom + Rv.Top);
+    if RectInRect(R, TEasyCollectionItemX(ElvMain.Items[I]).GetDisplayRect) then
+    begin
+      SetLength(Result, Length(Result) + 1);
+      Result[Length(Result) - 1] := Data[I].FileName;
+    end;
   end;
- end;
 end;
 
 procedure TFormCont.AddThread;
@@ -1289,7 +1277,7 @@ end;
 
 destructor TManagePanels.Destroy;
 begin
-  FPanels.Free;
+  F(FPanels);
 end;
 
 function TManagePanels.GetPanelByIndex(Index: Integer): TFormCont;
@@ -1337,7 +1325,7 @@ begin
     MenuitemSeparator.Caption := '-';
     MenuItem.Add(MenuitemSeparator);
     MenuitemSentToNew := TMenuitem.Create(MenuItem);
-    MenuitemSentToNew.Caption := TEXT_MES_NEW_PANEL;
+    MenuitemSentToNew.Caption := TA('New panel');
     MenuitemSentToNew.OnClick := OnClick;
     MenuitemSentToNew.ImageIndex := DB_IC_SENDTO;
     MenuitemSentToNew.Tag := -1;
@@ -1394,20 +1382,20 @@ begin
  If FPanels.Count = 0 then
  begin
   FTag:=1;
-  s:=Format(TEXT_MES_PANEL_CAPTION,[IntToStr(FTag)]);
+  s:=Format(TA('Panel (%s)'),[IntToStr(FTag)]);
  end;
  If FPanels.Count > 0 then
  begin
   For i:=0 to FPanels.Count-1 do
   if not TagExists(i+1) then
   begin
-   s:=format(TEXT_MES_PANEL_CAPTION,[inttostr(i+1)]);
+   s:=format(TA('Panel (%s)'),[inttostr(i+1)]);
    FTag:=i+1;
    break;
   end;
   if FTag=0 then
   begin
-   s:=format(TEXT_MES_PANEL_CAPTION,[inttostr(FPanels.Count+1)]);
+   s:=format(TA('Panel (%s)'),[inttostr(FPanels.Count+1)]);
    FTag:=FPanels.Count+1;
   end;
  end;
@@ -1568,16 +1556,13 @@ procedure TFormCont.WebLink1Click(Sender: TObject);
 var
   I: Integer;
   List: TDBPopupMenuInfo;
-  ImageInfo: TDBPopupMenuInfoRecord;
 begin
   List := TDBPopupMenuInfo.Create;
   try
     for I := 0 to ElvMain.Items.Count - 1 do
       if ElvMain.Items[I].Selected then
-      begin
-        ImageInfo := TDBPopupMenuInfoRecord.CreateFromContRecord(Data[I]);
-        List.Add(ImageInfo);
-      end;
+        List.Add(Data[I].COpy);
+
     ResizeImages(List);
   finally
     List.Free;
@@ -1655,7 +1640,7 @@ var
   end;
 
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SELECT_PLACE_TO_COPY,Dolphin_DB.UseSimpleSelectFolderDialog);
+ Dir:=UnitDBFileDialogs.DBSelectDir(Handle,L('Select place to copy files'), UseSimpleSelectFolderDialog);
  If DirectoryExists(Dir) then
  begin
   SetLength(DestWide,0);
@@ -1697,7 +1682,7 @@ var
   S: string;
 begin
   S := Caption;
-  if PromtString(TEXT_MES_ENTER_TEXT, TEXT_MES_ENTER_CAPTION_OF_PANEL, S) then
+  if PromtString(L('Enter text'), L('Enter new name of panel'), S) then
     Caption := S;
 end;
 
@@ -1754,13 +1739,6 @@ begin
   MouseDowned := False;
 end;
 
-procedure TFormCont.UpdateTheme(Sender: TObject);
-begin
-  CreateBackgroundImage;
-  ElvMain.Selection.FullCellPaint := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
-  ElvMain.Selection.RoundRectRadius := DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3);
-end;
-
 procedure TFormCont.Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
   var CompareResult: Integer);
 var
@@ -1777,27 +1755,23 @@ end;
 
 procedure TFormCont.LoadToolBarIcons;
 var
-  Ico : TIcon;
+  Ico : HIcon;
 
   procedure AddIcon(Name : String);
   begin
-    Ico := TIcon.Create;
-    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
-    ToolBarImageList.AddIcon(Ico);
+    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ImageList_AddIcon(ToolBarImageList.Handle, Ico);
+    DestroyIcon(Ico);
   end;
 
   procedure AddDisabledIcon(Name : String);
   begin
-    Ico := TIcon.Create;
-    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
-    ToolBarDisabledImageList.AddIcon(Ico);
+    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    ImageList_AddIcon(ToolBarDisabledImageList.Handle, Ico);
+    DestroyIcon(Ico);
   end;
 
 begin
-
-  ConvertTo32BitImageList(ToolBarImageList);
-  ConvertTo32BitImageList(ToolBarDisabledImageList);
-
   AddIcon('PANEL_RESIZE');
   AddIcon('PANEL_CONVERT');
   AddIcon('PANEL_EXPORT');
@@ -1852,7 +1826,7 @@ begin
   ElvMain.BeginUpdate;
   try
     SelectedVisible := IsSelectedVisible;
-    if FPictureSize > 40 then
+    if FPictureSize > 50 then
       FPictureSize := FPictureSize - 10;
     LoadSizes;
     BigImagesTimer.Enabled := False;
@@ -1886,7 +1860,7 @@ begin
     if SelectedVisible then
       ElvMain.Selection.First.MakeVisible(EmvTop);
   finally
-    ElvMain.EndUpdate();
+    ElvMain.EndUpdate;
   end;
 end;
 
@@ -1903,14 +1877,22 @@ begin
 end;
 
 procedure TFormCont.BigImagesTimerTimer(Sender: TObject);
+var
+  FData : TDBPopupMenuInfo;
 begin
   BigImagesTimer.Enabled := False;
   BigImagesSID := GetGUID;
 
   TbStop.Enabled := True;
 
-  // тут начинается загрузка больших картинок
-  TPanelLoadingBigImagesThread.Create(Self, BigImagesSID, nil, FPictureSize, Copy(Data));
+  FData := TDBPopupMenuInfo.Create;
+  try
+    FData.Assign(Data);
+    // тут начинается загрузка больших картинок
+    TPanelLoadingBigImagesThread.Create(Self, BigImagesSID, nil, FPictureSize, FData);
+  finally
+    FData.Free;
+  end;
 end;
 
 function TFormCont.FileNameExistsInList(FileName: string): Boolean;
@@ -1919,7 +1901,7 @@ var
 begin
   FileName := AnsiLowerCase(FileName);
   Result := False;
-  for I := 0 to Length(Data) - 1 do
+  for I := 0 to Data.Count - 1 do
   begin
     if AnsiLowerCase(Data[I].FileName) = FileName then
     begin
@@ -1933,8 +1915,8 @@ procedure TFormCont.ReplaseBitmapWithPath(FileName : string; Bitmap : TBitmap);
 var
   I : integer;
 begin
- FileName:= AnsiLowerCase(FileName);
-  for I := 0 to Length(Data) - 1 do
+  FileName:= AnsiLowerCase(FileName);
+  for I := 0 to Data.Count - 1 do
   begin
     if AnsiLowerCase(Data[I].FileName) = FileName then
     begin
@@ -1963,40 +1945,16 @@ begin
   end;
 end;
 
-function TFormCont.IsSelectedVisible: boolean;
-var
-  i : integer;
-  r : TRect;
-  t : array of boolean;
-  rv : TRect;
-begin
- Result:=false;
- SetLength(t,0);
- rv :=  ElvMain.Scrollbars.ViewableViewportRect;
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  r:=Rect(ElvMain.ClientRect.Left+rv.Left,ElvMain.ClientRect.Top+rv.Top,ElvMain.ClientRect.Right+rv.Left,ElvMain.ClientRect.Bottom+rv.Top);
-  if RectInRect(r,TEasyCollectionItemX(ElvMain.Items[i]).GetDisplayRect) then
-  begin
-   if ElvMain.Items[i].Selected then
-   begin
-    Result:=true;
-    exit;
-   end;
-  end;
- end;
-end;
-
 procedure TFormCont.TerminateTimerTimer(Sender: TObject);
 begin
- TerminateTimer.Enabled:=false;
- Release;
+  TerminateTimer.Enabled := False;
+  Release;
 end;
 
 procedure TFormCont.TwWindowsPosChange(Sender: TObject);
 begin
- DropFileTarget2.Unregister;
- if TwWindowsPos.Pushed then
+  DropFileTarget2.Unregister;
+  if TwWindowsPos.Pushed then
     FormStyle := FsStayOnTop
   else
     FormStyle := FsNormal;
@@ -2014,14 +1972,15 @@ end;
 
 procedure TFormCont.PopupMenuZoomDropDownPopup(Sender: TObject);
 begin
- Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
- BigImagesSizeForm.Execute(self,fPictureSize,BigSizeCallBack);
+  Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
+  BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
 end;
 
-Initialization
- ManagerPanels := TManagePanels.Create;
+initialization
+
+  ManagerPanels := TManagePanels.Create;
 
 Finalization
- ManagerPanels.Free;
+  F(ManagerPanels);
 
 end.

@@ -47,7 +47,7 @@ var
   Rec : TTextPosRecord;
   i : integer;
 begin
-  F(TextPosList);
+  FreeList(TextPosList);
   TextPosList:=TList.Create;
   Patt := 'TEXT_MES_';
   SearchStr := S;
@@ -58,16 +58,16 @@ begin
     if Offset = 0 then
       Break;
 
-    Rec := TTextPosRecord.Create;
-    for i:=Offset to Length(S) do
-    if not (s[i] in ['A'..'Z','_','0'..'9']) then
-    begin
-     Rec.Text:=Copy(SearchStr,Offset,i-Offset);
-     SearchStr[Offset]:='_';
-     Rec.pos:=Offset;
-     TextPosList.Add(Rec);
-     Break;
-    end; 
+    for I := Offset to Length(S) do
+      if not(S[I] in ['A' .. 'Z', '_', '0' .. '9']) then
+      begin
+        Rec := TTextPosRecord.Create;
+        Rec.Text := Copy(SearchStr, Offset, I - Offset);
+        SearchStr[Offset] := '_';
+        Rec.Pos := Offset;
+        TextPosList.Add(Rec);
+        Break;
+      end;
   end;
 end;
 
@@ -76,20 +76,20 @@ var
  i,j, Offset : integer;
  Increment : integer;
 begin
- for i:=TextPosList.Count-1 downto 0 do
- if TTextPosRecord(TextPosList[i]).Text=OldPattern then
- begin
-  Offset:=TTextPosRecord(TextPosList[i]).pos;
-  Delete(script,Offset,Length(OldPattern));
-  Insert(NewPattern,script,Offset);
-  Increment:=Length(NewPattern)-Length(OldPattern);
-  TObject(TextPosList[I]).Free;
-  TextPosList.Delete(i);
-  for j:=0 to TextPosList.Count-1 do
-  if TTextPosRecord(TextPosList[j]).pos>Offset then
-  TTextPosRecord(TextPosList[j]).pos:=TTextPosRecord(TextPosList[j]).pos+Increment;
- end;
- Result:=script;
+  for I := TextPosList.Count - 1 downto 0 do
+    if TTextPosRecord(TextPosList[I]).Text = OldPattern then
+    begin
+      Offset := TTextPosRecord(TextPosList[I]).Pos;
+      Delete(Script, Offset, Length(OldPattern));
+      Insert(NewPattern, Script, Offset);
+      Increment := Length(NewPattern) - Length(OldPattern);
+      TObject(TextPosList[I]).Free;
+      TextPosList.Delete(I);
+      for J := 0 to TextPosList.Count - 1 do
+        if TTextPosRecord(TextPosList[J]).Pos > Offset then
+          TTextPosRecord(TextPosList[J]).Pos := TTextPosRecord(TextPosList[J]).Pos + Increment;
+    end;
+  Result := Script;
 end;
 
 function ApplyChanges(script : string) : string;

@@ -29,7 +29,7 @@ var
   FE : boolean;
 begin
   if ID = 0 then
-    DrawIconEx(HCanvas, 0 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_NEW+1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(HCanvas, DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_NEW+1], 16, 16, 0, 0, DI_NORMAL);
 
   if Exists = 0 then
   begin

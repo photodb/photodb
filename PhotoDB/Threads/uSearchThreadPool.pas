@@ -32,8 +32,8 @@ var
   SearchThread : TSearchBigImagesLoaderThread;
 begin
   SearchThread := TSearchBigImagesLoaderThread(Thread);
-  if (Thread <> nil) and (FAvaliableThreadList.Count + FBusyThreadList.Count < Min(MAX_THREADS_USE, ProcessorCount + 1)) then
-    FAvaliableThreadList.Add(TSearchBigImagesLoaderThread.Create(
+  if (Thread <> nil) and (AvaliableThreadsCount + BusyThreadsCount < Min(MAX_THREADS_USE, ProcessorCount + 1)) then
+    AddAvaliableThread(TSearchBigImagesLoaderThread.Create(
       SearchThread.ThreadForm,
       SearchThread.StateID,
       nil, 0, nil, False));

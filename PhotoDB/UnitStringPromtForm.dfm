@@ -1,11 +1,14 @@
 object FormStringPromt: TFormStringPromt
   Left = 275
   Top = 178
-  BorderStyle = bsToolWindow
+  BorderStyle = bsSizeToolWin
   Caption = 'FormStringPromt'
-  ClientHeight = 95
-  ClientWidth = 225
+  ClientHeight = 101
+  ClientWidth = 241
   Color = clBtnFace
+  Constraints.MaxHeight = 135
+  Constraints.MinHeight = 135
+  Constraints.MinWidth = 200
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -14,42 +17,53 @@ object FormStringPromt: TFormStringPromt
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  DesignSize = (
+    241
+    101)
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object LbInfo: TLabel
     Left = 8
     Top = 8
-    Width = 209
+    Width = 224
     Height = 25
+    Anchors = [akLeft, akTop, akRight]
     AutoSize = False
-    Caption = 'Label1'
+    Caption = 'Info'
     WordWrap = True
+    ExplicitWidth = 209
   end
-  object Edit1: TEdit
+  object EdString: TWatermarkedEdit
     Left = 8
     Top = 40
-    Width = 209
+    Width = 224
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
-    Text = 'Edit1'
-    OnKeyPress = Edit1KeyPress
+    OnKeyPress = EdStringKeyPress
+    WatermarkText = 'Enter your text here'
+    ExplicitWidth = 209
   end
-  object Button1: TButton
-    Left = 144
+  object BtnOK: TButton
+    Left = 159
     Top = 66
     Width = 75
     Height = 25
-    Caption = 'Button1'
+    Anchors = [akTop, akRight]
+    Caption = 'BtnOK'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtnOKClick
+    ExplicitLeft = 144
   end
-  object Button2: TButton
-    Left = 64
+  object BtnCancel: TButton
+    Left = 79
     Top = 66
     Width = 75
     Height = 25
-    Caption = 'Button2'
+    Anchors = [akTop, akRight]
+    Caption = 'BtnCancel'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtnCancelClick
+    ExplicitLeft = 64
   end
 end

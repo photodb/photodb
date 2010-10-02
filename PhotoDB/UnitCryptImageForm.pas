@@ -4,11 +4,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt, Language,
-  uVistaFuncs, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher;
+  Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt,
+  uVistaFuncs, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher,
+  WatermarkedEdit, uDBForm;
 
 type
-  TCryptImageForm = class(TForm)
+  TCryptImageForm = class(TDBForm)
     BtCancel: TButton;
     BtOk: TButton;
     CbSaveCRC: TCheckBox;
@@ -16,8 +17,8 @@ type
     CbSavePasswordPermanent: TCheckBox;
     LbPassword: TLabel;
     LbPasswordConfirm: TLabel;
-    EdPassword: TEdit;
-    EdPasswordConfirm: TEdit;
+    EdPassword: TWatermarkedEdit;
+    EdPasswordConfirm: TWatermarkedEdit;
     CbShowPassword: TCheckBox;
     WblMethod: TWebLink;
     PmCryptMethod: TPopupMenu;
@@ -28,13 +29,14 @@ type
     procedure BtCancelClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure WblMethodClick(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
-    FPassIcon : TIcon;
     procedure LoadLanguage;
     procedure FillChiperList;
     procedure SelectChipperClick(Sender: TObject);
+  protected
+    { Protected declarations }
+    function GetFormID : string; override;
   public
     { Public declarations }
     FFileName: string;
@@ -106,10 +108,11 @@ begin
   StrongCryptInit;
 
   DECEnumClasses(@DoEnumClasses, Self);
-  //Set default chipper class
 end;
 
 procedure TCryptImageForm.FormCreate(Sender: TObject);
+var
+  FPassIcon : HIcon;
 begin
   DBkernel.RecreateThemeToForm(Self);
   CbSavePasswordForSession.Checked := DBKernel.Readbool('Options', 'AutoSaveSessionPasswords', True);
@@ -120,14 +123,9 @@ begin
   LoadLanguage;
   FillChiperList;
 
-  FPassIcon := TIcon.Create;
-  FPassIcon.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar('PASSWORD'));
-  WblMethod.LoadFromHIcon(FPassIcon.Handle);
-end;
-
-procedure TCryptImageForm.FormDestroy(Sender: TObject);
-begin
-  F(FPassIcon);
+  FPassIcon := LoadIcon(DBKernel.IconDllInstance, PWideChar('PASSWORD'));
+  WblMethod.LoadFromHIcon(FPassIcon);
+  DestroyIcon(FPassIcon);
 end;
 
 procedure TCryptImageForm.BtOkClick(Sender: TObject);
@@ -137,7 +135,7 @@ begin
 
   if not CbShowPassword.Checked and (EdPassword.Text <> EdPasswordConfirm.Text) then
   begin
-    MessageBoxDB(Handle, TEXT_MES_PASSWORDS_DIFFERENT, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+    MessageBoxDB(Handle, L('Passwords doesn''t match!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
     Exit;
   end;
 
@@ -157,8 +155,7 @@ begin
     EdPassword.PasswordChar := #0;
     EdPasswordConfirm.Hide;
     LbPasswordConfirm.Hide;
-  end
-  else
+  end else
   begin
     EdPassword.PasswordChar := '*';
     EdPasswordConfirm.Show;
@@ -182,15 +179,20 @@ end;
 
 procedure TCryptImageForm.LoadLanguage;
 begin
-  LbPassword.Caption := TEXT_MES_ENTER_IM_PASSWORD;
-  LbPasswordConfirm.Caption := TEXT_MES_REENTER_IM_PASSWORD;
-  Caption := TEXT_MES_CRYPT_IMAGE;
-  BtCancel.Caption := TEXT_MES_CANCEL;
-  BtOk.Caption := TEXT_MES_OK;
-  CbSaveCRC.Caption := TEXT_MES_SAVE_CRC;
-  CbSavePasswordForSession.Caption := TEXT_MES_SAVE_PASS_SESSION;
-  CbSavePasswordPermanent.Caption := TEXT_MES_SAVE_PASS_IN_INI_DIRECTORY;
-  CbShowPassword.Caption := TEXT_MES_SHOW_PASSWORD;
+  BeginTranslate;
+  try
+    LbPassword.Caption := L('Enter password for selected objects') + ':';
+    LbPasswordConfirm.Caption := L('Confirm password');
+    Caption := L('Crypt objects');
+    BtCancel.Caption := L('Cancel');
+    BtOk.Caption := L('Ok');
+    CbSaveCRC.Caption := L('Save CRC');
+    CbSavePasswordForSession.Caption := L('Save password for session');
+    CbSavePasswordPermanent.Caption := L('Save password in settings');
+    CbShowPassword.Caption := L('Show password');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TCryptImageForm.SelectChipperClick(Sender: TObject);
@@ -215,6 +217,11 @@ procedure TCryptImageForm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = Char(VK_ESCAPE) then
     Close;
+end;
+
+function TCryptImageForm.GetFormID: string;
+begin
+  Result := 'Password';
 end;
 
 end.

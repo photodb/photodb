@@ -10,7 +10,7 @@ uses
   ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare,
-  UnitDBCommonGraphics, uScript, uLogger, uFileUtils;
+  UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM;
 
 type TDBPopupMenu = class
    private
@@ -81,8 +81,8 @@ uses ExplorerUnit, PropertyForm, SlideShow, Searching, UnitFormCont,
      AddSessionPasswordUnit, ImEditor, FormManegerUnit, CommonDBSupport,
      UnitCDMappingSupport;
 
- var
-   DBPopupMenu: TDBPopupMenu = nil;
+var
+  DBPopupMenu: TDBPopupMenu = nil;
 
 { TDBPopupMenu }
 
@@ -109,60 +109,60 @@ const
   ShowGroupsInContextMenu = True;
 
 begin
- if FBusy then
- begin
-  for i:=0 to item.Count-1 do
-  item.Delete(0);
-  BusyMenu:=Tmenuitem.Create(_popupmenu);
-  BusyMenu.Caption:=TEXT_MES_MENU_BUSY;
-  BusyMenu.Enabled:=false;
-  Item.Add(BusyMenu);
-  Exit;
- end;
- If info.Count=0 then
- begin
-  for i:=0 to item.Count-1 do
-  item.Delete(0);
-  ErrorMenu:=TMenuItem.Create(_popupmenu);
-  ErrorMenu.Caption:=TEXT_MES_MENU_NOT_AVALIABLE_0;
-  ErrorMenu.Enabled:=false;
-  Item.Add(ErrorMenu);
-  Exit;
- end;
+  if FBusy then
+  begin
+    for I := 0 to Item.Count - 1 do
+      Item.Delete(0);
+    BusyMenu := Tmenuitem.Create(_popupmenu);
+    BusyMenu.Caption := TEXT_MES_MENU_BUSY;
+    BusyMenu.Enabled := False;
+    Item.Add(BusyMenu);
+    Exit;
+  end;
+  if Info.Count = 0 then
+  begin
+    for I := 0 to Item.Count - 1 do
+      Item.Delete(0);
+    ErrorMenu := TMenuItem.Create(_popupmenu);
+    ErrorMenu.Caption := TEXT_MES_MENU_NOT_AVALIABLE_0;
+    ErrorMenu.Enabled := False;
+    Item.Add(ErrorMenu);
+    Exit;
+  end;
 
- finfo:=info;
+ finfo.Assign(info);
  isrecord:=true;
- if info.Count=1 then
- if info[0].ID=0 then isrecord:=false;
+ if finfo.Count=1 then
+ if finfo[0].ID=0 then isrecord:=false;
  for i:=0 to item.Count-1 do
  item.Delete(0);
 
- if info.Count>1 then
+ if finfo.Count>1 then
  begin
   isrecord:=false;
-  for i:=0 to info.Count-1 do
-  if info[0].ID<>0 then isrecord:=true;
+  for i:=0 to finfo.Count-1 do
+  if finfo[0].ID<>0 then isrecord:=true;
  end;
  NoDBInfoNeeded:=false;
 
  OnlyCurrentDBinfoSelected:=true;
- if info.Count>1 then
- for i:=0 to info.Count-1 do
- if info[I].ID<>0 then
- if info[i].Selected then
- if info.Position<>i then
+ if finfo.Count>1 then
+ for i:=0 to finfo.Count-1 do
+ if finfo[I].ID<>0 then
+ if finfo[i].Selected then
+ if finfo.Position<>i then
  OnlyCurrentDBinfoSelected:=false;
- if info[info.Position].Selected then
- if info[info.Position].ID=0 then
+ if finfo[finfo.Position].Selected then
+ if finfo[finfo.Position].ID=0 then
  if not OnlyCurrentDBinfoSelected then
  NoDBInfoNeeded:=true;
  if not isrecord then NoDBInfoNeeded:=true;
- if info[info.Position].ID=0 then NoDBInfoNeeded:=true;
+ if finfo[finfo.Position].ID=0 then NoDBInfoNeeded:=true;
 
  IsFile:=false;
- IsCurrentFile:=FileExists(info[info.Position].FileName);
- for i:=0 to info.Count - 1 do
- if FileExists(info[i].FileName) then
+ IsCurrentFile:=FileExists(finfo[finfo.Position].FileName);
+ for i:=0 to finfo.Count - 1 do
+ if FileExists(finfo[i].FileName) then
  begin
   IsFile:=True;
   Break;
@@ -171,21 +171,21 @@ begin
 
   script:=MenuScript;
 
-  SetBoolAttr(aScript,'$CanRename',Info.IsListItem);
+  SetBoolAttr(aScript,'$CanRename',finfo.IsListItem);
   SetBoolAttr(aScript,'$IsRecord',IsRecord);
   SetBoolAttr(aScript,'$IsFile',IsFile);
   SetBoolAttr(aScript,'$NoDBInfoNeeded',NoDBInfoNeeded);
 
-  SetIntAttr(aScript,'$MenuLength',Info.Count);
-  SetIntAttr(aScript,'$Position',Info.Position);
+  SetIntAttr(aScript,'$MenuLength',finfo.Count);
+  SetIntAttr(aScript,'$Position',finfo.Position);
 
   //if user haven't rights to get FileName its only possible way to know
-  SetBoolAttr(aScript,'$FileExists',FileExists(Info[Info.Position].FileName));
+  SetBoolAttr(aScript,'$FileExists',FileExists(finfo[finfo.Position].FileName));
 
   // END Access section
   SetBoolAttr(aScript,'$IsCurrentFile',IsCurrentFile);
 
-  LoadVariablesNo(info.Position);
+  LoadVariablesNo(finfo.Position);
 
   PanelsTexts := TStringList.Create;
   try
@@ -195,7 +195,7 @@ begin
     aPanelTexts[i]:=PanelsTexts[i];
     SetNamedValueArrayStrings(aScript,'$Panels',aPanelTexts);
   finally
-    PanelsTexts.Free;
+    F(PanelsTexts);
   end;
   GroupsList := TStringList.Create;
   for i:=0 to FInfo.Count-1 do
@@ -281,7 +281,7 @@ begin
       else
         _user_group_menu.ImageIndex := DB_IC_COMPUTER;
     finally
-      Ico.Free;
+      F(Ico);
     end;
 
   end;
@@ -307,7 +307,7 @@ begin
       else
         _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].ImageIndex := DB_IC_COMPUTER;
     finally
-      Ico.Free;
+      F(Ico);
     end;
    end else
    begin
@@ -328,7 +328,7 @@ begin
       else
         _user_menu[Length(_user_menu) - 1].ImageIndex := DB_IC_COMPUTER;
     finally
-      Ico.Free;
+      F(Ico);
     end;
    end;
   end;
@@ -359,7 +359,7 @@ begin
 
     Copy_Move(True, FileList);
   finally
-    FileList.Free;
+    F(FileList);
   end;
 end;
 
@@ -368,6 +368,7 @@ begin
   inherited;
 
   FBusy:=false;
+  Finfo := TDBPopupMenuInfo.Create;
   aScript := TScript.Create('');
   aScript.Description:='ID Menu';
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
@@ -729,8 +730,10 @@ end;
 
 destructor TDBPopupMenu.destroy;
 begin
-  _popupmenu.Free;
-  _popupmenu:=nil;
+  F(_popupmenu);
+  if GOM.IsObj(aScript) then
+    F(aScript);
+  F(Finfo);
   inherited;
 end;
 
@@ -763,7 +766,7 @@ begin
  FPopUpPoint:=Point(X,Y);
  if not FBusy then
  begin
-  FInfo:=info;
+  FInfo.Assign(info);
   if Finfo.Count=0 then
     exit;
   begin
@@ -787,7 +790,7 @@ var
   _menuitem_nil : tmenuitem;
 begin
  FPopUpPoint:=Point(X,Y);
- FInfo:=info;
+ FInfo.Assign(info);
  if Finfo.Count=0 then exit;
   begin
 
@@ -1041,19 +1044,21 @@ end;
 
 procedure TDBPopupMenu.PrintItemPopUpMenu_(Sender: TObject);
 var
-  i : integer;
-  files : TStrings;
+  I: Integer;
+  Files: TStrings;
 begin
- files:=TStringList.Create;
- for i:=0 to finfo.Count-1 do
- if finfo[i].Selected then
- if FileExists(finfo[i].FileName) then
- begin
-  Files.Add(finfo[i].FileName[i])
- end;
- if Files.Count<>0 then
- GetPrintForm(Files);
- Files.Free;
+  Files := TStringList.Create;
+  try
+    for I := 0 to Finfo.Count - 1 do
+      if Finfo[I].Selected then
+        if FileExists(Finfo[I].FileName) then
+          Files.Add(Finfo[I].FileName[I]);
+
+    if Files.Count <> 0 then
+      GetPrintForm(Files);
+  finally
+    Files.Free;
+  end;
 end;
 
 procedure TDBPopupMenu.PrivateItemPopUpMenu_(Sender: TObject);
@@ -1098,9 +1103,7 @@ begin
     end;
    end;
   end;
-  ProgressForm.Close;
-  ProgressForm.Release;
-  ProgressForm.Free;
+  R(ProgressForm);
   FBusy:=false;
 end;
 
@@ -1261,8 +1264,9 @@ end;
 
 procedure TDBPopupMenu.SetInfo(Info: TDBPopupMenuInfo);
 begin
- If info.Count=0 then exit;
- finfo:=info;
+  if Info.Count = 0 then
+    Exit;
+  Finfo.Assign(Info);
 end;
 
 procedure TDBPopupMenu.SetRatingItemPopUpMenu_(Sender: TObject);
@@ -1408,5 +1412,11 @@ begin
  SetDesktopWallpaper(FileName,WPSTYLE_TILE) else
  MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
 end;
+
+initialization
+
+finalization
+
+  F(DBPopupMenu);
 
 end.

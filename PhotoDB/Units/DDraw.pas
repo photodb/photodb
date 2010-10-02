@@ -19,6 +19,7 @@ unit DDraw;
 
 {$INCLUDE COMSWITCH.INC}
 {$INCLUDE STRINGSWITCH.INC}
+{$DEFINE UNICODE}
 
 interface
 
@@ -4789,31 +4790,28 @@ end;
 
 procedure DDrawInit;
 begin
-  if not IsNTandDelphiRunning then
-  begin
-    DDrawDLL := LoadLibrary('DDraw.dll');
-    DirectDrawEnumerateA := GetProcAddress(DDrawDLL,'DirectDrawEnumerateA');
-    DirectDrawEnumerateW := GetProcAddress(DDrawDLL,'DirectDrawEnumerateW');
+  DDrawDLL := LoadLibrary('DDraw.dll');
+  DirectDrawEnumerateA := GetProcAddress(DDrawDLL,'DirectDrawEnumerateA');
+  DirectDrawEnumerateW := GetProcAddress(DDrawDLL,'DirectDrawEnumerateW');
 {$IFDEF UNICODE}
-    DirectDrawEnumerate := DirectDrawEnumerateW;
+  DirectDrawEnumerate := DirectDrawEnumerateW;
 {$ELSE}
-    DirectDrawEnumerate := DirectDrawEnumerateA;
+  DirectDrawEnumerate := DirectDrawEnumerateA;
 {$ENDIF}
 
-    DirectDrawEnumerateExA := GetProcAddress(DDrawDLL,'DirectDrawEnumerateExA');
-    DirectDrawEnumerateExW := GetProcAddress(DDrawDLL,'DirectDrawEnumerateExW');
+  DirectDrawEnumerateExA := GetProcAddress(DDrawDLL,'DirectDrawEnumerateExA');
+  DirectDrawEnumerateExW := GetProcAddress(DDrawDLL,'DirectDrawEnumerateExW');
 {$IFDEF UNICODE}
-    DirectDrawEnumerateEx := DirectDrawEnumerateExW;
+  DirectDrawEnumerateEx := DirectDrawEnumerateExW;
 {$ELSE}
-    DirectDrawEnumerateEx := DirectDrawEnumerateExA;
+  DirectDrawEnumerateEx := DirectDrawEnumerateExA;
 {$ENDIF}
 
-    DirectDrawCreate := GetProcAddress(DDrawDLL,'DirectDrawCreate');
-    DirectDrawCreateClipper := GetProcAddress(DDrawDLL,'DirectDrawCreateClipper');
+  DirectDrawCreate := GetProcAddress(DDrawDLL,'DirectDrawCreate');
+  DirectDrawCreateClipper := GetProcAddress(DDrawDLL,'DirectDrawCreateClipper');
 {$IFDEF WINNT}
-    NtDirectDrawCreate := GetProcAddress(DDrawDLL,'NtDirectDrawCreate');
+  NtDirectDrawCreate := GetProcAddress(DDrawDLL,'NtDirectDrawCreate');
 {$ENDIF}
-  end;
 end;
 
 initialization

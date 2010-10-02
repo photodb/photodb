@@ -2316,7 +2316,6 @@ begin
   icons[119] := LoadIcon(IconDllInstance,'CD_IMAGE');
 
   //disabled items are bad
-  //ConvertTo32BitImageList(FImageList);
 
   for i:=1 to IconsCount do
     ImageList_ReplaceIcon(FImageList.Handle, -1, icons[i]);

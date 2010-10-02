@@ -1,10 +1,10 @@
-unit UMultiCPUThreadManager;
+unit uMultiCPUThreadManager;
 
 interface
 
 uses
-  Windows, Math, SysUtils, UTime, UGOM, ULogger,
-  UThreadEx, UThreadForm, Classes, SyncObjs, UMemory;
+  Windows, Math, SysUtils, uTime, uGOM, uLogger,
+  uThreadEx, uThreadForm, Classes, SyncObjs, uMemory;
 
 type
   TMultiCPUThread = class(TThreadEx)
@@ -12,9 +12,11 @@ type
     FMode: Integer;
     FSyncEvent: Integer;
     FWorkingInProgress: Boolean;
+    FThreadNumber: Integer;
     procedure DoMultiProcessorWork;
   protected
     procedure DoMultiProcessorTask; virtual; abstract;
+    procedure CheckThreadPriority; override;
   public
     constructor Create(AOwnerForm: TThreadForm; AState: TGUID);
     procedure StartMultiThreadWork;
@@ -25,11 +27,15 @@ type
 
 type
   TThreadPoolCustom = class(TObject)
-  protected
+  private
     FAvaliableThreadList: TList;
     FBusyThreadList: TList;
+    function GetAvaliableThreadsCount: Integer;
+    function GetBusyThreadsCount: Integer;
+  protected
     FSync: TCriticalSection;
     procedure ThreadsCheck(Thread: TMultiCPUThread); virtual;
+    procedure AddAvaliableThread(Thread: TMultiCPUThread);
   protected
     procedure AddNewThread(Thread: TMultiCPUThread); virtual; abstract;
     function GetAvaliableThread(Sender: TMultiCPUThread): TMultiCPUThread;
@@ -37,6 +43,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    property AvaliableThreadsCount : Integer read GetAvaliableThreadsCount;
+    property BusyThreadsCount : Integer read GetBusyThreadsCount;
   end;
 
 const
@@ -48,6 +56,17 @@ uses
   Dolphin_db;
 
 { TThreadPoolCustom }
+
+procedure TThreadPoolCustom.AddAvaliableThread(Thread: TMultiCPUThread);
+begin
+  FSync.Enter;
+  try
+    FAvaliableThreadList.Add(Thread);
+    Thread.FThreadNumber := FAvaliableThreadList.Count + FBusyThreadList.Count;
+  finally
+    FSync.Leave;
+  end;
+end;
 
 constructor TThreadPoolCustom.Create;
 begin
@@ -64,6 +83,7 @@ begin
   for I := 0 to FAvaliableThreadList.Count - 1 do
   begin
     TMultiCPUThread(FAvaliableThreadList[I]).FMode := 0;
+    TMultiCPUThread(FAvaliableThreadList[I]).Priority := tpTimeCritical;
     SetEvent(TMultiCPUThread(FAvaliableThreadList[I]).FSyncEvent);
   end;
 
@@ -81,7 +101,10 @@ begin
     end;
   end;
 
-  Sleep(100);
+{$IFDEF DBDEBUG}
+  //wait for threads - for debug only - memory leaks check
+  Sleep(1000);
+{$ENDIF}
   F(FSync);
   F(FAvaliableThreadList);
   F(FBusyThreadList);
@@ -94,11 +117,36 @@ begin
 
   ThreadsCheck(Sender);
 
-  if FAvaliableThreadList.Count > 0 then
-  begin
-    Result := FAvaliableThreadList[0];
-    FAvaliableThreadList.Remove(Result);
-    FBusyThreadList.Add(Result);
+  FSync.Enter;
+  try
+    if FAvaliableThreadList.Count > 0 then
+    begin
+      Result := FAvaliableThreadList[0];
+      FAvaliableThreadList.Remove(Result);
+      FBusyThreadList.Add(Result);
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TThreadPoolCustom.GetAvaliableThreadsCount: Integer;
+begin
+  FSync.Enter;
+  try
+    Result := FAvaliableThreadList.Count;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TThreadPoolCustom.GetBusyThreadsCount: Integer;
+begin
+  FSync.Enter;
+  try
+    Result := FBusyThreadList.Count;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -113,39 +161,58 @@ end;
 procedure TThreadPoolCustom.ThreadsCheck(Thread: TMultiCPUThread);
 var
   ThreadHandles: array [0 .. MAX_THREADS_USE - 1] of THandle;
-  I: Integer;
+  I, ThreadsCount: Integer;
   S: string;
 begin
   AddNewThread(Thread);
 
   while FAvaliableThreadList.Count = 0 do
   begin
-    for I := FBusyThreadList.Count - 1 downto 0 do
-    begin
-      if not TMultiCPUThread(FBusyThreadList[I]).FWorkingInProgress then
+    FSync.Enter;
+    try
+      ThreadsCount := FBusyThreadList.Count;
+      for I := ThreadsCount - 1 downto 0 do
       begin
-        FAvaliableThreadList.Add(FBusyThreadList[I]);
-        FBusyThreadList.Delete(I);
+        if not TMultiCPUThread(FBusyThreadList[I]).FWorkingInProgress then
+        begin
+          FAvaliableThreadList.Add(FBusyThreadList[I]);
+          FBusyThreadList.Delete(I);
+        end;
       end;
+
+      if FAvaliableThreadList.Count > 0 then
+        Break;
+
+      for I := 0 to ThreadsCount - 1 do
+        ThreadHandles[I] := TMultiCPUThread(FBusyThreadList[I]).FEvent;
+
+      S := 'WaitForMultipleObjects: ' + IntToStr(FBusyThreadList.Count) + ' - ';
+      for I := 0 to ThreadsCount - 1 do
+        S := S + ',' + IntToStr(TMultiCPUThread(FBusyThreadList[I]).FSyncEvent);
+      TW.I.Start(S);
+
+    finally
+      FSync.Leave;
     end;
-
-    if FAvaliableThreadList.Count > 0 then
-      Break;
-
-    for I := 0 to FBusyThreadList.Count - 1 do
-      ThreadHandles[I] := TMultiCPUThread(FBusyThreadList[I]).FEvent;
-
-    S := 'WaitForMultipleObjects: ' + IntToStr(FBusyThreadList.Count) + ' - ';
-    for I := 0 to FBusyThreadList.Count - 1 do
-      S := S + ',' + IntToStr(TMultiCPUThread(FBusyThreadList[I]).FSyncEvent);
-    TW.I.Start(S);
-    WaitForMultipleObjects(FBusyThreadList.Count, @ThreadHandles[0], False, INFINITE);
+    WaitForMultipleObjects(ThreadsCount, @ThreadHandles[0], False, INFINITE);
 
     TW.I.Start('WaitForMultipleObjects END');
   end;
 end;
 
 { TMultiCPUThread }
+
+procedure TMultiCPUThread.CheckThreadPriority;
+begin
+  if ThreadForm.Active then
+  begin
+    if FThreadNumber = 1 then
+      Priority := tpNormal
+    else
+      Priority := tpLowest
+  end else
+    Priority := tpIdle;
+end;
 
 constructor TMultiCPUThread.Create(AOwnerForm: TThreadForm; AState: TGUID);
 begin
