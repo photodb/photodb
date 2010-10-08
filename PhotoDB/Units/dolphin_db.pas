@@ -848,29 +848,19 @@ end;
 
 function ExtinMask(mask : string; ext : string):boolean;
 var
-  i,j:integer;
+  I, J: Integer;
+  C : Char;
+  S : string;
 begin
- result:=false;
- If mask='||' then
- begin
-  result:=true;
-  exit;
- end;
- for i:=1 to length(mask) do
- begin
-  if mask[i]='|' then
-  for j:=i to length(mask) do
+  Result := False;
+  if Mask = '||' then
   begin
-   If mask[j]='|' then
-   If (j-i-1>0) and (i+1<length(mask)) then
-   if (AnsiUpperCase(copy(mask,i+1,j-i-1))<>'') and (AnsiUpperCase(copy(mask,i+1,j-i-1))=AnsiUpperCase(ext)) then
-   begin
-    result:=true;
-    Break;
-   end;
+    Result := True;
+    Exit;
   end;
-  If Result then Break;
- end;
+  mask := '|' + AnsiUpperCase(Mask) + '|';
+  ext := AnsiUpperCase(ext);
+  Result := Pos('|' + ext + '|', Mask) > -1;
 end;
 
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);

@@ -502,6 +502,7 @@ begin
   Result.InfoLoaded := InfoLoaded;
   Result.Include := Include;
   Result.Links := Links;
+  Result.Selected := Selected;
   if Data <> nil then
     Result.Data := Data.Copy
   else

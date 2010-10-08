@@ -271,7 +271,7 @@ var
 begin
   Result := nil;
   for I := 0 to FValues.Count - 1 do
-    if (TValue(FValues[I]).AName = Name) and (TValue(FValues[I]).AType and AType > 0) then
+    if (TValue(FValues[I]).AType and AType > 0) and (TValue(FValues[I]).AName = Name) then
     begin
       Result := FValues[I];
       Exit;

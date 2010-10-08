@@ -197,10 +197,6 @@ type
    procedure LoadFileFunctions(Enviroment : TScriptEnviroment);
 
    const
-   //TODO: пиздец!
-  DROPEFFECT_COPY   = 1;
-  DROPEFFECT_MOVE   = 2;
-
   EndSymbol = '};';
 
   SHELL_FOLDERS_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\Explorer';
@@ -333,47 +329,45 @@ end;
 
 function GetValueType(const aScript : TScript; const Value : string) : integer;
 var
-  i : integer;
-
+  I: Integer;
 begin
- Result:=VALUE_TYPE_ERROR;
- if IsVariable(Value) then
- begin
-  for i:=0 to aScript.NamedValues.Count - 1 do
-  if aScript.NamedValues[i].aName=Value then
+  Result := VALUE_TYPE_ERROR;
+  if IsVariable(Value) then
   begin
-   Result:=aScript.NamedValues[i].aType;
-   exit;
+    for I := 0 to AScript.NamedValues.Count - 1 do
+      if AScript.NamedValues[I].AName = Value then
+      begin
+        Result := AScript.NamedValues[I].AType;
+        Exit;
+      end;
+    if AScript.ParentScript <> nil then
+    begin
+      Result := GetValueType(AScript.ParentScript, Value);
+    end;
+    Exit;
   end;
-  if aScript.ParentScript<>nil then
+  if (Value = 'true') or (Value = 'false') then
   begin
-   Result:=GetValueType(aScript.ParentScript, Value);
+    Result := VALUE_TYPE_BOOLEAN;
+    Exit;
   end;
-  exit;
- end;
- if StrToIntDef(Value,-1)=StrToIntDef(Value,1) then
- begin
-  Result:=VALUE_TYPE_INTEGER;
-  exit;
- end;
- if (Value='true') or (Value='false') then
- begin
-  Result:=VALUE_TYPE_BOOLEAN;
-  exit;
- end;
- if Length(Value)>1 then
- if (Value[1]=Value[Length(Value)]) and (Value[1]='"') then
- if PosExS('+',Value)=0 then
- begin
-  Result:=VALUE_TYPE_STRING;
- end;
- ;
- if StrToFloatDef(ConvertUniversalFloatToLocal(Value),-1)=StrToFloatDef(ConvertUniversalFloatToLocal(Value),1) then
- begin
-  Result:=VALUE_TYPE_FLOAT;
-  exit;
- end;
-
+  if StrToIntDef(Value, -1) = StrToIntDef(Value, 1) then
+  begin
+    Result := VALUE_TYPE_INTEGER;
+    Exit;
+  end;
+  if Length(Value) > 1 then
+    if (Value[1] = Value[Length(Value)]) and (Value[1] = '"') then
+      if PosExS('+', Value) = 0 then
+      begin
+        Result := VALUE_TYPE_STRING;
+        Exit;
+      end;
+  if StrToFloatDef(ConvertUniversalFloatToLocal(Value), -1) = StrToFloatDef(ConvertUniversalFloatToLocal(Value), 1) then
+  begin
+    Result := VALUE_TYPE_FLOAT;
+    Exit;
+  end;
 end;
 
 procedure SetNamedValueArrayStrings(const aScript : TScript; const ValueName: string; const AValue : TArrayOfString);
@@ -576,13 +570,22 @@ end;
 function PosExR(const SubStr: Char; const Str: string; const index: Integer = 1): Integer;
 var
   I: Integer;
+  P: PChar;
+  C: Char;
 begin
   Result := 0;
-  for I := index to Length(Str) do
+  if Str = '' then
+    Exit;
+
+  P := PChar(Integer(Addr(Str[1])));
+  Inc(P, Index - 2);
+  for I := Index to Length(Str) do
   begin
-    if not CharInSet(Str[I], ['0' .. '9', 'a' .. 'z', 'A' .. 'Z', '_', ' ', '$', '=']) then
+    Inc(P, 1);
+    C := P[0];
+    if not CharInSet(C, ['0' .. '9', 'a' .. 'z', 'A' .. 'Z', '_', ' ', '$', '=']) then
       Exit;
-    if Str[I] = SubStr then
+    if C = SubStr then
     begin
       Result := I;
       Break;
@@ -592,57 +595,102 @@ end;
 
 function PosNext(const SubStr : string; const Str : string; const index : integer = 1) : integer;
 var
-  i : integer;
-  s : string;
+  I, SubLen: Integer;
+  S: string;
+  P: PChar;
+  C: Char;
 begin
- Result:=0;
- for i:=index to Length(Str)-1 do
- begin
-  if Str[i]=';' then continue;
-  if (Str[i]=#32) and (Str[i+1]<>#32) then
+  Result := 0;
+  P := PChar(Integer(Addr(Str[1])));
+  Inc(P, Index - 2);
+  for I := Index to Length(Str) - 1 do
   begin
-   s:=Copy(Str,i+1,Length(SubStr));
-   if s=SubStr then Result:=i;
-  end else exit;
- end;
+    Inc(P, 1);
+    C := P[0];
+    if C = ';' then
+      Continue;
+    if (C = #32) and (P[1] <> #32) then
+    begin
+
+      S := Copy(Str, I + 1, Length(SubStr));
+      if S = SubStr then
+        Result := I;
+    end else
+      Exit;
+  end;
 end;
 
 function PosExK(const SubStr : string; const Str : string; index : integer = 1) : integer;
 var
-  i : integer;
-  n : boolean;
-  ls : integer;
-  TmpS : string;
+  I: Integer;
+  N: Boolean;
+  Ls: Integer;
+  TmpS: string;
+  C, FS : Char;
+  OneChar : Boolean;
+  PS : PChar;
+
 begin
- n:=false;
- Result:=0;
- ls:=Length(SubStr);
- if index<1 then index:=1;
- for i:=index to Length(Str) do
- begin
-   TmpS := Copy(Str,i,Ls);
-  if (TmpS=SubStr) and (not n) then
+  n := False;
+  Result := 0;
+  Ls := Length(SubStr);
+  OneChar := Ls = 1;
+  if Index < 1 then
+    Index := 1;
+  if OneChar then
+    FS := SubStr[1];
+
+  PS := PChar(Addr(Str[1]));
+  Inc(PS, Index - 2);
+
+  for I := Index to Length(Str) do
   begin
-   Result:=i;
-   exit;
+    Inc(PS, 1);
+
+    if OneChar then
+    begin
+      C := PS[0];
+      if (C = FS) and (not N) then
+      begin
+        Result := I;
+        Exit;
+      end;
+    end else
+    begin
+      TmpS := Copy(Str, I, Ls);
+      if (TmpS = SubStr) and (not N) then
+      begin
+        Result := I;
+        Exit;
+      end;
+      C := PS[0];
+    end;
+
+    if I = index then
+      Continue;
+
+    if (C = '"')  then
+    begin
+      N := not N;
+      Continue;
+    end;
+
+    if OneChar then
+    begin
+      if (C = FS) and (not N) then
+      begin
+        Result := I;
+        Exit;
+      end;
+    end else
+    begin
+      if (TmpS = SubStr) and (not N) then
+      begin
+        Result := I;
+        Exit;
+      end;
+    end;
   end;
-  if i=index then continue;
-  if (Str[i]='"') and not n then
-  begin
-   n:=true;
-   continue;
-  end;
-  if (Str[i]='"') and n then
-  begin
-   n:=false;
-   continue;
-  end;
-  if (TmpS=SubStr) and (not n) then
-  begin
-   Result:=i;
-   exit;
-  end;
- end;
 end;
 
 
@@ -653,74 +701,77 @@ end;
 
 function GetFunctionName(aFunction : string) : string;
 var
-  fb, fe, i, r, p : integer;
+  Fb, Fe, I, R, P: Integer;
 begin
- p:=0;
- r:=PosExR('=',aFunction,1);
- if r<>0 then
- Delete(aFunction,1,r);
- for i:=1 to Length(aFunction) do
- if aFunction[i]=' ' then p:=i else break;
- Delete(aFunction,1,p);
- fb:=1;
- fe:=0;
- if aFunction<>'' then
- if aFunction[1]<>'#' then
- fe:=PosExS('(',aFunction);
- if fe=0 then
- fe:=PosExS(';',aFunction,fe);
- if fe<>0 then Result:=Copy(aFunction,fb,fe-fb);
- for i:=Length(Result) downto 1 do
- if Result[i]=' ' then Delete(Result,i,1) else break;
+  P := 0;
+  R := PosExR('=', AFunction, 1);
+  if R <> 0 then
+    Delete(AFunction, 1, R);
+
+  AFunction := TrimLeft(AFunction);
+
+  Fb := 1;
+  Fe := 0;
+  if AFunction <> '' then
+    if AFunction[1] <> '#' then
+      Fe := PosExS('(', AFunction);
+  if Fe = 0 then
+    Fe := PosExS(';', AFunction, Fe);
+  if Fe <> 0 then
+    Result := Copy(AFunction, Fb, Fe - Fb);
+
+  Result := TrimRight(Result);
 end;
 
 function OneParam(const aFunction : string) : string;
 var
-  fb, fe : integer;
+  Fb, Fe: Integer;
 begin
- fb:=Pos('(',aFunction);
- fe:=PosExK(')',aFunction,fb);
- Result:=Copy(aFunction,fb+1,fe-fb-1);
+  Fb := Pos('(', AFunction);
+  Fe := PosExK(')', AFunction, Fb);
+  Result := Copy(AFunction, Fb + 1, Fe - Fb - 1);
 end;
 
 function FirstParam(const aFunction : string) : string;
 var
-  fb, fe, p : integer;
+  Fb, Fe, P: Integer;
 begin
- fb:=Pos('(',aFunction);
- fe:=PosExS(');',aFunction,fb);
- p:=PosExS(',',aFunction,fb);
- if p>fe then p:=fe;
- Result:=Copy(aFunction,fb+1,p-fb-1);
+  Fb := Pos('(', AFunction);
+  Fe := PosExS(');', AFunction, Fb);
+  P := PosExS(',', AFunction, Fb);
+  if P > Fe then
+    P := Fe;
+  Result := Copy(AFunction, Fb + 1, P - Fb - 1);
 end;
 
 function SecondParam(const aFunction : string) : string;
 var
-  fb, fe, p : integer;
+  Fb, Fe, P: Integer;
 begin
- fb:=Pos('(',aFunction);
- fe:=PosExS(');',aFunction,fb);
- p:=PosExS(',',aFunction,fb);
- Result:=Copy(aFunction,p+1,fe-p-1);
+  Fb := Pos('(', AFunction);
+  Fe := PosExS(');', AFunction, Fb);
+  P := PosExS(',', AFunction, Fb);
+  Result := Copy(AFunction, P + 1, Fe - P - 1);
 end;
 
 function ParamNO(const aFunction : string; const N : integer) : string;
 var
-  fb, {fe,} i, p, px, pold : integer;
+  Fb, I, P, Px, Pold: Integer;
 begin
- fb:=Pos('(',aFunction);
- //fe:=PosExK(')',aFunction,fb);
- p:=fb-1;
- pold:=p;
- for i:=1 to N do
- begin
-  pold:=p;
-  p:=PosEx(',',aFunction,p+1);
-  px:=PosEx(')',aFunction,p+1);
-  if (px<p) or (p=0) then p:=px;
- end;
- if N=1 then inc(pold);
- Result:=Copy(aFunction,pold+1,p-pold-1);
+  Fb := Pos('(', AFunction);
+  P := Fb - 1;
+  Pold := P;
+  for I := 1 to N do
+  begin
+    Pold := P;
+    P := PosEx(',', AFunction, P + 1);
+    Px := PosEx(')', AFunction, P + 1);
+    if (Px < P) or (P = 0) then
+      P := Px;
+  end;
+  if N = 1 then
+    Inc(Pold);
+  Result := Copy(AFunction, Pold + 1, P - Pold - 1);
 end;
 
 function RightEvalution(const aScript : TScript; Evalution : string) : boolean;
@@ -730,46 +781,66 @@ var
  _af, _bf : extended;
  _ab, _bb : boolean;
 
-  function LeftOperand(const S : string) : string;
+  function LeftOperand(const S: string): string;
   var
-    i : integer;
+    I, LS: Integer;
+    C: Char;
   begin
-   Result:='';
-   for i:=1 to Length(S) do
-   if (S[i]='=') or ((S[i]='!') and (S[i+1]='=') and (i<=Length(S))) or (S[i]='<') or (S[i]='>') then
-   begin
-    Result:=Copy(S,1,i-1);
-    exit;
-   end;
+    Result := '';
+    LS := Length(S);
+    for I := 1 to LS do
+    begin
+      C := S[I];
+      if (C = '=') or ((C = '!') and (S[I + 1] = '=') and (I <= LS)) or (C = '<') or (C = '>') then
+      begin
+        Result := Copy(S, 1, I - 1);
+        Exit;
+      end;
+    end;
   end;
 
   function RightOperand(const S : string) : string;
   var
-    i : integer;
+    I, LS: Integer;
+    C: Char;
   begin
-   Result:='';
-   for i:=1 to Length(S) do
-   if (S[i]='=') or ((S[i]='!') and (S[i+1]='=') and (i<=Length(S))) or (S[i]='<') or (S[i]='>') then
-   begin
-    if (S[i]='!') then Result:=Copy(S,i+2,Length(s)-i-2) else
-    Result:=Copy(S,i+1,Length(s)-i);
-    exit;
-   end;
+    Result := '';
+    LS := Length(S);
+    for I := 1 to LS do
+    begin
+      C := S[I];
+      if (C = '=') or ((C = '!') and (S[I + 1] = '=') and (I <= LS)) or (C = '<') or (C= '>') then
+      begin
+        if (C = '!') then
+          Result := Copy(S, I + 2, LS - I - 2)
+        else
+          Result := Copy(S, I + 1, LS - I);
+        Exit;
+      end;
+    end;
   end;
 
   function GetOperand(const S : string) : integer;
   var
-    i : integer;
+    I: Integer;
+    C: Char;
   begin
-   Result:=0;
-   for i:=1 to Length(S)-1 do
-   if (S[i]='=') or ((S[i]='!') and (S[i+1]='=')) or (S[i]='<') or (S[i]='>') then
-   begin
-    if (S[i]='=') then Result:=1
-    else if ((S[i]='!') and (S[i+1]='=')) then Result:=2
-    else if (S[i]='<') then Result:=3
-    else if (S[i]='>') then Result:=4;
-   end;
+    Result := 0;
+    for I := 1 to Length(S) - 1 do
+    begin
+      C := S[I];
+      if (C = '=') or ((C = '!') and (S[I + 1] = '=')) or (C = '<') or (C = '>') then
+      begin
+        if (C = '=') then
+          Result := 1
+        else if ((C = '!') and (S[I + 1] = '=')) then
+          Result := 2
+        else if (C = '<') then
+          Result := 3
+        else if (C = '>') then
+          Result := 4;
+      end;
+    end;
   end;
 
 begin
@@ -1822,15 +1893,61 @@ var
   NewItem, TempItem : TMenuItemW;
   aRun : boolean;
   VirtualItem : TMenuItemW;
+  C : Char;
+  LInitString, LRun: Integer;
+  PC : Integer;
+  PInit, PRun : PChar;
 
 const
   ItitStringCommand = 'initialization:';
   RunStringCommand = 'run:';
 
+  function IsInit(PCommand, L : Integer) : Boolean;
+  var
+    J, P : Integer;
+    C : Char;
+  begin
+
+    for J := 0 to LInitString div 2 - 1 do
+    begin
+      P := PCommand + J * 2;
+      if P > L then
+        Exit;
+      C := PChar(P)[0];
+      if ItitStringCommand[J + 1] <> C then
+      begin
+        Result := False;
+        Exit;
+      end;
+    end;
+    Result := True;
+  end;
+
+  function IsRun(PCommand, L : Integer) : Boolean;
+  var
+    J, P : Integer;
+    C : Char;
+  begin
+
+    for J := 0 to LRun div 2 - 1 do
+    begin
+      P := PCommand + J * 2;
+      if P > L then
+        Exit;
+      C := PChar(P)[0];
+      if RunStringCommand[J + 1] <> C then
+      begin
+        Result := False;
+        Exit;
+      end;
+    end;
+    Result := True;
+  end;
+
 begin
  NewItem:=nil;
  apos:=1;
- script := StringReplace(script, #10#13 , '', [rfReplaceAll]);
+ script := StringReplace(script, #13#10 , '', [rfReplaceAll]);
  MenuItem.Clear;
  if initialize then
  for i:=1 to ImagesCount do
@@ -1839,6 +1956,8 @@ begin
   ImageList.Delete(ImageList.Count-1);
   ImagesCount:=0;
  end;
+  LInitString := Length(ItitStringCommand) * SizeOf(Char);
+  LRun := Length(RunStringCommand) * SizeOf(Char);
  if script='' then exit;
  repeat
   tb:=PosExS('<',script,apos);
@@ -1851,33 +1970,8 @@ begin
   Icon:=Copy(script,ib+1,ie-ib-1);
   Command:=Copy(script,cb+1,ce-cb-1);
 
-  aRun:=true;
-  InitScript:='';
-  RunScript:='';
-  l:=Length(Command);
-  p:=1;
-  scc:=0;
-  if l>0 then
-  Repeat
-   if Command[p]='{' then inc(scc);
-   if Command[p]='}' then dec(scc);
-   if scc=0 then
-   if Copy(Command,p,Length(ItitStringCommand))=ItitStringCommand then
-   begin
-    aRun:=false;
-    inc(p,Length(ItitStringCommand));
-   end;
-   if scc=0 then
-   if Copy(Command,p,Length(RunStringCommand))=RunStringCommand then
-   begin
-    aRun:=true;
-    inc(p,Length(RunStringCommand));
-   end;
-   if aRun then RunScript:=RunScript+Command[p] else InitScript:=InitScript+Command[p];
-   inc(p);
-  until p>l;
 
-  if (tb<>0) and (te<>0) and (ib<>0) and (ie<>0) and (cb<>0) and (ce<>0)  then
+    if (tb<>0) and (te<>0) and (ib<>0) and (ie<>0) and (cb<>0) and (ce<>0)  then
   begin
    if (Length(Trim(Text))>0) then
    begin
@@ -1894,6 +1988,61 @@ begin
      ExecuteScriptFile(TempItem,aScript,'',ImagesCount,ImageList,OnClick,Command);
     end else
     begin
+
+      aRun:=true;
+      SetLength(InitScript, Length(Command));
+      FillChar(InitScript[1], Length(Command) * 2, 0);
+      PInit := PChar(Addr(InitScript[1]));
+      SetLength(RunScript, Length(Command));
+      FillChar(RunScript[1], Length(Command) * 2, 0);
+      PRun := PChar(Addr(RunScript[1]));
+
+      scc := 0;
+      P := Integer(Addr(Command[1]));
+      L := Integer(Addr(Command[Length(Command)]));
+      if Length(Command) > 0 then
+      begin
+        repeat
+          C := PChar(P)[0];
+          if C = '{' then
+            Inc(Scc)
+          else if C = '}' then
+            Dec(Scc);
+
+          if Scc = 0 then
+          begin
+
+            if IsInit(P, L) then
+            begin
+              ARun := False;
+              Inc(P, LInitString);
+              C := PChar(P)[0];
+            end else if IsRun(P, L) then
+            begin
+              ARun := True;
+              Inc(P, LRun);
+              C := PChar(P)[0];
+            end;
+
+          end;
+          if ARun then
+          begin
+            PRun[0] := C;
+            Inc(PRun, 1);
+          end else
+          begin
+            PInit[0] := C;
+            Inc(PInit, 1);
+          end;
+
+          Inc(P, 2);
+        until P > L;
+      end;
+
+      InitScript := Trim(InitScript);
+      RunScript := Trim(RunScript);
+
+
      SetNamedValue(aScript,'$Tag','0');
      SetNamedValue(aScript,'$Visible','true');
      SetNamedValue(aScript,'$Default','false');
@@ -1943,7 +2092,7 @@ var
   s, ResS : string;
 
 begin
- Case GetValueType(aScript,Expression) of
+ Case GetValueType(aScript, Expression) of
    VALUE_TYPE_STRING : Result:='String('+Expression+');';
    VALUE_TYPE_INTEGER : Result:='Integer('+Expression+');';
    VALUE_TYPE_BOOLEAN : Result:='Boolean('+Expression+');';
@@ -2176,7 +2325,7 @@ begin
   Result:=FS.Text;
   FS.Free;
 
-  Result := StringReplace(Result, #10#13 , '', [rfReplaceAll]);
+  Result := StringReplace(Result, #13#10 , '', [rfReplaceAll]);
   if InitScriptFunction<>nil then
   begin
    @F:=InitScriptFunction;
@@ -2253,7 +2402,7 @@ begin
     FS.Free;
   end;
 
-  Result := StringReplace(Result, #10#13 , '', [rfReplaceAll]);
+  Result := StringReplace(Result, #13#10 , '', [rfReplaceAll]);
   if InitScriptFunction<>nil then
   begin
    @F:=InitScriptFunction;
@@ -2270,14 +2419,15 @@ end;
 
 function ArrayStringLength(aArray : TArrayOfString) : integer;
 begin
- Result:=Length(aArray);
+  Result := Length(AArray);
 end;
 
 function GetStringItem(aArray : TArrayOfString; int : integer) : string;
 begin
- if int<=Length(aArray)-1 then
- Result:=aArray[int] else
- Result:='';
+  if Int <= Length(AArray) - 1 then
+    Result := AArray[Int]
+  else
+    Result := '';
 end;
 
 function ArrayIntLength(aArray : TArrayOfInt) : integer;
@@ -2287,9 +2437,10 @@ end;
 
 function GetIntItem(aArray : TArrayOfInt; int : integer) : integer;
 begin
- if int<=Length(aArray)-1 then
- Result:=aArray[int] else
- Result:=0;
+  if Int <= Length(AArray) - 1 then
+    Result := AArray[Int]
+  else
+    Result := 0;
 end;
 
 procedure SetIntItem(aArray : TArrayOfInt; index, value : integer);

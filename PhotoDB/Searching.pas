@@ -468,6 +468,7 @@ type
     procedure DBRangeOpened(Sender : TObject; DS : TDataSet);
     procedure ClearItems;
     function GetListView : TEasyListview; override;
+    function GetFormID : string; override;
   public
     WindowID : TGUID;
     procedure LoadGroupsList(LoadAllLIst : boolean = false);
@@ -556,13 +557,13 @@ begin
 
   LsSearchResults.Color := ElvMain.Color;
 
- DateRange := GetDateFilter;
+  DateRange := GetDateFilter;
 
- WlStartStop.OnClick:= BreakOperation;
- WlStartStop.Text:=TEXT_MES_STOP;
- PbProgress.Text:=TEXT_MES_STOPING+'...';
- Label7.Caption:=TEXT_MES_CALCULATING+'...';
- If Creating then Exit;
+  WlStartStop.OnClick:= BreakOperation;
+  WlStartStop.Text:=TEXT_MES_STOP;
+  PbProgress.Text:=TEXT_MES_STOPING+'...';
+  Label7.Caption:=TEXT_MES_CALCULATING+'...';
+  If Creating then Exit;
 
   ClearItems;
   FBitmapImageList.Clear;
@@ -916,20 +917,20 @@ begin
     end;
   end;
 
- if Active then
-   Application.HideHint;
- THintManager.Instance.CloseHint;
- HintTimer.Enabled:=false;
+  if Active then
+    Application.HideHint;
+  THintManager.Instance.CloseHint;
+  HintTimer.Enabled := False;
 
- if ElvMain.Selection.First<>nil then
- begin
-  MenuInfo:=GetCurrentPopUpMenuInfo(ListViewSelected);
-  If Viewer=nil then
-  Application.CreateForm(TViewer,Viewer);
-  DBPopupMenuInfoToRecordsInfo(MenuInfo,info);
-  Viewer.Execute(Sender,info);
-  Viewer.Show;
- end;
+  if ElvMain.Selection.First <> nil then
+  begin
+    MenuInfo := GetCurrentPopUpMenuInfo(ListViewSelected);
+    if Viewer = nil then
+      Application.CreateForm(TViewer, Viewer);
+    DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
+    Viewer.Execute(Sender, Info);
+    Viewer.Show;
+  end;
 end;
 
 procedure TSearchForm.ListViewSelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
@@ -2516,72 +2517,77 @@ end;
 
 procedure TSearchForm.LoadLanguage;
 begin
-  SearchEdit.NullText := TEXT_MES_NULL_TEXT;
-  LabelBackGroundSearching.Caption := TEXT_MES_SERCH_PR;
-  Label1.Caption := TEXT_MES_SEARCH_TEXT;
-  Label2.Caption := TEXT_MES_IDENT;
-  Label7.Caption := TEXT_MES_RESULT;
-  Label8.Caption := TEXT_MES_RATING;
+  BeginTranslate;
+  try
+    SearchEdit.NullText := TEXT_MES_NULL_TEXT;
+    LabelBackGroundSearching.Caption := TEXT_MES_SERCH_PR;
+    Label1.Caption := TEXT_MES_SEARCH_TEXT;
+    Label2.Caption := TEXT_MES_IDENT;
+    Label7.Caption := TEXT_MES_RESULT;
+    Label8.Caption := TEXT_MES_RATING;
 
-  Label4.Caption := TEXT_MES_SIZE;
-  Label6.Caption := TEXT_MES_COMMENTS;
-  Label5.Caption := TEXT_MES_KEYWORDS;
-  Save.Caption := TEXT_MES_SAVE;
-  DoSearchNow1.Caption := TEXT_MES_DO_SEARCH_NOW;
-  Panels1.Caption := TEXT_MES_PANELS;
-  Properties1.Caption := TEXT_MES_PROPERTIES;
-  Explorer2.Caption := TEXT_MES_EXPLORER;
-  EditGroups1.Caption := TEXT_MES_EDIT_GROUPS;
-  GroupsManager1.Caption := TEXT_MES_GROUPS_MANAGER;
-  Ratingnotsets1.Caption := TEXT_MES_RATING_NOT_SETS;
-  SetComent1.Caption := TEXT_MES_SET_COM;
-  Comentnotsets1.Caption := TEXT_MES_SET_COM_NOT;
-  MenuItem2.Caption := TEXT_MES_SELECT_ALL;
-  Cut1.Caption := TEXT_MES_CUT;
-  Copy2.Caption := TEXT_MES_COPY;
-  Paste1.Caption := TEXT_MES_PASTE;
-  Undo1.Caption := TEXT_MES_UNDO;
-  OpeninExplorer1.Caption := TEXT_MES_OPEN_IN_EXPLORER;
-  AddFolder1.Caption := TEXT_MES_ADD_FOLDER;
-  SortbyID1.Caption := TEXT_MES_SORT_BY_ID;
-  SortbyName1.Caption := TEXT_MES_SORT_BY_NAME;
-  SortbyDate1.Caption := TEXT_MES_SORT_BY_DATE;
-  SortbyRating1.Caption := TEXT_MES_SORT_BY_RATING;
-  SortbyFileSize1.Caption := TEXT_MES_SORT_BY_FILESIZE;
-  SortbySize1.Caption := TEXT_MES_SORT_BY_SIZE;
+    Label4.Caption := TEXT_MES_SIZE;
+    Label6.Caption := TEXT_MES_COMMENTS;
+    Label5.Caption := TEXT_MES_KEYWORDS;
+    Save.Caption := TEXT_MES_SAVE;
+    DoSearchNow1.Caption := TEXT_MES_DO_SEARCH_NOW;
+    Panels1.Caption := TEXT_MES_PANELS;
+    Properties1.Caption := TEXT_MES_PROPERTIES;
+    Explorer2.Caption := TEXT_MES_EXPLORER;
+    EditGroups1.Caption := TEXT_MES_EDIT_GROUPS;
+    GroupsManager1.Caption := TEXT_MES_GROUPS_MANAGER;
+    Ratingnotsets1.Caption := TEXT_MES_RATING_NOT_SETS;
+    SetComent1.Caption := TEXT_MES_SET_COM;
+    Comentnotsets1.Caption := TEXT_MES_SET_COM_NOT;
+    MenuItem2.Caption := TEXT_MES_SELECT_ALL;
+    Cut1.Caption := TEXT_MES_CUT;
+    Copy2.Caption := TEXT_MES_COPY;
+    Paste1.Caption := TEXT_MES_PASTE;
+    Undo1.Caption := TEXT_MES_UNDO;
+    OpeninExplorer1.Caption := TEXT_MES_OPEN_IN_EXPLORER;
+    AddFolder1.Caption := TEXT_MES_ADD_FOLDER;
+    SortbyID1.Caption := TEXT_MES_SORT_BY_ID;
+    SortbyName1.Caption := TEXT_MES_SORT_BY_NAME;
+    SortbyDate1.Caption := TEXT_MES_SORT_BY_DATE;
+    SortbyRating1.Caption := TEXT_MES_SORT_BY_RATING;
+    SortbyFileSize1.Caption := TEXT_MES_SORT_BY_FILESIZE;
+    SortbySize1.Caption := TEXT_MES_SORT_BY_SIZE;
 
-  SortbyCompare1.Caption := TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
+    SortbyCompare1.Caption := TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
 
-  Increment1.Caption := TEXT_MES_SORT_INCREMENT;
-  Decremect1.Caption := TEXT_MES_SORT_DECREMENT;
+    Increment1.Caption := TEXT_MES_SORT_INCREMENT;
+    Decremect1.Caption := TEXT_MES_SORT_DECREMENT;
 
-  Datenotexists1.Caption := TEXT_MES_NO_DATE_1;
-  DateExists1.Caption := TEXT_MES_DATE_EX;
-  Datenotsets1.Caption := TEXT_MES_DATE_NOT_SETS;
-  PanelValueIsDateSets.Caption := TEXT_MES_VAR_VALUES;
-  IsDatePanel.Caption := TEXT_MES_NO_DATE_1;
-  Setvalue1.Caption := TEXT_MES_SET_VALUE;
-  Setvalue2.Caption := TEXT_MES_SET_VALUE;
-  IsTimePanel.Caption := TEXT_MES_TIME_NOT_EXISTS;
-  PanelValueIsTimeSets.Caption := TEXT_MES_VAR_VALUES;
+    Datenotexists1.Caption := TEXT_MES_NO_DATE_1;
+    DateExists1.Caption := TEXT_MES_DATE_EX;
+    Datenotsets1.Caption := TEXT_MES_DATE_NOT_SETS;
+    PanelValueIsDateSets.Caption := TEXT_MES_VAR_VALUES;
+    IsDatePanel.Caption := TEXT_MES_NO_DATE_1;
+    Setvalue1.Caption := TEXT_MES_SET_VALUE;
+    Setvalue2.Caption := TEXT_MES_SET_VALUE;
+    IsTimePanel.Caption := TEXT_MES_TIME_NOT_EXISTS;
+    PanelValueIsTimeSets.Caption := TEXT_MES_VAR_VALUES;
 
-  Timenotsets1.Caption := TEXT_MES_TIME_NOT_SETS;
-  TimeExists1.Caption := TEXT_MES_TIME_EXISTS;
-  TimenotExists1.Caption := TEXT_MES_TIME_NOT_EXISTS;
+    Timenotsets1.Caption := TEXT_MES_TIME_NOT_SETS;
+    TimeExists1.Caption := TEXT_MES_TIME_EXISTS;
+    TimenotExists1.Caption := TEXT_MES_TIME_NOT_EXISTS;
 
-  View2.Caption := TEXT_MES_SLIDE_SHOW;
-  ShowDateOptionsLink.Text := TEXT_MES_SHOW_DATE_OPTIONS;
+    View2.Caption := TEXT_MES_SLIDE_SHOW;
+    ShowDateOptionsLink.Text := TEXT_MES_SHOW_DATE_OPTIONS;
 
-  TbSearch.Caption := TEXT_MES_SEARCH;
-  ToolButton9.Caption := TEXT_MES_SORTING;
-  ToolButton1.Caption := TEXT_MES_ZOOM_IN;
-  ToolButton2.Caption := TEXT_MES_ZOOM_OUT;
-  ToolButton10.Caption := TEXT_MES_GROUPS;
+    TbSearch.Caption := TEXT_MES_SEARCH;
+    ToolButton9.Caption := TEXT_MES_SORTING;
+    ToolButton1.Caption := TEXT_MES_ZOOM_IN;
+    ToolButton2.Caption := TEXT_MES_ZOOM_OUT;
+    ToolButton10.Caption := TEXT_MES_GROUPS;
 
-  ToolButton4.Caption := TEXT_MES_SAVE;
-  ToolButton5.Caption := TEXT_MES_OPEN;
-  ToolButton12.Caption := TEXT_MES_EXPLORER;
-  SearchEdit.StartText := TEXT_MES_ENTER_QUERY_HERE;
+    ToolButton4.Caption := TEXT_MES_SAVE;
+    ToolButton5.Caption := TEXT_MES_OPEN;
+    ToolButton12.Caption := TEXT_MES_EXPLORER;
+    SearchEdit.StartText := TEXT_MES_ENTER_QUERY_HERE;
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
@@ -3395,85 +3401,89 @@ end;
 
 procedure TSearchForm.RemovableDrives1Click(Sender: TObject);
 var
-  i : integer;
-  NewItem : TMenuItem;
-  DS :  TDriveState;
-  S : String;
-  Item : TMenuItem;
+  I: Integer;
+  NewItem: TMenuItem;
+  DS: TDriveState;
+  S: string;
+  Item: TMenuItem;
 begin
- Item:=Sender as TMenuItem;
- for i:=1 to Item.Count-1 do
- Item.Delete(1);
- for i:=ord('C') to ord('Z') do
- If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_REMOVABLE) then
- begin
-  NewItem := TMenuItem.Create(Item);
-  DS:=DriveState(AnsiChar(Chr(i)));
-  If (DS=DS_DISK_WITH_FILES) or (DS=DS_EMPTY_DISK) then
+  Item := Sender as TMenuItem;
+  for I := 1 to Item.Count - 1 do
+    Item.Delete(1);
+  for I := Ord('C') to Ord('Z') do
+    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_REMOVABLE) then
+    begin
+      NewItem := TMenuItem.Create(Item);
+      DS := DriveState(AnsiChar(Chr(I)));
+      if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
+      begin
+        S := GetCDVolumeLabel(Chr(I));
+        if S <> '' then
+          NewItem.Caption := S + ' (' + Chr(I) + ':)'
+        else
+          NewItem.Caption := TEXT_MES_REMOVEBLE_DRIVE + ' (' + Chr(I) + ':)';
+      end
+      else
+        NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
+      NewItem.ImageIndex := DB_IC_USB;
+      NewItem.OnClick := GetPhotosClick;
+      NewItem.Tag := I;
+      Item.Add(NewItem);
+    end;
+  if Item.Count = 1 then
   begin
-   S:=GetCDVolumeLabel(Chr(i));
-   if S<>'' then
-   NewItem.Caption:=S+' ('+Chr(i)+':)' else
-   NewItem.Caption:=TEXT_MES_REMOVEBLE_DRIVE+' ('+Chr(i)+':)';
-  end else
-  NewItem.Caption:=MrsGetFileType(Chr(i)+':\')+' ('+Chr(i)+':)';
-  NewItem.ImageIndex:=DB_IC_USB;
-  NewItem.OnClick:=GetPhotosClick;
-  NewItem.Tag:=i;
-  Item.Add(NewItem);
- end;
- if Item.Count=1 then
- begin
-  NewItem := TMenuItem.Create(Item);
-  NewItem.Caption:=TEXT_MES_NO_USB_DRIVES;
-  NewItem.ImageIndex:=DB_IC_DELETE_INFO;
-  NewItem.Tag:=-1;
-  NewItem.Enabled:=false;
-  Item.add(NewItem);
- end;
+    NewItem := TMenuItem.Create(Item);
+    NewItem.Caption := TEXT_MES_NO_USB_DRIVES;
+    NewItem.ImageIndex := DB_IC_DELETE_INFO;
+    NewItem.Tag := -1;
+    NewItem.Enabled := False;
+    Item.Add(NewItem);
+  end;
 end;
 
 procedure TSearchForm.CDROMDrives1Click(Sender: TObject);
 var
-  i : integer;
-  NewItem : TMenuItem;
-  DS :  TDriveState;
-  S : String;
-  Item : TMenuItem;
-  C : integer;
+  I: Integer;
+  NewItem: TMenuItem;
+  DS: TDriveState;
+  S: string;
+  Item: TMenuItem;
+  C: Integer;
 begin
- Item:=Sender as TMenuItem;
- for i:=1 to Item.Count-1 do
- Item.Delete(1);
- C:=-1;
- for i:=ord('C') to ord('Z') do
- If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_CDROM) then
- begin
-  NewItem := TMenuItem.Create(Item);
-  DS:=DriveState(AnsiChar(Chr(i)));
-  inc(C);
-  If (DS=DS_DISK_WITH_FILES) or (DS=DS_EMPTY_DISK) then
+  Item := Sender as TMenuItem;
+  for I := 1 to Item.Count - 1 do
+    Item.Delete(1);
+  C := -1;
+  for I := Ord('C') to Ord('Z') do
+    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
+    begin
+      NewItem := TMenuItem.Create(Item);
+      DS := DriveState(AnsiChar(Chr(I)));
+      Inc(C);
+      if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
+      begin
+        S := GetCDVolumeLabel(Chr(I));
+        if S <> '' then
+          NewItem.Caption := S + ' (' + Chr(I) + ':)'
+        else
+          NewItem.Caption := TEXT_MES_CD_ROM_DRIVE + ' (' + Chr(I) + ':)';
+      end
+      else
+        NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
+      NewItem.ImageIndex := IconsCount + C;
+      NewItem.OnClick := GetPhotosClick;
+      NewItem.Tag := I;
+      Item.Add(NewItem);
+    end;
+  if Item.Count = 1 then
   begin
-   S:=GetCDVolumeLabel(Chr(i));
-   if S<>'' then
-   NewItem.Caption:=S+' ('+Chr(i)+':)' else
-   NewItem.Caption:=TEXT_MES_CD_ROM_DRIVE+' ('+Chr(i)+':)';
-  end else
-  NewItem.Caption:=MrsGetFileType(Chr(i)+':\')+' ('+Chr(i)+':)';
-  NewItem.ImageIndex:=IconsCount+C;//DB_IC_CD_ROM;
-  NewItem.OnClick:=GetPhotosClick;
-  NewItem.Tag:=i;
-  Item.Add(NewItem);
- end;
- if Item.Count=1 then
- begin
-  NewItem := TMenuItem.Create(Item);
-  NewItem.Caption:=TEXT_MES_NO_CD_ROM_DRIVES;
-  NewItem.ImageIndex:=DB_IC_DELETE_INFO;
-  NewItem.Tag:=-1;
-  NewItem.Enabled:=false;
-  Item.Add(NewItem);
- end;
+    NewItem := TMenuItem.Create(Item);
+    NewItem.Caption := TEXT_MES_NO_CD_ROM_DRIVES;
+    NewItem.ImageIndex := DB_IC_DELETE_INFO;
+    NewItem.Tag := -1;
+    NewItem.Enabled := False;
+    Item.Add(NewItem);
+  end;
 end;
 
 procedure TSearchForm.SpecialLocation1Click(Sender: TObject);
@@ -3490,24 +3500,24 @@ end;
 
 procedure TSearchForm.GetPhotosFromDrive2Click(Sender: TObject);
 var
-  i : integer;
-  Icon : TIcon;
-  oldMode: Cardinal;
+  I: Integer;
+  Icon: TIcon;
+  OldMode: Cardinal;
 begin
- oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- for i:=1 to FExtImagesInImageList do
- DBKernel.ImageList.Delete(IconsCount);
- FExtImagesInImageList:=0;
- for i:=ord('C') to ord('Z') do
- If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_CDROM) then
- begin
-  Icon:=TIcon.Create;
-  Icon.Handle:=ExtractAssociatedIcon_(Chr(i)+':\');
-  DBKernel.ImageList.AddIcon(icon);
-  Icon.Free;
-  inc(FExtImagesInImageList);
- end;
- SetErrorMode(oldMode);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  for I := 1 to FExtImagesInImageList do
+    DBKernel.ImageList.Delete(IconsCount);
+  FExtImagesInImageList := 0;
+  for I := Ord('C') to Ord('Z') do
+    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
+    begin
+      Icon := TIcon.Create;
+      Icon.Handle := ExtractAssociatedIcon_(Chr(I) + ':\');
+      DBKernel.ImageList.AddIcon(Icon);
+      Icon.Free;
+      Inc(FExtImagesInImageList);
+    end;
+  SetErrorMode(OldMode);
 end;
 
 procedure TSearchForm.IsTimePanelDblClick(Sender: TObject);
@@ -3638,11 +3648,11 @@ end;
 procedure TSearchForm.EasyListviewKeyAction(Sender: TCustomEasyListview;
   var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 var
-  aChar : Char;
+  AChar: Char;
 begin
-  aChar := Char(CharCode);
-  ListViewKeyPress(Sender, aChar);
-  if CharCode=VK_F2 then
+  AChar := Char(CharCode);
+  ListViewKeyPress(Sender, AChar);
+  if CharCode = VK_F2 then
     ListViewKeyDown(Sender, CharCode, []);
 end;
 
@@ -3664,15 +3674,15 @@ procedure TSearchForm.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
-  Dolphin_DB.SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
+  SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
   EventInfo.Rating:=(Sender as TMenuItem).Tag;
   DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
 end;
 
 procedure TSearchForm.ListViewResize(Sender : TObject);
 begin
-  ElvMain.BackGround.OffsetX := ElvMain.Width-ElvMain.BackGround.Image.Width;
-  ElvMain.BackGround.OffsetY := ElvMain.Height-ElvMain.BackGround.Image.Height;
+  ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
+  ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
   LoadSizes;
 end;
 
@@ -3710,7 +3720,7 @@ begin
   end;
 end;
 
-procedure TSearchForm.LoadSizes();
+procedure TSearchForm.LoadSizes;
 begin
   SetLVThumbnailSize(ElvMain, FPictureSize);
 end;
@@ -3913,7 +3923,7 @@ end;
 
 procedure TSearchForm.ComboBoxSearchGroupsSelect(Sender: TObject);
 begin
-  if WlStartStop.Text<>TEXT_MES_STOP then
+  if WlStartStop.Text <> TEXT_MES_STOP then
     DoSearchNow(nil);
 end;
 
@@ -4859,6 +4869,11 @@ begin
     Result.DateFrom := EncodeDateTime(1990, 1, 1, 0, 0, 0, 0);
     Result.DateTo := Trunc(Now);
   end;
+end;
+
+function TSearchForm.GetFormID: string;
+begin
+  Result := 'Search';
 end;
 
 procedure TSearchForm.AddItemInListViewByGroups(DataRecord : TDBPopupMenuInfoRecord; ReplaceBitmap : Boolean);

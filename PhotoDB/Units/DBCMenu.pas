@@ -141,7 +141,7 @@ begin
  begin
   isrecord:=false;
   for i:=0 to finfo.Count-1 do
-  if finfo[0].ID<>0 then isrecord:=true;
+  if finfo[i].ID<>0 then isrecord:=true;
  end;
  NoDBInfoNeeded:=false;
 

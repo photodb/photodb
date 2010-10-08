@@ -4,7 +4,8 @@ interface
 
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
      Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
-     UnitDBFileDialogs, Forms, Language, uVistaFuncs, uLogger;
+     UnitDBFileDialogs, Forms, Language, uVistaFuncs, uLogger,
+     uFileUtils;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;
@@ -15,7 +16,7 @@ function aExtractFileName(FileName : string) : string;
 function aPos(sub, str : string) : integer;
 function aStrCopy(s : string; aBegin, aLength : integer) : string;
 function aStrToInt(s : string) : integer;
-function GetDirListing(Dir : String; Mask : string) : TArrayOfString;  
+function GetDirListing(Dir : String; Mask : string) : TArrayOfString;
 function SpilitWords(S : string) : TArrayOfString;
 function SpilitWordsW(S : string; SplitChar : char) : TArrayOfString;
 function aIntToStr(int : integer) : string;
@@ -26,7 +27,7 @@ procedure Checked(var aScript : TScript);
 function aDirectoryExists(FileName : string) : boolean;
 function aDirectoryFileExists(FileName : string) : boolean;
 function aPathFormat(aPath, aFile : string) : string;
-procedure Copy_Move(FCM:Boolean;File_List : TStrings);
+//procedure Copy_Move(FCM:Boolean;File_List : TStrings);
 procedure CopyFile(aFile : string);
 procedure CutFile(aFile : string);
 procedure CopyFiles(Files : TArrayOfString);
@@ -59,11 +60,10 @@ function DriveState(driveletter: AnsiChar): TSDriveState;
 Function GetCDVolumeLabel(CDName : AnsiChar) : String;
 function GetDriveName(Drive : AnsiString; DefString : string) : string;
 function GetMyPicturesFolder : string;
-function GetMyDocumentsFolder : string;    
+function GetMyDocumentsFolder : string;
 function GetProgramFolder : string;
 //function AnsiDequotedStr(Value : string) : string;
 function AnsiQuotedStr(const S: string): string;
-function ScriptString(s : String) : String;
 function GetSaveImageFileName(InitFile, Filter : string) : string;
 function GetOpenImageFileName(InitFile, Filter : string) : string;
 procedure CopyFileSynch(S,D : string);
@@ -75,39 +75,13 @@ implementation
 
 function FileHasExt(aFile, aExt : string) : boolean;
 begin
- aFile:=Dolphin_DB.GetExt(aFile);
- Result:=Dolphin_DB.ExtinMask(aExt,aFile);
+  AFile := Dolphin_DB.GetExt(AFile);
+  Result := Dolphin_DB.ExtinMask(AExt, AFile);
 end;
 
 function GetProgramFolder : string;
 begin
  Result:=GetDirectory(Application.ExeName);
-end;
-
-function ScriptString(s : String) : String;
-var
-  i, p : integer;
-  TS : TStrings;
-  temp : string;
-begin
- TS:=TStringList.Create;
- TS.Text:=s;
- for i:=0 to TS.Count-1 do
- begin
-  temp:=TS[i];
-  p:=Pos('//',temp);
-  if p>0 then
-  begin
-   TS[i]:=Copy(temp,1,p-1);
-  end;
- end;
- Result:=TS.Text;
- TS.Free;
- for i:=Length(Result) downto 1 do
- begin
-  if Result[i]=#10 then Result[i]:=' ';
-  if Result[i]=#13 then Result[i]:=' ';
- end;
 end;
 
 function AnsiQuotedStr(const S: string): string;
@@ -147,25 +121,6 @@ begin
   Move(Src^, Dest^, P - Src);
   Inc(Dest, P - Src);
   Dest^ := Quote;
-end;
-
-function AnsiDequotedStr(Value : string) : string;
-var
-  i : integer;
-begin
- Result:=Value;
- if Length(Result)>1 then
- begin
-  if (Result[1]='"') and (Result[Length(Result)]='"') then
-  begin
-   Result:=Copy(Result,2,Length(Result)-2);
-   for i:=1 to Length(Result)-1 do
-   begin
-    if i>Length(Result)-1 then exit;
-    if (Result[i]='"') and (Result[i+1]='"') then Delete(Result,i,1);
-   end;
-  end;
- end;
 end;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
@@ -306,7 +261,7 @@ end;
 function GetDirListing(Dir : String; Mask : string) : TArrayOfString;
 var
   Found  : integer;
-  SearchRec : TSearchRec; 
+  SearchRec : TSearchRec;
   oldMode: Cardinal;
 
   function ExtInMask(mask : string; ext : string) : boolean;
@@ -322,7 +277,7 @@ var
    Result:=AnsiUpperCase(Copy(s,1,Length(s)-1));
   end;
 
-begin       
+begin
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
   SetLength(Result,0);
   if dir = '' then exit;
@@ -338,7 +293,7 @@ begin
    end;
    Found := sysutils.FindNext(SearchRec);
   end;
-  FindClose(SearchRec); 
+  FindClose(SearchRec);
   SetErrorMode(oldMode);
 end;
 
@@ -411,9 +366,9 @@ end;
 function aDirectoryFileExists(FileName : string) : boolean;
 var
   oldMode: Cardinal;
-begin                
+begin
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  Result:=DirectoryExists(ExtractFileDir(FileName));    
+  Result:=DirectoryExists(ExtractFileDir(FileName));
   SetErrorMode(oldMode);
 end;
 
@@ -422,7 +377,7 @@ begin
  Result:=StringReplace(aPath,'%1',aFile,[rfReplaceAll,rfIgnoreCase]);
 end;
 
-procedure Copy_Move(FCM:Boolean;File_List : TStrings);
+{procedure Copy_Move(FCM:Boolean;File_List : TStrings);
 var hGlobal,shGlobal:THandle;
    DropFiles:PDropFiles;
    REff:Cardinal;
@@ -476,7 +431,7 @@ finally
  CloseClipboard();
 end;
 end;
-
+       }
 procedure CopyFileSynch(S,D : string);
 begin
  try
@@ -487,36 +442,45 @@ end;
 
 procedure CopyFile(aFile : string);
 var
-  aFiles : TStrings;
+  AFiles: TStrings;
 begin
- aFiles:=TStringList.Create;
- aFiles.Add(aFile);
- Copy_Move(true,aFiles);
- aFiles.Free;
+  AFiles := TStringList.Create;
+  try
+    AFiles.Add(AFile);
+    Copy_Move(True, AFiles);
+  finally
+    AFiles.Free;
+  end;
 end;
 
 procedure CutFile(aFile : string);
 var
-  aFiles : TStrings;
+  AFiles: TStrings;
 begin
- aFiles:=TStringList.Create;
- aFiles.Add(aFile);
- Copy_Move(false,aFiles);
- aFiles.Free;
+  AFiles := TStringList.Create;
+  try
+    AFiles.Add(AFile);
+    Copy_Move(False, AFiles);
+  finally
+    AFiles.Free;
+  end;
 end;
 
 procedure CopyFiles(Files : TArrayOfString);
 var
-  i : integer;
-  aFiles : TStrings;
+  I: Integer;
+  AFiles: TStrings;
 begin
- aFiles:=TStringList.Create;
- for i:=0 to Length(Files)-1 do
- begin
-  aFiles.Add(Files[i])
- end;
- Copy_Move(true,aFiles);
- aFiles.Free;
+  AFiles := TStringList.Create;
+  try
+    for I := 0 to Length(Files) - 1 do
+    begin
+      AFiles.Add(Files[I])
+    end;
+    Copy_Move(True, AFiles);
+  finally
+    AFiles.Free;
+  end;
 end;
 
 procedure CutFiles(Files : TArrayOfString);
@@ -630,11 +594,11 @@ var
   StartInfo: TStartupInfo;
   ProcInfo: TProcessInformation;
   CmdLine: ShortString;
-begin  
+begin
   { Помещаем имя файла между кавычками, с соблюдением всех пробелов в именах Win9x }
   CmdLine := '"' + Filename + '" ' + Params;
   FillChar(StartInfo, SizeOf(StartInfo), #0);
-  with StartInfo do  
+  with StartInfo do
   begin
     cb := SizeOf(TStartupInfo);
     dwFlags := STARTF_USESHOWWINDOW;
@@ -646,9 +610,9 @@ begin
   { Ожидаем завершения приложения }
   begin
     WaitForSingleObject(ProcInfo.hProcess, INFINITE);
-    { Free the Handles }  
+    { Free the Handles }
     CloseHandle(ProcInfo.hProcess);
-    CloseHandle(ProcInfo.hThread);  
+    CloseHandle(ProcInfo.hThread);
   end;
 end;
 
@@ -692,7 +656,7 @@ end;
 procedure aRenameFile(S,D : String);
 var
   oldMode: Cardinal;
-begin       
+begin
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
   RenameFile(PChar(S),PChar(D));
   SetErrorMode(oldMode);
@@ -892,18 +856,18 @@ var
   VolumeName,
   FileSystemName : array [0..MAX_PATH-1] of Char;
   VolumeSerialNo : DWord;
-  MaxComponentLength,FileSystemFlags: Cardinal;    
+  MaxComponentLength,FileSystemFlags: Cardinal;
   oldMode: Cardinal;
 begin
   GetVolumeInformation(Pchar(CDName+':\'),VolumeName,MAX_PATH,@VolumeSerialNo,
-  MaxComponentLength,FileSystemFlags, FileSystemName,MAX_PATH);    
+  MaxComponentLength,FileSystemFlags, FileSystemName,MAX_PATH);
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
   SetErrorMode(oldMode);
   Result:=VolumeName;
 end;
 
 function MrsGetFileType(strFilename: string): string;
-var 
+var
   FileInfo: TSHFileInfo;
   oldMode: Cardinal;
 begin
@@ -917,10 +881,10 @@ end;
 function GetDriveName(Drive : AnsiString; DefString : string) : string;
 var
   DS :  TSDriveState;
-  S : string;      
+  S : string;
   oldMode: Cardinal;
 begin
- Result:=Drive;      
+ Result:=Drive;
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
  if Length(Drive)<2 then exit;
  DS:=DriveState(Drive[1]);
@@ -931,7 +895,7 @@ begin
   Result:=S+' ('+Drive[1]+':)' else
   Result:=DefString+' ('+Drive[1]+':)';
  end else
- Result:=MrsGetFileType(Drive[1]+':\')+' ('+Drive[1]+':)';    
+ Result:=MrsGetFileType(Drive[1]+':\')+' ('+Drive[1]+':)';
   SetErrorMode(oldMode);
 end;
 

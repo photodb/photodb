@@ -672,11 +672,10 @@ begin
     end;
 
   if not DBTerminating then
-    if GetParamStrDBBool('/BACKUP') or DBKernel.ReadBool('StartUp', 'BackUp', False) then
+    if GetParamStrDBBool('/BACKUP') then
     begin
       SplashThread.Terminate;
       EventLog('BackUp...');
-      DBKernel.WriteBool('StartUp', 'BackUp', False);
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.BackUpTable;
       CMDForm.Release;
