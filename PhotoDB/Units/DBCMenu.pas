@@ -9,7 +9,7 @@ uses
   Graphics, Menus, UnitDBKernel, UnitCryptImageForm, GraphicCrypt,
   ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
-  EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare,
+  EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM;
 
 type TDBPopupMenu = class
@@ -159,18 +159,22 @@ begin
  if not isrecord then NoDBInfoNeeded:=true;
  if finfo[finfo.Position].ID=0 then NoDBInfoNeeded:=true;
 
- IsFile:=false;
- IsCurrentFile:=FileExists(finfo[finfo.Position].FileName);
- for i:=0 to finfo.Count - 1 do
- if FileExists(finfo[i].FileName) then
- begin
-  IsFile:=True;
-  Break;
- end;
+  TW.I.Start('FileExists');
+  IsCurrentFile:=FileExists(finfo[finfo.Position].FileName);
+
+  IsFile := IsCurrentFile;
+  if not IsFile then
+    for I := 0 to Finfo.Count - 1 do
+      if FileExists(Finfo[I].FileName) then
+      begin
+        IsFile := True;
+        Break;
+      end;
  SetLength(MenuGroups,0);
 
   script:=MenuScript;
 
+  TW.I.Start('Vars');
   SetBoolAttr(aScript,'$CanRename',finfo.IsListItem);
   SetBoolAttr(aScript,'$IsRecord',IsRecord);
   SetBoolAttr(aScript,'$IsFile',IsFile);
@@ -187,6 +191,7 @@ begin
 
   LoadVariablesNo(finfo.Position);
 
+  TW.I.Start('Panels');
   PanelsTexts := TStringList.Create;
   try
     ManagerPanels.GetPanelsTexts(PanelsTexts);
@@ -197,6 +202,7 @@ begin
   finally
     F(PanelsTexts);
   end;
+  TW.I.Start('Groups');
   GroupsList := TStringList.Create;
   for i:=0 to FInfo.Count-1 do
   if FInfo[i].Selected then
@@ -215,7 +221,9 @@ begin
   end;
   SetNamedValueArrayStrings(aScript,'$GroupsNames',aGroupsNames);
   SetNamedValueArrayStrings(aScript,'$GroupsCodes',aGroupsCodes);
+  TW.I.Start('LoadMenuFromScript');
   LoadMenuFromScript(item,DBKernel.ImageList,script,aScript,ScriptExecuted,FExtImagesInImageList,true);
+  TW.I.Start('LoadMenuFromScript - end');
 end;
 
 procedure TDBPopupMenu.AddUserMenu(Item: TMenuItem; Insert : Boolean; Index : integer);

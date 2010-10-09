@@ -393,7 +393,6 @@ begin
     Result := VALUE_TYPE_INTEGER
   else if (Value='true') or (Value='false') then
     Result := VALUE_TYPE_BOOLEAN
-  //else if (Length(Value)>1) and (Value[1]=Value[Length(Value)]) and (Value[1]='"') and (PosExS('+',Value) = 0) then
   else if StrToFloatDef(ConvertUniversalFloatToLocal(Value), -1) = StrToFloatDef(ConvertUniversalFloatToLocal(Value), 1) then
     Result := VALUE_TYPE_FLOAT
   else

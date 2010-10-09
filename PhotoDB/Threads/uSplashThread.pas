@@ -40,8 +40,6 @@ var
   Rectangle : TRect;
 begin
   hSplashProgress := ProgressValue;
-{  Rectangle := Rect(0, SplHeight - 30, SplWidth, SplHeight);
-  InvalidateRect(hSplashWnd, @Rectangle, False);      }
   PostMessage(hSplashWnd, WM_PAINT, 0, 0);
 end;
 

@@ -5,7 +5,7 @@ interface
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
      Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
      UnitDBFileDialogs, Forms, Language, uVistaFuncs, uLogger,
-     uFileUtils;
+     uFileUtils, uTime;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;
@@ -278,6 +278,7 @@ var
   end;
 
 begin
+  TW.I.Start('GetDirListing');
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
   SetLength(Result,0);
   if dir = '' then exit;
@@ -295,6 +296,7 @@ begin
   end;
   FindClose(SearchRec);
   SetErrorMode(oldMode);
+  TW.I.Start('GetDirListing - END');
 end;
 
 function SpilitWords(S : string) : TArrayOfString;
@@ -304,29 +306,30 @@ end;
 
 function SpilitWordsW(S : string; SplitChar : char) : TArrayOfString;
 var
-  i, j : integer;
-  pi_ : PInteger;
+  I, J: Integer;
+  Pi_: PInteger;
+  LS: Integer;
 begin
- SetLength(Result,0);
- s:=SplitChar+s+SplitChar;
- pi_:=@i;
- for i:=1 to length(s)-1 do
- begin
-  if i+1>length(s)-1 then break;
-  if (s[i]=SplitChar) and (s[i+1]<>SplitChar) then
-  for j:=i+1 to length(s) do
-  if (s[j]=SplitChar) or (j=length(s)) then
+  LS := Length(S);
+  SetLength(Result, 0);
+  S := SplitChar + S + SplitChar;
+  Pi_ := @I;
+  for I := 1 to LS - 1 do
   begin
-   SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=Copy(s,i+1,j-i-1);
-   pi_^:=j-1;
-   Break;
+    // if i+1>LS-1 then break;
+    if (S[I] = SplitChar) and (S[I + 1] <> SplitChar) then
+      for J := I + 1 to LS do
+        if (S[J] = SplitChar) or (J = LS) then
+        begin
+          SetLength(Result, Length(Result) + 1);
+          Result[Length(Result) - 1] := Copy(S, I + 1, J - I - 1);
+          Pi_^ := J - 1;
+          Break;
+        end;
   end;
- end;
- for i:=0 to Length(Result)-1 do
- begin
-   Result[i] := Trim(Result[i]);
- end;
+  for I := 0 to Length(Result) - 1 do
+    Result[I] := Trim(Result[I]);
+
 end;
 
 function aIntToStr(int : integer) : string;

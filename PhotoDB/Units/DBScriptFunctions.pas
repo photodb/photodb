@@ -18,20 +18,19 @@ procedure DoOptions;
 function NewImageEditor : string;
 function NewExplorer : string;
 function NewExplorerByPath(Path : string) : string;
-function InitializeScriptString(Script : string) : string;    
+function InitializeScriptString(Script : string) : string;
 procedure InitEnviroment(Enviroment : TScriptEnviroment);
 
 implementation
 
 uses ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
-CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
-UnitUpdateDB, Searching, ManagerDBUnit, Options, ImEditor, UnitFormCont,
-ExplorerUnit, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
-SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
-UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB, Language,
-UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
-UnitFormCDMapper, UnitFormCDExport;
-
+  CommonDBSupport, UActivation, UnitInternetUpdate, UnitManageGroups, UAbout,
+  UnitUpdateDB, Searching, ManagerDBUnit, Options, ImEditor, UnitFormCont,
+  ExplorerUnit, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
+  SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
+  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB, Language,
+  UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
+  UnitFormCDMapper, UnitFormCDExport;
 
 procedure DoActivation;
 begin
@@ -51,8 +50,6 @@ end;
 function ReadScriptFile(FileName : string) : string;
 begin
  Result := UnitScripts.ReadScriptFile(FileName);
- Result := AddLanguage(Result);
- Result := AddIcons(Result);
 end;
 
 function InitializeScriptString(Script : string) : string;
@@ -81,54 +78,60 @@ end;
 
 function GetRegKeyListing(Key : string) : TArrayOfString;
 var
-  reg : TBDRegistry;
-  S : TStrings;
-  i: integer;
+  Reg: TBDRegistry;
+  S: TStrings;
+  I: Integer;
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  Reg.OpenKey(GetRegRootKey+'\'+Key,true);
-  S := TStringList.create;
-  Reg.GetKeyNames(S);
-  Reg.Free;
-  SetLength(Result,S.Count);
-  for i:=0 to S.Count-1 do
-  Result[i]:=S[i];
-  S.Free;
+  try
+    Reg.OpenKey(GetRegRootKey+'\'+Key, True);
+    S := TStringList.create;
+    try
+      Reg.GetKeyNames(S);
+      SetLength(Result, S.Count);
+      for I := 0 to S.Count - 1 do
+        Result[I] := S[I];
+    finally
+      S.Free;
+    end;
+  finally
+    Reg.Free;
+  end;
 end;
 
-function ReadRegString(Key, Value : string) : string;
+function ReadRegString(Key, Value: string): string;
 begin
- Result:=DBKernel.ReadString(Key,Value);
+  Result := DBKernel.ReadString(Key, Value);
 end;
 
-function ReadRegBool(Key, Value : string) : boolean;
+function ReadRegBool(Key, Value: string): Boolean;
 begin
- Result:=DBKernel.ReadBool(Key,Value,false);
+  Result := DBKernel.ReadBool(Key, Value, False);
 end;
 
-function ReadRegRealBool(Key, Value : string) : boolean;
+function ReadRegRealBool(Key, Value: string): Boolean;
 begin
- Result:=DBKernel.ReadRealBool(Key,Value,false);
+  Result := DBKernel.ReadRealBool(Key, Value, False);
 end;
 
 function ReadRegInteger(Key, Value : string) : integer;
 begin
- Result:=DBKernel.ReadInteger(Key,Value,0);
+  Result := DBKernel.ReadInteger(Key, Value, 0);
 end;
 
-procedure WriteRegString(Key, Value : string; aValue : string);
+procedure WriteRegString(Key, Value: string; AValue: string);
 begin
- DBKernel.WriteString(Key,Value,aValue);
+  DBKernel.WriteString(Key, Value, AValue);
 end;
 
-procedure WriteRegBool(Key, Value : string; aValue : boolean);
+procedure WriteRegBool(Key, Value: string; AValue: Boolean);
 begin
- DBKernel.WriteBool(Key,Value,aValue);
+  DBKernel.WriteBool(Key, Value, AValue);
 end;
 
-procedure WriteRegInteger(Key, Value : string; aValue : integer);
+procedure WriteRegInteger(Key, Value: string; AValue: Integer);
 begin
- DBKernel.WriteInteger(Key,Value,aValue);
+  DBKernel.WriteInteger(Key, Value, AValue);
 end;
 
 procedure SetFileNameByID(ID : integer; FileName : string);
@@ -643,7 +646,7 @@ begin
    Close;
    Release;
    Free;
-  end; 
+  end;
  end;
 end;
 
@@ -823,7 +826,7 @@ function ImageEditorRegisterCallBack(CID, ID, Proc : string): string;
 begin
  if GetImageEditorByCID(CID)<>nil then
  begin
-  GetImageEditorByCID(CID).FScript:=ID; 
+  GetImageEditorByCID(CID).FScript:=ID;
   GetImageEditorByCID(CID).FScriptProc:=Proc;
  end;
  Result:='';
@@ -983,7 +986,7 @@ begin
 
  AddScriptFunction(Enviroment,'DoCDExport',F_TYPE_PROCEDURE_NO_PARAMS,@DoCDExport);
  AddScriptFunction(Enviroment,'DoCDMapping',F_TYPE_PROCEDURE_NO_PARAMS,@DoManageCDMapping);
-end;   
+end;
 
 procedure InitEnviroment(Enviroment : TScriptEnviroment);
 begin

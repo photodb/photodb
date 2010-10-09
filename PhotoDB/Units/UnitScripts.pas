@@ -17,7 +17,7 @@ interface
 
 uses Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs,
      Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-     uMemory, uGOM;
+     uMemory, uGOM, uTime;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -277,16 +277,25 @@ const
 );
 
 type
+   TIncludeScript = class(TObject)
+   public
+     FilePath : string;
+     ScriptContent : string;
+   end;
+
    TScriptsManager = class(TObject)
    private
    public
      FScripts: TList;
+     FIncludes: TList;
      constructor Create;
      destructor Destroy; override;
      function AddScript(Script: TScript): string;
      procedure RemoveScript(ID: string);
      function ScriptExists(ID: string): Boolean;
      function GetScriptByID(ID: string): TScript;
+     procedure RegisterIncludeScript(FileName, ScriptContent : string);
+     function GetIncludeScript(FileName : string) : TIncludeScript;
    end;
 
 {$EXTERNALSYM CoCreateGuid}
@@ -330,9 +339,14 @@ end;
 function GetValueType(const aScript : TScript; const Value : string) : integer;
 var
   I: Integer;
+  C: Char;
 begin
   Result := VALUE_TYPE_ERROR;
-  if IsVariable(Value) then
+  if Value = '' then
+    Exit;
+
+  C := Value[1];
+  if C = '$' then
   begin
     for I := 0 to AScript.NamedValues.Count - 1 do
       if AScript.NamedValues[I].AName = Value then
@@ -349,6 +363,21 @@ begin
   if (Value = 'true') or (Value = 'false') then
   begin
     Result := VALUE_TYPE_BOOLEAN;
+    Exit;
+  end;
+  if CharInSet(C, ['a'..'z', 'A'..'Z']) then
+    Exit;
+
+  if (C = '"') and (C = Value[Length(Value)]) then
+    if PosExS('+', Value) = 0 then
+    begin
+      Result := VALUE_TYPE_STRING;
+      Exit;
+    end;
+
+  if StrToIntDef(Value, -1) = StrToIntDef(Value, 1) then
+  begin
+    Result := VALUE_TYPE_INTEGER;
     Exit;
   end;
   if StrToIntDef(Value, -1) = StrToIntDef(Value, 1) then
@@ -491,11 +520,19 @@ function GetNamedValueInt(const aScript : TScript; const ValueName : string; con
 var
   Value : TValue;
 begin
-  Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_INTEGER);
-  if Value <> nil then
-    Result := Value.IntValue
-  else
-    Result := StrToIntDef(ValueName, Default);
+  if ValueName <> '' then
+  begin
+    if ValueName[1] = '$' then
+    begin
+      Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_INTEGER);
+      if Value <> nil then
+        Result := Value.IntValue
+      else
+        Result := Default;
+    end else
+      Result := StrToIntDef(ValueName, Default);
+  end else
+    Result := Default;
 end;
 
 function GetNamedValueFloat(const aScript : TScript; const ValueName : string) : Extended;
@@ -513,11 +550,19 @@ function GetNamedValueBool(const aScript : TScript; const ValueName : string) : 
 var
   Value : TValue;
 begin
-  Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_BOOLEAN);
-  if Value <> nil then
-    Result := Value.BoolValue
-  else
-    Result := ValueName = 'true';
+  if ValueName <> '' then
+  begin
+    if ValueName[1] = '$' then
+    begin
+    Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_BOOLEAN);
+    if Value <> nil then
+      Result := Value.BoolValue
+    else
+      Result := False;
+    end else
+      Result := ValueName = 'true';
+  end else
+    Result := False;
 end;
 
 function GetNamedValueArrayString(const aScript : TScript; const ValueName : string) : TArrayOfString;
@@ -606,7 +651,7 @@ begin
   for I := Index to Length(Str) - 1 do
   begin
     Inc(P, 1);
-    C := P[0];
+    C := P^;
     if C = ';' then
       Continue;
     if (C = #32) and (P[1] <> #32) then
@@ -628,17 +673,45 @@ var
   TmpS: string;
   C, FS : Char;
   OneChar : Boolean;
-  PS : PChar;
+  PS, PSup : PChar;
+
+  function IsSubStr() : Boolean;
+  var
+    K : Integer;
+    APS : PChar;
+    APSub : PChar;
+  begin
+    Integer(APS) := Integer(PS);
+    Integer(APSub) := Integer(PSup);
+    for K := 1 to LS do
+    begin
+      if APS^ <> APSub^ then
+      begin
+        Result := False;
+        Exit;
+      end;
+      Inc(APS, 1);
+      Inc(APSub, 1);
+    end;
+    Result := True;
+  end;
 
 begin
+  if index < 1 then
+  begin
+    Result := 0;
+    Exit;
+  end;
+
   n := False;
   Result := 0;
   Ls := Length(SubStr);
   OneChar := Ls = 1;
-  if Index < 1 then
-    Index := 1;
+
   if OneChar then
-    FS := SubStr[1];
+    FS := SubStr[1]
+  else
+    PSup := PChar(Addr(SubStr[1]));
 
   PS := PChar(Addr(Str[1]));
   Inc(PS, Index - 2);
@@ -649,7 +722,7 @@ begin
 
     if OneChar then
     begin
-      C := PS[0];
+      C := PS^;
       if (C = FS) and (not N) then
       begin
         Result := I;
@@ -657,13 +730,12 @@ begin
       end;
     end else
     begin
-      TmpS := Copy(Str, I, Ls);
-      if (TmpS = SubStr) and (not N) then
+      if IsSubStr and (not N) then
       begin
         Result := I;
         Exit;
       end;
-      C := PS[0];
+      C := PS^;
     end;
 
     if I = index then
@@ -675,29 +747,28 @@ begin
       Continue;
     end;
 
-    if OneChar then
+    if (not N) then
     begin
-      if (C = FS) and (not N) then
+      if OneChar then
       begin
-        Result := I;
-        Exit;
-      end;
-    end else
-    begin
-      if (TmpS = SubStr) and (not N) then
+        if (C = FS) then
+        begin
+          Result := I;
+          Exit;
+        end;
+      end else
       begin
-        Result := I;
-        Exit;
+        if IsSubStr then
+        begin
+          Result := I;
+          Exit;
+        end;
       end;
     end;
   end;
 end;
 
-
-
-
 /////////////////////////////////////////////////////////////////////////
-
 
 function GetFunctionName(aFunction : string) : string;
 var
@@ -716,7 +787,7 @@ begin
     if AFunction[1] <> '#' then
       Fe := PosExS('(', AFunction);
   if Fe = 0 then
-    Fe := PosExS(';', AFunction, Fe);
+    Fe := PosExS(';', AFunction, 1);
   if Fe <> 0 then
     Result := Copy(AFunction, Fb, Fe - Fb);
 
@@ -925,6 +996,7 @@ begin
    begin
     Ftype:=Copy(funct,2,ps-2);
     _type:=VALUE_TYPE_ERROR;
+    if Ftype='void' then _type:=VALUE_TYPE_VOID else
     if Ftype='int' then _type:=VALUE_TYPE_INTEGER else
     if Ftype='string' then _type:=VALUE_TYPE_STRING else
     if Ftype='bool' then _type:=VALUE_TYPE_BOOLEAN else
@@ -932,8 +1004,7 @@ begin
     if Ftype='string[]' then _type:=VALUE_TYPE_STRING_ARRAY else
     if Ftype='int[]' then _type:=VALUE_TYPE_INT_ARRAY else
     if Ftype='bool[]' then _type:=VALUE_TYPE_BOOL_ARRAY else
-    if Ftype='float[]' then _type:=VALUE_TYPE_FLOAT_ARRAY else
-    if Ftype='void' then _type:=VALUE_TYPE_VOID;
+    if Ftype='float[]' then _type:=VALUE_TYPE_FLOAT_ARRAY;
     if _type<>VALUE_TYPE_ERROR then
     begin
      sb:=PosEx('(',funct,ps);
@@ -943,10 +1014,8 @@ begin
      bb:=PosEx('{',funct,se);
      be:=PosExS(EndSymbol,funct,bb);
      fbody:=Copy(funct,bb+1,be-bb-1);
-     for i:=Length(_farg) downto 1 do
-     if _farg[i]=' ' then Delete(_farg,i,1);
-     for i:=1 to Length(_farg) do
-     if _farg[i]=';' then _farg[i]:=' ';
+     _farg := Trim(_farg);
+
      SetLength(farg,0);
  {$IFNDEF EXT}
      farg:=Copy(SpilitWordsW(_farg,','));
@@ -976,7 +1045,6 @@ var
   ii1 : TArrayOfInt;
   ff1 : TArrayOfFloat;
   Value : TValue;
-
   i1, i2, k : integer;
   f1, f2 : extended;
   b1, b2, b3 : boolean;
@@ -1045,6 +1113,7 @@ var
   aTempItem : TMenuItem;
   TempScript : TScript;
   pTempScript : TScript;
+  SF : TScriptFunction;
  {$IFDEF USEDEBUG}
 
   DebugScriptForm: TDebugScriptForm;
@@ -1068,6 +1137,7 @@ var
    end;
    DebugScriptForm:=nil;
   end;
+  TW.I.Start('END Script: ' + Copy(script, 1, 20));
   {$ENDIF}
  end;
 
@@ -1083,6 +1153,7 @@ begin
   if Sender<>nil then
   script:=Sender.Script else begin DoExit; exit; end;
  end;
+  TW.I.Start('Script: ' + Copy(script, 1, 100));
 
  repeat
   inc(LineCounter);
@@ -1102,7 +1173,7 @@ begin
    NVar:=Trim(Copy(script,fb,r-fb));
   end else
   begin
-   ifb:=PosEx('if',script,fb);
+   ifb:=PosExW('if',script,fb,n);
    ifsb:=PosExK('(',script,ifb);
    ifse:=PosExS(')',script,ifsb);
    ifssb:=PosExK('{',script,ifse);
@@ -1144,7 +1215,7 @@ begin
     end;
    end else
    begin
-    forb:=PosEx('for',script,fb);
+    forb:=PosExW('for',script,fb,n);
     forsb:=PosExK('(',script,forb);
     forse:=PosExS(')',script,forsb);
     forssb:=PosExK('{',script,forse);
@@ -1152,8 +1223,6 @@ begin
 
     if (n>forb) and (forb<>0) and (forsb<>0) and (forse<>0) and (forssb<>0) then
     begin
-
-
 
      n1:=PosExK(';',script,forsb);
      n2:=PosExK(';',script,n1+1);
@@ -1186,13 +1255,15 @@ begin
   Command:=Copy(script,fb,fe-fb+1);
   if Copy(Trim(Command),1,10)='@functions' then
   begin
-
+   TW.I.Start('@functions');
    fe:=PosEx('@end',script,fb+10);
    fb:=PosEx('@functions',script,fb);
    if fe<1 then fe:=Length(script);
    NewFunctions:=Copy(script,fb+10,fe-fb-10);
    Command:=NewFunctions;
+   TW.I.Start('@AddScriptTextFunctions');
    AddScriptTextFunctions(aScript,Command);
+   TW.I.Start('@AddScriptTextFunctions - END');
    fb:=fe+4;
    Continue;
   end;
@@ -1209,10 +1280,10 @@ begin
   fb:=fe+1;
   for i:=0 to aScript.ScriptFunctions.Count - 1 do
   begin
-   if aScript.ScriptFunctions[i].Name=Func then
+    SF := aScript.ScriptFunctions[i];
+   if SF.Name = Func then
    begin
-    Case aScript.ScriptFunctions[i].aType of
-
+    Case SF.aType of
 
     F_TYPE_FUNCTION_DEBUG_START :
     begin
@@ -1793,39 +1864,39 @@ function ValidMenuDescription(const Desc : string) : boolean;
 var
   n, k : integer;
 begin
- Result:=false;
- n:=PosExS('<',Desc,1);
- if n=0 then exit;
- n:=PosExS('>',Desc,n);
- if n=0 then exit;
- n:=PosExS('[',Desc,n);
- if n=0 then exit;
- n:=PosExS(']',Desc,n);
- if n=0 then exit;
- n:=PosExS('{',Desc,n);
- if n=0 then exit;
- k:=PosExS('}',Desc,n);
- if k=0 then exit;
- Result:=true;
+  Result := False;
+  n:=PosExS('<',Desc,1);
+  if n=0 then exit;
+  n:=PosExS('>',Desc,n);
+  if n=0 then exit;
+  n:=PosExS('[',Desc,n);
+  if n=0 then exit;
+  n:=PosExS(']',Desc,n);
+  if n=0 then exit;
+  n:=PosExS('{',Desc,n);
+  if n=0 then exit;
+  k:=PosExS('}',Desc,n);
+  if k=0 then exit;
+  Result := True;
 end;
 
 procedure DeleteMenuDescription(var Desc : string);
 var
   b, n, e : integer;
 begin
- b:=PosExS('<',Desc,1);
- if b=0 then exit;
- n:=PosExS('>',Desc,b);
- if n=0 then exit;
- n:=PosExS('[',Desc,n);
- if n=0 then exit;
- n:=PosExS(']',Desc,n);
- if n=0 then exit;
- n:=PosExS('{',Desc,n);
- if n=0 then exit;
- e:=PosExS('}',Desc,n);
- if e=0 then exit;
- Delete(Desc,b,e-b+1);
+  b:=PosExS('<',Desc,1);
+  if b=0 then exit;
+  n:=PosExS('>',Desc,b);
+  if n=0 then exit;
+  n:=PosExS('[',Desc,n);
+  if n=0 then exit;
+  n:=PosExS(']',Desc,n);
+  if n=0 then exit;
+  n:=PosExS('{',Desc,n);
+  if n=0 then exit;
+  e:=PosExS('}',Desc,n);
+  if e=0 then exit;
+  Delete(Desc,b,e-b+1);
 end;
 
 function MakeNewItem(MenuItem : TMenuItem; ImageList : TImageList; Caption, Icon : string; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer) : TMenuItemW;
@@ -1854,8 +1925,8 @@ begin
  end else Item.ImageIndex:=StrToIntDef(Icon,-1);
  Item.OnClick:=OnClick;
  Command:=Script;
- While ValidMenuDescription(Command) do
- DeleteMenuDescription(Command);
+ while ValidMenuDescription(Command) do
+   DeleteMenuDescription(Command);
 
  Item.Tag:=GetNamedValueInt(aScript,'$Tag');
  Item.Visible:=GetNamedValueBool(aScript,'$Visible');
@@ -1913,7 +1984,7 @@ const
       P := PCommand + J * 2;
       if P > L then
         Exit;
-      C := PChar(P)[0];
+      C := PChar(P)^;
       if ItitStringCommand[J + 1] <> C then
       begin
         Result := False;
@@ -1934,7 +2005,7 @@ const
       P := PCommand + J * 2;
       if P > L then
         Exit;
-      C := PChar(P)[0];
+      C := PChar(P)^;
       if RunStringCommand[J + 1] <> C then
       begin
         Result := False;
@@ -1947,7 +2018,6 @@ const
 begin
  NewItem:=nil;
  apos:=1;
- script := StringReplace(script, #13#10 , '', [rfReplaceAll]);
  MenuItem.Clear;
  if initialize then
  for i:=1 to ImagesCount do
@@ -1970,8 +2040,7 @@ begin
   Icon:=Copy(script,ib+1,ie-ib-1);
   Command:=Copy(script,cb+1,ce-cb-1);
 
-
-    if (tb<>0) and (te<>0) and (ib<>0) and (ie<>0) and (cb<>0) and (ce<>0)  then
+  if (tb<>0) and (te<>0) and (ib<>0) and (ie<>0) and (cb<>0) and (ce<>0)  then
   begin
    if (Length(Trim(Text))>0) then
    begin
@@ -1988,59 +2057,63 @@ begin
      ExecuteScriptFile(TempItem,aScript,'',ImagesCount,ImageList,OnClick,Command);
     end else
     begin
-
-      aRun:=true;
-      SetLength(InitScript, Length(Command));
-      FillChar(InitScript[1], Length(Command) * 2, 0);
-      PInit := PChar(Addr(InitScript[1]));
-      SetLength(RunScript, Length(Command));
-      FillChar(RunScript[1], Length(Command) * 2, 0);
-      PRun := PChar(Addr(RunScript[1]));
-
-      scc := 0;
-      P := Integer(Addr(Command[1]));
-      L := Integer(Addr(Command[Length(Command)]));
-      if Length(Command) > 0 then
+      TW.I.Start('Init-Run: ' + Copy(Command,1 ,20));
+      if Command <> '' then
       begin
-        repeat
-          C := PChar(P)[0];
-          if C = '{' then
-            Inc(Scc)
-          else if C = '}' then
-            Dec(Scc);
+        aRun:=true;
+        SetLength(InitScript, Length(Command));
+        FillChar(InitScript[1], Length(Command) * 2, 0);
+        PInit := PChar(Addr(InitScript[1]));
+        SetLength(RunScript, Length(Command));
+        FillChar(RunScript[1], Length(Command) * 2, 0);
+        PRun := PChar(Addr(RunScript[1]));
 
-          if Scc = 0 then
-          begin
+        scc := 0;
+        P := Integer(Addr(Command[1]));
+        L := Integer(Addr(Command[Length(Command)]));
+        if Length(Command) > 0 then
+        begin
+          repeat
+            C := PChar(P)[0];
+            if C = '{' then
+              Inc(Scc)
+            else if C = '}' then
+              Dec(Scc);
 
-            if IsInit(P, L) then
+            if Scc = 0 then
             begin
-              ARun := False;
-              Inc(P, LInitString);
-              C := PChar(P)[0];
-            end else if IsRun(P, L) then
+
+              if IsInit(P, L) then
+              begin
+                ARun := False;
+                Inc(P, LInitString);
+                C := PChar(P)[0];
+              end else if IsRun(P, L) then
+              begin
+                ARun := True;
+                Inc(P, LRun);
+                C := PChar(P)[0];
+              end;
+
+            end;
+            if ARun then
             begin
-              ARun := True;
-              Inc(P, LRun);
-              C := PChar(P)[0];
+              PRun[0] := C;
+              Inc(PRun, 1);
+            end else
+            begin
+              PInit[0] := C;
+              Inc(PInit, 1);
             end;
 
-          end;
-          if ARun then
-          begin
-            PRun[0] := C;
-            Inc(PRun, 1);
-          end else
-          begin
-            PInit[0] := C;
-            Inc(PInit, 1);
-          end;
+            Inc(P, 2);
+          until P > L;
+        end;
 
-          Inc(P, 2);
-        until P > L;
+        InitScript := Trim(InitScript);
+        RunScript := Trim(RunScript);
       end;
-
-      InitScript := Trim(InitScript);
-      RunScript := Trim(RunScript);
+      TW.I.Start('END - Init-Run');
 
 
      SetNamedValue(aScript,'$Tag','0');
@@ -2298,7 +2371,17 @@ var
   i, p : integer;
   F : TInitScriptFunction;
   FS : TStrings;
+  Script : TIncludeScript;
 begin
+  if ScriptsManager <> nil then
+  begin
+    Script := ScriptsManager.GetIncludeScript(FileName);
+    if Script <> nil then
+    begin
+      Result := Script.ScriptContent;
+      Exit;
+    end;
+  end;
  Result:='';
  if Length(FileName)<4 then exit;
  if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
@@ -2333,6 +2416,8 @@ begin
   end;
   Result:=Result;
  end;
+  if ScriptsManager <> nil then
+    ScriptsManager.RegisterIncludeScript(FileName, Result);
 end;
 
 function ReadFile(FileName : string) : string;
@@ -2340,7 +2425,17 @@ var
   FS : TFileStream;
   d : string;
   F : TInitScriptFunction;
+  Script : TIncludeScript;
 begin
+  if ScriptsManager <> nil then
+  begin
+    Script := ScriptsManager.GetIncludeScript(FileName);
+    if Script <> nil then
+    begin
+      Result := Script.ScriptContent;
+      Exit;
+    end;
+  end;
  Result:='';
  if Length(FileName)<4 then exit;
  if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
@@ -2364,6 +2459,8 @@ begin
   end;
   Result:=Result;
  end;
+  if ScriptsManager <> nil then
+    ScriptsManager.RegisterIncludeScript(FileName, Result);
 end;
 
 function ReadScriptFile(FileName : string) : string;
@@ -2371,8 +2468,18 @@ var
   d, s : string;
   i, p : integer;
   F : TInitScriptFunction;
+  Script : TIncludeScript;
   FS : TStrings;
 begin
+  if ScriptsManager <> nil then
+  begin
+    Script := ScriptsManager.GetIncludeScript(FileName);
+    if Script <> nil then
+    begin
+      Result := Script.ScriptContent;
+      Exit;
+    end;
+  end;    
  Result:='';
  if Length(FileName)<4 then exit;
  if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
@@ -2410,7 +2517,10 @@ begin
   end;
   Result:=Result;
  end;
-end;
+
+  if ScriptsManager <> nil then
+    ScriptsManager.RegisterIncludeScript(FileName, Result);
+ end;
 
 function Float(ext : Extended) : Extended;
 begin
@@ -2805,8 +2915,8 @@ procedure ExecuteScriptFile(Sender : TMenuItemW; var aScript : TScript; Alternat
 var
    FileText : string;
 begin
- FileText:=ReadScriptFile(FileName);
- ExecuteScript(Sender,aScript,FileText,ImagesCount,ImageList,OnClick);
+  FileText := ReadScriptFile(FileName);
+  ExecuteScript(Sender,aScript,FileText,ImagesCount,ImageList,OnClick);
 end;
 
 function aMessageBox(Text, Caption : string; params : integer) : integer;
@@ -2975,6 +3085,7 @@ end;
 constructor TScriptsManager.Create;
 begin
   FScripts := TList.Create;
+  FIncludes  := TList.Create;
 end;
 
 destructor TScriptsManager.Destroy;
@@ -2986,7 +3097,23 @@ begin
       TScript(FScripts[i]).Free;
 
   FScripts.Free;
+  FreeList(FIncludes);
   inherited;
+end;
+
+function TScriptsManager.GetIncludeScript(FileName: string): TIncludeScript;
+var
+  I : Integer;
+begin
+  Result := nil;
+  for I := 0 to FIncludes.Count - 1 do
+  begin
+    if TIncludeScript(FIncludes[I]).FilePath = FileName then
+    begin
+      Result := FIncludes[I];
+      Exit;
+    end;
+  end;
 end;
 
 function TScriptsManager.GetScriptByID(ID: string): TScript;
@@ -3000,6 +3127,20 @@ begin
       Result := FScripts[I];
       Exit;
     end;
+end;
+
+procedure TScriptsManager.RegisterIncludeScript(FileName,
+  ScriptContent: string);
+var
+  IncludeScript : TIncludeScript;
+begin
+  if GetIncludeScript(FileName) <> nil then
+    Exit;
+
+  IncludeScript := TIncludeScript.Create;
+  IncludeScript.FilePath := FileName;
+  IncludeScript.ScriptContent := ScriptContent;
+  FIncludes.Add(IncludeScript);
 end;
 
 procedure TScriptsManager.RemoveScript(ID : string);
