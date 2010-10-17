@@ -221,6 +221,7 @@ type
   TSearchDataExtension = class(TClonableObject)
   public
     Bitmap : TBitmap;
+    Icon : TIcon;
     CompareResult : TImageCompareResult;
     function Copy : TClonableObject; override;
     constructor Create;
@@ -671,11 +672,13 @@ end;
 constructor TSearchDataExtension.Create;
 begin
   Bitmap := nil;
+  Icon := nil;
 end;
 
 destructor TSearchDataExtension.Destroy;
 begin
   F(Bitmap);
+  F(Icon);
   inherited;
 end;
 

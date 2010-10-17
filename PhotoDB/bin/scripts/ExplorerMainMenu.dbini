@@ -5,7 +5,7 @@
 //  Run($file,"");
 // }
 <#>[]{scripts\changedb_functions.dbini}
-<TEXT_MES_FILE>[0]
+<File>[0]
 {
  <->[]{}
  $IconList=GetDBsIcons;
@@ -20,20 +20,20 @@
   if ($im=true) 
   {
    $runscript=PathFormat("ShowFile(""%1"")",$file);
-   CreateItemDefChecked("TEXT_MES_SHELL",DB_IC_SHELL,$runscript,false,true,false,0);
+   CreateItemDefChecked("Execute",DB_IC_SHELL,$runscript,false,true,false,0);
    $b=false;
   };
   $dir=DirectoryExists($file);
   if ($dir=true) 
   {
    $runscript=PathFormat("NewExplorerByPath(""%1"")",$file);
-   CreateItemDefChecked("TEXT_MES_SHELL",DB_IC_SHELL,$runscript,false,true,false,0);
+   CreateItemDefChecked("Execute",DB_IC_SHELL,$runscript,false,true,false,0);
    $b=false;
   };
   if ($b=true)
   {
    $runscript=PathFormat("Exec(""%1"")",$file);
-   CreateItemDefChecked("TEXT_MES_SHELL",DB_IC_SHELL,$runscript,false,true,false,0);
+   CreateItemDefChecked("Execute",DB_IC_SHELL,$runscript,false,true,false,0);
   };
  };
  CreateItemDefChecked("-",0,"",false,false,false,0);
@@ -43,43 +43,43 @@
  InsertSelectDBMenu($IconList);
 
  CreateItemDefChecked("-",0,"",false,false,false,0);
- CreateItemDefChecked("TEXT_MES_EXIT",DB_IC_EXIT,"CloseWindow;",false,true,false,0);
+ CreateItemDefChecked("Exit",DB_IC_EXIT,"CloseWindow;",false,true,false,0);
 }
 
-<TEXT_MES_EDIT>[0]
+<Edit>[0]
 {
  <->[]{}
  DeleteNoFirst;
  $fCanBack=CanBack;
- CreateItemDefChecked("TEXT_MES_BACK",DB_IC_PREVIOUS,"GoBack;",false,$fCanBack,false,0);
+ CreateItemDefChecked("Back",DB_IC_PREVIOUS,"GoBack;",false,$fCanBack,false,0);
  $fCanForward=CanForward;
- CreateItemDefChecked("TEXT_MES_FORWARD",DB_IC_NEXT,"GoForward;",false,$fCanForward,false,0);
+ CreateItemDefChecked("Forward",DB_IC_NEXT,"GoForward;",false,$fCanForward,false,0);
  if ($CanShowPath=true) 
  {
   $fCanUp=CanUp;
-  CreateItemDefChecked("TEXT_MES_UP",DB_IC_UP,"GoUp;",false,$fCanUp,false,0);
+  CreateItemDefChecked("Up",DB_IC_UP,"GoUp;",false,$fCanUp,false,0);
  };
  CreateItemDefChecked("-",0,"",false,false,false,0);
  
  $CanCopy=CanCopySelection;
  if ($CanFileOperationsNormal=true) {
- CreateItemDefChecked("TEXT_MES_COPY",DB_IC_COPY,"Copy;",false,$CanCopy,false,0);};
+ CreateItemDefChecked("Copy",DB_IC_COPY,"Copy;",false,$CanCopy,false,0);};
  if ($CanFileOperationsCritical=true) {
- CreateItemDefChecked("TEXT_MES_CUT",DB_IC_CUT,"Cut;",false,$CanCopy,false,0);};
+ CreateItemDefChecked("Cut",DB_IC_CUT,"Cut;",false,$CanCopy,false,0);};
  
  $ClipBoardFiles=LoadFilesFromClipBoard;
  $l=ArrayStringLength($ClipBoardFiles);
  if ($l>0) 
  {
    $CanPaste=CanPasteInSelection;
-   CreateItemDefChecked("TEXT_MES_PASTE",DB_IC_PASTE,"Paste;",false,$CanPaste,false,0);
+   CreateItemDefChecked("Paste",DB_IC_PASTE,"Paste;",false,$CanPaste,false,0);
  };
  CreateItemDefChecked("-",0,"",false,false,false,0);
- CreateItemDefChecked("TEXT_MES_SELECT_ALL",DB_IC_SELECTALL,"SelectAll;",false,true,false,0);
+ CreateItemDefChecked("Select all",DB_IC_SELECTALL,"SelectAll;",false,true,false,0);
 }
 
 
-<TEXT_MES_VIEW>[0]
+<View>[0]
 {
  <->[]{}
  DeleteNoFirst;
@@ -87,98 +87,97 @@
  $explorer=ExplorerType;
  if ($explorer=true) 
  {
-  CreateItemDefChecked("TEXT_MES_SHOW_INFO_PANEL",DB_IC_INFO_PANEL,"CancelExplorerMode;",false,true,false,0);
+  CreateItemDefChecked("Show info panel",DB_IC_INFO_PANEL,"CancelExplorerMode;",false,true,false,0);
  }; else 
  {
   if ($CanShowPath=true) 
   {
-   CreateItemDefChecked("TEXT_MES_SHOW_EXPLORER_PANEL",DB_IC_EXPLORER_PANEL,"GoToExplorerMode;",false,true,false,0);
+   CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"GoToExplorerMode;",false,true,false,0);
   };
  };
 
  $State=ShowPrivateNow;
  if ($State=true) 
  {
-  CreateItemDefChecked("TEXT_MES_SHOW_ONLY_COMMON",DB_IC_COMMON,"HidePrivate;",false,true,false,0);
+  CreateItemDefChecked("Public only",DB_IC_COMMON,"HidePrivate;",false,true,false,0);
  }; else
  {
-  CreateItemDefChecked("TEXT_MES_SHOW_PRIVATE",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
+  CreateItemDefChecked("Show private images",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
  };
  CreateItemDefChecked("-",0,"",false,false,false,0);
- CreateItemDefChecked("TEXT_MES_VIEW",DB_IC_SORT,"",false,true,false,-1);
+ CreateItemDefChecked("View",DB_IC_SORT,"",false,true,false,-1);
  $View=GetView;
  $Check=false;
  if ($View=0) {$Check=true;}; else {$Check=false;};
- CreateItemDefCheckedSubTag("TEXT_MES_VIEW_THUMBNAILS",-1,"SetThumbnailsView;",false,true,$Check,0,-1);
+ CreateItemDefCheckedSubTag("Thumbnails",-1,"SetThumbnailsView;",false,true,$Check,0,-1);
  if ($View=4) {$Check=true;}; else {$Check=false;};
- CreateItemDefCheckedSubTag("TEXT_MES_VIEW_TILE",-1,"SetTilesView;",false,true,$Check,0,-1);
+ CreateItemDefCheckedSubTag("Tile",-1,"SetTilesView;",false,true,$Check,0,-1);
  if ($View=1) {$Check=true;}; else {$Check=false;};
- CreateItemDefCheckedSubTag("TEXT_MES_VIEW_ICONS",-1,"SetIconsView;",false,true,$Check,0,-1);
+ CreateItemDefCheckedSubTag("Icons",-1,"SetIconsView;",false,true,$Check,0,-1);
  if ($View=3) {$Check=true;}; else {$Check=false;};
- CreateItemDefCheckedSubTag("TEXT_MES_VIEW_LIST",-1,"SetListView;",false,true,$Check,0,-1);
+ CreateItemDefCheckedSubTag("List",-1,"SetListView;",false,true,$Check,0,-1);
  if ($View=2) {$Check=true;}; else {$Check=false;};
- CreateItemDefCheckedSubTag("TEXT_MES_VIEW_LIST2",-1,"SetList2View;",false,true,$Check,0,-1);
+ CreateItemDefCheckedSubTag("Table",-1,"SetList2View;",false,true,$Check,0,-1);
 
 }
-<TEXT_MES_TOOLS>[0]
+<Tools>[0]
 {
-  <TEXT_MES_GET_LIST_OF_KEYWORDS>[DB_IC_SEARCH]
+  <List of keywords>[DB_IC_SEARCH]
   {
     GetListOfKeyWords;
   }
-  <TEXT_MES_MAKE_DB_TREE>[DB_IC_TREE]
+  <Show DB Tree>[DB_IC_TREE]
   {
     MakeDBFileTree;
   }
-  <TEXT_MES_SHOW_UPDATER>[DB_IC_BOX]
+  <Show update window>[DB_IC_BOX]
   {
     ShowUpdateWindow;
   }
-  <TEXT_MES_MANAGE_DB>[DB_IC_ADMINTOOLS]
+  <Manage DB>[DB_IC_ADMINTOOLS]
   {
     DoManager;
   }
-  <TEXT_MES_IMAGE_EDITOR>[DB_IC_IMEDITOR]
+  <Image Editor>[DB_IC_IMEDITOR]
   {
     $form=NewImageEditor;
     ShowDBForm($form);
   }
-  <TEXT_MES_NEW_PANEL>[DB_IC_PANEL]
+  <New Panel>[DB_IC_PANEL]
   {
     NewPanel;
   }
-  <TEXT_MES_NEW_SEARCH>[DB_IC_ADDTODB]
+  <New Search>[DB_IC_ADDTODB]
   {
     NewSearch;
   }
-  <TEXT_MES_GROUPS_MANAGER>[DB_IC_GROUPS]
+  <Groups manages>[DB_IC_GROUPS]
   {
     ExecuteGroupManager;
   }
-  <TEXT_MES_EXPLORER>[DB_IC_EXPLORER]
+  <Explorer>[DB_IC_EXPLORER]
   {
     NewExplorer;
   }
-  <TEXT_MES_SPLIT_DB_CAPTION>[DB_IC_SPLIT]
+  <Split DB>[DB_IC_SPLIT]
   {
     SplitDB;
   }
   <->[]{}
-  <TEXT_MES_CD_EXPORT_CAPTION>[DB_IC_CD_EXPORT]
+  <Export images to CD>[DB_IC_CD_EXPORT]
   {
     DoCDExport;
   }  
-  <TEXT_MES_CD_MAPPING_CAPTION>[DB_IC_CD_MAPPING]
+  <CD mapping>[DB_IC_CD_MAPPING]
   {
     DoCDMapping;
   }
   <->[]{}
-  <TEXT_MES_OPTIONS>[DB_IC_OPTIONS]
+  <Options>[DB_IC_OPTIONS]
   {
     DoOptions;
   }
   <>[]{scripts\MenuScripts.dbini}
 }
-<->[]{}
 <>[]{scripts\GetPhotosScript.dbini}
 <>[]{scripts\HelpScript.dbini}

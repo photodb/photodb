@@ -12,9 +12,6 @@ uses
 
 type
   TOptionsForm = class(TForm)
-    TabbedNotebook1: TTabbedNotebook;
-    CheckBox4: TCheckBox;
-    RadioGroup1: TRadioGroup;
     ColorDialog1: TColorDialog;
     FontDialog1: TFontDialog;
     CancelButton: TButton;
@@ -23,108 +20,11 @@ type
     Usethisprogramasdefault1: TMenuItem;
     Usemenuitem1: TMenuItem;
     Dontusethisextension1: TMenuItem;
-    Panel1: TPanel;
-    Shape6: TShape;
-    Label8: TLabel;
-    Shape7: TShape;
-    Label9: TLabel;
-    Shape2: TShape;
-    Label4: TLabel;
-    Shape1: TShape;
-    Label1: TLabel;
-    Label6: TLabel;
-    Shape4: TShape;
-    Shape3: TShape;
-    Label7: TLabel;
-    Shape5: TShape;
-    Button9: TButton;
-    Button8: TButton;
-    Button10: TButton;
-    Button11: TButton;
-    StaticText1: TStaticText;
-    Label5: TLabel;
-    CheckBox1: TCheckBox;
-    CheckBox7: TCheckBox;
-    CheckBox6: TCheckBox;
-    CheckBox8: TCheckBox;
-    CheckBox9: TCheckBox;
-    CheckBox10: TCheckBox;
-    CheckBox11: TCheckBox;
-    CheckBox12: TCheckBox;
-    Button12: TButton;
-    CheckListBox1: TCheckListBox;
-    ListBox1: TListBox;
-    Button1: TButton;
-    Label10: TStaticText;
-    ShellChangeNotifier1: TShellChangeNotifier;
-    Label13: TStaticText;
-    Label12: TStaticText;
-    Label14: TStaticText;
-    ListView1: TListView;
     PopupMenu2: TPopupMenu;
     Addnewcommand1: TMenuItem;
     Remore1: TMenuItem;
-    Button13: TButton;
-    Button14: TButton;
     ImageList1: TImageList;
-    Button16: TButton;
-    Button17: TButton;
-    Button18: TButton;
-    GroupBox3: TGroupBox;
-    CheckBox17: TCheckBox;
-    CheckBox18: TCheckBox;
-    CheckBox19: TCheckBox;
-    Panel2: TPanel;
-    Label24: TLabel;
-    Image2: TImage;
-    Label21: TLabel;
-    Edit7: TEdit;
-    Label23: TLabel;
-    Edit8: TEdit;
-    Button15: TButton;
-    Button19: TButton;
-    Button20: TButton;
-    CheckBox2: TCheckBox;
-    CheckBox13: TCheckBox;
-    Edit1: TEdit;
-    Button2: TButton;
-    Panel3: TPanel;
-    Label16: TLabel;
-    Label26: TLabel;
-    TrackBar4: TTrackBar;
-    TrackBar3: TTrackBar;
-    Panel4: TPanel;
-    CheckBox16: TCheckBox;
-    Button7: TButton;
-    Edit5: TEdit;
-    Edit9: TEdit;
-    Label25: TLabel;
-    Edit4: TEdit;
-    Button5: TButton;
-    Label18: TLabel;
-    Edit6: TEdit;
-    Label20: TLabel;
-    Label19: TLabel;
     DestroyTimer: TTimer;
-    CheckBox20: TCheckBox;
-    CheckBox21: TCheckBox;
-    CheckBox22: TCheckBox;
-    CheckBox23: TCheckBox;
-    CheckBox24: TCheckBox;
-    Button21: TButton;
-    CheckBox25: TCheckBox;
-    TrackBar2: TTrackBar;
-    Label22: TLabel;
-    TrackBar1: TTrackBar;
-    Label15: TLabel;
-    Button22: TButton;
-    CheckBox26: TCheckBox;
-    CheckBox27: TCheckBox;
-    Button23: TButton;
-    Button24: TButton;
-    CheckListBox2: TCheckListBox;
-    Label11: TLabel;
-    Label27: TLabel;
     PopupMenu3: TPopupMenu;
     Additem1: TMenuItem;
     DeleteItem1: TMenuItem;
@@ -132,32 +32,92 @@ type
     Up1: TMenuItem;
     Down1: TMenuItem;
     PlacesImageList: TImageList;
-    PlacesListView: TListView;
-    CheckBox28: TCheckBox;
-    Bevel1: TBevel;
     Rename1: TMenuItem;
     N2: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
-    CheckBox30: TCheckBox;
-    Shape8: TShape;
-    Label28: TLabel;
-    CheckBox31: TCheckBox;
     N3: TMenuItem;
     Default1: TMenuItem;
-    CheckBox32: TCheckBox;
-    Edit11: TEdit;
-    CheckBox33: TCheckBox;
-    Button25: TButton;
-    CheckBox34: TCheckBox;
-    Edit12: TEdit;
-    Label31: TLabel;
-    Edit13: TEdit;
-    Label32: TLabel;
+    PcMain: TPageControl;
+    TsGeneral: TTabSheet;
+    CheckBox4: TCheckBox;
+    RadioGroup1: TRadioGroup;
+    TsExplorer: TTabSheet;
+    Button20: TButton;
+    Button12: TButton;
+    Button19: TButton;
+    Button24: TButton;
+    Button23: TButton;
+    CheckListBox1: TCheckListBox;
+    PlacesListView: TListView;
+    CheckListBox2: TCheckListBox;
+    Label27: TLabel;
+    Label11: TLabel;
+    CheckBox21: TCheckBox;
+    CheckBox20: TCheckBox;
+    CheckBox12: TCheckBox;
+    CheckBox11: TCheckBox;
+    CheckBox10: TCheckBox;
+    CheckBox9: TCheckBox;
+    Label13: TStaticText;
+    Label12: TStaticText;
+    CheckBox1: TCheckBox;
+    CheckBox6: TCheckBox;
+    CheckBox7: TCheckBox;
+    CheckBox8: TCheckBox;
+    Label14: TStaticText;
+    Bevel1: TBevel;
+    TsView: TTabSheet;
+    TrackBar1: TTrackBar;
+    Label15: TLabel;
+    Label22: TLabel;
+    TrackBar2: TTrackBar;
+    Label16: TLabel;
+    TrackBar3: TTrackBar;
+    TrackBar4: TTrackBar;
+    Label26: TLabel;
+    CheckBox24: TCheckBox;
+    CheckBox25: TCheckBox;
+    CheckBox37: TCheckBox;
+    Button21: TButton;
+    CheckBox22: TCheckBox;
+    CheckBox2: TCheckBox;
+    CheckBox13: TCheckBox;
+    Edit1: TEdit;
+    TsUserMenu: TTabSheet;
+    Button2: TButton;
+    Button16: TButton;
+    GroupBox3: TGroupBox;
+    CheckBox17: TCheckBox;
+    CheckBox18: TCheckBox;
+    CheckBox19: TCheckBox;
+    Button13: TButton;
+    Button14: TButton;
+    Button18: TButton;
+    Button17: TButton;
+    ListView1: TListView;
+    Button15: TButton;
+    Edit8: TEdit;
+    Label23: TLabel;
+    Edit7: TEdit;
+    Label21: TLabel;
+    Label24: TLabel;
+    Image2: TImage;
+    CheckBox16: TCheckBox;
+    Edit5: TEdit;
+    Button7: TButton;
+    Label19: TLabel;
+    Edit9: TEdit;
+    Label25: TLabel;
+    Edit4: TEdit;
+    Button5: TButton;
+    Label18: TLabel;
+    Edit6: TEdit;
+    Label20: TLabel;
+    TsSecurity: TTabSheet;
     GroupBox2: TGroupBox;
-    Edit10: TEdit;
     Label30: TLabel;
     Label29: TLabel;
-    CheckBox35: TCheckBox;
+    Edit10: TEdit;
     GroupBox4: TGroupBox;
     Label17: TLabel;
     Image1: TImage;
@@ -165,31 +125,36 @@ type
     Button3: TButton;
     CheckBox15: TCheckBox;
     CheckBox14: TCheckBox;
-    CheckBox36: TCheckBox;
-    Shape9: TShape;
-    Shape10: TShape;
-    Shape11: TShape;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label33: TLabel;
-    CheckBox5: TCheckBox;
+    TsGlobal: TTabSheet;
+    Label32: TLabel;
+    Edit13: TEdit;
+    Label31: TLabel;
+    Edit12: TEdit;
+    CheckBox34: TCheckBox;
+    Edit11: TEdit;
+    Button25: TButton;
+    CheckBox33: TCheckBox;
+    CheckBox32: TCheckBox;
+    CheckBox31: TCheckBox;
     Edit2: TEdit;
     Label35: TLabel;
-    Label34: TLabel;
-    CheckBox37: TCheckBox;
+    CheckBox5: TCheckBox;
     CheckBox38: TCheckBox;
+    CheckBox30: TCheckBox;
+    CheckBox28: TCheckBox;
+    CheckBox35: TCheckBox;
+    Button22: TButton;
+    CheckBox27: TCheckBox;
+    CheckBox26: TCheckBox;
+    CheckBox23: TCheckBox;
+    Label34: TLabel;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Button9Click(Sender: TObject);
-    procedure LoadCOlorsToWindow;
     procedure FormCreate(Sender: TObject);
-    procedure Button8Click(Sender: TObject);
-    procedure LoadColorsFromWindow;
-    procedure Button11Click(Sender: TObject);
-    procedure Button10Click(Sender: TObject);
     procedure OkButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure CheckListBox1ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -198,9 +163,6 @@ type
     procedure Usemenuitem1Click(Sender: TObject);
     procedure Dontusethisextension1Click(Sender: TObject);
     procedure Button12Click(Sender: TObject);
-    procedure ShellChangeNotifier1Change;
-    procedure Button1Click(Sender: TObject);
-    procedure ListBox1DblClick(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar2Change(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
@@ -250,19 +212,19 @@ type
     procedure Button25Click(Sender: TObject);
     procedure CheckBox33Click(Sender: TObject);
     procedure CheckBox34Click(Sender: TObject);
-    procedure CheckBox36Click(Sender: TObject);
+    procedure PcMainChange(Sender: TObject);
   private
-  FThemeList : TStringList;
-  FUserMenu : TUserMenuItemArray;
-  FLoadedPages : array[0..5] of boolean;
-  FPlaces : TPlaceFolderArray;
-  ReloadData : boolean;
+    FThemeList : TStringList;
+    FUserMenu : TUserMenuItemArray;
+    FLoadedPages : array[0..5] of boolean;
+    FPlaces : TPlaceFolderArray;
+    ReloadData : boolean;
   protected
+    { Protected declarations }
     procedure CreateParams(VAR Params: TCreateParams); override;
-    { Private declarations }
   public
-    procedure LoadLanguage;
     { Public declarations }
+    procedure LoadLanguage;
   end;
 
 var
@@ -318,8 +280,6 @@ begin
   CheckBox4.Checked:=DBKernel.Readbool('Options','AllowPreview',True);
   RadioGroup1.ItemIndex:=DBKernel.readinteger('Options','PreviewSwohOptions',0);
 
-  CheckBox36.Checked:=DBKernel.Readbool('Options','UseWindowsTheme',True);
-  ListBox1.Enabled:=not DBKernel.Readbool('Options','UseWindowsTheme',True);
  end;
  if NewTab=1 then
  begin
@@ -514,21 +474,6 @@ begin
  SaveDialog.Free;
 end;
 
-procedure TOptionsForm.LoadColorsToWindow;
-begin
-  Shape1.Brush.Color:=Theme_MainColor;
-  Shape2.Brush.Color:=Theme_ListColor;
-  Shape3.Brush.Color:=Theme_ListFontColor;
-  Shape4.Brush.Color:=Theme_MainFontColor;
-  Shape7.Brush.Color:=Theme_memoeditcolor;
-  Shape5.Brush.Color:=Theme_memoeditfontcolor;
-  Shape6.Brush.Color:=Theme_Labelfontcolor;
-  Shape8.Brush.Color:=Theme_ListSelectColor;
-  Shape9.Brush.Color:=Theme_ProgressBackColor;
-  Shape10.Brush.Color:=Theme_ProgressFontColor;
-  Shape11.Brush.Color:=Theme_ProgressFillColor;
-end;
-
 procedure TOptionsForm.FormCreate(Sender: TObject);
 var
   i : integer;
@@ -541,11 +486,8 @@ begin
  SaveWindowPos1.SetPosition;
  for i:=0 to 5 do
  FLoadedPages[i]:=false;
- LoadColorsToWindow;
  LoadLanguage;
  FThemeList:=nil;
- ShellChangeNotifier1.Root:=ProgramDir+ThemesDirectory;
- ShellChangeNotifier1Change;
  CheckBox27.Enabled:=GDIPlusPresent;
  if not GDIPlusPresent then
  CheckBox27.Caption:=TEXT_MES_GDI_PLUS_DISABLED_INFO;
@@ -560,50 +502,6 @@ begin
  Remore1.ImageIndex:=DB_IC_DELETE_INFO;
  CheckBox31.Enabled:=not FolderView;
  ClientHeight:=484;
-end;
-
-procedure TOptionsForm.Button8Click(Sender: TObject);
-var
-  OpenDialog : DBOpenDialog;
-begin
- OpenDialog:=DBOpenDialog.Create;
- OpenDialog.Filter:='Color Themes (*.dbc)|*.dbc';
- OpenDialog.FilterIndex:=1;
- If OpenDialog.Execute then
- begin
-  DBkernel.LoadThemeFromFile(OpenDialog.FileName);
-  DBkernel.ReloadGlobalTheme;
-  LoadColorsToWindow;
- end;
- OpenDialog.Free;
-end;
-
-procedure TOptionsForm.LoadColorsFromWindow;
-begin
-  Theme_MainColor:=Shape1.Brush.Color;
-  Theme_ListColor:=Shape2.Brush.Color;
-  Theme_ListFontColor:=Shape3.Brush.Color;
-  Theme_MainFontColor:=Shape4.Brush.Color;
-  Theme_memoeditcolor:=Shape7.Brush.Color;
-  Theme_memoeditfontcolor:=Shape5.Brush.Color;
-  Theme_Labelfontcolor:=Shape6.Brush.Color;
-  Theme_ListSelectColor:=Shape8.Brush.Color;
-
-  Theme_ProgressBackColor:=Shape9.Brush.Color;
-  Theme_ProgressFontColor:=Shape10.Brush.Color;
-  Theme_ProgressFillColor:=Shape11.Brush.Color;
-
-  DBkernel.ReloadGlobalTheme;
-end;
-
-procedure TOptionsForm.Button11Click(Sender: TObject);
-begin
- LoadColorsFromWindow;
-end;
-
-procedure TOptionsForm.Button10Click(Sender: TObject);
-begin
- LoadColorsToWindow;
 end;
 
 procedure TOptionsForm.OkButtonClick(Sender: TObject);
@@ -627,17 +525,7 @@ begin
   begin
    DBKernel.WriteBool('Options','AllowPreview',CheckBox4.Checked);
    DBKernel.WriteInteger('Options','PreviewSwohOptions',RadioGroup1.ItemIndex);
-   DBKernel.WriteBool('Options','UseWindowsTheme',CheckBox36.Checked);
-   if CheckBox36.Checked then
-   begin
-    DBkernel.LoadColorTheme;
-    try
-     DBkernel.ReloadGlobalTheme;
-    except
-      on e : Exception do EventLog(':TOptionsForm::OkButtonClick()\ReloadGlobalTheme throw exception: '+e.Message);
-    end;
    end;
-  end;
 // 1:
   if FLoadedPages[1] then
   begin
@@ -818,28 +706,17 @@ end;
 procedure TOptionsForm.LoadLanguage;
 begin
  Caption := TEXT_MES_OPTIONS;
- TabbedNotebook1.Pages[0]:=TEXT_MES_GENERAL;
- TabbedNotebook1.Pages[1]:=TEXT_MES_EXPLORER;
- TabbedNotebook1.Pages[2]:=TEXT_MES_SLIDE_SHOW;
- TabbedNotebook1.Pages[3]:=TEXT_MES_USER_MENU;
- TabbedNotebook1.Pages[4]:=TEXT_MES_SECURITY;
- TabbedNotebook1.Pages[5]:=TEXT_MES_GLOBAL;
+ TsGeneral.Caption:=TEXT_MES_GENERAL;
+ TsExplorer.Caption:=TEXT_MES_EXPLORER;
+ TsView.Caption:=TEXT_MES_SLIDE_SHOW;
+ TsUserMenu.Caption:=TEXT_MES_USER_MENU;
+ TsSecurity.Caption:=TEXT_MES_SECURITY;
+ TsGlobal.Caption:=TEXT_MES_GLOBAL;
  GroupBox2.Caption:=TEXT_MES_BACKUPING_GROUP;
- StaticText1.Caption:=TEXT_MES_COLOR_THEME;
- Label1.Caption:= TEXT_MES_MAIN_COLOR;
- Label6.Caption:= TEXT_MES_MAIN_F_COLOR;
- Label4.Caption:= TEXT_MES_LIST_COLOR;
- Label5.Caption:= TEXT_MES_LIST_F_COLOR;
- Label9.Caption:= TEXT_MES_EDIT_COLOR;
- Label7.Caption:= TEXT_MES_EDIT_F_COLOR;
- Label8.Caption:= TEXT_MES_LABEL_COLOR;
+
  Dontusethisextension1.Caption:=TEXT_MES_DONT_USE_EXT;
  Usethisprogramasdefault1.Caption:=TEXT_MES_USE_THIS_PROGRAM;
  Usemenuitem1.Caption:=TEXT_MES_USE_ITEM;
- Button11.Caption:= TEXT_MES_LOAD_THEME;
- Button10.Caption:= TEXT_MES_RESET;
- Button8.Caption:= TEXT_MES_LOAD_FROM_FILE;
- Button9.Caption:= TEXT_MES_SAVE_THEME_TO_FILE;
  CheckBox4.Caption:=TEXT_MES_SHOW_PREVIEW;
  RadioGroup1.Caption:=TEXT_MES_HINTS;
  RadioGroup1.Items[0]:=TEXT_MES_ANIMATE_SHOW;
@@ -857,10 +734,7 @@ begin
  Button12.Caption:= TEXT_MES_SET;
  OkButton.Caption:=TEXT_MES_OK;
  Cancelbutton.Caption:=TEXT_MES_CANCEL;
- Label10.Caption:=TEXT_MES_AVALIABLE_THEMES;
- Button1.Caption:=TEXT_MES_LOAD_THEME;
  CheckBox2.Caption:=TEXT_MES_USE_COOL_STRETCH;
-// GroupBox2.Caption:=TEXT_MES_DO_SLIDE_SHOW;
  CheckBox13.Caption:=TEXT_MES_USE_EXTERNAL_VIEWER;
  Label14.Caption:=TEXT_MES_EXT_IN_USE;
  TrackBar4Change(nil);
@@ -925,7 +799,6 @@ begin
  Rename1.Caption:=TEXT_MES_RENAME;
  CheckBox30.Caption:=TEXT_MES_ALLOW_VIRTUAL_CURSOR_IN_EDITOR;
 
- Label28.Caption:=TEXT_MES_SELECTED_COLOR;
  Default1.Caption:=TEXT_MES_DEFAULT;
  CheckBox31.Caption:=TEXT_MES_DO_UPDATE_IMAGES_ON_IMAGE_CHANGES;
  CheckBox32.Caption:=TEXT_MES_RUN_EXPLORER_AT_ATARTUP;
@@ -937,66 +810,11 @@ begin
  CheckBox35.Caption:=TEXT_MES_SHOW_GROUPS_IN_SEARCH;
  GroupBox4.Caption:=TEXT_MES_PASSWORDS;
 
- CheckBox36.Caption:=TEXT_MES_USE_WINDOWS_THEME;
-
- Label2.Caption:=TEXT_MES_PROGRESS_BACK_COLOR;
- Label3.Caption:=TEXT_MES_PROGRESS_FONT_COLOR;
- Label33.Caption:=TEXT_MES_PROGRESS_FILL_COLOR;
-
  CheckBox5.Caption:=TEXT_MES_USE_FULL_RECT_SELECT;
  Label34.Caption:=TEXT_MES_LIST_VIEW_ROUND_RECT_SIZE;
 
  CheckBox37.Caption:=TEXT_MES_USE_SLIDE_SHOW_FAST_LOADING;
  CheckBox38.Caption:=TEXT_MES_USE_SMALL_TOOLBAR_ICONS;
-end;
-
-procedure TOptionsForm.ShellChangeNotifier1Change;
-var
-  i : integer;
-begin
- if FThemeList=nil then FThemeList:=TStringList.Create;
- FThemeList.Clear;
- RelodThemesNamesW(FThemeList);
- ListBox1.Items.Clear;
- for i:=0 to FThemeList.Count-1 do
- ListBox1.Items.Add(ExtractFileName(FThemeList[i]));
-end;
-
-procedure TOptionsForm.Button1Click(Sender: TObject);
-var
-  i : integer;
-begin
- For i:=0 to ListBox1.Items.Count-1 do
- begin
-  if ListBox1.Selected[i] then
-  begin
-   DBkernel.LoadThemeFromFile(FThemeList[i]);
-   DBkernel.ReloadGlobalTheme;
-   LoadColorsToWindow;
-   Break;
-  end;
- end;
-end;
-
-procedure TOptionsForm.ListBox1DblClick(Sender: TObject);
-var
-  i : integer;
-begin
- For i:=0 to ListBox1.Items.Count-1 do
- begin
-  if ListBox1.Selected[i] then
-  begin
-   DBkernel.LoadThemeFromFile(FThemeList[i]);
-   try
-    DBkernel.ReloadGlobalTheme;
-   except
-    on e : Exception do EventLog(':TOptionsForm::ListBox1DblClick()\ReloadGlobalTheme throw exception: '+e.Message);
-   end;
-   LoadColorsToWindow;
-   ReloadData:=true;
-   Break;
-  end;
- end;
 end;
 
 procedure TOptionsForm.TrackBar1Change(Sender: TObject);
@@ -1006,7 +824,6 @@ end;
 
 procedure TOptionsForm.TrackBar2Change(Sender: TObject);
 begin
-// Label15.Caption:=Format(TEXT_MES_SLIDE_SHOW_GRAYSCALE_OPTIONS,[IntToStr(TrackBar2.Position)]);
  Label22.Caption:=Format(TEXT_MES_SLIDE_SHOW_SPEED,[IntToStr(TrackBar2.Position*50)]);
 end;
 
@@ -1376,6 +1193,13 @@ begin
  ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
+procedure TOptionsForm.PcMainChange(Sender: TObject);
+var
+  AllowChange : Boolean;
+begin
+  TabbedNotebook1Change(Sender, PcMain.ActivePageIndex, AllowChange);
+end;
+
 procedure TOptionsForm.PlacesListViewContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
@@ -1726,16 +1550,6 @@ procedure TOptionsForm.CheckBox34Click(Sender: TObject);
 begin
  Edit12.Enabled:=CheckBox34.Checked;
  Edit13.Enabled:=CheckBox34.Checked;
-end;
-
-procedure TOptionsForm.CheckBox36Click(Sender: TObject);
-begin
- ListBox1.Enabled:=not CheckBox36.Checked;
- if CheckBox36.Checked then
- begin
-  DBkernel.LoadColorTheme;
-  LoadColorsToWindow;
- end;
 end;
 
 end.

@@ -2221,7 +2221,6 @@ object ExplorerForm: TExplorerForm
     Align = alLeft
     ParentColor = True
     TabOrder = 0
-    ExplicitHeight = 526
     object CloseButtonPanel: TPanel
       Left = 1
       Top = 1
@@ -2260,7 +2259,6 @@ object ExplorerForm: TExplorerForm
       ParentCtl3D = False
       TabOrder = 1
       OnResize = PropertyPanelResize
-      ExplicitHeight = 503
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
@@ -2282,7 +2280,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'ScrollBox1'
         TabOrder = 0
         OnResize = ScrollBox1Resize
-        ExplicitHeight = 503
         object TypeLabel: TLabel
           Left = 8
           Top = 136
@@ -2724,7 +2721,6 @@ object ExplorerForm: TExplorerForm
       item
         Width = 150
       end>
-    ExplicitTop = 573
   end
   object CoolBar1: TCoolBar
     Left = 0
@@ -2996,7 +2992,6 @@ object ExplorerForm: TExplorerForm
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 3
-    ExplicitHeight = 526
   end
   object CoolBar2: TCoolBar
     Left = 0

@@ -65,7 +65,10 @@ procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; S
 procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string;
   DragPoint : TPoint; var SpotX, SpotY : Integer); overload;
-
+procedure EnsureSelectionInListView(EasyListview: TEasyListview; ListItem : TEasyItem;
+  Shift: TShiftState; X, Y: Integer; var ItemSelectedByMouseDown : Boolean;
+  var ItemByMouseDown : Boolean);
+procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item : TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
 
 implementation
 
@@ -545,6 +548,61 @@ begin
     end;
     Inc(I)
   end
+end;
+
+procedure EnsureSelectionInListView(EasyListview: TEasyListview; ListItem : TEasyItem;
+  Shift: TShiftState; X, Y: Integer; var ItemSelectedByMouseDown : Boolean;
+  var ItemByMouseDown : Boolean);
+var
+  R: TRect;
+  I: Integer;
+begin
+  R := EasyListview.Scrollbars.ViewableViewportRect;
+  if (ListItem <> nil) and ListItem.SelectionHitPt(Point(X + R.Left, Y + R.Top), EshtClickSelect) then
+  begin
+
+    ItemSelectedByMouseDown := False;
+    if not ListItem.Selected then
+    begin
+      if [SsCtrl, SsShift] * Shift = [] then
+        for I := 0 to EasyListview.Items.Count - 1 do
+          if EasyListview.Items[I].Selected then
+            if ListItem <> EasyListview.Items[I] then
+              EasyListview.Items[I].Selected := False;
+      if [SsShift] * Shift <> [] then
+        EasyListview.Selection.SelectRange(ListItem, EasyListview.Selection.FocusedItem, False, False)
+      else
+      begin
+        ItemSelectedByMouseDown := True;
+        ListItem.Selected := True;
+        ListItem.Focused := True;
+      end;
+    end else
+      ItemByMouseDown := True;
+
+    ListItem.Focused := True;
+  end;
+end;
+
+procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item : TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
+var
+  I : Integer;
+begin
+  if Item <> nil then
+    if Item.Selected and (Button = MbLeft) then
+    begin
+      if (Shift = []) and Item.Selected then
+        if ItemByMouseDown then
+        begin
+          for I := 0 to EasyListview.Items.Count - 1 do
+            if EasyListview.Items[I].Selected then
+              if Item <> EasyListview.Items[I] then
+                EasyListview.Items[I].Selected := False;
+        end;
+      if not(EbcsDragSelecting in EasyListview.States) then
+        if ([SsCtrl] * Shift <> []) and not ItemSelectedByMouseDown then
+          Item.Selected := False;
+    end;
 end;
 
 { TEasyCollectionItemX }

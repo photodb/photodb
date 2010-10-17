@@ -1491,18 +1491,18 @@ begin
 
   if (Msg.message = WM_MOUSEWHEEL) then
   begin
-    if not ZoomerOn then
-    begin
-      if Msg.WParam > 0 then
-        Previous_(nil)
-      else
-        Next_(nil);
-    end else
+    if ZoomerOn or CtrlKeyDown then
     begin
       if Msg.WParam > 0 then
         TbZoomOutClick(nil)
       else
         TbZoomInClick(nil);
+    end else
+    begin
+      if Msg.WParam > 0 then
+        Previous_(nil)
+      else
+        Next_(nil);
     end;
   end;
 end;

@@ -3,7 +3,7 @@ unit DBScriptFunctions;
 interface
 
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
-     ReplaseLanguageInScript, Forms, Classes, SysUtils, Registry, GraphicCrypt,
+     Forms, Classes, SysUtils, Registry, GraphicCrypt,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
      Math, uScript, UnitCDMappingSupport, uFileUtils, ImageConverting,
      UnitDBCommon;
@@ -54,8 +54,7 @@ end;
 
 function InitializeScriptString(Script : string) : string;
 begin
- Result := AddLanguage(Script);
- Result := AddIcons(Result);
+ Result := AddIcons(Script);
 end;
 
 procedure ShowUpdateWindow;

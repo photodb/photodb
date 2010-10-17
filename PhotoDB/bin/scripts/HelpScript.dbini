@@ -1,26 +1,26 @@
-<TEXT_MES_HELP>[DB_IC_HELP]
+<Help>[DB_IC_HELP]
 {
-  <TEXT_MES_HELP>[DB_IC_HELP]
+  <Help>[DB_IC_HELP]
   {
     DoHelp;
   }
-  <TEXT_MES_ACTIVATION>[DB_IC_NOTES]
+  <Activation>[DB_IC_NOTES]
   {
     DoActivation;
   }
-  <TEXT_MES_ABOUT>[DB_IC_HELP]
+  <About>[DB_IC_HELP]
   {
     DoAbout;
   }
-  <TEXT_MES_HOME_PAGE>[DB_IC_NETWORK]
+  <Go to Home Page>[DB_IC_NETWORK]
   {
     DoHomePage;
   }
-  <TEXT_MES_CONTACT_WITH_AUTHOR>[DB_IC_E_MAIL]
+  <Email author>[DB_IC_E_MAIL]
   {
     DoHomeContactWithAuthor;
   }
-  <TEXT_MES_GET_UPDATING>[DB_IC_UPDATING]
+  <Check for updates>[DB_IC_UPDATING]
   {
     GetUpdates(true);
   }

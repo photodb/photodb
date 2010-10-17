@@ -1,19 +1,19 @@
 <#>[]{scripts\changedb_functions.dbini}
-<TEXT_MES_FILE>[0]
+<File>[0]
 {
   //все иконки необходимо создать ДО появления соответствующего меню (Выбор БД)
   $IconList=GetDBsIcons;
   //
-  <TEXT_MES_LOAD_RES>[DB_IC_LOADFROMFILE]
+  <Load results>[DB_IC_LOADFROMFILE]
   {
     LoadResults;
   }
-  <TEXT_MES_SAVE_RES>[DB_IC_SAVETOFILE]
+  <Save results>[DB_IC_SAVETOFILE]
   {
     SaveResults;
   }
   <->[]{}
-  <TEXT_MES_SELECT_DATABASE>[DB_IC_ADDTODB]
+  <Select DB>[DB_IC_ADDTODB]
   {
    run:  
    //пустой итем. создаётся сразу
@@ -23,12 +23,12 @@
    InsertSelectDBMenu($IconList);
   }
   <->[]{}
-  <TEXT_MES_EXIT>[DB_IC_EXIT]
+  <Exit>[DB_IC_EXIT]
   {
     CloseWindow;
   }
 }
-<TEXT_MES_VIEW>[0]
+<View>[0]
 {
  <->[]{}
  DeleteNoFirst;
@@ -36,75 +36,71 @@
  LoadExplorerValue;
  if ($explorer=true) 
  {
-  CreateItemDefChecked("TEXT_MES_SHOW_EXPLORER_PANEL",-1,"HideExplorerPanel;",false,true,true,0);
+  CreateItemDefChecked("Show explorer panel",-1,"HideExplorerPanel;",false,true,true,0);
  }; else 
  {
-  CreateItemDefChecked("TEXT_MES_SHOW_EXPLORER_PANEL",DB_IC_EXPLORER_PANEL,"ShowExplorerPanel;",false,true,false,0);
+  CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"ShowExplorerPanel;",false,true,false,0);
  };
 }
-<TEXT_MES_TOOLS>[0]
+<Tools>[0]
 {
-  <TEXT_MES_GET_LIST_OF_KEYWORDS>[DB_IC_SEARCH]
+  <Show list of keywords>[DB_IC_SEARCH]
   {
     GetListOfKeyWords;
   }
-  <TEXT_MES_MAKE_DB_TREE>[DB_IC_TREE]
+  <Show DB tree>[DB_IC_TREE]
   {   
     MakeDBFileTree;
   }
-  <TEXT_MES_SHOW_UPDATER>[DB_IC_BOX]
+  <Show updater window>[DB_IC_BOX]
   {
     ShowUpdateWindow;
   }
-  <TEXT_MES_MANAGE_DB>[DB_IC_ADMINTOOLS]
+  <DB Manager>[DB_IC_ADMINTOOLS]
   {
     DoManager;
   }
-  <TEXT_MES_IMAGE_EDITOR>[DB_IC_IMEDITOR]
+  <Image editro>[DB_IC_IMEDITOR]
   {  
     $form=NewImageEditor;
     ShowDBForm($form);
   }
-  <TEXT_MES_NEW_PANEL>[DB_IC_PANEL]
+  <New panel>[DB_IC_PANEL]
   {
     NewPanel;
   }
-  <TEXT_MES_NEW_SEARCH>[DB_IC_ADDTODB]
+  <New search window>[DB_IC_ADDTODB]
   {
     NewSearch;
   }
-  <TEXT_MES_GROUPS_MANAGER>[DB_IC_GROUPS]
+  <Groups manager>[DB_IC_GROUPS]
   {   
     ExecuteGroupManager;
   }
-  <TEXT_MES_EXPLORER>[DB_IC_EXPLORER]
+  <Explorer>[DB_IC_EXPLORER]
   {
     NewExplorer;
   }
-
-  <TEXT_MES_SPLIT_DB_CAPTION>[DB_IC_SPLIT]
+  <Split DB>[DB_IC_SPLIT]
   {
     SplitDB;
   }
-
   <->[]{}
-  <TEXT_MES_CD_EXPORT_CAPTION>[DB_IC_CD_EXPORT]
+  <Export images to CD>[DB_IC_CD_EXPORT]
   {
     DoCDExport;
   }  
-  <TEXT_MES_CD_MAPPING_CAPTION>[DB_IC_CD_MAPPING]
+  <CD Mapping>[DB_IC_CD_MAPPING]
   {
     DoCDMapping;
   }
-
   <->[]{}
-  <TEXT_MES_OPTIONS>[DB_IC_OPTIONS]
+  <Options>[DB_IC_OPTIONS]
   {
     DoOptions;
   }
   <>[]{scripts\MenuScripts.dbini}
 }
-//общие пункты меню вынесены в отдельные файлы
-<->[]{}
+//common menu
 <>[]{scripts\GetPhotosScript.dbini}
 <>[]{scripts\HelpScript.dbini}

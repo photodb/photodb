@@ -2443,6 +2443,8 @@ const
   MaxBufferSize = 255;
 
 begin
+  if KernelHandle = 0 then
+    KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
   PAddr := GetProcAddress(KernelHandle, 'GetCIDA');
   if PAddr = nil then
   begin

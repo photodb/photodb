@@ -278,7 +278,7 @@ end;
 
 function TPassWordForm.GetFormID: string;
 begin
-  Result := 'PasswordForm';
+  Result := 'Password';
 end;
 
 procedure TPassWordForm.ReallignControlsEx;

@@ -94,6 +94,7 @@ begin
     FilePass := '';
     if ValidCryptGraphicFile(FInfo.FileName) then
     begin
+      Crypted := True;
       FilePass := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
       if FilePass = '' then
         Exit;

@@ -225,7 +225,6 @@ uses
   UnitSQLOptimizing in 'Units\UnitSQLOptimizing.pas',
   CommonDBSupport in 'Units\CommonDBSupport.pas',
   UnitScripts in 'Units\UnitScripts.pas',
-  ReplaseLanguageInScript in 'Units\ReplaseLanguageInScript.pas',
   ReplaseIconsInScript in 'Units\ReplaseIconsInScript.pas',
   DBScriptFunctions in 'Units\DBScriptFunctions.pas',
   UnitScriptsFunctions in 'Units\UnitScriptsFunctions.pas',

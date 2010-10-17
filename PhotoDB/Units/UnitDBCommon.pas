@@ -3,7 +3,7 @@ unit UnitDBCommon;
 interface
 
 uses Windows, Classes, Forms, Math, SysUtils, uScript, UnitScripts, Messages,
-     ReplaseLanguageInScript, ReplaseIconsInScript, uTime;
+     ReplaseIconsInScript, uTime;
 
 function Hash_Cos_C(s:string):integer;
 function ActivateApplication(const Handle1: THandle): Boolean;
@@ -210,7 +210,7 @@ begin
       if LoadScript[i]=#10 then LoadScript[i]:=' ';
       if LoadScript[i]=#13 then LoadScript[i]:=' ';
      end;
-     LoadScript:=AddLanguage(LoadScript);
+     //LoadScript:=AddLanguage(LoadScript);
      LoadScript:=AddIcons(LoadScript);
      aFS.Free;
     except

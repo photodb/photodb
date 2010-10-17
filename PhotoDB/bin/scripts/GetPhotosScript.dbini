@@ -1,4 +1,4 @@
-<TEXT_MES_GET_PHOTOS>[DB_IC_GET_USB]
+<Get photos>[DB_IC_GET_USB]
 {
   $CDROM=GetCDROMDrives;
   $CD_ROM_ICONS=GetIntArray(0);
@@ -11,7 +11,7 @@
     AddIntItem($CD_ROM_ICONS,$IconN);
     AddStringItem($CD_ROMs,$Drive);
   };
-  <TEXT_MES_REMOVABLE_DRIVES>[DB_IC_USB]
+  <Removable drives>[DB_IC_USB]
   {
     <->[]{}
     $USB=GetUSBDrives;
@@ -27,10 +27,10 @@
       CreateItem($Caption,DB_IC_USB,$RunScript,false,0);
     };
     if ($c=0) {
-      CreateItemDef("TEXT_MES_NO_USB_DRIVES",DB_IC_DELETE_INFO,"",false,0,false);
+      CreateItemDef("No USB drives",DB_IC_DELETE_INFO,"",false,0,false);
     };
   }
-  <TEXT_MES_CD_ROM_DRIVES>[DB_IC_CD_ROM]
+  <CD-ROM drives>[DB_IC_CD_ROM]
   {
     <->[]{initialization: InVisible; }
     DeleteNoFirst;
@@ -46,10 +46,10 @@
       CreateItem($Caption,$IconN,$RunScript,false,0);
     };
     if ($c=0) {
-      CreateItemDef("TEXT_MES_NO_CD_ROM_DRIVES",DB_IC_DELETE_INFO,"",false,0,false);
+      CreateItemDef("No CD-ROM drives",DB_IC_DELETE_INFO,"",false,0,false);
     };
   }
-  <TEXT_MES_SPECIAL_LOCATION>[DB_IC_DIRECTORY]
+  <Select location>[DB_IC_DIRECTORY]
   {
     $dir=SelectDir("TEXT_MES_SEL_FOLDER_IMPORT_PHOTOS");
     $DirExists=DirectoryExists($dir);

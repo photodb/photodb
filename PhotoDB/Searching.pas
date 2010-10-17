@@ -522,7 +522,6 @@ uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
      UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm , UnitQuickGroupInfo,
      UnitGroupReplace, UnitSavingTableForm, UnitInternetUpdate, UnitHelp,
      ImEditor, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
-     ReplaseLanguageInScript, ReplaseIconsInScript,
      UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
      UnitOpenQueryThread;
 
@@ -853,8 +852,8 @@ end;
 procedure TSearchForm.ListViewMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  I : integer;
-  MenuInfo : TDBPopupMenuInfo;
+  I: Integer;
+  MenuInfo: TDBPopupMenuInfo;
   Item, SelectedItem: TEasyItem;
 begin
   Item := ItemAtPos(X, Y);
@@ -864,27 +863,7 @@ begin
   if Item = nil then
     ElvMain.Selection.ClearAll;
 
-  if (Button = mbLeft) and (SelectedItem <> nil) then
-  begin
-    ItemSelectedByMouseDown := False;
-    if not SelectedItem.Selected then
-    begin
-      if [ssCtrl, ssShift] * Shift = [] then
-        for I := 0 to ElvMain.Items.Count - 1 do
-          if ElvMain.Items[I].Selected and (SelectedItem <> ElvMain.Items[I]) then
-            ElvMain.Items[I].Selected := False;
-
-      if [ssShift] * Shift <> [] then
-        ElvMain.Selection.SelectRange(SelectedItem, ElvMain.Selection.FocusedItem, False, False)
-      else begin
-        ItemSelectedByMouseDown := True;
-        SelectedItem.Selected := True;
-      end;
-    end else
-      ItemByMouseDown:=true;
-
-    SelectedItem.Focused:=True;
-  end;
+  EnsureSelectionInListView(ElvMain, Item, Shift, X, Y, ItemSelectedByMouseDown, ItemByMouseDown);
 
   if (Button = mbLeft) and (Item <> nil) then
   begin
@@ -2140,37 +2119,22 @@ end;
 procedure TSearchForm.ListViewMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  Handled : boolean;
-  i : integer;
-  item: TEasyItem;
+  Handled: Boolean;
+  Item: TEasyItem;
 begin
 
-   item:=self.ItemAtPos(X,Y);
-   if item<>nil then
-   if item.Selected then
-   begin
-    if (Shift=[]) and item.Selected then
-    if ItemByMouseDown then
-    begin
-     for i:=0 to ElvMain.Items.Count-1 do
-     if ElvMain.Items[i].Selected then
-     if item<>ElvMain.Items[i] then
-     ElvMain.Items[i].Selected:=false;
-    end;
-    if not (ebcsDragSelecting in ElvMain.States) then
-    if ([ssCtrl]*Shift<>[]) and not ItemSelectedByMouseDown and (Button=mbLeft) then
-    item.Selected:=false;
-   end;
+  Item := Self.ItemAtPos(X, Y);
+  RightClickFix(ElvMain, Button, Shift, Item, ItemByMouseDown, ItemSelectedByMouseDown);
 
- if MouseDowned then
- if Button=mbRight then
- begin
-  ListViewContextPopup(ElvMain,Point(X,Y),Handled);
-  PopupHandled:=true;
- end;
- MouseDowned:=false;
- DBCanDrag:=false;
- FilesToDrag.Clear;
+  if MouseDowned then
+    if Button = MbRight then
+    begin
+      ListViewContextPopup(ElvMain, Point(X, Y), Handled);
+      PopupHandled := True;
+    end;
+  MouseDowned := False;
+  DBCanDrag := False;
+  FilesToDrag.Clear;
 end;
 
 procedure TSearchForm.ListViewExit(Sender: TObject);
@@ -2521,8 +2485,8 @@ procedure TSearchForm.Comentnotsets1Click(Sender: TObject);
 begin
  Memo2.ReadOnly:=True;
  Memo2.Cursor:=CrHandPoint;
- Memo2.Text:=TEXT_MES_VAR_COM;
- SelectedInfo.CommonComment:=TEXT_MES_VAR_COM;
+ Memo2.Text:= L('<Different comments>');
+ SelectedInfo.CommonComment:= '';
  CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
  Memo1Change(Sender);
 end;
@@ -2634,7 +2598,7 @@ var
 
   begin
    if count<50 then
-   DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT, TEXT_MES_HELP_FIRST, Point(0,0), ElvMain, HelpNextClick,TEXT_MES_NEXT_HELP,HelpCloseClick) else
+   DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_FIRST, Point(0,0), ElvMain, HelpNextClick, L('Next...'),HelpCloseClick) else
    begin
     HelpNo:=0;
     DBKernel.WriteBool('HelpSystem','CheckRecCount',False);
@@ -2650,7 +2614,7 @@ begin
   HelpActivationNO:=0;
   if DBkernel.GetDemoMode then
   if DBKernel.ReadBool('HelpSystem','ActivationHelp',True) then
-  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_FIRST,Point(0,0),ElvMain,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick) else
+  DoHelpHintCallBackOnCanClose(L('Help'),TEXT_MES_HELP_ACTIVATION_FIRST,Point(0,0),ElvMain,HelpActivationNextClick, L('Next...'),HelpActivationCloseClick) else
   if not DBkernel.GetDemoMode then
   DBKernel.WriteBool('HelpSystem','ActivationHelp',false);
   exit;
@@ -2835,7 +2799,7 @@ end;
 procedure TSearchForm.HelpCloseClick(Sender: TObject;
   var CanClose: Boolean);
 begin
- CanClose:=ID_OK=MessageBoxDB(Handle,TEXT_MES_CLOSE_HELP,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION);
+ CanClose:=ID_OK=MessageBoxDB(Handle,TEXT_MES_CLOSE_HELP, L('Confirm'), TD_BUTTON_OKCANCEL,TD_ICON_QUESTION);
  if CanClose then
  begin
   HelpNo:=0;
@@ -2863,7 +2827,7 @@ end;
 procedure TSearchForm.HelpActivationCloseClick(Sender: TObject;
   var CanClose: Boolean);
 begin
- CanClose:=ID_OK=MessageBoxDB(Handle,TEXT_MES_CLOSE_HELP,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION);
+ CanClose:=ID_OK=MessageBoxDB(Handle,TEXT_MES_CLOSE_HELP, L('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_QUESTION);
  if CanClose then
  begin
   HelpActivationNO:=0;
@@ -2878,7 +2842,7 @@ begin
  HelpActivationNO:=HelpActivationNO+1;
  if HelpActivationNO=1 then
  begin
-  DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_ACTIVATION_1,Point(0,0),ElvMain,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick);
+  DoHelpHintCallBackOnCanClose(L('Help'),TEXT_MES_HELP_ACTIVATION_1,Point(0,0),ElvMain,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick);
  end;
  if HelpActivationNO=2 then
  begin
@@ -2940,21 +2904,23 @@ end;
 
 procedure TSearchForm.QuickGroupsearch(Sender: TObject);
 var
- S : String;
- i : integer;
+  S: string;
+  I: Integer;
 begin
- S:=(Sender as TMenuItem).Caption;
- for i:=1 to Length(s)-1 do
- begin
-  if (s[i]='&') and (s[i+1]<>'&') then Delete(S,i,1);
- end;
- for i:=1 to ComboBoxSearchGroups.Items.Count-1 do
- if ComboBoxSearchGroups.ItemsEx[i].Caption=S then
- begin
-  ComboBoxSearchGroups.ItemIndex := i;
-  break;
- end;
- if WlStartStop.Text<>TEXT_MES_STOP then DoSearchNow(nil);
+  S := (Sender as TMenuItem).Caption;
+  for I := 1 to Length(S) - 1 do
+  begin
+    if (S[I] = '&') and (S[I + 1] <> '&') then
+      Delete(S, I, 1);
+  end;
+  for I := 1 to ComboBoxSearchGroups.Items.Count - 1 do
+    if ComboBoxSearchGroups.ItemsEx[I].Caption = S then
+    begin
+      ComboBoxSearchGroups.ItemIndex := I;
+      Break;
+    end;
+  if WlStartStop.Text <> L('Stop') then
+    DoSearchNow(Sender);
 end;
 
 procedure TSearchForm.SortbyID1Click(Sender: TObject);
@@ -3782,7 +3748,7 @@ var
   ListItem : TEasyItem;
 begin
   FileName := AnsiLowerCase(FileName);
-
+  Result := False;
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
     ListItem := ElvMain.Items[I];
@@ -5114,8 +5080,10 @@ begin
     if SearchExtraInfo.Bitmap <> nil then
       New.ImageIndex := FBitmapImageList.AddBitmap(SearchExtraInfo.Bitmap)
     else
-      New.ImageIndex := -1;
+      New.ImageIndex := FBitmapImageList.AddIcon(SearchExtraInfo.Icon, True);
+
     SearchExtraInfo.Bitmap := nil;
+    SearchExtraInfo.Icon := nil;
   end;
   New.Caption := ExtractFileName(DataRecord.FileName);
 end;
@@ -5188,7 +5156,7 @@ procedure TSearchForm.SearchEditChange(Sender: TObject);
 begin
   if not FCanBackgroundSearch then
     Exit;
-  WlStartStop.Text := TEXT_MES_SEARCH;
+  WlStartStop.Text := L('Search');
   LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
   LsSearchResults.Color := SearchPanelA.Color;
   LsSearchResults.Show;
@@ -5206,7 +5174,7 @@ end;
 procedure TSearchForm.UpdateQueryEstimateCount(Count: Integer);
 begin
   LsSearchResults.Hide;
-  WlStartStop.Text := Format(TEXT_MES_SEARCH_WITH_COUNT, [Count]);
+  WlStartStop.Text := Format(L('Search (%d results)'), [Count]);
 end;
 
 procedure TSearchForm.elvDateRangeItemSelectionChanged(

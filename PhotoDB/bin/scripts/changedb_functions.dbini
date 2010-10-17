@@ -1,23 +1,23 @@
   @functions
 
   .int[] GetDBsIcons(){
-   //получение списка иконок
+   //Get list of icons
    $DBIconList=GetDBIconList;
    $n=ArrayStringLength($DBIconList); 
    $Result=GetIntArray;
    for($i=0;$i<$n;$i=%$i+1)
    {
     $aicon=GetStringItem($DBIconList,$i);
-    //получаем номер иконки 
+    //Get ID of icon
     $n=AddIcon($aicon);
-    //добавляем в массив
+    //add to array
     AddIntItem($Result,$n);
    };
   };
 
   .void InsertSelectDBMenu($IconList){
-   $DBNameList=GetDBNameList; //список имён
-   $DBFileList=GetDBFileList; //файлы
+   $DBNameList=GetDBNameList; //list of names
+   $DBFileList=GetDBFileList; //files
    $n=ArrayStringLength($DBNameList);
    for($i=0;$i<$n;$i=%$i+1)
    {
@@ -25,10 +25,10 @@
     $ic=GetIntItem($IconList,$i);
     $file=GetStringItem($DBFileList,$i);
     $file=LowerCase($file);
-    $dbname=GetCurrentDB; //текущая БД
-    $dbname=LowerCase($dbname); //приводим всё к маленьким буквам для сравнения
-    if ($dbname=$file) {$b=true;}; else {$b=false;}; //если это текущая БД то её будет выделять жирным
-    $run=PathFormat("SelectDB(""%1"");",$file); //по клику на итем - выбор новой БД
+    $dbname=GetCurrentDB; //current DB
+    $dbname=LowerCase($dbname); //to lower case to compare
+    if ($dbname=$file) {$b=true;}; else {$b=false;}; //if current db - bold font
+    $run=PathFormat("SelectDB(""%1"");",$file); //by click - select new db
     CreateItemDefChecked($aCaption,$ic,$run,$b,true,false,0);
    };
   };

@@ -86,7 +86,7 @@ Procedure ExecuteGroupManager;
 
 implementation
 
-uses UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo, Language,
+uses UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo,
   Searching, UnitSelectFontForm;
 
 {$R *.dfm}
@@ -114,7 +114,7 @@ begin
   if Length(Groups) > 0 then
     ShowModal
   else begin
-    if ID_OK = MessageBoxDB(Handle, TEXT_MES_NO_GROUPS, TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    if ID_OK = MessageBoxDB(Handle, L('Groups in DB not found! Do You want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       CreateNewGroupDialog;
   end;
 end;
@@ -124,10 +124,10 @@ begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   DBKernel.RecreateThemeToForm(Self);
   FSaving := False;
-  Caption := TEXT_MES_MANAGE_GROUPS;
+  Caption := L('Manage groups');
   ListView1.DoubleBuffered := True;
   Width := Min(650, Round(Screen.Width / 1.3));
-  ListView1.Columns[0].Caption := TEXT_MES_GROUPS_LIST;
+  ListView1.Columns[0].Caption := L('Groups list');
   FBitmapImageList := TBitmapImageList.Create;
   MainMenu1.Images := DBKernel.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;
@@ -154,24 +154,24 @@ begin
   ImagePopupMenu.Tag := (Sender as TListView).GetItemAt(MousePos.X, MousePos.Y).ImageIndex;
 
   MenuChangeGroup := TMenuItem.Create(ImagePopupMenu);
-  MenuChangeGroup.Caption := TEXT_MES_CHANGE_GROUP;
+  MenuChangeGroup.Caption := L('Edit group');
   MenuChangeGroup.OnClick := ChangeGroup;
   MenuChangeGroup.ImageIndex := DB_IC_RENAME;
   MenuDeleteGroup := TMenuItem.Create(ImagePopupMenu);
-  MenuDeleteGroup.Caption := TEXT_MES_DELETE_GROUP;
+  MenuDeleteGroup.Caption := L('Delete group');
   MenuDeleteGroup.OnClick := DeleteGroup;
   MenuDeleteGroup.ImageIndex := DB_IC_DELETE_INFO;
   MenuAddGroup := TMenuItem.Create(ImagePopupMenu);
-  MenuAddGroup.Caption := TEXT_MES_ADD_GROUP;
+  MenuAddGroup.Caption := L('Create group');
   MenuAddGroup.OnClick := MenuActionAddGroup;
   MenuAddGroup.ImageIndex := DB_IC_NEW_SHELL;
 
   MenuSearchForGroup := TmenuItem.Create(ImagePopupMenu);
-  MenuSearchForGroup.Caption := TEXT_MES_SEARCH_FOR_GROUP;
+  MenuSearchForGroup.Caption := L('Search images of group');
   MenuSearchForGroup.ImageIndex := DB_IC_SEARCH;
   MenuSearchForGroup.OnClick := MenuActionSearchForGroup;
   MenuQuickInfoGroup := TmenuItem.Create(ImagePopupMenu);
-  MenuQuickInfoGroup.Caption := TEXT_MES_QUICK_GROUP_INFO;
+  MenuQuickInfoGroup.Caption := L('Group info');
   MenuQuickInfoGroup.OnClick := MenuActionQuickInfoGroup;
   MenuQuickInfoGroup.ImageIndex := DB_IC_PROPERTIES;
 
@@ -235,16 +235,16 @@ begin
   else
     Index := (Sender as TComponent).Tag;
 
-  if ID_OK = MessageBoxDB(Handle, Format(TEXT_MES_DELETE_GROUP_CONFIRM, [Groups[index].GroupName]), TEXT_MES_WARNING,
+  if ID_OK = MessageBoxDB(Handle, Format(L('Do you really want to delete group "%s"?'), [Groups[index].GroupName]), L('Warning'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
     if UnitGroupsWork.DeleteGroup(Groups[index]) then
     begin
-      if ID_OK = MessageBoxDB(Handle, Format(TEXT_MES_DELETE_GROUP_IN_TABLE_CONFIRM, [Groups[index].GroupName]),
-        TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      if ID_OK = MessageBoxDB(Handle, Format(L('Scan DB and remote all pointers to group "%s"?'), [Groups[index].GroupName]),
+        L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       begin
         FSaving := True;
         UnitGroupsTools.DeleteGroup(Groups[index]);
-        MessageBoxDB(Handle, TEXT_MES_RELOAD_INFO, TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
+        MessageBoxDB(Handle, L('Reload data in windows to see changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
         FSaving := False;
         DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
         Exit;
@@ -285,140 +285,161 @@ procedure TFormManageGroups.ListView1CustomDrawItem(
   Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 var
-  r, r1, r2 : TRect;
-  b, btext : TBitmap;
-  textrect : TRect;
-  size, i : integer;
-  acaption, atext, akeyWords, aGroups, fn : string;
-  axGroups : TGroups;
-Const DrawTextOpt = DT_EDITCONTROL;
-  DrawTextOpt1 = DT_NOPREFIX+DT_WORDBREAK+DT_EDITCONTROL;
+  R, R1, R2: TRect;
+  B, Btext: TBitmap;
+  Textrect: TRect;
+  Size, I: Integer;
+  Acaption, Atext, AkeyWords, AGroups, Fn: string;
+  AxGroups: TGroups;
+const
+  DrawTextOpt = DT_EDITCONTROL;
+  DrawTextOpt1 = DT_NOPREFIX + DT_WORDBREAK + DT_EDITCONTROL;
 
-  ThSize : integer = 48;
+  ThSize: Integer = 48;
 
-  function Darken(Color : TColor) : TColor;
+  function Darken(Color: TColor): TColor;
   begin
-   Result:=RGB(Round(0.75*GetRValue(Color)),Round(0.75*GetGValue(Color)),Round(0.75*GetBValue(Color)));
+    Result := RGB(Round(0.75 * GetRValue(Color)), Round(0.75 * GetGValue(Color)), Round(0.75 * GetBValue(Color)));
   end;
 
-  function BothPercent(Color1,Color2 : TColor; percent : integer) : TColor;
+  function BothPercent(Color1, Color2: TColor; Percent: Integer): TColor;
   var
-    r, g, b : byte;
-    p : extended;
+    R, G, B: Byte;
+    P: Extended;
   begin
-   p := (percent/100);
-   r:=Round(p*GetRValue(Color1)+(p-1)*GetRValue(Color2));
-   g:=Round(p*GetGValue(Color1)+(p-1)*GetGValue(Color2));
-   b:=Round(p*GetBValue(Color1)+(p-1)*GetBValue(Color2));
-   Result:=RGB(r,g,b);
+    P := (Percent / 100);
+    R := Round(P * GetRValue(Color1) + (P - 1) * GetRValue(Color2));
+    G := Round(P * GetGValue(Color1) + (P - 1) * GetGValue(Color2));
+    B := Round(P * GetBValue(Color1) + (P - 1) * GetBValue(Color2));
+    Result := RGB(R, G, B);
   end;
 
 begin
- r := Item.DisplayRect(drBounds);
- if not RectInRect(Sender.ClientRect,r) then exit;
- r1 := Item.DisplayRect(drIcon);
- r2 := Item.DisplayRect(drLabel);
- b := TBitmap.create;
- b.PixelFormat:=pf24bit;
- b.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
+  R := Item.DisplayRect(DrBounds);
+  if not RectInRect(Sender.ClientRect, R) then
+    Exit;
+  R1 := Item.DisplayRect(DrIcon);
+  R2 := Item.DisplayRect(DrLabel);
+  B := TBitmap.Create;
+  try
+    B.PixelFormat := Pf24bit;
+    B.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
 
- if item.ImageIndex>Length(Groups)-1 then exit;
- acaption:=Groups[item.ImageIndex].GroupName;
- atext:=Groups[item.ImageIndex].GroupComment;
- akeyWords:=Groups[item.ImageIndex].GroupKeyWords;
+    if Item.ImageIndex > Length(Groups) - 1 then
+      Exit;
+    Acaption := Groups[Item.ImageIndex].GroupName;
+    Atext := Groups[Item.ImageIndex].GroupComment;
+    AkeyWords := Groups[Item.ImageIndex].GroupKeyWords;
 
- SetLength(axGroups,0);
- axGroups:=UnitGroupsWork.EncodeGroups(Groups[item.ImageIndex].RelatedGroups);
- aGroups:='';
- for i:=0 to Length(axGroups)-1 do
- begin
-  aGroups:=aGroups+axGroups[i].GroupName;
-  if i<>Length(axGroups)-1 then
-  aGroups:=aGroups+', '
- end;
+    SetLength(AxGroups, 0);
+    AxGroups := UnitGroupsWork.EncodeGroups(Groups[Item.ImageIndex].RelatedGroups);
+    AGroups := '';
+    for I := 0 to Length(AxGroups) - 1 do
+    begin
+      AGroups := AGroups + AxGroups[I].GroupName;
+      if I <> Length(AxGroups) - 1 then
+        AGroups := AGroups + ', '
+    end;
 
- if not (Sender.IsEditing and (Sender.ItemFocused=Item)) then
- begin
- if Item.Selected then
- begin
-  SelectedColor(b,RGB(Round(GetRValue(Theme_ListColor)*0.5),Round(GetGValue(Theme_ListColor)*0.5),Round(GetBValue(Theme_ListColor)*0.5)));
-  Sender.Canvas.Pen.Color:=RGB(Round(GetRValue(Theme_ListColor)*0.9),Round(GetGValue(Theme_ListColor)*0.9),Round(GetBValue(Theme_ListColor)*0.9));//$aa8888;
-  Sender.Canvas.Brush.Color:=RGB(Round(GetRValue(Theme_ListColor)*0.9),Round(GetGValue(Theme_ListColor)*0.9),Round(GetBValue(Theme_ListColor)*0.9));//$aa8888;
-  Sender.Canvas.FillRect(r2);
- end else
- begin
-  Sender.Canvas.Pen.Color:=Theme_ListColor;
-  Sender.Canvas.Brush.Color:=Theme_ListColor;
-  Sender.Canvas.FillRect(r2);
- end;
+    if not(Sender.IsEditing and (Sender.ItemFocused = Item)) then
+    begin
+      if Item.Selected then
+      begin
+        SelectedColor(B, RGB(Round(GetRValue(Theme_ListColor) * 0.5), Round(GetGValue(Theme_ListColor) * 0.5),
+            Round(GetBValue(Theme_ListColor) * 0.5)));
+        Sender.Canvas.Pen.Color := RGB(Round(GetRValue(Theme_ListColor) * 0.9), Round(GetGValue(Theme_ListColor) * 0.9),
+          Round(GetBValue(Theme_ListColor) * 0.9));
+        Sender.Canvas.Brush.Color := RGB(Round(GetRValue(Theme_ListColor) * 0.9),
+          Round(GetGValue(Theme_ListColor) * 0.9), Round(GetBValue(Theme_ListColor) * 0.9)); // $aa8888;
+        Sender.Canvas.FillRect(R2);
+      end
+      else
+      begin
+        Sender.Canvas.Pen.Color := Theme_ListColor;
+        Sender.Canvas.Brush.Color := Theme_ListColor;
+        Sender.Canvas.FillRect(R2);
+      end;
 
- if cdsHot in State then
- begin
-  Sender.Canvas.Font.Style:=[fsUnderline];
- end else
- begin
-  Sender.Canvas.Font.Style:=[];
+      if CdsHot in State then
+      begin
+        Sender.Canvas.Font.Style := [FsUnderline];
+      end else
+      begin
+        Sender.Canvas.Font.Style := [];
 
-  btext := TBitmap.Create;
-  btext.PixelFormat:=pf24bit;
-  btext.Width:=Max(0,r2.Right-r2.Left);
-  btext.Height:=Max(0,r2.Bottom-r2.Top);
-  btext.Canvas.Brush.Color:=Sender.Canvas.Brush.Color;
-  btext.Canvas.pen.Color:=Sender.Canvas.Brush.Color;
-  btext.Canvas.FillRect(Rect(0,0,btext.Width,btext.Height));
+        Btext := TBitmap.Create;
+        try
+          Btext.PixelFormat := Pf24bit;
+          Btext.Width := Max(0, R2.Right - R2.Left);
+          Btext.Height := Max(0, R2.Bottom - R2.Top);
+          Btext.Canvas.Brush.Color := Sender.Canvas.Brush.Color;
+          Btext.Canvas.Pen.Color := Sender.Canvas.Brush.Color;
+          Btext.Canvas.FillRect(Rect(0, 0, Btext.Width, Btext.Height));
 
-  fn:=DBKernel.ReadString('GroupsManager','FontName');
-  if fn<>'' then
-  btext.Canvas.Font.Name:=fn else btext.Canvas.Font.Name:='MS Sans Serif';
-  if Groups[item.index].IncludeInQuickList then
-  btext.Canvas.Font.Style:=[fsbold]+[fsUnderline] else
-  btext.Canvas.Font.Style:=[fsbold];
-  btext.Canvas.Font.Color:={ $0}Theme_ListFontColor;
-  btext.Canvas.Font.Size:=10;
-  textrect := Rect(5,0,(btext.Width div 4)*2-3,r2.Bottom);
-  DrawText(btext.Canvas.Handle, PWideChar(acaption), Length(acaption), textrect, DrawTextOpt+DT_LEFT);
-  size:=btext.Canvas.TextHeight(acaption);
-  btext.Canvas.Font.Size:=8;
+          Fn := DBKernel.ReadString('GroupsManager', 'FontName');
+          if Fn <> '' then
+            Btext.Canvas.Font.name := Fn
+          else
+            Btext.Canvas.Font.name := 'MS Sans Serif';
+          if Groups[Item.index].IncludeInQuickList then
+            Btext.Canvas.Font.Style := [Fsbold] + [FsUnderline]
+          else
+            Btext.Canvas.Font.Style := [Fsbold];
+          Btext.Canvas.Font.Color := Theme_ListFontColor;
+          Btext.Canvas.Font.Size := 10;
+          Textrect := Rect(5, 0, (Btext.Width div 4) * 2 - 3, R2.Bottom);
+          DrawText(Btext.Canvas.Handle, PWideChar(Acaption), Length(Acaption), Textrect, DrawTextOpt + DT_LEFT);
+          Size := Btext.Canvas.TextHeight(Acaption);
+          Btext.Canvas.Font.Size := 8;
 
-  if Length(aKeyWords)>0 then
-  begin
-   if Groups[item.index].AutoAddKeyWords then
-   btext.Canvas.Font.Style:=[fsbold]+[fsUnderline] else
-   btext.Canvas.Font.Style:=[fsbold];
-   btext.Canvas.Font.Color:={ $FF4040} Theme_ListFontColor xor $FF0000;
-   textrect := Rect((btext.Width div 4)*2+5,0,(btext.Width div 4)*3,btext.height);
-   DrawText(btext.Canvas.Handle, PWideChar(TEXT_MES_KEYWORDS+':'), Length(TEXT_MES_KEYWORDS+':'), textrect, DrawTextOpt+DT_LEFT);
+          if Length(AKeyWords) > 0 then
+          begin
+            if Groups[Item.index].AutoAddKeyWords then
+              Btext.Canvas.Font.Style := [Fsbold] + [FsUnderline]
+            else
+              Btext.Canvas.Font.Style := [Fsbold];
+            Btext.Canvas.Font.Color := Theme_ListFontColor xor $FF0000;
+            Textrect := Rect((Btext.Width div 4) * 2 + 5, 0, (Btext.Width div 4) * 3, Btext.Height);
+            DrawText(Btext.Canvas.Handle, PWideChar(L('Keywords') + ':'), Length(L('Keywords') + ':'), Textrect,
+              DrawTextOpt + DT_LEFT);
+          end;
+          if Length(AxGroups) > 0 then
+          begin
+            Btext.Canvas.Font.Style := [Fsbold];
+            Btext.Canvas.Font.Color := Theme_ListFontColor xor $008000;
+            Textrect := Rect((Btext.Width div 4) * 3 + 5, 0, Btext.Width, Btext.Height);
+            DrawText(Btext.Canvas.Handle, PWideChar(L('Groups') + ':'), Length(L('Groups') + ':'), Textrect,
+              DrawTextOpt + DT_LEFT);
+          end;
+          Btext.Canvas.Font.Style := [];
+          Btext.Canvas.Font.Color := BothPercent(Theme_ListColor, Theme_ListFontColor, 40);
+          Textrect := Rect(8, Size, (Btext.Width div 4) * 2 - 8, Btext.Height);
+          DrawText(Btext.Canvas.Handle, PWideChar(Atext), Length(Atext), Textrect, DrawTextOpt1 + DT_LEFT);
+
+          if Length(AKeyWords) > 0 then
+          begin
+            Textrect := Rect((Btext.Width div 4) * 2 + 8, Size, (Btext.Width div 4) * 3 - 8, Btext.Height);
+            DrawText(Btext.Canvas.Handle, PWideChar(AkeyWords), Length(AkeyWords), Textrect, DrawTextOpt1 + DT_LEFT);
+          end;
+
+          if Length(AxGroups) > 0 then
+          begin
+            Textrect := Rect((Btext.Width div 4) * 3 + 8, Size, Btext.Width - 3, Btext.Height);
+            DrawText(Btext.Canvas.Handle, PWideChar(AGroups), Length(AGroups), Textrect, DrawTextOpt1 + DT_LEFT);
+          end;
+          Sender.Canvas.Draw(R2.Left, R2.Top, Btext);
+        finally
+          Btext.Free;
+        end;
+      end;
+    end;
+    Sender.Canvas.Draw(R1.Left + ((R1.Right - R1.Left) div 2 - ThSize div 2),
+      R1.Top + (R1.Bottom - R1.Top) div 2 - B.Height div 2, B);
+
+  finally
+    B.Free;
   end;
-  if Length(axGroups)>0 then
-  begin
-   btext.Canvas.Font.Style:=[fsbold];
-   btext.Canvas.Font.Color:=Theme_ListFontColor xor $008000;
-   textrect := Rect((btext.Width div 4)*3+5,0,btext.Width,btext.height);
-   DrawText(btext.Canvas.Handle, PWideChar(TEXT_MES_GROUPS+':'), Length(TEXT_MES_GROUPS+':'), textrect, DrawTextOpt+DT_LEFT);
-  end;
-  btext.Canvas.Font.Style:=[];
-  btext.Canvas.Font.Color:= BothPercent(Theme_ListColor,Theme_ListFontColor,40);
-  textrect:=rect(8,size,(btext.Width  div 4)*2-8,btext.Height);
-  DrawText(btext.Canvas.Handle, PWideChar(atext), Length(atext), textrect, DrawTextOpt1+DT_LEFT);
-
-  if Length(aKeyWords)>0 then
-  begin
-   textrect:=rect((btext.Width  div 4)*2+8,size,(btext.Width div 4)*3-8,btext.Height);
-   DrawText(btext.Canvas.Handle, PWideChar(akeyWords), Length(akeyWords), textrect, DrawTextOpt1+DT_LEFT);
-  end;
-
-  if Length(axGroups)>0 then
-  begin
-   textrect:=rect((btext.Width div 4)*3+8,size,btext.Width-3,btext.Height);
-   DrawText(btext.Canvas.Handle, PWideChar(aGroups), Length(aGroups), textrect, DrawTextOpt1+DT_LEFT);
-  end;
-  Sender.Canvas.Draw(r2.Left,r2.Top,btext);
-  btext.free;
- end;
- end;
- Sender.Canvas.Draw(r1.Left+((r1.Right-r1.Left) div 2 - ThSize div 2),r1.Top  +(r1.Bottom-r1.Top) div 2 - b.Height div 2   ,b);
- b.free;
- DefaultDraw := false;
+  DefaultDraw := False;
 end;
 
 procedure TFormManageGroups.FormShow(Sender: TObject);
@@ -445,19 +466,24 @@ end;
 
 procedure TFormManageGroups.LoadLanguage;
 begin
-  TbExit.Caption := TEXT_MES_EXIT;
-  TbAdd.Caption := TEXT_MES_ADD_GROUP;
-  ToolButton2.Caption := TEXT_MES_EDIT;
-  ToolButton3.Caption := TEXT_MES_DELETE;
-  ToolButton8.Caption := TEXT_MES_OPTIONS;
-  Help1.Caption := TEXT_MES_HELP;
-  Contents1.Caption := TEXT_MES_CONTENTS;
-  Actions1.Caption := TEXT_MES_ACTIONS;
-  File1.Caption := TEXT_MES_FILE;
-  Exit1.Caption := TEXT_MES_EXIT;
-  ShowAll1.Caption := TEXT_MES_SHOW_ALL_GROUPS;
-  SelectFont1.Caption := TEXT_MES_SELECT_FONT;
-  AddGroup1.Caption := TEXT_MES_ADD_GROUP;
+  BeginTranslate;
+  try
+    TbExit.Caption := L('Exit');
+    TbAdd.Caption := L('Ceate group');
+    ToolButton2.Caption := L('Edit');
+    ToolButton3.Caption := L('Delete');
+    ToolButton8.Caption := L('Options');
+    Help1.Caption := L('Help');
+    Contents1.Caption := L('Content');
+    Actions1.Caption := L('Actions');
+    File1.Caption := L('File');
+    Exit1.Caption := L('Exit');
+    ShowAll1.Caption := L('All groups');
+    SelectFont1.Caption := L('Select font');
+    AddGroup1.Caption := L('Create group');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormManageGroups.Exit1Click(Sender: TObject);

@@ -527,7 +527,7 @@ type
      LockDrawIcon : boolean;
 
      MouseDowned : Boolean;
-     PopupHandled : boolean;
+     PopupHandled : Boolean;
      LastMouseItem, ItemWithHint : TEasyItem;
      LastListViewSelected : TEasyItem;
      FListDragItems : array of TEasyItem;
@@ -590,7 +590,7 @@ type
    public
      NoLockListView : boolean;
      Procedure LoadLanguage;
-     procedure LoadSizes();
+     procedure LoadSizes;
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
      constructor Create(AOwner : TComponent; GoToLastSavedPath : Boolean); reintroduce; overload;
      destructor Destroy; override;
@@ -1354,20 +1354,18 @@ begin
     end;
   end;
 
-  if fFilesInfo[PmItemPopup.tag].ID=0 then
- begin
-//  DBitem1.Visible:=false;
-  if fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
-  SendTo1.Visible:=true;
-  if DBKernel.ReadBool('Options','UseUserMenuForExplorer',true) then
-  if fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_IMAGE then
+  if fFilesInfo[PmItemPopup.Tag].ID = 0 then
   begin
-   info:=GetCurrentPopUpMenuInfo(Item);
-   TDBPopupMenu.Instance.SetInfo(info);
-   TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items,true,DBitem1.MenuIndex+1);
+    if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+      SendTo1.Visible := True;
+    if DBKernel.ReadBool('Options', 'UseUserMenuForExplorer', True) then
+      if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+      begin
+        Info := GetCurrentPopUpMenuInfo(Item);
+        TDBPopupMenu.Instance.SetInfo(Info);
+        TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
+      end;
   end;
- end;// else begin
-// end;
 end;
 
 procedure TExplorerForm.Copy1Click(Sender: TObject);
@@ -2256,69 +2254,49 @@ end;
 procedure TExplorerForm.ListView1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  i, index : integer;
-  r : TRect;
-  item, itemsel: TEasyItem;
+  I, Index : integer;
+  Item, Itemsel: TEasyItem;
 begin
   ItemsDeselected := False;
   FWasDragAndDrop := False;
-  Item := ItemAtPos(x,y);
 
-  MouseDowned:=Button=mbRight;
+  Item := ItemAtPos(x, y);
+
+  MouseDowned := Button = mbRight;
   if Item = nil then
      ElvMain.Selection.ClearAll;
 
-//  if ListView=LV_THUMBS then
+  itemsel:= Item;
+  ItemByMouseDown := False;
+
+  EnsureSelectionInListView(ElvMain, ItemSel, Shift, X, Y, ItemSelectedByMouseDown, ItemByMouseDown);
+
+  if ((Button = MbLeft) or (Button = MbRight)) and (Item <> nil) and not FDblClicked then
   begin
-   itemsel:=Item;
-   r :=  ElvMain.Scrollbars.ViewableViewportRect;
-   ItemByMouseDown:=false;
-   if itemsel<>nil then
-   if itemsel.SelectionHitPt(Point(x+r.Left,y+r.Top), eshtClickSelect) then
-   begin
+    Rdown := Button = MbRight;
 
-    ItemSelectedByMouseDown:=false;
-    if not itemsel.Selected then
-    begin
-     if [ssCtrl,ssShift]*Shift=[] then
-     for i:=0 to ElvMain.Items.Count-1 do
-     if ElvMain.Items[i].Selected then
-     if itemsel<>ElvMain.Items[i] then
-     ElvMain.Items[i].Selected:=false;
-     if [ssShift]*Shift<>[] then
-      ElvMain.Selection.SelectRange(itemsel,ElvMain.Selection.FocusedItem,false,false) else
-     begin
-      ItemSelectedByMouseDown:=true;
-      itemsel.Selected:=true;
-      itemsel.Focused:=true;
-     end;
-    end else ItemByMouseDown:=true;
-    itemsel.Focused:=true;
-   end;
-  end;
-
-  if ((Button = mbLeft) or (Button = mbRight)) and (Item<>nil) and not FDblClicked then
-  begin
-    rdown:=Button = mbRight;
-
-    FDBCanDrag:=True;
-    SetLength(fFilesToDrag,0);
-    SetLength(FListDragItems,0);
+    FDBCanDrag := True;
+    SetLength(FFilesToDrag, 0);
+    SetLength(FListDragItems, 0);
     GetCursorPos(FDBDragPoint);
-    For i:=0 to ElvMain.Items.Count-1 do
-    if ElvMain.Items[i].Selected then
-    begin
-     index:=ItemIndexToMenuIndex(i);
-     if index>fFilesInfo.Count-1 then exit;
-     if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_SHARE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_DRIVE) then
-     begin
-      SetLength(FListDragItems,Length(FListDragItems)+1);
-      FListDragItems[Length(FListDragItems)-1]:=ElvMain.Items[i];
-      SetLength(fFilesToDrag,Length(fFilesToDrag)+1);
-      fFilesToDrag[Length(fFilesToDrag)-1]:=fFilesInfo[index].FileName;
-     end;
-    end;
-    If Length(fFilesToDrag)=0 then FDBCanDrag:=false;
+    for I := 0 to ElvMain.Items.Count - 1 do
+      if ElvMain.Items[I].Selected then
+      begin
+        index := ItemIndexToMenuIndex(I);
+        if index > FFilesInfo.Count - 1 then
+          Exit;
+        if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or
+          (FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) or (FFilesInfo[index].FileType = EXPLORER_ITEM_SHARE) or
+          (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) then
+        begin
+          SetLength(FListDragItems, Length(FListDragItems) + 1);
+          FListDragItems[Length(FListDragItems) - 1] := ElvMain.Items[I];
+          SetLength(FFilesToDrag, Length(FFilesToDrag) + 1);
+          FFilesToDrag[Length(FFilesToDrag) - 1] := FFilesInfo[index].FileName;
+        end;
+      end;
+    if Length(FFilesToDrag) = 0 then
+      FDBCanDrag := False;
   end;
   FDblClicked:=false;
 end;
@@ -2326,36 +2304,22 @@ end;
 procedure TExplorerForm.ListView1MouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  i, j, k : integer;
-  Handled : boolean;
-  item: TEasyItem;
+  I, J, K : Integer;
+  Handled: Boolean;
+  Item: TEasyItem;
 begin
 
-   item:=self.ItemAtPos(X,Y);
-   if item<>nil then
-   if item.Selected and (Button=mbLeft) then
-   begin
-    if (Shift=[]) and item.Selected then
-    if ItemByMouseDown then
+  Item := Self.ItemAtPos(X, Y);
+  RightClickFix(ElvMain, Button, Shift, Item, ItemByMouseDown, ItemSelectedByMouseDown);
+
+  if MouseDowned then
+    if Button = MbRight then
     begin
-     for i:=0 to ElvMain.Items.Count-1 do
-     if ElvMain.Items[i].Selected then
-     if item<>ElvMain.Items[i] then
-     ElvMain.Items[i].Selected:=false;
+      ListView1ContextPopup(ElvMain, Point(X, Y), Handled);
+      PopupHandled := True;
     end;
-    if not (ebcsDragSelecting in ElvMain.States) then
-    if ([ssCtrl]*Shift<>[]) and not ItemSelectedByMouseDown  then
-    item.Selected:=false;
-   end;
 
- if MouseDowned then
- if Button=mbRight then
- begin
-  ListView1ContextPopup(ElvMain,Point(X,Y),Handled);
-  PopupHandled:=true;
- end;
-
- MouseDowned:=false;
+  MouseDowned:=false;
 
  if FDBCanDrag and ItemsDeselected then
  begin
@@ -2364,26 +2328,26 @@ begin
 
   SetSelected(nil);
 
-  for j:=0 to ElvMain.Items.Count-1 do
-  begin
-   for i:=0 to Length(FListDragItems)-1 do
-   if FListDragItems[i]=ElvMain.Items[j] then
-   begin
-    FListDragItems[i].Selected:=True;
-    if i<>0 then
+  for J := 0 to ElvMain.Items.Count - 1 do
     begin
-     for k:=i to Length(FListDragItems)-2 do
-     FListDragItems[k]:=FListDragItems[k+1];
-     SetLength(FListDragItems,Length(FListDragItems)-1);
+      for I := 0 to Length(FListDragItems) - 1 do
+        if FListDragItems[I] = ElvMain.Items[J] then
+        begin
+          FListDragItems[I].Selected := True;
+          if I <> 0 then
+          begin
+            for K := I to Length(FListDragItems) - 2 do
+              FListDragItems[K] := FListDragItems[K + 1];
+            SetLength(FListDragItems, Length(FListDragItems) - 1);
+          end;
+          Break;
+        end;
     end;
-    Break;
-   end;
   end;
- end;
- SetLength(fFilesToDrag,0);
- SetLength(FListDragItems,0);
- FDBCanDrag:=false;
- fDBCanDragW:=false;
+  SetLength(FFilesToDrag, 0);
+  SetLength(FListDragItems, 0);
+  FDBCanDrag := False;
+  FDBCanDragW := False;
 end;
 
 procedure TExplorerForm.ListView1Exit(Sender: TObject);
@@ -4343,141 +4307,145 @@ end;
 
 procedure TExplorerForm.LoadLanguage;
 begin
- SlideShowLink.Text:= TEXT_MES_SLIDE_SHOW;
- ShellLink.Text:= TEXT_MES_OPEN;
- CopyToLink.Text:= TEXT_MES_COPY_TO;
- MoveToLink.Text:= TEXT_MES_MOVE_TO;
- RenameLink.Text:= TEXT_MES_RENAME;
- PropertiesLink.Text:= TEXT_MES_PROPERTY;
- DeleteLink.Text:= TEXT_MES_DELETE;
- RefreshLink.Text:=TEXT_MES_REFRESH;
- ImageEditorLink.Text:=TEXT_MES_IMAGE_EDITOR;
- PrintLink.Text:=TEXT_MES_PRINT;
- MyPicturesLink.Text:=TEXT_MES_MY_PICTURES;
- MyDocumentsLink.Text:=TEXT_MES_MY_DOCUMENTS;
- DesktopLink.Text:=TEXT_MES_DESKTOP;
- MyComputerLink.Text:=TEXT_MES_MY_COMPUTER;
- AddLink.Text:=TEXT_MES_ADD_OBJECT;
+  BeginTranslate;
+  try
+    SlideShowLink.Text:= L('Slide show');
+    ShellLink.Text := L('Execute');
+    CopyToLink.Text := L('Copy to');
+    MoveToLink.Text := L('Move to');
+    RenameLink.Text := L('Rename');
+    PropertiesLink.Text := L('Properties');
+    DeleteLink.Text := L('Delete');
+    RefreshLink.Text := L('Refresh');
+    ImageEditorLink.Text := L('Image editor');
+    PrintLink.Text := L('Print');
+    MyPicturesLink.Text := L('My pictures');
+    MyDocumentsLink.Text := L('My documents');
+    DesktopLink.Text := L('Desktop');
+    MyComputerLink.Text := L('My Computer');
+    AddLink.Text := L('Add to DB');
 
- Label1.Caption:=TEXT_MES_IMAGE_PRIVIEW;
- TasksLabel.Caption:= TEXT_MES_TASKS;
- Open1.Caption:= TEXT_MES_OPEN;
- Open2.Caption:= TEXT_MES_OPEN;
- SlideShow1.Caption:= TEXT_MES_SHOW;;
- NewWindow1.Caption:= TEXT_MES_NEW_WINDOW;
- Shell1.Caption:= TEXT_MES_SHELL;
- DBitem1.Caption:= TEXT_MES_DBITEM;
- Copy1.Caption:= TEXT_MES_COPY;
- Cut2.Caption:= TEXT_MES_CUT;
- Paste2.Caption:= TEXT_MES_PASTE;
- Delete1.Caption:= TEXT_MES_DELETE;
- Rename1.Caption:= TEXT_MES_RENAME;
- New1.Caption:= TEXT_MES_NEW;
- Directory1.Caption:= TEXT_MES_DIRECTORY;
- Refresh1.Caption:= TEXT_MES_REFRESH;
- Properties1.Caption:= TEXT_MES_PROPERTY;
- AddFile1.Caption:= TEXT_MES_ADD_FILE;
- OpenInNewWindow1.Caption:= TEXT_MES_OPEN_IN_NEW_WINDOW;
- OpenInNewWindow2.Caption:= TEXT_MES_OPEN_IN_NEW_WINDOW;
- Copy2.Caption:= TEXT_MES_COPY;
- Cut1.Caption:= TEXT_MES_CUT;
- Paste1.Caption:= TEXT_MES_PASTE;
- Addfolder1.Caption:= TEXT_MES_ADD_FOLDER;
- MakeNew1.Caption:= TEXT_MES_MAKE_NEW;
+    Label1.Caption := L('Preview');
+    TasksLabel.Caption := L('Tasks');
+    Open1.Caption := L('Open');
+    Open2.Caption := L('Open');
+    SlideShow1.Caption := L('Show');
+    NewWindow1.Caption := L('New Window');
+    Shell1.Caption := L('Execute');
+    DBitem1.Caption := L('DB Item');
+    Copy1.Caption := L('Copy');
+    Cut2.Caption := L('Cut');
+    Paste2.Caption := L('Paste');
+    Delete1.Caption := L('Delete');
+    Rename1.Caption := L('Rename');
+    New1.Caption := L('New');
+    Directory1.Caption := L('Directory');
+    Refresh1.Caption := L('Refresh');
+    Properties1.Caption := L('Properties');
+    AddFile1.Caption := L('Add file');
+    OpenInNewWindow1.Caption := L('Open in new window');
+    OpenInNewWindow2.Caption := L('Open in new window');
+    Copy2.Caption := L('Copy');
+    Cut1.Caption := L('Cut');
+    Paste1.Caption := L('Paste');
+    Addfolder1.Caption := L('Add folder');
+    MakeNew1.Caption := L('Make new');
 
+    Directory2.Caption := L('Directory');
+    TextFile2.Caption := L('Text file');
 
- Directory2.Caption:= TEXT_MES_MAKE_NEW_FOLDER;
- TextFile2.Caption:= TEXT_MES_MAKE_NEW_TEXT_FILE;
+    ShowUpdater1.Caption := L('Show update window');
+    OpeninSearchWindow1.Caption := L('Open in serach window');
+    Refresh2.Caption := L('Refresh');
+    SelectAll1.Caption := L('Select all');
+    GoToSearchWindow1.Caption := L('Go to search window');
+    Exit2.Caption := L('Exit');
+    OpeninExplorer1.Caption := L('Open in explorer');
+    OpeninExplorer1.Caption := L('Open in explorer');
+    AddFolder2.Caption := L('Add folder');
 
- ShowUpdater1.Caption:= TEXT_MES_SHOW_UPDATER;
- OpeninSearchWindow1.Caption:= TEXT_MES_OPEN_IN_SEARCH_WINDOW;
- Refresh2.Caption:= TEXT_MES_REFRESH;
- SelectAll1.Caption:= TEXT_MES_SELECT_ALL;
- GoToSearchWindow1.Caption:= TEXT_MES_GO_TO_SEARCH_WINDOW;
- Exit2.Caption:= TEXT_MES_EXIT;
- OpeninExplorer1.Caption:=TEXT_MES_OPEN_IN_EXPLORER;
- OpeninExplorer1.Caption:=TEXT_MES_OPEN_IN_EXPLORER;
- AddFolder2.Caption:=TEXT_MES_ADD_FOLDER;
+    Label2.Caption := L('Address');
+    CryptFile1.Caption := L('Encrypt file');
+    ResetPassword1.Caption := L('Decrypt file');
+    EnterPassword1.Caption := L('Enter password');
+    Convert1.Caption := L('Convert');
+    Resize1.Caption := L('Resize');
+    Rotate1.Caption := L('Rotate');
+    RotateCCW1.Caption := L('Rotate left');
+    RotateCW1.Caption := L('Rotate right');
+    Rotateon1801.Caption := L('Rotate 180°');
+    SetasDesktopWallpaper1.Caption := L('Set as desktop wallpaper');
+    Stretch1.Caption := L('Stretch');
+    Center1.Caption := L('Center');
+    Tile1.Caption := L('Tile');
+    RefreshID1.Caption := L('Refresh DB info');
+    DBInfoLabel.Caption := L('DB Info') + ':';
+    ImageEditor2.Caption := L('Image editor');
 
- Label2.Caption:=TEXT_MES_ADDRESS;
- CryptFile1.Caption:=TEXT_MES_CRYPT_FILE;
- ResetPassword1.Caption:=TEXT_MES_DECRYPT_FILE;
- EnterPassword1.Caption:=TEXT_MES_ENTER_PASSWORD;
- Convert1.Caption:=TEXT_MES_CONVERT;
- Resize1.Caption:=TEXT_MES_RESIZE;
- Rotate1.Caption:=TEXT_MES_ROTATE_IMAGE;
- RotateCCW1.Caption:=TEXT_MES_ROTATE_270;
- RotateCW1.Caption:=TEXT_MES_ROTATE_90;
- Rotateon1801.Caption:=TEXT_MES_ROTATE_180;
- SetasDesktopWallpaper1.Caption:=TEXT_MES_SET_AS_DESKTOP_WALLPAPER;
- Stretch1.Caption:=TEXT_MES_BY_STRETCH;
- Center1.Caption:=TEXT_MES_BY_CENTER;
- Tile1.Caption:=TEXT_MES_BY_TILE;
- RefreshID1.Caption:=TEXT_MES_REFRESH_ID;
- DBInfoLabel.Caption:=TEXT_MES_DB_INFO;
- ImageEditor2.Caption:=TEXT_MES_IMAGE_EDITOR;
+    Othertasks1.Caption := L('Other tasks');
+    ExportImages1.Caption := L('Export images');
+    Print1.Caption := L('Print');
 
- Othertasks1.Caption:=TEXT_MES_OTHER_TASKS;
- ExportImages1.Caption:=TEXT_MES_EXPORT_IMAGES;
- Print1.Caption:=TEXT_MES_PRINT;
+    OtherPlacesLabel.Caption := L('Other places');
 
- OtherPlacesLabel.Caption:=TEXT_MES_OTHER_PLACES;
+    TextFile1.Caption := L('New text file');
+    Copywithfolder1.Caption := L('Copy with folder');
 
- TextFile1.Caption:=TEXT_MES_NEW_TEXT_FILE;
- Copywithfolder1.Caption:=TEXT_MES_COPY_WITH_FOLDER;
+    Copy4.Caption := L('Copy');
+    Move1.Caption := L('Move');
+    Cancel1.Caption := L('Cancel');
 
- Copy4.Caption:=TEXT_MES_COPY;
- Move1.Caption:=TEXT_MES_MOVE;
- Cancel1.Caption:=TEXT_MES_CANCEL;
+    SendTo1.Caption := L('Send to');
+    View2.Caption := L('Slide show');
 
- SendTo1.Caption:=TEXT_MES_SEND_TO;
- View2.Caption:=TEXT_MES_SLIDE_SHOW;
+    Sortby1.Caption := L('Sort by');
 
- Sortby1.Caption:=SORT_BY;
+    Nosorting1.Caption := L('No sorting');
+    FileName1.Caption := L('File name');
+    Size1.Caption := L('File size');
+    Type1.Caption := L('File type');
+    Modified1.Caption := L('Modify date');
+    Rating1.Caption := L('Rating');
+    Number1.Caption := L('Number');
+    SetFilter1.Caption := L('Set filter');
 
- Nosorting1.Caption:=SORT_BY_NO_SORTING;
- FileName1.Caption:=SORT_BY_FILENAME;
- Size1.Caption:=SORT_BY_SIZE;
- Type1.Caption:=SORT_BY_TYPE;
- Modified1.Caption:=SORT_BY_MODIFIED;
- Rating1.Caption:=SORT_BY_RATING;
- Number1.Caption:=SORT_BY_NUMBER;
- SetFilter1.Caption:=SORT_BY_SET_FILTER;
+    MakeFolderViewer1.Caption := L('Make DB viewer');
+    MakeFolderViewer2.Caption := L('Make DB viewer');
 
- MakeFolderViewer1.Caption:=TEXT_MES_MAKE_FOLDERVIEWER;
- MakeFolderViewer2.Caption:=TEXT_MES_MAKE_FOLDERVIEWER;
+    Thumbnails1.Caption := L('Thumbnail');
+    Tile2.Caption := L('Tile');
+    Icons1.Caption := L('Icons');
+    SmallIcons1.Caption := L('Table');
+    List1.Caption := L('List');
 
- Thumbnails1.Caption:=TEXT_MES_VIEW_THUMBNAILS;
- Tile2.Caption:=TEXT_MES_VIEW_TILE;
- Icons1.Caption:=TEXT_MES_VIEW_ICONS;
- SmallIcons1.Caption:=TEXT_MES_VIEW_LIST2;
- List1.Caption:=TEXT_MES_VIEW_LIST;
+    StenoGraphia1.Caption := L('Data hidding');
+    AddHiddenInfo1.Caption := L('Hide data in image');
+    ExtractHiddenInfo1.Caption := L('Extract hidden data');
 
- StenoGraphia1.Caption:=TEXT_MES_STENOGRAPHIA;
- AddHiddenInfo1.Caption:=TEXT_MES_DO_STENO;
- ExtractHiddenInfo1.Caption:=TEXT_MES_DO_DESTENO;
+    MapCD1.Caption := L('Map CD with DB');
 
- MapCD1.Caption:=TEXT_MES_ADD_CD_LOCATION;
-
- ToolButton5.Caption:=TEXT_MES_CUT;
- ToolButton6.Caption:=TEXT_MES_COPY;
- ToolButton7.Caption:=TEXT_MES_PASTE;
- ToolButton19.Caption:=TEXT_MES_OPTIONS;
- TbBack.Hint:=TEXT_MES_GO_BACK;
- TbForward.Hint:=TEXT_MES_GO_FORWARD;
- ToolButton3.Hint:=TEXT_MES_GO_UP;
- ToolButton5.Hint:=TEXT_MES_CUT;
- ToolButton6.Hint:=TEXT_MES_COPY;
- ToolButton7.Hint:=TEXT_MES_PASTE;
- ToolButton8.Hint:=TEXT_MES_DELETE;
- ToolButtonView.Hint:=TEXT_MES_VIEW;
- ToolButton13.Hint:=TEXT_MES_ZOOM_IN;
- ToolButton14.Hint:=TEXT_MES_ZOOM_OUT;
- ToolButton15.Hint:=TEXT_MES_GO_TO_SEARCH_WINDOW;
- ToolButton18.Hint:=TEXT_MES_STOP;
- ToolButton19.Hint:=TEXT_MES_OPTIONS;
- ToolBar1.ShowCaptions := True;
- ToolBar1.AutoSize := True;
+    ToolButton5.Caption := L('Cut');
+    ToolButton6.Caption := L('Copy');
+    ToolButton7.Caption := L('Paste');
+    ToolButton19.Caption := L('Options');
+    TbBack.Hint := L('Back');
+    TbForward.Hint := L('Forward');
+    ToolButton3.Hint := L('Go to');
+    ToolButton5.Hint := L('Cut');
+    ToolButton6.Hint := L('Copy');
+    ToolButton7.Hint := L('Paste');
+    ToolButton8.Hint := L('Delete');
+    ToolButtonView.Hint := L('View');
+    ToolButton13.Hint := L('Zoom in');
+    ToolButton14.Hint := L('Zoom out');
+    ToolButton15.Hint := L('Go to search window');
+    ToolButton18.Hint := L('Stop');
+    ToolButton19.Hint := L('Options');
+    ToolBar1.ShowCaptions := True;
+    ToolBar1.AutoSize := True;
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TExplorerForm.Help1Click(Sender: TObject);

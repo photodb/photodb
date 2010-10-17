@@ -414,7 +414,7 @@ begin
             EventLog('KernelHandle IS 0 -> exit');
             MessageBoxDB(GetActiveFormHandle, L('Unable to load "Kernel.dll" library!'),
               L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-            Halt;
+            Application.Terminate;
           end;
 
       {$IFDEF LICENCE}

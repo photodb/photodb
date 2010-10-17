@@ -259,6 +259,10 @@ var
 begin
   Result := False;
   ATranslate := Original;
+
+  if not FParces then
+    LoadTranslateList(FScopeNode);
+
   for I := 0 to FTranslateList.Count - 1 do
   begin
     Translate := FTranslateList[I];

@@ -441,27 +441,8 @@ begin
   MouseDowned:=Button=mbRight;
   itemsel:=Item;
   ItemByMouseDown:=false;
-  if (Button = mbLeft) then
-  if itemsel<>nil then
-  begin
-   ItemSelectedByMouseDown:=false;
-   if not itemsel.Selected then
-   begin
-    if [ssCtrl,ssShift]*Shift=[] then
-    for i:=0 to ElvMain.Items.Count-1 do
-    if ElvMain.Items[i].Selected then
-    if itemsel<>ElvMain.Items[i] then
-    ElvMain.Items[i].Selected:=false;
-    if [ssShift]*Shift<>[] then
-     ElvMain.Selection.SelectRange(itemsel,ElvMain.Selection.FocusedItem,false,false) else
-    begin
-     ItemSelectedByMouseDown:=true;
-     itemsel.Selected:=true;
-     itemsel.Focused:=true;
-    end;
-   end else ItemByMouseDown:=true;
-   itemsel.Focused:=true;
-  end;
+
+  EnsureSelectionInListView(ElvMain, ItemSel, Shift, X, Y, ItemSelectedByMouseDown, ItemByMouseDown);
 
   WindowsMenuTickCount := GetTickCount;
   if (Button = MbLeft) and (Item <> nil) then
@@ -631,7 +612,6 @@ end;
 procedure TFormCont.AddNewItem(Image : Tbitmap; Info : TDBPopupMenuInfoRecord);
 var
   New: TEasyItem;
-  L: Integer;
 begin
   if Info = nil then
     Exit;
@@ -1708,26 +1688,11 @@ procedure TFormCont.ListView1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   Handled: Boolean;
-  I: Integer;
   Item: TEasyItem;
 begin
 
   Item := Self.ItemAtPos(X, Y);
-  if Item <> nil then
-    if Item.Selected then
-    begin
-      if (Shift = []) and Item.Selected then
-        if ItemByMouseDown then
-        begin
-          for I := 0 to ElvMain.Items.Count - 1 do
-            if ElvMain.Items[I].Selected then
-              if Item <> ElvMain.Items[I] then
-                ElvMain.Items[I].Selected := False;
-        end;
-      if not(EbcsDragSelecting in ElvMain.States) then
-        if ([SsCtrl] * Shift <> []) and not ItemSelectedByMouseDown and (Button = MbLeft) then
-          Item.Selected := False;
-    end;
+  RightClickFix(ElvMain, Button, Shift, Item, ItemByMouseDown, ItemSelectedByMouseDown);
 
   if MouseDowned then
     if Button = MbRight then

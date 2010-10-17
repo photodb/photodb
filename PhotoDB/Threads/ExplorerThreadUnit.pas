@@ -1430,7 +1430,7 @@ begin
 
     end;
   finally
-    FFiles.Free;
+    F(FFiles);
   end;
   SynchronizeEx(EndUpdate);
   ShowInfo('',1,0);
@@ -1481,7 +1481,7 @@ begin
      SynchronizeEx(MakeImageWithIcon);
     end;
   finally
-    FFiles.Free;
+    F(FFiles);
   end;
   SynchronizeEx(EndUpdate);
   ShowInfo('',1,0);
@@ -1527,7 +1527,7 @@ begin
       SynchronizeEx(MakeImageWithIcon);
     end;
   finally
-    FFiles.Free;
+    F(FFiles);
   end;
   SynchronizeEx(EndUpdate);
   ShowInfo('', 1, 0);
@@ -1588,7 +1588,7 @@ begin
  DoLoadBigImages;
 
  finally
-   FFiles.Free;
+   F(FFiles);
  end;
  if FInfo.ItemId<>0 then
    if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then

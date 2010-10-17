@@ -1,11 +1,11 @@
-<TEXT_MES_SLIDE_SHOW>[DB_IC_SLIDE_SHOW]
+<Slide show>[DB_IC_SLIDE_SHOW]
 {
 initialization:
   if ($OneFileExists=false) {InVisible;};
 run:
   SlideShow;
 }
-<TEXT_MES_SELECT_ALL>[DB_IC_SELECTALL]
+<Select all>[DB_IC_SELECTALL]
 {
 initialization:
   if ($OneFileExists=false) {InVisible;};
@@ -13,49 +13,49 @@ run:
   SelectAll;
 }
 <->[]{}
-<TEXT_MES_SHOW_UPDATER>[DB_IC_BOX]
+<Show updater>[DB_IC_BOX]
 {
   ShowUpdateWindow;
 }
 <->[]{}
 
 <>[]{scripts\HelpScript.dbini}
-<TEXT_MES_MANAGE_DB>[DB_IC_ADMINTOOLS]
+<DB Manager>[DB_IC_ADMINTOOLS]
 {
   DoManager;
 }
-<TEXT_MES_OPTIONS>[DB_IC_OPTIONS]
+<Options>[DB_IC_OPTIONS]
 {
   DoOptions;
 }
-<TEXT_MES_GROUPS_MANAGER>[DB_IC_GROUPS]
+<Groups manager>[DB_IC_GROUPS]
 {
   ExecuteGroupManager;
 }
-<TEXT_MES_IMAGE_EDITOR>[DB_IC_IMEDITOR]
+<Image editor>[DB_IC_IMEDITOR]
 {
   $form=NewImageEditor;
   ShowDBForm($form);
 }
 <>[]{scripts\GetPhotosScript.dbini}
-<TEXT_MES_LOAD_RES>[DB_IC_LOADFROMFILE]
+<Load results from file>[DB_IC_LOADFROMFILE]
 {
   LoadResults;
 }
-<TEXT_MES_SAVE_RES>[DB_IC_SAVETOFILE]
+<Save results to file>[DB_IC_SAVETOFILE]
 {
   SaveResults;
 }
-<TEXT_MES_NEW_PANEL>[DB_IC_PANEL]
+<New panel>[DB_IC_PANEL]
 {
   NewPanel;
 }
-<TEXT_MES_NEW_SEARCH>[DB_IC_ADDTODB]
+<New search>[DB_IC_ADDTODB]
 {
   NewSearch;
 }
 <->[]{}
-<TEXT_MES_EXPLORER>[DB_IC_EXPLORER]
+<Explorer>[DB_IC_EXPLORER]
 {
   NewExplorer;
 }

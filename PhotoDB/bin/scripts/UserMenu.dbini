@@ -1,4 +1,4 @@
-<TEXT_MES_USER_SUBMENU>[DB_IC_MY_COMPUTER]
+<User menu>[DB_IC_MY_COMPUTER]
 {
 initialization:
   $c=0;

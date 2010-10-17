@@ -51,7 +51,7 @@
     <translate name="Error writing data on disk: %s." value="Ошибка записи данных на диск: %s." />
     <translate name="Watermark Options" value="Настнойки водяного знака" />
   </scope>
-  <scope name="PasswordForm">
+  <scope name="Password">
     <translate name="Enter your password here" value="Введите пароль здесь" />
     <translate name="Password requared" value="Необходим пароль" />
     <translate name="Enter password to open file &quot;%s&quot; here:" value="Введите пароль для открытия файла '%s' сюда:" />

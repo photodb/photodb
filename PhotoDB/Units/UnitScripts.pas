@@ -17,7 +17,7 @@ interface
 
 uses Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs,
      Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-     uMemory, uGOM, uTime;
+     uMemory, uGOM, uTime, uTranslate;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -2594,7 +2594,7 @@ var
   Ico : TIcon;
 begin
  Result:=TMenuItemW.Create(aOwner);
- Result.Caption:=Caption;
+ Result.Caption:= TA(Caption, 'ScriptItems');
  Result.Script:=Script;
  Result.Default:=Default;
  Result.OnClick:=OnClick;
@@ -2622,7 +2622,7 @@ var
   Ico : TIcon;
 begin
  Result:=TMenuItemW.Create(aOwner);
- Result.Caption:=Caption;
+ Result.Caption:=TA(Caption, 'ScriptItems');
  Result.Script:=Script;
  Result.Default:=Default;
  Result.OnClick:=OnClick;
@@ -2651,7 +2651,7 @@ var
   Ico : TIcon;
 begin
  Result:=TMenuItemW.Create(aOwner);
- Result.Caption:=Caption;
+ Result.Caption:=TA(Caption);
  Result.Script:=Script;
  Result.Default:=Default;
  Result.OnClick:=OnClick;
@@ -2675,8 +2675,6 @@ begin
   end else Result.ImageIndex:=StrToIntDef(Icon,-1);
  end else Result.ImageIndex:=StrToIntDef(Icon,-1);
 end;
-
-
 
 function aBoolean(bool : boolean) : boolean;
 begin

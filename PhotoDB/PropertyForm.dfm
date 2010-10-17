@@ -252,7 +252,7 @@ object PropertiesForm: TPropertiesForm
     Top = 114
     Width = 307
     Height = 378
-    ActivePage = TsGroups
+    ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -1269,6 +1269,10 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         299
         350)
@@ -1289,6 +1293,10 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         299
         350)
@@ -1341,6 +1349,10 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         299
         350)

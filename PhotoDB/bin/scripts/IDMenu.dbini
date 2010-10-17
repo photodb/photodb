@@ -16,7 +16,7 @@ run:
  };
 }
 
-<TEXT_MES_SHOW>[DB_IC_SLIDE_SHOW]
+<Slide Show>[DB_IC_SLIDE_SHOW]
 {
 initialization:
   Default;
@@ -24,7 +24,7 @@ run:
  ShowItemPopUpMenu; 
 }
 
-<Сравнить!>[DB_IC_SLIDE_SHOW]
+<Compare>[DB_IC_SLIDE_SHOW]
 {
 initialization:
  $skd=ShiftKeyDown;
@@ -57,7 +57,7 @@ run:
  MessageBox($s,"Анализатор",$p);
 }
 
-<TEXT_MES_APPLY_ACTION>[DB_IC_APPLY_ACTION]
+<Apply actions>[DB_IC_APPLY_ACTION]
 {
 initialization:
   $Visible=true;
@@ -130,7 +130,7 @@ run:
   };
 }
 
-<TEXT_MES_SHELL>[DB_IC_SHELL]
+<Shell>[DB_IC_SHELL]
 {
 initialization:
  $Visible=true;
@@ -139,7 +139,7 @@ run:
   ShellExecutePopUpMenu;
 }
 
-<TEXT_MES_LINKS>[DB_IC_NOTES]
+<Links>[DB_IC_NOTES]
 {
 initialization:
  $Visible=true;
@@ -200,7 +200,7 @@ initialization:
  };
 }
 
-<TEXT_MES_REFRESH_ITEM>[DB_IC_REFRESH_THUM]
+<Refresh>[DB_IC_REFRESH_THUM]
 {
 initialization:
   $Visible=true;
@@ -208,16 +208,16 @@ initialization:
 run:
   RefreshThumItemPopUpMenu;
 }
-<TEXT_MES_ROTATE>[DB_IC_ROTETED_0]{
+<Rotate>[DB_IC_ROTETED_0]{
 initialization:
   if ($IsRecord=false) {InVisible;};
   if ($NoDBInfoNeeded=true) {InVisible;};
 
   for ($i=0;$i<4;$i=SumInt($i,1)) {
-      if ($i=0) {$s="TEXT_MES_ROTATE_0";};
-      if ($i=1) {$s="TEXT_MES_ROTATE_90";};
-      if ($i=2) {$s="TEXT_MES_ROTATE_180";};
-      if ($i=3) {$s="TEXT_MES_ROTATE_270";};
+      if ($i=0) {$s="No rotate";};
+      if ($i=1) {$s="Rotate right";};
+      if ($i=2) {$s="Rotate 180°";};
+      if ($i=3) {$s="Rotate left";};
       $n=SumInt($i,DB_IC_ROTETED_0);
       if ($Rotation=$i) {
       CreateItem($s,$n,"SetRotateItemPopUpMenu;",true,$i);
@@ -227,7 +227,7 @@ initialization:
    };
 }
 
-<TEXT_MES_RATING>[DB_IC_RATING_STAR]{
+<Rating>[DB_IC_RATING_STAR]{
 initialization:
   $Visible=true;
   if ($IsRecord=false) {InVisible;};
@@ -242,7 +242,7 @@ initialization:
      };
    };
 }
-<TEXT_MES_PRIVATE>[DB_IC_PRIVATE]
+<Private>[DB_IC_PRIVATE]
 { 
  initialization:
   $Visible=true;
@@ -254,7 +254,7 @@ run:
   PrivateItemPopUpMenu;
 }
 
-<TEXT_MES_COMMON>[DB_IC_COMMON]
+<Public>[DB_IC_COMMON]
 {
  initialization:
   $Visible=true;
@@ -266,7 +266,7 @@ run:
   PrivateItemPopUpMenu;
 }
 
-<TEXT_MES_DATE>[DB_IC_EDIT_DATE]
+<Date>[DB_IC_EDIT_DATE]
 {
  initialization:
   $Visible=true;
@@ -276,7 +276,7 @@ run:
  run:
   DateItemPopUpMenu;
 }
-<TEXT_MES_GROUPS>[DB_IC_GROUPS]
+<Groups>[DB_IC_GROUPS]
 { 
  initialization:
   $Visible=true;
@@ -292,11 +292,11 @@ run:
    };
   CreateItem("-",0,"",false,0);
 
-  CreateItem("TEXT_MES_EDITA",DB_IC_GROUPS,"GroupsPopUpMenu;",false,0);
+  CreateItem("Edit groups",DB_IC_GROUPS,"GroupsPopUpMenu;",false,0);
 
 }
 
-<Ключевые слова>[DB_IC_NOTEPAD]
+<Keywords>[DB_IC_NOTEPAD]
 { 
 initialization:
   $Visible=true;
@@ -311,39 +311,39 @@ initialization:
   if ($shift=true) {InVisible;}; 
 }
 
-<TEXT_MES_CRYPTING>[DB_IC_KEY]
+<Crypting>[DB_IC_KEY]
 {
 initialization:
   $Visible=true;
   if ($Crypted=true) {
-    CreateItem("TEXT_MES_ENTER_PASSWORD",DB_IC_PASSWORD,"EnterPasswordItemPopUpMenu;",false,0);
-    CreateItem("TEXT_MES_DECRYPT",DB_IC_DECRYPTIMAGE,"DeCryptItemPopUpMenu;",false,0);
+    CreateItem("Enter password",DB_IC_PASSWORD,"EnterPasswordItemPopUpMenu;",false,0);
+    CreateItem("Decrypt",DB_IC_DECRYPTIMAGE,"DeCryptItemPopUpMenu;",false,0);
   }; else {
-    CreateItem("TEXT_MES_CRYPT",DB_IC_CRYPTIMAGE,"CryptItemPopUpMenu;",false,0);
+    CreateItem("Encrypt",DB_IC_CRYPTIMAGE,"CryptItemPopUpMenu;",false,0);
   };
   CreateItem("-",0,"",false,0);
   $script = "DoSteno("""+$FileName+""")";
-  CreateItem("TEXT_MES_DO_STENO",DB_IC_STENO,$script,false,0);
+  CreateItem("Hide info in image",DB_IC_STENO,$script,false,0);
   $can_desteno=FileHasExt($FileName,"|BMP|PNG|");
   if ($can_desteno=true) {
     $script = "DoDesteno("""+$FileName+""")";
-    CreateItem("TEXT_MES_DO_DESTENO",DB_IC_DESTENO,$script,false,0);
+    CreateItem("Extract info from image",DB_IC_DESTENO,$script,false,0);
   };
 }
 
-<TEXT_MES_SET_AS_DESKTOP_WALLPAPER>[DB_IC_WALLPAPER]
+<Set as desktop wallpaper>[DB_IC_WALLPAPER]
 {
 initialization:
   $Visible=true;
   if ($IsCurrentFile=false) {InVisible;};
   if ($WallPaper=false) {InVisible;};
   if ($Crypted=true) {InVisible;};
-  CreateItem("TEXT_MES_BY_STRETCH",DB_IC_WALLPAPER,"WallpaperStretchItemPopUpMenu;",false,0);
-  CreateItem("TEXT_MES_BY_CENTER",DB_IC_WALLPAPER,"WallpaperCenterItemPopUpMenu;",false,0);
-  CreateItem("TEXT_MES_BY_TILE",DB_IC_WALLPAPER,"WallpaperTileItemPopUpMenu;",false,0);
+  CreateItem("Streatch",DB_IC_WALLPAPER,"WallpaperStretchItemPopUpMenu;",false,0);
+  CreateItem("Center",DB_IC_WALLPAPER,"WallpaperCenterItemPopUpMenu;",false,0);
+  CreateItem("Tile",DB_IC_WALLPAPER,"WallpaperTileItemPopUpMenu;",false,0);
 }
 
-<TEXT_MES_IMAGE_EDITOR>[DB_IC_IMEDITOR]
+<Image editor>[DB_IC_IMEDITOR]
 {
 initialization:
   $Visible=true;
@@ -354,7 +354,7 @@ run:
 
 <>[]{scripts\UserMenu.dbini}
 
-<TEXT_MES_REFRESH_ID>[DB_IC_REFRESH_ID]
+<Update info>[DB_IC_REFRESH_ID]
 {
 initialization:
   $Visible=true;
@@ -365,7 +365,7 @@ run:
   RefreshIDItemPopUpMenu;
 }
 
-<TEXT_MES_SCAN_IMAGE>[DB_IC_SEARCH]
+<Scan image>[DB_IC_SEARCH]
 {
 initialization:
   $Visible=true;
@@ -376,7 +376,7 @@ run:
   ScanImageItemPopUpMenu;
 }
 
-<TEXT_MES_PRINT>[DB_IC_PRINTER]
+<Print>[DB_IC_PRINTER]
 {
 initialization:
   $Visible=true;
@@ -385,16 +385,16 @@ run:
   PrintItemPopUpMenu;
 }
 
-<TEXT_MES_DUBLICATES>[DB_IC_DUBLICAT]
+<Duplicates>[DB_IC_DUBLICAT]
 {
 initialization:
   $Visible=true;
   if ($Dublicat=false) {InVisible;};
-  CreateItem("TEXT_MES_SHOW_DUBLICATES",DB_IC_DUBLICAT,"ShowDublicatesItemPopUpMenu;",false,0);
-  CreateItem("TEXT_MES_DEL_DUBLICATES",DB_IC_DEL_DUBLICAT,"DeleteDublicatesItemPopUpMenu;",false,0);
+  CreateItem("Show duplicates",DB_IC_DUBLICAT,"ShowDublicatesItemPopUpMenu;",false,0);
+  CreateItem("Delete duplicates",DB_IC_DEL_DUBLICAT,"DeleteDublicatesItemPopUpMenu;",false,0);
 }
 
-<TEXT_MES_DEL_FROM_DB>[DB_IC_DELETE_INFO]
+<Delete info from DB>[DB_IC_DELETE_INFO]
 {
 initialization:
   $Visible=true;
@@ -404,7 +404,7 @@ run:
   DeleteLItemPopUpMenu;
 }
 
-<TEXT_MES_DEL_FILE>[DB_IC_DELETE_FILE]
+<Delete file>[DB_IC_DELETE_FILE]
 {
 initialization:
   $Visible=true;
@@ -416,7 +416,7 @@ run:
   DeleteItemPopUpMenu;
 }
 
-<TEXT_MES_COPY_ITEM>[DB_IC_COPY]
+<Copy>[DB_IC_COPY]
 {
 initialization:
   $Visible=true;
@@ -426,14 +426,14 @@ run:
   CopyItemPopUpMenu;
 }
 
-<TEXT_MES_RENAME>[DB_IC_RENAME]
+<Rename>[DB_IC_RENAME]
 {
   RenameItemPopUpMenu;
 }
 
 <->[]{}
 
-<TEXT_MES_EXPLORER>[DB_IC_EXPLORER]
+<Open in Explorer>[DB_IC_EXPLORER]
 {
 initialization:
  $Visible=true;
@@ -442,7 +442,7 @@ run:
   ExplorerPopUpMenu;
 }
 
-<TEXT_MES_SEND_TO>[DB_IC_SENDTO]
+<Send to>[DB_IC_SENDTO]
 {
   initialization:
   $Visible=true;
@@ -452,10 +452,10 @@ run:
       CreateItem($s,DB_IC_SEND,"SendToItemPopUpMenu;",false,$i);
    };
   CreateItem("-","","",false,0);
-  CreateItem("TEXT_MES_NEW_PANEL",DB_IC_SENDTO,"SendToItemPopUpMenu;",false,-1);
+  CreateItem("New Panel",DB_IC_SENDTO,"SendToItemPopUpMenu;",false,-1);
 }
 
-<TEXT_MES_SHOW_FOLDER>[DB_IC_SEARCH]
+<Show folder>[DB_IC_SEARCH]
 {
 initialization:
   $Visible=true;
@@ -465,7 +465,7 @@ run:
   SearchFolderPopUpMenu;
 }
 
-<TEXT_MES_PROPERTY>[DB_IC_PROPERTIES]
+<Properties>[DB_IC_PROPERTIES]
 {
   PropertyItemPopUpMenu;
 }

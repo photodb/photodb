@@ -8,7 +8,8 @@ uses
   GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
   UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
   UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon,
-  CommonDBSupport, uFileUtils, uTranslate, uMemory, ActiveX;
+  CommonDBSupport, uFileUtils, uTranslate, uMemory, ActiveX,
+  uAssociatedIcons;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
@@ -1184,7 +1185,7 @@ var
         AssignJpeg(SearchExtension.Bitmap, JPEG);
         ApplyRotate(SearchExtension.Bitmap, SearchData.Rotation);
       end else
-        SearchExtension.Bitmap := nil;
+        SearchExtension.Icon := TAIcons.Instance.GetIconByExt(SearchData.FileName, False, 48, False);
     finally
       JPEG.Free;
     end;

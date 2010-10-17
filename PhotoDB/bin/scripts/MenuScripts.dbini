@@ -1,14 +1,14 @@
-  <Скрипты>[DB_IC_SHELL]
+  <Scripts>[DB_IC_SHELL]
   {
-    <Список функций>[DB_IC_OPTIONS]
+    <Functions list>[DB_IC_OPTIONS]
     {
      ShowFunctionList;
     }
-    <Список переменных>[DB_IC_BOX]
+    <Variables>[DB_IC_BOX]
     {
      ShowMemoryStatus;
     }
-    <Открыть папку>[DB_IC_DIRECTORY]
+    <Open scripts directory>[DB_IC_DIRECTORY]
     {
      $script_path=GetProgramPath;
      $script_path=ExtractFileDirectory($script_path);

@@ -4,7 +4,7 @@ interface
 
 uses
  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
- UnitINI, Dolphin_DB, ReplaseLanguageInScript, ReplaseIconsInScript, uScript, UnitScripts,
+ UnitINI, Dolphin_DB, ReplaseIconsInScript, uScript, UnitScripts,
  UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory;
 
 const

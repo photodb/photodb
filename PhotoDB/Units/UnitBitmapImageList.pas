@@ -29,7 +29,7 @@ type
     destructor Destroy; override;
   public
     function AddBitmap(Bitmap : TBitmap; CopyPointer : Boolean = True) : Integer;
-    procedure AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '');
+    function AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '') : Integer;
     procedure Clear;
     function Count : Integer;
     procedure Delete(Index : Integer);
@@ -65,7 +65,7 @@ begin
   Result := FImages.Add(Item);
 end;
 
-procedure TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased : Boolean; Ext : string = '');   
+function TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased : Boolean; Ext : string = '') : Integer;
 var
   Item : TBitmapImageListImage;
 begin
@@ -73,7 +73,7 @@ begin
   Item.Graphic := Icon;
   Item.SelfReleased := SelfReleased;
   Item.Ext := Ext;
-  FImages.Add(Item);
+  Result := FImages.Add(Item);
 end;
 
 procedure TBitmapImageList.Clear;
