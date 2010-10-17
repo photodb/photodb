@@ -449,6 +449,7 @@ type
     FFillListInfo : TListFillInfo;
     FW7TaskBar : ITaskbarList3;
     FCanBackgroundSearch: Boolean;
+    FMoreThan, FLessThan: string;
     function HintRealA(Info : TDBPopupMenuInfoRecord) : Boolean;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
@@ -560,16 +561,16 @@ begin
   DateRange := GetDateFilter;
 
   WlStartStop.OnClick:= BreakOperation;
-  WlStartStop.Text:=TEXT_MES_STOP;
-  PbProgress.Text:=TEXT_MES_STOPING+'...';
-  Label7.Caption:=TEXT_MES_CALCULATING+'...';
+  WlStartStop.Text:= L('Stop');
+  PbProgress.Text:= L('Stoping') + '...';
+  Label7.Caption := L('Calculating') + '...';
   If Creating then Exit;
 
   ClearItems;
   FBitmapImageList.Clear;
-  PbProgress.Text:=TEXT_MES_INITIALIZE+'...';
-  PbProgress.position:=0;
-  PbProgress.Text:=TEXT_MES_QUERY_EX;
+  PbProgress.Text := L('Initialize') + '...';
+  PbProgress.Position := 0;
+  PbProgress.Text := L('Query executing') + '...';
 
   ElvMain.ShowGroupMargins := DBKernel.Readbool('Options', 'UseGroupsInSearch', True);
 
@@ -586,13 +587,17 @@ end;
 procedure TSearchForm.StartSearchThread(IsEstimate : Boolean);
 var
   WideSearch : TSearchQuery;
+  ItemEx : TComboExItem;
 begin
   //TODO: free object
   WideSearch := TSearchQuery.Create;
   WideSearch.Query := SearchEdit.Text;
-  WideSearch.GroupName := ComboBoxSearchGroups.ItemsEx[ComboBoxSearchGroups.GetItemIndex].Caption;
-  if WideSearch.GroupName = TEXT_MES_ALL_GROUPS then
+  ItemEx := ComboBoxSearchGroups.ItemsEx.ComboItems[ComboBoxSearchGroups.GetItemIndex];
+  if ItemEx.Data = nil then
+    WideSearch.GroupName := ItemEx.Caption
+  else
     WideSearch.GroupName := '';
+
   WideSearch.RatingFrom := Min(RtgQueryRating.Rating, RtgQueryRating.RatingRange);
   WideSearch.RatingTo := Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange);
   WideSearch.DateFrom := Min(GetDateFilter.DateFrom, GetDateFilter.DateTo);
@@ -617,15 +622,19 @@ end;
 
 procedure TSearchForm.FormCreate(Sender: TObject);
 const
- n = 3;
- Captions : array[0..n-1] of string = (TEXT_MES_SPEC_QUERY, TEXT_MES_DELETED, TEXT_MES_DUBLICATES);
+  N = 3;
 
 var
-  Menus : array[0..n-1] of TMenuItem;
+  Captions : array[0 .. N - 1] of string;
+  Menus : array[0 .. N - 1] of TMenuItem;
   I : integer;
   MainMenuScript : string;
   Ico : TIcon;
 begin
+  Captions[0] := L('System query');
+  Captions[1] := L('Show deleted items');
+  Captions[2] := L('Show duplicates');
+
   TW.I.Start('S -> FormCreate');
   FCanBackgroundSearch := False;
   FilesToDrag := TStringList.Create;
@@ -1415,7 +1424,7 @@ end;
 
 function TSearchForm.GetSelectedTStrings: TStrings;
 var
-  I : integer;
+  I : Integer;
   SearchRecord : TDBPopupMenuInfoRecord;
 begin
   Result := TStringList.Create;
@@ -1437,9 +1446,10 @@ begin
 
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
-  if Creating then exit;
-  DBkernel.UnRegisterForm(self);
-  DBKernel.UnRegisterChangesID(self,ChangedDBDataByID);
+  if Creating then
+    Exit;
+  DBkernel.UnRegisterForm(Self);
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   DBkernel.SaveCurrentColorTheme;
   SaveWindowPos1.SavePosition;
   FormManager.UnRegisterMainForm(Self);
@@ -1456,10 +1466,10 @@ begin
   StopLoadingList;
   if TbStopOperation.Enabled then
     TbStopOperation.Click;
-  PbProgress.Text := TEXT_MES_STOPING + '...';
+  PbProgress.Text := L('Stoping') + '...';
   WlStartStop.Onclick := DoSearchNow;
-  WlStartStop.Text := TEXT_MES_SEARCH;
-  PbProgress.Text := TEXT_MES_DONE;
+  WlStartStop.Text := L('Search');
+  PbProgress.Text := L('Done');
   PbProgress.Position := 0;
   ElvMain.Show;
   BackGroundSearchPanel.Hide;
@@ -1557,7 +1567,7 @@ end;
 
 procedure TSearchForm.ErrorQSL(sql : string);
 begin
-  MessageBoxDB(Handle, TEXT_MES_3 + Sql, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+  MessageBoxDB(Handle, L('Error in SQL. Query: ') + Sql, L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TSearchForm.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
@@ -1811,7 +1821,7 @@ end;
 
 procedure TSearchForm.FormDeactivate(Sender: TObject);
 begin
- hinttimer.Enabled:=false;
+  Hinttimer.Enabled := False;
 end;
 
 function TSearchForm.HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
@@ -1828,59 +1838,57 @@ procedure TSearchForm.initialization_;
 var
   SearchIcon : HIcon;
 begin
- TW.I.Start('S -> initialization_');
- DBCanDrag:=false;
- DBKernel.RegisterChangesID(self,ChangedDBDataByID);
- Caption:=ProductName+' - ['+DBkernel.GetDataBaseName+']';
+  TW.I.Start('S -> initialization_');
+  DBCanDrag := False;
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  Caption := ProductName + ' - [' + DBkernel.GetDataBaseName + ']';
 
- TW.I.Start('S -> DoShowSelectInfo');
- ElvMain.Canvas.Pen.Color:=$0;
- ElvMain.Canvas.brush.Color:=$0;
- WlStartStop.onclick:= DoSearchNow;
- SearchIcon := LoadImage(DBKernel.IconDllInstance, 'EXPLORER_SEARCH_SMALL', IMAGE_ICON, 16, 16, 0);
- WlStartStop.LoadFromHIcon(SearchIcon);
- DestroyIcon(SearchIcon);
- WlStartStop.Text:=TEXT_MES_SEARCH;
- Label7.Caption:=TEXT_MES_NO_RES;
- PbProgress.Text:=TEXT_MES_NO_RES;
- SaveWindowPos1.Key:=RegRoot+'Searching';
- SaveWindowPos1.SetPosition;
+  TW.I.Start('S -> DoShowSelectInfo');
+  WlStartStop.Onclick := DoSearchNow;
+  SearchIcon := LoadImage(DBKernel.IconDllInstance, 'EXPLORER_SEARCH_SMALL', IMAGE_ICON, 16, 16, 0);
+  WlStartStop.LoadFromHIcon(SearchIcon);
+  DestroyIcon(SearchIcon);
+  WlStartStop.Text := L('Search');
+  Label7.Caption := L('No results');
+  PbProgress.Text := L('No results');
+  SaveWindowPos1.Key := RegRoot + 'Searching';
+  SaveWindowPos1.SetPosition;
 
- SortLink.UseSpecIconSize:=true;
- ElvMain.DoubleBuffered:=true;
+  SortLink.UseSpecIconSize := True;
+  ElvMain.DoubleBuffered := True;
 
- TW.I.Start('S -> Immges');
- PopupMenu8.Images:=DBKernel.ImageList;
- OpeninExplorer1.ImageIndex:=DB_IC_EXPLORER;
- AddFolder1.ImageIndex:=DB_IC_ADD_FOLDER;
+  TW.I.Start('S -> Immges');
+  PopupMenu8.Images := DBKernel.ImageList;
+  OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
+  AddFolder1.ImageIndex := DB_IC_ADD_FOLDER;
 
- SortbyCompare1.ImageIndex:=DB_IC_DUBLICAT;
+  SortbyCompare1.ImageIndex := DB_IC_DUBLICAT;
 
- View2.ImageIndex:=DB_IC_SLIDE_SHOW;
+  View2.ImageIndex := DB_IC_SLIDE_SHOW;
 
- RatingPopupMenu1.Images:=DBkernel.ImageList;
+  RatingPopupMenu1.Images := DBkernel.ImageList;
 
- N00.ImageIndex:=DB_IC_DELETE_INFO;
- N01.ImageIndex:=DB_IC_RATING_1;
- N02.ImageIndex:=DB_IC_RATING_2;
- N03.ImageIndex:=DB_IC_RATING_3;
- N04.ImageIndex:=DB_IC_RATING_4;
- N05.ImageIndex:=DB_IC_RATING_5;
+  N00.ImageIndex := DB_IC_DELETE_INFO;
+  N01.ImageIndex := DB_IC_RATING_1;
+  N02.ImageIndex := DB_IC_RATING_2;
+  N03.ImageIndex := DB_IC_RATING_3;
+  N04.ImageIndex := DB_IC_RATING_4;
+  N05.ImageIndex := DB_IC_RATING_5;
 
- ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_EDIT_DATE+1]);
+  ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
 
- TW.I.Start('S -> BackGroundSearchPanelResize');
- BackGroundSearchPanelResize(Nil);
- TW.I.Start('S -> Splitter1Moved');
+  TW.I.Start('S -> BackGroundSearchPanelResize');
+  BackGroundSearchPanelResize(nil);
+  TW.I.Start('S -> Splitter1Moved');
 
- Creating:=false;
+  Creating := False;
 end;
 
 procedure TSearchForm.CMMOUSELEAVE(var Message: TWMNoParams);
 var
   P: Tpoint;
 begin
-  Getcursorpos(P);
+  GetCursorPos(P);
   if THintManager.Instance.HintAtPoint(P) <> nil then
     Exit;
 
@@ -1898,105 +1906,119 @@ end;
 
 procedure TSearchForm.SaveResults1Click(Sender: TObject);
 var
-  n,i : integer;
-  l : TArStrings;
+  N, I : integer;
+  LA : TArStrings;
   ItemsImThArray : TArStrings;
   ItemsIDArray : TArInteger;
   SaveDialog : DBSaveDialog;
   FileName : string;
 begin
- SaveDialog:=DBSaveDialog.Create;
- SaveDialog.Filter:='DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
- SaveDialog.FilterIndex:=1;
+  SaveDialog := DBSaveDialog.Create;
+  try
+    SaveDialog.Filter :=
+      'DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
+    SaveDialog.FilterIndex := 1;
 
- if SaveDialog.Execute then
- begin
-  n:=SaveDialog.GetFilterIndex;
-  if n=1 then
-  begin
-   FileName:=SaveDialog.FileName;
-   if GetExt(FileName)<>'IDS' then
-   FileName:=FileName+'.ids';
-   if FileExists(FileName) then
-   if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
+    if SaveDialog.Execute then
+    begin
+      N := SaveDialog.GetFilterIndex;
+      if N = 1 then
+      begin
+        FileName := SaveDialog.FileName;
+        if GetExt(FileName) <> 'IDS' then
+          FileName := FileName + '.ids';
+        if FileExists(FileName) then
+          if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
+            TD_ICON_WARNING) then
+            Exit;
 
+        SetLength(ItemsIDArray, ElvMain.Items.Count);
+        for I := 0 to ElvMain.Items.Count - 1 do
+          ItemsIDArray[I] := GetSearchRecordFromItemData(ElvMain.Items[I]).ID;
 
-   SetLength(ItemsIDArray, ElvMain.Items.Count);
-   for I := 0 to ElvMain.Items.Count - 1 do
-     ItemsIDArray[I]:= GetSearchRecordFromItemData(ElvMain.Items[I]).ID;
+        SaveIDsTofile(FileName, ItemsIDArray);
+      end;
+      if N = 2 then
+      begin
+        SetLength(LA, 0);
+        FileName := SaveDialog.FileName;
+        if GetExt(FileName) <> 'DBL' then
+          FileName := FileName + '.dbl';
+        if FileExists(FileName) then
+          if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
+            TD_ICON_WARNING) then
+            Exit;
 
-   SaveIDsTofile(FileName, ItemsIDArray);
+        SetLength(ItemsIDArray, ElvMain.Items.Count);
+        for I := 0 to ElvMain.Items.Count - 1 do
+          ItemsIDArray[I] := GetSearchRecordFromItemData(ElvMain.Items[I]).ID;
+
+        SaveListTofile(FileName, ItemsIDArray, LA);
+      end;
+      if N = 3 then
+      begin
+        FileName := SaveDialog.FileName;
+        if GetExt(FileName) <> 'ITH' then
+          FileName := FileName + '.ith';
+        if FileExists(FileName) then
+          if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
+            TD_ICON_WARNING) then
+            Exit;
+
+        SetLength(ItemsImThArray, ElvMain.Items.Count);
+        for I := 0 to ElvMain.Items.Count - 1 do
+          ItemsImThArray[I] := GetSearchRecordFromItemData(ElvMain.Items[I]).LongImageID;
+
+        SaveImThsTofile(FileName, ItemsImThArray);
+      end;
+    end;
+  finally
+    SaveDialog.Free;
   end;
-  if n=2 then
-  begin
-   SetLength(l,0);
-   FileName:=SaveDialog.FileName;
-   if GetExt(FileName)<>'DBL' then
-   FileName:=FileName+'.dbl';
-   if FileExists(FileName) then
-   if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
-
-   SetLength(ItemsIDArray, ElvMain.Items.Count);
-   for I := 0 to ElvMain.Items.Count - 1 do
-     ItemsIDArray[I]:= GetSearchRecordFromItemData(ElvMain.Items[I]).ID;
-
-   SaveListTofile(FileName, ItemsIDArray, l);
-  end;
-  if n=3 then
-  begin
-   FileName:=SaveDialog.FileName;
-   if GetExt(FileName)<>'ITH' then
-   FileName:=FileName+'.ith';
-   if FileExists(FileName) then
-   if ID_OK<>MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
-
-   SetLength(ItemsImThArray, ElvMain.Items.Count);
-   for I := 0 to ElvMain.Items.Count - 1 do
-     ItemsImThArray[I] := GetSearchRecordFromItemData(ElvMain.Items[I]).LongImageID;
-
-   SaveImThsTofile(FileName,ItemsImThArray);
-  end;
- end;
- SaveDialog.Free;
 end;
 
 procedure TSearchForm.LoadResults1Click(Sender: TObject);
 var
-  IDs : TArInteger;
-  Files : TArStrings;
-  S : string;
-  i : integer;
-  OpenDialog : DBOpenDialog;
+  IDs: TArInteger;
+  Files: TArStrings;
+  S: string;
+  I: Integer;
+  OpenDialog: DBOpenDialog;
 begin
- if FUpdatingDB then exit;
+  if FUpdatingDB then
+    Exit;
 
- OpenDialog:=DBOpenDialog.Create;
- OpenDialog.Filter:='All Supported (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
- OpenDialog.FilterIndex:=1;
+  OpenDialog := DBOpenDialog.Create;
+  try
+    OpenDialog.Filter :=
+      'All Supported (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
+    OpenDialog.FilterIndex := 1;
 
- if OpenDialog.Execute then
- begin
-  If GetExt(OpenDialog.FileName)='IDS' then
-  begin
-   SearchEdit.Text:=LoadIDsFromfile(OpenDialog.FileName);
-   DoSearchNow(nil);
+    if OpenDialog.Execute then
+    begin
+      if GetExt(OpenDialog.FileName) = 'IDS' then
+      begin
+        SearchEdit.Text := LoadIDsFromfile(OpenDialog.FileName);
+        DoSearchNow(nil);
+      end;
+      if GetExt(OpenDialog.FileName) = 'DBL' then
+      begin
+        LoadDblFromfile(OpenDialog.FileName, IDs, Files);
+        S := '';
+        for I := 0 to Length(IDs) - 1 do
+          S := S + IntToStr(IDs[I]) + '$';
+        SearchEdit.Text := S;
+        DoSearchNow(nil);
+      end;
+      if GetExt(OpenDialog.FileName) = 'ITH' then
+      begin
+        SearchEdit.Text := ':ThFile(' + OpenDialog.FileName + '):';
+        DoSearchNow(nil);
+      end;
+    end;
+  finally
+    OpenDialog.Free;
   end;
-  If GetExt(OpenDialog.FileName)='DBL' then
-  begin
-   LoadDblFromfile(OpenDialog.FileName,IDs,Files);
-   s:='';
-   for i:=0 to length(IDs)-1 do
-   s:=s+IntToStr(IDs[i])+'$';
-   SearchEdit.Text:=s;
-   DoSearchNow(nil);
-  end;
-  If GetExt(OpenDialog.FileName)='ITH' then
-  begin
-   SearchEdit.Text:=':ThFile('+OpenDialog.FileName+'):';
-   DoSearchNow(nil);
-  end;
- end;
- OpenDialog.Free;
 end;
 
 procedure TSearchForm.Help1Click(Sender: TObject);
@@ -2044,7 +2066,7 @@ begin
     if GetExt(S) <> GetExt(SearchRecord.FileName) then
     if FileExists(SearchRecord.FileName) then
     begin
-      If ID_OK <> MessageBoxDB(Handle, TEXT_MES_REPLACE_EXT, TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      If ID_OK <> MessageBoxDB(Handle, L('Do you really want to change file extension?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       begin
         S := ExtractFileName(SearchRecord.FileName);
         Exit;
@@ -2254,7 +2276,7 @@ begin
       begin
         ReloadIDMenu;
         ReloadListMenu;
-        MessageBoxDB(Handle,TEXT_MES_MENU_RELOADED,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+        MessageBoxDB(Handle, L('Menu reloaded!'), L('Information'), TD_BUTTON_OK,TD_ICON_INFORMATION);
       end;
 
       if (Msg.wParam = VK_SUBTRACT) then
@@ -2370,65 +2392,72 @@ end;
 
 procedure TSearchForm.ReloadGroups;
 var
-  i : integer;
-  FCurrentGroups : TGroups;
+  I: Integer;
+  FCurrentGroups: TGroups;
+  Item: TComboExItem;
 begin
- FCurrentGroups:=EncodeGroups(FPropertyGroups);
- ComboBoxSelGroups.Items.Clear;
- For i:=0 to Length(FCurrentGroups)-1 do
- begin
-  ComboBoxSelGroups.ItemsEx.Add().Caption:=FCurrentGroups[i].GroupName;
- end;
+  FCurrentGroups := EncodeGroups(FPropertyGroups);
+  ComboBoxSelGroups.Items.Clear;
+  for I := 0 to Length(FCurrentGroups) - 1 do
+  begin
+    Item := ComboBoxSelGroups.ItemsEx.Add;
+    Item.Caption := FCurrentGroups[I].GroupName;
+    Item.Data := nil;
+  end;
 
- ComboBoxSelGroups.ItemsEx.Add().Caption:=TEXT_MES_MANAGEA;
+  Item := ComboBoxSelGroups.ItemsEx.Add;
+  Item.Caption := L('<Groups>');
+  Item.Data := Pointer(1);
 
- ComboBoxSelGroups.Text:=TEXT_MES_GROUPSA;
+  ComboBoxSelGroups.Text := L('<Groups>');
 end;
 
 procedure TSearchForm.ComboBox1_Select(Sender: TObject);
 var
-  KeyWords : string;
+  KeyWords: string;
 begin
- Application.ProcessMessages;
- if ComboBoxSelGroups.ItemsEx.Count=0 then exit;
- if ComboBoxSelGroups.ItemIndex<>-1 then
- if (ComboBoxSelGroups.Text=ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.Items.Count-1].Caption) and (ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.ItemIndex].ImageIndex=0) then
- begin
-  KeyWords:=Memo1.Text;
-  DBChangeGroups(FPropertyGroups,KeyWords);
   Application.ProcessMessages;
-  Memo1.Text:=KeyWords;
-  ReloadGroups;
-  Memo1Change(Sender);
- end else
- begin
-  ShowGroupInfo(ComboBoxSelGroups.Text,false,nil);
- end;
- ComboBoxSelGroups.ItemIndex:=0;
- ComboBoxSelGroups.LastItemIndex:=0;
- ComboBoxSelGroups.Text:=TEXT_MES_GROUPSA;
+  if ComboBoxSelGroups.ItemsEx.Count = 0 then
+    Exit;
+  if ComboBoxSelGroups.ItemIndex <> -1 then
+    if (ComboBoxSelGroups.Text = ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.Items.Count - 1].Caption) and
+      (ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.ItemIndex].ImageIndex = 0) then
+    begin
+      KeyWords := Memo1.Text;
+      DBChangeGroups(FPropertyGroups, KeyWords);
+      Application.ProcessMessages;
+      Memo1.Text := KeyWords;
+      ReloadGroups;
+      Memo1Change(Sender);
+    end else
+    begin
+      ShowGroupInfo(ComboBoxSelGroups.Text, False, nil);
+    end;
+  ComboBoxSelGroups.ItemIndex := 0;
+  ComboBoxSelGroups.LastItemIndex := 0;
+  ComboBoxSelGroups.Text := L('<Groups>');
 end;
 
 procedure TSearchForm.ComboBox1_DblClick(Sender: TObject);
 var
   KeyWords : string;
 begin
- KeyWords:=Memo1.Text;
- DBChangeGroups(FPropertyGroups,KeyWords);
- Memo1.Text:=KeyWords;
- ReloadGroups;
- Memo1Change(Sender);
+  KeyWords:=Memo1.Text;
+  DBChangeGroups(FPropertyGroups,KeyWords);
+  Memo1.Text:=KeyWords;
+  ReloadGroups;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.GroupsManager1Click(Sender: TObject);
 begin
- ExecuteGroupManager;
+  ExecuteGroupManager;
 end;
 
 procedure TSearchForm.DateExists1Click(Sender: TObject);
 begin
- IsDatePanel.Visible:=False;
- Memo1Change(Sender);
+  IsDatePanel.Visible:=False;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.PopupMenu3Popup(Sender: TObject);
@@ -2519,72 +2548,74 @@ procedure TSearchForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    SearchEdit.NullText := TEXT_MES_NULL_TEXT;
-    LabelBackGroundSearching.Caption := TEXT_MES_SERCH_PR;
-    Label1.Caption := TEXT_MES_SEARCH_TEXT;
-    Label2.Caption := TEXT_MES_IDENT;
-    Label7.Caption := TEXT_MES_RESULT;
-    Label8.Caption := TEXT_MES_RATING;
+    FMoreThan := L('More than');
+    FLessThan := L('Less than');
+    SearchEdit.NullText := L('Empty query');
+    LabelBackGroundSearching.Caption := L('Please, wait - search in progress...');
+    Label1.Caption := L('Search text');
+    Label2.Caption := L('ID');
+    Label7.Caption := L('Result');
+    Label8.Caption := L('Rating');
 
-    Label4.Caption := TEXT_MES_SIZE;
-    Label6.Caption := TEXT_MES_COMMENTS;
-    Label5.Caption := TEXT_MES_KEYWORDS;
-    Save.Caption := TEXT_MES_SAVE;
-    DoSearchNow1.Caption := TEXT_MES_DO_SEARCH_NOW;
-    Panels1.Caption := TEXT_MES_PANELS;
-    Properties1.Caption := TEXT_MES_PROPERTIES;
-    Explorer2.Caption := TEXT_MES_EXPLORER;
-    EditGroups1.Caption := TEXT_MES_EDIT_GROUPS;
-    GroupsManager1.Caption := TEXT_MES_GROUPS_MANAGER;
-    Ratingnotsets1.Caption := TEXT_MES_RATING_NOT_SETS;
-    SetComent1.Caption := TEXT_MES_SET_COM;
-    Comentnotsets1.Caption := TEXT_MES_SET_COM_NOT;
-    MenuItem2.Caption := TEXT_MES_SELECT_ALL;
-    Cut1.Caption := TEXT_MES_CUT;
-    Copy2.Caption := TEXT_MES_COPY;
-    Paste1.Caption := TEXT_MES_PASTE;
-    Undo1.Caption := TEXT_MES_UNDO;
-    OpeninExplorer1.Caption := TEXT_MES_OPEN_IN_EXPLORER;
-    AddFolder1.Caption := TEXT_MES_ADD_FOLDER;
-    SortbyID1.Caption := TEXT_MES_SORT_BY_ID;
-    SortbyName1.Caption := TEXT_MES_SORT_BY_NAME;
-    SortbyDate1.Caption := TEXT_MES_SORT_BY_DATE;
-    SortbyRating1.Caption := TEXT_MES_SORT_BY_RATING;
-    SortbyFileSize1.Caption := TEXT_MES_SORT_BY_FILESIZE;
-    SortbySize1.Caption := TEXT_MES_SORT_BY_SIZE;
+    Label4.Caption := L('Size');
+    Label6.Caption := L('Comment');
+    Label5.Caption := L('Keywords');
+    Save.Caption := L('Save');
+    DoSearchNow1.Caption := L('Search');
+    Panels1.Caption := L('Panels');
+    Properties1.Caption := L('Properties');
+    Explorer2.Caption := L('Explorer');
+    EditGroups1.Caption := L('Edit groups');
+    GroupsManager1.Caption := L('Groups manager');
+    Ratingnotsets1.Caption := L('No rating');
+    SetComent1.Caption := L('Set comment');
+    Comentnotsets1.Caption := L('No comment');
+    MenuItem2.Caption := L('Select all');
+    Cut1.Caption := L('Cut');
+    Copy2.Caption := L('Copy');
+    Paste1.Caption := L('Paste');
+    Undo1.Caption := L('Undo');
+    OpeninExplorer1.Caption := L('Open in explorer');
+    AddFolder1.Caption := L('Add folder');
+    SortbyID1.Caption := L('Sort by ID');
+    SortbyName1.Caption := L('Sort by Name');
+    SortbyDate1.Caption := L('Sort by Date');
+    SortbyRating1.Caption := L('Sort by Rating');
+    SortbyFileSize1.Caption := L('Sort by Filesize');
+    SortbySize1.Caption := L('Sort by Image Size');
 
-    SortbyCompare1.Caption := TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
+    SortbyCompare1.Caption := L('Sort by compare result');
 
-    Increment1.Caption := TEXT_MES_SORT_INCREMENT;
-    Decremect1.Caption := TEXT_MES_SORT_DECREMENT;
+    Increment1.Caption := L('Sort Increment');
+    Decremect1.Caption := L('Sort Decrement');
 
-    Datenotexists1.Caption := TEXT_MES_NO_DATE_1;
-    DateExists1.Caption := TEXT_MES_DATE_EX;
-    Datenotsets1.Caption := TEXT_MES_DATE_NOT_SETS;
-    PanelValueIsDateSets.Caption := TEXT_MES_VAR_VALUES;
-    IsDatePanel.Caption := TEXT_MES_NO_DATE_1;
-    Setvalue1.Caption := TEXT_MES_SET_VALUE;
-    Setvalue2.Caption := TEXT_MES_SET_VALUE;
-    IsTimePanel.Caption := TEXT_MES_TIME_NOT_EXISTS;
-    PanelValueIsTimeSets.Caption := TEXT_MES_VAR_VALUES;
+    Datenotexists1.Caption := L('No date');
+    DateExists1.Caption := L('Date exists');
+    Datenotsets1.Caption := L('No date');
+    PanelValueIsDateSets.Caption := L('Different values');
+    IsDatePanel.Caption := L('No date');
+    Setvalue1.Caption := L('Set value');
+    Setvalue2.Caption := L('Set value');
+    IsTimePanel.Caption := L('No time');
+    PanelValueIsTimeSets.Caption := L('Different values');
 
-    Timenotsets1.Caption := TEXT_MES_TIME_NOT_SETS;
-    TimeExists1.Caption := TEXT_MES_TIME_EXISTS;
-    TimenotExists1.Caption := TEXT_MES_TIME_NOT_EXISTS;
+    Timenotsets1.Caption := L('No time');
+    TimeExists1.Caption := L('Set time');;
+    TimenotExists1.Caption := L('No time');;
 
-    View2.Caption := TEXT_MES_SLIDE_SHOW;
-    ShowDateOptionsLink.Text := TEXT_MES_SHOW_DATE_OPTIONS;
+    View2.Caption := L('Slide show');
+    ShowDateOptionsLink.Text := L('Date options');
 
-    TbSearch.Caption := TEXT_MES_SEARCH;
-    ToolButton9.Caption := TEXT_MES_SORTING;
-    ToolButton1.Caption := TEXT_MES_ZOOM_IN;
-    ToolButton2.Caption := TEXT_MES_ZOOM_OUT;
-    ToolButton10.Caption := TEXT_MES_GROUPS;
+    TbSearch.Caption := L('Search');
+    ToolButton9.Caption := L('Sort');
+    ToolButton1.Caption := L('Zoom In');
+    ToolButton2.Caption := L('Zoom Out');
+    ToolButton10.Caption := L('Groups');
 
-    ToolButton4.Caption := TEXT_MES_SAVE;
-    ToolButton5.Caption := TEXT_MES_OPEN;
-    ToolButton12.Caption := TEXT_MES_EXPLORER;
-    SearchEdit.StartText := TEXT_MES_ENTER_QUERY_HERE;
+    ToolButton4.Caption := L('Save');
+    ToolButton5.Caption := L('Open');
+    ToolButton12.Caption := L('Explorer');
+    SearchEdit.StartText := L('Enter your query here');
   finally
     EndTranslate;
   end;
@@ -2598,12 +2629,12 @@ var
 
     function count :  integer;
     begin
-     result:=xDS.FieldByName('Coun').AsInteger;
+     result:=xDS.FieldByName('RecordsCount').AsInteger;
     end;
 
   begin
    if count<50 then
-   DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT,TEXT_MES_HELP_FIRST,Point(0,0),ElvMain,HelpNextClick,TEXT_MES_NEXT_HELP,HelpCloseClick) else
+   DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT, TEXT_MES_HELP_FIRST, Point(0,0), ElvMain, HelpNextClick,TEXT_MES_NEXT_HELP,HelpCloseClick) else
    begin
     HelpNo:=0;
     DBKernel.WriteBool('HelpSystem','CheckRecCount',False);
@@ -2627,8 +2658,8 @@ begin
 
  if GetDBType=DB_TYPE_MDB then
  begin
-  DS:=GetQuery;
-  SetSQL(DS, 'Select count(*) as Coun from $DB$');
+  DS:=GetQuery(true);
+  SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
   DS.Open;
   xHint(DS);
   FreeDS(DS);
@@ -2928,58 +2959,58 @@ end;
 
 procedure TSearchForm.SortbyID1Click(Sender: TObject);
 begin
- SortbyID1.Checked:=true;
- SortLink.Tag:=0;
- SortLink.Text:=TEXT_MES_SORT_BY_ID;
- SortingClick(Sender);
+  SortbyID1.Checked := True;
+  SortLink.Tag := 0;
+  SortLink.Text := L('Sort by ID');
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.SortbyName1Click(Sender: TObject);
 begin
- SortbyName1.Checked:=true;
- SortLink.Tag:=1;
- SortLink.Text:=TEXT_MES_SORT_BY_NAME;
- SortingClick(Sender);
+  SortbyName1.Checked := True;
+  SortLink.Tag := 1;
+  SortLink.Text := L('Sort by name');
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.SortbyDate1Click(Sender: TObject);
 begin
- SortbyDate1.Checked:=true;
- SortLink.Tag:=2;
- SortLink.Text:=TEXT_MES_SORT_BY_DATE;
- SortingClick(Sender);
+  SortbyDate1.Checked := True;
+  SortLink.Tag := 2;
+  SortLink.Text := L('Sort by date');
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.SortbyRating1Click(Sender: TObject);
 begin
- SortbyRating1.Checked:=true;
- SortLink.Tag:=3;
- SortLink.Text:=TEXT_MES_SORT_BY_RATING;
- SortingClick(Sender);
+  SortbyRating1.Checked := True;
+  SortLink.Tag := 3;
+  SortLink.Text := L('Sort by rating');
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.SortbyFileSize1Click(Sender: TObject);
 begin
- SortbyFileSize1.Checked:=true;
- SortLink.Tag:=4;
- SortLink.Text:=TEXT_MES_SORT_BY_FILESIZE;
- SortingClick(Sender);
+  SortbyFileSize1.Checked := True;
+  SortLink.Tag := 4;
+  SortLink.Text := L('Sort by file size');
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.SortbySize1Click(Sender: TObject);
 begin
- SortbySize1.Checked:=true;
- SortLink.Tag:=5;
- SortLink.Text:=TEXT_MES_SORT_BY_SIZE;
- SortingClick(Sender);
+  SortbySize1.Checked := True;
+  SortLink.Tag := 5;
+  SortLink.Text := L('Sort by image size');
+  SortingClick(Sender);
 end;
 
 procedure TSearchForm.Image4_Click(Sender: TObject);
 var
-  p : TPoint;
+  P: TPoint;
 begin
- GetCursorPos(p);
- SortingPopupMenu.Popup(p.x,p.y);
+  GetCursorPos(P);
+  SortingPopupMenu.Popup(P.X, P.Y);
 end;
 
 procedure TSearchForm.Decremect1Click(Sender: TObject);
@@ -3291,13 +3322,13 @@ begin
 
   CommonKeyWords:=GetCommonWordsA(KeyWordList);
   SelectedInfo.CommonKeyWords:=CommonKeyWords;
-  Label4.Caption:=Format(TEXT_MES_SIZE_FORMATA,[sizeintextA(size)]);
-  Label2.Caption:=TEXT_MES_ITEMS+' = '+inttostr(GetSelectionCount);
+  Label4.Caption:=Format(L('Size: %s'),[sizeintextA(size)]);
+  Label2.Caption:=L('Items')+' = '+inttostr(GetSelectionCount);
   Memo1.Lines.text:=CommonKeyWords;
   SelectedInfo.IsVariousComments:=IsVariousArStrings(ArComments);
   if SelectedInfo.IsVariousComments then
   begin
-   SelectedInfo.CommonComment:=TEXT_MES_VAR_COM;
+   SelectedInfo.CommonComment:=L('<Different comments>');
    CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
    Memo2.PopupMenu:=PopupMenu6;
   end else
@@ -3329,8 +3360,8 @@ begin
   SetSQL(SelectQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(indent));
   SelectQuery.active:=true;
   lockwindowupdate(Handle);
-  Label2.Caption:=Format(TEXT_MES_ID_FORMATA,[inttostr(indent)]);
-  Label4.Caption:=Format(TEXT_MES_SIZE_FORMATA,[sizeintextA(SelectQuery.FieldByName('FileSize').asinteger)]);
+  Label2.Caption:=Format(L('ID = %d'),[indent]);
+  Label4.Caption:=Format(L('Size = %s'),[sizeintextA(SelectQuery.FieldByName('FileSize').asinteger)]);
   memo1.Lines.text:=SelectQuery.FieldByName('KeyWords').asstring;
   memo2.Lines.text:=SelectQuery.FieldByName('Comment').asstring;
   RatingEdit.Rating:=SelectQuery.FieldByName('Rating').asinteger;
@@ -3421,7 +3452,7 @@ begin
         if S <> '' then
           NewItem.Caption := S + ' (' + Chr(I) + ':)'
         else
-          NewItem.Caption := TEXT_MES_REMOVEBLE_DRIVE + ' (' + Chr(I) + ':)';
+          NewItem.Caption := L('Removable drive') + ' (' + Chr(I) + ':)';
       end
       else
         NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
@@ -3433,7 +3464,7 @@ begin
   if Item.Count = 1 then
   begin
     NewItem := TMenuItem.Create(Item);
-    NewItem.Caption := TEXT_MES_NO_USB_DRIVES;
+    NewItem.Caption := L('No USB drive');
     NewItem.ImageIndex := DB_IC_DELETE_INFO;
     NewItem.Tag := -1;
     NewItem.Enabled := False;
@@ -3466,7 +3497,7 @@ begin
         if S <> '' then
           NewItem.Caption := S + ' (' + Chr(I) + ':)'
         else
-          NewItem.Caption := TEXT_MES_CD_ROM_DRIVE + ' (' + Chr(I) + ':)';
+          NewItem.Caption := L('CD-ROM drive') + ' (' + Chr(I) + ':)';
       end
       else
         NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
@@ -3478,7 +3509,7 @@ begin
   if Item.Count = 1 then
   begin
     NewItem := TMenuItem.Create(Item);
-    NewItem.Caption := TEXT_MES_NO_CD_ROM_DRIVES;
+    NewItem.Caption := L('No CD-ROM drive');
     NewItem.ImageIndex := DB_IC_DELETE_INFO;
     NewItem.Tag := -1;
     NewItem.Enabled := False;
@@ -3666,8 +3697,9 @@ begin
   ListViewEdited(Sender, Item, S);
   ElvMain.EditManager.Enabled := False;
   Accept := RenameResult;
+
   if not Accept then
-    MessageBoxDB(Handle, TEXT_MES_CANNOT_RENAME_FILE, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+    MessageBoxDB(Handle, Format(L('Cannot rename file! Erro code = %d'), [GetLastError]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TSearchForm.N05Click(Sender: TObject);
@@ -3874,7 +3906,8 @@ begin
         finally
           B.Free;
         end;
-       Caption := TEXT_MES_ALL_GROUPS;
+       Data := Pointer(1);
+       Caption := L('All groups');
        ImageIndex := 0;
       end;
       ComboBoxSearchGroups.ItemIndex:=0;
@@ -3912,6 +3945,7 @@ begin
       begin
         Caption := Groups[I].GroupName;
         ImageIndex := I + 1;
+        Data := nil;
       end;
     end;
 
@@ -4462,7 +4496,7 @@ procedure TSearchForm.SortbyCompare1Click(Sender: TObject);
 begin
   SortbyCompare1.Checked := True;
   SortLink.Tag := 6;
-  SortLink.Text := TEXT_MES_IMAGES_SORT_BY_COMPARE_RESULT;
+  SortLink.Text := L('Sort by compare result');
   SortingClick(Sender);
 end;
 
@@ -4889,7 +4923,7 @@ begin
     with ElvMain.Groups.Add do
     begin
       Visible := True;
-      Caption := TEXT_MES_RECORDS_FOUNDED + ':';
+      Caption := L('Records found') + ':';
     end;
   end;
 
@@ -4905,7 +4939,7 @@ begin
         FFillListInfo.LastSize := Max(1, DataRecord.FileSize);
         with ElvMain.Groups.Add do
         begin
-          Caption := TEXT_MES_LESS_THAN + ' ' + SizeInTextA(1024 * 100);
+          Caption := FLessThan + ' ' + SizeInTextA(1024 * 100);
           Visible := True;
         end;
       end else
@@ -4918,7 +4952,7 @@ begin
           with ElvMain.Groups.Add do
           begin
             FFillListInfo.LastSize := i + i10;
-            Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
+            Caption := FMoreThan + ' ' + SizeInTextA(I);
             Visible := True;
           end;
         end else
@@ -4932,14 +4966,14 @@ begin
               begin
                 I := 1024 * 1024;
                 FFillListInfo.LastSize := I + i10;
-                Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
+                Caption := FMoreThan + ' ' + SizeInTextA(I);
                 Visible := True;
               end;
             if (FFillListInfo.LastSize < I + i10) and (DataRecord.FileSize > 1024 * 1024) then
             with ElvMain.Groups.Add do
             begin
               FFillListInfo.LastSize := I + i10;
-              Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
+              Caption := FMoreThan + ' ' + SizeInTextA(I);
               Visible := True;
             end;
           end else
@@ -4953,14 +4987,14 @@ begin
               begin
                 I := 1024 * 1024 * 10;
                 FFillListInfo.LastSize := I + i10;
-                Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
+                Caption := FMoreThan + ' ' + SizeInTextA(I);
                 Visible := True;
               end;
               if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 1024 * 1024 * 10) then
                 with ElvMain.Groups.Add do
                 begin
                  FFillListInfo.LastSize := I + i10;
-                 Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(I);
+                 Caption := FMoreThan + ' ' + SizeInTextA(I);
                  Visible := True;
                 end;
             end else
@@ -4968,7 +5002,7 @@ begin
               with ElvMain.Groups.Add do
               begin
                 FFillListInfo.LastSize := 1024 * 1024 * 100;
-                Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(1024 * 1024 * 100);
+                Caption := FMoreThan + ' ' + SizeInTextA(1024 * 1024 * 100);
                 Visible := True;
               end;
             end;
@@ -4984,7 +5018,7 @@ begin
           with ElvMain.Groups.Add do
           begin
             FFillListInfo.LastSize := i10 + 1024 * 100;
-            Caption := TEXT_MES_LESS_THAN + ' ' + SizeInTextA(i10 + 1024 * 100);
+            Caption := FLessThan + ' ' + SizeInTextA(i10 + 1024 * 100);
             Visible := True;
           end;
        end else
@@ -4996,7 +5030,7 @@ begin
              with ElvMain.Groups.Add do
              begin
               FFillListInfo.LastSize:=i10 + 1024 * 1024;
-              Caption := TEXT_MES_LESS_THAN + ' ' + SizeInTextA(i10 + 1024 * 1024);
+              Caption := FLessThan + ' ' + SizeInTextA(i10 + 1024 * 1024);
               Visible := True;
              end;
           end else
@@ -5008,7 +5042,7 @@ begin
              with ElvMain.Groups.Add do
              begin
                FFillListInfo.LastSize := i10 + 1024 * 1024 * 10;
-               Caption := TEXT_MES_LESS_THAN + ' ' + SizeInTextA(i10 + 1024 * 1024 * 10);
+               Caption := FLessThan + ' ' + SizeInTextA(i10 + 1024 * 1024 * 10);
                Visible := True;
              end;
            end else
@@ -5016,7 +5050,7 @@ begin
              with ElvMain.Groups.Add do
              begin
                FFillListInfo.LastSize := 1024 * 1024 * 100;
-               Caption := TEXT_MES_MORE_THAN + ' ' + SizeInTextA(1024 * 1024 * 100);
+               Caption := FMoreThan + ' ' + SizeInTextA(1024 * 1024 * 100);
                Visible := True;
              end;
            end;
@@ -5046,9 +5080,9 @@ begin
       with ElvMain.Groups.Add do
       begin
         if DataRecord.Rating = 0 then
-          Caption := TEXT_MES_NO_RATING + ':'
+          Caption := L('No rating') + ':'
         else
-          Caption := TEXT_MES_RATING + ': ' + IntToStr(DataRecord.Rating);
+          Caption := L('Rating') + ': ' + IntToStr(DataRecord.Rating);
 
         Visible := True;
       end;

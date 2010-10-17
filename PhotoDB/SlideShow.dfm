@@ -179,6 +179,7 @@ object Viewer: TViewer
           DropdownMenu = PopupMenuPageSelecter
           ImageIndex = 22
           Style = tbsDropDown
+          Visible = False
         end
         object TbSeparatorPageNumber: TToolButton
           Left = 246
@@ -269,8 +270,8 @@ object Viewer: TViewer
   end
   object PopupMenu1: TPopupMenu
     OnPopup = PopupMenu1Popup
-    Left = 368
-    Top = 8
+    Left = 392
+    Top = 16
     object Next1: TMenuItem
       Caption = 'Next'
       Default = True
@@ -429,91 +430,91 @@ object Viewer: TViewer
   object MouseTimer: TTimer
     Enabled = False
     Interval = 5000
-    Left = 432
-    Top = 8
+    Left = 144
+    Top = 112
   end
   object ApplicationEvents1: TApplicationEvents
     OnHint = ApplicationEvents1Hint
     OnMessage = ApplicationEvents1Message
-    Left = 368
-    Top = 40
+    Left = 312
+    Top = 16
   end
   object WaitImageTimer: TTimer
     Enabled = False
     Interval = 500
     OnTimer = WaitImageTimerTimer
-    Left = 400
-    Top = 40
+    Left = 64
+    Top = 56
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 400
-    Top = 8
+    Left = 464
+    Top = 16
   end
   object ImageList1: TImageList
     BlendColor = 12937777
     BkColor = 12937777
-    Left = 432
-    Top = 40
+    Left = 368
+    Top = 272
   end
   object ImageList2: TImageList
     BlendColor = 12937777
     BkColor = 12937777
-    Left = 464
-    Top = 40
+    Left = 424
+    Top = 272
   end
   object ImageList3: TImageList
-    Left = 496
-    Top = 40
+    Left = 480
+    Top = 272
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = [dtCopy, dtMove, dtLink]
     OnDrop = DropFileTarget1Drop
     OptimizedMove = True
-    Left = 368
-    Top = 104
+    Left = 440
+    Top = 112
   end
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
     ShowImage = True
-    Left = 400
-    Top = 104
+    Left = 532
+    Top = 112
   end
   object DragImageList: TImageList
     ColorDepth = cd32Bit
     Height = 200
     Width = 200
-    Left = 432
-    Top = 104
+    Left = 368
+    Top = 208
   end
   object DestroyTimer: TTimer
     Enabled = False
     Interval = 1
     OnTimer = DestroyTimerTimer
-    Left = 368
-    Top = 144
+    Left = 256
+    Top = 112
   end
   object ImageFrameTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = ImageFrameTimerTimer
-    Left = 368
-    Top = 192
+    Left = 64
+    Top = 112
   end
   object SlideTimer: TTimer
     Enabled = False
     Interval = 4000
     OnTimer = SlideTimerTimer
-    Left = 464
-    Top = 8
+    Left = 200
+    Top = 112
   end
   object RatingPopupMenu: TPopupMenu
     MenuAnimation = [maBottomToTop]
-    Left = 368
-    Top = 232
+    Left = 248
+    Top = 200
     object N01: TMenuItem
       Caption = '0'
       OnClick = N51Click
@@ -543,8 +544,8 @@ object Viewer: TViewer
     Enabled = False
     Interval = 500
     OnTimer = TimerDBWorkTimer
-    Left = 368
-    Top = 272
+    Left = 320
+    Top = 112
   end
   object PopupMenuPageSelecter: TPopupMenu
     Left = 136

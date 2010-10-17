@@ -9,7 +9,7 @@ object SearchForm: TSearchForm
   Constraints.MinHeight = 180
   Constraints.MinWidth = 310
   Font.Charset = DEFAULT_CHARSET
-  Font.Color = clInactiveCaptionText
+  Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
@@ -208,7 +208,7 @@ object SearchForm: TSearchForm
         Height = 13
         Caption = 'Ident'
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsUnderline]
@@ -222,7 +222,7 @@ object SearchForm: TSearchForm
         Height = 13
         Caption = 'Rating:'
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsUnderline]
@@ -235,7 +235,7 @@ object SearchForm: TSearchForm
         Height = 13
         Caption = 'Size'
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsUnderline]
@@ -249,7 +249,7 @@ object SearchForm: TSearchForm
         Height = 13
         Caption = 'Comments:'
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsUnderline]
@@ -259,11 +259,11 @@ object SearchForm: TSearchForm
         Tag = 2
         Left = 8
         Top = 231
-        Width = 52
-        Height = 13
+        Width = 54
+        Height = 14
         Caption = 'KeyWords:'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Charset = EASTEUROPE_CHARSET
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsUnderline]
@@ -293,7 +293,7 @@ object SearchForm: TSearchForm
         Height = 70
         Anchors = [akLeft, akTop, akRight]
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsItalic]
@@ -313,7 +313,7 @@ object SearchForm: TSearchForm
         Height = 50
         Anchors = [akLeft, akTop, akRight]
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsItalic]
@@ -351,7 +351,13 @@ object SearchForm: TSearchForm
         Time = 38153.582815208330000000
         Color = clBtnFace
         DateFormat = dfLong
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
         ParentColor = True
+        ParentFont = False
         PopupMenu = PopupMenu3
         TabOrder = 1
         OnChange = Memo1Change
@@ -379,7 +385,7 @@ object SearchForm: TSearchForm
         Caption = '<value not sets>'
         Ctl3D = True
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
@@ -430,7 +436,7 @@ object SearchForm: TSearchForm
         Caption = '<value not sets>'
         Ctl3D = True
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
@@ -449,7 +455,12 @@ object SearchForm: TSearchForm
         Height = 22
         ItemsEx = <>
         Anchors = [akLeft, akTop, akRight]
-        ParentColor = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
         PopupMenu = PopupMenu4
         TabOrder = 10
         Text = 'ComboBoxSelGroups'
@@ -495,7 +506,7 @@ object SearchForm: TSearchForm
         Height = 13
         Caption = 'Result'
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsUnderline]
@@ -635,7 +646,7 @@ object SearchForm: TSearchForm
         Height = 13
         Caption = 'Search text'
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInactiveCaptionText
+        Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsUnderline]
@@ -850,7 +861,6 @@ object SearchForm: TSearchForm
         ItemsEx = <>
         Style = csExDropDownList
         Anchors = [akLeft, akTop, akRight]
-        ParentColor = True
         TabOrder = 4
         OnDropDown = ComboBoxSearchGroupsDropDown
         OnSelect = ComboBoxSearchGroupsSelect
@@ -868,8 +878,13 @@ object SearchForm: TSearchForm
         ItemsEx = <>
         Anchors = [akLeft, akTop, akRight]
         Ctl3D = True
-        ParentColor = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
         ParentCtl3D = False
+        ParentFont = False
         ParentShowHint = False
         ShowHint = True
         TabOrder = 5
@@ -929,6 +944,8 @@ object SearchForm: TSearchForm
         Width = 133
         Height = 16
         Cursor = crHandPoint
+        ParentColor = False
+        Color = clBtnFace
         Text = 'Search (999999 Result)'
         ImageIndex = 0
         IconWidth = 16
@@ -1035,7 +1052,7 @@ object SearchForm: TSearchForm
       BiDiMode = bdLeftToRight
       Caption = 'Please, wait until searching in progress...'
       Font.Charset = ANSI_CHARSET
-      Font.Color = clInactiveCaptionText
+      Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'Times New Roman'
       Font.Style = [fsBold]

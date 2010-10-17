@@ -167,6 +167,7 @@ asm
        pop   ebx
        pop   esi
 end;
+
 function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer;
 begin
   _MaxSearchPos := Max;

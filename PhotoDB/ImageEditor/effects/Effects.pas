@@ -2298,9 +2298,6 @@ begin
   end; {if}
 end; {SmoothResize}
 
-
-
-
 procedure SmoothResize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 type
   TRGBArray = array[Word] of TRGBTriple;

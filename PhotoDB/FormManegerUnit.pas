@@ -8,7 +8,7 @@ uses
   Controls, Forms,  uVistaFuncs, UnitDBNullQueryThread, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
-  uDBForm;
+  uDBForm, uFastLoad;
 
 type
   TFormManager = class(TDBForm)
@@ -238,7 +238,7 @@ try
       Application.CreateForm(TViewer, Viewer);
     RegisterMainForm(Viewer);
     TW.I.Start('ExecuteDirectoryWithFileOnThread');
-    Viewer.ExecuteDirectoryWithFileOnThread(LongFileName(ParamStr1));
+    Viewer.ExecuteDirectoryWithFileOnThread(ParamStr1);
     TW.I.Start('ActivateApplication');
     CloseLoadingForm;
     Viewer.Show;
@@ -397,6 +397,39 @@ begin
     begin
       SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
       SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
+    end;
+    if (FCheckCount = 20) and not FolderView then //after 2 sec.
+    begin
+      EventLog('Loading Kernel.dll');
+      TW.i.Start('StartCRCCheckThread');
+      TLoad.Instance.StartCRCCheckThread;
+    end;
+    if (FCheckCount = 50) and not FolderView then //after 5 sec.
+    begin
+
+      if not DBTerminating then
+        if not FolderView then
+          if KernelHandle = 0 then
+          begin
+            EventLog('KernelHandle IS 0 -> exit');
+            MessageBoxDB(GetActiveFormHandle, L('Unable to load "Kernel.dll" library!'),
+              L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+            Halt;
+          end;
+
+      {$IFDEF LICENCE}
+      EventLog('Verifyng....');
+
+      TLoad.Instance.RequaredCRCCheck;
+      @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
+      if not Initaproc(PChar(Application.ExeName)) then
+      begin
+        SplashThread.Terminate;
+        MessageBoxDB(GetActiveFormHandle, TEXT_MES_APPLICATION_NOT_VALID, L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        DBTerminating := True;
+        Application.Terminate;
+      end;
+      {$ENDIF}
     end;
     if (FCheckCount = 600) then //after 1.min. backup database
       DBKernel.BackUpTable;

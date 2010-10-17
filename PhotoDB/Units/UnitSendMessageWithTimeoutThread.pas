@@ -32,13 +32,13 @@ implementation
   var
     SendMessageThread : TThread;
   begin
-   
+
    EventLog(':SendMessageEx()...');
    while SendMessageMessageWork do
     Application.ProcessMessages;
 
    SendMessageMessageWork := True;
-   SendMessageResult:=false;          
+   SendMessageResult:=false;
    SendMessageThread := TSendMessageWithTimeoutThread.Create(hWnd, Msg, wParam, lParam);
    WaitForSingleObject(SendMessageThread.Handle, 5000);
 
@@ -50,24 +50,24 @@ implementation
 constructor TSendMessageWithTimeoutThread.Create(
   hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM);
 begin
- inherited Create(True);
- fhWnd:= hWnd;
- fMsg:= Msg;
- fwParam:=fwParam;
- flParam:=lParam;
+  inherited Create(False);
+  FhWnd := HWnd;
+  FMsg := Msg;
+  FwParam := FwParam;
+  FlParam := LParam;
 end;
 
 destructor TSendMessageWithTimeoutThread.Destroy;
 begin
-  SendMessageMessageWork:=false;
+  SendMessageMessageWork := False;
   inherited;
 end;
 
 procedure TSendMessageWithTimeoutThread.Execute;
 begin
- FreeOnTerminate:=True;
- SendMessage(fhWnd, fMsg, fwParam, flParam);
- SendMessageResult:=True;
+  FreeOnTerminate := True;
+  SendMessage(FhWnd, FMsg, FwParam, FlParam);
+  SendMessageResult := True;
 end;
 
 end.

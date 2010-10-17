@@ -384,7 +384,7 @@ begin
   MTimer1.Caption:=TEXT_MES_SLIDE_STOP_TIMER;
   MTimer1.ImageIndex:=DB_IC_PAUSE;
 
-  SaveWindowPos1.Key:=RegRoot+'SlideShow';
+  SaveWindowPos1.Key := RegRoot+'SlideShow';
   SaveWindowPos1.SetPosition;
   PopupMenu1.Images:=DBKernel.imageList;
   Shell1.ImageIndex:=DB_IC_SHELL;
@@ -1738,9 +1738,11 @@ procedure TViewer.CreateParams(var Params: TCreateParams);
 begin
   TW.I.Start('CreateParams');
   Inherited CreateParams(Params);
+  TW.I.Start('GetDesktopWindow');
   Params.WndParent := GetDesktopWindow;
   with params do
     ExStyle := ExStyle or WS_EX_APPWINDOW;
+  TW.I.Start('CreateParams - END');
 end;
 
 procedure TViewer.WaitImageTimerTimer(Sender: TObject);
@@ -3191,12 +3193,15 @@ var
   I : Integer;
   MenuItem : TMenuItem;
 begin
-  TbPageNumber.Visible := FPageCount > 1;
-  TbSeparatorPageNumber.Visible := FPageCount > 1;
-  ToolsBar.Realign;
-  TbrActions.Width := TbInfo.Left + TbInfo.Width + 2;
-  ToolsBar.Width := TbrActions.Width;
-  ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
+  if not FCreating then
+  begin
+    TbPageNumber.Visible := FPageCount > 1;
+    TbSeparatorPageNumber.Visible := FPageCount > 1;
+    ToolsBar.Realign;
+    TbrActions.Width := TbInfo.Left + TbInfo.Width + 2;
+    ToolsBar.Width := TbrActions.Width;
+    ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
+  end;
   PopupMenuPageSelecter.Items.Clear;
   for I := 0 to FPageCount - 1 do
   begin

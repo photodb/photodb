@@ -19,8 +19,10 @@ type
 
   TLanguageScope = class(TObject)
   private
-    FScope : string; 
-    FTranslateList : TList;
+    FScope: string;
+    FTranslateList: TList;
+    FParces: Boolean;
+    FScopeNode: IXMLDOMNode;
     function GetTranslate(Index: Integer): TTranslate;
   protected
     procedure LoadTranslateList(ScopeNode : IXMLDOMNode);
@@ -209,11 +211,12 @@ constructor TLanguageScope.Create(ScopeNode : IXMLDOMNode);
 var
   NameAttr : IXMLDOMNode;
 begin
+  FScopeNode := ScopeNode;
   FTranslateList := TList.Create;
   NameAttr := ScopeNode.attributes.getNamedItem('name');
   if NameAttr <> nil then
     FScope := NameAttr.text;
-  LoadTranslateList(ScopeNode);
+  FParces := False;
 end;
 
 destructor TLanguageScope.Destroy;
@@ -225,6 +228,8 @@ end;
 
 function TLanguageScope.GetTranslate(Index: Integer): TTranslate;
 begin
+  if not FParces then
+    LoadTranslateList(FScopeNode);
   Result := FTranslateList[Index];
 end;
 

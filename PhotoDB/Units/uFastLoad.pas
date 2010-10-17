@@ -23,6 +23,7 @@ type
     procedure RequaredCRCCheck;
     procedure RequaredDBKernelIcons;
     procedure RequaredDBSettings;
+    procedure Stop;
   end;
 
 implementation
@@ -68,6 +69,19 @@ end;
 procedure TLoad.StartDBSettingsThread;
 begin
   LoadDBSettingsThread := TLoadDBSettingsThread.Create(False);
+end;
+
+procedure TLoad.Stop;
+begin
+  if not LoadDBKernelIconsThread.IsTerminated then
+    TerminateThread(LoadDBKernelIconsThread.Handle, 0);
+  if not LoadDBSettingsThread.IsTerminated then
+    TerminateThread(LoadDBSettingsThread.Handle, 0);
+  if not LoadCRCCheckThread.IsTerminated then
+    TerminateThread(LoadCRCCheckThread.Handle, 0);
+  F(LoadDBKernelIconsThread);
+  F(LoadDBSettingsThread);
+  F(LoadCRCCheckThread);
 end;
 
 procedure TLoad.StartCRCCheckThread;

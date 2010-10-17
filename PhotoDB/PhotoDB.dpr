@@ -352,11 +352,16 @@ begin
 
         StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
         cd.lpData := Buf;
+
+        SplashThread.Terminate;
         if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
-          Halt
-        else
+        begin
+          Application.Terminate;
+        end else
           if ID_YES <> MessageBoxDB(0, TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED, TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then
-            Halt;
+          begin
+            Application.Terminate;
+          end;
       finally
         FreeMem(Buf);
       end;
@@ -559,13 +564,8 @@ begin
   // CHECK DEMO MODE ----------------------------------------------------
   if not DBTerminating then
   begin
-    EventLog('Loading Kernel.dll');
-    if not FolderView then
-      KernelHandle := LoadLibrary(PWideChar(ProgramDir + 'Kernel.dll'));
-    TW.i.Start('StartCRCCheckThread');
-    TLoad.Instance.StartCRCCheckThread;
-    EventLog(':DBKernel.InitRegModule');
-    TW.i.Start('InitRegModule');
+    //EventLog(':DBKernel.InitRegModule');
+    //TW.i.Start('InitRegModule');
     // TODO: LATER!!!! DBKernel.InitRegModule;
     EventLog(':DBKernel.LoadColorTheme');
     TW.i.Start('DBKernel.LoadColorThem');
@@ -584,24 +584,12 @@ begin
         Application.Terminate;
         DBTerminating := True;
       end;
-  if not DBTerminating then
-    if not FolderView then
-      if KernelHandle = 0 then
-      begin
-        EventLog('KernelHandle IS 0 -> exit');
-        MessageBoxDB(GetActiveFormHandle, TEXT_MES_ERROR_KERNEL_DLL,
-          TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-        Halt;
-      end;
 
   if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
     AExplorerFolders := TExplorerFolders.Create;
 
   TW.i.Start('GetCIDA');
-  SetSplashProgress(80);
-
-  EventLog('...Loading menu...');
-  SetSplashProgress(95);
+  SetSplashProgress(90);
 
   TW.i.Start('LoadingAboutForm.Free');
   EventLog('...LOGGING...');
@@ -611,8 +599,6 @@ begin
         if DBKernel.ProgramInDemoMode then
           TSplashThread(SplashThread).ShowDemoInfo;
 
-  TW.i.Start('CHECK APPDATA DIRECTORY');
-  // GROUPS CHECK + MENU----------------------------------------------------
   EventLog('...GROUPS CHECK + MENU...');
   TW.i.Start('IsValidGroupsTable');
 
@@ -729,27 +715,6 @@ begin
       CMDForm.Release;
       CMDForm := nil;
     end;
-
-  // DEMO? ----------------------------------------------------
-
-  TW.I.Start('DEMO');
-
-  {$IFDEF LICENCE}
-  if not FolderView then
-  begin
-    EventLog('Verifyng....');
-
-    TLoad.Instance.RequaredCRCCheck;
-    @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
-    if not Initaproc(PChar(Application.ExeName)) then
-    begin
-      SplashThread.Terminate;
-      MessageBoxDB(GetActiveFormHandle, TEXT_MES_APPLICATION_NOT_VALID, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
-      DBTerminating := True;
-      Application.Terminate;
-    end;
-  end;
-  {$ENDIF}
 
   TW.i.Start('LoadingAboutForm.FREE');
 

@@ -4,7 +4,8 @@ interface
 
 uses
    Classes, Windows, Messages, JPEG, Graphics, DmProgress, uTime,
-   uConstants, uResources, Language, UnitDBCommonGraphics, uMemory;
+   uConstants, uResources, UnitDBCommonGraphics, uMemory,
+   uTranslate, ActiveX;
 
 type
   TSplashThread = class(TThread)
@@ -36,8 +37,6 @@ var
   IsFirstDraw : Boolean = True;
 
 procedure SetSplashProgress(ProgressValue : Byte);
-var
-  Rectangle : TRect;
 begin
   hSplashProgress := ProgressValue;
   PostMessage(hSplashWnd, WM_PAINT, 0, 0);
@@ -124,7 +123,7 @@ begin
     TP.Height := 17;
     TP.BorderColor := clGray;
     TP.Color := clBlack;
-    TP.Text := TEXT_MES_LOADING_PHOTODB;
+    TP.Text := TA('Loading PhotoDB 2.3');
     TP.Font.Color := clWhite; 
     TP.Font.Name := 'Times New Roman';
     TP.CoolColor := clNavy;
@@ -178,51 +177,59 @@ begin
   SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
   SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
 
-  Instance := GetModuleHandle(nil);
-  SplashWindowClass.style := CS_HREDRAW or CS_VREDRAW;
-  SplashWindowClass.lpfnWndProc := @SplashWindowProc;
-  SplashWindowClass.hInstance := Instance;
-  SplashWindowClass.hIcon := LoadIcon(0, IDI_APPLICATION);
-  SplashWindowClass.hCursor := LoadCursor(0, IDC_ARROW);
-  SplashWindowClass.hbrBackground := COLOR_BTNFACE + 1;
-  SplashWindowClass.lpszClassName := ClassName;
-
-  RegisterClass(SplashWindowClass);
+  CoInitialize(nil);
   try
-    hSplashWnd := CreateWindowEx(WS_EX_TOOLWINDOW or WS_EX_TOPMOST, ClassName, 'SplashScreen',
-                                 WS_POPUP,
-                                 GetSystemMetrics(SM_CXSCREEN) div 2 - SplWidth div 2,
-                                 GetSystemMetrics(SM_CYSCREEN) div 2 - SplHeight div 2,
-                                 SplWidth, SplHeight, 0, 0, Instance, nil);
-    try
-      ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
-      UpdateWindow(hSplashWnd);
+    //call transkate manager to load XML with language in separate thead
+    TA('PhotoDB');
 
-      while True do
-      begin
-        if Terminated then
-          Break;
-        if PeekMessage(Msg, hSplashWnd, 0,0, PM_REMOVE) then
+    Instance := GetModuleHandle(nil);
+    SplashWindowClass.style := CS_HREDRAW or CS_VREDRAW;
+    SplashWindowClass.lpfnWndProc := @SplashWindowProc;
+    SplashWindowClass.hInstance := Instance;
+    SplashWindowClass.hIcon := LoadIcon(0, IDI_APPLICATION);
+    SplashWindowClass.hCursor := LoadCursor(0, IDC_ARROW);
+    SplashWindowClass.hbrBackground := COLOR_BTNFACE + 1;
+    SplashWindowClass.lpszClassName := ClassName;
+
+    RegisterClass(SplashWindowClass);
+    try
+      hSplashWnd := CreateWindowEx(WS_EX_TOOLWINDOW or WS_EX_TOPMOST, ClassName, 'SplashScreen',
+                                   WS_POPUP,
+                                   GetSystemMetrics(SM_CXSCREEN) div 2 - SplWidth div 2,
+                                   GetSystemMetrics(SM_CYSCREEN) div 2 - SplHeight div 2,
+                                   SplWidth, SplHeight, 0, 0, Instance, nil);
+      try
+        ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
+        UpdateWindow(hSplashWnd);
+
+        while True do
         begin
-          if Msg.message = WM_QUIT then
+          if Terminated then
             Break;
-          TranslateMessage(Msg);
-          DispatchMessage(Msg);
-        end else
-        begin
-          // Do rendering here if a real-time app
+          if PeekMessage(Msg, hSplashWnd, 0,0, PM_REMOVE) then
+          begin
+            if Msg.message = WM_QUIT then
+              Break;
+            TranslateMessage(Msg);
+            DispatchMessage(Msg);
+          end else
+          begin
+            // Do rendering here if a real-time app
+          end;
+          Sleep(1);
         end;
-        Sleep(1);
+      finally
+        DestroyWindow(hSplashWnd);
       end;
     finally
-      DestroyWindow(hSplashWnd);
+      UnregisterClass(ClassName, Instance);
     end;
+    TW.I.Start('SPLASH THREAD END');
+    SplashThread := nil;
+    FreeOnTerminate := True;
   finally
-    UnregisterClass(ClassName, Instance);
-  end;      
-  TW.I.Start('SPLASH THREAD END');
-  SplashThread := nil;
-  FreeOnTerminate := True;
+    CoUninitialize;
+  end;
 end; // ShowSplashWindow
 
 procedure TSplashThread.ShowDemoInfo;
