@@ -53,19 +53,19 @@ type
     procedure DestroyTimerTimer(Sender: TObject);
     function CallBack(CallbackInfo : TCallbackInfo) : TDirectXSlideShowCreatorCallBackResult;
   private
-    FReady: boolean;
-    FForwardThreadExists: boolean;
+    FReady: Boolean;
+    FForwardThreadExists: Boolean;
     FForwardFileName: String;
     procedure SetReady(const Value: boolean);
     procedure SetForwardThreadExists(const Value: boolean);
     procedure SetForwardFileName(const Value: String);
     { Private declarations }
   public
-    fPlay : Boolean;
-    SID : TGUID;
-    ForwardSID : TGUID;
-    FManager : TObject;
-    FNowPaused : Boolean;
+    FPlay: Boolean;
+    SID: TGUID;
+    ForwardSID: TGUID;
+    FManager: TObject;
+    FNowPaused: Boolean;
     FReadyAfterPause : Boolean;
     property Ready : boolean read FReady write SetReady;
     property ForwardThreadExists : boolean read FForwardThreadExists Write SetForwardThreadExists;
@@ -90,15 +90,15 @@ var
     //Информация о цветовом разрешении
   BPP, RBM, GBM, BBM: integer;
     //Массивы, хранящие данные поверхностей
-  TransSrc1, TransSrc2{, TempSrc, TempThreadScr} : PByteArr;
+  TransSrc1, TransSrc2 : PByteArr;
     //Параметры преобразования
   TransHeight, TransPitch, TransSize: integer;
     //Флаги загрузки картинок
   FileLoaded: boolean;
   ThreadDestroy : Boolean = false;
-   SurfaceDesc: TDDSurfaceDesc2;
-    Clpr: IDirectDrawClipper;
-    AlphaSteeps : integer = 20;
+  SurfaceDesc: TDDSurfaceDesc2;
+  Clpr: IDirectDrawClipper;
+  AlphaSteeps : integer = 20;
 
 implementation
 
@@ -106,9 +106,9 @@ implementation
 
 //     ЭМУЛЯЦИЯ АЛЬФА-КАНАЛА И ЭФФЕКТЫ ПРОЗРАЧНОСТИ ДЛЯ DIRECTDRAW
 //
-//     Платформа: Windows 95/98
-//     Язык: Borland Delphi 5.0
-//     Комментарии в коде: есть
+  // Платформа: Windows 95/98
+  // Язык: Borland Delphi 5.0
+  // Комментарии в коде: есть
 //     Ключевые слова: Delphi, DirectX, DirectDraw, transparency, alpha channel, emulation
 //     Состав: DX_alphachannel.dpr, DX_alphachannel.res, DX_Alpha.pas, DX_Alpha.dfm
 //            + заголовочные файлы DirectX 6.0 для Delphi (см. ниже)
@@ -170,9 +170,6 @@ implementation
 uses  FloatPanelFullScreen, SlideShow, SlideShowFullScreen,
      UnitDirectXSlideShowCreator;
 
-//В этот массив загружаются данные поверхности
-//type TByteArr = array[0..0] of byte;
-
 //Копирование Offscreen на экран (по WM_PAINT, к примеру)
 procedure UpdateSurface (ParentControl: TControl);
 var r1, r2: TRect;
@@ -193,7 +190,7 @@ end;
 
 //Упаковка цвета с учетом цветового разрешения видеоадаптера
 //(параметы RBM, GBM и BBM запомнили при создании DirectDraw)
-function PackColor (Color: TColor): TColor;
+function PackColor (Color: TColor): TColor; inline;
 var r, g, b: integer;
 begin
   Color := ColorToRGB (Color);
@@ -245,14 +242,16 @@ end;
 
 //А это - копирование картинки из объекта Delphi TBitmap на поверхность DirectDraw.
 //Картинка масштабируется так, чтобы заполнить наибОльшую часть прямоугольника Rect,
-//после чего размещается по центру. Возвращает прямоугольник, РЕАЛЬНО занятый картинкой.
-function CenterBmp (Buffer: IDirectDrawSurface4; Bitmap: TBitmap; Rect: TRect): TRect;
-var dc: HDC;
-    w0, h0: integer;
-    w, h: double;
+ // после чего размещается по центру. Возвращает прямоугольник, РЕАЛЬНО занятый картинкой.
+function CenterBmp(Buffer: IDirectDrawSurface4; Bitmap: TBitmap; Rect: TRect): TRect;
+var
+   Dc: HDC;
+   W0, H0: Integer;
+   W, H: Double;
 begin
-  if (Buffer = nil) or (Bitmap = nil) then exit;
-  //Масштабируем и центрируем.
+   if (Buffer = nil) or (Bitmap = nil) then
+     Exit;
+   // Масштабируем и центрируем.
   w0 := Bitmap.Width;
   h0 := Bitmap.Height;
   w := Rect.Right - Rect.Left;
@@ -284,10 +283,6 @@ begin
   if TransSrc1 <> nil then begin
      FreeMem (TransSrc1);
      FreeMem (TransSrc2);
-//     FreeMem (TempSrc);
-//     FreeMem (TempThreadScr);
-//     TempSrc:= nil;
-//     TempThreadScr:= nil;
      TransSrc1 := nil;
      TransSrc2 := nil;
   end;
@@ -457,15 +452,15 @@ begin
  FillChar (SurfaceDesc, sizeof (SurfaceDesc), 0);
  SurfaceDesc.dwSize := sizeof (SurfaceDesc);
  SurfaceDesc.dwFlags := DDSD_CAPS;
- SurfaceDesc.ddsCaps.dwCaps := DDSCAPS_PRIMARYSURFACE;  
-       
+ SurfaceDesc.ddsCaps.dwCaps := DDSCAPS_PRIMARYSURFACE;
+
  DirectDraw4.CreateSurface (SurfaceDesc, PrimarySurface, nil);
  //...привязывается к главному окну через IDirectDrawClipper.
  //Поэтому создаем IDirectDrawClipper...
  DirectDraw4.CreateClipper (0, Clpr, nil);
  //...связываем его с главным окном...
  Clpr.SetHWND (0, Handle);
-           
+
  //...а потОм - с видимой поверхностью.
  PrimarySurface.SetClipper (Clpr);
 
@@ -550,6 +545,8 @@ begin
   FirstImage.Canvas.Rectangle(0,0,FirstImage.width,FirstImage.Height);
   if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
   begin
+    if FNewCsrBmp.Empty then
+      FNewCsrBmp.Assign(FbImage);
    if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
    begin
     fh:=FNewCsrBmp.Height;
@@ -622,7 +619,7 @@ end;
 
 procedure TDirectShowForm.FormMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
-begin          
+begin
   MouseTimer.Enabled:=true;
   if (abs(OldPoint.X-x)>5) or (abs(OldPoint.X-x)>5) then
   begin
@@ -880,7 +877,7 @@ begin
   FReadyAfterPause :=true;
   FNowPaused:=false;
   exit;
- end;    
+ end;
  FNowPaused:=false;
  FReadyAfterPause:=false;
  if not XForward then
@@ -1063,4 +1060,3 @@ begin
 end;
 
 end.
-

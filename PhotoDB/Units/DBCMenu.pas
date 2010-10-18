@@ -648,8 +648,7 @@ begin
      If fileexists(Files[j]) then
      begin
       try
-       S[0]:=Files[j];
-       SilentDeleteFiles( Application.Handle, s , true );
+       SilentDeleteFile( Application.Handle, Files[j] , true );
       except
       end;
      end;
@@ -693,8 +692,7 @@ begin
     If fileexists(finfo[i].FileName) then
     begin
      try
-      s[0]:=finfo[i].FileName;
-      SilentDeleteFiles( Application.Handle, s , true );
+      SilentDeleteFile( Application.Handle, finfo[i].FileName , true );
      except
      end;
     end;

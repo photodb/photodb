@@ -63,7 +63,7 @@ procedure TConvertDBThread.Execute;
 var
   i, j,  pos : integer;
   ToFileName : string;
-  Files : array of string;
+  FileName : string;
   fSpecQuery : TDataSet;
 begin
  FreeOnTerminate:=true;
@@ -147,12 +147,10 @@ begin
   SetPosition(100);
  except
  end;
- SetLength(Files, 1);
- Files[0]:=FFileName;
  CommonDBSupport.TryRemoveConnection(FFileName,true);
  CommonDBSupport.TryRemoveConnection(ToFileName,true);
  try
-  SilentDeleteFiles(0, Files, true);
+  SilentDeleteFile(0, FFileName, true);
  except
   fParamStr:=Format(TEXT_MES_CANNOT_DELETE_FILE_NEW_NAME_F,[FFileName]);
   FIntParam:=LINE_INFO_ERROR;
@@ -162,9 +160,9 @@ begin
  try
   //deleting temp and system db files
 
-   Files[0]:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'.ldb';
-   if FileExists(Files[0]) then
-   SilentDeleteFiles(0, Files, true);
+   FileName:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'.ldb';
+   if FileExists(FileName) then
+   SilentDeleteFile(0, FileName, true);
 
  except
   on e : Exception do
@@ -190,20 +188,20 @@ begin
  end;
  DBKernel.MoveDB(FFileName, NewFileName);
 
- fSpecQuery:=GetQuery(NewFileName);
- try
-  SetSQL(fSpecQuery, 'Update $DB$ Set Comment="" where Comment is null');
-  ExecSQL(fSpecQuery);
-  SetSQL(fSpecQuery, 'Update $DB$ Set KeyWords="" where KeyWords is null');
-  ExecSQL(fSpecQuery);
-  SetSQL(fSpecQuery, 'Update $DB$ Set Groups="" where Groups is null');
-  ExecSQL(fSpecQuery);
-  SetSQL(fSpecQuery, 'Update $DB$ Set Links="" where Links is null');
-  ExecSQL(fSpecQuery);
- finally
-  FreeDS(fSpecQuery);
- end;
- Synchronize(DoExit);
+  fSpecQuery:=GetQuery(NewFileName);
+  try
+    SetSQL(fSpecQuery, 'Update $DB$ Set Comment="" where Comment is null');
+    ExecSQL(fSpecQuery);
+    SetSQL(fSpecQuery, 'Update $DB$ Set KeyWords="" where KeyWords is null');
+    ExecSQL(fSpecQuery);
+    SetSQL(fSpecQuery, 'Update $DB$ Set Groups="" where Groups is null');
+    ExecSQL(fSpecQuery);
+    SetSQL(fSpecQuery, 'Update $DB$ Set Links="" where Links is null');
+    ExecSQL(fSpecQuery);
+  finally
+    FreeDS(fSpecQuery);
+  end;
+  Synchronize(DoExit);
 end;
 
 procedure TConvertDBThread.DoExit;

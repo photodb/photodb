@@ -12,10 +12,10 @@ uses
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
-  DBLoading, LoadingSign;
+  DBLoading, LoadingSign, uDBForm, uMemory;
 
 type
-  TManagerDB = class(TForm)
+  TManagerDB = class(TDBForm)
     Panel2: TPanel;
     PnTop: TPanel;
     PopupMenu1: TPopupMenu;
@@ -193,6 +193,7 @@ type
     { protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
     procedure ReleaseLoadingThread;
+    function GetFormID : string; override;
   public
     { public declarations }
     procedure LoadLanguage;
@@ -570,52 +571,57 @@ end;
 
 procedure TManagerDB.LoadLanguage;
 begin
-  RadioButton1.Caption:=TEXT_MES_SET;
-  RadioButton2.Caption:=TEXT_MES_DELETE;
-  Label10.Caption:=TEXT_MES_WHERE;
-  PackTabelLink.Text:=TEXT_MES_PACK_TABLE;
-  ExportTableLink.Text:=TEXT_MES_EXPORT_TABLE;
-  ImportTableLink.Text:=TEXT_MES_IMPORT_TABLE;
-  BackUpDBLink.Text:=TEXT_MES_BACK_UP_DB;
-  CleaningLink.Text:=TEXT_MES_CLEANING;
-  DublicatesLink.Text:=TEXT_MES_OPTIMIZING_DUBLICATES;
-  BtnExecSQL.Caption:=TEXT_MES_EXES_SQL;
-  DateExists1.Caption:=TEXT_MES_DATE_NOT_EX;
-  DateExists2.Caption:=TEXT_MES_DATE_EX;
-  EditGroups1.Caption:=TEXT_MES_EDIT_GROUPS;
-  GroupsManager1.Caption:=TEXT_MES_GROUPS_MANAGER;
-  Label7.Caption:=TEXT_MES_GO_TO_REC_ID;
-  Caption:=TEXT_MES_MANAGER_DB;
-  Label11.Caption:=TEXT_MES_BACKUPS;
-  Restore1.Caption:=TEXT_MES_RESTORE_DB;
-  Delete1.Caption:=TEXT_MES_DELETE;
-  Refresh1.Caption:=TEXT_MES_REFRESH;
-  TimenotExists1.Caption:=TEXT_MES_TIME_NOT_SETS;
-  TimeExists1.Caption:=TEXT_MES_TIME_EXISTS;
-  Rename1.Caption:=TEXT_MES_RENAME;
-  RecreateIDExLink.Text:=TEXT_MES_RECTEATE_IDEX_CAPTION;
-  ScanforBadLinksLink.Text:=TEXT_MES_BAD_LINKS_CAPTION;
-  BtnAddDB.Caption:=TEXT_MES_DO_ADD_DB;
-  EditDB1.Caption:=TEXT_MES_EDIT;
-  SelectDB1.Caption:=TEXT_MES_SELECT_DB;
-  DeleteDB1.Caption:=TEXT_MES_DELETE;
-  RenameDB1.Caption:=TEXT_MES_RENAME;
-  ConvertLink.Text:=TEXT_MES_CONVERT_DB;
-  ChangePathLink.Text:=TEXT_MES_THANGE_FILES_PATH_IN_DB;
+  BeginTranslate;
+  try
+    RadioButton1.Caption:= L('Set');
+    RadioButton2.Caption:=  L('Delete');
+    Label10.Caption:= L('where');
+    PackTabelLink.Text:= L('Pack table');
+    ExportTableLink.Text:= L('Export DB');
+    ImportTableLink.Text:= L('Import DB');
+    BackUpDBLink.Text:= L('Backup DB');
+    CleaningLink.Text:= L('Cleaning');
+    DublicatesLink.Text:= L('Optimize duplicates');
+    BtnExecSQL.Caption:= L('Exec sql');
+    DateExists1.Caption:= L('No date');
+    DateExists2.Caption:= L('Set date');
+    EditGroups1.Caption:= L('Edit groups');
+    GroupsManager1.Caption:= L('Groups manager');
+    Label7.Caption:= L('Go to record ID');
+    Caption:= L('DB Manager');
+    Label11.Caption:= L('Backups');
+    Restore1.Caption:= L('Restore DB');
+    Delete1.Caption:= L('Delete');
+    Refresh1.Caption:= L('Refresh');
+    TimenotExists1.Caption:= L('No time');
+    TimeExists1.Caption:= L('Set time');
+    Rename1.Caption:= L('Rename');
+    RecreateIDExLink.Text:= L('Recreare DB cache');
+    ScanforBadLinksLink.Text:= L('Scan for bad links');
+    BtnAddDB.Caption:= L('Add DB file');
+    EditDB1.Caption:= L('Edit');
+    SelectDB1.Caption:= L('Select DB');
+    DeleteDB1.Caption:= L('Delete');
+    RenameDB1.Caption:= L('Rename');
+    ConvertLink.Text:= L('Convert DB');
+    ChangePathLink.Text:= L('Change file in DB');
 
-  elvMain.Columns[0].Caption:=TEXT_MES_ID;
-  elvMain.Columns[1].Caption:=TEXT_MES_FILE_NAME;
-  elvMain.Columns[2].Caption:=TEXT_MES_KEYWORDS;
-  elvMain.Columns[3].Caption:=TEXT_MES_COMMENT;
-  elvMain.Columns[4].Caption:=TEXT_MES_RATING;
-  elvMain.Columns[5].Caption:=TEXT_MES_ROTATE;
-  elvMain.Columns[6].Caption:=TEXT_MES_ACCESS;
-  elvMain.Columns[7].Caption:=TEXT_MES_GROUPS;
-  elvMain.Columns[8].Caption:=TEXT_MES_DATE;
-  elvMain.Columns[9].Caption:=TEXT_MES_TIME;
-  elvMain.Columns[10].Caption:=TEXT_MES_SIZE;
+    elvMain.Columns[0].Caption:= L('ID');
+    elvMain.Columns[1].Caption:= L('FileName');
+    elvMain.Columns[2].Caption:= L('Keywords');
+    elvMain.Columns[3].Caption:= L('Comment');
+    elvMain.Columns[4].Caption:= L('Rating');
+    elvMain.Columns[5].Caption:= L('Rotate');
+    elvMain.Columns[6].Caption:= L('Access');
+    elvMain.Columns[7].Caption:= L('Groups');
+    elvMain.Columns[8].Caption:= L('Date');
+    elvMain.Columns[9].Caption:= L('Time');
+    elvMain.Columns[10].Caption:= L('Size');
 
-  Showfileinexplorer1.Caption:=TEXT_MES_SHOW_FILE_IN_EXPLORER;
+    Showfileinexplorer1.Caption:= L('Show file in explorer');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TManagerDB.CreateParams(var Params: TCreateParams);
@@ -1078,6 +1084,11 @@ begin
   end;
 end;
 
+function TManagerDB.GetFormID: string;
+begin
+  Result := 'DBManager';
+end;
+
 procedure TManagerDB.ElvMainSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 var
@@ -1521,33 +1532,38 @@ begin
         FormManagerHint.Image1.Picture.Bitmap := TBitmap.Create;
         FormManagerHint.Image1.Picture.Bitmap.PixelFormat := pf24bit;
       end;
-      JPG := TJpegImage.Create;
+      B:= TBitmap.Create;
       try
-        if ValidCryptBlobStreamJPG(DS.FieldByName('Thum')) then
-        begin
-          pass := DBKernel.FindPasswordForCryptBlobStream(DS.FieldByName('Thum'));
-          if pass = '' then
+        JPG := TJpegImage.Create;
+        try
+          if ValidCryptBlobStreamJPG(DS.FieldByName('Thum')) then
           begin
-            ShowWindow(FormManagerHint.Handle, SW_HIDE);
-            Exit;
+            pass := DBKernel.FindPasswordForCryptBlobStream(DS.FieldByName('Thum'));
+            if pass = '' then
+            begin
+              ShowWindow(FormManagerHint.Handle, SW_HIDE);
+              Exit;
+            end else
+              DeCryptBlobStreamJPG(DS.FieldByName('Thum'), pass, JPG);
           end else
-            DeCryptBlobStreamJPG(DS.FieldByName('Thum'), pass, JPG);
-        end else
-          JPG.Assign(DS.FieldByName('Thum'));
+            JPG.Assign(DS.FieldByName('Thum'));
 
-        B:= FormManagerHint.image1.Picture.Graphic as TBitmap;
-        B.Width:=ThSize;
-        B.Height:=ThSize;
-        B.Canvas.Pen.Color:=Theme_MainColor;
-        B.Canvas.Brush.Color:=Theme_MainColor;
-        B.Canvas.Rectangle(0,0,B.Width,B.Height);
-        B.Canvas.Pen.Color:=Theme_ListColor;
-        B.canvas.Draw(ThSize div 2 - JPG.Width div 2,ThSize div 2 - JPG.Height div 2,JPG);
+          B.Width := ThSize;
+          B.Height := ThSize;
+          B.Canvas.Pen.Color := Theme_MainColor;
+          B.Canvas.Brush.Color := Theme_MainColor;
+          B.Canvas.Rectangle(0, 0, B.Width, B.Height);
+          B.Canvas.Pen.Color := Theme_ListColor;
+          B.Canvas.Draw(ThSize div 2 - JPG.Width div 2, ThSize div 2 - JPG.Height div 2, JPG);
+        finally
+          JPG.Free;
+        end;
+        ApplyRotate(B, ItemData.Rotation);
+        DrawAttributes(B, ThSize, ItemData.Rating, ItemData.Rotation, ItemData.Access, DS.FieldByName('FFileName').AsString, ValidCryptBlobStreamJPG(DS.FieldByName('Thum')), ItemData.Exists, ItemData.ID);
+        FormManagerHint.Image1.Picture.Graphic := B;
       finally
-        JPG.Free;
+        F(B);
       end;
-      ApplyRotate(B, ItemData.Rotation);
-      DrawAttributes(B, ThSize, ItemData.Rating, ItemData.Rotation, ItemData.Access, DS.FieldByName('FFileName').AsString, ValidCryptBlobStreamJPG(DS.FieldByName('Thum')), ItemData.Exists, ItemData.ID);
     finally
       FreeDS(DS);
     end;

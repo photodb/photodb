@@ -308,7 +308,7 @@ var
   DrawImage: TBitmap;
   FBImage: Tbitmap;
   Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
-    CurrentFileNumber: Integer;
+  CurrentFileNumber: Integer;
 
 const
   CursorZoomInNo = 130;
@@ -316,7 +316,7 @@ const
 
 implementation
 
-uses Language, UnitUpdateDB, PropertyForm, SlideShowFullScreen,
+uses UnitUpdateDB, PropertyForm, SlideShowFullScreen,
   ExplorerUnit, FloatPanelFullScreen, UnitRotateImages, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
@@ -381,7 +381,7 @@ begin
   TW.I.Start('AnimatedBuffer');
   AnimatedBuffer := TBitmap.create;
   AnimatedBuffer.PixelFormat:=pf24bit;
-  MTimer1.Caption:=TEXT_MES_SLIDE_STOP_TIMER;
+  MTimer1.Caption:= L('Stop timer');
   MTimer1.ImageIndex:=DB_IC_PAUSE;
 
   SaveWindowPos1.Key := RegRoot+'SlideShow';
@@ -423,22 +423,7 @@ begin
   DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
   TW.I.Start('LoadLanguage');
   LoadLanguage;
-  TW.I.Start('ToolButton2.Hint');
-  TbBack.Hint:=TEXT_MES_VIEW_SC_LEFT_ARROW;
-  TbForward.Hint:=TEXT_MES_VIEW_SC_RIGHT_ARROW;
-  TbFitToWindow.Hint:=TEXT_MES_VIEW_SC_FIT_TO_SIZE;
-  TbRealSize.Hint:=TEXT_MES_VIEW_SC_FULL_SIZE;
-  TbSlideShow.Hint:=TEXT_MES_VIEW_SC_SLIDE_SHOW;
-  TbFullScreen.Hint:=TEXT_MES_VIEW_SC_FULLSCREEN;
-  TbZoomOut.Hint:=TEXT_MES_VIEW_SC_ZOOM_IN;
-  TbZoomIn.Hint:=TEXT_MES_VIEW_SC_ZOOM_OUT;
-  TbRotateCCW.Hint:=TEXT_MES_VIEW_SC_ROTATE_LEFT;
-  TbRotateCW.Hint:=TEXT_MES_VIEW_SC_ROTATE_RIGHT;
-  TbDelete.Hint:=TEXT_MES_VIEW_SC_DELETE;
-  TbPrint.Hint:=TEXT_MES_VIEW_SC_PRINT;
-  TbRating.Hint:=TEXT_MES_VIEW_SC_RATING;
-  TbEditImage.Hint:=TEXT_MES_VIEW_SC_EDITOR;
-  TbInfo.Hint:=TEXT_MES_VIEW_SC_INFO;
+
   TW.I.Start('LoadCursor');
   CursorZoomIn := LoadCursor(HInstance,'ZOOMIN');
   CursorZoomOut := LoadCursor(HInstance,'ZOOMOUT');
@@ -470,7 +455,7 @@ begin
 // DBKernel.RegisterChangesIDbyID(self,ChangedDBDataByID,CurrentInfo.ItemIds[CurrentFileNumber]);
  if CheckFileExistsWithSleep(FileName,false) then
  begin
-  Caption:=Format(TEXT_MES_SLIDE_CAPTION,[ExtractFileName(FileName),CurrentFileNumber+1, Length(CurrentInfo.LoadedImageInfo)]);
+  Caption:=Format(L('View') + ' - %s   [%d/%d]',[ExtractFileName(FileName),CurrentFileNumber+1, Length(CurrentInfo.LoadedImageInfo)]);
 
   DisplayRating := CurrentInfo.ItemRatings[CurrentFileNumber];
 
@@ -509,13 +494,13 @@ begin
   end else ForwardThreadNeeds:=true;
  end else
  begin
-  Caption:=Format(TEXT_MES_SLIDE_CAPTION,[ExtractFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
+  Caption:=Format(L('View') + ' - %s   [%d/%d]',[ExtractFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
   DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
 
   TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
   TbRotateCW.Enabled:=TbRotateCCW.Enabled;
 
-  Text:=Format(TEXT_MES_FILE_NOT_EXISTS_F,[Mince(FileName,30)]);
+  Text:=Format(L('File %s not found!'),[Mince(FileName,80)]);
   FbImage.Canvas.Rectangle(0,0,FbImage.width,FbImage.Height);
   FbImage.Width:=FbImage.Canvas.TextWidth(text);
   FbImage.Height:=FbImage.Canvas.TextHeight(text);
@@ -533,14 +518,10 @@ var
   zx,zy,zw,zh, x1,x2,y1,y2 : integer;
   ImRect, BeginRect : TRect;
   z : real;
-  FileName : String;
+  FileName : string;
   TempImage, b : TBitmap;
   aCopyRect : TRect;
-
-const
-  text_out = TEXT_MES_CREATING+'...';
-  text_error_out = TEXT_MES_UNABLE_SHOW_FILE;
-
+  text_error_out : string;
 
  procedure DrawRect(x1,y1,x2,y2 : Integer);
  begin
@@ -599,6 +580,7 @@ begin
    end else
    begin
     DrawImage.Canvas.Font.Color:=$FFFFFF;
+    text_error_out := L('Error showing image!');
     DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(text_error_out) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2,text_error_out);
     DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(FileName) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2+DrawImage.Canvas.Textheight(FileName)+4,FileName);
    end;
@@ -731,8 +713,8 @@ begin
     z:=min(fw/RealImageWidth,fh/RealImageHeight);
    end;
    if WaitingList then
-   Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]) else
-   Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,z*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
+   Caption:=Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]) else
+   Caption:=Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]', [ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,z*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
   end;
   LastZValue:=z;
  FormPaint(Sender);
@@ -1003,7 +985,7 @@ begin
  begin
   AddToDB1.Visible:=false;
   DBItem1.Visible:=true;
-  DBItem1.Caption:=Format(TEXT_MES_DBITEM_FORMAT,[inttostr(CurrentInfo.ItemIds[CurrentFileNumber])]);
+  DBItem1.Caption:=Format(L('DB Item [%s]'),[CurrentInfo.ItemIds[CurrentFileNumber]]);
   InitializeInfo;
   TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
  end else
@@ -1054,7 +1036,7 @@ begin
  begin
   if MTimer1.ImageIndex=DB_IC_PAUSE then
   begin
-   MTimer1.Caption:=TEXT_MES_START_TIMER;
+   MTimer1.Caption:= L('Start timer');
    MTimer1.ImageIndex:=DB_IC_PLAY;
    if FloatPanel<>nil then
    begin
@@ -1064,7 +1046,7 @@ begin
    SlideTimer.Enabled:=false;
    Play:=false;
   end else begin
-   MTimer1.Caption:=TEXT_MES_STOP_TIMER;
+   MTimer1.Caption:=L('Stop timer');
    MTimer1.ImageIndex:=DB_IC_PAUSE;
    if FloatPanel<>nil then
    begin
@@ -1080,14 +1062,14 @@ begin
   begin
    if DirectShowForm<>nil then
    DirectShowForm.Pause;
-   MTimer1.Caption:=TEXT_MES_START_TIMER;
+   MTimer1.Caption:=L('Start timer');
    MTimer1.ImageIndex:=DB_IC_PLAY;
    FloatPanel.ToolButton1.Down:=false;
    FloatPanel.ToolButton2.Down:=true;
   end else begin
    if DirectShowForm<>nil then
    DirectShowForm.Play;
-   MTimer1.Caption:=TEXT_MES_STOP_TIMER;
+   MTimer1.Caption:=L('Stop timer');
    MTimer1.ImageIndex:=DB_IC_PAUSE;
    FloatPanel.ToolButton1.Down:=true;
    FloatPanel.ToolButton2.Down:=false;
@@ -1420,14 +1402,14 @@ begin
     begin
       FButtons[0].iId := 40001;
       FButtons[0].dwFlags := THBF_ENABLED;
-      FButtons[0].hIcon := LoadImage(DBKernel.IconDllInstance, PWideChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
-	    StringToWideChar(TEXT_MES_BACK, FButtons[0].szTip, 260);
+      FButtons[0].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
+	      StringToWideChar(L('Back'), FButtons[0].szTip, 260);
 	    FButtons[0].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
 
 	    FButtons[1].iId := 40002;
 	    FButtons[1].dwFlags := THBF_ENABLED;
-	    FButtons[1].hIcon := LoadImage(DBKernel.IconDllInstance, PWideChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
-	    StringToWideChar(TEXT_MES_NEXT, FButtons[1].szTip, 260);
+	    FButtons[1].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
+	      StringToWideChar(L('Forward'), FButtons[1].szTip, 260);
 	    FButtons[1].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
       FW7TaskBar.ThumbBarAddButtons(Handle, 2, @FButtons);
 
@@ -1530,7 +1512,7 @@ begin
   TSlideShowScanDirectoryThread.Create(Self, StateID, FileName);
   Info := RecordsInfoOne(FileName, 0,0,0,0,'','','','','',0, False, False, 0, ValidCryptGraphicFile(FileName), False, False, '');
   ExecuteW(Self, Info, '');
-  Caption := Format(TEXT_MES_SLIDE_CAPTION_EX_WAITING,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]), RealImageWidth, RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
+  Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]), RealImageWidth, RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
 
 end;
 
@@ -1544,16 +1526,13 @@ end;
 function TViewer.ExecuteW(Sender: TObject; Info: TRecordsInfo; LoadBaseFile : String) : boolean;
 var
   i : integer;
-  s, Dir : String;
+  s, Dir, text_out : String;
   si : TStartupInfo;
   p  : TProcessInformation;
   TempInfo : TOneRecordInfo;
   LoadImage : TPNGGraphic;
   LoadImageBMP : TBitmap;
   FOldImageExists : Boolean;
-
-const
-  text_out = TEXT_MES_GENERATING;
 
 begin
  TW.I.Start('ExecuteW');
@@ -1689,6 +1668,7 @@ begin
       LoadImage.Free;
     end;
 
+    text_out := L('Processing...');
     FbImage.Canvas.TextOut(FbImage.Width div 2-FbImage.Canvas.TextWidth(text_out) div 2,FbImage.Height{ div 2}-4*FbImage.Canvas.Textheight(text_out) div 2,text_out);
 
     TW.I.Start('RecreateDrawImage_');
@@ -1699,7 +1679,7 @@ begin
 
   end else
   begin
-   Caption:=Format(TEXT_MES_SLIDE_CAPTION_EX,[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
+   Caption:=Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
    DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
    FImageExists := FOldImageExists;
    TbRotateCW.Enabled:=TbRotateCCW.Enabled;
@@ -1823,10 +1803,22 @@ begin
   BeginTranslate;
   try
     Caption := L('Viewer');
-   {TbBack.Caption := TEXT_MES_SLIDE_PREVIOUS;
-    TbForward.Caption := TEXT_MES_NEXT;
-    TbInfo.Caption:=TEXT_MES_PROPERTIES;
-    TbEditImage.Caption:=TEXT_MES_IMAGE_EDITOR_W;}
+    TW.I.Start('ToolButton2.Hint');
+    TbBack.Hint := L('Back (left arrow)');
+    TbForward.Hint := L('Forward (right arrow)'); ;
+    TbFitToWindow.Hint := L('Fit to window (Ctrl+F)');
+    TbRealSize.Hint := L('Original size (Ctrl+A)');
+    TbSlideShow.Hint := L('Slide show (Ctrl+S)');
+    TbFullScreen.Hint := L('Full screen (Ctrl+Enter)');
+    TbZoomOut.Hint := L('Zoom in (Ctrl+I)');
+    TbZoomIn.Hint := L('Zoom out (Ctrl+O)');
+    TbRotateCCW.Hint := L('Rotate left (Ctrl+L)');
+    TbRotateCW.Hint := L('Rotate right (Ctrl+R)');
+    TbDelete.Hint := L('Delete (Ctrl+D)');
+    TbPrint.Hint := L('Print (Ctrl+P)');
+    TbRating.Hint := L('Rating (Ctrl+rating)');
+    TbEditImage.Hint := L('Image editor (Ctrl+E)');
+    TbInfo.Hint := L('Properties (Ctrl+Z)');
   finally
     EndTranslate;
   end;
@@ -2413,7 +2405,7 @@ procedure TViewer.Pause;
 begin
  if DirectShowForm<>nil then
  DirectShowForm.Pause;
- MTimer1.Caption:=TEXT_MES_START_TIMER;
+ MTimer1.Caption:= L('Start timer');
  MTimer1.ImageIndex:=DB_IC_PLAY;
  FloatPanel.ToolButton1.Down:=false;
  FloatPanel.ToolButton2.Down:=true;
@@ -2913,12 +2905,12 @@ end;
 procedure TViewer.TbDeleteClick(Sender: TObject);
 var
   fQuery : TDataSet;
-  s : TArStrings;
+  Files : TStrings;
   EventInfo : TEventValues;
   SQL_ : string;
   i, DeleteID : Integer;
 begin
- If ID_OK=MessageBoxDB(Handle,TEXT_MES_DEL_FILE_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+ If ID_OK=MessageBoxDB(Handle,L('Do you really want to delete file to resucle bin?'), L('Delete confirn'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   DeleteID:=0;
   if CurrentInfo.ItemIds[CurrentFileNumber]<>0 then
@@ -2933,9 +2925,15 @@ begin
      FreeDS(fQuery);
    end;
   end;
-  SetLength(s,1);
-  s[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
-  SilentDeleteFiles(Handle, s , true );
+
+  Files := TStringList.Create;
+  try
+    Files.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+    SilentDeleteFiles(Handle, Files, true );
+  finally
+    F(Files);
+  end;
+
   for i:=CurrentFileNumber to Length(CurrentInfo.ItemIds)-2 do
   begin
    With CurrentInfo do
@@ -3224,7 +3222,7 @@ end;
 function TViewer.GetPageCaption: String;
 begin
     if FPageCount > 1 then
-      Result := Format(TEXT_MES_SLIDE_PAGE_CATION, [FCurrentPage + 1, FPageCount])
+      Result := Format(L('Page %d from %d'), [FCurrentPage + 1, FPageCount])
     else
       Result := '';
 end;

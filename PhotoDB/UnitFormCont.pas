@@ -16,6 +16,16 @@ uses
   uGOM, uMemory, uFormListView, uTranslate;
 
 type
+
+  TDestDype = class(TObject)
+  public
+    Dest: string;
+    Files: TStrings;
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
+type
   TFormCont = class(TListViewForm)
     Panel1: TPanel;
     PopupMenu1: TPopupMenu;
@@ -219,6 +229,19 @@ uses Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
      UnitStringPromtForm, Loadingresults, UnitBigImagesSize;
 
 {$R *.dfm}
+
+{ TDestDype }
+
+constructor TDestDype.Create;
+begin
+  Files := TStringList.Create;
+end;
+
+destructor TDestDype.Destroy;
+begin
+  F(Files);
+  inherited;
+end;
 
 { TFormCont }
 
@@ -1586,66 +1609,62 @@ begin
 end;
 
 procedure TFormCont.ExCopyLinkClick(Sender: TObject);
-
-type
- TDestDype = record
-  Dest : String;
-  Files : array of String;
- end;
-
 var
   FileName, Temp, UpDir, Dir, NewDir : String;
   l1,l2 : integer;
   i : integer;
-  DestWide : array of TDestDype;
+  DestWide : TList;
 
-  procedure AddFileToDestWide(NewDir,NewFileName : String);
+  procedure AddFileToDestWide(NewDir, NewFileName: string);
   var
-    i : integer;
+    I: Integer;
+    DestType : TDestDype;
   begin
-   for i:=0 to Length(DestWide)-1 do
-   if AnsiLowerCase(DestWide[i].Dest)=AnsiLowerCase(NewDir) then
-   begin
-    SetLength(DestWide[i].Files,Length(DestWide[i].Files)+1);
-    DestWide[i].Files[Length(DestWide[i].Files)-1]:=NewFileName;
-    Exit;
-   end;
-   SetLength(DestWide,Length(DestWide)+1);
-   With DestWide[Length(DestWide)-1] do
-   begin
-    Dest:=NewDir;
-    SetLength(Files,1);
-    Files[0]:=NewFileName;
-   end;
+    for I := 0 to DestWide.Count - 1 do
+      if AnsiLowerCase(TDestDype(DestWide[I]).Dest) = AnsiLowerCase(NewDir) then
+      begin
+        TDestDype(DestWide[I]).Files.Add(NewFileName);
+        Exit;
+      end;
+
+    DestType := TDestDype.Create;
+    DestType.Dest := NewDir;
+    DestType.Files.Add(NewFileName);
+    DestWide.Add(DestType);
   end;
 
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,L('Select place to copy files'), UseSimpleSelectFolderDialog);
- If DirectoryExists(Dir) then
- begin
-  SetLength(DestWide,0);
-  FormatDir(Dir);
-  for i:=0 to ElvMain.Items.Count-1 do
-  If ElvMain.Items[i].Selected then
-  begin
-   FileName:=ProcessPath(Data[i].FileName);
-   Temp:=GetDirectory(FileName);
-   UnFormatDir(Temp);
-   l1:=Length(Temp);
-   Temp:=GetDirectory(Temp);
-   FormatDir(Temp);
-   l2:=Length(Temp);
-   UpDir:=Copy(FileName,l2+1,l1-l2);
-   NewDir:=Dir+UpDir;
-   AddFileToDestWide(NewDir,FileName);
+  DestWide := TList.Create;
+  try
+    Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select place to copy files'), UseSimpleSelectFolderDialog);
+    if DirectoryExists(Dir) then
+    begin
+      FormatDir(Dir);
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          FileName := ProcessPath(Data[I].FileName);
+          Temp := GetDirectory(FileName);
+          UnFormatDir(Temp);
+          L1 := Length(Temp);
+          Temp := GetDirectory(Temp);
+          FormatDir(Temp);
+          L2 := Length(Temp);
+          UpDir := Copy(FileName, L2 + 1, L1 - L2);
+          NewDir := Dir + UpDir;
+          AddFileToDestWide(NewDir, FileName);
+        end;
+    end;
+    for I := 0 to DestWide.Count - 1 do
+    begin
+      Dir := TDestDype(DestWide[I]).Dest;
+      FormatDir(Dir);
+      CreateDirA(Dir);
+      CopyFiles(Handle, TDestDype(DestWide[I]).Files, Dir, False, True);
+    end;
+  finally
+    FreeList(DestWide);
   end;
- end;
- For i:=0 To Length(DestWide)-1 do
- begin
-  FormatDir(DestWide[i].Dest);
-  CreateDirA(DestWide[i].Dest);
-  CopyFiles(Handle,DestWide[i].Files,DestWide[i].Dest,false,true);
- end;
 end;
 
 procedure TFormCont.PopupMenu1Popup(Sender: TObject);

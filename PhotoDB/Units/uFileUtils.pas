@@ -3,13 +3,13 @@ unit uFileUtils;
 interface
 
 uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl,  ShlObj, ActiveX,
-     VRSIShortCuts, ShellAPI, uConstants;
+     VRSIShortCuts, ShellAPI, uConstants, uMemory;
 
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
   TBuffer = array of Char;
 
-  TCorrectPathProc = procedure(Src: array of string; Dest: string) of object;
+  TCorrectPathProc = procedure(Src: TStrings; Dest: string) of object;
 
 function GetAppDataDirectory: string;
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
@@ -24,19 +24,21 @@ function GetFileSize(FileName: string): Int64;
 function GetFileSizeByName(FileName: string): Int64;
 function LongFileName(ShortName: string): string;
 function LongFileNameW(ShortName: string): string;
-function CopyFilesSynch(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean): Integer;
+function CopyFilesSynch(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean): Integer;
 procedure Copy_Move(Copy: Boolean; FileList: TStrings);
 function Mince(PathToMince: string; InSpace: Integer): string;
 function WindowsCopyFile(FromFile, ToDir: string): Boolean;
 function WindowsCopyFileSilent(FromFile, ToDir: string): Boolean;
 function DateModify(FileName: string): TDateTime;
 function MrsGetFileType(StrFilename: string): string;
-procedure CopyFiles(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean;
+procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
   CallBack: TCorrectPathProc = nil; ExplorerForm: TForm = nil);
-function DeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean): Integer;
+function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 function GetCDVolumeLabel(CDName: Char): string;
 function DriveState(Driveletter: AnsiChar): TDriveState;
-function SilentDeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean;
+function SilentDeleteFile(Handle: HWnd; FileName: string; ToRecycle: Boolean;
+  HideErrors: Boolean = False): Integer;
+function SilentDeleteFiles(Handle: HWnd; Names: TStrings; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
 
 var
@@ -421,20 +423,20 @@ begin
   Result := FileInfo.SzTypeName;
 end;
 
-procedure CreateBuffer(Names: array of string; var P: TBuffer);
+procedure CreateBuffer(Files: TStrings; var P: TBuffer);
 var
   I: Integer;
   S: string;
 begin
-  for I := 0 to Length(Names) - 1 do
+  for I := 0 to Files.Count - 1 do
   begin
     if S = '' then
     begin
-      S := Names[I];
+      S := Files[I];
     end
     else
     begin
-      S := S + #0 + Names[I];
+      S := S + #0 + Files[I];
     end;
   end;
   S := S + #0#0;
@@ -443,7 +445,7 @@ begin
     P[I - 1] := S[I];
 end;
 
-function CopyFilesSynch(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean): Integer;
+function CopyFilesSynch(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean): Integer;
 var
   SHFileOpStruct: TSHFileOpStruct;
   SrcBuf: TBuffer;
@@ -474,18 +476,18 @@ begin
   end;
 end;
 
-procedure CopyFiles(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean; AutoRename: Boolean;
+procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
   CallBack: TCorrectPathProc = nil; ExplorerForm: TForm = nil);
 begin
   TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, CallBack, ExplorerForm);
 end;
 
-function DeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean): Integer;
+function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 var
   SHFileOpStruct: TSHFileOpStruct;
   Src: TBuffer;
 begin
-  CreateBuffer(Names, Src);
+  CreateBuffer(Files, Src);
   with SHFileOpStruct do
   begin
     Wnd := Handle;
@@ -503,7 +505,21 @@ begin
   Src := nil;
 end;
 
-function SilentDeleteFiles(Handle: HWnd; Names: array of string; ToRecycle: Boolean;
+function SilentDeleteFile(Handle: HWnd; FileName: string; ToRecycle: Boolean;
+  HideErrors: Boolean = False): Integer;
+var
+  Files : TStrings;
+begin
+  Files := TStringList.Create;
+  try
+    Files.Add(FileName);
+    SilentDeleteFiles(Handle, Files, ToRecycle, HideErrors);
+  finally
+    F(Files);
+  end;
+end;
+
+function SilentDeleteFiles(Handle: HWnd; Names: TStrings; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
 var
   SHFileOpStruct: TSHFileOpStruct;

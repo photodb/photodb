@@ -1678,13 +1678,6 @@ object SearchForm: TSearchForm
     Left = 456
     Top = 88
   end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = DestroyTimerTimer
-    Left = 521
-    Top = 128
-  end
   object DropFileTarget2: TDropFileTarget
     DragTypes = [dtCopy, dtLink]
     OnDrop = DropFileTarget2Drop

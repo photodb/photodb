@@ -148,7 +148,6 @@ type
     TimeExists1: TMenuItem;
     Timenotsets1: TMenuItem;
     SelectTimer: TTimer;
-    DestroyTimer: TTimer;
     View2: TMenuItem;
     DropFileTarget2: TDropFileTarget;
     ScriptListPopupMenu: TPopupMenu;
@@ -344,7 +343,6 @@ type
     procedure IsTimePanelDblClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure DBTreeView1Click(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure View2Click(Sender: TObject);
     procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
@@ -358,7 +356,6 @@ type
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
     procedure ListViewSelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
     function GetListItemByID(ID : integer) : TEasyItem;
-    function GetSelecteditemNO(item : TEasyItem):integer;
     function ItemIndex(item : TEasyItem) : integer;
     procedure ListViewEdited(Sender: TObject; Item: TEasyItem;
       var S: String);
@@ -1388,17 +1385,17 @@ end;
 
 function TSearchForm.GetListItemByID(ID : integer) : TEasyItem;
 var
-  i : integer;
+  I: Integer;
 begin
- result:=nil;
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  if ElvMain.Items[i].Tag=ID then
+  Result := nil;
+  for I := 0 to ElvMain.Items.Count - 1 do
   begin
-   result:=ElvMain.Items[i];
-   break;
+    if ElvMain.Items[I].Tag = ID then
+    begin
+      Result := ElvMain.Items[I];
+      Break;
+    end;
   end;
- end;
 end;
 
 function TSearchForm.GetSelectedTStrings: TStrings;
@@ -1468,24 +1465,6 @@ begin
   Result := TStringList.Create;
   for I := 0 to ElvMain.Items.Count - 1 do
     Result.Add(GetSearchRecordFromItemData(ElvMain.Items[I]).FileName);
-end;
-
-function TSearchForm.GetSelectedItemNO(item : TEasyItem) : integer;
-var
-  i, c : integer;
-begin
- result:=0;
- c:=-1;
- if ElvMain.Items.Count=0 then exit;
- for i:=0 to ElvMain.Items.Count-1 do
- begin
-  if ElvMain.Items[i].Selected then inc(c);
-  if ElvMain.Items[i]=item then
-  begin
-   result:=c;
-   break;
-  end;
- end;
 end;
 
 procedure TSearchForm.Memo1KeyDown(Sender: TObject; var Key: Word;
@@ -2277,12 +2256,7 @@ begin
   SaveQueryList;
   SearchManager.RemoveSearch(Self);
   Hide;
-  if FUpdatingDB then
-  begin
-    DestroyTimer.Interval:=100;
-    DestroyCounter:=1;
-  end;
-  DestroyTimer.Enabled:=true;
+  Release;
 end;
 
 procedure TSearchForm.Datenotexists1Click(Sender: TObject);
@@ -3534,27 +3508,16 @@ begin
   MakeDBFileTree(dbname);
 end;
 
-procedure TSearchForm.DestroyTimerTimer(Sender: TObject);
-begin
- if FUpdatingDB then Exit;
- if DestroyCounter>0 then
- begin
-  inc(DestroyCounter);
- end;
- if (DestroyCounter<3) and (DestroyCounter<>0) then exit;
- DestroyTimer.Enabled:=false;
- Release;
-end;
-
 procedure TSearchForm.View2Click(Sender: TObject);
 var
-  info : TRecordsInfo;
-  n : integer;
+  Info: TRecordsInfo;
+  N: Integer;
 begin
- if Viewer=nil then Application.CreateForm(TViewer, Viewer);
- GetFileListByMask(TempFolderName,SupportedExt,info,n,True);
- if Length(info.ItemFileNames)>0 then
- Viewer.Execute(Self,info);
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
+  if Length(Info.ItemFileNames) > 0 then
+    Viewer.Execute(Self, Info);
 end;
 
 procedure TSearchForm.DropFileTarget2Drop(Sender: TObject;
@@ -3756,16 +3719,20 @@ begin
     if AnsiLowerCase(SearchRecord.FileName) = FileName then
     begin
       if ListItem.ImageIndex = -1 then
-        ListItem.ImageIndex := FBitmapImageList.AddBitmap(Bitmap)
+      begin
+        ListItem.ImageIndex := FBitmapImageList.AddBitmap(Bitmap);
+        Bitmap := nil;
+      end
       else begin
         FBitmapImageList.Items[ListItem.ImageIndex].Bitmap.Assign(Bitmap);
-        Bitmap.Free;
+        F(Bitmap);
       end;
       ListItem.Invalidate(True);
       Result := True;
       Break;
     end;
   end;
+  F(Bitmap);
 end;
 
 procedure TSearchForm.BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
@@ -3796,6 +3763,7 @@ procedure TSearchForm.ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
 begin
   if not (ssCtrl in Shift) then
     Exit;
+
   if WheelDelta < 0 then
     ZoomIn
   else
@@ -4751,7 +4719,7 @@ procedure TSearchForm.elvDateRangeMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   Item : TEasyItem;
-  i : integer;
+  I : integer;
 begin
   if CtrlKeyDown then
   begin

@@ -3,45 +3,45 @@ unit UnitWindowsCopyFilesThread;
 interface
 
 uses
-  Classes, Windows, DBCommon, Forms, uFileUtils;
+  Classes, Windows, DBCommon, Forms, uFileUtils, uMemory;
 
 type
-  TCorrectPathProc = procedure(Src : array of string; Dest : string) of object;
+  TCorrectPathProc = procedure(Src : TStrings; Dest : string) of object;
 
 type
   TWindowsCopyFilesThread = class(TThread)
   private
+    { Private declarations }
     FHandle: Hwnd;
-    FSrc: array of string;
+    FSrc: TStrings;
     FDest: string;
     FMove, FAutoRename: Boolean;
     FCallBack: TCorrectPathProc;
     FOwnerExplorerForm: TForm;
-    { Private declarations }
   protected
     procedure Execute; override;
     procedure DoCallBack;
   public
-    constructor Create(Handle: Hwnd; Src: array of string; Dest: string; Move: Boolean;
+    constructor Create(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean;
       AutoRename: Boolean; CallBack: TCorrectPathProc; OwnerExplorerForm: TForm);
+    destructor Destroy; override;
   end;
 
 implementation
 
-uses Dolphin_DB, ExplorerUnit;
+uses ExplorerUnit;
 
 { TWindowsCopyFilesThread }
 
-constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: array of string; Dest: string; Move, AutoRename: Boolean;
+constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
   CallBack: TCorrectPathProc; OwnerExplorerForm: TForm);
 var
   I: Integer;
 begin
   inherited Create(False);
   FHandle := Handle;
-  SetLength(FSrc, Length(Src));
-  for I := 0 to Length(FSrc) - 1 do
-    FSrc[I] := Src[I];
+  FSrc := TStringList.Create;
+  FSrc.Assign(Src);
   FDest := Dest;
   FMove := Move;
   FAutoRename := AutoRename;
@@ -49,10 +49,16 @@ begin
   FOwnerExplorerForm := OwnerExplorerForm;
 end;
 
+destructor TWindowsCopyFilesThread.Destroy;
+begin
+  F(FSrc);
+  inherited;
+end;
+
 procedure TWindowsCopyFilesThread.DoCallBack;
 begin
- if Assigned(FCallBack) then
- FCallBack(FSrc,FDest);
+  if Assigned(FCallBack) then
+    FCallBack(FSrc, FDest);
 end;
 
 procedure TWindowsCopyFilesThread.Execute;

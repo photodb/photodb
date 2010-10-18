@@ -12,11 +12,19 @@ type
     function GetListView : TEasyListview; virtual; abstract;
     function IsSelectedVisible : Boolean;
     procedure CreateParams(var Params: TCreateParams); override;
+  public
+    function GetFilePreviw(FileName : string; Bitmap : TBitmap) : Boolean; virtual;
   end;
 
 implementation
 
 { TListViewForm }
+
+function TListViewForm.GetFilePreviw(FileName: string;
+  Bitmap: TBitmap): Boolean;
+begin
+  Result := False;
+end;
 
 function TListViewForm.IsSelectedVisible: Boolean;
 var

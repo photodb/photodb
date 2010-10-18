@@ -396,7 +396,6 @@ end;
 procedure TGetToPersonalFolderForm.Button1Click(Sender: TObject);
 var
   Files : TStrings;
-  FFiles : TArStrings;
   MaxFiles, FilesSearch, i, j : Integer;
   Folder, Mask : String;
   Options : TGetImagesOptions;
@@ -460,11 +459,9 @@ begin
    GetFileNameById(0);
    Delay(1500);
    //////////////////
-   SetLength(FFiles,Files.Count);
-   for j:=0 to Files.Count-1 do
-   FFiles[j]:=Files[j];
+
    try
-    CopyFilesSynch(0,FFiles,Folder,Options.Move,true);
+    CopyFilesSynch(0,Files,Folder,Options.Move,true);
    except
     MessageBoxDB(Handle,TEXT_MES_UNABLE_GET_PHOTOS_COPY_MOVE_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
    end;
@@ -503,9 +500,7 @@ begin
    Mask:=SupportedExt+Mask;
   end else Mask:=SupportedExt;
   GetPhotosNamesFromDrive(FPach,Mask,Files,FilesSearch,MaxFiles);
-  SetLength(FFiles,Files.Count);
-  for i:=0 to Files.Count-1 do
-  FFiles[i]:=Files[i];
+
   Hide;
   if CheckBox1.Checked then
   With ExplorerManager.NewExplorer(False) do
@@ -519,7 +514,7 @@ begin
   Delay(1500);
   //////////////////
   try
-   CopyFilesSynch(0,FFiles,Folder,ComboBox2.ItemIndex<>1,true);
+   CopyFilesSynch(0,Files,Folder,ComboBox2.ItemIndex<>1,true);
   except
    MessageBoxDB(Handle,TEXT_MES_UNABLE_GET_PHOTOS_COPY_MOVE_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
   end;

@@ -5,7 +5,7 @@ interface
 uses
   Classes, Language, Dolphin_DB, UnitLinksSupport, DB, SysUtils,
   CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc, uFileUtils,
-  UnitDBDeclare;
+  UnitDBDeclare, uMemory;
 
 type
   TThreadOptimizeDublicates = class(TThread)
@@ -56,7 +56,7 @@ var
    FileName, Groups, Links, KeyWords, Comment, s, Folder, StrTh, SQLText, SetStr : String;
   i, ID, FileSize, Rating, Access, paramno, RecordCount, Attr : integer;
   Query : TDataSet;
-  aFile : array of string;
+  aFile : string;
   Include, Locked, Cont, FE : Boolean;
   crc : Cardinal;
   FromDB : string;
@@ -392,26 +392,26 @@ begin
   end;
 
   //DELETING OTHER RECORDS AND FILES!
-  SetLength(aFile,1);
 
-  Query.First;
-  LockFile;
-  For i:=1 to Query.RecordCount do
-  begin
-   if Query.FieldByName('ID').AsInteger<>ID then
-   begin
-    DeleteRecordByID(Query.FieldByName('ID').AsInteger);
-    aFile[0]:=Query.FieldByName('FFileName').AsString;
-    try
-     if FileExists(aFile[0]) then
-     if AnsiLowerCase(aFile[0])<>AnsiLowerCase(FileName) then
-     SilentDeleteFiles( 0, aFile , true, true);
-    except
+    Query.First;
+    LockFile;
+    For i:=1 to Query.RecordCount do
+    begin
+     if Query.FieldByName('ID').AsInteger<>ID then
+     begin
+      DeleteRecordByID(Query.FieldByName('ID').AsInteger);
+      aFile := Query.FieldByName('FFileName').AsString;
+      try
+       if FileExists(aFile) then
+       if AnsiLowerCase(aFile)<>AnsiLowerCase(FileName) then
+       SilentDeleteFile( 0, aFile , true, true);
+      except
+      end;
+     end;
+     Query.Next;
     end;
-   end;
-   Query.Next;
-  end;
-  FreeDS(Query);
+    FreeDS(Query);
+
 
   UnLockFile;
 

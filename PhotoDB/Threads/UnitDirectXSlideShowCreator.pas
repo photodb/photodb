@@ -5,11 +5,12 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
   GraphicsCool, Language, Effects, UnitDBCommonGraphics, uMemory,
-  ImageConverting;
+  ImageConverting, SyncObjs;
 
 type
   TDirectXSlideShowCreator = class(TThread)
   private
+    { Private declarations }
     FInfo: TDirectXSlideShowCreatorInfo;
     Graphic: TGraphic;
     Image: TBitmap;
@@ -23,7 +24,6 @@ type
     FNext: Boolean;
     BooleanParam: Boolean;
     Paused: Boolean;
-    { Private declarations }
   protected
     procedure DoCallBack(Action: Byte);
     procedure DoCallBackSynch;
@@ -43,8 +43,6 @@ type
     destructor Destroy; override;
   end;
 
-  TArThreads = array of TDirectXSlideShowCreator;
-
   TThreadDestroyDXObjects = record
     DirectDraw4: IDirectDraw4;
     PrimarySurface: IDirectDrawSurface4;
@@ -55,12 +53,12 @@ type
     Form: TForm;
   end;
 
-  //TODO: Synchronisation!!!
   TDirectXSlideShowCreatorManager = class(TObject)
   private
     FThreads: TList;
     FObjects: TThreadDestroyDXObjects;
     FFreeOnExit: Boolean;
+    FSync: TCriticalSection;
   public
     constructor Create;
     destructor Destroy; override;
@@ -116,7 +114,7 @@ procedure TDirectXSlideShowCreator.DoCallBack(Action : Byte);
 begin
   FCallBackAction := Action;
   if Action = CallBack_Next then
-    Sleep(100);
+    Sleep(10);
   Synchronize(DoCallBackSynch)
 end;
 
@@ -145,11 +143,11 @@ begin
       if ExitReady or Ready then
         Break;
 
-      Sleep(50);
+      Sleep(10);
     until False;
   end;
   Synchronize(DoExitSynch);
-  FInfo.Buffer.Release;
+  FInfo.Buffer.Free;
   FreeMem(FInfo.TempSrc)
 end;
 
@@ -215,77 +213,81 @@ begin
           F(Graphic);
 
 
+          ScreenImage := TBitmap.Create;
+          try
+            ScreenImage.Canvas.Pen.Color:=0;
+            ScreenImage.Canvas.Brush.Color:=0;
+            ScreenImage.Width:=Screen.Width;
+            ScreenImage.Height:=Screen.Height;
+            if LoadingPicture then
+            begin
+              W := Image.Width;
+              H := Image.Height;
+              case FInfo.Rotate of
+                DB_IMAGE_ROTATE_0 :
+                begin
+                  ProportionalSize(Screen.Width,Screen.Height, W, H);
+                  if Image.Width <> 0 then
+                    Zoom := W / Image.Width
+                  else
+                    Zoom := 1;
 
+                  if (Zoom<ZoomSmoothMin) or UseOnlyDefaultDraw then
+                    StretchCoolEx0(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, Image, ScreenImage, $000000)
+                  else
+                  begin
+                    XFillRect(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, ScreenImage, $000000);
+                    TempImage := TBitmap.Create;
+                    try
+                      TempImage.PixelFormat:=pf24bit;
+                      TempImage.Width := W;
+                      TempImage.Height := H;
+                      SmoothResize(W, H, Image, TempImage);
+                      ThreadDraw(TempImage, ScreenImage, Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2);
+                    finally
+                      F(TempImage);
+                    end;
+                  end;
+                end;
+                DB_IMAGE_ROTATE_270 :
+                begin
+                  ProportionalSize(Screen.Width, Screen.Height, W, H);
+                  StretchCoolEx270(Screen.Width div 2 - H div 2, Screen.Height div 2 - W div 2, W, H, Image, ScreenImage, $000000)
+                end;
+                DB_IMAGE_ROTATE_90 :
+                begin
+                  ProportionalSize(Screen.Width, Screen.Height, W, H);
+                  StretchCoolEx90(Screen.Width div 2 - H div 2, Screen.Height div 2 - W div 2, W, H, Image, ScreenImage, $000000)
+                end;
+                DB_IMAGE_ROTATE_180 :
+                begin
+                  ProportionalSize(Screen.Width, Screen.Height, W, H);
+                  StretchCoolEx180(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, Image, ScreenImage,$000000)
+                end;
+              end;
+            end else
+            begin
+              ScreenImage.Canvas.Font.Color:=$FFFFFF;
+              ScreenImage.Canvas.TextOut(ScreenImage.Width div 2-ScreenImage.Canvas.TextWidth(text_error_out) div 2,ScreenImage.Height div 2-ScreenImage.Canvas.Textheight(text_error_out) div 2,text_error_out);
+              ScreenImage.Canvas.TextOut(ScreenImage.Width div 2-ScreenImage.Canvas.TextWidth(FInfo.FileName) div 2,ScreenImage.Height div 2-ScreenImage.Canvas.Textheight(text_error_out) div 2+ScreenImage.Canvas.Textheight(FInfo.FileName)+4,FInfo.FileName);
+            end;
+            F(Image);
 
- ScreenImage := TBitmap.Create;
- ScreenImage.Canvas.Pen.Color:=0;
- ScreenImage.Canvas.Brush.Color:=0;
- ScreenImage.Width:=Screen.Width;
- ScreenImage.Height:=Screen.Height;
- if LoadingPicture then
- begin
-  w:=Image.Width;
-  h:=Image.Height;
-  Case FInfo.Rotate of
-   DB_IMAGE_ROTATE_0 :
-    begin
-     ProportionalSize(Screen.Width,Screen.Height,w,h);
-     if Image.Width<>0 then
-     Zoom:=w/Image.Width else Zoom:=1;
+            FillChar (fx, SizeOf (fx), 0);
+            fx.dwSize := SizeOf (fx);
+            fx.dwFillColor := PackColor (0);
+            r := Rect(0, 0, ScreenImage.Width, ScreenImage.Height);
+            Synchronize(Btl);
+            CenterBmp (FInfo.Buffer, ScreenImage, Rect(0, 0, ScreenImage.Width, ScreenImage.Height));
+            F(ScreenImage);
+            ReplaceTransform;
 
-     if (Zoom<ZoomSmoothMin) or UseOnlyDefaultDraw then
-     StretchCoolEx0(Screen.Width div 2-w div 2, Screen.Height div 2-h div 2,w,h,Image,ScreenImage,$000000)
-     else begin
-      XFillRect(Screen.Width div 2-w div 2, Screen.Height div 2-h div 2,w,h,ScreenImage,$000000);
-      TempImage := TBitmap.Create;
-      TempImage.PixelFormat:=pf24bit;
-      TempImage.Width:=w;
-      TempImage.Height:=h;
-      SmoothResize(w,h,Image,TempImage);
-      ThreadDraw(tempImage,ScreenImage,Screen.Width div 2-w div 2, Screen.Height div 2-h div 2);
-      TempImage.Free;
-     end;
-
-    end;
-   DB_IMAGE_ROTATE_270 :
-    begin
-     ProportionalSize(Screen.Width,Screen.Height,h,w);
-     StretchCoolEx270(Screen.Width div 2-h div 2, Screen.Height div 2-w div 2,w,h,Image,ScreenImage,$000000)
-    end;
-   DB_IMAGE_ROTATE_90 :
-    begin
-     ProportionalSize(Screen.Width,Screen.Height,h,w);
-     StretchCoolEx90(Screen.Width div 2-h div 2, Screen.Height div 2-w div 2,w,h,Image,ScreenImage,$000000)
-    end;
-   DB_IMAGE_ROTATE_180 :
-    begin
-     ProportionalSize(Screen.Width,Screen.Height,w,h);
-     StretchCoolEx180(Screen.Width div 2-w div 2, Screen.Height div 2-h div 2,w,h,Image,ScreenImage,$000000)
-    end;
-   end;
- end else
- begin
-  ScreenImage.Canvas.Font.Color:=$FFFFFF;
-  ScreenImage.Canvas.TextOut(ScreenImage.Width div 2-ScreenImage.Canvas.TextWidth(text_error_out) div 2,ScreenImage.Height div 2-ScreenImage.Canvas.Textheight(text_error_out) div 2,text_error_out);
-  ScreenImage.Canvas.TextOut(ScreenImage.Width div 2-ScreenImage.Canvas.TextWidth(FInfo.FileName) div 2,ScreenImage.Height div 2-ScreenImage.Canvas.Textheight(text_error_out) div 2+ScreenImage.Canvas.Textheight(FInfo.FileName)+4,FInfo.FileName);
- end;
- Image.Free;
- try
-  FillChar (fx, sizeof (fx), 0);
-  fx.dwSize := sizeof (fx);
-  fx.dwFillColor := PackColor (0);
-  r := Rect(0,0,ScreenImage.Width,ScreenImage.Height);
-  Synchronize(Btl);
-  CenterBmp (FInfo.Buffer, ScreenImage, Rect(0,0,ScreenImage.Width,ScreenImage.Height));
-  ScreenImage.free;
-  ReplaceTransform;
- except
- end;
-
-
+          finally
+            F(ScreenImage);
+          end;
 
         finally
-          Image.Free;
+          F(Image);
         end;
 
       finally
@@ -351,13 +353,16 @@ procedure TDirectXSlideShowCreator.ReplaceTransform;
    if FInfo.Buffer = nil then
      Exit;
    LockRead(FInfo.Buffer, Dd);
-   TransPitch := Dd.LPitch;
-   TransHeight := Dd.DwHeight;
-   TransSize := TransHeight * TransPitch;
-   if FInfo.TempSrc = nil then
-     GetMem(FInfo.TempSrc, TransSize);
-   CopyMemory(FInfo.TempSrc, Dd.LpSurface, TransSize - 1);
-   UnLock(FInfo.Buffer);
+   try
+     TransPitch := Dd.LPitch;
+     TransHeight := Dd.DwHeight;
+     TransSize := TransHeight * TransPitch;
+     if FInfo.TempSrc = nil then
+       GetMem(FInfo.TempSrc, TransSize);
+     CopyMemory(FInfo.TempSrc, Dd.LpSurface, TransSize - 1);
+   finally
+     UnLock(FInfo.Buffer);
+   end;
  end;
 
 destructor TDirectXSlideShowCreator.Destroy;
@@ -374,11 +379,11 @@ end;
 
 function TDirectXSlideShowCreator.Ready: boolean;
 begin
-  Result:=false;
+  Result := False;
   if Paused then
   begin
     Result:=DirectShowForm.FReadyAfterPause;
-    exit;
+    Exit;
   end;
   if DirectShowForm<>nil then
     if IsEqualGUID(DirectShowForm.ForwardSID, FInfo.SID) then
@@ -387,42 +392,48 @@ end;
 
 function TDirectXSlideShowCreator.ExitReady: boolean;
 begin
- if DirectShowForm=nil then
- begin
-  Result:=true;
-  exit;
- end;
- if Paused then
- begin
-  Result:=not DirectShowForm.FNowPaused;
-  exit;
- end;
- if (not IsEqualGUID(DirectShowForm.ForwardSID, FInfo.SID) and FXForward) or (DirectShowForm=nil) then
- Result:=true else Result:=false;
+  if DirectShowForm = nil then
+  begin
+    Result := True;
+    Exit;
+  end;
+  if Paused then
+  begin
+    Result := not DirectShowForm.FNowPaused;
+    Exit;
+  end;
+  if (not IsEqualGUID(DirectShowForm.ForwardSID, FInfo.SID) and FXForward) or (DirectShowForm = nil) then
+    Result := True
+  else
+    Result := False;
 end;
 
 procedure TDirectXSlideShowCreator.IFPause;
 begin
- if DirectShowForm=nil then
- begin
-  BooleanParam:=true;
-  exit;
- end;
- BooleanParam:=DirectShowForm.FNowPaused;
+  if DirectShowForm = nil then
+  begin
+    BooleanParam := True;
+    Exit;
+  end;
+  BooleanParam := DirectShowForm.FNowPaused;
 end;
 
 { TDirectXSlideShowCreatorManager }
 
-procedure TDirectXSlideShowCreatorManager.AddThread(
-Thread: TDirectXSlideShowCreator);
+procedure TDirectXSlideShowCreatorManager.AddThread(Thread: TDirectXSlideShowCreator);
 begin
-  if FThreads.IndexOf(Thread) < 0 then
-    FThreads.Add(Thread);
-
+  FSync.Enter;
+  try
+    if FThreads.IndexOf(Thread) < 0 then
+      FThreads.Add(Thread);
+  finally
+    FSync.Leave;
+  end;
 end;
 
 constructor TDirectXSlideShowCreatorManager.Create;
 begin
+  FSync := TCriticalSection.Create;
   FThreads := TList.Create;
   FFreeOnExit := False;
 end;
@@ -430,6 +441,7 @@ end;
 destructor TDirectXSlideShowCreatorManager.Destroy;
 begin
   F(FThreads);
+  F(FSync);
   if FFreeOnExit then
   begin
     R(FObjects.Buffer);
@@ -450,25 +462,40 @@ end;
 function TDirectXSlideShowCreatorManager.IsThread(
   Thread: TDirectXSlideShowCreator): Boolean;
 begin
-  Result := FThreads.IndexOf(Thread) > -1;
+  FSync.Enter;
+  try
+    Result := FThreads.IndexOf(Thread) > -1;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TDirectXSlideShowCreatorManager.RemoveThread(
   Thread: TDirectXSlideShowCreator);
 begin
-  FThreads.Remove(Thread);
-  if (FThreads.Count = 0) and FFreeOnExit then
-    Free;
+  FSync.Enter;
+  try
+    FThreads.Remove(Thread);
+    if (FThreads.Count = 0) and FFreeOnExit then
+      Free;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TDirectXSlideShowCreatorManager.SetDXObjects(Objects : TThreadDestroyDXObjects);
 begin
-  FObjects:=Objects;
+  FObjects := Objects;
 end;
 
 function TDirectXSlideShowCreatorManager.ThreadCount: Integer;
 begin
-  Result := FThreads.Count;
+  FSync.Enter;
+  try
+    Result := FThreads.Count;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 end.

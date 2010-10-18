@@ -229,7 +229,6 @@ type
     procedure Rename1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
     procedure AddFile1Click(Sender: TObject);
-    procedure UpdateTheme(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ListView1Edited(Sender: TObject; Item: TEasyItem;
       var S: String);
@@ -574,7 +573,7 @@ type
        MousePos: TPoint; var Handled: Boolean);
      procedure DoSelectItem;
      procedure SendToItemPopUpMenu_(Sender : TObject);
-     procedure CorrectPath(Src : array of string; Dest : string);
+     procedure CorrectPath(Src : TStrings; Dest : string);
      procedure LoadIcons;
     { Private declarations }
    protected
@@ -696,23 +695,23 @@ begin
     Bitmap.PixelFormat := pf24bit;
     Bitmap.Width := 150;
     Bitmap.Height := 150;
-    Bitmap.Canvas.Brush.Color := Theme_ListColor;
-    Bitmap.Canvas.Pen.Color := Theme_ListColor;
+    Bitmap.Canvas.Brush.Color := ClWindow;
+    Bitmap.Canvas.Pen.Color := ClWindow;
     Bitmap.Canvas.Rectangle(0, 0, 150, 150);
     ExplorerBackground := GetExplorerBackground;
     try
       ExplorerBackgroundBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme_ListColor);
+        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ClWindow);
         Bitmap.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
 
-        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ScrollBox1.Color);
+        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, clBtnFace);
 
         ScrollBox1.BackGround.PixelFormat := pf24bit;
         ScrollBox1.BackGround.Width := 130;
         ScrollBox1.BackGround.Height := 150;
-        ScrollBox1.BackGround.Canvas.Brush.Color := ScrollBox1.Color;
-        ScrollBox1.BackGround.Canvas.Pen.Color := ScrollBox1.Color;
+        ScrollBox1.BackGround.Canvas.Brush.Color := clBtnFace;
+        ScrollBox1.BackGround.Canvas.Pen.Color := clBtnFace;
         ScrollBox1.BackGround.Canvas.Rectangle(0, 0, ScrollBox1.BackGround.Width, ScrollBox1.BackGround.Height);
         DrawTransparent(ExplorerBackgroundBMP, ScrollBox1.BackGround, 40);
       finally
@@ -755,7 +754,7 @@ begin
   ElvMain.BackGround.BlendAlpha := 220;
 
 
-  ElvMain.HotTrack.Color := Theme_ListFontColor;
+  ElvMain.HotTrack.Color := clWindowText;
   ElvMain.Font.Color := 0;
   ElvMain.View := elsThumbnail;
   ElvMain.DragKind := dkDock;
@@ -811,7 +810,6 @@ begin
   fHistory.OnHistoryChange:=HistoryChanged;
   TbBack.Enabled:=false;
   TbForward.Enabled:=false;
-  DBKernel.RegisterProcUpdateTheme(UpdateTheme,self);
   DBKernel.RegisterChangesID(Sender,ChangedDBDataByID);
 
   NewFormState;
@@ -872,8 +870,7 @@ begin
     Menu := ScriptMainMenu;
     ScriptMainMenu.Images := DBkernel.ImageList;
 
-  TW.I.Start('RecreateThemeToForm');
-  DBKernel.RecreateThemeToForm(Self);
+  TW.I.Start('ReadPlaces');
   ReadPlaces;
   TW.I.Start('LoadLanguage');
   LoadLanguage;
@@ -1095,7 +1092,7 @@ begin
   EnterPassword1.Visible:=false;
   ResetPassword1.Visible:=false;
   NewWindow1.Visible:=true;
-  AddFile1.Caption:=TEXT_MES_ADD_DISK;
+  AddFile1.Caption:= L('Add disk');
   AddFile1.Visible:=True;
   Properties1.Visible:=True;
   Open1.Visible:=true;
@@ -1129,7 +1126,7 @@ begin
   StenoGraphia1.Visible:=false;
   Refresh1.Visible:=true;
   NewWindow1.Visible:=true;
-  AddFile1.Caption:=TEXT_MES_ADD_DIRECTORY;
+  AddFile1.Caption:= L('Add directory');
   AddFile1.Visible:=True;
   Properties1.Visible:=True;
   Paste2.Visible:=True;
@@ -1177,7 +1174,7 @@ begin
   Properties1.Visible:=true;
   SlideShow1.Visible:=True;
   Delete1.Visible:=True;
-  AddFile1.Caption:=TEXT_MES_ADDFILE;
+  AddFile1.Caption:= L('Add file');
   if fFilesInfo[PmItemPopup.tag].ID=0 then
   AddFile1.Visible:=true else AddFile1.Visible:=false;
   Cut2.Visible:=True;
@@ -1369,87 +1366,94 @@ begin
 end;
 
 procedure TExplorerForm.Copy1Click(Sender: TObject);
-Var
-  i, index : integer;
-  File_List : TStrings;
+var
+  I, Index : Integer;
+  FileList: TStrings;
 begin
- File_List:=TStringList.Create;
- For i:=0 to ElvMain.Items.Count-1 do
- If ElvMain.Items[i].Selected then
- begin
-  index:=ItemIndexToMenuIndex(i);
-  File_List.Add(ProcessPath(fFilesInfo[index].FileName));
- end;
- if File_List.Count>0 then
- Copy_Move(True,File_List);
- File_List.Free;
+  FileList := TStringList.Create;
+  try
+  for I := 0 to ElvMain.Items.Count - 1 do
+    if ElvMain.Items[I].Selected then
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
+    end;
+  if FileList.Count > 0 then
+    Copy_Move(True, FileList);
+  finally
+      FileList.Free;
+  end;
 end;
 
 procedure TExplorerForm.Rename1Click(Sender: TObject);
 var
-  i, ItemIndex : integer;
-  Files : TStrings;
-  X : TArInteger;
+  i, ItemIndex : Integer;
+  Files: TStrings;
+  X: TArInteger;
 begin
- if SelCount=1 then
- if ListView1Selected<>nil then
- begin
-  ElvMain.SetFocus;
-
-  ElvMain.EditManager.Enabled:=true;
-  ElvMain.Selection.First.Edit;
-
- end;
- if SelCount>1 then
- begin
-  Files := TStringList.Create;
-  For i:=0 to ElvMain.Items.Count-1 do
+  if (SelCount = 1) and (ListView1Selected <> nil) then
   begin
-   if ElvMain.Items[i].Selected then
-   begin
-   ItemIndex:=ItemIndexToMenuIndex(i);
-   if (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_EXEFILE) or (fFilesInfo[ItemIndex].FileType=EXPLORER_ITEM_FOLDER) then
-    begin
-     SetLength(X,Length(X)+1);
-     X[Length(X)-1]:=fFilesInfo[ItemIndex].ID;
-     Files.Add(ProcessPath(fFilesInfo[ItemIndex].FileName));
-    end
-   end;
+    ElvMain.SetFocus;
+    ElvMain.EditManager.Enabled := True;
+    ElvMain.Selection.First.Edit;
+  end else if SelCount > 1 then
+  begin
+    Files := TStringList.Create;
+    try
+      for I := 0 to ElvMain.Items.Count - 1 do
+      begin
+        if ElvMain.Items[I].Selected then
+        begin
+          ItemIndex := ItemIndexToMenuIndex(I);
+          if (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE) or
+            (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_FILE) or
+            (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_EXEFILE) or
+            (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_FOLDER) then
+          begin
+            SetLength(X, Length(X) + 1);
+            X[Length(X) - 1] := FFilesInfo[ItemIndex].ID;
+            Files.Add(ProcessPath(FFilesInfo[ItemIndex].FileName));
+          end
+        end;
+      end;
+      FastRenameManyFiles(Files, X);
+    finally
+      Files.Free;
+    end;
   end;
-  FastRenameManyFiles(Files,X);
-  Files.Free;
- end;
 end;
 
-Procedure TExplorerForm.DeleteFiles(ToRecycle : Boolean);
+procedure TExplorerForm.DeleteFiles(ToRecycle : Boolean);
 var
-  i : integer;
-  Index : integer;
-  S : TArStrings;
+  I : integer;
+  Index: Integer;
+  Files: TStringList;
 begin
- If SelCount=0 then Exit;
- SetLength(S,0);
- For i:=0 to ElvMain.Items.Count-1 do
- if ElvMain.Items[i].Selected then
- begin
-  Index := ItemIndexToMenuIndex(i);
-  SetLength(S,Length(S)+1);
-  S[Length(S)-1]:=fFilesInfo[Index].FileName
- end;
- uFIleUtils.DeleteFiles( Self.Handle, S , ToRecycle );
+  if SelCount = 0 then
+    Exit;
+  Files:= TStringList.Create;
+  try
+    for I := 0 to ElvMain.Items.Count - 1 do
+      if ElvMain.Items[I].Selected then
+      begin
+        index := ItemIndexToMenuIndex(I);
+        Files.Add(FFilesInfo[index].FileName);
+      end;
+    uFileUtils.DeleteFiles(Handle, Files, ToRecycle);
+  finally
+    F(Files);
+  end;
 end;
 
 procedure TExplorerForm.Delete1Click(Sender: TObject);
 begin
- DeleteFiles(True);
+  DeleteFiles(True);
 end;
 
 procedure TExplorerForm.AddFile1Click(Sender: TObject);
 Var
  i, index :integer;
 begin
-// SizeImageList.
-// ToolBar1.Images
  If UpdaterDB=nil then
  UpdaterDB:=TUpdaterDB.Create;
  If ListView1Selected<>nil then
@@ -1490,23 +1494,6 @@ begin
  end;
 end;
 
-procedure TExplorerForm.UpdateTheme(Sender: TObject);
-var
-  i : integer;
-begin
-  ElvMain.Selection.FullCellPaint:=DBKernel.Readbool('Options','UseListViewFullRectSelect',false);
-  ElvMain.Selection.RoundRectRadius:=DBKernel.ReadInteger('Options','UseListViewRoundRectSize',3);
-  ListView1SelectItem(Sender,ListView1Selected,ListView1Selected=nil);
-  for i:=0 to Length(UserLinks)-1 do
-  begin
-   UserLinks[i].Color:=Theme_MainColor;
-   UserLinks[i].Font.Color:=Theme_MainFontColor;
-   UserLinks[i].Refresh;
-  end;
-
-  CreateBackgrounds;
-end;
-
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
   NewFormState;
@@ -1516,12 +1503,11 @@ begin
   F(aScript);
   F(DragFilesPopup);
   F(FBitmapImageList);
-//  F(ExtIcons);
+
   SaveWindowPos1.SavePosition;
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
   DBKernel.UnRegisterChangesID(Sender,ChangedDBDataByID);
-  DBKernel.UnRegisterProcUpdateTheme(UpdateTheme, Self);
 
   DBkernel.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
 
@@ -1813,7 +1799,7 @@ begin
   end;
   if GetCurrentPathW.PType=EXPLORER_ITEM_WORKGROUP then
   begin
-   SetNewPathW(ExplorerPath(TEXT_MES_NETWORK,EXPLORER_ITEM_NETWORK),false);
+   SetNewPathW(ExplorerPath(L('Network'),EXPLORER_ITEM_NETWORK),false);
    Exit;
   end;
 
@@ -2457,25 +2443,26 @@ end;
 procedure TExplorerForm.MakeNewFolder1Click(Sender: TObject);
 var
   S, FolderName : String;
-  n : integer;
+  N : Integer;
 begin
- FolderName:=TEXT_MES_NEW_FOLDER;
- S:=GetCurrentPath;
- FormatDir(S);
- n:=1;
- If DirectoryExists(S+FolderName) then
- begin
-  Repeat
-   Inc(n);
-  Until not DirectoryExists(S+FolderName+' ('+inttostr(n)+')');
-  FolderName:=FolderName+' ('+inttostr(n)+')';
- end;
- if not CreateDir(S+FolderName) then
- begin
-  MessageBoxDB(Handle,Format(TEXT_MES_UNABLE_TO_CREATE_DIRECTORY_F,[S+FolderName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-  Exit;
- end;
- NewFileName:=AnsiLowerCase(S+FolderName);
+  FolderName:= L('New directory');
+  S := GetCurrentPath;
+  FormatDir(S);
+  N := 1;
+  if DirectoryExists(S + FolderName) then
+  begin
+    repeat
+      Inc(N);
+    until not DirectoryExists(S + FolderName + ' (' + Inttostr(N) + ')');
+    FolderName := FolderName + ' (' + Inttostr(N) + ')';
+  end;
+  if not CreateDir(S + FolderName) then
+  begin
+    MessageBoxDB(Handle, Format(L('Unable to create directory %s!'), [S + FolderName]), L('Error'), TD_BUTTON_OK,
+      TD_ICON_ERROR);
+    Exit;
+  end;
+  NewFileName := AnsiLowerCase(S + FolderName);
 end;
 
 procedure TExplorerForm.Copy2Click(Sender: TObject);
@@ -3119,41 +3106,41 @@ end;
 
 procedure TExplorerForm.Cut1Click(Sender: TObject);
 var
-  File_List : TStrings;
+  FileList : TStrings;
 begin
- File_List:=TStringList.Create;
- File_List.Add(GetCurrentPath);
- Copy_Move(false,File_List);
- File_List.Free;
+  FileList := TStringList.Create;
+  try
+    FileList.Add(GetCurrentPath);
+    Copy_Move(False, FileList);
+  finally
+    FileList.Free;
+  end;
 end;
 
 procedure TExplorerForm.Paste1Click(Sender: TObject);
-Var
+var
   Files : TStrings;
   Effects : Integer;
-  i : Integer;
-  S : Array of String;
-//  _AutoRename, _Break : boolean;
 begin
- Files:=TStringList.Create;
- LoadFIlesFromClipBoard(Effects,Files);
- if Files.Count=0 then begin Files.Free; exit; end;
- SetLength(S,0);
- For i:=0 to Files.Count-1 do
- begin
-  SetLength(S,Length(s)+1);
-  S[Length(s)-1]:=Files[i];
- end;
+  Files := TStringList.Create;
+  try
+    LoadFIlesFromClipBoard(Effects, Files);
+    if Files.Count = 0 then
+      Exit;
 
- if Effects= DROPEFFECT_MOVE then
- begin
-  CopyFiles(Handle,S,GetCurrentPath,True,False,CorrectPath,self);
-  inc(CopyInstances);
-  ClipBoard.Clear;
-  ToolButton7.Enabled:=false;
- end;
- if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,GetCurrentPath,false,False);
+    if Effects = DROPEFFECT_MOVE then
+    begin
+      CopyFiles(Handle, Files, GetCurrentPath, True, False, CorrectPath, Self);
+      Inc(CopyInstances);
+      ClipBoard.Clear;
+      ToolButton7.Enabled := False;
+    end;
+    if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
+      CopyFiles(Handle, Files, GetCurrentPath, False, False);
 
+  finally
+    F(Files);
+  end;
 end;
 
 procedure TExplorerForm.PmListPopupPopup(Sender: TObject);
@@ -3161,36 +3148,40 @@ var
   Files : TStrings;
   Effects : Integer;
 begin
- OpeninSearchWindow1.Visible:=True;
- Files:=TStringList.Create;
- LoadFIlesFromClipBoard(Effects,Files);
- if Files.Count<>0 then Paste1.Enabled:=true else Paste1.Enabled:=false;
- Files.free;
+  OpeninSearchWindow1.Visible:=True;
+  Files:=TStringList.Create;
+  try
+    LoadFIlesFromClipBoard(Effects, Files);
+    Paste1.Enabled := Files.Count > 0;
+  finally
+    Files.Free;
+  end;
 
- MakeFolderViewer1.Visible:=((GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
+  MakeFolderViewer1.Visible := ((GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
 
- if GetCurrentPathW.PType=EXPLORER_ITEM_MYCOMPUTER then
- begin
-  Paste1.Visible:=false;
-  Cut1.Visible:=false;
-  Copy2.Visible:=false;
-  Addfolder1.Visible:=false;
-  MakeNew1.Visible:=false;
-  OpeninSearchWindow1.Visible:=false;
- end;
- if (GetCurrentPathW.PType=EXPLORER_ITEM_NETWORK) or (GetCurrentPathW.PType=EXPLORER_ITEM_WORKGROUP) or (GetCurrentPathW.PType=EXPLORER_ITEM_COMPUTER) then
- begin
-  Paste1.Visible:=false;
-  Cut1.Visible:=false;
-  Copy2.Visible:=false;
-  Addfolder1.Visible:=false;
-  MakeNew1.Visible:=false;
-  OpeninSearchWindow1.Visible:=false;
- end;
- if (GetCurrentPathW.PType=EXPLORER_ITEM_SHARE) then
- begin
-  Cut1.Visible:=false;
- end;
+  if GetCurrentPathW.PType=EXPLORER_ITEM_MYCOMPUTER then
+  begin
+    Paste1.Visible := False;
+    Cut1.Visible := False;
+    Copy2.Visible := False;
+    Addfolder1.Visible := False;
+    MakeNew1.Visible := False;
+    OpeninSearchWindow1.Visible := False;
+  end;
+  if (GetCurrentPathW.PType = EXPLORER_ITEM_NETWORK) or (GetCurrentPathW.PType = EXPLORER_ITEM_WORKGROUP) or
+    (GetCurrentPathW.PType = EXPLORER_ITEM_COMPUTER) then
+  begin
+    Paste1.Visible := False;
+    Cut1.Visible := False;
+    Copy2.Visible := False;
+    Addfolder1.Visible := False;
+    MakeNew1.Visible := False;
+    OpeninSearchWindow1.Visible := False;
+  end;
+  if (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
+  begin
+    Cut1.Visible := False;
+  end;
 end;
 
 procedure TExplorerForm.Cut2Click(Sender: TObject);
@@ -3434,7 +3425,7 @@ begin
    begin
     DimensionsLabel.Top:=TypeLabel.Top+TypeLabel.Height+H;
     DimensionsLabel.Visible:=True;
-    DimensionsLabel.Caption:=TEXT_MES_FREE_SPACE+':';
+    DimensionsLabel.Caption:=L('Free space')+':';
    end else
    begin
     DimensionsLabel.Top:=TypeLabel.Top;
@@ -3772,99 +3763,101 @@ end;
 procedure TExplorerForm.CopyToLinkClick(Sender: TObject);
 var
   EndDir : String;
-  i, index : integer;
-  S : Array of String;
-  DlgCaption : String;
-//  _AutoRename, _Break : boolean;
+  I, Index : integer;
+  Files : TStringList;
+  DlgCaption: string;
 begin
- SetLength(S,0);
- If SelCount<>0 then
- begin
-  For i:=0 to ElvMain.Items.Count-1 do
-  If ElvMain.Items[i].Selected then
-  begin
-   index:=ItemIndexToMenuIndex(i);
-   if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) or (fFilesInfo[index].FileType=EXPLORER_ITEM_EXEFILE) then
-   begin
-    SetLength(S,Length(s)+1);
-    S[Length(s)-1]:=fFilesInfo[index].FileName;
-   end;
+  Files := TStringList.Create;
+  try
+    if SelCount <> 0 then
+    begin
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE)
+            or (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or
+            (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
+          begin
+            Files.Add(FFilesInfo[Index].FileName);
+          end;
+        end;
+    end else
+      Files.Add(GetCurrentPath);
+
+    if Files.Count = 1 then
+      DlgCaption := Format(L('Select place to copy file "%s"'), [ExtractFileName(Files[0])])
+    else
+      DlgCaption := Format(L('Select place to copy %d files'), [Files.Count]);
+
+    EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption, UseSimpleSelectFolderDialog);
+
+    if EndDir <> '' then
+      CopyFiles(Handle, Files, EndDir, False, False);
+  finally
+    F(Files);
   end;
- end else
- begin
-  SetLength(S,1);
-  S[0]:=GetCurrentPath;
-  UnFormatDir(S[0]);
- end;
- If Length(s)=1 then DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_COPY_ONE,[ExtractFileName(S[0])]) else
- DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_COPY_MANY,[inttostr(Length(s))]);
-
- EndDir:=UnitDBFileDialogs.DBSelectDir(Handle,DlgCaption,Dolphin_DB.UseSimpleSelectFolderDialog);
-
- If EndDir<>'' then
- CopyFiles(Self.Handle,S,EndDir,false,False);
 end;
 
 procedure TExplorerForm.MoveToLinkClick(Sender: TObject);
 var
   EndDir : String;
-  i, index : integer;
-  S : Array of String;
+  I, Index : integer;
+  Files : TStringList;
   DlgCaption : String;
 begin
- SetLength(S,0);
- If SelCount<>0 then
- begin
-  For i:=0 to ElvMain.Items.Count-1 do
-  If ElvMain.Items[i].Selected then
-  begin
-   index:=ItemIndexToMenuIndex(i);
-   SetLength(S,Length(s)+1);
-   S[Length(s)-1]:=fFilesInfo[index].FileName;
+  Files := TStringList.Create;
+  try
+    if SelCount <> 0 then
+    begin
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          Files.Add(FFilesInfo[Index].FileName);
+        end;
+    end else
+      Files.Add(GetCurrentPath);
+
+    if Files.Count = 1 then
+      DlgCaption := Format(L('Select place to move file "%s"'), [ExtractFileName(Files[0])])
+    else
+      DlgCaption := Format(L('Select place to move %d files'), [Files.Count]);
+
+    EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption, UseSimpleSelectFolderDialog);
+    if EndDir <> '' then
+    begin
+      CopyFiles(Handle, Files, EndDir, True, False, CorrectPath, Self);
+      Inc(CopyInstances);
+    end;
+  finally
+    F(Files);
   end;
- end else
- begin
-  SetLength(S,1);
-  S[0]:=GetCurrentPath;
-  UnFormatDir(S[0]);
- end;
- If Length(s)=1 then DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_MOVE_ONE,[ExtractFileName(S[0])]) else
- DlgCaption:=Format(TEXT_MES_SEL_PLACE_TO_MOVE_MANY,[inttostr(Length(s))]);
-
- EndDir:=UnitDBFileDialogs.DBSelectDir(Handle,DlgCaption,Dolphin_DB.UseSimpleSelectFolderDialog);
- If EndDir<>'' then
- begin
-
-  CopyFiles(Self.Handle,S,EndDir,True,False,CorrectPath,self);
-  inc(CopyInstances);
- end;
 end;
 
 procedure TExplorerForm.Paste2Click(Sender: TObject);
 var
   Files : TStrings;
   Effects : Integer;
-  i : Integer;
-  S : array of String;
 begin
- Files:=TStringList.Create;
- LoadFilesFromClipBoard(Effects,Files);
- if Files.Count=0 then begin Files.Free; exit; end;
- SetLength(S,0);
- For i:=0 to Files.Count-1 do
- begin
-  SetLength(S,Length(s)+1);
-  S[Length(s)-1]:=Files[i];
- end;
+  Files:=TStringList.Create;
+  try
+    LoadFilesFromClipBoard(Effects, Files);
+    if Files.Count = 0 then
+      Exit;
 
- if Effects= DROPEFFECT_MOVE then
- begin
-  CopyFiles(Handle,S,fFilesInfo[PmItemPopup.tag].FileName,True,False,CorrectPath,self);
-  inc(CopyInstances);
-  ClipBoard.Clear;
-  ToolButton7.Enabled:=false;
- end;
- if (Effects= DROPEFFECT_COPY) or (Effects= DROPEFFECT_COPY+DROPEFFECT_LINK) or (Effects= DROPEFFECT_NONE) then CopyFiles(Handle,S,fFilesInfo[PmItemPopup.tag].FileName,False,False);
+    if Effects = DROPEFFECT_MOVE then
+    begin
+      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, True, False, CorrectPath, Self);
+      Inc(CopyInstances);
+      ClipBoard.Clear;
+      ToolButton7.Enabled := False;
+    end;
+    if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
+      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, False, False);
+  finally
+    F(Files);
+  end;
 end;
 
 procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
@@ -4201,17 +4194,21 @@ begin
 end;
 
 procedure TExplorerForm.DeleteLinkClick(Sender: TObject);
-Var
-  s : TArStrings;
+var
+  Files : TStringList;
 begin
- If SelCount<>0 then
- Delete1Click(Sender) else
- begin
-  Setlength(s,1);
-  S[0]:=GetCurrentPath;
-  UnFormatDir(S[0]);
-  uFileUtils.DeleteFiles( Handle, S , True );
- end;
+  if SelCount<>0 then
+    Delete1Click(Sender)
+  else
+  begin
+    Files := TStringList.Create;
+    try
+      Files.Add(GetCurrentPath);
+      uFileUtils.DeleteFiles(Handle, Files, True);
+    finally
+      F(Files);
+    end;
+  end;
 end;
 
 procedure TExplorerForm.PropertiesLinkClick(Sender: TObject);
@@ -4295,14 +4292,14 @@ end;
 
 procedure TExplorerForm.OpeninSearchWindow1Click(Sender: TObject);
 var
-  NewSearch : TSearchForm;
+  NewSearch: TSearchForm;
 begin
- NewSearch:=SearchManager.NewSearch;
- NewSearch.SearchEdit.Text:=':Folder('+GetCurrentPath+'):';
- NewSearch.SetPath(GetCurrentPath);
- NewSearch.DoSearchNow(nil);
- NewSearch.Show;
- NewSearch.SetFocus;
+  NewSearch := SearchManager.NewSearch;
+  NewSearch.SearchEdit.Text := ':Folder(' + GetCurrentPath + '):';
+  NewSearch.SetPath(GetCurrentPath);
+  NewSearch.DoSearchNow(nil);
+  NewSearch.Show;
+  NewSearch.SetFocus;
 end;
 
 procedure TExplorerForm.LoadLanguage;
@@ -4457,27 +4454,27 @@ procedure TExplorerForm.PopupMenu8Popup(Sender: TObject);
 begin
  if TreeView.SelectedFolder<>nil then
  begin
-  TempFolderName:=TreeView.SelectedFolder.PathName;
-  OpeninExplorer1.Visible:=DirectoryExists(TempFolderName);
-  AddFolder2.Visible:=OpeninExplorer1.Visible ;
-  View2.Visible:=OpeninExplorer1.Visible;
- end else
- begin
-  TempFolderName:='';
-  OpeninExplorer1.Visible:=false;
-  AddFolder2.Visible:=false;
-  View2.Visible:=false;
- end;
+    TempFolderName := TreeView.SelectedFolder.PathName;
+    OpeninExplorer1.Visible := DirectoryExists(TempFolderName);
+    AddFolder2.Visible := OpeninExplorer1.Visible;
+    View2.Visible := OpeninExplorer1.Visible;
+  end else
+  begin
+    TempFolderName := '';
+    OpeninExplorer1.Visible := False;
+    AddFolder2.Visible := False;
+    View2.Visible := False;
+  end;
 end;
 
 procedure TExplorerForm.OpeninExplorer1Click(Sender: TObject);
 begin
  With ExplorerManager.NewExplorer(False) do
- begin
-  SetPath(Self.TempFolderName);
-  Show;
-  SetFocus;
- end;
+  begin
+    SetPath(Self.TempFolderName);
+    Show;
+    SetFocus;
+  end;
 end;
 
 procedure TExplorerForm.AddFolder2Click(Sender: TObject);
@@ -5084,14 +5081,12 @@ end;
 procedure TExplorerForm.DropFileTarget1Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 var
-  S : array of string;
   i, j, index : Integer;
   si : TStartupInfo;
   p  : TProcessInformation;
   Str, Params : String;
   DropInfo : TStrings;
   Pnt : TPoint;
-//  _AutoRename, _Break : boolean;
 begin
  outdrag:=false;
  DropInfo:= TStringList.Create;
@@ -5114,16 +5109,11 @@ begin
   if not SelfDraging and (Selcount=0) then
   begin
    fDBCanDragW:=false;
-   SetLength(S,DropInfo.Count);
-   for i:=1 to DropInfo.Count do
-   S[i-1]:=DropInfo[i-1];
-
-
 
    if not ShiftKeyDown then
-   CopyFiles(Handle,S,GetCurrentPath,false,False) else
+   CopyFiles(Handle,DropInfo,GetCurrentPath,false,False) else
    begin
-    CopyFiles(Handle,S,GetCurrentPath,true,False,CorrectPath,self);
+    CopyFiles(Handle,DropInfo,GetCurrentPath,true,False,CorrectPath,self);
     inc(CopyInstances);
    end;
   end;
@@ -5136,19 +5126,11 @@ begin
    begin
     Str:=FFilesInfo[index].FileName;
     UnFormatDir(Str);
-    SetLength(S,DropInfo.Count);
-    for i:=1 to DropInfo.Count do
-    S[i-1]:=DropInfo[i-1];
-    for j:=0 to Length(s)-1 do
-    for i:=Length(S[j]) downto 1 do
-    if S[j,i]=#0 then
-    Delete(S[j],i,1);
-
 
     if not ShiftKeyDown then
-    CopyFiles(Handle,S,Str,ShiftKeyDown,False) else
+    CopyFiles(Handle,DropInfo,Str,ShiftKeyDown,False) else
     begin
-     CopyFiles(Handle,S,Str,ShiftKeyDown,False,CorrectPath,self);
+     CopyFiles(Handle,DropInfo,Str,ShiftKeyDown,False,CorrectPath,self);
      inc(CopyInstances);
     end;
 
@@ -5562,37 +5544,40 @@ end;
 
 procedure TExplorerForm.CopyWithFolder1Click(Sender: TObject);
 var
-  i, index : integer;
-  Files : array of String;
-  UpDir, Dir, NewDir, Temp : String;
-  l1, l2 : integer;
+  I, index : integer;
+  Files : TStrings;
+  UpDir, Dir, NewDir, Temp: string;
+  L1, L2: Integer;
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SELECT_PLACE_TO_COPY,Dolphin_DB.UseSimpleSelectFolderDialog);
- if Dir<>'' then
- begin
-  SetLength(Files,0);
-  for i:=0 to ElvMain.Items.Count-1 do
-  If ElvMain.Items[i].Selected then
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, TEXT_MES_SELECT_PLACE_TO_COPY, Dolphin_DB.UseSimpleSelectFolderDialog);
+  if Dir <> '' then
   begin
-   index:=ItemIndexToMenuIndex(i);
-   SetLength(Files,Length(Files)+1);
-   Files[Length(Files)-1]:=ProcessPath(fFilesInfo[index].FileName);
+    Files := TStringList.Create;
+    try
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          Files.Add(ProcessPath(FFilesInfo[Index].FileName));
+        end;
+      if Files.Count > 0 then
+      begin
+        Temp := GetDirectory(Files[0]);
+        UnFormatDir(Temp);
+        L1 := Length(Temp);
+        Temp := GetDirectory(Temp);
+        FormatDir(Temp);
+        L2 := Length(Temp);
+        UpDir := Copy(Files[0], L2 + 1, L1 - L2);
+        NewDir := Dir + UpDir;
+        FormatDir(NewDir);
+        CreateDirA(NewDir);
+        CopyFiles(Handle, Files, NewDir, False, False);
+      end;
+    finally
+      F(Files);
+    end;
   end;
-  if Length(Files)>0 then
-  begin
-   Temp:=GetDirectory(Files[0]);
-   UnFormatDir(Temp);
-   l1:=Length(Temp);
-   Temp:=GetDirectory(Temp);
-   FormatDir(Temp);
-   l2:=Length(Temp);
-   UpDir:=Copy(Files[0],l2+1,l1-l2);
-   NewDir:=Dir+UpDir;
-   FormatDir(NewDir);
-   CreateDirA(NewDir);
-   CopyFiles(Handle,Files,NewDir,false,False);
-  end;
- end;
 end;
 
 procedure TExplorerForm.ReadPlaces;
@@ -5646,8 +5631,8 @@ begin
     UserLinks[Length(UserLinks)-1].Text:=fName;
     UserLinks[Length(UserLinks)-1].Tag:=Length(UserLinks)-1;
     UserLinks[Length(UserLinks)-1].OnClick:=UserDefinedPlaceClick;
-    UserLinks[Length(UserLinks)-1].Color:=Theme_MainColor;
-    UserLinks[Length(UserLinks)-1].Font.Color:=Theme_MainFontColor;
+    UserLinks[Length(UserLinks)-1].Color:=ClBtnface;
+    UserLinks[Length(UserLinks)-1].Font.Color:=clWindowText;
     UserLinks[Length(UserLinks)-1].EnterBould:=false;
     UserLinks[Length(UserLinks)-1].IconWidth:=16;
     UserLinks[Length(UserLinks)-1].IconHeight:=16;
@@ -5687,60 +5672,53 @@ end;
 
 procedure TExplorerForm.Copy4Click(Sender: TObject);
 var
-  S : array of string;
-  i, j, index : integer;
+  I, J, index : integer;
   Str : string;
 begin
- if (LastListViewSelCount=0) then
- begin
-  fDBCanDragW:=false;
-  SetLength(S,DragFilesPopup.Count);
-  for i:=1 to DragFilesPopup.Count do
-  S[i-1]:=DragFilesPopup[i-1];
-
-
-  if not (Sender=Move1) then
-  CopyFiles(Handle,S,GetCurrentPath,Sender=Move1,False) else
+  if (LastListViewSelCount = 0) then
   begin
-   CopyFiles(Handle,S,GetCurrentPath,Sender=Move1,False,CorrectPath,self);
-   inc(CopyInstances);
-  end;
- end;
- if LastListViewSelCount=1 then
- if LastListViewSelected<>nil then
- begin
-  fDBCanDragW:=false;
-  index:=ItemIndexToMenuIndex(LastListViewSelected.Index);
-  if (FFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType=EXPLORER_ITEM_DRIVE) or (FFilesInfo[index].FileType=EXPLORER_ITEM_SHARE) then
-  begin
-   Str:=FFilesInfo[index].FileName;
-   UnFormatDir(Str);
-   SetLength(S,DragFilesPopup.Count);
-   for i:=1 to DragFilesPopup.Count do
-   S[i-1]:=DragFilesPopup[i-1];
-   for j:=0 to Length(s)-1 do
-   for i:=Length(S[j]) downto 1 do
-   if S[j,i]=#0 then
-   Delete(S[j],i,1);
+    FDBCanDragW := False;
 
-   if not (Sender=Move1) then
-   CopyFiles(Handle,S,Str,Sender=Move1,False) else
-   begin
-    CopyFiles(Handle,S,Str,Sender=Move1,False,CorrectPath,self);
-    inc(CopyInstances);
-   end;
+    if not(Sender = Move1) then
+      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False)
+    else
+    begin
+      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, CorrectPath, Self);
+      Inc(CopyInstances);
+    end;
   end;
- end;
+  if LastListViewSelCount = 1 then
+    if LastListViewSelected <> nil then
+    begin
+      FDBCanDragW := False;
+      index := ItemIndexToMenuIndex(LastListViewSelected.index);
+      if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) or
+        (FFilesInfo[index].FileType = EXPLORER_ITEM_SHARE) then
+      begin
+        Str := FFilesInfo[index].FileName;
+        UnFormatDir(Str);
+
+        if not(Sender = Move1) then
+          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False)
+        else
+        begin
+          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False, CorrectPath, Self);
+          Inc(CopyInstances);
+        end;
+      end;
+    end;
 end;
 
 procedure TExplorerForm.NewPanel1Click(Sender: TObject);
 begin
- ManagerPanels.NewPanel.Show;
+  ManagerPanels.NewPanel.Show;
 end;
 
 procedure TExplorerForm.DoSelectItem;
-Const GeneratingText =  TEXT_MES_GENERATING+'...';
-Var
+const
+  GeneratingText = TEXT_MES_GENERATING + '...';
+
+var
   Index, i, j, x, y, w, h : Integer;
   Ico : TIcon;
   Ico48 : TIcon48;
@@ -5875,7 +5853,7 @@ begin
          if pic = nil then exit;
 
        bit32:=TBitmap.Create;
-       LoadPNGImage32bit(Pic,bit32,Theme_MainColor);
+       LoadPNGImage32bit(Pic,bit32,clBtnFace);
        Pic.free;
        TempBitmap:=TBitmap.Create;
        StretchCoolW(0,0,100,100,Rect(0,0,bit32.Width,bit32.Height),bit32,TempBitmap);
@@ -6651,13 +6629,13 @@ begin
  SetStringPath(CbPathEdit.text,false);
 end;
 
-procedure TExplorerForm.CorrectPath(Src: array of string; Dest: string);
+procedure TExplorerForm.CorrectPath(Src: TStrings; Dest: string);
 var
   i : integer;
   fn, adest : string;
 begin
  UnforMatDir(Dest);
- for i:=0 to Length(Src)-1 do
+ for i:=0 to Src.Count - 1 do
  begin
   fn:=Dest+'\'+ExtractFileName(Src[i]);
   if DirectoryExists(fn) then

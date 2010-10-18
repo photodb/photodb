@@ -135,7 +135,7 @@ var
   Sql: string;
   FQuery: TDataSet;
   M: TMemoryStream;
-  CRC, StrThCrc: Cardinal;
+  StrThCrc: Cardinal;
 begin
   Result := False;
   if DBKernel.ReadBool('Options', 'NoAddSmallImages', True) then
@@ -221,13 +221,11 @@ begin
       ExecSQL(FQuery);
       if LastInseredID = 0 then
       begin
-        SetSQL(FQuery, Format('SELECT ID FROM $DB$ where FolderCRC=%d AND FFileName like :FFileName', [Integer(Crc)]));
-
-        SetStrParam(FQuery, 0, Delnakl(NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(Path)))));
+        SetSQL(FQuery, 'SELECT Max(ID) as MaxID FROM $DB$');
         try
           FQuery.Open;
           if FQuery.RecordCount > 0 then
-            LastInseredID := FQuery.FieldByName('ID').AsInteger;
+            LastInseredID := FQuery.FieldByName('MaxID').AsInteger;
         except
           on e : Exception do
             Eventlog('Error getting count of DB items: ' + e.Message);
