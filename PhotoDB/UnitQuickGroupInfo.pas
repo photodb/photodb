@@ -5,10 +5,10 @@ interface
 uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
-  ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics;
+  ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics, uDBForm;
 
 type
-  TFormQuickGroupInfo = class(TForm)
+  TFormQuickGroupInfo = class(TDBForm)
     GroupImage: TImage;
     GroupNameEdit: TEdit;
     CommentMemo: TMemo;
@@ -43,16 +43,18 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
-  FGroup : TGroup;
-  FCloseOwner : Boolean;
-  fOwner : TForm;
-  FNewRelatedGroups : String;
     { Private declarations }
+    FGroup: TGroup;
+    FCloseOwner: Boolean;
+    FOwner: TForm;
+    FNewRelatedGroups: string;
+  protected
+    function GetFormID : string; override;
   public
-  procedure Execute(Group : TGroup; CloseOwner : Boolean; Owner_ : TForm);
-  procedure LoadLanguage;
-  procedure ReloadGroups;
     { Public declarations }
+    procedure Execute(Group: TGroup; CloseOwner: Boolean; Owner_: TForm);
+    procedure LoadLanguage;
+    procedure ReloadGroups;
   end;
 
 Procedure ShowGroupInfo(Group : TGroup; CloseOwner : Boolean; Owner : TForm); overload;
@@ -180,6 +182,11 @@ begin
  Button1.SetFocus;
 end;
 
+function TFormQuickGroupInfo.GetFormID: string;
+begin
+  Result := 'GroupInfo';
+end;
+
 procedure TFormQuickGroupInfo.LoadLanguage;
 begin
  Caption:=TEXT_MES_QUICK_INFO_CAPTION;
@@ -216,13 +223,11 @@ begin
 end;
 
 procedure TFormQuickGroupInfo.ComboBoxEx1Select(Sender: TObject);
-{var
-  KeyWords : string;  }
 begin
  if ComboBoxEx1.ItemsEx.Count=0 then exit;
  ShowGroupInfo(ComboBoxEx1.Text,false,nil);
  ComboBoxEx1.ItemIndex:=-1;
- ComboBoxEx1.Text:=TEXT_MES_GROUPSA;
+ ComboBoxEx1.Text:=L('<Groups>');
 end;
 
 procedure TFormQuickGroupInfo.ReloadGroups;
@@ -236,7 +241,7 @@ begin
  begin
   ComboBoxEx1.Items.Add(FCurrentGroups[i].GroupName);
  end;
- ComboBoxEx1.Text:=TEXT_MES_GROUPSA;
+ ComboBoxEx1.Text:=L('<Groups>');
 end;
 
 procedure TFormQuickGroupInfo.ComboBoxEx1DropDown(Sender: TObject);

@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, WebLink, dolphin_db, UnitDBKernel,
-  DBCtrls, UnitDBCommon, UnitDBCommonGraphics;
+  DBCtrls, UnitDBCommon, UnitDBCommonGraphics, uDBForm;
 
 type
-  TBigImagesSizeForm = class(TForm)
+  TBigImagesSizeForm = class(TDBForm)
     TrbImageSize: TTrackBar;
     Panel1: TPanel;
     RgPictureSize: TRadioGroup;
@@ -18,25 +18,26 @@ type
     procedure FormCreate(Sender: TObject);
     procedure RgPictureSizeClick(Sender: TObject);
     procedure TrbImageSizeChange(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
     procedure TimerActivateTimer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormShow(Sender: TObject);
   private
+    { Private declarations }
     LockChange : boolean;
     FCallBack: TCallBackBigSizeProc;
     FOwner: TForm;
     TimerActivated: Boolean;
     procedure LoadLanguage;
-    { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
-    BigThSize : integer;
-    Destroying : boolean;
-    procedure Execute(aOwner : TForm; aPictureSize : integer; CallBack : TCallBackBigSizeProc);
-    procedure SetRadioButtonSize;
     { Public declarations }
+    BigThSize: Integer;
+    Destroying: Boolean;
+    procedure Execute(AOwner: TForm; APictureSize: Integer; CallBack: TCallBackBigSizeProc);
+    procedure SetRadioButtonSize;
   end;
 
 var
@@ -44,16 +45,19 @@ var
 
 implementation
 
-uses Language;
-
 {$R *.dfm}
 
 procedure TBigImagesSizeForm.LoadLanguage;
 begin
-  Caption := TEXT_MES_BIG_IMAGE_FORM_SELECT;
-  RgPictureSize.Caption := TEXT_MES_BIG_IMAGE_SIZES;
-  LnkClose.Text := TEXT_MES_CLOSE;
-  RgPictureSize.Items[0] := Format(TEXT_MES_OTHER_BIG_SIZE_F,[BigThSize,BigThSize]);
+  BeginTranslate;
+  try
+    Caption := L('Thumbnail size');
+    RgPictureSize.Caption := L('Size') + ':';
+    LnkClose.Text := L('Close');
+    RgPictureSize.Items[0] := Format( L('%dx%d pixels'), [BigThSize,BigThSize]);
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TBigImagesSizeForm.LnkCloseClick(Sender: TObject);
@@ -77,11 +81,8 @@ begin
   TimerActivated := False;
   Destroying := False;
   LoadLanguage;
+  LnkClose.Left := ClientWidth - LnkClose.Width - 5;
   LockChange := False;
-  Color := Theme_ListColor;
-  Panel1.Color := Theme_ListColor;
-  DBkernel.RecreateThemeToForm(Self);
-  DBKernel.RegisterForm(Self);
 end;
 
 procedure TBigImagesSizeForm.RgPictureSizeClick(Sender: TObject);
@@ -129,18 +130,13 @@ begin
     LockChange := True;
     RgPictureSize.ItemIndex := 0;
     BigThSize := (50 - TrbImageSize.Position) * 10 + 40;
-    RgPictureSize.Buttons[0].Caption := Format(TEXT_MES_OTHER_BIG_SIZE_F, [BigThSize, BigThSize]);
+    RgPictureSize.Buttons[0].Caption := Format(L('%dx%d pixels'), [BigThSize, BigThSize]);
 
     FCallBack(Self, BigThSize, BigThSize);
   finally
     EndScreenUpdate(RgPictureSize.Buttons[0].Handle, False);
     LockChange := False;
   end;
-end;
-
-procedure TBigImagesSizeForm.FormDestroy(Sender: TObject);
-begin
-  DBkernel.UnRegisterForm(Self);
 end;
 
 procedure TBigImagesSizeForm.Execute(aOwner: TForm; aPictureSize : integer;
@@ -176,7 +172,7 @@ begin
   SetRadioButtonSize;
 
   LockChange := False;
-  RgPictureSize.Items[0] := Format(TEXT_MES_OTHER_BIG_SIZE_F, [BigThSize, BigThSize]);
+  RgPictureSize.Items[0] := Format(L('%dx%d pixels'), [BigThSize, BigThSize]);
   FCallBack := CallBack;
   fOwner := aOwner;
   Show;
@@ -212,10 +208,15 @@ begin
   ActivateApplication(Self.Handle);
   GetCursorPos(p);
   TrbImageSize.SetFocus;
-  if GetAsyncKeystate(VK_MBUTTON)<>0 then
+  if GetAsyncKeystate(VK_MBUTTON) <> 0 then
     Exit;
   if GetAsyncKeystate(VK_LBUTTON) <> 0 then
     mouse_event(MOUSEEVENTF_LEFTDOWN, P.X, P.Y, 0, 0);
+end;
+
+function TBigImagesSizeForm.GetFormID: string;
+begin
+  Result := 'ThumbnailSize';
 end;
 
 end.

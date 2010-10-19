@@ -2,9 +2,6 @@ unit UnitLinksSupport;
 
 interface
 
-{$DEFINE RUS}
-//{$DEFINE ENGL}
-
 uses
   Windows, SysUtils, Classes, StrUtils, Language, UnitDBDeclare, UnitDBCommon,
   uConstants;
@@ -17,18 +14,7 @@ const
   LINK_TYPE_FOLDER   = 4;
   LINK_TYPE_TXT      = 5;
   LINK_TYPE_HTML     = 6;
-  
-{$IFDEF RUS}
-  LINK_TEXT_TYPE_ID       = 'ID';
-  LINK_TEXT_TYPE_ID_EXT   = 'IDExt';
-  LINK_TEXT_TYPE_IMAGE    = 'Изображение';
-  LINK_TEXT_TYPE_FILE     = 'Файл';
-  LINK_TEXT_TYPE_FOLDER   = 'Папка';
-  LINK_TEXT_TYPE_TXT      = 'Текст';
-  LINK_TEXT_TYPE_HTML     = 'HTML';
-{$ENDIF}
 
-{$IFDEF ENGL}
   LINK_TEXT_TYPE_ID       = 'ID';
   LINK_TEXT_TYPE_ID_EXT   = 'IDExt';
   LINK_TEXT_TYPE_IMAGE    = 'Image';
@@ -36,8 +22,6 @@ const
   LINK_TEXT_TYPE_FOLDER   = 'Folder';
   LINK_TEXT_TYPE_TXT      = 'Text';
   LINK_TEXT_TYPE_HTML     = 'HTML';
-{$ENDIF}
-
 type
 
    TLinkInfo = record

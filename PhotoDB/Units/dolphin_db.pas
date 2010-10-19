@@ -2505,6 +2505,7 @@ function GetFileNameById(ID: Integer): string;
 var
   FQuery: TDataSet;
 begin
+  Result := '';
   FQuery := GetQuery;
   try
     FQuery.Active := False;
@@ -2513,12 +2514,9 @@ begin
     try
       FQuery.Active := True;
     except
-      Result := '';
       Exit;
     end;
-    if FQuery.RecordCount = 0 then
-      Result := ''
-    else
+    if FQuery.RecordCount <> 0 then
       Result := FQuery.FieldByName('FFileName').AsString;
   finally
     FreeDS(FQuery);

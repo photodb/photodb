@@ -1261,7 +1261,7 @@ object SearchForm: TSearchForm
         ImageIndex = 4
         Style = tbsSeparator
       end
-      object ToolButton9: TToolButton
+      object TbSort: TToolButton
         Left = 40
         Top = 0
         AutoSize = True
@@ -1277,15 +1277,15 @@ object SearchForm: TSearchForm
         ImageIndex = 4
         Style = tbsSeparator
       end
-      object ToolButton1: TToolButton
+      object TbZoomIn: TToolButton
         Left = 60
         Top = 0
         AutoSize = True
         Caption = 'Zoom In'
         ImageIndex = 0
-        OnClick = ToolButton1Click
+        OnClick = TbZoomInClick
       end
-      object ToolButton2: TToolButton
+      object TbZoomOut: TToolButton
         Left = 72
         Top = 0
         AutoSize = True
@@ -1293,7 +1293,7 @@ object SearchForm: TSearchForm
         DropdownMenu = PopupMenuZoomDropDown
         ImageIndex = 1
         Style = tbsDropDown
-        OnClick = ToolButton2Click
+        OnClick = TbZoomOutClick
       end
       object ToolButton11: TToolButton
         Left = 105
@@ -1303,7 +1303,7 @@ object SearchForm: TSearchForm
         ImageIndex = 4
         Style = tbsSeparator
       end
-      object ToolButton10: TToolButton
+      object TbGroups: TToolButton
         Left = 113
         Top = 0
         AutoSize = True
@@ -1319,7 +1319,7 @@ object SearchForm: TSearchForm
         ImageIndex = 4
         Style = tbsSeparator
       end
-      object ToolButton4: TToolButton
+      object TbSave: TToolButton
         Left = 133
         Top = 0
         AutoSize = True
@@ -1327,7 +1327,7 @@ object SearchForm: TSearchForm
         ImageIndex = 2
         OnClick = SaveResults1Click
       end
-      object ToolButton5: TToolButton
+      object TbLoad: TToolButton
         Left = 145
         Top = 0
         AutoSize = True
@@ -1343,12 +1343,12 @@ object SearchForm: TSearchForm
         ImageIndex = 5
         Style = tbsSeparator
       end
-      object ToolButton12: TToolButton
+      object TbExplorer: TToolButton
         Left = 165
         Top = 0
         Caption = 'Explorer'
         ImageIndex = 4
-        OnClick = ToolButton12Click
+        OnClick = TbExplorerClick
       end
     end
   end

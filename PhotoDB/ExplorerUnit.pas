@@ -195,23 +195,23 @@ type
     ToolBar1: TToolBar;
     TbBack: TToolButton;
     TbForward: TToolButton;
-    ToolButton3: TToolButton;
+    TbUp: TToolButton;
     ToolButton4: TToolButton;
-    ToolButton5: TToolButton;
-    ToolButton6: TToolButton;
-    ToolButton7: TToolButton;
+    TbCut: TToolButton;
+    TbCopy: TToolButton;
+    TbPaste: TToolButton;
     ToolButton17: TToolButton;
-    ToolButton8: TToolButton;
+    TbDelete: TToolButton;
     ToolButton10: TToolButton;
     ToolButtonView: TToolButton;
     ToolButton11: TToolButton;
-    ToolButton13: TToolButton;
-    ToolButton14: TToolButton;
+    TbZoomIn: TToolButton;
+    TbZoomOut: TToolButton;
     ToolButton12: TToolButton;
-    ToolButton15: TToolButton;
+    TbSearch: TToolButton;
     ToolButton16: TToolButton;
-    ToolButton19: TToolButton;
-    ToolButton18: TToolButton;
+    TbOptions: TToolButton;
+    TbStop: TToolButton;
     ToolButton20: TToolButton;
     PopupMenuZoomDropDown: TPopupMenu;
     MapCD1: TMenuItem;
@@ -490,9 +490,9 @@ type
     procedure DoStopLoading;
     procedure AddHiddenInfo1Click(Sender: TObject);
     procedure ExtractHiddenInfo1Click(Sender: TObject);
-    procedure ToolButton13Click(Sender: TObject);
-    procedure ToolButton14Click(Sender: TObject);
-    procedure ToolButton18Click(Sender: TObject);
+    procedure TbZoomInClick(Sender: TObject);
+    procedure TbZoomOutClick(Sender: TObject);
+    procedure TbStopClick(Sender: TObject);
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
     procedure MapCD1Click(Sender: TObject);
     procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -676,12 +676,12 @@ begin
     Files := TStringList.Create;
     try
       LoadFilesFromClipBoard(Effects, Files);
-      ToolButton7.Enabled := Files.Count > 0;
+      TBPaste.Enabled := Files.Count > 0;
     finally
       F(Files);
     end;
     if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
-      ToolButton7.Enabled := False;
+      TBPaste.Enabled := False;
   end;
 end;
 
@@ -899,7 +899,7 @@ begin
   ScrollBox1.DoubleBuffered:=true;
 
   ToolBar2.ButtonHeight:=22;
-  ToolButton18.Enabled:=false;
+  TbStop.Enabled:=false;
   SaveWindowPos1.Key:=RegRoot+'Explorer\'+MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
   FormLoadEnd:=true;
@@ -2800,13 +2800,13 @@ begin
 
   if Msg.message = 256 then
   begin
-  WindowsMenuTickCount:=GetTickCount;
-  if (Msg.wParam=37) and CtrlKeyDown then SpeedButton1Click(nil);
-  if (Msg.wParam=39) and CtrlKeyDown then SpeedButton2Click(nil);
-  if (Msg.wParam=38) and CtrlKeyDown then SpeedButton3Click(nil);
-  if (Msg.wParam=83) and CtrlKeyDown then
-  if ToolButton18.Enabled then ToolButton18Click(nil);
-  if (Msg.wParam=116) then SetPath(GetCurrentPath);
+    WindowsMenuTickCount := GetTickCount;
+    if (Msg.wParam=37) and CtrlKeyDown then SpeedButton1Click(nil);
+    if (Msg.wParam=39) and CtrlKeyDown then SpeedButton2Click(nil);
+    if (Msg.wParam=38) and CtrlKeyDown then SpeedButton3Click(nil);
+    if (Msg.wParam=83) and CtrlKeyDown then
+    if TbStop.Enabled then TbStopClick(nil);
+    if (Msg.wParam=116) then SetPath(GetCurrentPath);
  end;
 
  if Msg.hwnd=ElvMain.Handle then
@@ -3133,7 +3133,7 @@ begin
       CopyFiles(Handle, Files, GetCurrentPath, True, False, CorrectPath, Self);
       Inc(CopyInstances);
       ClipBoard.Clear;
-      ToolButton7.Enabled := False;
+      TbPaste.Enabled := False;
     end;
     if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
       CopyFiles(Handle, Files, GetCurrentPath, False, False);
@@ -3306,40 +3306,26 @@ begin
 
  If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) then
  begin
-  if SelCount<>0 then
-  ToolButton6.Enabled:=true else
-  ToolButton6.Enabled:=false;
+  TbCopy.Enabled:=SelCount<>0;
  end else
  begin
-  ToolButton6.Enabled:=false;
+  TbCopy.Enabled:=false;
  end;
 
  If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then
  begin
-  if SelCount<>0 then
-  begin
-   ToolButton5.Enabled:=true;
-  end else
-  begin
-   ToolButton5.Enabled:=false;
-  end;
+   TbCut.Enabled:=SelCount<>0;
  end else
  begin
-  ToolButton5.Enabled:=false;
+  TbCut.Enabled:=false;
  end;
 
  If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE)) then
  begin
-  if SelCount<>0 then
-  begin
-   ToolButton8.Enabled:=true;
-  end else
-  begin
-   ToolButton8.Enabled:=false;
-  end;
+   TbDelete.Enabled:=SelCount<>0;
  end else
  begin
-  ToolButton8.Enabled:=false;
+  TbDelete.Enabled:=false;
  end;
 
 end;
@@ -3551,14 +3537,12 @@ begin
  If ((FSelectedInfo.FileType=EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType=EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType=EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType=EXPLORER_ITEM_SHARE)) then
  begin
   CopyToLink.Visible:=true;
-  if SelCount<>0 then
-  ToolButton6.Enabled:=true else
-  ToolButton6.Enabled:=false;
+  TbCopy.Enabled:=SelCount<>0;
   CopyToLink.Top:=ShellLink.Top+ShellLink.Height+h;
  end else
  begin
   CopyToLink.Visible:=false;
-  ToolButton6.Enabled:=false;
+  TbCopy.Enabled:=false;
   CopyToLink.Top:=ShellLink.Top;
  end;
 
@@ -3568,16 +3552,16 @@ begin
   begin
    MoveToLink.Top:=CopyToLink.Top+CopyToLink.Height+h;
    MoveToLink.Visible:=true;
-   ToolButton5.Enabled:=true;
+   TbCut.Enabled:=true;
   end else
   begin
-   ToolButton5.Enabled:=false;
+   TbCut.Enabled:=false;
    MoveToLink.Top:=CopyToLink.Top;
   end;
  end else
  begin
   MoveToLink.Visible:=false;
-  ToolButton5.Enabled:=false;
+  TbCut.Enabled:=false;
   MoveToLink.Top:=CopyToLink.Top;
  end;
 
@@ -3605,19 +3589,19 @@ begin
  begin
   if SelCount<>0 then
   begin
-   ToolButton8.Enabled:=true;
+   TbDelete.Enabled:=true;
    DeleteLink.Visible:=true;
    DeleteLink.Top:=PropertiesLink.Top+PropertiesLink.Height+h;
   end else
   begin
-   ToolButton8.Enabled:=false;
+   TbDelete.Enabled:=false;
    DeleteLink.Visible:=false;
    DeleteLink.Top:=PropertiesLink.Top;
   end;
  end else
  begin
-  DeleteLink.Visible:=false;
-  ToolButton8.Enabled:=false;
+  TbDelete.Visible:=false;
+  TbDelete.Enabled:=false;
   DeleteLink.Top:=PropertiesLink.Top;
  end;
 
@@ -3851,7 +3835,7 @@ begin
       CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, True, False, CorrectPath, Self);
       Inc(CopyInstances);
       ClipBoard.Clear;
-      ToolButton7.Enabled := False;
+      TbPaste.Enabled := False;
     end;
     if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
       CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, False, False);
@@ -4421,23 +4405,23 @@ begin
 
     MapCD1.Caption := L('Map CD with DB');
 
-    ToolButton5.Caption := L('Cut');
-    ToolButton6.Caption := L('Copy');
-    ToolButton7.Caption := L('Paste');
-    ToolButton19.Caption := L('Options');
+    TbCut.Caption := L('Cut');
+    TbCopy.Caption := L('Copy');
+    TbPaste.Caption := L('Paste');
+    TbOptions.Caption := L('Options');
     TbBack.Hint := L('Back');
     TbForward.Hint := L('Forward');
-    ToolButton3.Hint := L('Go to');
-    ToolButton5.Hint := L('Cut');
-    ToolButton6.Hint := L('Copy');
-    ToolButton7.Hint := L('Paste');
-    ToolButton8.Hint := L('Delete');
+    TbUp.Hint := L('Go up');
+    TbCut.Hint := L('Cut');
+    TbCopy.Hint := L('Copy');
+    TbPaste.Hint := L('Paste');
+    TbDelete.Hint := L('Delete');
     ToolButtonView.Hint := L('View');
-    ToolButton13.Hint := L('Zoom in');
-    ToolButton14.Hint := L('Zoom out');
-    ToolButton15.Hint := L('Go to search window');
-    ToolButton18.Hint := L('Stop');
-    ToolButton19.Hint := L('Options');
+    TbZoomIn.Hint := L('Zoom in');
+    TbZoomOut.Hint := L('Zoom out');
+    TbSearch.Hint := L('Go to search window');
+    TbStop.Hint := L('Stop');
+    TbOptions.Hint := L('Options');
     ToolBar1.ShowCaptions := True;
     ToolBar1.AutoSize := True;
   finally
@@ -4486,20 +4470,19 @@ end;
 
 procedure TExplorerForm.AddLinkClick(Sender: TObject);
 begin
- AddFile1Click(Sender);
+  AddFile1Click(Sender);
 end;
 
 procedure TExplorerForm.ScrollBox1Resize(Sender: TObject);
 begin
- ScrollBox1.BackgroundLeft:=ScrollBox1.Width-ScrollBox1.BackGround.Width-3;
- ScrollBox1.BackgroundTop:=ScrollBox1.Height-ScrollBox1.BackGround.Height-3;
+  ScrollBox1.BackgroundLeft:=ScrollBox1.Width-ScrollBox1.BackGround.Width - 3;
+  ScrollBox1.BackgroundTop := ScrollBox1.Height - ScrollBox1.BackGround.Height - 3;
 
-
- if ScrollBox1.VertScrollBar.Visible then
- begin
-//  MainPanel.Width:=117+GetSystemMetrics(SM_CYHSCROLL);
-//  ScrollBox1.VertScrollBar.Visible:=true;
- end;
+  if ScrollBox1.VertScrollBar.Visible then
+  begin
+    // MainPanel.Width:=117+GetSystemMetrics(SM_CYHSCROLL);
+    // ScrollBox1.VertScrollBar.Visible:=true;
+  end;
 end;
 
 procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath;
@@ -4597,9 +4580,9 @@ begin
  fHistory.add(ExplorerPath(S,WPath.PType));
  FChangeHistoryOnChPath:=true;
  If (WPath.PType=EXPLORER_ITEM_MYCOMPUTER){ or not DirectoryExists(GetCurrentPath)} then
- ToolButton3.Enabled:=false else
- ToolButton3.Enabled:=True;
- ToolButton3.Enabled:=ToolButton3.Enabled;
+ TbCut.Enabled:=false else
+ TbCut.Enabled:=True;
+
  fFilesInfo.Clear;
  try
   SelectTimer.Enabled:=false;
@@ -4660,7 +4643,7 @@ begin
  EventLog('ExplorerThread');
  if ElvMain<>nil then
  begin
-  ToolButton18.Enabled:=true;
+  TbStop.Enabled:=true;
   TExplorerThread.Create(Path,FileMask,ThreadType,info,self,UpdaterInfo,StateID);
  end;
  if FIsExplorer then
@@ -6631,25 +6614,25 @@ end;
 
 procedure TExplorerForm.CorrectPath(Src: TStrings; Dest: string);
 var
-  i : integer;
-  fn, adest : string;
+  I : integer;
+  FN, Adest : string;
 begin
  UnforMatDir(Dest);
- for i:=0 to Src.Count - 1 do
- begin
-  fn:=Dest+'\'+ExtractFileName(Src[i]);
-  if DirectoryExists(fn) then
+  for I := 0 to Src.Count - 1 do
   begin
-   adest:=Dest+'\'+ExtractFileName(Src[i]);
-   RenameFolderWithDB(Self, Src[i],adest,false);
+    FN := Dest + '\' + ExtractFileName(Src[I]);
+    if DirectoryExists(FN) then
+    begin
+      Adest := Dest + '\' + ExtractFileName(Src[I]);
+      RenameFolderWithDB(Self, Src[I], Adest, False);
+    end;
+    if FileExists(FN) then
+    begin
+      Adest := Dest + '\' + ExtractFileName(Src[I]);
+      RenameFileWithDB(Self, Src[I], Adest, GetIDByFileName(Src[I]), True);
+    end;
   end;
-  if FileExists(fn) then
-  begin
-   adest:=Dest+'\'+ExtractFileName(Src[i]);
-   RenameFileWithDB(Self, Src[i],adest,GetIDByFileName(Src[i]),true);
-  end;
- end;
- Dec(CopyInstances);
+  Dec(CopyInstances);
 end;
 
 procedure TExplorerForm.MakeFolderViewer1Click(Sender: TObject);
@@ -6676,12 +6659,12 @@ end;
 
 procedure TExplorerForm.AutoCompliteTimerTimer(Sender: TObject);
 var
- FEditHandle : THandle;
+  FEditHandle : THandle;
 begin
- AutoCompliteTimer.Enabled:=false;
- ComboBox1DropDown;
- FEditHandle:=GetWindow(GetWindow(CbPathEdit.Handle, GW_CHILD), GW_CHILD);
- SendMessage(FEditHandle,256,39,39);
+  AutoCompliteTimer.Enabled := False;
+  ComboBox1DropDown;
+  FEditHandle := GetWindow(GetWindow(CbPathEdit.Handle, GW_CHILD), GW_CHILD);
+  SendMessage(FEditHandle, WM_KEYDOWN, VK_RIGHT, VK_RIGHT);
 end;
 
 procedure TExplorerForm.ComboBox1DropDown;
@@ -6979,24 +6962,31 @@ end;
 
 procedure TExplorerForm.SetSelected(NewSelected: TEasyItem);
 begin
- ElvMain.Selection.GroupSelectBeginUpdate;
- ElvMain.Selection.ClearAll;
- if NewSelected<>nil then NewSelected.Selected:=true;
- ElvMain.Selection.GroupSelectEndUpdate;
+  ElvMain.Selection.GroupSelectBeginUpdate;
+  try
+    ElvMain.Selection.ClearAll;
+    if NewSelected <> nil then
+      NewSelected.Selected := True;
+  finally
+    ElvMain.Selection.GroupSelectEndUpdate;
+  end;
 end;
 
 procedure TExplorerForm.ScrollBox1Reallign(Sender: TObject);
 var
   i : integer;
 begin
- if IsReallignInfo then exit;
- for i:=0 to ComponentCount-1 do
- if Components[i] is TWebLink then
- if (Components[i] as TWebLink).Visible then
- (Components[i] as TWebLink).RefreshBuffer;
+ if IsReallignInfo then
+    Exit;
 
- for i:=0 to Length(UserLinks)-1 do
- UserLinks[i].RefreshBuffer;
+  //to mack backgroupd image
+  for I := 0 to ComponentCount - 1 do
+    if Components[I] is TWebLink then
+      if (Components[I] as TWebLink).Visible then
+        (Components[I] as TWebLink).RefreshBuffer;
+
+  for I := 0 to Length(UserLinks) - 1 do
+    UserLinks[I].RefreshBuffer;
 end;
 
 procedure TExplorerForm.BackGround(Sender: TObject; X, Y, W, H: integer;
@@ -7066,52 +7056,52 @@ end;
 
 procedure TExplorerForm.SmallIcons1Click(Sender: TObject);
 begin
- ListView:=LV_SMALLICONS;
- SmallIcons1.Checked:=true;
- Reload;
+  ListView := LV_SMALLICONS;
+  SmallIcons1.Checked := True;
+  Reload;
 end;
 
 procedure TExplorerForm.Reload;
 begin
-  SetNewPathW(GetCurrentPathW,false);
+  SetNewPathW(GetCurrentPathW, False);
   LoadSizes;
 end;
 
 procedure TExplorerForm.Icons1Click(Sender: TObject);
 begin
- Icons1.Checked:=true;
- ListView:=LV_ICONS;
- Reload;
+  Icons1.Checked := True;
+  ListView := LV_ICONS;
+  Reload;
 end;
 
 procedure TExplorerForm.List1Click(Sender: TObject);
 begin
- List1.Checked:=true;
- ListView:=LV_TITLES;
- Reload;
+  List1.Checked := True;
+  ListView := LV_TITLES;
+  Reload;
 end;
 
 procedure TExplorerForm.Tile2Click(Sender: TObject);
 begin
- Tile2.Checked:=true;
- ListView:=LV_TILE;
- Reload;
+  Tile2.Checked := True;
+  ListView := LV_TILE;
+  Reload;
 end;
 
 procedure TExplorerForm.Grid1Click(Sender: TObject);
 begin
- Grid1.Checked:=true;
- ListView:=LV_GRID;
- Reload;
+  Grid1.Checked := True;
+  ListView := LV_GRID;
+  Reload;
 end;
 
 procedure TExplorerForm.ToolButtonViewClick(Sender: TObject);
 var
-  aPoint : TPoint;
+  APoint: TPoint;
 begin
- aPoint:=Point(ToolButtonView.Left,ToolButtonView.Top+ToolButtonView.Height);
- aPoint:=ToolBar1.ClientToScreen(aPoint);
- PopupMenu5.Popup(aPoint.x,aPoint.y);
+  APoint := Point(ToolButtonView.Left, ToolButtonView.Top + ToolButtonView.Height);
+  APoint := ToolBar1.ClientToScreen(APoint);
+  PopupMenu5.Popup(APoint.X, APoint.Y);
 end;
 
 procedure TExplorerForm.Thumbnails1Click(Sender: TObject);
@@ -7237,7 +7227,7 @@ begin
  Info.PictureSize:=fPictureSize;
  NewFormState;
 
- ToolButton18.Enabled:=true;
+ TbStop.Enabled:=true;
  TExplorerThread.Create('::BIGIMAGES','',THREAD_TYPE_BIG_IMAGES,info,self,UpdaterInfo,StateID);
  for i:=0 to fFilesInfo.Count-1 do
  begin
@@ -7284,12 +7274,12 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ToolButton13Click(Sender: TObject);
+procedure TExplorerForm.TbZoomInClick(Sender: TObject);
 begin
   ZoomIn;
 end;
 
-procedure TExplorerForm.ToolButton14Click(Sender: TObject);
+procedure TExplorerForm.TbZoomOutClick(Sender: TObject);
 begin
   ZoomOut;
 end;
@@ -7378,19 +7368,19 @@ begin
 
 end;
 
-procedure TExplorerForm.ToolButton18Click(Sender: TObject);
+procedure TExplorerForm.TbStopClick(Sender: TObject);
 begin
  NewFormState;
  if UpdatingList then
    EndUpdate;
- ToolButton18.Enabled:=false;
+ TbStop.Enabled:=false;
  fStatusProgress.Visible:=false;
  StatusBar1.Panels[0].Text:=TEXT_MES_LOADING_BREAK;
 end;
 
 procedure TExplorerForm.DoStopLoading();
 begin
-  ToolButton18.Enabled:=false;
+  TbStop.Enabled:=false;
   fStatusProgress.Visible:=false;
   StatusBar1.Panels[0].Text:='';
 end;

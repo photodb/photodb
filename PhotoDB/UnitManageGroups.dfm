@@ -15,7 +15,7 @@ object FormManageGroups: TFormManageGroups
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   KeyPreview = True
-  Menu = MainMenu1
+  Menu = MmMain
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
@@ -150,7 +150,7 @@ object FormManageGroups: TFormManageGroups
     Left = 64
     Top = 176
   end
-  object MainMenu1: TMainMenu
+  object MmMain: TMainMenu
     Left = 64
     Top = 224
     object File1: TMenuItem

@@ -169,19 +169,19 @@ type
     SearchEdit: TComboBoxExDB;
     CoolBar1: TCoolBar;
     TbMain: TToolBar;
-    ToolButton1: TToolButton;
+    TbZoomIn: TToolButton;
     ToolBarImageList: TImageList;
-    ToolButton2: TToolButton;
+    TbZoomOut: TToolButton;
     TbSearch: TToolButton;
-    ToolButton4: TToolButton;
-    ToolButton5: TToolButton;
+    TbSave: TToolButton;
+    TbLoad: TToolButton;
     ToolButton6: TToolButton;
     ToolButton7: TToolButton;
     ToolButton8: TToolButton;
-    ToolButton9: TToolButton;
-    ToolButton10: TToolButton;
+    TbSort: TToolButton;
+    TbGroups: TToolButton;
     ToolButton11: TToolButton;
-    ToolButton12: TToolButton;
+    TbExplorer: TToolButton;
     ToolButton13: TToolButton;
     TbStopOperation: TToolButton;
     ToolButton15: TToolButton;
@@ -387,9 +387,9 @@ type
     procedure SearchEditDropDown(Sender: TObject);
     procedure SearchEditSelect(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure ToolButton1Click(Sender: TObject);
-    procedure ToolButton2Click(Sender: TObject);
-    procedure ToolButton12Click(Sender: TObject);
+    procedure TbZoomInClick(Sender: TObject);
+    procedure TbZoomOutClick(Sender: TObject);
+    procedure TbExplorerClick(Sender: TObject);
     procedure SearchEditGetAdditionalImage(Sender: TObject; Index: Integer;
       HDC: Cardinal; var Top, Left: Integer);
     procedure TbStopOperationClick(Sender: TObject);
@@ -2545,14 +2545,14 @@ begin
     ShowDateOptionsLink.Text := L('Date options');
 
     TbSearch.Caption := L('Search');
-    ToolButton9.Caption := L('Sort');
-    ToolButton1.Caption := L('Zoom In');
-    ToolButton2.Caption := L('Zoom Out');
-    ToolButton10.Caption := L('Groups');
+    TbSort.Caption := L('Sort');
+    TbZoomIn.Caption := L('Zoom In');
+    TbZoomOut.Caption := L('Zoom Out');
+    TbGroups.Caption := L('Groups');
 
-    ToolButton4.Caption := L('Save');
-    ToolButton5.Caption := L('Open');
-    ToolButton12.Caption := L('Explorer');
+    TbSave.Caption := L('Save');
+    TbLoad.Caption := L('Open');
+    TbExplorer.Caption := L('Explorer');
     SearchEdit.StartText := L('Enter your query here');
   finally
     EndTranslate;
@@ -3362,7 +3362,7 @@ end;
 
 procedure TSearchForm.GetListofKeyWords1Click(Sender: TObject);
 begin
- GetListOfKeyWords;
+  GetListOfKeyWords;
 end;
 
 function TSearchForm.GetListView: TEasyListview;
@@ -4042,7 +4042,7 @@ var
 
 begin
   UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
-  ToolButton5.Visible := True;
+  TbLoad.Visible := True;
 
   if UseSmallIcons then
   begin
@@ -4065,13 +4065,13 @@ begin
   AddDisabledIcon('SEARCH_BREAK_GRAY');
 
   TbSearch.ImageIndex:=0;
-  ToolButton9.ImageIndex:=1;
-  ToolButton1.ImageIndex:=3;
-  ToolButton2.ImageIndex:=2;
-  ToolButton10.ImageIndex:=4;
-  ToolButton4.ImageIndex:=5;
-  ToolButton5.ImageIndex:=6;
-  ToolButton12.ImageIndex:=7;
+  TbSort.ImageIndex:=1;
+  TbZoomIn.ImageIndex:=3;
+  TbZoomOut.ImageIndex:=2;
+  TbGroups.ImageIndex:=4;
+  TbSave.ImageIndex:=5;
+  TbLoad.ImageIndex:=6;
+  TbExplorer.ImageIndex:=7;
   tbStopOperation.ImageIndex:=8;
 
   TbMain.Images := ToolBarImageList;
@@ -4118,12 +4118,12 @@ begin
   end;
 end;
 
-procedure TSearchForm.ToolButton1Click(Sender: TObject);
+procedure TSearchForm.TbZoomInClick(Sender: TObject);
 begin
   ZoomIn;
 end;
 
-procedure TSearchForm.ToolButton2Click(Sender: TObject);
+procedure TSearchForm.TbZoomOutClick(Sender: TObject);
 begin
   ZoomOut;
 end;
@@ -4135,11 +4135,11 @@ begin
   LoadGroupsList;
 end;
 
-procedure TSearchForm.ToolButton12Click(Sender: TObject);
+procedure TSearchForm.TbExplorerClick(Sender: TObject);
 var
   FileName : string;
 begin
-  if ElvMain.Selection.Count=0 then
+  if ElvMain.Selection.Count = 0 then
   begin
     NewExplorer;
   end else
@@ -4394,10 +4394,11 @@ begin
           ElvMain.Items[i].Data := LI[SIs[i].ID].Data;
         end;
       except
-        on e : Exception do EventLog(':TSearchForm::SortingClick() throw exception: ' + e.Message);
+        on e : Exception do
+          EventLog(':TSearchForm::SortingClick() throw exception: ' + e.Message);
       end;
     finally
-      ElvMain.EndUpdate();
+      ElvMain.EndUpdate;
     end;
   finally
     ElvMain.Groups.EndUpdate(False);

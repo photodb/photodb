@@ -16,7 +16,6 @@ uses
   uGOM, uMemory, uFormListView, uTranslate;
 
 type
-
   TDestDype = class(TObject)
   public
     Dest: string;

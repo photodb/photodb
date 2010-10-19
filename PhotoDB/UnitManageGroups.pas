@@ -13,7 +13,7 @@ type
   TFormManageGroups = class(TDBForm)
     ListView1: TNoVSBListView1;
     ImlGroups: TImageList;
-    MainMenu1: TMainMenu;
+    MmMain: TMainMenu;
     File1: TMenuItem;
     Exit1: TMenuItem;
     Help1: TMenuItem;
@@ -129,7 +129,7 @@ begin
   Width := Min(650, Round(Screen.Width / 1.3));
   ListView1.Columns[0].Caption := L('Groups list');
   FBitmapImageList := TBitmapImageList.Create;
-  MainMenu1.Images := DBKernel.ImageList;
+  MmMain.Images := DBKernel.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;
   Contents1.ImageIndex := DB_IC_HELP;
   AddGroup1.ImageIndex := DB_IC_NEW_SHELL;
@@ -264,13 +264,13 @@ begin
 end;
 
 procedure TFormManageGroups.MenuActionSearchForGroup(Sender: TObject);
+var
+  Search : TSearchForm;
 begin
-  with SearchManager.NewSearch do
-  begin
-    SearchEdit.Text := ':Group(' + Groups[(Sender as TmenuItem).Owner.Tag].GroupName + '):';
-    WlStartStop.OnClick(Sender);
-    Show;
-  end;
+  Search := SearchManager.NewSearch;
+  Search.SearchEdit.Text := ':Group(' + Groups[(Sender as TmenuItem).Owner.Tag].GroupName + '):';
+  Search.WlStartStop.OnClick(Sender);
+  Search.Show;
   Close;
 end;
 
@@ -569,8 +569,8 @@ procedure TFormManageGroups.ToolButton3Click(Sender: TObject);
 begin
   if ListView1.Selected = nil then
     Exit;
-  MainMenu1.Tag := ListView1.Selected.index;
-  DeleteGroup(MainMenu1);
+  MmMain.Tag := ListView1.Selected.index;
+  DeleteGroup(Sender);
 end;
 
 procedure TFormManageGroups.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

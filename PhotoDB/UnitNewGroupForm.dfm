@@ -17,7 +17,7 @@ object NewGroupForm: TNewGroupForm
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
+  object ImGroup: TImage
     Left = 4
     Top = 4
     Width = 50
@@ -76,9 +76,9 @@ object NewGroupForm: TNewGroupForm
       70077E95E4B3797E7C9E496316E3B0B0E76E78CD24923CAE5E476776392CC724
       D36B82ACE12D211B7E2CE9A709AD672BFE0BFAF99FFFD9}
     PopupMenu = PopupMenu1
-    OnClick = Image1Click
+    OnClick = ImGroupClick
   end
-  object Label1: TLabel
+  object KeyWordsLabel: TLabel
     Tag = 2
     Left = 8
     Top = 120
@@ -86,7 +86,7 @@ object NewGroupForm: TNewGroupForm
     Height = 13
     Caption = 'KeyWords for group:'
   end
-  object Label2: TLabel
+  object CommentLabel: TLabel
     Tag = 2
     Left = 8
     Top = 56
@@ -102,7 +102,7 @@ object NewGroupForm: TNewGroupForm
     Height = 13
     Caption = 'Related Groups:'
   end
-  object EdName: TEdit
+  object EdName: TWatermarkedEdit
     Left = 60
     Top = 12
     Width = 201
@@ -115,71 +115,51 @@ object NewGroupForm: TNewGroupForm
     ParentColor = True
     ParentFont = False
     TabOrder = 0
-    Text = '<NewGroupName>'
+    WatermarkText = 'Enter group name'
   end
-  object Memo1: TMemo
+  object MemComments: TWatermarkedMemo
     Left = 4
     Top = 76
     Width = 257
     Height = 41
-    Lines.Strings = (
-      '<Comment>')
     ParentColor = True
     TabOrder = 1
+    WatermarkText = 'Place here comments to this group'
   end
-  object Button1: TButton
+  object BtnOk: TButton
     Left = 189
     Top = 277
     Width = 75
     Height = 17
     Caption = 'Ok'
     TabOrder = 2
-    OnClick = Button1Click
+    OnClick = BtnOkClick
   end
-  object Button2: TButton
+  object BtnCancel: TButton
     Left = 110
     Top = 277
     Width = 75
     Height = 17
     Caption = 'Cancel'
     TabOrder = 3
-    OnClick = Button2Click
+    OnClick = BtnCancelClick
   end
-  object RadioButton1: TRadioButton
-    Left = 7
-    Top = 256
-    Width = 113
-    Height = 17
-    Caption = 'Common Group'
-    Checked = True
-    TabOrder = 4
-    TabStop = True
-  end
-  object RadioButton2: TRadioButton
-    Left = 135
-    Top = 256
-    Width = 113
-    Height = 17
-    Caption = 'Private Group'
-    TabOrder = 5
-  end
-  object Memo2: TMemo
+  object MemKeywords: TWatermarkedMemo
     Left = 4
     Top = 140
     Width = 257
     Height = 29
-    Lines.Strings = (
-      '<Key Words>')
     ParentColor = True
-    TabOrder = 6
+    TabOrder = 4
+    WatermarkText = 'Place here keywords for this group'
   end
-  object CheckBox1: TCheckBox
+  object CbAddkeywords: TCheckBox
     Left = 8
     Top = 173
     Width = 249
     Height = 17
     Caption = 'Auto Add keyWords'
-    TabOrder = 7
+    TabOrder = 5
   end
   object CbeGroupList: TComboBoxEx
     Left = 8
@@ -187,14 +167,14 @@ object NewGroupForm: TNewGroupForm
     Width = 255
     Height = 22
     ItemsEx = <>
-    TabOrder = 8
+    TabOrder = 6
     OnDblClick = CbeGroupListDblClick
     OnDropDown = CbeGroupListDropDown
     OnKeyPress = CbeGroupListKeyPress
     OnSelect = CbeGroupListSelect
     Images = GroupsImageList
   end
-  object CheckBox2: TCheckBox
+  object CbInclude: TCheckBox
     Left = 8
     Top = 235
     Width = 253
@@ -202,19 +182,29 @@ object NewGroupForm: TNewGroupForm
     Caption = 'Include In Quick Lists'
     Checked = True
     State = cbChecked
-    TabOrder = 9
+    TabOrder = 7
+  end
+  object CbPrivateGroup: TCheckBox
+    Left = 8
+    Top = 254
+    Width = 253
+    Height = 17
+    Caption = 'Private group'
+    Checked = True
+    State = cbChecked
+    TabOrder = 8
   end
   object PopupMenu1: TPopupMenu
-    Left = 160
-    Top = 64
+    Left = 152
+    Top = 24
     object LoadFromFile1: TMenuItem
       Caption = 'Load From File'
       OnClick = LoadFromFile1Click
     end
   end
   object GroupsImageList: TImageList
-    Left = 96
-    Top = 64
+    Left = 104
+    Top = 24
   end
   object GraphicSelect1: TGraphicSelectEx
     ThWidth = 48
@@ -230,7 +220,7 @@ object NewGroupForm: TNewGroupForm
     GaleryNumber = 1
     RealSizes = True
     AutoSizeGaleries = False
-    Left = 192
-    Top = 64
+    Left = 200
+    Top = 24
   end
 end

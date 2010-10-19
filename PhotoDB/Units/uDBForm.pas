@@ -3,7 +3,7 @@ unit uDBForm;
 interface
 
 uses
-  Forms, Classes, uTranslate;
+  Forms, Classes, uTranslate, dolphin_db;
 
 type
   TDBForm = class(TForm)
@@ -13,6 +13,7 @@ type
     function GetFormID : string; virtual; abstract;
   public
     constructor Create(AOwner : TComponent); override;
+    destructor Destroy; override;
     function L(StringToTranslate : string) : string;
     procedure BeginTranslate;
     procedure EndTranslate;
@@ -31,6 +32,13 @@ end;
 constructor TDBForm.Create(AOwner: TComponent);
 begin
   FIsTranslating := False;
+  inherited;
+  DBKernel.RegisterForm(Self);
+end;
+
+destructor TDBForm.Destroy;
+begin
+  DBKernel.UnRegisterForm(Self);
   inherited;
 end;
 

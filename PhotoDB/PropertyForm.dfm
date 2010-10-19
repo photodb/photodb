@@ -1269,10 +1269,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         350)
@@ -1293,10 +1289,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         350)
@@ -1349,10 +1341,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         350)
@@ -1617,8 +1605,8 @@ object PropertiesForm: TPropertiesForm
   end
   object PmImageConnect: TPopupMenu
     OnPopup = PmImageConnectPopup
-    Left = 168
-    Top = 40
+    Left = 976
+    Top = 65360
     object AddImThProcessingImageAndAddOriginalToProcessingPhoto1: TMenuItem
       Caption = 'AddProcessingImThAndAddOriginalToProcessingImTh'
       OnClick = AddImThProcessingImageAndAddOriginalToProcessingPhoto1Click

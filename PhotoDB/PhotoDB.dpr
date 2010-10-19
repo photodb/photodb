@@ -301,7 +301,8 @@ uses
   AddSessionPasswordUnit in 'AddSessionPasswordUnit.pas' {AddSessionPasswordForm},
   uSearchThreadPool in 'Threads\uSearchThreadPool.pas',
   uMultiCPUThreadManager in 'Threads\uMultiCPUThreadManager.pas',
-  uFormListView in 'Units\uFormListView.pas';
+  uFormListView in 'Units\uFormListView.pas',
+  uDBThread in 'Threads\uDBThread.pas';
 
 {$R *.res}
 

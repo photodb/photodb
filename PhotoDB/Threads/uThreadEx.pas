@@ -2,10 +2,10 @@ unit uThreadEx;
 
 interface
 
-uses Classes, uThreadForm, Windows, SyncObjs, uGOM;
+uses Classes, uThreadForm, Windows, SyncObjs, uDBThread, uGOM;
 
 type
-  TThreadEx = class(TThread)
+  TThreadEx = class(TDBThread)
   private
     FThreadForm : TThreadForm;
     FState : TGUID;

@@ -588,7 +588,7 @@ object EditGroupsForm: TEditGroupsForm
     Font.Style = []
     ParentFont = False
   end
-  object Label3: TLabel
+  object LbInfo: TLabel
     Left = 80
     Top = 16
     Width = 329
@@ -599,43 +599,43 @@ object EditGroupsForm: TEditGroupsForm
       'ton to remove them'
     WordWrap = True
   end
-  object Button1: TButton
+  object BtnCancel: TButton
     Left = 312
     Top = 432
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 0
-    OnClick = Button1Click
+    OnClick = BtnCancelClick
   end
-  object Button2: TButton
+  object BtnOk: TButton
     Left = 392
     Top = 432
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 1
-    OnClick = Button2Click
+    OnClick = BtnOkClick
   end
-  object Button3: TButton
-    Left = 104
-    Top = 432
+  object BtnCreateGroup: TButton
+    Left = 120
+    Top = 431
     Width = 97
     Height = 25
     Caption = 'New Group'
     TabOrder = 2
-    OnClick = Button3Click
+    OnClick = BtnCreateGroupClick
   end
-  object Button5: TButton
+  object BtnManager: TButton
     Left = 9
     Top = 432
-    Width = 88
+    Width = 105
     Height = 25
     Caption = 'Manager'
     TabOrder = 3
     OnClick = GroupManeger1Click
   end
-  object ListBox1: TListBox
+  object LstSelectedGroups: TListBox
     Left = 256
     Top = 96
     Width = 209
@@ -647,11 +647,11 @@ object EditGroupsForm: TEditGroupsForm
     MultiSelect = True
     ParentColor = True
     TabOrder = 4
-    OnContextPopup = ListBox1ContextPopup
-    OnDblClick = ListBox1DblClick
-    OnDrawItem = ListBox2DrawItem
+    OnContextPopup = LstSelectedGroupsContextPopup
+    OnDblClick = LstSelectedGroupsDblClick
+    OnDrawItem = LstAvaliableGroupsDrawItem
   end
-  object ListBox2: TListBox
+  object LstAvaliableGroups: TListBox
     Left = 8
     Top = 96
     Width = 209
@@ -663,52 +663,52 @@ object EditGroupsForm: TEditGroupsForm
     MultiSelect = True
     ParentColor = True
     TabOrder = 5
-    OnDblClick = Button6Click
-    OnDrawItem = ListBox2DrawItem
+    OnDblClick = BtnAddGroupClick
+    OnDrawItem = LstAvaliableGroupsDrawItem
   end
-  object Button7: TButton
+  object BtnRemoveGroup: TButton
     Left = 224
     Top = 168
     Width = 27
     Height = 65
     Caption = '<--'
     TabOrder = 6
-    OnClick = Button7Click
+    OnClick = BtnRemoveGroupClick
   end
-  object Button6: TButton
+  object BtnAddGroup: TButton
     Left = 224
     Top = 96
     Width = 27
     Height = 65
     Caption = '-->'
     TabOrder = 7
-    OnClick = Button6Click
+    OnClick = BtnAddGroupClick
   end
-  object CheckBox2: TCheckBox
+  object CbRemoveKeywords: TCheckBox
     Left = 8
     Top = 412
     Width = 281
     Height = 17
     Caption = 'Remove KeyWords For Group'
     TabOrder = 8
-    OnClick = CheckBox2Click
+    OnClick = CbRemoveKeywordsClick
   end
-  object CheckBox3: TCheckBox
+  object CbShowAllGroups: TCheckBox
     Left = 8
     Top = 396
     Width = 281
     Height = 17
     Caption = 'Show All Groups'
     TabOrder = 9
-    OnClick = CheckBox3Click
+    OnClick = CbShowAllGroupsClick
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
+  object PmGroup: TPopupMenu
+    OnPopup = PmGroupPopup
     Left = 208
     Top = 48
     object Delete1: TMenuItem
       Caption = 'Delete Item'
-      OnClick = Button7Click
+      OnClick = BtnRemoveGroupClick
     end
     object N1: TMenuItem
       Caption = '-'
@@ -738,7 +738,7 @@ object EditGroupsForm: TEditGroupsForm
       OnClick = QuickInfo1Click
     end
   end
-  object PopupMenu2: TPopupMenu
+  object PmGroupsManager: TPopupMenu
     Left = 176
     Top = 48
     object GroupManeger2: TMenuItem
@@ -746,7 +746,7 @@ object EditGroupsForm: TEditGroupsForm
       OnClick = GroupManeger1Click
     end
   end
-  object PopupMenu3: TPopupMenu
+  object PmClear: TPopupMenu
     Left = 144
     Top = 48
     object Clear1: TMenuItem
@@ -763,13 +763,6 @@ object EditGroupsForm: TEditGroupsForm
     Height = 34
     Width = 32
     Left = 240
-    Top = 48
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 304
     Top = 48
   end
 end

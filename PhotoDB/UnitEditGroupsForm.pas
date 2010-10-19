@@ -6,24 +6,24 @@ uses
   Dolphin_DB, UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
-  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics;
+  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, uDBForm;
 
 type
-  TEditGroupsForm = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
-    PopupMenu1: TPopupMenu;
+  TEditGroupsForm = class(TDBForm)
+    BtnCancel: TButton;
+    BtnOk: TButton;
+    BtnCreateGroup: TButton;
+    PmGroup: TPopupMenu;
     Delete1: TMenuItem;
     N1: TMenuItem;
     CreateGroup1: TMenuItem;
     ChangeGroup1: TMenuItem;
     GroupManeger1: TMenuItem;
-    Button5: TButton;
-    PopupMenu2: TPopupMenu;
+    BtnManager: TButton;
+    PmGroupsManager: TPopupMenu;
     GroupManeger2: TMenuItem;
     QuickInfo1: TMenuItem;
-    PopupMenu3: TPopupMenu;
+    PmClear: TPopupMenu;
     Clear1: TMenuItem;
     Label1: TLabel;
     Image1: TImage;
@@ -31,41 +31,39 @@ type
     ApplicationEvents1: TApplicationEvents;
     SearchForGroup1: TMenuItem;
     GroupsImageList: TImageList;
-    DestroyTimer: TTimer;
-    ListBox1: TListBox;
-    ListBox2: TListBox;
-    Button7: TButton;
-    Button6: TButton;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
+    LstSelectedGroups: TListBox;
+    LstAvaliableGroups: TListBox;
+    BtnRemoveGroup: TButton;
+    BtnAddGroup: TButton;
+    CbRemoveKeywords: TCheckBox;
+    CbShowAllGroups: TCheckBox;
     MoveToGroup1: TMenuItem;
-    Label3: TLabel;
-    procedure Button1Click(Sender: TObject);
+    LbInfo: TLabel;
+    procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button6Click(Sender: TObject);
-    procedure ListBox1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure BtnCreateGroupClick(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
+    procedure BtnAddGroupClick(Sender: TObject);
+    procedure LstSelectedGroupsContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure ChangeGroup1Click(Sender: TObject);
     procedure GroupManeger1Click(Sender: TObject);
     procedure CreateGroup1Click(Sender: TObject);
     procedure RecreateGroupsList;
-    procedure PopupMenu1Popup(Sender: TObject);
+    procedure PmGroupPopup(Sender: TObject);
     procedure QuickInfo1Click(Sender: TObject);
     procedure Clear1Click(Sender: TObject);
     procedure ComboBoxEx1_KeyPress(Sender: TObject; var Key: Char);
-    procedure ListBox1DblClick(Sender: TObject);
+    procedure LstSelectedGroupsDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
     procedure SearchForGroup1Click(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
-    procedure CheckBox3Click(Sender: TObject);
-    procedure CheckBox2Click(Sender: TObject);
-    procedure ListBox2DrawItem(Control: TWinControl; Index: Integer;
+    procedure CbShowAllGroupsClick(Sender: TObject);
+    procedure CbRemoveKeywordsClick(Sender: TObject);
+    procedure LstAvaliableGroupsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure Button7Click(Sender: TObject);
+    procedure BtnRemoveGroupClick(Sender: TObject);
     procedure MoveToGroup1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -82,11 +80,12 @@ type
     FOldKeyWords: string;
     function AGetGroupByCode(GroupCode: string): Integer;
     procedure ChangedDBDataGroups(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
-
+  protected
+    function GetFormID : string; override;
   public
+    { Public declarations }
     procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True);
     procedure LoadLanguage;
-    { Public declarations }
   end;
 
 procedure DBChangeGroups(var Groups : TGroups; var KeyWords : String; CanNew : Boolean = true); overload;
@@ -95,7 +94,7 @@ procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : B
 implementation
 
 uses UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
-     UnitQuickGroupInfo, Language, Searching, SelectGroupForm;
+     UnitQuickGroupInfo, Searching, SelectGroupForm;
 
 {$R *.dfm}
 
@@ -130,162 +129,163 @@ end;
 
 procedure TEditGroupsForm.Execute(var Groups: TGroups; var KeyWords : String; CanNew : Boolean = true);
 var
-  i : integer;
+  I: Integer;
 begin
- if not CanNew then
- begin
-  Button3.Enabled:=false;
-  Button5.Enabled:=false;
- end;
- FResult:=false;
- FNewKeyWords:=KeyWords;
- FOldGroups := CopyGroups(Groups);
- FOldKeyWords := KeyWords;
- fGroups:=CopyGroups(Groups);
- FSetGroups :=CopyGroups(Groups);
- ListBox1.Clear;
- For i:=0 to Length(Groups)-1 do
- begin
-  ListBox1.Items.Add(Groups[i].GroupName);
- end;
- ShowModal;
- FreeGroups(Groups);
- if FResult then
- begin
-  Groups:=CopyGroups(FSetGroups);
-  KeyWords:=FNewKeyWords;
- end else
- begin
-  Groups:=CopyGroups(FOldGroups);
-  KeyWords:=FOldKeyWords;
- end;
- FreeGroups(FSetGroups);
- DestroyTimer.Enabled:=true;
+  if not CanNew then
+  begin
+    BtnCreateGroup.Enabled := False;
+    BtnManager.Enabled := False;
+  end;
+  FResult := False;
+  FNewKeyWords := KeyWords;
+  FOldGroups := CopyGroups(Groups);
+  FOldKeyWords := KeyWords;
+  FGroups := CopyGroups(Groups);
+  FSetGroups := CopyGroups(Groups);
+  LstSelectedGroups.Clear;
+  for I := 0 to Length(Groups) - 1 do
+    LstSelectedGroups.Items.Add(Groups[I].GroupName);
+
+  ShowModal;
+  FreeGroups(Groups);
+  if FResult then
+  begin
+    Groups := CopyGroups(FSetGroups);
+    KeyWords := FNewKeyWords;
+  end else
+  begin
+    Groups := CopyGroups(FOldGroups);
+    KeyWords := FOldKeyWords;
+  end;
+  FreeGroups(FSetGroups);
+  Close;
 end;
 
-procedure TEditGroupsForm.Button1Click(Sender: TObject);
+procedure TEditGroupsForm.BtnCancelClick(Sender: TObject);
 begin
- FResult:=false;
- Close;
+  FResult := False;
+  Close;
 end;
 
 procedure TEditGroupsForm.FormCreate(Sender: TObject);
 begin
- SetLength(fGroups,0);
- SetLength(FRegGroups,0);
- SetLength(FShowenRegGroups,0);
+  SetLength(FGroups, 0);
+  SetLength(FRegGroups, 0);
+  SetLength(FShowenRegGroups, 0);
 
- RecreateGroupsList;
- DBKernel.RecreateThemeToForm(Self);
- DBKernel.RegisterChangesID(Self,ChangedDBDataGroups);
- LoadLanguage;
- CheckBox2.Checked:=DBkernel.ReadBool('Propetry','DeleteKeyWords',True);
- CheckBox3.Checked:=DBkernel.ReadBool('Propetry','ShowAllGroups',false);
+  RecreateGroupsList;
+  DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
+  LoadLanguage;
+  CbRemoveKeywords.Checked := DBkernel.ReadBool('Propetry', 'DeleteKeyWords', True);
+  CbShowAllGroups.Checked := DBkernel.ReadBool('Propetry', 'ShowAllGroups', False);
 end;
 
-procedure TEditGroupsForm.Button3Click(Sender: TObject);
+procedure TEditGroupsForm.BtnCreateGroupClick(Sender: TObject);
 begin
- CreateNewGroupDialog;
+  CreateNewGroupDialog;
 end;
 
-procedure TEditGroupsForm.Button2Click(Sender: TObject);
+procedure TEditGroupsForm.BtnOkClick(Sender: TObject);
 var
-  i : integer;
-  FGroup : TGroup;
+  I: Integer;
+  FGroup: TGroup;
 begin
- FResult:=true;
- FreeGroups(FGroups);
- For i:=1 to ListBox1.Items.Count do
- begin
-  SetLength(FGroups,Length(FGroups)+1);
-  FGroups[Length(FGroups)-1].GroupName:=ListBox1.Items[i-1];
-  FGroup:=GetGroupByGroupName(ListBox1.Items[i-1],false);
-  FGroups[Length(FGroups)-1].GroupCode:=FGroup.GroupCode;
-  if FGroup.AutoAddKeyWords then
-  AddWordsA(FGroup.GroupKeyWords,FNewKeyWords);
- end;
- FSetGroups:=CopyGroups(FGroups);
- Close;
-end;
-
-procedure TEditGroupsForm.Button6Click(Sender: TObject);
-var
-  i : integer;
-//  Group : TGroup;
-
-  Procedure AddGroup(Group : TGroup);
-  var
-    FRelatedGroups : TGroups;
-    OldGroups, Groups : TGroups;
-    TempGroup : TGroup;
-    i: integer;
+  FResult := True;
+  FreeGroups(FGroups);
+  for I := 1 to LstSelectedGroups.Items.Count do
   begin
-   //добавляем связанные группы
-   FRelatedGroups:=EncodeGroups(Group.RelatedGroups);
-   //сохраняем что имели
-   OldGroups:=CopyGroups(FSetGroups);
-   //копируем?
-   Groups:=CopyGroups(OldGroups);
+    SetLength(FGroups, Length(FGroups) + 1);
+    FGroups[Length(FGroups) - 1].GroupName := LstSelectedGroups.Items[I - 1];
+    FGroup := GetGroupByGroupName(LstSelectedGroups.Items[I - 1], False);
+    FGroups[Length(FGroups) - 1].GroupCode := FGroup.GroupCode;
+    if FGroup.AutoAddKeyWords then
+      AddWordsA(FGroup.GroupKeyWords, FNewKeyWords);
+  end;
+  FSetGroups := CopyGroups(FGroups);
+  Close;
+end;
 
-   //добавили группу и связанные с ней группы
-   AddGroupToGroups(Groups,Group);
-   AddGroupsToGroups(Groups,FRelatedGroups);
+procedure TEditGroupsForm.BtnAddGroupClick(Sender: TObject);
+var
+  I: Integer;
 
-   //занесли это всё в FSetGroups - результат
-   FSetGroups:=CopyGroups(Groups);
+  procedure AddGroup(Group: TGroup);
+  var
+    FRelatedGroups: TGroups;
+    OldGroups, Groups: TGroups;
+    TempGroup: TGroup;
+    I: Integer;
+  begin
+    // добавляем связанные группы
+    FRelatedGroups := EncodeGroups(Group.RelatedGroups);
+    // сохраняем что имели
+    OldGroups := CopyGroups(FSetGroups);
+    // копируем?
+    Groups := CopyGroups(OldGroups);
 
-   //получили все новые группы путём вычитаниясо старым
-   RemoveGroupsFromGroups(Groups,OldGroups);
-   for i:=0 to Length(Groups)-1 do
-   begin
-    //добавляем группу и ключевые слова к ней
-    ListBox1.Items.Add(Groups[i].GroupName);
-    TempGroup:=GetGroupByGroupCode(Groups[i].GroupCode,false);
-    AddWordsA(TempGroup.GroupKeyWords,FNewKeyWords);
-   end;
+    // добавили группу и связанные с ней группы
+    AddGroupToGroups(Groups, Group);
+    AddGroupsToGroups(Groups, FRelatedGroups);
+
+    // занесли это всё в FSetGroups - результат
+    FSetGroups := CopyGroups(Groups);
+
+    // получили все новые группы путём вычитаниясо старым
+    RemoveGroupsFromGroups(Groups, OldGroups);
+    for I := 0 to Length(Groups) - 1 do
+    begin
+      // добавляем группу и ключевые слова к ней
+      LstSelectedGroups.Items.Add(Groups[I].GroupName);
+      TempGroup := GetGroupByGroupCode(Groups[I].GroupCode, False);
+      AddWordsA(TempGroup.GroupKeyWords, FNewKeyWords);
+    end;
   end;
 
 begin
- //добавляем выделенные групы в ListBox2
- for i:=0 to ListBox2.Items.Count-1 do
- if ListBox2.Selected[i] then
- begin
-  AddGroup(FShowenRegGroups[i]);
- end;
- ListBox1.Invalidate;
- ListBox2.Invalidate;
+  // добавляем выделенные групы в ListBox2
+  for I := 0 to LstAvaliableGroups.Items.Count - 1 do
+    if LstAvaliableGroups.Selected[I] then
+      AddGroup(FShowenRegGroups[I]);
+
+  LstSelectedGroups.Invalidate;
+  LstAvaliableGroups.Invalidate;
 end;
 
-procedure TEditGroupsForm.ListBox1ContextPopup(Sender: TObject;
+procedure TEditGroupsForm.LstSelectedGroupsContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   ItemNo : Integer;
   i : integer;
 begin
- ItemNo:=ListBox1.ItemAtPos(MousePos,True);
+  ItemNo := LstSelectedGroups.ItemAtPos(MousePos, True);
  If ItemNo<>-1 then
  begin
-  if not ListBox1.Selected[ItemNo] then
+  if not LstSelectedGroups.Selected[ItemNo] then
   begin
-   ListBox1.Selected[ItemNo]:=True;
-   for i:=0 to ListBox1.Items.Count-1 do
-   if i<>ItemNo then
-   ListBox1.Selected[i]:=false;
+   LstSelectedGroups.Selected[ItemNo]:=True;
+      for I := 0 to LstSelectedGroups.Items.Count - 1 do
+        if I <> ItemNo then
+          LstSelectedGroups.Selected[I] := False;
+    end;
+    PmGroup.Tag := ItemNo;
+    PmGroup.Popup(LstSelectedGroups.ClientToScreen(MousePos).X, LstSelectedGroups.ClientToScreen(MousePos).Y);
+  end else
+  begin
+    PmClear.Popup(LstSelectedGroups.ClientToScreen(MousePos).X, LstSelectedGroups.ClientToScreen(MousePos).Y);
   end;
-  PopupMenu1.Tag:=ItemNo;
-  PopupMenu1.Popup(ListBox1.ClientToScreen(MousePos).X,ListBox1.ClientToScreen(MousePos).Y);
- end else
- begin
-  PopupMenu3.Popup(ListBox1.ClientToScreen(MousePos).X,ListBox1.ClientToScreen(MousePos).Y);
- end;
 end;
 
 procedure TEditGroupsForm.ChangeGroup1Click(Sender: TObject);
 var
-  Group : TGroup;
+  Group: TGroup;
 begin
- Group := GetGroupByGroupCode(FindGroupCodeByGroupName(ListBox1.Items[PopupMenu1.Tag]),false);
- DBChangeGroup(Group);
+  Group := GetGroupByGroupCode(FindGroupCodeByGroupName(LstSelectedGroups.Items[PmGroup.Tag]), False);
+  DBChangeGroup(Group);
+end;
+
+function TEditGroupsForm.GetFormID: string;
+begin
+  Result := 'EditGroupsList';
 end;
 
 procedure TEditGroupsForm.GroupManeger1Click(Sender: TObject);
@@ -295,372 +295,362 @@ end;
 
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);
 begin
- CreateNewGroupDialogA(fGroups[PopupMenu1.Tag].GroupName,fGroups[PopupMenu1.Tag].GroupCode);
+  CreateNewGroupDialogA(fGroups[PmGroup.Tag].GroupName,fGroups[PmGroup.Tag].GroupCode);
 end;
 
 procedure TEditGroupsForm.RecreateGroupsList;
 var
-  i, size : integer;
+  I, Size : integer;
   SmallB, B : TBitmap;
 begin
- FreeGroups(FRegGroups);
- FreeGroups(FShowenRegGroups);
- FRegGroups:=GetRegisterGroupList(True);
- GroupsImageList.Clear;
- SmallB := TBitmap.Create;
- SmallB.PixelFormat:=pf24bit;
- SmallB.Width:=32;
- SmallB.Height:=32+2;
- SmallB.Canvas.Pen.Color:=Theme_MainColor;
- SmallB.Canvas.Brush.Color:=Theme_MainColor;
- SmallB.Canvas.Rectangle(0,0,SmallB.Width,SmallB.Height);
- DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],SmallB.Width div 2 - 8,SmallB.Height div 2 - 8,0,0,DI_NORMAL);
- GroupsImageList.Add(SmallB,nil);
- SmallB.Free;
- ListBox2.Clear;
- for i:=0 to Length(FRegGroups)-1 do
- begin
+  FreeGroups(FRegGroups);
+  FreeGroups(FShowenRegGroups);
+  FRegGroups:=GetRegisterGroupList(True);
+  GroupsImageList.Clear;
   SmallB := TBitmap.Create;
-  SmallB.PixelFormat:=pf24bit;
-  SmallB.Canvas.Brush.Color:=Theme_MainColor;
-  if FRegGroups[i].GroupImage<>nil then
-  if not FRegGroups[i].GroupImage.Empty then
-  begin
-   B := TBitmap.Create;
-   B.PixelFormat:=pf24bit;
-   B.Canvas.Brush.Color:=Theme_MainColor;
-   B.Canvas.Pen.Color:=Theme_MainColor;
-   size:=Max(FRegGroups[i].GroupImage.Width,FRegGroups[i].GroupImage.Height);
-   B.Width:=size;
-   B.Height:=size;
-   B.Canvas.Rectangle(0,0,size,size);
-   B.Canvas.Draw(B.Width div 2 - FRegGroups[i].GroupImage.Width div 2, B.Height div 2 - FRegGroups[i].GroupImage.Height div 2,FRegGroups[i].GroupImage);
-   DoResize(32,34,B,SmallB);
-   B.Free;
-  end;
-  GroupsImageList.Add(SmallB,nil);
-  if FRegGroups[i].IncludeInQuickList or CheckBox3.Checked then
-  begin
-   UnitGroupsWork.AddGroupToGroups(FShowenRegGroups,FRegGroups[i]);
-   ListBox2.Items.Add(FRegGroups[i].GroupName);
-  end;
+  SmallB.PixelFormat := Pf24bit;
+  SmallB.Width := 32;
+  SmallB.Height := 32 + 2;
+  SmallB.Canvas.Pen.Color := Theme_MainColor;
+  SmallB.Canvas.Brush.Color := Theme_MainColor;
+  SmallB.Canvas.Rectangle(0, 0, SmallB.Width, SmallB.Height);
+  DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], SmallB.Width div 2 - 8,
+    SmallB.Height div 2 - 8, 0, 0, DI_NORMAL);
+  GroupsImageList.Add(SmallB, nil);
   SmallB.Free;
- end;
+  LstAvaliableGroups.Clear;
+  for I := 0 to Length(FRegGroups) - 1 do
+  begin
+    SmallB := TBitmap.Create;
+    SmallB.PixelFormat := Pf24bit;
+    SmallB.Canvas.Brush.Color := Theme_MainColor;
+    if FRegGroups[I].GroupImage <> nil then
+      if not FRegGroups[I].GroupImage.Empty then
+      begin
+        B := TBitmap.Create;
+        B.PixelFormat := Pf24bit;
+        B.Canvas.Brush.Color := Theme_MainColor;
+        B.Canvas.Pen.Color := Theme_MainColor;
+        Size := Max(FRegGroups[I].GroupImage.Width, FRegGroups[I].GroupImage.Height);
+        B.Width := Size;
+        B.Height := Size;
+        B.Canvas.Rectangle(0, 0, Size, Size);
+        B.Canvas.Draw(B.Width div 2 - FRegGroups[I].GroupImage.Width div 2,
+          B.Height div 2 - FRegGroups[I].GroupImage.Height div 2, FRegGroups[I].GroupImage);
+        DoResize(32, 34, B, SmallB);
+        B.Free;
+      end;
+    GroupsImageList.Add(SmallB, nil);
+    if FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
+    begin
+      UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
+      LstAvaliableGroups.Items.Add(FRegGroups[I].GroupName);
+    end;
+    SmallB.Free;
+  end;
 end;
 
-procedure TEditGroupsForm.PopupMenu1Popup(Sender: TObject);
+procedure TEditGroupsForm.PmGroupPopup(Sender: TObject);
 begin
- if GroupWithCodeExists(FSetGroups[PopupMenu1.Tag].GroupCode) then
- begin
-  CreateGroup1.Visible:=False;
-  MoveToGroup1.Visible:=False;
-  ChangeGroup1.Visible:=True;
- end else
- begin
-  CreateGroup1.Visible:=True;
-  MoveToGroup1.Visible:=True;
-  ChangeGroup1.Visible:=False;
- end;
+  if GroupWithCodeExists(FSetGroups[PmGroup.Tag].GroupCode) then
+  begin
+    CreateGroup1.Visible := False;
+    MoveToGroup1.Visible := False;
+    ChangeGroup1.Visible:=True;
+  end else
+  begin
+    CreateGroup1.Visible := True;
+    MoveToGroup1.Visible := True;
+    ChangeGroup1.Visible := False;
+  end;
 end;
 
 procedure TEditGroupsForm.QuickInfo1Click(Sender: TObject);
 begin
- ShowGroupInfo(fGroups[PopupMenu1.Tag],false,nil);
+  ShowGroupInfo(FGroups[PmGroup.Tag], False, nil);
 end;
 
 procedure TEditGroupsForm.Clear1Click(Sender: TObject);
 begin
- ListBox1.Clear;
- FreeGroups(FSetGroups);
- ListBox1.Invalidate;
- ListBox2.Invalidate;
+  LstSelectedGroups.Clear;
+  FreeGroups(FSetGroups);
+  LstSelectedGroups.Invalidate;
+  LstAvaliableGroups.Invalidate;
 end;
 
 procedure TEditGroupsForm.ComboBoxEx1_KeyPress(Sender: TObject;
   var Key: Char);
 begin
- Key:=#0;
+  Key:= #0;
 end;
 
-procedure TEditGroupsForm.ListBox1DblClick(Sender: TObject);
+procedure TEditGroupsForm.LstSelectedGroupsDblClick(Sender: TObject);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=0 to ListBox1.Items.Count-1 do
- if ListBox1.Selected[i] then
- begin
-  ShowGroupInfo(FSetGroups[i],false,nil);
-  Break;
- end;
+  for I :=0 to LstSelectedGroups.Items.Count-1 do
+  if LstSelectedGroups.Selected[i] then
+    begin
+      ShowGroupInfo(FSetGroups[i],false,nil);
+    Break;
+  end;
 end;
 
 procedure TEditGroupsForm.FormShow(Sender: TObject);
 begin
- Button1.SetFocus;
+  BtnOk.SetFocus;
 end;
 
 procedure TEditGroupsForm.LoadLanguage;
 begin
- Caption := TEXT_MES_EDIT_GROUPS_CAPTION;
- Button5.Caption := TEXT_MES_GROUP_MANAGER_BUTTON;
- Button3.Caption := TEXT_MES_NEW_GROUP_BUTTON;
- Button1.Caption := TEXT_MES_CANCEL;
- Button2.Caption := TEXT_MES_OK;
- Label2.Caption := TEXT_MES_AVALIABLE_GROUPS;
- Label1.Caption := TEXT_MES_CURRENT_GROUPS;
- Clear1.Caption := TEXT_MES_CLEAR;
- GroupManeger2.Caption := TEXT_MES_GROUPS_MANAGER;
- Delete1.Caption := TEXT_MES_DELETE_ITEM;
- CreateGroup1.Caption := TEXT_MES_GREATE_GROUP;
- ChangeGroup1.Caption := TEXT_MES_CHANGE_GROUP;
- GroupManeger1.Caption := TEXT_MES_GROUPS_MANAGER;
- QuickInfo1.Caption :=  TEXT_MES_QUICK_INFO;
- SearchForGroup1.Caption:=TEXT_MES_SEARCH_FOR_GROUP;
- CheckBox3.Caption:=TEXT_MES_SHOW_ALL_GROUPS;
- CheckBox2.Caption:=TEXT_MES_DELETE_UNUSED_KEY_WORDS;
- MoveToGroup1.Caption:=TEXT_MES_MOVE_TO_GROUP;
- Label3.Caption:=TEXT_MES_GROUPS_EDIT_INFO;
+  BeginTranslate;
+  try
+    Caption := L('Edit groups');
+    BtnManager.Caption := L('Groups manager');
+    BtnCreateGroup.Caption := L('Create group');
+    BtnCancel.Caption := L('Cancel');
+    BtnOk.Caption := L('Ok');
+    Label2.Caption := L('Avaliable groups') + ':';
+    Label1.Caption := L('Selected groups') + ':';
+    Clear1.Caption := L('Clear');
+    GroupManeger2.Caption := L('Groups manager');
+    Delete1.Caption := L('Delete');
+    CreateGroup1.Caption := L('Create group');
+    ChangeGroup1.Caption := L('Change group');
+    GroupManeger1.Caption := L('Groups manager');
+    QuickInfo1.Caption := L('Group info');
+    SearchForGroup1.Caption := L('Search group photos');
+    CbShowAllGroups.Caption := L('Show all groups');
+    CbRemoveKeywords.Caption := L('Delete group comments');
+    MoveToGroup1.Caption := L('Move to group');
+    LbInfo.Caption := L('Use button "-->" to select groups and button "<--" to remove them from list');
+  finally
+    EndTranslate;
+  end;
 end;
 
-
-procedure TEditGroupsForm.ApplicationEvents1Message(var Msg: tagMSG;
-  var Handled: Boolean);
-{var
-  i : integer;  }
+procedure TEditGroupsForm.ApplicationEvents1Message(var Msg: TagMSG; var Handled: Boolean);
 begin
- if Msg.hwnd=ListBox1.Handle then
- if Msg.message=256 then
- if Msg.wParam=46 then
- begin
-  Button7Click(nil);
- end;
+  if (Msg.Hwnd = LstSelectedGroups.Handle)
+    and (Msg.message = WM_KEYDOWN)
+    and (Msg.wParam = VK_DELETE) then
+  BtnRemoveGroupClick(Self);
 end;
 
 procedure TEditGroupsForm.SearchForGroup1Click(Sender: TObject);
 var
-  NewSearch : TSearchForm;
+  NewSearch: TSearchForm;
 begin
- NewSearch:=SearchManager.NewSearch;
- NewSearch.SearchEdit.Text:=':Group('+fGroups[PopupMenu1.Tag].GroupName+'):';
- NewSearch.WlStartStop.OnClick(Sender);
- NewSearch.Show;
+  NewSearch := SearchManager.NewSearch;
+  NewSearch.SearchEdit.Text := ':Group(' + FGroups[PmGroup.Tag].GroupName+'):';
+  NewSearch.WlStartStop.OnClick(Sender);
+  NewSearch.Show;
 end;
 
-procedure TEditGroupsForm.DestroyTimerTimer(Sender: TObject);
+procedure TEditGroupsForm.CbShowAllGroupsClick(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- Release;
+  RecreateGroupsList;
+  DBkernel.WriteBool('Propetry','ShowAllGroups', CbShowAllGroups.Checked);
 end;
 
-procedure TEditGroupsForm.CheckBox3Click(Sender: TObject);
+procedure TEditGroupsForm.CbRemoveKeywordsClick(Sender: TObject);
 begin
- RecreateGroupsList;
- DBkernel.WriteBool('Propetry','ShowAllGroups',CheckBox3.Checked);
+  DBkernel.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywords.Checked);
 end;
 
-procedure TEditGroupsForm.CheckBox2Click(Sender: TObject);
-begin
- DBkernel.WriteBool('Propetry','DeleteKeyWords',CheckBox2.Checked);
-end;
-
-procedure TEditGroupsForm.ListBox2DrawItem(Control: TWinControl;
+procedure TEditGroupsForm.LstAvaliableGroupsDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
-  n, i, w : Integer;
+  N, I, W : Integer;
   xNewGroups : TGroups;
-  Text,Text1 : string;
+  Text, Text1 : string;
+
   function NewGroup(GroupCode : String) : Boolean;
   var
-    j : integer;
+    J : integer;
   begin
    Result:=false;
-   for j:=0 to Length(xNewGroups)-1 do
-   if xNewGroups[j].GroupCode=GroupCode then
-   begin
-    Result:=true;
-    Break;
-   end;
+   for J := 0 to Length(xNewGroups) - 1 do
+      if XNewGroups[J].GroupCode = GroupCode then
+      begin
+        Result := True;
+        Break;
+      end;
   end;
 
-  function GroupExists(GroupCode : String) : Boolean;
+  function GroupExists(GroupCode: string): Boolean;
   var
-    j : integer;
+    J: Integer;
   begin
-   Result:=false;
-   for j:=0 to Length(FSetGroups)-1 do
-   if FSetGroups[j].GroupCode=GroupCode then
-   begin
-    Result:=true;
-    Break;
-   end;
+    Result := False;
+    for J := 0 to Length(FSetGroups) - 1 do
+      if FSetGroups[J].GroupCode = GroupCode then
+      begin
+        Result := True;
+        Break;
+      end;
   end;
 
 begin
- if Control=ListBox1 then
- begin
-  xNewGroups:=CopyGroups(FSetGroups);
-  RemoveGroupsFromGroups(xNewGroups,FOldGroups);
- end else
- begin
-  xNewGroups:=CopyGroups(FOldGroups);
-  RemoveGroupsFromGroups(xNewGroups,FSetGroups);
- end;
- try
-  if Index=-1 then exit;
-  with (Control as TListBox).Canvas do
+  if Control = LstSelectedGroups then
   begin
-//   if Length(FRegGroups)-1<Index then exit;
-//   if Length(FRegGroups)=0 then exit;
-   FillRect(Rect);
-   n:=-1;
-   if Control=ListBox1 then
-   begin
-    for i:=0 to Length(FRegGroups)-1 do
-    begin
-     if FRegGroups[i].GroupCode=FSetGroups[Index].GroupCode then
-     begin
-      n:=i+1;
-      break;
-     end;
-    end
-   end else
-   begin
-    for i:=0 to Length(FRegGroups)-1 do
-    begin
-     if FRegGroups[i].GroupName=(Control as TListBox).Items[Index] then
-     begin
-      n:=i+1;
-      break;
-     end;
-    end
-   end;
-
-   GroupsImageList.Draw((Control as TListBox).Canvas,Rect.Left+2,Rect.Top+2,Max(0,n));
-   if n=-1 then
-   begin
-    DrawIconEx((Control as TListBox).Canvas.Handle,Rect.Left+10,Rect.Top+8,UnitDBKernel.icons[DB_IC_DELETE_INFO+1],8,8,0,0,DI_NORMAL);
-   end;
-   if Control=ListBox1 then
-   if NewGroup(FSetGroups[Index].GroupCode) then
-   (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style+[fsBold] else (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style-[fsBold];
-
-   if Control=ListBox2 then
-   if n>-1 then
-   if NewGroup(FRegGroups[n-1].GroupCode) then
-    (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style+[fsBold] else
-    begin
-     if GroupExists(FShowenRegGroups[Index].GroupCode) then
-     begin
-      (Control as TListBox).Canvas.Font.Color:=ColorDiv2(Theme_ListFontColor,Theme_MemoEditColor);
-     end else
-     begin
-      (Control as TListBox).Canvas.Font.Color:=Theme_ListFontColor;
-     end;
-    (Control as TListBox).Canvas.Font.Style:=(Control as TListBox).Canvas.Font.Style-[fsBold];
-   end;
-   Text:=(Control as TListBox).Items[Index];
-   w:=Control.Width div (Control as TListBox).Canvas.TextWidth('w');
-   Text1:=Copy(Text,1,Min(Length(Text),w));
-   Delete(Text,1,Length(Text1));
-   if Text<>'' then
-   if CharInSet(Text1[Length(Text1)], ['a'..'z','A'..'Z','а'..'Я','а'..'Я']) then
-   if CharInSet(Text[1], ['a'..'z','A'..'Z','а'..'Я','а'..'Я']) then
-   Text1:=Text1+'-';
-   TextOut(Rect.Left+32+5, Rect.Top+3, Text1);
-   TextOut(Rect.Left+32+5, Rect.Top+3+14, Text);
+    XNewGroups := CopyGroups(FSetGroups);
+    RemoveGroupsFromGroups(XNewGroups, FOldGroups);
+  end else
+  begin
+    XNewGroups := CopyGroups(FOldGroups);
+    RemoveGroupsFromGroups(xNewGroups,FSetGroups);
   end;
- except
- end;
+
+  try
+    if Index=-1 then
+      exit;
+    with (Control as TListBox).Canvas do
+    begin
+      FillRect(Rect);
+      n:=-1;
+      if Control=LstSelectedGroups then
+      begin
+        for i:=0 to Length(FRegGroups)-1 do
+        begin
+          if FRegGroups[I].GroupCode = FSetGroups[index].GroupCode then
+          begin
+            N := I + 1;
+            Break;
+          end;
+        end
+      end else
+      begin
+        for I := 0 to Length(FRegGroups) - 1 do
+        begin
+          if FRegGroups[I].GroupName = (Control as TListBox).Items[index] then
+          begin
+            N := I + 1;
+            Break;
+          end;
+        end
+      end;
+
+      GroupsImageList.Draw((Control as TListBox).Canvas, Rect.Left + 2, Rect.Top + 2, Max(0, N));
+      if N = -1 then
+      begin
+        DrawIconEx((Control as TListBox).Canvas.Handle, Rect.Left + 10, Rect.Top + 8,
+          UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
+      end;
+      if Control = LstSelectedGroups then
+        if NewGroup(FSetGroups[index].GroupCode) then
+          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
+        else
+          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
+
+      if Control = LstAvaliableGroups then
+        if N > -1 then
+          if NewGroup(FRegGroups[N - 1].GroupCode) then (Control as TListBox)
+            .Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
+          else
+          begin
+            if GroupExists(FShowenRegGroups[index].GroupCode) then
+            begin
+              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme_ListFontColor, Theme_MemoEditColor);
+            end else
+            begin
+              (Control as TListBox).Canvas.Font.Color := Theme_ListFontColor;
+            end;
+            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
+          end;
+      Text := (Control as TListBox).Items[index];
+      W := Control.Width div (Control as TListBox).Canvas.TextWidth('w');
+      Text1 := Copy(Text, 1, Min(Length(Text), W));
+      Delete(Text, 1, Length(Text1));
+      if Text <> '' then
+        if CharInSet(Text1[Length(Text1)], ['a' .. 'z', 'A' .. 'Z', 'а' .. 'Я', 'а' .. 'Я']) then
+          if CharInSet(Text[1], ['a' .. 'z', 'A' .. 'Z', 'а' .. 'Я', 'а' .. 'Я']) then
+            Text1 := Text1 + '-';
+      TextOut(Rect.Left + 32 + 5, Rect.Top + 3, Text1);
+      TextOut(Rect.Left + 32 + 5, Rect.Top + 3 + 14, Text);
+    end;
+  except
+  end;
 end;
 
-function TEditGroupsForm.aGetGroupByCode(GroupCode: String): integer;
+function TEditGroupsForm.AGetGroupByCode(GroupCode: string): Integer;
 var
-  i : integer;
+  I: Integer;
 begin
- Result:=-1;
- for i:=0 to Length(FRegGroups)-1 do
- if FRegGroups[i].GroupCode=GroupCode then
- begin
-  Result:=i;
-  break;
- end;
+  Result := -1;
+  for I := 0 to Length(FRegGroups) - 1 do
+    if FRegGroups[I].GroupCode = GroupCode then
+    begin
+    Result := I;
+    break;
+  end;
 end;
 
-procedure TEditGroupsForm.Button7Click(Sender: TObject);
+procedure TEditGroupsForm.BtnRemoveGroupClick(Sender: TObject);
 var
-  i, j : integer;
-  KeyWords, AllGroupsKeyWords, GroupKeyWords : String;
+  I, J: Integer;
+  KeyWords, AllGroupsKeyWords, GroupKeyWords: string;
 begin
- for i:=ListBox1.Items.Count-1 downto 0 do
- if ListBox1.Selected[i] then
- // смотрим выделенный группы для удаления
- begin
-
-//  if aGetGroupByCode(fGroups[i].GroupCode)>-1 then
-//  RemoveGroupFromGroups(FSetGroups,FRegGroups[aGetGroupByCode(fGroups[i].GroupCode)]);
-
-  //если удаление ключевых слов ненужных то удаляем их
-  if CheckBox2.Checked then
+  for I := LstSelectedGroups.Items.Count - 1 downto 0 do
+  if LstSelectedGroups.Selected[I] then
+  // смотрим выделенный группы для удаления
   begin
-   AllGroupsKeyWords:='';
-   for j:=ListBox1.Items.Count-1 downto 0 do
-   if i<>j then
-   begin
-    if aGetGroupByCode(FSetGroups[j].GroupCode)>-1 then
-    AddWordsA(FRegGroups[aGetGroupByCode(FSetGroups[j].GroupCode)].GroupKeyWords,AllGroupsKeyWords);
-   end;
-   KeyWords:=FNewKeyWords;
-   if aGetGroupByCode(FSetGroups[i].GroupCode)>-1 then
-   GroupKeyWords:=FRegGroups[aGetGroupByCode(FSetGroups[i].GroupCode)].GroupKeyWords;
-   DeleteWords(GroupKeyWords,AllGroupsKeyWords);
-   DeleteWords(KeyWords,GroupKeyWords);
-   FNewKeyWords:=KeyWords;
-  end;
+  // если удаление ключевых слов ненужных то удаляем их
+      if CbRemoveKeywords.Checked then
+      begin
+        AllGroupsKeyWords := '';
+        for J := LstSelectedGroups.Items.Count - 1 downto 0 do
+          if I <> J then
+          begin
+            if AGetGroupByCode(FSetGroups[J].GroupCode) > -1 then
+              AddWordsA(FRegGroups[AGetGroupByCode(FSetGroups[J].GroupCode)].GroupKeyWords, AllGroupsKeyWords);
+          end;
+        KeyWords := FNewKeyWords;
+        if AGetGroupByCode(FSetGroups[I].GroupCode) > -1 then
+          GroupKeyWords := FRegGroups[AGetGroupByCode(FSetGroups[I].GroupCode)].GroupKeyWords;
+        DeleteWords(GroupKeyWords, AllGroupsKeyWords);
+        DeleteWords(KeyWords, GroupKeyWords);
+        FNewKeyWords := KeyWords;
+      end;
 
-  //удаляем группу изтекущих
-
-  RemoveGroupFromGroups(FSetGroups,FSetGroups[i]);
-
-  ListBox1.Items.Delete(i);
-
- end;
- ListBox1.Invalidate;
- ListBox2.Invalidate;
+      // удаляем группу изтекущих
+      RemoveGroupFromGroups(FSetGroups, FSetGroups[I]);
+      LstSelectedGroups.Items.Delete(I);
+    end;
+  LstSelectedGroups.Invalidate;
+  LstAvaliableGroups.Invalidate;
 end;
 
 procedure TEditGroupsForm.MoveToGroup1Click(Sender: TObject);
 var
-  ToGroup : TGroup;
+  ToGroup: TGroup;
 begin
- if SelectGroup(ToGroup) then
- begin
-  MoveGroup(FSetGroups[PopupMenu1.Tag],ToGroup);
-  MessageBoxDB(Handle,TEXT_MES_RELOAD_INFO,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
- end;
+  if SelectGroup(ToGroup) then
+  begin
+    MoveGroup(FSetGroups[PmGroup.Tag], ToGroup);
+    MessageBoxDB(Handle, L('Reload data in application to see changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+  end;
 end;
 
 procedure TEditGroupsForm.ChangedDBDataGroups(Sender: TObject; ID: integer;
-  params: TEventFields; Value: TEventValues);
+  Params: TEventFields; Value: TEventValues);
 begin
- if EventID_Param_GroupsChanged in params then
- begin
-  RecreateGroupsList;
-  Exit;
- end;
+  if EventID_Param_GroupsChanged in Params then
+  begin
+    RecreateGroupsList;
+    Exit;
+  end;
 end;
 
-procedure TEditGroupsForm.FormClose(Sender: TObject;
-  var Action: TCloseAction);
-begin
- DestroyTimer.Enabled:=true;
- DBKernel.UnRegisterChangesID(Self,ChangedDBDataGroups);
+procedure TEditGroupsForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin;
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataGroups);
 end;
 
-procedure TEditGroupsForm.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TEditGroupsForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
- //ESC
- if Key = 27 then Close();
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 end.

@@ -1709,7 +1709,7 @@ begin
     if LoadingAllBigImages then
       SynchronizeEx(GetAllFiles);
 
-    ShowInfo(TEXT_MES_LOADING_BIG_IMAGES);
+    ShowInfo(L('Loading previews'));
     ShowInfo(FFiles.Count ,0);
     InfoPosition:=0;
 

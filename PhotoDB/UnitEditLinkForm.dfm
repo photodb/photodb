@@ -184,24 +184,23 @@ object FormEditLink: TFormEditLink
     Height = 13
     Caption = 'Link value:'
   end
-  object Label4: TLabel
+  object LblInfo: TLabel
     Left = 56
     Top = 8
     Width = 129
     Height = 41
     AutoSize = False
-    Caption = 'Label4'
+    Caption = 'LblInfo'
     WordWrap = True
   end
-  object Edit1: TEdit
+  object EdName: TWatermarkedEdit
     Left = 8
     Top = 112
     Width = 177
     Height = 21
     TabOrder = 0
-    Text = '<Name>'
-    OnChange = Edit1Change
-    OnKeyPress = ComboBox1KeyPress
+    OnChange = EdNameChange
+    OnKeyPress = CbLinkTypeKeyPress
   end
   object Button1: TButton
     Left = 168
@@ -212,36 +211,34 @@ object FormEditLink: TFormEditLink
     TabOrder = 1
     OnClick = Button1Click
   end
-  object Button2: TButton
+  object BtnOk: TButton
     Left = 112
     Top = 224
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtnOkClick
   end
-  object Button3: TButton
+  object BtnCancel: TButton
     Left = 31
     Top = 224
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 3
-    OnClick = Button3Click
+    OnClick = BtnCancelClick
   end
-  object Edit2: TMemo
+  object EdValue: TWatermarkedMemo
     Left = 8
     Top = 152
     Width = 161
     Height = 65
-    Lines.Strings = (
-      '<Value>')
     TabOrder = 4
-    OnChange = Edit1Change
-    OnKeyPress = Edit2KeyPress
+    OnChange = EdNameChange
+    OnKeyPress = EdValueKeyPress
   end
-  object ComboBox1: TComboBoxExDB
+  object CbLinkType: TComboBoxExDB
     Left = 8
     Top = 72
     Width = 177
@@ -249,8 +246,8 @@ object FormEditLink: TFormEditLink
     ItemsEx = <>
     Style = csExDropDownList
     TabOrder = 5
-    OnChange = Edit1Change
-    OnKeyPress = ComboBox1KeyPress
+    OnChange = EdNameChange
+    OnKeyPress = CbLinkTypeKeyPress
     Images = LinkImageList
     DropDownCount = 10
     ShowDropDownMenu = True
@@ -262,13 +259,6 @@ object FormEditLink: TFormEditLink
     OnDrop = DropFileTarget1Drop
     OptimizedMove = True
     Left = 80
-    Top = 56
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 144
     Top = 56
   end
   object LinkImageList: TImageList

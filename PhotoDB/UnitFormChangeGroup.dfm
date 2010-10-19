@@ -125,30 +125,26 @@ object FormChangeGroup: TFormChangeGroup
     Caption = 'Related Groups:'
     ExplicitTop = 192
   end
-  object MemComments: TMemo
+  object MemComments: TWatermarkedMemo
     Left = 4
     Top = 76
     Width = 317
     Height = 41
     Anchors = [akLeft, akTop, akRight]
-    Lines.Strings = (
-      '<Comment>')
     TabOrder = 0
-    ExplicitWidth = 257
+    WatermarkText = 'Write here comment to this group'
   end
-  object Button1: TButton
-    Left = 250
-    Top = 315
+  object BtnOk: TButton
+    Left = 252
+    Top = 314
     Width = 75
     Height = 17
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 1
-    OnClick = Button1Click
-    ExplicitLeft = 190
-    ExplicitTop = 280
+    OnClick = BtnOkClick
   end
-  object Button2: TButton
+  object BtnCancel: TButton
     Left = 171
     Top = 315
     Width = 75
@@ -156,43 +152,16 @@ object FormChangeGroup: TFormChangeGroup
     Anchors = [akRight, akBottom]
     Caption = 'Cancel'
     TabOrder = 2
-    OnClick = Button2Click
-    ExplicitLeft = 111
-    ExplicitTop = 280
+    OnClick = BtnCancelClick
   end
-  object RadioButton1: TRadioButton
-    Left = 8
-    Top = 291
-    Width = 113
-    Height = 17
-    Anchors = [akLeft, akBottom]
-    Caption = 'Common Group'
-    Checked = True
-    TabOrder = 3
-    TabStop = True
-    ExplicitTop = 256
-  end
-  object RadioButton2: TRadioButton
-    Left = 136
-    Top = 291
-    Width = 113
-    Height = 17
-    Anchors = [akLeft, akBottom]
-    Caption = 'Private Group'
-    TabOrder = 4
-    ExplicitTop = 256
-  end
-  object MemKeywords: TMemo
-    Left = 4
+  object MemKeywords: TWatermarkedMemo
+    Left = 3
     Top = 140
     Width = 317
     Height = 64
     Anchors = [akLeft, akTop, akRight, akBottom]
-    Lines.Strings = (
-      '<Key Words>')
-    TabOrder = 5
-    ExplicitWidth = 257
-    ExplicitHeight = 29
+    TabOrder = 3
+    WatermarkText = 'Write here keywords for this group'
   end
   object CbAddkeywords: TCheckBox
     Left = 8
@@ -201,8 +170,7 @@ object FormChangeGroup: TFormChangeGroup
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'Auto Add keyWords'
-    TabOrder = 6
-    ExplicitTop = 173
+    TabOrder = 4
   end
   object ComboBoxEx1: TComboBoxEx
     Left = 8
@@ -211,14 +179,12 @@ object FormChangeGroup: TFormChangeGroup
     Height = 22
     ItemsEx = <>
     Anchors = [akLeft, akRight, akBottom]
-    TabOrder = 7
+    TabOrder = 5
     OnDblClick = ComboBoxEx1DblClick
     OnDropDown = ComboBoxEx1DropDown
     OnKeyPress = ComboBoxEx1KeyPress
     OnSelect = ComboBoxEx1Select
     Images = GroupsImageList
-    ExplicitTop = 208
-    ExplicitWidth = 255
   end
   object CbInclude: TCheckBox
     Left = 8
@@ -227,11 +193,9 @@ object FormChangeGroup: TFormChangeGroup
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Include In Quick Lists'
-    TabOrder = 8
-    ExplicitTop = 235
-    ExplicitWidth = 253
+    TabOrder = 6
   end
-  object EdwName: TWatermarkedEdit
+  object EdName: TWatermarkedEdit
     Left = 60
     Top = 8
     Width = 260
@@ -243,8 +207,17 @@ object FormChangeGroup: TFormChangeGroup
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 9
+    TabOrder = 7
     WatermarkText = 'Enter group name'
+  end
+  object CbPrivateGroup: TCheckBox
+    Left = 8
+    Top = 291
+    Width = 313
+    Height = 17
+    Anchors = [akLeft, akRight, akBottom]
+    Caption = 'Group is private'
+    TabOrder = 8
   end
   object PmLoadFromFile: TPopupMenu
     OnPopup = PmLoadFromFilePopup

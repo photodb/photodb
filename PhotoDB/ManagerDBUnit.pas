@@ -296,9 +296,7 @@ begin
   UnLock;
   DropFileTarget1.Register(Self);
   DBCanDrag := False;
-  DBkernel.RegisterChangesID(self,ChangedDBDataByID);
-  DBkernel.RegisterForm(Self);
-  DBkernel.RecreateThemeToForm(Self);
+  DBkernel.RegisterChangesID(self, ChangedDBDataByID);
 
   Showfileinexplorer1.ImageIndex := DB_IC_FOLDER;
 

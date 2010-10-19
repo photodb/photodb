@@ -215,8 +215,8 @@ begin
     PbProgress.MaxValue:=intparam;
     //Saving text information
     OldInformationText:=Label7.Caption;
-    Label7.Caption:=TEXT_MES_LOADING_BIG_IMAGES;
-    PbProgress.Text:=format(TEXT_MES_LOADING_BIG_IMAGES_F,[IntToStr(intparam)]);
+    Label7.Caption:= L('Loading previews');
+    PbProgress.Text:=format(L('Loading previews (%s)'),[IntToStr(intparam)]);
     (FSender as TSearchForm).tbStopOperation.Enabled:=true;
   end;
 end;

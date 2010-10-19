@@ -15,7 +15,6 @@ object BigImagesSizeForm: TBigImagesSizeForm
   KeyPreview = True
   OldCreateOrder = False
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
