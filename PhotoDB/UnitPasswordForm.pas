@@ -172,7 +172,6 @@ procedure TPassWordForm.FormCreate(Sender: TObject);
 begin
   FOpenedList := False;
   ClientHeight := BtOk.Top + BtOk.Height + 5;
-  DBKernel.RecreateThemeToForm(Self);
   CbSavePassToSession.Checked := DBKernel.Readbool('Options', 'AutoSaveSessionPasswords', True);
   CbSavePassPermanent.Checked := DBKernel.Readbool('Options', 'AutoSaveINIPasswords', False);
   LoadLanguage;

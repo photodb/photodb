@@ -87,7 +87,6 @@ end;
 
 procedure TFormInternetUpdating.FormCreate(Sender: TObject);
 begin
- DBkernel.RecreateThemeToForm(self);
  LoadLanguage
 end;
 

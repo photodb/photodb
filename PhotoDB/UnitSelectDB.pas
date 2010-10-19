@@ -156,7 +156,6 @@ begin
   ListBox1.ItemIndex:=0;
   Step:=0;
   LoadLanguage;
-  DBKernel.RecreateThemeToForm(Self);
   DBKernel.RegisterForm(Self);
   RefreshDBList;
 end;
@@ -670,7 +669,7 @@ var
 begin
   ComboBoxExDB1.Clear;
   DBImageList.Clear;
-  DBImageList.BkColor := Theme_ListColor;
+  DBImageList.BkColor := clWindow;
 
   for I := 0 to DBKernel.DBs.Count - 1 do
   begin

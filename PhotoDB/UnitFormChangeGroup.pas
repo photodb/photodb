@@ -288,8 +288,8 @@ begin
   SmallB.PixelFormat := Pf24bit;
   SmallB.Width := 16;
   SmallB.Height := 16;
-  SmallB.Canvas.Pen.Color := Theme_ListColor;
-  SmallB.Canvas.Brush.Color := Theme_ListColor;
+  SmallB.Canvas.Pen.Color := ClWindow;
+  SmallB.Canvas.Brush.Color := ClWindow;
   SmallB.Canvas.Rectangle(0, 0, 16, 16);
   DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
   GroupsImageList.Add(SmallB, nil);
@@ -299,7 +299,7 @@ begin
   begin
     SmallB := TBitmap.Create;
     SmallB.PixelFormat := Pf24bit;
-    SmallB.Canvas.Brush.Color := Theme_MainColor;
+    SmallB.Canvas.Brush.Color := ClBtnFace;
     Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
     GroupImageValud := False;
     if Group.GroupImage <> nil then

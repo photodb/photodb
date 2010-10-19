@@ -268,8 +268,8 @@ begin
   Bitmap := TBitmap.Create;
   try
     Bitmap.PixelFormat := Pf24bit;
-    Bitmap.Canvas.Brush.Color := Theme_ListColor;
-    Bitmap.Canvas.Pen.Color := Theme_ListColor;
+    Bitmap.Canvas.Brush.Color := clWindow;
+    Bitmap.Canvas.Pen.Color := clWindow;
     Bitmap.Width := 120;
     Bitmap.Height := 120;
 
@@ -277,7 +277,7 @@ begin
     try
       SearchBackgroundBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme_ListColor);
+        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, clWindow);
         Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
       finally
         SearchBackgroundBMP.Free;
@@ -316,7 +316,7 @@ begin
   ElvMain.Font.Color := 0;
   ElvMain.View := ElsThumbnail;
   ElvMain.DragKind := DkDock;
-  ElvMain.HotTrack.Color := Theme_ListFontColor;
+  ElvMain.HotTrack.Color := clWindowText;
 
   SetLVSelection(ElvMain);
 
@@ -347,7 +347,6 @@ begin
   DropFileTarget2.register(Self);
   FBitmapImageList := TBitmapImageList.Create;
   ManagerPanels.AddPanel(Self);
-  DBkernel.RecreateThemeToForm(Self);
   ElvMain.DoubleBuffered := True;
 
   ManagerPanels.AddPanel(Self);

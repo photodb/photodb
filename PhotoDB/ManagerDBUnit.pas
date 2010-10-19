@@ -835,15 +835,17 @@ procedure TManagerDB.ElvMainAdvancedCustomDrawSubItem(
   Sender: TCustomListView; Item: TListItem; SubItem: Integer;
   State: TCustomDrawState; Stage: TCustomDrawStage;
   var DefaultDraw: Boolean);
-var
-  r2 : TRect;
-  Caption : string;
-  aRect : TRect;
-  j, i : integer;
-  G : TGroups;
-  ItemData : TDBPopupMenuInfoRecord;
-Const
-  DrawTextOpt = DT_NOPREFIX+DT_CENTER+DT_WORDBREAK+DT_EDITCONTROL;
+ var
+   R2: TRect;
+   Caption: string;
+   ARect: TRect;
+   J, I: Integer;
+   G: TGroups;
+   ItemData: TDBPopupMenuInfoRecord;
+
+ const
+   DrawTextOpt = DT_NOPREFIX + DT_CENTER + DT_WORDBREAK + DT_EDITCONTROL;
+
 begin
   SetLength(G, 0);
   if SubItem < 0 then
@@ -858,21 +860,21 @@ begin
     Sender.Canvas.Brush.Style:=bsSolid;
     if Item.Selected and DefaultDraw then
     begin
-      Sender.Canvas.Brush.Color := Theme_ListSelectColor;
-      Sender.Canvas.Pen.Color := Theme_ListSelectColor;
+      Sender.Canvas.Brush.Color := clHighlight;
+      Sender.Canvas.Pen.Color := clHighlight;
       ListView_GetSubItemRect(elvMain.Handle, Item.Index, 10, 0, @aRect);
       elvMain.Canvas.Rectangle(0, r2.Top, aRect.Right, r2.Bottom);
     end else
     begin
       if Odd(Item.Index) then
       begin
-        Sender.Canvas.Brush.Color := ColorDarken(Theme_ListColor);
-        Sender.Canvas.Pen.Color := ColorDarken(Theme_ListColor);
+        Sender.Canvas.Brush.Color := ColorDarken(clWindow);
+        Sender.Canvas.Pen.Color := ColorDarken(clWindow);
         Sender.Canvas.Rectangle(0, r2.Top, Sender.Width, r2.Bottom);
       end else
       begin
-        Sender.Canvas.Brush.Color := Theme_ListColor;
-        Sender.Canvas.Pen.Color := Theme_ListColor;
+        Sender.Canvas.Brush.Color := clWindow;
+        Sender.Canvas.Pen.Color := clWindow;
         Sender.Canvas.Rectangle(0, r2.Top, Sender.Width, r2.Bottom);
       end;
     end;
@@ -885,7 +887,7 @@ begin
   end;
   Sender.Canvas.Brush.Style := bsClear;
   ListView_GetSubItemRect(elvMain.Handle, Item.Index, SubItem, 0, @aRect);
-  Sender.Canvas.Pen.Color := ColorDarken(Theme_MemoEditFontColor);
+  Sender.Canvas.Pen.Color := ColorDarken(clWindowText);
   Sender.Canvas.MoveTo(aRect.Left, aRect.Top);
   Sender.Canvas.LineTo(aRect.Left, aRect.Bottom);
   if not ItemData.InfoLoaded then
@@ -1548,10 +1550,10 @@ begin
 
           B.Width := ThSize;
           B.Height := ThSize;
-          B.Canvas.Pen.Color := Theme_MainColor;
-          B.Canvas.Brush.Color := Theme_MainColor;
+          B.Canvas.Pen.Color := ClBtnFace;
+          B.Canvas.Brush.Color := ClBtnFace;
           B.Canvas.Rectangle(0, 0, B.Width, B.Height);
-          B.Canvas.Pen.Color := Theme_ListColor;
+          B.Canvas.Pen.Color := clWindow;
           B.Canvas.Draw(ThSize div 2 - JPG.Width div 2, ThSize div 2 - JPG.Height div 2, JPG);
         finally
           JPG.Free;
@@ -1733,7 +1735,7 @@ var
 begin
   DBImageList.Clear;
   LbDatabases.Clear;
-  DBImageList.BkColor := Theme_ListColor;
+  DBImageList.BkColor := clWindow;
   for I := 0 to DBKernel.DBs.Count - 1 do
   begin
     LbDatabases.Items.Add(DBKernel.DBs[I].name);
@@ -1913,8 +1915,8 @@ end;
 procedure TManagerDB.dblDataDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := Theme_ListColor;
-  Buffer.Canvas.Brush.Color := Theme_ListColor;
+  Buffer.Canvas.Pen.Color := clWindow;
+  Buffer.Canvas.Brush.Color := clWindow;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 

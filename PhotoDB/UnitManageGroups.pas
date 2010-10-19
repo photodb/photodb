@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
   ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math, CommCtrl,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
-  UnitDBDeclare, uDBDrawing, uMemory, uDBForm;
+  UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils;
 
 type
   TFormManageGroups = class(TDBForm)
@@ -122,7 +122,6 @@ end;
 procedure TFormManageGroups.FormCreate(Sender: TObject);
 begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
-  DBKernel.RecreateThemeToForm(Self);
   FSaving := False;
   Caption := L('Manage groups');
   ListView1.DoubleBuffered := True;
@@ -212,7 +211,7 @@ begin
         B.Assign(Groups[I].GroupImage);
         FBitmapImageList.AddBitmap(B, False);
       finally
-        B.Free;
+        F(B);
       end;
     end;
     ListView1.Clear;
@@ -291,30 +290,15 @@ var
   Size, I: Integer;
   Acaption, Atext, AkeyWords, AGroups, Fn: string;
   AxGroups: TGroups;
+  WindowColor : TColor;
+
 const
   DrawTextOpt = DT_EDITCONTROL;
   DrawTextOpt1 = DT_NOPREFIX + DT_WORDBREAK + DT_EDITCONTROL;
-
   ThSize: Integer = 48;
 
-  function Darken(Color: TColor): TColor;
-  begin
-    Result := RGB(Round(0.75 * GetRValue(Color)), Round(0.75 * GetGValue(Color)), Round(0.75 * GetBValue(Color)));
-  end;
-
-  function BothPercent(Color1, Color2: TColor; Percent: Integer): TColor;
-  var
-    R, G, B: Byte;
-    P: Extended;
-  begin
-    P := (Percent / 100);
-    R := Round(P * GetRValue(Color1) + (P - 1) * GetRValue(Color2));
-    G := Round(P * GetGValue(Color1) + (P - 1) * GetGValue(Color2));
-    B := Round(P * GetBValue(Color1) + (P - 1) * GetBValue(Color2));
-    Result := RGB(R, G, B);
-  end;
-
 begin
+  WindowColor := ColorToRGB(ClWindow);
   R := Item.DisplayRect(DrBounds);
   if not RectInRect(Sender.ClientRect, R) then
     Exit;
@@ -322,7 +306,7 @@ begin
   R2 := Item.DisplayRect(DrLabel);
   B := TBitmap.Create;
   try
-    B.PixelFormat := Pf24bit;
+    B.PixelFormat := pf24bit;
     B.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
 
     if Item.ImageIndex > Length(Groups) - 1 then
@@ -345,18 +329,14 @@ begin
     begin
       if Item.Selected then
       begin
-        SelectedColor(B, RGB(Round(GetRValue(Theme_ListColor) * 0.5), Round(GetGValue(Theme_ListColor) * 0.5),
-            Round(GetBValue(Theme_ListColor) * 0.5)));
-        Sender.Canvas.Pen.Color := RGB(Round(GetRValue(Theme_ListColor) * 0.9), Round(GetGValue(Theme_ListColor) * 0.9),
-          Round(GetBValue(Theme_ListColor) * 0.9));
-        Sender.Canvas.Brush.Color := RGB(Round(GetRValue(Theme_ListColor) * 0.9),
-          Round(GetGValue(Theme_ListColor) * 0.9), Round(GetBValue(Theme_ListColor) * 0.9)); // $aa8888;
+        SelectedColor(B, MakeDarken(WindowColor, 0.5));
+        Sender.Canvas.Pen.Color := MakeDarken(WindowColor,  0.9);
+        Sender.Canvas.Brush.Color := MakeDarken(WindowColor,  0.9);
         Sender.Canvas.FillRect(R2);
-      end
-      else
+      end else
       begin
-        Sender.Canvas.Pen.Color := Theme_ListColor;
-        Sender.Canvas.Brush.Color := Theme_ListColor;
+        Sender.Canvas.Pen.Color := clWindow;
+        Sender.Canvas.Brush.Color := clWindow;
         Sender.Canvas.FillRect(R2);
       end;
 
@@ -369,7 +349,7 @@ begin
 
         Btext := TBitmap.Create;
         try
-          Btext.PixelFormat := Pf24bit;
+          Btext.PixelFormat := pf24bit;
           Btext.Width := Max(0, R2.Right - R2.Left);
           Btext.Height := Max(0, R2.Bottom - R2.Top);
           Btext.Canvas.Brush.Color := Sender.Canvas.Brush.Color;
@@ -385,7 +365,7 @@ begin
             Btext.Canvas.Font.Style := [Fsbold] + [FsUnderline]
           else
             Btext.Canvas.Font.Style := [Fsbold];
-          Btext.Canvas.Font.Color := Theme_ListFontColor;
+          Btext.Canvas.Font.Color := clWindowText;
           Btext.Canvas.Font.Size := 10;
           Textrect := Rect(5, 0, (Btext.Width div 4) * 2 - 3, R2.Bottom);
           DrawText(Btext.Canvas.Handle, PWideChar(Acaption), Length(Acaption), Textrect, DrawTextOpt + DT_LEFT);
@@ -398,7 +378,7 @@ begin
               Btext.Canvas.Font.Style := [Fsbold] + [FsUnderline]
             else
               Btext.Canvas.Font.Style := [Fsbold];
-            Btext.Canvas.Font.Color := Theme_ListFontColor xor $FF0000;
+            Btext.Canvas.Font.Color := ColorToRGB(clWindowText) xor $FF0000;
             Textrect := Rect((Btext.Width div 4) * 2 + 5, 0, (Btext.Width div 4) * 3, Btext.Height);
             DrawText(Btext.Canvas.Handle, PWideChar(L('Keywords') + ':'), Length(L('Keywords') + ':'), Textrect,
               DrawTextOpt + DT_LEFT);
@@ -406,13 +386,13 @@ begin
           if Length(AxGroups) > 0 then
           begin
             Btext.Canvas.Font.Style := [Fsbold];
-            Btext.Canvas.Font.Color := Theme_ListFontColor xor $008000;
+            Btext.Canvas.Font.Color := ColorToRGB(clWindowText) xor $008000;
             Textrect := Rect((Btext.Width div 4) * 3 + 5, 0, Btext.Width, Btext.Height);
             DrawText(Btext.Canvas.Handle, PWideChar(L('Groups') + ':'), Length(L('Groups') + ':'), Textrect,
               DrawTextOpt + DT_LEFT);
           end;
           Btext.Canvas.Font.Style := [];
-          Btext.Canvas.Font.Color := BothPercent(Theme_ListColor, Theme_ListFontColor, 40);
+          Btext.Canvas.Font.Color := MixColors(clWindow, clWindowText, 40);
           Textrect := Rect(8, Size, (Btext.Width div 4) * 2 - 8, Btext.Height);
           DrawText(Btext.Canvas.Handle, PWideChar(Atext), Length(Atext), Textrect, DrawTextOpt1 + DT_LEFT);
 
@@ -437,7 +417,7 @@ begin
       R1.Top + (R1.Bottom - R1.Top) div 2 - B.Height div 2, B);
 
   finally
-    B.Free;
+    F(B);
   end;
   DefaultDraw := False;
 end;

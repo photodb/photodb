@@ -195,14 +195,15 @@ end;
 
 procedure LoadFilesToPanel.Execute;
 var
-  i ,l : integer;
-  Graphic : TGraphic;
-  Data : TDBPopupMenuInfo;
-  DataRec : TDBPopupMenuInfoRecord;
+  I, L: Integer;
+  Graphic: TGraphic;
+  Data: TDBPopupMenuInfo;
+  DataRec: TDBPopupMenuInfoRecord;
 begin
-  FreeOnTerminate:=true;
+  FreeOnTerminate := True;
   CoInitialize(nil);
   try
+
  if fbyid then l:=Length(fIDs) else l:=Length(FFiles);
 
  FQuery := GetQuery;
@@ -221,8 +222,8 @@ begin
    if FTermitated then exit;
    fbit:=TBitmap.create;
    fbit.PixelFormat:=pf24bit;
-   fbit.Canvas.Brush.color:=Theme_ListColor;
-   fbit.Canvas.pen.color:=Theme_ListColor;
+    Fbit.Canvas.Brush.Color := ClWindow;
+    Fbit.Canvas.Pen.Color := ClWindow;
    fbit.Width:=fPictureSize;
    fbit.Height:=fPictureSize;
    if fbyid then
@@ -261,17 +262,16 @@ begin
       end;
       UnitPanelLoadingBigImagesThread.TPanelLoadingBigImagesThread.Create(FOwner,(FOwner as TFormCont).BigImagesSID, nil, FPictureSize, Data);
 
-    finally
-      F(Data);
+      finally
+        F(Data);
+      end;
+    end else
+    begin
+      Synchronize(DoStopLoading);
     end;
- end else
- begin
-  Synchronize(DoStopLoading);
- end;
   finally
     CoUninitialize;
   end;
-
 end;
 
 procedure LoadFilesToPanel.GetInfoByFileNameOrID(FileName: string; ID, N  : integer; out Graphic : TGraphic);
@@ -390,7 +390,7 @@ var
 begin
   B := TBitmap.Create;
   try
-    LoadImageX(Graphic, B, Theme_ListColor);
+    LoadImageX(Graphic, B, clWindow);
     W := B.Width;
     H := B.Height;
     ProportionalSize(FPictureSize, FPictureSize, W, H);

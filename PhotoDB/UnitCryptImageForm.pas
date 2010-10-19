@@ -114,7 +114,6 @@ procedure TCryptImageForm.FormCreate(Sender: TObject);
 var
   FPassIcon : HIcon;
 begin
-  DBkernel.RecreateThemeToForm(Self);
   CbSavePasswordForSession.Checked := DBKernel.Readbool('Options', 'AutoSaveSessionPasswords', True);
   CbSavePasswordPermanent.Checked := DBKernel.Readbool('Options', 'AutoSaveINIPasswords', False);
   SaveFileCRC := False;

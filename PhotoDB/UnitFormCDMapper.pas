@@ -79,7 +79,6 @@ begin
   CDImageList.AddIcon(Icon);
   Icon.Free;
   DBKernel.RegisterForm(Self);
-  DBKernel.RecreateThemeToForm(Self);
   LoadLanguage;
   RefreshCDList;
 end;

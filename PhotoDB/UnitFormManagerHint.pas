@@ -28,7 +28,6 @@ begin
  Width:=ThImageSize+10;
  Height:=ThImageSize+10;
  DBkernel.RegisterForm(self);
- DBkernel.RecreateThemeToForm(self);
 end;
 
 procedure TFormManagerHint.FormDestroy(Sender: TObject);

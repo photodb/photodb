@@ -451,10 +451,6 @@ resourcestring
 
 var
   DBName: string;
-  Theme_ListSelectColor, Theme_MainColor, Theme_MainFontColor, Theme_ListColor, Theme_ListFontColor,
-    Theme_MemoEditColor, Theme_MemoEditFontColor, Theme_LabelFontColor, Theme_ProgressBackColor,
-    Theme_ProgressFontColor, Theme_ProgressFillColor: TColor;
-
   DBKernel: TDBKernel = nil;
   ResultLogin: Boolean;
   KernelHandle: THandle;

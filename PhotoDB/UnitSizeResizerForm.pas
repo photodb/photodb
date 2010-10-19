@@ -111,7 +111,6 @@ var
 begin
   LoadLanguage;
   FData := TDBPopupMenuInfo.Create;
-  DBkernel.RecreateThemeToForm(Self);
 
   Formats := GetConvertableImageClasses;
   for I := 0 to Length(Formats) - 1 do

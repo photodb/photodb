@@ -152,7 +152,6 @@ begin
   for I := LINK_TYPE_ID to LINK_TYPE_TXT do
     CbLinkType.ItemsEx[I].ImageIndex := I;
   CbLinkType.ItemIndex := 0;
-  DBkernel.RecreateThemeToForm(Self);
 end;
 
 procedure TFormEditLink.BtnCancelClick(Sender: TObject);

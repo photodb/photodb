@@ -12,7 +12,7 @@ type
     GroupImage: TImage;
     GroupNameEdit: TEdit;
     CommentMemo: TMemo;
-    Button1: TButton;
+    BtnOk: TButton;
     DateEdit: TEdit;
     AccessEdit: TEdit;
     PopupMenu1: TPopupMenu;
@@ -24,14 +24,14 @@ type
     Label1: TLabel;
     SearchForGroup1: TMenuItem;
     KeyWordsMemo: TMemo;
-    CheckBox1: TCheckBox;
+    CbAddKeywords: TCheckBox;
     KeyWordsLabel: TLabel;
     Label3: TLabel;
     ComboBoxEx1: TComboBoxEx;
-    CheckBox2: TCheckBox;
+    CbInclude: TCheckBox;
     GroupsImageList: TImageList;
     PopupMenu2: TPopupMenu;
-    procedure Button1Click(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure EditGroup1Click(Sender: TObject);
     procedure Manager1Click(Sender: TObject);
@@ -66,120 +66,124 @@ implementation
 
 uses UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, Language, Searching;
 
-Procedure ShowGroupInfo(GrouName : String; CloseOwner : Boolean; Owner : TForm);
+procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm);
 var
   FormQuickGroupInfo: TFormQuickGroupInfo;
-  Group : TGroup;
+  Group: TGroup;
 begin
- Group.GroupCode:=FindGroupCodeByGroupName(GrouName);
- Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
- FormQuickGroupInfo.Execute(Group,CloseOwner,Owner);
- FormQuickGroupInfo.Release;
+  Group.GroupCode := FindGroupCodeByGroupName(GrouName);
+  Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
+  try
+    FormQuickGroupInfo.Execute(Group, CloseOwner, Owner);
+  finally
+    FormQuickGroupInfo.Release;
+  end;
 end;
 
-Procedure ShowGroupInfo(Group : TGroup; CloseOwner : Boolean; Owner : TForm);
+procedure ShowGroupInfo(Group: TGroup; CloseOwner: Boolean; Owner: TForm);
 var
   FormQuickGroupInfo: TFormQuickGroupInfo;
 begin
- Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
- FormQuickGroupInfo.Execute(Group,CloseOwner,Owner);
- FormQuickGroupInfo.Release;
+  Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
+  try
+    FormQuickGroupInfo.Execute(Group, CloseOwner, Owner);
+  finally
+    FormQuickGroupInfo.Release;
+  end;
 end;
 
-procedure TFormQuickGroupInfo.Button1Click(Sender: TObject);
+procedure TFormQuickGroupInfo.BtnOkClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
-procedure TFormQuickGroupInfo.Execute(Group: TGroup; CloseOwner : Boolean; Owner_ : TForm);
+procedure TFormQuickGroupInfo.Execute(Group: TGroup; CloseOwner: Boolean; Owner_: TForm);
 const
-   otstup = 3;
-   otstupa = 2;
+  Otstup = 3;
+  Otstupa = 2;
 var
-  FPrGroup : TGroup;
-  FineDate: array[0..255] of Char;
+  FPrGroup: TGroup;
+  FineDate: array [0 .. 255] of Char;
   TempSysTime: TSystemTime;
 begin
- fCloseOwner:=CloseOwner;
- fOwner:=Owner_;
- FGroup:=GetGroupByGroupCode(Group.GroupCode,True);
- if FGroup.GroupName='' then
- begin
-  MessageBoxDB(Handle,TEXT_MES_GROUP_NOT_FOUND,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  Exit;
- end;
- FPrGroup:=CopyGroup(FGroup);
- GroupNameEdit.Text:=FGroup.GroupName;
- FNewRelatedGroups:=FGroup.RelatedGroups;
- CheckBox2.Checked:=FGroup.IncludeInQuickList;
- If FPrGroup.GroupImage<>nil then
- begin
-  GroupImage.Picture.Graphic.Assign(FPrGroup.GroupImage As TJpegImage);
- end;
- CommentLabel.Top:=Max(GroupImage.Top+GroupImage.Height,GroupNameEdit.Top+GroupNameEdit.Height)+3;
- CommentMemo.Top:=CommentLabel.Top+CommentLabel.Height+3;
- CommentMemo.Text:=FPrGroup.GroupComment;
- CommentMemo.Height:=(CommentMemo.Lines.Count+1)*(Abs(CommentMemo.Font.Height)+2)+otstup;
- KeyWordsLabel.Top:=CommentMemo.Top+CommentMemo.Height+otstup;
- KeyWordsMemo.Top:=KeyWordsLabel.Top+KeyWordsLabel.Height+otstup;
- KeyWordsMemo.Text:=FPrGroup.GroupKeyWords;
- CheckBox1.Top:=KeyWordsMemo.Top+KeyWordsMemo.Height+otstup;
- CheckBox1.Checked:=FPrGroup.AutoAddKeyWords;
+  FCloseOwner := CloseOwner;
+  FOwner := Owner_;
+  FGroup := GetGroupByGroupCode(Group.GroupCode, True);
+  if FGroup.GroupName = '' then
+  begin
+    MessageBoxDB(Handle, TEXT_MES_GROUP_NOT_FOUND, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
+  FPrGroup := CopyGroup(FGroup);
+  GroupNameEdit.Text := FGroup.GroupName;
+  FNewRelatedGroups := FGroup.RelatedGroups;
+  CbInclude.Checked := FGroup.IncludeInQuickList;
+  if FPrGroup.GroupImage <> nil then
+    GroupImage.Picture.Graphic := FPrGroup.GroupImage;
 
- Label3.Top:=CheckBox1.Top+CheckBox1.Height+otstup;
- ComboBoxEx1.Top:=Label3.Top+Label3.Height+otstup;
- CheckBox2.Top:=ComboBoxEx1.Top+ComboBoxEx1.Height+otstup;
+  CommentLabel.Top := Max(GroupImage.Top + GroupImage.Height, GroupNameEdit.Top + GroupNameEdit.Height) + 3;
+  CommentMemo.Top := CommentLabel.Top + CommentLabel.Height + 3;
+  CommentMemo.Text := FPrGroup.GroupComment;
+  CommentMemo.Height := (CommentMemo.Lines.Count + 1) * (Abs(CommentMemo.Font.Height) + 2) + Otstup;
+  KeyWordsLabel.Top := CommentMemo.Top + CommentMemo.Height + Otstup;
+  KeyWordsMemo.Top := KeyWordsLabel.Top + KeyWordsLabel.Height + Otstup;
+  KeyWordsMemo.Text := FPrGroup.GroupKeyWords;
+  CbAddKeywords.Top := KeyWordsMemo.Top + KeyWordsMemo.Height + Otstup;
+  CbAddKeywords.Checked := FPrGroup.AutoAddKeyWords;
 
- DateLabel.Top:=CheckBox2.Top+CheckBox2.Height+otstup;
- DateEdit.Top:=DateLabel.Top+DateLabel.Height+otstupa;
- AccessLabel.Top:=DateEdit.Top+DateEdit.Height+otstupa;
- AccessEdit.Top:=AccessLabel.Top+AccessLabel.Height+otstup;
- Button1.Top:=AccessEdit.Top+AccessEdit.Height+otstup;
- ClientHeight:=Button1.Top+Button1.Height+otstup;
- DateTimeToSystemTime(FPrGroup.GroupDate,TempSysTime);
- GetDateFormat(LOCALE_USER_DEFAULT,  DATE_USE_ALT_CALENDAR,  @TempSysTime,  'd MMMM yyyy ', @FineDate,  255);
+  Label3.Top := CbAddKeywords.Top + CbAddKeywords.Height + Otstup;
+  ComboBoxEx1.Top := Label3.Top + Label3.Height + Otstup;
+  CbInclude.Top := ComboBoxEx1.Top + ComboBoxEx1.Height + Otstup;
 
- DateEdit.Text:=Format(TEXT_MES_GROUP_CREATED_AT,[{DateTimeToStr(FPrGroup.GroupDate)}FineDate]);
- if FPrGroup.GroupAccess=GROUP_ACCESS_COMMON then
- AccessEdit.Text:=TEXT_MES_COMMON_GROUP;
- if FPrGroup.GroupAccess=GROUP_ACCESS_PRIVATE then
- AccessEdit.Text:=TEXT_MES_PRIVATE_GROUP;
- ReloadGroups;
- ShowModal;
- FreeGroup(FGroup);
- FreeGroup(FPrGroup);
+  DateLabel.Top := CbInclude.Top + CbInclude.Height + Otstup;
+  DateEdit.Top := DateLabel.Top + DateLabel.Height + Otstupa;
+  AccessLabel.Top := DateEdit.Top + DateEdit.Height + Otstupa;
+  AccessEdit.Top := AccessLabel.Top + AccessLabel.Height + Otstup;
+  BtnOk.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
+  ClientHeight := BtnOk.Top + BtnOk.Height + Otstup;
+  DateTimeToSystemTime(FPrGroup.GroupDate, TempSysTime);
+  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM yyyy ', @FineDate, 255);
+
+  DateEdit.Text := Format(TEXT_MES_GROUP_CREATED_AT, [ { DateTimeToStr(FPrGroup.GroupDate) } FineDate]);
+  if FPrGroup.GroupAccess = GROUP_ACCESS_COMMON then
+    AccessEdit.Text := TEXT_MES_COMMON_GROUP;
+  if FPrGroup.GroupAccess = GROUP_ACCESS_PRIVATE then
+    AccessEdit.Text := TEXT_MES_PRIVATE_GROUP;
+  ReloadGroups;
+  ShowModal;
+  FreeGroup(FGroup);
+  FreeGroup(FPrGroup);
 end;
 
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);
 begin
- DBKernel.RecreateThemeToForm(Self);
- Loadlanguage;
+  Loadlanguage;
 end;
 
 procedure TFormQuickGroupInfo.EditGroup1Click(Sender: TObject);
 begin
- Hide;
- Application.ProcessMessages;
- DBChangeGroup(FGroup);
- Close;
+  Hide;
+  Application.ProcessMessages;
+  DBChangeGroup(FGroup);
+  Close;
 end;
 
 procedure TFormQuickGroupInfo.Manager1Click(Sender: TObject);
 begin
- Hide;
- if FormManageGroups<>nil then
- begin
+  Hide;
+  if FormManageGroups <> nil then
+  begin
+    Close;
+    Exit;
+  end;
+  Application.ProcessMessages;
+  ExecuteGroupManager;
   Close;
-  exit;
- end;
- Application.ProcessMessages;
- ExecuteGroupManager;
- Close;
 end;
 
 procedure TFormQuickGroupInfo.FormShow(Sender: TObject);
 begin
- Button1.SetFocus;
+  BtnOk.SetFocus;
 end;
 
 function TFormQuickGroupInfo.GetFormID: string;
@@ -189,116 +193,131 @@ end;
 
 procedure TFormQuickGroupInfo.LoadLanguage;
 begin
- Caption:=TEXT_MES_QUICK_INFO_CAPTION;
- Label1.Caption:= TEXT_MES_GROUP;
- DateLabel.Caption:=TEXT_MES_GROUP_DATE_CREATED;
- AccessLabel.Caption:=TEXT_MES_GROUP_ATTRIBUTES;
- Button1.Caption:= TEXT_MES_OK;
- EditGroup1.Caption:=TEXT_MES_CHANGE_GROUP;
- Manager1.Caption:=TEXT_MES_GROUP_MANAGER_BUTTON;
- SearchForGroup1.Caption:=TEXT_MES_SEARCH_FOR_GROUP;
- CheckBox1.Caption:=TEXT_MES_AUTO_ADD_KEYWORDS;
- KeyWordsLabel.Caption:=TEXT_MES_KEYWORDS_FOR_GROUP;
- CommentLabel.Caption:=TEXT_MES_GROUP_COMMENT;
- CheckBox2.Caption:=TEXT_MES_INCLUDE_IN_QUICK_LISTS;
- Label3.Caption:=TEXT_MES_RELATED_GROUPS+':';
+  BeginTranslate;
+  try
+    Caption:= L('Group info');
+    Label1.Caption := L('Group');
+    DateLabel.Caption := L('Date created');
+    AccessLabel.Caption := L('Attributes');
+    BtnOk.Caption := L('Ok');
+    EditGroup1.Caption := L('Edit group');
+    Manager1.Caption := L('Groups manager');
+    SearchForGroup1.Caption := L('Search for group images');
+    CbAddKeywords.Caption := L('Auto add keywords');
+    KeyWordsLabel.Caption := L('Keywords for group') + ':';
+    CommentLabel.Caption := L('Comment for group') + ':';
+    CbInclude.Caption := L('Include in quick access list');
+    Label3.Caption := L('Related groups') + ':';
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormQuickGroupInfo.SearchForGroup1Click(Sender: TObject);
 begin
- With SearchManager.NewSearch do
- begin
-  SearchEdit.Text:=':Group('+FGroup.GroupName+'):';
-  Button1.OnClick(Sender);
-  Show;
- end;
- Close;
- if FCloseOwner then FOwner.Close;
+  with SearchManager.NewSearch do
+  begin
+    SearchEdit.Text := ':Group(' + FGroup.GroupName + '):';
+    BtnOk.OnClick(Sender);
+    Show;
+  end;
+  Close;
+  if FCloseOwner then
+    FOwner.Close;
 end;
 
-procedure TFormQuickGroupInfo.ComboBoxEx1KeyPress(Sender: TObject;
-  var Key: Char);
+procedure TFormQuickGroupInfo.ComboBoxEx1KeyPress(Sender: TObject; var Key: Char);
 begin
- Key:=#0;
+  Key := #0;
 end;
 
 procedure TFormQuickGroupInfo.ComboBoxEx1Select(Sender: TObject);
 begin
- if ComboBoxEx1.ItemsEx.Count=0 then exit;
- ShowGroupInfo(ComboBoxEx1.Text,false,nil);
- ComboBoxEx1.ItemIndex:=-1;
- ComboBoxEx1.Text:=L('<Groups>');
+  if ComboBoxEx1.ItemsEx.Count = 0 then
+    Exit;
+  ShowGroupInfo(ComboBoxEx1.Text, False, nil);
+  ComboBoxEx1.ItemIndex := -1;
+  ComboBoxEx1.Text := L('<Groups>');
 end;
 
 procedure TFormQuickGroupInfo.ReloadGroups;
 var
-  i : integer;
-  FCurrentGroups : TGroups;
+  I: Integer;
+  FCurrentGroups: TGroups;
 begin
- FCurrentGroups:=EncodeGroups(FNewRelatedGroups);
- ComboBoxEx1.Items.Clear;
- For i:=0 to Length(FCurrentGroups)-1 do
- begin
-  ComboBoxEx1.Items.Add(FCurrentGroups[i].GroupName);
- end;
- ComboBoxEx1.Text:=L('<Groups>');
+  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  ComboBoxEx1.Items.Clear;
+  for I := 0 to Length(FCurrentGroups) - 1 do
+    ComboBoxEx1.Items.Add(FCurrentGroups[I].GroupName);
+
+  ComboBoxEx1.Text := L('<Groups>');
 end;
 
 procedure TFormQuickGroupInfo.ComboBoxEx1DropDown(Sender: TObject);
 var
-  i : integer;
-  Group : TGroup;
-  SmallB, B : TBitmap;
-  GroupImageValud : Boolean;
-  FCurrentGroups : TGroups;
+  I: Integer;
+  Group: TGroup;
+  SmallB, B: TBitmap;
+  GroupImageValud: Boolean;
+  FCurrentGroups: TGroups;
 begin
- GroupsImageList.Clear;
- SmallB := TBitmap.Create;
- SmallB.PixelFormat:=pf24bit;
- SmallB.Width:=16;
- SmallB.Height:=16;
- SmallB.Canvas.Pen.Color:=Theme_MainColor;
- SmallB.Canvas.Brush.Color:=Theme_MainColor;
- SmallB.Canvas.Rectangle(0,0,16,16);
- DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
- GroupsImageList.Add(SmallB,nil);
- SmallB.Free;
- FCurrentGroups:=EncodeGroups(FNewRelatedGroups);
- for i:=0 to Length(FCurrentGroups)-1 do
- begin
+  GroupsImageList.Clear;
   SmallB := TBitmap.Create;
-  SmallB.PixelFormat:=pf24bit;
-  SmallB.Canvas.Brush.Color:=Theme_MainColor;
-  Group:=GetGroupByGroupName(FCurrentGroups[i].GroupName,true);
-  GroupImageValud:=false;
-  if Group.GroupImage<>nil then
-  if not Group.GroupImage.Empty then
-  begin
-   B := TBitmap.Create;
-   B.PixelFormat:=pf24bit;
-   GroupImageValud:=true;
-   B.Assign(Group.GroupImage);
-   FreeGroup(Group);
-   DoResize(15,15,B,SmallB);
-   SmallB.Height:=16;
-   SmallB.Width:=16;
-   B.Free;
+  try
+    SmallB.PixelFormat := pf24bit;
+    SmallB.Width := 16;
+    SmallB.Height := 16;
+    SmallB.Canvas.Pen.Color := ClBtnFace;
+    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Rectangle(0, 0, 16, 16);
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+    GroupsImageList.Add(SmallB, nil);
+  finally
+    SmallB.Free;
   end;
-  GroupsImageList.Add(SmallB,nil);
-  SmallB.Free;
-  With ComboBoxEx1.ItemsEx[i] do
+  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  for I := 0 to Length(FCurrentGroups) - 1 do
   begin
-   if GroupImageValud then
-   ImageIndex:=i+1 else ImageIndex:=0;
+    SmallB := TBitmap.Create;
+    try
+      SmallB.PixelFormat := Pf24bit;
+      SmallB.Canvas.Brush.Color := ClBtnFace;
+      Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
+      GroupImageValud := False;
+      if Group.GroupImage <> nil then
+        if not Group.GroupImage.Empty then
+        begin
+          B := TBitmap.Create;
+          try
+            B.PixelFormat := pf24bit;
+            GroupImageValud := True;
+            B.Assign(Group.GroupImage);
+            FreeGroup(Group);
+            DoResize(15, 15, B, SmallB);
+            SmallB.Height := 16;
+            SmallB.Width := 16;
+          finally
+            B.Free;
+          end;
+        end;
+      GroupsImageList.Add(SmallB, nil);
+    finally
+      SmallB.Free;
+    end;
+    with ComboBoxEx1.ItemsEx[I] do
+    begin
+      if GroupImageValud then
+        ImageIndex := I + 1
+      else
+        ImageIndex := 0;
+    end;
   end;
- end;
 end;
 
-procedure TFormQuickGroupInfo.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TFormQuickGroupInfo.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
- //ESC
- if Key = 27 then Close();
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 end.

@@ -527,7 +527,7 @@ var
  begin
   if TransparentImage then
   begin
-   drawimage.Canvas.Brush.Color:=Theme_MainColor;
+   drawimage.Canvas.Brush.Color:=ClBtnFace;
    drawimage.Canvas.Pen.Color:=0;
    drawimage.Canvas.Rectangle(x1-1,y1-1,x2+1,y2+1);
   end;
@@ -590,8 +590,8 @@ begin
   end;
   DrawImage.Width:=Clientwidth;
   DrawImage.Height:=HeightW;
-  DrawImage.Canvas.Brush.Color:=Theme_MainColor;
-  DrawImage.Canvas.pen.Color:=Theme_MainColor;
+  DrawImage.Canvas.Brush.Color:=ClBtnFace;
+  DrawImage.Canvas.pen.Color:=ClBtnFace;
   DrawImage.Canvas.Rectangle(0,0,DrawImage.Width,DrawImage.Height);
   if (FbImage.Height=0) or (FbImage.width=0) then exit;
   if (FbImage.width>ClientWidth) or (FbImage.Height>HeightW) then
@@ -734,8 +734,8 @@ begin
  BottomImage.Top:=ClientHeight - ToolsBar.Height;
  BottomImage.Width:=ClientWidth;
  BottomImage.Height:=ToolsBar.Height;
- Canvas.Brush.Color:=Theme_MainColor;
- Canvas.Pen.Color:=Theme_MainColor;
+ Canvas.Brush.Color:=ClBtnFace;
+ Canvas.Pen.Color:=ClBtnFace;
  Canvas.Rectangle(0,HeightW,ClientWidth,ClientHeight);
  if StaticImage then  else
  begin
@@ -1647,8 +1647,8 @@ begin
    TW.I.Start('LoadImage_');
    if LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false) then
    begin
-    FbImage.Canvas.Brush.Color:=Theme_MainColor;
-    FbImage.Canvas.pen.Color:=Theme_MainColor;
+    FbImage.Canvas.Brush.Color:=ClBtnFace;
+    FbImage.Canvas.pen.Color:=ClBtnFace;
     if FNewCsrBmp<>nil then
     FNewCsrBmp.Canvas.Rectangle(0,0,FNewCsrBmp.width,FNewCsrBmp.Height);
     FbImage.Width:=170;
@@ -1659,7 +1659,7 @@ begin
     try
       LoadImageBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(LoadImage, LoadImageBMP, Theme_MainColor);
+        LoadPNGImage32bit(LoadImage, LoadImageBMP, ClBtnFace);
         FbImage.Canvas.Draw(0, 0, LoadImageBMP);
       finally
         LoadImageBMP.Free;
@@ -2226,15 +2226,15 @@ begin
       Imlists[I].Clear;
 
   TW.I.Start('BkColor');
-  Imlists[0].BkColor := Theme_MainColor;
+  Imlists[0].BkColor := ClBtnFace;
   Imlists[1].BkColor := ClBtnFace;
-  Imlists[2].BkColor := Theme_MainColor;
+  Imlists[2].BkColor := ClBtnFace;
   B := TBitmap.Create;
   try
     B.Width := 16;
     B.Height := 16;
-    B.Canvas.Brush.Color := Theme_MainColor;
-    B.Canvas.Pen.Color := Theme_MainColor;
+    B.Canvas.Brush.Color := ClBtnFace;
+    B.Canvas.Pen.Color := ClBtnFace;
     TW.I.Start('ImageList_ReplaceIcon');
     for I := 0 to 1 do
       for J := 0 to 22 do
@@ -2537,8 +2537,8 @@ begin
   AnimatedBuffer.Canvas.Pen.Color:=0;
  end else
  begin
-  AnimatedBuffer.Canvas.Brush.Color:=Theme_MainColor;
-  AnimatedBuffer.Canvas.Pen.Color:=Theme_MainColor;
+  AnimatedBuffer.Canvas.Brush.Color:=ClBtnFace;
+  AnimatedBuffer.Canvas.Pen.Color:=ClBtnFace;
  end;
  AnimatedBuffer.Canvas.Rectangle(0,0,AnimatedBuffer.Width,AnimatedBuffer.Height);
  ImageFrameTimer.Interval:=1;
@@ -2576,8 +2576,8 @@ begin
   AnimatedBuffer.Canvas.Pen.Color:=0;
  end else
  begin
-  AnimatedBuffer.Canvas.Brush.Color:=Theme_MainColor;
-  AnimatedBuffer.Canvas.Pen.Color:=Theme_MainColor;
+  AnimatedBuffer.Canvas.Brush.Color:=ClBtnFace;
+  AnimatedBuffer.Canvas.Pen.Color:=ClBtnFace;
  end;
  im:=(AnimatedImage as TGIFImage);
  TimerEnabled:=false;
@@ -2612,8 +2612,8 @@ begin
    AnimatedBuffer.Canvas.Brush.Color:=0;
   end else
   begin
-   AnimatedBuffer.Canvas.Pen.Color:=Theme_MainColor;
-   AnimatedBuffer.Canvas.Brush.Color:=Theme_MainColor;
+   AnimatedBuffer.Canvas.Pen.Color:=ClBtnFace;
+   AnimatedBuffer.Canvas.Brush.Color:=ClBtnFace;
   end;
 
   AnimatedBuffer.Canvas.Rectangle(bounds_);

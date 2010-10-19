@@ -97,7 +97,6 @@ var
 begin
  FFont := TFont.Create;
  LoadLanguage;
- DBkernel.RecreateThemeToForm(Self);
  ComboBox2.Clear;
  Formats:=GetConvertableImageClasses;
  for i:=0 to Length(Formats)-1 do

@@ -121,7 +121,6 @@ begin
  DropFileTarget1.Register(CDListView);
  PopupMenuListView.Images:=DBKernel.ImageList;
  DBKernel.RegisterForm(Self);
- DBKernel.RecreateThemeToForm(Self);
  FormManager.RegisterMainForm(Self);
  ComboBoxPathList.ItemIndex:=0;
  LoadLanguage;

@@ -67,7 +67,6 @@ end;
 procedure TImportProgressForm.FormCreate(Sender: TObject);
 begin
  DBKernel.RegisterForm(ImportProgressForm);
- DBKernel.RecreateThemeToForm(ImportProgressForm);
  FormManager.RegisterMainForm(self);
  StatusLabel.Caption:=TEXT_MES_WAITING+'...';
  ActionLabel.Caption:=TEXT_MES_WAITING+'...';

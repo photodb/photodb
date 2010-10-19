@@ -98,24 +98,21 @@ end;
 
 procedure TSplitExportForm.FormCreate(Sender: TObject);
 begin
- SetLength(Items,0);
+  SetLength(Items, 0);
 
+  DropFileTarget1.register(ListView1);
+  LoadLanguage;
+  MethodImageList.BkColor := ClWindow;
+  ImageList1.BkColor := ClWindow;
 
- DropFileTarget1.Register(ListView1);
- LoadLanguage;
- MethodImageList.BkColor:=Theme_ListColor;  
- ImageList1.BkColor:=Theme_ListColor;
+  ImageList_ReplaceIcon(MethodImageList.Handle, -1, Icons[DB_IC_COPY + 1]);
+  ImageList_ReplaceIcon(MethodImageList.Handle, -1, Icons[DB_IC_CUT + 1]);
 
-
- ImageList_ReplaceIcon(MethodImageList.Handle, -1, icons[DB_IC_COPY+1]);
- ImageList_ReplaceIcon(MethodImageList.Handle, -1, icons[DB_IC_CUT+1]);
-
- PopupMenu1.Images:=DBKernel.ImageList;
- Copy1.ImageIndex:=DB_IC_COPY;
- Cut1.ImageIndex:=DB_IC_CUT;           
- Delete1.ImageIndex:=DB_IC_DELETE_INFO;
- Button4.Caption:=TEXT_MES_NEW_W;
- DBKernel.RecreateThemeToForm(Self);
+  PopupMenu1.Images := DBKernel.ImageList;
+  Copy1.ImageIndex := DB_IC_COPY;
+  Cut1.ImageIndex := DB_IC_CUT;
+  Delete1.ImageIndex := DB_IC_DELETE_INFO;
+  Button4.Caption := TEXT_MES_NEW_W;
 end;
 
 procedure TSplitExportForm.DropFileTarget1Drop(Sender: TObject;
@@ -174,14 +171,14 @@ end;
 procedure TSplitExportForm.Button1Click(Sender: TObject);
 var
   OpenDialog : DBOpenDialog;
-begin      
+begin
  OpenDialog:=DBOpenDialog.Create;
  OpenDialog.Filter:='PhotoDB files (*.photodb)|*.photodb|All Files|*.*';
 
  if OpenDialog.Execute then
  if DBKernel.TestDB(OpenDialog.FileName) then
  Edit1.Text:=OpenDialog.FileName;
- 
+
  OpenDialog.Free;
 end;
 
@@ -193,7 +190,7 @@ begin
  CheckBox1.Caption:=TEXT_MES_DELETE_RECORDS_AFTER_FINISH;
  Label2.Caption:=TEXT_MES_PATH;
  Label3.Caption:=TEXT_MES_FILES_AND_FOLDERS;
- Copy1.Caption:=TEXT_MES_COPY;              
+ Copy1.Caption:=TEXT_MES_COPY;
  Cut1.Caption:=TEXT_MES_CUT;
  ListView1.Columns[0].Caption:=TEXT_MES_METHOD;
  ListView1.Columns[1].Caption:=TEXT_MES_PATH;
@@ -335,7 +332,7 @@ begin
   SetLength(ID_Delete,0);
   ProgressWindow := GetProgressWindow;
   ProgressWindow.OneOperation:=false;
-  ProgressWindow.OperationCount:=3;  
+  ProgressWindow.OperationCount:=3;
   ProgressWindow.OperationPosition:=1;
   ProgressWindow.DoubleBuffered:=true;
   S:=GetTable;

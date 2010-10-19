@@ -4,33 +4,32 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DB, Dolphin_DB, ProgressActionUnit, Language, uVistaFuncs,
-  CmpUnit, ExtCtrls, ClipBrd, Menus, UnitDBkernel, CommonDBSupport, uMemory;
+  Dialogs, StdCtrls, DB, Dolphin_DB, ProgressActionUnit, uVistaFuncs,
+  CmpUnit, ExtCtrls, ClipBrd, Menus, UnitDBkernel, CommonDBSupport, uMemory,
+  uDBForm;
 
 type
   Item = string; { This defines the objects being sorted. }
   List = array of Item; { This is an array of objects to be sorted. }
 
 type
-  TFormListOfKeyWords = class(TForm)
-    ListBox1: TListBox;
-    DestroyTimer: TTimer;
-    PopupMenu1: TPopupMenu;
+  TFormListOfKeyWords = class(TDBForm)
+    LstKeywords: TListBox;
+    PmKeywords: TPopupMenu;
     Copy1: TMenuItem;
     N1: TMenuItem;
     Search1: TMenuItem;
     Panel1: TPanel;
     Panel2: TPanel;
-    Button1: TButton;
+    BtnOk: TButton;
     Panel3: TPanel;
-    Label1: TLabel;
+    LbInfo: TLabel;
     procedure FormCreate(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure ListBox1DblClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure LstKeywordsDblClick(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
-    procedure ListBox1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure LstKeywordsContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure Search1Click(Sender: TObject);
     procedure DBOpened(Sender : TObject; DS : TDataSet);
@@ -39,6 +38,9 @@ type
   private
     { Private declarations }
     DBInOpening: Boolean;
+    procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
     procedure Execute;
@@ -48,8 +50,7 @@ procedure GetListOfKeyWords;
 
 implementation
 
-uses Searching,
-     UnitOpenQueryThread;
+uses Searching, UnitOpenQueryThread;
 
 {$R *.dfm}
 
@@ -133,7 +134,7 @@ begin
       ProgressForm.OperationPosition := 0;
       ProgressForm.OneOperation := True;
       ProgressForm.CanClosedByUser := True;
-      ProgressForm.SetAlternativeText(TEXT_MES_LOADING_KEYWORDS);
+      ProgressForm.SetAlternativeText(L('Loading list. Please, wait...'));
       try
         begin
 
@@ -144,7 +145,7 @@ begin
           OpenProgress.OperationCounter.Text := '';
           OpenProgress.OperationProgress.Inverse := True;
           OpenProgress.OperationProgress.Text := '';
-          OpenProgress.SetAlternativeText(TEXT_MES_WAINT_OPENING_QUERY);
+          OpenProgress.SetAlternativeText(L('Executing query. Please, wait...'));
 
           C := 0;
           I := 0;
@@ -168,7 +169,7 @@ begin
         end;
 
       except
-        MessageBoxDB(Handle, Format(TEXT_MES_OPEN_TABLE_ERROR_F, [Dbname]), TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+        MessageBoxDB(Handle, Format(L('Error executing query on DB "%s"'), [Dbname]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         Exit;
       end;
       ProgressForm.MaxPosCurrentOperation := FTable.RecordCount;
@@ -205,7 +206,7 @@ begin
           AllList.Delete(I);
       end;
 
-      ListBox1.Items := AllList;
+      LstKeywords.Items := AllList;
     finally
       R(ProgressForm);
     end;
@@ -218,71 +219,72 @@ end;
 procedure TFormListOfKeyWords.FormCreate(Sender: TObject);
 begin
   DBInOpening := True;
-  ListBox1.Color := Theme_ListColor;
-  ListBox1.Font.Color := Theme_ListFontColor;
-  DBKernel.RecreateThemeToForm(Self);
-  Caption := TEXT_MES_LIST_OF_KEYWORDS_CAPTION;
-  Label1.Caption := TEXT_MES_LIST_OF_KEYWORDS_TEXT;
-  Button1.Caption := TEXT_MES_OK;
-  Copy1.Caption := TEXT_MES_COPY;
-  Search1.Caption := TEXT_MES_SEARCH;
-  PopupMenu1.Images := DBkernel.ImageList;
+  LoadLanguage;
+  PmKeywords.Images := DBkernel.ImageList;
   Copy1.ImageIndex := DB_IC_COPY;
   Search1.ImageIndex := DB_IC_SEARCH;
 end;
 
-procedure TFormListOfKeyWords.DestroyTimerTimer(Sender: TObject);
+procedure TFormListOfKeyWords.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  DestroyTimer.Enabled := False;
   Release;
 end;
 
-procedure TFormListOfKeyWords.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  DestroyTimer.Enabled := True;
-end;
-
-procedure TFormListOfKeyWords.ListBox1DblClick(Sender: TObject);
+procedure TFormListOfKeyWords.LstKeywordsDblClick(Sender: TObject);
 var
   P: TPoint;
   N: Integer;
 begin
   GetCursorPos(P);
-  P := ListBox1.ScreenToClient(P);
-  N := ListBox1.ItemAtPos(P, True);
+  P := LstKeywords.ScreenToClient(P);
+  N := LstKeywords.ItemAtPos(P, True);
   if N > -1 then
-    ClipBoard.AsText := ListBox1.Items[N];
+    ClipBoard.AsText := LstKeywords.Items[N];
 end;
 
-procedure TFormListOfKeyWords.Button1Click(Sender: TObject);
+procedure TFormListOfKeyWords.BtnOkClick(Sender: TObject);
 begin
   Close;
 end;
 
 procedure TFormListOfKeyWords.Copy1Click(Sender: TObject);
 begin
-  ClipBoard.AsText := ListBox1.Items[PopupMenu1.Tag];
+  ClipBoard.AsText := LstKeywords.Items[PmKeywords.Tag];
 end;
 
-procedure TFormListOfKeyWords.ListBox1ContextPopup(Sender: TObject;
+procedure TFormListOfKeyWords.LoadLanguage;
+begin
+  BeginTranslate;
+  try
+    Caption := L('List of keywords');
+    LbInfo.Caption := L('This is list of all keywords in DB. Double click to copy item to clipboard.');
+    BtnOk.Caption := L('Ok');
+    Copy1.Caption := L('Copy');
+    Search1.Caption := L('Search');
+  finally
+    EndTranslate;
+  end;
+end;
+
+procedure TFormListOfKeyWords.LstKeywordsContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   I: Integer;
   ItemNo: Integer;
 begin
-  ItemNo := ListBox1.ItemAtPos(MousePos, True);
+  ItemNo := LstKeywords.ItemAtPos(MousePos, True);
   if ItemNo <> -1 then
   begin
-    if not ListBox1.Selected[ItemNo] then
+    if not LstKeywords.Selected[ItemNo] then
     begin
-      ListBox1.Selected[ItemNo] := True;
+      LstKeywords.Selected[ItemNo] := True;
     end;
-    PopupMenu1.Tag := ItemNo;
-    PopupMenu1.Popup(ListBox1.ClientToScreen(MousePos).X, ListBox1.ClientToScreen(MousePos).Y);
+    PmKeywords.Tag := ItemNo;
+    PmKeywords.Popup(LstKeywords.ClientToScreen(MousePos).X, LstKeywords.ClientToScreen(MousePos).Y);
   end else
   begin
-    for I := 0 to ListBox1.Items.Count - 1 do
-      ListBox1.Selected[I] := False;
+    for I := 0 to LstKeywords.Items.Count - 1 do
+      LstKeywords.Selected[I] := False;
   end;
 end;
 
@@ -291,8 +293,8 @@ begin
   with SearchManager.NewSearch do
   begin
     Show;
-    SearchEdit.Text := ':KeyWord(' + ListBox1.Items[Self.PopupMenu1.Tag] + '):';
-    DoSearchNow(nil);
+    SearchEdit.Text := ':KeyWord(' + LstKeywords.Items[PmKeywords.Tag] + '):';
+    DoSearchNow(Sender);
   end;
 end;
 
@@ -306,6 +308,11 @@ procedure TFormListOfKeyWords.FormKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_ESCAPE then
     Close;
+end;
+
+function TFormListOfKeyWords.GetFormID: string;
+begin
+  Result := 'KeywordList';
 end;
 
 end.

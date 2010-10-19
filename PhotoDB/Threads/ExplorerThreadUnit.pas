@@ -1245,7 +1245,7 @@ begin
   TempBitmap.PixelFormat := Pf24Bit;
   TempBitmap.Width := FIcoSize;
   TempBitmap.Height := FIcoSize;
-  FillRectNocanvas(TempBitmap, Theme_ListColor);
+  FillRectNocanvas(TempBitmap, ClWindow);
 end;
 
 function TExplorerThread.FindInQuery(FileName: String) : Boolean;
@@ -1820,7 +1820,7 @@ begin
       JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
 
       if Min(Graphic.Height, Graphic.Width)>1 then
-        LoadImageX(Graphic,Fbit,Theme_ListColor);
+        LoadImageX(Graphic,Fbit,clWindow);
       F(Graphic);
       TempBitmap := TBitmap.create;
       TempBitmap.PixelFormat := pf24bit;
@@ -1918,7 +1918,7 @@ begin
         try
           TempBit.PixelFormat := pf24bit;
           JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
-          LoadImageX(Graphic, TempBit, Theme_ListColor);
+          LoadImageX(Graphic, TempBit, clWindow);
           F(Graphic);
 
           W := TempBit.Width;

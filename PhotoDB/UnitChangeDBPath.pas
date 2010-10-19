@@ -87,7 +87,6 @@ begin
  Working:=false;
  LoadLanguage;
  DBKernel.RegisterForm(Self);
- DBkernel.RecreateThemeToForm(Self);
 end;
 
 procedure TFormChangeDBPath.FormDestroy(Sender: TObject);

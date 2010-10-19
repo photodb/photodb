@@ -20,7 +20,7 @@ object FormListOfKeyWords: TFormListOfKeyWords
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
-  object ListBox1: TListBox
+  object LstKeywords: TListBox
     Left = 0
     Top = 57
     Width = 304
@@ -28,8 +28,8 @@ object FormListOfKeyWords: TFormListOfKeyWords
     Align = alClient
     ItemHeight = 13
     TabOrder = 0
-    OnContextPopup = ListBox1ContextPopup
-    OnDblClick = ListBox1DblClick
+    OnContextPopup = LstKeywordsContextPopup
+    OnDblClick = LstKeywordsDblClick
   end
   object Panel1: TPanel
     Left = 0
@@ -47,14 +47,14 @@ object FormListOfKeyWords: TFormListOfKeyWords
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 0
-      object Button1: TButton
+      object BtnOk: TButton
         Left = 51
         Top = 3
         Width = 75
         Height = 25
         Caption = 'Ok'
         TabOrder = 0
-        OnClick = Button1Click
+        OnClick = BtnOkClick
       end
     end
   end
@@ -66,7 +66,7 @@ object FormListOfKeyWords: TFormListOfKeyWords
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 2
-    object Label1: TLabel
+    object LbInfo: TLabel
       Left = 4
       Top = 4
       Width = 310
@@ -78,14 +78,7 @@ object FormListOfKeyWords: TFormListOfKeyWords
       WordWrap = True
     end
   end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = DestroyTimerTimer
-    Left = 176
-    Top = 8
-  end
-  object PopupMenu1: TPopupMenu
+  object PmKeywords: TPopupMenu
     Left = 128
     Top = 8
     object Copy1: TMenuItem

@@ -42,7 +42,7 @@ type
    ImagePassword : string;
    MaxFileSize : Integer;
    NormalFileSize : integer;
-   GoodFileSize : integer;        
+   GoodFileSize : integer;
    function GetMaxFileSize : integer;
     { Private declarations }
   public
@@ -52,11 +52,11 @@ type
   end;
 
 const
-  max_exts = 2;
-  exts : array[0..max_exts] of string = ('bmp','jpg','jpeg');
+  Max_exts = 2;
+  Exts: array [0 .. Max_exts] of string = ('bmp', 'jpg', 'jpeg');
 
-procedure DoDesteno(InitialFileName : string);
-procedure DoSteno(InitialFileName : string);
+procedure DoDesteno(InitialFileName: string);
+procedure DoSteno(InitialFileName: string);
 
 implementation
 
@@ -68,45 +68,51 @@ procedure DoDesteno(InitialFileName : string);
 var
   FormSteno: TFormSteno;
 begin
- Application.CreateForm(TFormSteno, FormSteno);
- FormSteno.LoadInfoFromFile(ProcessPath(InitialFileName));
- FormSteno.Release;
- FormSteno.Free;
+  Application.CreateForm(TFormSteno, FormSteno);
+  try
+    FormSteno.LoadInfoFromFile(ProcessPath(InitialFileName));
+  finally
+    FormSteno.Release;
+  end;
 end;
 
 procedure DoSteno(InitialFileName : string);
 var
   FormSteno: TFormSteno;
 begin
- Application.CreateForm(TFormSteno, FormSteno);
- FormSteno.LoadImage(ProcessPath(InitialFileName),true);
- if not FormSteno.ImageSaved then
- FormSteno.ShowModal;
- FormSteno.Release;
- FormSteno.Free;
+  Application.CreateForm(TFormSteno, FormSteno);
+  try
+    FormSteno.LoadImage(ProcessPath(InitialFileName), True);
+    if not FormSteno.ImageSaved then
+      FormSteno.ShowModal;
+  finally
+    FormSteno.Release;
+  end;
 end;
 
 procedure TFormSteno.Button3Click(Sender: TObject);
 var
-  OpenPictureDialog : DBOpenPictureDialog;
+  OpenPictureDialog: DBOpenPictureDialog;
 begin
- OpenPictureDialog:=DBOpenPictureDialog.Create;
+  OpenPictureDialog := DBOpenPictureDialog.Create;
+  try
 
- if PNG_CAN_SAVE then
- begin
-  OpenPictureDialog.Filter:='PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp';
-  OpenPictureDialog.FilterIndex:=1;
- end else
- begin
-  OpenPictureDialog.Filter:='Bitmaps (*.bmp)|*.bmp';
-  OpenPictureDialog.FilterIndex:=1;
- end;
+    if PNG_CAN_SAVE then
+    begin
+      OpenPictureDialog.Filter := 'PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp';
+      OpenPictureDialog.FilterIndex := 1;
+    end else
+    begin
+      OpenPictureDialog.Filter := 'Bitmaps (*.bmp)|*.bmp';
+      OpenPictureDialog.FilterIndex := 1;
+    end;
 
- if OpenPictureDialog.Execute then
- begin
-  LoadInfoFromFile(OpenPictureDialog.FileName);
- end;
- OpenPictureDialog.Free;
+    if OpenPictureDialog.Execute then
+      LoadInfoFromFile(OpenPictureDialog.FileName);
+
+  finally
+    OpenPictureDialog.Free;
+  end;
 end;
 
 function TFormSteno.LoadInfoFromFile(FileName: String) : boolean;
@@ -167,7 +173,7 @@ begin
   if Length(info)=0 then
   begin
    Bitmap.Free;
-   Bitmap:=nil;  
+   Bitmap:=nil;
    MessageBoxDB(GetActiveFormHandle,TEXT_MES_STENO_IMAGE_IS_NOT_VALID,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
    Exit;
   end;
@@ -215,63 +221,67 @@ begin
  end;
 end;
 
-function FileExists(const eFile:string;var sHigh,SLow:cardinal):integer;
+function FileExists(const EFile: string; var SHigh, SLow: Cardinal): Integer;
 var
-  sf : string;
-  fesr : TSearchRec;
-  sfAttr : integer;
+  Sf: string;
+  Fesr: TSearchRec;
+  SfAttr: Integer;
 begin
- sf:=trim(eFile);
- Result:=3;
- if (Length(sf)=0)or(sf[Length(sf)]='\') then exit;
- sfAttr:=$FFE7;
- Result:=FindFirst(sf,sfAttr,fesr);
- if Result=0 then
- begin
-  Result:=2;
-  repeat
-   if (((fesr.Attr and $10)<>$10)and((fesr.Attr and $8)<>$8)) then
-   begin
-    Result:=0;
-    sHigh:=fesr.FindData.nFileSizeHigh;
-    sLow:=fesr.FindData.nFileSizeLow;
-   end;
-  until (Result=0)or(FindNext(fesr)<>0);
-  FindClose(fesr);
- end;
+  Sf := Trim(EFile);
+  Result := 3;
+  if (Length(Sf) = 0) or (Sf[Length(Sf)] = '\') then
+    Exit;
+  SfAttr := $FFE7;
+  Result := FindFirst(Sf, SfAttr, Fesr);
+  if Result = 0 then
+  begin
+    Result := 2;
+    repeat
+      if (((Fesr.Attr and $10) <> $10) and ((Fesr.Attr and $8) <> $8)) then
+      begin
+        Result := 0;
+        SHigh := Fesr.FindData.NFileSizeHigh;
+        SLow := Fesr.FindData.NFileSizeLow;
+      end;
+    until (Result = 0) or (FindNext(Fesr) <> 0);
+    FindClose(Fesr);
+  end;
 end;
 
 procedure TFormSteno.OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
   var Include: Boolean);
 var
-  FileName:string;
-  sr:TStrRet;
-  sHigh,sLow:cardinal;
-  IDL:PItemIDList;
+  FileName: string;
+  Sr: TStrRet;
+  SHigh, SLow: Cardinal;
+  IDL: PItemIDList;
 begin
-  Include:=true; //На всяк пожарный
-  ofn.psf.GetDisplayNameOf(ofn.pidl, SHGDN_FORPARSING, sr);
-  case sr.uType of
-   STRRET_CSTR: FileName:=sr.cStr;
-   STRRET_WSTR: FileName:=sr.pOleStr;
-   STRRET_OFFSET: FileName:=PChar(Cardinal(ofn.pidl)+sr.uOffset);
+  Include := True; // На всяк пожарный
+  Ofn.Psf.GetDisplayNameOf(Ofn.Pidl, SHGDN_FORPARSING, Sr);
+  case Sr.UType of
+    STRRET_CSTR:
+      FileName := Sr.CStr;
+    STRRET_WSTR:
+      FileName := Sr.POleStr;
+    STRRET_OFFSET:
+      FileName := PChar(Cardinal(Ofn.Pidl) + Sr.UOffset);
   end;
-  IDL:=ofn.pidl;
-  if (FileExists(FileName,sHigh,sLow)=0)and((sHigh>0)or(sLow>GetMaxFileSize)) then
+  IDL := Ofn.Pidl;
+  if (FileExists(FileName, SHigh, SLow) = 0) and ((SHigh > 0) or (SLow > GetMaxFileSize)) then
   begin
-   Include:=false; //На всяк пожарный
-   try
-   // IDL^.mkid.cb:=0; //приводит к утечкам
-    IDL^.mkid.abID[0]:=0;
-   except //На всяк пожарный - а то вдруг и вправду привелегий не будет
-   end;
+    Include := False; // На всяк пожарный
+    try
+      // IDL^.mkid.cb:=0; //приводит к утечкам
+      IDL^.Mkid.AbID[0] := 0;
+    except // На всяк пожарный - а то вдруг и вправду привелегий не будет
+    end;
   end;
 end;
 
 procedure TFormSteno.Button2Click(Sender: TObject);
 var
-  Size : Integer;
-  info : TArByte;
+  Size: Integer;
+  Info: TArByte;
   Bitmap : TBitmap;
   n : integer;
   o : TOpenOptions;
@@ -302,7 +312,7 @@ begin
   Memo1.Text:=FileName;
   Label5.Caption:=Format(TEXT_MES_FILE_SIZE_F,[SizeInTextA(Size)]);
   S:=GetFileName(PictureFileName);
-  
+
   SavePictureDialog := DBSavePictureDialog.Create;
 
   if PNG_CAN_SAVE then
@@ -380,114 +390,121 @@ procedure TFormSteno.Button1Click(Sender: TObject);
 var
   OpenPicturDialog : DBOpenPictureDialog;
 begin
- OpenPicturDialog:=DBOpenPictureDialog.Create;
- OpenPicturDialog.Filter:=Dolphin_DB.GetGraphicFilter;
- OpenPicturDialog.FilterIndex:=1;
+  OpenPicturDialog := DBOpenPictureDialog.Create;
+  try
+    OpenPicturDialog.Filter := Dolphin_DB.GetGraphicFilter;
+    OpenPicturDialog.FilterIndex := 1;
 
- if OpenPicturDialog.Execute then
- begin
-  LoadImage(OpenPicturDialog.FileName);
- end;
- OpenPicturDialog.Free;
+    if OpenPicturDialog.Execute then
+      LoadImage(OpenPicturDialog.FileName);
+
+  finally
+    OpenPicturDialog.Free;
+  end;
 end;
 
-procedure TFormSteno.LoadImage(FileName: String; CloseIfOk : boolean = false);
+procedure TFormSteno.LoadImage(FileName: string; CloseIfOk: Boolean = False);
 var
   Password : string;
   Graphic : TGraphic;
 begin
 
  if ValidCryptGraphicFile(FileName) then
- begin
-  Password:=DBkernel.FindPasswordForCryptImageFile(FileName);
-  if Password='' then
-  Password:=GetImagePasswordFromUser(FileName);
-
-  if Password<>'' then
   begin
-    Graphic := DeCryptGraphicFile(FileName,Password);
-    try
-      Image1.Picture.Graphic:= Graphic;
-    finally
-      F(Graphic);
+    Password := DBkernel.FindPasswordForCryptImageFile(FileName);
+    if Password = '' then
+      Password := GetImagePasswordFromUser(FileName);
+
+    if Password <> '' then
+    begin
+      Graphic := DeCryptGraphicFile(FileName, Password);
+      try
+        Image1.Picture.Graphic := Graphic;
+      finally
+        F(Graphic);
+      end;
+      ImagePassword := Password;
+    end
+    else
+    begin
+      MessageBoxDB(Handle, Format(TEXT_MES_CANT_LOAD_IMAGE, [FileName]), TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+      Exit;
     end;
-   ImagePassword:=Password;
-  end else
+  end
+  else
   begin
-   MessageBoxDB(Handle,Format(TEXT_MES_CANT_LOAD_IMAGE,[FileName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   exit;
+    Image1.Picture.LoadFromFile(FileName);
   end;
- end else
- begin
-  Image1.Picture.LoadFromFile(FileName);
- end;
 
- MaxFileSize:=MaxSizeInfoInGraphic(Image1.Picture.Graphic,2)-255;
- NormalFileSize:=MaxSizeInfoInGraphic(Image1.Picture.Graphic,5)-255;
- GoodFileSize:=MaxSizeInfoInGraphic(Image1.Picture.Graphic,8)-255;
- PictureFileName:=FileName;
+  MaxFileSize := MaxSizeInfoInGraphic(Image1.Picture.Graphic, 2) - 255;
+  NormalFileSize := MaxSizeInfoInGraphic(Image1.Picture.Graphic, 5) - 255;
+  GoodFileSize := MaxSizeInfoInGraphic(Image1.Picture.Graphic, 8) - 255;
+  PictureFileName := FileName;
 
- Label1.Caption:=Format(TEXT_MES_MAX_FILE_SIZE_F,[SizeInTextA(Max(0,MaxSizeInfoInGraphic(Image1.Picture.Graphic,2)-255))]);
- Label2.Caption:=Format(TEXT_MES_FILE_NAME_F,[getFileName(FileName)]);
- Label3.Caption:=Format(TEXT_MES_NORMAL_FILE_SIZE_F,[SizeInTextA(Max(0,MaxSizeInfoInGraphic(Image1.Picture.Graphic,5)-255))]);
- Label7.Caption:=Format(TEXT_MES_GOOD_FILE_SIZE_F,[SizeInTextA(Max(0,MaxSizeInfoInGraphic(Image1.Picture.Graphic,8)-255))]);
- if MaxFileSize>0 then Button2Click(self);
+  Label1.Caption := Format(TEXT_MES_MAX_FILE_SIZE_F,
+    [SizeInTextA(Max(0, MaxSizeInfoInGraphic(Image1.Picture.Graphic, 2) - 255))]);
+  Label2.Caption := Format(TEXT_MES_FILE_NAME_F, [GetFileName(FileName)]);
+  Label3.Caption := Format(TEXT_MES_NORMAL_FILE_SIZE_F,
+    [SizeInTextA(Max(0, MaxSizeInfoInGraphic(Image1.Picture.Graphic, 5) - 255))]);
+  Label7.Caption := Format(TEXT_MES_GOOD_FILE_SIZE_F,
+    [SizeInTextA(Max(0, MaxSizeInfoInGraphic(Image1.Picture.Graphic, 8) - 255))]);
+  if MaxFileSize > 0 then
+    Button2Click(Self);
 end;
 
 procedure TFormSteno.FormCreate(Sender: TObject);
 begin
- ImagePassword:='';
- ImageSaved:=false;
- PictureFileName:='';
- FileName:='';
- MaxFileSize:=0;
- NormalFileSize:=0;
- LoadLanguage;
- DBkernel.RegisterForm(Self);   
- DBkernel.RecreateThemeToForm(Self);
+  ImagePassword := '';
+  ImageSaved := False;
+  PictureFileName := '';
+  FileName := '';
+  MaxFileSize := 0;
+  NormalFileSize := 0;
+  LoadLanguage;
+  DBkernel.RegisterForm(Self);
 end;
 
 procedure TFormSteno.LoadLanguage;
 begin
- DBKernel.RecreateThemeToForm(self);
- DBKernel.RegisterForm(self);
- Caption:=TEXT_MES_STENOGRAPHIA;
- Label1.Caption:=Format(TEXT_MES_MAX_FILE_SIZE_F,[SizeInTextA(0)]);
- Label2.Caption:=Format(TEXT_MES_FILE_NAME_F,['']);
- Label3.Caption:=Format(TEXT_MES_NORMAL_FILE_SIZE_F,[SizeInTextA(0)]);
- Label7.Caption:=Format(TEXT_MES_GOOD_FILE_SIZE_F,[SizeInTextA(0)]);
- Label4.Caption:=TEXT_MES_INFORMATION_FILE_NAME;
- Label5.Caption:=Format(TEXT_MES_FILE_SIZE_F,[SizeInTextA(0)]);
- Label6.Caption:=TEXT_MES_STENO_USE_FILTER;
- ComboBox1.Items[0]:=TEXT_MES_STENO_USE_FILTER_MAX;
- ComboBox1.Items[1]:=TEXT_MES_STENO_USE_FILTER_NORMAL;  
- ComboBox1.Items[2]:=TEXT_MES_STENO_USE_FILTER_GOOD;
- Button1.Caption:=TEXT_MES_OPEN_IMAGE;
- Button2.Caption:=TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
- Button3.Caption:=TEXT_MES_DESTENO_IMAGE;
- LoadFromFile1.Caption:=TEXT_MES_OPEN_IMAGE;
- AddInfo1.Caption:=TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
- ComboBox1.ItemIndex:=1;
+  DBKernel.RegisterForm(Self);
+  Caption := TEXT_MES_STENOGRAPHIA;
+  Label1.Caption:=Format(TEXT_MES_MAX_FILE_SIZE_F, [SizeInTextA(0)]);
+  Label2.Caption := Format(TEXT_MES_FILE_NAME_F, ['']);
+  Label3.Caption := Format(TEXT_MES_NORMAL_FILE_SIZE_F, [SizeInTextA(0)]);
+  Label7.Caption := Format(TEXT_MES_GOOD_FILE_SIZE_F, [SizeInTextA(0)]);
+  Label4.Caption := TEXT_MES_INFORMATION_FILE_NAME;
+  Label5.Caption := Format(TEXT_MES_FILE_SIZE_F, [SizeInTextA(0)]);
+  Label6.Caption := TEXT_MES_STENO_USE_FILTER;
+  ComboBox1.Items[0] := TEXT_MES_STENO_USE_FILTER_MAX;
+  ComboBox1.Items[1] := TEXT_MES_STENO_USE_FILTER_NORMAL;
+  ComboBox1.Items[2] := TEXT_MES_STENO_USE_FILTER_GOOD;
+  Button1.Caption := TEXT_MES_OPEN_IMAGE;
+  Button2.Caption := TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
+  Button3.Caption := TEXT_MES_DESTENO_IMAGE;
+  LoadFromFile1.Caption := TEXT_MES_OPEN_IMAGE;
+  AddInfo1.Caption := TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
+  ComboBox1.ItemIndex := 1;
 end;
 
-function TFormSteno.GetMaxFileSize: integer;
+function TFormSteno.GetMaxFileSize: Integer;
 begin
- if ComboBox1.ItemIndex=0 then
+  if ComboBox1.ItemIndex = 0 then
  begin
-  Result:=MaxFileSize;
- end else
- begin
-  if ComboBox1.ItemIndex=1 then
-   Result:=NormalFileSize else
+    Result := MaxFileSize;
+  end else
   begin
-   Result:=GoodFileSize;
+    if ComboBox1.ItemIndex = 1 then
+      Result := NormalFileSize
+    else
+    begin
+      Result := GoodFileSize;
+    end;
   end;
- end;
 end;
 
 procedure TFormSteno.FormDestroy(Sender: TObject);
 begin
- DBKernel.UnRegisterForm(self);
+  DBKernel.UnRegisterForm(self);
 end;
 
 end.

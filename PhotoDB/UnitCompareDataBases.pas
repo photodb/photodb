@@ -73,7 +73,6 @@ begin
  Filter:='Access files (*.photodb;*.mdb)|*.photodb;*.mdb';
  OpenDialog1.Filter:=Filter;
  DBKernel.RegisterForm(ImportDataBaseForm);
- DBKernel.RecreateThemeToForm(ImportDataBaseForm);
  Memo1.Lines.Clear;
  CheckEnabled;
  Edit4.text:=InstalledUserName;

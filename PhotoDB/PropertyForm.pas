@@ -550,8 +550,8 @@ begin
             B1.PixelFormat := pf24bit;
             B1.Width := ThImageSize;
             B1.Height := ThImageSize;
-            B1.Canvas.Brush.Color := Theme_MainColor;
-            B1.Canvas.Pen.Color := Theme_MainColor;
+            B1.Canvas.Brush.Color := ClBtnFace;
+            B1.Canvas.Pen.Color := ClBtnFace;
             PassWord := '';
             if TBlobField(WorkQuery.FieldByName('thum')) = nil then
               Exit;
@@ -2656,9 +2656,9 @@ begin
           else
           begin
             if GroupExists(FShowenRegGroups[index].GroupCode) then
-              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme_ListFontColor, Theme_MemoEditColor)
+              (Control as TListBox).Canvas.Font.Color := ColorDiv2(clWindowText, clWindow)
             else
-              (Control as TListBox).Canvas.Font.Color := Theme_ListFontColor;
+              (Control as TListBox).Canvas.Font.Color := clWindowText;
 
             (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
           end;

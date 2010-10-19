@@ -17,7 +17,6 @@ type
     Button2: TButton;
     Button3: TButton;
     DestroyTimer: TTimer;
-    procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure DestroyTimerTimer(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -55,11 +54,6 @@ begin
  LoadLanguage;
  ShowModal;
  Result:=0;
-end;
-
-procedure TFormCDMapInfo.FormCreate(Sender: TObject);
-begin
- DBkernel.RecreateThemeToForm(Self);
 end;
 
 procedure TFormCDMapInfo.LoadLanguage;

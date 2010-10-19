@@ -658,13 +658,13 @@ begin
 
   SetLVSelection(ElvMain);
 
-  ElvMain.GroupFont.Color := Theme_ListFontColor;
+  ElvMain.GroupFont.Color := clWindowText;
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
   LoadSizes;
 
   ElvMain.Font.Name := 'Tahoma';
-  ElvMain.HotTrack.Color := Theme_ListFontColor;
+  ElvMain.HotTrack.Color := clWindowText;
   ElvMain.HotTrack.Cursor := CrArrow;
   ElvMain.IncrementalSearch.Enabled := True;
   ElvMain.OnItemThumbnailDraw := EasyListViewItemThumbnailDraw;
@@ -1261,7 +1261,7 @@ begin
     bit.PixelFormat:=pf24bit;
     bit.Width:=ThSize;
     bit.Height:=ThSize;
-    FillColorEx(bit, Theme_ListColor);
+    FillColorEx(bit, clWindow);
     try
      bit.canvas.Draw(ThSize div 2 - image1.picture.Graphic.Width div 2,ThSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
     except
@@ -1287,11 +1287,11 @@ begin
   end;
   bit := TBitmap.create;
   bit.PixelFormat:=pf24bit;
-  bit.Canvas.Brush.Color:=Theme_ListColor;
-  bit.Canvas.Pen.Color:=Theme_ListColor;
+  bit.Canvas.Brush.Color:=clWindow;
+  bit.Canvas.Pen.Color:=clWindow;
   bit.width:=ThSize;
   bit.height:=ThSize;
-  FillColorEx(bit, Theme_ListColor);
+  FillColorEx(bit, clWindow);
 
   bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
   J.free;
@@ -1341,7 +1341,7 @@ begin
    begin
     bit.width:=ThSize;
     bit.height:=ThSize;
-    FillColorEx(bit, Theme_ListColor);
+    FillColorEx(bit, clWindow);
     try
      bit.canvas.Draw(ThSize div 2 - Image1.Picture.Graphic.Width div 2,ThSize div 2 - Image1.Picture.Graphic.height div 2,Image1.Picture.Graphic);
     except
@@ -1368,7 +1368,7 @@ begin
   bit.PixelFormat:=pf24bit;
   bit.width:=ThSize;
   bit.height:=ThSize;
-  FillColorEx(bit, Theme_ListColor);
+  FillColorEx(bit, clWindow);
   bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
   J.free;
   ApplyRotate(bit, SearchRecord.Rotation);
@@ -1426,7 +1426,6 @@ begin
     Exit;
   DBkernel.UnRegisterForm(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  DBkernel.SaveCurrentColorTheme;
   SaveWindowPos1.SavePosition;
   FormManager.UnRegisterMainForm(Self);
   Creating := True;
@@ -2293,7 +2292,7 @@ begin
     try
       WaitImageBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(WaitImage, WaitImageBMP, Theme_ListColor);
+        LoadPNGImage32bit(WaitImage, WaitImageBMP, clWindow);
         ImageSearchWait.Picture.Graphic := WaitImageBMP;
       finally
         WaitImageBMP.Free;
@@ -2979,22 +2978,22 @@ end;
 
 procedure TSearchForm.ComboBox1DropDown(Sender: TObject);
 var
-  i : integer;
-  size : integer;
-  Group : TGroup;
-  SmallB, B : TBitmap;
-  GroupImageValid : Boolean;
-  FCurrentGroups : TGroups;
+  I: Integer;
+  Size: Integer;
+  Group: TGroup;
+  SmallB, B: TBitmap;
+  GroupImageValid: Boolean;
+  FCurrentGroups: TGroups;
 
   procedure CreteDefaultGroupImage;
   begin
-   SmallB.Width:=16;
-   SmallB.Height:=16;
-   SmallB.Canvas.Pen.Color:=Theme_MainColor;
-   SmallB.Canvas.Brush.Color:=Theme_MainColor;
-   SmallB.Canvas.Rectangle(0,0,16,16);
-   DrawIconEx(SmallB.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
-   GroupImageValid:=true;
+    SmallB.Width := 16;
+    SmallB.Height := 16;
+    SmallB.Canvas.Pen.Color := ClBtnFace;
+    SmallB.Canvas.Brush.Color := ClBtnFace;
+    SmallB.Canvas.Rectangle(0, 0, 16, 16);
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+    GroupImageValid := True;
   end;
 
 begin
@@ -3005,7 +3004,7 @@ begin
  begin
   SmallB := TBitmap.Create;
   SmallB.PixelFormat:=pf24bit;
-  SmallB.Canvas.Brush.Color:=Theme_MainColor;
+  SmallB.Canvas.Brush.Color:=clBtnFace;
   Group:=GetGroupByGroupName(FCurrentGroups[i].GroupName,true);
   GroupImageValid:=false;
   if Group.GroupImage<>nil then
@@ -3016,8 +3015,8 @@ begin
    GroupImageValid:=true;
 
    size:=Max(Group.GroupImage.Width,Group.GroupImage.Height);
-   B.Canvas.Brush.Color:=Theme_MainColor;
-   B.Canvas.Pen.Color:=Theme_MainColor;
+   B.Canvas.Brush.Color:=clBtnFace;
+   B.Canvas.Pen.Color:=clBtnFace;
    B.Width:=size;
    B.Height:=size;
    B.Canvas.Rectangle(0,0,size,size);
@@ -4542,14 +4541,14 @@ begin
     Bitmap.PixelFormat := pf24bit;
     Bitmap.Width := 150;
     Bitmap.Height := 150;
-    Bitmap.Canvas.Brush.Color := Theme_ListColor;
-    Bitmap.Canvas.Pen.Color := Theme_ListColor;
+    Bitmap.Canvas.Brush.Color := clWindow;
+    Bitmap.Canvas.Pen.Color := clWindow;
     Bitmap.Canvas.Rectangle(0,0,150,150);
     BackgroundImage := GetSearchBackground;
     try
       SearchBackgroundBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme_ListColor);
+        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, clWindow);
         Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
       finally
         SearchBackgroundBMP.Free;
@@ -4648,15 +4647,15 @@ begin
   elvDateRange.BackGround.Image.PixelFormat := pf24bit;
   elvDateRange.BackGround.Image.Width := 100;
   elvDateRange.BackGround.Image.Height := 100;
-  elvDateRange.BackGround.Image.Canvas.Brush.Color := Theme_ListColor;
-  elvDateRange.BackGround.Image.Canvas.Pen.Color := Theme_ListColor;
+  elvDateRange.BackGround.Image.Canvas.Brush.Color := clWindow;
+  elvDateRange.BackGround.Image.Canvas.Pen.Color := clWindow;
   elvDateRange.BackGround.Image.Canvas.Rectangle(0, 0, 100, 100);
 
   DateRangeBackgroundImage := GetDateRangeImage;
   try
     DateRangeBackgroundImageBMP := TBitmap.Create;
     try
-      LoadPNGImage32bit(DateRangeBackgroundImage, DateRangeBackgroundImageBMP, Theme_ListColor);
+      LoadPNGImage32bit(DateRangeBackgroundImage, DateRangeBackgroundImageBMP, clWindow);
       elvDateRange.BackGround.Image.Canvas.Draw(0, 0, DateRangeBackgroundImageBMP);
     finally
       DateRangeBackgroundImageBMP.Free;
@@ -5097,8 +5096,8 @@ end;
 procedure TSearchForm.dblDateDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := Theme_ListColor;
-  Buffer.Canvas.Brush.Color := Theme_ListColor;
+  Buffer.Canvas.Pen.Color := clWindow;
+  Buffer.Canvas.Brush.Color := clWindow;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 

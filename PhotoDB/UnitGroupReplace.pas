@@ -125,7 +125,6 @@ end;
 
 procedure TFormGroupReplace.FormCreate(Sender: TObject);
 begin
- DBKernel.RecreateThemeToForm(Self);
  FGroupFileName:=dbname;//GroupsTableFileName;
  RecreateGroupsList;
  LoadLanguage;

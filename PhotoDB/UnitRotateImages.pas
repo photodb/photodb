@@ -95,7 +95,6 @@ var
   Description, Mask : String;
 begin
  LoadLanguage;
- DBkernel.RecreateThemeToForm(Self);
  ComboBox2.Clear;
  Formats:=GetConvertableImageClasses;
  for i:=0 to Length(Formats)-1 do

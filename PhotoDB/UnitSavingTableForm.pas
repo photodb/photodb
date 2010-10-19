@@ -61,7 +61,6 @@ procedure TSavingTableForm.FormCreate(Sender: TObject);
 begin
  LoadLanguage;
  FTerminating:=false;
- DBkernel.RecreateThemeToForm(Self);
 end;
 
 procedure TSavingTableForm.SetMaxValue(Value: Integer);

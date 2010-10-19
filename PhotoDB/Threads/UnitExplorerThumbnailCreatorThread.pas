@@ -56,7 +56,7 @@ begin
       TempBitmap.PixelFormat:=pf24Bit;
       TempBitmap.Width := ThSizeExplorerPreview;
       TempBitmap.Height := ThSizeExplorerPreview;
-      FillColorEx(TempBitmap, Theme_MainColor);
+      FillColorEx(TempBitmap, ClBtnFace);
 
       Info.Image := TJPEGImage.Create;
       try
@@ -144,7 +144,7 @@ begin
 
               TempBit := TBitmap.Create;
               try
-                LoadImageX(FGraphic, TempBit, Theme_MainColor);
+                LoadImageX(FGraphic, TempBit, ClBtnFace);
                 F(FGraphic);
                 TempBit.PixelFormat := pf24bit;
                 W := TempBit.Width;

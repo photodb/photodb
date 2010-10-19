@@ -104,7 +104,6 @@ end;
 
 procedure TFormDBOptions.FormCreate(Sender: TObject);
 begin
- DBKernel.RecreateThemeToForm(Self);
  LoadLanguage;
  DBKernel.RegisterForm(Self);
 end;

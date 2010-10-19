@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, Menus, DmProgress, Dolphin_DB, ComCtrls,
   acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
-  UnitDBCommon, UnitDBCommonGraphics, uFileUtils;
+  UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils;
 
 type
   TFormImportingImages = class(TForm)
@@ -144,7 +144,6 @@ begin
    Halt;
   end;
   DBKernel:=TDBKernel.Create;
-  DBKernel.LoadColorTheme;
  end;
  DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
 
@@ -457,16 +456,16 @@ end;
 procedure TFormImportingImages.ChangedDBDataByID(Sender: TObject;
   ID: integer; params: TEventFields; Value: TEventValues);
 var
-  bit : TBitmap;
-  p : TPoint;
-  FileSize : integer;
+  Bit: TBitmap;
+  P: TPoint;
+  FileSize: Integer;
 
- procedure FillRectToBitmapA(var Bitmap: TBitmap);
- begin
-  Bitmap.Canvas.Pen.Color:=0;
-  Bitmap.Canvas.Brush.Color:=RGB(Round(GetRValue(Theme_ListColor)*0.9),Round(GetGValue(Theme_ListColor)*0.9),Round(GetBValue(Theme_ListColor)*0.9));
-  Bitmap.Canvas.Rectangle(0,0,Bitmap.Width,Bitmap.Height);
-  Bitmap.Canvas.Pen.Color:=Theme_ListColor;
+  procedure FillRectToBitmapA(var Bitmap: TBitmap);
+  begin
+    Bitmap.Canvas.Pen.Color := 0;
+    Bitmap.Canvas.Brush.Color := MakeDarken(ClWindow, 0.9);
+    Bitmap.Canvas.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
+    Bitmap.Canvas.Pen.Color := ClWindow;
  end;
 
 begin

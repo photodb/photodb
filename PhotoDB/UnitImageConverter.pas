@@ -31,7 +31,7 @@ type
     procedure CheckBox2Click(Sender: TObject);
   private
     { Private declarations }
-  public          
+  public
   FImageList : TArStrings;
   FIDList : TArInteger;
   procedure GetFileList(ImageList : TArStrings; IDList : TArInteger);
@@ -48,14 +48,17 @@ uses UnitJPEGOptions, ProgressActionUnit, UnitConvertImagesThread;
 
 {$R *.dfm}
 
-Procedure ConvertImages(ImageList : TArStrings; IDList : TArInteger);
+procedure ConvertImages(ImageList: TArStrings; IDList: TArInteger);
 var
   FormConvertImages: TFormConvertImages;
 begin
   Application.CreateForm(TFormConvertImages, FormConvertImages);
-  FormConvertImages.GetFileList(ImageList,IDList);
-  FormConvertImages.ShowModal;
-  FormConvertImages.Release;
+  try
+    FormConvertImages.GetFileList(ImageList, IDList);
+    FormConvertImages.ShowModal;
+  finally
+    FormConvertImages.Release;
+  end;
 end;
 
 procedure TFormConvertImages.FormCreate(Sender: TObject);
@@ -65,7 +68,6 @@ var
   Description, Mask : String;
 begin
  LoadLanguage;
- DBkernel.RecreateThemeToForm(Self);
  ComboBox2.Clear;
  Formats:=GetConvertableImageClasses;
  for i:=0 to Length(Formats)-1 do

@@ -2,9 +2,6 @@ unit UnitDBKernel;
 
 interface
 
-//{$DEFINE ENGL}
-{$DEFINE RUS}
-
 uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   Rating, ComCtrls, StdCtrls, ExtCtrls, Forms, Windows, Classes,
   Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
@@ -207,6 +204,7 @@ type
 
 type TDBKernel = class(TObject)
   private
+    { Private declarations }
     FINIPasswods : TStrings;
     FPasswodsInSession : TStrings;
     FEvents : TDBEventsIDArray;
@@ -226,8 +224,6 @@ type TDBKernel = class(TObject)
     FRegistryCache : TDBRegistryCache;
     FSych : TCriticalSection;
     procedure LoadDBs;
-    procedure SetTheme(const Value: TDbTheme);
-    { Private declarations }
   public
     { Public declarations }
     IconDllInstance : THandle;
@@ -261,27 +257,17 @@ type TDBKernel = class(TObject)
     function ReadStringW(Key, name: string): string;
     function ReadDateTime(Key, name: string; default: TdateTime): TDateTime;
     procedure BackUpTable;
-    procedure LoadColorTheme;
-    procedure SaveCurrentColorTheme;
     function LogIn(UserName, Password: string; AutoLogin: Boolean): Integer;
     function CreateDBbyName(FileName: string): Integer;
     function GetDataBase: string;
     function GetDataBaseName: string;
     procedure SetDataBase(DBname_: string);
-    property Theme: TDbTheme read FTheme write SetTheme;
     procedure SetActivateKey(AName, AKey: string);
     function ReadActivateKey: string;
     function GetDemoMode: Boolean;
     function ReadRegName: string;
-    procedure RecreateThemeToForm(Form: TForm);
-    procedure SaveThemeToFile(FileName: string);
-    procedure LoadThemeFromFile(FileName: string);
     procedure RegisterForm(Form: TForm);
     procedure UnRegisterForm(Form: TForm);
-    procedure ReloadGlobalTheme;
-    procedure RegisterProcUpdateTheme(Proc: TNotifyEvent; Form: TForm);
-    procedure UnRegisterProcUpdateTheme(Proc: TNotifyEvent; Form: TForm);
-    procedure DoProcGlobalTheme;
     function GetTemporaryFolder: string;
     function ApplicationCode: string;
     procedure SaveApplicationCode(Key: string);
@@ -427,47 +413,6 @@ begin
  end;
 end;
 
-procedure TDBKernel.LoadColorTheme;
-var
-  Reg : TBDRegistry;
-begin
- if DBKernel.Readbool('Options','UseWindowsTheme',True) then
- begin
-  Theme_ListColor:=ColorToRGB(clWindow);
-  Theme_ListFontColor:=ColorToRGB(clWindowText);
-  Theme_MainColor:=ColorToRGB(ClBtnFace);
-  Theme_MainFontColor:=ColorToRGB(clWindowText);
-  Theme_memoeditcolor:=ColorToRGB(clWindow);
-  Theme_memoeditfontcolor:=ColorToRGB(clWindowText);
-  Theme_Labelfontcolor:=ColorToRGB(clWindowText);
-  Theme_ListSelectColor:=ColorToRGB(clHighlight);
-  Theme_ProgressBackColor:=clBlack;
-  Theme_ProgressFontColor:=clWhite;
-  Theme_ProgressFillColor:=$00009600;
- end else
- begin
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  Reg.OpenKey(GetRegRootKey+'CurrentTheme',true);
-
-  Theme_ListColor:=HexToIntDef(Reg.ReadString('Theme_ListColor'),ColorToRGB(clWindow));
-  Theme_ListFontColor:=HexToIntDef(Reg.ReadString('Theme_ListFontColor'),ColorToRGB(clWindowText));
-  Theme_MainColor:=HexToIntDef(Reg.ReadString('Theme_MainColor'),ColorToRGB(ClBtnFace));
-  Theme_MainFontColor:=HexToIntDef(Reg.ReadString('Theme_MainFontColor'),ColorToRGB(clWindowText));
-  Theme_memoeditcolor:=HexToIntDef(Reg.ReadString('Theme_memoeditcolor'),ColorToRGB(clWindow));
-  Theme_memoeditfontcolor:=HexToIntDef(Reg.ReadString('Theme_memoeditfontcolor'),ColorToRGB(clWindowText));
-  Theme_Labelfontcolor:=HexToIntDef(Reg.ReadString('Theme_Labelfontcolor'),ColorToRGB(clWindowText));
-  Theme_ListSelectColor:=HexToIntDef(Reg.ReadString('Theme_ListSelectColor'),ColorToRGB(clHighlight));
-  Theme_ProgressBackColor:=HexToIntDef(Reg.ReadString('Theme_ProgressBackColor'),clBlack);
-  Theme_ProgressFontColor:=HexToIntDef(Reg.ReadString('Theme_ProgressFontColor'),clWhite);
-  Theme_ProgressFillColor:=HexToIntDef(Reg.ReadString('Theme_ProgressFillColor'),$00009600);
-  Reg.CloseKey;
-  Reg.free;
- end;
-end;
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//     fUserRights.Add:=false;
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 function TDBKernel.LogIn(UserName, Password: string; AutoLogin : boolean): integer;
 begin
@@ -1010,11 +955,6 @@ begin
  ReadDBOptions;
 end;
 
-procedure TDBKernel.SetTheme(const Value: TDbTheme);
-begin
-  FTheme := Value;
-end;
-
 procedure TDBKernel.SetActivateKey(aName,aKey: String);
 var
   Reg : TBDRegistry;
@@ -1127,415 +1067,6 @@ begin
  Reg.free;
 end;
 
-procedure TDBKernel.RecreateThemeToForm(Form: TForm);
-var
-  i, n : integer;
-  aTag : integer;
-begin
- If Form=nil then exit;
- SetVistaFonts(Form);
- for i:=1 to Form.ComponentCount do
- begin
-  if Form.Components[i-1] is TEdit then
-  with (Form.Components[i-1] as TEdit) do
-  begin
-   if Tag>10 then
-   begin
-    aTag := Tag-10;
-    SetVistaContentFonts(Font,1);
-   end else
-   begin
-    aTag := Tag;
-    SetVistaContentFonts(Font);
-   end;
-   SetVistaContentFonts(Font);
-   if aTag=0 then
-   begin
-    Color:=Theme_MemoEditColor;
-    Font.Color:=Theme_MemoEditFontColor;
-   end else begin
-    Color:=Theme_MainColor;
-    Font.Color:=Theme_MainFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TComboBox then
-  with (Form.Components[i-1] as TComboBox) do
-  begin
-   if tag=0 then
-   begin
-    color:=Theme_MemoEditColor;
-    font.color:=Theme_MemoEditFontColor;
-   end else begin
-    color:=Theme_MainColor;
-    font.color:=Theme_MainFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TComboBoxEx then
-  with (Form.Components[i-1] as TComboBoxEx) do
-  begin
-   if Tag=0 then
-   begin
-    Color:=Theme_MemoEditColor;
-    Font.Color:=Theme_MemoEditFontColor;
-   end else begin
-    Color:=Theme_MainColor;
-    Font.Color:=Theme_MainFontColor;
-   end;
-  end;
-
-  if Form.Components[i-1] is TListView then
-  with (Form.Components[i-1] as TListView) do
-  begin
-   SetVistaContentFonts(Font);
-   Color:=Theme_ListColor;
-   Font.Color:=Theme_ListFontColor;
-  end;
-
-  if Form.Components[i-1] is TEasyListView then
-  with (Form.Components[i-1] as TEasyListView) do
-  begin
-   Color:=Theme_ListColor;
-   Font.Color:=Theme_ListFontColor;
-   SetVistaContentFonts(Font);
-   Selection.BlendColorSelRect:=Theme_ListSelectColor;
-   Selection.BorderColor:=Theme_ListSelectColor;
-   Selection.BorderColorSelRect:=Theme_ListSelectColor;
-   Selection.Color:=Theme_ListSelectColor;
-   PaintInfoItem.BorderColor:=Theme_ListSelectColor;
-  end;
-
-  if Form.Components[i-1] is TShellTreeView then
-  with (Form.Components[i-1] as TShellTreeView) do
-  begin
-   Color:=Theme_ListColor;
-   Font.Color:=Theme_ListFontColor;
-  end;
-  if Form.Components[i-1] is TListBox then
-  with (Form.Components[i-1] as TListBox) do
-  begin
-   Color:=Theme_ListColor;
-   Font.Color:=Theme_ListFontColor;
-  end;
-
-  if Form.Components[i-1] is TCheckListBox then
-  with (Form.Components[i-1] as TCheckListBox) do
-  begin
-   If Tag=0 then
-   begin
-    Color:=Theme_ListColor;
-    Font.Color:=Theme_ListFontColor;
-   end;
-   If tag=1 then
-   begin
-    Color:=Theme_MainColor;
-    Font.color:=Theme_MainFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TDateTimePicker then
-  with (Form.Components[i-1] as TDateTimePicker) do
-  begin
-   //SetVistaContentFonts(Font);
-   if Tag=0 then
-   begin
-    Color:=Theme_memoeditcolor;
-    Font.color:=Theme_memoeditfontcolor;
-   end else begin
-    Color:=Theme_MainColor;
-    Font.color:=Theme_MainFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TRating then
-  with (Form.Components[i-1] as TRating) do
-  begin
-   Color:=Theme_MainColor;
-  end;
-  if Form.Components[i-1] is TTwButton then
-  with (Form.Components[i-1] as TTwButton) do
-  begin
-   Color:=Theme_MainColor;
-  end;
-
-  if Form.Components[i-1] is TComboBox then
-  with (Form.Components[i-1] as TComboBox) do
-  begin
-   if Tag=0 then
-   begin
-    Color:=Theme_MainColor;
-    Font.Color:=Theme_MainFontColor;
-   end;
-   if Tag=1 then
-   begin
-    Color:=Theme_ListColor;
-    Font.Color:=Theme_ListFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TRadioButton then
-  with (Form.Components[i-1] as TRadioButton) do
-  begin
-   if Tag=0 then
-   begin
-    Font.Color:=Theme_LabelFontColor;
-   end;
-   if Tag=1 then
-   begin
-    Font.Color:=Theme_MainFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TValueListEditor then
-  with (Form.Components[i-1] as TValueListEditor) do
-  begin
-   if Tag=0 then
-   begin
-    FixedColor:=Theme_MainColor;
-    Color:=Theme_memoeditcolor;
-    Font.Color:=Theme_memoeditfontcolor;
-   end;
-   if Tag=1 then
-   begin
-    FixedColor:=Theme_MainColor;
-    Color:=Theme_MainColor;
-    Font.Color:=Theme_MainFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TCheckBox then
-  with (Form.Components[i-1] as TCheckBox) do
-  begin
-   if Tag=0 then
-   begin
-    Font.Color:=Theme_LabelFontColor;
-   end;
-   if Tag=1 then
-   begin
-    Font.Color:=Theme_MainFontColor;
-   end;
-  end;
-  if Form.Components[i-1] is TPanel then
-  with (Form.Components[i-1] as TPanel) do
-  begin
-   if Tag=0 then
-   begin
-    Color:=Theme_MainColor;
-    Font.Color:=Theme_MainFontColor;
-   end;
-   if Tag=1 then
-   begin
-    Color:=Theme_ListColor;
-    Font.Color:=Theme_ListFontColor;
-   end;
-  end;
-
-  if Form.Components[i-1] is TScrollPanel then
-  with (Form.Components[i-1] as TScrollPanel) do
-  begin
-   if Tag=0 then
-   begin
-    Color:=Theme_MainColor;
-    Font.Color:=Theme_MainFontColor;
-   end;
-   if Tag=1 then
-   begin
-    Color:=Theme_ListColor;
-    Font.Color:=Theme_ListFontColor;
-   end;
-  end;
-
-  if Form.Components[i-1] is TWebLink then
-  with (Form.Components[i-1] as TWebLink) do
-  begin
-   SetVistaContentFonts(Font,1);
-   if Tag>-1 then
-   begin
-    color:=Theme_MainColor;
-    font.color:=Theme_MainFontColor;
-    If Tag=1 then Font.Style:=[fsBold];
-    If Tag=2 then Font.Style:=[fsUnderline];
-   end;
-  end;
-  if Form.Components[i-1] is TLabel then
-  with (Form.Components[i-1] as TLabel) do
-  begin
-   //n:=Tag;
-   aTag:=Tag mod 10000;
-   ParentColor:=true;
-   ParentFont:=true;
-   If aTag=1 then Font.Style:=[fsBold];
-   If aTag=2 then Font.Style:=[fsUnderline];
-   If aTag>100 then
-   begin
-    If (Tag>100) and (Tag<200) then Font.Style:=[fsBold];
-    If (Tag>200) and (Tag<300) then Font.Style:=[fsUnderline];
-    Font.Size:=(Tag mod 100);
-   end;
-   If aTag>1000 then
-   begin
-    If (aTag>1000) and (aTag<2000) then Font.Style:=[fsBold];
-    If (aTag>2000) and (aTag<3000) then Font.Style:=[fsUnderline];
-    if (aTag mod 1000)<100 then
-   end;
-   Font.Color:=Theme_memoeditFontcolor;
-   if Tag div 10000>0 then Font.Name:='Tahoma';
-   SetVistaContentFonts(Font,1);
-   //tag:=n;
-  end;
-  if Form.Components[i-1] is TButton then
-  with (Form.Components[i-1] as TButton) do
-  begin
-   Font.Color:=Theme_MainFontColor;
-  end;
-  if Form.Components[i-1] is TTabbedNotebook then
-  with (Form.Components[i-1] as TTabbedNotebook) do
-  begin
-   //Color:=Theme_MainColor;
-  end;
-  if Form.Components[i-1] is TShape then
-  with (Form.Components[i-1] as TShape) do
-  begin
-   if Tag=1 then
-   begin
-    Brush.Color:=Theme_MainColor;
-    Pen.Color:=Theme_MainColor;
-   end;
-  end;
-  if Form.Components[i-1] is TGraphicSelectEx then
-  with (Form.Components[i-1] as TGraphicSelectEx) do
-  begin
-   Color:=Theme_MainColor;
-   SelColor:=Theme_MainFontColor;
-  end;
-  if Form.Components[i-1] is TMemo then
-  with (Form.Components[i-1] as TMemo) do
-  begin
-   if Tag>10 then
-   begin
-    aTag := Tag-10;
-    SetVistaContentFonts(Font,1);
-   end else
-   begin
-    aTag := Tag;
-    SetVistaContentFonts(Font);
-   end;
-   if Tag=0 then
-   begin
-    Color:=Theme_memoeditcolor;
-    Font.Color:=Theme_memoeditfontcolor;
-   end else if Tag=-1 then
-   begin
-
-   end else
-   begin
-    Color:=Theme_MainColor;
-    Font.color:=Theme_MainFontColor;
-   end;
-   if aTag=10 then
-   begin
-    color:=Theme_MainColor;
-    ParentColor:=true;
-   end;
-  end;
-  if Form.Components[i-1] is TRichEdit then
-  with (Form.Components[i-1] as TRichEdit) do
-  begin
-   SetVistaContentFonts(Font);
-   if Tag=0 then
-   begin
-    Color:=Theme_memoeditcolor;
-    Font.color:=Theme_memoeditfontcolor;
-   end else begin
-    Color:=Theme_MainColor;
-    Font.color:=Theme_MainFontColor;
-   end;
-  end;
-
-  if Form.Components[i-1] is TDmProgress then
-  with (Form.Components[i-1] as TDmProgress) do
-  begin
-   SetVistaContentFonts(Font,1);
-   Color:=Theme_ProgressBackColor;
-   BorderColor:=Theme_ProgressFillColor;
-   CoolColor:=Theme_ProgressFillColor;
-   Font.Color:=Theme_ProgressFontColor;
-   Position:=Position; //to remake image
-  end;
-
- end;
- if Form.Tag<>1 then //UpdaterForm
- Form.Color:=Theme_MainColor;
- Form.font.Color:=Theme_MainFontColor;
-end;
-
-procedure TDBKernel.SaveCurrentColorTheme;
-var
-  Reg : TBDRegistry;
-begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
- if not Reg.OpenKey(GetRegRootKey+'CurrentTheme', true) then
- begin
-  exit;
- end;
- Reg.WriteString('Theme_ListColor','$'+IntToHex(Theme_ListColor,8));
- Reg.WriteString('Theme_ListFontColor','$'+IntToHex(Theme_ListFontColor,8));
- Reg.WriteString('Theme_MainColor','$'+IntToHex(Theme_MainColor,8));
- Reg.WriteString('Theme_MainFontColor','$'+IntToHex(Theme_MainFontColor,8));
- Reg.WriteString('Theme_memoeditcolor','$'+IntToHex(Theme_memoeditcolor,8));
- Reg.WriteString('Theme_memoeditfontcolor','$'+IntToHex(Theme_memoeditfontcolor,8));
- Reg.WriteString('Theme_Labelfontcolor','$'+IntToHex(Theme_Labelfontcolor,8));
- Reg.WriteString('Theme_ListSelectColor','$'+IntToHex(Theme_ListSelectColor,8));
-
- Reg.WriteString('Theme_ProgressBackColor','$'+IntToHex(Theme_ProgressBackColor,8));
- Reg.WriteString('Theme_ProgressFontColor','$'+IntToHex(Theme_ProgressFontColor,8));
- Reg.WriteString('Theme_ProgressFillColor','$'+IntToHex(Theme_ProgressFillColor,8));
- finally
-   Reg.Free;
- end;
-end;
-
-procedure TDBKernel.SaveThemeToFile(FileName: string);
-var
-  IniFile : TIniFile;
-begin
- IniFile:=TIniFile.Create(FileName);
- try
- IniFile.WriteString('THEME','Theme_ListColor','$'+IntToHex(Theme_ListColor,8));
- IniFile.WriteString('THEME','Theme_ListFontColor','$'+IntToHex(Theme_ListFontColor,8));
- IniFile.WriteString('THEME','Theme_MainColor','$'+IntToHex(Theme_MainColor,8));
- IniFile.WriteString('THEME','Theme_MainFontColor','$'+IntToHex(Theme_MainFontColor,8));
- IniFile.WriteString('THEME','Theme_memoeditcolor','$'+IntToHex(Theme_memoeditcolor,8));
- IniFile.WriteString('THEME','Theme_memoeditfontcolor','$'+IntToHex(Theme_memoeditfontcolor,8));
- IniFile.WriteString('THEME','Theme_Labelfontcolor','$'+IntToHex(Theme_Labelfontcolor,8));
- IniFile.WriteString('THEME','Theme_ListSelectColor','$'+IntToHex(Theme_ListSelectColor,8));
-
- IniFile.WriteString('THEME','Theme_ProgressBackColor','$'+IntToHex(Theme_ProgressBackColor,8));
- IniFile.WriteString('THEME','Theme_ProgressFontColor','$'+IntToHex(Theme_ProgressFontColor,8));
- IniFile.WriteString('THEME','Theme_ProgressFillColor','$'+IntToHex(Theme_ProgressFillColor,8));
- except
-  MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_ERROR_WRITING_THEME,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
- end;
- IniFile.Free;
-end;
-
-procedure TDBKernel.LoadThemeFromFile(FileName: string);
-var
-  IniFile : TIniFile;
-begin
- IniFile:=TIniFile.Create(FileName);
-
- Theme_ListColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_ListColor',''),ColorToRGB(clWindow));
- Theme_ListFontColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_ListFontColor',''),ColorToRGB(clWindowText));
- Theme_MainColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_MainColor',''),ColorToRGB(ClBtnFace));
- Theme_MainFontColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_MainFontColor',''),ColorToRGB(clWindowText));
- Theme_memoeditcolor:=HexToIntDef(IniFile.ReadString('THEME','Theme_memoeditcolor',''),ColorToRGB(clWindow));
- Theme_memoeditfontcolor:=HexToIntDef(IniFile.ReadString('THEME','Theme_memoeditfontcolor',''),ColorToRGB(clWindowText));
- Theme_Labelfontcolor:=HexToIntDef(IniFile.ReadString('THEME','Theme_Labelfontcolor',''),ColorToRGB(clWindowText));
- Theme_ListSelectColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_ListSelectColor',''),ColorToRGB(clHighlight));
-
- Theme_ProgressBackColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_ProgressBackColor',''),clBlack);
- Theme_ProgressFontColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_ProgressFontColor',''),clWhite);
- Theme_ProgressFillColor:=HexToIntDef(IniFile.ReadString('THEME','Theme_ProgressFillColor',''),$00009600);
-
- IniFile.Free;
-end;
-
 procedure TDBKernel.RegisterForm(Form: TForm);
 begin
   if FForms.IndexOf(Form) > -1 then
@@ -1550,76 +1081,6 @@ end;
 procedure TDBKernel.UnRegisterForm(Form: TForm);
 begin
   FForms.Remove(Form);
-end;
-
-procedure TDBKernel.ReloadGlobalTheme;
-var
-  I: Integer;
-begin
-  for I := 0 to FForms.Count - 1 do
-    RecreateThemeToForm(TForm(FForms[I]));
-  DoProcGlobalTheme;
-end;
-
-procedure TDBKernel.RegisterProcUpdateTheme(Proc: TNotifyEvent; Form : TForm);
-var
-  i : integer;
-  isproc : boolean;
-  TNE : TNotifyEvent;
-begin
- isproc:=false;
- For i:=0 to length(FThemeNotifys)-1 do
- begin
-  TNE:=FThemeNotifys[i];
-  if (@TNE=@Proc) and (FThemeNotifysForms[i]=Form) then
-  begin
-   isproc:=true;
-   break;
-  end;
- end;
- If not isproc then
- begin
-  TNE:=Proc;
-  SetLength(FThemeNotifys,length(FThemeNotifys)+1);
-  FThemeNotifys[length(FThemeNotifys)-1]:=TNE;
-
-  SetLength(FThemeNotifysForms,length(FThemeNotifysForms)+1);
-  FThemeNotifysForms[length(FThemeNotifysForms)-1]:=Form;
- end;
-end;
-
-procedure TDBKernel.UnRegisterProcUpdateTheme(Proc: TNotifyEvent; Form : TForm);
-var
-  i, j : integer;
-  TNE : TNotifyEvent;
-begin
- For i:=0 to length(FThemeNotifys)-1 do
- begin
-  TNE:=FThemeNotifys[i];
-  if (@TNE=@Proc) and (FThemeNotifysForms[i]=Form) then
-  begin
-   For j:=i to length(FThemeNotifys)-2 do
-   FThemeNotifys[j]:=FThemeNotifys[j+1];
-   SetLength(FThemeNotifys,length(FThemeNotifys)-1);
-
-   For j:=i to length(FThemeNotifysForms)-2 do
-   FThemeNotifysForms[j]:=FThemeNotifysForms[j+1];
-   SetLength(FThemeNotifysForms,length(FThemeNotifysForms)-1);
-
-   Exit;
-  end
- end;
-end;
-
-procedure TDBKernel.DoProcGlobalTheme;
-var
-  i : integer;
-begin
- For i:=0 to length(FThemeNotifys)-1 do
- begin
-  if Assigned(FThemeNotifys[i]) then
-  FThemeNotifys[i](Self);
- end;
 end;
 
 function TDBKernel.GetTemporaryFolder: String;

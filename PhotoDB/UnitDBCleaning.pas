@@ -58,7 +58,6 @@ begin
  CheckBox5.Checked:=DBKernel.ReadBool('Options','AllowFastCleaning',False);
  CheckBox6.Checked:=DBKernel.ReadBool('Options','FixDateAndTime',True);
  DBKernel.RegisterForm(DBCleaningForm);
- DBKernel.RecreateThemeToForm(DBCleaningForm);
  Button3.Enabled:=not UnitCleanUpThread.Active;
  Button4.Enabled:=UnitCleanUpThread.Active;
  DmProgress1.MaxValue:=UnitCleanUpThread.Share_MaxPosition;

@@ -246,8 +246,8 @@ begin
   AnimatedBuffer.PixelFormat := Pf24bit;
   AnimatedBuffer.Width := G.Width;
   AnimatedBuffer.Height := G.Height;
-  AnimatedBuffer.Canvas.Brush.Color := Theme_MainColor;
-  AnimatedBuffer.Canvas.Pen.Color := Theme_MainColor;
+  AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
+  AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
   AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
   AnimatedImage := G;
 
@@ -607,8 +607,8 @@ begin
     SlideNO := GetNextImageNO;
 
   R := (AnimatedImage as TGIFImage).Images[SlideNO].BoundsRect;
-  AnimatedBuffer.Canvas.Brush.Color := Theme_MainColor;
-  AnimatedBuffer.Canvas.Pen.Color := Theme_MainColor;
+  AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
+  AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
   Im := (AnimatedImage as TGIFImage);
   TimerEnabled := False;
   PreviousNumber := GetPreviousImageNO;
@@ -640,8 +640,8 @@ begin
   else if (DisposalMethod = DmBackground) then
   begin
     Bounds_ := Im.Images[PreviousNumber].BoundsRect;
-    AnimatedBuffer.Canvas.Pen.Color := Theme_MainColor;
-    AnimatedBuffer.Canvas.Brush.Color := Theme_MainColor;
+    AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
+    AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
     AnimatedBuffer.Canvas.Rectangle(Bounds_);
   end;
   if DisposalMethod = DmPrevious then
@@ -654,19 +654,19 @@ begin
   end;
   Im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
 
-  ImageBuffer.Canvas.Pen.Color := Theme_MainColor;
-  ImageBuffer.Canvas.Brush.Color := Theme_MainColor;
+  ImageBuffer.Canvas.Pen.Color := ClBtnFace;
+  ImageBuffer.Canvas.Brush.Color := ClBtnFace;
   ImageBuffer.Canvas.Rectangle(0, 0, ImageBuffer.Width, ImageBuffer.Height);
 
   case CurrentInfo.Rotation of
     DB_IMAGE_ROTATE_0:
-      StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme_MainColor);
+      StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, ClBtnFace);
     DB_IMAGE_ROTATE_90:
-      StretchCoolEx90(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme_MainColor);
+      StretchCoolEx90(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, ClBtnFace);
     DB_IMAGE_ROTATE_180:
-      StretchCoolEx180(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme_MainColor);
+      StretchCoolEx180(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, ClBtnFace);
     DB_IMAGE_ROTATE_270:
-      StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme_MainColor);
+      StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, ClBtnFace);
   end;
 
   DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);

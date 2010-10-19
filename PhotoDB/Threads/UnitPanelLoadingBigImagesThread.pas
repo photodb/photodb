@@ -139,7 +139,7 @@ begin
           try
             Fbit.PixelFormat := Pf24bit;
 
-            LoadImageX(Graphic, Fbit, Theme_ListColor);
+            LoadImageX(Graphic, Fbit, clWindow);
             F(Graphic);
             TempBitmap := TBitmap.Create;
             try

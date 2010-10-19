@@ -12,7 +12,6 @@ uses
    DataBase_Files : boolean;
    Registry_Entries : boolean;
    Chortcuts : boolean;
-   Themes : boolean;
    PlugIns : boolean;
    Scripts : boolean;
    Actions : boolean;
@@ -187,36 +186,6 @@ begin
   except
   end;
   Reg.free;
- end;
- If Options.Themes then
- begin
-  FTypeOperation:=TEXT_MES_DELETING_THEMES;
-  FInfo:='...';
-  FinfoLabel:='';
-  FProgressText:=TEXT_MES_WAIT_PR;
-  FProgress:=0;
-  FMaxSize:=1;
-  Synchronize(SetInfo);
-  Synchronize(SetProgress);
-  Found := FindFirst(fdir+ThemesDirectory+'*.dbc', faAnyFile, SearchRec);
-  while Found = 0 do
-  begin
-   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-   begin
-    If fileexists(fdir+ThemesDirectory+SearchRec.Name) then
-    begin
-     Filesetattr(fdir+ThemesDirectory+SearchRec.Name,faHidden);
-     Assignfile(f1,fdir+ThemesDirectory+SearchRec.Name);
-     Erase(f1);
-    end;
-   end;
-   Found := SysUtils.FindNext(SearchRec);
-  end;
-  SysUtils.FindClose(SearchRec);
-  try
-   RmDir(fdir+ThemesDirectory);
-  except
-  end;
  end;
  If Options.PlugIns then
  begin

@@ -396,7 +396,7 @@ begin
   ListView.Selection.GradientColorTop := clGradientInactiveCaption;
   ListView.Selection.RoundRect := True;
   ListView.Selection.UseFocusRect := False;
-  ListView.Selection.TextColor := Theme_ListFontColor;
+  ListView.Selection.TextColor := clWindowText;
   ListView.PaintInfoItem.ShowBorder := False;
   ListView.HotTrack.Cursor := CrArrow;
 end;

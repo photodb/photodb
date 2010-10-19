@@ -9,7 +9,7 @@ uses
    DropSource, DropTarget, UnitDBkernel, UnitDBDeclare,
    UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
    GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
-   uW7TaskBar, GraphicsBaseTypes, TwButton;
+   uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils;
 
 type
   TUpdateDBForm = class(TForm)
@@ -168,7 +168,6 @@ begin
   LastFileName := ':::';
   BadHistory := TStringList.Create;
   DBKernel.RegisterForm(Self);
-  DBKernel.RecreateThemeToForm(Self);
   DropFileTarget1.Register(Self);
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   LoadLanguage;
@@ -262,10 +261,9 @@ var
   procedure FillRectToBitmapA(var Bitmap: TBitmap);
   begin
     Bitmap.Canvas.Pen.Color := 0;
-    Bitmap.Canvas.Brush.Color := RGB(Round(GetRValue(Theme_ListColor) * 0.9), Round(GetGValue(Theme_ListColor) * 0.9),
-      Round(GetBValue(Theme_ListColor) * 0.9));
+    Bitmap.Canvas.Brush.Color := MakeDarken(clWindow, 0.9);
     Bitmap.Canvas.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
-    Bitmap.Canvas.Pen.Color := Theme_ListColor;
+    Bitmap.Canvas.Pen.Color := clWindow;
   end;
 
 begin

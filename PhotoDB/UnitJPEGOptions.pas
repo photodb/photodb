@@ -164,7 +164,6 @@ end;
 procedure TFormJpegOptions.FormCreate(Sender: TObject);
 begin
   LoadLanguage;
-  DBKernel.RecreateThemeToForm(Self);
 end;
 
 procedure TFormJpegOptions.FormKeyPress(Sender: TObject; var Key: Char);
@@ -199,15 +198,20 @@ end;
 
 procedure TFormJpegOptions.LoadLanguage;
 begin
-  Caption := L('JPEG compression');
-  LbInfo.Caption := L('Choose JPEG mode and compression rate:');
-  GbJPEGOption.Caption := L('JPEG');
-  TbCompressionRateChange(Self);
-  CbProgressiveMove.Caption := L('Progressive mode');
-  BtCancel.Caption := L('Cancel');
-  BtOk.Caption := L('Ok');
-  CbOptimizeToSize.Caption := L('Optimize to size:');
-  LbKb.Caption := L('Kb');
+  BeginTranslate;
+  try
+    Caption := L('JPEG compression');
+    LbInfo.Caption := L('Choose JPEG mode and compression rate:');
+    GbJPEGOption.Caption := L('JPEG');
+    TbCompressionRateChange(Self);
+    CbProgressiveMove.Caption := L('Progressive mode');
+    BtCancel.Caption := L('Cancel');
+    BtOk.Caption := L('Ok');
+    CbOptimizeToSize.Caption := L('Optimize to size:');
+    LbKb.Caption := L('Kb');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormJpegOptions.SetSection(Section: String);

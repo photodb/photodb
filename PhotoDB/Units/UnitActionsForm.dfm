@@ -15,7 +15,6 @@ object ActionsForm: TActionsForm
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object ActionList: TListBox
@@ -42,8 +41,6 @@ object ActionsForm: TActionsForm
       Width = 81
       Height = 16
       Cursor = crHandPoint
-      ParentColor = False
-      Color = clWhite
       Text = 'Save To File'
       OnClick = SaveToFileLinkClick
       ImageIndex = 0
@@ -62,8 +59,6 @@ object ActionsForm: TActionsForm
       Width = 90
       Height = 16
       Cursor = crHandPoint
-      ParentColor = False
-      Color = clWhite
       Text = 'Load From File'
       OnClick = LoadFromFileLinkClick
       ImageIndex = 0
@@ -82,8 +77,6 @@ object ActionsForm: TActionsForm
       Width = 47
       Height = 16
       Cursor = crHandPoint
-      ParentColor = False
-      Color = clWhite
       Text = 'Close'
       OnClick = CloseLinkClick
       ImageIndex = 0
@@ -98,8 +91,8 @@ object ActionsForm: TActionsForm
     end
   end
   object ActionsImageList: TImageList
-    Left = 120
-    Top = 16
+    Left = 168
+    Top = 104
   end
   object OpenDialog1: TOpenDialog
     Filter = 'PhotoDB Actions (*.dbact)|*.dbact'

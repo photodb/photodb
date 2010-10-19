@@ -77,7 +77,6 @@ begin
  InfoListBox.Clear;
  LoadToolBarIcons;
 
- DBKernel.RecreateThemeToForm(self);
  LoadLanguage;
  PopupMenu1.Images:=DBkernel.ImageList;
  View1.ImageIndex:=DB_IC_SLIDE_SHOW;

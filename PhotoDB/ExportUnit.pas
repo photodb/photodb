@@ -142,7 +142,6 @@ end;
 
 procedure TExportForm.FormCreate(Sender: TObject);
 begin
- DBKernel.RecreateThemeToForm(Self);
  LoadLanguage;
 end;
 

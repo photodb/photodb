@@ -8,7 +8,7 @@ uses
   DropTarget, DragDropFile, DragDrop, DropSource, Menus, ImgList, StdCtrls,
   ExtCtrls, ComCtrls,  Dialogs, DB, CommCtrl, JPEG, Math,
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
-  UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils;
+  UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils, uGraphicUtils;
 
 type
   TDBReplaceForm = class(TForm)
@@ -114,8 +114,6 @@ uses Searching, Language, ExplorerUnit, UnitPasswordForm,
 
 {$R *.dfm}
 
-{ TForm9 }
-
 procedure TDBReplaceForm.Additem(caption_: string; ID: integer; fbit_: tbitmap);
 var
   new : TListItem;
@@ -168,7 +166,7 @@ begin
   end;
   BS.Free;
  end;
- FillColorEx(bit, Theme_ListColor);
+ FillColorEx(bit, clWindow);
  if (J.Width>ListItemPreviewSize) or (J.Height>ListItemPreviewSize) then
  begin
   TempBitmap:=TBitmap.Create;
@@ -279,8 +277,8 @@ begin
  bit.PixelFormat:=pf24bit;
  bit.Width:=ListItemPreviewSize;
  bit.Height:=ListItemPreviewSize;
- bit.Canvas.Brush.color:=Theme_MainColor;
- bit.Canvas.pen.color:=Theme_MainColor;
+ bit.Canvas.Brush.color:=clBtnFace;
+ bit.Canvas.pen.color:=clBtnFace;
  if TBlobField(fQuery.FieldByName('thum'))=nil then
  begin
   bit.free;
@@ -305,7 +303,7 @@ begin
       JPEG.Free;
     end;
   end else
-  begin   
+  begin
    EventLog('TDBReplaceForm::ReadDBInfoByID()/Password==null --> exit');
    bit.free;
    pic.free;
@@ -356,7 +354,7 @@ end;
 
 procedure TDBReplaceForm.ListView1SelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
-begin   
+begin
  if Item<>nil then
  begin
   ReadDBInfoByID(item.Indent);
@@ -372,7 +370,6 @@ begin
  DropFileTarget1.Register(self);
  FBitmapImageList := TBitmapImageList.Create;
  DBKernel.RegisterForm(self);
- DBKernel.RecreateThemeToForm(self);
  ListView1.HotTrack:=DBKernel.Readbool('Options','UseHotSelect',true);
  listview1.DoubleBuffered:=true;
  ListView1SelectItem(Sender, nil, false);
@@ -465,8 +462,8 @@ begin
  fb1.PixelFormat:=pf24bit;
  fb1.Width:=FilePreviewSize;
  fb1.Height:=FilePreviewSize;
- fb1.Canvas.Brush.color:=Theme_MainColor;
- fb1.Canvas.pen.color:=Theme_MainColor;
+ fb1.Canvas.Brush.color:=ClBtnFace;
+ fb1.Canvas.pen.color:=ClBtnFace;
  fb1.Canvas.Rectangle(0,0,FilePreviewSize,FilePreviewSize);
  if pic.Width>pic.Height then
  begin
@@ -585,51 +582,54 @@ begin
   TDBPopupMenu.Instance.Execute(Image2.ClientToScreen(MousePos).x, Image2.ClientToScreen(MousePos).y, MenuInfo);
 end;
 
+
 procedure TDBReplaceForm.ListView1CustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 var
-  r, r1, r2 : TRect;
-  b : TBitmap;
-Const
-  DrawTextOpt = DT_NOPREFIX+DT_CENTER+DT_WORDBREAK+DT_EDITCONTROL;
+  R, R1, R2: TRect;
+  B: TBitmap;
+const
+  DrawTextOpt = DT_NOPREFIX + DT_CENTER + DT_WORDBREAK + DT_EDITCONTROL;
   ListItemPreviewSize = 102;
 begin
- if FBitmapImageList.Count=0 then Exit;
- r := Item.DisplayRect(drBounds);
- if not RectInRect(Sender.ClientRect,r) then exit;
- r1 := Item.DisplayRect(drIcon);
- r2 := Item.DisplayRect(drLabel);
- b := TBitmap.create;
- b.PixelFormat:=pf24bit;
- b.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
- if not (Sender.IsEditing and (Sender.ItemFocused=Item)) then
- begin
- if Item.Selected then
- begin
-  SelectedColor(b,RGB(Round(GetRValue(Theme_ListColor)*0.5),Round(GetGValue(Theme_ListColor)*0.5),Round(GetBValue(Theme_ListColor)*0.5)));
-  Sender.Canvas.Pen.Color:=RGB(Round(GetRValue(Theme_ListColor)*0.9),Round(GetGValue(Theme_ListColor)*0.9),Round(GetBValue(Theme_ListColor)*0.9));//$aa8888;
-  Sender.Canvas.Brush.Color:=RGB(Round(GetRValue(Theme_ListColor)*0.9),Round(GetGValue(Theme_ListColor)*0.9),Round(GetBValue(Theme_ListColor)*0.9));//$aa8888;
-  Sender.Canvas.FillRect(r2);
- end else
- begin
-  Sender.Canvas.Pen.Color:=Theme_ListColor;
-  Sender.Canvas.Brush.Color:=Theme_ListColor;
-  Sender.Canvas.FillRect(r2);
- end;
- Sender.Canvas.Font.Color:=Theme_ListFontColor;
- if cdsHot in State then
- begin
-  Sender.Canvas.Font.Style:=[fsUnderline];
-  DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), r2, DrawTextOpt);
- end else
- begin
-  Sender.Canvas.Font.Style:=[];
-  DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), r2, DrawTextOpt);
- end;
- end;
- Sender.Canvas.Draw(r1.Left+((r1.Right-r1.Left) div 2 - ListItemPreviewSize div 2),r1.Top,b);
- b.free;
- DefaultDraw := false;
+  if FBitmapImageList.Count = 0 then
+    Exit;
+  R := Item.DisplayRect(DrBounds);
+  if not RectInRect(Sender.ClientRect, R) then
+    Exit;
+  R1 := Item.DisplayRect(DrIcon);
+  R2 := Item.DisplayRect(DrLabel);
+  B := TBitmap.Create;
+  B.PixelFormat := Pf24bit;
+  B.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
+  if not(Sender.IsEditing and (Sender.ItemFocused = Item)) then
+  begin
+    if Item.Selected then
+    begin
+      SelectedColor(B, MakeDarken(ClWindow, 0.5));
+      Sender.Canvas.Pen.Color := MakeDarken(ClWindow, 0.9);
+      Sender.Canvas.Brush.Color := MakeDarken(ClWindow, 0.9);
+      Sender.Canvas.FillRect(R2);
+    end else
+    begin
+      Sender.Canvas.Pen.Color := ClWindow;
+      Sender.Canvas.Brush.Color := ClWindow;
+      Sender.Canvas.FillRect(R2);
+    end;
+    Sender.Canvas.Font.Color := clWindowText;
+    if CdsHot in State then
+    begin
+      Sender.Canvas.Font.Style := [FsUnderline];
+      DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), R2, DrawTextOpt);
+    end else
+    begin
+      Sender.Canvas.Font.Style := [];
+      DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), R2, DrawTextOpt);
+    end;
+  end;
+  Sender.Canvas.Draw(R1.Left + ((R1.Right - R1.Left) div 2 - ListItemPreviewSize div 2), R1.Top, B);
+  B.Free;
+  DefaultDraw := False;
 end;
 
 procedure TDBReplaceForm.FormDestroy(Sender: TObject);

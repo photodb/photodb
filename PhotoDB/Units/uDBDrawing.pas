@@ -104,7 +104,7 @@ begin
   if not Data.Include then
     Result := $00FFFF
   else
-    Result := Theme_ListSelectColor;
+    Result := clHighlight;
 end;
 
 function RectInRect(const R1, R2 : TRect) : Boolean;

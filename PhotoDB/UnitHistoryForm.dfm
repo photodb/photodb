@@ -58,7 +58,6 @@ object FormHistory: TFormHistory
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitTop = 259
     object Panel3: TPanel
       Left = 240
       Top = 0

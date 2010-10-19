@@ -201,14 +201,14 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ReadOnly = True
     TabOrder = 1
   end
-  object Button1: TButton
+  object BtnOk: TButton
     Left = 190
     Top = 297
     Width = 75
     Height = 17
     Caption = 'Ok'
     TabOrder = 2
-    OnClick = Button1Click
+    OnClick = BtnOkClick
   end
   object DateEdit: TEdit
     Tag = 1
@@ -247,7 +247,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ReadOnly = True
     TabOrder = 5
   end
-  object CheckBox1: TCheckBox
+  object CbAddKeywords: TCheckBox
     Left = 4
     Top = 144
     Width = 249
@@ -270,7 +270,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     OnSelect = ComboBoxEx1Select
     Images = GroupsImageList
   end
-  object CheckBox2: TCheckBox
+  object CbInclude: TCheckBox
     Left = 4
     Top = 207
     Width = 253

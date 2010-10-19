@@ -124,7 +124,7 @@ begin
 
           BitmapParam := FB1;
 
-          FillRectNoCanvas(FB1, Theme_MainColor);
+          FillRectNoCanvas(FB1, ClBtnFace);
 
           DrawImageEx(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,
             ThSizePropertyPreview div 2 - FB.Height div 2);

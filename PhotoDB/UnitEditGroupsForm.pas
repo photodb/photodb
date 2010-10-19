@@ -311,8 +311,8 @@ begin
   SmallB.PixelFormat := Pf24bit;
   SmallB.Width := 32;
   SmallB.Height := 32 + 2;
-  SmallB.Canvas.Pen.Color := Theme_MainColor;
-  SmallB.Canvas.Brush.Color := Theme_MainColor;
+  SmallB.Canvas.Pen.Color := clBtnFace;
+  SmallB.Canvas.Brush.Color := clBtnFace;
   SmallB.Canvas.Rectangle(0, 0, SmallB.Width, SmallB.Height);
   DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], SmallB.Width div 2 - 8,
     SmallB.Height div 2 - 8, 0, 0, DI_NORMAL);
@@ -322,15 +322,15 @@ begin
   for I := 0 to Length(FRegGroups) - 1 do
   begin
     SmallB := TBitmap.Create;
-    SmallB.PixelFormat := Pf24bit;
-    SmallB.Canvas.Brush.Color := Theme_MainColor;
+    SmallB.PixelFormat := pf24bit;
+    SmallB.Canvas.Brush.Color := ClBtnFace;
     if FRegGroups[I].GroupImage <> nil then
       if not FRegGroups[I].GroupImage.Empty then
       begin
         B := TBitmap.Create;
-        B.PixelFormat := Pf24bit;
-        B.Canvas.Brush.Color := Theme_MainColor;
-        B.Canvas.Pen.Color := Theme_MainColor;
+        B.PixelFormat := pf24bit;
+        B.Canvas.Brush.Color := ClBtnFace;
+        B.Canvas.Pen.Color := ClBtnFace;
         Size := Max(FRegGroups[I].GroupImage.Width, FRegGroups[I].GroupImage.Height);
         B.Width := Size;
         B.Height := Size;
@@ -551,10 +551,10 @@ begin
           begin
             if GroupExists(FShowenRegGroups[index].GroupCode) then
             begin
-              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme_ListFontColor, Theme_MemoEditColor);
+              (Control as TListBox).Canvas.Font.Color := ColorDiv2(clWindowText, clWindow);
             end else
             begin
-              (Control as TListBox).Canvas.Font.Color := Theme_ListFontColor;
+              (Control as TListBox).Canvas.Font.Color := clWindowText;
             end;
             (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
           end;

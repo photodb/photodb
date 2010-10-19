@@ -290,7 +290,6 @@ begin
  ExtendedMode:=false;
  GetPhotosFormSID:=GetGUID;
  ThreadInProgress:=false;
- DBKernel.RecreateThemeToForm(Self);
  LoadLanguage;
  if DirectoryExists(DBKernel.ReadString('GetPhotos','DFolder')) then
  Edit2.Text:=DBKernel.ReadString('GetPhotos','DFolder') else
@@ -299,7 +298,7 @@ begin
   Edit2.Text:=Reg.ReadString('Shell Folders', 'My Pictures', '');
   Reg.Free;
  end;
- OptionsImageList.BkColor:=Theme_ListColor;
+ OptionsImageList.BkColor:=clWindow;
  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_SENDTO+1]);
  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_UP+1]);
  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DOWN+1]);
@@ -658,24 +657,24 @@ begin
 
   if Item.Selected then
   begin
-   Sender.Canvas.Brush.Color:=Theme_ListSelectColor;
-   Sender.Canvas.Pen.Color:=Theme_ListSelectColor;
+   Sender.Canvas.Brush.Color:= clHighlight;
+   Sender.Canvas.Pen.Color:=clHighlight;
   end else
   begin
    if TItemRecordOptions(Item.Data^).Tag=1 then
    begin
-    Sender.Canvas.Brush.Color:=MergeColors(Theme_ListColor,clRed);
-    Sender.Canvas.Pen.Color:=MergeColors(Theme_ListColor,clRed);
+    Sender.Canvas.Brush.Color:=MergeColors(clWindow,clRed);
+    Sender.Canvas.Pen.Color:=MergeColors(clWindow,clRed);
    end;
    if TItemRecordOptions(Item.Data^).Tag=0 then
    begin
-    Sender.Canvas.Brush.Color:=MergeColors(Theme_ListColor,clGreen);
-    Sender.Canvas.Pen.Color:=MergeColors(Theme_ListColor,clGreen);
+    Sender.Canvas.Brush.Color:=MergeColors(clWindow,clGreen);
+    Sender.Canvas.Pen.Color:=MergeColors(clWindow,clGreen);
    end;
    if TItemRecordOptions(Item.Data^).Tag=-1 then
    begin
-    Sender.Canvas.Brush.Color:=MergeColors(Theme_ListColor,clBlue);
-    Sender.Canvas.Pen.Color:=MergeColors(Theme_ListColor,clBlue);
+    Sender.Canvas.Brush.Color:=MergeColors(clWindow,clBlue);
+    Sender.Canvas.Pen.Color:=MergeColors(clWindow,clBlue);
    end;
   end;
   Sender.Canvas.Rectangle(aRect);

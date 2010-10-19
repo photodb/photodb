@@ -153,7 +153,6 @@ type
     procedure FormShow(Sender: TObject);
     procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure Button9Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure OkButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -236,30 +235,6 @@ uses Language, CleaningForm, dbselectunit, SlideShow, ExplorerThreadUnit,
       ExplorerUnit, UnitJPEGOptions;
 
 {$R *.dfm}
-
-Procedure RelodThemesNamesW(var List : TStringList);
-var
-  Found  : integer;
-  SearchRec : TSearchRec;
-  Directory : string;
-begin
- List:= TStringList.Create;
- List.Clear;
- Directory:=ProgramDir;
- FormatDir(Directory);
- Directory:=Directory + ThemesDirectory;
- Found := FindFirst(Directory+'*.dbc', faAnyFile, SearchRec);
- while Found = 0 do
- begin
-  if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-  begin
-   If fileexists(Directory+SearchRec.Name) then
-   List.Add(Directory+SearchRec.Name);
-  end;
-  Found := SysUtils.FindNext(SearchRec);
- end;
- SysUtils.FindClose(SearchRec);
-end;
 
 procedure TOptionsForm.TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
   var AllowChange: Boolean);
@@ -452,26 +427,6 @@ begin
  ColorDialog1.Color:= (Sender as TShape).brush.color;
  if ColorDialog1.Execute then
  (Sender as TShape).brush.color:=ColorDialog1.Color;
-end;
-
-procedure TOptionsForm.Button9Click(Sender: TObject);
-var
-  SaveDialog : DBSaveDialog;
-  FileName : string;
-begin
- SaveDialog:=DBSaveDialog.Create;
- SaveDialog.Filter:='Color Themes (*.dbc)|*.dbc';
- SaveDialog.FilterIndex:=1;
- if SaveDialog.Execute then
- begin
-  FileName:=SaveDialog.FileName;
-  if GetExt(FileName)<>'DBC' then
-  FileName:=FileName+'.dbc';
-  If FileExists(FileName) then
-  if ID_OK<>MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_1,[FileName]),TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
-  DBKernel.SaveThemeToFile(FileName);
- end;
- SaveDialog.Free;
 end;
 
 procedure TOptionsForm.FormCreate(Sender: TObject);

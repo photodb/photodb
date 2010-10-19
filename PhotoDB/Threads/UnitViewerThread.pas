@@ -85,7 +85,7 @@ begin
   if FullScreenNow then
     TransparentColor := 0
   else
-    TransparentColor := Theme_MainColor;
+    TransparentColor := ClBtnFace;
 
   FTransparent := False;
   FreeOnTerminate := True;

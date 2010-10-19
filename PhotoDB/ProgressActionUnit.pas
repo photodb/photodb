@@ -115,7 +115,6 @@ begin
   Closed := False;
   WindowID := GetGUID;
   ManagerProgresses.AddProgress(Self);
-  DBKernel.RecreateThemeToForm(Self);
   LoadLanguage;
   FLoading := False;
   FCanClosedByUser := False;

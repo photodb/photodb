@@ -49,7 +49,6 @@ begin
   Groups := UnitGroupsWork.GetRegisterGroupList(True, True);
   RecreateGroupsList;
   ShowResult := False;
-  DBKernel.RecreateThemeToForm(Self);
   LoadLanguage;
 end;
 
@@ -131,7 +130,7 @@ var
   I : integer;
 begin
   CbeGroupList.Clear;
-  FillGroupsToImageList(GroupsImageList, Groups, Theme_MainColor);
+  FillGroupsToImageList(GroupsImageList, Groups, ClBtnFace);
 
   for I := 0 to Length(Groups) - 1 do
     with CbeGroupList.ItemsEx.Add do

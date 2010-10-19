@@ -302,7 +302,8 @@ uses
   uSearchThreadPool in 'Threads\uSearchThreadPool.pas',
   uMultiCPUThreadManager in 'Threads\uMultiCPUThreadManager.pas',
   uFormListView in 'Units\uFormListView.pas',
-  uDBThread in 'Threads\uDBThread.pas';
+  uDBThread in 'Threads\uDBThread.pas',
+  uGraphicUtils in 'Units\uGraphicUtils.pas';
 
 {$R *.res}
 
@@ -471,7 +472,6 @@ begin
             Halt;
           end;
           DBKernel := TDBKernel.Create;
-          DBKernel.LoadColorTheme;
           Application.CreateForm(TInstallForm, InstallForm);
   Application.Restore;
           EventLog(':InstallForm.SetQuickSelfInstallOption()');
@@ -501,7 +501,6 @@ begin
           Halt;
         end;
         DBKernel := TDBKernel.Create;
-        DBKernel.LoadColorTheme;
         if Length(GetDirectory(Application.ExeName)) > 200 then
         begin
           MessageBoxDB(Dolphin_DB.GetActiveFormHandle, PWideChar(Format(TEXT_MES_PATH_TOO_LONG, [GetDirectory(Application.ExeName)])), TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
@@ -567,9 +566,6 @@ begin
     //EventLog(':DBKernel.InitRegModule');
     //TW.i.Start('InitRegModule');
     // TODO: LATER!!!! DBKernel.InitRegModule;
-    EventLog(':DBKernel.LoadColorTheme');
-    TW.i.Start('DBKernel.LoadColorThem');
-    DBKernel.LoadColorTheme;
   end;
   TW.i.Start('SetSplashProgress 70');
   SetSplashProgress(70);
@@ -737,8 +733,6 @@ begin
 
   If not DBTerminating then
   begin
-    EventLog('Theme...');
-    DBKernel.LoadColorTheme;
     EventLog('Run manager...');
     if not GetParamStrDBBool('/NoFullRun') then
       FormManager.Run(SplashThread);

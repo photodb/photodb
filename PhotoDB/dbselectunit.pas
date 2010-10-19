@@ -220,7 +220,6 @@ begin
  DBFile.Icon:='';
  DBFile.FileName:='';
  DBFile.FileType:=0;
- DBkernel.RecreateThemeToForm(Self);
  LoadLanguage;
  SetDefaultIcon;
  DoControlsReallign;
@@ -302,7 +301,7 @@ var
 begin
   ComboBoxExDB1.Clear;
   DBImageList.Clear;
-  DBImageList.BkColor := Theme_ListColor;
+  DBImageList.BkColor := ClWindow;
 
   with ComboBoxExDB1.ItemsEx.Add do
   begin

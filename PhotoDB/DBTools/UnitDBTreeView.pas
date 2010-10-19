@@ -294,7 +294,7 @@ begin
   Until not DBInOpening;
   TempTable.First;
   OpenProgress.Release;
-  
+
  Show;
  Button1Click(self);
 end;
@@ -317,29 +317,28 @@ end;
 
 procedure TFormCreateDBFileTree.FormCreate(Sender: TObject);
 begin
-  DBInOpening:=true;
-  DropFileTarget1.Register(self);
-  FTerminating := false;
-  FCanFree  := false;
-  fStatusProgress:=CreateProgressBar(StatusBar1,0);
+  DBInOpening := True;
+  DropFileTarget1.register(Self);
+  FTerminating := False;
+  FCanFree := False;
+  FStatusProgress := CreateProgressBar(StatusBar1, 0);
   LoadLanguage;
-  ImageList1.BkColor:=Theme_ListColor;
-  DBKernel.RecreateThemeToForm(self);
-  TreeView1.Color:=Theme_ListColor;
-  TreeView1.Font.Color:=Theme_ListFontColor;
+  ImageList1.BkColor := clWindow;
+  TreeView1.Color := clWindow;
+  TreeView1.Font.Color := clWindowText;
 
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(HInstance,'MAINICON'));
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(DBKernel.IconDllInstance,'PICTURE'));
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_DIRECTORY+1]);  
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_EXPLORER+1]);
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_KEY+1]);
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.icons[DB_IC_DELETE_INFO+1]);
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(HInstance, 'MAINICON'));
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(DBKernel.IconDllInstance, 'PICTURE'));
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_EXPLORER + 1]);
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_KEY + 1]);
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
 
   Label1.Hide;
   Panel2.Hide;
   Label2.Hide;
-  PopupMenu1.Images:=DBKernel.ImageList;
-  OpeninExplorer1.ImageIndex:=DB_IC_EXPLORER;
+  PopupMenu1.Images := DBKernel.ImageList;
+  OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
 end;
 
 procedure TFormCreateDBFileTree.TreeView1Click(Sender: TObject);
@@ -372,7 +371,7 @@ begin
    B.PixelFormat:=pf24bit;
    B.Width:=102;
    B.height:=102;
-   FillColorEx(B, Theme_ListColor);
+   FillColorEx(B, clWindow);
    Exists:=0;
    DrawAttributes(B,102,0,0,0,'',false,Exists);
    Image1.Picture.Graphic:=B;
@@ -387,8 +386,8 @@ begin
    B.PixelFormat:=pf24bit;
 
    B.Width:=102;
-   B.height:=102;   
-   FillColorEx(B, Theme_ListColor);
+   B.height:=102;
+   FillColorEx(B, clWindow);
 
    if PassWord='' then
    begin
@@ -420,7 +419,7 @@ begin
    B.PixelFormat:=pf24bit;
    B.Width:=102;
    B.height:=102;
-   FillColorEx(B, Theme_ListColor);
+   FillColorEx(B, clWindow);
 
    if (J.Width>100) or (J.Height>100) then
    begin
@@ -429,11 +428,11 @@ begin
     TempBitmap.Assign(J);
     w:=J.Width;
     h:=J.Height;
-    ProportionalSize(100,100,w,h);   
+    ProportionalSize(100,100,w,h);
     Image := TBitmap.Create;
     Image.PixelFormat:=pf24bit;
     DoResize(w,h,TempBitmap,Image);
-    TempBitmap.Free;      
+    TempBitmap.Free;
     B.Canvas.Draw(50-Image.Width div 2,50 - Image.Height div 2,Image);
    end else
    B.Canvas.Draw(50-J.Width div 2,50 - J.Height div 2,J);
@@ -463,7 +462,7 @@ end;
 
 procedure TFormCreateDBFileTree.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);  
+ Inherited CreateParams(Params);
  Params.WndParent := GetDesktopWindow;
  with params do
  ExStyle := ExStyle or WS_EX_APPWINDOW;

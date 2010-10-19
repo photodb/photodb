@@ -42,7 +42,7 @@ object FormSelectFont: TFormSelectFont
     Font.Style = []
     ParentFont = False
   end
-  object Label3: TLabel
+  object LbInfo: TLabel
     Left = 8
     Top = 8
     Width = 185
@@ -51,33 +51,33 @@ object FormSelectFont: TFormSelectFont
     Caption = 'Select font and press Ok button:'
     WordWrap = True
   end
-  object ListBox1: TListBox
+  object LstFonts: TListBox
     Left = 8
     Top = 40
     Width = 185
     Height = 185
     Style = lbOwnerDrawVariable
     TabOrder = 0
-    OnClick = ListBox1Click
-    OnDrawItem = ListBox1DrawItem
-    OnMeasureItem = ListBox1MeasureItem
+    OnClick = LstFontsClick
+    OnDrawItem = LstFontsDrawItem
+    OnMeasureItem = LstFontsMeasureItem
   end
-  object Button1: TButton
+  object BtnCancel: TButton
     Left = 40
     Top = 280
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtnCancelClick
   end
-  object Button2: TButton
+  object BntOk: TButton
     Left = 120
     Top = 280
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BntOkClick
   end
 end
