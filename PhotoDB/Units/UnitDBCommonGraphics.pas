@@ -1039,6 +1039,7 @@ var
   R, G, B : Byte;
 begin
   Bitmap.PixelFormat := pf24Bit;
+  Color := ColorToRGB(Color);
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);

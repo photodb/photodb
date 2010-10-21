@@ -788,7 +788,7 @@ procedure TSearchForm.ListViewContextPopup(Sender: TObject; MousePos: TPoint;
 var
   Info : TDBPopupMenuInfo;
   item: TEasyItem;
-  FileNames : TArStrings;
+  FileNames : TStrings;
   i : integer;
   S : String;
   FileList : TStrings;
@@ -814,14 +814,16 @@ begin
       TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
     end else
     begin
-      SetLength(FileNames,0);
-      for I := 0 to Info.Count - 1 do
-      if Info[i].Selected then
-      begin
-        SetLength(FileNames,Length(FileNames)+1);
-        FileNames[Length(FileNames)-1]:=Info[i].FileName;
+      FileNames := TStringList.Create;
+      try
+        for I := 0 to Info.Count - 1 do
+        if Info[i].Selected then
+          FileNames.Add(Info[i].FileName);
+
+        GetProperties(FileNames, MousePos, ElvMain);
+      finally
+        F(FileNames);
       end;
-      GetProperties(FileNames,MousePos,ElvMain);
     end;
   end else
   begin
@@ -836,8 +838,8 @@ begin
       else
         FileList := GetSelectedTstrings;
 
-        FilesCount := FileList.Count;
-        FileList.Free;
+      FilesCount := FileList.Count;
+      FileList.Free;
     end;
     SetBoolAttr(aScript,'$OneFileExists', FilesCount > 0);
     S := ListMenuScript;

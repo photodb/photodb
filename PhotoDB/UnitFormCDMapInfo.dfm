@@ -16,6 +16,7 @@ object FormCDMapInfo: TFormCDMapInfo
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
@@ -345,14 +346,14 @@ object FormCDMapInfo: TFormCDMapInfo
     Height = 13
     Caption = 'Disk:'
   end
-  object Button1: TButton
+  object BtnCancel: TButton
     Left = 368
     Top = 152
     Width = 115
     Height = 25
     Caption = 'Cancel'
     TabOrder = 3
-    OnClick = Button1Click
+    OnClick = BtnCancelClick
   end
   object EditCDName: TEdit
     Left = 8
@@ -370,29 +371,22 @@ object FormCDMapInfo: TFormCDMapInfo
     TabOrder = 0
     Text = 'Disk name'
   end
-  object Button2: TButton
+  object BtnSelectDrive: TButton
     Left = 208
     Top = 152
     Width = 155
     Height = 25
     Caption = 'Select Disk'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtnSelectDriveClick
   end
-  object Button3: TButton
+  object BtnDontAskAgain: TButton
     Left = 8
     Top = 152
     Width = 193
     Height = 25
     Caption = 'Dont ask me again'
     TabOrder = 1
-    OnClick = Button3Click
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = DestroyTimerTimer
-    Left = 456
-    Top = 8
+    OnClick = BtnDontAskAgainClick
   end
 end

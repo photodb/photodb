@@ -309,7 +309,7 @@ function chartoint(ch : char):Integer;
 
 implementation
 
-uses Dolphin_db, UnitBackUpTableThread, Language, UnitCrypting, CommonDBSupport,
+uses Dolphin_db, Language, UnitCrypting, CommonDBSupport,
   UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
   UnitBackUpTableInCMD, UnitCDMappingSupport;
 

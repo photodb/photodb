@@ -9,43 +9,42 @@ uses
 
 type
   TCDExportOptions = record
-   ToDirectory : String;
-   DeleteFiles : boolean;
-   ModifyDB : boolean;
-   CreatePortableDB : boolean;
-   OnEnd : TNotifyEvent;
+    ToDirectory: string;
+    DeleteFiles: Boolean;
+    ModifyDB: Boolean;
+    CreatePortableDB: Boolean;
+    OnEnd: TNotifyEvent;
   end;
 
 type
   TCDExportThread = class(TThread)
   private
-   Mapping: TCDIndexMapping;
-   Options : TCDExportOptions;
-   DBRemapping : TDBFilePathArray;
-   DS : TDataSet;
-   ExtDS : TDataSet;
-   DBUpdated : boolean;
-   CRC : Cardinal;
-   FRegGroups : TGroups;
-   FGroupsFounded : TGroups;
-   ImageSettings : TImageDBOptions;
-   IntParam, CopiedSize : int64;
-   StrParam : string;
-   ProgressWindow : TForm;
-   IsClosedParam : boolean;
     { Private declarations }
+    Mapping: TCDIndexMapping;
+    Options: TCDExportOptions;
+    DBRemapping: TDBFilePathArray;
+    DS: TDataSet;
+    ExtDS: TDataSet;
+    DBUpdated: Boolean;
+    CRC: Cardinal;
+    FRegGroups: TGroups;
+    FGroupsFounded: TGroups;
+    ImageSettings: TImageDBOptions;
+    IntParam, CopiedSize: Int64;
+    StrParam: string;
+    ProgressWindow: TForm;
+    IsClosedParam: Boolean;
   protected
     procedure Execute; override;
   public
-    constructor Create(aMapping : TCDIndexMapping;
-     aOptions : TCDExportOptions);
+    constructor Create(AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
     procedure DoErrorDeletingFiles;
     procedure ShowError;
     procedure DoOnEnd;
     procedure ShowCopyError;
     procedure CreatePortableDB;
     procedure InitializeProgress;
-    procedure OnProgress(Sender : TObject; var Info : TProgressCallBackInfo);
+    procedure OnProgress(Sender: TObject; var Info: TProgressCallBackInfo);
     procedure SetProgressAsynch;
     procedure IfBreakOperation;
     procedure DestroyProgress;
@@ -69,41 +68,42 @@ end;
 
 procedure TCDExportThread.CreatePortableDB;
 begin
- CreateMobileDBFilesInDirectory(StrParam,Mapping.CDLabel);
+  CreateMobileDBFilesInDirectory(StrParam, Mapping.CDLabel);
 end;
 
 procedure TCDExportThread.DoErrorDeletingFiles;
 begin
- MessageBoxDB(Handle,TEXT_MES_UNABLE_TO_DELETE_ORIGINAL_FILES,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+  MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_DELETE_ORIGINAL_FILES, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
 end;
 
 procedure TCDExportThread.DoOnEnd;
 begin
- Options.OnEnd(Self);
+  Options.OnEnd(Self);
 end;
 
 procedure TCDExportThread.InitializeProgress;
 begin
- ProgressWindow:=GetProgressWindow(true);
- With ProgressWindow as TProgressActionForm do
- begin
-  CanClosedByUser:=True;
-  OneOperation:=false;
-  OperationCount:=4;
-  OperationPosition:=1;
-  MaxPosCurrentOperation:=IntParam;
-  xPosition:=0;
-  Show;
- end;
+  ProgressWindow := GetProgressWindow(True);
+  with ProgressWindow as TProgressActionForm do
+  begin
+    CanClosedByUser := True;
+    OneOperation := False;
+    OperationCount := 4;
+    OperationPosition := 1;
+    MaxPosCurrentOperation := IntParam;
+    XPosition := 0;
+    Show;
+  end;
 end;
 
 procedure TCDExportThread.Execute;
 var
-   i, j : integer;
-   Directory : string;
-   FS : TFileStream;
-   Str : string;
+  I, J: Integer;
+  Directory: string;
+  FS: TFileStream;
+  Str: string;
 
+  //TODO: REFACTOR!!!
 procedure CopyRecordsW(OutTable, InTable: TDataSet; FileName : string; CRC : Cardinal);
 var
   S : String;
@@ -330,71 +330,72 @@ begin
   end;
  end;
 
- CommonDBSupport.TryRemoveConnection(Directory+Mapping.CDLabel+'.photodb',true);
+    CommonDBSupport.TryRemoveConnection(Directory + Mapping.CDLabel + '.photodb', True);
 
- except
-  on e : Exception do
-  begin
-   EventLog(':TCDExportThread::Execute() throw exception: '+e.Message);
-   StrParam:=e.Message;
-   Synchronize(ShowError);
+  except
+    on E: Exception do
+    begin
+      EventLog(':TCDExportThread::Execute() throw exception: ' + E.message);
+      StrParam := E.message;
+      Synchronize(ShowError);
+    end;
   end;
- end;
- Synchronize(DestroyProgress);
- Synchronize(DoOnEnd);
+  Synchronize(DestroyProgress);
+  Synchronize(DoOnEnd);
 end;
 
 procedure TCDExportThread.ShowCopyError;
 begin
- MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_UNABLE_TO_COPY_DISK,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+  MessageBoxDB(Dolphin_DB.GetActiveFormHandle, TEXT_MES_UNABLE_TO_COPY_DISK, TEXT_MES_WARNING, TD_BUTTON_OK,
+    TD_ICON_WARNING);
 end;
 
 procedure TCDExportThread.ShowError;
 begin
- MessageBoxDB(Dolphin_DB.GetActiveFormHandle,Format(TEXT_MES_UNKNOWN_ERROR_F,[StrParam]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+  MessageBoxDB(Dolphin_DB.GetActiveFormHandle, Format(TEXT_MES_UNKNOWN_ERROR_F, [StrParam]), TEXT_MES_ERROR,
+    TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
-procedure TCDExportThread.OnProgress(Sender: TObject;
-  var Info: TProgressCallBackInfo);
+procedure TCDExportThread.OnProgress(Sender: TObject; var Info: TProgressCallBackInfo);
 begin
- CopiedSize:=CopiedSize+Info.Position;
- Synchronize(SetProgressAsynch);
- Info.Terminate:=IsClosedParam;
+  CopiedSize := CopiedSize + Info.Position;
+  Synchronize(SetProgressAsynch);
+  Info.Terminate := IsClosedParam;
 end;
 
 procedure TCDExportThread.SetProgressAsynch;
 begin
- With ProgressWindow as TProgressActionForm do
- begin
-  xPosition:=CopiedSize;
- end;
- IfBreakOperation;
+  with ProgressWindow as TProgressActionForm do
+  begin
+    XPosition := CopiedSize;
+  end;
+  IfBreakOperation;
 end;
 
 procedure TCDExportThread.DestroyProgress;
 begin
- (ProgressWindow as TProgressActionForm).WindowCanClose:=true;
- ProgressWindow.Release;
+  (ProgressWindow as TProgressActionForm).WindowCanClose := True;
+  ProgressWindow.Release;
 end;
 
 procedure TCDExportThread.IfBreakOperation;
 begin
- IsClosedParam:=(ProgressWindow as TProgressActionForm).Closed;
+  IsClosedParam := (ProgressWindow as TProgressActionForm).Closed;
 end;
 
 procedure TCDExportThread.SetProgressOperation;
 begin
- (ProgressWindow as TProgressActionForm).OperationPosition:=IntParam;
+  (ProgressWindow as TProgressActionForm).OperationPosition := IntParam;
 end;
 
 procedure TCDExportThread.SetMaxPosition;
 begin
- (ProgressWindow as TProgressActionForm).MaxPosCurrentOperation:=IntParam;
+  (ProgressWindow as TProgressActionForm).MaxPosCurrentOperation := IntParam;
 end;
 
 procedure TCDExportThread.SetPosition;
 begin
- (ProgressWindow as TProgressActionForm).xPosition:=IntParam;
+  (ProgressWindow as TProgressActionForm).XPosition := IntParam;
 end;
 
 end.

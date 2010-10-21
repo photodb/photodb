@@ -5,7 +5,7 @@ interface
 uses
   GraphicCrypt, DB, UnitINI, UnitTerminationApplication,
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms,  uVistaFuncs, UnitDBNullQueryThread, AppEvnts, ExtCtrls,
+  Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad;

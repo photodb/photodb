@@ -1115,40 +1115,45 @@ end;
 
 procedure TDBPopupMenu.PropertyItemPopUpMenu_(Sender: TObject);
 var
-  i : integer;
-  items : TArInteger;
-  WindowsProp : boolean;
-  SelectCount : integer;
-  FFiles : array of string;
+  I: Integer;
+  Items: TArInteger;
+  WindowsProp: Boolean;
+  SelectCount: Integer;
+  FFiles: TStrings;
 begin
- SetLength(items,0);
- SetLength(FFiles,0);
- SelectCount:=0;
- for i:=0 to FInfo.Count-1 do
- if FInfo[i].Selected then
- inc(SelectCount);
- WindowsProp:=(SelectCount>1) and (FInfo[FInfo.Position].ID=0);
- for i:=0 to FInfo.Count-1 do
- if ((FInfo[i].ID<>0) or WindowsProp) and FInfo[i].Selected then
- begin
-  SetLength(items,Length(items)+1);
-  items[Length(items)-1]:=FInfo[i].ID;
-  SetLength(FFiles,Length(FFiles)+1);
-  FFiles[Length(FFiles)-1]:=FInfo[i].FileName;
- end;
- If Length(items)<2 then
- begin
-  if FInfo[FInfo.Position].ID<>0 then
-  PropertyManager.NewIDProperty(FInfo[FInfo.Position].ID).Execute(FInfo[FInfo.Position].ID);
-  if FInfo[FInfo.Position].ID=0 then
-  if FInfo[FInfo.Position].FileName<>'' then
-  PropertyManager.NewFileProperty(FInfo[FInfo.Position].FileName).ExecuteFileNoEx(FInfo[FInfo.Position].FileName);
- end else
- begin
-  if FInfo[FInfo.Position].ID=0 then
-  GetPropertiesWindows(FFiles,FormManager) else
-  PropertyManager.NewSimpleProperty.ExecuteEx(items);
- end;
+  SetLength(Items, 0);
+  FFiles := TStringList.Create;
+  try
+
+    SelectCount := 0;
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].Selected then
+        Inc(SelectCount);
+    WindowsProp := (SelectCount > 1) and (FInfo[FInfo.Position].ID = 0);
+    for I := 0 to FInfo.Count - 1 do
+      if ((FInfo[I].ID <> 0) or WindowsProp) and FInfo[I].Selected then
+      begin
+        SetLength(Items, Length(Items) + 1);
+        Items[Length(Items) - 1] := FInfo[I].ID;
+        FFiles.Add(FInfo[I].FileName);
+      end;
+    if Length(Items) < 2 then
+    begin
+      if FInfo[FInfo.Position].ID <> 0 then
+        PropertyManager.NewIDProperty(FInfo[FInfo.Position].ID).Execute(FInfo[FInfo.Position].ID);
+      if FInfo[FInfo.Position].ID = 0 then
+        if FInfo[FInfo.Position].FileName <> '' then
+          PropertyManager.NewFileProperty(FInfo[FInfo.Position].FileName).ExecuteFileNoEx(FInfo[FInfo.Position].FileName);
+    end else
+    begin
+      if FInfo[FInfo.Position].ID = 0 then
+        GetPropertiesWindows(FFiles, FormManager)
+      else
+        PropertyManager.NewSimpleProperty.ExecuteEx(Items);
+    end;
+  finally
+    F(FFiles);
+  end;
 end;
 
 procedure TDBPopupMenu.QuickGroupInfoPopUpMenu_(Sender: TObject);

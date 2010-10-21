@@ -11,7 +11,7 @@ uses
   EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
-  UnitExplorerLoadSIngleImageThread, uConstants, uMemory, SyncObjs,
+  uConstants, uMemory, SyncObjs,
   uMultiCPUThreadManager;
 
 type

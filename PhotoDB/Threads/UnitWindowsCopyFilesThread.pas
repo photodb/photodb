@@ -3,10 +3,8 @@ unit UnitWindowsCopyFilesThread;
 interface
 
 uses
-  Classes, Windows, DBCommon, Forms, uFileUtils, uMemory;
-
-type
-  TCorrectPathProc = procedure(Src : TStrings; Dest : string) of object;
+  Classes, Windows, DBCommon, SysUtils, Forms, Dolphin_DB, uFileUtils, uMemory,
+  uLogger;
 
 type
   TWindowsCopyFilesThread = class(TThread)
@@ -20,7 +18,6 @@ type
     FOwnerExplorerForm: TForm;
   protected
     procedure Execute; override;
-    procedure DoCallBack;
   public
     constructor Create(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean;
       AutoRename: Boolean; CallBack: TCorrectPathProc; OwnerExplorerForm: TForm);
@@ -55,12 +52,6 @@ begin
   inherited;
 end;
 
-procedure TWindowsCopyFilesThread.DoCallBack;
-begin
-  if Assigned(FCallBack) then
-    FCallBack(FSrc, FDest);
-end;
-
 procedure TWindowsCopyFilesThread.Execute;
 var
   Res: Boolean;
@@ -70,17 +61,19 @@ begin
   try
     Res := CopyFilesSynch(0, FSrc, FDest, FMove, FAutoRename) = 0;
   except
+    on e : Exception do
+      EventLog(e.Message);
   end;
   if Res then
   begin
     if FOwnerExplorerForm <> nil then
     begin
       if ExplorerManager.IsExplorer(TExplorerForm(FOwnerExplorerForm)) then
-        Synchronize(DoCallBack);
-    end
-    else
-      Synchronize(DoCallBack);
+        FCallBack(FOwnerExplorerForm, FSrc, FDest);
+    end else
+      FCallBack(FOwnerExplorerForm, FSrc, FDest);
   end;
 end;
 
 end.
+

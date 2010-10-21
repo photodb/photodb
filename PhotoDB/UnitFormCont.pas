@@ -397,54 +397,58 @@ begin
   TerminateTimer.Enabled := True;
 end;
 
-procedure TFormCont.ListView1ContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
+procedure TFormCont.ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
 var
-  i:integer;
-  Info : TDBPopupMenuInfo;
-  item : TEasyItem;
-  menus : TArMenuitem;
-  FileNames : TArStrings;
+  I: Integer;
+  Info: TDBPopupMenuInfo;
+  Item: TEasyItem;
+  Menus: TArMenuitem;
+  FileNames: TStrings;
 begin
   if CopyFilesSynchCount > 0 then
     WindowsMenuTickCount := GetTickCount;
 
- Item:=ItemByPointImage(ElvMain, Point(MousePos.x,MousePos.y));
- if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ElvMain.Selection.First;
+  Item := ItemByPointImage(ElvMain, Point(MousePos.X, MousePos.Y));
+  if (Item = nil) or ((MousePos.X = -1) and (MousePos.Y = -1)) then
+    Item := ElvMain.Selection.First;
 
- HintTimer.Enabled:=false;
- if item <>nil then
- begin
-  LastMouseItem:= nil;
-  application.HideHint;
-  THintManager.Instance.CloseHint;
-
-  hinttimer.Enabled:=false;
-  info:=GetCurrentPopUpMenuInfo(item);
-  info.AttrExists:=false;
-  if not (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
+  HintTimer.Enabled := False;
+  if Item <> nil then
   begin
-   info.IsPlusMenu:=false;
-   info.IsListItem:=false;
-   setlength(menus,1);
-   menus[0]:=Tmenuitem.Create(nil);
-   menus[0].Caption:= L('Delete item from list');
-   menus[0].Tag:=item.Index;
-   menus[0].ImageIndex:=DB_IC_DELETE_INFO;
-   menus[0].OnClick:=DeleteIndexItemFromPopUpMenu;
-   TDBPopupMenu.Instance.ExecutePlus(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info,menus);
+    LastMouseItem := nil;
+    Application.HideHint;
+    THintManager.Instance.CloseHint;
+
+    Hinttimer.Enabled := False;
+    Info := GetCurrentPopUpMenuInfo(Item);
+    Info.AttrExists := False;
+    if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
+    begin
+      Info.IsPlusMenu := False;
+      Info.IsListItem := False;
+      Setlength(Menus, 1);
+      Menus[0] := Tmenuitem.Create(nil);
+      Menus[0].Caption := L('Delete item from list');
+      Menus[0].Tag := Item.index;
+      Menus[0].ImageIndex := DB_IC_DELETE_INFO;
+      Menus[0].OnClick := DeleteIndexItemFromPopUpMenu;
+      TDBPopupMenu.Instance.ExecutePlus(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, Info,
+        Menus);
+    end else
+    begin
+      FileNames := TStringList.Create;
+      try
+        for I := 0 to Info.Count - 1 do
+          if Info[I].Selected then
+            FileNames.Add(Info[I].FileName);
+
+        GetProperties(FileNames, MousePos, ElvMain);
+      finally
+        F(FileNames);
+      end;
+    end;
   end else
-  begin
-   SetLength(FileNames,0);
-   For i:=0 to Info.Count - 1 do
-   if Info[I].Selected then
-   begin
-    SetLength(FileNames,Length(FileNames)+1);
-    FileNames[Length(FileNames)-1]:=Info[i].FileName;
-   end;
-   GetProperties(FileNames,MousePos,ElvMain);
-  end;
- end else PopupMenu1.Popup(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y);
+    PopupMenu1.Popup(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
 end;
 
 procedure TFormCont.ListView1MouseDown(Sender: TObject;

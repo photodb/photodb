@@ -15,7 +15,6 @@ object ExplorerForm: TExplorerForm
   KeyPreview = True
   OldCreateOrder = False
   OnClose = FormClose
-  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
@@ -3598,7 +3597,7 @@ object ExplorerForm: TExplorerForm
     Left = 136
     Top = 176
   end
-  object PopupMenu3: TPopupMenu
+  object PmLinkOptions: TPopupMenu
     Left = 168
     Top = 176
     object Open2: TMenuItem
@@ -3610,7 +3609,7 @@ object ExplorerForm: TExplorerForm
       OnClick = OpeninNewWindow2Click
     end
   end
-  object PopupMenu4: TPopupMenu
+  object PmDragMode: TPopupMenu
     Left = 200
     Top = 176
     object Copy4: TMenuItem

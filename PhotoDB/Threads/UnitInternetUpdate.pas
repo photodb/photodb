@@ -9,10 +9,10 @@ uses
 type
   TInternetUpdate = class(TThread)
   private
+    { Private declarations }
    NewVersion,Text,URL : string;
    FNeedsInformation : boolean;
    StringParam : String;
-    { Private declarations }
   protected
     procedure Execute; override;
     procedure ShowUpdates;
@@ -169,9 +169,9 @@ end;
 
 procedure TInternetUpdate.InformSynch;
 var
-  ActiveFormHandle : integer;
+  ActiveFormHandle: Integer;
 begin
- if Screen.ActiveForm<>nil then
+  if Screen.ActiveForm <> nil then
  ActiveFormHandle:=Screen.ActiveForm.Handle else
  ActiveFormHandle:=0;
  MessageBoxDB(ActiveFormHandle,StringParam,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);

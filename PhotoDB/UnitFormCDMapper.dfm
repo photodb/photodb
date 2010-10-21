@@ -2,11 +2,12 @@ object FormCDMapper: TFormCDMapper
   Left = 195
   Top = 231
   BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsSingle
   Caption = 'FormCDMapper'
-  ClientHeight = 352
-  ClientWidth = 525
+  ClientHeight = 362
+  ClientWidth = 534
   Color = clBtnFace
+  Constraints.MinHeight = 400
+  Constraints.MinWidth = 550
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -17,8 +18,10 @@ object FormCDMapper: TFormCDMapper
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  DesignSize = (
+    534
+    362)
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
@@ -334,17 +337,20 @@ object FormCDMapper: TFormCDMapper
   object LabelInfo: TLabel
     Left = 64
     Top = 8
-    Width = 457
+    Width = 465
     Height = 57
+    Anchors = [akLeft, akTop, akRight]
     AutoSize = False
     Caption = 'LabelInfo'
     WordWrap = True
+    ExplicitWidth = 457
   end
   object CDMappingListView: TListView
     Left = 8
     Top = 72
-    Width = 513
-    Height = 241
+    Width = 518
+    Height = 252
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Columns = <
       item
         Caption = 'ID'
@@ -370,41 +376,45 @@ object FormCDMapper: TFormCDMapper
     ViewStyle = vsReport
     OnDblClick = CDMappingListViewDblClick
     OnSelectItem = CDMappingListViewSelectItem
+    ExplicitWidth = 510
+    ExplicitHeight = 241
   end
   object ButtonOK: TButton
-    Left = 440
-    Top = 320
+    Left = 451
+    Top = 330
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 1
     OnClick = ButtonOKClick
+    ExplicitLeft = 443
+    ExplicitTop = 319
   end
   object ButtonAddocation: TButton
-    Left = 288
-    Top = 320
+    Left = 296
+    Top = 331
     Width = 147
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Add CD Location'
     TabOrder = 2
     OnClick = ButtonAddocationClick
+    ExplicitLeft = 288
+    ExplicitTop = 320
   end
   object ButtonRemoveLocation: TButton
-    Left = 128
-    Top = 320
+    Left = 139
+    Top = 330
     Width = 155
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Remove CD location'
     Enabled = False
     TabOrder = 3
     OnClick = ButtonRemoveLocationClick
-  end
-  object TimerDestroy: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = TimerDestroyTimer
-    Left = 488
-    Top = 8
+    ExplicitLeft = 131
+    ExplicitTop = 319
   end
   object CDImageList: TImageList
     ColorDepth = cd32Bit

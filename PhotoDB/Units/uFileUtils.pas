@@ -8,8 +8,7 @@ uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl,  ShlObj, ActiveX,
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
   TBuffer = array of Char;
-
-  TCorrectPathProc = procedure(Src: TStrings; Dest: string) of object;
+  TCorrectPathProc = procedure(Caller : TObject; Src: TStrings; Dest: string);
 
 function GetAppDataDirectory: string;
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
@@ -107,8 +106,11 @@ var
   ShortCut : TVRSIShortCut;
 begin
   ShortCut:= TVRSIShortCut.Create(ShortcutPath);
-  Result := ShortCut.Path;
-  ShortCut.Free;
+  try
+    Result := ShortCut.Path;
+  finally
+    ShortCut.Free;
+  end;
 end;
 
 function SetDirectoryWriteRights(lPath : String): Dword;
@@ -431,13 +433,9 @@ begin
   for I := 0 to Files.Count - 1 do
   begin
     if S = '' then
-    begin
-      S := Files[I];
-    end
+      S := Files[I]
     else
-    begin
       S := S + #0 + Files[I];
-    end;
   end;
   S := S + #0#0;
   SetLength(P, Length(S));

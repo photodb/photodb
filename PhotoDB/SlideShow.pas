@@ -985,7 +985,7 @@ begin
  begin
   AddToDB1.Visible:=false;
   DBItem1.Visible:=true;
-  DBItem1.Caption:=Format(L('DB Item [%s]'),[CurrentInfo.ItemIds[CurrentFileNumber]]);
+  DBItem1.Caption:=Format(L('DB Item [%d]'),[CurrentInfo.ItemIds[CurrentFileNumber]]);
   InitializeInfo;
   TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
  end else
@@ -2364,19 +2364,25 @@ end;
 procedure TViewer.FormContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
-  FNames : TArStrings;
-  p : TPoint;
+  FNames: TStrings;
+  P: TPoint;
 begin
- if Length(CurrentInfo.ItemFileNames)=0 then exit;
- if (GetTickCount-WindowsMenuTickCount>WindowsMenuTime) then
- begin
-  SetLength(FNames,1);
-  FNames[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
-  GetProperties(FNames[0],MousePos,self);
-  exit;
- end;
- p:=ClientToScreen(MousePos);
- PopupMenu1.Popup(p.X,p.y);
+  if Length(CurrentInfo.ItemFileNames) = 0 then
+    Exit;
+
+  if (GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
+  begin
+    FNames := TStringList.Create;
+    try
+      FNames.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+      GetProperties(FNames, MousePos, Self);
+    finally
+      F(FNames);
+    end;
+    Exit;
+  end;
+  P := ClientToScreen(MousePos);
+  PopupMenu1.Popup(P.X, P.Y);
 end;
 
 procedure TViewer.DropFileTarget1Drop(Sender: TObject;
@@ -2403,21 +2409,21 @@ end;
 
 procedure TViewer.Pause;
 begin
- if DirectShowForm<>nil then
- DirectShowForm.Pause;
- MTimer1.Caption:= L('Start timer');
- MTimer1.ImageIndex:=DB_IC_PLAY;
- FloatPanel.ToolButton1.Down:=false;
- FloatPanel.ToolButton2.Down:=true;
+  if DirectShowForm <> nil then
+    DirectShowForm.Pause;
+  MTimer1.Caption := L('Start timer');
+  MTimer1.ImageIndex := DB_IC_PLAY;
+  FloatPanel.ToolButton1.Down := False;
+  FloatPanel.ToolButton2.Down := True;
 end;
 
 procedure TViewer.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- FormManager.UnRegisterMainForm(self);
- DBKernel.UnRegisterChangesID(Self,ChangedDBDataByID);
- Release;
- Viewer:=nil;
+  DestroyTimer.Enabled := False;
+  FormManager.UnRegisterMainForm(Self);
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  Release;
+  Viewer := nil;
 end;
 
 procedure TViewer.SetImageExists(const Value: Boolean);
@@ -2432,7 +2438,7 @@ end;
 
 function TViewer.GetSID: TGUID;
 begin
- Result:=FSID;
+  Result := FSID;
 end;
 
 procedure TViewer.SetStaticImage(Image : TBitmap; Transparent : Boolean);
@@ -2547,7 +2553,7 @@ end;
 
 procedure TViewer.ImageFrameTimerTimer(Sender: TObject);
 begin
- NextSlide;
+  NextSlide;
 end;
 
 procedure TViewer.NextSlide;
@@ -2647,20 +2653,22 @@ begin
   FValidImages := Value;
 end;
 
-function TViewer.GetFirstImageNO: integer;
+function TViewer.GetFirstImageNO: Integer;
 var
-  i : Integer;
+  I: Integer;
 begin
- Result:=0;
- if ValidImages=0 then Result:=0 else
- begin
-  for i:=0 to (AnimatedImage as TGIFImage).Images.count-1 do
-  if not (AnimatedImage as TGIFImage).Images[i].Empty then
+  Result := 0;
+  if ValidImages = 0 then
+    Result := 0
+  else
   begin
-   Result:=i;
-   break;
+    for I := 0 to (AnimatedImage as TGIFImage).Images.Count - 1 do
+      if not(AnimatedImage as TGIFImage).Images[I].Empty then
+      begin
+        Result := I;
+        Break;
+      end;
   end;
- end;
 end;
 
 function TViewer.GetFormID: string;
@@ -2668,84 +2676,81 @@ begin
   Result := 'Viewer';
 end;
 
-function TViewer.GetNextImageNO: integer;
+function TViewer.GetNextImageNO: Integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=SlideNO;
-  inc(Result);
-  if Result>=im.Images.Count then
+  if ValidImages = 0 then
+    Result := 0
+  else
   begin
-   Result:=0;
+    Im := (AnimatedImage as TGIFImage);
+    Result := SlideNO;
+    Inc(Result);
+    if Result >= Im.Images.Count then
+      Result := 0;
+
+    if Im.Images[Result].Empty then
+      Result := GetNextImageNOX(Result);
   end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetNextImageNOX(Result);
-  end;
- end;
 end;
 
-function TViewer.GetPreviousImageNO: integer;
+function TViewer.GetPreviousImageNO: Integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=SlideNO;
-  dec(Result);
-  if Result<0 then
+  if ValidImages = 0 then
+    Result := 0
+  else
   begin
-   Result:=im.Images.Count-1;
+    Im := (AnimatedImage as TGIFImage);
+    Result := SlideNO;
+    Dec(Result);
+    if Result < 0 then
+      Result := Im.Images.Count - 1;
+
+    if Im.Images[Result].Empty then
+      Result := GetPreviousImageNOX(Result);
+
   end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetPreviousImageNOX(Result);
-  end;
- end;
 end;
 
-function TViewer.GetNextImageNOX(NO: Integer): integer;
+function TViewer.GetNextImageNOX(NO: Integer): Integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=NO;
-  inc(Result);
-  if Result>=im.Images.Count then
+  if ValidImages = 0 then
+    Result := 0
+  else
   begin
-   Result:=0;
+    Im := (AnimatedImage as TGIFImage);
+    Result := NO;
+    Inc(Result);
+    if Result >= Im.Images.Count then
+      Result := 0;
+
+    if Im.Images[Result].Empty then
+      Result := GetNextImageNOX(Result);
   end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetNextImageNOX(Result);
-  end;
- end;
 end;
 
-function TViewer.GetPreviousImageNOX(NO: Integer): integer;
+function TViewer.GetPreviousImageNOX(NO: Integer): Integer;
 var
-  im : TGIFImage;
+  Im: TGIFImage;
 begin
- if ValidImages=0 then Result:=0 else
- begin
-  im:=(AnimatedImage as TGIFImage);
-  Result:=NO;
-  dec(Result);
-  if Result<0 then
+  if ValidImages = 0 then
+    Result := 0
+  else
   begin
-   Result:=im.Images.Count-1;
+    Im := (AnimatedImage as TGIFImage);
+    Result := NO;
+    Dec(Result);
+    if Result < 0 then
+      Result := Im.Images.Count - 1;
+
+    if Im.Images[Result].Empty then
+      Result := GetPreviousImageNOX(Result);
   end;
-  if im.Images[Result].Empty then
-  begin
-   Result:=GetPreviousImageNOX(Result);
-  end;
- end;
 end;
 
 procedure TViewer.SetForwardThreadExists(const Value: Boolean);

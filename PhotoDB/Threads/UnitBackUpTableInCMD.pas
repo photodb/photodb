@@ -71,7 +71,7 @@ begin
       Exit;
     end;
   end;
-  FStrParam := TA('Backup process successfully ended.');
+  FStrParam := TA('Backup process successfully ended.', 'BackUp');
   FIntParam := LINE_INFO_OK;
   Synchronize(TextOut);
   Synchronize(DoExit);
