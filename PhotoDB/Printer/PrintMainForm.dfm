@@ -25,7 +25,6 @@ object PrintForm: TPrintForm
     Align = alLeft
     TabOrder = 0
     OnResize = ToolsPanelResize
-    ExplicitHeight = 529
     object BaseImage: TImage
       Left = 0
       Top = 0
@@ -321,7 +320,6 @@ object PrintForm: TPrintForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitTop = 424
       object Label4: TLabel
         Left = 54
         Top = 57
@@ -399,7 +397,6 @@ object PrintForm: TPrintForm
         Cursor = crHandPoint
         Text = 'Make Image'
         OnClick = ListView1DblClick
-        BkColor = clBtnFace
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -419,7 +416,6 @@ object PrintForm: TPrintForm
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 529
     object OkButtonPanel: TPanel
       Left = 567
       Top = 1
@@ -456,7 +452,6 @@ object PrintForm: TPrintForm
     Height = 527
     Align = alRight
     TabOrder = 2
-    ExplicitHeight = 529
     object Label2: TLabel
       Left = 8
       Top = 200
@@ -509,7 +504,6 @@ object PrintForm: TPrintForm
       Enabled = False
       Text = 'Zoom In'
       OnClick = ZoomInLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16
@@ -566,7 +560,6 @@ object PrintForm: TPrintForm
       Enabled = False
       Text = 'Zoom Out'
       OnClick = ZoomOutLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16
@@ -623,7 +616,6 @@ object PrintForm: TPrintForm
       Enabled = False
       Text = 'Full Size'
       OnClick = FullSizeLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16
@@ -680,7 +672,6 @@ object PrintForm: TPrintForm
       Enabled = False
       Text = 'Fit Image'
       OnClick = FitToSizeLinkClick
-      BkColor = clBtnFace
       ImageIndex = 0
       IconWidth = 16
       IconHeight = 16
@@ -763,7 +754,6 @@ object PrintForm: TPrintForm
     Align = alClient
     PopupMenu = PopupMenu1
     OnResize = FastScrollingImage1Resize
-    ExplicitHeight = 529
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -777,7 +767,6 @@ object PrintForm: TPrintForm
       item
         Width = 150
       end>
-    ExplicitTop = 570
   end
   object StaticText1: TStaticText
     Left = 248

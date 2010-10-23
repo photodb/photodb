@@ -183,6 +183,10 @@ begin
     TA('PhotoDB');
 
     Instance := GetModuleHandle(nil);
+
+    if Terminated then
+      Exit;
+
     SplashWindowClass.style := CS_HREDRAW or CS_VREDRAW;
     SplashWindowClass.lpfnWndProc := @SplashWindowProc;
     SplashWindowClass.hInstance := Instance;
@@ -190,6 +194,9 @@ begin
     SplashWindowClass.hCursor := LoadCursor(0, IDC_ARROW);
     SplashWindowClass.hbrBackground := COLOR_BTNFACE + 1;
     SplashWindowClass.lpszClassName := ClassName;
+
+    if Terminated then
+      Exit;
 
     RegisterClass(SplashWindowClass);
     try
@@ -199,6 +206,10 @@ begin
                                    GetSystemMetrics(SM_CYSCREEN) div 2 - SplHeight div 2,
                                    SplWidth, SplHeight, 0, 0, Instance, nil);
       try
+
+        if Terminated then
+          Exit;
+
         ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
         UpdateWindow(hSplashWnd);
 
@@ -225,9 +236,10 @@ begin
       UnregisterClass(ClassName, Instance);
     end;
     TW.I.Start('SPLASH THREAD END');
+
+  finally
     SplashThread := nil;
     FreeOnTerminate := True;
-  finally
     CoUninitialize;
   end;
 end; // ShowSplashWindow

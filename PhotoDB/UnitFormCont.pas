@@ -1075,7 +1075,6 @@ end;
 function TFormCont.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
 var
   I: Integer;
-  MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
   Result.IsListItem := False;

@@ -1175,7 +1175,7 @@ var
         try
           JPEG.LoadFromStream(BS);
         finally
-          BS.Free;
+          F(BS);
         end;
       end;
       if not JPEG.Empty then
@@ -1187,7 +1187,7 @@ var
       end else
         SearchExtension.Icon := TAIcons.Instance.GetIconByExt(SearchData.FileName, False, 48, False);
     finally
-      JPEG.Free;
+      F(JPEG);
     end;
   end;
 
@@ -1199,59 +1199,59 @@ begin
     QueryParams := CreateQuery;
     try
 
-    if not FSearchParams.IsEstimate then
-    begin
-      TADOQuery(FWorkQuery).CursorType := ctOpenForwardOnly;
-      TADOQuery(FWorkQuery).CursorLocation := clUseServer;
-    end;
-    TADOQuery(FWorkQuery).LockType := ltReadOnly;
-    QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '''', ' ', [rfReplaceAll]);
-    QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '\', ' ', [rfReplaceAll]);
-    QueryParams.ApplyToDS(FWorkQuery);
-
-    try
-      CheckForm;
-      if not Terminated then
-        FWorkQuery.Open;
-    except
-      on e : Exception do
+      if not FSearchParams.IsEstimate then
       begin
-        FErrorMsg := e.Message + #13 + TA('Query failed to execute!');
-        SynchronizeEx(ErrorSQL);
-        Exit;
+        TADOQuery(FWorkQuery).CursorType := ctOpenForwardOnly;
+        TADOQuery(FWorkQuery).CursorLocation := clUseServer;
       end;
-    end;
+      TADOQuery(FWorkQuery).LockType := ltReadOnly;
+      QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '''', ' ', [rfReplaceAll]);
+      QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '\', ' ', [rfReplaceAll]);
+      QueryParams.ApplyToDS(FWorkQuery);
 
-    if not FWorkQuery.IsEmpty and not FSearchParams.IsEstimate then
-    begin
-      FLastPacketTime := GetTickCount;
-      while not FWorkQuery.Eof do
-      begin
-        if Terminated then
-          Break;
-        AddItem(FWorkQuery);
-
-        if GetTickCount - FLastPacketTime > MIN_PACKET_TIME then
+      try
+        CheckForm;
+        if not Terminated then
+          FWorkQuery.Open;
+      except
+        on e : Exception do
         begin
-          SynchronizeEx(SendDataPacketToForm);
-          FLastPacketTime := GetTickCount;
+          FErrorMsg := e.Message + #13 + TA('Query failed to execute!');
+          SynchronizeEx(ErrorSQL);
+          Exit;
         end;
-        FWorkQuery.Next;
       end;
-      SynchronizeEx(SendDataPacketToForm);
-    end;
 
-    if FSearchParams.IsEstimate then
-    begin
-      IntParam := FWorkQuery.Fields[0].AsInteger;
-      SynchronizeEx(UpdateQueryEstimateCount);
-    end;
+      if not FWorkQuery.IsEmpty and not FSearchParams.IsEstimate then
+      begin
+        FLastPacketTime := GetTickCount;
+        while not FWorkQuery.Eof do
+        begin
+          if Terminated then
+            Break;
+          AddItem(FWorkQuery);
+
+          if GetTickCount - FLastPacketTime > MIN_PACKET_TIME then
+          begin
+            SynchronizeEx(SendDataPacketToForm);
+            FLastPacketTime := GetTickCount;
+          end;
+          FWorkQuery.Next;
+        end;
+        SynchronizeEx(SendDataPacketToForm);
+      end;
+
+      if FSearchParams.IsEstimate then
+      begin
+        IntParam := FWorkQuery.Fields[0].AsInteger;
+        SynchronizeEx(UpdateQueryEstimateCount);
+      end;
 
     finally
       F(QueryParams);
     end;
   finally
-    FWorkQuery.Free;
+    FreeDS(FWorkQuery);
   end;
 end;
 

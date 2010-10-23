@@ -3745,7 +3745,6 @@ begin
     end;
   end else
   begin
-    TbDelete.Visible := False;
     TbDelete.Enabled := False;
     DeleteLink.Top := PropertiesLink.Top;
   end;
@@ -5251,7 +5250,7 @@ end;
 procedure TExplorerForm.DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint;
   var Effect: Integer);
 var
-  I, J, index: Integer;
+  I, Index: Integer;
   Si: TStartupInfo;
   P: TProcessInformation;
   Str, Params: string;
@@ -5290,7 +5289,7 @@ begin
       if ListView1Selected <> nil then
       begin
         FDBCanDragW := False;
-        index := ItemIndexToMenuIndex(ListView1Selected.index);
+        Index := ItemIndexToMenuIndex(ListView1Selected.index);
         if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) or
           (FFilesInfo[index].FileType = EXPLORER_ITEM_SHARE) then
         begin
@@ -5878,7 +5877,7 @@ end;
 
 procedure TExplorerForm.Copy4Click(Sender: TObject);
 var
-  I, J, index : integer;
+  Index : integer;
   Str : string;
 begin
   if (LastListViewSelCount = 0) then
@@ -6024,8 +6023,8 @@ begin
         begin
           Width := ThSizeExplorerPreview;
           Height := ThSizeExplorerPreview;
-          Canvas.Pen.Color := PropertyPanel.Color;
-          Canvas.Brush.Color := PropertyPanel.Color;
+          Canvas.Pen.Color := clBtnFace;
+          Canvas.Brush.Color := clBtnFace;
           if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
           begin
@@ -6106,8 +6105,8 @@ begin
             begin
               Width := ThSizeExplorerPreview;
               Height := ThSizeExplorerPreview;
-              Canvas.Pen.Color := PropertyPanel.Color;
-              Canvas.Brush.Color := PropertyPanel.Color;
+              Canvas.Pen.Color := clBtnFace;
+              Canvas.Brush.Color := clBtnFace;
               Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
 
               case FSelectedInfo.FileType of
@@ -6137,50 +6136,55 @@ begin
       end;
     end else
     begin
-      with ImPreview.Picture.Bitmap do
-      begin
-        FSelectedInfo._GUID := GetGUID;
-        Width := ThSizeExplorerPreview;
-        Height := ThSizeExplorerPreview;
-        Canvas.Pen.Color := PropertyPanel.Color;
-        Canvas.Brush.Color := PropertyPanel.Color;
-        Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
-        Ico := TIcon.Create;
-        Ico.Handle := UnitDBKernel.Icons[DB_IC_MANY_FILES + 1];
-        Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2, ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
-        Ico.Free;
-        FSelectedInfo.Size := 0;
-        if SelCount < 1000 then
-        begin
-          for I := 0 to ElvMain.Items.Count - 1 do
-            if ElvMain.Items[I].Selected then
-            begin
-              index := ItemIndexToMenuIndex(I);
-              if FSelectedInfo.FileType <> EXPLORER_ITEM_MYCOMPUTER then
-                FSelectedInfo.FileType := FFilesInfo[index].FileType;
-              if FFilesInfo.Count - 1 < index then
-                Exit;
-              if (FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) or
-                ((FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or
-                  (FFilesInfo[index].FileType = EXPLORER_ITEM_EXEFILE)) then
-              begin
-                FSelectedInfo.Size := FSelectedInfo.Size + FFilesInfo[index].FileSize;
-              end;
-            end
-        end
-        else
-          FSelectedInfo.Size := -1;
-
-        FSelectedInfo.FileName := Format(L('%d objects'), [SelCount]);
-        FSelectedInfo.FileTypeW := '';
-        FSelectedInfo.Id := 0;
-        FSelectedInfo.Width := 0;
-        FSelectedInfo.Height := 0;
-        FSelectedInfo.One := True;
-        FSelectedInfo.Rating := 0;
-        TypeLabel.Caption := '';
-        ReallignInfo;
+      Bit32 := TBitmap.Create;
+      try
+        CreateMultiselectImage(ElvMain, Bit32, FBitmapImageList, ElvMain.Selection.GradientColorBottom, ElvMain.Selection.GradientColorTop,
+          ElvMain.Selection.Color, ElvMain.Font, ThSizeExplorerPreview + 3, ThSizeExplorerPreview + 3);
+        TempBitmap := TBitmap.Create;
+        try
+          TempBitmap.PixelFormat := pf24bit;
+          LoadBMPImage32bit(Bit32, TempBitmap, clBtnFace);
+          ImPreview.Picture.Graphic := TempBitmap;
+        finally
+          F(TempBitmap);
+        end;
+      finally
+        F(Bit32);
       end;
+
+      FSelectedInfo._GUID := GetGUID;
+
+      FSelectedInfo.Size := 0;
+      if SelCount < 1000 then
+      begin
+        for I := 0 to ElvMain.Items.Count - 1 do
+          if ElvMain.Items[I].Selected then
+          begin
+            index := ItemIndexToMenuIndex(I);
+            if FSelectedInfo.FileType <> EXPLORER_ITEM_MYCOMPUTER then
+              FSelectedInfo.FileType := FFilesInfo[index].FileType;
+            if FFilesInfo.Count - 1 < index then
+              Exit;
+            if (FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) or
+              ((FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or
+                (FFilesInfo[index].FileType = EXPLORER_ITEM_EXEFILE)) then
+            begin
+              FSelectedInfo.Size := FSelectedInfo.Size + FFilesInfo[index].FileSize;
+            end;
+          end
+      end
+      else
+        FSelectedInfo.Size := -1;
+
+      FSelectedInfo.FileName := Format(L('%d objects'), [SelCount]);
+      FSelectedInfo.FileTypeW := '';
+      FSelectedInfo.Id := 0;
+      FSelectedInfo.Width := 0;
+      FSelectedInfo.Height := 0;
+      FSelectedInfo.One := True;
+      FSelectedInfo.Rating := 0;
+      TypeLabel.Caption := '';
+      ReallignInfo;
     end;
   end;
 end;

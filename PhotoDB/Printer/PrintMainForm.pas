@@ -92,18 +92,18 @@ type
     procedure ComboBox2Change(Sender: TObject);
     procedure FastScrollingImage1Resize(Sender: TObject);
   private
-  PreviewSID : string;
-  FFiles : TStrings;
-  CountPerPage : integer;
-  Pages : Integer;
-  FCurrentFormat : TPrintSampleSizeOne;
-  VirtualBitmap : TBitmap;
     { Private declarations }
+    PreviewSID: string;
+    FFiles: TStrings;
+    CountPerPage: Integer;
+    Pages: Integer;
+    FCurrentFormat: TPrintSampleSizeOne;
+    VirtualBitmap: TBitmap;
   public
-    FStatusProgress : TProgressBar;
-    procedure Execute(PrintFiles : TStrings); overload;
-    procedure Execute(VirtualFile : TBitmap); overload;
     { Public declarations }
+    FStatusProgress: TProgressBar;
+    procedure Execute(PrintFiles: TStrings); overload;
+    procedure Execute(VirtualFile: TBitmap); overload;
   end;
 
 var PrintFormExists : boolean;
@@ -118,47 +118,6 @@ uses UnitGeneratorPrinterPreview, PrinterProgress, UnitJPEGOptions;
 
 {$R *.dfm}
 
-Function GetExt(FileName : string) : string;
-var
-  i,j:integer;
-  s:string;
-begin
- j:=0;
- For i:=length(filename) downto 1 do
- begin
-  If filename[i]='.' then
-  begin
-   j:=i;
-   break;
-  end;
-  If filename[i]='\' then break;
- end;
- s:='';
- If j<>0 then
- begin
-  s:=copy(filename,j+1,length(filename)-j);
-  For i:=1 to length(s) do
-  s[i]:=Upcase(s[i]);
- end;
- result:=s;
-end;
-
-Function CreateProgressBar(StatusBar:TStatusBar; index:integer):TProgressBar;
-var
-  findleft : integer;
-  i : integer;
-begin
- Result:=TProgressBar.Create(Statusbar);
- Result.parent:=Statusbar;
- Result.visible:=true;
- Result.top:=2;
- FindLeft:=0;
- for i:=0 to index-1 do
- FindLeft:=FindLeft+Statusbar.Panels[i].width+1;
- Result.left:=findleft;
- Result.width:=Statusbar.Panels[index].width-4;
- Result.height:=Statusbar.height-2;
-end;
 
 function GetPrintForm(Files : TStrings) : TPrintForm;
 var
@@ -168,7 +127,7 @@ var
 begin
  form:=nil;
  try
-  Application.CreateForm(TPrintForm,Result);  
+  Application.CreateForm(TPrintForm,Result);
   for i:=0 to Files.Count-1 do
   Files[i]:=ProcessPath(Files[i]);
   Result.Execute(Files);
@@ -193,44 +152,58 @@ end;
 
 procedure TPrintForm.AddSampleImage(SampleImageType: TPrintSampleSizeOne);
 var
-  NewImage : TBitmap;
-  SampleImage : TBitmap;
-  item : TListItem;
-  Options : TGenerateImageOptions;
+  NewImage: TBitmap;
+  SampleImage: TBitmap;
+  Item: TListItem;
+  Options: TGenerateImageOptions;
 begin
- ImageList1.Width:=ListView1.Width-50;
- ImageList1.Height:=Round(ImageList1.Width*Printer.PageHeight/Printer.PageWidth);
- SampleImage:=TBitmap.Create;
- SampleImage.PixelFormat:=pf24bit;
- SampleImage.Assign(BaseImage.Picture.Graphic);
- item:=ListView1.Items.Add;
- Item.ImageIndex:=-1;
- 
- Case SampleImageType of
-  TPSS_FullSize: Item.Caption:=TEXT_MES_TPSS_FULL_SIZE;
-  TPSS_C35:      Item.Caption:=TEXT_MES_TPSS_C35;
-  TPSS_20X25C1:  Item.Caption:=TEXT_MES_TPSS_20X25C1;
-  TPSS_13X18C1:  Item.Caption:=TEXT_MES_TPSS_13X18C1;
-  TPSS_13X18C2:  Item.Caption:=TEXT_MES_TPSS_13X18C2;
-  TPSS_10X15C1:  Item.Caption:=TEXT_MES_TPSS_10X15C1;
-  TPSS_10X15C2:  Item.Caption:=TEXT_MES_TPSS_10X15C2;
-  TPSS_10X15C3:  Item.Caption:=TEXT_MES_TPSS_10X15C3;
-  TPSS_9X13C1:   Item.Caption:=TEXT_MES_TPSS_9X13C1;
-  TPSS_9X13C2:   Item.Caption:=TEXT_MES_TPSS_9X13C2;
-  TPSS_9X13C4:   Item.Caption:=TEXT_MES_TPSS_9X13C4;
-  TPSS_C9:       Item.Caption:=TEXT_MES_TPSS_C9;
-  TPSS_4X6C4:    Item.Caption:=TEXT_MES_TPSS_4X6C4;
-  TPSS_3X4C6:    Item.Caption:=TEXT_MES_TPSS_3X4C6;
- end;
- Options.CropImages:=false;
- Options.FreeCenterSize:=false;
- Options.VirtualImage:=false;
- NewImage:=GenerateImage(false,ImageList1.Width,ImageList1.Height,SampleImage,nil,SampleImageType,Options);
- ImageList1.Add(NewImage,nil);
- Item.ImageIndex:=ImageList1.Count-1;
- Item.Indent:=Integer(SampleImageType);
- SampleImage.free;
- NewImage.free;
+  ImageList1.Width := ListView1.Width - 50;
+  ImageList1.Height := Round(ImageList1.Width * Printer.PageHeight / Printer.PageWidth);
+  SampleImage := TBitmap.Create;
+  SampleImage.PixelFormat := Pf24bit;
+  SampleImage.Assign(BaseImage.Picture.Graphic);
+  Item := ListView1.Items.Add;
+  Item.ImageIndex := -1;
+
+  case SampleImageType of
+    TPSS_FullSize:
+      Item.Caption := TEXT_MES_TPSS_FULL_SIZE;
+    TPSS_C35:
+      Item.Caption := TEXT_MES_TPSS_C35;
+    TPSS_20X25C1:
+      Item.Caption := TEXT_MES_TPSS_20X25C1;
+    TPSS_13X18C1:
+      Item.Caption := TEXT_MES_TPSS_13X18C1;
+    TPSS_13X18C2:
+      Item.Caption := TEXT_MES_TPSS_13X18C2;
+    TPSS_10X15C1:
+      Item.Caption := TEXT_MES_TPSS_10X15C1;
+    TPSS_10X15C2:
+      Item.Caption := TEXT_MES_TPSS_10X15C2;
+    TPSS_10X15C3:
+      Item.Caption := TEXT_MES_TPSS_10X15C3;
+    TPSS_9X13C1:
+      Item.Caption := TEXT_MES_TPSS_9X13C1;
+    TPSS_9X13C2:
+      Item.Caption := TEXT_MES_TPSS_9X13C2;
+    TPSS_9X13C4:
+      Item.Caption := TEXT_MES_TPSS_9X13C4;
+    TPSS_C9:
+      Item.Caption := TEXT_MES_TPSS_C9;
+    TPSS_4X6C4:
+      Item.Caption := TEXT_MES_TPSS_4X6C4;
+    TPSS_3X4C6:
+      Item.Caption := TEXT_MES_TPSS_3X4C6;
+  end;
+  Options.CropImages := False;
+  Options.FreeCenterSize := False;
+  Options.VirtualImage := False;
+  NewImage := GenerateImage(False, ImageList1.Width, ImageList1.Height, SampleImage, nil, SampleImageType, Options);
+  ImageList1.Add(NewImage, nil);
+  Item.ImageIndex := ImageList1.Count - 1;
+  Item.Indent := Integer(SampleImageType);
+  SampleImage.Free;
+  NewImage.Free;
 end;
 
 procedure TPrintForm.Button1Click(Sender: TObject);
@@ -289,7 +262,7 @@ begin
    AddSampleImage(TPSS_4X6C4);
    AddSampleImage(TPSS_3X4C6);
   end;
-  
+
  TPS_B5 :
   begin
    AddSampleImage(TPSS_FullSize);
@@ -385,7 +358,7 @@ begin
  Image1.Picture.Bitmap:=Bitmap;
  Bitmap.Free;
  FCurrentFormat:=SampleType;
- 
+
  Case SampleType of
   TPSS_FullSize: Caption:=TEXT_MES_PRINTER_MAIN_FORM_CAPTION+'  ['+TEXT_MES_TPSS_FULL_SIZE+']';
   TPSS_C35:      Caption:=TEXT_MES_PRINTER_MAIN_FORM_CAPTION+'  ['+TEXT_MES_TPSS_C35+']';
@@ -665,7 +638,7 @@ end;
 procedure TPrintForm.PopupMenu1Popup(Sender: TObject);
 begin
  CopyToFile1.Visible:=Button3.Enabled;
- 
+
 end;
 
 procedure TPrintForm.CopyToFile1Click(Sender: TObject);
@@ -673,7 +646,7 @@ var
   Image : TGraphic;
   SavePictureDialog : DBSavePictureDialog;
   FileName : string;
-begin         
+begin
  SavePictureDialog := DBSavePictureDialog.Create;
  SavePictureDialog.Filter:='JPEG Image File (*.jpg;*.jpeg)|*.jpg;*.jpeg|Bitmaps (*.bmp)|*.bmp';
  SavePictureDialog.FilterIndex:=1;
@@ -701,7 +674,7 @@ begin
      Image.SaveToFile(FileName);
      Image.Free;
     end;
-   2 : 
+   2 :
     begin
     if (GetExt(FileName)<>'BMP') then
      FileName:=FileName+'.bmp';
@@ -842,5 +815,3 @@ PrintFormExists := false;
 Printing := false;
 
 end.
-
-

@@ -820,14 +820,13 @@ constructor TPixelsEffectThread.Create(AOwner: TObject;
   CreateSuspended: Boolean; S: TBitmap; Width, Height: integer;
   SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
+ inherited Create(False);
  FAOwner := AOwner;
  FS := S;
  FWidth := Width;
  FHeight := Height;
  FSID := SID;
  FOnExit := OnExit;
- if not CreateSuspended then Resume;
 end;
 
 procedure TPixelsEffectThread.Execute;
@@ -1037,7 +1036,7 @@ constructor TWaveEffectThread.Create(AOwner: TObject;
   Horizontal: Boolean; BkColor: TColor; SID: string;
   OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
+ inherited Create(False);
  FAOwner := AOwner;
  FS := S;
  FFrequency:=Frequency;
@@ -1046,7 +1045,6 @@ begin
  FBkColor:=BkColor;
  FSID := SID;
  FOnExit := OnExit;
- if not CreateSuspended then Resume;
 end;
 
 procedure TWaveEffectThread.Execute;

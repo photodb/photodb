@@ -179,7 +179,6 @@ var
   I, N, NS, LS: integer;
   Q: boolean;
   C, FS : Char;
-  S : string;
   OneChar : Boolean;
   PS, PSup : PChar;
 
@@ -212,6 +211,7 @@ begin
   end;
   n := 0;
   ns := 0;
+  FS := #0;
   q := False;
   Result := 0;
   LS := Length(SubStr);

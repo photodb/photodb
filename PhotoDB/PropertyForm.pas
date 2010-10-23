@@ -1610,7 +1610,7 @@ begin
       M := Min(ALeft, Min(ALeft, AllocBy));
 
       FirstID := True;
-      SQL := 'Select ID, FFileName, Comment, Owner, Collection, Rotated, Access, Rating, DateToAdd, aTime, IsDate, IsTime, Groups, FileSize, KeyWords, Width, Height, Thum, Include, Links, Attr FROM $DB$ Where ID in (';
+      SQL := 'Select ID, FFileName, Comment, Owner, Collection, Rotated, Access, Rating, DateToAdd, aTime, IsDate, IsTime, Groups, FileSize, KeyWords, Width, Height, Thum, Include, Links, Attr, StrTh FROM $DB$ Where ID in (';
       for I := 1 to M do
       begin
         Dec(ALeft);

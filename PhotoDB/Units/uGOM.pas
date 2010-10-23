@@ -82,8 +82,6 @@ begin
 end;
 
 procedure TManagerObjects.RemoveObj(Obj: TObject);
-var
-  I, J: Integer;
 begin
   FSync.Enter;
   try

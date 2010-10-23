@@ -1016,6 +1016,7 @@ var
   R, G, B : Byte;
 begin
   Bitmap.PixelFormat := pf32Bit;
+  Color := ColorToRGB(Color);
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);
@@ -1038,30 +1039,34 @@ var
   p : PARGB;
   R, G, B : Byte;
 begin
-  Bitmap.PixelFormat := pf24Bit;
+  Bitmap.PixelFormat := Pf24Bit;
   Color := ColorToRGB(Color);
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);
-  for I := 0 to Bitmap.Height - 1 do
+  if Bitmap.PixelFormat = Pf24bit then
   begin
-    p := Bitmap.ScanLine[I];
-    for J := 0 to Bitmap.Width - 1 do
+    for I := 0 to Bitmap.Height - 1 do
     begin
-      p[j].R := R;
-      p[j].G := G;
-      p[j].B := B;
+      P := Bitmap.ScanLine[I];
+      for J := 0 to Bitmap.Width - 1 do
+      begin
+        P[J].R := R;
+        P[J].G := G;
+        P[J].B := B;
+      end;
     end;
   end;
 end;
 
-procedure LoadBMPImage32bit(S : TBitmap; D : TBitmap; BackGroundColor : TColor);
+procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
 var
-  I, J, W1, W2 : integer;
+    I, J, W1, W2: integer;
   PD : PARGB;
   PS : PARGB32;
   R, G, B : byte;
 begin
+  BackGroundColor := ColorToRGB(BackGroundColor);
   R := GetRValue(BackGroundColor);
   G := GetGValue(BackGroundColor);
   B := GetBValue(BackGroundColor);
@@ -1091,6 +1096,7 @@ var
   p : PARGB;
   r,g,b : byte;
 begin
+  BackGroundColor := ColorToRGB(BackGroundColor);
  r:=GetRValue(BackGroundColor);
  g:=GetGValue(BackGroundColor);
  b:=GetBValue(BackGroundColor);
@@ -1233,6 +1239,12 @@ begin
     Exit;
   if (S.Width = 0) or (S.Height = 0) then
     Exit;
+
+  if (S.PixelFormat = pf32bit) and (D.PixelFormat = pf32bit) then
+  begin
+    StretchCool(Width, Height, S, D);
+    Exit;
+  end;
 
   if (Width / S.Width > 1) or (Height / S.Height > 1) then
     Interpolate(0, 0, Width, Height, Rect(0, 0, S.Width, S.Height), S, D)

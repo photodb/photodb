@@ -439,8 +439,8 @@ var
   // In FormManager this sizes loaded from DB
   DBJpegCompressionQuality: Integer = 75;
   ThSize: Integer = 152;
-  ThSizeExplorerPreview: Integer = 100;
-  ThSizePropertyPreview: Integer = 100;
+  ThSizeExplorerPreview: Integer = 115;
+  ThSizePropertyPreview: Integer = 115;
   ThSizePanelPreview: Integer = 75;
   ThImageSize: Integer = 150;
   ThHintSize: Integer = 300;
@@ -453,8 +453,7 @@ var
   DBName: string;
   DBKernel: TDBKernel = nil;
   ResultLogin: Boolean;
-  KernelHandle: THandle;
-  DBTerminating: Boolean = False;
+  KernelHandle: THandle;  DBTerminating: Boolean = False;
   HelpNO: Integer = 0;
   HelpActivationNO: Integer = 0;
   FExtImagesInImageList: Integer;
@@ -823,30 +822,26 @@ begin
   For i:=1 to length(s) do
   s[i]:=Upcase(s[i]);
  end;
- result:=s;
+ result:= S;
 end;
 
-function GetDirectory(FileName:string):string;
+function GetDirectory(FileName: string): string;
 var
-  i, n: integer;
+  I, N: Integer;
 begin
- n:=0;
- for i:=Length(FileName) downto 1 do
- If FileName[i]='\' then
- begin
-  n:=i;
-  Break;
- end;
- Delete(filename,n,length(filename)-n+1);
- Result:=FileName;
- FormatDir(Result);
+  N := 0;
+  for I := Length(FileName) downto 1 do
+    if FileName[I] = '\' then
+    begin
+      N := I;
+      Break;
+    end;
+  Delete(Filename, N, Length(Filename) - N + 1);
+  Result := FileName;
+  FormatDir(Result);
 end;
 
-function ExtinMask(mask : string; ext : string):boolean;
-var
-  I, J: Integer;
-  C : Char;
-  S : string;
+function ExtinMask(Mask: string; Ext: string): Boolean;
 begin
   Result := False;
   if Mask = '||' then
@@ -854,9 +849,11 @@ begin
     Result := True;
     Exit;
   end;
+  if ext = '' then
+    Exit;
   mask := '|' + AnsiUpperCase(Mask) + '|';
   ext := AnsiUpperCase(ext);
-  Result := Pos('|' + ext + '|', Mask) > -1;
+  Result := Pos('|' + ext + '|', Mask) > 0;
 end;
 
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
@@ -3037,8 +3034,7 @@ begin
         Thbmp.Width := 100;
       end;
     end;
-    if G <> nil then
-      G.Free;
+    F(G);
     DoResize(Thbmp.Width, Thbmp.Height, Bmp, Thbmp);
     Bmp.Free;
     Result.Jpeg.Assign(Thbmp); // +s
@@ -5577,305 +5573,305 @@ begin
   Result := SUserName;
 end;
 
-  // SupportedExt
-  procedure GetPhotosNamesFromDrive(Dir, Mask: string; var Files: TStrings; var MaxFilesCount: Integer;
-    MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
-  var
-    Found: Integer;
-    SearchRec: TSearchRec;
-    Info: TProgressCallBackInfo;
+// SupportedExt
+procedure GetPhotosNamesFromDrive(Dir, Mask: string; var Files: TStrings; var MaxFilesCount: Integer;
+  MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
+var
+  Found: Integer;
+  SearchRec: TSearchRec;
+  Info: TProgressCallBackInfo;
+begin
+  if Dir = '' then
+    Exit;
+  if Dir[Length(Dir)] <> '\' then
+    Dir := Dir + '\';
+  Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
+  while Found = 0 do
   begin
-    if Dir = '' then
-      Exit;
-    if Dir[Length(Dir)] <> '\' then
-      Dir := Dir + '\';
-    Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
-    while Found = 0 do
+    if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
     begin
-      if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+      if FileExists(Dir + SearchRec.name) then
+        Dec(MaxFilesCount);
+      if MaxFilesCount < 0 then
+        Break;
+      if FileExists(Dir + SearchRec.name) and ExtinMask(Mask, GetExt(Dir + SearchRec.name)) then
       begin
-        if FileExists(Dir + SearchRec.name) then
-          Dec(MaxFilesCount);
-        if MaxFilesCount < 0 then
+        if Files.Count >= MaxFilesSearch then
           Break;
-        if FileExists(Dir + SearchRec.name) and ExtinMask(Mask, GetExt(Dir + SearchRec.name)) then
+        Files.Add(Dir + SearchRec.name);
+        if Files.Count >= MaxFilesSearch then
+          Break;
+        if Assigned(CallBack) then
         begin
-          if Files.Count >= MaxFilesSearch then
+          Info.MaxValue := -1;
+          Info.Position := -1;
+          Info.Information := Dir + SearchRec.name;
+          Info.Terminate := False;
+          CallBack(nil, Info);
+          if Info.Terminate then
             Break;
-          Files.Add(Dir + SearchRec.name);
-          if Files.Count >= MaxFilesSearch then
-            Break;
-          if Assigned(CallBack) then
-          begin
-            Info.MaxValue := -1;
-            Info.Position := -1;
-            Info.Information := Dir + SearchRec.name;
-            Info.Terminate := False;
-            CallBack(nil, Info);
-            if Info.Terminate then
-              Break;
-          end;
-        end
-        else if DirectoryExists(Dir + SearchRec.name) then
-          GetPhotosNamesFromDrive(Dir + SearchRec.name, Mask, Files, MaxFilesCount, MaxFilesSearch, CallBack);
-      end;
-      Found := SysUtils.FindNext(SearchRec);
-    end;
-    FindClose(SearchRec);
-  end;
-
-  function EXIFDateToDate(DateTime: string): TDateTime;
-  var
-    Yyyy, Mm, Dd: Word;
-    D: string;
-    DT: TDateTime;
-  begin
-    Result := 0;
-    if TryStrToDate(DateTime, DT) then
-    begin
-      Result := DateOf(DT);
-    end
-    else
-    begin
-      D := Copy(DateTime, 1, 10);
-      TryStrToDate(D, Result);
-      if Result = 0 then
-      begin
-        Yyyy := StrToIntDef(Copy(DateTime, 1, 4), 0);
-        Mm := StrToIntDef(Copy(DateTime, 6, 2), 0);
-        Dd := StrToIntDef(Copy(DateTime, 9, 2), 0);
-        if (Yyyy > 1990) and (Yyyy < 2050) then
-          if (Mm >= 1) and (Mm <= 12) then
-            if (Dd >= 1) and (Dd <= 31) then
-              Result := EncodeDate(Yyyy, Mm, Dd);
-      end;
-    end;
-  end;
-
-  function EXIFDateToTime(DateTime: string): TDateTime;
-  var
-    // yyyy,mm,dd : Word;
-    T: string;
-    DT: TDateTime;
-  begin
-    Result := 0;
-    if TryStrToTime(DateTime, DT) then
-    begin
-      Result := TimeOf(DT);
-    end
-    else
-    begin
-      T := Copy(DateTime, 12, 8);
-      TryStrToTime(T, Result);
-      Result := TimeOf(Result);
-    end;
-  end;
-
-  function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer;
-    overload;
-  begin
-    Result := TaskDialogEx(Handle, AContent, Title, ADescription, Buttons, Icon, GetParamStrDBBool('NoVistaMsg'));
-  end;
-
-  function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: Integer): Integer; overload;
-  begin
-    Result := MessageBoxDB(Handle, AContent, Title, '', Buttons, Icon);
-  end;
-
-  procedure TextToClipboard(const S: string);
-  var
-    N: Integer;
-    Mem: Cardinal;
-    Ptr: Pointer;
-  begin
-    try
-      with Clipboard do
-        try
-          Open;
-          if IsClipboardFormatAvailable(CF_UNICODETEXT) then
-          begin
-            N := (Length(S) + 1) * 2;
-            Mem := GlobalAlloc(GMEM_MOVEABLE + GMEM_DDESHARE, N);
-            Ptr := GlobalLock(Mem);
-            Move(PWideChar(Widestring(S))^, Ptr^, N);
-            GlobalUnlock(Mem);
-            SetAsHandle(CF_UNICODETEXT, Mem);
-          end;
-          AsText := S;
-          Mem := GlobalAlloc(GMEM_MOVEABLE + GMEM_DDESHARE, SizeOf(Dword));
-          Ptr := GlobalLock(Mem);
-          Dword(Ptr^) := (SUBLANG_NEUTRAL shl 10) or LANG_RUSSIAN;
-          GlobalUnLock(Mem);
-          SetAsHandle(CF_LOCALE, Mem);
-        finally
-          Close;
         end;
-    except
+      end
+      else if DirectoryExists(Dir + SearchRec.name) then
+        GetPhotosNamesFromDrive(Dir + SearchRec.name, Mask, Files, MaxFilesCount, MaxFilesSearch, CallBack);
     end;
+    Found := SysUtils.FindNext(SearchRec);
   end;
+  FindClose(SearchRec);
+end;
 
-  function GetActiveFormHandle: Integer;
+function EXIFDateToDate(DateTime: string): TDateTime;
+var
+  Yyyy, Mm, Dd: Word;
+  D: string;
+  DT: TDateTime;
+begin
+  Result := 0;
+  if TryStrToDate(DateTime, DT) then
   begin
-    if Screen.ActiveForm <> nil then
-      Result := Screen.ActiveForm.Handle
-    else
-      Result := 0;
-  end;
-
-  function GetGraphicFilter: string;
-  var
-    AllFormatsString: string;
-    FormatsString, StrTemp: string;
-    P, I: Integer;
-    RAWFormats: string;
-
-    procedure AddGraphicFormat(FormatName: string; Extensions: string; LastExtension: Boolean);
+    Result := DateOf(DT);
+  end
+  else
+  begin
+    D := Copy(DateTime, 1, 10);
+    TryStrToDate(D, Result);
+    if Result = 0 then
     begin
-      FormatsString := FormatsString + FormatName + ' (' + Extensions + ')' + '|' + Extensions;
-      if not LastExtension then
-        FormatsString := FormatsString + '|';
-
-      AllFormatsString := AllFormatsString + Extensions;
-      if not LastExtension then
-        AllFormatsString := AllFormatsString + ';';
+      Yyyy := StrToIntDef(Copy(DateTime, 1, 4), 0);
+      Mm := StrToIntDef(Copy(DateTime, 6, 2), 0);
+      Dd := StrToIntDef(Copy(DateTime, 9, 2), 0);
+      if (Yyyy > 1990) and (Yyyy < 2050) then
+        if (Mm >= 1) and (Mm <= 12) then
+          if (Dd >= 1) and (Dd <= 31) then
+            Result := EncodeDate(Yyyy, Mm, Dd);
     end;
-
-  begin
-    AllFormatsString := '';
-    FormatsString := '';
-    RAWFormats := '';
-    if GraphicFilterString = '' then
-    begin
-      AddGraphicFormat('JPEG Image File', '*.jpg;*.jpeg;*.jfif;*.jpe;*.thm', False);
-      AddGraphicFormat('Tiff images', '*.tiff;*.tif;*.fax', False);
-      AddGraphicFormat('Portable network graphic images', '*.png', False);
-      AddGraphicFormat('GIF Images', '*.gif', False);
-
-      if IsRAWSupport then
-      begin
-        P := 1;
-        for I := 1 to Length(RAWImages) do
-          if (RAWImages[I] = '|') then
-          begin
-            StrTemp := Copy(RAWImages, P, I - P);
-
-            RAWFormats := RAWFormats + '*.' + AnsiLowerCase(StrTemp);
-            if I <> Length(RAWImages) then
-              RAWFormats := RAWFormats + ';';
-            P := I + 1;
-          end;
-        AddGraphicFormat('Camera RAW Images', RAWFormats, False);
-      end;
-
-      AddGraphicFormat('Bitmaps', '*.bmp;*.rle;*.dib', False);
-      AddGraphicFormat('Photoshop images', '*.psd;*.pdd', False);
-      AddGraphicFormat('Truevision images', '*.win;*.vst;*.vda;*.tga;*.icb', False);
-      AddGraphicFormat('ZSoft Paintbrush images', '*.pcx;*.pcc;*.scr', False);
-      AddGraphicFormat('Alias/Wavefront images', '*.rpf;*.rla', False);
-      AddGraphicFormat('SGI true color images', '*.sgi;*.rgba;*.rgb;*.bw', False);
-      AddGraphicFormat('Portable map images', '*.ppm;*.pgm;*.pbm', False);
-      AddGraphicFormat('Autodesk images', '*.cel;*.pic', False);
-      AddGraphicFormat('Kodak Photo-CD images', '*.pcd', False);
-      AddGraphicFormat('Dr. Halo images', '*.cut', False);
-      AddGraphicFormat('Paintshop Pro images', '*.psp', True);
-
-      FormatsString := Format(TEXT_MES_ALL_FORMATS, [AllFormatsString]) + '|' + AllFormatsString + '|' + FormatsString;
-      GraphicFilterString := FormatsString;
-    end;
-    Result := GraphicFilterString;
   end;
+end;
 
-  function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
-  var
-    ROT: array [0 .. 3, 0 .. 3] of Integer;
+function EXIFDateToTime(DateTime: string): TDateTime;
+var
+  // yyyy,mm,dd : Word;
+  T: string;
+  DT: TDateTime;
+begin
+  Result := 0;
+  if TryStrToTime(DateTime, DT) then
   begin
-    {
-      DB_IMAGE_ROTATED_0   = 0;
-      DB_IMAGE_ROTATED_90  = 1;
-      DB_IMAGE_ROTATED_180 = 2;
-      DB_IMAGE_ROTATED_270 = 3;
-      }
-    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_0;
-    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_90;
-    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_180;
-    ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_270;
-
-    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_270;
-    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_0;
-    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_90;
-    ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_180;
-
-    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_180;
-    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_270;
-    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_0;
-    ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_90;
-
-    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_90;
-    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_180;
-    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_270;
-    ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_0;
-
-    Result := ROT[OldRotation, NewRotation];
+    Result := TimeOf(DT);
+  end
+  else
+  begin
+    T := Copy(DateTime, 12, 8);
+    TryStrToTime(T, Result);
+    Result := TimeOf(Result);
   end;
+end;
 
-  procedure ExecuteQuery(SQL: string);
-  var
-    DS: TDataSet;
-  begin
-    DS := GetQuery;
-    try
-      SetSQL(DS, SQL);
+function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer;
+  overload;
+begin
+  Result := TaskDialogEx(Handle, AContent, Title, ADescription, Buttons, Icon, GetParamStrDBBool('NoVistaMsg'));
+end;
+
+function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: Integer): Integer; overload;
+begin
+  Result := MessageBoxDB(Handle, AContent, Title, '', Buttons, Icon);
+end;
+
+procedure TextToClipboard(const S: string);
+var
+  N: Integer;
+  Mem: Cardinal;
+  Ptr: Pointer;
+begin
+  try
+    with Clipboard do
       try
-        ExecSQL(DS);
-        EventLog('::ExecuteSQLExecOnCurrentDB()/ExecSQL OK [' + SQL + ']');
-      except
-        on E: Exception do
-          EventLog(':ExecuteSQLExecOnCurrentDB()/ExecSQL throw exception: ' + E.message);
+        Open;
+        if IsClipboardFormatAvailable(CF_UNICODETEXT) then
+        begin
+          N := (Length(S) + 1) * 2;
+          Mem := GlobalAlloc(GMEM_MOVEABLE + GMEM_DDESHARE, N);
+          Ptr := GlobalLock(Mem);
+          Move(PWideChar(Widestring(S))^, Ptr^, N);
+          GlobalUnlock(Mem);
+          SetAsHandle(CF_UNICODETEXT, Mem);
+        end;
+        AsText := S;
+        Mem := GlobalAlloc(GMEM_MOVEABLE + GMEM_DDESHARE, SizeOf(Dword));
+        Ptr := GlobalLock(Mem);
+        Dword(Ptr^) := (SUBLANG_NEUTRAL shl 10) or LANG_RUSSIAN;
+        GlobalUnLock(Mem);
+        SetAsHandle(CF_LOCALE, Mem);
+      finally
+        Close;
       end;
-    finally
-      FreeDS(DS);
-    end;
+  except
+  end;
+end;
+
+function GetActiveFormHandle: Integer;
+begin
+  if Screen.ActiveForm <> nil then
+    Result := Screen.ActiveForm.Handle
+  else
+    Result := 0;
+end;
+
+function GetGraphicFilter: string;
+var
+  AllFormatsString: string;
+  FormatsString, StrTemp: string;
+  P, I: Integer;
+  RAWFormats: string;
+
+  procedure AddGraphicFormat(FormatName: string; Extensions: string; LastExtension: Boolean);
+  begin
+    FormatsString := FormatsString + FormatName + ' (' + Extensions + ')' + '|' + Extensions;
+    if not LastExtension then
+      FormatsString := FormatsString + '|';
+
+    AllFormatsString := AllFormatsString + Extensions;
+    if not LastExtension then
+      AllFormatsString := AllFormatsString + ';';
   end;
 
-  function ReadTextFileInString(FileName: string): string;
-  var
-    FS: TFileStream;
+begin
+  AllFormatsString := '';
+  FormatsString := '';
+  RAWFormats := '';
+  if GraphicFilterString = '' then
   begin
-    if not FileExists(FileName) then
+    AddGraphicFormat('JPEG Image File', '*.jpg;*.jpeg;*.jfif;*.jpe;*.thm', False);
+    AddGraphicFormat('Tiff images', '*.tiff;*.tif;*.fax', False);
+    AddGraphicFormat('Portable network graphic images', '*.png', False);
+    AddGraphicFormat('GIF Images', '*.gif', False);
+
+    if IsRAWSupport then
+    begin
+      P := 1;
+      for I := 1 to Length(RAWImages) do
+        if (RAWImages[I] = '|') then
+        begin
+          StrTemp := Copy(RAWImages, P, I - P);
+
+          RAWFormats := RAWFormats + '*.' + AnsiLowerCase(StrTemp);
+          if I <> Length(RAWImages) then
+            RAWFormats := RAWFormats + ';';
+          P := I + 1;
+        end;
+      AddGraphicFormat('Camera RAW Images', RAWFormats, False);
+    end;
+
+    AddGraphicFormat('Bitmaps', '*.bmp;*.rle;*.dib', False);
+    AddGraphicFormat('Photoshop images', '*.psd;*.pdd', False);
+    AddGraphicFormat('Truevision images', '*.win;*.vst;*.vda;*.tga;*.icb', False);
+    AddGraphicFormat('ZSoft Paintbrush images', '*.pcx;*.pcc;*.scr', False);
+    AddGraphicFormat('Alias/Wavefront images', '*.rpf;*.rla', False);
+    AddGraphicFormat('SGI true color images', '*.sgi;*.rgba;*.rgb;*.bw', False);
+    AddGraphicFormat('Portable map images', '*.ppm;*.pgm;*.pbm', False);
+    AddGraphicFormat('Autodesk images', '*.cel;*.pic', False);
+    AddGraphicFormat('Kodak Photo-CD images', '*.pcd', False);
+    AddGraphicFormat('Dr. Halo images', '*.cut', False);
+    AddGraphicFormat('Paintshop Pro images', '*.psp', True);
+
+    FormatsString := Format(TEXT_MES_ALL_FORMATS, [AllFormatsString]) + '|' + AllFormatsString + '|' + FormatsString;
+    GraphicFilterString := FormatsString;
+  end;
+  Result := GraphicFilterString;
+end;
+
+function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
+var
+  ROT: array [0 .. 3, 0 .. 3] of Integer;
+begin
+  {
+    DB_IMAGE_ROTATED_0   = 0;
+    DB_IMAGE_ROTATED_90  = 1;
+    DB_IMAGE_ROTATED_180 = 2;
+    DB_IMAGE_ROTATED_270 = 3;
+    }
+  ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_0;
+  ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_90;
+  ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_180;
+  ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_270;
+
+  ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_270;
+  ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_0;
+  ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_90;
+  ROT[DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_180;
+
+  ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_180;
+  ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_270;
+  ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_0;
+  ROT[DB_IMAGE_ROTATE_180, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_90;
+
+  ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_90;
+  ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_180;
+  ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_270;
+  ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_0;
+
+  Result := ROT[OldRotation, NewRotation];
+end;
+
+procedure ExecuteQuery(SQL: string);
+var
+  DS: TDataSet;
+begin
+  DS := GetQuery;
+  try
+    SetSQL(DS, SQL);
+    try
+      ExecSQL(DS);
+      EventLog('::ExecuteSQLExecOnCurrentDB()/ExecSQL OK [' + SQL + ']');
+    except
+      on E: Exception do
+        EventLog(':ExecuteSQLExecOnCurrentDB()/ExecSQL throw exception: ' + E.message);
+    end;
+  finally
+    FreeDS(DS);
+  end;
+end;
+
+function ReadTextFileInString(FileName: string): string;
+var
+  FS: TFileStream;
+begin
+  if not FileExists(FileName) then
+    Exit;
+  try
+    FS := TFileStream.Create(FileName, FmOpenRead);
+  except
+    on E: Exception do
+    begin
+      EventLog(':ReadTextFileInString() throw exception: ' + E.message);
       Exit;
-    try
-      FS := TFileStream.Create(FileName, FmOpenRead);
-    except
-      on E: Exception do
-      begin
-        EventLog(':ReadTextFileInString() throw exception: ' + E.message);
-        Exit;
-      end;
     end;
-    SetLength(Result, FS.Size);
-    try
-      FS.read(Result[1], FS.Size);
-    except
-      on E: Exception do
-      begin
-        EventLog(':ReadTextFileInString() throw exception: ' + E.message);
-        Exit;
-      end;
-    end;
-    FS.Free;
   end;
+  SetLength(Result, FS.Size);
+  try
+    FS.read(Result[1], FS.Size);
+  except
+    on E: Exception do
+    begin
+      EventLog(':ReadTextFileInString() throw exception: ' + E.message);
+      Exit;
+    end;
+  end;
+  FS.Free;
+end;
 
-  procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
-  begin
-    case RotateValue of
-      DB_IMAGE_ROTATE_270:
-        Rotate270A(Bitmap);
-      DB_IMAGE_ROTATE_90:
-        Rotate90A(Bitmap);
-      DB_IMAGE_ROTATE_180:
-        Rotate180A(Bitmap);
-    end;
+procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
+begin
+  case RotateValue of
+    DB_IMAGE_ROTATE_270:
+      Rotate270A(Bitmap);
+    DB_IMAGE_ROTATE_90:
+      Rotate90A(Bitmap);
+    DB_IMAGE_ROTATE_180:
+      Rotate180A(Bitmap);
   end;
+end;
 
 { TDBPopupMenuInfo }
 

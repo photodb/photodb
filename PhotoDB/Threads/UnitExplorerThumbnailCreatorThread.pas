@@ -46,17 +46,17 @@ var
   W, H : Integer;
   Password : string;
   GraphicClass : TGraphicClass;
-
+  ShadowImage : TBitmap;
 begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
     TempBitmap := TBitmap.Create;
     try
-      TempBitmap.PixelFormat:=pf24Bit;
-      TempBitmap.Width := ThSizeExplorerPreview;
-      TempBitmap.Height := ThSizeExplorerPreview;
-      FillColorEx(TempBitmap, ClBtnFace);
+      TempBitmap.PixelFormat := pf32Bit;
+      TempBitmap.Width := ThSizeExplorerPreview + 4;
+      TempBitmap.Height := ThSizeExplorerPreview + 4;
+      FillTransparentColor(TempBitmap, clBtnFace);
 
       Info.Image := TJPEGImage.Create;
       try
@@ -68,33 +68,46 @@ begin
           begin
             TempBit := TBitmap.Create;
             try
-              TempBit.PixelFormat := Pf24bit;
+              TempBit.PixelFormat := pf24bit;
               AssignJpeg(TempBit, Info.Image);
               W := TempBit.Width;
               H := TempBit.Height;
               ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
               FBit := TBitmap.Create;
               try
-                FBit.PixelFormat := Pf24bit;
+                FBit.PixelFormat := pf24bit;
                 DoResize(W, H, TempBit, Fbit);
-                DrawImageEx(TempBitmap, Fbit, ThSizeExplorerPreview div 2 - Fbit.Width div 2,
-                  ThSizeExplorerPreview div 2 - Fbit.Height div 2);
+                F(TempBit);
+                ShadowImage := TBitmap.Create;
+                try
+                  DrawShadowToImage(ShadowImage, Fbit);
+                  DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
+                    TempBitmap.Height div 2 - ShadowImage.Height div 2);
+                finally
+                  F(ShadowImage);
+                end;
               finally
-                FBit.Free;
+                F(FBit);
               end;
             finally
-              TempBit.Free;
+              F(TempBit);
             end;
           end else
           begin
             TempBit := TBitmap.Create;
             try
-              TempBit.PixelFormat := Pf24bit;
+              TempBit.PixelFormat := pf24bit;
               AssignJpeg(TempBit, Info.Image);
-              DrawImageEx(TempBitmap, TempBit, ThSizeExplorerPreview div 2 - Info.Image.Width div 2,
-                ThSizeExplorerPreview div 2 - Info.Image.Height div 2);
+              ShadowImage := TBitmap.Create;
+              try
+                DrawShadowToImage(ShadowImage, TempBit);
+                DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
+                  TempBitmap.Height div 2 - ShadowImage.Height div 2);
+              finally
+                F(ShadowImage);
+              end;
             finally
-              TempBit.Free;
+              F(TempBit);
             end;
           end;
           ApplyRotate(TempBitmap, Info.ItemRotate);
@@ -144,9 +157,9 @@ begin
 
               TempBit := TBitmap.Create;
               try
-                LoadImageX(FGraphic, TempBit, ClBtnFace);
+
+                LoadImageX(FGraphic, TempBit, clBtnFace);
                 F(FGraphic);
-                TempBit.PixelFormat := pf24bit;
                 W := TempBit.Width;
                 H := TempBit.Height;
                 if Max(W,H) < ThSizeExplorerPreview then
@@ -158,7 +171,14 @@ begin
               finally
                 F(TempBit);
               end;
-              DrawImageEx(TempBitmap, FBit, ThSizeExplorerPreview div 2 - FBit.Width div 2, ThSizeExplorerPreview div 2 - FBit.height div 2);
+              ShadowImage := TBitmap.Create;
+              try
+                DrawShadowToImage(ShadowImage, FBit);
+                DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
+                  TempBitmap.Height div 2 - ShadowImage.Height div 2);
+              finally
+                F(ShadowImage);
+              end;
             finally
               F(FBit);
             end;

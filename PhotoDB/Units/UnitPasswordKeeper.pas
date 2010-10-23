@@ -91,7 +91,7 @@ end;
 
 function TPasswordKeeper.GetActiveFiles(Sender : TObject): TList;
 var
-  I, L: Integer;
+  I: Integer;
   P, Cp: TPasswordRecord;
 begin
   FSync.Enter;
@@ -184,7 +184,7 @@ end;
 function TPasswordKeeper.PasswordOKForRecords(Password: string): TList;
 var
   CRC: Cardinal;
-  I, L: Integer;
+  I: Integer;
   P, Cp: TPasswordRecord;
 begin
   FSync.Enter;

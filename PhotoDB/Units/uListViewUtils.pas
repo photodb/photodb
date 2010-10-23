@@ -69,6 +69,8 @@ procedure EnsureSelectionInListView(EasyListview: TEasyListview; ListItem : TEas
   Shift: TShiftState; X, Y: Integer; var ItemSelectedByMouseDown : Boolean;
   var ItemByMouseDown : Boolean);
 procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item : TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
+procedure CreateMultiselectImage(ListView : TEasyListView; ResultImage : TBitmap; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Width, Height : Integer);
 
 implementation
 
@@ -205,6 +207,181 @@ begin
     Font, Caption, Point, X, Y);
 end;
 
+procedure DrawSelectionCount(Bitmap : TBitmap; ItemsSelected : Integer; Font : TFont; RoundRadius : Integer);
+var
+  AFont : TFont;
+  W, H : Integer;
+  R : TRect;
+begin
+  AFont := TFont.Create;
+  try
+    AFont.Assign(Font);
+    AFont.Style := [fsBold];
+    AFont.Size := AFont.Size + 2;
+    AFont.Color := clHighlightText;
+    W := Bitmap.Canvas.TextWidth(IntToStr(ItemsSelected));
+    H := Bitmap.Canvas.TextHeight(IntToStr(ItemsSelected));
+    Inc(W, 10);
+    Inc(H, 10);
+    R := Rect(5, 5, 5 + W, 5 + H);
+    DrawRoundGradientVert(Bitmap, R, clBlack, clHighlight, clHighlightText, RoundRadius);
+    DrawText32Bit(Bitmap, IntToStr(ItemsSelected), AFont, R, DT_CENTER or DT_VCENTER);
+  finally
+    AFont.Free;
+  end;
+end;
+
+procedure  CreateMultiselectImage(ListView : TEasyListView; ResultImage : TBitmap; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Width, Height : Integer);
+var
+  SelCount : Integer;
+  SelectedItem : TEasyItem;
+  Items : array of TEasyItem;
+  MaxH, MaxW, I, N, FSelCount, ItemsSelected, ImageW, ImageH : Integer;
+  Graphic : TGraphic;
+  DX, DY, DMax : Extended;
+  TmpImage,
+  SelectedImage : TBitmap;
+  LBitmap : TLayeredBitmap;
+  FocusedItem : TEasyItem;
+
+  function LastSelected : TEasyItem;
+  var
+    Item : TEasyItem;
+  begin
+    Item := ListView.Selection.First;
+    while Item <> nil do
+    begin
+      Result := Item;
+      Item := ListView.Selection.Next(Result);
+    end;
+  end;
+
+const
+  MaxItems = 5;
+  ImagePadding = 10;
+  RoundRadius = 8;
+
+begin
+  SelectedItem := nil;
+
+  SetLength(Items, 0);
+  if ListView <> nil then
+  begin
+    ItemsSelected := ListView.Selection.Count;
+    FSelCount := Min(MaxItems, ItemsSelected);
+
+    SelectedItem := ListView.Selection.First;
+    FocusedItem := nil;
+    if ListView.Selection.FocusedItem <> nil then
+      if ListView.Selection.FocusedItem.Selected then
+        FocusedItem := ListView.Selection.FocusedItem;
+
+    if FocusedItem = nil then
+      FocusedItem := LastSelected;
+
+    for I := 1 to FSelCount do
+    begin
+      if FocusedItem <> SelectedItem then
+      begin
+        if Length(Items) = FSelCount - 1 then
+          Break;
+
+        SetLength(Items, Length(Items) + 1);
+        Items[Length(Items) - 1] := SelectedItem;
+      end;
+      SelectedItem := ListView.Selection.Next(SelectedItem);
+    end;
+    SetLength(Items, Length(Items) + 1);
+    Items[Length(Items) - 1] := FocusedItem;
+    FSelCount := Length(Items);
+  end else begin
+    ItemsSelected := SImageList.Count;
+    FSelCount := Min(MaxItems, ItemsSelected);
+  end;
+
+  N := 0;
+
+  MaxH := 0;
+  MaxW := 0;
+  for I := 1 to FSelCount do
+  begin
+
+    if ListView <> nil then
+      Graphic := SImageList[Items[I - 1].ImageIndex].Graphic
+    else
+      Graphic := SImageList[I - 1].Graphic;
+
+    MaxH := Max(MaxH, N + Graphic.Height);
+    MaxW := Max(MaxW, N + Graphic.Width);
+  end;
+
+  DX := MaxW / (Width - FSelCount * (ImagePadding - 1));
+  DY := MaxH / (Height  - FSelCount * (ImagePadding - 1));
+  DMax := Max(MaxW, MaxH);
+
+  ResultImage.Width := Width;
+  ResultImage.Height := Height;
+  FillTransparentColor(ResultImage, ClBlack, 0);
+
+  N := 0;
+
+  if ListView <> nil then
+    SelectedItem := ListView.Selection.First;
+  for I := 1 to FSelCount do
+  begin
+    if ListView <> nil then
+      Graphic := SImageList[Items[I - 1].ImageIndex].Graphic
+    else
+      Graphic := SImageList[I - 1].Graphic;
+
+    if Graphic is TBitmap then
+    begin
+      ImageW := Graphic.Width;
+      ImageH := Graphic.Height;
+      ProportionalSizeA(Round(ImageW / DX), Round(ImageH / DY), ImageW, ImageH);
+      if TBitmap(Graphic).PixelFormat = pf24bit then
+      begin
+        SelectedImage := TBitmap.Create;
+        try
+          TmpImage := TBitmap.Create;
+          try
+            DoResize(ImageW, ImageH, Graphic as TBitmap, TmpImage);
+            DrawShadowToImage(SelectedImage, TmpImage);
+            DrawImageEx32(ResultImage, SelectedImage, N, N);
+          finally
+            F(TmpImage);
+          end;
+        finally
+          F(SelectedImage);
+        end;
+      end else if TBitmap(Graphic).PixelFormat = pf32bit then
+      begin
+        TmpImage := TBitmap.Create;
+        try
+          DoResize(ImageW, ImageH, Graphic as TBitmap, TmpImage);
+          DrawImageEx32(ResultImage, TmpImage, N, N);
+        finally
+          F(TmpImage);
+        end;
+      end;
+    end else if Graphic is TIcon then
+    begin
+      LBitmap := TLayeredBitmap.Create;
+      try
+        LBitmap.LoadFromHIcon(TIcon(Graphic).Handle, TIcon(Graphic).Height, TIcon(Graphic).Width);
+        InverseTransparenty(LBitmap);
+        DrawImageEx32(ResultImage, LBitmap, N, N);
+      finally
+        F(LBitmap);
+      end;
+    end;
+    Inc(N, ImagePadding);
+  end;
+
+  DrawSelectionCount(ResultImage, ItemsSelected, Font, RoundRadius);
+end;
+
 procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string;
   DragPoint : TPoint; var SpotX, SpotY : Integer);
@@ -218,7 +395,6 @@ var
   Graphic : TGraphic;
   ARect, R, SelectionRect : TRect;
   LBitmap : TLayeredBitmap;
-  AFont : TFont;
   Items : array of TEasyItem;
   EasyRect : TEasyRectArrayObject;
 
@@ -333,24 +509,7 @@ begin
     end;
 
     if ItemsSelected > 1 then
-    begin
-      AFont := TFont.Create;
-      try
-        AFont.Assign(Font);
-        AFont.Style := [fsBold];
-        AFont.Size := AFont.Size + 2;
-        AFont.Color := clHighlightText;
-        W := TempImage.Canvas.TextWidth(IntToStr(ItemsSelected));
-        H := TempImage.Canvas.TextHeight(IntToStr(ItemsSelected));
-        Inc(W, 10);
-        Inc(H, 10);
-        R := Rect(5, 5, 5 + W, 5 + H);
-        DrawRoundGradientVert(TempImage, R, clBlack, clHighlight, clHighlightText, RoundRadius);
-        DrawText32Bit(TempImage, IntToStr(ItemsSelected), AFont, R, DT_CENTER or DT_VCENTER);
-      finally
-        AFont.Free;
-      end;
-    end;
+      DrawSelectionCount(TempImage, ItemsSelected, Font, RoundRadius);
 
     if ListView <> nil then
     begin

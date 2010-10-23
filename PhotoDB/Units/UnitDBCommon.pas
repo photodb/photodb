@@ -14,6 +14,7 @@ procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightTo
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
 function ProgramDir : string;
+procedure ActivateBackgroundApplication(hWnd : THandle);
 
 var
   RAWImages: string = 'CR2|';
@@ -145,6 +146,34 @@ begin
   end; 
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
+end;
+
+procedure ActivateBackgroundApplication(hWnd : THandle);
+var
+  hCurWnd, dwThreadID, dwCurThreadID: THandle;
+  OldTimeOut: Cardinal;
+  AResult: Boolean;
+begin
+     Application.Restore;
+     ShowWindow(hWnd,SW_RESTORE);
+     hWnd := Application.Handle;
+     SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @OldTimeOut, 0);
+     SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(0), 0);
+     SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+     hCurWnd := GetForegroundWindow;
+     AResult := False;
+     while not AResult do
+     begin
+        dwThreadID := GetCurrentThreadId;
+        dwCurThreadID := GetWindowThreadProcessId(hCurWnd);
+        AttachThreadInput(dwThreadID, dwCurThreadID, True);
+        AResult := SetForegroundWindow(hWnd);
+        AttachThreadInput(dwThreadID, dwCurThreadID, False);
+     end;
+     SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+     SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(OldTimeOut), 0);
+     ShowWindow(Application.MainForm.Handle,SW_HIDE);
+     ShowWindow(Application.Handle,SW_HIDE);
 end;
 
 function Hash_Cos_C(s : string):integer;

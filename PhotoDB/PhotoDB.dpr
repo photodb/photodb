@@ -130,7 +130,6 @@ uses
   UnitRestoreTableThread in 'Threads\UnitRestoreTableThread.pas',
   UnitWindowsCopyFilesThread in 'Threads\UnitWindowsCopyFilesThread.pas',
   UnitThreadShowBadLinks in 'Threads\UnitThreadShowBadLinks.pas',
-  UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas',
   UnitBackUpTableInCMD in 'Threads\UnitBackUpTableInCMD.pas',
   UnitOpenQueryThread in 'Threads\UnitOpenQueryThread.pas',
   UnitOptimizeDublicatesThread in 'Threads\UnitOptimizeDublicatesThread.pas',
@@ -299,7 +298,8 @@ uses
   uMultiCPUThreadManager in 'Threads\uMultiCPUThreadManager.pas',
   uFormListView in 'Units\uFormListView.pas',
   uDBThread in 'Threads\uDBThread.pas',
-  uGraphicUtils in 'Units\uGraphicUtils.pas';
+  uGraphicUtils in 'Units\uGraphicUtils.pas',
+  UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas';
 
 {$R *.res}
 
@@ -322,6 +322,13 @@ begin
   Result := ReleaseNumber;
 end;
 
+procedure StopApplication;
+begin
+  SplashThread.Terminate;
+  DBTerminating := True;
+  Halt;
+end;
+
 procedure FindRunningVersion;
 var
   HSemaphore : THandle;
@@ -335,10 +342,10 @@ begin
   begin
     CloseHandle(HSemaphore);
 
-    if (AnsiUpperCase(ParamStr(1)) <> '/EXPLORER') and (AnsiUpperCase(ParamStr(1)) <> '/GETPHOTOS') and (FindWindow(nil, DBID) <> 0) then
+    if ParamStr(1) = '' then
       MessageToSent := 'Activate'
     else
-      MessageToSent := ParamStr(1) + #0 + ParamStr(2);
+      MessageToSent := ParamStr(1) + #1 + ParamStr(2);
 
       cd.dwData := WM_COPYDATA_ID;
       cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
@@ -353,12 +360,11 @@ begin
         SplashThread.Terminate;
         if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
         begin
-          Application.Terminate;
+          DBTerminating := True;
         end else
-          if ID_YES <> MessageBoxDB(0, TEXT_MES_APPLICATION_PREV_FOUND_BUT_SEND_MES_FAILED, TEXT_MES_ERROR, TD_BUTTON_YESNO, TD_ICON_ERROR) then
-          begin
-            Application.Terminate;
-          end;
+          if ID_YES <> MessageBoxDB(0, TA('This program already running, but not responds! Run new instance?'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
+            DBTerminating := True;
+
       finally
         FreeMem(Buf);
       end;
@@ -425,11 +431,7 @@ begin
   if GetParamStrDBBool('/SLEEP') then
     Sleep(1000);
 
-  SetSplashProgress(5);
-  TW.i.Start('InitializeDBLoadScript');
-  InitializeDBLoadScript;
   // INITIALIZAING APPLICATION
-
   if GetDBViewMode then
   begin
     FolderView := True;
@@ -453,60 +455,53 @@ begin
       if (AnsiUpperCase(ExtractFileName(Application.ExeName))
           <> 'SETUP.EXE') and not EmulationInstall then
       begin
-        if ID_YES = MessageBoxDB(dolphin_db.GetActiveFormHandle,
-          TEXT_MES_PROGRAMM_NOT_INSTALLED, TEXT_MES_ERROR, TD_BUTTON_YESNO,
+        if ID_YES = MessageBoxDB(GetActiveFormHandle,
+          L('Program is not corrected installed!', 'System'), TA('Error'), TD_BUTTON_YESNO,
           TD_ICON_ERROR) then
         begin
           EventLog('Loading Kernel.dll');
-          KernelHandle := loadlibrary(PChar(ProgramDir + 'Kernel.dll'));
+          KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
           if KernelHandle = 0 then
           begin
             EventLog('KernelHandle IS 0 -> exit');
-            MessageBoxDB(dolphin_db.GetActiveFormHandle,
-              TEXT_MES_ERROR_KERNEL_DLL, TEXT_MES_ERROR, TD_BUTTON_OK,
+            MessageBoxDB(GetActiveFormHandle,
+              TA('Unable to load "Kernel.dll" library!', 'System'), TA('Error'), TD_BUTTON_OK,
               TD_ICON_ERROR);
-            Halt;
+            StopApplication;
           end;
           DBKernel := TDBKernel.Create;
           Application.CreateForm(TInstallForm, InstallForm);
-  Application.Restore;
+          Application.Restore;
           EventLog(':InstallForm.SetQuickSelfInstallOption()');
           InstallForm.SetQuickSelfInstallOption;
           InstallForm.ShowModal;
           InstallForm.Release;
           InstallForm := nil;
           DBTerminating := True;
-          Halt;
-        end
-        else
+          StopApplication;
+        end else
         begin
           DBTerminating := True;
-          Halt;
         end;
-      end
-      else
+      end else
       begin
         EventLog('Loading Kernel.dll');
-        KernelHandle := loadlibrary(PChar(ProgramDir + 'Kernel.dll'));
+        KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
         if KernelHandle = 0 then
         begin
           EventLog('KernelHandle IS 0 -> exit');
-          MessageBoxDB(dolphin_db.GetActiveFormHandle,
-            TEXT_MES_ERROR_KERNEL_DLL, TEXT_MES_ERROR, TD_BUTTON_OK,
+          MessageBoxDB(GetActiveFormHandle,
+            TA('Unable to load "Kernel.dll" library!', 'System'), TA('Error'), TD_BUTTON_OK,
             TD_ICON_ERROR);
-          Halt;
+          StopApplication;
         end;
         DBKernel := TDBKernel.Create;
-        if Length(GetDirectory(Application.ExeName)) > 200 then
-        begin
-          MessageBoxDB(Dolphin_DB.GetActiveFormHandle, PWideChar(Format(TEXT_MES_PATH_TOO_LONG, [GetDirectory(Application.ExeName)])), TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
-        end;
         Application.CreateForm(TInstallForm, InstallForm);
         Application.Restore;
         InstallForm.ShowModal;
         InstallForm.Release;
         InstallForm := nil;
-        Halt;
+        StopApplication;
       end;
     end;
   end;
@@ -518,64 +513,68 @@ begin
     and not DBTerminating then
   begin
     If ID_YES = MessageBoxDB(dolphin_db.GetActiveFormHandle,
-      TEXT_MES_UNINSTALL_CONFIRM, TEXT_MES_WARNING, TD_BUTTON_YESNO,
+      TA('Do you really want to delete this product?', 'System'), TA('Warning'), TD_BUTTON_YESNO,
       TD_ICON_WARNING) then
     begin
-      AExplorerFolders.free;
-      AExplorerFolders := nil;
+      F(AExplorerFolders);
       Application.CreateForm(TUnInstallForm, UnInstallForm);
       Application.Restore;
       UnInstallForm.ShowModal;
       UnInstallForm.Release;
       UnInstallForm := nil;
     end;
-    Halt;
+    StopApplication;
   end;
-
-  EventLog('TDBKernel.Create');
-  DBKernel := TDBKernel.Create;
-  TW.i.Start('DBKernel.LogIn');
-  DBKernel.LogIn('', '', True);
-  TLoad.Instance.StartDBKernelIconsThread;
-  TLoad.Instance.StartDBSettingsThread;
-  SetSplashProgress(25);
 
   TW.i.Start('FindRunningVersion');
   if not GetParamStrDBBool('/NoPrevVersion') then
     FindRunningVersion;
 
-  TW.i.Start('SetSplashProgress 35');
-  SetSplashProgress(35);
-
-  // This is main form of application
-  TW.i.Start('TFormManager Create');
-  Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
-
-  TW.i.Start('SetSplashProgress 50');
-  SetSplashProgress(50);
-
-  TW.i.Start('Kernel');
-  // CHECK DEMO MODE ----------------------------------------------------
+  TW.i.Start('InitializeDBLoadScript');
   if not DBTerminating then
   begin
+    InitializeDBLoadScript;
+
+    EventLog('TDBKernel.Create');
+    DBKernel := TDBKernel.Create;
+    TW.i.Start('DBKernel.LogIn');
+    DBKernel.LogIn('', '', True);
+
+    TW.i.Start('SetSplashProgress 35');
+    SetSplashProgress(25);
+
+    TLoad.Instance.StartDBKernelIconsThread;
+    TLoad.Instance.StartDBSettingsThread;
+
+    SetSplashProgress(35);
+
+    TW.i.Start('TFormManager Create');
+    Application.CreateForm(TFormManager, FormManager);
+    Application.ShowMainForm := False;
+    // This is main form of application
+
+    TW.i.Start('SetSplashProgress 50');
+    SetSplashProgress(50);
+
+    TW.i.Start('Kernel');
+    // CHECK DEMO MODE ----------------------------------------------------
     //EventLog(':DBKernel.InitRegModule');
     //TW.i.Start('InitRegModule');
     // TODO: LATER!!!! DBKernel.InitRegModule;
-  end;
-  TW.i.Start('SetSplashProgress 70');
-  SetSplashProgress(70);
+    TW.i.Start('SetSplashProgress 70');
+    SetSplashProgress(70);
 
-  if not FolderView then
-    if not DBTerminating then
+    if not FolderView then
       If IsInstalling then
       begin
         EventLog('IsInstalling IS true -> exit');
-        MessageBoxDB(GetActiveFormHandle, TEXT_MES_SETUP_RUNNING,
+        MessageBoxDB(GetActiveFormHandle, TA('Setup is currentry active. Close setup program and try again!', 'System'),
           TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         Application.Terminate;
         DBTerminating := True;
       end;
+
+  end;
 
   if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
     AExplorerFolders := TExplorerFolders.Create;
@@ -614,7 +613,7 @@ begin
           and not DBInDebug then
         begin
           EventLog('Application terminated...');
-          if ID_OK = MessageBoxDB(FormManager.Handle, TEXT_MES_APPLICATION_FAILED, TEXT_MES_ERROR, TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
+          if ID_OK = MessageBoxDB(FormManager.Handle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
           begin
             SplashThread.Terminate;
             DBKernel.WriteBool('StartUp', 'Pack', False);
@@ -789,6 +788,7 @@ begin
   AllowDragAndDrop;
 
   TW.i.Start('Application.Run');
-  Application.Run;
+  If not DBTerminating then
+    Application.Run;
 
 end.

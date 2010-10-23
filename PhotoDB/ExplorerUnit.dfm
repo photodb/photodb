@@ -24,11 +24,11 @@ object ExplorerForm: TExplorerForm
   object Splitter1: TSplitter
     Left = 135
     Top = 47
+    Width = 5
     Height = 546
-    Constraints.MaxWidth = 100
+    Constraints.MaxWidth = 150
     OnCanResize = Splitter1CanResize
-    ExplicitTop = 42
-    ExplicitHeight = 527
+    ExplicitLeft = 150
   end
   object NormalImages: TImage
     Left = 0
@@ -2280,8 +2280,8 @@ object ExplorerForm: TExplorerForm
         TabOrder = 0
         OnResize = ScrollBox1Resize
         object TypeLabel: TLabel
-          Left = 8
-          Top = 136
+          Left = 7
+          Top = 141
           Width = 49
           Height = 13
           Caption = 'TypeLabel'
@@ -2307,8 +2307,8 @@ object ExplorerForm: TExplorerForm
           ParentFont = False
         end
         object SizeLabel: TLabel
-          Left = 8
-          Top = 152
+          Left = 7
+          Top = 157
           Width = 44
           Height = 13
           Caption = 'SizeLabel'
@@ -2348,8 +2348,8 @@ object ExplorerForm: TExplorerForm
         end
         object NameLabel: TLabel
           Tag = 1
-          Left = 8
-          Top = 128
+          Left = 7
+          Top = 148
           Width = 62
           Height = 13
           Caption = 'NameLabel'
@@ -2372,8 +2372,8 @@ object ExplorerForm: TExplorerForm
         object ImPreview: TImage
           Left = 10
           Top = 24
-          Width = 100
-          Height = 100
+          Width = 118
+          Height = 118
           ParentCustomHint = False
           OnContextPopup = ImPreviewContextPopup
           OnDblClick = ImPreviewDblClick
@@ -2392,8 +2392,8 @@ object ExplorerForm: TExplorerForm
           ParentFont = False
         end
         object DimensionsLabel: TLabel
-          Left = 8
-          Top = 144
+          Left = 7
+          Top = 149
           Width = 78
           Height = 13
           Caption = 'DimensionsLabel'
@@ -2983,14 +2983,16 @@ object ExplorerForm: TExplorerForm
     end
   end
   object WaitingPanel: TPanel
-    Left = 138
+    Left = 140
     Top = 47
-    Width = 732
+    Width = 730
     Height = 546
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 3
+    ExplicitLeft = 138
+    ExplicitWidth = 732
   end
   object CoolBar2: TCoolBar
     Left = 0
