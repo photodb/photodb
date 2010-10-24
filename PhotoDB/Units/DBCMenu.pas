@@ -204,13 +204,16 @@ begin
   end;
   TW.I.Start('Groups');
   GroupsList := TStringList.Create;
-  for i:=0 to FInfo.Count-1 do
-  if FInfo[i].Selected then
-  begin
-    GroupsList.Add(FInfo[i].Groups);
+  try
+    for i:=0 to FInfo.Count-1 do
+    if FInfo[i].Selected then
+      GroupsList.Add(FInfo[i].Groups);
+
+    SetNamedValueArrayStrings(aScript,'$Panels',aPanelTexts);
+    StrGroups:=GetCommonGroups(GroupsList);
+  finally
+    F(GroupsList);
   end;
-  SetNamedValueArrayStrings(aScript,'$Panels',aPanelTexts);
-  StrGroups:=GetCommonGroups(GroupsList);
   MenuGroups:=EnCodeGroups(StrGroups);
   SetLength(aGroupsNames,Length(MenuGroups));
   SetLength(aGroupsCodes,Length(MenuGroups));
@@ -355,8 +358,9 @@ end;
 
 procedure TDBPopupMenu.CopyItemPopUpMenu_(Sender: TObject);
 var
-  I : integer;
-  FileList : TStrings;
+  I: integer;
+  FileList: TStrings;
+  EventInfo: TEventValues;
 begin
   FileList := TStringList.Create;
   try
@@ -366,6 +370,8 @@ begin
           FileList.Add(FInfo[I].FileName);
 
     Copy_Move(True, FileList);
+
+    DBKernel.DoIDEvent(Self, 0, [EventID_Param_CopyPaste], EventInfo);
   finally
     F(FileList);
   end;

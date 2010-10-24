@@ -141,9 +141,9 @@ begin
       AniInfo.iMinAnimate := 1;
       SystemParametersInfo(SPI_SETANIMATION, SizeOf(AniInfo), @AniInfo, 0);
     end;
-  
+
     Result := (GetForegroundWindow = Handle1);
-  end; 
+  end;
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
 end;
@@ -154,38 +154,38 @@ var
   OldTimeOut: Cardinal;
   AResult: Boolean;
 begin
-     Application.Restore;
-     ShowWindow(hWnd,SW_RESTORE);
-     hWnd := Application.Handle;
-     SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @OldTimeOut, 0);
-     SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(0), 0);
-     SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-     hCurWnd := GetForegroundWindow;
-     AResult := False;
-     while not AResult do
-     begin
-        dwThreadID := GetCurrentThreadId;
-        dwCurThreadID := GetWindowThreadProcessId(hCurWnd);
-        AttachThreadInput(dwThreadID, dwCurThreadID, True);
-        AResult := SetForegroundWindow(hWnd);
-        AttachThreadInput(dwThreadID, dwCurThreadID, False);
-     end;
-     SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
-     SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(OldTimeOut), 0);
-     ShowWindow(Application.MainForm.Handle,SW_HIDE);
-     ShowWindow(Application.Handle,SW_HIDE);
+  Application.Restore;
+  ShowWindow(hWnd,SW_RESTORE);
+  hWnd := Application.Handle;
+  SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @OldTimeOut, 0);
+  SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(0), 0);
+  SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+  hCurWnd := GetForegroundWindow;
+  AResult := False;
+  while not AResult do
+  begin
+    dwThreadID := GetCurrentThreadId;
+    dwCurThreadID := GetWindowThreadProcessId(hCurWnd);
+    AttachThreadInput(dwThreadID, dwCurThreadID, True);
+    AResult := SetForegroundWindow(hWnd);
+    AttachThreadInput(dwThreadID, dwCurThreadID, False);
+  end;
+  SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+  SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(OldTimeOut), 0);
+  ShowWindow(Application.MainForm.Handle,SW_HIDE);
+  ShowWindow(Application.Handle,SW_HIDE);
 end;
 
-function Hash_Cos_C(s : string):integer;
+function Hash_Cos_C(S: string): Integer;
 var
-  c , i : integer;
+  C, I: Integer;
 begin
- c:=0;
- {$R-}
- for i:=1 to Length(s) do
- c:=c+Round($ffffffff*cos(i)*Ord(s[i]));
- {$R+}
- Result:=c;
+  C := 0;
+{$R-}
+  for I := 1 to Length(S) do
+    C := C + Round($FFFFFFFF * Cos(I) * Ord(S[I]));
+{$R+}
+  Result := C;
 end;
 
 procedure CheckParams;
@@ -222,76 +222,81 @@ end;
 
 procedure ExecuteScriptFile(FileName : String; UseDBFunctions : boolean = false);
 var
-  aScript : TScript;
-  i : integer;
-  LoadScript : string;
-  aFS : TFileStream;
+  AScript: TScript;
+  I: Integer;
+  LoadScript: string;
+  AFS: TFileStream;
 begin
-  aScript := TScript.Create('');
+  AScript := TScript.Create('');
   try
-    LoadScript:='';
+    LoadScript := '';
     try
-     aFS := TFileStream.Create(FileName,fmOpenRead);
-     SetLength(LoadScript,aFS.Size);
-     aFS.Read(LoadScript[1],aFS.Size);
-     for i:=Length(LoadScript) downto 1 do
-     begin
-      if LoadScript[i]=#10 then LoadScript[i]:=' ';
-      if LoadScript[i]=#13 then LoadScript[i]:=' ';
-     end;
-     //LoadScript:=AddLanguage(LoadScript);
-     LoadScript:=AddIcons(LoadScript);
-     aFS.Free;
+      AFS := TFileStream.Create(FileName, FmOpenRead);
+      SetLength(LoadScript, AFS.Size);
+      AFS.read(LoadScript[1], AFS.Size);
+      for I := Length(LoadScript) downto 1 do
+      begin
+        if LoadScript[I] = #10 then
+          LoadScript[I] := ' ';
+        if LoadScript[I] = #13 then
+          LoadScript[I] := ' ';
+      end;
+      LoadScript := AddIcons(LoadScript);
+      AFS.Free;
     except
     end;
     try
-     ExecuteScript(nil,aScript,LoadScript,i,nil);
+      ExecuteScript(nil, AScript, LoadScript, I, nil);
     except
-      //on e : Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
+      // on e : Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
     end;
   finally
-    aScript.Free;
+    AScript.Free;
   end;
 end;
 
-procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
+procedure ProportionalSizeA(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
 begin
- if (aWidthToSize = 0) or (aHeightToSize = 0) then
- begin
-  aHeightToSize := 0;
-  aWidthToSize  := 0;
- end else begin
-  if (aHeightToSize/aWidthToSize) < (aHeight/aWidth) then
+  if (AWidthToSize = 0) or (AHeightToSize = 0) then
   begin
-   aHeightToSize := Round ( (aWidth/aWidthToSize) * aHeightToSize );
-   aWidthToSize  := aWidth;
-  end else begin
-   aWidthToSize  := Round ( (aHeight/aHeightToSize) * aWidthToSize );
-   aHeightToSize := aHeight;
+    AHeightToSize := 0;
+    AWidthToSize := 0;
+  end else
+  begin
+    if (AHeightToSize / AWidthToSize) < (AHeight / AWidth) then
+    begin
+      AHeightToSize := Round((AWidth / AWidthToSize) * AHeightToSize);
+      AWidthToSize := AWidth;
+    end else
+    begin
+      AWidthToSize := Round((AHeight / AHeightToSize) * AWidthToSize);
+      AHeightToSize := AHeight;
+    end;
   end;
- end;
 end;
 
-procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
+procedure ProportionalSize(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
 begin
- If (aWidthToSize<aWidth) and (aHeightToSize<aHeight) then
- begin
-  Exit;
- end;
- if (aWidthToSize = 0) or (aHeightToSize = 0) then
- begin
-  aHeightToSize := 0;
-  aWidthToSize  := 0;
- end else begin
-  if (aHeightToSize/aWidthToSize) < (aHeight/aWidth) then
+  if (AWidthToSize < AWidth) and (AHeightToSize < AHeight) then
   begin
-   aHeightToSize := Round ( (aWidth/aWidthToSize) * aHeightToSize );
-   aWidthToSize  := aWidth;
-  end else begin
-   aWidthToSize  := Round ( (aHeight/aHeightToSize) * aWidthToSize );
-   aHeightToSize := aHeight;
+    Exit;
   end;
- end;
+  if (AWidthToSize = 0) or (AHeightToSize = 0) then
+  begin
+    AHeightToSize := 0;
+    AWidthToSize := 0;
+  end else
+  begin
+    if (AHeightToSize / AWidthToSize) < (AHeight / AWidth) then
+    begin
+      AHeightToSize := Round((AWidth / AWidthToSize) * AHeightToSize);
+      AWidthToSize := AWidth;
+    end else
+    begin
+      AWidthToSize := Round((AHeight / AHeightToSize) * AWidthToSize);
+      AHeightToSize := AHeight;
+    end;
+  end;
 end;
 
 function ProgramDir : string;

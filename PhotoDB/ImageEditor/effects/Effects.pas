@@ -2157,8 +2157,8 @@ begin
   begin
     DstLine := D.ScanLine[0];
     DstGap  := Integer(D.ScanLine[1]) - Integer(DstLine);
-    Mx := MulDiv(S.Width+1, $10000, D.Width);
-    My := MulDiv(S.Height+1, $10000, D.Height);
+    Mx := MulDiv(S.Width, $10000, D.Width);
+    My := MulDiv(S.Height, $10000, D.Height);
     yP  := 0;
 
     for y := 0 to pred(D.Height) do

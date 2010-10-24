@@ -2,12 +2,13 @@ object FormSizeResizer: TFormSizeResizer
   Left = 366
   Top = 205
   BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsToolWindow
+  BorderStyle = bsSizeToolWin
   Caption = 'Change Image'
-  ClientHeight = 500
-  ClientWidth = 406
+  ClientHeight = 506
+  ClientWidth = 394
   Color = clBtnFace
-  Constraints.MinWidth = 340
+  Constraints.MinHeight = 540
+  Constraints.MinWidth = 410
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -18,25 +19,29 @@ object FormSizeResizer: TFormSizeResizer
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnPaint = FormPaint
+  OnResize = FormResize
   DesignSize = (
-    406
-    500)
+    394
+    506)
   PixelsPerInch = 96
   TextHeight = 13
   object LbInfo: TLabel
     Left = 8
     Top = 8
-    Width = 410
+    Width = 378
     Height = 49
+    Anchors = [akLeft, akTop, akRight]
     AutoSize = False
     Caption = 
       'You can resize you image(s) and convert they in other graphic fo' +
       'rmat, which you can select in combobox follow:'
     WordWrap = True
+    ExplicitWidth = 429
   end
   object BtOk: TButton
-    Left = 323
-    Top = 469
+    Left = 311
+    Top = 475
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -46,8 +51,8 @@ object FormSizeResizer: TFormSizeResizer
     OnClick = BtOkClick
   end
   object BtCancel: TButton
-    Left = 242
-    Top = 469
+    Left = 230
+    Top = 475
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -57,7 +62,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object BtSaveAsDefault: TButton
     Left = 8
-    Top = 469
+    Top = 475
     Width = 153
     Height = 25
     Anchors = [akLeft, akBottom]
@@ -67,8 +72,8 @@ object FormSizeResizer: TFormSizeResizer
   end
   object EdImageName: TEdit
     Left = 8
-    Top = 258
-    Width = 390
+    Top = 264
+    Width = 378
     Height = 21
     Anchors = [akLeft, akRight, akBottom]
     Enabled = False
@@ -77,19 +82,19 @@ object FormSizeResizer: TFormSizeResizer
     Text = 'Image Name'
   end
   object LsMain: TLoadingSign
-    Left = 370
+    Left = 358
     Top = 63
-    Width = 16
-    Height = 16
-    Visible = False
+    Width = 28
+    Height = 28
     Active = True
     FillPercent = 0
     Anchors = [akTop, akRight]
+    SignColor = clHighlight
   end
   object PrbMain: TDmProgress
     Left = 8
-    Top = 234
-    Width = 390
+    Top = 240
+    Width = 378
     Height = 18
     Visible = False
     Anchors = [akLeft, akRight, akBottom]
@@ -108,17 +113,17 @@ object FormSizeResizer: TFormSizeResizer
   end
   object PnOptions: TPanel
     Left = 0
-    Top = 285
-    Width = 406
+    Top = 291
+    Width = 394
     Height = 178
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 6
     DesignSize = (
-      406
+      394
       178)
     object LbSizeSeparator: TLabel
-      Left = 341
+      Left = 329
       Top = 91
       Width = 7
       Height = 13
@@ -151,7 +156,7 @@ object FormSizeResizer: TFormSizeResizer
     object DdConvert: TComboBox
       Left = 128
       Top = 34
-      Width = 158
+      Width = 146
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akRight, akBottom]
@@ -160,7 +165,7 @@ object FormSizeResizer: TFormSizeResizer
       OnChange = DdConvertChange
     end
     object BtJPEGOptions: TButton
-      Left = 292
+      Left = 280
       Top = 33
       Width = 106
       Height = 22
@@ -175,12 +180,13 @@ object FormSizeResizer: TFormSizeResizer
     object DdRotate: TComboBox
       Left = 128
       Top = 61
-      Width = 158
+      Width = 146
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akRight, akBottom]
       Enabled = False
       TabOrder = 4
+      OnChange = DdRotateChange
     end
     object CbRotate: TCheckBox
       Left = 8
@@ -205,7 +211,7 @@ object FormSizeResizer: TFormSizeResizer
     object DdResizeAction: TComboBox
       Left = 128
       Top = 88
-      Width = 158
+      Width = 146
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akRight, akBottom]
@@ -215,7 +221,7 @@ object FormSizeResizer: TFormSizeResizer
       OnChange = DdResizeActionChange
     end
     object EdWidth: TEdit
-      Left = 292
+      Left = 280
       Top = 88
       Width = 41
       Height = 21
@@ -227,7 +233,7 @@ object FormSizeResizer: TFormSizeResizer
       OnKeyPress = EdHeightKeyPress
     end
     object EdHeight: TEdit
-      Left = 357
+      Left = 345
       Top = 88
       Width = 41
       Height = 21
@@ -241,18 +247,19 @@ object FormSizeResizer: TFormSizeResizer
     object CbAspectRatio: TCheckBox
       Left = 128
       Top = 117
-      Width = 270
+      Width = 258
       Height = 17
       Anchors = [akLeft, akRight, akBottom]
       Caption = 'Preserve aspect ratio'
       Checked = True
       State = cbChecked
       TabOrder = 10
+      OnClick = CbAspectRatioClick
     end
     object CbAddSuffix: TCheckBox
       Left = 128
       Top = 135
-      Width = 270
+      Width = 258
       Height = 17
       Anchors = [akLeft, akRight, akBottom]
       Caption = 'Add filename suffix'
@@ -263,7 +270,7 @@ object FormSizeResizer: TFormSizeResizer
     object EdSavePath: TEdit
       Left = 8
       Top = 157
-      Width = 365
+      Width = 353
       Height = 21
       Anchors = [akLeft, akRight, akBottom]
       ReadOnly = True
@@ -271,7 +278,7 @@ object FormSizeResizer: TFormSizeResizer
       Text = 'C:\'
     end
     object BtChangeDirectory: TButton
-      Left = 379
+      Left = 367
       Top = 156
       Width = 19
       Height = 22
@@ -281,7 +288,7 @@ object FormSizeResizer: TFormSizeResizer
       OnClick = BtChangeDirectoryClick
     end
     object BtWatermarkOptions: TButton
-      Left = 128
+      Left = 116
       Top = 7
       Width = 158
       Height = 22
@@ -295,7 +302,13 @@ object FormSizeResizer: TFormSizeResizer
     end
   end
   object ImlWatermarkPatterns: TImageList
-    Left = 8
-    Top = 8
+    Left = 48
+    Top = 192
+  end
+  object TmrPreview: TTimer
+    Interval = 500
+    OnTimer = TmrPreviewTimer
+    Left = 128
+    Top = 192
   end
 end

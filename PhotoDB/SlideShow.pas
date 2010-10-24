@@ -13,7 +13,7 @@ uses
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
-  uListViewUtils;
+  uListViewUtils, uFormListView, uImageSource;
 
 type
   TRotatingImageInfo = record
@@ -23,7 +23,7 @@ type
   end;
 
 type
-  TViewer = class(TThreadForm)
+  TViewer = class(TThreadForm, IImageSource)
     PopupMenu1: TPopupMenu;
     Next1: TMenuItem;
     Previous1: TMenuItem;
@@ -234,7 +234,7 @@ type
     procedure SetDisplayRating(const Value: Integer);
   protected
     { Protected declarations }
-    procedure CreateParams(VAR Params: TCreateParams); override;
+    procedure CreateParams(var Params: TCreateParams); override;
     procedure WndProc(var Message: TMessage); override;
     function GetFormID : string; override;
   public
@@ -251,6 +251,7 @@ type
     WaitGrayScale: Integer;
     WaitImage: TBitmap;
     FSID: TGUID;
+    function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
     procedure ExecuteDirectoryWithFileOnThread(FileName : String);
     function Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
     function ExecuteW(Sender: TObject; Info : TRecordsInfo; LoadBaseFile : String) : boolean;
@@ -317,7 +318,7 @@ const
 implementation
 
 uses UnitUpdateDB, PropertyForm, SlideShowFullScreen,
-  ExplorerUnit, FloatPanelFullScreen, UnitRotateImages, UnitSizeResizerForm,
+  ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread;
@@ -2266,77 +2267,80 @@ end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);
 var
-  ImageList : TArStrings;
-  IDList, RotateList : TArInteger;
+  FileInfo : TDBPopupMenuInfoRecord;
+  Info : TDBPopupMenuInfo;
 begin
- SetLength(ImageList,1);
- SetLength(IDList,1);
- SetLength(RotateList,1);
- ImageList[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
- IDList[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
- RotateList[0]:=CurrentInfo.ItemRotates[CurrentFileNumber];
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_270,true);
+  Info := TDBPopupMenuInfo.Create;
+  try
+    FileInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
+    Info.Add(FileInfo);
 
- LockEventRotateFileList.Add(AnsiLowerCase(ImageList[0]));
- Rotate270A(FbImage);
- if ZoomerOn then
- begin
-  RealSizeClick(Sender);
- end;
- RecreateDrawImage(self);
+    RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
+
+    LockEventRotateFileList.Add(AnsiLowerCase(FileInfo.FileName));
+    Rotate270A(FbImage);
+    if ZoomerOn then
+      RealSizeClick(Sender);
+
+    RecreateDrawImage(Self);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TViewer.RotateCW1Click(Sender: TObject);
 var
-  ImageList : TArStrings;
-  IDList, RotateList : TArInteger;
+  FileInfo: TDBPopupMenuInfoRecord;
+  Info: TDBPopupMenuInfo;
 begin
- SetLength(ImageList,1);
- SetLength(IDList,1);
- SetLength(RotateList,1);
- ImageList[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
- IDList[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
- RotateList[0]:=CurrentInfo.ItemRotates[CurrentFileNumber];
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_90,true);
+  Info := TDBPopupMenuInfo.Create;
+  try
+    FileInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
+    Info.Add(FileInfo);
 
- LockEventRotateFileList.Add(AnsiLowerCase(ImageList[0]));
+    RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
 
- Rotate90A(FbImage);
- if ZoomerOn then
- begin
-  RealSizeClick(Sender);
- end;
- ReAllignScrolls(true,Point(0,0));
- RecreateDrawImage(self);
+    LockEventRotateFileList.Add(AnsiLowerCase(FileInfo.FileName));
+
+    Rotate90A(FbImage);
+    if ZoomerOn then
+      RealSizeClick(Sender);
+
+    ReAllignScrolls(True, Point(0, 0));
+    RecreateDrawImage(Self);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TViewer.Rotateon1801Click(Sender: TObject);
 var
-  ImageList : TArStrings;
-  IDList, RotateList : TArInteger;
+  FileInfo: TDBPopupMenuInfoRecord;
+  Info: TDBPopupMenuInfo;
 begin
- SetLength(ImageList,1);
- SetLength(IDList,1);
- SetLength(RotateList,1);
- ImageList[0]:=CurrentInfo.ItemFileNames[CurrentFileNumber];
- IDList[0]:=CurrentInfo.ItemIds[CurrentFileNumber];
- RotateList[0]:=CurrentInfo.ItemRotates[CurrentFileNumber];
- RotateImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_180,true);
+  Info := TDBPopupMenuInfo.Create;
+  try
+    FileInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
+    Info.Add(FileInfo);
+    RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TViewer.Stretch1Click(Sender: TObject);
 begin
- SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber],WPSTYLE_STRETCH);
+  SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber], WPSTYLE_STRETCH);
 end;
 
 procedure TViewer.Center1Click(Sender: TObject);
 begin
- SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber],WPSTYLE_CENTER);
+  SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber], WPSTYLE_CENTER);
 end;
 
 procedure TViewer.Tile1Click(Sender: TObject);
 begin
- SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber],WPSTYLE_TILE);
+  SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber], WPSTYLE_TILE);
 end;
 
 procedure TViewer.Properties1Click(Sender: TObject);
@@ -2355,7 +2359,7 @@ begin
   try
     ImageInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
     List.Add(ImageInfo);
-    ResizeImages(List);
+    ResizeImages(Self, List);
   finally
     List.Free;
   end;
@@ -2554,6 +2558,16 @@ end;
 procedure TViewer.ImageFrameTimerTimer(Sender: TObject);
 begin
   NextSlide;
+end;
+
+function TViewer.GetImage(FileName: string; Bitmap: TBitmap): Boolean;
+begin
+  Result := False;
+  if AnsiLowerCase(FileName) = AnsiLowerCase(CurrentInfo.ItemFileNames[CurrentFileNumber]) then
+  begin
+    Result := True;
+    Bitmap.Assign(DrawImage);
+  end;
 end;
 
 procedure TViewer.NextSlide;

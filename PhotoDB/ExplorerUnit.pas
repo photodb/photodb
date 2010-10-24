@@ -584,6 +584,7 @@ type
      procedure CreateBackgrounds;
      function GetFormID : string; override;
      function GetListView : TEasyListview; override;
+     function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; override;
    public
      NoLockListView : boolean;
      Procedure LoadLanguage;
@@ -633,9 +634,9 @@ uses Language, UnitUpdateDB, ExplorerThreadUnit, Searching,
      SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
      FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
      uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
-     UnitFileRenamerForm, UnitImageConverter, UnitSizeResizerForm, ImEditor,
-     UnitRotateImages, UnitManageGroups, UnitInternetUpdate, UnitHelp,
-     UnitExportImagesForm, UnitGetPhotosForm, UnitFormCont,
+     UnitFileRenamerForm, UnitSizeResizerForm, ImEditor,
+     UnitManageGroups, UnitInternetUpdate, UnitHelp,
+     UnitGetPhotosForm, UnitFormCont,
      UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
      UnitSavingTableForm, UnitUpdateDBObject, Loadingresults,
      UnitStenoGraphia, UnitBigImagesSize;
@@ -1045,20 +1046,24 @@ begin
   if SelCount> 1 then
     begin
       Info := GetCurrentPopUpMenuInfo(nil);
-      SetLength(ArInt, 0);
-      WindowsProperty := True;
-      for I := 0 to Info.Count - 1 do
-        if Info[I].Selected then
-        begin
-          SetLength(ArInt, Length(ArInt) + 1);
-          ArInt[Length(ArInt) - 1] := Info[I].ID;
-          if Info[I].ID <> 0 then
-            WindowsProperty := False;
-        end;
-      if not WindowsProperty then
-        PropertyManager.NewSimpleProperty.ExecuteEx(ArInt)
-      else
-        ShowWindowsPropertiesDialogToSelected;
+      try
+        SetLength(ArInt, 0);
+        WindowsProperty := True;
+        for I := 0 to Info.Count - 1 do
+          if Info[I].Selected then
+          begin
+            SetLength(ArInt, Length(ArInt) + 1);
+            ArInt[Length(ArInt) - 1] := Info[I].ID;
+            if Info[I].ID <> 0 then
+              WindowsProperty := False;
+          end;
+        if not WindowsProperty then
+          PropertyManager.NewSimpleProperty.ExecuteEx(ArInt)
+        else
+          ShowWindowsPropertiesDialogToSelected;
+      finally
+        F(Info);
+      end;
     end else
     begin
       if not FFilesInfo[PmItemPopup.Tag].Loaded then
@@ -1388,8 +1393,12 @@ begin
       if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
       begin
         Info := GetCurrentPopUpMenuInfo(Item);
-        TDBPopupMenu.Instance.SetInfo(Info);
-        TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
+        try
+          TDBPopupMenu.Instance.SetInfo(Info);
+          TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
+        finally
+          F(Info);
+        end;
       end;
   end;
 end;
@@ -4289,10 +4298,14 @@ begin
   if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
   begin
     MenuInfo := Self.GetCurrentPopUpMenuInfo(ListView1Selected);
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
-    DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
-    Viewer.Execute(Sender, Info);
+    try
+      if Viewer = nil then
+        Application.CreateForm(TViewer, Viewer);
+      DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
+      Viewer.Execute(Sender, Info);
+    finally
+      F(MenuInfo);
+    end;
     Exit;
   end;
 end;
@@ -4426,6 +4439,30 @@ end;
 procedure TExplorerForm.InfoPanel1Click(Sender: TObject);
 begin
   Button1Click(Sender);
+end;
+
+function TExplorerForm.InternalGetImage(FileName: string;
+  Bitmap: TBitmap): Boolean;
+var
+  I, Index : Integer;
+begin
+  Result := False;
+  FileName := AnsiLowerCase(FileName);
+  for I := 0 to ElvMain.Items.Count - 1 do
+  begin
+    if ElvMain.Items[I].ImageIndex <> -1 then
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      if AnsiLowerCase(FFilesInfo[Index].FileName) = FileName then
+      begin
+        if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
+        begin
+          Bitmap.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Graphic);
+          Result := True;
+        end;
+      end;
+    end;
+  end;
 end;
 
 function TExplorerForm.GetThreadsCount: Integer;
@@ -5095,20 +5132,11 @@ end;
 
 procedure TExplorerForm.Resize1Click(Sender: TObject);
 var
-  I, Index: Integer;
   List: TDBPopupMenuInfo;
-  ImageInfo: TDBPopupMenuInfoRecord;
 begin
-  List := TDBPopupMenuInfo.Create;
+  List := GetCurrentPopUpMenuInfo(nil);
   try
-    for I := 0 to ElvMain.Items.Count - 1 do
-      if ElvMain.Items[I].Selected then
-      begin
-        Index := ItemIndexToMenuIndex(I);
-        ImageInfo := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[Index]);
-        List.Add(ImageInfo);
-      end;
-    ResizeImages(List);
+    ResizeImages(Self, List);
   finally
     List.Free;
   end;
@@ -5116,20 +5144,14 @@ end;
 
 procedure TExplorerForm.Convert1Click(Sender: TObject);
 var
-  I, index : integer;
-  ImageList : TArStrings;
-  IDList: TArInteger;
+  List: TDBPopupMenuInfo;
 begin
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      SetLength(ImageList, Length(ImageList) + 1);
-      ImageList[Length(ImageList) - 1] := ProcessPath(FFilesInfo[index].FileName);
-      SetLength(IDList, Length(IDList) + 1);
-      IDList[Length(IDList) - 1] := FFilesInfo[index].ID;
-    end;
-  ConvertImages(ImageList, IDList);
+  List := GetCurrentPopUpMenuInfo(nil);
+  try
+    ConvertImages(Self, List);
+  finally
+    List.Free;
+  end;
 end;
 
 procedure TExplorerForm.Stretch1Click(Sender: TObject);
@@ -5158,62 +5180,38 @@ end;
 
 procedure TExplorerForm.RotateCCW1Click(Sender: TObject);
 var
-  I, index: Integer;
-  ImageList: TArStrings;
-  IDList, RotateList: TArInteger;
+  Info : TDBPopupMenuInfo;
 begin
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      SetLength(ImageList, Length(ImageList) + 1);
-      ImageList[Length(ImageList) - 1] := ProcessPath(FFilesInfo[index].FileName);
-      SetLength(IDList, Length(IDList) + 1);
-      IDList[Length(IDList) - 1] := FFilesInfo[index].ID;
-      SetLength(RotateList, Length(RotateList) + 1);
-      RotateList[Length(RotateList) - 1] := FFilesInfo[index].Rotate;
-    end;
-  RotateImages(ImageList, IDList, RotateList, DB_IMAGE_ROTATE_270);
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.RotateCW1Click(Sender: TObject);
 var
-  I, index: Integer;
-  ImageList: TArStrings;
-  IDList, RotateList: TArInteger;
+  Info : TDBPopupMenuInfo;
 begin
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      SetLength(ImageList, Length(ImageList) + 1);
-      ImageList[Length(ImageList) - 1] := ProcessPath(FFilesInfo[index].FileName);
-      SetLength(IDList, Length(IDList) + 1);
-      IDList[Length(IDList) - 1] := FFilesInfo[index].ID;
-      SetLength(RotateList, Length(RotateList) + 1);
-      RotateList[Length(RotateList) - 1] := FFilesInfo[index].Rotate;
-    end;
-  RotateImages(ImageList, IDList, RotateList, DB_IMAGE_ROTATE_90);
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.Rotateon1801Click(Sender: TObject);
 var
-  I, index: Integer;
-  ImageList: TArStrings;
-  IDList, RotateList: TArInteger;
+  Info : TDBPopupMenuInfo;
 begin
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      SetLength(ImageList, Length(ImageList) + 1);
-      ImageList[Length(ImageList) - 1] := ProcessPath(FFilesInfo[index].FileName);
-      SetLength(IDList, Length(IDList) + 1);
-      IDList[Length(IDList) - 1] := FFilesInfo[index].ID;
-      SetLength(RotateList, Length(RotateList) + 1);
-      RotateList[Length(RotateList) - 1] := FFilesInfo[index].Rotate;
-    end;
-  RotateImages(ImageList, IDList, RotateList, DB_IMAGE_ROTATE_180);
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.RefreshID1Click(Sender: TObject);
@@ -5567,22 +5565,14 @@ end;
 
 procedure TExplorerForm.ExportImages1Click(Sender: TObject);
 var
-  I, Index : integer;
-  ImageList : TArStrings;
-  IDList, RotateList: TArInteger;
+  Info : TDBPopupMenuInfo;
 begin
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      SetLength(ImageList, Length(ImageList) + 1);
-      ImageList[Length(ImageList) - 1] := ProcessPath(FFilesInfo[index].FileName);
-      SetLength(IDList, Length(IDList) + 1);
-      IDList[Length(IDList) - 1] := FFilesInfo[index].ID;
-      SetLength(RotateList, Length(RotateList) + 1);
-      RotateList[Length(RotateList) - 1] := FFilesInfo[index].Rotate;
-    end;
-  ExportImages(ImageList, IDList, RotateList, DB_IMAGE_ROTATE_90);
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    ExportImages(Self, Info);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.PrintLinkClick(Sender: TObject);
@@ -7140,12 +7130,16 @@ begin
       if fFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
       begin
         MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
-        If Viewer = nil then
-          Application.CreateForm(TViewer, Viewer);
-        DBPopupMenuInfoToRecordsInfo(MenuInfo, info);
-        Viewer.Execute(Sender, info);
-        Viewer.Show;
-        RestoreSelected;
+        try
+          If Viewer = nil then
+            Application.CreateForm(TViewer, Viewer);
+          DBPopupMenuInfoToRecordsInfo(MenuInfo, info);
+          Viewer.Execute(Sender, info);
+          Viewer.Show;
+          RestoreSelected;
+        finally
+          F(MenuInfo);
+        end;
         Exit;
       end;
       if fFilesInfo[Index].FileType = EXPLORER_ITEM_FILE then
@@ -7873,6 +7867,7 @@ destructor TExplorerForm.Destroy;
 begin
   F(FHistory);
   F(FFilesInfo);
+  F(RefreshIDList);
   inherited;
 end;
 

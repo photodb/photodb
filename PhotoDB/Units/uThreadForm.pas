@@ -2,7 +2,8 @@ unit uThreadForm;
 
 interface
 
-uses Classes, Forms, SyncObjs, Dolphin_DB, uDBForm;
+uses Classes, Forms, SyncObjs, Dolphin_DB, uDBForm, uImageSource,
+Graphics;
 
 type
   TThreadForm = class(TDBForm)
@@ -23,6 +24,7 @@ type
     destructor Destroy; override;
     property StateID : TGUID read FStateID;
     property SubStateID : TGUID read FSubStateID;
+    function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
   end;
 
 implementation
@@ -42,6 +44,11 @@ begin
   FThreadList.Free;
   FSync.Free;
   inherited;
+end;
+
+function TThreadForm.GetImage(FileName: string; Bitmap: TBitmap): Boolean;
+begin
+  result := false;
 end;
 
 function TThreadForm.IsActualState(State: TGUID): Boolean;

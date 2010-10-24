@@ -353,6 +353,12 @@ type
     IsItalic : Boolean;
   end;
 
+  TPreviewOptions = record
+    GeneratePreview : Boolean;
+    PreviewWidth : Integer;
+    PreviewHeight : Integer;
+  end;
+
   TProcessingParams = record
     Rotation: Integer;
     ResizeToSize: Boolean;
@@ -367,6 +373,7 @@ type
     WorkDirectory : string;
     AddWatermark : Boolean;
     WatermarkOptions : TWatermarkOptions;
+    PreviewOptions : TPreviewOptions;
   end;
 
 const

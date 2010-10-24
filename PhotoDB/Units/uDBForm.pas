@@ -3,7 +3,7 @@ unit uDBForm;
 interface
 
 uses
-  Forms, Classes, uTranslate, dolphin_db;
+  Forms, Classes, uTranslate, Dolphin_db, Graphics, uImageSource;
 
 type
   TDBForm = class(TForm)
@@ -57,3 +57,4 @@ begin
 end;
 
 end.
+

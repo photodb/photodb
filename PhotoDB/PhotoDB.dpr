@@ -72,9 +72,7 @@ uses
   UnitCryptImageForm in 'UnitCryptImageForm.pas' {CryptImageForm},
   UnitFileRenamerForm in 'UnitFileRenamerForm.pas' {FormFastFileRenamer},
   UnitSizeResizerForm in 'UnitSizeResizerForm.pas' {FormSizeResizer},
-  UnitImageConverter in 'UnitImageConverter.pas' {FormConvertImages},
   UnitJPEGOptions in 'UnitJPEGOptions.pas' {FormJpegOptions},
-  UnitRotateImages in 'UnitRotateImages.pas' {FormRotateImages},
   DX_Alpha in 'Units\dx\DX_Alpha.pas' {DirectShowForm},
   UnitFormInternetUpdating in 'UnitFormInternetUpdating.pas' {FormInternetUpdating},
   UnitHelp in 'UnitHelp.pas' {HelpPopup},
@@ -82,7 +80,6 @@ uses
   ImEditor in 'ImageEditor\ImEditor.pas' {ImageEditor},
   ExEffectFormUnit in 'ImageEditor\ExEffectFormUnit.pas' {ExEffectForm},
   UnitEditorFullScreenForm in 'UnitEditorFullScreenForm.pas' {EditorFullScreenForm},
-  UnitExportImagesForm in 'UnitExportImagesForm.pas' {ExportImagesForm},
   UnitChangeDBPath in 'UnitChangeDBPath.pas' {FormChangeDBPath},
   UnitSelectDB in 'UnitSelectDB.pas' {FormSelectDB},
   UnitDBOptions in 'UnitDBOptions.pas' {FormDBOptions},
@@ -134,13 +131,11 @@ uses
   UnitOpenQueryThread in 'Threads\UnitOpenQueryThread.pas',
   UnitOptimizeDublicatesThread in 'Threads\UnitOptimizeDublicatesThread.pas',
   ConvertDBThreadUnit in 'Threads\ConvertDBThreadUnit.pas',
-  UnitConvertImagesThread in 'Threads\UnitConvertImagesThread.pas',
   UnitPropertyLoadImageThread in 'Threads\UnitPropertyLoadImageThread.pas',
   UnitPropertyLoadGistogrammThread in 'Threads\UnitPropertyLoadGistogrammThread.pas',
   UnitScanImportPhotosThread in 'Threads\UnitScanImportPhotosThread.pas',
   UnitRefreshDBRecordsThread in 'Threads\UnitRefreshDBRecordsThread.pas',
   UnitCryptingImagesThread in 'Threads\UnitCryptingImagesThread.pas',
-  UnitRotatingImagesThread in 'Threads\UnitRotatingImagesThread.pas',
   UnitPanelLoadingBigImagesThread in 'Threads\UnitPanelLoadingBigImagesThread.pas',
   UnitFileExistsThread in 'Threads\UnitFileExistsThread.pas',
   UnitSlideShowUpdateInfoThread in 'Threads\UnitSlideShowUpdateInfoThread.pas',
@@ -299,7 +294,8 @@ uses
   uFormListView in 'Units\uFormListView.pas',
   uDBThread in 'Threads\uDBThread.pas',
   uGraphicUtils in 'Units\uGraphicUtils.pas',
-  UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas';
+  UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas',
+  uImageSource in 'Units\uImageSource.pas';
 
 {$R *.res}
 
@@ -456,7 +452,7 @@ begin
           <> 'SETUP.EXE') and not EmulationInstall then
       begin
         if ID_YES = MessageBoxDB(GetActiveFormHandle,
-          L('Program is not corrected installed!', 'System'), TA('Error'), TD_BUTTON_YESNO,
+          TA('Program is not corrected installed!', 'System'), TA('Error'), TD_BUTTON_YESNO,
           TD_ICON_ERROR) then
         begin
           EventLog('Loading Kernel.dll');
@@ -471,7 +467,7 @@ begin
           end;
           DBKernel := TDBKernel.Create;
           Application.CreateForm(TInstallForm, InstallForm);
-          Application.Restore;
+  Application.Restore;
           EventLog(':InstallForm.SetQuickSelfInstallOption()');
           InstallForm.SetQuickSelfInstallOption;
           InstallForm.ShowModal;

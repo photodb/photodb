@@ -17,6 +17,7 @@ type
     FSyncSuccessful : Boolean;
     function GetIsTerminated: Boolean;
     procedure SetTerminated(const Value: Boolean);
+    procedure TestMethod;
   protected
     function SynchronizeEx(Method: TThreadMethod) : Boolean;
     procedure CallMethod;
@@ -25,7 +26,8 @@ type
     function IsVirtualTerminate : Boolean; virtual;
     procedure WaitForSubThreads;
     procedure CheckThreadPriority; virtual;
-  public      
+    function CheckThread : Boolean;
+  public
     FEvent : THandle;
     constructor Create(AOwnerForm : TThreadForm; AState : TGUID);
     destructor Destroy; override;
@@ -66,6 +68,11 @@ begin
 
     CheckThreadPriority;
   end;
+end;
+
+function TThreadEx.CheckThread : Boolean;
+begin
+  Result := SynchronizeEx(TestMethod);
 end;
 
 procedure TThreadEx.CheckThreadPriority;
@@ -153,6 +160,11 @@ begin
     Synchronize(CallMethod);
     Result := FSyncSuccessful;
   end;
+end;
+
+procedure TThreadEx.TestMethod;
+begin
+  //do nothing
 end;
 
 procedure TThreadEx.UnRegisterSubThread(SubThread: TThreadEx);

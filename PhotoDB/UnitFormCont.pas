@@ -47,7 +47,7 @@ type
     DragImageList: TImageList;
     DropFileTarget2: TDropFileTarget;
     Label2: TLabel;
-    WebLink2: TWebLink;
+    WlConvert: TWebLink;
     GroupBox1: TGroupBox;
     Label1: TLabel;
     Image1: TImage;
@@ -70,7 +70,7 @@ type
     TbZoomIn: TToolButton;
     TbZoomOut: TToolButton;
     BigImagesTimer: TTimer;
-    WebLink1: TWebLink;
+    WlResize: TWebLink;
     RedrawTimer: TTimer;
     TbStop: TToolButton;
     ToolButton11: TToolButton;
@@ -116,8 +116,8 @@ type
       var Handled: Boolean);
     procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
-    procedure WebLink1Click(Sender: TObject);
-    procedure WebLink2Click(Sender: TObject);
+    procedure WlResizeClick(Sender: TObject);
+    procedure WlConvertClick(Sender: TObject);
     procedure ExportLinkClick(Sender: TObject);
     procedure ExCopyLinkClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
@@ -174,6 +174,7 @@ type
     { Protected declarations }
     function GetFormID : string; override;
     function GetListView : TEasyListview; override;
+    function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; override;
   public
     { Public declarations }
     WindowID: TGUID;
@@ -223,8 +224,7 @@ var
 implementation
 
 uses Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
-     SlideShow, ExplorerUnit, UnitSizeResizerForm, UnitImageConverter,
-     UnitRotateImages, UnitExportImagesForm, CommonDBSupport,
+     SlideShow, ExplorerUnit, UnitSizeResizerForm, CommonDBSupport,
      UnitStringPromtForm, Loadingresults, UnitBigImagesSize;
 
 {$R *.dfm}
@@ -368,8 +368,8 @@ begin
 
   Label2.Caption := L('Actions') + ':';
   Rename1.Caption := L('Rename');
-  WebLink1.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
-  WebLink2.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
+  WlResize.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
+  WlConvert.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
   ExportLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EXPORT_IMAGES + 1]);
   ExCopyLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COPY + 1]);
 
@@ -382,8 +382,8 @@ begin
   N04.ImageIndex := DB_IC_RATING_4;
   N05.ImageIndex := DB_IC_RATING_5;
 
-  WebLink2.Top := WebLink1.Top + WebLink1.Height + 5;
-  ExportLink.Top := WebLink2.Top + WebLink2.Height + 5;
+  WlConvert.Top := WlResize.Top + WlResize.Height + 5;
+  ExportLink.Top := WlConvert.Top + WlConvert.Height + 5;
   ExCopyLink.Top := ExportLink.Top + ExportLink.Height + 5;
 
   DBKernel.RegisterForm(Self);
@@ -677,8 +677,8 @@ begin
 
  if Selected=false then
  begin
-  WebLink1.Visible:=false;
-  WebLink2.Visible:=false;
+  WlResize.Visible:=false;
+  WlConvert.Visible:=false;
   ExportLink.Visible:=false;
   ExCopyLink.Visible:=false;
   Panel3.Visible:=false;
@@ -703,8 +703,8 @@ begin
   LabelName.Caption:=ExtractFileName(Data[Item.Index].FileName);// else
   LabelID.Caption:=Format(L('ID = %d'),[Data[Item.Index].ID]);
   Panel3.Visible:=true;
-  WebLink1.Visible:=true;
-  WebLink2.Visible:=true;
+  WlResize.Visible:=true;
+  WlConvert.Visible:=true;
   ExportLink.Visible:=true;
   ExCopyLink.Visible:=true;
   TbResize.Enabled:=true;
@@ -1120,8 +1120,8 @@ begin
     SaveToFile1.Caption := L('Save to file');
     Clear1.Caption := L('Clear');
     Close1.Caption := L('Close');
-    WebLink1.Text := L('Resize');
-    WebLink2.Text := L('Convert');
+    WlResize.Text := L('Resize');
+    WlConvert.Text := L('Convert');
     ExportLink.Text := L('Export');
     ExCopyLink.Text := L('Copy');
     GroupBox1.Caption := L('Photo');
@@ -1556,57 +1556,40 @@ begin
  LoadFilesToPanel.Create(param,ids,b,false,false,self);
 end;
 
-procedure TFormCont.WebLink1Click(Sender: TObject);
+procedure TFormCont.WlResizeClick(Sender: TObject);
 var
-  I: Integer;
-  List: TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
 begin
-  List := TDBPopupMenuInfo.Create;
+  Info := GetCurrentPopUpMenuInfo(nil);
   try
-    for I := 0 to ElvMain.Items.Count - 1 do
-      if ElvMain.Items[I].Selected then
-        List.Add(Data[I].COpy);
-
-    ResizeImages(List);
+    ResizeImages(Self, Info);
   finally
-    List.Free;
+    F(Info);
   end;
 end;
 
-procedure TFormCont.WebLink2Click(Sender: TObject);
+procedure TFormCont.WlConvertClick(Sender: TObject);
 var
-  i : integer;
-  ImageList : TArStrings;
-  IDList : TArInteger;
+  Info: TDBPopupMenuInfo;
 begin
- for i:=0 to ElvMain.Items.Count-1 do
- If ElvMain.Items[i].Selected then
- begin
-  SetLength(ImageList,Length(ImageList)+1);
-  ImageList[Length(ImageList)-1]:=ProcessPath(Data[i].FileName);
-  SetLength(IDList,Length(IDList)+1);
-  IDList[Length(IDList)-1]:=Data[i].ID;
- end;
- ConvertImages(ImageList,IDList);
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    ConvertImages(Self, Info);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TFormCont.ExportLinkClick(Sender: TObject);
 var
-  i : integer;
-  ImageList : TArStrings;
-  IDList, RotateList : TArInteger;
+  Info: TDBPopupMenuInfo;
 begin
- for i:=0 to ElvMain.Items.Count-1 do
- If ElvMain.Items[i].Selected then
- begin
-  SetLength(ImageList,Length(ImageList)+1);
-  ImageList[Length(ImageList)-1]:=ProcessPath(Data[i].FileName);
-  SetLength(IDList,Length(IDList)+1);
-  IDList[Length(IDList)-1]:=Data[i].ID;
-  SetLength(RotateList,Length(RotateList)+1);
-  RotateList[Length(RotateList)-1]:=Data[i].Rotation;
- end;
- ExportImages(ImageList,IDList,RotateList,DB_IMAGE_ROTATE_90);
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    ExportImages(Self, Info);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TFormCont.ExCopyLinkClick(Sender: TObject);
@@ -1877,6 +1860,26 @@ begin
     TPanelLoadingBigImagesThread.Create(Self, BigImagesSID, nil, FPictureSize, FData);
   finally
     FData.Free;
+  end;
+end;
+
+function TFormCont.InternalGetImage(FileName: string; Bitmap: TBitmap): Boolean;
+var
+  I: Integer;
+begin
+  FileName := AnsiLowerCase(FileName);
+  Result := False;
+  for I := 0 to Data.Count - 1 do
+  begin
+    if AnsiLowerCase(Data[I].FileName) = FileName then
+    begin
+      if FBitmapImageList[I].IsBitmap then
+      begin
+        Bitmap.Assign(FBitmapImageList[I].Graphic);
+        Result := True;
+      end;
+      Break;
+    end;
   end;
 end;
 

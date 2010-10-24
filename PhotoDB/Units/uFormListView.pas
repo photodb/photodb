@@ -3,15 +3,18 @@ unit uFormListView;
 interface
 
 uses
-  Windows, Classes, Controls, EasyListview, uThreadForm,
-  uDBDrawing, uListViewUtils;
+  Windows, Graphics, Classes, Controls, EasyListview, uThreadForm,
+  uDBDrawing, uListViewUtils, uImageSource;
 
 type
-  TListViewForm = class(TThreadForm)
+  TListViewForm = class(TThreadForm, IImageSource)
   protected
-    function GetListView : TEasyListview; virtual; abstract;
+    function GetListView : TEasyListview; virtual;
     function IsSelectedVisible : Boolean;
     procedure CreateParams(var Params: TCreateParams); override;
+    { IImageSource }
+    function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
+    function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; virtual;
   public
     function GetFilePreviw(FileName : string; Bitmap : TBitmap) : Boolean; virtual;
   end;
@@ -22,6 +25,21 @@ implementation
 
 function TListViewForm.GetFilePreviw(FileName: string;
   Bitmap: TBitmap): Boolean;
+begin
+  GetImage(FileName, Bitmap);
+end;
+
+function TListViewForm.GetListView: TEasyListview;
+begin
+  Result := nil;
+end;
+
+function TListViewForm.GetImage(FileName: string; Bitmap: TBitmap): Boolean;
+begin
+  Result := InternalGetImage(FileName, Bitmap);
+end;
+
+function TListViewForm.InternalGetImage(FileName: string; Bitmap: TBitmap): Boolean;
 begin
   Result := False;
 end;

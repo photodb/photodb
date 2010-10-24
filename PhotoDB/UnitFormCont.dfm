@@ -41,14 +41,14 @@ object FormCont: TFormCont
         Height = 13
         Caption = 'Edit:'
       end
-      object WebLink2: TWebLink
+      object WlConvert: TWebLink
         Left = 9
         Top = 181
         Width = 45
         Height = 16
         Cursor = crHandPoint
         Text = 'Type'
-        OnClick = WebLink2Click
+        OnClick = WlConvertClick
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -139,14 +139,14 @@ object FormCont: TFormCont
         ImageCanRegenerate = True
         UseSpecIconSize = True
       end
-      object WebLink1: TWebLink
+      object WlResize: TWebLink
         Left = 8
         Top = 160
         Width = 41
         Height = 16
         Cursor = crHandPoint
         Text = 'Size'
-        OnClick = WebLink1Click
+        OnClick = WlResizeClick
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -293,7 +293,7 @@ object FormCont: TFormCont
         AutoSize = True
         Caption = 'Resize'
         ImageIndex = 0
-        OnClick = WebLink1Click
+        OnClick = WlResizeClick
       end
       object TbConvert: TToolButton
         Left = 63
@@ -301,7 +301,7 @@ object FormCont: TFormCont
         AutoSize = True
         Caption = 'Convert'
         ImageIndex = 1
-        OnClick = WebLink2Click
+        OnClick = WlConvertClick
       end
       object TbExport: TToolButton
         Left = 131

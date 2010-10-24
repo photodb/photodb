@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB, UnitRotatingImagesThread,
+  UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB,
   UnitDBDeclare, uGOM;
 
 type

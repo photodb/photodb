@@ -6,25 +6,27 @@ uses
   Windows, Classes, Graphics, Forms, SysUtils, Dolphin_db, GraphicCrypt,
   ImageConverting, Exif, uLogger, GraphicEx, UnitDBCommon, uMemory, uFileUtils,
   PngImage, uGOM, uDBForm, Dialogs, UnitDBDeclare, JPEG, UnitJPEGOptions,
-  UnitDBCommonGraphics, GDIPlusRotate;
+  UnitDBCommonGraphics, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
+  uThreadForm, uTranslate;
 
 type
-  TImageConvertThread = class(TThread)
+  TImageConvertThread = class(TThreadEx)
   private
     { Private declarations }
-    FOwner : TForm;
     FData: TDBPopupMenuInfoRecord;
     FProcessingParams : TProcessingParams;
     FDialogResult : Integer;
     FEndProcessing : Boolean;
     FErrorMessage : string;
+    BitmapParam : TBitmap;
     procedure ShowWriteError;
     procedure OnEnd;
     procedure NotifyDB;
+    procedure UpdatePreview;
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TForm; AData : TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
+    constructor Create(AOwnerForm: TThreadForm; AState : TGUID; AData : TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
   end;
 
 implementation
@@ -33,10 +35,9 @@ uses UnitSizeResizerForm;
 
 { TImageConvertThread }
 
-constructor TImageConvertThread.Create(AOwner : TForm; AData: TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
+constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState : TGUID; AData: TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
 begin
-  inherited Create(False);
-  FOwner := AOwner;
+  inherited Create(AOwnerForm, AState);
   FData := AData;
   FProcessingParams := AProcessingParams;
 end;
@@ -72,10 +73,15 @@ var
 
 const
   MODE_GDI_PLUS_CRYPT = 0;
-  MODE_GDI_PLUS      = 1;
-  MODE_CUSTOM        = 2;
+  MODE_GDI_PLUS       = 1;
+  MODE_CUSTOM         = 2;
+  MODE_PREVIEW        = 3;
 
   procedure SaveFile(Mode : Integer);
+  var
+    Bitmap,
+    TmpImage : TBitmap;
+    W, H : Integer;
   begin
 
     repeat
@@ -113,6 +119,31 @@ const
               if Password <> '' then
                 CryptGraphicFileV2(FileName, Password, CRYPT_OPTIONS_SAVE_CRC);
             end;
+
+          MODE_PREVIEW:
+            begin
+              Bitmap := TBitmap.Create;
+              try
+                if NewGraphic is PngImage.TPngGraphic then
+                  PngImage.TPngGraphic(NewGraphic).Image.CopyToBmp(Bitmap)
+                else
+                  Bitmap.Assign(NewGraphic);
+                BitmapParam := TBitmap.Create;
+                try
+                  W := Bitmap.Width;
+                  H := Bitmap.Height;
+                  ProportionalSize(FProcessingParams.PreviewOptions.PreviewWidth,
+                    FProcessingParams.PreviewOptions.PreviewHeight, W, H);
+                  DoResize(W, H, Bitmap, BitmapParam);
+                    if SynchronizeEx(UpdatePreview) then
+                      BitmapParam := nil;
+                finally
+                  F(BitmapParam);
+                end;
+              finally
+                F(Bitmap);
+              end;
+            end;
         end;
 
         if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) then
@@ -122,7 +153,7 @@ const
         on e : Exception do
         begin
 
-          if not GOM.IsObj(FOwner) then
+          if not GOM.IsObj(ThreadForm) then
              Exit;
 
           FErrorMessage := e.Message;
@@ -178,6 +209,7 @@ begin
       and DBKernel.Readbool('Options', 'UseGDIPlus', GDIPlusPresent)
       and not FProcessingParams.ResizeToSize
       and not FProcessingParams.AddWatermark
+      and not FProcessingParams.PreviewOptions.GeneratePreview
       and (NewGraphicClass = GraphicClass)
       and (GraphicClass = TJPEGImage) then
     begin
@@ -229,6 +261,9 @@ begin
       end else
         Graphic.LoadFromFile(FData.FileName);
 
+      if not CheckThread then
+        Exit;
+
       Original := TBitmap.Create;
       try
         Original.Assign(Graphic);
@@ -259,6 +294,9 @@ begin
           Stretch(Width, Height, sfLanczos3, 0, Original);
         end;
 
+        if not CheckThread then
+          Exit;
+
         //apply rotation to image - quick process
         if FProcessingParams.Rotate then
         begin
@@ -268,6 +306,9 @@ begin
             ApplyRotate(Original, FProcessingParams.Rotation);
         end;
 
+        if not CheckThread then
+          Exit;
+
         //add watermark
         if FProcessingParams.AddWatermark then
           DrawWatermark(Original, FProcessingParams.WatermarkOptions.BlockCountX,
@@ -275,6 +316,9 @@ begin
             FProcessingParams.WatermarkOptions.Text, -1,
             FProcessingParams.WatermarkOptions.Color,
             FProcessingParams.WatermarkOptions.Transparenty);
+
+        if not CheckThread then
+          Exit;
 
         //save
         NewGraphic := NewGraphicClass.Create;
@@ -284,7 +328,10 @@ begin
 
           SetJPEGGraphicSaveOptions(ConvertImageID, NewGraphic);
 
-          SaveFile(MODE_CUSTOM);
+          if FProcessingParams.PreviewOptions.GeneratePreview then
+            SaveFile(MODE_PREVIEW)
+          else
+            SaveFile(MODE_CUSTOM);
 
         finally
           F(NewGraphic);
@@ -297,7 +344,9 @@ begin
       F(Graphic);
     end;
   finally
-    Synchronize(OnEnd);
+    ProcessedFilesCollection.RemoveFile(FData.FileName);
+    if not FProcessingParams.PreviewOptions.GeneratePreview then
+      SynchronizeEx(OnEnd);
     F(FData);
   end;
 end;
@@ -314,17 +363,17 @@ end;
 
 procedure TImageConvertThread.OnEnd;
 begin
-  if not GOM.IsObj(FOwner) then
-     Exit;
-  TFormSizeResizer(FOwner).ThreadEnd(FData, FEndProcessing);
+  TFormSizeResizer(ThreadForm).ThreadEnd(FData, FEndProcessing);
 end;
 
 procedure TImageConvertThread.ShowWriteError;
 begin
-  if not GOM.IsObj(FOwner) then
-    Exit;
+  FDialogResult := Application.MessageBox(PWideChar(Format(TA('Error writing data on disk: %s.'), [FErrorMessage])), PWideChar(PWideChar(TA('Error'))), MB_ICONERROR or MB_ABORTRETRYIGNORE);
+end;
 
-  FDialogResult := Application.MessageBox(PWideChar(Format(TDBForm(FOwner).L('Error writing data on disk: %s.'), [FErrorMessage])), PWideChar(PWideChar(TDBForm(FOwner).L('Error'))), MB_ICONERROR or MB_ABORTRETRYIGNORE);
+procedure TImageConvertThread.UpdatePreview;
+begin
+  TFormSizeResizer(ThreadForm).UpdatePreview(BitmapParam);
 end;
 
 end.

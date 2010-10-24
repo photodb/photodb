@@ -467,6 +467,7 @@ type
     procedure ClearItems;
     function GetListView : TEasyListview; override;
     function GetFormID : string; override;
+    function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; override;
   public
     WindowID : TGUID;
     procedure LoadGroupsList(LoadAllLIst : boolean = false);
@@ -3080,27 +3081,28 @@ end;
 
 procedure TSearchForm.HidePanelTimerTimer(Sender: TObject);
 begin
- if (ListViewSelected=nil) or (GetSelectionCount=0) then
- begin
-  HidePanelTimer.Enabled:=false;
-  PropertyPanel.Hide;
- end;
+  if (ListViewSelected = nil) or (GetSelectionCount = 0) then
+  begin
+    HidePanelTimer.Enabled := False;
+    PropertyPanel.Hide;
+  end;
 end;
 
 procedure TSearchForm.PanelValueIsTimeSetsDblClick(Sender: TObject);
 begin
- If FUpdatingDB then Exit;
- PanelValueIsTimeSets.Visible:=false;
- Memo1Change(Sender);
+  if FUpdatingDB then
+    Exit;
+  PanelValueIsTimeSets.Visible := False;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.PopupMenu11Popup(Sender: TObject);
 begin
- TimeNotExists1.Visible:=not IsTimePanel.Visible;
- TimeExists1.Visible:=IsTimePanel.Visible;
- TimeExists1.Visible:=TimeExists1.Visible and not FUpdatingDB;
- Timenotsets1.Visible:=Timenotsets1.Visible and not FUpdatingDB;
- Timenotsets1.Visible:=Timenotsets1.Visible and (GetSelectionCount>1) and not FUpdatingDB;
+  TimeNotExists1.Visible := not IsTimePanel.Visible;
+  TimeExists1.Visible := IsTimePanel.Visible;
+  TimeExists1.Visible := TimeExists1.Visible and not FUpdatingDB;
+  Timenotsets1.Visible := Timenotsets1.Visible and not FUpdatingDB;
+  Timenotsets1.Visible := Timenotsets1.Visible and (GetSelectionCount > 1) and not FUpdatingDB;
 end;
 
 procedure TSearchForm.Timenotexists1Click(Sender: TObject);
@@ -3685,6 +3687,30 @@ end;
 procedure TSearchForm.LoadSizes;
 begin
   SetLVThumbnailSize(ElvMain, FPictureSize);
+end;
+
+function TSearchForm.InternalGetImage(FileName: string;
+  Bitmap: TBitmap): Boolean;
+var
+  I : Integer;
+  SearchRecord : TDBPopupMenuInfoRecord;
+begin
+  Result := False;
+  FileName := AnsiLowerCase(FileName);
+  for I := 0 to ElvMain.Items.Count - 1 do
+  begin
+    SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
+    if AnsiLowerCase(SearchRecord.FileName) = FileName then
+    begin
+      if ElvMain.Items[I].ImageIndex <> -1 then
+        if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
+        begin
+          Bitmap.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Graphic);
+          Result := True;
+        end;
+      Break;
+    end;
+  end;
 end;
 
 function TSearchForm.FileNameExistsInList(FileName : string) : Boolean;

@@ -2991,8 +2991,6 @@ object ExplorerForm: TExplorerForm
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 3
-    ExplicitLeft = 138
-    ExplicitWidth = 732
   end
   object CoolBar2: TCoolBar
     Left = 0
