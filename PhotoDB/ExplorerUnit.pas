@@ -18,7 +18,7 @@ uses
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, uMemory;
+  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, uMemory, LoadingSign;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -184,7 +184,6 @@ type
     BigIconsImageList: TImageList;
     SmallIconsImageList: TImageList;
     MakeFolderViewer2: TMenuItem;
-    WaitingPanel: TPanel;
     BigImagesTimer: TTimer;
     Nosorting1: TMenuItem;
     N21: TMenuItem;
@@ -215,6 +214,7 @@ type
     ToolButton20: TToolButton;
     PopupMenuZoomDropDown: TPopupMenu;
     MapCD1: TMenuItem;
+    LsMain: TLoadingSign;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -497,6 +497,8 @@ type
     procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure ClearList;
+    procedure ShowLoadingSign;
+    procedure HideLoadingSign;
    private
      FBitmapImageList : TBitmapImageList;
      FWindowID : TGUID;
@@ -505,7 +507,6 @@ type
      TempFolderName : String;
      ComboPath : string;
      FormLoadEnd : boolean;
-
      FPictureSize : integer;
      ListView : integer;
      ElvMain : TEasyListView;
@@ -573,6 +574,7 @@ type
      procedure SendToItemPopUpMenu_(Sender : TObject);
 //     procedure CorrectPath(Src : TStrings; Dest : string);
      procedure LoadIcons;
+    function GetMyComputer: string;
     { Private declarations }
    protected
      procedure ComboWNDProc(var Message: TMessage);
@@ -593,6 +595,7 @@ type
      constructor Create(AOwner : TComponent; GoToLastSavedPath : Boolean); reintroduce; overload;
      destructor Destroy; override;
      property WindowID : TGUID read FWindowID;
+     property MyComputer : string read GetMyComputer;
    end;
 
   TManagerExplorer = class(TObject)
@@ -783,21 +786,21 @@ begin
   ElvMain.Groups.Add;
 
   TLoad.Instance.RequaredDBSettings;
-  FPictureSize:=ThImageSize;
+  FPictureSize := ThImageSize;
   LoadSizes;
 
-  FWindowID:=GetGUID;
+  FWindowID := GetGUID;
   RefreshIDList := TList.Create;
 
-  SetLength(UserLinks,0);
-  SetLength(FPlaces,0);
-  DragFilesPopup:=TStringList.Create;
+  SetLength(UserLinks, 0);
+  SetLength(FPlaces, 0);
+  DragFilesPopup := TStringList.Create;
 
-  SelfDraging:=false;
-  FDblClicked:=false;
-  FIsExplorer:=false;
-  SetLength(FListDragItems,0);
-  fDBCanDragW:=false;
+  SelfDraging := False;
+  FDblClicked := False;
+  FIsExplorer := False;
+  SetLength(FListDragItems, 0);
+  FDBCanDragW := False;
   ImPreview.Picture.Bitmap := nil;
   DropFileTarget2.Register(Self);
   DropFileTarget1.Register(ElvMain);
@@ -860,14 +863,14 @@ begin
 
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
-    TW.I.Start('Script read');
-    SetNamedValueStr(aScript, '$dbname', dbname);
-    MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');
-    TW.I.Start('Script Execure');
-    Menu := nil;
-    LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
-    Menu := ScriptMainMenu;
-    ScriptMainMenu.Images := DBkernel.ImageList;
+  TW.I.Start('Script read');
+  SetNamedValueStr(aScript, '$dbname', dbname);
+  MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');
+  TW.I.Start('Script Execure');
+  Menu := nil;
+  LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
+  Menu := ScriptMainMenu;
+  ScriptMainMenu.Images := DBkernel.ImageList;
 
   TW.I.Start('ReadPlaces');
   ReadPlaces;
@@ -883,25 +886,29 @@ begin
   ToolBar1.Images := ToolBarNormalImageList;
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
-  for i:=0 to ComponentCount-1 do
-    if Components[i] is TWebLink then
-     (Components[i] as TWebLink).GetBackGround := BackGround;
+  for I := 0 to ComponentCount - 1 do
+    if Components[I] is TWebLink then
+      (Components[I] as TWebLink).GetBackGround := BackGround;
 
-  for i:=0 to Length(UserLinks)-1 do
-    UserLinks[i].GetBackGround := BackGround;
+  for I := 0 to Length(UserLinks) - 1 do
+    UserLinks[I].GetBackGround := BackGround;
 
   ExplorerManager.AddExplorer(Self);
   DBKernel.RegisterForm(Self);
-  MainPanel.DoubleBuffered:=true;
-  PropertyPanel.DoubleBuffered:=true;
-  ElvMain.DoubleBuffered:=true;
-  ScrollBox1.DoubleBuffered:=true;
+  MainPanel.DoubleBuffered := True;
+  PropertyPanel.DoubleBuffered := True;
+  ElvMain.DoubleBuffered := True;
+  ScrollBox1.DoubleBuffered := True;
 
-  ToolBar2.ButtonHeight:=22;
-  TbStop.Enabled:=false;
-  SaveWindowPos1.Key:=RegRoot+'Explorer\'+MakeRegPath(GetCurrentPath);
+  ToolBar2.ButtonHeight := 22;
+  TbStop.Enabled := False;
+  SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
-  FormLoadEnd:=true;
+  FormLoadEnd := True;
+  LsMain.Top := CoolBar1.Top + CoolBar1.Height + 3;
+  LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3;
+  LsMain.BringToFront;
+  LsMain.Color := clWindow;
 
   if FGoToLastSavedPath then
   begin
@@ -1092,7 +1099,7 @@ begin
   SendTo1.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
-  if fFilesInfo[PmItemPopup.tag].FileType=EXPLORER_ITEM_DRIVE then
+  if fFilesInfo[PmItemPopup.tag].FileType = EXPLORER_ITEM_DRIVE then
   begin
     DBitem1.Visible := False;
     Print1.Visible := False;
@@ -1920,7 +1927,10 @@ begin
       Result.Add(MenuRecord);
       if Item <> nil then
         if ElvMain.Items[I].Selected then
+        begin
           Result.Position := Result.Count - 1;
+          Result.ListItem := ElvMain.Items[I];
+        end;
     end;
   end;
 end;
@@ -1933,6 +1943,11 @@ end;
 function TExplorerForm.GetListView: TEasyListview;
 begin
   Result := ElvMain;
+end;
+
+function TExplorerForm.GetMyComputer: string;
+begin
+  Result := L('My computer');
 end;
 
 procedure TExplorerForm.CbPathEditKeyPress(Sender: TObject; var Key: Char);
@@ -2887,7 +2902,7 @@ begin
 
       if (Msg.WParam = 93) and CtrlKeyDown then
       begin
-        if SelCOunt = 0 then
+        if SelCount = 0 then
           ListView1ContextPopup(nil, ElvMain.ClientToScreen(Point(ElvMain.Left, ElvMain.Top)), InternalHandled);
       end;
 
@@ -3203,28 +3218,6 @@ begin
   end;
 end;
 
-procedure CorrectPath(Owner : TObject; Src: TStrings; Dest: string);
-var
-  I : Integer;
-  FN, Adest : string;
-begin
-  UnforMatDir(Dest);
-  for I := 0 to Src.Count - 1 do
-  begin
-    FN := Dest + '\' + ExtractFileName(Src[I]);
-    if DirectoryExists(FN) then
-    begin
-      Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFolderWithDB(Owner, Src[I], Adest, False);
-    end;
-    if FileExists(FN) then
-    begin
-      Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFileWithDB(Owner, Src[I], Adest, GetIDByFileName(Src[I]), True);
-    end;
-  end;
-end;
-
 procedure TExplorerForm.Paste1Click(Sender: TObject);
 var
   Files : TStrings;
@@ -3238,7 +3231,7 @@ begin
 
     if Effects = DROPEFFECT_MOVE then
     begin
-      CopyFiles(Handle, Files, GetCurrentPath, True, False, CorrectPath, Self);
+      CopyFiles(Handle, Files, GetCurrentPath, True, False, Self);
       ClipBoard.Clear;
       TbPaste.Enabled := False;
     end;
@@ -3316,6 +3309,11 @@ begin
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+end;
+
+procedure TExplorerForm.HideLoadingSign;
+begin
+  LsMain.Hide;
 end;
 
 procedure TExplorerForm.HideProgress;
@@ -3982,7 +3980,7 @@ begin
 
     EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption, UseSimpleSelectFolderDialog);
     if EndDir <> '' then
-      CopyFiles(Handle, Files, EndDir, True, False, CorrectPath, Self);
+      CopyFiles(Handle, Files, EndDir, True, False, Self);
 
   finally
     F(Files);
@@ -4002,7 +4000,7 @@ begin
 
     if Effects = DROPEFFECT_MOVE then
     begin
-      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, True, False, CorrectPath, Self);
+      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, True, False, Self);
       ClipBoard.Clear;
       TbPaste.Enabled := False;
     end;
@@ -4479,6 +4477,11 @@ begin
   else
     Paste2Click(Sender);
   DBKernel.DoIDEvent(Self, 0, [EventID_Param_CopyPaste], EventInfo);
+end;
+
+procedure TExplorerForm.ShowLoadingSign;
+begin
+  LsMain.Show;
 end;
 
 procedure TExplorerForm.ShowOnlyCommon1Click(Sender: TObject);
@@ -5217,32 +5220,15 @@ end;
 procedure TExplorerForm.RefreshID1Click(Sender: TObject);
 var
   Options : TRefreshIDRecordThreadOptions;
-  ItemFileNames : TArStrings;
-  ItemIDs: TArInteger;
-  ItemSelected: TArBoolean;
-  I, index: Integer;
+  Info : TDBPopupMenuInfo;
 begin
-  Setlength(ItemFileNames, FFilesInfo.Count);
-  Setlength(ItemIDs, FFilesInfo.Count);
-  Setlength(ItemSelected, FFilesInfo.Count);
-
-  // be default unchecked
-  for I := 0 to FFilesInfo.Count - 1 do
-    ItemSelected[I] := False;
-
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      ItemFileNames[index] := FFilesInfo[index].FileName;
-      ItemIDs[index] := FFilesInfo[index].ID;
-      ItemSelected[index] := True;
-    end;
-
-  Options.Files := Copy(ItemFileNames);
-  Options.IDs := Copy(ItemIDs);
-  Options.Selected := Copy(ItemSelected);
-  TRefreshDBRecordsThread.Create(False, Options);
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    Options.Info := Info;
+    TRefreshDBRecordsThread.Create(Options);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint;
@@ -5277,10 +5263,10 @@ begin
     begin
       FDBCanDragW := False;
 
-      if not ShiftKeyDown then
+      if CtrlKeyDown then
         CopyFiles(Handle, DropInfo, GetCurrentPath, False, False)
       else
-        CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, CorrectPath, Self);
+        CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, Self);
 
     end;
     if Selcount = 1 then
@@ -5294,10 +5280,10 @@ begin
           Str := FFilesInfo[index].FileName;
           UnFormatDir(Str);
 
-          if not ShiftKeyDown then
+          if CtrlKeyDown then
             CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False)
           else
-            CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, CorrectPath, Self);
+            CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, Self);
 
         end;
       end;
@@ -5877,7 +5863,7 @@ begin
     if not(Sender = Move1) then
       CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False)
     else
-      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, CorrectPath, Self);
+      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self);
 
   end;
   if LastListViewSelCount = 1 then
@@ -5894,7 +5880,7 @@ begin
         if not(Sender = Move1) then
           CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False)
         else
-          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False, CorrectPath, Self);
+          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False, Self);
 
       end;
     end;
@@ -6392,7 +6378,7 @@ end;
 
 function TExplorerForm.UpdatingNow(ID: Integer): boolean;
 begin
-  Result:=RefreshIDList.IndexOf(Pointer(ID)) > -1;
+  Result := RefreshIDList.IndexOf(Pointer(ID)) > -1;
 end;
 
 procedure TExplorerForm.ScriptExecuted(Sender: TObject);
@@ -7464,34 +7450,35 @@ procedure TExplorerForm.BigImagesTimerTimer(Sender: TObject);
 var
   Info: TExplorerViewInfo;
   UpdaterInfo: TUpdaterInfo;
-  i : integer;
+  I: Integer;
 begin
- BigImagesTimer.Enabled:=false;
- if ListView<>LV_THUMBS then exit;
- info.View:=ListView;
- //тут начинается загрузка больших картинок
- UpdaterInfo.IsUpdater:=false;
- info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
- info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
- info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
- info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
- info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
- info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
- info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
- info.View:=ListView;
- Info.PictureSize:=fPictureSize;
- NewFormState;
+  BigImagesTimer.Enabled := False;
+  if ListView <> LV_THUMBS then
+    Exit;
+  Info.View := ListView;
+  // тут начинается загрузка больших картинок
+  UpdaterInfo.IsUpdater := False;
+  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.View := ListView;
+  Info.PictureSize := FPictureSize;
+  NewFormState;
 
- TbStop.Enabled:=true;
- TExplorerThread.Create('::BIGIMAGES','',THREAD_TYPE_BIG_IMAGES,info,self,UpdaterInfo,StateID);
- for i:=0 to fFilesInfo.Count-1 do
- begin
-  fFilesInfo[i].isBigImage:=false;
- end;
+  TbStop.Enabled := True;
+  TExplorerThread.Create('::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, Info, Self, UpdaterInfo, StateID);
+  for I := 0 to FFilesInfo.Count - 1 do
+  begin
+    FFilesInfo[I].IsBigImage := False;
+  end;
 end;
 
-function TExplorerForm.GetAllItems : TExplorerFileInfos;
+function TExplorerForm.GetAllItems: TExplorerFileInfos;
 begin
   Result := fFilesInfo.Clone;
 end;
@@ -7499,29 +7486,34 @@ end;
 procedure TExplorerForm.DoDefaultSort(GUID : TGUID);
 begin
 case DefaultSort of
-  0: FileName1Click(FileName1);
- //1: - rating!!! no default sorting, information about sorting goes later
-  2: FileName1Click(Size1);
-  3: FileName1Click(Type1);
-  4: FileName1Click(Modified1);
-  5: FileName1Click(Number1);
- end;
+    0:
+      FileName1Click(FileName1);
+    // 1: - rating!!! no default sorting, information about sorting goes later
+    2:
+      FileName1Click(Size1);
+    3:
+      FileName1Click(Type1);
+    4:
+      FileName1Click(Modified1);
+    5:
+      FileName1Click(Number1);
+  end;
 end;
 
 procedure TExplorerForm.AddHiddenInfo1Click(Sender: TObject);
 var
-  Index : integer;
+  Index: Integer;
 begin
   if SelCount = 1 then
   begin
-    Index := ItemIndexToMenuIndex(ListView1Selected.Index);
-    DoSteno(FFilesInfo[Index].FileName);
+    Index := ItemIndexToMenuIndex(ListView1Selected.index);
+    DoSteno(FFilesInfo[index].FileName);
   end;
 end;
 
 procedure TExplorerForm.ExtractHiddenInfo1Click(Sender: TObject);
 var
-  Index: integer;
+  Index: Integer;
 begin
   if SelCount=1 then
   begin

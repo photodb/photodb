@@ -2060,13 +2060,13 @@ end;
 
 function TSearchForm.GetCurrentPopUpMenuInfo(Item : TEasyItem) : TDBPopupMenuInfo;
 var
-  I : Integer;
-  MenuRecord : TDBPopupMenuInfoRecord;
-  SearchRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  MenuRecord: TDBPopupMenuInfoRecord;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
-  Result.IsListItem:=false;
-  Result.IsPlusMenu:=false;
+  Result.IsListItem := False;
+  Result.IsPlusMenu := False;
   Result.IsPlusMenu := False;
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
@@ -2074,27 +2074,26 @@ begin
     MenuRecord := SearchRecord.Copy;
     Result.Add(MenuRecord);
   end;
- Result.Position:=0;
- Result.AttrExists:=true;
-  for i:=0 to ElvMain.Items.Count-1 do
-    Result[I].Selected:=ElvMain.Items[i].Selected;
- If Item=nil then
- begin
- end else
- begin
-  if GetSelectionCount=1 then
+  Result.Position := 0;
+  Result.AttrExists := True;
+  for I := 0 to ElvMain.Items.Count - 1 do
+    Result[I].Selected := ElvMain.Items[I].Selected;
+  if Item <> nil then
   begin
-   Result.IsListItem:=true;
-   if ElvMain.Selection.First<>nil then
-   begin
-    Result.ListItem:=ElvMain.Selection.First;
-    Result.Position:=ItemIndex(ElvMain.Selection.First);
-   end;
-  end else if GetSelectionCount>1 then
-  begin
-   Result.Position:=ItemIndex(Item);
+    if GetSelectionCount = 1 then
+    begin
+      Result.IsListItem := True;
+      if ElvMain.Selection.First <> nil then
+      begin
+        Result.ListItem := ElvMain.Selection.First;
+        Result.Position := ItemIndex(ElvMain.Selection.First);
+      end;
+    end
+    else if GetSelectionCount > 1 then
+    begin
+      Result.Position := ItemIndex(Item);
+    end;
   end;
- end;
 end;
 
 procedure TSearchForm.ListViewMouseUp(Sender: TObject; Button: TMouseButton;

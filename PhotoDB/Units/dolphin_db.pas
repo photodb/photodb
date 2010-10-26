@@ -2405,8 +2405,7 @@ begin
           Delete(NewFileName, 1, Length(ProgramDir));
         end;
 
-      end
-      else
+      end else
       begin
         Acrc := '';
       end;
@@ -3454,17 +3453,17 @@ end;
 
 function AltKeyDown: Boolean;
 begin
-  Result := (Word(GetKeyState(VK_MENU)) and $8000) <> 0;
+  Result := (Word(GetKeyState(VK_MENU)) and 128) <> 0;
 end;
 
 function CtrlKeyDown: Boolean;
 begin
-  Result := (Word(GetKeyState(VK_CONTROL)) and $8000) <> 0;
+  Result := (Word(GetKeyState(VK_CONTROL)) and 128) <> 0;
 end;
 
 function ShiftKeyDown: Boolean;
 begin
-  Result := (Word(GetKeyState(VK_SHIFT)) and $8000) <> 0;
+  Result := (Word(GetKeyState(VK_SHIFT)) and 128) <> 0;
 end;
 
 procedure JPEGScale(Graphic: TGraphic; Width, Height: Integer);
@@ -5906,6 +5905,8 @@ begin
 
   if Source.Position >= 0 then
     Position := Source.Position;
+
+  ListItem := Source.ListItem;
 end;
 
 procedure TDBPopupMenuInfo.Clear;

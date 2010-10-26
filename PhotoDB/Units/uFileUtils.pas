@@ -30,8 +30,7 @@ function WindowsCopyFile(FromFile, ToDir: string): Boolean;
 function WindowsCopyFileSilent(FromFile, ToDir: string): Boolean;
 function DateModify(FileName: string): TDateTime;
 function MrsGetFileType(StrFilename: string): string;
-procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
-  CallBack: TCorrectPathProc = nil; ExplorerForm: TForm = nil);
+procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TForm = nil);
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 function GetCDVolumeLabel(CDName: Char): string;
 function DriveState(Driveletter: AnsiChar): TDriveState;
@@ -475,9 +474,9 @@ begin
 end;
 
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
-  CallBack: TCorrectPathProc = nil; ExplorerForm: TForm = nil);
+  ExplorerForm: TForm = nil);
 begin
-  TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, CallBack, ExplorerForm);
+  TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, ExplorerForm);
 end;
 
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;

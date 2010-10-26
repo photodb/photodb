@@ -10,6 +10,7 @@ type
   protected
     function L(TextToTranslate : string) : string; overload;
     function L(TextToTranslate, Scope : string) : string; overload;
+    function GetThreadID : string; virtual; abstract;
   end;
 
 implementation
@@ -18,7 +19,7 @@ implementation
 
 function TDBThread.L(TextToTranslate: string): string;
 begin
-  Result := TA(TextToTranslate);
+  Result := TA(TextToTranslate, GetThreadID);
 end;
 
 function TDBThread.L(TextToTranslate, Scope: string): string;

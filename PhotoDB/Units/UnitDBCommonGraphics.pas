@@ -946,6 +946,7 @@ begin
   DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
   DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
 
+  try
   for I := 0 to PNG.Height - 1 do
   begin
     AddrS := AddrLineS;
@@ -959,6 +960,9 @@ begin
     end;
     AddrLineS := AddrLineS + DeltaS;
     AddrLineD := AddrLineD + DeltaD;
+  end;
+  except
+    PNG.PixelFormat := pf24bit;
   end;
 end;
 

@@ -8,7 +8,7 @@ uses
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask, uFileUtils,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
   UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons, uLogger, uConstants,
-  UnitDBCommon, UnitDBCommonGraphics;
+  UnitDBCommon, UnitDBCommonGraphics, uTranslate;
 
 type
   TOptionsForm = class(TForm)
@@ -737,7 +737,7 @@ begin
  Label30.Caption:=TEXT_MES_DAYS;
  CheckBox28.Caption:=TEXT_MES_MANY_INSTANCES_OF_PROEPRTY;
  CheckListBox2.Clear;
- CheckListBox2.Items.Add(TEXT_MES_MY_COMPUTER);
+ CheckListBox2.Items.Add(TA('My computer', 'System'));
  CheckListBox2.Items.Add(TEXT_MES_MY_DOCUMENTS);
  CheckListBox2.Items.Add(TEXT_MES_MY_PICTURES);
  CheckListBox2.Items.Add(TEXT_MES_OTHER_PLACES);

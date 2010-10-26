@@ -29,7 +29,7 @@ const
   DelayExecuteSQLOperation = 200;
 
   //Information
-  MyComputer = TEXT_MES_MY_COMPUTER;
+//  MyComputer = TEXT_MES_MY_COMPUTER;
   ProductName = 'Photo DataBase 2.3';
   StartMenuProgramsPath = 'Photo DB v2.3';
   ProductVersion = '2.3';

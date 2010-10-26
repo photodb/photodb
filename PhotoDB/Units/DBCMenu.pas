@@ -1164,56 +1164,54 @@ end;
 
 procedure TDBPopupMenu.QuickGroupInfoPopUpMenu_(Sender: TObject);
 var
-  s : string;
-  i : integer;
+  S: string;
+  I: Integer;
 begin
- s:=(Sender as TMenuItem).Caption;
- For i:=Length(s) downto 1 do
- if s[i]='&' then delete(s,i,1);
- ShowGroupInfo(s,false,nil);
+  S := (Sender as TMenuItem).Caption;
+  for I := Length(S) downto 1 do
+    if S[I] = '&' then
+      Delete(S, I, 1);
+  ShowGroupInfo(S, False, nil);
 end;
 
 procedure TDBPopupMenu.RefreshIDItemPopUpMenu_(Sender: TObject);
 var
   Options : TRefreshIDRecordThreadOptions;
 begin
- //TODO: ???
-{ Options.Files := Copy(FInfo.ItemFileNames_);
- Options.IDs := Copy(FInfo.ItemIDs_);
- Options.Selected := Copy(FInfo.ItemSelected_);  }
- TRefreshDBRecordsThread.Create(false,Options);
+  Options.Info := FInfo;
+  TRefreshDBRecordsThread.Create(Options);
 end;
 
 procedure TDBPopupMenu.RefreshThumItemPopUpMenu_(Sender: TObject);
 var
-  i:integer;
-  EventInfo : TEventValues;
+  I: Integer;
+  EventInfo: TEventValues;
 begin
- EventInfo.Image:=nil;
- for i:=0 to FInfo.Count-1 do
- if FInfo[i].Selected then
- DBKernel.DoIDEvent(Sender,FInfo[i].ID,[EventID_Param_Image],EventInfo);
+  EventInfo.Image := nil;
+  for I := 0 to FInfo.Count - 1 do
+    if FInfo[I].Selected then
+      DBKernel.DoIDEvent(Sender, FInfo[I].ID, [EventID_Param_Image], EventInfo);
 end;
 
 procedure TDBPopupMenu.RenameItemPopUpMenu_(Sender: TObject);
 begin
- if FInfo.ListItem is TEasyItem then
- begin
-  TEasyListview(TEasyItem(FInfo.ListItem).OwnerListview).EditManager.Enabled:=true;
-  TEasyItem(FInfo.ListItem).Edit;
- end;
+  if FInfo.ListItem is TEasyItem then
+  begin
+    TEasyListview(TEasyItem(FInfo.ListItem).OwnerListview).EditManager.Enabled := True;
+    TEasyItem(FInfo.ListItem).Edit;
+  end;
 end;
 
 procedure TDBPopupMenu.ScanImageItemPopUpMenu_(Sender: TObject);
 var
-  NewSearch : TSearchForm;
+  NewSearch: TSearchForm;
 begin
- NewSearch:=SearchManager.NewSearch;
- NewSearch.SearchEdit.Text:=':ScanImageW('+Finfo[Finfo.Position].FileName+':1):';
- NewSearch.SetPath(GetDirectory(Finfo[Finfo.Position].FileName));
- NewSearch.DoSearchNow(nil);
- NewSearch.Show;
- NewSearch.SetFocus;
+  NewSearch := SearchManager.NewSearch;
+  NewSearch.SearchEdit.Text := ':ScanImageW(' + Finfo[Finfo.Position].FileName + ':1):';
+  NewSearch.SetPath(GetDirectory(Finfo[Finfo.Position].FileName));
+  NewSearch.DoSearchNow(nil);
+  NewSearch.Show;
+  NewSearch.SetFocus;
 end;
 
 procedure TDBPopupMenu.ScriptExecuted(Sender: TObject);
@@ -1227,15 +1225,15 @@ end;
 
 procedure TDBPopupMenu.SearchFolderPopUpMenu_(Sender: TObject);
 var
-  NewSearch : TSearchForm;
+  NewSearch: TSearchForm;
 begin
- NewSearch:=SearchManager.NewSearch;
- //TODO:!!!
- NewSearch.SearchEdit.Text:=':Folder('+inttostr(Finfo[Finfo.Position].ID)+'):';
- NewSearch.SetPath(GetDirectory(Finfo[Finfo.Position].FileName));
- NewSearch.DoSearchNow(nil);
- NewSearch.Show;
- NewSearch.SetFocus;
+  NewSearch := SearchManager.NewSearch;
+  // TODO:!!!
+  NewSearch.SearchEdit.Text := ':Folder(' + Inttostr(Finfo[Finfo.Position].ID) + '):';
+  NewSearch.SetPath(GetDirectory(Finfo[Finfo.Position].FileName));
+  NewSearch.DoSearchNow(nil);
+  NewSearch.Show;
+  NewSearch.SetFocus;
 end;
 
 procedure TDBPopupMenu.SendToItemPopUpMenu_(Sender: TObject);

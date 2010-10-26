@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel,
   ImgList, UnitCDMappingSupport, UnitDBCommonGraphics, Menus, DB, CommonDBSupport,
-  uVistaFuncs, uLogger, uDBForm;
+  uVistaFuncs, uLogger, uDBForm, uMemory, UnitDBDeclare;
 
 type
   TFormCDMapper = class(TDBForm)
@@ -227,6 +227,8 @@ var
   DS: TDataSet;
   I: Integer;
   CD: PCDClass;
+  Info: TDBPopupMenuInfo;
+  InfoRecord: TDBPopupMenuInfoRecord;
 begin
   if CDMappingListView.Selected <> nil then
     if CDMappingListView.Selected.Data <> nil then
@@ -252,18 +254,22 @@ begin
         end;
         if DS.RecordCount > 0 then
         begin
-          DS.First;
-          SetLength(Options.Files, DS.RecordCount);
-          SetLength(Options.IDs, DS.RecordCount);
-          SetLength(Options.Selected, DS.RecordCount);
-          for I := 1 to DS.RecordCount do
-          begin
-            Options.Files[I - 1] := DS.FieldByName('FFileName').AsString;
-            Options.IDs[I - 1] := DS.FieldByName('ID').AsInteger;
-            Options.Selected[I - 1] := True;
-            DS.Next;
+          Info := TDBPopupMenuInfo.Create;
+          try
+            DS.First;
+            for I := 1 to DS.RecordCount do
+            begin
+              InfoRecord := TDBPopupMenuInfoRecord.Create;
+              InfoRecord.FileName := DS.FieldByName('FFileName').AsString;
+              InfoRecord.ID := DS.FieldByName('ID').AsInteger;
+              InfoRecord.Selected := True;
+              info.Add(InfoRecord);
+              DS.Next;
+            end;
+            TRefreshDBRecordsThread.Create(Options);
+          finally
+            F(Info);
           end;
-          TRefreshDBRecordsThread.Create(False, Options);
         end;
         FreeDS(DS);
       end;

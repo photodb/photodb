@@ -2,31 +2,31 @@ unit wfsU;
 
 interface
 
-uses  Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, uLogger,
-      uGOM, ExplorerTypes;
+uses Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, ULogger,
+  UGOM, ExplorerTypes, uMemory;
 
 type
-
   WFSError = class(Exception);
 
+type
   TWFS = class(TThread)
   private
-    FName           : string;
-    FFilter         : Cardinal;
-    FSubTree        : boolean;
-    FInfoCallback   : TWatchFileSystemCallback;
-    FWatchHandle    : THandle;
-    FWatchBuf       : array[0..65535] of Byte;
-    FOverLapp       : TOverlapped;
-    FPOverLapp      : POverlapped;
-    FBytesWritte    : DWORD;
-    FCompletionPort : THandle;
-    FNumBytes       : Cardinal;
-    FOldFileName    : string;
-    InfoCallback    : TInfoCallBackDirectoryChangedArray;
-    fOnNeedClosing  : TNotifyEvent;
-    fOnThreadClosing: TNotifyEvent;
-    function CreateDirHandle(aDir: string): THandle;
+    FName: string;
+    FFilter: Cardinal;
+    FSubTree: Boolean;
+    FInfoCallback: TWatchFileSystemCallback;
+    FWatchHandle: THandle;
+    FWatchBuf: array [0 .. 65535] of Byte;
+    FOverLapp: TOverlapped;
+    FPOverLapp: POverlapped;
+    FBytesWritte: DWORD;
+    FCompletionPort: THandle;
+    FNumBytes: Cardinal;
+    FOldFileName: string;
+    InfoCallback: TInfoCallBackDirectoryChangedArray;
+    FOnNeedClosing: TNotifyEvent;
+    FOnThreadClosing: TNotifyEvent;
+    function CreateDirHandle(ADir: string): THandle;
     procedure WatchEvent;
     procedure HandleEvent;
   protected
@@ -40,43 +40,44 @@ type
     destructor Destroy; override;
   end;
 
-  TWachDirectoryClass = class(TObject)
-  private
-    WFS : TWFS;
-    fOnDirectoryChanged: TNotifyDirectoryChangeW;
-    fCID : TGUID;
-    fOwner : TForm;
+TWachDirectoryClass = class(TObject)
+private
+    WFS: TWFS;
+    FOnDirectoryChanged: TNotifyDirectoryChangeW;
+    FCID: TGUID;
+    FOwner: TForm;
     procedure SetOnDirectoryChanged(const Value: TNotifyDirectoryChangeW);
     { Запуск мониторинга файловой системы
-    Праметры:
-    pName    - имя папки для мониторинга
-    pFilter  - комбинация констант FILE_NOTIFY_XXX
-    pSubTree - мониторить ли все подпапки заданной папки
-    pInfoCallback - адрес callback процедуры, вызываемой при изменении в файловой системе}
-    procedure StartWatch(pName: string; pFilter: cardinal; pSubTree: boolean; pInfoCallback: TWatchFileSystemCallback);
-    procedure CallBack(pInfo: TInfoCallBackDirectoryChangedArray);
-    procedure OnNeedClosing(Sender : TObject);
-    procedure OnThreadClosing(Sender : TObject);
+      Праметры:
+      pName    - имя папки для мониторинга
+      pFilter  - комбинация констант FILE_NOTIFY_XXX
+      pSubTree - мониторить ли все подпапки заданной папки
+      pInfoCallback - адрес callback процедуры, вызываемой при изменении в файловой системе }
+    procedure StartWatch(PName: string; PFilter: Cardinal; PSubTree: Boolean;
+      PInfoCallback: TWatchFileSystemCallback);
+    procedure CallBack(PInfo: TInfoCallBackDirectoryChangedArray);
+    procedure OnNeedClosing(Sender: TObject);
+    procedure OnThreadClosing(Sender: TObject);
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Start(Directory : string; Owner : TForm; CID : TGUID);
+    procedure Start(Directory: string; Owner: TForm; CID: TGUID);
     // Остановка мониторинга
     procedure StopWatch;
   published
-    property OnDirectoryChanged : TNotifyDirectoryChangeW read fOnDirectoryChanged write SetOnDirectoryChanged;
+    property OnDirectoryChanged: TNotifyDirectoryChangeW read FOnDirectoryChanged write SetOnDirectoryChanged;
   end;
 
-  var
-    OM : TManagerObjects;
+var
+  OM: TManagerObjects;
 
 implementation
 
 uses ExplorerUnit;
 
-procedure TWachDirectoryClass.CallBack(pInfo: TInfoCallBackDirectoryChangedArray);
+procedure TWachDirectoryClass.CallBack(PInfo: TInfoCallBackDirectoryChangedArray);
 begin
- if ExplorerManager.IsExplorerForm(fOwner) then
+  if ExplorerManager.IsExplorerForm(fOwner) then
  begin
   (fOwner as TExplorerForm).DirectoryChanged(self,fCID,pInfo);
  end else
@@ -88,12 +89,12 @@ end;
 
 constructor TWachDirectoryClass.Create;
 begin
- OM.AddObj(self);
+  OM.AddObj(Self);
 end;
 
 destructor TWachDirectoryClass.Destroy;
 begin
- OM.RemoveObj(self);
+  OM.RemoveObj(Self);
   inherited;
 end;
 
@@ -139,7 +140,6 @@ var
   Temp : TWFS;
 begin
  if OM.IsObj(WFS) then
-//  if Assigned(WFS) then
   begin
    try
     PostQueuedCompletionStatus(WFS.FCompletionPort, 0, 0, nil);

@@ -19,6 +19,9 @@ object ExplorerForm: TExplorerForm
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
   OnShow = FormShow
+  DesignSize = (
+    870
+    613)
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
@@ -2982,16 +2985,6 @@ object ExplorerForm: TExplorerForm
       end
     end
   end
-  object WaitingPanel: TPanel
-    Left = 140
-    Top = 47
-    Width = 730
-    Height = 546
-    Align = alClient
-    BevelOuter = bvNone
-    ParentColor = True
-    TabOrder = 3
-  end
   object CoolBar2: TCoolBar
     Left = 0
     Top = 0
@@ -3181,6 +3174,17 @@ object ExplorerForm: TExplorerForm
         OnClick = Options1Click
       end
     end
+  end
+  object LsMain: TLoadingSign
+    Left = 845
+    Top = 49
+    Width = 20
+    Height = 20
+    Visible = False
+    Active = True
+    FillPercent = 0
+    Anchors = [akTop, akRight]
+    SignColor = clBlack
   end
   object SizeImageList: TImageList
     Height = 102
