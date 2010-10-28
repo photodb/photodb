@@ -3,8 +3,8 @@ unit UnitRefreshDBRecordsThread;
 interface
 
 uses
-  Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitDBDeclare, SysUtils, uLogger, uMemory;
+  Classes, uDBPopupMenuInfo, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
+  UnitDBDeclare, SysUtils, uLogger, uMemory, Dolphin_DB;
 
 type
   TRefreshIDRecordThreadOptions = record

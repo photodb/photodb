@@ -9,10 +9,11 @@ uses
    DropSource, DropTarget, UnitDBkernel, UnitDBDeclare,
    UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
    GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
-   uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils;
+   uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
+   uConstants;
 
 type
-  TUpdateDBForm = class(TForm)
+  TUpdateDBForm = class(TDBForm)
     PopupMenu1: TPopupMenu;
     Stayontop1: TMenuItem;
     Layered1: TMenuItem;
@@ -104,6 +105,8 @@ type
     FW7TaskBar : ITaskbarList3;
     FFullSize: Int64;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent; AddObject: TUpdaterDB); reintroduce;
@@ -133,22 +136,22 @@ var
 implementation
 
 uses Language, FormManegerUnit, UnitHistoryForm,
-     ExplorerUnit, SlideShow, UnitScripts, DBScriptFunctions,
-     UnitUpdateDBThread;
+  ExplorerUnit, SlideShow, UnitScripts, DBScriptFunctions,
+  UnitUpdateDBThread;
 
 {$R *.dfm}
 
 { TUpdateDBForm }
 
-procedure TUpdateDBForm.WMMouseDown(var s: Tmessage);
-begin
- Perform(WM_NCLButtonDown,HTcaption,s.lparam);
-end;
+ procedure TUpdateDBForm.WMMouseDown(var S: Tmessage);
+ begin
+   Perform(WM_NCLButtonDown, HTcaption, S.Lparam);
+ end;
 
-procedure TUpdateDBForm.ButtonCloseClick(Sender: TObject);
-begin
- Close;
-end;
+ procedure TUpdateDBForm.ButtonCloseClick(Sender: TObject);
+ begin
+   Close;
+ end;
 
 procedure TUpdateDBForm.FormCreate(Sender: TObject);
 var
@@ -163,7 +166,7 @@ begin
   FCurrentFileName := '';
   HideImage(True);
   TimeCounter := TTimeCounter.Create;
-  TimeCounter.TimerInterval := 10000; // 15 seconds to refresh
+  TimeCounter.TimerInterval := 10000; // 10 seconds to refresh
   LastIDImage := 0;
   LastFileName := ':::';
   BadHistory := TStringList.Create;
@@ -222,31 +225,36 @@ end;
 
 procedure TUpdateDBForm.LoadLanguage;
 begin
-  FilesLabel.Text := TEXT_MES_NO_ANY_FILEA;
-  ProgressBar.Text := '';
-  ButtonBreak.Text := TEXT_MES_BREAK_BUTTON;
-  ButtonRunStop.Text := TEXT_MES_PAUSE;
-  ButtonClose.Text := TEXT_MES_CLOSE;
-  ProgressBar.Text := TEXT_MES_PROGRESS_PR;
-  Stayontop1.Caption := TEXT_MES_STAY_ON_TOP;
-  Layered1.Caption := TEXT_MES_LAYERED;
-  Fill1.Caption := TEXT_MES_FILL;
-  Hide1.Caption := TEXT_MES_HIDE;
-  Auto1.Caption := TEXT_MES_AUTO;
-  AutoAnswer1.Caption := TEXT_MES_AUTO_ANSWER;
-  None1.Caption := TEXT_MES_NONE;
-  ReplaceAll1.Caption := TEXT_MES_REPLACE_ALL;
-  AddAll1.Caption := TEXT_MES_ADD_ALL;
-  SkipAll1.Caption := TEXT_MES_SKIP_ALL;
-  Caption := TEXT_MES_UPDATER_CAPTION;
-  History1.Caption := TEXT_MES_HISTORY;
-  UseScaningByFilename1.Caption := TEXT_MES_USE_SCANNING_BY_FILENAME;
+  BeginTranslate;
+  try
+    FilesLabel.Text := L('No files');
+    ProgressBar.Text := '';
+    ButtonBreak.Text := L('Stop!');
+    ButtonRunStop.Text := L('Pause');
+    ButtonClose.Text := L('Close');
+    ProgressBar.Text := L('Progress... (&%%)');
+    Stayontop1.Caption := L('Stay on top');
+    Layered1.Caption := L('Transparencity');
+    Fill1.Caption := L('No');
+    Hide1.Caption := L('Hide');
+    Auto1.Caption := L('Auto');
+    AutoAnswer1.Caption := L('Auto answer');
+    None1.Caption := L('None');
+    ReplaceAll1.Caption := L('Replace all');
+    AddAll1.Caption := L('Add all');
+    SkipAll1.Caption := L('Skip all');
+    Caption := L('DB Updater');
+    History1.Caption := L('History');
+    UseScaningByFilename1.Caption := L('Using scaning on filename match');
 
-  ShowHistoryLink.Text := TEXT_MES_SHOW_HISTORY;
-  WebLinkOptions.Text := TEXT_MES_OPTIONS;
-  WebLinkOpenImage.Text := TEXT_MES_UPDATER_OPEN_IMAGE;
-  WebLinkOpenFolder.Text := TEXT_MES_UPDATER_OPEN_FOLDER;
-  DmMemo1.Text := TEXT_MES_PROCESSING_STATUS;
+    ShowHistoryLink.Text := L('Show history');
+    WebLinkOptions.Text := L('Options');
+    WebLinkOpenImage.Text := L('Open');
+    WebLinkOpenFolder.Text := L('Explorer');
+    DmMemo1.Text := L('Status') + ':';
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TUpdateDBForm.ChangedDBDataByID(Sender: TObject; ID: integer;
@@ -258,7 +266,7 @@ var
   W, H: Integer;
   Bit, Bitmap: TBitmap;
 
-  procedure FillRectToBitmapA(var Bitmap: TBitmap);
+  procedure FillRectToBitmapA(Bitmap: TBitmap);
   begin
     Bitmap.Canvas.Pen.Color := 0;
     Bitmap.Canvas.Brush.Color := MakeDarken(clWindow, 0.9);
@@ -268,82 +276,90 @@ var
 
 begin
 
- if (SetNewIDFileData in params) or (EventID_FileProcessed in params) then
- //? if FAddObject.Active then
- begin
-  LastFileName:=Value.Name;
-  LastIDImage:=ID;
-  bit := TBitmap.Create;
-  bit.PixelFormat:=pf24bit;
-  bit.Assign(Value.JPEGImage);
-  Bitmap := TBitmap.Create;
-  Bitmap.PixelFormat:=pf24bit;
-  w:=bit.Width;
-  h:=bit.Height;
-  ProportionalSize(100,100,w,h);
-  DoResize(w,h,bit,Bitmap);
-  bit.free;
-  FCurrentImage:=TBitmap.Create;
-  FCurrentImage.Assign(Bitmap);
-  Repaint;
-  Bitmap.free;
-  FileSize:=GetFileSizeByName(Value.Name);
-  TimeCounter.NextAction(FileSize);
-
-  ProgressBar.Text:=Format(TEXT_MES_TIME_REM_F,[FormatDateTime('hh:mm:ss',TimeCounter.GetTimeRemaining)]);
-  FCurrentFileName:=Value.Name;
-  WebLinkOpenImage.Enabled:=true;
-  WebLinkOpenImage.RefreshBuffer;
-  WebLinkOpenImage.Repaint;
-  WebLinkOpenFolder.Enabled:=true;
-  WebLinkOpenFolder.RefreshBuffer;
-  WebLinkOpenFolder.Repaint;
-  exit;
- end;
-
- if EventID_Param_Add_Crypt_WithoutPass in params then
- begin
-  b:=true;
-  Value.Name:=AnsiLowerCase(Value.Name);
-  for i:=0 to BadHistory.Count-1 do
-  if AnsiLowerCase(BadHistory[i])=Value.Name then
+  if (SetNewIDFileData in Params) or (EventID_FileProcessed in Params) then
   begin
-   b:=false;
-   break;
+    LastFileName := Value.name;
+    LastIDImage := ID;
+    Bit := TBitmap.Create;
+    try
+      Bit.PixelFormat := Pf24bit;
+      Bit.Assign(Value.JPEGImage);
+      Bitmap := TBitmap.Create;
+      try
+        Bitmap.PixelFormat := Pf24bit;
+        W := Bit.Width;
+        H := Bit.Height;
+        ProportionalSize(100, 100, W, H);
+        DoResize(W, H, Bit, Bitmap);
+
+        FCurrentImage := TBitmap.Create;
+        FCurrentImage.Assign(Bitmap);
+        Repaint;
+      finally
+        F(Bitmap);
+      end;
+    finally
+      F(Bit);
+    end;
+    FileSize := GetFileSizeByName(Value.name);
+    TimeCounter.NextAction(FileSize);
+
+    ProgressBar.Text := Format(TEXT_MES_TIME_REM_F, [FormatDateTime('hh:mm:ss', TimeCounter.GetTimeRemaining)]);
+    FCurrentFileName := Value.name;
+    WebLinkOpenImage.Enabled := True;
+    WebLinkOpenImage.RefreshBuffer;
+    WebLinkOpenImage.Repaint;
+    WebLinkOpenFolder.Enabled := True;
+    WebLinkOpenFolder.RefreshBuffer;
+    WebLinkOpenFolder.Repaint;
+    Exit;
   end;
-  if b then BadHistory.Add(Value.Name);
-  if not CryptFileWithoutPassChecked then
+
+  if EventID_Param_Add_Crypt_WithoutPass in Params then
   begin
-   Show;
-   Delay(100);
-   DoHelpHint(TEXT_MES_WARNING,TEXT_MES_CRYPT_FILE_WITHOUT_PASS_MOT_ADDED,p,Self);
+    B := True;
+    Value.name := AnsiLowerCase(Value.name);
+    for I := 0 to BadHistory.Count - 1 do
+      if AnsiLowerCase(BadHistory[I]) = Value.name then
+      begin
+        B := False;
+        Break;
+      end;
+    if B then
+      BadHistory.Add(Value.name);
+    if not CryptFileWithoutPassChecked then
+    begin
+      Show;
+      Delay(100);
+      DoHelpHint(L('Warning'), TEXT_MES_CRYPT_FILE_WITHOUT_PASS_MOT_ADDED, P, Self);
+    end;
   end;
- end;
 end;
 
 procedure TUpdateDBForm.HideImage(OnCreate : boolean);
 begin
- if not WebLinkOpenImage.Enabled and not WebLinkOpenFolder.Enabled then exit;
- if not OnCreate then
- begin
-  if GetParamStrDBBool('/NoFullRun') then
+  if not WebLinkOpenImage.Enabled and not WebLinkOpenFolder.Enabled then
+    Exit;
+  if not OnCreate then
   begin
-   TimerTerminate.Enabled:=true;
-   exit;
+    if GetParamStrDBBool('/NoFullRun') then
+    begin
+      TimerTerminate.Enabled := True;
+      Exit;
+    end;
   end;
- end;
- WebLinkOpenImage.Enabled:=false;
- WebLinkOpenImage.RefreshBuffer;
- WebLinkOpenImage.Repaint;
- WebLinkOpenFolder.Enabled:=false;
- WebLinkOpenFolder.RefreshBuffer;
- WebLinkOpenFolder.Repaint;
- FCurrentImage.free;
- FCurrentFileName:='';
- FCurrentImage:=nil;
- ProgressBar.Position:=0;
- ProgressBar.Text:=TEXT_MES_DONE;
- Repaint;
+  WebLinkOpenImage.Enabled := False;
+  WebLinkOpenImage.RefreshBuffer;
+  WebLinkOpenImage.Repaint;
+  WebLinkOpenFolder.Enabled := False;
+  WebLinkOpenFolder.RefreshBuffer;
+  WebLinkOpenFolder.Repaint;
+  FCurrentImage.Free;
+  FCurrentFileName := '';
+  FCurrentImage := nil;
+  ProgressBar.Position := 0;
+  ProgressBar.Text := TEXT_MES_DONE;
+  Repaint;
 end;
 
 procedure TUpdateDBForm.ShowImage;
@@ -353,7 +369,7 @@ end;
 
 procedure TUpdateDBForm.Hide1Click(Sender: TObject);
 begin
- Hide;
+  Hide;
 end;
 
 procedure TUpdateDBForm.N101Click(Sender: TObject);
@@ -398,16 +414,16 @@ begin
   if FAddObject.Pause then
   begin
     FAddObject.DoUnPause;
-    SetIcon(ButtonRunStop,'UPDATER_PAUSE');
-    ButtonRunStop.Text:=TEXT_MES_PAUSE;
+    SetIcon(ButtonRunStop, 'UPDATER_PAUSE');
+    ButtonRunStop.Text := TEXT_MES_PAUSE;
     if FW7TaskBar <> nil then
       FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
   end else
   begin
-    //TODO icon
+    // TODO icon
     FAddObject.DoPause;
-    SetIcon(ButtonRunStop,'UPDATER_PLAY');
-    ButtonRunStop.Text:=TEXT_MES_UNPAUSE;
+    SetIcon(ButtonRunStop, 'UPDATER_PLAY');
+    ButtonRunStop.Text := TEXT_MES_UNPAUSE;
     if FW7TaskBar <> nil then
       FW7TaskBar.SetProgressState(Handle, TBPF_PAUSED);
   end;
@@ -540,7 +556,7 @@ procedure TUpdateDBForm.SetDone(Sender: TObject);
 begin
   HideImage(False);
   ProgressBar.Position := 0;
-  ProgressBar.Text := TEXT_MES_DONE;
+  ProgressBar.Text := L('Done');
   FilesLabel.Text := TEXT_MES_NO_FILE_TO_ADD;
 end;
 
@@ -635,6 +651,11 @@ begin
   ProgressBar.DoPaintOnXY(Canvas, ProgressBar.Left, ProgressBar.Top);
 end;
 
+function TUpdateDBForm.GetFormID: string;
+begin
+  Result := 'Updater';
+end;
+
 procedure TUpdateDBForm.SetIcon(Link : TWebLink; Name : String);
 var
   Ico : HIcon;
@@ -647,7 +668,7 @@ begin
   end;
 end;
 
-procedure TUpdateDBForm.LoadToolBarIcons();
+procedure TUpdateDBForm.LoadToolBarIcons;
 begin
   SetIcon(WebLinkOptions, 'UPDATER_OPTIONS');
   SetIcon(ButtonRunStop, 'UPDATER_PLAY');

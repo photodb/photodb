@@ -3,8 +3,9 @@ unit UnitGroupsWork;
 interface
 
 
-uses Windows, SysUtils, Graphics, Dolphin_DB, UnitDBDeclare, jpeg, DB, Classes,
-  uMemory;
+uses
+  Windows, SysUtils, Graphics, UnitDBDeclare, jpeg, DB, Classes,
+  uMemory, uConstants;
 
 type
   TGroup = Record
@@ -52,10 +53,9 @@ type
   end;
 
 
-Function CreateNewGroup(GroupName : String) : String;
-Function GroupSearchByGroupName(GroupName : String) : String;
-Function EncodeGroups(Groups : String) : TGroups;
-//Function GroupsTableFileName : String;
+function CreateNewGroup(GroupName : String) : String;
+function GroupSearchByGroupName(GroupName : String) : String;
+function EncodeGroups(Groups : String) : TGroups;
 function GroupsTableName : String; overload;
 function GroupsTableName(FileName : String) : String; overload;
 Function GetRegisterGroupList(LoadImages : Boolean; UseInclude : Boolean = false) : TGroups;
@@ -89,7 +89,7 @@ Function GetCommonGroups(ArGroups : TArGroups) : TGroups; overload;
 Function CompareGroups(GroupsA, GroupsB : String) : Boolean; overload;
 Function CompareGroups(GroupsA, GroupsB : TGroups) : Boolean; overload;
 Procedure ReplaceGroups(GroupsToDelete, GroupsToAdd : String; var Groups : String);
-Function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; UseInclude : Boolean = false) : TGroups;
+Function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; SortByName : Boolean; UseInclude : Boolean = false) : TGroups;
 Function GroupExistsInGroups(Group : TGroup; Groups : TGroups) : Boolean;
 Procedure ReplaceGroupsW(GroupsToDelete, GroupsToAdd : TGroups; var Groups : TGroups);
 Function GroupWithCodeExists(GroupCode : String) : Boolean;
@@ -137,105 +137,18 @@ begin
   SetLength(Groups, 0);
 end;
 
-{$IFDEF EXT}
-Function GetExt(Filename : string) : string;
+function RandomPwd(PWLen: Integer; StrTable: string): string;
 var
-  i,j:integer;
-  s:string;
+  Y, I: Integer;
 begin
- j:=0;
- For i:=length(filename) downto 1 do
- begin
-  If filename[i]='.' then
+  Randomize;
+  SetLength(Result, PWLen);
+  Y := Length(StrTable);
+  for I := 1 to PWLen do
   begin
-   j:=i;
-   break;
+    Result[I] := StrTable[Random(Y) + 1];
   end;
-  If filename[i]='\' then break;
- end;
- s:='';
- If j<>0 then
- begin
-  s:=copy(filename,j+1,length(filename)-j);
-  For i:=1 to length(s) do
-  s[i]:=Upcase(s[i]);
- end;
- result:=s;
 end;
-
-function GetFileNameWithoutExt(filename : string) : string;
-var
-  i, n : integer;
-begin
- Result:='';
- If filename='' then exit;
- n:=0;
- for i:=length(filename)-1 downto 1 do
- If filename[i]='\' then
- begin
-  n:=i;
-  break;
- end;
- delete(filename,1,n);
- If filename<>'' then
- If filename[Length(filename)]='\' then
- Delete(filename,Length(filename),1);
- For i:=Length(filename) Downto 1 do
- begin
-  if filename[i]='.' then
-  begin
-   FileName:=Copy(filename,1,i-1);
-   Break;
-  end;
- end;
- Result:=FileName;
-end;
-
-procedure UnFormatDir(var s:string);
-begin
- if s='' then exit;
- if s[length(s)]='\' then Delete(s,length(s),1);
-end;
-
-procedure FormatDir(var s:string);
-begin
- if s='' then exit;
- if s[length(s)]<>'\' then s:=s+'\';
-end;
-
-function GetDirectory(FileName:string):string;
-var
-  i, n: integer;
-begin
- n:=0;
- for i:=Length(FileName) downto 1 do
- If FileName[i]='\' then
- begin
-  n:=i;
-  Break;
- end;
- Delete(filename,n,length(filename)-n+1);
- Result:=FileName;
- FormatDir(Result);
-end;
-
-function NormalizeDBString(S : String) : String;
-var
-  i : integer;
-begin
- result:=s;
- i:=1;
- if length(result)>0 then
- Repeat
-  if result[i]='"' then
-  begin
-   insert('"',result,i);
-   inc(i);
-  end;
-  inc(i);
- until i>length(result);
-end;
-{$ENDIF}
 
 function CreateNewGroupCode : String;
 Const
@@ -877,7 +790,7 @@ begin
   end;
 end;
 
-function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; UseInclude : Boolean = false) : TGroups;
+function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; SortByName : Boolean; UseInclude : Boolean = false) : TGroups;
 var
   Table : TDataSet;
   N: Integer;
@@ -938,7 +851,7 @@ begin
   finally
     FreeDS(Table);
   end;
-  if DBKernel.Readbool('Options', 'SortGroupsByName', True) then
+  if SortByName then
     for I := 1 to Length(Result) do
     begin
       B := True;

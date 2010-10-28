@@ -196,7 +196,7 @@ begin
       Action.InGroup:=GetGroupByGroupNameW(Groups[i].GroupName,false,FileName);
       Action.Action:=GROUP_ACTION_ADD_IN_EXISTS;
       AddGroupsAction(Actions.Actions,Action);
-      InRegGroups:=GetRegisterGroupListW(FileName,True);
+      InRegGroups:=GetRegisterGroupListW(FileName,True, DBKernel.SortGroupsByName);
      end else
      begin
       MessageBoxDB(GetActiveFormHandle,Format(TEXT_MES_ERROR_ADDING_GROUP,[Groups[i].GroupName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);

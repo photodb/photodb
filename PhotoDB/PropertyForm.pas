@@ -13,7 +13,7 @@ uses
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
   UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
-  UnitBitmapImageList, uListViewUtils, uList64, uDBForm;
+  UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);

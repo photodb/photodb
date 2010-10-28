@@ -10,7 +10,8 @@ uses
   ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
-  UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM;
+  UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
+  uDBPopupMenuInfo, uConstants;
 
 type TDBPopupMenu = class
    private

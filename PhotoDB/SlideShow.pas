@@ -13,7 +13,7 @@ uses
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
-  uListViewUtils, uFormListView, uImageSource;
+  uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo;
 
 type
   TRotatingImageInfo = record

@@ -447,7 +447,6 @@ var
   SHFileOpStruct: TSHFileOpStruct;
   SrcBuf: TBuffer;
 begin
-  Result := -1;
   Inc(CopyFilesSynchCount);
   try
     CreateBuffer(Src, SrcBuf);
@@ -510,7 +509,7 @@ begin
   Files := TStringList.Create;
   try
     Files.Add(FileName);
-    SilentDeleteFiles(Handle, Files, ToRecycle, HideErrors);
+    Result := SilentDeleteFiles(Handle, Files, ToRecycle, HideErrors);
   finally
     F(Files);
   end;

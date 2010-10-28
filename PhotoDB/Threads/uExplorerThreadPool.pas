@@ -4,7 +4,8 @@ interface
 
 uses Windows, Math, Classes, SysUtils, SyncObjs,
      dolphin_db, ExplorerTypes, UnitDBDeclare,
-     uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory;
+     uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory,
+     uConstants;
 
 type
   TExplorerThreadPool = class(TThreadPoolCustom)
@@ -56,6 +57,7 @@ begin
       Avaliablethread.IsCryptedFile := CryptedFile;
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_IMAGE;
+      Avaliablethread.OwnerThreadType := Thread.ThreadType;
 
       StartThread(Thread, Avaliablethread);
     end;
@@ -90,6 +92,7 @@ begin
       Avaliablethread.IsCryptedFile := False;
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_BIG_IMAGE;
+      Avaliablethread.OwnerThreadType := Thread.ThreadType;
 
       StartThread(Thread, Avaliablethread);
     end;
@@ -123,6 +126,7 @@ begin
       Avaliablethread.IsCryptedFile := False;
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_DIRECTORY;
+      Avaliablethread.OwnerThreadType := Thread.ThreadType;
 
       StartThread(Thread, Avaliablethread);
     end;

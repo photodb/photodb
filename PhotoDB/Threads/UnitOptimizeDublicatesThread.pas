@@ -5,7 +5,7 @@ interface
 uses
   Classes, Language, Dolphin_DB, UnitLinksSupport, DB, SysUtils,
   CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc, uFileUtils,
-  UnitDBDeclare, uMemory;
+  UnitDBDeclare, uMemory, uConstants;
 
 type
   TThreadOptimizeDublicates = class(TThread)

@@ -5,8 +5,8 @@ interface
 uses
   ReplaceForm, UnitDBKernel, Windows, Dolphin_db, Classes, UnitUpdateDB, Forms,
   SysUtils, DB, GraphicCrypt, Dialogs, Exif, DateUtils, CommonDBSupport,
-  Win32crc, Jpeg, UnitUpdateDBObject, UVistaFuncs, ULogger, UFileUtils,
-  UnitDBDeclare, UnitDBCommon, UMemory;
+  Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
+  UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;

@@ -295,7 +295,8 @@ uses
   uDBThread in 'Threads\uDBThread.pas',
   uGraphicUtils in 'Units\uGraphicUtils.pas',
   UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas',
-  uImageSource in 'Units\uImageSource.pas';
+  uImageSource in 'Units\uImageSource.pas',
+  uDBPopupMenuInfo in 'Units\uDBPopupMenuInfo.pas';
 
 {$R *.res}
 

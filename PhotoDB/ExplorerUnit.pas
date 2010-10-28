@@ -16,9 +16,9 @@ uses
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
-  UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources,
+  UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
-  uFileUtils, uListViewUtils, uDBDrawing, uW7TaskBar, uMemory, LoadingSign;
+  uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -303,7 +303,7 @@ type
     procedure WaitForUnLock;
     Procedure SetOldPath(Path : String);
     procedure FormShow(Sender: TObject);
-    procedure SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
+//    procedure SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
     procedure NewWindow1Click(Sender: TObject);
     procedure Cut1Click(Sender: TObject);
     procedure Paste1Click(Sender: TObject);
@@ -520,7 +520,7 @@ type
      FDblClicked : Boolean;
      FSelectedInfo : TSelectedInfo;
      fStatusProgress : TProgressBar;
-     fFilesInfo : TExplorerFileInfos;
+     FFilesInfo : TExplorerFileInfos;
      fCurrentPath : String;
      fCurrentTypePath : Integer;
      LockDrawIcon : boolean;
@@ -910,6 +910,7 @@ begin
   LsMain.BringToFront;
   LsMain.Color := clWindow;
 
+  GOM.AddObj(Self);
   if FGoToLastSavedPath then
   begin
     NewPath:=DBkernel.ReadString('Explorer','Patch');
@@ -925,7 +926,6 @@ begin
   end;
   FW7TaskBar := CreateTaskBarInstance;
   CreateBackgrounds;
-  GOM.AddObj(Self);
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
@@ -1099,6 +1099,7 @@ begin
   SendTo1.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
+
   if fFilesInfo[PmItemPopup.tag].FileType = EXPLORER_ITEM_DRIVE then
   begin
     DBitem1.Visible := False;
@@ -1552,7 +1553,7 @@ begin
 
   DBkernel.WriteString('Explorer','Patch',GetCurrentPathW.Path);
   DBkernel.WriteInteger('Explorer','PatchType',GetCurrentPathW.PType);
-  fStatusProgress.free;
+  FStatusProgress.Free;
   FormManager.UnRegisterMainForm(Self);
   DBKernel.UnRegisterForm(self);
   F(FFilesInfo);
@@ -1657,7 +1658,7 @@ begin
 
   HintTimer.Enabled := False;
 
-  MenuInfo := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[index]);
+  MenuInfo := FFilesInfo[index].Copy;
   THintManager.Instance.CreateHintWindow(Self, MenuInfo, P, HintRealA);
 end;
 
@@ -1767,14 +1768,14 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
+{procedure TExplorerForm.SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
 var
   InternalInfo : TExplorerFileInfo;
 begin
   InternalInfo := fFilesInfo[Number];
   InternalInfo.FileName:=info.ItemFileName;
   InternalInfo.ID:=info.ItemId;
-  InternalInfo.Rotate:=info.ItemRotate;
+  InternalInfo.Rotation:=info.ItemRotate;
   InternalInfo.Access:=info.ItemAccess;
   InternalInfo.Rating:=info.ItemRating;
   InternalInfo.FileSize:=info.ItemSize;
@@ -1791,7 +1792,7 @@ begin
   InternalInfo.Links:=Info.ItemLinks;
   if AnsiLowerCase(Info.ItemFileName) = AnsiLowerCase(FSelectedInfo.FileName) then
     ListView1SelectItem(nil, nil, false);
-end;
+end; }
 
 procedure TExplorerForm.SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
 var
@@ -1805,7 +1806,7 @@ begin
     begin
       ExplorerInfo.FileName := info.ItemFileName;
       ExplorerInfo.ID := info.ItemId;
-      ExplorerInfo.Rotate := info.ItemRotate;
+      ExplorerInfo.Rotation := info.ItemRotate;
       ExplorerInfo.Access := info.ItemAccess;
       ExplorerInfo.Rating := info.ItemRating;
       ExplorerInfo.FileSize := info.ItemSize;
@@ -1922,7 +1923,7 @@ begin
       Exit;
     if FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE then
     begin
-      MenuRecord := TDBPopupMenuInfoRecord.CreateFromExplorerInfo(FFilesInfo[ItemIndex]);
+      MenuRecord := FFilesInfo[ItemIndex].Copy;
       MenuRecord.Selected := ElvMain.Items[I].Selected;
       Result.Add(MenuRecord);
       if Item <> nil then
@@ -2082,8 +2083,8 @@ begin
         begin
           if EventID_Param_Rotate in Params then
           begin
-            ReRotation := GetNeededRotation(FFilesInfo[I].Rotate, Value.Rotate);
-            FFilesInfo[I].Rotate := Value.Rotate;
+            ReRotation := GetNeededRotation(FFilesInfo[I].Rotation, Value.Rotate);
+            FFilesInfo[I].Rotation := Value.Rotate;
           end;
 
           if EventID_Param_Private in Params then
@@ -2170,7 +2171,7 @@ procedure TExplorerForm.FormClose(Sender: TObject;
 begin
   ExplorerManager.RemoveExplorer(Self);
   THintManager.Instance.CloseHint;
-  Hinttimer.Enabled:=false;
+  Hinttimer.Enabled := False;
   Release;
 end;
 
@@ -2201,60 +2202,101 @@ begin
   UpdaterDB.AddDirectory(GetCurrentPath, nil)
 end;
 
-procedure TExplorerForm.RefreshItem(Number: Integer);
+procedure TExplorerForm.Refresh1Click(Sender: TObject);
 var
   UpdaterInfo : TUpdaterInfo;
-  info : TExplorerViewInfo;
-  Index : integer;
+  Info: TExplorerViewInfo;
+  I, Index: Integer;
 begin
- Index := ItemIndexToMenuIndex(Number);
- UpdaterInfo.IsUpdater:=false;
- UpdaterInfo.ID:=0;
-{ if HelpNo=3 then
- UpdaterInfo.ProcHelpAfterUpdate:=Help1NextClick else   }
- UpdaterInfo.ProcHelpAfterUpdate:=nil;
- info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
- info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
- info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
- info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
- info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
- info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
- info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
- info.View:=ListView;
- info.PictureSize:=fPictureSize;
- if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
- TExplorerThread.Create(fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,StateID);
- if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_EXEFILE) then
- TExplorerThread.Create(fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,StateID);
+  UpdaterInfo.IsUpdater := False;
+  UpdaterInfo.UpdateDB := False;
+  UpdaterInfo.ProcHelpAfterUpdate := nil;
+  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.View := ListView;
+  Info.PictureSize := FPictureSize;
+  for I := 0 to ElvMain.Items.Count - 1 do
+    if ElvMain.Items[I].Selected then
+    begin
+      UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
+      if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) then
+        TExplorerThread.Create(FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID), THREAD_TYPE_IMAGE,
+          Info, Self, UpdaterInfo, StateID);
+
+      if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
+        TExplorerThread.Create(FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID),
+          THREAD_TYPE_FOLDER_UPDATE, Info, Self, UpdaterInfo, StateID);
+    end;
+end;
+
+procedure TExplorerForm.RefreshItem(Number: Integer);
+var
+  UpdaterInfo: TUpdaterInfo;
+  Info: TExplorerViewInfo;
+  Index: Integer;
+begin
+  Index := ItemIndexToMenuIndex(Number);
+  UpdaterInfo.IsUpdater := False;
+  UpdaterInfo.UpdateDB := False;
+  UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
+  { if HelpNo=3 then
+    UpdaterInfo.ProcHelpAfterUpdate:=Help1NextClick else }
+  UpdaterInfo.ProcHelpAfterUpdate := nil;
+  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.View := ListView;
+  Info.PictureSize := FPictureSize;
+  if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
+    TExplorerThread.Create(FFilesInfo[index].FileName, GUIDToString(FFilesInfo[index].SID), THREAD_TYPE_IMAGE, Info,
+      Self, UpdaterInfo, StateID);
+  if (FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[index].FileType = EXPLORER_ITEM_EXEFILE) then
+    TExplorerThread.Create(FFilesInfo[index].FileName, GUIDToString(FFilesInfo[index].SID), THREAD_TYPE_FILE, Info,
+      Self, UpdaterInfo, StateID);
 end;
 
 procedure TExplorerForm.RefreshItemA(Number: Integer);
 var
-  UpdaterInfo : TUpdaterInfo;
-  info : TExplorerViewInfo;
-  Index : integer;
+  UpdaterInfo: TUpdaterInfo;
+  Info: TExplorerViewInfo;
+  index: Integer;
 begin
- Index := ItemIndexToMenuIndex(Number);
- if Index=-1 then exit;
- if Index>fFilesInfo.Count-1 then exit;
- UpdaterInfo.IsUpdater:=false;
- UpdaterInfo.ID:=fFilesInfo[Index].ID;
- UpdaterInfo.ProcHelpAfterUpdate:=nil;
- info.ShowFolders:=DBKernel.Readbool('Options','Explorer_ShowFolders',True);
- info.ShowSimpleFiles:=DBKernel.Readbool('Options','Explorer_ShowSimpleFiles',True);
- info.ShowImageFiles:=DBKernel.Readbool('Options','Explorer_ShowImageFiles',True);
- info.ShowHiddenFiles:=DBKernel.Readbool('Options','Explorer_ShowHiddenFiles',False);
- info.ShowAttributes:=DBKernel.Readbool('Options','Explorer_ShowAttributes',True);
- info.ShowThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForFolders',True);
- info.SaveThumbNailsForFolders:=DBKernel.Readbool('Options','Explorer_SaveThumbnailsForFolders',True);
- info.ShowThumbNailsForImages:=DBKernel.Readbool('Options','Explorer_ShowThumbnailsForImages',True);
- info.View:=ListView;
- info.PictureSize:=fPictureSize;
- if fFilesInfo[Index].FileType=EXPLORER_ITEM_IMAGE then
- TExplorerThread.Create(fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_IMAGE,info,self,UpdaterInfo,StateID);
- if (fFilesInfo[Index].FileType=EXPLORER_ITEM_FILE) or (fFilesInfo[Index].FileType=EXPLORER_ITEM_EXEFILE) then
- TExplorerThread.Create(fFilesInfo[Index].FileName,GUIDToString(fFilesInfo[Index].SID),THREAD_TYPE_FILE,info,self,UpdaterInfo,StateID);
+  index := ItemIndexToMenuIndex(Number);
+  if index = -1 then
+    Exit;
+  if index > FFilesInfo.Count - 1 then
+    Exit;
+  UpdaterInfo.IsUpdater := False;
+  UpdaterInfo.UpdateDB := True;
+  UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[index].Copy);
+  UpdaterInfo.ProcHelpAfterUpdate := nil;
+  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.View := ListView;
+  Info.PictureSize := FPictureSize;
+  if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
+    TExplorerThread.Create(FFilesInfo[index].FileName, GUIDToString(FFilesInfo[index].SID), THREAD_TYPE_IMAGE, Info,
+      Self, UpdaterInfo, StateID);
+  if (FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[index].FileType = EXPLORER_ITEM_EXEFILE) then
+    TExplorerThread.Create(FFilesInfo[index].FileName, GUIDToString(FFilesInfo[index].SID), THREAD_TYPE_FILE, Info,
+      Self, UpdaterInfo, StateID);
 end;
 
 procedure TExplorerForm.HistoryChanged(Sender: TObject);
@@ -2419,43 +2461,6 @@ begin
  FDBCanDrag:=false;
  fDBCanDragW:=false;
  SetLength(fFilesToDrag,0);
-end;
-
-procedure TExplorerForm.Refresh1Click(Sender: TObject);
-var
-  UpdaterInfo : TUpdaterInfo;
-  Info: TExplorerViewInfo;
-  I, index: Integer;
-begin
-  UpdaterInfo.IsUpdater := False;
-  UpdaterInfo.ProcHelpAfterUpdate := nil;
-  UpdaterInfo.ID := 0;
-  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-  Info.View := ListView;
-  Info.PictureSize := FPictureSize;
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      if (FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) then
-      begin
-        TExplorerThread.Create(FFilesInfo[index].FileName, GUIDToString(FFilesInfo[index].SID), THREAD_TYPE_IMAGE,
-          Info, Self, UpdaterInfo, StateID);
-      end;
-
-      if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) then
-      begin
-        TExplorerThread.Create(FFilesInfo[index].FileName, GUIDToString(FFilesInfo[index].SID),
-          THREAD_TYPE_FOLDER_UPDATE, Info, Self, UpdaterInfo, StateID);
-      end;
-    end;
 end;
 
 procedure TExplorerForm.RefreshItemByID(ID: Integer);
@@ -2918,8 +2923,11 @@ begin
         if ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
         begin
-          PmItemPopup.Tag := ItemIndexToMenuIndex(ListView1Selected.index);
-          Rename1Click(Self);
+          if ListView1Selected <> nil then
+          begin
+            PmItemPopup.Tag := ItemIndexToMenuIndex(ListView1Selected.Index);
+            Rename1Click(Self);
+          end;
         end;
 
       if (Msg.WParam = VK_DELETE) and ShiftKeyDown then
@@ -2988,6 +2996,7 @@ var
   ExplorerViewInfo: TExplorerViewInfo;
   UpdaterInfo: TUpdaterInfo;
   FileName, FOldFileName: string;
+  Info : TExplorerFileInfo;
 begin
   if not FormLoadEnd then
     Exit;
@@ -3003,8 +3012,10 @@ begin
               Exit;
           UpdaterInfo.IsUpdater := True;
           begin
-            UpdaterInfo.FileName := PInfo[K].FNewFileName;
-            UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(UpdaterInfo.FileName);
+            Info := TExplorerFileInfo.Create;
+            Info.FileName := PInfo[K].FNewFileName;
+            UpdaterInfo.FileInfo := Info;
+            UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
             Self.NewFileName := '';
             ExplorerViewInfo.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
             ExplorerViewInfo.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
@@ -3115,7 +3126,7 @@ begin
     if FFilesInfo[I].FileName = Info[0].FileName then
       Exit;
 
-  FFilesInfo.Add(Info[0].Clone);
+  FFilesInfo.Add(Info[0].Copy);
 end;
 
 function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;
@@ -4069,14 +4080,14 @@ begin
   FSync := TCriticalSection.Create;
   FExplorers := TList.Create;
   FForms := TList.Create;
-  fShowPrivate:=false;
+  FShowPrivate := False;
 end;
 
 destructor TManagerExplorer.Destroy;
 begin
-  FExplorers.Free;
-  FForms.Free;
-  FSync.Free;
+  F(FExplorers);
+  F(FForms);
+  F(FSync);
   inherited;
 end;
 
@@ -4717,6 +4728,7 @@ begin
   EventLog('SetNewPathW "' + WPath.Path + '"');
   FDBCanDragW := False;
   FDBCanDrag := False;
+  TbUp.Enabled := WPath.PType <> EXPLORER_ITEM_MYCOMPUTER;
   OldDir := GetCurrentPath;
   Path := WPath.Path;
   ThreadType := THREAD_TYPE_FOLDER;
@@ -4787,8 +4799,14 @@ begin
       (WPath.PType = EXPLORER_ITEM_SHARE) then
     begin
       EventLog('ExplorerThreadNotifyDirectoryChange');
+      try
+        TW.I.Start(' -> DirectoryWatcher.StopWatch');
       DirectoryWatcher.StopWatch;
+        TW.I.Start(' -> DirectoryWatcher.Start');
       DirectoryWatcher.Start(S, Self, StateID);
+      except
+        TW.I.Start(' -> EXCEPTION!!!');
+      end;
     end
     else if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
       S := MyComputer;
@@ -7201,7 +7219,7 @@ begin
   Exists := 1;
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.FileName,
-    Info.Rating, Info.Rotate, Info.Access, Info.Crypted, Exists);
+    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Exists);
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(
@@ -7480,7 +7498,8 @@ end;
 
 function TExplorerForm.GetAllItems: TExplorerFileInfos;
 begin
-  Result := fFilesInfo.Clone;
+  Result := TExplorerFileInfos.Create;
+  Result.Assign(FFilesInfo);
 end;
 
 procedure TExplorerForm.DoDefaultSort(GUID : TGUID);

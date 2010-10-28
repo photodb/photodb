@@ -10,9 +10,9 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
-      UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants, uList64,
-      UnitLinksSupport, EasyListView, ExplorerTypes, ImageConverting,
-      uMemory;
+      UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
+      UnitLinksSupport, EasyListView, ImageConverting,
+      uMemory, uDBPopupMenuInfo;
 
 const
   DBInDebug = True;
@@ -22,130 +22,6 @@ const
 var
   LOGGING_ENABLED: Boolean = True;
   LOGGING_MESSAGE: Boolean = False;
-
-const
-  Pwd_rusup = '¨ÉÖÓÊÅÍÃØÙÇÕÚÔÛÂÀÏÐÎËÄÆÝß×ÑÌÈÒÜÁÞ';
-  Pwd_rusdown = '¸éöóêåíãøùçõúôûâàïðîëäæýÿ÷ñìèòüáþ';
-  Pwd_englup = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-  Pwd_engldown = 'qwertyuiopasdfghjklzxcvbnm';
-  Pwd_cifr = '0123456789';
-  Pwd_spec = '!#$%&()=?@<>|{[]}/\*~+#;:.-_';
-  Abs_engl: set of AnsiChar = ['a' .. 'z', 'A' .. 'Z'];
-  Abs_rus: set of AnsiChar = ['à' .. 'ß', 'à' .. 'ß'];
-  Abs_cifr: set of AnsiChar = ['0' .. '9'];
-  Abs_hex: set of AnsiChar = ['a' .. 'e', 'A' .. 'E', '0' .. '9'];
-  Abs_englUp: set of AnsiChar = ['A' .. 'Z'];
-  Abs_rusUp: set of AnsiChar = ['À' .. 'ß'];
-  Abs_englDown: set of AnsiChar = ['a' .. 'z'];
-  Abs_rusDown: set of AnsiChar = ['à' .. 'ÿ'];
-
-  SHELL_FOLDERS_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\Explorer';
-  QUICK_LAUNCH_ROOT = 'Software\MicroSoft\Windows\CurrentVersion\GrpConv';
-
-  Cifri: set of AnsiChar = ['0' .. '9'];
-
-  Unusedchar: set of AnsiChar = ['''', '/', '|', '\', '<', '>', '"', '?', '*', ':'];
-  Unusedchar_folders: set of AnsiChar = ['''', '/', '|', '<', '>', '"', '?', '*', ':'];
-  Abs_alldb = ['0' .. '9', 'à' .. 'ÿ', 'À' .. 'ß', '¸', '¨', 'a' .. 'z', 'A' .. 'Z', '/', '|', '\', '<', '>', '''',
-    '?', '*', ':'];
-
-  Validchars: set of AnsiChar = ['a' .. 'z', 'A' .. 'Z', '[', ']', '-', '_', '!', ':', ';', '\', '/', '.', ',', ' ',
-    '0' .. '9'];
-  Validcharsmdb: set of AnsiChar = ['a' .. 'z', 'A' .. 'Z', '[', ']', '-', '_', '!', ':', ';', '\', '/', '.', ',', ' ',
-    '0' .. '9', ' ', 'à' .. 'ÿ', 'À' .. 'ß'];
-
-const
-  Db_access_private = 1;
-  Db_access_none = 0;
-  Db_attr_norm = 0;
-  Db_attr_not_exists = 1;
-  Db_attr_dublicate = 2;
-
-const
-
-  DB_IMAGE_ROTATE_UNKNOWN = -1;
-  DB_IMAGE_ROTATE_0       = 0;
-  DB_IMAGE_ROTATE_90      = 1;
-  DB_IMAGE_ROTATE_180     = 2;
-  DB_IMAGE_ROTATE_270     = 3;
-  DB_IMAGE_ROTATE_EXIF    = 4;
-
-  Result_Invalid                    = -1;
-  Result_Add                        =  0;
-  Result_Add_All                    =  1;
-  Result_Skip                       =  2;
-  Result_Skip_All                   =  3;
-  Result_Replace                    =  4;
-  Result_Replace_All                =  5;
-  Result_Replace_And_Del_Dublicates =  6;
-  Result_Delete_File                =  7;
-
-  DemoDays = 30;
-  LimitDemoRecords = 1000;
-
-type
-  TDBPopupMenuInfo = class(TObject)
-  private
-    FData: TList;
-    FAttrExists: Boolean;
-    FIsPlusMenu: Boolean;
-    FIsListItem: Boolean;
-    FListItem: TEasyItem;
-    function GetValueByIndex(index: Integer): TDBPopupMenuInfoRecord;
-    function GetCount: Integer;
-    function GetIsVariousInclude: Boolean;
-    function GetStatRating: Integer;
-    function GetStatDate: TDateTime;
-    function GetStatTime: TDateTime;
-    function GetStatIsDate: Boolean;
-    function GetStatIsTime: Boolean;
-    function GetIsVariousDate: Boolean;
-    function GetIsVariousTime: Boolean;
-    function GetCommonKeyWords: string;
-    function GetIsVariousComments: Boolean;
-    function GetCommonGroups: string;
-    function GetCommonLinks: TLinksInfo;
-    function GetPosition: Integer;
-    procedure SetPosition(const Value: Integer);
-    function GetStatInclude: Boolean;
-    function GetCommonComments: string;
-    procedure SetValueByIndex(index: Integer;
-      const Value: TDBPopupMenuInfoRecord);
-  public
-    constructor Create;
-    destructor Destroy; override;
-    procedure Assign(Source : TDBPopupMenuInfo);
-    procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
-    function Add(FileName: string) : TDBPopupMenuInfoRecord; overload;
-    procedure Clear;
-    procedure Exchange(Index1, Index2 : Integer);
-    procedure Delete(Index : Integer);
-    function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
-    property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex write SetValueByIndex; default;
-    property IsListItem: Boolean read FIsListItem write FIsListItem;
-    property AttrExists: Boolean read FAttrExists write FAttrExists;
-    property Count: Integer read GetCount;
-    property IsVariousInclude: Boolean read GetIsVariousInclude;
-    property IsVariousDate: Boolean read GetIsVariousDate;
-    property IsVariousTime: Boolean read GetIsVariousTime;
-    property IsVariousComments: Boolean read GetIsVariousComments;
-    property StatRating: Integer read GetStatRating;
-    property StatDate: TDateTime read GetStatDate;
-    property StatTime: TDateTime read GetStatTime;
-    property StatIsDate: Boolean read GetStatIsDate;
-    property StatIsTime: Boolean read GetStatIsTime;
-    property StatInclude: Boolean read GetStatInclude;
-    property IsPlusMenu: Boolean read FIsPlusMenu write FIsPlusMenu;
-    property CommonKeyWords: string read GetCommonKeyWords;
-    property CommonGroups: string read GetCommonGroups;
-    property CommonLinks: TLinksInfo read GetCommonLinks;
-    property CommonComments: string read GetCommonComments;
-    property Position: Integer read GetPosition write SetPosition;
-    property ListItem: TEasyItem read FListItem write FListItem;
-    // TODO: +  PlusMenu : TArMenuitem;
-    // TODO: +  IsListItem : boolean;
-    // TODO: +  ListItem : TObject;
-  end;
 
 type
   TBuffer = array of Char;
@@ -501,7 +377,6 @@ function LoadIDsFromfileA(FileName: string): TArInteger;
 function LoadImThsFromfileA(FileName: string): TArStrings;
 function SaveImThsTofile(FileName: string; ImThs: TArstrings): Boolean;
 
-function NormalizeDBString(S: string): string;
 function HardwareStringToCode(Hs: string): string;
 function CodeToActivateCode(S: string): string;
 function GetuserString: string;
@@ -540,7 +415,6 @@ function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; var Info: TOneR
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
 function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
 { END DB Types }
-function NormalizeDBStringLike(S: string): string;
 procedure ShowPropertiesDialog(FName: string);
 procedure ShowMyComputerProperties(Hwnd: THandle);
 function KillTask(ExeFileName: string): Integer;
@@ -614,7 +488,6 @@ function CreateShortcutW(SourceFileName, ShortcutName: string; // the file the s
   Parameters, Description: string): // description property of the shortcut
   string;
 procedure HideFromTaskBar(Handle: Thandle);
-function RandomPwd(PWLen: Integer; StrTable: string): string;
 procedure Del_Close_btn(Handle: Thandle);
 procedure DoUpdateHelp;
 function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean;
@@ -2458,21 +2331,6 @@ begin
   FreeMem(Buffer);
 end;
 
-function NormalizeDBString(S: string): string;
-begin
-  Result := AnsiQuotedStr(S, '"')
-end;
-
-function NormalizeDBStringLike(S: string): string;
-var
-  I: Integer;
-begin
-  for I := 1 to Length(S) do
-    if (S[I] = '[') or (S[I] = ']') then
-      S[I] := '_';
-  Result := S;
-end;
-
 function GetIdByFileName(FileName: string): Integer;
 var
   FQuery: TDataSet;
@@ -3765,12 +3623,11 @@ var
   procedure DoDBkernelEvent(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
   begin
     if Assigned(OnDBKernelEvent) then
-    begin
-      OnDBKernelEvent(Sender, ID, Params, Value);
-    end
+      OnDBKernelEvent(Sender, ID, Params, Value)
     else
     begin
-      DBKernel.DoIDEvent(Sender, ID, Params, Value);
+      if GetCurrentThreadId = MainThreadID then
+        DBKernel.DoIDEvent(Sender, ID, Params, Value);
     end;
   end;
 
@@ -4167,7 +4024,7 @@ begin
   Body := TStringList.Create;
   Body.Add('Error body:');
   Body.Add(ErrorValue);
-  SendMail('', ProgramMail, PAnsiChar('Error in program [' + Error + ']'), PAnsichar(Body.Text), '', True);
+  SendMail('', ProgramMail, PAnsiChar('Error in program [' + Error + ']'), PAnsiChar(Body.Text), '', True);
   Body.Free;
 end;
 
@@ -4834,6 +4691,7 @@ end;
 
 function ColorDarken(Color: TColor): TColor;
 begin
+  Color := ColorToRGB(Color);
   Result := RGB(Round(GetRValue(Color) / 1.2), (Round(GetGValue(Color) / 1.2)), (Round(GetBValue(Color) / 1.2)));
 end;
 
@@ -5054,428 +4912,413 @@ begin
     end;
   end;
 
-   function GetProgramFilesDirByKeyStr(KeyStr: string): string;
-  var
-    DwKeySize: DWORD;
-    Key: HKEY;
-    DwType: DWORD;
-  begin
-    if RegOpenKeyEx(Windows.HKEY_LOCAL_MACHINE, PChar(KeyStr), 0, KEY_READ, Key) = ERROR_SUCCESS then
-      try
-        RegQueryValueEx(Key, 'ProgramFilesDir', nil, @DwType, nil, @DwKeySize);
+function GetProgramFilesDirByKeyStr(KeyStr: string): string;
+var
+  DwKeySize: DWORD;
+  Key: HKEY;
+  DwType: DWORD;
+begin
+  if RegOpenKeyEx(Windows.HKEY_LOCAL_MACHINE, PChar(KeyStr), 0, KEY_READ, Key) = ERROR_SUCCESS then
+    try
+      RegQueryValueEx(Key, 'ProgramFilesDir', nil, @DwType, nil, @DwKeySize);
+      if (DwType in [REG_SZ, REG_EXPAND_SZ]) and (DwKeySize > 0) then
+      begin
+        SetLength(Result, DwKeySize);
+        RegQueryValueEx(Key, 'ProgramFilesDir', nil, @DwType, PByte(PChar(Result)), @DwKeySize);
+      end
+      else
+      begin
+        RegQueryValueEx(Key, 'ProgramFilesPath', nil, @DwType, nil, @DwKeySize);
         if (DwType in [REG_SZ, REG_EXPAND_SZ]) and (DwKeySize > 0) then
         begin
           SetLength(Result, DwKeySize);
-          RegQueryValueEx(Key, 'ProgramFilesDir', nil, @DwType, PByte(PChar(Result)), @DwKeySize);
-        end
-        else
-        begin
-          RegQueryValueEx(Key, 'ProgramFilesPath', nil, @DwType, nil, @DwKeySize);
-          if (DwType in [REG_SZ, REG_EXPAND_SZ]) and (DwKeySize > 0) then
-          begin
-            SetLength(Result, DwKeySize);
-            RegQueryValueEx(Key, 'ProgramFilesPath', nil, @DwType, PByte(PChar(Result)), @DwKeySize);
-          end;
+          RegQueryValueEx(Key, 'ProgramFilesPath', nil, @DwType, PByte(PChar(Result)), @DwKeySize);
         end;
-      finally
-        RegCloseKey(Key);
       end;
-  end;
-
-  function GetProgramFilesDir: string;
-  const
-    DefaultProgramFilesDir = '%SystemDrive%\Program Files';
-  var
-    FolderName: string;
-    DwStrSize: DWORD;
-    I: Integer;
-  begin
-    if Win32Platform = VER_PLATFORM_WIN32_NT then
-    begin
-      FolderName := GetProgramFilesDirByKeyStr('Software\Microsoft\Windows NT\CurrentVersion');
+    finally
+      RegCloseKey(Key);
     end;
-    if Length(FolderName) = 0 then
-    begin
-      FolderName := GetProgramFilesDirByKeyStr('Software\Microsoft\Windows\CurrentVersion');
-    end;
-    if Length(FolderName) = 0 then
-      FolderName := DefaultProgramFilesDir;
-    DwStrSize := ExpandEnvironmentStrings(PChar(FolderName), nil, 0);
-    SetLength(Result, DwStrSize);
-    ExpandEnvironmentStrings(PChar(FolderName), PChar(Result), DwStrSize);
-    for I := 1 to Length(Result) do
-      if Result[I] = #0 then
-      begin
-        Result := Copy(Result, 1, I - 1);
-        Break;
-      end;
-  end;
+end;
 
-  procedure DelDir(Dir: string; Mask: string);
-  var
-    Found: Integer;
-    SearchRec: TSearchRec;
-    F: Textfile;
+function GetProgramFilesDir: string;
+const
+  DefaultProgramFilesDir = '%SystemDrive%\Program Files';
+var
+  FolderName: string;
+  DwStrSize: DWORD;
+  I: Integer;
+begin
+  if Win32Platform = VER_PLATFORM_WIN32_NT then
   begin
-    if Length(Dir) < 4 then
-      Exit;
-    if Dir[Length(Dir)] <> '\' then
-      Dir := Dir + '\';
-    Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
-    while Found = 0 do
+    FolderName := GetProgramFilesDirByKeyStr('Software\Microsoft\Windows NT\CurrentVersion');
+  end;
+  if Length(FolderName) = 0 then
+  begin
+    FolderName := GetProgramFilesDirByKeyStr('Software\Microsoft\Windows\CurrentVersion');
+  end;
+  if Length(FolderName) = 0 then
+    FolderName := DefaultProgramFilesDir;
+  DwStrSize := ExpandEnvironmentStrings(PChar(FolderName), nil, 0);
+  SetLength(Result, DwStrSize);
+  ExpandEnvironmentStrings(PChar(FolderName), PChar(Result), DwStrSize);
+  for I := 1 to Length(Result) do
+    if Result[I] = #0 then
     begin
-      if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+      Result := Copy(Result, 1, I - 1);
+      Break;
+    end;
+end;
+
+procedure DelDir(Dir: string; Mask: string);
+var
+  Found: Integer;
+  SearchRec: TSearchRec;
+  F: Textfile;
+begin
+  if Length(Dir) < 4 then
+    Exit;
+  if Dir[Length(Dir)] <> '\' then
+    Dir := Dir + '\';
+  Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
+  while Found = 0 do
+  begin
+    if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+    begin
+      if Fileexists(Dir + SearchRec.name) and Extinmask(Mask, Getext(Dir + SearchRec.name)) then
       begin
-        if Fileexists(Dir + SearchRec.name) and Extinmask(Mask, Getext(Dir + SearchRec.name)) then
-        begin
-          try
-            Filesetattr(Dir + SearchRec.name, 0);
-            Assignfile(F, Dir + SearchRec.name);
+        try
+          Filesetattr(Dir + SearchRec.name, 0);
+          Assignfile(F, Dir + SearchRec.name);
 {$I-}
-            Erase(F);
+          Erase(F);
 {$I+}
-          except
-            ;
-          end;
-        end
-        else if Directoryexists(Dir + SearchRec.name) then
-          Deldir(Dir + SearchRec.name, Mask);
-      end;
-      Found := Sysutils.FindNext(SearchRec);
+        except
+          ;
+        end;
+      end
+      else if Directoryexists(Dir + SearchRec.name) then
+        Deldir(Dir + SearchRec.name, Mask);
     end;
-    FindClose(SearchRec);
+    Found := Sysutils.FindNext(SearchRec);
+  end;
+  FindClose(SearchRec);
+  try
+    Removedir(Dir);
+  except
+  end;
+end;
+
+{ :Converts Ansi string to Unicode string using specified code page.
+  @param   s        Ansi string.
+  @param   codePage Code page to be used in conversion.
+  @returns Converted wide string.
+}
+function StringToWideString(const S: AnsiString; CodePage: Word): WideString;
+var
+  L: Integer;
+begin
+  if S = '' then
+    Result := ''
+  else
+  begin
+    L := MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PAnsiChar(@S[1]), -1, nil, 0);
+    SetLength(Result, L - 1);
+    if L > 1 then
+      MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PAnsiChar(@S[1]), -1, PWideChar(@Result[1]), L - 1);
+  end;
+end; { StringToWideString }
+
+function CreateShortcutW(SourceFileName, ShortcutName: string; // the file the shortcut points to
+  Location: ShortcutType; // shortcut location
+  SubFolder, // subfolder of location
+  WorkingDir, // working directory property of the shortcut
+  Parameters, Description: string): // description property of the shortcut
+  string;
+var
+  MyObject: IUnknown;
+  MySLink: IShellLink;
+  MyPFile: IPersistFile;
+  Directory, LinkName: string;
+  WFileName: string;
+  Reg: TRegIniFile;
+  FS: TFileStream;
+begin
+
+  MyObject := CreateComObject(CLSID_ShellLink);
+  MySLink := MyObject as IShellLink;
+  MyPFile := MyObject as IPersistFile;
+
+  MySLink.SetPath(PWideChar(SourceFileName));
+  MySLink.SetArguments(PWideChar(Parameters));
+  MySLink.SetDescription(PWideChar(Description));
+
+  LinkName := ChangeFileExt(ShortcutName, '.lnk');
+  LinkName := ExtractFileName(LinkName);
+
+  // Quicklauch
+  if Location = _QUICKLAUNCH then
+  begin
+    Reg := TRegIniFile.Create(QUICK_LAUNCH_ROOT);
     try
-      Removedir(Dir);
-    except
+      Directory := Reg.ReadString('MapGroups', 'Quick Launch', '');
+    finally
+      Reg.Free;
+    end;
+  end
+  else
+  // Other locations
+  begin
+    Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
+    try
+      case Location of
+        _OTHERFOLDER:
+          Directory := SubFolder;
+        _DESKTOP:
+          Directory := Reg.ReadString('Shell Folders', 'Desktop', '');
+        _STARTMENU:
+          Directory := Reg.ReadString('Shell Folders', 'Start Menu', '');
+        _SENDTO:
+          Directory := Reg.ReadString('Shell Folders', 'SendTo', '');
+        _PROGRAMS:
+          Directory := Reg.ReadString('Shell Folders', 'Programs', '');
+      end;
+    finally
+      Reg.Free;
     end;
   end;
 
-  { :Converts Ansi string to Unicode string using specified code page.
-    @param   s        Ansi string.
-    @param   codePage Code page to be used in conversion.
-    @returns Converted wide string.
-  }
-  function StringToWideString(const S: AnsiString; CodePage: Word): WideString;
-  var
-    L: Integer;
+  if Directory <> '' then
   begin
-    if S = '' then
-      Result := ''
-    else
+    if (SubFolder <> '') and (Location <> _OTHERFOLDER) then
     begin
-      L := MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PAnsiChar(@S[1]), -1, nil, 0);
-      SetLength(Result, L - 1);
-      if L > 1 then
-        MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PAnsiChar(@S[1]), -1, PWideChar(@Result[1]), L - 1);
-    end;
-  end; { StringToWideString }
-
-  function CreateShortcutW(SourceFileName, ShortcutName: string; // the file the shortcut points to
-    Location: ShortcutType; // shortcut location
-    SubFolder, // subfolder of location
-    WorkingDir, // working directory property of the shortcut
-    Parameters, Description: string): // description property of the shortcut
-    string;
-  var
-    MyObject: IUnknown;
-    MySLink: IShellLink;
-    MyPFile: IPersistFile;
-    Directory, LinkName: string;
-    WFileName: string;
-    Reg: TRegIniFile;
-    FS: TFileStream;
-  begin
-
-    MyObject := CreateComObject(CLSID_ShellLink);
-    MySLink := MyObject as IShellLink;
-    MyPFile := MyObject as IPersistFile;
-
-    MySLink.SetPath(PWideChar(SourceFileName));
-    MySLink.SetArguments(PWideChar(Parameters));
-    MySLink.SetDescription(PWideChar(Description));
-
-    LinkName := ChangeFileExt(ShortcutName, '.lnk');
-    LinkName := ExtractFileName(LinkName);
-
-    // Quicklauch
-    if Location = _QUICKLAUNCH then
-    begin
-      Reg := TRegIniFile.Create(QUICK_LAUNCH_ROOT);
-      try
-        Directory := Reg.ReadString('MapGroups', 'Quick Launch', '');
-      finally
-        Reg.Free;
-      end;
+      if not DirectoryExists(Directory + '\' + SubFolder) then
+        CreateDir(Directory + '\' + SubFolder);
+      WFileName := Directory + '\' + SubFolder + '\' + LinkName;
     end
     else
-    // Other locations
-    begin
-      Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
+      WFileName := Directory + '\' + LinkName;
+    if WorkingDir = '' then
+      MySLink.SetWorkingDirectory(PWideChar(ExtractFilePath(SourceFileName)))
+    else
+      MySLink.SetWorkingDirectory(PWideChar(WorkingDir));
+
+    try
+
+      FS := nil;
       try
-        case Location of
-          _OTHERFOLDER:
-            Directory := SubFolder;
-          _DESKTOP:
-            Directory := Reg.ReadString('Shell Folders', 'Desktop', '');
-          _STARTMENU:
-            Directory := Reg.ReadString('Shell Folders', 'Start Menu', '');
-          _SENDTO:
-            Directory := Reg.ReadString('Shell Folders', 'SendTo', '');
-          _PROGRAMS:
-            Directory := Reg.ReadString('Shell Folders', 'Programs', '');
-        end;
-      finally
-        Reg.Free;
-      end;
-    end;
-
-    if Directory <> '' then
-    begin
-      if (SubFolder <> '') and (Location <> _OTHERFOLDER) then
-      begin
-        if not DirectoryExists(Directory + '\' + SubFolder) then
-          CreateDir(Directory + '\' + SubFolder);
-        WFileName := Directory + '\' + SubFolder + '\' + LinkName;
-      end
-      else
-        WFileName := Directory + '\' + LinkName;
-      if WorkingDir = '' then
-        MySLink.SetWorkingDirectory(PWideChar(ExtractFilePath(SourceFileName)))
-      else
-        MySLink.SetWorkingDirectory(PWideChar(WorkingDir));
-
-      try
-
-        FS := nil;
-        try
-          FS := TFileStream.Create(SourceFileName, FmShareExclusive);
-        except
-        end;
-        MyPFile.Save(PWideChar(WFileName), False);
-        if FS <> nil then
-          FS.Free;
-
+        FS := TFileStream.Create(SourceFileName, FmShareExclusive);
       except
       end;
-      Result := WFileName;
+      MyPFile.Save(PWideChar(WFileName), False);
+      if FS <> nil then
+        FS.Free;
+
+    except
     end;
+    Result := WFileName;
   end;
+end;
 
-  procedure HideFromTaskBar(Handle: Thandle);
-  var
-    ExtendedStyle: Integer;
+procedure HideFromTaskBar(Handle: Thandle);
+var
+  ExtendedStyle: Integer;
+begin
+  ExtendedStyle := GetWindowLong(Application.Handle, GWL_EXSTYLE);
+  SetWindowLong(Application.Handle, SW_SHOWMINNOACTIVE,
+    WS_EX_TOOLWINDOW or WS_EX_TOPMOST or WS_EX_LTRREADING or WS_EX_LEFT or ExtendedStyle);
+end;
+
+procedure Del_Close_btn(Handle: Thandle);
+var
+  HMenuHandle: HMENU;
+begin
+  if (Handle <> 0) then
   begin
-    ExtendedStyle := GetWindowLong(Application.Handle, GWL_EXSTYLE);
-    SetWindowLong(Application.Handle, SW_SHOWMINNOACTIVE,
-      WS_EX_TOOLWINDOW or WS_EX_TOPMOST or WS_EX_LTRREADING or WS_EX_LEFT or ExtendedStyle);
+    HMenuHandle := GetSystemMenu(Handle, FALSE);
+    if (HMenuHandle <> 0) then
+      DeleteMenu(HMenuHandle, SC_CLOSE, MF_BYCOMMAND);
   end;
+end;
 
-  function RandomPwd(PWLen: Integer; StrTable: string): string;
-  var
-    Y, I: Integer;
-  begin
-    Randomize;
-    SetLength(Result, PWLen);
-    Y := Length(StrTable);
-    for I := 1 to PWLen do
+function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean;
+type
+  SHChangeIconProc = function(Wnd: HWND; SzFileName: PChar; Reserved: Integer; var LpIconIndex: Integer): DWORD;
+    stdcall;
+  SHChangeIconProcW = function(Wnd: HWND; SzFileName: PWideChar; Reserved: Integer; var LpIconIndex: Integer): DWORD;
+    stdcall;
+
+const
+  Shell32 = 'shell32.dll';
+
+var
+  ShellHandle: THandle;
+  SHChangeIcon: SHChangeIconProc;
+  SHChangeIconW: SHChangeIconProcW;
+  Buf: array [0 .. MAX_PATH] of Char;
+  BufW: array [0 .. MAX_PATH] of WideChar;
+begin
+  Result := False;
+  SHChangeIcon := nil;
+  SHChangeIconW := nil;
+  ShellHandle := Windows.LoadLibrary(PChar(Shell32));
+  try
+    if ShellHandle <> 0 then
     begin
-      Result[I] := StrTable[Random(Y) + 1];
-    end;
-  end;
-
-  procedure Del_Close_btn(Handle: Thandle);
-  var
-    HMenuHandle: HMENU;
-  begin
-    if (Handle <> 0) then
-    begin
-      HMenuHandle := GetSystemMenu(Handle, FALSE);
-      if (HMenuHandle <> 0) then
-        DeleteMenu(HMenuHandle, SC_CLOSE, MF_BYCOMMAND);
-    end;
-  end;
-
-  function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean;
-  type
-    SHChangeIconProc = function(Wnd: HWND; SzFileName: PChar; Reserved: Integer; var LpIconIndex: Integer): DWORD;
-      stdcall;
-    SHChangeIconProcW = function(Wnd: HWND; SzFileName: PWideChar; Reserved: Integer; var LpIconIndex: Integer): DWORD;
-      stdcall;
-
-  const
-    Shell32 = 'shell32.dll';
-
-  var
-    ShellHandle: THandle;
-    SHChangeIcon: SHChangeIconProc;
-    SHChangeIconW: SHChangeIconProcW;
-    Buf: array [0 .. MAX_PATH] of Char;
-    BufW: array [0 .. MAX_PATH] of WideChar;
-  begin
-    Result := False;
-    SHChangeIcon := nil;
-    SHChangeIconW := nil;
-    ShellHandle := Windows.LoadLibrary(PChar(Shell32));
-    try
-      if ShellHandle <> 0 then
-      begin
-        if Win32Platform = VER_PLATFORM_WIN32_NT then
-          SHChangeIconW := GetProcAddress(ShellHandle, PChar(62))
-        else
-          SHChangeIcon := GetProcAddress(ShellHandle, PChar(62));
-      end;
-      if Assigned(SHChangeIconW) then
-      begin
-        StringToWideChar(FileName, BufW, SizeOf(BufW));
-        Result := SHChangeIconW(HOwner, BufW, SizeOf(BufW), IconIndex) = 1;
-        if Result then
-          FileName := BufW;
-      end
-      else if Assigned(SHChangeIcon) then
-      begin
-        StrPCopy(Buf, FileName);
-        Result := SHChangeIcon(HOwner, Buf, SizeOf(Buf), IconIndex) = 1;
-        if Result then
-          FileName := Buf;
-      end
+      if Win32Platform = VER_PLATFORM_WIN32_NT then
+        SHChangeIconW := GetProcAddress(ShellHandle, PChar(62))
       else
-        raise Exception.Create(SNotSupported);
-    finally
-      if ShellHandle <> 0 then
-        FreeLibrary(ShellHandle);
+        SHChangeIcon := GetProcAddress(ShellHandle, PChar(62));
+    end;
+    if Assigned(SHChangeIconW) then
+    begin
+      StringToWideChar(FileName, BufW, SizeOf(BufW));
+      Result := SHChangeIconW(HOwner, BufW, SizeOf(BufW), IconIndex) = 1;
+      if Result then
+        FileName := BufW;
+    end
+    else if Assigned(SHChangeIcon) then
+    begin
+      StrPCopy(Buf, FileName);
+      Result := SHChangeIcon(HOwner, Buf, SizeOf(Buf), IconIndex) = 1;
+      if Result then
+        FileName := Buf;
+    end
+    else
+      raise Exception.Create(SNotSupported);
+  finally
+    if ShellHandle <> 0 then
+      FreeLibrary(ShellHandle);
+  end;
+end;
+
+function GetProgramPath: string;
+begin
+  Result := Application.ExeName;
+end;
+
+procedure SelectDB(Caller : TObject; DB: string);
+var
+  EventInfo: TEventValues;
+  DBVersion: Integer;
+
+  procedure DoErrorMsg;
+  begin
+    if Screen.ActiveForm <> nil then
+    begin
+      MessageBoxDB(GetActiveFormHandle, Format(TEXT_MES_ERROR_DB_FILE_F, [DB]), TEXT_MES_ERROR, TD_BUTTON_OK,
+        TD_ICON_ERROR);
     end;
   end;
 
-  function GetProgramPath: string;
+begin
+  if FileExists(DB) then
   begin
-    Result := Application.ExeName;
-  end;
-
-  procedure SelectDB(Caller : TObject; DB: string);
-  var
-    EventInfo: TEventValues;
-    DBVersion: Integer;
-
-    procedure DoErrorMsg;
+    DBVersion := DBKernel.TestDBEx(DB);
+    if DBkernel.ValidDBVersion(DB, DBVersion) then
     begin
-      if Screen.ActiveForm <> nil then
-      begin
-        MessageBoxDB(GetActiveFormHandle, Format(TEXT_MES_ERROR_DB_FILE_F, [DB]), TEXT_MES_ERROR, TD_BUTTON_OK,
-          TD_ICON_ERROR);
-      end;
-    end;
-
-  begin
-    if FileExists(DB) then
-    begin
-      DBVersion := DBKernel.TestDBEx(DB);
-      if DBkernel.ValidDBVersion(DB, DBVersion) then
-      begin
-        Dbname := DB;
-        DBKernel.SetDataBase(DB);
-        EventInfo.name := Dbname;
-        LastInseredID := 0;
-        DBKernel.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
-      end
-      else
-      begin
-        DoErrorMsg;
-      end;
+      Dbname := DB;
+      DBKernel.SetDataBase(DB);
+      EventInfo.name := Dbname;
+      LastInseredID := 0;
+      DBKernel.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
     end
     else
     begin
       DoErrorMsg;
     end;
-  end;
-
-  function SaveActionsTofile(FileName: string; Actions: TArstrings): Boolean;
-  var
-    I, Length: Integer;
-    X: array of Byte;
-    Fs: TFileStream;
+  end
+  else
   begin
-    Result := False;
-    if System.Length(Actions) = 0 then
-      Exit;
-    try
-      Fs := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
-    except
-      Exit;
-    end;
-    try
-      SetLength(X, 14);
-      X[0] := Ord(' ');
-      X[1] := Ord('D');
-      X[2] := Ord('B');
-      X[3] := Ord('A');
-      X[4] := Ord('C');
-      X[5] := Ord('T');
-      X[6] := Ord('I');
-      X[7] := Ord('O');
-      X[8] := Ord('N');
-      X[9] := Ord('S');
-      X[10] := Ord('-');
-      X[11] := Ord('-');
-      X[12] := Ord('V');
-      X[13] := Ord('1');
-      Fs.write(Pointer(X)^, 14);
-      Length := System.Length(Actions);
-      Fs.write(Length, SizeOf(Length));
-      for I := 0 to System.Length(Actions) - 1 do
-      begin
-        Length := System.Length(Actions[I]);
-        Fs.write(Length, SizeOf(Length));
-        Fs.write(Actions[I, 1], System.Length(Actions[I]));
-      end;
-    except
-      Fs.Free;
-      Exit;
-    end;
-    Fs.Free;
-    Result := True;
+    DoErrorMsg;
   end;
+end;
 
-  function LoadActionsFromfileA(FileName: string): TArStrings;
-  var
-    I, Length: Integer;
-    S: string;
-    X: array of Byte;
-    Fs: Tfilestream;
-    V1: Boolean;
-  begin
-    SetLength(Result, 0);
-    if not FileExists(FileName) then
-      Exit;
-    try
-      Fs := Tfilestream.Create(Filename, FmOpenRead);
-    except
-      Exit;
-    end;
+function SaveActionsTofile(FileName: string; Actions: TArstrings): Boolean;
+var
+  I, Length: Integer;
+  X: array of Byte;
+  Fs: TFileStream;
+begin
+  Result := False;
+  if System.Length(Actions) = 0 then
+    Exit;
+  try
+    Fs := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
+  except
+    Exit;
+  end;
+  try
     SetLength(X, 14);
-    Fs.read(Pointer(X)^, 14);
-    if (X[1] = Ord('D')) and (X[2] = Ord('B')) and (X[3] = Ord('A')) and (X[4] = Ord('C')) and (X[5] = Ord('T')) and
-      (X[6] = Ord('I')) and (X[7] = Ord('O')) and (X[8] = Ord('N')) and (X[9] = Ord('S')) and (X[10] = Ord('-')) and
-      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-      //V1 := True
-    else
+    X[0] := Ord(' ');
+    X[1] := Ord('D');
+    X[2] := Ord('B');
+    X[3] := Ord('A');
+    X[4] := Ord('C');
+    X[5] := Ord('T');
+    X[6] := Ord('I');
+    X[7] := Ord('O');
+    X[8] := Ord('N');
+    X[9] := Ord('S');
+    X[10] := Ord('-');
+    X[11] := Ord('-');
+    X[12] := Ord('V');
+    X[13] := Ord('1');
+    Fs.write(Pointer(X)^, 14);
+    Length := System.Length(Actions);
+    Fs.write(Length, SizeOf(Length));
+    for I := 0 to System.Length(Actions) - 1 do
     begin
-      Fs.Free;
-      Exit;
+      Length := System.Length(Actions[I]);
+      Fs.write(Length, SizeOf(Length));
+      Fs.write(Actions[I, 1], System.Length(Actions[I]));
     end;
-
-    Fs.read(Length, SizeOf(Length));
-    for I := 1 to Length do
-    begin
-      Fs.read(Length, SizeOf(Length));
-      SetLength(S, Length);
-      Fs.read(S[1], Length);
-      SetLength(Result, System.Length(Result) + 1);
-      Result[System.Length(Result) - 1] := S;
-    end;
+  except
     Fs.Free;
+    Exit;
+  end;
+  Fs.Free;
+  Result := True;
+end;
+
+function LoadActionsFromfileA(FileName: string): TArStrings;
+var
+  I, Length: Integer;
+  S: string;
+  X: array of Byte;
+  Fs: Tfilestream;
+  V1: Boolean;
+begin
+  SetLength(Result, 0);
+  if not FileExists(FileName) then
+    Exit;
+  try
+    Fs := Tfilestream.Create(Filename, FmOpenRead);
+  except
+    Exit;
+  end;
+  SetLength(X, 14);
+  Fs.read(Pointer(X)^, 14);
+  if (X[1] = Ord('D')) and (X[2] = Ord('B')) and (X[3] = Ord('A')) and (X[4] = Ord('C')) and (X[5] = Ord('T')) and
+    (X[6] = Ord('I')) and (X[7] = Ord('O')) and (X[8] = Ord('N')) and (X[9] = Ord('S')) and (X[10] = Ord('-')) and
+    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
+    //V1 := True
+  else
+  begin
+    Fs.Free;
+    Exit;
   end;
 
-
+  Fs.read(Length, SizeOf(Length));
+  for I := 1 to Length do
+  begin
+    Fs.read(Length, SizeOf(Length));
+    SetLength(S, Length);
+    Fs.read(S[1], Length);
+    SetLength(Result, System.Length(Result) + 1);
+    Result[System.Length(Result) - 1] := S;
+  end;
+  Fs.Free;
+end;
 
 procedure CopyFullRecordInfo(ID: Integer);
 var
@@ -5877,297 +5720,6 @@ begin
     DB_IMAGE_ROTATE_180:
       Rotate180A(Bitmap);
   end;
-end;
-
-{ TDBPopupMenuInfo }
-
-procedure TDBPopupMenuInfo.Add(MenuRecord: TDBPopupMenuInfoRecord);
-begin
-  FData.Add(MenuRecord);
-end;
-
-function TDBPopupMenuInfo.Add(FileName: string) : TDBPopupMenuInfoRecord;
-begin
-  Result := TDBPopupMenuInfoRecord.Create;
-  Result.FileName := FileName;
-  Add(Result);
-end;
-
-procedure TDBPopupMenuInfo.Assign(Source: TDBPopupMenuInfo);
-var
-  I: Integer;
-begin
-  if Pointer(Source) = Pointer(Self) then
-     Exit;
-  Clear;
-  for I := 0 to Source.Count - 1 do
-    FData.Add(Source[I].Copy);
-
-  if Source.Position >= 0 then
-    Position := Source.Position;
-
-  ListItem := Source.ListItem;
-end;
-
-procedure TDBPopupMenuInfo.Clear;
-var
-  I: Integer;
-begin
-  for I := 0 to FData.Count - 1 do
-    TDBPopupMenuInfoRecord(FData[I]).Free;
-  FData.Clear;
-end;
-
-constructor TDBPopupMenuInfo.Create;
-begin
-  FData := TList.Create;
-end;
-
-procedure TDBPopupMenuInfo.Delete(Index: Integer);
-begin
-  TObject(FData[Index]).Free;
-  FData.Delete(Index);
-end;
-
-destructor TDBPopupMenuInfo.Destroy;
-begin
-  Clear;
-  FData.Free;
-  inherited;
-end;
-
-procedure TDBPopupMenuInfo.Exchange(Index1, Index2: Integer);
-begin
-  FData.Exchange(Index1, Index2);
-end;
-
-function TDBPopupMenuInfo.Extract(Index: Integer): TDBPopupMenuInfoRecord;
-begin
-  Result := FData[Index];
-  FData.Delete(Index);
-end;
-
-function TDBPopupMenuInfo.GetCommonComments: string;
-begin
-  Result := '';
-  if (Count > 0) and not IsVariousComments then
-    Result := Self[0].Comment;
-end;
-
-function TDBPopupMenuInfo.GetCommonGroups: string;
-var
-  SL: TStringList;
-  I: Integer;
-begin
-  SL := TStringList.Create;
-  try
-    for I := 0 to Count - 1 do
-      SL.Add(Self[I].Groups);
-    Result := UnitGroupsWork.GetCommonGroups(SL);
-  finally
-    SL.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetCommonKeyWords: string;
-var
-  KL: TStringList;
-  I: Integer;
-begin
-  KL := TStringList.Create;
-  try
-    for I := 0 to Count - 1 do
-      KL.Add(Self[I].KeyWords);
-    Result := GetCommonWordsA(KL);
-  finally
-    KL.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetCommonLinks: TLinksInfo;
-var
-  LL: TStringList;
-  I: Integer;
-begin
-  LL := TStringList.Create;
-  try
-    for I := 0 to Count - 1 do
-      LL.Add(Self[I].Links);
-    Result := UnitLinksSupport.GetCommonLinks(LL);
-  finally
-    LL.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetCount: Integer;
-begin
-  Result := FData.Count;
-end;
-
-function TDBPopupMenuInfo.GetIsVariousComments: Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  if Count > 1 then
-    for I := 1 to Count - 1 do
-      if Self[0].Comment <> Self[I].Comment then
-        Result := True;
-end;
-
-function TDBPopupMenuInfo.GetIsVariousDate: Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  if Count > 1 then
-    for I := 1 to Count - 1 do
-      if Self[0].Date <> Self[I].Date then
-        Result := True;
-end;
-
-function TDBPopupMenuInfo.GetIsVariousInclude: Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  if Count > 1 then
-    for I := 1 to Count - 1 do
-      if Self[0].Include <> Self[I].Include then
-        Result := True;
-  end;
-
-function TDBPopupMenuInfo.GetIsVariousTime: Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  if Count > 1 then
-    for I := 1 to Count - 1 do
-      if Self[0].Time <> Self[I].Time then
-        Result := True;
-end;
-
-function TDBPopupMenuInfo.GetPosition: Integer;
-var
-  I: Integer;
-begin
-  Result := -1;
-  if Count > 0 then
-    Result := 0;
-  for I := 1 to Count - 1 do
-    if Self[I].IsCurrent then
-      Result := I;
-end;
-
-function TDBPopupMenuInfo.GetStatDate: TDateTime;
-var
-  I: Integer;
-  List: TList64;
-begin
-  List := TList64.Create;
-  try
-    for I := 0 to Count - 1 do
-      List.Add(Self[I].Date);
-    Result := List.MaxStatDateTime;
-  finally
-    List.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetStatInclude: Boolean;
-var
-  I: Integer;
-  List: TList64;
-begin
-  List := TList64.Create;
-  try
-    for I := 0 to Count - 1 do
-      List.Add(Self[I].Include);
-    Result := List.MaxStatBoolean;
-  finally
-    List.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetStatIsDate: Boolean;
-var
-  I: Integer;
-  List: TList64;
-begin
-  List := TList64.Create;
-  try
-    for I := 0 to Count - 1 do
-      List.Add(Self[I].IsDate);
-    Result := List.MaxStatBoolean;
-  finally
-    List.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetStatIsTime: Boolean;
-var
-  I: Integer;
-  List: TList64;
-begin
-  List := TList64.Create;
-  try
-    for I := 0 to Count - 1 do
-      List.Add(Self[I].IsTime);
-    Result := List.MaxStatBoolean;
-  finally
-    List.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetStatRating: Integer;
-var
-  I: Integer;
-  List: TList64;
-begin
-  List := TList64.Create;
-  try
-    for I := 0 to Count - 1 do
-      List.Add(Self[I].Rating);
-    Result := List.MaxStatInteger;
-  finally
-    List.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetStatTime: TDateTime;
-var
-  I: Integer;
-  List: TList64;
-begin
-  List := TList64.Create;
-  try
-    for I := 0 to Count - 1 do
-      List.Add(Self[I].Time);
-    Result := List.MaxStatDateTime;
-  finally
-    List.Free;
-  end;
-end;
-
-function TDBPopupMenuInfo.GetValueByIndex(index: Integer): TDBPopupMenuInfoRecord;
-begin
-  Result := FData[index];
-end;
-
-procedure TDBPopupMenuInfo.SetPosition(const Value: Integer);
-var
-  I: Integer;
-begin
-  for I := 0 to Count - 1 do
-    Self[I].IsCurrent := False;
-  Self[Value].IsCurrent := True;
-end;
-
-procedure TDBPopupMenuInfo.SetValueByIndex(index: Integer;
-  const Value: TDBPopupMenuInfoRecord);
-begin
-  FData[index] := Value;
 end;
 
 initialization

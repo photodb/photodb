@@ -9,7 +9,7 @@ uses
   UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
   UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon,
   CommonDBSupport, uFileUtils, uTranslate, uMemory, ActiveX,
-  uAssociatedIcons;
+  uAssociatedIcons, uDBPopupMenuInfo, uConstants;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,

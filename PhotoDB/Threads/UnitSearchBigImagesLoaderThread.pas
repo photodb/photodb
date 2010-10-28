@@ -6,7 +6,7 @@ uses
   Windows, Classes, Forms, Dolphin_DB, SysUtils, Graphics, GraphicCrypt, Math,
   RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, ImageConverting,
   UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx, uMemory,
-  uMultiCPUThreadManager;
+  uMultiCPUThreadManager, uDBPopupMenuInfo;
 
 type
   TSearchBigImagesLoaderThread = class(TMultiCPUThread)

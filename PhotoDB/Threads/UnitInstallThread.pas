@@ -653,9 +653,9 @@ begin
    if not ExistsGroupsFile then
    CreateGroupsTableW(aDBName);
    ExistsGroupsFile:=IsValidGroupsTableW(aDBName);
-   FRegGroups:=GetRegisterGroupListW(aDBName,True);
+   FRegGroups:=GetRegisterGroupListW(aDBName,True, DBKernel.SortGroupsByName);
 
-   FOutRegGroups:=GetRegisterGroupListW(FDBFile,True);
+   FOutRegGroups:=GetRegisterGroupListW(FDBFile,True, DBKernel.SortGroupsByName);
    GroupsActions.IsActionForKnown:=false;
    GroupsActions.IsActionForUnKnown:=false;
    if DBKernel.TestDBEx(aDBName)>0 then
@@ -668,7 +668,7 @@ begin
      if not IsOldDataBase then
      begin
       CreateGroupsTableW(FDBFile);
-      FOutRegGroups:=GetRegisterGroupListW(FDBFile,True);
+      FOutRegGroups:=GetRegisterGroupListW(FDBFile,True, DBKernel.SortGroupsByName);
      end;
     except 
       on e : Exception do EventLog(':Install() throw exception: '+e.Message);

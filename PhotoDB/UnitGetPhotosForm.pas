@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, Language, EXIF, Dolphin_DB,
   acDlgSelect, Math, UnitUpdateDBObject, UnitScanImportPhotosThread,
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
-  UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon;
+  UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants;
 
 type
   TGetImagesOptions = record

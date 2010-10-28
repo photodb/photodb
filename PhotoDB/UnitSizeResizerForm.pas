@@ -6,10 +6,11 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, ImageConverting, Math, UVistaFuncs,
   JPEG, GIFImage, GraphicEx, UnitDBkernel, GraphicCrypt,
-  AcDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, UFileUtils,
-  UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, UDBForm, LoadingSign,
-  DmProgress, UW7TaskBar, PngImage, UGOM, UWatermarkOptions, UImageSource,
-  UnitPropeccedFilesSupport, UThreadForm, UMemory, UFormListView;
+  AcDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
+  UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
+  DmProgress, uW7TaskBar, PngImage, uGOM, uWatermarkOptions, uImageSource,
+  UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView,
+  uDBPopupMenuInfo, uConstants;
 
 type
   TFormSizeResizer = class(TThreadForm)

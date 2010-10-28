@@ -561,6 +561,7 @@ object ManagerDB: TManagerDB
       FillPercent = 50
       Color = clBtnFace
       ParentColor = False
+      SignColor = clBlack
     end
   end
   object PopupMenu1: TPopupMenu

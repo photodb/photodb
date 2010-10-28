@@ -3,14 +3,16 @@ unit UnitLoadFilesToPanel;
 interface
 
 uses
- SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
- CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
- UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
- UnitDBCommon, uLogger, ImageConverting, uMemory;
+  SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
+  CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
+  UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
+  UnitDBCommon, uLogger, ImageConverting, uMemory,
+  uDBPopupMenuInfo;
 
 type
   LoadFilesToPanel = class(TThread)
   private
+    { Private declarations }
     FFiles: TArStrings;
     FIDs: TArInteger;
     FRotates: TArInteger;
@@ -26,7 +28,6 @@ type
     FPictureSize: Integer;
     FValidThread: Boolean;
     FSID: TGUID;
-    { Private declarations }
   protected
     procedure Execute; override;
     procedure GetInfoByFileNameOrID(FileName : string; ID, N : integer; out Graphic : TGraphic);

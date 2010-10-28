@@ -1,9 +1,9 @@
 unit CmpUnit;
 
 interface
-uses
 
-Dolphin_DB,  UnitDBDeclare, SysUtils, Classes;
+uses
+  UnitDBDeclare, SysUtils, Classes, uConstants;
 
 type
   TCompOptions = record

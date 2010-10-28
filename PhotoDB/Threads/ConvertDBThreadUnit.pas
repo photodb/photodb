@@ -126,7 +126,7 @@ begin
   Log(TEXT_MES_SAVING_GROUPS);
   SetMaxValue(length(FGroupsFounded));
   SetPosition(0);
-  FRegGroups:=GetRegisterGroupListW(FFileName,True);
+  FRegGroups:=GetRegisterGroupListW(FFileName, True, DBKernel.SortGroupsByName);
   CreateGroupsTableW(ToFileName);
 
   AddGroupsToGroups(FGroupsFounded, FRegGroups);

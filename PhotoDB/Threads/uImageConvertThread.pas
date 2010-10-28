@@ -7,7 +7,7 @@ uses
   ImageConverting, Exif, uLogger, GraphicEx, UnitDBCommon, uMemory, uFileUtils,
   PngImage, uGOM, uDBForm, Dialogs, UnitDBDeclare, JPEG, UnitJPEGOptions,
   UnitDBCommonGraphics, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
-  uThreadForm, uTranslate;
+  uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants;
 
 type
   TImageConvertThread = class(TThreadEx)

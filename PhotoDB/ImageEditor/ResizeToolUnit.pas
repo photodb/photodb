@@ -2,17 +2,10 @@ unit ResizeToolUnit;
 
 interface
 
-{$DEFINE PHOTODB}
-
 uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
      GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls, 
      language, EffectsLanguage, UnitResampleFilters,
-
-    {$IFDEF PHOTODB}
-      Dolphin_DB,
-    {$ENDIF}
-
-     Effects;
+     Dolphin_DB,  Effects, uConstants;
 
 type TResizeToolPanelClass = Class(TToolsPanelClass)
   private
@@ -354,8 +347,7 @@ begin
  IcoCancel.Free;
 
  CloseLink.ImageCanRegenerate:=True;
- 
- {$IFDEF PHOTODB}
+
  ComboBoxPercent.Text:=IntToStr(DBKernel.ReadInteger('Editor','PercentValue',100))+'%';
  WidthEdit.Text:=IntToStr(DBKernel.ReadInteger('Editor','CustomWidth',100));
  HeightEdit.Text:=IntToStr(DBKernel.ReadInteger('Editor','CustomHeight',100));
@@ -366,7 +358,6 @@ begin
  CheckBoxSaveProportions.Checked:=DBKernel.ReadBool('Editor','SaveProportions',true);
  RadioButtonPercent.Checked:=DBKernel.ReadBool('Editor','ResizeToPercent',false);
  ComboBoxMethod.ItemIndex:=DBKernel.ReadInteger('Editor','ResizeMethod',0);
- {$ENDIF}
  Loading:=false;
 end;
 
@@ -411,7 +402,6 @@ end;
 
 procedure TResizeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
- {$IFDEF PHOTODB}
  DBKernel.WriteBool('Editor','ResizeTo100x100',RadioButton100x100.Checked);
  DBKernel.WriteBool('Editor','ResizeTo200x200',RadioButton200x200.Checked);
  DBKernel.WriteBool('Editor','ResizeTo600x800',RadioButton600x800.Checked);
@@ -422,7 +412,6 @@ begin
  DBKernel.WriteInteger('Editor','CustomWidth',StrToIntDef(WidthEdit.Text,100));
  DBKernel.WriteInteger('Editor','CustomHeight',StrToIntDef(HeightEdit.Text,100));
  DBKernel.WriteInteger('Editor','PercentValue',Round(GetZoom*100));
- {$ENDIF}
 end;
 
 procedure TResizeToolPanelClass.EditChange(Sender: TObject);

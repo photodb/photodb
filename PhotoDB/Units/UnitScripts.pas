@@ -640,7 +640,7 @@ end;
 
 function PosNext(const SubStr : string; const Str : string; const index : integer = 1) : integer;
 var
-  I, SubLen: Integer;
+  I: Integer;
   S: string;
   P: PChar;
   C: Char;
@@ -705,6 +705,7 @@ begin
 
   n := False;
   Result := 0;
+  FS := #0;
   Ls := Length(SubStr);
   OneChar := Ls = 1;
 
@@ -772,9 +773,8 @@ end;
 
 function GetFunctionName(aFunction : string) : string;
 var
-  Fb, Fe, I, R, P: Integer;
+  Fb, Fe, R, P: Integer;
 begin
-  P := 0;
   R := PosExR('=', AFunction, 1);
   if R <> 0 then
     Delete(AFunction, 1, R);
@@ -978,7 +978,7 @@ procedure AddScriptTextFunctions(var aScript : TScript; Functions : string);
 var
   funct, fname, _farg, fbody : string;
   farg : TArrayOfString;
-  fb, fe, ps, _type, sb, se, bb, be, i : integer;
+  fb, fe, ps, _type, sb, se, bb, be : integer;
   Ftype : string;
   ScriptStringFunction : TScriptStringFunction;
 begin
@@ -1978,7 +1978,7 @@ const
     J, P : Integer;
     C : Char;
   begin
-
+    Result := True;
     for J := 0 to LInitString div 2 - 1 do
     begin
       P := PCommand + J * 2;
@@ -1991,7 +1991,6 @@ const
         Exit;
       end;
     end;
-    Result := True;
   end;
 
   function IsRun(PCommand, L : Integer) : Boolean;
@@ -1999,7 +1998,7 @@ const
     J, P : Integer;
     C : Char;
   begin
-
+    Result := True;
     for J := 0 to LRun div 2 - 1 do
     begin
       P := PCommand + J * 2;
@@ -2012,7 +2011,6 @@ const
         Exit;
       end;
     end;
-    Result := True;
   end;
 
 begin

@@ -178,22 +178,6 @@ type
    Print : Boolean;
   end;
 
-type
-  TDBTheme = record
-   MainColor : TColor;
-   MainFont : TFont;
-   EditColor : TColor;
-   EditFont : TFont;
-   MemoColor : TColor;
-   MemoFont : TFont;
-   LabelFont : TColor;
-   LabelGroupFont : TFont;
-   HintColor : TColor;
-   ProgressBackColor : TColor;
-   ProgressFontColor : TColor;
-   ProgressFillColor : TColor;
-  end;
-
 type TDBEventsIDArray = array of DBEventsIDArray;
 
 const
@@ -209,10 +193,7 @@ type TDBKernel = class(TObject)
     FPasswodsInSession : TStrings;
     FEvents : TDBEventsIDArray;
     FImageList: TImageList;
-    FTheme: TDbTheme;
     FForms : TList;
-    FThemeNotifys : array of TNotifyEvent;
-    FThemeNotifysForms : array of TForm;
     FApplicationKey : String;
     Chars : array[1..100] of TCharObject;
     Sootv : array [1..16] of integer;
@@ -224,6 +205,7 @@ type TDBKernel = class(TObject)
     FRegistryCache : TDBRegistryCache;
     FSych : TCriticalSection;
     procedure LoadDBs;
+    function GetSortGroupsByName: Boolean;
   public
     { Public declarations }
     IconDllInstance : THandle;
@@ -300,6 +282,7 @@ type TDBKernel = class(TObject)
     procedure GetPasswordsFromParams;
     procedure LoadIcons;
     property ImageOptions: TImageDBOptions read FImageOptions;
+    property SortGroupsByName : Boolean read GetSortGroupsByName;
   end;
 
   var Icons : TDbKernelArrayIcons;
@@ -1638,6 +1621,11 @@ begin
  PassArray:=SplitString(PassParam,'!');
  for i:=0 to Length(PassArray)-1 do
  AddTemporaryPasswordInSession(PassArray[i]);
+end;
+
+function TDBKernel.GetSortGroupsByName: Boolean;
+begin
+  Result := Readbool('Options', 'SortGroupsByName', True);
 end;
 
 procedure TDBKernel.LoadIcons;

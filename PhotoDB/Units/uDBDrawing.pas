@@ -3,7 +3,7 @@ unit uDBDrawing;
 interface
 
 uses Windows, SysUtils, Graphics, UnitDBDeclare, Exif, UnitDBCommon, Math,
-     GraphicsBaseTypes;
+     GraphicsBaseTypes, uConstants;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
 procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);

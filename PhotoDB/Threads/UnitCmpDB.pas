@@ -231,7 +231,7 @@ begin
  SetActionText(TEXT_MES_WAIT_FOR_A_MINUTE);
 
  FRegGroups:=GetRegisterGroupList(True);
- FOutRegGroups:=GetRegisterGroupListW(SourceTableName,True);
+ FOutRegGroups:=GetRegisterGroupListW(SourceTableName,True, DBKernel.SortGroupsByName);
  GroupsActions.IsActionForKnown:=false;
  GroupsActions.IsActionForUnKnown:=false;
 

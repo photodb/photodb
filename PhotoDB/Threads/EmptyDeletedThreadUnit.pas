@@ -3,8 +3,9 @@ unit EmptyDeletedThreadUnit;
 interface
 
 uses
- windows, Messages, CommCtrl, Dialogs, Classes, CommonDBSupport, DBGrids, DB, dolphin_db,
- SysUtils, ComCtrls, Graphics, jpeg, registry;
+  Windows, Messages, CommCtrl, Dialogs, Classes, CommonDBSupport,
+  SysUtils, ComCtrls, Graphics, DBGrids, DB, Dolphin_DB,
+  jpeg, registry, uConstants;
 
 type
   EmptyDeletedThread = class(TThread)
@@ -23,7 +24,8 @@ type
 
 implementation
 
-uses CleaningForm;
+uses
+  CleaningForm;
 
 { EmptyDeletedThread }
 

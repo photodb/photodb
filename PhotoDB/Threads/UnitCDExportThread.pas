@@ -5,7 +5,7 @@ interface
 uses
   Classes, Forms, UnitCDMappingSupport, Dolphin_DB, Language, uVistaFuncs, DB,
   UnitGroupsWork, UnitDBDeclare, CommonDBSupport, win32crc, SysUtils, uLogger,
-  uFileUtils;
+  uFileUtils, uConstants;
 
 type
   TCDExportOptions = record

@@ -4,7 +4,7 @@ interface
 
 uses
   UnitGroupsWork, Classes, DB, dolphin_db, SysUtils, GraphicCrypt, ActiveX,
-   win32crc, UnitDBDeclare, uFileUtils;
+   win32crc, UnitDBDeclare, uFileUtils, uConstants;
 
 Type
   TExportOptions = record

@@ -7,7 +7,8 @@ uses
   Dialogs, StdCtrls, ExtCtrls, Menus, DmProgress, Dolphin_DB, ComCtrls,
   acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
-  UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils;
+  UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils,
+  uConstants;
 
 type
   TFormImportingImages = class(TForm)

@@ -155,7 +155,7 @@ procedure TFormGroupReplace.RecreateGroupsList;
 var
   i : integer;
 begin
- RegGroups:=GetRegisterGroupListW(FGroupFileName,False);
+ RegGroups:=GetRegisterGroupListW(FGroupFileName, False, DBKernel.SortGroupsByName);
  ComboBox1.Clear;
  For i:=0 to Length(RegGroups)-1 do
  ComboBox1.Items.Add(RegGroups[i].GroupName);

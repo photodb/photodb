@@ -9,7 +9,7 @@ uses
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
   DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory, uDBForm,
   UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator,
-  UnitDBDeclare;
+  UnitDBDeclare, uConstants, uDBPopupMenuInfo;
 
 type
   TImHint = class(TDBForm)

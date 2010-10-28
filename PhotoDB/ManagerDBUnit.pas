@@ -12,7 +12,7 @@ uses
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
-  DBLoading, LoadingSign, uDBForm, uMemory;
+  DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo;
 
 type
   TManagerDB = class(TDBForm)

@@ -139,7 +139,6 @@ Type TEventField=(EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
       Links : string;
      end;
 
-
   TOnDBKernelEventProcedure = procedure(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues) of object;
 
   ///////////////CONSTANT SECTION//////////////////////
@@ -162,7 +161,7 @@ type
     ByPixels : Byte;
   end;
 
- TExplorerFileInfo = class(TObject)
+ {TExplorerFileInfo = class(TObject)
   public
     FileName : String;
     SID : TGUID;
@@ -189,7 +188,7 @@ type
     Links: string;
     IsBigImage: Boolean;
     function Clone: TExplorerFileInfo;
-  end;
+  end;  }
 
 type
   TPhotoDBFile = class
@@ -308,6 +307,8 @@ type
 
 type
   TDBPopupMenuInfoRecord = class(TObject)
+  protected
+    function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
   public
     FileName: string;
     Comment: string;
@@ -329,94 +330,19 @@ type
     InfoLoaded: Boolean;
     Include: Boolean;
     Width, Height: Integer;
-    Links: string; // ??? not for common use yet
+    Links: string;
     Exists: Integer; // for drawing in lists
     LongImageID: string;
     Data: TClonableObject;
     constructor CreateFromDS(DS: TDataSet);
-//    constructor CreateFromContRecord(ContRecord: TImageContRecord);
     constructor CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
-//    constructor CreateFromSearchRecord(Info: TSearchRecord);
-    constructor CreateFromExplorerInfo(Info: TExplorerFileInfo);
-    constructor CreateFromRecordInfo(RI: TOneRecordInfo);
     destructor Destroy; override;
-    function Copy : TDBPopupMenuInfoRecord;
+    function Copy : TDBPopupMenuInfoRecord; virtual;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
 
 implementation
-
-{ TSearchRecordArray }
-
-{procedure TSearchRecordArray.Add(Data: TSearchRecord);
-begin
-  FList.Add(Data);
-end;
-
-function TSearchRecordArray.AddNew: TSearchRecord;
-begin
-  Result := TSearchRecord.Create;
-  FList.Add(Result);
-end;
-
-procedure TSearchRecordArray.Clear;
-var
-  I : Integer;
-begin
-  for I := 0 to FList.Count - 1 do
-    TSearchRecord(FList[I]).Free;
-  FList.Clear;
-end;
-
-procedure TSearchRecordArray.ClearList;
-begin
-  FList.Clear;
-end;
-
-constructor TSearchRecordArray.Create;
-begin
-  FList := TList.Create;
-end;
-
-procedure TSearchRecordArray.DeleteAt(Index: Integer);
-var
-  Rec : TSearchRecord;
-begin
-  Rec := FList[Index];
-  Rec.Free;
-  FList.Delete(Index);
-end;
-
-destructor TSearchRecordArray.Destroy;
-begin
-  Clear;
-  FList.Free;
-  inherited;
-end;
-
-function TSearchRecordArray.ExtractAt(Index: Integer): TSearchRecord;
-begin
-  Result := FList[Index];
-  FList.Delete(Index);
-end;
-
-function TSearchRecordArray.GetCount: Integer;
-begin
-  Result := FList.Count;
-end;
-
-function TSearchRecordArray.GetValueByIndex(Index: Integer): TSearchRecord;
-begin
-  Result := FList[Index];
-end;
-
-procedure TSearchRecordArray.SetValueByIndex(Index: Integer;
-  const Value: TSearchRecord);
-begin
-  FList[Index] := Value;
-end;
-        }
 
 { TPhotoDBFiles }
 
@@ -466,26 +392,11 @@ begin
        and (AQuery.SortMethod = SortMethod) and (AQuery.SortDecrement = SortDecrement);
 end;
 
-{ TSearchRecord }
-
-{constructor TSearchRecord.Create;
-begin
-  Bitmap := nil;
-end;
-
-destructor TSearchRecord.Destroy;
-begin
-  if Bitmap <> nil then
-    Bitmap.Free;
-  inherited;
-end;    }
-
-
-  { TDBPopupMenuInfoRecord }
+{ TDBPopupMenuInfoRecord }
 
 function TDBPopupMenuInfoRecord.Copy: TDBPopupMenuInfoRecord;
 begin
-  Result := TDBPopupMenuInfoRecord.Create;
+  Result := InitNewInstance;
   Result.ID := ID;
   Result.FileName := FileName;
   Result.Comment := Comment;
@@ -545,50 +456,6 @@ begin
   Data := nil;
 end;
 
-constructor TDBPopupMenuInfoRecord.CreateFromExplorerInfo(Info: TExplorerFileInfo);
-begin
-  ID := Info.ID;
-  FileName := Info.FileName;
-  Comment := Info.Comment;
-  Groups := Info.Groups;
-  FileSize := Info.FileSize;
-  Rotation := Info.Rotate;
-  Rating := Info.Rating;
-  Access := Info.Access;
-  Date := Info.Date;
-  Time := Info.Time;
-  IsDate := Info.IsDate;
-  IsTime := Info.IsTime;
-  Crypted := Info.Crypted;
-  KeyWords := Info.KeyWords;
-  InfoLoaded := Info.Loaded;
-  Include := Info.Include;
-  Links := Info.Links;
-  Data := nil;
-end;
-
-constructor TDBPopupMenuInfoRecord.CreateFromRecordInfo(RI: TOneRecordInfo);
-begin
-  FileName := RI.ItemFileName;
-  Comment := RI.ItemComment;
-  Groups := RI.ItemGroups;
-  ID := RI.ItemId;
-  FileSize := RI.ItemSize;
-  Rotation := RI.ItemRotate;
-  Rating := RI.ItemRating;
-  Access := RI.ItemAccess;
-  Date := RI.ItemDate;
-  Time := RI.ItemTime;
-  IsDate := RI.ItemIsDate;
-  IsTime := RI.ItemIsTime;
-  Crypted := RI.ItemCrypted;
-  KeyWords := RI.ItemKeyWords;
-  InfoLoaded := RI.Loaded;
-  Include := RI.ItemInclude;
-  Links := RI.ItemLinks;
-  Data := nil;
-end;
-
 constructor TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
 begin
   FileName := Info.ItemFileNames[Position];
@@ -620,36 +487,12 @@ begin
   inherited;
 end;
 
-{ TExplorerFileInfo }
-
-function TExplorerFileInfo.Clone: TExplorerFileInfo;
+function TDBPopupMenuInfoRecord.InitNewInstance: TDBPopupMenuInfoRecord;
 begin
-  Result := TExplorerFileInfo.Create;
-  Result.FileName := FileName;
-  Result.SID := SID;
-  Result.FileType := FileType;
-  Result.ID := ID;
-  Result.Rotate := Rotate;
-  Result.Access := Access;
-  Result.Rating := Rating;
-  Result.FileSize := FileSize;
-  Result.Comment := Comment;
-  Result.KeyWords := KeyWords;
-  Result.Date := Date;
-  Result.Time := Time;
-  Result.ImageIndex := ImageIndex;
-  Result.Owner := Owner;
-  Result.Groups := Groups;
-  Result.Collections := Collections;
-  Result.IsDate := IsDate;
-  Result.IsTime := IsTime;
-  Result.Crypted := Crypted;
-  Result.Tag := Tag;
-  Result.Loaded := Loaded;
-  Result.Include := Include;
-  Result.Links := Links;
-  Result.isBigImage := isBigImage;
+  Result := TDBPopupMenuInfoRecord.Create;
 end;
+
+{ TExplorerFileInfo }
 
 function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
 begin

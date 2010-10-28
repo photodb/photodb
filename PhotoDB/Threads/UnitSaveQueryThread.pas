@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, UnitGroupsWork, UnitExportThread, Classes, DB, Dolphin_DB,
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
-  acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils;
+  acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants;
 
 type
   TSaveQueryThread = class(TThread)

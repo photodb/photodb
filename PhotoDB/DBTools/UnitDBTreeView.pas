@@ -2,22 +2,18 @@ unit UnitDBTreeView;
 
 interface
 
-{$DEFINE PHOTODB}
-
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ImgList, DB, ExtCtrls, JPEG, CommCtrl
-{$IFDEF PHOTODB}
-  ,Dolphin_DB, Language, UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
+  Dialogs, StdCtrls, ComCtrls, ImgList, DB, ExtCtrls, JPEG, CommCtrl,
+  Dolphin_DB, Language, UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
   AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
-  UnitDBCommon, UnitDBCommonGraphics, uDBDrawing, uFileUtils
-{$ENDIF}
-  ;
+  UnitDBCommon, UnitDBCommonGraphics, uDBDrawing, uFileUtils,
+  uDBPopupMenuInfo;
 
 type
   TItemData = record
-  ID : integer;
-  Crypted : Boolean;
+    ID : integer;
+    Crypted : Boolean;
   end;
 
   PItemData = ^TItemData;

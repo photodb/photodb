@@ -175,8 +175,8 @@ var
 begin
  DisableControls;
  Options:=CommonDBSupport.GetImageSettingsFromTable(DBFile.FileName);
- Options.Name:=DOlphin_DB.NormalizeDBString(Edit1.Text);
- Options.Description:=DOlphin_DB.NormalizeDBString(Edit2.Text);
+ Options.Name:=NormalizeDBString(Edit1.Text);
+ Options.Description:=NormalizeDBString(Edit2.Text);
  Options.ThSizePanelPreview:=SysUtils.StrToIntDef(ComboBox1.Text,Options.ThSizePanelPreview);
  Options.ThHintSize:=SysUtils.StrToIntDef(ComboBox2.Text,Options.ThHintSize);
  if Options.ThSizePanelPreview<50 then Options.ThSizePanelPreview:=50;

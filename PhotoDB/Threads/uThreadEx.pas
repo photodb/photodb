@@ -148,7 +148,10 @@ end;
 
 procedure TThreadEx.Start;
 begin
-  FThreadForm.RegisterThreadAndStart(Self);
+  if GOM.IsObj(FThreadForm) then
+    FThreadForm.RegisterThreadAndStart(Self)
+  else
+    inherited Start;
 end;
 
 function TThreadEx.SynchronizeEx(Method: TThreadMethod) : Boolean;

@@ -172,10 +172,27 @@ function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
 procedure PackTable(FileName : string);
 function GetDefaultImageDBOptions : TImageDBOptions;
 function GetPathCRC(FileFullPath : string) : Integer;
+function NormalizeDBString(S: string): string;
+function NormalizeDBStringLike(S: string): string;
 
 implementation
 
  uses UnitGroupsWork;
+
+function NormalizeDBString(S: string): string;
+begin
+  Result := AnsiQuotedStr(S, '"')
+end;
+
+function NormalizeDBStringLike(S: string): string;
+var
+  I: Integer;
+begin
+  for I := 1 to Length(S) do
+    if (S[I] = '[') or (S[I] = ']') then
+      S[I] := '_';
+  Result := S;
+end;
 
 function GetDefDBName : string;
 begin
