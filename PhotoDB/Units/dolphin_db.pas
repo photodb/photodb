@@ -5731,8 +5731,6 @@ initialization
   LastInseredID := 0;
   GraphicFilterString := '';
   ProcessorCount := GettingProcNum;
-//  if ProcessorCount > 2 then
-//    NeverSleepOnMMThreadContention := True;
 
 finalization
 

@@ -403,8 +403,7 @@ end;
 
 procedure TStringsHistoryW.Add(Path: TExplorerPath);
 begin
- //TODO:
-{ If Fposition=Length(fArray)-1 then
+ If Fposition=Length(fArray)-1 then
  begin
   SetLength(fArray,Length(fArray)+1);
   fArray[Length(fArray)-1]:=Path;
@@ -415,7 +414,7 @@ begin
   fArray[Fposition+1]:=Path;
   Fposition:=Fposition+1;
  end;
- If Assigned(OnHistoryChange) Then OnHistoryChange(Self);  }
+ If Assigned(OnHistoryChange) Then OnHistoryChange(Self);
 end;
 
 function TStringsHistoryW.CanBack: boolean;

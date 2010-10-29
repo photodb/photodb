@@ -31,6 +31,7 @@ type
     function AddBitmap(Bitmap : TBitmap; CopyPointer : Boolean = True) : Integer;
     function AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '') : Integer;
     procedure Clear;
+    procedure ClearImagesList;
     function Count : Integer;
     procedure Delete(Index : Integer);
     property Items[Index: Integer]: TBitmapImageListImage read GetBitmapByIndex; default;
@@ -87,6 +88,16 @@ begin
     Item.Graphic := nil;
     F(Item);
   end;
+
+  FImages.Clear;
+end;
+
+procedure TBitmapImageList.ClearImagesList;
+var
+  I : Integer;
+begin
+  for I := 0 to FImages.Count - 1 do
+    TBitmapImageListImage(FImages[I]).Free;
 
   FImages.Clear;
 end;

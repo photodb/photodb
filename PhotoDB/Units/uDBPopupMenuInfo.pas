@@ -42,6 +42,7 @@ type
     procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
     function Add(FileName: string) : TDBPopupMenuInfoRecord; overload;
     procedure Clear;
+    procedure ClearList;
     procedure Exchange(Index1, Index2 : Integer);
     procedure Delete(Index : Integer);
     function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
@@ -107,6 +108,11 @@ var
 begin
   for I := 0 to FData.Count - 1 do
     TDBPopupMenuInfoRecord(FData[I]).Free;
+  FData.Clear;
+end;
+
+procedure TDBPopupMenuInfo.ClearList;
+begin
   FData.Clear;
 end;
 

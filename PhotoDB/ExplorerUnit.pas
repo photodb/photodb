@@ -785,6 +785,7 @@ begin
   ElvMain.DragManager.Enabled := False;
   ElvMain.Header.Columns.Add;
   ElvMain.Groups.Add;
+  ElvMain.Groups[0].Visible := True;
 
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
@@ -1875,9 +1876,9 @@ procedure TExplorerForm.BeginUpdate;
 begin
   if not UpdatingList then
   begin
-    ElvMain.Groups[0].Visible:=false;
-    ElvMain.Cursor:=CrHourGlass;
-    UpdatingList:=True;
+  //  ElvMain.Groups[0].Visible:=false;
+  //  ElvMain.Cursor:=CrHourGlass;
+    UpdatingList := True;
     ElvMain.BeginUpdate;
   end;
   if FW7TaskBar <> nil then
@@ -1889,12 +1890,12 @@ begin
   if UpdatingList then
   begin
     ElvMain.EndUpdate;
-    ElvMain.Groups[0].Visible := True;
+ {   ElvMain.Groups[0].Visible := True;
     ElvMain.Groups.EndUpdate(true);
     ElvMain.Realign;
-    ElvMain.Repaint;
+    ElvMain.Repaint;  }
     ElvMain.Cursor:=CrDefault;
-    ElvMain.HotTrack.Enabled:=DBKernel.Readbool('Options', 'UseHotSelect', True);
+   // ElvMain.HotTrack.Enabled:=DBKernel.Readbool('Options', 'UseHotSelect', True);
     UpdatingList := False;
   end;
   if FW7TaskBar <> nil then
@@ -2721,10 +2722,10 @@ begin
   for I := FFilesInfo.Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
-      if LockItems then
+      {if LockItems then
         if ElvMain.Groups[0].Visible then
           if ElvMain.Items.Count = 0 then
-            ElvMain.Groups[0].Visible := False;
+            ElvMain.Groups[0].Visible := False; }
 
       LockDrawIcon := True;
 
@@ -2765,9 +2766,9 @@ begin
   for I := 0 to FFilesInfo.Count - 1 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
-      if ElvMain.Groups[0].Visible then
+      {if ElvMain.Groups[0].Visible then
         if ElvMain.Items.Count = 0 then
-          ElvMain.Groups[0].Visible := False;
+          ElvMain.Groups[0].Visible := False; }
 
       LockDrawIcon := True;
       Data := TDataObject.Create;
@@ -3121,13 +3122,28 @@ end;
 
 procedure TExplorerForm.AddInfoAboutFile(Info: TExplorerFileInfos);
 var
-  I : Integer;
+  I, J : Integer;
+  IsContinue : Boolean;
+  InfoCount : Integer;
 begin
-  for I := 0 to FFilesInfo.Count - 1 do
-    if FFilesInfo[I].FileName = Info[0].FileName then
-      Exit;
+  InfoCount := FFilesInfo.Count;
+  for I := 0 to Info.Count - 1 do
+  begin
+    IsContinue := False;
+    for J := 0 to InfoCount - 1 do
+    begin
+      if FFilesInfo[J].FileName = Info[I].FileName then
+      begin
+        IsContinue := True;
+        Break;
+      end;
+    end;
+    if IsContinue then
+      Continue;
 
-  FFilesInfo.Add(Info[0].Copy);
+    FFilesInfo.Add(Info[I].Copy);
+  end;
+
 end;
 
 function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;

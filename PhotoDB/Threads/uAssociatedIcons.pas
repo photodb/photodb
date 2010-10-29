@@ -259,35 +259,37 @@ begin
   inherited;
 end;
 
-function TAIcons.GetIconByExt(FileName: String; IsFolder : boolean; Size : integer; Default : boolean): TIcon;
+function TAIcons.GetIconByExt(FileName: string; IsFolder: Boolean; Size: Integer; default: Boolean): TIcon;
 var
-  n, i : integer;
-  Ext : String;
+  N, I: Integer;
+  Ext: string;
 begin
   FSync.Enter;
   try
-    Result:=nil;
-    n:=0;
+    Result := nil;
+    N := 0;
     if IsFolder then
-    if Copy(FileName,1,2)='\\' then Default:=true;
-    if IsFolder then Ext:='' else Ext:=AnsiLowerCase(ExtractFileExt(FileName));
-    if not IsExt(EXT,Size) and not Default then
-    n:=AddIconByExt(FileName, Ext, Size);
-    for i:=n to length(FAssociatedIcons)-1 do
-      if (FAssociatedIcons[i].Ext = Ext) and (FAssociatedIcons[i].Size = Size) then
+      if Copy(FileName, 1, 2) = '\\' then
+        default := True;
+    if IsFolder then
+      Ext := ''
+    else
+      Ext := AnsiLowerCase(ExtractFileExt(FileName));
+    if not IsExt(EXT, Size) and not default then
+      N := AddIconByExt(FileName, Ext, Size);
+    for I := N to Length(FAssociatedIcons) - 1 do
+      if (FAssociatedIcons[I].Ext = Ext) and (FAssociatedIcons[I].Size = Size) then
       begin
-      if (not FAssociatedIcons[i].SelfIcon) or Default then
-      begin
-        if Size = 48 then
-          Result := TIcon48.Create
-        else
-         Result:=TIcon.Create;
-       Result.Assign(FAssociatedIcons[i].Icon);
-      end else
-      begin
-       Result:=GetShellImage(FileName,Size);
+        if (not FAssociatedIcons[I].SelfIcon) or default then
+        begin
+          if Size = 48 then
+            Result := TIcon48.Create
+          else
+            Result := TIcon.Create;
+          Result.Assign(FAssociatedIcons[I].Icon);
+        end else
+          Result := GetShellImage(FileName, Size);
       end;
-    end;
   finally
     FSync.Leave;
   end;
@@ -311,7 +313,7 @@ begin
   end;
 end;
 
-function TAIcons.IsVarIcon(FileName: string; Size : integer): boolean;
+function TAIcons.IsVarIcon(FileName: string; Size : integer): Boolean;
 var
   i : Integer;
   Ext : String;
@@ -320,7 +322,7 @@ begin
   FSync.Enter;
   try
     Ext := AnsiLowerCase(ExtractFileExt(FileName));
-    for i:=0 to length(FAssociatedIcons)-1 do
+    for I := 0 to length(FAssociatedIcons)-1 do
     if (FAssociatedIcons[i].Ext = Ext) and (FAssociatedIcons[i].Size = Size) then
     begin
       Result := FAssociatedIcons[i].SelfIcon;

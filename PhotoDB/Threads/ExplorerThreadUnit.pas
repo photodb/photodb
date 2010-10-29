@@ -14,7 +14,7 @@
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList;
 
-  type
+type
   TExplorerThread = class(TMultiCPUThread)
   private
     { Private declarations }
@@ -58,7 +58,7 @@
     FOwnerThreadType : Integer;
     CurrentFileInfo : TExplorerFileInfo;
     FPacketImages : TBitmapImageList;
-    FPacketInfos : TDBPopupMenuInfo;
+    FPacketInfos : TExplorerFileInfos;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
@@ -69,11 +69,10 @@
     procedure EndUpDate;
     Procedure MakeFolderImage(Folder : String);
     procedure FileNeededAW;
-    procedure AddDirectoryToPacket;
     procedure AddDirectoryItemToExplorer;
     procedure AddDirectoryImageToExplorer;
     procedure AddDirectoryIconToExplorer;
-    procedure AddImageFileToExplorer;
+    procedure AddImageFileToPacket;
     procedure DrawImageIcon;
     procedure DrawImageIconSmall;
     procedure AddImageFileImageToExplorer;
@@ -129,6 +128,7 @@
     procedure DoMultiProcessorTask; override;
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
+    procedure SendPacketToExplorer;
   protected
     function IsVirtualTerminate : Boolean; override;
     function GetThreadID : string; override;
@@ -442,15 +442,12 @@ begin
           FindClose(SearchRec);
 
           FPacketImages := TBitmapImageList.Create;
-          FPacketInfos := TDBPopupMenuInfo.Create;
+          FPacketInfos := TExplorerFileInfos.Create;
           try
 
             TW.I.Start('Loading info');
             ShowInfo(L('Loading info') + '...', 1, 0);
             ShowProgress;
-
-            SynchronizeEx(BeginUpdate);
-            SynchronizeEx(InfoToExplorerForm);
 
             ShowInfo(L('Loading directories') + '...', FFiles.Count, 0);
             InfoPosition := 0;
@@ -462,16 +459,23 @@ begin
               begin
                 if IsTerminated then
                   Break;
+                FPacketInfos.Add(CurrentFileInfo);
                 GUIDParam := CurrentFileInfo.SID;
                 CurrentFile := CurrentFileInfo.FileName;
                 MakeFolderImage(CurrentFile);
-                SynchronizeEx(AddDirectoryToExplorer);
+                FPacketImages.AddIcon(FIcon, True);
+                FIcon := nil;
 
                 Inc(InfoPosition);
                 if InfoPosition mod 10 = 0 then
+                begin
                   ShowInfo(InfoPosition);
+                  Synchronize(SendPacketToExplorer);
+                end;
               end;
             end;
+            if FPacketInfos.Count > 0 then
+              Synchronize(SendPacketToExplorer);
 
             ShowInfo(L('Loading images') + '...');
             for I := 0 to FFiles.Count - 1 do
@@ -481,34 +485,47 @@ begin
               begin
                 if IsTerminated then
                   Break;
+                FPacketInfos.Add(CurrentFileInfo);
                 GUIDParam := CurrentFileInfo.SID;
                 CurrentFile := CurrentFileInfo.FileName;
-                AddImageFileToExplorer;
+                AddImageFileToPacket;
 
                 Inc(InfoPosition);
                 if InfoPosition mod 10 = 0 then
+                begin
                   ShowInfo(InfoPosition);
+                  Synchronize(SendPacketToExplorer);
+                end;
               end;
             end;
+            if FPacketInfos.Count > 0 then
+              Synchronize(SendPacketToExplorer);
 
             ShowInfo(L('Loading files') + '...');
             if FShowFiles then
             for I := 0 to FFiles.Count - 1 do
             begin
               CurrentFileInfo := FFiles[I];
-              if CurrentFileInfo.FileType=EXPLORER_ITEM_FILE then
+              if CurrentFileInfo.FileType = EXPLORER_ITEM_FILE then
               begin
-                If IsTerminated then break;
+                If IsTerminated then
+                  Break;
+                FPacketInfos.Add(CurrentFileInfo);
                 GUIDParam := CurrentFileInfo.SID;
                 CurrentFile := CurrentFileInfo.FileName;
-                AddImageFileToExplorer;
+                AddImageFileToPacket;
                 CurrentFileInfo.Tag := IntIconParam;
 
                 Inc(InfoPosition);
                 if InfoPosition mod 10 = 0 then
+                begin
                   ShowInfo(InfoPosition);
+                  Synchronize(SendPacketToExplorer);
+                end;
               end;
             end;
+            if FPacketInfos.Count > 0 then
+              Synchronize(SendPacketToExplorer);
 
           finally
             F(FPacketImages);
@@ -516,23 +533,22 @@ begin
           end;
 
           SynchronizeEx(DoDefaultSort);
-          SynchronizeEx(EndUpdate);
 
           TW.I.Start('not IsPrivateDirectory');
           if not IsPrivateDirectory then
             LoadDBContent;
-
-          SynchronizeEx(HideLoadingSign);
 
           TW.I.Start('Loading thumbnails');
           ShowInfo(L('Loading thumbnails') + '...');
           ShowInfo(FFiles.Count, 0);
           InfoPosition:=0;
 
+          SynchronizeEx(HideLoadingSign);
+
           for I := 0 to FFiles.Count - 1 do
           begin
             if IsTerminated then Break;
-            if i mod 5 = 0 then
+            if I mod 5 = 0 then
             begin
               TW.I.Start('GetVisibleFiles');
               SynchronizeEx(GetVisibleFiles);
@@ -545,42 +561,41 @@ begin
               Inc(InfoPosition);
               ShowInfo(InfoPosition);
               CurrentFile:=FFiles[i].FileName;
-              CurrentInfoPos:=i;
+              CurrentInfoPos := I;
               ReplaceImageItemImage(FFiles[i].FileName, FFiles[i].FileSize, FFiles[i].SID);
             end;
 
-           If ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[i].Tag=1)) then
-           begin
-            FFiles[i].Tag:=1;
-            GUIDParam:=FFiles[i].SID;
+           if ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[I].Tag = 1)) then
             begin
-             Inc(InfoPosition);
-             ShowInfo(InfoPosition);
-             CurrentFile:=FFiles[i].FileName;
-             MakeIconForFile;
+              FFiles[I].Tag := 1;
+              GUIDParam := FFiles[I].SID;
+              begin
+                Inc(InfoPosition);
+                ShowInfo(InfoPosition);
+                CurrentFile := FFiles[I].FileName;
+                MakeIconForFile;
+              end;
             end;
-           end;
 
-           if ExplorerInfo.View=LV_THUMBS then
-           begin
-            If FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
+            if ExplorerInfo.View = LV_THUMBS then
             begin
-             FFiles[i].Tag:=1;
-             GUIDParam:=FFiles[i].SID;
-             begin
+              if FFiles[I].FileType = EXPLORER_ITEM_FOLDER then
+              begin
+                FFiles[I].Tag := 1;
+                GUIDParam := FFiles[I].SID;
+                begin
+                  Inc(InfoPosition);
+                  ShowInfo(InfoPosition);
+                  if ExplorerInfo.ShowThumbNailsForFolders then
+                    ExtractDirectoryPreview(FFiles[I].FileName, FFiles[I].SID);
+                end;
+              end;
+            end else
+            begin
               Inc(InfoPosition);
               ShowInfo(InfoPosition);
-              if ExplorerInfo.ShowThumbNailsForFolders then
-                ExtractDirectoryPreview(FFiles[i].FileName, FFiles[i].SID);
-               // ReplaceThumbImageToFolder(FFiles[i].FileName);
-             end;
+              CurrentInfoPos := I;
             end;
-           end else
-           begin
-            Inc(InfoPosition);
-            ShowInfo(InfoPosition);
-            CurrentInfoPos:=i;
-           end;
           end;
 
           if (ExplorerInfo.View = LV_THUMBS) and (ExplorerInfo.PictureSize <> ThImageSize) then
@@ -603,6 +618,61 @@ begin
     F(FullFolderPicture);
     CoUninitialize;
   end;
+end;
+
+procedure TExplorerThread.SendPacketToExplorer;
+var
+  I : Integer;
+  Icon : TIcon;
+  S1, S2 : String;
+  Info : TExplorerFileInfo;
+begin
+  FSender.BeginUpdate;
+  try
+    FSender.AddInfoAboutFile(FPacketInfos);
+    for I := 0 to FPacketInfos.Count - 1 do
+    begin
+      Info := FPacketInfos[I];
+      Icon := FPacketImages[I].Icon;
+      FSender.AddIcon(Icon, True, Info.SID);
+
+      NewItem := FSender.AddItem(Info.SID);
+      S1 := ExplorerInfo.OldFolderName;
+      UnformatDir(S1);
+      S2 := CurrentFile;
+      UnformatDir(S2);
+      if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
+        FSelected := NewItem;
+    end;
+    FPacketImages.ClearImagesList;
+    FPacketInfos.ClearList;
+  finally
+    FSender.EndUpdate;
+  end;
+end;
+
+procedure TExplorerThread.AddImageFileToPacket;
+var
+  EXT : String;
+begin
+  EXT := AnsiLowerCase(ExtractFileExt(CurrentFile));
+  IntIconParam := 0;
+  if (EXT = '.exe') or (EXT = '.scr') then
+  begin
+    Ficon := TAIcons.Instance.GetIconByExt('file.exe', False, FIcoSize, True);
+    Inc(FilesWithoutIcons);
+    IntIconParam := 1;
+  end else if TAIcons.Instance.IsVarIcon(CurrentFile, FIcoSize) then
+  begin
+    begin
+      Ficon := TAIcons.Instance.GetIconByExt('file.___', False, FIcoSize, True);
+      Inc(FilesWithoutIcons);
+      IntIconParam := 1;
+    end;
+  end else
+    Ficon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
+
+  FPacketImages.AddIcon(FIcon, True);
 end;
 
 procedure TExplorerThread.BeginUpdate;
@@ -628,12 +698,6 @@ begin
   BooleanResult := False;
   If not IsTerminated then
     BooleanResult:=FSender.FileNeededW(GUIDParam);
-end;
-
-procedure TExplorerThread.AddDirectoryTopacket;
-begin
-  AddDirectoryImageToExplorer;
-  AddDirectoryItemToExplorer;
 end;
 
 procedure TExplorerThread.AddDriveToExplorer;
@@ -673,30 +737,6 @@ begin
   UnformatDir(S2);
   if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
     FSelected := NewItem;
-end;
-
-procedure TExplorerThread.AddImageFileToExplorer;
-var
-  EXT : String;
-begin
-  EXT := AnsiLowerCase(ExtractFileExt(CurrentFile));
-  IntIconParam := 0;
-  if (EXT = '.exe') or (EXT = '.scr') then
-  begin
-    Ficon := TAIcons.Instance.GetIconByExt('file.exe', False, FIcoSize, True);
-    Inc(FilesWithoutIcons);
-    IntIconParam := 1;
-  end else if TAIcons.Instance.IsVarIcon(CurrentFile, FIcoSize) then
-  begin
-    begin
-      Ficon := TAIcons.Instance.GetIconByExt('file.___', False, FIcoSize, True);
-      Inc(FilesWithoutIcons);
-      IntIconParam := 1;
-    end;
-  end else
-    Ficon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
-
-  SynchronizeEx(MakeImageWithIcon);
 end;
 
 procedure TExplorerThread.DrawImageIcon;
@@ -1161,7 +1201,9 @@ var
 
   GUIDParam := DirctoryID;
   if not SynchronizeEx(ReplaceFolderImage) then
-    F(TempBitmap);
+    F(TempBitmap)
+  else
+    TempBitmap := nil;
 end;
 
 procedure TExplorerThread.DrawFolderImageBig(Bitmap: TBitmap);
@@ -1295,7 +1337,7 @@ end;
 
 procedure TExplorerThread.MakeFolderImage(Folder: String);
 begin
-  FIcon:=TAIcons.Instance.GetIconByExt(Folder,true, FIcoSize,false);
+  FIcon := TAIcons.Instance.GetIconByExt(Folder, True, FIcoSize, False);
 end;
 
 procedure TExplorerThread.MakeTempBitmap;
