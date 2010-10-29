@@ -537,7 +537,8 @@ implementation
 uses UnitPasswordForm,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
-  UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit;
+  UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit,
+  uPrivateHelper;
 
 function IsWinXP: Boolean;
 begin
@@ -2951,6 +2952,7 @@ end;
 
 procedure SetPrivate(ID: Integer);
 begin
+  TPrivateHelper.Instance.Reset;
   ExecuteQuery(Format('Update $DB$ Set Access=%d WHERE ID=%d', [Db_access_private, ID]));
 end;
 

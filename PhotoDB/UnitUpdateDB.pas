@@ -135,7 +135,7 @@ var
 
 implementation
 
-uses Language, FormManegerUnit, UnitHistoryForm,
+uses FormManegerUnit, UnitHistoryForm,
   ExplorerUnit, SlideShow, UnitScripts, DBScriptFunctions,
   UnitUpdateDBThread;
 
@@ -304,7 +304,7 @@ begin
     FileSize := GetFileSizeByName(Value.name);
     TimeCounter.NextAction(FileSize);
 
-    ProgressBar.Text := Format(TEXT_MES_TIME_REM_F, [FormatDateTime('hh:mm:ss', TimeCounter.GetTimeRemaining)]);
+    ProgressBar.Text := Format(L('Tile left - %s (&%%%%)'), [FormatDateTime('hh:mm:ss', TimeCounter.GetTimeRemaining)]);
     FCurrentFileName := Value.name;
     WebLinkOpenImage.Enabled := True;
     WebLinkOpenImage.RefreshBuffer;
@@ -331,7 +331,7 @@ begin
     begin
       Show;
       Delay(100);
-      DoHelpHint(L('Warning'), TEXT_MES_CRYPT_FILE_WITHOUT_PASS_MOT_ADDED, P, Self);
+      DoHelpHint(L('Warning'), L( 'Unable to add to DB one or more files. Choose "History" in context menu.'), P, Self);
     end;
   end;
 end;
@@ -358,7 +358,7 @@ begin
   FCurrentFileName := '';
   FCurrentImage := nil;
   ProgressBar.Position := 0;
-  ProgressBar.Text := TEXT_MES_DONE;
+  ProgressBar.Text := L('Done');
   Repaint;
 end;
 
@@ -415,7 +415,7 @@ begin
   begin
     FAddObject.DoUnPause;
     SetIcon(ButtonRunStop, 'UPDATER_PAUSE');
-    ButtonRunStop.Text := TEXT_MES_PAUSE;
+    ButtonRunStop.Text := L('Pause');
     if FW7TaskBar <> nil then
       FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
   end else
@@ -423,7 +423,7 @@ begin
     // TODO icon
     FAddObject.DoPause;
     SetIcon(ButtonRunStop, 'UPDATER_PLAY');
-    ButtonRunStop.Text := TEXT_MES_UNPAUSE;
+    ButtonRunStop.Text := L('Run');
     if FW7TaskBar <> nil then
       FW7TaskBar.SetProgressState(Handle, TBPF_PAUSED);
   end;
@@ -455,8 +455,8 @@ end;
 procedure TUpdateDBForm.FormDestroy(Sender: TObject);
 begin
   UpdaterDB.SaveWork;
-  TimeCounter.Free;
-  BadHistory.Free;
+  F(TimeCounter);
+  F(BadHistory);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   DropFileTarget1.Unregister;
 end;
@@ -473,7 +473,7 @@ begin
 // BadHistory.Add('j:\autoexec.bat');
   if BadHistory.Count = 0 then
   begin
-    MessageBoxDB(Handle, TEXT_MES_NO_HISTORY, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_INFORMATION);
+    MessageBoxDB(Handle, L('History is empty!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
     Exit;
   end;
   ShowHistory(BadHistory);
@@ -557,15 +557,15 @@ begin
   HideImage(False);
   ProgressBar.Position := 0;
   ProgressBar.Text := L('Done');
-  FilesLabel.Text := TEXT_MES_NO_FILE_TO_ADD;
+  FilesLabel.Text := L('No files to add');
 end;
 
 procedure TUpdateDBForm.SetBeginUpdation(Sender: TObject);
 begin
   HideImage(False);
   ProgressBar.Position := 0;
-  ProgressBar.Text := TEXT_MES_ADDING_FILE_PR;
-  FilesLabel.Text := TEXT_MES_NOW_FILE;
+  ProgressBar.Text := L('Processing files... (&%%)');
+  FilesLabel.Text := L('<current file>');
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
@@ -611,8 +611,10 @@ end;
 procedure TUpdateDBForm.FormPaint(Sender: TObject);
 var
   R: TRect;
+
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;
+
 begin
 
   Canvas.Pen.Color := 0;
@@ -646,7 +648,7 @@ begin
     Canvas.Draw(10 + 50 - FCurrentImage.Width div 2, 10 + 50 - FCurrentImage.Height div 2, FCurrentImage);
 
   Canvas.Font.Style := [FsBold];
-  Canvas.TextOut(120, 5, TEXT_MES_PROCESSING_STATUS);
+  Canvas.TextOut(120, 5, L('Progress status') + ':');
 
   ProgressBar.DoPaintOnXY(Canvas, ProgressBar.Left, ProgressBar.Top);
 end;
@@ -699,42 +701,45 @@ begin
   begin
 
     Bitmap := TBitmap.Create;
-    Bitmap.Width := 100;
-    Bitmap.Height := 85;
-    Bitmap.Canvas.Brush.Color := ClWhite;
-    Bitmap.Canvas.Pen.Color := ClWhite;
-    Bitmap.Canvas.Rectangle(0, 0, 100, 100);
-
-    if FInfoStr = '' then
-    begin
-      FImage.DolayeredDraw(16 * FImagePos, 0, 255 - FImagePosStep, Bitmap);
-      if FImagePos > 4 then
-        FImage.DolayeredDraw(0, 0, FImagePosStep, Bitmap)
-      else
-        FImage.DolayeredDraw(16 * (FImagePos + 1), 0, FImagePosStep, Bitmap);
-    end else
-    begin
-      Bitmap.Canvas.Font.name := 'Times New Roman';
-      Bitmap.Canvas.Font.Size := 8;
-      Bitmap.Canvas.Font.Style := [FsBold];
+    try
+      Bitmap.Width := 100;
+      Bitmap.Height := 85;
       Bitmap.Canvas.Brush.Color := ClWhite;
-      Text := FInfoStr;
-      TextWidth := Canvas.TextWidth(Text);
-      TextHeight := Canvas.TextHeight(Text);
-      TextLeft := Bitmap.Width div 2 - TextWidth div 2;
-      TextTop := Bitmap.Height - TextHeight;
-      Bitmap.Canvas.TextOut(TextLeft, TextTop, Text);
+      Bitmap.Canvas.Pen.Color := ClWhite;
+      Bitmap.Canvas.Rectangle(0, 0, 100, 100);
 
-      FImageInv.DolayeredDraw(16 * FImagePos, 0, 255 - FImagePosStep, Bitmap);
-      if FImagePos > 4 then
-        FImageInv.DolayeredDraw(0, 0, FImagePosStep, Bitmap)
-      else
-        FImageInv.DolayeredDraw(16 * (FImagePos + 1), 0, FImagePosStep, Bitmap);
+      if FInfoStr = '' then
+      begin
+        FImage.DolayeredDraw(16 * FImagePos, 0, 255 - FImagePosStep, Bitmap);
+        if FImagePos > 4 then
+          FImage.DolayeredDraw(0, 0, FImagePosStep, Bitmap)
+        else
+          FImage.DolayeredDraw(16 * (FImagePos + 1), 0, FImagePosStep, Bitmap);
+      end else
+      begin
+        Bitmap.Canvas.Font.name := 'Times New Roman';
+        Bitmap.Canvas.Font.Size := 8;
+        Bitmap.Canvas.Font.Style := [FsBold];
+        Bitmap.Canvas.Brush.Color := ClWhite;
+        Text := FInfoStr;
+        TextWidth := Canvas.TextWidth(Text);
+        TextHeight := Canvas.TextHeight(Text);
+        TextLeft := Bitmap.Width div 2 - TextWidth div 2;
+        TextTop := Bitmap.Height - TextHeight;
+        Bitmap.Canvas.TextOut(TextLeft, TextTop, Text);
 
+        FImageInv.DolayeredDraw(16 * FImagePos, 0, 255 - FImagePosStep, Bitmap);
+        if FImagePos > 4 then
+          FImageInv.DolayeredDraw(0, 0, FImagePosStep, Bitmap)
+        else
+          FImageInv.DolayeredDraw(16 * (FImagePos + 1), 0, FImagePosStep, Bitmap);
+
+      end;
+      FImageHourGlass.DolayeredDraw(Bitmap.Width div 2 - FImageHourGlass.Width div 2 - 10, 16, 150, Bitmap);
+      Canvas.Draw(10, FilesLabel.Top, Bitmap);
+    finally
+      F(Bitmap);
     end;
-    FImageHourGlass.DolayeredDraw(Bitmap.Width div 2 - FImageHourGlass.Width div 2 - 10, 16, 150, Bitmap);
-    Canvas.Draw(10, FilesLabel.Top, Bitmap);
-    Bitmap.Free;
 
     Inc(FImagePosStep, 10);
     if (FImagePosStep >= 255) then
@@ -753,7 +758,7 @@ procedure TUpdateDBForm.OnDirectorySearch(Owner: TObject; FileName: string;
   Size: int64);
 begin
   FFullSize := FFullSize + Size;
-  FInfoStr := Format(TEXT_MES_UPDATER_INFO_SIZE_FORMAT, [Dolphin_DB.SizeInTextA(FFullSize)]);
+  FInfoStr := Format(L('Reading [%s]'), [SizeInTextA(FFullSize)]);
 end;
 
 procedure TUpdateDBForm.FormKeyDown(Sender: TObject; var Key: Word;

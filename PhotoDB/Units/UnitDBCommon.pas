@@ -174,8 +174,18 @@ begin
   SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(0), 0);
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
 
-  AllowToSetForegroundWindow(hWnd);
-  SetForegroundWindow(hWnd);
+  {AllowToSetForegroundWindow(hWnd);
+  SetForegroundWindow(hWnd);}
+  hCurWnd := GetForegroundWindow;
+  AResult := False;
+  while not AResult do
+  begin
+    dwThreadID := GetCurrentThreadId;
+    dwCurThreadID := GetWindowThreadProcessId(hCurWnd);
+    AttachThreadInput(dwThreadID, dwCurThreadID, True);
+    AResult := SetForegroundWindow(hWnd);
+    AttachThreadInput(dwThreadID, dwCurThreadID, False);
+  end;
 
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);

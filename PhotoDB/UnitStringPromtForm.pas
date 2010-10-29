@@ -64,7 +64,7 @@ end;
 
 function TFormStringPromt.GetFormID: string;
 begin
-  Result := '';
+  Result := 'TextPromt';
 end;
 
 procedure TFormStringPromt.BtnCancelClick(Sender: TObject);

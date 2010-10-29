@@ -266,6 +266,10 @@ begin
 
       Original := TBitmap.Create;
       try
+        if FProcessingParams.PreviewOptions.GeneratePreview then
+          JPEGScale(Graphic, FProcessingParams.PreviewOptions.PreviewWidth,
+            FProcessingParams.PreviewOptions.PreviewHeight);
+
         Original.Assign(Graphic);
         F(Graphic);
 
@@ -291,7 +295,10 @@ begin
           end;
 
           //resample image
-          Stretch(Width, Height, sfLanczos3, 0, Original);
+          if FProcessingParams.PreviewOptions.GeneratePreview then
+            Stretch(Width, Height, sfBox, 0, Original)
+          else
+            Stretch(Width, Height, sfLanczos3, 0, Original);
         end;
 
         if not CheckThread then

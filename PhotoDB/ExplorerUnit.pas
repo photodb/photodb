@@ -13,7 +13,7 @@ uses
   ShellContextMenu, ShlObj, Clipbrd, GraphicsCool,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
   EasyListview, MPCommonUtilities, MPCommonObjects,
-  UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport,
+  UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources, uListViewUtils,
@@ -733,6 +733,7 @@ var
   NewPath : String;
   NewPathType, i : Integer;
 begin
+  TPrivateHelper.Instance.Init;
   DirectoryWatcher := TWachDirectoryClass.Create;
   DefaultSort:=-1;
   FWasDragAndDrop:=false;

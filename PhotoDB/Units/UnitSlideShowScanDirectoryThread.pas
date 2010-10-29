@@ -32,7 +32,6 @@ begin
   FSID := SID;
   FSender := Sender;
   BaseFileName := ABaseFileName;
-  Start;
 end;
 
 procedure TSlideShowScanDirectoryThread.Execute;

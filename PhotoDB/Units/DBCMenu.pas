@@ -11,7 +11,7 @@ uses
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
-  uDBPopupMenuInfo, uConstants;
+  uDBPopupMenuInfo, uConstants, uPrivateHelper;
 
 type TDBPopupMenu = class
    private
@@ -1116,6 +1116,7 @@ begin
     end;
    end;
   end;
+  TPrivatehelper.Instance.Reset;
   R(ProgressForm);
   FBusy:=false;
 end;

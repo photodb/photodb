@@ -8,9 +8,9 @@ uses
 type
   TSlideShowUpdateInfoThread = class(TThreadEx)
   private
+    { Private declarations }
    FFileName : string;
    DS : TDataSet;
-    { Private declarations }
   protected
     procedure Execute; override;
     procedure DoUpdateWithSlideShow;
@@ -29,7 +29,6 @@ constructor TSlideShowUpdateInfoThread.Create(AOwner : TThreadForm; AState : TGU
 begin
   inherited Create(AOwner, AState);
   FFileName := FileName;
-  Start;
 end;
 
 procedure TSlideShowUpdateInfoThread.DoSetNotDBRecord;
@@ -44,7 +43,7 @@ end;
 
 procedure TSlideShowUpdateInfoThread.Execute;
 begin
-  FreeOnTerminate:=true;
+  FreeOnTerminate := True;
   CoInitialize(nil);
   try
     DS:=GetQuery(True);

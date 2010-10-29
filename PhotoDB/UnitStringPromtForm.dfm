@@ -42,7 +42,6 @@ object FormStringPromt: TFormStringPromt
     TabOrder = 0
     OnKeyPress = EdStringKeyPress
     WatermarkText = 'Enter your text here'
-    ExplicitWidth = 209
   end
   object BtnOK: TButton
     Left = 159
@@ -53,7 +52,6 @@ object FormStringPromt: TFormStringPromt
     Caption = 'BtnOK'
     TabOrder = 1
     OnClick = BtnOKClick
-    ExplicitLeft = 144
   end
   object BtnCancel: TButton
     Left = 79
@@ -64,6 +62,5 @@ object FormStringPromt: TFormStringPromt
     Caption = 'BtnCancel'
     TabOrder = 2
     OnClick = BtnCancelClick
-    ExplicitLeft = 64
   end
 end

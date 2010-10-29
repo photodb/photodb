@@ -12,7 +12,7 @@
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo,
-  uMultiCPUThreadManager;
+  uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList;
 
   type
   TExplorerThread = class(TMultiCPUThread)
@@ -56,6 +56,9 @@
     LoadingAllBigImages: Boolean;
     NewItem: TEasyItem;
     FOwnerThreadType : Integer;
+    CurrentFileInfo : TExplorerFileInfo;
+    FPacketImages : TBitmapImageList;
+    FPacketInfos : TDBPopupMenuInfo;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
@@ -66,7 +69,7 @@
     procedure EndUpDate;
     Procedure MakeFolderImage(Folder : String);
     procedure FileNeededAW;
-    procedure AddDirectoryToExplorer;
+    procedure AddDirectoryToPacket;
     procedure AddDirectoryItemToExplorer;
     procedure AddDirectoryImageToExplorer;
     procedure AddDirectoryIconToExplorer;
@@ -144,27 +147,30 @@
     property ThreadType : Integer read FThreadType;
   end;
 
-  type
+type
   TIconType = (itSmall, itLarge);
 
-  var
+var
   AExplorerFolders : TExplorerFolders = nil;
   UpdaterCount : integer = 0;
   ExplorerUpdateBigImageThreadsCount : integer = 0;
   FullFolderPicture: TPNGGraphic = nil;
   FFolderPictureLock : TCriticalSection = nil;
 
-  implementation
+implementation
 
-  uses
+uses
   FormManegerUnit, UnitViewerThread, CommonDBSupport, uExplorerThreadPool;
 
   { TExplorerThread }
 
-  Constructor TExplorerThread.Create(Folder,
+constructor TExplorerThread.Create(Folder,
   Mask: string; ThreadType : Integer; Info: TExplorerViewInfo; Sender : TExplorerForm; UpdaterInfo: TUpdaterInfo; SID : TGUID);
-  begin
+begin
   inherited Create(Sender, SID);
+  CurrentFileInfo := nil;
+  FPacketImages  := nil;
+  FPacketInfos  := nil;
   FThreadType := ThreadType;
   FOwnerThreadType := THREAD_TYPE_NONE;
   FSender := Sender;
@@ -178,10 +184,10 @@
   FFiles := nil;
   FEvent := 0;
   Start;
-  end;
+end;
 
-  procedure TExplorerThread.Execute;
-  var
+procedure TExplorerThread.Execute;
+var
   Found, FilesReadedCount: Integer;
   SearchRec: TSearchRec;
   I: Integer;
@@ -193,8 +199,46 @@
   Crc: Cardinal;
   S: string;
   P: Integer;
+  IsPrivateDirectory : Boolean;
 
+  procedure LoadDBContent;
+  var
+    I : Integer;
   begin
+    ShowInfo(L('DB Query...'), 1, 0);
+    if (GetDBType = DB_TYPE_MDB) and not FolderView then
+      SetSQL(FQuery, 'Select * From (Select * from $DB$ where FolderCRC=' + Inttostr(Integer(Crc)) +
+          ') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+    if FolderView then
+    begin
+      SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
+      S := FFolder;
+      Delete(S, 1, Length(ProgramDir));
+      UnformatDir(S);
+      CalcStringCRC32(AnsiLowerCase(S), Crc);
+      SetIntParam(FQuery, 0, Integer(Crc));
+    end else
+    begin
+      SetStrParam(FQuery, 0, '%' + DBFolderToSearch + '%');
+      SetStrParam(FQuery, 1, '%' + DBFolderToSearch + '%\%');
+    end;
+
+    for I := 1 to 20 do
+    begin
+      try
+        FQuery.Active := True;
+        Break;
+      except
+        on E: Exception do
+        begin
+          EventLog(':TExplorerThread::Execute throw exception: ' + E.message);
+          Sleep(DelayExecuteSQLOperation);
+        end;
+      end;
+    end;
+  end;
+
+begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
@@ -303,7 +347,7 @@
       PrivateFiles := TStringList.Create;
       try
 
-        DBFolderToSearch:=FFolder;
+        DBFolderToSearch := FFolder;
         UnProcessPath(DBFolderToSearch);
         DBFolderToSearch:=AnsiLowerCase(DBFolderToSearch);
         UnFormatDir(DBFolderToSearch);
@@ -312,46 +356,21 @@
         FormatDir(FFolder);
         FFiles := TExplorerFileInfos.Create;
 
+        IsPrivateDirectory := TPrivateHelper.Instance.IsPrivateDirectory(DBFolderToSearch);
+
         DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
         FQuery := GetQuery;
         try
-          ShowInfo(L('DB Query...'), 1, 0);
+          TW.I.Start('IsPrivateDirectory');
+          if IsPrivateDirectory then
+            LoadDBContent;
 
-          if (GetDBType = DB_TYPE_MDB) and not FolderView then
-            SetSQL(FQuery,'Select * From (Select * from $DB$ where FolderCRC='+inttostr(Integer(crc))+') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
-          if FolderView then
-          begin
-           SetSQL(FQuery,'Select * From $DB$ where FolderCRC = :crc');
-           s:=FFolder;
-           Delete(s,1,Length(ProgramDir));
-           UnformatDir(s);
-           CalcStringCRC32(AnsiLowerCase(s),crc);
-           SetIntParam(FQuery,0,Integer(crc));
-          end else
-          begin
-           SetStrParam(FQuery,0,'%'+DBFolderToSearch+'%');
-           SetStrParam(FQuery,1,'%'+DBFolderToSearch+'%\%');
-          end;
-
-          for I:=1 to 20 do
-          begin
-           try
-            FQuery.Active:=True;
-            Break;
-           except
-            on e : Exception do
-            begin
-             EventLog(':TExplorerThread::Execute throw exception: '+e.Message);
-             Sleep(DelayExecuteSQLOperation);
-            end;
-           end;
-          end;
           if not FQuery.IsEmpty and not ExplorerInfo.ShowPrivate then
           begin
             FQuery.First;
             for I := 1 to FQuery.RecordCount do
             begin
-              if FQuery.FieldByName('Access').AsInteger=db_access_private then
+              if FQuery.FieldByName('Access').AsInteger = Db_access_private then
                 PrivateFiles.Add(AnsiLowerCase(ExtractFileName(FQuery.FieldByName('FFileName').AsString)));
 
               FQuery.Next;
@@ -359,6 +378,7 @@
             PrivateFiles.Sort;
           end;
 
+          TW.I.Start('Reading directory');
           ShowInfo(L('Reading directory') + '...', 1, 0);
           FilesReadedCount:=0;
           FilesWithoutIcons:=0;
@@ -420,58 +440,91 @@
            end;
           end;
           FindClose(SearchRec);
-          SynchronizeEx(BeginUpdate);
 
-          ShowInfo(L('Loading info') + '...', 1, 0);
-          ShowProgress;
-          SynchronizeEx(InfoToExplorerForm);
-          ShowInfo(L('Loading directories') + '...', FFiles.Count, 0);
-          InfoPosition := 0;
-          for I := 0 to FFiles.Count - 1 do
-          begin
-           FFiles[I].Tag:=0;
-           If FFiles[I].FileType = EXPLORER_ITEM_FOLDER then
-           begin
-             if IsTerminated then Break;
-             GUIDParam:=FFiles[i].SID;
-             Inc(InfoPosition);
-             if InfoPosition mod 10 = 0 then
-               ShowInfo(InfoPosition);
-             CurrentFile := FFiles[i].FileName;
-             MakeFolderImage(CurrentFile);
-             SynchronizeEx(AddDirectoryToExplorer);
-           end;
+          FPacketImages := TBitmapImageList.Create;
+          FPacketInfos := TDBPopupMenuInfo.Create;
+          try
+
+            TW.I.Start('Loading info');
+            ShowInfo(L('Loading info') + '...', 1, 0);
+            ShowProgress;
+
+            SynchronizeEx(BeginUpdate);
+            SynchronizeEx(InfoToExplorerForm);
+
+            ShowInfo(L('Loading directories') + '...', FFiles.Count, 0);
+            InfoPosition := 0;
+            for I := 0 to FFiles.Count - 1 do
+            begin
+              CurrentFileInfo := FFiles[i];
+              CurrentFileInfo.Tag := 0;
+              if CurrentFileInfo.FileType = EXPLORER_ITEM_FOLDER then
+              begin
+                if IsTerminated then
+                  Break;
+                GUIDParam := CurrentFileInfo.SID;
+                CurrentFile := CurrentFileInfo.FileName;
+                MakeFolderImage(CurrentFile);
+                SynchronizeEx(AddDirectoryToExplorer);
+
+                Inc(InfoPosition);
+                if InfoPosition mod 10 = 0 then
+                  ShowInfo(InfoPosition);
+              end;
+            end;
+
+            ShowInfo(L('Loading images') + '...');
+            for I := 0 to FFiles.Count - 1 do
+            begin
+              CurrentFileInfo := FFiles[I];
+              if CurrentFileInfo.FileType = EXPLORER_ITEM_IMAGE then
+              begin
+                if IsTerminated then
+                  Break;
+                GUIDParam := CurrentFileInfo.SID;
+                CurrentFile := CurrentFileInfo.FileName;
+                AddImageFileToExplorer;
+
+                Inc(InfoPosition);
+                if InfoPosition mod 10 = 0 then
+                  ShowInfo(InfoPosition);
+              end;
+            end;
+
+            ShowInfo(L('Loading files') + '...');
+            if FShowFiles then
+            for I := 0 to FFiles.Count - 1 do
+            begin
+              CurrentFileInfo := FFiles[I];
+              if CurrentFileInfo.FileType=EXPLORER_ITEM_FILE then
+              begin
+                If IsTerminated then break;
+                GUIDParam := CurrentFileInfo.SID;
+                CurrentFile := CurrentFileInfo.FileName;
+                AddImageFileToExplorer;
+                CurrentFileInfo.Tag := IntIconParam;
+
+                Inc(InfoPosition);
+                if InfoPosition mod 10 = 0 then
+                  ShowInfo(InfoPosition);
+              end;
+            end;
+
+          finally
+            F(FPacketImages);
+            F(FPacketInfos);
           end;
-          ShowInfo(L('Loading images') + '...');
-          for I := 0 to FFiles.Count - 1 do
-          if FFiles[I].FileType = EXPLORER_ITEM_IMAGE then
-          begin
-            if IsTerminated then Break;
-            GUIDParam:=FFiles[i].SID;
-            Inc(InfoPosition);
-            if InfoPosition mod 10 = 0 then
-              ShowInfo(InfoPosition);
-            CurrentFile:=FFiles[i].FileName;
-            AddImageFileToExplorer;
-          end;
-          ShowInfo(L('Loading files') + '...');
-          if FShowFiles then
-          for I := 0 to FFiles.Count - 1 do
-          If FFiles[I].FileType=EXPLORER_ITEM_FILE then
-          begin
-            If IsTerminated then break;
-            GUIDParam:=FFiles[i].SID;
-            Inc(InfoPosition);
-            if InfoPosition mod 10 = 0 then
-              ShowInfo(InfoPosition);
-            CurrentFile:=FFiles[i].FileName;
-            AddImageFileToExplorer;
-            FFiles[i].Tag:=IntIconParam;
-          end;
-          SynchronizeEx(HideLoadingSign);
+
           SynchronizeEx(DoDefaultSort);
           SynchronizeEx(EndUpdate);
 
+          TW.I.Start('not IsPrivateDirectory');
+          if not IsPrivateDirectory then
+            LoadDBContent;
+
+          SynchronizeEx(HideLoadingSign);
+
+          TW.I.Start('Loading thumbnails');
           ShowInfo(L('Loading thumbnails') + '...');
           ShowInfo(FFiles.Count, 0);
           InfoPosition:=0;
@@ -550,84 +603,82 @@
     F(FullFolderPicture);
     CoUninitialize;
   end;
-  end;
+end;
 
-  procedure TExplorerThread.BeginUpdate;
-  begin
+procedure TExplorerThread.BeginUpdate;
+begin
   FSender.BeginUpdate;
-  end;
+end;
 
-  procedure TExplorerThread.EndUpdate;
-  begin
+procedure TExplorerThread.EndUpdate;
+begin
   FSender.EndUpdate;
-  FSender.Select(FSelected,FCID);
+  FSender.Select(FSelected, FCID);
   AExplorerFolders.CheckFolder(FFolder);
-  end;
+end;
 
-  procedure TExplorerThread.InfoToExplorerForm;
-  begin
+procedure TExplorerThread.InfoToExplorerForm;
+begin
   if not IsTerminated then
     FSender.LoadInfoAboutFiles(FFiles);
-  end;
+end;
 
-  procedure TExplorerThread.FileNeededAW;
-  begin
+procedure TExplorerThread.FileNeededAW;
+begin
   BooleanResult := False;
   If not IsTerminated then
     BooleanResult:=FSender.FileNeededW(GUIDParam);
-  end;
+end;
 
-  procedure TExplorerThread.AddDirectoryToExplorer;
-  begin
+procedure TExplorerThread.AddDirectoryTopacket;
+begin
   AddDirectoryImageToExplorer;
   AddDirectoryItemToExplorer;
-  end;
+end;
 
-  procedure TExplorerThread.AddDriveToExplorer;
-  begin
+procedure TExplorerThread.AddDriveToExplorer;
+begin
   AddDirectoryImageToExplorer;
   AddDirectoryItemToExplorerW;
-  end;
+end;
 
-  procedure TExplorerThread.AddDirectoryItemToExplorer;
-  var
+procedure TExplorerThread.AddDirectoryItemToExplorer;
+var
   S1, S2 : String;
-  begin
-  NewItem:=FSender.AddItem(GUIDParam);
-  S1:=ExplorerInfo.OldFolderName;
+begin
+  NewItem := FSender.AddItem(GUIDParam);
+  S1 := ExplorerInfo.OldFolderName;
   UnformatDir(S1);
-  S2:=CurrentFile;
+  S2 := CurrentFile;
   UnformatDir(S2);
-  if AnsiLowerCase(S1)=AnsiLowerCase(S2) then
-    FSelected:=NewItem;
-  end;
+  if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
+    FSelected := NewItem;
+end;
 
-  procedure TExplorerThread.AddDirectoryImageToExplorer;
-  begin
+procedure TExplorerThread.AddDirectoryImageToExplorer;
+begin
   if not IsTerminated then
     FSender.AddIcon(FIcon, True, GUIDParam);
-  end;
+end;
 
-  procedure TExplorerThread.AddDirectoryItemToExplorerW;
-  var
+procedure TExplorerThread.AddDirectoryItemToExplorerW;
+var
   NewItem : TEasyItem;
   S1, S2 : String;
-  begin
-  NewItem:=FSender.AddItemW(DriveNameParam, GUIDParam);
-  S1:=ExplorerInfo.OldFolderName;
+begin
+  NewItem := FSender.AddItemW(DriveNameParam, GUIDParam);
+  S1 := ExplorerInfo.OldFolderName;
   UnformatDir(S1);
-  S2:=CurrentFile;
+  S2 := CurrentFile;
   UnformatDir(S2);
-  If AnsiLowerCase(S1)=AnsiLowerCase(S2) then
-  begin
-  FSelected:=NewItem;
-  end;
-  end;
+  if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
+    FSelected := NewItem;
+end;
 
-  procedure TExplorerThread.AddImageFileToExplorer;
-  var
+procedure TExplorerThread.AddImageFileToExplorer;
+var
   EXT : String;
-  begin
+begin
   EXT := AnsiLowerCase(ExtractFileExt(CurrentFile));
   IntIconParam := 0;
   if (EXT = '.exe') or (EXT = '.scr') then
@@ -646,45 +697,45 @@
     Ficon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
 
   SynchronizeEx(MakeImageWithIcon);
-  end;
+end;
 
-  procedure TExplorerThread.DrawImageIcon;
-  begin
-  if IconParam <> nil then
+procedure TExplorerThread.DrawImageIcon;
+begin
+if IconParam <> nil then
     TempBitmap.Canvas.Draw(ExplorerInfo.PictureSize div 2-FIcoSize div 2,ExplorerInfo.PictureSize div 2-FIcoSize div 2,IconParam);
-  end;
+end;
 
-  procedure TExplorerThread.DrawImageIconSmall;
-  begin
+procedure TExplorerThread.DrawImageIconSmall;
+begin
   if IconParam <> nil then
     TempBitmap.Canvas.Draw(0, 0, IconParam);
-  end;
+end;
 
-  procedure TExplorerThread.AddImageFileImageToExplorer;
-  begin
+procedure TExplorerThread.AddImageFileImageToExplorer;
+begin
   if not IsTerminated then
     FSender.AddIcon(FIcon, True, GUIDParam);
-  end;
+end;
 
-  procedure TExplorerThread.AddIconFileImageToExplorer;
-  begin
+procedure TExplorerThread.AddIconFileImageToExplorer;
+begin
   If not IsTerminated then
    FSender.AddIcon(FIcon, True, GUIDParam);
-  end;
+end;
 
-  procedure TExplorerThread.AddImageFileItemToExplorer;
-  var
+procedure TExplorerThread.AddImageFileItemToExplorer;
+var
   NewItem : TEasyItem;
-  begin
+begin
   if not IsTerminated then
   begin
     NewItem := FSender.AddItem(GUIDParam);
     If AnsiLowerCase(ExplorerInfo.OldFolderName) = AnsiLowerCase(CurrentFile) then
       FSelected := NewItem;
   end;
-  end;
+end;
 
-  procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
+procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
   var
   FBS : TStream;
   CryptedFile : Boolean;
@@ -763,37 +814,37 @@
     else
       ExtractImage(FInfo, CryptedFile, FileID);
   end;
-  end;
+end;
 
-  procedure TExplorerThread.DrawImageToTempBitmapCenter;
-  begin
+procedure TExplorerThread.DrawImageToTempBitmapCenter;
+begin
   TempBitmap.Canvas.Draw(ThSize div 2 - GraphicParam.Width div 2, ThSize div 2 - GraphicParam.height div 2, GraphicParam);
-  end;
+end;
 
-  procedure TExplorerThread.ReplaceImageInExplorer;
-  begin
+procedure TExplorerThread.ReplaceImageInExplorer;
+begin
   if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam);
     if TempBitmap <> nil then
       FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.ItemInclude, isBigImage)
   end;
-  end;
+end;
 
-  procedure TExplorerThread.ReplaceInfoInExplorer;
-  begin
+procedure TExplorerThread.ReplaceInfoInExplorer;
+begin
   if not IsTerminated then
     FSender.SetInfoToItem(FInfo, GUIDParam);
-  end;
+end;
 
-  procedure TExplorerThread.ReplaceImageInExplorerA;
-  begin
+procedure TExplorerThread.ReplaceImageInExplorerA;
+begin
   if not IsTerminated then
      FSender.SetInfoToItem(FInfo, GUIDParam);
-  end;
+end;
 
-  procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
-  Var
+procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
+var
   Found, Count, Dx, i, j, x, y, w, H, Ps, index: Integer;
   SearchRec: TSearchRec;
   Files: array [1 .. 4] of string;
@@ -1111,7 +1162,7 @@
   GUIDParam := DirctoryID;
   if not SynchronizeEx(ReplaceFolderImage) then
     F(TempBitmap);
-  end;
+end;
 
 procedure TExplorerThread.DrawFolderImageBig(Bitmap: TBitmap);
 var

@@ -296,7 +296,8 @@ uses
   uGraphicUtils in 'Units\uGraphicUtils.pas',
   UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas',
   uImageSource in 'Units\uImageSource.pas',
-  uDBPopupMenuInfo in 'Units\uDBPopupMenuInfo.pas';
+  uDBPopupMenuInfo in 'Units\uDBPopupMenuInfo.pas',
+  uPrivateHelper in 'Units\uPrivateHelper.pas';
 
 {$R *.res}
 

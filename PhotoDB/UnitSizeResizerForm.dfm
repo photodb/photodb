@@ -306,7 +306,7 @@ object FormSizeResizer: TFormSizeResizer
     Top = 192
   end
   object TmrPreview: TTimer
-    Interval = 500
+    Interval = 200
     OnTimer = TmrPreviewTimer
     Left = 128
     Top = 192
