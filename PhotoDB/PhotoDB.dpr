@@ -219,15 +219,12 @@ uses
   ReplaseIconsInScript in 'Units\ReplaseIconsInScript.pas',
   DBScriptFunctions in 'Units\DBScriptFunctions.pas',
   UnitScriptsFunctions in 'Units\UnitScriptsFunctions.pas',
-  UnitImageActions in 'Units\UnitImageActions.pas',
-  UnitReadingActions in 'Units\UnitReadingActions.pas',
   UnitUpdateDBObject in 'Units\UnitUpdateDBObject.pas',
   UnitTimeCounter in 'Units\UnitTimeCounter.pas',
   VirtualSystemImageLists in 'Units\VirtualSystemImageLists.pas',
   acWorkRes in 'Units\acWorkRes.pas',
   UnitPropeccedFilesSupport in 'Units\UnitPropeccedFilesSupport.pas',
   UnitINI in 'Units\UnitINI.pas',
-  UnitDBRedeclare in 'Units\UnitDBRedeclare.pas',
   wfsU in 'Units\wfsU.pas',
   UnitFileCheckerDB in 'Units\UnitFileCheckerDB.pas',
   UnitPasswordKeeper in 'Units\UnitPasswordKeeper.pas',
@@ -263,7 +260,6 @@ uses
   FreeImage in 'External\Formats\FreeImage\FreeImage.pas',
   FreeUtils in 'External\Formats\FreeImage\FreeUtils.pas',
   uDBDrawing in 'Units\uDBDrawing.pas',
-  uDBImages in 'Units\uDBImages.pas',
   uList64 in 'Units\uList64.pas',
   uThreadLoadingManagerDB in 'Threads\uThreadLoadingManagerDB.pas',
   uW7TaskBar in 'Units\uW7TaskBar.pas',
@@ -375,6 +371,7 @@ exports
   FileVersion name 'FileVersion';
 
 begin
+//  FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
 //  ReportMemoryLeaksOnShutdown := True;
 {
  //Command line

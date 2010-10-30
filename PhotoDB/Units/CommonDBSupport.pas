@@ -792,7 +792,6 @@ begin
       Dec(ADOConnections[I].RefCount);
       if ADOConnections[I].RefCount = 0 then
       begin
-        ADOConnections[I].ADOConnection.Close;
         ADOConnections[I].ADOConnection.Free;
         ADOConnections[I].Free;
         ADOConnections.RemoveAt(I);
@@ -830,14 +829,26 @@ end;
 
 procedure FreeDS(var DS : TDataSet);
 var
-  Connection : TADOConnection;
+  Connection: TADOConnection;
 begin
   FSync.Enter;
   try
     if DS = nil then
       Exit;
-    if DS is TADOQuery then begin Connection:=(DS as TADOQuery).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADOQuery).Connection.Free;} exit; end;
-    if DS is TADODataSet then begin Connection:=(DS as TADODataSet).Connection; DS.Free{OnRelease}; DS:=nil; RemoveADORef(Connection);{(DS as TADODataSet).Connection.Free;} exit; end;
+    if DS is TADOQuery then
+    begin
+      Connection := (DS as TADOQuery).Connection;
+      F(DS);
+      RemoveADORef(Connection);
+      Exit;
+    end;
+    if DS is TADODataSet then
+    begin
+      Connection := (DS as TADODataSet).Connection;
+      F(DS);
+      RemoveADORef(Connection);
+      Exit;
+    end;
   finally
     FSync.Leave;
   end;

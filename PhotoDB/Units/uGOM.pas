@@ -2,7 +2,7 @@ unit uGOM;
 
 interface
 
-uses Classes, SysUtils, SyncObjs, UMemory;
+uses Classes, SysUtils, SyncObjs, uMemory;
 
 type
   TManagerObjects = class(TObject)

@@ -41,6 +41,7 @@ interface
   procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
   procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
   procedure DrawImageEx32(Dest32, Src32 : TBitmap; X, Y : Integer);
+  procedure DrawImageEx32To24(Dest24, Src32 : TBitmap; X, Y : Integer);
   procedure DrawImageEx24To32(Dest32, Src24 : TBitmap; X, Y : Integer; NewTransparent : Byte = 0);
   procedure FillTransparentColor(Bitmap : TBitmap; Color : TColor; TransparentValue : Byte = 0);
   procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
@@ -860,6 +861,42 @@ begin
     P := Bitmap32.ScanLine[I];
     for J := 0 to Bitmap32.Width - 1 do
       P[J].L := 255 - P[J].L;
+  end;
+end;
+
+procedure DrawImageEx32To24(Dest24, Src32 : TBitmap; X, Y : Integer);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW  : Integer;
+  W1, W : Byte;
+  pD : PARGB;
+  pS : PARGB32;
+begin
+  DH := Dest24.Height;
+  DW := Dest24.Width;
+  SH := Src32.Height;
+  SW := Src32.Width;
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS := Src32.ScanLine[I];
+    pD := Dest24.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;
+      if (XD >= DW) then
+        Break;
+
+      W := pS[J].L;
+      W1 := 255 - W;
+      pD[XD].R := (pD[XD].R * W1 + pS[J].R * W + $7F) div $FF;
+      pD[XD].G := (pD[XD].G * W1 + pS[J].G * W + $7F) div $FF;
+      pD[XD].B := (pD[XD].B * W1 + pS[J].B * W + $7F) div $FF;
+    end;
   end;
 end;
 

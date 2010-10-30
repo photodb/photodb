@@ -199,10 +199,10 @@ var
 begin
   FSync.Enter;
   try
-    for I := Length(FImages) - 1 downto 9  do
+    for I := Length(FImages) - 1 downto 0 do
     begin
       if AnsiLowerCase(FImages[I].Directory) = AnsiLowerCase(Folder) then
-      for k:=1 to 4 do
+      for k := 1 to 4 do
       if FImages[I].FileNames[K] = '' then
       begin
         for L := 1 to 4 do
@@ -403,119 +403,126 @@ end;
 
 procedure TStringsHistoryW.Add(Path: TExplorerPath);
 begin
- If Fposition=Length(fArray)-1 then
- begin
-  SetLength(fArray,Length(fArray)+1);
-  fArray[Length(fArray)-1]:=Path;
-  Fposition:=Length(fArray)-1;
- end else
- begin
-  SetLength(fArray,Fposition+2);
-  fArray[Fposition+1]:=Path;
-  Fposition:=Fposition+1;
- end;
- If Assigned(OnHistoryChange) Then OnHistoryChange(Self);
+  if FPosition = Length(FArray) - 1 then
+  begin
+    SetLength(FArray,Length(FArray) + 1);
+    FArray[Length(FArray) - 1]:=Path;
+    FPosition:= Length(FArray) - 1;
+  end else
+  begin
+    SetLength(FArray, FPosition + 2);
+    FArray[FPosition + 1] := Path;
+    FPosition := FPosition + 1;
+  end;
+  if Assigned(OnHistoryChange) then
+    OnHistoryChange(Self);
 end;
 
-function TStringsHistoryW.CanBack: boolean;
+function TStringsHistoryW.CanBack: Boolean;
 begin
- If Fposition=-1 then
- begin
-  Result:=false;
- end else
- begin
-  if FPosition>0 then Result:=True else Result:=false;
- end;
+  Result := FPosition > 0
 end;
 
 function TStringsHistoryW.CanForward: boolean;
 begin
- if FPosition=-1 then
- begin
-  Result:=false;
-  Exit;
- end else
- begin
-  if (Fposition<>Length(fArray)-1) and (Length(fArray)<>1) then
-  Result:=True else Result:=false;
- end;
+  if FPosition = -1 then
+    Result := False
+  else
+    Result := (FPosition <> Length(FArray) - 1) and (Length(FArray) <> 1)
 end;
 
 procedure TStringsHistoryW.Clear;
 begin
- Fposition:=-1;
- SetLength(fArray,0);
+  FPosition := -1;
+  SetLength(FArray, 0);
 end;
 
-constructor TStringsHistoryW.create;
+constructor TStringsHistoryW.Create;
 begin
- Inherited;
- Fposition:=-1;
- SetLength(fArray,0);
- fOnChange:=nil;
+  inherited;
+  FPosition := -1;
+  SetLength(FArray, 0);
+  fOnChange := nil;
 end;
 
 destructor TStringsHistoryW.Destroy;
 begin
- SetLength(fArray,0);
- inherited;
+  SetLength(FArray, 0);
+  inherited;
 end;
 
 function TStringsHistoryW.DoBack: TExplorerPath;
 begin
- Result:=ExplorerPath('',0);
- If FPosition=-1 then Exit;
- if FPosition=0 then Result:=fArray[0] else
- begin
-  Dec(FPosition);
-  Result:=fArray[FPosition];
- end;
- If Assigned(OnHistoryChange) Then OnHistoryChange(Self);
+  Result := ExplorerPath('', 0);
+
+  if FPosition = -1 then
+    Exit;
+
+  if FPosition = 0 then
+    Result := FArray[0]
+  else
+  begin
+    Dec(FPosition);
+    Result := FArray[FPosition];
+  end;
+
+  if Assigned(OnHistoryChange) then
+    OnHistoryChange(Self);
 end;
 
 function TStringsHistoryW.DoForward: TExplorerPath;
 begin
- Result:=ExplorerPath('',0);
- If FPosition=-1 then Exit;
- if (Fposition=Length(fArray)-1) or (Length(fArray)=1) then Result:=fArray[Length(fArray)-1] else
- begin
-  Inc(FPosition);
-  Result:=fArray[FPosition];
- end;
- If Assigned(OnHistoryChange) Then OnHistoryChange(Self);
+  Result := ExplorerPath('', 0);
+
+  if FPosition = -1 then
+    Exit;
+
+  if (FPosition = Length(FArray)-1) or (Length(FArray)=1) then
+    Result := FArray[Length(FArray) - 1]
+  else
+  begin
+    Inc(FPosition);
+    Result := FArray[FPosition];
+  end;
+  if Assigned(OnHistoryChange) then
+    OnHistoryChange(Self);
 end;
 
 function TStringsHistoryW.GetBackHistory: TArExplorerPath;
 var
-  i : integer;
+  I : Integer;
 begin
- SetLength(Result,0);
- If FPosition=-1 then Exit;
- For i:=0 to FPosition-1 do
- begin
-  SetLength(Result,Length(Result)+1);
-  Result[i]:=fArray[i];
-  Result[i].Tag:=i;
- end;
+  SetLength(Result, 0);
+  if FPosition = -1 then
+    Exit;
+
+  for I := 0 to FPosition - 1 do
+  begin
+    SetLength(Result, Length(Result) + 1);
+    Result[I] := FArray[I];
+    Result[I].Tag := I;
+  end;
 end;
 
 function TStringsHistoryW.GetCurrentPos: integer;
 begin
- Result:=FPosition+1;
+  Result := FPosition + 1;
 end;
 
 function TStringsHistoryW.GetForwardHistory: TArExplorerPath;
 var
-  i : integer;
+  I : Integer;
 begin
- SetLength(Result,0);
- If FPosition=-1 then Exit;
- For i:=FPosition+1 to Length(fArray)-1 do
- begin
-  SetLength(Result,Length(Result)+1);
-  Result[i-FPosition-1]:=fArray[i];
-  Result[i-FPosition-1].Tag:=i;
- end;
+  SetLength(Result, 0);
+  if FPosition = -1 then
+    Exit;
+
+  for I := FPosition + 1 to Length(FArray) - 1 do
+  begin
+    SetLength(Result,Length(Result) + 1);
+    Result[I - FPosition - 1] := FArray[I];
+    Result[I - FPosition - 1].Tag := I;
+  end;
 end;
 
 function TStringsHistoryW.GetItem(Index: Integer): TExplorerPath;
@@ -525,26 +532,29 @@ end;
 
 function TStringsHistoryW.LastPath: TExplorerPath;
 begin
- Result:=ExplorerPath('',0);
- if FPosition=-1 then Exit;
- Result:=fArray[FPosition];
+  Result := ExplorerPath('', 0);
+
+  if FPosition = -1 then
+    Exit;
+
+  Result := FArray[FPosition];
 end;
 
 procedure TStringsHistoryW.SetOnChange(const Value: TNotifyEvent);
 begin
- fOnChange:=Value;
+  FOnChange := Value;
 end;
 
 { TIcon48 }
 
 function TIcon48.GetHeight: Integer;
 begin
- Result:=48;
+  Result := 48;
 end;
 
 function TIcon48.GetWidth: Integer;
 begin
- Result:=48;
+  Result := 48;
 end;
 
 procedure TExplorerFileInfos.SetValueByIndex(Index: Integer;

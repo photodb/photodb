@@ -99,14 +99,14 @@ function TPrivateHelper.IsPrivateDirectory(Directory: string): Boolean;
 var
   CRC : Integer;
 begin
+  if not FListReady then
+  begin
+    Result := True;
+    Exit;
+  end;
+
   FSync.Enter;
   try
-    if not FListReady then
-    begin
-      Result := True;
-      Exit;
-    end;
-
     CRC := MakeFolderCRC(Directory);
     Result := FPrivateDirectoryList.IndexOf(Pointer(CRC)) > -1;
   finally

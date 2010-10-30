@@ -489,10 +489,11 @@ begin
   end;
 end;
 
-procedure TPropertiesForm.Execute(ID: integer);
+procedure TPropertiesForm.Execute(ID: Integer);
 var
   FBS: TStream;
-  FBit, B1, TempBitmap: TBitmap;
+  FBit, B1, TempBitmap,
+  FShadowImage: TBitmap;
   JPEG: TJpegImage;
   PassWord: string;
   Exists, W, H: Integer;
@@ -550,8 +551,6 @@ begin
             B1.PixelFormat := pf24bit;
             B1.Width := ThImageSize;
             B1.Height := ThImageSize;
-            B1.Canvas.Brush.Color := ClBtnFace;
-            B1.Canvas.Pen.Color := ClBtnFace;
             PassWord := '';
             if TBlobField(WorkQuery.FieldByName('thum')) = nil then
               Exit;
@@ -594,11 +593,20 @@ begin
                 TempBitmap.Free;
               end;
 
-              B1.Width := ThSizePropertyPreview;
-              B1.Height := ThSizePropertyPreview;
+              B1.Width := ThSizePropertyPreview + 4;
+              B1.Height := ThSizePropertyPreview + 4;
+              B1.Canvas.Brush.Color := clBtnFace;
+              B1.Canvas.Pen.Color := clBtnFace;
               B1.Canvas.Rectangle(0, 0, ThSizePropertyPreview, ThSizePropertyPreview);
-              B1.Canvas.Draw(ThSizePropertyPreview div 2 - Fbit.Width div 2,
-                ThSizePropertyPreview div 2 - Fbit.Height div 2, Fbit);
+
+              FShadowImage := TBitmap.Create;
+              try
+                DrawShadowToImage(FShadowImage, Fbit);
+                DrawImageEx32To24(B1, FShadowImage, ThSizePropertyPreview div 2 - FShadowImage.Width div 2,
+                  ThSizePropertyPreview div 2 - FShadowImage.Height div 2);
+              finally
+                F(FShadowImage);
+              end;
               F(FBit);
               ApplyRotate(B1, DataRecord.Rotation);
               Exists := 0;
@@ -1258,6 +1266,7 @@ begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
   Viewer.Execute(Sender, Info);
+  Viewer.Show;
 end;
 
 procedure TPropertiesForm.Searchforit1Click(Sender: TObject);
@@ -1499,6 +1508,8 @@ begin
   SaveWindowPos1.SavePosition;
   DBKernel.UnRegisterForm(Self);
   F(FFilesInfo);
+  FreeGroups(RegGroups);
+  FreeGroups(FShowenRegGroups);
 end;
 
 procedure TPropertiesForm.ApplicationEvents1Message(var Msg: tagMSG;
@@ -1543,6 +1554,7 @@ var
   I, N, M, ALeft, Num, Len, K: Integer;
   Size: Int64;
   Ico: TIcon;
+  Width, Height: Integer;
   DirectoryList: TStringList;
   WidthList, HeightList: TList64;
   MenuRecord: TDBPopupMenuInfoRecord;
@@ -1639,25 +1651,24 @@ begin
       end;
 
       WorkQuery.First;
+      FFilesInfo.Clear;
       for I := 0 to WorkQuery.RecordCount - 1 do
       begin
         MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
         MenuRecord.Selected := True;
-        FFilesInfo.Clear;
         FFilesInfo.Add(MenuRecord);
 
         Size := Size + MenuRecord.FileSize;
-        WidthList.Add(Integer(WorkQuery.FieldByName('Width').AsInteger));
-        HeightList.Add(Integer(WorkQuery.FieldByName('Height').AsInteger));
+        Width := WorkQuery.FieldByName('Width').AsInteger;
+        Height := WorkQuery.FieldByName('Height').AsInteger;
+        WidthList.Add(Width);
+        HeightList.Add(Height);
         DirectoryList.Add(ExtractFileDir(MenuRecord.FileName));
 
         WorkQuery.Next;
       end;
 
     end;
-  finally
-    FreeDS(WorkQuery);
-  end;
   if FFilesInfo.Count = 0 then
   begin
     MessageBoxDB(Handle, L('Unable to load info: ') + L('No DB records found!'), L('Error'), TD_BUTTON_OK,
@@ -1669,85 +1680,92 @@ begin
     Execute(ImageID);
     Exit;
   end;
+  Editing_info := False;
+  try
+    Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
+    SizeLAbel.Text := SizeInTextA(Size);
+    OwnerMemo.Text := L('Not avaliable');
+    CollectionMemo.Text := L('Not avaliable');
+    OwnerMemo.readonly := True;
+    CommentMemo.PopupMenu := nil;
+    CollectionMemo.readonly := True;
 
-  Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
-  SizeLAbel.Text := SizeInTextA(Size);
-  OwnerMemo.Text := L('Not avaliable');
-  CollectionMemo.Text := L('Not avaliable');
-  OwnerMemo.readonly := True;
-  CommentMemo.PopupMenu := nil;
-  CollectionMemo.readonly := True;
-
-  if FFilesInfo.IsVariousInclude then
-    CbInclude.State := CbGrayed
-  else
-  begin
-    if FFilesInfo[0].Include then
-      CbInclude.State := CbChecked
+    if FFilesInfo.IsVariousInclude then
+      CbInclude.State := CbGrayed
     else
-      CbInclude.State := CbUnChecked;
-  end;
+    begin
+      if FFilesInfo[0].Include then
+        CbInclude.State := CbChecked
+      else
+        CbInclude.State := CbUnChecked;
+    end;
 
-  if WidthList.HasVarValues then
-    WidthMemo.Text := L('Width differens')
-  else
-    WidthMemo.Text := Format(L('All - %spx.'), [IntToStr(WidthList[0])]);
+    if WidthList.HasVarValues then
+      WidthMemo.Text := L('Width differens')
+    else
+      WidthMemo.Text := Format(L('All - %spx.'), [IntToStr(WidthList[0])]);
 
-  if HeightList.HasVarValues then
-    HeightMemo.Text := L('Height differens')
-  else
-    HeightMemo.Text := Format(L('All - %spx.'), [IntToStr(HeightList[0])]);
+    if HeightList.HasVarValues then
+      HeightMemo.Text := L('Height differens')
+    else
+      HeightMemo.Text := Format(L('All - %spx.'), [IntToStr(HeightList[0])]);
 
-  LabelName.Text := L('Diffrent files');
-  if IsVariousArStrings(DirectoryList) then
-    LabelPath.Text := L('Different directories')
-  else
-  begin
-    S := DirectoryList[0];
-    UnFormatDir(S);
-    LabelPath.Text := Format(L('All in %s'), [LongFileName(S)]);
-  end;
+    LabelName.Text := L('Diffrent files');
+    if IsVariousArStrings(DirectoryList) then
+      LabelPath.Text := L('Different directories')
+    else
+    begin
+      S := DirectoryList[0];
+      UnFormatDir(S);
+      LabelPath.Text := Format(L('All in %s'), [LongFileName(S)]);
+    end;
 
-  RatingEdit.Rating := FFilesInfo.StatRating;
-  RatingEdit.Islayered := True;
-  RatingEdit.Layered := 100;
-  TimeEdit.Time := FFilesInfo.StatTime;
-  DateEdit.DateTime := FFilesInfo.StatDate;
+    RatingEdit.Rating := FFilesInfo.StatRating;
+    RatingEdit.Islayered := True;
+    RatingEdit.Layered := 100;
+    TimeEdit.Time := FFilesInfo.StatTime;
+    DateEdit.DateTime := FFilesInfo.StatDate;
 
-  DateEdit.Checked := FFilesInfo.StatIsDate or FFilesInfo.IsVariousDate;
-  TimeEdit.Checked := FFilesInfo.StatIsTime or FFilesInfo.IsVariousDate;
+    DateEdit.Checked := FFilesInfo.StatIsDate or FFilesInfo.IsVariousDate;
+    TimeEdit.Checked := FFilesInfo.StatIsTime or FFilesInfo.IsVariousDate;
 
-  KeyWordsMemo.Text := FFilesInfo.CommonKeyWords;
-  IDLabel.Text := Format(L('Selected %d items'), [FFilesInfo.Count]);
-  CommentMemo.Cursor := CrDefault;
+    KeyWordsMemo.Text := FFilesInfo.CommonKeyWords;
+    IDLabel.Text := Format(L('Selected %d items'), [FFilesInfo.Count]);
+    CommentMemo.Cursor := CrDefault;
 
-  if FFilesInfo.IsVariousComments then
-  begin
-    CommentMemo.readonly := True;
-    CommentMemo.Cursor := CrHandPoint;
-    CommentMemo.PopupMenu := PmComment;
-  end;
-  CommentMemo.Text := FFilesInfo.CommonComments;
+    if FFilesInfo.IsVariousComments then
+    begin
+      CommentMemo.readonly := True;
+      CommentMemo.Cursor := CrHandPoint;
+      CommentMemo.PopupMenu := PmComment;
+    end;
+    CommentMemo.Text := FFilesInfo.CommonComments;
 
-  FNowGroups := UnitGroupsWork.EncodeGroups(FFilesInfo.CommonGroups);
-  FOldGroups := CopyGroups(FNowGroups);
+    FNowGroups := UnitGroupsWork.EncodeGroups(FFilesInfo.CommonGroups);
+    FOldGroups := CopyGroups(FNowGroups);
 
-  ItemLinks := FFilesInfo.CommonLinks;
-  FPropertyLinks := CopyLinksInfo(ItemLinks);
+    ItemLinks := FFilesInfo.CommonLinks;
+    FPropertyLinks := CopyLinksInfo(ItemLinks);
 
-  ReloadGroups;
-  DBItem1.Visible := True;
-  FFilesInfo.IsListItem := False;
-  CommentMemoChange(Self);
-  BtnFind.Visible := False;
-  ImageLoadingFile.Visible := False;
+    ReloadGroups;
+    DBItem1.Visible := True;
+    FFilesInfo.IsListItem := False;
+    CommentMemoChange(Self);
+    BtnFind.Visible := False;
+    ImageLoadingFile.Visible := False;
+    finally
+      F(DirectoryList);
+      F(WidthList);
+      F(HeightList);
+    end;
+    Show;
+    SID := GetGUID;
   finally
-    F(DirectoryList);
-    F(WidthList);
-    F(HeightList);
+    FreeDS(WorkQuery);
   end;
-  Show;
-  SID := GetGUID;
+  finally
+    Editing_info := True;
+  end;
 end;
 
 procedure TPropertiesForm.FormShow(Sender: TObject);
@@ -2453,7 +2471,7 @@ begin
   UnFormatDir(DN);
   if (DN <> '') and not DirectoryExists(DN) then
   begin
-    MessageBoxDB(Handle, Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F, [DN]), TEXT_MES_WARNING, TD_BUTTON_OK,
+    MessageBoxDB(Handle, Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F, [DN]), L('Warning'), TD_BUTTON_OK,
       TD_ICON_WARNING);
     Exit;
   end;
@@ -2900,7 +2918,7 @@ begin
   if SelectGroup(ToGroup) then
   begin
     MoveGroup(FNowGroups[PopupMenuGroups.Tag], ToGroup);
-    MessageBoxDB(Handle, TEXT_MES_RELOAD_INFO, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_INFORMATION);
+    MessageBoxDB(Handle, TEXT_MES_RELOAD_INFO, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   end;
 end;
 

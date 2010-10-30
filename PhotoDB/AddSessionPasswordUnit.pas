@@ -4,23 +4,27 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Dolphin_DB, FormManegerUnit, StdCtrls, Language;
+  Dialogs, Dolphin_DB, FormManegerUnit, StdCtrls, Language, WatermarkedEdit,
+  uVistaFuncs, uDBForm;
 
 type
-  TAddSessionPasswordForm = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
-    Label1: TLabel;
-    Label2: TLabel;
-    Edit1: TEdit;
-    Edit2: TEdit;
-    CheckBox6: TCheckBox;
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
-    procedure CheckBox6Click(Sender: TObject);
+  TAddSessionPasswordForm = class(TDBForm)
+    BtnCancel: TButton;
+    BtnOk: TButton;
+    LbInfoPassword: TLabel;
+    LbPasswordConfirm: TLabel;
+    EdPassword: TWatermarkedEdit;
+    EdPasswordConfirm: TWatermarkedEdit;
+    CbShowPassword: TCheckBox;
+    procedure BtnCancelClick(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
+    procedure EdPasswordKeyPress(Sender: TObject; var Key: Char);
+    procedure CbShowPasswordClick(Sender: TObject);
   private
     { Private declarations }
+    procedure LoadLnguage;
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
     Password : String;
@@ -44,55 +48,75 @@ begin
   end;
 end;
 
-procedure TAddSessionPasswordForm.Button1Click(Sender: TObject);
+procedure TAddSessionPasswordForm.BtnCancelClick(Sender: TObject);
 begin
   Close;
 end;
 
-procedure TAddSessionPasswordForm.Button2Click(Sender: TObject);
+procedure TAddSessionPasswordForm.BtnOkClick(Sender: TObject);
 begin
-  if Edit1.Text = '' then
+  if EdPassword.Text = '' then
     Exit;
-  if CheckBox6.Checked then
+  if CbShowPassword.Checked then
   begin
-    Password := Edit1.Text;
+    Password := EdPassword.Text;
     DBKernel.AddTemporaryPasswordInSession(Password);
     Close;
   end else
   begin
-    if Edit1.Text = Edit2.Text then
+    if EdPassword.Text = EdPasswordConfirm.Text then
     begin
-      Password := Edit1.Text;
+      Password := EdPassword.Text;
       DBKernel.AddTemporaryPasswordInSession(Password);
       Close;
     end else
-    begin
-      Application.MessageBox(TEXT_MES_PASSWORDS_DIFFERENT, TEXT_MES_WARNING, MB_ICONWARNING + MB_OK);
-    end;
+      MessageBoxDB(Handle, L('Password and password confirm don''t match'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+
   end;
 end;
 
-procedure TAddSessionPasswordForm.Edit1KeyPress(Sender: TObject; var Key: Char);
+procedure TAddSessionPasswordForm.EdPasswordKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = Char(VK_RETURN) then
   begin
     Key := #0;
-    Button2Click(Sender);
+    BtnOkClick(Sender);
   end;
 end;
 
-procedure TAddSessionPasswordForm.CheckBox6Click(Sender: TObject);
+function TAddSessionPasswordForm.GetFormID: string;
 begin
-  if CheckBox6.Checked then
+  Result := 'Password';
+end;
+
+procedure TAddSessionPasswordForm.LoadLnguage;
+begin
+  BeginTranslate;
+  try
+    BtnOk.Caption := L('Ok');
+    BtnCancel.Caption := L('Cancel');
+    CbShowPassword.Caption := L('Show password');
+    LbInfoPassword.Caption := L('Enter password form image here') + ':';
+    EdPassword.WatermarkText := L('Enter password here');
+    LbPasswordConfirm.Caption := L('Enter password confirm here') + ':';
+    EdPasswordConfirm.WatermarkText := L('Password confirm');
+  finally
+    EndTranslate;
+  end;
+end;
+
+procedure TAddSessionPasswordForm.CbShowPasswordClick(Sender: TObject);
+begin
+  if CbShowPassword.Checked then
   begin
-    Edit1.PasswordChar := #0;
-    Edit2.Hide;
-    Label2.Hide;
+    EdPassword.PasswordChar := #0;
+    EdPasswordConfirm.Hide;
+    LbPasswordConfirm.Hide;
   end else
   begin
-    Edit1.PasswordChar := '*';
-    Edit2.Show;
-    Label2.Show;
+    EdPassword.PasswordChar := '*';
+    EdPasswordConfirm.Show;
+    LbPasswordConfirm.Show;
   end;
 end;
 

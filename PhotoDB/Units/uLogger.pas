@@ -38,7 +38,7 @@ constructor TLogger.Create;
 begin
 {$IFDEF LOG}
   FSync := TCriticalSection.Create;
-  FFile := TFileStream.Create(GetAppDataDirectory+'\EventLog'+ FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) +'.txt', fmCreate);
+  FFile := TFileStream.Create(GetAppDataDirectory + '\EventLog' + FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) +'.txt', fmCreate);
 {$ENDIF LOG}
 end;
 

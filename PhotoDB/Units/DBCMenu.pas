@@ -11,7 +11,7 @@ uses
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
-  uDBPopupMenuInfo, uConstants, uPrivateHelper;
+  uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate;
 
 type TDBPopupMenu = class
    private
@@ -70,17 +70,21 @@ type TDBPopupMenu = class
 
  procedure ReloadIDMenu;
 
+ const
+   DBMenuID = 'DBMenu';
+
 var
    MenuScript : string;
    aFS : TFileStream;
 
 implementation
 
-uses ExplorerUnit, PropertyForm, SlideShow, Searching, UnitFormCont,
-     UnitLoadFilesToPanel, UnitEditGroupsForm, UnitMenuDateForm, CmpUnit,
-     UnitQuickGroupInfo, Language, UnitCrypting, UnitPasswordForm,
-     AddSessionPasswordUnit, ImEditor, FormManegerUnit, CommonDBSupport,
-     UnitCDMappingSupport;
+uses
+  ExplorerUnit, PropertyForm, SlideShow, Searching, UnitFormCont,
+  UnitLoadFilesToPanel, UnitEditGroupsForm, UnitMenuDateForm, CmpUnit,
+  UnitQuickGroupInfo, UnitCrypting, UnitPasswordForm,
+  ImEditor, FormManegerUnit, CommonDBSupport,
+  UnitCDMappingSupport;
 
 var
   DBPopupMenu: TDBPopupMenu = nil;
@@ -115,7 +119,7 @@ begin
     for I := 0 to Item.Count - 1 do
       Item.Delete(0);
     BusyMenu := Tmenuitem.Create(_popupmenu);
-    BusyMenu.Caption := TEXT_MES_MENU_BUSY;
+    BusyMenu.Caption := TA('Busy...', DBMenuID);
     BusyMenu.Enabled := False;
     Item.Add(BusyMenu);
     Exit;
@@ -125,7 +129,7 @@ begin
     for I := 0 to Item.Count - 1 do
       Item.Delete(0);
     ErrorMenu := TMenuItem.Create(_popupmenu);
-    ErrorMenu.Caption := TEXT_MES_MENU_NOT_AVALIABLE_0;
+    ErrorMenu.Caption := TA('Unable to show menu!', DBMenuID);
     ErrorMenu.Enabled := False;
     Item.Add(ErrorMenu);
     Exit;
@@ -278,7 +282,7 @@ begin
    _user_group_menu := TMenuItem.Create(item);
    if DBKernel.ReadString('','UserMenuName')<>'' then
    _user_group_menu.Caption:=DBKernel.ReadString('','UserMenuName') else
-   _user_group_menu.Caption:=TEXT_MES_USER_SUBMENU;
+   _user_group_menu.Caption:=TA('Additional', DBMenuID);
    icon:=DBKernel.ReadString('','UserMenuIcon');
    if icon='' then icon:='%SystemRoot%\system32\shell32.dll,126';
    Ico := TIcon.Create;
@@ -429,7 +433,7 @@ var
  Opt : TCryptImageOptions;
  CryptOptions : integer;
 begin
- Opt:=GetPassForCryptImageFile(TEXT_MES_SELECTED_OBJECTS);
+ Opt:=GetPassForCryptImageFile(TA('SelectedObjects', DBMenuID));
  if Opt.SaveFileCRC then CryptOptions:=CRYPT_OPTIONS_SAVE_CRC else CryptOptions:=CRYPT_OPTIONS_NORMAL;
  if Opt.Password='' then exit;
  //TODO:!!!
@@ -620,7 +624,7 @@ var
   Files, S : TArStrings;
   IDs : TArInteger;
 begin
- If ID_OK=MessageBoxDB(GetActiveFormHandle,TEXT_MES_DEL_FROM_DB_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+ If ID_OK=MessageBoxDB(GetActiveFormHandle,TA('Do you really want ot delete this info from DB?', DBMenuID), TA('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   for i:=0 to finfo.Count - 1 do
   if finfo[i].Selected then
@@ -676,7 +680,7 @@ var
   s : TArStrings;
   FirstID : boolean;
 begin
- If ID_OK=MessageBoxDB(GetActiveFormHandle,TEXT_MES_DEL_FROM_DB_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+ If ID_OK=MessageBoxDB(GetActiveFormHandle,TA('Do you really want ot delete this info from DB?'), TA('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   fQuery:=GetQuery;
   SQL_:='UPDATE $DB$ SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID in (';
@@ -718,7 +722,7 @@ var
   SQL_ : string;
   FirstID : boolean;
 begin
- If idOk=MessageBoxDB(GetActiveFormHandle,TEXT_MES_DEL_FROM_DB_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+ If idOk=MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID), TA('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   fQuery:=GetQuery;
   fQuery.active:=false;
@@ -1351,7 +1355,7 @@ begin
  if FInfo[i].Selected then
  Inc(AllOperations);
  If AllOperations>10 then
- if ID_OK<>MessageBoxDB(GetActiveFormHandle,Format(TEXT_MES_SHELL_OPEN_CONFIRM_FORMAT,[inttostr(AllOperations)]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
+ if ID_OK<>MessageBoxDB(GetActiveFormHandle,Format(TA('Running %s objects can slow down computer work! Continue?', DBMenuID),[inttostr(AllOperations)]),TA('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
  for i:=0 to FInfo.Count-1 do
  if FInfo[i].Selected then
  begin
@@ -1402,32 +1406,41 @@ end;
 
 procedure TDBPopupMenu.WallpaperCenterItemPopUpMenu_(Sender: TObject);
 var
-  FileName : string;
+  FileName: string;
 begin
- FileName:=finfo[finfo.Position].FileName;
- if StaticPath(FileName) then
- SetDesktopWallpaper(FileName,WPSTYLE_STRETCH) else
- MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+  FileName := ProcessPath(Finfo[Finfo.Position].FileName);
+  if not FileExists(FileName) then
+  begin
+    MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
+    Exit;
+  end;
+  SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_STRETCH);
 end;
 
 procedure TDBPopupMenu.WallpaperStretchItemPopUpMenu_(Sender: TObject);
 var
-  FileName : string;
+  FileName: string;
 begin
- FileName:=finfo[finfo.Position].FileName;
- if StaticPath(FileName) then
- SetDesktopWallpaper(FileName,WPSTYLE_CENTER) else
- MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+  FileName := ProcessPath(Finfo[Finfo.Position].FileName);
+  if not FileExists(FileName) then
+  begin
+    MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
+    Exit;
+  end;
+  SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_CENTER);
 end;
 
 procedure TDBPopupMenu.WallpaperTileItemPopUpMenu_(Sender: TObject);
 var
-  FileName : string;
+  FileName: string;
 begin
- FileName:=finfo[finfo.Position].FileName;
- if StaticPath(FileName) then
- SetDesktopWallpaper(FileName,WPSTYLE_TILE) else
- MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_CANNOT_USE_CD_IMAGE_FOR_THIS_OPERATION_PLEASE_COPY_IT_OR_USE_DIFFERENT_IMAGE,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+  FileName := ProcessPath(Finfo[Finfo.Position].FileName);
+  if not FileExists(FileName) then
+  begin
+    MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
+    Exit;
+  end;
+  SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_TILE)
 end;
 
 initialization

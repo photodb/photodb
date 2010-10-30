@@ -42,7 +42,7 @@ type
   png_size_t  = png_uint_32;
 
   png_charpp  = ^png_charp;
-  png_charp   = PChar;
+  png_charp   = PAnsiChar;
 
   png_voidp    = pointer;
 

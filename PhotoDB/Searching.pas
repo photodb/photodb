@@ -4563,7 +4563,7 @@ var
   BackgroundImage : TPNGGraphic;
   Bitmap, SearchBackgroundBMP : TBitmap;
 begin
-  Bitmap := TBitmap.Create;
+{  Bitmap := TBitmap.Create;
   try
     Bitmap.PixelFormat := pf24bit;
     Bitmap.Width := 150;
@@ -4586,7 +4586,7 @@ begin
     ElvMain.BackGround.Image := Bitmap;
   finally
     Bitmap.Free;
-  end;
+  end;    }
 end;
 
 function TManagerSearchs.GetValueByIndex(Index: Integer): TSearchForm;

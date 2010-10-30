@@ -112,7 +112,6 @@ object NewGroupForm: TNewGroupForm
     Font.Height = -24
     Font.Name = 'Times New Roman'
     Font.Style = []
-    ParentColor = True
     ParentFont = False
     TabOrder = 0
     WatermarkText = 'Enter group name'
@@ -122,7 +121,6 @@ object NewGroupForm: TNewGroupForm
     Top = 76
     Width = 257
     Height = 41
-    ParentColor = True
     TabOrder = 1
     WatermarkText = 'Place here comments to this group'
   end
@@ -149,7 +147,6 @@ object NewGroupForm: TNewGroupForm
     Top = 140
     Width = 257
     Height = 29
-    ParentColor = True
     TabOrder = 4
     WatermarkText = 'Place here keywords for this group'
   end

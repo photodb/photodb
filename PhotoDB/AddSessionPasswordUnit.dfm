@@ -15,39 +15,39 @@ object AddSessionPasswordForm: TAddSessionPasswordForm
   Position = poDesktopCenter
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object LbInfoPassword: TLabel
     Left = 8
     Top = 8
     Width = 146
     Height = 13
     Caption = 'Enter password for image here:'
   end
-  object Label2: TLabel
+  object LbPasswordConfirm: TLabel
     Left = 8
-    Top = 56
+    Top = 62
     Width = 160
     Height = 13
     Caption = 'ReEnter password for image here:'
   end
-  object Button1: TButton
+  object BtnCancel: TButton
     Left = 140
     Top = 138
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 3
-    OnClick = Button1Click
+    OnClick = BtnCancelClick
   end
-  object Button2: TButton
+  object BtnOk: TButton
     Left = 220
     Top = 138
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 4
-    OnClick = Button2Click
+    OnClick = BtnOkClick
   end
-  object Edit1: TEdit
+  object EdPassword: TWatermarkedEdit
     Left = 8
     Top = 24
     Width = 281
@@ -60,11 +60,12 @@ object AddSessionPasswordForm: TAddSessionPasswordForm
     ParentFont = False
     PasswordChar = '*'
     TabOrder = 0
-    OnKeyPress = Edit1KeyPress
+    OnKeyPress = EdPasswordKeyPress
+    WatermarkText = 'Enter password here'
   end
-  object Edit2: TEdit
+  object EdPasswordConfirm: TWatermarkedEdit
     Left = 8
-    Top = 72
+    Top = 75
     Width = 281
     Height = 32
     Font.Charset = DEFAULT_CHARSET
@@ -75,15 +76,16 @@ object AddSessionPasswordForm: TAddSessionPasswordForm
     ParentFont = False
     PasswordChar = '*'
     TabOrder = 1
-    OnKeyPress = Edit1KeyPress
+    OnKeyPress = EdPasswordKeyPress
+    WatermarkText = 'Password confirm'
   end
-  object CheckBox6: TCheckBox
+  object CbShowPassword: TCheckBox
     Left = 8
-    Top = 104
+    Top = 110
     Width = 281
     Height = 17
     Caption = 'Show password'
     TabOrder = 2
-    OnClick = CheckBox6Click
+    OnClick = CbShowPasswordClick
   end
 end

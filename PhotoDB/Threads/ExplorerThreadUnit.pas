@@ -384,60 +384,65 @@ begin
           FilesWithoutIcons:=0;
           FE := False;
           EM := False;
-          if FMask = '' then FileMask:='*.*' else FileMask:=FMask;
-          Found := FindFirst(FFolder + FileMask, faAnyFile, SearchRec);
+          if FMask = '' then FileMask:='*.*' else
+            FileMask := FMask;
+          Found := FindFirst(FFolder + FileMask, FaAnyFile, SearchRec);
           while Found = 0 do
           begin
-           if IsTerminated then Break;
-           try
-           if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
-           begin
-            FA := SearchRec.Attr and FaHidden;
-            If ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
-            begin
-             if not ExplorerInfo.ShowPrivate then
-               if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.Name)) > -1 then
-                 Continue;
+            if IsTerminated then
+              Break;
+            try
+              if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+              begin
+                FA := SearchRec.Attr and FaHidden;
+                if ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
+                begin
+                  if not ExplorerInfo.ShowPrivate then
+                    if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.name)) > -1 then
+                      Continue;
 
-             inc(FilesReadedCount);
-             if FilesReadedCount mod 10 = 0 then
-               ShowInfo(Format(L('Reading directory [%d objects found]'), [FilesReadedCount]),1,0);
-             If ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
-             begin
-              FE:=(SearchRec.Attr and faDirectory=0);
-              s:=ExtractFileExt(SearchRec.Name);
-              Delete(s,1,1);
-              s:='|'+AnsiUpperCase(s)+'|';
-              p:=Pos(s, SupportedExt);
-              EM:=p<>0;
-             end;
-             If FShowFiles then
-             if ExplorerInfo.ShowSimpleFiles then
-             If FE and not EM and ExplorerInfo.ShowSimpleFiles then
-             begin
-              if FolderView then
-              if AnsiLowerCase(SearchRec.Name)='folderdb.ldb' then
-               Continue;
+                  Inc(FilesReadedCount);
+                  if FilesReadedCount mod 10 = 0 then
+                    ShowInfo(Format(L('Reading directory [%d objects found]'), [FilesReadedCount]), 1, 0);
+                  if ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
+                  begin
+                    FE := (SearchRec.Attr and FaDirectory = 0);
+                    S := ExtractFileExt(SearchRec.name);
+                    Delete(S, 1, 1);
+                    S := '|' + AnsiUpperCase(S) + '|';
+                    P := Pos(S, SupportedExt);
+                    EM := P <> 0;
+                  end;
+                  if FShowFiles then
+                    if ExplorerInfo.ShowSimpleFiles then
+                      if FE and not EM and ExplorerInfo.ShowSimpleFiles then
+                      begin
+                        if FolderView then
+                          if AnsiLowerCase(SearchRec.name) = 'folderdb.ldb' then
+                            Continue;
 
-              AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FILE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,true,true);
-              Continue;
-             end;
-             if ExplorerInfo.ShowImageFiles then
-             If FE and EM and ExplorerInfo.ShowImageFiles then
-             begin
-              AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_IMAGE, -1, GetGUID,0,0,0,0,SearchRec.Size,'','','',0,false,false,true);
-              Continue;
-             end;
-             If (SearchRec.Attr and faDirectory<>0) and ExplorerInfo.ShowFolders then
-             begin
-              AddOneExplorerFileInfo(FFiles,FFolder+SearchRec.Name, EXPLORER_ITEM_FOLDER, -1, GetGUID,0,0,0,0,0,'','','',0,false,true,true);
-              Continue;
-             end;
+                        AddOneExplorerFileInfo(FFiles, FFolder + SearchRec.name, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
+                          0, 0, SearchRec.Size, '', '', '', 0, False, True, True);
+                        Continue;
+                      end;
+                  if ExplorerInfo.ShowImageFiles then
+                    if FE and EM and ExplorerInfo.ShowImageFiles then
+                    begin
+                      AddOneExplorerFileInfo(FFiles, FFolder + SearchRec.name, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0,
+                        0, 0, SearchRec.Size, '', '', '', 0, False, False, True);
+                      Continue;
+                    end;
+                  if (SearchRec.Attr and FaDirectory <> 0) and ExplorerInfo.ShowFolders then
+                  begin
+                    AddOneExplorerFileInfo(FFiles, FFolder + SearchRec.name, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
+                      0, 0, 0, '', '', '', 0, False, True, True);
+                    Continue;
+                  end;
+                end;
+              end;
+            finally
+              Found := SysUtils.FindNext(SearchRec);
             end;
-           end;
-           finally
-            Found := SysUtils.FindNext(SearchRec);
-           end;
           end;
           FindClose(SearchRec);
 
@@ -470,12 +475,12 @@ begin
                 if InfoPosition mod 10 = 0 then
                 begin
                   ShowInfo(InfoPosition);
-                  Synchronize(SendPacketToExplorer);
+                  SynchronizeEx(SendPacketToExplorer);
                 end;
               end;
             end;
             if FPacketInfos.Count > 0 then
-              Synchronize(SendPacketToExplorer);
+              SynchronizeEx(SendPacketToExplorer);
 
             ShowInfo(L('Loading images') + '...');
             for I := 0 to FFiles.Count - 1 do
@@ -494,12 +499,12 @@ begin
                 if InfoPosition mod 10 = 0 then
                 begin
                   ShowInfo(InfoPosition);
-                  Synchronize(SendPacketToExplorer);
+                  SynchronizeEx(SendPacketToExplorer);
                 end;
               end;
             end;
             if FPacketInfos.Count > 0 then
-              Synchronize(SendPacketToExplorer);
+              SynchronizeEx(SendPacketToExplorer);
 
             ShowInfo(L('Loading files') + '...');
             if FShowFiles then
@@ -508,7 +513,7 @@ begin
               CurrentFileInfo := FFiles[I];
               if CurrentFileInfo.FileType = EXPLORER_ITEM_FILE then
               begin
-                If IsTerminated then
+                if IsTerminated then
                   Break;
                 FPacketInfos.Add(CurrentFileInfo);
                 GUIDParam := CurrentFileInfo.SID;
@@ -520,15 +525,17 @@ begin
                 if InfoPosition mod 10 = 0 then
                 begin
                   ShowInfo(InfoPosition);
-                  Synchronize(SendPacketToExplorer);
+                  SynchronizeEx(SendPacketToExplorer);
                 end;
               end;
             end;
             if FPacketInfos.Count > 0 then
-              Synchronize(SendPacketToExplorer);
+              SynchronizeEx(SendPacketToExplorer);
 
           finally
             F(FPacketImages);
+            //FPacketInfos hasn't own items - it pointers from FFiles
+            FPacketInfos.ClearList;
             F(FPacketInfos);
           end;
 
@@ -552,20 +559,20 @@ begin
             begin
               TW.I.Start('GetVisibleFiles');
               SynchronizeEx(GetVisibleFiles);
-              VisibleUp(i);
+              VisibleUp(I);
               TW.I.Start('GetVisibleFiles - end');
             end;
 
-            if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
+            if FFiles[I].FileType = EXPLORER_ITEM_IMAGE then
             begin
               Inc(InfoPosition);
               ShowInfo(InfoPosition);
-              CurrentFile:=FFiles[i].FileName;
+              CurrentFile:=FFiles[I].FileName;
               CurrentInfoPos := I;
-              ReplaceImageItemImage(FFiles[i].FileName, FFiles[i].FileSize, FFiles[i].SID);
+              ReplaceImageItemImage(FFiles[I].FileName, FFiles[I].FileSize, FFiles[I].SID);
             end;
 
-           if ((FFiles[i].FileType=EXPLORER_ITEM_FILE) and (FFiles[I].Tag = 1)) then
+           if ((FFiles[I].FileType = EXPLORER_ITEM_FILE) and (FFiles[I].Tag = 1)) then
             begin
               FFiles[I].Tag := 1;
               GUIDParam := FFiles[I].SID;
@@ -627,7 +634,7 @@ var
   S1, S2 : String;
   Info : TExplorerFileInfo;
 begin
-  FSender.BeginUpdate;
+  BeginUpdate;
   try
     FSender.AddInfoAboutFile(FPacketInfos);
     for I := 0 to FPacketInfos.Count - 1 do
@@ -639,7 +646,7 @@ begin
       NewItem := FSender.AddItem(Info.SID);
       S1 := ExplorerInfo.OldFolderName;
       UnformatDir(S1);
-      S2 := CurrentFile;
+      S2 := Info.FileName;
       UnformatDir(S2);
       if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
         FSelected := NewItem;
@@ -647,7 +654,7 @@ begin
     FPacketImages.ClearImagesList;
     FPacketInfos.ClearList;
   finally
-    FSender.EndUpdate;
+    EndUpdate;
   end;
 end;
 
@@ -1227,9 +1234,14 @@ begin
     if FullFolderPicture = nil then
       Exit;
 
-    Bit32 := TBitmap.Create;
+   Bit32 := TBitmap.Create;
    try
-     LoadPNGImageTransparent(FullFolderPicture, Bit32);
+     FFolderPictureLock.Enter;
+     try
+       LoadPNGImageTransparent(FullFolderPicture, Bit32);
+     finally
+       FFolderPictureLock.Leave;
+     end;
      StretchCoolW32(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, Bitmap, 1);
    finally
      Bit32.Free;

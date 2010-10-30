@@ -15,7 +15,7 @@ uses Searching;
 procedure ICMError(Error : String);
 begin
   // Searching.SearchManager.GetAnySearch.Caption:=Error;
-  // Application.MessageBox(pchar(Error), TEXT_MES_ERROR, MB_OK + MB_ICONERROR);
+  // Application.MessageBox(PChar(Error), TA('Error'), MB_OK + MB_ICONERROR);
 end;
 
 procedure FormatDir(var S: string);

@@ -167,7 +167,7 @@ begin
   if Key = Char(VK_RETURN) then
   begin
     Key := #0;
-    BtCancelClick(Sender);
+    BtOKClick(Sender);
   end;
 end;
 

@@ -454,7 +454,7 @@ var
   sl:      PByteArray;  // Scanline of bitmap
   png:     png_structp; // PPng_Struct;
   FPngInfo:  png_infop; //  PPng_Info;
-  tmp:      array[0..32] of char;
+  tmp:      array[0..32] of AnsiChar;
   bmp_colours: array [0..255] of TPaletteEntry;
   r, g, b: byte;
   greyscale: boolean;
@@ -670,11 +670,11 @@ type
   PPngPalette = ^TPngPalette;
   TPngPalette = array [0..255] of TPngColor;
 var
-  tmp:      array[0..31] of char;
+  tmp:      array[0..31] of AnsiChar;
   sig:      array[0..3] of byte;
   Txt : png_textp;
   i, nTxt: integer;
-  s: string;
+  s: AnsiString;
   Time: png_timep;
   pBackground : png_color_16p;
   RGBValue : Byte;
@@ -909,8 +909,8 @@ var
       FillChar (txt, SizeOf (txt), 0);         // Ensure no spurious values
       with txt do
         begin
-        key := PChar (keyword);              // Point to keyword
-        text := PChar (value);               // Point to value
+        key := PAnsiChar (keyword);              // Point to keyword
+        text := PAnsiChar (value);               // Point to value
         text_length := length (value);       // Store the length
         compression := PNG_TEXT_COMPRESSION_NONE;
         end;
@@ -919,7 +919,7 @@ var
   end;
 
 var
-  tmp:      array[0..32] of char;
+  tmp:      array[0..32] of AnsiChar;
   //  costs, weights: array[ 0..4] of double;
   Time: png_time;
   yy, mm, dd, hh, mi, ss, ms: word;

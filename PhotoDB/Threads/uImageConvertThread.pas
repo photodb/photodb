@@ -104,11 +104,11 @@ const
             begin
               case FProcessingParams.Rotation of
                 DB_IMAGE_ROTATE_270:
-                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate270, True, FileName);
+                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate270, FileName);
                 DB_IMAGE_ROTATE_90:
-                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate90, True, FileName);
+                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate90, FileName);
                 DB_IMAGE_ROTATE_180:
-                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate180, True, FileName);
+                  RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate180, FileName);
               end;
             end;
 
@@ -201,18 +201,16 @@ begin
     FileName := FileName + '\' + GetFileNameWithoutExt(FData.FileName) + FProcessingParams.Preffix;
     FileName := FileName + GetGraphicExtForSave(NewGraphicClass);
 
-    if FProcessingParams.Rotate then
-      InitGDIPlus;
-
     //if only rotate and JPEG image -> rotate only with GDI+
     if FProcessingParams.Rotate
       and DBKernel.Readbool('Options', 'UseGDIPlus', GDIPlusPresent)
-      and not FProcessingParams.ResizeToSize
+      and not FProcessingParams.Resize
       and not FProcessingParams.AddWatermark
       and not FProcessingParams.PreviewOptions.GeneratePreview
       and (NewGraphicClass = GraphicClass)
       and (GraphicClass = TJPEGImage) then
     begin
+      InitGDIPlus;
       FixEXIFRotate;
 
       MS := TMemoryStream.Create;

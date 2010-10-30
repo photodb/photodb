@@ -111,7 +111,7 @@ begin
   Dec(FCount);
   if Index < FCount then
     System.Move(FList^[Index + 1], FList^[Index],
-      (FCount - Index) * SizeOf(Pointer));
+      (FCount - Index) * SizeOf(Int64));
   if Temp <> 0 then
     Notify(Temp, lnDeleted);
 end;
@@ -212,7 +212,7 @@ begin
     Grow;
   if Index < FCount then
     System.Move(FList^[Index], FList^[Index + 1],
-      (FCount - Index) * SizeOf(Pointer));
+      (FCount - Index) * SizeOf(Int64));
   FList^[Index] := Item;
   Inc(FCount);
   if Item <> 0 then
@@ -279,7 +279,7 @@ begin
     Error(@SListCapacityError, NewCapacity);
   if NewCapacity <> FCapacity then
   begin
-    ReallocMem(FList, NewCapacity * SizeOf(Pointer));
+    ReallocMem(FList, NewCapacity * SizeOf(Int64));
     FCapacity := NewCapacity;
   end;
 end;
@@ -293,7 +293,7 @@ begin
   if NewCount > FCapacity then
     SetCapacity(NewCount);
   if NewCount > FCount then
-    FillChar(FList^[FCount], (NewCount - FCount) * SizeOf(Pointer), 0)
+    FillChar(FList^[FCount], (NewCount - FCount) * SizeOf(Int64), 0)
   else
     for I := FCount - 1 downto NewCount do
       Delete(I);

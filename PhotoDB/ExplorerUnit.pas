@@ -888,13 +888,6 @@ begin
   ToolBar1.Images := ToolBarNormalImageList;
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
-  for I := 0 to ComponentCount - 1 do
-    if Components[I] is TWebLink then
-      (Components[I] as TWebLink).GetBackGround := BackGround;
-
-  for I := 0 to Length(UserLinks) - 1 do
-    UserLinks[I].GetBackGround := BackGround;
-
   ExplorerManager.AddExplorer(Self);
   DBKernel.RegisterForm(Self);
   MainPanel.DoubleBuffered := True;
@@ -926,8 +919,16 @@ begin
     DBkernel.WriteString('Explorer','Patch',NewPath);
     DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
   end;
-  FW7TaskBar := CreateTaskBarInstance;
   CreateBackgrounds;
+
+  for I := 0 to ComponentCount - 1 do
+    if Components[I] is TWebLink then
+      (Components[I] as TWebLink).GetBackGround := BackGround;
+
+  for I := 0 to Length(UserLinks) - 1 do
+    UserLinks[I].GetBackGround := BackGround;
+
+  FW7TaskBar := CreateTaskBarInstance;
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
@@ -1770,32 +1771,6 @@ begin
   end;
 end;
 
-{procedure TExplorerForm.SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
-var
-  InternalInfo : TExplorerFileInfo;
-begin
-  InternalInfo := fFilesInfo[Number];
-  InternalInfo.FileName:=info.ItemFileName;
-  InternalInfo.ID:=info.ItemId;
-  InternalInfo.Rotation:=info.ItemRotate;
-  InternalInfo.Access:=info.ItemAccess;
-  InternalInfo.Rating:=info.ItemRating;
-  InternalInfo.FileSize:=info.ItemSize;
-  InternalInfo.Comment:=info.ItemComment;
-  InternalInfo.KeyWords:=info.ItemKeyWords;
-  InternalInfo.FileType:=Info.Tag;
-  InternalInfo.Date:=Info.ItemDate;
-  InternalInfo.Time:=Info.ItemTime;
-  InternalInfo.IsDate:=Info.ItemIsDate;
-  InternalInfo.IsTime:=Info.ItemIsTime;
-  InternalInfo.Groups:=Info.ItemGroups;
-  InternalInfo.Crypted:=Info.ItemCrypted;
-  InternalInfo.Include:=Info.ItemInclude;
-  InternalInfo.Links:=Info.ItemLinks;
-  if AnsiLowerCase(Info.ItemFileName) = AnsiLowerCase(FSelectedInfo.FileName) then
-    ListView1SelectItem(nil, nil, false);
-end; }
-
 procedure TExplorerForm.SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
 var
   I : Integer;
@@ -1881,8 +1856,8 @@ begin
     UpdatingList := True;
     ElvMain.BeginUpdate;
   end;
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
+  //if FW7TaskBar <> nil then
+  //  FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;
 
 procedure TExplorerForm.EndUpdate;
@@ -1894,12 +1869,12 @@ begin
     ElvMain.Groups.EndUpdate(true);
     ElvMain.Realign;
     ElvMain.Repaint;  }
-    ElvMain.Cursor:=CrDefault;
+    //ElvMain.Cursor:=CrDefault;
    // ElvMain.HotTrack.Enabled:=DBKernel.Readbool('Options', 'UseHotSelect', True);
     UpdatingList := False;
   end;
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
+  //if FW7TaskBar <> nil then
+  //  FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
 end;
 
 procedure TExplorerForm.Open1Click(Sender: TObject);
@@ -2034,7 +2009,7 @@ begin
     for I := 0 to FFilesInfo.Count - 1 do
       if AnsiLowerCase(FFilesInfo[I].FileName) = Value.name then
       begin
-        // fFilesInfo[i].SID:=GetCid; //?
+        fFilesInfo[i].SID := GetGUID;
 
         if HelpNo = 3 then
           Help1NextClick(Self);
@@ -2305,44 +2280,57 @@ procedure TExplorerForm.HistoryChanged(Sender: TObject);
 var
   MenuBack, MenuForward : TArMenuItem;
   MenuBackInfo, MenuForwardInfo : TArExplorerPath;
-  i : integer;
+  I : Integer;
+
+  function FormatPath(Path : string) : string;
+  begin
+    if (Path <> '') and ((Path[Length(Path)] = '/') or (Path[Length(Path)] = '\')) then
+      Result := Copy(Path, 1, Length(Path) - 1)
+    else
+      Result := Path;
+  end;
+
+  function MakeName(Path : TExplorerPath) : string;
+  begin
+    if (Path.PType = EXPLORER_ITEM_DRIVE) or (Path.PType = EXPLORER_ITEM_MYCOMPUTER) or (Path.PType = EXPLORER_ITEM_NETWORK) or (Path.PType = EXPLORER_ITEM_WORKGROUP) then
+      Result := Path.Path
+    else
+      Result := ExtractFileName(FormatPath(Path.Path));
+  end;
+
 begin
- TbBack.Enabled:=fHistory.CanBack;
- TbForward.Enabled:=fHistory.CanForward;
- PopupMenuBack.Items.Clear;
- PopupMenuForward.Items.Clear;
- if fHistory.CanBack then
- begin
-  SetLength(MenuBackInfo,0);
-  MenuBackInfo:=Copy(fHistory.GetBackHistory);
-  SetLength(MenuBack,Length(MenuBackInfo));
-  For i:=0 to Length(MenuBack)-1 do
+  TbBack.Enabled := FHistory.CanBack;
+  TbForward.Enabled := FHistory.CanForward;
+  PopupMenuBack.Items.Clear;
+  PopupMenuForward.Items.Clear;
+  if FHistory.CanBack then
   begin
-   MenuBack[Length(MenuBack)-1-i]:=TMenuItem.Create(PopupMenuBack.Items);
-   if (MenuBackInfo[i].PType=EXPLORER_ITEM_DRIVE) or (MenuBackInfo[i].PType=EXPLORER_ITEM_MYCOMPUTER) or (MenuBackInfo[i].PType=EXPLORER_ITEM_NETWORK) or (MenuBackInfo[i].PType=EXPLORER_ITEM_WORKGROUP) then
-   MenuBack[Length(MenuBack)-1-i].Caption:=MenuBackInfo[i].Path else
-   MenuBack[Length(MenuBack)-1-i].Caption:=ExtractFileName(MenuBackInfo[i].Path);
-   MenuBack[Length(MenuBack)-1-i].Tag:=MenuBackInfo[i].Tag;
-   MenuBack[Length(MenuBack)-1-i].OnClick:=JumpHistoryClick;
+    SetLength(MenuBackInfo, 0);
+    MenuBackInfo := Copy(FHistory.GetBackHistory);
+    SetLength(MenuBack, Length(MenuBackInfo));
+    for I := 0 to Length(MenuBack) - 1 do
+    begin
+      MenuBack[Length(MenuBack) - 1 - I] := TMenuItem.Create(PopupMenuBack.Items);
+      MenuBack[Length(MenuBack) - 1 - I].Caption := MakeName(MenuBackInfo[I]);
+      MenuBack[Length(MenuBack) - 1 - I].Tag := MenuBackInfo[I].Tag;
+      MenuBack[Length(MenuBack) - 1 - I].OnClick := JumpHistoryClick;
+    end;
+    PopupMenuBack.Items.Add(MenuBack);
   end;
-  PopupMenuBack.Items.Add(MenuBack);
- end;
- if fHistory.CanForward then
- begin
-  SetLength(MenuForwardInfo,0);
-  MenuForwardInfo:=Copy(fHistory.GetForwardHistory);
-  SetLength(MenuForward,Length(MenuForwardInfo));
-  For i:=0 to Length(MenuForward)-1 do
+  if FHistory.CanForward then
   begin
-   MenuForward[i]:=TMenuItem.Create(PopupMenuForward.Items);
-   if (MenuForwardInfo[i].PType=EXPLORER_ITEM_DRIVE) or (MenuForwardInfo[i].PType=EXPLORER_ITEM_MYCOMPUTER) or (MenuForwardInfo[i].PType=EXPLORER_ITEM_NETWORK) or (MenuForwardInfo[i].PType=EXPLORER_ITEM_WORKGROUP) then
-   MenuForward[i].Caption:=MenuForwardInfo[i].Path else
-   MenuForward[i].Caption:=ExtractFileName(MenuForwardInfo[i].Path);
-   MenuForward[i].Tag:=MenuForwardInfo[i].Tag;
-   MenuForward[i].OnClick:=JumpHistoryClick;
+    SetLength(MenuForwardInfo, 0);
+    MenuForwardInfo := Copy(FHistory.GetForwardHistory);
+    SetLength(MenuForward, Length(MenuForwardInfo));
+    for I := 0 to Length(MenuForward) - 1 do
+    begin
+      MenuForward[I] := TMenuItem.Create(PopupMenuForward.Items);
+      MenuForward[I].Caption := MakeName(MenuForwardInfo[I]);
+      MenuForward[I].Tag := MenuForwardInfo[I].Tag;
+      MenuForward[I].OnClick := JumpHistoryClick;
+    end;
+    PopupMenuForward.Items.Add(MenuForward);
   end;
-  PopupMenuForward.Items.add(MenuForward);
- end;
 end;
 
 procedure TExplorerForm.SpeedButton1Click(Sender: TObject);
@@ -5440,13 +5428,14 @@ begin
   end else
   begin
     S := Path;
-    if CheckFileExistsWithMessageEx(S, True) then
+    if CheckFileExistsWithMessageEx(S, False) then
     begin
       if ExtInMask(SupportedExt, GetExt(S)) then
       begin
         if Viewer = nil then
           Application.CreateForm(TViewer, Viewer);
         Viewer.ShowFile(S);
+        Viewer.Show;
       end else
         ShellExecute(Handle, nil, PChar(S), nil, nil, SW_NORMAL);
     end else if not ChangeTreeView then
@@ -5598,7 +5587,7 @@ end;
 
 procedure TExplorerForm.PrintLinkClick(Sender: TObject);
 var
-  I, Index : integer;
+  I, Index : Integer;
   Files : TStrings;
 begin
   Files := TStringList.Create;
@@ -5851,8 +5840,9 @@ begin
           WebLink.IconHeight := 16;
           WebLink.Left := MyPicturesLink.Left;
           WebLink.OnContextPopup := UserDefinedPlaceContextPopup;
+          WebLink.ImageCanRegenerate := True;
           SetLength(FPlaces, Length(FPlaces) + 1);
-          FPlaces[Length(FPlaces) - 1].name := FName;
+          FPlaces[Length(FPlaces) - 1].Name := FName;
           FPlaces[Length(FPlaces) - 1].FolderName := FFolderName;
           FPlaces[Length(FPlaces) - 1].Icon := FIcon;
           FPlaces[Length(FPlaces) - 1].MyComputer := FMyComputer;
@@ -5860,15 +5850,19 @@ begin
           FPlaces[Length(FPlaces) - 1].MyPictures := FMyPictures;
           FPlaces[Length(FPlaces) - 1].OtherFolder := FOtherFolder;
           Ico := TIcon.Create;
-          Ico.Handle := ExtractSmallIconByPath(FIcon, True);
-          UserLinks[Length(UserLinks) - 1].Icon := Ico;
+          try
+            Ico.Handle := ExtractSmallIconByPath(FIcon, True);
+            UserLinks[Length(UserLinks) - 1].Icon := Ico;
+          finally
+            F(Ico);
+          end;
         end;
       end;
     finally
-      S.Free;
+      F(S);
     end;
   finally
-    Reg.Free;
+    F(Reg);
   end;
 end;
 

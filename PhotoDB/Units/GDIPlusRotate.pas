@@ -4,7 +4,7 @@ unit GDIPlusRotate;
 
 interface
 
-uses Windows, Classes, SysUtils, UTime, ActiveX;
+uses Windows, Classes, SysUtils, UTime, ActiveX, uFileUtils, uTranslate;
 
 type
 {$EXTERNALSYM EncoderValue}
@@ -176,8 +176,7 @@ var
   GdiplusShutdown: TGdiplusShutdown;
 
 procedure InitGDIPlus;
-procedure RotateGDIPlusJPEGFile(AFileName: string; Encode: TEncoderValue; UseOtherFile: Boolean = False;
-  OtherFile: string = '');
+procedure RotateGDIPlusJPEGFile(AFileName: string; Encode: TEncoderValue; OtherFile: string = '');
 function AGetTempFileName(FileName: string): string;
 procedure RotateGDIPlusJPEGStream(Src : TStream; Dst: TStream; Encode: TEncoderValue);
 
@@ -292,8 +291,7 @@ begin;
 
 end;
 
-procedure RotateGDIPlusJPEGFile(AFileName: string; Encode: TEncoderValue; UseOtherFile: Boolean = False;
-  OtherFile: string = '');
+procedure RotateGDIPlusJPEGFile(AFileName: string; Encode: TEncoderValue; OtherFile: string = '');
 var
   CLSID: TGUID;
   EncoderParameters: TEncoderParameters;
@@ -301,6 +299,7 @@ var
   PIP: PEncoderParameters;
   NativeImage: GpImage;
   FileName, FileNameTemp: WideString;
+  UseOtherFile: Boolean;
 begin
   Filename := AFileName;
   NativeImage := nil;
@@ -315,21 +314,29 @@ begin
   EncoderParameters.Parameter[0].Value := @EV;
   PIP := @EncoderParameters;
 
+  UseOtherFile := AnsiLowerCase(FileName) <> AnsiLowerCase(AFileName);
   if not UseOtherFile then
   begin
     FileNameTemp := AGetTempFileName(FileName);
-    GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP);
-    GdipDisposeImage(NativeImage);
-    DeleteFile(PWideChar(AFileName));
-    RenameFile(FileNameTemp, AFileName);
-  end
-  else
+    try
+      if Ok <> GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP) then
+        raise Exception.Create(Format(TA('Can''t write wo file %s!'), [FileNameTemp]));
+    finally
+      GdipDisposeImage(NativeImage);
+      DeleteFile(PWideChar(AFileName));
+      RenameFile(FileNameTemp, AFileName);
+    end;
+  end else
   begin
     if FileExists(OtherFile) then
-      DeleteFile(PWideChar(OtherFile));
+      uFileUtils.SilentDeleteFile(0, PWideChar(OtherFile), True, True);
     FileNameTemp := OtherFile;
-    GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP);
-    GdipDisposeImage(NativeImage);
+    try
+      if Ok <> GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP) then
+        raise Exception.Create(Format(TA('Can''t write wo file %s!'), [FileNameTemp]));
+    finally
+      GdipDisposeImage(NativeImage);
+    end;
   end;
 end;
 

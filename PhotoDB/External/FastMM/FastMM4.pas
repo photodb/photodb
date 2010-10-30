@@ -1,6 +1,6 @@
 (*
 
-Fast Memory Manager 4.96
+Fast Memory Manager 4.97
 
 Description:
  A fast replacement memory manager for Embarcadero Delphi Win32 applications
@@ -235,6 +235,8 @@ Acknowledgements (for version 4):
    as a bugfix to GetMemoryMap.
  - Richard Bradbrook for fixing the Windows 95 FullDebugMode support that was
    broken in version 4.94.
+ - Zach Saw for the suggestion to (optionally) use SwitchToThread when
+   waiting for a lock on a shared resource to be released.
  - Everyone who have made donations. Thanks!
  - Any other Fastcoders or supporters that I have forgotten, and also everyone
    that helped with the older versions.
@@ -770,7 +772,7 @@ Change log:
     will check that the block was actually allocated through the same FastMM
     instance. This is useful for tracking down memory manager sharing issues.
   - Compatible with Delphi 2010.
-  Version 4.96 (31 August 2011):
+  Version 4.96 (31 August 2010):
   - Reduced the minimum block size to 4 bytes from the previous value of 12
     bytes (only applicable to 8 byte alignment). This reduces memory usage if
     the application allocates many blocks <= 4 bytes in size.
@@ -794,6 +796,16 @@ Change log:
     When set, all allocations are automatically registered as expected memory
     leaks. Only available in FullDebugMode. (Thanks to Brian Cook.)
   - Compatible with Delphi XE.
+  Version 4.97 (30 September 2010):
+  - Fixed a crash bug (that crept in in 4.96) that may manifest itself when
+    resizing a block to 4 bytes or less.
+  - Added the UseSwitchToThread option. Set this option to call SwitchToThread
+    instead of sitting in a "busy waiting" loop when a thread contention
+    occurs. This is used in conjunction with the NeverSleepOnThreadContention
+    option, and has no effect unless NeverSleepOnThreadContention is also
+    defined. This option may improve performance with many CPU cores and/or
+    threads of different priorities. Note that the SwitchToThread API call is
+    only available on Windows 2000 and later. (Thanks to Zach Saw.)
 
 *)
 
@@ -972,7 +984,7 @@ interface
 {-------------------------Public constants-----------------------------}
 const
   {The current version of FastMM}
-  FastMMVersion = '4.96';
+  FastMMVersion = '4.97';
   {The number of small block types}
 {$ifdef Align16Bytes}
   NumSmallBlockTypes = 46;
@@ -2207,7 +2219,8 @@ asm
 end;
 
 {Variable size move procedure: Assumes ACount is 4 less than a multiple of 16.
- Always moves at least 12 bytes, irrespective of ACount.}
+ Important note: Always moves at least 12 bytes (the minimum small block size
+ with 16 byte alignment), irrespective of ACount.}
 procedure MoveX16L4(const ASource; var ADest; ACount: Integer);
 asm
   {Make the counter negative based: The last 12 bytes are moved separately}
@@ -2290,11 +2303,14 @@ asm
 end;
 
 {Variable size move procedure: Assumes ACount is 4 less than a multiple of 8.
- Always moves at least 12 bytes, irrespective of ACount.}
+ Important note: Always moves at least 4 bytes (the smallest block size with
+ 8 byte alignment), irrespective of ACount.}
 procedure MoveX8L4(const ASource; var ADest; ACount: Integer);
 asm
   {Make the counter negative based: The last 4 bytes are moved separately}
   sub ecx, 4
+  {4 bytes or less? -> Use the Move4 routine.}
+  jle @FourBytesOrLess
   add eax, ecx
   add edx, ecx
   neg ecx
@@ -2326,9 +2342,7 @@ asm
   {Do the last 4 bytes}
   mov eax, [eax + ecx]
   mov [edx + ecx], eax
-  {$ifndef ForceMMX}
   ret
-  {$endif}
 {$endif}
 {FPU code is only used if MMX is not forced}
 {$ifndef ForceMMX}
@@ -2342,7 +2356,12 @@ asm
   {Do the last 4 bytes}
   mov eax, [eax + ecx]
   mov [edx + ecx], eax
+  ret
 {$endif}
+@FourBytesOrLess:
+  {Four or less bytes to move}
+  mov eax, [eax]
+  mov [edx], eax
 end;
 
 {----------------Windows Emulation Functions for Kylix Support-----------------}
@@ -2809,7 +2828,11 @@ begin
     begin
       while LockCmpxchg(0, 1, @SmallBlockTypes[LInd].BlockTypeLocked) <> 0 do
       begin
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {$ifdef UseSwitchToThread}
+        SwitchToThread;
+  {$endif}
+{$else}
         Sleep(InitialSleepTime);
         if LockCmpxchg(0, 1, @SmallBlockTypes[LInd].BlockTypeLocked) = 0 then
           Break;
@@ -2892,7 +2915,11 @@ begin
   begin
     while LockCmpxchg(0, 1, @MediumBlocksLocked) <> 0 do
     begin
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {$ifdef UseSwitchToThread}
+      SwitchToThread;
+  {$endif}
+{$else}
       Sleep(InitialSleepTime);
       if LockCmpxchg(0, 1, @MediumBlocksLocked) = 0 then
         Break;
@@ -2910,7 +2937,19 @@ asm
   {Attempt to lock the medium blocks}
   lock cmpxchg MediumBlocksLocked, ah
   je @Done
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {Pause instruction (improves performance on P4)}
+  rep nop
+  {$ifdef UseSwitchToThread}
+  push ecx
+  push edx
+  call SwitchToThread
+  pop edx
+  pop ecx
+  {$endif}
+  {Try again}
+  jmp @MediumBlockLockLoop
+{$else}
   {Couldn't lock the medium blocks - sleep and try again}
   push ecx
   push edx
@@ -2930,11 +2969,6 @@ asm
   call Sleep
   pop edx
   pop ecx
-  {Try again}
-  jmp @MediumBlockLockLoop
-{$else}
-  {Pause instruction (improves performance on P4)}
-  rep nop
   {Try again}
   jmp @MediumBlockLockLoop
 {$endif}
@@ -3282,7 +3316,11 @@ begin
   begin
     while LockCmpxchg(0, 1, @LargeBlocksLocked) <> 0 do
     begin
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {$ifdef UseSwitchToThread}
+      SwitchToThread;
+  {$endif}
+{$else}
       Sleep(InitialSleepTime);
       if LockCmpxchg(0, 1, @LargeBlocksLocked) = 0 then
         Break;
@@ -3434,7 +3472,7 @@ begin
      thus negating the need to move the data?}
     LNextSegmentPointer := Pointer(Cardinal(APointer) - LargeBlockHeaderSize + (LBlockHeader and DropMediumAndLargeFlagsMask));
     VirtualQuery(LNextSegmentPointer, LMemInfo, SizeOf(LMemInfo));
-    if (LMemInfo.State = MEM_FREE) then
+    if LMemInfo.State = MEM_FREE then
     begin
       {Round the region size to the previous 64K}
       LMemInfo.RegionSize := LMemInfo.RegionSize and -LargeBlockGranularity;
@@ -3569,7 +3607,11 @@ begin
           Break;
         {All three sizes locked - given up and sleep}
         Dec(Cardinal(LPSmallBlockType), 2 * SizeOf(TSmallBlockType));
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {$ifdef UseSwitchToThread}
+        SwitchToThread;
+  {$endif}
+{$else}
         {Both this block type and the next is in use: sleep}
         Sleep(InitialSleepTime);
         {Try the lock again}
@@ -4067,7 +4109,20 @@ asm
   je @GotLockOnSmallBlockType
   {Block type and two sizes larger are all locked - give up and sleep}
   sub ebx, 2 * Type(TSmallBlockType)
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {Pause instruction (improves performance on P4)}
+  rep nop
+  {$ifdef UseSwitchToThread}
+  call SwitchToThread
+  {$endif}
+  {Try again}
+  jmp @LockBlockTypeLoop
+  {Align branch target}
+  nop
+  {$ifndef UseSwitchToThread}
+  nop
+  {$endif}
+{$else}
   {Couldn't grab the block type - sleep and try again}
   push InitialSleepTime
   call Sleep
@@ -4083,14 +4138,6 @@ asm
   jmp @LockBlockTypeLoop
   {Align branch target}
   nop
-  nop
-  nop
-{$else}
-  {Pause instruction (improves performance on P4)}
-  rep nop
-  {Try again}
-  jmp @LockBlockTypeLoop
-  {Align branch target}
   nop
   nop
 {$endif}
@@ -4565,7 +4612,11 @@ begin
     begin
       while (LockCmpxchg(0, 1, @LPSmallBlockType.BlockTypeLocked) <> 0) do
       begin
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {$ifdef UseSwitchToThread}
+        SwitchToThread;
+  {$endif}
+{$else}
         Sleep(InitialSleepTime);
         if LockCmpxchg(0, 1, @LPSmallBlockType.BlockTypeLocked) = 0 then
           Break;
@@ -4760,7 +4811,23 @@ asm
   {Attempt to grab the block type}
   lock cmpxchg TSmallBlockType([ebx]).BlockTypeLocked, ah
   je @GotLockOnSmallBlockType
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {Pause instruction (improves performance on P4)}
+  rep nop
+  {$ifdef UseSwitchToThread}
+  push ecx
+  push edx
+  call SwitchToThread
+  pop edx
+  pop ecx
+  {$endif}
+  {Try again}
+  jmp @LockBlockTypeLoop
+  {Align branch target}
+  {$ifndef UseSwitchToThread}
+  nop
+  {$endif}
+{$else}
   {Couldn't grab the block type - sleep and try again}
   push ecx
   push edx
@@ -4784,13 +4851,6 @@ asm
   jmp @LockBlockTypeLoop
   {Align branch target}
   nop
-  nop
-{$else}
-  {Pause instruction (improves performance on P4)}
-  rep nop
-  {Try again}
-  jmp @LockBlockTypeLoop
-  {Align branch target}
   nop
 {$endif}
   {---------------------Medium blocks------------------------------}
@@ -5951,7 +6011,11 @@ begin
     begin
       Break;
     end;
-  {$ifndef NeverSleepOnThreadContention}
+  {$ifdef NeverSleepOnThreadContention}
+    {$ifdef UseSwitchToThread}
+    SwitchToThread;
+    {$endif}
+  {$else}
     Sleep(InitialSleepTime);
     {Try again}
     LOldCount := ThreadsInFullDebugModeRoutine;
@@ -5985,7 +6049,11 @@ begin
     {Get the old thread count}
     if LockCmpxchg32(0, -1, @ThreadsInFullDebugModeRoutine) = 0 then
       Break;
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {$ifdef UseSwitchToThread}
+    SwitchToThread;
+  {$endif}
+{$else}
     Sleep(InitialSleepTime);
     {Try again}
     if LockCmpxchg32(0, -1, @ThreadsInFullDebugModeRoutine) = 0 then
@@ -7476,7 +7544,11 @@ begin
   begin
     while LockCmpxchg(0, 1, @ExpectedMemoryLeaksListLocked) <> 0 do
     begin
-{$ifndef NeverSleepOnThreadContention}
+{$ifdef NeverSleepOnThreadContention}
+  {$ifdef UseSwitchToThread}
+      SwitchToThread;
+  {$endif}
+{$else}
       Sleep(InitialSleepTime);
       if LockCmpxchg(0, 1, @ExpectedMemoryLeaksListLocked) = 0 then
         Break;

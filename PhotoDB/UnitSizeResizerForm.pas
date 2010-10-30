@@ -144,7 +144,7 @@ begin
   FormSizeResizer.SetInfo(Owner, List);
   FormSizeResizer.DefaultRotate(BeginRotate, StartImmediately);
   if not StartImmediately then
-    FormSizeResizer.Show;
+    FormSizeResizer.Show
 end;
 
 procedure TFormSizeResizer.BtCancelClick(Sender: TObject);
@@ -616,6 +616,7 @@ var
 begin
   FIgnoreInput := True;
   CbRotate.Checked := True;
+  CbAddSuffix.Checked := not StartImmediately;
   for I := 0 to DdRotate.Items.Count - 1 do
     if DdRotate.Items.Objects[I] = Pointer(RotateValue) then
     begin
@@ -636,8 +637,8 @@ begin
 end;
 
 procedure TFormSizeResizer.EdWidthExit(Sender: TObject);
-begin (Sender as TEdit)
-  .Text := IntToStr(Min(Max(StrToIntDef((Sender as TEdit).Text, 100), 5), 5000));
+begin
+  (Sender as TEdit).Text := IntToStr(Min(Max(StrToIntDef((Sender as TEdit).Text, 100), 5), 5000));
   CheckValidForm;
 end;
 

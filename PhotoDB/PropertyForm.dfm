@@ -25,12 +25,10 @@ object PropertiesForm: TPropertiesForm
   object Image1: TImage
     Left = 8
     Top = 8
-    Width = 100
-    Height = 100
+    Width = 104
+    Height = 104
     Center = True
     PopupMenu = PmItem
-    Proportional = True
-    Stretch = True
     OnDblClick = Image1DblClick
     OnMouseDown = Image1MouseDown
   end
@@ -249,9 +247,9 @@ object PropertiesForm: TPropertiesForm
   end
   object PcMain: TPageControl
     Left = 8
-    Top = 114
+    Top = 118
     Width = 307
-    Height = 378
+    Height = 374
     ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
@@ -261,13 +259,9 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
-        350)
+        346)
       object LabelKeywords: TLabel
         Left = 3
         Top = 280
@@ -429,7 +423,7 @@ object PropertiesForm: TPropertiesForm
         Left = 3
         Top = 296
         Width = 293
-        Height = 48
+        Height = 44
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -612,10 +606,10 @@ object PropertiesForm: TPropertiesForm
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitHeight = 350
       DesignSize = (
         299
-        350)
+        346)
       object Image3: TImage
         Left = 3
         Top = 8
@@ -1186,7 +1180,7 @@ object PropertiesForm: TPropertiesForm
         Left = 3
         Top = 90
         Width = 107
-        Height = 183
+        Height = 179
         Style = lbOwnerDrawFixed
         Anchors = [akLeft, akTop, akBottom]
         ItemHeight = 20
@@ -1220,7 +1214,7 @@ object PropertiesForm: TPropertiesForm
         Left = 171
         Top = 92
         Width = 111
-        Height = 175
+        Height = 171
         Style = lbOwnerDrawFixed
         Anchors = [akLeft, akTop, akBottom]
         ItemHeight = 20
@@ -1235,43 +1229,47 @@ object PropertiesForm: TPropertiesForm
       end
       object CbShowAllGroups: TCheckBox
         Left = 3
-        Top = 279
+        Top = 275
         Width = 281
         Height = 17
         Anchors = [akLeft, akBottom]
         Caption = 'Show All Groups'
         TabOrder = 4
         OnClick = CbShowAllGroupsClick
+        ExplicitTop = 279
       end
       object CbRemoveKeywordsForGroups: TCheckBox
         Left = 3
-        Top = 297
+        Top = 293
         Width = 281
         Height = 17
         Anchors = [akLeft, akBottom]
         Caption = 'Remove KeyWords For Group'
         TabOrder = 5
         OnClick = CbRemoveKeywordsForGroupsClick
+        ExplicitTop = 297
       end
       object BtnNewGroup: TButton
         Left = 3
-        Top = 320
+        Top = 316
         Width = 89
         Height = 25
         Anchors = [akLeft, akBottom]
         Caption = 'New Group'
         TabOrder = 6
         OnClick = BtnNewGroupClick
+        ExplicitTop = 320
       end
       object BtnManageGroups: TButton
         Left = 99
-        Top = 320
+        Top = 316
         Width = 89
         Height = 25
         Anchors = [akLeft, akBottom]
         Caption = 'Manager'
         TabOrder = 7
         OnClick = BtnManageGroupsClick
+        ExplicitTop = 320
       end
     end
     object TsEXIF: TTabSheet
@@ -1280,19 +1278,20 @@ object PropertiesForm: TPropertiesForm
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitHeight = 350
       DesignSize = (
         299
-        350)
+        346)
       object VleExif: TValueListEditor
         Left = 3
         Top = 3
         Width = 293
-        Height = 344
+        Height = 340
         Anchors = [akLeft, akTop, akRight, akBottom]
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
         TabOrder = 0
         OnContextPopup = VleExifContextPopup
+        ExplicitHeight = 344
         ColWidths = (
           100
           187)
@@ -1304,10 +1303,10 @@ object PropertiesForm: TPropertiesForm
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitHeight = 350
       DesignSize = (
         299
-        350)
+        346)
       object Label5: TLabel
         Left = 3
         Top = 327
@@ -1360,10 +1359,10 @@ object PropertiesForm: TPropertiesForm
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitHeight = 350
       DesignSize = (
         299
-        350)
+        346)
       object LbLinks: TLabel
         Left = 3
         Top = 32
@@ -1385,10 +1384,11 @@ object PropertiesForm: TPropertiesForm
         Left = 3
         Top = 48
         Width = 293
-        Height = 299
+        Height = 295
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PmAddLink
         TabOrder = 1
+        ExplicitHeight = 299
       end
     end
   end
