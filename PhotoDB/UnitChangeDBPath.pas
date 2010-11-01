@@ -300,7 +300,7 @@ begin
      CalcStringCRC32(AnsiLowerCase(NewDir),CRC);
      if not CheckBox1.Checked or FileExists(NewPath)  then
      begin
-      _sqlexectext:='UPDATE $DB$ SET FFileName="'+AnsiLowerCase(NormalizeDBString(NewPath))+'" , FolderCRC = '+Format('%d',[crc])+' where ID = '+IntToStr(WorkQuery.FieldByName('ID').AsInteger);
+      _sqlexectext:='UPDATE $DB$ SET FFileName='+AnsiLowerCase(NormalizeDBString(NewPath))+' , FolderCRC = '+Format('%d',[crc])+' where ID = '+IntToStr(WorkQuery.FieldByName('ID').AsInteger);
       SetSQL(TempQuery,_sqlexectext);
       try
        ExecSQL(TempQuery);

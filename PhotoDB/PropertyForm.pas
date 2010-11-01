@@ -2542,42 +2542,47 @@ begin
     SmallB.Free;
   end;
 
-  LstAvaliableGroups.Clear;
-  for I := 0 to Length(RegGroups) - 1 do
-  begin
-    SmallB := TBitmap.Create;
-    try
-      SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := ClBtnFace;
-      if RegGroups[I].GroupImage <> nil then
-        if not RegGroups[I].GroupImage.Empty then
-        begin
-          B := TBitmap.Create;
-          try
-            B.PixelFormat := Pf24bit;
-            Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
-            B.Canvas.Brush.Color := ClBtnFace;
-            B.Canvas.Pen.Color := ClBtnFace;
-            B.Width := Size;
-            B.Height := Size;
-            B.Canvas.Rectangle(0, 0, Size, Size);
-            B.Canvas.Draw(B.Width div 2 - RegGroups[I].GroupImage.Width div 2,
-              B.Height div 2 - RegGroups[I].GroupImage.Height div 2, RegGroups[I].GroupImage);
-            DoResize(16, 16, B, SmallB);
-          finally
-            B.Free;
+  LstAvaliableGroups.Items.BeginUpdate;
+  try
+    LstAvaliableGroups.Clear;
+    for I := 0 to Length(RegGroups) - 1 do
+    begin
+      SmallB := TBitmap.Create;
+      try
+        SmallB.PixelFormat := pf24bit;
+        SmallB.Canvas.Brush.Color := ClBtnFace;
+        if RegGroups[I].GroupImage <> nil then
+          if not RegGroups[I].GroupImage.Empty then
+          begin
+            B := TBitmap.Create;
+            try
+              B.PixelFormat := Pf24bit;
+              Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
+              B.Canvas.Brush.Color := ClBtnFace;
+              B.Canvas.Pen.Color := ClBtnFace;
+              B.Width := Size;
+              B.Height := Size;
+              B.Canvas.Rectangle(0, 0, Size, Size);
+              B.Canvas.Draw(B.Width div 2 - RegGroups[I].GroupImage.Width div 2,
+                B.Height div 2 - RegGroups[I].GroupImage.Height div 2, RegGroups[I].GroupImage);
+              DoResize(16, 16, B, SmallB);
+            finally
+              B.Free;
+            end;
+            SmallB.Height := 18;
           end;
-          SmallB.Height := 18;
+        RegGroupsImageList.Add(SmallB, nil);
+        if RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
+        begin
+          UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
+          LstAvaliableGroups.Items.Add(RegGroups[I].GroupName);
         end;
-      RegGroupsImageList.Add(SmallB, nil);
-      if RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
-      begin
-        UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
-        LstAvaliableGroups.Items.Add(RegGroups[I].GroupName);
+      finally
+        SmallB.Free;
       end;
-    finally
-      SmallB.Free;
     end;
+  finally
+    LstAvaliableGroups.Items.EndUpdate;
   end;
   LstCurrentGroups.Refresh;
 end;

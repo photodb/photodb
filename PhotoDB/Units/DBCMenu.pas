@@ -874,134 +874,147 @@ end;
 
 procedure TDBPopupMenu.GroupsPopUpMenu_(Sender: TObject);
 var
-  i, j : integer;
-  KeyWordList,
-  GroupList : TStringList;
-  _sqlexectext, StrOldGroups, StrNewGroups, Groups, OldKeyWords, NewKeyWords, KeyWords : string;
-  fQuery : TDataSet;
-  EventInfo : TEventValues;
-  Count : integer;
-  ProgressForm : TProgressActionForm;
-  VarkeyWords, VarGroups : boolean;
-  List : TSQLList;
-  IDs : String;
+  I, J: Integer;
+  KeyWordList, GroupList: TStringList;
+  _sqlexectext, StrOldGroups, StrNewGroups, Groups, OldKeyWords, NewKeyWords, KeyWords: string;
+  FQuery: TDataSet;
+  EventInfo: TEventValues;
+  Count: Integer;
+  ProgressForm: TProgressActionForm;
+  VarkeyWords, VarGroups: Boolean;
+  List: TSQLList;
+  IDs: string;
 begin
-  FBusy:=true;
-  GroupList := TStringList.Create;
-  KeyWordList := TStringList.Create;
-  Count:=0;
-  for i:=0 to FInfo.Count-1 do
-    if FInfo[i].Selected then
-      inc(Count);
+  FBusy := True;
+  try
+    GroupList := TStringList.Create;
+    KeyWordList := TStringList.Create;
+    Count := 0;
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].Selected then
+        Inc(Count);
 
-  for i:=0 to FInfo.Count-1 do
-    if FInfo[i].Selected then
-    begin
-     GroupList.Add(FInfo[i].Groups);
-     KeyWordList.Add(FInfo[i].KeyWords);
-    end;
-  StrOldGroups:=GetCommonGroups(GroupList);
-  StrNewGroups:=GetCommonGroups(GroupList);
-  OldKeyWords:=GetCommonWordsA(KeyWordList);
-  NewKeyWords:=OldKeyWords;
-  DBChangeGroups(StrNewGroups,NewKeyWords);
-  VarKeyWords:=VariousKeyWords(OldKeyWords,NewKeyWords);
-  VarGroups:=not CompareGroups(StrOldGroups,StrNewGroups);
-  if not VarKeyWords and not VarGroups then
-  begin
-   FBusy:=false;
-   exit;
-  end;
-  fQuery := GetQuery;
-  ProgressForm:=GetProgressWindow;
-  ProgressForm.MaxPosCurrentOperation:=Count;
-  ProgressForm.OneOperation:=false;
-  if Count>2 then
-  ProgressForm.DoShow;
-  ProgressForm.xPosition:=0;
-  if VarKeyWords and VarGroups then
-  ProgressForm.OperationCount:=2 else
-  ProgressForm.OperationCount:=1;
-  ProgressForm.OperationPosition:=1;
-  FreeSQLList(List);
-  if VarKeyWords then
-  for i:=0 to FInfo.Count-1 do
-    if FInfo[i].Selected then
-    begin
-     KeyWords:=FInfo[i].KeyWords;
-     ReplaceWords(OldKeyWords,NewKeyWords,KeyWords);
-     if VariousKeyWords(KeyWords,FInfo[i].KeyWords) then
-     begin
-      AddQuery(List,KeyWords,FInfo[i].ID);
-     end;
-    end;
-  PackSQLList(List,VALUE_TYPE_KEYWORDS);
-  ProgressForm.MaxPosCurrentOperation:=Length(List);
-  for i:=0 to Length(List)-1 do
-  begin
-   IDs:='';
-   for j:=0 to Length(List[i].IDs)-1 do
-   begin
-    if j<>0 then IDs:=IDs+' , ';
-    IDs:=IDs+' '+IntToStr(List[i].IDs[j])+' ';
-   end;
-   ProgressForm.xPosition:=ProgressForm.xPosition+1;
-   {!!!}   Application.ProcessMessages;
-   _sqlexectext:='Update $DB$ Set KeyWords = "'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
-   fQuery.active:=false;
-   SetSQL(fQuery,_sqlexectext);
-   ExecSQL(fQuery);
-   EventInfo.KeyWords:=List[i].Value;
-   for j:=0 to Length(List[i].IDs)-1 do
-   DBKernel.DoIDEvent(Sender,List[i].IDs[j],[EventID_Param_KeyWords],EventInfo);
-  end;
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].Selected then
+      begin
+        GroupList.Add(FInfo[I].Groups);
+        KeyWordList.Add(FInfo[I].KeyWords);
+      end;
+    StrOldGroups := GetCommonGroups(GroupList);
+    StrNewGroups := GetCommonGroups(GroupList);
+    OldKeyWords := GetCommonWordsA(KeyWordList);
+    NewKeyWords := OldKeyWords;
+    DBChangeGroups(StrNewGroups, NewKeyWords);
+    VarKeyWords := VariousKeyWords(OldKeyWords, NewKeyWords);
+    VarGroups := not CompareGroups(StrOldGroups, StrNewGroups);
+    if not VarKeyWords and not VarGroups then
+      Exit;
 
-  FreeDS(fQuery);
-  If not CompareGroups(StrNewGroups,StrOldGroups) then
-  begin
-   FreeSQLList(List);
-   fQuery := GetQuery;
-   ProgressForm.xPosition:=0;
-   if VarKeyWords and VarGroups then
-   ProgressForm.OperationPosition:=2 else
-   ProgressForm.OperationPosition:=1;
-   if VarGroups then
-   for i:=0 to FInfo.Count-1 do
-   if FInfo[i].Selected then
-   begin
-    Groups:=FInfo[i].Groups;
-    ReplaceGroups(StrOldGroups,StrNewGroups,Groups);
-    if not CompareGroups(Groups,FInfo[i].Groups) then
-    begin
-     AddQuery(List,Groups,FInfo[i].ID);
-    end;
-   end;
+    fQuery := GetQuery;
+    try
+      ProgressForm:= GetProgressWindow;
+      ProgressForm.MaxPosCurrentOperation := Count;
+      ProgressForm.OneOperation := False;
+      if Count > 2 then
+        ProgressForm.DoShow;
+      ProgressForm.XPosition := 0;
+      if VarKeyWords and VarGroups then
+        ProgressForm.OperationCount := 2
+      else
+        ProgressForm.OperationCount := 1;
+      ProgressForm.OperationPosition := 1;
+      FreeSQLList(List);
+      if VarKeyWords then
+        for I := 0 to FInfo.Count - 1 do
+          if FInfo[I].Selected then
+          begin
+            KeyWords := FInfo[I].KeyWords;
+            ReplaceWords(OldKeyWords, NewKeyWords, KeyWords);
+            if VariousKeyWords(KeyWords, FInfo[I].KeyWords) then
+              AddQuery(List, KeyWords, FInfo[I].ID);
 
-   PackSQLList(List,VALUE_TYPE_GROUPS);
-   ProgressForm.MaxPosCurrentOperation:=Length(List);
-   for i:=0 to Length(List)-1 do
-   begin
-    IDs:='';
-    for j:=0 to Length(List[i].IDs)-1 do
-    begin
-     if j<>0 then IDs:=IDs+' , ';
-     IDs:=IDs+' '+IntToStr(List[i].IDs[j])+' ';
+          end;
+      PackSQLList(List, VALUE_TYPE_KEYWORDS);
+      ProgressForm.MaxPosCurrentOperation := Length(List);
+      for I := 0 to Length(List) - 1 do
+      begin
+        IDs := '';
+        for J := 0 to Length(List[I].IDs) - 1 do
+        begin
+          if J <> 0 then
+            IDs := IDs + ' , ';
+          IDs := IDs + ' ' + IntToStr(List[I].IDs[J]) + ' ';
+        end;
+        ProgressForm.XPosition := ProgressForm.XPosition + 1;
+
+        //update progress window
+        Application.ProcessMessages;
+        _sqlexectext := 'Update $DB$ Set KeyWords = ' + NormalizeDBString(List[I].Value)
+          + ' Where ID in (' + IDs + ')';
+        FQuery.Active := False;
+        SetSQL(FQuery, _sqlexectext);
+        ExecSQL(FQuery);
+        EventInfo.KeyWords := List[I].Value;
+        for J := 0 to Length(List[I].IDs) - 1 do
+          DBKernel.DoIDEvent(Sender, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
+      end;
+
+    finally
+      FreeDS(fQuery);
     end;
-    ProgressForm.xPosition:=ProgressForm.xPosition+1;
-    {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set Groups = "'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
-    fQuery.active:=false;
-    SetSQL(fQuery,_sqlexectext);
-    ExecSQL(fQuery);
-    EventInfo.Groups:=List[i].Value;
-    for j:=0 to Length(List[i].IDs)-1 do
-    DBKernel.DoIDEvent(Sender,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
-   end;
-   FreeDS(fQuery);
+    if not CompareGroups(StrNewGroups, StrOldGroups) then
+    begin
+      FreeSQLList(List);
+      FQuery := GetQuery;
+      try
+        ProgressForm.XPosition := 0;
+        if VarKeyWords and VarGroups then
+          ProgressForm.OperationPosition := 2
+        else
+          ProgressForm.OperationPosition := 1;
+        if VarGroups then
+          for I := 0 to FInfo.Count - 1 do
+            if FInfo[I].Selected then
+            begin
+              Groups := FInfo[I].Groups;
+              ReplaceGroups(StrOldGroups, StrNewGroups, Groups);
+              if not CompareGroups(Groups, FInfo[I].Groups) then
+                AddQuery(List, Groups, FInfo[I].ID);
+
+            end;
+
+        PackSQLList(List, VALUE_TYPE_GROUPS);
+        ProgressForm.MaxPosCurrentOperation := Length(List);
+        for I := 0 to Length(List) - 1 do
+        begin
+          IDs := '';
+          for J := 0 to Length(List[I].IDs) - 1 do
+          begin
+            if J <> 0 then
+              IDs := IDs + ' , ';
+            IDs := IDs + ' ' + IntToStr(List[I].IDs[J]) + ' ';
+          end;
+          ProgressForm.XPosition := ProgressForm.XPosition + 1;
+
+        //update progress window
+          Application.ProcessMessages;
+          _sqlexectext := 'Update $DB$ Set Groups = ' + NormalizeDBString(List[I].Value) + ' Where ID in (' + IDs + ')';
+          FQuery.Active := False;
+          SetSQL(FQuery, _sqlexectext);
+          ExecSQL(FQuery);
+          EventInfo.Groups := List[I].Value;
+          for J := 0 to Length(List[I].IDs) - 1 do
+            DBKernel.DoIDEvent(Sender,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
+      end;
+      finally
+        FreeDS(fQuery);
+      end;
+    end;
+    ProgressForm.Close;
+    ProgressForm.Release;
+  finally
+    FBusy := False;
   end;
-  ProgressForm.Close;
-  ProgressForm.Release;
-  FBusy:=false;
 end;
 
 procedure TDBPopupMenu.ImageEditorItemPopUpMenu_(Sender: TObject);

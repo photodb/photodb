@@ -250,7 +250,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 307
     Height = 374
-    ActivePage = TsGeneral
+    ActivePage = TsGroups
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -603,10 +603,6 @@ object PropertiesForm: TPropertiesForm
     object TsGroups: TTabSheet
       Caption = 'Groups'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 350
       DesignSize = (
         299
         346)
@@ -1236,7 +1232,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Show All Groups'
         TabOrder = 4
         OnClick = CbShowAllGroupsClick
-        ExplicitTop = 279
       end
       object CbRemoveKeywordsForGroups: TCheckBox
         Left = 3
@@ -1247,7 +1242,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Remove KeyWords For Group'
         TabOrder = 5
         OnClick = CbRemoveKeywordsForGroupsClick
-        ExplicitTop = 297
       end
       object BtnNewGroup: TButton
         Left = 3
@@ -1258,7 +1252,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'New Group'
         TabOrder = 6
         OnClick = BtnNewGroupClick
-        ExplicitTop = 320
       end
       object BtnManageGroups: TButton
         Left = 99
@@ -1269,7 +1262,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Manager'
         TabOrder = 7
         OnClick = BtnManageGroupsClick
-        ExplicitTop = 320
       end
     end
     object TsEXIF: TTabSheet

@@ -811,7 +811,7 @@ begin
        if res then
        begin
         _sqlexectext:='Update '+GetTableNameByFileName(aDBName);
-        _sqlexectext:=_sqlexectext+ ' Set Comment ="'+NormalizeDBString(r)+'"';
+        _sqlexectext:=_sqlexectext+ ' Set Comment = '+NormalizeDBString(r);
        _sqlexectext:=_sqlexectext+ ' Where ID = '+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
         post(_sqlexectext);
        end;

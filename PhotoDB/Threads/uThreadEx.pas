@@ -5,6 +5,8 @@ interface
 uses Classes, uThreadForm, Windows, SyncObjs, uDBThread, uGOM;
 
 type
+  TThreadExNotify = procedure(Sender: TObject; StateID: TGUID) of object;
+
   TThreadEx = class(TDBThread)
   private
     FThreadForm : TThreadForm;

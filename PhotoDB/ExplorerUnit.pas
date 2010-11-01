@@ -2591,9 +2591,12 @@ procedure TExplorerForm.Select(Item: TEasyItem; GUID: TGUID);
 begin
   if (Item <> nil) then
   begin
-    Item.Selected := True;
-    Item.Focused := True;
-    Item.MakeVisible(EmvTop);
+    if ElvMain.Selection.Count = 0 then
+    begin
+      Item.Selected := True;
+      Item.Focused := True;
+      Item.MakeVisible(EmvTop);
+    end;
   end;
 end;
 
@@ -4792,30 +4795,30 @@ begin
     ThreadType := THREAD_TYPE_COMPUTER;
   end;
   S := Path;
+
   NewFormState;
-  if ElvMain <> nil then
+  FCurrentPath := Path;
+  FCurrentTypePath := WPath.PType;
+  ListView1SelectItem(nil, nil, False);
+  if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) then
+    Formatdir(S);
+  if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or
+    (WPath.PType = EXPLORER_ITEM_SHARE) then
   begin
-    FCurrentPath := Path;
-    FCurrentTypePath := WPath.PType;
-    ListView1SelectItem(nil, nil, False);
-    if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) then
-      Formatdir(S);
-    if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or
-      (WPath.PType = EXPLORER_ITEM_SHARE) then
-    begin
-      EventLog('ExplorerThreadNotifyDirectoryChange');
-      try
-        TW.I.Start(' -> DirectoryWatcher.StopWatch');
-      DirectoryWatcher.StopWatch;
-        TW.I.Start(' -> DirectoryWatcher.Start');
-      DirectoryWatcher.Start(S, Self, StateID);
-      except
-        TW.I.Start(' -> EXCEPTION!!!');
-      end;
-    end
-    else if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
-      S := MyComputer;
-  end;
+    EventLog('ExplorerThreadNotifyDirectoryChange');
+    try
+      TW.I.Start(' -> DirectoryWatcher.StopWatch');
+    DirectoryWatcher.StopWatch;
+      TW.I.Start(' -> DirectoryWatcher.Start');
+    DirectoryWatcher.Start(S, Self, StateID);
+    except
+      TW.I.Start(' -> EXCEPTION!!!');
+    end;
+  end
+  else if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
+    S := MyComputer;
+
+
   if FChangeHistoryOnChPath then
     if (FHistory.LastPath.Path <> S) or (FHistory.LastPath.PType <> WPath.PType) then
       FHistory.Add(ExplorerPath(S, WPath.PType));

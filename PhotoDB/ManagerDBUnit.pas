@@ -485,7 +485,7 @@ var
 begin
   FieldType := GetFieldTupe(FieldName);
   if FieldType = FieldTypeInt then Result := IntToStr(StrToIntDef(Value,0))
-  else if FieldType = FieldTypeStr then Result := '"'+normalizeDBString(Value) + '"'
+  else if FieldType = FieldTypeStr then Result := normalizeDBString(Value)
   else if FieldType = FieldTypeBool then
   begin
     if Value='0' then

@@ -2175,8 +2175,8 @@ begin
                 NewPath := AnsiLowerCase(S + ExtractFileName(FQuery.FieldByName('FFileName').AsString));
               end;
               Int := Integer(Crc);
-              Sql := 'UPDATE $DB$ SET FFileName="' + AnsiLowerCase(NormalizeDBString(NewPath))
-                + '" , FolderCRC = ' + IntToStr(Int) + ' where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger);
+              Sql := 'UPDATE $DB$ SET FFileName= ' + AnsiLowerCase(NormalizeDBString(NewPath))
+                + ' , FolderCRC = ' + IntToStr(Int) + ' where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger);
               SetSQL(SetQuery, Sql);
             end;
             ExecSQL(SetQuery);

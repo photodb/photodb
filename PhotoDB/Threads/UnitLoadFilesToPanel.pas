@@ -296,7 +296,7 @@ begin
       S := FileName;
       if FolderView then
         Delete(S, 1, Length(ProgramDir));
-      SetStrParam(FQuery, 0, Delnakl(NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(S)))));
+      SetStrParam(FQuery, 0, Delnakl(NormalizeDBStringLike(AnsiLowerCase(S))));
     end;
     FQuery.Active := True;
     C := FQuery.RecordCount;

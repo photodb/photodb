@@ -101,7 +101,7 @@ begin
  end;
  fQuery:=GetQuery(DBFileName);
  SetSQL(fQuery,'SELECT ID, FFileName, Attr, StrTh, Thum FROM '+GetTableNameByFileName(DBFileName)+' WHERE FFileName like :str ');
- SetStrParam(fQuery,0,'%'+ NormalizeDBString(normalizeDBStringLike((AnsiLowerCase(ExtractFileName(FN)))))+'%');
+ SetStrParam(fQuery,0,'%'+ normalizeDBStringLike((AnsiLowerCase(ExtractFileName(FN))))+'%');
  try
   fQuery.active:=true;
  except

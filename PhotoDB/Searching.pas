@@ -1104,7 +1104,7 @@ begin
   //[BEGIN] Comment Support
   if not Memo2.ReadOnly then
   begin
-   _sqlexectext:='Update $DB$ Set Comment = "'+normalizeDBString(Memo2.Text)+'" Where ID in (';
+   _sqlexectext:='Update $DB$ Set Comment = '+normalizeDBString(Memo2.Text)+' Where ID in (';
    for i:=0 to Length(SelectedInfo.Ids)-1 do
    if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(SelectedInfo.Ids[i])+' ' else
    _sqlexectext:=_sqlexectext+' , '+inttostr(SelectedInfo.Ids[i])+'';
@@ -1147,7 +1147,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set KeyWords ="'+NormalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set KeyWords = '+NormalizeDBString(List[i].Value)+' Where ID in ('+IDs+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
     ExecSQL(WorkQuery);
@@ -1187,7 +1187,7 @@ begin
     end;
     ProgressForm.xPosition:=ProgressForm.xPosition+1;
     {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set Groups ="'+normalizeDBString(List[i].Value)+'" Where ID in ('+IDs+')';
+    _sqlexectext:='Update $DB$ Set Groups = '+normalizeDBString(List[i].Value)+' Where ID in ('+IDs+')';
     WorkQuery.active:=false;
     SetSQL(WorkQuery,_sqlexectext);
    ExecSQL(WorkQuery);
