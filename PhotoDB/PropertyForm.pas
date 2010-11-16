@@ -2078,8 +2078,8 @@ begin
           else
             XInsert('Flash: ', L('Off'));
 
-          XInsert('Width: ', ExifData.ExifImageWidth.AsString + '.px');
-          XInsert('Height: ', ExifData.ExifImageheight.AsString + '.px');
+          XInsert('Width: ', IntToStr(ExifData.ExifImageWidth.Value) + ' px.');
+          XInsert('Height: ', IntToStr(ExifData.ExifImageheight.Value) + 'px.');
         end
         else
           VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);

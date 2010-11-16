@@ -300,14 +300,8 @@ uses
 
 {$R *.res}
 
-type
-    TInitializeAProc = function(s:PChar) : boolean;
-
 var
     S1: string;
-{$IFDEF LICENCE}
-    Initaproc: TInitializeAProc;
-{$ENDIF}
 
 function IsFalidDBFile : boolean;
 begin

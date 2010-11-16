@@ -354,7 +354,6 @@ var
   Query : TDataSet;
 begin
  Result:='';
- If not FileExistsW(GroupsTableFileNameW(dbname)) and (GetDBType<>DB_TYPE_MDB) then exit;
  Query := GetQuery;
  SetSQL(Query,'Select * From '+GroupsTableName+' Where GroupName like "'+GroupName+'"');
  try
@@ -379,7 +378,6 @@ var
   Query : TDataSet;
 begin
  Result:='';
- If not FileExistsW(GroupsTableFileNameW(dbname)) and (GetDBType<>DB_TYPE_MDB) then exit;
  Query := GetQuery;
  SetSQL(Query,'Select * From '+GroupsTableName+' Where GroupCode="'+GroupCode+'"');
  Query.Active:=True;
@@ -404,7 +402,6 @@ var
   Query : TDataSet;
 begin
  Result:=False;
- If not FileExists(GroupsTableFileNameW(FileName)) and (GetDBType<>DB_TYPE_MDB) then exit;
  Query := GetQuery(FileName);
  SetSQL(Query,'Select * From '+GroupsTableName(FileName)+' Where GroupName like "'+GroupName+'"');
  try
@@ -462,7 +459,6 @@ var
   ID : integer;
 begin
  Result:=false;
- If not FileExists(GroupsTableFileNameW(dbname)) and (GetDBType<>DB_TYPE_MDB) then exit;
  Query := GetQuery;
  SetSQL(Query,'Select * From '+GroupsTableName+' Where GroupCode like "'+Group.GroupCode+'"');
  try

@@ -1118,8 +1118,8 @@ var bfh    : TBitmapFileHeader;
 begin
   result := false;
   if GetResourceW(update, PWideChar(RT_BITMAP), name, language, p1, c1) then begin
-    pchar(@bfh.bfType)[0] := 'B';
-    pchar(@bfh.bfType)[1] := 'M';
+    pansichar(@bfh.bfType)[0] := 'B';
+    pansichar(@bfh.bfType)[1] := 'M';
     bfh.bfSize      := sizeOf(bfh) + c1;
     bfh.bfReserved1 := 0;
     bfh.bfReserved2 := 0;
@@ -1429,7 +1429,7 @@ end;
 
 function IntToHexEx(value    : integer;
                     minLen   : integer = 1;
-                    fillChar : char    = '0') : string; overload;
+                    fillChar : char = '0') : string; overload;
 begin
   result := IntToHex(value);
   if (minLen < 0) or CharInSet(fillChar, ['0'..'9','A'..'F','a'..'f']) then begin

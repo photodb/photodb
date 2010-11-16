@@ -3,9 +3,9 @@ unit CommonDBSupport;
 interface
 
 uses
- Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
- UnitINI, Dolphin_DB, ReplaseIconsInScript, uScript, UnitScripts,
- UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory;
+  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
+  UnitINI, Dolphin_DB, ReplaseIconsInScript, uScript, UnitScripts,
+  UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory;
 
 const
 
@@ -111,9 +111,9 @@ var
 
   MDBProvider : string = 'Microsoft.Jet.OLEDB.4.0';
 
-{$IFDEF DEBUG}
- var dbname : string = 'D:\Dmitry\ImagesDB\dolphin.db';
-{$ENDIF}
+ var
+   //TODO: delete it
+   dbname : string = '';
 
 function GetDBType : integer; overload;
 function GetDBType(dbname : string) : integer; overload;

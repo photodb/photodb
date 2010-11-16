@@ -525,6 +525,7 @@ object PropertiesForm: TPropertiesForm
         Cursor = crHandPoint
         PopupMenu = PmRatingNotAvaliable
         ParentColor = False
+        Color = clBtnFace
         Rating = 0
         RatingRange = 0
         OnChange = CommentMemoChange

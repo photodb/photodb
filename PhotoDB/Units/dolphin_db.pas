@@ -19,9 +19,15 @@ const
   Emulation = False;
   EmulationInstall = False;
 
+type
+  TInitializeAProc = function(s:PChar) : boolean;
+
 var
   LOGGING_ENABLED: Boolean = True;
   LOGGING_MESSAGE: Boolean = False;
+{$IFDEF LICENCE}
+    Initaproc: TInitializeAProc;
+{$ENDIF}
 
 type
   TBuffer = array of Char;

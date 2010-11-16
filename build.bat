@@ -43,5 +43,11 @@ cd KernelDLL
 "%DCC32%" Kernel -E"..\bin" -N0"..\dcu" -U"%DM%" -$W -$D+ -$I+ -$O+ -$Z1
 cd ..
 
+cd ..
+cd Installer
+InstallMaker SETUP$ZIP.dat
+"%BRCC32%" SETUP_ZIP.rc
+"%DCC32%" PhotoDBInstall -E".." -N0"\PhotoDB\dcu" -U"%DM%" -$W -$D+ -$I+ -$O+ -$Z1
+
 
 pause
