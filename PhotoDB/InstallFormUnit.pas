@@ -47,9 +47,6 @@ type
     CheckBox4: TCheckBox;
     CheckBox5: TCheckBox;
     Label10: TLabel;
-    CheckBox6: TCheckBox;
-    ComboBox1: TComboBox;
-    Label11: TLabel;
     procedure Button5Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -69,14 +66,12 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Edit4KeyPress(Sender: TObject; var Key: Char);
     procedure Memo1KeyPress(Sender: TObject; var Key: Char);
-    procedure ComboBox1Select(Sender: TObject);
   private
     { Private declarations }
   public
-  QuickSelfInstall : boolean;
-  Procedure LoadLanguage;
-  Procedure SetQuickSelfInstallOption;
     { Public declarations }
+    procedure LoadLanguage;
+    procedure SetQuickSelfInstallOption;
   end;
 
 var
@@ -136,7 +131,6 @@ var
   i, j : Integer;
 begin
  QuickSelfInstall:=false;
- CheckBox6.Visible:=False;//TODO: delete FileExists(ProgramDir+'BdeInst.dll');
 
  Label1.Caption:=ProductName;
  hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
@@ -167,7 +161,6 @@ begin
  Edit4.Text:=InstalledUserName else
  Edit4.Text:=TEXT_MES_NAMEA;
 
-  ComboBox1.Enabled:=false;
   Edit3.Text:=TEXT_MES_NO_FILE;
 
  Edit3.Enabled:=False; //TODO: delete: BDEInstalled;
@@ -255,8 +248,6 @@ begin
  UnitInstallThread.FEndDBDirectory:=DBDataDir;
  UnitInstallThread.FDBFile:=Edit3.text;
  UnitInstallThread.InstUserName:=Edit4.text;
- UnitInstallThread.InstallBDEAnyway:=CheckBox6.Checked and CheckBox6.Visible;
- UnitInstallThread.DBType:=ComboBox1.ItemIndex;
  UnitInstallThread.QuickSelfInstall:=QuickSelfInstall;
  SetLength(UnitInstallThread.Exts,CheckListBox1.Items.Count);
  For i:=1 to CheckListBox1.Items.Count do
@@ -395,8 +386,6 @@ begin
  Label3.Caption:=TEXT_MES_END_DB_FOLDER;
  Label4.Caption:=TEXT_MES_DEF_DB;
  CheckBox2.Caption:=TEXT_MES_MOVE_PRIVATE;
- CheckBox6.Caption:=TEXT_MES_INSTALL_BDE_ANYWAY;
- Label11.Caption:=TEXT_MES_DB_TYPE;
 end;
 
 procedure TInstallForm.FormCloseQuery(Sender: TObject;
@@ -414,14 +403,6 @@ end;
 procedure TInstallForm.Memo1KeyPress(Sender: TObject; var Key: Char);
 begin
  if key=#13 then Button7Click(Sender);
-end;
-
-procedure TInstallForm.ComboBox1Select(Sender: TObject);
-begin
- if ComboBox1.ItemIndex=1 then
- begin
-  MessageBoxDB(Handle,TEXT_MES_DB_IS_OLD_DB,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
- end;
 end;
 
 procedure TInstallForm.SetQuickSelfInstallOption;

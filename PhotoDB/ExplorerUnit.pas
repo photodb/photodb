@@ -215,6 +215,8 @@ type
     PopupMenuZoomDropDown: TPopupMenu;
     MapCD1: TMenuItem;
     LsMain: TLoadingSign;
+    AsEXIF1: TMenuItem;
+    N3: TMenuItem;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -499,6 +501,7 @@ type
     procedure ClearList;
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
+    procedure AsEXIF1Click(Sender: TObject);
    private
      FBitmapImageList : TBitmapImageList;
      FWindowID : TGUID;
@@ -814,7 +817,7 @@ begin
   fHistory.OnHistoryChange:=HistoryChanged;
   TbBack.Enabled:=false;
   TbForward.Enabled:=false;
-  DBKernel.RegisterChangesID(Sender,ChangedDBDataByID);
+  DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
 
   NewFormState;
   MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
@@ -2043,9 +2046,12 @@ begin
     Exit;
   end;
   ImParams := [EventID_Param_Image,EventID_Param_Delete,EventID_Param_Critical,EventID_Param_Crypt];
- If ImParams*params<> [] then
+  if ImParams * params<> [] then
   begin
-    RefreshItemByID(ID);
+    if ID > 0 then
+      RefreshItemByID(ID)
+    else
+      RefreshItemByName(Value.Name);
   end;
 
   UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private, EventID_Param_Access,
@@ -2120,9 +2126,7 @@ begin
   ImParams := [EventID_Param_Refresh, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private,
     EventID_Param_Access];
   if ImParams * Params <> [] then
-  begin
     ElvMain.Refresh;
-  end;
 
   if [EventID_Param_DB_Changed] * Params <> [] then
   begin
@@ -2136,11 +2140,10 @@ begin
       RefreshItemByName(Value.name)
     else
       RefreshItemByName(Value.NewName);
+
   if [EventID_Param_DB_Changed, EventID_Param_Refresh_Window] * Params <> [] then
-  begin
-    ElvMain.Selection.ClearAll;
     RefreshLinkClick(RefreshLink);
-  end;
+
 end;
 
 procedure TExplorerForm.FormClose(Sender: TObject;
@@ -2201,6 +2204,7 @@ begin
   for I := 0 to ElvMain.Items.Count - 1 do
     if ElvMain.Items[I].Selected then
     begin
+      Index := ItemIndexToMenuIndex(I);
       UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) then
         TExplorerThread.Create(FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID), THREAD_TYPE_IMAGE,
@@ -4594,6 +4598,7 @@ begin
     RotateCCW1.Caption := L('Rotate left');
     RotateCW1.Caption := L('Rotate right');
     Rotateon1801.Caption := L('Rotate 180°');
+    AsEXIF1.Caption := L('By EXIF');
     SetasDesktopWallpaper1.Caption := L('Set as desktop wallpaper');
     Stretch1.Caption := L('Stretch');
     Center1.Caption := L('Center');
@@ -4873,6 +4878,7 @@ begin
   end;
 
   UpdaterInfo.IsUpdater := False;
+  UpdaterInfo.FileInfo := nil;
   Inc(FReadingFolderNumber);
 
   Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
@@ -5205,6 +5211,18 @@ var
 begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
   SetDesktopWallpaper(FileName, WPSTYLE_TILE);
+end;
+
+procedure TExplorerForm.AsEXIF1Click(Sender: TObject);
+var
+  Info : TDBPopupMenuInfo;
+begin
+  Info := GetCurrentPopUpMenuInfo(nil);
+  try
+    RotateImages(Self, Info, DB_IMAGE_ROTATE_EXIF, True);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.RotateCCW1Click(Sender: TObject);
@@ -7490,6 +7508,7 @@ begin
   Info.View := ListView;
   // тут начинается загрузка больших картинок
   UpdaterInfo.IsUpdater := False;
+  UpdaterInfo.FileInfo := nil;
   Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
   Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
   Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
@@ -7500,6 +7519,7 @@ begin
   Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
   Info.View := ListView;
   Info.PictureSize := FPictureSize;
+  UpdaterInfo.FileInfo := nil;
   NewFormState;
 
   TbStop.Enabled := True;

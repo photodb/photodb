@@ -12,7 +12,7 @@ uses
   ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, clipbrd,
   EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus, Language,
   CustomSelectTool, TextToolUnit, BrushToolUnit,InsertImageToolUnit,
-  GraphicsBaseTypes
+  GraphicsBaseTypes, uMemory
 {$IFDEF PHOTODB}
   ,GraphicCrypt, Dolphin_DB, UnitPasswordForm, Searching, UnitJPEGOptions,
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
@@ -1017,11 +1017,7 @@ begin
    if PassWord<>'' then
    begin
     Pic.Graphic:=DeCryptGraphicFile(FileName,PassWord,true);
-    if EXIFSection<>nil then
-    begin
-     EXIFSection.free;
-     EXIFSection:=nil;
-    end;
+    F(EXIFSection);
    end
    else
    begin
@@ -1037,11 +1033,7 @@ begin
     //by default RAW is half-sized
     (pic.Graphic as TRAWImage).LoadHalfSize:=false;
     pic.Graphic.LoadFromFile(FileName);
-    if EXIFSection<>nil then
-    begin
-     EXIFSection.free;
-     EXIFSection:=nil;
-    end;
+    F(EXIFSection);
    end else
    begin
     pic.LoadFromFile(FileName);
@@ -2258,7 +2250,7 @@ begin
        begin
         try
          EXIFSection.ExifObj.WriteThruInt('Orientation',1); //Normal orientation!!!
-         EXIFSection.ExifObj.AdjExifSize(CurrentImage.Width,CurrentImage.Height);
+         EXIFSection.ExifObj.AdjExifSize(CurrentImage.Width, CurrentImage.Height);
         except
          MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
         end;

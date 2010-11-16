@@ -191,13 +191,6 @@ object InstallForm: TInstallForm
       Height = 13
       Caption = 'DataBase folder'
     end
-    object Label11: TLabel
-      Left = 232
-      Top = 136
-      Width = 45
-      Height = 13
-      Caption = 'DB Type:'
-    end
     object CheckBox2: TCheckBox
       Left = 0
       Top = 216
@@ -220,7 +213,7 @@ object InstallForm: TInstallForm
     object Edit2: TEdit
       Left = 0
       Top = 152
-      Width = 209
+      Width = 289
       Height = 21
       TabOrder = 4
       Text = 'C:\Program Files\PhotoDataBase\DB'
@@ -266,7 +259,7 @@ object InstallForm: TInstallForm
       OnClick = Button3Click
     end
     object Button4: TButton
-      Left = 208
+      Left = 288
       Top = 152
       Width = 17
       Height = 21
@@ -282,20 +275,6 @@ object InstallForm: TInstallForm
       Caption = '...'
       TabOrder = 7
       OnClick = Button5Click
-    end
-    object ComboBox1: TComboBox
-      Left = 232
-      Top = 152
-      Width = 73
-      Height = 21
-      Style = csDropDownList
-      ItemIndex = 0
-      TabOrder = 9
-      Text = 'Access'
-      OnSelect = ComboBox1Select
-      Items.Strings = (
-        'Access'
-        'Paradox')
     end
   end
   object Button6: TButton
@@ -319,7 +298,7 @@ object InstallForm: TInstallForm
     OnClick = Button7Click
   end
   object Step2: TPanel
-    Left = 149
+    Left = 151
     Top = 40
     Width = 313
     Height = 233
@@ -383,7 +362,7 @@ object InstallForm: TInstallForm
       Left = 0
       Top = 64
       Width = 105
-      Height = 113
+      Height = 146
       AllowGrayed = True
       ItemHeight = 13
       PopupMenu = PopupMenu1
@@ -413,14 +392,6 @@ object InstallForm: TInstallForm
       Width = 17
       Height = 17
       TabOrder = 4
-    end
-    object CheckBox6: TCheckBox
-      Left = 32
-      Top = 200
-      Width = 297
-      Height = 17
-      Caption = 'Install BDE Anyway'
-      TabOrder = 5
     end
   end
   object OpenDialog1: TOpenDialog

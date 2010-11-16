@@ -322,8 +322,8 @@ var
   // In FormManager this sizes loaded from DB
   DBJpegCompressionQuality: Integer = 75;
   ThSize: Integer = 152;
-  ThSizeExplorerPreview: Integer = 115;
-  ThSizePropertyPreview: Integer = 115;
+  ThSizeExplorerPreview: Integer = 100;
+  ThSizePropertyPreview: Integer = 100;
   ThSizePanelPreview: Integer = 75;
   ThImageSize: Integer = 150;
   ThHintSize: Integer = 300;
@@ -548,7 +548,17 @@ end;
 
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
 const
-  Orientations : array[1..9] of Integer = (0, 0, 2, 2, 1, 1, 3, 3, 0);
+  Orientations : array[1..9] of Integer = (
+  DB_IMAGE_ROTATE_0,
+  DB_IMAGE_ROTATE_0,
+  DB_IMAGE_ROTATE_180,
+  DB_IMAGE_ROTATE_180,
+  DB_IMAGE_ROTATE_90,
+  DB_IMAGE_ROTATE_90,
+  DB_IMAGE_ROTATE_270,
+  DB_IMAGE_ROTATE_270,
+  DB_IMAGE_ROTATE_0);
+
 begin
   if Orientation in [1..9] then
     Result := Orientations[Orientation]
@@ -3655,9 +3665,9 @@ begin
   DateToAdd := 0;
   ATime := 0;
   // ----
-  if GetDBType = DB_TYPE_MDB then
-  begin
-    Table := GetQuery;
+
+  Table := GetQuery;
+  try
     SetSQL(Table, 'Select StrTh,Attr from $DB$ where ID = ' + IntToStr(ID));
     try
       Table.Open;
@@ -3680,8 +3690,7 @@ begin
         UnProcessPath(Folder);
         UnFormatDir(Folder);
         CalcStringCRC32(AnsiLowerCase(Folder), Crc);
-      end
-      else
+      end else
       begin
         Folder := GetDirectory(FileName);
         UnProcessPath(Folder);
@@ -3720,7 +3729,7 @@ begin
           on E: Exception do
             EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
         end;
-        Exif.Free;
+        F(Exif);
       end;
 
       if Attr = Db_attr_dublicate then
@@ -3775,6 +3784,8 @@ begin
       end
       else
         AssignParam(Table, Next, Res.Jpeg);
+
+      Res.Jpeg.SaveToFile(Format('c:\%d.jpg', [ID]));
       if UpdateDateTime then
       begin
         SetDateParam(Table, 'DateToAdd', DateToAdd);
@@ -3788,92 +3799,10 @@ begin
         EventLog(':UpdateImageRecordEx()/ExecSQL throw exception: ' + E.message);
     end;
     Res.Jpeg.Free;
-    FreeDS(Table);
-    UpdateImageThInLinks(OldImTh, Res.ImTh);
-    Exit;
-  end;
-
-  // ----
-  Table := GetTable;
-  Table.Active := True;
-  EF := [];
-  try
-    if Table.Locate('ID', ID, [LoPartialKey]) then
-    begin
-      OldImTh := Table.FieldByName('StrTh').AsString;
-      Table.Edit;
-      Table.FieldByName('FFileName').AsString := AnsiLowerCase(FileName);
-      Table.FieldByName('Name').AsString := ExtractFilename(FileName);
-      Table.FieldByName('StrTh').AsString := Res.ImTh;
-      Table.FieldByName('thum').Assign(Res.Jpeg);
-      Table.FieldByName('Width').AsInteger := Res.OrWidth;
-      Table.FieldByName('Height').AsInteger := Res.OrHeight;
-      Table.FieldByName('FileSize').AsInteger := GetFileSizeByName(FileName);
-
-      if DBKernel.ReadBool('Options', 'FixDateAndTime', True) then
-      begin
-        Exif := TExif.Create;
-        try
-          Exif.ReadFromFile(FileName);
-          if YearOf(Exif.Date) > 2000 then
-          begin
-            Table.FieldByName('DateToAdd').AsDateTime := Exif.Date;
-            Table.FieldByName('aTime').AsDateTime := Exif.Time;
-            Table.FieldByName('IsDate').AsBoolean := True;
-            Table.FieldByName('IsTime').AsBoolean := True;
-            EventInfo.Date := Exif.Date;
-            EventInfo.Time := Exif.Time;
-            EventInfo.IsDate := True;
-            EventInfo.IsTime := True;
-            EF := [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];
-            DoDBkernelEvent(nil, ID, EF, EventInfo);
-          end;
-        except
-          on E: Exception do
-            EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
-        end;
-        Exif.Free;
-      end;
-
-      if Res.Crypt then
-        CryptBlobStream(Table.FieldByName('thum'), Res.Password);
-
-      if Table.FieldByName('Attr').AsInteger = Db_attr_dublicate then
-      begin
-        Dublicat := False;
-        for I := 0 to Res.Count - 1 do
-          if Res.IDs[I] <> ID then
-            if Res.Attr[I] <> Db_attr_not_exists then
-            begin
-              Dublicat := True;
-              Break;
-            end;
-        if not Dublicat then
-        begin
-          Table.FieldByName('Attr').AsInteger := Db_attr_norm;
-          EventInfo.Attr := Db_attr_norm;
-          DoDBkernelEvent(nil, ID, [EventID_Param_Attr], EventInfo);
-        end;
-      end;
-
-      if Table.FieldByName('Attr').AsInteger = Db_attr_not_exists then
-      begin
-        Table.FieldByName('Attr').AsInteger := Db_attr_norm;
-        EventInfo.Attr := Db_attr_norm;
-        DoDBkernelEvent(nil, ID, [EventID_Param_Attr], EventInfo);
-      end;
-
-    end;
   finally
-    Res.Jpeg.Free;
     FreeDS(Table);
   end;
-  try
-    UpdateImageThInLinks(OldImTh, Res.ImTh);
-  except
-    on E: Exception do
-      EventLog(':UpdateImageRecordEx()/UpdateImageThInLinks throw exception: ' + E.message);
-  end;
+  UpdateImageThInLinks(OldImTh, Res.ImTh);
 end;
 
 procedure SetDesktopWallpaper(FileName: string; WOptions: Byte);

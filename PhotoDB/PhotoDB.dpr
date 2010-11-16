@@ -293,7 +293,14 @@ uses
   UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas',
   uImageSource in 'Units\uImageSource.pas',
   uDBPopupMenuInfo in 'Units\uDBPopupMenuInfo.pas',
-  uPrivateHelper in 'Units\uPrivateHelper.pas';
+  uPrivateHelper in 'Units\uPrivateHelper.pas',
+  CCR.Exif.Consts in 'External\CCR.Exif\CCR.Exif.Consts.pas',
+  CCR.Exif.IPTC in 'External\CCR.Exif\CCR.Exif.IPTC.pas',
+  CCR.Exif.JpegUtils in 'External\CCR.Exif\CCR.Exif.JpegUtils.pas',
+  CCR.Exif in 'External\CCR.Exif\CCR.Exif.pas',
+  CCR.Exif.StreamHelper in 'External\CCR.Exif\CCR.Exif.StreamHelper.pas',
+  CCR.Exif.TagIDs in 'External\CCR.Exif\CCR.Exif.TagIDs.pas',
+  CCR.Exif.XMPUtils in 'External\CCR.Exif\CCR.Exif.XMPUtils.pas';
 
 {$R *.res}
 
@@ -466,7 +473,7 @@ begin
           end;
           DBKernel := TDBKernel.Create;
           Application.CreateForm(TInstallForm, InstallForm);
-  Application.Restore;
+          Application.Restore;
           EventLog(':InstallForm.SetQuickSelfInstallOption()');
           InstallForm.SetQuickSelfInstallOption;
           InstallForm.ShowModal;

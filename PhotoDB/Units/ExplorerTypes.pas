@@ -173,6 +173,7 @@ type
     class function Instance : TLockFiles;
     destructor Destroy; override;
     function AddLockedFile(FileName : string; LifeTimeMs : Integer) : TLockedFile;
+    function RemoveLockedFile(FileName : string) : Boolean;
     function IsFileLocked(FileName : string) : Boolean;
   end;
 
@@ -571,9 +572,22 @@ end;
 { TLockFiles }
 
 function TLockFiles.AddLockedFile(FileName: string; LifeTimeMs: Integer) : TLockedFile;
+var
+  I : Integer;
+  FFile : TLockedFile;
 begin
   FSync.Enter;
   try
+    FileName := AnsiLowerCase(FileName);
+    for I := FFiles.Count - 1 downto 0 do
+    begin
+      FFile := TLockedFile(FFiles[I]);
+      if FFile.FileName = FileName then
+      begin
+        FFile.DateOfUnLock := Now + LifeTimeMs / 1000;
+        Exit;
+      end;
+    end;
     Result := TLockedFile.Create;
     Result.FileName := FileName;
     Result.DateOfUnLock := Now + LifeTimeMs / 1000;
@@ -618,7 +632,7 @@ begin
     for I := FFiles.Count - 1 downto 0 do
     begin
       FFile := TLockedFile(FFiles[I]);
-      if FFile.DateOfUnLock > ANow then
+      if FFile.DateOfUnLock < ANow then
       begin
         FFiles.Remove(FFile);
         F(FFile);
@@ -626,6 +640,31 @@ begin
       end;
       if AnsiLowerCase(FFile.FileName) = FileName then
       begin
+        Result := True;
+        Break;
+      end;
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TLockFiles.RemoveLockedFile(FileName: string): Boolean;
+var
+  I : Integer;
+  FFile : TLockedFile;
+begin
+  FSync.Enter;
+  Result := False;
+  FileName := AnsiLowerCase(FileName);
+  try
+    for I := FFiles.Count - 1 downto 0 do
+    begin
+      FFile := TLockedFile(FFiles[I]);
+      if AnsiLowerCase(FFile.FileName) = FileName then
+      begin
+        FFiles.Remove(FFile);
+        F(FFile);
         Result := True;
         Break;
       end;

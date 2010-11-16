@@ -181,6 +181,7 @@ begin
   FShowFiles := True;
   FUpdaterInfo := UpdaterInfo;
   FVisibleFiles := nil;
+  FullFolderPicture := nil;
   FFiles := nil;
   FEvent := 0;
   Start;
@@ -267,6 +268,7 @@ begin
 
     if (FThreadType = THREAD_TYPE_BIG_IMAGES) then
     begin
+      FFiles := TExplorerFileInfos.Create;
       ShowProgress;
       DoLoadBigImages;
       Exit;
@@ -558,8 +560,9 @@ begin
             if I mod 5 = 0 then
             begin
               TW.I.Start('GetVisibleFiles');
-              SynchronizeEx(GetVisibleFiles);
-              VisibleUp(I);
+              F(FVisibleFiles);
+              if SynchronizeEx(GetVisibleFiles) then
+                VisibleUp(I);
               TW.I.Start('GetVisibleFiles - end');
             end;
 
@@ -622,7 +625,6 @@ begin
       SynchronizeEx(HideLoadingSign);
     end;
   finally
-    F(FullFolderPicture);
     CoUninitialize;
   end;
 end;
@@ -1222,11 +1224,7 @@ begin
     FFolderPictureLock.Enter;
     try
       if FullFolderPicture = nil then
-      begin
-        if FullFolderPicture = nil then
-          FullFolderPicture := GetFolderPicture;
-
-      end;
+        FullFolderPicture := GetFolderPicture;
     finally
       FFolderPictureLock.Leave;
     end;
@@ -1478,7 +1476,7 @@ end;
 
 procedure TExplorerThread.ShowProgress;
 begin
-  ProgressVisible:=True;
+  ProgressVisible := True;
   SynchronizeEx(SetProgressVisible);
 end;
 
@@ -1824,7 +1822,6 @@ end;
 
 procedure TExplorerThread.GetVisibleFiles;
 begin
-  F(FVisibleFiles);
   FVisibleFiles := FSender.GetVisibleItems;
 end;
 
@@ -1859,7 +1856,8 @@ begin
 
   try
     if LoadingAllBigImages then
-      SynchronizeEx(GetAllFiles);
+      if not SynchronizeEx(GetAllFiles) then
+        Exit;
 
     ShowInfo(L('Loading previews'));
     ShowInfo(FFiles.Count ,0);
@@ -1873,8 +1871,9 @@ begin
 
       if I mod 5 = 0 then
       begin
-       SynchronizeEx(GetVisibleFiles);
-       VisibleUp(I);
+       F(FVisibleFiles);
+       if SynchronizeEx(GetVisibleFiles) then
+         VisibleUp(I);
       end;
 
       GUIDParam := FFiles[i].SID;
@@ -1901,10 +1900,12 @@ begin
       end;
 
       //directories
-      if FFiles[i].FileType=EXPLORER_ITEM_FOLDER then
+      if FFiles[i].FileType = EXPLORER_ITEM_FOLDER then
       begin
         BooleanResult := False;
-        SynchronizeEx(FileNeededAW);
+        if not SynchronizeEx(FileNeededAW) then
+          Exit;
+
         CurrentFile := FFiles[i].FileName;
 
         //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
@@ -2103,7 +2104,7 @@ begin
     end;
   end else //if ID <> 0
   begin
-    if not ((Info.PassTag = 0) and Info.ItemCrypted) and not Info.Image.Empty then
+    if not ((Info.PassTag = 0) and Info.ItemCrypted) and not ((Info.Image = nil) or Info.Image.Empty) then
     begin
       TempBitmap := TBitmap.Create;
       AssignJpeg(TempBitmap, Info.Image);

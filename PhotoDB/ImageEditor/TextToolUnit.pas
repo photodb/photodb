@@ -346,7 +346,7 @@ procedure TextToolClass.DoBorder(Bitmap: TBitmap; aRect: TRect);
 var
   Xdp : TArPARGB;
   Rct: TRect;
-  Dheight, w,h, i,j : integer;
+  Dheight, i,j : integer;
 
   Procedure Border(i,j : integer; var RGB : TRGB);
   begin
@@ -369,8 +369,6 @@ begin
  Rct.Left:=Min(aRect.Left,aRect.Right);
  Rct.Right:=Max(aRect.Left,aRect.Right);
  aRect:=Rct;
- w:=Rct.Right-Rct.Left;
- h:=Rct.Bottom-Rct.Top;
  Dheight:=Bitmap.Height;
  SetLength(Xdp,Bitmap.height);
  for i:=0 to Bitmap.Height-1 do

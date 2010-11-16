@@ -244,13 +244,14 @@ object PropertiesForm: TPropertiesForm
     Height = 64
     LineColor = clBlack
     Active = True
+    OnDrawBackground = ImageLoadingFileDrawBackground
   end
   object PcMain: TPageControl
     Left = 8
     Top = 118
     Width = 307
     Height = 374
-    ActivePage = TsGroups
+    ActivePage = TsEXIF
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -524,7 +525,6 @@ object PropertiesForm: TPropertiesForm
         Cursor = crHandPoint
         PopupMenu = PmRatingNotAvaliable
         ParentColor = False
-        Color = clBtnFace
         Rating = 0
         RatingRange = 0
         OnChange = CommentMemoChange
@@ -1267,10 +1267,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 350
       DesignSize = (
         299
         346)
@@ -1283,7 +1279,6 @@ object PropertiesForm: TPropertiesForm
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
         TabOrder = 0
         OnContextPopup = VleExifContextPopup
-        ExplicitHeight = 344
         ColWidths = (
           100
           187)
@@ -1292,10 +1287,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 350
       DesignSize = (
         299
         346)
@@ -1348,10 +1339,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 350
       DesignSize = (
         299
         346)
@@ -1380,7 +1367,6 @@ object PropertiesForm: TPropertiesForm
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PmAddLink
         TabOrder = 1
-        ExplicitHeight = 299
       end
     end
   end

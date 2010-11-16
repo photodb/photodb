@@ -31,7 +31,7 @@ var
   MyResP : Pointer;
   MyResS : Integer;
 begin
-  Result:=nil;
+  Result := nil;
   MyRes := FindResource(HInstance, PWideChar(ResName), RT_RCDATA);
   if MyRes <> 0 then begin
     MyResS := SizeOfResource(HInstance,MyRes);
@@ -41,8 +41,8 @@ begin
       if MyResP <> nil then begin
         Result := TMemoryStream.Create;
         with Result do begin
-          Write(MyResP^,MyResS);
-          Seek(0,soFromBeginning);
+          Write(MyResP^, MyResS);
+          Seek(0, soFromBeginning);
         end;
         UnLockResource(MyRes);
       end;

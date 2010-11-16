@@ -3273,6 +3273,13 @@ object ExplorerForm: TExplorerForm
     end
     object Rotate1: TMenuItem
       Caption = 'Rotate Image'
+      object AsEXIF1: TMenuItem
+        Caption = 'By EXIF'
+        OnClick = AsEXIF1Click
+      end
+      object N3: TMenuItem
+        Caption = '-'
+      end
       object RotateCCW1: TMenuItem
         Caption = 'Rotate CCW'
         OnClick = RotateCCW1Click

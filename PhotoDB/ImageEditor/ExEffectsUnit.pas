@@ -243,7 +243,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TObject; CreateSuspended: Boolean; S : TBitmap; W,H: integer; BkColor : TColor; SID : string; OnExit : TBaseEffectProcThreadExit);
+    constructor Create(AOwner : TObject; S : TBitmap; W,H: integer; BkColor : TColor; SID : string; OnExit : TBaseEffectProcThreadExit);
     procedure OnExit;
     procedure ImageProgress(Progress : integer; var Break: boolean);
     procedure ImageProgressSynch;
@@ -1217,7 +1217,7 @@ begin
  FDisorderLengthWLabel.Caption:=Format(TEXT_MES_HORIZONTAL_DISORDER,[FDisorderLengthW.Position]);
  FDisorderLengthHLabel.Caption:=Format(TEXT_MES_VERTICAL_DISORDER,[FDisorderLengthH.Position]);
  FSID:=IntToStr(random(10000));
- TDisorderEffectThread.Create(self,false,D,FDisorderLengthW.Position,FDisorderLengthH.Position,ColorChooser.Brush.Color,FSID,ExitThread);
+ TDisorderEffectThread.Create(self,D,FDisorderLengthW.Position,FDisorderLengthH.Position,ColorChooser.Brush.Color,FSID,ExitThread);
 end;
 
 procedure TDisorderEffect.Progress(Progress: integer; var Break: boolean);
@@ -1236,10 +1236,10 @@ end;
 { TDisorderEffectThread }
 
 constructor TDisorderEffectThread.Create(AOwner: TObject;
-  CreateSuspended: Boolean; S: TBitmap; W,H: integer; BkColor: TColor;
+  S: TBitmap; W,H: integer; BkColor: TColor;
   SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
- inherited Create(True);
+ inherited Create(False);
  FAOwner := AOwner;
  FS := S;
  FW:=W;
@@ -1247,7 +1247,6 @@ begin
  FSID := SID;
  FOnExit := OnExit;
  FBkColor:=BkColor;
- if not CreateSuspended then Resume;
 end;
 
 procedure TDisorderEffectThread.Execute;

@@ -670,7 +670,6 @@ var
   I: Integer;
   N: Boolean;
   Ls: Integer;
-  TmpS: string;
   C, FS : Char;
   OneChar : Boolean;
   PS, PSup : PChar;
@@ -773,7 +772,7 @@ end;
 
 function GetFunctionName(aFunction : string) : string;
 var
-  Fb, Fe, R, P: Integer;
+  Fb, Fe, R: Integer;
 begin
   R := PosExR('=', AFunction, 1);
   if R <> 0 then

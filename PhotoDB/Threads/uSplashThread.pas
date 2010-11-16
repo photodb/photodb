@@ -35,6 +35,8 @@ var
   hSplashWnd : HWND;
   hSplashProgress : Byte = 0;
   IsFirstDraw : Boolean = True;
+  MouseCaptured : Boolean = False;
+  Mouse_X, MouseY : Integer;
 
 procedure SetSplashProgress(ProgressValue : Byte);
 begin
@@ -163,6 +165,19 @@ begin
          Result := 0;
          Exit;
        end;
+    WM_LBUTTONDOWN:
+      begin
+        MouseCaptured := True;
+      end;
+    WM_LBUTTONUP:
+      begin
+        MouseCaptured := False;
+      end;
+    WM_MOUSEMOVE  :
+      begin
+        if MouseCaptured then
+          //
+      end;
   end;
   Result := DefWindowProc(hWnd, uMsg, wParam, lParam);
 end; // SplashWindowProc

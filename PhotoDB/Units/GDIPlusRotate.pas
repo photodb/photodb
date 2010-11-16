@@ -4,7 +4,7 @@ unit GDIPlusRotate;
 
 interface
 
-uses Windows, Classes, SysUtils, UTime, ActiveX, uFileUtils, uTranslate;
+uses Windows, Classes, SysUtils, UTime, ActiveX, uFileUtils, uTranslate, ExplorerTypes;
 
 type
 {$EXTERNALSYM EncoderValue}
@@ -318,9 +318,10 @@ begin
   if not UseOtherFile then
   begin
     FileNameTemp := AGetTempFileName(FileName);
+    TLockFiles.Instance.AddLockedFile(FileNameTemp, 5000);
     try
       if Ok <> GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP) then
-        raise Exception.Create(Format(TA('Can''t write wo file %s!'), [FileNameTemp]));
+        raise Exception.Create(Format(TA('Can''t write to file %s!'), [FileNameTemp]));
     finally
       GdipDisposeImage(NativeImage);
       DeleteFile(PWideChar(AFileName));
@@ -333,7 +334,7 @@ begin
     FileNameTemp := OtherFile;
     try
       if Ok <> GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP) then
-        raise Exception.Create(Format(TA('Can''t write wo file %s!'), [FileNameTemp]));
+        raise Exception.Create(Format(TA('Can''t write to file %s!'), [FileNameTemp]));
     finally
       GdipDisposeImage(NativeImage);
     end;

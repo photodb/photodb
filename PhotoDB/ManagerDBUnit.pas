@@ -1930,10 +1930,8 @@ procedure TManagerDB.ReleaseLoadingThread;
 begin
   if FLoadingDataThread <> nil then
   begin
-    FLoadingDataThread.Suspend;
     FLoadingDataThread.FreeOnTerminate := True;
     FLoadingDataThread.Terminate;
-    FLoadingDataThread.Resume;
   end;
 end;
 

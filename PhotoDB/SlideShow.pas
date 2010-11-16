@@ -1337,25 +1337,28 @@ end;
 
 procedure TViewer.ShowFile(FileName: String);
 var
-  Info : TRecordsInfo;
+  Info: TRecordsInfo;
 begin
- Info:=RecordsInfoOne(FileName,0,0,0,0,'','','','','',0,False,False,0,ValidCryptGraphicFile(FileName),false,false,'');
- Execute(nil,Info);
+  Info := RecordsInfoOne(FileName, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0,
+    ValidCryptGraphicFile(FileName), False, False, '');
+  Execute(nil, Info);
 end;
 
 procedure TViewer.ShowFolder(Files: Tstrings; CurrentN : integer);
 var
-  i : integer;
-  Info : TRecordsInfo;
+  I: Integer;
+  Info: TRecordsInfo;
 begin
- Info:=RecordsInfoNil;
- If Files=nil then exit;
- for i:=0 to Files.Count-1 do
- begin
-  AddRecordsInfoOne(Info,Files[i],0,0,0,0,'','','','','',0,false,false,0,ValidCryptGraphicFile(Files[i]),false,false,'');
- end;
- Info.Position:=CurrentN;
- Execute(nil,Info);
+  Info := RecordsInfoNil;
+  if Files = nil then
+    Exit;
+  for I := 0 to Files.Count - 1 do
+  begin
+    AddRecordsInfoOne(Info, Files[I], 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0,
+      ValidCryptGraphicFile(Files[I]), False, False, '');
+  end;
+  Info.Position := CurrentN;
+  Execute(nil, Info);
 end;
 
 procedure TViewer.UpdateRecord(FileNo: integer);

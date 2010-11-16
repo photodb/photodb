@@ -231,6 +231,7 @@ type
                   adjSize:boolean = true);  overload;
         procedure WriteEXIFJpeg(fname:string); overload;
         procedure WriteEXIFJpeg(j:tjpegimage;fname:string; adjSize:boolean = true);  overload;
+        procedure WriteEXIFJpegStream(j:tjpegimage;destStream:TStream; adjSize:boolean = true);
         function ExtractThumbnailJpeg: TJpegImage;
         function MetaDataToXML: tstringlist;
         function FillInIptc:boolean;
@@ -2335,7 +2336,7 @@ begin
     inc(SectionCnt);
     IPTCSegment := @(sections[SectionCnt]);
   end;
-  IPTCSegment^.data := char(bl div 256)+char(bl mod 256)+buff;
+  IPTCSegment^.data := ansichar(bl div 256)+ansichar(bl mod 256)+buff;
   IPTCSegment^.size := bl;
   IPTCSegment^.dtype := M_IPTC;
 end;
@@ -2349,7 +2350,7 @@ begin
     inc(SectionCnt);
     CommentSegment := @(sections[SectionCnt]);
   end;
-  CommentSegment^.data := char(bl div 256)+char(bl mod 256)+buff;
+  CommentSegment^.data := ansichar(bl div 256)+ansichar(bl mod 256)+buff;
   CommentSegment^.size := bl;
   CommentSegment^.dtype := M_COM;
 end;
@@ -2472,6 +2473,11 @@ begin
   img.LoadFromFile(Filename);
   WriteEXIFJpeg(img,fname,false);
   img.Free;
+end;
+
+procedure TImgData.WriteEXIFJpegStream(j:tjpegimage;destStream:TStream; adjSize:boolean = true);
+begin
+
 end;
 
 procedure TImgData.WriteEXIFJpeg(j:tjpegimage;fname:string; adjSize:boolean = true);
@@ -2739,7 +2745,7 @@ var // lh,ll,
     fmt:string;
 begin
   result := true;
-  fmt := char(getbyte(f))+char(getbyte(f));
+  fmt := ansichar(getbyte(f))+ansichar(getbyte(f));
   if (fmt <> 'II') and (fmt <> 'MM') then
   begin
     result := FALSE;

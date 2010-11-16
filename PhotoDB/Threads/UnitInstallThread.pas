@@ -53,8 +53,6 @@ type
       MovePrivate : Boolean;
       InstallDone : Boolean;
       Exts : TInstallExts;
-      InstallBDEAnyway : Boolean;
-      DBType : integer;
       QuickSelfInstall : boolean;
 
   const MaxShowPathLength = 40;
@@ -574,10 +572,8 @@ begin
   EventLog('Install/Registry installation...');
   if GetDefaultDBName<>'' then aDBName:=GetDefaultDBName else
   begin
-   if DBType=1 then
-   aDBName:=FEndDBDirectory+'PhotoDB.DB' else
    aDBName:=FEndDBDirectory+'PhotoDB.photodb';
-  end; 
+  end;
   try
    RegInstallApplication(FEndDirectory+'PhotoDB.exe',aDBName,InstUserName);
    if not PortableWork then

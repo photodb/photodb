@@ -3,7 +3,7 @@ unit uMultiCPUThreadManager;
 interface
 
 uses
-  Windows, Math, SysUtils, uTime, uGOM, uLogger,
+  Windows, Math, SysUtils, Forms, uTime, uGOM, uLogger,
   uThreadEx, uThreadForm, Classes, SyncObjs, uMemory;
 
 type
@@ -91,6 +91,9 @@ begin
   while FAvaliableThreadList.Count > 0 do
   begin
     Sleep(10);
+{$IFDEF DBDEBUG}
+    Application.ProcessMessages;
+{$ENDIF}
     for I := 0 to FAvaliableThreadList.Count - 1 do
     begin
       if not GOM.IsObj(FAvaliableThreadList[I]) then
@@ -103,7 +106,9 @@ begin
 
 {$IFDEF DBDEBUG}
   //wait for threads - for debug only - memory leaks check
+  Application.ProcessMessages;
   Sleep(1000);
+  Application.ProcessMessages;
 {$ENDIF}
   F(FSync);
   F(FAvaliableThreadList);

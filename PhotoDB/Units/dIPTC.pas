@@ -363,8 +363,8 @@ var buff,sLen:string;
   bLen:integer;
 begin
   bLen := length(Data);
-  sLen := char(blen div 256)+char(blen mod 256);
-  result := buff+char($1C)+char(code)+char(tag)+sLen+Data;
+  sLen := ansichar(blen div 256)+ansichar(blen mod 256);
+  result := buff+ansichar($1C)+ansichar(code)+ansichar(tag)+sLen+Data;
 end;
 
 function TIPTCdata.IPTCArrayToXML: tstringlist;
@@ -425,7 +425,7 @@ begin
     buff := buff+#0;
   h2 := MakeEntry(2,0,#0#2);
   bLen := length(buff)+length(h2);
-  sLen := char(blen div 256)+char(blen mod 256);
+  sLen := ansichar(blen div 256)+ansichar(blen mod 256);
   buff := 'Photoshop 3.0'#0'8BIM'#4#4#0#0#0#0+slen+h2+buff;
  
 // Photoshop requires the following End-of-data marker:
@@ -684,8 +684,8 @@ end;
 function TIPTCdata.GetDateTime:TDateTime;
 type
   TConvert= packed record
-     year: Array [1..4] of char;
-     mon, day, hr, min, sec: Array [1..2] of Char;
+     year: Array [1..4] of ansichar;
+     mon, day, hr, min, sec: Array [1..2] of ansiChar;
   end;
   PConvert= ^TConvert;
 var

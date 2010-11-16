@@ -247,8 +247,6 @@ begin
 
       if TLockFiles.Instance.IsFileLocked(FName + FileName) then
       begin
-        FreeMem(FileName);
-
         if PFileNotifyInformation(Ptr).NextEntryOffset = 0 then
           NoMoreFilesFound := True
         else
@@ -262,7 +260,7 @@ begin
         Continue;
 
       FInfoCallback.FAction := PFileNotifyInformation(Ptr).Action;
-      if not DirectoryExists(FName + FileName) then
+      if (FInfoCallback.FAction = 0) and (FileName = '') and not DirectoryExists(FName + FileName) then
       begin
         TW.I.Start('EXPLORER - CLOSE, file = "' + FName + FileName + '", BytesWrite = ' + IntToStr(FBytesWrite)
         + ' hEvent = ' + IntToStr(FPOverLapp.hEvent)

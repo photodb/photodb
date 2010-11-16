@@ -8,12 +8,13 @@ uses
   ExtCtrls, ActiveX, ShellAPI, Messages, SysUtils, Variants, UnitPasswordForm,
   Dialogs, JPEG, Rating, ComCtrls, AppEvnts, Effects, ImgList, DropTarget,
   DropSource, SaveWindowPos, Grids, ValEdit, TabNotBk, GraphicCrypt, DateUtils,
-  Exif, ProgressActionUnit, DmGradient, Clipbrd, WebLink, UnitLinksSupport,
+  ProgressActionUnit, DmGradient, Clipbrd, WebLink, UnitLinksSupport,
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
   UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
-  UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo;
+  UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
+  CCR.Exif, uConstants;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -238,7 +239,9 @@ type
       Sender: TObject);
     procedure PmImageConnectPopup(Sender: TObject);
     procedure PcMainChange(Sender: TObject);
+    procedure ImageLoadingFileDrawBackground(Sender: TObject; Buffer: TBitmap);
   private
+    { Private declarations }
     LinkDropFiles: TStrings;
     EditLinkForm: TForm;
     Links: array of TWebLink;
@@ -257,11 +260,9 @@ type
     function GetImageID: Integer;
     function GetFileName: string;
   protected
+    { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
-    procedure WMActivate(var message: TWMActivate); message WM_ACTIVATE;
-    procedure WMSyscommand(var message: TWmSysCommand); message WM_SYSCOMMAND;
     function GetFormID : string; override;
-    { Private declarations }
   public
     { Public declarations }
     SID: TGUID;
@@ -590,20 +591,20 @@ begin
                 ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
                 DoResize(W, H, TempBitmap, Fbit);
               finally
-                TempBitmap.Free;
+                F(TempBitmap);
               end;
 
               B1.Width := ThSizePropertyPreview + 4;
               B1.Height := ThSizePropertyPreview + 4;
               B1.Canvas.Brush.Color := clBtnFace;
               B1.Canvas.Pen.Color := clBtnFace;
-              B1.Canvas.Rectangle(0, 0, ThSizePropertyPreview, ThSizePropertyPreview);
+              B1.Canvas.Rectangle(0, 0, B1.Width, B1.Height);
 
               FShadowImage := TBitmap.Create;
               try
                 DrawShadowToImage(FShadowImage, Fbit);
-                DrawImageEx32To24(B1, FShadowImage, ThSizePropertyPreview div 2 - FShadowImage.Width div 2,
-                  ThSizePropertyPreview div 2 - FShadowImage.Height div 2);
+                DrawImageEx32To24(B1, FShadowImage, B1.Width div 2 - FShadowImage.Width div 2,
+                  B1.Height div 2 - FShadowImage.Height div 2);
               finally
                 F(FShadowImage);
               end;
@@ -806,6 +807,14 @@ begin
       DropFileSource1.Execute;
     end;
   end;
+end;
+
+procedure TPropertiesForm.ImageLoadingFileDrawBackground(Sender: TObject;
+  Buffer: TBitmap);
+begin
+  Buffer.Canvas.Pen.Color := clBtnFace;
+  Buffer.Canvas.Brush.Color := clBtnFace;
+  Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 
 procedure UpdateControlFont(Control: TControl; IsBold: Boolean);
@@ -1302,7 +1311,7 @@ end;
 
 procedure TPropertiesForm.ExecuteFileNoEx(FileName: string);
 var
-  Exif: TExif;
+  ExifData: TExifData;
   RAWExif: TRAWExif;
   Options: TPropertyLoadImageThreadOptions;
   Rec: TDBPopupMenuInfoRecord;
@@ -1320,18 +1329,21 @@ begin
   SetLength(FPropertyLinks, 0);
   SetLength(FNowGroups, 0);
 
-  Exif := TExif.Create;
+  ExifData := TExifData.Create;
   try
     FFileDate := 0;
     try
-      Exif.ReadFromFile(FileName);
-      FFileDate := Exif.Date;
-      FFileTime := Exif.Time;
+      ExifData.LoadFromJPEG(FileName);
+      if not ExifData.Empty then
+      begin
+        FFileDate := DateOf(ExifData.DateTime);
+        FFileTime := TimeOf(ExifData.DateTime);
+      end;
     except
       EventLog('Error reading EXIF in file "' + FileName + '"');
     end;
   finally
-    Exif.Free;
+    F(ExifData);
   end;
 
   FDateTimeInFileExists := FFileDate <> 0;
@@ -1348,7 +1360,7 @@ begin
           FFileTime := TimeOf(RAWExif.TimeStamp);
         end;
       finally
-        RAWExif.Free;
+        F(RAWExif);
       end;
     end;
   end;
@@ -1990,9 +2002,10 @@ end;
 
 procedure TPropertiesForm.ReadExifData;
 var
-  Exif: TExif;
+  ExifData: TExifData;
   I: Integer;
   RAWExif: TRAWExif;
+  Orientation : Integer;
 
   procedure XInsert(Key, Value: string);
   begin
@@ -2019,7 +2032,7 @@ begin
   begin
     RAWExif := ReadRAWExif(FileName);
     try
-      if RAWExif.isEXIF then
+      if RAWExif.IsEXIF then
       begin
         VleEXIF.InsertRow('RAW Info:', '', True);
         for I := 0 to RAWExif.Count - 1 do
@@ -2031,54 +2044,51 @@ begin
     end;
   end else
   begin
-    Exif := TExif.Create;
+    ExifData := TExifData.Create;
     try
       try
-        Exif.ReadFromFile(FileName);
-        if Exif.Valid then
+        ExifData.LoadFromJPEG(FileName);
+        if not ExifData.Empty then
         begin
-          XInsert('Make: ', Exif.Make);
-          XInsert('Model: ', Exif.Model);
-          XInsert('Image Desk: ', Exif.ImageDesc);
-          XInsert('Copyright: ', Exif.Copyright);
-          XInsert('DateTime: ', Exif.DateTime);
-          XInsert('Original DateTime: ', Exif.DateTimeOriginal);
-          XInsert('Created DateTime: ', Exif.DateTimeDigitized);
-          XInsert('UserComments: ', Exif.UserComments);
-          XInsert('Software: ', Exif.Software);
-          XInsert('Artist: ', Exif.Artist);
-          if Byte(Exif.Orientation) <> 0 then
-            VleEXIF.InsertRow('Orientation: ', Format('%d (%s)', [Byte(Exif.Orientation), Exif.OrientationDesc]), True);
-          XInsert('Exposure: ', Exif.Exposure);
-          if Exif.ExposureProgram <> 0 then
-            VleEXIF.InsertRow('Exposure Program: ',
-              Format('%d (%s)', [Exif.ExposureProgram, Exif.ExposureProgramDesc]), True);
-          XInsert('Fstops: ', Exif.FStops);
-          XInsert('ShutterSpeed: ', Exif.ShutterSpeed);
-          XInsert('Aperture: ', Exif.Aperture);
-          XInsert('MaxAperture: ', Exif.MaxAperture);
-          XInsert('Compressed BPP: ', Exif.CompressedBPP);
-          XInsertInt('ISO speed: ', Exif.ISO);
-          XInsertInt('PixelXDimension: ', Exif.PixelXDimension);
-          XInsertInt('PixelYDimension: ', Exif.PixelYDimension);
-          XInsertInt('XResolution: ', Exif.XResolution);
-          XInsertInt('YResolution: ', Exif.YResolution);
-          XInsertInt('MeteringMode: ', Exif.MeteringMode);
-          XInsert('MeteringMethod: ', Exif.MeteringMethod);
-          XInsert('Orientation: ', Exif.OrientationDesc);
-          if Exif.LightSource <> 0 then
-            VleEXIF.InsertRow('LightSource: ', Format('%d (%s)', [Exif.LightSource, Exif.LightSourceDesc]), True);
-          if Exif.Flash <> 0 then
-            VleEXIF.InsertRow('Flash: ', Format('%d (%s)', [Exif.Flash, Exif.FlashDesc]), True);
+
+          XInsert('Make: ', ExifData.CameraMake);
+          XInsert('Model: ', ExifData.CameraModel);
+          XInsert('Copyright: ', ExifData.Copyright);
+          XInsert('Date and time: ', FormatDateTime('yyyy/mm/dd', ExifData.DateTime));
+          XInsert('Description: ', ExifData.ImageDescription);
+          XInsert('Software: ', ExifData.Software);
+          Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+          case Orientation of
+            DB_IMAGE_ROTATE_0:
+              XInsert('Orientation: ', L('Normal'));
+            DB_IMAGE_ROTATE_90:
+              XInsert('Orientation: ', L('Right'));
+            DB_IMAGE_ROTATE_270:
+              XInsert('Orientation: ', L('Left'));
+            DB_IMAGE_ROTATE_180:
+              XInsert('Orientation: ', L('180 grad.'));
+          end;
+
+          XInsert('Exposure: ', ExifData.ExposureTime.AsString);
+          XInsert('ISO: ', ExifData.ISOSpeedRatings.AsString);
+          XInsert('Focal length: ', ExifData.FocalLength.AsString);
+          XInsert('F number: ', ExifData.FNumber.AsString);
+          if ExifData.Flash.Fired then
+            XInsert('Flash: ', L('On'))
+          else
+            XInsert('Flash: ', L('Off'));
+
+          XInsert('Width: ', ExifData.ExifImageWidth.AsString + '.px');
+          XInsert('Height: ', ExifData.ExifImageheight.AsString + '.px');
         end
         else
-          VleEXIF.InsertRow('Info:', TEXT_MES_NO_EXIF_HEADER, True);
+          VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
       except
         on e : Exception do
           Eventlog(e.Message);
       end;
     finally
-      Exif.free;
+      F(ExifData);
     end;
   end;
 end;
@@ -3169,34 +3179,6 @@ begin
     GistogrammImage.Picture.Bitmap := Bitmap;
   finally
     Bitmap.Free;
-  end;
-end;
-
-procedure TPropertiesForm.WMActivate(var Message: TWMActivate);
-begin
-  if (Message.Active = WA_ACTIVE) and not IsWindowEnabled(Handle) and IsWindowsVista then
-  begin
-    SetActiveWindow(Application.Handle);
-    Message.Result := 0;
-  end else
-    inherited;
-end;
-
-procedure TPropertiesForm.WMSyscommand(var Message: TWmSysCommand);
-begin
-  case (Message.CmdType and $FFF0) of
-    SC_MINIMIZE:
-    begin
-      ShowWindow(Handle, SW_MINIMIZE);
-      Message.Result := 0;
-    end;
-    SC_RESTORE:
-    begin
-      ShowWindow(Handle, SW_RESTORE);
-      Message.Result := 0;
-    end;
-  else
-    inherited;
   end;
 end;
 

@@ -828,8 +828,6 @@ begin
     end;
   end else
   begin
-    FileList := TStringList.Create;
-
     if ElvMain.Selection.First = nil then
       FilesCount := ElvMain.Items.Count
     else
@@ -840,7 +838,7 @@ begin
         FileList := GetSelectedTstrings;
 
       FilesCount := FileList.Count;
-      FileList.Free;
+      F(FileList);
     end;
     SetBoolAttr(aScript,'$OneFileExists', FilesCount > 0);
     S := ListMenuScript;
@@ -854,11 +852,10 @@ procedure TSearchForm.ListViewMouseDown(Sender: TObject; Button: TMouseButton;
 var
   I: Integer;
   MenuInfo: TDBPopupMenuInfo;
-  Item, SelectedItem: TEasyItem;
+  Item: TEasyItem;
 begin
   Item := ItemAtPos(X, Y);
   MouseDowned := Button = mbRight;
-  SelectedItem := Item;
   ItemByMouseDown := False;
   if Item = nil then
     ElvMain.Selection.ClearAll;
@@ -4563,7 +4560,7 @@ var
   BackgroundImage : TPNGGraphic;
   Bitmap, SearchBackgroundBMP : TBitmap;
 begin
-{  Bitmap := TBitmap.Create;
+  Bitmap := TBitmap.Create;
   try
     Bitmap.PixelFormat := pf24bit;
     Bitmap.Width := 150;
@@ -4586,7 +4583,7 @@ begin
     ElvMain.BackGround.Image := Bitmap;
   finally
     Bitmap.Free;
-  end;    }
+  end;
 end;
 
 function TManagerSearchs.GetValueByIndex(Index: Integer): TSearchForm;
@@ -5145,6 +5142,7 @@ begin
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
   TbStopOperation.Enabled := False;
+  NewFormState;
 end;
 
 procedure TSearchForm.SearchEditChange(Sender: TObject);
