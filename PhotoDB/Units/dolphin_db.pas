@@ -6,13 +6,13 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
       Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
       Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
       ImgList, ComCtrls, DBCtrls, JPEG, DmProgress, ClipBrd, win32crc,
-      SaveWindowPos, ExtDlgs, ToolWin, DbiProcs, DbiErrs, Exif, UnitDBDeclare,
+      SaveWindowPos, ExtDlgs, ToolWin, DbiProcs, DbiErrs, UnitDBDeclare,
       acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
       UnitLinksSupport, EasyListView, ImageConverting,
-      uMemory, uDBPopupMenuInfo;
+      uMemory, uDBPopupMenuInfo, CCR.Exif;
 
 const
   DBInDebug = True;
@@ -3619,7 +3619,7 @@ var
   Dublicat, IsDate, IsTime, UpdateDateTime: Boolean;
   I, Attr, Counter: Integer;
   EventInfo: TEventValues;
-  Exif: TEXIF;
+  ExifData: TExifData;
   EF: TEventFields;
   Path, OldImTh, Folder, _SetSql: string;
   Crc: Cardinal;
@@ -3704,18 +3704,18 @@ begin
       UpdateDateTime := False;
       if DBKernel.ReadBool('Options', 'FixDateAndTime', True) then
       begin
-        Exif := TExif.Create;
+        ExifData := TExifData.Create;
         try
-          Exif.ReadFromFile(FileName);
-          if YearOf(Exif.Date) > 2000 then
+          ExifData.LoadFromJPEG(FileName);
+          if YearOf(ExifData.DateTime) > 2000 then
           begin
             UpdateDateTime := True;
-            DateToAdd := Exif.Date;
-            ATime := Exif.Time;
+            DateToAdd := DateOf(ExifData.DateTime);
+            ATime := TimeOf(ExifData.DateTime);
             IsDate := True;
             IsTime := True;
-            EventInfo.Date := Exif.Date;
-            EventInfo.Time := Exif.Time;
+            EventInfo.Date := DateOf(ExifData.DateTime);
+            EventInfo.Time := TimeOf(ExifData.DateTime);
             EventInfo.IsDate := True;
             EventInfo.IsTime := True;
             EF := [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];
@@ -3729,7 +3729,7 @@ begin
           on E: Exception do
             EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
         end;
-        F(Exif);
+        F(ExifData);
       end;
 
       if Attr = Db_attr_dublicate then

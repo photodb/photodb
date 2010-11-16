@@ -3,8 +3,9 @@ unit UnitScanImportPhotosThread;
 interface
 
 uses
-  Classes, Messages, Forms, Dolphin_DB, EXIF, RawImage, SysUtils,
-  Language, UnitDBDeclare, DateUtils, UnitDBCommon;
+  Classes, Messages, Forms, Dolphin_DB, RawImage, SysUtils,
+  Language, UnitDBDeclare, DateUtils, UnitDBCommon,
+  CCR.Exif, uMemory;
 
 type
   TScanImportPhotosThreadOptions = record
@@ -84,24 +85,24 @@ end;
 
 procedure TScanImportPhotosThread.Execute;
 var
-  i : integer;
-  MaxFilesCount,MaxFilesSearch : Integer;
-  FEXIF : TEXIF;
-  RAWExif : TRAWExif;
-  FDate : TDateTime;
+  I: Integer;
+  MaxFilesCount, MaxFilesSearch: Integer;
+  ExifData: TExifData;
+  RAWExif: TRAWExif;
+  FDate: TDateTime;
 
-  function L_Less_Than_R(L,R:TFileDateRecord):boolean;
+  function L_Less_Than_R(L, R: TFileDateRecord): Boolean;
   begin
-   Result:=L.Date<R.Date;
+    Result := L.Date < R.Date;
   end;
 
-  procedure Swap(var X:TFileDateList;I,J:integer);
+  procedure Swap(var X: TFileDateList; I, J: Integer);
   var
-    temp : TFileDateRecord;
+    Temp: TFileDateRecord;
   begin
-   temp:=X[i];
-   X[i]:=X[J];
-   X[J]:=temp;
+    Temp := X[I];
+    X[I] := X[J];
+    X[J] := Temp;
   end;
 
   procedure Qsort(var X:TFileDateList; Left,Right:integer);
@@ -163,14 +164,14 @@ begin
  for i:=0 to fFiles.Count-1 do
  begin
   SetPosition(i+1);
-  FEXIF := TEXIF.Create;
+  ExifData := TExifData.Create;
   try
-   FEXIF.ReadFromFile(fFiles[i]);
+   ExifData.LoadFromJPEG(fFiles[i]);
   except
   end;
-  if FEXIF.Valid then
+  if not ExifData.Empty then
   begin
-   AddFileToList(fFiles[i],FEXIF.Date);
+   AddFileToList(fFiles[i],ExifData.DateTime);
   end else
   begin
    if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(fFiles[i]) then
@@ -186,7 +187,7 @@ begin
     end;
    end;
   end;
-  FEXIF.Free;
+  F(ExifData);
  end;
  if Length(DateFileList)>1 then
  QuickSort(DateFileList,Length(DateFileList));
@@ -261,4 +262,3 @@ begin
 end;
 
 end.
-

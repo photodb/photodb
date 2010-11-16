@@ -7,7 +7,7 @@
   UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, Windows, ComCtrls,
   Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
   Dialogs, Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
-  GIFImage, Exif, GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
+  GIFImage, GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
   EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,

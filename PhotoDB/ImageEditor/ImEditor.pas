@@ -8,19 +8,16 @@ uses
 
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, WebLink, StdCtrls, ExtCtrls, ComCtrls, ExtDlgs, jpeg, GIFImage, Math,
-  DropSource, DropTarget, ToolsUnit, CropToolUnit, SaveWindowPos, dEXIF,
+  DropSource, DropTarget, ToolsUnit, CropToolUnit, SaveWindowPos,
   ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, clipbrd,
   EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus, Language,
   CustomSelectTool, TextToolUnit, BrushToolUnit,InsertImageToolUnit,
-  GraphicsBaseTypes, uMemory
-{$IFDEF PHOTODB}
-  ,GraphicCrypt, Dolphin_DB, UnitPasswordForm, Searching, UnitJPEGOptions,
+  GraphicsBaseTypes, uMemory,GraphicCrypt, Dolphin_DB, UnitPasswordForm, Searching, UnitJPEGOptions,
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
   UnitCrypting, GraphicEx, GraphicsCool, uScript, UnitScripts, PngImage, TiffImageUnit,
   RAWImage, DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
-  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, ImageConverting
-{$ENDIF}
-  ;
+  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, ImageConverting,
+  CCR.Exif, uDBForm;
 
 Type TTool=(ToolNone,ToolPen,ToolCrop,ToolRotate,ToolResize,ToolEffects,
 ToolColor,ToolRedEye, ToolText, ToolBrush, ToolInsertImage);
@@ -39,7 +36,7 @@ type
    TWindowEnableStates = array of TWindowEnableState;
 
 type
-  TImageEditor = class(TForm)
+  TImageEditor = class(TDBForm)
     ToolsPanel: TPanel;
     ButtomPanel: TPanel;
     ScrollBar1: TScrollBar;
@@ -171,9 +168,9 @@ type
     procedure ReadNextAction(Sender: TObject);
     procedure ReadActionsFile(FileName : string);
     procedure SaveImageFile(FileName : string; AfterEnd : boolean = false);
-  private           
+  private
     { Private declarations }
-   EXIFSection : TimgData;
+   EXIFSection : TExifData;
    SaveAfterEndActions : boolean;
    SaveAfterEndActionsFileName : string;
    ForseSave : boolean;
@@ -200,7 +197,8 @@ type
     EState : TWindowEnableStates;
     procedure SetCloseOnFailture(const Value: boolean);
   protected
-    procedure CreateParams(VAR Params: TCreateParams); override;
+    procedure CreateParams(var Params: TCreateParams); override;
+    function GetFormID : string; override;
   public
    FScript : string;
    FScriptProc : string;
@@ -310,7 +308,7 @@ procedure EnableControls(Window : TImageEditor);
   Control.Invalidate;
  end;
 
-begin     
+begin
  With Window do
  begin
  DropFileTarget1.Register(Window);
@@ -407,7 +405,7 @@ begin
  Screen.Cursors[CUR_CROP]:=LoadCursor(HInstance,'CROP');
 
  DropFileTarget1.Register(Self);
- 
+
  LoadLanguage;
 
  {for i:=1 to 10 do
@@ -449,7 +447,7 @@ begin
  NewEditor1.ImageIndex:=DB_IC_IMEDITOR;
 
  Actions1.ImageIndex:=DB_IC_NEW_SHELL;
- {$ENDIF}                  
+ {$ENDIF}
 end;
 
 procedure TImageEditor.LoadProgramImageFormat(Pic: TPicture);
@@ -482,7 +480,7 @@ var
 begin
  OpenPictureDialog := DBOpenPictureDialog.Create;
  OpenPictureDialog.Filter:=Dolphin_DB.GetGraphicFilter;
- 
+
  if OpenPictureDialog.Execute then OpenFileName(OpenPictureDialog.FileName);
  OpenPictureDialog.Free;
 end;
@@ -657,7 +655,7 @@ var
   CropClass : TCropToolPanelClass;
   CustomSelectToolClass : TCustomSelectToolClass;
   Pt1, Pt2 : TPoint;
-  
+
 begin
  if LockedImage then exit;
  for i:=0 to Buffer.Height-1 do
@@ -857,7 +855,7 @@ begin
    ScrollBar2.Position:=0;
    ScrollBar2.Max:=100;
    ScrollBar2.Position:=50;
-  end;  
+  end;
  if ScrollBar1.Visible then
  begin
   if ScrollBar2.Visible then inc_:=ScrollBar2.Width else inc_:=0;
@@ -974,7 +972,7 @@ var
   pic : TPicture;
   PassWord : String;
   Res : integer;
-  
+
   Procedure DoExit;
   begin
    if CurrentFileName='' then
@@ -987,7 +985,7 @@ begin
 
  if Tool<>ToolNone then
  begin
-  MessageBoxDB(Handle,TEXT_MES_CANT_OPEN_IMAGE_BECAUSE_EDITING,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_WARNING);
+  MessageBoxDB(Handle,TEXT_MES_CANT_OPEN_IMAGE_BECAUSE_EDITING, L('Error'),TD_BUTTON_OK,TD_ICON_WARNING);
   exit;
  end;
 
@@ -1026,7 +1024,7 @@ begin
     Exit;
    end
   end else
-  begin     
+  begin
    if GetGraphicClass(GetExt(FileName),false) = TRAWImage then
    begin
     pic.Graphic:=TRAWImage.Create;
@@ -1037,20 +1035,6 @@ begin
    end else
    begin
     pic.LoadFromFile(FileName);
-    try
-     EXIFSection:=TImgData.Create();
-     EXIFSection.ProcessFile(FileName);
-     if EXIFSection.HasEXIF then
-     if EXIFSection.HasThumbnail then
-     begin
-      EXIFSection.ExifObj.ProcessThumbnail;
-      EXIFSection.ExifObj.RemoveThumbnail;
-     end;
-    except
-     if EXIFSection<>nil then
-     EXIFSection.Free;
-     EXIFSection:=nil;
-    end;
    end;
   end;
  except
@@ -1464,7 +1448,7 @@ begin
        CropClass.FirstPoint:=Point(CropClass.BeginFirstPoint.X+w,CropClass.BeginFirstPoint.Y+h);
        CropClass.SecondPoint:=Point(CropClass.BeginSecondPoint.X+w,CropClass.BeginSecondPoint.Y+h);
       end;
-      
+
       if not CropClass.KeepProportions then
       begin
 
@@ -2149,7 +2133,7 @@ begin
  ToolClass.Image:=CurrentImage;
  ToolClass.SetImagePointer:=SetPointerToNewImage;
  ToolClass.OnClosePanel:=ShowTools;
- ToolClass.Show;   
+ ToolClass.Show;
 end;
 
 procedure TImageEditor.RedEyeLinkClick(Sender: TObject);
@@ -2244,7 +2228,8 @@ begin
      SetJPEGGraphicSaveOptions('ImageEditor', Image);
 
      try
-      if EXIFSection<>nil then
+     //TODO: fix exif
+    {  if EXIFSection<>nil then
       begin
        if EXIFSection.ExifObj<>nil then
        begin
@@ -2252,21 +2237,21 @@ begin
          EXIFSection.ExifObj.WriteThruInt('Orientation',1); //Normal orientation!!!
          EXIFSection.ExifObj.AdjExifSize(CurrentImage.Width, CurrentImage.Height);
         except
-         MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+         MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
         end;
-       end;  
+       end;
        try
         EXIFSection.WriteEXIFJpeg((Image as TJPEGImage),FileName);
        except
-        MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_EXIF_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+        MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
        end;
-      end else
+      end else}
       begin
        Image.SaveToFile(FileName);
       end;
       fSaved:=true;
      except
-      MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName])),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
      end;
      Image.Free;
      {$IFDEF PHOTODB}
@@ -2294,7 +2279,7 @@ begin
       Image.SaveToFile(FileName);
       fSaved:=true;
      except
-      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
      end;
      Image.Free;
      {$IFDEF PHOTODB}
@@ -2303,7 +2288,7 @@ begin
      {$ENDIF}
     end;
 
-    
+
    3 :
     begin
      if (GetExt(FileName)<>'BMP') then
@@ -2323,7 +2308,7 @@ begin
       Image.SaveToFile(FileName);
       fSaved:=true;
      except
-      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
      end;
      Image.Free;
      {$IFDEF PHOTODB}
@@ -2339,7 +2324,7 @@ begin
      if FileExists(FileName) then
      begin
       if not ForseSave then
-      if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
+      if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_REPLACE,[FileName]),L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
       Replace:=true;
       {$IFDEF PHOTODB}
       ID:=GetIdByFileName(FileName);
@@ -2351,7 +2336,7 @@ begin
       Image.SaveToFile(FileName);
       fSaved:=true;
      except
-      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
      end;
      Image.Free;
      {$IFDEF PHOTODB}
@@ -2379,7 +2364,7 @@ begin
       Image.SaveToFile(FileName);
       fSaved:=true;
      except
-      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      MessageBoxDB(Handle,Format(TEXT_MES_CANT_WRITE_TO_FILE_F,[FileName]),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
      end;
      Image.Free;
      {$IFDEF PHOTODB}
@@ -2394,7 +2379,7 @@ begin
   if FilePassWord<>'' then
   GraphicCrypt.CryptGraphicFileV2(FileName,FilePassWord,0);
   {$ENDIF}
- end;  
+ end;
  SavePictureDialog.Free;
 end;
 
@@ -2477,36 +2462,41 @@ end;
 
 procedure TImageEditor.LoadLanguage;
 begin
- ZoomOut1.Caption:=TEXT_MES_ZOOM_IN;
- ZoomIn1.Caption:=TEXT_MES_ZOOM_OUT;
- SaveLink.Text:=TEXT_MES_SAVE;       
- ZoomOutLink.Text:=TEXT_MES_ZOOM_IN;
- ZoomInLink.Text:=TEXT_MES_ZOOM_OUT;
- FullSiseLink.Text:=TEXT_MES_IM_REAL_SIZE;
- FitToSizeLink.Text:=TEXT_MES_IM_FIT_TO_SIZE;
- UndoLink.Text:=TEXT_MES_IM_UNDO;
- RedoLink.Text:=TEXT_MES_IM_REDO;
- OpenFileLink.Text:=TEXT_MES_OPEN;
- CropLink.Text:=TEXT_MES_CROP;
- RotateLink.Text:=TEXT_MES_ROTATE;
- ResizeLink.Text:=TEXT_MES_IM_RESIZE;
- EffectsLink.Text:=TEXT_MES_EFFECTS;
- ColorsLink.Text:=TEXT_MES_COLORS;
- RedEyeLink.Text:=TEXT_MES_RED_EYE;
- Search1.Caption:=TEXT_MES_SEARCHING;
- Explorer1.Caption:=TEXT_MES_EXPLORER;
- Properties1.Caption:=TEXT_MES_PROPERTIES;
- Exit1.Caption:=TEXT_MES_EXIT;
- Paste1.Caption:=TEXT_MES_PASTE;
- OpenFile1.Caption:=TEXT_MES_OPEN_FILE;
- FullScreen1.Caption:=TEXT_MES_FULL_SCREEN;
- Copy1.Caption:=TEXT_MES_COPY;
- Print1.Caption:=TEXT_MES_PRINT;
- BrushLink.Text:=TEXT_MES_BRUSH;
- InsertImageLink.Text:=TEXT_MES_INSERT_IMAGE;
- TextLink.Text:=TEXT_MES_TEXT;
- NewEditor1.Caption:=TEXT_MES_NEW_EDITOR;
- Actions1.Caption:=TEXT_MES_ACTIONS;
+  BeginTranslate;
+  try
+    ZoomOut1.Caption := L('Zoom in');
+    ZoomIn1.Caption := L('Zoom out');
+    SaveLink.Text := L('Save');
+    ZoomOutLink.Text := L('Zoom in');
+    ZoomInLink.Text := L('Zoom out');
+    FullSiseLink.Text := L('100%');
+    FitToSizeLink.Text := L('Fit to window');
+    UndoLink.Text := L('Undo');
+    RedoLink.Text := L('Redo');
+    OpenFileLink.Text := L('Open');
+    CropLink.Text := L('Crop');
+    RotateLink.Text := L('Rotate');
+    ResizeLink.Text := L('Resize');
+    EffectsLink.Text := L('Effects');
+    ColorsLink.Text := L('Colors');
+    RedEyeLink.Text := L('Red eye');
+    Search1.Caption := L('Search');
+    Explorer1.Caption := L('Explorer');
+    Properties1.Caption := L('Properties');
+    Exit1.Caption := L('Exit');
+    Paste1.Caption := L('Paste');
+    OpenFile1.Caption := L('Open file');
+    FullScreen1.Caption := L('Full screen');
+    Copy1.Caption := L('Copy');
+    Print1.Caption := L('Print');
+    BrushLink.Text := L('Brush');
+    InsertImageLink.Text := L('Insert image');
+    TextLink.Text := L('Text');
+    NewEditor1.Caption := L('New editor');
+    Actions1.Caption := L('Actions');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TImageEditor.CreateParams(var Params: TCreateParams);
@@ -2534,7 +2524,7 @@ begin
  begin
   if FileExists(CurrentFileName) then
   PropertyManager.NewFileProperty(CurrentFileName).ExecuteFileNoEx(CurrentFileName) else
-  MessageBoxDB(Handle,TEXT_MES_VIRTUAL_FILE,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+  MessageBoxDB(Handle,TEXT_MES_VIRTUAL_FILE,L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
  end;
  {$ENDIF}
 end;
@@ -2559,7 +2549,7 @@ var
 begin
  if Tool<>ToolNone then
  begin
-  MessageBoxDB(Handle,TEXT_MES_CANT_OPEN_IMAGE_BECAUSE_EDITING,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+  MessageBoxDB(Handle,TEXT_MES_CANT_OPEN_IMAGE_BECAUSE_EDITING,L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
   exit;
  end;
  if ImageHistory.CanBack then
@@ -2645,26 +2635,31 @@ begin
  Pointer(Result):=Pointer(CurrentImage);
 end;
 
+function TImageEditor.GetFormID: string;
+begin
+  Result := 'Editor';
+end;
+
 procedure TImageEditor.Copy1Click(Sender: TObject);
 begin
- ClipBoard.Assign(CurrentImage);
+  ClipBoard.Assign(CurrentImage);
 end;
 
 procedure TImageEditor.TextLinkClick(Sender: TObject);
 begin
- DisableHistory;
- Tool:=ToolText;
- ToolSelectPanel.Hide;
- ToolClass:=TextToolClass.Create(ToolsPanel);
- ToolClass.Editor:=Self;
- ToolClass.ImageHistory:=ImageHistory;
- ToolClass.SetTempImage:=SetTemporaryImage;
- ToolClass.CancelTempImage:=CancelTemporaryImage;
- ToolClass.Image:=CurrentImage;
- ToolClass.SetImagePointer:=SetPointerToNewImage;
- (ToolClass as TCustomSelectToolClass).ProcRecteateImage:=RecteareImageProc;
- ToolClass.OnClosePanel:=ShowTools;
- ToolClass.Show;
+  DisableHistory;
+  Tool := ToolText;
+  ToolSelectPanel.Hide;
+  ToolClass := TextToolClass.Create(ToolsPanel);
+  ToolClass.Editor := Self;
+  ToolClass.ImageHistory := ImageHistory;
+  ToolClass.SetTempImage := SetTemporaryImage;
+  ToolClass.CancelTempImage := CancelTemporaryImage;
+  ToolClass.Image := CurrentImage;
+  ToolClass.SetImagePointer := SetPointerToNewImage;
+  (ToolClass as TCustomSelectToolClass).ProcRecteateImage := RecteareImageProc;
+  ToolClass.OnClosePanel := ShowTools;
+  ToolClass.Show;
 end;
 
 procedure TImageEditor.BrushLinkClick(Sender: TObject);
@@ -2936,7 +2931,7 @@ begin
  ID:=Copy(Action,2,38);
  Filter_ID:=Copy(Action,42,38);
 
- 
+
  if ID='{59168903-29EE-48D0-9E2E-7F34C913B94A}' then begin ReadNextAction(Self); exit; end;
  if ID='{5AA5CA33-220E-4D1D-82C2-9195CE6DF8E4}' then begin ReadNextAction(Self); exit; {CROP} end;
  if ID='{747B3EAF-6219-4A96-B974-ABEB1405914B}' then begin ToolClass:=TRotateToolPanelClass.Create(TempPanel); BaseConfigureTool; end;
@@ -2985,10 +2980,10 @@ end;
 
 initialization
 
-EditorsManager := TManagerEditors.Create;
+  EditorsManager := TManagerEditors.Create;
 
 finalization
 
-EditorsManager.Free;
+  F(EditorsManager);
 
 end.

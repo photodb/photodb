@@ -520,8 +520,6 @@ begin
 end;
 
 procedure TFormManager.Load;
-var
-  DateTime : TDateTime;
 begin
   TW.I.Start('FM -> Load');
  Caption:=DBID;
@@ -544,7 +542,6 @@ begin
  if DBTerminating then
    TimerCloseHandle := SetTimer(0, TIMER_CLOSE, 1000, @TimerProc);
 
- DateTime:=Now;
  If not DBTerminating then
  begin
 

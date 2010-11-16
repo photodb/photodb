@@ -189,9 +189,6 @@ uses
   rxtypes in 'SelfDelete\rxtypes.pas',
   SelfDeleteUnit in 'SelfDelete\SelfDeleteUnit.pas',
   uVistaFuncs in 'Units\uVistaFuncs.pas',
-  dEXIF in 'Units\dEXIF.pas',
-  dIPTC in 'Units\dIPTC.pas',
-  msData in 'Units\msData.pas',
   dolphin_db in 'Units\dolphin_db.pas',
   UnitDBKernel in 'Units\UnitDBKernel.pas',
   CmpUnit in 'Units\CmpUnit.pas',
@@ -209,7 +206,6 @@ uses
   DDraw in 'Units\DDraw.pas',
   ole2 in 'Units\ole2.pas',
   DXCommon in 'Units\DXCommon.pas',
-  Exif in 'Units\Exif.pas',
   UnitLinksSupport in 'Units\UnitLinksSupport.pas',
   GDIPlusRotate in 'Units\GDIPlusRotate.pas',
   UnitGroupsTools in 'Units\UnitGroupsTools.pas',
@@ -473,7 +469,7 @@ begin
           end;
           DBKernel := TDBKernel.Create;
           Application.CreateForm(TInstallForm, InstallForm);
-          Application.Restore;
+  Application.Restore;
           EventLog(':InstallForm.SetQuickSelfInstallOption()');
           InstallForm.SetQuickSelfInstallOption;
           InstallForm.ShowModal;

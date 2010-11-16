@@ -4,9 +4,10 @@ interface
 
 uses
   ReplaceForm, UnitDBKernel, Windows, Dolphin_db, Classes, UnitUpdateDB, Forms,
-  SysUtils, DB, GraphicCrypt, Dialogs, Exif, DateUtils, CommonDBSupport,
+  SysUtils, DB, GraphicCrypt, Dialogs, DateUtils, CommonDBSupport,
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
-  UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants;
+  UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
+  CCR.Exif;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -131,7 +132,7 @@ function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh,
   OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsTime: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 var
-  Exif: TExif;
+  ExifData : TExifData;
   Sql: string;
   FQuery: TDataSet;
   M: TMemoryStream;
@@ -157,20 +158,20 @@ begin
     SetStrParam(FQuery, 0, ExtractFileName(Path));
     SetStrParam(FQuery, 1, AnsiLowerCase(Path));
     SetIntParam(FQuery, 2, GetFileSize(Path));
-    Exif := TExif.Create;
+    ExifData := TExifData.Create;
     try
       Date := 0;
       try
-        Exif.ReadFromFile(Path);
-        Date := Exif.Date;
-        Time := Exif.Time;
-        Rotated := ExifOrientationToRatation(Exif.Orientation);
+        ExifData.LoadFromJPEG(Path);
+        Date := DateOf(ExifData.DateTime);
+        Time := TimeOf(ExifData.DateTime);
+        Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
       except
         on e : Exception do
           Eventlog('Reading EXIF failed: ' + e.Message);
       end;
     finally
-      Exif.Free;
+      F(ExifData);
     end;
     SetBoolParam(FQuery, 16, True);
     if Date = 0 then

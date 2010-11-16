@@ -477,45 +477,53 @@ end;
 procedure TFormCreateDBFileTree.TreeView1ContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  Node : TTreeNode;
-  Path : string;
-  info : TDBPopupMenuInfo;
+  Node: TTreeNode;
+  Path: string;
+  Info: TDBPopupMenuInfo;
 begin
- Path:='';
- Node:=TreeView1.GetNodeAt(MousePos.X,MousePos.Y);
- if Node=nil then exit;
- if Node.Parent=nil then exit;
- Repeat
-  Path:=Node.Text+Path;
-  if Node.Parent.Parent<>nil then Path:='\'+Path;
-  Node:=Node.Parent;
-  if Node=nil then Break;
-  if Node.Parent=nil then Break;
- Until false;
- if DirectoryExists(Path) then
- begin
-  FPath:=Path;
-  FormatDir(FPath);
-  Popupmenu1.Popup(TreeView1.ClientToScreen(MousePos).x,TreeView1.ClientToScreen(MousePos).y);
- end else
- begin
-  FPath := '';
-  Node:=TreeView1.GetNodeAt(MousePos.X,MousePos.Y);
-  if Node<>nil then
-  info:=GetMenuInfoByID(TItemData(Node.Data^).ID);
-  Info.AttrExists:=false;
-  TDBPopupMenu.Instance.Execute(TreeView1.ClientToScreen(MousePos).x,TreeView1.ClientToScreen(MousePos).y,info);
- end;
+  Path := '';
+  Node := TreeView1.GetNodeAt(MousePos.X, MousePos.Y);
+  if Node = nil then
+    Exit;
+  if Node.Parent = nil then
+    Exit;
+  repeat
+    Path := Node.Text + Path;
+    if Node.Parent.Parent <> nil then
+      Path := '\' + Path;
+    Node := Node.Parent;
+    if Node = nil then
+      Break;
+    if Node.Parent = nil then
+      Break;
+  until False;
+
+  if DirectoryExists(Path) then
+  begin
+    FPath := Path;
+    FormatDir(FPath);
+    Popupmenu1.Popup(TreeView1.ClientToScreen(MousePos).X, TreeView1.ClientToScreen(MousePos).Y);
+  end else
+  begin
+    FPath := '';
+    Node := TreeView1.GetNodeAt(MousePos.X, MousePos.Y);
+    if Node <> nil then
+    begin
+      Info := GetMenuInfoByID(TItemData(Node.Data^).ID);
+      Info.AttrExists := False;
+      TDBPopupMenu.Instance.Execute(TreeView1.ClientToScreen(MousePos).X, TreeView1.ClientToScreen(MousePos).Y, Info);
+    end;
+  end;
 end;
 
 procedure TFormCreateDBFileTree.OpeninExplorer1Click(Sender: TObject);
 begin
- if DirectoryExists(FPath) then
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetStringPath(FPath,false);
-  Show;
- end;
+  if DirectoryExists(FPath) then
+    with ExplorerManager.NewExplorer(False) do
+    begin
+      SetStringPath(FPath, False);
+      Show;
+    end;
 end;
 
 procedure TFormCreateDBFileTree.ApplicationEvents1Message(var Msg: tagMSG;

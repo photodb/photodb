@@ -4,8 +4,9 @@ interface
 
 uses
   UnitDBKernel, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
-  SysUtils,ComCtrls, Graphics, jpeg, UnitINI, Exif, DateUtils, uFileUtils,
-  CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants;
+  SysUtils,ComCtrls, Graphics, jpeg, UnitINI, DateUtils, uFileUtils,
+  CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants,
+  CCR.Exif, uMemory;
 
 type
   CleanUpThread = class(TThread)
@@ -45,7 +46,7 @@ procedure CleanUpThread.Execute;
 var
   i, int, position : integer;
   s, str_position, _sqlexectext, FromDB : string;
-  Exif : TExif;
+  ExifData: TExifData;
   crc : cardinal;
   folder : string;
   SetQuery : TDataSet;
@@ -184,15 +185,15 @@ begin
 
   if DBKernel.ReadBool('Options','FixDateAndTime',True) then
   begin
-   Exif := TExif.Create;
+   ExifData := TExifData.Create;
    try
-    Exif.ReadFromFile(FTable.FieldByName('FFileName').AsString);
-    if YearOf(Exif.Date)>2000 then
-    if (FTable.FieldByName('DateToAdd').AsDateTime<>Exif.Date) or (FTable.FieldByName('aTime').AsDateTime<>Exif.Time) then
+    ExifData.LoadFromJPEG(FTable.FieldByName('FFileName').AsString);
+    if YearOf(ExifData.DateTime)>2000 then
+    if (FTable.FieldByName('DateToAdd').AsDateTime<>ExifData.DateTime) or (FTable.FieldByName('aTime').AsDateTime<>TimeOf(ExifData.DateTime)) then
     begin
 
-       DateToAdd:=Exif.Date;
-       aTime:=Exif.Time;
+       DateToAdd:=ExifData.DateTime;
+       aTime:=TimeOf(ExifData.DateTime);
        IsDate:=True;
        IsTime:=True;
        _sqlexectext:='';
@@ -212,7 +213,7 @@ begin
    except
    on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
    end;
-   Exif.Free;
+    F(ExifData);
   end;
 
   if Termitating then break;

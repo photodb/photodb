@@ -4,10 +4,11 @@ interface
 
 uses
   Registry, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Language, EXIF, Dolphin_DB,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Language, Dolphin_DB,
   acDlgSelect, Math, UnitUpdateDBObject, UnitScanImportPhotosThread,
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
-  UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants;
+  UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants,
+  CCR.Exif, uMemory;
 
 type
   TGetImagesOptions = record
@@ -166,7 +167,7 @@ end;
 Function GetPhotosDate(Mask : String; Pach : string) : TDateTime;
 var
   Files : TStrings;
-  FEXIF : TEXIF;
+  ExifData : TExifData;
   Dates : array[1..4] of TDateTime;
   i, MaxFiles, FilesSearch : integer;
 begin
@@ -192,16 +193,17 @@ begin
    Exit;
   end;
  end;
- for i:=1 to Min(4,Files.Count) do
- begin
-  FEXIF := TEXIF.Create;
-  try
-   FEXIF.ReadFromFile(Files[i-1]);
-  except
+  for I := 1 to Min(4, Files.Count) do
+  begin
+    ExifData := TExifData.Create;
+    try
+      ExifData.LoadFromJPEG(Files[I - 1]);
+      Dates[I] := ExifData.DateTime;
+    except
+      Dates[I] := Now;
+    end;
+    F(ExifData);
   end;
-  Dates[i]:=FEXIF.Date;
-  FEXIF.Free;
- end;
  Result:=now;
  for i:=1 to Min(4,Files.Count)-1 do
  if Dates[i+1]<>Dates[1] then

@@ -2,8 +2,8 @@ unit uDBDrawing;
 
 interface
 
-uses Windows, SysUtils, Graphics, UnitDBDeclare, Exif, UnitDBCommon, Math,
-     GraphicsBaseTypes, uConstants;
+uses Windows, SysUtils, Graphics, UnitDBDeclare, CCR.Exif, UnitDBCommon, Math,
+     Classes, GraphicsBaseTypes, uConstants, uMemory;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
 procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
@@ -24,8 +24,7 @@ end;
 
 procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
 var
-  FExif : TExif;
-  Failture : Boolean;
+  FS: TFileStream;
   FE : boolean;
 begin
   if ID = 0 then
@@ -48,25 +47,20 @@ begin
     FE := FileExists(FileName);
   end;
 
-  if ExplorerManager.ShowEXIF then
+  if (ExplorerManager <> nil) and ExplorerManager.ShowEXIF then
   begin
-    FExif := TExif.Create;
+    FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
     try
-      Failture := False;
-      try
-        FExif.ReadFromFile(FileName);
-      except
-        Failture:=true;
-      end;
-      if FExif.Valid and not failture then
+      if HasExifHeader(FS) then
       begin
-        if Id=0 then
+        F(FS);
+        if ID = 0 then
           DrawIconEx(HCanvas, 20 + DeltaX, DeltaY, UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL)
         else
           DrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL);
       end;
     finally
-      FExif.Free;
+      F(FS);
     end;
   end;
 

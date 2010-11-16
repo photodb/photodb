@@ -632,7 +632,7 @@ type
   end;
 
 var
-  ExplorerManager : TManagerExplorer;
+  ExplorerManager : TManagerExplorer = nil;
 
 implementation
 
@@ -2054,6 +2054,7 @@ begin
       RefreshItemByName(Value.Name);
   end;
 
+  ReRotation := 0;
   UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private, EventID_Param_Access,
     EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime, EventID_Param_Groups,
     EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Include];

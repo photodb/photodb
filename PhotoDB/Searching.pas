@@ -11,7 +11,7 @@ uses
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
   ShellContextMenu, DropSource, DropTarget, DateUtils, acDlgSelect,
   ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts, DBScriptFunctions,
-  Exif, EasyListview, WebLink, MPCommonUtilities, GraphicsCool,
+  EasyListview, WebLink, MPCommonUtilities, GraphicsCool,
   UnitSearchBigImagesLoaderThread, DragDropFile, uFileUtils,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
@@ -4361,7 +4361,6 @@ begin
         LI[I].Data := ElvMain.Items[I].Data;
         LI[I].ImageIndex := ElvMain.Items[I].ImageIndex;
         Data := GetSearchRecordFromItemData(ElvMain.Items[I]);
-        index := I;
         case SortMethod of
           SM_ID: begin
               SIs[i].ValueInt := Data.ID;
