@@ -2,14 +2,23 @@ program PhotoDBInstall;
 
 uses
   Forms,
-  frmMain in 'frmMain.pas' {FrmMain},
-  uInstallUtils in 'uInstallUtils.pas';
+  uFrmMain in 'uFrmMain.pas' {FrmMain},
+  uInstallUtils in 'uInstallUtils.pas',
+  uFrmLanguage in 'uFrmLanguage.pas' {FormLanguage},
+  uInstallTypes in 'uInstallTypes.pas',
+  uMemory in '..\PhotoDB\Units\uMemory.pas',
+  uDBForm in '..\PhotoDB\Units\uDBForm.pas',
+  uTranslate in '..\PhotoDB\Units\uTranslate.pas',
+  MSXML2_TLB in '..\PhotoDB\External\Xml\MSXML2_TLB.pas',
+  OmniXML_MSXML in '..\PhotoDB\External\Xml\OmniXML_MSXML.pas',
+  uLogger in '..\PhotoDB\Units\uLogger.pas',
+  uFileUtils in '..\PhotoDB\Units\uFileUtils.pas',
+  VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
+  uConstants in '..\PhotoDB\Units\uConstants.pas';
 
 {$R SETUP_ZIP.res}
 
 begin
-
-
 (*  FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
   ExtractFileFromStorage(FS, 'c:\1\PhotoDB.exe');
   ExtractFileFromStorage(FS, 'c:\1\Kernel.dll');
@@ -26,6 +35,6 @@ begin
 
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TFrmMain, FrmMainInstance);
+  Application.CreateForm(TFrmMain, FrmMain);
   Application.Run;
 end.

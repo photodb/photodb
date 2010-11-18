@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_Define>DBDEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_DependencyCheckOutputName>PhotoDBInstall.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
@@ -38,10 +39,23 @@
 			<DelphiCompile Include="PhotoDBInstall.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="frmMain.pas">
+			<DCCReference Include="uFrmMain.pas">
 				<Form>FrmMain</Form>
 			</DCCReference>
 			<DCCReference Include="uInstallUtils.pas"/>
+			<DCCReference Include="uFrmLanguage.pas">
+				<Form>FormLanguage</Form>
+			</DCCReference>
+			<DCCReference Include="uInstallTypes.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Xml\MSXML2_TLB.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Xml\OmniXML_MSXML.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uLogger.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uFileUtils.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

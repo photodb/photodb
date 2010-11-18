@@ -832,14 +832,14 @@ end;
 
 function DriveState(driveletter: AnsiChar): TSDriveState;
 var
-  mask: string[6];
+  mask: string;
   sRec: TSearchRec;
   oldMode: Cardinal;
   retcode: Integer;
 begin
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
   mask := '?:\*.*';
-  mask[1] := driveletter;
+  mask[1] := Char(driveletter);
 {$I-} { не возбуждаем исключение при неудаче }
   retcode := FindFirst(mask, faAnyfile, SRec);
   FindClose(SRec);
@@ -887,7 +887,7 @@ var
   S : string;
   oldMode: Cardinal;
 begin
- Result:=Drive;
+ Result:= string(Drive);
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
  if Length(Drive)<2 then exit;
  DS:=DriveState(Drive[1]);
@@ -895,8 +895,8 @@ begin
  begin
   S:=GetCDVolumeLabel(Drive[1]);
   if S<>'' then
-  Result:=S+' ('+Drive[1]+':)' else
-  Result:=DefString+' ('+Drive[1]+':)';
+  Result:=S+' ('+Char(Drive[1])+':)' else
+  Result:=DefString+' ('+Char(Drive[1])+':)';
  end else
  Result:=MrsGetFileType(Drive[1]+':\')+' ('+Drive[1]+':)';
   SetErrorMode(oldMode);

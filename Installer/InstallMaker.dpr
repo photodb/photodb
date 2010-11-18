@@ -41,10 +41,10 @@ begin
     {$IFDEF DBDEBUG}
     AddFile('..\PhotoDB\bin\FastMM_FullDebugMode.dll');
     {$ENDIF}
-    AddFile('..\PhotoDB\bin\LanguageRU.xml');
     AddDirectory('..\PhotoDB\bin\Actions');
     AddDirectory('..\PhotoDB\bin\Acripts');
     AddDirectory('..\PhotoDB\bin\Images');
+    AddDirectory('..\PhotoDB\bin\Languages');
   finally
     F(FS);
   end;

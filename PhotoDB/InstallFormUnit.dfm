@@ -191,15 +191,6 @@ object InstallForm: TInstallForm
       Height = 13
       Caption = 'DataBase folder'
     end
-    object CheckBox2: TCheckBox
-      Left = 0
-      Top = 216
-      Width = 297
-      Height = 17
-      Caption = 'Move private records'
-      Enabled = False
-      TabOrder = 8
-    end
     object Edit3: TEdit
       Left = 0
       Top = 192

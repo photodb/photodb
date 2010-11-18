@@ -3,7 +3,11 @@ unit uDBForm;
 interface
 
 uses
-  Forms, Classes, uTranslate, Dolphin_db, Graphics, uImageSource;
+  Forms, Classes, uTranslate,
+  {$IFDEF PHOTODB}
+  Dolphin_db,
+  {$ENDIF}
+  Graphics;
 
 type
   TDBForm = class(TForm)
@@ -33,12 +37,16 @@ constructor TDBForm.Create(AOwner: TComponent);
 begin
   FIsTranslating := False;
   inherited;
+  {$IFDEF PHOTODB}
   DBKernel.RegisterForm(Self);
+  {$ENDIF}
 end;
 
 destructor TDBForm.Destroy;
 begin
+  {$IFDEF PHOTODB}
   DBKernel.UnRegisterForm(Self);
+  {$ENDIF}
   inherited;
 end;
 

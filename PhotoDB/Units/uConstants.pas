@@ -1,13 +1,9 @@
 unit uConstants;
 
 interface
-           
-//{$DEFINE ENGL}
-{$DEFINE RUS}
 
 uses
-Windows,
-Language;
+  Windows;
 
 const
   //envoirements
@@ -27,6 +23,8 @@ const
   TempFolderMask = '|NDX|MB|DB|NET|';
   DelayReadFileOperation = 200;
   DelayExecuteSQLOperation = 200;
+  LanguageFileMask = 'Language';
+  SetupDataName = 'SETUP_DATA';
 
   //Information
 //  MyComputer = TEXT_MES_MY_COMPUTER;
@@ -34,20 +32,14 @@ const
   StartMenuProgramsPath = 'Photo DB v2.3';
   ProductVersion = '2.3';
   ProgramShortCutFile = ProductName+'.lnk';
-  HelpShortCutFile = TEXT_MES_HELP+'.lnk';
+  HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;
   ProgramMail = 'illusdolphin@gmail.com';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
-  {$IFDEF RUS}
   UpdateFileName = '/rus_update.txt';
   AlternativeUpdateURL = 'http://photodb.illusdolphin.net/update?lg=ru';
   HomeURL = 'http://photodb.illusdolphin.net';
-  {$ENDIF}
-  {$IFDEF ENGL}
-  UpdateFileName = '/engl_update.txt';
-  HomeURL = 'http://www.illusdolphin.narod.ru/photodb';
-  {$ENDIF}
-  
+
 const
     WM_DROPFILES = $0233;
     WM_COPYDATA = $004A;

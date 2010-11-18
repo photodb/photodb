@@ -127,7 +127,7 @@ end;
 
 procedure InsertImageToolPanelClass.DoBorder(Bitmap: TBitmap; aRect: TRect);
 var
-  w,h,i,j,Dheight:integer;
+  i,j:integer;
   Rct : TRect;
   Xdp : TArPARGB;
 
@@ -151,9 +151,7 @@ begin
  Rct.Left:=Min(aRect.Left,aRect.Right);
  Rct.Right:=Max(aRect.Left,aRect.Right);
  aRect:=Rct;
- w:=Rct.Right-Rct.Left;
- h:=Rct.Bottom-Rct.Top;
- Dheight:=Bitmap.Height;
+
  SetLength(Xdp,Bitmap.height);
  for i:=0 to Bitmap.Height-1 do
  Xdp[i]:=Bitmap.ScanLine[i];

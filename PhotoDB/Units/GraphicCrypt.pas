@@ -76,9 +76,9 @@ const
 
 function CryptGraphicFileV2(FileName: string; Password: string; Options: Integer): Boolean;
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
-  LoadFullRAW: Boolean = false; Page: Word = 0): TGraphic;
+  LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function DeCryptGraphicFile(FileName: string; Password: string;
-  LoadFullRAW: Boolean = false; Page: Word = 0): TGraphic;
+  LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function ValidPassInCryptGraphicFile(FileName, Password: string): Boolean;
 function ResetPasswordInGraphicFile(FileName, Password: string): Boolean;
 function ChangePasswordInGraphicFile(FileName: string; OldPass, NewPass: string): Boolean;
@@ -363,7 +363,7 @@ begin
 end;
 
 function DeCryptGraphicFile(FileName: string; Password: String;
-  LoadFullRAW: Boolean = False; Page: Word = 0): TGraphic;
+  LoadFullRAW: Boolean = False; Page: Integer = 0): TGraphic;
 var
   Pages: Word;
 begin
@@ -472,7 +472,7 @@ begin
 end;
 
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
-  LoadFullRAW: Boolean = False; Page: Word = 0): TGraphic;
+  LoadFullRAW: Boolean = False; Page: Integer = 0): TGraphic;
 var
   FS: TFileStream;
   MS: TMemoryStream;

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<language name="Russian">
+<language name="Русский язык">
   <scope name="">
     <translate name="Ok" value="Да" />
     <translate name="Cancel" value="Отмена" />
@@ -11,6 +11,10 @@
     <translate name="Mb" value="Мб" />
     <translate name="Gb" value="Гб" />
     <translate name="Error" value="Ошибка" />
+  </scope>
+  <scope name="InstallLanguage">
+    <translate name="Select language" value="Выбор языка" />
+    <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
   <scope name="JPEG">
     <translate name="JPEG compression" value="Компрессия JPEG" />

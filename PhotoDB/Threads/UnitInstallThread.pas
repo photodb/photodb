@@ -50,7 +50,6 @@ type
   var pause, terminate_ : Boolean;
       OnDone : TNotifyEvent;
       FEndDirectory, FEndDBDirectory, FDBFile, InstUserName : string;
-      MovePrivate : Boolean;
       InstallDone : Boolean;
       Exts : TInstallExts;
       QuickSelfInstall : boolean;
@@ -715,7 +714,7 @@ begin
     Repeat
      FProgress:=OutTable.RecNo;
      Synchronize(SetProgress);
-     If (OutTable.FieldByName('Access').AsInteger<>db_access_private) or MovePrivate then
+
      If not IsOldDataBase then
      begin
       AddCurrentFile;

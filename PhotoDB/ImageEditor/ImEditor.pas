@@ -231,7 +231,6 @@ type
     Function IsEditor(Editor : TForm) : Boolean;
     Function EditorsCount : Integer;
     Function GetAnyEditor : TImageEditor;
-   published
   end;
 
 var

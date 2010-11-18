@@ -3,7 +3,7 @@ unit uTranslate;
 interface
 
 uses
-  Classes, SysUtils, uLogger, uMemory, MSXML, OmniXML_MSXML,
+  Classes, SysUtils, uLogger, uMemory, MSXML, OmniXML_MSXML, uConstants,
   SyncObjs;
 
 type
@@ -35,15 +35,30 @@ type
   end;
 
 type
-  TTranslateManager = class(TObject)
+  TLanguage = class(TObject)
   private
     FTranslate : IXMLDOMDocument;
     FTranslateList : TList;
+    FName : string;
+  public
+    constructor Create(FileName : string);
+    constructor CreateFromXML(XML : string);
+    procedure Init;
+    destructor Destroy; override;
+    procedure LoadTranslationList;
+    function LocateString(const Original, Scope: string): string;
+    property Name : string read FName;
+  end;
+
+  TTranslateManager = class(TObject)
+  private
     FSync: TCriticalSection;
+    FLanguage : TLanguage;
+    FLanguageCode : string;
     constructor Create;
     function GetLanguage: string;
+    procedure SetLanguage(const Value: string);
   protected
-    procedure LoadTranslationList;
     function LocateString(const Original, Scope : string) : string;
   public
     destructor Destroy; override;
@@ -54,13 +69,35 @@ type
     function TA(const StringToTranslate: string) : string; overload;
     function Translate(const StringToTranslate: string) : string; overload;
     function Translate(const StringToTranslate, Scope: string) : string; overload;
-    property Language : string read GetLanguage;
+    property Language : string read GetLanguage write SetLanguage;
   end;
+
+  TLanguageInitCallBack = procedure(var Language : TLanguage; LanguageCode : string);
 
 function TA(const StringToTranslate, Scope: string) : string; overload;
 function TA(const StringToTranslate: string) : string; overload;
+procedure LoadLanguageFromFile(var Language : TLanguage; LanguageCode : string);
+
+var
+  LanguageInitCallBack : TLanguageInitCallBack = LoadLanguageFromFile;
 
 implementation
+
+procedure LoadLanguageFromFile(var Language : TLanguage; LanguageCode : string);
+var
+  LanguagePath : string;
+begin
+  if LanguageCode = '--' then
+    LanguageCode := 'RU';
+
+  LanguagePath := ExtractFileDir(ParamStr(0)) + Format('Languages\%s%s.xml', [LanguageFileMask, LanguageCode]);
+  try
+    Language := TLanguage.Create(LanguagePath);
+  except
+    on e : Exception do
+      EventLog(e.Message);
+  end;
+end;
 
 var
   TranslateManager : TTranslateManager = nil;
@@ -83,23 +120,13 @@ begin
 end;
 
 constructor TTranslateManager.Create;
-var
-  LanguagePath : string;
 begin
+  FLanguageCode := '--';
   FSync:= TCriticalSection.Create;
-  LanguagePath := ExtractFileDir(ParamStr(0)) + Format('\Language%s.xml', [Language]);
-
-  FTranslateList := TList.Create;
-  FTranslate := CreateXMLDoc;
   FSync.Enter;
   try
-    try
-      FTranslate.load(LanguagePath);
-      LoadTranslationList;
-    except
-      on e : Exception do
-        EventLog(e.Message);
-    end;
+    FLanguage := nil;
+    LanguageInitCallBack(FLanguage, Language);
   finally
     FSync.Leave;
   end;
@@ -107,8 +134,8 @@ end;
 
 destructor TTranslateManager.Destroy;
 begin
-  FreeList(FTranslateList);
   F(FSync);
+  F(FLanguage);
   inherited;
 end;
 
@@ -119,7 +146,7 @@ end;
 
 function TTranslateManager.GetLanguage: string;
 begin
-  Result := 'RU';
+  Result := FLanguageCode;
 end;
 
 class function TTranslateManager.Instance: TTranslateManager;
@@ -130,49 +157,16 @@ begin
   Result := TranslateManager;
 end;
 
-procedure TTranslateManager.LoadTranslationList;
-var
-  DocumentElement : IXMLDOMElement;
-  ScopeList : IXMLDOMNodeList;
-  ScopeNode : IXMLDOMNode;
-  I : Integer;
-  Scope : TLanguageScope;
+function TTranslateManager.LocateString(const Original, Scope: string): string;
 begin
-  FTranslateList.Clear;
-  DocumentElement := FTranslate.documentElement;
-  if DocumentElement <> nil then
-  begin
-    ScopeList := DocumentElement.childNodes;
-    if ScopeList <> nil then
-    begin
-      for I := 0 to ScopeList.length - 1 do
-      begin
-        ScopeNode := ScopeList.item[I];
-        Scope := TLanguageScope.Create(ScopeNode);
-        FTranslateList.Add(Scope);
-      end;
-    end;
-  end;
+  Result := FLanguage.LocateString(Original, Scope);
 end;
 
-function TTranslateManager.LocateString(const Original, Scope: string): string;
-var
-  I : Integer;
-  FScope : TLanguageScope;
+procedure TTranslateManager.SetLanguage(const Value: string);
 begin
-  Result := Original;
-  for I := 0 to FTranslateList.Count - 1 do
-  begin
-    FScope := TLanguageScope(FTranslateList[I]);
-    if FScope.Scope = Scope then
-    begin
-      if FScope.Translate(Original, Result) then
-        Break
-      else
-        if Scope <> '' then
-          Result := LocateString(Original, '');
-    end;
-  end;
+  FLanguageCode := Value;
+  F(FLanguage);
+  LanguageInitCallBack(FLanguage, Language);
 end;
 
 function TTranslateManager.TA(const StringToTranslate, Scope: string): string;
@@ -233,25 +227,6 @@ begin
   Result := FTranslateList[Index];
 end;
 
-procedure TLanguageScope.LoadTranslateList(ScopeNode: IXMLDOMNode);
-var
-  I : Integer;
-  TranslateList : IXMLDOMNodeList;
-  TranslateNode : IXMLDOMNode;
-  Translate : TTranslate;
-begin
-  TranslateList := ScopeNode.childNodes;
-  if TranslateList <> nil then
-  begin
-    for I := 0 to TranslateList.length - 1 do
-    begin
-      TranslateNode := TranslateList.item[I];
-      Translate := TTranslate.Create(TranslateNode);
-      FTranslateList.Add(Translate);
-    end;
-  end;
-end;
-
 function TLanguageScope.Translate(Original: string; out ATranslate : string): Boolean;
 var
   I : Integer;
@@ -275,6 +250,25 @@ begin
   end;
 end;
 
+procedure TLanguageScope.LoadTranslateList(ScopeNode: IXMLDOMNode);
+var
+  I : Integer;
+  TranslateList : IXMLDOMNodeList;
+  TranslateNode : IXMLDOMNode;
+  Translate : TTranslate;
+begin
+  TranslateList := ScopeNode.childNodes;
+  if TranslateList <> nil then
+  begin
+    for I := 0 to TranslateList.length - 1 do
+    begin
+      TranslateNode := TranslateList.item[I];
+      Translate := TTranslate.Create(TranslateNode);
+      FTranslateList.Add(Translate);
+    end;
+  end;
+end;
+
 { TTranslate }
 
 constructor TTranslate.Create(Node: IXMLDOMNode);
@@ -289,6 +283,85 @@ begin
   ValueAttr := Node.attributes.getNamedItem('value');
   if ValueAttr <> nil then
     FTranslate := ValueAttr.text;
+end;
+
+{ TLanguage }
+
+constructor TLanguage.Create(FileName: string);
+begin
+  Init;
+  FTranslate.load(FileName);
+  LoadTranslationList;
+end;
+
+constructor TLanguage.CreateFromXML(XML: string);
+begin
+  Init;
+  FTranslate.loadXML(XML);
+  LoadTranslationList;
+end;
+
+destructor TLanguage.Destroy;
+begin
+  FreeList(FTranslateList);
+  inherited;
+end;
+
+procedure TLanguage.Init;
+begin
+  FTranslateList := TList.Create;
+  FTranslate := CreateXMLDoc;
+end;
+
+procedure TLanguage.LoadTranslationList;
+var
+  DocumentElement : IXMLDOMElement;
+  ScopeList : IXMLDOMNodeList;
+  ScopeNode : IXMLDOMNode;
+  NameAttr : IXMLDOMNode;
+  I : Integer;
+  Scope : TLanguageScope;
+begin
+  FTranslateList.Clear;
+  DocumentElement := FTranslate.documentElement;
+  if DocumentElement <> nil then
+  begin
+    NameAttr := DocumentElement.attributes.getNamedItem('name');
+    if NameAttr <> nil then
+      FName := NameAttr.text;
+
+    ScopeList := DocumentElement.childNodes;
+    if ScopeList <> nil then
+    begin
+      for I := 0 to ScopeList.length - 1 do
+      begin
+        ScopeNode := ScopeList.item[I];
+        Scope := TLanguageScope.Create(ScopeNode);
+        FTranslateList.Add(Scope);
+      end;
+    end;
+  end;
+end;
+
+function TLanguage.LocateString(const Original, Scope: string): string;
+var
+  I : Integer;
+  FScope : TLanguageScope;
+begin
+  Result := Original;
+  for I := 0 to FTranslateList.Count - 1 do
+  begin
+    FScope := TLanguageScope(FTranslateList[I]);
+    if FScope.Scope = Scope then
+    begin
+      if FScope.Translate(Original, Result) then
+        Break
+      else
+        if Scope <> '' then
+          Result := LocateString(Original, '');
+
+    end;
+  end;
 end;
 
 initialization

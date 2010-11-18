@@ -16,7 +16,6 @@ type
     Image1: TImage;
     OpenDialog1: TOpenDialog;
     Step1: TPanel;
-    CheckBox2: TCheckBox;
     Edit3: TEdit;
     Label4: TLabel;
     Edit2: TEdit;
@@ -91,10 +90,8 @@ begin
    if DBKernel.TestDB(OpenDialog1.FileName) then
    begin
     Edit3.Text:=OpenDialog1.FileName;
-    CheckBox2.Enabled:=true;
     Edit3.Enabled:=true;
    end else begin
-    CheckBox2.Enabled:=false;
     MessageBoxDB(Handle,TEXT_MES_DB_FILE_NOT_VALID,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_WARNING);
    end;
   end;
@@ -243,7 +240,6 @@ begin
  InstallForm.Hide;
  Application.ProcessMessages;
  UnitInstallThread.OnDone:=SetupProgressUnit.SetupProgressForm.Done;
- UnitInstallThread.MovePrivate:=CheckBox2.Checked;
  UnitInstallThread.FEndDirectory:=Edit1.text;
  UnitInstallThread.FEndDBDirectory:=DBDataDir;
  UnitInstallThread.FDBFile:=Edit3.text;
@@ -280,8 +276,6 @@ begin
  if key=#8 then
  begin
   Edit3.Text:=TEXT_MES_NO_FILE;
-  CheckBox2.Checked:=false;
-  CheckBox2.Enabled:=false;
  end;
  if key=#13 then Button7Click(Sender);
 end;
@@ -385,7 +379,6 @@ begin
  Label2.Caption:=TEXT_MES_END_FOLDER;
  Label3.Caption:=TEXT_MES_END_DB_FOLDER;
  Label4.Caption:=TEXT_MES_DEF_DB;
- CheckBox2.Caption:=TEXT_MES_MOVE_PRIVATE;
 end;
 
 procedure TInstallForm.FormCloseQuery(Sender: TObject;

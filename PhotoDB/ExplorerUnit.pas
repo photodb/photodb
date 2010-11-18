@@ -3523,7 +3523,7 @@ var
   end;
 
 begin
-  ScrollBox1.Updating := True;
+  ScrollBox1.UpdatingPanel := True;
   IsReallignInfo:=true;
   EventLog('ReallignInfo...');
 
@@ -3921,7 +3921,7 @@ begin
   end;
   IsReallignInfo := False;
 
-  ScrollBox1.Updating := False;
+  ScrollBox1.UpdatingPanel := False;
   ScrollBox1Reallign(nil);
   ScrollBox1.Realign;
 
@@ -7731,7 +7731,7 @@ begin
   begin
     Dir := ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName);
     FormatDir(Dir);
-    CDMapper.AddCDMapping(Info.CDLabel, Dir, False);
+    CDMapper.AddCDMapping(string(Info.CDLabel), Dir, False);
   end else
   begin
     MessageBoxDB(Handle, Format(L('Unable to find file %s by address "%s"'), [C_CD_MAP_FILE, FFilesInfo[PmItemPopup.Tag].FileName]),

@@ -1,5 +1,7 @@
 unit uInstallTypes;
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 interface
 
 uses Zlib, Windows, Classes, SysUtils, uMemory;
@@ -26,6 +28,8 @@ function ExtractFileFromStorage(Src : TStream; Dest : TStream; FileName : string
 function ExtractFileFromStorage(Src : TStream; FileName : string) : Boolean; overload;
 function AddDirectoryToStream(Src : TStream; DirectoryName : string) : Boolean;
 function ExtractDirectoryFromStorage(Src : TStream; DirectoryPath : string) : Boolean;
+procedure FillFileList(Src : TStream; FileList : TStrings; out OriginalFilesSize : Int64);
+function ReadFileContent(Src : TStream; FileName : string) : string;
 
 implementation
 
@@ -94,6 +98,7 @@ function ExtractFileFromStorage(Src : TStream; FileName : string) : Boolean; ove
 var
   FS : TFileStream;
 begin
+  Result := True;
   FS := TFileStream.Create(FileName, fmCreate);
   try
     ExtractFileFromStorage(Src, FS, ExtractFileName(FileName));
@@ -138,6 +143,7 @@ var
   SearchRec: TSearchRec;
   EntryHeader : TZipEntryHeader;
 begin
+  Result := True;
   Files := TStringList.Create;
   DirectoryName := IncludeTrailingBackslash(DirectoryName);
   try
@@ -209,6 +215,45 @@ begin
     finally
       Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
     end;
+  end;
+end;
+
+procedure FillFileList(Src : TStream; FileList : TStrings; out OriginalFilesSize : Int64);
+var
+  EntryHeader : TZipEntryHeader;
+begin
+  OriginalFilesSize := 0;
+  Src.Seek(0, soFromBeginning);
+  while Src.Read(EntryHeader, SizeOf(EntryHeader)) = SizeOf(EntryHeader) do
+  begin
+    if not EntryHeader.IsDirectory then
+    begin
+      FileList.Add(ExtractFileNameFromHeader(EntryHeader));
+      Inc(OriginalFilesSize, EntryHeader.FileOriginalSize);
+    end;
+    Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
+  end;
+end;
+
+function ReadFileContent(Src : TStream; FileName : string) : string;
+var
+  MS : TMemoryStream;
+  SR : TStreamReader;
+begin
+  Result := '';
+  MS := TMemoryStream.Create;
+  try
+    if ExtractFileFromStorage(Src, MS, FileName) then
+    begin
+      if MS.Size > 0 then
+      begin
+        MS.Seek(0, soFromBeginning);
+        SR := TStreamReader.Create(MS);
+        Result := SR.ReadToEnd;
+      end;
+    end;
+  finally
+    F(MS);
   end;
 end;
 

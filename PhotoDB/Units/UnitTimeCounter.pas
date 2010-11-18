@@ -21,16 +21,15 @@ type
     procedure SetTimerInterval(const Value: integer);
     procedure SetMaxActions(const Value: int64);
   public
-   constructor Create; 
-   destructor Destroy; override;
-   procedure DoBegin;
-   procedure NextAction(Actions : int64 = 1);
-   procedure Suspend;
-   procedure Resume;
-   function GetTimeRemaining : TDateTime;
-   procedure AddActions(Actions: int64);
     { Public declarations }
-  published
+    constructor Create;
+    destructor Destroy; override;
+    procedure DoBegin;
+    procedure NextAction(Actions : int64 = 1);
+    procedure Suspend;
+    procedure Resume;
+    function GetTimeRemaining : TDateTime;
+    procedure AddActions(Actions: int64);
     property TimerInterval : integer read FTimerInterval write SetTimerInterval;
     property MaxActions : int64 read FMaxActions write SetMaxActions;
   end;

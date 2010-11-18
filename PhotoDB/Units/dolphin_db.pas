@@ -4610,7 +4610,7 @@ end;
 
 procedure Delay(Msecs: Longint);
 var
-  FirstTick: Cardinal;
+  FirstTick: Longint;
 begin
   FirstTick := GetTickCount;
   repeat

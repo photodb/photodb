@@ -63,7 +63,6 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-  published
     property TIntValue: Integer read FTIntValue write SetTIntValue;
     property TStrValue: TStrings read FSTStrValue write SetTStrValue;
     property TBoolValue: Boolean read FTBoolValue write SetTBoolValue;

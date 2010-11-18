@@ -68,7 +68,6 @@ type
     function GetFilesCount: Integer;
     function FileExistsInFileList(FileName: string): Boolean;
     function GetCount: Integer;
-  published
     property Active: Boolean read FActive;
     property Auto: Boolean read FAuto write SetAuto default True;
     property UseFileNameScaning: Boolean read FUseFileNameScaning write SetUseFileNameScaning default False;

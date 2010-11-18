@@ -1,4 +1,7 @@
 unit VRSIShortCuts;
+
+{$WARN SYMBOL_PLATFORM OFF}
+
  //==============================================================================
  //                     FractalizeR's Delphi Library
  //               <- ShortCut Operations Class v1.0 ->

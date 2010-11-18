@@ -13,6 +13,7 @@ type
     function GetDisplayRect : TRect;
   end;
 
+  {$HINTS OFF}
   TEasySelectionManagerX = class(TEasyOwnedPersistent)
   private
     FAlphaBlend: Boolean;
@@ -44,6 +45,7 @@ type
     property AGradientColorBottom : TColor write FGradientColorBottom;
     property AGradientColorTop : TColor write FGradientColorTop;
   end;
+  {$HINTS ON}
 
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
@@ -249,6 +251,7 @@ var
   var
     Item : TEasyItem;
   begin
+    Result := nil;
     Item := ListView.Selection.First;
     while Item <> nil do
     begin
@@ -263,8 +266,6 @@ const
   RoundRadius = 8;
 
 begin
-  SelectedItem := nil;
-
   SetLength(Items, 0);
   if ListView <> nil then
   begin
@@ -318,7 +319,6 @@ begin
 
   DX := MaxW / (Width - FSelCount * (ImagePadding - 1));
   DY := MaxH / (Height  - FSelCount * (ImagePadding - 1));
-  DMax := Max(MaxW, MaxH);
 
   ResultImage.Width := Width;
   ResultImage.Height := Height;
@@ -326,8 +326,6 @@ begin
 
   N := 0;
 
-  if ListView <> nil then
-    SelectedItem := ListView.Selection.First;
   for I := 1 to FSelCount do
   begin
     if ListView <> nil then
@@ -410,8 +408,6 @@ begin
   try
     TempImage.PixelFormat := pf32bit;
 
-    SelectedItem := nil;
-
     SetLength(Items, 0);
     if ListView <> nil then
     begin
@@ -470,8 +466,6 @@ begin
 
     N := ImagePadding - ImageMoveLength;
 
-    if ListView <> nil then
-      SelectedItem := ListView.Selection.First;
     for I := 1 to FSelCount do
     begin
       Inc(N, ImageMoveLength);

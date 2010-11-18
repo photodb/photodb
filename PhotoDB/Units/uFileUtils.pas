@@ -1,5 +1,7 @@
 unit uFileUtils;
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 interface
 
 uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl,  ShlObj, ActiveX,
@@ -30,7 +32,9 @@ function WindowsCopyFile(FromFile, ToDir: string): Boolean;
 function WindowsCopyFileSilent(FromFile, ToDir: string): Boolean;
 function DateModify(FileName: string): TDateTime;
 function MrsGetFileType(StrFilename: string): string;
+{$IFDEF PHOTODB}
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TForm = nil);
+{$ENDIF}
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 function GetCDVolumeLabel(CDName: Char): string;
 function DriveState(Driveletter: AnsiChar): TDriveState;
@@ -44,8 +48,10 @@ var
 
 implementation
 
+{$IFDEF PHOTODB}
 uses
   UnitWindowsCopyFilesThread;
+{$ENDIF}
 
 procedure UnFormatDir(var FileName : string);
 begin
@@ -270,14 +276,9 @@ begin
 end;
 
 function GetFileDateTime(FileName: string): TDateTime;
-var
-  IntFileAge: LongInt;
 begin
-  IntFileAge := FileAge(FileName);
-  if IntFileAge = -1 then
-    Result := 0
-  else
-    Result := FileDateToDateTime(IntFileAge);
+  if not FileAge(FileName, Result) then
+    Result := Now;
 end;
 
 function GetDirectorySize(Folder: string): Int64;
@@ -297,7 +298,7 @@ begin
     if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
     begin
       if FileExists(Folder + SearchRec.name) then
-        Result := Result + SearchRec.FindData.NFileSizeLow + SearchRec.FindData.NFileSizeHigh * 2 * MaxInt
+        Result := Result + Int64(SearchRec.FindData.NFileSizeLow) + Int64(SearchRec.FindData.NFileSizeHigh) * 2 * MaxInt
       else if DirectoryExists(Folder + SearchRec.name) then
         Result := Result + GetDirectorySize(Folder + '\' + SearchRec.name);
     end;
@@ -353,7 +354,7 @@ begin
   begin
     Windows.FindClose(HFind);
     if (FindData.DwFileAttributes and FILE_ATTRIBUTE_DIRECTORY) = 0 then
-      Result := FindData.NFileSizeHigh * 2 * MaxInt + FindData.NFileSizeLow;
+      Result := Int64(FindData.NFileSizeHigh) * 2 * MaxInt + Int64(FindData.NFileSizeLow);
   end;
 end;
 
@@ -472,11 +473,13 @@ begin
   end;
 end;
 
+{$IFDEF PHOTODB}
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
   ExplorerForm: TForm = nil);
 begin
   TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, ExplorerForm);
 end;
+{$ENDIF}
 
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 var
@@ -554,14 +557,14 @@ end;
 
 function DriveState(Driveletter: AnsiChar): TDriveState;
 var
-  Mask: string[6];
+  Mask: string;
   SRec: TSearchRec;
   OldMode: Cardinal;
   Retcode: Integer;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   Mask := '?:\*.*';
-  Mask[1] := Driveletter;
+  Mask[1] := Char(Driveletter);
 {$I-} { не возбуждаем исключение при неудаче }
   Retcode := FindFirst(Mask, FaAnyfile, SRec);
   FindClose(SRec);

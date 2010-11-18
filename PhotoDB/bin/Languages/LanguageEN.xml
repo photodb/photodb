@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<language name="English language">
+  <scope name="">
+    <translate name="Example string" value="New string" />
+  </scope>
+</language>

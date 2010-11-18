@@ -9,8 +9,10 @@ uses Windows, Classes, SysUtils, uFileUtils, SyncObjs;
 type
   TLogger = class(TObject)
   private
+{$IFDEF LOG}
     FFile : TFileStream;
     FSync : TCriticalSection;
+{$ENDIF}
   public
     constructor Create;
     destructor Destroy; override;

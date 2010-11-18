@@ -599,7 +599,6 @@ begin
   Del := 100;
   if FClosed then
     Exit;
-  DisposalMethod := DmNone;
 
   if SlideNO = -1 then
     SlideNO := GetFirstImageNO
