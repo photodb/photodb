@@ -13,7 +13,7 @@ uses
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
   uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx, TwButton,
-  uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo;
+  uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils;
 
 type
   TDestDype = class(TObject)

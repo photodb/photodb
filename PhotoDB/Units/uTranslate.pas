@@ -40,6 +40,7 @@ type
     FTranslate : IXMLDOMDocument;
     FTranslateList : TList;
     FName : string;
+    FImageName : string;
   public
     constructor Create(FileName : string);
     constructor CreateFromXML(XML : string);
@@ -48,6 +49,7 @@ type
     procedure LoadTranslationList;
     function LocateString(const Original, Scope: string): string;
     property Name : string read FName;
+    property ImageName : string read FImageName;
   end;
 
   TTranslateManager = class(TObject)
@@ -318,7 +320,8 @@ var
   DocumentElement : IXMLDOMElement;
   ScopeList : IXMLDOMNodeList;
   ScopeNode : IXMLDOMNode;
-  NameAttr : IXMLDOMNode;
+  NameAttr,
+  ImageNameAttr : IXMLDOMNode;
   I : Integer;
   Scope : TLanguageScope;
 begin
@@ -329,6 +332,10 @@ begin
     NameAttr := DocumentElement.attributes.getNamedItem('name');
     if NameAttr <> nil then
       FName := NameAttr.text;
+
+    ImageNameAttr := DocumentElement.attributes.getNamedItem('image');
+    if ImageNameAttr <> nil then
+      FImageName := ImageNameAttr.text;
 
     ScopeList := DocumentElement.childNodes;
     if ScopeList <> nil then

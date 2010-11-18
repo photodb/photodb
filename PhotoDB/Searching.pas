@@ -18,7 +18,7 @@ uses
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources, uMemory,
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
-  uFormListView, uDBPopupMenuInfo;
+  uFormListView, uDBPopupMenuInfo, uPNGUtils;
 
 type
   TDateRange = record

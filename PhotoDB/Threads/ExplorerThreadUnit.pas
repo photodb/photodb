@@ -11,7 +11,7 @@
   EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
-  uConstants, uMemory, SyncObjs, uDBPopupMenuInfo,
+  uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList;
 
 type

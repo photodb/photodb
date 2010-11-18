@@ -296,7 +296,9 @@ uses
   CCR.Exif in 'External\CCR.Exif\CCR.Exif.pas',
   CCR.Exif.StreamHelper in 'External\CCR.Exif\CCR.Exif.StreamHelper.pas',
   CCR.Exif.TagIDs in 'External\CCR.Exif\CCR.Exif.TagIDs.pas',
-  CCR.Exif.XMPUtils in 'External\CCR.Exif\CCR.Exif.XMPUtils.pas';
+  CCR.Exif.XMPUtils in 'External\CCR.Exif\CCR.Exif.XMPUtils.pas',
+  uPNGUtils in 'Units\uPNGUtils.pas',
+  uFormUtils in 'Units\uFormUtils.pas';
 
 {$R *.res}
 

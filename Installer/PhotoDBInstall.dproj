@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_Define>DBDEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_DependencyCheckOutputName>PhotoDBInstall.exe</DCC_DependencyCheckOutputName>
@@ -56,6 +57,28 @@
 			<DCCReference Include="..\PhotoDB\Units\uFileUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicColor.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicCompression.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicEx.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicStrings.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\JPG.pas"/>
+			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\MZLib.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uPNGUtils.pas"/>
+			<DCCReference Include="uFrmProgress.pas">
+				<Form>FrmProgress</Form>
+			</DCCReference>
+			<DCCReference Include="uFrLicence.pas">
+				<Form>FrmLicence</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="uFrAdvancedOptions.pas">
+				<Form>FrmAdvancedOptions</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="uInstallFrame.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
+			<DCCReference Include="uInstallThread.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

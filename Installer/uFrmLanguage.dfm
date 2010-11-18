@@ -4,7 +4,7 @@ object FormLanguage: TFormLanguage
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Select language'
-  ClientHeight = 236
+  ClientHeight = 229
   ClientWidth = 225
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -12,8 +12,11 @@ object FormLanguage: TFormLanguage
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
+  Position = poScreenCenter
   OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
   object LbInfo: TLabel
@@ -27,19 +30,30 @@ object FormLanguage: TFormLanguage
   end
   object LbLanguages: TListBox
     Left = 8
-    Top = 40
+    Top = 42
     Width = 209
-    Height = 156
-    ItemHeight = 13
+    Height = 147
+    Style = lbOwnerDrawFixed
+    DoubleBuffered = True
+    ItemHeight = 36
+    ParentDoubleBuffered = False
     TabOrder = 0
     OnClick = LbLanguagesClick
+    OnDblClick = BtnOkClick
+    OnDrawItem = LbLanguagesDrawItem
+    OnMouseDown = LbLanguagesMouseDown
   end
   object BtnOk: TButton
     Left = 142
-    Top = 202
+    Top = 195
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 1
+    OnClick = BtnOkClick
+  end
+  object XPManifest: TXPManifest
+    Left = 168
+    Top = 56
   end
 end

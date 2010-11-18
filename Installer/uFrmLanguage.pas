@@ -5,21 +5,31 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
-  StrUtils, uTranslate, uLogger;
+  StrUtils, uTranslate, uLogger, GraphicEx, uPNGUtils, XPMan;
 
 type
   TLangageItem = class(TObject)
   public
     Name : string;
     Code : string;
+    Image : TPNGGraphic;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
   TFormLanguage = class(TDBForm)
     LbLanguages: TListBox;
     BtnOk: TButton;
     LbInfo: TLabel;
+    XPManifest: TXPManifest;
     procedure LbLanguagesClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure LbLanguagesDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure LbLanguagesMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure BtnOkClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     procedure LoadLanguage;
@@ -63,11 +73,26 @@ end;
 
 { TFormLanguage }
 
+procedure TFormLanguage.BtnOkClick(Sender: TObject);
+begin
+  ModalResult := idOk;
+  Hide;
+end;
+
 procedure TFormLanguage.FormCreate(Sender: TObject);
 begin
   LanguageInitCallBack := LoadLanguageFromSetupData;
   LoadLanguageList;
   LoadLanguage;
+end;
+
+procedure TFormLanguage.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    BtnOkClick(Sender);
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 function TFormLanguage.GetFormID: string;
@@ -90,6 +115,61 @@ begin
     TTranslateManager.Instance.Language := TLangageItem(LbLanguages.Items.Objects[SelectedIndex]).Code;
     LoadLanguage;
   end;
+  LbLanguages.Refresh;
+end;
+
+procedure TFormLanguage.LbLanguagesDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+  Language : TLangageItem;
+  Bitmap : TBitmap;
+  PngBitmap : TBitmap;
+  BackColor : TColor;
+begin
+  if Index < 0 then
+    Exit;
+
+  Language := TLangageItem(LbLanguages.Items.Objects[Index]);
+
+  Bitmap := TBitmap.Create;
+  Bitmap.PixelFormat := pf24Bit;
+  try
+    Bitmap.Width := Rect.Right - Rect.Left;
+    Bitmap.Height := Rect.Bottom - Rect.Top;
+    if LbLanguages.Selected[Index] then
+      BackColor := clHighlight
+    else
+      BackColor := clWindow;
+
+    Bitmap.Canvas.Pen.Color := BackColor;
+    Bitmap.Canvas.Brush.Color := BackColor;
+    Bitmap.Canvas.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
+    if LbLanguages.Selected[Index] then
+      Bitmap.Canvas.Font.Color := clHighlightText
+    else
+      Bitmap.Canvas.Font.Color := clWindowText;
+
+    Bitmap.Canvas.TextOut(Language.Image.Width + 6, Bitmap.Height div 2 - Bitmap.Canvas.TextHeight(Language.Name) div 2, Language.Name);
+
+    PngBitmap := TBitmap.Create;
+    try
+      PngBitmap.PixelFormat := pf24bit;
+      LoadPNGImage32bit(Language.Image, PngBitmap, BackColor);
+      Bitmap.Canvas.Draw(2, 2, PngBitmap);
+    finally
+      F(PngBitmap);
+    end;
+
+    LbLanguages.Canvas.Draw(Rect.Left, Rect.Top, Bitmap);
+  finally
+    F(Bitmap);
+  end;
+end;
+
+procedure TFormLanguage.LbLanguagesMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  LbLanguages.Refresh;
 end;
 
 procedure TFormLanguage.LoadLanguage;
@@ -112,6 +192,8 @@ var
   I : Integer;
   Language : TLanguage;
   LangItem : TLangageItem;
+  ImageStream : TMemoryStream;
+  PNG : TPNGGraphic;
 begin
   LbLanguages.Clear;
   MS := TMemoryStream.Create;
@@ -127,10 +209,25 @@ begin
         begin
           Language := TLanguage.CreateFromXML(ReadFileContent(MS, FileList[I]));
           try
-            LangItem := TLangageItem.Create;
-            LangItem.Name := Language.Name;
-            LangItem.Code := StringReplace(StringReplace(FileList[I], LanguageFileMask, '', []), ExtractFileExt(FileList[I]), '', []);
-            LbLanguages.Items.AddObject(Language.Name, LangItem);
+            ImageStream := TMemoryStream.Create;
+            try
+              LangItem := TLangageItem.Create;
+              ExtractFileFromStorage(MS, ImageStream, Language.ImageName);
+              PNG := TPNGGraphic.Create;
+              try
+                ImageStream.Seek(0, soFromBeginning);
+                PNG.LoadFromStream(ImageStream);
+                LangItem.Image := PNG;
+                PNG := nil;
+              finally
+                F(PNG);
+              end;
+              LangItem.Name := Language.Name;
+              LangItem.Code := StringReplace(StringReplace(FileList[I], LanguageFileMask, '', []), ExtractFileExt(FileList[I]), '', []);
+              LbLanguages.Items.AddObject(Language.Name, LangItem);
+            finally
+              F(ImageStream);
+            end;
           finally
             F(Language);
           end;
@@ -142,7 +239,21 @@ begin
   finally
     F(MS);
   end;
+  LbLanguages.Selected[0] := True;
   LoadLanguage;
+end;
+
+{ TLangageItem }
+
+constructor TLangageItem.Create;
+begin
+  Image := nil;
+end;
+
+destructor TLangageItem.Destroy;
+begin
+  F(Image);
+  inherited;
 end;
 
 end.

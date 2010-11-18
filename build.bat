@@ -43,6 +43,10 @@ cd KernelDLL
 "%DCC32%" Kernel -E"..\bin" -N0"..\dcu" -U"%DM%" -$W -$D+ -$I+ -$O+ -$Z1
 cd ..
 
+cd dcu
+del *.dcu
+cd ..
+
 cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat

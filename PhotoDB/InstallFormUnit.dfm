@@ -4,8 +4,8 @@ object InstallForm: TInstallForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Install PhotoDB'
-  ClientHeight = 304
-  ClientWidth = 463
+  ClientHeight = 584
+  ClientWidth = 667
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -164,7 +164,7 @@ object InstallForm: TInstallForm
     OnClick = Button2Click
   end
   object Step1: TPanel
-    Left = 152
+    Left = 151
     Top = 40
     Width = 313
     Height = 233
@@ -290,7 +290,7 @@ object InstallForm: TInstallForm
   end
   object Step2: TPanel
     Left = 151
-    Top = 40
+    Top = 323
     Width = 313
     Height = 233
     BevelOuter = bvNone
