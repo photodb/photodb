@@ -4,12 +4,18 @@ unit uInstallTypes;
 
 interface
 
-uses Zlib, Windows, Classes, SysUtils, uMemory;
+uses Zlib, Windows, Classes, SysUtils, uMemory, Math;
 
 const
   MaxFileNameLength = 255;
+  ReadBufferSize = 1024;
 
 type
+  TInstallOptions = record
+    FinalDestination : string;
+    FileTypes : string;
+  end;
+
   TZipHeader = record
     CRC : Cardinal;
   end;
@@ -23,13 +29,18 @@ type
     ChildsCount : Integer;
   end;
 
+  TExtractFileCallBack = procedure(BytesRead, BytesTotal : Integer) of object;
+
 function AddFileToStream(Stream : TStream; FileName : string) : Boolean;
 function ExtractFileFromStorage(Src : TStream; Dest : TStream; FileName : string) : Boolean; overload;
+function ExtractFileFromStorageEx(Src : TStream; Dest : TStream; FileName : string; CallBack : TExtractFileCallBack) : Boolean; overload;
 function ExtractFileFromStorage(Src : TStream; FileName : string) : Boolean; overload;
 function AddDirectoryToStream(Src : TStream; DirectoryName : string) : Boolean;
 function ExtractDirectoryFromStorage(Src : TStream; DirectoryPath : string) : Boolean;
 procedure FillFileList(Src : TStream; FileList : TStrings; out OriginalFilesSize : Int64);
 function ReadFileContent(Src : TStream; FileName : string) : string;
+function ExtractFileEntry(Src : TStream; FileName : string; var Entry : TZipEntryHeader) : Boolean;
+function GetObjectSize(Src : TStream; FileName : string) : Int64;
 
 implementation
 
@@ -108,12 +119,19 @@ begin
 end;
 
 function ExtractFileFromStorage(Src : TStream; Dest : TStream; FileName : string) : Boolean;
+begin
+  Result := ExtractFileFromStorageEx(Src, Dest, FileName, nil);
+end;
+
+function ExtractFileFromStorageEx(Src : TStream; Dest : TStream; FileName : string; CallBack : TExtractFileCallBack) : Boolean;
 var
   EntryHeader : TZipEntryHeader;
   Decompression : TDecompressionStream;
+  SizeToCopy, CopyedSize : Integer;
 begin
   Result := False;
   Src.Seek(0, soFromBeginning);
+  CopyedSize := 0;
 
   while Src.Read(EntryHeader, SizeOf(EntryHeader)) = SizeOf(EntryHeader) do
   begin
@@ -122,7 +140,14 @@ begin
       begin
         Decompression := TDecompressionStream.Create(Src);
         try
-          Dest.CopyFrom(Decompression, EntryHeader.FileOriginalSize );
+          while CopyedSize < EntryHeader.FileOriginalSize do
+          begin
+            SizeToCopy := Min(EntryHeader.FileOriginalSize - CopyedSize, ReadBufferSize);
+            Dest.CopyFrom(Decompression, SizeToCopy);
+            Inc(CopyedSize, SizeToCopy);
+            if Assigned(CallBack) then
+              CallBack(EntryHeader.FileOriginalSize, CopyedSize);
+          end;
         finally
           F(Decompression);
         end;
@@ -254,6 +279,49 @@ begin
     end;
   finally
     F(MS);
+  end;
+end;
+
+function ExtractFileEntry(Src : TStream; FileName : string; var Entry : TZipEntryHeader) : Boolean;
+begin
+  Result := False;
+  Src.Seek(0, soFromBeginning);
+  while Src.Read(Entry, SizeOf(Entry)) = SizeOf(Entry) do
+  begin
+    if AnsiLowerCase(ExtractFileNameFromHeader(Entry)) = AnsiLowerCase(FileName) then
+    begin
+      Result := True;
+      Exit;
+    end;
+    Src.Seek(Entry.FileCompressedSize, soFromCurrent);
+  end;
+end;
+
+function GetObjectSize(Src : TStream; FileName : string) : Int64;
+var
+  EntryHeader : TZipEntryHeader;
+  I : Integer;
+begin
+  Result := 0;
+  Src.Seek(0, soFromBeginning);
+  while Src.Read(EntryHeader, SizeOf(EntryHeader)) = SizeOf(EntryHeader) do
+  begin
+    if AnsiLowerCase(ExtractFileNameFromHeader(EntryHeader)) = AnsiLowerCase(FileName) then
+    begin
+      if not EntryHeader.IsDirectory then
+        Result := EntryHeader.FileOriginalSize
+      else
+      begin
+        for I := 1 to EntryHeader.ChildsCount do
+        begin
+          Src.Read(EntryHeader, SizeOf(EntryHeader));
+          Inc(Result, EntryHeader.FileOriginalSize);
+          Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
+        end;
+      end;
+      Exit;
+    end;
+    Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
   end;
 end;
 

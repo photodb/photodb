@@ -1,17 +1,21 @@
 program InstallMaker;
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   Classes,
   SysUtils,
   Zlib,
   uInstallTypes in 'uInstallTypes.pas',
   acWorkRes in '..\PhotoDB\Units\acWorkRes.pas',
-  uMemory in '..\PhotoDB\Units\uMemory.pas';
+  uMemory in '..\PhotoDB\Units\uMemory.pas',
+  uInstallScope in 'uInstallScope.pas';
 
 var
   FileName : string;
   FS : TFileStream;
-  FD : TFileStream;
+  I : Integer;
+  DiskObject : TDiskObject;
 
   procedure AddFile(FileRelativePath : string);
   var
@@ -33,18 +37,14 @@ begin
   FileName := IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + ParamStr(1);
   FS := TFileStream.Create(FileName, fmCreate);
   try
-    AddFile('..\PhotoDB\bin\PhotoDB.exe');
-    AddFile('..\PhotoDB\bin\Kernel.dll');
-    AddFile('..\PhotoDB\bin\lpng-px.dll');
-    AddFile('..\PhotoDB\bin\Icons.dll');
-    AddFile('..\PhotoDB\bin\FreeImage.dll');
-    {$IFDEF DBDEBUG}
-    AddFile('..\PhotoDB\bin\FastMM_FullDebugMode.dll');
-    {$ENDIF}
-    AddDirectory('..\PhotoDB\bin\Actions');
-    AddDirectory('..\PhotoDB\bin\Acripts');
-    AddDirectory('..\PhotoDB\bin\Images');
-    AddDirectory('..\PhotoDB\bin\Languages');
+    for I := 0 to CurrentInstall.Files.Count - 1 do
+    begin
+      DiskObject := CurrentInstall.Files[I];
+      if DiskObject is TFileObject then
+        AddFile('..\PhotoDB\bin\' + DiskObject.Name);
+      if DiskObject is TDirectoryObject then
+        AddDirectory('..\PhotoDB\bin\' + DiskObject.Name);
+    end;
   finally
     F(FS);
   end;

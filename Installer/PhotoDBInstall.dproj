@@ -57,13 +57,6 @@
 			<DCCReference Include="..\PhotoDB\Units\uFileUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicColor.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicCompression.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicEx.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\GraphicStrings.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\JPG.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Formats\GraphicEx\MZLib.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uPNGUtils.pas"/>
 			<DCCReference Include="uFrmProgress.pas">
 				<Form>FrmProgress</Form>
 			</DCCReference>
@@ -79,6 +72,12 @@
 			<DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
 			<DCCReference Include="uInstallThread.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
+			<DCCReference Include="uSetupActions.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uVistaFuncs.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\UnitDBFileDialogs.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\VistaDialogInterfaces.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\VistaFileDialogs.pas"/>
+			<DCCReference Include="uInstallScope.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

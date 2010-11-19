@@ -439,67 +439,7 @@ begin
 
   EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
-  // INSTALL ----------------------------------------------------
-
-  if not FolderView and not Emulation and not DBInDebug then
-  begin
-    EventLog('...INSTALL COMPARING...');
-    If not ThisFileInstalled then
-    begin
-      if (AnsiUpperCase(ExtractFileName(Application.ExeName))
-          <> 'SETUP.EXE') and not EmulationInstall then
-      begin
-        if ID_YES = MessageBoxDB(GetActiveFormHandle,
-          TA('Program is not corrected installed!', 'System'), TA('Error'), TD_BUTTON_YESNO,
-          TD_ICON_ERROR) then
-        begin
-          EventLog('Loading Kernel.dll');
-          KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
-          if KernelHandle = 0 then
-          begin
-            EventLog('KernelHandle IS 0 -> exit');
-            MessageBoxDB(GetActiveFormHandle,
-              TA('Unable to load "Kernel.dll" library!', 'System'), TA('Error'), TD_BUTTON_OK,
-              TD_ICON_ERROR);
-            StopApplication;
-          end;
-          DBKernel := TDBKernel.Create;
-          Application.CreateForm(TInstallForm, InstallForm);
-  Application.Restore;
-          EventLog(':InstallForm.SetQuickSelfInstallOption()');
-          InstallForm.SetQuickSelfInstallOption;
-          InstallForm.ShowModal;
-          InstallForm.Release;
-          InstallForm := nil;
-          DBTerminating := True;
-          StopApplication;
-        end else
-        begin
-          DBTerminating := True;
-        end;
-      end else
-      begin
-        EventLog('Loading Kernel.dll');
-        KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
-        if KernelHandle = 0 then
-        begin
-          EventLog('KernelHandle IS 0 -> exit');
-          MessageBoxDB(GetActiveFormHandle,
-            TA('Unable to load "Kernel.dll" library!', 'System'), TA('Error'), TD_BUTTON_OK,
-            TD_ICON_ERROR);
-          StopApplication;
-        end;
-        DBKernel := TDBKernel.Create;
-        Application.CreateForm(TInstallForm, InstallForm);
-        Application.Restore;
-        InstallForm.ShowModal;
-        InstallForm.Release;
-        InstallForm := nil;
-        StopApplication;
-      end;
-    end;
-  end;
-
+  //TODO: uninstall is stand-alone application
   // UNINSTALL ----------------------------------------------------
 
   EventLog('...UNINSTALL COMPARING...');

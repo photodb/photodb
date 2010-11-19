@@ -305,10 +305,6 @@ const
   // [END]
 
 const
-  DBID = '{E1446065-CB87-440D-9315-6FA356F921B6}'; // B5
-  DBBeginInstallID = '{A8C9FD9D-C2F6-4B1C-9164-11E6075FD527}';
-  DBEndInstallID = '{C5348907-0AD6-4D02-8E0D-4063057B652F}';
-  ReleaseNumber = 12;
   DemoSecondsToOpen = 5;
   MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
   FilesCount = 10;
@@ -853,7 +849,7 @@ end;
 function IsNewVersion: Boolean;
 var
   FReg: TBDRegistry;
-  F: TIntegerFunction;
+  Func: TIntegerFunction;
   H: Thandle;
   ProcH: Pointer;
   FileName: string;
@@ -874,16 +870,18 @@ begin
         ProcH := GetProcAddress(H, 'FileVersion');
         if ProcH <> nil then
         begin
-          @F := ProcH;
-          if F > ReleaseNumber then
+          @Func := ProcH;
+          if Func > ReleaseNumber then
             Result := True;
         end;
         FreeLibrary(H);
       end;
     end;
   except
+    on e : Exception do
+      EventLog(e.Message);
   end;
-  FReg.Free;
+  F(FReg);
 end;
 
 function ThisFileInstalled: Boolean;

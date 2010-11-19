@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, SysUtils, StrUtils, UnitDBFileDialogs,
   Dolphin_DB, UnitDBDeclare, Language, uVistaFuncs, uFileUtils,
-  uMemory, uTranslate;
+  uMemory, uTranslate, uConstants;
 
 type
  // File strusts//////////////////////////////////////
@@ -1047,7 +1047,7 @@ begin
   FillChar(HeaderV1, SizeOf(HeaderV1), #0);
   Header.ID := 'PHOTODB_CD_INDEX';
   Header.Version := 1;
-  Header.DBVersion := Dolphin_DB.ReleaseNumber;
+  Header.DBVersion := ReleaseNumber;
   HeaderV1.CDLabel := CDLabel;
   HeaderV1.Date := Now;
   try

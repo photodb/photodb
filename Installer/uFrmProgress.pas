@@ -4,11 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, pngimage, ExtCtrls, uFormUtils, uMemory, uPNGUtils, GraphicsBaseTypes;
+  Dialogs, pngimage, ExtCtrls, uFormUtils, uMemory, GraphicsBaseTypes,
+  uInstallUtils, uDBForm;
 
 type
-  TFrmProgress = class(TForm)
-    ImBackground: TImage;
+  TFrmProgress = class(TDBForm)
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
@@ -16,8 +16,12 @@ type
     FProgress: Byte;
     FBackgroundImage : TBitmap;
     procedure RenderFormImage;
+    procedure LoadLanguage;
     procedure SetProgress(const Value: Byte);
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
+    function GetFormID : string; override;
   public
     { Public declarations }
     property Progress : Byte read FProgress write SetProgress;
@@ -27,14 +31,36 @@ implementation
 
 {$R *.dfm}
 
+procedure TFrmProgress.CreateParams(var Params: TCreateParams);
+begin
+  inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
+end;
+
 procedure TFrmProgress.FormCreate(Sender: TObject);
 var
   MS : TMemoryStream;
+  Png : TPngImage;
 begin
+  LoadLanguage;
   FBackgroundImage := TBitmap.Create;
   FBackgroundImage.PixelFormat := pf32bit;
-  FBackgroundImage.Assign(ImBackground.Picture.Graphic);
-  Progress := 75;
+  MS := TMemoryStream.Create;
+  try
+    GetRCDATAResourceStream('PROGRESS', MS);
+    Png := TPngImage.Create;
+    try
+      MS.Seek(0, soFromBeginning);
+      Png.LoadFromStream(MS);
+      FBackgroundImage.Assign(Png);
+    finally
+      F(Png);
+    end;
+  finally
+    F(MS);
+  end;
 end;
 
 procedure TFrmProgress.RenderFormImage;
@@ -69,6 +95,21 @@ end;
 procedure TFrmProgress.FormDestroy(Sender: TObject);
 begin
   F(FBackgroundImage);
+end;
+
+function TFrmProgress.GetFormID: string;
+begin
+  Result := 'Setup';
+end;
+
+procedure TFrmProgress.LoadLanguage;
+begin
+  BeginTranslate;
+  try
+    Caption := L('PhotoDB 2.3 Setup');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFrmProgress.SetProgress(const Value: Byte);

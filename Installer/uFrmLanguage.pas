@@ -5,14 +5,14 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
-  StrUtils, uTranslate, uLogger, GraphicEx, uPNGUtils, XPMan;
+  StrUtils, uTranslate, uLogger, XPMan, pngimage;
 
 type
   TLangageItem = class(TObject)
   public
     Name : string;
     Code : string;
-    Image : TPNGGraphic;
+    Image : TPngImage;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -154,8 +154,7 @@ begin
     PngBitmap := TBitmap.Create;
     try
       PngBitmap.PixelFormat := pf24bit;
-      LoadPNGImage32bit(Language.Image, PngBitmap, BackColor);
-      Bitmap.Canvas.Draw(2, 2, PngBitmap);
+      Language.Image.Draw(Bitmap.Canvas, Classes.Rect(2, 2, 2 + Language.Image.Width, 2 + Language.Image.Height));
     finally
       F(PngBitmap);
     end;
@@ -193,7 +192,7 @@ var
   Language : TLanguage;
   LangItem : TLangageItem;
   ImageStream : TMemoryStream;
-  PNG : TPNGGraphic;
+  PNG : TPNGImage;
 begin
   LbLanguages.Clear;
   MS := TMemoryStream.Create;
@@ -213,7 +212,7 @@ begin
             try
               LangItem := TLangageItem.Create;
               ExtractFileFromStorage(MS, ImageStream, Language.ImageName);
-              PNG := TPNGGraphic.Create;
+              PNG := TPNGImage.Create;
               try
                 ImageStream.Seek(0, soFromBeginning);
                 PNG.LoadFromStream(ImageStream);

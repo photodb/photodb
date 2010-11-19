@@ -42,6 +42,7 @@
 			<DCCReference Include="uInstallTypes.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\acWorkRes.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
+			<DCCReference Include="uInstallScope.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

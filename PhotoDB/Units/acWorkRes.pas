@@ -263,7 +263,7 @@ function LoadFileToResourceW(exeFile, type_, name, aFile: PWideChar): BOOL; stdc
 // aFile   - Путь к файлу, который будет грузиться в ресурс
 // LoadFileToResourceW('e:\Temp\Project1.exe', 'JPEG', 'MYJPEG', 'e:\Temp\Untitled-21.jpg')
 
-function StringToPWide(sStr: String): PWideChar;
+function StringToPWide(sStr: AnsiString): PWideChar;
 // Преобразование String в PWideChar
 
 function PWideToString(pw: PWideChar): string;
@@ -644,7 +644,7 @@ begin
   else           c3 := OPEN_EXISTING;
   if GetVersion and $80000000 = 0 then
        result := CreateFileW(fileName,                            c1, c2, nil, c3, 0, 0)
-  else result := CreateFileA(pansichar(string(wideString(fileName))), c1, c2, nil, c3, 0, 0);
+  else result := CreateFileA(pansichar(ansistring(wideString(fileName))), c1, c2, nil, c3, 0, 0);
 end;
 
 function BeginUpdateResourceW(fileName: PWideChar; delExistingRes: bool; Write : boolean = true) : dword; stdcall;
@@ -1329,7 +1329,7 @@ begin
     Result:= EndUpdateResourceW(hUpdateRes, False);
 end;
 
-function StringToPWide(sStr: String): PWideChar;
+function StringToPWide(sStr: AnsiString): PWideChar;
 // Преобразование String в PWideChar
 var
   pw: PWideChar;
@@ -1353,7 +1353,7 @@ begin
   GetMem(p, iLen);
   try
     WideCharToMultiByte(CP_ACP, 0, pw, iLen, p, iLen * 2, nil, nil);
-    Result:= p;
+    Result := string(p);
   finally
     FreeMem(p, iLen);
   end;

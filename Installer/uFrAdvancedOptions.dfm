@@ -1,9 +1,17 @@
 object FrmAdvancedOptions: TFrmAdvancedOptions
   Left = 0
   Top = 0
-  Width = 425
-  Height = 324
-  TabOrder = 0
+  ClientHeight = 327
+  ClientWidth = 428
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = True
+  PixelsPerInch = 96
+  TextHeight = 13
   object Label1: TLabel
     Left = 3
     Top = 281
@@ -32,7 +40,7 @@ object FrmAdvancedOptions: TFrmAdvancedOptions
     Height = 13
     Caption = '- File extension ignored'
   end
-  object CheckListBox1: TCheckListBox
+  object CbFileExtensions: TCheckListBox
     Left = 3
     Top = 3
     Width = 201
@@ -43,7 +51,7 @@ object FrmAdvancedOptions: TFrmAdvancedOptions
   object EdPath: TEdit
     Left = 3
     Top = 300
-    Width = 414
+    Width = 394
     Height = 21
     TabOrder = 1
     Text = 'EdPath'
@@ -72,5 +80,14 @@ object FrmAdvancedOptions: TFrmAdvancedOptions
     Width = 17
     Height = 17
     TabOrder = 4
+  end
+  object BtnSelectDirectory: TButton
+    Left = 403
+    Top = 300
+    Width = 19
+    Height = 21
+    Caption = '...'
+    TabOrder = 5
+    OnClick = BtnSelectDirectoryClick
   end
 end

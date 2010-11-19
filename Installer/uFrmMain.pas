@@ -5,11 +5,12 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
-  uFrmProgress;
+  uFrmProgress, uInstallTypes, uInstallUtils, uMemory, uConstants,
+  uVistaFuncs;
 
 type
   TFrmMain = class(TDBForm)
-    Image1: TImage;
+    ImMain: TImage;
     BtnNext: TButton;
     BtnCancel: TButton;
     Label1: TLabel;
@@ -22,6 +23,7 @@ type
   private
     { Private declarations }
     procedure LoadLanguage;
+    procedure LoadMainImage;
   protected
     function GetFormID : string; override;
   public
@@ -36,7 +38,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uFrmLanguage;
+  uFrmLanguage, uInstallThread;
 
 { TFrmMain }
 
@@ -48,11 +50,13 @@ end;
 procedure TFrmMain.BtnInstallClick(Sender: TObject);
 var
   FrmProgress: TFrmProgress;
+  Options : TInstallOptions;
 begin
   Application.CreateForm(TFrmProgress, FrmProgress);
   Hide;
   FrmProgress.Show;
- //TODO:
+  FrmProgress.Progress := 75;
+  TInstallThread.Create(Self, Options);
 end;
 
 procedure TFrmMain.CbAcceptLicenseAgreementClick(Sender: TObject);
@@ -62,7 +66,17 @@ begin
 end;
 
 procedure TFrmMain.FormCreate(Sender: TObject);
+var
+  hSemaphore : THandle;
 begin
+  hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
+  if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
+  begin
+    TaskDialogEx(Handle, L('Install already in progress!'), L('Warning'), '', TD_BUTTON_OK, TD_ICON_ERROR, False);
+    Application.Terminate;
+    Exit;
+  end;
+  LoadMainImage;
   LoadLanguage;
 end;
 
@@ -81,6 +95,27 @@ begin
     BtnInstall.Caption := L('Install');
   finally
     EndTranslate;
+  end;
+end;
+
+procedure TFrmMain.LoadMainImage;
+var
+  MS : TMemoryStream;
+  Png : TPngImage;
+begin
+  MS := TMemoryStream.Create;
+  try
+    GetRCDATAResourceStream('Image', MS);
+    Png := TPngImage.Create;
+    try
+      MS.Seek(0, soFromBeginning);
+      Png.LoadFromStream(MS);
+      ImMain.Picture.Graphic := Png;
+    finally
+      F(Png);
+    end;
+  finally
+    F(MS);
   end;
 end;
 
