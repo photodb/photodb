@@ -476,7 +476,6 @@ begin
     try
      if Foptions.AddLinks then
      begin
-      Res:=false;
       if length(FSourceTable.fieldByName('Links').AsString)>1 then
       begin
        res:=false;

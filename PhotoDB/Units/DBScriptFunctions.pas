@@ -909,7 +909,7 @@ begin
 
  AddScriptFunction(Enviroment,'GetFileNameByID',F_TYPE_FUNCTION_INTEGER_IS_STRING,@GetFileNameByID);
  AddScriptFunction(Enviroment,'GetIDByFileName',F_TYPE_FUNCTION_STRING_IS_INTEGER,@GetIDByFileName);
- AddScriptFunction(Enviroment,'InstalledFileName',F_TYPE_FUNCTION_IS_STRING,@InstalledFileName);
+// AddScriptFunction(Enviroment,'InstalledFileName',F_TYPE_FUNCTION_IS_STRING,@InstalledFileName);
 
  AddScriptFunction(Enviroment,'DoManager',F_TYPE_PROCEDURE_NO_PARAMS,@DoManager);
 

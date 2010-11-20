@@ -5,7 +5,7 @@ interface
 uses
   ExplorerTypes, Forms, ShellApi, Dialogs, Registry, SelfDeleteUnit,
   Windows, SysUtils, Dolphin_DB, Classes, UnitGroupsWork,  uVistaFuncs,
-  GraphicSelectEx, WindowsIconCacheTools, uConstants, uFileUtils;
+  GraphicSelectEx, uConstants, uFileUtils;
 
   type TUnInstallOptions = record
    Program_Files : boolean;
@@ -102,7 +102,7 @@ begin
   FinfoLabel:='';
   FProgressText:=TEXT_MES_DELETING_PR;
   FProgress:=0;
-  FMaxSize:=FilesCount;
+{  FMaxSize:=FilesCount;
   Synchronize(SetInfo);
   Synchronize(SetProgress);
   FProgress:=1;
@@ -118,7 +118,7 @@ begin
    end;
    FProgress:=i+1;
    Synchronize(SetProgress);
-  end;
+  end;  }
  end;
  If Options.DataBase_Files then
  begin
@@ -155,8 +155,8 @@ begin
   FMaxSize:=1;
   Synchronize(SetInfo);
   Synchronize(SetProgress);
-  DeleteRegistryEntries;
-  ExtUnInstallApplicationW;
+  //TODO: DeleteRegistryEntries;
+  //TODO: ExtUnInstallApplicationW;
  end;
  If Options.Chortcuts then
  begin
@@ -197,38 +197,6 @@ begin
   FMaxSize:=1;
   Synchronize(SetInfo);
   Synchronize(SetProgress);
-  //Remove old version plugins
-  Found := FindFirst(fdir+OldPlugInImagesFolder+'*.dll', faAnyFile, SearchRec);
-  while Found = 0 do
-  begin
-   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-   begin
-    If FileExists(fdir+OldPlugInImagesFolder+SearchRec.Name) then
-    begin
-     try
-      dllhandle:=LoadLibrary(PWideChar(fdir+OldPlugInImagesFolder+SearchRec.Name));
-      if dllhandle<>0 then
-      begin
-       SetString(s, Buffer, LoadString(dllhandle, 3, Buffer, sizeof(Buffer)));
-       freelibrary(dllhandle);
-       if s='TGRAPHICSELECT' then
-       begin
-        Filesetattr(fdir+OldPlugInImagesFolder+SearchRec.Name,faHidden);
-        Assignfile(f1,fdir+OldPlugInImagesFolder+SearchRec.Name);
-        Erase(f1);
-       end;
-      end;
-     except
-     end;
-    end;
-   end;
-   Found := SysUtils.FindNext(SearchRec);
-  end;
-  SysUtils.FindClose(SearchRec);
-  try
-   RmDir(fdir+OldPlugInImagesFolder);
-  except
-  end;
 
   //Remove plugins 2.0
   Found := FindFirst(fdir+PlugInImagesFolder+'*.jpgc', faAnyFile, SearchRec);
@@ -324,7 +292,7 @@ begin
  Synchronize(SetInfo);
  Synchronize(SetProgress);
  try
-  RebuildIconCacheAndNotifyChanges;
+   //TODO: RebuildIconCacheAndNotifyChanges;
  except
  end;
 
@@ -349,7 +317,7 @@ begin
   SetupProgressUnit.SetupProgressForm.OnClose:=nil;
   SetupProgressUnit.SetupProgressForm.Close;
  end;
- DoEndInstall;
+ //DoEndInstall;
 end;
 
 end.

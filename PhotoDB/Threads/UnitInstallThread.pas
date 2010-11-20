@@ -6,7 +6,7 @@ uses
   Windows, Dialogs, Variants, DB, Dolphin_DB, Classes, Sysutils, Forms,
   ActiveX, UnitGroupsWork, Registry, acDlgSelect, jpeg, Math,
   GraphicSelectEx, CommonDBSupport, UnitINI,uVistaFuncs,
-  WindowsIconCacheTools, uLogger, uConstants, uFileUtils,
+  uLogger, uConstants, uFileUtils,
   UnitDBCommon;
 
 type
@@ -20,7 +20,6 @@ type
   FErrorString : string;
   FCurrentFile : string;
   FErrorResult : integer;
-  FQuery, FSetQuery : TDataSet;//TQuery;
   FInstallEnd : Boolean;
   FStrParam : String;
   FParamTempGroup : TGroups;
@@ -44,7 +43,6 @@ type
     procedure ErrorB;
     procedure errorC;
     procedure FilterGroupsSync;
-    procedure Post(SQL : string);
   end;
 
   var pause, terminate_ : Boolean;
@@ -83,7 +81,7 @@ begin
   if FileExists(CurrentImagesDirectory+'Images\Me.jpg') then
   begin
    try                       
-    if InstUserName='' then NewGroup.GroupName:=Dolphin_DB.InstalledUserName else
+    if InstUserName='' then NewGroup.GroupName:=GetWindowsUserName else
     NewGroup.GroupName:=InstUserName;
 
     NewGroup.GroupCode:=CreateNewGroupCode;
@@ -174,389 +172,8 @@ var
   GroupsActions : TGroupsActionsW;
   PlugInsFiles, ThemesFiles : TStringList;
   Reg : TRegIniFile;
-
-Procedure AddCurrentFile;
 begin
- try
-     Sleep(1);
-     InTable.Append ;
-     IfPause;
-     FFname:=OutTable.FieldByName('Name').AsString;
-     FCurrentFile:=Format(TEXT_MES_ADDING_INSTALL_FORMAT,[inttostr(OutTable.RecNo),inttostr(FMaxSize),Copy(FFname,1,max(length(FFname),16))]);
-     Synchronize(ProgressFile);
-     InTable.FieldByName('Name').AsString:=FFName;
-     InTable.FieldByName('FFileName').AsString:=OutTable.FieldByName('FFileName').AsString;
-     InTable.FieldByName('Comment').AsString:=OutTable.FieldByName('Comment').AsString;
-     InTable.FieldByName('DateToAdd').AsDateTime:=OutTable.FieldByName('DateToAdd').AsDateTime;
-     InTable.FieldByName('Owner').AsString:=OutTable.FieldByName('Owner').AsString;
-     InTable.FieldByName('Rating').AsInteger:=OutTable.FieldByName('Rating').AsInteger;
-     InTable.FieldByName('Thum').AsVariant:=OutTable.FieldByName('Thum').AsVariant;
-     InTable.FieldByName('FileSize').AsInteger:=OutTable.FieldByName('FileSize').AsInteger;
-     InTable.FieldByName('KeyWords').AsString:=OutTable.FieldByName('KeyWords').AsString;
-     InTable.FieldByName('StrTh').AsString:=OutTable.FieldByName('StrTh').AsString;
-     If fileexists(InTable.FieldByName('FFileName').AsString) then
-     InTable.FieldByName('Attr').AsInteger:=db_attr_norm else
-     InTable.FieldByName('Attr').AsInteger:=db_attr_not_exists;
-     InTable.FieldByName('Attr').AsInteger:=OutTable.FieldByName('Attr').AsInteger;
-     if OutTable.FindField('Collection')<>nil then
-     InTable.FieldByName('Collection').AsString:=OutTable.FieldByName('Collection').AsString;
-     InTable.FieldByName('Access').AsInteger:=OutTable.FieldByName('Access').AsInteger;
-     InTable.FieldByName('Width').AsInteger:=OutTable.FieldByName('Width').AsInteger;
-     InTable.FieldByName('Height').AsInteger:=OutTable.FieldByName('Height').AsInteger;
-     if OutTable.FindField('Colors')<>nil then
-     InTable.FieldByName('Colors').AsInteger:=OutTable.FieldByName('Colors').AsInteger;
-     if OutTable.FindField('Rotated')<>nil then
-     InTable.FieldByName('Rotated').AsInteger:=OutTable.FieldByName('Rotated').AsInteger;
-     if OutTable.FindField('IsDate')<>nil then
-     InTable.FieldByName('IsDate').AsBoolean:=OutTable.FieldByName('IsDate').AsBoolean;
-     if OutTable.FindField('Groups')<>nil then
-     begin
-      Groups := InTable.FieldByName('Groups').AsString;
-      OldGroups := Groups;
-      Groups_ := OutTable.fieldByName('Groups').AsString;
-      FTempGroup:=EnCodeGroups(Groups_);
-      FParamTempGroup := FTempGroup;
-      FParamFOutRegGroups := FOutRegGroups;
-      FParamFRegGroups := FRegGroups;
-      FParamGroupsActions :=  GroupsActions;
-      FStrParam:=FEndDBDirectory+'PhotoDB.DB';
-      Synchronize(FilterGroupsSync);
-      GroupsActions:=FParamGroupsActions;
-      FRegGroups:=FParamFRegGroups;
-      InTable.FieldByName('Groups').AsString:=CodeGroups(FParamTempGroup);
-     end;
-     if OutTable.FindField('Include')<>nil then
-     InTable.FieldByName('Include').AsBoolean:=OutTable.FieldByName('Include').AsBoolean;
-     if OutTable.FindField('Links')<>nil then
-     InTable.FieldByName('Links').AsString:=OutTable.FieldByName('Links').AsString;
-     if OutTable.FindField('aTime')<>nil then
-     InTable.FieldByName('aTime').AsDateTime:=OutTable.FieldByName('aTime').AsDateTime;
-     if OutTable.FindField('IsTime')<>nil then
-     InTable.FieldByName('IsTime').AsBoolean:=OutTable.FieldByName('IsTime').AsBoolean;
 
- except    
-  on e : Exception do EventLog(':AddCurrentFile() throw exception: '+e.Message);
- end;
-end;
-
-Procedure RelodDllNames(var List : TStringList; out AllSize : Integer);
-var
-  Found  : integer;
-  SearchRec : TSearchRec;
-  Directory : string;
-begin
- AllSize:=0;
- FInstallEnd:=false;
- List:= TStringList.Create;
- List.Clear;
- Directory:=ProgramDir;
- FormatDir(Directory);
- Directory:=Directory+PlugInImagesFolder;
- Found := FindFirst(Directory+'*.jpgc', faAnyFile, SearchRec);
- while Found = 0 do
- begin
-  if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-  begin
-   If FileExists(Directory+SearchRec.Name) then
-   try
-    if ValidJPEGContainer(Directory+SearchRec.Name) then
-    List.Add(Directory+SearchRec.Name);
-   except
-    on e : Exception do EventLog(':RelodDllNames() throw exception: '+e.Message);
-   end;
-  end;
-  Found := SysUtils.FindNext(SearchRec);
- end;
- SysUtils.FindClose(SearchRec);
-end;
-
-procedure CopyFileByStreams(Source, Target: String);
-
-var
-  SourceStream: TFileStream;
-  TargetStream: TFileStream;
-
-begin
-  SourceStream := TFileStream.Create(Source, fmShareDenyWrite);
-  try
-    TargetStream := TFileStream.Create(Target, fmCreate);
-      try
-        TargetStream.CopyFrom(SourceStream, 0);
-        FileSetDate(TargetStream.Handle, FileGetDate(SourceStream.Handle));
-      finally
-        TargetStream.Free;
-      end;
-    finally
-      SourceStream.Free;
-    end;
-end;
-
-Procedure RelodThemesNames(var List : TStringList; out AllSize : Integer);
-var
-  Found  : integer;
-  SearchRec : TSearchRec;
-  Directory: string;
-begin
- AllSize:=0;
- List:= TStringList.Create;
- List.Clear;
- Directory:=ProgramDir;
- FormatDir(Directory);
- Directory:=Directory+ThemesDirectory;
- Found := FindFirst(Directory+'*.dbc', faAnyFile, SearchRec);
- while Found = 0 do
- begin
-  if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-  begin
-   If FileExists(Directory+SearchRec.Name) then
-   begin
-    FCurrentFile:=Mince(Directory+SearchRec.Name,MaxShowPathLength);
-    Synchronize(ProgressFile);
-    List.Add(Directory+SearchRec.Name);
-    Inc(AllSize,GetFileSizeByName(Directory+SearchRec.Name));
-    IfPause;
-   end;
-  end;
-  Found := SysUtils.FindNext(SearchRec);
- end;
- SysUtils.FindClose(SearchRec);
-end;
-
-procedure DeleteOlderShortcuts;
-begin
-//[BEGIN] Removing Shortcuts olders versions
-//1.75
-  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Desktop', '')+'\'+ProgramShortCutFile_1_75);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_75+'\'+ProgramShortCutFile_1_75);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_75+'\'+HelpShortCutFile_1_75);
-  except
-  end;
-  try
-   SysUtils.RemoveDir(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_75);
-  except
-  end;
-//1.8
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Desktop', '')+'\'+ProgramShortCutFile_1_8);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_8+'\'+ProgramShortCutFile_1_8);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_8+'\'+HelpShortCutFile_1_8);
-  except
-  end;
-  try
-   SysUtils.RemoveDir(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_8);
-  except
-  end;
-//1.9
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Desktop', '')+'\'+ProgramShortCutFile_1_9);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_9+'\'+ProgramShortCutFile_1_9);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_9+'\'+HelpShortCutFile_1_9);
-  except
-  end;
-  try
-   SysUtils.RemoveDir(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_1_9);
-  except
-  end;
-
-//2.0
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Desktop', '')+'\'+ProgramShortCutFile_2_0);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_2_0+'\'+ProgramShortCutFile_2_0);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_2_0+'\'+HelpShortCutFile_2_0);
-  except
-  end;
-  try
-   SysUtils.RemoveDir(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_2_0);
-  except
-  end;
-
-//2.1
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Desktop', '')+'\'+ProgramShortCutFile_2_1);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_2_1+'\'+ProgramShortCutFile_2_1);
-  except
-  end;
-  try
-   SysUtils.DeleteFile(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_2_1+'\'+HelpShortCutFile_2_1);
-  except
-  end;
-  try
-   SysUtils.RemoveDir(Reg.ReadString('Shell Folders', 'Programs', '')+'\'+StartMenuProgramsPath_2_1);
-  except
-  end;
-  Reg.free;
-//[END] Removing olders versions
-end;
-
-begin
- EventLog('Install thread begin...');
- SetupProgressUnit.FPause:=@Pause;
- SetupProgressUnit.fInstallDone:=@InstallDone;
- IsOldDataBase:=false;
- InstallDone:=false;
- CurrentDirectory:=GetDirectory(Application.ExeName);
- FMaxSize:=0;
- FBytesOfFilesCopied:=0;
- FMaxSize:=FMaxSize+GetFileSizeByName(Application.ExeName);
- FTypeOperation:=TEXT_MES_SEARCH_PLUGINS;
- FInfo:='...';
- FinfoLabel:='';
- FProgressText:=TEXT_MES_WAIT_MIN;
- FProgress:=0;
- Synchronize(SetInfo);
- Synchronize(SetProgress);
- IfPause;
- RelodDllNames(PlugInsFiles,SizeA);
- inc(FMaxSize,SizeA);
- RelodThemesNames(ThemesFiles,SizeA);
- inc(FMaxSize,SizeA);
- IfPause;
- EventLog('Install/Initialization...');
- if not QuickSelfInstall then
- for i:=0 to FilesCount-1 do
- begin
-  IfPause;
-  if terminate_ then break;
-  size:=GetFileSizeByName(CurrentDirectory+FileList[i]);
-  if DirectoryExists(CurrentDirectory+FileList[i]) then size:=GetDirectorySize(CurrentDirectory+FileList[i]);
-  if Size<10 then
-  if InstallFileNeeds[i] then
-  begin
-   FErrorString:=TEXT_MES_FILE_NOT_FOUND+':'+#13+filelist[i];
-   Synchronize(ErrorExit);
-  end;
-  FMaxSize:=FMaxSize+size;
- end;  
- EventLog('Install/FileSizes complite...');
- Pause:=false;
- terminate_:=false;
- FormatDir(FEndDirectory);
- FormatDir(FEndDBDirectory);
- FTypeOperation:=TEXT_MES_INST_BDE;
- FInfo:='...';
- FinfoLabel:='';
- FProgressText:=TEXT_MES_WAIT_MIN;
- FProgress:=0;
- Synchronize(SetInfo);
- Synchronize(SetProgress);
- If terminate_ then
- begin
-  InstallDone:=true;
-  Synchronize(exitW);
-  exit;
- end;
- FTypeOperation:=TEXT_MES_COPYING_NEW_FILES;
- FInfo:=TEXT_MES_CURRENT_FILE;
- FinfoLabel:='';
- FProgressText:=TEXT_MES_COPYING_PR;
- FProgress:=0;     
- Synchronize(SetInfo);
- Synchronize(SetProgress);
- FCurrentFile:=Mince(FEndDirectory+'PhotoDB.exe',MaxShowPathLength);
- Synchronize(ProgressFile);
- IfPause;
- EventLog('Install/Set information complite...');
- try
-  if not QuickSelfInstall then
-  CopyFileByStreams(Application.ExeName,FEndDirectory+'PhotoDB.exe');
- except
-  on e : Exception do EventLog(':Install() throw exception: '+e.Message);
- end;
- FBytesOfFilesCopied:=FBytesOfFilesCopied+GetFileSizeByName(Application.ExeName);
- IfPause;
- FProgress:=FBytesOfFilesCopied;
-
- EventLog('Install/Begin copying files complite...');
- try
-  if not QuickSelfInstall then
-  For i:=0 to FilesCount-1 do
-  begin
-   IfPause;
-   if terminate_ then break;
-   FCurrentFile:=Mince(FEndDirectory+filelist[i],MaxShowPathLength);
-   Synchronize(ProgressFile);
-   Synchronize(SetProgress);
-   if FileOptions[i] then
-   begin
-    if FileExists(CurrentDirectory+FileList[i]) then
-    WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDirectory+FileList[i]);
-    if DirectoryExists(CurrentDirectory+FileList[i]) then
-    WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDirectory);
-   end else
-   begin
-    WindowsCopyFileSilent(CurrentDirectory+FileList[i],FEndDBDirectory+FileList[i]);
-   end;
-   inc(FBytesOfFilesCopied,GetFileSizeByName(CurrentDirectory+FileList[i]));
-   FProgress:=FBytesOfFilesCopied;
-  end;
-  CreateDirA(FEndDirectory+PlugInImagesFolder);   
- except
-  on e : Exception do EventLog(':Install() throw exception: '+e.Message);
- end;   
- EventLog('Install/Begin copying PlugIns complite...');
- try
-  if not QuickSelfInstall then
-  For i:=0 to PlugInsFiles.Count-1 do
-  begin
-   IfPause;
-   if terminate_ then break;
-   FCurrentFile:=Mince(FEndDirectory+PlugInImagesFolder+ExtractFileName(PlugInsFiles[i]),MaxShowPathLength);
-   Synchronize(ProgressFile);
-   Synchronize(SetProgress);
-   CopyFileByStreams(PlugInsFiles[i],FEndDirectory+PlugInImagesFolder+ExtractFileName(PlugInsFiles[i]));
-   inc(FBytesOfFilesCopied,GetFileSizeByName(PlugInsFiles[i]));
-   FProgress:=FBytesOfFilesCopied;
-  end;       
-  CreateDirA(FEndDirectory+ThemesDirectory);
- except
-  on e : Exception do EventLog(':Install() throw exception: '+e.Message);
- end;
- EventLog('Install/Begin copying themes...');
- try
-  if not QuickSelfInstall then
-  for i:=0 to ThemesFiles.Count-1 do
-  begin
-   IfPause;
-   if terminate_ then break;
-   FCurrentFile:=Mince(FEndDirectory+ThemesDirectory+ExtractFileName(ThemesFiles[i]),MaxShowPathLength);
-   Synchronize(ProgressFile);
-   Synchronize(SetProgress);
-   CopyFileByStreams(ThemesFiles[i],FEndDirectory+ThemesDirectory+ExtractFileName(ThemesFiles[i]));
-   inc(FBytesOfFilesCopied,GetFileSizeByName(ThemesFiles[i]));
-   FProgress:=FBytesOfFilesCopied;
-  end;
- except
-  on e : Exception do EventLog(':Install() throw exception: '+e.Message);
- end;   
  IfPause;
  if not terminate_ then
  begin
@@ -569,16 +186,16 @@ begin
   Synchronize(SetProgress);
   IfPause;
   EventLog('Install/Registry installation...');
-  if GetDefaultDBName<>'' then aDBName:=GetDefaultDBName else
+  if GetWindowsUserName <>'' then aDBName:=GetWindowsUserName else
   begin
    aDBName:=FEndDBDirectory+'PhotoDB.photodb';
   end;
   try
-   RegInstallApplication(FEndDirectory+'PhotoDB.exe',aDBName,InstUserName);
+   //TODO: RegInstallApplication(FEndDirectory+'PhotoDB.exe',aDBName,InstUserName);
    if not PortableWork then
    begin
-    ExtInstallApplication(FEndDirectory+'PhotoDB.exe');
-    ExtInstallApplicationW(Exts,FEndDirectory+'PhotoDB.exe');
+    //TODO: ExtInstallApplication(FEndDirectory+'PhotoDB.exe');
+    //TODO: ExtInstallApplicationW(Exts,FEndDirectory+'PhotoDB.exe');
    end;
   except
    on e : Exception do EventLog(':Install() throw exception: '+e.Message);
@@ -593,29 +210,10 @@ begin
   Synchronize(SetProgress);
   EventLog('Install/CoInitialization...');
   Coinitialize(nil);
-  if not PortableWork then
-  begin
-   EventLog('Install/Deleting shortcuts...');
-   DeleteOlderShortcuts;
-   IfPause;
-   try
-    EventLog('Install/Creating shortcuts...');
-    CreateShortcutW(FEndDirectory+'PhotoDB.exe',ProgramShortCutFile,_PROGRAMS,StartMenuProgramsPath,FEndDirectory,'',TEXT_MES_DISCRIPTION);
-    IfPause;
-    if FileExists(FEndDirectory+'\Help\Index.htm') then
-    CreateShortcutW(FEndDirectory+'\Help\Index.htm',HelpShortCutFile,_PROGRAMS,StartMenuProgramsPath,FEndDirectory,'',TEXT_MES_HELP) else
-    if FileExists(FEndDirectory+'\Help\Index.html') then
-    CreateShortcutW(FEndDirectory+'\Help\Index.html',HelpShortCutFile,_PROGRAMS,StartMenuProgramsPath,FEndDirectory,'',TEXT_MES_HELP);
-    IfPause;
-    CreateShortcutW(FEndDirectory+'PhotoDB.exe',ProgramShortCutFile,_DESKTOP,'',FEndDirectory,'',TEXT_MES_DISCRIPTION);
-    IfPause;
-   except
-    on e : Exception do EventLog(':Install() throw exception: '+e.Message);
-   end;
-  end;
+
   FErrorResult:=ID_OK;
  end;
- 
+
  EventLog('Install/DB installation...');
  if not terminate_ then
  begin
@@ -656,7 +254,6 @@ begin
    if DBKernel.TestDBEx(aDBName)>0 then
    begin
 
-    FSetQuery:=GetQuery(aDBName);
     If FErrorResult=ID_YES then
     IsOldDataBase:=true else IsOldDataBase:=false;
     try
@@ -695,128 +292,6 @@ begin
      GroupsActions.MaxAuto:=False;
     end;
     dbname:=aDBName;
-    FTypeOperation:=TEXT_MES_MOVING_DB+'...';
-    FInfo:=TEXT_MES_CURRENT_REC;
-    FinfoLabel:='';
-    FProgressText:=TEXT_MES_PROGRESS_PR;
-    FProgress:=0;
-    Synchronize(SetInfo);
-    Synchronize(SetProgress);
-    OutTable:= GetTable(FDBFile,DB_TABLE_IMAGES);
-    InTable := GetTable(aDBName,DB_TABLE_IMAGES);
-
-    OutTable.Active:=true;
-    InTable.Active:=true;
-    FMaxSize:=OutTable.RecordCount;
-    Synchronize(SetInfo);
-    OutTable.First;
-    IfPause;
-    Repeat
-     FProgress:=OutTable.RecNo;
-     Synchronize(SetProgress);
-
-     If not IsOldDataBase then
-     begin
-      AddCurrentFile;
-     end else
-     begin
-      FFname:=OutTable.FieldByName('Name').AsString;
-      FCurrentFile:=Format(TEXT_MES_ADDING_INSTALL_FORMAT,[inttostr(OutTable.RecNo),inttostr(FMaxSize),Copy(FFname,1,max(length(FFname),16))]);
-      Synchronize(ProgressFile);
-      FQuery:=GetQuery(aDBName);
-      SetSQL(FQuery,'SELECT * FROM '+GetTableNameByFileName(aDBName)+' WHERE StrTh=:StrTh');
-
-      SetStrParam(FQuery,0,OutTable.FieldByName('StrTh').AsString);
-
-      FQuery.Active:=true;
-      If FQuery.RecordCount=0 then
-      begin
-       AddCurrentFile;
-      end else
-      begin
-       KeyWords:= FQuery.FieldByName('KeyWords').AsString;
-       KeyWords_:= OutTable.FieldByName('KeyWords').AsString;
-       if AddWordsA( KeyWords_, KeyWords) then
-       begin
-        _sqlexectext:='Update '+GetTableNameByFileName(aDBName);
-        _sqlexectext:=_sqlexectext+ ' Set KeyWords="'+KeyWords+'"';
-        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.FieldByName('ID').AsInteger)+'';
-        post(_sqlexectext);
-       end;
-       Groups := FQuery.FieldByName('Groups').AsString;
-       OldGroups := Groups;
-       Groups_ := OutTable.fieldByName('Groups').AsString;
-       FTempGroup:=EnCodeGroups(Groups_);
-       FParamTempGroup := FTempGroup;
-       FParamFOutRegGroups := FOutRegGroups;
-       FParamFRegGroups := FRegGroups;
-       FParamGroupsActions :=  GroupsActions;
-       //FStrParam:=GroupsTableFileNameW(aDBName);   
-       FStrParam:=aDBName;
-       Synchronize(FilterGroupsSync);
-       GroupsActions:=FParamGroupsActions;
-       Groups_:=CodeGroups(FParamTempGroup);
-       if not CompareGroups(OldGroups,Groups_) then
-       begin
-        _sqlexectext:='Update '+GetTableNameByFileName(aDBName);
-        _sqlexectext:=_sqlexectext+ ' Set Groups="'+Groups_+'"';
-        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.FieldByName('ID').AsInteger)+'';
-        post(_sqlexectext);
-       end;
-       if (FQuery.FieldByName('Rotated').AsInteger=0) and
-       (OutTable.FieldByName('Rotated').AsInteger>0) then
-       begin
-        _sqlexectext:='Update '+GetTableNameByFileName(aDBName);
-        _sqlexectext:=_sqlexectext+ ' Set Rotated='+inttostr(OutTable.fieldByName('Rotated').AsInteger)+'';
-        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
-        post(_sqlexectext);
-       end;
-       if (FQuery.FieldByName('Rating').AsInteger=0) and
-       (OutTable.FieldByName('Rating').AsInteger>0) then
-       begin
-        _sqlexectext:='Update '+GetTableNameByFileName(aDBName);
-        _sqlexectext:=_sqlexectext+ ' Set Rating='+inttostr(OutTable.FieldByName('Rating').AsInteger)+'';
-        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.FieldByName('ID').AsInteger)+'';
-        post(_sqlexectext);
-       end;
-       if (FQuery.fieldByName('IsDate').AsBoolean=False) and
-       (OutTable.fieldByName('IsDate').AsBoolean=True) then
-       begin
-        _sqlexectext:='Update '+GetTableNameByFileName(aDBName);
-        _sqlexectext:=_sqlexectext+ ' Set IsDate=:IsDate, DateToAdd=:DateToAdd';
-        _sqlexectext:=_sqlexectext+ ' Where ID='+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
-        SetSQL(FSetQuery,_sqlexectext);
-        SetBoolParam(FSetQuery,0,True);
-        SetDateParam(FSetQuery,'DateToAdd',OutTable.fieldByName('DateToAdd').AsDateTime);
-        ExecSQL(FSetQuery);
-       end;
-       Res:=false;
-       if Length(OutTable.fieldByName('Comment').AsString)>1 then
-       begin
-        if Length(FQuery.fieldByName('Comment').AsString)>1 then
-        begin
-         res:=not SimilarTexts(OutTable.fieldByName('Comment').AsString,FQuery.fieldByName('Comment').AsString);
-         r:=FQuery.fieldByName('Comment').AsString+' P.S. '+OutTable.fieldByName('Comment').AsString
-        end else
-        begin
-         res:=true;
-         r:=OutTable.fieldByName('Comment').AsString;
-        end;
-       end;
-       if res then
-       begin
-        _sqlexectext:='Update '+GetTableNameByFileName(aDBName);
-        _sqlexectext:=_sqlexectext+ ' Set Comment = '+NormalizeDBString(r);
-       _sqlexectext:=_sqlexectext+ ' Where ID = '+inttostr(FQuery.fieldByName('ID').AsInteger)+'';
-        post(_sqlexectext);
-       end;
-      end;
-      FreeDS(FQuery);
-     end;
-     OutTable.Next;
-    Until OutTable.Eof;
-    FreeDS(InTable);
-    FreeDS(OutTable);
    end;
   end else
   begin
@@ -847,23 +322,7 @@ begin
    end;
   end;
 
- if not terminate_ then
- begin
-  InstallDone:=true;
-  FInstallEnd:=true;
- end;
- FTypeOperation:=TEXT_MES_UPDATING_SYSTEM_INFO;
- FInfo:='';
- FinfoLabel:='';
- FProgressText:=TEXT_MES_WAIT;
- FProgress:=0;
- Synchronize(SetInfo);
- Synchronize(SetProgress);
- try
-  RebuildIconCacheAndNotifyChanges;
- except
- end;
- 
+
  Synchronize(exitW);
 end;
 
@@ -906,7 +365,7 @@ var
   p  : TProcessInformation;
   S : String;
 begin
- DoEndInstall;
+ //DoEndInstall;
  InstallDone:=true;
  SetupProgressUnit.SetupProgressForm.OnClose:=nil;
  SetupProgressUnit.SetupProgressForm.OnCloseQuery:=nil;
@@ -938,13 +397,6 @@ end;
 procedure InstallThread.FilterGroupsSync;
 begin
  FilterGroupsW(FParamTempGroup,FParamFOutRegGroups,FParamFRegGroups,FParamGroupsActions,FStrParam);
-end;
-
-procedure InstallThread.Post(SQL: string);
-begin
- FSetQuery.Active:=False;
- SetSQL(FSetQuery,sql);
- ExecSQL(FSetQuery);
 end;
 
 initialization

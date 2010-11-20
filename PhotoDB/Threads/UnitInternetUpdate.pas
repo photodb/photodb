@@ -123,16 +123,11 @@ begin
   S := TStringList.Create;
   try
   try
-    S.Text := DownloadFile(HomeURL + UpdateFileName);
+    S.Text := DownloadFile(HomeURL + UpdateURL);
   except
     on E: Exception do EventLog(':TInternetUpdate::Execute() throw exception: '+e.Message);
  end;
- if S.Text='' then
- try
-  S.Text:=DownloadFile(AlternativeUpdateURL);
- except
-  on e : Exception do EventLog(':TInternetUpdate::Execute() throw exception: '+e.Message);
- end;
+
  if s.Text<>'' then
  begin
   if S.Count>0 then

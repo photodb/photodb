@@ -29,7 +29,7 @@ type
     procedure Execute; override;
   public
     constructor Create(Options: TRefreshIDRecordThreadOptions);
-    destructor Destroy;
+    destructor Destroy; override;
     procedure InitializeProgress;
     procedure DestroyProgress;
     procedure IfBreakOperation;

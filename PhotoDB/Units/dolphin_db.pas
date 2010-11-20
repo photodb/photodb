@@ -2,13 +2,13 @@ unit Dolphin_db;
 
 interface
 
-uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
+uses  Language, Registry, UnitDBKernel, ShellApi, Windows,
       Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
       Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
       ImgList, ComCtrls, DBCtrls, JPEG, DmProgress, ClipBrd, win32crc,
-      SaveWindowPos, ExtDlgs, ToolWin, DbiProcs, DbiErrs, UnitDBDeclare,
+      SaveWindowPos, ExtDlgs, UnitDBDeclare, Tlhelp32,
       acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
-      MAPI, DDraw, Math, Effects, DateUtils, psAPI, DBCommon, GraphicsCool,
+      MAPI, DDraw, Math, Effects, DateUtils, psAPI,{ DBCommon,} GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
       UnitLinksSupport, EasyListView, ImageConverting,
@@ -17,7 +17,6 @@ uses  Language, Tlhelp32, Registry, UnitDBKernel, ShellApi, Windows,
 const
   DBInDebug = True;
   Emulation = False;
-  EmulationInstall = False;
 
 type
   TInitializeAProc = function(s:PChar) : boolean;
@@ -40,7 +39,6 @@ type
   end;
 
 type
-  ShortcutType = (_DESKTOP, _QUICKLAUNCH, _SENDTO, _STARTMENU, _OTHERFOLDER, _PROGRAMS);
 
   THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
   TPCharFunctionA = function(S: Pchar): PChar;
@@ -99,13 +97,7 @@ type
   end;
 
   TImageDBRecordAArray = array of TImageDBRecordA;
-
-  TStringFunction = function: string;
-  TIntegerFunction = function: Integer;
-  TBooleanFunction = function: Boolean;
-  TPAnsiCharFunction = function: PAnsiChar;
   TCIDProcedure = procedure(Buffferm: PAnsiChar; BuffesSize : Integer);
-  TDllRegisterServer = function: HResult; stdcall;
 
 const
   InstallType_Checked = 0;
@@ -258,7 +250,7 @@ type
     PreviewOptions : TPreviewOptions;
   end;
 
-const
+{const
   CSIDL_COMMON_APPDATA = $0023;
   CSIDL_MYMUSIC = $0013;
   CSIDL_MYPICTURES = $0014; // FONTS
@@ -267,52 +259,11 @@ const
   CSIDL_WINDOWS = $0024;
   CSIDL_PROGRAM_FILES = $0026;
   CSIDL_LOCAL_APPDATA = $001C;
-
-  // [BEGIN] Short install section oldest version
-const
-  // 1.75
-  ProductName_1_75 = 'Photo DataBase 1.75';
-  StartMenuProgramsPath_1_75 = 'Photo DB v1.75';
-  ProductVersion_1_75 = '1.75';
-  ProgramShortCutFile_1_75 = ProductName_1_75 + '.lnk';
-  HelpShortCutFile_1_75 = TEXT_MES_HELP + '.lnk';
-  // 1.8
-  ProductName_1_8 = 'Photo DataBase 1.8';
-  StartMenuProgramsPath_1_8 = 'Photo DB v1.8';
-  ProductVersion_1_8 = '1.8';
-  ProgramShortCutFile_1_8 = ProductName_1_8 + '.lnk';
-  HelpShortCutFile_1_8 = TEXT_MES_HELP + '.lnk';
-  // 1.9
-  ProductName_1_9 = 'Photo DataBase 1.9';
-  StartMenuProgramsPath_1_9 = 'Photo DB v1.9';
-  ProductVersion_1_9 = '1.9';
-  ProgramShortCutFile_1_9 = ProductName_1_9 + '.lnk';
-  HelpShortCutFile_1_9 = TEXT_MES_HELP + '.lnk';
-
-  // 2.0
-  ProductName_2_0 = 'Photo DataBase 2.0';
-  StartMenuProgramsPath_2_0 = 'Photo DB v2.0';
-  ProductVersion_2_0 = '2.0';
-  ProgramShortCutFile_2_0 = ProductName_2_0 + '.lnk';
-  HelpShortCutFile_2_0 = TEXT_MES_HELP + '.lnk';
-
-  // 2.1
-  ProductName_2_1 = 'Photo DataBase 2.1';
-  StartMenuProgramsPath_2_1 = 'Photo DB v2.1';
-  ProductVersion_2_1 = '2.1';
-  ProgramShortCutFile_2_1 = ProductName_2_1 + '.lnk';
-  HelpShortCutFile_2_1 = TEXT_MES_HELP + '.lnk';
-  // [END]
+                                      }
 
 const
   DemoSecondsToOpen = 5;
   MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
-  FilesCount = 10;
-  FileList: array [0 .. FilesCount - 1] of string = ('Kernel.dll', 'Licence.txt', 'Scripts', 'Tools.exe', 'Help',
-    'lpng-px.dll', 'FreeImage.dll', 'icons.dll', 'Actions', 'Images');
-  FileOptions: array [0 .. FilesCount - 1] of Boolean = (True, True, True, True, True, True, True, True, True, True);
-  InstallFileNeeds: array [0 .. FilesCount - 1] of Boolean = (True, False, True, True, False, False, True, True, False,
-    False);
   DBFilesExt: array [0 .. 1] of string = ('MDB', 'PHOTODB');
   RetryTryCountOnWrite = 10;
   RetryTryDelayOnWrite = 100;
@@ -345,7 +296,6 @@ var
   LastInseredID: Integer;
   FolderView: Boolean = False;
   DBLoadInitialized: Boolean = False;
-  FThisFileInstalled: Integer = -1;
   GraphicFilterString: string;
 
 function ActivationID: string;
@@ -424,26 +374,7 @@ procedure LoadNickJpegImage(Image: TImage);
 procedure DoHelp;
 procedure DoGetCode(S: string);
 
-{ Setup section }
-function InstalledUserName: string;
-function IsInstalledApplication: Boolean;
-function RegInstallApplication(Filename, DBName, UserName: string): Boolean;
-function ExtInstallApplication(Filename: string): Boolean;
-function ExtInstallApplicationW(Exts: TInstallExts; Filename: string): Boolean;
-function ExtUnInstallApplicationW: Boolean;
-function IsNewVersion: Boolean;
-function ThisFileInstalled: Boolean;
-function DeleteRegistryEntries: Boolean;
-procedure DoBeginInstall;
-procedure DoEndInstall;
-function IsInstalling: Boolean;
-function InstalledDirectory: string;
-function InstalledFileName: string;
-function FileRegisteredOnInstalledApplication(Value: string): Boolean;
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
-function GetDefaultDBName: string;
-
-
 function ExtractAssociatedIcon_(FileName: string): HICON;
 function ExtractAssociatedIcon_W(FileName: string; IconIndex: Word): HICON;
 
@@ -483,12 +414,6 @@ function IsWallpaper(FileName: string): Boolean;
 procedure LoadFIlesFromClipBoard(var Effects: Integer; Files: TStrings);
 function GetProgramFilesDir: string;
 procedure Deldir(Dir: string; Mask: string);
-function CreateShortcutW(SourceFileName, ShortcutName: string; // the file the shortcut points to
-  Location: ShortcutType; // shortcut location
-  SubFolder, // subfolder of location
-  WorkingDir, // working directory property of the shortcut
-  Parameters, Description: string): // description property of the shortcut
-  string;
 procedure HideFromTaskBar(Handle: Thandle);
 procedure Del_Close_btn(Handle: Thandle);
 procedure DoUpdateHelp;
@@ -503,7 +428,7 @@ function SaveActionsTofile(FileName: string; Actions: TArstrings): Boolean;
 procedure RenameFolderWithDB(Caller : TObject; OldFileName, NewFileName: string; Ask: Boolean = True);
 function GetDBViewMode: Boolean;
 function GetDBFileName(FileName, DBName: string): string;
-// procedure CompareStrThs(Th1, Th2 : string);
+
 function DBReadOnly: Boolean;
 function StringCRC(Str: string): Cardinal;
 function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
@@ -606,11 +531,10 @@ function GetDBViewMode: Boolean;
 begin
   Result := False;
   if not DBInDebug then
-    if not ThisFileInstalled then
-      if FileExists(GetDirectory(ParamStr(0)) + 'FolderDB.photodb') or FileExists
-        (GetDirectory(ParamStr(0)) + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.photodb') or FileExists
-        (GetDirectory(ParamStr(0)) + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.mdb') then
-        Result := True;
+    if FileExists(GetDirectory(ParamStr(0)) + 'FolderDB.photodb') or FileExists
+      (GetDirectory(ParamStr(0)) + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.photodb') or FileExists
+      (GetDirectory(ParamStr(0)) + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.mdb') then
+      Result := True;
 end;
 
 function FilePathCRC(FileName: string): Cardinal;
@@ -780,666 +704,6 @@ begin
     Found := Sysutils.FindNext(SearchRec);
   end;
   FindClose(SearchRec);
-end;
-
-function InstalledFileName: string;
-var
-  FReg: TBDRegistry;
-begin
-  Result := '';
-  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
-  try
-    FReg.OpenKey(RegRoot, True);
-    Result := FReg.ReadString('DataBase');
-    if PortableWork then
-      if Result <> '' then
-        Result[1] := Application.Exename[1];
-  except
-  end;
-  FReg.Free;
-end;
-
-function InstalledUserName: string;
-var
-  Reg: TBDRegistry;
-begin
-  Reg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
-  try
-    Reg.OpenKey(RegRoot, True);
-    Result := Reg.ReadString('DBUserName');
-  finally
-    Reg.Free;
-  end;
-end;
-
-function InstalledDirectory: string;
-begin
-  Result := ExtractFileDir(InstalledFileName);
-end;
-
-function IsInstalling: Boolean;
-var
-  HSemaphore: THandle;
-begin
-  Result := False;
-  HSemaphore := CreateSemaphore(nil, 0, 1, PWideChar(DBBeginInstallID));
-  if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
-  begin
-    Result := True;
-    HSemaphore := CreateSemaphore(nil, 0, 1, PWideChar(DBEndInstallID));
-    if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
-    begin
-      Result := False;
-    end;
-    CloseHandle(HSemaphore);
-  end;
-  CloseHandle(HSemaphore);
-end;
-
-procedure DoBeginInstall;
-begin
-  CreateSemaphore(nil, 0, 1, PWideChar(DBBeginInstallID));
-end;
-
-procedure DoEndInstall;
-begin
-  CreateSemaphore(nil, 0, 1, PWideChar(DBEndInstallID));
-end;
-
-function IsNewVersion: Boolean;
-var
-  FReg: TBDRegistry;
-  Func: TIntegerFunction;
-  H: Thandle;
-  ProcH: Pointer;
-  FileName: string;
-begin
-  Result := False;
-  Freg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
-  try
-    FReg.OpenKey(RegRoot, True);
-    FileName := FReg.ReadString('DataBase');
-    if PortableWork then
-      if FileName <> '' then
-        FileName[1] := Application.Exename[1];
-    if FileExists(FileName) then
-    begin
-      H := LoadLibrary(PWideChar(FileName));
-      if H <> 0 then
-      begin
-        ProcH := GetProcAddress(H, 'FileVersion');
-        if ProcH <> nil then
-        begin
-          @Func := ProcH;
-          if Func > ReleaseNumber then
-            Result := True;
-        end;
-        FreeLibrary(H);
-      end;
-    end;
-  except
-    on e : Exception do
-      EventLog(e.Message);
-  end;
-  F(FReg);
-end;
-
-function ThisFileInstalled: Boolean;
-begin
-  Result := AnsiUpperCase(ExtractFileName(Application.ExeName)) <> 'SETUP.EXE';
-end;
-
-function IsInstalledApplication: Boolean;
-var
-  FReg: TBDRegistry;
-  F: TBooleanFunction;
-  H: Thandle;
-  ProcH: Pointer;
-  FileName: string;
-begin
-  Result := False;
-  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
-  try
-    FReg.OpenKey(RegRoot, True);
-    FileName := AnsiLowerCase(Freg.ReadString('DataBase'));
-    if PortableWork then
-      if FileName <> '' then
-        FileName[1] := Application.ExeName[1];
-    if FileExists(FileName) then
-    begin
-      H := Loadlibrary(PWideChar(FileName));
-      if H <> 0 then
-      begin
-        ProcH := GetProcAddress(H, 'IsFalidDBFile');
-        if ProcH <> nil then
-        begin
-          @F := ProcH;
-          if F then
-            if FileExists(GetDirectory(FileName) + '\Kernel.dll') then
-              Result := True;
-        end;
-        FreeLibrary(H);
-      end;
-    end;
-  except
-    on E: Exception do
-      EventLog(':IsInstalledApplication() throw exception: ' + E.message);
-  end;
-  FReg.Free;
-end;
-
-function DeleteRegistryEntries: Boolean;
-var
-  Freg: TRegistry;
-begin
-  Result := False;
-  Freg := Tregistry.Create;
-  try
-    Freg.RootKey := Windows.HKEY_CLASSES_ROOT;
-    Freg.DeleteKey('\.photodb');
-    Freg.DeleteKey('\PhotoDB.PhotodbFile\');
-    Freg.DeleteKey('\.ids');
-    Freg.DeleteKey('\PhotoDB.IdsFile\');
-    Freg.DeleteKey('\.dbl');
-    Freg.DeleteKey('\PhotoDB.DblFile\');
-    Freg.DeleteKey('\.ith');
-    Freg.DeleteKey('\PhotoDB.IthFile\');
-    Freg.DeleteKey('\Directory\Shell\PhDBBrowse\');
-    Freg.DeleteKey('\Drive\Shell\PhDBBrowse\');
-  except
-    on E: Exception do
-    begin
-      EventLog(':DeleteRegistryEntries() throw exception: ' + E.message);
-      Freg.Free;
-    end;
-  end;
-  FReg.Free;
-  FReg := Tregistry.Create;
-  try
-    FReg.RootKey := HKEY_INSTALL;
-    FReg.DeleteKey(RegRoot);
-  except
-    on E: Exception do
-    begin
-      EventLog(':DeleteRegistryEntries()/HKEY_INSTALL throw exception: ' + E.message);
-      FReg.Free;
-    end;
-  end;
-  FReg.Free;
-  FReg := TRegistry.Create;
-  try
-    FReg.RootKey := HKEY_USER_WORK;
-    FReg.DeleteKey(RegRoot);
-  except
-    on E: Exception do
-    begin
-      EventLog(':DeleteRegistryEntries()/HKEY_USER_WORK throw exception: ' + E.message);
-      FReg.Free;
-    end;
-  end;
-  FReg.Free;
-  FReg := Tregistry.Create;
-  try
-    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
-    FReg.DeleteKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase');
-    Result := True;
-  except
-    on E: Exception do
-      EventLog(':DeleteRegistryEntries() throw exception: ' + E.message);
-  end;
-  FReg.Free;
-  FReg := TRegistry.Create;
-  try
-    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
-    FReg.DeleteKey(
-      '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\Handlers\PhotoDBGetPhotosHandler');
-    FReg.DeleteKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler');
-    FReg.OpenKey(
-      '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\ShowPicturesOnArrival', True);
-    FReg.DeleteValue('PhotoDBgetPhotosHandler');
-    Result := True;
-  except
-    on E: Exception do
-      EventLog(':DeleteRegistryEntries() throw exception: ' + E.message);
-  end;
-  FReg.Free;
-end;
-
-function GetDefaultDBName: string;
-var
-  Reg: TBDRegistry;
-begin
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(RegRoot, True);
-    Result := Reg.ReadString('DBDefaultName');
-  except
-  end;
-  Reg.Free;
-end;
-
-function RegInstallApplication(FileName, DBName, UserName: string): Boolean;
-var
-  Freg: TBDRegistry;
-begin
-  Result := False;
-  Freg := TBDRegistry.Create(REGISTRY_ALL_USERS);
-  try
-    Freg.OpenKey(RegRoot, True);
-    Freg.WriteString('ReleaseNumber', IntToStr(ReleaseNumber));
-    Freg.WriteString('DataBase', Filename);
-    Freg.WriteString('Folder', GetDirectory(Filename));
-    Freg.WriteString('DBDefaultName', DBName);
-    Freg.WriteString('DBUserName', UserName);
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Freg.Free;
-      Exit;
-    end;
-  end;
-  Freg.Free;
-
-  if PortableWork then
-    Exit;
-
-  Freg := TBDRegistry.Create(REGISTRY_ALL_USERS);
-  try
-    Freg.OpenKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase', True);
-    Freg.WriteString('UninstallString', '"' + Filename + '"' + ' /uninstall');
-    Freg.WriteString('DisplayName', 'Photo DataBase');
-    Freg.WriteString('DisplayVersion', ProductVersion);
-    Freg.WriteString('HelpLink', HomeURL);
-    Freg.WriteString('Publisher', CopyRightString);
-    Freg.WriteString('URLInfoAbout', 'MailTo:' + ProgramMail);
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Freg.Free;
-      Exit;
-    end;
-  end;
-  Freg.Free;
-
-  Freg := TBDRegistry.Create(REGISTRY_CLASSES);
-  try
-    Freg.OpenKey('\.photodb', True);
-    Freg.WriteString('', 'PhotoDB.PhotodbFile');
-    Freg.CloseKey;
-    Freg.OpenKey('\PhotoDB.PhotodbFile', True);
-    Freg.OpenKey('\PhotoDB.PhotodbFile\DefaultIcon', True);
-    Freg.WriteString('', FileName + ',0');
-    Result := True;
-    Freg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Freg.Free;
-
-  Freg := TBDRegistry.Create(REGISTRY_CLASSES);
-  try
-    Freg.OpenKey('\.ids', True);
-    Freg.WriteString('', 'PhotoDB.IdsFile');
-    Freg.CloseKey;
-    Freg.OpenKey('\PhotoDB.IdsFile', True);
-    Freg.OpenKey('\PhotoDB.IdsFile\DefaultIcon', True);
-    Freg.WriteString('', FileName + ',0');
-    Freg.OpenKey('\PhotoDB.IdsFile\Shell\Open\Command', True);
-    Freg.WriteString('', '"' + GetDirectory(FileName) + 'PhotoDB.exe" "%1"');
-    Result := True;
-    Freg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Freg.Free;
-
-  Freg := TBDRegistry.Create(REGISTRY_CLASSES);
-  try
-    Freg.CloseKey;
-    Freg.OpenKey('\.dbl', True);
-    Freg.WriteString('', 'PhotoDB.dblFile');
-    Freg.CloseKey;
-    Freg.OpenKey('\PhotoDB.dblFile', True);
-    Freg.OpenKey('\PhotoDB.dblFile\DefaultIcon', True);
-    Freg.WriteString('', FileName + ',0');
-    Freg.OpenKey('\PhotoDB.dblFile\Shell\Open\Command', True);
-    Freg.WriteString('', '"' + GetDirectory(FileName) + 'PhotoDB.exe" "%1"');
-    Result := True;
-    Freg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Freg.Free;
-
-  Freg := TBDRegistry.Create(REGISTRY_CLASSES);
-  try
-    Freg.CloseKey;
-    Freg.OpenKey('\.ith', True);
-    Freg.Writestring('', 'PhotoDB.IthFile');
-    Freg.CloseKey;
-    Freg.OpenKey('\PhotoDB.IthFile', True);
-    Freg.OpenKey('\PhotoDB.IthFile\DefaultIcon', True);
-    Freg.Writestring('', FileName + ',0');
-    Freg.OpenKey('\PhotoDB.IthFile\Shell\Open\Command', True);
-    Freg.Writestring('', '"' + Getdirectory(FileName) + 'PhotoDB.exe" "%1"');
-    Result := True;
-    Freg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-
-  Freg.Free;
-  // Adding Handler for removable drives
-  Freg := TBDRegistry.Create(REGISTRY_ALL_USERS);
-  try
-    Freg.OpenKey
-      ('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\Handlers\PhotoDBGetPhotosHandler', True);
-    Freg.WriteString('Action', TEXT_MES_GET_PHOTOS);
-    Freg.WriteString('DefaultIcon', FileName + ',0');
-    Freg.WriteString('InvokeProgID', 'PhotoDB.AutoPlayHandler');
-    Freg.WriteString('InvokeVerb', 'Open');
-    Freg.WriteString('Provider', 'Photo DataBase ' + ProductVersion);
-    Freg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Freg.Free;
-
-  Freg := TBDRegistry.Create(REGISTRY_ALL_USERS);
-  try
-    Freg.OpenKey(
-      '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\ShowPicturesOnArrival', True);
-    Freg.WriteString('PhotoDBGetPhotosHandler', '');
-    Freg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Freg.Free;
-
-  Freg := TBDRegistry.Create(REGISTRY_ALL_USERS);
-  try
-    Freg.OpenKey('\SOFTWARE\Classes', True);
-    Freg.CloseKey;
-    Freg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler', True);
-    Freg.CloseKey;
-    Freg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler\Shell', True);
-    Freg.CloseKey;
-    Freg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler\Shell\Open', True);
-    Freg.CloseKey;
-    Freg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler\Shell\Open\Command', True);
-    Freg.WriteString('', '"' + GetDirectory(Filename) + 'PhotoDB.exe" "/GETPHOTOS" "%1"');
-    Freg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Freg.Free;
-end;
-
-function FileRegisteredOnInstalledApplication(Value: string): Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  for I := Length(Value) downto 2 do
-    if (Value[I - 1] = '%') and (Value[I] = '1') then
-    begin
-      Delete(Value, I - 1, 2);
-    end;
-  for I := Length(Value) downto 1 do
-    if Value[I] = '"' then
-      Delete(Value, I, 1);
-  for I := Length(Value) downto 1 do
-    if Value[I] = ' ' then
-      Delete(Value, I, 1)
-    else
-      Break;
-  if AnsiLowerCase(Value) = AnsiLowerCase(GetDirectory(InstalledFileName) + 'PhotoDB.exe') then
-    Result := True;
-end;
-
-function ExtInstallApplicationW(Exts: TInstallExts; Filename: string): Boolean;
-var
-  Reg: TRegistry;
-  I: Integer;
-  S: string;
-  B, C: Boolean;
-
-  procedure DeleteExtInfo(Ext: string);
-  var
-    FReg: TRegistry;
-  begin
-    FReg := TRegistry.Create;
-    try
-      FReg.RootKey := Windows.HKEY_CURRENT_USER;
-      FReg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.' + Ext);
-    finally
-      FReg.Free;
-    end;
-  end;
-
-begin
-  Result := False;
-  Reg := TRegistry.Create;
-  Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
-  for I := 0 to Length(Exts) - 1 do
-  begin
-    case Exts[I].InstallType of
-      InstallType_Checked:
-        begin
-          Reg.OpenKey('\.' + Exts[I].Ext, True);
-          S := Reg.ReadString('');
-          Reg.CloseKey;
-          B := False;
-          if S = '' then
-            B := True;
-          if not B then
-          begin
-            Reg.OpenKey('\' + S + '\Shell\Open\Command', False);
-            if Reg.ReadString('') <> '' then
-              B := False
-            else
-              B := True;
-            Reg.CloseKey;
-          end;
-          if B then
-          begin
-            Reg.OpenKey('\.' + Exts[I].Ext, True);
-            Reg.WriteString('', 'PhotoDB.' + Exts[I].Ext);
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\Open\Command', True);
-            Reg.WriteString('', '"' + GetDirectory(FileName) + 'PhotoDB.exe" "%1"');
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\DefaultIcon', True);
-            Reg.WriteString('', '' + GetDirectory(Filename) + 'PhotoDB.exe,0');
-            Reg.CloseKey;
-            DeleteExtInfo(Exts[I].Ext);
-          end
-          else
-          begin
-            Reg.OpenKey('\.' + Exts[I].Ext, True);
-            S := Reg.ReadString('');
-            Reg.WriteString('PhotoDB_PreviousAssociation', S);
-            Reg.WriteString('', 'PhotoDB.' + Exts[I].Ext);
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\Open\Command', True);
-            Reg.WriteString('', '"' + GetDirectory(Filename) + 'PhotoDB.exe" "%1"');
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\DefaultIcon', True);
-            Reg.WriteString('', '' + GetDirectory(Filename) + 'PhotoDB.exe,0');
-            Reg.CloseKey;
-            DeleteExtInfo(Exts[I].Ext);
-          end;
-        end;
-      InstallType_Grayed:
-        begin
-          Reg.OpenKey('\.' + Exts[I].Ext, True);
-          S := Reg.ReadString('');
-          Reg.CloseKey;
-          C := False;
-          B := True;
-          if S = '' then
-            C := True;
-          if not C then
-          begin
-            Reg.OpenKey('\' + S + '\Shell\Open\Command', False);
-            if Reg.ReadString('') <> '' then
-              B := False
-            else
-              B := True;
-            Reg.CloseKey;
-          end;
-          if B then
-          begin
-            Reg.OpenKey('\.' + Exts[I].Ext, True);
-            Reg.WriteString('', 'PhotoDB.' + Exts[I].Ext);
-            Reg.CloseKey;
-          end;
-          if B then
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\PhotoDBView', True)
-          else
-            Reg.OpenKey('\' + S + '\Shell\PhotoDBView', True);
-          Reg.WriteString('', TEXT_MES_VIEW_WITH_DB);
-          Reg.CloseKey;
-          if B then
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\PhotoDBView\Command', True)
-          else
-            Reg.OpenKey('\' + S + '\Shell\PhotoDBView\Command', True);
-          Reg.WriteString('', '"' + GetDirectory(Filename) + 'PhotoDB.exe" "%1"');
-          if B then
-          begin
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\DefaultIcon', True);
-            Reg.WriteString('', '' + GetDirectory(Filename) + 'PhotoDB.exe,0');
-          end;
-          Reg.CloseKey;
-        end;
-    end;
-  end;
-  Reg.Free;
-  Result := True;
-end;
-
-function ExtUnInstallApplicationW: Boolean;
-var
-  I, J: Integer;
-  Reg: TRegistry;
-  S: string;
-  PrExt: Boolean;
-begin
-  Result := False;
-  Reg := TRegistry.Create;
-  Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
-  for I := 1 to Length(SupportedExt) do
-  begin
-    if SupportedExt[I] = '|' then
-      for J := I to Length(SupportedExt) do
-      begin
-        if SupportedExt[J] = '|' then
-          if (J - I - 1 > 0) and (I + 1 < Length(SupportedExt)) then
-            if (AnsiLowerCase(Copy(SupportedExt, I + 1, J - I - 1)) <> '') then
-            begin
-              Reg.OpenKey('\.' + Copy(SupportedExt, I + 1, J - I - 1), True);
-              S := Reg.ReadString('');
-              Reg.CloseKey;
-              if AnsiLowerCase(S) = AnsiLowerCase('PhotoDB.' + Copy(SupportedExt, I + 1, J - I - 1)) then
-                PrExt := True
-              else
-                PrExt := False;
-              if PrExt then
-                Reg.DeleteKey('\' + S);
-              Reg.DeleteKey('\' + S + '\Shell\PhotoDBView\Command');
-              Reg.DeleteKey('\' + S + '\Shell\PhotoDBView');
-              Reg.OpenKey('\.' + Copy(SupportedExt, I + 1, J - I - 1), True);
-              S := Reg.ReadString('PhotoDB_PreviousAssociation');
-              Reg.CloseKey;
-              if S <> '' then
-              begin
-                Reg.OpenKey('\.' + Copy(SupportedExt, I + 1, J - I - 1), True);
-                Reg.DeleteValue('PhotoDB_PreviousAssociation');
-                Reg.WriteString('', S);
-                Reg.CloseKey;
-              end
-              else
-              begin
-                if PrExt then
-                  Reg.DeleteKey('\.' + Copy(SupportedExt, I + 1, J - I - 1));
-              end;
-              Break;
-            end;
-      end;
-  end;
-  Reg.Free;
-  Result := True;
-end;
-
-function ExtInstallApplication(Filename: string): Boolean;
-var
-  Reg: TRegistry;
-begin
-  Result := True;
-  Reg := Tregistry.Create;
-  try
-    Reg.Rootkey := Windows.HKEY_CLASSES_ROOT;
-    Reg.OpenKey('\Directory\Shell\PhDBBrowse', True);
-    Reg.Writestring('', TEXT_MES_BROWSE_WITH_DB);
-    Reg.CloseKey;
-    Reg.OpenKey('\Directory\Shell\PhDBBrowse\Command', True);
-    Reg.Writestring('', '"' + GetDirectory(Filename) + 'PhotoDB.exe" "/EXPLORER" "%1"');
-    Result := True;
-  except
-    on E: Exception do
-    begin
-      EventLog(':ExtInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Reg.Free;
-  Reg := Tregistry.Create;
-  try
-    Reg.Rootkey := Windows.HKEY_CLASSES_ROOT;
-    Reg.OpenKey('\Drive\Shell\PhDBBrowse', True);
-    Reg.Writestring('', TEXT_MES_BROWSE_WITH_DB);
-    Reg.CloseKey;
-    Reg.OpenKey('\Drive\Shell\PhDBBrowse\Command', True);
-    Reg.Writestring('', '"' + GetDirectory(Filename) + 'PhotoDB.exe" "/EXPLORER" "%1"');
-    Result := True;
-  except
-    on E: Exception do
-    begin
-      EventLog(':ExtInstallApplication() throw exception: ' + E.message);
-      Result := False;
-    end;
-  end;
-  Reg.Free;
 end;
 
 function TryOpenCDS(DS: TDataSet): Boolean;
@@ -4963,97 +4227,6 @@ begin
   end;
 end; { StringToWideString }
 
-function CreateShortcutW(SourceFileName, ShortcutName: string; // the file the shortcut points to
-  Location: ShortcutType; // shortcut location
-  SubFolder, // subfolder of location
-  WorkingDir, // working directory property of the shortcut
-  Parameters, Description: string): // description property of the shortcut
-  string;
-var
-  MyObject: IUnknown;
-  MySLink: IShellLink;
-  MyPFile: IPersistFile;
-  Directory, LinkName: string;
-  WFileName: string;
-  Reg: TRegIniFile;
-  FS: TFileStream;
-begin
-
-  MyObject := CreateComObject(CLSID_ShellLink);
-  MySLink := MyObject as IShellLink;
-  MyPFile := MyObject as IPersistFile;
-
-  MySLink.SetPath(PWideChar(SourceFileName));
-  MySLink.SetArguments(PWideChar(Parameters));
-  MySLink.SetDescription(PWideChar(Description));
-
-  LinkName := ChangeFileExt(ShortcutName, '.lnk');
-  LinkName := ExtractFileName(LinkName);
-
-  // Quicklauch
-  if Location = _QUICKLAUNCH then
-  begin
-    Reg := TRegIniFile.Create(QUICK_LAUNCH_ROOT);
-    try
-      Directory := Reg.ReadString('MapGroups', 'Quick Launch', '');
-    finally
-      Reg.Free;
-    end;
-  end
-  else
-  // Other locations
-  begin
-    Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-    try
-      case Location of
-        _OTHERFOLDER:
-          Directory := SubFolder;
-        _DESKTOP:
-          Directory := Reg.ReadString('Shell Folders', 'Desktop', '');
-        _STARTMENU:
-          Directory := Reg.ReadString('Shell Folders', 'Start Menu', '');
-        _SENDTO:
-          Directory := Reg.ReadString('Shell Folders', 'SendTo', '');
-        _PROGRAMS:
-          Directory := Reg.ReadString('Shell Folders', 'Programs', '');
-      end;
-    finally
-      Reg.Free;
-    end;
-  end;
-
-  if Directory <> '' then
-  begin
-    if (SubFolder <> '') and (Location <> _OTHERFOLDER) then
-    begin
-      if not DirectoryExists(Directory + '\' + SubFolder) then
-        CreateDir(Directory + '\' + SubFolder);
-      WFileName := Directory + '\' + SubFolder + '\' + LinkName;
-    end
-    else
-      WFileName := Directory + '\' + LinkName;
-    if WorkingDir = '' then
-      MySLink.SetWorkingDirectory(PWideChar(ExtractFilePath(SourceFileName)))
-    else
-      MySLink.SetWorkingDirectory(PWideChar(WorkingDir));
-
-    try
-
-      FS := nil;
-      try
-        FS := TFileStream.Create(SourceFileName, FmShareExclusive);
-      except
-      end;
-      MyPFile.Save(PWideChar(WFileName), False);
-      if FS <> nil then
-        FS.Free;
-
-    except
-    end;
-    Result := WFileName;
-  end;
-end;
-
 procedure HideFromTaskBar(Handle: Thandle);
 var
   ExtendedStyle: Integer;
@@ -5221,7 +4394,6 @@ var
   S: string;
   X: array of Byte;
   Fs: Tfilestream;
-  V1: Boolean;
 begin
   SetLength(Result, 0);
   if not FileExists(FileName) then

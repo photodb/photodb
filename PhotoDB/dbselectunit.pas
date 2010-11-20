@@ -245,7 +245,6 @@ var
   IconIndex: Integer;
   S, Icon: string;
   I: Integer;
-  Ico: TIcon;
 begin
   S := DBFile.Icon;
   I := Pos(',', S);
@@ -256,7 +255,6 @@ begin
   if FileName <> '' then
     Icon := FileName + ',' + IntToStr(IconIndex);
   DBFile.Icon := Icon;
-  Ico := TIcon.Create;
   SetIconToPictureFromPath(Image1.Picture, Icon);
 end;
 

@@ -199,7 +199,7 @@ begin
 
     SetStrParam(FQuery, 5, ImTh);
     SetStrParam(FQuery, 6, KeyWords);
-    SetStrParam(FQuery, 7, InstalledUserName);
+    SetStrParam(FQuery, 7, GetWindowsUserName);
     SetStrParam(FQuery, 8, 'PhotoAlbum');
     SetIntparam(FQuery, 9, Access);
     SetIntparam(FQuery, 10, OrWidth);

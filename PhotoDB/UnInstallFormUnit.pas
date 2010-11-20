@@ -67,7 +67,6 @@ begin
     MessageBoxDB(GetActiveFormHandle, TEXT_MES_CLOSE_OPENED_PROGRAM, TEXT_MES_UNINSTALL, TD_BUTTON_OK, TD_ICON_WARNING);
     Halt;
   end;
-  DoBeginInstall;
   for I := 0 to CheckListBox1.Count - 1 do
     CheckListBox1.Checked[I] := True;
   CheckListBox1.Checked[1] := False;

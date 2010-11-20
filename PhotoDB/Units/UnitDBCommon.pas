@@ -3,7 +3,7 @@ unit UnitDBCommon;
 interface
 
 uses Windows, Classes, Forms, Math, SysUtils, uScript, UnitScripts, Messages,
-     ReplaseIconsInScript, uTime;
+     ReplaseIconsInScript, uTime, uMemory;
 
 function Hash_Cos_C(s:string):integer;
 function ActivateApplication(const Handle1: THandle): Boolean;
@@ -15,6 +15,8 @@ procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightT
 function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
 function ProgramDir : string;
 procedure ActivateBackgroundApplication(hWnd : THandle);
+function StringToHexString(text : String) : string;
+function HexStringToString(text : String) : string;
 
 var
   RAWImages: string = 'CR2|';
@@ -65,6 +67,34 @@ function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
 begin
   if not TryHexToInt(HexStr, Result) then
     Result := Default;
+end;
+
+function StringToHexString(Text: string): string;
+var
+  I: Integer;
+  Str: string;
+begin
+  Result := '';
+  for I := 1 to Length(Text) do
+  begin
+    Str := IntToHex(Ord(Text[I]), 2);
+    Result := Result + Str;
+  end;
+end;
+
+function HexStringToString(Text : String) : string;
+var
+  I: Integer;
+  C: Byte;
+  Str: string;
+begin
+  Result := '';
+  for I := 1 to Length(Text) div 2 do
+  begin
+    Str := Copy(Text, (I - 1) * 2 + 1, 2);
+    C := HexToIntDef(Str, 0);
+    Result := Result + Chr(C);
+  end;
 end;
 
 function ActivateApplication(const Handle1: THandle): Boolean;
@@ -174,8 +204,6 @@ begin
   SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(0), 0);
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
 
-  {AllowToSetForegroundWindow(hWnd);
-  SetForegroundWindow(hWnd);}
   hCurWnd := GetForegroundWindow;
   AResult := False;
   while not AResult do
@@ -323,7 +351,6 @@ initialization
 
 finalization
 
-if ProgramParams <> nil then
-  FreeAndNil(ProgramParams);
+  F(ProgramParams);
 
 end.

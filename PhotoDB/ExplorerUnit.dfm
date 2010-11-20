@@ -2275,7 +2275,7 @@ object ExplorerForm: TExplorerForm
         OnReallign = ScrollBox1Reallign
         BackgroundLeft = 0
         BackgroundTop = 0
-        Updating = False
+        UpdatingPanel = False
         Align = alClient
         BevelOuter = bvNone
         FullRepaint = False

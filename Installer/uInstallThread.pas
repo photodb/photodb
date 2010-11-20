@@ -4,20 +4,22 @@ interface
 
 uses
   Windows, Classes, uInstallTypes, uDBForm, uMemory, uConstants,
-  uInstallUtils, uSetupScope;
+  uInstallUtils, uInstallScope, uInstallActions, ActiveX;
 
 type
   TInstallThread = class(TThread)
   private
     { Private declarations }
     FOwner : TDBForm;
-    FOptions : TInstallOptions;
+    FTotal, FCurrentlyDone : Int64;
+    FTerminateProgress : Boolean;
   protected
     procedure Execute; override;
     procedure ExitSetup;
-    procedure InstallCallBack(Sender : TSetupScope; CurrentPoints, Total : int64; var Terminate : Boolean);
+    procedure UpdateProgress;
+    procedure InstallCallBack(Sender : TInstallAction; CurrentPoints, Total : int64; var Terminate : Boolean);
   public
-    constructor Create(Owner : TDBForm; Options : TInstallOptions);
+    constructor Create(Owner : TDBForm);
   end;
 
 implementation
@@ -27,20 +29,26 @@ uses
 
 { TInstallThread }
 
-constructor TInstallThread.Create(Owner: TDBForm; Options: TInstallOptions);
+constructor TInstallThread.Create(Owner: TDBForm);
 begin
   inherited Create(False);
   FOwner := Owner;
-  FOptions := Options;
+  FTotal := 0;
+  FCurrentlyDone := 0;
 end;
 
 procedure TInstallThread.Execute;
 begin
   FreeOnTerminate := True;
+  CoInitialize(nil);
   try
-    TSetupManager.Instance.ExecuteInstallActions(FOptions, InstallCallBack);
+    try
+      TInstallManager.Instance.ExecuteInstallActions(InstallCallBack);
+    finally
+      Synchronize(ExitSetup);
+    end;
   finally
-    Synchronize(ExitSetup);
+    CoUninitialize;
   end;
 end;
 
@@ -49,10 +57,17 @@ begin
   TFrmMain(FOwner).Close;
 end;
 
-procedure TInstallThread.InstallCallBack(Sender: TSetupScope; CurrentPoints,
+procedure TInstallThread.InstallCallBack(Sender: TInstallAction; CurrentPoints,
   Total: int64; var Terminate: Boolean);
 begin
-  //TODO:
+  FTotal := Total;
+  FCurrentlyDone := CurrentPoints;
+  Synchronize(UpdateProgress);
+end;
+
+procedure TInstallThread.UpdateProgress;
+begin
+  FTerminateProgress := not TFrmMain(FOwner).UpdateProgress(FCurrentlyDone, FTotal);
 end;
 
 end.

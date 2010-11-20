@@ -72,8 +72,9 @@ var
   NewGroupForm: TNewGroupForm;
 begin
   if not IsValidGroupsTable then
-  if ThisFileInstalled or DBInDebug then
+  if DBInDebug then
   CreateGroupsTable;
+
   Application.CreateForm(TNewGroupForm, NewGroupForm);
   NewGroupForm.Execute;
   R(NewGroupForm);

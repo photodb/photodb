@@ -18,7 +18,7 @@ const
   ActionsFolder : String = 'Actions\';  
   ImagesFolder : String = 'Images\';
   DBRestoreFolder : String = '\DB\';
-  PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase\Data';
+  PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase';
   RegRoot : string = 'Software\Photo DataBase\';
   TempFolderMask = '|NDX|MB|DB|NET|';
   DelayReadFileOperation = 200;
@@ -27,7 +27,6 @@ const
   SetupDataName = 'SETUP_DATA';
 
   //Information
-//  MyComputer = TEXT_MES_MY_COMPUTER;
   ProductName = 'Photo DataBase 2.3';
   StartMenuProgramsPath = 'Photo DB v2.3';
   ProductVersion = '2.3';
@@ -36,8 +35,8 @@ const
   WindowsMenuTime = 1000;
   ProgramMail = 'illusdolphin@gmail.com';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
-  UpdateFileName = '/rus_update.txt';
-  AlternativeUpdateURL = 'http://photodb.illusdolphin.net/update?lg=ru';
+  UpdateURL = 'http://photodb.illusdolphin.net/update.aspx';
+  SetupURL = 'http://photodb.illusdolphin.net/setup.aspx';
   HomeURL = 'http://photodb.illusdolphin.net';
 
   //install

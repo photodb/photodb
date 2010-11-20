@@ -232,7 +232,6 @@ uses
   VistaFileDialogs in 'Units\VistaFileDialogs.pas',
   UnitDBFileDialogs in 'Units\UnitDBFileDialogs.pas',
   UnitSendMessageWithTimeoutThread in 'Units\UnitSendMessageWithTimeoutThread.pas',
-  WindowsIconCacheTools in 'Units\WindowsIconCacheTools.pas',
   VRSIShortCuts in 'Units\VRSIShortCuts.pas',
   UnitCDMappingSupport in 'Units\UnitCDMappingSupport.pas',
   uThreadForm in 'Units\uThreadForm.pas',
@@ -298,7 +297,11 @@ uses
   CCR.Exif.TagIDs in 'External\CCR.Exif\CCR.Exif.TagIDs.pas',
   CCR.Exif.XMPUtils in 'External\CCR.Exif\CCR.Exif.XMPUtils.pas',
   uPNGUtils in 'Units\uPNGUtils.pas',
-  uFormUtils in 'Units\uFormUtils.pas';
+  uFormUtils in 'Units\uFormUtils.pas',
+  uShellUtils in '..\Installer\uShellUtils.pas',
+  uInstallTypes in '..\Installer\uInstallTypes.pas',
+  uInstallScope in '..\Installer\uInstallScope.pas',
+  uDBBaseTypes in 'Units\uDBBaseTypes.pas';
 
 {$R *.res}
 
@@ -443,7 +446,7 @@ begin
   // UNINSTALL ----------------------------------------------------
 
   EventLog('...UNINSTALL COMPARING...');
-  If ThisFileInstalled and GetParamStrDBBool('/UNINSTALL')
+  If GetParamStrDBBool('/UNINSTALL')
     and not DBTerminating then
   begin
     If ID_YES = MessageBoxDB(dolphin_db.GetActiveFormHandle,
@@ -452,7 +455,7 @@ begin
     begin
       F(AExplorerFolders);
       Application.CreateForm(TUnInstallForm, UnInstallForm);
-      Application.Restore;
+  Application.Restore;
       UnInstallForm.ShowModal;
       UnInstallForm.Release;
       UnInstallForm := nil;
@@ -497,20 +500,9 @@ begin
     // TODO: LATER!!!! DBKernel.InitRegModule;
     TW.i.Start('SetSplashProgress 70');
     SetSplashProgress(70);
-
-    if not FolderView then
-      If IsInstalling then
-      begin
-        EventLog('IsInstalling IS true -> exit');
-        MessageBoxDB(GetActiveFormHandle, TA('Setup is currentry active. Close setup program and try again!', 'System'),
-          TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
-        Application.Terminate;
-        DBTerminating := True;
-      end;
-
   end;
 
-  if ThisFileInstalled or DBInDebug or Emulation or GetDBViewMode then
+  if DBInDebug or Emulation or GetDBViewMode then
     AExplorerFolders := TExplorerFolders.Create;
 
   TW.i.Start('GetCIDA');
@@ -530,7 +522,6 @@ begin
   try
     if not DBTerminating then
       if not IsValidGroupsTable then
-        if ThisFileInstalled then
           CreateGroupsTable;
   except
     on e: Exception do

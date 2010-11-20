@@ -589,7 +589,7 @@ begin
   //TODO: free object
   WideSearch := TSearchQuery.Create;
   WideSearch.Query := SearchEdit.Text;
-  ItemEx := ComboBoxSearchGroups.ItemsEx.ComboItems[ComboBoxSearchGroups.GetItemIndex];
+  ItemEx := ComboBoxSearchGroups.ItemsEx.ComboItems[ComboBoxSearchGroups.ItemIndex];
   if ItemEx.Data = nil then
     WideSearch.GroupName := ItemEx.Caption
   else
@@ -3993,7 +3993,7 @@ begin
                   Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
                   DateRange.DateFrom,
                   DateRange.DateTo,
-                  ComboBoxSearchGroups.Items[ComboBoxSearchGroups.GetItemIndex],
+                  ComboBoxSearchGroups.Items[ComboBoxSearchGroups.ItemIndex],
                   SearchEdit.Text,
                   SortLink.Tag,
                   Decremect1.Checked);
@@ -4007,7 +4007,7 @@ var
   SearchRecord : TSearchQuery;
 
 begin
-  SearchEdit.ItemIndex := SearchEdit.GetItemIndex;
+  SearchEdit.ItemIndex := SearchEdit.ItemIndex;
   SearchEdit.Realign;
   SearchEdit.SelStart:=0;
   SearchEdit.SelLength:=0;

@@ -125,7 +125,6 @@ var
   Handle : THandle;
   i : integer;
 begin
- form:=nil;
  try
   Application.CreateForm(TPrintForm,Result);
   for i:=0 to Files.Count-1 do

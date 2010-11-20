@@ -1,5 +1,7 @@
 unit uFrAdvancedOptions;
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 interface
 
 uses

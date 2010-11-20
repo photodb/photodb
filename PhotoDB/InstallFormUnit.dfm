@@ -279,7 +279,7 @@ object InstallForm: TInstallForm
     OnClick = Button6Click
   end
   object Button7: TButton
-    Left = 384
+    Left = 465
     Top = 274
     Width = 75
     Height = 25

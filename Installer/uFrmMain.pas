@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
   uFrmProgress, uInstallTypes, uInstallUtils, uMemory, uConstants,
-  uVistaFuncs;
+  uVistaFuncs, uInstallScope;
 
 type
   TFrmMain = class(TDBForm)
@@ -22,12 +22,14 @@ type
     procedure BtnInstallClick(Sender: TObject);
   private
     { Private declarations }
+    FrmProgress: TFrmProgress;
     procedure LoadLanguage;
     procedure LoadMainImage;
   protected
     function GetFormID : string; override;
   public
     { Public declarations }
+    function UpdateProgress(Position, Total : Int64) : Boolean;
   end;
 
 var
@@ -48,15 +50,13 @@ begin
 end;
 
 procedure TFrmMain.BtnInstallClick(Sender: TObject);
-var
-  FrmProgress: TFrmProgress;
-  Options : TInstallOptions;
 begin
   Application.CreateForm(TFrmProgress, FrmProgress);
   Hide;
   FrmProgress.Show;
-  FrmProgress.Progress := 75;
-  TInstallThread.Create(Self, Options);
+  FrmProgress.Progress := 0;
+  CurrentInstall.DestinationPath := 'c:\1';
+  TInstallThread.Create(Self);
 end;
 
 procedure TFrmMain.CbAcceptLicenseAgreementClick(Sender: TObject);
@@ -69,6 +69,7 @@ procedure TFrmMain.FormCreate(Sender: TObject);
 var
   hSemaphore : THandle;
 begin
+  FrmProgress := nil;
   hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
   if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin
@@ -117,6 +118,12 @@ begin
   finally
     F(MS);
   end;
+end;
+
+function TFrmMain.UpdateProgress(Position, Total: Int64): Boolean;
+begin
+  FrmProgress.Progress := Round((Position * 255) / Total);
+  Result := True;
 end;
 
 end.

@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
-  StrUtils, uTranslate, uLogger, XPMan, pngimage;
+  StrUtils, uTranslate, uLogger, XPMan, pngimage, uInstallZip;
 
 type
-  TLangageItem = class(TObject)
+  TLanguageItem = class(TObject)
   public
     Name : string;
     Code : string;
@@ -30,6 +30,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure BtnOkClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     procedure LoadLanguage;
@@ -86,6 +87,14 @@ begin
   LoadLanguage;
 end;
 
+procedure TFormLanguage.FormDestroy(Sender: TObject);
+var
+  I : Integer;
+begin
+  for I := 0 to LbLanguages.Count - 1 do
+    LbLanguages.Items.Objects[I].Free;
+end;
+
 procedure TFormLanguage.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
@@ -112,7 +121,7 @@ begin
 
   if (SelectedIndex > -1) then
   begin
-    TTranslateManager.Instance.Language := TLangageItem(LbLanguages.Items.Objects[SelectedIndex]).Code;
+    TTranslateManager.Instance.Language := TLanguageItem(LbLanguages.Items.Objects[SelectedIndex]).Code;
     LoadLanguage;
   end;
   LbLanguages.Refresh;
@@ -121,7 +130,7 @@ end;
 procedure TFormLanguage.LbLanguagesDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
-  Language : TLangageItem;
+  Language : TLanguageItem;
   Bitmap : TBitmap;
   PngBitmap : TBitmap;
   BackColor : TColor;
@@ -129,7 +138,7 @@ begin
   if Index < 0 then
     Exit;
 
-  Language := TLangageItem(LbLanguages.Items.Objects[Index]);
+  Language := TLanguageItem(LbLanguages.Items.Objects[Index]);
 
   Bitmap := TBitmap.Create;
   Bitmap.PixelFormat := pf24Bit;
@@ -190,7 +199,7 @@ var
   Size : Int64;
   I : Integer;
   Language : TLanguage;
-  LangItem : TLangageItem;
+  LangItem : TLanguageItem;
   ImageStream : TMemoryStream;
   PNG : TPNGImage;
 begin
@@ -210,8 +219,8 @@ begin
           try
             ImageStream := TMemoryStream.Create;
             try
-              LangItem := TLangageItem.Create;
-              ExtractFileFromStorage(MS, ImageStream, Language.ImageName);
+              LangItem := TLanguageItem.Create;
+              ExtractStreamFromStorage(MS, ImageStream, Language.ImageName, nil);
               PNG := TPNGImage.Create;
               try
                 ImageStream.Seek(0, soFromBeginning);
@@ -244,12 +253,12 @@ end;
 
 { TLangageItem }
 
-constructor TLangageItem.Create;
+constructor TLanguageItem.Create;
 begin
   Image := nil;
 end;
 
-destructor TLangageItem.Destroy;
+destructor TLanguageItem.Destroy;
 begin
   F(Image);
   inherited;

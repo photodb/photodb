@@ -2,31 +2,6 @@ unit VRSIShortCuts;
 
 {$WARN SYMBOL_PLATFORM OFF}
 
- //==============================================================================
- //                     FractalizeR's Delphi Library
- //               <- ShortCut Operations Class v1.0 ->
- //             Автор: Раструсный Владислав
- //                          http://www.vrsi.ru
- //                           info@vrsi.ru
- //==============================================================================
-{-------------------------------------------------------------------------------
-Usage example on existing shortcut file:
-var MyShortCut: TVRSIShortCut;
-MyShortCut:=TVRSIShortCut.Create('C:\MyShortcut.lnk');
-MyShortCut.IconLocation:='E:\Program Files\FlashGet\flashget.exe,0';
-MyShortCut.Save('C:\MyShortcut.lnk');
-MyShortCut.Free;
--------------------------------------------------------------------------------}
-{-------------------------------------------------------------------------------
-Shortcut creation example:
-var MyShortCut: TVRSIShortCut;
-MyShortCut:=TVRSIShortCut.Create;
-MyShortCut.Path:='E:\Program Files\FlashGet\flashget.exe';
-MyShortCut.IconLocation:='E:\Program Files\FlashGet\flashget.exe,0';
-MyShortCut.ShowCMD:=SW_MAXIMIZE;
-MyShortCut.Save('C:\MyShortcut.lnk');
-MyShortCut.Free;
--------------------------------------------------------------------------------}
 interface
 
 uses ActiveX, Classes, ComObj, ShlObj, SysUtils, Windows;
@@ -47,7 +22,6 @@ uses ActiveX, Classes, ComObj, ShlObj, SysUtils, Windows;
      procedure SetArguments(const Value: string);
      procedure SetDescription(const Value: string);
      procedure SetHotKey(const Value: TShortCut);
-     procedure SetIconLocation(const Value: string);
      procedure SetIDList(const Value: PItemIDList);
      procedure SetPath(const Value: string);
      procedure SetRelativePath(const Value: string);
@@ -64,6 +38,7 @@ uses ActiveX, Classes, ComObj, ShlObj, SysUtils, Windows;
      procedure Save(Filename: string);
      // Loads shortcut object from specified *.lnk file
      procedure Load(Filename: string);
+     procedure SetIcon(const ExeDllName: string; Index : Integer);
      // Resolves shortcut (validates path and if object shortcut points to does not exists,
      // opens window and searchs for lost object. Under Windows NT and NTFS if Distributed Link
      // Tracking system is enabled method finds shortcut object and sets correct path
@@ -77,7 +52,7 @@ uses ActiveX, Classes, ComObj, ShlObj, SysUtils, Windows;
      // Hot key for shortcut object
      property HotKey: TShortCut read GetHotKey write SetHotKey;
      // Icon location property
-     property IconLocation: string read GetIconLocation write SetIconLocation;
+     property IconLocation: string read GetIconLocation;
      // IDList property for special shell icon objects
      property IDList: PItemIDList read GetIDList write SetIDList;
      // Path to shortcut abject
@@ -143,9 +118,6 @@ end;
 
 destructor TVRSIShortCut.Destroy;
 begin
-  // Self.FPersistFile._Release;
-  // Self.FShellLink._Release;
-  CoUninitialize;
   inherited;
 end;
 
@@ -241,7 +213,7 @@ end;
 
 procedure TVRSIShortCut.Save(Filename: string);
 begin
-  FPersistFile.Save(StringToOLEStr(Filename), True);
+  FPersistFile.Save(PChar(Filename), True);
 end;
 
 procedure TVRSIShortCut.SetArguments(const Value: string);
@@ -259,10 +231,9 @@ begin
   Self.FShellLink.SetHotkey(Value);
 end;
 
-procedure TVRSIShortCut.SetIconLocation(const Value: string);
+procedure TVRSIShortCut.SetIcon(const ExeDllName: string; Index: Integer);
 begin
-  Self.FShellLink.SetIconLocation(PChar(Copy(Value, 0, Pos(',', Value) - 1)),
-    StrToInt(Copy(Value, Pos(',', Value) + 1, MAX_PATH)));
+  Self.FShellLink.SetIconLocation(PChar(ExeDllName), Index);
 end;
 
 procedure TVRSIShortCut.SetIDList(const Value: PItemIDList);

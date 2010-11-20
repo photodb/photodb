@@ -3,41 +3,42 @@ unit UnitINI;
 interface
 
 uses Windows, Registry, IniFiles, Classes, SysUtils, uLogger, uConstants,
-     UnitDBCommon;
+     uMemory;
 
 type
   TMyRegistryINIFile = class(TIniFile)
-   public Key : string;
+  public
+    Key: string;
   end;
 
 type
   TBDRegistry = class(TObject)
   private
-    Registry : TObject;
-    FReadOnly : Boolean;
-    FKey : string;
-    FSection : Integer;
+    Registry: TObject;
+    FReadOnly: Boolean;
+    FKey: string;
+    FSection: Integer;
   public
-    constructor Create(ASection : integer; ReadOnly : Boolean = false);
+    constructor Create(ASection: Integer; readonly: Boolean = False);
     destructor Destroy; override;
-    function OpenKey(Key : String; CreateInNotExists : Boolean) : boolean;
-    function ReadString(Name : String; Default : string = '') : string;
-    function ReadInteger(Name : String; Default : Integer = 0) : Integer;
-    function ReadDateTime(Name : String; Default : TDateTime = 0) : TDateTime;
+    function OpenKey(Key: string; CreateInNotExists: Boolean): Boolean;
+    function ReadString(name: string; default: string = ''): string;
+    function ReadInteger(name: string; default: Integer = 0): Integer;
+    function ReadDateTime(name: string; default: TDateTime = 0): TDateTime;
     procedure CloseKey;
-    procedure GetKeyNames(Strings : TStrings);
-    procedure GetValueNames(Strings : TStrings);
-    function ValueExists(Name : String) : boolean;
-    function KeyExists(Key : String) : boolean;
-    function ReadBool(Name : String; Default : boolean = false) : boolean;
-    function DeleteKey(Key : String) : boolean;
-    function DeleteValue(Name : String) : boolean;
-    procedure WriteString(Name : String; Value : String);
-    procedure WriteBool(Name : String; Value : boolean);
-    procedure WriteDateTime(Name : String; Value : TDateTime);  
-    procedure WriteInteger(Name : String; Value : Integer);
-    property Key : string read FKey;
-    property Section : Integer read FSection;
+    procedure GetKeyNames(Strings: TStrings);
+    procedure GetValueNames(Strings: TStrings);
+    function ValueExists(name: string): Boolean;
+    function KeyExists(Key: string): Boolean;
+    function ReadBool(name: string; default: Boolean = False): Boolean;
+    function DeleteKey(Key: string): Boolean;
+    function DeleteValue(name: string): Boolean;
+    procedure WriteString(name: string; Value: string);
+    procedure WriteBool(name: string; Value: Boolean);
+    procedure WriteDateTime(name: string; Value: TDateTime);
+    procedure WriteInteger(name: string; Value: Integer);
+    property Key: string read FKey;
+    property Section: Integer read FSection;
   end;
 
   TDBRegistryCache = class(TObject)
@@ -49,8 +50,6 @@ type
     function GetSection(ASection : Integer; AKey : string) : TBDRegistry;
   end;
 
-function StringToHexString(text : String) : string;
-function HexStringToString(text : String) : string;
 
 const
   REGISTRY_ALL_USERS    = 0;
@@ -64,42 +63,14 @@ var
 
 implementation
 
-function StringToHexString(text : String) : string;
-var
-  i : integer;
-  str : string;
-begin
- Result:='';
- for i:=1 to Length(text) do
- begin
-  str:=IntToHex(Ord(text[i]),2);
-  Result:=Result+str;
- end;
-end;
-
-function HexStringToString(text : String) : string;
-var
-  i : integer;
-  c : byte;
-  str : string;
-begin
- Result:='';
- for i:=1 to Length(text) div 2 do
- begin
-  str:=Copy(text,(i-1)*2+1,2);
-  c:=HexToIntDef(str,0);
-  Result:=Result+Chr(c);
- end;
-end;
-
 function GetRegRootKey: string;
 begin
- Result:=RegRoot+'UserData\';
+  Result := RegRoot + 'UserData\';
 end;
 
-function GetRegIniFileName : string;
+function GetRegIniFileName: string;
 begin
-  Result := ExtractFileDir(ParamStr(0))+'Registry.ini';
+  Result := ExtractFileDir(ParamStr(0)) + 'Registry.ini';
 end;
 
 { TBDRegistry }
@@ -111,45 +82,50 @@ end;
 
 constructor TBDRegistry.Create(ASection: integer; ReadOnly : Boolean = false);
 begin
- inherited Create;
- FSection := ASection;
- FKey := '';
- FReadOnly:=ReadOnly;
- If PortableWork then
- begin
-  Registry:=TMyRegistryINIFile.Create(GetRegIniFileName);
- end else
- begin
-  if ReadOnly then
-  Registry:=TRegistry.Create(KEY_READ) else
-  Registry:=TRegistry.Create(KEY_ALL_ACCESS);
-  if ASection = REGISTRY_ALL_USERS then (Registry as TRegistry).RootKey := HKEY_INSTALL;
-  if ASection = REGISTRY_CLASSES then (Registry as TRegistry).RootKey := windows.HKEY_CLASSES_ROOT;
-  if ASection = REGISTRY_CURRENT_USER then (Registry as TRegistry).RootKey := HKEY_USER_WORK;
- end;
+  inherited Create;
+  FSection := ASection;
+  FKey := '';
+  FReadOnly := readonly;
+  if PortableWork then
+  begin
+    Registry := TMyRegistryINIFile.Create(GetRegIniFileName);
+  end else
+  begin
+    if Readonly then
+      Registry := TRegistry.Create(KEY_READ)
+    else
+      Registry := TRegistry.Create(KEY_ALL_ACCESS);
+    if ASection = REGISTRY_ALL_USERS then
+      (Registry as TRegistry).RootKey := HKEY_INSTALL;
+    if ASection = REGISTRY_CLASSES then
+      (Registry as TRegistry).RootKey := Windows.HKEY_CLASSES_ROOT;
+    if ASection = REGISTRY_CURRENT_USER then
+      (Registry as TRegistry).RootKey := HKEY_USER_WORK;
+  end;
 end;
 
 function TBDRegistry.DeleteKey(Key: String): boolean;
 begin
- Result:=false;
- if Registry is TRegistry then Result:=(Registry as TRegistry).DeleteKey(Key);
- if Registry is TMyRegistryINIFile then
- begin
-  (Registry as TMyRegistryINIFile).EraseSection(Key);
-  Result:=true;
- end;
+  Result := False;
+  if Registry is TRegistry then
+    Result := (Registry as TRegistry).DeleteKey(Key);
+  if Registry is TMyRegistryINIFile then
+  begin
+    (Registry as TMyRegistryINIFile).EraseSection(Key);
+    Result := True;
+  end;
 end;
 
 function TBDRegistry.DeleteValue(Name: String): boolean;
 var
   Key : string;
-begin   
+begin
  Result:=false;
  if Registry is TRegistry then Result:=(Registry as TRegistry).DeleteKey(Name);
  if Registry is TMyRegistryINIFile then
  begin
   Key:=(Registry as TMyRegistryINIFile).Key;
-  (Registry as TMyRegistryINIFile).DeleteKey(Key,Name);   
+  (Registry as TMyRegistryINIFile).DeleteKey(Key,Name);
   Result:=true;
  end;
 end;
@@ -230,7 +206,7 @@ end;
 function TBDRegistry.ReadBool(Name: String; Default: boolean): boolean;
 var
   Key : string;
-begin  
+begin
   Result:=Default;
  try
   if Registry is TRegistry then Result:=(Registry as TRegistry).ReadBool(Name);
@@ -248,8 +224,8 @@ function TBDRegistry.ReadDateTime(Name: String;
   Default: TDateTime): TDateTime;
 var
   Key : string;
-begin    
-  Result:=Default;  
+begin
+  Result:=Default;
  try
   if Registry is TRegistry then Result:=(Registry as TRegistry).ReadDateTime(Name);
   if Registry is TMyRegistryINIFile then
@@ -299,7 +275,7 @@ end;
 function TBDRegistry.ValueExists(Name: String): boolean;
 var
   Key : string;
-begin        
+begin
  Result:=false;
  if Registry is TRegistry then Result:=(Registry as TRegistry).ValueExists(Name);
  if Registry is TMyRegistryINIFile then
@@ -368,12 +344,8 @@ begin
 end;
 
 destructor TDBRegistryCache.Destroy;
-var
-  I : Integer;
 begin
-  for I := 0 to FList.Count - 1 do
-    TBDRegistry(FList[I]).Free;
-  FList.Free;
+  FreeList(FList);
   inherited;
 end;
 

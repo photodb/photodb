@@ -5,7 +5,7 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Classes, uMemory;
+  Classes, uMemory, uConstants;
 
 type
   //OBJECTS
@@ -13,11 +13,56 @@ type
 
   end;
 
+  TExtState = (TES_IGNORE, TES_ADD_HANDLER, TES_DEFAULT);
+
+  TInstallExt = class(TInstallObject)
+  public
+    State : TExtState;
+    Ext : string;
+  end;
+
+  TInstallExts = class(TObject)
+  private
+    FList : TList;
+    function GetExtByIndex(Index: Integer): TInstallExt;
+    function GetCount: Integer;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    property Count : Integer read GetCount;
+    property Exts[Index : Integer] : TInstallExt read GetExtByIndex; default;
+  end;
+
+  TShortCut = class(TObject)
+  public
+    Name : string;
+    Location : string;
+  end;
+
+  TShortCuts = class(TObject)
+  private
+    FShortCuts : TList;
+    function GetCount: Integer;
+    function GetItemByIndex(Index: Integer): TShortCut;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Add(Name, Location : string); overload;
+    procedure Add(Location : string); overload;
+    property Count : Integer read GetCount;
+    property Items[Index : Integer] : TShortCut read GetItemByIndex; default;
+  end;
+
   TDiskObject = class(TInstallObject)
+  private
+    FShortCuts : TShortCuts;
   public
     Name : string;
     FinalDestination : string;
-    constructor Create(AName, AFinalDestination : string);
+    Description : string;
+    constructor Create(AName, AFinalDestination, ADescription : string);
+    destructor Destroy; override;
+    property ShortCuts : TShortCuts read FShortCuts;
   end;
 
   TFileObject = class(TDiskObject)
@@ -50,9 +95,11 @@ type
   TInstall = class(TObject)
   private
     FFiles : TScopeFiles;
+    FDestinationPath : string;
   public
     constructor Create;
     destructor Destroy; override;
+    property DestinationPath : string read FDestinationPath write FDestinationPath;
     property Files : TScopeFiles read FFiles;
   end;
 
@@ -66,12 +113,43 @@ type
 
 implementation
 
+{ TInstallExts }
+
+constructor TInstallExts.Create;
+begin
+  FList := TList.Create;
+end;
+
+destructor TInstallExts.Destroy;
+begin
+  FreeList(FList);
+  inherited;
+end;
+
+function TInstallExts.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function TInstallExts.GetExtByIndex(Index: Integer): TInstallExt;
+begin
+  Result := FList[Index];
+end;
+
 { TDiskObject }
 
-constructor TDiskObject.Create(AName, AFinalDestination: string);
+constructor TDiskObject.Create(AName, AFinalDestination, ADescription: string);
 begin
   Name := AName;
   FinalDestination := AFinalDestination;
+  Description := ADescription;
+  FShortCuts := TShortCuts.Create;
+end;
+
+destructor TDiskObject.Destroy;
+begin
+  F(FShortCuts);
+  inherited;
 end;
 
 { TScopeFiles }
@@ -118,22 +196,68 @@ end;
 { TPhotoDBInstall_V23 }
 
 constructor TPhotoDBInstall_V23.Create;
+var
+  PhotoDBFile : TDiskObject;
 begin
   inherited;
 
-  Files.Add(TFileObject.Create('PhotoDB.exe', '%PROGRAM%'));
-  Files.Add(TFileObject.Create('Kernel.dll', '%PROGRAM%'));
-  Files.Add(TFileObject.Create('Icons.dll', '%PROGRAM%'));
-  Files.Add(TFileObject.Create('FreeImage.dll', '%PROGRAM%'));
+  PhotoDBFile := TFileObject.Create('PhotoDB.exe', '%PROGRAM%', 'Photo Database {V} helps you to find, protect and organize your photos.');
+  PhotoDBFile.FShortCuts.Add('%DESKTOP%\Photo Database {V}.lnk');
+  PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + ProgramShortCutFile);
+  PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + 'Home page.lnk', 'http://photodb.illusdolphin.net/{LNG}');
+  Files.Add(PhotoDBFile);
+
+  Files.Add(TFileObject.Create('Kernel.dll',       '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('Icons.dll',        '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('FreeImage.dll',    '%PROGRAM%', ''));
 
   {$IFDEF DBDEBUG}
-  Files.Add(TFileObject.Create('FastMM_FullDebugMode.dll', '%PROGRAM%'));
+  Files.Add(TFileObject.Create('FastMM_FullDebugMode.dll', '%PROGRAM%', ''));
   {$ENDIF}
 
-  Files.Add(TDirectoryObject.Create('Languages', '%PROGRAM%'));
-  Files.Add(TDirectoryObject.Create('Actions', '%PROGRAM%'));
-  Files.Add(TDirectoryObject.Create('Scripts', '%PROGRAM%'));
-  Files.Add(TDirectoryObject.Create('Images', '%PROGRAM%'));
+  Files.Add(TDirectoryObject.Create('Languages',   '%PROGRAM%', ''));
+  Files.Add(TDirectoryObject.Create('Actions',     '%PROGRAM%', ''));
+  Files.Add(TDirectoryObject.Create('Scripts',     '%PROGRAM%', ''));
+  Files.Add(TDirectoryObject.Create('Images',      '%PROGRAM%', ''));
+  Files.Add(TDirectoryObject.Create('PlugInsEx',   '%PROGRAM%', ''));
+end;
+
+{ TShortCuts }
+
+procedure TShortCuts.Add(Name, Location: string);
+var
+  ShortCut : TShortCut;
+begin
+  ShortCut := TShortCut.Create;
+  ShortCut.Name := Name;
+  ShortCut.Location := Location;
+  FShortCuts.Add(ShortCut);
+end;
+
+procedure TShortCuts.Add(Location: string);
+begin
+  Add('', Location);
+end;
+
+constructor TShortCuts.Create;
+begin
+  FShortCuts := TList.Create;
+end;
+
+destructor TShortCuts.Destroy;
+begin
+  FreeList(FShortCuts);
+  inherited;
+end;
+
+function TShortCuts.GetCount: Integer;
+begin
+  Result := FShortCuts.Count;
+end;
+
+function TShortCuts.GetItemByIndex(Index: Integer): TShortCut;
+begin
+  Result := FShortCuts[Index];
 end;
 
 initialization

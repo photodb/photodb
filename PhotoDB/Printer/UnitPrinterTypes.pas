@@ -654,9 +654,9 @@ begin
      end;
     1 :
      begin
-      if FullImage then
-      h:=Result.Height - aHeight - Round(MmToPix(XSize(10,10)).Height) else
-      h:=Result.Height - aHeight - Round((MmToPix(XSize(10,10)).Height/Printer.PageHeight)*Result.Height);
+      //if FullImage then
+      //h:=Result.Height - aHeight - Round(MmToPix(XSize(10,10)).Height) else
+      //h:=Result.Height - aHeight - Round((MmToPix(XSize(10,10)).Height/Printer.PageHeight)*Result.Height);
 
       if FullImage then ainc:=0 else ainc:=1;
       if aWidth/SampleImage.Width<1 then
@@ -665,9 +665,9 @@ begin
      end;
     2 :
      begin
-      if FullImage then
-      h:=Result.Height - aHeight - Round(MmToPix(XSize(10,10)).Height) else
-      h:=Result.Height - aHeight - Round((MmToPix(XSize(10,10)).Height/Printer.PageHeight)*Result.Height);
+      //if FullImage then
+      //h:=Result.Height - aHeight - Round(MmToPix(XSize(10,10)).Height) else
+      //h:=Result.Height - aHeight - Round((MmToPix(XSize(10,10)).Height/Printer.PageHeight)*Result.Height);
 
       if FullImage then ainc:=0 else ainc:=1;
       if aWidth/SampleImage.Width<1 then

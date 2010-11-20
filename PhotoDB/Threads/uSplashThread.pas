@@ -36,7 +36,6 @@ var
   hSplashProgress : Byte = 0;
   IsFirstDraw : Boolean = True;
   MouseCaptured : Boolean = False;
-  Mouse_X, MouseY : Integer;
 
 procedure SetSplashProgress(ProgressValue : Byte);
 begin

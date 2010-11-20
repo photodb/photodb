@@ -1,5 +1,7 @@
 unit GraphicCrypt;
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 interface
 
 uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,

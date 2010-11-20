@@ -7,8 +7,8 @@ uses
   Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask, uFileUtils,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
-  UnitDBFileDialogs, WindowsIconCacheTools, uAssociatedIcons, uLogger, uConstants,
-  UnitDBCommon, UnitDBCommonGraphics, uTranslate;
+  UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants,
+  UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils;
 
 type
   TOptionsForm = class(TForm)
@@ -507,7 +507,7 @@ begin
      cbGrayed:  Exts[i-1].InstallType:=InstallType_Grayed;
     end;
    end;
-   ExtInstallApplicationW(Exts,InstalledFileName);
+   //TODO: ExtInstallApplicationW(Exts,InstalledFileName);
    WritePlaces;
   end;
 //  3 :
@@ -650,10 +650,10 @@ begin
   end;
  end;
  ExtUnInstallApplicationW;
- ExtInstallApplicationW(Exts,Application.ExeName);
+ //TODO: ExtInstallApplicationW(Exts,Application.ExeName);
  LoadExts;
  try
-  RebuildIconCacheAndNotifyChanges;
+   //TODO: RebuildIconCacheAndNotifyChanges;
  except
  end;
 end;

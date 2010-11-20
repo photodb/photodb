@@ -21,7 +21,6 @@ type TExEffect = class(TObject)
    function GetName : String; virtual;
    function GetBestValue : integer; virtual;
    Procedure GetPreview(S,D : TBitmap); virtual;
-  published
    Property SetImageProc : TSetPointerToNewImage read FSetImageProc write SetSetImageProc;
    property Editor : TForm read FEditor write SetEditor;
    function GetValueByName(Properties, Name: string): string;

@@ -73,7 +73,7 @@ begin
   try
     FBackgroundImage.PixelFormat := pf32bit;
     FCurrentImage.Assign(FBackgroundImage);
-    L := FCurrentImage.Width * Progress div 100;
+    L := FCurrentImage.Width * Progress div 255;
     for I := 0 to FCurrentImage.Height - 1 do
     begin
       P := FCurrentImage.ScanLine[I];

@@ -75,7 +75,7 @@ begin
  DBKernel.RegisterForm(ImportDataBaseForm);
  Memo1.Lines.Clear;
  CheckEnabled;
- Edit4.text:=InstalledUserName;
+ Edit4.text:=GetWindowsUserName;
  LoadLanguage;
  CheckListBox1.Checked[0]:=True;
  CheckListBox1.Checked[1]:=True;

@@ -142,21 +142,20 @@ begin
   Exit;
  end;
  CloseHandle(hSemaphore);
- DoBeginInstall;
+ //DoBeginInstall;
  UnitInstallThread.InstallDone:=true;
  try
   Memo1.Lines.LoadFromFile(GetDirectory(Application.ExeName)+'Licence.txt');
  except
   MessageBoxDB(Handle,TEXT_MES_LISENCE_FILE_BOT_FOUND,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-  if not EmulationInstall then Halt;
+
  end;
  ProgramDir:=GetProgramFilesDir;
  UnFormatDir(ProgramDir);
  Edit1.text:=ProgramDir+'\Photo DataBase';
  Edit2.text:=StringReplace('%APPDATA%\DB','%APPDATA%',GetAppDataDirectory,[rfReplaceAll,rfIgnoreCase]);
- if InstalledUserName<>'' then
- Edit4.Text:=InstalledUserName else
- Edit4.Text:=TEXT_MES_NAMEA;
+
+ Edit4.Text:=GetWindowsUserName;
 
   Edit3.Text:=TEXT_MES_NO_FILE;
 
@@ -209,7 +208,7 @@ begin
   Edit4.SelectAll;
   Exit;
  end;
- If IsNewVersion then
+ {If IsNewVersion then
  begin
   If ID_OK<>MessageBoxDB(Handle,TEXT_MES_PROG_IS_NEW,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
   exit;
@@ -218,7 +217,7 @@ begin
  begin
   If ID_OK<>MessageBoxDB(Handle,TEXT_MES_PROG_IS,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
   exit;
- end;
+ end;  }
  DBDataDir:=StringReplace(Edit2.text,'%APPDATA%',GetAppDataDirectory,[rfReplaceAll,rfIgnoreCase]);
  try
   CreateDirA(Edit1.text);
@@ -319,7 +318,7 @@ Var
   Reg : TRegistry;
   S : String;
 begin
- Reg:=TRegistry.Create;
+{ Reg:=TRegistry.Create;
  Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;
  For i:=1 to CheckListBox1.Items.Count do
  begin
@@ -336,7 +335,7 @@ begin
   end;
   Reg.CloseKey;
  end;
- Reg.Free;
+ Reg.Free;  }
 end;
 
 procedure TInstallForm.Button7Click(Sender: TObject);
