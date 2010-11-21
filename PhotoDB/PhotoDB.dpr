@@ -29,7 +29,6 @@ uses
   ComCtrls,
   ActiveX,
   ShlObj,
-  DBCtrls,
   jpeg,
   DmProgress,
   ClipBrd,
@@ -155,9 +154,6 @@ uses
   ZLibDelphi in 'External\Formats\Tiff\ZLibDelphi.pas',
   RAWImage in 'External\Formats\DelphiDcraw\RAWImage.pas',
   GIFImage in 'External\Formats\GIFImage.pas',
-  PNG_IO in 'External\Formats\PNG_IO.pas',
-  PngDef in 'External\Formats\PngDef.pas',
-  PNGImage in 'External\Formats\PNGImage.pas',
   ColorToolUnit in 'ImageEditor\ColorToolUnit.pas',
   CropToolUnit in 'ImageEditor\CropToolUnit.pas',
   EffectsToolThreadUnit in 'ImageEditor\EffectsToolThreadUnit.pas',
@@ -338,33 +334,36 @@ begin
   begin
     CloseHandle(HSemaphore);
 
-    if ParamStr(1) = '' then
-      MessageToSent := 'Activate'
-    else
-      MessageToSent := ParamStr(1) + #1 + ParamStr(2);
+    if FindWindow(nil, DBID) <> 0 then
+    begin
 
-      cd.dwData := WM_COPYDATA_ID;
-      cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
-      GetMem(Buf, cd.cbData);
-      try
-        P := PByte(Buf);
-        Integer(P) := Integer(P) + SizeOf(TMsgHdr);
+      if ParamStr(1) = '' then
+        MessageToSent := 'Activate'
+      else
+        MessageToSent := ParamStr(1) + #1 + ParamStr(2);
 
-        StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
-        cd.lpData := Buf;
+        cd.dwData := WM_COPYDATA_ID;
+        cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
+        GetMem(Buf, cd.cbData);
+        try
+          P := PByte(Buf);
+          Integer(P) := Integer(P) + SizeOf(TMsgHdr);
 
-        SplashThread.Terminate;
-        if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
-        begin
-          DBTerminating := True;
-        end else
-          if ID_YES <> MessageBoxDB(0, TA('This program already running, but not responds! Run new instance?'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
+          StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
+          cd.lpData := Buf;
+
+          SplashThread.Terminate;
+          if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
+          begin
             DBTerminating := True;
+          end else
+            if ID_YES <> MessageBoxDB(0, TA('This program already running, but not responds! Run new instance?'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
+              DBTerminating := True;
 
-      finally
-        FreeMem(Buf);
-      end;
-
+        finally
+          FreeMem(Buf);
+        end;
+    end;
   end;
 end;
 
@@ -455,7 +454,7 @@ begin
     begin
       F(AExplorerFolders);
       Application.CreateForm(TUnInstallForm, UnInstallForm);
-  Application.Restore;
+      Application.Restore;
       UnInstallForm.ShowModal;
       UnInstallForm.Release;
       UnInstallForm := nil;
@@ -507,14 +506,6 @@ begin
 
   TW.i.Start('GetCIDA');
   SetSplashProgress(90);
-
-  TW.i.Start('LoadingAboutForm.Free');
-  EventLog('...LOGGING...');
-  if not FolderView then
-    if not DBInDebug then
-      if not DBTerminating then
-        if DBKernel.ProgramInDemoMode then
-          TSplashThread(SplashThread).ShowDemoInfo;
 
   EventLog('...GROUPS CHECK + MENU...');
   TW.i.Start('IsValidGroupsTable');

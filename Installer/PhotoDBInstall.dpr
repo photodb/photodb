@@ -36,7 +36,8 @@ uses
   UnitINI in '..\PhotoDB\Units\UnitINI.pas',
   uShellUtils in 'uShellUtils.pas',
   uInstallZip in 'uInstallZip.pas',
-  uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas';
+  uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas',
+  uAssociations in 'uAssociations.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

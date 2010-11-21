@@ -7,7 +7,7 @@ uses
   SysUtils, Variants, Classes, Graphics, Controls, Forms, Math, uVistaFuncs,
   ExtCtrls, AppEvnts, ImgList, DropTarget, DragDropFile, DragDrop,
   DropSource, Menus, SaveWindowPos, DB, ComCtrls, WebLink, StdCtrls,
-  Dialogs, Grids, DBGrids, jpeg, DBCtrls, TwButton, Rating, Mask,
+  Dialogs, Grids, DBGrids, jpeg, TwButton, Rating, Mask,
   GraphicCrypt, UnitStringPromtForm, CommonDBSupport, GraphicsCool,
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,

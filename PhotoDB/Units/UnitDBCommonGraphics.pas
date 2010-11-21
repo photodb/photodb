@@ -3,14 +3,14 @@ unit UnitDBCommonGraphics;
 interface
 
  uses Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics,
-      GraphicEx, ShellApi, JPEG, CommCtrl, uMemory,
+      pngimage, ShellApi, JPEG, CommCtrl, uMemory,
 {$IFDEF PHOTODB}
       DmProgress,
       GIFImage,
       RAWImage,
 {$ENDIF}
       UnitDBDeclare, Language, UnitDBCommon, SysUtils,
-      GraphicsBaseTypes, Effects, Math, uMath;
+      GraphicsBaseTypes, Effects, Math, uMath, uPngUtils;
 
  type
    TJPEGX = class(TJpegImage)
@@ -19,7 +19,7 @@ interface
    end;
 
  const
-    PSDTransparent = false;
+    PSDTransparent = true;
     //Image processiong options
     ZoomSmoothMin = 0.4;
 
@@ -357,7 +357,7 @@ procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : str
 var
   lf: TLogFont;
   I, J : Integer;
-  X, Y, Width, Height, W, H, TextLength : Integer;
+  X, Y, Width, Height, H, TextLength : Integer;
   Angle : Integer;
   Mask : TBitmap;
   PS, PD : PARGB;
@@ -418,7 +418,6 @@ begin
     //TODO: thread-safe ?
     Mask.Canvas.Font.Handle := CreateFontIndirect(lf);
     Mask.Canvas.Font.Color := clBlack;
-    W := Mask.Canvas.TextWidth(Text);
     H := Mask.Canvas.TextHeight(Text);
     for I := 1 to XBlocks do
       for J := 1 to YBlocks do
@@ -1166,7 +1165,8 @@ end;
 
 procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
 begin
-  if (Src is TBitmap) and (TBitmap(Src).PixelFormat = pf32Bit) then
+  if ((Src is TBitmap) and (TBitmap(Src).PixelFormat = pf32Bit))
+    or ((Src is TPngImage) and (TPngImage(Src).TransparencyMode <> ptmNone)) then
     Dest.PixelFormat := pf32Bit
   else
     Dest.PixelFormat := pf24Bit;
@@ -1177,6 +1177,13 @@ begin
     Dest.Assign(TRAWImage(Src))
   else if Src is TBitmap then
     AssignBitmap(Dest, TBitmap(Src))
+  else if Src is TPngImage then
+  begin
+    if TPngImage(Src).TransparencyMode <> ptmNone then
+      LoadPNGImageTransparent(TPngImage(Src), Dest)
+    else
+      LoadPNGImageWOTransparent(TPngImage(Src), Dest);
+  end
   else
     Dest.Assign(Src);
 end;

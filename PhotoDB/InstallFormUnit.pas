@@ -313,10 +313,10 @@ begin
 end;
 
 procedure TInstallForm.Default1Click(Sender: TObject);
-Var
+{Var
   i : Integer;
   Reg : TRegistry;
-  S : String;
+  S : String;}
 begin
 { Reg:=TRegistry.Create;
  Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;

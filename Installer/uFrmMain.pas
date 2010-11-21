@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
   uFrmProgress, uInstallTypes, uInstallUtils, uMemory, uConstants,
-  uVistaFuncs, uInstallScope;
+  uVistaFuncs, uInstallScope, Registry, uShellUtils;
 
 type
   TFrmMain = class(TDBForm)
@@ -55,7 +55,7 @@ begin
   Hide;
   FrmProgress.Show;
   FrmProgress.Progress := 0;
-  CurrentInstall.DestinationPath := 'c:\1';
+  CurrentInstall.DestinationPath := IncludeTrailingBackslash(GetProgramFilesPath) + 'Photo DataBase';
   TInstallThread.Create(Self);
 end;
 

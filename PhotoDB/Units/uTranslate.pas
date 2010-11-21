@@ -376,5 +376,4 @@ initialization
 finalization
   F(TranslateManager);
 
-
 end.

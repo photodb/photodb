@@ -108,8 +108,7 @@ begin
         begin
           FB.Width := ThSizePropertyPreview;
           FB.Height := Round(ThSizePropertyPreview * (Graphic.Height / Graphic.Width));
-        end
-        else
+        end else
         begin
           FB.Width := Round(ThSizePropertyPreview * (Graphic.Width / Graphic.Height));
           FB.Height := ThSizePropertyPreview;

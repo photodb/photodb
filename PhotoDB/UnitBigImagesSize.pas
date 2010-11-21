@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, WebLink, dolphin_db, UnitDBKernel,
-  DBCtrls, UnitDBCommon, UnitDBCommonGraphics, uDBForm;
+  UnitDBCommon, UnitDBCommonGraphics, uDBForm;
 
 type
   TBigImagesSizeForm = class(TDBForm)

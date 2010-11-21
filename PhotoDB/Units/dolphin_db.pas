@@ -5,10 +5,10 @@ interface
 uses  Language, Registry, UnitDBKernel, ShellApi, Windows,
       Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
       Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
-      ImgList, ComCtrls, DBCtrls, JPEG, DmProgress, ClipBrd, win32crc,
+      ImgList, ComCtrls, JPEG, DmProgress, ClipBrd, win32crc,
       SaveWindowPos, ExtDlgs, UnitDBDeclare, Tlhelp32,
       acDlgSelect, GraphicCrypt, ShlObj, ActiveX, ShellCtrls, ComObj,
-      MAPI, DDraw, Math, Effects, DateUtils, psAPI,{ DBCommon,} GraphicsCool,
+      MAPI, DDraw, Math, Effects, DateUtils, psAPI, GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
       UnitLinksSupport, EasyListView, ImageConverting,
@@ -97,7 +97,7 @@ type
   end;
 
   TImageDBRecordAArray = array of TImageDBRecordA;
-  TCIDProcedure = procedure(Buffferm: PAnsiChar; BuffesSize : Integer);
+  TCIDProcedure = procedure(Buffferm: PChar; BuffesSize : Integer);
 
 const
   InstallType_Checked = 0;
@@ -315,7 +315,7 @@ procedure UpdateMovedDBRecord(ID: Integer; FileName: string);
 procedure SetRotate(ID, Rotate: Integer);
 procedure SetRating(ID, Rating: Integer);
 procedure SetAttr(ID, Attr: Integer);
-function GetHardwareString: string;
+//function GetHardwareString: string;
 function XorStrings(S1, S2: string): string;
 function SetStringToLengthWithNoData(S: string; N: Integer): string;
 function BitmapToString(Bit: Tbitmap): string;
@@ -329,9 +329,9 @@ function LoadIDsFromfileA(FileName: string): TArInteger;
 function LoadImThsFromfileA(FileName: string): TArStrings;
 function SaveImThsTofile(FileName: string; ImThs: TArstrings): Boolean;
 
-function HardwareStringToCode(Hs: string): string;
+//function HardwareStringToCode(Hs: string): string;
 function CodeToActivateCode(S: string): string;
-function GetuserString: string;
+//function GetuserString: string;
 function RenameFileWithDB(Caller : TObject; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 function GetGUID: TGUID;
 procedure GetFileListByMask(BeginFile, Mask: string;
@@ -710,7 +710,6 @@ function TryOpenCDS(DS: TDataSet): Boolean;
 var
   I: Integer;
 begin
-  Result := False;
   for I := 1 to 20 do
   begin
     Result := True;
@@ -1588,7 +1587,7 @@ function ActivationID: string;
 var
   P: TCIDProcedure;
   PAddr: Pointer;
-  Buffer : PAnsiChar;
+  Buffer : PChar;
 
 const
   MaxBufferSize = 255;
@@ -2269,7 +2268,7 @@ begin
       Result[I] := Chr((I + Cs) xor Cs);
 end;
 
-function GetHardwareString: string;
+{function GetHardwareString: string;
 var
   I: Integer;
   LpDisplayDevice: TDisplayDevice;
@@ -2361,7 +2360,7 @@ begin
   S1 := Setstringtolengthwithnodata(GettingKeybType, 255);
   Hardwarestring := Xorstrings(Hardwarestring, S1);
   Result := Hardwarestring;
-end;
+end;  }
 
 function SaveIDsTofile(FileName: string; IDs: TArInteger): Boolean;
 var
@@ -2422,14 +2421,17 @@ begin
   end;
   SetLength(X, 14);
   Fs.read(Pointer(X)^, 14);
-  if (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
     (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('I')) and (X[9] = Ord('D')) and (X[10] = Ord('S')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-    V1 := True;
-  for I := 1 to (Fs.Size - 14) div Sizeof(Integer) do
+    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+
+  if V1 then
   begin
-    Fs.read(Int, Sizeof(Integer));
-    Result := Result + Inttostr(Int) + '$';
+    for I := 1 to (Fs.Size - 14) div Sizeof(Integer) do
+    begin
+      Fs.read(Int, Sizeof(Integer));
+      Result := Result + Inttostr(Int) + '$';
+    end;
   end;
   Fs.Free;
 end;
@@ -2451,19 +2453,20 @@ begin
   end;
   SetLength(X, 14);
   Fs.read(Pointer(X)^, 14);
-  if (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
     (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('I')) and (X[9] = Ord('D')) and (X[10] = Ord('S')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-    V1 := True
-  else
-    Exit;
-  for I := 1 to (Fs.Size - 14) div SizeOf(Integer) do
+    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+
+  if V1 then
   begin
-    Fs.read(Int, Sizeof(Integer));
-    SetLength(Result, Length(Result) + 1);
-    Result[Length(Result) - 1] := Int;
+    for I := 1 to (Fs.Size - 14) div SizeOf(Integer) do
+    begin
+      Fs.read(Int, Sizeof(Integer));
+      SetLength(Result, Length(Result) + 1);
+      Result[Length(Result) - 1] := Int;
+    end;
   end;
-  Fs.Free;
+  FS.Free;
 end;
 
 function SaveImThsTofile(FileName: string; ImThs: TArstrings): Boolean;
@@ -2525,26 +2528,24 @@ begin
   end;
   SetLength(X, 14);
   Fs.read(Pointer(X)^, 14);
-  if (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
     (X[6] = Ord('I')) and (X[7] = Ord('M')) and (X[8] = Ord('T')) and (X[9] = Ord('H')) and (X[10] = Ord('S')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-    V1 := True
-  else
+    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+
+  if V1 then
   begin
-    Fs.Free;
-    Exit;
-  end;
-  for I := 1 to (Fs.Size - 14) div 200 do
-  begin
-    SetLength(S, 200);
-    Fs.read(S[1], 200);
-    SetLength(Result, Length(Result) + 1);
-    Result[Length(Result) - 1] := S;
+    for I := 1 to (Fs.Size - 14) div 200 do
+    begin
+      SetLength(S, 200);
+      Fs.read(S[1], 200);
+      SetLength(Result, Length(Result) + 1);
+      Result[Length(Result) - 1] := S;
+    end;
   end;
   Fs.Free;
 end;
 
-function HardwareStringToCode(Hs: string): string;
+{function HardwareStringToCode(Hs: string): string;
 var
   I, J: Integer;
   S: Byte;
@@ -2558,7 +2559,7 @@ begin
       S := S + Ord(Hs[32 * (I - 1) + J - 1]);
     Result := Result + Inttohex(S, 2);
   end;
-end;
+end;  }
 
 function CodeToActivateCode(S: string): string;
 var
@@ -2578,7 +2579,7 @@ begin
   end;
 end;
 
-function GetUserString: string;
+{function GetUserString: string;
 var
   S1, Hardwarestring: string;
 begin
@@ -2587,7 +2588,7 @@ begin
   S1 := Setstringtolengthwithnodata(S1, 255);
   Hardwarestring := Xorstrings(Hardwarestring, S1);
   Result := Hardwarestring;
-end;
+end;   }
 
 function AltKeyDown: Boolean;
 begin
@@ -2669,7 +2670,7 @@ begin
                     LpVerb := PAnsiChar('Properties');
                     NShow := SW_SHOWNORMAL;
                   end;
-                  Hr := Mnu.InvokeCommand(Cmd);
+                  {Hr := }Mnu.InvokeCommand(Cmd);
                 finally
                   Mnu := nil;
                 end;
@@ -3223,7 +3224,7 @@ begin
   Body := TStringList.Create;
   Body.Add('Error body:');
   Body.Add(ErrorValue);
-  SendMail('', ProgramMail, PAnsiChar('Error in program [' + Error + ']'), PAnsiChar(Body.Text), '', True);
+  SendMail('', ProgramMail, PAnsiChar(AnsiString('Error in program [' + Error + ']')), PAnsiChar(AnsiString(Body.Text)), '', True);
   Body.Free;
 end;
 
@@ -3877,7 +3878,7 @@ begin
   FirstTick := GetTickCount;
   repeat
     Application.ProcessMessages; { для того чтобы не "завесить" Windows }
-  until (GetTickCount - FirstTick) >= Msecs;
+  until (Longint(GetTickCount) - FirstTick) >= Msecs;
 end;
 
 function ColorDiv2(Color1, COlor2: TColor): TColor;
@@ -4024,30 +4025,28 @@ begin
   end;
   SetLength(X, 14);
   Fs.read(Pointer(X)^, 14);
-  if (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
     (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('L')) and (X[9] = Ord('S')) and (X[10] = Ord('T')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-    //V1 := True
-  else
+    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+
+  if V1 then
   begin
-    FS.Free;
-    Exit;
-  end;
-  Fs.read(LenIDS, SizeOf(LenIDS));
-  Fs.read(LenFiles, SizeOf(LenFiles));
-  SetLength(IDs, LenIDS);
-  SetLength(Files, LenFiles);
-  for I := 1 to LenIDS do
-  begin
-    Fs.read(Int, Sizeof(Integer));
-    IDs[I - 1] := Int;
-  end;
-  for I := 1 to LenFiles do
-  begin
-    Fs.read(L, Sizeof(L));
-    SetLength(Str, L);
-    Fs.read(Str[1], L + 1);
-    Files[I - 1] := Str;
+    Fs.read(LenIDS, SizeOf(LenIDS));
+    Fs.read(LenFiles, SizeOf(LenFiles));
+    SetLength(IDs, LenIDS);
+    SetLength(Files, LenFiles);
+    for I := 1 to LenIDS do
+    begin
+      Fs.read(Int, Sizeof(Integer));
+      IDs[I - 1] := Int;
+    end;
+    for I := 1 to LenFiles do
+    begin
+      Fs.read(L, Sizeof(L));
+      SetLength(Str, L);
+      Fs.read(Str[1], L + 1);
+      Files[I - 1] := Str;
+    end;
   end;
   Fs.Free;
 end;

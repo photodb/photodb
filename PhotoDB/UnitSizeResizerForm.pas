@@ -275,7 +275,7 @@ begin
       Description := 'Tiff Image'
     else if Formats[I] = TGIFImage then
       Description := 'GIF Image'
-    else if Formats[I] = PngImage.TPNGGraphic then
+    else if Formats[I] = TPngImage then
       Description := 'PNG Image'
     else
       Description := GraphicEx.FileFormatList.GetDescription(Formats[I]);
@@ -284,7 +284,7 @@ begin
       Mask := '*.tiff'
     else if Formats[I] = TBitmap then
       Mask := '*.bmp'
-    else if Formats[I] = PngImage.TPNGGraphic then
+    else if Formats[I] = TPngImage then
       Mask := '*.png'
     else
       Mask := GraphicFileMask(Formats[I]);

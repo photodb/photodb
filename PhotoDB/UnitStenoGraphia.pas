@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, SaveInfoToImage, ShlObj,
-  Dolphin_DB, Math, ImageConverting, PngImage, PngDef, GraphicEx, uVistaFuncs,
+  Dolphin_DB, Math, ImageConverting, PngImage, GraphicEx, uVistaFuncs,
   GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils, uMemory;
 
 type
@@ -97,15 +97,8 @@ begin
   OpenPictureDialog := DBOpenPictureDialog.Create;
   try
 
-    if PNG_CAN_SAVE then
-    begin
-      OpenPictureDialog.Filter := 'PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp';
-      OpenPictureDialog.FilterIndex := 1;
-    end else
-    begin
-      OpenPictureDialog.Filter := 'Bitmaps (*.bmp)|*.bmp';
-      OpenPictureDialog.FilterIndex := 1;
-    end;
+    OpenPictureDialog.Filter := 'PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp';
+    OpenPictureDialog.FilterIndex := 1;
 
     if OpenPictureDialog.Execute then
       LoadInfoFromFile(OpenPictureDialog.FileName);
@@ -118,7 +111,7 @@ end;
 function TFormSteno.LoadInfoFromFile(FileName: String) : boolean;
 var
   Bitmap : TBitmap;
-  PNG : GraphicEx.TPngGraphic;
+  PNG : TPngImage;
   info : TArByte;
   Header : InfoHeader;
   Password : String;
@@ -158,7 +151,7 @@ begin
   if GetExt(FileName)<>'BMP' then
   begin
    try
-    PNG:=GraphicEx.TPngGraphic(LoadCryptFile(FileName,GraphicEx.TPngGraphic));
+    PNG:=TPngImage(LoadCryptFile(FileName,TPngImage));
     Bitmap:=TBitmap.Create;
     Bitmap.Assign(PNG);
    finally
@@ -287,7 +280,7 @@ var
   o : TOpenOptions;
   s : string;
   DialogFileSize : Integer;
-  PNG : PngImage.TPngGraphic;
+  PNG : TPngImage;
   Opt : TCryptImageOptions;
   SavePictureDialog : DBSavePictureDialog;
   FileName : string;
@@ -315,17 +308,10 @@ begin
 
   SavePictureDialog := DBSavePictureDialog.Create;
 
-  if PNG_CAN_SAVE then
-  begin
-    SavePictureDialog.Filter:='PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp';
-    SavePictureDialog.FilterIndex:=1;
-    s:=GetDirectory(PictureFileName)+GetFileNameWithoutExt(S)+'.png';
-  end else
-  begin
-    SavePictureDialog.Filter:='Bitmaps (*.bmp)|*.bmp';
-    SavePictureDialog.FilterIndex:=0;
-   s:=GetDirectory(PictureFileName)+GetFileNameWithoutExt(S)+'.bmp';
-  end;
+  SavePictureDialog.Filter:='PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp';
+  SavePictureDialog.FilterIndex:=1;
+  s:=GetDirectory(PictureFileName)+GetFileNameWithoutExt(S)+'.png';
+
   SavePictureDialog.SetFileName(s);
   if SavePictureDialog.Execute then
   begin
@@ -366,9 +352,7 @@ begin
     ImageSaved:=true;
    end else
    begin
-    if PNG_CAN_SAVE then
-    begin
-     PNG:=PngImage.TPngGraphic.Create;
+     PNG := TPngImage.Create;
      try
       PNG.Assign(Bitmap);
       PNG.SaveToFile(SavePictureDialog.FileName);
@@ -378,7 +362,6 @@ begin
       finally
        PNG.Free;
       end;
-    end;
    end;
    Bitmap.Free;
   end;

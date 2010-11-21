@@ -8,7 +8,7 @@ uses
   Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls,
   Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
-  uDBForm, uFastLoad, uMemory;
+  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager;
 
 type
   TFormManager = class(TDBForm)
@@ -346,6 +346,10 @@ begin
   // to allow run new copy
   Caption := '';
 
+  for I := 0 to MultiThreadManagers.Count - 1 do
+    TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
+  Delay(1000);
+
   for I := 0 to Length(FTemtinatedActions) - 1 do
     if (FTemtinatedActions[I].Options = TA_INFORM) or (FTemtinatedActions[I].Options = TA_INFORM_AND_NT) then
     begin
@@ -436,6 +440,11 @@ begin
       end;
       {$ENDIF}
     end;
+    if (FCheckCount = 100) then //after 10 sec. check for updates
+    begin
+      TW.I.Start('TInternetUpdate - Create');
+      TInternetUpdate.Create(False, False);
+    end;
     if (FCheckCount = 600) then //after 1.min. backup database
       DBKernel.BackUpTable;
     if CanCheckViewerInMainForms then
@@ -522,7 +531,7 @@ end;
 procedure TFormManager.Load;
 begin
   TW.I.Start('FM -> Load');
- Caption:=DBID;
+ Caption := DBID;
  CanCheckViewerInMainForms:=false;
  LockCleaning:=true;
  EnteringCodeNeeded := false;
@@ -596,9 +605,6 @@ begin
  end;
   TW.I.Start('FM -> HidefromTaskBar');
   HidefromTaskBar(Application.Handle);
-  if not DBTerminating then
-  TInternetUpdate.Create(False, False);
-  TW.I.Start('TInternetUpdate - Create');
 end;
 
 procedure TFormManager.WMCopyData(var Msg: TWMCopyData);
@@ -730,6 +736,6 @@ end;
 
 initialization
 
-FormManager:=nil;
+  FormManager := nil;
 
 end.

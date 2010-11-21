@@ -177,10 +177,7 @@ const
               begin
                 Bitmap := TBitmap.Create;
                 try
-                  if NewGraphic is PngImage.TPngGraphic then
-                    PngImage.TPngGraphic(NewGraphic).Image.CopyToBmp(Bitmap)
-                  else
-                    Bitmap.Assign(NewGraphic);
+                  Bitmap.Assign(NewGraphic);
                   BitmapParam := TBitmap.Create;
                   try
                     W := Bitmap.Width;
@@ -275,6 +272,8 @@ begin
       if GDIPlusPresent then
       begin
         FixEXIFRotate;
+        if FProcessingParams.Rotation = DB_IMAGE_ROTATE_0 then
+          Exit;
 
         MS := TMemoryStream.Create;
         try

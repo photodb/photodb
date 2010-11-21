@@ -1315,6 +1315,7 @@ var
   RAWExif: TRAWExif;
   Options: TPropertyLoadImageThreadOptions;
   Rec: TDBPopupMenuInfoRecord;
+  FS : TFileStream;
 begin
   if not Fileexists(FileName) then
     Exit;
@@ -1333,11 +1334,20 @@ begin
   try
     FFileDate := 0;
     try
-      ExifData.LoadFromJPEG(FileName);
-      if not ExifData.Empty then
-      begin
-        FFileDate := DateOf(ExifData.DateTime);
-        FFileTime := TimeOf(ExifData.DateTime);
+      FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+      try
+        FS.Seek(0, soFromBeginning);
+        if HasExifHeader(FS) then
+        begin
+          ExifData.LoadFromStream(FS);
+          if not ExifData.Empty then
+          begin
+            FFileDate := DateOf(ExifData.DateTime);
+            FFileTime := TimeOf(ExifData.DateTime);
+          end;
+        end;
+      finally
+        F(FS);
       end;
     except
       EventLog('Error reading EXIF in file "' + FileName + '"');

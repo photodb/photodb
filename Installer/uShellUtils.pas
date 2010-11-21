@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
-  uMemory, uInstallTypes, uInstallScope, uTranslate, uDBBaseTypes;
+  uMemory, uInstallTypes, uInstallScope, uTranslate, uDBBaseTypes,
+  ShlObj;
 
 function RegInstallApplication(Filename, DBName, UserName: string): Boolean;
 function ExtInstallApplication(Filename: string): Boolean;
@@ -16,6 +17,9 @@ function InstalledDirectory: string;
 function InstalledFileName: string;
 function FileRegisteredOnInstalledApplication(Value: string): Boolean;
 function GetDefaultDBName: string;
+function GetProgramFilesPath: string;
+function GetStartMenuPath: string;
+function GetDesktopPath: string;
 
 implementation
 
@@ -582,6 +586,34 @@ begin
     end;
   end;
   Reg.Free;
+end;
+
+function GetSystemPath(PathType : Integer) : string;
+var
+  P: Array[0..MAX_PATH] of char;
+  SystemDir: string;
+begin
+  if SHGetFolderPath(0, PathType, 0,0, @P[0]) = S_OK then
+    SystemDir:= P
+  else
+    SystemDir:= '';
+
+  Result:= SystemDir;
+end;
+
+function GetStartMenuPath: string;
+begin
+  Result := GetSystemPath(CSIDL_STARTMENU);
+end;
+
+function GetProgramFilesPath: string;
+begin
+  Result := GetSystemPath(CSIDL_PROGRAM_FILES);
+end;
+
+function GetDesktopPath: string;
+begin
+  Result := GetSystemPath(CSIDL_DESKTOP);
 end;
 
 end.

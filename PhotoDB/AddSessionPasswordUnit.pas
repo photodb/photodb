@@ -20,9 +20,10 @@ type
     procedure BtnOkClick(Sender: TObject);
     procedure EdPasswordKeyPress(Sender: TObject; var Key: Char);
     procedure CbShowPasswordClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
-    procedure LoadLnguage;
+    procedure LoadLanguage;
   protected
     function GetFormID : string; override;
   public
@@ -84,12 +85,17 @@ begin
   end;
 end;
 
+procedure TAddSessionPasswordForm.FormCreate(Sender: TObject);
+begin
+  LoadLanguage;
+end;
+
 function TAddSessionPasswordForm.GetFormID: string;
 begin
   Result := 'Password';
 end;
 
-procedure TAddSessionPasswordForm.LoadLnguage;
+procedure TAddSessionPasswordForm.LoadLanguage;
 begin
   BeginTranslate;
   try

@@ -4,15 +4,15 @@ interface
 
 uses
   Clipbrd, dolphin_db, DBCMenu, ComCtrls, CommCtrl, ImgList, ExtCtrls, StdCtrls,
-  UnitDBKernel, db, Windows, Messages, SysUtils, Variants, Classes,
+  UnitDBKernel, db, Windows, Messages, SysUtils, Classes,
   Graphics, Controls, Forms, GraphicCrypt, ShellContextMenu, GraphicsCool,
-  Dialogs, activex, jpeg, Menus, DmProgress, Buttons, acDlgSelect,  Math,
+  Dialogs, Activex, jpeg, Menus, Buttons, acDlgSelect,  Math,
   DropSource, DropTarget, AppEvnts, WebLink, MPCommonUtilities, uVistaFuncs,
-  DBCtrls, UnitBitmapImageList, EasyListview, DragDropFile, DragDrop,
+  UnitBitmapImageList, EasyListview, DragDropFile, DragDrop,
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
-  uListViewUtils, uDBDrawing, uFileUtils, uResources, GraphicEx, TwButton,
+  uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
   uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils;
 
 type
@@ -262,7 +262,7 @@ end;
 
 procedure TFormCont.CreateBackgroundImage;
 var
-  BackgroundImage : TPNGGraphic;
+  BackgroundImage : TPNGImage;
   Bitmap, SearchBackgroundBMP : TBitmap;
 begin
   Bitmap := TBitmap.Create;
@@ -280,14 +280,14 @@ begin
         LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, clWindow);
         Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
       finally
-        SearchBackgroundBMP.Free;
+        F(SearchBackgroundBMP);
        end;
     finally
-      BackgroundImage.Free;
+      F(BackgroundImage);
     end;
     ElvMain.BackGround.Image := Bitmap;
   finally
-    Bitmap.Free;
+    F(Bitmap);
   end;
 end;
 
@@ -548,63 +548,65 @@ begin
   exit;
  end;
 
- if ID=-2 then exit;
+  if ID = -2 then
+    Exit;
+  ReRotation := 0;
 
- For i:=0 to Data.Count-1 do
- if Data[i].ID=ID then
- begin
-  if EventID_Param_Rotate in params then
+  for I := 0 to Data.Count - 1 do
+    if Data[I].ID = ID then
+    begin
+      if EventID_Param_Rotate in Params then
+      begin
+        ReRotation := GetNeededRotation(Data[I].Rotation, Value.Rotate);
+        Data[I].Rotation := Value.Rotate;
+      end;
+
+      if EventID_Param_Private in params then Data[i].Access:=Value.Access;
+      if EventID_Param_KeyWords in params then Data[i].KeyWords:=Value.KeyWords;
+      if EventID_Param_Crypt in params then Data[i].Crypted:=Value.Crypt;
+      if EventID_Param_Date in params then Data[i].Date:=Value.Date;
+      if EventID_Param_Time in params then Data[i].Time:=Value.Time;
+      if EventID_Param_Rotate in params then Data[i].Rotation:=Value.Rotate;
+      if EventID_Param_Rating in params then Data[i].Rating:=Value.Rating;
+      if EventID_Param_Comment in params then Data[i].Comment:=Value.Comment;
+      if EventID_Param_IsDate in params then Data[i].IsDate:=Value.IsDate;
+      if EventID_Param_IsTime in params then Data[i].IsTime:=Value.IsTime;
+      if EventID_Param_Groups in params then Data[i].Groups:=Value.Groups;
+      if EventID_Param_Links in params then Data[i].Links:=Value.Links;
+      if EventID_Param_Include in params then
+      begin
+        Data[I].Include := Value.Include;
+        Item := GetListItemById(Id);
+        if Item <> nil then
+          if Item.Data <> nil then
+            Boolean(TDataObject(Item.Data).Include) := Value.Include;
+        Item.BorderColor := GetListItemBorderColor(TDataObject(Item.Data));
+      end;
+    end;
+
+  if [EventID_Param_Rotate] * Params <> [] then
   begin
-   ReRotation:=GetNeededRotation(Data[i].Rotation,Value.Rotate);
-   Data[i].Rotation:=Value.Rotate;
+    for I := 0 to Data.Count - 1 do
+      if Data[I].ID = ID then
+      begin
+        if ElvMain.Items[I].ImageIndex > -1 then
+        begin
+          ApplyRotate(FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap, ReRotation);
+        end;
+      end;
   end;
 
-  if EventID_Param_Private in params then Data[i].Access:=Value.Access;
-  if EventID_Param_KeyWords in params then Data[i].KeyWords:=Value.KeyWords;
-  if EventID_Param_Crypt in params then Data[i].Crypted:=Value.Crypt;
-  if EventID_Param_Date in params then Data[i].Date:=Value.Date;
-  if EventID_Param_Time in params then Data[i].Time:=Value.Time;
-  if EventID_Param_Rotate in params then Data[i].Rotation:=Value.Rotate;
-  if EventID_Param_Rating in params then Data[i].Rating:=Value.Rating;
-  if EventID_Param_Comment in params then Data[i].Comment:=Value.Comment;
-  if EventID_Param_IsDate in params then Data[i].IsDate:=Value.IsDate;
-  if EventID_Param_IsTime in params then Data[i].IsTime:=Value.IsTime;
-  if EventID_Param_Groups in params then Data[i].Groups:=Value.Groups;
-  if EventID_Param_Links in params then Data[i].Links:=Value.Links;
-  if EventID_Param_Include in params then
-  begin
-   Data[i].Include:=Value.Include;
-   item:=GetListItemById(id);
-   if item<>nil then
-   if item.Data<>nil then
-   Boolean(TDataObject(item.Data).Include):=Value.Include;
-   item.BorderColor := GetListItemBorderColor(TDataObject(item.Data));
-  end;
- end;
+  if (EventID_Param_Image in Params) then
+    if GetListItemById(Id) <> nil then
+    begin
+      // TODO: normal image
+      RefreshItemByID(Id);
+    end;
+  if (EventID_Param_Include in Params) then
+    ElvMain.Refresh;
 
- if [EventID_Param_Rotate]*params<>[] then
- begin
-  for i:=0 to Data.Count-1 do
-  if Data[i].ID=ID then
-  begin
-   if ElvMain.Items[i].ImageIndex>-1 then
-   begin
-     ApplyRotate(FBitmapImageList[ElvMain.Items[i].ImageIndex].Bitmap, ReRotation);
-   end;
-  end;
- end;
-
- if (EventID_Param_Image in params) then
- if GetListItemById(id)<>nil then
- begin
-  //TODO: normal image
-  RefreshItemByID(id);
- end;
- if (EventID_Param_Include in params) then ElvMain.Refresh;
- if (EventID_Param_Delete in params) then
- begin
-  DeleteIndexItemByID(ID);
- end;
+  if (EventID_Param_Delete in Params) then
+    DeleteIndexItemByID(ID);
 
  if SetNewIDFileData in params then
  begin

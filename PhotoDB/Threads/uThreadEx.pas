@@ -102,8 +102,8 @@ begin
   WaitForSubThreads;
   FSubThreads.Free;
   FSync.Free;
-  GOM.RemoveObj(Self);
   inherited;
+  GOM.RemoveObj(Self);
 end;
 
 procedure TThreadEx.DoTerminate;

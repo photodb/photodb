@@ -3,7 +3,7 @@ unit ImageConverting;
 interface
 
 uses SysUtils, Classes, Graphics, UnitDBCommon,
-     JPEG, RAWImage, PngImage, GraphicEx, GIFImage, PNGDef, TiffImageUnit,
+     JPEG, RAWImage, PngImage, GraphicEx, GIFImage, TiffImageUnit,
      uFileUtils;
 
 type
@@ -110,20 +110,11 @@ begin
     result := TCUTGraphic
   else if EXT = 'psp' then
     result := TPSPGraphic
-
   else if EXT = 'png' then
-  begin
-    if ToSave then
-      result := PngImage.TPNGGraphic
-    else
-      result := GraphicEx.TPNGGraphic;
-  end
-
+    result := TPngImage
   else if Pos('|' + AnsiUpperCase(EXT) + '|', RAWImages) > -1 then
     result := TRAWImage
 
-  // PNG_CAN_SAVE MANUALLY processing
-  // else if Ext = 'png' then begin if PNG_CAN_SAVE then Result := PngImage.TPNGGraphic else  Result := GraphicEx.TPNGGraphic;  end;
 {$ENDIF}
 end;
 
@@ -151,11 +142,8 @@ function GetConvertableImageClasses : TArGraphicClass;
   end;
 
 begin
-  InitPNG;
-
   AddClass(TJPEGImage);
-  if PNG_CAN_SAVE then
-    AddClass(PngImage.TPNGGraphic);
+  AddClass(TPNGImage);
   AddClass(TiffImageUnit.TTIFFGraphic);
   AddClass(TGIFImage);
   AddClass(TBitmap);
@@ -166,7 +154,7 @@ function GetGraphicExtForSave(GraphicClass : TGraphicClass) : string;
 begin
   if GraphicClass = TJPEGImage then
     Result := '.jpg'
-  else if GraphicClass = PngImage.TPNGGraphic then
+  else if GraphicClass = TPngImage then
     Result := '.png'
   else if GraphicClass = TiffImageUnit.TTIFFGraphic then
     Result := '.tiff'

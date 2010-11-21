@@ -290,8 +290,6 @@ function CleanUpThread.GetDBRecordCount: integer;
 var
   DS : TDataSet;
 begin
-
- Result:=0;
  DS := GetQuery;
  SetSQL(DS,'SELECT count(*) as DB_Count from $DB$');
  try

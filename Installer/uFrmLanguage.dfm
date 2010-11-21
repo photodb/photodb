@@ -40,7 +40,6 @@ object FormLanguage: TFormLanguage
     ParentDoubleBuffered = False
     TabOrder = 0
     OnClick = LbLanguagesClick
-    OnDblClick = BtnOkClick
     OnDrawItem = LbLanguagesDrawItem
     OnMouseDown = LbLanguagesMouseDown
   end

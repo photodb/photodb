@@ -3,15 +3,15 @@
   interface
 
   uses
-  Jpeg, DB, GraphicEx, ExplorerTypes, ImgList,
+  Jpeg, DB, ExplorerTypes,
   UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, Windows, ComCtrls,
   Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
-  Dialogs, Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
-  GIFImage, GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
+  Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
+  GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
   EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
-  uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, uPNGUtils,
+  uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList;
 
 type
@@ -154,7 +154,7 @@ var
   AExplorerFolders : TExplorerFolders = nil;
   UpdaterCount : integer = 0;
   ExplorerUpdateBigImageThreadsCount : integer = 0;
-  FullFolderPicture: TPNGGraphic = nil;
+  FullFolderPicture: TPNGImage = nil;
   FFolderPictureLock : TCriticalSection = nil;
 
 implementation
@@ -181,7 +181,6 @@ begin
   FShowFiles := True;
   FUpdaterInfo := UpdaterInfo;
   FVisibleFiles := nil;
-  FullFolderPicture := nil;
   FFiles := nil;
   FEvent := 0;
   Start;
@@ -2124,7 +2123,8 @@ begin
 
   GUIDParam := FileID;
   FInfo := Info;
-  SynchronizeEx(ReplaceImageInExplorer);
+  if not SynchronizeEx(ReplaceImageInExplorer) then
+    F(TempBitmap);
 end;
 
 procedure TExplorerThread.DoMultiProcessorTask;

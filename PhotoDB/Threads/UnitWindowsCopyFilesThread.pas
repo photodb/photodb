@@ -31,8 +31,6 @@ uses ExplorerUnit;
 
 constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
    OwnerExplorerForm: TForm);
-var
-  I: Integer;
 begin
   inherited Create(False);
   FHandle := Handle;

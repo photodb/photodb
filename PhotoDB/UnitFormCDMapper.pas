@@ -190,7 +190,7 @@ procedure TFormCDMapper.ButtonRemoveLocationClick(Sender: TObject);
 begin
   if CDMappingListView.Selected <> nil then
   begin
-    CDMapper.RemoveCDMapping(PCDClass(CDMappingListView.Selected.Data).name);
+    CDMapper.RemoveCDMapping(PCDClass(CDMappingListView.Selected.Data).Name);
     RefreshCDList;
   end;
 end;

@@ -388,7 +388,6 @@ end;
 
 function TValue.GetValueType(Value: string): Integer;
 begin
-  Result:=VALUE_TYPE_ERROR;
   if StrToIntDef(Value,-1) = StrToIntDef(Value,1) then
     Result := VALUE_TYPE_INTEGER
   else if (Value='true') or (Value='false') then

@@ -2,16 +2,17 @@ unit uResources;
 
 interface
 
-uses Windows, SysUtils, Classes, JPEG, GraphicEx;
+uses Windows, SysUtils, Classes, JPEG, pngImage;
 
-function GetFolderPicture : TPNGGraphic;
-function GetLogoPicture : TJpegImage; 
-function GetSlideShowLoadPicture : TPNGGraphic;
-function GetExplorerBackground : TPNGGraphic;
-function GetSearchBackground : TPNGGraphic;     
-function GetSearchWait : TPNGGraphic;          
-function GetDateRangeImage : TPNGGraphic;
-function GetImagePanelImage : TPNGGraphic;
+function GetFolderPicture : TPNGImage;
+function GetLogoPicture : TJpegImage;
+function GetSlideShowLoadPicture : TPNGImage;
+function GetExplorerBackground : TPNGImage;
+function GetSearchBackground : TPNGImage;
+function GetSearchWait : TPNGImage;
+function GetDateRangeImage : TPNGImage;
+function GetImagePanelImage : TPNGImage;
+function GetLoadingImage : TPNGImage;
               
 {$R Logo.res}    
 {$R slideshow_load.res}
@@ -22,6 +23,7 @@ function GetImagePanelImage : TPNGGraphic;
 {$R DateRange.res}
 {$R Manifest.res}
 {$R ImagePanelBackground.res}
+{$R Loading.res}
 
 implementation
 
@@ -51,7 +53,7 @@ begin
   end;
 end;
 
-function LoadPNGFromRES(ResName : string) : TPNGGraphic;
+function LoadPNGFromRES(ResName : string) : TPNGImage;
 var
   RCDataStream : TMemoryStream;
 begin
@@ -59,45 +61,50 @@ begin
   RCDataStream := GetRCDATAResourceStream(ResName);
   if RCDataStream <> nil then
   begin
-    Result := TPNGGraphic.Create;
+    Result := TPNGImage.Create;
     Result.LoadFromStream(RCDataStream);
     RCDataStream.Free;
   end;
 end;
 
-function GetFolderPicture : TPNGGraphic;
+function GetFolderPicture : TPNGImage;
 begin
   Result := LoadPNGFromRES('DIRECTORY_LARGE');
 end;
 
-function GetSlideShowLoadPicture : TPNGGraphic;
+function GetSlideShowLoadPicture : TPNGImage;
 begin
   Result := LoadPNGFromRES('SLIDESHOW_LOAD');
 end;
 
-function GetExplorerBackground : TPNGGraphic;
+function GetExplorerBackground : TPNGImage;
 begin
   Result := LoadPNGFromRES('EXPLORERBACKGROUND');
 end;
 
-function GetSearchBackground : TPNGGraphic;
+function GetSearchBackground : TPNGImage;
 begin
   Result := LoadPNGFromRES('SEARCHBACKGROUND');
 end;
 
-function GetSearchWait : TPNGGraphic;
+function GetSearchWait : TPNGImage;
 begin
   Result := LoadPNGFromRES('SEARCHWAIT');
 end;
       
-function GetDateRangeImage : TPNGGraphic;
+function GetDateRangeImage : TPNGImage;
 begin
   Result := LoadPNGFromRES('DATERANGE');
 end;
 
-function GetImagePanelImage : TPNGGraphic;
+function GetImagePanelImage : TPNGImage;
 begin
   Result := LoadPNGFromRES('IMAGEPANELBACKGROUND');
+end;
+
+function GetLoadingImage : TPNGImage;
+begin
+  Result := LoadPNGFromRES('LOADING');
 end;
 
 function GetLogoPicture : TJpegImage;

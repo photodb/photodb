@@ -59,7 +59,7 @@ procedure Contrast(S, D: TBitmap; Value: Extended; Local: Boolean); overload;
 procedure Contrast(Image: TBitmap; Value: Extended; Local: Boolean); overload;
 procedure Contrast(Image: TArPARGB; Width, Height : integer; Value: Extended; Local: Boolean); overload;
 
-Procedure Colorize(S,D : TBitmap; Luma: Cardinal);
+Procedure Colorize(S,D : TBitmap; Luma: Integer);
 
 Procedure AutoLevels(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 Procedure AutoColors(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
@@ -1253,7 +1253,7 @@ begin
   end;
 end;
 
-Procedure Colorize(S,D : TBitmap; Luma: Cardinal);
+Procedure Colorize(S,D : TBitmap; Luma: Integer);
 var
   ps, pd : PARGB;
   i,j : integer;
@@ -2419,7 +2419,7 @@ function GetGistogrammBitmap(Height : integer; SBitmap : TBitmap; Options : byte
 var
   t : boolean;
   i, j,  xc : integer;
-  x, MaxCount : Cardinal;
+  x, MaxCount : integer;
   G : T255IntArray;
   GE : array[0..255] of extended;
 begin
@@ -2490,74 +2490,75 @@ end;
 
 function GetGistogrammBitmapX(Height,d : integer; G : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
 var
-  i, j,  xc : integer;
-  x, MaxCount : Cardinal;
-  GE : array[0..255] of extended;
+  I, J, Xc: Integer;
+  X, MaxCount: Integer;
+  GE: array [0 .. 255] of Extended;
 begin
- Result:=TBitmap.create;
- Result.PixelFormat:=pf24bit;
+  Result := TBitmap.Create;
+  Result.PixelFormat := Pf24bit;
 
- MaxCount:=1;
+  MaxCount := 1;
 
- for i:=0 to 255 do
- if G[i]>MaxCount then
- begin
-  x:=G[i] div 2;
-  xc:=0;
-  for j:=0 to 255 do
-  if i<>j then
-  if G[j]>x then inc(xc);
-  if xc>5 then
-  MaxCount:=G[i];
- end;
+  for I := 0 to 255 do
+    if G[I] > MaxCount then
+    begin
+      X := G[I] div 2;
+      Xc := 0;
+      for J := 0 to 255 do
+        if I <> J then
+          if G[J] > X then
+            Inc(Xc);
+      if Xc > 5 then
+        MaxCount := G[I];
+    end;
 
- if MaxCount=1 then
- begin
-  for i:=0 to 255 do
-  if G[i]>MaxCount then
-  MaxCount:=G[i];
- end;
-
- for i:=0 to 255 do
- GE[i]:=G[i]/MaxCount;
- MinC:=0;
- for i:=0 to 255 do
- begin
-  if GE[i]>0.05 then
+  if MaxCount = 1 then
   begin
-   MinC:=i;
-   break;
+    for I := 0 to 255 do
+      if G[I] > MaxCount then
+        MaxCount := G[I];
   end;
- end;
- MaxC:=0;
- for i:=255 downto 0 do
- begin
-  if GE[i]>0.05 then
+
+  for I := 0 to 255 do
+    GE[I] := G[I] / MaxCount;
+  MinC := 0;
+  for I := 0 to 255 do
   begin
-   MaxC:=i;
-   break;
+    if GE[I] > 0.05 then
+    begin
+      MinC := I;
+      Break;
+    end;
   end;
- end;
- Result.Width:=256;
- Result.Height:=Height;
- Result.Canvas.Rectangle(0,0,256,Height);
- for i:=0 to 255 do
- begin
-  Result.Canvas.MoveTo(i+1,Height-d);
-  Result.Canvas.LineTo(i+1,Height-d-Round((Height-d)*GE[i]));
- end;
- Result.Canvas.Pen.Color:=$888888;
- Result.Canvas.MoveTo(MinC,0);
- Result.Canvas.LineTo(MinC,Height-d);
- Result.Canvas.Pen.Color:=$888888;
- Result.Canvas.MoveTo(MaxC,0);
- Result.Canvas.LineTo(MaxC,Height-d);
+  MaxC := 0;
+  for I := 255 downto 0 do
+  begin
+    if GE[I] > 0.05 then
+    begin
+      MaxC := I;
+      Break;
+    end;
+  end;
+  Result.Width := 256;
+  Result.Height := Height;
+  Result.Canvas.Rectangle(0, 0, 256, Height);
+  for I := 0 to 255 do
+  begin
+    Result.Canvas.MoveTo(I + 1, Height - D);
+    Result.Canvas.LineTo(I + 1, Height - D - Round((Height - D) * GE[I]));
+  end;
+  Result.Canvas.Pen.Color := $888888;
+  Result.Canvas.MoveTo(MinC, 0);
+  Result.Canvas.LineTo(MinC, Height - D);
+  Result.Canvas.Pen.Color := $888888;
+  Result.Canvas.MoveTo(MaxC, 0);
+  Result.Canvas.LineTo(MaxC, Height - D);
 end;
 
 procedure GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer; Bitmap : TBitmap);
 var
   I, J, Xc: Integer;
-  X, MaxCount: Cardinal;
+  X, MaxCount: Integer;
   GE: array [0 .. 255] of Extended;
 begin
   Bitmap.PixelFormat := Pf24bit;

@@ -88,6 +88,7 @@
 			<DCCReference Include="uShellUtils.pas"/>
 			<DCCReference Include="uInstallZip.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
+			<DCCReference Include="uAssociations.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

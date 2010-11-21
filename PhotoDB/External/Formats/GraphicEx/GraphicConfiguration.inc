@@ -37,11 +37,11 @@
 {$define PCDGraphic}             // *.pcd images
 {$define PortableMapGraphic}     // *.ppm, *.pgm, *.pbm images
 {$define CUTGraphic}             // *.cut (+ *.pal) images
-{$define GIFGraphic}             // *.gif images
+{$define _GIF_Graphic_}             // *.gif images
 {$define RLAGraphic}             // *.rla, *.rpf images
 {$define PhotoshopGraphic}       // *.psd, *.pdd images
 {$define PaintshopProGraphic}    // *.psp images
-{$define PortableNetworkGraphic} // *.png images
+{$define _Portable_Network_Graphic_} // *.png images
 {$define EPSGraphic}             // *.eps images
 
 // adjust dependent definitions

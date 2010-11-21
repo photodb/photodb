@@ -3,18 +3,20 @@ unit uSplashThread;
 interface
 
 uses
-   Classes, Windows, Messages, JPEG, Graphics, DmProgress, uTime,
+   Classes, Windows, Messages, JPEG, Graphics, uTime,
    uConstants, uResources, UnitDBCommonGraphics, uMemory,
-   uTranslate, ActiveX;
+   uTranslate, ActiveX, uFileUtils, pngimage,
+   uFormUtils;
 
 type
   TSplashThread = class(TThread)
-  private
-    { Private declarations }
   protected
     procedure Execute; override;
-  public
-    procedure ShowDemoInfo;
+  end;
+
+  TLanguageThread = class(TThread)
+  protected
+    procedure Execute; override;
   end;
 
 var
@@ -27,8 +29,8 @@ implementation
 { TSplashThread }
 
 const
-  SplWidth = 480;
-  SplHeight = 500;
+  SplWidth = 645;
+  SplHeight = 450;
 
 var
   SplashWindowClass : TWndClass;
@@ -36,134 +38,47 @@ var
   hSplashProgress : Byte = 0;
   IsFirstDraw : Boolean = True;
   MouseCaptured : Boolean = False;
+  LoadingImage : TBitmap = nil;
 
 procedure SetSplashProgress(ProgressValue : Byte);
 begin
   hSplashProgress := ProgressValue;
-  PostMessage(hSplashWnd, WM_PAINT, 0, 0);
+  //PostMessage(hSplashWnd, WM_PAINT, 0, 0);
 end;
 
-procedure DrawOurStuff(DrawDC: HDC);
-const
-  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_LEFT;
-var
-  J : TJPEGImage;
-  BMP : TBitmap;
-  TP : TDmProgress;
-  brushInfo : tagLOGBRUSH;
-  Brush : HBrush;
-  InfoText : TStringList;
-  R : TRect;
-  hf, oldFont: HFONT;
+procedure UpdateFormImage;
 begin
-  brushInfo.lbStyle := BS_SOLID;
-  brushInfo.lbColor := 0;
-
-  if IsFirstDraw then
-  begin
-    Brush := CreateBrushIndirect(brushInfo);
-    FillRect(DrawDC, Rect(0, 0, SplWidth, SplHeight), Brush);
-    DeleteObject(Brush);
-    J := GetLogoPicture;
-    try
-      BMP := TBitmap.Create;
-      try
-        BMP.Canvas.Brush.Color := 0;
-        BMP.Canvas.Pen.Color := 0;
-        BMP.Height := SplHeight;
-        BMP.Width := SplWidth;
-        AssignJpeg(BMP, J);
-        BitBlt(DrawDC, 200, 0, SplWidth, SplHeight, BMP.Canvas.Handle, 0, 0, SRCCOPY);
-      finally
-        BMP.Free;
-      end;
-    finally
-      J.Free;
-    end;
-    InfoText := TStringList.Create;
-    try
-      InfoText.Add(ProductName);
-      InfoText.Add('About project:');
-      InfoText.Add('All copyrights to this program are');
-      InfoText.Add('exclusively owned by the author:');
-      InfoText.Add('Veresov Dmitry © 2002-2011');
-      InfoText.Add('Studio "Illusion Dolphin".');
-      InfoText.Add('You can''t emulate, clone, rent, lease,');
-      InfoText.Add('sell, modify, decompile, disassemble,');
-      InfoText.Add('otherwise, reverse engineer, transfer');
-      InfoText.Add('this software.');
-      InfoText.Add('');
-      InfoText.Add('HomePage:');
-      InfoText.Add(HomeURL);
-      InfoText.Add('');
-      InfoText.Add('E-Mail:');
-      InfoText.Add(ProgramMail);
-
-      R := Rect(10, 10, SplWidth, SplHeight);
-      SetBkColor(DrawDC, clBlack);
-      SetTextColor(DrawDC, clWhite);
-      hf := CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Times New Roman');
-      oldFont := SelectObject(DrawDC, hf);
-      DrawText(DrawDC, PChar(InfoText.Text), Length(InfoText.Text), R, DrawTextOpt);
-      SelectObject(DrawDC, oldFont);
-      if(hf > 0) then
-        DeleteObject(hf);
-    finally
-      InfoText.Free;
-    end;
-
-    IsFirstDraw := False;
-  end;
-
-  TP := TDmProgress.Create(nil);
-  try
-    TP.Visible := False;
-    TP.MaxValue := 100;
-    TP.Position := hSplashProgress;
-    TP.Width := SplWidth - 20;
-    TP.Height := 17;
-    TP.BorderColor := clGray;
-    TP.Color := clBlack;
-    TP.Text := TA('Loading PhotoDB 2.3');
-    TP.Font.Color := clWhite; 
-    TP.Font.Name := 'Times New Roman';
-    TP.CoolColor := clNavy;
-    TP.DoDraw(DrawDC, 10, SplHeight - TP.Height - 10);
-  finally
-    TP.Free;
-  end;
+  RenderForm(hSplashWnd, LoadingImage, 255);
 end;
 
 function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;
                     lParam : LPARAM) : LRESULT; stdcall;
 var
-  ps: TPaintStruct;
-  DrawDC: HDC;
-  Rectangle : TRect;
+  PNGLogo : TPNGImage;
 begin
   case uMsg of
     WM_DESTROY:
       begin
+        F(LoadingImage);
         PostQuitMessage(0); // stop message loop
         Result := 0;
         Exit;
       end;
+    WM_CREATE:
+      begin
+        PNGLogo := GetLoadingImage;
+        try
+          LoadingImage := TBitmap.Create;
+          LoadingImage.PixelFormat := pf32bit;
+          LoadingImage.Assign(PNGLogo);
+        finally
+          F(PNGLogo);
+        end;
+      end;
     WM_PAINT:
       begin
-         Rectangle := Rect(0, SplHeight - 30, SplWidth, SplHeight);
-         InvalidateRect(hSplashWnd, @Rectangle, False);
-
-         // note: g_Handle is the handle to our window, got from CreateWindow
-         // tell Windows we're painting the window
-         DrawDC := BeginPaint(hSplashWnd, ps);
-         try
-           DrawOurStuff(DrawDC);
-         finally
-           EndPaint(hSplashWnd, ps); // we've stopped painting now
-         end;
-         Result := 0;
-         Exit;
-       end;
+        //UpdateFormImage;
+      end;
     WM_LBUTTONDOWN:
       begin
         MouseCaptured := True;
@@ -188,14 +103,7 @@ var
   Instance : Thandle;
   Msg: TMsg; // declare this too, for later
 begin
-  SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
-  SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
-
-  CoInitialize(nil);
   try
-    //call transkate manager to load XML with language in separate thead
-    TA('PhotoDB');
-
     Instance := GetModuleHandle(nil);
 
     if Terminated then
@@ -224,8 +132,11 @@ begin
         if Terminated then
           Exit;
 
+        UpdateFormImage;
+        if Terminated then
+          Exit;
+
         ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
-        UpdateWindow(hSplashWnd);
 
         while True do
         begin
@@ -254,13 +165,21 @@ begin
   finally
     SplashThread := nil;
     FreeOnTerminate := True;
-    CoUninitialize;
   end;
 end; // ShowSplashWindow
 
-procedure TSplashThread.ShowDemoInfo;
+{ TLanguageThread }
+
+procedure TLanguageThread.Execute;
 begin
-  //TODO:
+  FreeOnTerminate := True;
+  CoInitialize(nil);
+  try
+    //call translate manager to load XML with language in separate thead
+    TA('PhotoDB');
+  finally
+    CoUninitialize;
+  end;
 end;
 
 initialization
@@ -268,7 +187,10 @@ initialization
   //if not GetParamStrDBBool('/NoLogo') then
   begin
     TW.I.Start('TSplashThread');
+    SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
+    SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
     SplashThread := TSplashThread.Create(False);
+    TLanguageThread.Create(False);
     TW.I.Start('TSplashThread - Created');
   end;
 

@@ -17,6 +17,7 @@
     <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
   <scope name="Setup">
+    <translate name="Install" value="Установить" />
     <translate name="Next" value="Далее" />
     <translate name="PhotoDB 2.3 Setup" value="Установка PhotoDB 2.3" />
     <translate name="I accept licence agreement" value="Я принимаю лицензионное соглашение" />

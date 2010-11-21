@@ -63,14 +63,12 @@ end;
 procedure UnInstallThread.Execute;
 var
   Found, i:integer;
-  s, fdir, fdbfile, fdbdir : string;
+  fdir, fdbfile, fdbdir : string;
   freg : Tregistry;
   Reg : TRegIniFile;
   f1 : textFile;
   SearchRec : TSearchRec;
 
-  dllhandle : integer;
-  Buffer: array [0..1023] of char;
 
 begin
  InstallDone:=false;

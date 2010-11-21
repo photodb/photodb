@@ -7,10 +7,9 @@ interface
 uses
   Windows, SysUtils, Classes, Messages, Registry, ShlObj, ComObj, ActiveX,
   uConstants, uMemory, uInstallTypes, uInstallScope, VRSIShortCuts,
-  IniFiles, uTranslate, uLogger, UnitINI;
+  IniFiles, uTranslate, uLogger, UnitINI, uShellUtils;
 
 type
-  ShortcutType = (_DESKTOP, _QUICKLAUNCH, _SENDTO, _STARTMENU, _OTHERFOLDER, _PROGRAMS);
   TBooleanFunction = function: Boolean;
 
 function IsApplicationInstalled: Boolean;
@@ -116,11 +115,10 @@ var
 begin
   Result := StringReplace(Path, '{V}', ProductVersion, [rfIgnoreCase]);
   Result := StringReplace(Result, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [rfIgnoreCase]);
-  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
   try
     ProgramPath := CurrentInstall.DestinationPath;
-    StartMenuPath := Reg.ReadString('Shell Folders', 'Start Menu', '');
-    DesktopPath := Reg.ReadString('Shell Folders', 'Desktop', '');
+    StartMenuPath := GetStartMenuPath;
+    DesktopPath := GetDesktopPath;
 
     Result := StringReplace(Result, '%PROGRAM%', ProgramPath, [rfIgnoreCase]);
     Result := StringReplace(Result, '%STARTMENU%', StartMenuPath, [rfIgnoreCase]);

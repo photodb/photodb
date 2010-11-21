@@ -3,12 +3,12 @@ unit SlideShow;
 interface
 
 uses
-  Shellapi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Shellapi, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
-  AppEvnts, ImgList, UnitDBKernel, FadeImage, jpeg, Win32crc, CommCtrl,
+  AppEvnts, ImgList, UnitDBKernel, jpeg, Win32crc, CommCtrl,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
   FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, Searching,
-  ShellContextMenu, DropSource, DropTarget, GIFImage, GraphicEx, uFileUtils,
+  ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage, uFileUtils,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
@@ -1534,7 +1534,7 @@ var
   si : TStartupInfo;
   p  : TProcessInformation;
   TempInfo : TOneRecordInfo;
-  LoadImage : TPNGGraphic;
+  LoadImage : TPNGImage;
   LoadImageBMP : TBitmap;
   FOldImageExists : Boolean;
 

@@ -16,7 +16,6 @@ type
   FMaxSize : Integer;
   FProgress : integer;
   FProgressText : string;
-  FBytesOfFilesCopied : integer;
   FErrorString : string;
   FCurrentFile : string;
   FErrorResult : integer;
@@ -164,14 +163,10 @@ end;
 
 procedure InstallThread.Execute;
 var
-  r, _sqlexectext, KeyWords, KeyWords_, OldGroups, Groups, Groups_, FFname, CurrentDirectory, aDBName  : string;
-  i, Size, SizeA : integer;
-  OutTable, inTable : TDataSet;
-  IsOldDataBase, ExistsGroupsFile, Res : boolean;
-  FTempGroup, FRegGroups, FOutRegGroups : TGroups;
+  CurrentDirectory, aDBName  : string;
+  IsOldDataBase, ExistsGroupsFile : boolean;
+  FRegGroups, FOutRegGroups : TGroups;
   GroupsActions : TGroupsActionsW;
-  PlugInsFiles, ThemesFiles : TStringList;
-  Reg : TRegIniFile;
 begin
 
  IfPause;
@@ -284,6 +279,7 @@ begin
    end;
    begin
     IfPause;
+    IsOldDataBase := true;
     if not IsOldDataBase then
     begin
      GroupsActions.MaxAuto:=True;

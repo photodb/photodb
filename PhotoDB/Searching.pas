@@ -5,8 +5,8 @@ interface
 uses
   UnitGroupsWork, DBCMenu, CmpUnit, FileCtrl, Dolphin_DB,
   ShellApi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Registry, Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
-  ImgList, ComCtrls, ActiveX, ShlObj, DBCtrls, JPEG, DmProgress, ClipBrd,
+  Dialogs, DB, Menus, ExtCtrls, StdCtrls,
+  ImgList, ComCtrls, ActiveX, ShlObj, JPEG, DmProgress, ClipBrd,
   SaveWindowPos, ExtDlgs , ToolWin, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
   ShellContextMenu, DropSource, DropTarget, DateUtils, acDlgSelect,
@@ -16,7 +16,7 @@ uses
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
-  uFastload, uListViewUtils, uDBDrawing, GraphicEx, uResources, uMemory,
+  uFastload, uListViewUtils, uDBDrawing, pngimage, uResources, uMemory,
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
   uFormListView, uDBPopupMenuInfo, uPNGUtils;
 
@@ -1222,7 +1222,7 @@ var
   Password, fname : string;
   J : TJpegImage;
   bit : TBitmap;
-  i, iItemIndex : integer;
+  i : integer;
   SelectQuery : TDataSet;
 
   RecordInfo : TOneRecordInfo;
@@ -1230,6 +1230,7 @@ var
   SearchRecord : TDBPopupMenuInfoRecord;
 begin
   //TODO: WTF?
+  bit := nil;
   Password:='';
   item:=GetListItemByID(ID);
   if item=nil then exit;
@@ -1305,7 +1306,7 @@ begin
   end;
   item.Caption:=fname;
   SearchRecord.FileName:=SelectQuery.FieldByName('FFileName').AsString;
-  iItemIndex:=ItemIndex(item);
+  //iItemIndex:=ItemIndex(item);
 
   Exists:=0;
   DrawAttributes(bit,fPictureSize,SearchRecord.Rating,SearchRecord.Rotation,SearchRecord.Access,SelectQuery.FieldByName('FFileName').AsString,SearchRecord.Crypted,Exists);
@@ -2279,7 +2280,7 @@ end;
 
 procedure TSearchForm.BeginUpdate;
 var
-  WaitImage : TPNGGraphic;
+  WaitImage : TPNGImage;
   WaitImageBMP : TBitmap;
 begin
   FListUpdating := True;
@@ -4212,7 +4213,7 @@ end;
 
 procedure TSearchForm.SortingClick(Sender: TObject);
 var
-  I, L, index, N : integer;
+  I, L, N : integer;
   aType : Byte;
   Data : TDBPopupMenuInfoRecord;
   SearchExtraInfo : TSearchDataExtension;
@@ -4556,7 +4557,7 @@ end;
 
 procedure TSearchForm.CreateBackground;
 var
-  BackgroundImage : TPNGGraphic;
+  BackgroundImage : TPNGImage;
   Bitmap, SearchBackgroundBMP : TBitmap;
 begin
   Bitmap := TBitmap.Create;
@@ -4655,7 +4656,7 @@ end;
 procedure TSearchForm.LoadDateRange;
 var
   DS : TDataSet;
-  DateRangeBackgroundImage : TPNGGraphic;
+  DateRangeBackgroundImage : TPNGImage;
   DateRangeBackgroundImageBMP : TBitmap;
 begin
   if not elvDateRange.BackGround.Image.Empty then

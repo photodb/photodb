@@ -97,7 +97,7 @@ type
     FFiles : TScopeFiles;
     FDestinationPath : string;
   public
-    constructor Create;
+    constructor Create; virtual;
     destructor Destroy; override;
     property DestinationPath : string read FDestinationPath write FDestinationPath;
     property Files : TScopeFiles read FFiles;
@@ -105,13 +105,51 @@ type
 
   TPhotoDBInstall_V23 = class(TInstall)
   public
-    constructor Create;
+    constructor Create; override;
   end;
 
   var
     CurrentInstall : TInstall = nil;
 
 implementation
+
+{ TShortCuts }
+
+procedure TShortCuts.Add(Name, Location: string);
+var
+  ShortCut : TShortCut;
+begin
+  ShortCut := TShortCut.Create;
+  ShortCut.Name := Name;
+  ShortCut.Location := Location;
+  FShortCuts.Add(ShortCut);
+end;
+
+procedure TShortCuts.Add(Location: string);
+begin
+  Add('', Location);
+end;
+
+constructor TShortCuts.Create;
+begin
+  FShortCuts := TList.Create;
+end;
+
+destructor TShortCuts.Destroy;
+begin
+  FreeList(FShortCuts);
+  inherited;
+end;
+
+function TShortCuts.GetCount: Integer;
+begin
+  Result := FShortCuts.Count;
+end;
+
+function TShortCuts.GetItemByIndex(Index: Integer): TShortCut;
+begin
+  Result := FShortCuts[Index];
+end;
 
 { TInstallExts }
 
@@ -220,44 +258,6 @@ begin
   Files.Add(TDirectoryObject.Create('Scripts',     '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Images',      '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('PlugInsEx',   '%PROGRAM%', ''));
-end;
-
-{ TShortCuts }
-
-procedure TShortCuts.Add(Name, Location: string);
-var
-  ShortCut : TShortCut;
-begin
-  ShortCut := TShortCut.Create;
-  ShortCut.Name := Name;
-  ShortCut.Location := Location;
-  FShortCuts.Add(ShortCut);
-end;
-
-procedure TShortCuts.Add(Location: string);
-begin
-  Add('', Location);
-end;
-
-constructor TShortCuts.Create;
-begin
-  FShortCuts := TList.Create;
-end;
-
-destructor TShortCuts.Destroy;
-begin
-  FreeList(FShortCuts);
-  inherited;
-end;
-
-function TShortCuts.GetCount: Integer;
-begin
-  Result := FShortCuts.Count;
-end;
-
-function TShortCuts.GetItemByIndex(Index: Integer): TShortCut;
-begin
-  Result := FShortCuts[Index];
 end;
 
 initialization

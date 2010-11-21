@@ -89,9 +89,11 @@ begin
     if W = nil then
       W := TList.Create;
 
+{$IFDEF MULTIFILES}
     CurrentThreadID := GetCurrentThreadID;
     if MainThreadID = CurrentThreadID then
       CurrentThreadID := 0;
+{$ENDIF}
 {$IFNDEF MULTIFILES}
     CurrentThreadID := 0;
 {$ENDIF}

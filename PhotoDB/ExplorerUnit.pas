@@ -14,7 +14,7 @@ uses
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
   EasyListview, MPCommonUtilities, MPCommonObjects,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
-  UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, GraphicEx,
+  UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
@@ -693,7 +693,7 @@ end;
 
 procedure TExplorerForm.CreateBackgrounds;
 var
-  ExplorerBackground : TPNGGraphic;
+  ExplorerBackground : TPNGImage;
   Bitmap, ExplorerBackgroundBMP : TBitmap;
 begin
   Bitmap := TBitmap.Create;
@@ -5955,7 +5955,7 @@ var
   FolderImageRect: TRect;
   Fbmp: TBitmap;
   OldMode: Cardinal;
-  Pic: TPNGGraphic;
+  Pic: TPNGImage;
   Bit32: TBitmap;
   TempBitmap: TBitmap;
 begin

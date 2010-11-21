@@ -1767,7 +1767,7 @@ begin
     begin
       dec(size, b);
       WriteByte(Stream, b);
-      Stream.Write(PAnsiChar(s)^, b);
+      Stream.Write(PAnsiChar(AnsiString(s))^, b);
       delete(s, 1, b);
       if (b > size) then
         b := size;
@@ -1795,7 +1795,7 @@ begin
   begin
     ReadCheck(Stream, buf, size);
     buf[size] := #0;
-    Text.Add(Buf);
+    Text.Add(string(Buf));
     if (Stream.Read(size, 1) <> 1) then
       exit;
   end;
@@ -5643,7 +5643,7 @@ begin
   Position := Stream.Position;
 
   ReadCheck(Stream, GifHeader, sizeof(GifHeader));
-  if (uppercase(GifHeader.Signature) <> 'GIF') then
+  if (uppercase(string(GifHeader.Signature)) <> 'GIF') then
   begin
     // Attempt recovery in case we are reading a GIF stored in a form by rxLib
     Stream.Position := Position;
@@ -5651,7 +5651,7 @@ begin
     Stream.Seek(sizeof(longInt), soFromCurrent);
     // Attempt to read signature again
     ReadCheck(Stream, GifHeader, sizeof(GifHeader));
-    if (uppercase(GifHeader.Signature) <> 'GIF') then
+    if (uppercase(string(GifHeader.Signature)) <> 'GIF') then
       Error(sBadSignature);
   end;
 
@@ -9731,26 +9731,26 @@ end;
 
 function TGIFApplicationExtension.GetAuthentication: string;
 begin
-  Result := FIdent.Authentication;
+  Result := string(FIdent.Authentication);
 end;
 
 procedure TGIFApplicationExtension.SetAuthentication(const Value: string);
 begin
   if (Length(Value) < sizeof(TGIFAuthenticationCode)) then
     FillChar(FIdent.Authentication, sizeof(TGIFAuthenticationCode), 32);
-  StrLCopy(@(FIdent.Authentication[0]), PAnsiChar(Value), sizeof(TGIFAuthenticationCode));
+  StrLCopy(@(FIdent.Authentication[0]), PAnsiChar(AnsiString(Value)), sizeof(TGIFAuthenticationCode));
 end;
 
 function TGIFApplicationExtension.GetIdentifier: string;
 begin
-  Result := FIdent.Identifier;
+  Result := string(FIdent.Identifier);
 end;
 
 procedure TGIFApplicationExtension.SetIdentifier(const Value: string);
 begin
   if (Length(Value) < sizeof(TGIFIdentifierCode)) then
     FillChar(FIdent.Identifier, sizeof(TGIFIdentifierCode), 32);
-  StrLCopy(@(FIdent.Identifier[0]), PAnsiChar(Value), sizeof(TGIFIdentifierCode));
+  StrLCopy(@(FIdent.Identifier[0]), PAnsiChar(AnsiString(Value)), sizeof(TGIFIdentifierCode));
 end;
 
 procedure TGIFApplicationExtension.SaveToStream(Stream: TStream);

@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, SysUtils, Forms,
-  GIFImage, GraphicEx, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
+  GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG,
-  uMemory, UnitDBDeclare, uPNGUtils;
+  uMemory, UnitDBDeclare, pngimage, uPNGUtils;
 
 type
   TViewerThread = class(TThread)
@@ -75,7 +75,7 @@ end;
 
 procedure TViewerThread.Execute;
 var
-  PNG : TPNGGraphic;
+  PNG : TPNGImage;
   TransparentColor : TColor;
   GraphicClass : TGraphicClass;
 begin
@@ -160,19 +160,19 @@ begin
     fPages:=(Graphic as TiffImageUnit.TTiffGraphic).Pages;
     //TODO: (Graphic as TiffImageUnit.TTiffGraphic).GetPagesCount()
    end;
-   if Graphic is TPNGGraphic then
+   if Graphic is TPNGImage then
    begin
     FTransparent:=true;
-    PNG:=(Graphic as TPNGGraphic);
-    if PNG.PixelFormat=pf32bit then
+    PNG:=(Graphic as TPNGImage);
+    if PNG.TransparencyMode <> ptmNone then
     begin
-     LoadPNGImage32bit(PNG,Bitmap,TransparentColor);
+     LoadPNGImage32bit(PNG, Bitmap, TransparentColor);
     end else AssignGraphic(Bitmap, Graphic);
    end else
    begin
     if (Graphic is TBitmap) then
     begin
-     if not (Graphic is TPSDGraphic) or PSDTransparent then
+     if {not (Graphic is TPSDGraphic) or} PSDTransparent then
      begin
       if (Graphic as TBitmap).PixelFormat=pf32bit then
       begin

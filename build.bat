@@ -12,6 +12,7 @@ cd photodb/resources
 "%BRCC32%" DateRange.rc
 "%BRCC32%" Manifest.rc
 "%BRCC32%" ImagePanelBackground.rc
+"%BRCC32%" Loading.rc
 
 cd ..
 cd ..

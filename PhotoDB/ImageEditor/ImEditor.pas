@@ -2329,7 +2329,7 @@ begin
       ID:=GetIdByFileName(FileName);
       {$ENDIF}
      end;
-     Image:=TPngGraphic.Create;
+     Image:=TPngImage.Create;
      Image.Assign(CurrentImage);
      try
       Image.SaveToFile(FileName);
