@@ -63,7 +63,11 @@
 			<DCCReference Include="uFrmProgress.pas">
 				<Form>FrmProgress</Form>
 			</DCCReference>
-			<DCCReference Include="uFrLicence.pas">
+			<DCCReference Include="uInstallFrame.pas">
+				<Form>InstallFrame</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="uFrLicense.pas">
 				<Form>FrmLicence</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
@@ -71,7 +75,6 @@
 				<Form>FrmAdvancedOptions</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
-			<DCCReference Include="uInstallFrame.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
 			<DCCReference Include="uInstallThread.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
@@ -89,6 +92,7 @@
 			<DCCReference Include="uInstallZip.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
 			<DCCReference Include="uAssociations.pas"/>
+			<DCCReference Include="uInstallSteps.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

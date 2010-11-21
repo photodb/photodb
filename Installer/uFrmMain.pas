@@ -2,11 +2,13 @@ unit uFrmMain;
 
 interface
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
   uFrmProgress, uInstallTypes, uInstallUtils, uMemory, uConstants,
-  uVistaFuncs, uInstallScope, Registry, uShellUtils;
+  uVistaFuncs, uInstallScope, Registry, uShellUtils, uInstallSteps;
 
 type
   TFrmMain = class(TDBForm)
@@ -16,15 +18,20 @@ type
     Label1: TLabel;
     Bevel1: TBevel;
     BtnInstall: TButton;
+    BtnPrevious: TButton;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure CbAcceptLicenseAgreementClick(Sender: TObject);
     procedure BtnInstallClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure BtnNextClick(Sender: TObject);
+    procedure BtnPreviousClick(Sender: TObject);
   private
     { Private declarations }
     FrmProgress: TFrmProgress;
+    FInstallType : TInstallSteps;
     procedure LoadLanguage;
     procedure LoadMainImage;
+    procedure StepsChanged(Sender: TObject);
   protected
     function GetFormID : string; override;
   public
@@ -51,18 +58,22 @@ end;
 
 procedure TFrmMain.BtnInstallClick(Sender: TObject);
 begin
+  FInstallType.PrepaireInstall;
   Application.CreateForm(TFrmProgress, FrmProgress);
   Hide;
   FrmProgress.Show;
   FrmProgress.Progress := 0;
-  CurrentInstall.DestinationPath := IncludeTrailingBackslash(GetProgramFilesPath) + 'Photo DataBase';
   TInstallThread.Create(Self);
 end;
 
-procedure TFrmMain.CbAcceptLicenseAgreementClick(Sender: TObject);
+procedure TFrmMain.BtnNextClick(Sender: TObject);
 begin
-//  BtnNext.Enabled := CbAcceptLicenseAgreement.Checked;
-//  BtnInstall.Enabled := CbAcceptLicenseAgreement.Checked;
+  FInstallType.NextStep;
+end;
+
+procedure TFrmMain.BtnPreviousClick(Sender: TObject);
+begin
+  FInstallType.PreviousStep;
 end;
 
 procedure TFrmMain.FormCreate(Sender: TObject);
@@ -79,6 +90,18 @@ begin
   end;
   LoadMainImage;
   LoadLanguage;
+  if IsApplicationInstalled then
+    FInstallType := TUpdatePreviousVersion.Create
+  else
+    FInstallType := TFreshInstall.Create;
+
+  FInstallType.OnChange := StepsChanged;
+  FInstallType.Start(Self, 190, 5);
+end;
+
+procedure TFrmMain.FormDestroy(Sender: TObject);
+begin
+  F(FInstallType);
 end;
 
 function TFrmMain.GetFormID: string;
@@ -93,6 +116,7 @@ begin
     Caption := L('PhotoDB 2.3 Setup');
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
+    BtnPrevious.Caption := L('Previous');
     BtnInstall.Caption := L('Install');
   finally
     EndTranslate;
@@ -118,6 +142,14 @@ begin
   finally
     F(MS);
   end;
+end;
+
+procedure TFrmMain.StepsChanged(Sender: TObject);
+begin
+  BtnNext.Visible := not FInstallType.CanPrevious;
+  BtnNext.Enabled := FInstallType.CanNext;
+  BtnPrevious.Visible := FInstallType.CanPrevious;
+  BtnInstall.Enabled := FInstallType.CanInstall;
 end;
 
 function TFrmMain.UpdateProgress(Position, Total: Int64): Boolean;

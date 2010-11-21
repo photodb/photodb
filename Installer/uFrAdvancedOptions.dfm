@@ -1,18 +1,10 @@
-object FrmAdvancedOptions: TFrmAdvancedOptions
-  Left = 0
-  Top = 0
-  ClientHeight = 327
-  ClientWidth = 428
-  Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'Tahoma'
-  Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
-  TextHeight = 13
-  object Label1: TLabel
+inherited FrAdvancedOptions: TFrAdvancedOptions
+  Width = 430
+  Height = 330
+  ParentFont = False
+  ExplicitWidth = 430
+  ExplicitHeight = 330
+  object LbInstallPath: TLabel
     Left = 3
     Top = 281
     Width = 35
@@ -56,7 +48,7 @@ object FrmAdvancedOptions: TFrmAdvancedOptions
     TabOrder = 1
     Text = 'EdPath'
   end
-  object CheckBox3: TCheckBox
+  object CbInstallTypeChecked: TCheckBox
     Left = 216
     Top = 3
     Width = 17
@@ -65,7 +57,7 @@ object FrmAdvancedOptions: TFrmAdvancedOptions
     State = cbChecked
     TabOrder = 2
   end
-  object CheckBox4: TCheckBox
+  object CbInstallTypeGrayed: TCheckBox
     Left = 216
     Top = 34
     Width = 17
@@ -74,7 +66,7 @@ object FrmAdvancedOptions: TFrmAdvancedOptions
     State = cbGrayed
     TabOrder = 3
   end
-  object CheckBox5: TCheckBox
+  object CbInstallTypeNone: TCheckBox
     Left = 216
     Top = 65
     Width = 17

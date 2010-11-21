@@ -31,6 +31,7 @@ type
     procedure BtnOkClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormDestroy(Sender: TObject);
+    procedure LbLanguagesDblClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadLanguage;
@@ -76,6 +77,7 @@ end;
 
 procedure TFormLanguage.BtnOkClick(Sender: TObject);
 begin
+  LbLanguagesClick(Sender);
   ModalResult := idOk;
   Hide;
 end;
@@ -125,6 +127,18 @@ begin
     LoadLanguage;
   end;
   LbLanguages.Refresh;
+end;
+
+procedure TFormLanguage.LbLanguagesDblClick(Sender: TObject);
+var
+  Pos : TPoint;
+  Index : Integer;
+begin
+  GetCursorPos(Pos);
+  Pos := LbLanguages.ScreenToClient(Pos);
+  Index := LbLanguages.ItemAtPos(Pos, True);
+  if (Index > -1) and (Index < LbLanguages.Count) then
+     BtnOkClick(Sender);
 end;
 
 procedure TFormLanguage.LbLanguagesDrawItem(Control: TWinControl;

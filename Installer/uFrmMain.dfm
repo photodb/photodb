@@ -4,8 +4,8 @@ object FrmMain: TFrmMain
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'PhotoDB 2.3 Setup'
-  ClientHeight = 361
-  ClientWidth = 604
+  ClientHeight = 379
+  ClientWidth = 624
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -15,6 +15,10 @@ object FrmMain: TFrmMain
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  DesignSize = (
+    624
+    379)
   PixelsPerInch = 96
   TextHeight = 13
   object ImMain: TImage
@@ -34,36 +38,51 @@ object FrmMain: TFrmMain
   end
   object Bevel1: TBevel
     Left = 8
-    Top = 321
-    Width = 588
+    Top = 339
+    Width = 608
     Height = 1
+    Anchors = [akLeft, akRight, akBottom]
     Shape = bsTopLine
+    ExplicitTop = 321
+    ExplicitWidth = 588
   end
   object BtnNext: TButton
-    Left = 441
-    Top = 328
+    Left = 462
+    Top = 346
     Width = 75
     Height = 25
+    Anchors = [akLeft, akBottom]
     Caption = 'BtnNext'
-    Enabled = False
     TabOrder = 0
+    OnClick = BtnNextClick
   end
   object BtnCancel: TButton
-    Left = 360
-    Top = 328
+    Left = 381
+    Top = 346
     Width = 75
     Height = 25
+    Anchors = [akLeft, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 1
     OnClick = BtnCancelClick
   end
   object BtnInstall: TButton
-    Left = 521
-    Top = 328
+    Left = 542
+    Top = 346
     Width = 75
     Height = 25
+    Anchors = [akLeft, akBottom]
     Caption = 'BtnInstall'
     TabOrder = 2
     OnClick = BtnInstallClick
+  end
+  object BtnPrevious: TButton
+    Left = 462
+    Top = 346
+    Width = 75
+    Height = 25
+    Caption = 'Previous'
+    TabOrder = 3
+    OnClick = BtnPreviousClick
   end
 end

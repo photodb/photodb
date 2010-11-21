@@ -9,7 +9,9 @@ uses
   uInstallTypes in 'uInstallTypes.pas',
   acWorkRes in '..\PhotoDB\Units\acWorkRes.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas',
-  uInstallScope in 'uInstallScope.pas';
+  uInstallScope in 'uInstallScope.pas',
+  uConstants in '..\PhotoDB\Units\uConstants.pas',
+  uInstallZip in 'uInstallZip.pas';
 
 var
   FileName : string;

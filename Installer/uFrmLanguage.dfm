@@ -4,7 +4,7 @@ object FormLanguage: TFormLanguage
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Select language'
-  ClientHeight = 229
+  ClientHeight = 226
   ClientWidth = 225
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -40,6 +40,7 @@ object FormLanguage: TFormLanguage
     ParentDoubleBuffered = False
     TabOrder = 0
     OnClick = LbLanguagesClick
+    OnDblClick = LbLanguagesDblClick
     OnDrawItem = LbLanguagesDrawItem
     OnMouseDown = LbLanguagesMouseDown
   end

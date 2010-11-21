@@ -18,9 +18,9 @@ uses
   VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uFrmProgress in 'uFrmProgress.pas' {FrmProgress},
-  uFrLicence in 'uFrLicence.pas' {FrmLicence: TFrame},
+  uInstallFrame in 'uInstallFrame.pas' {InstallFrame: TFrame},
+  uFrLicense in 'uFrLicense.pas' {FrmLicence: TFrame},
   uFrAdvancedOptions in 'uFrAdvancedOptions.pas' {FrmAdvancedOptions: TFrame},
-  uInstallFrame in 'uInstallFrame.pas',
   uFormUtils in '..\PhotoDB\Units\uFormUtils.pas',
   uInstallThread in 'uInstallThread.pas',
   uGOM in '..\PhotoDB\Units\uGOM.pas',
@@ -37,7 +37,8 @@ uses
   uShellUtils in 'uShellUtils.pas',
   uInstallZip in 'uInstallZip.pas',
   uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas',
-  uAssociations in 'uAssociations.pas';
+  uAssociations in 'uAssociations.pas',
+  uInstallSteps in 'uInstallSteps.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}
