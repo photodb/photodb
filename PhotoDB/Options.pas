@@ -831,7 +831,7 @@ var
   reg : TRegistry;
   s : string;
 begin
- Reg:=TRegistry.Create;
+ {Reg:=TRegistry.Create;
  Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;
  For i:=1 to CheckListBox1.Items.Count do
  begin
@@ -855,7 +855,7 @@ begin
   end;
   Reg.CloseKey;
  end;
- Reg.Free;
+ Reg.Free;}
 end;
 
 procedure TOptionsForm.Button3Click(Sender: TObject);
@@ -1458,7 +1458,7 @@ Var
   Reg : TRegistry;
   S : String;
 begin
- Reg:=TRegistry.Create;
+{ Reg:=TRegistry.Create;
  Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;
  For i:=1 to CheckListBox1.Items.Count do
  begin
@@ -1475,7 +1475,7 @@ begin
   end;
   Reg.CloseKey;
  end;
- Reg.Free;
+ Reg.Free; }
 end;
 
 procedure TOptionsForm.CheckBox32Click(Sender: TObject);

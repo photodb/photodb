@@ -17,43 +17,51 @@ function GetRCDATAResourceStream(ResName : string; MS : TMemoryStream) : Boolean
 procedure CreateShortcut(SourceFileName, ShortcutPath: string; Description: string);
 function ResolveInstallPath(Path : string) : string;
 procedure CreateInternetShortcut(const FileName, LocationURL : string);
+function GetInstalledFileName : string;
 
 implementation
 
-function IsApplicationInstalled: Boolean;
+function GetInstalledFileName : string;
 var
   FReg: TBDRegistry;
+begin
+  Result := '';
+  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
+  try
+    FReg.OpenKey(RegRoot, True);
+    Result := AnsiLowerCase(FReg.ReadString('DataBase'));
+  except
+    on E: Exception do
+      EventLog(':IsInstalledApplication() throw exception: ' + E.message);
+  end;
+  F(FReg);
+end;
+
+function IsApplicationInstalled: Boolean;
+var
   Func: TBooleanFunction;
   H: Thandle;
   ProcH: Pointer;
   FileName: string;
 begin
   Result := False;
-  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
-  try
-    FReg.OpenKey(RegRoot, True);
-    FileName := AnsiLowerCase(FReg.ReadString('DataBase'));
-    if FileExists(FileName) then
+  FileName := GetInstalledFileName;
+  if FileExists(FileName) then
+  begin
+    H := LoadLibrary(PChar(FileName));
+    if H <> 0 then
     begin
-      H := Loadlibrary(PWideChar(FileName));
-      if H <> 0 then
+      ProcH := GetProcAddress(H, 'IsFalidDBFile');
+      if ProcH <> nil then
       begin
-        ProcH := GetProcAddress(H, 'IsFalidDBFile');
-        if ProcH <> nil then
-        begin
-          @Func := ProcH;
-          if Func then
-            if FileExists(IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'Kernel.dll') then
-              Result := True;
-        end;
-        FreeLibrary(H);
+        @Func := ProcH;
+        if Func then
+          if FileExists(IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'Kernel.dll') then
+            Result := True;
       end;
+      FreeLibrary(H);
     end;
-  except
-    on E: Exception do
-      EventLog(':IsInstalledApplication() throw exception: ' + E.message);
   end;
-  F(FReg);
 end;
 
 function GetRCDATAResourceStream(ResName : string; MS : TMemoryStream) : Boolean;

@@ -4,18 +4,16 @@ interface
 
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
-  uMemory, uInstallTypes, uInstallScope, uTranslate, uDBBaseTypes,
+  uMemory, uInstallTypes, uTranslate, uDBBaseTypes,
   ShlObj;
 
 function RegInstallApplication(Filename, DBName, UserName: string): Boolean;
 function ExtInstallApplication(Filename: string): Boolean;
-function ExtInstallApplicationW(Exts: TInstallExts; Filename: string): Boolean;
 function ExtUnInstallApplicationW: Boolean;
 function IsNewVersion: Boolean;
 function DeleteRegistryEntries: Boolean;
 function InstalledDirectory: string;
 function InstalledFileName: string;
-function FileRegisteredOnInstalledApplication(Value: string): Boolean;
 function GetDefaultDBName: string;
 function GetProgramFilesPath: string;
 function GetStartMenuPath: string;
@@ -353,147 +351,6 @@ begin
     end;
   end;
   Freg.Free;
-end;
-
-function FileRegisteredOnInstalledApplication(Value: string): Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  for I := Length(Value) downto 2 do
-    if (Value[I - 1] = '%') and (Value[I] = '1') then
-    begin
-      Delete(Value, I - 1, 2);
-    end;
-  for I := Length(Value) downto 1 do
-    if Value[I] = '"' then
-      Delete(Value, I, 1);
-  for I := Length(Value) downto 1 do
-    if Value[I] = ' ' then
-      Delete(Value, I, 1)
-    else
-      Break;
-  if AnsiLowerCase(Value) = AnsiLowerCase(ExtractFileDir(InstalledFileName) + 'PhotoDB.exe') then
-    Result := True;
-end;
-
-function ExtInstallApplicationW(Exts: TInstallExts; Filename: string): Boolean;
-var
-  Reg: TRegistry;
-  I: Integer;
-  S: string;
-  B, C: Boolean;
-
-  procedure DeleteExtInfo(Ext: string);
-  var
-    FReg: TRegistry;
-  begin
-    FReg := TRegistry.Create;
-    try
-      FReg.RootKey := Windows.HKEY_CURRENT_USER;
-      FReg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.' + Ext);
-    finally
-      FReg.Free;
-    end;
-  end;
-
-begin
-  Reg := TRegistry.Create;
-  Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
-  for I := 0 to Exts.Count - 1 do
-  begin
-    case Exts[I].State of
-      TES_IGNORE:
-        begin
-          Reg.OpenKey('\.' + Exts[I].Ext, True);
-          S := Reg.ReadString('');
-          Reg.CloseKey;
-          B := False;
-          if S = '' then
-            B := True;
-          if not B then
-          begin
-            Reg.OpenKey('\' + S + '\Shell\Open\Command', False);
-            if Reg.ReadString('') <> '' then
-              B := False
-            else
-              B := True;
-            Reg.CloseKey;
-          end;
-          if B then
-          begin
-            Reg.OpenKey('\.' + Exts[I].Ext, True);
-            Reg.WriteString('', 'PhotoDB.' + Exts[I].Ext);
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\Open\Command', True);
-            Reg.WriteString('', Format('"%s" "%1"', [FileName]));
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\DefaultIcon', True);
-            Reg.WriteString('', Filename + ',0');
-            Reg.CloseKey;
-            DeleteExtInfo(Exts[I].Ext);
-          end else
-          begin
-            Reg.OpenKey('\.' + Exts[I].Ext, True);
-            S := Reg.ReadString('');
-            Reg.WriteString('PhotoDB_PreviousAssociation', S);
-            Reg.WriteString('', 'PhotoDB.' + Exts[I].Ext);
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\Open\Command', True);
-            Reg.WriteString('', Format('"%s" "%1"', [Filename]));
-            Reg.CloseKey;
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\DefaultIcon', True);
-            Reg.WriteString('', Filename + ',0');
-            Reg.CloseKey;
-            DeleteExtInfo(Exts[I].Ext);
-          end;
-        end;
-      TES_ADD_HANDLER:
-        begin
-          Reg.OpenKey('\.' + Exts[I].Ext, True);
-          S := Reg.ReadString('');
-          Reg.CloseKey;
-          C := False;
-          B := True;
-          if S = '' then
-            C := True;
-          if not C then
-          begin
-            Reg.OpenKey('\' + S + '\Shell\Open\Command', False);
-            if Reg.ReadString('') <> '' then
-              B := False
-            else
-              B := True;
-            Reg.CloseKey;
-          end;
-          if B then
-          begin
-            Reg.OpenKey('\.' + Exts[I].Ext, True);
-            Reg.WriteString('', 'PhotoDB.' + Exts[I].Ext);
-            Reg.CloseKey;
-          end;
-          if B then
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\PhotoDBView', True)
-          else
-            Reg.OpenKey('\' + S + '\Shell\PhotoDBView', True);
-          Reg.WriteString('', TA('View with PhotoDB', 'System'));
-          Reg.CloseKey;
-          if B then
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\Shell\PhotoDBView\Command', True)
-          else
-            Reg.OpenKey('\' + S + '\Shell\PhotoDBView\Command', True);
-          Reg.WriteString('', Format('"%s" "%1"', [Filename]));
-          if B then
-          begin
-            Reg.OpenKey('\PhotoDB.' + Exts[I].Ext + '\DefaultIcon', True);
-            Reg.WriteString('', Filename + ',0');
-          end;
-          Reg.CloseKey;
-        end;
-    end;
-  end;
-  Reg.Free;
-  Result := True;
 end;
 
 function ExtUnInstallApplicationW: Boolean;

@@ -6,11 +6,13 @@ interface
 
 uses
   Classes, uMemory, uInstallTypes, uInstallUtils, uConstants, uInstallScope,
-  VRSIShortCuts, ShlObj, SysUtils, uTranslate, StrUtils, uInstallZip;
+  VRSIShortCuts, ShlObj, SysUtils, uTranslate, StrUtils, uInstallZip,
+  uAssociations;
 
 const
   InstallPoints_ShortCut = 500 * 1024;
   InstallPoints_SystemInfo = 1024 * 1024;
+  InstallPoints_Association = 128 * 1024;
 
 type
   TInstallAction = class;
@@ -45,8 +47,13 @@ type
     procedure Execute(Callback : TActionCallback); override;
   end;
 
-  TInstallRegistry = class(TInstallAction)
-
+  TInstallAssociations = class(TInstallAction)
+  private
+    FCallback : TActionCallback;
+    procedure OnInstallAssociationCakkBack(Total, Count : Integer; var Terminate : Boolean);
+  public
+    function CalculateTotalPoints : Int64; override;
+    procedure Execute(Callback : TActionCallback); override;
   end;
 
   TInstallShortcuts = class(TInstallAction)
@@ -78,6 +85,13 @@ implementation
 
 var
   InstallManagerInstance : TInstallManager = nil;
+
+{ TInstallAction }
+
+constructor TInstallAction.Create;
+begin
+ //
+end;
 
 { TInstallManager }
 
@@ -257,16 +271,29 @@ begin
   Callback(Self, InstallPoints_SystemInfo, InstallPoints_SystemInfo, Terminate);
 end;
 
-{ TInstallAction }
+{ TInstallExtensions }
 
-constructor TInstallAction.Create;
+function TInstallAssociations.CalculateTotalPoints: Int64;
 begin
- //
+  Result := TFileAssociations.Instance.Count * InstallPoints_Association;
+end;
+
+procedure TInstallAssociations.Execute(Callback: TActionCallback);
+begin
+  FCallback := Callback;
+  InstallGraphicFileAssociations(IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe', OnInstallAssociationCakkBack);
+end;
+
+procedure TInstallAssociations.OnInstallAssociationCakkBack(Total,
+  Count: Integer; var Terminate : Boolean);
+begin
+  FCallback(Self, InstallPoints_Association * Count, InstallPoints_Association * Total, Terminate);
 end;
 
 initialization
 
   TInstallManager.Instance.RegisterScope(TInstallFiles);
+  TInstallManager.Instance.RegisterScope(TInstallAssociations);
   TInstallManager.Instance.RegisterScope(TInstallShortcuts);
   TInstallManager.Instance.RegisterScope(TInstallUpdatingWindows);
 

@@ -13,26 +13,6 @@ type
 
   end;
 
-  TExtState = (TES_IGNORE, TES_ADD_HANDLER, TES_DEFAULT);
-
-  TInstallExt = class(TInstallObject)
-  public
-    State : TExtState;
-    Ext : string;
-  end;
-
-  TInstallExts = class(TObject)
-  private
-    FList : TList;
-    function GetExtByIndex(Index: Integer): TInstallExt;
-    function GetCount: Integer;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    property Count : Integer read GetCount;
-    property Exts[Index : Integer] : TInstallExt read GetExtByIndex; default;
-  end;
-
   TShortCut = class(TObject)
   public
     Name : string;
@@ -149,29 +129,6 @@ end;
 function TShortCuts.GetItemByIndex(Index: Integer): TShortCut;
 begin
   Result := FShortCuts[Index];
-end;
-
-{ TInstallExts }
-
-constructor TInstallExts.Create;
-begin
-  FList := TList.Create;
-end;
-
-destructor TInstallExts.Destroy;
-begin
-  FreeList(FList);
-  inherited;
-end;
-
-function TInstallExts.GetCount: Integer;
-begin
-  Result := FList.Count;
-end;
-
-function TInstallExts.GetExtByIndex(Index: Integer): TInstallExt;
-begin
-  Result := FList[Index];
 end;
 
 { TDiskObject }

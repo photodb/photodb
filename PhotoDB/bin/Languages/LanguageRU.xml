@@ -17,6 +17,7 @@
     <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
   <scope name="Setup">
+    <translate name="Update" value="Обновление" />
     <translate name="Install already in progress!" value="Установка уже запущена!" />
     <translate name="Install" value="Установить" />
     <translate name="Next" value="Далее" />
@@ -24,6 +25,9 @@
     <translate name="Install path" value="Путь для установки" />
     <translate name="PhotoDB 2.3 Setup" value="Установка PhotoDB 2.3" />
     <translate name="I accept license agreement" value="Я принимаю лицензионное соглашение" />
+    <translate name="Select default associations" value="По умолчанию" />
+    <translate name="Select all" value="Выбрать всё" />
+    <translate name="Select none" value="Отменить всё" />
   </scope>
   <scope name="JPEG">
     <translate name="JPEG compression" value="Компрессия JPEG" />

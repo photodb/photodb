@@ -37,7 +37,9 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
     Top = 3
     Width = 201
     Height = 270
+    AllowGrayed = True
     ItemHeight = 13
+    PopupMenu = PmAssociations
     TabOrder = 0
   end
   object EdPath: TEdit
@@ -81,5 +83,21 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
     Caption = '...'
     TabOrder = 5
     OnClick = BtnSelectDirectoryClick
+  end
+  object PmAssociations: TPopupMenu
+    Left = 256
+    Top = 168
+    object SelectDefault1: TMenuItem
+      Caption = 'Select Default'
+      OnClick = SelectDefault1Click
+    end
+    object SelectAll1: TMenuItem
+      Caption = 'Select All'
+      OnClick = SelectAll1Click
+    end
+    object SelectNone1: TMenuItem
+      Caption = 'Select None'
+      OnClick = SelectNone1Click
+    end
   end
 end

@@ -110,10 +110,15 @@ begin
 end;
 
 procedure TFrmMain.LoadLanguage;
+var
+  S : string;
 begin
   BeginTranslate;
   try
-    Caption := L('PhotoDB 2.3 Setup');
+    S := L('PhotoDB 2.3 Setup');
+    if IsApplicationInstalled then
+      S := S + ' (' + L('Update') + ')';
+    Caption := S;
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
     BtnPrevious.Caption := L('Previous');
