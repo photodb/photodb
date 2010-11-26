@@ -3,7 +3,7 @@ unit uAssociations;
 interface
 
 uses
-  Windows, Classes, StdCtrls, uMemory, SysUtils, Registry, uShellUtils,
+  Windows, Classes, StdCtrls, uMemory, SysUtils, Registry,
   uTranslate, StrUtils;
 
 type
@@ -20,7 +20,7 @@ type
     State : TAssociationState;
   end;
 
-  TInstallAssociationCallBack = procedure(Total, Count : Integer; var Terminate : Boolean) of object;
+  TInstallAssociationCallBack = procedure(Current, Total : Integer; var Terminate : Boolean) of object;
 
   TFileAssociations = class(TObject)
   private
@@ -46,7 +46,6 @@ const
   ASSOCIATION_PREVIOUS = 'PhotoDB_PreviousAssociation';
   ASSOCIATION_ADD_HANDLER_COMMAND = 'PhotoDBView';
 
-function FileRegisteredOnInstalledApplication(Value: string): Boolean;
 function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
 function AssociationStateToCheckboxState(AssociationState : TAssociationState) : TCheckBoxState;
 function CheckboxStateToAssociationState(CheckBoxState : TCheckBoxState) : TAssociationState;
@@ -84,86 +83,67 @@ begin
   end;
 end;
 
-function FileRegisteredOnInstalledApplication(Value: string): Boolean;
+procedure UnregisterPhotoDBAssociation(Ext : string);
 var
-  I: Integer;
+  Reg: TRegistry;
+  ShellPath, ExtensionHandler, PreviousHandler : string;
 begin
-  Result := False;
-  for I := Length(Value) downto 2 do
-    if (Value[I - 1] = '%') and (Value[I] = '1') then
-    begin
-      Delete(Value, I - 1, 2);
-    end;
-  for I := Length(Value) downto 1 do
-    if Value[I] = '"' then
-      Delete(Value, I, 1);
+  Reg := TRegistry.Create;
+  try
+    Reg.RootKey := Windows.HKEY_CURRENT_USER;
+    Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
+    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
+  finally
+    Reg.Free;
+  end;
 
-  Value := Trim(Value);
-  if AnsiLowerCase(Value) = AnsiLowerCase(InstalledFileName) then
-    Result := True;
+  Reg := TRegistry.Create;
+  try
+    Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    Reg.OpenKey('\' + Ext, True);
+    ExtensionHandler := Reg.ReadString('');
+    PreviousHandler := Reg.ReadString(ASSOCIATION_PREVIOUS);
+    Reg.CloseKey;
+
+    if ExtensionHandler <> '' then
+    begin
+      ShellPath := '\' + ExtensionHandler + '\Shell\';
+      //unregister view menu item
+      if Reg.KeyExists(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command') then
+        Reg.DeleteKey(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command');
+      if Reg.KeyExists(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND) then
+        Reg.DeleteKey(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND);
+
+      if StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(ExtensionHandler)) then
+      begin
+        //if open with photodb then delete default association
+        if Reg.KeyExists(ShellPath + 'Open\Command') then
+          Reg.DeleteKey(ShellPath + 'Open\Command');
+        if Reg.KeyExists(ShellPath + 'Open') then
+          Reg.DeleteKey(ShellPath + 'Open');
+      end;
+    end;
+
+    Reg.OpenKey('\' + Ext, True);
+    if not StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(PreviousHandler)) then
+      Reg.WriteString('', PreviousHandler)
+    else
+      Reg.WriteString('', '');
+    Reg.CloseKey;
+  finally
+    F(Reg);
+  end;
 end;
+
 
 function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
 var
   Reg: TRegistry;
   I: Integer;
-  S, Ext, ExtensionHandler, PreviousHandler: string;
+  S, Ext: string;
   B, C: Boolean;
   Terminate : Boolean;
-
-  procedure UnregisterPhotoDBAssociation(Ext : string);
-  var
-    Reg: TRegistry;
-    ShellPath : string;
-  begin   
-    Reg := TRegistry.Create;
-    try
-      Reg.RootKey := Windows.HKEY_CURRENT_USER;
-      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
-      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-    finally
-      Reg.Free;
-    end;
-     
-    Reg := TRegistry.Create;
-    try
-      Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
-      Reg.OpenKey('\' + Ext, True);
-      ExtensionHandler := Reg.ReadString('');
-      PreviousHandler := Reg.ReadString(ASSOCIATION_PREVIOUS);
-      Reg.CloseKey;
-
-      if ExtensionHandler <> '' then
-      begin
-        ShellPath := '\' + ExtensionHandler + '\Shell\';
-        //unregister view menu item
-        if Reg.KeyExists(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command') then
-          Reg.DeleteKey(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command');
-        if Reg.KeyExists(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND) then
-          Reg.DeleteKey(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND);  
-
-        if StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(ExtensionHandler)) then
-        begin
-          //if open with photodb then delete default association
-          if Reg.KeyExists(ShellPath + 'Open\Command') then
-            Reg.DeleteKey(ShellPath + 'Open\Command');
-          if Reg.KeyExists(ShellPath + 'Open') then
-            Reg.DeleteKey(ShellPath + 'Open');
-        end;
-      end;
-
-      Reg.OpenKey('\' + Ext, True);
-      if not StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(PreviousHandler)) then
-        Reg.WriteString('', PreviousHandler)
-      else
-        Reg.WriteString('', '');   
-      Reg.CloseKey;
-    finally
-      F(Reg);
-    end;
-  end;
-
 begin
   Terminate := False;
 
@@ -173,7 +153,7 @@ begin
     for I := 0 to TFileAssociations.Instance.Count - 1 do
     begin
       if Assigned(CallBack) then
-        CallBack(TFileAssociations.Instance.Count, I, Terminate);
+        CallBack(I, TFileAssociations.Instance.Count, Terminate);
 
       if Terminate then
         Break;
@@ -390,27 +370,31 @@ function TFileAssociations.GetCurrentAssociationState(
   Extension: string): TAssociationState;
 var
   Reg: TRegistry;
-  S : string;
+  AssociationHandler, AssociationCommand : string;
 begin
   Reg := TRegistry.Create;
   try
     Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
 
     Reg.OpenKey('\' + Extension, False);
-    S := Reg.ReadString('');
+    AssociationHandler := Reg.ReadString('');
     Reg.CloseKey;
-    Reg.OpenKey('\' + S + '\shell\open\command', False);
-    S := Reg.ReadString('');
-    if S = '' then
+
+    if StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(AssociationHandler)) then
+    begin
+      Result := TAS_DEFAULT;
+      Exit;
+    end;
+
+    Reg.OpenKey('\' + AssociationHandler + '\shell\open\command', False);
+    AssociationCommand := Reg.ReadString('');
+    Reg.CloseKey;
+
+    if AssociationCommand = '' then
       Result := TAS_DEFAULT
     else
-    begin
-      if FileRegisteredOnInstalledApplication(S) then
-        Result := TAS_DEFAULT
-      else
-        Result := TAS_ADD_HANDLER;
-    end;
-    Reg.CloseKey;
+      Result := TAS_ADD_HANDLER;
+
   finally
     F(Reg);
   end;

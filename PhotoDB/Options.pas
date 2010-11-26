@@ -649,7 +649,6 @@ begin
    cbGrayed:  Exts[i-1].InstallType:=InstallType_Grayed;
   end;
  end;
- ExtUnInstallApplicationW;
  //TODO: ExtInstallApplicationW(Exts,Application.ExeName);
  LoadExts;
  try

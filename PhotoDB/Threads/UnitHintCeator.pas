@@ -130,7 +130,7 @@ begin
     FOriginalWidth := Graphic.Width;
     FOriginalHeight := Graphic.Height;
 
-    if (Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 0) then
+    if (Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 1) then
     begin
       Synchronize(DoShowHint);
       Exit;

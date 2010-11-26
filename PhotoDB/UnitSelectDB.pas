@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, Language,
+  Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, Language, uDBUtils,
   UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, jpeg, CommonDBSupport,
   UnitDBCommonGraphics, ImgList, ComCtrls, ComboBoxExDB, WebLink,
   UnitDBCommon;
@@ -111,7 +111,7 @@ function DoChooseDBFile(Options : Integer = SELECT_DB_OPTION_GET_DB) : TPhotoDBF
 
 implementation
 
-uses UnitConvertDBForm, UnitDBOptions, UnitInstallThread;
+uses UnitConvertDBForm, UnitDBOptions;
 
 {$R *.dfm}
 

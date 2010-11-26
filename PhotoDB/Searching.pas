@@ -516,7 +516,7 @@ implementation
 uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
      PropertyForm, ReplaceForm, CleaningForm, Options, UnitLoadFilesToPanel,
      UnitHintCeator, UnitImHint, DBSelectUnit, UnitFormCont,
-     uAbout, uActivation, ExplorerUnit, InstallFormUnit, UnitUpdateDB,
+     uAbout, uActivation, ExplorerUnit, UnitUpdateDB,
      UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm , UnitQuickGroupInfo,
      UnitGroupReplace, UnitSavingTableForm, UnitInternetUpdate, UnitHelp,
      ImEditor, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,

@@ -357,6 +357,7 @@ begin
       begin
         TmpImage := TBitmap.Create;
         try
+          TmpImage.PixelFormat := pf32bit;
           DoResize(ImageW, ImageH, Graphic as TBitmap, TmpImage);
           DrawImageEx32(ResultImage, TmpImage, N, N);
         finally

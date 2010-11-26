@@ -176,9 +176,10 @@ end;
 
 procedure TImHint.Execute(Sender : TForm; G : TGraphic; W, H : Integer; Info : TDBPopupMenuInfoRecord; Pos : TPoint; CheckFunction : THintCheckFunction);
 var
-  WW, HH, FH, FW, FL, FT, TextHeight: Integer;
+  DisplayWidth, DisplayHeight, WindowHeight, WindowWidth, WindowLeft, WindowTop, TextHeight: Integer;
   Rect : TRect;
   R : TRect;
+  InverseHW, IsAnimated : Boolean;
 begin
   FCheckFunction := CheckFunction;
   FOwner := Sender;
@@ -200,16 +201,19 @@ begin
   FDragDrop := True;
   CurrentInfo := Info;
 
-  if (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_180) then
+  IsAnimated := (G is TGIFImage) and ((G as TGIFImage).Images.Count > 1);
+  InverseHW := not (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_180);
+  if not (InverseHW and IsAnimated) then
   begin
-    WW := G.Width;
-    HH := G.Height;
+    DisplayWidth := G.Width;
+    DisplayHeight := G.Height;
   end else
   begin
-    HH := G.Width;
-    WW := G.Height;
+    DisplayHeight := G.Width;
+    DisplayWidth := G.Height;
   end;
-  ProportionalSize(ThHintSize, ThHintSize, Ww, Hh);
+  if not IsAnimated then
+    ProportionalSize(ThHintSize, ThHintSize, DisplayWidth, DisplayHeight);
 
   ImageBuffer := TBitmap.Create;
   AnimatedBuffer := TBitmap.Create;
@@ -221,36 +225,51 @@ begin
   AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
   AnimatedImage := G;
 
-  FW := Max(100, WW + 10 + 2);
-  FH := HH + 10;
+  if IsAnimated then
+  begin
+    SlideNO := -1;
+    ImageFrameTimer.Interval := 1;
+    ImageFrameTimer.Enabled := True;
+    ImageBuffer.Width := DisplayWidth;
+    ImageBuffer.Height := DisplayHeight;
+    //Draw first slide
+    ImageFrameTimerTimer(Self);
+  end else
+  begin
+    ImageBuffer.Assign(G);
+  end;
+
+  WindowWidth := Max(100, DisplayWidth + 10 + 2);
+  WindowHeight := DisplayHeight + 10;
 
   TextHeight := Canvas.TextHeight('Iy');
   R.Left := 5;
-  R.Right := FW - 5;
-  R.Top := 5 + FH + 5;
+  R.Right := WindowWidth - 5;
+  R.Top := WindowHeight + 10;
+
   R.Bottom := 5 + 200;
   DrawText(Canvas.Handle, PChar(ImageName), Length(ImageName), R, DT_WORDBREAK or DT_CALCRECT);
-  Inc(FH, 2 * (5 + TextHeight) + (5 + R.Bottom - R.Top) + 5);
-
-  ClientWidth := FW;
-  ClientHeight := FH;
+  Inc(WindowHeight, 2 * (5 + TextHeight) + (5 + R.Bottom - R.Top) + 5);
 
   //fix window position
   Rect := Classes.Rect(Pos.X, Pos.Y, Pos.X + 100, Pos.Y + 100);
-  if Rect.Top + Fh + 10 > Screen.Height then
-    Ft := Rect.Top - 20 - Fh
+  if Rect.Top + WindowHeight + 10 > Screen.Height then
+    WindowTop := Rect.Top - 20 - WindowHeight
   else
-    Ft := Rect.Top + 10;
-  if Rect.Left + Fw + 10 > Screen.Width then
-    Fl := Rect.Left - 20 - Fw
+    WindowTop := Rect.Top + 10;
+
+  if Rect.Left + WindowWidth + 10 > Screen.Width then
+    WindowLeft := Rect.Left - 20 - WindowWidth
   else
-    Fl := Rect.Left + 10;
-  if Ft < 0 then
-    Ft := 200;
-  if Fl < 0 then
-    Fl := 200;
-  Top := Ft;
-  Left := Fl;
+    WindowLeft := Rect.Left + 10;
+
+  if WindowTop < 0 then
+    WindowTop := 100;
+  if WindowLeft < 0 then
+    WindowLeft := 100;
+
+  Top := WindowTop;
+  Left := WindowLeft;
 
   FAlphaBlend := 0;
   if DBKernel.ReadInteger('Options', 'PreviewSwohOptions', 0) = 0 then
@@ -263,19 +282,8 @@ begin
       SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE);
   FClosed := False;
 
-  if (G is TGIFImage) and ((G as TGIFImage).Images.Count > 1) then
-  begin
-    SlideNO := -1;
-    ImageFrameTimer.Interval := 1;
-    ImageFrameTimer.Enabled := True;
-    ImageBuffer.Width := WW;
-    ImageBuffer.Height := HH;
-    //Draw first slide
-    ImageFrameTimerTimer(Self);
-  end else
-  begin
-    ImageBuffer.Assign(G);
-  end;
+  ClientWidth := WindowWidth;
+  ClientHeight := WindowHeight;
 
   CreateFormImage;
   ShowWindow(Handle, SW_SHOWNOACTIVATE);

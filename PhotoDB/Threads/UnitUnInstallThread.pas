@@ -40,24 +40,24 @@ type
 
 implementation
 
-uses SetupProgressUnit, Language;
+uses Language;
 
 { UnInstallThread }
 
 procedure UnInstallThread.SetInfo;
 begin
- If SetupProgressUnit.SetupProgressForm=nil then exit;
+{ If SetupProgressUnit.SetupProgressForm=nil then exit;
  SetupProgressUnit.SetupProgressForm.Label2.Caption:=FTypeOperation;
  SetupProgressUnit.SetupProgressForm.Label3.Caption:=FInfo;
  SetupProgressUnit.SetupProgressForm.Label4.Caption:=FinfoLabel;
  SetupProgressUnit.SetupProgressForm.DmProgress1.MaxValue:=FMaxSize;
- SetupProgressUnit.SetupProgressForm.DmProgress1.Text:=FProgressText;
+ SetupProgressUnit.SetupProgressForm.DmProgress1.Text:=FProgressText;    }
 end;
 
 procedure UnInstallThread.SetProgress;
 begin
- If SetupProgressUnit.SetupProgressForm=nil then exit;
- SetupProgressUnit.SetupProgressForm.DmProgress1.Position:=FProgress;
+{ If SetupProgressUnit.SetupProgressForm=nil then exit;
+ SetupProgressUnit.SetupProgressForm.DmProgress1.Position:=FProgress;  }
 end;
 
 procedure UnInstallThread.Execute;
@@ -72,8 +72,8 @@ var
 
 begin
  InstallDone:=false;
- SetupProgressUnit.FPause:=@Pause;
- SetupProgressUnit.fInstallDone:=@InstallDone;
+{ SetupProgressUnit.FPause:=@Pause;
+ SetupProgressUnit.fInstallDone:=@InstallDone;   }
  freg:=Tregistry.Create;
  try
   fReg.RootKey:=HKEY_INSTALL;
@@ -309,12 +309,12 @@ end;
 procedure UnInstallThread.exit;
 begin
  InstallDone:=true;
- If SetupProgressUnit.SetupProgressForm<>nil then
+{ If SetupProgressUnit.SetupProgressForm<>nil then
  begin
   SetupProgressUnit.SetupProgressForm.OnCloseQuery:=nil;
   SetupProgressUnit.SetupProgressForm.OnClose:=nil;
   SetupProgressUnit.SetupProgressForm.Close;
- end;
+ end;  }
  //DoEndInstall;
 end;
 

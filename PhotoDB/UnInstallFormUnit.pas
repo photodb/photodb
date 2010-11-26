@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses UnitUnInstallThread, SetupProgressUnit, Language;
+uses UnitUnInstallThread, Language;
 
 {$R *.dfm}
 
@@ -46,13 +46,13 @@ begin
   UnitUnInstallThread.Options.PlugIns := CheckListBox1.Checked[4];
   UnitUnInstallThread.Options.Scripts := CheckListBox1.Checked[5];
   UnitUnInstallThread.Options.Actions := CheckListBox1.Checked[6];
-  if SetupProgressForm = nil then
+ { if SetupProgressForm = nil then
     Application.CreateForm(TSetupProgressForm, SetupProgressForm);
   UnitUnInstallThread.UnInstallThread.Create(False);
   SetupProgressForm.ShowModal;
   SetupProgressForm.Release;
   SetupProgressForm.Free;
-  SetupProgressForm := nil;
+  SetupProgressForm := nil;   }
   Close;
 end;
 

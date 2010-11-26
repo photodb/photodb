@@ -7111,10 +7111,10 @@ begin
 
   GetCursorPos(P1);
   P := ElvMain.ScreenToClient(p1);
-  EasyItem := ItemAtPos(P.X, P.Y);
+  EasyItem := ElvMain.Selection.FocusedItem;
   if (EasyItem <> nil) and (EasyItem.ImageIndex > -1) then
   begin
-    if ItemByPointStar(ElvMain, p, FPictureSize, FBitmapImageList[EasyItem.ImageIndex].Graphic) <> nil then
+    if ItemByPointStar(ElvMain, p, FPictureSize, FBitmapImageList[EasyItem.ImageIndex].Graphic) = EasyItem then
     begin
       Index := ItemAtPos(p.X, p.Y).Index;
       Index := ItemIndexToMenuIndex(index);
@@ -7138,9 +7138,7 @@ begin
   THintManager.Instance.CloseHint;
   HintTimer.Enabled := false;
 
-  GetCursorPos(p1);
-  p := ElvMain.ScreenToClient(p1);
-  Item := ItemByPointImage(ElvMain, Point(p.X, p.Y), ListView);
+  Item := EasyItem;
   if (Item = nil) and (Sender = nil) then
     Item := ListView1Selected;
 

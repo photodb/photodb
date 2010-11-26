@@ -5,14 +5,16 @@ unit uInstallActions;
 interface
 
 uses
-  Classes, uMemory, uInstallTypes, uInstallUtils, uConstants, uInstallScope,
-  VRSIShortCuts, ShlObj, SysUtils, uTranslate, StrUtils, uInstallZip,
-  uAssociations;
+  Windows, Classes, uMemory, uInstallTypes, uInstallUtils, uConstants, uInstallScope,
+  VRSIShortCuts, ShellApi, ShlObj, SysUtils, uTranslate, StrUtils, uInstallZip,
+  uAssociations, uShellUtils;
 
 const
   InstallPoints_ShortCut = 500 * 1024;
   InstallPoints_SystemInfo = 1024 * 1024;
   InstallPoints_Association = 128 * 1024;
+  InstallPoints_Registry = 128 * 1024;
+  InstallPoints_RunProgram = 1024 * 1024;
 
 type
   TInstallAction = class;
@@ -47,10 +49,19 @@ type
     procedure Execute(Callback : TActionCallback); override;
   end;
 
+  TInstallRegistry = class(TInstallAction)
+  private
+    FCallback : TActionCallback;
+    procedure OnInstallRegistryCallBack(Current, Total : Integer; var Terminate : Boolean);
+  public
+    function CalculateTotalPoints : Int64; override;
+    procedure Execute(Callback : TActionCallback); override;
+  end;
+
   TInstallAssociations = class(TInstallAction)
   private
     FCallback : TActionCallback;
-    procedure OnInstallAssociationCakkBack(Total, Count : Integer; var Terminate : Boolean);
+    procedure OnInstallAssociationCallBack(Current, Total : Integer; var Terminate : Boolean);
   public
     function CalculateTotalPoints : Int64; override;
     procedure Execute(Callback : TActionCallback); override;
@@ -62,6 +73,11 @@ type
   end;
 
   TInstallUpdatingWindows = class(TInstallAction)
+    function CalculateTotalPoints : Int64; override;
+    procedure Execute(Callback : TActionCallback); override;
+  end;
+
+  TInstallRunProgram = class(TInstallAction)
     function CalculateTotalPoints : Int64; override;
     procedure Execute(Callback : TActionCallback); override;
   end;
@@ -281,21 +297,73 @@ end;
 procedure TInstallAssociations.Execute(Callback: TActionCallback);
 begin
   FCallback := Callback;
-  InstallGraphicFileAssociations(IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe', OnInstallAssociationCakkBack);
+  InstallGraphicFileAssociations(IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe', OnInstallAssociationCallBack);
 end;
 
-procedure TInstallAssociations.OnInstallAssociationCakkBack(Total,
-  Count: Integer; var Terminate : Boolean);
+procedure TInstallAssociations.OnInstallAssociationCallBack(Current, Total: Integer;
+  var Terminate : Boolean);
 begin
-  FCallback(Self, InstallPoints_Association * Count, InstallPoints_Association * Total, Terminate);
+  FCallback(Self, InstallPoints_Association * Current, InstallPoints_Association * Total, Terminate);
+end;
+
+{ TInstallRegistry }
+
+function TInstallRegistry.CalculateTotalPoints: Int64;
+begin
+  Result := 11 * InstallPoints_Registry;
+end;
+
+procedure TInstallRegistry.Execute(Callback: TActionCallback);
+var
+  FileName : string;
+begin
+  FCallback := Callback;
+  FileName := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe';
+  RegInstallApplication(FileName, OnInstallRegistryCallBack);
+end;
+
+procedure TInstallRegistry.OnInstallRegistryCallBack(Current, Total : Integer;
+  var Terminate: Boolean);
+begin
+  FCallback(Self, Current * InstallPoints_Registry, Total * InstallPoints_Registry, Terminate);
+end;
+
+{ TInstallRunProgram }
+
+function TInstallRunProgram.CalculateTotalPoints: Int64;
+begin
+  Result := InstallPoints_RunProgram;
+end;
+
+procedure TInstallRunProgram.Execute(Callback: TActionCallback);
+var
+  Terminate : Boolean;
+  PhotoDBExeFile : string;
+  StartInfo  : TStartupInfo;
+  ProcInfo   : TProcessInformation;
+begin
+  PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe';
+
+  { fill with known state }
+  FillChar(StartInfo,SizeOf(TStartupInfo),#0);
+  FillChar(ProcInfo,SizeOf(TProcessInformation),#0);
+  StartInfo.cb := SizeOf(TStartupInfo);
+
+  CreateProcess(PChar(PhotoDBExeFile), '/sleep', nil, nil, False,
+              CREATE_NEW_PROCESS_GROUP + NORMAL_PRIORITY_CLASS,
+              nil, PChar(CurrentInstall.DestinationPath), StartInfo, ProcInfo);
+
+  Callback(Self, InstallPoints_RunProgram, InstallPoints_RunProgram, Terminate);
 end;
 
 initialization
 
   TInstallManager.Instance.RegisterScope(TInstallFiles);
+  TInstallManager.Instance.RegisterScope(TInstallRegistry);
   TInstallManager.Instance.RegisterScope(TInstallAssociations);
   TInstallManager.Instance.RegisterScope(TInstallShortcuts);
   TInstallManager.Instance.RegisterScope(TInstallUpdatingWindows);
+  TInstallManager.Instance.RegisterScope(TInstallRunProgram);
 
 finalization;
 
