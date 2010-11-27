@@ -1,8 +1,8 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
-			<ProjectGuid>{4C03476C-1E9C-42ED-95A6-2DF61B89636A}</ProjectGuid>
+			<ProjectGuid>{8287C0E9-64E3-4E66-AED8-4918B239A5B6}</ProjectGuid>
 			<ProjectVersion>12.0</ProjectVersion>
-			<MainSource>PhotoDBInstall.dpr</MainSource>
+			<MainSource>Uninstall.dpr</MainSource>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 		</PropertyGroup>
@@ -20,12 +20,10 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_ExeOutput>..\</DCC_ExeOutput>
-			<DCC_DcuOutput>..\PhotoDB\dcu\</DCC_DcuOutput>
+			<DCC_Define>UNINSTALL;$(DCC_Define)</DCC_Define>
 			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-			<DCC_Define>DBDEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_DependencyCheckOutputName>..\PhotoDBInstall.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>Uninstall.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_Platform>x86</DCC_Platform>
 		</PropertyGroup>
@@ -39,62 +37,45 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="PhotoDBInstall.dpr">
+			<DelphiCompile Include="Uninstall.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="..\PhotoDB\External\FastMM\FastMM4.pas"/>
-			<DCCReference Include="..\PhotoDB\External\FastMM\FastMM4Messages.pas"/>
-			<DCCReference Include="uFrmMain.pas">
+			<DCCReference Include="..\Installer\uFrmMain.pas">
 				<Form>FrmMain</Form>
 			</DCCReference>
-			<DCCReference Include="uInstallUtils.pas"/>
-			<DCCReference Include="uFrmLanguage.pas">
-				<Form>FormLanguage</Form>
+			<DCCReference Include="..\Installer\uFrmProgress.pas">
+				<Form>FrmProgress</Form>
 			</DCCReference>
-			<DCCReference Include="uInstallTypes.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
 			<DCCReference Include="..\PhotoDB\External\Xml\MSXML2_TLB.pas"/>
 			<DCCReference Include="..\PhotoDB\External\Xml\OmniXML_MSXML.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uLogger.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uFileUtils.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
-			<DCCReference Include="uFrmProgress.pas">
-				<Form>FrmProgress</Form>
-			</DCCReference>
-			<DCCReference Include="uInstallFrame.pas">
+			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
+			<DCCReference Include="..\Installer\uInstallUtils.pas"/>
+			<DCCReference Include="..\Installer\uInstallTypes.pas"/>
+			<DCCReference Include="..\Installer\uInstallScope.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\UnitINI.pas"/>
+			<DCCReference Include="..\Installer\uShellUtils.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
+			<DCCReference Include="..\Installer\uAssociations.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uVistaFuncs.pas"/>
+			<DCCReference Include="..\Installer\uInstallFrame.pas">
 				<Form>InstallFrame</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
-			<DCCReference Include="uFrLicense.pas">
-				<Form>FrmLicence</Form>
+			<DCCReference Include="..\Installer\uSteps.pas"/>
+			<DCCReference Include="..\Installer\uInstallThread.pas"/>
+			<DCCReference Include="..\Installer\uActions.pas"/>
+			<DCCReference Include="uUninstallSteps.pas"/>
+			<DCCReference Include="uFrUninstall.pas">
+				<Form>FrUninstall</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
-			<DCCReference Include="uFrAdvancedOptions.pas">
-				<Form>FrmAdvancedOptions</Form>
-				<DesignClass>TFrame</DesignClass>
-			</DCCReference>
-			<DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
-			<DCCReference Include="uInstallThread.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
-			<DCCReference Include="uInstallActions.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uVistaFuncs.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\UnitDBFileDialogs.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\VistaDialogInterfaces.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\VistaFileDialogs.pas"/>
-			<DCCReference Include="uInstallScope.pas"/>
-			<DCCReference Include="uUninstallTypes.pas"/>
-			<DCCReference Include="uUninstall.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uLogger.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\UnitINI.pas"/>
-			<DCCReference Include="uShellUtils.pas"/>
-			<DCCReference Include="uInstallZip.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
-			<DCCReference Include="uAssociations.pas"/>
-			<DCCReference Include="uInstallSteps.pas"/>
-			<DCCReference Include="uSteps.pas"/>
-			<DCCReference Include="uActions.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -114,7 +95,7 @@
 			<BorlandProject>
 				<Delphi.Personality>
 					<Source>
-						<Source Name="MainSource">PhotoDBInstall.dpr</Source>
+						<Source Name="MainSource">Uninstall.dpr</Source>
 					</Source>
 					<Parameters>
 						<Parameters Name="UseLauncher">False</Parameters>

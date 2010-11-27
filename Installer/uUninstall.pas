@@ -5,20 +5,20 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Classes, uInstallActions, uInstallTypes, uMemory, Registry, uConstants,
+  Windows, Classes, uActions, uInstallTypes, uMemory, Registry, uConstants,
   SysUtils, uUninstallTypes;
 
 const
   InstallPoints_UninstallShortcuts = 16 * 1024;
 
 type
-  TUninstallShortcut = class
+  TUninstallPreviousShortcut = class
   public
     PathType : string;
     RelativePath : string;
   end;
 
-  TUninstallShortcutsAction = class(TInstallAction)
+  TUninstallPreviousShortcutsAction = class(TInstallAction)
   private
     FUninstallShortcuts : TList;
     procedure FillList;
@@ -34,40 +34,40 @@ implementation
 
 { TUninstallShortcutsAction }
 
-procedure TUninstallShortcutsAction.AddUninstallShortcut(APathType,
+procedure TUninstallPreviousShortcutsAction.AddUninstallShortcut(APathType,
   ARelativePath: string);
 var
-  Shortcut : TUninstallShortcut;
+  Shortcut : TUninstallPreviousShortcut;
 begin
-  Shortcut := TUninstallShortcut.Create;
+  Shortcut := TUninstallPreviousShortcut.Create;
   Shortcut.PathType := APathType;
   Shortcut.RelativePath := ARelativePath;
   FUninstallShortcuts.Add(Shortcut);
 end;
 
-function TUninstallShortcutsAction.CalculateTotalPoints: Int64;
+function TUninstallPreviousShortcutsAction.CalculateTotalPoints: Int64;
 begin
   Result := InstallPoints_UninstallShortcuts * FUninstallShortcuts.Count;
 end;
 
-constructor TUninstallShortcutsAction.Create;
+constructor TUninstallPreviousShortcutsAction.Create;
 begin
   inherited;
   FUninstallShortcuts := TList.Create;
   FillList;
 end;
 
-destructor TUninstallShortcutsAction.Destroy;
+destructor TUninstallPreviousShortcutsAction.Destroy;
 begin
   FreeList(FUninstallShortcuts);
   inherited;
 end;
 
-procedure TUninstallShortcutsAction.Execute(Callback: TActionCallback);
+procedure TUninstallPreviousShortcutsAction.Execute(Callback: TActionCallback);
 var
   Reg : TRegIniFile;
   I : Integer;
-  Shortcut : TUninstallShortcut;
+  Shortcut : TUninstallPreviousShortcut;
   Path : string;
   FCurrent, FTotal : Int64;
   Terminate : Boolean;
@@ -79,7 +79,7 @@ begin
   try
     for I := 0 to FUninstallShortcuts.Count - 1 do
     begin
-      Shortcut := TUninstallShortcut(FUninstallShortcuts[I]);
+      Shortcut := TUninstallPreviousShortcut(FUninstallShortcuts[I]);
       Path := IncludeTrailingBackslash(Reg.ReadString('Shell Folders', Shortcut.PathType, '')) + Shortcut.RelativePath;
       if ExtractFileExt(Shortcut.RelativePath) <> '' then
         SysUtils.DeleteFile(Path)
@@ -97,7 +97,7 @@ begin
   end;
 end;
 
-procedure TUninstallShortcutsAction.FillList;
+procedure TUninstallPreviousShortcutsAction.FillList;
 begin
   AddUninstallShortcut('Desktop', ProgramShortCutFile_1_75);
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_1_75 + '\' + ProgramShortCutFile_1_75);
@@ -132,6 +132,6 @@ end;
 
 initialization
 
-  TInstallManager.Instance.RegisterScope(TUninstallShortcutsAction);
+  TInstallManager.Instance.RegisterScope(TUninstallPreviousShortcutsAction);
 
 end.

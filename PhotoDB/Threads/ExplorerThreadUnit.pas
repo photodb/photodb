@@ -2137,6 +2137,8 @@ begin
 
   if Mode = THREAD_PREVIEW_MODE_BIG_IMAGE then
      ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate, FFileID);
+
+  F(FUpdaterInfo.FileInfo);
 end;
 
 procedure TExplorerThread.ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);

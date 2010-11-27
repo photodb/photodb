@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, uInstallTypes, uDBForm, uMemory, uConstants,
-  uInstallUtils, uInstallScope, uInstallActions, ActiveX;
+  uInstallUtils, uInstallScope, uActions, ActiveX;
 
 type
   TInstallThread = class(TThread)

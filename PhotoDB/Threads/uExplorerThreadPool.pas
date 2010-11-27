@@ -51,6 +51,7 @@ begin
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
+      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
       Avaliablethread.FInfo := Info;
@@ -85,6 +86,7 @@ begin
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
+      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
       Avaliablethread.FInfo.ItemFileName := FileName;
@@ -120,6 +122,7 @@ begin
       Avaliablethread.ThreadForm := Sender.ThreadForm;
       Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
       Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
+      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
       Avaliablethread.FInfo.ItemFileName := DirectoryPath;

@@ -7,8 +7,15 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
-  uFrmProgress, uInstallTypes, uInstallUtils, uMemory, uConstants,
-  uVistaFuncs, uInstallScope, Registry, uShellUtils, uInstallSteps;
+  uInstallTypes, uInstallUtils, uMemory, uConstants,
+  uVistaFuncs, uInstallScope, Registry, uShellUtils, uSteps,
+{$IFDEF INSTALL}
+  uInstallSteps,
+{$ENDIF}
+{$IFDEF UNINSTALL}
+  uUninstallSteps,
+{$ENDIF}
+  uFrmProgress;
 
 type
   TFrmMain = class(TDBForm)
@@ -47,7 +54,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uFrmLanguage, uInstallThread;
+  uInstallThread;
 
 { TFrmMain }
 
@@ -90,10 +97,16 @@ begin
   end;
   LoadMainImage;
   LoadLanguage;
+{$IFDEF INSTALL}
   if IsApplicationInstalled then
     FInstallType := TUpdatePreviousVersion.Create
   else
     FInstallType := TFreshInstall.Create;
+{$ENDIF}
+
+{$IFDEF UNINSTALL}
+  FInstallType := TUninstall_V2_3.Create;
+{$ENDIF}
 
   FInstallType.OnChange := StepsChanged;
   FInstallType.Start(Self, 190, 5);

@@ -38,7 +38,9 @@ uses
   uInstallZip in 'uInstallZip.pas',
   uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas',
   uAssociations in 'uAssociations.pas',
-  uInstallSteps in 'uInstallSteps.pas';
+  uInstallSteps in 'uInstallSteps.pas',
+  uSteps in 'uSteps.pas',
+  uActions in 'uActions.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

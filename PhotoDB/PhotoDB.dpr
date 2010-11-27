@@ -46,8 +46,6 @@ uses
   SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
   uActivation in 'uActivation.pas' {ActivateForm},
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
-  InstallFormUnit in 'InstallFormUnit.pas' {InstallForm},
-  SetupProgressUnit in 'SetupProgressUnit.pas' {SetupProgressForm},
   UnInstallFormUnit in 'UnInstallFormUnit.pas' {UnInstallForm},
   UnitUpdateDB in 'UnitUpdateDB.pas' {UpdateDBForm},
   uAbout in 'uAbout.pas' {AboutForm},
@@ -111,7 +109,6 @@ uses
   UnitHintCeator in 'Threads\UnitHintCeator.pas',
   UnitCmpDB in 'Threads\UnitCmpDB.pas',
   ExplorerThreadUnit in 'Threads\ExplorerThreadUnit.pas',
-  UnitInstallThread in 'Threads\UnitInstallThread.pas',
   UnitUnInstallThread in 'Threads\UnitUnInstallThread.pas',
   UnitPackingTable in 'Threads\UnitPackingTable.pas',
   UnitUpdateDBThread in 'Threads\UnitUpdateDBThread.pas',
@@ -297,7 +294,9 @@ uses
   uShellUtils in '..\Installer\uShellUtils.pas',
   uInstallTypes in '..\Installer\uInstallTypes.pas',
   uInstallScope in '..\Installer\uInstallScope.pas',
-  uDBBaseTypes in 'Units\uDBBaseTypes.pas';
+  uDBBaseTypes in 'Units\uDBBaseTypes.pas',
+  uDBUtils in 'Units\uDBUtils.pas',
+  uAssociations in '..\Installer\uAssociations.pas';
 
 {$R *.res}
 
@@ -448,7 +447,7 @@ begin
   If GetParamStrDBBool('/UNINSTALL')
     and not DBTerminating then
   begin
-    If ID_YES = MessageBoxDB(dolphin_db.GetActiveFormHandle,
+    If ID_YES = MessageBoxDB(GetActiveFormHandle,
       TA('Do you really want to delete this product?', 'System'), TA('Warning'), TD_BUTTON_YESNO,
       TD_ICON_WARNING) then
     begin
