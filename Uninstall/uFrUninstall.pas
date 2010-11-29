@@ -2,10 +2,12 @@ unit uFrUninstall;
 
 interface
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, StdCtrls, uInstallFrame, uInstallUtils, uTranslate,
-  uMemory, uConstants;
+  uMemory, uConstants, uInstallScope, uAssociations;
 
 type
   TFrUninstall = class(TInstallFrame)
@@ -18,6 +20,7 @@ type
     procedure Init; override;
     procedure LoadLanguage; override;
     function ValidateFrame : Boolean; override;
+    procedure InitInstall; override;
   end;
 
 implementation
@@ -35,6 +38,18 @@ procedure TFrUninstall.Init;
 begin
   inherited;
   cbYesUninstall.OnClick := YesUninstallClick;
+  CurrentInstall.IsUninstall := True;
+end;
+
+procedure TFrUninstall.InitInstall;
+var
+  I: Integer;
+begin
+  inherited;
+  for I := 0 to TFileAssociations.Instance.Count - 1 do
+    TFileAssociations.Instance[I].State := TAS_IGNORE;
+
+  CurrentInstall.DestinationPath := IncludeTrailingBackslash(ExtractFileDir(GetInstalledFileName));
 end;
 
 procedure TFrUninstall.LoadLanguage;

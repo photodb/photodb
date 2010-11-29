@@ -2,9 +2,11 @@ unit uTranslate;
 
 interface
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
-  Classes, SysUtils, uLogger, uMemory, MSXML, OmniXML_MSXML, uConstants,
-  SyncObjs;
+  Windows, Classes, SysUtils, uLogger, uMemory, MSXML, OmniXML_MSXML, uConstants,
+  SyncObjs, Registry;
 
 type
   TTranslate = class(TObject)
@@ -88,11 +90,21 @@ implementation
 procedure LoadLanguageFromFile(var Language : TLanguage; LanguageCode : string);
 var
   LanguagePath : string;
+  Reg : TRegistry;
 begin
   if LanguageCode = '--' then
-    LanguageCode := 'RU';
+  begin
+    Reg := TRegistry.Create;
+    try
+      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.OpenKey(RegRoot, True);
+      LanguageCode := Reg.ReadString('Language');
+    finally
+      F(Reg);
+    end;
+  end;
 
-  LanguagePath := ExtractFileDir(ParamStr(0)) + Format('Languages\%s%s.xml', [LanguageFileMask, LanguageCode]);
+  LanguagePath := IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + Format('Languages\%s%s.xml', [LanguageFileMask, LanguageCode]);
   try
     Language := TLanguage.Create(LanguagePath);
   except

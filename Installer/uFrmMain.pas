@@ -91,7 +91,7 @@ begin
   hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
   if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin
-    TaskDialogEx(Handle, L('Install already in progress!'), L('Warning'), '', TD_BUTTON_OK, TD_ICON_ERROR, False);
+    TaskDialogEx(Handle, L('Program already started!'), L('Warning'), '', TD_BUTTON_OK, TD_ICON_ERROR, False);
     Application.Terminate;
     Exit;
   end;
@@ -123,15 +123,22 @@ begin
 end;
 
 procedure TFrmMain.LoadLanguage;
+{$IFDEF INSTALL}
 var
   S : string;
+{$ENDIF}
 begin
   BeginTranslate;
   try
+{$IFDEF INSTALL}
     S := L('PhotoDB 2.3 Setup');
     if IsApplicationInstalled then
       S := S + ' (' + L('Update') + ')';
     Caption := S;
+{$ENDIF}
+{$IFDEF UNINSTALL}
+    Caption := L('PhotoDB 2.3 Uninstall');
+{$ENDIF}
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
     BtnPrevious.Caption := L('Previous');

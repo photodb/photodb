@@ -12,7 +12,7 @@ uses  Language, Registry, UnitDBKernel, ShellApi, Windows,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
       UnitLinksSupport, EasyListView, ImageConverting,
-      uMemory, uDBPopupMenuInfo, CCR.Exif;
+      uMemory, uDBPopupMenuInfo, CCR.Exif, uAppUtils;
 
 const
   DBInDebug = True;
@@ -4182,10 +4182,10 @@ begin
   begin
     if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
     begin
-      if Fileexists(Dir + SearchRec.name) and Extinmask(Mask, Getext(Dir + SearchRec.name)) then
+      if Fileexists(Dir + SearchRec.name) and ExtinMask(Mask, Getext(Dir + SearchRec.name)) then
       begin
         try
-          Filesetattr(Dir + SearchRec.name, 0);
+          FileSetAttr(Dir + SearchRec.name, 0);
           Assignfile(F, Dir + SearchRec.name);
 {$I-}
           Erase(F);

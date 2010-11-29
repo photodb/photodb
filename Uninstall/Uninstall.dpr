@@ -27,7 +27,11 @@ uses
   uInstallThread in '..\Installer\uInstallThread.pas',
   uActions in '..\Installer\uActions.pas',
   uUninstallSteps in 'uUninstallSteps.pas',
-  uFrUninstall in 'uFrUninstall.pas' {FrUninstall: TFrame};
+  uFrUninstall in 'uFrUninstall.pas' {FrUninstall: TFrame},
+  uUninstallActions in 'uUninstallActions.pas',
+  uAssociationActions in '..\Installer\uAssociationActions.pas',
+  uUpdatingWindowsActions in '..\Installer\uUpdatingWindowsActions.pas',
+  uSelfDeleteAction in 'uSelfDeleteAction.pas';
 
 {$R *.res}
 

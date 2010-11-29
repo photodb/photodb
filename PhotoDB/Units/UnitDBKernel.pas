@@ -7,7 +7,8 @@ uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
   GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
-  uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils;
+  uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
+  uAppUtils;
 
 type
   TCharObject = class (TObject)
@@ -21,12 +22,12 @@ type
   end;
 
  const
-
   DB_VER_1_8 = 1;
   DB_VER_1_9 = 2;
   DB_VER_2_0 = 3;
   DB_VER_2_1 = 4;
   DB_VER_2_2 = 5;
+  DB_VER_2_3 = 6;
 
 DB_IC_SHELL          = 0;
 DB_IC_SLIDE_SHOW     = 1;

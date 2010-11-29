@@ -8,6 +8,7 @@ uses
   Windows,
   {$IFDEF PHOTODB}
   UnitDBCommon,
+  uAppUtils,
   {$ENDIF}
   Classes, uMemory,
   uVistaFuncs, VistaFileDialogs, Dialogs, ExtDlgs, acDlgSelect, SysUtils;

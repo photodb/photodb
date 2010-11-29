@@ -179,8 +179,6 @@ uses
   InsertImageToolUnit in 'ImageEditor\InsertImageToolUnit.pas',
   OptimizeImageUnit in 'ImageEditor\OptimizeImageUnit.pas',
   UnitResampleFilters in 'ImageEditor\effects\UnitResampleFilters.pas',
-  rxtypes in 'SelfDelete\rxtypes.pas',
-  SelfDeleteUnit in 'SelfDelete\SelfDeleteUnit.pas',
   uVistaFuncs in 'Units\uVistaFuncs.pas',
   dolphin_db in 'Units\dolphin_db.pas',
   UnitDBKernel in 'Units\UnitDBKernel.pas',
@@ -296,7 +294,8 @@ uses
   uInstallScope in '..\Installer\uInstallScope.pas',
   uDBBaseTypes in 'Units\uDBBaseTypes.pas',
   uDBUtils in 'Units\uDBUtils.pas',
-  uAssociations in '..\Installer\uAssociations.pas';
+  uAssociations in '..\Installer\uAssociations.pas',
+  uAppUtils in 'Units\uAppUtils.pas';
 
 {$R *.res}
 
@@ -453,7 +452,7 @@ begin
     begin
       F(AExplorerFolders);
       Application.CreateForm(TUnInstallForm, UnInstallForm);
-      Application.Restore;
+  Application.Restore;
       UnInstallForm.ShowModal;
       UnInstallForm.Release;
       UnInstallForm := nil;

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, pngimage, ExtCtrls, uFormUtils, uMemory, GraphicsBaseTypes,
-  uInstallUtils, uDBForm;
+  uInstallUtils, uDBForm, uInstallScope;
 
 type
   TFrmProgress = class(TDBForm)
@@ -74,15 +74,32 @@ begin
     FBackgroundImage.PixelFormat := pf32bit;
     FCurrentImage.Assign(FBackgroundImage);
     L := FCurrentImage.Width * Progress div 255;
-    for I := 0 to FCurrentImage.Height - 1 do
+
+    if not CurrentInstall.IsUninstall then
     begin
-      P := FCurrentImage.ScanLine[I];
-      for J := L to FCurrentImage.Width - 1 do
+      for I := 0 to FCurrentImage.Height - 1 do
       begin
-        C := (P[J].R * 77 + P[J].G * 151 + P[J].B * 28) shr 8;
-        P[J].R := C;
-        P[J].G := C;
-        P[J].B := C;
+        P := FCurrentImage.ScanLine[I];
+        for J := L to FCurrentImage.Width - 1 do
+        begin
+          C := (P[J].R * 77 + P[J].G * 151 + P[J].B * 28) shr 8;
+          P[J].R := C;
+          P[J].G := C;
+          P[J].B := C;
+        end;
+      end;
+    end else
+    begin
+      for I := 0 to FCurrentImage.Height - 1 do
+      begin
+        P := FCurrentImage.ScanLine[I];
+        for J := 0 to L - 1 do
+        begin
+          C := (P[J].R * 77 + P[J].G * 151 + P[J].B * 28) shr 8;
+          P[J].R := C;
+          P[J].G := C;
+          P[J].B := C;
+        end;
       end;
     end;
 

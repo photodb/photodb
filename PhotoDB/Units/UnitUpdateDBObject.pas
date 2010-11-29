@@ -4,7 +4,7 @@ interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
      Dolphin_DB, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
-     uFileUtils, uDBPopupMenuInfo, uConstants;
+     uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;

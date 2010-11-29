@@ -10,7 +10,7 @@ uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl,  ShlObj, ActiveX,
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
   TBuffer = array of Char;
-  TCorrectPathProc = procedure(Caller : TObject; Src: TStrings; Dest: string);
+//  TCorrectPathProc = procedure(Caller : TObject; Src: TStrings; Dest: string);
 
 function GetAppDataDirectory: string;
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
@@ -19,7 +19,6 @@ procedure UnFormatDir(var FileName : string);
 procedure FormatDir(var FileName : string);
 function GetFileDateTime(FileName: string): TDateTime;
 function GetFileNameWithoutExt(FileName: string): string;
-
 function GetDirectorySize(Folder: string): Int64;
 function GetFileSize(FileName: string): Int64;
 function GetFileSizeByName(FileName: string): Int64;
@@ -42,6 +41,7 @@ function SilentDeleteFile(Handle: HWnd; FileName: string; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
 function SilentDeleteFiles(Handle: HWnd; Names: TStrings; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
+procedure DeleteDirectoryWithFiles(DirectoryName: string);
 
 var
   CopyFilesSynchCount: Integer = 0;
@@ -715,6 +715,36 @@ begin
   F.PTo := Pchar(ToDir);
   F.FFlags := FOF_SILENT or FOF_NOCONFIRMATION;
   Result := ShFileOperation(F) = 0;
+end;
+
+procedure DeleteDirectoryWithFiles(DirectoryName: string);
+var
+  Found: Integer;
+  SearchRec: TSearchRec;
+begin
+  if Length(DirectoryName) < 4 then
+    Exit;
+
+  DirectoryName := IncludeTrailingBackslash(DirectoryName);
+  Found := FindFirst(DirectoryName + '*.*', FaAnyFile, SearchRec);
+  try
+    while Found = 0 do
+    begin
+      if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+      begin
+        if Fileexists(DirectoryName + SearchRec.Name) then
+          DeleteFile(DirectoryName + SearchRec.name);
+
+        if DirectoryExists(DirectoryName + SearchRec.name) then
+          DeleteDirectoryWithFiles(DirectoryName + SearchRec.name);
+      end;
+      Found := SysUtils.FindNext(SearchRec);
+    end;
+  finally
+    FindClose(SearchRec);
+  end;
+
+  RemoveDir(DirectoryName);
 end;
 
 end.

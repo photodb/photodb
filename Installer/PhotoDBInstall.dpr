@@ -1,8 +1,6 @@
 program PhotoDBInstall;
 
 uses
-  FastMM4 in '..\PhotoDB\External\FastMM\FastMM4.pas',
-  FastMM4Messages in '..\PhotoDB\External\FastMM\FastMM4Messages.pas',
   Forms,
   Windows,
   uFrmMain in 'uFrmMain.pas' {FrmMain},
@@ -40,7 +38,9 @@ uses
   uAssociations in 'uAssociations.pas',
   uInstallSteps in 'uInstallSteps.pas',
   uSteps in 'uSteps.pas',
-  uActions in 'uActions.pas';
+  uActions in 'uActions.pas',
+  uAssociationActions in 'uAssociationActions.pas',
+  uUpdatingWindowsActions in 'uUpdatingWindowsActions.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

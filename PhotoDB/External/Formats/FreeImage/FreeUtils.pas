@@ -56,12 +56,12 @@ uses StrUtils;
 
 function FIU_GetFIFType(filename: string): FREE_IMAGE_FORMAT;
 begin
-  Result:=FreeImage_GetFileType(PAnsiChar(filename),0);
+  Result:=FreeImage_GetFileType(PAnsiChar(AnsiString(filename)),0);
 end;
 
 function FIU_GetFIFDescription(fif: FREE_IMAGE_FORMAT): string;
 begin
-  Result := FreeImage_GetFIFDescription(fif)
+  Result := string(FreeImage_GetFIFDescription(fif))
 end;
 
 procedure FIU_GetAllDescriptions(var Descriptions: TStringList);
@@ -80,7 +80,7 @@ var
   C: Char;
 begin
   Result := '*.';
-  ExtList := FreeImage_GetFIFExtensionList(fif);
+  ExtList := string(FreeImage_GetFIFExtensionList(fif));
   for I := 1 to Length(ExtList) do
   begin
     C := ExtList[i];
@@ -107,7 +107,7 @@ begin
   Result := '';
   if fif <> FIF_UNKNOWN then
   begin
-    Text := Trim(FreeImage_GetFIFDescription(fif));
+    Text := Trim(string(FreeImage_GetFIFDescription(fif)));
     ExtList := FIU_GetFIFExtList(fif);
     Result := Text + '(' + ExtList + ')' + '|' + ExtList
   end

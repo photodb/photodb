@@ -2,6 +2,8 @@ unit uShellUtils;
 
 interface
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
   uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations,
@@ -19,6 +21,8 @@ function GetProgramFilesPath: string;
 function GetStartMenuPath: string;
 function GetDesktopPath: string;
 function GetAppDataPath: string;
+function GetTempDirectory: string;
+function GetTempFileName: TFileName;
 
 implementation
 
@@ -170,6 +174,7 @@ begin
     FReg.OpenKey(RegRoot, True);
     FReg.WriteString('ReleaseNumber', IntToStr(ReleaseNumber));
     FReg.WriteString('DataBase', Filename);
+    FReg.WriteString('Language', TTranslateManager.Instance.Language);
     FReg.WriteString('Folder', ExtractFileDir(Filename));
   except
     on E: Exception do
@@ -186,7 +191,7 @@ begin
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase', True);
-    FReg.WriteString('UninstallString', '"' + FileName + '"' + ' /uninstall');
+    FReg.WriteString('UninstallString', '"' + IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'UnInstall.exe"' + ' /uninstall');
     FReg.WriteString('DisplayName', 'Photo DataBase');
     FReg.WriteString('DisplayVersion', ProductVersion);
     FReg.WriteString('HelpLink', HomeURL);
@@ -422,6 +427,23 @@ end;
 function GetAppDataPath: string;
 begin
   Result := GetSystemPath(CSIDL_APPDATA);
+end;
+
+function GetTempDirectory: string;
+var
+  TempFolder: array[0..MAX_PATH] of Char;
+begin
+  GetTempPath(MAX_PATH, @tempFolder);
+  Result := StrPas(TempFolder);
+end;
+
+function GetTempFileName: TFileName;
+var
+  TempFileName: array [0..MAX_PATH-1] of char;
+begin
+  if Windows.GetTempFileName(PChar(GetTempDirectory), '~', 0, TempFileName) = 0 then
+    raise Exception.Create(SysErrorMessage(GetLastError));
+  Result := TempFileName;
 end;
 
 end.

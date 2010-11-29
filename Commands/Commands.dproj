@@ -1,8 +1,8 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
-			<ProjectGuid>{8287C0E9-64E3-4E66-AED8-4918B239A5B6}</ProjectGuid>
+			<ProjectGuid>{627EE0B9-754F-4B0A-BED8-22F9340905BC}</ProjectGuid>
 			<ProjectVersion>12.0</ProjectVersion>
-			<MainSource>Uninstall.dpr</MainSource>
+			<MainSource>Commands.dpr</MainSource>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 		</PropertyGroup>
@@ -20,11 +20,10 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_ExeOutput>..\PhotoDB\bin\</DCC_ExeOutput>
-			<DCC_Define>UNINSTALL;$(DCC_Define)</DCC_Define>
-			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_DependencyCheckOutputName>..\PhotoDB\bin\Uninstall.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>Commands.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_Platform>x86</DCC_Platform>
 		</PropertyGroup>
@@ -38,49 +37,11 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="Uninstall.dpr">
+			<DelphiCompile Include="Commands.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="..\Installer\uFrmMain.pas">
-				<Form>FrmMain</Form>
-			</DCCReference>
-			<DCCReference Include="..\Installer\uFrmProgress.pas">
-				<Form>FrmProgress</Form>
-			</DCCReference>
-			<DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Xml\MSXML2_TLB.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Xml\OmniXML_MSXML.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uLogger.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uFileUtils.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
-			<DCCReference Include="..\Installer\uInstallUtils.pas"/>
-			<DCCReference Include="..\Installer\uInstallTypes.pas"/>
-			<DCCReference Include="..\Installer\uInstallScope.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\UnitINI.pas"/>
-			<DCCReference Include="..\Installer\uShellUtils.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
-			<DCCReference Include="..\Installer\uAssociations.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uVistaFuncs.pas"/>
-			<DCCReference Include="..\Installer\uInstallFrame.pas">
-				<Form>InstallFrame</Form>
-				<DesignClass>TFrame</DesignClass>
-			</DCCReference>
-			<DCCReference Include="..\Installer\uSteps.pas"/>
-			<DCCReference Include="..\Installer\uInstallThread.pas"/>
-			<DCCReference Include="..\Installer\uActions.pas"/>
-			<DCCReference Include="uUninstallSteps.pas"/>
-			<DCCReference Include="uFrUninstall.pas">
-				<Form>FrUninstall</Form>
-				<DesignClass>TFrame</DesignClass>
-			</DCCReference>
-			<DCCReference Include="uUninstallActions.pas"/>
-			<DCCReference Include="..\Installer\uAssociationActions.pas"/>
-			<DCCReference Include="..\Installer\uUpdatingWindowsActions.pas"/>
-			<DCCReference Include="uSelfDeleteAction.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -100,12 +61,13 @@
 			<BorlandProject>
 				<Delphi.Personality>
 					<Source>
-						<Source Name="MainSource">Uninstall.dpr</Source>
+						<Source Name="MainSource">Commands.dpr</Source>
 					</Source>
 					<Parameters>
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+						<Parameters Name="RunParams">/delete &quot;C:\Users\Dolphin.HOME_NET\Desktop\1\1.txt&quot; /wait 100000 /pid 5932 /withdirectory</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>

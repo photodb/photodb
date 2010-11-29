@@ -23,10 +23,8 @@
   <scope name="Setup">
     <translate name="Friends" value="Друзья" />
     <translate name="Family" value="Семья" />
-  </scope>
-  <scope name="Setup">
     <translate name="Update" value="Обновление" />
-    <translate name="Install already in progress!" value="Установка уже запущена!" />
+    <translate name="Program already started!" value="Программа уже запущена!" />
     <translate name="Install" value="Установить" />
     <translate name="Next" value="Далее" />
     <translate name="Previous" value="Назад" />	
@@ -36,6 +34,8 @@
     <translate name="Select default associations" value="По умолчанию" />
     <translate name="Select all" value="Выбрать всё" />
     <translate name="Select none" value="Отменить всё" />
+    <translate name="PhotoDB 2.3 Uninstall" value="Удаление PhotoDB 2.3" />
+    <translate name="Yes, I want to uninstall this program" value="Да, я хочу удалить эту программу" />
   </scope>
   <scope name="JPEG">
     <translate name="JPEG compression" value="Компрессия JPEG" />

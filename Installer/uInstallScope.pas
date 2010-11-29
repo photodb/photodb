@@ -76,11 +76,13 @@ type
   private
     FFiles : TScopeFiles;
     FDestinationPath : string;
+    FIsUninstall: Boolean;
   public
     constructor Create; virtual;
     destructor Destroy; override;
     property DestinationPath : string read FDestinationPath write FDestinationPath;
     property Files : TScopeFiles read FFiles;
+    property IsUninstall : Boolean read FIsUninstall write FIsUninstall;
   end;
 
   TPhotoDBInstall_V23 = class(TInstall)
@@ -180,6 +182,7 @@ end;
 constructor TInstall.Create;
 begin
   FFiles := TScopeFiles.Create;
+  FIsUninstall := False;
 end;
 
 destructor TInstall.Destroy;
@@ -208,6 +211,7 @@ begin
   Files.Add(TFileObject.Create('Kernel.dll',       '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('Icons.dll',        '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',    '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('UnInstall.exe',    '%PROGRAM%', ''));
 
   {$IFDEF DBDEBUG}
   Files.Add(TFileObject.Create('FastMM_FullDebugMode.dll', '%PROGRAM%', ''));

@@ -3,7 +3,7 @@ unit UnitUnInstallThread;
 interface
 
 uses
-  ExplorerTypes, Forms, ShellApi, Dialogs, Registry, SelfDeleteUnit,
+  ExplorerTypes, Forms, ShellApi, Dialogs, Registry,
   Windows, SysUtils, Dolphin_DB, Classes, UnitGroupsWork,  uVistaFuncs,
   GraphicSelectEx, uConstants, uFileUtils;
 
@@ -295,7 +295,7 @@ begin
  end;
 
  try
-  SelfDel;
+  //SelfDel;
  except
  end;
  Synchronize(exit);

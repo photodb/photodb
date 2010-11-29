@@ -23,7 +23,7 @@
 			<DCC_ExeOutput>..\</DCC_ExeOutput>
 			<DCC_DcuOutput>..\PhotoDB\dcu\</DCC_DcuOutput>
 			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-			<DCC_Define>DBDEBUG;$(DCC_Define)</DCC_Define>
+			<DCC_Define>DBDEBUG,INSTALL;$(DCC_Define)</DCC_Define>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_DependencyCheckOutputName>..\PhotoDBInstall.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
@@ -42,8 +42,6 @@
 			<DelphiCompile Include="PhotoDBInstall.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="..\PhotoDB\External\FastMM\FastMM4.pas"/>
-			<DCCReference Include="..\PhotoDB\External\FastMM\FastMM4Messages.pas"/>
 			<DCCReference Include="uFrmMain.pas">
 				<Form>FrmMain</Form>
 			</DCCReference>
@@ -95,6 +93,8 @@
 			<DCCReference Include="uInstallSteps.pas"/>
 			<DCCReference Include="uSteps.pas"/>
 			<DCCReference Include="uActions.pas"/>
+			<DCCReference Include="uAssociationActions.pas"/>
+			<DCCReference Include="uUpdatingWindowsActions.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

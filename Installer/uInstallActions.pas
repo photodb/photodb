@@ -11,8 +11,6 @@ uses
 
 const
   InstallPoints_ShortCut = 500 * 1024;
-  InstallPoints_SystemInfo = 1024 * 1024;
-  InstallPoints_Association = 128 * 1024;
   InstallPoints_Registry = 128 * 1024;
   InstallPoints_RunProgram = 1024 * 1024;
 
@@ -45,21 +43,7 @@ type
     procedure Execute(Callback : TActionCallback); override;
   end;
 
-  TInstallAssociations = class(TInstallAction)
-  private
-    FCallback : TActionCallback;
-    procedure OnInstallAssociationCallBack(Current, Total : Integer; var Terminate : Boolean);
-  public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
-  end;
-
   TInstallShortcuts = class(TInstallAction)
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
-  end;
-
-  TInstallUpdatingWindows = class(TInstallAction)
     function CalculateTotalPoints : Int64; override;
     procedure Execute(Callback : TActionCallback); override;
   end;
@@ -177,41 +161,6 @@ begin
   end;
 end;
 
-{ TInstallUpdatingWindows }
-
-function TInstallUpdatingWindows.CalculateTotalPoints: Int64;
-begin
-  Result := InstallPoints_SystemInfo;
-end;
-
-procedure TInstallUpdatingWindows.Execute(Callback: TActionCallback);
-var
-  Terminate : Boolean;
-begin
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
-  SHChangeNotify(SHCNE_UPDATEIMAGE, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
-  Callback(Self, InstallPoints_SystemInfo, InstallPoints_SystemInfo, Terminate);
-end;
-
-{ TInstallExtensions }
-
-function TInstallAssociations.CalculateTotalPoints: Int64;
-begin
-  Result := TFileAssociations.Instance.Count * InstallPoints_Association;
-end;
-
-procedure TInstallAssociations.Execute(Callback: TActionCallback);
-begin
-  FCallback := Callback;
-  InstallGraphicFileAssociations(IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe', OnInstallAssociationCallBack);
-end;
-
-procedure TInstallAssociations.OnInstallAssociationCallBack(Current, Total: Integer;
-  var Terminate : Boolean);
-begin
-  FCallback(Self, InstallPoints_Association * Current, InstallPoints_Association * Total, Terminate);
-end;
-
 { TInstallRegistry }
 
 function TInstallRegistry.CalculateTotalPoints: Int64;
@@ -266,9 +215,7 @@ initialization
 
   TInstallManager.Instance.RegisterScope(TInstallFiles);
   TInstallManager.Instance.RegisterScope(TInstallRegistry);
-  TInstallManager.Instance.RegisterScope(TInstallAssociations);
   TInstallManager.Instance.RegisterScope(TInstallShortcuts);
-  TInstallManager.Instance.RegisterScope(TInstallUpdatingWindows);
   TInstallManager.Instance.RegisterScope(TInstallRunProgram);
 
 end.

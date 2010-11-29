@@ -8,8 +8,7 @@ uses Windows, Classes, Forms, Math, SysUtils, uScript, UnitScripts, Messages,
 function Hash_Cos_C(s:string):integer;
 function ActivateApplication(const Handle1: THandle): Boolean;
 procedure ExecuteScriptFile(FileName : String; UseDBFunctions : boolean = false);
-function GetParamStrDBValue(Param : string) : string;
-function GetParamStrDBBool(Param : string) : Boolean;
+
 procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
@@ -24,9 +23,6 @@ var
   SupportedExt : String = '|BMP|JFIF|JPG|JPE|JPEG|RLE|DIB|WIN|VST|VDA|TGA|ICB|TIFF|TIF|FAX|EPS|PCC|PCX|RPF|RLA|SGI|RGBA|RGB|BW|PSD|PDD|PPM|PGM|PBM|CEL|PIC|PCD|GIF|CUT|PSP|PNG|THM|';
 
 implementation
-
-var
-  ProgramParams : TStringList = nil;
 
 function StripHexPrefix(const HexStr: string): string;
 begin
@@ -231,38 +227,6 @@ begin
   Result := C;
 end;
 
-procedure CheckParams;
-var
-  I : Integer;
-begin
-  if ProgramParams = nil then
-  begin
-    ProgramParams := TStringList.Create;
-    for i := 1 to ParamCount do
-      ProgramParams.Add(AnsiUpperCase(ParamStr(i)));
-    ProgramParams.Add('');
-  end;
-end;
-
-function GetParamStrDBBool(Param : string) : Boolean;
-begin
-  CheckParams;
-  Result := ProgramParams.IndexOf(AnsiUpperCase(Param)) > -1;
-end;
-
-function GetParamStrDBValue(param : string) : string;
-var
-  Index : Integer;
-begin
-  Result := '';
-  if param = '' then
-    Exit;
-  CheckParams;
-  Index := ProgramParams.IndexOf(AnsiUpperCase(Param));
-  if Index > -1 then
-    Result := ProgramParams[Index + 1];
-end;
-
 procedure ExecuteScriptFile(FileName : String; UseDBFunctions : boolean = false);
 var
   AScript: TScript;
@@ -346,11 +310,5 @@ function ProgramDir : string;
 begin
   Result := ExtractFileDir(ParamStr(0)) + '\';
 end;
-
-initialization
-
-finalization
-
-  F(ProgramParams);
 
 end.

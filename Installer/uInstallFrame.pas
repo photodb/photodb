@@ -3,7 +3,7 @@ unit uInstallFrame;
 interface
 
 uses
-  Classes, Forms, uTranslate;
+  Classes, Forms, uTranslate, uAssociations;
 
 type
   TInstallFrame = class(TFrame)
@@ -43,7 +43,8 @@ end;
 
 procedure TInstallFrame.InitInstall;
 begin
- //
+  inherited;
+  //
 end;
 
 function TInstallFrame.L(TextToTranslate: string): string;

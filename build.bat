@@ -25,6 +25,12 @@ cd dcu
 del *.dcu
 cd ..
 
+cd ..
+cd Uninstall
+"%DCC32%" UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$W -$D+ -$I+ -$O+ -$Z1
+cd ..
+cd PhotoDB
+
 move photodb.cfg photodb.cfg.safe
 "%DCC32%" photodb -D"PHOTODB,LICENCE" -Ebin -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -RResources;"%DELPHI%\Lib" -$W -$D+ -$I+ -$O+ -$Z1
 move photodb.cfg.safe photodb.cfg 
@@ -52,7 +58,8 @@ cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
 "%BRCC32%" SETUP_ZIP.rc
-"%DCC32%" PhotoDBInstall -E".." -N0"\PhotoDB\dcu" -U"%DM%" -$W -$D+ -$I+ -$O+ -$Z1
-
+"%DCC32%" PhotoDBInstall -D"INSTALL" -E".." -N0"..\PhotoDB\dcu" -U"%DM%" -$W -$D+ -$I+ -$O+ -$Z1
+cd ..
+cd PhotoDB
 
 pause

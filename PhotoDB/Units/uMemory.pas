@@ -2,12 +2,18 @@ unit uMemory;
 
 interface
 
-uses SysUtils, Classes, Forms, OLE2;
+uses SysUtils, Classes
+{$IFDEF PHOTODB}
+, Forms, OLE2
+{$ENDIF}
+;
 
 //Free object instance with check
 procedure F(var Obj); inline;
 //Release object with check (TForm supported too)
+{$IFDEF PHOTODB}
 procedure R(var Intf);
+{$ENDIF}
 //Free list items and then free list object
 procedure FreeList(var obj);
 
@@ -19,6 +25,7 @@ begin
     FreeAndNil(Obj);
 end;
 
+{$IFDEF PHOTODB}
 procedure R(var Intf);
 var
   I : IUnknown;
@@ -36,6 +43,7 @@ begin
     I.Release;
   end;
 end;
+{$ENDIF}
 
 procedure FreeList(var obj);
 var
