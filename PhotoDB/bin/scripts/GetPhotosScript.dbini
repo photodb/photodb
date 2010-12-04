@@ -22,15 +22,15 @@
     for ($i=0;$i<$len;$i=SumInt($i,1)) {
       $Drive=GetStringItem($USB,$i);
       $c=SumInt($c,1);
-      $Caption=GetDriveName($Drive,"Съёмный диск");
+      $Caption=GetDriveName($Drive,"Removable drive");
       $RunScript=PathFormat($Command,$Drive);
       CreateItem($Caption,DB_IC_USB,$RunScript,false,0);
     };
     if ($c=0) {
-      CreateItemDef("No USB drives",DB_IC_DELETE_INFO,"",false,0,false);
+      CreateItemDef("No removable drives",DB_IC_DELETE_INFO,"",false,0,false);
     };
   }
-  <CD-ROM drives>[DB_IC_CD_ROM]
+  <CD,DVD drives>[DB_IC_CD_ROM]
   {
     <->[]{initialization: InVisible; }
     DeleteNoFirst;
@@ -46,12 +46,12 @@
       CreateItem($Caption,$IconN,$RunScript,false,0);
     };
     if ($c=0) {
-      CreateItemDef("No CD-ROM drives",DB_IC_DELETE_INFO,"",false,0,false);
+      CreateItemDef("No CD,DVD drives",DB_IC_DELETE_INFO,"",false,0,false);
     };
   }
   <Select location>[DB_IC_DIRECTORY]
   {
-    $dir=SelectDir("TEXT_MES_SEL_FOLDER_IMPORT_PHOTOS");
+    $dir=SelectDir("Select folder to import");
     $DirExists=DirectoryExists($dir);
     if ($DirExists=true) {GetPhotosFromFolder($dir);};
   }

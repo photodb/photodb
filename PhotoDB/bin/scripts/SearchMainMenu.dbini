@@ -4,11 +4,11 @@
   //все иконки необходимо создать ДО появления соответствующего меню (Выбор БД)
   $IconList=GetDBsIcons;
   //
-  <Load results>[DB_IC_LOADFROMFILE]
+  <Load results from file>[DB_IC_LOADFROMFILE]
   {
     LoadResults;
   }
-  <Save results>[DB_IC_SAVETOFILE]
+  <Save results to file>[DB_IC_SAVETOFILE]
   {
     SaveResults;
   }
@@ -36,7 +36,7 @@
  LoadExplorerValue;
  if ($explorer=true) 
  {
-  CreateItemDefChecked("Show explorer panel",-1,"HideExplorerPanel;",false,true,true,0);
+  CreateItemDefChecked("Hide explorer panel",-1,"HideExplorerPanel;",false,true,true,0);
  }; else 
  {
   CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"ShowExplorerPanel;",false,true,false,0);
@@ -44,15 +44,15 @@
 }
 <Tools>[0]
 {
-  <Show list of keywords>[DB_IC_SEARCH]
+  <List of keywords>[DB_IC_SEARCH]
   {
     GetListOfKeyWords;
   }
-  <Show DB tree>[DB_IC_TREE]
+  <Show DB Tree>[DB_IC_TREE]
   {   
     MakeDBFileTree;
   }
-  <Show updater window>[DB_IC_BOX]
+  <Show update window>[DB_IC_BOX]
   {
     ShowUpdateWindow;
   }
@@ -60,7 +60,7 @@
   {
     DoManager;
   }
-  <Image editro>[DB_IC_IMEDITOR]
+  <Image editror>[DB_IC_IMEDITOR]
   {  
     $form=NewImageEditor;
     ShowDBForm($form);
@@ -69,7 +69,7 @@
   {
     NewPanel;
   }
-  <New search window>[DB_IC_ADDTODB]
+  <New search>[DB_IC_ADDTODB]
   {
     NewSearch;
   }
@@ -90,7 +90,7 @@
   {
     DoCDExport;
   }  
-  <CD Mapping>[DB_IC_CD_MAPPING]
+  <CD mapping>[DB_IC_CD_MAPPING]
   {
     DoCDMapping;
   }

@@ -303,7 +303,7 @@ var
 
 implementation
 
-uses Language, UnitQuickGroupInfo, Searching, SlideShow, UnitHintCeator,
+uses UnitQuickGroupInfo, Searching, SlideShow, UnitHintCeator,
      UnitEditGroupsForm, UnitManageGroups, CmpUnit,
      UnitEditLinkForm, UnitHelp, ExplorerUnit, UnitNewGroupForm,
      UnitFormChangeGroup, SelectGroupForm, UnitGroupsTools;
@@ -1897,7 +1897,7 @@ end;
 procedure TPropertiesForm.LoadLanguage;
 begin
   Caption := L('Properties');
-  LabelComment.Caption := L('Comments') + ':';
+  LabelComment.Caption := L('Comment') + ':';
   LabelName1.Caption := L('Name') + ':';
   Label4.Caption := L('Full path') + ':';
   OwnerLabel.Caption := L('Owner') + ':';
@@ -1952,9 +1952,9 @@ begin
   Change1.Caption := L('Change');
   Delete1.Caption := L('Delete');
   BtnManageGroups.Caption := L('Manage');
-  BtnNewGroup.Caption := L('New group');
+  BtnNewGroup.Caption := L('Create group');
   LbAvaliableGroups.Caption := L('Avaliable groups') + ':';
-  LbCurrentGroups.Caption := L('Current groups') + ':';
+  LbCurrentGroups.Caption := L('Selected groups') + ':';
   Clear1.Caption := L('Clear');
   MenuItem1.Caption := L('Delete');
   CreateGroup1.Caption := L('Create group');
@@ -1968,10 +1968,10 @@ begin
 
   LbGroupsEditInfo.Caption := L('Use button "-->" to add new groups or button "<--" to remove them');
   Cancel1.Caption := L('Cancel');
-  AddImThProcessingImageAndAddOriginalToProcessingPhoto1.Caption := TEXT_MES_ADD_PROC_IMTH_AND_ADD_ORIG_TO_PROC_PHOTO;
-  AddImThLink1.Caption := TEXT_MES_ADD_PROC_IMTH;
-  AddOriginalImThAndAddProcessngToOriginalImTh1.Caption := TEXT_MES_ADD_ORIG_IMTH_AND_ADD_PROC_TO_ORIG_PHOTO;
-  AddOriginalImTh1.Caption := TEXT_MES_ADD_ORIG_IMTH;
+  AddImThProcessingImageAndAddOriginalToProcessingPhoto1.Caption := L('Connect this photo with processed (Add link to this photo to processed)');
+  AddImThLink1.Caption := L('Connect this photo with processed');
+  AddOriginalImThAndAddProcessngToOriginalImTh1.Caption := L('Connect this photo with original (Add link to this photo to original)');
+  AddOriginalImTh1.Caption := L('Connect this photo with original');
 end;
 
 procedure TPropertiesForm.PcMainChange(Sender: TObject);
@@ -2283,7 +2283,7 @@ begin
         UnFormatDir(DN);
         if (DN <> '') and not DirectoryExists(DN) then
         begin
-          MessageBoxDB(Handle, Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F, [DN]), TEXT_MES_WARNING, TD_BUTTON_OK,
+          MessageBoxDB(Handle, Format(L('Directory "%s" not found!'), [DN]), L('Warning'), TD_BUTTON_OK,
             TD_ICON_WARNING);
           Exit;
         end;
@@ -2380,7 +2380,7 @@ begin
       MenuInfo.IsPlusMenu := False;
       MenuInfo.IsListItem := False;
       MenuInfo.AttrExists := False;
-      IDMenu1.Caption := Format(TEXT_MES_DBITEM_FORMAT, [Inttostr(ID)]);
+      IDMenu1.Caption := Format(L('DB Item [%d]'), [ID]);
       TDBPopupMenu.Instance.AddDBContMenu(IDMenu1, MenuInfo);
       DoExit;
       Exit;
@@ -2393,10 +2393,12 @@ begin
       MenuInfo.IsPlusMenu := False;
       MenuInfo.IsListItem := False;
       MenuInfo.AttrExists := False;
+
       if MenuInfo.Count > 0 then
-        IDMenu1.Caption := Format(TEXT_MES_DBITEM_FORMAT, [Inttostr(MenuInfo[0].ID)])
+        IDMenu1.Caption := Format(L('DB Item [%d]'), [MenuInfo[0].ID])
       else
-        IDMenu1.Caption := Format(TEXT_MES_DBITEM_FORMAT, [Inttostr(0)]);
+        IDMenu1.Caption := Format(L('DB Item [%d]'), [0]);
+
       TDBPopupMenu.Instance.AddDBContMenu(IDMenu1, MenuInfo);
       DoExit;
       Exit;
@@ -2491,7 +2493,7 @@ begin
   UnFormatDir(DN);
   if (DN <> '') and not DirectoryExists(DN) then
   begin
-    MessageBoxDB(Handle, Format(TEXT_MES_DIRECTORY_NOT_EXISTS_F, [DN]), L('Warning'), TD_BUTTON_OK,
+    MessageBoxDB(Handle, Format(L('Directory "%s" not found!'), [DN]), L('Warning'), TD_BUTTON_OK,
       TD_ICON_WARNING);
     Exit;
   end;
@@ -2943,7 +2945,7 @@ begin
   if SelectGroup(ToGroup) then
   begin
     MoveGroup(FNowGroups[PopupMenuGroups.Tag], ToGroup);
-    MessageBoxDB(Handle, TEXT_MES_RELOAD_INFO, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+    MessageBoxDB(Handle, L('Reload info'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   end;
 end;
 
@@ -3020,11 +3022,11 @@ begin
   if Info.ItemImTh = '' then
     Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
   LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := TEXT_MES_PROCESSING;
+  LinkInfo.LinkName := L('Processing');
   LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
   B := True;
   for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    if FPropertyLinks[I].LinkName = L('Processing') then
     begin
       B := False;
       Break;
@@ -3049,11 +3051,11 @@ begin
   if Info.ItemImTh = '' then
     Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
   LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := TEXT_MES_ORIGINAL;
+  LinkInfo.LinkName := L('Original');
   LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
   B := True;
   for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    if FPropertyLinks[I].LinkName = L('Original') then
     begin
       B := False;
       Break;
@@ -3081,11 +3083,11 @@ begin
   if Info.ItemImTh = '' then
     Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
   LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := TEXT_MES_PROCESSING;
+  LinkInfo.LinkName := L('Processing');
   LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
   B := True;
   for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    if FPropertyLinks[I].LinkName = L('Processing') then
     begin
       B := False;
       Break;
@@ -3097,7 +3099,7 @@ begin
   end;
   SetLength(LinksInfo, 1);
   LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
-  LinksInfo[0].LinkName := TEXT_MES_ORIGINAL;
+  LinksInfo[0].LinkName := L('Original');
   // TODO:[0]
   LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
   ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.ItemLinks);
@@ -3124,11 +3126,11 @@ begin
   if Info.ItemImTh = '' then
     Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
   LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := TEXT_MES_ORIGINAL;
+  LinkInfo.LinkName := L('Original');
   LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
   B := True;
   for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = TEXT_MES_PROCESSING then
+    if FPropertyLinks[I].LinkName = L('Original') then
     begin
       B := False;
       Break;
@@ -3140,7 +3142,7 @@ begin
   end;
   SetLength(LinksInfo, 1);
   LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
-  LinksInfo[0].LinkName := TEXT_MES_PROCESSING;
+  LinksInfo[0].LinkName := L('Processing');
   // TODO:[0]
   LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
   ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.ItemLinks);

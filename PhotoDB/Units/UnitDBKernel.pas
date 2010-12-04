@@ -8,7 +8,7 @@ uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
-  uAppUtils;
+  uAppUtils, uTranslate;
 
 type
   TCharObject = class (TObject)
@@ -293,7 +293,7 @@ function chartoint(ch : char):Integer;
 
 implementation
 
-uses Dolphin_db, Language, UnitCrypting, CommonDBSupport,
+uses Dolphin_db, UnitCrypting, CommonDBSupport,
   UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
   UnitBackUpTableInCMD, UnitCDMappingSupport;
 
@@ -909,17 +909,19 @@ end;
 
 function TDBKernel.GetDataBaseName: string;
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=0 to FDBs.Count-1 do
- if AnsiLowerCase(FDBs[i].FileName)=AnsiLowerCase(DBName) then
- begin
-  Result:=FDBs[i].Name;
- end;
+  for I := 0 to FDBs.Count - 1 do
+    if AnsiLowerCase(FDBs[I].FileName) = AnsiLowerCase(DBName) then
+    begin
+      Result := FDBs[I].name;
+    end;
 
- //? if Result='' then Result:=Dolphin_DB.GetFileNameWithoutExt(DBName);
+  if Result = '' then
+    Result := GetFileNameWithoutExt(DBName);
 
- if Result='' then Result:=TEXT_MES_UNKNOWN_DB;
+  if Result = '' then
+    Result := TA('Unknown DB', 'System');
 end;
 
 procedure TDBKernel.SetDataBase(DBname_: string);
@@ -1504,36 +1506,46 @@ end;
 
 function TDBKernel.DeleteDB(DBName: string): boolean;
 var
-  Reg : TBDRegistry;
+  Reg: TBDRegistry;
 begin
- Result:=false;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.DeleteKey(RegRoot+'dbs\'+DBName);
- except
-  on e : Exception do EventLog(':TDBKernel::DeleteDB() throw exception: '+e.Message);
- end;
- Reg.Free;
- LoadDBs;
+  Result := False;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.DeleteKey(RegRoot + 'dbs\' + DBName);
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::DeleteDB() throw exception: ' + E.message);
+  end;
+  Reg.Free;
+  LoadDBs;
 end;
 
 function TDBKernel.StringDBVersion(DBVersion: integer): string;
 begin
- Result:=TEXT_MES_UNKNOWN_DB_VERSION;
- Case DBVersion of
-  DB_VER_1_8 : Result:='Paradox DB v1.8';
-  DB_VER_1_9 : Result:='Paradox DB v1.9';
-  DB_VER_2_0 : Result:='Paradox DB v2.0';
-  DB_VER_2_1 : Result:='Access DB v2.1';
-  DB_VER_2_2 : Result:='Access DB v2.2';
- end;
+  Result := TA('Unknown DB', 'System');
+  case DBVersion of
+    DB_VER_1_8:
+      Result := 'Paradox DB v1.8';
+    DB_VER_1_9:
+      Result := 'Paradox DB v1.9';
+    DB_VER_2_0:
+      Result := 'Paradox DB v2.0';
+    DB_VER_2_1:
+      Result := 'PhotoDB v2.1';
+    DB_VER_2_2:
+      Result := 'PhotoDB v2.2';
+    DB_VER_2_3:
+      Result := 'PhotoDB v2.3';
+  end;
 end;
 
 function TDBKernel.ValidDBVersion(DBFile: string;
   DBVersion: integer): boolean;
 begin
- if CommonDBSupport.GetDBType(DBFile)=DB_TYPE_MDB then
- Result:=DBVersion>DB_VER_2_1 else Result:=DBVersion>DB_VER_1_9;
+  if CommonDBSupport.GetDBType(DBFile) = DB_TYPE_MDB then
+    Result := DBVersion > DB_VER_2_1
+  else
+    Result := DBVersion > DB_VER_1_9;
 end;
 
 procedure TDBKernel.InitIconDll;
@@ -1541,26 +1553,25 @@ begin
   IconDllInstance := LoadLibrary(PWideChar(ProgramDir + 'Icons.dll'));
   if IconDllInstance = 0 then
   begin
-   EventLog('icons IS missing -> exit');
-//   MessageBoxDB(GetActiveFormHandle, TEXT_MES_ERROR_ICONS_DLL, TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
-   Halt;
+    EventLog('Icons IS missing -> exit');
+    MessageBoxDB(GetActiveFormHandle, TA('Icons.dll is missing!'), TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
   end;
 end;
 
 procedure TDBKernel.FreeIconDll;
 begin
- if IconDllInstance<>0 then
- FreeLibrary(IconDllInstance);
+  if IconDllInstance <> 0 then
+    FreeLibrary(IconDllInstance);
 end;
 
 procedure TDBKernel.ReadDBOptions;
 begin
- fImageOptions:=CommonDBSupport.GetImageSettingsFromTable(DBName);
- DBJpegCompressionQuality := fImageOptions.DBJpegCompressionQuality;
- ThSize := fImageOptions.ThSize+2;
- ThSizePanelPreview := fImageOptions.ThSizePanelPreview;
- ThImageSize := fImageOptions.ThSize;
- ThHintSize := fImageOptions.ThHintSize;
+  FImageOptions := CommonDBSupport.GetImageSettingsFromTable(DBName);
+  DBJpegCompressionQuality := FImageOptions.DBJpegCompressionQuality;
+  ThSize := FImageOptions.ThSize + 2;
+  ThSizePanelPreview := FImageOptions.ThSizePanelPreview;
+  ThImageSize := FImageOptions.ThSize;
+  ThHintSize := FImageOptions.ThHintSize;
 end;
 
 procedure TDBKernel.DoSelectDB;
@@ -1568,28 +1579,27 @@ var
   ParamDBFile : string;
   i : integer;
 begin
- ParamDBFile:=GetParamStrDBValue('/SelectDB');
- if ParamDBFile='' then
- begin
-  dbname:=GetDataBase;
- end else
- begin
-  for i:=0 to DBs.Count-1 do
+  ParamDBFile := GetParamStrDBValue('/SelectDB');
+  if ParamDBFile = '' then
   begin
-   if DBs[i].Name=ParamDBFile then
-   begin
-    DBName:=DBs[i].FileName;
+    Dbname := GetDataBase;
+  end else
+  begin
+    for I := 0 to DBs.Count - 1 do
+    begin
+      if DBs[I].name = ParamDBFile then
+      begin
+        DBName := DBs[I].FileName;
+        if GetParamStrDBBool('/SelectDBPermanent') then
+          DBKernel.SetDataBase(DBName);
+        Exit;
+      end
+    end;
+    DBName := SysUtils.AnsiDequotedStr(ParamDBFile, '"');
     if GetParamStrDBBool('/SelectDBPermanent') then
-    DBKernel.SetDataBase(DBName);
-    exit;
-   end
+      DBKernel.SetDataBase(DBName);
   end;
-  DBName:=SysUtils.AnsiDequotedStr(ParamDBFile,'"');
-  if GetParamStrDBBool('/SelectDBPermanent') then
-  DBKernel.SetDataBase(DBName);
- end;
 end;
-
 
 function SplitString(str : String; SplitChar : char) : TArStrings;
 var

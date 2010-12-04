@@ -18,7 +18,7 @@ uses
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, pngimage, uResources, uMemory,
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
-  uFormListView, uDBPopupMenuInfo, uPNGUtils;
+  uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate;
 
 type
   TDateRange = record
@@ -230,7 +230,6 @@ type
     procedure FormDeactivate(Sender: TObject);
     procedure initialization_;
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
-    procedure NewPanel1Click(Sender: TObject);
     procedure SaveResults1Click(Sender: TObject);
     procedure LoadResults1Click(Sender: TObject);
     procedure Help1Click(Sender: TObject);
@@ -315,7 +314,6 @@ type
     procedure Image4_Click(Sender: TObject);
     procedure Decremect1Click(Sender: TObject);
     procedure Increment1Click(Sender: TObject);
-    procedure GetPhotosClick(Sender: TObject);
     procedure ComboBox1DropDown(Sender: TObject);
     procedure InsertSpesialQueryPopupMenuItemClick(Sender: TObject);
     procedure DeleteSelected;
@@ -325,24 +323,12 @@ type
     procedure Timenotexists1Click(Sender: TObject);
     procedure TimeExists1Click(Sender: TObject);
     procedure Timenotsets1Click(Sender: TObject);
-    procedure Help4Click(Sender: TObject);
-    procedure Activation2Click(Sender: TObject);
-    procedure About2Click(Sender: TObject);
-    procedure HomePage2Click(Sender: TObject);
-    procedure ContactWithAuthor2Click(Sender: TObject);
-    procedure GetUpdates2Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure ShowExplorerPage1Click(Sender: TObject);
     procedure DoShowSelectInfo;
     procedure SelectTimerTimer(Sender: TObject);
-    procedure GetListofKeyWords1Click(Sender: TObject);
-    procedure RemovableDrives1Click(Sender: TObject);
-    procedure CDROMDrives1Click(Sender: TObject);
-    procedure SpecialLocation1Click(Sender: TObject);
-    procedure GetPhotosFromDrive2Click(Sender: TObject);
     procedure IsTimePanelDblClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
-    procedure DBTreeView1Click(Sender: TObject);
     procedure View2Click(Sender: TObject);
     procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
@@ -514,12 +500,10 @@ var
 implementation
 
 uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
-     PropertyForm, ReplaceForm, CleaningForm, Options, UnitLoadFilesToPanel,
-     UnitHintCeator, UnitImHint, DBSelectUnit, UnitFormCont,
-     uAbout, uActivation, ExplorerUnit, UnitUpdateDB,
+     PropertyForm, Options, UnitLoadFilesToPanel,
+     UnitHintCeator, UnitImHint, ExplorerUnit, UnitUpdateDB,
      UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm , UnitQuickGroupInfo,
-     UnitGroupReplace, UnitSavingTableForm, UnitInternetUpdate, UnitHelp,
-     ImEditor, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
+     UnitGroupReplace, UnitSavingTableForm, UnitHelp,
      UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
      UnitOpenQueryThread;
 
@@ -706,7 +690,12 @@ begin
   TW.I.Start('S -> ReadScriptFile');
   MainMenuScript := ReadScriptFile('scripts\SearchMainMenu.dbini');
   TW.I.Start('S -> LoadMenuFromScript');
-  LoadMenuFromScript(ScriptMainMenu.Items,DBkernel.ImageList,MainMenuScript,aScript,ScriptExecuted,FExtImagesInImageList,true);
+  TTranslateManager.Instance.BeginTranslate;
+  try
+    LoadMenuFromScript(ScriptMainMenu.Items,DBkernel.ImageList,MainMenuScript,aScript,ScriptExecuted,FExtImagesInImageList,true);
+  finally
+    TTranslateManager.Instance.EndTranslate;
+  end;
   Menu := ScriptMainMenu;
 
   ScriptListPopupMenu.Images := DBKernel.ImageList;
@@ -812,7 +801,12 @@ begin
     Info:=GetCurrentPopUpMenuInfo(Item);
     if not (getTickCount-WindowsMenuTickCount>WindowsMenuTime)  then
     begin
-      TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
+      TTranslateManager.Instance.BeginTranslate;
+      try
+        TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
+      finally
+        TTranslateManager.Instance.EndTranslate;
+      end;
     end else
     begin
       FileNames := TStringList.Create;
@@ -842,7 +836,12 @@ begin
     end;
     SetBoolAttr(aScript,'$OneFileExists', FilesCount > 0);
     S := ListMenuScript;
-    LoadMenuFromScript(ScriptListPopupMenu.Items, DBkernel.ImageList, S, aScript, ScriptExecuted, FExtImagesInImageList, True);
+    TTranslateManager.Instance.BeginTranslate;
+    try
+      LoadMenuFromScript(ScriptListPopupMenu.Items, DBkernel.ImageList, S, aScript, ScriptExecuted, FExtImagesInImageList, True);
+    finally
+      TTranslateManager.Instance.EndTranslate;
+    end;
     ScriptListPopupMenu.Popup(ElvMain.ClientToScreen(MousePos).x, ElvMain.ClientToScreen(MousePos).y);
   end;
 end;
@@ -1857,11 +1856,6 @@ begin
   Hinttimer.Enabled := False;
 end;
 
-procedure TSearchForm.NewPanel1Click(Sender: TObject);
-begin
-  ManagerPanels.NewPanel.Show;
-end;
-
 procedure TSearchForm.SaveResults1Click(Sender: TObject);
 var
   N, I : integer;
@@ -2518,8 +2512,8 @@ begin
     SortbyName1.Caption := L('Sort by Name');
     SortbyDate1.Caption := L('Sort by Date');
     SortbyRating1.Caption := L('Sort by Rating');
-    SortbyFileSize1.Caption := L('Sort by Filesize');
-    SortbySize1.Caption := L('Sort by Image Size');
+    SortbyFileSize1.Caption := L('Sort by file size');
+    SortbySize1.Caption := L('Sort by image size');
 
     SortbyCompare1.Caption := L('Sort by compare result');
 
@@ -2968,14 +2962,6 @@ begin
   SortingClick(Sender);
 end;
 
-procedure TSearchForm.GetPhotosClick(Sender: TObject);
-var
-  Item : TMenuItem;
-begin
- Item:=(Sender as TMenuItem);
- GetPhotosFromDrive(Char(Item.Tag));
-end;
-
 procedure TSearchForm.ComboBox1DropDown(Sender: TObject);
 var
   I: Integer;
@@ -3118,36 +3104,6 @@ procedure TSearchForm.Timenotsets1Click(Sender: TObject);
 begin
   PanelValueIsTimeSets.Visible:=True;
   Memo1Change(Sender);
-end;
-
-procedure TSearchForm.Help4Click(Sender: TObject);
-begin
-  DoHelp;
-end;
-
-procedure TSearchForm.Activation2Click(Sender: TObject);
-begin
-  ShowActivationDialog;
-end;
-
-procedure TSearchForm.About2Click(Sender: TObject);
-begin
-  ShowAbout;
-end;
-
-procedure TSearchForm.HomePage2Click(Sender: TObject);
-begin
-  DoHomePage;
-end;
-
-procedure TSearchForm.ContactWithAuthor2Click(Sender: TObject);
-begin
-  DoHomeContactWithAuthor;
-end;
-
-procedure TSearchForm.GetUpdates2Click(Sender: TObject);
-begin
-  TInternetUpdate.Create(false,true);
 end;
 
 procedure TSearchForm.Exit1Click(Sender: TObject);
@@ -3360,135 +3316,9 @@ begin
   FLastSelectionCount := GetSelectionCount;
 end;
 
-procedure TSearchForm.GetListofKeyWords1Click(Sender: TObject);
-begin
-  GetListOfKeyWords;
-end;
-
 function TSearchForm.GetListView: TEasyListview;
 begin
   Result := ElvMain;
-end;
-
-procedure TSearchForm.RemovableDrives1Click(Sender: TObject);
-var
-  I: Integer;
-  NewItem: TMenuItem;
-  DS: TDriveState;
-  S: string;
-  Item: TMenuItem;
-begin
-  Item := Sender as TMenuItem;
-  for I := 1 to Item.Count - 1 do
-    Item.Delete(1);
-  for I := Ord('C') to Ord('Z') do
-    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_REMOVABLE) then
-    begin
-      NewItem := TMenuItem.Create(Item);
-      DS := DriveState(AnsiChar(Chr(I)));
-      if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-      begin
-        S := GetCDVolumeLabel(Chr(I));
-        if S <> '' then
-          NewItem.Caption := S + ' (' + Chr(I) + ':)'
-        else
-          NewItem.Caption := L('Removable drive') + ' (' + Chr(I) + ':)';
-      end
-      else
-        NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
-      NewItem.ImageIndex := DB_IC_USB;
-      NewItem.OnClick := GetPhotosClick;
-      NewItem.Tag := I;
-      Item.Add(NewItem);
-    end;
-  if Item.Count = 1 then
-  begin
-    NewItem := TMenuItem.Create(Item);
-    NewItem.Caption := L('No USB drive');
-    NewItem.ImageIndex := DB_IC_DELETE_INFO;
-    NewItem.Tag := -1;
-    NewItem.Enabled := False;
-    Item.Add(NewItem);
-  end;
-end;
-
-procedure TSearchForm.CDROMDrives1Click(Sender: TObject);
-var
-  I: Integer;
-  NewItem: TMenuItem;
-  DS: TDriveState;
-  S: string;
-  Item: TMenuItem;
-  C: Integer;
-begin
-  Item := Sender as TMenuItem;
-  for I := 1 to Item.Count - 1 do
-    Item.Delete(1);
-  C := -1;
-  for I := Ord('C') to Ord('Z') do
-    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
-    begin
-      NewItem := TMenuItem.Create(Item);
-      DS := DriveState(AnsiChar(Chr(I)));
-      Inc(C);
-      if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-      begin
-        S := GetCDVolumeLabel(Chr(I));
-        if S <> '' then
-          NewItem.Caption := S + ' (' + Chr(I) + ':)'
-        else
-          NewItem.Caption := L('CD-ROM drive') + ' (' + Chr(I) + ':)';
-      end
-      else
-        NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
-      NewItem.ImageIndex := IconsCount + C;
-      NewItem.OnClick := GetPhotosClick;
-      NewItem.Tag := I;
-      Item.Add(NewItem);
-    end;
-  if Item.Count = 1 then
-  begin
-    NewItem := TMenuItem.Create(Item);
-    NewItem.Caption := L('No CD-ROM drive');
-    NewItem.ImageIndex := DB_IC_DELETE_INFO;
-    NewItem.Tag := -1;
-    NewItem.Enabled := False;
-    Item.Add(NewItem);
-  end;
-end;
-
-procedure TSearchForm.SpecialLocation1Click(Sender: TObject);
-var
-  Dir : string;
-begin
-  Dir:=UnitDBFileDialogs.DBSelectDir(Handle, TEXT_MES_SEL_FOLDER_IMPORT_PHOTOS, Dolphin_DB.UseSimpleSelectFolderDialog);
-  if DirectoryExists(dir) then
-  begin
-    FormatDir(Dir);
-    GetPhotosFromFolder(Dir)
-  end;
-end;
-
-procedure TSearchForm.GetPhotosFromDrive2Click(Sender: TObject);
-var
-  I: Integer;
-  Icon: TIcon;
-  OldMode: Cardinal;
-begin
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  for I := 1 to FExtImagesInImageList do
-    DBKernel.ImageList.Delete(IconsCount);
-  FExtImagesInImageList := 0;
-  for I := Ord('C') to Ord('Z') do
-    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
-    begin
-      Icon := TIcon.Create;
-      Icon.Handle := ExtractAssociatedIcon_(Chr(I) + ':\');
-      DBKernel.ImageList.AddIcon(Icon);
-      Icon.Free;
-      Inc(FExtImagesInImageList);
-    end;
-  SetErrorMode(OldMode);
 end;
 
 procedure TSearchForm.IsTimePanelDblClick(Sender: TObject);
@@ -3501,11 +3331,6 @@ end;
 procedure TSearchForm.PopupMenu1Popup(Sender: TObject);
 begin
   DoSearchNow1.Visible:=not FUpdatingDB;
-end;
-
-procedure TSearchForm.DBTreeView1Click(Sender: TObject);
-begin
-  MakeDBFileTree(dbname);
 end;
 
 procedure TSearchForm.View2Click(Sender: TObject);
@@ -3915,7 +3740,7 @@ end;
 
 procedure TSearchForm.ComboBoxSearchGroupsSelect(Sender: TObject);
 begin
-  if WlStartStop.Text <> TEXT_MES_STOP then
+  if WlStartStop.Text <> L('Stop') then
     DoSearchNow(nil);
 end;
 
@@ -3952,7 +3777,7 @@ begin
     try
       GroupName := FSearchInfo[I].GroupName;
       if (GroupName = '') then
-        GroupName := TEXT_MES_ALL_GROUPS;
+        GroupName := L('All groups');
 
       GroupIndex := ComboBoxSearchGroups.Items.IndexOf(GroupName);
       if SearchGroupsImageList.GetBitmap(GroupIndex, GroupImage) then

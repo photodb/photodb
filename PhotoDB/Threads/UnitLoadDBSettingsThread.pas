@@ -3,7 +3,8 @@ unit UnitLoadDBSettingsThread;
 interface
 
 uses
-  Windows, Classes, DB, Dolphin_DB, CommonDBSupport, ActiveX, UnitDBThread, uTime;
+  Windows, Classes, DB, Dolphin_DB, CommonDBSupport, ActiveX, UnitDBThread,
+  SysUtils, uTime, uLogger;
 
 type
   TLoadDBSettingsThread = class(TDBThread)
@@ -21,7 +22,12 @@ procedure TLoadDBSettingsThread.Execute;
 begin     
   CoInitialize(nil);
   try
-    DBKernel.ReadDBOptions;
+    try
+      DBKernel.ReadDBOptions;
+    except
+      on e : Exception do
+        EventLog(e.Message);
+    end;
   finally
     CoUninitialize;
   end;

@@ -4,11 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Dolphin_DB, StdCtrls, ComCtrls, Language, UnitGroupsWork,
-  ImgList, UnitDBkernel, UnitDBCommonGraphics;
+  Dialogs, Dolphin_DB, StdCtrls, ComCtrls, UnitGroupsWork,
+  ImgList, UnitDBkernel, UnitDBCommonGraphics, uDBForm, uMemory;
 
 type
-  TFormSelectGroup = class(TForm)
+  TFormSelectGroup = class(TDBForm)
     LbInfo: TLabel;
     CbeGroupList: TComboBoxEx;
     BtOk: TButton;
@@ -20,6 +20,8 @@ type
     procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
     ShowResult: Boolean;
@@ -40,8 +42,11 @@ var
   FormSelectGroup: TFormSelectGroup;
 begin
   Application.CreateForm(TFormSelectGroup, FormSelectGroup);
-  Result:=FormSelectGroup.Execute(Group);
-  FormSelectGroup.Release;
+  try
+    Result := FormSelectGroup.Execute(Group);
+  finally
+    R(FormSelectGroup);
+  end;
 end;
 
 procedure TFormSelectGroup.FormCreate(Sender: TObject);
@@ -54,10 +59,15 @@ end;
 
 procedure TFormSelectGroup.LoadLanguage;
 begin
-  Caption := TEXT_MES_SELECT_GROUP;
-  LbInfo.Caption := TEXT_MES_SELECT_GROUP_TEXT + ':';
-  BtCancel.Caption := TEXT_MES_CANCEL;
-  BtOk.Caption := TEXT_MES_OK;
+  BeginTranslate;
+  try
+    Caption := L('Select group');
+    LbInfo.Caption := L('Select, please, nesessary group') + ':';
+    BtCancel.Caption := L('Cancel');
+    BtOk.Caption := L('Ok');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormSelectGroup.BtCancelClick(Sender: TObject);
@@ -87,6 +97,11 @@ begin
   FreeGroups(Groups);
 end;
 
+function TFormSelectGroup.GetFormID: string;
+begin
+  Result := 'SelectGroup';
+end;
+
 procedure FillGroupsToImageList(ImageList : TImageList; Groups : TGroups; BackgroundColor : TColor);
 var
   I : Integer;
@@ -114,13 +129,13 @@ begin
             B.Assign(Groups[I].GroupImage);
             DoResize(16, 16, B, SmallB);
           finally
-            B.Free;
+            F(B);
           end;
         end;
       end;
       ImageList.Add(SmallB, nil);
     finally
-      SmallB.Free;
+      F(SmallB);
     end;
   end;
 end;

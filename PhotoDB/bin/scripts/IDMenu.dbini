@@ -1,7 +1,7 @@
 <#>[]{scripts\dbe.dbini}
 <#>[]{scripts\Actions.dbini}
 
-<Найти файл вручную>[DB_IC_SEARCH]
+<Find file manually>[DB_IC_SEARCH]
 {
 initialization:
   $Visible=true;
@@ -65,7 +65,7 @@ initialization:
   
   $sID=REGISTER_SCRIPT;
   $script="$file=GetOpenFileName(""Result.dbact"",""DB Action Files (*.dbact)|*.dbact"");ApplyActionsToSelected("""+$sID+""",$file);";
-  CreateItem("Выбрать",DB_IC_APPLY_ACTION,$script,false,0);
+  CreateItem("Select",DB_IC_APPLY_ACTION,$script,false,0);
   CreateItem("-",DB_IC_APPLY_ACTION,"",false,0);
 
   $DBProgramDir=GetProgramFolder;
@@ -89,45 +89,6 @@ initialization:
 //$file=GetOpenFileName("Result.dbact","DB Action Files (*.dbact)|*.dbact");
 //$sID=REGISTER_SCRIPT;
 //ApplyActionsToSelected($sID,$file);
-}
-
-<Сохранить фотоссылки>[DB_IC_SHELL]
-{
-initialization:
- $Visible=true;
- $skd=ShiftKeyDown;
- if ($skd=false) {InVisible;};
-  if ($IsFile=false) {InVisible;};
-run:
-  $file=GetSaveFileName("Result.txt","Text Files (*.txt)|*.txt");
-  if ($file<>"") 
-  {
-   $fe=FileExists($file);
-   if ($fe=true) {DeleteFile($file);};
-   $progress=GetProgressWindow("Происходит сохранение данных в файл - пожалуйста подождите!");
-   ShowDBForm($progress);
-   CreateFile($file);
-   for($i=0;$i<$MenuLength;$i=%$i+1)
-   {
-    $percent=%100*$i/$MenuLength;
-    SetProgressWindowProgress($progress,$percent);
-    LoadVariablesNo($i);
-    $f=ExtractFileName($FileName);
-    $int=Pos(" ",$f);
-    $int=%$int-1;
-    if ($int>0)
-    {
-     $str=StrCopy($f,1,$int);
-     $no=StrToInt($str);
-     if ($no>0) 
-     {
-      $str="http://www.photosight.ru/photo.php?photoid="+$str;
-      WriteLnToFile($file,$str);
-     };
-    };
-   };
-   CloseDBForm($progress);
-  };
 }
 
 <Shell>[DB_IC_SHELL]
@@ -208,6 +169,7 @@ initialization:
 run:
   RefreshThumItemPopUpMenu;
 }
+
 <Rotate>[DB_IC_ROTETED_0]{
 initialization:
   if ($IsRecord=false) {InVisible;};
@@ -242,6 +204,7 @@ initialization:
      };
    };
 }
+
 <Private>[DB_IC_PRIVATE]
 { 
  initialization:
@@ -276,6 +239,7 @@ run:
  run:
   DateItemPopUpMenu;
 }
+
 <Groups>[DB_IC_GROUPS]
 { 
  initialization:

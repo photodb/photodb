@@ -12,7 +12,6 @@ uses
 type
   TDBForm = class(TForm)
   private
-    FIsTranslating: Boolean;
   protected
     function GetFormID : string; virtual; abstract;
   public
@@ -30,12 +29,10 @@ implementation
 procedure TDBForm.BeginTranslate;
 begin
   TTranslateManager.Instance.BeginTranslate;
-  FIsTranslating := True;
 end;
 
 constructor TDBForm.Create(AOwner: TComponent);
 begin
-  FIsTranslating := False;
   inherited;
   {$IFDEF PHOTODB}
   DBKernel.RegisterForm(Self);
@@ -52,16 +49,12 @@ end;
 
 procedure TDBForm.EndTranslate;
 begin
-  FIsTranslating := False;
   TTranslateManager.Instance.EndTranslate;
 end;
 
-function TDBForm.L(StringToTranslate: string): string;
+function TDBForm.L(StringToTranslate : string) : string;
 begin
-  if FIsTranslating then
-    Result := TTranslateManager.Instance.Translate(StringToTranslate, GetFormID)
-  else
-    Result := TTranslateManager.Instance.TA(StringToTranslate, GetFormID);
+  Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, GetFormID)
 end;
 
 end.

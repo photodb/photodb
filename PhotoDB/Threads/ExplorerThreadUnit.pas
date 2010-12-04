@@ -614,7 +614,6 @@ begin
           ShowInfo('');
           SynchronizeEx(DoStopSearch);
         finally
-          FQuery.Close;
           FreeDS(FQuery);
         end;
       finally

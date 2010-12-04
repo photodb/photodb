@@ -15,8 +15,7 @@ const
  DB_TABLE_UNKNOWN  = 0;
  DB_TABLE_GROUPS   = 1;
  DB_TABLE_IMAGES   = 2;
- DB_TABLE_LOGIN    = 3;
- DB_TABLE_SETTINGS = 4;
+ DB_TABLE_SETTINGS = 3;
 
 type
   TADODBConnection = class(TObject)
@@ -141,8 +140,8 @@ function GetBoolParam(Query : TDataSet; index : integer) : boolean;
 procedure LoadParamFromStream(Query : TDataSet; index : integer; Stream : TStream; FT : TFieldType);
 procedure SetDateParam(Query : TDataSet; Name : string; Date : TDateTime);
 procedure SetBoolParam(Query : TDataSet; index : integer; Bool : Boolean);
-procedure SetStrParam(Query : TDataSet; index : integer; Str : String);
-procedure SetIntParam(Query : TDataSet; index : integer; int : integer);
+procedure SetStrParam(Query : TDataSet; index : integer; Value : String);
+procedure SetIntParam(Query : TDataSet; index : integer; Value : integer);
 function QueryParamsCount(Query : TDataSet) : integer;
 
 function GetQueryText(Query : TDataSet) : string;
@@ -194,180 +193,192 @@ begin
   Result := S;
 end;
 
-function GetDefDBName : string;
+function GetDefDBName: string;
 begin
- if GetDBType(dbname)=DB_TYPE_MDB then Result:='ImageTable';
+  if GetDBType(Dbname) = DB_TYPE_MDB then
+    Result := 'ImageTable';
 end;
 
-function GetBlobStream(F : TField; Mode : TBlobStreamMode) : TStream;
+function GetBlobStream(F: TField; Mode: TBlobStreamMode): TStream;
 begin
- Result:=nil;
- if (F is TBlobField) and (F.DataSet is TADOQuery) then Result:=TADOBlobStream.Create(TBlobField(F),Mode);
- if (F is TBlobField) and (F.DataSet is TADODataSet) then Result:=TADOBlobStream.Create(TBlobField(F),Mode);
+  Result := nil;
+  if (F is TBlobField) and (F.DataSet is TADOQuery) then
+    Result := TADOBlobStream.Create(TBlobField(F), Mode);
+  if (F is TBlobField) and (F.DataSet is TADODataSet) then
+    Result := TADOBlobStream.Create(TBlobField(F), Mode);
 end;
 
-procedure AssignParams(S, D : TDataSet);
+procedure AssignParams(S, D: TDataSet);
 begin
- if (S is TADOQuery) then (D as TADOQuery).Parameters.Assign((S as TADOQuery).Parameters);
+  if (S is TADOQuery) then
+    (D as TADOQuery).Parameters.Assign((S as TADOQuery).Parameters);
 end;
 
-function GetQueryText(Query : TDataSet) : string;
+function GetQueryText(Query: TDataSet): string;
 begin
- Result:='';
- if (Query is TADOQuery) then Result:=(Query as TADOQuery).SQL.Text;
+  Result := '';
+  if (Query is TADOQuery) then
+    Result := (Query as TADOQuery).SQL.Text;
 end;
 
-function QueryParamsCount(Query : TDataSet) : integer;
+function QueryParamsCount(Query: TDataSet): Integer;
 begin
- Result:=0;
- if (Query is TADOQuery) then Result:=(Query as TADOQuery).Parameters.Count;
+  Result := 0;
+  if (Query is TADOQuery) then
+    Result := (Query as TADOQuery).Parameters.Count;
 end;
 
-procedure LoadParamFromStream(Query : TDataSet; index : integer; Stream : TStream; FT : TFieldType);
+procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; FT: TFieldType);
 begin
- Stream.Seek(0,soFromBeginning);
- if (Query is TADOQuery) then
-   (Query as TADOQuery).Parameters[index].LoadFromStream(Stream,FT);
+  Stream.Seek(0, SoFromBeginning);
+  if (Query is TADOQuery) then
+    (Query as TADOQuery).Parameters[index].LoadFromStream(Stream, FT);
 end;
 
 procedure AssignParam(Query : TDataSet; index : integer; Value : TPersistent);
 begin
- if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Assign(Value);
+  if (Query is TADOQuery) then
+    (Query as TADOQuery).Parameters[index].Assign(Value);
 end;
 
-function GetBoolParam(Query : TDataSet; index : integer) : boolean;
+function GetBoolParam(Query: TDataSet; index: Integer): Boolean;
 begin
- Result:=false;
- if (Query is TADOQuery) then Result:=(Query as TADOQuery).Parameters[index].Value;
+  Result := False;
+  if (Query is TADOQuery) then
+    Result := (Query as TADOQuery).Parameters[index].Value;
 end;
 
-procedure SetBoolParam(Query : TDataSet; index : integer; Bool : Boolean);
+procedure SetBoolParam(Query: TDataSet; index: Integer; Bool: Boolean);
 begin
- if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=Bool;
+  if (Query is TADOQuery) then
+    (Query as TADOQuery).Parameters[index].Value := Bool;
 end;
 
 procedure SetDateParam(Query : TDataSet; Name : string; Date : TDateTime);
 begin
- if (Query is TADOQuery) then (Query as TADOQuery).Parameters.FindParam(Name).Value:=Date;
+  if (Query is TADOQuery) then
+    (Query as TADOQuery).Parameters.FindParam(name).Value := Date;
 end;
 
-procedure SetIntParam(Query : TDataSet; index : integer; int : integer);
+procedure SetIntParam(Query : TDataSet; Index : integer; Value : integer);
 begin
- if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=int;
+  if (Query is TADOQuery) then
+    (Query as TADOQuery).Parameters[Index].Value := Value;
 end;
 
-procedure SetStrParam(Query : TDataSet; index : integer; Str : String);
+procedure SetStrParam(Query : TDataSet; Index : integer; Value : String);
 begin
- if (Query is TADOQuery) then (Query as TADOQuery).Parameters[index].Value:=Str;
+  if (Query is TADOQuery) then
+    (Query as TADOQuery).Parameters[Index].Value := Value;
 end;
 
-function GetDBType : integer;
+function GetDBType: Integer;
 begin
- Result:=DB_TYPE_UNKNOWN;
- if AnsiLowerCase(ExtractFileExt(dbname))='.mdb' then Result:=DB_TYPE_MDB;
- if AnsiLowerCase(ExtractFileExt(dbname))='.photodb' then Result:=DB_TYPE_MDB;
+  Result := DB_TYPE_MDB;
 end;
 
-function GetDBType(dbname : string) : integer;
+function GetDBType(DbName: string): Integer;
 begin
- Result:=DB_TYPE_UNKNOWN;
- if AnsiLowerCase(ExtractFileExt(dbname))='.mdb' then Result:=DB_TYPE_MDB;
- if AnsiLowerCase(ExtractFileExt(dbname))='.photodb' then Result:=DB_TYPE_MDB;
+  Result := DB_TYPE_MDB;
 end;
 
-function GetConnectionString : String;
+function GetConnectionString: string;
 begin
- Result:=Format(DBFConnectionString,[dbname]);
+  Result := Format(DBFConnectionString, [Dbname]);
 end;
 
-function GetConnectionString(dbname : String) : String;
+function GetConnectionString(Dbname: string): string;
 begin
- Result:=Format(DBFConnectionString,[dbname]);
+  Result := Format(DBFConnectionString, [Dbname]);
 end;
 
-procedure ExecSQL(SQL : TDataSet);
+procedure ExecSQL(SQL: TDataSet);
 begin
- if (SQL is TADOQuery) then (SQL as TADOQuery).ExecSQL;
+  if (SQL is TADOQuery) then
+    (SQL as TADOQuery).ExecSQL;
 end;
 
 procedure SetSQL(SQL : TDataSet; SQLText : String);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=1 to 20 do
- begin
-  try
-   if (SQL is TADOQuery) then
-   begin
-    SQLText := StringReplace(SQLText, '$DB$', GetDefDBName, [rfReplaceAll, rfIgnoreCase]);
-    (SQL as TADOQuery).SQL.Text:=SQLText;
-    (SQL as TADOQuery).Parameters.ParseSQL((SQL as TADOQuery).SQL.Text, true);
-   end;
-   Break;
-  except
-   on e : Exception do
-   begin
-    EventLog(':SetSQL() throw exception: '+e.Message);
-    Sleep(50);
-   end;
+  for I := 1 to 20 do
+  begin
+    try
+      if (SQL is TADOQuery) then
+      begin
+        SQLText := StringReplace(SQLText, '$DB$', GetDefDBName, [RfReplaceAll, RfIgnoreCase]);
+        (SQL as TADOQuery).SQL.Text := SQLText;
+        (SQL as TADOQuery).Parameters.ParseSQL((SQL as TADOQuery).SQL.Text, True);
+      end;
+      Break;
+    except
+      on E: Exception do
+      begin
+        EventLog(':SetSQL() throw exception: ' + E.message);
+        Sleep(50);
+      end;
+    end;
   end;
- end;
 end;
 
 function ActiveSQL(SQL : TDataSet; Active : boolean) : boolean;
 begin
- try
-  if (SQL is TADOQuery) then (SQL as TADOQuery).Active:=Active;
- except
-  on e : Exception do
-  begin
-   EventLog(':ActiveSQL() throw exception: '+e.Message);
-   Result:=false;
-   exit;
+  try
+    if (SQL is TADOQuery) then
+      (SQL as TADOQuery).Active := Active;
+  except
+    on E: Exception do
+    begin
+      EventLog(':ActiveSQL() throw exception: ' + E.message);
+      Result := False;
+      Exit;
+    end;
   end;
- end;
- Result:=SQL<>nil;
+  Result := SQL <> nil;
 end;
 
 function ActiveTable(Table : TDataSet; Active : boolean) : boolean;
 begin
- try
- if (Table is TADODataSet) then (Table as TADODataSet).Active:=Active;
- except
-  on e : Exception do
-  begin
-   EventLog(':ActiveTable() throw exception: '+e.Message);
-   Result:=false;
-   exit;
+  try
+    if (Table is TADODataSet) then
+      (Table as TADODataSet).Active := Active;
+  except
+    on E: Exception do
+    begin
+      EventLog(':ActiveTable() throw exception: ' + E.message);
+      Result := False;
+      Exit;
+    end;
   end;
- end;
- Result:=Table<>nil;
+  Result := Table <> nil;
 end;
 
-function GetQuery(IsolateThread : Boolean = False) : TDataSet;
+function GetQuery(IsolateThread: Boolean = False): TDataSet;
 begin
- Result:=GetQuery(dbname, GetDBType, IsolateThread);
+  Result := GetQuery(Dbname, GetDBType, IsolateThread);
 end;
 
-function GetTableNameByFileName(FileName : string) : string;
+function GetTableNameByFileName(FileName: string): string;
 begin
- if GetDBType(FileName)=DB_TYPE_MDB then
- Result:='ImageTable' else
- Result:='"'+FileName+'"';
+  Result := '';
+  if GetDBType(FileName) = DB_TYPE_MDB then
+    Result := 'ImageTable';
+
 end;
 
-Procedure AssingQuery(var QueryS, QueryD : TDataSet);
+procedure AssingQuery(var QueryS, QueryD : TDataSet);
 begin
- if (QueryS is TADOQuery) then
- begin
-  SetSQL(QueryD,(QueryS as TADOQuery).SQL.Text);
-  (QueryS as TADOQuery).Parameters.Assign((QueryD as TADOQuery).Parameters);
- end;
+  if (QueryS is TADOQuery) then
+  begin
+    SetSQL(QueryD, (QueryS as TADOQuery).SQL.Text);
+    (QueryS as TADOQuery).Parameters.Assign((QueryD as TADOQuery).Parameters);
+  end;
 end;
 
-function GetQuery(TableName : string; IsolateThread : Boolean = False) : TDataSet;
+function GetQuery(TableName: string; IsolateThread: Boolean = False): TDataSet;
 begin
- Result:=GetQuery(TableName, GetDBType(TableName), IsolateThread);
+  Result := GetQuery(TableName, GetDBType(TableName), IsolateThread);
 end;
 
 function GetQuery(TableName : string; TableType : integer; IsolateThread : Boolean = False) : TDataSet;
@@ -407,8 +418,6 @@ begin
         (Result as TADODataSet).CommandText := 'Groups';
       if TableID = DB_TABLE_IMAGES then
         (Result as TADODataSet).CommandText := 'ImageTable';
-      if TableID = DB_TABLE_LOGIN then
-        (Result as TADODataSet).CommandText := 'Login';
       if TableID = DB_TABLE_SETTINGS then
         (Result as TADODataSet).CommandText := 'DBSettings';
     end;
@@ -419,77 +428,74 @@ end;
 
 function GetRecordsCount(Table : string) : integer;
 var
-  FTable : TDataSet;
+  FTable: TDataSet;
 begin
- Result:=0;
- if (GetDBType(Table)=DB_TYPE_MDB) then
- begin
-  FTable:=GetQuery(Table);            //ONLY MDB
-  SetSQL(FTable,'Select count(*) as RecordsCount from ImageTable');
-  FTable.Open;
-  Result:=FTable.FieldByName('RecordsCount').AsInteger;
-  FreeDS(FTable);
- end;
+  Result := 0;
+  if (GetDBType(Table) = DB_TYPE_MDB) then
+  begin
+    FTable := GetQuery(Table); // ONLY MDB
+    try
+      SetSQL(FTable, 'SELECT COUNT(*) AS RecordsCount FROM ImageTable');
+      FTable.Open;
+      Result := FTable.FieldByName('RecordsCount').AsInteger;
+    finally
+      FreeDS(FTable);
+    end;
+  end;
 end;
 
 function ADOCreateGroupsTable(TableName : string) : boolean;
 var
-  SQL : string;
-  fQuery : TDataSet;
+  SQL: string;
+  FQuery: TDataSet;
 begin
- Result:=true;
- fQuery:=GetQuery(TableName);
- SQL:= 'CREATE TABLE Groups ( '+
-       'ID Autoincrement , '+
-       'GroupCode Memo , ' +
-       'GroupName Memo , ' +
-       'GroupComment Memo , '+
-       'GroupDate Date , ' +
-       'Groupfaces Memo , ' +
-       'GroupAccess INTEGER , ' +
-       'GroupImage LONGBINARY, ' +
-       'GroupKW Memo , ' +
-       'RelatedGroups Memo , ' +
-       'IncludeInQuickList Logical , ' +
-       'GroupAddKW Logical)';
- SetSQL(fQuery,SQL);
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':ADOCreateGroupsTable() throw exception: '+e.Message);
-   Result:=false;
+  Result := True;
+  FQuery := GetQuery(TableName);
+  try
+    SQL := 'CREATE TABLE Groups ( ' + 'ID Autoincrement , ' + 'GroupCode Memo , ' + 'GroupName Memo , ' +
+      'GroupComment Memo , ' + 'GroupDate Date , ' + 'Groupfaces Memo , ' + 'GroupAccess INTEGER , ' +
+      'GroupImage LONGBINARY, ' + 'GroupKW Memo , ' + 'RelatedGroups Memo , ' + 'IncludeInQuickList Logical , ' +
+      'GroupAddKW Logical)';
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':ADOCreateGroupsTable() throw exception: ' + E.message);
+        Result := False;
+      end;
+    end;
+  finally
+    FreeDS(FQuery);
   end;
- end;
- FreeDS(FQuery);
 end;
 
 function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : boolean;
 var
-  SQL : string;
-  fQuery : TDataSet;
+  SQL: string;
+  FQuery: TDataSet;
 begin
- Result:=true;
- fQuery:=GetQuery(TableName);
-
- SQL:= 'Update DBSettings Set Version='+IntToStr(Settings.Version)+
-       ', DBJpegCompressionQuality = '+IntToStr(Settings.DBJpegCompressionQuality)+
-       ', ThSizePanelPreview = '+IntToStr(Settings.ThSizePanelPreview)+','+
-        'ThImageSize = '+IntToStr(Settings.ThSize)+
-        ', ThHintSize = '+IntToStr(Settings.ThHintSize)+
-        ', DBName = "'+Settings.Name+'"'+
-        ', DBDescription = "'+Settings.Description+'"';
- SetSQL(fQuery,SQL);
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':UpdateImageSettings() throw exception: '+e.Message);
-   Result:=false;
+  Result := True;
+  FQuery := GetQuery(TableName);
+  try
+    SQL := 'Update DBSettings Set Version=' + IntToStr(Settings.Version) + ', DBJpegCompressionQuality = ' + IntToStr
+      (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = ' + IntToStr(Settings.ThSizePanelPreview)
+      + ',' + 'ThImageSize = ' + IntToStr(Settings.ThSize) + ', ThHintSize = ' + IntToStr(Settings.ThHintSize)
+      + ', DBName = "' + Settings.name + '"' + ', DBDescription = "' + Settings.Description + '"';
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':UpdateImageSettings() throw exception: ' + E.message);
+        Result := False;
+      end;
+    end;
+  finally
+    FreeDS(FQuery);
   end;
- end;
 end;
 
 {
@@ -510,158 +516,152 @@ var
         ThImageSize : integer = 150;
         ThHintSize : integer = 300;
 }
-function GetDefaultImageDBOptions : TImageDBOptions;
+function GetDefaultImageDBOptions: TImageDBOptions;
 begin
- Result.DBJpegCompressionQuality:=75;
- Result.ThSize  := 150;
- Result.ThSizePanelPreview := 75;
- Result.ThHintSize := 300;
+  Result.DBJpegCompressionQuality := 75;
+  Result.ThSize := 150;
+  Result.ThSizePanelPreview := 75;
+  Result.ThHintSize := 300;
 end;
 
 function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
 var
-  SQL : string;
-  fQuery : TDataSet;
+  SQL: string;
+  FQuery: TDataSet;
 begin
- Result:=GetDefaultImageDBOptions;
- fQuery:=GetQuery(TableName, True);
- SQL:= 'Select * from DBSettings';
- try
-  SetSQL(fQuery,SQL);
-  ActiveSQL(fQuery,true);
-  if fQuery.Active then
-  begin
-   Result.DBJpegCompressionQuality:=fQuery.FieldByName('DBJpegCompressionQuality').AsInteger;
-   Result.ThSize:=fQuery.FieldByName('ThImageSize').AsInteger;
-   Result.ThSizePanelPreview:=fQuery.FieldByName('ThSizePanelPreview').AsInteger;
-   Result.ThHintSize:=fQuery.FieldByName('ThHintSize').AsInteger;
-   Result.Name:=fQuery.FieldByName('DBName').AsString;
-   Result.Description:=fQuery.FieldByName('DBDescription').AsString;
+  Result := GetDefaultImageDBOptions;
+  FQuery := GetQuery(TableName, True);
+  try
+    SQL := 'SELECT * FROM DBSettings';
+    try
+      SetSQL(FQuery, SQL);
+      ActiveSQL(FQuery, True);
+      if FQuery.Active then
+      begin
+        Result.DBJpegCompressionQuality := FQuery.FieldByName('DBJpegCompressionQuality').AsInteger;
+        Result.ThSize := FQuery.FieldByName('ThImageSize').AsInteger;
+        Result.ThSizePanelPreview := FQuery.FieldByName('ThSizePanelPreview').AsInteger;
+        Result.ThHintSize := FQuery.FieldByName('ThHintSize').AsInteger;
+        Result.name := FQuery.FieldByName('DBName').AsString;
+        Result.Description := FQuery.FieldByName('DBDescription').AsString;
+      end;
+    except
+      on E: Exception do
+      begin
+        EventLog(':GetImageSettingsFromTable() throw exception: ' + E.message);
+        try
+          ADOCreateSettingsTable(TableName);
+          UpdateImageSettings(TableName, Result);
+        except
+          on E: Exception do
+            EventLog(':GetImageSettingsFromTable()/Restore throw exception: ' + E.message);
+        end;
+      end;
+    end;
+  finally
+    FreeDS(FQuery);
   end;
- except
-  on e : Exception do
-  begin
-   EventLog(':GetImageSettingsFromTable() throw exception: '+e.Message);
-   try
-    ADOCreateSettingsTable(TableName);
-    UpdateImageSettings(TableName,Result);
-   except
-    on e : Exception do EventLog(':GetImageSettingsFromTable()/Restore throw exception: '+e.Message);
-   end;
-  end;
- end;
- FreeDS(fQuery);
 end;
 
 function ADOCreateSettingsTable(TableName : string) : boolean;
 var
-  SQL : string;
-  fQuery : TDataSet;
+  SQL: string;
+  FQuery: TDataSet;
 begin
- Result:=true;
- fQuery:=GetQuery(TableName);
+  Result := True;
+  FQuery := GetQuery(TableName);
+  try
+    {
+            DBJpegCompressionQuality = 75;
+            ThSize = 152;
+            ThSizeExplorerPreview = 100;
+            ThSizePropertyPreview = 100;
+            ThSizePanelPreview = 75;
+            ThImageSize = 150;
+            ThHintSize = 300;
+    }
+    SQL := 'DROP TABLE DBSettings';
 
-{
-        DBJpegCompressionQuality = 75;
-        ThSize = 152;
-        ThSizeExplorerPreview = 100;
-        ThSizePropertyPreview = 100;
-        ThSizePanelPreview = 75;
-        ThImageSize = 150;
-        ThHintSize = 300;
-}
- SQL:= 'DROP TABLE DBSettings';
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+        EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
+    end;
 
- SetSQL(fQuery,SQL);
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':ADOCreateSettingsTable() throw exception: '+e.Message);
+    SQL := 'CREATE TABLE DBSettings ( ' + 'Version INTEGER , ' + 'DBName Character(255) , ' +
+      'DBDescription Character(255) , ' + 'DBJpegCompressionQuality INTEGER , ' + 'ThSizePanelPreview INTEGER , ' +
+      'ThImageSize INTEGER , ' + 'ThHintSize INTEGER)';
+
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
+        Result := False;
+      end;
+    end;
+
+    { SQL:= 'Insert (Version, DBJpegCompressionQuality, ThSizePanelPreview,'+
+      'ThImageSize, ThHintSize) Into DBSettings Values (:Version,'+
+      ':DBJpegCompressionQuality,:ThSizePanelPreview,:ThImageSize,:ThHintSize)'; }
+
+    SQL := 'Insert Into DBSettings  (Version, DBJpegCompressionQuality, ThSizePanelPreview,' +
+      'ThImageSize, ThHintSize, DBName, DBDescription) Values (1,75,75,150,300,"","")';
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
+        Result := False;
+      end;
+    end;
+
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
+        Result := False;
+      end;
+    end;
+  finally
+    FreeDS(FQuery);
   end;
- end;
-
- SQL:= 'CREATE TABLE DBSettings ( '+
-       'Version INTEGER , '+
-       'DBName Character(255) , '+
-       'DBDescription Character(255) , '+
-       'DBJpegCompressionQuality INTEGER , ' +
-       'ThSizePanelPreview INTEGER , ' +
-       'ThImageSize INTEGER , ' +
-       'ThHintSize INTEGER)';
-
- SetSQL(fQuery,SQL);
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':ADOCreateSettingsTable() throw exception: '+e.Message);
-   Result:=false;
-  end;
- end;
-
-{ SQL:= 'Insert (Version, DBJpegCompressionQuality, ThSizePanelPreview,'+
-        'ThImageSize, ThHintSize) Into DBSettings Values (:Version,'+
-        ':DBJpegCompressionQuality,:ThSizePanelPreview,:ThImageSize,:ThHintSize)';  }
-
- SQL:= 'Insert Into DBSettings  (Version, DBJpegCompressionQuality, ThSizePanelPreview,'+
-        'ThImageSize, ThHintSize, DBName, DBDescription) Values (1,75,75,150,300,"","")';
- SetSQL(fQuery,SQL);
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':ADOCreateSettingsTable() throw exception: '+e.Message);
-   Result:=false;
-  end;
- end;
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':ADOCreateSettingsTable() throw exception: '+e.Message);
-   Result:=false;
-  end;
- end;
- FreeDS(FQuery);
 end;
 
 function BDECreateGroupsTable(TableName : string) : boolean;
 var
-  SQL : string;
-  fQuery : TDataSet;
+  SQL: string;
+  FQuery: TDataSet;
 begin
- FQuery:=GetQuery(TableName,DB_TABLE_GROUPS);
- SQL:= 'CREATE TABLE "'+GroupsTableFileNameW(TableName)+'" ( '+
-       'ID AUTOINC , '+
-       'GroupCode BLOB(240,1) , ' +
-       'GroupName BLOB(240,1) , ' +
-       'GroupComment BLOB(240,1) , '+
-       'GroupDate Date , ' +
-       'Groupfaces BLOB(240,1) , ' +
-       'GroupAccess INTEGER , ' +
-       'GroupImage BLOB(1,2), ' +
-       'GroupKW BLOB(240,1) , ' +
-       'RelatedGroups BLOB(240,1) , ' +
-       'IncludeInQuickList BOOLEAN , ' +
-       'GroupAddKW BOOLEAN)';
- SetSQL(FQuery,SQL);
- try
-  ExecSQL(FQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':BDECreateGroupsTable() throw exception: '+e.Message);
-   Result:=False;
-   exit;
+  FQuery := GetQuery(TableName, DB_TABLE_GROUPS);
+  try
+    SQL := 'CREATE TABLE "' + GroupsTableFileNameW(TableName) + '" ( ' + 'ID AUTOINC , ' + 'GroupCode BLOB(240,1) , ' +
+      'GroupName BLOB(240,1) , ' + 'GroupComment BLOB(240,1) , ' + 'GroupDate Date , ' + 'Groupfaces BLOB(240,1) , ' +
+      'GroupAccess INTEGER , ' + 'GroupImage BLOB(1,2), ' + 'GroupKW BLOB(240,1) , ' + 'RelatedGroups BLOB(240,1) , ' +
+      'IncludeInQuickList BOOLEAN , ' + 'GroupAddKW BOOLEAN)';
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':BDECreateGroupsTable() throw exception: ' + E.message);
+        Result := False;
+        Exit;
+      end;
+    end;
+    Result := True;
+  finally
+    FreeDS(FQuery);
   end;
- end;
- Result:=True;
- FreeDS(FQuery);
 end;
 
 procedure CreateMSAccessDatabase(FileName: string);
@@ -679,6 +679,7 @@ const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'D
     Res := CoCreateInstance(G, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, Res);
     Result:=Res = S_OK;
   end;
+
 begin
   for I := 0 to 2 do
     if CheckClass(Engines[i]) then
@@ -692,98 +693,82 @@ end;
 
 function ADOCreateImageTable(TableName : string) : boolean;
 var
-  SQL : string;
-  fQuery : TDataSet;
+  SQL: string;
+  FQuery: TDataSet;
 begin
- Result:=false;
- try
-  CreateMSAccessDatabase(TableName);
- except
-  on e : Exception do EventLog(':ADOCreateImageTable() throw exception: '+e.Message);
- end;
- fQuery:=GetQuery(TableName,GetDBType(TableName));
- SQL:= 'CREATE TABLE ImageTable ('+
-       'ID Autoincrement,'+
-       'Name Character(255),'+
-       'FFileName Memo,'+
-       'Comment Memo,'+
-       'IsDate Logical,'+
-       'DateToAdd Date ,'+
-       'Owner  Character(255),'+
-       'Rating INTEGER ,'+
-       'Thum  LONGBINARY,'+
-       'FileSize INTEGER ,'+
-       'KeyWords Memo,'+
-       'Groups Memo,'+
-       'StrTh  Memo,'+  //Character fault when special characters
-       'StrThCrc INTEGER , '+
-       'Attr INTEGER,'+
-       'Collection  Character(255),'+
-       'Access INTEGER ,'+
-       'Width INTEGER ,'+
-       'Height INTEGER ,'+
-       'Colors INTEGER ,'+
-       'Include Logical,'+
-       'Links Memo,'+
-       'aTime TIME,'+
-       'IsTime Logical,'+
-       'FolderCRC INTEGER,'+
-       'Rotated INTEGER )';
- SetSQL(fQuery,SQL);
- try
-  ExecSQL(fQuery);
- except
-  on e : Exception do
-  begin
-   EventLog(':ADOCreateImageTable() throw exception: '+e.Message);
-   FreeDS(fQuery);
-   exit;
+  Result := False;
+  try
+    CreateMSAccessDatabase(TableName);
+  except
+    on E: Exception do
+      EventLog(':ADOCreateImageTable() throw exception: ' + E.message);
   end;
- end;
- Result:=true;
- FreeDS(fQuery);
+  FQuery := GetQuery(TableName, GetDBType(TableName));
+  try
+    SQL := 'CREATE TABLE ImageTable (' + 'ID Autoincrement,' + 'Name Character(255),' + 'FFileName Memo,' +
+      'Comment Memo,' + 'IsDate Logical,' + 'DateToAdd Date ,' + 'Owner  Character(255),' + 'Rating INTEGER ,' +
+      'Thum  LONGBINARY,' + 'FileSize INTEGER ,' + 'KeyWords Memo,' + 'Groups Memo,' + 'StrTh  Memo,' +
+    // Character fault when special characters
+      'StrThCrc INTEGER , ' + 'Attr INTEGER,' + 'Collection  Character(255),' + 'Access INTEGER ,' + 'Width INTEGER ,' +
+      'Height INTEGER ,' + 'Colors INTEGER ,' + 'Include Logical,' + 'Links Memo,' + 'aTime TIME,' + 'IsTime Logical,' +
+      'FolderCRC INTEGER,' + 'Rotated INTEGER )';
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':ADOCreateImageTable() throw exception: ' + E.message);
+        FreeDS(FQuery);
+        Exit;
+      end;
+    end;
+    Result := True;
+  finally
+    FreeDS(FQuery);
+  end;
 
- fQuery:=GetQuery(TableName,GetDBType(TableName));
- try
-  SQL:='CREATE INDEX aID ON ImageTable(ID)';
-  SetSQL(fQuery,SQL);
-  ExecSQL(fQuery);
-  //DROP INDEX <Index name>;
-  SQL:='CREATE INDEX aFolderCRC ON ImageTable(FolderCRC)';
-  SetSQL(fQuery,SQL);
-  ExecSQL(fQuery);
+  FQuery := GetQuery(TableName, GetDBType(TableName));
+  try
+    SQL := 'CREATE INDEX aID ON ImageTable(ID)';
+    SetSQL(FQuery, SQL);
+    ExecSQL(FQuery);
+    // DROP INDEX <Index name>;
+    SQL := 'CREATE INDEX aFolderCRC ON ImageTable(FolderCRC)';
+    SetSQL(FQuery, SQL);
+    ExecSQL(FQuery);
 
-  SQL:='CREATE INDEX aStrThCrc ON ImageTable(StrThCrc)';
-  SetSQL(fQuery,SQL);
-  ExecSQL(fQuery);
+    SQL := 'CREATE INDEX aStrThCrc ON ImageTable(StrThCrc)';
+    SetSQL(FQuery, SQL);
+    ExecSQL(FQuery);
 
- finally
-  FreeDS(fQuery);
- end;
+  finally
+    FreeDS(FQuery);
+  end;
 end;
 
 procedure TryRemoveConnection(dbname : string; Delete : boolean = false);
 var
-  I : integer;
+  I: Integer;
 begin
-  dbname := AnsiLowerCase(dbname);
-  for I:=0 to ADOConnections.Count - 1 do
+  Dbname := AnsiLowerCase(Dbname);
+  for I := 0 to ADOConnections.Count - 1 do
   begin
-    if ADOConnections[I].FileName=dbname then
-    if (ADOConnections[I].RefCount = 0) or Delete then
-    begin
-      ADOConnections[I].ADOConnection.Close;
-      ADOConnections[I].ADOConnection.Free;
-      ADOConnections[I].Free;
-      ADOConnections.RemoveAt(I);
-      exit;
-    end;
+    if ADOConnections[I].FileName = Dbname then
+      if (ADOConnections[I].RefCount = 0) or Delete then
+      begin
+        ADOConnections[I].ADOConnection.Close;
+        ADOConnections[I].ADOConnection.Free;
+        ADOConnections[I].Free;
+        ADOConnections.RemoveAt(I);
+        Exit;
+      end;
   end;
 end;
 
 procedure RemoveADORef(ADOConnection : TADOConnection);
 var
-  I  : Integer;
+  I: Integer;
 begin
   for I := 0 to ADOConnections.Count - 1 do
   begin
@@ -869,7 +854,7 @@ begin
   end;
 end;
 
-function DataBaseConnection_Test(bMessage: Boolean): AnsiString;
+{function DataBaseConnection_Test(bMessage: Boolean): AnsiString;
 var
   asTimeout, asUserName, asPassword, asDataSource, ConnectionString: AnsiString;
   iReturn: Integer;
@@ -900,7 +885,7 @@ begin
       Result := '';
   finally
   end;
-end;
+end; }
 
 procedure CompactDatabase_JRO(DatabaseName:string;DestDatabaseName:string='';Password:string='');
 const
@@ -950,23 +935,24 @@ end;
 
 procedure PackTable(FileName : string);
 begin
- if (GetDBType(dbname)=DB_TYPE_MDB) then
- begin
-  CommonDBSupport.TryRemoveConnection(dbname,true);
-  CompactDatabase_JRO(dbname,'','')
- end;
+  if (GetDBType(dbname) = DB_TYPE_MDB) then
+  begin
+    CommonDBSupport.TryRemoveConnection(dbname, True);
+    CompactDatabase_JRO(dbname, '', '')
+  end;
 end;
 
 Procedure InitializeDBLoadScript;
 begin
  EventLog(':InitializeDBLoadScript()');
- if DBLoadInitialized then exit;
- {$IFNDEF DEBUG}
- begin
-  TW.I.Start('InitializeDB -> aScript');
-    aScript := TScript.Create('InitializeDBLoadScript');
+  if DBLoadInitialized then
+    Exit;
+{$IFNDEF DEBUG}
+  begin
+    TW.I.Start('InitializeDB -> aScript');
+    AScript := TScript.Create('InitializeDBLoadScript');
     try
-    AddScriptFunction(aScript.PrivateEnviroment,'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @UnitScripts.ReadFile);
+      AddScriptFunction(aScript.PrivateEnviroment,'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @UnitScripts.ReadFile);
 
   SetNamedValue(aScript,'$PortableWork','False');
   SetNamedValue(aScript,'$InitialString',DBFConnectionString);

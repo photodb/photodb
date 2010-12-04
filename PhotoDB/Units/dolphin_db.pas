@@ -733,6 +733,7 @@ var
   JPEG: TJpegImage;
 begin
   Result := False;
+  Info.Image := nil;
   FQuery := GetQuery;
   try
     FileName := AnsiLowerCase(FileName);

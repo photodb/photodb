@@ -23,7 +23,7 @@ type
   private
     FScope: string;
     FTranslateList: TList;
-    FParces: Boolean;
+    FParced: Boolean;
     FScopeNode: IXMLDOMNode;
     function GetTranslate(Index: Integer): TTranslate;
   protected
@@ -43,6 +43,7 @@ type
     FTranslateList : TList;
     FName : string;
     FImageName : string;
+    FLastScope : TLanguageScope;
   public
     constructor Create(FileName : string);
     constructor CreateFromXML(XML : string);
@@ -59,6 +60,7 @@ type
     FSync: TCriticalSection;
     FLanguage : TLanguage;
     FLanguageCode : string;
+    FIsTranslating : Boolean;
     constructor Create;
     function GetLanguage: string;
     procedure SetLanguage(const Value: string);
@@ -73,7 +75,9 @@ type
     function TA(const StringToTranslate: string) : string; overload;
     function Translate(const StringToTranslate: string) : string; overload;
     function Translate(const StringToTranslate, Scope: string) : string; overload;
+    function SmartTranslate(const StringToTranslate, Scope: string) : string;
     property Language : string read GetLanguage write SetLanguage;
+    property IsTranslating : Boolean read FIsTranslating write FIsTranslating;
   end;
 
   TLanguageInitCallBack = procedure(var Language : TLanguage; LanguageCode : string);
@@ -131,10 +135,12 @@ end;
 procedure TTranslateManager.BeginTranslate;
 begin
   FSync.Enter;
+  FIsTranslating := True;
 end;
 
 constructor TTranslateManager.Create;
 begin
+  FIsTranslating := True;
   FLanguageCode := '--';
   FSync:= TCriticalSection.Create;
   FSync.Enter;
@@ -155,6 +161,7 @@ end;
 
 procedure TTranslateManager.EndTranslate;
 begin
+  FIsTranslating := False;
   FSync.Leave;
 end;
 
@@ -181,6 +188,15 @@ begin
   FLanguageCode := Value;
   F(FLanguage);
   LanguageInitCallBack(FLanguage, Language);
+end;
+
+function TTranslateManager.SmartTranslate(const StringToTranslate,
+  Scope: string): string;
+begin
+  if FIsTranslating then
+    Result := Translate(StringToTranslate, Scope)
+  else
+    Result := TA(StringToTranslate, Scope);
 end;
 
 function TTranslateManager.TA(const StringToTranslate, Scope: string): string;
@@ -224,7 +240,7 @@ begin
   NameAttr := ScopeNode.attributes.getNamedItem('name');
   if NameAttr <> nil then
     FScope := NameAttr.text;
-  FParces := False;
+  FParced := False;
 end;
 
 destructor TLanguageScope.Destroy;
@@ -236,8 +252,12 @@ end;
 
 function TLanguageScope.GetTranslate(Index: Integer): TTranslate;
 begin
-  if not FParces then
+  if not FParced then
+  begin
+    FParced := True;
     LoadTranslateList(FScopeNode);
+  end;
+
   Result := FTranslateList[Index];
 end;
 
@@ -249,8 +269,11 @@ begin
   Result := False;
   ATranslate := Original;
 
-  if not FParces then
+  if not FParced then
+  begin
+    FParced := True;
     LoadTranslateList(FScopeNode);
+  end;
 
   for I := 0 to FTranslateList.Count - 1 do
   begin
@@ -323,6 +346,7 @@ end;
 
 procedure TLanguage.Init;
 begin
+  FLastScope := nil;
   FTranslateList := TList.Create;
   FTranslate := CreateXMLDoc;
 end;
@@ -366,16 +390,28 @@ function TLanguage.LocateString(const Original, Scope: string): string;
 var
   I : Integer;
   FScope : TLanguageScope;
+
 begin
   Result := Original;
+
+  //if some form uses a lot of translations - try to cache form scope
+  if (Scope <> '') and (FLastScope <> nil) and (FLastScope.Scope = Scope) then
+  begin
+    if FLastScope.Translate(Original, Result) then
+      Exit;
+  end;
+
   for I := 0 to FTranslateList.Count - 1 do
   begin
     FScope := TLanguageScope(FTranslateList[I]);
     if FScope.Scope = Scope then
     begin
+
       if FScope.Translate(Original, Result) then
+      begin
+        FLastScope := FScope;
         Break
-      else
+      end else
         if Scope <> '' then
           Result := LocateString(Original, '');
 

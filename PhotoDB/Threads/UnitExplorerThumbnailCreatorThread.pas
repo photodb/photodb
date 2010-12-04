@@ -62,7 +62,7 @@ begin
       try
         GetInfoByFileNameA(FFileName, True, Info);
 
-        if not Info.Image.Empty then
+        if (Info.Image <> nil) and not Info.Image.Empty then
         begin
           if (Info.Image.Width > ThSizeExplorerPreview) or (Info.Image.Height > ThSizeExplorerPreview) then
           begin

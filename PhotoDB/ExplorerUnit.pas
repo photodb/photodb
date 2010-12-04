@@ -4581,7 +4581,7 @@ begin
     TextFile2.Caption := L('Text file');
 
     ShowUpdater1.Caption := L('Show update window');
-    OpeninSearchWindow1.Caption := L('Open in serach window');
+    OpeninSearchWindow1.Caption := L('Open in search window');
     Refresh2.Caption := L('Refresh');
     SelectAll1.Caption := L('Select all');
     GoToSearchWindow1.Caption := L('Go to search window');

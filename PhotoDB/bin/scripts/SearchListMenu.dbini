@@ -20,7 +20,7 @@ run:
 <->[]{}
 
 <>[]{scripts\HelpScript.dbini}
-<DB Manager>[DB_IC_ADMINTOOLS]
+<Manage DB>[DB_IC_ADMINTOOLS]
 {
   DoManager;
 }

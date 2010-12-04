@@ -2034,6 +2034,7 @@ begin
   cb:=PosExS('{',script,ie);
   ce:=PosExS('}',script,cb);
   Text:=Copy(script,tb+1,te-tb-1);
+  Text := TTranslateManager.Instance.SmartTranslate(Text, 'DBMenu');
   Icon:=Copy(script,ib+1,ie-ib-1);
   Command:=Copy(script,cb+1,ce-cb-1);
 
@@ -2591,7 +2592,7 @@ var
   Ico : TIcon;
 begin
  Result:=TMenuItemW.Create(aOwner);
- Result.Caption:= TA(Caption, 'ScriptItems');
+ Result.Caption:= TTranslateManager.Instance.SmartTranslate(Caption, 'DBMenu');
  Result.Script:=Script;
  Result.Default:=Default;
  Result.OnClick:=OnClick;
@@ -2619,7 +2620,7 @@ var
   Ico : TIcon;
 begin
  Result:=TMenuItemW.Create(aOwner);
- Result.Caption:=TA(Caption, 'ScriptItems');
+ Result.Caption:=TTranslateManager.Instance.SmartTranslate(Caption, 'DBMenu');
  Result.Script:=Script;
  Result.Default:=Default;
  Result.OnClick:=OnClick;
@@ -2648,7 +2649,7 @@ var
   Ico : TIcon;
 begin
  Result:=TMenuItemW.Create(aOwner);
- Result.Caption:=TA(Caption);
+ Result.Caption:=TTranslateManager.Instance.SmartTranslate(Caption, 'DBMenu');
  Result.Script:=Script;
  Result.Default:=Default;
  Result.OnClick:=OnClick;

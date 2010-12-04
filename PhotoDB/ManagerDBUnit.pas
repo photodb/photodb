@@ -602,10 +602,10 @@ begin
     DeleteDB1.Caption:= L('Delete');
     RenameDB1.Caption:= L('Rename');
     ConvertLink.Text:= L('Convert DB');
-    ChangePathLink.Text:= L('Change file in DB');
+    ChangePathLink.Text:= L('Change path in DB');
 
     elvMain.Columns[0].Caption:= L('ID');
-    elvMain.Columns[1].Caption:= L('FileName');
+    elvMain.Columns[1].Caption:= L('File name');
     elvMain.Columns[2].Caption:= L('Keywords');
     elvMain.Columns[3].Caption:= L('Comment');
     elvMain.Columns[4].Caption:= L('Rating');
