@@ -15,11 +15,12 @@ object HelpPopup: THelpPopup
   FormStyle = fsStayOnTop
   KeyPreview = True
   OldCreateOrder = False
-  PopupMenu = PopupMenu1
+  PopupMenu = PmCopy
   PrintScale = poNone
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
   OnKeyDown = FormKeyDown
   OnPaint = FormPaint
@@ -38,7 +39,7 @@ object HelpPopup: THelpPopup
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object DmMemo1: TDmMemo
+  object MemText: TDmMemo
     Left = 60
     Top = 76
     Width = 177
@@ -51,9 +52,9 @@ object HelpPopup: THelpPopup
     TabOrder = 0
     TransparentMouse = True
   end
-  object ImButton1: TImButton
-    Left = 240
-    Top = 56
+  object ImbClose: TImButton
+    Left = 243
+    Top = 49
     Width = 21
     Height = 21
     ImageNormal.Data = {
@@ -292,12 +293,12 @@ object HelpPopup: THelpPopup
       7A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E397
       7A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E1957700DD84
       6200CB370000}
-    OnClick = ImButton1Click
+    OnClick = ImbCloseClick
     Transparent = False
     View = DmIm_Close
     Enabled = True
     ShowCaption = False
-    Caption = 'ImButton1'
+    Caption = 'ImbClose'
     FontNormal.Charset = DEFAULT_CHARSET
     FontNormal.Color = clWindowText
     FontNormal.Height = -11
@@ -320,7 +321,7 @@ object HelpPopup: THelpPopup
     CoolColorSize = 3
     VirtualDraw = False
   end
-  object ImButton2: TImButton
+  object ImbNext: TImButton
     Left = 160
     Top = 144
     Width = 24
@@ -629,12 +630,12 @@ object HelpPopup: THelpPopup
       7A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E397
       7A00E3977A00E3977A00E3977A00E3977A00E3977A00E2947600DF886600DC7E
       5A00}
-    OnClick = ImButton2Click
+    OnClick = ImbNextClick
     Transparent = False
     View = DmIm_Right
     Enabled = True
     ShowCaption = False
-    Caption = 'ImButton2'
+    Caption = 'ImbNext'
     FontNormal.Charset = DEFAULT_CHARSET
     FontNormal.Color = clWindowText
     FontNormal.Height = -11
@@ -664,7 +665,7 @@ object HelpPopup: THelpPopup
     Left = 168
     Top = 8
   end
-  object PopupMenu1: TPopupMenu
+  object PmCopy: TPopupMenu
     Left = 168
     Top = 56
     object Copy1: TMenuItem

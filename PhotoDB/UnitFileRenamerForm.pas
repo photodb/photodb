@@ -74,9 +74,12 @@ var
   FormFastFileRenamer: TFormFastFileRenamer;
 begin
   Application.CreateForm(TFormFastFileRenamer, FormFastFileRenamer);
-  FormFastFileRenamer.SetFiles(Files, IDS);
-  FormFastFileRenamer.ShowModal;
-  FormFastFileRenamer.Release;
+  try
+    FormFastFileRenamer.SetFiles(Files, IDS);
+    FormFastFileRenamer.ShowModal;
+  finally
+    FormFastFileRenamer.Release;
+  end;
 end;
 
 { TFormFastFileRenamer }
@@ -112,11 +115,11 @@ procedure TFormFastFileRenamer.LoadLanguage;
 begin
   BeginTranslate;
   try
+    Caption := L('File renamer');
     ValueListEditor1.TitleCaptions[0] := L('Original file name');
     ValueListEditor1.TitleCaptions[1] := L('New file name');
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');
-    Caption := L('File renamer');
 
     LblTitle.Caption := L('Mask for files');
     SortbyFileName1.Caption := L('Sort by file name');
@@ -227,7 +230,7 @@ procedure TFormFastFileRenamer.Button3Click(Sender: TObject);
 var
   Info : string;
 begin
-  info := L('File mask: replace %d to number , %date - current date, %fn - original file name (without extension)');
+  info := L('File mask: replace %d to number, %date - current date, %fn - original file name (without extension)');
   MessageBoxDB(Handle, info, L('Info'), TD_BUTTON_OK, TD_ICON_INFORMATION);
 end;
 

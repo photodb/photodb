@@ -8,10 +8,10 @@ uses
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask, uFileUtils,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
   UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants,
-  UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils;
+  UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm;
 
 type
-  TOptionsForm = class(TForm)
+  TOptionsForm = class(TDBForm)
     ColorDialog1: TColorDialog;
     FontDialog1: TFontDialog;
     CancelButton: TButton;
@@ -220,7 +220,8 @@ type
     ReloadData : boolean;
   protected
     { Protected declarations }
-    procedure CreateParams(VAR Params: TCreateParams); override;
+    procedure CreateParams(var Params: TCreateParams); override;
+    function GetFormID : string; override;
   public
     { Public declarations }
     procedure LoadLanguage;
@@ -419,6 +420,11 @@ var
   b : boolean;
 begin
  TabbedNotebook1Change(sender,0,b);
+end;
+
+function TOptionsForm.GetFormID: string;
+begin
+  Result := 'Options';
 end;
 
 procedure TOptionsForm.Shape1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -728,8 +734,8 @@ begin
  CheckBox23.Caption:=TEXT_MES_USE_HOT_SELECT_IN_LISTVIEWS;
  CheckBox24.Caption:=TEXT_MES_ROTATE_WITHOUT_PROMT;
  CheckBox25.Caption:=TEXT_MES_ROTATE_EVEN_IF_FILE_IN_DB;
- Button21.Caption:=TEXT_MES_JPEG_OPTIONS;
- Button22.Caption:=TEXT_MES_JPEG_OPTIONS;
+ Button21.Caption:=L('JPEG Options');
+ Button22.Caption:=L('JPEG Options');
  CheckBox26.Caption:=TEXT_MES_SORT_GROUPS;
  CheckBox27.Caption:=TEXT_MES_USE_GDI_PLUS;
  Label29.Caption:=TEXT_MES_CREATE_BACK_UP_EVERY;
@@ -825,10 +831,10 @@ begin
 end;
 
 procedure TOptionsForm.LoadExts;
-var
+{var
   i : integer;
   reg : TRegistry;
-  s : string;
+  s : string;   }
 begin
  {Reg:=TRegistry.Create;
  Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;
@@ -1141,10 +1147,10 @@ end;
 
 procedure TOptionsForm.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);
- Params.WndParent := GetDesktopWindow;
- with params do
- ExStyle := ExStyle or WS_EX_APPWINDOW;
+  inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with Params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TOptionsForm.PcMainChange(Sender: TObject);
@@ -1452,10 +1458,10 @@ begin
 end;
 
 procedure TOptionsForm.Default1Click(Sender: TObject);
-Var
+{Var
   i : Integer;
   Reg : TRegistry;
-  S : String;
+  S : String; }
 begin
 { Reg:=TRegistry.Create;
  Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;

@@ -781,12 +781,15 @@ begin
 
     if LoadThum then
     begin
+      if Info.Image = nil then
+        Info.Image := TJpegImage.Create;
+
       if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
       begin
         DeCryptBlobStreamJPG(FQuery.FieldByName('thum'),
           DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum')), Info.Image);
         Info.ItemCrypted := True;
-        if not Info.Image.Empty then
+        if (Info.Image <> nil) and (not Info.Image.Empty) then
           Info.Tag := 1;
 
       end else
@@ -3900,19 +3903,16 @@ function CreateDirA(Dir: string): Boolean;
 var
   I: Integer;
 begin
-  Result := True;
-  if Dir[Length(Dir)] <> '\' then
-    Dir := Dir + '\';
+  Result := False;
+  Dir := ExcludeTrailingBackslash(Dir);
+
   if Length(Dir) < 3 then
     Exit;
   for I := 1 to Length(Dir) do
     try
       if (Dir[I] = '\') or (I = Length(Dir)) then
-        if not CreateDir(Copy(Dir, 1, I)) then
-        begin
-          Result := False;
-          Exit;
-        end;
+        if CreateDir(ExcludeTrailingBackslash(Copy(Dir, 1, I))) then
+          Result := I = Length(Dir);
     except
       Result := False;
       Exit;

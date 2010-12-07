@@ -51,7 +51,7 @@ procedure TBigImagesSizeForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption := L('Thumbnail size');
+    Caption := L('Thumbnails size');
     RgPictureSize.Caption := L('Size') + ':';
     LnkClose.Text := L('Close');
     RgPictureSize.Items[0] := Format( L('%dx%d pixels'), [BigThSize,BigThSize]);
@@ -216,7 +216,7 @@ end;
 
 function TBigImagesSizeForm.GetFormID: string;
 begin
-  Result := 'ThumbnailSize';
+  Result := 'ThumbnailsSize';
 end;
 
 end.

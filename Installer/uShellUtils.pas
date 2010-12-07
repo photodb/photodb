@@ -7,7 +7,7 @@ interface
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
   uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations,
-  ShlObj;
+  ShlObj, uFileUtils;
 
 type
   TRegistryInstallCallBack = procedure(Current, Total: Integer; var Terminate : Boolean) of object;
@@ -61,7 +61,7 @@ begin
   try
     FReg.OpenKey(RegRoot, True);
     FileName := FReg.ReadString('DataBase');
-    if FileExists(FileName) then
+    if FileExistsSafe(FileName) then
     begin
       H := LoadLibrary(PWideChar(FileName));
       if H <> 0 then

@@ -134,11 +134,11 @@
   {
     ShowUpdateWindow;
   }
-  <Manage DB>[DB_IC_ADMINTOOLS]
+  <DB Manager>[DB_IC_ADMINTOOLS]
   {
     DoManager;
   }
-  <Image Editor>[DB_IC_IMEDITOR]
+  <Image editor>[DB_IC_IMEDITOR]
   {
     $form=NewImageEditor;
     ShowDBForm($form);
@@ -147,11 +147,11 @@
   {
     NewPanel;
   }
-  <New Search>[DB_IC_ADDTODB]
+  <New search>[DB_IC_ADDTODB]
   {
     NewSearch;
   }
-  <Groups manages>[DB_IC_GROUPS]
+  <Groups manager>[DB_IC_GROUPS]
   {
     ExecuteGroupManager;
   }

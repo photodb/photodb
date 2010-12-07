@@ -423,7 +423,7 @@ begin
     CbShowAllGroups.Caption := L('Show all groups');
     CbRemoveKeywords.Caption := L('Delete group comments');
     MoveToGroup1.Caption := L('Move to group');
-    LbInfo.Caption := L('Use button "-->" to select groups and button "<--" to remove them from list');
+    LbInfo.Caption := L('Use button "-->" to add new groups or button "<--" to remove them');
   finally
     EndTranslate;
   end;
@@ -628,7 +628,7 @@ begin
   if SelectGroup(ToGroup) then
   begin
     MoveGroup(FSetGroups[PmGroup.Tag], ToGroup);
-    MessageBoxDB(Handle, L('Reload data in application to see changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
   end;
 end;
 

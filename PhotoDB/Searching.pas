@@ -55,7 +55,6 @@ type
 type
   TSearchForm = class(TListViewForm)
     PnLeft: TPanel;
-    Image1: TImage;
     Splitter1: TSplitter;
     SaveWindowPos1: TSaveWindowPos;
     HintTimer: TTimer;
@@ -543,7 +542,7 @@ begin
 
   WlStartStop.OnClick:= BreakOperation;
   WlStartStop.Text:= L('Stop');
-  PbProgress.Text:= L('Stoping') + '...';
+  PbProgress.Text:= L('Stopping') + '...';
   Label7.Caption := L('Calculating') + '...';
   If Creating then Exit;
 
@@ -870,7 +869,7 @@ begin
 
     for I:=0 to MenuInfo.Count - 1 do
       if MenuInfo[I].Selected then
-        if FileExists(MenuInfo[I].FileName) then
+        if FileExistsSafe(MenuInfo[I].FileName) then
           FilesToDrag.Add(MenuInfo[I].FileName);
 
     if FilesToDrag.Count = 0 then
@@ -1263,7 +1262,7 @@ begin
     bit.Height:=ThSize;
     FillColorEx(bit, clWindow);
     try
-     bit.canvas.Draw(ThSize div 2 - image1.picture.Graphic.Width div 2,ThSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
+    // bit.canvas.Draw(ThSize div 2 - image1.picture.Graphic.Width div 2,ThSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
     except
     end;
     Exists:=0;
@@ -1343,7 +1342,7 @@ begin
     bit.height:=ThSize;
     FillColorEx(bit, clWindow);
     try
-     bit.canvas.Draw(ThSize div 2 - Image1.Picture.Graphic.Width div 2,ThSize div 2 - Image1.Picture.Graphic.height div 2,Image1.Picture.Graphic);
+    // bit.canvas.Draw(ThSize div 2 - Image1.Picture.Graphic.Width div 2,ThSize div 2 - Image1.Picture.Graphic.height div 2,Image1.Picture.Graphic);
     except
     end;
     Exists:=0;
@@ -1409,7 +1408,7 @@ begin
   begin
     SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
     if ElvMain.Items[I].Selected then
-      if FileExists(SearchRecord.FileName) then
+      if FileExistsSafe(SearchRecord.FileName) then
         Result.Add(SearchRecord.FileName);
   end;
 end;
@@ -1524,7 +1523,7 @@ end;
 
 procedure TSearchForm.ErrorQSL(sql : string);
 begin
-  MessageBoxDB(Handle, L('Error in SQL. Query: ') + Sql, L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+  MessageBoxDB(Handle, Format(L('Error in SQL. Query: %s'), [Sql]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TSearchForm.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
@@ -1699,7 +1698,7 @@ begin
     Data := GetSearchRecordFromItemData(LastMouseItem);
 
     if DBKernel.Readbool('Options', 'AllowPreview', True) then
-      ElvMain.ShowHint := not FileExists(Data.FileName);
+      ElvMain.ShowHint := not FileExistsSafe(Data.FileName);
 
     ElvMain.Hint := Data.Comment;
   end;
@@ -1925,7 +1924,7 @@ begin
       end;
     end;
   finally
-    SaveDialog.Free;
+    F(SaveDialog);
   end;
 end;
 
@@ -1969,7 +1968,7 @@ begin
       end;
     end;
   finally
-    OpenDialog.Free;
+    F(OpenDialog);
   end;
 end;
 
@@ -1980,10 +1979,9 @@ end;
 
 procedure TSearchForm.ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
 begin
-  If LockChangePath then Exit;
-  If Creating then Exit;
-  if FUpdatingDB then Exit;
-  SearchEdit.Text:=':folder('+TreeView.Path+'):';
+  if LockChangePath or Creating or FUpdatingDB then
+    Exit;
+  SearchEdit.Text := ':folder(' + TreeView.Path + '):';
   DoSearchNow(Sender);
 end;
 
@@ -2008,7 +2006,7 @@ procedure TSearchForm.ListViewEdited(Sender: TObject; Item: TEasyItem;
 var
   SearchRecord : TDBPopupMenuInfoRecord;
 begin
-  S := copy(S, 1, Min(Length(S), 255));
+  S := Copy(S, 1, Min(Length(S), 255));
   SearchRecord := GetSearchRecordFromItemData(Item);
 
   if S = ExtractFileName(SearchRecord.FileName) then
@@ -2016,7 +2014,7 @@ begin
 
   begin
     if GetExt(S) <> GetExt(SearchRecord.FileName) then
-    if FileExists(SearchRecord.FileName) then
+    if FileExistsSafe(SearchRecord.FileName) then
     begin
       If ID_OK <> MessageBoxDB(Handle, L('Do you really want to change file extension?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       begin
@@ -2111,46 +2109,45 @@ end;
 
 procedure TSearchForm.ListViewExit(Sender: TObject);
 begin
- DBCanDrag:=false;
- FilesToDrag.Clear;
+  DBCanDrag := False;
+  FilesToDrag.Clear;
 end;
 
 procedure TSearchForm.Properties1Click(Sender: TObject);
 begin
- if GetSelectionCount>1 then
- PropertyPanel.Visible:=true;
- ExplorerPanel.Visible:=false;
- Properties1.Checked:=true;
- Explorer2.Checked:=false;
+  if GetSelectionCount > 1 then
+    PropertyPanel.Visible := True;
+  ExplorerPanel.Visible := False;
+  Properties1.Checked := True;
+  Explorer2.Checked := False;
 end;
 
 procedure TSearchForm.Explorer2Click(Sender: TObject);
 begin
- PropertyPanel.Visible:=false;
- ExplorerPanel.Visible:=true;
- if not TreeView.UseShellImages then
- begin
-  TreeView.ObjectTypes:=[otFolders];
-  TreeView.UseShellImages:=true;
-  TreeView.Refresh(TreeView.TopItem);
- end;
- ExplorerPanel.Align:=AlClient;
- Properties1.Checked:=false;
- Explorer2.Checked:=true;
- TreeView.FullCollapse;
- if FSearchPath<>'' then
- if DirectoryExists(FSearchPath) then
- TreeView.Path:=FSearchPath;
+  PropertyPanel.Visible := False;
+  ExplorerPanel.Visible := True;
+  if not TreeView.UseShellImages then
+  begin
+    TreeView.ObjectTypes := [OtFolders];
+    TreeView.UseShellImages := True;
+    TreeView.Refresh(TreeView.TopItem);
+  end;
+  ExplorerPanel.Align := AlClient;
+  Properties1.Checked := False;
+  Explorer2.Checked := True;
+  TreeView.FullCollapse;
+  if FSearchPath <> '' then
+    if DirectoryExists(FSearchPath) then
+      TreeView.Path := FSearchPath;
 end;
 
-procedure TSearchForm.SearchPanelAContextPopup(Sender: TObject; MousePos: TPoint;
-  var Handled: Boolean);
-Var
-  WHandle : THandle;
+procedure TSearchForm.SearchPanelAContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+var
+  WHandle: THandle;
 begin
- WHandle:=WindowFromPoint(SearchPanelA.ClientToScreen(MousePos));
- if WHandle<>SearchEdit.Handle then
- PopupMenu1.Popup(SearchPanelA.ClientToScreen(MousePos).X,SearchPanelA.ClientToScreen(MousePos).Y);
+  WHandle := WindowFromPoint(SearchPanelA.ClientToScreen(MousePos));
+  if WHandle <> SearchEdit.Handle then
+    PopupMenu1.Popup(SearchPanelA.ClientToScreen(MousePos).X, SearchPanelA.ClientToScreen(MousePos).Y);
 end;
 
 procedure TSearchForm.RatingEditMouseDown(Sender: TObject);
@@ -2234,14 +2231,14 @@ begin
 
 end;
 
-procedure TSearchForm.SetPath(Value: String);
+procedure TSearchForm.SetPath(Value: string);
 begin
- formatDir(Value);
- FSearchPath := Value;
- LockChangePath:=true;
- If ExplorerPanel.Visible then
- TreeView.Path:=Value;
- LockChangePath:=false;
+  FormatDir(Value);
+  FSearchPath := Value;
+  LockChangePath := True;
+  if ExplorerPanel.Visible then
+    TreeView.Path := Value;
+  LockChangePath := False;
 end;
 
 procedure TSearchForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -2254,22 +2251,24 @@ end;
 
 procedure TSearchForm.Datenotexists1Click(Sender: TObject);
 begin
- IsDatePanel.Visible:=True;
- Memo1Change(Sender);
+  IsDatePanel.Visible := True;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.IsDatePanelDblClick(Sender: TObject);
 begin
- If FUpdatingDB then Exit;
- IsDatePanel.Visible:=False;
- Memo1Change(Sender);
+  if FUpdatingDB then
+    Exit;
+  IsDatePanel.Visible := False;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.PanelValueIsDateSetsDblClick(Sender: TObject);
 begin
- If FUpdatingDB then Exit;
- PanelValueIsDateSets.Visible:=false;
- Memo1Change(Sender);
+  if FUpdatingDB then
+    Exit;
+  PanelValueIsDateSets.Visible := False;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.BeginUpdate;
@@ -2301,24 +2300,24 @@ end;
 
 procedure TSearchForm.EndUpdate;
 begin
- fListUpdating:=false;
- ElvMain.Visible:=true;
- BackGroundSearchPanel.Visible:=False;
- ElvMain.Groups.EndUpdate;
- ElvMain.EndUpdate;
+  FListUpdating := False;
+  ElvMain.Visible := True;
+  BackGroundSearchPanel.Visible := False;
+  ElvMain.Groups.EndUpdate;
+  ElvMain.EndUpdate;
 end;
 
 procedure TSearchForm.BackGroundSearchPanelResize(Sender: TObject);
 begin
- LabelBackGroundSearching.Top:=BackGroundSearchPanel.Height div 2+128 div 2;
- LabelBackGroundSearching.Left:=BackGroundSearchPanel.Width div 2-LabelBackGroundSearching.Width div 2;
- ImageSearchWait.Top:=BackGroundSearchPanel.Height div 2-128 div 2;
- ImageSearchWait.Left:=BackGroundSearchPanel.Width div 2-128 div 2;
+  LabelBackGroundSearching.Top := BackGroundSearchPanel.Height div 2 + 128 div 2;
+  LabelBackGroundSearching.Left := BackGroundSearchPanel.Width div 2 - LabelBackGroundSearching.Width div 2;
+  ImageSearchWait.Top := BackGroundSearchPanel.Height div 2 - 128 div 2;
+  ImageSearchWait.Left := BackGroundSearchPanel.Width div 2 - 128 div 2;
 end;
 
 procedure TSearchForm.ComboBox1_KeyPress(Sender: TObject; var Key: Char);
 begin
- Key:=#0;
+  Key := #0;
 end;
 
 procedure TSearchForm.ReloadGroups;
@@ -2902,7 +2901,7 @@ procedure TSearchForm.SortbyName1Click(Sender: TObject);
 begin
   SortbyName1.Checked := True;
   SortLink.Tag := 1;
-  SortLink.Text := L('Sort by name');
+  SortLink.Text := L('Sort by Name');
   SortingClick(Sender);
 end;
 
@@ -2910,7 +2909,7 @@ procedure TSearchForm.SortbyDate1Click(Sender: TObject);
 begin
   SortbyDate1.Checked := True;
   SortLink.Tag := 2;
-  SortLink.Text := L('Sort by date');
+  SortLink.Text := L('Sort by Date');
   SortingClick(Sender);
 end;
 
@@ -2918,7 +2917,7 @@ procedure TSearchForm.SortbyRating1Click(Sender: TObject);
 begin
   SortbyRating1.Checked := True;
   SortLink.Tag := 3;
-  SortLink.Text := L('Sort by rating');
+  SortLink.Text := L('Sort by Rating');
   SortingClick(Sender);
 end;
 
@@ -3453,7 +3452,7 @@ begin
   Accept := RenameResult;
 
   if not Accept then
-    MessageBoxDB(Handle, Format(L('Cannot rename file! Erro code = %d'), [GetLastError]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    MessageBoxDB(Handle, Format(L('Cannot rename file! Error code = %d'), [GetLastError]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TSearchForm.N05Click(Sender: TObject);

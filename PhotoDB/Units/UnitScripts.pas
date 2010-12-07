@@ -2477,7 +2477,7 @@ begin
       Result := Script.ScriptContent;
       Exit;
     end;
-  end;    
+  end;
  Result:='';
  if Length(FileName)<4 then exit;
  if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
@@ -2681,19 +2681,28 @@ end;
 
 function aFileExists(FileName : string) : boolean;
 var
-  d : string;
-  oldMode: Cardinal;
+  D: string;
+  OldMode: Cardinal;
 begin
- Result:=false;
- if Length(FileName)<4 then exit;
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
- FileName:=Copy(FileName,2,Length(FileName)-2);
- if FileName[2]=':' then d:=FileName else
- d:=ExtractFileDir(paramstr(0))+'\'+FileName;
- if FileExists(d) then
-  Result:=true else Result:=FileExists(FileName);
-  SetErrorMode(oldMode);
+  Result := False;
+  if Length(FileName) < 4 then
+    Exit;
+
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    if (FileName[1] = '"') and (FileName[Length(FileName)] = '"') then
+      FileName := Copy(FileName, 2, Length(FileName) - 2);
+    if FileName[2] = ':' then
+      D := FileName
+    else
+      D := ExtractFileDir(Paramstr(0)) + '\' + FileName;
+    if FileExists(D) then
+      Result := True
+    else
+      Result := FileExists(FileName);
+  finally
+    SetErrorMode(OldMode);
+  end;
 end;
 
 { TMenuItemW }

@@ -2,11 +2,13 @@ object FormChangeDBPath: TFormChangeDBPath
   Left = 434
   Top = 291
   BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsSingle
   Caption = 'Change DB Path'
   ClientHeight = 239
-  ClientWidth = 482
+  ClientWidth = 517
   Color = clBtnFace
+  Constraints.MaxHeight = 277
+  Constraints.MinHeight = 277
+  Constraints.MinWidth = 350
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -16,8 +18,12 @@ object FormChangeDBPath: TFormChangeDBPath
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  DesignSize = (
+    517
+    239)
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
@@ -643,66 +649,75 @@ object FormChangeDBPath: TFormChangeDBPath
   object Label1: TLabel
     Left = 112
     Top = 8
-    Width = 361
+    Width = 396
     Height = 57
+    Anchors = [akLeft, akTop, akRight]
     AutoSize = False
     Caption = 'Label1'
     WordWrap = True
+    ExplicitWidth = 361
   end
-  object Label2: TLabel
+  object LbOldPath: TLabel
     Left = 8
     Top = 80
     Width = 22
     Height = 13
     Caption = 'Path'
   end
-  object Label3: TLabel
+  object LbNewPath: TLabel
     Left = 8
     Top = 136
     Width = 76
     Height = 13
     Caption = 'Path to change:'
   end
-  object ComboBox1: TComboBox
+  object CbOldPath: TComboBox
     Left = 8
     Top = 96
-    Width = 369
+    Width = 404
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
     Text = 'c:\'
   end
-  object Button1: TButton
-    Left = 384
+  object BtnScanFolders: TButton
+    Left = 264
     Top = 120
-    Width = 89
+    Width = 244
     Height = 21
+    Anchors = [akTop, akRight]
     Caption = 'Scan'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtnScanFoldersClick
   end
-  object Button2: TButton
-    Left = 384
+  object BtnChooseNewPath: TButton
+    Left = 419
     Top = 152
     Width = 89
     Height = 21
+    Anchors = [akTop, akRight]
     Caption = 'Choose'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtnChooseNewPathClick
+    ExplicitLeft = 384
   end
-  object Edit1: TEdit
+  object EdNewPath: TEdit
     Left = 8
     Top = 152
-    Width = 369
+    Width = 404
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     ReadOnly = True
     TabOrder = 3
     Text = 'c:\'
+    ExplicitWidth = 369
   end
-  object DmProgress1: TDmProgress
+  object DprMain: TDmProgress
     Left = 8
     Top = 184
-    Width = 465
+    Width = 500
     Height = 18
+    Anchors = [akLeft, akTop, akRight]
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
@@ -715,49 +730,51 @@ object FormChangeDBPath: TFormChangeDBPath
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
+    ExplicitWidth = 465
   end
-  object Button3: TButton
-    Left = 400
+  object BtnOk: TButton
+    Left = 435
     Top = 208
     Width = 75
     Height = 25
+    Anchors = [akTop, akRight]
     Caption = 'Ok'
     TabOrder = 5
-    OnClick = Button3Click
+    OnClick = BtnOkClick
+    ExplicitLeft = 400
   end
-  object Button4: TButton
-    Left = 320
+  object BtnCancel: TButton
+    Left = 355
     Top = 208
     Width = 75
     Height = 25
+    Anchors = [akTop, akRight]
     Caption = 'Cancel'
     TabOrder = 6
-    OnClick = Button4Click
+    OnClick = BtnCancelClick
+    ExplicitLeft = 320
   end
-  object Button5: TButton
-    Left = 384
+  object BtnChooseOldPath: TButton
+    Left = 419
     Top = 96
     Width = 89
     Height = 21
+    Anchors = [akTop, akRight]
     Caption = 'Choose'
     TabOrder = 7
-    OnClick = Button5Click
+    OnClick = BtnChooseOldPathClick
+    ExplicitLeft = 384
   end
   object CheckBox1: TCheckBox
     Left = 8
     Top = 212
-    Width = 289
+    Width = 341
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Change only in end path exists'
     Checked = True
     State = cbChecked
     TabOrder = 8
-  end
-  object CloseTimer: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = CloseTimerTimer
-    Left = 200
-    Top = 40
+    ExplicitWidth = 306
   end
 end

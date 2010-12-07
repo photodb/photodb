@@ -165,12 +165,12 @@ begin
  if finfo[finfo.Position].ID=0 then NoDBInfoNeeded:=true;
 
   TW.I.Start('FileExists');
-  IsCurrentFile:=FileExists(finfo[finfo.Position].FileName);
+  IsCurrentFile:=FileExistsSafe(finfo[finfo.Position].FileName);
 
   IsFile := IsCurrentFile;
   if not IsFile then
     for I := 0 to Finfo.Count - 1 do
-      if FileExists(Finfo[I].FileName) then
+      if FileExistsSafe(Finfo[I].FileName) then
       begin
         IsFile := True;
         Break;
@@ -189,7 +189,7 @@ begin
   SetIntAttr(aScript,'$Position',finfo.Position);
 
   //if user haven't rights to get FileName its only possible way to know
-  SetBoolAttr(aScript,'$FileExists',FileExists(finfo[finfo.Position].FileName));
+  SetBoolAttr(aScript,'$FileExists',FileExistsSafe(finfo[finfo.Position].FileName));
 
   // END Access section
   SetBoolAttr(aScript,'$IsCurrentFile',IsCurrentFile);
@@ -371,7 +371,7 @@ begin
   try
     for I := 0 to FInfo.Count - 1 do
       if FInfo[I].Selected then
-        if FileExists(FInfo[I].FileName) then
+        if FileExistsSafe(FInfo[I].FileName) then
           FileList.Add(FInfo[I].FileName);
 
     Copy_Move(True, FileList);
@@ -588,7 +588,7 @@ begin
 
  Password:=DBKernel.FindPasswordForCryptImageFile(FInfo[FInfo.Position].FileName);
  if Password='' then
- if FileExists(FInfo[FInfo.Position].FileName) then
+ if FileExistsSafe(FInfo[FInfo.Position].FileName) then
  Password:=GetImagePasswordFromUser(FInfo[FInfo.Position].FileName);
 
  Setlength(ItemFileNames,FInfo.Count);
@@ -656,7 +656,7 @@ begin
    for j:=0 to length(Files)-1 do
    begin
     begin
-     If fileexists(Files[j]) then
+     If FileExistsSafe(Files[j]) then
      begin
       try
        SilentDeleteFile( Application.Handle, Files[j] , true );
@@ -700,7 +700,7 @@ begin
   if finfo[i].Selected then
   begin
    begin
-    If fileexists(finfo[i].FileName) then
+    If FileExistsSafe(finfo[i].FileName) then
     begin
      try
       SilentDeleteFile( Application.Handle, finfo[i].FileName , true );
@@ -761,7 +761,7 @@ var
   ID : Integer;
 begin
  EventInfo.Image:=nil;
- if fileexists(FInfo[fInfo.Position].FileName) then
+ if FileExistsSafe(FInfo[fInfo.Position].FileName) then
  begin
   if GetImagePasswordFromUser(FInfo[fInfo.Position].FileName)<>'' then
   DBKernel.DoIDEvent(Sender,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
@@ -1081,7 +1081,7 @@ begin
   try
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
-        if FileExists(Finfo[I].FileName) then
+        if FileExistsSafe(Finfo[I].FileName) then
           Files.Add(Finfo[I].FileName[I]);
 
     if Files.Count <> 0 then
@@ -1422,7 +1422,7 @@ var
   FileName: string;
 begin
   FileName := ProcessPath(Finfo[Finfo.Position].FileName);
-  if not FileExists(FileName) then
+  if not FileExistsSafe(FileName) then
   begin
     MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
     Exit;
@@ -1435,7 +1435,7 @@ var
   FileName: string;
 begin
   FileName := ProcessPath(Finfo[Finfo.Position].FileName);
-  if not FileExists(FileName) then
+  if not FileExistsSafe(FileName) then
   begin
     MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
     Exit;
@@ -1448,7 +1448,7 @@ var
   FileName: string;
 begin
   FileName := ProcessPath(Finfo[Finfo.Position].FileName);
-  if not FileExists(FileName) then
+  if not FileExistsSafe(FileName) then
   begin
     MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
     Exit;

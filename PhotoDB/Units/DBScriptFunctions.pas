@@ -739,8 +739,8 @@ var
   CompResult : TImageCompareResult;
 begin
  Result:=0;
- if not FileExists(File1) then exit;
- if not FileExists(File2) then exit;
+ if not FileExistsSafe(File1) then exit;
+ if not FileExistsSafe(File2) then exit;
  G1:=nil;
  G2:=nil;
  if ValidCryptGraphicFile(File1) then

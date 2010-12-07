@@ -3,7 +3,7 @@ unit UnitCrypting;
 interface
 
 uses dolphin_db, GraphicCrypt, Language, DB, Windows, SysUtils,
-     UnitDBKernel, Classes, Win32Crc, UnitDBDeclare;
+     UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils;
 
 const
 
@@ -99,13 +99,13 @@ var
 begin
  info.Crypt:=true;
  Result:=CRYPT_RESULT_UNDEFINED;
- if ValidCryptGraphicFile(FileName) and FileExists(FileName) then
+ if ValidCryptGraphicFile(FileName) and FileExistsSafe(FileName) then
  begin
   Result:=CRYPT_RESULT_ALREADY_CRYPT;
   exit;
  end;
 
- if FileExists(FileName) then
+ if FileExistsSafe(FileName) then
  if not CryptGraphicFileV2(FileName, Password, Options) then
  begin
   Result:=CRYPT_RESULT_FAILED_CRYPT_FILE;
@@ -136,13 +136,13 @@ function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Int
 
 begin
   Result := CRYPT_RESULT_OK;
-  if not ValidCryptGraphicFile(FileName) and FileExists(FileName) then
+  if not ValidCryptGraphicFile(FileName) and FileExistsSafe(FileName) then
   begin
     Result := CRYPT_RESULT_ALREADY_DECRYPT;
     Exit;
   end;
 
-  if FileExists(FileName) then
+  if FileExistsSafe(FileName) then
     if not ResetPasswordInGraphicFile(FileName, Password) then
     begin
       Result := CRYPT_RESULT_FAILED_CRYPT_FILE;

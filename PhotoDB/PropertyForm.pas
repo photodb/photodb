@@ -778,11 +778,11 @@ begin
     if FShowInfoType = SHOW_INFO_IDS then
     begin
       for I := 0 to FFilesInfo.Count - 1 do
-        if FileExists(ProcessPath(FFilesInfo[I].FileName)) then
+        if FileExistsSafe(ProcessPath(FFilesInfo[I].FileName)) then
          DropFileSource1.Files.Add(ProcessPath(FFilesInfo[I].FileName));
     end else
     begin
-      if FileExists(ProcessPath(LabelPath.Text)) then
+      if FileExistsSafe(ProcessPath(LabelPath.Text)) then
         DropFileSource1.Files.Add(ProcessPath(LabelPath.Text));
     end;
     if DropFileSource1.Files.Count > 0 then
@@ -1253,7 +1253,7 @@ begin
       FileList.Add(FileName)
     else begin
       for I := 0 to FFilesInfo.Count - 1 do
-        if FileExists(FFilesInfo[I].FileName) then
+        if FileExistsSafe(FFilesInfo[I].FileName) then
           FileList.Add(FFilesInfo[I].FileName);
     end;
     Copy_Move(True, FileList);
@@ -1285,7 +1285,7 @@ var
 begin
   if FShowInfoType = SHOW_INFO_ID then
   begin
-    if FileExists(FileName) then
+    if FileExistsSafe(FileName) then
     begin
       NewSearch := SearchManager.NewSearch;
       NewSearch.Show;
@@ -1317,7 +1317,7 @@ var
   Rec: TDBPopupMenuInfoRecord;
   FS : TFileStream;
 begin
-  if not Fileexists(FileName) then
+  if not FileExistsSafe(FileName) then
     Exit;
   if not ExtInMask(SupportedExt, Getext(FileName)) then
     Exit;
@@ -1492,7 +1492,7 @@ begin
         end;
       SHOW_INFO_FILE_NAME:
         begin
-          if (AnsiLowerCase(Value.NewName) = AnsiLowerCase(FileName)) and FileExists(Value.NewName) then
+          if (AnsiLowerCase(Value.NewName) = AnsiLowerCase(FileName)) and FileExistsSafe(Value.NewName) then
           begin
             ID_ := GetIdByFileName(FileName);
             if ID_ = 0 then
@@ -1501,7 +1501,7 @@ begin
               Execute(ID_);
           end;
           if (AnsiLowerCase(Value.name) = AnsiLowerCase(FileName)) then
-            if FileExists(Value.NewName) and not FileExists(Value.name) then
+            if FileExistsSafe(Value.NewName) and not FileExistsSafe(Value.name) then
               ExecuteFileNoEx(Value.NewName)
         end;
     end;
@@ -1509,13 +1509,16 @@ begin
 end;
 
 procedure TPropertiesForm.PmItemPopup(Sender: TObject);
+var
+  FE : Boolean;
 begin
-  Shell1.Visible := FileExists(FileName);
+  FE := FileExistsSafe(FileName);
+  Shell1.Visible := FE;
   if FShowInfoType <> SHOW_INFO_IDS then
-    Show1.Visible := FileExists(FileName);
+    Show1.Visible := FE;
   if FShowInfoType <> SHOW_INFO_IDS then
     Show1.Visible := True;
-  Copy1.Visible := FileExists(FileName);
+  Copy1.Visible := FE;
   if FShowInfoType = SHOW_INFO_IDS then
     Copy1.Visible := True;
   DBItem1.Clear;
@@ -2016,6 +2019,7 @@ var
   I: Integer;
   RAWExif: TRAWExif;
   Orientation : Integer;
+  OldMode : Cardinal;
 
   procedure XInsert(Key, Value: string);
   begin
@@ -2038,68 +2042,73 @@ var
 begin
   VleEXIF.Strings.Clear;
 
-  if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FileName) then
-  begin
-    RAWExif := ReadRAWExif(FileName);
-    try
-      if RAWExif.IsEXIF then
-      begin
-        VleEXIF.InsertRow('RAW Info:', '', True);
-        for I := 0 to RAWExif.Count - 1 do
-          xInsert(Format('%s: ', [RAWExif[i].Description]), RAWExif[i].Value);
-      end else
-        VleEXIF.InsertRow('Info:', L('Exif header not found'), True);
-    finally
-      RAWExif.Free;
-    end;
-  end else
-  begin
-    ExifData := TExifData.Create;
-    try
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FileName) then
+    begin
+      RAWExif := ReadRAWExif(FileName);
       try
-        ExifData.LoadFromJPEG(FileName);
-        if not ExifData.Empty then
+        if RAWExif.IsEXIF then
         begin
-
-          XInsert('Make: ', ExifData.CameraMake);
-          XInsert('Model: ', ExifData.CameraModel);
-          XInsert('Copyright: ', ExifData.Copyright);
-          XInsert('Date and time: ', FormatDateTime('yyyy/mm/dd', ExifData.DateTime));
-          XInsert('Description: ', ExifData.ImageDescription);
-          XInsert('Software: ', ExifData.Software);
-          Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-          case Orientation of
-            DB_IMAGE_ROTATE_0:
-              XInsert('Orientation: ', L('Normal'));
-            DB_IMAGE_ROTATE_90:
-              XInsert('Orientation: ', L('Right'));
-            DB_IMAGE_ROTATE_270:
-              XInsert('Orientation: ', L('Left'));
-            DB_IMAGE_ROTATE_180:
-              XInsert('Orientation: ', L('180 grad.'));
-          end;
-
-          XInsert('Exposure: ', ExifData.ExposureTime.AsString);
-          XInsert('ISO: ', ExifData.ISOSpeedRatings.AsString);
-          XInsert('Focal length: ', ExifData.FocalLength.AsString);
-          XInsert('F number: ', ExifData.FNumber.AsString);
-          if ExifData.Flash.Fired then
-            XInsert('Flash: ', L('On'))
-          else
-            XInsert('Flash: ', L('Off'));
-
-          XInsert('Width: ', IntToStr(ExifData.ExifImageWidth.Value) + ' px.');
-          XInsert('Height: ', IntToStr(ExifData.ExifImageheight.Value) + 'px.');
-        end
-        else
-          VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
-      except
-        on e : Exception do
-          Eventlog(e.Message);
+          VleEXIF.InsertRow('RAW Info:', '', True);
+          for I := 0 to RAWExif.Count - 1 do
+            xInsert(Format('%s: ', [RAWExif[i].Description]), RAWExif[i].Value);
+        end else
+          VleEXIF.InsertRow('Info:', L('Exif header not found'), True);
+      finally
+        RAWExif.Free;
       end;
-    finally
-      F(ExifData);
+    end else
+    begin
+      ExifData := TExifData.Create;
+      try
+        try
+          ExifData.LoadFromJPEG(FileName);
+          if not ExifData.Empty then
+          begin
+
+            XInsert('Make: ', ExifData.CameraMake);
+            XInsert('Model: ', ExifData.CameraModel);
+            XInsert('Copyright: ', ExifData.Copyright);
+            XInsert('Date and time: ', FormatDateTime('yyyy/mm/dd', ExifData.DateTime));
+            XInsert('Description: ', ExifData.ImageDescription);
+            XInsert('Software: ', ExifData.Software);
+            Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+            case Orientation of
+              DB_IMAGE_ROTATE_0:
+                XInsert('Orientation: ', L('Normal'));
+              DB_IMAGE_ROTATE_90:
+                XInsert('Orientation: ', L('Right'));
+              DB_IMAGE_ROTATE_270:
+                XInsert('Orientation: ', L('Left'));
+              DB_IMAGE_ROTATE_180:
+                XInsert('Orientation: ', L('180 grad.'));
+            end;
+
+            XInsert('Exposure: ', ExifData.ExposureTime.AsString);
+            XInsert('ISO: ', ExifData.ISOSpeedRatings.AsString);
+            XInsert('Focal length: ', ExifData.FocalLength.AsString);
+            XInsert('F number: ', ExifData.FNumber.AsString);
+            if ExifData.Flash.Fired then
+              XInsert('Flash: ', L('On'))
+            else
+              XInsert('Flash: ', L('Off'));
+
+            XInsert('Width: ', IntToStr(ExifData.ExifImageWidth.Value) + ' px.');
+            XInsert('Height: ', IntToStr(ExifData.ExifImageheight.Value) + 'px.');
+          end
+          else
+            VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
+        except
+          on e : Exception do
+            Eventlog(e.Message);
+        end;
+      finally
+        F(ExifData);
+      end;
     end;
+  finally
+    SetErrorMode(OldMode);
   end;
 end;
 

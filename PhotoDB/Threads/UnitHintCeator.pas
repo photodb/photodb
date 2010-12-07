@@ -81,7 +81,7 @@ var
 begin
   FreeOnTerminate := True;
 
-  if not FileExists(FInfo.FileName) then
+  if not FileExistsSafe(FInfo.FileName) then
     Exit;
 
   GraphicClass := GetGraphicClass(ExtractFileExt(FInfo.FileName), False);

@@ -255,11 +255,11 @@ begin
 
         Result := ID_OK;
         case res of
-        TD_RESULT_CANCEL : Result := ID_Cancel;
-        TD_RESULT_RETRY : Result := ID_Retry;
-        TD_RESULT_YES : Result := ID_Yes;
-        TD_RESULT_NO : Result := ID_No;
-        TD_RESULT_CLOSE : Result := ID_Abort;
+          TD_RESULT_CANCEL : Result := ID_Cancel;
+          TD_RESULT_RETRY : Result := ID_Retry;
+          TD_RESULT_YES : Result := ID_Yes;
+          TD_RESULT_NO : Result := ID_No;
+          TD_RESULT_CLOSE : Result := ID_Abort;
         end;
       end;
       FreeLibrary(DLLHandle);

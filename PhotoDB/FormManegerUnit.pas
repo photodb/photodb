@@ -542,7 +542,7 @@ begin
   begin
    dbname := GetDirectory(Application.ExeName)+'FolderDB.photodb';
 
-   if FileExists(GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
+   if FileExistsSafe(GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
    dbname:=GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb';
   end;
  except

@@ -2,18 +2,11 @@ unit UnitEditorFullScreenForm;
 
 interface
 
-{$DEFINE PHOTODB}
-
 uses
-{$IFNDEF PHOTODB}
-// dm,
-{$ENDIF}
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Menus,
-  {$IFDEF PHOTODB}
- UnitDBKernel, Dolphin_DB,  UnitDBCommon, UnitDBCommonGraphics,
-{$ENDIF}
-   Language;
+  UnitDBKernel, Dolphin_DB,  UnitDBCommon, UnitDBCommonGraphics,
+  Language;
 
 type
   TEditorFullScreenForm = class(TForm)

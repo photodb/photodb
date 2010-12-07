@@ -5,7 +5,7 @@ interface
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
      Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
      UnitDBFileDialogs, Forms, Language, uVistaFuncs, uLogger,
-     uFileUtils, uTime;
+     uFileUtils, uTime, uMemory;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;
@@ -58,11 +58,10 @@ function GetCDROMDrives : TArrayOfString;
 function GetAllDrives : TArrayOfString;
 function DriveState(driveletter: AnsiChar): TSDriveState;
 Function GetCDVolumeLabel(CDName : AnsiChar) : String;
-function GetDriveName(Drive : AnsiString; DefString : string) : string;
+function GetDriveName(Drive : string; DefString : string) : string;
 function GetMyPicturesFolder : string;
 function GetMyDocumentsFolder : string;
 function GetProgramFolder : string;
-//function AnsiDequotedStr(Value : string) : string;
 function AnsiQuotedStr(const S: string): string;
 function GetSaveImageFileName(InitFile, Filter : string) : string;
 function GetOpenImageFileName(InitFile, Filter : string) : string;
@@ -264,44 +263,45 @@ var
   SearchRec : TSearchRec;
   oldMode: Cardinal;
 
-  function ExtInMask(mask : string; ext : string) : boolean;
+  function ExtInMask(Mask: string; Ext: string): Boolean;
   begin
-   Result:=Pos('|'+ext+'|',mask)<>-1;
+    Result := Pos('|' + Ext + '|', Mask) <> -1;
   end;
 
-  function GetExt(FileName : string) : string;
+  function GetExt(FileName: string): string;
   var
-    s : string;
+    S: string;
   begin
-   s:=ExtractFileExt(FileName);
-   Result:=AnsiUpperCase(Copy(s,1,Length(s)-1));
+    S := ExtractFileExt(FileName);
+    Result := AnsiUpperCase(Copy(S, 1, Length(S) - 1));
   end;
 
 begin
   TW.I.Start('GetDirListing');
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  SetLength(Result,0);
-  if dir = '' then exit;
-  If dir[length(dir)]<>'\' then dir:=dir+'\';
-  Found := FindFirst(dir+'*.*', faAnyFile, SearchRec);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  SetLength(Result, 0);
+  if Dir = '' then
+    Exit;
+  Dir := IncludeTrailingBackslash(Dir);
+  Found := FindFirst(Dir + '*.*', FaAnyFile - FaDirectory, SearchRec);
   while Found = 0 do
   begin
-   if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
-   if ExtInMask(GetExt(SearchRec.Name),Mask) then
-   begin
-    SetLength(Result,length(Result)+1);
-    Result[length(Result)-1]:=dir+SearchRec.Name;
-   end;
-   Found := sysutils.FindNext(SearchRec);
+    if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+      if ExtInMask(GetExt(SearchRec.name), Mask) then
+      begin
+        SetLength(Result, Length(Result) + 1);
+        Result[Length(Result) - 1] := Dir + SearchRec.name;
+      end;
+    Found := Sysutils.FindNext(SearchRec);
   end;
   FindClose(SearchRec);
-  SetErrorMode(oldMode);
+  SetErrorMode(OldMode);
   TW.I.Start('GetDirListing - END');
 end;
 
 function SpilitWords(S : string) : TArrayOfString;
 begin
- Result:=SpilitWordsW(S,' ');
+  Result := SpilitWordsW(S, ' ');
 end;
 
 function SpilitWordsW(S : string; SplitChar : char) : TArrayOfString;
@@ -329,7 +329,6 @@ begin
   end;
   for I := 0 to Length(Result) - 1 do
     Result[I] := Trim(Result[I]);
-
 end;
 
 function aIntToStr(int : integer) : string;
@@ -337,110 +336,58 @@ begin
   Result:=IntToStr(int);
 end;
 
-procedure Default(var aScript : TScript);
+procedure default(var AScript: TScript);
 begin
- SetNamedValue(aScript,'$Default','true');
+  SetNamedValue(AScript, '$Default', 'true');
 end;
 
-procedure InVisible(var aScript : TScript);
+procedure InVisible(var AScript: TScript);
 begin
- SetNamedValue(aScript,'$Visible','false');
+  SetNamedValue(AScript, '$Visible', 'false');
 end;
 
-procedure Disabled(var aScript : TScript);
+procedure Disabled(var AScript: TScript);
 begin
- SetNamedValue(aScript,'$Enabled','false');
+  SetNamedValue(AScript, '$Enabled', 'false');
 end;
 
-procedure Checked(var aScript : TScript);
+procedure Checked(var AScript: TScript);
 begin
- SetNamedValue(aScript,'$Checked','true');
+  SetNamedValue(AScript, '$Checked', 'true');
 end;
 
-function aDirectoryExists(FileName : string) : boolean;
+function ADirectoryExists(FileName: string): Boolean;
 var
-  oldMode: Cardinal;
+  OldMode: Cardinal;
 begin
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  Result:=DirectoryExists(FileName);
-  SetErrorMode(oldMode);
-end;
-
-function aDirectoryFileExists(FileName : string) : boolean;
-var
-  oldMode: Cardinal;
-begin
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  Result:=DirectoryExists(ExtractFileDir(FileName));
-  SetErrorMode(oldMode);
-end;
-
-function aPathFormat(aPath, aFile : string) : string;
-begin
- Result:=StringReplace(aPath,'%1',aFile,[rfReplaceAll,rfIgnoreCase]);
-end;
-
-{procedure Copy_Move(FCM:Boolean;File_List : TStrings);
-var hGlobal,shGlobal:THandle;
-   DropFiles:PDropFiles;
-   REff:Cardinal;
-   dwEffect:^Word;
-   rSize,i:Integer;
-   c:PChar;
-begin
-i:=File_List.Count;
-if (i=0)or(OpenClipboard(0)=false) then exit;
-try
- EmptyClipboard();
- rSize:=sizeof(TDropFiles);
- repeat
-  dec(i);
-  rSize:=rSize+Length(trim(File_List.Strings[i]))+1;
- until (i=0);
- inc(rSize);
- hGlobal:=GlobalAlloc(GMEM_SHARE or GMEM_MOVEABLE or GMEM_ZEROINIT,rSize);
- if hGlobal<>0 then
-  begin
-   DropFiles:=GlobalLock(hGlobal);
-   DropFiles.pFiles:=sizeof(TDropFiles);
-//    DropFiles.pt:=;
-   DropFiles.fNC:=false;
-   DropFiles.fWide:=False;
-   i:=File_List.Count;
-   c:=PChar(DropFiles);
-   c:=c+DropFiles.pFiles;
-   repeat
-    dec(i);
-    StrCopy(c,PChar(trim(File_List.Strings[i])));
-    c:=c+Length(trim(File_List.Strings[i]))+1;
-   until (i=0);
-   GlobalUnlock(hGlobal);
-   shGlobal:=SetClipboardData(CF_HDROP,hGlobal);
-   if (shGlobal<>0) then
-    begin
-     hGlobal:=GlobalAlloc(GMEM_MOVEABLE,sizeof(dwEffect));
-     if hGlobal<>0 then
-      begin
-       dwEffect:=GlobalLock(hGlobal);
-       If FCM then dwEffect^:=DROPEFFECT_COPY else
-       dwEffect^:=DROPEFFECT_MOVE;
-       GlobalUnlock(hGlobal);
-       REff:=RegisterClipboardFormat(PChar('Preferred DropEffect'));//'CFSTR_PREFERREDDROPEFFECT'));
-       SetClipboardData(REff,hGlobal)
-      end;
-    end;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := DirectoryExists(FileName);
+  finally
+    SetErrorMode(OldMode);
   end;
-finally
- CloseClipboard();
 end;
+
+function ADirectoryFileExists(FileName: string): Boolean;
+var
+  OldMode: Cardinal;
+begin
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := DirectoryExists(ExtractFileDir(FileName));
+  finally
+    SetErrorMode(OldMode);
+  end;
 end;
-       }
+
+function APathFormat(APath, AFile: string): string;
+begin
+  Result := StringReplace(APath, '%1', AFile, [RfReplaceAll, RfIgnoreCase]);
+end;
+
 procedure CopyFileSynch(S,D : string);
 begin
- try
-  Windows.CopyFileW(PChar(S),PChar(D),true);
- except
- end;
+  Windows.CopyFile(PChar(S),PChar(D),true);
 end;
 
 procedure CopyFile(aFile : string);
@@ -488,16 +435,18 @@ end;
 
 procedure CutFiles(Files : TArrayOfString);
 var
-  i : integer;
-  aFiles : TStrings;
+  I: Integer;
+  AFiles: TStrings;
 begin
- aFiles:=TStringList.Create;
- for i:=0 to Length(Files)-1 do
- begin
-  aFiles.Add(Files[i])
- end;
- Copy_Move(false,aFiles);
- aFiles.Free;
+  AFiles := TStringList.Create;
+  try
+    for I := 0 to Length(Files) - 1 do
+      AFiles.Add(Files[I]);
+
+    Copy_Move(False, AFiles);
+  finally
+    F(AFiles);
+  end;
 end;
 
 function LoadFIlesFromClipBoard : TArrayOfString;
@@ -549,19 +498,19 @@ if IsClipboardFormatAvailable(CF_HDROP) then
  end;
 end;
 
-function NowString : String;
+function NowString: string;
 begin
- Result:=DateTimeToStr(Now);
+  Result := DateTimeToStr(Now);
 end;
 
-function SumInt(int1, int2 : integer) : integer;
+function SumInt(Int1, Int2: Integer): Integer;
 begin
- Result:=int1+int2;
+  Result := Int1 + Int2;
 end;
 
-function SumStr(str1, str2 : string) : string;
+function SumStr(Str1, Str2: string): string;
 begin
- Result:=str1+str2;
+  Result := Str1 + Str2;
 end;
 
 procedure UnFormatDir(var s:string);
@@ -596,7 +545,7 @@ procedure ExecAndWait(FileName, Params: String);
 var
   StartInfo: TStartupInfo;
   ProcInfo: TProcessInformation;
-  CmdLine: ShortString;
+  CmdLine: string;
 begin
   { Помещаем имя файла между кавычками, с соблюдением всех пробелов в именах Win9x }
   CmdLine := '"' + Filename + '" ' + Params;
@@ -607,9 +556,9 @@ begin
     dwFlags := STARTF_USESHOWWINDOW;
     wShowWindow := 4;
   end;
-  if CreateProcess(nil, PChar( String( CmdLine ) ), nil, nil, false,
+  if CreateProcess(nil, PChar( string( CmdLine ) ), nil, nil, false,
                           CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil,
-                          PChar(ExtractFilePath(Filename)),StartInfo,ProcInfo) then
+                          PChar(ExtractFilePath(Filename)), StartInfo,ProcInfo) then
   { Ожидаем завершения приложения }
   begin
     WaitForSingleObject(ProcInfo.hProcess, INFINITE);
@@ -630,16 +579,16 @@ begin
   UnformatDir(Dir);
   FillChar( Si, SizeOf( Si ) , 0 );
   with Si do begin
-    cb := SizeOf( Si);
+    cb := SizeOf(Si);
     dwFlags := startf_UseShowWindow;
     wShowWindow := 4;
   end;
-  CreateProcess(nil, PWideChar(CmdLine), nil, nil, False, CREATE_DEFAULT_ERROR_MODE, nil, PWideChar(Dir), si, p);
+  CreateProcess(nil, PChar(CmdLine), nil, nil, False, CREATE_DEFAULT_ERROR_MODE, nil, PWideChar(Dir), si, p);
 end;
 
 procedure Exec(FileName : string);
 begin
- ShellExecute(0, 'open', PWideChar(FileName), nil, nil, SW_SHOW)
+  ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOW)
 end;
 
 Procedure aCopyFile(FromFile, ToDir : string);
@@ -661,8 +610,11 @@ var
   oldMode: Cardinal;
 begin
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  RenameFile(PChar(S),PChar(D));
-  SetErrorMode(oldMode);
+  try
+    RenameFile(PChar(S),PChar(D));
+  finally
+    SetErrorMode(oldMode);
+  end;
 end;
 
 function ShowInt(int : integer) : string;
@@ -672,7 +624,7 @@ end;
 
 procedure aDeleteFile(S : String);
 begin
- FileSetAttr(S,faHidden);
+ FileSetAttr(S, faHidden);
  DeleteFile(PChar(S));
 end;
 
@@ -681,19 +633,19 @@ begin
  Result:=(Word(GetKeyState(VK_MENU)) and $8000)<>0;
 end;
 
-function CtrlKeyDown : boolean;
+function CtrlKeyDown: Boolean;
 begin
- Result:=(Word(GetKeyState(VK_CONTROL)) and $8000)<>0;
+  Result := (Word(GetKeyState(VK_CONTROL)) and $8000) <> 0;
 end;
 
-function ShiftKeyDown : boolean;
+function ShiftKeyDown: Boolean;
 begin
- Result:=(Word(GetKeyState(VK_SHIFT)) and $8000)<>0;
+  Result := (Word(GetKeyState(VK_SHIFT)) and $8000) <> 0;
 end;
 
-procedure ShowString(str : string);
+procedure ShowString(Str: string);
 begin
- MessageBoxDB(Dolphin_DB.GetActiveFormHandle,str,Language.TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+  MessageBoxDB(Dolphin_DB.GetActiveFormHandle,str,Language.TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
 end;
 
 function GetSmallIconByPath(IconPath : String; Big : boolean = false) : TIcon;
@@ -756,78 +708,94 @@ end;
 
 function AddAssociatedIcon(Path : string; ImageList : TImageList; var IconsCount : integer) : integer;
 var
-  ico : TIcon;
-  oldMode: Cardinal;
+  Ico : TIcon;
+  OldMode: Cardinal;
 
- function ExtractAssociatedIcon_(FileName :String) :HICON;
- var
-   i : Word;
-   b : array[0..2048] of char;
- begin
-  i := 1;
-  Result := ExtractAssociatedIcon(0, StrLCopy(b,PChar(FileName),SizeOf(b)-1),i);
- end;
+  function ExtractAssociatedIconFixed(FileName :String) :HICON;
+  var
+    I : Word;
+    B : array[0 .. 2048] of Char;
+  begin
+    I := 1;
+    Result := ExtractAssociatedIcon(0, StrLCopy(B, PChar(FileName), SizeOf(B) - 1), I);
+  end;
 
 begin
- ico := GetSmallIconByPath(Path,false);
- oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- ico.Handle:=ExtractAssociatedIcon_(Path);
- SetErrorMode(oldMode);
- if not Ico.Empty then
- begin
-  ImageList.AddIcon(ico);
-  inc(IconsCount);
-  Result:=ImageList.Count-1;
- end else Result:=-1;
- ico.Free;
+  Ico := GetSmallIconByPath(Path, False);
+  try
+    OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+    try
+      Ico.Handle := ExtractAssociatedIconFixed(Path);
+    finally
+      SetErrorMode(oldMode);
+    end;
+    if not Ico.Empty then
+    begin
+      ImageList.AddIcon(ico);
+      inc(IconsCount);
+      Result:=ImageList.Count-1;
+    end
+    else Result:=-1;
+  finally
+    F(Ico);
+  end;
 end;
 
 function GetUSBDrives : TArrayOfString;
 var
-  i : integer;
-  oldMode: Cardinal;
+  I : integer;
+  OldMode: Cardinal;
 begin
- SetLength(Result,0);
- oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- for i:=ord('C') to ord('Z') do
- If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_REMOVABLE) then
- begin
-  SetLength(Result,Length(Result)+1);
-  Result[Length(Result)-1]:=Chr(i)+':\';
- end;
- SetErrorMode(oldMode);
+  SetLength(Result, 0);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    for I:=Ord('C') to Ord('Z') do
+    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_REMOVABLE) then
+    begin
+      SetLength(Result, Length(Result) + 1);
+      Result[Length(Result)-1] := Chr(I) + ':\';
+    end;
+  finally
+    SetErrorMode(OldMode);
+  end;
 end;
 
 function GetCDROMDrives : TArrayOfString;
 var
-  i : integer;
-  oldMode: Cardinal;
+  I : integer;
+  OldMode: Cardinal;
 begin
- SetLength(Result,0);
- oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- for i:=ord('C') to ord('Z') do
- If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_CDROM) then
- begin
-  SetLength(Result,Length(Result)+1);
-  Result[Length(Result)-1]:=Chr(i)+':\';
- end;
- SetErrorMode(oldMode);
+  SetLength(Result, 0);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    for I := Ord('C') to Ord('Z') do
+    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
+    begin
+      SetLength(Result, Length(Result) + 1);
+      Result[Length(Result)-1] := Chr(I) + ':\';
+    end;
+  finally
+    SetErrorMode(OldMode);
+  end;
 end;
 
 function GetAllDrives : TArrayOfString;
 var
-  i : integer;
-  oldMode: Cardinal;
+  I : integer;
+  OldMode: Cardinal;
 begin
- SetLength(Result,0);
- oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- for i:=ord('C') to ord('Z') do
- If (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_FIXED) or (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_CDROM) or (GetDriveType(PChar(Chr(i)+':\'))=DRIVE_REMOVABLE) then
- begin
-  SetLength(Result,Length(Result)+1);
-  Result[Length(Result)-1]:=Chr(i)+':\';
- end;
- SetErrorMode(oldMode);
+  SetLength(Result, 0);
+  OldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    for I := ord('C') to ord('Z') do
+    if (GetDriveType(PChar(Chr(I)+':\'))=DRIVE_FIXED) or (GetDriveType(PChar(Chr(I)+':\'))=DRIVE_CDROM) or (GetDriveType(PChar(Chr(I)+':\'))=DRIVE_REMOVABLE) then
+    begin
+      SetLength(Result, Length(Result) + 1);
+      Result[Length(Result)-1] := Chr(I) + ':\';
+    end;
+  finally
+    SetErrorMode(OldMode);
+  end;
 end;
 
 function DriveState(driveletter: AnsiChar): TSDriveState;
@@ -838,20 +806,23 @@ var
   retcode: Integer;
 begin
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  mask := '?:\*.*';
-  mask[1] := Char(driveletter);
-{$I-} { не возбуждаем исключение при неудаче }
-  retcode := FindFirst(mask, faAnyfile, SRec);
-  FindClose(SRec);
-{$I+}
-  case retcode of
-    0: Result := DSS_DISK_WITH_FILES; { обнаружен по крайней мере один файл }
-    -18: Result := DSS_EMPTY_DISK; { никаких файлов не обнаружено, но ok }
-    -21: Result := DSS_NO_DISK; { DOS ERROR_NOT_READY }
-  else
-    Result := DSS_UNFORMATTED_DISK; { в моей системе значение равно -1785!}
+  try
+    mask := '?:\*.*';
+    mask[1] := Char(driveletter);
+  {$I-} { не возбуждаем исключение при неудаче }
+    retcode := FindFirst(mask, faAnyfile, SRec);
+    FindClose(SRec);
+  {$I+}
+    case retcode of
+      0: Result := DSS_DISK_WITH_FILES; { обнаружен по крайней мере один файл }
+      -18: Result := DSS_EMPTY_DISK; { никаких файлов не обнаружено, но ok }
+      -21: Result := DSS_NO_DISK; { DOS ERROR_NOT_READY }
+    else
+      Result := DSS_UNFORMATTED_DISK; { в моей системе значение равно -1785!}
+    end;
+  finally
+    SetErrorMode(oldMode);
   end;
-  SetErrorMode(oldMode);
 end;
 
 Function GetCDVolumeLabel(CDName : AnsiChar) : String;
@@ -862,11 +833,14 @@ var
   MaxComponentLength,FileSystemFlags: Cardinal;
   oldMode: Cardinal;
 begin
-  GetVolumeInformation(Pchar(CDName+':\'),VolumeName,MAX_PATH,@VolumeSerialNo,
-  MaxComponentLength,FileSystemFlags, FileSystemName,MAX_PATH);
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  SetErrorMode(oldMode);
-  Result:=VolumeName;
+  oldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    GetVolumeInformation(PChar(CDName + ':\'), VolumeName, MAX_PATH, @VolumeSerialNo,
+      MaxComponentLength, FileSystemFlags, FileSystemName, MAX_PATH);
+  finally
+    SetErrorMode(oldMode);
+  end;
+  Result := VolumeName;
 end;
 
 function MrsGetFileType(strFilename: string): string;
@@ -876,55 +850,70 @@ var
 begin
   FillChar(FileInfo, SizeOf(FileInfo), #0);
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  SHGetFileInfo(PChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
-  Result := FileInfo.szTypeName;
-  SetErrorMode(oldMode);
+  try
+    SHGetFileInfo(PChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
+    Result := FileInfo.szTypeName;
+  finally
+    SetErrorMode(oldMode);
+  end;
 end;
 
-function GetDriveName(Drive : AnsiString; DefString : string) : string;
+function GetDriveName(Drive : string; DefString : string) : string;
 var
   DS :  TSDriveState;
   S : string;
   oldMode: Cardinal;
 begin
- Result:= string(Drive);
+  Result:= string(Drive);
   oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- if Length(Drive)<2 then exit;
- DS:=DriveState(Drive[1]);
- If (DS=DSS_DISK_WITH_FILES) or (DS=DSS_EMPTY_DISK) then
- begin
-  S:=GetCDVolumeLabel(Drive[1]);
-  if S<>'' then
-  Result:=S+' ('+Char(Drive[1])+':)' else
-  Result:=DefString+' ('+Char(Drive[1])+':)';
- end else
- Result:=MrsGetFileType(Drive[1]+':\')+' ('+Drive[1]+':)';
-  SetErrorMode(oldMode);
+  try
+    if Length(Drive)<2 then
+      Exit;
+    DS := DriveState(AnsiChar(Drive[1]));
+    if (DS = DSS_DISK_WITH_FILES) or (DS = DSS_EMPTY_DISK) then
+    begin
+      S := GetCDVolumeLabel(AnsiChar(Drive[1]));
+      if S <> '' then
+        Result := S + ' (' + Drive[1] + ':)'
+      else
+        Result := DefString + ' (' + Drive[1] + ':)';
+    end
+    else
+      Result := MrsGetFileType(Drive[1] + ':\') + ' (' + Drive[1] + ':)';
+  finally
+    SetErrorMode(OldMode);
+  end;
 end;
 
-function GetMyPicturesFolder : string;
+function GetMyPicturesFolder: string;
 var
   Reg: TRegIniFile;
 begin
- Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
- Result:=Reg.ReadString('Shell Folders', 'My Pictures', '');
- Reg.Free;
+  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
+  try
+    Result := Reg.ReadString('Shell Folders', 'My Pictures', '');
+  finally
+    F(Reg);
+  end;
 end;
 
 function GetMyDocumentsFolder : string;
 var
   Reg: TRegIniFile;
 begin
- Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
- Result:=Reg.ReadString('Shell Folders', 'Personal', '');
- Reg.Free;
+  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
+  try
+    Result := Reg.ReadString('Shell Folders', 'Personal', '');
+  finally
+    F(Reg);
+  end;
 end;
 
 function FileInPath(aFile, aPath : string) : boolean;
 begin
- aPath:=AnsiLowerCase(aPath);
- aFile:=AnsiLowerCase(aFile);
- Result:=Copy(aFile,1,Length(aPath))=aPath;
+  aPath := AnsiLowerCase(aPath);
+  aFile := AnsiLowerCase(aFile);
+  Result := Copy(aFile, 1, Length(aPath)) = aPath;
 end;
 
 end.

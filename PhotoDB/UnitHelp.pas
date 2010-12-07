@@ -5,34 +5,35 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmMemo, ImButton, ExtCtrls, Menus, clipbrd, Dolphin_DB,
-  GraphicsBaseTypes;
+  GraphicsBaseTypes, uMemory;
 
 type
-  TCanHelpCloseProcedure = Procedure(Sender : TObject; var CanClose : Boolean) of object;
+  TCanHelpCloseProcedure = procedure(Sender: TObject; var CanClose: Boolean) of object;
 
 type
   THelpPopup = class(TForm)
-    DmMemo1: TDmMemo;
-    ImButton1: TImButton;
+    MemText: TDmMemo;
+    ImbClose: TImButton;
     DestroyTimer: TTimer;
-    ImButton2: TImButton;
+    ImbNext: TImButton;
     Label1: TLabel;
-    PopupMenu1: TPopupMenu;
+    PmCopy: TPopupMenu;
     Copy1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure ColorFill(var image : tbitmap);
-    procedure ImButton1Click(Sender: TObject);
+    procedure ImbCloseClick(Sender: TObject);
     procedure SetPos(P : TPoint);
     procedure ReCreateRGN;
     procedure DestroyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDeactivate(Sender: TObject);
-    procedure ImButton2Click(Sender: TObject);
+    procedure ImbNextClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Copy1Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure FormDestroy(Sender: TObject);
   private
     FActivePoint: TPoint;
     FText: TStrings;
@@ -129,234 +130,226 @@ end;
 
 function CreateBitmapRgn(Bitmap: TBitmap; TransClr: TColorRef): hRgn;
 var
-// bmInfo: TBitmap;                //структура BITMAP WinAPI
- W, H: Integer;                  //высота и ширина растра
- bmDIB: hBitmap;                 //дискрептор независимого растра
- bmiInfo: BITMAPINFO;            //структура BITMAPINFO WinAPI
- lpBits, lpOldBits: PRGBTriple;  //указатели на структуры RGBTRIPLE WinAPI
- lpData: PRgnData;               //указатель на структуру RGNDATA WinAPI
- X, Y, C, F, I: Integer;         //переменные циклов
- Buf: Pointer;                   //указатель
- BufSize: Integer;               //размер указателя
- rdhInfo: TRgnDataHeader;        //структура RGNDATAHEADER WinAPI
- lpRect: PRect;                  //указатель на TRect (RECT WinAPI)
- memDC : HDC;
+  // bmInfo: TBitmap;                //структура BITMAP WinAPI
+  W, H: Integer; // высота и ширина растра
+  BmDIB: HBitmap; // дискрептор независимого растра
+  BmiInfo: BITMAPINFO; // структура BITMAPINFO WinAPI
+  LpBits, LpOldBits: PRGBTriple; // указатели на структуры RGBTRIPLE WinAPI
+  LpData: PRgnData; // указатель на структуру RGNDATA WinAPI
+  X, Y, C, F, I: Integer; // переменные циклов
+  Buf: Pointer; // указатель
+  BufSize: Integer; // размер указателя
+  RdhInfo: TRgnDataHeader; // структура RGNDATAHEADER WinAPI
+  LpRect: PRect; // указатель на TRect (RECT WinAPI)
+  MemDC: HDC;
 begin
- Result:=0;
- if Bitmap=nil then Exit;          //если растр не задан, выходим
+  Result := 0;
+  if Bitmap = nil then
+    Exit; // если растр не задан, выходим
 
-// GetObject(Bitmap, SizeOf(bmInfo), @bmInfo);  //узнаем размеры растра
- W:=Bitmap.Width;                           //используя структуру BITMAP
- H:=Bitmap.Height;
- I:=(W*3)-((W*3) div 4)*4;                    //определяем смещение в байтах
- if I<>0 then I:=4-I;
+  // GetObject(Bitmap, SizeOf(bmInfo), @bmInfo);  //узнаем размеры растра
+  W := Bitmap.Width; // используя структуру BITMAP
+  H := Bitmap.Height;
+  I := (W * 3) - ((W * 3) div 4) * 4; // определяем смещение в байтах
+  if I <> 0 then
+    I := 4 - I;
 
-//Пояснение: растр Windows Bitmap читается снизу вверх, причем каждая строка
-//дополняется нулевыми байтами до ее кратности 4.
-//для 32-х битный растров такой сдвиг делать не надо.
+  // Пояснение: растр Windows Bitmap читается снизу вверх, причем каждая строка
+  // дополняется нулевыми байтами до ее кратности 4.
+  // для 32-х битный растров такой сдвиг делать не надо.
 
-//заполняем BITMAPINFO для передачи в CreateDIBSection
- memDC := CreateCompatibleDC(0);
- bmiInfo.bmiHeader.biWidth:=W;             //ширина
- bmiInfo.bmiHeader.biHeight:=H;            //высота
- bmiInfo.bmiHeader.biPlanes:=1;            //всегда 1
- bmiInfo.bmiHeader.biBitCount:=24;         //три байта на пиксель
- bmiInfo.bmiHeader.biCompression:=BI_RGB;  //без компрессии
- bmiInfo.bmiHeader.biSizeImage:=0;         //размер не знаем, ставим в ноль
- bmiInfo.bmiHeader.biXPelsPerMeter:=2834;  //пикселей на метр, гор.
- bmiInfo.bmiHeader.biYPelsPerMeter:=2834;  //пикселей на метр, верт.
- bmiInfo.bmiHeader.biClrUsed:=0;           //палитры нет, все в ноль
- bmiInfo.bmiHeader.biClrImportant:=0;      //то же
- bmiInfo.bmiHeader.biSize:=SizeOf(bmiInfo.bmiHeader); //размер структруы
- bmDIB:=CreateDIBSection(memDC, bmiInfo, DIB_RGB_COLORS,
-                         Pointer(lpBits), 0, 0);
-//создаем независимый растр WxHx24, без палитры, в указателе lpBits получаем
-//адрес первого байта этого растра. bmDIB - дискрептор растра
+  // заполняем BITMAPINFO для передачи в CreateDIBSection
+  MemDC := CreateCompatibleDC(0);
+  bmiInfo.bmiHeader.biWidth := W;             //ширина
+  bmiInfo.bmiHeader.biHeight := H;            //высота
+  bmiInfo.bmiHeader.biPlanes := 1;            //всегда 1
+  bmiInfo.bmiHeader.biBitCount := 24;         //три байта на пиксель
+  bmiInfo.bmiHeader.biCompression := BI_RGB;  //без компрессии
+  BmiInfo.BmiHeader.BiSizeImage := 0; // размер не знаем, ставим в ноль
+  BmiInfo.BmiHeader.BiXPelsPerMeter := 2834; // пикселей на метр, гор.
+  BmiInfo.BmiHeader.BiYPelsPerMeter := 2834; // пикселей на метр, верт.
+  BmiInfo.BmiHeader.BiClrUsed := 0; // палитры нет, все в ноль
+  BmiInfo.BmiHeader.BiClrImportant := 0; // то же
+  BmiInfo.BmiHeader.BiSize := SizeOf(BmiInfo.BmiHeader); // размер структруы
+  BmDIB := CreateDIBSection(MemDC, BmiInfo, DIB_RGB_COLORS, Pointer(LpBits), 0, 0);
+  // создаем независимый растр WxHx24, без палитры, в указателе lpBits получаем
+  // адрес первого байта этого растра. bmDIB - дискрептор растра
 
-//заполняем первые шесть членов BITMAPINFO для передачи в GetDIBits
+  // заполняем первые шесть членов BITMAPINFO для передачи в GetDIBits
 
- bmiInfo.bmiHeader.biWidth:=W;             //ширина
- bmiInfo.bmiHeader.biHeight:=H;            //высота
- bmiInfo.bmiHeader.biPlanes:=1;            //всегда 1
- bmiInfo.bmiHeader.biBitCount:=24;         //три байта на пиксель
- bmiInfo.bmiHeader.biCompression:=BI_RGB;  //без компресси
- bmiInfo.bmiHeader.biSize:=SizeOf(bmiInfo.bmiHeader); //размер структуры
- GetDIBits(memDC, Bitmap.Handle, 0, H-1, lpBits, bmiInfo, DIB_RGB_COLORS);
-//конвертируем исходный растр в наш с его копированием по адресу lpBits
+  BmiInfo.BmiHeader.BiWidth := W; // ширина
+  BmiInfo.BmiHeader.BiHeight := H; // высота
+  BmiInfo.BmiHeader.BiPlanes := 1; // всегда 1
+  BmiInfo.BmiHeader.BiBitCount := 24; // три байта на пиксель
+  BmiInfo.BmiHeader.BiCompression := BI_RGB; // без компресси
+  BmiInfo.BmiHeader.BiSize := SizeOf(BmiInfo.BmiHeader); // размер структуры
+  GetDIBits(MemDC, Bitmap.Handle, 0, H - 1, LpBits, BmiInfo, DIB_RGB_COLORS);
+  // конвертируем исходный растр в наш с его копированием по адресу lpBits
 
- lpOldBits:=lpBits;  //запоминаем адрес lpBits
+  LpOldBits := LpBits; // запоминаем адрес lpBits
 
-//первый проход - подсчитываем число прямоугольников, необходимых для
-//создания региона
- C:=0;                         //сначала ноль
- for Y:=H-1 downto 0 do        //проход снизу вверх
-   begin
-     X:=0;
-     while X<W do              //от 0 до ширины-1
-       begin
-//пропускаем прзрачный цвет, увеличивая координату и указатель
-         while (RGB(lpBits.rgbtRed, lpBits.rgbtGreen,
-                    lpBits.rgbtBlue)=TransClr) and (X<W) do
-           begin
-             Inc(lpBits);
-             X:=X+1;
-           end;
-//если нашли не прозрачный цвет, то считаем, сколько точек в ряду он идет
-         if RGB(lpBits.rgbtRed, lpBits.rgbtGreen,
-                lpBits.rgbtBlue)<>TransClr then
-           begin
-             while (RGB(lpBits.rgbtRed, lpBits.rgbtGreen,
-                     lpBits.rgbtBlue)<>TransClr) and (X<W) do
-               begin
-                 Inc(lpBits);
-                 X:=X+1;
-               end;
-             C:=C+1;  //увиличиваем счетчик прямоугольников
-           end;
-       end;
-//ряд закончился, необходимо увеличить указатель до кратности 4
-     PChar(lpBits):=PChar(lpBits)+I;
-   end;
-
- lpBits:=lpOldBits;  //восстанавливаем значение lpBits
-
-//Заполняем структуру RGNDATAHEADER
- rdhInfo.iType:=RDH_RECTANGLES;             //будем использовать прямоугольники
- rdhInfo.nCount:=C;                         //их количество
- rdhInfo.nRgnSize:=0;                       //размер выделяем памяти не знаем
- rdhInfo.rcBound:=Rect(0, 0, W, H);         //размер региона
- rdhInfo.dwSize:=SizeOf(rdhInfo);           //размер структуры
-
-//выделяем память для струтуры RGNDATA:
-//сумма RGNDATAHEADER и необходимых на прямоугольников
- BufSize:=SizeOf(rdhInfo)+SizeOf(TRect)*C;
- GetMem(Buf, BufSize);
- lpData:=Buf;             //ставим указатель на выделенную память
- lpData.rdh:=rdhInfo;     //заносим в память RGNDATAHEADER
-
-//Заполдяенм память прямоугольниками
- lpRect:=@lpData.Buffer;  //первый прямоугольник
- for Y:=H-1 downto 0 do
-   begin
-     X:=0;
-     while X<W do
-       begin
-         while (RGB(lpBits.rgbtRed, lpBits.rgbtGreen,
-                 lpBits.rgbtBlue)=TransClr) and (X<W) do
-           begin
-             Inc(lpBits);
-             X:=X+1;
-           end;
-         if RGB(lpBits.rgbtRed, lpBits.rgbtGreen,
-                lpBits.rgbtBlue)<>TransClr then
-           begin
-             F:=X;
-             while (RGB(lpBits.rgbtRed, lpBits.rgbtGreen,
-                     lpBits.rgbtBlue)<>TransClr) and (X<W) do
-               begin
-                 Inc(lpBits);
-                 X:=X+1;
-               end;
-             lpRect^:=Rect(F, Y-1, X, Y);  //заносим координаты
-             Inc(lpRect);                  //переходим к следующему
-           end;
-       end;
-     PChar(lpBits):=PChar(lpBits)+I;
-   end;
-
-//после окночания заполнения структуры RGNDATA можно создавать регион.
-//трансформации нам не нужны, ставим в nil, указываем размер
-//созданной структуры и ее саму.
- Result:=ExtCreateRegion(nil, BufSize, lpData^);  //создаем регион
-
- FreeMem(Buf, BufSize);  //теперь структура RGNDATA больше не нужна, удаляем
- DeleteObject(bmDIB);    //созданный растр тоже удаляем
-end;
-
-function BitmapToRegion(hBmp: TBitmap; TransColor: TColor): HRGN;
-begin
-  Result:=CreateBitmapRgn(hBmp, TransColor);
-end;
-
-procedure THelpPopup.ColorFill(var image : tbitmap);
-var
-  i, j : integer;
-  p: PARGB;
-begin
- for i:=0 to image.Height-1 do
- begin
-  p:=image.ScanLine[i];
-  for j:=0 to image.Width-1 do
+  // первый проход - подсчитываем число прямоугольников, необходимых для
+  // создания региона
+  C := 0; // сначала ноль
+  for Y := H - 1 downto 0 do // проход снизу вверх
   begin
-   p[j].b:=p[j].b div 2;
-   p[j].r:=p[j].r div 2+128;
-   p[j].g:=p[j].g div 2+128;
+    X := 0;
+    while X < W do // от 0 до ширины-1
+    begin
+      // пропускаем прзрачный цвет, увеличивая координату и указатель
+      while (RGB(LpBits.RgbtRed, LpBits.RgbtGreen, LpBits.RgbtBlue) = TransClr) and (X < W) do
+      begin
+        Inc(LpBits);
+        X := X + 1;
+      end;
+      // если нашли не прозрачный цвет, то считаем, сколько точек в ряду он идет
+      if RGB(LpBits.RgbtRed, LpBits.RgbtGreen, LpBits.RgbtBlue) <> TransClr then
+      begin
+        while (RGB(LpBits.RgbtRed, LpBits.RgbtGreen, LpBits.RgbtBlue) <> TransClr) and (X < W) do
+        begin
+          Inc(LpBits);
+          X := X + 1;
+        end;
+        C := C + 1; // увиличиваем счетчик прямоугольников
+      end;
+    end;
+    // ряд закончился, необходимо увеличить указатель до кратности 4
+    PChar(LpBits) := PChar(LpBits) + I;
   end;
- end;
+
+  LpBits := LpOldBits; // восстанавливаем значение lpBits
+
+  // Заполняем структуру RGNDATAHEADER
+  RdhInfo.IType := RDH_RECTANGLES; // будем использовать прямоугольники
+  RdhInfo.NCount := C; // их количество
+  RdhInfo.NRgnSize := 0; // размер выделяем памяти не знаем
+  RdhInfo.RcBound := Rect(0, 0, W, H); // размер региона
+  RdhInfo.DwSize := SizeOf(RdhInfo); // размер структуры
+
+  // выделяем память для струтуры RGNDATA:
+  // сумма RGNDATAHEADER и необходимых на прямоугольников
+  BufSize := SizeOf(RdhInfo) + SizeOf(TRect) * C;
+  GetMem(Buf, BufSize);
+  LpData := Buf; // ставим указатель на выделенную память
+  LpData.Rdh := RdhInfo; // заносим в память RGNDATAHEADER
+
+  // Заполдяенм память прямоугольниками
+  LpRect := @LpData.Buffer; // первый прямоугольник
+  for Y := H - 1 downto 0 do
+  begin
+    X := 0;
+    while X < W do
+    begin
+      while (RGB(LpBits.RgbtRed, LpBits.RgbtGreen, LpBits.RgbtBlue) = TransClr) and (X < W) do
+      begin
+        Inc(LpBits);
+        X := X + 1;
+      end;
+      if RGB(LpBits.RgbtRed, LpBits.RgbtGreen, LpBits.RgbtBlue) <> TransClr then
+      begin
+        F := X;
+        while (RGB(LpBits.RgbtRed, LpBits.RgbtGreen, LpBits.RgbtBlue) <> TransClr) and (X < W) do
+        begin
+          Inc(LpBits);
+          X := X + 1;
+        end;
+        LpRect^ := Rect(F, Y - 1, X, Y); // заносим координаты
+        Inc(LpRect); // переходим к следующему
+      end;
+    end;
+    PChar(LpBits) := PChar(LpBits) + I;
+  end;
+
+  // после окночания заполнения структуры RGNDATA можно создавать регион.
+  // трансформации нам не нужны, ставим в nil, указываем размер
+  // созданной структуры и ее саму.
+  Result := ExtCreateRegion(nil, BufSize, LpData^); // создаем регион
+
+  FreeMem(Buf, BufSize); // теперь структура RGNDATA больше не нужна, удаляем
+  DeleteObject(BmDIB); // созданный растр тоже удаляем
 end;
 
-procedure THelpPopup.DoDelp(HelpMessage: String; Point: TPoint);
+function BitmapToRegion(HBmp: TBitmap; TransColor: TColor): HRGN;
 begin
- HelpText:=HelpMessage;
- ActivePoint:=Point;
- Show;
- Refresh;
+  Result := CreateBitmapRgn(HBmp, TransColor);
+end;
+
+procedure THelpPopup.ColorFill(var Image: TBitmap);
+var
+  I, J: Integer;
+  P: PARGB;
+begin
+  for I := 0 to Image.Height - 1 do
+  begin
+    P := Image.ScanLine[I];
+    for J := 0 to Image.Width - 1 do
+    begin
+      P[J].B := P[J].B div 2;
+      P[J].R := P[J].R div 2 + 128;
+      P[J].G := P[J].G div 2 + 128;
+    end;
+  end;
+end;
+
+procedure THelpPopup.DoDelp(HelpMessage: string; Point: TPoint);
+begin
+  HelpText := HelpMessage;
+  ActivePoint := Point;
+  Show;
+  Refresh;
 end;
 
 procedure THelpPopup.FormCreate(Sender: TObject);
 begin
- Copy1.Caption:=TEXT_MES_COPY;
- FCallBack:=nil;
- FOnCanCloseMessage:=true;
- FNextButtonVisible:=false;
- FText:=TStringList.Create;
- ImButton1.Filter:=ColorFill;
- ImButton1.refresh;
- Bitmap := TBitmap.Create;
- Bitmap.PixelFormat:=pf24bit;
- dh:=100;
- dw:=220;
- FOnHelpClose:=nil;
- ImButton2.Filter:=ColorFill;
- ImButton2.refresh;
- ImButton2.Caption:='Ok';
- ImButton2.ShowCaption:=false;
+  Copy1.Caption := TEXT_MES_COPY;
+  FCallBack := nil;
+  FOnCanCloseMessage := True;
+  FNextButtonVisible := False;
+  FText := TStringList.Create;
+  ImbClose.Filter := ColorFill;
+  ImbClose.Refresh;
+  Bitmap := TBitmap.Create;
+  Bitmap.PixelFormat := Pf24bit;
+  Dh := 100;
+  Dw := 220;
+  FOnHelpClose := nil;
+  ImbNext.Filter := ColorFill;
+  ImbNext.Refresh;
+  ImbNext.Caption := 'Ok';
+  ImbNext.ShowCaption := False;
 end;
 
 procedure THelpPopup.FormPaint(Sender: TObject);
 begin
- try
-  Canvas.Draw(0,-1,Bitmap);
- except
- end;
+  Canvas.Draw(0, -1, Bitmap);
 end;
 
-procedure THelpPopup.ImButton1Click(Sender: TObject);
+procedure THelpPopup.ImbCloseClick(Sender: TObject);
 begin
- Close
+  Close;
 end;
 
 procedure THelpPopup.ReCreateRGN;
 var
-  RGN : HRGN;
-  dx, dy : integer;
-  PP : array[0..3] of TPoint;
+  RGN: HRGN;
+  Dx, Dy: Integer;
+  PP: array [0 .. 3] of TPoint;
 begin
- Bitmap.Width:=Width;
- Bitmap.Height:=Height;
- Bitmap.Canvas.Brush.Color:=$FFFFFF;
- Bitmap.Canvas.Pen.Color:=$FFFFFF;
- Bitmap.Canvas.Rectangle(0,0,Bitmap.Width,Bitmap.Height);
- Bitmap.Canvas.Brush.Color:=$00FFFF;
- Bitmap.Canvas.Pen.Color:=$0;
- dx:=50;
- dy:=50;
- Bitmap.Canvas.RoundRect(0+dx,0+dy,dw+dx,dh+dy,10,10);
- if (Left-FActivePoint.X>=0) and (Top-FActivePoint.y>=0) then
- begin
-  PP[0]:=Point(dx+20,dy);
-  PP[1]:=Point(dx+40,dy);
-  PP[2]:=Point(0, 0);
+  Bitmap.Width := Width;
+  Bitmap.Height := Height;
+  Bitmap.Canvas.Brush.Color := $FFFFFF;
+  Bitmap.Canvas.Pen.Color := $FFFFFF;
+  Bitmap.Canvas.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
+  Bitmap.Canvas.Brush.Color := $00FFFF;
+  Bitmap.Canvas.Pen.Color := $0;
+  Dx := 50;
+  Dy := 50;
+  Bitmap.Canvas.RoundRect(0+dx,0+dy,dw+dx,dh+dy,10,10);
+  if (Left-FActivePoint.X>=0) and (Top-FActivePoint.y>=0) then
+  begin
+    PP[0]:=Point(dx+20,dy);
+    PP[1]:=Point(dx+40,dy);
+    PP[2]:=Point(0, 0);
     PP[3] := Point(Dx + 20, Dy);
     Bitmap.Canvas.Polygon(PP);
     Bitmap.Canvas.Brush.Color := $00FFFF;
@@ -365,50 +358,50 @@ begin
     Bitmap.Canvas.LineTo(Dx + 40, Dy);
   end;
   if (Left - FActivePoint.X >= 0) and (Top-FActivePoint.y<0) then
- begin
-  PP[0]:=Point(dx+20,dy+dh-1);
-  PP[1]:=Point(dx+40,dy+dh-1);
-  PP[2]:=Point(0,height-1);
-  PP[3]:=Point(dx+20,dy+dh-1);
-  Bitmap.Canvas.Polygon(PP);
-  Bitmap.Canvas.Brush.Color:=$00FFFF;
-  Bitmap.Canvas.Pen.Color:=$00FFFF;
-  Bitmap.Canvas.MoveTo(dx+20,dy+dh-1);
-  Bitmap.Canvas.LineTo(dx+40,dy+dh-1);
- end;
- if (Left-FActivePoint.X<0) and (Top-FActivePoint.y<0) then
- begin
-  PP[0]:=Point(dx-20+dw,dy+dh-1);
-  PP[1]:=Point(dx-40+dw,dy+dh-1);
-  PP[2]:=Point(Width-1,Height-1);
-  PP[3]:=Point(dx-20+dw,dy+dh-1);
-  Bitmap.Canvas.Polygon(PP);
-  Bitmap.Canvas.Brush.Color:=$00FFFF;
-  Bitmap.Canvas.Pen.Color:=$00FFFF;
-  Bitmap.Canvas.MoveTo(dx+dw-20,dy+dh-1);
-  Bitmap.Canvas.LineTo(dx+dw-40,dy+dh-1);
- end;
- if (Left-FActivePoint.X<0) and (Top-FActivePoint.y>=0) then
- begin
-  PP[0]:=Point(dx-20+dw,dy);
-  PP[1]:=Point(dx-40+dw,dy);
-  PP[2]:=Point(Width-1,0);
-  PP[3]:=Point(dx-20+dw,dy);
-  Bitmap.Canvas.Polygon(PP);
-  Bitmap.Canvas.Brush.Color:=$00FFFF;
-  Bitmap.Canvas.Pen.Color:=$00FFFF;
-  Bitmap.Canvas.MoveTo(dx-20+dw,dy);
-  Bitmap.Canvas.LineTo(dx-40+dw,dy);
- end;
- RGN:=BitmapToRegion(Bitmap,$FFFFFF);
- SetWindowRGN(Handle,RGN,false);
- FormPaint(Self);
+  begin
+    PP[0]:=Point(dx+20,dy+dh-1);
+    PP[1]:=Point(dx+40,dy+dh-1);
+    PP[2]:=Point(0, Height - 1);
+    PP[3] := Point(Dx + 20, Dy + Dh - 1);
+    Bitmap.Canvas.Polygon(PP);
+    Bitmap.Canvas.Brush.Color := $00FFFF;
+    Bitmap.Canvas.Pen.Color := $00FFFF;
+    Bitmap.Canvas.MoveTo(Dx + 20, Dy + Dh - 1);
+    Bitmap.Canvas.LineTo(Dx + 40, Dy + Dh - 1);
+  end;
+  if (Left - FActivePoint.X < 0) and (Top - FActivePoint.Y < 0) then
+  begin
+    PP[0] := Point(Dx - 20 + Dw, Dy + Dh - 1);
+    PP[1] := Point(Dx - 40 + Dw, Dy + Dh - 1);
+    PP[2] := Point(Width - 1, Height - 1);
+    PP[3] := Point(Dx - 20 + Dw, Dy + Dh - 1);
+    Bitmap.Canvas.Polygon(PP);
+    Bitmap.Canvas.Brush.Color:=$00FFFF;
+    Bitmap.Canvas.Pen.Color:=$00FFFF;
+    Bitmap.Canvas.MoveTo(dx+dw- 20, Dy + Dh - 1);
+    Bitmap.Canvas.LineTo(Dx + Dw - 40, Dy + Dh - 1);
+  end;
+  if (Left - FActivePoint.X < 0) and (Top - FActivePoint.Y >= 0) then
+  begin
+    PP[0] := Point(Dx - 20 + Dw, Dy);
+    PP[1] := Point(Dx - 40 + Dw, Dy);
+    PP[2] := Point(Width - 1, 0);
+    PP[3] := Point(Dx - 20 + Dw, Dy);
+    Bitmap.Canvas.Polygon(PP);
+    Bitmap.Canvas.Brush.Color := $00FFFF;
+    Bitmap.Canvas.Pen.Color := $00FFFF;
+    Bitmap.Canvas.MoveTo(Dx - 20 + Dw, Dy);
+    Bitmap.Canvas.LineTo(Dx - 40 + Dw, Dy);
+  end;
+  RGN := BitmapToRegion(Bitmap, $FFFFFF);
+  SetWindowRGN(Handle, RGN, False);
+  FormPaint(Self);
 end;
 
 procedure THelpPopup.Refresh;
 begin
- FormPaint(Self);
- DmMemo1.Invalidate;
+  FormPaint(Self);
+  MemText.Invalidate;
 end;
 
 procedure THelpPopup.SetActivePoint(const Value: TPoint);
@@ -420,52 +413,61 @@ end;
 
 procedure THelpPopup.SetPos(P: TPoint);
 var
-  FTop, FLeft : integer;
+  FTop, FLeft: Integer;
 begin
- FTop:=P.Y+1;
- FLeft:=P.X+1;
- if FTop+Height>Screen.Height then FTop:=P.Y-Height-1;
- if FLeft+Width>Screen.Width then FLeft:=P.X-Width-1;
- Top:=FTop;
- Left:=FLeft;
+  FTop := P.Y + 1;
+  FLeft := P.X + 1;
+  if FTop + Height > Screen.Height then
+    FTop := P.Y - Height-1;
+  if FLeft+Width>Screen.Width then
+    FLeft := P.X - Width-1;
+  Top:=FTop;
+  Left:=FLeft;
 end;
 
 procedure THelpPopup.SetText(const Value: String);
 begin
-  FText.Text:=Value;
-  DmMemo1.Lines.Assign(FText);
-  DmMemo1.Height:=abs((DmMemo1.Lines.Count+1)*DmMemo1.Font.Height);
-  dh:=abs((DmMemo1.Lines.Count+1)*DmMemo1.Font.Height)+10+ImButton1.Height+5;
-  ImButton2.Top:=DmMemo1.Top+DmMemo1.Height+3;
-  if ImButton2.Visible then
-  dh:=dh+ImButton2.Height+5;
-  Height:=50+dh+50;
-  FSimpleText:=Value;
+  FText.Text := Value;
+  MemText.Lines.Assign(FText);
+  MemText.Height := Abs((MemText.Lines.Count + 1 ) * MemText.Font.Height);
+  dh := Abs((MemText.Lines.Count + 1) * MemText.Font.Height) + 10 + ImbClose.Height + 5;
+  ImbNext.Top := MemText.Top + MemText.Height + 3;
+  if ImbNext.Visible then
+    dh := dh + ImbNext.Height + 5;
+  Height := 50 + dh + 50;
+  FSimpleText := Value;
 end;
 
 procedure THelpPopup.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- Release;
+  DestroyTimer.Enabled := False;
+  Release;
 end;
 
 procedure THelpPopup.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- if Assigned(FOnHelpClose) then FOnHelpClose(self);
- DestroyTimer.Enabled:=true;
+  if Assigned(FOnHelpClose) then
+    FOnHelpClose(self);
+  DestroyTimer.Enabled := True;
 end;
 
 procedure THelpPopup.FormDeactivate(Sender: TObject);
 begin
- FOnCanCloseMessage:=false;
- if not DestroyTimer.Enabled then
- Close;
+  FOnCanCloseMessage := False;
+  if not DestroyTimer.Enabled then
+    Close;
+end;
+
+procedure THelpPopup.FormDestroy(Sender: TObject);
+begin
+  F(Bitmap);
+  F(FText);
 end;
 
 procedure THelpPopup.SetNextButtonVisible(const Value: Boolean);
 begin
   FNextButtonVisible := Value;
-  ImButton2.Visible:=Value;
+  ImbNext.Visible:=Value;
   SetText(HelpText);
 end;
 
@@ -474,19 +476,20 @@ begin
   FCallBack := Value;
 end;
 
-procedure THelpPopup.ImButton2Click(Sender: TObject);
+procedure THelpPopup.ImbNextClick(Sender: TObject);
 begin
- FOnCanCloseMessage:=false;
- if Assigned(FCallBack) then FCallBack(Self);
- Close;
+  FOnCanCloseMessage := False;
+  if Assigned(FCallBack) then
+    FCallBack(Self);
+  Close;
 end;
 
-procedure THelpPopup.SetNextText(const Value: String);
+procedure THelpPopup.SetNextText(const Value: string);
 begin
   FNextText := Value;
-  ImButton2.Caption:=FNextText;
-  ImButton2.ShowCaption:=False;
-  ImButton2.ShowCaption:=True;
+  ImbNext.Caption := FNextText;
+  ImbNext.ShowCaption := False;
+  ImbNext.ShowCaption := True;
 end;
 
 procedure THelpPopup.SetOnHelpClose(const Value: TNotifyEvent);
@@ -494,11 +497,11 @@ begin
   FOnHelpClose := Value;
 end;
 
-procedure THelpPopup.FormCloseQuery(Sender: TObject;
-  var CanClose: Boolean);
+procedure THelpPopup.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
- if FOnCanCloseMessage then
- if Assigned(CanHelpClose) then CanHelpClose(Sender,CanClose);
+  if FOnCanCloseMessage then
+    if Assigned(CanHelpClose) then
+      CanHelpClose(Sender, CanClose);
 end;
 
 procedure THelpPopup.SetCanHelpClose(const Value: TCanHelpCloseProcedure);
@@ -514,15 +517,14 @@ end;
 
 procedure THelpPopup.Copy1Click(Sender: TObject);
 begin
-  ClipBoard.SetTextBuf(PWideChar(DmMemo1.Text));
+  ClipBoard.SetTextBuf(PWideChar(MemText.Text));
 end;
 
 procedure THelpPopup.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  //ESC
-  if Key = 27 then
-    Close();
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 end.

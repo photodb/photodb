@@ -12,6 +12,7 @@ type
   TBuffer = array of Char;
 //  TCorrectPathProc = procedure(Caller : TObject; Src: TStrings; Dest: string);
 
+function FileExistsSafe(FileName: string) : Boolean;
 function GetAppDataDirectory: string;
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
 function FileExistsEx(const FileName :TFileName) :Boolean;
@@ -52,6 +53,18 @@ implementation
 uses
   UnitWindowsCopyFilesThread;
 {$ENDIF}
+
+function FileExistsSafe(FileName: string) : Boolean;
+var
+  OldMode : Cardinal;
+begin
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := FileExists(FileName);
+  finally
+    SetErrorMode(OldMode);
+  end;
+end;
 
 procedure UnFormatDir(var FileName : string);
 begin
@@ -297,7 +310,7 @@ begin
   begin
     if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
     begin
-      if FileExists(Folder + SearchRec.name) then
+      if FileExistsSafe(Folder + SearchRec.name) then
         Result := Result + Int64(SearchRec.FindData.NFileSizeLow) + Int64(SearchRec.FindData.NFileSizeHigh) * 2 * MaxInt
       else if DirectoryExists(Folder + SearchRec.name) then
         Result := Result + GetDirectorySize(Folder + '\' + SearchRec.name);
@@ -364,7 +377,7 @@ var
 begin
   Result := '';
   if (Pos('\\', ShortName) + Pos('*', ShortName) + Pos('?', ShortName) <> 0) or
-    (not FileExists(ShortName) and not DirectoryExists(ShortName)) or (Length(ShortName) < 4) then
+    (not FileExistsSafe(ShortName) and not DirectoryExists(ShortName)) or (Length(ShortName) < 4) then
   begin
     Result := ShortName;
     Exit;
@@ -395,7 +408,7 @@ var
 begin
   Result := '';
   if (Pos('\\', ShortName) + Pos('*', ShortName) + Pos('?', ShortName) <> 0) or
-    (not FileExists(ShortName) and not DirectoryExists(ShortName)) or (Length(ShortName) < 4) then
+    (not FileExistsSafe(ShortName) and not DirectoryExists(ShortName)) or (Length(ShortName) < 4) then
   begin
     Result := ShortName;
     Exit;
@@ -732,7 +745,7 @@ begin
     begin
       if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
       begin
-        if Fileexists(DirectoryName + SearchRec.Name) then
+        if FileExistsSafe(DirectoryName + SearchRec.Name) then
           DeleteFile(DirectoryName + SearchRec.name);
 
         if DirectoryExists(DirectoryName + SearchRec.name) then

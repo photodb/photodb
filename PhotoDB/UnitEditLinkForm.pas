@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, UnitLinksSupport, Language, ExtDlgs, GraphicEx,
+  Dialogs, ExtCtrls, StdCtrls, UnitLinksSupport, ExtDlgs, GraphicEx,
   acDlgSelect, DropSource, DropTarget, Dolphin_DB, ComCtrls, ImgList,
   UnitDBKernel, DragDrop, DragDropFile, uVistaFuncs, ComboBoxExDB,
   UnitDBFileDialogs, uDBForm, WatermarkedMemo, WatermarkedEdit;
@@ -93,7 +93,7 @@ begin
     if FInfo[FN].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT = 0 then
       EdValue.Text := FInfo[FN].LinkValue
     else
-      EdValue.Text := TEXT_MES_VAR_VALUES;
+      EdValue.Text := L('Different values');
     Caption := L('Edit link');
   end;
   Show;
@@ -210,7 +210,7 @@ begin
       end;
     LINK_TYPE_FOLDER:
       begin
-        S := SelectDir(Application.Handle, L('Select directory'));
+        S := SelectDir(Application.Handle, L('Please, select directory'));
         if S <> '' then
           EdValue.Text := S;
       end;
@@ -238,7 +238,7 @@ begin
       if (AnsiLowerCase(FInfo[I].LinkName) = AnsiLowerCase(EdName.Text)) and (FInfo[I].LinkType = CbLinkType.ItemIndex)
         then
       begin
-        MessageBoxDB(Handle, TEXT_MES_CANT_ADD_LINK_ALREADY_EXISTS, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+        MessageBoxDB(Handle, L('Link with this name already exists! Please, select another name.'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         Exit;
       end;
     Link.LinkType := CbLinkType.ItemIndex;
@@ -252,7 +252,7 @@ begin
         if (AnsiLowerCase(FInfo[I].LinkName) = AnsiLowerCase(EdName.Text)) and
           (FInfo[I].LinkType = CbLinkType.ItemIndex) then
         begin
-          MessageBoxDB(Handle, TEXT_MES_CANT_ADD_LINK_ALREADY_EXISTS, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+          MessageBoxDB(Handle, L('Link with this name already exists! Please, select another name.'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
           Exit;
         end;
     Link.LinkType := CbLinkType.ItemIndex;

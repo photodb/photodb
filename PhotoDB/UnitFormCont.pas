@@ -223,9 +223,9 @@ var
 
 implementation
 
-uses Searching, UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
+uses UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
      SlideShow, ExplorerUnit, UnitSizeResizerForm, CommonDBSupport,
-     UnitStringPromtForm, Loadingresults, UnitBigImagesSize;
+     UnitStringPromtForm, UnitBigImagesSize;
 
 {$R *.dfm}
 
@@ -267,7 +267,7 @@ var
 begin
   Bitmap := TBitmap.Create;
   try
-    Bitmap.PixelFormat := Pf24bit;
+    Bitmap.PixelFormat := pf24bit;
     Bitmap.Canvas.Brush.Color := clWindow;
     Bitmap.Canvas.Pen.Color := clWindow;
     Bitmap.Width := 120;
@@ -351,7 +351,7 @@ begin
 
   ManagerPanels.AddPanel(Self);
 
-  Caption := Format(L('Panel (%s)'), [Inttostr(ManagerPanels.PanelIndex(Self) + 1)]);
+  Caption := Format(L('Panel (%d)'), [ManagerPanels.PanelIndex(Self) + 1]);
 
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   PopupMenu1.Images := DBKernel.ImageList;
@@ -366,8 +366,6 @@ begin
 
   Rename1.ImageIndex := DB_IC_RENAME;
 
-  Label2.Caption := L('Actions') + ':';
-  Rename1.Caption := L('Rename');
   WlResize.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
   WlConvert.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
   ExportLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EXPORT_IMAGES + 1]);
@@ -478,7 +476,7 @@ begin
     MenuInfo := GetCurrentPopUpMenuInfo(Item);
     for I := 0 to MenuInfo.Count - 1 do
       if ElvMain.Items[I].Selected then
-        if FileExists(MenuInfo[I].FileName) then
+        if FileExistsSafe(MenuInfo[I].FileName) then
           FilesToDrag.Add(MenuInfo[I].FileName);
 
     if FilesToDrag.Count = 0 then
@@ -1127,6 +1125,8 @@ begin
     ExportLink.Text := L('Export');
     ExCopyLink.Text := L('Copy');
     GroupBox1.Caption := L('Photo');
+    Label2.Caption := L('Actions') + ':';
+    Rename1.Caption := L('Rename');
 
     TbResize.Caption := L('Resize');
     TbConvert.Caption := L('Convert');
@@ -1301,7 +1301,6 @@ begin
   Index := FPanels.IndexOf(Panel);
   if (Index > -1) then
     Result := IsEqualGUID(Self[Index].SID, CID) or IsEqualGUID(Self[Index].BigImagesSID, CID);
-
 end;
 
 procedure TManagePanels.FillSendToPanelItems(MenuItem: TMenuItem; OnClick : TNotifyEvent);
@@ -1331,7 +1330,7 @@ begin
     MenuitemSeparator.Caption := '-';
     MenuItem.Add(MenuitemSeparator);
     MenuitemSentToNew := TMenuitem.Create(MenuItem);
-    MenuitemSentToNew.Caption := TA('New panel');
+    MenuitemSentToNew.Caption := TA('New panel', 'Panel');
     MenuitemSentToNew.OnClick := OnClick;
     MenuitemSentToNew.ImageIndex := DB_IC_SENDTO;
     MenuitemSentToNew.Tag := -1;
@@ -1365,52 +1364,53 @@ begin
   until not B;
 end;
 
-Function TManagePanels.NewPanel : TFormCont;
-Var
-  i, FTag : integer;
-  s : string;
+function TManagePanels.NewPanel: TFormCont;
+var
+  I, FTag: Integer;
+  S: string;
 
-  Function TagExists(Tag : Integer) : Boolean;
-  var i:integer;
+  function TagExists(Tag: Integer): Boolean;
+  var
+    I: Integer;
   begin
-   result:=false;
-   For i:=0 to FPanels.Count - 1 do
-   if Self[i].Tag=Tag then
-   begin
-    Result:=True;
-    Break;
-   end;
+    Result := False;
+    for I := 0 to FPanels.Count - 1 do
+      if Self[I].Tag = Tag then
+      begin
+        Result := True;
+        Break;
+      end;
   end;
 
 begin
- s:='';
- FTag:=0;
- If FPanels.Count = 0 then
- begin
-  FTag:=1;
-  s:=Format(TA('Panel (%s)'),[IntToStr(FTag)]);
- end;
- If FPanels.Count > 0 then
- begin
-  For i:=0 to FPanels.Count-1 do
-  if not TagExists(i+1) then
+  S := '';
+  FTag := 0;
+  if FPanels.Count = 0 then
   begin
-   s:=format(TA('Panel (%s)'),[inttostr(i+1)]);
-   FTag:=i+1;
-   break;
+    FTag := 1;
+    S := Format(TA('Panel (%s)', 'Panel'), [IntToStr(FTag)]);
   end;
-  if FTag=0 then
+  if FPanels.Count > 0 then
   begin
-   s:=format(TA('Panel (%s)'),[inttostr(FPanels.Count+1)]);
-   FTag:=FPanels.Count+1;
+    for I := 0 to FPanels.Count - 1 do
+      if not TagExists(I + 1) then
+      begin
+        S := Format(TA('Panel (%s)', 'Panel'), [Inttostr(I + 1)]);
+        FTag := I + 1;
+        Break;
+      end;
+    if FTag = 0 then
+    begin
+      S := Format(TA('Panel (%s)', 'Panel'), [Inttostr(FPanels.Count + 1)]);
+      FTag := FPanels.Count + 1;
+    end;
   end;
- end;
- Application.CreateForm(TFormCont,Result);
- if s<>'' then
- begin
-  Result.Caption:=s;
-  Result.Tag:=FTag;
- end;
+  Application.CreateForm(TFormCont, Result);
+  if S <> '' then
+  begin
+    Result.Caption := S;
+    Result.Tag := FTag;
+  end;
 end;
 
 function TManagePanels.PanelIndex(Panel: TFormCont): Integer;

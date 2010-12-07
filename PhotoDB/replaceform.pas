@@ -494,7 +494,7 @@ procedure TDBReplaceForm.Image2MouseDown(Sender: TObject; Button: TMouseButton;
 var
   DragImage : TBitmap;
 begin
- if (Button = mbLeft) and FileExists(DB_PATCH.Text) then
+ if (Button = mbLeft) and FileExistsSafe(DB_PATCH.Text) then
  begin
    DragImageList.Clear;
    DropFileSource1.Files.Clear;
@@ -517,7 +517,7 @@ var
   DragImage : TBitmap;
   item : TListItem;
 begin
- if (Button = mbLeft) and (ListView1.GetItemAt(x,y)<>nil) and FileExists(DB_PATCH.Text) then
+ if (Button = mbLeft) and (ListView1.GetItemAt(x,y)<>nil) and FileExistsSafe(DB_PATCH.Text) then
  begin
   item:=ListView1.GetItemAt(x,y);
   DragImageList.Clear;
@@ -540,7 +540,7 @@ procedure TDBReplaceForm.Image1MouseDown(Sender: TObject; Button: TMouseButton;
 var
   DragImage : TBitmap;
 begin
-  if (Button = mbLeft) and FileExists(CurrentFileName) then
+  if (Button = mbLeft) and FileExistsSafe(CurrentFileName) then
   begin
    DragImageList.Clear;
    DropFileSource1.Files.Clear;

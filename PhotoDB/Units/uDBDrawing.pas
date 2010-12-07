@@ -3,7 +3,7 @@ unit uDBDrawing;
 interface
 
 uses Windows, SysUtils, Graphics, UnitDBDeclare, CCR.Exif, UnitDBCommon, Math,
-     Classes, GraphicsBaseTypes, uConstants, uMemory;
+     Classes, GraphicsBaseTypes, uConstants, uMemory, uFileUtils;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
 procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
@@ -32,7 +32,7 @@ begin
 
   if Exists = 0 then
   begin
-    FE := FileExists(FileName);
+    FE := FileExistsSafe(FileName);
     if FE then
       Exists := 1
     else
@@ -44,7 +44,7 @@ begin
   if not FE then
   begin
     FileName:=ProgramDir + FileName;
-    FE := FileExists(FileName);
+    FE := FileExistsSafe(FileName);
   end;
 
   if (ExplorerManager <> nil) and ExplorerManager.ShowEXIF then

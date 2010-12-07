@@ -298,7 +298,8 @@ end;
 
 procedure TFormConvertingDB.RadioButton1Click(Sender: TObject);
 begin
- MessageBoxDB(Handle,TEXT_MES_DB_IS_OLD_DB,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+ //TODO: remove this option
+ //MessageBoxDB(Handle,TEXT_MES_DB_IS_OLD_DB,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
 end;
 
 procedure TFormConvertingDB.ComboBox2Change(Sender: TObject);

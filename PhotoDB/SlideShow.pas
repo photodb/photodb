@@ -1672,7 +1672,7 @@ begin
       LoadImage.Free;
     end;
 
-    text_out := L('Processing...');
+    text_out := L('Processing') + '...';
     FbImage.Canvas.TextOut(FbImage.Width div 2-FbImage.Canvas.TextWidth(text_out) div 2,FbImage.Height{ div 2}-4*FbImage.Canvas.Textheight(text_out) div 2,text_out);
 
     TW.I.Start('RecreateDrawImage_');
@@ -2932,7 +2932,7 @@ var
   SQL_ : string;
   i, DeleteID : Integer;
 begin
- If ID_OK=MessageBoxDB(Handle,L('Do you really want to delete file to resucle bin?'), L('Delete confirn'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+ If ID_OK=MessageBoxDB(Handle,L('Do you really want to delete file to recycle bin?'), L('Delete confirn'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   DeleteID:=0;
   if CurrentInfo.ItemIds[CurrentFileNumber]<>0 then

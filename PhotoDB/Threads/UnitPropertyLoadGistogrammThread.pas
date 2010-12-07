@@ -90,8 +90,10 @@ var
   I: Integer;
   Graphic: TGraphic;
   GraphicClass : TGraphicClass;
+  OldMode : Cardinal;
 begin
   FreeOnTerminate := True;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     GraphicClass := GetGraphicClass(ExtractFileExt(fOptions.FileName), False);
     if GraphicClass = nil then
@@ -142,6 +144,7 @@ begin
       F(Graphic);
     end;
   finally
+    SetErrorMode(OldMode);
     Synchronize(DoOnDone);
   end;
 end;

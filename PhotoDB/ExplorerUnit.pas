@@ -73,13 +73,11 @@ type
     AddFolder2: TMenuItem;
     ToolBarNormalImageList: TImageList;
     CoolBar1: TCoolBar;
-    NormalImages: TImage;
     ToolBar2: TToolBar;
     Label2: TLabel;
     PopupMenuBack: TPopupMenu;
     PopupMenuForward: TPopupMenu;
     DragTimer: TTimer;
-    SelectedImages: TImage;
     ToolBarDisabledImageList: TImageList;
     N10: TMenuItem;
     CryptFile1: TMenuItem;
@@ -412,9 +410,6 @@ type
     procedure Copy4Click(Sender: TObject);
     procedure NewPanel1Click(Sender: TObject);
     procedure SelectTimerTimer(Sender: TObject);
-    procedure CDROMDrives1Click(Sender: TObject);
-    procedure RemovableDrives1Click(Sender: TObject);
-    procedure SpecialLocation1Click(Sender: TObject);
     procedure SendTo1Click(Sender: TObject);
     procedure View2Click(Sender: TObject);
     procedure RemoveUpdateID(ID : Integer; CID : TGUID);
@@ -1528,7 +1523,7 @@ begin
           Continue;
         end;
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
-          if ID_OK = MessageBoxDB(Handle, L('Do you really wabt to add full drive with subfolders?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+          if ID_OK = MessageBoxDB(Handle, L('Do you really want to add full drive with subfolders?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
           begin
             UpdaterDB.AddDirectory(FFilesInfo[Index].FileName, nil);
             Continue;
@@ -1581,7 +1576,7 @@ begin
     if GetExt(S) <> GetExt(FFilesInfo[PmItemPopup.Tag].FileName) then
       if FileExists(FFilesInfo[PmItemPopup.Tag].FileName) then
       begin
-        if ID_OK <> MessageBoxDB(Handle, L('Do you really want to replace extension to this object?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+        if ID_OK <> MessageBoxDB(Handle, L('Do you really want to replace extension to selected object?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         begin
           S := ExtractFileName(FFilesInfo[PmItemPopup.Tag].FileName);
           Exit;
@@ -1855,13 +1850,9 @@ procedure TExplorerForm.BeginUpdate;
 begin
   if not UpdatingList then
   begin
-  //  ElvMain.Groups[0].Visible:=false;
-  //  ElvMain.Cursor:=CrHourGlass;
     UpdatingList := True;
     ElvMain.BeginUpdate;
   end;
-  //if FW7TaskBar <> nil then
-  //  FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;
 
 procedure TExplorerForm.EndUpdate;
@@ -1869,16 +1860,8 @@ begin
   if UpdatingList then
   begin
     ElvMain.EndUpdate;
- {   ElvMain.Groups[0].Visible := True;
-    ElvMain.Groups.EndUpdate(true);
-    ElvMain.Realign;
-    ElvMain.Repaint;  }
-    //ElvMain.Cursor:=CrDefault;
-   // ElvMain.HotTrack.Enabled:=DBKernel.Readbool('Options', 'UseHotSelect', True);
     UpdatingList := False;
   end;
-  //if FW7TaskBar <> nil then
-  //  FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
 end;
 
 procedure TExplorerForm.Open1Click(Sender: TObject);
@@ -2719,11 +2702,6 @@ begin
   for I := FFilesInfo.Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
-      {if LockItems then
-        if ElvMain.Groups[0].Visible then
-          if ElvMain.Items.Count = 0 then
-            ElvMain.Groups[0].Visible := False; }
-
       LockDrawIcon := True;
 
       Data := TDataObject.Create;
@@ -2763,10 +2741,6 @@ begin
   for I := 0 to FFilesInfo.Count - 1 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
-      {if ElvMain.Groups[0].Visible then
-        if ElvMain.Items.Count = 0 then
-          ElvMain.Groups[0].Visible := False; }
-
       LockDrawIcon := True;
       Data := TDataObject.Create;
       Data.Include := True;
@@ -5995,7 +5969,7 @@ begin
         if (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) then
           FSelectedInfo.FileTypeW := L('Computer');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
-          FSelectedInfo.FileTypeW := L('Share folder');
+          FSelectedInfo.FileTypeW := L('Shared folder');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
           FSelectedInfo.Size := GetFileSizeByName(FileName);
       end else
@@ -6234,104 +6208,6 @@ begin
     Exit;
   end;
   LastSelCount := SelCount;
-end;
-
-procedure TExplorerForm.CDROMDrives1Click(Sender: TObject);
-var
-  I : integer;
-  NewItem : TMenuItem;
-  DS :  TDriveState;
-  S: string;
-  Item: TMenuItem;
-  C: Integer;
-begin
-  Item := Sender as TMenuItem;
-  for I := 1 to Item.Count - 1 do
-    Item.Delete(1);
-  C := -1;
-  for I := Ord('C') to Ord('Z') do
-    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
-    begin
-      NewItem := TMenuItem.Create(Item);
-      DS := DriveState(AnsiChar(Chr(I)));
-      Inc(C);
-      if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-      begin
-        S := GetCDVolumeLabel(Chr(I));
-        if S <> '' then
-          NewItem.Caption := S + ' (' + Chr(I) + ':)'
-        else
-          NewItem.Caption := L('CD-ROM') + ' (' + Chr(I) + ':)';
-      end else
-        NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
-      NewItem.ImageIndex := IconsCount + C;
-      NewItem.OnClick := GetPhotosClick;
-      NewItem.Tag := I;
-      Item.Add(NewItem);
-    end;
-  if Item.Count = 1 then
-  begin
-    NewItem := TMenuItem.Create(Item);
-    NewItem.Caption := L('No CD-ROM drives');
-    NewItem.ImageIndex := DB_IC_DELETE_INFO;
-    NewItem.Tag := -1;
-    NewItem.Enabled := False;
-    Item.Add(NewItem);
-  end;
-end;
-
-procedure TExplorerForm.RemovableDrives1Click(Sender: TObject);
-var
-  I : integer;
-  NewItem : TMenuItem;
-  DS :  TDriveState;
-  S: string;
-  Item: TMenuItem;
-begin
-  Item := Sender as TMenuItem;
-  for I := 1 to Item.Count - 1 do
-    Item.Delete(1);
-  for I := Ord('C') to Ord('Z') do
-    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_REMOVABLE) then
-    begin
-      NewItem := TMenuItem.Create(Item);
-      DS := DriveState(AnsiChar(Chr(I)));
-      if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-      begin
-        S := GetCDVolumeLabel(Chr(I));
-        if S <> '' then
-          NewItem.Caption := S + ' (' + Chr(I) + ':)'
-        else
-          NewItem.Caption := L('Removable drive') + ' (' + Chr(I) + ':)';
-      end
-      else
-        NewItem.Caption := MrsGetFileType(Chr(I) + ':\') + ' (' + Chr(I) + ':)';
-      NewItem.ImageIndex := DB_IC_USB;
-      NewItem.OnClick := GetPhotosClick;
-      NewItem.Tag := I;
-      Item.Add(NewItem);
-    end;
-  if Item.Count = 1 then
-  begin
-    NewItem := TMenuItem.Create(Item);
-    NewItem.Caption := L('No USB drives');
-    NewItem.ImageIndex := DB_IC_DELETE_INFO;
-    NewItem.Tag := -1;
-    NewItem.Enabled := False;
-    Item.Add(NewItem);
-  end;
-end;
-
-procedure TExplorerForm.SpecialLocation1Click(Sender: TObject);
-var
-  Dir : string;
-begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select directory to import photos in DB'), UseSimpleSelectFolderDialog);
-  if DirectoryExists(Dir) then
-  begin
-    FormatDir(Dir);
-    GetPhotosFromFolder(Dir)
-  end;
 end;
 
 procedure TExplorerForm.SendTo1Click(Sender: TObject);

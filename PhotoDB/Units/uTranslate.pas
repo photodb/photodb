@@ -43,6 +43,7 @@ type
     FTranslateList : TList;
     FName : string;
     FImageName : string;
+    FAutor : string;
     FLastScope : TLanguageScope;
   public
     constructor Create(FileName : string);
@@ -53,6 +54,7 @@ type
     function LocateString(const Original, Scope: string): string;
     property Name : string read FName;
     property ImageName : string read FImageName;
+    property Autor : string read FAutor;
   end;
 
   TTranslateManager = class(TObject)
@@ -356,6 +358,7 @@ var
   DocumentElement : IXMLDOMElement;
   ScopeList : IXMLDOMNodeList;
   ScopeNode : IXMLDOMNode;
+  AutorNameAttr,
   NameAttr,
   ImageNameAttr : IXMLDOMNode;
   I : Integer;
@@ -372,6 +375,10 @@ begin
     ImageNameAttr := DocumentElement.attributes.getNamedItem('image');
     if ImageNameAttr <> nil then
       FImageName := ImageNameAttr.text;
+
+    AutorNameAttr := DocumentElement.attributes.getNamedItem('image');
+    if AutorNameAttr <> nil then
+      FAutor := AutorNameAttr.text;
 
     ScopeList := DocumentElement.childNodes;
     if ScopeList <> nil then

@@ -46,7 +46,6 @@ uses
   SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
   uActivation in 'uActivation.pas' {ActivateForm},
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
-  UnInstallFormUnit in 'UnInstallFormUnit.pas' {UnInstallForm},
   UnitUpdateDB in 'UnitUpdateDB.pas' {UpdateDBForm},
   uAbout in 'uAbout.pas' {AboutForm},
   FormManegerUnit in 'FormManegerUnit.pas' {FormManager},
@@ -97,7 +96,6 @@ uses
   UnitActionsForm in 'Units\UnitActionsForm.pas' {ActionsForm},
   UnitSplitExportForm in 'UnitSplitExportForm.pas' {SplitExportForm},
   UnitDebugScriptForm in 'UnitDebugScriptForm.pas' {DebugScriptForm},
-  UnitTIFFOptionsUnit in 'UnitTIFFOptionsUnit.pas' {TIFFOptionsForm},
   UnitImportingImagesForm in 'UnitImportingImagesForm.pas' {FormImportingImages},
   UnitConvertDBForm in 'UnitConvertDBForm.pas' {FormConvertingDB},
   UnitBigImagesSize in 'UnitBigImagesSize.pas' {BigImagesSizeForm},
@@ -109,7 +107,6 @@ uses
   UnitHintCeator in 'Threads\UnitHintCeator.pas',
   UnitCmpDB in 'Threads\UnitCmpDB.pas',
   ExplorerThreadUnit in 'Threads\ExplorerThreadUnit.pas',
-  UnitUnInstallThread in 'Threads\UnitUnInstallThread.pas',
   UnitPackingTable in 'Threads\UnitPackingTable.pas',
   UnitUpdateDBThread in 'Threads\UnitUpdateDBThread.pas',
   UnitExportThread in 'Threads\UnitExportThread.pas',
@@ -195,7 +192,6 @@ uses
   ShellContextMenu in 'Units\ShellContextMenu.pas',
   ImageConverting in 'Units\ImageConverting.pas',
   DDraw in 'Units\DDraw.pas',
-  ole2 in 'Units\ole2.pas',
   DXCommon in 'Units\DXCommon.pas',
   UnitLinksSupport in 'Units\UnitLinksSupport.pas',
   GDIPlusRotate in 'Units\GDIPlusRotate.pas',
@@ -262,7 +258,6 @@ uses
   DECUtil in 'External\Crypt\DECv5.2\DECUtil.pas',
   TypInfoEx in 'External\Crypt\DECv5.2\TypInfoEx.pas',
   uStrongCrypt in 'Units\uStrongCrypt.pas',
-  jpegdec in 'Units\jpegdec.pas',
   uMemory in 'Units\uMemory.pas',
   uDBForm in 'Units\uDBForm.pas',
   uTranslate in 'Units\uTranslate.pas',
@@ -439,27 +434,6 @@ begin
 
   EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
-  //TODO: uninstall is stand-alone application
-  // UNINSTALL ----------------------------------------------------
-
-  EventLog('...UNINSTALL COMPARING...');
-  If GetParamStrDBBool('/UNINSTALL')
-    and not DBTerminating then
-  begin
-    If ID_YES = MessageBoxDB(GetActiveFormHandle,
-      TA('Do you really want to delete this product?', 'System'), TA('Warning'), TD_BUTTON_YESNO,
-      TD_ICON_WARNING) then
-    begin
-      F(AExplorerFolders);
-      Application.CreateForm(TUnInstallForm, UnInstallForm);
-  Application.Restore;
-      UnInstallForm.ShowModal;
-      UnInstallForm.Release;
-      UnInstallForm := nil;
-    end;
-    StopApplication;
-  end;
-
   TW.i.Start('FindRunningVersion');
   if not GetParamStrDBBool('/NoPrevVersion') then
     FindRunningVersion;
@@ -484,7 +458,7 @@ begin
 
     TW.i.Start('TFormManager Create');
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
     // This is main form of application
 
     TW.i.Start('SetSplashProgress 50');

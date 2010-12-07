@@ -43,16 +43,16 @@ end;
 procedure BackUpTableInCMD.Execute;
 var
   FSIn, FSOut: TFileStream;
-  S: string;
+  Directory : string;
 begin
   FreeOnTerminate := True;
-  S := GetDirectory(Application.ExeName);
-  FormatDir(S);
-  CreateDirA(GetAppDataDirectory + BackUpFolder);
+
+  Directory := ExcludeTrailingBackslash(GetAppDataDirectory + BackUpFolder);
+  CreateDirA(Directory);
   try
     FSOut := TFileStream.Create(Dbname, FmOpenRead or FmShareDenyNone);
     try
-      FSIn := TFileStream.Create(GetAppDataDirectory + BackUpFolder + ExtractFileName(Dbname), FmOpenWrite or FmCreate);
+      FSIn := TFileStream.Create(IncludeTrailingBackslash(Directory) + ExtractFileName(Dbname), FmOpenWrite or FmCreate);
       try
         FSIn.CopyFrom(FSOut, FSOut.Size);
       finally

@@ -122,7 +122,7 @@ begin
   LoadLanguage;
   FillChiperList;
 
-  FPassIcon := LoadIcon(DBKernel.IconDllInstance, PWideChar('PASSWORD'));
+  FPassIcon := LoadIcon(DBKernel.IconDllInstance, PChar('PASSWORD'));
   WblMethod.LoadFromHIcon(FPassIcon);
   DestroyIcon(FPassIcon);
 end;
@@ -134,7 +134,7 @@ begin
 
   if not CbShowPassword.Checked and (EdPassword.Text <> EdPasswordConfirm.Text) then
   begin
-    MessageBoxDB(Handle, L('Passwords doesn''t match!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    MessageBoxDB(Handle, L('Passwords do not match!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
     Exit;
   end;
 

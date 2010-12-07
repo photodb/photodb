@@ -2,6 +2,7 @@ program Uninstall;
 
 uses
   Forms,
+  Windows,
   uFrmMain in '..\Installer\uFrmMain.pas' {FrmMain},
   uFrmProgress in '..\Installer\uFrmProgress.pas' {FrmProgress},
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
@@ -37,7 +38,12 @@ uses
 
 begin
   Application.Initialize;
-  Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TFrmMain, FrmMain);
-  Application.Run;
+
+  If ID_YES = TaskDialogEx(0, TA('Do you really want to delete Photo Database 2.3?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO,
+    TD_ICON_WARNING, False) then
+  begin
+    Application.MainFormOnTaskbar := True;
+    Application.CreateForm(TFrmMain, FrmMain);
+    Application.Run;
+  end;
 end.

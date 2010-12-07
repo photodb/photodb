@@ -42,7 +42,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 377
     DesignSize = (
       309
       73)
@@ -71,7 +70,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Caption = '???'
       TabOrder = 0
       OnClick = Button3Click
-      ExplicitLeft = 302
     end
     object Edit2: TEdit
       Left = 164
@@ -82,7 +80,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       TabOrder = 1
       Text = '1'
       OnChange = Edit1Change
-      ExplicitLeft = 240
     end
     object CmMaskList: TComboBox
       Left = 8
@@ -92,7 +89,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
       OnChange = Edit1Change
-      ExplicitWidth = 225
     end
     object BtAdd: TButton
       Left = 9
@@ -135,7 +131,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = False
+      ImageCanRegenerate = True
       UseSpecIconSize = True
     end
   end
@@ -147,7 +143,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitWidth = 377
     DesignSize = (
       309
       31)
@@ -159,7 +154,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitLeft = 212
       object BtnOK: TButton
         Left = 86
         Top = 3
@@ -189,7 +183,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Constraints.MinWidth = 130
       TabOrder = 1
       OnClick = Edit1Change
-      ExplicitWidth = 209
     end
   end
   object pmSort: TPopupMenu
