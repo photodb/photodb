@@ -287,6 +287,28 @@
     <translate name="Time" value="Время" />
     <translate name="Size" value="Размер" />
     <translate name="Show file in explorer" value="Показать файл в проводнике" />
+    <translate name="An error occurred during the query: %s (%s)" value="Ошибка при выполнении запроса: %s (%s)" />
+    <translate name="Do you really want to delete this copy of database (%s)?" value="Вы действительно хотите удалить эту копию базы данных (%s)?" />
+    <translate name="New name" value="Новое имя" />
+    <translate name="Please, enter a new name" value="Пожалуйста, ведите новое имя" />
+    <translate name="File with that name already exists! Select a different file name." value="Файл с таким именем уже существует! Выберите другое имя файла" />
+    <translate name="No date set" value="Дата не установлена" />
+	<translate name="No time set" value="Время не установлено" />
+	<translate name="Edit groups" value="Редактировать группы" />
+	<translate name="Do you really want to pack the table? Packing will begin the next startup..." value="Вы действительно хотите упаковать таблицу? Упаковка начнётся при следующем запуске программы..." />
+	<translate name="Do you really want to export the table?" value="Вы действительно хотите экспортировать таблицу?" />
+	<translate name="Do you really want to restore this copy of the database (%s)? The current database will be moved to this store. Restart the application to begin the recovery process" value="Вы действительно хотите восстановить эту копию БД (%s)? Текущая БД будет перемещена в данное хранилище. Перезапустите приложение чтобы начать процесс восстановления" />
+	<translate name="Do you really want to import a table?" value="Вы действительно хотите импортировать таблицу?" />
+	<translate name="Do you really want to rebuild the IDEx in the table? Processing begins on the next startup." value="Вы действительно хотите переформировать IDEx в таблице? Восстановление начнётся при следующем запуске." />
+	<translate name="Do you really want to scan the table on the broken links? Processing will begin when the next launch." value="Вы действительно хотите сканировать таблицу на недействительные ссылки? Обработка начнётся при следующем запуске." />
+	<translate name="Do you really want to create a backup?" value="Вы действительно хотите создать резервную копию?" />
+	<translate name="Restoring will begin when the next launch!" value="Восстановление начнётся при следующем запуске программы!" />
+    <translate name="Please, enter a new name for DB" value="Пожалуйста, ведите новое имя для базы" />
+	<translate name="File not found!" value="Файл не найден!" />
+	<translate name="Do you really want to delete this database (%s)?" value="Вы действительно хотите удалить эту БД (%s)?" />
+	<translate name="Do you really want to convert your database? Conversion will take place after program restart." value="Вы действительно хотите преобразовать вашу базу данных? Преобразование начнётся после перезапуска программы." />
+	<translate name="Do you really want to optimize the duplicates in a table? Optimization starts at the next startup..." value="Вы действительно хотите оптимизировать дубликаты в таблице? Оптимизация начнётся при следующем запуске программы..." />
+	<translate name="This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?" value="Данная БД не может быть использована без конвертирования, т.е. она создана для работы со старыми версиями программы. Запустить мастер конвертации баз?" />
   </scope>
   <scope name="PropertiesForm">
     <translate name="Properties" value="Свойства" />
@@ -819,5 +841,18 @@
 	<translate name="An error occurred during the preparation of photographs. Perhaps you're trying to move pictures from media which is read-only" value="Произошла ошибка в процессе получения фотографий. Возможно Вы пытаетесь переместить фотографии с носителя, который доступен только для чтения" />
 	<translate name="Unable to create directory: &quot;%s&quot;" value="Невозможно создать директорию: &quot;%s&quot;" />
 	<translate name="Photos in the specified path: &quot;%s&quot; not found" value="Фотографии по указанному пути: &quot;%s&quot; не найдены" />
-  </scope>  
+  </scope> 
+  <scope name="ReplaceGroup">
+	<translate name="Group" value="Группа" />
+	<translate name="Replace group" value="Заменить группу" />
+	<translate name="Add group" value="Добавить группу" />
+	<translate name="Megre with" value="Совместить с" />
+	<translate name="Add with another name" value="Добавить с другим именем" />
+	<translate name="Skip this group" value="Пропустить эту группу" />
+	<translate name="Do you really want to create a new group and use it to import?" value="Вы действительно хотите создать новую группу и использовать её для импорта?" />
+	<translate name="The database found a group named &quot;%s&quot;. What to do with this group when you import an existing database?" value="'В базе данных найдена группа &quot;%s&quot;. Что делать с этой группой при импорте в существующую БД?'" />
+  </scope> 
+  <scope name="TextPromt">
+	<translate name="Enter your text here" value="Ведите необходимый текст сюда" />
+  </scope>
 </language>

@@ -5,7 +5,7 @@ interface
 uses Windows, SysUtils, Classes, JPEG, pngImage;
 
 function GetFolderPicture : TPNGImage;
-function GetLogoPicture : TJpegImage;
+function GetLogoPicture : TPNGImage;
 function GetSlideShowLoadPicture : TPNGImage;
 function GetExplorerBackground : TPNGImage;
 function GetSearchBackground : TPNGImage;
@@ -107,18 +107,9 @@ begin
   Result := LoadPNGFromRES('LOADING');
 end;
 
-function GetLogoPicture : TJpegImage;
-var
-  RCDataStream : TMemoryStream;
+function GetLogoPicture : TPNGImage;
 begin
-  Result := nil;
-  RCDataStream := GetRCDATAResourceStream('LOGO');
-  if RCDataStream <> nil then
-  begin
-    Result := TJpegImage.Create;
-    Result.LoadFromStream(RCDataStream);
-    RCDataStream.Free;
-  end;
+  Result := LoadPNGFromRES('LOGO');
 end;
 
 end.

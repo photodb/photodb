@@ -50,7 +50,7 @@ implementation
 
 {$R *.dfm}
 
-procedure LoadLanguageFromSetupData(var Language : TLanguage; LanguageCode : string);
+procedure LoadLanguageFromSetupData(var Language : TLanguage; var LanguageCode : string);
 var
   LanguageFileName : string;
   MS : TMemoryStream;

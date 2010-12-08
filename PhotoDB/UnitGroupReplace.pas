@@ -16,34 +16,34 @@ type
 type
   TFormGroupReplace = class(TDBForm)
     ActionPanel: TPanel;
-    ComboBox1: TComboBox;
-    RadioButton1: TRadioButton;
-    RadioButton2: TRadioButton;
-    RadioButton3: TRadioButton;
+    CbExistedGroups: TComboBox;
+    RbMergeWith: TRadioButton;
+    RbAddWithAnotherName: TRadioButton;
+    RbSkipGroup: TRadioButton;
     OutGroupPanel: TPanel;
     GroupNameBox: TEdit;
     Label1: TLabel;
-    Image3: TImage;
+    TmGroupImage: TImage;
     Panel2: TPanel;
-    CheckBox1: TCheckBox;
+    CbReplaceImage: TCheckBox;
     Panel3: TPanel;
     WarningLabelText: TLabel;
     Image1: TImage;
     Image2: TImage;
-    CheckBox2: TCheckBox;
-    Button1: TButton;
+    CbAllUnknownGroups: TCheckBox;
+    BtnOk: TButton;
     NewGroupNameBox: TEdit;
-    CheckBox3: TCheckBox;
-    RadioButton4: TRadioButton;
+    CbAllKnownGroups: TCheckBox;
+    RbAddGroup: TRadioButton;
     PopupMenu1: TPopupMenu;
-    procedure RadioButton2Click(Sender: TObject);
+    procedure RbAddWithAnotherNameClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure RadioButton1Click(Sender: TObject);
-    procedure RadioButton3Click(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
+    procedure RbMergeWithClick(Sender: TObject);
+    procedure RbSkipGroupClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure ComboBox1KeyPress(Sender: TObject; var Key: Char);
+    procedure CbExistedGroupsKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
     FGroup: TGroup;
@@ -51,16 +51,18 @@ type
     FAction: TGroupAction;
     RegGroups: TGroups;
     FGroupFileName: string;
+    procedure LoadLanguage;
+    procedure SetText(GroupName : string);
+    procedure RecreateGroupsList;
   protected
+    { Protected declarations }
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure RecreateGroupsList;
     procedure ExecuteNoDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions;
       FileName: string);
     procedure ExecuteWithDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions;
       FileName: string);
-    procedure LoadLanguage;
   end;
 
 Const
@@ -77,7 +79,7 @@ procedure GroupReplaceNotExists(Group: TGroup;
 
 implementation
 
-uses UnitNewGroupForm, Language;
+uses UnitNewGroupForm;
 
 {$R *.dfm}
 
@@ -106,30 +108,30 @@ begin
   end;
 end;
 
-procedure TFormGroupReplace.RadioButton2Click(Sender: TObject);
+procedure TFormGroupReplace.RbAddWithAnotherNameClick(Sender: TObject);
 var
-  b : boolean;
+  GroupCreated: Boolean;
   NewGroupName : String;
 begin
- if ID_OK <> MessageBoxDB(Handle, TEXT_MES_1, L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+ if ID_OK <> MessageBoxDB(Handle, L('Do you really want to create a new group and use it to import?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    RadioButton2.Checked := False;
-    RadioButton3.Checked := True;
+    RbAddWithAnotherName.Checked := False;
+    RbSkipGroup.Checked := True;
     Exit;
   end;
-  ComboBox1.Enabled := False;
-  if RadioButton2.Checked then
+  CbExistedGroups.Enabled := False;
+  if RbAddWithAnotherName.Checked then
   begin
-    CreateNewGroupDialogB(FGroup.GroupCode, FGroup.GroupImage, B, NewGroupName);
-    if not B then
+    CreateNewGroupDialogB(FGroup.GroupCode, FGroup.GroupImage, GroupCreated, NewGroupName);
+    if not GroupCreated then
     begin
-      RadioButton2.Checked := False;
-      RadioButton3.Checked := True;
+      RbAddWithAnotherName.Checked := False;
+      RbSkipGroup.Checked := True;
     end
     else
     begin
       NewGroupNameBox.Text := NewGroupName;
-      Button1Click(Sender);
+      BtnOkClick(Sender);
     end;
   end;
 end;
@@ -146,26 +148,26 @@ begin
   Result := 'ReplaceGroup';
 end;
 
-procedure TFormGroupReplace.Button1Click(Sender: TObject);
+procedure TFormGroupReplace.BtnOkClick(Sender: TObject);
 begin
   Working := False;
   FAction.Action := GROUP_ACTION_UNCNOWN;
-  if RadioButton1.Checked then
+  if RbMergeWith.Checked then
   begin
     FAction.Action := GROUP_ACTION_ADD_IN_EXISTS;
-    FAction.InGroup := GetGroupByGroupNameW(ComboBox1.Text, True, FGroupFileName);
+    FAction.InGroup := GetGroupByGroupNameW(CbExistedGroups.Text, True, FGroupFileName);
   end;
-  if RadioButton2.Checked then
+  if RbAddWithAnotherName.Checked then
   begin
     FAction.Action := GROUP_ACTION_ADD_IN_NEW;
     FAction.InGroup := GetGroupByGroupNameW(NewGroupNameBox.Text, True, FGroupFileName);
   end;
-  if RadioButton3.Checked then
+  if RbSkipGroup.Checked then
     FAction.Action := GROUP_ACTION_NO_ADD;
-  if RadioButton4.Checked then
+  if RbAddGroup.Checked then
     FAction.Action := GROUP_ACTION_ADD;
-  FAction.ReplaceImageOnNew := CheckBox1.Checked;
-  FAction.ActionForAll := CheckBox2.Checked;
+  FAction.ReplaceImageOnNew := CbReplaceImage.Checked;
+  FAction.ActionForAll := CbAllUnknownGroups.Checked;
   Close;
 end;
 
@@ -174,21 +176,26 @@ var
   I: Integer;
 begin
   RegGroups := GetRegisterGroupListW(FGroupFileName, False, DBKernel.SortGroupsByName);
-  ComboBox1.Clear;
+  CbExistedGroups.Clear;
   for I := 0 to Length(RegGroups) - 1 do
-    ComboBox1.Items.Add(RegGroups[I].GroupName);
+    CbExistedGroups.Items.Add(RegGroups[I].GroupName);
 end;
 
-procedure TFormGroupReplace.RadioButton1Click(Sender: TObject);
+procedure TFormGroupReplace.SetText(GroupName: string);
 begin
-  ComboBox1.Enabled := True;
-  if ComboBox1.Text = '' then
-    ComboBox1.Text := ComboBox1.Items[0];
+  WarningLabelText.Caption := Format(L('The database found a group named "%s". What to do with this group when you import an existing database?"'), [GroupName]);
 end;
 
-procedure TFormGroupReplace.RadioButton3Click(Sender: TObject);
+procedure TFormGroupReplace.RbMergeWithClick(Sender: TObject);
 begin
-  ComboBox1.Enabled := False;
+  CbExistedGroups.Enabled := True;
+  if CbExistedGroups.Text = '' then
+    CbExistedGroups.Text := CbExistedGroups.Items[0];
+end;
+
+procedure TFormGroupReplace.RbSkipGroupClick(Sender: TObject);
+begin
+  CbExistedGroups.Enabled := False;
 end;
 
 procedure TFormGroupReplace.ExecuteNoDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions;
@@ -196,40 +203,40 @@ procedure TFormGroupReplace.ExecuteNoDBGroupsIn(Group: TGroup; out Action: TGrou
 begin
   FGroupFileName := FileName;
   RecreateGroupsList;
-  if ComboBox1.Items.Count = 0 then
-    RadioButton1.Enabled := False;
+  if CbExistedGroups.Items.Count = 0 then
+    RbMergeWith.Enabled := False;
 
   Working := True;
   OutGroupPanel.Visible := False;
   FGroup := Group;
   GroupNameBox.Text := FGroup.GroupName;
-  CheckBox1.Enabled := False;
-  CheckBox2.Enabled := False;
-  CheckBox3.Enabled := False;
-  RadioButton3.Checked := True;
+  CbReplaceImage.Enabled := False;
+  CbAllUnknownGroups.Enabled := False;
+  CbAllKnownGroups.Enabled := False;
+  RbSkipGroup.Checked := True;
   if Options.AllowAdd then
   begin
-    RadioButton4.Enabled := True;
-    RadioButton4.Checked := True;
+    RbAddGroup.Enabled := True;
+    RbAddGroup.Checked := True;
   end;
   if not Options.AllowAdd then
   begin
-    RadioButton4.Enabled := False;
-    RadioButton3.Checked := True;
+    RbAddGroup.Enabled := False;
+    RbSkipGroup.Checked := True;
   end;
 
   if GroupNameExistsW(Group.GroupName, FileName) then
   begin
-    RadioButton1.Checked := True;
-    ComboBox1.Text := Group.GroupName;
-    RadioButton4.Enabled := False;
-    RadioButton3.Checked := False;
+    RbMergeWith.Checked := True;
+    CbExistedGroups.Text := Group.GroupName;
+    RbAddGroup.Enabled := False;
+    RbSkipGroup.Checked := False;
   end;
 
   FAction.OutGroup := CopyGroup(Group);
-  WarningLabelText.Caption := Format(TEXT_MES_REPLACE_GROUP, [Group.GroupName]);
+  SetText(Group.GroupName);
   if Options.MaxAuto then
-    Button1Click(nil)
+    BtnOkClick(Self)
   else
     ShowModal;
   Action := Faction;
@@ -240,42 +247,41 @@ procedure TFormGroupReplace.ExecuteWithDBGroupsIn(Group: TGroup;
 begin
   FGroupFileName := FileName;
   RecreateGroupsList;
-  if ComboBox1.Items.Count = 0 then
-    RadioButton1.Enabled := False;
+  if CbExistedGroups.Items.Count = 0 then
+    RbMergeWith.Enabled := False;
   Working := True;
   OutGroupPanel.Visible := True;
-  if Image3.Picture.Graphic = nil then
-    Image3.Picture.Graphic := TJpegImage.Create;
   FGroup := Group;
-  RadioButton3.Checked := True;
+  RbSkipGroup.Checked := True;
   if Options.AllowAdd then
   begin
-    RadioButton4.Enabled := True;
-    RadioButton4.Checked := True;
+    RbAddGroup.Enabled := True;
+    RbAddGroup.Checked := True;
   end;
   if not Options.AllowAdd then
   begin
-    RadioButton4.Enabled := False;
-    RadioButton3.Checked := True;
+    RbAddGroup.Enabled := False;
+    RbSkipGroup.Checked := True;
   end;
 
   if GroupNameExistsW(Group.GroupName, FileName) then
   begin
-    RadioButton1.Checked := True;
-    ComboBox1.Text := Group.GroupName;
-    RadioButton4.Enabled := False;
-    RadioButton3.Checked := False;
+    RbMergeWith.Checked := True;
+    CbExistedGroups.Text := Group.GroupName;
+    RbAddGroup.Enabled := False;
+    RbSkipGroup.Checked := False;
   end;
 
-  Image3.Picture.Graphic.Assign(FGroup.GroupImage);
+  TmGroupImage.Picture.Graphic := FGroup.GroupImage;
   GroupNameBox.Text := FGroup.GroupName;
   FAction.OutGroup := CopyGroup(Group);
-  CheckBox1.Enabled := False;
-  CheckBox2.Enabled := False;
-  CheckBox3.Enabled := False;
-  WarningLabelText.Caption := Format(TEXT_MES_REPLACE_GROUP, [Group.GroupName]);
+  CbReplaceImage.Enabled := False;
+  CbAllUnknownGroups.Enabled := False;
+  CbAllKnownGroups.Enabled := False;
+  SetText(Group.GroupName);
+
   if Options.MaxAuto then
-    Button1Click(nil)
+    BtnOkClick(Self)
   else
     ShowModal;
   Action := Faction;
@@ -299,20 +305,20 @@ begin
   BeginTranslate;
   try
     WarningLabelText.Caption := '';
-    Button1.Caption := L('Ok');
+    BtnOk.Caption := L('Ok');
     Label1.Caption := L('Group') + ':';
     Caption := L('Replace group');
-    RadioButton4.Caption := L('Add group');
-    RadioButton1.Caption := L('Megre with');
-    RadioButton2.Caption := L('Add with another name');
-    RadioButton3.Caption := L('Skip this group');
+    RbAddGroup.Caption := L('Add group');
+    RbMergeWith.Caption := L('Megre with');
+    RbAddWithAnotherName.Caption := L('Add with another name');
+    RbSkipGroup.Caption := L('Skip this group');
     NewGroupNameBox.Text := L('<Group>');
   finally
     EndTranslate;
   end;
 end;
 
-procedure TFormGroupReplace.ComboBox1KeyPress(Sender: TObject; var Key: Char);
+procedure TFormGroupReplace.CbExistedGroupsKeyPress(Sender: TObject; var Key: Char);
 begin
   Key := #0;
 end;

@@ -3,9 +3,9 @@ object AboutForm: TAboutForm
   Top = 159
   BorderStyle = bsNone
   Caption = 'About project'
-  ClientHeight = 455
-  ClientWidth = 462
-  Color = clBlack
+  ClientHeight = 431
+  ClientWidth = 640
+  Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -16,78 +16,19 @@ object AboutForm: TAboutForm
   Position = poScreenCenter
   OnCreate = FormCreate
   OnDblClick = FormDblClick
+  OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
   object ImageLogo: TImage
-    Left = 200
-    Top = -8
-    Width = 257
+    Left = 0
+    Top = 0
+    Width = 641
     Height = 433
     Enabled = False
   end
-  object MemoInfo: TMemo
-    Left = 8
-    Top = 8
-    Width = 185
-    Height = 305
-    BevelInner = bvNone
-    BevelOuter = bvNone
-    BorderStyle = bsNone
-    Color = clBlack
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'Times New Roman'
-    Font.Style = []
-    Lines.Strings = (
-      'Photo DataBase x.x'
-      'About project:'
-      'All copyrights to this program are '
-      'exclusively owned by the author: '
-      'Veresov Dmitry (c) 2002-xxxx '
-      'Illusion Dolphin. '
-      'You can'#39't emulate, clone, rent, lease, '
-      'sell, modify, decompile, disassemble, '
-      'otherwise, reverse engineer, transfer '
-      'this software.'
-      ''
-      'HomePage:'
-      'http://www.xxx.xx'
-      ''
-      'E-Mail:'
-      'xxx@xxx.xx')
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 0
-  end
-  object MemoRegistrationInfo: TMemo
-    Left = 8
-    Top = 320
-    Width = 185
-    Height = 105
-    BevelInner = bvNone
-    BevelOuter = bvNone
-    BorderStyle = bsNone
-    Color = clBlack
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'Times New Roman'
-    Font.Style = []
-    Lines.Strings = (
-      'This product code is:'
-      '0000000000000000'
-      ''
-      'Registered by:'
-      ''
-      'Unnamed')
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 1
-  end
   object ImbClose: TImButton
-    Left = 435
+    Left = 611
     Top = 8
     Width = 21
     Height = 21
@@ -484,12 +425,73 @@ object AboutForm: TAboutForm
     VirtualDraw = False
   end
   object BtShowActivationForm: TButton
-    Left = 9
-    Top = 430
+    Left = 63
+    Top = 390
     Width = 185
     Height = 17
-    Caption = 'Open activation form'
-    TabOrder = 3
+    Caption = 'Open an activation form'
+    TabOrder = 1
     OnClick = BtShowActivationFormClick
+  end
+  object MemoInfo: TRichEdit
+    Left = 32
+    Top = 32
+    Width = 246
+    Height = 258
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    Lines.Strings = (
+      'MemoInfo')
+    ParentFont = False
+    ReadOnly = True
+    ScrollBars = ssVertical
+    TabOrder = 2
+  end
+  object MemoRegistrationInfo: TRichEdit
+    Left = 32
+    Top = 296
+    Width = 246
+    Height = 88
+    Enabled = False
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    Lines.Strings = (
+      'MemoInfo')
+    ParentFont = False
+    TabOrder = 3
+  end
+  object LoadingSign1: TLoadingSign
+    Left = 611
+    Top = 401
+    Width = 16
+    Height = 16
+    Active = True
+    FillPercent = 50
+    SignColor = clRed
+    GetBackGround = LnkGoToWebSiteGetBackGround
+  end
+  object LnkGoToWebSite: TWebLink
+    Left = 489
+    Top = 401
+    Width = 116
+    Height = 16
+    Cursor = crHandPoint
+    Text = 'Checking updates...'
+    ImageIndex = 0
+    IconWidth = 16
+    IconHeight = 16
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = False
+    TopIconIncrement = 0
+    GetBackGround = LnkGoToWebSiteGetBackGround
+    ImageCanRegenerate = True
+    UseSpecIconSize = True
   end
 end

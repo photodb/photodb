@@ -3,7 +3,7 @@ object FormGroupReplace: TFormGroupReplace
   Top = 109
   BorderStyle = bsToolWindow
   Caption = 'Group Replace'
-  ClientHeight = 267
+  ClientHeight = 266
   ClientWidth = 257
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -26,8 +26,7 @@ object FormGroupReplace: TFormGroupReplace
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 254
-    object ComboBox1: TComboBox
+    object CbExistedGroups: TComboBox
       Left = 160
       Top = 32
       Width = 91
@@ -36,35 +35,35 @@ object FormGroupReplace: TFormGroupReplace
       ParentColor = True
       PopupMenu = PopupMenu1
       TabOrder = 2
-      Text = 'ComboBox1'
-      OnKeyPress = ComboBox1KeyPress
+      Text = 'CbExistedGroups'
+      OnKeyPress = CbExistedGroupsKeyPress
     end
-    object RadioButton1: TRadioButton
+    object RbMergeWith: TRadioButton
       Left = 8
       Top = 35
       Width = 145
       Height = 17
       Caption = 'Import In Group'
       TabOrder = 1
-      OnClick = RadioButton1Click
+      OnClick = RbMergeWithClick
     end
-    object RadioButton2: TRadioButton
+    object RbAddWithAnotherName: TRadioButton
       Left = 8
       Top = 54
       Width = 145
       Height = 25
       Caption = 'Add with another name'
       TabOrder = 3
-      OnClick = RadioButton2Click
+      OnClick = RbAddWithAnotherNameClick
     end
-    object RadioButton3: TRadioButton
+    object RbSkipGroup: TRadioButton
       Left = 8
       Top = 80
       Width = 241
       Height = 17
       Caption = 'Do not add this group'
       TabOrder = 5
-      OnClick = RadioButton3Click
+      OnClick = RbSkipGroupClick
     end
     object NewGroupNameBox: TEdit
       Tag = 1
@@ -77,7 +76,7 @@ object FormGroupReplace: TFormGroupReplace
       TabOrder = 4
       Text = '<Group>'
     end
-    object RadioButton4: TRadioButton
+    object RbAddGroup: TRadioButton
       Left = 8
       Top = 9
       Width = 225
@@ -86,7 +85,7 @@ object FormGroupReplace: TFormGroupReplace
       Checked = True
       TabOrder = 0
       TabStop = True
-      OnClick = RadioButton3Click
+      OnClick = RbSkipGroupClick
     end
   end
   object OutGroupPanel: TPanel
@@ -97,7 +96,6 @@ object FormGroupReplace: TFormGroupReplace
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 254
     object Label1: TLabel
       Left = 64
       Top = 4
@@ -105,7 +103,7 @@ object FormGroupReplace: TFormGroupReplace
       Height = 13
       Caption = 'Group:'
     end
-    object Image3: TImage
+    object TmGroupImage: TImage
       Left = 8
       Top = 1
       Width = 48
@@ -132,12 +130,13 @@ object FormGroupReplace: TFormGroupReplace
     Left = 0
     Top = 241
     Width = 241
-    Height = 26
+    Height = 25
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 2
     Visible = False
-    object CheckBox1: TCheckBox
+    ExplicitHeight = 26
+    object CbReplaceImage: TCheckBox
       Left = 8
       Top = 8
       Width = 225
@@ -145,7 +144,7 @@ object FormGroupReplace: TFormGroupReplace
       Caption = 'Replace Image on new'
       TabOrder = 0
     end
-    object CheckBox2: TCheckBox
+    object CbAllUnknownGroups: TCheckBox
       Left = 8
       Top = 24
       Width = 225
@@ -153,7 +152,7 @@ object FormGroupReplace: TFormGroupReplace
       Caption = 'This action for all unknown groups'
       TabOrder = 1
     end
-    object CheckBox3: TCheckBox
+    object CbAllKnownGroups: TCheckBox
       Left = 8
       Top = 40
       Width = 225
@@ -170,7 +169,6 @@ object FormGroupReplace: TFormGroupReplace
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitWidth = 254
     object WarningLabelText: TLabel
       Left = 80
       Top = 8
@@ -863,14 +861,14 @@ object FormGroupReplace: TFormGroupReplace
         FE01FFFF}
     end
   end
-  object Button1: TButton
+  object BtnOk: TButton
     Left = 182
     Top = 246
     Width = 67
     Height = 17
     Caption = 'Ok'
     TabOrder = 4
-    OnClick = Button1Click
+    OnClick = BtnOkClick
   end
   object PopupMenu1: TPopupMenu
     Left = 96

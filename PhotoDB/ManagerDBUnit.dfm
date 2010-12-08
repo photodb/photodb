@@ -207,7 +207,7 @@ object ManagerDB: TManagerDB
           '<>'
           'Like')
       end
-      object RadioButton1: TRadioButton
+      object RbSQLSet: TRadioButton
         Left = 212
         Top = 8
         Width = 76
@@ -222,9 +222,9 @@ object ManagerDB: TManagerDB
         ParentFont = False
         TabOrder = 10
         TabStop = True
-        OnClick = RadioButton1Click
+        OnClick = RbSQLSetClick
       end
-      object RadioButton2: TRadioButton
+      object RbSQLDelete: TRadioButton
         Left = 212
         Top = 32
         Width = 237
@@ -237,7 +237,7 @@ object ManagerDB: TManagerDB
         Font.Style = []
         ParentFont = False
         TabOrder = 11
-        OnClick = RadioButton1Click
+        OnClick = RbSQLSetClick
       end
       object RecordNumberEdit: TEdit
         Left = 656
@@ -759,8 +759,8 @@ object ManagerDB: TManagerDB
     Left = 497
     Top = 129
   end
-  object PopupMenu8: TPopupMenu
-    Left = 529
+  object PmRestore: TPopupMenu
+    Left = 561
     Top = 129
     object SelectDB1: TMenuItem
       Caption = 'SelectDB'

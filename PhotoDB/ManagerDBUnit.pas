@@ -32,8 +32,8 @@ type
     CbWhereField2: TComboBox;
     CbOperatorWhere1: TComboBox;
     CbOperatorWhere2: TComboBox;
-    RadioButton1: TRadioButton;
-    RadioButton2: TRadioButton;
+    RbSQLSet: TRadioButton;
+    RbSQLDelete: TRadioButton;
     RecordNumberEdit: TEdit;
     SaveWindowPos1: TSaveWindowPos;
     PopupMenu2: TPopupMenu;
@@ -88,7 +88,7 @@ type
     LbDatabases: TListBox;
     BtnAddDB: TButton;
     DBImageList: TImageList;
-    PopupMenu8: TPopupMenu;
+    PmRestore: TPopupMenu;
     DeleteDB1: TMenuItem;
     RenameDB1: TMenuItem;
     N1: TMenuItem;
@@ -105,7 +105,7 @@ type
     procedure ComboBox1Change(Sender: TObject);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     procedure FormDestroy(Sender: TObject);
-    procedure RadioButton1Click(Sender: TObject);
+    procedure RbSQLSetClick(Sender: TObject);
     procedure CbWhereCombinatorChange(Sender: TObject);
     procedure CbWhereField1Change(Sender: TObject);
     procedure BtnExecSQLClick(Sender: TObject);
@@ -215,7 +215,7 @@ FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeStr,FieldTypeStr,FieldTypeStr,Fi
 implementation
 
 uses UnitQuickGroupInfo, DBSelectUnit, ExplorerUnit,
-     Searching, SlideShow, ExportUnit, UnitManageGroups, Language,
+     Searching, SlideShow, ExportUnit, UnitManageGroups,
      CleaningForm, UnitDBCleaning, UnitCompareDataBases, UnitEditGroupsForm,
      UnitPasswordForm, UnitOpenQueryThread, ProgressActionUnit,
      UnitMenuDateForm, UnitChangeDBPath, UnitSelectDB, uThreadLoadingManagerDB,
@@ -285,7 +285,7 @@ begin
   Refresh1.ImageIndex := DB_IC_RELOAD;
   Rename1.ImageIndex  := DB_IC_RENAME;
 
-  PopupMenu8.Images := DBKernel.ImageList;
+  PmRestore.Images := DBKernel.ImageList;
   SelectDB1.ImageIndex := DB_IC_SHELL;
   RenameDB1.ImageIndex := DB_IC_RENAME;
   DeleteDB1.ImageIndex := DB_IC_DELETE_INFO;
@@ -349,7 +349,6 @@ begin
     FreeDS(WorkQuery);
     InitializeQueryList;
     WorkQuery:=GetQuery;
-  //  Edit1.text:=Value.Name;
     Exit;
   end;
 
@@ -405,10 +404,10 @@ begin
   FData.Free;
 end;
 
-procedure TManagerDB.RadioButton1Click(Sender: TObject);
+procedure TManagerDB.RbSQLSetClick(Sender: TObject);
 begin
-  CbSetField.Enabled:=RadioButton1.Checked;
-  Edit2.Enabled:=RadioButton1.Checked;
+  CbSetField.Enabled:=RbSQLSet.Checked;
+  Edit2.Enabled:=RbSQLSet.Checked;
   CheckSQL;
 end;
 
@@ -498,30 +497,31 @@ end;
 
 procedure TManagerDB.BtnExecSQLClick(Sender: TObject);
 var
-  SQL : string;
-  Query : TDataSet;
+  SQL: string;
+  Query: TDataSet;
 begin
   Query := GetQuery;
   try
-    if RadioButton1.Checked then
+    if RbSQLSet.Checked then
+      SQL := 'Update $DB$ Set ' + CbSetField.Text + ' = ' + ValueToDBValue(CbSetField.Text, Edit2.Text)
+    else
+      SQL := 'Delete from $DB$';
+
+    SQL := SQL + ' Where ';
+    SQL := SQL + '(' + CbWhereField1.Text + ' ' + CbOperatorWhere1.Text + ' ' + ValueToDBValue(CbWhereField1.Text,
+      Edit3.Text) + ')';
+    if (Trim(CbWhereCombinator.Text) <> '') then
     begin
-      SQL:='Update $DB$ Set '+CbSetField.Text+' = '+ValueToDBValue(CbSetField.Text,Edit2.Text);
-    end else
-    begin
-      SQL:='Delete from $DB$';
+      SQL := SQL + ' ' + CbWhereCombinator.Text + ' (' + CbWhereField2.Text + ' ' + CbOperatorWhere2.Text + ' ' +
+        ValueToDBValue(CbWhereField2.Text, Edit4.Text) + ')';
     end;
-    SQL:=SQL+' Where ';
-    SQL:=SQL+'('+CbWhereField1.Text+' '+CbOperatorWhere1.Text+' '+ValueToDBValue(CbWhereField1.Text,Edit3.Text)+')';
-    if (Trim(CbWhereCombinator.Text)<>'') then
-    begin
-      SQL:=SQL+' '+CbWhereCombinator.Text+' ('+CbWhereField2.Text+' '+CbOperatorWhere2.Text+' '+ValueToDBValue(CbWhereField2.Text,Edit4.Text)+')';
-    end;
-    SetSQL(Query,SQL);
+    SetSQL(Query, SQL);
     try
       ExecSQL(Query);
     except
-      on e : Exception do
-        MessageBoxDB(Handle,Format(TEXT_MES_ERROR_EXESQSL_BY_REASON_F,[e.Message,SQL]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+      on E: Exception do
+        MessageBoxDB(Handle, Format(L('An error occurred during the query: %s (%s)'), [E.message, SQL]), L('Error'),
+          TD_BUTTON_OK, TD_ICON_ERROR);
     end;
   finally
     FreeDS(Query);
@@ -530,7 +530,7 @@ end;
 
 procedure TManagerDB.CheckSQL;
 begin
-  if (((CbSetField.Text <> '') and RadioButton1.Checked) or RadioButton2.Checked) and (CbWhereField1.Text<>'') and (CbOperatorWhere1.Text<>'') then
+  if (((CbSetField.Text <> '') and RbSQLSet.Checked) or RbSQLDelete.Checked) and (CbWhereField1.Text<>'') and (CbOperatorWhere1.Text<>'') then
   begin
     if (Trim(CbWhereCombinator.Text) = '') then
       BtnExecSQL.Enabled := True
@@ -558,8 +558,7 @@ end;
 
 procedure TManagerDB.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  ManagerDB.Release;
-  ManagerDB := nil;
+  R(ManagerDB);
 end;
 
 procedure TManagerDB.GroupsManager1Click(Sender: TObject);
@@ -571,8 +570,9 @@ procedure TManagerDB.LoadLanguage;
 begin
   BeginTranslate;
   try
-    RadioButton1.Caption:= L('Set');
-    RadioButton2.Caption:=  L('Delete');
+    Caption:= L('DB Manager');
+    RbSQLSet.Caption:= L('Set');
+    RbSQLDelete.Caption:=  L('Delete');
     Label10.Caption:= L('where');
     PackTabelLink.Text:= L('Pack table');
     ExportTableLink.Text:= L('Export DB');
@@ -586,7 +586,6 @@ begin
     EditGroups1.Caption:= L('Edit groups');
     GroupsManager1.Caption:= L('Groups manager');
     Label7.Caption:= L('Go to record ID');
-    Caption:= L('DB Manager');
     Label11.Caption:= L('Backups');
     Restore1.Caption:= L('Restore DB');
     Delete1.Caption:= L('Delete');
@@ -632,25 +631,25 @@ end;
 
 procedure TManagerDB.ReadBackUps;
 var
-  i : integer;
+  I: Integer;
 begin
- FBackUpFiles.Clear;
- GetValidMDBFilesInFolder(GetAppDataDirectory+BackUpFolder,true,FBackUpFiles);
- LbBackups.Clear;
- for i:=0 to FBackUpFiles.Count-1 do
- LbBackups.Items.Add(ExtractFileName(FBackUpFiles[i]));
-
+  FBackUpFiles.Clear;
+  GetValidMDBFilesInFolder(GetAppDataDirectory + BackUpFolder, True, FBackUpFiles);
+  LbBackups.Clear;
+  for I := 0 to FBackUpFiles.Count - 1 do
+    LbBackups.Items.Add(ExtractFileName(FBackUpFiles[I]));
 end;
 
 procedure TManagerDB.LbBackupsDrawItem(Control: TWinControl; Index: Integer;
   Rect: TRect; State: TOwnerDrawState);
 var
-  LB : TListBox;
+  LB: TListBox;
 begin
- LB:=(Control as TListBox);
- LB.Canvas.FillRect(Rect);
- LB.Canvas.TextOut(Rect.Left+21, Rect.Top+3,LB.Items[Index]);
- DrawIconEx(LB.Canvas.Handle,Rect.Left+2,Rect.Top+2,UnitDBKernel.icons[DB_IC_LOADFROMFILE+1],16,16,0,0,DI_NORMAL);
+  LB := (Control as TListBox);
+  LB.Canvas.FillRect(Rect);
+  LB.Canvas.TextOut(Rect.Left + 21, Rect.Top + 3, LB.Items[index]);
+  DrawIconEx(LB.Canvas.Handle, Rect.Left + 2, Rect.Top + 2, UnitDBKernel.Icons[DB_IC_LOADFROMFILE + 1], 16, 16, 0, 0,
+    DI_NORMAL);
 end;
 
 procedure TManagerDB.LbBackupsContextPopup(Sender: TObject;
@@ -684,116 +683,120 @@ procedure TManagerDB.Delete1Click(Sender: TObject);
 var
   FileName, CurrentFile : String;
 begin
- if MessageBoxDB(Handle,Format(TEXT_MES_DELETE_DB_BACK_UP_CONFIRM_F,[FBackUpFiles[PopupMenu5.Tag]]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)=ID_OK then
- begin
-  FileName:=FBackUpFiles[PopupMenu5.Tag];
-  CurrentFile:=FileName;
-  try
-   DeleteFile(CurrentFile);
-  except
+  if MessageBoxDB(Handle, Format(L('Do you really want to delete this copy of database (%s)?'), [FBackUpFiles[PopupMenu5.Tag]]), L('Warning'),
+    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) = ID_OK then
+  begin
+    FileName := FBackUpFiles[PopupMenu5.Tag];
+    CurrentFile := FileName;
+    try
+      DeleteFile(CurrentFile);
+    except
+    end;
+    CurrentFile := ChangeFileExt(CurrentFile, '.mb');
+    try
+      DeleteFile(CurrentFile);
+    except
+    end;
+    CurrentFile := GroupsTableFileNameW(FileName);
+    try
+      DeleteFile(CurrentFile);
+    except
+    end;
+    CurrentFile := ChangeFileExt(CurrentFile, '.mb');
+    try
+      DeleteFile(CurrentFile);
+    except
+    end;
+    ReadBackUps;
   end;
-  CurrentFile:=ChangeFileExt(CurrentFile,'.mb');
-  try
-   DeleteFile(CurrentFile);
-  except
-  end;
-  CurrentFile:=GroupsTableFileNameW(FileName);
-  try
-   DeleteFile(CurrentFile);
-  except
-  end;
-  CurrentFile:=ChangeFileExt(CurrentFile,'.mb');
-  try
-   DeleteFile(CurrentFile);
-  except
-  end;
-  ReadBackUps;
- end;
 end;
 
 procedure TManagerDB.Refresh1Click(Sender: TObject);
 begin
- ReadBackUps;
+  ReadBackUps;
 end;
 
 procedure TManagerDB.Rename1Click(Sender: TObject);
 var
-  FileName, Dir : String;
-  NewFileName : String;
-  FN1, FN2, FN3, FN4, NFN1, NFN2, NFN3, NFN4 : string;
+  FileName, Dir: string;
+  NewFileName: string;
+  FN1, FN2, FN3, FN4, NFN1, NFN2, NFN3, NFN4: string;
 begin
- FileName:=GetFileNameWithoutExt(FBackUpFiles[PopupMenu5.Tag]);
- Dir:=GetDirectory(FBackUpFiles[PopupMenu5.Tag]);
- FormatDir(Dir);
- NewFileName:=FileName;
- if PromtString(TEXT_MES_NEW_NAME,TEXT_MES_ENTER_NEW_NAME,NewFileName) then
- begin
-  if not ValidDBPath(Dir+NewFileName) then
+  FileName := GetFileNameWithoutExt(FBackUpFiles[PopupMenu5.Tag]);
+  Dir := IncludeTrailingBackslash(ExtractFileDir(FBackUpFiles[PopupMenu5.Tag]));
+  NewFileName := FileName;
+  if PromtString(L('New name'), L('Please, enter a new name'), NewFileName) then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_PATH_INVALID,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_ERROR);
-   exit;
+    FN1 := Dir + FileName + '.db';
+    FN2 := Dir + FileName + '.mb';
+    FN3 := Dir + FileName + 'G.db';
+    FN4 := Dir + FileName + 'G.mb';
+    NFN1 := Dir + NewFileName + '.db';
+    NFN2 := Dir + NewFileName + '.mb';
+    NFN3 := Dir + NewFileName + 'G.db';
+    NFN4 := Dir + NewFileName + 'G.mb';
+    if FileExists(NFN1) or FileExists(NFN2) or FileExists(NFN3) or FileExists(NFN4) then
+    begin
+      MessageBoxDB(Handle, L('File with that name already exists! Select a different file name.'), L('Error'),
+        TD_BUTTON_OK, TD_ICON_ERROR);
+      Exit;
+    end;
+    RenameFile(FN1, NFN1);
+    RenameFile(FN2, NFN2);
+    RenameFile(FN3, NFN3);
+    RenameFile(FN4, NFN4);
+    ReadBackUps;
   end;
-  FN1:=Dir+FileName+'.db';
-  FN2:=Dir+FileName+'.mb';
-  FN3:=Dir+FileName+'G.db';
-  FN4:=Dir+FileName+'G.mb';
-  NFN1:=Dir+NewFileName+'.db';
-  NFN2:=Dir+NewFileName+'.mb';
-  NFN3:=Dir+NewFileName+'G.db';
-  NFN4:=Dir+NewFileName+'G.mb';
-  if FileExists(NFN1) or FileExists(NFN2) or FileExists(NFN3) or FileExists(NFN4) then
-  begin
-   MessageBoxDB(Handle,TEXT_MES_FILE_EXISTS_NO_ACTION,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   exit;
-  end;
-  RenameFile(FN1,NFN1);
-  RenameFile(FN2,NFN2);
-  RenameFile(FN3,NFN3);
-  RenameFile(FN4,NFN4);
-  ReadBackUps;
- end;
 end;
 
 procedure TManagerDB.Restore1Click(Sender: TObject);
+var
+  Mes : string;
 begin
- if MessageBoxDB(Handle,Format(TEXT_MES_RESTORE_DB_CONFIRM_F,[FBackUpFiles[PopupMenu5.Tag]]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)=ID_OK then
- begin
-  DBkernel.WriteBool('StartUp','Restore',True);
-  DBkernel.WriteString('StartUp','RestoreFile',FBackUpFiles[PopupMenu5.Tag]);
- end;
+  Mes := L('Do you really want to restore this copy of the database (%s)? The current database will be moved to this store. Restart the application to begin the recovery process');
+  if MessageBoxDB(Handle, Format(Mes, [FBackUpFiles[PopupMenu5.Tag]]), L('Warning'),
+    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) = ID_OK then
+  begin
+    DBkernel.WriteBool('StartUp', 'Restore', True);
+    DBkernel.WriteString('StartUp', 'RestoreFile', FBackUpFiles[PopupMenu5.Tag]);
+  end;
 end;
 
 procedure TManagerDB.InitializeQueryList;
 var
-  I, W, H : integer;
-  B : TBitmap;
+  I, W, H: Integer;
+  B: TBitmap;
 begin
-  LbDatabases.Enabled:=false;
-  aGroups:=GetRegisterGroupList(True);
-  SetLength(GroupBitmaps,Length(aGroups));
-  for i:=0 to Length(aGroups)-1 do
+  LbDatabases.Enabled := False;
+  AGroups := GetRegisterGroupList(True);
+  SetLength(GroupBitmaps, Length(AGroups));
+  for I := 0 to Length(AGroups) - 1 do
   begin
-    b := TBitmap.Create;
-    B.Assign(aGroups[i].GroupImage);
-    GroupBitmaps[i] := TBitmap.Create;
-    w:=B.Width;
-    h:=B.Height;
-    ProportionalSize(16,16,w,h);
-    GroupBitmaps[i].Height:=h;
-    GroupBitmaps[i].Width:=w;
-    GroupBitmaps[i].PixelFormat:=pf24bit;
-    StretchCoolWTransparent(0,0,w,h,Rect(0,0,B.Width,B.Height),B,GroupBitmaps[i],128);
+    B := TBitmap.Create;
+    try
+      B.Assign(AGroups[I].GroupImage);
+      GroupBitmaps[I] := TBitmap.Create;
+      W := B.Width;
+      H := B.Height;
+      ProportionalSize(16, 16, W, H);
+      GroupBitmaps[I].Height := H;
+      GroupBitmaps[I].Width := W;
+      GroupBitmaps[I].PixelFormat := Pf24bit;
+      StretchCoolWTransparent(0, 0, W, H, Rect(0, 0, B.Width, B.Height), B, GroupBitmaps[I], 128);
+    finally
+      F(B);
+    end;
   end;
-  LockDraw:=false;
-  LastSelectedIndex:=-1;
+  LockDraw := False;
+  LastSelectedIndex := -1;
   LastSelected := nil;
-  elvMain.DoubleBuffered:=true;
-  elvMain.ControlStyle := elvMain.ControlStyle-[csDoubleClicks];
+  ElvMain.DoubleBuffered := True;
+  ElvMain.ControlStyle := ElvMain.ControlStyle - [CsDoubleClicks];
 
   ReleaseLoadingThread;
   FLoadingDataThread := TThreadLoadingManagerDB.Create(Self);
-  dblData.Hide;
-  dblData.Active := False;
+  DblData.Hide;
+  DblData.Active := False;
   LsLoadingDB.Active := True;
   LsLoadingDB.Top := ElvMain.Top + 4 + GetListViewHeaderHeight(ElvMain);
   LsLoadingDB.Show;
@@ -938,26 +941,26 @@ begin
       end else
       begin
         elvMain.Canvas.Font.Color := $808080;
-        Caption := TEXT_MES_NO_DATE_1;
+        Caption := L('No date set');
         DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
         elvMain.Canvas.Font.Color := $0;
       end;
     end;
     9:
-    begin
-      aRect.Top:=aRect.Top+2;
-      if ItemData.IsTime then
       begin
-        Caption:=FormatDateTime('hh.mm.ss', ItemData.Time);
-        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
-      end else
-      begin
-        elvMain.Canvas.Font.Color:=$808080;
-        Caption:=TEXT_MES_TIME_NOT_EXISTS;
-        DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
-        elvMain.Canvas.Font.Color:=$0;
+        ARect.Top := ARect.Top + 2;
+        if ItemData.IsTime then
+        begin
+          Caption := FormatDateTime('hh.mm.ss', ItemData.Time);
+          DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), ARect, DrawTextOpt);
+        end else
+        begin
+          ElvMain.Canvas.Font.Color := $808080;
+          Caption := L('No time set');
+          DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), ARect, DrawTextOpt);
+          ElvMain.Canvas.Font.Color := $0;
+        end;
       end;
-    end;
     10:
     begin
       Caption := IntToStr(ItemData.FileSize);
@@ -1060,7 +1063,7 @@ begin
           Continue;
 
         ItemData := TDBPopupMenuInfoRecord(elvMain.Items[N].Data);
-        //TODO: ???aListData^.Exists:=0;
+        ItemData.Exists     := 0;
         ItemData.FileName   := Mince(WorkQuery.FieldByName('FFileName').AsString, 50);
         ItemData.KeyWords   := WorkQuery.FieldByName('KeyWords').AsString;
         ItemData.Comment    := WorkQuery.FieldByName('Comment').AsString;
@@ -1092,97 +1095,88 @@ end;
 procedure TManagerDB.ElvMainSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 var
-  i : integer;
-  DD : boolean;
-  LastLock : boolean;
+  I: Integer;
+  DD: Boolean;
+  LastLock: Boolean;
 begin
- LastLock:=LockDraw;
- LockDraw:=false;
- if Selected then
- begin
-  DD:=true;
-  for i:=1 to 10 do
-  ElvMainAdvancedCustomDrawSubItem(ElvMain,item,i,[],cdPrePaint,DD);
-  LastSelectedIndex:=Item.Index;
- end else
- begin
-  DD:=false;
-  if LastSelectedIndex<>-1 then
-  for i:=1 to 10 do
-  ElvMainAdvancedCustomDrawSubItem(ElvMain,ElvMain.Items[LastSelectedIndex],i,[],cdPrePaint,DD);
- end;
- LockDraw:=LastLock;
+  LastLock := LockDraw;
+  LockDraw := False;
+  if Selected then
+  begin
+    DD := True;
+    for I := 1 to 10 do
+      ElvMainAdvancedCustomDrawSubItem(ElvMain, Item, I, [], CdPrePaint, DD);
+    LastSelectedIndex := Item.index;
+  end else
+  begin
+    DD := False;
+    if LastSelectedIndex <> -1 then
+      for I := 1 to 10 do
+        ElvMainAdvancedCustomDrawSubItem(ElvMain, ElvMain.Items[LastSelectedIndex], I, [], CdPrePaint, DD);
+  end;
+  LockDraw := LastLock;
 end;
 
 function GetSubItemIndexByPoint(ListView : TListView;Item : TListItem; Point : TPoint) : integer;
 var
-  aRect : TRect;
-  SubItem : integer;
+  ARect: TRect;
+  SubItem: Integer;
 begin
- Result:=0;
- for SubItem:=1 to 10 do
- begin
-  ListView_GetSubItemRect(ListView.Handle,Item.Index,SubItem,0,@aRect);
-  if PtInRect(aRect,Point) then
+  Result := 0;
+  for SubItem := 1 to 10 do
   begin
-   Result:=SubItem;
-   Break;
+    ListView_GetSubItemRect(ListView.Handle, Item.index, SubItem, 0, @ARect);
+    if PtInRect(ARect, Point) then
+    begin
+      Result := SubItem;
+      Break;
+    end;
   end;
- end;
 end;
 
 function SpilitWords(S : string) : TArrayOfString;
 var
-  i, j : integer;
-  pi_ : PInteger;
-
- procedure DelSpacesA(var S : string);
- var
-   i : integer;
- begin
-  for i:=Length(s) downto 1 do
-  if s[i]=' ' then Delete(s,i,1);
- end;
+  I, J: Integer;
+  Pi_: PInteger;
 
 begin
- SetLength(Result,0);
- s:=' '+s+' ';
- pi_:=@i;
- for i:=1 to length(s)-1 do
- begin
-  if i+1>length(s)-1 then break;
-  if (s[i]=' ') and (s[i+1]<>' ') then
-  for j:=i+1 to length(s) do
-  if (s[j]=' ') or (j=length(s)) then
+  SetLength(Result, 0);
+  S := ' ' + S + ' ';
+  Pi_ := @I;
+  for I := 1 to Length(S) - 1 do
   begin
-   SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:=Copy(s,i+1,j-i-1);
-   pi_^:=j-1;
-   Break;
+    if I + 1 > Length(S) - 1 then
+      Break;
+    if (S[I] = ' ') and (S[I + 1] <> ' ') then
+      for J := I + 1 to Length(S) do
+        if (S[J] = ' ') or (J = Length(S)) then
+        begin
+          SetLength(Result, Length(Result) + 1);
+          Result[Length(Result) - 1] := Copy(S, I + 1, J - I - 1);
+          Pi_^ := J - 1;
+          Break;
+        end;
   end;
- end;
- for i:=0 to Length(Result)-1 do
- begin
-  DelSpacesA(Result[i]);
- end;
+  for I := 0 to Length(Result) - 1 do
+    Result[I] := Trim(Result[I]);
 
 end;
 
 procedure TManagerDB.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
-  p : TPoint;
-  Item : TListItem;
-  i, j : integer;
-  Words : TArrayOfString;
-  MenuItem : TMenuItem;
-  G : TGroups;
-  B, Bit, TempB : TBitmap;
-  w, h : integer;
-  Date, Time  : TDateTime;
-  IsDate, IsTime, Changed : boolean;
-  FQuery : TDataSet;
-  ItemData : TDBPopupMenuInfoRecord;
+  P: TPoint;
+  Item: TListItem;
+  I, J: Integer;
+  Words: TArrayOfString;
+  MenuItem: TMenuItem;
+  G: TGroups;
+  B, Bit, TempB: TBitmap;
+  W, H: Integer;
+  Date, Time: TDateTime;
+  IsDate, IsTime, Changed: Boolean;
+  FQuery: TDataSet;
+  ItemData: TDBPopupMenuInfoRecord;
 begin
   Words := nil;
   if Msg.hwnd = ElvMain.Handle then
@@ -1272,83 +1266,94 @@ begin
           begin
             if aGroups[J].GroupCode = G[I].GroupCode then
             begin
-              b := TBitmap.Create;
-              b.PixelFormat:=pf24bit;
-              b.Assign(aGroups[j].GroupImage);
-              Bit:=TBitmap.Create;
-              Bit.PixelFormat:=pf24bit;
-              Bit.Width:=16;
-              Bit.Height:=16;
-              Bit.Canvas.Brush.Color:=Graphics.clMenu;
-              Bit.Canvas.Pen.Color:=Graphics.clMenu;
-              Bit.Canvas.Rectangle(0,0,16,16);
-              w:=B.Width;
-              h:=B.Height;
-              ProportionalSize(16,16,w,h);
-              TempB:=TBitmap.Create;
-              TempB.PixelFormat:=pf24bit;
-              TempB.Height:=h;
-              TempB.Width:=w;
-              DoResize(w,h,b,TempB);
-              Bit.Canvas.Draw(8-TempB.Width div 2,8-TempB.Height div 2,TempB);
-              TempB.Free;
-              b.Free;
-              ImageListPopupGroups.Add(Bit,nil);
-              Bit.Free;
-              MenuItem:=TMenuItem.Create(PopupMenuGroups);
-              MenuItem.Caption:=G[i].GroupName;
-              MenuItem.ImageIndex:=ImageListPopupGroups.Count-1;
+              B := TBitmap.Create;
+              try
+                B.PixelFormat := Pf24bit;
+                B.Assign(AGroups[J].GroupImage);
+                Bit := TBitmap.Create;
+                try
+                  Bit.PixelFormat := Pf24bit;
+                  Bit.Width := 16;
+                  Bit.Height := 16;
+                  Bit.Canvas.Brush.Color := Graphics.ClMenu;
+                  Bit.Canvas.Pen.Color := Graphics.ClMenu;
+                  Bit.Canvas.Rectangle(0, 0, 16, 16);
+                  W := B.Width;
+                  H := B.Height;
+                  ProportionalSize(16, 16, W, H);
+                  TempB := TBitmap.Create;
+                  try
+                    TempB.PixelFormat := Pf24bit;
+                    TempB.Height := H;
+                    TempB.Width := W;
+                    DoResize(W, H, B, TempB);
+                    Bit.Canvas.Draw(8 - TempB.Width div 2, 8 - TempB.Height div 2, TempB);
+                  finally
+                    F(TempB);
+                  end;
+                  ImageListPopupGroups.Add(Bit, nil);
+                finally
+                  F(Bit);
+                end;
+              finally
+                F(B);
+              end;
+              MenuItem := TMenuItem.Create(PopupMenuGroups);
+              MenuItem.Caption := G[I].GroupName;
+              MenuItem.ImageIndex := ImageListPopupGroups.Count - 1;
               PopupMenuGroups.Items.Add(MenuItem);
               Break;
             end;
           end;
         end;
-        MenuItem:=TMenuItem.Create(PopupMenuGroups);
-        MenuItem.Caption:='-';
+        MenuItem := TMenuItem.Create(PopupMenuGroups);
+        MenuItem.Caption := '-';
         PopupMenuGroups.Items.Add(MenuItem);
 
-        MenuItem:=TMenuItem.Create(PopupMenuGroups);
-        MenuItem.Caption:=TEXT_MES_EDIT;
-        Bit:=TBitmap.Create;
-        Bit.PixelFormat:=pf24bit;
-        Bit.Width:=16;
-        Bit.Height:=16;
-        Bit.Canvas.Brush.Color:=Graphics.clMenu;
-        Bit.Canvas.Pen.Color:=Graphics.clMenu;
-        Bit.Canvas.Rectangle(0,0,16,16);
-        DrawIconEx(Bit.Canvas.Handle,0,0,UnitDBKernel.icons[DB_IC_GROUPS+1],16,16,0,0,DI_NORMAL);
-        ImageListPopupGroups.Add(Bit,nil);
-        Bit.Free;
+        MenuItem := TMenuItem.Create(PopupMenuGroups);
+        MenuItem.Caption := L('Edit groups');
+        Bit := TBitmap.Create;
+        try
+          Bit.PixelFormat := Pf24bit;
+          Bit.Width := 16;
+          Bit.Height := 16;
+          Bit.Canvas.Brush.Color := Graphics.ClMenu;
+          Bit.Canvas.Pen.Color := Graphics.ClMenu;
+          Bit.Canvas.Rectangle(0, 0, 16, 16);
+          DrawIconEx(Bit.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+          ImageListPopupGroups.Add(Bit, nil);
+        finally
+          F(Bit);
+        end;
 
         MenuItem.ImageIndex:=ImageListPopupGroups.Count-1;
 
-
-        MenuItem.OnClick:=EditGroupsMenuClick;
+        MenuItem.OnClick := EditGroupsMenuClick;
         PopupMenuGroups.Items.Add(MenuItem);
-        PopupMenuGroups.Popup(p.x,p.y);
+        PopupMenuGroups.Popup(P.X, P.Y);
       end;
     end;
-    if (msg.message=WM_LBUTTONDOWN) or (msg.message=WM_RBUTTONDOWN) then
+    if (Msg.message = WM_LBUTTONDOWN) or (Msg.message = WM_RBUTTONDOWN) then
     begin
       ElvMain.SetFocus;
-      msg.message:=0;
-      Handled:=true;
-      GetCursorPos(p);
-      p:=ElvMain.ScreenToClient(p);
-      Item:=ElvMain.GetItemAt(10,p.y);
-      if Item=nil then
-      if LastSelected<>nil then
-      begin
-        LastSelected.Selected:=true;
-        ElvMain.ItemFocused:=LastSelected;
-        exit;
-      end;
-      LockDraw:=true;
-      if Item<>nil then
-      Item.Selected:=true;
-      LastSelected:=Item;
-      LockDraw:=false;
-      ElvMain.ItemFocused:=Item;
+      Msg.message := 0;
+      Handled := True;
+      GetCursorPos(P);
+      P := ElvMain.ScreenToClient(P);
+      Item := ElvMain.GetItemAt(10, P.Y);
+      if Item = nil then
+        if LastSelected <> nil then
+        begin
+          LastSelected.Selected := True;
+          ElvMain.ItemFocused := LastSelected;
+          Exit;
+        end;
+      LockDraw := True;
+      if Item <> nil then
+        Item.Selected := True;
+      LastSelected := Item;
+      LockDraw := False;
+      ElvMain.ItemFocused := Item;
     end;
   end;
 end;
@@ -1578,60 +1583,55 @@ end;
 
 procedure TManagerDB.PackTabelLinkClick(Sender: TObject);
 begin
-  if ID_OK = MessageBoxDB(Handle,TEXT_MES_PACKING_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
-   DBkernel.WriteBool('StartUp', 'Pack', True);
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to pack the table? Packing will begin the next startup...'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
+    DBkernel.WriteBool('StartUp', 'Pack', True);
 end;
 
 procedure TManagerDB.ExportTableLinkClick(Sender: TObject);
+var
+  ExportForm: TExportForm;
 begin
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_EXPORT_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
- begin
-  if ExportForm=nil then
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to export the table?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
   begin
-   Application.CreateForm(TExportForm, ExportForm);
-   ExportForm.Execute;
-   ExportForm.Release;
-   ExportForm.Free;
-   ExportForm:=nil;
-  end else
-  begin
-   ExportForm.Show;
+    Application.CreateForm(TExportForm, ExportForm);
+    try
+      ExportForm.Execute;
+    finally
+      R(ExportForm);
+    end;
   end;
- end;
 end;
 
 procedure TManagerDB.ImportTableLinkClick(Sender: TObject);
 begin
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_IMPORT_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
- begin
-  if ImportDataBaseForm=nil then
-  Application.CreateForm(TImportDataBaseForm, ImportDataBaseForm);
-  ImportDataBaseForm.Execute;
- end;
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to import a table?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
+  begin
+    if ImportDataBaseForm = nil then
+      Application.CreateForm(TImportDataBaseForm, ImportDataBaseForm);
+    ImportDataBaseForm.Execute;
+  end;
 end;
 
 procedure TManagerDB.RecreateIDExLinkClick(Sender: TObject);
 begin
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_RECREATE_IDEX_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
- DBkernel.WriteBool('StartUp','RecreateIDEx',True);
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to rebuild the IDEx in the table? Processing begins on the next startup.'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
+    DBkernel.WriteBool('StartUp', 'RecreateIDEx', True);
 end;
 
 procedure TManagerDB.ScanforBadLinksLinkClick(Sender: TObject);
 begin
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_SHOW_BAD_LINKS_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
- DBkernel.WriteBool('StartUp','ScanBadLinks',True);
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to scan the table on the broken links? Processing will begin when the next launch.'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
+    DBkernel.WriteBool('StartUp', 'ScanBadLinks', True);
 end;
 
 procedure TManagerDB.BackUpDBLinkClick(Sender: TObject);
 begin
- if ID_OK<>MessageBoxDB(Handle,TEXT_MES_BACK_UP_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then exit;
- begin
-  if GetDBType=DB_TYPE_MDB then
-  begin
-   DBkernel.WriteBool('StartUp','BackUp',True);
-   MessageBoxDB(Handle,TEXT_MES_BACK_UPING_WILL_BEGIN_AT_NEXT_STARTUP,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
-  end;
- end;
+  if ID_OK <> MessageBoxDB(Handle, L('Do you really want to create a backup?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
+    Exit;
+
+  DBkernel.WriteBool('StartUp', 'BackUp', True);
+  MessageBoxDB(Handle, L('Restoring will begin when the next launch!'), L('Information'), TD_BUTTON_OK,
+    TD_ICON_INFORMATION);
 end;
 
 procedure TManagerDB.CleaningLinkClick(Sender: TObject);
@@ -1644,9 +1644,9 @@ end;
 procedure TManagerDB.ElvMainContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  MenuInfo : TDBPopupMenuInfo;
-  Item : TListItem;
-  ItemData : TDBPopupMenuInfoRecord;
+  MenuInfo: TDBPopupMenuInfo;
+  Item: TListItem;
+  ItemData: TDBPopupMenuInfoRecord;
 begin
   Item := GetListViewItemAt(MousePos.Y);
   if Item = nil then
@@ -1657,10 +1657,10 @@ begin
   if MenuInfo.Count = 1 then
     DoProcessPath(MenuInfo[0].FileName);
 
-  MenuInfo.IsPlusMenu:=False;
-  MenuInfo.IsListItem:=False;
-  MenuInfo.AttrExists:=false;
-  TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,MenuInfo);
+  MenuInfo.IsPlusMenu := False;
+  MenuInfo.IsListItem := False;
+  MenuInfo.AttrExists := False;
+  TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, MenuInfo);
 end;
 
 procedure TManagerDB.DeleteItemWithID(ID: integer);
@@ -1706,16 +1706,18 @@ end;
 procedure TManagerDB.LbDatabasesDrawItem(Control: TWinControl; Index: Integer;
   Rect: TRect; State: TOwnerDrawState);
 var
-  LB : TListBox;
-  aDBName : string;
+  LB: TListBox;
+  ADBName: string;
 begin
- LB:=(Control as TListBox);
- LB.Canvas.FillRect(Rect);
- aDBname:=ExtractFileName(DBKernel.DBs[Index].FileName);
- if AnsiLowerCase(dbname)=AnsiLowerCase(DBKernel.DBs[Index].FileName) then
- LB.Canvas.Font.Style:=[fsBold] else LB.Canvas.Font.Style:=[];
- LB.Canvas.TextOut(Rect.Left+21, Rect.Top+3,LB.Items[Index]+'  ['+aDBname+']');
- DBImageList.Draw(LB.Canvas,Rect.Left+2,Rect.Top+2,Index,true);
+  LB := (Control as TListBox);
+  LB.Canvas.FillRect(Rect);
+  ADBname := ExtractFileName(DBKernel.DBs[index].FileName);
+  if AnsiLowerCase(Dbname) = AnsiLowerCase(DBKernel.DBs[index].FileName) then
+    LB.Canvas.Font.Style := [FsBold]
+  else
+    LB.Canvas.Font.Style := [];
+  LB.Canvas.TextOut(Rect.Left + 21, Rect.Top + 3, LB.Items[index] + '  [' + ADBname + ']');
+  DBImageList.Draw(LB.Canvas, Rect.Left + 2, Rect.Top + 2, index, True);
 end;
 
 procedure TManagerDB.BtnAddDBClick(Sender: TObject);
@@ -1754,80 +1756,84 @@ end;
 procedure TManagerDB.LbDatabasesContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  index, i  : integer;
+  index, I: Integer;
 begin
- index:=LbDatabases.ItemAtPos(MousePos,true);
- if index=-1 then
- begin
-  for i:=0 to LbDatabases.Items.Count-1 do
-  LbDatabases.Selected[i]:=false;
-  exit;
- end;
- DeleteDB1.Visible:=LbDatabases.Items.Count>1;
- if index<>-1 then
- LbDatabases.Selected[index]:=true else PopupMenu8.Tag:=0;
- PopupMenu8.Tag:=index;
- PopupMenu8.Popup(LbDatabases.ClientToScreen(MousePos).X,LbDatabases.ClientToScreen(MousePos).Y);
+  index := LbDatabases.ItemAtPos(MousePos, True);
+  if index = -1 then
+  begin
+    for I := 0 to LbDatabases.Items.Count - 1 do
+      LbDatabases.Selected[I] := False;
+    Exit;
+  end;
+  DeleteDB1.Visible := LbDatabases.Items.Count > 1;
+  if index <> -1 then
+    LbDatabases.Selected[index] := True
+  else
+    PmRestore.Tag := 0;
+
+  PmRestore.Tag := index;
+  PmRestore.Popup(LbDatabases.ClientToScreen(MousePos).X, LbDatabases.ClientToScreen(MousePos).Y);
 end;
 
 procedure TManagerDB.RenameDB1Click(Sender: TObject);
 var
-  NewDBName : string;
-  i : integer;
+  NewDBName: string;
+  I: Integer;
 begin
- NewDBName:=LbDatabases.Items[PopupMenu8.Tag];
- if PromtString(TEXT_MES_NEW_NAME,TEXT_MES_ENTER_NEW_NAME_FOR_DB,NewDBName) then
- begin
-  if Length(NewDBName)=0 then exit;
-  for i:=1 to Length(NewDBName) do
-  if CharInSet(NewDBName[I], ['\', '/', '|']) then
-    NewDBName[I] := ' ';
-  DBKernel.RenameDB(LbDatabases.Items[PopupMenu8.Tag],NewDBName);
-  LbDatabases.Items[PopupMenu8.Tag]:=NewDBName;
-  RefreshDBList;
- end;
+  NewDBName := LbDatabases.Items[PmRestore.Tag];
+  if PromtString(L('New name'), L('Please, enter a new name for DB'), NewDBName) then
+  begin
+    if Length(NewDBName) = 0 then
+      Exit;
+    for I := 1 to Length(NewDBName) do
+      if CharInSet(NewDBName[I], ['\', '/', '|']) then
+        NewDBName[I] := ' ';
+    DBKernel.RenameDB(LbDatabases.Items[PmRestore.Tag], NewDBName);
+    LbDatabases.Items[PmRestore.Tag] := NewDBName;
+    RefreshDBList;
+  end;
 end;
 
 procedure TManagerDB.SelectDB1Click(Sender: TObject);
 var
-  DBVersion : integer;
-  DialogResult : integer;
-  FileName : string;
+  DBVersion: Integer;
+  DialogResult: Integer;
+  FileName: string;
 begin
- FileName:=DBKernel.DBs[PopupMenu8.Tag].FileName;
- if DBKernel.TestDB(FileName) then
- begin
-  SelectDB(Self, FileName);
- end else
- begin
-  if not FileExists(FileName) then
+  FileName := DBKernel.DBs[PmRestore.Tag].FileName;
+  if DBKernel.TestDB(FileName) then
   begin
-   MessageBoxDB(Handle,TEXT_MES_FILE_NOT_FOUND,TEXT_MES_ERROR,'',TD_BUTTON_OK,TD_ICON_ERROR);
+    SelectDB(Self, FileName);
   end else
   begin
-   DBVersion:=DBKernel.TestDBEx(FileName);
-   if DBVersion>0 then
-   if not DBKernel.ValidDBVersion(FileName,DBVersion) then
-   begin
-    DialogResult:=MessageBoxDB(Handle,TEXT_MES_DB_VERSION_INVALID_CONVERT_AVALIABLE,TEXT_MES_WARNING,TEXT_MES_INVALID_DB_VERSION_INFO,TD_BUTTON_YESNO,TD_ICON_WARNING);
-    if ID_OK=DialogResult then
+    if not FileExists(FileName) then
     begin
-     ConvertDB(FileName);
+      MessageBoxDB(Handle, L('File not found!'), L('Error'), '', TD_BUTTON_OK, TD_ICON_ERROR);
+    end else
+    begin
+      DBVersion := DBKernel.TestDBEx(FileName);
+      if DBVersion > 0 then
+        if not DBKernel.ValidDBVersion(FileName, DBVersion) then
+        begin
+          DialogResult := MessageBoxDB(Handle, L('This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'),
+            '', TD_BUTTON_YESNO, TD_ICON_WARNING);
+          if ID_OK = DialogResult then
+            ConvertDB(FileName);
+        end;
     end;
-   end;
   end;
- end;
- RefreshDBList;
- LbDatabases.Refresh;
+  RefreshDBList;
+  LbDatabases.Refresh;
 end;
 
 procedure TManagerDB.DeleteDB1Click(Sender: TObject);
 begin
- if MessageBoxDB(Handle,Format(TEXT_MES_DO_YOU_REALLY_WANT_TO_DENELE_DB_F,[LbDatabases.Items[PopupMenu8.Tag]]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)=ID_OK then
- begin
-  DBKernel.DeleteDB(LbDatabases.Items[PopupMenu8.Tag]);
-  RefreshDBList;
- end;
+  if MessageBoxDB(Handle, Format(L('Do you really want to delete this database (%s)?'), [LbDatabases.Items[PmRestore.Tag]]),
+    L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) = ID_OK then
+  begin
+    DBKernel.DeleteDB(LbDatabases.Items[PmRestore.Tag]);
+    RefreshDBList;
+  end;
 end;
 
 procedure TManagerDB.LbDatabasesDblClick(Sender: TObject);
@@ -1846,9 +1852,9 @@ end;
 
 procedure TManagerDB.EditDB1Click(Sender: TObject);
 var
-  index : integer;
+  Index: Integer;
 begin
-  Index := PopupMenu8.Tag;
+  index := PmRestore.Tag;
   ChangeDBOptions(DBKernel.DBs[index]);
   RefreshDBList;
 end;
@@ -1879,13 +1885,14 @@ end;
 
 procedure TManagerDB.DublicatesLinkClick(Sender: TObject);
 begin
-  if ID_OK=MessageBoxDB(Handle,TEXT_MES_OPTIMIZING_DUBLICATES_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
-    DBkernel.WriteBool('StartUp','OptimizeDublicates',True);
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to optimize the duplicates in a table? Optimization starts at the next startup...'), L('Warning'), TD_BUTTON_OKCANCEL,
+    TD_ICON_QUESTION) then
+    DBkernel.WriteBool('StartUp', 'OptimizeDublicates', True);
 end;
 
 procedure TManagerDB.ConvertLinkClick(Sender: TObject);
 begin
-  if ID_OK=MessageBoxDB(Handle,TEXT_MES_CONVERTING_DB_QUESTION,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION) then
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to convert your database? Conversion will take place after program restart'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
     DBkernel.WriteBool('StartUp', 'ConvertDB', True);
 end;
 

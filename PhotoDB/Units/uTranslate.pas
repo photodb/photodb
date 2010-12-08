@@ -82,18 +82,18 @@ type
     property IsTranslating : Boolean read FIsTranslating write FIsTranslating;
   end;
 
-  TLanguageInitCallBack = procedure(var Language : TLanguage; LanguageCode : string);
+  TLanguageInitCallBack = procedure(var Language : TLanguage; var LanguageCode : string);
 
 function TA(const StringToTranslate, Scope: string) : string; overload;
 function TA(const StringToTranslate: string) : string; overload;
-procedure LoadLanguageFromFile(var Language : TLanguage; LanguageCode : string);
+procedure LoadLanguageFromFile(var Language : TLanguage; var LanguageCode : string);
 
 var
   LanguageInitCallBack : TLanguageInitCallBack = LoadLanguageFromFile;
 
 implementation
 
-procedure LoadLanguageFromFile(var Language : TLanguage; LanguageCode : string);
+procedure LoadLanguageFromFile(var Language : TLanguage; var LanguageCode : string);
 var
   LanguagePath : string;
   Reg : TRegistry;
@@ -148,7 +148,7 @@ begin
   FSync.Enter;
   try
     FLanguage := nil;
-    LanguageInitCallBack(FLanguage, Language);
+    LanguageInitCallBack(FLanguage, FLanguageCode);
   finally
     FSync.Leave;
   end;
@@ -189,7 +189,7 @@ procedure TTranslateManager.SetLanguage(const Value: string);
 begin
   FLanguageCode := Value;
   F(FLanguage);
-  LanguageInitCallBack(FLanguage, Language);
+  LanguageInitCallBack(FLanguage, FLanguageCode);
 end;
 
 function TTranslateManager.SmartTranslate(const StringToTranslate,

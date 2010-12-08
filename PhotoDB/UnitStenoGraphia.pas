@@ -51,10 +51,6 @@ type
     { Public declarations }
   end;
 
-const
-  Max_exts = 2;
-  Exts: array [0 .. Max_exts] of string = ('bmp', 'jpg', 'jpeg');
-
 procedure DoDesteno(InitialFileName: string);
 procedure DoSteno(InitialFileName: string);
 

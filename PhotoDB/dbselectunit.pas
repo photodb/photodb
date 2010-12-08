@@ -82,12 +82,6 @@ begin
  if OpenDialog.Execute then
  begin
   FileName:=OpenDialog.FileName;
-  if not ValidDBPath(FileName) then
-  begin
-   MessageBoxDB(Handle,TEXT_MES_DB_PATH_INVALID,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-   OpenDialog.Free;
-   exit;
-  end;
   FA:=FileGetAttr(FileName);
   if (fa and SysUtils.faReadOnly)<>0 then
   begin
@@ -100,7 +94,7 @@ begin
   if DBVersion>0 then
   if not DBKernel.ValidDBVersion(FileName,DBVersion) then
   begin
-   DialogResult:=MessageBoxDB(Handle,TEXT_MES_DB_VERSION_INVALID_CONVERT_AVALIABLE,TEXT_MES_WARNING,TEXT_MES_INVALID_DB_VERSION_INFO,TD_BUTTON_YESNO,TD_ICON_WARNING);
+   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',TEXT_MES_WARNING,'',TD_BUTTON_YESNO,TD_ICON_WARNING);
    if ID_YES=DialogResult then
    begin
     ConvertDB(FileName);
@@ -157,12 +151,6 @@ begin
  begin
   ComboBoxExDB1.ItemIndex:=0;
   FileName:=SaveDialog.FileName;
-  if not ValidDBPath(FileName) then
-  begin
-   MessageBoxDB(Handle,TEXT_MES_DB_PATH_INVALID,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-   SaveDialog.Free;
-   exit;
-  end;
 
   if SaveDialog.GetFilterIndex=2 then
   if GetExt(FileName)<>'DB' then FileName:=FileName+'.db';
@@ -356,7 +344,7 @@ begin
   if DBVersion>0 then
   if not DBKernel.ValidDBVersion(DB.FileName,DBVersion) then
   begin
-   DialogResult:=MessageBoxDB(Handle,TEXT_MES_DB_VERSION_INVALID_CONVERT_AVALIABLE,TEXT_MES_WARNING,TEXT_MES_INVALID_DB_VERSION_INFO,TD_BUTTON_YESNO,TD_ICON_WARNING);
+   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',TEXT_MES_WARNING,'',TD_BUTTON_YESNO,TD_ICON_WARNING);
    if ID_YES=DialogResult then
    begin
     ConvertDB(DB.FileName);

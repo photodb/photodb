@@ -195,12 +195,12 @@ end;
 
 procedure ExportThread.SetMaxValueA;
 begin
- ExportForm.SetProgressMaxValue(FIntParam);
+  //TODO: send owner ExportForm.SetProgressMaxValue(FIntParam);
 end;
 
 procedure ExportThread.SetPositionA;
 begin
- ExportForm.SetProgressPosition(FIntParam);
+  //TODO: send owner ExportForm.SetProgressPosition(FIntParam);
 end;
 
 procedure ExportThread.SetPosition(Value: Integer);
@@ -217,7 +217,7 @@ end;
 
 procedure ExportThread.SetProgressTextA;
 begin
- ExportForm.SetProgressText(FStringParam);
+  //TODO: send owner ExportForm.SetProgressText(FStringParam);
 end;
 
 procedure ExportThread.SetText(Value: String);
@@ -228,13 +228,13 @@ end;
 
 procedure ExportThread.SetTextA;
 begin
- ExportForm.SetRecordText(FStringParam);
+  //TODO: send owner ExportForm.SetRecordText(FStringParam);
 end;
 
 procedure ExportThread.DoExit;
 begin
  CoUnInitialize;
- ExportForm.DoExit(Self);
+  //TODO: send owner ExportForm.DoExit(Self);
 end;
 
 procedure CopyRecords(OutTable, InTable: TDataSet; ExportGroups : boolean; var GroupsFounded : TGroups);

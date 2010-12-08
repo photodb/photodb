@@ -332,11 +332,6 @@ begin
  if SaveDialog.Execute then
  begin
   FileName:=SaveDialog.FileName;
-  if not ValidDBPath(FileName) then
-  begin
-   MessageBoxDB(Handle,TEXT_MES_DB_PATH_INVALID,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-   exit;
-  end;
 
   if SaveDialog.GetFilterIndex=2 then
   if GetExt(FileName)<>'DB' then FileName:=FileName+'.db';

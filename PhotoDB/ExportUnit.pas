@@ -46,7 +46,6 @@ type
   end;
 
 var
-  ExportForm: TExportForm;
   Working : Boolean = false;
 
 implementation
@@ -92,72 +91,63 @@ end;
 
 procedure TExportForm.Button1Click(Sender: TObject);
 begin
- If SaveDialog1.Execute then
- begin
-  if not ValidDBPath(SaveDialog1.FileName) then
+  if SaveDialog1.Execute then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_PATH_INVALID,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-   exit;
-  end;
-{  if SaveDialog1.FilterIndex=2 then
-  if GetExt(SaveDialog1.FileName)<>'DB' then
-  SaveDialog1.FileName:=SaveDialog1.FileName+'.db';
-  if SaveDialog1.FilterIndex=1 then   }
-  
-  if GetExt(SaveDialog1.FileName)<>'PHOTODB' then
-  SaveDialog1.FileName:=SaveDialog1.FileName+'.photodb';
+    if GetExt(SaveDialog1.FileName) <> 'PHOTODB' then
+      SaveDialog1.FileName := SaveDialog1.FileName + '.photodb';
 
-  if FileExists(SaveDialog1.FileName) then
-  if ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[SaveDialog1.FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
-  Edit1.text:=SaveDialog1.FileName;
- end;
+    if FileExists(SaveDialog1.FileName) then
+      if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_1, [SaveDialog1.FileName]), TEXT_MES_WARNING,
+        TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+        Exit;
+
+    Edit1.Text := SaveDialog1.FileName;
+  end;
 end;
 
 procedure TExportForm.Edit1KeyPress(Sender: TObject; var Key: Char);
 begin
- if key=#8 then
- if not Working then
- begin
-  Edit1.Text:=TEXT_MES_NO_FILEA;
- end;
+  if Key = #8 then
+    if not Working then
+    begin
+      Edit1.Text := TEXT_MES_NO_FILEA;
+    end;
 end;
 
-procedure TExportForm.SetRecordText(Value: String);
+procedure TExportForm.SetRecordText(Value: string);
 begin
- Label2.caption:=Value;
+  Label2.Caption := Value;
 end;
 
 procedure TExportForm.Edit1Change(Sender: TObject);
 begin
- If Edit1.text=TEXT_MES_NO_FILEA then
- Button2.Enabled:=false else
- Button2.Enabled:=true;
+  Button2.Enabled := Edit1.Text <> TEXT_MES_NO_FILEA
 end;
 
 procedure TExportForm.Execute;
 begin
- Edit1Change(nil);
- ShowModal;
+  Edit1Change(nil);
+  ShowModal;
 end;
 
 procedure TExportForm.FormCreate(Sender: TObject);
 begin
- LoadLanguage;
+  LoadLanguage;
 end;
 
 procedure TExportForm.SetProgressMaxValue(Value: Integer);
 begin
- DmProgress1.MaxValue:=Value;
+  DmProgress1.MaxValue := Value;
 end;
 
 procedure TExportForm.SetProgressPosition(Value: Integer);
 begin
- DmProgress1.Position:=Value;
+  DmProgress1.Position := Value;
 end;
 
-procedure TExportForm.SetProgressText(Value: String);
+procedure TExportForm.SetProgressText(Value: string);
 begin
- DmProgress1.Text:=Value;
+  DmProgress1.Text := Value;
 end;
 
 procedure TExportForm.DoExit(Sender: TObject);
@@ -174,17 +164,17 @@ end;
 
 procedure TExportForm.LoadLanguage;
 begin
- Caption:=TEXT_MES_EXPORT_WINDOW_CAPTION;
- CheckBox1.Caption:=TEXT_MES_EXPORT_PRIVATE;
- CheckBox2.Caption:=TEXT_MES_EXPORT_ONLY_RATING;
- CheckBox3.Caption:=TEXT_MES_EXPORT_REC_WITHOUT_FILES;
- CheckBox4.Caption:=TEXT_MES_EXPORT_GROUPS;
- CheckBox5.Caption:=TEXT_MES_EXPORT_CRYPTED;
- CheckBox6.Caption:=TEXT_MES_EXPORT_CRYPTED_IF_PASSWORD_EXISTS;
- Button2.Caption:=TEXT_MES_BEGIN_EXPORT;
- Button3.Caption:=TEXT_MES_BREAK_BUTTON;
- Label1.caption:=TEXT_MES_REC+':';
- DmProgress1.Text:=TEXT_MES_PROGRESS_PR;
+  Caption := TEXT_MES_EXPORT_WINDOW_CAPTION;
+  CheckBox1.Caption := TEXT_MES_EXPORT_PRIVATE;
+  CheckBox2.Caption := TEXT_MES_EXPORT_ONLY_RATING;
+  CheckBox3.Caption := TEXT_MES_EXPORT_REC_WITHOUT_FILES;
+  CheckBox4.Caption := TEXT_MES_EXPORT_GROUPS;
+  CheckBox5.Caption := TEXT_MES_EXPORT_CRYPTED;
+  CheckBox6.Caption := TEXT_MES_EXPORT_CRYPTED_IF_PASSWORD_EXISTS;
+  Button2.Caption := TEXT_MES_BEGIN_EXPORT;
+  Button3.Caption := TEXT_MES_BREAK_BUTTON;
+  Label1.Caption := TEXT_MES_REC + ':';
+  DmProgress1.Text := TEXT_MES_PROGRESS_PR;
 end;
 
 procedure TExportForm.CheckBox5Click(Sender: TObject);
@@ -194,14 +184,13 @@ end;
 
 procedure TExportForm.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- Release;
- ExportForm:=nil;
+  DestroyTimer.Enabled := False;
+  Release;
 end;
 
 procedure TExportForm.Button3Click(Sender: TObject);
 begin
- UnitExportThread.StopExport:=true;
+  UnitExportThread.StopExport := True;
 end;
 
 end.

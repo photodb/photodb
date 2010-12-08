@@ -391,7 +391,6 @@ procedure Delay(Msecs: Longint);
 function ColorDiv2(Color1, COlor2: TColor): TColor;
 function ColorDarken(Color: TColor): TColor;
 
-function ValidDBPath(DBPath: string): Boolean;
 function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
 
 procedure LoadDblFromfile(FileName: string; var IDs: TArInteger; var Files: TArStrings);
@@ -3761,24 +3760,6 @@ function ColorDarken(Color: TColor): TColor;
 begin
   Color := ColorToRGB(Color);
   Result := RGB(Round(GetRValue(Color) / 1.2), (Round(GetGValue(Color) / 1.2)), (Round(GetBValue(Color) / 1.2)));
-end;
-
-function ValidDBPath(DBPath: string): Boolean;
-var
-  I: Integer;
-  X: set of AnsiChar;
-begin
-  Result := True;
-  X := [];
-  if GetDBType(DBPath) = DB_TYPE_MDB then
-    X := Validcharsmdb;
-  for I := 1 to Length(DBPath) do
-    if not CharInSet(DBPath[I], Validchars) then
-    begin
-      DBPath[I] := '?';
-      Result := False;
-      Exit;
-    end;
 end;
 
 function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;

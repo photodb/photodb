@@ -488,7 +488,6 @@ begin
  s:=SaveToDBName;
  if PromtString(TEXT_MES_DB_NAME,TEXT_MES_ENTER_CUSTOM_DB_NAME,s) then
  if s<>'' then
- if ValidDBPath('x:\'+s+'.photodb') then
  SaveToDBName:=s;
 end;
 

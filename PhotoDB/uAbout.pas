@@ -6,17 +6,18 @@ uses
   win32crc, dolphin_db, Searching, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
-  UnitDBCommonGraphics, uResources;
-
-{$DEFINE RUS}
+  UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
+  uMemory, uTranslate;
 
 type
   TAboutForm = class(TForm)
     ImageLogo: TImage;
-    MemoInfo: TMemo;
-    MemoRegistrationInfo: TMemo;
     ImbClose: TImButton;
     BtShowActivationForm: TButton;
+    MemoInfo: TRichEdit;
+    MemoRegistrationInfo: TRichEdit;
+    LoadingSign1: TLoadingSign;
+    LnkGoToWebSite: TWebLink;
     procedure ImbCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Grayscale(var Image : TBitmap);
@@ -26,8 +27,12 @@ type
     procedure FormDblClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure FormDestroy(Sender: TObject);
+    procedure LnkGoToWebSiteGetBackGround(Sender: TObject; X, Y, W, H: Integer;
+      Bitmap: TBitmap);
   private
     { Private declarations }
+    FBackground : TBitmap;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
   public
     WaitEnabled : boolean;
@@ -51,7 +56,7 @@ begin
   try
     AboutForm.Execute;
   finally
-    AboutForm.Release;
+    R(AboutForm);
   end;
 end;
 
@@ -74,47 +79,33 @@ end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
 var
-  InfoText : TStringList;
-  Logo : TJPEGImage;
+  Logo : TPngImage;
 begin
+  DoubleBuffered := True;
+  MemoInfo.Brush.Style := BsClear;
+  SetWindowLong(MemoInfo.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT);
+  MemoRegistrationInfo.Brush.Style := BsClear;
+  SetWindowLong(MemoRegistrationInfo.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT);
+
+  FBackground := TBitmap.Create;
   Logo := GetLogoPicture;
   try
-    ImageLogo.Picture.Graphic := Logo;
+    FBackground.Assign(Logo);
+    FBackground.PixelFormat := pf24bit;
+    ImageLogo.Picture.Graphic := FBackground;
   finally
     Logo.Free;
   end;
   WaitEnabled := True;
-  ImbClose.Filter := GrayScale;
-  ImbClose.Refresh;
+  //ImbClose.Filter := GrayScale;
+  //ImbClose.Refresh;
   BtShowActivationForm.Caption := TEXT_MES_OPEN_ACTIVATION_FORM;
   if DBKernel <> nil then
     BtShowActivationForm.Visible := DBkernel.ProgramInDemoMode
   else
     BtShowActivationForm.Visible := False;
   TW.I.Start('Memo1');
-  InfoText := TStringList.Create;
-  try
-    MemoInfo.Clear;
-    InfoText.Add(ProductName);
-    InfoText.Add('About project:');
-    InfoText.Add('All copyrights to this program are');
-    InfoText.Add('exclusively owned by the author:');
-    InfoText.Add('Veresov Dmitry © 2002-2011');
-    InfoText.Add('Studio "Illusion Dolphin".');
-    InfoText.Add('You can''t emulate, clone, rent, lease,');
-    InfoText.Add('sell, modify, decompile, disassemble,');
-    InfoText.Add('otherwise, reverse engineer, transfer');
-    InfoText.Add('this software.');
-    InfoText.Add('');
-    InfoText.Add('HomePage:');
-    InfoText.Add(HomeURL);
-    InfoText.Add('');
-    InfoText.Add('E-Mail:');
-    InfoText.Add(ProgramMail);
-    MemoInfo.Lines.Assign(InfoText);
-  finally
-    InfoText.Free;
-  end;
+  MemoInfo.Lines.LoadFromFile(IncludeTrailingBackslash(GetDirectory(Application.ExeName)) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
   TW.I.Start('End');
 end;
 
@@ -147,6 +138,20 @@ procedure TAboutForm.FormDblClick(Sender: TObject);
 begin
   if not FolderView then
     ShowActivationDialog;
+end;
+
+procedure TAboutForm.FormDestroy(Sender: TObject);
+begin
+  F(FBackground);
+end;
+
+procedure TAboutForm.LnkGoToWebSiteGetBackGround(Sender: TObject; X, Y, W,
+  H: Integer; Bitmap: TBitmap);
+begin
+  Bitmap.Width := W;
+  Bitmap.Height := H;
+  if FBackground <> nil then
+    Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), FBackground.Canvas, Rect(X, Y, X + W, Y + H));
 end;
 
 procedure TAboutForm.LoadRegistrationData;
