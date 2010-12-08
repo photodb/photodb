@@ -4,14 +4,14 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, DmProgress, ComCtrls, Dolphin_DB, 
+  Dialogs, StdCtrls, ExtCtrls, DmProgress, ComCtrls, Dolphin_DB,
   uVistaFuncs, jpeg, Spin, UnitRecreatingThInTable, CommonDBSupport, Menus,
   ExtDlgs, Graphics, UnitPasswordKeeper, UnitDBDeclare, AppEvnts,
   UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon,
-  uSplashThread;
+  uSplashThread, uDBForm, uMemory;
 
 type
-  TFormConvertingDB = class(TForm)
+  TFormConvertingDB = class(TDBForm)
     Image1: TImage;
     Label1: TLabel;
     Button1: TButton;
@@ -68,32 +68,33 @@ type
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
   private
-   FFileName : string;
-   Step : integer;
-   SilentClose : boolean;
-   Image : TJpegImage;
-   ImageOptions : TImageDBOptions;
-   RecordCount : integer;
-   PasswordKeeper : TPasswordKeeper;
-   
-   ItemsData : TList;
-   Infos : TArStrings;
-   FInfo : String;
-   FProgressEnabled : boolean;
-   Icons : array of TIcon;
-   TopRecords : integer;
-   CurrentWideIndex : integer;
     { Private declarations }
-  public           
-  procedure LoadToolBarIcons;
-  procedure LoadLanguage;
-  procedure Execute(FileName : string);
-  procedure DoFormExit(Sender: TObject);
-  procedure OnConvertingStructureEnd(Sender: TObject; NewFileName : string);
-  procedure WriteLine(Sender : TObject; Line : string; Info : integer);
-  procedure WriteLnLine(Sender : TObject; Line : string; Info : integer);
-  procedure ProgressCallBack(Sender : TObject; var Info : TProgressCallBackInfo); 
-    { Public declarations }
+    FFileName: string;
+    Step: Integer;
+    SilentClose: Boolean;
+    Image: TJpegImage;
+    ImageOptions: TImageDBOptions;
+    RecordCount: Integer;
+    PasswordKeeper: TPasswordKeeper;
+    ItemsData: TList;
+    Infos: TArStrings;
+    FInfo: string;
+    FProgressEnabled: Boolean;
+    Icons: array of TIcon;
+    TopRecords: Integer;
+    CurrentWideIndex: Integer;
+  protected
+    function GetFormID : string; override;
+  public
+   { Public declarations }
+    procedure LoadToolBarIcons;
+    procedure LoadLanguage;
+    procedure Execute(FileName: string);
+    procedure DoFormExit(Sender: TObject);
+    procedure OnConvertingStructureEnd(Sender: TObject; NewFileName: string);
+    procedure WriteLine(Sender: TObject; Line: string; Info: Integer);
+    procedure WriteLnLine(Sender: TObject; Line: string; Info: Integer);
+    procedure ProgressCallBack(Sender: TObject; var Info: TProgressCallBackInfo);
   end;
 
 procedure ConvertDB(FileName : string);
@@ -164,7 +165,7 @@ begin
  Button3.Caption:=TEXT_MES_CANCEL;
  Label2.Caption:=TEXT_MES_CONVERTING_FIRST_STEP;
  Caption:=TEXT_MES_CONVERTING_CAPTION;
- Button2.Caption:=TEXT_MES_SLIDE_PREVIOUS;
+ Button2.Caption:=L('Previous');
  Button1.Caption:=TEXT_MES_NEXT;
  Label4.Caption:=TEXT_MES_CONVERTING_SECOND_STEP;
  Label6.Caption:=TEXT_MES_CURRENT_ACTION+':';
@@ -195,15 +196,15 @@ begin
 end;
 
 procedure TFormConvertingDB.Button1Click(Sender: TObject);
-begin     
+begin
  if Step=1 then
  if not RadioButton2.Checked then Step:=2;
 
   if Step=2 then
   begin
-   Step:=3;              
+   Step:=3;
    Panel2.Visible:=false;
-   Panel3.Visible:=true;  
+   Panel3.Visible:=true;
    Button1.Visible:=false;
    Button2.Enabled:=true;
    Button4.Visible:=true;
@@ -211,7 +212,7 @@ begin
 
   if Step=1 then
   begin
-   Step:=2;               
+   Step:=2;
    Panel1.Visible:=false;
    Panel2.Visible:=true;
    Button2.Enabled:=true;
@@ -226,14 +227,14 @@ begin
   begin
    Step:=1;
    Panel2.Visible:=false;
-   Panel1.Visible:=true;  
+   Panel1.Visible:=true;
    Button2.Enabled:=false;
   end;
-  
+
   if Step=3 then
   begin
    Step:=2;
-   Button4.Visible:=false;  
+   Button4.Visible:=false;
    Button1.Visible:=true;
    Panel2.Visible:=true;
    Panel3.Visible:=false;
@@ -251,7 +252,7 @@ begin
    Step:=4;
    Button1.Enabled:=false;
    Button2.Enabled:=false;
-   Button3.Enabled:=false;   
+   Button3.Enabled:=false;
    Button4.Enabled:=false;
    Button5.Visible:=true;
    TConvertDBThread.Create(Self,FFileName,RadioButton2.Checked,ImageOptions);
@@ -357,9 +358,9 @@ ThHintSize
    CalcJpegResampledSize(Image, ImageOptions.ThSizePanelPreview, ImageOptions.DBJpegCompressionQuality, Jpeg);
    ImagePreview.Picture.Assign(Jpeg);
   end else
-  begin    
+  begin
    w:=Image.Width;
-   h:=Image.Height; 
+   h:=Image.Height;
    Bitmap:=TBitmap.Create;
    Bitmap.Assign(Image);
    ProportionalSize(ImageOptions.ThHintSize,ImageOptions.ThHintSize,w,h);
@@ -419,8 +420,8 @@ begin
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThSize);
    end;
-  2: 
-   begin                                                
+  2:
+   begin
     Label13.Caption:=TEXT_MES_CONVERTATION_PANEL_PREVIEW_SIZE_INFO;
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThSizePanelPreview);
@@ -431,7 +432,7 @@ begin
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThHintSize);
    end;
- end;      
+ end;
  ComboBox2Change(Sender);
 end;
 
@@ -493,6 +494,11 @@ begin
  DBKernel.ReadDBOptions;
 end;
 
+function TFormConvertingDB.GetFormID: string;
+begin
+  Result := 'ConvertDB';
+end;
+
 procedure TFormConvertingDB.PasswordTimerTimer(Sender: TObject);
 var
   PasswordList : TArCardinal;
@@ -505,7 +511,7 @@ begin
   for i:=0 to Length(PasswordList)-1 do
   begin
    PasswordKeeper.TryGetPasswordFromUser(PasswordList[i]);
-  end;  
+  end;
   PasswordTimer.Enabled:=true;
  end;
 end;
@@ -536,17 +542,17 @@ end;
 
 procedure TFormConvertingDB.LoadToolBarIcons;
 var
-  Index : Integer;
+  index: Integer;
 
-  procedure AddIcon(Name : String);
+  procedure AddIcon(name: string);
   begin
-    Icons[Index] := TIcon.Create;
-    Icons[Index].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
-    Inc(Index);
+    Icons[index] := TIcon.Create;
+    Icons[index].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(name));
+    Inc(index);
   end;
 
 begin
-  Index := 0;
+  index := 0;
   SetLength(Icons, 7);
   AddIcon('CMD_OK');
   AddIcon('CMD_ERROR');
@@ -557,19 +563,11 @@ begin
   AddIcon('ADMINTOOLS');
 end;
 
-procedure TFormConvertingDB.ApplicationEvents1Message(var Msg: tagMSG;
-  var Handled: Boolean);
+procedure TFormConvertingDB.ApplicationEvents1Message(var Msg: TagMSG; var Handled: Boolean);
 begin
- if Msg.hwnd=InfoListBox.Handle then
- if Msg.message<>15 then
- if Msg.message<>512 then
- if Msg.message<>160 then  
- if Msg.message<>161 then
- if Msg.message=522 then
- begin
-  Msg.message:=0;
-//  ShowMessage(IntToStr(Msg.message));
- end;
+  if Msg.Hwnd = InfoListBox.Handle then
+    if Msg.message = 522 then
+      Msg.message := 0;
 end;
 
 end.

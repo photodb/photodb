@@ -7,7 +7,7 @@
     <translate name="JPEG Options" value="Настройки JPEG" />
     <translate name="Save settings by default" value="Сохранить по умолчанию" />
     <translate name="Processing... (&amp;%%)" value="Обработка... (&amp;%%)" />
-    <translate name="kb" value="Кб" />
+    <translate name="Kb" value="Кб" />
     <translate name="Mb" value="Мб" />
     <translate name="Gb" value="Гб" />
     <translate name="Error" value="Ошибка" />
@@ -46,12 +46,13 @@
     <translate name="Yes, I want to uninstall this program" value="Да, я хочу удалить эту программу" />
   </scope>
   <scope name="JPEG">
-    <translate name="JPEG compression" value="Компрессия JPEG" />
-    <translate name="Choose JPEG mode and compression rate:" value="Выберите режим для компрессии в JPEG формат:" />
-    <translate name="Progressive mode" value="Прогрессивный режим" />
+	<translate name="JPEG compression" value="JPEG компрессия" />
     <translate name="JPEG compression (%d%%):" value="JPEG компрессия (%d%%):" />
-    <translate name="Optimize to size:" value="Оптимизировать под размер:" />
-  </scope>
+	<translate name="Choose JPEG mode and compression rate" value="Выберите настройки JPEG" />
+	<translate name="JPEG" value="JPEG" />
+	<translate name="Progressive mode" value="Прогрессивный режим" />
+	<translate name="Optimize to size" value="оптимизировать под размер" />
+  </scope> 
   <scope name="DateChange">
     <translate name="Change date and time" value="Изменить дату и время" />
     <translate name="Go to current date" value="Перейти к текущей дате" />
@@ -109,6 +110,10 @@
   </scope>
   <scope name="Groups">
     <translate name="Group not found!" value="Группа не найдена!" />
+    <translate name="An error occurred during the move group %s to group %s (%s)" value="Произошла ошибка во время перемещения группы %s в группу %s (%s)" />
+    <translate name="An error occurred during the move group %s" value="Произошла ошибка во время перемещения группы %s" />
+    <translate name="An error occurred during the rename group %s" value="Произошла ошибка во время переименования группы %s" />
+    <translate name="An error occurred during the delete group %s" value="Произошла ошибка во время удаления группы %s" />
   </scope>
   <scope name="Explorer">
     <translate name="Slide show" value="Просмотр" />
@@ -441,7 +446,21 @@
   <scope name="SelectGroup">
     <translate name="Select group" value="Выбор группы" />
     <translate name="Select, please, nesessary group" value="Выберите, пожалуйста, необходимую группу" />
-  </scope>  
+  </scope>
+  <scope name="ChangeGroup">
+    <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах чтобы видеть изменения!" />
+    <translate name="Edit group" value="Редактировать группу" />
+    <translate name="Enter group name" value="Введите имя группы" />
+    <translate name="Group is private" value="Личная группа" />
+    <translate name="Write here comment for this group" value="Запишите сюда коментарий к группе" />
+    <translate name="Write here keywords for this group" value="Запишите сюда ключевые слова к группе" />
+    <translate name="Load from file" value="Загрузить из файла" />
+	<translate name="Auto add keywords to photo" value="Добавлять ключевые слова" />
+	<translate name="Comment for group" value="Коментарий к группе" />
+	<translate name="Keywords for group" value="Ключевые слова к группе" />
+	<translate name="Include in quick group list" value="Включать в базовый список групп" />
+	<translate name="Related groups" value="Связанные группы" />	
+  </scope>
   <scope name="DBMenu">
     <translate name="File" value="Файл" />
     <translate name="Execute" value="Выполнить" />
@@ -690,7 +709,115 @@
 	<translate name="Rename" value="Переименовать" />
 	<translate name="Select place to copy files" value="Выберите место для копирования файлов" />
 	<translate name="Enter text" value="Введите текст" />
-	<translate name="'Enter new name of panel" value="Введите новое название панели" />
-	
+	<translate name="Enter new name of panel" value="Введите новое название панели" />
   </scope>
+  <scope name="KeywordList">
+	<translate name="List of keywords" value="Список ключевых слов" />
+	<translate name="This is a list of all keywords in DB. Double click to copy item to clipboard." value="Это список всех ключевых слов в БД. Дважды кликните на строчку чтобы скопировать её с буфер обмена." />
+	<translate name="Search" value="Поиск" />
+	<translate name="Error executing query on DB &quot;%s&quot;" value="Ошибка выполнения запроса в базу &quot;%s&quot;" />
+	<translate name="Executing query. Please, wait..." value="Выполнение запроса. Пожалуйста, ждите..." />
+	<translate name="Loading list. Please, wait..." value="Загрузка списка. Пожалуйста, ждите..." />
+  </scope>  
+  <scope name="ManageGroups">
+	<translate name="Manage groups" value="Управление группами" />
+	<translate name="List of groups" value="Список групп" />
+	<translate name="Exit" value="Выход" />
+	<translate name="Create group" value="Создать группу" />
+	<translate name="Edit" value="Редактировать" />
+	<translate name="Delete" value="Удалить" />
+	<translate name="Options" value="Настройки" />
+	<translate name="Help" value="Помощь" />
+	<translate name="Content" value="Содержание" />
+	<translate name="Actions" value="Действия" />
+	<translate name="File" value="Файл" />
+	<translate name="All groups" value="Все группы" />	
+	<translate name="Select font" value="Выбрать шрифт" />
+	<translate name="Groups" value="Группы" />
+	<translate name="Keywords" value="Ключевые слова" />
+	<translate name="Do you really want to delete group &quot;%s&quot;?" value="Вы действительно хотите удалить группу &quot;%s&quot;?" />
+	<translate name="Scan DB and remote all pointers to group &quot;%s&quot;?" value="Сканировать базу и удалить все указатели на группу &quot;%s&quot;?" />
+    <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
+	<translate name="Group info" value="Информация о группе" />
+	<translate name="Search images of group" value="Искать фотографии группы" />
+	<translate name="Create group" value="Удалить группу" />
+	<translate name="Edit group" value="Редактировать группу" />
+	<translate name="Groups in DB not found! Do you want to create new group?" value="Группы в базе не найдены! Вы хотите создать новую группу?" />
+  </scope> 
+  <scope name="NewGroup">  
+	<translate name="Group with this name already exists!" value="Группа с таким именем уже существует!" />
+	<translate name="Create new group" value="Создать новую группу" />
+	<translate name="Enter group name" value="Введите имя группы" />
+	<translate name="Group is private" value="Личная группа" />
+	<translate name="Group is private" value="Личная группа" />    
+	<translate name="Write here comment for this group" value="Запишите сюда коментарий к группе" />
+    <translate name="Write here keywords for this group" value="Запишите сюда ключевые слова к группе" />
+    <translate name="Load from file" value="Загрузить из файла" />
+	<translate name="Auto add keywords to photo" value="Автоматически добавлять ключевые слова к фото" />    
+	<translate name="Comment for group" value="Коментарий к группе" />   
+	<translate name="Include in quick group list" value="Включать в базовый список групп" />    
+	<translate name="Related groups" value="Связанные группы" />
+  </scope> 
+  <scope name="GroupInfo">  
+	<translate name="Group info" value="Информация о группе" />
+	<translate name="Group" value="Группа" />
+	<translate name="Date created" value="Дата создания" />
+	<translate name="Attributes" value="Аттрибуты" />
+	<translate name="Edit group" value="Редактировать группу" />
+	<translate name="Groups manager" value="Управление группами" />
+	<translate name="Search for group photos" value="Искать фотографии группы" />
+	<translate name="Auto add keywords" value="Автоматически добавлять ключевые слова" />
+	<translate name="Keywords for group" value="Ключевые слова к группе" />
+	<translate name="Comment for group" value="Коментарий к группе" />
+	<translate name="Include in quick access list" value="Включать в список быстрого доступа" />     
+	<translate name="Related groups" value="Связанные группы" />
+	<translate name="Group not found!" value="Группа не найдена!" />
+	<translate name="Created %s" value="Создана %s" />
+	<translate name="Public group" value="Публичная группа" />
+	<translate name="Private group" value="Личная группа" />
+  </scope> 
+  <scope name="DBTreeView">
+	<translate name="File tree of current collection" value="дерево файлов текущей коллекции" />
+	<translate name="Build tree" value="Построить дерево" />
+	<translate name="Information" value="Информация" />
+	<translate name="Open in explorer" value="Открыть в проводнике" />
+	<translate name="Building tree of collection" value="Построение дерева коллекции" />
+	<translate name="Unknown file" value="Неизвестный файл" />
+	<translate name="Please wait while the search is executed" value="Пожалуйста, подождите пока выполниться поиск" />
+  </scope>
+  <scope name="GetPhotos">
+	<translate name="Import of photos" value="Импорт фотографий" />
+	<translate name="Date of photos" value="Дата фотографий" />
+	<translate name="Open this folder" value="Открыть папку" />
+	<translate name="Folder mask" value="Маска имени директории" />
+	<translate name="Comment for folder" value="Коментарий к папке" />
+	<translate name="Your comment" value="Ваш коментарий" />
+	<translate name="Folder name" value="Имя директории" />
+	<translate name="Final location" value="Конечная директория" />
+	<translate name="Method" value="Метод" />
+	<translate name="Copy" value="Копировать" />
+	<translate name="Move" value="Переместить" />
+	<translate name="Save" value="Сохранить" />
+	<translate name="Copy multimedia files" value="Копировать мультимедийные файлы" />
+	<translate name="Add folder" value="Добавить директорию" />
+	<translate name="Series of pictures by dates" value="Серии фотографий по датам" />
+	<translate name="Options" value="Опции" />
+	<translate name="Date" value="Дата" />
+	<translate name="Up" value="Вверх" />
+	<translate name="Down" value="Вниз" />
+	<translate name="Delete" value="Удалить" />
+	<translate name="Separate folder" value="Отдельная директория" />
+	<translate name="Merge up" value="Совместить с верхней" />
+	<translate name="Merge down" value="Совместить с нижней" />
+	<translate name="Skip" value="Пропустить" />
+	<translate name="Show photos" value="Показать фотографии" />
+	<translate name="Scan directory" value="Показать серии фотографий" />
+	<translate name="y." value="г." />
+	<translate name="Select a folder to place images" value="Выберите папку для размещения изображений" />
+	<translate name="Do you really want to delete this item?" value="Вы действительно хотите удалить этот пункт?" />
+	<translate name="No photos found! Window will be closed!" value="Фотографии не найдены! Окно будет закрыто!" />
+	<translate name="An error occurred during the preparation of photographs. Perhaps you're trying to move pictures from media which is read-only" value="Произошла ошибка в процессе получения фотографий. Возможно Вы пытаетесь переместить фотографии с носителя, который доступен только для чтения" />
+	<translate name="Unable to create directory: &quot;%s&quot;" value="Невозможно создать директорию: &quot;%s&quot;" />
+	<translate name="Photos in the specified path: &quot;%s&quot; not found" value="Фотографии по указанному пути: &quot;%s&quot; не найдены" />
+  </scope>  
 </language>

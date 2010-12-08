@@ -197,6 +197,7 @@ begin
   Attr := 0;
   CallbackWindow := 0;
   PathPIDL := nil;
+  //TODO: then unitialize in main thread???
   CIE := CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
     SFP := GetCommonDirectory(Files);

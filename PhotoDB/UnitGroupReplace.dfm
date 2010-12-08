@@ -4,7 +4,7 @@ object FormGroupReplace: TFormGroupReplace
   BorderStyle = bsToolWindow
   Caption = 'Group Replace'
   ClientHeight = 267
-  ClientWidth = 254
+  ClientWidth = 257
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,11 +21,12 @@ object FormGroupReplace: TFormGroupReplace
   object ActionPanel: TPanel
     Left = 0
     Top = 145
-    Width = 254
+    Width = 257
     Height = 96
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitWidth = 254
     object ComboBox1: TComboBox
       Left = 160
       Top = 32
@@ -91,11 +92,12 @@ object FormGroupReplace: TFormGroupReplace
   object OutGroupPanel: TPanel
     Left = 0
     Top = 89
-    Width = 254
+    Width = 257
     Height = 56
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitWidth = 254
     object Label1: TLabel
       Left = 64
       Top = 4
@@ -163,11 +165,12 @@ object FormGroupReplace: TFormGroupReplace
   object Panel3: TPanel
     Left = 0
     Top = 0
-    Width = 254
+    Width = 257
     Height = 89
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 3
+    ExplicitWidth = 254
     object WarningLabelText: TLabel
       Left = 80
       Top = 8

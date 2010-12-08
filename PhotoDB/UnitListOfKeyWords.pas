@@ -161,8 +161,6 @@ begin
               OpenProgress.XPosition := C;
             end;
             Application.ProcessMessages;
-            Application.ProcessMessages;
-            Application.ProcessMessages;
           until not DBInOpening;
           OpenProgress.Release;
           FTable.First;
@@ -257,7 +255,7 @@ begin
   BeginTranslate;
   try
     Caption := L('List of keywords');
-    LbInfo.Caption := L('This is list of all keywords in DB. Double click to copy item to clipboard.');
+    LbInfo.Caption := L('This is a list of all keywords in DB. Double click to copy item to clipboard.');
     BtnOk.Caption := L('Ok');
     Copy1.Caption := L('Copy');
     Search1.Caption := L('Search');

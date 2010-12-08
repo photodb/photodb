@@ -8,10 +8,10 @@ uses
   acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
   UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils,
-  uConstants;
+  uConstants, uMemory, uDBForm;
 
 type
-  TFormImportingImages = class(TForm)
+  TFormImportingImages = class(TDBForm)
     Image1: TImage;
     Label1: TLabel;
     Panel1: TPanel;
@@ -169,7 +169,7 @@ begin
  Button4.Caption:=TEXT_MES_ADD_FOLDER;
  Button3.Caption:=TEXT_MES_CANCEL;
  Button5.Caption:=TEXT_MES_DELETE;
- Button2.Caption:=TEXT_MES_SLIDE_PREVIOUS;
+ Button2.Caption:=L('Previous');
  Button1.Caption:=TEXT_MES_NEXT;
  DeleteItem1.Caption:=TEXT_MES_DELETE;
  CheckBox1.Caption:=TEXT_MES_NO_ADD_SMALL_FILES_WITH_WH;

@@ -321,7 +321,7 @@ var
   f : file;
 begin
  result:=0;
- Dolphin_DB.CreateDirA(GetDirectory(FileName));
+ CreateDirA(GetDirectory(FileName));
  try
   if FileExists(FileName) then
   begin

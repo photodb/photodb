@@ -3,59 +3,60 @@ unit UnitGetPhotosForm;
 interface
 
 uses
-  Registry, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Language, Dolphin_DB,
+  Registry, Windows, Messages, SysUtils, Variants, Classes,
+  Graphics, Controls, Forms, DateUtils,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB,
   acDlgSelect, Math, UnitUpdateDBObject, UnitScanImportPhotosThread,
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants,
-  CCR.Exif, uMemory;
+  CCR.Exif, uMemory, uTranslate, uDBForm, uShellUtils;
 
 type
   TGetImagesOptions = record
-   Date : TDateTime;
-   FolderMask : String;
-   Comment : String;
-   ToFolder : String;
-   GetMultimediaFiles : boolean;
-   MultimediaMask : String;
-   Move : boolean;
-   OpenFolder : Boolean;
-   AddFolder : Boolean;
+    Date: TDateTime;
+    FolderMask: string;
+    Comment: string;
+    ToFolder: string;
+    GetMultimediaFiles: Boolean;
+    MultimediaMask: string;
+    Move: Boolean;
+    OpenFolder: Boolean;
+    AddFolder: Boolean;
   end;
 
- TGetImagesOptionsArray = array of TGetImagesOptions;
+  TGetImagesOptionsArray = array of TGetImagesOptions;
 
 type
-  TGetToPersonalFolderForm = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
-    DateTimePicker1: TDateTimePicker;
-    Edit1: TEdit;
+  TGetToPersonalFolderForm = class(TDBForm)
+    BtnOk: TButton;
+    BtnCancel: TButton;
+    DtpFromDate: TDateTimePicker;
+    EdFolderMask: TEdit;
     Image1: TImage;
-    Label1: TLabel;
+    LbDate: TLabel;
     Label2: TLabel;
-    Memo1: TMemo;
+    MemComment: TMemo;
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
-    Edit2: TEdit;
-    Button3: TButton;
-    ComboBox2: TComboBox;
+    EdFolder: TEdit;
+    BtnChooseFolder: TButton;
+    CbMethod: TComboBox;
     Label6: TLabel;
-    CheckBox1: TCheckBox;
-    Memo2: TMemo;
-    Button4: TButton;
+    CbOpenFolder: TCheckBox;
+    MemFolderName: TMemo;
+    BtnSave: TButton;
     CheckBox2: TCheckBox;
-    Edit3: TEdit;
-    CheckBox3: TCheckBox;
+    EdMultimediaMask: TEdit;
+    CbAddProtosToDB: TCheckBox;
     DestroyTimer: TTimer;
-    ListView1: TListView;
-    Label7: TLabel;
-    Button5: TButton;
+    LvMain: TListView;
+    LbListComment: TLabel;
+    BtnScanDates: TButton;
     ExtendedButton: TButton;
     ProgressBar: TDmProgress;
     OptionsImageList: TImageList;
-    PopupMenu1: TPopupMenu;
+    PmListView: TPopupMenu;
     MoveUp1: TMenuItem;
     MoveDown1: TMenuItem;
     N1: TMenuItem;
@@ -67,980 +68,1050 @@ type
     SimpleCopy1: TMenuItem;
     N3: TMenuItem;
     ShowImages1: TMenuItem;
-    procedure Button2Click(Sender: TObject);
+    procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure Edit1Change(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnChooseFolderClick(Sender: TObject);
+    procedure EdFolderMaskChange(Sender: TObject);
+    procedure BtnSaveClick(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure Button5Click(Sender: TObject);
+    procedure BtnScanDatesClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure ListView1Resize(Sender: TObject);
+    procedure LvMainResize(Sender: TObject);
     procedure ExtendedButtonClick(Sender: TObject);
-    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure LvMainContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure SimpleCopy1Click(Sender: TObject);
     procedure MergeUp1Click(Sender: TObject);
     procedure MergeDown1Click(Sender: TObject);
     procedure DontCopy1Click(Sender: TObject);
-    procedure ListView1AdvancedCustomDrawItem(Sender: TCustomListView;
+    procedure LvMainAdvancedCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; Stage: TCustomDrawStage;
       var DefaultDraw: Boolean);
     procedure ShowImages1Click(Sender: TObject);
     procedure Remove1Click(Sender: TObject);
     procedure MoveUp1Click(Sender: TObject);
     procedure MoveDown1Click(Sender: TObject);
-    procedure ListView1SelectItem(Sender: TObject; Item: TListItem;
+    procedure LvMainSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
   private
-  FPach : string;
-  fDataList : TFileDateList;
-  ExtendedMode : boolean;
-  ThreadInProgress : boolean;
-  DefaultOptions : TGetImagesOptions;
-  OptionsArray : TGetImagesOptionsArray;
     { Private declarations }
+    FPath: string;
+    FDataList: TFileDateList;
+    ExtendedMode: Boolean;
+    ThreadInProgress: Boolean;
+    DefaultOptions: TGetImagesOptions;
+    OptionsArray: TGetImagesOptionsArray;
+    procedure ClearList;    
+    procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
-  Procedure Execute(Pach : string);
-  Procedure LoadLanguage;
-  procedure OnEndScanFolder(Sender: TObject);
-  procedure OnLoadingFilesCallBackEvent(Sender : TObject; var Info : TProgressCallBackInfo);
-  procedure SetDataList(DataList : TFileDateList);
-  procedure RecountGroups;
-  Function FormatFolderName(Mask, Comment : String; Date : TDateTime) : String;
     { Public declarations }
+    procedure Execute(Pach: string);
+    procedure OnEndScanFolder(Sender: TObject);
+    procedure OnLoadingFilesCallBackEvent(Sender: TObject; var Info: TProgressCallBackInfo);
+    procedure SetDataList(DataList: TFileDateList);
+    procedure RecountGroups;
+    function FormatFolderName(Mask, Comment: string; Date: TDateTime): string;
   end;
 
-  TItemRecordOptions = record
-   StringDate : string[240];
-   Date : TDateTime;
-   Options : integer;
-   Tag : integer;
+  TItemRecordOptions = class
+  public
+    StringDate: string;
+    Date: TDateTime;
+    Options: Integer;
+    Tag: Integer;
   end;
-  PItemRecordOptions = ^TItemRecordOptions;
 
-Procedure GetPhotosFromDrive(DriveLetter : Char);
-Procedure GetPhotosFromFolder(Folder : string);
+procedure GetPhotosFromDrive(DriveLetter: Char);
+procedure GetPhotosFromFolder(Folder: string);
 
 implementation
 
-uses ExplorerUnit, UnitUpdateDB, SlideShow;
+uses
+  ExplorerUnit, UnitUpdateDB, SlideShow;
 
-Procedure GetPhotosFromDrive(DriveLetter : Char);
+procedure GetPhotosFromDrive(DriveLetter: Char);
 var
   GetToPersonalFolderForm: TGetToPersonalFolderForm;
 begin
- Application.CreateForm(TGetToPersonalFolderForm,GetToPersonalFolderForm);
- GetToPersonalFolderForm.Execute(DriveLetter+':\');
+  Application.CreateForm(TGetToPersonalFolderForm, GetToPersonalFolderForm);
+  GetToPersonalFolderForm.Execute(DriveLetter + ':\');
 end;
 
-Procedure GetPhotosFromFolder(Folder : string);
+procedure GetPhotosFromFolder(Folder: string);
 var
   GetToPersonalFolderForm: TGetToPersonalFolderForm;
 begin
- Application.CreateForm(TGetToPersonalFolderForm,GetToPersonalFolderForm);
- GetToPersonalFolderForm.Execute(Folder);
+  Application.CreateForm(TGetToPersonalFolderForm, GetToPersonalFolderForm);
+  GetToPersonalFolderForm.Execute(Folder);
 end;
 
 {$R *.dfm}
 
 { TGetToPersonalFolderForm }
 
-procedure CreateDirA(dir : string);
+function GetPhotosDate(Mask: string; Path: string): TDateTime;
 var
-  i : integer;
+  Files: TStrings;
+  ExifData: TExifData;
+  Dates: array [1 .. 4] of TDateTime;
+  I, MaxFiles, FilesSearch: Integer;
 begin
- if dir[length(dir)]<>'\' then dir:=dir+'\';
- if length(dir)<3 then exit;
- for i:=1 to length(dir) do
- try
-  if (dir[i]='\') or (i=length(dir)) then
-  createdir(copy(dir,1,i));
- except
-  exit;
- end;
-end;
+  Files := TStringList.Create;
+  try
+    MaxFiles := 500;
+    FilesSearch := 4;
+    GetPhotosNamesFromDrive(Path, SupportedExt, Files, MaxFiles, FilesSearch);
+    if Files.Count = 0 then
+    begin
+      MaxFiles := 500;
+      FilesSearch := 4;
+      GetPhotosNamesFromDrive(Path, Mask, Files, MaxFiles, FilesSearch);
+      if Files.Count = 0 then
+      begin
+        MessageBoxDB(GetActiveFormHandle, Format(TA('Photos in the specified path: "%s" not found', 'GetPhotos'), [Path]), TA('Warning'),
+          TD_BUTTON_OK, TD_ICON_WARNING);
 
-Function GetPhotosDate(Mask : String; Pach : string) : TDateTime;
-var
-  Files : TStrings;
-  ExifData : TExifData;
-  Dates : array[1..4] of TDateTime;
-  i, MaxFiles, FilesSearch : integer;
-begin
- Files := TStringList.Create;
- MaxFiles:=500;
- FilesSearch:=4;
- GetPhotosNamesFromDrive(Pach, SupportedExt,Files,MaxFiles,FilesSearch);
- if Files.Count=0 then
- begin
-  MaxFiles:=500;
-  FilesSearch:=4;
-  GetPhotosNamesFromDrive(Pach,Mask,Files,MaxFiles,FilesSearch);
-  if Files.Count=0 then
-  begin
-   if (Length(Pach)=3) and (Pach[2]=':') then
-   MessageBoxDB(GetActiveFormHandle,Format(TEXT_MES_PHOTOS_NOT_FOUND_IN_DRIVE_F,[Pach]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING) else
-   MessageBoxDB(GetActiveFormHandle,Format(TEXT_MES_PHOTOS_NOT_FOUND_IN_PACH_F,[Pach]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-   Result:=-1;
-   Exit;
-  end else
-  begin
-   Result:=Now;
-   Exit;
-  end;
- end;
-  for I := 1 to Min(4, Files.Count) do
-  begin
-    ExifData := TExifData.Create;
-    try
-      ExifData.LoadFromJPEG(Files[I - 1]);
-      Dates[I] := ExifData.DateTime;
-    except
-      Dates[I] := Now;
+        Result := -1;
+        Exit;
+      end else
+      begin
+        Result := Now;
+        Exit;
+      end;
     end;
-    F(ExifData);
+    for I := 1 to Min(4, Files.Count) do
+    begin
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromJPEG(Files[I - 1]);
+        Dates[I] := DateOf(ExifData.DateTime);
+      except
+        Dates[I] := DateOf(Now);
+      end;
+      F(ExifData);
+    end;
+    Result := Now;
+    for I := 1 to Min(4, Files.Count) - 1 do
+      if Dates[I + 1] <> Dates[1] then
+      begin
+        Result := Now;
+        Exit;
+      end
+      else
+        Result := Dates[1];
+  finally
+    F(Files);
   end;
- Result:=now;
- for i:=1 to Min(4,Files.Count)-1 do
- if Dates[i+1]<>Dates[1] then
- begin
-  Result:=Now;
-  Exit;
- end else Result:=Dates[1];
 end;
 
 procedure TGetToPersonalFolderForm.Execute(Pach: string);
 var
-  Date : TDateTime;
-  Mask : String;
-  i : Integer;
-  oldMode: Cardinal;
+  Date: TDateTime;
+  Mask: string;
+  I: Integer;
+  OldMode: Cardinal;
 begin
- oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
- FPach:=Pach;
- if CheckBox2.Checked then
- begin
-  Mask:=Edit3.Text;
-  Mask:='|'+Mask+'|';
-  For i:=Length(Mask) downto 2 do
-  if (Mask[i]='|') and (Mask[i-1]='|') then Delete(Mask,i,1);
-  if Length(Mask)>0 then Delete(Mask,1,1);
-  Mask:=SupportedExt+Mask;
- end else Mask:=SupportedExt;
- Date:=GetPhotosDate(Mask,Pach);
- SetErrorMode(oldMode);
- if Date=-1 then
- begin
-  Exit;
- end;
- DateTimePicker1.DateTime:=Date;
- Edit1Change(self);
- Show;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    FPath := Pach;
+    if CheckBox2.Checked then
+    begin
+      Mask := EdMultimediaMask.Text;
+      Mask := '|' + Mask + '|';
+      for I := Length(Mask) downto 2 do
+        if (Mask[I] = '|') and (Mask[I - 1] = '|') then
+          Delete(Mask, I, 1);
+      if Length(Mask) > 0 then
+        Delete(Mask, 1, 1);
+      Mask := SupportedExt + Mask;
+    end
+    else
+      Mask := SupportedExt;
+    Date := GetPhotosDate(Mask, Pach);
+  finally
+    SetErrorMode(OldMode);
+  end;
+  if Date = -1 then
+    Exit;
+
+  DtpFromDate.DateTime := Date;
+  EdFolderMaskChange(Self);
+  Show;
 end;
 
 procedure TGetToPersonalFolderForm.LoadLanguage;
 begin
- Label1.Caption:=TEXT_MES_PHOTOS_DATE;
- CheckBox1.Caption:=TEXT_MES_OPEN_THIS_FOLDER;
- Caption:=TEXT_MES_GET_PHOTOS_CAPTION;
- Label2.Caption:=TEXT_MES_FOLDER_MASK;
- Label3.Caption:=TEXT_MES_COMMENT_FOR_FOLDER;
- Memo1.Text:=TEXT_MES_YOU_COMMENT;
- Label4.Caption:=TEXT_MES_FOLDER_NAME_A;
- Label5.Caption:=TEXT_MES_END_FOLDER_A;
- Label6.Caption:=TEXT_MES_METHOD_A;
- ComboBox2.Items.Clear;
- ComboBox2.Items.Add(TEXT_MES_MOVE);
- ComboBox2.Items.Add(TEXT_MES_COPY);
- Button2.Caption:=TEXT_MES_CANCEL;
- Button1.Caption:=TEXT_MES_OK;
- Button4.Caption:=TEXT_MES_SAVE;
- CheckBox2.Caption:=TEXT_MES_GET_MULTIMEDIA_FILES;
- CheckBox3.Caption:=TEXT_MES_ADD_FOLDER;
- Label7.Caption:=TEXT_MES_PHOTO_SERIES_DATES_;
- ListView1.Columns[0].Caption:=TEXT_MES_ACTION_DOWNLOAD_DATE;
- ListView1.Columns[1].Caption:=TEXT_MES_DATE;
+  BeginTranslate;
+  try
+    Caption := L('Import of photos');
+    LbDate.Caption := L('Date of photos') + ':';
+    CbOpenFolder.Caption := L('Open this folder');
+    Label2.Caption := L('Folder mask') + ':';
+    Label3.Caption := L('Comment for folder') + ':';
+    MemComment.Text := L('Your comment');  //TODO: shadow
+    Label4.Caption := L('Folder name') + ':';
+    Label5.Caption := L('Final location');
+    Label6.Caption := L('Method') + ':';
+    CbMethod.Items.Clear;
+    CbMethod.Items.Add(L('Move'));
+    CbMethod.Items.Add(L('Copy'));
+    BtnCancel.Caption := L('Cancel');
+    BtnOk.Caption := L('Ok');
+    BtnSave.Caption := L('Save');
+    CheckBox2.Caption := L('Copy multimedia files');
+    CbAddProtosToDB.Caption := L('Add folder');
+    LbListComment.Caption := L('Series of pictures by dates') + ':';
+    LvMain.Columns[0].Caption := L('Options');
+    LvMain.Columns[1].Caption := L('Date');
 
- MoveUp1.Caption:=TEXT_MES_ITEM_UP;
- MoveDown1.Caption:=TEXT_MES_ITEM_DOWN;
- Remove1.Caption:=TEXT_MES_DELETE;
+    MoveUp1.Caption := L('Up');
+    MoveDown1.Caption := L('Down');
+    Remove1.Caption := L('Delete');
 
- SimpleCopy1.Caption:=TEXT_MES_SIMPLE_COPY_BY_DATE;
- MergeUp1.Caption:=TEXT_MES_MERGE_UP_BY_DATE;
- MergeDown1.Caption:=TEXT_MES_MERGE_DOWN_BY_DATE;
- DontCopy1.Caption:=TEXT_MES_DONT_COPY_BY_DATE;
- ShowImages1.Caption:=TEXT_MES_SHOW_IMAGES;
+    SimpleCopy1.Caption := L('Separate folder');
+    MergeUp1.Caption := L('Merge up');
+    MergeDown1.Caption := L('Merge down');
+    DontCopy1.Caption := L('Skip');
+    ShowImages1.Caption := L('Show photos');
 
- Button5.Caption:=TEXT_MES_SCAN_IMAGES_DATES;
+    BtnScanDates.Caption := L('Scan directory');
+  finally
+    EndTranslate;
+  end;
 end;
 
-procedure TGetToPersonalFolderForm.Button2Click(Sender: TObject);
+procedure TGetToPersonalFolderForm.BtnCancelClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TGetToPersonalFolderForm.FormCreate(Sender: TObject);
-var
-  Reg: TRegIniFile;
 begin
- Width:=273;
- ExtendedButton.Left:=248;
- ExtendedMode:=false;
- GetPhotosFormSID:=GetGUID;
- ThreadInProgress:=false;
- LoadLanguage;
- if DirectoryExists(DBKernel.ReadString('GetPhotos','DFolder')) then
- Edit2.Text:=DBKernel.ReadString('GetPhotos','DFolder') else
- begin
-  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-  Edit2.Text:=Reg.ReadString('Shell Folders', 'My Pictures', '');
-  Reg.Free;
- end;
- OptionsImageList.BkColor:=clWindow;
- ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_SENDTO+1]);
- ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_UP+1]);
- ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DOWN+1]);
- ImageList_ReplaceIcon(OptionsImageList.Handle, -1, icons[DB_IC_DELETE_INFO+1]);
- PopupMenu1.Images:=DBKernel.ImageList;
+  Width := 273;
+  ExtendedButton.Left := 248;
+  ExtendedMode := False;
+  GetPhotosFormSID := GetGUID;
+  ThreadInProgress := False;
+  LoadLanguage;
+  if DirectoryExists(DBKernel.ReadString('GetPhotos', 'DFolder')) then
+    EdFolder.Text := DBKernel.ReadString('GetPhotos', 'DFolder')
+  else
+  begin
+    EdFolder.Text := GetMyPicturesPath;
+  end;
+  OptionsImageList.BkColor := ClWindow;
+  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, Icons[DB_IC_SENDTO + 1]);
+  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, Icons[DB_IC_UP + 1]);
+  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, Icons[DB_IC_DOWN + 1]);
+  ImageList_ReplaceIcon(OptionsImageList.Handle, -1, Icons[DB_IC_DELETE_INFO + 1]);
+  PmListView.Images := DBKernel.ImageList;
 
- MoveUp1.ImageIndex:=DB_IC_UP;
- MoveDown1.ImageIndex:=DB_IC_DOWN;
- Remove1.ImageIndex:=DB_IC_DELETE_INFO;
- SimpleCopy1.ImageIndex:=DB_IC_SENDTO;
- MergeUp1.ImageIndex:=DB_IC_UP;
- MergeDown1.ImageIndex:=DB_IC_DOWN;
- DontCopy1.ImageIndex:=DB_IC_DELETE_INFO;
- ShowImages1.ImageIndex:=DB_IC_SLIDE_SHOW;
+  MoveUp1.ImageIndex := DB_IC_UP;
+  MoveDown1.ImageIndex := DB_IC_DOWN;
+  Remove1.ImageIndex := DB_IC_DELETE_INFO;
+  SimpleCopy1.ImageIndex := DB_IC_SENDTO;
+  MergeUp1.ImageIndex := DB_IC_UP;
+  MergeDown1.ImageIndex := DB_IC_DOWN;
+  DontCopy1.ImageIndex := DB_IC_DELETE_INFO;
+  ShowImages1.ImageIndex := DB_IC_SLIDE_SHOW;
 
- CheckBox1.Checked:=DBKernel.ReadBool('GetPhotos','OpenFolder',true);
- CheckBox3.Checked:=DBKernel.ReadBool('GetPhotos','AddPhotos',true);
- if DBKernel.ReadString('GetPhotos','MaskFolder')<>'' then
- Edit1.Text:=DBKernel.ReadString('GetPhotos','MaskFolder') else
- Edit1.Text:='%yy:mm:dd = %YMD (%coment)';
+  CbOpenFolder.Checked := DBKernel.ReadBool('GetPhotos', 'OpenFolder', True);
+  CbAddProtosToDB.Checked := DBKernel.ReadBool('GetPhotos', 'AddPhotos', True);
+  if DBKernel.ReadString('GetPhotos', 'MaskFolder') <> '' then
+    EdFolderMask.Text := DBKernel.ReadString('GetPhotos', 'MaskFolder')
+  else
+    EdFolderMask.Text := '%yy:mm:dd = %YMD (%coment)';
 
- if DBKernel.ReadString('GetPhotos','Comment')<>'' then
- Memo1.Text:=DBKernel.ReadString('GetPhotos','Comment') else
- Memo1.Text:=TEXT_MES_YOU_COMMENT;
+  if DBKernel.ReadString('GetPhotos', 'Comment') <> '' then
+    MemComment.Text := DBKernel.ReadString('GetPhotos', 'Comment')
+  else
+    MemComment.Text := L('Your comment');
 
- Case DBKernel.ReadInteger('GetPhotos','GetMethod',0) of
- 0 : ComboBox2.ItemIndex:=0;
- 1 : ComboBox2.ItemIndex:=1;
- else ComboBox2.ItemIndex:=0;
- end;
- Edit1Change(Sender);
+  case DBKernel.ReadInteger('GetPhotos', 'GetMethod', 0) of
+    0:
+      CbMethod.ItemIndex := 0;
+    1:
+      CbMethod.ItemIndex := 1;
+  else
+    CbMethod.ItemIndex := 0;
+  end;
+  EdFolderMaskChange(Sender);
 
- CheckBox2.Checked:=DBKernel.ReadBool('GetPhotos','UseMultimediaMask',true);
- if DBKernel.ReadString('GetPhotos','MultimediaMask')<>'' then
- Edit3.Text:=DBKernel.ReadString('GetPhotos','MultimediaMask') else
- Edit3.Text:=MultimediaBaseFiles;
+  CheckBox2.Checked := DBKernel.ReadBool('GetPhotos', 'UseMultimediaMask', True);
+  if DBKernel.ReadString('GetPhotos', 'MultimediaMask') <> '' then
+    EdMultimediaMask.Text := DBKernel.ReadString('GetPhotos', 'MultimediaMask')
+  else
+    EdMultimediaMask.Text := MultimediaBaseFiles;
 end;
 
-procedure TGetToPersonalFolderForm.Button3Click(Sender: TObject);
+procedure TGetToPersonalFolderForm.BtnChooseFolderClick(Sender: TObject);
 var
-  Dir : string;
+  Dir: string;
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_FOLDER_FOR_IMAGES,Edit2.Text,Dolphin_DB.UseSimpleSelectFolderDialog);
- if DirectoryExists(dir) then
- Edit2.Text:=dir;
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select a folder to place images'), EdFolder.Text,
+    UseSimpleSelectFolderDialog);
+
+  if DirectoryExists(Dir) then
+    EdFolder.Text := Dir;
 end;
 
-procedure TGetToPersonalFolderForm.Edit1Change(Sender: TObject);
+procedure TGetToPersonalFolderForm.EdFolderMaskChange(Sender: TObject);
 var
-  Options : TGetImagesOptions;
-  i,GroupTag : integer;
+  Options: TGetImagesOptions;
+  I, GroupTag: Integer;
 begin
- Memo2.Text:=FormatFolderName(Edit1.Text, Memo1.Text, DateTimePicker1.DateTime);
- if ExtendedMode then
- if ListView1.Selected<>nil then
- begin
-  Options.Date:=DateTimePicker1.Date;
-  Options.FolderMask:=Edit1.Text;
-  Options.Comment:=Memo1.Text;
-  Options.ToFolder:=Edit2.Text;
-  Options.GetMultimediaFiles:=CheckBox2.Checked;
-  Options.MultimediaMask:=Edit3.Text;
-  Options.Move:=ComboBox2.ItemIndex=0;
-  Options.OpenFolder:=CheckBox1.Checked;
-  Options.AddFolder:=CheckBox3.Checked;
-  OptionsArray[ListView1.Selected.Index]:=Options;
-  GroupTag:=TItemRecordOptions(ListView1.Items[ListView1.Selected.Index].Data^).Tag;
+  MemFolderName.Text := FormatFolderName(EdFolderMask.Text, MemComment.Text, DtpFromDate.DateTime);
+  if ExtendedMode then
+    if LvMain.Selected <> nil then
+    begin
+      Options.Date := DtpFromDate.Date;
+      Options.FolderMask := EdFolderMask.Text;
+      Options.Comment := MemComment.Text;
+      Options.ToFolder := EdFolder.Text;
+      Options.GetMultimediaFiles := CheckBox2.Checked;
+      Options.MultimediaMask := EdMultimediaMask.Text;
+      Options.Move := CbMethod.ItemIndex = 0;
+      Options.OpenFolder := CbOpenFolder.Checked;
+      Options.AddFolder := CbAddProtosToDB.Checked;
+      OptionsArray[LvMain.Selected.index] := Options;
+      GroupTag := TItemRecordOptions(LvMain.Items[LvMain.Selected.index].Data^).Tag;
 
-  //look index-down
-  for i:=ListView1.Selected.Index downto 0 do
-  if TItemRecordOptions(ListView1.Items[i].Data^).Tag=GroupTag then
-  OptionsArray[i]:=Options else Break;
+      // look index-down
+      for I := LvMain.Selected.index downto 0 do
+        if TItemRecordOptions(LvMain.Items[I].Data^).Tag = GroupTag then
+          OptionsArray[I] := Options
+        else
+          Break;
 
-  //look index-ip
-  for i:=ListView1.Selected.Index to ListView1.Items.Count-1 do
-  if TItemRecordOptions(ListView1.Items[i].Data^).Tag=GroupTag then
-  OptionsArray[i]:=Options else Break;
+      // look index-ip
+      for I := LvMain.Selected.index to LvMain.Items.Count - 1 do
+        if TItemRecordOptions(LvMain.Items[I].Data^).Tag = GroupTag then
+          OptionsArray[I] := Options
+        else
+          Break;
 
- end;
+    end;
 end;
 
-procedure TGetToPersonalFolderForm.Button4Click(Sender: TObject);
+procedure TGetToPersonalFolderForm.BtnSaveClick(Sender: TObject);
 begin
- DBKernel.WriteBool('GetPhotos','OpenFolder',CheckBox1.Checked);
- DBKernel.WriteBool('GetPhotos','AddPhotos',CheckBox3.Checked);
- DBKernel.WriteString('GetPhotos','DFolder',Edit2.Text);
- DBKernel.WriteString('GetPhotos','MaskFolder',Edit1.Text);
- DBKernel.WriteString('GetPhotos','Comment',Memo1.Text);
- DBKernel.WriteInteger('GetPhotos','GetMethod',ComboBox2.ItemIndex);
- DBKernel.WriteString('GetPhotos','MultimediaMask',Edit3.Text);
- DBKernel.WriteBool('GetPhotos','UseMultimediaMask',CheckBox2.Checked);
+  DBKernel.WriteBool('GetPhotos', 'OpenFolder', CbOpenFolder.Checked);
+  DBKernel.WriteBool('GetPhotos', 'AddPhotos', CbAddProtosToDB.Checked);
+  DBKernel.WriteString('GetPhotos', 'DFolder', EdFolder.Text);
+  DBKernel.WriteString('GetPhotos', 'MaskFolder', EdFolderMask.Text);
+  DBKernel.WriteString('GetPhotos', 'Comment', MemComment.Text);
+  DBKernel.WriteInteger('GetPhotos', 'GetMethod', CbMethod.ItemIndex);
+  DBKernel.WriteString('GetPhotos', 'MultimediaMask', EdMultimediaMask.Text);
+  DBKernel.WriteBool('GetPhotos', 'UseMultimediaMask', CheckBox2.Checked);
 end;
 
-procedure TGetToPersonalFolderForm.Button1Click(Sender: TObject);
+procedure TGetToPersonalFolderForm.BtnOkClick(Sender: TObject);
 var
-  Files : TStrings;
-  MaxFiles, FilesSearch, i, j : Integer;
-  Folder, Mask : String;
-  Options : TGetImagesOptions;
-  ItemOptions : TItemRecordOptions;
-  Date : TDateTime;
+  Files: TStrings;
+  MaxFiles, FilesSearch,
+  I, J: Integer;
+  Folder, Mask: string;
+  Options: TGetImagesOptions;
+  ItemOptions: TItemRecordOptions;
+  Date: TDateTime;
 begin
 
-
- if ExtendedMode then
- begin
-
-  DateTimePicker1.Enabled:=false;
-  Edit1.Enabled:=false;
-  Memo1.Enabled:=false;
-  Edit2.Enabled:=false;
-  CheckBox2.Enabled:=false;
-  Edit3.Enabled:=false;
-  ComboBox2.Enabled:=false;
-  CheckBox1.Enabled:=false;
-  CheckBox3.Enabled:=false;
-  ListView1.Enabled:=false;
-  Button1.Enabled:=false;
-  Button2.Enabled:=false;
-  Button3.Enabled:=false;
-  Button4.Enabled:=false;
-  Button5.Enabled:=false;
-
-  //EXTENDED LOADING FILES
-  for i:=0 to ListView1.Items.Count-1 do
+  if ExtendedMode then
   begin
-   ItemOptions:=TItemRecordOptions(ListView1.Items[i].Data^);
-   if ItemOptions.Options=DIRECTORY_OPTION_DATE_EXCLUDE then continue;
-   Options:=OptionsArray[i];
 
-   Folder:=Options.ToFolder;
-   FormatDir(Folder);
-   Folder:=Folder+FormatFolderName(Options.FolderMask,Options.Comment,Options.Date);
-   CreateDirA(Folder);
-   if not DirectoryExists(Folder) then
-   begin
-    MessageBoxDB(Handle,Format(TEXT_MES_CANT_CREATE_DIRECTORY_F,[Folder]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-    exit;
-   end;
-   Files:=TStringList.Create;
-   Date:=TItemRecordOptions(ListView1.Items[i].Data^).Date;
-   TItemRecordOptions(ListView1.Items[i].Data^).Tag:=-1;
-   ListView1.Refresh;
-   for j:=0 to Length(fDataList)-1 do
-   if fDataList[j].Date=Date then
-   Files.Add(fDataList[j].FileName);
+    DtpFromDate.Enabled := False;
+    EdFolderMask.Enabled := False;
+    MemComment.Enabled := False;
+    EdFolder.Enabled := False;
+    CheckBox2.Enabled := False;
+    EdMultimediaMask.Enabled := False;
+    CbMethod.Enabled := False;
+    CbOpenFolder.Enabled := False;
+    CbAddProtosToDB.Enabled := False;
+    LvMain.Enabled := False;
+    BtnOk.Enabled := False;
+    BtnCancel.Enabled := False;
+    BtnChooseFolder.Enabled := False;
+    BtnSave.Enabled := False;
+    BtnScanDates.Enabled := False;
 
-   if Options.OpenFolder then
-   With ExplorerManager.NewExplorer(False) do
-   begin
-    SetPath(Folder);
-    Show;
-    SetFocus;
-   end;
-   //TODO:
-   //WHAT IT??????
-   GetFileNameById(0);
-   Delay(1500);
-   //////////////////
+    // EXTENDED LOADING FILES
+    for I := 0 to LvMain.Items.Count - 1 do
+    begin
+      ItemOptions := TItemRecordOptions(LvMain.Items[I].Data^);
+      if ItemOptions.Options = DIRECTORY_OPTION_DATE_EXCLUDE then
+        Continue;
+      Options := OptionsArray[I];
 
-   try
-    CopyFilesSynch(0,Files,Folder,Options.Move,true);
-   except
-    MessageBoxDB(Handle,TEXT_MES_UNABLE_GET_PHOTOS_COPY_MOVE_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   end;
-   if Options.AddFolder then
-   begin
-    If UpdaterDB=nil then
-    UpdaterDB:=TUpdaterDB.Create;
-    UpdaterDB.AddDirectory(Folder,nil);
-   end;
+      Folder := Options.ToFolder;
+      FormatDir(Folder);
+      Folder := Folder + FormatFolderName(Options.FolderMask, Options.Comment, Options.Date);
+      CreateDirA(Folder);
+      if not DirectoryExists(Folder) then
+      begin
+        MessageBoxDB(Handle, Format(L('Unable to create directory: "%s"'), [Folder]), L('Error'), TD_BUTTON_OK,
+          TD_ICON_ERROR);
+        Exit;
+      end;
+      Files := TStringList.Create;
+      try
+        Date := TItemRecordOptions(LvMain.Items[I].Data^).Date;
+        TItemRecordOptions(LvMain.Items[I].Data^).Tag := -1;
+        LvMain.Refresh;
+        for J := 0 to Length(FDataList) - 1 do
+          if FDataList[J].Date = Date then
+            Files.Add(FDataList[J].FileName);
 
-   Files.Free;
-  end;
-  //END
- end else
- begin
+        if Options.OpenFolder then
+          with ExplorerManager.NewExplorer(False) do
+          begin
+            SetPath(Folder);
+            Show;
+            SetFocus;
+          end;
+        // TODO:
+        // WHAT IT??????
+        GetFileNameById(0);
+        Delay(1500);
+        /// ///////////////
 
-  Folder:=Edit2.Text;
-  FormatDir(Folder);
-  Folder:=Folder+Memo2.Text;
-  CreateDirA(Folder);
-  if not DirectoryExists(Folder) then
+        try
+          CopyFilesSynch(0, Files, Folder, Options.Move, True);
+        except
+          MessageBoxDB(Handle, L('An error occurred during the preparation of photographs. Perhaps you''re trying to move pictures from media which is read-only'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        end;
+        if Options.AddFolder then
+        begin
+          if UpdaterDB = nil then
+            UpdaterDB := TUpdaterDB.Create;
+          UpdaterDB.AddDirectory(Folder, nil);
+        end;
+      finally
+        F(Files);
+      end;
+    end;
+    // END
+  end else
   begin
-   MessageBoxDB(Handle,Format(TEXT_MES_CANT_CREATE_DIRECTORY_F,[Folder]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   exit;
-  end;
-  Files:=TStringList.Create;
-  MaxFiles:=10000;
-  FilesSearch:=100000;
-  if CheckBox2.Checked then
-  begin
-   Mask:=Edit3.Text;
-   Mask:='|'+Mask+'|';
-   For i:=Length(Mask) downto 2 do
-   if (Mask[i]='|') and (Mask[i-1]='|') then Delete(Mask,i,1);
-   if Length(Mask)>0 then Delete(Mask,1,1);
-   Mask:=SupportedExt+Mask;
-  end else Mask:=SupportedExt;
-  GetPhotosNamesFromDrive(FPach,Mask,Files,FilesSearch,MaxFiles);
 
-  Hide;
-  if CheckBox1.Checked then
-  With ExplorerManager.NewExplorer(False) do
-  begin
-   SetPath(Folder);
-   Show;
-   SetFocus;
-  end;
-  //WHAT IT??????
-  GetFileNameById(0);
-  Delay(1500);
-  //////////////////
-  try
-   CopyFilesSynch(0,Files,Folder,ComboBox2.ItemIndex<>1,true);
-  except
-   MessageBoxDB(Handle,TEXT_MES_UNABLE_GET_PHOTOS_COPY_MOVE_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-  end;
-  if CheckBox3.Checked then
-  begin
-   If UpdaterDB=nil then
-   UpdaterDB:=TUpdaterDB.Create;
-   UpdaterDB.AddDirectory(Folder,nil);
-  end;
-  Files.Free;
- end;
+    Folder := IncludeTrailingBackslash(EdFolder.Text);
+    Folder := Folder + MemFolderName.Text;
+    CreateDirA(Folder);
+    if not DirectoryExists(Folder) then
+    begin
+      MessageBoxDB(Handle, Format(L('Unable to create directory: "%s"'), [Folder]), L('Error'), TD_BUTTON_OK,
+        TD_ICON_ERROR);
+      Exit;
+    end;
 
- Close;
+    Files := TStringList.Create;
+    try
+      MaxFiles := 10000;
+      FilesSearch := 100000;
+      if CheckBox2.Checked then
+      begin
+        Mask := EdMultimediaMask.Text;
+        Mask := '|' + Mask + '|';
+        for I := Length(Mask) downto 2 do
+          if (Mask[I] = '|') and (Mask[I - 1] = '|') then
+            Delete(Mask, I, 1);
+        if Length(Mask) > 0 then
+          Delete(Mask, 1, 1);
+        Mask := SupportedExt + Mask;
+      end
+      else
+        Mask := SupportedExt;
+      GetPhotosNamesFromDrive(FPath, Mask, Files, FilesSearch, MaxFiles);
+
+      Hide;
+      if CbOpenFolder.Checked then
+        with ExplorerManager.NewExplorer(False) do
+        begin
+          SetPath(Folder);
+          Show;
+          SetFocus;
+        end;
+      // WHAT IT??????
+      GetFileNameById(0);
+      Delay(1500);
+      /// ///////////////
+      try
+        CopyFilesSynch(0, Files, Folder, CbMethod.ItemIndex <> 1, True);
+      except
+        MessageBoxDB(Handle, L('An error occurred during the preparation of photographs. Perhaps you''re trying to move pictures from media which is read-only'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      end;
+      if CbAddProtosToDB.Checked then
+      begin
+        if UpdaterDB = nil then
+          UpdaterDB := TUpdaterDB.Create;
+        UpdaterDB.AddDirectory(Folder, nil);
+      end;
+
+    finally
+      F(Files);
+    end;
+  end;
+
+  Close;
 end;
 
 procedure TGetToPersonalFolderForm.CheckBox2Click(Sender: TObject);
 begin
- Edit3.Enabled:=CheckBox2.Checked;
- Edit1Change(Sender);
+  EdMultimediaMask.Enabled := CheckBox2.Checked;
+  EdFolderMaskChange(Sender);
+end;
+
+procedure TGetToPersonalFolderForm.ClearList;
+var
+  I : Integer;
+begin
+  for I := 0 to LvMain.Items.Count - 1 do
+    TObject(LvMain.Items[I].Data).Free;
+
+  LvMain.Clear;
 end;
 
 procedure TGetToPersonalFolderForm.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- Release;
+  DestroyTimer.Enabled := False;
+  Release;
 end;
 
-procedure TGetToPersonalFolderForm.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TGetToPersonalFolderForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- DestroyTimer.Enabled:=true;
+  DestroyTimer.Enabled := True;
 end;
 
-procedure TGetToPersonalFolderForm.Button5Click(Sender: TObject);
+procedure TGetToPersonalFolderForm.BtnScanDatesClick(Sender: TObject);
 var
-  Options : TScanImportPhotosThreadOptions;
+  Options: TScanImportPhotosThreadOptions;
 begin
- ThreadInProgress:=true;
- Options.Directory:=FPach;
- Options.Mask:=Edit3.Text;
- Options.OnEnd:=OnEndScanFolder;
- Options.Owner:=self;
- Options.OnProgress:=OnLoadingFilesCallBackEvent;
- TScanImportPhotosThread.Create(false,Options);
- ProgressBar.Visible:=true;
- Button5.Visible:=false;
+  ThreadInProgress := True;
+  Options.Directory := FPath;
+  Options.Mask := EdMultimediaMask.Text;
+  Options.OnEnd := OnEndScanFolder;
+  Options.Owner := Self;
+  Options.OnProgress := OnLoadingFilesCallBackEvent;
+  TScanImportPhotosThread.Create(False, Options);
+  ProgressBar.Visible := True;
+  BtnScanDates.Visible := False;
 end;
 
 procedure TGetToPersonalFolderForm.OnEndScanFolder(Sender: TObject);
 begin
- ThreadInProgress:=false;
- ProgressBar.Visible:=ThreadInProgress;
- Button5.Visible:=not ThreadInProgress;
- RecountGroups;
- ListView1.Refresh;
- if ExtendedMode then
- Button1.Enabled:=ListView1.Items.Count>0;
- //
+  ThreadInProgress := False;
+  ProgressBar.Visible := ThreadInProgress;
+  BtnScanDates.Visible := not ThreadInProgress;
+  RecountGroups;
+  LvMain.Refresh;
+  if ExtendedMode then
+    BtnOk.Enabled := LvMain.Items.Count > 0;
+  //
 end;
 
 procedure TGetToPersonalFolderForm.FormDestroy(Sender: TObject);
 begin
- GetPhotosFormSID:=GetGUID; // to prevent Thread AV
+  ClearList;
+  GetPhotosFormSID := GetGUID; // to prevent Thread AV
 end;
 
-procedure TGetToPersonalFolderForm.OnLoadingFilesCallBackEvent(
-  Sender: TObject; var Info: TProgressCallBackInfo);
+function TGetToPersonalFolderForm.GetFormID: string;
 begin
- ProgressBar.MaxValue:=1;
- ProgressBar.Position:=0;
- ProgressBar.Text:=Mince(Info.Information,25);
+  Result := 'GetPhotos';
+end;
+
+procedure TGetToPersonalFolderForm.OnLoadingFilesCallBackEvent(Sender: TObject; var Info: TProgressCallBackInfo);
+begin
+  ProgressBar.MaxValue := 1;
+  ProgressBar.Position := 0;
+  ProgressBar.Text := Mince(Info.Information, 25);
 end;
 
 procedure TGetToPersonalFolderForm.SetDataList(DataList: TFileDateList);
 var
-  i : integer;
-  LastDate : TDateTime;
-  p : PItemRecordOptions;
-  Options : TGetImagesOptions;
+  I: Integer;
+  LastDate: TDateTime;
+  P: TItemRecordOptions;
+  Options: TGetImagesOptions;
 begin
- fDataList:=DataList;
- LastDate:=0;
- ListView1.Clear;
- SetLength(OptionsArray,0);
- for i:=0 to Length(fDataList)-1 do
- begin
-  if (LastDate=0) or (LastDate<>fDataList[i].Date) then
-  With ListView1.Items.Add do
+  FDataList := DataList;
+  LastDate := 0;
+  ClearList;
+  SetLength(OptionsArray, 0);
+  for I := 0 to Length(FDataList) - 1 do
   begin
-   LastDate:=fDataList[i].Date;
-   GetMem(p,SizeOf(TItemRecordOptions));
-   p^.StringDate:=DateToStr(fDataList[i].Date);
-   p^.Date:=fDataList[i].Date;
-   p^.Options:=DIRECTORY_OPTION_DATE_SINGLE;
-   p^.Tag:=0;
-   Data:=p;
+    if (LastDate = 0) or (LastDate <> FDataList[I].Date) then
+      with LvMain.Items.Add do
+      begin
+        LastDate := FDataList[I].Date;
+        P := TItemRecordOptions.Create;
+        P.StringDate := DateToStr(FDataList[I].Date);
+        P.Date := FDataList[I].Date;
+        P.Options := DIRECTORY_OPTION_DATE_SINGLE;
+        P.Tag := 0;
+        Data := P;
 
-   Options.Date:=fDataList[i].Date;
-   Options.FolderMask:=Edit1.Text;
-   Options.Comment:=Memo1.Text;
-   Options.ToFolder:=Edit2.Text;
-   Options.GetMultimediaFiles:=CheckBox2.Checked;
-   Options.MultimediaMask:=Edit3.Text;
-   Options.Move:=ComboBox2.ItemIndex=0;
-   Options.OpenFolder:=CheckBox1.Checked;
-   Options.AddFolder:=CheckBox3.Checked;
-   SetLength(OptionsArray,Length(OptionsArray)+1);
-   OptionsArray[Length(OptionsArray)-1]:=Options;
+        Options.Date := FDataList[I].Date;
+        Options.FolderMask := EdFolderMask.Text;
+        Options.Comment := MemComment.Text;
+        Options.ToFolder := EdFolder.Text;
+        Options.GetMultimediaFiles := CheckBox2.Checked;
+        Options.MultimediaMask := EdMultimediaMask.Text;
+        Options.Move := CbMethod.ItemIndex = 0;
+        Options.OpenFolder := CbOpenFolder.Checked;
+        Options.AddFolder := CbAddProtosToDB.Checked;
+        SetLength(OptionsArray, Length(OptionsArray) + 1);
+        OptionsArray[Length(OptionsArray) - 1] := Options;
+      end;
   end;
- end;
 end;
 
-procedure TGetToPersonalFolderForm.ListView1Resize(Sender: TObject);
+procedure TGetToPersonalFolderForm.LvMainResize(Sender: TObject);
 begin
- ListView1.Columns[1].Width:=ListView1.Width-ListView1.Columns[0].Width-5;
+  LvMain.Columns[1].Width := LvMain.Width - LvMain.Columns[0].Width - 5;
 end;
 
-procedure TGetToPersonalFolderForm.ListView1AdvancedCustomDrawItem(
-  Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-  Stage: TCustomDrawStage; var DefaultDraw: Boolean);
+procedure TGetToPersonalFolderForm.LvMainAdvancedCustomDrawItem(Sender: TCustomListView; Item: TListItem;
+  State: TCustomDrawState; Stage: TCustomDrawStage; var DefaultDraw: Boolean);
 var
-  aRect : TRect;
-  i : integer;
+  ARect: TRect;
+  I: Integer;
+  Data : TItemRecordOptions;
 
-  function MergeColors(Color1,Color2 : TColor) : TColor;
+  function MergeColors(Color1, Color2: TColor): TColor;
   var
-    r,g,b: byte;
+    R, G, B: Byte;
   begin
-   Color1:=ColorToRGB(Color1) and $00FFFFFF;
-   Color2:=ColorToRGB(Color2) and $00FFFFFF;
-   r:=(GetRValue(Color1)*2+GetRValue(Color2)) div 3;
-   g:=(GetGValue(Color1)*2+GetGValue(Color2)) div 3;
-   b:=(GetBValue(Color1)*2+GetBValue(Color2)) div 3;
-   Result:=RGB(r,g,b);
+    Color1 := ColorToRGB(Color1) and $00FFFFFF;
+    Color2 := ColorToRGB(Color2) and $00FFFFFF;
+    R := (GetRValue(Color1) * 2 + GetRValue(Color2)) div 3;
+    G := (GetGValue(Color1) * 2 + GetGValue(Color2)) div 3;
+    B := (GetBValue(Color1) * 2 + GetBValue(Color2)) div 3;
+    Result := RGB(R, G, B);
   end;
 
 begin
- for i:=0 to 1 do
- begin
-  ListView_GetSubItemRect(ListView1.Handle,Item.Index,i,0,@aRect);
+  Data := TItemRecordOptions(Item.Data);
+  for I := 0 to 1 do
+  begin
+    ListView_GetSubItemRect(LvMain.Handle, Item.index, I, 0, @ARect);
 
-  if Item.Selected then
-  begin
-   Sender.Canvas.Brush.Color:= clHighlight;
-   Sender.Canvas.Pen.Color:=clHighlight;
-  end else
-  begin
-   if TItemRecordOptions(Item.Data^).Tag=1 then
-   begin
-    Sender.Canvas.Brush.Color:=MergeColors(clWindow,clRed);
-    Sender.Canvas.Pen.Color:=MergeColors(clWindow,clRed);
-   end;
-   if TItemRecordOptions(Item.Data^).Tag=0 then
-   begin
-    Sender.Canvas.Brush.Color:=MergeColors(clWindow,clGreen);
-    Sender.Canvas.Pen.Color:=MergeColors(clWindow,clGreen);
-   end;
-   if TItemRecordOptions(Item.Data^).Tag=-1 then
-   begin
-    Sender.Canvas.Brush.Color:=MergeColors(clWindow,clBlue);
-    Sender.Canvas.Pen.Color:=MergeColors(clWindow,clBlue);
-   end;
+    if Item.Selected then
+    begin
+      Sender.Canvas.Brush.Color := ClHighlight;
+      Sender.Canvas.Pen.Color := ClHighlight;
+    end else
+    begin
+      if Data.Tag = 1 then
+      begin
+        Sender.Canvas.Brush.Color := MergeColors(ClWindow, ClRed);
+        Sender.Canvas.Pen.Color := MergeColors(ClWindow, ClRed);
+      end;
+      if Data.Tag = 0 then
+      begin
+        Sender.Canvas.Brush.Color := MergeColors(ClWindow, ClGreen);
+        Sender.Canvas.Pen.Color := MergeColors(ClWindow, ClGreen);
+      end;
+      if Data.Tag = -1 then
+      begin
+        Sender.Canvas.Brush.Color := MergeColors(ClWindow, ClBlue);
+        Sender.Canvas.Pen.Color := MergeColors(ClWindow, ClBlue);
+      end;
+    end;
+    Sender.Canvas.Rectangle(ARect);
+    if I = 0 then
+      OptionsImageList.Draw(Sender.Canvas, ARect.Left, Item.Top, Data.Options);
+    if I = 1 then
+      Sender.Canvas.TextOut(ARect.Left, Item.Top, Mince(Data.StringDate, 50));
+
+    DefaultDraw := True;
   end;
-  Sender.Canvas.Rectangle(aRect);
-  if i=0 then
-  OptionsImageList.Draw(Sender.Canvas,aRect.Left,Item.Top,TItemRecordOptions(Item.Data^).Options);
-  if i=1 then
-  Sender.Canvas.TextOut(aRect.Left, Item.Top,Mince(TItemRecordOptions(Item.Data^).StringDate,50));
-
-  DefaultDraw:=true;
- end;
 end;
 
 procedure TGetToPersonalFolderForm.ExtendedButtonClick(Sender: TObject);
 begin
- if ExtendedMode then
- begin
-  ExtendedMode:=false;
-  DateTimePicker1.Enabled:=true;
-  Edit1.Enabled:=true;
-  Memo1.Enabled:=true;
-  Edit2.Enabled:=true;
-  CheckBox2.Enabled:=true;
-  Edit3.Enabled:=true;
-  ComboBox2.Enabled:=true;
-  CheckBox1.Enabled:=true;
-  CheckBox3.Enabled:=true;
-
-  try
-   DateTimePicker1.Date:=DefaultOptions.Date;
-  except
-  end;
-  Edit1.Text:=DefaultOptions.FolderMask;
-  Memo1.Text:=DefaultOptions.Comment;
-  Edit2.Text:=DefaultOptions.ToFolder;
-  CheckBox2.Checked:=DefaultOptions.GetMultimediaFiles;
-  Edit3.Text:=DefaultOptions.MultimediaMask;
-  if DefaultOptions.Move then
-  ComboBox2.ItemIndex:=0 else ComboBox2.ItemIndex:=1;
-  CheckBox1.Checked:=DefaultOptions.OpenFolder;
-  CheckBox3.Checked:=DefaultOptions.AddFolder;
-
-  Width:=273;
-  Button2.Left:=104;
-  Button1.Left:=176;
-  Button5.Visible:=false;
-  ProgressBar.Visible:=false;
-  Label7.Visible:=false;
-  ListView1.Visible:=false;
-  ExtendedButton.Caption:='>';
-  ExtendedButton.Left:=248;
-  Button1.Enabled:=true;
- end else
- begin
-
-  DefaultOptions.Date:=DateTimePicker1.Date;
-  DefaultOptions.FolderMask:=Edit1.Text;
-  DefaultOptions.Comment:=Memo1.Text;
-  DefaultOptions.ToFolder:=Edit2.Text;
-  DefaultOptions.GetMultimediaFiles:=CheckBox2.Checked;
-  DefaultOptions.MultimediaMask:=Edit3.Text;
-  DefaultOptions.Move:=ComboBox2.ItemIndex=0;
-  DefaultOptions.OpenFolder:=CheckBox1.Checked;
-  DefaultOptions.AddFolder:=CheckBox3.Checked;
-
-  if ListView1.Selected=nil then
+  if ExtendedMode then
   begin
-   DateTimePicker1.Enabled:=false;
-   Edit1.Enabled:=false;
-   Memo1.Enabled:=false;
-   Edit2.Enabled:=false;
-   CheckBox2.Enabled:=false;
-   Edit3.Enabled:=false;
-   ComboBox2.Enabled:=false;
-   CheckBox1.Enabled:=false;
-   CheckBox3.Enabled:=false;
-  end else
-  ListView1SelectItem(ListView1,ListView1.Selected,true);
+    ExtendedMode := False;
+    DtpFromDate.Enabled := True;
+    EdFolderMask.Enabled := True;
+    MemComment.Enabled := True;
+    EdFolder.Enabled := True;
+    CheckBox2.Enabled := True;
+    EdMultimediaMask.Enabled := True;
+    CbMethod.Enabled := True;
+    CbOpenFolder.Enabled := True;
+    CbAddProtosToDB.Enabled := True;
 
-  Button2.Left:=344;
-  Button1.Left:=416;
-  Button1.Enabled:=ListView1.Items.Count>0;
-  Label7.Visible:=true;
-  ListView1.Visible:=true;
-  ProgressBar.Visible:=ThreadInProgress;
-  Button5.Visible:=not ThreadInProgress;
-  Width:=513;
-  ExtendedMode:=true;
-  ExtendedButton.Caption:='<';
-  ExtendedButton.Left:=488;
- end;
+    try
+      DtpFromDate.Date := DefaultOptions.Date;
+    except
+    end;
+    EdFolderMask.Text := DefaultOptions.FolderMask;
+    MemComment.Text := DefaultOptions.Comment;
+    EdFolder.Text := DefaultOptions.ToFolder;
+    CheckBox2.Checked := DefaultOptions.GetMultimediaFiles;
+    EdMultimediaMask.Text := DefaultOptions.MultimediaMask;
+    if DefaultOptions.Move then
+      CbMethod.ItemIndex := 0
+    else
+      CbMethod.ItemIndex := 1;
+    CbOpenFolder.Checked := DefaultOptions.OpenFolder;
+    CbAddProtosToDB.Checked := DefaultOptions.AddFolder;
+
+    Width := 273;
+    BtnCancel.Left := 104;
+    BtnOk.Left := 176;
+    BtnScanDates.Visible := False;
+    ProgressBar.Visible := False;
+    LbListComment.Visible := False;
+    LvMain.Visible := False;
+    ExtendedButton.Caption := '>';
+    ExtendedButton.Left := 248;
+    BtnOk.Enabled := True;
+  end else
+  begin
+
+    DefaultOptions.Date := DtpFromDate.Date;
+    DefaultOptions.FolderMask := EdFolderMask.Text;
+    DefaultOptions.Comment := MemComment.Text;
+    DefaultOptions.ToFolder := EdFolder.Text;
+    DefaultOptions.GetMultimediaFiles := CheckBox2.Checked;
+    DefaultOptions.MultimediaMask := EdMultimediaMask.Text;
+    DefaultOptions.Move := CbMethod.ItemIndex = 0;
+    DefaultOptions.OpenFolder := CbOpenFolder.Checked;
+    DefaultOptions.AddFolder := CbAddProtosToDB.Checked;
+
+    if LvMain.Selected = nil then
+    begin
+      DtpFromDate.Enabled := False;
+      EdFolderMask.Enabled := False;
+      MemComment.Enabled := False;
+      EdFolder.Enabled := False;
+      CheckBox2.Enabled := False;
+      EdMultimediaMask.Enabled := False;
+      CbMethod.Enabled := False;
+      CbOpenFolder.Enabled := False;
+      CbAddProtosToDB.Enabled := False;
+    end else
+      LvMainSelectItem(LvMain, LvMain.Selected, True);
+
+    BtnCancel.Left := 344;
+    BtnOk.Left := 416;
+    BtnOk.Enabled := LvMain.Items.Count > 0;
+    LbListComment.Visible := True;
+    LvMain.Visible := True;
+    ProgressBar.Visible := ThreadInProgress;
+    BtnScanDates.Visible := not ThreadInProgress;
+    Width := 513;
+    ExtendedMode := True;
+    ExtendedButton.Caption := '<';
+    ExtendedButton.Left := 488;
+  end;
 end;
 
-procedure TGetToPersonalFolderForm.ListView1ContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
+procedure TGetToPersonalFolderForm.LvMainContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
 var
-  item : TListItem;
+  Item: TListItem;
 begin
- item:=ListView1.GetItemAt(10,MousePos.y);
- if item<>nil then
- begin
-  PopupMenu1.Tag:=item.Index;
-  item.Selected:=true;
-  MoveUp1.Visible:=item.Index>0;
-  MoveDown1.Visible:=item.Index<ListView1.Items.Count-1;
+  Item := LvMain.GetItemAt(10, MousePos.Y);
+  if Item <> nil then
+  begin
+    PmListView.Tag := Item.index;
+    Item.Selected := True;
+    MoveUp1.Visible := Item.index > 0;
+    MoveDown1.Visible := Item.index < LvMain.Items.Count - 1;
 
-  MergeUp1.Visible:=MoveUp1.Visible;
-  MergeDown1.Visible:=MoveDown1.Visible;
+    MergeUp1.Visible := MoveUp1.Visible;
+    MergeDown1.Visible := MoveDown1.Visible;
 
-  Case TItemRecordOptions(item.Data^).Options of
-   DIRECTORY_OPTION_DATE_SINGLE    :  SimpleCopy1.Default:=true;
-   DIRECTORY_OPTION_DATE_WITH_UP   :  MergeUp1.Default:=true;
-   DIRECTORY_OPTION_DATE_WITH_DOWN :  MergeDown1.Default:=true;
-   DIRECTORY_OPTION_DATE_EXCLUDE   :  DontCopy1.Default:=true;
+    case TItemRecordOptions(Item.Data^).Options of
+      DIRECTORY_OPTION_DATE_SINGLE:
+        SimpleCopy1.default := True;
+      DIRECTORY_OPTION_DATE_WITH_UP:
+        MergeUp1.default := True;
+      DIRECTORY_OPTION_DATE_WITH_DOWN:
+        MergeDown1.default := True;
+      DIRECTORY_OPTION_DATE_EXCLUDE:
+        DontCopy1.default := True;
+    end;
+    PmListView.Popup(LvMain.ClientToScreen(MousePos).X, LvMain.ClientToScreen(MousePos).Y);
   end;
-  PopupMenu1.Popup(ListView1.ClientToScreen(MousePos).X,ListView1.ClientToScreen(MousePos).Y);
- end;
 end;
 
 procedure TGetToPersonalFolderForm.SimpleCopy1Click(Sender: TObject);
 begin
- fDataList[PopupMenu1.Tag].Options:=DIRECTORY_OPTION_DATE_SINGLE;
- TItemRecordOptions(ListView1.Items[PopupMenu1.Tag].Data^).Options:=DIRECTORY_OPTION_DATE_SINGLE;
- RecountGroups;
- ListView1.Refresh;
+  FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_SINGLE;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_SINGLE;
+  RecountGroups;
+  LvMain.Refresh;
 end;
 
 procedure TGetToPersonalFolderForm.MergeUp1Click(Sender: TObject);
 begin
- fDataList[PopupMenu1.Tag].Options:=DIRECTORY_OPTION_DATE_WITH_UP;
- TItemRecordOptions(ListView1.Items[PopupMenu1.Tag].Data^).Options:=DIRECTORY_OPTION_DATE_WITH_UP;
- OptionsArray[PopupMenu1.Tag]:=OptionsArray[PopupMenu1.Tag-1];
- RecountGroups;
- ListView1.Refresh;
+  FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_WITH_UP;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_WITH_UP;
+  OptionsArray[PmListView.Tag] := OptionsArray[PmListView.Tag - 1];
+  RecountGroups;
+  LvMain.Refresh;
 end;
 
 procedure TGetToPersonalFolderForm.MergeDown1Click(Sender: TObject);
 begin
- fDataList[PopupMenu1.Tag].Options:=DIRECTORY_OPTION_DATE_WITH_DOWN;
- TItemRecordOptions(ListView1.Items[PopupMenu1.Tag].Data^).Options:=DIRECTORY_OPTION_DATE_WITH_DOWN;
- OptionsArray[PopupMenu1.Tag]:=OptionsArray[PopupMenu1.Tag+1];
- RecountGroups;
- ListView1.Refresh;
+  FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_WITH_DOWN;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_WITH_DOWN;
+  OptionsArray[PmListView.Tag] := OptionsArray[PmListView.Tag + 1];
+  RecountGroups;
+  LvMain.Refresh;
 end;
 
 procedure TGetToPersonalFolderForm.DontCopy1Click(Sender: TObject);
 begin
- fDataList[PopupMenu1.Tag].Options:=DIRECTORY_OPTION_DATE_EXCLUDE;
- TItemRecordOptions(ListView1.Items[PopupMenu1.Tag].Data^).Options:=DIRECTORY_OPTION_DATE_EXCLUDE;
- RecountGroups;
- ListView1.Refresh;
+  FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_EXCLUDE;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_EXCLUDE;
+  RecountGroups;
+  LvMain.Refresh;
 end;
 
 procedure TGetToPersonalFolderForm.RecountGroups;
 var
-  i : integer;
-  LastGroup : boolean;
-  CurrentRecord, NextRecord : TItemRecordOptions;
+  I: Integer;
+  LastGroup: Boolean;
+  CurrentRecord, NextRecord: TItemRecordOptions;
 begin
- LastGroup:=false;
- for i:=0 to ListView1.Items.Count-2 do
- begin
-  CurrentRecord:=TItemRecordOptions(ListView1.Items[i].Data^);
-  NextRecord:=TItemRecordOptions(ListView1.Items[i+1].Data^);
-  if LastGroup then TItemRecordOptions(ListView1.Items[i].Data^).Tag:=0 else TItemRecordOptions(ListView1.Items[i].Data^).Tag:=1;
-  if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_WITH_DOWN) and (NextRecord.Options=DIRECTORY_OPTION_DATE_EXCLUDE) then
+  LastGroup := False;
+  for I := 0 to LvMain.Items.Count - 2 do
   begin
-   Continue;
+    CurrentRecord := TItemRecordOptions(LvMain.Items[I].Data^);
+    NextRecord := TItemRecordOptions(LvMain.Items[I + 1].Data^);
+    if LastGroup then
+      TItemRecordOptions(LvMain.Items[I].Data^).Tag := 0
+    else
+      TItemRecordOptions(LvMain.Items[I].Data^).Tag := 1;
+    if (CurrentRecord.Options = DIRECTORY_OPTION_DATE_WITH_DOWN) and
+      (NextRecord.Options = DIRECTORY_OPTION_DATE_EXCLUDE) then
+    begin
+      Continue;
+    end;
+    if (CurrentRecord.Options = DIRECTORY_OPTION_DATE_WITH_DOWN) and
+      (NextRecord.Options = DIRECTORY_OPTION_DATE_SINGLE) then
+    begin
+      Continue;
+    end;
+    if (CurrentRecord.Options = DIRECTORY_OPTION_DATE_WITH_DOWN) and
+      (NextRecord.Options = DIRECTORY_OPTION_DATE_WITH_DOWN) then
+    begin
+      Continue;
+    end;
+    if (CurrentRecord.Options = DIRECTORY_OPTION_DATE_EXCLUDE)
+       and (NextRecord.Options = DIRECTORY_OPTION_DATE_WITH_UP) then
+      Continue;
+    if (CurrentRecord.Options = DIRECTORY_OPTION_DATE_SINGLE)
+       and (NextRecord.Options = DIRECTORY_OPTION_DATE_WITH_UP) then
+      Continue;
+
+    if (CurrentRecord.Options = DIRECTORY_OPTION_DATE_WITH_UP)
+       and (NextRecord.Options = DIRECTORY_OPTION_DATE_WITH_UP) then
+      Continue;
+
+    LastGroup := not LastGroup;
   end;
-  if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_WITH_DOWN) and (NextRecord.Options=DIRECTORY_OPTION_DATE_SINGLE) then
+  I := LvMain.Items.Count - 1;
+  if I > -1 then
   begin
-   Continue;
-  end;
-  if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_WITH_DOWN) and (NextRecord.Options=DIRECTORY_OPTION_DATE_WITH_DOWN) then
-  begin
-   Continue;
-  end;
-  if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_EXCLUDE) and (NextRecord.Options=DIRECTORY_OPTION_DATE_WITH_UP) then
-  begin
-   Continue;
-  end;
-  if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_SINGLE) and (NextRecord.Options=DIRECTORY_OPTION_DATE_WITH_UP) then
-  begin
-   Continue;
-  end;
-  if (CurrentRecord.Options=DIRECTORY_OPTION_DATE_WITH_UP) and (NextRecord.Options=DIRECTORY_OPTION_DATE_WITH_UP) then
-  begin
-   Continue;
-  end;
-  LastGroup:=not LastGroup;
- end;
- i:=ListView1.Items.Count-1;
- if i>-1 then
- begin
-  CurrentRecord:=TItemRecordOptions(ListView1.Items[i].Data^);
-  if CurrentRecord.Options<>DIRECTORY_OPTION_DATE_WITH_UP then
-  begin
-   if LastGroup then TItemRecordOptions(ListView1.Items[i].Data^).Tag:=0 else TItemRecordOptions(ListView1.Items[i].Data^).Tag:=1;
+    CurrentRecord := TItemRecordOptions(LvMain.Items[I].Data^);
+    if CurrentRecord.Options <> DIRECTORY_OPTION_DATE_WITH_UP then
+    begin
+      if LastGroup then
+        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 0
+      else
+        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 1;
+    end else
+    begin
+      if LastGroup then
+        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 1
+      else
+        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 0;
+    end;
   end else
   begin
-   if LastGroup then TItemRecordOptions(ListView1.Items[i].Data^).Tag:=1 else TItemRecordOptions(ListView1.Items[i].Data^).Tag:=0;
+    Hide;
+    MessageBoxDB(Handle, L('No photos found! Window will be closed!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Close;
   end;
- end else
- begin
-  Hide;
-  MessageBoxDB(Handle,TEXT_MES_IMAGES_NOT_FOUND_UPDATER_CLOSED,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_WARNING);
-  Close;
- end;
 end;
 
 procedure TGetToPersonalFolderForm.ShowImages1Click(Sender: TObject);
 var
-  info : TRecordsInfo;
-  i : integer;
-  Date : TDateTime;
+  Info: TRecordsInfo;
+  I: Integer;
+  Date: TDateTime;
 
-  function L_Less_Than_R(L,R:TFileDateRecord):boolean;
+  function L_Less_Than_R(L, R: TFileDateRecord): Boolean;
   begin
-   Result:=SysUtils.CompareText(ExtractFileName(L.FileName),ExtractFileName(R.FileName))<0;
+    Result := SysUtils.CompareText(ExtractFileName(L.FileName), ExtractFileName(R.FileName)) < 0;
   end;
 
-  procedure Swap(var X:TFileDateList;I,J:integer);
+  procedure Swap(var X: TFileDateList; I, J: Integer);
   var
-    temp : TFileDateRecord;
+    Temp: TFileDateRecord;
   begin
-   temp:=X[i];
-   X[i]:=X[J];
-   X[J]:=temp;
+    Temp := X[I];
+    X[I] := X[J];
+    X[J] := Temp;
   end;
 
-  procedure Qsort(var X:TFileDateList; Left,Right:integer);
-  label
-     Again;
+  procedure Qsort(var X: TFileDateList; Left, Right: Integer);
+  label Again;
   var
-     Pivot:TFileDateRecord;
-     P,Q:integer;
-     m : integer;
-   begin
-      P:=Left;
-      Q:=Right;
-      m:=(Left+Right) div 2;
-      Pivot:=X [m];
+    Pivot: TFileDateRecord;
+    P, Q: Integer;
+    M: Integer;
+  begin
+    P := Left;
+    Q := Right;
+    M := (Left + Right) div 2;
+    Pivot := X[M];
 
-      while P<=Q do
+    while P <= Q do
+    begin
+      while L_Less_Than_R(X[P], Pivot) do
       begin
-         while L_Less_Than_R(X[P],Pivot) do
-         begin
-          if p=m then break;
-          inc(P);
-         end;
-         while L_Less_Than_R(Pivot,X[Q]) do
-         begin
-          if q=m then break;
-          dec(Q);
-         end;
-         if P>Q then goto Again;
-         Swap(X,P,Q);
-         inc(P);dec(Q);
+        if P = M then
+          Break;
+        Inc(P);
       end;
+      while L_Less_Than_R(Pivot, X[Q]) do
+      begin
+        if Q = M then
+          Break;
+        Dec(Q);
+      end;
+      if P > Q then
+        goto Again;
+      Swap(X, P, Q);
+      Inc(P);
+      Dec(Q);
+    end;
 
-      Again:
-      if Left<Q  then Qsort(X,Left,Q);
-      if P<Right then Qsort(X,P,Right);
-   end;
+  Again :
+    if Left < Q then
+      Qsort(X, Left, Q);
+    if P < Right then
+      Qsort(X, P, Right);
+  end;
 
-  procedure QuickSort(var X:TFileDateList; N:integer);
+  procedure QuickSort(var X: TFileDateList; N: Integer);
   begin
-    Qsort(X,0,N-1);
+    Qsort(X, 0, N - 1);
   end;
 
 begin
- Info:=RecordsInfoNil;
- If Viewer=nil then
- Application.CreateForm(TViewer,Viewer);
- Date:=TItemRecordOptions(ListView1.Items[PopupMenu1.Tag].Data^).Date;
- QuickSort(fDataList,Length(fDataList));
- for i:=0 to Length(fDataList)-1 do
- begin
-  if Date=fDataList[i].Date then
-  //                                                                                                 crypted
-  AddRecordsInfoOne(info,fDataList[i].FileName,0,0,0,0,'','','','','',fDataList[i].Date,true,false,0,false        ,true,true,'');
- end;
- Viewer.Execute(Sender,Info);
+  Info := RecordsInfoNil;
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  Date := TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Date;
+  QuickSort(FDataList, Length(FDataList));
+  for I := 0 to Length(FDataList) - 1 do
+  begin
+    if Date = FDataList[I].Date then
+      // crypted
+      AddRecordsInfoOne(Info, FDataList[I].FileName, 0, 0, 0, 0, '', '', '', '', '', FDataList[I].Date, True, False, 0,
+        False, True, True, '');
+  end;
+  Viewer.Execute(Sender, Info);
+  Viewer.Show;
 end;
 
 procedure TGetToPersonalFolderForm.Remove1Click(Sender: TObject);
 var
-  i : integer;
+  I: Integer;
 begin
- if ID_OK<>MessageBoxDB(Handle,TEXT_MES_DO_YOU_REALLY_WANT_TO_THIS_ITEM,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
- ListView1.Items.Delete(PopupMenu1.Tag);
- for i:=PopupMenu1.Tag to Length(OptionsArray)-2 do
- OptionsArray[i]:=OptionsArray[i+1];
- SetLength(OptionsArray,Length(OptionsArray)-1);
- RecountGroups;
- ListView1.Refresh;
+  if ID_OK <> MessageBoxDB(Handle, L('Do you really want to delete this item?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    Exit;
+
+  LvMain.Items.Delete(PmListView.Tag);
+  for I := PmListView.Tag to Length(OptionsArray) - 2 do
+    OptionsArray[I] := OptionsArray[I + 1];
+  SetLength(OptionsArray, Length(OptionsArray) - 1);
+  RecountGroups;
+  LvMain.Refresh;
 end;
 
 procedure TGetToPersonalFolderForm.MoveUp1Click(Sender: TObject);
 var
-  p : Pointer;
+  P: Pointer;
 begin
- p:=ListView1.Items[PopupMenu1.Tag-1].Data;
- ListView1.Items[PopupMenu1.Tag-1].Data:=ListView1.Items[PopupMenu1.Tag].Data;
- ListView1.Items[PopupMenu1.Tag].Data:=p;
- RecountGroups;
- ListView1.Refresh;
+  P := LvMain.Items[PmListView.Tag - 1].Data;
+  LvMain.Items[PmListView.Tag - 1].Data := LvMain.Items[PmListView.Tag].Data;
+  LvMain.Items[PmListView.Tag].Data := P;
+  RecountGroups;
+  LvMain.Refresh;
 end;
 
 procedure TGetToPersonalFolderForm.MoveDown1Click(Sender: TObject);
 var
-  p : Pointer;
+  P: Pointer;
 begin
- p:=ListView1.Items[PopupMenu1.Tag+1].Data;
- ListView1.Items[PopupMenu1.Tag+1].Data:=ListView1.Items[PopupMenu1.Tag].Data;
- ListView1.Items[PopupMenu1.Tag].Data:=p;
- RecountGroups;
- ListView1.Refresh;
+  P := LvMain.Items[PmListView.Tag + 1].Data;
+  LvMain.Items[PmListView.Tag + 1].Data := LvMain.Items[PmListView.Tag].Data;
+  LvMain.Items[PmListView.Tag].Data := P;
+  RecountGroups;
+  LvMain.Refresh;
 end;
 
-procedure TGetToPersonalFolderForm.ListView1SelectItem(Sender: TObject;
+procedure TGetToPersonalFolderForm.LvMainSelectItem(Sender: TObject;
   Item: TListItem; Selected: Boolean);
 var
-  Options : TGetImagesOptions;
+  Options: TGetImagesOptions;
 begin
- if (Item<>nil) and Selected then
- begin
-  DateTimePicker1.Enabled:=true;
-  Edit1.Enabled:=true;
-  Memo1.Enabled:=true;
-  Edit2.Enabled:=true;
-  CheckBox2.Enabled:=true;
-  Edit3.Enabled:=true;
-  ComboBox2.Enabled:=true;
-  CheckBox1.Enabled:=true;
-  CheckBox3.Enabled:=true;
+  if (Item <> nil) and Selected then
+  begin
+    DtpFromDate.Enabled := True;
+    EdFolderMask.Enabled := True;
+    MemComment.Enabled := True;
+    EdFolder.Enabled := True;
+    CheckBox2.Enabled := True;
+    EdMultimediaMask.Enabled := True;
+    CbMethod.Enabled := True;
+    CbOpenFolder.Enabled := True;
+    CbAddProtosToDB.Enabled := True;
 
-  Options:=OptionsArray[Item.index];
-  try
-   DateTimePicker1.Date:=Options.Date;
-  except
+    Options := OptionsArray[Item.index];
+    try
+      DtpFromDate.Date := Options.Date;
+    except
+    end;
+    EdFolderMask.Text := Options.FolderMask;
+    MemComment.Text := Options.Comment;
+    EdFolder.Text := Options.ToFolder;
+    CheckBox2.Checked := Options.GetMultimediaFiles;
+    EdMultimediaMask.Text := Options.MultimediaMask;
+    if Options.Move then
+      CbMethod.ItemIndex := 0
+    else
+      CbMethod.ItemIndex := 1;
+
+    CbOpenFolder.Checked := Options.OpenFolder;
+    CbAddProtosToDB.Checked := Options.AddFolder;
+    EdFolderMaskChange(Self);
+  end else
+  begin
+    DtpFromDate.Enabled := False;
+    EdFolderMask.Enabled := False;
+    MemComment.Enabled := False;
+    EdFolder.Enabled := False;
+    CheckBox2.Enabled := False;
+    EdMultimediaMask.Enabled := False;
+    CbMethod.Enabled := False;
+    CbOpenFolder.Enabled := False;
+    CbAddProtosToDB.Enabled := False;
   end;
-  Edit1.Text:=Options.FolderMask;
-  Memo1.Text:=Options.Comment;
-  Edit2.Text:=Options.ToFolder;
-  CheckBox2.Checked:=Options.GetMultimediaFiles;
-  Edit3.Text:=Options.MultimediaMask;
-  if Options.Move then
-  ComboBox2.ItemIndex:=0 else ComboBox2.ItemIndex:=1;
-
-  CheckBox1.Checked:=Options.OpenFolder;
-  CheckBox3.Checked:=Options.AddFolder;
-  Edit1Change(self);
- end else
- begin
-  DateTimePicker1.Enabled:=false;
-  Edit1.Enabled:=false;
-  Memo1.Enabled:=false;
-  Edit2.Enabled:=false;
-  CheckBox2.Enabled:=false;
-  Edit3.Enabled:=false;
-  ComboBox2.Enabled:=false;
-  CheckBox1.Enabled:=false;
-  CheckBox3.Enabled:=false;
- end;
 end;
 
 function TGetToPersonalFolderForm.FormatFolderName(Mask, Comment: String;
@@ -1057,7 +1128,7 @@ begin
   S := StringReplace(S, '%yy:mm:dd', FormatDateTime('yy.mm.dd', Date), [RfReplaceAll, RfIgnoreCase]);
   DateTimeToSystemTime(Date, TempSysTime);
   GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'dddd, d MMMM yyyy ', @FineDate, 255);
-  S := StringReplace(S, '%YMD', FineDate + TEXT_MES_YEAR_A, [RfReplaceAll, RfIgnoreCase]);
+  S := StringReplace(S, '%YMD', FineDate + L('y.'), [RfReplaceAll, RfIgnoreCase]);
   S := StringReplace(S, '%coment', Comment, [RfReplaceAll, RfIgnoreCase]);
   S := StringReplace(S, '%yyyy', FormatDateTime('yyyy', Date), [RfReplaceAll, RfIgnoreCase]);
   S := StringReplace(S, '%yy', FormatDateTime('yy', Date), [RfReplaceAll, RfIgnoreCase]);
@@ -1072,7 +1143,7 @@ begin
   S := StringReplace(S, '%dddd', FineDate, [RfReplaceAll, RfIgnoreCase]);
   S := StringReplace(S, '%ddd', FormatDateTime('ddd', Date), [RfReplaceAll, RfIgnoreCase]);
   S := StringReplace(S, '%dd', FormatDateTime('dd', Date), [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S,'%d',FormatDateTime('d',Date),[rfReplaceAll,rfIgnoreCase]);
+  S := StringReplace(S, '%d', FormatDateTime('d', Date), [RfReplaceAll, RfIgnoreCase]);
   for I := Length(S) downto 1 do
     if (CharInSet(S[I], Unusedchar_folders)) then
       Delete(S, I, 1);

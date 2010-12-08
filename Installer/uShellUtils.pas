@@ -20,6 +20,7 @@ function InstalledFileName: string;
 function GetProgramFilesPath: string;
 function GetStartMenuPath: string;
 function GetDesktopPath: string;
+function GetMyPicturesPath: string;
 function GetAppDataPath: string;
 function GetTempDirectory: string;
 function GetTempFileName: TFileName;
@@ -427,6 +428,11 @@ end;
 function GetAppDataPath: string;
 begin
   Result := GetSystemPath(CSIDL_APPDATA);
+end;
+
+function GetMyPicturesPath: string;
+begin
+  Result := GetSystemPath(CSIDL_MYPICTURES);
 end;
 
 function GetTempDirectory: string;

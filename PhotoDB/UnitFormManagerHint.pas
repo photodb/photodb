@@ -25,14 +25,14 @@ uses Dolphin_DB;
 
 procedure TFormManagerHint.FormCreate(Sender: TObject);
 begin
- Width:=ThImageSize+10;
- Height:=ThImageSize+10;
- DBkernel.RegisterForm(self);
+  Width := ThImageSize + 10;
+  Height := ThImageSize + 10;
+  DBkernel.RegisterForm(Self);
 end;
 
 procedure TFormManagerHint.FormDestroy(Sender: TObject);
 begin
- DBkernel.UnRegisterForm(self);
+  DBkernel.UnRegisterForm(Self);
 end;
 
 end.

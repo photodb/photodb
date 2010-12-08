@@ -72,12 +72,15 @@ var
   NewGroupForm: TNewGroupForm;
 begin
   if not IsValidGroupsTable then
-  if DBInDebug then
-  CreateGroupsTable;
+    if DBInDebug then
+      CreateGroupsTable;
 
   Application.CreateForm(TNewGroupForm, NewGroupForm);
-  NewGroupForm.Execute;
-  R(NewGroupForm);
+  try
+    NewGroupForm.Execute;
+  finally
+    R(NewGroupForm);
+  end;
 end;
 
 Procedure CreateNewGroupDialogA(GroupName,GroupCode : String);
@@ -85,8 +88,11 @@ var
   NewGroupForm: TNewGroupForm;
 begin
   Application.CreateForm(TNewGroupForm, NewGroupForm);
-  NewGroupForm.ExecuteA(GroupName,GroupCode);
-  R(NewGroupForm);
+  try
+    NewGroupForm.ExecuteA(GroupName,GroupCode);
+  finally
+    R(NewGroupForm);
+  end;
 end;
 
 Procedure CreateNewGroupDialogB(GroupCode: String; Image : TJpegImage; out Created : Boolean; out GroupName : String);
@@ -94,8 +100,11 @@ var
   NewGroupForm: TNewGroupForm;
 begin
   Application.CreateForm(TNewGroupForm, NewGroupForm);
-  NewGroupForm.ExecuteB(GroupCode,Image,Created,GroupName);
-  R(NewGroupForm);
+  try
+    NewGroupForm.ExecuteB(GroupCode,Image,Created,GroupName);
+  finally
+    R(NewGroupForm);
+  end;
 end;
 
 procedure TNewGroupForm.ImGroupClick(Sender: TObject);
@@ -126,7 +135,7 @@ var
 begin
   if GroupNameExists(EdName.Text) then
   begin
-    MessageBoxDB(Handle, L('Group with this name alreadt exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    MessageBoxDB(Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;
   Group.GroupName := EdName.Text;

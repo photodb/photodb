@@ -10,8 +10,8 @@ uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl,  ShlObj, ActiveX,
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
   TBuffer = array of Char;
-//  TCorrectPathProc = procedure(Caller : TObject; Src: TStrings; Dest: string);
 
+function CreateDirA(Dir: string): Boolean;
 function FileExistsSafe(FileName: string) : Boolean;
 function GetAppDataDirectory: string;
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
@@ -53,6 +53,26 @@ implementation
 uses
   UnitWindowsCopyFilesThread;
 {$ENDIF}
+
+function CreateDirA(Dir: string): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  Dir := ExcludeTrailingBackslash(Dir);
+
+  if Length(Dir) < 3 then
+    Exit;
+  for I := 1 to Length(Dir) do
+    try
+      if (Dir[I] = '\') or (I = Length(Dir)) then
+        if CreateDir(ExcludeTrailingBackslash(Copy(Dir, 1, I))) then
+          Result := I = Length(Dir);
+    except
+      Result := False;
+      Exit;
+    end;
+end;
 
 function FileExistsSafe(FileName: string) : Boolean;
 var

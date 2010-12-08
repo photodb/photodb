@@ -162,7 +162,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
       000000030000000300000003C0000003FE000003FFF80007FFFE007FFFFE007F
       FFFF00FF}
   end
-  object Label1: TLabel
+  object LbDate: TLabel
     Left = 56
     Top = 8
     Width = 62
@@ -204,7 +204,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Height = 13
     Caption = 'Method:'
   end
-  object Label7: TLabel
+  object LbListComment: TLabel
     Left = 256
     Top = 8
     Width = 95
@@ -212,25 +212,25 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Caption = 'Photos series dates:'
     Visible = False
   end
-  object Button1: TButton
+  object BtnOk: TButton
     Left = 176
     Top = 354
     Width = 65
     Height = 25
     Caption = 'Ok'
     TabOrder = 0
-    OnClick = Button1Click
+    OnClick = BtnOkClick
   end
-  object Button2: TButton
+  object BtnCancel: TButton
     Left = 104
     Top = 354
     Width = 65
     Height = 25
     Caption = 'Cancel'
     TabOrder = 1
-    OnClick = Button2Click
+    OnClick = BtnCancelClick
   end
-  object DateTimePicker1: TDateTimePicker
+  object DtpFromDate: TDateTimePicker
     Left = 56
     Top = 24
     Width = 186
@@ -239,18 +239,18 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Time = 38476.977185509260000000
     DateFormat = dfLong
     TabOrder = 2
-    OnChange = Edit1Change
+    OnChange = EdFolderMaskChange
   end
-  object Edit1: TEdit
+  object EdFolderMask: TEdit
     Left = 8
     Top = 72
     Width = 233
     Height = 21
     TabOrder = 3
     Text = '%yy:mm:dd = %YMD (%coment)'
-    OnChange = Edit1Change
+    OnChange = EdFolderMaskChange
   end
-  object Memo1: TMemo
+  object MemComment: TMemo
     Left = 8
     Top = 112
     Width = 233
@@ -258,28 +258,28 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Lines.Strings = (
       'You comment')
     TabOrder = 4
-    OnChange = Edit1Change
+    OnChange = EdFolderMaskChange
   end
-  object Edit2: TEdit
+  object EdFolder: TEdit
     Left = 8
     Top = 248
     Width = 217
     Height = 21
     ReadOnly = True
     TabOrder = 5
-    Text = 'Edit2'
-    OnChange = Edit1Change
+    Text = 'EdFolder'
+    OnChange = EdFolderMaskChange
   end
-  object Button3: TButton
+  object BtnChooseFolder: TButton
     Left = 224
     Top = 248
     Width = 17
     Height = 19
     Caption = '...'
     TabOrder = 6
-    OnClick = Button3Click
+    OnClick = BtnChooseFolderClick
   end
-  object ComboBox2: TComboBox
+  object CbMethod: TComboBox
     Left = 8
     Top = 327
     Width = 97
@@ -288,21 +288,21 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     ItemIndex = 0
     TabOrder = 7
     Text = 'Move'
-    OnChange = Edit1Change
+    OnChange = EdFolderMaskChange
     Items.Strings = (
       'Move'
       'Copy')
   end
-  object CheckBox1: TCheckBox
+  object CbOpenFolder: TCheckBox
     Left = 112
     Top = 314
     Width = 129
     Height = 17
     Caption = 'Open This Folder'
     TabOrder = 8
-    OnClick = Edit1Change
+    OnClick = EdFolderMaskChange
   end
-  object Memo2: TMemo
+  object MemFolderName: TMemo
     Left = 8
     Top = 192
     Width = 233
@@ -312,14 +312,14 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     ReadOnly = True
     TabOrder = 9
   end
-  object Button4: TButton
+  object BtnSave: TButton
     Left = 8
     Top = 354
     Width = 81
     Height = 25
     Caption = 'Save'
     TabOrder = 10
-    OnClick = Button4Click
+    OnClick = BtnSaveClick
   end
   object CheckBox2: TCheckBox
     Left = 8
@@ -332,25 +332,25 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     TabOrder = 11
     OnClick = CheckBox2Click
   end
-  object Edit3: TEdit
+  object EdMultimediaMask: TEdit
     Left = 8
     Top = 288
     Width = 233
     Height = 21
     TabOrder = 12
     Text = '|MOV|MP3|AVI|MPEG|MPG|'
-    OnChange = Edit1Change
+    OnChange = EdFolderMaskChange
   end
-  object CheckBox3: TCheckBox
+  object CbAddProtosToDB: TCheckBox
     Left = 112
     Top = 330
     Width = 129
     Height = 17
     Caption = 'Add photos to DB'
     TabOrder = 13
-    OnClick = Edit1Change
+    OnClick = EdFolderMaskChange
   end
-  object ListView1: TListView
+  object LvMain: TListView
     Left = 256
     Top = 24
     Width = 225
@@ -369,12 +369,12 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     TabOrder = 14
     ViewStyle = vsReport
     Visible = False
-    OnAdvancedCustomDrawItem = ListView1AdvancedCustomDrawItem
-    OnContextPopup = ListView1ContextPopup
-    OnResize = ListView1Resize
-    OnSelectItem = ListView1SelectItem
+    OnAdvancedCustomDrawItem = LvMainAdvancedCustomDrawItem
+    OnContextPopup = LvMainContextPopup
+    OnResize = LvMainResize
+    OnSelectItem = LvMainSelectItem
   end
-  object Button5: TButton
+  object BtnScanDates: TButton
     Left = 256
     Top = 328
     Width = 225
@@ -382,7 +382,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Caption = 'Scan dates'
     TabOrder = 15
     Visible = False
-    OnClick = Button5Click
+    OnClick = BtnScanDatesClick
   end
   object ExtendedButton: TButton
     Left = 488
@@ -395,7 +395,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   end
   object ProgressBar: TDmProgress
     Left = 256
-    Top = 328
+    Top = 327
     Width = 225
     Height = 18
     Visible = False
@@ -420,11 +420,11 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Top = 56
   end
   object OptionsImageList: TImageList
-    Left = 264
+    Left = 288
     Top = 48
   end
-  object PopupMenu1: TPopupMenu
-    Left = 296
+  object PmListView: TPopupMenu
+    Left = 368
     Top = 48
     object ShowImages1: TMenuItem
       Caption = 'Show Images'

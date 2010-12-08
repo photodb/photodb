@@ -49,10 +49,10 @@ type
   end;
 
 procedure SetJPEGOptions; overload;
-procedure SetJPEGOptions(Section : String); overload;
-procedure SetJPEGGraphicSaveOptions(Section : string; Graphic : TGraphic);
-function CompresJPEGToSize(JS: TGraphic; var ToSize : Integer; Progressive : Boolean; var CompressionRate : Integer;
-  CallBack: TCompresJPEGToSizeCallback = nil) : Boolean;
+procedure SetJPEGOptions(Section: string); overload;
+procedure SetJPEGGraphicSaveOptions(Section: string; Graphic: TGraphic);
+function CompresJPEGToSize(JS: TGraphic; var ToSize: Integer; Progressive: Boolean; var CompressionRate: Integer;
+  CallBack: TCompresJPEGToSizeCallback = nil): Boolean;
 
 implementation
 
@@ -164,6 +164,7 @@ end;
 procedure TFormJpegOptions.FormCreate(Sender: TObject);
 begin
   LoadLanguage;
+  TbCompressionRateChange(Self);
 end;
 
 procedure TFormJpegOptions.FormKeyPress(Sender: TObject; var Key: Char);
@@ -201,13 +202,12 @@ begin
   BeginTranslate;
   try
     Caption := L('JPEG compression');
-    LbInfo.Caption := L('Choose JPEG mode and compression rate:');
+    LbInfo.Caption := L('Choose JPEG mode and compression rate') + ':';
     GbJPEGOption.Caption := L('JPEG');
-    TbCompressionRateChange(Self);
     CbProgressiveMove.Caption := L('Progressive mode');
     BtCancel.Caption := L('Cancel');
     BtOk.Caption := L('Ok');
-    CbOptimizeToSize.Caption := L('Optimize to size:');
+    CbOptimizeToSize.Caption := L('Optimize to size') + ':';
     LbKb.Caption := L('Kb');
   finally
     EndTranslate;

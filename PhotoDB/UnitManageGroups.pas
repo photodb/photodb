@@ -114,7 +114,7 @@ begin
   if Length(Groups) > 0 then
     ShowModal
   else begin
-    if ID_OK = MessageBoxDB(Handle, L('Groups in DB not found! Do You want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    if ID_OK = MessageBoxDB(Handle, L('Groups in DB not found! Do you want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       CreateNewGroupDialog;
   end;
 end;
@@ -123,10 +123,8 @@ procedure TFormManageGroups.FormCreate(Sender: TObject);
 begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   FSaving := False;
-  Caption := L('Manage groups');
   ListView1.DoubleBuffered := True;
   Width := Min(650, Round(Screen.Width / 1.3));
-  ListView1.Columns[0].Caption := L('Groups list');
   FBitmapImageList := TBitmapImageList.Create;
   MmMain.Images := DBKernel.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;
@@ -243,7 +241,7 @@ begin
       begin
         FSaving := True;
         UnitGroupsTools.DeleteGroup(Groups[index]);
-        MessageBoxDB(Handle, L('Reload data in windows to see changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
+        MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
         FSaving := False;
         DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
         Exit;
@@ -448,8 +446,10 @@ procedure TFormManageGroups.LoadLanguage;
 begin
   BeginTranslate;
   try
+    Caption := L('Manage groups');
+    ListView1.Columns[0].Caption := L('List of groups');
     TbExit.Caption := L('Exit');
-    TbAdd.Caption := L('Ceate group');
+    TbAdd.Caption := L('Create group');
     ToolButton2.Caption := L('Edit');
     ToolButton3.Caption := L('Delete');
     ToolButton8.Caption := L('Options');

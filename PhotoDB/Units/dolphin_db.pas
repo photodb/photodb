@@ -250,17 +250,6 @@ type
     PreviewOptions : TPreviewOptions;
   end;
 
-{const
-  CSIDL_COMMON_APPDATA = $0023;
-  CSIDL_MYMUSIC = $0013;
-  CSIDL_MYPICTURES = $0014; // FONTS
-  CSIDL_LOCAL = $0022;
-  CSIDL_SYSTEM = $0025;
-  CSIDL_WINDOWS = $0024;
-  CSIDL_PROGRAM_FILES = $0026;
-  CSIDL_LOCAL_APPDATA = $001C;
-                                      }
-
 const
   DemoSecondsToOpen = 5;
   MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
@@ -315,7 +304,6 @@ procedure UpdateMovedDBRecord(ID: Integer; FileName: string);
 procedure SetRotate(ID, Rotate: Integer);
 procedure SetRating(ID, Rating: Integer);
 procedure SetAttr(ID, Attr: Integer);
-//function GetHardwareString: string;
 function XorStrings(S1, S2: string): string;
 function SetStringToLengthWithNoData(S: string; N: Integer): string;
 function BitmapToString(Bit: Tbitmap): string;
@@ -329,13 +317,12 @@ function LoadIDsFromfileA(FileName: string): TArInteger;
 function LoadImThsFromfileA(FileName: string): TArStrings;
 function SaveImThsTofile(FileName: string; ImThs: TArstrings): Boolean;
 
-//function HardwareStringToCode(Hs: string): string;
 function CodeToActivateCode(S: string): string;
 //function GetuserString: string;
 function RenameFileWithDB(Caller : TObject; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 function GetGUID: TGUID;
 procedure GetFileListByMask(BeginFile, Mask: string;
-  { var list : tstrings; } out Info: TRecordsInfo; var N: Integer; ShowPrivate: Boolean);
+ out Info: TRecordsInfo; var N: Integer; ShowPrivate: Boolean);
 function AltKeyDown: Boolean;
 function CtrlKeyDown: Boolean;
 function ShiftKeyDown: Boolean;
@@ -404,7 +391,6 @@ procedure Delay(Msecs: Longint);
 function ColorDiv2(Color1, COlor2: TColor): TColor;
 function ColorDarken(Color: TColor): TColor;
 
-function CreateDirA(Dir: string): Boolean;
 function ValidDBPath(DBPath: string): Boolean;
 function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
 
@@ -2272,100 +2258,6 @@ begin
       Result[I] := Chr((I + Cs) xor Cs);
 end;
 
-{function GetHardwareString: string;
-var
-  I: Integer;
-  LpDisplayDevice: TDisplayDevice;
-  Cc, DwFlags: DWORD;
-  EBXstr, ECXstr, EDXstr: string[5];
-  Hardwarestring, S1: string;
-
-  function GlobalMemoryStatus(index: Integer): Integer;
-  var
-    MemoryStatus: TMemoryStatus;
-  begin
-    with MemoryStatus do
-    begin
-      DwLength := SizeOf(TMemoryStatus);
-      Windows.GlobalMemoryStatus(MemoryStatus);
-      case index of
-        1:
-          Result := DwMemoryLoad;
-        2:
-          Result := DwTotalPhys div 1024;
-        3:
-          Result := DwAvailPhys div 1024;
-        4:
-          Result := DwTotalPageFile div 1024;
-        5:
-          Result := DwAvailPageFile div 1024;
-        6:
-          Result := DwTotalVirtual div 1024;
-        7:
-          Result := DwAvailVirtual div 1024;
-      else
-        Result := 0;
-      end;
-    end;
-  end;
-
-  function GettingKeybType: string; // Win95 or later and NT3.1 or later
-  var
-    Flag: Integer;
-  begin
-    Flag := 0;
-    case GetKeyboardType(Flag) of
-      1:
-        Result := 'IBM PC/XT or compatible (83-key) keyboard';
-      2:
-        Result := 'Olivetti "ICO" (102-key) keyboard';
-      3:
-        Result := 'IBM PC/AT (84-key) or similar keyboard';
-      4:
-        Result := 'IBM enhanced (101- or 102-key) keyboard';
-      5:
-        Result := 'Nokia 1050 and similar keyboards';
-      6:
-        Result := 'Nokia 9140 and similar keyboards';
-      7:
-        Result := 'Japanese keyboard';
-    end;
-  end;
-
-begin
-  for I := 1 to 255 do
-    Hardwarestring := Hardwarestring + ' ';
-  S1 := Setstringtolengthwithnodata(Inttostr(GlobalMemoryStatus(2)), 255);
-  Hardwarestring := Xorstrings(Hardwarestring, S1);
-  S1 := '';
-  LpDisplayDevice.Cb := Sizeof(LpDisplayDevice);
-  DwFlags := 0;
-  Cc := 0;
-  while EnumDisplayDevices(nil, Cc, LpDisplayDevice, DwFlags) do
-  begin
-    Inc(Cc);
-    S1 := S1 + LpDisplayDevice.DeviceString;
-  end;
-  S1 := Setstringtolengthwithnodata(S1, 255);
-  Hardwarestring := Xorstrings(Hardwarestring, S1);
- asm
-  mov eax,0
-  cpuid
-  mov dword ptr EBXstr+1,EBX
-  mov byte ptr EBXstr,4
-  mov dword ptr ECXstr+1,ECX
-  mov byte ptr ECXstr,4
-  mov dword ptr EDXstr+1,EDX
-  mov byte ptr EDXstr,4
- end;
-  S1 := EBXstr + '  ' + ECXstr + '  ' + EDXstr;
-  S1 := Setstringtolengthwithnodata(S1, 255);
-  Hardwarestring := Xorstrings(Hardwarestring, S1);
-  S1 := Setstringtolengthwithnodata(GettingKeybType, 255);
-  Hardwarestring := Xorstrings(Hardwarestring, S1);
-  Result := Hardwarestring;
-end;  }
-
 function SaveIDsTofile(FileName: string; IDs: TArInteger): Boolean;
 var
   I: Integer;
@@ -2549,22 +2441,6 @@ begin
   Fs.Free;
 end;
 
-{function HardwareStringToCode(Hs: string): string;
-var
-  I, J: Integer;
-  S: Byte;
-begin
-  Hs := GetUserString;
-  Result := '';
-  for I := 1 to 8 do
-  begin
-    S := 0;
-    for J := 1 to 32 do
-      S := S + Ord(Hs[32 * (I - 1) + J - 1]);
-    Result := Result + Inttohex(S, 2);
-  end;
-end;  }
-
 function CodeToActivateCode(S: string): string;
 var
   C, Intr, Sum, I: Integer;
@@ -2582,17 +2458,6 @@ begin
     Result := Result + Hs;
   end;
 end;
-
-{function GetUserString: string;
-var
-  S1, Hardwarestring: string;
-begin
-  Hardwarestring := Gethardwarestring;
-  S1 := SidToStr(GetUserSID);
-  S1 := Setstringtolengthwithnodata(S1, 255);
-  Hardwarestring := Xorstrings(Hardwarestring, S1);
-  Result := Hardwarestring;
-end;   }
 
 function AltKeyDown: Boolean;
 begin
@@ -2642,7 +2507,6 @@ begin
   SExInfo.FMask := SEE_MASK_INVOKEIDLIST;
   ShellExecuteEx(Addr(SExInfo));
 end;
-
 
 procedure ShowMyComputerProperties(Hwnd: THandle);
 var
@@ -3897,26 +3761,6 @@ function ColorDarken(Color: TColor): TColor;
 begin
   Color := ColorToRGB(Color);
   Result := RGB(Round(GetRValue(Color) / 1.2), (Round(GetGValue(Color) / 1.2)), (Round(GetBValue(Color) / 1.2)));
-end;
-
-function CreateDirA(Dir: string): Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  Dir := ExcludeTrailingBackslash(Dir);
-
-  if Length(Dir) < 3 then
-    Exit;
-  for I := 1 to Length(Dir) do
-    try
-      if (Dir[I] = '\') or (I = Length(Dir)) then
-        if CreateDir(ExcludeTrailingBackslash(Copy(Dir, 1, I))) then
-          Result := I = Length(Dir);
-    except
-      Result := False;
-      Exit;
-    end;
 end;
 
 function ValidDBPath(DBPath: string): Boolean;

@@ -164,7 +164,7 @@ begin
     if FGroup.GroupName <> EdName.Text then
     begin
       RenameGroup(FGroup, EdName.Text);
-      MessageBoxDB(Handle, L('Reload data in application to see changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+      MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
     end;
   FreeGroup(Group);
   DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
@@ -175,8 +175,8 @@ procedure TFormChangeGroup.LoadLanguage;
 begin
   BeginTranslate;
   try
-    EdName.WatermarkText := L('Enter group name');
     Caption := L('Edit group');
+    EdName.WatermarkText := L('Enter group name');
     BtnOk.Caption := L('Ok');
     BtnCancel.Caption := L('Cancel');
     CbPrivateGroup.Caption := L('Group is private');

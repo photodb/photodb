@@ -5,7 +5,7 @@ interface
 uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
-  ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics, uDBForm;
+  ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics, uDBForm, uMemory;
 
 type
   TFormQuickGroupInfo = class(TDBForm)
@@ -57,14 +57,14 @@ type
     procedure ReloadGroups;
   end;
 
-Procedure ShowGroupInfo(Group : TGroup; CloseOwner : Boolean; Owner : TForm); overload;
-Procedure ShowGroupInfo(GrouName : String; CloseOwner : Boolean; Owner : TForm); overload;
+procedure ShowGroupInfo(Group: TGroup; CloseOwner: Boolean; Owner: TForm); overload;
+procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm); overload;
 
 implementation
 
 {$R *.dfm}
 
-uses UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, Language, Searching;
+uses UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, Searching;
 
 procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm);
 var
@@ -76,7 +76,7 @@ begin
   try
     FormQuickGroupInfo.Execute(Group, CloseOwner, Owner);
   finally
-    FormQuickGroupInfo.Release;
+    R(FormQuickGroupInfo);
   end;
 end;
 
@@ -88,7 +88,7 @@ begin
   try
     FormQuickGroupInfo.Execute(Group, CloseOwner, Owner);
   finally
-    FormQuickGroupInfo.Release;
+    R(FormQuickGroupInfo);
   end;
 end;
 
@@ -111,7 +111,7 @@ begin
   FGroup := GetGroupByGroupCode(Group.GroupCode, True);
   if FGroup.GroupName = '' then
   begin
-    MessageBoxDB(Handle, TEXT_MES_GROUP_NOT_FOUND, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+    MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;
   FPrGroup := CopyGroup(FGroup);
@@ -144,11 +144,11 @@ begin
   DateTimeToSystemTime(FPrGroup.GroupDate, TempSysTime);
   GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM yyyy ', @FineDate, 255);
 
-  DateEdit.Text := Format(TEXT_MES_GROUP_CREATED_AT, [ { DateTimeToStr(FPrGroup.GroupDate) } FineDate]);
+  DateEdit.Text := Format(L('Created %s'), [FineDate]);
   if FPrGroup.GroupAccess = GROUP_ACCESS_COMMON then
-    AccessEdit.Text := TEXT_MES_COMMON_GROUP;
+    AccessEdit.Text := L('Public group');
   if FPrGroup.GroupAccess = GROUP_ACCESS_PRIVATE then
-    AccessEdit.Text := TEXT_MES_PRIVATE_GROUP;
+    AccessEdit.Text := L('Private group');
   ReloadGroups;
   ShowModal;
   FreeGroup(FGroup);
@@ -202,7 +202,7 @@ begin
     BtnOk.Caption := L('Ok');
     EditGroup1.Caption := L('Edit group');
     Manager1.Caption := L('Groups manager');
-    SearchForGroup1.Caption := L('Search for group images');
+    SearchForGroup1.Caption := L('Search for group photos');
     CbAddKeywords.Caption := L('Auto add keywords');
     KeyWordsLabel.Caption := L('Keywords for group') + ':';
     CommentLabel.Caption := L('Comment for group') + ':';

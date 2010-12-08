@@ -171,7 +171,7 @@ begin
   end;
   if not ExifData.Empty then
   begin
-   AddFileToList(fFiles[i],ExifData.DateTime);
+   AddFileToList(fFiles[i], DateOf(ExifData.DateTime));
   end else
   begin
    if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(fFiles[i]) then
