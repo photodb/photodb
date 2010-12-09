@@ -100,16 +100,16 @@ begin
   BeginTranslate;
   try
     Caption := L('CD mapping');
-    LabelInfo.Caption := Format(L('In this window you can manage remvable drives with photos. To mount drive - select this disk or select file "%s" in file system'), [C_CD_MAP_FILE]);
+    LabelInfo.Caption := Format(L('In this window you can manage your removable disks with photos. To connect a drive - select the drive or select the file "%s" in the file system'), [C_CD_MAP_FILE]);
     CDMappingListView.Columns[0].Caption := L('ID');
     CDMappingListView.Columns[1].Caption := L('Name');
     CDMappingListView.Columns[2].Caption := L('CD location');
     CDMappingListView.Columns[3].Caption := L('Mounted');
-    ButtonRemoveLocation.Caption := L('Unmount drive');
-    ButtonAddocation.Caption := L('Mount drive');
+    ButtonRemoveLocation.Caption := L('Unmount disk');
+    ButtonAddocation.Caption := L('Mount disk');
     ButtonOK.Caption := L('Ok');
     Explorer1.Caption := L('Explore removable drive');
-    Dismount1.Caption := L('Unmount drive');
+    Dismount1.Caption := L('Unmount disk');
     RefreshDBFilesOnCD1.Caption := L('Refresh files in DB for this CD');
   finally
     EndTranslate;
@@ -138,7 +138,7 @@ procedure TFormCDMapper.RefreshCDList;
 var
   I: Integer;
   List: TList;
-  Item, CDItem: PCDClass;
+  Item, CDItem: TCDClass;
   ListItem: TListItem;
 begin
   if CDMapper = nil then
@@ -158,7 +158,7 @@ begin
       CDItem := CDMapper.GetCDByName(Item.name);
       if CDItem <> nil then
       begin
-        if CDItem.Path <> nil then
+        if CDItem.Path <> '' then
           ListItem.SubItems.Add(CDItem.Path)
         else
           ListItem.SubItems.Add('');
@@ -176,7 +176,7 @@ procedure TFormCDMapper.CDMappingListViewDblClick(Sender: TObject);
 begin
   if CDMappingListView.Selected <> nil then
   begin
-    CheckCD(PCDClass(CDMappingListView.Selected.Data).name);
+    CheckCD(TCDClass(CDMappingListView.Selected.Data).Name);
     RefreshCDList;
   end;
 end;
@@ -190,7 +190,7 @@ procedure TFormCDMapper.ButtonRemoveLocationClick(Sender: TObject);
 begin
   if CDMappingListView.Selected <> nil then
   begin
-    CDMapper.RemoveCDMapping(PCDClass(CDMappingListView.Selected.Data).Name);
+    CDMapper.RemoveCDMapping(TCDClass(CDMappingListView.Selected.Data).Name);
     RefreshCDList;
   end;
 end;
@@ -202,7 +202,7 @@ begin
   RefreshDBFilesOnCD1.Visible := False;
   if CDMappingListView.Selected <> nil then
   begin
-    RefreshDBFilesOnCD1.Visible := PCDClass(CDMappingListView.Selected.Data).Path <> nil;
+    RefreshDBFilesOnCD1.Visible := TCDClass(CDMappingListView.Selected.Data).Path <> '';
     Dismount1.Visible := RefreshDBFilesOnCD1.Visible;
     Explorer1.Visible := Dismount1.Visible;
   end;
@@ -214,8 +214,8 @@ begin
   begin
     with ExplorerManager.NewExplorer(False) do
     begin
-      SetOldPath(PCDClass(CDMappingListView.Selected.Data).Path);
-      SetPath(GetDirectory(PCDClass(CDMappingListView.Selected.Data).Path));
+      SetOldPath(TCDClass(CDMappingListView.Selected.Data).Path);
+      SetPath(GetDirectory(TCDClass(CDMappingListView.Selected.Data).Path));
       Show;
     end;
   end;
@@ -226,20 +226,20 @@ var
   Options: TRefreshIDRecordThreadOptions;
   DS: TDataSet;
   I: Integer;
-  CD: PCDClass;
+  CD: TCDClass;
   Info: TDBPopupMenuInfo;
   InfoRecord: TDBPopupMenuInfoRecord;
 begin
   if CDMappingListView.Selected <> nil then
     if CDMappingListView.Selected.Data <> nil then
     begin
-      CD := CDMapper.GetCDByName(PCDClass(CDMappingListView.Selected.Data).name);
+      CD := CDMapper.GetCDByName(TCDClass(CDMappingListView.Selected.Data).Name);
       if CD <> nil then
       begin
         DS := GetQuery;
         SetSQL(DS,
           'Select ID,FFileName from $DB$ where FFileName Like "%::' + AnsiLowerCase
-            (PCDClass(CDMappingListView.Selected.Data).name) + '::%"');
+            (TCDClass(CDMappingListView.Selected.Data).name) + '::%"');
 
         try
           DS.Open;

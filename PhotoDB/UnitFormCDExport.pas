@@ -5,12 +5,13 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ComboBoxExDB, Menus, ImgList,
-  Language, Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
+  Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
   DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
-  AppEvnts, uVistaFuncs, DB, uAssociatedIcons;
+  AppEvnts, uVistaFuncs, DB, uAssociatedIcons, WatermarkedEdit, uMemory,
+  uDBForm;
 
 type
-  TFormCDExport = class(TForm)
+  TFormCDExport = class(TDBForm)
     CDListView: TListView;
     PanelBottom: TPanel;
     PanelTop: TPanel;
@@ -21,7 +22,7 @@ type
     LabelInfo: TLabel;
     Image1: TImage;
     LabelCDLabel: TLabel;
-    EditLabel: TEdit;
+    EditLabel: TWatermarkedEdit;
     LabelPath: TLabel;
     ButtonExport: TButton;
     CheckBoxDeleteFiles: TCheckBox;
@@ -61,7 +62,6 @@ type
     procedure ButtonAddItemsClick(Sender: TObject);
     procedure ComboBoxPathListSelect(Sender: TObject);
     procedure ButtonExportClick(Sender: TObject);
-    procedure PanelTopResize(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
     procedure CDListViewEditing(Sender: TObject; Item: TListItem;
       var AllowEdit: Boolean);
@@ -74,17 +74,19 @@ type
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
   private
-   Mapping : TCDIndexMapping;
-   procedure LoadLanguage;
     { Private declarations }
+    Mapping: TCDIndexMapping;
+    procedure LoadLanguage;
   protected
-   procedure CreateParams(VAR Params: TCreateParams); override;
+    { Protected declarations }
+    procedure CreateParams(var Params: TCreateParams); override;
+    function GetFormID : string;override;
   public
-   procedure Execute;
-   procedure DrawCurrentDirectory(ListView : TListView);
-   procedure OnThreadEnd(Sender: TObject);
-   procedure EnableControls(Value : boolean);
     { Public declarations }
+    procedure Execute;
+    procedure DrawCurrentDirectory(ListView: TListView);
+    procedure OnThreadEnd(Sender: TObject);
+    procedure EnableControls(Value: Boolean);
   end;
 
 procedure DoCDExport;
@@ -92,7 +94,7 @@ procedure DoCDExport;
 implementation
 
 uses FormManegerUnit, ExplorerThreadUnit, UnitStringPromtForm,
-     UnitCDExportThread;
+     UnitCDExportThread, ExplorerUnit;
 
 {$R *.dfm}
 
@@ -113,180 +115,201 @@ end;
 
 procedure TFormCDExport.FormCreate(Sender: TObject);
 begin
- CDListView.DoubleBuffered:=true;
+  CDListView.DoubleBuffered := True;
 
- Mapping := TCDIndexMapping.Create;
- EditCDSize.Text:=SizeInTextA(Mapping.GetCDSize);
+  Mapping := TCDIndexMapping.Create;
+  EditCDSize.Text := SizeInTextA(Mapping.GetCDSize);
 
- DropFileTarget1.Register(CDListView);
- PopupMenuListView.Images:=DBKernel.ImageList;
- DBKernel.RegisterForm(Self);
- FormManager.RegisterMainForm(Self);
- ComboBoxPathList.ItemIndex:=0;
- LoadLanguage;
- Open1.ImageIndex:=DB_IC_SHELL;
- Copy1.ImageIndex:=DB_IC_COPY;
- Cut1.ImageIndex:=DB_IC_CUT;
- Paste1.ImageIndex:=DB_IC_PASTE;
- Delete1.ImageIndex:=DB_IC_DELETE_INFO;
- Rename1.ImageIndex:=DB_IC_RENAME;
- AddItems1.ImageIndex:=DB_IC_NEW;
-
- PanelTopResize(Self);
+  DropFileTarget1.Register(CDListView);
+  PopupMenuListView.Images := DBKernel.ImageList;
+  FormManager.RegisterMainForm(Self);
+  ComboBoxPathList.ItemIndex := 0;
+  LoadLanguage;
+  Open1.ImageIndex := DB_IC_SHELL;
+  Copy1.ImageIndex := DB_IC_COPY;
+  Cut1.ImageIndex := DB_IC_CUT;
+  Paste1.ImageIndex := DB_IC_PASTE;
+  Delete1.ImageIndex := DB_IC_DELETE_INFO;
+  Rename1.ImageIndex := DB_IC_RENAME;
+  AddItems1.ImageIndex := DB_IC_NEW;
 end;
 
 procedure TFormCDExport.LoadLanguage;
 begin
- Caption:=TEXT_MES_CD_EXPORT_CAPTION;
- LabelInfo.Caption:=TEXT_MES_CD_EXPORT_INFO;
- LabelCDLabel.Caption:=TEXT_MES_CREATE_CD_WITH_LABEL+':';
- EditLabel.Text:=TEXT_MES_CD_EXPORT_LABEL_DEFAULT;
- LabelPath.Caption:=TEXT_MES_PATH+':';
- ButtonAddItems.Caption:=TEXT_MES_ADD_CD_ITEMS;
- ButtonRemoveItems.Caption:=TEXT_MES_REMOVE_CD_ITEMS;
- ButtonCreateDirectory.Caption:=TEXT_MES_CREATE_DIRECTORY;
- CDListView.Columns[0].Caption:=TEXT_MES_CD_EXPORT_LIST_VIEW_LOCUMN_FILE_NAME;
- CDListView.Columns[1].Caption:=TEXT_MES_CD_EXPORT_LIST_VIEW_LOCUMN_FILE_SIZE;
- CDListView.Columns[2].Caption:=TEXT_MES_CD_EXPORT_LIST_VIEW_LOCUMN_DB_ID;
-
- CheckBoxDeleteFiles.Caption:=TEXT_MES_CD_EXPORT_DELETE_ORIGINAL_FILES;
- CheckBoxModifyDB.Caption:=TEXT_MES_CD_EXPORT_MODIFY_DB;
- ButtonExport.Caption:=TEXT_MES_DO_CD_EXPORT;
- LabelExportDirectory.Caption:=TEXT_MES_CD_EXPORT_DIRECTORY+':';
- ButtonChooseDirectory.Caption:=TEXT_MES_CHOOSE_DIRECTORY;
- Open1.Caption:=TEXT_MES_OPEN;
- Copy1.Caption:=TEXT_MES_COPY;
- Cut1.Caption:=TEXT_MES_CUT;
- Paste1.Caption:=TEXT_MES_PASTE;
- Delete1.Caption:=TEXT_MES_DELETE;
- LabelExportSize.Caption:=TEXT_MES_CD_EXPORT_SIZE+':';
- Rename1.Caption:=TEXT_MES_RENAME;
- AddItems1.Caption:=TEXT_MES_ADD_CD_ITEMS;
-
- CheckBoxCreatePortableDB.Caption:=TEXT_MES_CREATE_PORTABLE_DB;
+  BeginTranslate;
+  try
+    Caption := L('Export photos to a removable disk');
+    LabelInfo.Caption := L('This dialog will help you to transfer a portion of photos stored on your hard drive - on CD \ DVD drive.$nl$' + 'Thus the information about the photographs will remain in the database, and if you want to see photos of the program will ask you to insert the appropriate disc.$nl$' + 'Program does not record data on the disc, but only generates a folder designed to write to the disk. $nl$To write to disk data files using special software!');
+    LabelCDLabel.Caption := L('Create CD\DVD image with name') + ':';
+    EditLabel.WatermarkText := L('Name of drive');
+    LabelPath.Caption := L('Location') + ':';
+    ButtonAddItems.Caption := L('Add');
+    ButtonRemoveItems.Caption := L('Delete');
+    ButtonCreateDirectory.Caption := L('Create directory');
+    CDListView.Columns[0].Caption := L('File name');
+    CDListView.Columns[1].Caption := L('File size');
+    CDListView.Columns[2].Caption := L('DB ID');
+    ButtonExport.Caption := L('Start export');
+    LabelExportDirectory.Caption := L('Directory for export') + ':';
+    ButtonChooseDirectory.Caption := L('Choose directory');
+    Open1.Caption := L('Open');
+    Copy1.Caption := L('Copy');
+    Cut1.Caption := L('Cut');
+    Paste1.Caption := L('Paste');
+    Delete1.Caption := L('Delete');
+    LabelExportSize.Caption := L('The size of files for export') + ':';
+    Rename1.Caption := L('Rename');
+    AddItems1.Caption := L('Add');
+    CheckBoxDeleteFiles.Caption := L('Delete original files after a successful export');
+    CheckBoxModifyDB.Caption := L('Adjust the information in the database after a successful export');
+    CheckBoxCreatePortableDB.Caption := L('Create portable database on disk');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormCDExport.FormDestroy(Sender: TObject);
 begin
- FormManager.UnRegisterMainForm(Self);
- DBKernel.UnRegisterForm(Self);
- Mapping.Free;
+  FormManager.UnRegisterMainForm(Self);
+  F(Mapping);
+end;
+
+function TFormCDExport.GetFormID: string;
+begin
+  Result := 'CDExport';
 end;
 
 procedure TFormCDExport.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- Release;
+  DestroyTimer.Enabled := False;
+  Release;
 end;
 
-procedure TFormCDExport.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TFormCDExport.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- DestroyTimer.Enabled:=true;
+  DestroyTimer.Enabled := True;
 end;
 
-procedure TFormCDExport.DrawCurrentDirectory(ListView : TListView);
+procedure TFormCDExport.DrawCurrentDirectory(ListView: TListView);
 var
-  Level : PCDIndexMappingDirectory;
-  i, ID : integer;
-  Item : TListItem;
-  Size : int64;
-  PathList : TStrings;
-  Icon : TIcon;
+  Level: TCDIndexMappingDirectory;
+  I, ID: Integer;
+  Item: TListItem;
+  Size: Int64;
+  PathList: TStrings;
+  Icon: TIcon;
 begin
- ListView.Items.BeginUpdate;
- ListView.Items.Clear;
- ImageListIcons.Clear;
- Level:=Mapping.CurrentLevel;
- if Level.Parent<>nil then
- begin
-  Item:=ListView.Items.Add;
-  Item.Caption:='[..]';
-  Item.Data:=nil;
-  Icon:=TAIcons.Instance.GetIconByExt('',true,16,true);
-  Item.ImageIndex:=ImageListIcons.AddIcon(Icon);
- end;
- for i:=0 to Level.Files.Count-1 do
- begin
-  Item:=ListView.Items.Add;
-  Item.Caption:=PCDIndexMappingDirectory(Level.Files[i]).Name;
-  Item.Data:=Level.Files[i];
-  Size:=Mapping.GetCDSizeWithDirectory(Level.Files[i]);
-  if Size>0 then
-  Item.SubItems.Add(SizeInTextA(Size)) else Item.SubItems.Add('');
-  ID:=PCDIndexMappingDirectory(Level.Files[i]).DB_ID;
-  if ID>0 then
-  Item.SubItems.Add(IntToStr(ID)) else
-  begin
-   if Mapping.DirectoryHasDBFiles(Item.Data) then
-   Item.SubItems.Add('+') else Item.SubItems.Add('');
-  end;
+  ListView.Items.BeginUpdate;
+  try
+    ListView.Items.Clear;
+    ImageListIcons.Clear;
+    Level := Mapping.CurrentLevel;
+    if Level.Parent <> nil then
+    begin
+      Item := ListView.Items.Add;
+      Item.Caption := '[..]';
+      Item.Data := nil;
+      Icon := TAIcons.Instance.GetIconByExt('', True, 16, True);
+      try
+        Item.ImageIndex := ImageListIcons.AddIcon(Icon);
+      finally
+        F(Icon);
+      end;
+    end;
+    for I := 0 to Level.Count - 1 do
+    begin
+      Item := ListView.Items.Add;
+      Item.Caption := Level[I].Name;
+      Item.Data := Level[I];
+      Size := Mapping.GetCDSizeWithDirectory(Level[I]);
+      if Size > 0 then
+        Item.SubItems.Add(SizeInTextA(Size))
+      else
+        Item.SubItems.Add('');
+      ID := Level[I].DB_ID;
+      if ID > 0 then
+        Item.SubItems.Add(IntToStr(ID))
+      else
+      begin
+        if Mapping.DirectoryHasDBFiles(Item.Data) then
+          Item.SubItems.Add('+')
+        else
+          Item.SubItems.Add('');
+      end;
 
-  if PCDIndexMappingDirectory(Level.Files[i]).IsFile then
-  begin
-   Icon:=TAIcons.Instance.GetIconByExt(PCDIndexMappingDirectory(Level.Files[i]).RealFileName,false,16,false);
-  end else
-  begin
-   Icon:=TAIcons.Instance.GetIconByExt('',true,16,true);
+      if Level[I].IsFile then
+        Icon := TAIcons.Instance.GetIconByExt(Level[I].RealFileName, False, 16, False)
+      else
+        Icon := TAIcons.Instance.GetIconByExt('', True, 16, True);
+      try
+        Item.ImageIndex := ImageListIcons.AddIcon(Icon);
+      finally
+        F(Icon);
+      end;
+    end;
+  finally
+    ListView.Items.EndUpdate;
   end;
-  Item.ImageIndex:=ImageListIcons.AddIcon(Icon);
- end;
- ListView.Items.EndUpdate;
- EditCDSize.Text:=SizeInTextA(Mapping.GetCDSize);
- ComboBoxPathList.Items.Clear;
- PathList:= Mapping.GetCurrentUpperDirectories;
- for i:=PathList.Count-1 downto 0 do
- ComboBoxPathList.Items.Add(PathList[i]);
- ComboBoxPathList.ItemIndex:=0;
- PathList.Free;
+  EditCDSize.Text := SizeInTextA(Mapping.GetCDSize);
+  ComboBoxPathList.Items.Clear;
+  PathList := Mapping.GetCurrentUpperDirectories;
+  try
+    for I := PathList.Count - 1 downto 0 do
+      ComboBoxPathList.Items.Add(PathList[I]);
+    ComboBoxPathList.ItemIndex := 0;
+  finally
+    F(PathList);
+  end;
 end;
 
 procedure TFormCDExport.CDListViewDblClick(Sender: TObject);
 var
-  Item : TListItem;
+  Item: TListItem;
 begin
- Item:=CDListView.Selected;
- if Item=nil then exit;
+  Item := CDListView.Selected;
+  if Item = nil then
+    Exit;
 
- if Item.Data=nil then
- begin
-  Mapping.GoUp;
-  DrawCurrentDirectory(CDListView);
-  exit;
- end;
+  if Item.Data = nil then
+  begin
+    Mapping.GoUp;
+    DrawCurrentDirectory(CDListView);
+    Exit;
+  end;
 
- if Item.Data<>nil then
- if not PCDIndexMappingDirectory(Item.Data).IsFile then
- begin
-  Mapping.SelectDirectory(PCDIndexMappingDirectory(Item.Data).Name);
-  DrawCurrentDirectory(CDListView);
- end;
+  if Item.Data <> nil then
+    if not TCDIndexMappingDirectory(Item.Data).IsFile then
+    begin
+      Mapping.SelectDirectory(TCDIndexMappingDirectory(Item.Data).Name);
+      DrawCurrentDirectory(CDListView);
+    end;
 end;
 
 procedure TFormCDExport.ButtonRemoveItemsClick(Sender: TObject);
 var
-  i : integer;
-  Item : PCDIndexMappingDirectory;
+  I: Integer;
+  Item: TCDIndexMappingDirectory;
 begin
- for i:=CDListView.Items.Count-1 downto 0 do
- if CDListView.Items[i].Selected then
- begin
-  Item:=CDListView.Items[i].Data;
-  if Item<>nil then
-  begin
-   if Item.IsFile then
-   Mapping.DeleteFile(Item.Name) else
-   Mapping.DeleteDirectory(Item.Name);
-  end;
-  Mapping.ClearClipBoard;
- end;
- DrawCurrentDirectory(CDListView);
+  for I := CDListView.Items.Count - 1 downto 0 do
+    if CDListView.Items[I].Selected then
+    begin
+      Item := CDListView.Items[I].Data;
+      if Item <> nil then
+      begin
+        if Item.IsFile then
+          Mapping.DeleteFile(Item.name)
+        else
+          Mapping.DeleteDirectory(Item.name);
+      end;
+      Mapping.ClearClipBoard;
+    end;
+  DrawCurrentDirectory(CDListView);
 end;
 
 procedure TFormCDExport.DropFileTarget1Drop(Sender: TObject;
   ShiftState: TShiftState; APoint: TPoint; var Effect: Integer);
 var
-  FileList : TStrings;
+  FileList: TStrings;
 begin
   FileList := TStringList.Create;
   try
@@ -294,100 +317,108 @@ begin
     Mapping.AddRealItemsToCurrentDirectory(FileList);
     DrawCurrentDirectory(CDListView);
   finally
-    FileList.Free;
+    F(FileList);
   end;
 end;
 
 procedure TFormCDExport.ButtonCreateDirectoryClick(Sender: TObject);
 var
-  DirectoryName : string;
+  DirectoryName: string;
 begin
- DirectoryName:=Language.TEXT_MES_NEW_FOLDER;
- if PromtString(TEXT_MES_CREATE_DIRECTORY,TEXT_MES_ENTER_NEW_VIRTUAL_DIRECTORY_NAME,DirectoryName) then
- begin
-  Mapping.CreateDirectory(DirectoryName);
-  DrawCurrentDirectory(CDListView);
- end;
+  DirectoryName := L('New folder');
+  if PromtString(L('Create directory'), L('Enter a name for the new directory'), DirectoryName) then
+  begin
+    Mapping.CreateDirectory(DirectoryName);
+    DrawCurrentDirectory(CDListView);
+  end;
 end;
 
 procedure TFormCDExport.ButtonChooseDirectoryClick(Sender: TObject);
 var
-  Dir : String;
+  Dir: string;
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SELECT_PLACE_TO_CD_EXPORT,Dolphin_DB.UseSimpleSelectFolderDialog);
- If DirectoryExists(Dir) then
- EditExportDirectory.Text:=Dir;
+  Dir := DBSelectDir(Handle, L('Select a folder to export files'), UseSimpleSelectFolderDialog);
+  if DirectoryExists(Dir) then
+    EditExportDirectory.Text := Dir;
 end;
 
 procedure TFormCDExport.ButtonAddItemsClick(Sender: TObject);
 var
-  Dialog : DBOpenDialog;
+  Dialog: DBOpenDialog;
 begin
- Dialog:=DBOpenDialog.Create;
- Dialog.EnableMultyFileChooseWithDirectory;
- if Dialog.Execute then
- begin
-  Mapping.AddRealItemsToCurrentDirectory(Dialog.GetFiles);
-  DrawCurrentDirectory(CDListView);
- end;
+  Dialog := DBOpenDialog.Create;
+  try
+    Dialog.EnableMultyFileChooseWithDirectory;
+    if Dialog.Execute then
+    begin
+      Mapping.AddRealItemsToCurrentDirectory(Dialog.GetFiles);
+      DrawCurrentDirectory(CDListView);
+    end;
+  finally
+    F(Dialog);
+  end;
 end;
 
 procedure TFormCDExport.CreateParams(var Params: TCreateParams);
 begin
- Inherited CreateParams(Params);
- Params.WndParent := GetDesktopWindow;
- with params do
- ExStyle := ExStyle or WS_EX_APPWINDOW;
+  inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with Params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TFormCDExport.ComboBoxPathListSelect(Sender: TObject);
 begin
- Mapping.SelectPath(ComboBoxPathList.Items[ComboBoxPathList.ItemIndex]);
- DrawCurrentDirectory(CDListView);
+  Mapping.SelectPath(ComboBoxPathList.Items[ComboBoxPathList.ItemIndex]);
+  DrawCurrentDirectory(CDListView);
 end;
 
 procedure TFormCDExport.EnableControls(Value : boolean);
 begin
-   EditLabel.Enabled:=Value;
-   EditCDSize.Enabled:=Value;
-   PanelTop.Enabled:=Value;
-   ButtonAddItems.Enabled:=Value;
-   ButtonRemoveItems.Enabled:=Value;
-   ButtonCreateDirectory.Enabled:=Value;
-   CDListView.Enabled:=Value;
-   ButtonChooseDirectory.Enabled:=Value;
-   CheckBoxDeleteFiles.Enabled:=Value;
-   CheckBoxModifyDB.Enabled:=Value;
-   ButtonExport.Enabled:=Value;
+  EditLabel.Enabled := Value;
+  EditCDSize.Enabled := Value;
+  PanelTop.Enabled := Value;
+  ButtonAddItems.Enabled := Value;
+  ButtonRemoveItems.Enabled := Value;
+  ButtonCreateDirectory.Enabled := Value;
+  CDListView.Enabled := Value;
+  ButtonChooseDirectory.Enabled := Value;
+  CheckBoxDeleteFiles.Enabled := Value;
+  CheckBoxModifyDB.Enabled := Value;
+  ButtonExport.Enabled := Value;
 end;
 
 procedure TFormCDExport.ButtonExportClick(Sender: TObject);
 var
-  DriveFreeSize : int64;
-  Options : TCDExportOptions;
+  DriveFreeSize: Int64;
+  Options: TCDExportOptions;
 begin
- if (Pos(':',EditLabel.Text)>0) or (Pos('\',EditLabel.Text)>0) or (Pos('?',EditLabel.Text)>0) or (EditLabel.Text='') then
- begin
-  MessageBoxDB(Handle,TEXT_MES_ENTER_CD_LABEL_TO_IDENTIFY_DISK,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  EditLabel.SetFocus;
-  EditLabel.SelectAll;
-  exit;
- end;
- Mapping.CDLabel:=EditLabel.Text;
- DriveFreeSize:=DiskFree(ord(AnsiLowerCase(EditExportDirectory.Text)[1])-ord('a')+1);
- if Mapping.GetCDSize>DriveFreeSize then
- begin
-  MessageBoxDB(Handle,Format(TEXT_MES_UNABLE_TO_COPY_DISK_FULL_F,[SizeInTextA(Mapping.GetCDSize),SizeInTextA(DriveFreeSize)]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
-  exit;
- end;
+  if (Pos(':', EditLabel.Text) > 0) or (Pos('\', EditLabel.Text) > 0) or (Pos('?', EditLabel.Text) > 0) or
+    (EditLabel.Text = '') then
+  begin
+    MessageBoxDB(Handle, L('Please enter a disk label that uniquely identify a disk! The title character is not allowed ":", "\" and "?"'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    EditLabel.SetFocus;
+    EditLabel.SelectAll;
+    Exit;
+  end;
+  Mapping.CDLabel := EditLabel.Text;
+  DriveFreeSize := DiskFree(Ord(AnsiLowerCase(EditExportDirectory.Text)[1]) - Ord('a') + 1);
+  if Mapping.GetCDSize > DriveFreeSize then
+  begin
+    MessageBoxDB(Handle, Format(L('Can not copy files: detected insufficient disk space! Need %s, and free only %s!'), [SizeInTextA(Mapping.GetCDSize),
+        SizeInTextA(DriveFreeSize)]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
 
- if not Mapping.DirectoryHasDBFiles(Mapping.GetRoot) then
- begin
-  if ID_YES<>MessageBoxDB(Handle,TEXT_MES_CD_EXPORT_HASNT_ANY_DB_FILE,TEXT_MES_WARNING,TD_BUTTON_YESNO,TD_ICON_WARNING) then exit;
- end;
+  if not Mapping.DirectoryHasDBFiles(Mapping.GetRoot) then
+  begin
+    if ID_YES <> MessageBoxDB(Handle, L('The exported data can not have files associated with the current database! You may not have selected the correct database! Continue to export?'), L('Warning'), TD_BUTTON_YESNO,
+      TD_ICON_WARNING) then
+      Exit;
+  end;
 
- EnableControls(false);
- //in thread!
+  EnableControls(False);
+  // in thread!
 
   Options.ToDirectory := EditExportDirectory.Text;
   Options.DeleteFiles := CheckBoxDeleteFiles.Checked;
@@ -396,140 +427,143 @@ begin
   Options.OnEnd := OnThreadEnd;
 
   TCDExportThread.Create(Mapping, Options);
-
-end;
-
-procedure TFormCDExport.PanelTopResize(Sender: TObject);
-begin
- ButtonCreateDirectory.Left:=PanelTop.Width-ButtonCreateDirectory.Width-5;
- ButtonRemoveItems.Left:=ButtonCreateDirectory.Left-ButtonRemoveItems.Width-5;
- ButtonAddItems.Left:=ButtonRemoveItems.Left-ButtonAddItems.Width-5;
- ComboBoxPathList.Width:=ButtonAddItems.Left-ComboBoxPathList.Left-5;
-
- ButtonExport.Left:=PanelTop.Width-ButtonExport.Width-5;
 end;
 
 procedure TFormCDExport.Rename1Click(Sender: TObject);
 var
   Item : TListItem;
 begin
- Item:=CDListView.Selected;
- if Item<>nil then
- begin
-  Item.EditCaption;
- end;
+  Item := CDListView.Selected;
+  if Item <> nil then
+    Item.EditCaption;
 end;
 
 procedure TFormCDExport.CDListViewEditing(Sender: TObject; Item: TListItem;
   var AllowEdit: Boolean);
 begin
- if Item<>nil then
- if Item.Data=nil then AllowEdit:=false;
+  if Item <> nil then
+    if Item.Data = nil then
+      AllowEdit := False;
 end;
 
 procedure TFormCDExport.CDListViewEdited(Sender: TObject; Item: TListItem;
   var S: String);
 var
-  Data : PCDIndexMappingDirectory;
+  Data: TCDIndexMappingDirectory;
 begin
- Data:=PCDIndexMappingDirectory(Item.Data);
- if Data.IsFile then
- if Mapping.FileExists(S) then
- begin
-  S:=Item.Caption;
-  exit;
- end;
- if not Data.IsFile then
- if Mapping.DirectoryExists(S) then
- begin
-  S:=Item.Caption;
-  exit;
- end;
- Data.Name:=S;
+  Data := TCDIndexMappingDirectory(Item.Data);
+  if Data.IsFile then
+    if Mapping.FileExists(S) then
+    begin
+      S := Item.Caption;
+      Exit;
+    end;
+  if not Data.IsFile then
+    if Mapping.DirectoryExists(S) then
+    begin
+      S := Item.Caption;
+      Exit;
+    end;
+  Data.name := S;
 end;
 
 procedure TFormCDExport.PopupMenuListViewPopup(Sender: TObject);
 begin
- Open1.Visible:=CDListView.SelCount>0;
- Copy1.Visible:=CDListView.SelCount>0;
- Cut1.Visible:=CDListView.SelCount>0;
- Paste1.Visible:=CDListView.SelCount=0;
- Rename1.Visible:=CDListView.SelCount=1;
- Delete1.Visible:=CDListView.SelCount>0;
+  Open1.Visible := CDListView.SelCount > 0;
+  Copy1.Visible := CDListView.SelCount > 0;
+  Cut1.Visible := CDListView.SelCount > 0;
+  Paste1.Visible := CDListView.SelCount = 0;
+  Rename1.Visible := CDListView.SelCount = 1;
+  Delete1.Visible := CDListView.SelCount > 0;
 end;
 
 procedure TFormCDExport.Copy1Click(Sender: TObject);
 var
-  i : integer;
-  Item : PCDIndexMappingDirectory;
-  List : TList;
+  I: Integer;
+  Item: TCDIndexMappingDirectory;
+  List: TList;
 begin
- List:=TList.Create;
- for i:=CDListView.Items.Count-1 downto 0 do
- if CDListView.Items[i].Selected then
- begin
-  Item:=CDListView.Items[i].Data;
-  List.Add(Item);
- end;
- Mapping.Copy(List);
- List.Free;
- DrawCurrentDirectory(CDListView);
+  List := TList.Create;
+  try
+    for I := CDListView.Items.Count - 1 downto 0 do
+      if CDListView.Items[I].Selected then
+      begin
+        Item := CDListView.Items[I].Data;
+        List.Add(Item);
+      end;
+    Mapping.Copy(List);
+  finally
+    F(List);
+  end;
+  DrawCurrentDirectory(CDListView);
 end;
 
 procedure TFormCDExport.Cut1Click(Sender: TObject);
 var
-  i : integer;
-  Item : PCDIndexMappingDirectory;
-  List : TList;
+  I: Integer;
+  Item: TCDIndexMappingDirectory;
+  List: TList;
 begin
- List:=TList.Create;
- for i:=CDListView.Items.Count-1 downto 0 do
- if CDListView.Items[i].Selected then
- begin
-  Item:=CDListView.Items[i].Data;
-  List.Add(Item);
- end;
- Mapping.Cut(List);
- List.Free;
- DrawCurrentDirectory(CDListView);
+  List := TList.Create;
+  try
+    for I := CDListView.Items.Count - 1 downto 0 do
+      if CDListView.Items[I].Selected then
+      begin
+        Item := CDListView.Items[I].Data;
+        List.Add(Item);
+      end;
+    Mapping.Cut(List);
+  finally
+    F(List);
+  end;
+  DrawCurrentDirectory(CDListView);
 end;
 
 procedure TFormCDExport.Paste1Click(Sender: TObject);
 begin
- Mapping.Paste;
- DrawCurrentDirectory(CDListView);
+  Mapping.Paste;
+  DrawCurrentDirectory(CDListView);
 end;
 
 procedure TFormCDExport.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
- if Msg.hwnd=CDListView.Handle then
- begin
-  if Msg.message=256 then
+  if Msg.Hwnd = CDListView.Handle then
   begin
-   //Del  --->  delete selected
-   if (Msg.wParam=46) then ButtonRemoveItemsClick(ButtonRemoveItems);
-   if (Msg.wParam=13) then CDListViewDblClick(CDListView);
-   if (Msg.wParam=113) then
-   begin
-    Rename1Click(Rename1);
-   end;
+    if Msg.message = WM_KEYDOWN then
+    begin
+      if (Msg.WParam = VK_DELETE) then
+        ButtonRemoveItemsClick(ButtonRemoveItems);
+      if (Msg.WParam = VK_RETURN) then
+        CDListViewDblClick(CDListView);
+      if (Msg.WParam = VK_F2) then
+        Rename1Click(Rename1);
+    end;
   end;
- end;
 end;
 
 procedure TFormCDExport.OnThreadEnd(Sender: TObject);
 var
-  Directory : string;
+  Directory: string;
 begin
- EnableControls(true);
+  EnableControls(True);
 
- Directory:=GetDirectory(EditExportDirectory.Text);
- FormatDir(Directory);
- Directory:=Directory+Mapping.CDLabel+'\';
+  Directory := GetDirectory(EditExportDirectory.Text);
+  Directory := IncludeTrailingBackslash(Directory);
+  Directory := Directory + Mapping.CDLabel;
+  Directory := IncludeTrailingBackslash(Directory);
 
- MessageBoxDB(Handle,Format(TEXT_MES_CD_EXPORT_OK_F,[Directory]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
- Close;
+  MessageBoxDB(Handle, Format(L('Files written to disk successfully exported to the folder "%s"!'), [Directory]), L('Information'), TD_BUTTON_OK,
+    TD_ICON_INFORMATION);
+
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(Directory);
+    Show;
+    SetFocus;
+  end;
+
+  Close;
 end;
 
 end.

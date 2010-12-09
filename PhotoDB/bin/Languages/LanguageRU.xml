@@ -855,4 +855,63 @@
   <scope name="TextPromt">
 	<translate name="Enter your text here" value="Ведите необходимый текст сюда" />
   </scope>
+  <scope name="CDExport">
+	<translate name="New folder" value="Новая папка" />
+	<translate name="The size of files for export" value="Размер файлов для экспорта" />
+	<translate name="Delete original files after a successful export" value="Удалять оригинальные фотографии после успешного экспорта" />
+	<translate name="Adjust the information in the database after a successful export" value="Корректировать информацию в БД после удачного экспорта" />
+	<translate name="Create portable database on disk" value="Создать портабельную базу данных на диске" />
+	<translate name="Export photos to a removable disk" value="Экспорт фотографий на съемный диск" />
+	<translate name="This dialog will help you to transfer a portion of photos stored on your hard drive - on CD \ DVD drive.$nl$Thus the information about the photographs will remain in the database, and if you want to see photos of the program will ask you to insert the appropriate disc.$nl$Program does not record data on the disc, but only generates a folder designed to write to the disk. $nl$To write to disk data files using special software!" value="Данный диалог поможет Вам перенести часть фотографий, хранящихся на жёстком диске - на CD\DVD диск.$nl$ При этом информация о фотографиях останется в базе, а при необходимости просмотра фотографий программа попросит Вас вставить соответствующий диск.$nl$Программа не записывает данные на диск, а всего лишь формирует папку предназначенную для записи на диск.$nl$ Чтобы записать на диск данные файлы используйте специализированные программы!" />
+	<translate name="Create directory" value="Создать директорию" />
+	<translate name="Enter a name for the new directory" value="Введите имя для новой директории" />
+	<translate name="Select a folder to export files" value="Выберите папку для экспорта файлов" />
+	<translate name="Please enter a disk label that uniquely identify a disk! The title character is not allowed &quot;:&quot;, &quot;\&quot; and &quot;?&quot;" value="Пожалуйста, введите метку диска которая уникально определит диск! В названии нельзя использовать символы &quot;:&quot;, &quot;\&quot; и &quot;?&quot;" />
+	<translate name="Can not copy files: detected insufficient disk space! Need %s, and free only %s!" value="Невозможно скопировать файлы: обнаружено недостаточное количество свободного места на диске! Необходимо %s, а свободно %s!" />
+	<translate name="The exported data can not have files associated with the current database! You may not have selected the correct database! Continue to export?" value="Экспортируемые данные не имеют файлов, связанных с текущей базой данных! Возможно Вы не выбрали нужную базу! Продолжать экспорт?" />
+	<translate name="Create CD\DVD image with name" value="Создать CD\DVD с именем" />
+	<translate name="Name of drive" value="Имя диска" />
+	<translate name="Location" value="Расположение" />
+	<translate name="Add" value="Добавить" />
+	<translate name="Delete" value="Удалить" />
+	<translate name="File name" value="Имя файла" />
+	<translate name="File size" value="Размер файла" />
+	<translate name="DB ID" value="ID в базе" />
+	<translate name="Start export" value="Начать экспорт" />
+	<translate name="Directory for export" value="Директория для экспорта" />
+	<translate name="Choose directory" value="Выбрать директорию" />
+	<translate name="Open" value="Открыть" />
+	<translate name="Copy" value="Копировать" />
+	<translate name="Cut" value="Вырезать" />
+	<translate name="Paste" value="Вставить" />
+	<translate name="Delete" value="Удалить" />
+	<translate name="Rename" value="Переименовать" />
+	<translate name="Files written to disk successfully exported to the folder &quot;%s&quot;!" value="Файлы для записи на диск успешно экспортированы в папку &quot;%s&quot;!" />
+	<translate name="CD Index (%s)|%s" value="Индекс диска (%s)|%s" />
+	<translate name="Unable to find file %s by address &quot;%s&quot;" value="Невозможно найти файл %s по адресу &quot;%s&quot;" />	
+	<translate name="File %s is not found in this directory! Use this directory as a root of drive &quot;%s&quot;?" value="Файл %s не найден в этой директории! Использовать директорию как корнепую папку диска &quot;%s&quot;?" />
+  </scope>
+  <scope name="CD mapping">    
+    <translate name="CD mapping" value="Привязка дисков" />
+	<translate name="In this window you can manage your removable disks with photos. To connect a drive - select the drive or select the file &quot;%s&quot; in the file system" value="В этом окне вы можете управлять съемными диски с фотографиями. Чтобы подключить диск - выберите этот диск или выберите файл "%s" в файловой системе" />
+	<translate name="ID" value="ID" />
+	<translate name="Name" value="Имя" />
+	<translate name="CD location" value="Расположение диска" />
+	<translate name="Mounted" value="Привязан" />
+	<translate name="Unmount disk" value="Отключить диск" />
+	<translate name="Mount disk" value="Подключить диск" />
+	<translate name="Explore removable drive" value="Просмотр диска" />
+	<translate name="Refresh files in DB for this CD" value="Обновить файлы в БД для этого компакт-диска" />
+	<translate name="Unexpected error: %s" value="Непредвиденная ошибка: %s" /> 
+  </scope>
+  <scope name="MapCDInfo">
+	<translate name="Map CD/DVD" value="Связать диск с базой" />
+	<translate name="Select drive" value="Выберите диск" />	
+	<translate name="You try to open file, which placed on removable drive (CD or DVD)" value="Вы пытаетесь открыть файл, который помещен на съемный диск (CD или DVD)" />	
+	<translate name="Enter, please, drive with label &quot;%s&quot; and choose &quot;%s&quot; to find this drive." value="Вставте, пожалуйста, диск с меткой &quot;%s&quot; и выберите &quot;%s&quot;, чтобы найти этот диск." />
+	<translate name="You can select a directory with files or file &quot;%s&quot; on the drive." value="Вы можете выбрать каталог с файлами или файл &quot;%s&quot; на диске." />
+	<translate name="Don''t ask me again" value="Не спрашивать меня более" />
+	<translate name="Disk" value="Диск" />
+	<translate name="Was loaded disc labeled &quot;%s&quot;, but required the disc labeled &quot;%s&quot;! Do you want to close this dialog?" value="Был загружен диск с меткой &quot;%s&quot;, но требуется диск с меткой &quot;%s&quot;! Хотите ли вы закрыть этот диалог?" />
+  </scope>
 </language>

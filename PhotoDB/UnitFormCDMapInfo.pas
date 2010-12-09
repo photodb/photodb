@@ -63,13 +63,13 @@ begin
   try
     Caption := L('Map CD/DVD');
     SelectDriveLabel := L('Select drive');
-    LabelInfo.Caption := Format(L('You try to open file, witch placed on removable drive (CD or DVD)') + #13 + L
+    LabelInfo.Caption := Format(L('You try to open file, which placed on removable drive (CD or DVD)') + #13 + L
         ('Enter, please, drive with label "%s" and choose "%s" to find this drive.') + #13 + L
-        ('You can select directory with files or file "%s" on drive.'), [FCDName, SelectDriveLabel, C_CD_MAP_FILE]);
+        ('You can select a directory with files or file "%s" on the drive.'), [FCDName, SelectDriveLabel, C_CD_MAP_FILE]);
     BtnDontAskAgain.Caption := L('Don''t ask me again');
     BtnSelectDrive.Caption := SelectDriveLabel;
     BtnCancel.Caption := L('Cancel');
-    LabelDisk.Caption := TEXT_MES_DISK + ':';
+    LabelDisk.Caption := L('Disk') + ':';
   finally
     EndTranslate;
   end;
@@ -112,8 +112,9 @@ begin
     Exit;
   if AnsiLowerCase(CDLabel) <> AnsiLowerCase(EditCDName.Text) then
   begin
-    if ID_YES = MessageBoxDB(Handle, Format(TEXT_MES_LOADED_DIFFERENT_DISK_F, [CDLabel, EditCDName.Text]),
-      TEXT_MES_WARNING, TD_BUTTON_YESNO, TD_ICON_QUESTION) then
+    if ID_YES = MessageBoxDB(Handle,
+      Format(L('Was loaded disc labeled "%s", but required the disc labeled "%s"! Do you want to close this dialog?'), [CDLabel, EditCDName.Text]),
+      L('Warning'), TD_BUTTON_YESNO, TD_ICON_QUESTION) then
       Close
     else
       Exit;

@@ -287,11 +287,6 @@ type
     procedure Splitter1CanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure DeleteItemByID(ID : integer);
-    procedure GroupsManager2Click(Sender: TObject);
-    procedure Activation1Click(Sender: TObject);
-    procedure Help2Click(Sender: TObject);
-    procedure HomePage1Click(Sender: TObject);
-    procedure ContactWithAuthor1Click(Sender: TObject);
     procedure RefreshThumItemByID(ID : integer);
     procedure NewSearch1Click(Sender: TObject);
     procedure GetUpdates1Click(Sender: TObject);
@@ -499,12 +494,12 @@ var
 implementation
 
 uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
-     PropertyForm, Options, UnitLoadFilesToPanel,
-     UnitHintCeator, UnitImHint, ExplorerUnit, UnitUpdateDB,
-     UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm , UnitQuickGroupInfo,
-     UnitGroupReplace, UnitSavingTableForm, UnitHelp,
-     UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
-     UnitOpenQueryThread;
+  PropertyForm, Options, UnitLoadFilesToPanel,
+  UnitHintCeator, UnitImHint, ExplorerUnit, UnitUpdateDB,
+  UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
+  UnitGroupReplace, UnitSavingTableForm, UnitHelp,
+  UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
+  UnitOpenQueryThread;
 
 {$R *.dfm}
 
@@ -2392,17 +2387,17 @@ end;
 
 procedure TSearchForm.PopupMenu3Popup(Sender: TObject);
 begin
- DateNotExists1.Visible:=not IsDatePanel.Visible;
- DateExists1.Visible:=IsDatePanel.Visible;
- DateExists1.Visible:=DateExists1.Visible and not FUpdatingDB;
- Datenotsets1.Visible:=Datenotsets1.Visible and not FUpdatingDB;
- Datenotsets1.Visible:=Datenotsets1.Visible and (GetSelectionCount>1) and not FUpdatingDB;
+  DateNotExists1.Visible := not IsDatePanel.Visible;
+  DateExists1.Visible := IsDatePanel.Visible;
+  DateExists1.Visible := DateExists1.Visible and not FUpdatingDB;
+  Datenotsets1.Visible := Datenotsets1.Visible and not FUpdatingDB;
+  Datenotsets1.Visible := Datenotsets1.Visible and (GetSelectionCount > 1) and not FUpdatingDB;
 end;
 
 procedure TSearchForm.Ratingnotsets1Click(Sender: TObject);
 begin
- RatingEdit.Islayered:=True;
- Memo1Change(Sender);
+  RatingEdit.Islayered := True;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.PopupMenu5Popup(Sender: TObject);
@@ -2413,54 +2408,55 @@ end;
 
 procedure TSearchForm.MenuItem2Click(Sender: TObject);
 begin
- Memo2.SelectAll;
+  Memo2.SelectAll;
 end;
 
 procedure TSearchForm.Cut1Click(Sender: TObject);
 begin
- Memo2.CutToClipboard;
+  Memo2.CutToClipboard;
 end;
 
 procedure TSearchForm.Copy2Click(Sender: TObject);
 begin
- Memo2.CopyToClipboard;
+  Memo2.CopyToClipboard;
 end;
 
 procedure TSearchForm.Paste1Click(Sender: TObject);
 begin
- Memo2.PasteFromClipboard;
+  Memo2.PasteFromClipboard;
 end;
 
 procedure TSearchForm.Undo1Click(Sender: TObject);
 begin
- Memo2.Undo;
+  Memo2.Undo;
 end;
 
 procedure TSearchForm.SetComent1Click(Sender: TObject);
 begin
- if not Memo2.ReadOnly then exit;
- Memo2.ReadOnly:=False;
- Memo2.Cursor:=CrDefault;
- Memo2.Text:='';
- SelectedInfo.CommonComment:='';
- CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
- Memo1Change(Sender);
+  if not Memo2.readonly then
+    Exit;
+  Memo2.readonly := False;
+  Memo2.Cursor := CrDefault;
+  Memo2.Text := '';
+  SelectedInfo.CommonComment := '';
+  CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.Comentnotsets1Click(Sender: TObject);
 begin
- Memo2.ReadOnly:=True;
- Memo2.Cursor:=CrHandPoint;
- Memo2.Text:= L('<Different comments>');
- SelectedInfo.CommonComment:= '';
- CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
- Memo1Change(Sender);
+  Memo2.readonly := True;
+  Memo2.Cursor := CrHandPoint;
+  Memo2.Text := L('<Different comments>');
+  SelectedInfo.CommonComment := '';
+  CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.Datenotsets1Click(Sender: TObject);
 begin
- PanelValueIsDateSets.Visible:=True;
- Memo1Change(Sender);
+  PanelValueIsDateSets.Visible := True;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.PopupMenu6Popup(Sender: TObject);
@@ -2599,12 +2595,12 @@ end;
 
 procedure TSearchForm.PopupMenu7Popup(Sender: TObject);
 begin
- Setvalue1.Visible:= not FUpdatingDB;
+  Setvalue1.Visible := not FUpdatingDB;
 end;
 
 procedure TSearchForm.PopupMenu4Popup(Sender: TObject);
 begin
- EditGroups1.Visible:= not FUpdatingDB;
+  EditGroups1.Visible := not FUpdatingDB;
 end;
 
 procedure TSearchForm.Edit2KeyPress(Sender: TObject; var Key: Char);
@@ -2616,29 +2612,29 @@ end;
 
 procedure TSearchForm.PopupMenu8Popup(Sender: TObject);
 begin
- if TreeView.SelectedFolder<>nil then
- begin
-  TempFolderName:=TreeView.SelectedFolder.PathName;
-  OpeninExplorer1.Visible:=DirectoryExists(TreeView.SelectedFolder.PathName);
-  AddFolder1.Visible:=OpeninExplorer1.Visible;
-  View2.Visible:=OpeninExplorer1.Visible;
- end else
- begin
-  TempFolderName:='';
-  OpeninExplorer1.Visible:=false;
-  AddFolder1.Visible:=false;
-  View2.Visible:=false;
- end;
+  if TreeView.SelectedFolder <> nil then
+  begin
+    TempFolderName := TreeView.SelectedFolder.PathName;
+    OpeninExplorer1.Visible := DirectoryExists(TreeView.SelectedFolder.PathName);
+    AddFolder1.Visible := OpeninExplorer1.Visible;
+    View2.Visible := OpeninExplorer1.Visible;
+  end else
+  begin
+    TempFolderName := '';
+    OpeninExplorer1.Visible := False;
+    AddFolder1.Visible := False;
+    View2.Visible := False;
+  end;
 end;
 
 procedure TSearchForm.OpeninExplorer1Click(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetPath(Self.TempFolderName);
-  Show;
-  SetFocus;
- end;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(Self.TempFolderName);
+    Show;
+    SetFocus;
+  end;
 end;
 
 procedure TSearchForm.AddFolder1Click(Sender: TObject);
@@ -2674,31 +2670,6 @@ begin
       Break;
     end;
   end;
-end;
-
-procedure TSearchForm.GroupsManager2Click(Sender: TObject);
-begin
-  ExecuteGroupManager;
-end;
-
-procedure TSearchForm.Activation1Click(Sender: TObject);
-begin
- DoActivation;
-end;
-
-procedure TSearchForm.Help2Click(Sender: TObject);
-begin
- DoHelp;
-end;
-
-procedure TSearchForm.HomePage1Click(Sender: TObject);
-begin
- DoHomePage;
-end;
-
-procedure TSearchForm.ContactWithAuthor1Click(Sender: TObject);
-begin
- DoHomeContactWithAuthor;
 end;
 
 { TManagerSearchs }

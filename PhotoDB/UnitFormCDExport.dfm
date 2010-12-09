@@ -56,6 +56,9 @@ object FormCDExport: TFormCDExport
     Height = 113
     Align = alBottom
     TabOrder = 1
+    DesignSize = (
+      716
+      113)
     object LabelExportDirectory: TLabel
       Left = 8
       Top = 8
@@ -64,10 +67,11 @@ object FormCDExport: TFormCDExport
       Caption = 'Export directory:'
     end
     object ButtonExport: TButton
-      Left = 592
+      Left = 598
       Top = 80
       Width = 107
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Export'
       TabOrder = 0
       OnClick = ButtonExportClick
@@ -93,17 +97,19 @@ object FormCDExport: TFormCDExport
     object EditExportDirectory: TEdit
       Left = 8
       Top = 24
-      Width = 361
+      Width = 546
       Height = 21
+      Anchors = [akLeft, akTop, akRight]
       ReadOnly = True
       TabOrder = 3
       Text = 'c:\'
     end
     object ButtonChooseDirectory: TButton
-      Left = 376
+      Left = 560
       Top = 24
       Width = 145
       Height = 21
+      Anchors = [akTop, akRight]
       Caption = 'Choose'
       TabOrder = 4
       OnClick = ButtonChooseDirectoryClick
@@ -126,12 +132,17 @@ object FormCDExport: TFormCDExport
     Height = 185
     Align = alTop
     TabOrder = 2
-    OnResize = PanelTopResize
+    ExplicitLeft = 8
+    ExplicitTop = -6
+    DesignSize = (
+      716
+      185)
     object LabelInfo: TLabel
       Left = 64
       Top = 8
-      Width = 617
-      Height = 81
+      Width = 641
+      Height = 82
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Label information'
       WordWrap = True
@@ -470,13 +481,14 @@ object FormCDExport: TFormCDExport
     object ComboBoxPathList: TComboBoxExDB
       Left = 8
       Top = 155
-      Width = 321
+      Width = 332
       Height = 22
       ItemsEx = <
         item
           Caption = '\'
         end>
       Style = csExDropDownList
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       OnSelect = ComboBoxPathListSelect
       ShowDropDownMenu = True
@@ -484,39 +496,42 @@ object FormCDExport: TFormCDExport
       ShowEditIndex = 0
     end
     object ButtonAddItems: TButton
-      Left = 336
-      Top = 152
+      Left = 346
+      Top = 154
       Width = 89
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Add items'
       TabOrder = 1
       OnClick = ButtonAddItemsClick
     end
     object ButtonRemoveItems: TButton
-      Left = 432
-      Top = 152
+      Left = 441
+      Top = 154
       Width = 121
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Remove items'
       TabOrder = 2
       OnClick = ButtonRemoveItemsClick
     end
     object ButtonCreateDirectory: TButton
-      Left = 560
-      Top = 152
+      Left = 568
+      Top = 154
       Width = 137
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Create directory'
       TabOrder = 3
       OnClick = ButtonCreateDirectoryClick
     end
-    object EditLabel: TEdit
+    object EditLabel: TWatermarkedEdit
       Left = 8
       Top = 112
       Width = 177
       Height = 21
       TabOrder = 4
-      Text = 'CDLabel'
+      WatermarkText = 'CDLabel'
     end
     object EditCDSize: TEdit
       Left = 208
@@ -530,7 +545,7 @@ object FormCDExport: TFormCDExport
   end
   object PopupMenuListView: TPopupMenu
     OnPopup = PopupMenuListViewPopup
-    Left = 40
+    Left = 120
     Top = 216
     object Open1: TMenuItem
       Caption = 'Open'
@@ -574,14 +589,14 @@ object FormCDExport: TFormCDExport
   end
   object ImageListIcons: TImageList
     ColorDepth = cd32Bit
-    Left = 8
+    Left = 24
     Top = 216
   end
   object DestroyTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = DestroyTimerTimer
-    Left = 672
+    Left = 656
     Top = 8
   end
   object DropFileTarget1: TDropFileTarget
@@ -589,12 +604,12 @@ object FormCDExport: TFormCDExport
     OnDrop = DropFileTarget1Drop
     ShowImage = False
     OptimizedMove = True
-    Left = 72
+    Left = 216
     Top = 216
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
-    Left = 640
+    Left = 568
     Top = 8
   end
 end

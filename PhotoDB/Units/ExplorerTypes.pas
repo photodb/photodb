@@ -585,6 +585,7 @@ begin
       if FFile.FileName = FileName then
       begin
         FFile.DateOfUnLock := Now + LifeTimeMs / 1000;
+        Result := FFile;
         Exit;
       end;
     end;

@@ -38,18 +38,27 @@ type
     Data: array of TCDDataArrayItem;
   end;
 
-  TCDIndexMappingDirectory = record
-    Files: TList;
-    name: string[255];
+  TCDIndexMappingDirectory = class
+  private
+    FFiles : TList;
+    function GetFileByIndex(FileIndex: Integer): TCDIndexMappingDirectory;
+    function GetCount: Integer;
+  public
+    Name: string;
     IsFile: Boolean;
-    Parent: Pointer;
+    Parent: TCDIndexMappingDirectory;
     IsReal: Boolean;
-    RealFileName: PChar;
+    RealFileName: string;
     DB_ID: Integer;
     FileSize: Int64;
+    constructor Create;
+    destructor Destroy; override;
+    function Add(Item : TCDIndexMappingDirectory) : Integer;
+    property Items[FileIndex : Integer] : TCDIndexMappingDirectory read GetFileByIndex; default;
+    property Count : Integer read GetCount;
+    procedure Remove(var Item : TCDIndexMappingDirectory);
+    procedure Delete(Index : Integer);
   end;
-
-  PCDIndexMappingDirectory = ^TCDIndexMappingDirectory;
 
   TDBFilePath = record
     FileName: string;
@@ -62,17 +71,17 @@ type
   private
     ClipboardCut: Boolean;
     Clipboard: TList;
-    Root: PCDIndexMappingDirectory;
-    CurrentDir: PCDIndexMappingDirectory;
+    Root: TCDIndexMappingDirectory;
+    CurrentDir: TCDIndexMappingDirectory;
     Mapping: TCDDataArray;
     FCDLabel: string;
-    function GetCurrentPathWithDirectory(Directory: PCDIndexMappingDirectory; Init: Boolean = True): string;
-    procedure GetDBRemappingArrayWithDirectory(Directory: PCDIndexMappingDirectory; var Info: TDBFilePathArray);
+    function GetCurrentPathWithDirectory(Directory: TCDIndexMappingDirectory; Init: Boolean = True): string;
+    procedure GetDBRemappingArrayWithDirectory(Directory: TCDIndexMappingDirectory; var Info: TDBFilePathArray);
     procedure SetCDLabel(const Value: string);
-    function CreateStructureToDirectoryWithDirectory(Directory: string; PDirectory: PCDIndexMappingDirectory;
+    function CreateStructureToDirectoryWithDirectory(Directory: string; PDirectory: TCDIndexMappingDirectory;
       OnProgress: TCallBackProgressEvent): Boolean;
-    function GetCurrentUpperDirectoriesWithDirectory(PDirectory: PCDIndexMappingDirectory): TStrings;
-    function DeleteOriginalStructureWithDirectory(PDirectory: PCDIndexMappingDirectory;
+    function GetCurrentUpperDirectoriesWithDirectory(PDirectory: TCDIndexMappingDirectory): TStrings;
+    function DeleteOriginalStructureWithDirectory(PDirectory: TCDIndexMappingDirectory;
       OnProgress: TCallBackProgressEvent): Boolean;
   public
     constructor Create;
@@ -94,11 +103,11 @@ type
     function DeleteFile(FileName: string): Boolean;
     function GetCurrentPath: string;
     function CreateStructureToDirectory(Directory: string; OnProgress: TCallBackProgressEvent): Boolean;
-    function GetItemByIndex(index: Integer): PCDIndexMappingDirectory;
+    function GetItemByIndex(index: Integer): TCDIndexMappingDirectory;
     function GetDBRemappingArray: TDBFilePathArray;
     function GetCDSize: Int64;
-    function CurrentLevel: PCDIndexMappingDirectory;
-    function GetCDSizeWithDirectory(Directory: PCDIndexMappingDirectory): Int64;
+    function CurrentLevel: TCDIndexMappingDirectory;
+    function GetCDSizeWithDirectory(Directory: TCDIndexMappingDirectory): Int64;
     procedure SortLevel(Level: TList);
     function GetCurrentUpperDirectories: TStrings;
     procedure SelectRoot;
@@ -107,11 +116,10 @@ type
     procedure Cut(Files: TList);
     procedure Paste;
     procedure ClearClipBoard;
-    function CloneItem(Item: PCDIndexMappingDirectory): PCDIndexMappingDirectory;
-    procedure FreeItem(Parent: PCDIndexMappingDirectory; Item: PCDIndexMappingDirectory);
-    function DirectoryHasDBFiles(Directory: PCDIndexMappingDirectory): Boolean;
+    function CloneItem(Item: TCDIndexMappingDirectory): TCDIndexMappingDirectory;
+    function DirectoryHasDBFiles(Directory: TCDIndexMappingDirectory): Boolean;
     function DeleteOriginalStructure(OnProgress: TCallBackProgressEvent): Boolean;
-    function GetRoot: PCDIndexMappingDirectory;
+    function GetRoot: TCDIndexMappingDirectory;
     function PlaceMapFile(Directory: string): Boolean;
     class function ReadMapFile(FileName: string): TCDIndexInfo;
     property CDLabel: string read FCDLabel write SetCDLabel;
@@ -124,13 +132,14 @@ const
   C_CD_MAP_FILE = 'DBCDMap.map';
 
 type
-  TCDClass = record
-    name: string[255];
-    Path: PChar;
+  TCDClass = class(TObject)
+  public
+    Name: string;
+    Path: string;
     Tag: Integer;
   end;
 
-  PCDClass = ^TCDClass;
+//  PCDClass = ^TCDClass;
 
   TCDDBMapping = class(TObject)
   private
@@ -139,8 +148,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function GetCDByName(CDName: string): PCDClass;
-    function GetCDByNameInternal(CDName: string): PCDClass;
+    function GetCDByName(CDName: string): TCDClass;
+    function GetCDByNameInternal(CDName: string): TCDClass;
     procedure DoProcessPath(var FileName: string; CanUserNotify: Boolean = False);
     function ProcessPath(FileName: string; CanUserNotify: Boolean = False): string;
     procedure AddCDMapping(CDName: string; Path: string; Permanent: Boolean);
@@ -150,7 +159,7 @@ type
     procedure UnProcessPath(var Path: string);
   end;
 
- var
+var
   CDMapper: TCDDBMapping = nil;
 
 function ProcessPath(FileName: string; CanUserNotify: Boolean = False): string;
@@ -214,7 +223,7 @@ begin
   begin
     if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
     begin
-      if Directoryexists(Dir + SearchRec.name) then
+      if DirectoryExists(Dir + SearchRec.name) then
       begin
         Result := GetValidCDIndexInFolder(Dir + SearchRec.name);
         if Result <> '' then
@@ -245,47 +254,46 @@ var
 begin
   Result := '';
   OpenDialog := DBOpenDialog.Create;
-  OpenDialog.Filter := Format('CD Index (%s)|%s', [C_CD_MAP_FILE, C_CD_MAP_FILE]);
-  OpenDialog.FilterIndex := 1;
-  OpenDialog.EnableChooseWithDirectory;
-  if OpenDialog.Execute then
-  begin
-    Path := OpenDialog.FileName;
-    if FileExists(Path) then
+  try
+    OpenDialog.Filter := Format(TA('CD Index (%s)|%s', 'CDExport'), [C_CD_MAP_FILE, C_CD_MAP_FILE]);
+    OpenDialog.FilterIndex := 1;
+    OpenDialog.EnableChooseWithDirectory;
+    if OpenDialog.Execute then
     begin
-      if AnsiLowerCase(ExtractFileName(Path)) = AnsiLowerCase(C_CD_MAP_FILE) then
+      Path := OpenDialog.FileName;
+      if FileExists(Path) then
       begin
-        LoadInfoByPath;
-      end
-      else
+        if AnsiLowerCase(ExtractFileName(Path)) = AnsiLowerCase(C_CD_MAP_FILE) then
+          LoadInfoByPath
+        else
+          MessageBoxDB(GetActiveFormHandle, Format(
+            TA('Unable to find file %s by address "%s"', 'CDExport'), [C_CD_MAP_FILE, Path]),
+            TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      end;
+      Dir := ExcludeTrailingBackslash(Path);
+      if DirectoryExists(Dir) then
       begin
-        MessageBoxDB(GetActiveFormHandle, Format(
-          TA('Unable to find file %s by address "%s"'), [C_CD_MAP_FILE, Path]),
-          TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        Path := GetValidCDIndexInFolder(Dir);
+        if Path <> '' then
+        begin
+          LoadInfoByPath;
+        end else
+        begin
+          if CDName <> '' then
+            if ID_YES = MessageBoxDB(GetActiveFormHandle,
+              Format(TA('In this directory file %s not found! Use this directory as root of drive "%s"?', 'CDExport'), [C_CD_MAP_FILE, CDName]),
+              TA('Error'), TD_BUTTON_YESNO,
+              TD_ICON_ERROR) then
+            begin
+              Dir := IncludeTrailingBackslash(Dir);
+              CDMapper.AddCDMapping(CDName, Dir, False);
+              Result := CDName;
+            end;
+        end;
       end;
     end;
-    UnFormatDir(Path);
-    Dir := Path;
-    if DirectoryExists(Dir) then
-    begin
-      Path := GetValidCDIndexInFolder(Dir);
-      if Path <> '' then
-      begin
-        LoadInfoByPath;
-      end else
-      begin
-        if CDName <> '' then
-          if ID_YES = MessageBoxDB(GetActiveFormHandle,
-            Format(TA('In this directory file %s not found! Use this directory as root of drive "%s"?'), [C_CD_MAP_FILE, CDName]),
-            TA('Error'), TD_BUTTON_YESNO,
-            TD_ICON_ERROR) then
-          begin
-            FormatDir(Dir);
-            CDMapper.AddCDMapping(CDName, Dir, False);
-            Result := CDName;
-          end;
-      end;
-    end;
+  finally
+    F(OpenDialog);
   end;
 end;
 
@@ -312,7 +320,7 @@ begin
   begin
     Windows.FindClose(hFind);
     if (FindData.dwFileAttributes and FILE_ATTRIBUTE_DIRECTORY) = 0 then
-      Result := FindData.nFileSizeHigh*2*MaxInt+FindData.nFileSizeLow;
+      Result := FindData.NFileSizeHigh * 2 * MaxInt + FindData.NFileSizeLow;
   end;
 end;
 
@@ -322,36 +330,22 @@ begin
   Result.ID := ID;
 end;
 
-procedure SetPCharString(var P: PChar; S: string);
-var
-  L: Integer;
-begin
-  L := Length(S);
-  if P <> nil then
-    FreeMem(P);
-  GetMem(P, Length(S) + 1);
-  P[L] := #0;
-  Lstrcpyn(P, PChar(S), L + 1);
-end;
-
 function TCDIndexMapping.AddImageFile(Path: TDBFilePath): Boolean;
 var
-  Image: PCDIndexMappingDirectory;
+  Image: TCDIndexMappingDirectory;
 begin
   Result := False;
   if not FileExists(ExtractFileName(Path.FileName)) then
   begin
-    GetMem(Image, SizeOf(TCDIndexMappingDirectory));
-    Image.Files := TList.Create;
-    Image.name := ExtractFileName(Path.FileName);
+    Image := TCDIndexMappingDirectory.Create;
+    Image.Name := ExtractFileName(Path.FileName);
     Image.IsFile := True;
     Image.Parent := CurrentDir;
     Image.IsReal := True;
     Image.DB_ID := Path.ID;
-    Image.RealFileName := nil;
     Image.FileSize := GetFileSizeByName(Path.FileName);
-    SetPCharString(Image.RealFileName, Path.FileName);
-    CurrentDir.Files.Add(Image);
+    Image.RealFileName := Path.FileName;
+    CurrentDir.Add(Image);
     Result := True;
   end;
 end;
@@ -393,9 +387,7 @@ begin
     if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
     begin
       if SysUtils.DirectoryExists(Directory + SearchRec.name) then
-      begin
         AddRealDirectory(Directory + SearchRec.name, CallBackProc);
-      end;
     end;
     Found := SysUtils.FindNext(SearchRec);
     if Assigned(CallBackProc) then
@@ -410,23 +402,21 @@ end;
 
 function TCDIndexMapping.AddRealFile(FileName: string): Boolean;
 var
-  _File: PCDIndexMappingDirectory;
+  CDFile: TCDIndexMappingDirectory;
 begin
   Result := False;
 
   if not FileExists(ExtractFileName(FileName)) then
   begin
-    GetMem(_File, SizeOf(TCDIndexMappingDirectory));
-    _File.Files := TList.Create;
-    _File.name := ExtractFileName(FileName);
-    _File.IsFile := True;
-    _File.Parent := CurrentDir;
-    _File.IsReal := True;
-    _File.DB_ID := 0;
-    _File.RealFileName := nil;
-    _File.FileSize := GetFileSizeByName(FileName);
-    SetPCharString(_File.RealFileName, FileName);
-    CurrentDir.Files.Add(_File);
+    CDFile := TCDIndexMappingDirectory.Create;
+    CDFile.Name := ExtractFileName(FileName);
+    CDFile.IsFile := True;
+    CDFile.Parent := CurrentDir;
+    CDFile.IsReal := True;
+    CDFile.DB_ID := 0;
+    CDFile.RealFileName := FileName;
+    CDFile.FileSize := GetFileSizeByName(FileName);
+    CurrentDir.Add(CDFile);
     Result := True;
   end;
 end;
@@ -442,7 +432,7 @@ begin
       AddRealDirectory(Files[I], nil);
     if FileExistsEx(Files[I]) then
     begin
-      if not Dolphin_DB.GetInfoByFileNameA(Files[I], False, Info) then
+      if not GetInfoByFileNameA(Files[I], False, Info) then
         AddRealFile(Files[I])
       else
         AddImageFile(DBFilePath(Info.ItemFileName, Info.ItemId));
@@ -459,13 +449,12 @@ constructor TCDIndexMapping.Create;
 begin
   ClipboardCut := False;
   Clipboard := TList.Create;
-  GetMem(Root, SizeOf(TCDIndexMappingDirectory));
-  Root.Files := TList.Create;
-  Root.name := '\';
+  Root := TCDIndexMappingDirectory.Create;
+  Root.Name := '\';
   Root.IsFile := False;
   Root.Parent := nil;
   Root.IsReal := False;
-  Root.RealFileName := nil;
+  Root.RealFileName := '';
   Root.DB_ID := 0;
   Root.FileSize := 0;
   CurrentDir := Root;
@@ -475,24 +464,22 @@ end;
 
 function TCDIndexMapping.CreateDirectory(Directory: string): Boolean;
 var
-  Dir: PCDIndexMappingDirectory;
+  Dir: TCDIndexMappingDirectory;
 begin
   Directory := CheckName(Directory);
   if not DirectoryExists(Directory) then
   begin
-    GetMem(Dir, SizeOf(TCDIndexMappingDirectory));
-    Dir.Files := TList.Create;
-    Dir.name := Directory;
+    Dir := TCDIndexMappingDirectory.Create;
+    Dir.Name := Directory;
     Dir.IsFile := False;
     Dir.Parent := CurrentDir;
     Dir.IsReal := False;
-    Dir.RealFileName := nil;
+    Dir.RealFileName := '';
     Dir.DB_ID := 0;
     Dir.FileSize := 0;
-    CurrentDir.Files.Add(Dir);
+    CurrentDir.Add(Dir);
     Result := True;
-  end
-  else
+  end else
   begin
     Result := False;
   end;
@@ -519,31 +506,29 @@ begin
 end;
 
 function TCDIndexMapping.CreateStructureToDirectoryWithDirectory(
-  Directory: string; PDirectory: PCDIndexMappingDirectory; OnProgress : TCallBackProgressEvent): Boolean;
+  Directory: string; PDirectory: TCDIndexMappingDirectory; OnProgress : TCallBackProgressEvent): Boolean;
 var
   I: Integer;
   DirectoryName, FileName: string;
   Info: TProgressCallBackInfo;
 begin
   Result := True;
-  for I := 0 to PDirectory.Files.Count - 1 do
-    if PCDIndexMappingDirectory(PDirectory.Files[I]).IsFile then
+  for I := 0 to PDirectory.Count - 1 do
+    if PDirectory[I].IsFile then
     begin
-      FileName := PCDIndexMappingDirectory(PDirectory.Files[I]).name;
+      FileName := PDirectory[I].Name;
       DirectoryName := Directory;
       FormatDir(DirectoryName);
-      if AnsiLowerCase(PCDIndexMappingDirectory(PDirectory.Files[I]).RealFileName) <> AnsiLowerCase
-        (DirectoryName + FileName) then
-        if not Windows.CopyFile(PCDIndexMappingDirectory(PDirectory.Files[I]).RealFileName,
+      if AnsiLowerCase(PDirectory[I].RealFileName) <> AnsiLowerCase(DirectoryName + FileName) then
+        if not Windows.CopyFile(PChar(PDirectory[I].RealFileName),
           PChar(DirectoryName + FileName), False) then
         begin
           Result := False;
           Exit;
-        end
-        else
+        end else
         begin
           Info.MaxValue := -1;
-          Info.Position := PCDIndexMappingDirectory(PDirectory.Files[I]).FileSize;
+          Info.Position := PDirectory[I].FileSize;
           Info.Information := '';
           Info.Terminate := False;
           if Assigned(OnProgress) then
@@ -556,12 +541,12 @@ begin
         end;
     end;
 
-  for I := 0 to PDirectory.Files.Count - 1 do
-    if not PCDIndexMappingDirectory(PDirectory.Files[I]).IsFile then
+  for I := 0 to PDirectory.Count - 1 do
+    if not PDirectory[I].IsFile then
     begin
       DirectoryName := Directory;
       FormatDir(DirectoryName);
-      DirectoryName := DirectoryName + PCDIndexMappingDirectory(PDirectory.Files[I]).name;
+      DirectoryName := DirectoryName + PDirectory[I].Name;
 
       if not SysUtils.DirectoryExists(DirectoryName) then
         if not CreateDir(DirectoryName) then
@@ -569,14 +554,14 @@ begin
           Result := False;
           Exit;
         end;
-      CreateStructureToDirectoryWithDirectory(DirectoryName, PDirectory.Files[I], OnProgress);
+      CreateStructureToDirectoryWithDirectory(DirectoryName, PDirectory[I], OnProgress);
     end;
 
 end;
 
-function TCDIndexMapping.CurrentLevel: PCDIndexMappingDirectory;
+function TCDIndexMapping.CurrentLevel: TCDIndexMappingDirectory;
 begin
-  SortLevel(CurrentDir.Files);
+  SortLevel(CurrentDir.FFiles);
   Result := CurrentDir;
 end;
 
@@ -585,12 +570,11 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to CurrentDir.Files.Count - 1 do
-    if not PCDIndexMappingDirectory(CurrentDir.Files[I]).IsFile then
-      if AnsiLowerCase(PCDIndexMappingDirectory(CurrentDir.Files[I]).name) = AnsiLowerCase(Directory) then
+  for I := 0 to CurrentDir.Count - 1 do
+    if not CurrentDir[I].IsFile then
+      if AnsiLowerCase(CurrentDir[I].Name) = AnsiLowerCase(Directory) then
       begin
-        FreeMem(CurrentDir.Files[I]);
-        CurrentDir.Files.Delete(I);
+        CurrentDir.Delete(I);
         Result := True;
         Break;
       end;
@@ -601,12 +585,11 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to CurrentDir.Files.Count - 1 do
-    if PCDIndexMappingDirectory(CurrentDir.Files[I]).IsFile then
-      if AnsiLowerCase(PCDIndexMappingDirectory(CurrentDir.Files[I]).name) = AnsiLowerCase(FileName) then
+  for I := 0 to CurrentDir.Count - 1 do
+    if CurrentDir[I].IsFile then
+      if AnsiLowerCase(CurrentDir[I].Name) = AnsiLowerCase(FileName) then
       begin
-        FreeMem(CurrentDir.Files[I]);
-        CurrentDir.Files.Delete(I);
+        CurrentDir.Delete(I);
         Result := True;
         Break;
       end;
@@ -614,8 +597,8 @@ end;
 
 destructor TCDIndexMapping.Destroy;
 begin
-  FreeItem(nil, Root);
-  Clipboard.Free;
+  F(Root);
+  F(Clipboard);
   inherited Destroy;
 end;
 
@@ -624,12 +607,10 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to CurrentDir.Files.Count - 1 do
-    if not PCDIndexMappingDirectory(CurrentDir.Files[I]).IsFile then
-      if AnsiLowerCase(PCDIndexMappingDirectory(CurrentDir.Files[I]).name) = AnsiLowerCase(Directory) then
-      begin
+  for I := 0 to CurrentDir.Count - 1 do
+    if not CurrentDir[I].IsFile then
+      if AnsiLowerCase(CurrentDir[I].Name) = AnsiLowerCase(Directory) then
         Result := True;
-      end;
 end;
 
 function TCDIndexMapping.FileExists(FileName: string): Boolean;
@@ -637,12 +618,10 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to CurrentDir.Files.Count - 1 do
-    if PCDIndexMappingDirectory(CurrentDir.Files[I]).IsFile then
-      if AnsiLowerCase(PCDIndexMappingDirectory(CurrentDir.Files[I]).name) = AnsiLowerCase(FileName) then
-      begin
+  for I := 0 to CurrentDir.Count - 1 do
+    if CurrentDir[I].IsFile then
+      if AnsiLowerCase(CurrentDir[I].Name) = AnsiLowerCase(FileName) then
         Result := True;
-      end;
 end;
 
 function TCDIndexMapping.GetCDIndex: TCDDataArray;
@@ -660,7 +639,7 @@ begin
   Result := GetCurrentPathWithDirectory(CurrentDir);
 end;
 
-function TCDIndexMapping.GetCurrentPathWithDirectory(Directory: PCDIndexMappingDirectory; Init: Boolean = True): string;
+function TCDIndexMapping.GetCurrentPathWithDirectory(Directory: TCDIndexMappingDirectory; Init: Boolean = True): string;
 begin
   if Init then
     Result := '';
@@ -676,49 +655,46 @@ begin
 end;
 
 procedure TCDIndexMapping.GetDBRemappingArrayWithDirectory(
-  Directory: PCDIndexMappingDirectory; var Info: TDBFilePathArray);
+  Directory: TCDIndexMappingDirectory; var Info: TDBFilePathArray);
 var
   I: Integer;
 begin
-  for I := 0 to Directory.Files.Count - 1 do
-    if PCDIndexMappingDirectory(Directory.Files[I]).IsFile then
-      if PCDIndexMappingDirectory(Directory.Files[I]).DB_ID > 0 then
+  for I := 0 to Directory.Count - 1 do
+    if Directory[I].IsFile then
+      if Directory[I].DB_ID > 0 then
       begin
         SetLength(Info, Length(Info) + 1);
-        Info[Length(Info) - 1].ID := PCDIndexMappingDirectory(Directory.Files[I]).DB_ID;
-        Info[Length(Info) - 1].FileName := AnsiLowerCase('::' + CDLabel + '::' + GetCurrentPathWithDirectory(Directory)
-            + PCDIndexMappingDirectory(Directory.Files[I]).name);
+        Info[Length(Info) - 1].ID := Directory[I].DB_ID;
+        Info[Length(Info) - 1].FileName := AnsiLowerCase('::' + CDLabel + '::' + GetCurrentPathWithDirectory(Directory) + Directory[I].Name);
       end;
-  for I := 0 to Directory.Files.Count - 1 do
-    if not PCDIndexMappingDirectory(Directory.Files[I]).IsFile then
-    begin
-      GetDBRemappingArrayWithDirectory(Directory.Files[I], Info);
-    end;
+  for I := 0 to Directory.Count - 1 do
+    if not Directory[I].IsFile then
+      GetDBRemappingArrayWithDirectory(Directory[I], Info);
 end;
 
 function TCDIndexMapping.GetCDSizeWithDirectory(
-  Directory: PCDIndexMappingDirectory): int64;
+  Directory: TCDIndexMappingDirectory): int64;
 var
   I: Integer;
 begin
   Result := Directory.FileSize;
-  for I := 0 to Directory.Files.Count - 1 do
-    if PCDIndexMappingDirectory(Directory.Files[I]).IsFile then
-      Result := Result + PCDIndexMappingDirectory(Directory.Files[I]).FileSize;
+  for I := 0 to Directory.Count - 1 do
+    if Directory[I].IsFile then
+      Result := Result + Directory[I].FileSize;
 
-  for I := 0 to Directory.Files.Count - 1 do
-    if not PCDIndexMappingDirectory(Directory.Files[I]).IsFile then
-      Result := Result + GetCDSizeWithDirectory(Directory.Files[I]);
+  for I := 0 to Directory.Count - 1 do
+    if not Directory[I].IsFile then
+      Result := Result + GetCDSizeWithDirectory(Directory[I]);
 end;
 
-function TCDIndexMapping.GetItemByIndex(index: Integer): PCDIndexMappingDirectory;
+function TCDIndexMapping.GetItemByIndex(index: Integer): TCDIndexMappingDirectory;
 begin
-  Result := CurrentDir.Files[index];
+  Result := CurrentDir[index];
 end;
 
 function TCDIndexMapping.GetItemNameByIndex(index: Integer): string;
 begin
-  Result := PCDIndexMappingDirectory(CurrentDir.Files[index]).name;
+  Result := CurrentDir[Index].Name;
 end;
 
 function TCDIndexMapping.GoUp: Boolean;
@@ -738,11 +714,11 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to CurrentDir.Files.Count - 1 do
-    if not PCDIndexMappingDirectory(CurrentDir.Files[I]).IsFile then
-      if AnsiLowerCase(PCDIndexMappingDirectory(CurrentDir.Files[I]).name) = AnsiLowerCase(Directory) then
+  for I := 0 to CurrentDir.Count - 1 do
+    if not CurrentDir[I].IsFile then
+      if AnsiLowerCase(CurrentDir[I].Name) = AnsiLowerCase(Directory) then
       begin
-        CurrentDir := CurrentDir.Files[I];
+        CurrentDir := CurrentDir[I];
         Break;
       end;
 end;
@@ -758,13 +734,13 @@ var
   Text: string;
 begin
   Result := TStringList.Create;
-  for I := 0 to CurrentDir.Files.Count - 1 do
+  for I := 0 to CurrentDir.Count - 1 do
   begin
-    if PCDIndexMappingDirectory(CurrentDir.Files[I]).IsFile then
+    if CurrentDir[I].IsFile then
       Text := '[File] '
     else
       Text := '[Directory] ';
-    Text := Text + PCDIndexMappingDirectory(CurrentDir.Files[I]).name;
+    Text := Text + CurrentDir[I].name;
     Result.Add(Text);
   end;
 end;
@@ -779,49 +755,51 @@ begin
   // Folders by text compare -> files by text compare
   Changed := False;
   List := TList.Create;
-  LevelSize := Level.Count;
-  for I := Level.Count - 1 downto 0 do
-  begin
-    if not PCDIndexMappingDirectory(Level[I]).IsFile then
+  try
+    LevelSize := Level.Count;
+    for I := Level.Count - 1 downto 0 do
     begin
-      List.Add(Level[I]);
-      Level.Delete(I);
+      if not TCDIndexMappingDirectory(Level[I]).IsFile then
+      begin
+        List.Add(Level[I]);
+        Level.Delete(I);
+      end;
     end;
-  end;
-  if (List.Count = 0) or (List.Count = LevelSize) then
-  begin
-    if (List.Count = 0) then
-      for I := Level.Count - 1 downto 1 do
-      begin
-        if SysUtils.CompareText(PCDIndexMappingDirectory(Level[I]).name, PCDIndexMappingDirectory(Level[I - 1]).name)
-          < 0 then
+    if (List.Count = 0) or (List.Count = LevelSize) then
+    begin
+      if (List.Count = 0) then
+        for I := Level.Count - 1 downto 1 do
         begin
-          Level.Exchange(I, I - 1);
-          Changed := True;
+          if SysUtils.CompareText(TCDIndexMappingDirectory(Level[I]).Name, TCDIndexMappingDirectory(Level[I - 1]).Name) < 0 then
+          begin
+            Level.Exchange(I, I - 1);
+            Changed := True;
+          end;
         end;
-      end;
 
-    if (List.Count = LevelSize) then
-      for I := List.Count - 1 downto 1 do
-      begin
-        if SysUtils.CompareText(PCDIndexMappingDirectory(List[I]).name, PCDIndexMappingDirectory(List[I - 1]).name)
-          < 0 then
+      if (List.Count = LevelSize) then
+        for I := List.Count - 1 downto 1 do
         begin
-          List.Exchange(I, I - 1);
-          Changed := True;
+          if SysUtils.CompareText(TCDIndexMappingDirectory(List[I]).Name, TCDIndexMappingDirectory(List[I - 1]).Name)
+            < 0 then
+          begin
+            List.Exchange(I, I - 1);
+            Changed := True;
+          end;
         end;
-      end;
-  end
-  else
-  begin
-    SortLevel(Level);
-    SortLevel(List);
+    end
+    else
+    begin
+      SortLevel(Level);
+      SortLevel(List);
+    end;
+    for I := 0 to List.Count - 1 do
+      Level.Insert(0, List[I]);
+    if Changed then
+      SortLevel(Level);
+  finally
+    F(List);
   end;
-  // for i:=List.Count-1 downto 0 do
-  for I := 0 to List.Count - 1 do
-    Level.Insert(0, List[I]);
-  if Changed then
-    SortLevel(Level);
 end;
 
 function TCDIndexMapping.GetCurrentUpperDirectories: TStrings;
@@ -830,7 +808,7 @@ begin
 end;
 
 function TCDIndexMapping.GetCurrentUpperDirectoriesWithDirectory(
-  PDirectory: PCDIndexMappingDirectory): TStrings;
+  PDirectory: TCDIndexMappingDirectory): TStrings;
 begin
   if PDirectory.Parent = nil then
   begin
@@ -883,54 +861,40 @@ end;
 procedure TCDIndexMapping.Paste;
 var
   I: Integer;
-  Item, OldParent: PCDIndexMappingDirectory;
+  ItemToDelete, Item, OldParent: TCDIndexMappingDirectory;
 begin
   for I := 0 to Clipboard.Count - 1 do
   begin
-    Item := CloneItem(Clipboard[I]);
-    OldParent := PCDIndexMappingDirectory(Clipboard[I]).Parent;
+    ItemToDelete := TCDIndexMappingDirectory(Clipboard[I]);
+    Item := CloneItem(ItemToDelete);
+    OldParent := ItemToDelete.Parent;
     Item.Parent := CurrentDir;
-    CurrentDir.Files.Add(Item);
+    CurrentDir.Add(Item);
     if ClipboardCut then
-      FreeItem(OldParent, Clipboard[I]);
+      OldParent.Remove(ItemToDelete);
   end;
   Clipboard.Clear;
 end;
 
 function TCDIndexMapping.CloneItem(
-  Item: PCDIndexMappingDirectory): PCDIndexMappingDirectory;
+  Item: TCDIndexMappingDirectory): TCDIndexMappingDirectory;
 var
   I: Integer;
-  AItem: PCDIndexMappingDirectory;
+  AItem: TCDIndexMappingDirectory;
 begin
-  GetMem(AItem, SizeOf(TCDIndexMappingDirectory));
-  AItem.Files := TList.Create;
-  AItem.name := Item.name;
+  AItem := TCDIndexMappingDirectory.Create;
+  AItem.Name := Item.Name;
   AItem.IsFile := Item.IsFile;
   AItem.Parent := Item.Parent;
   AItem.IsReal := Item.IsReal;
   AItem.DB_ID := Item.DB_ID;
   AItem.FileSize := Item.FileSize;
-  AItem.RealFileName := nil;
-  SetPCharString(AItem.RealFileName, string(Item.RealFileName));
-  for I := 0 to Item.Files.Count - 1 do
-  begin
-    AItem.Files.Add(CloneItem(Item.Files[I]));
-  end;
+  AItem.RealFileName := Item.RealFileName;
+
+  for I := 0 to Item.Count - 1 do
+    AItem.Add(CloneItem(Item[I]));
+
   Result := AItem;
-end;
-
-procedure TCDIndexMapping.FreeItem(Parent, Item: PCDIndexMappingDirectory);
-var
-  I: Integer;
-begin
-  if Parent <> nil then
-    Parent.Files.Remove(Item);
-
-  FreeMem(Item.RealFileName);
-  for I := Item.Files.Count - 1 downto 0 do
-    FreeItem(Item, Item.Files[I]);
-  Item.Files.Free;
 end;
 
 procedure TCDIndexMapping.ClearClipBoard;
@@ -939,25 +903,24 @@ begin
 end;
 
 function TCDIndexMapping.DirectoryHasDBFiles(
-  Directory: PCDIndexMappingDirectory): boolean;
+  Directory: TCDIndexMappingDirectory): boolean;
 var
   I: Integer;
 begin
   Result := False;
-  if Directory.Files = nil then
-    Exit;
-  for I := 0 to Directory.Files.Count - 1 do
+
+  for I := 0 to Directory.Count - 1 do
   begin
-    if PCDIndexMappingDirectory(Directory.Files[I]).IsFile then
+    if Directory[I].IsFile then
     begin
-      if PCDIndexMappingDirectory(Directory.Files[I]).DB_ID > 0 then
+      if Directory[I].DB_ID > 0 then
       begin
         Result := True;
         Exit;
       end;
     end else
     begin
-      if DirectoryHasDBFiles(Directory.Files[I]) then
+      if DirectoryHasDBFiles(Directory[I]) then
       begin
         Result := True;
         Exit;
@@ -971,25 +934,25 @@ begin
   Result := DeleteOriginalStructureWithDirectory(Root, OnProgress);
 end;
 
-function TCDIndexMapping.DeleteOriginalStructureWithDirectory(PDirectory: PCDIndexMappingDirectory;
+function TCDIndexMapping.DeleteOriginalStructureWithDirectory(PDirectory: TCDIndexMappingDirectory;
   OnProgress: TCallBackProgressEvent): Boolean;
 var
   I: Integer;
   Info: TProgressCallBackInfo;
 begin
   Result := True;
-  for I := 0 to PDirectory.Files.Count - 1 do
+  for I := 0 to PDirectory.Count - 1 do
   begin
-    if PCDIndexMappingDirectory(PDirectory.Files[I]).IsFile then
-      if PCDIndexMappingDirectory(PDirectory.Files[I]).IsReal then
+    if PDirectory[I].IsFile then
+      if PDirectory[I].IsReal then
       begin
-        if not SysUtils.DeleteFile(PCDIndexMappingDirectory(PDirectory.Files[I]).RealFileName) then
+        if not SysUtils.DeleteFile(PDirectory[I].RealFileName) then
         begin
           Result := False;
         end else
         begin
           Info.MaxValue := -1;
-          Info.Position := PCDIndexMappingDirectory(PDirectory.Files[I]).FileSize;
+          Info.Position := PDirectory[I].FileSize;
           Info.Information := '';
           Info.Terminate := False;
           if Assigned(OnProgress) then
@@ -1003,21 +966,19 @@ begin
       end;
   end;
 
-  for I := 0 to PDirectory.Files.Count - 1 do
+  for I := 0 to PDirectory.Count - 1 do
   begin
-    if not PCDIndexMappingDirectory(PDirectory.Files[I]).IsFile then
+    if not PDirectory[I].IsFile then
     begin
-      if not DeleteOriginalStructureWithDirectory(PDirectory.Files[I], OnProgress) then
-      begin
+      if not DeleteOriginalStructureWithDirectory(PDirectory[I], OnProgress) then
         Result := False;
-      end;
     end;
   end;
 
   SysUtils.RemoveDir(PDirectory.RealFileName);
 end;
 
-function TCDIndexMapping.GetRoot: PCDIndexMappingDirectory;
+function TCDIndexMapping.GetRoot: TCDIndexMappingDirectory;
 begin
   Result := Root;
 end;
@@ -1051,8 +1012,8 @@ begin
   HeaderV1.CDLabel := CDLabel;
   HeaderV1.Date := Now;
   try
-    FS.write(Header, SizeOf(Header));
-    FS.write(HeaderV1, SizeOf(HeaderV1));
+    FS.Write(Header, SizeOf(Header));
+    FS.Write(HeaderV1, SizeOf(HeaderV1));
   except
     Result := False;
   end;
@@ -1094,30 +1055,25 @@ end;
 procedure TCDDBMapping.AddCDMapping(CDName, Path: string;
   Permanent: boolean);
 var
-  CD: PCDClass;
+  CD: TCDClass;
 begin
   CD := GetCDByName(CDName);
   if CD <> nil then
   begin
-    FreeMem(CD.Path);
-    CD.Path := nil;
-    SetPCharString(CD.Path, Path);
+    CD.Path := Path;
     Exit;
   end;
-  GetMem(CD, SizeOf(TCDClass));
-  CD.name := CDName;
+  CD := TCDClass.Create;
+  CD.Name := CDName;
   CD.Tag := TCD_CLASS_TAG_NONE;
-  CD.Path := nil;
-  SetPCharString(CD.Path, Path);
+  CD.Path := Path;
   CDLoadedList.Add(CD);
   if GetCDByNameInternal(CDName) = nil then
   begin
-    CD := nil;
-    GetMem(CD, SizeOf(TCDClass));
-    CD.name := CDName;
+    CD := TCDClass.Create;
+    CD.Name := CDName;
     CD.Tag := TCD_CLASS_TAG_NONE;
-    CD.Path := nil;
-    SetPCharString(CD.Path, Path);
+    CD.Path := Path;
     CDFindedList.Add(CD);
   end;
 end;
@@ -1129,19 +1085,9 @@ begin
 end;
 
 destructor TCDDBMapping.Destroy;
-var
-  I: Integer;
 begin
-  for I := 0 to CDLoadedList.Count - 1 do
-  begin
-    FreeMem(PCDClass(CDLoadedList[I]).Path);
-  end;
-  CDLoadedList.Free;
-  for I := 0 to CDFindedList.Count - 1 do
-  begin
-    FreeMem(PCDClass(CDFindedList[I]).Path);
-  end;
-  CDFindedList.Free;
+  FreeList(CDLoadedList);
+  FreeList(CDFindedList);
   inherited;
 end;
 
@@ -1149,7 +1095,7 @@ procedure TCDDBMapping.DoProcessPath(var FileName: string;
   CanUserNotify: boolean);
 var
   I, P, MapResult: Integer;
-  CD: PCDClass;
+  CD: TCDClass;
   CDName: string;
 begin
   if Copy(FileName, 1, 2) = '::' then
@@ -1163,16 +1109,15 @@ begin
       begin
         Delete(FileName, 1, P + 2);
         FileName := CD.Path + FileName;
-      end
-      else
+      end else
       begin
         CD := GetCDByNameInternal(CDName);
         if CD = nil then
         begin
-          GetMem(CD, SizeOf(TCDClass));
+          CD := TCDClass.Create;
           CD.name := CDName;
           CD.Tag := TCD_CLASS_TAG_NONE;
-          CD.Path := nil;
+          CD.Path := '';
           CDFindedList.Add(CD);
         end;
         if CanUserNotify then
@@ -1186,31 +1131,35 @@ begin
   end;
 end;
 
-function TCDDBMapping.GetCDByName(CDName: string): PCDClass;
+function TCDDBMapping.GetCDByName(CDName: string): TCDClass;
 var
   I: Integer;
+  CD : TCDClass;
 begin
   Result := nil;
   for I := 0 to CDLoadedList.Count - 1 do
   begin
-    if AnsiLowerCase(PCDClass(CDLoadedList[I]).name) = AnsiLowerCase(CDName) then
+    CD := TCDClass(CDLoadedList[I]);
+    if AnsiLowerCase(CD.Name) = AnsiLowerCase(CDName) then
     begin
-      Result := PCDClass(CDLoadedList[I]);
+      Result := CD;
       Break;
     end;
   end;
 end;
 
-function TCDDBMapping.GetCDByNameInternal(CDName: string): PCDClass;
+function TCDDBMapping.GetCDByNameInternal(CDName: string): TCDClass;
 var
   I: Integer;
+  CD : TCDClass;
 begin
   Result := nil;
   for I := 0 to CDFindedList.Count - 1 do
   begin
-    if AnsiLowerCase(PCDClass(CDFindedList[I]).name) = AnsiLowerCase(CDName) then
+    CD := TCDClass(CDFindedList[I]);
+    if AnsiLowerCase(CD.Name) = AnsiLowerCase(CDName) then
     begin
-      Result := PCDClass(CDFindedList[I]);
+      Result := CD;
       Break;
     end;
   end;
@@ -1230,19 +1179,19 @@ end;
 
 procedure TCDDBMapping.RemoveCDMapping(CDName: string);
 var
-  CD: PCDClass;
+  CD: TCDClass;
 begin
   CD := GetCDByName(CDName);
   if CD <> nil then
   begin
-    FreeMem(CD.Path);
-    CD.Path := nil;
+    CDLoadedList.Remove(CD);
+    F(CD);
   end;
 end;
 
 procedure TCDDBMapping.SetCDWithNOQuestion(CDName: string);
 var
-  CD: PCDClass;
+  CD: TCDClass;
 begin
   CD := GetCDByNameInternal(CDName);
   if CD <> nil then
@@ -1253,20 +1202,65 @@ procedure TCDDBMapping.UnProcessPath(var Path: string);
 var
   I: Integer;
   CDPath: string;
+  CD: TCDClass;
 begin
   for I := 0 to CDLoadedList.Count - 1 do
   begin
-    if PCDClass(CDLoadedList[I]).Path <> nil then
+    CD := TCDClass(CDLoadedList[I]);
+    if CD.Path <> '' then
     begin
-      CDPath := PCDClass(CDLoadedList[I]).Path;
+      CDPath := CD.Path;
       UnFormatDir(CDPath);
       if AnsiLowerCase(Copy(Path, 1, Length(CDPath))) = AnsiLowerCase(CDPath) then
       begin
         Delete(Path, 1, Length(CDPath));
-        Path := AnsiLowerCase('::' + PCDClass(CDLoadedList[I]).name + '::' + Path);
+        Path := AnsiLowerCase('::' + CD.name + '::' + Path);
       end;
     end;
   end;
+end;
+
+{ TCDIndexMappingDirectory }
+
+function TCDIndexMappingDirectory.Add(
+  Item: TCDIndexMappingDirectory): Integer;
+begin
+  FFiles.Add(Item);
+end;
+
+constructor TCDIndexMappingDirectory.Create;
+begin
+  FFiles := TList.Create;
+  Parent := nil;
+end;
+
+procedure TCDIndexMappingDirectory.Delete(Index: Integer);
+begin
+  Items[Index].Free;
+  FFiles.Delete(Index);
+end;
+
+destructor TCDIndexMappingDirectory.Destroy;
+begin
+  FreeList(FFiles);
+  inherited;
+end;
+
+function TCDIndexMappingDirectory.GetCount: Integer;
+begin
+  Result := FFiles.Count;
+end;
+
+function TCDIndexMappingDirectory.GetFileByIndex(
+  FileIndex: Integer): TCDIndexMappingDirectory;
+begin
+  Result := FFiles[FileIndex];
+end;
+
+procedure TCDIndexMappingDirectory.Remove(var Item: TCDIndexMappingDirectory);
+begin
+  FFiles.Remove(Item);
+  Item.Free;
 end;
 
 initialization

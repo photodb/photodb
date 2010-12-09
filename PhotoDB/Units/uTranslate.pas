@@ -51,7 +51,7 @@ type
     procedure Init;
     destructor Destroy; override;
     procedure LoadTranslationList;
-    function LocateString(const Original, Scope: string): string;
+    function LocateString(Original, Scope: string): string;
     property Name : string read FName;
     property ImageName : string read FImageName;
     property Autor : string read FAutor;
@@ -317,11 +317,11 @@ var
 begin
   NameAttr := Node.attributes.getNamedItem('name');
   if NameAttr <> nil then
-    FOriginal := NameAttr.text;
+    FOriginal := StringReplace(NameAttr.text, '$nl$', #13, [rfReplaceAll]);
 
   ValueAttr := Node.attributes.getNamedItem('value');
   if ValueAttr <> nil then
-    FTranslate := ValueAttr.text;
+    FTranslate := StringReplace(ValueAttr.text, '$nl$', #13, [rfReplaceAll]);
 end;
 
 { TLanguage }
@@ -393,12 +393,13 @@ begin
   end;
 end;
 
-function TLanguage.LocateString(const Original, Scope: string): string;
+function TLanguage.LocateString(Original, Scope: string): string;
 var
   I : Integer;
   FScope : TLanguageScope;
 
 begin
+  Original := StringReplace(Original, '$nl$', #13, [rfReplaceAll]);
   Result := Original;
 
   //if some form uses a lot of translations - try to cache form scope
