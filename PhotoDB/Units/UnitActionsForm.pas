@@ -5,9 +5,16 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, WebLink, ImgList, Dolphin_DB, ImageHistoryUnit,
-  UnitDBDeclare, UnitDBFileDialogs, uDBForm;
+  UnitDBDeclare, UnitDBFileDialogs, uDBForm, uMemory;
 
 type
+  TActionObject = class(TObject)
+  public
+    Action : string;
+    ImageIndex : Integer;
+    constructor Create(AAction : string; AImageIndex : Integer);
+  end;
+
   TActionsForm = class(TDBForm)
     ActionList: TListBox;
     TopPanel: TPanel;
@@ -24,19 +31,19 @@ type
     procedure LoadFromFileLinkClick(Sender: TObject);
   private
     { Private declarations }
+    FParent: TDBForm;
+    Actions: TList;
+    Cursor: Integer;
   protected
+    { Protected declarations }
     function GetFormID : string; override;
   public
-    FParent: TForm;
-    Actions: TArStrings;
-    ActionImages: TArInteger;
-    Cursor: Integer;
+    { Public declarations }
     procedure LoadLanguage;
     procedure AddAction(Action: string; Atype: THistoryAction);
-    procedure SetParent(Parent: TForm);
+    procedure SetParentForm(Parent: TDBForm);
     procedure LoadIcons;
     procedure Reset;
-    { Public declarations }
   end;
 
 var
@@ -44,7 +51,8 @@ var
 
 implementation
 
- uses UnitDBKernel, ImEditor, EffectsToolUnit;
+uses
+  UnitDBKernel, ImEditor, EffectsToolUnit;
 
 {$R *.dfm}
 
@@ -57,8 +65,7 @@ begin
   CloseLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EXIT + 1]);
   ActionsImageList.BkColor := ClWindow;
   Cursor := 0;
-  SetLength(Actions, 0);
-  SetLength(ActionImages, 0);
+  Actions := TList.Create;
 end;
 
 procedure TActionsForm.CloseLinkClick(Sender: TObject);
@@ -84,6 +91,7 @@ var
   ID, Filter_ID, Filter_Name, StrAction: string;
   Ico, I: Integer;
   EM: TEffectsManager;
+  ActionObject : TActionObject;
 begin
   if (Atype = [THA_Undo]) then
   begin
@@ -98,13 +106,14 @@ begin
 
   if (Atype = [THA_Add]) then
   begin
-    if Cursor <> Length(Actions) then
+    if Cursor <> Actions.Count then
     begin
-      for I := 1 to Length(Actions) - Cursor do
+      for I := 1 to Actions.Count - Cursor do
+      begin
         ActionList.Items.Delete(Cursor);
-
-      Setlength(Actions, Cursor);
-      Setlength(ActionImages, Cursor);
+        TObject(Actions[Cursor]).Free;
+        Actions.Delete(Cursor);
+      end;
     end;
 
     Inc(Cursor);
@@ -114,71 +123,72 @@ begin
     if ID = '{59168903-29EE-48D0-9E2E-7F34C913B94A}' then
     begin
       Ico := 0;
-      StrAction := L('Open');
+      StrAction := L('Open', 'Editor');
     end;
     if ID = '{5AA5CA33-220E-4D1D-82C2-9195CE6DF8E4}' then
     begin
       Ico := 1;
-      StrAction := L('Crop');
+      StrAction := L('Crop', 'Editor');
     end;
     if ID = '{747B3EAF-6219-4A96-B974-ABEB1405914B}' then
     begin
       Ico := 2;
-      StrAction := L('Rotate');
+      StrAction := L('Rotate', 'Editor');
     end;
     if ID = '{29C59707-04DA-4194-9B53-6E39185CC71E}' then
     begin
       Ico := 3;
-      StrAction := L('Resize');
+      StrAction := L('Resize', 'Editor');
     end;
     if ID = '{2AA20ABA-9205-4655-9BCE-DF3534C4DD79}' then
     begin
       EM := TEffectsManager.Create;
-      EM.InitializeBaseEffects;
-      Filter_Name := EM.GetEffectNameByID(Filter_ID);
-      EM.Free;
+      try
+        EM.InitializeBaseEffects;
+        Filter_Name := EM.GetEffectNameByID(Filter_ID);
+      finally
+        F(EM);
+      end;
       Ico := 4;
-      StrAction := L('Effects') + ' [' + Filter_Name + ']';
+      StrAction := L('Effects', 'Editor') + ' [' + Filter_Name + ']';
     end;
     if ID = '{E20DDD6C-0E5F-4A69-A689-978763DE8A0A}' then
     begin
       Ico := 5;
-      StrAction := L('Colors');
+      StrAction := L('Colors', 'Editor');
     end;
     // red
     if ID = '{3D2B384F-F4EB-457C-A11C-BDCE1C20FFFF}' then
     begin
       Ico := 6;
-      StrAction := L('Red eye');
+      StrAction := L('Red eye', 'Editor');
     end;
     // text
     if ID = '{E52516CC-8235-4A1D-A135-6D84A2E298E9}' then
     begin
       Ico := 7;
-      StrAction := L('Text');
+      StrAction := L('Text', 'Editor');
     end;
     // brush
     if ID = '{542FC0AD-A013-4973-90D4-E6D6E9F65D2C}' then
     begin
       Ico := 8;
-      StrAction := L('Brush');
+      StrAction := L('Brush', 'Editor');
     end;
     // insert
     if ID = '{CA9E5AFD-E92D-4105-8F7B-978A6EBA9D74}' then
     begin
       Ico := 9;
-      StrAction := L('Insert image');
+      StrAction := L('Insert image', 'Editor');
     end;
 
+    ActionObject := TActionObject.Create(StrAction, Ico);
+    Actions.Add(ActionObject);
     ActionList.Items.Add(StrAction);
-    SetLength(Actions, Length(Actions) + 1);
-    Actions[Length(Actions) - 1] := Action;
-    SetLength(ActionImages, Length(ActionImages) + 1);
-    ActionImages[Length(ActionImages) - 1] := Ico;
   end;
 end;
 
-procedure TActionsForm.SetParent(Parent: TForm);
+procedure TActionsForm.SetParentForm(Parent: TDBForm);
 begin
   FParent := Parent;
 end;
@@ -228,7 +238,7 @@ begin
       ActionList.Canvas.Brush.Color := ClWindow;
     ActionList.Canvas.Rectangle(Rect.Left, Rect.Top, Rect.Left + 20, Rect.Top + 20);
   end;
-  ActionsImageList.Draw(ActionList.Canvas, Rect.Left + 2, Rect.Top + 2, ActionImages[index]);
+  ActionsImageList.Draw(ActionList.Canvas, Rect.Left + 2, Rect.Top + 2, TActionObject(Actions[index]).ImageIndex);
   ActionList.Canvas.Font.Color := clWindowText;
   ActionList.Canvas.TextOut(Rect.Left + 25, Rect.Top + 2, ActionList.Items[index]);
 end;
@@ -237,17 +247,27 @@ procedure TActionsForm.SaveToFileLinkClick(Sender: TObject);
 var
   SaveDialog: DBSaveDialog;
   FileName: string;
+  StringActions : TStrings;
+  I : Integer;
 begin
   SaveDialog := DBSaveDialog.Create;
   try
-    SaveDialog.Filter := 'PhotoDB Actions (*.dbact)|*.dbact';
+    SaveDialog.Filter := L('PhotoDB actions file (*.dbact)|*.dbact');
     SaveDialog.FilterIndex := 1;
     if SaveDialog.Execute then
     begin
       FileName := SaveDialog.FileName;
       if GetEXT(FileName) <> 'DBACT' then
         FileName := FileName + '.dbact';
-      SaveActionsTofile(FileName, Actions);
+
+      StringActions := TStringList.Create;
+      try
+        for I := 0 to Actions.Count - 1 do
+          StringActions.Add(TActionObject(Actions[I]).Action);
+        SaveActionsTofile(FileName, StringActions);
+      finally
+        F(StringActions);
+      end;
     end;
   finally
     SaveDialog.Free;
@@ -259,31 +279,45 @@ var
   AActions: TArStrings;
   OpenDialog: DBOpenDialog;
 begin
-
   OpenDialog := DBOpenDialog.Create;
-  OpenDialog.Filter := 'PhotoDB Actions (*.dbact)|*.dbact';
-  OpenDialog.FilterIndex := 1;
-  // TODO: load file list from directory actions!
-  SetLength(AActions, 0);
-  if OpenDialog.Execute then
-  begin
-    AActions := LoadActionsFromfileA(OpenDialog.FileName);
-    TImageEditor(FParent).ReadActions(AActions);
+  try
+    OpenDialog.Filter := L('PhotoDB actions file (*.dbact)|*.dbact');
+    OpenDialog.FilterIndex := 1;
+    // TODO: load file list from directory actions!
+    SetLength(AActions, 0);
+    if OpenDialog.Execute then
+    begin
+      AActions := LoadActionsFromfileA(OpenDialog.FileName);
+      TImageEditor(FParent).ReadActions(AActions);
+    end;
+  finally
+    F(OpenDialog);
   end;
-  OpenDialog.Free;
 end;
 
 procedure TActionsForm.Reset;
+var
+  I : Integer;
 begin
   ActionList.Items.Clear;
   Cursor := 0;
-  Setlength(Actions, 0);
-  Setlength(ActionImages, 0);
+  for I := 0 to Actions.Count - 1 do
+    TObject(Actions[I]).Free;
+
+  Actions.Clear;
 end;
 
 function TActionsForm.GetFormID: string;
 begin
   Result := 'ActionsList';
+end;
+
+{ TActionObject }
+
+constructor TActionObject.Create(AAction: string; AImageIndex: Integer);
+begin
+  Action := AAction;
+  ImageIndex := AImageIndex;
 end;
 
 end.

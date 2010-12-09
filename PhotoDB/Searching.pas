@@ -2238,6 +2238,7 @@ end;
 
 procedure TSearchForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  ClearItems;
   SaveQueryList;
   SearchManager.RemoveSearch(Self);
   Hide;

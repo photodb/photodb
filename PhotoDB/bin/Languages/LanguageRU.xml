@@ -914,4 +914,50 @@
 	<translate name="Disk" value="Диск" />
 	<translate name="Was loaded disc labeled &quot;%s&quot;, but required the disc labeled &quot;%s&quot;! Do you want to close this dialog?" value="Был загружен диск с меткой &quot;%s&quot;, но требуется диск с меткой &quot;%s&quot;! Хотите ли вы закрыть этот диалог?" />
   </scope>
+  <scope name="SelectFont">
+	<translate name="Select font" value="Выбрать шрифт" />
+	<translate name="Current font" value="Текущий шрифт" />
+	<translate name="New font" value="Новый шрифт" />
+	<translate name="Select font from list below" value="Выберите шрифт со списка ниже" />
+  </scope>
+  <scope name="Editor">
+	<translate name="Unable to open the image as you edit another image." value="Невозможно открыть изображение т.к. выполняется редактирование другого изображения." />
+	<translate name="Current font" value="Текущий шрифт" />
+	<translate name="Zoom in" value="Увеличить" />
+	<translate name="Zoom out" value="Уменьшить" />
+	<translate name="Save" value="Сохранить" />
+	<translate name="100%" value="100%" />
+	<translate name="Fit to window" value="Лучший размер" />
+	<translate name="Undo" value="Отменить" />
+	<translate name="Redo" value="Вопротить" />
+	<translate name="Open" value="Открыть" />
+	<translate name="Crop" value="Кадрировать" />	
+	<translate name="Rotate" value="Повернуть" />	
+	<translate name="Resize" value="Размер" />	
+	<translate name="Effects" value="Эффекты" />	
+	<translate name="Colors" value="Цвета" />	
+	<translate name="Red eye" value="Красный глаз" />	
+	<translate name="Search" value="Искать" />	
+	<translate name="Explorer" value="Проводник" />	
+	<translate name="Properties" value="Свойства" />	
+	<translate name="Exit" value="Выход" />	
+	<translate name="Paste" value="Вставить" />	
+	<translate name="Open file" value="Открыть файл" />	
+	<translate name="Full screen" value="На весь экран" />	
+	<translate name="Copy" value="Копировать" />	
+	<translate name="Print" value="Печать" />	
+	<translate name="Brush" value="Кисть" />	
+	<translate name="Insert image" value="Наложение" />
+	<translate name="Text" value="Текст" />
+	<translate name="New editor" value="Новый редактор" />
+	<translate name="Actions" value="Действия" />
+	<translate name="For an unsaved file, the properties are not available." value="Для несохранённого файла, свойства недоступны." />
+  </scope>
+  <scope name="ActionsList">
+	<translate name="Actions" value="Действия" />
+	<translate name="Save to file" value="Сохранить в файл" />
+	<translate name="Load from file" value="Загрузить из файла" />
+	<translate name="Close" value="Закрыть" />
+	<translate name="PhotoDB actions file (*.dbact)|*.dbact" value="PhotoDB действия (*.dbact)|*.dbact" />
+  </scope>
 </language>

@@ -2,18 +2,10 @@ unit ExEffectFormUnit;
 
 interface
 
-{$DEFINE PHOTODB}
-
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Buttons, ExEffects, Language,
-  EffectsLanguage, ToolsUnit, ScrollingImage, Math,
-
- {$IFDEF PHOTODB}
-  Dolphin_DB, uGOM, AppEvnts
- {$ENDIF}
-
-  ;
+  EffectsLanguage, ToolsUnit, ScrollingImage, Math,  Dolphin_DB, uGOM, AppEvnts;
 
 type
   TExEffectForm = class(TForm)
@@ -49,19 +41,19 @@ type
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
   private
-  FEffect : TExEffect;
-  FOwner : TToolsPanelClass;
-  FInitialString : string;     
-   InitiatedByString : boolean;
+    { Private declarations }
+    FEffect: TExEffect;
+    FOwner: TToolsPanelClass;
+    FInitialString: string;
+    InitiatedByString: Boolean;
     FEditor: TForm;
     procedure SetEditor(const Value: TForm);
-    { Private declarations }
   public
-  function Execute(Owner : TToolsPanelClass; S,D : TBitmap; Effect: TExEffectsClass; var InitialString : string) : boolean;
-  procedure SetImage(Image : TBitmap);
     { Public declarations }
-  published
-  property Editor : TForm read FEditor write SetEditor;
+    function Execute(Owner: TToolsPanelClass; S, D: TBitmap; Effect: TExEffectsClass;
+      var InitialString: string): Boolean;
+    procedure SetImage(Image: TBitmap);
+    property Editor: TForm read FEditor write SetEditor;
   end;
 
 implementation
@@ -74,61 +66,67 @@ uses EffectsToolUnit, ImEditor;
 
 function TExEffectForm.Execute(Owner : TToolsPanelClass; S,D : TBitmap; Effect: TExEffectsClass; var InitialString : string): boolean;
 begin
- FInitialString:=InitialString;
- if FInitialString<>'' then
- begin
-  SpeedButton1.Enabled:=false;
-  SpeedButton2.Enabled:=false;
-  EffectPanel.Enabled:=false;
-  CheckBox1.Enabled:=false;
-  CheckBox2.Enabled:=false;
-  Button2.Enabled:=false;
-  Button1.Enabled:=false;
-  InitiatedByString:=true;
- end else InitiatedByString:=false;
- FOwner:=Owner;
- FEffect:=Effect.Create;
- FEffect.SetImageProc:=SetImage;
- FEffect.Editor:=Editor;
- if InitiatedByString then
- begin
-  FEffect.Execute(S,D,EffectPanel,false);
-  FEffect.SetProperties(InitialString);
- end else FEffect.Execute(S,D,EffectPanel,true);
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- if not InitiatedByString then
- begin
-  OriginalImage.Picture.Assign(S);
-  NewImage.Picture.Assign(S);
- end;
- ShowModal;
- InitialString:=FInitialString;
- Result:=true;
+  FInitialString := InitialString;
+  if FInitialString <> '' then
+  begin
+    SpeedButton1.Enabled := False;
+    SpeedButton2.Enabled := False;
+    EffectPanel.Enabled := False;
+    CheckBox1.Enabled := False;
+    CheckBox2.Enabled := False;
+    Button2.Enabled := False;
+    Button1.Enabled := False;
+    InitiatedByString := True;
+  end
+  else
+    InitiatedByString := False;
+  FOwner := Owner;
+  FEffect := Effect.Create;
+  FEffect.SetImageProc := SetImage;
+  FEffect.Editor := Editor;
+  if InitiatedByString then
+  begin
+    FEffect.Execute(S, D, EffectPanel, False);
+    FEffect.SetProperties(InitialString);
+  end
+  else
+    FEffect.Execute(S, D, EffectPanel, True);
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  if not InitiatedByString then
+  begin
+    OriginalImage.Picture.Assign(S);
+    NewImage.Picture.Assign(S);
+  end;
+  ShowModal;
+  InitialString := FInitialString;
+  Result := True;
 end;
 
 procedure TExEffectForm.Button2Click(Sender: TObject);
 begin
- (FOwner as TEffectsToolPanelClass).CancelTempImage(true);
- Close;
+  (FOwner as TEffectsToolPanelClass).CancelTempImage(True);
+  Close;
 end;
 
 procedure TExEffectForm.FormCreate(Sender: TObject);
 begin
- FEffect:=nil;
- Button2.Caption:=TEXT_MES_CANCEL;
- Button1.Caption:=TEXT_MES_OK;
- Caption:=TEXT_MES_EX_EFFECTS;
- CheckBox1.Caption:=TEXT_MES_PREVIEW;
- CheckBox2.Caption:=TEXT_MES_LAYERED;
+  FEffect := nil;
+  Button2.Caption := TEXT_MES_CANCEL;
+  Button1.Caption := TEXT_MES_OK;
+  Caption := TEXT_MES_EX_EFFECTS;
+  CheckBox1.Caption := TEXT_MES_PREVIEW;
+  CheckBox2.Caption := TEXT_MES_LAYERED;
 end;
 
 procedure TExEffectForm.FormDestroy(Sender: TObject);
 begin
- if GOM.IsObj(FEffect) then
- if FEffect<>nil then FEffect.Free;
- (Editor as TImageEditor).FStatusProgress.Position:=0;
- (Editor as TImageEditor).StatusBar1.Panels[0].Text:='';
+  if GOM.IsObj(FEffect) then
+    if FEffect <> nil then
+      FEffect.Free;
+
+  (Editor as TImageEditor).FStatusProgress.Position := 0;
+  (Editor as TImageEditor).StatusBar1.Panels[0].Text := '';
 end;
 
 procedure TExEffectForm.SetImage(Image: TBitmap);
@@ -221,33 +219,31 @@ end;
 
 procedure TExEffectForm.CheckBox2Click(Sender: TObject);
 begin
- AlphaBlend:=CheckBox2.Checked;
+  AlphaBlend := CheckBox2.Checked;
 end;
 
 procedure TExEffectForm.TrackBar1Change(Sender: TObject);
 begin
- AlphaBlendvalue:=255-Round(TrackBar1.Position*255/20);
+  AlphaBlendvalue := 255 - Round(TrackBar1.Position * 255 / 20);
 end;
 
 procedure TExEffectForm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
- if Key=#27 then
- begin
-  Button2Click(Sender);
- end;
+  if Ord(Key) = VK_ESCAPE then
+    Button2Click(Sender);
 end;
 
 procedure TExEffectForm.Timer1Timer(Sender: TObject);
 begin
- {$IFDEF PHOTODB}
- if CtrlKeyDown and Active then
- begin
-  if Visible then Hide;
- end else
- begin
-  if not Visible then Show;
- end
- {$ENDIF}
+  if CtrlKeyDown and Active then
+  begin
+    if Visible then
+      Hide;
+  end else
+  begin
+    if not Visible then
+      Show;
+  end
 end;
 
 procedure TExEffectForm.SetEditor(const Value: TForm);
@@ -258,11 +254,15 @@ end;
 procedure TExEffectForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
- if not Active then Exit;
- if Msg.message=522 then
- begin
-  if Msg.wParam<0 then SpeedButton1Click(nil) else SpeedButton2Click(nil);
- end;
+  if not Active then
+    Exit;
+  if Msg.message = 522 then
+  begin
+    if Msg.WParam < 0 then
+      SpeedButton1Click(nil)
+    else
+      SpeedButton2Click(nil);
+  end;
 end;
 
 end.

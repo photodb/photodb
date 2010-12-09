@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, uDBForm;
+  Dialogs, StdCtrls, Dolphin_DB, uDBForm, uMemory;
 
 type
   TFormSelectFont = class(TDBForm)
@@ -24,13 +24,13 @@ type
     procedure BtnCancelClick(Sender: TObject);
   private
     { Private declarations }
+    FOldFont: string;
+    procedure LoadLanguage;
   protected
     function GetFormID : string; override;
   public
     { Public declarations }
-    FOldFont: string;
     ExecutedOk: Boolean;
-    procedure LoadLanguage;
     function Execute(OldFont: string; out NewFont: string): Boolean;
   end;
 
@@ -48,7 +48,7 @@ begin
   try
     Result := FormSelectFont.Execute(OldFont, NewFont);
   finally
-    FormSelectFont.Release;
+    R(FormSelectFont);
   end;
 end;
 
@@ -78,7 +78,7 @@ begin
   with LstFonts.Canvas do
   begin
     Brush.Color := ClWindow;
-    Font.Color := ClWindow;
+    Font.Color := ClWindowText;
     FillRect(Rect);
     Font.name := LstFonts.Items[index];
     Font.Size := 0; // use font's preferred size
@@ -108,9 +108,9 @@ procedure TFormSelectFont.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Label1.Caption := L('Old font name');
-    Label2.Caption := L('New fnt name');
     Caption := L('Select font');
+    Label1.Caption := L('Current font');
+    Label2.Caption := L('New font');
     LbInfo.Caption := L('Select font from list below');
     BntOk.Caption := L('Ok');
     BtnCancel.Caption := L('Cancel');

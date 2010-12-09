@@ -28,7 +28,7 @@ object ImageEditor: TImageEditor
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
+  object SampleImage: TImage
     Left = 8
     Top = 48
     Width = 105
@@ -2794,17 +2794,17 @@ object ImageEditor: TImageEditor
       UseSpecIconSize = True
     end
   end
-  object ScrollBar1: TScrollBar
+  object ScrollBarH: TScrollBar
     Left = 0
     Top = 440
     Width = 489
     Height = 17
     PageSize = 0
     TabOrder = 2
-    OnChange = ScrollBar2Change
-    OnScroll = ScrollBar1Scroll
+    OnChange = ScrollBarVChange
+    OnScroll = ScrollBarHScroll
   end
-  object ScrollBar2: TScrollBar
+  object ScrollBarV: TScrollBar
     Left = 489
     Top = 41
     Width = 17
@@ -2812,8 +2812,8 @@ object ImageEditor: TImageEditor
     Kind = sbVertical
     PageSize = 0
     TabOrder = 3
-    OnChange = ScrollBar2Change
-    OnScroll = ScrollBar1Scroll
+    OnChange = ScrollBarVChange
+    OnScroll = ScrollBarHScroll
   end
   object NullPanel: TPanel
     Left = 488
@@ -2878,8 +2878,8 @@ object ImageEditor: TImageEditor
     Left = 232
     Top = 48
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
+  object PmMain: TPopupMenu
+    OnPopup = PmMainPopup
     Left = 272
     Top = 48
     object OpenFile1: TMenuItem

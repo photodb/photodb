@@ -409,7 +409,7 @@ procedure CopyFullRecordInfo(ID: Integer);
 
 function LoadActionsFromfileA(FileName: string): TArStrings;
 
-function SaveActionsTofile(FileName: string; Actions: TArstrings): Boolean;
+function SaveActionsToFile(FileName: string; Actions: TStrings): Boolean;
 procedure RenameFolderWithDB(Caller : TObject; OldFileName, NewFileName: string; Ask: Boolean = True);
 function GetDBViewMode: Boolean;
 function GetDBFileName(FileName, DBName: string): string;
@@ -4166,15 +4166,17 @@ begin
   end;
 end;
 
-function SaveActionsTofile(FileName: string; Actions: TArstrings): Boolean;
+function SaveActionsTofile(FileName: string; Actions: TStrings): Boolean;
 var
-  I, Length: Integer;
+  I, L: Integer;
   X: array of Byte;
   Fs: TFileStream;
+  Action : string;
 begin
   Result := False;
-  if System.Length(Actions) = 0 then
+  if Actions.Count = 0 then
     Exit;
+
   try
     Fs := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
   except
@@ -4197,13 +4199,14 @@ begin
     X[12] := Ord('V');
     X[13] := Ord('1');
     Fs.write(Pointer(X)^, 14);
-    Length := System.Length(Actions);
-    Fs.write(Length, SizeOf(Length));
-    for I := 0 to System.Length(Actions) - 1 do
+    L := Actions.Count;
+    Fs.write(L, SizeOf(L));
+    for I := 0 to Actions.Count - 1 do
     begin
-      Length := System.Length(Actions[I]);
-      Fs.write(Length, SizeOf(Length));
-      Fs.write(Actions[I, 1], System.Length(Actions[I]));
+      Action := Actions[I];
+      L := Length(Action);
+      Fs.write(L, SizeOf(L));
+      Fs.write(Action[1], Length(Action));
     end;
   except
     Fs.Free;
@@ -4219,12 +4222,12 @@ var
   S: string;
   X: array of Byte;
   Fs: Tfilestream;
-begin
-  SetLength(Result, 0);
-  if not FileExists(FileName) then
-    Exit;
-  try
-    Fs := Tfilestream.Create(Filename, FmOpenRead);
+  begin
+    SetLength(Result, 0);
+    if not FileExists(FileName) then
+      Exit;
+    try
+      Fs := Tfilestream.Create(Filename, FmOpenRead);
   except
     Exit;
   end;

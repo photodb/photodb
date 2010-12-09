@@ -2,206 +2,230 @@ unit ImageHistoryUnit;
 
 interface
 
-uses Graphics, Classes;
+uses Graphics, Classes, uMemory;
 
 type
   THistoryAct = (THA_Redo, THA_Undo, THA_Add, THA_Unknown);
   THistoryAction = set of THistoryAct;
 
-  TArBitmap = array of TBitmap;
-  TArString = array of string;
-  TNotifyHistoryEvent = procedure(Sender: TObject; Action : THistoryAction) of object;
+  TNotifyHistoryEvent = procedure(Sender: TObject; Action: THistoryAction) of object;
 
 type
-  TBitmapHistory = class(TObject)
-  fArray : TArBitmap;
-  fActionArray : TArString;
-  fposition : integer;
-//  fStrings : integer;
+  TBitmapHistoryItem = class(TObject)
   private
-    fOnChange: TNotifyHistoryEvent;
-//    fCount: integer;
-  procedure SetOnChange(const Value: TNotifyHistoryEvent);
-    { Private declarations }
+    FBitmap : TBitmap;
+    FAction : string;
   public
-  constructor Create;
-  destructor Destroy; override;
-  procedure Add(Image : TBitmap; Action : String);
-//  procedure AddPointer(Image : TBitmap);
-  Function CanBack : boolean;
-  Function CanForward : boolean;
-  Function GetCurrentPos : integer;
-  Function DoBack : TBitmap;
-  Function DoForward : TBitmap;
-  Property OnHistoryChange : TNotifyHistoryEvent read fOnChange write SetOnChange;
-  Function LastImage : TBitmap;
-  Function GetBackHistory : TArBitmap;
-  Function GetForwardHistory : TArBitmap;
-  Property Actions : TArString read fActionArray;
-  Procedure Clear;
+    constructor Create(ABitmap : TBitmap; AAction : string);
+    destructor Destroy; override;
+    property Bitmap : TBitmap read FBitmap;
+    property Action : string read FAction;
+  end;
+
+  TBitmapHistory = class(TObject)
+  private
+    { Private declarations }
+    FArray: TList;
+    FPosition: Integer;
+    FOnChange: TNotifyHistoryEvent;
+    procedure SetOnChange(const Value: TNotifyHistoryEvent);
+    function GetImageByIndex(Index: Integer): TBitmap;
+    function GetCount: Integer;
+    function GetItemByIndex(Index: Integer): TBitmapHistoryItem;
+    function GetActionByIndex(Index: Integer): string;
+  protected
+    property Items[Index : Integer] : TBitmapHistoryItem read GetItemByIndex;
+  public
     { Public declarations }
+    constructor Create;
+    destructor Destroy; override;
+    procedure Add(Image: TBitmap; Action: string);
+    function CanBack: Boolean;
+    function CanForward: Boolean;
+    function GetCurrentPos: Integer;
+    function DoBack: TBitmap;
+    function DoForward: TBitmap;
+    function LastImage: TBitmap;
+    procedure Clear;
+    property OnHistoryChange: TNotifyHistoryEvent read FOnChange write SetOnChange;
+    property Images[Index : Integer] : TBitmap read GetImageByIndex;
+    property Actions[Index : Integer] : string read GetActionByIndex;
+    property Count : Integer read GetCount;
+    property Position : Integer read FPosition;
   end;
 
 implementation
 
-{ TStringsHistoryW }
+{ TBitmapHistory }
 
 procedure TBitmapHistory.Add(Image: TBitmap; Action : String);
 var
-  i : integer;
-begin
- If Fposition=Length(fArray)-1 then
- begin
-  SetLength(fArray,Length(fArray)+1);
-  fArray[Length(fArray)-1]:=TBitmap.Create;
-  fArray[Length(fArray)-1].PixelFormat:=pf24bit;
-  fArray[Length(fArray)-1].Assign(Image);
+  I: Integer;
 
-  SetLength(fActionArray,Length(fActionArray)+1);
-  fActionArray[Length(fActionArray)-1]:=Action;
-
-  Fposition:=Length(fArray)-1;
- end else
- begin
-  For i:=Fposition+1 to length(fArray)-1 do
+  procedure AddImage;
+  var
+    Item : TBitmapHistoryItem;
   begin
-   fArray[i].free;
-   fActionArray[i]:='';
+    Item := TBitmapHistoryItem.Create(Image, Action);
+    FArray.Add(Item);
+    FPosition := FArray.Count - 1;
   end;
-  SetLength(fArray,Fposition+2);
-  SetLength(fActionArray,Fposition+2);
-  fArray[Fposition+1]:=TBitmap.Create;
-  fArray[Fposition+1].PixelFormat:=pf24bit;
-  fArray[Fposition+1].Assign(Image);
-  fActionArray[Fposition+1]:=Action;
-  Fposition:=Fposition+1;
- end;
- If Assigned(OnHistoryChange) Then OnHistoryChange(Self,[THA_Add]);
+
+begin
+  if FPosition = FArray.Count - 1 then
+    AddImage
+  else
+  begin
+    for I := FArray.Count - 1 downto FPosition + 1 do
+    begin
+      Items[I].Free;
+      FArray.Delete(I);
+    end;
+    AddImage;
+  end;
+
+  if Assigned(OnHistoryChange) then
+    OnHistoryChange(Self, [THA_Add]);
 end;
 
-function TBitmapHistory.CanBack: boolean;
+function TBitmapHistory.CanBack: Boolean;
 begin
- If Fposition=-1 then
- begin
-  Result:=false;
- end else
- begin
-  if FPosition>0 then Result:=True else Result:=false;
- end;
+  if Fposition = -1 then
+  begin
+    Result := False;
+  end else
+  begin
+    if FPosition > 0 then
+      Result := True
+    else
+      Result := False;
+  end;
 end;
 
-function TBitmapHistory.CanForward: boolean;
+function TBitmapHistory.CanForward: Boolean;
 begin
- if FPosition=-1 then
- begin
-  Result:=false;
-  Exit;
- end else
- begin
-  if (Fposition<>Length(fArray)-1) and (Length(fArray)<>1) then
-  Result:=True else Result:=false;
- end;
+  if FPosition = -1 then
+  begin
+    Result := False;
+    Exit;
+  end else
+  begin
+    if (Fposition <> FArray.Count - 1) and (FArray.Count <> 1) then
+      Result := True
+    else
+      Result := False;
+  end;
 end;
 
 procedure TBitmapHistory.Clear;
 var
-  i : integer;
+  I: Integer;
 begin
- Fposition:=-1;
- for i:=0 to Length(fArray)-1 do
- begin
-  fArray[i].free;
-  fActionArray[i]:='';
- end;
- SetLength(fArray,0);  
- SetLength(fActionArray,0);
+  Fposition := -1;
+  for I := 0 to Count - 1 do
+    Items[I].Free;
+
+  FArray.Clear;
 end;
 
 constructor TBitmapHistory.create;
 begin
- Inherited;
- Fposition:=-1;
- SetLength(fArray,0);
- SetLength(fActionArray,0);
- fOnChange:=nil;
+  inherited;
+  FPosition := -1;
+  FArray := TList.Create;
+  FOnChange := nil;
 end;
 
 destructor TBitmapHistory.Destroy;
 begin
- Clear;
- SetLength(fArray,0);
- SetLength(fActionArray,0);
- inherited;
+  Clear;
+  F(FArray);
+  inherited;
 end;
 
 function TBitmapHistory.DoBack: TBitmap;
 begin
- Result:=nil;
- If FPosition=-1 then Exit;
- if FPosition=0 then Result:=fArray[0] else
- begin
-  Dec(FPosition);
-  Result:=fArray[FPosition];
- end;
- If Assigned(OnHistoryChange) Then OnHistoryChange(Self,[THA_Undo]);
+  Result := nil;
+  if FPosition = -1 then
+    Exit;
+  if FPosition = 0 then
+    Result := FArray[0]
+  else
+  begin
+    Dec(FPosition);
+    Result := FArray[FPosition];
+  end;
+  if Assigned(OnHistoryChange) then
+    OnHistoryChange(Self, [THA_Undo]);
 end;
 
 function TBitmapHistory.DoForward: TBitmap;
 begin
- Result:=nil;
- If FPosition=-1 then Exit;
- if (Fposition=Length(fArray)-1) or (Length(fArray)=1) then Result:=fArray[Length(fArray)-1] else
- begin
-  Inc(FPosition);
-  Result:=fArray[FPosition];
- end;
- If Assigned(OnHistoryChange) Then OnHistoryChange(Self,[THA_Redo]);
+  Result := nil;
+  if FPosition = -1 then
+    Exit;
+  if (Fposition = FArray.Count - 1) or (FArray.Count = 1) then
+    Result := Items[FArray.Count - 1].Bitmap
+  else
+  begin
+    Inc(FPosition);
+    Result := Items[FPosition].Bitmap;
+  end;
+  if Assigned(OnHistoryChange) then
+    OnHistoryChange(Self, [THA_Redo]);
 end;
 
-
-function TBitmapHistory.GetBackHistory: TArBitmap;
-var
-  i : integer;
+function TBitmapHistory.GetActionByIndex(Index: Integer): string;
 begin
- SetLength(Result,0);
- If FPosition=-1 then Exit;
- For i:=0 to FPosition-1 do
- begin
-  SetLength(Result,Length(Result)+1);
-  Result[i]:=fArray[i];
-//  Result[i].Tag:=i;
- end;
+  Result := Items[Index].Action;
+end;
+
+function TBitmapHistory.GetCount: Integer;
+begin
+  Result := FArray.Count;
 end;
 
 function TBitmapHistory.GetCurrentPos: integer;
 begin
- Result:=FPosition+1;
+  Result := FPosition + 1;
 end;
 
-function TBitmapHistory.GetForwardHistory: TArBitmap;
-var
-  i : integer;
+function TBitmapHistory.GetImageByIndex(Index: Integer): TBitmap;
 begin
- SetLength(Result,0);
- If FPosition=-1 then Exit;
- For i:=FPosition+1 to Length(fArray)-1 do
- begin
-  SetLength(Result,Length(Result)+1);
-  Result[i-FPosition-1]:=fArray[i];
-//  Result[i-FPosition-1].Tag:=i;
- end;
+  Result := Items[Index].Bitmap;
+end;
+
+function TBitmapHistory.GetItemByIndex(Index: Integer): TBitmapHistoryItem;
+begin
+  Result := FArray[Index];
 end;
 
 function TBitmapHistory.LastImage: TBitmap;
 begin
- Result:=nil;
- if FPosition=-1 then Exit;
- Result:=fArray[FPosition];
+  Result := nil;
+  if FPosition = -1 then
+    Exit;
+  Result := Items[FPosition].Bitmap;
 end;
 
 procedure TBitmapHistory.SetOnChange(const Value: TNotifyHistoryEvent);
 begin
- fOnChange:=Value;
+  FOnChange := Value;
+end;
+
+{ TBitmapHistoryItem }
+
+constructor TBitmapHistoryItem.Create(ABitmap: TBitmap; AAction: string);
+begin
+  FBitmap := TBitmap.Create;
+  FBitmap.Assign(ABitmap);
+  FAction := AAction;
+end;
+
+destructor TBitmapHistoryItem.Destroy;
+begin
+  F(FBitmap);
+  inherited;
 end;
 
 end.

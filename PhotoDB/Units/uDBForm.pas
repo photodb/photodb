@@ -17,7 +17,8 @@ type
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
-    function L(StringToTranslate : string) : string;
+    function L(StringToTranslate : string) : string; overload;
+    function L(StringToTranslate : string; Scope : string) : string; overload;
     procedure BeginTranslate;
     procedure EndTranslate;
   end;
@@ -50,6 +51,11 @@ end;
 procedure TDBForm.EndTranslate;
 begin
   TTranslateManager.Instance.EndTranslate;
+end;
+
+function TDBForm.L(StringToTranslate : string; Scope : string) : string;
+begin
+  Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope)
 end;
 
 function TDBForm.L(StringToTranslate : string) : string;

@@ -129,7 +129,7 @@ begin
  MakeItLink.Visible:=true;
  MakeItLink.Color:=ClBtnface;
  MakeItLink.OnClick:=DoMakeImage;
- MakeItLink.Icon:=IcoOK;   
+ MakeItLink.Icon:=IcoOK;
  MakeItLink.ImageCanRegenerate:=True;
  IcoOK.Free;
 
@@ -187,7 +187,7 @@ var
 begin
  EM := TEffectsManager.Create;
  EM.InitializeBaseEffects;
- 
+
  BaseEffects:=EM.GetBaseEffects;
  ExEffects:=EM.GetExEffects;
 
@@ -197,7 +197,7 @@ begin
 
  //FilterInitialString:='a'; //////////!!!!!!!!!!
  Filter_ID:=Copy(OneEffectID,1,38);
- FilterInitialString:=Copy(OneEffectID,39,Length(OneEffectID)-38);  
+ FilterInitialString:=Copy(OneEffectID,39,Length(OneEffectID)-38);
  OutFilterInitialString:=FilterInitialString;
  for i:=0 to Length(BaseEffects)-1 do
  begin
@@ -349,12 +349,12 @@ begin
   MakeTransform;
   if Assigned(fOnDone) then fOnDone(self);
   Free;
- end; 
+ end;
 end;
 
 { TEffectsmanager }
 
-function BaseEffectProcW(Proc : TBaseEffectProc; Name : String; ID : ShortString) : TBaseEffectProcW;
+function BaseEffectProcW(Proc : TBaseEffectProc; Name : String; ID : string) : TBaseEffectProcW;
 begin
  Result.Proc:=Proc;
  Result.Name:=Name;
@@ -391,7 +391,7 @@ begin
   begin
    Result:=Effects[i].Name;
    exit;
-  end;      
+  end;
  end;
 
  for i:=0 to Length(ExEffects)-1 do
@@ -413,30 +413,30 @@ end;
 
 procedure TEffectsManager.InitializeBaseEffects;
 begin
- AddBaseEffect(BaseEffectProcW(Sepia,'Sepia','{CA27D483-3F3D-4805-B5CE-56E3D9C3F3ED}'));
- AddBaseEffect(BaseEffectProcW(GrayScaleImage,TEXT_MES_GRAYSCALE,'{92C0D214-A561-4AAA-937E-CD3110905524}'));
- AddBaseEffect(BaseEffectProcW(Dither,'Dither','{0A18043D-1696-4B18-A532-8B0EE731B865}'));
- AddBaseEffect(BaseEffectProcW(Inverse,TEXT_MES_INVERSE,'{62BE35C1-3C56-4AAC-B521-46076CB1DE20}'));
- AddBaseEffect(BaseEffectProcW(AutoLevels,TEXT_MES_AUTO_LEVELS,'{F28C1B08-8C3B-4522-BE41-64998F58AC31}'));
- AddBaseEffect(BaseEffectProcW(AutoColors,TEXT_MES_AUTO_COLORS,'{B09B7105-8FB8-4E1B-B1D5-09486B33ED5B}'));
- AddBaseEffect(BaseEffectProcW(Emboss,'Emboss','{1262A88E-55C5-4894-873F-ED458D1CDD8C}'));
- AddBaseEffect(BaseEffectProcW(AntiAlias,TEXT_MES_ANTIALIAS,'{C0EF3036-EFB4-459E-A16E-6DE8AA7D6EBD}'));
- AddBaseEffect(BaseEffectProcW(OptimizeImage,TEXT_MES_OPTIMIZE_IMAGE,'{718F3546-E030-4CBF-BE61-49DAD7232B10}'));
+  AddBaseEffect(BaseEffectProcW(Sepia, 'Sepia', '{CA27D483-3F3D-4805-B5CE-56E3D9C3F3ED}'));
+  AddBaseEffect(BaseEffectProcW(GrayScaleImage, TEXT_MES_GRAYSCALE, '{92C0D214-A561-4AAA-937E-CD3110905524}'));
+  AddBaseEffect(BaseEffectProcW(Dither, 'Dither', '{0A18043D-1696-4B18-A532-8B0EE731B865}'));
+  AddBaseEffect(BaseEffectProcW(Inverse, TEXT_MES_INVERSE, '{62BE35C1-3C56-4AAC-B521-46076CB1DE20}'));
+  AddBaseEffect(BaseEffectProcW(AutoLevels, TEXT_MES_AUTO_LEVELS, '{F28C1B08-8C3B-4522-BE41-64998F58AC31}'));
+  AddBaseEffect(BaseEffectProcW(AutoColors, TEXT_MES_AUTO_COLORS, '{B09B7105-8FB8-4E1B-B1D5-09486B33ED5B}'));
+  AddBaseEffect(BaseEffectProcW(Emboss, 'Emboss', '{1262A88E-55C5-4894-873F-ED458D1CDD8C}'));
+  AddBaseEffect(BaseEffectProcW(AntiAlias, TEXT_MES_ANTIALIAS, '{C0EF3036-EFB4-459E-A16E-6DE8AA7D6EBD}'));
+  AddBaseEffect(BaseEffectProcW(OptimizeImage, TEXT_MES_OPTIMIZE_IMAGE, '{718F3546-E030-4CBF-BE61-49DAD7232B10}'));
 
- AddExEffect(TDisorderEffect);
- AddExEffect(TGausBlur);
- AddExEffect(TSplitBlurEffect);
- AddExEffect(TSharpen);
- AddExEffect(TPixelsEffect);
- AddExEffect(TWaveEffect);
- AddExEffect(TGrayScaleEffect);
- AddExEffect(TSepeaEffect);
- AddExEffect(TReplaceColorEffect);
- AddExEffect(TAddColorNoiseEffect);
- AddExEffect(TAddMonoNoiseEffect);
- AddExEffect(TFishEyeEffect);
- AddExEffect(TTwistEffect);
- AddExEffect(TCustomMatrixEffect);
+  AddExEffect(TDisorderEffect);
+  AddExEffect(TGausBlur);
+  AddExEffect(TSplitBlurEffect);
+  AddExEffect(TSharpen);
+  AddExEffect(TPixelsEffect);
+  AddExEffect(TWaveEffect);
+  AddExEffect(TGrayScaleEffect);
+  AddExEffect(TSepeaEffect);
+  AddExEffect(TReplaceColorEffect);
+  AddExEffect(TAddColorNoiseEffect);
+  AddExEffect(TAddMonoNoiseEffect);
+  AddExEffect(TFishEyeEffect);
+  AddExEffect(TTwistEffect);
+  AddExEffect(TCustomMatrixEffect);
 
 end;
 

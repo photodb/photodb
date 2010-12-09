@@ -96,7 +96,7 @@ object ActionsForm: TActionsForm
   end
   object OpenDialog1: TOpenDialog
     Filter = 'PhotoDB Actions (*.dbact)|*.dbact'
-    Left = 128
-    Top = 152
+    Left = 80
+    Top = 104
   end
 end
