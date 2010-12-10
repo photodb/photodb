@@ -388,37 +388,42 @@ begin
     begin
       PassWord := DBkernel.FindPasswordForCryptBlobStream(TempTable.FieldByName('thum'));
       B := TBitmap.Create;
-      B.PixelFormat := Pf24bit;
+      try
+        B.PixelFormat := pf24bit;
+        B.Width := 102;
+        B.Height := 102;
+        FillColorEx(B, ClWindow);
 
-      B.Width := 102;
-      B.Height := 102;
-      FillColorEx(B, ClWindow);
-
-      if PassWord = '' then
-      begin
-        Ico := TIcon.Create;
-        Ico.Handle := LoadIcon(DBKernel.IconDllInstance, 'SLIDE_SHOW');
-        B.Canvas.Draw(102 div 2 - Ico.Width div 2, 102 div 2 - Ico.Height div 2, Ico);
-        Ico.Free;
-        Exists := 0;
-        DrawAttributes(B, 102, 0, 0, 0, TempTable.FieldByName('FFileName').AsString, True, Exists);
-      end
-      else
-      begin
-        J := TJpegImage.Create;
-        try
-          DeCryptBlobStreamJPG(TempTable.FieldByName('thum'), PassWord, J);
-          B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
-        finally
-          J.Free;
+        if PassWord = '' then
+        begin
+          Ico := TIcon.Create;
+          try
+            Ico.Handle := LoadIcon(DBKernel.IconDllInstance, 'SLIDE_SHOW');
+            B.Canvas.Draw(102 div 2 - Ico.Width div 2, 102 div 2 - Ico.Height div 2, Ico);
+          finally
+            F(Ico);
+          end;
+          Exists := 0;
+          DrawAttributes(B, 102, 0, 0, 0, TempTable.FieldByName('FFileName').AsString, True, Exists);
+        end
+        else
+        begin
+          J := TJpegImage.Create;
+          try
+            DeCryptBlobStreamJPG(TempTable.FieldByName('thum'), PassWord, J);
+            B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
+          finally
+            F(J);
+          end;
+          Exists := 0;
+          DrawAttributes(B, 102, TempTable.FieldByName('Rating').AsInteger, TempTable.FieldByName('Rotated').AsInteger,
+            TempTable.FieldByName('Access').AsInteger, TempTable.FieldByName('FFileName').AsString,
+            ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')), Exists);
         end;
-        Exists := 0;
-        DrawAttributes(B, 102, TempTable.FieldByName('Rating').AsInteger, TempTable.FieldByName('Rotated').AsInteger,
-          TempTable.FieldByName('Access').AsInteger, TempTable.FieldByName('FFileName').AsString,
-          ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')), Exists);
+        Image1.Picture.Graphic := B;
+      finally
+        F(B);
       end;
-      Image1.Picture.Graphic := B;
-      B.Free;
     end
     else
     begin

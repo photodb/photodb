@@ -272,7 +272,7 @@ object PrintForm: TPrintForm
       Height = 214
       Columns = <>
       HideSelection = False
-      LargeImages = ImageList1
+      LargeImages = ImlFormatPreviews
       ReadOnly = True
       TabOrder = 0
       OnDblClick = ListView1DblClick
@@ -293,14 +293,14 @@ object PrintForm: TPrintForm
         Height = 13
         Caption = 'Print Formats:'
       end
-      object Button1: TButton
+      object BtnAddPrinter: TButton
         Left = 8
         Top = 8
         Width = 153
         Height = 25
         Caption = 'Add New Printer'
         TabOrder = 0
-        OnClick = Button1Click
+        OnClick = BtnAddPrinterClick
       end
       object Button2: TButton
         Left = 8
@@ -334,7 +334,7 @@ object PrintForm: TPrintForm
         Height = 13
         Caption = 'Custom Size:'
       end
-      object Edit1: TEdit
+      object EdWidth: TEdit
         Left = 8
         Top = 52
         Width = 41
@@ -342,7 +342,7 @@ object PrintForm: TPrintForm
         Enabled = False
         TabOrder = 0
         Text = '10'
-        OnExit = Edit1Exit
+        OnExit = EdWidthExit
       end
       object ComboBox2: TComboBox
         Left = 112
@@ -360,7 +360,7 @@ object PrintForm: TPrintForm
           'sm'
           'in')
       end
-      object Edit2: TEdit
+      object EdHeight: TEdit
         Left = 64
         Top = 52
         Width = 41
@@ -368,18 +368,18 @@ object PrintForm: TPrintForm
         Enabled = False
         TabOrder = 2
         Text = '15'
-        OnExit = Edit2Exit
+        OnExit = EdHeightExit
       end
-      object CheckBox1: TCheckBox
+      object CbUseCustomSize: TCheckBox
         Left = 8
         Top = 17
         Width = 153
         Height = 17
         Caption = 'Use custom size'
         TabOrder = 3
-        OnClick = CheckBox1Click
+        OnClick = CbUseCustomSizeClick
       end
-      object CheckBox2: TCheckBox
+      object CbCropImage: TCheckBox
         Left = 8
         Top = 0
         Width = 153
@@ -389,7 +389,7 @@ object PrintForm: TPrintForm
         State = cbChecked
         TabOrder = 4
       end
-      object WebLink1: TWebLink
+      object WlGeneratePreview: TWebLink
         Left = 8
         Top = 80
         Width = 80
@@ -424,7 +424,7 @@ object PrintForm: TPrintForm
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 0
-      object Button3: TButton
+      object BtnPrint: TButton
         Left = 88
         Top = 8
         Width = 90
@@ -432,16 +432,16 @@ object PrintForm: TPrintForm
         Caption = 'Print'
         Enabled = False
         TabOrder = 0
-        OnClick = Button3Click
+        OnClick = BtnPrintClick
       end
-      object Button4: TButton
+      object BtnCancel: TButton
         Left = 7
         Top = 8
         Width = 75
         Height = 25
         Caption = 'Cancel'
         TabOrder = 1
-        OnClick = Button4Click
+        OnClick = BtnCancelClick
       end
     end
   end
@@ -719,7 +719,7 @@ object PrintForm: TPrintForm
         FFFFF000FFFFF000FFFFF000FFFFF000FFFFF800FFFFFC01FFFFFE07FFFF}
       UseSpecIconSize = True
     end
-    object ComboBox1: TComboBox
+    object CbPageNumber: TComboBox
       Left = 8
       Top = 216
       Width = 105
@@ -727,7 +727,7 @@ object PrintForm: TPrintForm
       Enabled = False
       TabOrder = 5
       Text = '1'
-      OnClick = ComboBox1Click
+      OnClick = CbPageNumberClick
       Items.Strings = (
         '1')
     end
@@ -768,7 +768,7 @@ object PrintForm: TPrintForm
         Width = 150
       end>
   end
-  object StaticText1: TStaticText
+  object StHintText: TStaticText
     Left = 248
     Top = 104
     Width = 209
@@ -807,7 +807,7 @@ object PrintForm: TPrintForm
     Left = 416
     Top = 8
   end
-  object ImageList1: TImageList
+  object ImlFormatPreviews: TImageList
     Height = 100
     Width = 100
     Left = 88

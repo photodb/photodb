@@ -36,23 +36,23 @@ object ExEffectForm: TExEffectForm
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 0
-      object Button2: TButton
+      object BtnCancel: TButton
         Left = 6
         Top = 8
         Width = 75
         Height = 25
         Caption = 'Cancel'
         TabOrder = 0
-        OnClick = Button2Click
+        OnClick = BtnCancelClick
       end
-      object Button1: TButton
+      object BtnOk: TButton
         Left = 94
         Top = 8
         Width = 75
         Height = 25
         Caption = 'Ok'
         TabOrder = 1
-        OnClick = Button1Click
+        OnClick = BtnOkClick
       end
     end
   end
@@ -101,16 +101,16 @@ object ExEffectForm: TExEffectForm
       ParentFont = False
       TabOrder = 0
     end
-    object CheckBox1: TCheckBox
+    object CbPreview: TCheckBox
       Left = 146
       Top = 244
-      Width = 97
+      Width = 268
       Height = 17
       Caption = 'Show Prewiew'
       Checked = True
       State = cbChecked
       TabOrder = 1
-      OnClick = CheckBox1Click
+      OnClick = CbPreviewClick
     end
     object OriginalImage: TFastScrollingImage
       Left = 8
@@ -128,16 +128,16 @@ object ExEffectForm: TExEffectForm
       Zoom = 100.000000000000000000
       OnChangePos = NewImageChangePos
     end
-    object CheckBox2: TCheckBox
+    object CbTransparent: TCheckBox
       Left = 146
       Top = 262
-      Width = 97
+      Width = 268
       Height = 17
       Caption = 'Layered:'
       TabOrder = 4
-      OnClick = CheckBox2Click
+      OnClick = CbTransparentClick
     end
-    object TrackBar1: TTrackBar
+    object TbTransparent: TTrackBar
       Left = 144
       Top = 279
       Width = 273
@@ -147,7 +147,7 @@ object ExEffectForm: TExEffectForm
       Position = 2
       TabOrder = 5
       ThumbLength = 10
-      OnChange = TrackBar1Change
+      OnChange = TbTransparentChange
     end
   end
   object Timer1: TTimer

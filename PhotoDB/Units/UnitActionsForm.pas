@@ -220,8 +220,7 @@ begin
   begin
     ActionList.Canvas.Brush.Color := clHighlight;
     ActionList.Canvas.Pen.Color := clHighlight;
-  end
-  else
+  end else
   begin
     ActionList.Canvas.Brush.Color := ClWindow;
     ActionList.Canvas.Pen.Color := ClWindow;
@@ -270,7 +269,7 @@ begin
       end;
     end;
   finally
-    SaveDialog.Free;
+    F(SaveDialog);
   end;
 end;
 

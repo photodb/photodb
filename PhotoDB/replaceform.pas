@@ -366,7 +366,7 @@ end;
 
 procedure TDBReplaceForm.FormCreate(Sender: TObject);
 begin
- Dolphin_DB.Del_Close_btn(Handle);
+ DisableWindowCloseButton(Handle);
  WorkQuery:=GetQuery;
  DropFileTarget1.Register(self);
  FBitmapImageList := TBitmapImageList.Create;

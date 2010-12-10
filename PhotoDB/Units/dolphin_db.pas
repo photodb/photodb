@@ -400,7 +400,7 @@ procedure LoadFIlesFromClipBoard(var Effects: Integer; Files: TStrings);
 function GetProgramFilesDir: string;
 procedure Deldir(Dir: string; Mask: string);
 procedure HideFromTaskBar(Handle: Thandle);
-procedure Del_Close_btn(Handle: Thandle);
+procedure DisableWindowCloseButton(Handle: Thandle);
 procedure DoUpdateHelp;
 function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean;
 function GetProgramPath: string;
@@ -4032,26 +4032,6 @@ begin
   end;
 end;
 
-{ :Converts Ansi string to Unicode string using specified code page.
-  @param   s        Ansi string.
-  @param   codePage Code page to be used in conversion.
-  @returns Converted wide string.
-}
-function StringToWideString(const S: AnsiString; CodePage: Word): WideString;
-var
-  L: Integer;
-begin
-  if S = '' then
-    Result := ''
-  else
-  begin
-    L := MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PAnsiChar(@S[1]), -1, nil, 0);
-    SetLength(Result, L - 1);
-    if L > 1 then
-      MultiByteToWideChar(CodePage, MB_PRECOMPOSED, PAnsiChar(@S[1]), -1, PWideChar(@Result[1]), L - 1);
-  end;
-end; { StringToWideString }
-
 procedure HideFromTaskBar(Handle: Thandle);
 var
   ExtendedStyle: Integer;
@@ -4061,7 +4041,7 @@ begin
     WS_EX_TOOLWINDOW or WS_EX_TOPMOST or WS_EX_LTRREADING or WS_EX_LEFT or ExtendedStyle);
 end;
 
-procedure Del_Close_btn(Handle: Thandle);
+procedure DisableWindowCloseButton(Handle: Thandle);
 var
   HMenuHandle: HMENU;
 begin

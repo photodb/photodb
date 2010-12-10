@@ -5,37 +5,38 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Buttons, ExEffects, Language,
-  EffectsLanguage, ToolsUnit, ScrollingImage, Math,  Dolphin_DB, uGOM, AppEvnts;
+  EffectsLanguage, ToolsUnit, ScrollingImage, Math,  Dolphin_DB, uGOM, AppEvnts,
+  uMemory, uDBForm;
 
 type
-  TExEffectForm = class(TForm)
+  TExEffectForm = class(TDBForm)
     BottomPanel: TPanel;
     ExEffectPanel: TPanel;
     ButtonPanel: TPanel;
-    Button2: TButton;
-    Button1: TButton;
+    BtnCancel: TButton;
+    BtnOk: TButton;
     EffectPanel: TGroupBox;
-    CheckBox1: TCheckBox;
+    CbPreview: TCheckBox;
     SpeedButton1: TSpeedButton;
     SpeedButton2: TSpeedButton;
     Label1: TLabel;
     OriginalImage: TFastScrollingImage;
     NewImage: TFastScrollingImage;
     Timer1: TTimer;
-    CheckBox2: TCheckBox;
-    TrackBar1: TTrackBar;
+    CbTransparent: TCheckBox;
+    TbTransparent: TTrackBar;
     ApplicationEvents1: TApplicationEvents;
-    procedure Button2Click(Sender: TObject);
+    procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure OriginalImageChangePos(Sender: TObject);
     procedure NewImageChangePos(Sender: TObject);
-    procedure CheckBox1Click(Sender: TObject);
-    procedure CheckBox2Click(Sender: TObject);
-    procedure TrackBar1Change(Sender: TObject);
+    procedure CbPreviewClick(Sender: TObject);
+    procedure CbTransparentClick(Sender: TObject);
+    procedure TbTransparentChange(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure Timer1Timer(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
@@ -48,6 +49,10 @@ type
     InitiatedByString: Boolean;
     FEditor: TForm;
     procedure SetEditor(const Value: TForm);
+    procedure LoadLanguage;
+  protected
+    { Protected declarations }
+    function GetFormID : string; override;
   public
     { Public declarations }
     function Execute(Owner: TToolsPanelClass; S, D: TBitmap; Effect: TExEffectsClass;
@@ -72,14 +77,15 @@ begin
     SpeedButton1.Enabled := False;
     SpeedButton2.Enabled := False;
     EffectPanel.Enabled := False;
-    CheckBox1.Enabled := False;
-    CheckBox2.Enabled := False;
-    Button2.Enabled := False;
-    Button1.Enabled := False;
+    CbPreview.Enabled := False;
+    CbTransparent.Enabled := False;
+    BtnCancel.Enabled := False;
+    BtnOk.Enabled := False;
     InitiatedByString := True;
   end
   else
     InitiatedByString := False;
+
   FOwner := Owner;
   FEffect := Effect.Create;
   FEffect.SetImageProc := SetImage;
@@ -103,7 +109,7 @@ begin
   Result := True;
 end;
 
-procedure TExEffectForm.Button2Click(Sender: TObject);
+procedure TExEffectForm.BtnCancelClick(Sender: TObject);
 begin
   (FOwner as TEffectsToolPanelClass).CancelTempImage(True);
   Close;
@@ -112,18 +118,13 @@ end;
 procedure TExEffectForm.FormCreate(Sender: TObject);
 begin
   FEffect := nil;
-  Button2.Caption := TEXT_MES_CANCEL;
-  Button1.Caption := TEXT_MES_OK;
-  Caption := TEXT_MES_EX_EFFECTS;
-  CheckBox1.Caption := TEXT_MES_PREVIEW;
-  CheckBox2.Caption := TEXT_MES_LAYERED;
+  LoadLanguage;
 end;
 
 procedure TExEffectForm.FormDestroy(Sender: TObject);
 begin
   if GOM.IsObj(FEffect) then
-    if FEffect <> nil then
-      FEffect.Free;
+    F(FEffect);
 
   (Editor as TImageEditor).FStatusProgress.Position := 0;
   (Editor as TImageEditor).StatusBar1.Panels[0].Text := '';
@@ -131,33 +132,34 @@ end;
 
 procedure TExEffectForm.SetImage(Image: TBitmap);
 var
-  OldPos : TPoint;
+  OldPos: TPoint;
 begin
- if InitiatedByString then
- begin
-  (FOwner as TEffectsToolPanelClass).SetNewImage(Image);
-  FInitialString:=FEffect.GetProperties;
-  Close;
- end else
- begin
-  OriginalImage.Tag:=1;
-  OldPos:=NewImage.ImagePos;
-  NewImage.Picture.Assign(Image);
-  NewImage.ImagePos:=OldPos;
-
-  NewImage.Transparent:=true;
-  NewImage.Transparent:=false;
-  OriginalImage.Tag:=0;
-  if CheckBox1.Checked then
+  if InitiatedByString then
   begin
-   (FOwner as TEffectsToolPanelClass).SetTempImage(Image);
-   FInitialString:=FEffect.GetProperties;
+    (FOwner as TEffectsToolPanelClass).SetNewImage(Image);
+    FInitialString := FEffect.GetProperties;
+    Close;
   end else
-  Image.Free;
- end;
+  begin
+    OriginalImage.Tag := 1;
+    OldPos := NewImage.ImagePos;
+    NewImage.Picture.Assign(Image);
+    NewImage.ImagePos := OldPos;
+
+    NewImage.Transparent := True;
+    NewImage.Transparent := False;
+    OriginalImage.Tag := 0;
+    if CbPreview.Checked then
+    begin
+     (FOwner as TEffectsToolPanelClass).SetTempImage(Image);
+      FInitialString := FEffect.GetProperties;
+    end
+    else
+      F(Image);
+  end;
 end;
 
-procedure TExEffectForm.Button1Click(Sender: TObject);
+procedure TExEffectForm.BtnOkClick(Sender: TObject);
 var
   Bitmap : TBitmap;
 begin
@@ -171,66 +173,86 @@ end;
 
 procedure TExEffectForm.SpeedButton1Click(Sender: TObject);
 begin
- OriginalImage.Tag:=1;
- OriginalImage.Zoom:=Min(1600,Max(1,OriginalImage.Zoom*1.2));
- NewImage.Zoom:=OriginalImage.Zoom;
- Label1.Caption:=IntToStr(Round(NewImage.Zoom))+'%';
- OriginalImage.Tag:=0;
+  OriginalImage.Tag := 1;
+  OriginalImage.Zoom := Min(1600, Max(1, OriginalImage.Zoom * 1.2));
+  NewImage.Zoom := OriginalImage.Zoom;
+  Label1.Caption := IntToStr(Round(NewImage.Zoom)) + '%';
+  OriginalImage.Tag := 0;
 end;
 
 procedure TExEffectForm.SpeedButton2Click(Sender: TObject);
 begin
- OriginalImage.Tag:=1;
- OriginalImage.Zoom:=Min(1600,Max(1,OriginalImage.Zoom/1.2));
- NewImage.Zoom:=OriginalImage.Zoom;
- Label1.Caption:=IntToStr(Round(NewImage.Zoom))+'%';
- OriginalImage.Tag:=0;
+  OriginalImage.Tag := 1;
+  OriginalImage.Zoom := Min(1600, Max(1, OriginalImage.Zoom / 1.2));
+  NewImage.Zoom := OriginalImage.Zoom;
+  Label1.Caption := IntToStr(Round(NewImage.Zoom)) + '%';
+  OriginalImage.Tag := 0;
 end;
 
 procedure TExEffectForm.OriginalImageChangePos(Sender: TObject);
 begin
- if OriginalImage.Tag<>1 then
- NewImage.ImagePos:=OriginalImage.ImagePos;
+  if OriginalImage.Tag <> 1 then
+    NewImage.ImagePos := OriginalImage.ImagePos;
 end;
 
 procedure TExEffectForm.NewImageChangePos(Sender: TObject);
 begin
- if OriginalImage.Tag=1 then exit;
- OriginalImage.Tag:=1;
- OriginalImage.ImagePos:=NewImage.ImagePos;
- OriginalImage.Tag:=0;
+  if OriginalImage.Tag = 1 then
+    Exit;
+  OriginalImage.Tag := 1;
+  OriginalImage.ImagePos := NewImage.ImagePos;
+  OriginalImage.Tag := 0;
 end;
 
-procedure TExEffectForm.CheckBox1Click(Sender: TObject);
+procedure TExEffectForm.CbPreviewClick(Sender: TObject);
 var
-  Image :  TBitmap;
+  Image: TBitmap;
 begin
- if CheckBox1.Checked then
- begin
-  Image := TBitmap.Create;
-  Image.PixelFormat:=pf24bit;
-  Image.Assign(NewImage.Picture);
-  (FOwner as TEffectsToolPanelClass).SetTempImage(Image);
- end else
- begin
-  (FOwner as TEffectsToolPanelClass).CancelTempImage(true);
- end;
+  if CbPreview.Checked then
+  begin
+    Image := TBitmap.Create;
+    Image.PixelFormat := Pf24bit;
+    Image.Assign(NewImage.Picture);
+    (FOwner as TEffectsToolPanelClass).SetTempImage(Image);
+  end else
+  begin
+    (FOwner as TEffectsToolPanelClass).CancelTempImage(True);
+  end;
 end;
 
-procedure TExEffectForm.CheckBox2Click(Sender: TObject);
+procedure TExEffectForm.CbTransparentClick(Sender: TObject);
 begin
-  AlphaBlend := CheckBox2.Checked;
+  AlphaBlend := CbTransparent.Checked;
 end;
 
-procedure TExEffectForm.TrackBar1Change(Sender: TObject);
+procedure TExEffectForm.TbTransparentChange(Sender: TObject);
 begin
-  AlphaBlendvalue := 255 - Round(TrackBar1.Position * 255 / 20);
+  AlphaBlendvalue := 255 - Round(TbTransparent.Position * 255 / 20);
 end;
 
 procedure TExEffectForm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
   if Ord(Key) = VK_ESCAPE then
-    Button2Click(Sender);
+    BtnCancelClick(Sender);
+end;
+
+function TExEffectForm.GetFormID: string;
+begin
+  Result := 'ExEffectForm';
+end;
+
+procedure TExEffectForm.LoadLanguage;
+begin
+  BeginTranslate;
+  try
+    BtnCancel.Caption := L('Cancel');
+    BtnOk.Caption := L('Ok');
+    Caption := L('Effects');
+    CbPreview.Caption := L('Preview');
+    CbTransparent.Caption := L('Transparency');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TExEffectForm.Timer1Timer(Sender: TObject);
@@ -256,12 +278,12 @@ procedure TExEffectForm.ApplicationEvents1Message(var Msg: tagMSG;
 begin
   if not Active then
     Exit;
-  if Msg.message = 522 then
+  if Msg.message = WM_MOUSEWHEEL then
   begin
     if Msg.WParam < 0 then
-      SpeedButton1Click(nil)
+      SpeedButton1Click(Self)
     else
-      SpeedButton2Click(nil);
+      SpeedButton2Click(Self);
   end;
 end;
 

@@ -260,7 +260,7 @@ end;
 
 procedure TGeneratorPrinterPreview.SetProgressWindowMaxSynch;
 begin
- FormProgress.DmProgress1.MaxValue:=IntParam;
+ FormProgress.PbPrinterProgress.MaxValue:=IntParam;
 end;
 
 procedure TGeneratorPrinterPreview.SetProgressWindowValue(Value: integer);
@@ -271,7 +271,7 @@ end;
 
 procedure TGeneratorPrinterPreview.SetProgressWindowValueSynch;
 begin
- FormProgress.DmProgress1.Position:=IntParam;
+ FormProgress.PbPrinterProgress.Position:=IntParam;
 end;
 
 end.

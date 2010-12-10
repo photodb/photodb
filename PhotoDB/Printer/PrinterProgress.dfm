@@ -19,7 +19,7 @@ object FormPrinterProgress: TFormPrinterProgress
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
+  object ImPrinter: TImage
     Left = 8
     Top = 8
     Width = 33
@@ -170,7 +170,7 @@ object FormPrinterProgress: TFormPrinterProgress
     Caption = 'Please, wait until prepairing images for printer...'
     WordWrap = True
   end
-  object DmProgress1: TDmProgress
+  object PbPrinterProgress: TDmProgress
     Left = 8
     Top = 48
     Width = 241
@@ -188,13 +188,13 @@ object FormPrinterProgress: TFormPrinterProgress
     View = dm_pr_cool
     Inverse = False
   end
-  object Button1: TButton
+  object BtnAbort: TButton
     Left = 88
     Top = 72
     Width = 81
     Height = 25
     Caption = 'Abort'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtnAbortClick
   end
 end

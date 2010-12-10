@@ -3,29 +3,31 @@ unit PrinterProgress;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, DmProgress, Language;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
+  Forms, Dolphin_DB, Dialogs, StdCtrls, ExtCtrls, DmProgress,
+  Language, uDBForm, uMemory;
 
 type
-  TFormPrinterProgress = class(TForm)
-    DmProgress1: TDmProgress;
-    Image1: TImage;
-    Button1: TButton;
+  TFormPrinterProgress = class(TDBForm)
+    PbPrinterProgress: TDmProgress;
+    ImPrinter: TImage;
+    BtnAbort: TButton;
     Label1: TLabel;
     procedure FormCreate(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnAbortClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   protected
-  procedure CreateParams(VAR Params: TCreateParams); override;
-    { Private declarations }
+    { Protected declarations }
+    procedure CreateParams(var Params: TCreateParams); override;
+    function GetFormID : string; override;
   public
-  PValue : PBoolean;
-  FCanClose : boolean;
-  procedure SetMaxValue(Value : integer);
-  procedure SetValue(Value : integer);
-  procedure SetText(Text : String);
-  procedure SetLanguage;
     { Public declarations }
+    PValue: PBoolean;
+    FCanClose: Boolean;
+    procedure SetMaxValue(Value: Integer);
+    procedure SetValue(Value: Integer);
+    procedure SetText(Text: string);
+    procedure SetLanguage;
   end;
 
 function GetFormPrinterProgress : TFormPrinterProgress;
@@ -34,18 +36,6 @@ implementation
 
 {$R *.dfm}
 
-procedure del_close_btn(handle:Thandle);
-var
-  hMenuHandle : HMENU;
-begin
- if (Handle <> 0) then
- begin
-  hMenuHandle := GetSystemMenu(Handle, FALSE);
-  if (hMenuHandle <> 0) then
-  DeleteMenu(hMenuHandle, SC_CLOSE, MF_BYCOMMAND);
- end;
-end;
-
 function GetFormPrinterProgress : TFormPrinterProgress;
 begin
   Application.CreateForm(TFormPrinterProgress, Result);
@@ -53,52 +43,61 @@ end;
 
 procedure TFormPrinterProgress.FormCreate(Sender: TObject);
 begin
- icon:=Image1.Picture.Icon;
- SetLanguage;
- del_close_btn(Handle);
- FCanClose:=false;
+  Icon := ImPrinter.Picture.Icon;
+  SetLanguage;
+  DisableWindowCloseButton(Handle);
+  FCanClose := False;
 end;
 
-procedure TFormPrinterProgress.SetMaxValue(Value: integer);
+function TFormPrinterProgress.GetFormID: string;
 begin
- DmProgress1.MaxValue:=Value;
+  Result := 'PrinterProgress';
 end;
 
-procedure TFormPrinterProgress.SetText(Text: String);
+procedure TFormPrinterProgress.SetMaxValue(Value: Integer);
 begin
- DmProgress1.Text:=Text;
+  PbPrinterProgress.MaxValue := Value;
 end;
 
-procedure TFormPrinterProgress.SetValue(Value: integer);
+procedure TFormPrinterProgress.SetText(Text: string);
 begin
- DmProgress1.Position:=Value;
+  PbPrinterProgress.Text := Text;
 end;
 
-procedure TFormPrinterProgress.Button1Click(Sender: TObject);
+procedure TFormPrinterProgress.SetValue(Value: Integer);
 begin
- Button1.Enabled:=false;
- PValue^:=True;
+  PbPrinterProgress.Position := Value;
+end;
+
+procedure TFormPrinterProgress.BtnAbortClick(Sender: TObject);
+begin
+  BtnAbort.Enabled := False;
+  PValue^ := True;
 end;
 
 procedure TFormPrinterProgress.SetLanguage;
 begin
- Button1.Caption:=TEXT_MES_ABORT;
- Caption:=TEXT_MES_PRINTING;
- Label1.Caption:=TEXT_MES_WAIT_UNTIL_PRINTING;
+  BeginTranslate;
+  try
+    Caption := L('Printing ...');
+    BtnAbort.Caption := L('Abort');
+    Label1.Caption := L('Please wait until done printing...');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormPrinterProgress.CreateParams(var Params: TCreateParams);
 begin
-  Inherited CreateParams(Params);
+  inherited CreateParams(Params);
   Params.WndParent := GetDesktopWindow;
-  with params do
-  ExStyle := ExStyle or WS_EX_APPWINDOW;
+  with Params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
-procedure TFormPrinterProgress.FormCloseQuery(Sender: TObject;
-  var CanClose: Boolean);
+procedure TFormPrinterProgress.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
- CanClose:=FCanClose;
+  CanClose := FCanClose;
 end;
 
 end.

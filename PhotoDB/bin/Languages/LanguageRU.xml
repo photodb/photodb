@@ -893,7 +893,7 @@
   </scope>
   <scope name="CD mapping">    
     <translate name="CD mapping" value="Привязка дисков" />
-	<translate name="In this window you can manage your removable disks with photos. To connect a drive - select the drive or select the file &quot;%s&quot; in the file system" value="В этом окне вы можете управлять съемными диски с фотографиями. Чтобы подключить диск - выберите этот диск или выберите файл "%s" в файловой системе" />
+	<translate name="In this window you can manage your removable disks with photos. To connect a drive - select the drive or select the file &quot;%s&quot; in the file system" value="В этом окне вы можете управлять съемными диски с фотографиями. Чтобы подключить диск - выберите этот диск или выберите файл &quot;%s&quot; в файловой системе" />
 	<translate name="ID" value="ID" />
 	<translate name="Name" value="Имя" />
 	<translate name="CD location" value="Расположение диска" />
@@ -920,7 +920,8 @@
 	<translate name="New font" value="Новый шрифт" />
 	<translate name="Select font from list below" value="Выберите шрифт со списка ниже" />
   </scope>
-  <scope name="Editor">
+  <scope name="Editor">	
+    <translate name="File &quot;%s&quot; already exists! Do you want to replace it?" value="Файл &quot;%s&quot; уже существует! Вы хотите его заменить?" />  
 	<translate name="Unable to open the image as you edit another image." value="Невозможно открыть изображение т.к. выполняется редактирование другого изображения." />
 	<translate name="Current font" value="Текущий шрифт" />
 	<translate name="Zoom in" value="Увеличить" />
@@ -960,4 +961,53 @@
 	<translate name="Close" value="Закрыть" />
 	<translate name="PhotoDB actions file (*.dbact)|*.dbact" value="PhotoDB действия (*.dbact)|*.dbact" />
   </scope>
+  <scope name="ExEffectForm">
+	<translate name="Effects" value="Эффекты" />
+	<translate name="Preview" value="Предпросмотр" />
+	<translate name="Transparency" value="Прозрачность" />
+  </scope>
+  <scope name="PrinterProgress">
+	<translate name="Abort" value="Прервать" />
+	<translate name="Printing ..." value="Идёт печать..." />
+	<translate name="Please wait until done printing..." value="Пожалуйста, подождите пока производится вывод на печать..." />
+  </scope>
+  <scope name="Printer">  
+	<translate name="Add printer" value="Добавить принтер" />
+	<translate name="Printer setup" value="Настройки принтера" />
+	<translate name="Zoom out" value="Уменьшить" />
+	<translate name="Zoom in" value="Увеличить" />
+	<translate name="Full size" value="Полный размер" />
+	<translate name="Fit to window" value="Лучший размер" />
+	<translate name="Close" value="Закрыть" />
+	<translate name="Print" value="Печать" />
+	<translate name="Print photos" value="Печать фотографий" />
+	<translate name="Current format" value="Текущий формат" />
+	<translate name="Print pages" value="Страницы печати" />
+	<translate name="Only this page" value="Только эта страница" />
+	<translate name="All pages" value="Все страницы" />
+	<translate name="Copy to file" value="Копировать в файл" />
+	<translate name="Crop photos" value="Кадрировать фотографии" />
+	<translate name="Use custom size" value="Произвольный размер" />
+	<translate name="Custom size" value="Размер" />
+	<translate name="Page" value="Страница" />
+	<translate name="Print layouts" value="Размещение фотографий" />
+	<translate name="Generate preview" value="Сделать предпросмотр" />
+	<translate name="35 photos on page" value="35 фотографий на странице" />
+	<translate name="20x25 sm. 1 photo" value="20x25 см. 1 фото" />
+	<translate name="13x18 sm. 1 photo" value="13x18 см. 1 фото" />
+	<translate name="13x18 sm. 2 photos" value="13x18 см. 2 фото" />
+	<translate name="10x15 sm. 1 photo" value="10x15 см. 1 фото" />
+	<translate name="10x15 sm. 2 photos" value="10x15 см. 2 фото" />
+	<translate name="10x15 sm. 3 photos" value="10x15 см. 3 фото" />
+	<translate name="9x13 sm. 1 photo" value="9x13 см. 1 фото" />
+	<translate name="9x13 sm. 2 photos" value="9x13 см. 2 фото" />
+	<translate name="9x13 sm. 4 photos" value="9x13 см. 4 фото" />
+	<translate name="9 photos on page" value="9 фотографий на странице" />
+	<translate name="4x6 sm. 1 photo in 4 copies" value="4x6 см. 1 фото в 4 отпечатках" />
+	<translate name="3x4 sm. 1 photo in 6 copies" value="3x4 см. 1 фото в 6 отпечатках" />
+	<translate name="Page" value="Страница" />
+	<translate name="    Choose a format to print the list on the left and double-click on the selected format" value="    Выберите формат для печати в списке слева и дважды кликните на выбранном формате" />
+	<translate name="Unable to open printer form: %s" value="Невозможно открыть форму печати по причине: %s" />
+	<translate name="File &quot;%s&quot; already exists! Do you want to replace it?" value="Файл &quot;%s&quot; уже существует! Вы хотите его заменить?" />  
+  </scope>  
 </language>

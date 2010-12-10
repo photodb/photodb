@@ -98,7 +98,7 @@ end;
 procedure TProgressActionForm.DoShow;
 begin
   if not CanClosedByUser then
-    Del_close_btn(Handle);
+    DisableWindowCloseButton(Handle);
   if not Visible then
   begin
     Show;

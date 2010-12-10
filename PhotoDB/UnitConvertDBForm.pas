@@ -160,10 +160,10 @@ procedure TFormConvertingDB.LoadLanguage;
 begin
  Label1.Caption:=TEXT_MES_DIALOG_CONVERTING_DB;
  Label3.Caption:=TEXT_MES_CURRENT_DATABASE+':';
- RadioButton1.Caption:=TEXT_MES_CONVERT_TO_BDE;
+// RadioButton1.Caption:=TEXT_MES_CONVERT_TO_BDE;
  RadioButton2.Caption:=TEXT_MES_CONVERT_TO_MDB;
  Button3.Caption:=TEXT_MES_CANCEL;
- Label2.Caption:=TEXT_MES_CONVERTING_FIRST_STEP;
+// Label2.Caption:=TEXT_MES_CONVERTING_FIRST_STEP;
  Caption:=TEXT_MES_CONVERTING_CAPTION;
  Button2.Caption:=L('Previous');
  Button1.Caption:=TEXT_MES_NEXT;

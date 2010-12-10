@@ -19,7 +19,6 @@ uses
 type
   TTool = (ToolNone, ToolPen, ToolCrop, ToolRotate, ToolResize, ToolEffects, ToolColor, ToolRedEye, ToolText,
     ToolBrush, ToolInsertImage);
-{$DEFINE PICTURE24BITMODE}
 
 type
   TVBrushType = array of TPoint;
@@ -967,6 +966,7 @@ begin
         if PassWord <> '' then
         begin
           Pic.Graphic := DeCryptGraphicFile(FileName, PassWord, True);
+          CurrentFileName := FileName;
           F(EXIFSection);
         end else
           Exit;
@@ -979,9 +979,13 @@ begin
           // by default RAW is half-sized
           (Pic.Graphic as TRAWImage).LoadHalfSize := False;
           Pic.Graphic.LoadFromFile(FileName);
+          CurrentFileName := FileName;
           F(EXIFSection);
         end else
+        begin
           Pic.LoadFromFile(FileName);
+          CurrentFileName := FileName;
+        end;
       end;
       FilePassWord := PassWord;
       (ActionForm as TActionsForm).Reset;
@@ -2146,6 +2150,13 @@ var
   ID: Integer;
   SavePictureDialog: DBSavePictureDialog;
   FileName: string;
+
+  function RewriteFile(FileName : string) : Boolean;
+  begin
+    Result := ID_OK = MessageBoxDB(Handle, Format(L('File "%s" already exists! Do you want to replace it?'), [FileName]), L('Warning'),
+                  TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
+  end;
+
 begin
   SavePictureDialog := DBSavePictureDialog.Create;
   try
@@ -2196,8 +2207,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_REPLACE, [FileName]), TEXT_MES_WARNING,
-                  TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+                if RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2235,7 +2245,7 @@ begin
                 end;
                 FSaved := True;
               except
-                MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_TO_FILE_F, [FileName])), L('Error'),
+                MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_TO_FILE_F, [FileName])), L('Warning'),
                   TD_BUTTON_OK, TD_ICON_ERROR);
               end;
             finally
@@ -2252,8 +2262,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_REPLACE, [FileName]), TEXT_MES_WARNING,
-                  TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+                if RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2283,8 +2292,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_REPLACE, [FileName]), TEXT_MES_WARNING,
-                  TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+                if RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2313,8 +2321,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_REPLACE, [FileName]), L('Warning'),
-                  TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+                if RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2343,8 +2350,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_REPLACE, [FileName]), TEXT_MES_WARNING,
-                  TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+                if RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
