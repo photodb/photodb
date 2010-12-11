@@ -26,7 +26,7 @@ implementation
 function TListViewForm.GetFilePreviw(FileName: string;
   Bitmap: TBitmap): Boolean;
 begin
-  GetImage(FileName, Bitmap);
+  Result := GetImage(FileName, Bitmap);
 end;
 
 function TListViewForm.GetListView: TEasyListview;

@@ -35,7 +35,6 @@ type
     FVirtualSysImages : VirtualSysImages;
     FSync : TCriticalSection;
     procedure Initialize;
-    function SetPath(const Value: string) : PItemIDList;
   public
     class function Instance : TAIcons;
     constructor Create;
@@ -46,6 +45,7 @@ type
     function GetShellImage(Path : String; Size : integer): TIcon;
     function IsVarIcon(FileName : String; Size : integer): boolean;
     procedure Clear;
+    function SetPath(const Value: string) : PItemIDList;
   end;
 
 procedure FindIcon(hLib :cardinal; NameRes :string; Size, ColorDepth :Byte; var Icon :TIcon);

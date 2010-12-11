@@ -1094,7 +1094,7 @@ end;
 procedure TCDDBMapping.DoProcessPath(var FileName: string;
   CanUserNotify: boolean);
 var
-  I, P, MapResult: Integer;
+  P, MapResult: Integer;
   CD: TCDClass;
   CDName: string;
 begin
@@ -1225,7 +1225,7 @@ end;
 function TCDIndexMappingDirectory.Add(
   Item: TCDIndexMappingDirectory): Integer;
 begin
-  FFiles.Add(Item);
+  Result := FFiles.Add(Item);
 end;
 
 constructor TCDIndexMappingDirectory.Create;

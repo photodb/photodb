@@ -96,7 +96,7 @@ procedure TCryptImageForm.FillChiperList;
           TCryptImageForm(Data).PmCryptMethod.Items.Add(MenuItem);
         end;
         if (TCryptImageForm(Data).PmCryptMethod.Items.Count = 0)
-           or (ClassType.Identity = DBKernel.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity))) then
+           or (Integer(ClassType.Identity) = DBKernel.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity))) then
           MenuItem.Click;
       finally
         Chiper.Free;
@@ -181,7 +181,9 @@ begin
   BeginTranslate;
   try
     LbPassword.Caption := L('Enter password for selected objects') + ':';
+    EdPassword.WatermarkText := L('Password');
     LbPasswordConfirm.Caption := L('Confirm password');
+    EdPasswordConfirm.WatermarkText := L('Confirm password');
     Caption := L('Crypt objects');
     BtCancel.Caption := L('Cancel');
     BtOk.Caption := L('Ok');

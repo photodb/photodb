@@ -459,7 +459,7 @@ object PrintForm: TPrintForm
       Height = 13
       Caption = 'Page:'
     end
-    object Image1: TImage
+    object ImCurrentFormat: TImage
       Left = 8
       Top = 320
       Width = 105

@@ -1082,7 +1082,7 @@ begin
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
         if FileExistsSafe(Finfo[I].FileName) then
-          Files.Add(Finfo[I].FileName[I]);
+          Files.Add(Finfo[I].FileName);
 
     if Files.Count <> 0 then
       GetPrintForm(Files);

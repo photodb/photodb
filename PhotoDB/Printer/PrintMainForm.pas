@@ -51,7 +51,7 @@ type
     SaveWindowPos1: TSaveWindowPos;
     PopupMenu1: TPopupMenu;
     CopyToFile1: TMenuItem;
-    Image1: TImage;
+    ImCurrentFormat: TImage;
     Label5: TLabel;
     WlGeneratePreview: TWebLink;
     StHintText: TStaticText;
@@ -206,6 +206,7 @@ begin
     Options.CropImages := False;
     Options.FreeCenterSize := False;
     Options.VirtualImage := False;
+    Options.Image := nil;
     NewImage := GenerateImage(False, ImlFormatPreviews.Width, ImlFormatPreviews.Height, SampleImage, nil, SampleImageType, Options);
     try
       ImlFormatPreviews.Add(NewImage, nil);
@@ -230,8 +231,7 @@ begin
   begin
     DoGenerateSample;
     BtnPrint.Enabled := False;
-    Image1.Picture.Bitmap.Height := 0;
-    Image1.Picture.Bitmap.Width := 0;
+    ImCurrentFormat.Picture.Graphic := nil;
   end;
 end;
 
@@ -383,7 +383,7 @@ begin
   Bitmap := TBitmap.Create;
   try
     ImlFormatPreviews.GetBitmap(Item.ImageIndex, Bitmap);
-    Image1.Picture.Bitmap := Bitmap;
+    ImCurrentFormat.Picture.Graphic := Bitmap;
   finally
     F(Bitmap);
   end;
