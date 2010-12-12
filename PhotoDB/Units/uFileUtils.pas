@@ -4,7 +4,7 @@ unit uFileUtils;
 
 interface
 
-uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl,  ShlObj, ActiveX,
+uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl, Variants, ShlObj, ActiveX,
      VRSIShortCuts, ShellAPI, uConstants, uMemory;
 
 type
@@ -43,6 +43,7 @@ function SilentDeleteFile(Handle: HWnd; FileName: string; ToRecycle: Boolean;
 function SilentDeleteFiles(Handle: HWnd; Names: TStrings; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
 procedure DeleteDirectoryWithFiles(DirectoryName: string);
+procedure LoadFilesFromClipBoard(var Effects: Integer; Files: TStrings);
 
 var
   CopyFilesSynchCount: Integer = 0;
@@ -779,5 +780,55 @@ begin
 
   RemoveDir(DirectoryName);
 end;
+
+
+procedure LoadFIlesFromClipBoard(var Effects: Integer; Files: TStrings);
+var
+  Hand: THandle;
+  Count: Integer;
+  Pfname: array [0 .. 10023] of Char;
+  CD: Cardinal;
+  S: string;
+  DwEffect: ^Word;
+begin
+  Effects := 0;
+  Files.Clear;
+  if IsClipboardFormatAvailable(CF_HDROP) then
+  begin
+    if OpenClipboard(Application.Handle) = False then
+      Exit;
+    CD := 0;
+    repeat
+      CD := EnumClipboardFormats(CD);
+      if (CD <> 0) and (GetClipboardFormatName(CD, Pfname, 1024) <> 0) then
+      begin
+        S := UpperCase(string(Pfname));
+        if Pos('DROPEFFECT', S) <> 0 then
+        begin
+          Hand := GetClipboardData(CD);
+          if (Hand <> NULL) then
+          begin
+            DwEffect := GlobalLock(Hand);
+            Effects := DwEffect^;
+            GlobalUnlock(Hand);
+          end;
+          CD := 0;
+        end;
+      end;
+    until (CD = 0);
+    Hand := GetClipboardData(CF_HDROP);
+    if (Hand <> NULL) then
+    begin
+      Count := DragQueryFile(Hand, $FFFFFFFF, nil, 0);
+      if Count > 0 then
+        repeat
+          Dec(Count);
+          DragQueryFile(Hand, Count, Pfname, 1024);
+          Files.Add(string(Pfname));
+        until (Count = 0);
+      end;
+      CloseClipboard();
+    end;
+  end;
 
 end.

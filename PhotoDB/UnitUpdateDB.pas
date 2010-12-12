@@ -107,10 +107,10 @@ type
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
   protected
     function GetFormID : string; override;
+    procedure LoadLanguage;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent; AddObject: TUpdaterDB); reintroduce;
-    procedure LoadLanguage;
     procedure SetAutoAnswer(Value: Integer);
     procedure SetText(Text: string);
     procedure ShowForm(Sender: TObject);
@@ -126,7 +126,6 @@ type
     procedure LoadToolBarIcons;
     procedure SetIcon(Link: TWebLink; name: string);
     procedure OnDirectorySearch(Owner: TObject; FileName: string; Size: Int64);
-  published
     property FullSize : Int64 read FFullSize write FFullSize;
   end;
 
@@ -175,13 +174,14 @@ begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   LoadLanguage;
   LoadToolBarIcons;
+  ButtonClose.Left := ClientWidth - ButtonClose.Width - 5;
 
   FImagePos := 0;
   FImagePosStep := 1;
-  FImage := TLayeredBitmap.Create();
+  FImage := TLayeredBitmap.Create;
   FImage.LoadFromHIcon(ImageGo.Picture.Icon.Handle);
 
-  FImageInv := TLayeredBitmap.Create();
+  FImageInv := TLayeredBitmap.Create;
   FImageInv.LoadFromHIcon(ImageGo.Picture.Icon.Handle);
 
   for I := 0 to FImageInv.Height - 1 do
@@ -229,12 +229,12 @@ begin
   try
     FilesLabel.Text := L('No files');
     ProgressBar.Text := '';
-    ButtonBreak.Text := L('Stop!');
+    ButtonBreak.Text := L('Stop');
     ButtonRunStop.Text := L('Pause');
     ButtonClose.Text := L('Close');
     ProgressBar.Text := L('Progress... (&%%)');
     Stayontop1.Caption := L('Stay on top');
-    Layered1.Caption := L('Transparencity');
+    Layered1.Caption := L('Transparency');
     Fill1.Caption := L('No');
     Hide1.Caption := L('Hide');
     Auto1.Caption := L('Auto');
@@ -245,7 +245,7 @@ begin
     SkipAll1.Caption := L('Skip all');
     Caption := L('DB Updater');
     History1.Caption := L('History');
-    UseScaningByFilename1.Caption := L('Using scaning on filename match');
+    UseScaningByFilename1.Caption := L('Detailed search if file name already exists');
 
     ShowHistoryLink.Text := L('Show history');
     WebLinkOptions.Text := L('Options');
@@ -331,7 +331,7 @@ begin
     begin
       Show;
       Delay(100);
-      DoHelpHint(L('Warning'), L( 'Unable to add to DB one or more files. Choose "History" in context menu.'), P, Self);
+      DoHelpHint(L('Warning'), L( 'Unable to add to DB one or more files. Choose "History" in context menu for details.'), P, Self);
     end;
   end;
 end;
@@ -454,6 +454,10 @@ end;
 
 procedure TUpdateDBForm.FormDestroy(Sender: TObject);
 begin
+  F(FImage);
+  F(FImageInv);
+  F(FImageHourGlass);
+
   UpdaterDB.SaveWork;
   F(TimeCounter);
   F(BadHistory);
@@ -802,5 +806,9 @@ end;
 initialization
 
   UpdaterDB := nil;
+
+finalization
+
+  F(UpdaterDB);
 
 end.

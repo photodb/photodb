@@ -27,12 +27,11 @@ procedure Checked(var aScript : TScript);
 function aDirectoryExists(FileName : string) : boolean;
 function aDirectoryFileExists(FileName : string) : boolean;
 function aPathFormat(aPath, aFile : string) : string;
-//procedure Copy_Move(FCM:Boolean;File_List : TStrings);
 procedure CopyFile(aFile : string);
 procedure CutFile(aFile : string);
 procedure CopyFiles(Files : TArrayOfString);
 procedure CutFiles(Files : TArrayOfString);
-function LoadFIlesFromClipBoard : TArrayOfString;
+function LoadFilesFromClipBoardA : TArrayOfString;
 function NowString : String;
 function SumInt(int1, int2 : integer) : integer;
 function SumStr(str1, str2 : string) : string;
@@ -449,53 +448,15 @@ begin
   end;
 end;
 
-function LoadFIlesFromClipBoard : TArrayOfString;
+function LoadFilesFromClipBoardA : TArrayOfString;
 var
-  Hand : THandle;
-  Count, Effects : integer;
-  pfname : array[0..10023] of char;
-  CD : Cardinal;
-  s : string;
-  dwEffect : ^Word;
+  I, Effects : Integer;
+  Files : TStrings;
 begin
-Effects:=0;
-SetLength(Result,0);
-if IsClipboardFormatAvailable(CF_HDROP) then
- begin
-  if OpenClipboard(0)=false then exit;
-  CD:=0;
-  repeat
-   CD:=EnumClipboardFormats(CD);
-   if (CD<>0)and(GetClipboardFormatName(CD,pfname,1024)<>0) then
-    begin
-     s:=UpperCase(string(pfname));
-     if Pos('DROPEFFECT',s)<>0 then
-      begin
-       Hand:=GetClipboardData(CD);
-       if (Hand<>0) then
-        begin
-         dwEffect:=GlobalLock(Hand);
-         Effects:=dwEffect^;
-         GlobalUnlock(Hand);
-        end;
-       CD:=0;
-      end;
-    end;
-  until (CD=0);
-  Hand:=GetClipboardData(CF_HDROP);
-  if (Hand<>0) then
-   begin
-    Count:=DragQueryFile(Hand,$FFFFFFFF,nil,0);
-    if Count>0 then
-     repeat
-      dec(Count);
-      DragQueryFile(Hand,Count,pfname,1024);
-      SetLength(Result,length(Result)+1);
-      Result[length(Result)-1]:=pfname;
-     until (Count=0);
-   end;
-  CloseClipboard();
- end;
+  LoadFilesFromClipBoard(Effects, Files);
+  SetLength(Result, Files.Count);
+  for I := 0 to Files.Count - 1 do
+    Result[I] := Files[I];
 end;
 
 function NowString: string;

@@ -6,23 +6,25 @@ uses Windows, Classes, Graphics, Math, SysUtils, GraphicsBaseTypes, Scanlines;
 
 type
   PIntegerArray = ^TIntegerArray;
-  TIntegerArray = array[0..maxInt div sizeof(integer) - 2] of integer;
+  TIntegerArray = array [0 .. MaxInt div Sizeof(Integer) - 2] of Integer;
+
   TColor3 = packed record
-    b, g, r: byte;
+    B, G, R: Byte;
   end;
-  TColor3Array = array[0..maxInt div sizeof(TColor3) - 2] of TColor3;
+
+  TColor3Array = array [0 .. MaxInt div Sizeof(TColor3) - 2] of TColor3;
   PColor3Array = ^TColor3Array;
 
-  TResizeProcedure = procedure (Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+  TResizeProcedure = procedure(Width, Height: Integer; S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
 
-  TEffectOneIntParam = procedure(S,D : TBitmap; Int : integer; CallBack : TBaseEffectCallBackProc = nil);
-
-  type
- T255ByteArray = array[0..255] of byte;
- T255IntArray = array[0..255] of Integer;
+  TEffectOneIntParam = procedure(S, D: TBitmap; Int: Integer; CallBack: TBaseEffectCallBackProc = nil);
 
 type
- TArPARGB = array of PARGB;
+  T255ByteArray = array [0 .. 255] of Byte;
+  T255IntArray = array [0 .. 255] of Integer;
+
+type
+  TArPARGB = array of PARGB;
 
 procedure Inverse(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 

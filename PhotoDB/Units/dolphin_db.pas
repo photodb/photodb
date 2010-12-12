@@ -396,7 +396,6 @@ function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
 procedure LoadDblFromfile(FileName: string; var IDs: TArInteger; var Files: TArStrings);
 function SaveListTofile(FileName: string; IDs: TArInteger; Files: TArStrings): Boolean;
 function IsWallpaper(FileName: string): Boolean;
-procedure LoadFIlesFromClipBoard(var Effects: Integer; Files: TStrings);
 function GetProgramFilesDir: string;
 procedure Deldir(Dir: string; Mask: string);
 procedure HideFromTaskBar(Handle: Thandle);
@@ -3886,55 +3885,6 @@ begin
     (Str = 'BMP');
   Result := Result and StaticPath(FileName);
 end;
-
-procedure LoadFIlesFromClipBoard(var Effects: Integer; Files: TStrings);
-var
-  Hand: THandle;
-  Count: Integer;
-  Pfname: array [0 .. 10023] of Char;
-  CD: Cardinal;
-  S: string;
-  DwEffect: ^Word;
-begin
-  Effects := 0;
-  Files.Clear;
-  if IsClipboardFormatAvailable(CF_HDROP) then
-  begin
-    if OpenClipboard(Application.Handle) = False then
-      Exit;
-    CD := 0;
-    repeat
-      CD := EnumClipboardFormats(CD);
-      if (CD <> 0) and (GetClipboardFormatName(CD, Pfname, 1024) <> 0) then
-      begin
-        S := UpperCase(string(Pfname));
-        if Pos('DROPEFFECT', S) <> 0 then
-        begin
-          Hand := GetClipboardData(CD);
-          if (Hand <> NULL) then
-          begin
-            DwEffect := GlobalLock(Hand);
-            Effects := DwEffect^;
-            GlobalUnlock(Hand);
-          end;
-          CD := 0;
-        end;
-      end;
-    until (CD = 0);
-    Hand := GetClipboardData(CF_HDROP);
-    if (Hand <> NULL) then
-    begin
-      Count := DragQueryFile(Hand, $FFFFFFFF, nil, 0);
-      if Count > 0 then
-        repeat
-          Dec(Count);
-          DragQueryFile(Hand, Count, Pfname, 1024);
-          Files.Add(string(Pfname));
-        until (Count = 0);
-      end;
-      CloseClipboard();
-    end;
-  end;
 
 function GetProgramFilesDirByKeyStr(KeyStr: string): string;
 var

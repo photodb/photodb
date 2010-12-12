@@ -87,7 +87,7 @@ object FormSizeResizer: TFormSizeResizer
     Width = 28
     Height = 28
     Active = True
-    FillPercent = 0
+    FillPercent = 50
     Anchors = [akTop, akRight]
     SignColor = clHighlight
   end

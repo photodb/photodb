@@ -7,10 +7,10 @@ uses
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, DropSource, DropTarget, Dolphin_DB,
    Language, acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
   DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger,
-  UnitDBCommon, uConstants;
+  UnitDBCommon, uConstants, uDBForm;
 
 type
-  TSplitExportForm = class(TForm)
+  TSplitExportForm = class(TDBForm)
     Panel1: TPanel;
     ListView1: TListView;
     Image1: TImage;
@@ -190,8 +190,8 @@ begin
  CheckBox1.Caption:=TEXT_MES_DELETE_RECORDS_AFTER_FINISH;
  Label2.Caption:=TEXT_MES_PATH;
  Label3.Caption:=TEXT_MES_FILES_AND_FOLDERS;
- Copy1.Caption:=TEXT_MES_COPY;
- Cut1.Caption:=TEXT_MES_CUT;
+ Copy1.Caption:=L('Copy');
+ Cut1.Caption:=L('Cut');
  ListView1.Columns[0].Caption:=TEXT_MES_METHOD;
  ListView1.Columns[1].Caption:=TEXT_MES_PATH;
  Label1.Caption:=TEXT_MES_SPLIT_DB_INFO;

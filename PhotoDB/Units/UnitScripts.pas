@@ -3009,7 +3009,7 @@ begin
  AddScriptFunction(Enviroment, 'ShiftKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@ShiftKeyDown);
  AddScriptFunction(Enviroment, 'NowString',F_TYPE_FUNCTION_IS_STRING,@NowString);
  AddScriptFunction(Enviroment, 'Halt',F_TYPE_PROCEDURE_NO_PARAMS,@aHalt);
- AddScriptFunction(Enviroment, 'LoadFilesFromClipBoard',F_TYPE_FUNCTION_IS_ARRAYSTRING,@LoadFIlesFromClipBoard);
+ AddScriptFunction(Enviroment, 'LoadFilesFromClipBoard',F_TYPE_FUNCTION_IS_ARRAYSTRING,@LoadFilesFromClipBoardA);
  AddScriptFunction(Enviroment, 'ClipboardCopyFile',F_TYPE_PROCEDURE_STRING,@CopyFile);
  AddScriptFunction(Enviroment, 'ClipboardCutFile',F_TYPE_PROCEDURE_STRING,@CutFile);
  AddScriptFunction(Enviroment, 'ClipboardCopyFiles',F_TYPE_PROCEDURE_ARRAYSTRING,@CopyFiles);

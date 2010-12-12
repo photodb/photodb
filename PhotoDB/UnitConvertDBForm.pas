@@ -77,7 +77,7 @@ type
     RecordCount: Integer;
     PasswordKeeper: TPasswordKeeper;
     ItemsData: TList;
-    Infos: TArStrings;
+    Infos: TStrings;
     FInfo: string;
     FProgressEnabled: Boolean;
     Icons: array of TIcon;
@@ -148,7 +148,7 @@ begin
  CurrentWideIndex:=-1;
  FProgressEnabled:=true;
  FInfo:='';
- SetLength(Infos,0);
+ Infos := TStringList.Create;
  InfoListBox.DoubleBuffered:=true;
  ItemsData:=TList.Create;
  InfoListBox.ItemHeight:=InfoListBox.Canvas.TextHeight('Iy')*3+5;
@@ -172,7 +172,7 @@ begin
  Button4.Caption:=TEXT_MES_START_NOW;
  Button5.Caption:=TEXT_MES_BREAK_BUTTON;
  Button6.Caption:=TEXT_MES_FINISH;
- Label7.Caption:=TEXT_MES_WAITING;
+ Label7.Caption:=L('Waiting');
  Label8.Caption:=TEXT_MES_CONVERTING_IMAGE_SIZES_STEP;
  Label9.Caption:=TEXT_MES_SIZE+':';
  ComboBox1.Items[0]:=TEXT_MES_CONVERTATION_JPEG_QUALITY;
@@ -455,12 +455,7 @@ begin
   exit;
  end;
  LockWindowUpdate(Handle);
- SetLength(Infos,Length(Infos)+1);
- for i:=length(Infos)-2 downto TopRecords do
- begin
-  Infos[i+1]:=Infos[i];
- end;
- Infos[ TopRecords]:=FInfo;
+ Infos.Insert(0, FInfo);
 
  GetMem(p,SizeOf(integer));
  p^:=Info;

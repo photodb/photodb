@@ -4674,11 +4674,11 @@ begin
   if (SortMethod = 0) or not ShowGroups then
   begin
     if ElvMain.Groups.Count = 0 then
-    with ElvMain.Groups.Add do
-    begin
-      Visible := True;
-      Caption := L('Records found') + ':';
-    end;
+      with ElvMain.Groups.Add do
+      begin
+        Visible := True;
+        Caption := L('Records found') + ':';
+      end;
   end;
 
   if ShowGroups then
@@ -4961,9 +4961,16 @@ begin
 end;
 
 procedure TSearchForm.UpdateQueryEstimateCount(Count: Integer);
+var
+  Counter : string;
 begin
   LsSearchResults.Hide;
-  WlStartStop.Text := Format(L('Search (%d results)'), [Count]);
+  if Count > 1000 then
+    Counter := '1000+'
+  else
+    Counter := IntToStr(Count);
+
+  WlStartStop.Text := Format(L('Search (%s results)'), [Counter]);
 end;
 
 procedure TSearchForm.elvDateRangeItemSelectionChanged(

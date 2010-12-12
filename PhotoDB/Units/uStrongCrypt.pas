@@ -72,14 +72,21 @@ end;
 procedure CryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
                         ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
+var
+  APassword : AnsiString;
+  Bytes : TBytes;
 begin
   ACipher := ValidCipher(ACipher);
   AHash := ValidHash(AHash);
 
+  Bytes := TEncoding.UTF8.GetBytes(Password);
+  SetLength(APassword, Length(Bytes));
+  Move(Bytes[0], APassword[1], Length(Bytes));
+
   with ACipher.Create do
   try
     Mode := CmCTSx;
-    Init(AHash.KDFx(Password, Seed, Context.KeySize));
+    Init(AHash.KDFx(APassword, Seed, Context.KeySize));
     EncodeStream(Source, Dest, Source.Size);
   finally
     Free;
@@ -90,14 +97,21 @@ procedure DeCryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binar
                         DataSize : Int64;
                         ACipher: TDECCipherClass; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
+var
+  APassword : AnsiString;
+  Bytes : TBytes;
 begin
   ACipher := ValidCipher(ACipher);
   AHash := ValidHash(AHash);
 
+  Bytes := TEncoding.UTF8.GetBytes(Password);
+  SetLength(APassword, Length(Bytes));
+  Move(Bytes[0], APassword[1], Length(Bytes));
+
   with ACipher.Create do
   try
     Mode := CmCTSx;
-    Init(AHash.KDFx(Password, Seed, Context.KeySize));
+    Init(AHash.KDFx(APassword, Seed, Context.KeySize));
     DecodeStream(Source, Dest, DataSize);
   finally
     Free;
@@ -106,7 +120,7 @@ end;
 
 initialization
 
-    SetDefaultCipherClass(TCipher_Blowfish);
-    SetDefaultHashClass(THash_SHA1);
+  SetDefaultCipherClass(TCipher_Blowfish);
+  SetDefaultHashClass(THash_SHA1);
 
 end.

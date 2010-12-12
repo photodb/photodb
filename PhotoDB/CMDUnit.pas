@@ -27,10 +27,10 @@ type
       var Height: Integer);
     procedure InfoListBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-  private    
+  private
    PasswordKeeper : TPasswordKeeper;
    ItemsData : TList;
-   Infos : TArStrings;
+   Infos : TStrings;
    FInfo : String;
    FProgressEnabled : boolean;
    Icons : array of TIcon;
@@ -40,7 +40,7 @@ type
   public
   procedure PackPhotoTable;
   procedure ShowBadLinks;
-  procedure RecreateImThInPhotoTable;  
+  procedure RecreateImThInPhotoTable;
   procedure OptimizeDublicates;
   procedure OnEnd(Sender : TObject);
   Procedure LoadLanguage;
@@ -49,7 +49,7 @@ type
   procedure WriteLine(Sender : TObject; Line : string; Info : integer);
   procedure WriteLnLine(Sender : TObject; Line : string; Info : integer);
   procedure LoadToolBarIcons;
-  procedure ProgressCallBack(Sender : TObject; var Info : TProgressCallBackInfo); 
+  procedure ProgressCallBack(Sender : TObject; var Info : TProgressCallBackInfo);
   procedure SetWideIndex;
     { Public declarations }
   end;
@@ -78,13 +78,13 @@ begin
  FProgressEnabled:=false;
  FInfo:='';
  DoubleBuffered:=true;
- SetLength(Infos,0);
+ Infos := TStringList.Create;
  ItemsData:=TList.Create;
  InfoListBox.DoubleBuffered:=true;
  InfoListBox.ItemHeight:=InfoListBox.Canvas.TextHeight('Iy')*3+5;
  InfoListBox.Clear;
  LoadToolBarIcons;
-                     
+
  PasswordKeeper:=nil;
  Recreating:=false;
  WriteLnLine(Self,Format(TEXT_MES_WELCOME_FORMAT,[ProductName]),LINE_INFO_INFO);
@@ -95,10 +95,9 @@ end;
 
 procedure TCMDForm.OnEnd(Sender: TObject);
 begin
- Recreating:=false;
- Working:=false;
- Delay(1000);
- Close;
+  Recreating := False;
+  Working := False;
+  Close;
 end;
 
 procedure TCMDForm.PackPhotoTable;
@@ -220,7 +219,7 @@ begin
  if Msg.hwnd=InfoListBox.Handle then
  if Msg.message<>15 then
  if Msg.message<>512 then
- if Msg.message<>160 then  
+ if Msg.message<>160 then
  if Msg.message<>161 then
  if Msg.message=522 then
  begin
@@ -284,12 +283,12 @@ var
    Options: TOptimizeDublicatesThreadOptions;
 begin
  WriteLnLine(Self,TEXT_MES_OPTIMIZANG_DUBLICATES,LINE_INFO_INFO);
- WriteLnLine(Self,'['+dbname+']',LINE_INFO_DB);      
+ WriteLnLine(Self,'['+dbname+']',LINE_INFO_DB);
  SetWideIndex;
  WriteLnLine(Self,TEXT_MES_OPTIMIZANG_DUBLICATES_WORKING_1,LINE_INFO_INFO);
  WriteLnLine(Self,TEXT_MES_OPTIMIZANG_DUBLICATES_WORKING,LINE_INFO_OK);
  TopRecords:=2;
- 
+
  Options.WriteLineProc:=WriteLine;
  Options.WriteLnLineProc:=WriteLnLine;
  Options.OnEnd:=OnEnd;
@@ -316,7 +315,6 @@ end;
 procedure TCMDForm.WriteLnLine(Sender: TObject; Line: string; Info : integer);
 var
   p : PInteger;
-  i : integer;
 begin
  if Info=LINE_INFO_INFO then
  begin
@@ -324,12 +322,7 @@ begin
   exit;
  end;
  LockWindowUpdate(Handle);
- SetLength(Infos,Length(Infos)+1);
- for i:=length(Infos)-2 downto TopRecords do
- begin
-  Infos[i+1]:=Infos[i];
- end;
- Infos[ TopRecords]:=FInfo;
+ Infos.Insert(0, FInfo);
 
  GetMem(p,SizeOf(integer));
  p^:=Info;
@@ -412,11 +405,10 @@ begin
  CurrentWideIndex:=InfoListBox.Items.Count-2;
 end;
 
-procedure TCMDForm.InfoListBoxDrawItem(Control: TWinControl;
-  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+procedure TCMDForm.InfoListBoxDrawItem(Control: TWinControl; index: Integer; Rect: TRect; State: TOwnerDrawState);
 begin
- DoInfoListBoxDrawItem(Control as TListBox,Index,Rect,State,
- ItemsData,Icons,FProgressEnabled,TempProgress,Infos);
+  DoInfoListBoxDrawItem(Control as TListBox, index, Rect, State, ItemsData, Icons, FProgressEnabled, TempProgress,
+    Infos);
 end;
 
 end.

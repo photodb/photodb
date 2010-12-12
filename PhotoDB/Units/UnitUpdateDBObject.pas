@@ -4,7 +4,7 @@ interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
      Dolphin_DB, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
-     uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils;
+     uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;
@@ -29,7 +29,7 @@ type
     FActive: Boolean;
     FAuto: Boolean;
     FAutoAnswer: Integer;
-    Fpause: Boolean;
+    FPause: Boolean;
     BeginTime: TDateTime;
     FFilesInfo: TDBPopupMenuInfo;
     FUseFileNameScaning: Boolean;
@@ -156,15 +156,7 @@ begin
   NoLimit := False;
   OwnerFormSetText := nil;
   FUseFileNameScaning := False;
-  if FormManager <> nil then
-  begin
-    TermInfo.TerminatedPointer := @Self.FTerminate;
-    TermInfo.TerminatedVerify := @Self.Active;
-    TermInfo.Options := TA_INFORM_AND_NT;
-    TermInfo.Discription := TEXT_MES_UPDATING_DESCTIPTION;
-    TermInfo.Owner := Self;
-    FormManager.RegisterActionCanTerminating(TermInfo);
-  end;
+
   FFilesInfo.Clear;
   FPosition := 0;
   Auto := True;
@@ -199,16 +191,8 @@ destructor TUpdaterDB.Destroy;
 var
   TermInfo: TTemtinatedAction;
 begin
-  if TFormManager <> nil then
-  begin
-    TermInfo.TerminatedPointer := @Self.FTerminate;
-    TermInfo.TerminatedVerify := @Self.Active;
-    TermInfo.Options := TA_INFORM_AND_NT;
-    TermInfo.Owner := Self;
-    FormManager.UnRegisterActionCanTerminating(TermInfo);
-  end;
-
-  R(FForm);
+  if GOM.IsObj(FForm) then
+    R(FForm);
   F(FProcessScript);
   F(FFilesInfo);
 end;

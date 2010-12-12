@@ -1141,6 +1141,7 @@ var
   FWorkQuery : TDataSet;
   FLastPacketTime : Cardinal;
   QueryParams : TDBQueryParams;
+  Counter : Integer;
 
   procedure AddItem(S : TDataSet);
   var
@@ -1225,10 +1226,16 @@ begin
       if not FWorkQuery.IsEmpty and not FSearchParams.IsEstimate then
       begin
         FLastPacketTime := GetTickCount;
+        Counter := 0;
         while not FWorkQuery.Eof do
         begin
           if Terminated then
             Break;
+
+          Inc(Counter);
+          if (Counter > 1000) then
+            Break;
+
           AddItem(FWorkQuery);
 
           if GetTickCount - FLastPacketTime > MIN_PACKET_TIME then

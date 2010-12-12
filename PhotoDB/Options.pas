@@ -666,9 +666,9 @@ end;
 procedure TOptionsForm.LoadLanguage;
 begin
  Caption := TEXT_MES_OPTIONS;
- TsGeneral.Caption:=TEXT_MES_GENERAL;
- TsExplorer.Caption:=TEXT_MES_EXPLORER;
- TsView.Caption:=TEXT_MES_SLIDE_SHOW;
+ TsGeneral.Caption:=L('General');
+ TsExplorer.Caption:=L('Explorer');;
+ TsView.Caption:=L('Slide show');;
  TsUserMenu.Caption:=TEXT_MES_USER_MENU;
  TsSecurity.Caption:=TEXT_MES_SECURITY;
  TsGlobal.Caption:=TEXT_MES_GLOBAL;

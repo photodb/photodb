@@ -2,69 +2,67 @@ unit UnitDBCommonGraphics;
 
 interface
 
- uses Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics,
-      pngimage, ShellApi, JPEG, CommCtrl, uMemory,
-{$IFDEF PHOTODB}
-      DmProgress,
-      GIFImage,
-      RAWImage,
-{$ENDIF}
-      UnitDBDeclare, Language, UnitDBCommon, SysUtils,
-      GraphicsBaseTypes, Effects, Math, uMath, uPngUtils;
+uses
+  Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics,
+  pngimage, ShellApi, JPEG, CommCtrl, uMemory,
+  DmProgress, GIFImage, RAWImage,
+  UnitDBDeclare, Language, UnitDBCommon, SysUtils,
+  GraphicsBaseTypes, Effects, Math, uMath, uPngUtils;
 
- type
-   TJPEGX = class(TJpegImage)
-   public
-     function InnerBitmap : TBitmap;
-   end;
+type
+  TJPEGX = class(TJpegImage)
+  public
+    function InnerBitmap: TBitmap;
+  end;
 
- const
-    PSDTransparent = true;
-    //Image processiong options
-    ZoomSmoothMin = 0.4;
+const
+  PSDTransparent = True;
+  // Image processiong options
+  ZoomSmoothMin = 0.4;
 
-{$IFDEF PHOTODB}
-  procedure DoInfoListBoxDrawItem(ListBox: TListBox; Index: Integer; aRect: TRect; State: TOwnerDrawState;
-    ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
-    Infos : TArStrings);
-{$ENDIF}
-  procedure BeginScreenUpdate(hwnd: THandle);
-  procedure EndScreenUpdate(hwnd: THandle; erase: Boolean);
-  function CalcJpegResampledSize(Jpeg : TJpegImage; Size : integer; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
-  function CalcBitmapToJPEGCompressSize(Bitmap : TBitmap; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
-  procedure LoadImageX(Image : TGraphic; Bitmap : TBitmap; BackGround : TColor);
-  procedure LoadBMPImage32bit(S : TBitmap; D : TBitmap; BackGroundColor : TColor);
-  procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
-  procedure StretchCool(x, y, Width, Height : Integer; S, D : TBitmap); overload;
-  procedure StretchCool(Width, Height : integer; S,D : TBitmap); overload;
-  Procedure QuickReduceWide(Width, Height : integer; S,D : TBitmap);
-  procedure DoResize(Width,Height : integer; S,D : TBitmap);
-  procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; S, D : TBitmap);
-  procedure Rotate180A(Bitmap : TBitmap);
-  procedure Rotate270A(Bitmap : TBitmap);
-  procedure Rotate90A(Bitmap : TBitmap);
-  procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
-  procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
-  procedure DrawImageEx32(Dest32, Src32 : TBitmap; X, Y : Integer);
-  procedure DrawImageEx32To24(Dest24, Src32 : TBitmap; X, Y : Integer);
-  procedure DrawImageEx24To32(Dest32, Src24 : TBitmap; X, Y : Integer; NewTransparent : Byte = 0);
-  procedure FillTransparentColor(Bitmap : TBitmap; Color : TColor; TransparentValue : Byte = 0);
-  procedure DrawTransparent(s, d : TBitmap; Transparent : byte);
-  procedure GrayScale(Image : TBitmap);
-  procedure SelectedColor(Image : TBitmap; Color : TColor);
-  procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
-  procedure AssignBitmap(Dest : TBitmap; Src : TBitmap);
-  procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
-  procedure RemoveBlackColor(Bitmap : TBitmap);
-  function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
-  procedure SetIconToPictureFromPath(Picture : TPicture; IconPath : string);
-  procedure AddIconToListFromPath(ImageList : TImageList; IconPath : string);
-  procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : string; AAngle : Integer; Color : TColor; Transparent : Byte);
-  procedure DrawText32Bit(Bitmap32 : TBitmap; Text : string; Font : TFont; ARect : TRect; DrawTextOptions : Cardinal);
-  procedure DrawColorMaskTo32Bit(Dest, Mask : TBitmap; Color : TColor; X, Y : Integer);
-  procedure DrawShadowToImage(Dest32, Src : TBitmap; Transparenty : Byte = 0);
-  procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 220);
-  procedure InverseTransparenty(Bitmap32: TBitmap);
+procedure DoInfoListBoxDrawItem(ListBox: TListBox; index: Integer; ARect: TRect; State: TOwnerDrawState;
+  ItemsData: TList; Icons: array of TIcon; FProgressEnabled: Boolean; TempProgress: TDmProgress; Infos: TStrings);
+procedure BeginScreenUpdate(Hwnd: THandle);
+procedure EndScreenUpdate(Hwnd: THandle; Erase: Boolean);
+function CalcJpegResampledSize(Jpeg: TJpegImage; Size: Integer; CompressionRate: Byte;
+  out JpegImageResampled: TJpegImage): Int64;
+function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte;
+  out JpegImageResampled: TJpegImage): Int64;
+procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
+procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
+procedure QuickReduce(NewWidth, NewHeight: Integer; BmpIn, BmpOut: TBitmap);
+procedure StretchCool(X, Y, Width, Height: Integer; S, D: TBitmap); overload;
+procedure StretchCool(Width, Height: Integer; S, D: TBitmap); overload;
+procedure QuickReduceWide(Width, Height: Integer; S, D: TBitmap);
+procedure DoResize(Width, Height: Integer; S, D: TBitmap);
+procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; S, D: TBitmap);
+procedure Rotate180A(Bitmap: TBitmap);
+procedure Rotate270A(Bitmap: TBitmap);
+procedure Rotate90A(Bitmap: TBitmap);
+procedure FillColorEx(Bitmap: TBitmap; Color: TColor);
+procedure DrawImageEx(Dest, Src: TBitmap; X, Y: Integer);
+procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
+procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
+procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
+procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
+procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
+procedure GrayScale(Image: TBitmap);
+procedure SelectedColor(Image: TBitmap; Color: TColor);
+procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
+procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
+procedure AssignGraphic(Dest: TBitmap; Src: TGraphic);
+procedure RemoveBlackColor(Bitmap: TBitmap);
+function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
+procedure SetIconToPictureFromPath(Picture: TPicture; IconPath: string);
+procedure AddIconToListFromPath(ImageList: TImageList; IconPath: string);
+procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer; Text: string; AAngle: Integer; Color: TColor;
+  Transparent: Byte);
+procedure DrawText32Bit(Bitmap32: TBitmap; Text: string; Font: TFont; ARect: TRect; DrawTextOptions: Cardinal);
+procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
+procedure DrawShadowToImage(Dest32, Src: TBitmap; Transparenty: Byte = 0);
+procedure DrawRoundGradientVert(Dest32: TBitmap; Rect: TRect; ColorFrom, ColorTo, BorderColor: TColor;
+  RoundRect: Integer; TransparentValue: Byte = 220);
+procedure InverseTransparenty(Bitmap32: TBitmap);
 
 implementation
 
@@ -576,10 +574,9 @@ begin
   end;
 end;
 
-{$IFDEF PHOTODB}
 procedure DoInfoListBoxDrawItem(ListBox: TListBox; Index: Integer; aRect: TRect; State: TOwnerDrawState;
 ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
-Infos : TArStrings);
+Infos : TStrings);
 var
   InfoText, Text : string;
   r : TRect;
@@ -724,33 +721,32 @@ begin
 
  DrawText(ListBox.Canvas.Handle,PWideChar(Text),Length(Text), aRect,DT_NOPREFIX+DT_LEFT+DT_WORDBREAK);
 end;
-{$ENDIF}
 
 function CalcBitmapToJPEGCompressSize(Bitmap : TBitmap; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
 var
   Jpeg: TJpegImage;
-  ms: TMemoryStream;
+  MS: TMemoryStream;
 begin
   Jpeg := TJpegImage.Create;
   try
     Jpeg.Assign(Bitmap);
-    if CompressionRate < 1 then
+      if CompressionRate < 1 then
       CompressionRate := 1;
     if CompressionRate > 100 then
       CompressionRate := 100;
     Jpeg.CompressionQuality := CompressionRate;
     Jpeg.Compress;
 
-    ms:=TMemoryStream.Create;
+    MS := TMemoryStream.Create;
     try
       Jpeg.SaveToStream(ms);
       F(Jpeg);
       JpegImageResampled := TJpegImage.Create;
-      ms.Seek(0, soFromBeginning);
-      JpegImageResampled.LoadFromStream(ms);
-      Result := ms.Size;
+      MS.Seek(0, soFromBeginning);
+      JpegImageResampled.LoadFromStream(MS);
+      Result := MS.Size;
     finally
-      F(ms);
+      F(MS);
     end;
   finally
     F(Jpeg);

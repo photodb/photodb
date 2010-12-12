@@ -10,20 +10,20 @@ uses
 type
   TSaveQueryThread = class(TThread)
   private
-  FQuery : TDataSet;
-  FTable : TDataSet;
-  FFileName,DBFolder : String;
-  FIntParam : Integer;
-  FOwner : TForm;
-  FRegGroups : TGroups;
-  FGroupsFounded : TGroups;
-  FolderSave : boolean;
-  FSubFolders : boolean;
-  FFileList : TArStrings;
-  SaveToDBName : string;
-  NewIcon : TIcon;
-  OutIconName : string;
-  OriginalIconLanguage : integer;
+    FQuery: TDataSet;
+    FTable: TDataSet;
+    FFileName, DBFolder: string;
+    FIntParam: Integer;
+    FOwner: TForm;
+    FRegGroups: TGroups;
+    FGroupsFounded: TGroups;
+    FolderSave: Boolean;
+    FSubFolders: Boolean;
+    FFileList: TArStrings;
+    SaveToDBName: string;
+    NewIcon: TIcon;
+    OutIconName: string;
+    OriginalIconLanguage: Integer;
     { Private declarations }
   protected
     procedure Execute; override;
@@ -40,7 +40,7 @@ type
     Destructor Destroy; override;
   end;
 
-  function CreateMobileDBFIlesInDirectory(Directory, SaveToDBName  : string) : boolean;
+function CreateMobileDBFIlesInDirectory(Directory, SaveToDBName: string): Boolean;
 
 implementation
 

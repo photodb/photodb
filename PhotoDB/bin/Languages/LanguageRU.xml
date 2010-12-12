@@ -463,7 +463,7 @@
     <translate name="Records found" value="Изображений найдено" />
     <translate name="No rating" value="Без оценки" />
     <translate name="Rating found" value="Оценка" />
-    <translate name="Search (%d results)" value="Поиск (%d результатов)" />
+    <translate name="Search (%s results)" value="Поиск (%s результатов)" />
   </scope>
   <scope name="SelectGroup">
     <translate name="Select group" value="Выбор группы" />
@@ -1009,5 +1009,49 @@
 	<translate name="    Choose a format to print the list on the left and double-click on the selected format" value="    Выберите формат для печати в списке слева и дважды кликните на выбранном формате" />
 	<translate name="Unable to open printer form: %s" value="Невозможно открыть форму печати по причине: %s" />
 	<translate name="File &quot;%s&quot; already exists! Do you want to replace it?" value="Файл &quot;%s&quot; уже существует! Вы хотите его заменить?" />  
-  </scope>  
+  </scope>
+  <scope name="Updater">
+	<translate name="No files" value="Нет файлов" />
+	<translate name="Stop" value="Остановить" />
+	<translate name="Pause" value="Пауза" />
+	<translate name="Close" value="Закрыть" />
+	<translate name="Progress... (&amp;%%)" value="Прогресс... (&amp;%%)" />
+	<translate name="Stay on top" value="Поверх всех окон" />
+	<translate name="Transparency" value="Прозрачность" />
+	<translate name="No" value="Нет" />
+	<translate name="Hide" value="Спрятать" />
+	<translate name="Auto" value="Автоматически" />
+	<translate name="Auto answer" value="Автоматический ответ" />
+	<translate name="None" value="Никакого" />
+	<translate name="Replace all" value="Заменить все" />
+	<translate name="Add all" value="Добавить все" />
+	<translate name="Skip all" value="Пропустить всё" />
+	<translate name="DB Updater" value="Обновление коллекции" />
+	<translate name="History" value="История" />
+	<translate name="Detailed search if file name already exists" value="Детальный поиск, если имя файла уже существует" />
+	<translate name="Show history" value="Показывать историю" />
+	<translate name="Options" value="Настройки" />
+	<translate name="Open" value="Открыть" />
+	<translate name="Explorer" value="Проводник" />
+	<translate name="Status" value="Состояние" />
+	<translate name="Tile left - %s (&amp;%%%%)" value="Времени осталось - %s (&amp;%%%%)" />
+	<translate name="Unable to add to DB one or more files. Choose &quot;History&quot; in context menu for details." value="Невозможно добавить один или более файлов в коллекцию. Выберите &quot;История&quot; в контекстном меню для деталей." />
+	<translate name="Done" value="Готово" />
+	<translate name="Run" value="Запустить"/>
+	<translate name="History is empty!" value="История пуста!" />
+	<translate name="No files to add" value="Нет файлов для добавления" />
+	<translate name="Processing files... (&amp;%%)" value="Обработка файлов... (&amp;%%)" />
+	<translate name="&lt;current file&gt;" value="&lt;Текущий файл&gt;" />
+	<translate name="Progress status" value="Состояние обновления" />
+	<translate name="Reading [%s]" value="Чтение [%s]"/>  
+  </scope>
+  <scope name="UpdaterHistory">
+	<translate name="In this list are the files that for whatever reasons, have not been added" value="В этом списке находятся файлы, которые по каким-то причинам не были добавлены"/>
+	<translate name="Update history" value="История обновления"/>
+	<translate name="Slide show" value="Просмотр"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Add all files again" value="Добавить все файлы снова"/>
+	<translate name="Unable to find password for file: &quot;%s&quot;" value="Не удаётся найти пароль к файлу: &quot;%s&quot;"/>
+	<translate name="Unable to add file: &quot;%s&quot;" value="Не удалось добавить файл: &quot;%s&quot;"/>
+  </scope>
 </language>

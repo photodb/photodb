@@ -85,7 +85,6 @@ type
     FValues : TList;
     FOwner : TScript;
     function GetValueByIndex(Index: Integer): TValue;
-    procedure SetValueByName(Index: string; const Value: TValue);
     function GetCount: Integer;
   public        
     function GetValueByName(Index: string): TValue;
@@ -93,6 +92,7 @@ type
     destructor Destroy; override;
     procedure Remove(Name : string);
     procedure Clear;
+    procedure SetValueByName(Index: string; const Value: TValue);
     function Exists(Name : string; SearchInParent : Boolean = False) : Boolean;
     function GetByNameAndType(Name : string; AType : Integer) : TValue;
     property Items[Index: Integer]: TValue read GetValueByIndex; default;

@@ -4,10 +4,10 @@ interface
 
 uses
   Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress;
+  Dialogs, StdCtrls, DmProgress, uDBForm;
 
 type
-  TImportProgressForm = class(TForm)
+  TImportProgressForm = class(TDBForm)
     DmProgress1: TDmProgress;
     Label13: TLabel;
     ActionLabel: TLabel;
@@ -68,8 +68,8 @@ procedure TImportProgressForm.FormCreate(Sender: TObject);
 begin
  DBKernel.RegisterForm(ImportProgressForm);
  FormManager.RegisterMainForm(self);
- StatusLabel.Caption:=TEXT_MES_WAITING+'...';
- ActionLabel.Caption:=TEXT_MES_WAITING+'...';
+ StatusLabel.Caption:=L('Waiting')+'...';
+ ActionLabel.Caption:=L('Waiting')+'...';
  DmProgress1.MaxValue:=1;
  DmProgress2.MaxValue:=1;
  DmProgress3.MaxValue:=1;

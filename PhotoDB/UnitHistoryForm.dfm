@@ -3,8 +3,8 @@ object FormHistory: TFormHistory
   Top = 223
   BorderStyle = bsSizeToolWin
   Caption = 'FormHistory'
-  ClientHeight = 295
-  ClientWidth = 376
+  ClientHeight = 287
+  ClientWidth = 382
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,33 +16,41 @@ object FormHistory: TFormHistory
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  DesignSize = (
+    382
+    287)
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 376
+    Width = 382
     Height = 57
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
+    DesignSize = (
+      382
+      57)
     object InfoLabel: TLabel
       Left = 8
       Top = 8
-      Width = 353
+      Width = 366
       Height = 41
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'InfoLabel'
       WordWrap = True
+      ExplicitWidth = 368
     end
   end
   object InfoListBox: TListBox
     Left = 0
     Top = 57
-    Width = 376
-    Height = 204
+    Width = 382
+    Height = 191
     Style = lbOwnerDrawVariable
-    Align = alClient
+    Anchors = [akLeft, akTop, akRight, akBottom]
     ItemHeight = 13
     TabOrder = 1
     OnContextPopup = InfoListBoxContextPopup
@@ -50,36 +58,19 @@ object FormHistory: TFormHistory
     OnDrawItem = InfoListBoxDrawItem
     OnMeasureItem = InfoListBoxMeasureItem
   end
-  object Panel2: TPanel
-    Left = 0
-    Top = 261
-    Width = 376
-    Height = 34
-    Align = alBottom
-    BevelOuter = bvNone
+  object Button1: TButton
+    Left = 299
+    Top = 254
+    Width = 75
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Ok'
     TabOrder = 2
-    object Panel3: TPanel
-      Left = 240
-      Top = 0
-      Width = 136
-      Height = 34
-      Align = alRight
-      BevelOuter = bvNone
-      TabOrder = 0
-      object Button1: TButton
-        Left = 56
-        Top = 5
-        Width = 75
-        Height = 25
-        Caption = 'Ok'
-        TabOrder = 0
-        OnClick = Button1Click
-      end
-    end
+    OnClick = Button1Click
   end
-  object PopupMenu1: TPopupMenu
+  object PmActions: TPopupMenu
     Left = 112
-    Top = 16
+    Top = 152
     object View1: TMenuItem
       Caption = 'View'
       OnClick = View1Click

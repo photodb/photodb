@@ -4,21 +4,19 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Language, Dolphin_DB, Menus, UnitDBKernel,
-  UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt;
+  Dialogs, ExtCtrls, StdCtrls, Dolphin_DB, Menus, UnitDBKernel,
+  UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt, uMemory, uDBForm;
 
 type
-  TFormHistory = class(TForm)
+  TFormHistory = class(TDBForm)
     Panel1: TPanel;
     InfoListBox: TListBox;
-    Panel2: TPanel;
-    Panel3: TPanel;
-    Button1: TButton;
     InfoLabel: TLabel;
-    PopupMenu1: TPopupMenu;
+    PmActions: TPopupMenu;
     View1: TMenuItem;
     Explorer1: TMenuItem;
     ReAddAll1: TMenuItem;
+    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -33,26 +31,28 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure FormDestroy(Sender: TObject);
     procedure ReAddAll1Click(Sender: TObject);
-  private      
-   Icons : array of TIcon;
-   ItemsData : TList;
-   Infos : TArStrings;
-   FileList : TStrings;
+  private
     { Private declarations }
+    Icons : array of TIcon;
+    ItemsData: TList;
+    Infos: TStrings;
+    FileList: TStrings;
+    procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
-   Procedure LoadLanguage;
+    { Public declarations }
    procedure LoadToolBarIcons;
    procedure SetFilesList(List : TStrings);
    procedure WriteLnLine(Sender: TObject; Line: string; Info : integer);
-
-    { Public declarations }
   end;
 
 procedure ShowHistory(List : TStrings);
 
 implementation
 
-uses ExplorerUnit, SlideShow, UnitUpdateDB;
+uses
+  ExplorerUnit, SlideShow, UnitUpdateDB;
 
 {$R *.dfm}
 
@@ -60,147 +60,156 @@ procedure ShowHistory(List : TStrings);
 var
   FormHistory: TFormHistory;
 begin
- Application.CreateForm(TFormHistory, FormHistory);
- FormHistory.SetFilesList(List);
- FormHistory.Show;
+  Application.CreateForm(TFormHistory, FormHistory);
+  FormHistory.SetFilesList(List);
+  FormHistory.Show;
 end;
 
 procedure TFormHistory.FormCreate(Sender: TObject);
 begin
- FileList:=nil;     
-// DoubleBuffered:=true;
- SetLength(Infos,0);
- ItemsData:=TList.Create;
+  FileList := TStringList.Create;
+  Infos := TStringList.Create;
+  ItemsData := TList.Create;
 
- InfoListBox.DoubleBuffered:=true;
- InfoListBox.ItemHeight:=InfoListBox.Canvas.TextHeight('Iy')*3+5;
- InfoListBox.Clear;
- LoadToolBarIcons;
+  InfoListBox.DoubleBuffered := True;
+  InfoListBox.ItemHeight := InfoListBox.Canvas.TextHeight('Iy') * 3 + 5;
+  InfoListBox.Clear;
+  LoadToolBarIcons;
 
- LoadLanguage;
- PopupMenu1.Images:=DBkernel.ImageList;
- View1.ImageIndex:=DB_IC_SLIDE_SHOW;
- Explorer1.ImageIndex:=DB_IC_FOLDER;
- ReAddAll1.ImageIndex:=DB_IC_NEW;
+  LoadLanguage;
+  PmActions.Images := DBKernel.ImageList;
+  View1.ImageIndex := DB_IC_SLIDE_SHOW;
+  Explorer1.ImageIndex := DB_IC_FOLDER;
+  ReAddAll1.ImageIndex := DB_IC_NEW;
 end;
 
 procedure TFormHistory.LoadLanguage;
 begin
- InfoLabel.Caption:=TEXT_MES_HISTORY_INFO;
- Caption:=TEXT_MES_HISTORY;
- Button1.Caption:=TEXT_MES_OK;
- View1.Caption:=TEXT_MES_SLIDE_SHOW;
- Explorer1.Caption:=TEXT_MES_EXPLORER;  
- ReAddAll1.Caption:=TEXT_MES_READD_ALL;
+  BeginTranslate;
+  try
+    InfoLabel.Caption := L('In this list are the files that for whatever reasons, have not been added') + ':';
+    Caption := L('Update history');
+    Button1.Caption := L('Ok');
+    View1.Caption := L('Slide show');
+    Explorer1.Caption := L('Explorer');
+    ReAddAll1.Caption := L('Add all files again');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormHistory.Button1Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFormHistory.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
- Release;
+  Release;
 end;
 
 procedure TFormHistory.InfoListBoxDblClick(Sender: TObject);
 var
-  Info : TRecordsInfo;
-  P : TPoint;
-  n : integer;
-  OneInfo : TOneRecordInfo;
+  Info: TRecordsInfo;
+  P: TPoint;
+  N: Integer;
+  OneInfo: TOneRecordInfo;
 begin
- GetCursorPos(P);
- p:=InfoListBox.ScreenToClient(P);
- n:=InfoListBox.ItemAtPos(P,true);
- if n<0 then exit;
- If Viewer=nil then
- Application.CreateForm(TViewer,Viewer);
- GetInfoByFileNameA(FileList[n],false,OneInfo);
- Info:=GetRecordsFromOne(OneInfo);
- Viewer.Execute(Sender,Info);
+  GetCursorPos(P);
+  P := InfoListBox.ScreenToClient(P);
+  N := InfoListBox.ItemAtPos(P, True);
+  if N < 0 then
+    Exit;
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  GetInfoByFileNameA(FileList[N], False, OneInfo);
+  Info := GetRecordsFromOne(OneInfo);
+  Viewer.Execute(Sender, Info);
+  Viewer.Show;
 end;
 
 procedure TFormHistory.InfoListBoxContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  P, p1 : TPoint;
-  n : integer;
+  P, P1: TPoint;
+  N: Integer;
 begin
- GetCursorPos(P);
- p1:=InfoListBox.ScreenToClient(P);
- n:=InfoListBox.ItemAtPos(P1,true);
- if n<0 then exit;
- PopupMenu1.Tag:=n;
- InfoListBox.Selected[n]:=True;
- PopupMenu1.Popup(P.X,P.Y);
+  GetCursorPos(P);
+  P1 := InfoListBox.ScreenToClient(P);
+  N := InfoListBox.ItemAtPos(P1, True);
+  if N < 0 then
+    Exit;
+  PmActions.Tag := N;
+  InfoListBox.Selected[N] := True;
+  PmActions.Popup(P.X, P.Y);
 end;
 
 procedure TFormHistory.View1Click(Sender: TObject);
 var
-  Info : TRecordsInfo;
-  OneInfo : TOneRecordInfo;
+  Info: TRecordsInfo;
+  OneInfo: TOneRecordInfo;
 begin
- If Viewer=nil then
- Application.CreateForm(TViewer,Viewer);
- GetInfoByFileNameA(FileList[PopupMenu1.Tag],false,OneInfo);
- Info:=GetRecordsFromOne(OneInfo);
- Viewer.Execute(Sender,Info);
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  GetInfoByFileNameA(FileList[PmActions.Tag], False, OneInfo);
+  Info := GetRecordsFromOne(OneInfo);
+  Viewer.Execute(Sender, Info);
+  Viewer.Show;
 end;
 
 procedure TFormHistory.Explorer1Click(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetOldPath(InfoListBox.Items[PopupMenu1.Tag]);
-  SetPath(GetDirectory(FileList[PopupMenu1.Tag]));
-  Show;
- end;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetOldPath(InfoListBox.Items[PmActions.Tag]);
+    SetPath(GetDirectory(FileList[PmActions.Tag]));
+    Show;
+  end;
 end;
 
-procedure TFormHistory.InfoListBoxMeasureItem(Control: TWinControl;
-  Index: Integer; var Height: Integer);
+procedure TFormHistory.InfoListBoxMeasureItem(Control: TWinControl; index: Integer; var Height: Integer);
 begin
- Height:=InfoListBox.Canvas.TextHeight('Iy')*3+5;
+  Height := InfoListBox.Canvas.TextHeight('Iy') * 3 + 5;
 end;
 
-procedure TFormHistory.InfoListBoxDrawItem(Control: TWinControl;
-  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+procedure TFormHistory.InfoListBoxDrawItem(Control: TWinControl; index: Integer; Rect: TRect; State: TOwnerDrawState);
 begin
- DoInfoListBoxDrawItem(Control as TListBox,Index,Rect,State,
- ItemsData,Icons,false,nil,Infos);
+  DoInfoListBoxDrawItem(Control as TListBox, index, Rect, State, ItemsData, Icons, False, nil, Infos);
 end;
-         
+
 procedure TFormHistory.SetFilesList(List: TStrings);
 var
-  i : integer;
-  pass : String;
-begin
- FileList:=TStringList.Create;
- InfoListBox.Clear;
- for i:=0 to List.Count-1 do
- begin
-  FileList.Add(List[i]);
-  if FileExists(List[i]) then
+  I: Integer;
+  Pass: string;
+
+  function AddErrorMessage(FileName : string) : string;
   begin
-   if GraphicCrypt.ValidCryptGraphicFile(List[i]) then
-   begin
-    pass:=DBkernel.FindPasswordForCryptImageFile(List[i]);
-    if pass='' then
+    Result := Format(L('Unable to add file: "%s"'), [FileName]);
+  end;
+
+begin
+  InfoListBox.Clear;
+  for I := 0 to List.Count - 1 do
+  begin
+    FileList.Add(List[I]);
+    if FileExists(List[I]) then
     begin
-     WriteLnLine(self,Format(TEXT_MES_UNABLE_TO_FIND_PASS_FOR_FILE_F,[List[i]]),LINE_INFO_WARNING);
+      if GraphicCrypt.ValidCryptGraphicFile(List[I]) then
+      begin
+        Pass := DBkernel.FindPasswordForCryptImageFile(List[I]);
+        if Pass = '' then
+        begin
+          WriteLnLine(Self, Format(L('Unable to find password for file: &quot;%s&quot;'), [List[I]]), LINE_INFO_WARNING);
+        end else
+        begin
+          WriteLnLine(Self, AddErrorMessage(List[I]), LINE_INFO_PLUS);
+        end;
+      end else
+        WriteLnLine(Self, AddErrorMessage(List[I]), LINE_INFO_OK)
     end else
-    begin
-     WriteLnLine(self,Format(TEXT_MES_UNABLE_TO_ADD_FILE_F,[List[i]]),LINE_INFO_PLUS);
-    end;
-   end else
-   WriteLnLine(self,Format(TEXT_MES_UNABLE_TO_ADD_FILE_F,[List[i]]),LINE_INFO_OK)
-  end else
-  WriteLnLine(self,Format(TEXT_MES_UNABLE_TO_ADD_FILE_F,[List[i]]),LINE_INFO_ERROR);
- end;
-// InfoListBox.Items:=List;
+      WriteLnLine(Self, AddErrorMessage(List[I]), LINE_INFO_ERROR);
+  end;
 end;
 
 procedure TFormHistory.LoadToolBarIcons;
@@ -215,56 +224,55 @@ var
   end;
 
 begin
- index:=0;
- SetLength(Icons,7);
- AddIcon('CMD_OK');
- AddIcon('CMD_ERROR');
- AddIcon('CMD_WARNING');
- AddIcon('CMD_PLUS');
- AddIcon('CMD_PROGRESS');
- AddIcon('CMD_DB');
- AddIcon('ADMINTOOLS');
+  index := 0;
+  SetLength(Icons, 7);
+  AddIcon('CMD_OK');
+  AddIcon('CMD_ERROR');
+  AddIcon('CMD_WARNING');
+  AddIcon('CMD_PLUS');
+  AddIcon('CMD_PROGRESS');
+  AddIcon('CMD_DB');
+  AddIcon('ADMINTOOLS');
 end;
 
 procedure TFormHistory.FormDestroy(Sender: TObject);
 begin
- ItemsData.Free;
+  F(ItemsData);
+  F(Infos);
+  F(FileList);
 end;
 
-procedure TFormHistory.WriteLnLine(Sender: TObject; Line: string; Info : integer);
+function TFormHistory.GetFormID: string;
+begin
+  Result := 'UpdaterHistory';
+end;
+
+procedure TFormHistory.WriteLnLine(Sender: TObject; Line: string; Info: Integer);
 var
-  p : PInteger;
-  i : integer;
+  P: PInteger;
 const
   TopRecords = 0;
 begin
- LockWindowUpdate(Handle);
- SetLength(Infos,Length(Infos)+1);
- for i:=length(Infos)-2 downto TopRecords do
- begin
-  Infos[i+1]:=Infos[i];
- end;
+  LockWindowUpdate(Handle);
+  Infos.Insert(0, Line);
 
- GetMem(p,SizeOf(integer));
- p^:=Info;
- ItemsData.Insert( TopRecords,p);
- InfoListBox.Items.Insert( TopRecords,Line);
+  GetMem(P, SizeOf(Integer));
+  P^ := Info;
+  ItemsData.Insert(TopRecords, P);
+  InfoListBox.Items.Insert(TopRecords, Line);
 
- LockWindowUpdate(0);
+  LockWindowUpdate(0);
 end;
 
 procedure TFormHistory.ReAddAll1Click(Sender: TObject);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=0 to FileList.Count-1 do
- begin
-  if FileExists(FileList[i]) then
+  for I := 0 to FileList.Count - 1 do
   begin
-   UpdaterDB.AddFile(FileList[i]);
+    if FileExists(FileList[I]) then
+      UpdaterDB.AddFile(FileList[I]);
   end;
- end;
-// InfoListBox.Items:=List;
 end;
 
 end.

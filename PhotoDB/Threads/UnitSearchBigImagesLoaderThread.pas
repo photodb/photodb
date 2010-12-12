@@ -266,7 +266,7 @@ begin
   if (FSender as TSearchForm).tbStopOperation.Enabled then
   begin
    (FSender as TSearchForm).tbStopOperation.Click;
-   (FSender as TSearchForm).PbProgress.Text:=TEXT_MES_DONE;
+   (FSender as TSearchForm).PbProgress.Text:=L('Done');
    (FSender as TSearchForm).Label7.Caption:=OldInformationText;
    (FSender as TSearchForm).PbProgress.Position:=0;
    (FSender as TSearchForm).PbProgress.MaxValue:=1;
