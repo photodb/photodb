@@ -196,7 +196,7 @@ begin
       UnformatDir(Directory);
     end;
 
-    if UpcaseAll(ParamStr1) <> '/EXPLORER' then
+    if AnsiUpperCase(ParamStr1) <> '/EXPLORER' then
     begin
       TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
       if IsFile(ParamStr1) then

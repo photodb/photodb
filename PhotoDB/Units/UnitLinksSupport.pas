@@ -3,7 +3,7 @@ unit UnitLinksSupport;
 interface
 
 uses
-  Windows, SysUtils, Classes, StrUtils, Language, UnitDBDeclare, UnitDBCommon,
+  Windows, SysUtils, Classes, StrUtils, uTranslate, UnitDBDeclare, UnitDBCommon,
   uConstants;
 
 const
@@ -78,354 +78,363 @@ function LinkType(LinkTypeN : integer) : String;
 
 implementation
 
-function CompareTwoLinks(Link1, Link2 : TLinkInfo; UseValue: boolean = false) : boolean;
-begin
- Result:=false;
- if Link1.LinkType=Link2.LinkType then
- if AnsiLowerCase(Link1.LinkName)=AnsiLowerCase(Link2.LinkName) then
- if (AnsiLowerCase(Link1.LinkValue)=AnsiLowerCase(Link2.LinkValue)) or not UseValue then
- Result:=true;
-end;
-
-function CopyLinksInfo(info : TLinksInfo) : TLinksInfo;
-var
-  i : integer;
-begin
- SetLength(Result,length(info));
- for i:=0 to length(info)-1 do
+ function CompareTwoLinks(Link1, Link2: TLinkInfo; UseValue: Boolean = False): Boolean;
  begin
-  Result[i]:=info[i];
+   Result := False;
+   if Link1.LinkType = Link2.LinkType then
+     if AnsiLowerCase(Link1.LinkName) = AnsiLowerCase(Link2.LinkName) then
+       if (AnsiLowerCase(Link1.LinkValue) = AnsiLowerCase(Link2.LinkValue)) or not UseValue then
+         Result := True;
  end;
-end;
 
-function CodeLinkInfo(info : TLinkInfo) : String;
-begin
- Result:='['+IntToStr(info.LinkType)+']{'+info.LinkName+'}'+info.LinkValue+';';
-end;
-
-function CodeLinksInfo(info : TLinksInfo) : String;
+function CopyLinksInfo(Info: TLinksInfo): TLinksInfo;
 var
-  i : integer;
+  I: Integer;
 begin
- Result:='';
- for i:=0 to Length(info)-1 do
- begin
-  Result:=Result+'['+IntToStr(info[i].LinkType)+']{'+info[i].LinkName+'}'+info[i].LinkValue+';';
- end;
+  SetLength(Result, Length(Info));
+  for I := 0 to Length(Info) - 1 do
+    Result[I] := Info[I];
+end;
+
+function CodeLinkInfo(Info: TLinkInfo): string;
+begin
+  Result := '[' + IntToStr(Info.LinkType) + ']{' + Info.LinkName + '}' + Info.LinkValue + ';';
+end;
+
+function CodeLinksInfo(Info: TLinksInfo): string;
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := 0 to Length(Info) - 1 do
+    Result := Result + '[' + IntToStr(Info[I].LinkType) + ']{' + Info[I].LinkName + '}' + Info[I].LinkValue + ';';
 end;
 
 function ParseLinksInfo(Info : String) : TLinksInfo;
 var
-  i, c,l : integer;
-  s : String;
+  I, C, L: Integer;
+  S: string;
 
-  Procedure AddOneLink(aInfo : String);
+  procedure AddOneLink(AInfo: string);
   var
-    s1,s2,s3,s4,s5 : integer;
+    S1, S2, S3, S4, S5: Integer;
   begin
-   s1:=Pos('[',aInfo);
-   s2:=PosEx(']',aInfo,s1);
-   s3:=PosEx('{',aInfo,s2);
-   s4:=PosEx('}',aInfo,s3);
-   s5:=PosEx(';',aInfo,s4);
-   if (s1<>0) and (s2<>0) and (s3<>0) and (s4<>0) and (s5<>0) then
-   begin
-    l := Length(Result);
-    SetLength(Result,l+1);
-    Result[l].LinkType:=StrToIntDef(Copy(aInfo,s1+1,s2-s1-1),0);
-    Result[l].LinkName:=Copy(aInfo,s3+1,s4-s3-1);
-    Result[l].LinkValue:=Copy(aInfo,s4+1,s5-s4-1);
-    Result[l].Tag:=LINK_TAG_NONE;
-   end;
+    S1 := Pos('[', AInfo);
+    S2 := PosEx(']', AInfo, S1);
+    S3 := PosEx('{', AInfo, S2);
+    S4 := PosEx('}', AInfo, S3);
+    S5 := PosEx(';', AInfo, S4);
+    if (S1 <> 0) and (S2 <> 0) and (S3 <> 0) and (S4 <> 0) and (S5 <> 0) then
+    begin
+      L := Length(Result);
+      SetLength(Result, L + 1);
+      Result[L].LinkType := StrToIntDef(Copy(AInfo, S1 + 1, S2 - S1 - 1), 0);
+      Result[L].LinkName := Copy(AInfo, S3 + 1, S4 - S3 - 1);
+      Result[L].LinkValue := Copy(AInfo, S4 + 1, S5 - S4 - 1);
+      Result[L].Tag := LINK_TAG_NONE;
+    end;
   end;
 
 begin
- c:=0;
- SetLength(Result,0);
- for i:=1 to Length(Info) do
- if Info[i]=';' then
- begin
-  s:=Copy(Info,c,i-c+1);
-  AddOneLink(s);
-  c:=i+1;
- end;
+  C := 0;
+  SetLength(Result, 0);
+  for I := 1 to Length(Info) do
+    if Info[I] = ';' then
+    begin
+      S := Copy(Info, C, I - C + 1);
+      AddOneLink(S);
+      C := I + 1;
+    end;
 end;
 
-function LinkInLinksExists(Link : TLinkInfo; Links : TLinksInfo; UseValue : boolean = true) : boolean;
+function LinkInLinksExists(Link: TLinkInfo; Links: TLinksInfo; UseValue: Boolean = True): Boolean;
 var
-  i : integer;
+  I: Integer;
 begin
- Result:=false;
- for i:=0 to Length(Links)-1 do
- begin
-  if Link.LinkType=Links[i].LinkType then
-  if AnsiLowerCase(Link.LinkName)=AnsiLowerCase(Links[i].LinkName) then
-  if (AnsiLowerCase(Link.LinkValue)=AnsiLowerCase(Links[i].LinkValue)) or not UseValue then
+  Result := False;
+  for I := 0 to Length(Links) - 1 do
   begin
-   Result:=true;
-   exit;
+    if Link.LinkType = Links[I].LinkType then
+      if AnsiLowerCase(Link.LinkName) = AnsiLowerCase(Links[I].LinkName) then
+        if (AnsiLowerCase(Link.LinkValue) = AnsiLowerCase(Links[I].LinkValue)) or not UseValue then
+        begin
+          Result := True;
+          Exit;
+        end;
   end;
- end;
 end;
 
-function VariousLinks(info1, info2 : String) : boolean;
+function VariousLinks(Info1, Info2: string): Boolean;
 begin
- Result:=VariousLinks(ParseLinksInfo(info1),ParseLinksInfo(info2));
+  Result := VariousLinks(ParseLinksInfo(Info1), ParseLinksInfo(Info2));
 end;
 
-function VariousLinks(info1, info2 : TLinksInfo) : boolean;
+function VariousLinks(Info1, Info2: TLinksInfo): Boolean;
 var
-  i : integer;
+  I: Integer;
 begin
- Result:=false;
- for i:=0 to Length(info1)-1 do
- if not LinkInLinksExists(info1[i],info2) then
- begin
-  Result:=true;
-  exit;
- end;
- for i:=0 to Length(info2)-1 do
- if not LinkInLinksExists(info2[i],info1) then
- begin
-  Result:=true;
-  exit;
- end;
+  Result := False;
+  for I := 0 to Length(Info1) - 1 do
+    if not LinkInLinksExists(Info1[I], Info2) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  for I := 0 to Length(Info2) - 1 do
+    if not LinkInLinksExists(Info2[I], Info1) then
+    begin
+      Result := True;
+      Exit;
+    end;
 end;
 
-function DeleteLinkAtPos(var info : String; pos : integer) : boolean;
+function DeleteLinkAtPos(var Info: string; Pos: Integer): Boolean;
 var
-  Tinfo : TLinksInfo;
+  Tinfo: TLinksInfo;
 begin
- Tinfo:=ParseLinksInfo(info);
- Result:=DeleteLinkAtPos(Tinfo,pos);
- info:=CodeLinksInfo(Tinfo);
+  Tinfo := ParseLinksInfo(Info);
+  Result := DeleteLinkAtPos(Tinfo, Pos);
+  Info := CodeLinksInfo(Tinfo);
 end;
 
-function DeleteLinkAtPos(var info : TLinksInfo; pos : integer) : boolean;
+function DeleteLinkAtPos(var Info: TLinksInfo; Pos: Integer): Boolean;
 var
-  i : integer;
+  I: Integer;
 begin
- Result:=false;
- if Length(info)-1<pos then exit;
- for i:=pos to Length(info)-2 do
- info[i]:=info[i+1];
- SetLength(info,Length(info)-1);
+  Result := False;
+  if Length(Info) - 1 < Pos then
+    Exit;
+  for I := Pos to Length(Info) - 2 do
+    Info[I] := Info[I + 1];
+  SetLength(Info, Length(Info) - 1);
 end;
 
-procedure DeleteLinkInLinks(var info : TLinksInfo; Link : TLinkInfo; DeleteNoVal : boolean = true);
+procedure DeleteLinkInLinks(var Info: TLinksInfo; Link: TLinkInfo; DeleteNoVal: Boolean = True);
 var
-  i, j : Integer;
+  I, J: Integer;
 begin
- For i:=0 to Length(info)-1 do
- if Link.LinkType=info[i].LinkType then
- if AnsiLowerCase(Link.LinkName)=AnsiLowerCase(info[i].LinkName) then
- if (AnsiLowerCase(Link.LinkValue)=AnsiLowerCase(info[i].LinkValue)) or DeleteNoVal then
- begin
-  For j:=i to Length(info)-2 do
-  info[j]:=info[j+1];
-  SetLength(info,Length(info)-1);
-  Exit;
- end;
+  for I := 0 to Length(Info) - 1 do
+    if Link.LinkType = Info[I].LinkType then
+      if AnsiLowerCase(Link.LinkName) = AnsiLowerCase(Info[I].LinkName) then
+        if (AnsiLowerCase(Link.LinkValue) = AnsiLowerCase(Info[I].LinkValue)) or DeleteNoVal then
+        begin
+          for J := I to Length(Info) - 2 do
+            Info[J] := Info[J + 1];
+          SetLength(Info, Length(Info) - 1);
+          Exit;
+        end;
 end;
 
-function GetCommonLinks(LinksList : TStringList) : TLinksInfo;
+function GetCommonLinks(LinksList: TStringList): TLinksInfo;
 var
-  i : integer;
-  Tinfo : TArLinksInfo;
+  I: Integer;
+  Tinfo: TArLinksInfo;
 begin
- SetLength(Tinfo, LinksList.Count);
- for i:=0 to LinksList.Count-1 do
- Tinfo[i]:=ParseLinksInfo(LinksList[i]);
- Result:=GetCommonLinks(Tinfo);
+  SetLength(Tinfo, LinksList.Count);
+  for I := 0 to LinksList.Count - 1 do
+    Tinfo[I] := ParseLinksInfo(LinksList[I]);
+  Result := GetCommonLinks(Tinfo);
 end;
 
-function GetCommonLinks(info : TArLinksInfo) : TLinksInfo;
+function GetCommonLinks(Info: TArLinksInfo): TLinksInfo;
 var
-  i, j : integer;
+  I, J: Integer;
 begin
- if Length(info)=0 then exit;
- Result:=CopyLinksInfo(info[0]);
- for i:=1 to length(info)-1 do
- begin
-  if length(info[i])=0 then
+  if Length(Info) = 0 then
+    Exit;
+  Result := CopyLinksInfo(Info[0]);
+  for I := 1 to Length(Info) - 1 do
   begin
-   SetLength(Result,0);
-   Break;
+    if Length(Info[I]) = 0 then
+    begin
+      SetLength(Result, 0);
+      Break;
+    end;
+    for J := Length(Result) - 1 downto 0 do
+      if not LinkInLinksExists(Result[J], Info[I], False) then
+        DeleteLinkInLinks(Result, Result[J]);
+    if Length(Result) = 0 then
+      Exit;
   end;
-  for j:=length(Result)-1 downto 0 do
-  if not LinkInLinksExists(Result[j],info[i],false) then
-  DeleteLinkInLinks(Result,Result[j]);
-  If Length(Result)=0 then Exit;
- end;
- for i:=0 to length(Result)-1 do
- Result[i].Tag:=LINK_TAG_NONE;
- for i:=0 to length(Result)-1 do
- begin
-  for j:=0 to length(info)-1 do
+  for I := 0 to Length(Result) - 1 do
+    Result[I].Tag := LINK_TAG_NONE;
+  for I := 0 to Length(Result) - 1 do
   begin
-   if not LinkInLinksExists(Result[i],info[j],true) then
-   begin
-    Result[i].Tag:=LINK_TAG_VALUE_VAR_NOT_SELECT;
-    Break;
-   end;
+    for J := 0 to Length(Info) - 1 do
+    begin
+      if not LinkInLinksExists(Result[I], Info[J], True) then
+      begin
+        Result[I].Tag := LINK_TAG_VALUE_VAR_NOT_SELECT;
+        Break;
+      end;
+    end;
   end;
- end;
 end;
 
-procedure DeleteLinksFromLinks(var Links : TLinksInfo; LinksToDelete : TLinksInfo; DeleteNoVal : boolean = true);
+procedure DeleteLinksFromLinks(var Links: TLinksInfo; LinksToDelete: TLinksInfo; DeleteNoVal: Boolean = True);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=0 to Length(LinksToDelete)-1 do
- if LinksToDelete[i].Tag = LINK_TAG_NONE then
- DeleteLinkInLinks(Links,LinksToDelete[i], DeleteNoVal);
+  for I := 0 to Length(LinksToDelete) - 1 do
+    if LinksToDelete[I].Tag = LINK_TAG_NONE then
+      DeleteLinkInLinks(Links, LinksToDelete[I], DeleteNoVal);
 end;
 
-procedure AddLinkToLinks(var Links : TLinksInfo; LinksToAdd : TLinkInfo);
+procedure AddLinkToLinks(var Links: TLinksInfo; LinksToAdd: TLinkInfo);
 begin
- SetLength(Links,Length(Links)+1);
- Links[Length(Links)-1]:=LinksToAdd;
+  SetLength(Links, Length(Links) + 1);
+  Links[Length(Links) - 1] := LinksToAdd;
 end;
 
-procedure AddLinksToLinks(var Links : TLinksInfo; LinksToAdd : TLinksInfo);
+procedure AddLinksToLinks(var Links: TLinksInfo; LinksToAdd: TLinksInfo);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=0 to Length(LinksToAdd)-1 do
- if LinksToAdd[i].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT=0 then
- AddLinkToLinks(Links,LinksToAdd[i]);
+  for I := 0 to Length(LinksToAdd) - 1 do
+    if LinksToAdd[I].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT = 0 then
+      AddLinkToLinks(Links, LinksToAdd[I]);
 end;
 
-Procedure ReplaceLinks(LinksToDelete, LinksToAdd : String; var Links : String);
+procedure ReplaceLinks(LinksToDelete, LinksToAdd: string; var Links: string);
 var
-  LA, LB, LR : TLinksInfo;
+  LA, LB, LR: TLinksInfo;
 begin
- LA:=ParseLinksInfo(LinksToDelete);
- LB:=ParseLinksInfo(LinksToAdd);
- LR:=ParseLinksInfo(Links);
- ReplaceLinks(LA,LB,LR);
- Links:=CodeLinksInfo(LR);
+  LA := ParseLinksInfo(LinksToDelete);
+  LB := ParseLinksInfo(LinksToAdd);
+  LR := ParseLinksInfo(Links);
+  ReplaceLinks(LA, LB, LR);
+  Links := CodeLinksInfo(LR);
 end;
 
-Procedure ReplaceLinks(LinksToDelete, LinksToAdd : TLinksInfo; var Links : TLinksInfo);
+procedure ReplaceLinks(LinksToDelete, LinksToAdd: TLinksInfo; var Links: TLinksInfo);
 var
-  i, j : integer;
-  b : boolean;
+  I, J: Integer;
+  B: Boolean;
 begin
- for i:=0 to Length(LinksToDelete)-1 do
- if LinksToDelete[i].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT<>0 then
- begin
-  b:=false;
-  for j:=0 to Length(LinksToAdd)-1 do
+  for I := 0 to Length(LinksToDelete) - 1 do
+    if LinksToDelete[I].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT <> 0 then
+    begin
+      B := False;
+      for J := 0 to Length(LinksToAdd) - 1 do
+      begin
+        if (LinksToAdd[J].LinkType = LinksToDelete[I].LinkType) and
+          (AnsiLowerCase(LinksToAdd[J].LinkName) = AnsiLowerCase(LinksToDelete[I].LinkName)) then
+        begin
+          B := True;
+          Break;
+        end;
+      end;
+      if not B then
+        LinksToDelete[I].Tag := LINK_TAG_NONE;
+    end;
+  for I := 0 to Length(LinksToAdd) - 1 do
+    if LinksToAdd[I].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT = 0 then
+    begin
+      for J := 0 to Length(LinksToDelete) - 1 do
+      begin
+        if (LinksToAdd[I].LinkType = LinksToDelete[J].LinkType) and
+          (AnsiLowerCase(LinksToAdd[I].LinkName) = AnsiLowerCase(LinksToDelete[J].LinkName)) then
+        begin
+          LinksToDelete[I].Tag := LINK_TAG_NONE;
+        end;
+      end;
+    end;
+  DeleteLinksFromLinks(Links, LinksToDelete, True);
+  AddLinksToLinks(Links, LinksToAdd);
+end;
+
+function CompareLinks(LinksA, LinksB: string; Simple: Boolean = False): Boolean;
+var
+  LA, LB: TLinksInfo;
+begin
+  LA := ParseLinksInfo(LinksA);
+  LB := ParseLinksInfo(LinksB);
+  Result := CompareLinks(LA, LB, Simple);
+end;
+
+function CompareLinks(LinksA, LinksB: TLinksInfo; Simple: Boolean = False): Boolean;
+var
+  I: Integer;
+begin
+  Result := True;
+  if not Simple then
   begin
-   if (LinksToAdd[j].LinkType=LinksToDelete[i].LinkType) and (AnsiLowerCase(LinksToAdd[j].LinkName)=AnsiLowerCase(LinksToDelete[i].LinkName)) then
-   begin
-    b:=true;
-    break;
-   end;
-  end;
-  if not b then LinksToDelete[i].Tag:=LINK_TAG_NONE;
- end;
- for i:=0 to Length(LinksToAdd)-1 do
- if LinksToAdd[i].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT=0 then
- begin
-  for j:=0 to Length(LinksToDelete)-1 do
+    for I := 0 to Length(LinksA) - 1 do
+    begin
+      if not LinkInLinksExists(LinksA[I], LinksB) then
+      begin
+        Result := False;
+        Break;
+      end;
+    end;
+    for I := 0 to Length(LinksB) - 1 do
+    begin
+      if not LinkInLinksExists(LinksB[I], LinksA) then
+      begin
+        Result := False;
+        Break;
+      end;
+    end;
+  end
+  else
   begin
-   if (LinksToAdd[i].LinkType=LinksToDelete[j].LinkType) and (AnsiLowerCase(LinksToAdd[i].LinkName)=AnsiLowerCase(LinksToDelete[j].LinkName)) then
-   begin
-    LinksToDelete[i].Tag:=LINK_TAG_NONE;
-   end;
+    if Length(LinksA) <> Length(LinksB) then
+    begin
+      Result := False;
+      Exit;
+    end;
+    for I := 0 to Length(LinksA) - 1 do
+    begin
+      if not CompareTwoLinks(LinksA[I], LinksB[I], True) then
+      begin
+        Result := False;
+        Break;
+      end;
+    end;
   end;
- end;
- DeleteLinksFromLinks(Links,LinksToDelete,true);
- AddLinksToLinks(Links,LinksToAdd);
 end;
 
-Function CompareLinks(LinksA, LinksB : String; Simple : boolean = false) : Boolean;
+function CodeExtID(ExtID: string): string;
 var
-  LA, LB : TLinksInfo;
+  I: Integer;
 begin
- LA:=ParseLinksInfo(LinksA);
- LB:=ParseLinksInfo(LinksB);
- Result:=CompareLinks(LA,LB,Simple);
+  Result := '';
+  for I := 1 to Length(ExtID) do
+    Result := Result + IntToHex(Byte(ExtID[I]), 2);
 end;
 
-Function CompareLinks(LinksA, LinksB : TLinksInfo; Simple : boolean = false) : Boolean;
+function DeCodeExtID(S: string): string;
 var
-  i : integer;
+  I: Integer;
+  Str: string;
 begin
- Result:=True;
- if not Simple then
- begin
-  for i:=0 to length(LinksA)-1 do
+  Result := '';
+  for I := 1 to (Length(S) div 2) do
   begin
-   if not LinkInLinksExists(LinksA[i],LinksB) then
-   begin
-    Result:=False;
-    Break;
-   end;
+    Str := Copy(S, 1 + 2 * (I - 1), 2);
+    if FIXIDEX then
+      if not((I = 200) and (Str = '20')) then
+        Result := Result + Char(HexToIntDef(Str, 32));
   end;
-  for i:=0 to length(LinksB)-1 do
-  begin
-   if not LinkInLinksExists(LinksB[i],LinksA) then
-   begin
-    Result:=False;
-    Break;
-   end;
-  end;
- end else
- begin
-  if length(LinksA)<>length(LinksB) then
-  begin
-   Result:=False;
-   exit;
-  end;
-  for i:=0 to length(LinksA)-1 do
-  begin
-   if not CompareTwoLinks(LinksA[i],LinksB[i],true) then
-   begin
-    Result:=False;
-    Break;
-   end;
-  end;
- end;
-end;
-
-function CodeExtID(ExtID : String) : String;
-var
-  i : integer;
-begin
- Result:='';
- for i:=1 to Length(ExtID) do
- begin
-  Result:=Result+IntToHex(Byte(ExtID[i]),2);
- end;
-end;
-
-function DeCodeExtID(S : String) : String;
-var
-  i : integer;
-  Str : String;
-begin
- Result:='';
- for i:=1 to (Length(S) div 2) do
- begin
-  Str:=Copy(S,1+2*(i-1),2);
-  if FIXIDEX then if not ((i=200) and (Str='20')) then
-  Result:=Result+Char(HexToIntDef(Str,32));
- end;
 end;
 
 function LinkType(LinkTypeN : integer) : String;
 begin
- Result:=TEXT_MES_UNKNOWN;
-  if LinkTypeN=LINK_TYPE_ID then Result:=LINK_TEXT_TYPE_ID;
-  if LinkTypeN=LINK_TYPE_ID_EXT then Result:=LINK_TEXT_TYPE_ID_EXT;
-  if LinkTypeN=LINK_TYPE_IMAGE then Result:=LINK_TEXT_TYPE_IMAGE;
-  if LinkTypeN=LINK_TYPE_FILE then Result:=LINK_TEXT_TYPE_FILE;
-  if LinkTypeN=LINK_TYPE_FOLDER then Result:=LINK_TEXT_TYPE_FOLDER;
-  if LinkTypeN=LINK_TYPE_TXT then Result:=LINK_TEXT_TYPE_TXT;
-  if LinkTypeN=LINK_TYPE_HTML then Result:=LINK_TEXT_TYPE_HTML;
+  Result := TA('Unknown');
+  if LinkTypeN = LINK_TYPE_ID then
+    Result := LINK_TEXT_TYPE_ID;
+  if LinkTypeN = LINK_TYPE_ID_EXT then
+    Result := LINK_TEXT_TYPE_ID_EXT;
+  if LinkTypeN = LINK_TYPE_IMAGE then
+    Result := LINK_TEXT_TYPE_IMAGE;
+  if LinkTypeN = LINK_TYPE_FILE then
+    Result := LINK_TEXT_TYPE_FILE;
+  if LinkTypeN = LINK_TYPE_FOLDER then
+    Result := LINK_TEXT_TYPE_FOLDER;
+  if LinkTypeN = LINK_TYPE_TXT then
+    Result := LINK_TEXT_TYPE_TXT;
+  if LinkTypeN = LINK_TYPE_HTML then
+    Result := LINK_TEXT_TYPE_HTML;
 end;
 
 end.

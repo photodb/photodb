@@ -47,8 +47,7 @@ type
     FOwner: TToolsPanelClass;
     FInitialString: string;
     InitiatedByString: Boolean;
-    FEditor: TForm;
-    procedure SetEditor(const Value: TForm);
+    FEditor: TDBForm;
     procedure LoadLanguage;
   protected
     { Protected declarations }
@@ -58,7 +57,7 @@ type
     function Execute(Owner: TToolsPanelClass; S, D: TBitmap; Effect: TExEffectsClass;
       var InitialString: string): Boolean;
     procedure SetImage(Image: TBitmap);
-    property Editor: TForm read FEditor write SetEditor;
+    property Editor: TDBForm read FEditor write FEditor;
   end;
 
 implementation
@@ -266,11 +265,6 @@ begin
     if not Visible then
       Show;
   end
-end;
-
-procedure TExEffectForm.SetEditor(const Value: TForm);
-begin
-  FEditor := Value;
 end;
 
 procedure TExEffectForm.ApplicationEvents1Message(var Msg: tagMSG;

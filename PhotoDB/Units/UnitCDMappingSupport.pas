@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, StrUtils, UnitDBFileDialogs,
-  Dolphin_DB, UnitDBDeclare, Language, uVistaFuncs, uFileUtils,
+  Dolphin_DB, UnitDBDeclare, uVistaFuncs, uFileUtils,
   uMemory, uTranslate, uConstants;
 
 type

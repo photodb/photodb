@@ -56,7 +56,7 @@ implementation
 
 {$R *.dfm}
 
-uses Language, Dolphin_DB;
+uses Dolphin_DB;
 
 { TFormMenuDateEdit }
 

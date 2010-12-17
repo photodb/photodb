@@ -4,7 +4,7 @@ interface
 
 uses
   ExtCtrls, Classes, Graphics, ImageHistoryUnit, ComCtrls, Menus, Controls,
-  GraphicsBaseTypes, Forms, StrUtils, SysUtils;
+  GraphicsBaseTypes, Forms, StrUtils, SysUtils, uDBForm;
 
 type
   TToolsPanelClass = class(TPanel)
@@ -17,7 +17,7 @@ type
     FSetTempImage: TSetPointerToNewImage;
     FImageHistory: TBitmapHistory;
     FProgress: TProgressBar;
-    FEditor: TForm;
+    FEditor: TDBForm;
     procedure SetOnClose(const Value: TNotifyEvent);
     procedure SetImage(const Value: TBitmap);
     procedure SetSetImagePointer(const Value: TSetPointerToNewImage);
@@ -25,7 +25,6 @@ type
     procedure SetSetTempImage(const Value: TSetPointerToNewImage);
     procedure SetImageHistory(const Value: TBitmapHistory);
     procedure SetProgress(const Value: TProgressBar);
-    procedure SetEditor(const Value: TForm);
   public
     { Public declarations }
     class function ID: string; virtual;
@@ -47,7 +46,7 @@ type
     property CancelTempImage: TCancelTemporaryImage read FCancelTempImage write SetCancelTempImage;
     property ImageHistory: TBitmapHistory read FImageHistory write SetImageHistory;
     property Progress: TProgressBar read FProgress write SetProgress;
-    property Editor: TForm read FEditor write SetEditor;
+    property Editor: TDBForm read FEditor write FEditor;
   end;
 
 implementation
@@ -120,11 +119,6 @@ end;
 procedure TToolsPanelClass.SetCancelTempImage(const Value: TCancelTemporaryImage);
 begin
   FCancelTempImage := Value;
-end;
-
-procedure TToolsPanelClass.SetEditor(const Value: TForm);
-begin
-  FEditor := Value;
 end;
 
 procedure TToolsPanelClass.SetImage(const Value: TBitmap);

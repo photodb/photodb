@@ -3,7 +3,7 @@ unit DBScriptFunctions;
 interface
 
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
-     Forms, Classes, SysUtils, Registry, GraphicCrypt,
+     Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
      Math, uScript, UnitCDMappingSupport, uFileUtils, ImageConverting,
      UnitDBCommon;
@@ -24,11 +24,11 @@ procedure InitEnviroment(Enviroment : TScriptEnviroment);
 implementation
 
 uses ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
-  CommonDBSupport, UActivation, UnitInternetUpdate, UnitManageGroups, UAbout,
+  CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, Searching, ManagerDBUnit, Options, ImEditor, UnitFormCont,
   ExplorerUnit, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
   SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
-  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB, Language,
+  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
   UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
   UnitFormCDMapper, UnitFormCDExport;
 
@@ -39,7 +39,7 @@ end;
 
 procedure GetUpdates(ShowInfo : boolean);
 begin
- TInternetUpdate.Create(false,ShowInfo);
+  TInternetUpdate.Create(False, ShowInfo);
 end;
 
 procedure DoAbout;
@@ -47,32 +47,35 @@ begin
   ShowAbout;
 end;
 
-function ReadScriptFile(FileName : string) : string;
+function ReadScriptFile(FileName: string): string;
 begin
- Result := UnitScripts.ReadScriptFile(FileName);
+  Result := UnitScripts.ReadScriptFile(FileName);
 end;
 
-function InitializeScriptString(Script : string) : string;
+function InitializeScriptString(Script: string): string;
 begin
- Result := AddIcons(Script);
+  Result := AddIcons(Script);
 end;
 
 procedure ShowUpdateWindow;
 begin
- If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
- UpdaterDB.ShowWindowNow;
+  if UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
+  UpdaterDB.ShowWindowNow;
 end;
 
-procedure AddFileInDB(FileName : string);
+procedure AddFileInDB(FileName: string);
 begin
- If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
- UpdaterDB.AddFile(FileName)
+  if UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
+  UpdaterDB.AddFile(FileName)
 end;
 
-procedure AddFolderInDB(Directory : string);
+procedure AddFolderInDB(Directory: string);
 begin
- If UpdaterDB=nil then UpdaterDB:=TUpdaterDB.Create;
- UpdaterDB.AddDirectory(Directory,nil)
+  if UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
+  UpdaterDB.AddDirectory(Directory, nil)
 end;
 
 function GetRegKeyListing(Key : string) : TArrayOfString;
@@ -83,7 +86,7 @@ var
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    Reg.OpenKey(GetRegRootKey+'\'+Key, True);
+    Reg.OpenKey(GetRegRootKey + '\' + Key, True);
     S := TStringList.create;
     try
       Reg.GetKeyNames(S);
@@ -133,238 +136,239 @@ begin
   DBKernel.WriteInteger(Key, Value, AValue);
 end;
 
-procedure SetFileNameByID(ID : integer; FileName : string);
+procedure SetFileNameByID(ID: Integer; FileName: string);
 var
-  fQuery : TDataSet;
+  FQuery: TDataSet;
 begin
- fQuery:=GetQuery;
- fQuery.Active:=false;
- FileName:=NormalizeDBString(AnsiLowerCase(FileName));
- SetSQL(fQuery,'Update $DB$ Set FFileName="'+FileName+'" WHERE ID='+inttostr(ID));
- try
-  ExecSQL(fQuery);
- except
- end;
- FreeDS(fQuery);
+  FQuery := GetQuery;
+  FQuery.Active := False;
+  FileName := NormalizeDBString(AnsiLowerCase(FileName));
+  SetSQL(FQuery, 'Update $DB$ Set FFileName="' + FileName + '" WHERE ID=' + Inttostr(ID));
+  try
+    ExecSQL(FQuery);
+  except
+  end;
+  FreeDS(FQuery);
 end;
 
-function ShowKeyWord(KeyWord : string) : string;
+function ShowKeyWord(KeyWord: string): string;
 begin
- With SearchManager.NewSearch do
- begin
-  Show;
-  SearchEdit.Text:=':KeyWord('+KeyWord+'):';
-  DoSearchNow(nil);
-  Result:= GUIDToString(WindowID);
- end;
+  with SearchManager.NewSearch do
+  begin
+    Show;
+    SearchEdit.Text := ':KeyWord(' + KeyWord + '):';
+    DoSearchNow(nil);
+    Result := GUIDToString(WindowID);
+  end;
 end;
 
-function OpenSearch(StringSearch : string) : string;
+function OpenSearch(StringSearch: string): string;
 begin
- With SearchManager.NewSearch do
- begin
-  Show;
-  SearchEdit.Text:=StringSearch;
-  DoSearchNow(nil);
-  Result:= GUIDToString(WindowID);
- end;
+  with SearchManager.NewSearch do
+  begin
+    Show;
+    SearchEdit.Text := StringSearch;
+    DoSearchNow(nil);
+    Result := GUIDToString(WindowID);
+  end;
 end;
 
 procedure DoManager;
 begin
-  if ManagerDB=nil then
-  Application.CreateForm(TManagerDB,ManagerDB);
+  if ManagerDB = nil then
+    Application.CreateForm(TManagerDB, ManagerDB);
   ManagerDB.Show;
 end;
 
 procedure DoOptions;
 begin
-  if OptionsForm=nil then
-  Application.CreateForm(TOptionsForm, OptionsForm);
-  OptionsForm.show;
+  if OptionsForm = nil then
+    Application.CreateForm(TOptionsForm, OptionsForm);
+  OptionsForm.Show;
 end;
 
-function NewImageEditor : string;
+function NewImageEditor: string;
 begin
- With EditorsManager.NewEditor do
- begin
-//  Show;
-  Result:= GUIDToString(WindowID);
-  CloseOnFailture:=false;
- end;
+  with EditorsManager.NewEditor do
+  begin
+    // Show;
+    Result := GUIDToString(WindowID);
+    CloseOnFailture := False;
+  end;
 end;
 
-function NewPanel : string;
+function NewPanel: string;
 begin
- With ManagerPanels.NewPanel do
- begin
-  Show;
-  SetFocus;
-  Result:= GUIDToString(WindowID);
- end;
+  with ManagerPanels.NewPanel do
+  begin
+    Show;
+    SetFocus;
+    Result := GUIDToString(WindowID);
+  end;
 end;
 
-function GetLastPanel : string;
+function GetLastPanel: string;
 begin
- if ManagerPanels.Count>0 then
- begin
-  Result:=GUIDToString(ManagerPanels[ManagerPanels.Count-1].WindowID);
-  exit;
- end;
- With ManagerPanels.NewPanel do
- begin
-  Show;
-  SetFocus;
-  Result:= GUIDToString(WindowID);
- end;
+  if ManagerPanels.Count > 0 then
+  begin
+    Result := GUIDToString(ManagerPanels[ManagerPanels.Count - 1].WindowID);
+    Exit;
+  end;
+  with ManagerPanels.NewPanel do
+  begin
+    Show;
+    SetFocus;
+    Result := GUIDToString(WindowID);
+  end;
 end;
 
-function NewSearch : string;
+function NewSearch: string;
 begin
- With SearchManager.NewSearch do
- begin
-  Show;
-  SetFocus;
-  Result:= GUIDToString(WindowID);
- end;
+  with SearchManager.NewSearch do
+  begin
+    Show;
+    SetFocus;
+    Result := GUIDToString(WindowID);
+  end;
 end;
 
-function NewExplorerByPath(Path : string) : string;
+function NewExplorerByPath(Path: string): string;
 begin
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetStringPath(Path,false);
-  Show;
-  Result:= GUIDToString(WindowID);
- end;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetStringPath(Path, False);
+    Show;
+    Result := GUIDToString(WindowID);
+  end;
 end;
 
-function NewExplorer : string;
+function NewExplorer: string;
 begin
   with ExplorerManager.NewExplorer(True) do
- begin
-  Show;
-  Result:= GUIDToString(WindowID);
- end;
+  begin
+    Show;
+    Result := GUIDToString(WindowID);
+  end;
 end;
 
-function SelectDir(Text : string) : string;
+function SelectDir(Text: string): string;
 var
-  Dir : string;
+  Dir: string;
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Application.Handle,Text,Dolphin_DB.UseSimpleSelectFolderDialog);
- FormatDir(Dir);
- Result:=Dir;
+  Dir := UnitDBFileDialogs.DBSelectDir(Application.Handle, Text, Dolphin_DB.UseSimpleSelectFolderDialog);
+  FormatDir(Dir);
+  Result := Dir;
 end;
 
-procedure aMakeDBFileTree;
+procedure AMakeDBFileTree;
 begin
- MakeDBFileTree(dbname);
+  MakeDBFileTree(Dbname);
 end;
 
-function ImageFile(FileName : string) : boolean;
+function ImageFile(FileName: string): Boolean;
 var
-  s : string;
-  p : PWideChar;
+  S: string;
+  P: PWideChar;
 begin
- s:=ExtractFileExt(FileName);
- Delete(s,1,1);
- s:='|'+AnsiUpperCase(s)+'|';
- p:=StrPos(PWideChar(SupportedExt),PWideChar(s));
- Result:=p<>nil;
+  S := ExtractFileExt(FileName);
+  Delete(S, 1, 1);
+  S := '|' + AnsiUpperCase(S) + '|';
+  P := StrPos(PWideChar(SupportedExt), PWideChar(S));
+  Result := P <> nil;
 end;
 
-procedure ShowFile(FileName : string);
+procedure ShowFile(FileName: string);
 var
-  Info : TRecordsInfo;
+  Info: TRecordsInfo;
 begin
- If Viewer=nil then
- Application.CreateForm(TViewer,Viewer);
- info:=Dolphin_DB.RecordsInfoOne(FileName,0,0,0,0,'','','','','',0,false,false,0,false,false,true,'');
- Viewer.Execute(nil,Info);
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  Info := Dolphin_DB.RecordsInfoOne(FileName, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False, False, True, '');
+  Viewer.Execute(nil, Info);
+  Viewer.Show;
 end;
 
-function SplitLinks(Links, NoParam : String) : TArrayOfString;
+function SplitLinks(Links, NoParam: string): TArrayOfString;
 var
-  info : TLinksInfo;
-  i : integer;
+  Info: TLinksInfo;
+  I: Integer;
 begin
- info:=ParseLinksInfo(Links);
- SetLength(Result,Length(info));
- for i:=0 to Length(info)-1 do
- begin
-  Result[i]:=CodeLinkInfo(info[i]);
- end;
+  Info := ParseLinksInfo(Links);
+  SetLength(Result, Length(Info));
+  for I := 0 to Length(Info) - 1 do
+    Result[I] := CodeLinkInfo(Info[I]);
 end;
 
-function aLinkName(Link : string) : string;
+function ALinkName(Link: string): string;
 var
-  info : TLinksInfo;
+  Info: TLinksInfo;
 begin
- info:=ParseLinksInfo(Link);
- if Length(info)>0 then
- Result:=info[0].LinkName;
+  Info := ParseLinksInfo(Link);
+  if Length(Info) > 0 then
+    Result := Info[0].LinkName;
 end;
 
-function aLinkValue(Link : string) : string;
+function ALinkValue(Link: string): string;
 var
-  info : TLinksInfo;
+  Info: TLinksInfo;
 begin
- info:=ParseLinksInfo(Link);
- if Length(info)>0 then
- Result:=info[0].LinkValue;
+  Info := ParseLinksInfo(Link);
+  if Length(Info) > 0 then
+    Result := Info[0].LinkValue;
 end;
 
-function aLinkType(Link : string) : integer;
+function ALinkType(Link: string): Integer;
 var
-  info : TLinksInfo;
+  Info: TLinksInfo;
 begin
- info:=ParseLinksInfo(Link);
- if Length(info)>0 then
- Result:=info[0].LinkType else Result:=-1;
+  Info := ParseLinksInfo(Link);
+  if Length(Info) > 0 then
+    Result := Info[0].LinkType
+  else
+    Result := -1;
 end;
 
-function aLinkTypeString(Link : string) : String;
+function ALinkTypeString(Link: string): string;
 var
-  info : TLinksInfo;
+  Info: TLinksInfo;
 begin
- info:=ParseLinksInfo(Link);
- if Length(info)>0 then
- Result:=LinkType(info[0].LinkType);
+  Info := ParseLinksInfo(Link);
+  if Length(Info) > 0 then
+    Result := LinkType(Info[0].LinkType);
 end;
 
-function GetFileNameByIDEx(IDEx : string) : string;
+function GetFileNameByIDEx(IDEx: string): string;
 var
-  TIRA : TImageDBRecordA;
+  TIRA: TImageDBRecordA;
 begin
- TIRA:=getimageIDTh(IDEx);
- if TIRA.count>0 then
- Result:=TIRA.FileNames[0];
+  TIRA := GetimageIDTh(IDEx);
+  if TIRA.Count > 0 then
+    Result := TIRA.FileNames[0];
 end;
 
-function GetIDByIDEx(IDEx : string) : integer;
+function GetIDByIDEx(IDEx: string): Integer;
 var
-  TIRA : TImageDBRecordA;
+  TIRA: TImageDBRecordA;
 begin
- TIRA:=getimageIDTh(IDEx);
- if TIRA.count>0 then
- Result:=TIRA.IDs[0] else Result:=0;
+  TIRA := GetimageIDTh(IDEx);
+  if TIRA.Count > 0 then
+    Result := TIRA.IDs[0]
+  else
+    Result := 0;
 end;
 
-procedure aHint(Caption, Text : string);
+procedure AHint(Caption, Text: string);
 var
-  p : TPoint;
+  P: TPoint;
 begin
- GetCursorPos(p);
- DoHelpHint(Caption,Text,p,nil);
+  GetCursorPos(P);
+  DoHelpHint(Caption, Text, P, nil);
 end;
 
 procedure CloseApp;
 begin
- if FormManager<>nil then
- begin
-  FormManager.CloseApp(nil);
- end;
+  if FormManager <> nil then
+    FormManager.CloseApp(nil);
 end;
 
 function GetExplorerByCID(CID : string) : TExplorerForm;
@@ -808,39 +812,43 @@ end;
 
 function ExecuteActions(CID, FileName, ToFileName : string): string;
 var
-  aActions : TArStrings;
+  AActions: TStrings;
 begin
- if GetImageEditorByCID(CID)<>nil then
- begin
-  SetLength(aActions,0);
-  aActions:=Copy(LoadActionsFromfileA(FileName));
-  GetImageEditorByCID(CID).ReadActions(aActions);
-  GetImageEditorByCID(CID).SaveImageFile(ToFileName,true);
- end;
- Result:='';
+  if GetImageEditorByCID(CID) <> nil then
+  begin
+    AActions := TStringList.Create;
+    try
+      if LoadActionsFromfileA(FileName, AActions) then
+      begin
+        GetImageEditorByCID(CID).ReadActions(AActions);
+        GetImageEditorByCID(CID).SaveImageFile(ToFileName, True);
+      end;
+    finally
+      F(AActions);
+    end;
+  end;
+  Result := '';
 end;
 
-function ImageEditorRegisterCallBack(CID, ID, Proc : string): string;
+function ImageEditorRegisterCallBack(CID, ID, Proc: string): string;
 begin
- if GetImageEditorByCID(CID)<>nil then
- begin
-  GetImageEditorByCID(CID).FScript:=ID;
-  GetImageEditorByCID(CID).FScriptProc:=Proc;
- end;
- Result:='';
+  if GetImageEditorByCID(CID) <> nil then
+  begin
+    GetImageEditorByCID(CID).FScript := ID;
+    GetImageEditorByCID(CID).FScriptProc := Proc;
+  end;
+  Result := '';
 end;
 
-function ImageEditorOpenFileName(CID, FileName : string) : string;
+function ImageEditorOpenFileName(CID, FileName: string): string;
 begin
- if GetImageEditorByCID(CID)<>nil then
- begin
-  GetImageEditorByCID(CID).OpenFileName(FileName);
- end;
+  if GetImageEditorByCID(CID) <> nil then
+    GetImageEditorByCID(CID).OpenFileName(FileName);
 end;
 
-function GetImagesMask : string;
+function GetImagesMask: string;
 begin
- Result:=SupportedExt;
+  Result := SupportedExt;
 end;
 
 Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);

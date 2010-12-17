@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, uDBPopupMenuInfo, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitDBDeclare, SysUtils, uLogger, uMemory, Dolphin_DB;
+  UnitDBDeclare, SysUtils, uLogger, uMemory, Dolphin_DB, ActiveX;
 
 type
   TRefreshIDRecordThreadOptions = record
@@ -67,42 +67,47 @@ var
   C: Integer;
 begin
   FreeOnTerminate := True;
-  Count := 0;
-  for I := 0 to FInfo.Count - 1 do
-    if FInfo[I].ID <> 0 then
-      if FInfo[I].Selected then
-        Inc(Count);
-  Synchronize(InitializeProgress);
-  C := 0;
-  for I := 0 to FInfo.Count - 1 do
-  begin
-    if FInfo[I].ID <> 0 then
-      if FInfo[I].Selected then
-      begin
-        Synchronize(IfBreakOperation);
-        if BoolParam then
+  CoInitialize(nil);
+  try
+    Count := 0;
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].ID <> 0 then
+        if FInfo[I].Selected then
+          Inc(Count);
+    Synchronize(InitializeProgress);
+    C := 0;
+    for I := 0 to FInfo.Count - 1 do
+    begin
+      if FInfo[I].ID <> 0 then
+        if FInfo[I].Selected then
         begin
-          for J := I to FInfo.Count - 1 do
-            ProcessedFilesCollection.RemoveFile(FInfo[J].FileName);
+          Synchronize(IfBreakOperation);
+          if BoolParam then
+          begin
+            for J := I to FInfo.Count - 1 do
+              ProcessedFilesCollection.RemoveFile(FInfo[J].FileName);
 
+            Synchronize(DoDBkernelEventRefreshList);
+            Continue;
+          end;
+          Inc(C);
+          SetProgressPosition(C);
+          try
+            // TODO: DBKernelEvent NOT in thread!
+            UpdateImageRecordEx(FInfo[I].FileName, FInfo[I].ID, OnDBKernelEventProcedure);
+          except
+            on E: Exception do
+              EventLog(':TRefreshDBRecordsThread::Execute()/UpdateImageRecord throw exception: ' + E.message);
+          end;
+          IntParam := FInfo[I].ID;
+          StrParam := FInfo[I].FileName;
+          ProcessedFilesCollection.RemoveFile(FInfo[I].FileName);
           Synchronize(DoDBkernelEventRefreshList);
-          Continue;
+          Synchronize(DoDBkernelEvent);
         end;
-        Inc(C);
-        SetProgressPosition(C);
-        try
-          // TODO: DBKernelEvent NOT in thread!
-          UpdateImageRecordEx(FInfo[I].FileName, FInfo[I].ID, OnDBKernelEventProcedure);
-        except
-          on E: Exception do
-            EventLog(':TRefreshDBRecordsThread::Execute()/UpdateImageRecord throw exception: ' + E.message);
-        end;
-        IntParam := FInfo[I].ID;
-        StrParam := FInfo[I].FileName;
-        ProcessedFilesCollection.RemoveFile(FInfo[I].FileName);
-        Synchronize(DoDBkernelEventRefreshList);
-        Synchronize(DoDBkernelEvent);
-      end;
+    end;
+  finally
+    CoUninitialize;
   end;
   Synchronize(DestroyProgress);
 end;

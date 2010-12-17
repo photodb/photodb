@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Graphics, UnitPrinterTypes, Printers, PrinterProgress,
-  Language, uMemory;
+  uTranslate, uMemory;
 
 type
   TOnEndGeneratePrinterPreviewEvent = procedure(Bitmap: TBitmap; SID: string) of object;
@@ -74,7 +74,7 @@ var
 begin
   if not FDoPrint then
   begin
-    SetCommentText(TEXT_MES_GENERATING_PRINTER_PREVIEW);
+    SetCommentText(TA('Generating preview') + '...');
     Synchronize(ShowProgress);
     FOptions.VirtualImage := FVirtualBitmaped;
     FOptions.Image := FVirtualBitmap;

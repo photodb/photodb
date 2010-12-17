@@ -4,7 +4,8 @@ interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
      Dolphin_DB, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
-     uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM;
+     uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM,
+     uTranslate;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;
@@ -78,7 +79,7 @@ type
 
 implementation
 
-uses Language, UnitUpdateDBThread, DBScriptFunctions,
+uses UnitUpdateDBThread, DBScriptFunctions,
   FormManegerUnit, UnitUpdateDB, ProgressActionUnit;
 
 { TUpdaterDB }
@@ -91,7 +92,7 @@ begin
 
   if FFilesInfo.Count = 0 then
     if Assigned(OwnerFormSetText) then
-      OwnerFormSetText(TEXT_MES_ADDING_FOLDER);
+      OwnerFormSetText(TA('Getting list of files from directory', 'Updater'));
 
   if FForm <> nil then
     if (FForm is TUpdateDBForm) then
@@ -145,8 +146,6 @@ begin
 end;
 
 constructor TUpdaterDB.Create(AutoCreateForm : boolean = true);
-var
-  TermInfo: TTemtinatedAction;
 begin
   FFilesInfo := TDBPopupMenuInfo.Create;
   ScriptProcessString := Include('Scripts\Adding_AddFile.dbini');
@@ -188,8 +187,6 @@ begin
 end;
 
 destructor TUpdaterDB.Destroy;
-var
-  TermInfo: TTemtinatedAction;
 begin
   if GOM.IsObj(FForm) then
     R(FForm);
@@ -225,7 +222,7 @@ var
 begin
   if FFilesInfo.Count = 0 then
     if Assigned(OwnerFormSetFileName) then
-      OwnerFormSetFileName(TEXT_MES_NO_ANY_FILEA);
+      OwnerFormSetFileName(TA('<No files>', 'Updater'));
 
   Inc(FmaxSize, (Sender as TValueObject).TIntValue);
 
@@ -300,7 +297,7 @@ begin
     end else
     begin
       if Assigned(OwnerFormSetTimeText) then
-        OwnerFormSetTimeText(TEXT_MES_LAST_FILE);
+        OwnerFormSetTimeText(TA('The last file', 'Updater') + '...');
     end;
   end;
   if Assigned(OwnerFormSetPosition) then
@@ -323,9 +320,8 @@ begin
     Inc(FPosition);
     if (FFilesInfo.Count - FPosition = 0) then
       Break;
- end;
- UpdateDBThread.Create(Self,Info,OnAddFileDone,FAutoAnswer,UseFileNameScaning,@FTerminate,@FPause,NoLimit);
-
+  end;
+  UpdateDBThread.Create(Self, Info, OnAddFileDone, FAutoAnswer, UseFileNameScaning, @FTerminate, @FPause, NoLimit);
 end;
 
 procedure TUpdaterDB.OnAddFileDone(Sender: TObject);
@@ -379,25 +375,28 @@ var
   ProgressWindow: TProgressActionForm;
 begin
   ProgressWindow := GetProgressWindow;
-  C := DBKernel.ReadInteger('Updater', 'Counter', 0);
-  ProgressWindow.OneOperation := True;
-  ProgressWindow.MaxPosCurrentOperation := C;
-  ProgressWindow.XPosition := 0;
-  ProgressWindow.SetAlternativeText(TEXT_MES_WAIT_LOADING_WORK);
-  if C > 10 then
-    ProgressWindow.Show;
+  try
+    C := DBKernel.ReadInteger('Updater', 'Counter', 0);
+    ProgressWindow.OneOperation := True;
+    ProgressWindow.MaxPosCurrentOperation := C;
+    ProgressWindow.XPosition := 0;
+    ProgressWindow.SetAlternativeText(TA('Wait until the program is restore the work', 'Updater'));
+    if C > 10 then
+      ProgressWindow.Show;
 
-  for I := 0 to C - 1 do
-  begin
-    if I mod 8 = 0 then
+    for I := 0 to C - 1 do
     begin
-      ProgressWindow.XPosition := I;
-      Application.ProcessMessages;
+      if I mod 8 = 0 then
+      begin
+        ProgressWindow.XPosition := I;
+        Application.ProcessMessages;
+      end;
+      AddFile(DBKernel.ReadString('Updater', 'File' + IntToStr(I)), I <> C - 1);
     end;
-    AddFile(DBKernel.ReadString('Updater', 'File' + IntToStr(I)), I <> C - 1);
-  end;
 
-  ProgressWindow.Release;
+  finally
+    R(ProgressWindow);
+  end;
 end;
 
 procedure TUpdaterDB.SaveWork;

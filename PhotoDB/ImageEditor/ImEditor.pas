@@ -160,7 +160,7 @@ type
     procedure MakeTempLayer;
     procedure DeleteTempLayer;
     procedure Actions1Click(Sender: TObject);
-    procedure ReadActions(Actions : TArStrings);
+    procedure ReadActions(Actions : TStrings);
     procedure ReadNextAction(Sender: TObject);
     procedure ReadActionsFile(FileName : string);
     procedure SaveImageFile(FileName : string; AfterEnd : boolean = false);
@@ -171,7 +171,7 @@ type
     SaveAfterEndActionsFileName: string;
     ForseSave: Boolean;
     ForseSaveFileName: string;
-    NewActions: TArStrings;
+    NewActions: TStrings;
     NewActionsCounter: Integer;
     OldBrushPos: TPoint;
     LockedImage: Boolean;
@@ -359,6 +359,7 @@ end;
 
 procedure TImageEditor.FormCreate(Sender: TObject);
 begin
+  NewActions := TStringList.Create;
   EXIFSection := nil;
   NewActionsCounter := -1;
   FScript := '';
@@ -1862,6 +1863,7 @@ begin
   F(CurrentImage);
   F(Buffer);
   F(ImageHistory);
+  F(NewActions);
 end;
 
 procedure TImageEditor.ZoomOutLinkClick(Sender: TObject);
@@ -2869,7 +2871,7 @@ begin
   ActionForm.Show;
 end;
 
-procedure TImageEditor.ReadActions(Actions: TArStrings);
+procedure TImageEditor.ReadActions(Actions: TStrings);
 begin
   SetLength(EState, 0);
   DisableControls(Self);
@@ -2898,7 +2900,7 @@ begin
   ToolClass := nil;
 
   Inc(NewActionsCounter);
-  if NewActionsCounter > Length(NewActions) - 1 then
+  if NewActionsCounter > NewActions.Count - 1 then
   begin
     EnableControls(Self);
     if SaveAfterEndActions then
@@ -2960,10 +2962,15 @@ end;
 
 procedure TImageEditor.ReadActionsFile(FileName: string);
 var
-  AActions: TArStrings;
+  AActions: TStrings;
 begin
-  AActions := LoadActionsFromfileA(FileName);
-  ReadActions(AActions);
+  AActions := TStringList.Create;
+  try
+    if LoadActionsFromfileA(FileName, AActions) then
+      ReadActions(AActions);
+  finally
+    F(AActions);
+  end;
 end;
 
 procedure TImageEditor.SaveImageFile(FileName: string; AfterEnd: Boolean = False);

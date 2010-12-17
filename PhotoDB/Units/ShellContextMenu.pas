@@ -3,7 +3,7 @@ unit ShellContextMenu;
 interface
 
 uses Windows, SysUtils, Messages, StdCtrls, ComCtrls, ShlObj, ActiveX, ShellCtrls,
-     Classes, Controls, Math, Language, Forms, uMemory;
+     Classes, Controls, Math, Forms, uMemory;
 
 procedure GetProperties(Files : TStrings; MP : TPoint; WC : TWinControl);
 procedure GetPropertiesWindows(Files : TStrings; WC : TWinControl);

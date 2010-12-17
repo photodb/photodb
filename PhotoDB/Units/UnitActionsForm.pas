@@ -275,7 +275,7 @@ end;
 
 procedure TActionsForm.LoadFromFileLinkClick(Sender: TObject);
 var
-  AActions: TArStrings;
+  AActions: TStrings;
   OpenDialog: DBOpenDialog;
 begin
   OpenDialog := DBOpenDialog.Create;
@@ -283,11 +283,15 @@ begin
     OpenDialog.Filter := L('PhotoDB actions file (*.dbact)|*.dbact');
     OpenDialog.FilterIndex := 1;
     // TODO: load file list from directory actions!
-    SetLength(AActions, 0);
     if OpenDialog.Execute then
     begin
-      AActions := LoadActionsFromfileA(OpenDialog.FileName);
-      TImageEditor(FParent).ReadActions(AActions);
+      AActions := TStringList.Create;
+      try
+        LoadActionsFromfileA(OpenDialog.FileName, AActions);
+        TImageEditor(FParent).ReadActions(AActions);
+      finally
+        F(AActions);
+      end;
     end;
   finally
     F(OpenDialog);

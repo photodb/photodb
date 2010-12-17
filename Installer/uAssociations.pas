@@ -386,6 +386,7 @@ begin
       Exit;
     end;
 
+    //TODO: HKEY_CLASSES_ROOT\.jpeg\OpenWithProgids
     Reg.OpenKey('\' + AssociationHandler + '\shell\open\command', False);
     AssociationCommand := Reg.ReadString('');
     Reg.CloseKey;

@@ -3,9 +3,9 @@ unit UnitScriptsFunctions;
 interface
 
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
-     Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
-     UnitDBFileDialogs, Forms, Language, uVistaFuncs, uLogger,
-     uFileUtils, uTime, uMemory;
+  Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
+  UnitDBFileDialogs, Forms, uVistaFuncs, uLogger,
+  uFileUtils, uTime, uMemory, uTranslate;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;
@@ -79,7 +79,7 @@ end;
 
 function GetProgramFolder : string;
 begin
- Result:=GetDirectory(Application.ExeName);
+  Result := GetDirectory(Application.ExeName);
 end;
 
 function AnsiQuotedStr(const S: string): string;
@@ -453,10 +453,15 @@ var
   I, Effects : Integer;
   Files : TStrings;
 begin
-  LoadFilesFromClipBoard(Effects, Files);
-  SetLength(Result, Files.Count);
-  for I := 0 to Files.Count - 1 do
-    Result[I] := Files[I];
+  Files := TStringList.Create;
+  try
+    LoadFilesFromClipBoard(Effects, Files);
+    SetLength(Result, Files.Count);
+    for I := 0 to Files.Count - 1 do
+      Result[I] := Files[I];
+  finally
+    F(Files);
+  end;
 end;
 
 function NowString: string;
@@ -474,32 +479,36 @@ begin
   Result := Str1 + Str2;
 end;
 
-procedure UnFormatDir(var s:string);
+procedure UnFormatDir(var S: string);
 begin
- if s='' then exit;
- if s[length(s)]='\' then Delete(s,length(s),1);
+  if S = '' then
+    Exit;
+  if S[Length(S)] = '\' then
+    Delete(S, Length(S), 1);
 end;
 
-procedure FormatDir(var s:string);
+procedure FormatDir(var S: string);
 begin
- if s='' then exit;
- if s[length(s)]<>'\' then s:=s+'\';
+  if S = '' then
+    Exit;
+  if S[Length(S)] <> '\' then
+    S := S + '\';
 end;
 
-function GetDirectory(FileName:string):string;
+function GetDirectory(FileName: string): string;
 var
-  i, n: integer;
+  I, N: Integer;
 begin
- n:=0;
- for i:=Length(FileName) downto 1 do
- If FileName[i]='\' then
- begin
-  n:=i;
-  Break;
- end;
- Delete(filename,n,length(filename)-n+1);
- Result:=FileName;
- FormatDir(Result);
+  N := 0;
+  for I := Length(FileName) downto 1 do
+    if FileName[I] = '\' then
+    begin
+      N := I;
+      Break;
+    end;
+  Delete(Filename, N, Length(Filename) - N + 1);
+  Result := FileName;
+  FormatDir(Result);
 end;
 
 procedure ExecAndWait(FileName, Params: String);
@@ -556,21 +565,21 @@ Procedure aCopyFile(FromFile, ToDir : string);
 var
   F : TShFileOpStruct;
 begin
- try
-  F.Wnd := 0; F.wFunc := FO_COPY;
-  FromFile:=FromFile+#0; F.pFrom:=pchar(FromFile);
-  ToDir:=ToDir+#0; F.pTo:=pchar(ToDir);
-  F.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
+  F.Wnd := 0;
+  F.WFunc := FO_COPY;
+  FromFile := FromFile + #0;
+  F.PFrom := Pchar(FromFile);
+  ToDir := ToDir + #0;
+  F.PTo := Pchar(ToDir);
+  F.FFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
   ShFileOperation(F);
- except
- end;
 end;
 
-procedure aRenameFile(S,D : String);
+procedure ARenameFile(S, D: string);
 var
-  oldMode: Cardinal;
+  OldMode: Cardinal;
 begin
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     RenameFile(PChar(S),PChar(D));
   finally
@@ -580,18 +589,19 @@ end;
 
 function ShowInt(int : integer) : string;
 begin
- MessageBoxDB(Dolphin_DB.GetActiveFormHandle,IntToStr(int),Language.TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+  MessageBoxDB(Dolphin_DB.GetActiveFormHandle, IntToStr(Int), TA('Information'), TD_BUTTON_OK,
+    TD_ICON_INFORMATION);
 end;
 
-procedure aDeleteFile(S : String);
+procedure ADeleteFile(S: string);
 begin
- FileSetAttr(S, faHidden);
- DeleteFile(PChar(S));
+  FileSetAttr(S, FaHidden);
+  DeleteFile(PChar(S));
 end;
 
-function AltKeyDown : boolean;
+function AltKeyDown: Boolean;
 begin
- Result:=(Word(GetKeyState(VK_MENU)) and $8000)<>0;
+  Result := (Word(GetKeyState(VK_MENU)) and $8000)<>0;
 end;
 
 function CtrlKeyDown: Boolean;
@@ -606,7 +616,7 @@ end;
 
 procedure ShowString(Str: string);
 begin
-  MessageBoxDB(Dolphin_DB.GetActiveFormHandle,str,Language.TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+  MessageBoxDB(GetActiveFormHandle, str, TA('Information') ,TD_BUTTON_OK,TD_ICON_INFORMATION);
 end;
 
 function GetSmallIconByPath(IconPath : String; Big : boolean = false) : TIcon;

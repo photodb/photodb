@@ -11,7 +11,7 @@ uses  Language, Registry, UnitDBKernel, ShellApi, Windows,
       MAPI, DDraw, Math, Effects, DateUtils, psAPI, GraphicsCool,
       uVistaFuncs, GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
-      UnitLinksSupport, EasyListView, ImageConverting,
+      UnitLinksSupport, EasyListView, ImageConverting, uTranslate,
       uMemory, uDBPopupMenuInfo, CCR.Exif, uAppUtils;
 
 const
@@ -406,7 +406,7 @@ function GetProgramPath: string;
 procedure SelectDB(Caller : TObject; DB: string);
 procedure CopyFullRecordInfo(ID: Integer);
 
-function LoadActionsFromfileA(FileName: string): TArStrings;
+function LoadActionsFromfileA(FileName: string; Info : TStrings) : Boolean;
 
 function SaveActionsToFile(FileName: string; Actions: TStrings): Boolean;
 procedure RenameFolderWithDB(Caller : TObject; OldFileName, NewFileName: string; Ask: Boolean = True);
@@ -1402,7 +1402,7 @@ begin
     FQuery.First;
     if FQuery.RecordCount > 0 then
       if Ask or (ID_OK = MessageBoxDB(GetActiveFormHandle, Format(TEXT_MES_RENAME_FOLDER_WITH_DB_F,
-            [OldFileName, IntToStr(FQuery.RecordCount)]), TEXT_MES_WARNING, TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
+            [OldFileName, IntToStr(FQuery.RecordCount)]), TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
       begin
         ProgressWindow := GetProgressWindow;
         ProgressWindow.OneOperation := True;
@@ -1581,15 +1581,13 @@ const
   MaxBufferSize = 255;
 
 begin
+  Result := '';
   if KernelHandle = 0 then
     KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
   PAddr := GetProcAddress(KernelHandle, 'GetCIDA');
   if PAddr = nil then
-  begin
-    ShowMessage(TEXT_MES_ERROR_KERNEL_DLL);
-    Halt;
     Exit;
-  end;
+
   @P := PAddr;
   GetMem(Buffer, MaxBufferSize);
   P(Buffer, MaxBufferSize);
@@ -1723,7 +1721,7 @@ begin
       Exit;
     end;
   end;
-  Result := Format(TEXT_MES_PIXEL_FORMAT, [IntToStr(Pixels)]);
+  Result := Format(TA('%dpx.'), [IntToStr(Pixels)]);
 end;
 
 procedure SetRotate(ID, Rotate: Integer);
@@ -1785,13 +1783,13 @@ end;
 function SizeInTextA(Size: Int64): string;
 begin
   if Size <= 1024 then
-    Result := Inttostr(Size) + ' ' + TEXT_MES_BYTES;
+    Result := Inttostr(Size) + ' ' + TA('Bytes');
   if (Size > 1024) and (Size <= 1024 * 999) then
-    Result := FloatToStrA(Size / 1024, 3) + ' ' + TEXT_MES_KB;
+    Result := FloatToStrA(Size / 1024, 3) + ' ' + TA('Kb');
   if (Size > 1024 * 999) and (Size <= 1024 * 1024 * 999) then
-    Result := FloatToStrA(Size / (1024 * 1024), 3) + ' ' + TEXT_MES_MB;
+    Result := FloatToStrA(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
   if (Size > 1024 * 1024 * 999) then
-    Result := FloatToStrA(Size / (1024 * 1024 * 1024), 3) + ' ' + TEXT_MES_GB;
+    Result := FloatToStrA(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
 end;
 
 function GetimageIDTh(ImageTh: string): TImageDBRecordA;
@@ -1802,37 +1800,34 @@ var
 begin
   FQuery := GetQuery;
   try
-  if GetDBType = DB_TYPE_MDB then
-    FromDB := '(Select ID, FFileName, Attr from $DB$ where StrThCrc = ' + IntToStr(Integer(StringCRC(ImageTh))) + ')'
-  else
-    FromDB := 'SELECT ID, FFileName, Attr FROM $DB$ WHERE StrTh = :str ';
+    FromDB := '(Select ID, FFileName, Attr from $DB$ where StrThCrc = ' + IntToStr(Integer(StringCRC(ImageTh))) + ')';
 
-  SetSQL(FQuery, FromDB);
-  if GetDBType <> DB_TYPE_MDB then
-    SetStrParam(Fquery, 0, ImageTh);
-  try
-    FQuery.Active := True;
-  except
-    Setlength(Result.Ids, 0);
-    Setlength(Result.FileNames, 0);
-    Setlength(Result.Attr, 0);
-    Result.Count := 0;
-    Result.ImTh := '';
-    Exit;
-  end;
-  Setlength(Result.Ids, FQuery.RecordCount);
-  Setlength(Result.FileNames, FQuery.RecordCount);
-  Setlength(Result.Attr, FQuery.RecordCount);
-  FQuery.First;
-  for I := 1 to FQuery.RecordCount do
-  begin
-    Result.Ids[I - 1] := FQuery.FieldByName('ID').AsInteger;
-    Result.FileNames[I - 1] := FQuery.FieldByName('FFileName').AsString;
-    Result.Attr[I - 1] := FQuery.FieldByName('Attr').AsInteger;
-    FQuery.Next;
-  end;
-  Result.Count := FQuery.RecordCount;
-  Result.ImTh := ImageTh;
+    SetSQL(FQuery, FromDB);
+    if GetDBType <> DB_TYPE_MDB then
+      SetStrParam(Fquery, 0, ImageTh);
+    try
+      FQuery.Active := True;
+    except
+      Setlength(Result.Ids, 0);
+      Setlength(Result.FileNames, 0);
+      Setlength(Result.Attr, 0);
+      Result.Count := 0;
+      Result.ImTh := '';
+      Exit;
+    end;
+    Setlength(Result.Ids, FQuery.RecordCount);
+    Setlength(Result.FileNames, FQuery.RecordCount);
+    Setlength(Result.Attr, FQuery.RecordCount);
+    FQuery.First;
+    for I := 1 to FQuery.RecordCount do
+    begin
+      Result.Ids[I - 1] := FQuery.FieldByName('ID').AsInteger;
+      Result.FileNames[I - 1] := FQuery.FieldByName('FFileName').AsString;
+      Result.Attr[I - 1] := FQuery.FieldByName('Attr').AsInteger;
+      FQuery.Next;
+    end;
+    Result.Count := FQuery.RecordCount;
+    Result.ImTh := ImageTh;
   finally
     FreeDS(FQuery);
   end;
@@ -2102,8 +2097,7 @@ begin
         Result.Count := 0;
         Exit;
       end;
-    end
-    else
+    end  else
     begin
       Result.Crypt := False;
       G := GetGraphicClass(GetExt(FileName), False).Create;
@@ -2136,12 +2130,12 @@ begin
       begin
         Thbmp.Width := AThImageSize;
         Thbmp.Height := Round(AThImageSize * (G.Height / G.Width));
-   end else
+      end else
       begin
         Thbmp.Width := Round(AThImageSize * (G.Width / G.Height));
         Thbmp.Height := AThImageSize;
       end;
-  end else begin
+    end else begin
       Thbmp.Width := G.Width;
       Thbmp.Height := G.Height;
     end;
@@ -4068,7 +4062,7 @@ var
   begin
     if Screen.ActiveForm <> nil then
     begin
-      MessageBoxDB(GetActiveFormHandle, Format(TEXT_MES_ERROR_DB_FILE_F, [DB]), TEXT_MES_ERROR, TD_BUTTON_OK,
+      MessageBoxDB(GetActiveFormHandle, Format(TEXT_MES_ERROR_DB_FILE_F, [DB]), TA('Error'), TD_BUTTON_OK,
         TD_ICON_ERROR);
     end;
   end;
@@ -4146,43 +4140,42 @@ begin
   Result := True;
 end;
 
-function LoadActionsFromfileA(FileName: string): TArStrings;
+function LoadActionsFromfileA(FileName: string; Info : TStrings) : Boolean;
 var
   I, Length: Integer;
   S: string;
   X: array of Byte;
-  Fs: Tfilestream;
-  begin
-    SetLength(Result, 0);
-    if not FileExists(FileName) then
-      Exit;
-    try
-      Fs := Tfilestream.Create(Filename, FmOpenRead);
+  FS: TFileStream;
+begin
+  Result := False;
+  try
+    FS := TFileStream.Create(Filename, FmOpenRead);
   except
     Exit;
   end;
-  SetLength(X, 14);
-  Fs.read(Pointer(X)^, 14);
-  if (X[1] = Ord('D')) and (X[2] = Ord('B')) and (X[3] = Ord('A')) and (X[4] = Ord('C')) and (X[5] = Ord('T')) and
-    (X[6] = Ord('I')) and (X[7] = Ord('O')) and (X[8] = Ord('N')) and (X[9] = Ord('S')) and (X[10] = Ord('-')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
-    //V1 := True
-  else
-  begin
-    Fs.Free;
-    Exit;
-  end;
+  Info.Clear;
+  try
+    SetLength(X, 14);
+    Fs.Read(Pointer(X)^, 14);
+    if (X[1] = Ord('D')) and (X[2] = Ord('B')) and (X[3] = Ord('A')) and (X[4] = Ord('C')) and (X[5] = Ord('T')) and
+      (X[6] = Ord('I')) and (X[7] = Ord('O')) and (X[8] = Ord('N')) and (X[9] = Ord('S')) and (X[10] = Ord('-')) and
+      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1')) then
+      //V1 := True
+    else
+      Exit;
 
-  Fs.read(Length, SizeOf(Length));
-  for I := 1 to Length do
-  begin
-    Fs.read(Length, SizeOf(Length));
-    SetLength(S, Length);
-    Fs.read(S[1], Length);
-    SetLength(Result, System.Length(Result) + 1);
-    Result[System.Length(Result) - 1] := S;
+    FS.Read(Length, SizeOf(Length));
+    for I := 1 to Length do
+    begin
+      FS.read(Length, SizeOf(Length));
+      SetLength(S, Length);
+      FS.read(S[1], Length);
+      Info.Add(S);
+    end;
+    Result := True;
+  finally
+    F(FS);
   end;
-  Fs.Free;
 end;
 
 procedure CopyFullRecordInfo(ID: Integer);
@@ -4207,7 +4200,7 @@ begin
         S := S + DS.FieldDefList[I].name + ' = ' + DS.Fields[I].AsString + #13;
     end;
   end;
-  MessageBoxDB(GetActiveFormHandle, S, TEXT_MES_INFORMATION, TD_BUTTON_OK, TD_ICON_INFORMATION);
+  MessageBoxDB(GetActiveFormHandle, S, TA('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   FreeDS(DS);
 end;
 
@@ -4489,7 +4482,7 @@ begin
     AddGraphicFormat('Dr. Halo images', '*.cut', False);
     AddGraphicFormat('Paintshop Pro images', '*.psp', True);
 
-    FormatsString := Format(TEXT_MES_ALL_FORMATS, [AllFormatsString]) + '|' + AllFormatsString + '|' + FormatsString;
+    FormatsString := Format(TA('All formats (%s)'), [AllFormatsString]) + '|' + AllFormatsString + '|' + FormatsString;
     GraphicFilterString := FormatsString;
   end;
   Result := GraphicFilterString;

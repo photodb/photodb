@@ -44,6 +44,6 @@ begin
   begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TFrmMain, FrmMain);
-    Application.Run;
+  Application.Run;
   end;
 end.

@@ -3,42 +3,43 @@ unit EffectsToolUnit;
 interface
 
 uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-     GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-     ComCtrls, Effects, ExEffects, Language, Dialogs, Forms, GraphicsBaseTypes,
-     ExEffectsUnitW, EffectsLanguage, OptimizeImageUnit, Dolphin_DB;
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
+  ComCtrls, Effects, ExEffects, Language, Dialogs, Forms, GraphicsBaseTypes,
+  ExEffectsUnitW, EffectsLanguage, OptimizeImageUnit, Dolphin_DB;
 
-type TEffectsManager = class(TObject)
+type
+  TEffectsManager = class(TObject)
   private
-  Effects : TBaseEffectProcedures;
-  ExEffects : TExEffects;
     { Private declarations }
+    Effects: TBaseEffectProcedures;
+    ExEffects: TExEffects;
   public
-  Procedure AddBaseEffect(Effect : TBaseEffectProcW);
-  Function GetBaseEffects : TBaseEffectProcedures;
-
-  Procedure AddExEffect(Effect : TExEffectsClass);
-  Function GetExEffects : TExEffects;
-
-  Procedure InitializeBaseEffects;
-  Function GetEffectNameByID(ID : string) : string;
-   { Public declarations }
+    { Public declarations }
+    procedure AddBaseEffect(Effect: TBaseEffectProcW);
+    function GetBaseEffects: TBaseEffectProcedures;
+    procedure AddExEffect(Effect: TExEffectsClass);
+    function GetExEffects: TExEffects;
+    procedure InitializeBaseEffects;
+    function GetEffectNameByID(ID: string): string;
   end;
 
-type TEffectsToolPanelClass = Class(TToolsPanelClass)
+type
+  TEffectsToolPanelClass = class(TToolsPanelClass)
   private
-  NewImage : TBitmap;
-  CloseLink : TWebLink;
-  MakeItLink : TWebLink;
-  EffectsChooser : TListView;
-  ImageList : TImageList;
-  EM : TEffectsManager;
-  BaseEffects : TBaseEffectProcedures;
-  ExEffects : TExEffects;
-  BaseImage : TBitmap;
-  fOnDone: TNotifyEvent;
-  ApplyOnDone : boolean;
     { Private declarations }
+    NewImage: TBitmap;
+    CloseLink: TWebLink;
+    MakeItLink: TWebLink;
+    EffectsChooser: TListView;
+    ImageList: TImageList;
+    EM: TEffectsManager;
+    BaseEffects: TBaseEffectProcedures;
+    ExEffects: TExEffects;
+    BaseImage: TBitmap;
+    FOnDone: TNotifyEvent;
+    ApplyOnDone: Boolean;
   public
+   { Public declarations }
    FSID : String;
    TempFilterID : String;
    FilterID : string;
@@ -59,11 +60,8 @@ type TEffectsToolPanelClass = Class(TToolsPanelClass)
    procedure SetProgress(Progress : Integer; SID : string);
    procedure SetNewImage(Image : TBitmap);
    procedure EffectChooserPress(Sender: TObject; var Key: Char);
-
    Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
-
    Procedure SetProperties(Properties : String); override;
-   { Public declarations }
   end;
 
 implementation

@@ -2,7 +2,7 @@ unit UnitCrypting;
 
 interface
 
-uses dolphin_db, GraphicCrypt, Language, DB, Windows, SysUtils,
+uses dolphin_db, GraphicCrypt, DB, Windows, SysUtils,
      UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils;
 
 const

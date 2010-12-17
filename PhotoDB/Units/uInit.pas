@@ -2,10 +2,13 @@ unit uInit;
 
 interface
 
-uses SysUtils, Forms, Dolphin_DB;
+uses SysUtils;
 
 implementation
 
 initialization
+
+finalization
+
 
 end.

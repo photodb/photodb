@@ -6,7 +6,7 @@ uses
   Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics,
   pngimage, ShellApi, JPEG, CommCtrl, uMemory,
   DmProgress, GIFImage, RAWImage,
-  UnitDBDeclare, Language, UnitDBCommon, SysUtils,
+  UnitDBDeclare, uTranslate, UnitDBCommon, SysUtils,
   GraphicsBaseTypes, Effects, Math, uMath, uPngUtils;
 
 type
@@ -330,8 +330,8 @@ end;
 
 procedure DrawText32Bit(Bitmap32 : TBitmap; Text : string; Font : TFont; ARect : TRect; DrawTextOptions : Cardinal);
 var
-  Bitmap : TBitmap;
-  R : TRect;
+  Bitmap: TBitmap;
+  R: TRect;
 begin
   Bitmap32.PixelFormat := pf32bit;
   Bitmap := TBitmap.Create;
@@ -339,15 +339,15 @@ begin
     Bitmap.PixelFormat := pf24Bit;
     Bitmap.Canvas.Font.Assign(Font);
     Bitmap.Canvas.Font.Color := ClBlack;
-    Bitmap.Canvas.Brush.Color := clWhite;
-    Bitmap.Canvas.Pen.Color := clWhite;
+    Bitmap.Canvas.Brush.Color := ClWhite;
+    Bitmap.Canvas.Pen.Color := ClWhite;
     Bitmap.Width := ARect.Right - ARect.Left;
     Bitmap.Height := ARect.Bottom - ARect.Top;
     R := Rect(0, 0, Bitmap.Width, Bitmap.Height);
     DrawText(Bitmap.Canvas.Handle, PWideChar(Text), Length(Text), R, DrawTextOptions);
     DrawColorMaskTo32Bit(Bitmap32, Bitmap, Font.Color, ARect.Left, ARect.Top);
   finally
-    Bitmap.Free;
+    F(Bitmap);
   end;
 end;
 
@@ -448,45 +448,44 @@ procedure BeginScreenUpdate(hwnd: THandle);
 begin
   if (hwnd = 0) then
     hwnd := Application.MainForm.Handle;
-  SendMessage(hwnd, WM_SETREDRAW, 0, 0);
+  SendMessage(Hwnd, WM_SETREDRAW, 0, 0);
 end;
 
-procedure EndScreenUpdate(hwnd: THandle; erase: Boolean);
+procedure EndScreenUpdate(Hwnd: THandle; Erase: Boolean);
 begin
-  if (hwnd = 0) then
-    hwnd := Application.MainForm.Handle;
-  SendMessage(hwnd, WM_SETREDRAW, 1, 0);
-  RedrawWindow(hwnd, nil, 0, {DW_FRAME + }RDW_INVALIDATE +
-    RDW_ALLCHILDREN + RDW_NOINTERNALPAINT);
-  if (erase) then
-    Windows.InvalidateRect(hwnd, nil, True);
+  if (Hwnd = 0) then
+    Hwnd := Application.MainForm.Handle;
+  SendMessage(Hwnd, WM_SETREDRAW, 1, 0);
+  RedrawWindow(Hwnd, nil, 0, { DW_FRAME + } RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_NOINTERNALPAINT);
+  if (Erase) then
+    Windows.InvalidateRect(Hwnd, nil, True);
 end;
 
-procedure SelectedColor(Image : TBitmap; Color : TColor);
+procedure SelectedColor(Image: TBitmap; Color: TColor);
 var
-  I, J, R, G, B : integer;
-  p : PARGB;
+  I, J, R, G, B: Integer;
+  P: PARGB;
 begin
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);
-  if Image.PixelFormat<>pf24bit then
-    Image.PixelFormat:=pf24bit;
+  if Image.PixelFormat <> Pf24bit then
+    Image.PixelFormat := Pf24bit;
 
   for I := 0 to Image.Height - 1 do
   begin
-    p:=image.ScanLine[I];
-    for J:=0 to Image.Width - 1 do
+    P := Image.ScanLine[I];
+    for J := 0 to Image.Width - 1 do
       if Odd(I + J) then
       begin
-        p[J].R := R;
-        p[J].G := G;
-        p[J].B := B;
+        P[J].R := R;
+        P[J].G := G;
+        P[J].B := B;
       end;
   end;
 end;
 
-function MixBytes(FG, BG, TRANS: byte): byte;
+function MixBytes(FG, BG, TRANS: Byte): Byte;
  asm
   push bx  // push some regs
   push cx
@@ -518,10 +517,10 @@ var
 begin
   Image.PixelFormat := pf24bit;
 
-  for i := 0 to Image.Height - 1 do
+  for I := 0 to Image.Height - 1 do
   begin
     p := Image.ScanLine[I];
-    for J:=0 to Image.Width - 1 do
+    for J := 0 to Image.Width - 1 do
     begin
       C := (p[J].R * 77 + p[J].G * 151 + p[J].B * 28) shr 8;
       p[J].R := C;
@@ -533,30 +532,30 @@ end;
 
 procedure GrayScaleImage(S, D : TBitmap; N : integer);
 var
-  i, j : integer;
+  I, J : integer;
   p1, p2 : Pargb;
   G : Byte;
-  W1, W2 : Byte;
+  W1, W2: Byte;
 begin
-  W1 := Round((N / 100)*255);
+  W1 := Round((N / 100) * 255);
   W2 := 255 - W1;
   for I := 0 to S.Height - 1 do
   begin
-    p1 := S.ScanLine[I];
-    p2 := D.ScanLine[I];
-    for j:=0 to S.Width-1 do
+    P1 := S.ScanLine[I];
+    P2 := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
     begin
-      G := (p1[j].R * 77 + p1[j].G * 151 + p1[j].B * 28) shr 8;
-      p2[j].R := (W2 * p2[j].R + W1 * G) shr 8;
-      p2[j].G := (W2 * p2[j].G + W1 * G) shr 8;
-      p2[j].B := (W2 * p2[j].B + W1 * G) shr 8;
+      G := (P1[J].R * 77 + P1[J].G * 151 + P1[J].B * 28) shr 8;
+      P2[J].R := (W2 * P2[J].R + W1 * G) shr 8;
+      P2[J].G := (W2 * P2[J].G + W1 * G) shr 8;
+      P2[J].B := (W2 * P2[J].B + W1 * G) shr 8;
     end;
   end;
 end;
 
-procedure DrawTransparent(S, D : TBitmap; Transparent : byte);
+procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
 var
-  W1, W2, I, J : Integer;
+  W1, W2, I, J: Integer;
   PS, PD : PARGB;
 begin
   W1 := Transparent;
@@ -575,8 +574,8 @@ begin
 end;
 
 procedure DoInfoListBoxDrawItem(ListBox: TListBox; Index: Integer; aRect: TRect; State: TOwnerDrawState;
-ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
-Infos : TStrings);
+  ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
+  Infos : TStrings);
 var
   InfoText, Text : string;
   r : TRect;
@@ -590,139 +589,144 @@ const
   IndexErrorRecord = 1;
   IndexDBRecord = 5;
 begin
- //
- ItemData:=PInteger(ItemsData[Index])^;
- if odSelected in State then
- ListBox.Canvas.Brush.Color:=$A0A0A0 else
- ListBox.Canvas.Brush.Color:=ClWhite;
- //clearing rect
- ListBox.Canvas.Pen.Color:=ListBox.Canvas.Brush.Color;
- ListBox.Canvas.Rectangle(aRect);
+    //
+  ItemData := PInteger(ItemsData[index])^;
+  if OdSelected in State then
+    ListBox.Canvas.Brush.Color := $A0A0A0
+  else
+    ListBox.Canvas.Brush.Color := ClWhite;
+  // clearing rect
+  ListBox.Canvas.Pen.Color := ListBox.Canvas.Brush.Color;
+  ListBox.Canvas.Rectangle(ARect);
 
- ListBox.Canvas.Pen.Color:=ClBlack;
- ListBox.Canvas.Font.Color:=ClBlack;
- Text:=ListBox.Items[index];
+  ListBox.Canvas.Pen.Color := ClBlack;
+  ListBox.Canvas.Font.Color := ClBlack;
+  Text := ListBox.Items[index];
 
- //first Record
- if Index=0 then
- begin
-  if TempProgress<>nil then
+  // first Record
+  if Index = 0 then
   begin
-   DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexProgressRecord].Handle,16,16,0,0,DI_NORMAL);
-   aRect.Left:=aRect.Left+20;
-   r:=Rect( aRect.Left,aRect.Top,aRect.Right,aRect.Top+ListBox.Canvas.TextHeight('Iy'));
-   aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
-   InfoText:=TEXT_MES_PROSESSING_;
-   ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
-   if FProgressEnabled then
-   begin
-    TempProgress.Text:='';
-    TempProgress.Width:=aRect.Right-aRect.Left- ListBox.Canvas.TextWidth(InfoText)-10-ListBox.ScrollWidth;
-    TempProgress.Height:=ListBox.Canvas.TextHeight('Iy');
-    TempProgress.DoPaintOnXY(ListBox.Canvas,r.Left+ListBox.Canvas.TextWidth(InfoText)+10,r.Top);
-   end;
-  end;
-  ListBox.Canvas.Font.Style:=[];
- end;
-
- if ItemData=LINE_INFO_OK then
- begin
-  if Infos[index]<>'' then
-  begin
-   r:=Rect( aRect.Left,aRect.Top,aRect.Right,aRect.Top+ListBox.Canvas.TextHeight('Iy'));
-   aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
-   InfoText:=Infos[index];
-   ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
-   ListBox.Canvas.Font.Style:=[];
-  end;
-  DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexProcessedRecord].Handle,16,16,0,0,DI_NORMAL);
-
-  aRect.Left:=aRect.Left+20;
- end;
-
- if ItemData=LINE_INFO_DB then
- begin
-  if Infos[index]<>'' then
-  begin
-   r:=Rect( aRect.Left,aRect.Top,aRect.Right,aRect.Top+ListBox.Canvas.TextHeight('Iy'));
-   aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
-   InfoText:=Infos[index];
-   ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
-   ListBox.Canvas.Font.Style:=[];
+    if TempProgress <> nil then
+    begin
+      DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexProgressRecord].Handle, 16, 16, 0, 0,
+          DI_NORMAL);
+      ARect.Left := ARect.Left + 20;
+      R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+      ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+      InfoText := TA('Executing') + ':';
+      ListBox.Canvas.Font.Style := [FsBold];
+      DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+      if FProgressEnabled then
+      begin
+        TempProgress.Text := '';
+        TempProgress.Width := ARect.Right - ARect.Left - ListBox.Canvas.TextWidth(InfoText)
+          - 10 - ListBox.ScrollWidth;
+        TempProgress.Height := ListBox.Canvas.TextHeight('Iy');
+        TempProgress.DoPaintOnXY(ListBox.Canvas, R.Left + ListBox.Canvas.TextWidth(InfoText) + 10, R.Top);
+      end;
+    end;
+    ListBox.Canvas.Font.Style := [];
   end;
 
-  DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexDBRecord].Handle,16,16,0,0,DI_NORMAL);
-  aRect.Left:=aRect.Left+20;
- end;
-
-
- if ItemData=LINE_INFO_GREETING then
- begin
-
-   r:=Rect( aRect.Left,aRect.Top,aRect.Right,aRect.Top+ListBox.Canvas.TextHeight('Iy'));
-   aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
-   InfoText:=Infos[index];
-   ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
-   ListBox.Canvas.Font.Style:=[];
-
-  DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexAdminToolsRecord].Handle,16,16,0,0,DI_NORMAL);
-
-  aRect.Left:=aRect.Left+20;
-  Text:='';
- end;
-
-
- if ItemData=LINE_INFO_PLUS then
- begin
-  if Infos[index]<>'' then
+  if ItemData = LINE_INFO_OK then
   begin
-   aRect.Left:=aRect.Left+10;
-   r:=Rect(aRect.Left,aRect.Top,aRect.Right,aRect.Top+ListBox.Canvas.TextHeight('Iy'));
-   aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
-   InfoText:=Infos[index];
-   ListBox.Canvas.Font.Style:=[fsBold];
-   DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
-   ListBox.Canvas.Font.Style:=[];
+    if Infos[index] <> '' then
+    begin
+      R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+      ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+      InfoText := Infos[index];
+      ListBox.Canvas.Font.Style := [FsBold];
+      DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+      ListBox.Canvas.Font.Style := [];
+    end;
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexProcessedRecord].Handle, 16, 16, 0, 0,
+      DI_NORMAL);
+
+    ARect.Left := ARect.Left + 20;
   end;
 
-  DrawIconEx(ListBox.Canvas.Handle,aRect.Left+10,aRect.Top,Icons[IndexPlusRecord].Handle,16,16,0,0,DI_NORMAL);
-  aRect.Left:=aRect.Left+30;
- end;
+  if ItemData = LINE_INFO_DB then
+  begin
+    if Infos[index] <> '' then
+    begin
+      R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+      ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+      InfoText := Infos[index];
+      ListBox.Canvas.Font.Style := [FsBold];
+      DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+      ListBox.Canvas.Font.Style := [];
+    end;
 
- if ItemData=LINE_INFO_WARNING then
- begin
-  DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexWarningRecord].Handle,16,16,0,0,DI_NORMAL);
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexDBRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
+    ARect.Left := ARect.Left + 20;
+  end;
 
-  aRect.Left:=aRect.Left+20;
-  r:=Rect( aRect.Left,aRect.Top,aRect.Right,aRect.Top+ListBox.Canvas.TextHeight('Iy'));
-  aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
-  InfoText:=TEXT_MES_WARNING+':';
-  ListBox.Canvas.Font.Style:=[fsBold];
-  DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
-  ListBox.Canvas.Font.Style:=[];
- end;
+  if ItemData = LINE_INFO_GREETING then
+  begin
 
- if ItemData=LINE_INFO_ERROR then
- begin
-  DrawIconEx(ListBox.Canvas.Handle,aRect.Left,aRect.Top,Icons[IndexErrorRecord].Handle,16,16,0,0,DI_NORMAL);
+    R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+    ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+    InfoText := Infos[index];
+    ListBox.Canvas.Font.Style := [FsBold];
+    DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+    ListBox.Canvas.Font.Style := [];
 
-  aRect.Left:=aRect.Left+20;
-  r:=Rect( aRect.Left,aRect.Top,aRect.Right,aRect.Top+ListBox.Canvas.TextHeight('Iy'));
-  aRect.Top:=aRect.Top+ListBox.Canvas.TextHeight('Iy');
-  InfoText:=TEXT_MES_ERROR+':';
-  ListBox.Canvas.Font.Style:=[fsBold];
-  DrawText(ListBox.Canvas.Handle,PWideChar(InfoText),Length(InfoText), r ,0);
-  ListBox.Canvas.Font.Style:=[];
- end;
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexAdminToolsRecord].Handle, 16, 16, 0, 0,
+      DI_NORMAL);
 
- DrawText(ListBox.Canvas.Handle,PWideChar(Text),Length(Text), aRect,DT_NOPREFIX+DT_LEFT+DT_WORDBREAK);
-end;
+    ARect.Left := ARect.Left + 20;
+    Text := '';
+  end;
 
-function CalcBitmapToJPEGCompressSize(Bitmap : TBitmap; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
+  if ItemData = LINE_INFO_PLUS then
+  begin
+    if Infos[index] <> '' then
+    begin
+      ARect.Left := ARect.Left + 10;
+      R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+      ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+      InfoText := Infos[index];
+      ListBox.Canvas.Font.Style := [FsBold];
+      DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+      ListBox.Canvas.Font.Style := [];
+    end;
+
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left + 10, ARect.Top, Icons[IndexPlusRecord].Handle, 16, 16, 0, 0,
+      DI_NORMAL);
+    ARect.Left := ARect.Left + 30;
+  end;
+
+  if ItemData = LINE_INFO_WARNING then
+  begin
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexWarningRecord].Handle, 16, 16, 0, 0,
+      DI_NORMAL);
+
+    ARect.Left := ARect.Left + 20;
+    R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+    ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+    InfoText := TA('Warning') + ':';
+    ListBox.Canvas.Font.Style := [FsBold];
+    DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+    ListBox.Canvas.Font.Style := [];
+  end;
+
+    if ItemData = LINE_INFO_ERROR then
+    begin
+      DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexErrorRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
+
+      ARect.Left := ARect.Left + 20;
+      R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+      ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+      InfoText := TA('Error') + ':';
+      ListBox.Canvas.Font.Style := [FsBold];
+      DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+      ListBox.Canvas.Font.Style := [];
+    end;
+
+    DrawText(ListBox.Canvas.Handle, PWideChar(Text), Length(Text), ARect, DT_NOPREFIX + DT_LEFT + DT_WORDBREAK);
+  end;
+
+function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte; out JpegImageResampled: TJpegImage) : int64;
 var
   Jpeg: TJpegImage;
   MS: TMemoryStream;
@@ -753,30 +757,31 @@ begin
   end;
 end;
 
-function CalcJpegResampledSize(Jpeg : TJpegImage; Size : integer; CompressionRate : byte; out JpegImageResampled : TJpegImage) : int64;
+function CalcJpegResampledSize(Jpeg : TJpegImage; Size : integer; CompressionRate : byte;
+    out JpegImageResampled : TJpegImage): Int64;
 var
-  Bitmap, OutBitmap : TBitmap;
-  w, h : integer;
+  Bitmap, OutBitmap: TBitmap;
+  W, H: Integer;
 begin
-  Bitmap:=TBitmap.Create;
+  Bitmap := TBitmap.Create;
   try
-   Bitmap.Assign(Jpeg);
-   OutBitmap:=TBitmap.Create();
-   try
-      w:=Jpeg.Width;
-      h:=Jpeg.Height;
-      ProportionalSize(Size,Size,w,h);
-      DoResize(w,h,Bitmap,OutBitmap);
-      Result:=CalcBitmapToJPEGCompressSize(OutBitmap,CompressionRate,JpegImageResampled);
+    Bitmap.Assign(Jpeg);
+    OutBitmap := TBitmap.Create;
+    try
+      W := Jpeg.Width;
+      H := Jpeg.Height;
+      ProportionalSize(Size, Size, W, H);
+      DoResize(W, H, Bitmap, OutBitmap);
+      Result := CalcBitmapToJPEGCompressSize(OutBitmap, CompressionRate, JpegImageResampled);
     finally
-      OutBitmap.Free;
+      F(OutBitmap);
     end;
   finally
-    Bitmap.Free;
+    F(Bitmap);
   end;
 end;
 
-procedure DrawColorMaskTo32Bit(Dest, Mask : TBitmap; Color : TColor; X, Y : Integer);
+procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
 var
   I, J,
   XD, YD,
@@ -970,7 +975,7 @@ end;
 
 procedure FillTransparentColor(Bitmap : TBitmap; Color : TColor; TransparentValue : Byte = 0);
 var
-  I, J : integer;
+  I, J : Integer;
   p : PARGB32;
   R, G, B : Byte;
 begin
@@ -994,7 +999,7 @@ end;
 
 procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
 var
-  I, J : integer;
+  I, J : Integer;
   p : PARGB;
   R, G, B : Byte;
 begin
@@ -1020,7 +1025,7 @@ end;
 
 procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
 var
-    I, J, W1, W2: integer;
+  I, J, W1, W2: integer;
   PD : PARGB;
   PS : PARGB32;
   R, G, B : byte;
@@ -1049,73 +1054,74 @@ begin
   end;
 end;
 
-procedure LoadGIFImage32bit(GIF : TGIFSubImage; Bitmap : TBitmap; BackGroundColorIndex : integer; BackGroundColor : TColor);
+procedure LoadGIFImage32bit(GIF : TGIFSubImage; Bitmap : TBitmap; BackGroundColorIndex : integer;
+    BackGroundColor : TColor);
 var
-  i, j : integer;
-  p : PARGB;
-  r,g,b : byte;
+  I, J: Integer;
+  P: PARGB;
+  R, G, B: Byte;
 begin
   BackGroundColor := ColorToRGB(BackGroundColor);
- r:=GetRValue(BackGroundColor);
- g:=GetGValue(BackGroundColor);
- b:=GetBValue(BackGroundColor);
- Bitmap.PixelFormat:=pf24bit;
- for i:=0 to GIF.Top-1 do
- begin
-  p:=Bitmap.ScanLine[i];
-  for j:=0 to Bitmap.Width-1 do
+  R := GetRValue(BackGroundColor);
+  G := GetGValue(BackGroundColor);
+  B := GetBValue(BackGroundColor);
+  Bitmap.PixelFormat := pf24bit;
+  for I := 0 to GIF.Top - 1 do
   begin
-   p[j].r:=r;
-   p[j].g:=g;
-   p[j].b:=b;
+    P := Bitmap.ScanLine[I];
+    for J := 0 to Bitmap.Width - 1 do
+    begin
+      P[J].R := R;
+      P[J].G := G;
+      P[J].B := B;
+    end;
   end;
- end;
- for i:=GIF.Top+GIF.Height to Bitmap.Height-1 do
- begin
-  p:=Bitmap.ScanLine[i];
-  for j:=0 to Bitmap.Width-1 do
+  for I := GIF.Top + GIF.Height to Bitmap.Height - 1 do
   begin
-   p[j].r:=r;
-   p[j].g:=g;
-   p[j].b:=b;
+    P := Bitmap.ScanLine[I];
+    for J := 0 to Bitmap.Width - 1 do
+    begin
+      P[J].R := R;
+      P[J].G := G;
+      P[J].B := B;
+    end;
   end;
- end;
- for i:=GIF.Top to GIF.Top+GIF.Height-1 do
- begin
-  p:=Bitmap.ScanLine[i];
-  for j:=0 to GIF.Left-1 do
+  for I := GIF.Top to GIF.Top + GIF.Height - 1 do
   begin
-   p[j].r:=r;
-   p[j].g:=g;
-   p[j].b:=b;
+    P := Bitmap.ScanLine[I];
+    for J := 0 to GIF.Left - 1 do
+    begin
+      P[J].R := R;
+      P[J].G := G;
+      P[J].B := B;
+    end;
   end;
- end;
- for i:=GIF.Top to GIF.Top+GIF.Height-1 do
- begin
-  p:=Bitmap.ScanLine[i];
-  for j:=GIF.Left+GIF.Width-1 to Bitmap.Width-2  do
+  for I := GIF.Top to GIF.Top + GIF.Height - 1 do
   begin
-   p[j].r:=r;
-   p[j].g:=g;
-   p[j].b:=b;
+    P := Bitmap.ScanLine[I];
+    for J := GIF.Left + GIF.Width - 1 to Bitmap.Width - 2 do
+    begin
+      P[J].R := R;
+      P[J].G := G;
+      P[J].B := B;
+    end;
   end;
- end;
- for i:=0 to GIF.Height-1 do
- begin
-  p:=Bitmap.ScanLine[i+GIF.Top];
-  for j:=0 to GIF.Width-1 do
+  for I := 0 to GIF.Height - 1 do
   begin
-   if GIF.Pixels[j,i]=BackGroundColorIndex then
-   begin
-    p[j+GIF.Left].r:=r;
-    p[j+GIF.Left].g:=g;
-    p[j+GIF.Left].b:=b;
-   end;
+    P := Bitmap.ScanLine[I + GIF.Top];
+    for J := 0 to GIF.Width - 1 do
+    begin
+      if GIF.Pixels[J, I] = BackGroundColorIndex then
+      begin
+        P[J + GIF.Left].R := R;
+        P[J + GIF.Left].G := G;
+        P[J + GIF.Left].B := B;
+      end;
+    end;
   end;
- end;
 end;
 
-procedure AssignBitmap(Dest : TBitmap; Src : TBitmap);
+procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
 var
   I, J: Integer;
   PS, PD: PARGB;
@@ -1233,16 +1239,16 @@ end;
 procedure StretchCool(x, y, Width, Height : Integer; S, D : TBitmap);
 var
   i,j,k,p,Sheight1:integer;
-  p1: pargb;
-  col,r,g,b : integer;
-  Sh, Sw : Extended;
-  Xp : array of PARGB;
-  s_h, s_w : integer;
+  P1: Pargb;
+  Col, R, G, B: Integer;
+  Sh, Sw: Extended;
+  Xp: array of PARGB;
+  S_h, S_w: Integer;
 begin
- s.PixelFormat:=pf24bit;
- d.PixelFormat:=pf24bit;
- if width+x>d.Width then
- d.Width:=width+x;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  if Width + X > D.Width then
+    D.Width := Width + X;
  if Height+y>d.Height then
  d.Height:=height+y;
  Sh:=S.height/height;

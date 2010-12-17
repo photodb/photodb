@@ -10,12 +10,16 @@
     <translate name="Kb" value="Кб" />
     <translate name="Mb" value="Мб" />
     <translate name="Gb" value="Гб" />
+    <translate name="Bytes" value="Байт" />
     <translate name="Error" value="Ошибка" />
     <translate name="Question" value="Вопрос" />
     <translate name="Confirm" value="Подтверждение" />	
     <translate name="Information" value="Информация" />
     <translate name="An unexpected error occurred: %s" value="Произошла неожиданная ошибка: %s" />
     <translate name="Progress... (&amp;%%)" value="Прогресс... (&amp;%%)" />
+    <translate name="Executing" value="Выполнение" />
+    <translate name="%dpx." value="%dпк." />
+    <translate name="All formats (%s)" value="Все форматы (%s)" />
   </scope>
   <scope name="System">
     <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
@@ -732,6 +736,7 @@
 	<translate name="Select place to copy files" value="Выберите место для копирования файлов" />
 	<translate name="Enter text" value="Введите текст" />
 	<translate name="Enter new name of panel" value="Введите новое название панели" />
+	<translate name="New panel" value="Новую панель" />	
   </scope>
   <scope name="KeywordList">
 	<translate name="List of keywords" value="Список ключевых слов" />
@@ -971,7 +976,8 @@
 	<translate name="Printing ..." value="Идёт печать..." />
 	<translate name="Please wait until done printing..." value="Пожалуйста, подождите пока производится вывод на печать..." />
   </scope>
-  <scope name="Printer">  
+  <scope name="Printer">    
+	<translate name="Generating preview" value="Генерация предпросмотра" />
 	<translate name="Add printer" value="Добавить принтер" />
 	<translate name="Printer setup" value="Настройки принтера" />
 	<translate name="Zoom out" value="Уменьшить" />
@@ -1043,7 +1049,11 @@
 	<translate name="Processing files... (&amp;%%)" value="Обработка файлов... (&amp;%%)" />
 	<translate name="&lt;current file&gt;" value="&lt;Текущий файл&gt;" />
 	<translate name="Progress status" value="Состояние обновления" />
-	<translate name="Reading [%s]" value="Чтение [%s]"/>  
+	<translate name="Reading [%s]" value="Чтение [%s]"/>
+	<translate name="Getting list of files from directory" value="Получение списка файлов из директории"/>
+	<translate name="&lt;No files&gt;" value="&lt;Нет файлов&gt;"/>
+	<translate name="The last file" value="Последний файл"/>
+	<translate name="Wait until the program is restore the work" value="Подождите, пока программа восстановит сохранённую работу"/>
   </scope>
   <scope name="UpdaterHistory">
 	<translate name="In this list are the files that for whatever reasons, have not been added" value="В этом списке находятся файлы, которые по каким-то причинам не были добавлены"/>
