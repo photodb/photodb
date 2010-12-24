@@ -3,10 +3,10 @@ unit UnitSearchBigImagesLoaderThread;
 interface
 
 uses
-  Windows, Classes, Forms, Dolphin_DB, SysUtils, Graphics, GraphicCrypt, Math,
+  Windows, Classes, Forms, UnitDBKernel, SysUtils, Graphics, GraphicCrypt, Math,
   RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, ImageConverting,
   UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx, uMemory,
-  uMultiCPUThreadManager, uDBPopupMenuInfo;
+  uMultiCPUThreadManager, uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes;
 
 type
   TSearchBigImagesLoaderThread = class(TMultiCPUThread)

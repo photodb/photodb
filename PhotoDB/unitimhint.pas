@@ -9,7 +9,8 @@ uses
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
   DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory, uDBForm,
   UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator,
-  UnitDBDeclare, uConstants, uDBPopupMenuInfo, uFormUtils;
+  UnitDBDeclare, uConstants, uDBPopupMenuInfo, uFormUtils,
+  uRuntime;
 
 type
   TImHint = class(TDBForm)
@@ -432,7 +433,7 @@ begin
   MenuInfo.AttrExists := False;
   MenuInfo.ListItem := nil;
   MenuInfo.IsListItem := False;
-  TDBPopupMenu.Instance.Execute(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y, MenuInfo);
+  TDBPopupMenu.Instance.Execute(Self, ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y, MenuInfo);
   if not FClosed then
     TimerHide.Enabled := True;
   FDragDrop := False;
@@ -470,7 +471,6 @@ begin
   F(ImageBuffer);
   F(AnimatedImage);
   DropFileTargetMain.Unregister;
-  DBKernel.UnRegisterForm(Self);
 end;
 
 procedure TImHint.FormKeyPress(Sender: TObject; var Key: Char);

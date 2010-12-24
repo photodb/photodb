@@ -9,10 +9,10 @@ uses
   ExtCtrls, ComCtrls,  Dialogs, DB, CommCtrl, JPEG, Math,
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
   UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
-  uConstants, uDBPopupMenuInfo;
+  uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm;
 
 type
-  TDBReplaceForm = class(TForm)
+  TDBReplaceForm = class(TDBForm)
     ListView1: TListView;
     SizeImageList: TImageList;
     Panel1: TPanel;
@@ -370,7 +370,7 @@ begin
  WorkQuery:=GetQuery;
  DropFileTarget1.Register(self);
  FBitmapImageList := TBitmapImageList.Create;
- DBKernel.RegisterForm(self);
+// DBKernel.RegisterForm(self);
  ListView1.HotTrack:=DBKernel.Readbool('Options','UseHotSelect',true);
  listview1.DoubleBuffered:=true;
  ListView1SelectItem(Sender, nil, false);
@@ -580,7 +580,7 @@ begin
   MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
   MenuInfo.Add(MenuRecord);
   MenuInfo.AttrExists:=false;
-  TDBPopupMenu.Instance.Execute(Image2.ClientToScreen(MousePos).x, Image2.ClientToScreen(MousePos).y, MenuInfo);
+  TDBPopupMenu.Instance.Execute(Self, Image2.ClientToScreen(MousePos).x, Image2.ClientToScreen(MousePos).y, MenuInfo);
 end;
 
 
@@ -638,7 +638,7 @@ begin
  FreeDS(WorkQuery);
  DropFileTarget1.Unregister;
  FBitmapImageList.Free;
- DBKernel.UnRegisterForm(self);
+// DBKernel.UnRegisterForm(self);
  DBKernel.UnRegisterChangesID(self,self.ChangedDBDataByID);
 end;
 

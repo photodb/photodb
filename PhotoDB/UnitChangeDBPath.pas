@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Dolphin_DB, StdCtrls, DmProgress, DB, win32crc,
   UnitDBFileDialogs, UnitOpenQueryThread, CommonDBSupport, uVistaFuncs,
-  UnitDBkernel, UnitDBDeclare, uFileUtils, uDBForm, uMemory;
+  UnitDBkernel, UnitDBDeclare, uFileUtils, uDBForm, uMemory,
+  uShellIntegration;
 
 type
   TFormChangeDBPath = class(TDBForm)
@@ -165,11 +166,12 @@ var
   var
     Directory, UpDirectory: string;
   begin
-    Directory := GetDirectory(FileName);
+    Directory := ExtractFileDir(FileName);
     if not PathExists(Directory) then
       PathList.Add(Directory);
-    UnformatDir(Directory);
-    UpDirectory := GetDirectory(Directory);
+
+    Directory := ExcludeTrailingBackslash(Directory);
+    UpDirectory := ExtractFileDir(Directory);
     if (Length(UpDirectory) > 3) and (Directory <> FileName) then
       AddPathEntry(Directory)
     else if Length(UpDirectory) = 3 then
@@ -277,10 +279,8 @@ begin
   DisableControls;
   try
     Working := True;
-    FromPath := CbOldPath.Text;
-    FormatDir(FromPath);
-    ToPath := EdNewPath.Text;
-    FormatDir(ToPath);
+    FromPath := IncludeTrailingBackslash(CbOldPath.Text);
+    ToPath := IncludeTrailingBackslash(EdNewPath.Text);
     WorkQuery := GetQuery;
     try
       _sqlexectext := 'Select ID,FFileName from $DB$';
@@ -315,16 +315,15 @@ begin
           FileName := AnsiLowerCase(WorkQuery.FieldByName('FFileName').AsString);
           if Copy(FileName, 1, Len) = FromPath then
           begin
-            Dir := GetDirectory(FileName);
+            Dir := ExtractFileDir(FileName);
             if Dir <> FromPath then
             begin
-              UnFormatDir(Dir);
+              ExcludeTrailingBackslash(Dir);
 
               NewPath := FileName;
               Delete(NewPath, 1, Len);
               NewPath := ToPath + NewPath;
-              NewDir := AnsiLowerCase(GetDirectory(NewPath));
-              UnFormatDir(NewDir);
+              NewDir := ExcludeTrailingBackslash(AnsiLowerCase(ExtractFileDir(NewPath)));
 
               CRC := 0;
               CalcStringCRC32(AnsiLowerCase(NewDir), CRC);

@@ -2,46 +2,46 @@ unit RotateToolUnit;
 
 interface
 
-uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-     GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-     Effects, Angle, Spin, Language, Dialogs, GraphicsBaseTypes;
+uses
+  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
+  Effects, Angle, Spin, Language, Dialogs, GraphicsBaseTypes,
+  uEditorTypes, UnitDBKernel;
 
-type TRotateToolPanelClass = Class(TToolsPanelClass)
+type
+  TRotateToolPanelClass = class(TToolsPanelClass)
   private
-  NewImage : TBitmap;
-  CloseLink : TWebLink;
-  MakeItLink : TWebLink;
-  SelectChooseBox : TRadioGroup;
-  CustomAngle : TAngle;
-  AngleEdit: TSpinEdit;
-  ColorEdit : TShape;
-  ColorChooser : TColorDialog;
-  ColorLabel : TLabel;
-  ApplyOnDone : boolean;       
-  fOnDone : TNotifyEvent;
     { Private declarations }
+    NewImage: TBitmap;
+    CloseLink: TWebLink;
+    MakeItLink: TWebLink;
+    SelectChooseBox: TRadioGroup;
+    CustomAngle: TAngle;
+    AngleEdit: TSpinEdit;
+    ColorEdit: TShape;
+    ColorChooser: TColorDialog;
+    ColorLabel: TLabel;
+    ApplyOnDone: Boolean;
+    FOnDone: TNotifyEvent;
   public
-   FSID : String;
-   class function ID: string; override;
-   constructor Create(AOwner : TComponent); override;
-   destructor Destroy; override;
-   Procedure ClosePanel; override;
-   Procedure MakeTransform; override;
-   Procedure ClosePanelEvent(Sender : TObject);
-   Procedure SelectChooseBoxClick(Sender : TObject);
-   Procedure DoMakeImage(Sender : TObject);
-   procedure SetThreadImage(Image : TBitmap; SID : string);
-   procedure SetProgress(Progress : Integer; SID : string);
-   procedure AngleChanged(Sender : TObject);
-   procedure AngleEditChanged(Sender : TObject);
-   procedure ColorLabelClick(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-
-   function GetProperties : string; override;
-   Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
-   
-   Procedure SetProperties(Properties : String); override;
-   { Public declarations }
+    { Public declarations }
+    FSID: string;
+    class function ID: string; override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure ClosePanel; override;
+    procedure MakeTransform; override;
+    procedure ClosePanelEvent(Sender: TObject);
+    procedure SelectChooseBoxClick(Sender: TObject);
+    procedure DoMakeImage(Sender: TObject);
+    procedure SetThreadImage(Image: TBitmap; SID: string);
+    procedure SetProgress(Progress: Integer; SID: string);
+    procedure AngleChanged(Sender: TObject);
+    procedure AngleEditChanged(Sender: TObject);
+    procedure ColorLabelClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    function GetProperties: string; override;
+    procedure ExecuteProperties(Properties: string; OnDone: TNotifyEvent); override;
+    procedure SetProperties(Properties: string); override;
   end;
 
 implementation
@@ -52,44 +52,47 @@ uses RotateToolThreadUnit, ImEditor, Dolphin_DB;
 
 procedure TRotateToolPanelClass.AngleChanged(Sender: TObject);
 begin
- AngleEdit.Tag:=1;
- if Round(CustomAngle.Angle)<0 then
- AngleEdit.Value:=360+Round(CustomAngle.Angle) else
- AngleEdit.Value:=Round(CustomAngle.Angle);
- AngleEdit.Tag:=0;
- if SelectChooseBox.ItemIndex<>6 then
- SelectChooseBox.ItemIndex:=6 else
- SelectChooseBoxClick(Sender);
+  AngleEdit.Tag := 1;
+  if Round(CustomAngle.Angle) < 0 then
+    AngleEdit.Value := 360 + Round(CustomAngle.Angle)
+  else
+    AngleEdit.Value := Round(CustomAngle.Angle);
+  AngleEdit.Tag := 0;
+  if SelectChooseBox.ItemIndex <> 6 then
+    SelectChooseBox.ItemIndex := 6
+  else
+    SelectChooseBoxClick(Sender);
 end;
 
 procedure TRotateToolPanelClass.AngleEditChanged(Sender: TObject);
 begin
- if AngleEdit.Tag=0 then
- CustomAngle.Angle:=AngleEdit.Value;
+  if AngleEdit.Tag = 0 then
+    CustomAngle.Angle := AngleEdit.Value;
 end;
 
 procedure TRotateToolPanelClass.ClosePanel;
 begin
- if Assigned(OnClosePanel) then OnClosePanel(self);
- if not ApplyOnDone then
- inherited;
+  if Assigned(OnClosePanel) then
+    OnClosePanel(Self);
+  if not ApplyOnDone then
+    inherited;
 end;
 
 procedure TRotateToolPanelClass.ClosePanelEvent(Sender: TObject);
 begin
- CancelTempImage(true);
- ClosePanel;
+  CancelTempImage(True);
+  ClosePanel;
 end;
 
-procedure TRotateToolPanelClass.ColorLabelClick(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+procedure TRotateToolPanelClass.ColorLabelClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
 begin
- ColorChooser.Color:=ColorEdit.Brush.Color;
- if ColorChooser.Execute then
- begin
-  ColorEdit.Brush.Color:=ColorChooser.Color;
-  SelectChooseBoxClick(Sender);
- end;
+  ColorChooser.Color := ColorEdit.Brush.Color;
+  if ColorChooser.Execute then
+  begin
+    ColorEdit.Brush.Color := ColorChooser.Color;
+    SelectChooseBoxClick(Sender);
+  end;
 end;
 
 constructor TRotateToolPanelClass.Create(AOwner: TComponent);
@@ -167,7 +170,7 @@ begin
  MakeItLink.Visible:=true;
  MakeItLink.Color:=ClBtnface;
  MakeItLink.OnClick:=DoMakeImage;
- MakeItLink.Icon:=IcoOK;     
+ MakeItLink.Icon:=IcoOK;
  MakeItLink.ImageCanRegenerate:=True;
  IcoOK.Free;
 
@@ -179,8 +182,8 @@ begin
  CloseLink.Visible:=true;
  CloseLink.Color:=ClBtnface;
  CloseLink.OnClick:=ClosePanelEvent;
- CloseLink.Icon:=IcoCancel;      
- CloseLink.ImageCanRegenerate:=True;  
+ CloseLink.Icon:=IcoCancel;
+ CloseLink.ImageCanRegenerate:=True;
  IcoCancel.Free;
 
 end;
@@ -317,7 +320,3 @@ begin
 end;
 
 end.
-
-
-
-

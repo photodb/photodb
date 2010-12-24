@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, WebLink, ComCtrls, dolphin_db, ShellAPI;
+  Dialogs, StdCtrls, ExtCtrls, WebLink, ComCtrls, UnitDBKernel, ShellAPI,
+  Dolphin_DB;
 
 type
   TFormInternetUpdating = class(TForm)

@@ -4,12 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, SaveInfoToImage, ShlObj,
+  Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, SaveInfoToImage, ShlObj, UnitDBKernel,
   Dolphin_DB, Math, ImageConverting, PngImage, GraphicEx, uVistaFuncs,
-  GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils, uMemory;
+  GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils, uMemory,
+  uShellIntegration, uDBForm;
 
 type
-  TFormSteno = class(TForm)
+  TFormSteno = class(TDBForm)
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -36,19 +37,18 @@ type
     function LoadInfoFromFile(FileName: String) : boolean;
     procedure LoadImage(FileName: String; CloseIfOk : boolean = false);
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
   private
-   PictureFileName, FileName : String;
-   ImagePassword : string;
-   MaxFileSize : Integer;
-   NormalFileSize : integer;
-   GoodFileSize : integer;
-   function GetMaxFileSize : integer;
     { Private declarations }
+    PictureFileName, FileName: string;
+    ImagePassword: string;
+    MaxFileSize: Integer;
+    NormalFileSize: Integer;
+    GoodFileSize: Integer;
+    function GetMaxFileSize: Integer;
+    procedure LoadLanguage;
   public
-   ImageSaved : boolean;
-   procedure LoadLanguage;
     { Public declarations }
+    ImageSaved: Boolean;
   end;
 
 procedure DoDesteno(InitialFileName: string);
@@ -305,13 +305,13 @@ begin
   SavePictureDialog := DBSavePictureDialog.Create;
 
   SavePictureDialog.Filter:='PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp';
-  SavePictureDialog.FilterIndex:=1;
-  s:=GetDirectory(PictureFileName)+GetFileNameWithoutExt(S)+'.png';
+  SavePictureDialog.FilterIndex := 1;
+    S := ExtractFilePath(PictureFileName) + GetFileNameWithoutExt(S) + '.png';
 
-  SavePictureDialog.SetFileName(s);
-  if SavePictureDialog.Execute then
-  begin
-   if SavePictureDialog.GetFilterIndex=0 then
+    SavePictureDialog.SetFileName(S);
+    if SavePictureDialog.Execute then
+    begin
+      if SavePictureDialog.GetFilterIndex=0 then
    begin
     if GetExt(SavePictureDialog.FileName)<>'BMP' then
     SavePictureDialog.SetFileName(SavePictureDialog.FileName+'.bmp');
@@ -440,29 +440,32 @@ begin
   MaxFileSize := 0;
   NormalFileSize := 0;
   LoadLanguage;
-  DBkernel.RegisterForm(Self);
 end;
 
 procedure TFormSteno.LoadLanguage;
 begin
-  DBKernel.RegisterForm(Self);
-  Caption := TEXT_MES_STENOGRAPHIA;
-  Label1.Caption:=Format(TEXT_MES_MAX_FILE_SIZE_F, [SizeInTextA(0)]);
-  Label2.Caption := Format(TEXT_MES_FILE_NAME_F, ['']);
-  Label3.Caption := Format(TEXT_MES_NORMAL_FILE_SIZE_F, [SizeInTextA(0)]);
-  Label7.Caption := Format(TEXT_MES_GOOD_FILE_SIZE_F, [SizeInTextA(0)]);
-  Label4.Caption := TEXT_MES_INFORMATION_FILE_NAME;
-  Label5.Caption := Format(TEXT_MES_FILE_SIZE_F, [SizeInTextA(0)]);
-  Label6.Caption := TEXT_MES_STENO_USE_FILTER;
-  ComboBox1.Items[0] := TEXT_MES_STENO_USE_FILTER_MAX;
-  ComboBox1.Items[1] := TEXT_MES_STENO_USE_FILTER_NORMAL;
-  ComboBox1.Items[2] := TEXT_MES_STENO_USE_FILTER_GOOD;
-  Button1.Caption := TEXT_MES_OPEN_IMAGE;
-  Button2.Caption := TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
-  Button3.Caption := TEXT_MES_DESTENO_IMAGE;
-  LoadFromFile1.Caption := TEXT_MES_OPEN_IMAGE;
-  AddInfo1.Caption := TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
-  ComboBox1.ItemIndex := 1;
+  BeginTranslate;
+  try
+    Caption := TEXT_MES_STENOGRAPHIA;
+    Label1.Caption:=Format(TEXT_MES_MAX_FILE_SIZE_F, [SizeInTextA(0)]);
+    Label2.Caption := Format(TEXT_MES_FILE_NAME_F, ['']);
+    Label3.Caption := Format(TEXT_MES_NORMAL_FILE_SIZE_F, [SizeInTextA(0)]);
+    Label7.Caption := Format(TEXT_MES_GOOD_FILE_SIZE_F, [SizeInTextA(0)]);
+    Label4.Caption := TEXT_MES_INFORMATION_FILE_NAME;
+    Label5.Caption := Format(TEXT_MES_FILE_SIZE_F, [SizeInTextA(0)]);
+    Label6.Caption := TEXT_MES_STENO_USE_FILTER;
+    ComboBox1.Items[0] := TEXT_MES_STENO_USE_FILTER_MAX;
+    ComboBox1.Items[1] := TEXT_MES_STENO_USE_FILTER_NORMAL;
+    ComboBox1.Items[2] := TEXT_MES_STENO_USE_FILTER_GOOD;
+    Button1.Caption := TEXT_MES_OPEN_IMAGE;
+    Button2.Caption := TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
+    Button3.Caption := TEXT_MES_DESTENO_IMAGE;
+    LoadFromFile1.Caption := TEXT_MES_OPEN_IMAGE;
+    AddInfo1.Caption := TEXT_MES_ADD_INFO_AND_SAVE_IMAGE;
+    ComboBox1.ItemIndex := 1;
+  finally
+    EndTranslate;
+  end;
 end;
 
 function TFormSteno.GetMaxFileSize: Integer;
@@ -479,11 +482,6 @@ begin
       Result := GoodFileSize;
     end;
   end;
-end;
-
-procedure TFormSteno.FormDestroy(Sender: TObject);
-begin
-  DBKernel.UnRegisterForm(self);
 end;
 
 end.

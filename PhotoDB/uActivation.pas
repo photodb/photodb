@@ -4,8 +4,8 @@ interface
 
 uses
   UnitINI, Searching, dolphin_db, UnitDBKernel, Windows, Messages, SysUtils,
-  Variants, Classes, Graphics, Controls, Forms, uVistaFuncs,
-  Dialogs, StdCtrls, jpeg, ExtCtrls;
+  Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
+  Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime;
 
 type
   TActivateForm = class(TForm)

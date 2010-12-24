@@ -7,7 +7,7 @@ uses
   SysUtils, DB, GraphicCrypt, Dialogs, DateUtils, CommonDBSupport,
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
-  CCR.Exif;
+  CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -567,7 +567,7 @@ begin
   try
     EventInfo.NewName := NameParam;
     EventInfo.ID := IDParam;
-    DBKernel.DoIDEvent(Self, IDParam, [EventID_Param_Name], EventInfo);
+    DBKernel.DoIDEvent(FSender.Form, IDParam, [EventID_Param_Name], EventInfo);
   except
     on E: Exception do
       EventLog(':UpdateDBThread::DoEventReplaceSynch() throw exception: ' + E.message);
@@ -584,7 +584,7 @@ var
   EventInfo: TEventValues;
 begin
   EventInfo.name := FInfo[FileNumber].FileName;
-  DBKernel.DoIDEvent(Self, -1, [EventID_Param_Add_Crypt_WithoutPass], EventInfo);
+  DBKernel.DoIDEvent(FSender.Form, -1, [EventID_Param_Add_Crypt_WithoutPass], EventInfo);
   CryptFileWithoutPassChecked := True;
 end;
 
@@ -614,7 +614,7 @@ begin
   EventInfo.JPEGImage := Res.Jpeg;
   EventInfo.Crypt := Res.Crypt;
   EventInfo.Include := True;
-  DBKernel.DoIDEvent(Self, LastInseredID, [SetNewIDFileData], EventInfo);
+  DBKernel.DoIDEvent(FSender.Form, LastInseredID, [SetNewIDFileData], EventInfo);
   if Res.Jpeg <> nil then
     Res.Jpeg.Free;
   ResArray[FileNumber].Jpeg := nil;
@@ -641,7 +641,7 @@ begin
   EventInfo.JPEGImage := Res.Jpeg;
   EventInfo.Crypt := Res.Crypt;
   EventInfo.Include := True;
-  DBKernel.DoIDEvent(Self, LastInseredID, [EventID_FileProcessed], EventInfo);
+  DBKernel.DoIDEvent(FSender.Form, LastInseredID, [EventID_FileProcessed], EventInfo);
 end;
 
 { DirectorySizeThread }

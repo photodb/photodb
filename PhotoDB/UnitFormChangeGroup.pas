@@ -7,7 +7,8 @@ uses
   Graphics, Controls, Forms, Math, UnitGroupsTools, uVistaFuncs,
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
   ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon,
-  uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo;
+  uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo,
+  uShellIntegration;
 
 type
   TFormChangeGroup = class(TDBForm)
@@ -236,9 +237,7 @@ var
 begin
   Ts := TStringList.Create;
   Ts.Clear;
-  Directory := ProgramDir;
-  FormatDir(Directory);
-  Directory := Directory + PlugInImagesFolder;
+  Directory := IncludeTrailingBackslash(ProgramDir) + PlugInImagesFolder;
   Found := FindFirst(Directory + '*.jpgc', FaAnyFile, SearchRec);
   while Found = 0 do
   begin

@@ -5,10 +5,11 @@ interface
 uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   Rating, ComCtrls, StdCtrls, ExtCtrls, Forms, Windows, Classes,
   Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
-  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uVistaFuncs, uLogger,
+  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uLogger, uActivationUtils,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
-  uAppUtils, uTranslate;
+  uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,
+  uRuntime, uDBBaseTypes;
 
 type
   TCharObject = class (TObject)
@@ -20,134 +21,6 @@ type
     destructor Destroy; override;
     property Char_: Char read FChar write SetChar;
   end;
-
- const
-  DB_VER_1_8 = 1;
-  DB_VER_1_9 = 2;
-  DB_VER_2_0 = 3;
-  DB_VER_2_1 = 4;
-  DB_VER_2_2 = 5;
-  DB_VER_2_3 = 6;
-
-DB_IC_SHELL          = 0;
-DB_IC_SLIDE_SHOW     = 1;
-DB_IC_REFRESH_THUM   = 2;
-DB_IC_RATING_STAR    = 3;
-DB_IC_DELETE_INFO    = 4;
-DB_IC_DELETE_FILE    = 5;
-DB_IC_COPY_ITEM      = 6;
-DB_IC_PROPERTIES     = 7;
-DB_IC_PRIVATE        = 8;
-DB_IC_COMMON         = 9;
-DB_IC_SEARCH         = 10;
-DB_IC_EXIT           = 11;
-DB_IC_FAVORITE       = 12;
-DB_IC_DESKTOP        = 13;
-DB_IC_RELOAD         = 14;
-DB_IC_NOTES          = 15;
-DB_IC_NOTEPAD        = 16;
-DB_IC_RATING_1       = 17;
-DB_IC_RATING_2       = 18;
-DB_IC_RATING_3       = 19;
-DB_IC_RATING_4       = 20;
-DB_IC_RATING_5       = 21;
-DB_IC_NEXT           = 22;
-DB_IC_PREVIOUS       = 23;
-DB_IC_NEW            = 24;
-DB_IC_ROTETED_0      = 25;
-DB_IC_ROTETED_90     = 26;
-DB_IC_ROTETED_180    = 27;
-DB_IC_ROTETED_270    = 28;
-DB_IC_PLAY           = 29;
-DB_IC_PAUSE          = 30;
-DB_IC_COPY           = 31;
-DB_IC_PASTE          = 32;
-DB_IC_LOADFROMFILE   = 33;
-DB_IC_SAVETOFILE     = 34;
-DB_IC_PANEL          = 35;
-DB_IC_SELECTALL      = 36;
-DB_IC_OPTIONS        = 37;
-DB_IC_ADMINTOOLS     = 38;
-DB_IC_ADDTODB        = 39;
-DB_IC_HELP           = 40;
-DB_IC_RENAME         = 41;
-DB_IC_EXPLORER       = 42;
-DB_IC_SENDTO         = 44; //!!!
-DB_IC_SEND           = 43; //!!!
-DB_IC_NEW_SHELL      = 45;
-DB_IC_NEW_DIRECTORY  = 46;
-DB_IC_SHELL_PREVIOUS = 47;
-DB_IC_SHELL_NEXT     = 48;
-DB_IC_SHELL_UP       = 49;
-DB_IC_KEY            = 50;
-DB_IC_FOLDER         = 51;
-DB_IC_ADD_FOLDER     = 52;
-DB_IC_BOX            = 53;
-DB_IC_DIRECTORY      = 54;
-DB_IC_TH_FOLDER      = 55;
-DB_IC_CUT            = 56;
-DB_IC_NEWWINDOW      = 57;
-DB_IC_ADD_SINGLE_FILE= 58;
-DB_IC_MANY_FILES     = 59;
-DB_IC_MY_COMPUTER    = 60;
-DB_IC_EXPLORER_PANEL = 61;
-DB_IC_INFO_PANEL     = 62;
-DB_IC_SAVE_AS_TABLE  = 63;
-DB_IC_EDIT_DATE      = 64;
-DB_IC_GROUPS         = 65;
-DB_IC_WALLPAPER      = 66;
-DB_IC_NETWORK        = 67;
-DB_IC_WORKGROUP      = 68;
-DB_IC_COMPUTER       = 69;
-DB_IC_SHARE          = 70;
-DB_IC_ZOOMIN         = 71;
-DB_IC_ZOOMOUT        = 72;
-DB_IC_REALSIZE       = 73;
-DB_IC_BESTSIZE       = 74;
-DB_IC_E_MAIL         = 75;
-DB_IC_CRYPTIMAGE     = 76;
-DB_IC_DECRYPTIMAGE   = 77;
-DB_IC_PASSWORD       = 78;
-DB_IC_EXEFILE        = 79;
-DB_IC_SIMPLEFILE     = 80;
-DB_IC_CONVERT        = 81;
-DB_IC_RESIZE         = 82;
-DB_IC_REFRESH_ID     = 83;
-DB_IC_DUBLICAT       = 84;
-DB_IC_DEL_DUBLICAT   = 85;
-DB_IC_UPDATING       = 86;
-DB_IC_DO_SLIDE_SHOW  = 87;
-DB_IC_MY_DOCUMENTS   = 88;
-DB_IC_MY_PICTURES    = 89;
-DB_IC_DESKTOPLINK    = 90;
-DB_IC_IMEDITOR       = 91;
-DB_IC_OTHER_TOOLS    = 92;
-DB_IC_EXPORT_IMAGES  = 93;
-DB_IC_PRINTER        = 94;
-DB_IC_EXIF           = 95;
-DB_IC_GET_USB        = 96;
-DB_IC_USB            = 97;
-DB_IC_TEXT_FILE      = 98;
-DB_IC_DOWN           = 99;
-DB_IC_UP             = 100;
-DB_IC_CD_ROM         = 101;
-DB_IC_TREE           = 102;
-DB_IC_CANCEL_ACTION  = 103;
-DB_IC__DB            = 104;
-DB_IC__MDB           = 105;
-DB_IC_SORT           = 106;
-DB_IC_FILTER         = 107;
-DB_IC_CLOCK          = 108;
-DB_IC_ATYPE          = 109;
-DB_IC_MAIN           = 110;
-DB_IC_APPLY_ACTION   = 111;
-DB_IC_RELOADING      = 112;
-DB_IC_STENO          = 113;
-DB_IC_DESTENO        = 114;
-DB_IC_SPLIT          = 115;
-DB_IC_CD_EXPORT      = 116;
-DB_IC_CD_MAPPING     = 117;
-DB_IC_CD_IMAGE       = 118;
 
 type DBChangesIDEvent = Procedure(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues)  of object;
 
@@ -179,7 +52,8 @@ type
    Print : Boolean;
   end;
 
-type TDBEventsIDArray = array of DBEventsIDArray;
+type
+  TDBEventsIDArray = array of DBEventsIDArray;
 
 const
   IconsCount = 119;
@@ -219,7 +93,7 @@ type TDBKernel = class(TObject)
     procedure RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
     procedure UnRegisterChangesIDBySender(Sender: TObject);
     procedure RegisterChangesIDbyID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
-    procedure DoIDEvent(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure DoIDEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
     function TestDB(DBName_: string; OpenInThread: Boolean = False): Boolean;
     function ReadProperty(Key, name: string): string;
     procedure DeleteKey(Key: string);
@@ -249,8 +123,8 @@ type TDBKernel = class(TObject)
     function ReadActivateKey: string;
     function GetDemoMode: Boolean;
     function ReadRegName: string;
-    procedure RegisterForm(Form: TForm);
-    procedure UnRegisterForm(Form: TForm);
+//    procedure RegisterForm(Form: TForm);
+//    procedure UnRegisterForm(Form: TForm);
     function GetTemporaryFolder: string;
     function ApplicationCode: string;
     procedure SaveApplicationCode(Key: string);
@@ -286,14 +160,16 @@ type TDBKernel = class(TObject)
     property SortGroupsByName : Boolean read GetSortGroupsByName;
   end;
 
-  var Icons : TDbKernelArrayIcons;
+var
+  Icons: TDbKernelArrayIcons;
+  DBKernel: TDBKernel = nil;
 
-function inttochar(int : Integer):char;
-function chartoint(ch : char):Integer;
+function Inttochar(Int: Integer): Char;
+function Chartoint(Ch: Char): Integer;
 
 implementation
 
-uses Dolphin_db, UnitCrypting, CommonDBSupport,
+uses {Dolphin_db, }UnitCrypting, CommonDBSupport,
   UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
   UnitBackUpTableInCMD, UnitCDMappingSupport;
 
@@ -301,7 +177,7 @@ uses Dolphin_db, UnitCrypting, CommonDBSupport,
 
 constructor TDBKernel.Create;
 var
-  i : integer;
+  I : integer;
 begin
   inherited;
   FDBs := nil;
@@ -309,8 +185,8 @@ begin
   FForms := TList.Create;
   FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
-  for i := 1 to 100 do
-    Chars[i] := nil;
+  for I := 1 to 100 do
+    Chars[I] := nil;
   FPasswodsInSession := TStringList.create;
   FINIPasswods := nil;
   FApplicationKey := '';
@@ -321,7 +197,7 @@ var
   f : file;
 begin
  result:=0;
- CreateDirA(GetDirectory(FileName));
+ CreateDirA(ExtractFileDir(FileName));
  try
   if FileExists(FileName) then
   begin
@@ -366,7 +242,7 @@ begin
   inherited;
 end;
 
-procedure TDBKernel.DoIDEvent(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
+procedure TDBKernel.DoIDEvent(Sender : TDBForm; ID : integer; params : TEventFields; Value : TEventValues);
 var
   i:integer;
   fXevents : TDBEventsIDArray;
@@ -966,112 +842,104 @@ begin
  Reg.free;
 end;
 
-function TDBKernel.ReadActivateKey: String;
+function TDBKernel.ReadActivateKey: string;
 var
-  Reg : TBDRegistry;
-  Key, Name : String;
+  Reg: TBDRegistry;
+  Key, Name: string;
 begin
- if FApplicationKey<>'' then exit;
- if FolderView then exit;
- Reg:=TBDRegistry.Create(REGISTRY_CLASSES,true);
- if PortableWork then
- begin
-  Key:='\CLSID';
-  Name:='Key';
- end else
- begin
-  Key:='\CLSID\'+ActivationID;
-  Name:='DefaultHandle';
- end;
- try
-  Reg.OpenKey(Key,true);
-  Result:=Reg.ReadString(Name);
-  SaveApplicationCode(Result);
-  except
- end;
- Reg.CloseKey;
- Reg.Free;
+  if FApplicationKey <> '' then
+    Exit;
+  if FolderView then
+    Exit;
+  Reg := TBDRegistry.Create(REGISTRY_CLASSES, True);
+  try
+    if PortableWork then
+    begin
+      Key := '\CLSID';
+      Name := 'Key';
+    end else
+    begin
+      Key := '\CLSID\' + ActivationID;
+      Name := 'DefaultHandle';
+    end;
+    try
+      Reg.OpenKey(Key, True);
+      Result := Reg.ReadString(Name);
+      SaveApplicationCode(Result);
+    except
+    end;
+    Reg.CloseKey;
+  finally
+    F(Reg);
+  end;
 end;
 
-function chartoint(ch : char):Integer;
+function Chartoint(Ch: Char): Integer;
 begin
- Result:=HexToIntDef(ch,0);
+  Result := HexToIntDef(Ch, 0);
 end;
 
-function inttochar(int : Integer):char;
+function Inttochar(Int: Integer): Char;
 begin
- result:=IntToHex(int,1)[1];
+  Result := IntToHex(Int, 1)[1];
 end;
 
 function TDBKernel.GetDemoMode: Boolean;
 var
-  i, Sum : integer;
-  Str, ActCode, s: string;
+  I, Sum: Integer;
+  Str, ActCode, S: string;
 begin
- Result:=false;
- if FolderView then exit;
- S:=ApplicationCode;
- ActCode:=ReadActivateKey;
- if length(ActCode)<16 then ActCode:='0000000000000000';
- for i:=1 to 8 do
- begin
-  Str:=inttohex(abs(Round(cos(ord(s[i])+100*i+0.34)*16)),8);
-  If ActCode[(i-1)*2+1]<>Str[8] then
+  Result := False;
+  if FolderView then
+    Exit;
+  S := ApplicationCode;
+  ActCode := ReadActivateKey;
+  if Length(ActCode) < 16 then
+    ActCode := '0000000000000000';
+  for I := 1 to 8 do
   begin
-   Result:=True;
-   exit;
+    Str := Inttohex(Abs(Round(Cos(Ord(S[I]) + 100 * I + 0.34) * 16)), 8);
+    if ActCode[(I - 1) * 2 + 1] <> Str[8] then
+    begin
+      Result := True;
+      Exit;
+    end;
   end;
- end;
- Sum:=0;
- for i:=1 to 15 do
- Sum:=Sum+chartoint(ActCode[i]);
- if inttochar(Sum mod 15)<>ActCode[16] then
- begin
-  Result:=True;
-  exit;
- end;
+  Sum := 0;
+  for I := 1 to 15 do
+    Sum := Sum + Chartoint(ActCode[I]);
+  if Inttochar(Sum mod 15) <> ActCode[16] then
+  begin
+    Result := True;
+    Exit;
+  end;
 end;
 
 function TDBKernel.ReadRegName: string;
 var
-  Reg : TBDRegistry;
-  Key : String;
+  Reg: TBDRegistry;
+  Key: string;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CLASSES);
- if PortableWork then
- begin
-  Key:='\CLSID';
- end else
- begin
-  Key:='\CLSID\'+ActivationID;
- end;
- try
-  Reg.OpenKey(Key,true);
-  Result:=Reg.ReadString('UserName');
-  except
- end;
- Reg.free;
+  Reg := TBDRegistry.Create(REGISTRY_CLASSES);
+  try
+    if PortableWork then
+      Key := '\CLSID'
+    else
+      Key := '\CLSID\' + ActivationID;
+
+    try
+      Reg.OpenKey(Key, True);
+      Result := Reg.ReadString('UserName');
+    except
+    end;
+  finally
+    F(Reg);
+  end;
 end;
 
-procedure TDBKernel.RegisterForm(Form: TForm);
+function TDBKernel.GetTemporaryFolder: string;
 begin
-  if FForms.IndexOf(Form) > -1 then
-    Exit;
-
-  FForms.Add(Form);
-
-  if IsWindowsVista then
-    SetVistaFonts(Form);
-end;
-
-procedure TDBKernel.UnRegisterForm(Form: TForm);
-begin
-  FForms.Remove(Form);
-end;
-
-function TDBKernel.GetTemporaryFolder: String;
-begin
- Result:=GetDirectory(Application.ExeName);
+  Result := ExtractFileDir(Application.ExeName);
 end;
 
 function TDBKernel.ApplicationCode: String;
@@ -1554,7 +1422,7 @@ begin
   if IconDllInstance = 0 then
   begin
     EventLog('Icons IS missing -> exit');
-    MessageBoxDB(GetActiveFormHandle, TA('Icons.dll is missing!'), TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    MessageBoxDB(0, TA('Icons.dll is missing!'), TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
   end;
 end;
 
@@ -1803,9 +1671,7 @@ initialization
 
 finalization
 
-if DBKernel <> nil then
-begin
   FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(Dbname));
-end;
+  F(DBKernel);
 
 end.

@@ -5,10 +5,11 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ImgList, DB, ExtCtrls, JPEG, CommCtrl,
-  Dolphin_DB, UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
+  UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
   AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
   UnitDBCommon, UnitDBCommonGraphics, uDBDrawing, uFileUtils,
-  uDBPopupMenuInfo, uMemory, uDBForm;
+  uDBPopupMenuInfo, uMemory, uDBForm, uGraphicUtils, uDBUtils,
+  Dolphin_DB, uConstants;
 
 type
   TItemData = record
@@ -499,7 +500,7 @@ begin
   Info := GetMenuInfoByID(FID);
   try
     Info.AttrExists := False;
-    TDBPopupMenu.Instance.Execute(Image1.ClientToScreen(MousePos).X, Image1.ClientToScreen(MousePos).Y, Info);
+    TDBPopupMenu.Instance.Execute(Self, Image1.ClientToScreen(MousePos).X, Image1.ClientToScreen(MousePos).Y, Info);
   finally
     F(Info);
   end;
@@ -542,7 +543,7 @@ begin
       Info := GetMenuInfoByID(TItemData(Node.Data^).ID);
       try
         Info.AttrExists := False;
-        TDBPopupMenu.Instance.Execute(TreeView1.ClientToScreen(MousePos).X, TreeView1.ClientToScreen(MousePos).Y, Info);
+        TDBPopupMenu.Instance.Execute(Self, TreeView1.ClientToScreen(MousePos).X, TreeView1.ClientToScreen(MousePos).Y, Info);
       finally
         F(Info);
       end;

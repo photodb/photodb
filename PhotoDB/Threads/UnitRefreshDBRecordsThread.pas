@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, uDBPopupMenuInfo, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitDBDeclare, SysUtils, uLogger, uMemory, Dolphin_DB, ActiveX;
+  UnitDBDeclare, SysUtils, uLogger, uMemory, uDBUtils, ActiveX, uDBForm;
 
 type
   TRefreshIDRecordThreadOptions = record
@@ -21,7 +21,7 @@ type
     Count: Integer;
     IntParam: Integer;
     StrParam: string;
-    DBEvent_Sender: TObject;
+    DBEvent_Sender: TDBForm;
     DBEvent_ID: Integer;
     DBEvent_Params: TEventFields;
     DBEvent_Value: TEventValues;
@@ -37,7 +37,7 @@ type
     procedure SetProgressPositionSynch;
     procedure DoDBkernelEvent;
     procedure DoDBkernelEventRefreshList;
-    procedure OnDBKernelEventProcedure(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure OnDBKernelEventProcedure(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure OnDBKernelEventProcedureSunch;
   end;
 
@@ -160,17 +160,17 @@ var
 begin
   EventInfo.ID := IntParam;
   EventInfo.Image := nil;
-  DBKernel.DoIDEvent(Self, IntParam, [EventID_Param_Image], EventInfo);
+  DBKernel.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Param_Image], EventInfo);
 end;
 
 procedure TRefreshDBRecordsThread.DoDBkernelEventRefreshList;
 var
   EventInfo: TEventValues;
 begin
-  DBKernel.DoIDEvent(Self, IntParam, [EventID_Repaint_ImageList], EventInfo);
+  DBKernel.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Repaint_ImageList], EventInfo);
 end;
 
-procedure TRefreshDBRecordsThread.OnDBKernelEventProcedure(Sender: TObject; ID: Integer; Params: TEventFields;
+procedure TRefreshDBRecordsThread.OnDBKernelEventProcedure(Sender: TDBForm; ID: Integer; Params: TEventFields;
   Value: TEventValues);
 begin
   DBEvent_Sender := Sender;

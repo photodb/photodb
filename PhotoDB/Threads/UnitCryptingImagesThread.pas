@@ -5,7 +5,7 @@ interface
 uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
   UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB,
-  UnitDBDeclare, uGOM;
+  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm;
 
 type
   TCryptImageThreadOptions = record
@@ -38,8 +38,9 @@ type
     FE: Boolean;
     Position: Integer;
     CryptResult: Integer;
+    FSender : TDBForm;
   public
-    constructor Create(Options: TCryptImageThreadOptions);
+    constructor Create(Sender : TDBForm; Options: TCryptImageThreadOptions);
   protected
     procedure Execute; override;
     procedure InitializeProgress;
@@ -63,11 +64,12 @@ uses ProgressActionUnit, UnitPasswordForm;
 
 { TCryptingImagesThread }
 
-constructor TCryptingImagesThread.Create(Options: TCryptImageThreadOptions);
+constructor TCryptingImagesThread.Create(Sender : TDBForm; Options: TCryptImageThreadOptions);
 var
   I: Integer;
 begin
   inherited Create(False);
+  FSender := Sender;
   Table := nil;
   FOptions := Options;
   for I := 0 to Length(Options.Files) - 1 do
@@ -92,11 +94,11 @@ begin
     EventInfo.Crypt := Result <> CRYPT_RESULT_OK;
 
   if IntParam <> 0 then
-    DBKernel.DoIDEvent(Self, IntParam, [EventID_Param_Crypt], EventInfo)
+    DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt], EventInfo)
   else
   begin
     EventInfo.NewName := StrParam;
-    DBKernel.DoIDEvent(Self, IntParam, [EventID_Param_Name], EventInfo)
+    DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Name], EventInfo)
   end;
 end;
 
@@ -104,7 +106,7 @@ procedure TCryptingImagesThread.DoDBkernelEventRefreshList;
 var
   EventInfo : TEventValues;
 begin
-  DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
+  DBKernel.DoIDEvent(FSender, 0, [EventID_Repaint_ImageList], EventInfo);
 end;
 
 procedure TCryptingImagesThread.Execute;
@@ -143,7 +145,7 @@ begin
       begin
         // Crypting images
         try
-          Result := CryptImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
+          Result := CryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
             FOptions.CryptOptions, False);
         except
         end;

@@ -4,7 +4,7 @@ interface
 
 uses
   Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, SaveWindowPos, uConstants;
+  Dialogs, StdCtrls, DmProgress, SaveWindowPos, uConstants, UnitDBKernel;
 
 type
   TDBCleaningForm = class(TForm)
@@ -49,32 +49,31 @@ uses UnitCleanUpThread, Language;
 
 procedure TDBCleaningForm.FormCreate(Sender: TObject);
 begin
- SaveWindowPos1.Key:=RegRoot+'Cleaning';
- SaveWindowPos1.SetPosition;
- CheckBox1.Checked:=DBKernel.ReadBool('Options','DeleteNotValidRecords',True);
- CheckBox2.Checked:=DBKernel.ReadBool('Options','VerifyDublicates',False);
- CheckBox3.Checked:=DBKernel.ReadBool('Options','MarkDeletedFiles',True);
- CheckBox4.Checked:=DBKernel.ReadBool('Options','AllowAutoCleaning',false);
- CheckBox5.Checked:=DBKernel.ReadBool('Options','AllowFastCleaning',False);
- CheckBox6.Checked:=DBKernel.ReadBool('Options','FixDateAndTime',True);
- DBKernel.RegisterForm(DBCleaningForm);
- Button3.Enabled:=not UnitCleanUpThread.Active;
- Button4.Enabled:=UnitCleanUpThread.Active;
- DmProgress1.MaxValue:=UnitCleanUpThread.Share_MaxPosition;
- DmProgress1.Position:=UnitCleanUpThread.Share_Position;
- LoadLanguage;
+  SaveWindowPos1.Key := RegRoot + 'Cleaning';
+  SaveWindowPos1.SetPosition;
+  CheckBox1.Checked := DBKernel.ReadBool('Options', 'DeleteNotValidRecords', True);
+  CheckBox2.Checked := DBKernel.ReadBool('Options', 'VerifyDublicates', False);
+  CheckBox3.Checked := DBKernel.ReadBool('Options', 'MarkDeletedFiles', True);
+  CheckBox4.Checked := DBKernel.ReadBool('Options', 'AllowAutoCleaning', False);
+  CheckBox5.Checked := DBKernel.ReadBool('Options', 'AllowFastCleaning', False);
+  CheckBox6.Checked := DBKernel.ReadBool('Options', 'FixDateAndTime', True);
+//  DBKernel.RegisterForm(DBCleaningForm);
+  Button3.Enabled := not UnitCleanUpThread.Active;
+  Button4.Enabled := UnitCleanUpThread.Active;
+  DmProgress1.MaxValue := UnitCleanUpThread.Share_MaxPosition;
+  DmProgress1.Position := UnitCleanUpThread.Share_Position;
+  LoadLanguage;
 end;
 
 procedure TDBCleaningForm.FormDestroy(Sender: TObject);
 begin
- SaveWindowPos1.SavePosition;
- DBKernel.UnRegisterForm(Self);
+  SaveWindowPos1.SavePosition;
+//  DBKernel.UnRegisterForm(Self);
 end;
 
-procedure TDBCleaningForm.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TDBCleaningForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- Hide;
+  Hide;
 end;
 
 procedure TDBCleaningForm.Button2Click(Sender: TObject);

@@ -3,10 +3,11 @@ unit UnitViewerThread;
 interface
 
 uses
-  Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, SysUtils, Forms,
+  Windows, Classes, Graphics, GraphicCrypt, SysUtils, Forms,
   GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG,
-  uMemory, UnitDBDeclare, pngimage, uPNGUtils;
+  uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel,
+  uGraphicUtils, uDBUtils;
 
 type
   TViewerThread = class(TThread)
@@ -158,7 +159,6 @@ begin
    if Graphic is TiffImageUnit.TTiffGraphic then
    begin
     fPages:=(Graphic as TiffImageUnit.TTiffGraphic).Pages;
-    //TODO: (Graphic as TiffImageUnit.TTiffGraphic).GetPagesCount()
    end;
    if Graphic is TPNGImage then
    begin
@@ -200,30 +200,35 @@ end;
 
 procedure TViewerThread.GetPassword;
 begin
- PassWord:='';
- if ValidCryptGraphicFile(FFileName) then
- begin
-  Crypted := True;
-  PassWord:=DBKernel.FindPasswordForCryptImageFile(FFileName);
-  if PassWord='' then
+  PassWord := '';
+  if ValidCryptGraphicFile(FFileName) then
   begin
-   if not FIsForward then
-   Synchronize(GetPasswordSynch) else
-   begin
-    Repeat
-     if Viewer=nil then break;
-     if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
-     if not Viewer.ForwardThreadExists then break;
-     if Viewer.ForwardThreadNeeds then
-     begin
-      Synchronize(GetPasswordSynch);
-      exit;
-     end;
-     Sleep(10);
-    until false;
-   end;
-  end;
- end else Crypted := False;
+    Crypted := True;
+    PassWord := DBKernel.FindPasswordForCryptImageFile(FFileName);
+    if PassWord = '' then
+    begin
+      if not FIsForward then
+        Synchronize(GetPasswordSynch)
+      else
+      begin
+        repeat
+          if Viewer = nil then
+            Break;
+          if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+            Break;
+          if not Viewer.ForwardThreadExists then
+            Break;
+          if Viewer.ForwardThreadNeeds then
+          begin
+            Synchronize(GetPasswordSynch);
+            Exit;
+          end;
+          Sleep(10);
+        until False;
+      end;
+    end;
+  end else
+    Crypted := False;
 end;
 
 procedure TViewerThread.GetPasswordSynch;
@@ -371,7 +376,7 @@ begin
  try
   Query.Active:=false;
   SetSQL(Query,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
-  SetStrParam(Query,0,delnakl(AnsiLowerCase(FFileName)));
+  SetStrParam(Query,0,AnsiLowerCase(FFileName));
   Query.active:=true;
   if Query.RecordCount<>0 then
   begin

@@ -7,21 +7,15 @@ uses
   Dialogs, WebLink, StdCtrls, ExtCtrls, ComCtrls, ExtDlgs, Jpeg, GIFImage, Math,
   DropSource, DropTarget, ToolsUnit, CropToolUnit, SaveWindowPos,
   ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd,
-  EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus, Language,
+  EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus,
   CustomSelectTool, TextToolUnit, BrushToolUnit, InsertImageToolUnit,
   GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm, Searching, UnitJPEGOptions,
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
   UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage, TiffImageUnit,
   RAWImage, DragDrop, DragDropFile, UVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
   UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, ImageConverting,
-  CCR.Exif, uDBForm;
-
-type
-  TTool = (ToolNone, ToolPen, ToolCrop, ToolRotate, ToolResize, ToolEffects, ToolColor, ToolRedEye, ToolText,
-    ToolBrush, ToolInsertImage);
-
-type
-  TVBrushType = array of TPoint;
+  CCR.Exif, uEditorTypes, uShellIntegration, uRuntime, uSysUtils,
+  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants;
 
 type
   TWindowEnableState = record
@@ -32,7 +26,7 @@ type
   TWindowEnableStates = array of TWindowEnableState;
 
 type
-  TImageEditor = class(TDBForm)
+  TImageEditor = class(TImageEditorForm)
     ToolsPanel: TPanel;
     ButtomPanel: TPanel;
     ScrollBarH: TScrollBar;
@@ -124,7 +118,6 @@ type
     procedure CancelTemporaryImage(Destroy : Boolean);
     procedure HistoryChanged(Sender: TObject; Action : THistoryAction);
     procedure MakeCaption;
-    function GetZoom : Extended;
     procedure ResizeLinkClick(Sender: TObject);
     procedure UndoLinkClick(Sender: TObject);
     procedure RedoLinkClick(Sender: TObject);
@@ -166,7 +159,7 @@ type
     procedure SaveImageFile(FileName : string; AfterEnd : boolean = false);
   private
     { Private declarations }
-   EXIFSection: TExifData;
+    EXIFSection: TExifData;
     SaveAfterEndActions: Boolean;
     SaveAfterEndActionsFileName: string;
     ForseSave: Boolean;
@@ -196,14 +189,12 @@ type
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID : string; override;
+    function GetZoom : Extended; override;
   public
     { Public declarations }
     FScript: string;
     FScriptProc: string;
     ActionForm: TForm;
-    VBrush: TVBrushType;
-    VirtualBrushCursor: Boolean;
-    Transparency: Extended;
     FStatusProgress: TProgressBar;
     WindowID: TGUID;
     ToolClass: TToolsPanelClass;
@@ -244,9 +235,6 @@ const
 
   ImageEditorProductName = 'DBImage Editor v1.3';
 
-function NormalizeRect(R : TRect) : TRect;
-procedure ClearBrush(var Brush : TVBrushType);
-procedure MakeRadialBrush(var Brush : TVBrushType; Size : Integer);
 
 implementation
 
@@ -311,36 +299,7 @@ begin
   end;
 end;
 
-procedure ClearBrush(var Brush : TVBrushType);
-begin
-  SetLength(Brush, 0);
-end;
-
-procedure MakeRadialBrush(var Brush : TVBrushType; Size : Integer);
-var
-  I: Integer;
-  Count: Integer;
-  X: Extended;
-begin
-  Count := Round(Size * 4 / Sqrt(2));
-  SetLength(Brush, Count);
-  for I := 0 to Length(Brush) - 1 do
-  begin
-    X := 2 * I * Pi / Count;
-    Brush[I].X := Round(Size * Cos(X));
-    Brush[I].Y := Round(Size * Sin(X));
-  end;
-end;
-
-function NormalizeRect(R: TRect): TRect;
-begin
-  Result.Left := Min(R.Left, R.Right);
-  Result.Right := Max(R.Left, R.Right);
-  Result.Top := Min(R.Top, R.Bottom);
-  Result.Bottom := Max(R.Top, R.Bottom);
-end;
-
-function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
+{function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
 var
   Findleft: Integer;
   I: Integer;
@@ -355,7 +314,7 @@ begin
   Result.Left := Findleft;
   Result.Width := Statusbar.Panels[index].Width - 4;
   Result.Height := Statusbar.Height - 2;
-end;
+end;}
 
 procedure TImageEditor.FormCreate(Sender: TObject);
 begin
@@ -942,7 +901,7 @@ begin
 
   if ImageHistory.CanBack then
   begin
-    Res := MessageBoxDB(Handle, TEXT_MES_IMAGE_CHANGED_SAVE_Q, L('Warning'), TD_BUTTON_YESNO, TD_ICON_WARNING);
+    Res := MessageBoxDB(Handle, L('Image was changed, save changes?'), L('Warning'), TD_BUTTON_YESNO, TD_ICON_WARNING);
     if Res = ID_YES then
     begin
       SaveLinkClick(Self);
@@ -2247,7 +2206,7 @@ begin
                 end;
                 FSaved := True;
               except
-                MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_TO_FILE_F, [FileName])), L('Warning'),
+                MessageBoxDB(Handle, PWideChar(Format(L('Can not write to file "%s". The file may be in use by another application...'), [FileName])), L('Warning'),
                   TD_BUTTON_OK, TD_ICON_ERROR);
               end;
             finally
@@ -2277,7 +2236,7 @@ begin
                 Image.SaveToFile(FileName);
                 FSaved := True;
               except
-                MessageBoxDB(Handle, Format(TEXT_MES_CANT_WRITE_TO_FILE_F, [FileName]), L('Error'), TD_BUTTON_OK,
+                MessageBoxDB(Handle, Format(L('Can not write to file "%s". The file may be in use by another application...'), [FileName]), L('Error'), TD_BUTTON_OK,
                   TD_ICON_ERROR);
               end;
             finally
@@ -2306,7 +2265,7 @@ begin
                 Image.SaveToFile(FileName);
                 FSaved := True;
               except
-                MessageBoxDB(Handle, Format(TEXT_MES_CANT_WRITE_TO_FILE_F, [FileName]), L('Error'), TD_BUTTON_OK,
+                MessageBoxDB(Handle, Format(L('Can not write to file "%s". The file may be in use by another application...'), [FileName]), L('Error'), TD_BUTTON_OK,
                   TD_ICON_ERROR);
               end;
             finally
@@ -2335,7 +2294,7 @@ begin
                 Image.SaveToFile(FileName);
                 FSaved := True;
               except
-                MessageBoxDB(Handle, Format(TEXT_MES_CANT_WRITE_TO_FILE_F, [FileName]), L('Error'), TD_BUTTON_OK,
+                MessageBoxDB(Handle, Format(L('Can not write to file "%s". The file may be in use by another application...'), [FileName]), L('Error'), TD_BUTTON_OK,
                   TD_ICON_ERROR);
               end;
             finally
@@ -2364,7 +2323,7 @@ begin
                 Image.SaveToFile(FileName);
                 FSaved := True;
               except
-                MessageBoxDB(Handle, Format(TEXT_MES_CANT_WRITE_TO_FILE_F, [FileName]), L('Error'), TD_BUTTON_OK,
+                MessageBoxDB(Handle, Format(L('Can not write to file "%s". The file may be in use by another application...'), [FileName]), L('Error'), TD_BUTTON_OK,
                   TD_ICON_ERROR);
               end;
               finally
@@ -2450,7 +2409,7 @@ begin
   with ExplorerManager.NewExplorer(False) do
   begin
     SetOldPath(CurrentFileName);
-    SetPath(GetDirectory(CurrentFileName));
+    SetPath(ExtractFileDir(CurrentFileName));
     Show;
     SetFocus;
   end;
@@ -2543,7 +2502,7 @@ begin
 
   if ImageHistory.CanBack then
   begin
-    Res := MessageBoxDB(Handle, TEXT_MES_IMAGE_CHANGED_SAVE_Q, L('Warning'), TD_BUTTON_YESNOCANCEL,
+    Res := MessageBoxDB(Handle, L('Image was changed, save changes?'), L('Warning'), TD_BUTTON_YESNOCANCEL,
       TD_ICON_WARNING);
     if Res = ID_YES then
     begin
@@ -2708,7 +2667,7 @@ begin
   end;
   if ImageHistory.CanBack and not FSaved then
   begin
-    Result := MessageBoxDB(Handle, TEXT_MES_IMAGE_CHANGED_SAVE_Q, L('Warning'), TD_BUTTON_YESNOCANCEL,
+    Result := MessageBoxDB(Handle, L('Image was changed, save changes?'), L('Warning'), TD_BUTTON_YESNOCANCEL,
       TD_ICON_WARNING);
     if Result = ID_YES then
     begin

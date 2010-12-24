@@ -3,9 +3,10 @@ unit UnitRecreatingThInTable;
 interface
 
 uses
-  Classes, Graphics, Jpeg, DB, CommonDBSupport, Dolphin_DB, SysUtils,
+  Classes, Graphics, Jpeg, DB, CommonDBSupport, UnitDBKernel, SysUtils,
   GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport,
-  ActiveX;
+  ActiveX, Dolphin_DB, uMemory, uDBBaseTypes, uDBTypes, uDBUtils,
+  win32crc;
 
 type
   RecreatingThInTable = class(TThread)
@@ -212,21 +213,25 @@ begin
                 Synchronize(TextOutEx);
                 // fixing image -> deleting it
                 Bmp := TBitmap.Create;
-                Bmp.PixelFormat := Pf24bit;
-                Bmp.Width := ImageOptions.ThSize;
-                Bmp.Height := ImageOptions.ThSize;
-                FillRectNoCanvas(Bmp, 0);
-                Jpeg := TJpegImage.Create;
-                Jpeg.Assign(Bmp);
-                Bmp.Free;
-                Jpeg.CompressionQuality := ImageOptions.DBJpegCompressionQuality;
-                Jpeg.Compress;
                 try
-                  Table.Edit;
-                  Table.FieldByName('thum').Assign(Jpeg);
-                  Table.Post;
+                  Bmp.PixelFormat := Pf24bit;
+                  Bmp.Width := ImageOptions.ThSize;
+                  Bmp.Height := ImageOptions.ThSize;
+                  FillRectNoCanvas(Bmp, 0);
+                  Jpeg := TJpegImage.Create;
+                  Jpeg.Assign(Bmp);
+                  F(Bmp);
+                  Jpeg.CompressionQuality := ImageOptions.DBJpegCompressionQuality;
+                  Jpeg.Compress;
+                  try
+                    Table.Edit;
+                    Table.FieldByName('thum').Assign(Jpeg);
+                    Table.Post;
+                  except
+                  end;
                   Jpeg.Free;
-                except
+                finally
+                  F(Bmp);
                 end;
               end;
 

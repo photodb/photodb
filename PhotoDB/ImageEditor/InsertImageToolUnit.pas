@@ -8,10 +8,7 @@ uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
      GraphicsCool, SysUtils, ImageHistoryUnit, Effects, ComCtrls, Math,
      GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, ExtDlgs,
      ScanlinesFX, clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
-     {$IFDEF PHOTODB}
-     Dolphin_DB, UnitDBCommon,
-     {$ENDIF}
-     EffectsLanguage;
+     UnitDBKernel, UnitDBCommon, EffectsLanguage, Dolphin_DB, uDBGraphicTypes;
 
 type
   InsertImageToolPanelClass = Class(TCustomSelectToolClass)
@@ -55,7 +52,7 @@ begin
   if ClipBoard.HasFormat(CF_BITMAP) then
   Image.Assign(ClipBoard);
   OpenFileDialog := DBOpenPictureDialog.Create();
-  OpenFileDialog.Filter:=Dolphin_DB.GetGraphicFilter;
+  OpenFileDialog.Filter:= GetGraphicFilter;
   LoadImageButton := TButton.Create(AOwner);
   LoadImageButton.Parent:=Self;
   LoadImageButton.Top:=EditWidth.Top+EditWidth.Height+5;
@@ -104,12 +101,7 @@ begin
   TransparentEdit.OnChange:=RecreateImage;
   TransparentEdit.Min:=1;
   TransparentEdit.Max:=100;
-  {$IFDEF PHOTODB}
   TransparentEdit.Position:=DBKernel.ReadInteger('Editor','InsertImageTransparency',100);
-  {$ENDIF}
-  {$IFNDEF PHOTODB}
-  TransparentEdit.Position:=100;
-  {$ENDIF}
   TransparentEdit.Parent:=Self;
   LabelMethod.Caption:=Format(TEXT_MES_TRANSPARENCY_F,[IntToStr(TransparentEdit.Position)]);
   SaveSettingsLink.Top:=TransparentEdit.Top+TransparentEdit.Height+5;

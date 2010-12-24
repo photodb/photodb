@@ -7,8 +7,9 @@ uses
   Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
   Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask, uFileUtils,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
-  UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants,
-  UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm;
+  UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
+  UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
+  uRuntime;
 
 type
   TOptionsForm = class(TDBForm)
@@ -1191,7 +1192,7 @@ const
 begin
  if PlacesListView.Selected=nil then
  begin
-  NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE,Dolphin_DB.UseSimpleSelectFolderDialog);
+  NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE, UseSimpleSelectFolderDialog);
   if DirectoryExists(NewPlace) then
   begin
    SetLength(FPlaces,Length(FPlaces)+1);
@@ -1211,7 +1212,7 @@ begin
   end;
  end else
  begin
-  NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE,FPlaces[PlacesListView.Selected.Index].FolderName,Dolphin_DB.UseSimpleSelectFolderDialog);
+  NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE,FPlaces[PlacesListView.Selected.Index].FolderName, UseSimpleSelectFolderDialog);
   if DirectoryExists(NewPlace) then
   FPlaces[PlacesListView.Selected.Index].FolderName:=NewPlace;
   FPlaces[PlacesListView.Selected.Index].Name:=GetFileNameWithoutExt(NewPlace);
@@ -1491,14 +1492,11 @@ end;
 
 procedure TOptionsForm.Button25Click(Sender: TObject);
 var
-  Dir : string;
+  Dir: string;
 begin
- Dir:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SELECT_FOLDER,Dolphin_DB.UseSimpleSelectFolderDialog);
- If DirectoryExists(dir) then
- begin
-  FormatDir(Dir);
-  Edit11.Text:=Dir;
- end;
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, TEXT_MES_SELECT_FOLDER, UseSimpleSelectFolderDialog);
+  if DirectoryExists(Dir) then
+    Edit11.Text := IncludeTrailingBackslash(Dir);
 end;
 
 procedure TOptionsForm.CheckBox33Click(Sender: TObject);

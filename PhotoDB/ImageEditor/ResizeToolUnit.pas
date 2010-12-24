@@ -2,57 +2,59 @@ unit ResizeToolUnit;
 
 interface
 
-uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-     GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls, 
-     language, EffectsLanguage, UnitResampleFilters,
-     Dolphin_DB,  Effects, uConstants;
+uses
+  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
+  Language, EffectsLanguage, UnitResampleFilters, uDBBaseTypes,
+  UnitDBKernel, Effects, uConstants, uEditorTypes;
 
-type TResizeToolPanelClass = Class(TToolsPanelClass)
+type
+  TResizeToolPanelClass = class(TToolsPanelClass)
   private
-  NewImage : TBitmap;
-  CloseLink : TWebLink;
-  MakeItLink : TWebLink;
-  SaveSettingsLink : TWebLink;
-  SelectChooseBox : TRadioGroup;
-  RadioButton100x100 : TRadioButton;
-  RadioButton200x200 : TRadioButton;
-  RadioButton600x800 : TRadioButton;
-  RadioButton_Custom : TRadioButton;
-  CheckBoxSaveProportions : TCheckBox;
-  RadioButtonPercent : TRadioButton;
-  ComboBoxPercent : TComboBox;
-  MethodLabel : Tlabel;
-  ComboBoxMethod : TComboBox;
-  WidthEdit, HeightEdit : TEdit;
-  WidthEditLabel, HeightEditLabel : Tlabel;
-  Loading : Boolean;    
-  ApplyOnDone : boolean;
-  fOnDone : TNotifyEvent;
     { Private declarations }
+    NewImage: TBitmap;
+    CloseLink: TWebLink;
+    MakeItLink: TWebLink;
+    SaveSettingsLink: TWebLink;
+    SelectChooseBox: TRadioGroup;
+    RadioButton100x100: TRadioButton;
+    RadioButton200x200: TRadioButton;
+    RadioButton600x800: TRadioButton;
+    RadioButton_Custom: TRadioButton;
+    CheckBoxSaveProportions: TCheckBox;
+    RadioButtonPercent: TRadioButton;
+    ComboBoxPercent: TComboBox;
+    MethodLabel: Tlabel;
+    ComboBoxMethod: TComboBox;
+    WidthEdit, HeightEdit: TEdit;
+    WidthEditLabel, HeightEditLabel: Tlabel;
+    Loading: Boolean;
+    ApplyOnDone: Boolean;
+    FOnDone: TNotifyEvent;
   public
-   FSID : String;
-   class function ID: string; override;
-   constructor Create(AOwner : TComponent); override;
-   destructor Destroy; override;
-   Procedure ClosePanel; override;
-   Procedure MakeTransform; override;
-   Procedure ClosePanelEvent(Sender : TObject);
-   Procedure DoMakeImage(Sender : TObject);
-   Procedure ChangeSize(Sender : TObject);
-   Procedure ComboBoxPercentSelect(Sender : TObject);
-   Procedure EditChange(Sender : TObject);
-   procedure SetThreadImage(Image : TBitmap; SID : string);
-   procedure SetProgress(Progress : Integer; SID : string);
-   procedure DoSaveSettings(Sender : TObject);
-   function GetProperties : string; override;
-   function GetZoom : real;
-   Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
-   
-   Procedure SetProperties(Properties : String); override;
    { Public declarations }
+    FSID: string;
+    class function ID: string; override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure ClosePanel; override;
+    procedure MakeTransform; override;
+    procedure ClosePanelEvent(Sender: TObject);
+    procedure DoMakeImage(Sender: TObject);
+    procedure ChangeSize(Sender: TObject);
+    procedure ComboBoxPercentSelect(Sender: TObject);
+    procedure EditChange(Sender: TObject);
+    procedure SetThreadImage(Image: TBitmap; SID: string);
+    procedure SetProgress(Progress: Integer; SID: string);
+    procedure DoSaveSettings(Sender: TObject);
+    function GetProperties: string; override;
+    function GetZoom: Real;
+    procedure ExecuteProperties(Properties: string; OnDone: TNotifyEvent); override;
+    procedure SetProperties(Properties: string); override;
   end;
 
-  const StFilters = 2;
+const
+  StFilters = 2;
 
 implementation
 
@@ -60,22 +62,24 @@ uses ImEditor, ResizeToolThreadUnit;
 
 { TResizeToolPanelClass }
 
-procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
+procedure ProportionalSize(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
 begin
- if (aWidthToSize = 0) or (aHeightToSize = 0) then
- begin
-  aHeightToSize := 0;
-  aWidthToSize  := 0;
- end else begin
-  if (aHeightToSize/aWidthToSize) < (aHeight/aWidth) then
+  if (AWidthToSize = 0) or (AHeightToSize = 0) then
   begin
-   aHeightToSize := Round ( (aWidth/aWidthToSize) * aHeightToSize );
-   aWidthToSize  := aWidth;
-  end else begin
-   aWidthToSize  := Round ( (aHeight/aHeightToSize) * aWidthToSize );
-   aHeightToSize := aHeight;
+    AHeightToSize := 0;
+    AWidthToSize := 0;
+  end else
+  begin
+    if (AHeightToSize / AWidthToSize) < (AHeight / AWidth) then
+    begin
+      AHeightToSize := Round((AWidth / AWidthToSize) * AHeightToSize);
+      AWidthToSize := AWidth;
+    end else
+    begin
+      AWidthToSize := Round((AHeight / AHeightToSize) * AWidthToSize);
+      AHeightToSize := AHeight;
+    end;
   end;
- end;
 end;
 
 procedure TResizeToolPanelClass.ChangeSize(Sender: TObject);
@@ -249,7 +253,7 @@ begin
  HeightEdit.Top:=HeightEditLabel.Top+HeightEditLabel.Height+5;
  HeightEdit.Left:=85;
  HeightEdit.Width:=50;
- HeightEdit.Text:='768';  
+ HeightEdit.Text:='768';
  HeightEdit.Parent:=AOwner as TWinControl;
  HeightEdit.OnChange:=EditChange;
 
@@ -300,8 +304,6 @@ begin
  for i:=0 to 6 do
  ComboBoxMethod.Items.Add(ResampleFilters[i].Name);
 
-// ComboBoxMethod.Items.Add('xxx');
-// ComboBoxMethod.Items.Add('xxx2');
  ComboBoxMethod.ItemIndex:=0;
 
  IcoOK:=TIcon.Create;
@@ -331,7 +333,7 @@ begin
  MakeItLink.Visible:=true;
  MakeItLink.Color:=ClBtnface;
  MakeItLink.OnClick:=DoMakeImage;
- MakeItLink.Icon:=IcoOK;   
+ MakeItLink.Icon:=IcoOK;
  MakeItLink.ImageCanRegenerate:=True;
  IcoOK.Free;
 
@@ -473,7 +475,7 @@ begin
  begin
   Pointer(NewImage):=Pointer(Image);
   SetTempImage(Image);
- end else Image.Free; 
+ end else Image.Free;
  if ApplyOnDone then
  begin
   MakeTransform;

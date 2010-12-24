@@ -8,7 +8,8 @@ uses
   uVistaFuncs, jpeg, Spin, UnitRecreatingThInTable, CommonDBSupport, Menus,
   ExtDlgs, Graphics, UnitPasswordKeeper, UnitDBDeclare, AppEvnts,
   UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon,
-  uSplashThread, uDBForm, uMemory;
+  uSplashThread, uDBForm, uMemory, uShellIntegration,
+  uDBBaseTypes, uDBTypes;
 
 type
   TFormConvertingDB = class(TDBForm)

@@ -6,11 +6,11 @@ uses
    dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
    Forms, Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp,
    uVistaFuncs, DB, AppEvnts, DragDrop, DragDropFile, WebLink,
-   DropSource, DropTarget, UnitDBkernel, UnitDBDeclare,
+   DropSource, DropTarget, UnitDBkernel, UnitDBDeclare, uShellIntegration,
    UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
    GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
    uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
-   uConstants, uAppUtils;
+   uConstants, uAppUtils, uDBUtils;
 
 type
   TUpdateDBForm = class(TDBForm)
@@ -169,7 +169,6 @@ begin
   LastIDImage := 0;
   LastFileName := ':::';
   BadHistory := TStringList.Create;
-  DBKernel.RegisterForm(Self);
   DropFileTarget1.Register(Self);
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   LoadLanguage;
@@ -518,7 +517,7 @@ var
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Info := Dolphin_DB.RecordsInfoOne(LastFileName, LastIDImage, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False,
+  Info := RecordsInfoOne(LastFileName, LastIDImage, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False,
     False, True, '');
   Viewer.Execute(Sender, Info);
 end;

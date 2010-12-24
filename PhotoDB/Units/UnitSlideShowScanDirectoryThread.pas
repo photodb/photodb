@@ -3,8 +3,8 @@ unit UnitSlideShowScanDirectoryThread;
 interface
 
 uses
-  Classes, Forms, Dolphin_DB, uThreadForm, uThreadEx, ActiveX,
-  UnitDBCommon, UnitDBDeclare;
+  Classes, Forms, uThreadForm, uThreadEx, ActiveX,
+  UnitDBCommon, UnitDBDeclare, uDBUtils;
 
 type
   TSlideShowScanDirectoryThread = class(TThreadEx)

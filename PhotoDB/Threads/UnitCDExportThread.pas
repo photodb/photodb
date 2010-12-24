@@ -3,9 +3,10 @@ unit UnitCDExportThread;
 interface
 
 uses
-  Classes, Forms, UnitCDMappingSupport, Dolphin_DB, Language, uVistaFuncs, DB,
+  Classes, Forms, UnitCDMappingSupport, UnitDBKernel, Language, uVistaFuncs, DB,
   UnitGroupsWork, UnitDBDeclare, CommonDBSupport, win32crc, SysUtils, uLogger,
-  uFileUtils, uConstants;
+  uFileUtils, uConstants, uShellIntegration, uDBTypes, uDBBaseTypes, uDBForm,
+  uTranslate;
 
 type
   TCDExportOptions = record
@@ -34,10 +35,11 @@ type
     StrParam: string;
     ProgressWindow: TForm;
     IsClosedParam: Boolean;
+    FOwner : TDBForm;
   protected
     procedure Execute; override;
   public
-    constructor Create(AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
+    constructor Create(Owner : TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
     procedure DoErrorDeletingFiles;
     procedure ShowError;
     procedure DoOnEnd;
@@ -59,9 +61,10 @@ uses UnitSaveQueryThread, ProgressActionUnit;
 
 { TCDExportThread }
 
-constructor TCDExportThread.Create(AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
+constructor TCDExportThread.Create(Owner : TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
 begin
   inherited Create(False);
+  FOwner := Owner;
   Mapping := AMapping;
   Options := AOptions;
 end;
@@ -158,7 +161,7 @@ begin
  CopiedSize:=0;
  IntParam:=Mapping.GetCDSize;
  Synchronize(InitializeProgress);
- FormatDir(Options.ToDirectory);
+ Options.ToDirectory := IncludeTrailingBackslash(Options.ToDirectory);
  IntParam:=1;
  Synchronize(SetProgressOperation);
 
@@ -217,8 +220,7 @@ begin
    Synchronize(SetPosition);
    if IsClosedParam then break;
 
-   Directory:=GetDirectory(DBRemapping[i].FileName);
-   UnformatDir(Directory);
+   Directory:=ExtractFileDir(DBRemapping[i].FileName);
    CalcStringCRC32(AnsiLowerCase(Directory),crc);
 
    SetSQL(DS,'Update $DB$ Set FFileName = :FileName, FolderCRC = :FolderCRC Where ID = :ID');
@@ -234,8 +236,7 @@ begin
   FreeDS(DS);
  end;
 
- Directory:=GetDirectory(Options.ToDirectory);
- FormatDir(Directory);
+ Directory:=ExtractFileDir(Options.ToDirectory);
  Directory:=Directory+Mapping.CDLabel+'\';
 
  IntParam:=4;
@@ -281,8 +282,7 @@ begin
 
      Directory:=DBRemapping[i].FileName;
      if Pos('\',Directory)>0 then
-     Directory:=GetDirectory(Directory) else Directory:='';
-     UnformatDir(Directory);
+     Directory:=ExtractFileDir(Directory) else Directory:='';
 
      CalcStringCRC32(AnsiLowerCase(Directory),crc);
 
@@ -306,8 +306,7 @@ begin
    FreeDS(ExtDS);
   end;
 
-  Directory:=GetDirectory(Options.ToDirectory);
-  FormatDir(Directory);
+  Directory:=ExtractFilePath(Options.ToDirectory);
   Directory:=Directory+Mapping.CDLabel+'\';
 
   FRegGroups:=GetRegisterGroupList(True);
@@ -346,13 +345,13 @@ end;
 
 procedure TCDExportThread.ShowCopyError;
 begin
-  MessageBoxDB(Dolphin_DB.GetActiveFormHandle, TEXT_MES_UNABLE_TO_COPY_DISK, TEXT_MES_WARNING, TD_BUTTON_OK,
+  MessageBoxDB(FOwner.Handle, TEXT_MES_UNABLE_TO_COPY_DISK, TEXT_MES_WARNING, TD_BUTTON_OK,
     TD_ICON_WARNING);
 end;
 
 procedure TCDExportThread.ShowError;
 begin
-  MessageBoxDB(Dolphin_DB.GetActiveFormHandle, Format(TEXT_MES_UNKNOWN_ERROR_F, [StrParam]), TEXT_MES_ERROR,
+  MessageBoxDB(FOwner.Handle, Format(TEXT_MES_UNKNOWN_ERROR_F, [StrParam]), TA('Error'),
     TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 

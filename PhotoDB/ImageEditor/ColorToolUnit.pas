@@ -4,7 +4,7 @@ interface
 
 uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
      GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-     ComCtrls, Effects, Language;
+     ComCtrls, Effects, Language, UnitDBKernel, uDBGraphicTypes;
 
 type TColorToolPanelClass = Class(TToolsPanelClass)
   private
@@ -44,8 +44,6 @@ type TColorToolPanelClass = Class(TToolsPanelClass)
   end;
 
 implementation
-
-uses Dolphin_DB;
 
 { TColorToolPanelClass }
 

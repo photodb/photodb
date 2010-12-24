@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
-  UnitINI, Dolphin_DB, ReplaseIconsInScript, uScript, UnitScripts,
-  UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory;
+  UnitINI, uConstants, ReplaseIconsInScript, uScript, UnitScripts,
+  UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory,
+  uFileUtils, uRuntime;
 
 const
 
@@ -75,7 +76,7 @@ type
 
 var
   ADOConnections : TADOConnections = nil;
-
+  DBLoadInitialized: Boolean = False;
   FSync : TCriticalSection = nil;
   aScript : TScript;
   LoadInteger : integer;
@@ -173,10 +174,30 @@ function GetDefaultImageDBOptions : TImageDBOptions;
 function GetPathCRC(FileFullPath : string) : Integer;
 function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
+function TryOpenCDS(DS: TDataSet): Boolean;
+function GetDBViewMode: Boolean;
 
 implementation
 
  uses UnitGroupsWork;
+
+function TryOpenCDS(DS: TDataSet): Boolean;
+var
+  I: Integer;
+begin
+  for I := 1 to 20 do
+  begin
+    Result := True;
+    try
+      DS.Active := True;
+    except
+      Result := False;
+    end;
+    if Result then
+      Break;
+    Sleep(DelayExecuteSQLOperation);
+  end;
+end;
 
 function NormalizeDBString(S: string): string;
 begin
@@ -188,7 +209,7 @@ var
   I: Integer;
 begin
   for I := 1 to Length(S) do
-    if (S[I] = '[') or (S[I] = ']') then
+    if (S[I] = '[') or (S[I] = ']') or (S[I] = '\') then
       S[I] := '_';
   Result := S;
 end;
@@ -1094,6 +1115,43 @@ destructor TDBQueryParams.Destroy;
 begin
   FreeList(FParamList);
   inherited;
+end;
+
+function GetDBViewMode: Boolean;
+var
+  ProgramDir: string;
+begin
+  Result := False;
+  ProgramDir := IncludeTrailingBackSlash(ExtractFileDir(ParamStr(0)));
+  if not DBInDebug then
+    if FileExists(ProgramDir + 'FolderDB.photodb') or FileExists
+      (ProgramDir + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.photodb') or FileExists
+      (ProgramDir + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.mdb') then
+      Result := True;
+end;
+
+function DBReadOnly: Boolean;
+var
+  Attr: Integer;
+  ProgramDir: string;
+begin
+  Result := False;
+  ProgramDir := IncludeTrailingBackSlash(ExtractFileDir(ParamStr(0)));
+
+  if FileExists(ProgramDir + 'FolderDB.photodb') then
+  begin
+    Attr := Windows.GetFileAttributes(PChar(ProgramDir + 'FolderDB.photodb'));
+    if Attr and FILE_ATTRIBUTE_READONLY <> 0 then
+      Result := True;
+  end;
+
+  if FileExists(ProgramDir + GetFileNameWithoutExt(ParamStr(0)) + '.photodb') then
+  begin
+    Attr := Windows.GetFileAttributes
+      (PChar(ProgramDir + GetFileNameWithoutExt(ParamStr(0)) + '.photodb'));
+    if Attr and FILE_ATTRIBUTE_READONLY <> 0 then
+      Result := True;
+  end;
 end;
 
 initialization

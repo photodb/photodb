@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Windows, DBCommon, SysUtils, Forms, Dolphin_DB, uFileUtils, uMemory,
-  uLogger;
+  uLogger, uDBUtils, uDBForm;
 
 type
   TWindowsCopyFilesThread = class(TThread)
@@ -14,12 +14,12 @@ type
     FSrc: TStrings;
     FDest: string;
     FMove, FAutoRename: Boolean;
-    FOwnerExplorerForm: TForm;
+    FOwnerExplorerForm: TDBForm;
   protected
     procedure Execute; override;
   public
     constructor Create(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean;
-      AutoRename: Boolean; OwnerExplorerForm: TForm);
+      AutoRename: Boolean; OwnerExplorerForm: TDBForm);
     destructor Destroy; override;
   end;
 
@@ -30,7 +30,7 @@ uses ExplorerUnit;
 { TWindowsCopyFilesThread }
 
 constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
-   OwnerExplorerForm: TForm);
+   OwnerExplorerForm: TDBForm);
 begin
   inherited Create(False);
   FHandle := Handle;
@@ -48,12 +48,12 @@ begin
   inherited;
 end;
 
-procedure CorrectPath(Owner : TObject; Src: TStrings; Dest: string);
+procedure CorrectPath(Owner : TDBForm; Src: TStrings; Dest: string);
 var
   I : Integer;
   FN, Adest : string;
 begin
-  UnforMatDir(Dest);
+  Dest := ExcludeTrailingBackslash(Dest);
   for I := 0 to Src.Count - 1 do
   begin
     FN := Dest + '\' + ExtractFileName(Src[I]);
@@ -78,12 +78,13 @@ begin
   Res := False;
   try
     Res := CopyFilesSynch(0, FSrc, FDest, FMove, FAutoRename) = 0;
+
+    if Res and (FOwnerExplorerForm <> nil) then
+      CorrectPath(FOwnerExplorerForm, FSrc, FDest);
   except
     on e : Exception do
       EventLog(e.Message);
   end;
-  if Res and (FOwnerExplorerForm <> nil) then
-    CorrectPath(FOwnerExplorerForm, FSrc, FDest);
 end;
 
 end.

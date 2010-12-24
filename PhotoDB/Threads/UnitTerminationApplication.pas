@@ -3,7 +3,7 @@ unit UnitTerminationApplication;
 interface
 
 uses
-  Windows, Classes, Dolphin_DB, Forms, uLogger;
+  Windows, Classes, uSysUtils, Forms, uLogger;
 
 type
   TerminationApplication = class(TThread)

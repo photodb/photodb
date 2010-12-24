@@ -4,8 +4,8 @@ interface
 
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
   Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
-  UnitDBFileDialogs, Forms, uVistaFuncs, uLogger,
-  uFileUtils, uTime, uMemory, uTranslate;
+  UnitDBFileDialogs, Forms, uVistaFuncs, uLogger, uShellIntegration,
+  uFileUtils, uTime, uMemory, uTranslate, uRuntime;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;
@@ -73,8 +73,8 @@ implementation
 
 function FileHasExt(aFile, aExt : string) : boolean;
 begin
-  AFile := Dolphin_DB.GetExt(AFile);
-  Result := Dolphin_DB.ExtinMask(AExt, AFile);
+  AFile := GetExt(AFile);
+  Result := ExtinMask(AExt, AFile);
 end;
 
 function GetProgramFolder : string;
@@ -138,10 +138,10 @@ function GetOpenDirectory(Caption, Root : string) : string;
 begin
  if DirectoryExists(Root) then
  begin
-  Result:=UnitDBFileDialogs.DBSelectDir(Application.Handle,Caption,Root,Dolphin_DB.UseSimpleSelectFolderDialog);
+  Result:=UnitDBFileDialogs.DBSelectDir(Application.Handle,Caption,Root,UseSimpleSelectFolderDialog);
  end else
  begin
-  Result:=UnitDBFileDialogs.DBSelectDir(Application.Handle,Caption,Dolphin_DB.UseSimpleSelectFolderDialog);
+  Result:=UnitDBFileDialogs.DBSelectDir(Application.Handle,Caption,UseSimpleSelectFolderDialog);
  end;
 end;
 

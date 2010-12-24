@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt, DB,
+  Dialogs, StdCtrls, UnitDBKernel, FormManegerUnit, GraphicCrypt, DB,
   uVistaFuncs, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
-  uDBForm, uTranslate, uFileUtils;
+  uDBForm, uTranslate, uFileUtils, uShellIntegration;
 
 type
   PasswordType = Integer;
@@ -66,7 +66,7 @@ type
   public
     { Public declarations }
     procedure ReallignControlsEx;
-    procedure LoadFileList(FileList : TArStrings);
+    procedure LoadFileList(FileList : TStrings);
     property Password : string read FPassword write FPassword;
   end;
 
@@ -74,13 +74,13 @@ function GetImagePasswordFromUser(FileName : String) : String;
 function GetImagePasswordFromUserBlob(DF : TField; FileName : String) : String;
 function GetImagePasswordFromUserEx(FileName : String; out AskAgain : boolean) : String;
 function GetImagePasswordFromUserStenoraphy(FileName : string; CRC : Cardinal) : String;
-function GetImagePasswordFromUserForManyFiles(FileList : TArStrings; CRC : Cardinal; var Skip : boolean) : String;
+function GetImagePasswordFromUserForManyFiles(FileList : TStrings; CRC : Cardinal; var Skip : boolean) : String;
 
 implementation
 
 {$R *.dfm}
 
-function GetImagePasswordFromUserForManyFiles(FileList: TArStrings; CRC: Cardinal; var Skip: Boolean): string;
+function GetImagePasswordFromUserForManyFiles(FileList: TStrings; CRC: Cardinal; var Skip: Boolean): string;
 var
   PassWordForm: TPassWordForm;
 begin
@@ -316,12 +316,9 @@ begin
   TextToClipboard(InfoListBox.Items.Text);
 end;
 
-procedure TPassWordForm.LoadFileList(FileList: TArStrings);
-var
-  I : Integer;
+procedure TPassWordForm.LoadFileList(FileList: TStrings);
 begin
-  for I := 0 to Length(FileList) - 1 do
-    InfoListBox.Items.Add(FileList[I]);
+  InfoListBox.Items.Assign(FileList);
 
   BtCancelForFiles.Visible := True;
   InfoListBox.Visible := True;

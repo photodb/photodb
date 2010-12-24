@@ -114,6 +114,7 @@
   </scope>
   <scope name="Groups">
     <translate name="Group not found!" value="Группа не найдена!" />
+    <translate name="An error occurred while adding a group %s!" value="Произошла ошибка при добавлении группы %s!" />
     <translate name="An error occurred during the move group %s to group %s (%s)" value="Произошла ошибка во время перемещения группы %s в группу %s (%s)" />
     <translate name="An error occurred during the move group %s" value="Произошла ошибка во время перемещения группы %s" />
     <translate name="An error occurred during the rename group %s" value="Произошла ошибка во время переименования группы %s" />
@@ -958,6 +959,22 @@
 	<translate name="New editor" value="Новый редактор" />
 	<translate name="Actions" value="Действия" />
 	<translate name="For an unsaved file, the properties are not available." value="Для несохранённого файла, свойства недоступны." />
+	<translate name="Image was changed, save changes?" value="Изображение было изменено, сохранить изображение?" />
+	<translate name="Can not write to file &quot;%s&quot;. The file may be in use by another application..." value="Невозможно записать в файл &quot;%s&quot;. Возможно, файл занят другим приложением..." />
+  </scope>
+  <scope name="BrushTool">
+	<translate name="Brush size [%d]" value="Размер кисти [%d]" />
+	<translate name="Transparency" value="Прозрачность" />
+	<translate name="Transparency [%d]" value="Прозрачность [%d]" />
+	<translate name="Method" value="Метод" />
+	<translate name="Normal" value="Обычный" />
+	<translate name="Color replace" value="Замена цвета" />
+	<translate name="Brush color" value="Цвет кисти" />
+	<translate name="Save settings" value="Сохранить настройки" />
+	<translate name="Choose color" value="Выбрать цвет" />
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />	
+	
   </scope>
   <scope name="ActionsList">
 	<translate name="Actions" value="Действия" />

@@ -49,7 +49,7 @@ begin
     DS:=GetQuery(True);
     try
       SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
-      SetStrParam(DS, 0, DelNakl(AnsiLowerCase(FFileName)));
+      SetStrParam(DS, 0, AnsiLowerCase(FFileName));
       try
         DS.Active := True;
       except

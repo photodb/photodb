@@ -14,7 +14,8 @@ uses
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
   UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
-  CCR.Exif, uConstants;
+  CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
+  uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -306,7 +307,7 @@ implementation
 uses UnitQuickGroupInfo, Searching, SlideShow, UnitHintCeator,
      UnitEditGroupsForm, UnitManageGroups, CmpUnit,
      UnitEditLinkForm, UnitHelp, ExplorerUnit, UnitNewGroupForm,
-     UnitFormChangeGroup, SelectGroupForm, UnitGroupsTools;
+     UnitFormChangeGroup, SelectGroupForm, UnitGroupsTools, Options;
 
 {$R *.dfm}
 
@@ -704,11 +705,13 @@ end;
 
 procedure TPropertiesForm.BtnFindClick(Sender: TObject);
 begin
-  if no_file then exit;
+  if No_file then
+    Exit;
+
   with ExplorerManager.NewExplorer(False) do
   begin
     SetOldPath(LabelPath.text);
-    SetPath(GetDirectory(LabelPath.text));
+    SetPath(ExtractFileDir(LabelPath.text));
     Show;
   end;
 end;
@@ -736,7 +739,6 @@ begin
   Editing_info := True;
   Adding_now := False;
   DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
-  DBkernel.RegisterForm(Self);
   TimeEdit.ParentColor := True;
   PmItem.Images := DBKernel.ImageList;
   PmLinks.Images := DBKernel.ImageList;
@@ -753,7 +755,6 @@ begin
 
   Up1.ImageIndex := DB_IC_UP;
   Down1.ImageIndex := DB_IC_DOWN;
-  DBKernel.RegisterForm(Self);
   SaveWindowPos1.Key := GetRegRootKey + 'Properties';
   SaveWindowPos1.SetPosition;
   LoadLanguage;
@@ -966,7 +967,7 @@ begin
         ExecSQL(WorkQuery);
         EventInfo.Include := CbInclude.Checked;
         for I := 0 to FFilesInfo.Count - 1 do
-          DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_Include], EventInfo);
+          DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Include], EventInfo);
       end;// [END] Include Support
 
       // [BEGIN] Rating Support
@@ -978,7 +979,7 @@ begin
         ExecSQL(WorkQuery);
         EventInfo.Rating := RatingEdit.Rating;
         for I := 0 to FFilesInfo.Count - 1 do
-          DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_Rating], EventInfo);
+          DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Rating], EventInfo);
       end; // [END] Rating Support
 
       // [BEGIN] KeyWords Support
@@ -1013,7 +1014,7 @@ begin
           ExecSQL(WorkQuery);
           EventInfo.KeyWords := List[I].Value;
           for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(Sender, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
+            DBKernel.DoIDEvent(Self, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
         end;
       end;// [END] KeyWords Support
 
@@ -1051,7 +1052,7 @@ begin
           ExecSQL(WorkQuery);
           EventInfo.Groups := List[I].Value;
           for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(Sender, List[I].IDs[J], [EventID_Param_Groups], EventInfo);
+            DBKernel.DoIDEvent(Self, List[I].IDs[J], [EventID_Param_Groups], EventInfo);
         end;
       end; // [END] Groups Support
 
@@ -1110,7 +1111,7 @@ begin
         begin
           ProgressForm.XPosition := ProgressForm.XPosition + 1;
           { !!! } Application.ProcessMessages;
-          DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_Comment], EventInfo);
+          DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Comment], EventInfo);
         end;
       end;// [END] Commnet Support
 
@@ -1134,7 +1135,7 @@ begin
             ExecSQL(FQuery);
             EventInfo.IsDate := False;
             for I := 0 to FFilesInfo.Count - 1 do
-              DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
+              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
           end else
           begin
             _sqlexectext := Format('Update $DB$ Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (%s)', [GenerateIDList]);
@@ -1145,7 +1146,7 @@ begin
             EventInfo.Date := DateEdit.DateTime;
             EventInfo.IsDate := True;
             for I := 0 to FFilesInfo.Count - 1 do
-              DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
+              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
           end;
         finally
           FreeDS(FQuery);
@@ -1164,7 +1165,7 @@ begin
           ExecSQL(FQuery);
           EventInfo.IsTime := False;
           for I := 0 to FFilesInfo.Count - 1 do
-            DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
+            DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
         end
         else
         begin
@@ -1176,7 +1177,7 @@ begin
           EventInfo.Time := TimeEdit.Time;
           EventInfo.IsTime := True;
           for I := 0 to FFilesInfo.Count - 1 do
-            DBKernel.DoIDEvent(Sender, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
+            DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
         end;
       end;// [END] Time Support
 
@@ -1228,7 +1229,7 @@ begin
       EventInfo.Time := TimeOf(TimeEdit.Time);
       EventInfo.IsDate := not DateEdit.Checked;
       EventInfo.IsTime := not TimeEdit.Checked;
-      DBKernel.DoIDEvent(Sender, ImageId, [EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Rating,
+      DBKernel.DoIDEvent(Self, ImageId, [EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Rating,
         EventID_Param_Owner, EventID_Param_Collection, EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate,
         EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include], EventInfo);
     end else
@@ -1528,10 +1529,9 @@ end;
 
 procedure TPropertiesForm.FormDestroy(Sender: TObject);
 begin
-  LinkDropFiles.Free;
+  F(LinkDropFiles);
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
-  DBKernel.UnRegisterForm(Self);
   F(FFilesInfo);
   FreeGroups(RegGroups);
   FreeGroups(FShowenRegGroups);
@@ -1740,8 +1740,7 @@ begin
       LabelPath.Text := L('Different directories')
     else
     begin
-      S := DirectoryList[0];
-      UnFormatDir(S);
+      S := ExcludeTrailingBackslash(DirectoryList[0]);
       LabelPath.Text := Format(L('All in %s'), [LongFileName(S)]);
     end;
 
@@ -2283,13 +2282,12 @@ begin
       ViewFile(LI[N].LinkValue);
     LINK_TYPE_FILE:
       begin
-        S := GetDirectory(LI[N].LinkValue);
+        S := ExcludeTrailingBackslash(LI[N].LinkValue);
         ShellExecute(Handle, nil, PWideChar(LI[N].LinkValue), nil, PWideChar(S), SW_NORMAL);
       end;
     LINK_TYPE_FOLDER:
       begin
-        DN := LI[N].LinkValue;
-        UnFormatDir(DN);
+        DN := ExcludeTrailingBackslash(LI[N].LinkValue);
         if (DN <> '') and not DirectoryExists(DN) then
         begin
           MessageBoxDB(Handle, Format(L('Directory "%s" not found!'), [DN]), L('Warning'), TD_BUTTON_OK,
@@ -2497,9 +2495,9 @@ begin
   else
     Exit;
   end;
-  if DN = '' then
-    DN := GetDirectory(FN);
-  UnFormatDir(DN);
+  if FN <> '' then
+    DN := ExtractFileDir(FN);
+
   if (DN <> '') and not DirectoryExists(DN) then
   begin
     MessageBoxDB(Handle, Format(L('Directory "%s" not found!'), [DN]), L('Warning'), TD_BUTTON_OK,

@@ -11,7 +11,8 @@ uses
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
-  uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate;
+  uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate,
+  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils;
 
 type TDBPopupMenu = class
    private
@@ -24,6 +25,7 @@ type TDBPopupMenu = class
     FUserMenu : TUserMenuItemArray;
     FBusy : Boolean;
     aScript : TScript;
+    FOwner : TDBForm;
    public
     class function Instance : TDBPopupMenu;
     constructor Create;
@@ -58,8 +60,8 @@ type TDBPopupMenu = class
     procedure DeleteDublicatesItemPopUpMenu_(Sender: TObject);
     procedure UserMenuItemPopUpMenu_(Sender: TObject);
     procedure PrintItemPopUpMenu_(Sender: TObject);
-    procedure Execute(X, Y: Integer; Info: TDBPopupMenuInfo);
-    procedure ExecutePlus(X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
+    procedure Execute(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
+    procedure ExecutePlus(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
     procedure AddDBContMenu(Item: Tmenuitem; Info: TDBPopupMenuInfo);
     procedure AddUserMenu(Item: Tmenuitem; Insert: Boolean; index: Integer);
     procedure SetInfo(Info: TDBPopupMenuInfo);
@@ -376,7 +378,7 @@ begin
 
     Copy_Move(True, FileList);
 
-    DBKernel.DoIDEvent(Self, 0, [EventID_Param_CopyPaste], EventInfo);
+    DBKernel.DoIDEvent(FOwner, 0, [EventID_Param_CopyPaste], EventInfo);
   finally
     F(FileList);
   end;
@@ -429,21 +431,25 @@ end;
 
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);
 var
- Options : TCryptImageThreadOptions;
- Opt : TCryptImageOptions;
- CryptOptions : integer;
+  Options: TCryptImageThreadOptions;
+  Opt: TCryptImageOptions;
+  CryptOptions: Integer;
 begin
- Opt:=GetPassForCryptImageFile(TA('SelectedObjects', DBMenuID));
- if Opt.SaveFileCRC then CryptOptions:=CRYPT_OPTIONS_SAVE_CRC else CryptOptions:=CRYPT_OPTIONS_NORMAL;
- if Opt.Password='' then exit;
- //TODO:!!!
-{ Options.Files := Copy(FInfo.ItemFileNames_);
- Options.IDs := Copy(FInfo.ItemIDs_);
- Options.Selected := Copy(FInfo.ItemSelected_);   }
- Options.Password := Opt.Password;
- Options.CryptOptions := CryptOptions;
- Options.Action := ACTION_CRYPT_IMAGES;
- TCryptingImagesThread.Create(Options);
+  Opt := GetPassForCryptImageFile(TA('SelectedObjects', DBMenuID));
+  if Opt.SaveFileCRC then
+    CryptOptions := CRYPT_OPTIONS_SAVE_CRC
+  else
+    CryptOptions := CRYPT_OPTIONS_NORMAL;
+  if Opt.Password = '' then
+    Exit;
+  // TODO:!!!
+  { Options.Files := Copy(FInfo.ItemFileNames_);
+    Options.IDs := Copy(FInfo.ItemIDs_);
+    Options.Selected := Copy(FInfo.ItemSelected_); }
+  Options.Password := Opt.Password;
+  Options.CryptOptions := CryptOptions;
+  Options.Action := ACTION_CRYPT_IMAGES;
+  TCryptingImagesThread.Create(FOwner, Options);
 end;
 
 procedure TDBPopupMenu.DateItemPopUpMenu_(Sender: TObject);
@@ -506,7 +512,7 @@ begin
     EventInfo.IsDate:=True;
     for i:=0 to FInfo.Count-1 do
     if FInfo[i].Selected then
-    DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Date,EventID_Param_IsDate],EventInfo);
+    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Date,EventID_Param_IsDate],EventInfo);
    end else
    begin
     _sqlexectext:='Update $DB$ Set IsDate = FALSE Where ID in (';
@@ -525,7 +531,7 @@ begin
     EventInfo.IsDate:=FALSE;
     for i:=0 to FInfo.Count-1 do
     if finfo[i].Selected then
-    DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_IsDate],EventInfo);
+    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_IsDate],EventInfo);
    end;
    //[END] Date Support
    //[BEGIN] Time Support
@@ -549,7 +555,7 @@ begin
     EventInfo.IsTime:=True;
     for i:=0 to finfo.Count-1 do
     if finfo[i].Selected then
-    DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Time,EventID_Param_IsTime],EventInfo);
+    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Time,EventID_Param_IsTime],EventInfo);
    end else
    begin
     _sqlexectext:='Update $DB$ Set IsTime = FALSE Where ID in (';
@@ -568,7 +574,7 @@ begin
     EventInfo.IsTime:=FALSE;
     for i:=0 to FInfo.Count-1 do
     if finfo[i].Selected then
-    DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_IsTime],EventInfo);
+    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_IsTime],EventInfo);
    end;
    //[END] Time Support
   end;
@@ -612,7 +618,7 @@ begin
  Options.Action:=ACTION_DECRYPT_IMAGES;
  Options.Password:=Password;
  Options.CryptOptions:=0;
- TCryptingImagesThread.Create(Options);
+ TCryptingImagesThread.Create(FOwner, Options);
 end;
 
 procedure TDBPopupMenu.DeleteDublicatesItemPopUpMenu_(Sender: TObject);
@@ -651,7 +657,7 @@ begin
    SetSQL(fQuery,SQL_);
    ExecSQL(fQuery);
    EventInfo.Attr:=db_attr_norm;
-   DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Attr],EventInfo);
+   DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Attr],EventInfo);
    SetLength(S,1);
    for j:=0 to length(Files)-1 do
    begin
@@ -664,7 +670,7 @@ begin
       end;
      end;
     end;
-    DBKernel.DoIDEvent(Sender,IDs[j],[EventID_Param_Delete],EventInfo);
+    DBKernel.DoIDEvent(FOwner,IDs[j],[EventID_Param_Delete],EventInfo);
    end;
    FreeDS(fQuery);
   end;
@@ -708,7 +714,7 @@ begin
      end;
     end;
    end;
-   DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Delete],EventInfo);
+   DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Delete],EventInfo);
   end;
   FreeDS(fQuery);
  end;
@@ -740,7 +746,7 @@ begin
   ExecSQL(fQuery);
   for i:=0 to finfo.Count - 1 do
   if finfo[i].Selected then
-  DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Delete],EventInfo);
+  DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Delete],EventInfo);
   FreeDS(fQuery);
  end;
 end;
@@ -764,7 +770,7 @@ begin
  if FileExistsSafe(FInfo[fInfo.Position].FileName) then
  begin
   if GetImagePasswordFromUser(FInfo[fInfo.Position].FileName)<>'' then
-  DBKernel.DoIDEvent(Sender,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
+  DBKernel.DoIDEvent(FOwner,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
  end else
  begin
   Query := GetQuery;
@@ -773,13 +779,14 @@ begin
   SetSQL(Query,'SELECT * from $DB$ where ID='+IntToStr(ID));
   Query.Open;
   if GetImagePasswordFromUserBlob(Query.FieldByName('thum'),FInfo[fInfo.Position].FileName)<>'' then
-  DBKernel.DoIDEvent(Sender,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
+  DBKernel.DoIDEvent(FOwner,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
   Query.free;
  end;
 end;
 
-procedure TDBPopupMenu.Execute(x, y: integer; info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.Execute(Owner : TDBForm; x, y: integer; info: TDBPopupMenuInfo);
 begin
+  FOwner := Owner;
  FPopUpPoint:=Point(X,Y);
  if not FBusy then
  begin
@@ -800,12 +807,13 @@ begin
  end;
 end;
 
-procedure TDBPopupMenu.ExecutePlus(x, y: integer; info: TDBPopupMenuInfo;
+procedure TDBPopupMenu.ExecutePlus(Owner : TDBForm; x, y: integer; info: TDBPopupMenuInfo;
   Menus: TArMenuitem);
 var
    i :integer;
   _menuitem_nil : tmenuitem;
 begin
+  FOwner := Owner;
  FPopUpPoint:=Point(X,Y);
  FInfo.Assign(info);
  if Finfo.Count=0 then exit;
@@ -834,7 +842,7 @@ begin
  With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(FInfo[FInfo.Position].FileName);
-  SetPath(GetDirectory(FInfo[FInfo.Position].FileName));
+  SetPath(ExtractFilePath(FInfo[FInfo.Position].FileName));
   Show;
  end;
 end;
@@ -956,7 +964,7 @@ begin
         ExecSQL(FQuery);
         EventInfo.KeyWords := List[I].Value;
         for J := 0 to Length(List[I].IDs) - 1 do
-          DBKernel.DoIDEvent(Sender, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
+          DBKernel.DoIDEvent(FOwner, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
       end;
 
     finally
@@ -1004,7 +1012,7 @@ begin
           ExecSQL(FQuery);
           EventInfo.Groups := List[I].Value;
           for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(Sender,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
+            DBKernel.DoIDEvent(FOwner,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
       end;
       finally
         FreeDS(fQuery);
@@ -1122,14 +1130,14 @@ begin
     begin
      SetPrivate(FInfo[i].ID);
      EventInfo.Access:=db_access_private;
-     DBKernel.DoIDEvent(Sender,FInfo[i].ID,[EventID_Param_Private],EventInfo);
+     DBKernel.DoIDEvent(FOwner,FInfo[i].ID,[EventID_Param_Private],EventInfo);
     end;
    end else begin
     if FInfo[i].Access=DB_Access_Private then
     begin
      UnSetPrivate(FInfo[i].ID);
      EventInfo.Access:=db_access_none;
-     DBKernel.DoIDEvent(Sender,FInfo[i].ID,[EventID_Param_Private],EventInfo);
+     DBKernel.DoIDEvent(FOwner,FInfo[i].ID,[EventID_Param_Private],EventInfo);
     end;
    end;
   end;
@@ -1209,7 +1217,7 @@ begin
   EventInfo.Image := nil;
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
-      DBKernel.DoIDEvent(Sender, FInfo[I].ID, [EventID_Param_Image], EventInfo);
+      DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Image], EventInfo);
 end;
 
 procedure TDBPopupMenu.RenameItemPopUpMenu_(Sender: TObject);
@@ -1227,7 +1235,7 @@ var
 begin
   NewSearch := SearchManager.NewSearch;
   NewSearch.SearchEdit.Text := ':ScanImageW(' + Finfo[Finfo.Position].FileName + ':1):';
-  NewSearch.SetPath(GetDirectory(Finfo[Finfo.Position].FileName));
+  NewSearch.SetPath(ExtractFilePath(Finfo[Finfo.Position].FileName));
   NewSearch.DoSearchNow(nil);
   NewSearch.Show;
   NewSearch.SetFocus;
@@ -1249,7 +1257,7 @@ begin
   NewSearch := SearchManager.NewSearch;
   // TODO:!!!
   NewSearch.SearchEdit.Text := ':Folder(' + Inttostr(Finfo[Finfo.Position].ID) + '):';
-  NewSearch.SetPath(GetDirectory(Finfo[Finfo.Position].FileName));
+  NewSearch.SetPath(ExtractFilePath(Finfo[Finfo.Position].FileName));
   NewSearch.DoSearchNow(nil);
   NewSearch.Show;
   NewSearch.SetFocus;
@@ -1336,25 +1344,25 @@ begin
   if FInfo[i].Selected then
   begin
    EventInfo.Rating:=NewRating;
-   DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Rating],EventInfo);
+   DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Rating],EventInfo);
   end;
   FreeDS(fQuery);
 end;
 
 procedure TDBPopupMenu.SetRotateItemPopUpMenu_(Sender: TObject);
 var
-  i : integer;
-  EventInfo : TEventValues;
-  NewRotate : Integer;
+  I: Integer;
+  EventInfo: TEventValues;
+  NewRotate: Integer;
 begin
- NewRotate:=(sender as Tmenuitem).tag;
- for i:=0 to FInfo.Count-1 do
- if FInfo[i].Selected then
- begin
-  SetRotate(finfo[i].ID,NewRotate);
-  EventInfo.Rotate:=NewRotate;
-  DBKernel.DoIDEvent(Sender,finfo[i].ID,[EventID_Param_Rotate],EventInfo);
- end;
+  NewRotate := (Sender as Tmenuitem).Tag;
+  for I := 0 to FInfo.Count - 1 do
+    if FInfo[I].Selected then
+    begin
+      SetRotate(Finfo[I].ID, NewRotate);
+      EventInfo.Rotate := NewRotate;
+      DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rotate], EventInfo);
+    end;
 end;
 
 procedure TDBPopupMenu.ShellExecutePopUpMenu_(Sender: TObject);
@@ -1372,8 +1380,7 @@ begin
  for i:=0 to FInfo.Count-1 do
  if FInfo[i].Selected then
  begin
-  s:=GetDirectory(Finfo[i].FileName);
-  UnFormatDir(s);
+  s:=ExtractFileDir(Finfo[i].FileName);
   if ShellExecute(0, nil, PWideChar(ProcessPath(Finfo[i].FileName)), nil, PWideChar(s), SW_NORMAL)<32 then
   EventLog(':TDBPopupMenu::ShellExecutePopUpMenu()/ShellExecute return < 32, path = '+Finfo[i].FileName);
  end;

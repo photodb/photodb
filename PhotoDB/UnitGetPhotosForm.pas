@@ -4,12 +4,13 @@ interface
 
 uses
   Registry, Windows, Messages, SysUtils, Variants, Classes,
-  Graphics, Controls, Forms, DateUtils,
+  Graphics, Controls, Forms, DateUtils, uShellIntegration,
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB,
   acDlgSelect, Math, UnitUpdateDBObject, UnitScanImportPhotosThread,
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants,
-  CCR.Exif, uMemory, uTranslate, uDBForm, uShellUtils;
+  CCR.Exif, uMemory, uTranslate, uDBForm, uShellUtils, uSysUtils,
+  uDBUtils, uDBTypes, uRuntime, uDBBaseTypes;
 
 type
   TGetImagesOptions = record
@@ -165,12 +166,12 @@ begin
   try
     MaxFiles := 500;
     FilesSearch := 4;
-    GetPhotosNamesFromDrive(Path, SupportedExt, Files, MaxFiles, FilesSearch);
+    GetFileNamesFromDrive(Path, SupportedExt, Files, MaxFiles, FilesSearch);
     if Files.Count = 0 then
     begin
       MaxFiles := 500;
       FilesSearch := 4;
-      GetPhotosNamesFromDrive(Path, Mask, Files, MaxFiles, FilesSearch);
+      GetFileNamesFromDrive(Path, Mask, Files, MaxFiles, FilesSearch);
       if Files.Count = 0 then
       begin
         MessageBoxDB(GetActiveFormHandle, Format(TA('Photos in the specified path: "%s" not found', 'GetPhotos'), [Path]), TA('Warning'),
@@ -448,8 +449,7 @@ begin
         Continue;
       Options := OptionsArray[I];
 
-      Folder := Options.ToFolder;
-      FormatDir(Folder);
+      Folder := IncludeTrailingBackslash(Options.ToFolder);
       Folder := Folder + FormatFolderName(Options.FolderMask, Options.Comment, Options.Date);
       CreateDirA(Folder);
       if not DirectoryExists(Folder) then
@@ -526,7 +526,7 @@ begin
       end
       else
         Mask := SupportedExt;
-      GetPhotosNamesFromDrive(FPath, Mask, Files, FilesSearch, MaxFiles);
+      GetFileNamesFromDrive(FPath, Mask, Files, FilesSearch, MaxFiles);
 
       Hide;
       if CbOpenFolder.Checked then

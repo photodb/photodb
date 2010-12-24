@@ -4,8 +4,8 @@ interface
 
 uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Dolphin_DB, jpeg, Menus,
-  uVistaFuncs, uMemory, uDBForm;
+  Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Menus, UnitDBKernel, jpeg,
+  uVistaFuncs, uMemory, uDBForm, uShellIntegration, Dolphin_DB;
 
 type
   GroupReplaceOptions = record

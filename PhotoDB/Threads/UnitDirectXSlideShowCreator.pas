@@ -5,7 +5,8 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
   GraphicsCool, Language, Effects, UnitDBCommonGraphics, uMemory,
-  ImageConverting, SyncObjs, uConstants;
+  ImageConverting, SyncObjs, uConstants, UnitDBKernel,
+  uGraphicUtils;
 
 type
   TDirectXSlideShowCreator = class(TThread)

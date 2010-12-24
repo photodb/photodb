@@ -2,7 +2,8 @@ unit UnitResampleFilters;
 
 interface
 
-uses Math, Windows, Graphics, SysUtils, GraphicsBaseTypes, uMath;
+uses Math, Windows, Graphics, SysUtils, GraphicsBaseTypes, uMath,
+  uEditorTypes;
 
   // Sample filters for use with Stretch()
   function SplineFilter(Value: Single): Single; inline;

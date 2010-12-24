@@ -22,11 +22,15 @@ type
   TInitializeProc = function(s:PChar) : integer;
 var
   Initproc : TInitializeProc;
+  KernelHandle : THandle;
 begin
-  if KernelHandle = 0 then
-    KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
-  @initproc := GetProcAddress(KernelHandle ,'Initialize');
-  initproc(PChar(ParamStr(0)));
+  KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
+  if KernelHandle <> 0 then
+  begin
+    @initproc := GetProcAddress(KernelHandle ,'Initialize');
+    initproc(PChar(ParamStr(0)));
+    FreeLibrary(KernelHandle);
+  end;
 end;
 
 end.

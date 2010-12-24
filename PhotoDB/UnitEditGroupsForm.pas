@@ -6,7 +6,8 @@ uses
   Dolphin_DB, UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
-  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, uDBForm;
+  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, uDBForm, uShellIntegration,
+  uGraphicUtils, uConstants;
 
 type
   TEditGroupsForm = class(TDBForm)
@@ -550,12 +551,10 @@ begin
           else
           begin
             if GroupExists(FShowenRegGroups[index].GroupCode) then
-            begin
-              (Control as TListBox).Canvas.Font.Color := ColorDiv2(clWindowText, clWindow);
-            end else
-            begin
+              (Control as TListBox).Canvas.Font.Color := ColorDiv2(clWindowText, clWindow)
+            else
               (Control as TListBox).Canvas.Font.Color := clWindowText;
-            end;
+
             (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
           end;
       Text := (Control as TListBox).Items[index];

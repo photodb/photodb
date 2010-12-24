@@ -9,7 +9,8 @@ uses
   UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
   UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, UnitDBCommon,
   CommonDBSupport, uFileUtils, uTranslate, uMemory, ActiveX,
-  uAssociatedIcons, uDBPopupMenuInfo, uConstants;
+  uAssociatedIcons, uDBPopupMenuInfo, uConstants, uGraphicUtils,
+  uDBBaseTypes, uDBFileTypes, uRuntime;
 
 type
   TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
@@ -738,8 +739,7 @@ begin
    QueryType:=QT_FOLDER;
    systemquery:=true;
 
-   Folder:=copy(sysaction,8,length(sysaction)-8);
-   FormatDir(Folder);
+   Folder:=IncludeTrailingBackslash(copy(sysaction,8,length(sysaction)-8));
 
    Result.Query:=Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
    Result.AddIntParam('CRC', GetPathCRC(Folder));

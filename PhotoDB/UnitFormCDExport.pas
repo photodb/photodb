@@ -8,7 +8,7 @@ uses
   Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
   DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
   AppEvnts, uVistaFuncs, DB, uAssociatedIcons, WatermarkedEdit, uMemory,
-  uDBForm;
+  uDBForm, uShellIntegration, uRuntime, uConstants;
 
 type
   TFormCDExport = class(TDBForm)
@@ -426,7 +426,7 @@ begin
   Options.CreatePortableDB := CheckBoxCreatePortableDB.Checked;
   Options.OnEnd := OnThreadEnd;
 
-  TCDExportThread.Create(Mapping, Options);
+  TCDExportThread.Create(Self, Mapping, Options);
 end;
 
 procedure TFormCDExport.Rename1Click(Sender: TObject);
@@ -548,8 +548,7 @@ var
 begin
   EnableControls(True);
 
-  Directory := GetDirectory(EditExportDirectory.Text);
-  Directory := IncludeTrailingBackslash(Directory);
+  Directory := ExtractFilePath(EditExportDirectory.Text);
   Directory := Directory + Mapping.CDLabel;
   Directory := IncludeTrailingBackslash(Directory);
 

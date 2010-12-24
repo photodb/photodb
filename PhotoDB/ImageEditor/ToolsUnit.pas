@@ -4,7 +4,8 @@ interface
 
 uses
   ExtCtrls, Classes, Graphics, ImageHistoryUnit, ComCtrls, Menus, Controls,
-  GraphicsBaseTypes, Forms, StrUtils, SysUtils, uDBForm;
+  GraphicsBaseTypes, Forms, StrUtils, SysUtils, uDBForm, uEditorTypes,
+  uTranslate;
 
 type
   TToolsPanelClass = class(TPanel)
@@ -17,7 +18,7 @@ type
     FSetTempImage: TSetPointerToNewImage;
     FImageHistory: TBitmapHistory;
     FProgress: TProgressBar;
-    FEditor: TDBForm;
+    FEditor: TImageEditorForm;
     procedure SetOnClose(const Value: TNotifyEvent);
     procedure SetImage(const Value: TBitmap);
     procedure SetSetImagePointer(const Value: TSetPointerToNewImage);
@@ -25,8 +26,11 @@ type
     procedure SetSetTempImage(const Value: TSetPointerToNewImage);
     procedure SetImageHistory(const Value: TBitmapHistory);
     procedure SetProgress(const Value: TProgressBar);
+  protected
+    function LangID: string; virtual; abstract;
   public
     { Public declarations }
+    function L(StringToTranslate : string) : string;
     class function ID: string; virtual;
     function GetProperties: string; virtual; abstract;
     procedure SetProperties(Properties: string); virtual; abstract;
@@ -37,7 +41,6 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure ClosePanel; virtual;
-  published
     property OnClosePanel: TNotifyEvent read FOnClose write SetOnClose;
     property Image: TBitmap read FImage write SetImage;
     procedure MakeTransform; virtual;
@@ -46,7 +49,7 @@ type
     property CancelTempImage: TCancelTemporaryImage read FCancelTempImage write SetCancelTempImage;
     property ImageHistory: TBitmapHistory read FImageHistory write SetImageHistory;
     property Progress: TProgressBar read FProgress write SetProgress;
-    property Editor: TDBForm read FEditor write FEditor;
+    property Editor: TImageEditorForm read FEditor write FEditor;
   end;
 
 implementation
@@ -73,21 +76,23 @@ begin
   inherited;
 end;
 
-function TToolsPanelClass.GetBoolValueByName(Properties, name: string; default: Boolean): Boolean;
+function TToolsPanelClass.GetBoolValueByName(Properties, name: string; Default: Boolean): Boolean;
 var
   Val: string;
 begin
   Val := GetValueByName(Properties, name);
-  Result := default;
-  Result := AnsiUpperCase(Val) = 'TRUE';
+  if Val = '' then
+    Result := Default
+  else
+    Result := AnsiUpperCase(Val) = 'TRUE';
 end;
 
-function TToolsPanelClass.GetIntValueByName(Properties, name: string; default: Integer): Integer;
+function TToolsPanelClass.GetIntValueByName(Properties, name: string; Default: Integer): Integer;
 var
   Val: string;
 begin
   Val := GetValueByName(Properties, name);
-  Result := StrToIntDef(Val, default);
+  Result := StrToIntDef(Val, Default);
 end;
 
 function TToolsPanelClass.GetValueByName(Properties, name: string): string;
@@ -109,6 +114,11 @@ end;
 class function TToolsPanelClass.ID: string;
 begin
   Result := '{73899C26-6964-494E-B5F6-46E65BD50DB7}';
+end;
+
+function TToolsPanelClass.L(StringToTranslate: string): string;
+begin
+  Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, LangID);
 end;
 
 procedure TToolsPanelClass.MakeTransform;

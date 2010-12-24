@@ -2,36 +2,38 @@ unit ExEffects;
 
 interface
 
-uses Effects, StdCtrls, Graphics, GraphicsBaseTypes, Forms, StrUtils, SysUtils;
+uses
+  Effects, StdCtrls, Graphics, GraphicsBaseTypes, Forms, StrUtils, SysUtils,
+  uEditorTypes;
 
-type TExEffect = class(TObject)
+type
+  TExEffect = class(TObject)
   private
+    { Private declarations }
     FSetImageProc: TSetPointerToNewImage;
     FEditor: TForm;
     procedure SetSetImageProc(const Value: TSetPointerToNewImage);
     procedure SetEditor(const Value: TForm);
-    { Private declarations }
   public
-   constructor Create; virtual;
-   destructor Destroy; override;
-   class function ID : string; virtual;
-   function GetProperties : string; virtual;
-   procedure SetProperties(Properties : string); virtual;
-   function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; virtual;
-   function GetName : String; virtual;
-   function GetBestValue : integer; virtual;
-   Procedure GetPreview(S,D : TBitmap); virtual;
-   Property SetImageProc : TSetPointerToNewImage read FSetImageProc write SetSetImageProc;
-   property Editor : TForm read FEditor write SetEditor;
-   function GetValueByName(Properties, Name: string): string;
-   function GetIntValueByName(Properties, Name: string; Default : integer): integer;
-   function GetBoolValueByName(Properties, Name: string; Default : boolean): boolean;
-   { Public declarations }
+    { Public declarations }
+    constructor Create; virtual;
+    destructor Destroy; override;
+    class function ID: string; virtual;
+    function GetProperties: string; virtual;
+    procedure SetProperties(Properties: string); virtual;
+    function Execute(S, D: TBitmap; Panel: TGroupBox; AMakeImage: Boolean): Boolean; virtual;
+    function GetName: string; virtual;
+    function GetBestValue: Integer; virtual;
+    procedure GetPreview(S, D: TBitmap); virtual;
+    property SetImageProc: TSetPointerToNewImage read FSetImageProc write SetSetImageProc;
+    property Editor: TForm read FEditor write SetEditor;
+    function GetValueByName(Properties, name: string): string;
+    function GetIntValueByName(Properties, name: string; default: Integer): Integer;
+    function GetBoolValueByName(Properties, name: string; default: Boolean): Boolean;
   end;
 
 type
   TExEffectsClass = class of TExEffect;
-
   TExEffects = array of TExEffectsClass;
 
 implementation
@@ -40,41 +42,41 @@ uses ImEditor, Variants;
 
 { TExEffect }
 
-function TExEffect.GetValueByName(Properties, Name: string): string;
+function TExEffect.GetValueByName(Properties, name: string): string;
 var
-  str : string;
-  pbegin, pend : integer;
+  Str: string;
+  Pbegin, Pend: Integer;
 begin
- pbegin:=Pos('[',Properties);
- pend:=PosEx(';]',Properties,pbegin);
- str:=Copy(Properties,pbegin,pend-pbegin+1);
- pbegin:=Pos(Name+'=',str)+Length(Name)+1;
- pend:=PosEx(';',str,pbegin);
- Result:=Copy(str,pbegin,pend-pbegin);
+  Pbegin := Pos('[', Properties);
+  Pend := PosEx(';]', Properties, Pbegin);
+  Str := Copy(Properties, Pbegin, Pend - Pbegin + 1);
+  Pbegin := Pos(name + '=', Str) + Length(name) + 1;
+  Pend := PosEx(';', Str, Pbegin);
+  Result := Copy(Str, Pbegin, Pend - Pbegin);
 end;
 
 constructor TExEffect.Create;
 begin
 end;
 
-function TExEffect.GetBestValue : integer;
+function TExEffect.GetBestValue: Integer;
 begin
- Result:=-1;
+  Result := -1;
 end;
 
-function TExEffect.Execute(S, D: TBitmap; Panel: TGroupBox; aMakeImage : boolean): boolean;
+function TExEffect.Execute(S, D: TBitmap; Panel: TGroupBox; AMakeImage: Boolean): Boolean;
 begin
- result:=false;
+  Result := False;
 end;
 
-function TExEffect.GetName: String;
+function TExEffect.GetName: string;
 begin
- Result:='';
+  Result := '';
 end;
 
 procedure TExEffect.GetPreview(S, D: TBitmap);
 begin
- D.Assign(S);
+  D.Assign(S);
 end;
 
 procedure TExEffect.SetSetImageProc(const Value: TSetPointerToNewImage);
@@ -90,13 +92,13 @@ end;
 destructor TExEffect.Destroy;
 begin
   if EditorsManager.IsEditor(FEditor) then
-  (FEditor as TImageEditor).StatusBar1.Panels[0].Text:='';
+    (FEditor as TImageEditor).StatusBar1.Panels[0].Text := '';
   inherited;
 end;
 
 class function TExEffect.ID: string;
 begin
- Result:='{005943F7-CD7E-4B79-8D1A-0489C47C85A0}';
+  Result := '{005943F7-CD7E-4B79-8D1A-0489C47C85A0}';
 end;
 
 function TExEffect.GetProperties: string;
@@ -109,22 +111,20 @@ begin
 //
 end;
 
-function TExEffect.GetBoolValueByName(Properties, Name: string;
-  Default: boolean): boolean;
+function TExEffect.GetBoolValueByName(Properties, name: string; Default: Boolean): Boolean;
 var
-  Val : string;
+  Val: string;
 begin
- Val:=AnsiUpperCase(GetValueByName(Properties, Name));
- Result:=Default;
- if Val='TRUE' then Result:=true;
- if Val='FALSE' then Result:=false;
+  Val := AnsiUpperCase(GetValueByName(Properties, name));
+  if Val = '' then
+    Result := Default
+  else
+    Result := Val = 'TRUE';
 end;
 
-function TExEffect.GetIntValueByName(Properties, Name: string;
-  Default: integer): integer;
+function TExEffect.GetIntValueByName(Properties, name: string; Default: Integer): Integer;
 begin
- Result:=StrToIntDef(GetValueByName(Properties, Name),Default);
+  Result := StrToIntDef(GetValueByName(Properties, name), Default);
 end;
 
 end.
-

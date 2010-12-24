@@ -6,7 +6,8 @@ uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
      Math, uScript, UnitCDMappingSupport, uFileUtils, ImageConverting,
-     UnitDBCommon;
+     UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
+     uDBFileTypes, uGraphicUtils, uSysUtils;
 
 procedure DoActivation;
 procedure GetUpdates(ShowInfo : boolean);
@@ -255,9 +256,8 @@ function SelectDir(Text: string): string;
 var
   Dir: string;
 begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Application.Handle, Text, Dolphin_DB.UseSimpleSelectFolderDialog);
-  FormatDir(Dir);
-  Result := Dir;
+  Dir := UnitDBFileDialogs.DBSelectDir(Application.Handle, Text, UseSimpleSelectFolderDialog);
+  Result := IncludeTrailingBackslash(Dir);
 end;
 
 procedure AMakeDBFileTree;
@@ -283,7 +283,7 @@ var
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Info := Dolphin_DB.RecordsInfoOne(FileName, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False, False, True, '');
+  Info := RecordsInfoOne(FileName, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False, False, True, '');
   Viewer.Execute(nil, Info);
   Viewer.Show;
 end;

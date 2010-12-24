@@ -4,9 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, dolphin_db, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
+  Dialogs, StdCtrls, UnitDBKernel, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
   uVistaFuncs, CommonDBSupport, UnitPasswordKeeper, ImgList,
-  UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants;
+  UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants,
+  uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils;
 
 type
   TCMDForm = class(TForm)

@@ -3,7 +3,8 @@ unit uDBDrawing;
 interface
 
 uses Windows, SysUtils, Graphics, UnitDBDeclare, CCR.Exif, UnitDBCommon, Math,
-     Classes, GraphicsBaseTypes, uConstants, uMemory, uFileUtils;
+     Classes, GraphicsBaseTypes, uConstants, uMemory, uFileUtils,
+     uRuntime;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : integer; ID : integer = 0);
 procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
@@ -12,7 +13,8 @@ function RectInRect(const R1, R2 : TRect) : Boolean;
 
 implementation
 
-uses UnitDBKernel, Dolphin_DB, ExplorerUnit;
+uses
+  UnitDBKernel, ExplorerUnit;
 
 procedure DrawAttributes(Bitmap : TBitmap; PistureSize : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
 var

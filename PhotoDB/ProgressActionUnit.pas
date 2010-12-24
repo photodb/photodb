@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, DmProgress, Language, Dolphin_DB, AppEvnts,
-  uVistaFuncs, uGOM, uMemory;
+  uVistaFuncs, uGOM, uMemory, uShellIntegration, uSysUtils;
 
 type
   TProgressActionForm = class(TForm)

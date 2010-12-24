@@ -3,8 +3,8 @@ unit UnitThreadShowBadLinks;
 interface
 
 uses
-  Classes, Language, Dolphin_DB, UnitLinksSupport, DB, SysUtils,
-  CommonDBSupport, UnitDBDeclare;
+  Classes, Language, uDBBaseTypes, uDBTypes, UnitLinksSupport, DB, SysUtils,
+  CommonDBSupport, UnitDBDeclare, uDBUtils;
 
 type
   TThreadShowBadLinks = class(TThread)

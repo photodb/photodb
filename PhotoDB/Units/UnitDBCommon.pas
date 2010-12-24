@@ -3,7 +3,7 @@ unit UnitDBCommon;
 interface
 
 uses Windows, Classes, Forms, Math, SysUtils, uScript, UnitScripts, Messages,
-     ReplaseIconsInScript, uTime, uMemory;
+     ReplaseIconsInScript, uTime, uMemory, uFileUtils;
 
 function Hash_Cos_C(s:string):integer;
 function ActivateApplication(const Handle1: THandle): Boolean;
@@ -18,6 +18,7 @@ function StringToHexString(text : String) : string;
 function HexStringToString(text : String) : string;
 
 var
+  ProcessorCount: Integer = 0;
   RAWImages: string = 'CR2|';
   TempRAWMask: string = '|THUMB|JPG|TIFF|PBB|';
   SupportedExt : String = '|BMP|JFIF|JPG|JPE|JPEG|RLE|DIB|WIN|VST|VDA|TGA|ICB|TIFF|TIF|FAX|EPS|PCC|PCX|RPF|RLA|SGI|RGBA|RGB|BW|PSD|PDD|PPM|PGM|PBM|CEL|PIC|PCD|GIF|CUT|PSP|PNG|THM|';
@@ -310,5 +311,17 @@ function ProgramDir : string;
 begin
   Result := ExtractFileDir(ParamStr(0)) + '\';
 end;
+
+function GettingProcNum: Integer; // Win95 or later and NT3.1 or later
+var
+  Struc: _SYSTEM_INFO;
+begin
+  GetSystemInfo(Struc);
+  Result := Struc.DwNumberOfProcessors;
+end;
+
+initialization
+
+  ProcessorCount := GettingProcNum;
 
 end.

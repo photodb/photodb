@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
   Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes,
-  ImageConverting, uMemory;
+  ImageConverting, uMemory, uGraphicUtils, uDBGraphicTypes;
 
 type
   TPropertyLoadGistogrammThreadOptions = record

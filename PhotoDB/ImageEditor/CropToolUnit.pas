@@ -2,27 +2,22 @@ unit CropToolUnit;
 
 interface
 
-{$DEFINE PHOTODB}
+uses
+  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit, language,
+  EffectsLanguage, GraphicsBaseTypes, UnitDBKernel, Menus;
 
-uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-     GraphicsCool, Math, SysUtils, ImageHistoryUnit, language,
-     EffectsLanguage, GraphicsBaseTypes,
-
-    {$IFDEF PHOTODB}
-      Dolphin_DB,
-    {$ENDIF}
-
-     Menus;
-
-type TCropToolPanelClass = Class(TToolsPanelClass)
+type
+  TCropToolPanelClass = class(TToolsPanelClass)
   private
-  CloseLink : TWebLink;
-  MakeItLink : TWebLink;
-  SaveSettingsLink : TWebLink;
-  EditWidth : TEdit;
-  EditHeight : TEdit;
-  EditWidthLabel : TLabel;
-  EditHeightLabel : TLabel;
+    { Private declarations }
+    CloseLink: TWebLink;
+    MakeItLink: TWebLink;
+    SaveSettingsLink: TWebLink;
+    EditWidth: TEdit;
+    EditHeight: TEdit;
+    EditWidthLabel: TLabel;
+    EditHeightLabel: TLabel;
     FFirstPoint: TPoint;
     FSecondPoint: TPoint;
     FMakingRect: Boolean;
@@ -31,18 +26,18 @@ type TCropToolPanelClass = Class(TToolsPanelClass)
     FxLeft: Boolean;
     FxRight: Boolean;
     FxBottom: Boolean;
-    FxCenter: boolean;
+    FxCenter: Boolean;
     FBeginDragPoint: TPoint;
     FBeginFirstPoint: TPoint;
     FBeginSecondPoint: TPoint;
-    EditLock : Boolean;
+    EditLock: Boolean;
     FProcRecteateImage: TNotifyEvent;
-    CheckProportions : TCheckBox;
-    EditPrWidth : TEdit;
-    EditPrHeight : TEdit;
-    EditPrWidthLabel : TLabel;
-    EditPrHeightLabel : TLabel;
-    FKeepProportions: boolean;
+    CheckProportions: TCheckBox;
+    EditPrWidth: TEdit;
+    EditPrHeight: TEdit;
+    EditPrWidthLabel: TLabel;
+    EditPrHeightLabel: TLabel;
+    FKeepProportions: Boolean;
     FProportionsWidth: Integer;
     FProportionsHeight: Integer;
     ComboBoxProp: TComboBox;
@@ -65,7 +60,6 @@ type TCropToolPanelClass = Class(TToolsPanelClass)
     procedure SetKeepProportions(const Value: boolean);
     procedure SetProportionsHeight(const Value: Integer);
     procedure SetProportionsWidth(const Value: Integer);
-    { Private declarations }
   public
    class function ID: string; override;
    function GetProperties : string; override;
@@ -144,7 +138,7 @@ begin
 
  EditWidth := TEdit.Create(AOwner);
  EditWidth.OnChange:=EditWidthChanged;
- EditWidth.Top:=25;        
+ EditWidth.Top:=25;
  EditWidth.Width:=60;
  EditWidth.Left:=10;
  EditWidth.Text:='0';
@@ -270,7 +264,7 @@ begin
  MakeItLink.Visible:=true;
  MakeItLink.Color:=ClBtnface;
  MakeItLink.OnClick:=DoMakeImage;
- MakeItLink.Icon:=IcoOK;     
+ MakeItLink.Icon:=IcoOK;
  MakeItLink.ImageCanRegenerate:=True;
  IcoOK.Free;
 
@@ -286,12 +280,11 @@ begin
  IcoCancel.Free;
 
  CloseLink.ImageCanRegenerate:=True;
- {$IFDEF PHOTODB}
+
  ComboBoxProp.ItemIndex:=DBKernel.ReadInteger('Editor','Crop_Tool_PropSelect',0);
  EditPrWidth.Text:=IntToStr(DBKernel.ReadInteger('Editor','Crop_Tool_Prop_W',15));
  EditPrHeight.Text:=IntToStr(DBKernel.ReadInteger('Editor','Crop_Tool_Prop_H',10));
  CheckProportions.Checked:=DBKernel.ReadBool('Editor','Crop_Tool_Save_Prop',false);
- {$ENDIF}
 end;
 
 destructor TCropToolPanelClass.Destroy;
@@ -507,7 +500,7 @@ begin
 
 
   if Assigned(FProcRecteateImage) then FProcRecteateImage(Self);
- end;   
+ end;
 end;
 
 procedure TCropToolPanelClass.EditPrWidthChange(Sender: TObject);
@@ -725,12 +718,10 @@ end;
 
 procedure TCropToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
- {$IFDEF PHOTODB}
- DBKernel.WriteInteger('Editor','Crop_Tool_PropSelect',ComboBoxProp.ItemIndex);
- DBKernel.WriteInteger('Editor','Crop_Tool_Prop_W',StrToIntDef(EditPrWidth.Text,15));
- DBKernel.WriteInteger('Editor','Crop_Tool_Prop_H',StrToIntDef(EditPrHeight.Text,10));
- DBKernel.WriteBool('Editor','Crop_Tool_Save_Prop',CheckProportions.Checked);
- {$ENDIF}
+  DBKernel.WriteInteger('Editor', 'Crop_Tool_PropSelect', ComboBoxProp.ItemIndex);
+  DBKernel.WriteInteger('Editor', 'Crop_Tool_Prop_W', StrToIntDef(EditPrWidth.Text, 15));
+  DBKernel.WriteInteger('Editor', 'Crop_Tool_Prop_H', StrToIntDef(EditPrHeight.Text, 10));
+  DBKernel.WriteBool('Editor', 'Crop_Tool_Save_Prop', CheckProportions.Checked);
 end;
 
 procedure TCropToolPanelClass.ChangeSize(Sender: TObject);

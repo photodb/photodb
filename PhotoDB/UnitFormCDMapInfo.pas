@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel, Language,
-  UnitCDMappingSupport, uVistaFuncs, uDBForm;
+  UnitCDMappingSupport, uShellIntegration, uVistaFuncs, uDBForm;
 
 type
   TFormCDMapInfo = class(TDBForm)
@@ -107,7 +107,7 @@ procedure TFormCDMapInfo.BtnSelectDriveClick(Sender: TObject);
 var
   CDLabel: string;
 begin
-  CDLabel := AddCDLocation(FCDName);
+  CDLabel := AddCDLocation(Handle, FCDName);
   if CDLabel = '' then
     Exit;
   if AnsiLowerCase(CDLabel) <> AnsiLowerCase(EditCDName.Text) then

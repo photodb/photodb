@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Dolphin_DB, FormManegerUnit, StdCtrls, WatermarkedEdit,
-  uVistaFuncs, uDBForm;
+  Dialogs, UnitDBkernel, FormManegerUnit, StdCtrls, WatermarkedEdit,
+  uVistaFuncs, uDBForm, uShellIntegration;
 
 type
   TAddSessionPasswordForm = class(TDBForm)

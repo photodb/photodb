@@ -2,8 +2,9 @@ unit uThreadForm;
 
 interface
 
-uses Classes, Forms, SyncObjs, Dolphin_DB, uDBForm, uImageSource,
-Graphics;
+uses
+  Classes, Forms, SyncObjs, Dolphin_DB, uDBForm, uImageSource,
+  Graphics, uSysUtils;
 
 type
   TThreadForm = class(TDBForm)

@@ -258,7 +258,7 @@ var
 begin
   FSync.Enter;
   try
-    FormatDir(Directory);
+    Directory := IncludeTrailingBackslash(Directory);
     Result.Directory := '';
     for I := 1 to 4 do
       F(Result.Images[I]);
@@ -316,7 +316,7 @@ begin
   FSync.Enter;
   try
     B := False;
-    FormatDir(FolderImages.Directory);
+    FolderImages.Directory := IncludeTrailingBackslash(FolderImages.Directory);
     for I := 0 to Length(FImages) - 1 do
     begin
       if AnsiLowerCase(FImages[I].Directory) = AnsiLowerCase(FolderImages.Directory) then

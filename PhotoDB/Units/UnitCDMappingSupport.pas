@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Classes, SysUtils, StrUtils, UnitDBFileDialogs,
-  Dolphin_DB, UnitDBDeclare, uVistaFuncs, uFileUtils,
-  uMemory, uTranslate, uConstants;
+  uShellIntegration, UnitDBDeclare, uVistaFuncs, uFileUtils,
+  uMemory, uTranslate, uConstants, uDBBaseTypes, uDBUtils;
 
 type
  // File strusts//////////////////////////////////////
@@ -164,7 +164,7 @@ var
 
 function ProcessPath(FileName: string; CanUserNotify: Boolean = False): string;
 procedure DoProcessPath(var FileName: string; CanUserNotify: Boolean = False);
-function AddCDLocation(CDName: string = ''): string;
+function AddCDLocation(Handle : THandle; CDName: string): string;
 procedure UnProcessPath(var FileName: string);
 function StaticPath(FileName: string): Boolean;
 
@@ -207,7 +207,7 @@ var
   SearchRec: TSearchRec;
 begin
   Result := '';
-  FormatDir(Dir);
+  Dir := IncludeTrailingBackslash(Dir);
 
   if FileExists(Dir + C_CD_MAP_FILE) then
   begin
@@ -236,7 +236,7 @@ begin
 end;
 
 
-function AddCDLocation(CDName: string = ''): string;
+function AddCDLocation(Handle : THandle; CDName: string): string;
 var
   OpenDialog: DBOpenDialog;
   Path, Dir: string;
@@ -266,7 +266,7 @@ begin
         if AnsiLowerCase(ExtractFileName(Path)) = AnsiLowerCase(C_CD_MAP_FILE) then
           LoadInfoByPath
         else
-          MessageBoxDB(GetActiveFormHandle, Format(
+          MessageBoxDB(Handle, Format(
             TA('Unable to find file %s by address "%s"', 'CDExport'), [C_CD_MAP_FILE, Path]),
             TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
       end;
@@ -280,7 +280,7 @@ begin
         end else
         begin
           if CDName <> '' then
-            if ID_YES = MessageBoxDB(GetActiveFormHandle,
+            if ID_YES = MessageBoxDB(Handle,
               Format(TA('In this directory file %s not found! Use this directory as root of drive "%s"?', 'CDExport'), [C_CD_MAP_FILE, CDName]),
               TA('Error'), TD_BUTTON_YESNO,
               TD_ICON_ERROR) then
@@ -361,14 +361,15 @@ var
 begin
   CreateDirectory(ExtractFileName(Directory));
   SelectDirectory(ExtractFileName(Directory));
-  FormatDir(Directory);
+
+  Directory := IncludeTrailingBackslash(Directory);
   Found := FindFirst(Directory + '*', FaDirectory, SearchRec);
   Info.MaxValue := 0;
   Info.Position := 0;
   Info.Information := '';
   Info.Terminate := False;
   N := 0;
-  Dolphin_DB.GetFileListByMask(Directory, '*.*', DBInfo, N, True);
+  GetFileListByMask(Directory, '*.*', DBInfo, N, True);
   for I := 0 to Length(DBInfo.ItemFileNames) - 1 do
   begin
     if DBInfo.ItemIds[I] = 0 then
@@ -492,8 +493,8 @@ begin
   if not SysUtils.DirectoryExists(Directory) then
     if not CreateDirA(Directory) then
       Exit;
-  FormatDir(Directory);
-  Directory := Directory + CDLabel;
+
+  Directory := IncludeTrailingBackslash(Directory) + CDLabel;
 
   if not SysUtils.DirectoryExists(Directory) then
     if not CreateDir(Directory) then
@@ -517,8 +518,7 @@ begin
     if PDirectory[I].IsFile then
     begin
       FileName := PDirectory[I].Name;
-      DirectoryName := Directory;
-      FormatDir(DirectoryName);
+      DirectoryName := IncludeTrailingBackslash(Directory);
       if AnsiLowerCase(PDirectory[I].RealFileName) <> AnsiLowerCase(DirectoryName + FileName) then
         if not Windows.CopyFile(PChar(PDirectory[I].RealFileName),
           PChar(DirectoryName + FileName), False) then
@@ -544,8 +544,7 @@ begin
   for I := 0 to PDirectory.Count - 1 do
     if not PDirectory[I].IsFile then
     begin
-      DirectoryName := Directory;
-      FormatDir(DirectoryName);
+      DirectoryName := IncludeTrailingBackslash(Directory);
       DirectoryName := DirectoryName + PDirectory[I].Name;
 
       if not SysUtils.DirectoryExists(DirectoryName) then
@@ -990,34 +989,35 @@ var
   FS: TFileStream;
 begin
   Result := True;
-  FormatDir(Directory);
-  Directory := Directory + CDLabel;
+  Directory := IncludeTrailingBackslash(Directory) + CDLabel;
 
   if not SysUtils.DirectoryExists(Directory) then
     if not CreateDir(Directory) then
       Exit;
 
-  FormatDir(Directory);
   try
-    FS := TFileStream.Create(Directory + 'DBCDMap.map', FmOpenWrite or FmCreate);
+    FS := TFileStream.Create(IncludeTrailingBackslash(Directory) + 'DBCDMap.map', FmOpenWrite or FmCreate);
   except
     Result := False;
     Exit;
   end;
-  FillChar(Header, SizeOf(Header), #0);
-  FillChar(HeaderV1, SizeOf(HeaderV1), #0);
-  Header.ID := 'PHOTODB_CD_INDEX';
-  Header.Version := 1;
-  Header.DBVersion := ReleaseNumber;
-  HeaderV1.CDLabel := CDLabel;
-  HeaderV1.Date := Now;
   try
-    FS.Write(Header, SizeOf(Header));
-    FS.Write(HeaderV1, SizeOf(HeaderV1));
-  except
-    Result := False;
+    FillChar(Header, SizeOf(Header), #0);
+    FillChar(HeaderV1, SizeOf(HeaderV1), #0);
+    Header.ID := 'PHOTODB_CD_INDEX';
+    Header.Version := 1;
+    Header.DBVersion := ReleaseNumber;
+    HeaderV1.CDLabel := CDLabel;
+    HeaderV1.Date := Now;
+    try
+      FS.Write(Header, SizeOf(Header));
+      FS.Write(HeaderV1, SizeOf(HeaderV1));
+    except
+      Result := False;
+    end;
+  finally
+    F(FS);
   end;
-  FS.Free;
 end;
 
 class function TCDIndexMapping.ReadMapFile(FileName: string): TCDIndexInfo;
@@ -1209,8 +1209,7 @@ begin
     CD := TCDClass(CDLoadedList[I]);
     if CD.Path <> '' then
     begin
-      CDPath := CD.Path;
-      UnFormatDir(CDPath);
+      CDPath := ExcludeTrailingBackslash(CD.Path);
       if AnsiLowerCase(Copy(Path, 1, Length(CDPath))) = AnsiLowerCase(CDPath) then
       begin
         Delete(Path, 1, Length(CDPath));

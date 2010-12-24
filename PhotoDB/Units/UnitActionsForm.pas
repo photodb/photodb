@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, WebLink, ImgList, Dolphin_DB, ImageHistoryUnit,
-  UnitDBDeclare, UnitDBFileDialogs, uDBForm, uMemory;
+  Dialogs, ExtCtrls, StdCtrls, WebLink, ImgList, ImageHistoryUnit,
+  UnitDBDeclare, UnitDBFileDialogs, uDBForm, uMemory, uFileUtils,
+  uDBFileTypes, uConstants;
 
 type
   TActionObject = class(TObject)

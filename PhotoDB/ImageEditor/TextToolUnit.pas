@@ -2,44 +2,36 @@ unit TextToolUnit;
 
 interface
 
-{$DEFINE PHOTODB}
-
 uses CustomSelectTool, Windows, Classes, Graphics, Effects, GraphicsBaseTypes, Math,
      StdCtrls, Controls, Language, Forms, SysUtils, ExtCtrls, Buttons, Spin,
-     {$IFDEF PHOTODB}
-     Dolphin_DB,
-     {$ENDIF}
-     Dialogs;
+     UnitDBKernel, Dialogs, uDBGraphicTypes;
 
-type TextToolClass = Class(TCustomSelectToolClass)
+type
+  TextToolClass = Class(TCustomSelectToolClass)
   private
-  TextMemoLabel : TStaticText;
-  TextMemo : TMemo;
-  FontNameLabel : TStaticText;
-  FontNameEdit : TComboBox;
-
-  FontSizeLabel : TStaticText;
-  FontSizeEdit : TComboBox;
-
-  FontColorEdit : TShape;
-  FontColorEditDialog : TColorDialog;
-  FontColorLabel : TStaticText;
-
-  RotateTextChooser : TRadioGroup;
-
-  LeftOrientationButton : TSpeedButton;
-  CenterOrientationButton : TSpeedButton;
-  RightOrientationButton : TSpeedButton;
-  OrientationLabel : TStaticText;
-
-  EnableOutline : TCheckBox;
-  OutLineSizeLabel : TStaticText;
-  OutLineSizeEdit : TSpinEdit;
-  OutLineColorLabel : TStaticText;
-  OutLineColorEdit : TShape;
-  Loading : boolean;
     { Private declarations }
+    TextMemoLabel: TStaticText;
+    TextMemo: TMemo;
+    FontNameLabel: TStaticText;
+    FontNameEdit: TComboBox;
+    FontSizeLabel: TStaticText;
+    FontSizeEdit: TComboBox;
+    FontColorEdit: TShape;
+    FontColorEditDialog: TColorDialog;
+    FontColorLabel: TStaticText;
+    RotateTextChooser: TRadioGroup;
+    LeftOrientationButton: TSpeedButton;
+    CenterOrientationButton: TSpeedButton;
+    RightOrientationButton: TSpeedButton;
+    OrientationLabel: TStaticText;
+    EnableOutline: TCheckBox;
+    OutLineSizeLabel: TStaticText;
+    OutLineSizeEdit: TSpinEdit;
+    OutLineColorLabel: TStaticText;
+    OutLineColorEdit: TShape;
+    Loading: Boolean;
   public
+    { Public declarations }
    class function ID: string; override;
    constructor Create(AOwner : TComponent); override;
    destructor Destroy; override;
@@ -48,13 +40,10 @@ type TextToolClass = Class(TCustomSelectToolClass)
    procedure OnTextChanged(Sender : TObject);
    procedure ColorClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
    procedure OutLineColorClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-
    procedure DoSaveSettings(Sender : TObject); override;
    procedure EnableOutlineClick(Sender : TObject);
-   
    Procedure SetProperties(Properties : String); override;
    Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
-    { Public declarations }
   end;
 
 implementation
@@ -102,13 +91,9 @@ begin
  TextMemo.ScrollBars:=ssVertical;
  TextMemo.OnChange:=OnTextChanged;
  TextMemo.Parent:=AOwner as TWinControl;
- {$IFDEF PHOTODB}
  if DBKernel.ReadString('Editor','TextToolText')<>'' then
  TextMemo.Text:=DBKernel.ReadString('Editor','TextToolText') else
  TextMemo.Text:=TEXT_MES_NEW_TEXT_LABEL;
- {$ELSE}
- TextMemo.Text:=TEXT_MES_NEW_TEXT_LABEL;
- {$ENDIF}
 
  FontNameLabel := TStaticText.Create(AOwner);
  FontNameLabel.Top:=TextMemo.Top+TextMemo.Height+5;
@@ -164,7 +149,7 @@ begin
  FontColorEdit.Height:=16;
  FontColorEdit.OnMouseDown:=ColorClick;
  FontColorEdit.Pen.Color:=0;
- 
+
  {$IFDEF PHOTODB}
  if DBKernel.ReadInteger('Editor','TextToolFontColor',-1)<>-1 then
  FontColorEdit.Brush.Color:=DBKernel.ReadInteger('Editor','TextToolFontColor',0) else
@@ -286,7 +271,7 @@ begin
  OutLineSizeEdit.OnChange:=OnTextChanged;
  OutLineSizeEdit.Parent:=self;
  OutLineSizeEdit.Enabled:=EnableOutline.Checked;
- 
+
  OutLineColorLabel := TStaticText.Create(AOwner);
  OutLineColorLabel.Left:=OutLineSizeEdit.Left+OutLineSizeEdit.Width+15;
  OutLineColorLabel.Top:=EnableOutline.Top+EnableOutline.Height+3;

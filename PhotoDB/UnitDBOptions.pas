@@ -5,10 +5,11 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Dolphin_DB, StdCtrls, CommonDBSupport, WebLink, Language,
-  UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, ExtCtrls, UnitDBCommonGraphics;
+  UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, ExtCtrls, UnitDBCommonGraphics,
+  UnitDBKernel, uShellIntegration, uDBForm;
 
 type
-  TFormDBOptions = class(TForm)
+  TFormDBOptions = class(TDBForm)
     Edit1: TEdit;
     Label1: TLabel;
     Label2: TLabel;
@@ -105,12 +106,12 @@ end;
 procedure TFormDBOptions.FormCreate(Sender: TObject);
 begin
  LoadLanguage;
- DBKernel.RegisterForm(Self);
+// DBKernel.RegisterForm(Self);
 end;
 
 procedure TFormDBOptions.FormDestroy(Sender: TObject);
 begin
- DBKernel.UnRegisterForm(Self);
+// DBKernel.UnRegisterForm(Self);
 end;
 
 procedure TFormDBOptions.LoadLanguage;
@@ -145,12 +146,12 @@ end;
 
 procedure TFormDBOptions.Button3Click(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetOldPath(DBFile.FileName);
-  SetPath(GetDirectory(DBFile.FileName));
-  Show;
- end;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetOldPath(DBFile.FileName);
+    SetPath(ExtractFileDir(DBFile.FileName));
+    Show;
+  end;
 end;
 
 procedure TFormDBOptions.Button1Click(Sender: TObject);
@@ -307,7 +308,7 @@ end;
 procedure TFormDBOptions.SetDefaultIcon(path : string = '');
 begin
   if Path = '' then
-    Path := GetDirectory(GetProgramPath) + 'Icons.dll,121';
+    Path := ExtractFilePath(Application.ExeName) + 'Icons.dll,121';
   DBFile.Icon := Path;
   SetIconToPictureFromPath(ImageIconPreview.Picture, Path);
 end;

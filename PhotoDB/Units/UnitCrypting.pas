@@ -2,11 +2,12 @@ unit UnitCrypting;
 
 interface
 
-uses dolphin_db, GraphicCrypt, DB, Windows, SysUtils,
-     UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils;
+uses
+  dolphin_db, GraphicCrypt, DB, Windows, SysUtils,
+  UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils,
+  uDBForm;
 
 const
-
   CRYPT_RESULT_UNDEFINED         = 0;
   CRYPT_RESULT_OK                = 1;
   CRYPT_RESULT_FAILED_CRYPT      = 2;
@@ -17,7 +18,7 @@ const
   CRYPT_RESULT_ALREADY_CRYPT     = 7;
   CRYPT_RESULT_ALREADY_DECRYPT   = 8;
 
-function CryptImageByFileName(Caller : TObject; FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
+function CryptImageByFileName(Caller : TDBForm; FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
 function ResetPasswordImageByFileName(Caller : TObject; FileName: String; ID: integer; Password : String) : integer;
 function CryptTStrings(TS : TStrings; Pass : String) : String;
 function DeCryptTStrings(S : String; Pass : String) : TStrings;
@@ -25,7 +26,8 @@ function CryptDBRecordByID(ID : integer; Password : String) : integer;
 
 implementation
 
-uses JPEG, CommonDBSupport;
+uses
+  JPEG, CommonDBSupport;
 
 function CryptDBRecordByID(ID : integer; Password : String) : integer;
 var
@@ -93,31 +95,35 @@ begin
   end;
 end;
 
-function CryptImageByFileName(Caller : TObject; FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
+function CryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
+  DoEvent: Boolean = True): Integer;
 var
-  info : TEventValues;
+  Info: TEventValues;
 begin
- info.Crypt:=true;
- Result:=CRYPT_RESULT_UNDEFINED;
- if ValidCryptGraphicFile(FileName) and FileExistsSafe(FileName) then
- begin
-  Result:=CRYPT_RESULT_ALREADY_CRYPT;
-  exit;
- end;
+  Info.Crypt := True;
+  Result := CRYPT_RESULT_UNDEFINED;
+  if ValidCryptGraphicFile(FileName) and FileExistsSafe(FileName) then
+  begin
+    Result := CRYPT_RESULT_ALREADY_CRYPT;
+    Exit;
+  end;
 
- if FileExistsSafe(FileName) then
- if not CryptGraphicFileV2(FileName, Password, Options) then
- begin
-  Result:=CRYPT_RESULT_FAILED_CRYPT_FILE;
-  exit;
- end;
- if ID<>0 then
- if CryptDBRecordByID(ID, Password)<>CRYPT_RESULT_OK then
- begin
-  Result:=CRYPT_RESULT_FAILED_CRYPT_DB;
- end;
+  if FileExistsSafe(FileName) then
+    if not CryptGraphicFileV2(FileName, Password, Options) then
+    begin
+      Result := CRYPT_RESULT_FAILED_CRYPT_FILE;
+      Exit;
+    end;
+  if ID <> 0 then
+    if CryptDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
+    begin
+      Result := CRYPT_RESULT_FAILED_CRYPT_DB;
+    end;
 
- if Result=CRYPT_RESULT_UNDEFINED then info.Crypt:=true else info.Crypt:=false;
+  if Result = CRYPT_RESULT_UNDEFINED then
+    Info.Crypt := True
+  else
+    Info.Crypt := False;
 
   if ID <> 0 then
     if DoEvent then

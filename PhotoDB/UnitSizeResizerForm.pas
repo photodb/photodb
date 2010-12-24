@@ -10,7 +10,7 @@ uses
   UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
   DmProgress, uW7TaskBar, PngImage, uGOM, uWatermarkOptions, uImageSource,
   UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView,
-  uDBPopupMenuInfo, uConstants;
+  uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime;
 
 type
   TFormSizeResizer = class(TThreadForm)

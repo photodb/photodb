@@ -5,9 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, UnitLinksSupport, ExtDlgs, GraphicEx,
-  acDlgSelect, DropSource, DropTarget, Dolphin_DB, ComCtrls, ImgList,
+  acDlgSelect, DropSource, DropTarget, uDBUtils, ComCtrls, ImgList,
   UnitDBKernel, DragDrop, DragDropFile, uVistaFuncs, ComboBoxExDB,
-  UnitDBFileDialogs, uDBForm, WatermarkedMemo, WatermarkedEdit;
+  UnitDBFileDialogs, uDBForm, WatermarkedMemo, WatermarkedEdit,
+  uShellIntegration, Dolphin_db, uConstants;
 
 type
   TFormEditLink = class(TDBForm)
@@ -187,7 +188,7 @@ begin
     LINK_TYPE_ID:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := Dolphin_DB.GetGraphicFilter;
+        OpenPictureDialog.Filter := GetGraphicFilter;
         if OpenPictureDialog.Execute then
           EdValue.Text := IntToStr(GetIdByFileName(OpenPictureDialog.FileName));
 
@@ -196,7 +197,7 @@ begin
     LINK_TYPE_IMAGE:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := Dolphin_DB.GetGraphicFilter;
+        OpenPictureDialog.Filter := GetGraphicFilter;
         if OpenPictureDialog.Execute then
           EdValue.Text := OpenPictureDialog.FileName;
         OpenPictureDialog.Free;
@@ -217,7 +218,7 @@ begin
     LINK_TYPE_ID_EXT:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := Dolphin_DB.GetGraphicFilter;
+        OpenPictureDialog.Filter := GetGraphicFilter;
         if OpenPictureDialog.Execute then
         begin
           EdValue.Text := CodeExtID(GetImageIDW(OpenPictureDialog.FileName, False).ImTh);
@@ -286,7 +287,7 @@ begin
         if DirectoryExists(DropFileTarget1.Files[0]) then
           S := DropFileTarget1.Files[0]
         else
-          S := GetDirectory(DropFileTarget1.Files[0]);
+          S := ExtractFileDir(DropFileTarget1.Files[0]);
         if S <> '' then
           EdValue.Text := S;
       end;

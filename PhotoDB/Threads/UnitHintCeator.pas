@@ -7,7 +7,8 @@ uses
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage,
   GraphicCrypt, UnitDBCommon, ImageConverting, uGOM, uFileUtils,
-  uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare;
+  uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare,
+  uGraphicUtils, uRuntime;
 
 type
   HintCeator = class(TThread)

@@ -3,7 +3,7 @@ unit UnitExportThread;
 interface
 
 uses
-  UnitGroupsWork, Classes, DB, dolphin_db, SysUtils, GraphicCrypt, ActiveX,
+  UnitGroupsWork, Classes, DB, UnitDBKernel, SysUtils, GraphicCrypt, ActiveX,
    win32crc, UnitDBDeclare, uFileUtils, uConstants;
 
 Type
@@ -285,9 +285,7 @@ try
 
   if OutTable.Fields.FindField('FolderCRC')<>nil then InTable.FieldByName('FolderCRC').AsInteger:=OutTable.FieldByName('FolderCRC').AsInteger else
   begin
-   folder:=GetDirectory(OutTable.FieldByName('FFileName').AsString);
-   AnsiLowerCase(folder);
-   UnFormatDir(folder);
+   folder:=AnsiLowerCase(ExtractFilePath(OutTable.FieldByName('FFileName').AsString));
    {$R-}
    CalcStringCRC32(AnsiLowerCase(folder),crc);
    InTable.FieldByName('FolderCRC').AsInteger:=crc;

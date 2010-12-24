@@ -66,7 +66,7 @@ end;
 
 procedure TImportProgressForm.FormCreate(Sender: TObject);
 begin
- DBKernel.RegisterForm(ImportProgressForm);
+// DBKernel.RegisterForm(ImportProgressForm);
  FormManager.RegisterMainForm(self);
  StatusLabel.Caption:=L('Waiting')+'...';
  ActionLabel.Caption:=L('Waiting')+'...';
@@ -97,7 +97,7 @@ end;
 procedure TImportProgressForm.FormDestroy(Sender: TObject);
 begin
  FormManager.UnRegisterMainForm(self);
- DBKernel.UnRegisterForm(ImportProgressForm);
+// DBKernel.UnRegisterForm(ImportProgressForm);
 end;
 
 procedure TImportProgressForm.Button2Click(Sender: TObject);

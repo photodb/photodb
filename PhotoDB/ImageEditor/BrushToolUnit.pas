@@ -2,14 +2,15 @@ unit BrushToolUnit;
 
 interface
 
-uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics,
+uses Windows, ToolsUnit, WebLink, Classes, Controls, Graphics,
      Language, Math, Forms, ComCtrls, StdCtrls, SysUtils,
      Dialogs, GraphicsCool, GraphicsBaseTypes, EffectsLanguage,
-     Dolphin_DB, ExtCtrls;
+     UnitDBKernel, ExtCtrls, uEditorTypes, uMemory;
 
 type
   TBrushToolClass = class(TToolsPanelClass)
   private
+    { Private declarations }
     BrushSizeCaption: TStaticText;
     BrushSizeTrackBar: TTrackBar;
     BrusTransparencyCaption: TStaticText;
@@ -37,7 +38,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure ButtonMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
-    { Private declarations }
+  protected
+    function LangID: string; override;
   public
     { Public declarations }
     MethodDrawChooser: TComboBox;
@@ -72,8 +74,6 @@ implementation
 
 { TBrushToolClass }
 
-uses ImEditor;
-
 procedure TBrushToolClass.ClosePanel;
 begin
   if Assigned(OnClosePanel) then
@@ -100,7 +100,7 @@ begin
   BrushSizeCaption := TStaticText.Create(AOwner);
   BrushSizeCaption.Top := 5;
   BrushSizeCaption.Left := 8;
-  BrushSizeCaption.Caption := TEXT_MES_EDITOR_BRUSH_SIZE_LABEL;
+  BrushSizeCaption.Caption := L('Brush size [%d]');
   BrushSizeCaption.Parent := Self;
 
   BrushSizeTrackBar := TTrackBar.Create(AOwner);
@@ -116,7 +116,7 @@ begin
   BrusTransparencyCaption := TStaticText.Create(AOwner);
   BrusTransparencyCaption.Top := BrushSizeTrackBar.Top + BrushSizeTrackBar.Height + 3;
   BrusTransparencyCaption.Left := 8;
-  BrusTransparencyCaption.Caption := TEXT_MES_TRANSPARENCY;
+  BrusTransparencyCaption.Caption := L('Transparency');
   BrusTransparencyCaption.Parent := Self;
 
   BrusTransparencyTrackBar := TTrackBar.Create(AOwner);
@@ -129,13 +129,13 @@ begin
   BrusTransparencyTrackBar.Position := DBKernel.ReadInteger('Editor', 'BrushTransparency', 100);
   BrusTransparencyTrackBar.Parent := Self;
 
-  BrusTransparencyCaption.Caption := Format(TEXT_MES_TRANSPARENCY_F, [IntToStr(BrusTransparencyTrackBar.Position)]);
+  BrusTransparencyCaption.Caption := Format(L('Transparency [%d]'), [BrusTransparencyTrackBar.Position]);
 
   LabelMethod := TLabel.Create(AOwner);
   LabelMethod.Left := 8;
   LabelMethod.Top := BrusTransparencyTrackBar.Top + BrusTransparencyTrackBar.Height + 5;
   LabelMethod.Parent := Self;
-  LabelMethod.Caption := TEXT_MES_METHOD + ':';
+  LabelMethod.Caption := L('Method') + ':';
 
   MethodDrawChooser := TComboBox.Create(AOwner);
   MethodDrawChooser.Top := LabelMethod.Top + LabelMethod.Height + 5;
@@ -145,8 +145,8 @@ begin
   MethodDrawChooser.Parent := Self;
   MethodDrawChooser.Style := CsDropDownList;
 
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_NORMAL);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_CHANGE_COLOR);
+  MethodDrawChooser.Items.Add(L('Normal'));
+  MethodDrawChooser.Items.Add(L('Color replace'));
   MethodDrawChooser.ItemIndex := DBKernel.ReadInteger('Editor', 'BrushToolStyle', 0);
   MethodDrawChooser.OnChange := BrushTransparencyChanged;
 
@@ -162,7 +162,7 @@ begin
   BrushColorCaption := TStaticText.Create(AOwner);
   BrushColorCaption.Top := MethodDrawChooser.Top + MethodDrawChooser.Height + 15;
   BrushColorCaption.Left := BrushColorChooser.Left + BrushColorChooser.Width + 5;
-  BrushColorCaption.Caption := TEXT_MES_EDITOR_BRUSH_COLOR_LABEL;
+  BrushColorCaption.Caption := L('Brush color');
   BrushColorCaption.Parent := Self;
 
   FButtonCustomColor := TButton.Create(Self);
@@ -171,7 +171,7 @@ begin
   FButtonCustomColor.Width := 80;
   FButtonCustomColor.Height := 21;
   FButtonCustomColor.Left := 8;
-  FButtonCustomColor.Caption := TEXT_MES_SELECT_COLOR;
+  FButtonCustomColor.Caption := L('Choose color');
   FButtonCustomColor.OnMouseDown := ButtonMouseDown;
   FButtonCustomColor.OnMouseMove := ButtonMouseMove;
   FButtonCustomColor.OnMouseUp := ButtonMouseUp;
@@ -183,12 +183,11 @@ begin
   IcoSave := TIcon.Create;
   IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
   IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
-
   IcoSave.Handle := LoadIcon(DBKernel.IconDllInstance, 'SAVETOFILE');
 
   SaveSettingsLink := TWebLink.Create(Self);
   SaveSettingsLink.Parent := AOwner as TWinControl;
-  SaveSettingsLink.Text := TEXT_MES_SAVE_SETTINGS;
+  SaveSettingsLink.Text := L('Save settings');
   SaveSettingsLink.Top := FButtonCustomColor.Top + FButtonCustomColor.Height + 15;
   SaveSettingsLink.Left := 10;
   SaveSettingsLink.Visible := True;
@@ -199,7 +198,7 @@ begin
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := AOwner as TWinControl;
-  MakeItLink.Text := TEXT_MES_IM_APPLY;
+  MakeItLink.Text := L('Apply');
   MakeItLink.Top := SaveSettingsLink.Top + SaveSettingsLink.Height + 5;
   MakeItLink.Left := 10;
   MakeItLink.Visible := True;
@@ -211,7 +210,7 @@ begin
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := AOwner as TWinControl;
-  CloseLink.Text := TEXT_MES_IM_CLOSE_TOOL_PANEL;
+  CloseLink.Text := L('Close tool');
   CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
   CloseLink.Left := 10;
   CloseLink.Visible := True;
@@ -225,17 +224,17 @@ end;
 
 destructor TBrushToolClass.Destroy;
 begin
-  BrushSizeCaption.Free;
-  BrushSizeTrackBar.Free;
-  BrusTransparencyCaption.Free;
-  BrusTransparencyTrackBar.Free;
-  BrushColorCaption.Free;
-  BrushColorChooser.Free;
-  BrushColorChooserDialog.Free;
+  F(BrushSizeCaption);
+  F(BrushSizeTrackBar);
+  F(BrusTransparencyCaption);
+  F(BrusTransparencyTrackBar);
+  F(BrushColorCaption);
+  F(BrushColorChooser);
+  F(BrushColorChooserDialog);
   if Cur <> 0 then
     DestroyIcon(Cur);
-  MakeItLink.Free;
-  CloseLink.Free;
+  F(MakeItLink);
+  F(CloseLink);
   inherited;
 end;
 
@@ -261,7 +260,7 @@ begin
   LastRect.Left := Max(0, LastRect.Left - Rad div 2);
   LastRect.Bottom := Min(Image.Height - 1, LastRect.Bottom + Rad div 2);
   LastRect.Right := Min(Image.Width - 1, LastRect.Right + Rad div 2);
-  (Editor as TImageEditor).Transparency := BrusTransparencyTrackBar.Position / 100;
+  Editor.Transparency := BrusTransparencyTrackBar.Position / 100;
   if Assigned(FProcRecteateImage) then
     FProcRecteateImage(Self);
 end;
@@ -272,6 +271,11 @@ begin
   NewImage.Assign(Image);
   SetTempImage(NewImage);
   Initialized:=true;
+end;
+
+function TBrushToolClass.LangID: string;
+begin
+  Result := 'BrushTool';
 end;
 
 procedure TBrushToolClass.MakeTransform;
@@ -330,9 +334,11 @@ var
   IconInfo : TIconInfo;
   bit : TBitmap;
 begin
- if not Initialized then exit;
- CurSize:=Min(500, Max(2,round(BrushSizeTrackBar.Position*(FOwner as TImageEditor).GetZoom)));
- if not (Editor as TImageEditor).VirtualBrushCursor then
+  if not Initialized then
+    Exit;
+
+  CurSize := Min(500, Max(2, Round(BrushSizeTrackBar.Position * Editor.Zoom)));
+  if not Editor.VirtualBrushCursor then
  begin
   bit:=TBitmap.Create;
   bit.PixelFormat:=pf1bit;
@@ -364,14 +370,14 @@ begin
   Screen.Cursors[67]:=Cur;
  end else
  begin
-  ClearBrush((Editor as TImageEditor).VBrush);
-  MakeRadialBrush((Editor as TImageEditor).VBrush,CurSize div 2);
+  ClearBrush(Editor.VBrush);
+  MakeRadialBrush(Editor.VBrush,CurSize div 2);
  end;
 end;
 
 procedure TBrushToolClass.BrushSizeChanged(Sender: TObject);
 begin
-  BrushSizeCaption.Caption := Format(TEXT_MES_EDITOR_BRUSH_SIZE_LABEL, [BrushSizeTrackBar.Position]);
+  BrushSizeCaption.Caption := Format(L('Brush size [%d]'), [BrushSizeTrackBar.Position]);
   NewCursor;
 end;
 
@@ -400,8 +406,8 @@ begin
   if not Initialized then
     Exit;
 
-  BrusTransparencyCaption.Caption := Format(TEXT_MES_TRANSPARENCY_F, [IntToStr(BrusTransparencyTrackBar.Position)]);
-  (Editor as TImageEditor).Transparency := BrusTransparencyTrackBar.Position / 100;
+  BrusTransparencyCaption.Caption := Format(L('Transparency [%d]'), [BrusTransparencyTrackBar.Position]);
+  Editor.Transparency := BrusTransparencyTrackBar.Position / 100;
 
   if Assigned(FProcRecteateImage) then
     FProcRecteateImage(Self);

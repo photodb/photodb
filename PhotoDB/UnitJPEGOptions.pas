@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB, uDBForm, JPEG,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, UnitDBKernel, uDBForm, JPEG,
   Language;
 
 type

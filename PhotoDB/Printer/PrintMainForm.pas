@@ -6,9 +6,9 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ShellAPI, StdCtrls, ExtCtrls, ComCtrls, jpeg,
   ScrollingImage, printers, ScrollingImageAddons, ImgList, Math, UnitPrinterTypes,
-  WebLink, SaveWindowPos, ExtDlgs, UnitDBFileDialogs,
+  WebLink, SaveWindowPos, ExtDlgs, UnitDBFileDialogs, UnitDBKernel,
   Dolphin_DB, GraphicCrypt, uVistaFuncs, UnitCDMappingSupport, uConstants,
-  Menus, uDBForm, uMemory, uTranslate;
+  Menus, uDBForm, uMemory, uTranslate, uShellIntegration, uFileUtils;
 
 type
   TPrintForm = class(TDBForm)

@@ -7,7 +7,8 @@ uses
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, ExtDlgs, Jpeg, Dolphin_DB,
   Menus, GraphicEx, Gifimage, Math, ComCtrls, ImgList, GraphicSelectEx,
   uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, uConstants,
-  uFileUtils, uMemory, uDBForm, WatermarkedEdit, WatermarkedMemo;
+  uFileUtils, uMemory, uDBForm, WatermarkedEdit, WatermarkedMemo,
+  uShellIntegration, uRuntime;
 
 type
   TNewGroupForm = class(TDBForm)
@@ -231,9 +232,7 @@ var
 begin
   Ts := TStringList.Create;
   Ts.Clear;
-  Directory := ProgramDir;
-  FormatDir(Directory);
-  Directory := Directory + PlugInImagesFolder;
+  Directory := IncludeTrailingBackslash(ProgramDir) + PlugInImagesFolder;
   Found := FindFirst(Directory + '*.jpgc', FaAnyFile, SearchRec);
   while Found = 0 do
   begin

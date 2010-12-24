@@ -1,38 +1,34 @@
 unit ExEffectsUnit;
 
-{$DEFINE PHOTODB}
-
 interface
 
-uses Windows, ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
-     Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs,
-     EffectsLanguage, Forms, OptimizeImageUnit
-{$IFDEF PHOTODB}
-     , Dolphin_DB, uGOM
-{$ENDIF}
-     ;
+uses
+  Windows, ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
+  Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs,
+  EffectsLanguage, Forms, OptimizeImageUnit, uEditorTypes, uGOM,
+  UnitDBKernel;
 
 type
   TGausBlur = class(TExEffect)
   private
-   FS,FD : Tbitmap;
-   FTrackBar : TTrackBar;
-   FTrackBarlabel : TLabel;
-   FSID : String;
     { Private declarations }
+    FS, FD: Tbitmap;
+    FTrackBar: TTrackBar;
+    FTrackBarlabel: TLabel;
+    FSID: string;
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-  function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
-  function GetName : String; override;
-  Procedure GetPreview(S,D : TBitmap); override;
-  Procedure MakeImage(Sender : TObject);
-  Procedure Progress(Progress : integer; var Break: boolean);
-  Procedure ExitThread(Image : TBitmap; SID : string);
-  function GetProperties : string; override;
-  procedure SetProperties(Properties : string); override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
+    function Execute(S, D: TBitmap; Panel: TGroupBox; AMakeImage: Boolean): Boolean; override;
+    function GetName: string; override;
+    procedure GetPreview(S, D: TBitmap); override;
+    procedure MakeImage(Sender: TObject);
+    procedure Progress(Progress: Integer; var Break: Boolean);
+    procedure ExitThread(Image: TBitmap; SID: string);
+    function GetProperties: string; override;
+    procedure SetProperties(Properties: string); override;
   end;
 
 type
@@ -58,24 +54,24 @@ type
 type
   TSharpen = class(TExEffect)
   private
-   FS,FD : Tbitmap;
-   FTrackBar : TTrackBar;
-   FTrackBarlabel : TLabel;
-   FSID : String;
     { Private declarations }
+    FS, FD: Tbitmap;
+    FTrackBar: TTrackBar;
+    FTrackBarlabel: TLabel;
+    FSID: string;
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-  function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
-  function GetName : String; override;
-  Procedure GetPreview(S,D : TBitmap); override;
-  Procedure MakeImage(Sender : TObject);
-  Procedure Progress(Progress : integer; var Break: boolean);
-  Procedure ExitThread(Image : TBitmap; SID : string);
-  function GetProperties : string; override;
-  procedure SetProperties(Properties : string); override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
+    function Execute(S, D: TBitmap; Panel: TGroupBox; AMakeImage: Boolean): Boolean; override;
+    function GetName: string; override;
+    procedure GetPreview(S, D: TBitmap); override;
+    procedure MakeImage(Sender: TObject);
+    procedure Progress(Progress: Integer; var Break: Boolean);
+    procedure ExitThread(Image: TBitmap; SID: string);
+    function GetProperties: string; override;
+    procedure SetProperties(Properties: string); override;
   end;
 
 type

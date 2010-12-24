@@ -2,13 +2,14 @@ unit OptimizeImageUnit;
 
 interface
 
-uses Windows, Graphics, GBlur2, GraphicsBaseTypes, ScanlinesFX;
+uses
+  Windows, Graphics, GBlur2, GraphicsBaseTypes, ScanlinesFX, uEditorTypes;
 
 type
-TConvolutionMatrix = record
- Matrix : array[0..24] of integer;
- Devider : integer;
- end;
+  TConvolutionMatrix = record
+    Matrix: array [0 .. 24] of Integer;
+    Devider: Integer;
+  end;
 
 type
   TRGBArray = ARRAY[0..32677] OF Windows.TRGBTriple;   // bitmap element (API windows)

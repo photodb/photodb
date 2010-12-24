@@ -2,13 +2,14 @@ unit GBlur2;
 
 interface 
 
-uses Windows, Graphics, GraphicsBaseTypes;
+uses
+  Windows, Graphics, GraphicsBaseTypes, uEditorTypes;
 
 type 
 
   PRGBTriple = ^TRGBTriple; 
   TRGBTriple = packed record
-    b: byte; //легче для использования чем типа rgbtBlue... 
+    b: byte;
     g: byte; 
     r: byte; 
   end; 

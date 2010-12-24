@@ -3,11 +3,11 @@ unit uAbout;
 interface
 
 uses
-  win32crc, dolphin_db, Searching, Windows, Messages, SysUtils,
+  win32crc, UnitDBKernel, Searching, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
   UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
-  uMemory, uTranslate;
+  uMemory, uTranslate, uRuntime, uActivationUtils;
 
 type
   TAboutForm = class(TForm)
@@ -105,7 +105,7 @@ begin
   else
     BtShowActivationForm.Visible := False;
   TW.I.Start('Memo1');
-  MemoInfo.Lines.LoadFromFile(IncludeTrailingBackslash(GetDirectory(Application.ExeName)) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
+  MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
   TW.I.Start('End');
 end;
 

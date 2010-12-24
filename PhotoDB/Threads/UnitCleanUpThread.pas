@@ -6,7 +6,7 @@ uses
   UnitDBKernel, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
   SysUtils,ComCtrls, Graphics, jpeg, UnitINI, DateUtils, uFileUtils,
   CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants,
-  CCR.Exif, uMemory;
+  CCR.Exif, uMemory, uRuntime, uDBUtils;
 
 type
   CleanUpThread = class(TThread)
@@ -116,10 +116,8 @@ begin
      Continue;
     end;
 
-    folder:=GetDirectory(FTable.FieldByName('FFileName').AsString);
-
+    folder:= ExtractFileDir(FTable.FieldByName('FFileName').AsString);
     folder:=AnsiLowerCase(folder);
-    UnFormatDir(folder);
     CalcStringCRC32(AnsiLowerCase(folder),crc);
     int:=Integer(crc);
     if int<>FTable.FieldByName('FolderCRC').AsInteger then

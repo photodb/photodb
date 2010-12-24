@@ -3,12 +3,12 @@ unit uImageConvertThread;
 interface
 
 uses
-  Windows, Classes, Graphics, Forms, SysUtils, Dolphin_db, GraphicCrypt,
+  Windows, Classes, Graphics, Forms, SysUtils, UnitDBKernel, GraphicCrypt,
   ImageConverting, uLogger, GraphicEx, UnitDBCommon, uMemory, uFileUtils,
   PngImage, uGOM, uDBForm, Dialogs, UnitDBDeclare, JPEG, UnitJPEGOptions,
   UnitDBCommonGraphics, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
-  ActiveX, CCR.Exif, CCR.Exif.IPTC;
+  ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB;
 
 type
   TImageConvertThread = class(TThreadEx)
@@ -423,7 +423,7 @@ var
 begin
   EventInfo.Name := FData.FileName;
   EventInfo.NewName := FData.FileName;
-  DBKernel.DoIDEvent(Self, FData.ID, [EventID_Param_Refresh, EventID_Param_Image], EventInfo);
+  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image], EventInfo);
 end;
 
 procedure TImageConvertThread.OnEnd;

@@ -3,7 +3,7 @@ unit CmpUnit;
 interface
 
 uses
-  UnitDBDeclare, SysUtils, Classes, uConstants;
+  uDBBaseTypes, SysUtils, Classes, uConstants;
 
 type
   TCompOptions = record

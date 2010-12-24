@@ -1,9 +1,9 @@
-  unit ExplorerThreadUnit;
+unit ExplorerThreadUnit;
 
-  interface
+interface
 
-  uses
-  Jpeg, DB, ExplorerTypes,
+uses
+  Jpeg, DB, ExplorerTypes, uGraphicUtils, uShellIntegration,
   UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, Windows, ComCtrls,
   Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
   Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
@@ -12,7 +12,8 @@
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
-  uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList;
+  uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
+  uSysUtils, uRuntime, uDBUtils;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -212,9 +213,8 @@ var
     if FolderView then
     begin
       SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
-      S := FFolder;
+      S := ExcludeTrailingBackslash(FFolder);
       Delete(S, 1, Length(ProgramDir));
-      UnformatDir(S);
       CalcStringCRC32(AnsiLowerCase(S), Crc);
       SetIntParam(FQuery, 0, Integer(Crc));
     end else
@@ -334,7 +334,7 @@ begin
         Exit;
       end;
 
-      UnformatDir(FFolder);
+      FFolder := ExcludeTrailingBackslash(FFolder);
       if not DirectoryExists(FFolder) then
       begin
         StrParam := Format(L('Folder "%s" not found!'), [FFolder]);
@@ -350,11 +350,10 @@ begin
 
         DBFolderToSearch := FFolder;
         UnProcessPath(DBFolderToSearch);
-        DBFolderToSearch:=AnsiLowerCase(DBFolderToSearch);
-        UnFormatDir(DBFolderToSearch);
+        DBFolderToSearch:=ExcludeTrailingBackslash(AnsiLowerCase(DBFolderToSearch));
         CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
-        FormatDir(DBFolderToSearch);
-        FormatDir(FFolder);
+        DBFolderToSearch := IncludeTrailingBackslash(DBFolderToSearch);
+        FFolder := IncludeTrailingBackslash(FFolder);
         FFiles := TExplorerFileInfos.Create;
 
         IsPrivateDirectory := TPrivateHelper.Instance.IsPrivateDirectory(DBFolderToSearch);
@@ -644,10 +643,9 @@ begin
       FSender.AddIcon(Icon, True, Info.SID);
 
       NewItem := FSender.AddItem(Info.SID);
-      S1 := ExplorerInfo.OldFolderName;
-      UnformatDir(S1);
-      S2 := Info.FileName;
-      UnformatDir(S2);
+      S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
+      S2 := ExcludeTrailingBackslash(Info.FileName);
+
       if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
         FSelected := NewItem;
     end;
@@ -718,10 +716,9 @@ var
   S1, S2 : String;
 begin
   NewItem := FSender.AddItem(GUIDParam);
-  S1 := ExplorerInfo.OldFolderName;
-  UnformatDir(S1);
-  S2 := CurrentFile;
-  UnformatDir(S2);
+  S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
+  S2 := ExcludeTrailingBackslash(CurrentFile);
+
   if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
     FSelected := NewItem;
 end;
@@ -738,10 +735,10 @@ var
   S1, S2 : String;
 begin
   NewItem := FSender.AddItemW(DriveNameParam, GUIDParam);
-  S1 := ExplorerInfo.OldFolderName;
-  UnformatDir(S1);
-  S2 := CurrentFile;
-  UnformatDir(S2);
+
+  S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
+  S2 := ExcludeTrailingBackslash(CurrentFile);
+
   if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
     FSelected := NewItem;
 end;
@@ -944,7 +941,8 @@ var
   CountFilesInFolder := 0;
   for i := 1 to 4 do
     FilesInFolder[i] := '';
-  FormatDir(CurrentFile);
+
+  CurrentFile := IncludeTrailingBackslash(CurrentFile);
   fFolderImages.Directory := CurrentFile;
   FFolderImagesResult := AExplorerFolders.GetFolderImages(CurrentFile, SmallImageSize, SmallImageSize);
   FFastDirectoryLoading:=false;
@@ -966,9 +964,9 @@ var
       if not FFastDirectoryLoading then
       begin
         DBFolder:=NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(CurrentFile)));
-        UnFormatDir(DBFolder);
-        CalcStringCRC32(AnsiLowerCase(DBFolder),crc);
-        FormatDir(DBFolder);
+        DBFolder := ExcludeTrailingBackslash(DBFolder);
+        CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
+        DBFolder := IncludeTrailingBackslash(DBFolder);
 
         Query := GetQuery(False);
 
@@ -1786,7 +1784,7 @@ var
   EventInfo : TEventValues;
 begin
   EventInfo.Image := nil;
-  DBKernel.DoIDEvent(self, FUpdaterInfo.FileInfo.ID, [EventID_Param_Image],EventInfo);
+  DBKernel.DoIDEvent(FSender, FUpdaterInfo.FileInfo.ID, [EventID_Param_Image],EventInfo);
 end;
 
 procedure TExplorerThread.DoUpdaterHelpProc;

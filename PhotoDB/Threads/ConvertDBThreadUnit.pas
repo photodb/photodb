@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, ActiveX, CommonDBSupport, DB, Forms,
-  UnitGroupsWork, uVistaFuncs, Dolphin_DB, UnitDBDeclare, uFileUtils;
+  UnitGroupsWork, uVistaFuncs, uShellIntegration, UnitDBDeclare, uFileUtils;
 
 type
   TConvertDBThread = class(TThread)
@@ -68,7 +68,7 @@ var
 begin
  FreeOnTerminate:=true;
  CoInitialize(nil);
- ToFileName:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'$';
+ ToFileName:=ExtractFileDir(FFileName)+GetFileNameWithoutExt(FFileName)+'$';
  if FToMDB then ToFileName:=ToFileName+'.photodb' else
  ToFileName:=ToFileName+'.db';
  Log(TEXT_MES_CREATING_DB);
@@ -160,7 +160,7 @@ begin
  try
   //deleting temp and system db files
 
-   FileName:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName)+'.ldb';
+   FileName:=ExtractFileDir(FFileName)+GetFileNameWithoutExt(FFileName)+'.ldb';
    if FileExists(FileName) then
    SilentDeleteFile(0, FileName, true);
 
@@ -175,7 +175,7 @@ begin
 
  FFileName:=SysUtils.StringReplace(FFileName,'$','',[rfReplaceAll]);
 
- NewFileName:=GetDirectory(FFileName)+GetFileNameWithoutExt(FFileName);
+ NewFileName:=ExtractFileDir(FFileName)+GetFileNameWithoutExt(FFileName);
  if FToMDB then NewFileName:=NewFileName+'.photodb' else
  NewFileName:=NewFileName+'.db';
 

@@ -2,17 +2,10 @@ unit RedEyeToolUnit;
 
 interface
 
-{$DEFINE PHOTODB}
-
 uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
      GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
-     GraphicsBaseTypes, Language, CustomSelectTool, Dialogs,
-
-     {$IFDEF PHOTODB}
-     Dolphin_DB,
-     {$ENDIF}
-
-     EffectsLanguage;
+     GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, UnitDBKernel,
+     EffectsLanguage, uDBGraphicTypes;
 
 type TRedEyeToolPanelClass = Class(TCustomSelectToolClass)
   private
@@ -212,13 +205,9 @@ begin
  FCustomColor:=$0;
  FCustomColorDialog := TColorDialog.Create(AOwner);
 
- {$IFDEF PHOTODB}
  EffectSizeScroll.Position:=DBKernel.ReadInteger('Editor','RedEyeToolSize',50);
  FEyeColor.ItemIndex:=DBKernel.ReadInteger('Editor','RedEyeColor',0);
  FCustomColor:=DBKernel.ReadInteger('Editor','RedEyeColorCustom',0);
- {$ENDIF}
-
-
 
  SaveSettingsLink.Top:=FEyeColor.Top+FEyeColor.Height+15;
  MakeItLink.Top:=SaveSettingsLink.Top+SaveSettingsLink.Height+5;

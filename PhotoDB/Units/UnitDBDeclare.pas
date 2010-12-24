@@ -3,22 +3,13 @@ unit UnitDBDeclare;
 interface
 
 uses DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
-     GraphicCrypt, uMemory, uFileUtils;
-
-//array types
-type
-    TArMenuItem   = array of TMenuItem;
-    TArInteger    = array of Integer;
-    TArStrings    = array of String;
-    TArBoolean    = array of Boolean;
-    TArDateTime   = array of TDateTime;
-    TArTime       = array of TDateTime;
-    TArInteger64  = array of int64;
-    TArCardinal   = array of Cardinal;
+     GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
+     uDBForm;
 
 const
   BufferSize = 100*3*4*4096;
-Type
+
+type
   PBuffer = ^TBuffer;
   TBuffer = array [1..BufferSize] of Byte;
 
@@ -34,15 +25,6 @@ type
   TGetFilesWithoutPassProc = function(Sender : TObject) : TList of object;
   TAddCryptFileToListProc = procedure(Sender : TObject; Rec : TPasswordRecord)  of object;
   TGetAvaliableCryptFileList = function(Sender : TObject) : TArInteger  of object;
-
-  TProgressCallBackInfo = record
-    MaxValue : int64;
-    Position : int64;
-    Information : String;
-    Terminate : Boolean;
-  end;
-
-  TCallBackProgressEvent = procedure(Sender : TObject; var Info : TProgressCallBackInfo) of object;
 
   TRecreatingThInTableOptions = record
     WriteLineProc : TWriteLineProcedure;
@@ -139,7 +121,7 @@ Type TEventField=(EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
       Links : string;
      end;
 
-  TOnDBKernelEventProcedure = procedure(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues) of object;
+  TOnDBKernelEventProcedure = procedure(Sender : TDBForm; ID : integer; params : TEventFields; Value : TEventValues) of object;
 
   ///////////////CONSTANT SECTION//////////////////////
 
@@ -153,42 +135,6 @@ const
   LINE_INFO_DB        = 6;
   LINE_INFO_GREETING  = 7;
   LINE_INFO_INFO      = -1;
-
-
-type
-  TImageCompareResult = record
-    ByGistogramm : Byte;
-    ByPixels : Byte;
-  end;
-
- {TExplorerFileInfo = class(TObject)
-  public
-    FileName : String;
-    SID : TGUID;
-    FileType :  Integer;
-    ID : Integer;
-    Rotate : Integer;
-    Access : Integer;
-    Rating : Integer;
-    FileSize : Int64;
-    Comment: string;
-    KeyWords: string;
-    Date: TDateTime;
-    Time: TDateTime;
-    ImageIndex: Integer;
-    Owner: string;
-    Groups: string;
-    Collections: string;
-    IsDate: Boolean;
-    IsTime: Boolean;
-    Crypted: Boolean;
-    Tag: Integer;
-    Loaded: Boolean;
-    Include: Boolean;
-    Links: string;
-    IsBigImage: Boolean;
-    function Clone: TExplorerFileInfo;
-  end;  }
 
 type
   TPhotoDBFile = class

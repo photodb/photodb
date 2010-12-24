@@ -5,7 +5,8 @@ interface
 uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
   ComCtrls, Effects, ExEffects, Language, Dialogs, Forms, GraphicsBaseTypes,
-  ExEffectsUnitW, EffectsLanguage, OptimizeImageUnit, Dolphin_DB;
+  ExEffectsUnitW, EffectsLanguage, OptimizeImageUnit, UnitDBKernel,
+  uEditorTypes;
 
 type
   TEffectsManager = class(TObject)

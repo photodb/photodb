@@ -2,8 +2,9 @@ unit UnitINI;
 
 interface
 
-uses Windows, Registry, IniFiles, Classes, SysUtils, uLogger, uConstants,
-     uMemory;
+uses
+  Windows, Registry, IniFiles, Classes, SysUtils, uLogger, uConstants, uMemory,
+  uRuntime;
 
 type
   TMyRegistryINIFile = class(TIniFile)
@@ -55,9 +56,6 @@ const
   REGISTRY_ALL_USERS    = 0;
   REGISTRY_CURRENT_USER = 1;
   REGISTRY_CLASSES      = 2;
-
-var
-  PortableWork : boolean = false;
 
   function GetRegRootKey: string;
 

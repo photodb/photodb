@@ -2,10 +2,11 @@ unit UnitExplorerThumbnailCreatorThread;
 
 interface
 
-uses GraphicCrypt, Windows, Graphics, Classes, Dolphin_DB, ExplorerUnit, JPEG,
+uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
      Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, UnitDBCommon,
-     ImageConverting, uMemory, UnitDBDeclare;
+     ImageConverting, uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel,
+     uRuntime, uDBUtils, uFileUtils;
 
 type
   TExplorerThumbnailCreator = class(TThread)

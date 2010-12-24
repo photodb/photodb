@@ -3,17 +3,19 @@ unit UnitFormCont;
 interface
 
 uses
-  Clipbrd, dolphin_db, DBCMenu, ComCtrls, CommCtrl, ImgList, ExtCtrls, StdCtrls,
+  Clipbrd, DBCMenu, ComCtrls, CommCtrl, ImgList, ExtCtrls, StdCtrls,
   UnitDBKernel, db, Windows, Messages, SysUtils, Classes,
   Graphics, Controls, Forms, GraphicCrypt, ShellContextMenu, GraphicsCool,
   Dialogs, Activex, jpeg, Menus, Buttons, acDlgSelect,  Math,
   DropSource, DropTarget, AppEvnts, WebLink, MPCommonUtilities, uVistaFuncs,
-  UnitBitmapImageList, EasyListview, DragDropFile, DragDrop,
+  UnitBitmapImageList, EasyListview, DragDropFile, DragDrop, uShellIntegration,
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
   UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
   uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
-  uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils;
+  uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,
+  uGraphicUtils, uDBBaseTypes, uSysUtils, uDBUtils, uDBFileTypes,
+  uRuntime;
 
 type
   TDestDype = class(TObject)
@@ -383,8 +385,6 @@ begin
   WlConvert.Top := WlResize.Top + WlResize.Height + 5;
   ExportLink.Top := WlConvert.Top + WlConvert.Height + 5;
   ExCopyLink.Top := ExportLink.Top + ExportLink.Height + 5;
-
-  DBKernel.RegisterForm(Self);
   LoadToolBarIcons;
   GOM.AddObj(Self);
 end;
@@ -430,7 +430,7 @@ begin
       Menus[0].Tag := Item.index;
       Menus[0].ImageIndex := DB_IC_DELETE_INFO;
       Menus[0].OnClick := DeleteIndexItemFromPopUpMenu;
-      TDBPopupMenu.Instance.ExecutePlus(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, Info,
+      TDBPopupMenu.Instance.ExecutePlus(Self, ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, Info,
         Menus);
     end else
     begin
@@ -970,7 +970,6 @@ begin
   F(Data);
   F(FBitmapImageList);
   F(FilesToDrag);
-  DBkernel.UnRegisterForm(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
@@ -1626,16 +1625,14 @@ begin
     Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select place to copy files'), UseSimpleSelectFolderDialog);
     if DirectoryExists(Dir) then
     begin
-      FormatDir(Dir);
+      Dir := IncludeTrailingBackslash(Dir);
       for I := 0 to ElvMain.Items.Count - 1 do
         if ElvMain.Items[I].Selected then
         begin
           FileName := ProcessPath(Data[I].FileName);
-          Temp := GetDirectory(FileName);
-          UnFormatDir(Temp);
+          Temp := ExtractFileDir(FileName);
           L1 := Length(Temp);
-          Temp := GetDirectory(Temp);
-          FormatDir(Temp);
+          Temp := ExtractFilePath(Temp);
           L2 := Length(Temp);
           UpDir := Copy(FileName, L2 + 1, L1 - L2);
           NewDir := Dir + UpDir;
@@ -1645,7 +1642,6 @@ begin
     for I := 0 to DestWide.Count - 1 do
     begin
       Dir := TDestDype(DestWide[I]).Dest;
-      FormatDir(Dir);
       CreateDirA(Dir);
       CopyFiles(Handle, TDestDype(DestWide[I]).Files, Dir, False, True);
     end;
@@ -1956,9 +1952,9 @@ procedure TFormCont.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
-  Dolphin_DB.SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
+  SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
   EventInfo.Rating:=(Sender as TMenuItem).Tag;
-  DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
+  DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
 end;
 
 procedure TFormCont.PopupMenuZoomDropDownPopup(Sender: TObject);

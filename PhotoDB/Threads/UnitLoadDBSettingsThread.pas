@@ -3,7 +3,7 @@ unit UnitLoadDBSettingsThread;
 interface
 
 uses
-  Windows, Classes, DB, Dolphin_DB, CommonDBSupport, ActiveX, UnitDBThread,
+  Windows, Classes, DB, UnitDBKernel, CommonDBSupport, ActiveX, UnitDBThread,
   SysUtils, uTime, uLogger;
 
 type

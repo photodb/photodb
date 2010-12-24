@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, Language, uDBUtils,
   UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, jpeg, CommonDBSupport,
   UnitDBCommonGraphics, ImgList, ComCtrls, ComboBoxExDB, WebLink,
-  UnitDBCommon;
+  UnitDBCommon, uShellIntegration, UnitDBKernel, uFIleUtils;
 
 type
   TFormSelectDB = class(TForm)
@@ -156,7 +156,7 @@ begin
   ListBox1.ItemIndex:=0;
   Step:=0;
   LoadLanguage;
-  DBKernel.RegisterForm(Self);
+//  DBKernel.RegisterForm(Self);
   RefreshDBList;
 end;
 
@@ -337,7 +337,7 @@ end;
 
 procedure TFormSelectDB.FormDestroy(Sender: TObject);
 begin
-  DBKernel.UnRegisterForm(Self);
+//  DBKernel.UnRegisterForm(Self);
 end;
 
 procedure TFormSelectDB.Button5Click(Sender: TObject);
@@ -393,7 +393,7 @@ end;
 procedure TFormSelectDB.SetDefaultIcon(path : string = '');
 begin
   if Path = '' then
-    Path := GetDirectory(GetProgramPath) + 'Icons.dll,121';
+    Path := ExtractFilePath(Application.ExeName) + 'Icons.dll,121';
   FDBFile.Icon := Path;
   SetIconImage(Path);
 end;
@@ -593,7 +593,7 @@ begin
     exit;
    end;
 
-   CreateExampleDB(FileName,Application.ExeName+',0',GetDirectory(Application.ExeName));
+   CreateExampleDB(FileName,Application.ExeName+',0',ExtractFileDir(Application.ExeName));
 
    FDBFile.Name:=DBkernel.NewDBName(TEXT_MES_DEFAULT_DB_NAME);
    FDBFile.FileName:=FileName;
@@ -612,7 +612,7 @@ begin
   ImageOptions.Description:=Edit5.Text;
   CommonDBSupport.UpdateImageSettings(FDBFile.FileName,ImageOptions);
   if CheckBox3.Checked then
-  CreateExampleGroups(FDBFile.FileName,Application.ExeName+',0',GetDirectory(Application.ExeName));
+  CreateExampleGroups(FDBFile.FileName,Application.ExeName+',0',ExtractFileDir(Application.ExeName));
   if CheckBox1.Checked then
   DBkernel.SetDataBase(FDBFile.FileName);
   MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FDBFile.FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);

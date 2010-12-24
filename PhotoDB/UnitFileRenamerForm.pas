@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus, Dolphin_DB,
-  DB, WebLink, uVistaFuncs, UnitDBDeclare, uFileUtils,
-  uDBForm;
+  Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus, UnitDBKernel,
+  DB, WebLink, uVistaFuncs, UnitDBDeclare, uFileUtils, Dolphin_DB,
+  uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils;
 
 type
   TFormFastFileRenamer = class(TDBForm)
@@ -44,7 +44,6 @@ type
     procedure BtAddClick(Sender: TObject);
     procedure BtDeleteClick(Sender: TObject);
     procedure WebLinkWarningClick(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -108,7 +107,6 @@ begin
   if CmMaskList.Text = '' then
     CmMaskList.Text := L('Image #%3d [%date]');
   WebLinkWarning.Visible := False;
-  DBKernel.RegisterForm(Self);
 end;
 
 procedure TFormFastFileRenamer.LoadLanguage;
@@ -196,7 +194,7 @@ begin
     try
       OldFile := GetDirectory(FFiles[I - 1]) + ValueListEditor1.Cells[0, I];
       NewFile := GetDirectory(FFiles[I - 1]) + ValueListEditor1.Cells[1, I];
-      Dolphin_DB.RenamefileWithDB(Self, OldFile, NewFile, FIDS[I - 1], False);
+      RenamefileWithDB(Self, OldFile, NewFile, FIDS[I - 1], False);
     except
       on E: Exception do
         MessageBoxDB(Handle, Format(L('Error occurred while renaming file "%s" to "%s"! Error message: %s'), [OldFile, NewFile, E.message]),
@@ -417,11 +415,6 @@ begin
     Exit;
   end;
   WebLinkWarning.Visible := False;
-end;
-
-procedure TFormFastFileRenamer.FormDestroy(Sender: TObject);
-begin
-  DBKernel.UnRegisterForm(Self);
 end;
 
 function TFormFastFileRenamer.GetFormID: string;

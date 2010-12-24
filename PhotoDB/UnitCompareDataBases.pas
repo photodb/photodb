@@ -5,7 +5,7 @@ interface
 uses
   CmpUnit, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, StdCtrls, CheckLst, DB, CommonDBSupport, ExtCtrls,
-  uVistaFuncs;
+  uVistaFuncs, UnitDBKernel, uShellIntegration, uSysUtils;
 
 type
   TImportDataBaseForm = class(TForm)
@@ -72,7 +72,7 @@ var
 begin
  Filter:='Access files (*.photodb;*.mdb)|*.photodb;*.mdb';
  OpenDialog1.Filter:=Filter;
- DBKernel.RegisterForm(ImportDataBaseForm);
+// DBKernel.RegisterForm(ImportDataBaseForm);
  Memo1.Lines.Clear;
  CheckEnabled;
  Edit4.text:=GetWindowsUserName;
@@ -167,7 +167,7 @@ end;
 
 procedure TImportDataBaseForm.FormDestroy(Sender: TObject);
 begin
- DBkernel.UnRegisterForm(ImportDataBaseForm);
+// DBkernel.UnRegisterForm(ImportDataBaseForm);
 end;
 
 procedure TImportDataBaseForm.LoadLanguage;

@@ -3,41 +3,42 @@ unit ExEffectsUnitW;
 interface
 
 uses ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2, EffectsLanguage,
-     Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs, uGOM;
+  Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs, uGOM,
+  uEditorTypes;
 
 type
   TExEffectOneParamCustom = class(TExEffect)
   private
-   FS,FD : Tbitmap;
-   FTrackBar : TTrackBar;
-   FTrackBarlabel : TLabel;
-   FSID : String;
-   FEffect: TEffectOneIntParam;
-    FText: String;
-    FName: String;
+    { Private declarations }
+    FS, FD: Tbitmap;
+    FTrackBar: TTrackBar;
+    FTrackBarlabel: TLabel;
+    FSID: string;
+    FEffect: TEffectOneIntParam;
+    FText: string;
+    FName: string;
     FValue: Integer;
     FMax: Integer;
     procedure SetName(const Value: String);
     procedure SetText(const Value: String);
     procedure SetMax(const Value: Integer);
     procedure SetValue(const Value: Integer);
-    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-  function Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean) : boolean; override;
-  function GetName : String; override;
-  Procedure GetPreview(S,D : TBitmap); override;
-  Procedure MakeImage(Sender : TObject);
-  Procedure Progress(Progress : integer; var Break: boolean);
-  Procedure ExitThread(Image : TBitmap; SID : string);
-  Procedure SetEffect(Effect : TEffectOneIntParam);
-  Property Text : String read FText Write SetText;
-  Property Name : String read FName Write SetName;
-  Property Max : Integer read FMax Write SetMax;
-  Property Value: Integer read FValue Write SetValue;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
+    function Execute(S, D: TBitmap; Panel: TGroupBox; AMakeImage: Boolean): Boolean; override;
+    function GetName: string; override;
+    procedure GetPreview(S, D: TBitmap); override;
+    procedure MakeImage(Sender: TObject);
+    procedure Progress(Progress: Integer; var Break: Boolean);
+    procedure ExitThread(Image: TBitmap; SID: string);
+    procedure SetEffect(Effect: TEffectOneIntParam);
+    property Text: string read FText write SetText;
+    property name: string read FName write SetName;
+    property Max: Integer read FMax write SetMax;
+    property Value: Integer read FValue write SetValue;
   end;
 
 type
@@ -64,81 +65,81 @@ type
 type
   TGrayScaleEffect = class(TExEffectOneParamCustom)
   private
-   { Private declarations }
+    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
   end;
 
 type
   TSepeaEffect = class(TExEffectOneParamCustom)
   private
-   { Private declarations }
+    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
   end;
 
 type
   TAddColorNoiseEffect = class(TExEffectOneParamCustom)
   private
-   { Private declarations }
+    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
   end;
 
 type
   TAddMonoNoiseEffect = class(TExEffectOneParamCustom)
   private
-   { Private declarations }
+    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
   end;
 
 type
   TFishEyeEffect = class(TExEffectOneParamCustom)
   private
-   { Private declarations }
+    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-  function GetBestValue: integer; override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
+    function GetBestValue: Integer; override;
   end;
 
 type
   TSplitBlurEffect = class(TExEffectOneParamCustom)
   private
-   { Private declarations }
+    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-  function GetBestValue : integer; override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
+    function GetBestValue: Integer; override;
   end;
 
 type
   TTwistEffect = class(TExEffectOneParamCustom)
   private
-   { Private declarations }
+    { Private declarations }
   public
-  class function ID : string; override;
-  constructor Create; override;
-  destructor Destroy; override;
-  function GetBestValue : integer; override;
-   { Public declarations }
+    { Public declarations }
+    class function ID: string; override;
+    constructor Create; override;
+    destructor Destroy; override;
+    function GetBestValue: Integer; override;
   end;
 
 implementation
@@ -149,10 +150,10 @@ uses ImEditor;
 
 constructor TExEffectOneParamCustom.Create;
 begin
- Inherited;
- GOM.AddObj(Self);
- FTrackBar := nil ;
- FTrackBarlabel := nil ;
+  inherited;
+  GOM.AddObj(Self);
+  FTrackBar := nil;
+  FTrackBarlabel := nil;
 end;
 
 destructor TExEffectOneParamCustom.Destroy;

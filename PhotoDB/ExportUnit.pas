@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uVistaFuncs;
+  Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uVistaFuncs,
+  uShellIntegration;
 
 type
   TExportForm = class(TForm)
@@ -93,7 +94,7 @@ procedure TExportForm.Button1Click(Sender: TObject);
 begin
   if SaveDialog1.Execute then
   begin
-    if GetExt(SaveDialog1.FileName) <> 'PHOTODB' then
+    if AnsiUpperCase(ExtractFileExt(SaveDialog1.FileName)) <> '.PHOTODB' then
       SaveDialog1.FileName := SaveDialog1.FileName + '.photodb';
 
     if FileExists(SaveDialog1.FileName) then

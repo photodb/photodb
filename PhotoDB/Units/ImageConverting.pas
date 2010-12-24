@@ -196,7 +196,7 @@ var
   I: Integer;
 begin
   Result := FileName;
-  FormatDir(Dir);
+  Dir := IncludeTrailingBackslash(Dir);
   ChangeFileExt(Result, NewEXT);
   Result := Dir + GetFileNameWithoutExt(Result) + '.' + AnsiLowerCase(NewEXT);
   if not FileExists(Result) then

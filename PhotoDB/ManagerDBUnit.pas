@@ -12,7 +12,8 @@ uses
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
-  DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo;
+  DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo,
+  uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime;
 
 type
   TManagerDB = class(TDBForm)
@@ -399,7 +400,7 @@ begin
   end;
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
-  DBkernel.UnRegisterForm(Self);
+//  DBkernel.UnRegisterForm(Self);
   DBkernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   FData.Free;
 end;
@@ -1200,7 +1201,7 @@ begin
       ItemData := TDBPopupMenuInfoRecord(Item.Data);
       SetLength(G, 0);
       if ShiftKeyDown then
-        CopyFullRecordInfo(ItemData.ID);
+        CopyFullRecordInfo(Handle, ItemData.ID);
       if GetSubItemIndexByPoint(ElvMain, Item, P) = 2 then
       begin
         Words:=SpilitWords(ItemData.KeyWords);
@@ -1660,7 +1661,7 @@ begin
   MenuInfo.IsPlusMenu := False;
   MenuInfo.IsListItem := False;
   MenuInfo.AttrExists := False;
-  TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, MenuInfo);
+  TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, MenuInfo);
 end;
 
 procedure TManagerDB.DeleteItemWithID(ID: integer);
@@ -1903,13 +1904,13 @@ end;
 
 procedure TManagerDB.Showfileinexplorer1Click(Sender: TObject);
 var
-  Path : string;
+  Path: string;
 begin
   Path := FBackUpFiles[PopupMenu5.Tag];
   with ExplorerManager.NewExplorer(False) do
   begin
     SetOldPath(Path);
-    SetPath(GetDirectory(Path));
+    SetPath(ExtractFileDir(Path));
     Show;
   end;
 end;

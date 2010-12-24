@@ -5,7 +5,7 @@ interface
 uses
   Classes, Messages, Forms, Dolphin_DB, RawImage, SysUtils,
   Language, UnitDBDeclare, DateUtils, UnitDBCommon,
-  CCR.Exif, uMemory;
+  CCR.Exif, uMemory, uDBBaseTypes, uFileUtils;
 
 type
   TScanImportPhotosThreadOptions = record
@@ -158,7 +158,7 @@ begin
  fFiles := TStringList.Create;
  MaxFilesCount:=10000;
  MaxFilesSearch:=100000;
- GetPhotosNamesFromDrive(fOptions.Directory, fOptions.Mask, fFiles, MaxFilesCount, MaxFilesSearch, OnLoadingFilesCallBackEvent);
+ GetFileNamesFromDrive(fOptions.Directory, fOptions.Mask, fFiles, MaxFilesCount, MaxFilesSearch, OnLoadingFilesCallBackEvent);
 
  SetMaxPosition(fFiles.Count);
  for i:=0 to fFiles.Count-1 do

@@ -291,7 +291,15 @@ uses
   uDBBaseTypes in 'Units\uDBBaseTypes.pas',
   uDBUtils in 'Units\uDBUtils.pas',
   uAssociations in '..\Installer\uAssociations.pas',
-  uAppUtils in 'Units\uAppUtils.pas';
+  uAppUtils in 'Units\uAppUtils.pas',
+  uEditorTypes in 'ImageEditor\uEditorTypes.pas',
+  uShellIntegration in 'Units\uShellIntegration.pas',
+  uSysUtils in 'Units\uSysUtils.pas',
+  uDBTypes in 'Units\uDBTypes.pas',
+  uActivationUtils in 'Units\uActivationUtils.pas',
+  uDBFileTypes in 'Units\uDBFileTypes.pas',
+  uRuntime in 'Units\uRuntime.pas',
+  uDBGraphicTypes in 'Units\uDBGraphicTypes.pas';
 
 {$R *.res}
 
@@ -461,7 +469,7 @@ begin
 
       TW.i.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-      Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
       // This is main form of application
 
       TW.i.Start('SetSplashProgress 50');

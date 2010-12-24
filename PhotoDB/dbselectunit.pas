@@ -6,10 +6,11 @@ uses
   Dolphin_DB, Searching, UnitDBKernel, Windows, Messages, SysUtils, Variants,
   Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, DB,
   ExtCtrls, uVistaFuncs, UnitConvertDBForm, ComCtrls, ComboBoxExDB, ImgList,
-  UnitDBFileDialogs, UnitDBDeclare, UnitDBCommonGraphics;
+  UnitDBFileDialogs, UnitDBDeclare, UnitDBCommonGraphics, uShellIntegration,
+  uRuntime, uDBForm, uFileUtils;
 
 type
-  TDBSelect = class(TForm)
+  TDBSelect = class(TDBForm)
     Edit1: TEdit;
     Button1: TButton;
     Button3: TButton;
@@ -21,7 +22,6 @@ type
     ComboBoxExDB1: TComboBoxExDB;
     DBImageList: TImageList;
     Label1: TLabel;
-    procedure Button2Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -55,15 +55,6 @@ implementation
 uses Language, CommonDBSupport;
 
 {$R *.dfm}
-
-procedure TDBSelect.Button2Click(Sender: TObject);
-begin
-//? if dbneed_ then
- begin
-  DBTerminating:=True;
-  Application.Terminate
- end//? else close;
-end;
 
 procedure TDBSelect.Button1Click(Sender: TObject);
 var
@@ -195,8 +186,8 @@ procedure TDBSelect.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
  //?if dbneed_ then
  begin
-  DBterminating:=True;
-  Application.Terminate;
+   //TODO: close application
+   //Application.Terminate;
  end;
 end;
 
@@ -251,7 +242,7 @@ var
   Ico: TIcon;
 begin
   if Path = '' then
-    Path := GetProgramPath + ',0';
+    Path := Application.ExeName + ',0';
   DBFile.Icon := Path;
   Ico := TIcon.Create;
   try

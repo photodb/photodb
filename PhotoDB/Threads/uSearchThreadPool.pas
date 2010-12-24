@@ -3,7 +3,7 @@ unit uSearchThreadPool;
 interface
 
 uses
-  Classes, SysUtils, Math, uMemory, uMultiCPUThreadManager, Dolphin_DB;
+  Classes, SysUtils, Math, uMemory, uMultiCPUThreadManager, UnitDBCommon;
 
 type
   TSearchThreadPool = class(TThreadPoolCustom)

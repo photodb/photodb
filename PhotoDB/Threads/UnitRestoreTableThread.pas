@@ -3,7 +3,7 @@ unit UnitRestoreTableThread;
 interface
 
 uses
-  Windows, Classes, Dolphin_DB, Forms, UnitGroupsWork, SysUtils,
+  Windows, Classes, UnitDBKernel, Forms, UnitGroupsWork, SysUtils,
   Language, CommonDBSupport, UnitDBDeclare, uFileUtils, uConstants;
 
 type
@@ -39,15 +39,12 @@ end;
 
 procedure ThreadRestoreTable.Execute;
 var
-  s : String;
-  FileName : String;
+  S: string;
+  FileName: string;
 begin
- FreeOnTerminate:=True;
+  FreeOnTerminate := True;
 
- if GetDBType(dbname)=DB_TYPE_MDB then
- begin
-   s:=GetDirectory(Application.ExeName);
-   FormatDir(S);
+    S := ExtractFilePath(Application.ExeName);
    try
     CreateDirA(GetAppDataDirectory+BackUpFolder);
    except
@@ -79,8 +76,7 @@ begin
     exit;
    end;
    try
-    s:=GetDirectory(Application.ExeName);
-    FormatDir(S);
+    s:=ExtractFilePath(Application.ExeName);
     FileName:=GetAppDataDirectory+DBRestoreFolder+ExtractFileName(fOptions.FileName);
     CopyFile(PChar(fOptions.FileName),PChar(FileName),false);
    except
@@ -92,7 +88,6 @@ begin
    end;
    DBKernel.AddDB(GetFileNameWithoutExt(fOptions.FileName),fOptions.FileName,Application.ExeName+',0',false);
    DBKernel.SetDataBase(FileName);
- end;
 
  Sleep(2000);
  Synchronize(DoExit);
@@ -105,4 +100,3 @@ begin
 end;
 
 end.
-

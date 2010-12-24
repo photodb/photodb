@@ -3,9 +3,9 @@ unit UnitUpdateDBObject;
 interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
-     Dolphin_DB, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
+     UnitDBKernel, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
      uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM,
-     uTranslate;
+     uTranslate, Dolphin_DB, uDBForm;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;
@@ -24,7 +24,7 @@ type
     ScriptProcessString: string;
     FPosition: Integer;
     FShowWindow: Boolean;
-    FForm: TForm;
+    FForm: TDBForm;
     FmaxSize: Integer;
     FTerminate: Boolean;
     FActive: Boolean;
@@ -74,7 +74,7 @@ type
     property UseFileNameScaning: Boolean read FUseFileNameScaning write SetUseFileNameScaning default False;
     property AutoAnswer: Integer read FAutoAnswer write SetAutoAnswer;
     property Pause: Boolean read FPause;
-    property Form: TForm read FForm;
+    property Form: TDBForm read FForm;
   end;
 
 implementation
@@ -361,12 +361,9 @@ procedure TUpdaterDB.ProcessFile(var FileName: string);
 var
   C: Integer;
 begin
-  if not GetParamStrDBBool('/Add') then
-  begin
-    SetNamedValueStr(FProcessScript, '$File', FileName);
-    ExecuteScript(nil, FProcessScript, ScriptProcessString, C, nil);
-    FileName := GetNamedValueString(FProcessScript, '$File');
-  end;
+  SetNamedValueStr(FProcessScript, '$File', FileName);
+  ExecuteScript(nil, FProcessScript, ScriptProcessString, C, nil);
+  FileName := GetNamedValueString(FProcessScript, '$File');
 end;
 
 procedure TUpdaterDB.LoadWork;

@@ -6,9 +6,11 @@ uses
   GraphicCrypt, DB, UnitINI, UnitTerminationApplication,
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls,
-  Dialogs, dolphin_db, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
+  Dialogs, UnitDBKernel, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
-  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager;
+  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager,
+  uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
+  uDBUtils;
 
 type
   TFormManager = class(TDBForm)
@@ -185,15 +187,12 @@ begin
 
     ParamStr1 := ParamStr(1);
     ParamStr2 := Paramstr(2);
-    Directory := ParamStr2;
-    UnFormatDir(Directory);
-    Directory := LongFileName(Directory);
-    FormatDir(Directory);
+    Directory := ExcludeTrailingBackslash(ParamStr2);
+    Directory := IncludeTrailingBackslash(LongFileName(Directory));
     if FolderView then
     begin
       ParamStr1 := '/EXPLORER';
-      Directory := GetDirectory(Application.Exename);
-      UnformatDir(Directory);
+      Directory := ExtractFileDir(Application.Exename);
     end;
 
     if AnsiUpperCase(ParamStr1) <> '/EXPLORER' then
@@ -416,7 +415,7 @@ begin
     if (FCheckCount = 50) and not FolderView then //after 5 sec.
     begin
 
-      if not DBTerminating then
+    {  if not DBTerminating then
         if not FolderView then
           if KernelHandle = 0 then
           begin
@@ -425,7 +424,7 @@ begin
               L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
             Application.Terminate;
           end;
-
+                   }
       {$IFDEF LICENCE}
       EventLog('Verifyng....');
 
@@ -540,10 +539,10 @@ begin
   if not FolderView then
   InitializeActivation else
   begin
-   dbname := GetDirectory(Application.ExeName)+'FolderDB.photodb';
+   dbname := ExtractFilePath(Application.ExeName)+'FolderDB.photodb';
 
-   if FileExistsSafe(GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
-   dbname:=GetDirectory(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb';
+   if FileExistsSafe(ExtractFilePath(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
+   dbname:=ExtractFilePath(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb';
   end;
  except
   on e : Exception do EventLog(':TFormManager::FormCreate() throw exception: '+e.Message);
@@ -675,7 +674,7 @@ begin
     begin
       if GetExt(FileNameA) = 'DBL' then
       begin
-        Dolphin_DB.LoadDblFromfile(FileNameA, Fids_, Param);
+        LoadDblFromfile(FileNameA, Fids_, Param);
         FormCont := ManagerPanels.NewPanel;
         SetLength(B, 0);
         LoadFilesToPanel.Create(Param, Fids_, B, False, True, FormCont);

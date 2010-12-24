@@ -5,11 +5,13 @@ interface
 uses
   Windows, SysUtils, UnitGroupsWork, UnitExportThread, Classes, DB, Dolphin_DB,
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
-  acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants;
+  acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants,
+  uShellIntegration, UnitDBKernel, uDBBaseTypes;
 
 type
   TSaveQueryThread = class(TThread)
   private
+    { Private declarations }
     FQuery: TDataSet;
     FTable: TDataSet;
     FFileName, DBFolder: string;
@@ -24,7 +26,6 @@ type
     NewIcon: TIcon;
     OutIconName: string;
     OriginalIconLanguage: Integer;
-    { Private declarations }
   protected
     procedure Execute; override;
     procedure SetMaxValue(Value : integer);
@@ -48,16 +49,16 @@ uses UnitSavingTableForm, UnitStringPromtForm, Language;
 
 { TSaveQueryThread }
 
-function c_GetTempPath: String;
+function C_GetTempPath: string;
 var
-  Buffer: array[0..1023] of Char;
+  Buffer: array [0 .. 1023] of Char;
 begin
-  SetString(Result, Buffer, GetTempPath(Sizeof(Buffer)-1,Buffer));
+  SetString(Result, Buffer, GetTempPath(Sizeof(Buffer) - 1, Buffer));
 end;
 
-function c_GetTempPathIco: String;
+function C_GetTempPathIco: string;
 begin
- Result:=c_GetTempPath+'\$temp$.ico';
+  Result := C_GetTempPath + '\$temp$.ico';
 end;
 
 function ReplaceIconForFileQuestion(out IcoTempName : string; out Language : integer) : TIcon;
@@ -75,7 +76,7 @@ var
   begin
    Result:=false;
    try
-    update:= BeginUpdateResourceW(StringToPWide(FileName), False, false);
+    update:= BeginUpdateResourceW(PChar(FileName), False, false);
     if update=0 then
     begin
      exit;
@@ -149,7 +150,7 @@ end;
   begin
    Result:=false;
    try
-    update:= BeginUpdateResourceW(StringToPWide(FileName), False);
+    update:= BeginUpdateResourceW(PChar(FileName), False);
     ResIcoNameW:=GetNameIcon(update,0);
     if not LoadIconGroupResourceW(update,ResIcoNameW,OriginalIconLanguage,IcoTempNameW) then
     begin
@@ -169,34 +170,35 @@ var
   IcoTempName : string;
   Language : integer;
 begin
- FormatDir(Directory);
- CopyFile(PChar(Application.Exename),PChar(Directory+SaveToDBName+'.exe'),false);
- CopyFile(PChar(GetDirectory(Application.Exename)+'icons.dll'),PChar(Directory+'icons.dll'),false);
+  Directory := IncludeTrailingBackslash(Directory);
+  CopyFile(PChar(Application.Exename), PChar(Directory + SaveToDBName + '.exe'), False);
+  CopyFile(PChar(ExtractFilePath(Application.Exename) + 'icons.dll'), PChar(Directory + 'icons.dll'), False);
 
- NewIcon:=nil;
- try
-  NewIcon := ReplaceIconForFileQuestion(IcoTempName,Language);
-  if NewIcon<>nil then
-  begin
-   NewIcon.SaveToFile(IcoTempName);
-   NewIcon.Free;
+  NewIcon := nil;
+  try
+    NewIcon := ReplaceIconForFileQuestion(IcoTempName, Language);
+    if NewIcon <> nil then
+    begin
+      NewIcon.SaveToFile(IcoTempName);
+      NewIcon.Free;
 
-   ReplaceIcon(Directory+SaveToDBName+'.exe',StringToPWide(IcoTempName),Language);
+      ReplaceIcon(Directory + SaveToDBName + '.exe', PChar(IcoTempName), Language);
 
-   try
-    if FileExists(IcoTempName) then
-    DeleteFile(IcoTempName);
-   except
-   end;
+      try
+        if FileExists(IcoTempName) then
+          DeleteFile(IcoTempName);
+      except
+      end;
 
-  end;
+    end;
   except
-   try
-    if NewIcon<>nil then NewIcon.Free;
-   except
-   end;
-  exit;
- end;
+    try
+      if NewIcon <> nil then
+        NewIcon.Free;
+    except
+    end;
+    Exit;
+  end;
 end;
 
 constructor TSaveQueryThread.Create(CreateSuspennded: Boolean; Query: TDataSet; FileName: string; OwnerForm: TForm;
@@ -253,9 +255,12 @@ var
  var
    LocationFolder : string;
  begin
-  if FileExists(Location) then
-  LocationFolder:=GetDirectory(Location) else LocationFolder:=Location;
-  UnFormatDir(LocationFolder);
+    if FileExists(Location) then
+      LocationFolder := ExtractFileDir(Location)
+    else
+      LocationFolder := Location;
+
+  LocationFolder := ExcludeTrailingBackslash(LocationFolder);
   FQuery:=GetQuery;
   if not FSubFolders then
   begin
@@ -268,7 +273,8 @@ var
    AndWhere:='';
   end;
   if GetDBType=DB_TYPE_MDB then SetSQL(FQuery,'Select * From '+FromSQL+' where (FFileName Like :FolderA)'+AndWhere);
-  FormatDir(LocationFolder);
+
+  LocationFolder := IncludeTrailingBackslash(LocationFolder);
   if FileExists(Location) then
   SetStrParam(FQuery,0,'%'+AnsiLowerCase(Location)+'%') else
   SetStrParam(FQuery,0,'%'+LocationFolder+'%');
@@ -307,21 +313,29 @@ begin
  if Length(SaveToDBName)>1 then
  if SaveToDBName[2]=':' then SaveToDBName:=SaveToDBName[1]+'_drive';
  Synchronize(LoadCustomDBName);
- if FQuery=nil then FormatDir(FFileName);
- if FQuery=nil then
- if DBKernel.CreateDBbyName(FFileName+SaveToDBName+'.photodb')<>0 then
-  begin DoExit; Exit; end;
+  if FQuery = nil then
+    FFileName := IncludeTrailingBackslash(FFileName);
+  if FQuery = nil then
+    if DBKernel.CreateDBbyName(FFileName + SaveToDBName + '.photodb') <> 0 then
+    begin
+      DoExit;
+      Exit;
+    end;
 
  ImageSettings:=CommonDBSupport.GetImageSettingsFromTable(DBName);
  CommonDBSupport.UpdateImageSettings(FFileName+SaveToDBName+'.photodb',ImageSettings);
 
- if FQuery<>nil then
- if DBKernel.CreateDBbyName(FFileName)<>0 then
-  begin DoExit; Exit; end;
+  if FQuery <> nil then
+    if DBKernel.CreateDBbyName(FFileName) <> 0 then
+    begin
+      DoExit;
+      Exit;
+    end;
 
- if FQuery<>nil then
- FTable:=GetTable(FFileName,DB_TABLE_IMAGES) else
- FTable:=GetTable(GetDirectory(FFileName)+SaveToDBName+'.photodb',DB_TABLE_IMAGES);
+  if FQuery <> nil then
+    FTable := GetTable(FFileName, DB_TABLE_IMAGES)
+  else
+    FTable := GetTable(ExtractFilePath(FFileName) + SaveToDBName + '.photodb', DB_TABLE_IMAGES);
 
  try
   FTable.Active:=True;
@@ -330,7 +344,7 @@ begin
   Exit;
  end;
 
- if FileExists(FFileName) then DBFolder:=GetDirectory(FFileName) else DBFolder:=FFileName;
+ if FileExists(FFileName) then DBFolder:=ExtractFilePath(FFileName) else DBFolder:=FFileName;
 
  Setlength(FGroupsFounded,0);
 
@@ -348,7 +362,7 @@ begin
 
  SetMaxValue(length(FGroupsFounded));
  FRegGroups:=GetRegisterGroupList(True);
- CreateGroupsTableW(GroupsTableFileNameW(GetDirectory(FFileName)+SaveToDBName+'.photodb'));
+ CreateGroupsTableW(GroupsTableFileNameW(ExtractFilePath(FFileName)+SaveToDBName+'.photodb'));
 
  For i:=0 to length(FGroupsFounded)-1 do
  begin
@@ -357,16 +371,16 @@ begin
   for j:=0 to length(FRegGroups)-1 do
   if FRegGroups[j].GroupCode=FGroupsFounded[i].GroupCode then
   begin
-   AddGroupW(FRegGroups[j],GroupsTableFileNameW(GetDirectory(FFileName)+SaveToDBName+'.photodb'));
+   AddGroupW(FRegGroups[j],GroupsTableFileNameW(ExtractFilePath(FFileName)+SaveToDBName+'.photodb'));
    Break;
   end;
  end;
 
  if FolderSave then
  begin
-  FormatDir(FFileName);
-  CopyFile(PChar(Application.Exename),PChar(GetDirectory(FFileName)+SaveToDBName+'.exe'),false);
-  CopyFile(PChar(GetDirectory(Application.Exename)+'icons.dll'),PChar(GetDirectory(FFileName)+'icons.dll'),false);
+  FFileName := IncludeTrailingBackslash(FFileName);
+  CopyFile(PChar(Application.Exename),PChar(ExtractFilePath(FFileName)+SaveToDBName+'.exe'),false);
+  CopyFile(PChar(ExtractFilePath(Application.Exename)+'icons.dll'),PChar(ExtractFilePath(FFileName)+'icons.dll'),false);
   try
    Synchronize(ReplaceIconAction);
    if NewIcon<>nil then
@@ -375,7 +389,7 @@ begin
     NewIcon.SaveToFile(OutIconName);
     NewIcon.Free;
 
-    ReplaceIcon(GetDirectory(FFileName)+SaveToDBName+'.exe',StringToPWide(OutIconName),OriginalIconLanguage);
+    ReplaceIcon(ExtractFilePath(FFileName)+SaveToDBName+'.exe',StringToPWide(OutIconName),OriginalIconLanguage);
     try
      if FileExists(OutIconName) then
      DeleteFile(OutIconName);
@@ -430,10 +444,12 @@ begin
   Delete(s,1,Length(DBFolder));
   InTable.FieldByName('FFileName').AsString:=s;
 
-  if Pos('\',s)>0 then
-  Folder:=GetDirectory(s) else Folder:='';
-  UnformatDir(Folder);
-  CalcStringCRC32(Folder,crc);
+    if Pos('\', S) > 0 then
+      Folder := ExtractFileDir(S)
+    else
+      Folder := '';
+
+    CalcStringCRC32(Folder, Crc);
  {$R-}
  InTable.FieldByName('FolderCRC').AsInteger:=crc;
  {$R+}

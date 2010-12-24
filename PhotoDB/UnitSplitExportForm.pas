@@ -5,9 +5,9 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, DropSource, DropTarget, Dolphin_DB,
-   Language, acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
+  Language, acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
   DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger,
-  UnitDBCommon, uConstants, uDBForm;
+  UnitDBCommon, uConstants, uDBForm, uShellIntegration, uMemory;
 
 type
   TSplitExportForm = class(TDBForm)
@@ -60,21 +60,22 @@ type
     procedure ListView1Resize(Sender: TObject);
     procedure ListView1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    Items: TStrings;
+    FRegGroups: TGroups;
+    FGroupsFounded: TGroups;
+    procedure LoadLanguage;
   public
-  FRegGroups : TGroups;
-  FGroupsFounded : TGroups;
-  Items : TArStrings;
-  procedure LoadLanguage;
-  procedure CopyRecordsW(OutTable, InTable: TDataSet);
     { Public declarations }
+    procedure CopyRecordsW(OutTable, InTable: TDataSet);
   end;
 
 procedure SplitDB;
 
 var
-  Split_Opened : boolean = false;
+  Split_Opened: Boolean = False;
   SplitExportForm: TSplitExportForm;
 
 implementation
@@ -85,20 +86,20 @@ uses UnitDBKernel, CommCtrl, CommonDBSupport, ProgressActionUnit;
 
 procedure SplitDB;
 begin
- if Split_Opened then
- begin
+  if Split_Opened then
+  begin
+    SplitExportForm.Show;
+    Exit;
+  end;
+  Split_Opened := True;
+  Application.CreateForm(TSplitExportForm, SplitExportForm);
   SplitExportForm.Show;
-  exit;
- end;
- Split_Opened:=true;
- Application.CreateForm(TSplitExportForm, SplitExportForm);
- SplitExportForm.Show;
- Split_Opened:=true;
+  Split_Opened := True;
 end;
 
 procedure TSplitExportForm.FormCreate(Sender: TObject);
 begin
-  SetLength(Items, 0);
+  Items := TStringList.Create;
 
   DropFileTarget1.register(ListView1);
   LoadLanguage;
@@ -112,60 +113,68 @@ begin
   Copy1.ImageIndex := DB_IC_COPY;
   Cut1.ImageIndex := DB_IC_CUT;
   Delete1.ImageIndex := DB_IC_DELETE_INFO;
-  Button4.Caption := TEXT_MES_NEW_W;
+end;
+
+procedure TSplitExportForm.FormDestroy(Sender: TObject);
+begin
+  F(Items);
 end;
 
 procedure TSplitExportForm.DropFileTarget1Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 var
-  i,j : integer;
-  ico : TIcon;
+  I, J: Integer;
+  Ico: TIcon;
 begin
 
- if DropFileTarget1.Files.Count>0 then
- for i:=DropFileTarget1.Files.Count-1 downto 0 do
- for j:=0 to Length(Items)-1 do
- if AnsiLowerCase(Items[j])=AnsiLowerCase(DropFileTarget1.Files[i]) then
- begin
-  DropFileTarget1.Files.Delete(i);
-  break;
- end;
+  if DropFileTarget1.Files.Count > 0 then
+    for I := DropFileTarget1.Files.Count - 1 downto 0 do
+      for J := 0 to Items.Count - 1 do
+        if AnsiLowerCase(Items[J]) = AnsiLowerCase(DropFileTarget1.Files[I]) then
+        begin
+          DropFileTarget1.Files.Delete(I);
+          Break;
+        end;
 
- if DropFileTarget1.Files.Count>0 then
- for i:=0 to DropFileTarget1.Files.Count-1 do
- begin
-  if DirectoryExists(DropFileTarget1.Files[i]) then
-  begin
-   ico:=TIcon.Create;
-   ico.Handle:=ExtractAssociatedIcon_W(DropFileTarget1.Files[i],0);
-   With ListView1.Items.Add do
-   begin
-    Caption:='';//IntToStr(Index+1);
-    ImageIndex:=Byte(CheckBox1.Checked);
-    Data:=Pointer(ImageList1.Count);
-   end;
-   SetLength(Items,Length(Items)+1);
-   Items[Length(Items)-1]:=DropFileTarget1.Files[i];
-   ImageList1.AddIcon(ico);
-  end;
-  if FileExists(DropFileTarget1.Files[i]) then
-  if ExtInMask(SupportedExt,GetExt(DropFileTarget1.Files[i])) then
-  begin
-   ico:=TIcon.Create;
-   ico.Handle:=ExtractAssociatedIcon_W(DropFileTarget1.Files[i],0);
-   With ListView1.Items.Add do
-   begin
-    Caption:='';//IntToStr(Index+1);
-    ImageIndex:=Byte(CheckBox1.Checked);
-    Data:=Pointer(ImageList1.Count);
-   end;
-   SetLength(Items,Length(Items)+1);
-   Items[Length(Items)-1]:=DropFileTarget1.Files[i];
-   ImageList1.AddIcon(ico);
-  end;
- end;
-// if DirectoryExists()
-//
+  if DropFileTarget1.Files.Count > 0 then
+    for I := 0 to DropFileTarget1.Files.Count - 1 do
+    begin
+      if DirectoryExists(DropFileTarget1.Files[I]) then
+      begin
+        Ico := TIcon.Create;
+        try
+          Ico.Handle := ExtractAssociatedIconSafe(DropFileTarget1.Files[I], 0);
+          with ListView1.Items.Add do
+          begin
+            Caption := '';
+            ImageIndex := Byte(CheckBox1.Checked);
+            Data := Pointer(ImageList1.Count);
+          end;
+          Items.Add(DropFileTarget1.Files[I]);
+          ImageList1.AddIcon(Ico);
+        finally
+          F(Ico);
+        end;
+      end;
+      if FileExists(DropFileTarget1.Files[I]) then
+        if ExtInMask(SupportedExt, GetExt(DropFileTarget1.Files[I])) then
+        begin
+          Ico := TIcon.Create;
+          try
+            Ico.Handle := ExtractAssociatedIconSafe(DropFileTarget1.Files[I], 0);
+            with ListView1.Items.Add do
+            begin
+              Caption := ''; // IntToStr(Index+1);
+              ImageIndex := Byte(CheckBox1.Checked);
+              Data := Pointer(ImageList1.Count);
+            end;
+            Items.Add(DropFileTarget1.Files[I]);
+            ImageList1.AddIcon(Ico);
+          finally
+            F(Ico);
+          end;
+        end;
+    end;
 end;
 
 procedure TSplitExportForm.Button1Click(Sender: TObject);
@@ -184,19 +193,25 @@ end;
 
 procedure TSplitExportForm.LoadLanguage;
 begin
- Caption:=TEXT_MES_SPLIT_DB_CAPTION;
- Button2.Caption:=TEXT_MES_OK;
- Button3.Caption:=TEXT_MES_CANCEL;
- CheckBox1.Caption:=TEXT_MES_DELETE_RECORDS_AFTER_FINISH;
- Label2.Caption:=TEXT_MES_PATH;
- Label3.Caption:=TEXT_MES_FILES_AND_FOLDERS;
- Copy1.Caption:=L('Copy');
- Cut1.Caption:=L('Cut');
- ListView1.Columns[0].Caption:=TEXT_MES_METHOD;
- ListView1.Columns[1].Caption:=TEXT_MES_PATH;
- Label1.Caption:=TEXT_MES_SPLIT_DB_INFO;
- Delete1.Caption:=TEXT_MES_DELETE;
- Edit1.Text:=TEXT_MES_NO_FILE;
+  BeginTranslate;
+  try
+    Button4.Caption := TEXT_MES_NEW_W;
+    Caption := TEXT_MES_SPLIT_DB_CAPTION;
+    Button2.Caption := L('Ok');
+    Button3.Caption := L('Cancel');
+    CheckBox1.Caption := TEXT_MES_DELETE_RECORDS_AFTER_FINISH;
+    Label2.Caption := TEXT_MES_PATH;
+    Label3.Caption := TEXT_MES_FILES_AND_FOLDERS;
+    Copy1.Caption := L('Copy');
+    Cut1.Caption := L('Cut');
+    ListView1.Columns[0].Caption := TEXT_MES_METHOD;
+    ListView1.Columns[1].Caption := TEXT_MES_PATH;
+    Label1.Caption := TEXT_MES_SPLIT_DB_INFO;
+    Delete1.Caption := TEXT_MES_DELETE;
+    Edit1.Text := TEXT_MES_NO_FILE;
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TSplitExportForm.ListView1AdvancedCustomDrawSubItem(
@@ -246,33 +261,28 @@ end;
 
 procedure TSplitExportForm.Delete1Click(Sender: TObject);
 var
-  index, i : integer;
+  Index: Integer;
 begin
- index:=PopupMenu1.Tag;
- ListView1.Items.Delete(index);
-// ImageList1.Delete(index);
- for i:=index to Length(Items)-2 do
- Items[i]:=Items[i+1];
- SetLength(Items,Length(Items)-1);
-//
+  index := PopupMenu1.Tag;
+  ListView1.Items.Delete(index);
+  Items.Delete(index);
 end;
 
 procedure TSplitExportForm.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- Release;
- Split_Opened:=false;
+  DestroyTimer.Enabled := False;
+  Release;
+  Split_Opened := False;
 end;
 
 procedure TSplitExportForm.Button3Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
-procedure TSplitExportForm.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TSplitExportForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- DestroyTimer.Enabled:=true;
+  DestroyTimer.Enabled := True;
 end;
 
 procedure TSplitExportForm.Button2Click(Sender: TObject);
@@ -283,41 +293,40 @@ var
   fn : string;
   ID_Delete : array of integer;
 
-  function RecordOk : boolean;
+  function RecordOk: Boolean;
   var
-    i : integer;
+    I: Integer;
   begin
-   Result:=false;
-   fn:=S.FieldByName('FFileName').AsString;
-   for i:=0 to Length(Items)-1 do
-   begin
-    if AnsiUpperCase(Copy(fn,1,Length(Items[i])))=AnsiUpperCase(Items[i]) then
+    Result := False;
+    Fn := S.FieldByName('FFileName').AsString;
+    for I := 0 to Items.Count - 1 do
     begin
-     if ListView1.Items[i].ImageIndex=1 then
-     begin
-      SetLength(ID_Delete,Length(ID_Delete)+1);
-      ID_Delete[Length(ID_Delete)-1]:=S.FieldByName('ID').AsInteger;
-     end;
-     Result:=true;
-     exit;
+      if AnsiUpperCase(Copy(Fn, 1, Length(Items[I]))) = AnsiUpperCase(Items[I]) then
+      begin
+        if ListView1.Items[I].ImageIndex = 1 then
+        begin
+          SetLength(ID_Delete, Length(ID_Delete) + 1);
+          ID_Delete[Length(ID_Delete) - 1] := S.FieldByName('ID').AsInteger;
+        end;
+        Result := True;
+        Exit;
+      end;
     end;
-   end;
-
   end;
 
-  function RecordDelOk : boolean;
+  function RecordDelOk: Boolean;
   var
-    i, id : integer;
+    I, Id: Integer;
   begin
-   Result:=false;
-   id:=S.FieldByName('ID').AsInteger;
-   for i:=0 to Length(ID_Delete)-1 do
-   if ID_Delete[i]=id then
-   begin
-    Result:=true;
-    exit;
-   end;
- end;
+    Result := False;
+    Id := S.FieldByName('ID').AsInteger;
+    for I := 0 to Length(ID_Delete) - 1 do
+      if ID_Delete[I] = Id then
+      begin
+        Result := True;
+        Exit;
+      end;
+  end;
 
 begin
  if not DBKernel.TestDB(Edit1.Text) then
@@ -367,8 +376,6 @@ begin
   CreateGroupsTableW(Edit1.Text);
    for i:=0 to length(FGroupsFounded)-1 do
    begin
-//    SetText(Format(TEXT_MES_SAVING_GROUPS,[FGroupsFounded[i].GroupName]));
-//    SetPosition(i);
     ProgressWindow.xPosition:=i;
     for j:=0 to length(FRegGroups)-1 do
     if FRegGroups[j].GroupCode=FGroupsFounded[i].GroupCode then
@@ -475,19 +482,21 @@ try
  if InTable.Fields.FindField('FolderCRC')<>nil then
  begin
 
-  if OutTable.Fields.FindField('FolderCRC')<>nil then InTable.FieldByName('FolderCRC').AsInteger:=OutTable.FieldByName('FolderCRC').AsInteger else
-  begin
-   folder:=GetDirectory(OutTable.FieldByName('FFileName').AsString);
-   AnsiLowerCase(folder);
-   UnFormatDir(folder);
-   CalcStringCRC32(AnsiLowerCase(folder),crc);
-   InTable.FieldByName('FolderCRC').AsInteger:=crc;
-  end;
- end;
+      if OutTable.Fields.FindField('FolderCRC') <> nil then
+        InTable.FieldByName('FolderCRC').AsInteger := OutTable.FieldByName('FolderCRC').AsInteger
+      else
+      begin
+        Folder := ExtractFilePath(OutTable.FieldByName('FFileName').AsString);
+        AnsiLowerCase(Folder);
+        CalcStringCRC32(AnsiLowerCase(Folder), Crc);
+        InTable.FieldByName('FolderCRC').AsInteger := Crc;
+      end;
+    end;
 
- except
-  on e : Exception do EventLog(':CopyRecordsW() throw exception: '+e.Message);
- end;
+  except
+    on E: Exception do
+      EventLog(':CopyRecordsW() throw exception: ' + E.message);
+  end;
 end;
 
 procedure TSplitExportForm.ListView1Resize(Sender: TObject);
@@ -495,19 +504,16 @@ begin
  ListView1.Columns[1].Width:=ListView1.Width-ListView1.Columns[0].Width-5;
 end;
 
-procedure TSplitExportForm.ListView1KeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TSplitExportForm.ListView1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  index, i : integer;
+  Index: Integer;
 begin
- if ListView1.Selected<>nil then
- begin
-  index:=ListView1.Selected.Index;
-  ListView1.Items.Delete(index);
-  for i:=index to Length(Items)-2 do
-  Items[i]:=Items[i+1];
-  SetLength(Items,Length(Items)-1);
- end;
+  if ListView1.Selected <> nil then
+  begin
+    Index := ListView1.Selected.Index;
+    ListView1.Items.Delete(Index);
+    Items.Delete(Index);
+  end;
 end;
 
 end.

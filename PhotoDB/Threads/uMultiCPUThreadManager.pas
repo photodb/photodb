@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Math, SysUtils, Forms, uTime, uGOM, uLogger,
-  uThreadEx, uThreadForm, Classes, SyncObjs, uMemory;
+  uThreadEx, uThreadForm, Classes, SyncObjs, uMemory, uSysUtils;
 
 type
   TMultiCPUThread = class(TThreadEx)

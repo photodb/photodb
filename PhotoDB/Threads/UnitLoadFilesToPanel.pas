@@ -6,8 +6,8 @@ uses
   SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
   CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
   UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
-  UnitDBCommon, uLogger, ImageConverting, uMemory,
-  uDBPopupMenuInfo;
+  UnitDBCommon, uLogger, ImageConverting, uMemory, UnitDBKernel,
+  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime;
 
 type
   LoadFilesToPanel = class(TThread)
@@ -296,7 +296,7 @@ begin
       S := FileName;
       if FolderView then
         Delete(S, 1, Length(ProgramDir));
-      SetStrParam(FQuery, 0, Delnakl(NormalizeDBStringLike(AnsiLowerCase(S))));
+      SetStrParam(FQuery, 0, NormalizeDBStringLike(AnsiLowerCase(S)));
     end;
     FQuery.Active := True;
     C := FQuery.RecordCount;

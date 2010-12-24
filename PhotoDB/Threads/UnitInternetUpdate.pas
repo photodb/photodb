@@ -3,8 +3,8 @@ unit UnitInternetUpdate;
 interface
 
 uses
-  Classes, Registry, Windows, SysUtils, dolphin_db, Forms,
-  uVistaFuncs, uLogger, uConstants;
+  Classes, Registry, Windows, SysUtils, UnitDBKernel, Forms,
+  uVistaFuncs, uLogger, uConstants, uShellIntegration;
 
 type
   TInternetUpdate = class(TThread)

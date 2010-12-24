@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, DB, Dolphin_DB, UnitDBDeclare;
+  Dialogs, StdCtrls, DmProgress, DB, uDBBaseTypes, UnitDBDeclare;
 
 type
   TSavingTableForm = class(TForm)

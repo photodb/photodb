@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Dolphin_DB, Menus, UnitDBKernel,
-  UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt, uMemory, uDBForm;
+  Dialogs, ExtCtrls, StdCtrls, uDBUtils, Menus, UnitDBKernel,
+  UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt, uMemory, uDBForm,
+  uConstants;
 
 type
   TFormHistory = class(TDBForm)
@@ -163,7 +164,7 @@ begin
   with ExplorerManager.NewExplorer(False) do
   begin
     SetOldPath(InfoListBox.Items[PmActions.Tag]);
-    SetPath(GetDirectory(FileList[PmActions.Tag]));
+    SetPath(ExtractFileDir(FileList[PmActions.Tag]));
     Show;
   end;
 end;

@@ -7,7 +7,7 @@ interface
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
   uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations,
-  ShlObj, uFileUtils;
+  ShlObj, uFileUtils, uRuntime;
 
 type
   TRegistryInstallCallBack = procedure(Current, Total: Integer; var Terminate : Boolean) of object;

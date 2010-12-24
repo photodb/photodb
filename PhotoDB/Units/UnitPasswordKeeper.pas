@@ -2,8 +2,8 @@ unit UnitPasswordKeeper;
 
 interface
 
-uses Windows, Classes, Dolphin_DB, win32crc, GraphicCrypt, UnitDBDeclare,
-  SyncObjs;
+uses Windows, Classes, UnitDBKernel, win32crc, GraphicCrypt, UnitDBDeclare,
+  SyncObjs, uDBBaseTypes, uMemory;
 
 type
   TPasswordKeeper = class(TObject)
@@ -22,7 +22,7 @@ type
     function Count: Integer;
     function GetPasswords: TArCardinal;
     procedure TryGetPasswordFromUser(PasswordCRC: Cardinal);
-    function PasswordOKForFiles(PasswordCRC: Cardinal): TArStrings;
+    procedure PasswordOKForFiles(PasswordCRC: Cardinal; FileList : TStrings);
     function GetAvaliableCryptFileList(Sender: TObject): TArInteger;
     procedure AddToOKList(PasswordCRC: Cardinal);
   end;
@@ -159,22 +159,20 @@ begin
   end;
 end;
 
-function TPasswordKeeper.PasswordOKForFiles(PasswordCRC: Cardinal): TArStrings;
+procedure TPasswordKeeper.PasswordOKForFiles(PasswordCRC: Cardinal; FileList : TStrings);
 var
   I: Integer;
   P: TPasswordRecord;
 begin
   FSync.Enter;
   try
-   SetLength(Result, 0);
+    FileList.Clear;
     for I := PasswordList.Count - 1 downto 0 do
     begin
       P := TPasswordRecord(PasswordList[I]);
       if P.CRC = PasswordCRC then
-      begin
-        SetLength(Result, Length(Result) + 1);
-        Result[Length(Result) - 1] := P.FileName;
-      end;
+        FileList.Add(P.FileName);
+
     end;
   finally
     FSync.Leave;
@@ -232,35 +230,40 @@ end;
 
 procedure TPasswordKeeper.TryGetPasswordFromUser(PasswordCRC: Cardinal);
 var
-  FileList: TArStrings;
+  FileList: TStrings;
   FileOkList: TList;
   Password: string;
   Skip: Boolean;
   I: Integer;
   P: TPasswordRecord;
 begin
-  FileList := PasswordOKForFiles(PasswordCRC);
-  if Length(FileList) > 0 then
-  begin
-    Skip := False;
-    Password := GetImagePasswordFromUserForManyFiles(FileList, PasswordCRC, Skip);
-    if Password <> '' then
+  FileList := TStringList.Create;
+  try
+    PasswordOKForFiles(PasswordCRC, FileList);
+    if FileList.Count > 0 then
     begin
-      DBKernel.AddTemporaryPasswordInSession(Password);
-
-      // moving from password list to OKpassword list FILES
-
-      FileOkList := PasswordOKForRecords(Password);
-      for I := 0 to FileOkList.Count - 1 do
+      Skip := False;
+      Password := GetImagePasswordFromUserForManyFiles(FileList, PasswordCRC, Skip);
+      if Password <> '' then
       begin
-        P := FileOkList[I];
-        AddToOKList(P.ID);
-      end;
-      RemoveRecordsByPasswordCRC(PasswordCRC);
-    end;
+        DBKernel.AddTemporaryPasswordInSession(Password);
 
-    if Skip then
-      RemoveRecordsByPasswordCRC(PasswordCRC);
+        // moving from password list to OKpassword list FILES
+
+        FileOkList := PasswordOKForRecords(Password);
+        for I := 0 to FileOkList.Count - 1 do
+        begin
+          P := FileOkList[I];
+          AddToOKList(P.ID);
+        end;
+        RemoveRecordsByPasswordCRC(PasswordCRC);
+      end;
+
+      if Skip then
+        RemoveRecordsByPasswordCRC(PasswordCRC);
+    end;
+  finally
+    F(FileList);
   end;
 end;
 

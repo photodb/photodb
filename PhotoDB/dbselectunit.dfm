@@ -67,7 +67,6 @@ object DBSelect: TDBSelect
     Height = 25
     Caption = 'Exit'
     TabOrder = 3
-    OnClick = Button2Click
   end
   object Button4: TButton
     Left = 8

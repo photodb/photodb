@@ -4,31 +4,30 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, RotateToolUnit,
-  Language, GraphicsBaseTypes, ScanlinesFX;
+  Language, GraphicsBaseTypes, ScanlinesFX, uEditorTypes;
 
 type
   TRotateEffectThread = class(TThread)
   private
-  FSID : string;
-  FProc: TBaseEffectProc;
-  BaseImage : TBitmap;
-  IntParam : integer;
-  FOnExit : TBaseEffectProcThreadExit;
-  D : TBitmap;
-  FOwner : TObject;
-  FAngle : Double;
-  FBackColor : TColor;
-  FEditor : TObject;
     { Private declarations }
+    FSID: string;
+    FProc: TBaseEffectProc;
+    BaseImage: TBitmap;
+    IntParam: Integer;
+    FOnExit: TBaseEffectProcThreadExit;
+    D: TBitmap;
+    FOwner: TObject;
+    FAngle: Double;
+    FBackColor: TColor;
+    FEditor: TObject;
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TObject; CreateSuspended: Boolean; Proc : TBaseEffectProc;
-    S : TBitmap; SID : string; OnExit : TBaseEffectProcThreadExit; Angle: Double;
-    BackColor: TColor; Editor : TObject);
-    Procedure CallBack(Progress : integer; var Break: boolean);
-    Procedure SetProgress;
-    Procedure DoExit;
+    constructor Create(AOwner: TObject; CreateSuspended: Boolean; Proc: TBaseEffectProc; S: TBitmap; SID: string;
+      OnExit: TBaseEffectProcThreadExit; Angle: Double; BackColor: TColor; Editor: TObject);
+    procedure CallBack(Progress: Integer; var Break: Boolean);
+    procedure SetProgress;
+    procedure DoExit;
   end;
 
 implementation
@@ -37,13 +36,12 @@ implementation
 
 uses ImEditor;
 
-procedure TRotateEffectThread.CallBack(Progress: integer;
-  var Break: boolean);
+procedure TRotateEffectThread.CallBack(Progress: Integer; var Break: Boolean);
 begin
- intParam:=Progress;
- Synchronize(SetProgress);
- if (FEditor as TImageEditor).ToolClass=FOwner then
- Break:=(FOwner as TRotateToolPanelClass).FSID<>FSID;
+  IntParam := Progress;
+  Synchronize(SetProgress);
+  if (FEditor as TImageEditor).ToolClass = FOwner then
+    Break := (FOwner as TRotateToolPanelClass).FSID <> FSID;
 end;
 
 constructor TRotateEffectThread.Create(AOwner: TObject;

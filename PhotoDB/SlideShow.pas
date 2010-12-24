@@ -13,7 +13,9 @@ uses
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
-  uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils;
+  uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
+  uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime,
+  uDBBaseTypes;
 
 type
   TRotatingImageInfo = record
@@ -1251,7 +1253,7 @@ begin
  begin
   FileName:=List[i];
   SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
-  SetStrParam(fQuery,0,Delnakl(NormalizeDBStringLike(AnsiLowerCase(FileName))));
+  SetStrParam(fQuery,0,NormalizeDBStringLike(AnsiLowerCase(FileName)));
   fQuery.active:=true;
   if fQuery.RecordCount<>0 then
   begin
@@ -1370,7 +1372,7 @@ begin
   try
     FileName := CurrentInfo.ItemFileNames[FileNo];
     SetSQL(DS,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
-    SetStrParam(DS, 0, DelNakl(AnsiLowerCase(FileName)));
+    SetStrParam(DS, 0, AnsiLowerCase(FileName));
     DS.Active := True;
     if DS.RecordCount=0 then
       Exit;
@@ -1530,9 +1532,7 @@ end;
 function TViewer.ExecuteW(Sender: TObject; Info: TRecordsInfo; LoadBaseFile : String) : boolean;
 var
   i : integer;
-  s, Dir, text_out : String;
-  si : TStartupInfo;
-  p  : TProcessInformation;
+  text_out : String;
   TempInfo : TOneRecordInfo;
   LoadImage : TPNGImage;
   LoadImageBMP : TBitmap;
@@ -1580,30 +1580,6 @@ begin
  if not UseOnlySelf then
  if not ((FormManager.MainFormsCount=1) and FormManager.IsMainForms(self)) then
 
- if DBKernel.ReadboolW('Options','SlideShow_UseExternelViewer',False) then
- begin
-  s:='';
-  if Length(Info.ItemFileNames)=0 then Exit;
-  For i:=Info.Position to Length(Info.ItemFileNames)-1 do
-  s:=s+' "'+Info.ItemFileNames[i]+'" ';
-  For i:=0 to Info.Position-1 do
-  s:=s+' "'+Info.ItemFileNames[i]+'" ';
-  Dir:=GetDirectory(DBKernel.ReadStringW('Options','SlideShow_ExternelViewer'));
-  If AnsiLowercase(Dir)=AnsiLowercase(ProgramDir) then Exit;
-  UnFormatDir(Dir);
-  FillChar( Si, SizeOf( Si ) , 0 );
-  with Si do begin
-   cb := SizeOf( Si);
-   dwFlags := startf_UseShowWindow;
-   wShowWindow := 4;
-  end;
-  for i:=Length(Dir) downto 1 do
-  if dir[i]='"' then
-  Delete(Dir,i,1);
-  CreateProcess(nil,PChar(Format(DBKernel.ReadStringW('Options','SlideShow_ExternelViewer'),[S])),nil,nil,false,CREATE_DEFAULT_ERROR_MODE,nil,PChar(Dir),si,p);
-  Result:=false;
-  Exit;
- end;
  if (LoadBaseFile<>'') and (Length(CurrentInfo.ItemIds)=1) then
  begin
   TempInfo:=GetRecordFromRecords(CurrentInfo,0);
@@ -1767,7 +1743,7 @@ procedure TViewer.AllFolder1Click(Sender: TObject);
 begin
  If UpdaterDB=nil then
  UpdaterDB:=TUpdaterDB.Create;
- UpdaterDB.AddDirectory(GetDirectory(CurrentInfo.ItemFileNames[CurrentFileNumber]),nil)
+ UpdaterDB.AddDirectory(ExtractFileDir(CurrentInfo.ItemFileNames[CurrentFileNumber]),nil)
 end;
 
 procedure TViewer.GoToSearchWindow1Click(Sender: TObject);
@@ -1788,7 +1764,7 @@ begin
  With ExplorerManager.NewExplorer(False) do
  begin
   SetOldPath(CurrentInfo.ItemFileNames[CurrentFileNumber]);
-  SetPath(GetDirectory(CurrentInfo.ItemFileNames[CurrentFileNumber]));
+  SetPath(ExtractFileDir(CurrentInfo.ItemFileNames[CurrentFileNumber]));
   Show;
  end;
 end;
@@ -3066,7 +3042,7 @@ begin
   NewRating := StrToInt(Str);
   SetRating(CurrentInfo.ItemIds[CurrentFileNumber], NewRating);
   EventInfo.Rating := NewRating;
-  DBKernel.DoIDEvent(Sender, CurrentInfo.ItemIds[CurrentFileNumber], [EventID_Param_Rating], EventInfo);
+  DBKernel.DoIDEvent(Self, CurrentInfo.ItemIds[CurrentFileNumber], [EventID_Param_Rating], EventInfo);
 end;
 
 procedure TViewer.ApplicationEvents1Hint(Sender: TObject);

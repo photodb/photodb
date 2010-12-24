@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel,
   ImgList, UnitCDMappingSupport, UnitDBCommonGraphics, Menus, DB, CommonDBSupport,
-  uVistaFuncs, uLogger, uDBForm, uMemory, UnitDBDeclare, uDBPopupMenuInfo;
+  uVistaFuncs, uLogger, uDBForm, uMemory, UnitDBDeclare, uDBPopupMenuInfo,
+  uShellIntegration, uConstants;
 
 type
   TFormCDMapper = class(TDBForm)
@@ -73,12 +74,12 @@ var
   Icon : TIcon;
 begin
   PopupMenuCDActions.Images:=DBKernel.ImageList;
-  Icon:=TIcon.Create;
+  Icon := TIcon.Create;
   try
     DBkernel.ImageList.GetIcon(DB_IC_CD_IMAGE, Icon);
     CDImageList.AddIcon(Icon);
   finally
-    Icon.Free;
+    F(Icon);
   end;
   LoadLanguage;
   RefreshCDList;
@@ -130,7 +131,7 @@ end;
 
 procedure TFormCDMapper.ButtonAddocationClick(Sender: TObject);
 begin
-  AddCDLocation;
+  AddCDLocation(Handle, '');
   RefreshCDList;
 end;
 
@@ -215,7 +216,7 @@ begin
     with ExplorerManager.NewExplorer(False) do
     begin
       SetOldPath(TCDClass(CDMappingListView.Selected.Data).Path);
-      SetPath(GetDirectory(TCDClass(CDMappingListView.Selected.Data).Path));
+      SetPath(ExtractFilePath(TCDClass(CDMappingListView.Selected.Data).Path));
       Show;
     end;
   end;

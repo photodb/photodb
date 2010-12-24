@@ -3,9 +3,9 @@ unit Searching;
 interface
 
 uses
-  UnitGroupsWork, DBCMenu, CmpUnit, FileCtrl, Dolphin_DB,
+  UnitGroupsWork, DBCMenu, CmpUnit, FileCtrl,
   ShellApi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DB, Menus, ExtCtrls, StdCtrls,
+  Dialogs, DB, Menus, ExtCtrls, StdCtrls, uGraphicUtils,
   ImgList, ComCtrls, ActiveX, ShlObj, JPEG, DmProgress, ClipBrd,
   SaveWindowPos, ExtDlgs , ToolWin, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
@@ -18,7 +18,9 @@ uses
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, pngimage, uResources, uMemory,
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
-  uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate;
+  uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate,
+  uShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
+  uDBUtils, uDBFileTypes, Dolphin_DB;
 
 type
   TDateRange = record
@@ -729,8 +731,6 @@ begin
    on e : Exception do EventLog(':TSearchForm::FormCreate() throw exception: '+e.Message);
  end;
  TW.I.Start('S -> DBKernel.RegisterForm');
- DBKernel.RegisterForm(self);
-
  TW.I.Start('S -> LoadLanguage');
  LoadLanguage;
  SearchManager.AddSearch(Self);
@@ -797,7 +797,7 @@ begin
     begin
       TTranslateManager.Instance.BeginTranslate;
       try
-        TDBPopupMenu.Instance.Execute(ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
+        TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
       finally
         TTranslateManager.Instance.EndTranslate;
       end;
@@ -976,7 +976,7 @@ begin
   EventInfo.Groups:=FPropertyGroups;
   EventInfo.Date:=DateTimePicker1.DateTime;
   EventInfo.IsDate:=not IsDatePanel.Visible;
-  DBKernel.DoIDEvent(Sender,id,[EventID_Param_Rating,EventID_Param_Comment,EventID_Param_KeyWords,EventID_Param_Date,EventID_Param_IsDate,EventID_Param_Groups],EventInfo);
+  DBKernel.DoIDEvent(Self,id,[EventID_Param_Rating,EventID_Param_Comment,EventID_Param_KeyWords,EventID_Param_Date,EventID_Param_IsDate,EventID_Param_Groups],EventInfo);
  end else
  begin
   FUpdatingDB:=true;
@@ -1021,7 +1021,7 @@ begin
    ExecSQL(WorkQuery);
    EventInfo.Date:=DateTimePicker1.DateTime;
    For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_Date],EventInfo);
+   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Date],EventInfo);
   end;
   if not PanelValueIsDateSets.Visible then
   begin
@@ -1035,7 +1035,7 @@ begin
    ExecSQL(WorkQuery);
    EventInfo.IsDate:=not IsDatePanel.Visible;
    For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_IsDate],EventInfo);
+   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_IsDate],EventInfo);
   end;
   //[END] Date Support
 
@@ -1053,7 +1053,7 @@ begin
    ExecSQL(WorkQuery);
    EventInfo.Time:=TimeOf(DateTimePicker4.DateTime);
    For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_Time],EventInfo);
+   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Time],EventInfo);
   end;
   if not PanelValueIsTimeSets.Visible then
   begin
@@ -1069,7 +1069,7 @@ begin
    ExecSQL(WorkQuery);
    EventInfo.IsTime:=not IsTimePanel.Visible;
    For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_IsTime],EventInfo);
+   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_IsTime],EventInfo);
   end;
   //[END] Time Support
 
@@ -1087,7 +1087,7 @@ begin
    ExecSQL(WorkQuery);
    EventInfo.Rating:=RatingEdit.Rating;
    For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_Rating],EventInfo);
+   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Rating],EventInfo);
   end;
   //[END] Rating Support
 
@@ -1104,7 +1104,7 @@ begin
    ExecSQL(WorkQuery);
    EventInfo.Comment:=Memo2.Text;
    For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Sender,SelectedInfo.Ids[i],[EventID_Param_Comment],EventInfo);
+   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Comment],EventInfo);
   end;
   //[END] Comment Support
 
@@ -1143,7 +1143,7 @@ begin
     ExecSQL(WorkQuery);
     EventInfo.KeyWords:=List[i].Value;
     for j:=0 to Length(List[i].IDs)-1 do
-    DBKernel.DoIDEvent(Sender,List[i].IDs[j],[EventID_Param_KeyWords],EventInfo);
+    DBKernel.DoIDEvent(Self,List[i].IDs[j],[EventID_Param_KeyWords],EventInfo);
    end;
   end;
   //[END] KeyWords Support
@@ -1183,7 +1183,7 @@ begin
    ExecSQL(WorkQuery);
      EventInfo.Groups:=List[i].Value;
     for j:=0 to Length(List[i].IDs)-1 do
-    DBKernel.DoIDEvent(Sender,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
+    DBKernel.DoIDEvent(Self,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
    end;
 
   end;
@@ -1418,7 +1418,6 @@ begin
   DropFileTarget1.Unregister;
   if Creating then
     Exit;
-  DBkernel.UnRegisterForm(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   SaveWindowPos1.SavePosition;
   FormManager.UnRegisterMainForm(Self);
@@ -1541,7 +1540,7 @@ begin
   begin
     Caption:=ProductName + ' -  ['+DBkernel.GetDataBaseName+']';
     ReRecreateGroupsList;
-    FPictureSize := Dolphin_DB.ThImageSize;
+    FPictureSize := ThImageSize;
     LoadSizes;
   end else
   if ID=-2 then
@@ -2017,7 +2016,7 @@ begin
         Exit;
       end;
     end;
-    RenameResult := RenameFileWithDB(Self, SearchRecord.FileName,GetDirectory(SearchRecord.FileName) + S, SearchRecord.ID, False);
+    RenameResult := RenameFileWithDB(Self, SearchRecord.FileName, ExtractFilePath(SearchRecord.FileName) + S, SearchRecord.ID, False);
   end;
 end;
 
@@ -2228,7 +2227,7 @@ end;
 
 procedure TSearchForm.SetPath(Value: string);
 begin
-  FormatDir(Value);
+  Value := IncludeTrailingBackslash(Value);
   FSearchPath := Value;
   LockChangePath := True;
   if ExplorerPanel.Visible then
@@ -3433,7 +3432,7 @@ var
 begin
   SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
   EventInfo.Rating:=(Sender as TMenuItem).Tag;
-  DBKernel.DoIDEvent(Sender,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
+  DBKernel.DoIDEvent(Self,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
 end;
 
 procedure TSearchForm.ListViewResize(Sender : TObject);

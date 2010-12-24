@@ -10,7 +10,7 @@ uses
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
   Network, GraphicCrypt, UnitCrypting, DropSource, DragDropFile, DragDrop,
   DropTarget, ScPanel, AddSessionPasswordUnit, uGOM,
-  ShellContextMenu, ShlObj, Clipbrd, GraphicsCool,
+  ShellContextMenu, ShlObj, Clipbrd, GraphicsCool, uShellIntegration,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
   EasyListview, MPCommonUtilities, MPCommonObjects,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
@@ -19,7 +19,7 @@ uses
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
-  uPNGUtils;
+  uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime, uDBUtils;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -652,11 +652,12 @@ begin
   Result := Path;
   if Path = '' then
     Exit;
-  UnFormatDir(Result);
-  for I:=1 to Length(Result) do
+
+  Result := ExcludeTrailingBackslash(Result);
+  for I := 1 to Length(Result) do
   begin
-    if Result[i] = ':' then Result[i] := '_';
-    if Result[i] = '\' then Result[i] := '_';
+    if (Result[I] = ':') or (Result[I] = '\') then
+      Result[I] := '_';
   end;
 end;
 
@@ -888,7 +889,6 @@ begin
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
   ExplorerManager.AddExplorer(Self);
-  DBKernel.RegisterForm(Self);
   MainPanel.DoubleBuffered := True;
   PropertyPanel.DoubleBuffered := True;
   ElvMain.DoubleBuffered := True;
@@ -1076,7 +1076,7 @@ begin
     end else
     begin
       if not FFilesInfo[PmItemPopup.Tag].Loaded then
-        FFilesInfo[PmItemPopup.Tag].ID := Dolphin_DB.GetIdByFileName(FFilesInfo[PmItemPopup.Tag].FileName);
+        FFilesInfo[PmItemPopup.Tag].ID := GetIdByFileName(FFilesInfo[PmItemPopup.Tag].FileName);
       if FFilesInfo[PmItemPopup.Tag].ID = 0 then
         PropertyManager.NewFileProperty(FFilesInfo[PmItemPopup.Tag].FileName).ExecuteFileNoEx
           (FFilesInfo[PmItemPopup.Tag].FileName)
@@ -1557,7 +1557,6 @@ begin
   DBkernel.WriteInteger('Explorer','PatchType',GetCurrentPathW.PType);
   FStatusProgress.Free;
   FormManager.UnRegisterMainForm(Self);
-  DBKernel.UnRegisterForm(self);
   F(FFilesInfo);
   GOM.RemoveObj(Self);
 end;
@@ -1586,8 +1585,7 @@ begin
     begin
       DS := GetQuery;
       try
-        Folder := FFilesInfo[PmItemPopup.Tag].FileName;
-        FormatDir(Folder);
+        Folder := IncludeTrailingBackslash(FFilesInfo[PmItemPopup.Tag].FileName);
         SetSQL(DS, 'Select count(*) as CountField from $DB$ where (FFileName Like :FolderA)');
         SetStrParam(DS, 0, NormalizeDBStringLike('%' + Folder + '%'));
         DS.Open;
@@ -1595,19 +1593,19 @@ begin
         begin
           try
             RenameResult := RenameFile(FFilesInfo[PmItemPopup.Tag].FileName,
-              GetDirectory(FFilesInfo[PmItemPopup.Tag].FileName) + S);
+              ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S);
           except
             RenameResult := False;
           end;
         end else
           RenameResult := RenamefileWithDB(Self, FFilesInfo[PmItemPopup.Tag].FileName,
-            GetDirectory(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
+            ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
       finally
         FreeDS(DS);
       end;
     end else
       RenameResult := RenamefileWithDB(Self, FFilesInfo[PmItemPopup.Tag].FileName,
-        GetDirectory(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
+        ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
   end;
 end;
 
@@ -1931,11 +1929,10 @@ begin
       SlashHandled := False;
       Exit;
     end;
-    S := CbPathEdit.Text;
-    FormatDir(S);
-    if ComboPath <> GetDirectory(S) then
+    S := IncludeTrailingBackslash(CbPathEdit.Text);
+    if ComboPath <> ExtractFilePath(S) then
     begin
-      ComboPath := GetDirectory(CbPathEdit.Text);
+      ComboPath := ExtractFilePath(CbPathEdit.Text);
       ComboBox1DropDown;
     end;
   end;
@@ -2115,7 +2112,7 @@ begin
 
   if [EventID_Param_DB_Changed] * Params <> [] then
   begin
-    FPictureSize := Dolphin_DB.ThImageSize;
+    FPictureSize := ThImageSize;
     LoadSizes;
   end;
 
@@ -2505,8 +2502,7 @@ var
   N : Integer;
 begin
   FolderName:= L('New directory');
-  S := GetCurrentPath;
-  FormatDir(S);
+  S := IncludeTrailingBackslash(GetCurrentPath);
   N := 1;
   if DirectoryExists(S + FolderName) then
   begin
@@ -2772,7 +2768,7 @@ procedure TExplorerForm.ApplicationEvents1Message(var Msg: tagMSG;
 var
   FEditHandle : THandle;
   InternalHandled : boolean;
-  I : integer;
+  I : Integer;
 begin
   {if Msg.message<>0 then
   if Msg.message<>15 then
@@ -2802,10 +2798,10 @@ begin
     FEditHandle := GetWindow(GetWindow(CbPathEdit.Handle, GW_CHILD), GW_CHILD);
     if FEditHandle = GetWindow(Msg.Hwnd, GW_CHILD) then
     begin
-      if ComboPath <> GetDirectory(CbPathEdit.Text) then
+      if ComboPath <> ExtractFilePath(CbPathEdit.Text) then
       begin
         AutoCompliteTimer.Enabled := True;
-        ComboPath := GetDirectory(CbPathEdit.Text);
+        ComboPath := ExtractFilePath(CbPathEdit.Text);
       end;
     end;
   end;
@@ -3014,15 +3010,15 @@ begin
             Exit;
           for I := 0 to ElvMain.Items.Count - 1 do
           begin
-            index := ItemIndexToMenuIndex(I);
-            if index > FFilesInfo.Count - 1 then
+            Index := ItemIndexToMenuIndex(I);
+            if Index > FFilesInfo.Count - 1 then
               Exit;
             FileName := FFilesInfo[index].FileName;
             FOldFileName := PInfo[K].FNewFileName;
             if FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER then
             begin
-              FormatDir(FileName);
-              FormatDir(FOldFileName);
+              FileName := IncludeTrailingBackslash(FileName);
+              FOldFileName := IncludeTrailingBackslash(FOldFileName);
             end;
             if AnsiLowerCase(FileName) = AnsiLowerCase(FOldFileName) then
             begin
@@ -4029,7 +4025,7 @@ begin
     begin
       S := GetCurrentPath;
       if Length(S) = 2 then
-        FormatDir(S);
+        S := IncludeTrailingBackslash(S);
       TreeView.Path := S;
     end;
     if GetCurrentPathW.PType = EXPLORER_ITEM_NETWORK then
@@ -4210,15 +4206,14 @@ begin
     EventLog('SetNewPath "' + Path + '" <Explorer>')
   else
     EventLog('SetNewPath "' + Path + '"');
-  S := Path;
-  UnformatDir(S);
+  S := ExcludeTrailingBackslash(Path);
   if (AnsiLowerCase(Path) = AnsiLowerCase(MyComputer)) or (Path = '') or not DirectoryExists(S) then
   begin
     if Length(S) > 2 then
       if Copy(S, 1, 2) = '\\' then
       begin
-        UnformatDir(s);
-        Delete(S,1,2);
+        S := ExcludeTrailingBackslash(S);
+        Delete(S, 1, 2);
         If Pos('\', S) = 0 then
         begin
           SetNewPathW(ExplorerPath('\\' + S, EXPLORER_ITEM_COMPUTER), False);
@@ -4230,8 +4225,7 @@ begin
         SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False);
         Exit;
       end;
-      S := Path;
-      UnformatDir(S);
+      S := ExcludeTrailingBackslash(Path);
       if DirectoryExists(S) then
         SetNewPathW(ExplorerPath(S, EXPLORER_ITEM_MYCOMPUTER), Explorer)
       else
@@ -4241,12 +4235,11 @@ begin
       end;
     end else
     begin
-      S := Path;
-      UnformatDir(S);
+      S := ExcludeTrailingBackslash(Path);
       if Length(S) > 2 then
         if Copy(S, 1, 2) = '\\' then
         begin
-          UnformatDir(S);
+          S := ExcludeTrailingBackslash(S);
           Delete(S, 1, 2);
           if Pos('\', S) <> 0 then
           begin
@@ -4729,7 +4722,8 @@ begin
     for I := Length(Path) downto 3 do
       if (Path[I] = '\') and (Path[I - 1] = '\') then
         Delete(Path, I, 1);
-  UnFormatDir(Path);
+
+  Path := ExcludeTrailingBackslash(Path);
   if Length(Path) > 1 then
     if ((Path[1] = '\') and (Path[2] <> '\')) then
     begin
@@ -4752,8 +4746,7 @@ begin
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE)
     then
   begin
-    S := Path;
-    UnFormatDir(S);
+    S := ExcludeTrailingBackslash(Path);
     Caption := S;
     CbPathEdit.Text := Path;
   end;
@@ -4782,7 +4775,7 @@ begin
   FCurrentTypePath := WPath.PType;
   ListView1SelectItem(nil, nil, False);
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) then
-    Formatdir(S);
+    S := IncludeTrailingBackslash(S);
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or
     (WPath.PType = EXPLORER_ITEM_SHARE) then
   begin
@@ -4879,7 +4872,7 @@ begin
         try
           S := GetCurrentPath;
           if Length(S) = 2 then
-            FormatDir(S);
+            S := IncludeTrailingBackslash(S);
           TreeView.Path := S;
           TreeView.Select(TreeView.Selected);
         except
@@ -5072,7 +5065,7 @@ begin
   Options.Action := ACTION_DECRYPT_IMAGES;
   Options.Password := Password;
   Options.CryptOptions := 0;
-  TCryptingImagesThread.Create(Options);
+  TCryptingImagesThread.Create(Self, Options);
 
 end;
 
@@ -5117,7 +5110,7 @@ begin
   Options.Action := ACTION_CRYPT_IMAGES;
   Options.Password := Opt.Password;
   Options.CryptOptions := CryptOptions;
-  TCryptingImagesThread.Create(Options);
+  TCryptingImagesThread.Create(Self, Options);
 end;
 
 procedure TExplorerForm.Addsessionpassword1Click(Sender: TObject);
@@ -5133,7 +5126,7 @@ begin
   begin
     EventInfo.Image := nil;
     if GetImagePasswordFromUser(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
-      DBKernel.DoIDEvent(Sender, FFilesInfo[PmItemPopup.Tag].ID, [EventID_Param_Image], EventInfo);
+      DBKernel.DoIDEvent(Self, FFilesInfo[PmItemPopup.Tag].ID, [EventID_Param_Image], EventInfo);
   end else
   begin
     if GetImagePasswordFromUser(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
@@ -5297,8 +5290,7 @@ begin
         if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) or
           (FFilesInfo[index].FileType = EXPLORER_ITEM_SHARE) then
         begin
-          Str := FFilesInfo[index].FileName;
-          UnFormatDir(Str);
+          Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
           if CtrlKeyDown then
             CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False)
@@ -5314,8 +5306,7 @@ begin
         if (GetExt(FFilesInfo[index].FileName) = 'EXE') then
         begin
           FDBCanDragW := False;
-          Str := GetDirectory(FFilesInfo[index].FileName);
-          UnformatDir(Str);
+          Str := ExtractFileDir(FFilesInfo[index].FileName);
           FillChar(Si, SizeOf(Si), 0);
           with Si do
           begin
@@ -5395,7 +5386,7 @@ begin
   if Length(S) > 2 then
     if Copy(S, 1, 2) = '\\' then
     begin
-      UnformatDir(S);
+      S := ExcludeTrailingBackslash(S);
       Delete(S, 1, 2);
       if Pos('\', S) = 0 then
       begin
@@ -5417,8 +5408,7 @@ begin
         end;
       end
     end;
-  S := Path;
-  FormatDir(S);
+  S := IncludeTrailingBackslash(Path);
   if CheckFileExistsWithMessageEx(S, True) then
   begin
     SetNewPath(S, ChangeTreeView);
@@ -5673,8 +5663,8 @@ var
 begin
   FileNameTemplate := L('Text document');
   FileName := FileNameTemplate + '.txt';
-  S := GetCurrentPath;
-  FormatDir(S);
+  S := IncludeTrailingBackslash(GetCurrentPath);
+
   N := 1;
   if FileExists(S + FileName) then
   begin
@@ -5684,6 +5674,7 @@ begin
     FileName := S + FileNameTemplate + ' (' + Inttostr(N) + ').txt';
   end else
     FileName := S + FileName;
+
   System.Assign(F, FileName);
 {$I-}
   System.Rewrite(F);
@@ -5720,19 +5711,25 @@ var
   OldMode: Cardinal;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  for I := 1 to FExtImagesInImageList do
-    DBKernel.ImageList.Delete(IconsCount);
-  FExtImagesInImageList := 0;
-  for I := Ord('C') to Ord('Z') do
-    if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
-    begin
-      Icon := TIcon.Create;
-      Icon.Handle := ExtractAssociatedIcon_(Chr(I) + ':\');
-      DBKernel.ImageList.AddIcon(Icon);
-      Icon.Free;
-      Inc(FExtImagesInImageList);
-    end;
-  SetErrorMode(OldMode);
+  try
+    for I := 1 to FExtImagesInImageList do
+      DBKernel.ImageList.Delete(IconsCount);
+    FExtImagesInImageList := 0;
+    for I := Ord('C') to Ord('Z') do
+      if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
+      begin
+        Icon := TIcon.Create;
+        try
+          Icon.Handle := ExtractAssociatedIconSafe(Chr(I) + ':\');
+          DBKernel.ImageList.AddIcon(Icon);
+        finally
+          F(Icon);
+        end;
+        Inc(FExtImagesInImageList);
+      end;
+  finally
+    SetErrorMode(OldMode);
+  end;
 end;
 
 procedure TExplorerForm.CopyWithFolder1Click(Sender: TObject);
@@ -5742,7 +5739,7 @@ var
   UpDir, Dir, NewDir, Temp: string;
   L1, L2: Integer;
 begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select directory to copy files'), Dolphin_DB.UseSimpleSelectFolderDialog);
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select directory to copy files'), UseSimpleSelectFolderDialog);
   if Dir <> '' then
   begin
     Files := TStringList.Create;
@@ -5755,15 +5752,12 @@ begin
         end;
       if Files.Count > 0 then
       begin
-        Temp := GetDirectory(Files[0]);
-        UnFormatDir(Temp);
+        Temp := ExtractFileDir(Files[0]);
         L1 := Length(Temp);
-        Temp := GetDirectory(Temp);
-        FormatDir(Temp);
+        Temp := ExtractFilePath(Temp);
         L2 := Length(Temp);
         UpDir := Copy(Files[0], L2 + 1, L1 - L2);
-        NewDir := Dir + UpDir;
-        FormatDir(NewDir);
+        NewDir := IncludeTrailingBackslash(Dir + UpDir);
         CreateDirA(NewDir);
         CopyFiles(Handle, Files, NewDir, False, False);
       end;
@@ -5900,8 +5894,7 @@ begin
       if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) or
         (FFilesInfo[index].FileType = EXPLORER_ITEM_SHARE) then
       begin
-        Str := FFilesInfo[index].FileName;
-        UnFormatDir(Str);
+        Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
         if not(Sender = Move1) then
           CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False)
@@ -6037,24 +6030,28 @@ begin
             FFolderImagesResult := AExplorerFolders.GetFolderImages(FileName, 40, 40);
             if FFolderImagesResult.Directory = '' then
             begin
-              S := FileName;
-              UnFormatDir(S);
+              S := ExcludeTrailingBackslash(FileName);
               if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
-                Formatdir(FileName);
+                FileName := IncludeTrailingBackslash(FileName);
 
               OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
 
               Ico := TAIcons.Instance.GetIconByExt(FileName, (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
                   (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER), 48, False);
-
+              try
               Ico48 := TIcon48.Create;
-              Ico48.Assign(Ico);
-              Ico.Free;
-              SetErrorMode(OldMode);
+                try
+                  Ico48.Assign(Ico);
+                  SetErrorMode(OldMode);
 
-              Canvas.Draw(ThSizeExplorerPreview div 2 - Ico48.Width div 2,
-                ThSizeExplorerPreview div 2 - Ico48.Height div 2, Ico48);
-              Ico48.Free;
+                  Canvas.Draw(ThSizeExplorerPreview div 2 - Ico48.Width div 2,
+                    ThSizeExplorerPreview div 2 - Ico48.Height div 2, Ico48);
+                finally
+                  F(Ico48);
+                end;
+              finally
+                F(Ico);
+              end;
             end else
             begin
               Pic := GetFolderPicture;
@@ -6804,9 +6801,8 @@ begin
   IncludeSub := False;
   Query := GetQuery;
   try
-    Folder := GetCurrentPath;
-    FormatDir(Folder);
-    SetSQL(Query, 'Select count(*) as CountField From $DB$ where (FFileName Like :FolderA)');
+    Folder := IncludeTrailingBackslash(GetCurrentPath);
+    SetSQL(Query, 'SELECT count(*) AS CountField FROM $DB$ WHERE (FFileName LIKE :FolderA)');
     SetStrParam(Query, 0, '%' + Folder + NormalizeDBStringLike('%\%'));
     Query.Open;
     if Query.FieldByName('CountField').AsInteger > 0 then
@@ -6858,7 +6854,7 @@ var
 begin
   S := Trim(CbPathEdit.Text);
   if Length(S) <4 then
-    S := GetDirectory(S);
+    S := ExtractFilePath(S);
   if not CheckFileExistsWithSleep(S, True) then
     Exit;
 
@@ -6897,7 +6893,7 @@ begin
     end;
   if Key = VK_OEM_1 then
     Dir := Dir + ':';
-  Dir := GetDirectory(Dir);
+  Dir := ExtractFilePath(Dir);
   if CheckFileExistsWithMessageEx(Dir, True) then
     if ComboPath <> Dir then
     begin
@@ -6952,9 +6948,9 @@ procedure TExplorerForm.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
-  Dolphin_DB.SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
+  SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
   EventInfo.Rating := (Sender as TMenuItem).Tag;
-  DBKernel.DoIDEvent(Sender, RatingPopupMenu1.Tag, [EventID_Param_Rating],
+  DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag, [EventID_Param_Rating],
     EventInfo);
 end;
 
@@ -7029,9 +7025,8 @@ begin
         Exit;
       if (fFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
       begin
-        dir := fFilesInfo[Index].FileName;
-        FormatDir(dir);
-        SetNewPath(dir, false);
+        Dir := IncludeTrailingBackslash(FFilesInfo[Index].FileName);
+        SetNewPath(Dir, false);
         Exit;
       end;
       if fFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
@@ -7058,8 +7053,7 @@ begin
       begin
         if GetExt(fFilesInfo[Index].FileName) <> 'LNK' then
         begin
-          ShellDir := GetDirectory(fFilesInfo[Index].FileName);
-          UnFormatDir(ShellDir);
+          ShellDir := ExtractFileDir(fFilesInfo[Index].FileName);
           ShellExecute(Handle, nil, PWideChar(fFilesInfo[Index].FileName), nil,
             PWideChar(ShellDir), SW_NORMAL);
           RestoreSelected;
@@ -7089,8 +7083,7 @@ begin
               end;
               Exit;
             end;
-            ShellDir := GetDirectory(LinkPath);
-            UnFormatDir(ShellDir);
+            ShellDir := ExtractFileDir(LinkPath);
             ShellExecute(Handle, nil, PWideChar(LinkPath), nil, PWideChar(ShellDir), SW_NORMAL);
             RestoreSelected;
             Exit;
@@ -7605,7 +7598,6 @@ begin
   if Info.Loaded then
   begin
     Dir := ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName);
-    FormatDir(Dir);
     CDMapper.AddCDMapping(string(Info.CDLabel), Dir, False);
   end else
   begin

@@ -4,20 +4,20 @@ interface
 
 uses Windows,
   Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes, Forms,
-  Dolphin_DB, uVistaFuncs, uLogger;
+  Dolphin_DB, uVistaFuncs, uLogger, uEditorTypes, uShellIntegration;
 
 type
   TBaseEffectThread = class(TThread)
   private
-  FSID : string;
-  FProc: TBaseEffectProc;
-  BaseImage : TBitmap;
-  IntParam : integer;
-  FOnExit : TBaseEffectProcThreadExit;
-  D : TBitmap;
-  FOwner : TObject;
-  FEditor : TForm;
     { Private declarations }
+    FSID: string;
+    FProc: TBaseEffectProc;
+    BaseImage: TBitmap;
+    IntParam: Integer;
+    FOnExit: TBaseEffectProcThreadExit;
+    D: TBitmap;
+    FOwner: TObject;
+    FEditor: TForm;
   protected
     procedure Execute; override;
   public
@@ -32,21 +32,23 @@ implementation
 
 uses ImEditor;
 
-procedure TBaseEffectThread.CallBack(Progress: integer;
-  var Break: boolean);
+procedure TBaseEffectThread.CallBack(Progress: Integer; var Break: Boolean);
 begin
- intParam:=Progress;
- Synchronize(SetProgress);
- if not EditorsManager.IsEditor(FEditor) then exit;
- if (FEditor as TImageEditor).ToolClass=FOwner then
- if FOwner is TEffectsToolPanelClass then
- Break:=(FOwner as TEffectsToolPanelClass).FSID<>FSID;
+  IntParam := Progress;
+  Synchronize(SetProgress);
+  if not EditorsManager.IsEditor(FEditor) then
+    Exit;
+  if (FEditor as TImageEditor).ToolClass = FOwner then
+    if FOwner is TEffectsToolPanelClass then
+      Break := (FOwner as TEffectsToolPanelClass).FSID <> FSID;
 end;
 
 procedure TBaseEffectThread.ClearText;
 begin
- if not EditorsManager.IsEditor(FEditor) then Exit;
- if (FEditor as TImageEditor).ToolClass=FOwner then (FEditor as TImageEditor).StatusBar1.Panels[0].Text:='';
+  if not EditorsManager.IsEditor(FEditor) then
+    Exit;
+  if (FEditor as TImageEditor).ToolClass = FOwner then
+    (FEditor as TImageEditor).StatusBar1.Panels[0].Text := '';
 end;
 
 constructor TBaseEffectThread.Create(AOwner : TObject;
@@ -63,50 +65,52 @@ end;
 
 procedure TBaseEffectThread.DoExit;
 begin
- if not EditorsManager.IsEditor(FEditor) then
- begin
-  D.Free;
-  exit;
- end;
- if (FEditor as TImageEditor).ToolClass=FOwner then
- begin     
-  Synchronize(ClearText);
-  FOnExit(D,FSID);
- end else
- begin
-  D.Free;
- end;
+  if not EditorsManager.IsEditor(FEditor) then
+  begin
+    D.Free;
+    Exit;
+  end;
+  if (FEditor as TImageEditor).ToolClass = FOwner then
+  begin
+    Synchronize(ClearText);
+    FOnExit(D, FSID);
+  end
+  else
+  begin
+    D.Free;
+  end;
 end;
 
 procedure TBaseEffectThread.Execute;
 begin
- FreeOnTerminate:=true;
- D:=TBitmap.Create;
- FProc(BaseImage,D,CallBack);
- Synchronize(DoExit);
- BaseImage.Free;
- intParam:=0;
- Synchronize(SetProgress);
+  FreeOnTerminate := True;
+  D := TBitmap.Create;
+  FProc(BaseImage, D, CallBack);
+  Synchronize(DoExit);
+  BaseImage.Free;
+  IntParam := 0;
+  Synchronize(SetProgress);
 end;
 
 procedure TBaseEffectThread.SetProgress;
 begin
- try
-  if not EditorsManager.IsEditor(FEditor) then exit;
-  if (FEditor as TImageEditor).ToolClass=FOwner then
-  begin
-   if FOwner is TEffectsToolPanelClass then
-   (FOwner as TEffectsToolPanelClass).SetProgress(IntParam,FSID);
+  try
+    if not EditorsManager.IsEditor(FEditor) then
+      Exit;
+    if (FEditor as TImageEditor).ToolClass = FOwner then
+    begin
+      if FOwner is TEffectsToolPanelClass then
+        (FOwner as TEffectsToolPanelClass).SetProgress(IntParam, FSID);
+    end;
+  except
+    if (FEditor as TImageEditor).ToolClass = FOwner then
+      if FOwner is TEffectsToolPanelClass then
+      begin
+        EventLog('TBaseEffectThread.SetProgress() exception!');
+        MessageBoxDB(Handle, 'TBaseEffectThread.SetProgress() exception!',
+          'TBaseEffectThread.SetProgress() exception!', TD_BUTTON_OK, TD_ICON_ERROR);
+      end;
   end;
- except
-  if (FEditor as TImageEditor).ToolClass=FOwner then
-  if FOwner is TEffectsToolPanelClass then
-  begin
-   EventLog('TBaseEffectThread.SetProgress() exception!');
-   MessageBoxDB(Handle,'TBaseEffectThread.SetProgress() exception!','TBaseEffectThread.SetProgress() exception!',TD_BUTTON_OK,TD_ICON_ERROR);
-  end;
- end;
 end;
 
 end.
-

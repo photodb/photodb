@@ -2,233 +2,236 @@ unit UnitGroupsReplace;
 
 interface
 
-uses UnitGroupsWork, Forms, SysUtils, Dialogs, Windows, Dolphin_DB,
-      uVistaFuncs;
+uses UnitGroupsWork, Forms, SysUtils, Dialogs, Windows, UnitDBKernel,
+  uTranslate, uVistaFuncs, uShellIntegration, Dolphin_DB;
 
-Procedure FilterGroups(var Groups : TGroups; var OutRegGroups, InRegGroups : TGroups; var Actions : TGroupsActionsW);
-Procedure FilterGroupsW(var Groups : TGroups; var OutRegGroups, InRegGroups : TGroups; var Actions : TGroupsActionsW; FileName : String);
+procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
+procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW;
+  FileName: string);
 
 implementation
 
-uses UnitGroupReplace, Language;
+uses UnitGroupReplace;
 
-Procedure AddGroupsAction(var Actions : TGroupsActions; Action : TGroupAction);
+procedure AddGroupsAction(var Actions: TGroupsActions; Action: TGroupAction);
 var
-  i : integer;
-  b : boolean;
+  I: Integer;
+  B: Boolean;
 begin
- b:=false;
- For i:=0 to Length(Actions)-1 do
- if Actions[i].OutGroup.GroupCode=Action.OutGroup.GroupCode then
- begin
-  b:=True;
-  break;
- end;
- if not b then
- begin
-  SetLength(Actions,length(Actions)+1);
-  Actions[length(Actions)-1]:=Action;
- end;
-end;
-
-Function ExistsActionForGroup(Actions : TGroupsActions; Group : TGroup) : boolean;
-var
-  i : integer;
-begin
- Result:=false;
- for i:=0 to length(Actions)-1 do
- if Actions[i].OutGroup.GroupCode=Group.GroupCode then
- begin
-  Result:=True;
-  Break;
- end;
-end;
-
-Function GetGroupAction(Actions : TGroupsActions; Group : TGroup) : TGroupAction;
-var
-  i : integer;
-begin
- for i:=0 to length(Actions)-1 do
- if Actions[i].OutGroup.GroupCode=Group.GroupCode then
- begin
-  Result:=Actions[i];
-  Break;
- end;
-end;
-
-Procedure FilterGroups(var Groups : TGroups; var OutRegGroups, InRegGroups : TGroups; var Actions : TGroupsActionsW);
-begin
- FilterGroupsW(Groups, OutRegGroups, InRegGroups, Actions, dbname);
-end;
-
-Procedure FilterGroupsW(var Groups : TGroups; var OutRegGroups, InRegGroups : TGroups; var Actions : TGroupsActionsW; FileName : String);
-var
-  i : integer;
-  pi : PInteger;
-  Action : TGroupAction;
-  TempGroups, Temp : TGroups;
-  GrNameIn, GrNameOut : String;
-  Options : GroupReplaceOptions;
-  
-  function GroupExistsIn(GroupCode : String) : String;
-  var
-    j : integer;
-  begin
-   Result:='';
-   for j:=0 to length(InRegGroups)-1 do
-   if InRegGroups[j].GroupCode=GroupCode then
-   begin
-    Result:=InRegGroups[j].GroupName;
-    Break;
-   end;
-  end;
-
-  function GroupByNameIn(GroupName : String) :TGroup;
-  var
-    j : integer;
-  begin
-   for j:=0 to length(InRegGroups)-1 do
-   if InRegGroups[j].GroupName=GroupName then
-   begin
-    Result:=InRegGroups[j];
-    Break;
-   end;
-  end;
-
-  function GroupExistsInByNameByCode(GroupCode : String) : boolean;
-  var
-    j : integer;
-  begin
-   Result:=False;
-   for j:=0 to length(InRegGroups)-1 do
-   if InRegGroups[j].GroupCode=GroupCode then
-   begin
-    Result:=True;
-    Break;
-   end;
-  end;
-
-  function GroupExistsOut(GroupCode : String) : String;
-  var
-    j : integer;
-  begin
-   Result:='';
-   for j:=0 to length(OutRegGroups)-1 do
-   if OutRegGroups[j].GroupCode=GroupCode then
-   begin
-    Result:=OutRegGroups[j].GroupName;
-    Break;
-   end;
-  end;
-
-  function GroupByNameOut(GroupName : String; Default :TGroup) :TGroup;
-  var
-    j : integer;
-  begin
-   Result:=Default;
-   for j:=0 to length(OutRegGroups)-1 do
-   if OutRegGroups[j].GroupName=GroupName then
-   begin
-    Result:=OutRegGroups[j];
-    exit;
-   end;
-  end;
-
-begin
-
- pi:=@i;
- for i:=0 to length(Groups)-1 do
- begin
-  if length(Groups)<=i then Break;
-  if not ExistsActionForGroup(Actions.Actions,Groups[i]) then
-  begin
-   GrNameIn:=GroupExistsIn(Groups[i].GroupCode);
-   GrNameOut:=GroupExistsOut(Groups[i].GroupCode);
-   if ((GrNameIn<>'') or GroupExistsInByNameByCode(Groups[i].GroupName)) then
-   Options.AllowAdd:=false else
-   begin
-    if GrNameOut<>'' then
-    Options.AllowAdd:=true else Options.AllowAdd:=false;
-   end;
-   Options.MaxAuto:=Actions.MaxAuto;
-   Options.AllowAdd:=true;
-   If GrNameOut='' then
-   begin
-    GroupReplaceNotExists(Groups[i],Action,Options,FileName);
-   end else
-   begin
-    GroupReplaceExists(GroupByNameOut(Groups[i].GroupName,Groups[i]),Action,Options,FileName);
-   end;
-   If Action.Action<>GROUP_ACTION_ADD then
-   AddGroupsAction(Actions.Actions,Action);
-
-    If Action.Action=GROUP_ACTION_ADD_IN_EXISTS then
+  B := False;
+  for I := 0 to Length(Actions) - 1 do
+    if Actions[I].OutGroup.GroupCode = Action.OutGroup.GroupCode then
     begin
-     SetLength(TempGroups,1);
-     TempGroups[0]:=Action.InGroup;
-     SetLength(Temp,1);
-     Temp[0]:=Action.OutGroup;
-     ReplaceGroupsW(Temp,TempGroups,Groups);
+      B := True;
+      Break;
     end;
-    If Action.Action=GROUP_ACTION_ADD_IN_NEW then
-    begin
-     SetLength(TempGroups,1);
-     TempGroups[0]:=Action.InGroup;
-     SetLength(Temp,1);
-     Temp[0]:=Action.OutGroup;
-     ReplaceGroupsW(Temp,TempGroups,Groups);
-    end;             
-    If Action.Action=GROUP_ACTION_NO_ADD then
-    begin
-     RemoveGroupFromGroups(Groups,Action.InGroup);
-     pi^:=i-1;
-    end;
-    If Action.Action=GROUP_ACTION_ADD then
-    begin
-     //if AddGroupW(Groups[i],FileName) then
-     if AddGroupW(GroupByNameOut(Groups[i].GroupName,Groups[i]),FileName) then
-     begin
-      SetLength(TempGroups,1);
-      TempGroups[0]:=Action.InGroup;
-      SetLength(Temp,1);
-      Temp[0]:=Action.OutGroup;
-      ReplaceGroupsW(Groups,Temp,TempGroups);
-      Action.InGroup:=GetGroupByGroupNameW(Groups[i].GroupName,false,FileName);
-      Action.Action:=GROUP_ACTION_ADD_IN_EXISTS;
-      AddGroupsAction(Actions.Actions,Action);
-      InRegGroups:=GetRegisterGroupListW(FileName,True, DBKernel.SortGroupsByName);
-     end else
-     begin
-      MessageBoxDB(GetActiveFormHandle,Format(TEXT_MES_ERROR_ADDING_GROUP,[Groups[i].GroupName]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-     end;
-    end;
-
-  end else
+  if not B then
   begin
-   Action:=GetGroupAction(Actions.Actions,Groups[i]);
-   If Action.Action=GROUP_ACTION_ADD_IN_EXISTS then
-   begin
-    SetLength(TempGroups,1);
-    TempGroups[0]:=Action.InGroup;
-    SetLength(Temp,1);
-    Temp[0]:=Action.OutGroup;
-    ReplaceGroupsW(Temp,TempGroups,Groups);
-   end;
-   If Action.Action=GROUP_ACTION_ADD_IN_NEW then
-   begin
-    SetLength(TempGroups,1);
-    TempGroups[0]:=Action.InGroup;
-    SetLength(Temp,1);
-    Temp[0]:=Action.OutGroup;
-    ReplaceGroupsW(Temp,TempGroups,Groups);
-   end;
-   If Action.Action=GROUP_ACTION_NO_ADD then
-   begin
-    RemoveGroupFromGroups(Groups,Action.InGroup);
-    pi^:=i-1;
-   end;
+    SetLength(Actions, Length(Actions) + 1);
+    Actions[Length(Actions) - 1] := Action;
   end;
- end;
+end;
+
+function ExistsActionForGroup(Actions: TGroupsActions; Group: TGroup): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 0 to Length(Actions) - 1 do
+    if Actions[I].OutGroup.GroupCode = Group.GroupCode then
+    begin
+      Result := True;
+      Break;
+    end;
+end;
+
+function GetGroupAction(Actions: TGroupsActions; Group: TGroup): TGroupAction;
+var
+  I: Integer;
+begin
+  for I := 0 to Length(Actions) - 1 do
+    if Actions[I].OutGroup.GroupCode = Group.GroupCode then
+    begin
+      Result := Actions[I];
+      Break;
+    end;
+end;
+
+procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
+begin
+  FilterGroupsW(Groups, OutRegGroups, InRegGroups, Actions, Dbname);
+end;
+
+procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW;
+  FileName: string);
+var
+  I: Integer;
+  Pi: PInteger;
+  Action: TGroupAction;
+  TempGroups, Temp: TGroups;
+  GrNameIn, GrNameOut: string;
+  Options: GroupReplaceOptions;
+
+  function GroupExistsIn(GroupCode: string): string;
+  var
+    J: Integer;
+  begin
+    Result := '';
+    for J := 0 to Length(InRegGroups) - 1 do
+      if InRegGroups[J].GroupCode = GroupCode then
+      begin
+        Result := InRegGroups[J].GroupName;
+        Break;
+      end;
+  end;
+
+  function GroupByNameIn(GroupName: string): TGroup;
+  var
+    J: Integer;
+  begin
+    for J := 0 to Length(InRegGroups) - 1 do
+      if InRegGroups[J].GroupName = GroupName then
+      begin
+        Result := InRegGroups[J];
+        Break;
+      end;
+  end;
+
+  function GroupExistsInByNameByCode(GroupCode: string): Boolean;
+  var
+    J: Integer;
+  begin
+    Result := False;
+    for J := 0 to Length(InRegGroups) - 1 do
+      if InRegGroups[J].GroupCode = GroupCode then
+      begin
+        Result := True;
+        Break;
+      end;
+  end;
+
+  function GroupExistsOut(GroupCode: string): string;
+  var
+    J: Integer;
+  begin
+    Result := '';
+    for J := 0 to Length(OutRegGroups) - 1 do
+      if OutRegGroups[J].GroupCode = GroupCode then
+      begin
+        Result := OutRegGroups[J].GroupName;
+        Break;
+      end;
+  end;
+
+  function GroupByNameOut(GroupName: string; default: TGroup): TGroup;
+  var
+    J: Integer;
+  begin
+    Result := default;
+    for J := 0 to Length(OutRegGroups) - 1 do
+      if OutRegGroups[J].GroupName = GroupName then
+      begin
+        Result := OutRegGroups[J];
+        Exit;
+      end;
+  end;
+
+begin
+
+  Pi := @I;
+  for I := 0 to Length(Groups) - 1 do
+  begin
+    if Length(Groups) <= I then
+      Break;
+    if not ExistsActionForGroup(Actions.Actions, Groups[I]) then
+    begin
+      GrNameIn := GroupExistsIn(Groups[I].GroupCode);
+      GrNameOut := GroupExistsOut(Groups[I].GroupCode);
+      if ((GrNameIn <> '') or GroupExistsInByNameByCode(Groups[I].GroupName)) then
+        Options.AllowAdd := False
+      else
+      begin
+        if GrNameOut <> '' then
+          Options.AllowAdd := True
+        else
+          Options.AllowAdd := False;
+      end;
+      Options.MaxAuto := Actions.MaxAuto;
+      Options.AllowAdd := True;
+      if GrNameOut = '' then
+        GroupReplaceNotExists(Groups[I], Action, Options, FileName)
+      else
+        GroupReplaceExists(GroupByNameOut(Groups[I].GroupName, Groups[I]), Action, Options, FileName);
+
+      if Action.Action <> GROUP_ACTION_ADD then
+        AddGroupsAction(Actions.Actions, Action);
+
+      if Action.Action = GROUP_ACTION_ADD_IN_EXISTS then
+      begin
+        SetLength(TempGroups, 1);
+        TempGroups[0] := Action.InGroup;
+        SetLength(Temp, 1);
+        Temp[0] := Action.OutGroup;
+        ReplaceGroupsW(Temp, TempGroups, Groups);
+      end;
+      if Action.Action = GROUP_ACTION_ADD_IN_NEW then
+      begin
+        SetLength(TempGroups, 1);
+        TempGroups[0] := Action.InGroup;
+        SetLength(Temp, 1);
+        Temp[0] := Action.OutGroup;
+        ReplaceGroupsW(Temp, TempGroups, Groups);
+      end;
+      if Action.Action = GROUP_ACTION_NO_ADD then
+      begin
+        RemoveGroupFromGroups(Groups, Action.InGroup);
+        Pi^ := I - 1;
+      end;
+      if Action.Action = GROUP_ACTION_ADD then
+      begin
+        if AddGroupW(GroupByNameOut(Groups[I].GroupName, Groups[I]), FileName) then
+        begin
+          SetLength(TempGroups, 1);
+          TempGroups[0] := Action.InGroup;
+          SetLength(Temp, 1);
+          Temp[0] := Action.OutGroup;
+          ReplaceGroupsW(Groups, Temp, TempGroups);
+          Action.InGroup := GetGroupByGroupNameW(Groups[I].GroupName, False, FileName);
+          Action.Action := GROUP_ACTION_ADD_IN_EXISTS;
+          AddGroupsAction(Actions.Actions, Action);
+          InRegGroups := GetRegisterGroupListW(FileName, True, DBKernel.SortGroupsByName);
+        end else
+        begin
+          MessageBoxDB(GetActiveFormHandle, Format(TA('An error occurred while adding a group', 'Groups'),
+              [Groups[I].GroupName]), TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        end;
+      end;
+    end else
+    begin
+      Action := GetGroupAction(Actions.Actions, Groups[I]);
+      if Action.Action = GROUP_ACTION_ADD_IN_EXISTS then
+      begin
+        SetLength(TempGroups, 1);
+        TempGroups[0] := Action.InGroup;
+        SetLength(Temp, 1);
+        Temp[0] := Action.OutGroup;
+        ReplaceGroupsW(Temp, TempGroups, Groups);
+      end;
+      if Action.Action = GROUP_ACTION_ADD_IN_NEW then
+      begin
+        SetLength(TempGroups, 1);
+        TempGroups[0] := Action.InGroup;
+        SetLength(Temp, 1);
+        Temp[0] := Action.OutGroup;
+        ReplaceGroupsW(Temp, TempGroups, Groups);
+      end;
+      if Action.Action = GROUP_ACTION_NO_ADD then
+      begin
+        RemoveGroupFromGroups(Groups, Action.InGroup);
+        Pi^ := I - 1;
+      end;
+    end;
+  end;
 end;
 
 end.

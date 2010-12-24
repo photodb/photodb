@@ -2,29 +2,8 @@ unit Effects;
 
 interface
 
-uses Windows, Classes, Graphics, Math, SysUtils, GraphicsBaseTypes, Scanlines;
-
-type
-  PIntegerArray = ^TIntegerArray;
-  TIntegerArray = array [0 .. MaxInt div Sizeof(Integer) - 2] of Integer;
-
-  TColor3 = packed record
-    B, G, R: Byte;
-  end;
-
-  TColor3Array = array [0 .. MaxInt div Sizeof(TColor3) - 2] of TColor3;
-  PColor3Array = ^TColor3Array;
-
-  TResizeProcedure = procedure(Width, Height: Integer; S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
-
-  TEffectOneIntParam = procedure(S, D: TBitmap; Int: Integer; CallBack: TBaseEffectCallBackProc = nil);
-
-type
-  T255ByteArray = array [0 .. 255] of Byte;
-  T255IntArray = array [0 .. 255] of Integer;
-
-type
-  TArPARGB = array of PARGB;
+uses Windows, Classes, Graphics, Math, SysUtils, GraphicsBaseTypes, Scanlines,
+  uEditorTypes, uDBGraphicTypes;
 
 procedure Inverse(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 

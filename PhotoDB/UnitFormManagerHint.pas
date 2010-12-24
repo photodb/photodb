@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls;
+  Dialogs, ExtCtrls, uRuntime;
 
 type
   TFormManagerHint = class(TForm)
@@ -27,12 +27,12 @@ procedure TFormManagerHint.FormCreate(Sender: TObject);
 begin
   Width := ThImageSize + 10;
   Height := ThImageSize + 10;
-  DBkernel.RegisterForm(Self);
+//  DBkernel.RegisterForm(Self);
 end;
 
 procedure TFormManagerHint.FormDestroy(Sender: TObject);
 begin
-  DBkernel.UnRegisterForm(Self);
+//  DBkernel.UnRegisterForm(Self);
 end;
 
 end.

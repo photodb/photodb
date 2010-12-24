@@ -2,15 +2,17 @@ unit CustomSelectTool;
 
 interface
 
-uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-     GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
-     GraphicsBaseTypes, Language;
+uses
+  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
+  GraphicsBaseTypes, Language, UnitDBKernel;
 
-type TCustomSelectToolClass = Class(TToolsPanelClass)
+type
+  TCustomSelectToolClass = class(TToolsPanelClass)
   private
-
-  EditWidthLabel : TStaticText;
-  EditHeightLabel : TStaticText;
+    { Private declarations }
+    EditWidthLabel: TStaticText;
+    EditHeightLabel: TStaticText;
     FFirstPoint: TPoint;
     FSecondPoint: TPoint;
     FMakingRect: Boolean;
@@ -42,41 +44,40 @@ type TCustomSelectToolClass = Class(TToolsPanelClass)
     procedure EditheightChanged(Sender : TObject);
     procedure SetProcRecteateImage(const Value: TNotifyEvent);
     procedure SetAnyRect(const Value: boolean);
-    { Private declarations }
   public
-   FProcRecteateImage: TNotifyEvent;
-  EditWidth : TEdit;
-  EditHeight : TEdit;
-  CloseLink : TWebLink;
-  MakeItLink : TWebLink;
-  SaveSettingsLink : TWebLink;
-   function GetProperties : string; override;
-   constructor Create(AOwner : TComponent); override;
-   destructor Destroy; override;
-   procedure ClosePanel; override;
-   procedure ClosePanelEvent(Sender : TObject);
-   Property FirstPoint : TPoint read FFirstPoint write SetFirstPoint;
-   Property SecondPoint : TPoint read FSecondPoint write SetSecondPoint;
-   Property MakingRect : Boolean read FMakingRect write SetMakingRect;
-   Property ResizingRect : Boolean read FResizingRect write SetResizingRect;
-   procedure DoEffect(Image : TBitmap; Rect : TRect; FullImage : Boolean); virtual; abstract;
-   procedure DoSaveSettings(Sender : TObject); virtual; abstract;
-   Property xTop : Boolean read FxTop write SetxTop;
-   Property xLeft : Boolean read FxLeft write SetxLeft;
-   Property xBottom : Boolean read FxBottom write SetxBottom;
-   Property xRight : Boolean read FxRight write SetxRight;
-   Property xCenter : Boolean read FxCenter write SetxCenter;
-   Property BeginDragPoint : TPoint read FBeginDragPoint write SetBeginDragPoint;
-   Property BeginFirstPoint : TPoint read FBeginFirstPoint write SetBeginFirstPoint;
-   Property BeginSecondPoint : TPoint read FBeginSecondPoint write SetBeginSecondPoint;
-   Property ProcRecteateImage : TNotifyEvent read FProcRecteateImage write SetProcRecteateImage;
-   procedure MakeTransform; override;
-   procedure DoMakeImage(Sender : TObject);
-   procedure DoBorder(Bitmap : TBitmap; Rect : TRect); virtual; abstract;
-   Function GetZoom : Extended;
-   Function Termnating : boolean;
-   Property AnyRect : boolean read FAnyRect write SetAnyRect;
     { Public declarations }
+    FProcRecteateImage: TNotifyEvent;
+    EditWidth: TEdit;
+    EditHeight: TEdit;
+    CloseLink: TWebLink;
+    MakeItLink: TWebLink;
+    SaveSettingsLink: TWebLink;
+    function GetProperties: string; override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure ClosePanel; override;
+    procedure ClosePanelEvent(Sender: TObject);
+    property FirstPoint: TPoint read FFirstPoint write SetFirstPoint;
+    property SecondPoint: TPoint read FSecondPoint write SetSecondPoint;
+    property MakingRect: Boolean read FMakingRect write SetMakingRect;
+    property ResizingRect: Boolean read FResizingRect write SetResizingRect;
+    procedure DoEffect(Image: TBitmap; Rect: TRect; FullImage: Boolean); virtual; abstract;
+    procedure DoSaveSettings(Sender: TObject); virtual; abstract;
+    property XTop: Boolean read FxTop write SetxTop;
+    property XLeft: Boolean read FxLeft write SetxLeft;
+    property XBottom: Boolean read FxBottom write SetxBottom;
+    property XRight: Boolean read FxRight write SetxRight;
+    property XCenter: Boolean read FxCenter write SetxCenter;
+    property BeginDragPoint: TPoint read FBeginDragPoint write SetBeginDragPoint;
+    property BeginFirstPoint: TPoint read FBeginFirstPoint write SetBeginFirstPoint;
+    property BeginSecondPoint: TPoint read FBeginSecondPoint write SetBeginSecondPoint;
+    property ProcRecteateImage: TNotifyEvent read FProcRecteateImage write SetProcRecteateImage;
+    procedure MakeTransform; override;
+    procedure DoMakeImage(Sender: TObject);
+    procedure DoBorder(Bitmap: TBitmap; Rect: TRect); virtual; abstract;
+    function GetZoom: Extended;
+    function Termnating: Boolean;
+    property AnyRect: Boolean read FAnyRect write SetAnyRect;
   end;
 
 implementation
@@ -163,7 +164,7 @@ begin
  MakeItLink.Visible:=true;
  MakeItLink.Color:=ClBtnface;
  MakeItLink.OnClick:=DoMakeImage;
- MakeItLink.Icon:=IcoOK;     
+ MakeItLink.Icon:=IcoOK;
  MakeItLink.ImageCanRegenerate:=True;
  IcoOK.Free;
 
@@ -226,7 +227,7 @@ end;
 
 function TCustomSelectToolClass.GetZoom: Extended;
 begin
- Result:=(Editor as TImageEditor).GetZoom;
+ Result := Editor.Zoom;
 end;
 
 procedure TCustomSelectToolClass.MakeTransform;

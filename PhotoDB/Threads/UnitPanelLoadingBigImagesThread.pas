@@ -3,10 +3,10 @@ unit UnitPanelLoadingBigImagesThread;
 interface
 
 uses
-  Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt, Dolphin_DB,
+  Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt,
   UnitDBDeclare, RAWImage, UnitDBCommonGraphics, UnitDBCommon,
-  UnitCDMappingSupport, uLogger, ImageConverting, uMemory,
-  uDBPopupMenuInfo;
+  UnitCDMappingSupport, uLogger, ImageConverting, uMemory, UnitDBKernel,
+  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes;
 
 type
   TPanelLoadingBigImagesThread = class(TThread)

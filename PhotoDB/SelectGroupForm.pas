@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Dolphin_DB, StdCtrls, ComCtrls, UnitGroupsWork,
-  ImgList, UnitDBkernel, UnitDBCommonGraphics, uDBForm, uMemory;
+  ImgList, UnitDBkernel, UnitDBCommonGraphics, uDBForm, uMemory,
+  uConstants;
 
 type
   TFormSelectGroup = class(TDBForm)

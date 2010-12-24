@@ -3,9 +3,9 @@ unit UnitOptimizeDublicatesThread;
 interface
 
 uses
-  Classes, Language, Dolphin_DB, UnitLinksSupport, DB, SysUtils,
+  Classes, Language, UnitLinksSupport, DB, SysUtils,
   CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc, uFileUtils,
-  UnitDBDeclare, uMemory, uConstants;
+  UnitDBDeclare, uMemory, uConstants, uDBTypes, uDBBaseTypes;
 
 type
   TThreadOptimizeDublicates = class(TThread)
@@ -254,10 +254,9 @@ begin
    Query.Next;
   end;
 
-  //CRC
-  Folder:=GetDirectory(FileName);
-  UnFormatDir(Folder);
-  CalcStringCRC32(Folder,crc);
+    // CRC
+    Folder := ExtractFileDir(FileName);
+    CalcStringCRC32(Folder, Crc);
 
   //Max Rating
   Query.First;

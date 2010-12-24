@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls, Math,
   UnitDBCommon, Dolphin_DB, UnitBitmapImageList, UnitDBCommonGraphics, uMemory,
-  MPCommonUtilities, uDBDrawing, TLayered_Bitmap;
+  MPCommonUtilities, uDBDrawing, TLayered_Bitmap, uGraphicUtils, uConstants;
 
 type
   TEasyCollectionItemX = class(TEasyCollectionItem)

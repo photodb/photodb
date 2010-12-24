@@ -5,19 +5,16 @@ unit uFileUtils;
 interface
 
 uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl, Variants, ShlObj, ActiveX,
-     VRSIShortCuts, ShellAPI, uConstants, uMemory;
+     VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes;
 
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
-  TBuffer = array of Char;
 
 function CreateDirA(Dir: string): Boolean;
 function FileExistsSafe(FileName: string) : Boolean;
 function GetAppDataDirectory: string;
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
 function FileExistsEx(const FileName :TFileName) :Boolean;
-procedure UnFormatDir(var FileName : string);
-procedure FormatDir(var FileName : string);
 function GetFileDateTime(FileName: string): TDateTime;
 function GetFileNameWithoutExt(FileName: string): string;
 function GetDirectorySize(Folder: string): Int64;
@@ -32,9 +29,7 @@ function WindowsCopyFile(FromFile, ToDir: string): Boolean;
 function WindowsCopyFileSilent(FromFile, ToDir: string): Boolean;
 function DateModify(FileName: string): TDateTime;
 function MrsGetFileType(StrFilename: string): string;
-{$IFDEF PHOTODB}
-procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TForm = nil);
-{$ENDIF}
+
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 function GetCDVolumeLabel(CDName: Char): string;
 function DriveState(Driveletter: AnsiChar): TDriveState;
@@ -43,17 +38,19 @@ function SilentDeleteFile(Handle: HWnd; FileName: string; ToRecycle: Boolean;
 function SilentDeleteFiles(Handle: HWnd; Names: TStrings; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
 procedure DeleteDirectoryWithFiles(DirectoryName: string);
-procedure LoadFilesFromClipBoard(var Effects: Integer; Files: TStrings);
+procedure GetDirectoresOfPath(Dir: string; Listing : TStrings);
+procedure DelDir(Dir: string; Mask: string);
+procedure GetFileNamesFromDrive(Dir, Mask: string; Files: TStrings; var MaxFilesCount: Integer;
+  MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
+function ReadTextFileInString(FileName: string): string;
+function ExtinMask(Mask: string; Ext: string): Boolean;
+function GetExt(Filename: string): string;
+function ProgramDir : string;
 
 var
   CopyFilesSynchCount: Integer = 0;
 
 implementation
-
-{$IFDEF PHOTODB}
-uses
-  UnitWindowsCopyFilesThread;
-{$ENDIF}
 
 function CreateDirA(Dir: string): Boolean;
 var
@@ -87,45 +84,29 @@ begin
   end;
 end;
 
-procedure UnFormatDir(var FileName : string);
-begin
-  if FileName = '' then
-    Exit;
-  if FileName[Length(FileName)] = '\' then
-    Delete(FileName, Length(FileName), 1);
-end;
-
-procedure FormatDir(var FileName : string);
-begin
-  if FileName = '' then
-    Exit;
-  if FileName[Length(FileName)] <> '\' then
-    FileName := FileName + '\'
-end;
-
 function GetFileNameWithoutExt(FileName: string): string;
 var
   I, N: Integer;
 begin
   Result := '';
-  if Filename = '' then
+  if FileName = '' then
     Exit;
   N := 0;
-  for I := Length(Filename) - 1 downto 1 do
-    if Filename[I] = '\' then
+  for I := Length(FileName) - 1 downto 1 do
+    if FileName[I] = '\' then
     begin
       N := I;
       Break;
     end;
-  Delete(Filename, 1, N);
-  if Filename <> '' then
-    if Filename[Length(Filename)] = '\' then
-      Delete(Filename, Length(Filename), 1);
-  for I := Length(Filename) downto 1 do
+  Delete(FileName, 1, N);
+  if FileName <> '' then
+    if FileName[Length(FileName)] = '\' then
+      Delete(FileName, Length(FileName), 1);
+  for I := Length(FileName) downto 1 do
   begin
-    if Filename[I] = '.' then
+    if FileName[I] = '.' then
     begin
-      FileName := Copy(Filename, 1, I - 1);
+      FileName := Copy(FileName, 1, I - 1);
       Break;
     end;
   end;
@@ -507,14 +488,6 @@ begin
   end;
 end;
 
-{$IFDEF PHOTODB}
-procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
-  ExplorerForm: TForm = nil);
-begin
-  TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, ExplorerForm);
-end;
-{$ENDIF}
-
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 var
   SHFileOpStruct: TSHFileOpStruct;
@@ -781,54 +754,186 @@ begin
   RemoveDir(DirectoryName);
 end;
 
-
-procedure LoadFIlesFromClipBoard(var Effects: Integer; Files: TStrings);
+procedure GetDirectoresOfPath(Dir: string; Listing : TStrings);
 var
-  Hand: THandle;
-  Count: Integer;
-  Pfname: array [0 .. 10023] of Char;
-  CD: Cardinal;
-  S: string;
-  DwEffect: ^Word;
+  Found: Integer;
+  SearchRec: TSearchRec;
 begin
-  Effects := 0;
-  Files.Clear;
-  if IsClipboardFormatAvailable(CF_HDROP) then
-  begin
-    if OpenClipboard(Application.Handle) = False then
-      Exit;
-    CD := 0;
-    repeat
-      CD := EnumClipboardFormats(CD);
-      if (CD <> 0) and (GetClipboardFormatName(CD, Pfname, 1024) <> 0) then
-      begin
-        S := UpperCase(string(Pfname));
-        if Pos('DROPEFFECT', S) <> 0 then
-        begin
-          Hand := GetClipboardData(CD);
-          if (Hand <> NULL) then
-          begin
-            DwEffect := GlobalLock(Hand);
-            Effects := DwEffect^;
-            GlobalUnlock(Hand);
-          end;
-          CD := 0;
-        end;
-      end;
-    until (CD = 0);
-    Hand := GetClipboardData(CF_HDROP);
-    if (Hand <> NULL) then
+  Listing.Clear;
+
+  Found := FindFirst(IncludeTrailingBackslash(Dir) + '*.*', FaDirectory, SearchRec);
+  try
+    while Found = 0 do
     begin
-      Count := DragQueryFile(Hand, $FFFFFFFF, nil, 0);
-      if Count > 0 then
-        repeat
-          Dec(Count);
-          DragQueryFile(Hand, Count, Pfname, 1024);
-          Files.Add(string(Pfname));
-        until (Count = 0);
-      end;
-      CloseClipboard();
+      if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+        if (SearchRec.Attr and FaDirectory <> 0) then
+          Listing.Add(SearchRec.name);
+
+      Found := Sysutils.FindNext(SearchRec);
     end;
+  finally
+    FindClose(SearchRec);
   end;
+end;
+
+procedure DelDir(Dir: string; Mask: string);
+var
+  FileName : string;
+  Found: Integer;
+  SearchRec: TSearchRec;
+  FileExists, DirectoryExists : Boolean;
+begin
+  if Length(Dir) < 4 then
+    Exit;
+
+  Dir := IncludeTrailingBackSlash(Dir);
+
+  Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
+  try
+    while Found = 0 do
+    begin
+      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+      begin
+        FileName := Dir + SearchRec.Name;
+        FileExists := (SearchRec.Attr and FaDirectory = 0);
+        DirectoryExists := (SearchRec.Attr and FaDirectory <> 0);
+        if FileExists and ExtinMask(Mask, GetExt(FileName)) then
+        begin
+          FileSetAttr(FileName, 0);
+          DeleteFile(Dir + SearchRec.name);
+        end else if DirectoryExists then
+          DelDir(Dir + SearchRec.name, Mask);
+      end;
+      Found := SysUtils.FindNext(SearchRec);
+    end;
+  finally
+    FindClose(SearchRec);
+  end;
+  RemoveDir(Dir);
+end;
+
+procedure GetFileNamesFromDrive(Dir, Mask: string; Files: TStrings; var MaxFilesCount: Integer;
+  MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
+var
+  Found: Integer;
+  SearchRec: TSearchRec;
+  Info: TProgressCallBackInfo;
+  FileName : string;
+  FileExists,
+  DirectoryExists: Boolean;
+begin
+  if Dir = '' then
+    Exit;
+
+  Dir := IncludeTrailingBackSlash(Dir);
+  Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
+  while Found = 0 do
+  begin
+    if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+    begin
+      FileName := Dir + SearchRec.Name;
+      FileExists := (SearchRec.Attr and FaDirectory = 0);
+      DirectoryExists := (SearchRec.Attr and FaDirectory <> 0);
+      if FileExists then
+        Dec(MaxFilesCount);
+
+      if MaxFilesCount < 0 then
+        Break;
+
+      if FileExists and ExtinMask(Mask, GetExt(FileName)) then
+      begin
+        if Files.Count >= MaxFilesSearch then
+          Break;
+        Files.Add(FileName);
+        if Files.Count >= MaxFilesSearch then
+          Break;
+        if Assigned(CallBack) then
+        begin
+          Info.MaxValue := -1;
+          Info.Position := -1;
+          Info.Information := FileName;
+          Info.Terminate := False;
+          CallBack(nil, Info);
+          if Info.Terminate then
+            Break;
+        end;
+      end
+      else if DirectoryExists then
+        GetFileNamesFromDrive(FileName, Mask, Files, MaxFilesCount, MaxFilesSearch, CallBack);
+    end;
+    Found := SysUtils.FindNext(SearchRec);
+  end;
+  FindClose(SearchRec);
+end;
+
+function ReadTextFileInString(FileName: string): string;
+var
+  FS: TFileStream;
+begin
+  Result := '';
+  if not FileExists(FileName) then
+    Exit;
+  try
+    FS := TFileStream.Create(FileName, FmOpenRead);
+  except
+    Exit;
+  end;
+  try
+    SetLength(Result, FS.Size);
+    try
+      FS.Read(Result[1], FS.Size);
+    except
+      Exit;
+    end;
+  finally
+    F(FS);
+  end;
+end;
+
+Function GetExt(Filename : string) : string;
+var
+  i,j:integer;
+  s:string;
+begin
+ j:=0;
+ For i:=length(filename) downto 1 do
+  begin
+    if Filename[I] = '.' then
+    begin
+      J := I;
+      Break;
+    end;
+    if Filename[I] = '\' then
+      Break;
+  end;
+  S := '';
+  if J <> 0 then
+  begin
+    S := Copy(Filename, J + 1, Length(Filename) - J);
+    for I := 1 to Length(S) do
+      S[I] := Upcase(S[I]);
+  end;
+  Result := S;
+end;
+
+function ExtinMask(Mask: string; Ext: string): Boolean;
+begin
+  Result := False;
+  if Mask = '||' then
+  begin
+    Result := True;
+    Exit;
+  end;
+  if Ext = '' then
+    Exit;
+  mask := '|' + AnsiUpperCase(Mask) + '|';
+  Ext := AnsiUpperCase(Ext);
+  Result := Pos('|' + Ext + '|', Mask) > 0;
+end;
+
+function ProgramDir : string;
+begin
+  Result := IncludeTrailingBackSlash(ExtractFileDir(ParamStr(0)));
+end;
 
 end.

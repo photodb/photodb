@@ -14,7 +14,7 @@ uses
   CommCtrl,
   ShellAPI,
   Forms,
-  Dolphin_DB,
+  UnitDBKernel,
   SyncObjs,
   Registry,
   uMemory;

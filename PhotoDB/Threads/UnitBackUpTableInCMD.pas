@@ -3,7 +3,7 @@ unit UnitBackUpTableInCMD;
 interface
 
 uses
-  Classes, SysUtils, Dolphin_DB, Forms, CommonDBSupport,
+  Classes, SysUtils, UnitDBKernel, Forms, CommonDBSupport,
   UnitDBDeclare, uConstants, uFileUtils, uTranslate;
 
 type

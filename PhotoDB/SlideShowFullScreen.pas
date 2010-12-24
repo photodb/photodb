@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, AppEvnts, ImgList, ComCtrls, ToolWin, dolphin_db;
+  Dialogs, ExtCtrls, AppEvnts, ImgList, ComCtrls, ToolWin, uSysUtils;
 
 type
   TFullScreenView = class(TForm)

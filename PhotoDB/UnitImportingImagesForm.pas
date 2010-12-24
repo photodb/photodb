@@ -8,7 +8,7 @@ uses
   acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
   UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils,
-  uConstants, uMemory, uDBForm;
+  uConstants, uMemory, uDBForm, uShellIntegration, uRuntime;
 
 type
   TFormImportingImages = class(TDBForm)
@@ -136,16 +136,6 @@ begin
  Step:=1;
  DBTestOK:=false;
 
- if DBKernel=nil then
- begin
-  KernelHandle := LoadLibrary(PWideChar(ProgramDir+'Kernel.dll'));
-  if KernelHandle=0 then
-  begin
-   MessageBoxDB(Handle,TEXT_MES_ERROR_KERNEL_DLL,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-   Halt;
-  end;
-  DBKernel:=TDBKernel.Create;
- end;
  DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
 
  PopupMenu1.Images:=DBKernel.ImageList;
@@ -243,7 +233,7 @@ procedure TFormImportingImages.Button4Click(Sender: TObject);
 var
   NewPlace : String;
 begin
- NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE,Dolphin_DB.UseSimpleSelectFolderDialog);
+ NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE, UseSimpleSelectFolderDialog);
  AddFolder(NewPlace);
 end;
 

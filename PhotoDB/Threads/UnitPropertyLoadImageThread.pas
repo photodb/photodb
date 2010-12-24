@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
-  Dolphin_DB, UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics,
-  uMemory, GraphicsCool, ImageConverting;
+  UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics,
+  uMemory, GraphicsCool, ImageConverting, uGraphicUtils, uRuntime,
+  uConstants;
 
 type
   TPropertyLoadImageThreadOptions = record

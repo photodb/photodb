@@ -5,7 +5,8 @@ interface
 uses
   UnitGroupsReplace, CmpUnit, Classes, DB, dolphin_db, SysUtils,
   UnitGroupsWork, UnitLinksSupport, GraphicCrypt, JPEG, CommonDBSupport,
-  UnitDBDeclare;
+  UnitDBDeclare, UnitDBKernel, uDBTypes, uDBGraphicTypes, win32crc,
+  uGraphicUtils;
 
 type
   CmpDBTh = class(TThread)

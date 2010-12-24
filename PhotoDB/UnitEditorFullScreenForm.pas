@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Menus,
-  UnitDBKernel, Dolphin_DB,  UnitDBCommon, UnitDBCommonGraphics,
+  Dialogs, ExtCtrls, Menus, uConstants,
+  UnitDBKernel, uSysUtils,  UnitDBCommon, UnitDBCommonGraphics,
   Language;
 
 type
@@ -87,14 +87,13 @@ end;
 
 procedure TEditorFullScreenForm.FormCreate(Sender: TObject);
 begin
- DrawImage:=TBitmap.Create;
- DrawImage.PixelFormat:=pf24bit;
- LoadLanguage;
- {$IFDEF PHOTODB}
- PopupMenu1.Images:=DBKernel.ImageList;
- Close1.ImageIndex:=DB_IC_EXIT;
- SelectBackGroundColor1.ImageIndex:=DB_IC_DESKTOP;
- {$ENDIF}
+  DrawImage := TBitmap.Create;
+  DrawImage.PixelFormat := Pf24bit;
+  LoadLanguage;
+
+  PopupMenu1.Images := DBKernel.ImageList;
+  Close1.ImageIndex := DB_IC_EXIT;
+  SelectBackGroundColor1.ImageIndex := DB_IC_DESKTOP;
 end;
 
 procedure TEditorFullScreenForm.FormDestroy(Sender: TObject);

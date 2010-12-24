@@ -4,7 +4,7 @@ interface
 
 
 uses
-  Windows, SysUtils, Graphics, UnitDBDeclare, jpeg, DB, Classes,
+  Windows, SysUtils, Graphics, UnitDBDeclare, JPEG, DB, Classes,
   uMemory, uConstants;
 
 type

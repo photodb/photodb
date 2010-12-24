@@ -3,7 +3,7 @@ unit UnitPrinterTypes;
 interface
 
 uses Windows, SysUtils, Math, Graphics, Printers, Classes, ComObj, uLogger,
-  Dolphin_DB, GraphicCrypt, GraphicsBaseTypes, UnitDBCommonGraphics,
+  UnitDBKernel, GraphicCrypt, GraphicsBaseTypes, UnitDBCommonGraphics,
   ImageConverting, ActiveX, uMemory;
 
 type
