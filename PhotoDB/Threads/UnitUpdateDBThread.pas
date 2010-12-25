@@ -12,6 +12,7 @@ uses
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
 
+type
   UpdateDBThread = class(TThread)
   private
     { Private declarations }

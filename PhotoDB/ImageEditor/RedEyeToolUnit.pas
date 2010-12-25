@@ -2,226 +2,262 @@ unit RedEyeToolUnit;
 
 interface
 
-uses Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-     GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
-     GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, UnitDBKernel,
-     EffectsLanguage, uDBGraphicTypes;
+uses
+  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
+  GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, UnitDBKernel,
+  EffectsLanguage, uDBGraphicTypes, uMemory;
 
-type TRedEyeToolPanelClass = Class(TCustomSelectToolClass)
+type
+  TRedEyeToolPanelClass = class(TCustomSelectToolClass)
   private
-    EffectSizeScroll : TTrackBar;
-    EffectSizelabel : TLabel;
-    FRedEyeEffectSize: integer;
-    FEyeColorLabel : TLabel;
-    FEyeColor : TComboBox;
-    FCustomColor : TColor;
-    FCustomColorDialog : TColorDialog;
-    FLoading : Boolean;
-    procedure SetRedEyeEffectSize(const Value: integer);
-
     { Private declarations }
+    EffectSizeScroll: TTrackBar;
+    EffectSizelabel: TLabel;
+    FRedEyeEffectSize: Integer;
+    FEyeColorLabel: TLabel;
+    FEyeColor: TComboBox;
+    FCustomColor: TColor;
+    FCustomColorDialog: TColorDialog;
+    FLoading: Boolean;
+    procedure SetRedEyeEffectSize(const Value: Integer);
   public
-  constructor Create(AOwner : TComponent); override;
-  destructor Destroy; override;
-  procedure DoEffect(Bitmap : TBitmap; Rect : TRect; FullImage : Boolean); override;
-  procedure EffectSizeScrollChange(Sender : TObject);
-  Procedure DoBorder(Bitmap : TBitmap; aRect : TRect); override;
-  procedure EyeColorChange(Sender : TObject);
-  procedure DoSaveSettings(Sender : TObject); override;
-  class function ID: string; override;
-
-   Procedure SetProperties(Properties : String); override;
-   Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
     { Public declarations }
-  published
-    Property RedEyeEffectSize : integer read FRedEyeEffectSize write SetRedEyeEffectSize;
+    class function ID: string; override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure DoEffect(Bitmap: TBitmap; Rect: TRect; FullImage: Boolean); override;
+    procedure EffectSizeScrollChange(Sender: TObject);
+    procedure DoBorder(Bitmap: TBitmap; ARect: TRect); override;
+    procedure EyeColorChange(Sender: TObject);
+    procedure DoSaveSettings(Sender: TObject); override;
+    procedure SetProperties(Properties: string); override;
+    procedure ExecuteProperties(Properties: string; OnDone: TNotifyEvent); override;
+    property RedEyeEffectSize: Integer read FRedEyeEffectSize write SetRedEyeEffectSize;
   end;
 
 implementation
 
 { TRedEyeToolPanelClass }
 
-
-procedure FixRedEyes(Image: TBitmap; Rect: TRect; RedEyeEffectSize : Integer; EyeColorIntex : integer; CustomColor : TColor);
+procedure FixRedEyes(Image: TBitmap; Rect: TRect; RedEyeEffectSize: Integer; EyeColorIntex: Integer;
+  CustomColor: TColor);
 var
-  ih,iw,h,w,ix,iy, i,j : integer;
-  x,lay, R : extended;
-  Histogramm : T255IntArray;
-  c,cc,nc : integer;
-  Count : int64;
-  Rx : T255ByteArray;
-  Rct : TRect;
-  Xdp : TArPARGB;
-  Xc,Yc,Mx,My, xMx, xMy, t, rb, re : integer;
-  gray : Byte;
-  rn,cn : integer;
-  xx : array [0..255] of integer;
-  EyeR,EyeG,EyeB : byte;
-  Procedure ReplaceRedA(var RGB : TRGB; rx,gx,bx : byte; l: extended);
+  Ih, Iw, H, W, Ix, Iy, I, J: Integer;
+  X, Lay, R: Extended;
+  Histogramm: T255IntArray;
+  C, Cc, Nc: Integer;
+  Count: Int64;
+  Rx: T255ByteArray;
+  Rct: TRect;
+  Xdp: TArPARGB;
+  Xc, Yc, Mx, My, XMx, XMy, T, Rb, Re: Integer;
+  GR, Gray: Byte;
+  Rn, Cn: Integer;
+  Xx: array [0 .. 255] of Integer;
+  EyeR, EyeG, EyeB: Byte;
+
+  procedure ReplaceRedA(var RGB: TRGB; Rx, Gx, Bx: Byte; L: Extended);
   begin
-    RGB.r:=Round(rx*RGB.r*l/255+RGB.r*(1-l));
-    RGB.g:=Round(gx*RGB.g*l/255+RGB.g*(1-l));
-    RGB.b:=Round(bx*RGB.b*l/255+RGB.b*(1-l));
+    RGB.R := Round(Rx * RGB.R * L / 255 + RGB.R * (1 - L));
+    RGB.G := Round(Gx * RGB.G * L / 255 + RGB.G * (1 - L));
+    RGB.B := Round(Bx * RGB.B * L / 255 + RGB.B * (1 - L));
   end;
 
 begin
 
- Case EyeColorIntex of
- 0: begin EyeR:=$00; EyeG:=$AA; EyeB:=$60; end;
- 1: begin EyeR:=$00; EyeG:=$80; EyeB:=$FF; end;
- 2: begin EyeR:=$80; EyeG:=$60; EyeB:=$00; end;
- 3: begin EyeR:=$10; EyeG:=$10; EyeB:=$10; end;
- 4: begin EyeR:=$80; EyeG:=$80; EyeB:=$80; end;
- 5: begin EyeR:=GetRValue(CustomColor); EyeG:=GetGValue(CustomColor); EyeB:=GetBValue(CustomColor); end;
-  else begin EyeR:=$00; EyeG:=$00; EyeB:=$00; end;
- end;
-
- Rct.Top:=Min(Rect.Top,Rect.Bottom);
- Rct.Bottom:=Max(Rect.Top,Rect.Bottom);
- Rct.Left:=Min(Rect.Left,Rect.Right);
- Rct.Right:=Max(Rect.Left,Rect.Right);
- Rect:=Rct;
-
- for i:=0 to 30 do
- xx[i]:=255;
- for i:=30 to 255 do
- begin
-  xx[i]:=Round(800/(sqrt(sqrt(sqrt(i-29)))));
- end;
-
- SetLength(Xdp,Image.height);
- for i:=0 to Image.Height-1 do
- Xdp[i]:=Image.ScanLine[i];
-
- c:=0;
- cc:=1;
- Histogramm:=GistogrammRW(Image,Rect,Count);
- for i:=255 downto 1 do
- begin
-  inc(c,Histogramm[i]);
-  if (c>Count div 10) or (Histogramm[i]>10) then
-  begin
-   cc:=i;
-   break;
+  case EyeColorIntex of
+    0:
+      begin
+        EyeR := $00;
+        EyeG := $AA;
+        EyeB := $60;
+      end;
+    1:
+      begin
+        EyeR := $00;
+        EyeG := $80;
+        EyeB := $FF;
+      end;
+    2:
+      begin
+        EyeR := $80;
+        EyeG := $60;
+        EyeB := $00;
+      end;
+    3:
+      begin
+        EyeR := $10;
+        EyeG := $10;
+        EyeB := $10;
+      end;
+    4:
+      begin
+        EyeR := $80;
+        EyeG := $80;
+        EyeB := $80;
+      end;
+    5:
+      begin
+        EyeR := GetRValue(CustomColor);
+        EyeG := GetGValue(CustomColor);
+        EyeB := GetBValue(CustomColor);
+      end;
+  else
+    begin
+      EyeR := $00;
+      EyeG := $00;
+      EyeB := $00;
+    end;
   end;
- end;
- 
- for i:=0 to 255 do
- begin
-  Rx[i]:=Min(255,Round((255/cc)*i));
- end;
- c:=Round(cc*RedEyeEffectSize/100);
 
+  Rct.Top := Min(Rect.Top, Rect.Bottom);
+  Rct.Bottom := Max(Rect.Top, Rect.Bottom);
+  Rct.Left := Min(Rect.Left, Rect.Right);
+  Rct.Right := Max(Rect.Left, Rect.Right);
+  Rect := Rct;
 
- Mx:=0;
- My:=0;
- xMx:=0;
- xMy:=0;
+  for I := 0 to 30 do
+    Xx[I] := 255;
 
- for i:=Rect.left to Rect.Right do
- for j:=Rect.Top to Rect.Bottom do
- if (i>=0) and (j>=0) and (i<Image.Width-1) and (j<Image.Height-1) then
- begin
-  t:=Xdp[j,i].r-max(Xdp[j,i].g,Xdp[j,i].b);
-  if t>c then
+  for I := 30 to 255 do
+    Xx[I] := Round(800 / (Sqrt(Sqrt(Sqrt(I - 29)))));
+
+  SetLength(Xdp, Image.Height);
+  for I := 0 to Image.Height - 1 do
+    Xdp[I] := Image.ScanLine[I];
+
+  C := 0;
+  Cc := 1;
+  Histogramm := GistogrammRW(Image, Rect, Count);
+  for I := 255 downto 1 do
   begin
-   xMx:=xMx+t*i;
-   Mx:=Mx+t;
-
-   xMy:=xMy+t*j;
-   My:=My+t;
+    Inc(C, Histogramm[I]);
+    if (C > Count div 10) or (Histogramm[I] > 10) then
+    begin
+      Cc := I;
+      Break;
+    end;
   end;
- end;
- if (Mx=0) or (My=0) then exit;
- Xc:=Round(xMx/Mx);
- Yc:=Round(xMy/My);
- ih:=(Rect.Bottom-Rect.Top) div 2;
- h:=ih+Rect.Top;
- iw:=(Rect.Right-Rect.left) div 2;
- w:=iw+Rect.left;
- for i:=Rect.left to Rect.Right do
- begin
-  ix:=i-w;
-  iy:=0;
-  if iw*iw=0 then exit;
-  if (ih*ih)-((ih*ih)/(iw*iw))*(ix*ix)>0 then
-  iy:=Round(sqrt((ih*ih)-((ih*ih)/(iw*iw))*(ix*ix))) else continue;
-  for j:=h-iy to h+iy do
+
+  for I := 0 to 255 do
   begin
-   if (i>=0) and (j>=0) and (i<Image.Width-1) and (j<Image.Height-1) then
-   begin
-   rn:=xx[round(Xdp[j,i].r*0.3+Xdp[j,i].g*0.59+Xdp[j,i].b*0.11)];
-   cn:=math.max(Xdp[j,i].r-max(Xdp[j,i].g,Xdp[j,i].b),0);
-   cn:=Min(255,round(cn*rn/255));
-   if Xdp[j,i].r-max(Xdp[j,i].g,Xdp[j,i].b)>c then
-   if Xdp[j,i].r/(Xdp[j,i].r+Xdp[j,i].g+Xdp[j,i].b)>0.40 then ReplaceRedA(Xdp[j,i],EyeR,EyeG,EyeB,cn/255);
-   end;
+    Rx[I] := Min(255, Round((255 / Cc) * I));
   end;
- end;
+  C := Round(Cc * RedEyeEffectSize / 100);
 
+  Mx := 0;
+  My := 0;
+  XMx := 0;
+  XMy := 0;
+
+  for I := Rect.Left to Rect.Right do
+    for J := Rect.Top to Rect.Bottom do
+      if (I >= 0) and (J >= 0) and (I < Image.Width - 1) and (J < Image.Height - 1) then
+      begin
+        T := Xdp[J, I].R - Max(Xdp[J, I].G, Xdp[J, I].B);
+        if T > C then
+        begin
+          XMx := XMx + T * I;
+          Mx := Mx + T;
+
+          XMy := XMy + T * J;
+          My := My + T;
+        end;
+      end;
+  if (Mx = 0) or (My = 0) then
+    Exit;
+  Xc := Round(XMx / Mx);
+  Yc := Round(XMy / My);
+  Ih := (Rect.Bottom - Rect.Top) div 2;
+  H := Ih + Rect.Top;
+  Iw := (Rect.Right - Rect.Left) div 2;
+  W := Iw + Rect.Left;
+  for I := Rect.Left to Rect.Right do
+  begin
+    Ix := I - W;
+    if Iw * Iw = 0 then
+      Exit;
+    if (Ih * Ih) - ((Ih * Ih) / (Iw * Iw)) * (Ix * Ix) > 0 then
+      Iy := Round(Sqrt((Ih * Ih) - ((Ih * Ih) / (Iw * Iw)) * (Ix * Ix)))
+    else
+      Continue;
+    for J := H - Iy to H + Iy do
+    begin
+      if (I >= 0) and (J >= 0) and (I < Image.Width - 1) and (J < Image.Height - 1) then
+      begin
+        GR := (Xdp[J, I].R * 77 + Xdp[J, I].G * 151 + Xdp[J, I].B * 28) shr 8;
+        Rn := Xx[GR];
+        Cn := Math.Max(Xdp[J, I].R - Max(Xdp[J, I].G, Xdp[J, I].B), 0);
+        Cn := Min(255, Round(Cn * Rn / 255));
+        if Xdp[J, I].R - Max(Xdp[J, I].G, Xdp[J, I].B) > C then
+          if Xdp[J, I].R / (Xdp[J, I].R + Xdp[J, I].G + Xdp[J, I].B) > 0.40 then
+            ReplaceRedA(Xdp[J, I], EyeR, EyeG, EyeB, Cn / 255);
+      end;
+    end;
+  end;
 end;
 
 constructor TRedEyeToolPanelClass.Create(AOwner: TComponent);
 begin
-  inherited; 
-  FLoading:=true;
- EffectSizelabel:=TLabel.Create(self);
- EffectSizelabel.Left:=8;
- EffectSizelabel.Top:=EditHeight.Top+EditHeight.Height+5;
- EffectSizelabel.Caption:=TEXT_MES_RED_EYE_EFFECT_SIZE_F;
- EffectSizelabel.Parent:=self;
+  inherited;
+  FLoading := True;
+  EffectSizelabel := TLabel.Create(Self);
+  EffectSizelabel.Left := 8;
+  EffectSizelabel.Top := EditHeight.Top + EditHeight.Height + 5;
+  EffectSizelabel.Caption := TEXT_MES_RED_EYE_EFFECT_SIZE_F;
+  EffectSizelabel.Parent := Self;
 
- EffectSizeScroll := TTrackBar.Create(AOwner);
- EffectSizeScroll.Top:=EffectSizelabel.Top+EffectSizelabel.Height+5;
- EffectSizeScroll.Width:=150;
- EffectSizeScroll.Left:=8;
- EffectSizeScroll.Max:=100;
- EffectSizeScroll.Min:=5;
- EffectSizeScroll.OnChange:=EffectSizeScrollChange;
- EffectSizeScroll.Position:=50;
- EffectSizeScroll.Parent:=AOwner as TWinControl;
+  EffectSizeScroll := TTrackBar.Create(AOwner);
+  EffectSizeScroll.Top := EffectSizelabel.Top + EffectSizelabel.Height + 5;
+  EffectSizeScroll.Width := 150;
+  EffectSizeScroll.Left := 8;
+  EffectSizeScroll.Max := 100;
+  EffectSizeScroll.Min := 5;
+  EffectSizeScroll.OnChange := EffectSizeScrollChange;
+  EffectSizeScroll.Position := 50;
+  EffectSizeScroll.Parent := AOwner as TWinControl;
 
- FEyeColorLabel := TLabel.Create(AOwner);
- FEyeColorLabel.Left:=8;
- FEyeColorLabel.Top:=EffectSizeScroll.Top+EffectSizeScroll.Height+5;
- FEyeColorLabel.Parent:=self;
- FEyeColorLabel.Caption:=TEXT_MES_EYE_COLOR+':';
+  FEyeColorLabel := TLabel.Create(AOwner);
+  FEyeColorLabel.Left := 8;
+  FEyeColorLabel.Top := EffectSizeScroll.Top + EffectSizeScroll.Height + 5;
+  FEyeColorLabel.Parent := Self;
+  FEyeColorLabel.Caption := TEXT_MES_EYE_COLOR + ':';
 
- FEyeColor := TComboBox.Create(AOwner);
- FEyeColor.Left:=8;
- FEyeColor.Top:=FEyeColorLabel.Top+FEyeColorLabel.Height+5;
- FEyeColor.Width:=150;
- FEyeColor.OnChange:=EyeColorChange;
- FEyeColor.Style:=csDropDownList;
- FEyeColor.Parent:=AOwner as TWinControl;
- FEyeColor.Items.Add(TEXT_MES_COLOR_GREEN);
- FEyeColor.Items.Add(TEXT_MES_COLOR_BLUE);
- FEyeColor.Items.Add(TEXT_MES_COLOR_BROWN);
- FEyeColor.Items.Add(TEXT_MES_COLOR_BLACK);
- FEyeColor.Items.Add(TEXT_MES_COLOR_GRAY);
- FEyeColor.Items.Add(TEXT_MES_COLOR_CUSTOM);
+  FEyeColor := TComboBox.Create(AOwner);
+  FEyeColor.Left := 8;
+  FEyeColor.Top := FEyeColorLabel.Top + FEyeColorLabel.Height + 5;
+  FEyeColor.Width := 150;
+  FEyeColor.OnChange := EyeColorChange;
+  FEyeColor.Style := CsDropDownList;
+  FEyeColor.Parent := AOwner as TWinControl;
+  FEyeColor.Items.Add(TEXT_MES_COLOR_GREEN);
+  FEyeColor.Items.Add(TEXT_MES_COLOR_BLUE);
+  FEyeColor.Items.Add(TEXT_MES_COLOR_BROWN);
+  FEyeColor.Items.Add(TEXT_MES_COLOR_BLACK);
+  FEyeColor.Items.Add(TEXT_MES_COLOR_GRAY);
+  FEyeColor.Items.Add(TEXT_MES_COLOR_CUSTOM);
 
- FEyeColor.ItemIndex:=1;
- FCustomColor:=$0;
- FCustomColorDialog := TColorDialog.Create(AOwner);
+  FEyeColor.ItemIndex := 1;
+  FCustomColor := $0;
+  FCustomColorDialog := TColorDialog.Create(AOwner);
 
- EffectSizeScroll.Position:=DBKernel.ReadInteger('Editor','RedEyeToolSize',50);
- FEyeColor.ItemIndex:=DBKernel.ReadInteger('Editor','RedEyeColor',0);
- FCustomColor:=DBKernel.ReadInteger('Editor','RedEyeColorCustom',0);
+  EffectSizeScroll.Position := DBKernel.ReadInteger('Editor', 'RedEyeToolSize', 50);
+  FEyeColor.ItemIndex := DBKernel.ReadInteger('Editor', 'RedEyeColor', 0);
+  FCustomColor := DBKernel.ReadInteger('Editor', 'RedEyeColorCustom', 0);
 
- SaveSettingsLink.Top:=FEyeColor.Top+FEyeColor.Height+15;
- MakeItLink.Top:=SaveSettingsLink.Top+SaveSettingsLink.Height+5;
- CloseLink.Top:=MakeItLink.Top+MakeItLink.Height+5;
- FLoading:=false;
-
+  SaveSettingsLink.Top := FEyeColor.Top + FEyeColor.Height + 15;
+  MakeItLink.Top := SaveSettingsLink.Top + SaveSettingsLink.Height + 5;
+  CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
+  FLoading := False;
 end;
 
 destructor TRedEyeToolPanelClass.Destroy;
 begin
- EffectSizeScroll.free;
- EffectSizelabel.Free;
- FCustomColorDialog.Free;
- FEyeColor.Free;
+  F(EffectSizeScroll);
+  F(EffectSizelabel);
+  F(FCustomColorDialog);
+  F(FEyeColor);
   inherited;
 end;
 

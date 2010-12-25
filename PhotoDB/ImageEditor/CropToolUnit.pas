@@ -4,8 +4,8 @@ interface
 
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, language,
-  EffectsLanguage, GraphicsBaseTypes, UnitDBKernel, Menus;
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit,
+  EffectsLanguage, GraphicsBaseTypes, UnitDBKernel, Menus, uMemory;
 
 type
   TCropToolPanelClass = class(TToolsPanelClass)
@@ -60,571 +60,588 @@ type
     procedure SetKeepProportions(const Value: boolean);
     procedure SetProportionsHeight(const Value: Integer);
     procedure SetProportionsWidth(const Value: Integer);
+  protected
+    function LangID: string; override;
   public
-   class function ID: string; override;
-   function GetProperties : string; override;
-   constructor Create(AOwner : TComponent); override;
-   destructor Destroy; override;
-   procedure ClosePanel; override;
-   procedure ClosePanelEvent(Sender : TObject);
-   procedure CheckProportionsClick(Sender : TObject);
-   procedure EditPrWidthChange(Sender : TObject);
-   procedure EditPrHeightChange(Sender : TObject);
-   procedure DoSaveSettings(Sender : TObject);
-   Property FirstPoint : TPoint read FFirstPoint write SetFirstPoint;
-   Property SecondPoint : TPoint read FSecondPoint write SetSecondPoint;
-   Property MakingRect : Boolean read FMakingRect write SetMakingRect;
-   Property ResizingRect : Boolean read FResizingRect write SetResizingRect;
-   Procedure DoCropToolToImage(Image : TBitmap; Rect : TRect);
-   Procedure ChangeSize(Sender : TObject);
-   Property xTop : Boolean read FxTop write SetxTop;
-   Property xLeft : Boolean read FxLeft write SetxLeft;
-   Property xBottom : Boolean read FxBottom write SetxBottom;
-   Property xRight : Boolean read FxRight write SetxRight;
-   Property xCenter : Boolean read FxCenter write SetxCenter;
-   Property BeginDragPoint : TPoint read FBeginDragPoint write SetBeginDragPoint;
-   Property BeginFirstPoint : TPoint read FBeginFirstPoint write SetBeginFirstPoint;
-   Property BeginSecondPoint : TPoint read FBeginSecondPoint write SetBeginSecondPoint;
-
-   Property ProcRecteateImage : TNotifyEvent read FProcRecteateImage write SetProcRecteateImage;
-   Procedure MakeTransform; override;
-   Procedure DoMakeImage(Sender : TObject);
-   Property KeepProportions : boolean read FKeepProportions write SetKeepProportions;
-   Property ProportionsWidth : Integer read FProportionsWidth write SetProportionsWidth;
-   Property ProportionsHeight : Integer read FProportionsHeight write SetProportionsHeight;
-
-   Procedure SetProperties(Properties : String); override;
-   Procedure ExecuteProperties(Properties : String; OnDone : TNotifyEvent); override;
     { Public declarations }
+    class function ID: string; override;
+    function GetProperties: string; override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure ClosePanel; override;
+    procedure ClosePanelEvent(Sender: TObject);
+    procedure CheckProportionsClick(Sender: TObject);
+    procedure EditPrWidthChange(Sender: TObject);
+    procedure EditPrHeightChange(Sender: TObject);
+    procedure DoSaveSettings(Sender: TObject);
+    property FirstPoint: TPoint read FFirstPoint write SetFirstPoint;
+    property SecondPoint: TPoint read FSecondPoint write SetSecondPoint;
+    property MakingRect: Boolean read FMakingRect write SetMakingRect;
+    property ResizingRect: Boolean read FResizingRect write SetResizingRect;
+    procedure DoCropToolToImage(Image: TBitmap; Rect: TRect);
+    procedure ChangeSize(Sender: TObject);
+    property XTop: Boolean read FxTop write SetxTop;
+    property XLeft: Boolean read FxLeft write SetxLeft;
+    property XBottom: Boolean read FxBottom write SetxBottom;
+    property XRight: Boolean read FxRight write SetxRight;
+    property XCenter: Boolean read FxCenter write SetxCenter;
+    property BeginDragPoint: TPoint read FBeginDragPoint write SetBeginDragPoint;
+    property BeginFirstPoint: TPoint read FBeginFirstPoint write SetBeginFirstPoint;
+    property BeginSecondPoint: TPoint read FBeginSecondPoint write SetBeginSecondPoint;
+
+    property ProcRecteateImage: TNotifyEvent read FProcRecteateImage write SetProcRecteateImage;
+    procedure MakeTransform; override;
+    procedure DoMakeImage(Sender: TObject);
+    property KeepProportions: Boolean read FKeepProportions write SetKeepProportions;
+    property ProportionsWidth: Integer read FProportionsWidth write SetProportionsWidth;
+    property ProportionsHeight: Integer read FProportionsHeight write SetProportionsHeight;
+
+    procedure SetProperties(Properties: string); override;
+    procedure ExecuteProperties(Properties: string; OnDone: TNotifyEvent); override;
   end;
 
 implementation
 
-uses ImEditor;
+uses
+  ImEditor;
 
 { TCropToolPanelClass }
 
 procedure TCropToolPanelClass.CheckProportionsClick(Sender: TObject);
 begin
- KeepProportions:=CheckProportions.Checked;
- EditPrWidth.Enabled:=CheckProportions.Checked;
- EditPrHeight.Enabled:=CheckProportions.Checked;
+  KeepProportions := CheckProportions.Checked;
+  EditPrWidth.Enabled := CheckProportions.Checked;
+  EditPrHeight.Enabled := CheckProportions.Checked;
 end;
 
 procedure TCropToolPanelClass.ClosePanel;
 begin
- if Assigned(OnClosePanel) then OnClosePanel(self);
- inherited;
+  if Assigned(OnClosePanel) then
+    OnClosePanel(Self);
+  inherited;
 end;
 
 procedure TCropToolPanelClass.ClosePanelEvent(Sender: TObject);
 begin
- ClosePanel;
+  ClosePanel;
 end;
 
 constructor TCropToolPanelClass.Create(AOwner: TComponent);
 var
- IcoOK, IcoCancel, IcoSave : TIcon;
+  IcoOK, IcoCancel, IcoSave: TIcon;
 begin
- inherited;
- Align:=AlClient;
- FMakingRect:=false;
- FResizingRect:=false;
- EditLock:=false;
- FProcRecteateImage:=nil;
- KeepProportions:=false;
- FProportionsWidth:=15;
- FProportionsHeight:=10;
+  inherited;
+  Align := AlClient;
+  FMakingRect := False;
+  FResizingRect := False;
+  EditLock := False;
+  FProcRecteateImage := nil;
+  KeepProportions := False;
+  FProportionsWidth := 15;
+  FProportionsHeight := 10;
 
- EditWidth := TEdit.Create(AOwner);
- EditWidth.OnChange:=EditWidthChanged;
- EditWidth.Top:=25;
- EditWidth.Width:=60;
- EditWidth.Left:=10;
- EditWidth.Text:='0';
- EditWidth.Parent:=Self;
+  EditWidth := TEdit.Create(AOwner);
+  EditWidth.OnChange := EditWidthChanged;
+  EditWidth.Top := 25;
+  EditWidth.Width := 60;
+  EditWidth.Left := 10;
+  EditWidth.Text := '0';
+  EditWidth.Parent := Self;
 
- EditHeight := TEdit.Create(AOwner);
- EditHeight.OnChange:=EditHeightChanged;
- EditHeight.Top:=25;
- EditHeight.Width:=60;
- EditHeight.Left:=EditWidth.Left+EditWidth.Width+10;
- EditHeight.Parent:=Self;
- EditHeight.Text:='0';
+  EditHeight := TEdit.Create(AOwner);
+  EditHeight.OnChange := EditHeightChanged;
+  EditHeight.Top := 25;
+  EditHeight.Width := 60;
+  EditHeight.Left := EditWidth.Left + EditWidth.Width + 10;
+  EditHeight.Parent := Self;
+  EditHeight.Text := '0';
 
- EditWidthLabel := TLabel.Create(AOwner);
- EditWidthLabel.Caption:=TEXT_MES_WIDTH;
- EditWidthLabel.Top:=10;
- EditWidthLabel.Left:= 10;
- EditWidthLabel.Parent:=Self;
+  EditWidthLabel := TLabel.Create(AOwner);
+  EditWidthLabel.Caption := L('Width');
+  EditWidthLabel.Top := 10;
+  EditWidthLabel.Left := 10;
+  EditWidthLabel.Parent := Self;
 
- EditHeightLabel := TLabel.Create(AOwner);
- EditHeightLabel.Caption:=TEXT_MES_HEIGHT;
- EditHeightLabel.Top:=10;
- EditHeightLabel.Left:=EditWidth.Left+EditWidth.Width+10;
- EditHeightLabel.Parent:=Self;
+  EditHeightLabel := TLabel.Create(AOwner);
+  EditHeightLabel.Caption := L('Height');
+  EditHeightLabel.Top := 10;
+  EditHeightLabel.Left := EditWidth.Left + EditWidth.Width + 10;
+  EditHeightLabel.Parent := Self;
 
- CheckProportions := TCheckBox.Create(AOwner);
- CheckProportions.Top:=EditWidth.Top+EditWidth.Height+5;
- CheckProportions.Left:=10;
- CheckProportions.Width:=150;
- CheckProportions.Caption:=TEXT_MES_IM_KEEP_PROPORTIONS;
- CheckProportions.Enabled:=true;
- CheckProportions.Parent:=Self;
- CheckProportions.OnClick:=CheckProportionsClick;
+  CheckProportions := TCheckBox.Create(AOwner);
+  CheckProportions.Top := EditWidth.Top + EditWidth.Height + 5;
+  CheckProportions.Left := 10;
+  CheckProportions.Width := 150;
+  CheckProportions.Caption := L('Keep proportions');
+  CheckProportions.Enabled := True;
+  CheckProportions.Parent := Self;
+  CheckProportions.OnClick := CheckProportionsClick;
 
- EditPrWidthLabel := TLabel.Create(AOwner);
- EditPrWidthLabel.Caption:=TEXT_MES_WIDTH;
- EditPrWidthLabel.Left:= 10;
- EditPrWidthLabel.Top:=CheckProportions.Top+CheckProportions.Height+5;
- EditPrWidthLabel.Parent:=Self;
+  EditPrWidthLabel := TLabel.Create(AOwner);
+  EditPrWidthLabel.Caption := L('Width');
+  EditPrWidthLabel.Left := 10;
+  EditPrWidthLabel.Top := CheckProportions.Top + CheckProportions.Height + 5;
+  EditPrWidthLabel.Parent := Self;
 
- EditPrWidth := TEdit.Create(AOwner);
- EditPrWidth.OnChange:=EditWidthChanged;
- EditPrWidth.Top:=EditPrWidthLabel.Top+EditPrWidthLabel.Height+5;
- EditPrWidth.Width:=60;
- EditPrWidth.Left:=10;
- EditPrWidth.Text:=IntToStr(FProportionsWidth);
- EditPrWidth.Enabled:=false;
- EditPrWidth.OnChange:=EditPrWidthChange;
- EditPrWidth.Parent:=Self;
+  EditPrWidth := TEdit.Create(AOwner);
+  EditPrWidth.OnChange := EditWidthChanged;
+  EditPrWidth.Top := EditPrWidthLabel.Top + EditPrWidthLabel.Height + 5;
+  EditPrWidth.Width := 60;
+  EditPrWidth.Left := 10;
+  EditPrWidth.Text := IntToStr(FProportionsWidth);
+  EditPrWidth.Enabled := False;
+  EditPrWidth.OnChange := EditPrWidthChange;
+  EditPrWidth.Parent := Self;
 
- EditPrHeight := TEdit.Create(AOwner);
- EditPrHeight.OnChange:=EditHeightChanged;
- EditPrHeight.Top:=EditPrWidthLabel.Top+EditPrWidthLabel.Height+5;
- EditPrHeight.Width:=60;
- EditPrHeight.Left:=EditPrWidth.Left+EditPrWidth.Width+10;
- EditPrHeight.Text:=IntToStr(FProportionsHeight);
- EditPrHeight.Enabled:=false;
- EditPrHeight.OnChange:=EditPrHeightChange;
- EditPrHeight.Parent:=Self;
+  EditPrHeight := TEdit.Create(AOwner);
+  EditPrHeight.OnChange := EditHeightChanged;
+  EditPrHeight.Top := EditPrWidthLabel.Top + EditPrWidthLabel.Height + 5;
+  EditPrHeight.Width := 60;
+  EditPrHeight.Left := EditPrWidth.Left + EditPrWidth.Width + 10;
+  EditPrHeight.Text := IntToStr(FProportionsHeight);
+  EditPrHeight.Enabled := False;
+  EditPrHeight.OnChange := EditPrHeightChange;
+  EditPrHeight.Parent := Self;
 
- EditPrHeightLabel := TLabel.Create(AOwner);
- EditPrHeightLabel.Caption:=TEXT_MES_HEIGHT;
- EditPrHeightLabel.Top:=CheckProportions.Top+CheckProportions.Height+5;
- EditPrHeightLabel.Left:=EditPrWidth.Left+EditPrWidth.Width+10;
- EditPrHeightLabel.Parent:=Self;
+  EditPrHeightLabel := TLabel.Create(AOwner);
+  EditPrHeightLabel.Caption := L('Height');
+  EditPrHeightLabel.Top := CheckProportions.Top + CheckProportions.Height + 5;
+  EditPrHeightLabel.Left := EditPrWidth.Left + EditPrWidth.Width + 10;
+  EditPrHeightLabel.Parent := Self;
 
- ComboBoxPropLabel := TLabel.Create(AOwner);
- ComboBoxPropLabel.Caption:=TEXT_MES_PROPORTIONS;
- ComboBoxPropLabel.Top:=EditPrHeight.Top+EditPrHeight.Height+5;
- ComboBoxPropLabel.Left:=8;
- ComboBoxPropLabel.Parent:=Self;
+  ComboBoxPropLabel := TLabel.Create(AOwner);
+  ComboBoxPropLabel.Caption := L('Proportions') + ':';
+  ComboBoxPropLabel.Top := EditPrHeight.Top + EditPrHeight.Height + 5;
+  ComboBoxPropLabel.Left := 8;
+  ComboBoxPropLabel.Parent := Self;
 
- ComboBoxProp := TComboBox.Create(nil);
- ComboBoxProp.Top:=ComboBoxPropLabel.Top+ComboBoxPropLabel.Height+5;
- ComboBoxProp.Left:=8;
- ComboBoxProp.Width:=170;
- ComboBoxProp.Parent:=AOwner as TWinControl;
- ComboBoxProp.OnChange:=ChangeSize;
- ComboBoxProp.Style:=csDropDownList;
- ComboBoxProp.Items.Add('1/1');
- ComboBoxProp.Items.Add('1/2');
- ComboBoxProp.Items.Add('2/3');
- ComboBoxProp.Items.Add('3/4');
- ComboBoxProp.Items.Add('8/12');
- ComboBoxProp.Items.Add('9/13');
- ComboBoxProp.Items.Add('10/15');
- ComboBoxProp.Items.Add('13/18');
- ComboBoxProp.Items.Add('20/25');
- ComboBoxProp.Items.Add('2/1');
- ComboBoxProp.Items.Add('3/2');
- ComboBoxProp.Items.Add('4/3');
- ComboBoxProp.Items.Add('12/8');
- ComboBoxProp.Items.Add('13/9');
- ComboBoxProp.Items.Add('15/10');
- ComboBoxProp.Items.Add('18/13');
- ComboBoxProp.Items.Add('25/20');
- ComboBoxProp.ItemIndex:=0;
+  ComboBoxProp := TComboBox.Create(AOwner);
+  ComboBoxProp.Top := ComboBoxPropLabel.Top + ComboBoxPropLabel.Height + 5;
+  ComboBoxProp.Left := 8;
+  ComboBoxProp.Width := 170;
+  ComboBoxProp.Parent := AOwner as TWinControl;
+  ComboBoxProp.OnChange := ChangeSize;
+  ComboBoxProp.Style := CsDropDownList;
+  ComboBoxProp.Items.Add('1/1');
+  ComboBoxProp.Items.Add('1/2');
+  ComboBoxProp.Items.Add('2/3');
+  ComboBoxProp.Items.Add('3/4');
+  ComboBoxProp.Items.Add('8/12');
+  ComboBoxProp.Items.Add('9/13');
+  ComboBoxProp.Items.Add('10/15');
+  ComboBoxProp.Items.Add('13/18');
+  ComboBoxProp.Items.Add('20/25');
+  ComboBoxProp.Items.Add('2/1');
+  ComboBoxProp.Items.Add('3/2');
+  ComboBoxProp.Items.Add('4/3');
+  ComboBoxProp.Items.Add('12/8');
+  ComboBoxProp.Items.Add('13/9');
+  ComboBoxProp.Items.Add('15/10');
+  ComboBoxProp.Items.Add('18/13');
+  ComboBoxProp.Items.Add('25/20');
+  ComboBoxProp.ItemIndex := 0;
 
- IcoSave:=TIcon.Create;
- IcoSave.Handle:=LoadIcon(DBKernel.IconDllInstance,'SAVETOFILE');
+  IcoSave := TIcon.Create;
+  IcoSave.Handle := LoadIcon(DBKernel.IconDllInstance, 'SAVETOFILE');
 
- SaveSettingsLink := TWebLink.Create(nil);
- SaveSettingsLink.Parent:=AOwner as TWinControl;
- SaveSettingsLink.Text:=TEXT_MES_SAVE_SETTINGS;
- SaveSettingsLink.Top:=ComboBoxProp.Top+ComboBoxProp.Height+10;
- SaveSettingsLink.Left:=10;
- SaveSettingsLink.Visible:=true;
- SaveSettingsLink.Color:=ClBtnface;
- SaveSettingsLink.OnClick:=DoSaveSettings;
- SaveSettingsLink.Icon:=IcoSave;
- IcoSave.free;
+  SaveSettingsLink := TWebLink.Create(nil);
+  SaveSettingsLink.Parent := AOwner as TWinControl;
+  SaveSettingsLink.Text := L('Save settings');
+  SaveSettingsLink.Top := ComboBoxProp.Top + ComboBoxProp.Height + 10;
+  SaveSettingsLink.Left := 10;
+  SaveSettingsLink.Visible := True;
+  SaveSettingsLink.Color := ClBtnface;
+  SaveSettingsLink.OnClick := DoSaveSettings;
+  SaveSettingsLink.Icon := IcoSave;
+  SaveSettingsLink.ImageCanRegenerate := True;
+  IcoSave.Free;
 
- IcoOK:=TIcon.Create;
- IcoCancel:=TIcon.Create;
- IcoOK.Handle:=LoadIcon(DBKernel.IconDllInstance,'DOIT');
- IcoCancel.Handle:=LoadIcon(DBKernel.IconDllInstance,'CANCELACTION');
+  IcoOK := TIcon.Create;
+  IcoCancel := TIcon.Create;
+  IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
+  IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
 
- MakeItLink:= TWebLink.Create(Self);
- MakeItLink.Parent:=Self;
- MakeItLink.Text:=TEXT_MES_IM_APPLY;
- MakeItLink.Top:=SaveSettingsLink.Top+SaveSettingsLink.Height+5;
- MakeItLink.Left:=10;
- MakeItLink.Visible:=true;
- MakeItLink.Color:=ClBtnface;
- MakeItLink.OnClick:=DoMakeImage;
- MakeItLink.Icon:=IcoOK;
- MakeItLink.ImageCanRegenerate:=True;
- IcoOK.Free;
+  MakeItLink := TWebLink.Create(Self);
+  MakeItLink.Parent := Self;
+  MakeItLink.Text := L('Apply');
+  MakeItLink.Top := SaveSettingsLink.Top + SaveSettingsLink.Height + 5;
+  MakeItLink.Left := 10;
+  MakeItLink.Visible := True;
+  MakeItLink.Color := ClBtnface;
+  MakeItLink.OnClick := DoMakeImage;
+  MakeItLink.Icon := IcoOK;
+  MakeItLink.ImageCanRegenerate := True;
+  IcoOK.Free;
 
- CloseLink := TWebLink.Create(Self);
- CloseLink.Parent:=Self;
- CloseLink.Text:=TEXT_MES_IM_CLOSE_TOOL_PANEL;
- CloseLink.Top:=MakeItLink.Top+MakeItLink.Height+5;
- CloseLink.Left:=10;
- CloseLink.Visible:=true;
- CloseLink.Color:=ClBtnface;
- CloseLink.OnClick:=ClosePanelEvent;
- CloseLink.Icon:=IcoCancel;
- IcoCancel.Free;
+  CloseLink := TWebLink.Create(Self);
+  CloseLink.Parent := Self;
+  CloseLink.Text := L('Close tool');
+  CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
+  CloseLink.Left := 10;
+  CloseLink.Visible := True;
+  CloseLink.Color := ClBtnface;
+  CloseLink.OnClick := ClosePanelEvent;
+  CloseLink.Icon := IcoCancel;
+  CloseLink.ImageCanRegenerate := True;
+  IcoCancel.Free;
 
- CloseLink.ImageCanRegenerate:=True;
+  CloseLink.ImageCanRegenerate := True;
 
- ComboBoxProp.ItemIndex:=DBKernel.ReadInteger('Editor','Crop_Tool_PropSelect',0);
- EditPrWidth.Text:=IntToStr(DBKernel.ReadInteger('Editor','Crop_Tool_Prop_W',15));
- EditPrHeight.Text:=IntToStr(DBKernel.ReadInteger('Editor','Crop_Tool_Prop_H',10));
- CheckProportions.Checked:=DBKernel.ReadBool('Editor','Crop_Tool_Save_Prop',false);
+  ComboBoxProp.ItemIndex := DBKernel.ReadInteger('Editor', 'Crop_Tool_PropSelect', 0);
+  EditPrWidth.Text := IntToStr(DBKernel.ReadInteger('Editor', 'Crop_Tool_Prop_W', 15));
+  EditPrHeight.Text := IntToStr(DBKernel.ReadInteger('Editor', 'Crop_Tool_Prop_H', 10));
+  CheckProportions.Checked := DBKernel.ReadBool('Editor', 'Crop_Tool_Save_Prop', False);
 end;
 
 destructor TCropToolPanelClass.Destroy;
 begin
- ComboBoxProp.Free;
- ComboBoxPropLabel.Free;
- CheckProportions.Free;
- EditPrWidth.Free;
- EditPrHeight.Free;
- EditPrWidthLabel.Free;
- EditPrHeightLabel.Free;
+  F(ComboBoxProp);
+  F(ComboBoxPropLabel);
+  F(CheckProportions);
+  F(EditPrWidth);
+  F(EditPrHeight);
+  F(EditPrWidthLabel);
+  F(EditPrHeightLabel);
+  F(EditWidthLabel);
+  F(EditHeightLabel);
+  F(EditWidth);
+  F(EditHeight);
+  F(CloseLink);
+  F(SaveSettingsLink);
 
- EditWidthLabel.Free;
- EditHeightLabel.Free;
- EditWidth.Free;
- EditHeight.Free;
- CloseLink.Free;
- SaveSettingsLink.Free;
-
- inherited;
+  inherited;
 end;
 
-procedure TCropToolPanelClass.DoCropToolToImage(Image: TBitmap;
-  Rect: TRect);
+procedure TCropToolPanelClass.DoCropToolToImage(Image: TBitmap; Rect: TRect);
 var
-  w,h,i,j:integer;
-  Xdp : array of PARGB;
-  rc, gc, bc : byte;
-  Rct : TRect;
+  W, H, I, J: Integer;
+  Xdp: array of PARGB;
+  Rc, Gc, Bc: Byte;
+  Rct: TRect;
 
-  Procedure Darkness(var RGB : TRGB);
+  procedure Darkness(var RGB: TRGB); inline;
   begin
-   RGB.r:=RGB.r div 3;
-   RGB.g:=RGB.g div 3;
-   RGB.b:=RGB.b div 3;
+    RGB.R := RGB.R div 3;
+    RGB.G := RGB.G div 3;
+    RGB.B := RGB.B div 3;
   end;
 
-  Procedure Border(i,j : integer; var RGB : TRGB);
+  procedure Border(I, J: Integer; var RGB: TRGB); inline;
   begin
-   if odd((i+j) div 3) then
-   begin
-    RGB.r:=RGB.r div 5;
-    RGB.g:=RGB.g div 5;
-    RGB.b:=RGB.b div 5;
-   end else
-   begin
-    RGB.r:=RGB.r xor $FF;
-    RGB.g:=RGB.g xor $FF;
-    RGB.b:=RGB.b xor $FF;
-   end;
+    if Odd((I + J) div 3) then
+    begin
+      RGB.R := RGB.R div 5;
+      RGB.G := RGB.G div 5;
+      RGB.B := RGB.B div 5;
+    end else
+    begin
+      RGB.R := RGB.R xor $FF;
+      RGB.G := RGB.G xor $FF;
+      RGB.B := RGB.B xor $FF;
+    end;
   end;
 
-  Procedure Center(var RGB : TRGB);
+  procedure Center(var RGB: TRGB); inline;
   begin
-   RGB.r:=not RGB.r;
-   RGB.g:=not RGB.g;
-   RGB.b:=not RGB.b;
+    RGB.R := not RGB.R;
+    RGB.G := not RGB.G;
+    RGB.B := not RGB.B;
   end;
 
 begin
- Rct.Top:=Min(Rect.Top,Rect.Bottom);
- Rct.Bottom:=Max(Rect.Top,Rect.Bottom);
- Rct.Left:=Min(Rect.Left,Rect.Right);
- Rct.Right:=Max(Rect.Left,Rect.Right);
- Rect:=Rct;
- rc:=GetRValue(ColorToRGB(Color));
- gc:=GetGValue(ColorToRGB(Color));
- bc:=GetBValue(ColorToRGB(Color));
- Image.PixelFormat:=pf24bit;
+  Rct.Top := Min(Rect.Top, Rect.Bottom);
+  Rct.Bottom := Max(Rect.Top, Rect.Bottom);
+  Rct.Left := Min(Rect.Left, Rect.Right);
+  Rct.Right := Max(Rect.Left, Rect.Right);
+  Rect := Rct;
+  Rc := GetRValue(ColorToRGB(Color));
+  Gc := GetGValue(ColorToRGB(Color));
+  Bc := GetBValue(ColorToRGB(Color));
+  Image.PixelFormat := Pf24bit;
 
- SetLength(Xdp,Image.height);
- for i:=0 to Image.Height-1 do
- Xdp[i]:=Image.ScanLine[i];
- for i:=0 to Min(Rect.Top-1,Image.Height-1) do
- begin
-  for j:=0 to Image.Width-1 do
+  SetLength(Xdp, Image.Height);
+  for I := 0 to Image.Height - 1 do
+    Xdp[I] := Image.ScanLine[I];
+  for I := 0 to Min(Rect.Top - 1, Image.Height - 1) do
   begin
-   if (i=Rect.Top-1) and (j>Rect.Left) and (j<Rect.Right) then
-   begin
-    Border(i,j,Xdp[i,j]);
-   end else
-   begin
-    Darkness(Xdp[i,j]);
-   end;
-  end;
- end;
- for i:=Max(0,Rect.Bottom) to Image.Height-1 do
- for j:=0 to Image.Width-1 do
- begin
-  if (i=Rect.Bottom) and (j>Rect.Left) and (j<Rect.Right) then
-  begin
-   Border(i,j,Xdp[i,j]);
-  end else
-  begin
-   Darkness(Xdp[i,j]);
-  end;
- end;
- for i:=Max(0,Rect.Top) to Min(Rect.Bottom-1,Image.Height-1) do
- begin
-  for j:=0 to Min(Rect.Left-1,Image.Width-1) do
-  begin
-   Darkness(Xdp[i,j]);
-  end;
-  j:=Max(0,Min(Rect.Left-1,Image.Width-1));
-  Border(i,j,Xdp[i,j]);
- end;
- for i:=Max(0,Rect.Top) to Min(Rect.Bottom-1,Image.Height-1) do
- begin
-  for j:=Max(0,Rect.Right) to Image.Width-1 do
-  begin
-   Darkness(Xdp[i,j]);
-  end;
-  j:=Min(Image.Width-1,Max(0,Rect.Right));
-  Border(i,j,Xdp[i,j]);
- end;
+    for J := 0 to Image.Width - 1 do
+    begin
+      if (I = Rect.Top - 1) and (J > Rect.Left) and (J < Rect.Right) then
+        Border(I, J, Xdp[I, J])
+      else
+        Darkness(Xdp[I, J]);
 
- h:=abs(Rect.Top-Rect.Bottom) div 8;
- w:=abs(Rect.Left-Rect.Right) div 8;
+    end;
+  end;
+  for I := Max(0, Rect.Bottom) to Image.Height - 1 do
+    for J := 0 to Image.Width - 1 do
+    begin
+      if (I = Rect.Bottom) and (J > Rect.Left) and (J < Rect.Right) then
+        Border(I, J, Xdp[I, J])
+      else
+        Darkness(Xdp[I, J]);
 
- if ((Rect.Top+Rect.Bottom) div 2<Image.Height-1) and ((Rect.Top+Rect.Bottom) div 2>0) then
- for i:=(Rect.Left+Rect.Right) div 2-w to (Rect.Left+Rect.Right) div 2+w do
- if (i>0) and (i<Image.Width-1) then
- Center(Xdp[(Rect.Top+Rect.Bottom) div 2,i]);
+    end;
+  for I := Max(0, Rect.Top) to Min(Rect.Bottom - 1, Image.Height - 1) do
+  begin
+    for J := 0 to Min(Rect.Left - 1, Image.Width - 1) do
+      Darkness(Xdp[I, J]);
 
- if ((Rect.Left+Rect.Right) div 2<Image.Width-1) and ((Rect.Left+Rect.Right) div 2>0) then
- for i:=(Rect.Top+Rect.Bottom) div 2-h to (Rect.Top+Rect.Bottom) div 2+h do
- if (i>0) and (i<Image.Height-1) then
- Center(Xdp[i,(Rect.Left+Rect.Right) div 2]);
+    J := Max(0, Min(Rect.Left - 1, Image.Width - 1));
+    Border(I, J, Xdp[I, J]);
+  end;
+  for I := Max(0, Rect.Top) to Min(Rect.Bottom - 1, Image.Height - 1) do
+  begin
+    for J := Max(0, Rect.Right) to Image.Width - 1 do
+      Darkness(Xdp[I, J]);
+
+    J := Min(Image.Width - 1, Max(0, Rect.Right));
+    Border(I, J, Xdp[I, J]);
+  end;
+
+  H := Abs(Rect.Top - Rect.Bottom) div 8;
+  W := Abs(Rect.Left - Rect.Right) div 8;
+
+  if ((Rect.Top + Rect.Bottom) div 2 < Image.Height - 1) and ((Rect.Top + Rect.Bottom) div 2 > 0) then
+    for I := (Rect.Left + Rect.Right) div 2 - W to (Rect.Left + Rect.Right) div 2 + W do
+      if (I > 0) and (I < Image.Width - 1) then
+        Center(Xdp[(Rect.Top + Rect.Bottom) div 2, I]);
+
+  if ((Rect.Left + Rect.Right) div 2 < Image.Width - 1) and ((Rect.Left + Rect.Right) div 2 > 0) then
+    for I := (Rect.Top + Rect.Bottom) div 2 - H to (Rect.Top + Rect.Bottom) div 2 + H do
+      if (I > 0) and (I < Image.Height - 1) then
+        Center(Xdp[I, (Rect.Left + Rect.Right) div 2]);
 
 end;
 
 procedure TCropToolPanelClass.DoMakeImage(Sender: TObject);
 begin
- MakeTransform;
+  MakeTransform;
 end;
 
 procedure TCropToolPanelClass.EditheightChanged(Sender: TObject);
 var
-  Point1,Point2,P : TPoint;
-  w,h : integer;
-  prop : Extended;
+  Point1, Point2, P: TPoint;
+  W, H: Integer;
+  Prop: Extended;
 
-  function Znak(x : Extended) : Extended;
+  function Znak(X: Extended): Extended;
   begin
-   if x>=0 then Result:=1 else Result:=-1;
+    if X >= 0 then
+      Result := 1
+    else
+      Result := -1;
   end;
 
 begin
- if not EditLock then
- begin
-  if Image=nil then exit;
-  h:=StrToIntDef(EditHeight.Text,15);
-  Point1.X:=Max(0,Min(FirstPoint.X,SecondPoint.X));
-  Point1.Y:=Max(0,Min(FirstPoint.Y,SecondPoint.Y));
-  Point2.X:=Min(Max(FirstPoint.X,SecondPoint.X),Image.Width);
-  Point2.Y:=Min(Max(FirstPoint.Y,SecondPoint.Y),Image.Height);
-  FFirstPoint:=Point1;
-  FSecondPoint:=Point2;
+  if not EditLock then
+  begin
+    if Image = nil then
+      Exit;
+    H := StrToIntDef(EditHeight.Text, 15);
+    Point1.X := Max(0, Min(FirstPoint.X, SecondPoint.X));
+    Point1.Y := Max(0, Min(FirstPoint.Y, SecondPoint.Y));
+    Point2.X := Min(Max(FirstPoint.X, SecondPoint.X), Image.Width);
+    Point2.Y := Min(Max(FirstPoint.Y, SecondPoint.Y), Image.Height);
+    FFirstPoint := Point1;
+    FSecondPoint := Point2;
 
-  P.X:=math.Min(Image.Width,math.max(0,SecondPoint.X));
-  P.Y:=math.Min(Image.Height,math.max(0,FirstPoint.Y+h));
-
+    P.X := Math.Min(Image.Width, Math.Max(0, SecondPoint.X));
+    P.Y := Math.Min(Image.Height, Math.Max(0, FirstPoint.Y + H));
 
     if KeepProportions then
     begin
-     w:=1;
-     h:=-(FirstPoint.Y-p.Y);
-     if w*h=0 then exit;
-     if ProportionsHeight<>0 then
-     Prop:=ProportionsWidth/ProportionsHeight else
-     Prop:=1;
-     if abs(w/h)<abs(Prop) then
-     begin
-      if w<0 then w:=-Round(abs(h)*(Prop)) else
-      w:=Round(abs(h)*(Prop));
-      if FirstPoint.X+w>Image.Width then
+      W := 1;
+      H := -(FirstPoint.Y - P.Y);
+      if W * H = 0 then
+        Exit;
+      if ProportionsHeight <> 0 then
+        Prop := ProportionsWidth / ProportionsHeight
+      else
+        Prop := 1;
+      if Abs(W / H) < Abs(Prop) then
       begin
-       w:=Image.Width-FirstPoint.X;
-       h:=Round(Znak(h)*w/prop);
-      end;
-      if FirstPoint.X+w<0 then
+        if W < 0 then
+          W := -Round(Abs(H) * (Prop))
+        else
+          W := Round(Abs(H) * (Prop));
+        if FirstPoint.X + W > Image.Width then
+        begin
+          W := Image.Width - FirstPoint.X;
+          H := Round(Znak(H) * W / Prop);
+        end;
+        if FirstPoint.X + W < 0 then
+        begin
+          W := -FirstPoint.X;
+          H := -Round(Znak(H) * W / Prop);
+        end;
+        EditLock := True;
+        SecondPoint := Point(FirstPoint.X + W, FirstPoint.Y + H);
+        EditLock := False;
+      end
+      else
       begin
-       w:=-FirstPoint.X;
-       h:=-Round(Znak(h)*w/prop);
+        if H < 0 then
+          H := -Round(Abs(W) * (1 / Prop))
+        else
+          H := Round(Abs(W) * (1 / Prop));
+        if FirstPoint.Y + H > Image.Height then
+        begin
+          H := Image.Height - FirstPoint.Y;
+          W := Round(Znak(W) * (H * Prop));
+        end;
+        if FirstPoint.Y + H < 0 then
+        begin
+          H := -FirstPoint.Y;
+          W := -Round(Znak(W) * (H * Prop));
+        end;
+        EditLock := True;
+        SecondPoint := Point(FirstPoint.X + W, FirstPoint.Y + H);
+        EditLock := False;
       end;
-      EditLock:=true;
-      SecondPoint:=Point(FirstPoint.X+w,FirstPoint.Y+h);
-      EditLock:=false;
-     end else
-     begin
-      if h<0 then h:=-Round(abs(w)*(1/Prop)) else
-      h:=Round(abs(w)*(1/Prop));
-      if FirstPoint.Y+h>Image.height then
-      begin
-       h:=Image.height-FirstPoint.Y;
-       w:=Round(Znak(w)*(h*Prop));
-      end;
-      if FirstPoint.Y+h<0 then
-      begin
-       h:=-FirstPoint.Y;
-       w:=-Round(Znak(w)*(h*Prop));
-      end;
-      EditLock:=true;
-      SecondPoint:=Point(FirstPoint.X+w,FirstPoint.Y+h);
-      EditLock:=false;
-     end;
     end else
     begin
-     EditLock:=true;
-     SecondPoint:=p;
-     EditLock:=false;
+      EditLock := True;
+      SecondPoint := P;
+      EditLock := False;
     end;
 
-
-  if Assigned(FProcRecteateImage) then FProcRecteateImage(Self);
- end;
+    if Assigned(FProcRecteateImage) then
+      FProcRecteateImage(Self);
+  end;
 end;
 
 procedure TCropToolPanelClass.EditPrWidthChange(Sender: TObject);
 begin
- FProportionsWidth:=StrToIntDef(EditPrWidth.Text,1);
+  FProportionsWidth := StrToIntDef(EditPrWidth.Text, 1);
 end;
 
 procedure TCropToolPanelClass.EditPrHeightChange(Sender: TObject);
 begin
- FProportionsHeight:=StrToIntDef(EditPrHeight.Text,1);
+  FProportionsHeight := StrToIntDef(EditPrHeight.Text, 1);
 end;
 
 procedure TCropToolPanelClass.EditWidthChanged(Sender: TObject);
 var
-  Point1,Point2,P : TPoint;
-  w,h : integer;
-  prop : Extended;
+  Point1, Point2, P: TPoint;
+  W, H: Integer;
+  Prop: Extended;
 
-  function Znak(x : Extended) : Extended;
+  function Znak(X: Extended): Extended;
   begin
-   if x>=0 then Result:=1 else Result:=-1;
+    if X >= 0 then
+      Result := 1
+    else
+      Result := -1;
   end;
 
 begin
- if not EditLock then
- begin
-  if Image=nil then exit;
-  w:=StrToIntDef(EditWidth.Text,15);
-  Point1.X:=Max(0,Min(FirstPoint.X,SecondPoint.X));
-  Point1.Y:=Max(0,Min(FirstPoint.Y,SecondPoint.Y));
-  Point2.X:=Min(Max(FirstPoint.X,SecondPoint.X),Image.Width);
-  Point2.Y:=Min(Max(FirstPoint.Y,SecondPoint.Y),Image.Height);
-  FFirstPoint:=Point1;
-  FSecondPoint:=Point2;
-  P.X:=math.Min(Image.Width,math.max(0,FirstPoint.X+W));
-  P.Y:=math.Min(Image.Height,math.max(0,SecondPoint.Y));
+  if not EditLock then
+  begin
+    if Image = nil then
+      Exit;
+    W := StrToIntDef(EditWidth.Text, 15);
+    Point1.X := Max(0, Min(FirstPoint.X, SecondPoint.X));
+    Point1.Y := Max(0, Min(FirstPoint.Y, SecondPoint.Y));
+    Point2.X := Min(Max(FirstPoint.X, SecondPoint.X), Image.Width);
+    Point2.Y := Min(Max(FirstPoint.Y, SecondPoint.Y), Image.Height);
+    FFirstPoint := Point1;
+    FSecondPoint := Point2;
+    P.X := Math.Min(Image.Width, Math.Max(0, FirstPoint.X + W));
+    P.Y := Math.Min(Image.Height, Math.Max(0, SecondPoint.Y));
 
     if KeepProportions then
     begin
-     w:=-(FirstPoint.X-p.X);
-     h:=1;
-     if w*h=0 then exit;
-     if ProportionsHeight<>0 then
-     Prop:=ProportionsWidth/ProportionsHeight else
-     Prop:=1;
-     if abs(w/h)<abs(Prop) then
-     begin
-      if w<0 then w:=-Round(abs(h)*(Prop)) else
-      w:=Round(abs(h)*(Prop));
-      if FirstPoint.X+w>Image.Width then
+      W := -(FirstPoint.X - P.X);
+      H := 1;
+      if W * H = 0 then
+        Exit;
+      if ProportionsHeight <> 0 then
+        Prop := ProportionsWidth / ProportionsHeight
+      else
+        Prop := 1;
+      if Abs(W / H) < Abs(Prop) then
       begin
-       w:=Image.Width-FirstPoint.X;
-       h:=Round(Znak(h)*w/prop);
-      end;
-      if FirstPoint.X+w<0 then
+        if W < 0 then
+          W := -Round(Abs(H) * (Prop))
+        else
+          W := Round(Abs(H) * (Prop));
+        if FirstPoint.X + W > Image.Width then
+        begin
+          W := Image.Width - FirstPoint.X;
+          H := Round(Znak(H) * W / Prop);
+        end;
+        if FirstPoint.X + W < 0 then
+        begin
+          W := -FirstPoint.X;
+          H := -Round(Znak(H) * W / Prop);
+        end;
+        EditLock := True;
+        SecondPoint := Point(FirstPoint.X + W, FirstPoint.Y + H);
+        EditLock := False;
+      end else
       begin
-       w:=-FirstPoint.X;
-       h:=-Round(Znak(h)*w/prop);
+        if H < 0 then
+          H := -Round(Abs(W) * (1 / Prop))
+        else
+          H := Round(Abs(W) * (1 / Prop));
+        if FirstPoint.Y + H > Image.Height then
+        begin
+          H := Image.Height - FirstPoint.Y;
+          W := Round(Znak(W) * (H * Prop));
+        end;
+        if FirstPoint.Y + H < 0 then
+        begin
+          H := -FirstPoint.Y;
+          W := -Round(Znak(W) * (H * Prop));
+        end;
+        EditLock := True;
+        SecondPoint := Point(FirstPoint.X + W, FirstPoint.Y + H);
+        EditLock := False;
       end;
-      EditLock:=true;
-      SecondPoint:=Point(FirstPoint.X+w,FirstPoint.Y+h);
-      EditLock:=false;
-     end else
-     begin
-      if h<0 then h:=-Round(abs(w)*(1/Prop)) else
-      h:=Round(abs(w)*(1/Prop));
-      if FirstPoint.Y+h>Image.height then
-      begin
-       h:=Image.height-FirstPoint.Y;
-       w:=Round(Znak(w)*(h*Prop));
-      end;
-      if FirstPoint.Y+h<0 then
-      begin
-       h:=-FirstPoint.Y;
-       w:=-Round(Znak(w)*(h*Prop));
-      end;
-      EditLock:=true;
-      SecondPoint:=Point(FirstPoint.X+w,FirstPoint.Y+h);
-      EditLock:=false;
-     end;
     end else
     begin
-     EditLock:=true;
-     SecondPoint:=p;
-     EditLock:=false;
+      EditLock := True;
+      SecondPoint := P;
+      EditLock := False;
     end;
 
-  if Assigned(FProcRecteateImage) then FProcRecteateImage(Self);
- end;
+    if Assigned(FProcRecteateImage) then
+      FProcRecteateImage(Self);
+  end;
 end;
 
 procedure TCropToolPanelClass.MakeTransform;
 var
-  Bitmap : TBitmap;
-  Point1, Point2 : TPoint;
-  i,j : integer;
-  ps, pd : PARGB;
+  Bitmap: TBitmap;
+  Point1, Point2: TPoint;
+  I, J: Integer;
+  Ps, Pd: PARGB;
 begin
- inherited;
- Bitmap := TBitmap.Create;
- Bitmap.PixelFormat:=pf24bit;
- Point1.X:=Max(0,Min(FirstPoint.X,SecondPoint.X));
- Point1.Y:=Max(0,Min(FirstPoint.Y,SecondPoint.Y));
- Point2.X:=Min(Max(FirstPoint.X,SecondPoint.X),Image.Width);
- Point2.Y:=Min(Max(FirstPoint.Y,SecondPoint.Y),Image.Height);
- Bitmap.Width:=Point2.X-Point1.X;
- Bitmap.Height:=Point2.Y-Point1.Y;
+  inherited;
+  Bitmap := TBitmap.Create;
+  Bitmap.PixelFormat := Pf24bit;
+  Point1.X := Max(0, Min(FirstPoint.X, SecondPoint.X));
+  Point1.Y := Max(0, Min(FirstPoint.Y, SecondPoint.Y));
+  Point2.X := Min(Max(FirstPoint.X, SecondPoint.X), Image.Width);
+  Point2.Y := Min(Max(FirstPoint.Y, SecondPoint.Y), Image.Height);
+  Bitmap.Width := Point2.X - Point1.X;
+  Bitmap.Height := Point2.Y - Point1.Y;
 
- for i:=Point1.Y to Point2.Y-1 do
- begin
-  ps:=Image.ScanLine[i];
-  pd:=Bitmap.ScanLine[i-(Point1.Y)];
-  for j:=Point1.X to Point2.X-1 do
+  for I := Point1.Y to Point2.Y - 1 do
   begin
-   pd[j-(Point1.X)].r:=ps[j].r;
-   pd[j-(Point1.X)].g:=ps[j].g;
-   pd[j-(Point1.X)].b:=ps[j].b;
-  end;
+    Ps := Image.ScanLine[I];
+    Pd := Bitmap.ScanLine[I - (Point1.Y)];
+    for J := Point1.X to Point2.X - 1 do
+    begin
+      Pd[J - Point1.X] := Ps[J];
+    end;
 
- end;
- Image.Free;
- ImageHistory.Add(Bitmap,'{'+ID+'}['+GetProperties+']');
- SetImagePointer(Bitmap);
- ClosePanel;
+  end;
+  Image.Free;
+  ImageHistory.Add(Bitmap, '{' + ID + '}[' + GetProperties + ']');
+  SetImagePointer(Bitmap);
+  ClosePanel;
 end;
 
 procedure TCropToolPanelClass.SetBeginDragPoint(const Value: TPoint);
@@ -644,11 +661,11 @@ end;
 
 procedure TCropToolPanelClass.SetFirstPoint(const Value: TPoint);
 begin
- FFirstPoint := Value;
- EditLock:=true;
- EditWidth.Text:=IntToStr(Abs(FFirstPoint.X-FSecondPoint.X));
- Editheight.Text:=IntToStr(Abs(FFirstPoint.Y-FSecondPoint.Y));
- EditLock:=false;
+  FFirstPoint := Value;
+  EditLock := True;
+  EditWidth.Text := IntToStr(Abs(FFirstPoint.X - FSecondPoint.X));
+  Editheight.Text := IntToStr(Abs(FFirstPoint.Y - FSecondPoint.Y));
+  EditLock := False;
 end;
 
 procedure TCropToolPanelClass.SetKeepProportions(const Value: boolean);
@@ -684,11 +701,11 @@ end;
 
 procedure TCropToolPanelClass.SetSecondPoint(const Value: TPoint);
 begin
- FSecondPoint := Value;
- EditLock:=true;
- EditWidth.Text:=IntToStr(Abs(FFirstPoint.X-FSecondPoint.X));
- Editheight.Text:=IntToStr(Abs(FFirstPoint.Y-FSecondPoint.Y));
- EditLock:=false;
+  FSecondPoint := Value;
+  EditLock := True;
+  EditWidth.Text := IntToStr(Abs(FFirstPoint.X - FSecondPoint.X));
+  Editheight.Text := IntToStr(Abs(FFirstPoint.Y - FSecondPoint.Y));
+  EditLock := False;
 end;
 
 procedure TCropToolPanelClass.SetxBottom(const Value: Boolean);
@@ -726,23 +743,28 @@ end;
 
 procedure TCropToolPanelClass.ChangeSize(Sender: TObject);
 var
-  i : integer;
-  S : String;
+  I: Integer;
+  S: string;
 begin
- S:=ComboBoxProp.Text;
- for i:=1 to Length(S) do
- if S[i]='/' then
- begin
-  EditPrHeight.Text:=Copy(S,1,i-1);
-  EditPrWidth.Text:=Copy(S,i+1,length(S)-i);
-  CheckProportions.Checked:=True;
-  break;
- end;
+  S := ComboBoxProp.Text;
+  for I := 1 to Length(S) do
+    if S[I] = '/' then
+    begin
+      EditPrHeight.Text := Copy(S, 1, I - 1);
+      EditPrWidth.Text := Copy(S, I + 1, Length(S) - I);
+      CheckProportions.Checked := True;
+      Break;
+    end;
 end;
 
 class function TCropToolPanelClass.ID: string;
 begin
- Result:='{5AA5CA33-220E-4D1D-82C2-9195CE6DF8E4}';
+  Result := '{5AA5CA33-220E-4D1D-82C2-9195CE6DF8E4}';
+end;
+
+function TCropToolPanelClass.LangID: string;
+begin
+  Result := 'CropTool';
 end;
 
 function TCropToolPanelClass.GetProperties: string;

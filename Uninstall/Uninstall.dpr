@@ -32,7 +32,8 @@ uses
   uUninstallActions in 'uUninstallActions.pas',
   uAssociationActions in '..\Installer\uAssociationActions.pas',
   uUpdatingWindowsActions in '..\Installer\uUpdatingWindowsActions.pas',
-  uSelfDeleteAction in 'uSelfDeleteAction.pas';
+  uSelfDeleteAction in 'uSelfDeleteAction.pas',
+  uRuntime in '..\PhotoDB\Units\uRuntime.pas';
 
 {$R *.res}
 

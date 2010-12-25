@@ -5,7 +5,7 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
-  GraphicsBaseTypes, Language, UnitDBKernel;
+  GraphicsBaseTypes, UnitDBKernel, uMemory;
 
 type
   TCustomSelectToolClass = class(TToolsPanelClass)
@@ -44,6 +44,8 @@ type
     procedure EditheightChanged(Sender : TObject);
     procedure SetProcRecteateImage(const Value: TNotifyEvent);
     procedure SetAnyRect(const Value: boolean);
+  protected
+    function LangID: string; override;
   public
     { Public declarations }
     FProcRecteateImage: TNotifyEvent;
@@ -84,140 +86,144 @@ implementation
 
 { TRedEyeToolPanelClass }
 
-uses ImEditor, Dolphin_DB;
+uses ImEditor;
 
 procedure TCustomSelectToolClass.ClosePanel;
 begin
- if Assigned(OnClosePanel) then OnClosePanel(self);
- inherited;
+  if Assigned(OnClosePanel) then
+    OnClosePanel(Self);
+  inherited;
 end;
 
 procedure TCustomSelectToolClass.ClosePanelEvent(Sender: TObject);
 begin
- ClosePanel;
+  ClosePanel;
 end;
 
 constructor TCustomSelectToolClass.Create(AOwner: TComponent);
 var
- IcoOK, IcoCancel, IcoSave : TIcon;
+  IcoOK, IcoCancel, IcoSave: TIcon;
 begin
- inherited;
- FAnyRect:=false;
- FTerminating:=false;
- Align:=AlClient;
- FMakingRect:=false;
- FResizingRect:=false;
- EditLock:=false;
- FProcRecteateImage:=nil;
+  inherited;
+  FAnyRect := False;
+  FTerminating := False;
+  Align := AlClient;
+  FMakingRect := False;
+  FResizingRect := False;
+  EditLock := False;
+  FProcRecteateImage := nil;
 
- EditWidthLabel := TStaticText.Create(AOwner);
- EditWidthLabel.Caption:=TEXT_MES_WIDTH;
- EditWidthLabel.Top:=8;
- EditWidthLabel.Left:=8;
- EditWidthLabel.Parent:=AOwner as TWinControl;
+  EditWidthLabel := TStaticText.Create(AOwner);
+  EditWidthLabel.Caption := L('Width');
+  EditWidthLabel.Top := 8;
+  EditWidthLabel.Left := 8;
+  EditWidthLabel.Parent := AOwner as TWinControl;
 
- EditWidth := TEdit.Create(AOwner);
- EditWidth.OnChange:=EditWidthChanged;
- EditWidth.Top:=EditWidthLabel.Top+EditWidthLabel.Height+5;
- EditWidth.Width:=60;
- EditWidth.Left:=8;
- EditWidth.Parent:=AOwner as TWinControl;
+  EditWidth := TEdit.Create(AOwner);
+  EditWidth.OnChange := EditWidthChanged;
+  EditWidth.Top := EditWidthLabel.Top + EditWidthLabel.Height + 5;
+  EditWidth.Width := 60;
+  EditWidth.Left := 8;
+  EditWidth.Parent := AOwner as TWinControl;
 
- EditHeight := TEdit.Create(AOwner);
- EditHeight.OnChange:=EditHeightChanged;
- EditHeight.Top:=EditWidthLabel.Top+EditWidthLabel.Height+5;
- EditHeight.Width:=60;
- EditHeight.Left:=EditWidth.Left+EditWidth.Width+5;
- EditHeight.Parent:=AOwner as TWinControl;
+  EditHeight := TEdit.Create(AOwner);
+  EditHeight.OnChange := EditHeightChanged;
+  EditHeight.Top := EditWidthLabel.Top + EditWidthLabel.Height + 5;
+  EditHeight.Width := 60;
+  EditHeight.Left := EditWidth.Left + EditWidth.Width + 5;
+  EditHeight.Parent := AOwner as TWinControl;
 
- EditHeightLabel := TStaticText.Create(AOwner);
- EditHeightLabel.Caption:=TEXT_MES_HEIGHT;
- EditHeightLabel.Top:=8;
- EditHeightLabel.Left:=EditHeight.Left;
- EditHeightLabel.Parent:=AOwner as TWinControl;
+  EditHeightLabel := TStaticText.Create(AOwner);
+  EditHeightLabel.Caption := L('Height');
+  EditHeightLabel.Top := 8;
+  EditHeightLabel.Left := EditHeight.Left;
+  EditHeightLabel.Parent := AOwner as TWinControl;
 
+  IcoOK := TIcon.Create;
+  IcoCancel := TIcon.Create;
+  IcoSave := TIcon.Create;
+  IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
+  IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
+  IcoSave.Handle := LoadIcon(DBKernel.IconDllInstance, 'SAVETOFILE');
 
- IcoOK:=TIcon.Create;
- IcoCancel:=TIcon.Create;
- IcoSave:=TIcon.Create;
- IcoOK.Handle:=LoadIcon(DBKernel.IconDllInstance,'DOIT');
- IcoCancel.Handle:=LoadIcon(DBKernel.IconDllInstance,'CANCELACTION');
+  SaveSettingsLink := TWebLink.Create(Self);
+  SaveSettingsLink.Parent := AOwner as TWinControl;
+  SaveSettingsLink.Text := L('Save settings');
+  SaveSettingsLink.Top := 120;
+  SaveSettingsLink.Left := 10;
+  SaveSettingsLink.Visible := True;
+  SaveSettingsLink.Color := ClBtnface;
+  SaveSettingsLink.OnClick := DoSaveSettings;
+  SaveSettingsLink.Icon := IcoSave;
+  SaveSettingsLink.ImageCanRegenerate := True;
+  IcoSave.Free;
 
- IcoSave.Handle:=LoadIcon(DBKernel.IconDllInstance,'SAVETOFILE');
+  MakeItLink := TWebLink.Create(Self);
+  MakeItLink.Parent := AOwner as TWinControl;
+  MakeItLink.Text := L('Apply');
+  MakeItLink.Top := 140;
+  MakeItLink.Left := 10;
+  MakeItLink.Visible := True;
+  MakeItLink.Color := ClBtnface;
+  MakeItLink.OnClick := DoMakeImage;
+  MakeItLink.Icon := IcoOK;
+  MakeItLink.ImageCanRegenerate := True;
+  IcoOK.Free;
 
- SaveSettingsLink := TWebLink.Create(Self);
- SaveSettingsLink.Parent:=AOwner as TWinControl;
- SaveSettingsLink.Text:=TEXT_MES_SAVE_SETTINGS;
- SaveSettingsLink.Top:=120;
- SaveSettingsLink.Left:=10;
- SaveSettingsLink.Visible:=true;
- SaveSettingsLink.Color:=ClBtnface;
- SaveSettingsLink.OnClick:=DoSaveSettings;
- SaveSettingsLink.Icon:=IcoSave;
- IcoSave.free;
+  CloseLink := TWebLink.Create(Self);
+  CloseLink.Parent := AOwner as TWinControl;
+  CloseLink.Text := L('Close tool');
+  CloseLink.Top := 160;
+  CloseLink.Left := 10;
+  CloseLink.Visible := True;
+  CloseLink.Color := ClBtnface;
+  CloseLink.OnClick := ClosePanelEvent;
+  CloseLink.Icon := IcoCancel;
+  CloseLink.ImageCanRegenerate := True;
+  IcoCancel.Free;
 
- MakeItLink:= TWebLink.Create(Self);
- MakeItLink.Parent:=AOwner as TWinControl;
- MakeItLink.Text:=TEXT_MES_IM_APPLY;
- MakeItLink.Top:=140;
- MakeItLink.Left:=10;
- MakeItLink.Visible:=true;
- MakeItLink.Color:=ClBtnface;
- MakeItLink.OnClick:=DoMakeImage;
- MakeItLink.Icon:=IcoOK;
- MakeItLink.ImageCanRegenerate:=True;
- IcoOK.Free;
-
- CloseLink := TWebLink.Create(Self);
- CloseLink.Parent:=AOwner as TWinControl;
- CloseLink.Text:=TEXT_MES_IM_CLOSE_TOOL_PANEL;
- CloseLink.Top:=160;
- CloseLink.Left:=10;
- CloseLink.Visible:=true;
- CloseLink.Color:=ClBtnface;
- CloseLink.OnClick:=ClosePanelEvent;
- CloseLink.Icon:=IcoCancel;
- IcoCancel.Free;
-
- CloseLink.ImageCanRegenerate:=True;
 end;
 
 destructor TCustomSelectToolClass.Destroy;
 begin
- EditWidthLabel.Free;
- EditHeightLabel.Free;
- EditWidth.Free;
- EditHeight.Free;
- CloseLink.Free;
- SaveSettingsLink.free;
- inherited;
+  F(EditWidthLabel);
+  F(EditHeightLabel);
+  F(EditWidth);
+  F(EditHeight);
+  F(CloseLink);
+  F(SaveSettingsLink);
+  inherited;
 end;
 
 procedure TCustomSelectToolClass.DoMakeImage(Sender: TObject);
 begin
- MakeTransform;
+  MakeTransform;
 end;
 
 procedure TCustomSelectToolClass.EditheightChanged(Sender: TObject);
 begin
- if not EditLock then
- begin
-  if FFirstPoint.Y<FSecondPoint.Y then
-  FSecondPoint.Y:=FFirstPoint.Y+StrToIntDef(EditHeight.Text,10) else
-  FFirstPoint.Y:=FSecondPoint.Y+StrToIntDef(EditHeight.Text,10);
-  if Assigned(FProcRecteateImage) then FProcRecteateImage(Self);
- end;
+  if not EditLock then
+  begin
+    if FFirstPoint.Y < FSecondPoint.Y then
+      FSecondPoint.Y := FFirstPoint.Y + StrToIntDef(EditHeight.Text, 10)
+    else
+      FFirstPoint.Y := FSecondPoint.Y + StrToIntDef(EditHeight.Text, 10);
+    if Assigned(FProcRecteateImage) then
+      FProcRecteateImage(Self);
+  end;
 end;
 
 procedure TCustomSelectToolClass.EditWidthChanged(Sender: TObject);
 begin
- if not EditLock then
- begin
-  if FFirstPoint.X<FSecondPoint.X then
-  FSecondPoint.X:=FFirstPoint.X+StrToIntDef(EditWidth.Text,10) else
-  FFirstPoint.X:=FSecondPoint.X+StrToIntDef(EditWidth.Text,10);
-  if Assigned(FProcRecteateImage) then FProcRecteateImage(Self);
- end;
+  if not EditLock then
+  begin
+    if FFirstPoint.X < FSecondPoint.X then
+      FSecondPoint.X := FFirstPoint.X + StrToIntDef(EditWidth.Text, 10)
+    else
+      FFirstPoint.X := FSecondPoint.X + StrToIntDef(EditWidth.Text, 10);
+    if Assigned(FProcRecteateImage) then
+      FProcRecteateImage(Self);
+  end;
 end;
 
 function TCustomSelectToolClass.GetProperties: string;
@@ -227,37 +233,42 @@ end;
 
 function TCustomSelectToolClass.GetZoom: Extended;
 begin
- Result := Editor.Zoom;
+  Result := Editor.Zoom;
+end;
+
+function TCustomSelectToolClass.LangID: string;
+begin
+  Result := 'SelectionTool';
 end;
 
 procedure TCustomSelectToolClass.MakeTransform;
 var
-  Bitmap : TBitmap;
-  Point1, Point2 : TPoint;
+  Bitmap: TBitmap;
+  Point1, Point2: TPoint;
 begin
- inherited;
- FTerminating:=true;
- Bitmap := TBitmap.Create;
- Bitmap.PixelFormat:=pf24bit;
- Bitmap.Assign(Image);
- if FAnyRect then
- begin
-  Point1.X:=Min(FirstPoint.X,SecondPoint.X);
-  Point1.Y:=Min(FirstPoint.Y,SecondPoint.Y);
-  Point2.X:=Max(FirstPoint.X,SecondPoint.X);
-  Point2.Y:=Max(FirstPoint.Y,SecondPoint.Y);
- end else
- begin
-  Point1.X:=Max(1,Min(FirstPoint.X,SecondPoint.X));
-  Point1.Y:=Max(1,Min(FirstPoint.Y,SecondPoint.Y));
-  Point2.X:=Min(Max(FirstPoint.X,SecondPoint.X),Image.Width);
-  Point2.Y:=Min(Max(FirstPoint.Y,SecondPoint.Y),Image.Height);
- end;
- DoEffect(Bitmap,Rect(Point1,Point2),true);
- Image.Free;
- ImageHistory.Add(Bitmap,'{'+ID+'}['+GetProperties+']');
- SetImagePointer(Bitmap);
- ClosePanel;
+  inherited;
+  FTerminating := True;
+  Bitmap := TBitmap.Create;
+  Bitmap.PixelFormat := Pf24bit;
+  Bitmap.Assign(Image);
+  if FAnyRect then
+  begin
+    Point1.X := Min(FirstPoint.X, SecondPoint.X);
+    Point1.Y := Min(FirstPoint.Y, SecondPoint.Y);
+    Point2.X := Max(FirstPoint.X, SecondPoint.X);
+    Point2.Y := Max(FirstPoint.Y, SecondPoint.Y);
+  end else
+  begin
+    Point1.X := Max(1, Min(FirstPoint.X, SecondPoint.X));
+    Point1.Y := Max(1, Min(FirstPoint.Y, SecondPoint.Y));
+    Point2.X := Min(Max(FirstPoint.X, SecondPoint.X), Image.Width);
+    Point2.Y := Min(Max(FirstPoint.Y, SecondPoint.Y), Image.Height);
+  end;
+  DoEffect(Bitmap, Rect(Point1, Point2), True);
+  Image.Free;
+  ImageHistory.Add(Bitmap, '{' + ID + '}[' + GetProperties + ']');
+  SetImagePointer(Bitmap);
+  ClosePanel;
 end;
 
 procedure TCustomSelectToolClass.SetAnyRect(const Value: boolean);
@@ -282,11 +293,11 @@ end;
 
 procedure TCustomSelectToolClass.SetFirstPoint(const Value: TPoint);
 begin
- FFirstPoint := Value;
- EditLock:=true;
- EditWidth.Text:=IntToStr(Abs(FFirstPoint.X-FSecondPoint.X));
- Editheight.Text:=IntToStr(Abs(FFirstPoint.Y-FSecondPoint.Y));
- EditLock:=false;
+  FFirstPoint := Value;
+  EditLock := True;
+  EditWidth.Text := IntToStr(Abs(FFirstPoint.X - FSecondPoint.X));
+  Editheight.Text := IntToStr(Abs(FFirstPoint.Y - FSecondPoint.Y));
+  EditLock := False;
 end;
 
 procedure TCustomSelectToolClass.SetMakingRect(const Value: Boolean);
@@ -307,11 +318,11 @@ end;
 
 procedure TCustomSelectToolClass.SetSecondPoint(const Value: TPoint);
 begin
- FSecondPoint := Value;
- EditLock:=true;
- EditWidth.Text:=IntToStr(Abs(FFirstPoint.X-FSecondPoint.X));
- Editheight.Text:=IntToStr(Abs(FFirstPoint.Y-FSecondPoint.Y));
- EditLock:=false;
+  FSecondPoint := Value;
+  EditLock := True;
+  EditWidth.Text := IntToStr(Abs(FFirstPoint.X - FSecondPoint.X));
+  Editheight.Text := IntToStr(Abs(FFirstPoint.Y - FSecondPoint.Y));
+  EditLock := False;
 end;
 
 procedure TCustomSelectToolClass.SetxBottom(const Value: Boolean);
@@ -339,9 +350,9 @@ begin
   FxTop := Value;
 end;
 
-function TCustomSelectToolClass.Termnating: boolean;
+function TCustomSelectToolClass.Termnating: Boolean;
 begin
- Result:=FTerminating;
+  Result := FTerminating;
 end;
 
 end.

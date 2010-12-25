@@ -10,9 +10,9 @@ type
   TInternetUpdate = class(TThread)
   private
     { Private declarations }
-   NewVersion,Text,URL : string;
-   FNeedsInformation : boolean;
-   StringParam : String;
+    NewVersion, Text, URL: string;
+    FNeedsInformation: Boolean;
+    StringParam: string;
   protected
     procedure Execute; override;
     procedure ShowUpdates;
@@ -38,7 +38,7 @@ type
   TInternetCloseHandle = function(hInet: HINTERNET): BOOL; stdcall;
 const
 
-  INTERNET_OPEN_TYPE_PRECONFIG        = 0;  { use registry configuration }
+  INTERNET_OPEN_TYPE_PRECONFIG                = 0;  { use registry configuration }
   INTERNET_FLAG_RELOAD = $80000000;                 { retrieve the original item }
   wininet = 'wininet.dll';
 
@@ -179,6 +179,6 @@ end;
 
 initialization
 
-UpdatingWorking:=false;
+UpdatingWorking := False;
 
 end.

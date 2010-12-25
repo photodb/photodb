@@ -29,7 +29,8 @@ type
 
 implementation
 
-uses UnitPasswordForm;
+uses
+  UnitPasswordForm;
 
 { TPasswordKeeper }
 

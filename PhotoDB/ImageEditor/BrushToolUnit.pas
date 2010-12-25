@@ -3,7 +3,7 @@ unit BrushToolUnit;
 interface
 
 uses Windows, ToolsUnit, WebLink, Classes, Controls, Graphics,
-     Language, Math, Forms, ComCtrls, StdCtrls, SysUtils,
+     Math, Forms, ComCtrls, StdCtrls, SysUtils,
      Dialogs, GraphicsCool, GraphicsBaseTypes, EffectsLanguage,
      UnitDBKernel, ExtCtrls, uEditorTypes, uMemory;
 
@@ -193,6 +193,7 @@ begin
   SaveSettingsLink.Visible := True;
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
+  SaveSettingsLink.ImageCanRegenerate := True;
   SaveSettingsLink.Icon := IcoSave;
   IcoSave.Free;
 
@@ -339,40 +340,47 @@ begin
 
   CurSize := Min(500, Max(2, Round(BrushSizeTrackBar.Position * Editor.Zoom)));
   if not Editor.VirtualBrushCursor then
- begin
-  bit:=TBitmap.Create;
-  bit.PixelFormat:=pf1bit;
-  bit.Width:=CurSize;
-  bit.Height:=CurSize;
-  bit.PixelFormat:=pf4bit;
-  AndMask := TBitmap.Create;
-  AndMask.Monochrome := true;
-  AndMask.width:=CurSize;
-  AndMask.height:=CurSize;
-  AndMask.Canvas.Brush.Color := $ffffff;
-  AndMask.Canvas.pen.Color:=$ffffff;
-  AndMask.Canvas.FillRect(Rect(0, 0, bit.width, bit.height));
-  bit.Canvas.pen.color:=$0;
-  bit.Canvas.Brush.Color:=$0;
-  bit.Canvas.FillRect(Rect(0, 0, bit.width, bit.height));
-  bit.Canvas.pen.color:=$ffffff;
-  bit.Canvas.ellipse(Rect(0, 0, bit.width, bit.height));
-  IconInfo.fIcon := true;
-  IconInfo.xHotspot := 1;
-  IconInfo.yHotspot := 1;
-  IconInfo.hbmMask := AndMask.Handle;
-  IconInfo.hbmColor := bit.Handle;
-  if Cur<>0 then DestroyIcon(Cur);
-  Cur:=0;
-  Cur:=CreateIconIndirect(IconInfo);
-  AndMask.free;
-  bit.Free;
-  Screen.Cursors[67]:=Cur;
- end else
- begin
-  ClearBrush(Editor.VBrush);
-  MakeRadialBrush(Editor.VBrush,CurSize div 2);
- end;
+  begin
+    Bit := TBitmap.Create;
+    try
+      Bit.PixelFormat := pf1bit;
+      Bit.Width := CurSize;
+      Bit.Height := CurSize;
+      Bit.PixelFormat := Pf4bit;
+      AndMask := TBitmap.Create;
+      try
+        AndMask.Monochrome := True;
+        AndMask.Width := CurSize;
+        AndMask.Height := CurSize;
+        AndMask.Canvas.Brush.Color := $FFFFFF;
+        AndMask.Canvas.Pen.Color := $FFFFFF;
+        AndMask.Canvas.FillRect(Rect(0, 0, Bit.Width, Bit.Height));
+        Bit.Canvas.Pen.Color := $0;
+        Bit.Canvas.Brush.Color := $0;
+        Bit.Canvas.FillRect(Rect(0, 0, Bit.Width, Bit.Height));
+        Bit.Canvas.Pen.Color := $FFFFFF;
+        Bit.Canvas.Ellipse(Rect(0, 0, Bit.Width, Bit.Height));
+        IconInfo.FIcon := True;
+        IconInfo.XHotspot := 1;
+        IconInfo.YHotspot := 1;
+        IconInfo.HbmMask := AndMask.Handle;
+        IconInfo.HbmColor := Bit.Handle;
+        if Cur <> 0 then
+          DestroyIcon(Cur);
+        Cur := 0;
+        Cur := CreateIconIndirect(IconInfo);
+      finally
+        F(AndMask);
+      end;
+    finally
+      F(Bit);
+    end;
+    Screen.Cursors[67] := Cur;
+  end else
+  begin
+    ClearBrush(Editor.VBrush);
+    MakeRadialBrush(Editor.VBrush, CurSize div 2);
+  end;
 end;
 
 procedure TBrushToolClass.BrushSizeChanged(Sender: TObject);
@@ -427,10 +435,13 @@ begin
   if FButtonPressed then
   begin
     C := TCanvas.Create;
-    GetCursorPos(P);
-    C.Handle := GetDC(GetWindow(GetDesktopWindow, GW_OWNER));
-    BrushColorChooser.Brush.Color := C.Pixels[P.X, P.Y];
-    C.Free;
+    try
+      GetCursorPos(P);
+      C.Handle := GetDC(GetWindow(GetDesktopWindow, GW_OWNER));
+      BrushColorChooser.Brush.Color := C.Pixels[P.X, P.Y];
+    finally
+      F(C);
+    end;
   end;
 end;
 

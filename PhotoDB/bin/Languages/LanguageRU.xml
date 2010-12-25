@@ -973,9 +973,34 @@
 	<translate name="Save settings" value="Сохранить настройки" />
 	<translate name="Choose color" value="Выбрать цвет" />
 	<translate name="Apply" value="Применить" />
-	<translate name="Close tool" value="Закрыть инструмент" />	
-	
+	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
+  <scope name="ColorTool">
+	<translate name="Contrast: [%d]" value="Контрастность: [%d]" />
+	<translate name="Brightness : [%d]" value="Яркость : [%d]" />
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+	<translate name="R [%d]" value="R [%d]" />
+	<translate name="G [%d]" value="G [%d]" />
+	<translate name="B [%d]" value="B [%d]" />
+  </scope>
+  <scope name="CropTool">
+	<translate name="Width" value="Ширина" />
+	<translate name="Height" value="Высота" />
+	<translate name="Proportions" value="Пропорции" />	
+	<translate name="Keep proportions" value="Сохранять пропорции" />
+	<translate name="Save settings" value="Сохранить" />
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  <scope name="SelectionTool">
+	<translate name="Width" value="Ширина" />
+	<translate name="Height" value="Высота" />
+	<translate name="Save settings" value="Сохранить" />
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  
   <scope name="ActionsList">
 	<translate name="Actions" value="Действия" />
 	<translate name="Save to file" value="Сохранить в файл" />

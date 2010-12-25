@@ -40,7 +40,8 @@ uses
   uSteps in 'uSteps.pas',
   uActions in 'uActions.pas',
   uAssociationActions in 'uAssociationActions.pas',
-  uUpdatingWindowsActions in 'uUpdatingWindowsActions.pas';
+  uUpdatingWindowsActions in 'uUpdatingWindowsActions.pas',
+  uRuntime in '..\PhotoDB\Units\uRuntime.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

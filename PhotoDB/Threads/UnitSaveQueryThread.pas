@@ -6,7 +6,7 @@ uses
   Windows, SysUtils, UnitGroupsWork, UnitExportThread, Classes, DB, Dolphin_DB,
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
   acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants,
-  uShellIntegration, UnitDBKernel, uDBBaseTypes;
+  uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory;
 
 type
   TSaveQueryThread = class(TThread)
@@ -180,24 +180,15 @@ begin
     if NewIcon <> nil then
     begin
       NewIcon.SaveToFile(IcoTempName);
-      NewIcon.Free;
 
       ReplaceIcon(Directory + SaveToDBName + '.exe', PChar(IcoTempName), Language);
 
-      try
-        if FileExists(IcoTempName) then
-          DeleteFile(IcoTempName);
-      except
-      end;
+      if FileExists(IcoTempName) then
+        DeleteFile(IcoTempName);
 
     end;
-  except
-    try
-      if NewIcon <> nil then
-        NewIcon.Free;
-    except
-    end;
-    Exit;
+  finally
+    F(NewIcon);
   end;
 end;
 

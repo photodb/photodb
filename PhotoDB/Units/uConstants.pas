@@ -36,8 +36,8 @@ const
   ProgramMail = 'illusdolphin@gmail.com';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
   UpdateURL = 'http://photodb.illusdolphin.net/update.aspx';
-  InstallNotifyURL = 'http://photodb.illusdolphin.net/install.aspx';
-  UpdateNotifyURL = 'http://photodb.illusdolphin.net/update.aspx';
+  InstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/install.aspx';
+  UpdateNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/update.aspx';
   HomeURL = 'http://photodb.illusdolphin.net';
 
   //install

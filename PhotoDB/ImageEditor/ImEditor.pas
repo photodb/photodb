@@ -2917,6 +2917,7 @@ begin
   else
     ReadNextAction(Self);
 
+  F(ToolClass);
 end;
 
 procedure TImageEditor.ReadActionsFile(FileName: string);
