@@ -2,7 +2,8 @@ unit ImageHistoryUnit;
 
 interface
 
-uses Graphics, Classes, uMemory;
+uses
+  Graphics, Classes, uMemory;
 
 type
   THistoryAct = (THA_Redo, THA_Undo, THA_Add, THA_Unknown);

@@ -4,13 +4,13 @@ interface
 
 uses ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2, EffectsLanguage,
   Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs, uGOM,
-  uEditorTypes;
+  uEditorTypes, uMemory;
 
 type
   TExEffectOneParamCustom = class(TExEffect)
   private
     { Private declarations }
-    FS, FD: Tbitmap;
+    FS, FD: TBitmap;
     FTrackBar: TTrackBar;
     FTrackBarlabel: TLabel;
     FSID: string;
@@ -158,49 +158,53 @@ end;
 
 destructor TExEffectOneParamCustom.Destroy;
 begin
- GOM.RemoveObj(Self);
- if FTrackBar<>nil then FTrackBar.Free;
- if FTrackBarlabel<>nil then FTrackBarlabel.Free;
- inherited;
+  GOM.RemoveObj(Self);
+  F(FTrackBar);
+  F(FTrackBarlabel);
+  inherited;
 end;
 
-function TExEffectOneParamCustom.Execute(S,D : TBitmap; Panel : TGroupBox; aMakeImage : boolean): boolean;
+function TExEffectOneParamCustom.Execute(S, D: TBitmap; Panel: TGroupBox; AMakeImage: Boolean): Boolean;
 begin
- FS:=S;
- FD:=D;
- Panel.Caption:=GetName;
- FTrackBarlabel:= TLabel.Create(Panel);
- FTrackBarlabel.Parent:=Panel;
- FTrackBarlabel.Top:=20;
- FTrackBarlabel.Left:=8;
- FTrackBar:= TTrackBar.Create(nil);
- FTrackBar.Parent:=Panel;
- FTrackBar.Top:=FTrackBarlabel.Top+FTrackBarlabel.Height+5;
- FTrackBar.Max:=FMax;
- FTrackBar.Position:=FValue;
- FTrackBar.Left:=8;
- FTrackBar.Min:=1;
- FTrackBar.Width:=250;
- FTrackBar.OnChange:=MakeImage;
- MakeImage(Self);
- Result:=true;
+  FS := S;
+  FD := D;
+  Panel.Caption := GetName;
+  FTrackBarlabel := TLabel.Create(Panel);
+  FTrackBarlabel.Parent := Panel;
+  FTrackBarlabel.Top := 20;
+  FTrackBarlabel.Left := 8;
+  FTrackBar := TTrackBar.Create(nil);
+  FTrackBar.Parent := Panel;
+  FTrackBar.Top := FTrackBarlabel.Top + FTrackBarlabel.Height + 5;
+  FTrackBar.Max := FMax;
+  FTrackBar.Position := FValue;
+  FTrackBar.Left := 8;
+  FTrackBar.Min := 1;
+  FTrackBar.Width := 250;
+  FTrackBar.OnChange := MakeImage;
+  MakeImage(Self);
+  Result := True;
 end;
 
 procedure TExEffectOneParamCustom.ExitThread(Image: TBitmap; SID: string);
 begin
- if SID=FSID then
- SetImageProc(Image) else Image.Free;
+  if SID = FSID then
+    SetImageProc(Image)
+  else
+    F(Image);
 end;
 
-function TExEffectOneParamCustom.GetName: String;
+function TExEffectOneParamCustom.GetName: string;
 begin
- Result:=FName;
+  Result := FName;
 end;
 
 procedure TExEffectOneParamCustom.GetPreview(S, D: TBitmap);
 begin
- if GetBestValue<0 then
- FEffect(S,D,50) else FEffect(S,D,GetBestValue);
+  if GetBestValue < 0 then
+    FEffect(S, D, 50)
+  else
+    FEffect(S, D, GetBestValue);
 end;
 
 class function TExEffectOneParamCustom.ID: string;
@@ -210,19 +214,18 @@ end;
 
 procedure TExEffectOneParamCustom.MakeImage(Sender: TObject);
 var
-  D : TBitmap;
+  D: TBitmap;
 begin
- D:=TBitmap.Create;
- D.Assign(FS);
- FTrackBarlabel.Caption:=Format(FText,[FTrackBar.Position]);
- FSID:=IntToStr(random(100000));
- TExEffectOneParamCustomThread.Create(self,FEffect,false,D,FTrackBar.Position,FSID,ExitThread);
+  D := TBitmap.Create;
+  D.Assign(FS);
+  FTrackBarlabel.Caption := Format(FText, [FTrackBar.Position]);
+  FSID := IntToStr(Random(100000));
+  TExEffectOneParamCustomThread.Create(Self, FEffect, False, D, FTrackBar.Position, FSID, ExitThread);
 end;
 
-procedure TExEffectOneParamCustom.Progress(Progress: integer;
-  var Break: boolean);
+procedure TExEffectOneParamCustom.Progress(Progress: Integer; var Break: Boolean);
 begin
- (Editor as TImageEditor).FStatusProgress.Position:=Progress;
+  (Editor as TImageEditor).FStatusProgress.Position := Progress;
 end;
 
 procedure TExEffectOneParamCustom.SetEffect(Effect: TEffectOneIntParam);
@@ -268,51 +271,55 @@ end;
 
 procedure TExEffectOneParamCustomThread.Execute;
 var
-  New : TBitmap;
+  New: TBitmap;
 begin
- FreeOnTerminate:=true;
- sleep(100);
- if (FAOwner as TExEffectOneParamCustom).FSID<>FSID then
- begin
-  FS.Free;
-  Exit;
- end;
- New:=TBitmap.Create;
- New.PixelFormat:=pf24bit;
- FEffect(FS,New,FInt,ImageProgress);
- FS.Free;
- Pointer(FS):=Pointer(New);
- Synchronize(OnExit);
+  FreeOnTerminate := True;
+  Sleep(100);
+  if (FAOwner as TExEffectOneParamCustom).FSID <> FSID then
+  begin
+    F(FS);
+    Exit;
+  end;
+  New := TBitmap.Create;
+  New.PixelFormat := pf24bit;
+  FEffect(FS, New, FInt, ImageProgress);
+  F(FS);
+  Pointer(FS) := Pointer(New);
+  Synchronize(OnExit);
 end;
 
-procedure TExEffectOneParamCustomThread.ImageProgress(Progress: integer;
-  var Break: boolean);
+procedure TExEffectOneParamCustomThread.ImageProgress(Progress: Integer; var Break: Boolean);
 begin
- FBreak:=Break;
- FProgress:=Progress;
- Synchronize(ImageProgressSynch);
- Break:=FBreak;
+  FBreak := Break;
+  FProgress := Progress;
+  Synchronize(ImageProgressSynch);
+  Break := FBreak;
 end;
 
-procedure  TExEffectOneParamCustomThread.ImageProgressSynch;
+procedure TExEffectOneParamCustomThread.ImageProgressSynch;
 begin
- if not GOM.IsObj(FAOwner) then
- begin
-  FBreak:=true;
-  exit;
- end;
- if (FAOwner as TExEffectOneParamCustom).FSID=FSID then
- (FAOwner as TExEffectOneParamCustom).Progress(FProgress,FBreak) else FBreak:=true;
+  if not GOM.IsObj(FAOwner) then
+  begin
+    FBreak := True;
+    Exit;
+  end;
+  if (FAOwner as TExEffectOneParamCustom).FSID = FSID then
+    (FAOwner as TExEffectOneParamCustom).Progress(FProgress, FBreak)
+  else
+    FBreak := True;
 end;
 
 procedure TExEffectOneParamCustomThread.OnExit;
 begin
- if not GOM.IsObj(FAOwner) then
- begin
-  FS.Free;
-  exit;
- end;
- if Assigned(FOnExit) then FOnExit(FS,FSID) else FS.Free;
+  if not GOM.IsObj(FAOwner) then
+  begin
+    F(FS);
+    Exit;
+  end;
+  if Assigned(FOnExit) then
+    FOnExit(FS, FSID)
+  else
+    F(FS);
 end;
 
 { TGrayScaleEffect }
@@ -321,10 +328,10 @@ constructor TGrayScaleEffect.Create;
 begin
   inherited;
   SetEffect(GrayScaleImage);
-  Name:=TEXT_MES_CUSTOM_GRAYSCALE;
-  Text:=TEXT_MES_GRAYSCALE_TEXT;
-  FMax:=100;
-  FValue:=50;
+  Name := L('Custom grayscale');
+  Text := L('Ñolor - Grayscale [%d]') + ':';
+  FMax := 100;
+  FValue := 50;
 end;
 
 destructor TGrayScaleEffect.Destroy;
@@ -334,7 +341,7 @@ end;
 
 class function TGrayScaleEffect.ID: string;
 begin
- Result:='{BE5AE21F-5F27-4ADE-AAAF-FB9A8F591C08}';
+  Result := '{BE5AE21F-5F27-4ADE-AAAF-FB9A8F591C08}';
 end;
 
 { TSepeaEffect }
@@ -343,10 +350,10 @@ constructor TSepeaEffect.Create;
 begin
   inherited;
   SetEffect(Sepia);
-  Name:=TEXT_MES_CUSTOM_SEPIA;
-  Text:=TEXT_MES_SEPIA_TEXT;
-  FMax:=100;
-  FValue:=50;
+  name := L('Custom sepia');
+  Text := L('Sepia value [%d]');
+  FMax := 100;
+  FValue := 50;
 end;
 
 destructor TSepeaEffect.Destroy;
@@ -357,7 +364,7 @@ end;
 
 class function TSepeaEffect.ID: string;
 begin
- Result:='{DE6F7AEB-BDE7-4D36-859A-656645A7FBBC}';
+  Result := '{DE6F7AEB-BDE7-4D36-859A-656645A7FBBC}';
 end;
 
 { TAddColorNoiseEffect }
@@ -366,10 +373,10 @@ constructor TAddColorNoiseEffect.Create;
 begin
   inherited;
   SetEffect(AddColorNoise);
-  Name:=TEXT_MES_COLOR_NOISE;
-  Text:=TEXT_MES_COLOR_NOISE+' [%d]';
-  FMax:=100;
-  FValue:=50;
+  Name := L('Color noise');
+  Text := L('Color noise') + ' [%d]';
+  FMax := 100;
+  FValue := 50;
 end;
 
 destructor TAddColorNoiseEffect.Destroy;
@@ -380,7 +387,7 @@ end;
 
 class function TAddColorNoiseEffect.ID: string;
 begin
- Result:='{4FFBD84A-DA88-4A50-96CF-929951489DB8}';
+  Result := '{4FFBD84A-DA88-4A50-96CF-929951489DB8}';
 end;
 
 { TAddMonoNoiseEffect }
@@ -389,10 +396,10 @@ constructor TAddMonoNoiseEffect.Create;
 begin
   inherited;
   SetEffect(AddMonoNoise);
-  Name:=TEXT_MES_MONO_NOISE;
-  Text:=TEXT_MES_MONO_NOISE+' [%d]';
-  FMax:=100;
-  FValue:=50;
+  name := L('Mono noise');
+  Text := L('Mono noise') + ' [%d]';
+  FMax := 100;
+  FValue := 50;
 end;
 
 destructor TAddMonoNoiseEffect.Destroy;
@@ -403,7 +410,7 @@ end;
 
 class function TAddMonoNoiseEffect.ID: string;
 begin
-Result:='{483B513B-2EAD-467C-A738-9A3B7BF446D0}';
+  Result := '{483B513B-2EAD-467C-A738-9A3B7BF446D0}';
 end;
 
 { TFishEyeEffect }
@@ -412,10 +419,10 @@ constructor TFishEyeEffect.Create;
 begin
   inherited;
   SetEffect(FishEye);
-  Name:=TEXT_MES_FISH_EYE;
-  Text:=TEXT_MES_FISH_EYE+' [%d]';
-  FMax:=100;
-  FValue:=10;
+  Name := L('Fish eye');
+  Text := L('Fish eye') + ' [%d]';
+  FMax := 100;
+  FValue := 10;
 end;
 
 destructor TFishEyeEffect.Destroy;
@@ -424,14 +431,14 @@ begin
   inherited;
 end;
 
-function TFishEyeEffect.GetBestValue: integer;
+function TFishEyeEffect.GetBestValue: Integer;
 begin
- Result:=20;
+  Result := 20;
 end;
 
 class function TFishEyeEffect.ID: string;
 begin
- Result:='{1FED9DDE-0B92-48B8-8C73-1D90901A8DE9}';
+  Result := '{1FED9DDE-0B92-48B8-8C73-1D90901A8DE9}';
 end;
 
 { TSplitBlurEffect }
@@ -440,10 +447,10 @@ constructor TSplitBlurEffect.Create;
 begin
   inherited;
   SetEffect(SplitBlur);
-  Name:=TEXT_MES_SPLIT_BLUR;
-  Text:=TEXT_MES_SPLIT_BLUR+' [%d]';
-  FMax:=100;
-  FValue:=5;
+  name := L('Linear blur');
+  Text := L('Linear blur') + ' [%d]';
+  FMax := 100;
+  FValue := 5;
 end;
 
 destructor TSplitBlurEffect.Destroy;
@@ -452,14 +459,14 @@ begin
   inherited;
 end;
 
-function TSplitBlurEffect.GetBestValue: integer;
+function TSplitBlurEffect.GetBestValue: Integer;
 begin
- Result:=10;
+  Result := 10;
 end;
 
 class function TSplitBlurEffect.ID: string;
 begin
- Result:='{1017603E-3059-4604-9AFD-E942F1C8B38E}';
+  Result := '{1017603E-3059-4604-9AFD-E942F1C8B38E}';
 end;
 
 { TTwistEffect }
@@ -468,10 +475,10 @@ constructor TTwistEffect.Create;
 begin
   inherited;
   SetEffect(Twist);
-  Name:=TEXT_MES_TWIST;
-  Text:=TEXT_MES_TWIST+' [%d]';
-  FMax:=1000;
-  FValue:=100;
+  Name := L('Twist');
+  Text := L('Twist') + ' [%d]';
+  FMax := 1000;
+  FValue := 100;
 end;
 
 destructor TTwistEffect.Destroy;
@@ -480,14 +487,14 @@ begin
   inherited;
 end;
 
-function TTwistEffect.GetBestValue: integer;
+function TTwistEffect.GetBestValue: Integer;
 begin
- Result:=10;
+  Result := 10;
 end;
 
 class function TTwistEffect.ID: string;
 begin
- Result:='{33EC7CD0-5512-490C-AE6E-4D38C564BF3E}';
+  Result := '{33EC7CD0-5512-490C-AE6E-4D38C564BF3E}';
 end;
 
 end.

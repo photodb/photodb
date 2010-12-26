@@ -20,6 +20,8 @@
     <translate name="Executing" value="Выполнение" />
     <translate name="%dpx." value="%dпк." />
     <translate name="All formats (%s)" value="Все форматы (%s)" />
+    <translate name="Unknown" value="Неизвестно" />
+	
   </scope>
   <scope name="System">
     <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
@@ -999,6 +1001,63 @@
 	<translate name="Save settings" value="Сохранить" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  <scope name="EffectsTool">
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  <scope name="InsertImageTool">
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  <scope name="Effects">
+	<translate name="Radius: [%2.1f]" value="Радиус: [%2.1f]" />
+	<translate name="Gauss blur" value="Гауссово размытие" />
+	<translate name="Effect size: [%2.1f]" value="Сила эффекта: [%2.1f]" />
+	<translate name="Sharpen" value="Обострение" />
+	<translate name="Width [%d]" value="Ширина [%d]" />
+	<translate name="Height [%d]" value="Высота [%d]" />
+	<translate name="Pixels" value="Пиксели" />
+	<translate name="Horizontal" value="Горизонтально" />
+	<translate name="Backgroud color" value="Цвет фона" />
+	<translate name="Frequency [%d]" value="Частота [%d]" />
+	<translate name="Length [%d]" value="Длинна [%d]" />
+	<translate name="Wave" value="Волна" />
+	<translate name="Horizontal Disorder [%d]" value="Горизонтальный Разброс [%d]" />
+	<translate name="Vertical Disorder [%d]" value="Вертикальный Разброс [%d]" />
+	<translate name="Disorder [%d]" value="Разброс [%d]" />
+	<translate name="Disorder" value="Разброс" />
+	<translate name="Value [%d]" value="Значение [%d]" />
+	<translate name="Selected Color" value="Заменяемый цвет" />
+	<translate name="New Color" value="Новый цвет" />
+	<translate name="Select color" value="Выбрать цвет" />
+	<translate name="Replace color" value="Замена Цвета" />
+	<translate name="Matrix 5x5" value="Матрица 5x5" />
+	<translate name="Devider" value="Делитель" />
+	<translate name="Sample effect" value="Примеры эффектов" />
+	<translate name="Configuration name" value="Имя конфигурация" />
+	<translate name="Save configuration" value="Сохранить конфигурацию" />
+	<translate name="Load configuration" value="Загрузить конфигурацию" />
+	<translate name="Delete configuration" value="Удалить конфигурацию" />
+	<translate name="Custom Effect" value="Произвольный эффект" />
+	<translate name="Sepia" value="Сепия" />
+	<translate name="Grayscale" value="Чёрно-белое" />
+	<translate name="Dither" value="Dither" />
+	<translate name="Inverse" value="Инверсия" />
+	<translate name="Auto levels" value="Авто уровни" />
+	<translate name="Emboss" value="Барельеф" />
+	<translate name="Smoothing" value="Сглаживание" />
+	<translate name="Optmize image" value="Оптимизировать изображение" />	
+	<translate name="Filter &quot;%s&quot; is working" value="Фильтр &quot;%s&quot; работает" />	
+	<translate name="Сolor - Grayscale [%d]" value="Цветное - Чёрно-белое [%d]" />
+	<translate name="Custom grayscale" value="Произвольное чёрно-белое" />	
+	<translate name="Sepia value [%d]" value="Значение эффекта [%d]" />
+	<translate name="Custom sepia" value="Произвольная сепия" />
+	<translate name="Color noise" value="Цветной шум" />
+	<translate name="Mono noise" value="Цветной шум" />
+	<translate name="Fish eye" value="Рыбий глаз" />
+	<translate name="Linear blur" value="Линейное размытие" />	
+	<translate name="Twist" value="Скручивание" />	
   </scope>
   
   <scope name="ActionsList">

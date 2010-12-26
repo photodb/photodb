@@ -351,12 +351,13 @@ end;
 
 procedure TRedEyeToolPanelClass.EffectSizeScrollChange(Sender: TObject);
 begin
- FRedEyeEffectSize:=EffectSizeScroll.Position;
- EffectSizelabel.Caption:=format(TEXT_MES_RED_EYE_EFFECT_SIZE_F,[EffectSizeScroll.Max- EffectSizeScroll.Position]);
- if Assigned(FProcRecteateImage) then FProcRecteateImage(Self);
+  FRedEyeEffectSize := EffectSizeScroll.Position;
+  EffectSizelabel.Caption := Format(TEXT_MES_RED_EYE_EFFECT_SIZE_F, [EffectSizeScroll.Max - EffectSizeScroll.Position]);
+  if Assigned(FProcRecteateImage) then
+    FProcRecteateImage(Self);
 end;
 
-procedure TRedEyeToolPanelClass.SetRedEyeEffectSize(const Value: integer);
+procedure TRedEyeToolPanelClass.SetRedEyeEffectSize(const Value: Integer);
 begin
   FRedEyeEffectSize := Value;
 end;
@@ -375,11 +376,9 @@ end;
 
 procedure TRedEyeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
- {$IFDEF PHOTODB}
  DBKernel.WriteInteger('Editor','RedEyeToolSize',EffectSizeScroll.Position);
  DBKernel.WriteInteger('Editor','RedEyeColor',FEyeColor.ItemIndex);
  DBKernel.WriteInteger('Editor','RedEyeColorCustom',FCustomColor);
- {$ENDIF}
 end;
 
 class function TRedEyeToolPanelClass.ID: string;

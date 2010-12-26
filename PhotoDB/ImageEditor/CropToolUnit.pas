@@ -3,9 +3,9 @@ unit CropToolUnit;
 interface
 
 uses
-  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit,
-  EffectsLanguage, GraphicsBaseTypes, UnitDBKernel, Menus, uMemory;
+  GraphicsBaseTypes, UnitDBKernel, Menus, uMemory;
 
 type
   TCropToolPanelClass = class(TToolsPanelClass)

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Buttons, ExEffects, Language,
   EffectsLanguage, ToolsUnit, ScrollingImage, Math,  Dolphin_DB, uGOM, AppEvnts,
-  uMemory, uDBForm, uSysUtils;
+  uMemory, uDBForm, uSysUtils, uEditorTypes;
 
 type
   TExEffectForm = class(TDBForm)
@@ -47,7 +47,7 @@ type
     FOwner: TToolsPanelClass;
     FInitialString: string;
     InitiatedByString: Boolean;
-    FEditor: TDBForm;
+    FEditor: TImageEditorForm;
     procedure LoadLanguage;
   protected
     { Protected declarations }
@@ -57,7 +57,7 @@ type
     function Execute(Owner: TToolsPanelClass; S, D: TBitmap; Effect: TExEffectsClass;
       var InitialString: string): Boolean;
     procedure SetImage(Image: TBitmap);
-    property Editor: TDBForm read FEditor write FEditor;
+    property Editor: TImageEditorForm read FEditor write FEditor;
   end;
 
 implementation
@@ -160,14 +160,14 @@ end;
 
 procedure TExEffectForm.BtnOkClick(Sender: TObject);
 var
-  Bitmap : TBitmap;
+  Bitmap: TBitmap;
 begin
- Bitmap := TBitmap.Create;
- Bitmap.Assign(NewImage.Picture);
- Bitmap.PixelFormat:=pf24bit;
- (FOwner as TEffectsToolPanelClass).CancelTempImage(true);
- (FOwner as TEffectsToolPanelClass).SetNewImage(Bitmap);
- Close;
+  Bitmap := TBitmap.Create;
+  Bitmap.Assign(NewImage.Picture);
+  Bitmap.PixelFormat := pf24bit;
+  (FOwner as TEffectsToolPanelClass).CancelTempImage(True);
+  (FOwner as TEffectsToolPanelClass).SetNewImage(Bitmap);
+  Close;
 end;
 
 procedure TExEffectForm.SpeedButton1Click(Sender: TObject);
@@ -210,7 +210,7 @@ begin
   if CbPreview.Checked then
   begin
     Image := TBitmap.Create;
-    Image.PixelFormat := Pf24bit;
+    Image.PixelFormat := pf24bit;
     Image.Assign(NewImage.Picture);
     (FOwner as TEffectsToolPanelClass).SetTempImage(Image);
   end else

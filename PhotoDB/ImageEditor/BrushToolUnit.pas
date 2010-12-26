@@ -4,7 +4,7 @@ interface
 
 uses Windows, ToolsUnit, WebLink, Classes, Controls, Graphics,
      Math, Forms, ComCtrls, StdCtrls, SysUtils,
-     Dialogs, GraphicsCool, GraphicsBaseTypes, EffectsLanguage,
+     Dialogs, GraphicsCool, GraphicsBaseTypes,
      UnitDBKernel, ExtCtrls, uEditorTypes, uMemory;
 
 type
@@ -193,8 +193,8 @@ begin
   SaveSettingsLink.Visible := True;
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
-  SaveSettingsLink.ImageCanRegenerate := True;
   SaveSettingsLink.Icon := IcoSave;
+  SaveSettingsLink.ImageCanRegenerate := True;
   IcoSave.Free;
 
   MakeItLink := TWebLink.Create(Self);
@@ -218,9 +218,9 @@ begin
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
+  CloseLink.ImageCanRegenerate := True;
   IcoCancel.Free;
 
-  CloseLink.ImageCanRegenerate := True;
 end;
 
 destructor TBrushToolClass.Destroy;

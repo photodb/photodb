@@ -86,7 +86,8 @@ implementation
 
 { TRedEyeToolPanelClass }
 
-uses ImEditor;
+uses
+  ImEditor;
 
 procedure TCustomSelectToolClass.ClosePanel;
 begin
@@ -265,7 +266,7 @@ begin
     Point2.Y := Min(Max(FirstPoint.Y, SecondPoint.Y), Image.Height);
   end;
   DoEffect(Bitmap, Rect(Point1, Point2), True);
-  Image.Free;
+  F(FImage);
   ImageHistory.Add(Bitmap, '{' + ID + '}[' + GetProperties + ']');
   SetImagePointer(Bitmap);
   ClosePanel;

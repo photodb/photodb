@@ -299,23 +299,6 @@ begin
   end;
 end;
 
-{function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
-var
-  Findleft: Integer;
-  I: Integer;
-begin
-  Result := TProgressBar.Create(Statusbar);
-  Result.Parent := Statusbar;
-  Result.Visible := True;
-  Result.Top := 2;
-  FindLeft := 0;
-  for I := 0 to index - 1 do
-    FindLeft := FindLeft + Statusbar.Panels[I].Width + 1;
-  Result.Left := Findleft;
-  Result.Width := Statusbar.Panels[index].Width - 4;
-  Result.Height := Statusbar.Height - 2;
-end;}
-
 procedure TImageEditor.FormCreate(Sender: TObject);
 begin
   NewActions := TStringList.Create;
@@ -380,26 +363,17 @@ begin
 end;
 
 procedure TImageEditor.LoadProgramImageFormat(Pic: TPicture);
-var
-  Loaded: Boolean;
 begin
-  Loaded := False;
   if Pic.Graphic is TJPEGImage then
   begin
     LoadJPEGImage(Pic.Graphic as TJPEGImage);
-    Loaded := True;
-  end;
-  if Pic.Graphic is TBitmap then
+  end else if Pic.Graphic is TBitmap then
   begin
     LoadBMPImage(Pic.Graphic as TBitmap);
-    Loaded := True;
-  end;
-  if Pic.Graphic is TGIFImage then
+  end else if Pic.Graphic is TGIFImage then
   begin
     LoadGIFImage(Pic.Graphic as TGIFImage);
-    Loaded := True;
-  end;
-  if not Loaded then
+  end else
     LoadImageVariousformat(Pic.Graphic);
 end;
 
@@ -420,7 +394,7 @@ end;
 
 procedure TImageEditor.FormPaint(Sender: TObject);
 begin
- Canvas.Draw(0,ButtomPanel.Height,Buffer);
+  Canvas.Draw(0, ButtomPanel.Height, Buffer);
 end;
 
 procedure TImageEditor.LoadBMPImage(Bitmap: TBitmap);
@@ -465,9 +439,9 @@ end;
 
 procedure TImageEditor.LoadGIFImage(GIF: TGIFImage);
 var
-  i, j : integer;
+  I, J: Integer;
 begin
-   StatusBar1.Panels[0].Text:='Loading GIF format';
+  StatusBar1.Panels[0].Text := 'Loading GIF format';
 
    StatusBar1.Repaint;
    StatusBar1.Refresh;
@@ -504,7 +478,7 @@ end;
 
 procedure TImageEditor.LoadJPEGImage(JPEG: TJPEGImage);
 begin
-  StatusBar1.Panels[0].Text:=L('Loading JPEG format');
+  StatusBar1.Panels[0].Text := L('Loading JPEG format');
   StatusBar1.Repaint;
   StatusBar1.Refresh;
   FStatusProgress.Max := 2;

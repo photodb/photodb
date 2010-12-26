@@ -5,14 +5,13 @@ interface
 uses
   ExtCtrls, Classes, Graphics, ImageHistoryUnit, ComCtrls, Menus, Controls,
   GraphicsBaseTypes, Forms, StrUtils, SysUtils, uDBForm, uEditorTypes,
-  uTranslate;
+  uTranslate, uMemory;
 
 type
   TToolsPanelClass = class(TPanel)
   private
     { Private declarations }
     FOnClose: TNotifyEvent;
-    FImage: TBitmap;
     FSetImagePointer: TSetPointerToNewImage;
     FCancelTempImage: TCancelTemporaryImage;
     FSetTempImage: TSetPointerToNewImage;
@@ -27,6 +26,7 @@ type
     procedure SetImageHistory(const Value: TBitmapHistory);
     procedure SetProgress(const Value: TProgressBar);
   protected
+    FImage: TBitmap;
     function LangID: string; virtual; abstract;
   public
     { Public declarations }
@@ -58,7 +58,7 @@ implementation
 
 procedure TToolsPanelClass.ClosePanel;
 begin
-  Free;
+  //do nothing
 end;
 
 constructor TToolsPanelClass.Create(AOwner: TComponent);
@@ -133,6 +133,9 @@ end;
 
 procedure TToolsPanelClass.SetImage(const Value: TBitmap);
 begin
+  if Value = nil then
+    F(FImage);
+
   FImage := Value;
 end;
 

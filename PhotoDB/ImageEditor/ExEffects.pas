@@ -4,16 +4,18 @@ interface
 
 uses
   Effects, StdCtrls, Graphics, GraphicsBaseTypes, Forms, StrUtils, SysUtils,
-  uEditorTypes;
+  uEditorTypes, uTranslate;
 
 type
   TExEffect = class(TObject)
   private
     { Private declarations }
     FSetImageProc: TSetPointerToNewImage;
-    FEditor: TForm;
+    FEditor: TImageEditorForm;
     procedure SetSetImageProc(const Value: TSetPointerToNewImage);
-    procedure SetEditor(const Value: TForm);
+    procedure SetEditor(const Value: TImageEditorForm);
+  protected
+    function L(StringToTranslate : string) : string;
   public
     { Public declarations }
     constructor Create; virtual;
@@ -26,7 +28,7 @@ type
     function GetBestValue: Integer; virtual;
     procedure GetPreview(S, D: TBitmap); virtual;
     property SetImageProc: TSetPointerToNewImage read FSetImageProc write SetSetImageProc;
-    property Editor: TForm read FEditor write SetEditor;
+    property Editor: TImageEditorForm read FEditor write SetEditor;
     function GetValueByName(Properties, name: string): string;
     function GetIntValueByName(Properties, name: string; default: Integer): Integer;
     function GetBoolValueByName(Properties, name: string; default: Boolean): Boolean;
@@ -84,7 +86,7 @@ begin
   FSetImageProc := Value;
 end;
 
-procedure TExEffect.SetEditor(const Value: TForm);
+procedure TExEffect.SetEditor(const Value: TImageEditorForm);
 begin
   FEditor := Value;
 end;
@@ -101,9 +103,14 @@ begin
   Result := '{005943F7-CD7E-4B79-8D1A-0489C47C85A0}';
 end;
 
+function TExEffect.L(StringToTranslate: string): string;
+begin
+  Result := TTranslateManager.Instance.TA(StringToTranslate, 'Effects')
+end;
+
 function TExEffect.GetProperties: string;
 begin
- Result:='';
+  Result := '';
 end;
 
 procedure TExEffect.SetProperties(Properties: string);
