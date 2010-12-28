@@ -57,11 +57,11 @@ var
   Xx: array [0 .. 255] of Integer;
   EyeR, EyeG, EyeB: Byte;
 
-  procedure ReplaceRedA(var RGB: TRGB; Rx, Gx, Bx: Byte; L: Extended);
+  procedure ReplaceRedA(var RGB: TRGB; Rx, Gx, Bx: Byte; L: Byte); inline;
   begin
-    RGB.R := Round(Rx * RGB.R * L / 255 + RGB.R * (1 - L));
-    RGB.G := Round(Gx * RGB.G * L / 255 + RGB.G * (1 - L));
-    RGB.B := Round(Bx * RGB.B * L / 255 + RGB.B * (1 - L));
+    RGB.R := (Rx * RGB.R * L div 255 + RGB.R * (255 - L)) shr 8;
+    RGB.G := (Gx * RGB.G * L div 255 + RGB.G * (255 - L)) shr 8;
+    RGB.B := (Bx * RGB.B * L div 255 + RGB.B * (255 - L)) shr 8;
   end;
 
 begin
@@ -192,7 +192,7 @@ begin
         Cn := Min(255, Round(Cn * Rn / 255));
         if Xdp[J, I].R - Max(Xdp[J, I].G, Xdp[J, I].B) > C then
           if Xdp[J, I].R / (Xdp[J, I].R + Xdp[J, I].G + Xdp[J, I].B) > 0.40 then
-            ReplaceRedA(Xdp[J, I], EyeR, EyeG, EyeB, Cn / 255);
+            ReplaceRedA(Xdp[J, I], EyeR, EyeG, EyeB, Cn);
       end;
     end;
   end;
@@ -261,32 +261,33 @@ begin
   inherited;
 end;
 
-procedure TRedEyeToolPanelClass.DoEffect(Bitmap: TBitmap; Rect: TRect; FullImage : Boolean);
+procedure TRedEyeToolPanelClass.DoEffect(Bitmap: TBitmap; Rect: TRect; FullImage: Boolean);
 begin
- FixRedEyes(Bitmap,Rect,FRedEyeEffectSize,FEyeColor.ItemIndex,FCustomColor);
+  FixRedEyes(Bitmap, Rect, FRedEyeEffectSize, FEyeColor.ItemIndex, FCustomColor);
 end;
 
-procedure TRedEyeToolPanelClass.DoBorder(Bitmap: TBitmap; aRect: TRect);
+procedure TRedEyeToolPanelClass.DoBorder(Bitmap: TBitmap; ARect: TRect);
 var
-  nn,h2,w2,w,h,i,ii,j:integer;
-  Rct : TRect;
-  dd : extended;
-  Xdp : TArPARGB;
+  Nn, H2, W2, W, H, I, Ii, J: Integer;
+  Rct: TRect;
+  Dd: Extended;
+  Xdp: TArPARGB;
 
-  Procedure Border(i,j : integer; var RGB : TRGB);
+  procedure Border(I, J: Integer; var RGB: TRGB);
   begin
-   if odd((i+j) div 3) then
-   begin
-    RGB.r:=RGB.r div 5;
-    RGB.g:=RGB.g div 5;
-    RGB.b:=RGB.b div 5;
-   end else
-   begin
-    RGB.r:=RGB.r xor $FF;
-    RGB.g:=RGB.g xor $FF;
-    RGB.b:=RGB.b xor $FF;
-   end;
+    if Odd((I + J) div 3) then
+    begin
+      RGB.R := RGB.R div 5;
+      RGB.G := RGB.G div 5;
+      RGB.B := RGB.B div 5;
+    end else
+    begin
+      RGB.R := RGB.R xor $FF;
+      RGB.G := RGB.G xor $FF;
+      RGB.B := RGB.B xor $FF;
+    end;
   end;
+
 begin
  Rct.Top:=Min(aRect.Top,aRect.Bottom);
  Rct.Bottom:=Max(aRect.Top,aRect.Bottom);

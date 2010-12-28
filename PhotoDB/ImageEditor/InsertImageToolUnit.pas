@@ -58,7 +58,7 @@ begin
   LoadImageButton.Left := 8;
   LoadImageButton.Width := 150;
   LoadImageButton.Height := 21;
-  LoadImageButton.Caption := TEXT_MES_LOAD_IMAGE;
+  LoadImageButton.Caption := L('Load image');
   LoadImageButton.OnClick := DoLoadFileFromFile;
   LoadImageButton.Show;
 
@@ -66,7 +66,7 @@ begin
   LabelMethod.Left := 8;
   LabelMethod.Top := LoadImageButton.Top + LoadImageButton.Height + 5;
   LabelMethod.Parent := Self;
-  LabelMethod.Caption := TEXT_MES_METHOD + ':';
+  LabelMethod.Caption := L('Method') + ':';
 
   MethodDrawChooser := TComboBox.Create(AOwner);
   MethodDrawChooser.Top := LabelMethod.Top + LabelMethod.Height + 5;
@@ -75,14 +75,14 @@ begin
   MethodDrawChooser.Height := 20;
   MethodDrawChooser.Parent := Self;
   MethodDrawChooser.Style := CsDropDownList;
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_NORMAL);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_SUM);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_DARK);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_WHITE);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_COLOR);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_INV_COLOR);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_CHANGE_COLOR);
-  MethodDrawChooser.Items.Add(TEXT_MES_DRAW_STYLE_DIFFERENCE);
+  MethodDrawChooser.Items.Add(L('Overlay'));
+  MethodDrawChooser.Items.Add(L('Sum'));
+  MethodDrawChooser.Items.Add(L('Dark'));
+  MethodDrawChooser.Items.Add(L('Light'));
+  MethodDrawChooser.Items.Add(L('Luminosity'));
+  MethodDrawChooser.Items.Add(L('Inverse Luminosity'));
+  MethodDrawChooser.Items.Add(L('Change color'));
+  MethodDrawChooser.Items.Add(L('Difference'));
 
   MethodDrawChooser.ItemIndex := 0;
   MethodDrawChooser.OnChange := RecreateImage;
@@ -91,7 +91,7 @@ begin
   LabelMethod.Left := 8;
   LabelMethod.Top := MethodDrawChooser.Top + MethodDrawChooser.Height + 5;
   LabelMethod.Parent := Self;
-  LabelMethod.Caption := TEXT_MES_TRANSPARENCY + ':';
+  LabelMethod.Caption := L('Transparency') + ':';
 
   TransparentEdit := TTrackBar.Create(AOwner);
   TransparentEdit.Top := LabelMethod.Top + LabelMethod.Height + 5;
@@ -102,7 +102,7 @@ begin
   TransparentEdit.Max := 100;
   TransparentEdit.Position := DBKernel.ReadInteger('Editor', 'InsertImageTransparency', 100);
   TransparentEdit.Parent := Self;
-  LabelMethod.Caption := Format(TEXT_MES_TRANSPARENCY_F, [IntToStr(TransparentEdit.Position)]);
+  LabelMethod.Caption := Format(L('Transparency [%d]'), [TransparentEdit.Position]);
   SaveSettingsLink.Top := TransparentEdit.Top + TransparentEdit.Height + 5;
   MakeItLink.Top := SaveSettingsLink.Top + SaveSettingsLink.Height + 5;
   CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
@@ -193,7 +193,7 @@ begin
   IH := Min(S.Height, D.Height);
   IW := Min(S.Width, D.Width);
 
-  if CodeEffect = 2 then
+  if CodeEffect = 1 then
     for I := 0 to 255 do
       for J := 0 to 255 do
         SQ[I, J] := Round(Sqrt(I * J));
@@ -394,7 +394,7 @@ procedure InsertImageToolPanelClass.RecreateImage(Sender: TObject);
 begin
   if FLoading then
     Exit;
-  LabelMethod.Caption := Format(TEXT_MES_TRANSPARENCY_F, [IntToStr(TransparentEdit.Position)]);
+  LabelMethod.Caption := Format(L('Transparency [%d]'), [TransparentEdit.Position]);
   ProcRecteateImage(Sender);
 end;
 

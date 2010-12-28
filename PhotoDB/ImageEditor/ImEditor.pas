@@ -502,7 +502,7 @@ end;
 
 procedure TImageEditor.MakeImage;
 var
-  I, J: Integer;
+  I: Integer;
   Fh, Fw: Integer;
   Zx, Zy, Zw, Zh, X1, X2, Y1, Y2: Integer;
   ImRect, BeginRect: TRect;
@@ -513,16 +513,6 @@ var
 begin
   if LockedImage then
     Exit;
-
-  for I := 0 to Buffer.Height - 1 do
-  begin
-    for J := 0 to Buffer.Width - 1 do
-    begin
-      PBuffer[I, J].R := 0;
-      PBuffer[I, J].G := 0;
-      PBuffer[I, J].B := 0;
-    end;
-  end;
 
   if (CurrentImage.Height = 0) or (CurrentImage.Width = 0) then
     Exit;
@@ -644,7 +634,18 @@ var
   Inc_: Integer;
   Pos, M, Ps: Integer;
   V1, V2: Boolean;
+  I, J: Integer;
 begin
+  for I := 0 to Buffer.Height - 1 do
+  begin
+    for J := 0 to Buffer.Width - 1 do
+    begin
+      PBuffer[I, J].R := 0;
+      PBuffer[I, J].G := 0;
+      PBuffer[I, J].B := 0;
+    end;
+  end;
+
   if Tool = ToolBrush then
     (ToolClass as TBrushToolClass).NewCursor;
 

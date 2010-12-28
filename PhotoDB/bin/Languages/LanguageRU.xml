@@ -938,7 +938,7 @@
 	<translate name="100%" value="100%" />
 	<translate name="Fit to window" value="Лучший размер" />
 	<translate name="Undo" value="Отменить" />
-	<translate name="Redo" value="Вопротить" />
+	<translate name="Redo" value="Повторить" />
 	<translate name="Open" value="Открыть" />
 	<translate name="Crop" value="Кадрировать" />	
 	<translate name="Rotate" value="Повернуть" />	
@@ -1007,6 +1007,17 @@
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="InsertImageTool">
+	<translate name="Load image" value="Открыть файл" />
+	<translate name="Method" value="Метод" />
+	<translate name="Sum" value="Сумма" />
+	<translate name="Dark" value="Тёмное" />
+	<translate name="Light" value="Светлое" />
+	<translate name="Luminosity" value="Яркость" />
+	<translate name="Inverse luminosity" value="Обратная яркость" />
+	<translate name="Change color" value="Замена цвета" />
+	<translate name="Difference" value="Разница" />
+	<translate name="Transparency" value="Прозрачность" />
+	<translate name="Transparency [%d]" value="Прозрачность [%d]" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>

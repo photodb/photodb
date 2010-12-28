@@ -100,7 +100,6 @@ begin
   Result := RGB(R, G, B);
 end;
 
-
 procedure StretchA(Width, Height: Integer; S, D: TBitmap);
 var
   I, J: Integer;
@@ -120,9 +119,10 @@ begin
   for I := 0 to Height - 1 do
   begin
     P1 := D.ScanLine[I];
+    Y := Round(Sh * I);
     for J := 0 to Width - 1 do
     begin
-      Y := Round(Sh * I);
+      //todo: fast logic using array
       X := Round(Sw * J);
       P1[J] := Xp[Y, X];
     end;

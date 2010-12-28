@@ -31,6 +31,8 @@ type
     Cur: HIcon;
     Initialized: Boolean;
     FButtonPressed: Boolean;
+    Brush : TBrushToDraw;
+
     procedure SetProcRecteateImage(const Value: TNotifyEvent);
     procedure ButtonMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -109,7 +111,7 @@ begin
   BrushSizeTrackBar.Width := 160;
   BrushSizeTrackBar.OnChange := BrushSizeChanged;
   BrushSizeTrackBar.Min := 1;
-  BrushSizeTrackBar.Max := 300;
+  BrushSizeTrackBar.Max := 500;
   BrushSizeTrackBar.Position := DBKernel.ReadInteger('Editor', 'BrushToolSize', 30);
   BrushSizeTrackBar.Parent := Self;
 
@@ -253,7 +255,7 @@ begin
   G := GetGValue(BrushColorChooser.Brush.Color);
   B := GetBValue(BrushColorChooser.Brush.Color);
   Rad := Max(1, Round(BrushSizeTrackBar.Position));
-  DoBrush(FDrawlayer, Image.Width, Image.Height, BeginPoint.X, BeginPoint.Y, EndPoint.X, EndPoint.Y, R, G, B, Rad);
+  DoBrush(FDrawlayer, Brush, Image.Width, Image.Height, BeginPoint.X, BeginPoint.Y, EndPoint.X, EndPoint.Y, R, G, B, Rad);
   LastRect := Rect(BeginPoint.X, BeginPoint.Y, EndPoint.X, EndPoint.Y);
   LastRect := NormalizeRect(LastRect);
 
@@ -330,15 +332,18 @@ end;
 
 procedure TBrushToolClass.NewCursor;
 var
-  CurSize : integer;
+  Rad, CurSize: Integer;
   AndMask : TBitmap;
   IconInfo : TIconInfo;
-  bit : TBitmap;
+  Bit: TBitmap;
 begin
   if not Initialized then
     Exit;
 
+  Rad := Max(2, Round(BrushSizeTrackBar.Position));
   CurSize := Min(500, Max(2, Round(BrushSizeTrackBar.Position * Editor.Zoom)));
+
+  CreateBrush(Brush, Rad);
   if not Editor.VirtualBrushCursor then
   begin
     Bit := TBitmap.Create;

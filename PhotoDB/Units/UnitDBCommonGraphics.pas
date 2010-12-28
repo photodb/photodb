@@ -436,7 +436,7 @@ begin
         L1 := 255 - L;
         PD[J].R := (PD[J].R * L1 + R * L + $7F) div 255;
         PD[J].G := (PD[J].G * L1 + G * L + $7F) div 255;
-        PD[J].B := (PD[J].B * L1+ B * L + $7F) div 255;
+        PD[J].B := (PD[J].B * L1 + B * L + $7F) div 255;
       end;
     end;
   finally
@@ -920,6 +920,7 @@ begin
   DW := Dest32.Width;
   SH := Src32.Height;
   SW := Src32.Width;
+  InitSumLMatrix;
   for I := 0 to SH - 1 do
   begin
     YD := I + Y;
@@ -938,7 +939,7 @@ begin
       pD[XD].R := (pD[XD].R * W1 + pS[J].R * W + $7F) div $FF;
       pD[XD].G := (pD[XD].G * W1 + pS[J].G * W + $7F) div $FF;
       pD[XD].B := (pD[XD].B * W1 + pS[J].B * W + $7F) div $FF;
-      pD[XD].L := SumL(pD[XD].L, W);
+      pD[XD].L := SumLMatrix[pD[XD].L, W];
     end;
   end;
 end;
@@ -1244,111 +1245,143 @@ var
   Sh, Sw: Extended;
   Xp: array of PARGB;
   S_h, S_w: Integer;
+  XAW : array of Integer;
+  YMin, YMax : Integer;
 begin
-  S.PixelFormat := Pf24bit;
-  D.PixelFormat := Pf24bit;
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
   if Width + X > D.Width then
     D.Width := Width + X;
- if Height+y>d.Height then
- d.Height:=height+y;
- Sh:=S.height/height;
- Sw:=S.width/width;
- Sheight1:=S.height-1;
- SetLength(Xp,S.height);
- for i:=0 to Sheight1 do
- Xp[i]:=s.ScanLine[i];
- s_w := S.Width-1;
- s_h := S.Height-1;
- for i:=Max(0,y) to height+y-1 do
- begin
-  p1:=d.ScanLine[i];
-  for j:=0 to  width-1 do
+  if Height + Y > D.Height then
+    D.Height := Height + Y;
+  Sh := S.Height / Height;
+  Sw := S.Width / Width;
+  Sheight1 := S.Height - 1;
+  SetLength(Xp, S.Height);
+  for I := 0 to Sheight1 do
+    Xp[I] := S.ScanLine[I];
+  S_w := S.Width - 1;
+  S_h := S.Height - 1;
+  SetLength(XAW, Width + 1);
+  for I := 0 to Width do
+    XAW[I] := Round(Sw * I);
+
+  for I := Max(0, Y) to Height + Y - 1 do
   begin
-   col:=0;
-   r:=0;
-   g:=0;
-   b:=0;
-   for k:=Round(Sh*(i-y)) to Round(Sh*(i+1-y))-1 do
-   begin
-    if k > s_h then break;
-    if k < 0 then continue;
-    for p:=Round(Sw*j) to Round(Sw*(j+1))-1 do
+    P1 := D.ScanLine[I];
+    YMin := Round(Sh * (I - Y));
+    YMax := Round(Sh * (I + 1 - Y)) - 1;
+    for J := 0 to Width - 1 do
     begin
-     if p > s_w then break;
-     inc(col);
-     inc(r,Xp[k,p].r);
-     inc(g,Xp[k,p].g);
-     inc(b,Xp[k,p].b);
-    end;
-   end;
-   if (col<>0) and (j+x>0) then
-   begin
-    p1[j+x].r:=r div col;
-    p1[j+x].g:=g div col;
-    p1[j+x].b:=b div col;
-   end;
-  end;
- end;
-end;
-
-procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; S, D : TBitmap);
-var
-  z1, z2: single;
-  k: single;
-  i, j: integer;
-  dw,dh, xo, yo: integer;
-  x1r,y1r : extended;
-  Xs, Xd : array of PARGB;
-  dx, dy : Extended;
-begin
-  S.PixelFormat:=Pf24bit;
-  D.PixelFormat:=Pf24bit;
-  D.Width:=Math.Max(D.Width,x+Width);
-  D.height:=Math.Max(D.height,y+Height);
-  dw:=Math.Min(D.Width-x,x+Width);
-  dh:=Math.Min(D.height-y,y+Height);
-  dx:=(Width)/(Rect.Right-Rect.Left-1);
-  dy:=(Height)/(Rect.Bottom-Rect.Top-1);
-  if (dx<1) and (dy<1) then exit;
-  SetLength(Xs,S.Height);
-  for i:=0 to S.Height - 1 do
-  Xs[i]:=S.scanline[i];
-  SetLength(Xd,D.Height);
-  for i:=0 to D.Height - 1 do
-  Xd[i]:=D.scanline[i];
-  try
-
-  for i := 0 to min(Round((Rect.Bottom-Rect.Top-1)*dy)-1,dh-1) do begin
-      yo := FastTrunc(i / dy)+Rect.Top;
-      y1r:= FastTrunc(i / dy) * dy;
-      if yo>S.height then Break;
-    for j := 0 to min(Round((Rect.Right-Rect.Left-1)*dx)-1,dw-1) do begin
-      xo := FastTrunc(j / dx)+Rect.Left;
-      x1r:= FastTrunc(j / dx) * dx;
-      if xo>S.Width then Continue;
+      Col := 0;
+      R := 0;
+      G := 0;
+      B := 0;
+      for K := YMin to YMax do
       begin
-       if i+y<0 then continue;
-       if j+x<0 then continue;
-       z1 := ((Xs[yo ,xo+ 1].r - Xs[yo,xo].r)/ dx)*(j - x1r) + Xs[yo,xo].r;
-       z2 := ((Xs[yo+1,xo+1].r - Xs[yo+1,xo].r) / dx)*(j - x1r) + Xs[yo+1,xo].r;
-       k := (z2 - z1) / dy;
-       Xd[i+y,j+x].r := Round(i * k + z1 - y1r * k);
-       z1 := ((Xs[yo ,xo+ 1].g - Xs[yo,xo].g)/ dx)*(j - x1r) + Xs[yo,xo].g;
-       z2 := ((Xs[yo+1,xo+1].g - Xs[yo+1,xo].g) / dx)*(j - x1r) + Xs[yo+1,xo].g;
-       k := (z2 - z1) / dy;
-       Xd[i+y,j+x].g := Round(i * k + z1 - y1r * k);
-       z1 := ((Xs[yo ,xo+ 1].b - Xs[yo,xo].b)/ dx)*(j - x1r) + Xs[yo,xo].b;
-       z2 := ((Xs[yo+1,xo+1].b - Xs[yo+1,xo].b) / dx)*(j - x1r) + Xs[yo+1,xo].b;
-       k := (z2 - z1) / dy;
-       Xd[i+y,j+x].b := Round(i * k + z1 - y1r * k);
+        if K > S_h then
+          Break;
+        if K < 0 then
+          Continue;
+        for P := XAW[J] to XAW[J + 1] - 1 do
+        begin
+          if P > S_w then
+            Break;
+          Inc(Col);
+          Inc(R, Xp[K, P].R);
+          Inc(G, Xp[K, P].G);
+          Inc(B, Xp[K, P].B);
+        end;
+      end;
+      if (Col <> 0) and (J + X > 0) then
+      begin
+        P1[J + X].R := R div Col;
+        P1[J + X].G := G div Col;
+        P1[J + X].B := B div Col;
       end;
     end;
   end;
- except
+end;
+
+procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; S, D: TBitmap);
+var
+  Z1, Z2: single;
+  K: Single;
+  I, J, SW: Integer;
+  Dw, Dh, Xo, Yo: Integer;
+  Y1r: Extended;
+  Xs, Xd: array of PARGB;
+  Dx, Dy, Dxjx1r: Extended;
+  RGB00, RGB10: TRGB;
+  XAW : array of Integer;
+  XAWD : array of Extended;
+begin
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  D.Width := Math.Max(D.Width, X + Width);
+  D.Height :=Math.Max(D.height, Y + Height);
+  SW := S.Width;
+  Dw := Math.Min(D.Width - X, X + Width);
+  Dh := Math.Min(D.Height - y, Y + Height);
+  Dx := Width / (Rect.Right - Rect.Left - 1);
+  Dy := Height / (Rect.Bottom - Rect.Top - 1);
+  if (Dx < 1) and (Dy < 1) then
+    Exit;
+  SetLength(Xs, S.Height);
+  for I := 0 to S.Height - 1 do
+    Xs[I] := S.Scanline[I];
+  SetLength(Xd, D.Height);
+  for I := 0 to D.Height - 1 do
+    Xd[I] := D.Scanline[I];
+  SetLength(XAW, Width + 1);
+  SetLength(XAWD, Width + 1);
+  for I := 0 to Width do
+  begin
+    XAW[I] := FastTrunc(I / Dx);
+    XAWD[I] := I / Dx - XAW[I];
+  end;
+
+  for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * Dy) - 1, Dh - 1) do
+  begin
+    Yo := FastTrunc(I / Dy) + Rect.Top;
+    Y1r := FastTrunc(I / Dy) * Dy;
+    if Yo > S.Height then
+      Break;
+    if I + Y < 0 then
+      Continue;
+
+    for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * Dx) - 1, Dw - 1) do
+    begin
+      Xo := XAW[J] + Rect.Left;
+      if xo > SW then
+        Continue;
+      if J + X < 0 then
+        Continue;
+
+      RGB00 := Xs[Yo, Xo];
+      RGB10 := Xs[Yo + 1, Xo];
+
+      Dxjx1r := XAWD[J];
+
+      Z1 := (Xs[Yo, Xo + 1].R - RGB00.R) * Dxjx1r + RGB00.R;
+      Z2 := (Xs[Yo + 1, Xo + 1].R - RGB10.R) * Dxjx1r + RGB10.R;
+      k := (z2 - Z1) / Dy;
+      Xd[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
+
+      Z1 := (Xs[Yo, Xo + 1].G - RGB00.G)* Dxjx1r + RGB00.G;
+      Z2 := (Xs[Yo + 1, Xo + 1].G - RGB10.G) * Dxjx1r + RGB10.G;
+      K := (Z2 - Z1) / Dy;
+      Xd[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
+
+      Z1 := (Xs[Yo, Xo + 1].B - RGB00.B) * Dxjx1r + RGB00.B;
+      Z2 := (Xs[Yo + 1, Xo + 1].B - RGB10.B)  * Dxjx1r + RGB10.B;
+      K := (Z2 - Z1) / Dy;
+      Xd[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
+    end;
   end;
 end;
 
-procedure Rotate180A(Bitmap : TBitmap);
+procedure Rotate180A(Bitmap: TBitmap);
 var
   I, J: Integer;
   PS, PD: PARGB;
@@ -1545,6 +1578,8 @@ var
   XP32 : array of PARGB32;
   Count, R, G, B, L, Sheight1, SHI, SWI : Integer;
   SH, SW : Extended;
+  YMin, YMax : Integer;
+  XAW : array of Integer;
 begin
   if Width + Height = 0 then
     Exit;
@@ -1564,6 +1599,10 @@ begin
   SHI := S.Height;
   SWI := S.Width;
 
+  SetLength(XAW, Width + 1);
+  for I := 0 to Width do
+    XAW[I] := Round(Sw * I);
+
   if S.PixelFormat = pf24bit then
   begin
     SetLength(XP, S.height);
@@ -1573,15 +1612,17 @@ begin
     for I := 0 to Height - 1 do
     begin
       P := D.ScanLine[I];
+      YMin := Round(SH * I);
+      YMax := MinI32(SHI - 1, Round(SH * (I + 1)) - 1);
       for J := 0 to Width - 1 do
       begin
         Count := 0;
         R := 0;
         G := 0;
         B := 0;
-        for K := Round(SH * I) to MinI32(SHI - 1, Round(SH * (I + 1)) - 1) do
+        for K := YMin to YMax do
         begin
-          for F := Round(SW * J) to MinI32(SWI - 1, Round(SW * (J + 1)) - 1) do
+          for F := XAW[J] to MinI32(SWI - 1, XAW[J + 1] - 1) do
           begin
             Inc(Count);
             Inc(R, XP[K, F].R);
@@ -1606,6 +1647,8 @@ begin
     for I := 0 to Height - 1 do
     begin
       P32 := D.ScanLine[I];
+      YMin := Round(SH * I);
+      YMax := MinI32(SHI - 1, Round(SH * (I + 1)) - 1);
       for J := 0 to Width - 1 do
       begin
         Count := 0;
@@ -1613,9 +1656,9 @@ begin
         G := 0;
         B := 0;
         L := 0;
-        for K := Round(SH * I) to MinI32(SHI - 1, Round(SH * (I + 1)) - 1) do
+        for K := YMin to YMax do
         begin
-          for F := Round(SW * J) to MinI32(SWI - 1, Round(SW * (J + 1)) - 1) do
+          for F := XAW[J] to MinI32(SWI - 1, XAW[J + 1] - 1) do
           begin
             Inc(Count);
             Inc(R, XP32[K, F].R);
