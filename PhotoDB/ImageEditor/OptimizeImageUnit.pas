@@ -3,7 +3,8 @@ unit OptimizeImageUnit;
 interface
 
 uses
-  Windows, Graphics, GBlur2, GraphicsBaseTypes, ScanlinesFX, uEditorTypes;
+  Windows, Graphics, GBlur2, GraphicsBaseTypes, ScanlinesFX, uEditorTypes,
+  uMemory;
 
 type
   TConvolutionMatrix = record
@@ -12,20 +13,21 @@ type
   end;
 
 type
-  TRGBArray = ARRAY[0..32677] OF Windows.TRGBTriple;   // bitmap element (API windows)
+  TRGBArray = array [0 .. 32677] of Windows.TRGBTriple; // bitmap element (API windows)
   pRGBArray = ^TRGBArray;     // type pointer to 3 bytes array
 
   TArPRGBArray = array of PRGBArray;
 
 procedure OptimizeImage(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 
-Procedure MatrixEffectsW(fa,fb : integer; Tscan3,Tscan2 : TArPRGBArray; w1,h1 : integer; M : TConvolutionMatrix; CallBack : TBaseEffectCallBackProc = nil);
-Function Filterchoice(Numero : integer): TConvolutionMatrix;
-
+procedure MatrixEffectsW(Fa, Fb: Integer; Tscan3, Tscan2: TArPRGBArray; W1, H1: Integer; M: TConvolutionMatrix;
+  CallBack: TBaseEffectCallBackProc = nil);
+function Filterchoice(Numero: Integer): TConvolutionMatrix;
 
 implementation
 
-Procedure MatrixEffectsW(fa,fb : integer; Tscan3,Tscan2 : TArPRGBArray; w1,h1 : integer; M : TConvolutionMatrix; CallBack : TBaseEffectCallBackProc = nil);
+procedure MatrixEffectsW(Fa, Fb: Integer; Tscan3, Tscan2: TArPRGBArray; W1, H1: Integer; M: TConvolutionMatrix;
+  CallBack: TBaseEffectCallBackProc = nil);
 
 const
   M3 : array[0..24] of integer = (1,1,1,1,1,   // to detect if matrix is 3x3
@@ -34,12 +36,12 @@ const
                                   1,0,0,0,1,
                                   1,1,1,1,1);
 var
-  x, y : integer;
-  R, G, B : integer;
-  RR, GG , BB : integer;
-  i : integer;                    // index  of matrix coefficients
-  ix, iy, dx, dy, d : integer;    // positions of sliding matrix
-  Terminating : Boolean;
+  X, Y: Integer;
+  R, G, B: Integer;
+  RR, GG, BB: Integer;
+  I: Integer; // index  of matrix coefficients
+  Ix, Iy, Dx, Dy, D: Integer; // positions of sliding matrix
+  Terminating: Boolean;
 begin
   Terminating:=false;
   if M.Devider = 0 then M.Devider := 1;
@@ -65,14 +67,13 @@ begin
           R := Tscan3[iy, ix].RgbtRed;
           G := Tscan3[iy, ix].Rgbtgreen;
           B := Tscan3[iy, ix].Rgbtblue;
-        end
-        else
+        end else
         begin
           R := Tscan3[y, x].RgbtRed;  // outside : original pixel
           G := Tscan3[y, x].Rgbtgreen;
           B := Tscan3[y, x].Rgbtblue;
         end;
-        i := 12+dy*5+dx;        // matrix factor position
+        i := 12 + dy * 5 + dx;        // matrix factor position
         RR := RR + R * M.Matrix[i];   // multiply color values bu matrix factor
         GG := GG + G * M.Matrix[i];
         BB := BB + B * M.Matrix[i];
@@ -160,65 +161,67 @@ begin
   end;
 end;
 
-procedure OptimizeImage(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure OptimizeImage(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
 var
-  x, y : integer;
-  R3,G3,B3, R2,G2,B2, R4: integer;
-  Tscan2,Tscan3,Tscan4 : TArPRGBArray;
-  Terminating : boolean;
-  Temp1 : TBitmap;
+  X, Y: Integer;
+  R3, G3, B3, R2, G2, B2, R4: Integer;
+  Tscan2, Tscan3, Tscan4: TArPRGBArray;
+  Terminating: Boolean;
+  Temp1: TBitmap;
 begin
-  Terminating:=false;
+  Terminating := False;
   Temp1 := TBitmap.Create;
-  Temp1.PixelFormat:=pf24bit;
-  S.PixelFormat:=pf24bit;
-  D.Assign(S);
-  if Assigned(CallBack) then CallBack(5,Terminating);
-  D.PixelFormat:=pf24bit;
-  SetLength(Tscan2,S.height);
-  SetLength(Tscan3,S.height);
-  SetLength(Tscan4,S.height);
-  Temp1.Width:=S.Width;
-  Temp1.Height:=S.Height;
-  For y := 0 to S.height-1 do
-  begin
-    Tscan2[y] := D.ScanLine[y];
-    Tscan3[y] := S.ScanLine[y];
-    Tscan4[y] := Temp1.ScanLine[y];
-  end;
-  MatrixEffectsW(5,20,Tscan3,Tscan4,S.Width-1,S.Height-1,Filterchoice(11));
-  GBlurWX(25,20,Temp1,GBlur2.TArPRGBArray(Tscan4),2,CallBack);
-  GBlurWX(45,20,D,GBlur2.TArPRGBArray(Tscan2),3,CallBack);
-  For y := 0 to S.height-1 do
-  begin
-    for x := 0 to S.width-1 do
+  try
+    Temp1.PixelFormat := pf24bit;
+    S.PixelFormat := pf24bit;
+    D.Assign(S);
+    if Assigned(CallBack) then
+      CallBack(5, Terminating);
+    D.PixelFormat := pf24bit;
+    SetLength(Tscan2, S.Height);
+    SetLength(Tscan3, S.Height);
+    SetLength(Tscan4, S.Height);
+    Temp1.Width := S.Width;
+    Temp1.Height := S.Height;
+    for Y := 0 to S.Height - 1 do
     begin
-      R3 :=  Tscan3[y,x].Rgbtred;    // current image
-      G3 :=  Tscan3[y,x].Rgbtgreen;
-      B3 :=  Tscan3[y,x].Rgbtblue;
-      R2 :=  Tscan2[y,x].Rgbtred;    // blurred image
-      G2 :=  Tscan2[y,x].Rgbtgreen;
-      B2 :=  Tscan2[y,x].Rgbtblue;
-      R4 :=  Tscan4[y,x].Rgbtred;    // mask
-      if R4 > 0 then
-      begin
-        Tscan2[y,x].Rgbtred   := (R2+R3*3) div 4;   // edges
-        Tscan2[y,x].Rgbtgreen := (G2+G3*3) div 4;
-        Tscan2[y,x].Rgbtblue  := (B2+B3*3) div 4;
-      end
-      else
-      begin
-        Tscan2[y,x].Rgbtred   := (R2*7+R3) div 8;    // blur areas
-        Tscan2[y,x].Rgbtgreen := (G2*7+G3) div 8;
-        Tscan2[y,x].Rgbtblue  := (B2*7+B3) div 8;
-      end;
+      Tscan2[Y] := D.ScanLine[Y];
+      Tscan3[Y] := S.ScanLine[Y];
+      Tscan4[Y] := Temp1.ScanLine[Y];
     end;
-     if y mod 50=0 then
-     If Assigned(CallBack) then CallBack(65+Round(35*y/S.Height),Terminating);
-     if Terminating then Break;
+    MatrixEffectsW(5, 20, Tscan3, Tscan4, S.Width - 1, S.Height - 1, Filterchoice(11));
+    GBlurWX(25, 20, Temp1, GBlur2.TArPRGBArray(Tscan4), 2, CallBack);
+    GBlurWX(45, 20, D, GBlur2.TArPRGBArray(Tscan2), 3, CallBack);
+    for y := 0 to S.height-1 do
+    begin
+      for x := 0 to S.width-1 do
+      begin
+        R3 :=  Tscan3[y,x].Rgbtred;    // current image
+        G3 :=  Tscan3[y,x].Rgbtgreen;
+        B3 :=  Tscan3[y,x].Rgbtblue;
+        R2 :=  Tscan2[y,x].Rgbtred;    // blurred image
+        G2 :=  Tscan2[y,x].Rgbtgreen;
+        B2 :=  Tscan2[y,x].Rgbtblue;
+        R4 :=  Tscan4[y,x].Rgbtred;    // mask
+        if R4 > 0 then
+        begin
+          Tscan2[y,x].Rgbtred   := (R2+R3*3) div 4;   // edges
+          Tscan2[y,x].Rgbtgreen := (G2+G3*3) div 4;
+          Tscan2[y,x].Rgbtblue  := (B2+B3*3) div 4;
+        end else
+        begin
+          Tscan2[y,x].Rgbtred   := (R2*7+R3) div 8;    // blur areas
+          Tscan2[y,x].Rgbtgreen := (G2*7+G3) div 8;
+          Tscan2[y,x].Rgbtblue  := (B2*7+B3) div 8;
+        end;
+      end;
+       if y mod 50=0 then
+       If Assigned(CallBack) then CallBack(65+Round(35*y/S.Height),Terminating);
+       if Terminating then Break;
+    end;
+  finally
+    F(Temp1);
   end;
- Temp1.Free;
-// Temp2.Free;
 end;
 
 end.

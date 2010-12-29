@@ -256,101 +256,6 @@ begin
       Result := IncludeTrailingBackslash(ExtractFileDir(DBName)) + FileName;
 end;
 
-  {
-function GetUserSID: PSID;
-type
-  PTOKEN_USER = ^TOKEN_USER;
-
-  _TOKEN_USER = record
-    User: TSidAndAttributes;
-  end;
-
-  TOKEN_USER = _TOKEN_USER;
-var
-  HToken: THandle;
-  CbBuf: Cardinal;
-  PtiUser: PTOKEN_USER;
-begin
-  Result := nil;
-  if not OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, True, HToken) then
-  begin
-    if GetLastError() <> ERROR_NO_TOKEN then
-      Exit;
-    // В случее ошибки - получаем маркер доступа нашего процесса.
-    if not OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, HToken) then
-      Exit;
-  end;
-  // Вывываем GetTokenInformation для получения размера буфера
-  if not GetTokenInformation(HToken, TokenUser, nil, 0, CbBuf) then
-    if GetLastError() <> ERROR_INSUFFICIENT_BUFFER then
-    begin
-      CloseHandle(HToken);
-      Exit;
-    end;
-  if CbBuf = 0 then
-    Exit;
-  // Выделяем память под буфер
-  GetMem(PtiUser, CbBuf);
-  // В случае удачного вызова получим указатель на TOKEN_USER
-  if GetTokenInformation(HToken, TokenUser, PtiUser, CbBuf, CbBuf) then
-    Result := PtiUser.User.Sid;
-end;
-
-function SidToStr(Sid: PSID): WideString;
-var
-  SIA: PSidIdentifierAuthority;
-  DwCount: Cardinal;
-  I: Integer;
-begin
-  // S-R-I-S-S...
-  Result := '';
-  // Проверяем SID
-  if not IsValidSid(Sid) then
-    Exit;
-  Result := 'S-'; // Префикс
-  // Получаем номер версии SID
-  // Хотя работать на прямую с SID, как я уже говорил, не рекомендуется
-  Result := Result + IntToStr(Byte(Sid^)) + '-';
-  // Получаем орган, выдавший SID
-  // Пока все находится в последнем байте
-  Sia := GetSidIdentifierAuthority(Sid);
-  Result := Result + IntToStr(Sia.Value[5]); // S-R-I-
-  // кол-во RID
-  DwCount := GetSidSubAuthorityCount(Sid)^;
-  // и теперь перебираем их
-  for I := 0 to DwCount - 1 do
-    Result := Result + '-' + IntToStr(GetSidSubAuthority(Sid, I)^);
-end;
-        }
-
-{
-function GetDirectory(FileName: string): string;
-var
-  I, N: Integer;
-begin
-  N := 0;
-  for I := Length(FileName) downto 1 do
-    if FileName[I] = '\' then
-    begin
-      N := I;
-      Break;
-    end;
-  Delete(Filename, N, Length(Filename) - N + 1);
-  Result := FileName;
-  FormatDir(Result);
-end;   }
-
-
-{function Delnakl(S: string): string;
-var
-  J: Integer;
-begin
-  Result := S;
-  for J := 1 to Length(Result) do
-    if Result[J] = '\' then
-      Result[J] := '_';
-end;  }
-
 function PixelsToText(Pixels: Integer): string;
 begin
   Result := Format(TA('%dpx.'), [IntToStr(Pixels)]);
@@ -602,70 +507,6 @@ begin
   Result := Result and FileExists(FileName);
 end;
 
-{
-function GetProgramFilesDirByKeyStr(KeyStr: string): string;
-var
-  DwKeySize: DWORD;
-  Key: HKEY;
-  DwType: DWORD;
-begin
-  if RegOpenKeyEx(Windows.HKEY_LOCAL_MACHINE, PChar(KeyStr), 0, KEY_READ, Key) = ERROR_SUCCESS then
-    try
-      RegQueryValueEx(Key, 'ProgramFilesDir', nil, @DwType, nil, @DwKeySize);
-      if (DwType in [REG_SZ, REG_EXPAND_SZ]) and (DwKeySize > 0) then
-      begin
-        SetLength(Result, DwKeySize);
-        RegQueryValueEx(Key, 'ProgramFilesDir', nil, @DwType, PByte(PChar(Result)), @DwKeySize);
-      end
-      else
-      begin
-        RegQueryValueEx(Key, 'ProgramFilesPath', nil, @DwType, nil, @DwKeySize);
-        if (DwType in [REG_SZ, REG_EXPAND_SZ]) and (DwKeySize > 0) then
-        begin
-          SetLength(Result, DwKeySize);
-          RegQueryValueEx(Key, 'ProgramFilesPath', nil, @DwType, PByte(PChar(Result)), @DwKeySize);
-        end;
-      end;
-    finally
-      RegCloseKey(Key);
-    end;
-end;
-
-function GetProgramFilesDir: string;
-const
-  DefaultProgramFilesDir = '%SystemDrive%\Program Files';
-var
-  FolderName: string;
-  DwStrSize: DWORD;
-  I: Integer;
-begin
-  if Win32Platform = VER_PLATFORM_WIN32_NT then
-  begin
-    FolderName := GetProgramFilesDirByKeyStr('Software\Microsoft\Windows NT\CurrentVersion');
-  end;
-  if Length(FolderName) = 0 then
-  begin
-    FolderName := GetProgramFilesDirByKeyStr('Software\Microsoft\Windows\CurrentVersion');
-  end;
-  if Length(FolderName) = 0 then
-    FolderName := DefaultProgramFilesDir;
-  DwStrSize := ExpandEnvironmentStrings(PChar(FolderName), nil, 0);
-  SetLength(Result, DwStrSize);
-  ExpandEnvironmentStrings(PChar(FolderName), PChar(Result), DwStrSize);
-  for I := 1 to Length(Result) do
-    if Result[I] = #0 then
-    begin
-      Result := Copy(Result, 1, I - 1);
-      Break;
-    end;
-end;  }
-{
-function GetProgramPath: string;
-begin
-  Result := Application.ExeName;
-end;    }
-
-
 function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
 var
   S1, S2: string;
@@ -730,8 +571,7 @@ begin
   if TryStrToDate(DateTime, DT) then
   begin
     Result := DateOf(DT);
-  end
-  else
+  end else
   begin
     D := Copy(DateTime, 1, 10);
     TryStrToDate(D, Result);
@@ -758,8 +598,7 @@ begin
   if TryStrToTime(DateTime, DT) then
   begin
     Result := TimeOf(DT);
-  end
-  else
+  end else
   begin
     T := Copy(DateTime, 12, 8);
     TryStrToTime(T, Result);

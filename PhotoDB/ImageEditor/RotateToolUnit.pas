@@ -309,7 +309,7 @@ procedure TRotateToolPanelClass.SetThreadImage(Image: TBitmap;
 begin
  if SID=FSID then
  begin
-  Pointer(NewImage):=Pointer(Image);
+  NewImage:=Image;
   SetTempImage(Image);
  end else Image.Free;
  if ApplyOnDone then

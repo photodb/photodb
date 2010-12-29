@@ -28,10 +28,13 @@ type
     Loading: Boolean;
     ApplyOnDone: Boolean;
     FOnDone: TNotifyEvent;
+    PImage, PNewImage: TArPARGB;
+    FOverageContrast : Integer;
   protected
     function LangID: string; override;
   public
     { Public declarations }
+    procedure Init; override;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure ClosePanel; override;
@@ -186,10 +189,25 @@ begin
   CloseLink.ImageCanRegenerate := True;
   IcoCancel.Free;
 
-  CloseLink.ImageCanRegenerate := True;
-
   Loading := False;
+
   RefreshInfo;
+  FOverageContrast := -1;
+end;
+
+procedure TColorToolPanelClass.Init;
+var
+  I : Integer;
+begin
+  NewImage := TBitmap.Create;
+  NewImage.Assign(Image);
+  SetLength(PImage, NewImage.Height);
+  SetLength(PNewImage, Image.Height);
+  for I := 0 to Image.Height - 1 do
+    PImage[I] := Image.ScanLine[I];
+  for I := 0 to NewImage.Height - 1 do
+    PNewImage[I] := NewImage.ScanLine[I];
+  SetTempImage(NewImage);
 end;
 
 destructor TColorToolPanelClass.Destroy;
@@ -272,7 +290,6 @@ end;
 
 procedure TColorToolPanelClass.SetLocalProperties(Sender: TObject);
 var
-  PImage: TArPARGB;
   I: Integer;
   Width, Height: Integer;
   ContrastValue: Extended;
@@ -288,18 +305,12 @@ var
 begin
   if Loading then
     Exit;
-  NewImage := TBitmap.Create;
-  NewImage.Assign(Image);
-  SetLength(PImage, NewImage.Height);
-  for I := 0 to NewImage.Height - 1 do
-    PImage[I] := NewImage.ScanLine[I];
   Height := NewImage.Height;
   Width := NewImage.Width;
   ContrastValue := Znak(ContrastTrackBar.Position) * 100 * Power(Abs(ContrastTrackBar.Position) / 100, 2);
-  Contrast(PImage, Width, Height, ContrastValue, False);
-  ChangeBrightness(PImage, Width, Height, BrightnessTrackBar.Position);
-  SetRGBChannelValue(PImage, Width, Height, RTrackBar.Position, GTrackBar.Position, BTrackBar.Position);
-  SetTempImage(NewImage);
+  SetContractBrightnessRGBChannelValue(PImage, PNewImage, Width, Height, ContrastValue, FOverageContrast, BrightnessTrackBar.Position, RTrackBar.Position, GTrackBar.Position, BTrackBar.Position);
+  Editor.MakeImage;
+  Editor.DoPaint;
   RefreshInfo;
 end;
 

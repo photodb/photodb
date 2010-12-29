@@ -30,6 +30,7 @@ type
     function LangID: string; virtual; abstract;
   public
     { Public declarations }
+    procedure Init; virtual;
     function L(StringToTranslate : string) : string;
     class function ID: string; virtual;
     function GetProperties: string; virtual; abstract;
@@ -114,6 +115,11 @@ end;
 class function TToolsPanelClass.ID: string;
 begin
   Result := '{73899C26-6964-494E-B5F6-46E65BD50DB7}';
+end;
+
+procedure TToolsPanelClass.Init;
+begin
+  //
 end;
 
 function TToolsPanelClass.L(StringToTranslate: string): string;

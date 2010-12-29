@@ -21,6 +21,8 @@ type
     FCustomColorDialog: TColorDialog;
     FLoading: Boolean;
     procedure SetRedEyeEffectSize(const Value: Integer);
+  protected
+    function LangID: string; override;
   public
     { Public declarations }
     class function ID: string; override;
@@ -205,7 +207,7 @@ begin
   EffectSizelabel := TLabel.Create(Self);
   EffectSizelabel.Left := 8;
   EffectSizelabel.Top := EditHeight.Top + EditHeight.Height + 5;
-  EffectSizelabel.Caption := TEXT_MES_RED_EYE_EFFECT_SIZE_F;
+  EffectSizelabel.Caption := L('Value [%d]');
   EffectSizelabel.Parent := Self;
 
   EffectSizeScroll := TTrackBar.Create(AOwner);
@@ -222,7 +224,7 @@ begin
   FEyeColorLabel.Left := 8;
   FEyeColorLabel.Top := EffectSizeScroll.Top + EffectSizeScroll.Height + 5;
   FEyeColorLabel.Parent := Self;
-  FEyeColorLabel.Caption := TEXT_MES_EYE_COLOR + ':';
+  FEyeColorLabel.Caption := L('Eye color') + ':';
 
   FEyeColor := TComboBox.Create(AOwner);
   FEyeColor.Left := 8;
@@ -231,12 +233,12 @@ begin
   FEyeColor.OnChange := EyeColorChange;
   FEyeColor.Style := CsDropDownList;
   FEyeColor.Parent := AOwner as TWinControl;
-  FEyeColor.Items.Add(TEXT_MES_COLOR_GREEN);
-  FEyeColor.Items.Add(TEXT_MES_COLOR_BLUE);
-  FEyeColor.Items.Add(TEXT_MES_COLOR_BROWN);
-  FEyeColor.Items.Add(TEXT_MES_COLOR_BLACK);
-  FEyeColor.Items.Add(TEXT_MES_COLOR_GRAY);
-  FEyeColor.Items.Add(TEXT_MES_COLOR_CUSTOM);
+  FEyeColor.Items.Add(L('Green'));
+  FEyeColor.Items.Add(L('Blue'));
+  FEyeColor.Items.Add(L('Brown'));
+  FEyeColor.Items.Add(L('Black'));
+  FEyeColor.Items.Add(L('Gray'));
+  FEyeColor.Items.Add(L('Custom'));
 
   FEyeColor.ItemIndex := 1;
   FCustomColor := $0;
@@ -289,71 +291,70 @@ var
   end;
 
 begin
- Rct.Top:=Min(aRect.Top,aRect.Bottom);
- Rct.Bottom:=Max(aRect.Top,aRect.Bottom);
- Rct.Left:=Min(aRect.Left,aRect.Right);
- Rct.Right:=Max(aRect.Left,aRect.Right);
- aRect:=Rct;
- w:=Rct.Right-Rct.Left;
- h:=Rct.Bottom-Rct.Top;
- SetLength(Xdp,Bitmap.height);
- for i:=0 to Bitmap.Height-1 do
- Xdp[i]:=Bitmap.ScanLine[i];
+  Rct.Top := Min(ARect.Top, ARect.Bottom);
+  Rct.Bottom := Max(ARect.Top, ARect.Bottom);
+  Rct.Left := Min(ARect.Left, ARect.Right);
+  Rct.Right := Max(ARect.Left, ARect.Right);
+  ARect := Rct;
+  W := Rct.Right - Rct.Left;
+  H := Rct.Bottom - Rct.Top;
+  SetLength(Xdp, Bitmap.Height);
+  for I := 0 to Bitmap.Height - 1 do
+    Xdp[I] := Bitmap.ScanLine[I];
 
- i:=Min(Bitmap.Height-1,Max(0,aRect.Top));
- if i=aRect.Top then
- for j:=0 to Bitmap.Width-1 do
- begin
-  if (j>aRect.Left) and (j<aRect.Right) then
+  I := Min(Bitmap.Height - 1, Max(0, ARect.Top));
+  if I = ARect.Top then
+    for J := 0 to Bitmap.Width - 1 do
+    begin
+      if (J > ARect.Left) and (J < ARect.Right) then
+        Border(I, J, Xdp[I, J]);
+
+    end;
+
+  I := Min(Bitmap.Height - 1, Max(0, ARect.Bottom));
+  if I = ARect.Bottom then
+    for J := 0 to Bitmap.Width - 1 do
+    begin
+      if (J > ARect.Left) and (J < ARect.Right) then
+        Border(I, J, Xdp[I, J]);
+
+    end;
+
+  for I := Max(0, ARect.Top) to Min(ARect.Bottom - 1, Bitmap.Height - 1) do
   begin
-   Border(i,j,Xdp[i,j]);
+    J := Max(0, Min(Bitmap.Width - 1, ARect.Left));
+    if J = ARect.Left then
+      Border(I, J, Xdp[I, J]);
   end;
- end;
-
- i:=Min(Bitmap.Height-1,Max(0,aRect.Bottom));
- if i=aRect.Bottom then
- for j:=0 to Bitmap.Width-1 do
- begin
-  if (j>aRect.Left) and (j<aRect.Right) then
+  for I := Max(0, ARect.Top) to Min(ARect.Bottom - 1, Bitmap.Height - 1) do
   begin
-   Border(i,j,Xdp[i,j]);
+    J := Min(Bitmap.Width - 1, Max(0, ARect.Right));
+    if J = ARect.Right then
+      Border(I, J, Xdp[I, J]);
   end;
- end;
 
- for i:=Max(0,aRect.Top) to Min(aRect.Bottom-1,Bitmap.Height-1) do
- begin
-  j:=Max(0,Min(Bitmap.Width-1,aRect.Left));
-  if j=aRect.Left then
-  Border(i,j,Xdp[i,j]);
- end;
- for i:=Max(0,aRect.Top) to Min(aRect.Bottom-1,Bitmap.Height-1) do
- begin
-  j:=Min(Bitmap.Width-1,Max(0,aRect.Right));
-  if j=aRect.Right then
-  Border(i,j,Xdp[i,j]);
- end;
-
-
- if w*h=0 then exit;
- w2:=w div 2;
- h2:=h div 2;
- if w2*h2=0 then exit;
- dd:=min(1/w2,1/h2);
- nn:=Round(2*pi/dd);
- for ii:=1 to nn do
- begin
-  i:=aRect.Left+w2+Round((w/2)*cos(dd*ii));
-  j:=aRect.Top+h2+Round((h/2)*sin(dd*ii));
-  if (i>=0) and (j>=0) and (i<Bitmap.Width-1) and (j<Bitmap.Height-1) then
-  Border(i,j,Xdp[j,i]);
- end;
+  if W * H = 0 then
+    Exit;
+  W2 := W div 2;
+  H2 := H div 2;
+  if W2 * H2 = 0 then
+    Exit;
+  Dd := Min(1 / W2, 1 / H2);
+  Nn := Round(2 * Pi / Dd);
+  for Ii := 1 to Nn do
+  begin
+    I := ARect.Left + W2 + Round((W / 2) * Cos(Dd * Ii));
+    J := ARect.Top + H2 + Round((H / 2) * Sin(Dd * Ii));
+    if (I >= 0) and (J >= 0) and (I < Bitmap.Width - 1) and (J < Bitmap.Height - 1) then
+      Border(I, J, Xdp[J, I]);
+  end;
 
 end;
 
 procedure TRedEyeToolPanelClass.EffectSizeScrollChange(Sender: TObject);
 begin
   FRedEyeEffectSize := EffectSizeScroll.Position;
-  EffectSizelabel.Caption := Format(TEXT_MES_RED_EYE_EFFECT_SIZE_F, [EffectSizeScroll.Max - EffectSizeScroll.Position]);
+  EffectSizelabel.Caption := Format(L('Value [%d]'), [EffectSizeScroll.Max - EffectSizeScroll.Position]);
   if Assigned(FProcRecteateImage) then
     FProcRecteateImage(Self);
 end;
@@ -365,26 +366,32 @@ end;
 
 procedure TRedEyeToolPanelClass.EyeColorChange(Sender: TObject);
 begin
- FCustomColorDialog.Color:=FCustomColor;
- if FEyeColor.ItemIndex=5 then
- if not FLoading then
- if FCustomColorDialog.Execute then
- begin
-  FCustomColor:=FCustomColorDialog.Color;
- end else FEyeColor.ItemIndex:=0;
- EffectSizeScrollChange(Sender);
+  FCustomColorDialog.Color := FCustomColor;
+  if FEyeColor.ItemIndex = 5 then
+    if not FLoading then
+      if FCustomColorDialog.Execute then
+      begin
+        FCustomColor := FCustomColorDialog.Color;
+      end else
+        FEyeColor.ItemIndex := 0;
+  EffectSizeScrollChange(Sender);
 end;
 
 procedure TRedEyeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
- DBKernel.WriteInteger('Editor','RedEyeToolSize',EffectSizeScroll.Position);
- DBKernel.WriteInteger('Editor','RedEyeColor',FEyeColor.ItemIndex);
- DBKernel.WriteInteger('Editor','RedEyeColorCustom',FCustomColor);
+  DBKernel.WriteInteger('Editor', 'RedEyeToolSize', EffectSizeScroll.Position);
+  DBKernel.WriteInteger('Editor', 'RedEyeColor', FEyeColor.ItemIndex);
+  DBKernel.WriteInteger('Editor', 'RedEyeColorCustom', FCustomColor);
 end;
 
 class function TRedEyeToolPanelClass.ID: string;
 begin
- Result:='{3D2B384F-F4EB-457C-A11C-BDCE1C20FFFF}';
+  Result := '{3D2B384F-F4EB-457C-A11C-BDCE1C20FFFF}';
+end;
+
+function TRedEyeToolPanelClass.LangID: string;
+begin
+  Result := 'RedEyeTool';
 end;
 
 procedure TRedEyeToolPanelClass.SetProperties(Properties: String);

@@ -1021,6 +1021,24 @@
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
+  <scope name="RedEyeTool">
+	<translate name="Eye color" value="Цвет глаз" />
+	<translate name="Green" value="Зелёный" />
+	<translate name="Blue" value="Голубой" />
+	<translate name="Brown" value="Карий" />
+	<translate name="Black" value="Чёрный" />
+	<translate name="Gray" value="Серый" />
+	<translate name="Custom" value="Произвольный" />
+	<translate name="Value [%d]" value="Значение [%d]" />
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  <scope name="ResizeTool">
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  
+  
   <scope name="Effects">
 	<translate name="Radius: [%2.1f]" value="Радиус: [%2.1f]" />
 	<translate name="Gauss blur" value="Гауссово размытие" />

@@ -85,7 +85,6 @@ type
     procedure LoadBMPImage(Bitmap : TBitmap);
     procedure LoadGIFImage(GIF : TGIFImage);
     procedure LoadImageVariousformat(Image : TGraphic);
-    procedure MakeImage;
     procedure ScrollBarVChange(Sender: TObject);
     procedure FormResize(Sender: TObject);
     function GetVisibleImageHeight : Integer;
@@ -186,6 +185,7 @@ type
     EState: TWindowEnableStates;
     procedure SetCloseOnFailture(const Value: boolean);
     function CheckEditingMode : Boolean;
+    procedure LoadLanguage;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID : string; override;
@@ -198,7 +198,8 @@ type
     FStatusProgress: TProgressBar;
     WindowID: TGUID;
     ToolClass: TToolsPanelClass;
-    procedure LoadLanguage;
+    procedure MakeImage; override;
+    procedure DoPaint; override;
     procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     property CloseOnFailture: Boolean read FCloseOnFailture write SetCloseOnFailture;
   end;
@@ -392,9 +393,14 @@ begin
   end;
 end;
 
-procedure TImageEditor.FormPaint(Sender: TObject);
+procedure TImageEditor.DoPaint;
 begin
   Canvas.Draw(0, ButtomPanel.Height, Buffer);
+end;
+
+procedure TImageEditor.FormPaint(Sender: TObject);
+begin
+  DoPaint;
 end;
 
 procedure TImageEditor.LoadBMPImage(Bitmap: TBitmap);
@@ -502,7 +508,7 @@ end;
 
 procedure TImageEditor.MakeImage;
 var
-  I: Integer;
+  I, J: Integer;
   Fh, Fw: Integer;
   Zx, Zy, Zw, Zh, X1, X2, Y1, Y2: Integer;
   ImRect, BeginRect: TRect;
@@ -517,6 +523,18 @@ begin
   if (CurrentImage.Height = 0) or (CurrentImage.Width = 0) then
     Exit;
 
+  if Tool <> ToolColor then
+  begin
+    for I := 0 to Buffer.Height - 1 do
+    begin
+      for J := 0 to Buffer.Width - 1 do
+      begin
+        PBuffer[I, J].R := 0;
+        PBuffer[I, J].G := 0;
+        PBuffer[I, J].B := 0;
+      end;
+    end;
+  end;
   if (CurrentImage.Width > GetVisibleImageWidth) or (CurrentImage.Height > GetVisibleImageHeight) then
   begin
     if CurrentImage.Width / CurrentImage.Height < Buffer.Width / Buffer.Height then
@@ -634,18 +652,7 @@ var
   Inc_: Integer;
   Pos, M, Ps: Integer;
   V1, V2: Boolean;
-  I, J: Integer;
 begin
-  for I := 0 to Buffer.Height - 1 do
-  begin
-    for J := 0 to Buffer.Width - 1 do
-    begin
-      PBuffer[I, J].R := 0;
-      PBuffer[I, J].G := 0;
-      PBuffer[I, J].B := 0;
-    end;
-  end;
-
   if Tool = ToolBrush then
     (ToolClass as TBrushToolClass).NewCursor;
 
@@ -2056,6 +2063,7 @@ begin
   ToolClass.SetTempImage := SetTemporaryImage;
   ToolClass.CancelTempImage := CancelTemporaryImage;
   ToolClass.Image := CurrentImage;
+  ToolClass.Init;
   ToolClass.SetImagePointer := SetPointerToNewImage;
   ToolClass.OnClosePanel := ShowTools;
   ToolClass.Show;

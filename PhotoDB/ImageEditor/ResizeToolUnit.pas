@@ -6,7 +6,7 @@ uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
   Language, EffectsLanguage, UnitResampleFilters, uDBBaseTypes,
-  UnitDBKernel, Effects, uConstants, uEditorTypes;
+  UnitDBKernel, Effects, uConstants, uEditorTypes, uMemory;
 
 type
   TResizeToolPanelClass = class(TToolsPanelClass)
@@ -31,6 +31,8 @@ type
     Loading: Boolean;
     ApplyOnDone: Boolean;
     FOnDone: TNotifyEvent;
+  protected
+    function LangID: string; override;
   public
    { Public declarations }
     FSID: string;
@@ -323,6 +325,7 @@ begin
  SaveSettingsLink.Color:=ClBtnface;
  SaveSettingsLink.OnClick:=DoSaveSettings;
  SaveSettingsLink.Icon:=IcoSave;
+ SaveSettingsLink.ImageCanRegenerate:=True;
  IcoSave.free;
 
  MakeItLink := TWebLink.Create(nil);
@@ -346,9 +349,9 @@ begin
  CloseLink.Color:=ClBtnface;
  CloseLink.OnClick:=ClosePanelEvent;
  CloseLink.Icon:=IcoCancel;
+ CloseLink.ImageCanRegenerate:=True;
  IcoCancel.Free;
 
- CloseLink.ImageCanRegenerate:=True;
 
  ComboBoxPercent.Text:=IntToStr(DBKernel.ReadInteger('Editor','PercentValue',100))+'%';
  WidthEdit.Text:=IntToStr(DBKernel.ReadInteger('Editor','CustomWidth',100));
@@ -365,145 +368,157 @@ end;
 
 destructor TResizeToolPanelClass.Destroy;
 begin
- CloseLink.Free;
- MakeItLink.Free;
- SaveSettingsLink.Free;
- ComboBoxMethod.free;
- RadioButton100x100.Free;
- RadioButton200x200.Free;
- RadioButton600x800.Free;
- RadioButton_Custom.Free;
- CheckBoxSaveProportions.Free;
- RadioButtonPercent.Free;
- ComboBoxPercent.Free;
- MethodLabel.Free;
- WidthEdit.Free;
- HeightEdit.Free;
- WidthEditLabel.Free;
- HeightEditLabel.Free;
- SelectChooseBox.Free;
- inherited;
+  F(CloseLink);
+  F(MakeItLink);
+  F(SaveSettingsLink);
+  F(ComboBoxMethod);
+  F(RadioButton100x100);
+  F(RadioButton200x200);
+  F(RadioButton600x800);
+  F(RadioButton_Custom);
+  F(CheckBoxSaveProportions);
+  F(RadioButtonPercent);
+  F(ComboBoxPercent);
+  F(MethodLabel);
+  F(WidthEdit);
+  F(HeightEdit);
+  F(WidthEditLabel);
+  F(HeightEditLabel);
+  F(SelectChooseBox);
+  inherited;
 end;
 
 procedure TResizeToolPanelClass.DoMakeImage(Sender: TObject);
 begin
- MakeTransform;
+  MakeTransform;
 end;
 
- function TResizeToolPanelClass.GetZoom : real;
- var
-   s : string;
-   i : integer;
- begin
-  s:=ComboBoxPercent.Text;
-  if s='' then s:='100';
-  for i:=Length(s) downto 1 do
-  if not CharInSet(s[i], abs_cifr) then
-    Delete(s,i,1);
-  Result:=StrToFloatDef(s,50)/100;
- end;
+function TResizeToolPanelClass.GetZoom: Real;
+var
+  S: string;
+  I: Integer;
+begin
+  S := ComboBoxPercent.Text;
+  if S = '' then
+    S := '100';
+  for I := Length(S) downto 1 do
+    if not CharInSet(S[I], Abs_cifr) then
+      Delete(S, I, 1);
+  Result := StrToFloatDef(S, 50) / 100;
+end;
 
 procedure TResizeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
- DBKernel.WriteBool('Editor','ResizeTo100x100',RadioButton100x100.Checked);
- DBKernel.WriteBool('Editor','ResizeTo200x200',RadioButton200x200.Checked);
- DBKernel.WriteBool('Editor','ResizeTo600x800',RadioButton600x800.Checked);
- DBKernel.WriteBool('Editor','ResizeToCustom',RadioButton_Custom.Checked);
- DBKernel.WriteBool('Editor','SaveProportions',CheckBoxSaveProportions.Checked);
- DBKernel.WriteBool('Editor','ResizeToPercent',RadioButtonPercent.Checked);
- DBKernel.WriteInteger('Editor','ResizeMethod',ComboBoxMethod.ItemIndex);
- DBKernel.WriteInteger('Editor','CustomWidth',StrToIntDef(WidthEdit.Text,100));
- DBKernel.WriteInteger('Editor','CustomHeight',StrToIntDef(HeightEdit.Text,100));
- DBKernel.WriteInteger('Editor','PercentValue',Round(GetZoom*100));
+  DBKernel.WriteBool('Editor', 'ResizeTo100x100', RadioButton100x100.Checked);
+  DBKernel.WriteBool('Editor', 'ResizeTo200x200', RadioButton200x200.Checked);
+  DBKernel.WriteBool('Editor', 'ResizeTo600x800', RadioButton600x800.Checked);
+  DBKernel.WriteBool('Editor', 'ResizeToCustom', RadioButton_Custom.Checked);
+  DBKernel.WriteBool('Editor', 'SaveProportions', CheckBoxSaveProportions.Checked);
+  DBKernel.WriteBool('Editor', 'ResizeToPercent', RadioButtonPercent.Checked);
+  DBKernel.WriteInteger('Editor', 'ResizeMethod', ComboBoxMethod.ItemIndex);
+  DBKernel.WriteInteger('Editor', 'CustomWidth', StrToIntDef(WidthEdit.Text, 100));
+  DBKernel.WriteInteger('Editor', 'CustomHeight', StrToIntDef(HeightEdit.Text, 100));
+  DBKernel.WriteInteger('Editor','PercentValue',Round(GetZoom*100));
 end;
 
 procedure TResizeToolPanelClass.EditChange(Sender: TObject);
 begin
- RadioButton_Custom.Checked:=true;
- ChangeSize(Sender);
+  RadioButton_Custom.Checked := True;
+  ChangeSize(Sender);
 end;
 
 function TResizeToolPanelClass.GetProperties: string;
 
-  function B2S(b : boolean) : string;
-  begin if b then Result:='true' else result:='false'; end;
-  function I2S(i : integer) : string;
-  begin Result:=IntToStr(i); end;
+  function B2S(B: Boolean): string;
+  begin
+    if B then
+      Result := 'true'
+    else
+      Result := 'false';
+  end;
+  function I2S(I: Integer): string;
+  begin
+    Result := IntToStr(I);
+  end;
 
 begin
- Result:='';
- Result:=Result+'ResizeTo100x100='+B2S(RadioButton100x100.Checked)+';';
- Result:=Result+'ResizeTo200x200='+B2S(RadioButton200x200.Checked)+';';
- Result:=Result+'ResizeTo600x800='+B2S(RadioButton600x800.Checked)+';';
- Result:=Result+'ResizeToCustom='+B2S(RadioButton_Custom.Checked)+';';
- Result:=Result+'SaveProportions='+B2S(CheckBoxSaveProportions.Checked)+';';
- Result:=Result+'ResizeToPercent='+B2S(RadioButtonPercent.Checked)+';';
- Result:=Result+'ResizeMethod='+I2S(ComboBoxMethod.ItemIndex)+';';
- Result:=Result+'CustomWidth='+I2S(StrToIntDef(WidthEdit.Text,100))+';';
- Result:=Result+'CustomHeight='+I2S(StrToIntDef(HeightEdit.Text,100))+';';
- Result:=Result+'PercentValue='+I2S(Round(GetZoom*100))+';';
- //
+  Result := '';
+  Result := Result + 'ResizeTo100x100=' + B2S(RadioButton100x100.Checked) + ';';
+  Result := Result + 'ResizeTo200x200=' + B2S(RadioButton200x200.Checked) + ';';
+  Result := Result + 'ResizeTo600x800=' + B2S(RadioButton600x800.Checked) + ';';
+  Result := Result + 'ResizeToCustom=' + B2S(RadioButton_Custom.Checked) + ';';
+  Result := Result + 'SaveProportions=' + B2S(CheckBoxSaveProportions.Checked) + ';';
+  Result := Result + 'ResizeToPercent=' + B2S(RadioButtonPercent.Checked) + ';';
+  Result := Result + 'ResizeMethod=' + I2S(ComboBoxMethod.ItemIndex) + ';';
+  Result := Result + 'CustomWidth=' + I2S(StrToIntDef(WidthEdit.Text, 100)) + ';';
+  Result := Result + 'CustomHeight=' + I2S(StrToIntDef(HeightEdit.Text, 100)) + ';';
+  Result := Result + 'PercentValue=' + I2S(Round(GetZoom * 100)) + ';';
+  //
 end;
 
 class function TResizeToolPanelClass.ID: string;
 begin
- Result:='{29C59707-04DA-4194-9B53-6E39185CC71E}';
+  Result := '{29C59707-04DA-4194-9B53-6E39185CC71E}';
+end;
+
+function TResizeToolPanelClass.LangID: string;
+begin
+  Result := 'ResizeTool';
 end;
 
 procedure TResizeToolPanelClass.MakeTransform;
 begin
-// inherited;
- if NewImage<>nil then
- begin
-  ImageHistory.Add(NewImage,'{'+ID+'}['+GetProperties+']');
-  SetImagePointer(NewImage);
- end;
- ClosePanel;
+  if NewImage <> nil then
+  begin
+    ImageHistory.Add(NewImage, '{' + ID + '}[' + GetProperties + ']');
+    SetImagePointer(NewImage);
+  end;
+  ClosePanel;
 end;
 
-procedure TResizeToolPanelClass.SetProgress(Progress: Integer;
-  SID: string);
+procedure TResizeToolPanelClass.SetProgress(Progress: Integer; SID: string);
 begin
- if SID=FSID then
- (Editor as TImageEditor).FStatusProgress.Position:=Progress;
+  if SID = FSID then
+    (Editor as TImageEditor).FStatusProgress.Position := Progress;
 end;
 
-procedure TResizeToolPanelClass.SetThreadImage(Image: TBitmap;
-  SID: string);
+procedure TResizeToolPanelClass.SetThreadImage(Image: TBitmap; SID: string);
 begin
- if SID=FSID then
- begin
-  Pointer(NewImage):=Pointer(Image);
-  SetTempImage(Image);
- end else Image.Free;
- if ApplyOnDone then
- begin
-  MakeTransform;
-  if Assigned(fOnDone) then fOnDone(self);
-  free;
- end;
+  if SID = FSID then
+  begin
+    Pointer(NewImage) := Pointer(Image);
+    SetTempImage(Image);
+  end
+  else
+    F(Image);
+  if ApplyOnDone then
+  begin
+    MakeTransform;
+    if Assigned(FOnDone) then
+      FOnDone(Self);
+  end;
 end;
 
 procedure TResizeToolPanelClass.ExecuteProperties(Properties: String;
   OnDone: TNotifyEvent);
 begin
- ApplyOnDone:=true;
- fOnDone:=OnDone;
- Loading:=true;
- RadioButton100x100.Checked:=GetBoolValueByName(Properties,'ResizeTo100x100');
- RadioButton200x200.Checked:=GetBoolValueByName(Properties,'ResizeTo200x200');
- RadioButton600x800.Checked:=GetBoolValueByName(Properties,'ResizeTo600x800');
- RadioButton_Custom.Checked:=GetBoolValueByName(Properties,'ResizeToCustom');
- CheckBoxSaveProportions.Checked:=GetBoolValueByName(Properties,'SaveProportions');
- RadioButtonPercent.Checked:=GetBoolValueByName(Properties,'ResizeToPercent');
+  ApplyOnDone := True;
+  FOnDone := OnDone;
+  Loading := True;
+  RadioButton100x100.Checked := GetBoolValueByName(Properties, 'ResizeTo100x100');
+  RadioButton200x200.Checked := GetBoolValueByName(Properties, 'ResizeTo200x200');
+  RadioButton600x800.Checked := GetBoolValueByName(Properties, 'ResizeTo600x800');
+  RadioButton_Custom.Checked := GetBoolValueByName(Properties, 'ResizeToCustom');
+  CheckBoxSaveProportions.Checked := GetBoolValueByName(Properties, 'SaveProportions');
+  RadioButtonPercent.Checked := GetBoolValueByName(Properties, 'ResizeToPercent');
 
- ComboBoxMethod.ItemIndex:=GetIntValueByName(Properties,'ResizeMethod');
- WidthEdit.Text:=IntToStr(GetIntValueByName(Properties,'CustomWidth',100));
- HeightEdit.Text:=IntToStr(GetIntValueByName(Properties,'CustomHeight',100));
- ComboBoxPercent.Text:=GetValueByName(Properties,'PercentValue');
- Loading:=false;
- ApplyOnDone:=true;
- ChangeSize(Self);
+  ComboBoxMethod.ItemIndex := GetIntValueByName(Properties, 'ResizeMethod');
+  WidthEdit.Text := IntToStr(GetIntValueByName(Properties, 'CustomWidth', 100));
+  HeightEdit.Text := IntToStr(GetIntValueByName(Properties, 'CustomHeight', 100));
+  ComboBoxPercent.Text := GetValueByName(Properties, 'PercentValue');
+  Loading := False;
+  ApplyOnDone := True;
+  ChangeSize(Self);
 end;
 
 procedure TResizeToolPanelClass.SetProperties(Properties: String);

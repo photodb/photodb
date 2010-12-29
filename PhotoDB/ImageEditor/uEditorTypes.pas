@@ -39,6 +39,8 @@ type
     VirtualBrushCursor: Boolean;
     VBrush: TVBrushType;
     property Zoom : Extended read GetZoom;
+    procedure MakeImage; virtual; abstract;
+    procedure DoPaint; virtual; abstract;
   end;
 
 function NormalizeRect(R : TRect) : TRect;

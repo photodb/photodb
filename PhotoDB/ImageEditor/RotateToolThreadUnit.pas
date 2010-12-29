@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, RotateToolUnit,
-  Language, GraphicsBaseTypes, ScanlinesFX, uEditorTypes;
+  Language, GraphicsBaseTypes, ScanlinesFX, uEditorTypes, uMemory;
 
 type
   TRotateEffectThread = class(TThread)
@@ -61,55 +61,53 @@ end;
 
 procedure TRotateEffectThread.DoExit;
 begin
- if (FEditor as TImageEditor).ToolClass=FOwner then
- FOnExit(D,FSID) else
- begin
-  D.Free;
- end;
+  if (FEditor as TImageEditor).ToolClass = FOwner then
+  begin
+    FOnExit(D, FSID);
+    D := nil;
+  end;
 end;
 
 procedure TRotateEffectThread.Execute;
 begin
- inherited;
- FreeOnTerminate:=true;
- sleep(50);
- if (FEditor is TImageEditor) then
- begin
- if (FEditor as TImageEditor).ToolClass=FOwner then
- begin
-  if (FOwner as TRotateToolPanelClass).FSID<>FSID then
-  begin
-   BaseImage.free;
-   exit;
+  inherited;
+  FreeOnTerminate := True;
+  Sleep(50);
+  try
+    if not (FEditor is TImageEditor) then
+      Exit;
+
+    if (FEditor as TImageEditor).ToolClass <> FOwner then
+      Exit;
+
+    if (FOwner as TRotateToolPanelClass).FSID <> FSID then
+      Exit;
+
+    D := TBitmap.Create;
+    try
+      if Assigned(FProc) then
+        FProc(BaseImage, D, CallBack)
+      else
+      begin
+        D.Assign(BaseImage);
+        RotateBitmap(D, FAngle, FBackColor, CallBack);
+      end;
+      Synchronize(DoExit);
+    finally
+      F(D);
+    end;
+  finally
+    F(BaseImage)
   end;
- end else
- begin
-  BaseImage.free;
-  exit;
- end;
- end else
- begin
-  BaseImage.free;
-  exit;
- end;
- D:=TBitmap.Create;
- if Assigned(FProc) then
- FProc(BaseImage,D,CallBack) else
- begin
-  D.Assign(BaseImage);
-  RotateBitmap(D,FAngle,FBackColor,CallBack);
- end;
- Synchronize(DoExit);
- BaseImage.Free;
- intParam:=0;
- Synchronize(SetProgress);
+  IntParam := 0;
+  Synchronize(SetProgress);
 end;
 
 procedure TRotateEffectThread.SetProgress;
 begin
- if (FEditor as TImageEditor).ToolClass=FOwner then
- if (FOwner is TRotateToolPanelClass) then
- (FOwner as TRotateToolPanelClass).SetProgress(IntParam,FSID);
+  if (FEditor as TImageEditor).ToolClass = FOwner then
+    if (FOwner is TRotateToolPanelClass) then
+      (FOwner as TRotateToolPanelClass).SetProgress(IntParam, FSID);
 end;
 
 end.

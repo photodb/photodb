@@ -1269,8 +1269,8 @@ begin
   for I := Max(0, Y) to Height + Y - 1 do
   begin
     P1 := D.ScanLine[I];
-    YMin := Round(Sh * (I - Y));
-    YMax := Round(Sh * (I + 1 - Y)) - 1;
+    YMin := Max(0, Round(Sh * (I - Y)));
+    YMax := Min(S_h, Round(Sh * (I - Y + 1 )) - 1);
     for J := 0 to Width - 1 do
     begin
       Col := 0;
@@ -1279,10 +1279,6 @@ begin
       B := 0;
       for K := YMin to YMax do
       begin
-        if K > S_h then
-          Break;
-        if K < 0 then
-          Continue;
         for P := XAW[J] to XAW[J + 1] - 1 do
         begin
           if P > S_w then
@@ -1312,7 +1308,6 @@ var
   Y1r: Extended;
   Xs, Xd: array of PARGB;
   Dx, Dy, Dxjx1r: Extended;
-  RGB00, RGB10: TRGB;
   XAW : array of Integer;
   XAWD : array of Extended;
 begin
@@ -1358,23 +1353,20 @@ begin
       if J + X < 0 then
         Continue;
 
-      RGB00 := Xs[Yo, Xo];
-      RGB10 := Xs[Yo + 1, Xo];
-
       Dxjx1r := XAWD[J];
 
-      Z1 := (Xs[Yo, Xo + 1].R - RGB00.R) * Dxjx1r + RGB00.R;
-      Z2 := (Xs[Yo + 1, Xo + 1].R - RGB10.R) * Dxjx1r + RGB10.R;
+      Z1 := (Xs[Yo, Xo + 1].R - Xs[Yo, Xo].R) * Dxjx1r + Xs[Yo, Xo].R;
+      Z2 := (Xs[Yo + 1, Xo + 1].R - Xs[Yo + 1, Xo].R) * Dxjx1r + Xs[Yo + 1, Xo].R;
       k := (z2 - Z1) / Dy;
       Xd[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
 
-      Z1 := (Xs[Yo, Xo + 1].G - RGB00.G)* Dxjx1r + RGB00.G;
-      Z2 := (Xs[Yo + 1, Xo + 1].G - RGB10.G) * Dxjx1r + RGB10.G;
+      Z1 := (Xs[Yo, Xo + 1].G - Xs[Yo, Xo].G)* Dxjx1r + Xs[Yo, Xo].G;
+      Z2 := (Xs[Yo + 1, Xo + 1].G - Xs[Yo + 1, Xo].G) * Dxjx1r + Xs[Yo + 1, Xo].G;
       K := (Z2 - Z1) / Dy;
       Xd[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
 
-      Z1 := (Xs[Yo, Xo + 1].B - RGB00.B) * Dxjx1r + RGB00.B;
-      Z2 := (Xs[Yo + 1, Xo + 1].B - RGB10.B)  * Dxjx1r + RGB10.B;
+      Z1 := (Xs[Yo, Xo + 1].B - Xs[Yo, Xo].B) * Dxjx1r + Xs[Yo, Xo].B;
+      Z2 := (Xs[Yo + 1, Xo + 1].B - Xs[Yo + 1, Xo].B)  * Dxjx1r + Xs[Yo + 1, Xo].B;
       K := (Z2 - Z1) / Dy;
       Xd[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
     end;

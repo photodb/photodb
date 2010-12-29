@@ -163,7 +163,6 @@ uses
   ToolsUnit in 'ImageEditor\ToolsUnit.pas',
   Effects in 'ImageEditor\effects\Effects.pas',
   ExEffectsUnit in 'ImageEditor\ExEffectsUnit.pas',
-  GraphicsBaseTypes in 'ImageEditor\GraphicsBaseTypes.pas',
   GBlur2 in 'ImageEditor\GBlur2.pas',
   EffectsLanguage in 'ImageEditor\EffectsLanguage.pas',
   CustomSelectTool in 'ImageEditor\CustomSelectTool.pas',

@@ -3,7 +3,7 @@ unit Effects;
 interface
 
 uses Windows, Classes, Graphics, Math, SysUtils, GraphicsBaseTypes, Scanlines,
-  uEditorTypes, uDBGraphicTypes;
+  uEditorTypes, uDBGraphicTypes, uMemory;
 
 procedure Inverse(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 
@@ -39,6 +39,7 @@ procedure Disorder(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil); ove
 procedure Contrast(S, D: TBitmap; Value: Extended; Local: Boolean); overload;
 procedure Contrast(Image: TBitmap; Value: Extended; Local: Boolean); overload;
 procedure Contrast(Image: TArPARGB; Width, Height : integer; Value: Extended; Local: Boolean); overload;
+procedure SetContractBrightnessRGBChannelValue(ImageS, ImageD: TArPARGB; Width, Height: Integer; Contrast : Extended; var OverageBrightnss : Integer; Brightness, Red, Green, Blue: Integer); overload;
 
 Procedure Colorize(S,D : TBitmap; Luma: Integer);
 
@@ -56,6 +57,7 @@ procedure FlipVertical(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 
 procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil);
 procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+
 //-end temp resize functions
 procedure StretchCool(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 procedure SmoothResize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
@@ -209,63 +211,64 @@ end;
 
 procedure Sepia(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 begin
- Sepia(S, D, 20, CallBack);
+  Sepia(S, D, 20, CallBack);
 end;
 
-procedure Sepia(S,D : TBitmap; Depth: Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure Sepia(S, D: TBitmap; Depth: Integer; CallBack: TBaseEffectCallBackProc = nil);
 var
- color2:longint;
- r,g,b,rr,gg:byte;
- i,j:integer;
- ps, pd : PARGB;
- Terminating : boolean;
+  Color2: Longint;
+  R, G, B, Rr, Gg: Byte;
+  I, J: Integer;
+  Ps, Pd: PARGB;
+  Terminating: Boolean;
 begin
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- D.Width:=S.Width;
- D.Height:=S.Height;
- Terminating:=false;
- for i := 0 to S.height-1 do
- begin
-  ps:=S.ScanLine[i];
-  pD:=D.ScanLine[i];
-  for j := 0 to S.width-1 do
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  Terminating := False;
+  for I := 0 to S.Height - 1 do
   begin
-   r:=ps[j].r;
-   g:=ps[j].g;
-   b:=ps[j].b;
-   color2:=(r+g+b) div 3;
-   r:=color2;
-   g:=color2;
-   b:=color2;
-   rr:=Min(255,r+(depth*2));
-   gg:=Min(255,g+depth);
-   if rr <= ((depth*2)-1) then
-   rr:=255;
-   if gg <= (depth-1) then
-   gg:=255;
-   pd[j].r:=rr;
-   pd[j].g:=gg;
-   pd[j].b:=b;
+    Ps := S.ScanLine[I];
+    PD := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+    begin
+      R := Ps[J].R;
+      G := Ps[J].G;
+      B := Ps[J].B;
+      Color2 := (R + G + B) div 3;
+      R := Color2;
+      G := Color2;
+      B := Color2;
+      Rr := Min(255, R + (Depth * 2));
+      Gg := Min(255, G + Depth);
+      if Rr <= ((Depth * 2) - 1) then
+        Rr := 255;
+      if Gg <= (Depth - 1) then
+        Gg := 255;
+      Pd[J].R := Rr;
+      Pd[J].G := Gg;
+      Pd[J].B := B;
+    end;
+    if I mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * I / S.Height), Terminating);
+    if Terminating then
+      Break;
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*i/S.Height),Terminating);
-  if Terminating then Break;
- end;
 end;
 
 procedure Dither(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 var
-  scanlS, scanlD: PColor3Array;
-  error1R, error1G, error1B,
-  error2R, error2G, error2B: PIntegerArray;
-  x, y: integer;
-  dx: integer;
-  c, cD: TColor3;
-  sR, sG, sB: integer;
-  dR, dG, dB: integer;
-  eR, eG, eB: integer;
-  Terminating : boolean;
+  ScanlS, ScanlD: PColor3Array;
+  Error1R, Error1G, Error1B, Error2R, Error2G, Error2B: PIntegerArray;
+  X, Y: Integer;
+  Dx: Integer;
+  C, CD: TColor3;
+  SR, SG, SB: Integer;
+  DR, DG, DB: Integer;
+  ER, EG, EB: Integer;
+  Terminating: Boolean;
 
   procedure Swap(var p1, p2: PIntegerArray);
   var
@@ -287,155 +290,160 @@ var
   end;
 
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- error1R := AllocMem((S.Width + 2) * sizeof(integer));
- error1G := AllocMem((S.Width + 2) * sizeof(integer));
- error1B := AllocMem((S.Width + 2) * sizeof(integer));
- error2R := AllocMem((S.Width + 2) * sizeof(integer));
- error2G := AllocMem((S.Width + 2) * sizeof(integer));
- error2B := AllocMem((S.Width + 2) * sizeof(integer));
- dx := 1;
- Terminating:=false;
- for y := 0 to S.Height - 1 do
- begin
-  scanlS := S.ScanLine[y];
-  scanlD := D.ScanLine[y];
-  if dx > 0 then x := 0 else x := S.Width - 1;
-  while (x >= 0) and (x < S.Width) do
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  Error1R := AllocMem((S.Width + 2) * Sizeof(Integer));
+  Error1G := AllocMem((S.Width + 2) * Sizeof(Integer));
+  Error1B := AllocMem((S.Width + 2) * Sizeof(Integer));
+  Error2R := AllocMem((S.Width + 2) * Sizeof(Integer));
+  Error2G := AllocMem((S.Width + 2) * Sizeof(Integer));
+  Error2B := AllocMem((S.Width + 2) * Sizeof(Integer));
+  Dx := 1;
+  Terminating := False;
+  for Y := 0 to S.Height - 1 do
   begin
-   c := scanlS[x];
-   sR := c.r;
-   sG := c.g;
-   sB := c.b;
-   eR := error1R[x + 1];
-   //eG := error1G[x + 1];
-   //eB := error1B[x + 1];
-   dR := (sR * 16 + eR) div 16;
-   //dG := (sR * 16 + eR) div 16;
-   //dB := (sR * 16 + eR) div 16;
-   dR := clamp(dR, 0, 255) and (255 shl 4);
-   dG := clamp(dR, 0, 255) and (255 shl 4);
-   dB := clamp(dR, 0, 255) and (255 shl 4);
-   cD.r := dR;
-   cD.g := dG;
-   cD.b := dB;
-   scanlD[x] := cD;
-   eR := sR - dR;
-   eG := sG - dG;
-   eB := sB - dB;
-   inc(error1R[x + 1 + dx], (eR * 7)); {next}
-   inc(error1G[x + 1 + dx], (eG * 7));
-   inc(error1B[x + 1 + dx], (eB * 7));
-   inc(error2R[x + 1], (eR * 5)); {top}
-   inc(error2G[x + 1], (eG * 5));
-   inc(error2B[x + 1], (eB * 5));
-   inc(error2R[x + 1 + dx], (eR * 1)); {diag forward}
-   inc(error2G[x + 1 + dx], (eG * 1));
-   inc(error2B[x + 1 + dx], (eB * 1));
-   inc(error2R[x + 1 - dx], (eR * 3)); {diag backward}
-   inc(error2G[x + 1 - dx], (eG * 3));
-   inc(error2B[x + 1 - dx], (eB * 3));
-   inc(x, dx);
+    ScanlS := S.ScanLine[Y];
+    ScanlD := D.ScanLine[Y];
+    if Dx > 0 then
+      X := 0
+    else
+      X := S.Width - 1;
+    while (X >= 0) and (X < S.Width) do
+    begin
+      C := ScanlS[X];
+      SR := C.R;
+      SG := C.G;
+      SB := C.B;
+      ER := Error1R[X + 1];
+      // eG := error1G[x + 1];
+      // eB := error1B[x + 1];
+      DR := (SR * 16 + ER) div 16;
+      // dG := (sR * 16 + eR) div 16;
+      // dB := (sR * 16 + eR) div 16;
+      DR := Clamp(DR, 0, 255) and (255 shl 4);
+      DG := Clamp(DR, 0, 255) and (255 shl 4);
+      DB := Clamp(DR, 0, 255) and (255 shl 4);
+      CD.R := DR;
+      CD.G := DG;
+      CD.B := DB;
+      ScanlD[X] := CD;
+      ER := SR - DR;
+      EG := SG - DG;
+      EB := SB - DB;
+      Inc(Error1R[X + 1 + Dx], (ER * 7)); { next }
+      Inc(Error1G[X + 1 + Dx], (EG * 7));
+      Inc(Error1B[X + 1 + Dx], (EB * 7));
+      Inc(Error2R[X + 1], (ER * 5)); { top }
+      Inc(Error2G[X + 1], (EG * 5));
+      Inc(Error2B[X + 1], (EB * 5));
+      Inc(Error2R[X + 1 + Dx], (ER * 1)); { diag forward }
+      Inc(Error2G[X + 1 + Dx], (EG * 1));
+      Inc(Error2B[X + 1 + Dx], (EB * 1));
+      Inc(Error2R[X + 1 - Dx], (ER * 3)); { diag backward }
+      Inc(Error2G[X + 1 - Dx], (EG * 3));
+      Inc(Error2B[X + 1 - Dx], (EB * 3));
+      Inc(X, Dx);
+    end;
+    Dx := Dx * -1;
+    Swap(Error1R, Error2R);
+    Swap(Error1G, Error2G);
+    Swap(Error1B, Error2B);
+    FillChar(Error2R^, Sizeof(Integer) * (S.Width + 2), 0);
+    FillChar(Error2G^, Sizeof(Integer) * (S.Width + 2), 0);
+    FillChar(Error2B^, Sizeof(Integer) * (S.Width + 2), 0);
+    if Y mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * Y / S.Height), Terminating);
+    if Terminating then
+      Break;
   end;
-  dx := dx * -1;
-  Swap(error1R, error2R);
-  Swap(error1G, error2G);
-  Swap(error1B, error2B);
-  FillChar(error2R^, sizeof(integer) * (S.Width + 2), 0);
-  FillChar(error2G^, sizeof(integer) * (S.Width + 2), 0);
-  FillChar(error2B^, sizeof(integer) * (S.Width + 2), 0);
-  if y mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*y/S.Height),Terminating);
-  if Terminating then Break;
- end;
- FreeMem(error1R);
- FreeMem(error1G);
- FreeMem(error1B);
- FreeMem(error2R);
- FreeMem(error2G);
- FreeMem(error2B);
+  FreeMem(Error1R);
+  FreeMem(Error1G);
+  FreeMem(Error1B);
+  FreeMem(Error2R);
+  FreeMem(Error2G);
+  FreeMem(Error2B);
 end;
 
-procedure ChangeBrightness(S,D : TBitmap; Brightness: Integer);
+procedure ChangeBrightness(S, D: TBitmap; Brightness: Integer);
 var
-  LUT: array[Byte] of Byte;
-  v, i: Integer;
-  w, h, x, y: Integer;
+  LUT: array [Byte] of Byte;
+  V, I: Integer;
+  W, H, X, Y: Integer;
   LineSize: LongInt;
-  pLineStartS,pLineStartD: PByte;
-  ps, pd: PByte;
+  PLineStartS, PLineStartD: PByte;
+  Ps, Pd: PByte;
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- for i := 0 to 255 do
- begin
-  v := i + Brightness;
-  if v < 0 then
-    v := 0
-  else if v > 255 then
-    v := 255;
-   LUT[i] := v;
- end;
- w := S.Width;
- h := S.Height - 1;
- pLineStartS := PByte(S.ScanLine[h]);
- pLineStartD := PByte(D.ScanLine[h]);
- LineSize := ((w * 3 + 3) div 4) * 4;
- w := w * 3 - 1;
- for y := 0 to h do
- begin
-  ps := pLineStartS;
-  pd := pLineStartD;
-  for x := 0 to w do
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  for I := 0 to 255 do
   begin
-   pd^ := LUT[ps^];
-   Inc(ps);
-   Inc(pd);
+    V := I + Brightness;
+    if V < 0 then
+      V := 0
+    else if V > 255 then
+      V := 255;
+    LUT[I] := V;
   end;
-  Inc(pLineStartS, LineSize);
-  Inc(pLineStartD, LineSize);
- end;
+  W := S.Width;
+  H := S.Height - 1;
+  PLineStartS := PByte(S.ScanLine[H]);
+  PLineStartD := PByte(D.ScanLine[H]);
+  LineSize := ((W * 3 + 3) div 4) * 4;
+  W := W * 3 - 1;
+  for Y := 0 to H do
+  begin
+    Ps := PLineStartS;
+    Pd := PLineStartD;
+    for X := 0 to W do
+    begin
+      Pd^ := LUT[Ps^];
+      Inc(Ps);
+      Inc(Pd);
+    end;
+    Inc(PLineStartS, LineSize);
+    Inc(PLineStartD, LineSize);
+  end;
 end;
 
-procedure ChangeBrightness(Image : TBitmap; Brightness: Integer);
+procedure ChangeBrightness(Image: TBitmap; Brightness: Integer);
 var
-  LUT: array[Byte] of Byte;
-  v, i: Integer;
-  w, h, x, y: Integer;
+  LUT: array [Byte] of Byte;
+  V, I: Integer;
+  W, H, X, Y: Integer;
   LineSize: LongInt;
-  pLineStartD: PByte;
-  pd: PByte;
+  PLineStartD: PByte;
+  Pd: PByte;
 begin
- Image.PixelFormat := pf24bit;
- for i := 0 to 255 do
- begin
-  v := i + Brightness;
-  if v < 0 then
-    v := 0
-  else if v > 255 then
-    v := 255;
-   LUT[i] := v;
- end;
- w := Image.Width;
- h := Image.Height - 1;
- pLineStartD := PByte(Image.ScanLine[h]);
- LineSize := ((w * 3 + 3) div 4) * 4;
- w := w * 3 - 1;
- for y := 0 to h do
- begin
-  pd := pLineStartD;
-  for x := 0 to w do
+  Image.PixelFormat := Pf24bit;
+  for I := 0 to 255 do
   begin
-   pd^ := LUT[pd^];
-   Inc(pd);
+    V := I + Brightness;
+    if V < 0 then
+      V := 0
+    else if V > 255 then
+      V := 255;
+    LUT[I] := V;
   end;
-  Inc(pLineStartD, LineSize);
- end;
+  W := Image.Width;
+  H := Image.Height - 1;
+  PLineStartD := PByte(Image.ScanLine[H]);
+  LineSize := ((W * 3 + 3) div 4) * 4;
+  W := W * 3 - 1;
+  for Y := 0 to H do
+  begin
+    Pd := PLineStartD;
+    for X := 0 to W do
+    begin
+      Pd^ := LUT[Pd^];
+      Inc(Pd);
+    end;
+    Inc(PLineStartD, LineSize);
+  end;
 end;
 
 procedure ChangeBrightness(Image : TArPARGB; Width, Height : integer; Brightness: Integer);
@@ -488,137 +496,170 @@ const
 
 type
   TRGB = record
-   B, G, R: Byte;
+    B, G, R: Byte;
   end;
-  pRGB = ^TRGB;
+
+  PRGB = ^TRGB;
 
 var
-  c, x, y, f: Integer;
-  Dest, Src: pRGB;
-  p : PARGB;
-  r,g,b : Byte;
+  C, X, Y, F: Integer;
+  Dest, Src: PRGB;
+  P: PARGB;
+  R, G, B: Byte;
   Terminating: Boolean;
-
+  DPArr, SPArr : array of PRGB;
+  XA, YA : array of Integer;
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- Terminating:=false;
- try
-  r:=GetRValue(BackColor);
-  g:=GetGValue(BackColor);
-  b:=GetBValue(BackColor);
-  for y := 0 to D.Height - 1 do
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  Terminating := False;
+
+  R := GetRValue(BackColor);
+  G := GetGValue(BackColor);
+  B := GetBValue(BackColor);
+
+  SetLength(DPArr, D.Height);
+  for Y := 0 to D.Height - 1 do
+    DPArr[Y] := D.ScanLine[Y];
+  SetLength(SPArr, S.Height);
+  for Y := 0 to S.Height - 1 do
+    SPArr[Y] := S.ScanLine[Y];
+
+  SetLength(YA, S.Height);
+  SetLength(XA, S.Width);
+  for Y := 0 to D.Height - 1 do
+    YA[Y] := Round(Sin(Y * Rad * Length) * Frequency);
+
+  for X := 0 to D.Width - 1 do
+    XA[X] := Round(Sin(X * Rad * Length) * Frequency);
+
+  for Y := 0 to D.Height - 1 do
   begin
-   p:=D.ScanLine[y];
-   for x := 0 to D.Width - 1 do
-   begin
-    p[x].R:=r;
-    p[x].G:=g;
-    p[x].B:=b;
-   end;
+    P := PARGB(DPArr[Y]);
+    for X := 0 to D.Width - 1 do
+    begin
+      P[X].R := R;
+      P[X].G := G;
+      P[X].B := B;
+    end;
   end;
-  for y := 0 to S.Height - 1 do
+
+  for Y := 0 to S.Height - 1 do
   begin
-   Src := S.ScanLine[y];
-   for x := 0 to S.Width - 1 do
-   begin
+    Src := SPArr[Y];
     if Hor then
     begin
-     c:=Round(Sin(x * Rad * Length) * Frequency) + y;
-     f := Min(Max(c, 0),D.Height - 1);
-     Dest := D.ScanLine[f];
-     Inc(Dest, x);
+      for X := 0 to S.Width - 1 do
+      begin
+        C := XA[X] + Y;
+        F :=  Min(Max(C, 0), D.Height - 1);
+        Dest := DPArr[F];
+        Inc(Dest, X);
+
+        Dest^ := Src^;
+        Inc(Src);
+      end;
     end else
     begin
-     c:=Round(Sin(y * Rad * Length) * Frequency) + x;
-     f := Min(Max(c, 0),D.Width - 1);
-     Dest := D.ScanLine[y];
-     Inc(Dest, f);
+      for X := 0 to S.Width - 1 do
+      begin
+        C := YA[Y] + X;
+        F := Min(Max(C, 0), D.Width - 1);
+        Dest := DPArr[Y];
+        Inc(Dest, F);
+        Dest^ := Src^;
+        Inc(Src);
+      end;
     end;
-    Dest^ := Src^;
-    Inc(Src);
-   end;
 
-   if y mod 50=0 then
-   If Assigned(CallBack) then CallBack(Round(100*(y/S.Height)),Terminating);
-   if Terminating then Break;
+    if Y mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * (Y / S.Height)), Terminating);
+    if Terminating then
+      Break;
 
   end;
- finally
- end;
 end;
 
 procedure PixelsEffect(S, D: TBitmap; Hor, Ver: Word; CallBack : TBaseEffectCallBackProc = nil);
-
 type
   TRGB = record
     B, G, R: Byte;
   end;
-  pRGB = ^TRGB;
-  TpRGB = array of pARGB;
+
+  PRGB = ^TRGB;
+  TpRGB = array of PARGB;
 var
-  i, j, x, y, xd, yd, k, l,
-  rr, gg, bb, h, hx, hy: Integer;
-  Sour: pRGB;
-  dp : TpRGB;
-  Terminating : boolean;
+  I, J, X, Y, Xd, Yd, K, L, Rr, Gg, Bb, H, Hx, Hy, Dw1, Dh1: Integer;
+  Sour: PRGB;
+  Dp, Sp: TpRGB;
+  Terminating: Boolean;
 begin
- Terminating:=false;
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- if (Hor = 1) and (Ver = 1) then
- begin
-  D.Assign(S);
-  Exit;
- end;
-
- SetLength(dp,d.Height);
- for i := 0 to D.Height-1 do
- dp[i]:=d.ScanLine[i];
-
- xd := (S.Width - 1) div Hor;
- yd := (S.Height - 1) div Ver;
- for i := 0 to xd do
- for j := 0 to yd do
- begin
-  h := 0;
-  rr := 0;
-  gg := 0;
-  bb := 0;
-  hx := Min(Hor * (i + 1), S.Width - 1);
-  hy := Min(Ver * (j + 1), S.Height - 1);
-  for y := j * Ver to hy do
+  Terminating := False;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  if (Hor = 1) and (Ver = 1) then
   begin
-   Sour := S.ScanLine[y];
-   Inc(Sour, i * Hor);
-   for x := i * Hor to hx do
-   begin
-    Inc(rr, Sour^.R);
-    Inc(gg, Sour^.G);
-    Inc(bb, Sour^.B);
-    Inc(h);
-    Inc(Sour);
-   end;
-  end;
-  rr:=rr div h;
-  gg:=gg div h;
-  bb:=bb div h;
-  for k:=i * Hor to Min(hx + 1,D.Width-1) do
-  for l:=j * Ver to Min(hy + 1,D.Height-1) do
-  begin
-   dp[l,k].r:=rr;
-   dp[l,k].g:=gg;
-   dp[l,k].b:=bb;
+    D.Assign(S);
+    Exit;
   end;
 
-  if i mod 25=0 then
-  If Assigned(CallBack) then CallBack(Round(100*(i/xd)),Terminating);
-  if Terminating then Break;
- end;
+  Dw1 := D.Width - 1;
+  Dh1 := D.Height - 1;
+  SetLength(Dp, D.Height);
+  for I := 0 to D.Height - 1 do
+    Dp[I] := D.ScanLine[I];
+  SetLength(Sp, S.Height);
+  for I := 0 to S.Height - 1 do
+    Sp[I] := S.ScanLine[I];
+
+  Xd := (S.Width - 1) div Hor;
+  Yd := (S.Height - 1) div Ver;
+  for I := 0 to Xd do
+  begin
+    Hx := Min(Hor * (I + 1), S.Width - 1);
+    for J := 0 to Yd do
+    begin
+      H := 0;
+      Rr := 0;
+      Gg := 0;
+      Bb := 0;
+      Hy := Min(Ver * (J + 1), S.Height - 1);
+      for Y := J * Ver to Hy do
+      begin
+        Sour := PRGB(Sp[Y]);
+        Inc(Sour, I * Hor);
+        for X := I * Hor to Hx do
+        begin
+          Inc(Rr, Sour^.R);
+          Inc(Gg, Sour^.G);
+          Inc(Bb, Sour^.B);
+          Inc(H);
+          Inc(Sour);
+        end;
+      end;
+      Rr := Rr div H;
+      Gg := Gg div H;
+      Bb := Bb div H;
+      for K := I * Hor to Min(Hx + 1, Dw1) do
+        for L := J * Ver to Min(Hy + 1, Dh1) do
+        begin
+          Dp[L, K].R := Rr;
+          Dp[L, K].G := Gg;
+          Dp[L, K].B := Bb;
+        end;
+
+      if I mod 25 = 0 then
+        if Assigned(CallBack) then
+          CallBack(Round(100 * (I / Xd)), Terminating);
+      if Terminating then
+        Break;
+    end;
+  end;
 end;
 
 procedure Sharpen(S, D: TBitmap; alpha: Single; CallBack : TBaseEffectCallBackProc = nil);
@@ -738,8 +779,7 @@ begin
   end;
 end;
 
-procedure Blocks(S, D: TBitmap; Hor, Ver, MaxOffset:
-  Integer; BackColor: TColor);
+procedure Blocks(S, D: TBitmap; Hor, Ver, MaxOffset: Integer; BackColor: TColor);
 
   function RandomInRadius(Num, Radius: Integer): Integer;
   begin
@@ -750,24 +790,24 @@ procedure Blocks(S, D: TBitmap; Hor, Ver, MaxOffset:
   end;
 
 var
-  x, y, xd, yd: Integer;
+  X, Y, Xd, Yd: Integer;
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- try
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+
   D.Assign(S);
   D.Canvas.Brush.Color := BackColor;
   D.Canvas.FillRect(Rect(0, 0, D.Width, D.Height));
-  xd := (D.Width - 1) div Hor;
-  yd := (D.Height - 1) div Ver;
+  Xd := (D.Width - 1) div Hor;
+  Yd := (D.Height - 1) div Ver;
   Randomize;
-  for x := 0 to xd do
-  for y := 0 to yd do
-  BitBlt(D.Canvas.Handle,RandomInRadius(Hor * x, MaxOffset),RandomInRadius(Ver * y, MaxOffset), Hor, Ver, S.Canvas.Handle, Hor * x, Ver * y, SRCCOPY);
- finally
- end;
+  for X := 0 to Xd do
+    for Y := 0 to Yd do
+      BitBlt(D.Canvas.Handle, RandomInRadius(Hor * X, MaxOffset), RandomInRadius(Ver * Y, MaxOffset), Hor, Ver,
+        S.Canvas.Handle, Hor * X, Ver * Y, SRCCOPY);
+
 end;
 
 procedure Gamma(S, D: TBitmap; L: Double);
@@ -868,9 +908,9 @@ begin
   end;
   for I := 0 to 255 do
   begin
-    RuleArrayR[I] := Round(Min(255, Max(0, I * (1+(Red/100)))));
-    RuleArrayG[I] := Round(Min(255, Max(0, I * (1+(Green/100)))));
-    RuleArrayB[I] := Round(Min(255, Max(0, I * (1+(Blue/100)))));
+    RuleArrayR[I] := Round(Min(255, Max(0, I * (1 + (Red / 100)))));
+    RuleArrayG[I] := Round(Min(255, Max(0, I * (1 + (Green / 100)))));
+    RuleArrayB[I] := Round(Min(255, Max(0, I * (1 + (Blue / 100)))));
   end;
   for I := 0 to S.Height - 1 do
   begin
@@ -878,9 +918,9 @@ begin
     PD := D.ScanLine[I];
     for J := 0 to S.Width - 1 do
     begin
-      PD[J].r:=RuleArrayR[PS[J].r];
-      PD[J].g:=RuleArrayR[PS[J].G];
-      PD[J].b:=RuleArrayR[PS[J].B];
+      PD[J].R := RuleArrayR[PS[J].R];
+      PD[J].G := RuleArrayR[PS[J].G];
+      PD[J].B := RuleArrayR[PS[J].B];
     end;
   end;
 end;
@@ -970,17 +1010,17 @@ var
   r,g,b : Byte;
 begin
  D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- Setlength(xS,S.Height);
- for i:=0 to S.Height-1 do
- xS[i]:=S.ScanLine[i];
- Setlength(xD,D.Height);
- for i:=0 to D.Height-1 do
- xD[i]:=D.ScanLine[i];
+  D.Height := S.Height;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  Setlength(XS, S.Height);
+  for I := 0 to S.Height - 1 do
+    XS[I] := S.ScanLine[I];
+  Setlength(XD, D.Height);
+  for I := 0 to D.Height - 1 do
+    XD[I] := D.ScanLine[I];
   Randomize;
-  Terminate:=false;
+  Terminate := False;
   try
     WW := S.Width - 1;
     HH := S.Height - 1;
@@ -1133,8 +1173,7 @@ begin
     mR := 128;
     mG := 128;
     mB := 128;
-  end
-  else
+  end else
   begin
     tr := 0;
     tg := 0;
@@ -1202,8 +1241,7 @@ begin
 //    mR := 128;
 //    mG := 128;
     mB := 128;
-  end
-  else
+  end else
   begin
 //     tr := 0;
 //    tg := 0;
@@ -1387,221 +1425,229 @@ begin
   end;
 end;
 
-Procedure AutoLevels(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure AutoLevels(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
 var
-  ps, pd : PARGB;
-  i,j, MinCount : integer;
-  L: byte;
-  Count : int64;
-  RL : T255ByteArray;
-  Gistogramm : T255IntArray;
-  Terminated : Boolean;
-  Terminating : Boolean;
+  Ps, Pd: PARGB;
+  I, J, MinCount: Integer;
+  L: Byte;
+  Count: Int64;
+  RL: T255ByteArray;
+  Gistogramm: T255IntArray;
+  Terminated: Boolean;
+  Terminating: Boolean;
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- Gistogramm:=Gistogramma(S,Terminated,CallBack,0.5);
- if Terminated then exit;
- MinCount:=(S.height div 50)*(S.Width div 50);
- Count:=0;
- L:=0;
- for i:=255 downto 0 do
- begin
-  inc(Count,Gistogramm[i]);
-  if Count>MinCount then
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  Gistogramm := Gistogramma(S, Terminated, CallBack, 0.5);
+  if Terminated then
+    Exit;
+  MinCount := (S.Height div 50) * (S.Width div 50);
+  Count := 0;
+  L := 0;
+  for I := 255 downto 0 do
   begin
-   L:=i;
-   break;
+    Inc(Count, Gistogramm[I]);
+    if Count > MinCount then
+    begin
+      L := I;
+      Break;
+    end;
   end;
- end;
- if L=0 then L:=1;
- for i:=0 to 255 do
- begin
-  RL[i]:=Min(255,Round((255/l)*i));
- end;
- Terminating:=false;
- for i:=0 to s.height-1 do
- begin
-  ps:=s.ScanLine[i];
-  pd:=d.ScanLine[i];
-  for j:=0 to s.Width-1 do
+  if L = 0 then
+    L := 1;
+  for I := 0 to 255 do
   begin
-   pd[j].r:=Rl[ps[j].r];
-   pd[j].g:=Rl[ps[j].g];
-   pd[j].b:=Rl[ps[j].b];
+    RL[I] := Min(255, Round((255 / L) * I));
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*(i*0.5/S.Height+0.5)),Terminating);
-  if Terminating then
+  Terminating := False;
+  for I := 0 to S.Height - 1 do
   begin
-   Break;
+    Ps := S.ScanLine[I];
+    Pd := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+    begin
+      Pd[J].R := Rl[Ps[J].R];
+      Pd[J].G := Rl[Ps[J].G];
+      Pd[J].B := Rl[Ps[J].B];
+    end;
+    if I mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * (I * 0.5 / S.Height + 0.5)), Terminating);
+    if Terminating then
+      Break;
+
   end;
- end;
 end;
 
-Procedure AutoColors(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure AutoColors(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
 var
-  ps, pd : PARGB;
-  i,j, MinCount : integer;
-  Count : int64;
-  r,g,b: byte;
-  Rx, Bx, Gx : T255ByteArray;
-  GistogrammaR, GistogrammaG, GistogrammaB : T255IntArray;
-  Terminated, Terminating : Boolean;
+  Ps, Pd: PARGB;
+  I, J, MinCount: Integer;
+  Count: Int64;
+  R, G, B: Byte;
+  Rx, Bx, Gx: T255ByteArray;
+  GistogrammaR, GistogrammaG, GistogrammaB: T255IntArray;
+  Terminated, Terminating: Boolean;
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- GistogrammaR:=GistogrammR(S,Terminated,CallBack,0.25,0);
- if Terminated then Exit;
- GistogrammaG:=GistogrammG(S,Terminated,CallBack,0.25,0.25);
- if Terminated then Exit;
- GistogrammaB:=GistogrammB(S,Terminated,CallBack,0.25,0.5);
- if Terminated then Exit;
- Count:=0;
- R:=0;
- G:=0;
- B:=0;
- MinCount:=(S.height div 10)*(S.Width div 10);
- for i:=255 downto 0 do
- begin
-  inc(Count,GistogrammaR[i]);
-  if Count>MinCount then
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  GistogrammaR := GistogrammR(S, Terminated, CallBack, 0.25, 0);
+  if Terminated then
+    Exit;
+  GistogrammaG := GistogrammG(S, Terminated, CallBack, 0.25, 0.25);
+  if Terminated then
+    Exit;
+  GistogrammaB := GistogrammB(S, Terminated, CallBack, 0.25, 0.5);
+  if Terminated then
+    Exit;
+  Count := 0;
+  R := 0;
+  G := 0;
+  B := 0;
+  MinCount := (S.Height div 10) * (S.Width div 10);
+  for I := 255 downto 0 do
   begin
-   r:=i;
-   break;
+    Inc(Count, GistogrammaR[I]);
+    if Count > MinCount then
+    begin
+      R := I;
+      Break;
+    end;
   end;
- end;
- Count:=0;
- for i:=255 downto 0 do
- begin
-  inc(Count,GistogrammaG[i]);
-  if Count>MinCount then
+  Count := 0;
+  for I := 255 downto 0 do
   begin
-   g:=i;
-   break;
+    Inc(Count, GistogrammaG[I]);
+    if Count > MinCount then
+    begin
+      G := I;
+      Break;
+    end;
   end;
- end;
- Count:=0;
- for i:=255 downto 0 do
- begin
-  inc(Count,GistogrammaB[i]);
-  if Count>MinCount then
+  Count := 0;
+  for I := 255 downto 0 do
   begin
-   b:=i;
-   break;
+    Inc(Count, GistogrammaB[I]);
+    if Count > MinCount then
+    begin
+      B := I;
+      Break;
+    end;
   end;
- end;
- if r=0 then r:=1;
- if g=0 then g:=1;
- if b=0 then b:=1;
- for i:=0 to 255 do
- begin
-  Rx[i]:=Min(255,Round((255/r)*i));
-  Gx[i]:=Min(255,Round((255/g)*i));
-  Bx[i]:=Min(255,Round((255/b)*i));
- end;
- Terminating:=false;
- for i:=0 to S.height-1 do
- begin
-  ps:=s.ScanLine[i];
-  pd:=d.ScanLine[i];
-  for j:=0 to S.Width-1 do
+  if R = 0 then
+    R := 1;
+  if G = 0 then
+    G := 1;
+  if B = 0 then
+    B := 1;
+  for I := 0 to 255 do
   begin
-   pd[j].r:=Rx[ps[j].r];
-   pd[j].g:=Gx[ps[j].g];
-   pd[j].b:=Bx[ps[j].b];
+    Rx[I] := Min(255, Round((255 / R) * I));
+    Gx[I] := Min(255, Round((255 / G) * I));
+    Bx[I] := Min(255, Round((255 / B) * I));
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*(i*0.25/S.Height+0.75)),Terminating);
-  if Terminating then
+  Terminating := False;
+  for I := 0 to S.Height - 1 do
   begin
-   Break;
+    Ps := S.ScanLine[I];
+    Pd := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+    begin
+      Pd[J].R := Rx[Ps[J].R];
+      Pd[J].G := Gx[Ps[J].G];
+      Pd[J].B := Bx[Ps[J].B];
+    end;
+    if I mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * (I * 0.25 / S.Height + 0.75)), Terminating);
+    if Terminating then
+      Break;
+
   end;
- end;
 end;
 
-function GistogrammRW(S : TBitmap; Rect : TRect; var CountR : int64) : T255IntArray;
+function GistogrammRW(S: TBitmap; Rect: TRect; var CountR: Int64): T255IntArray;
 var
-  i,j : integer;
-  ps : PARGB;
+  I, J: Integer;
+  Ps: PARGB;
 begin
- S.PixelFormat := pf24bit;
- for i:=0 to 255 do
- Result[i]:=0;
- CountR:=0;
- for i:=Max(0,Rect.Top) to Min(Rect.Bottom-1,S.Height-1) do
- begin
- ps:=S.ScanLine[i];
- for j:=Max(0,Rect.Left) to Min(Rect.Right-1,S.Width-1) do
- if ps[j].r>max(ps[j].g,ps[j].b) then
+  S.PixelFormat := Pf24bit;
+  for I := 0 to 255 do
+    Result[I] := 0;
+  CountR := 0;
+  for I := Max(0, Rect.Top) to Min(Rect.Bottom - 1, S.Height - 1) do
   begin
-   inc(CountR,1);
-   inc(Result[ps[j].r-max(ps[j].g,ps[j].b)],1);
+    Ps := S.ScanLine[I];
+    for J := Max(0, Rect.Left) to Min(Rect.Right - 1, S.Width - 1) do
+      if Ps[J].R > Max(Ps[J].G, Ps[J].B) then
+      begin
+        Inc(CountR, 1);
+        Inc(Result[Ps[J].R - Max(Ps[J].G, Ps[J].B)], 1);
+      end;
   end;
- end;
 end;
 
-procedure Rotate180(S,D : Tbitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Rotate180(S, D: Tbitmap; CallBack: TBaseEffectCallBackProc = nil);
 var
-  i, j : integer;
-  p1, p2 : pargb;
-  Terminating : Boolean;
+  I, J: Integer;
+  P1, P2: Pargb;
+  Terminating: Boolean;
 begin
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- D.Width:=S.Width;
- D.Height:=S.Height;
- Terminating:=false;
- for i:=0 to S.Height-1 do
- begin
-  p1:=s.ScanLine[i];
-  p2:=d.ScanLine[S.Height-i-1];
-  for j:=0 to S.Width-1 do
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  Terminating := False;
+  for I := 0 to S.Height - 1 do
   begin
-   p2[j]:=p1[S.Width-1-j];
+    P1 := S.ScanLine[I];
+    P2 := D.ScanLine[S.Height - I - 1];
+    for J := 0 to S.Width - 1 do
+      P2[J] := P1[S.Width - 1 - J];
+
+    if I mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * (I * 0.25 / S.Height + 0.75)), Terminating);
+    if Terminating then
+    begin
+      Break;
+    end;
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*(i*0.25/S.Height+0.75)),Terminating);
-  if Terminating then
-  begin
-   Break;
-  end;
- end;
 end;
 
-procedure Rotate270(S,D : Tbitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Rotate270(S, D: Tbitmap; CallBack: TBaseEffectCallBackProc = nil);
 var
- i, j : integer;
- p1 : pargb;
- p : array of pargb;
- Terminating : Boolean;
+  I, J: Integer;
+  P1: Pargb;
+  P: array of Pargb;
+  Terminating: Boolean;
 begin
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- D.Width:=S.Height;
- D.Height:=S.Width;
- setlength(p,S.Width);
- for i:=0 to S.Width-1 do
- p[i]:=D.ScanLine[S.Width-1-i];
- Terminating:=false;
- for i:=0 to S.Height-1 do
- begin
-  p1:=S.ScanLine[i];
-  for j:=0 to S.Width-1 do
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  D.Width := S.Height;
+  D.Height := S.Width;
+  Setlength(P, S.Width);
+  for I := 0 to S.Width - 1 do
+    P[I] := D.ScanLine[S.Width - 1 - I];
+  Terminating := False;
+  for I := 0 to S.Height - 1 do
   begin
-   p[j,i]:=p1[j];
+    P1 := S.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+      P[J, I] := P1[J];
+
+    if I mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * (I * 0.25 / S.Height + 0.75)), Terminating);
+    if Terminating then
+    begin
+      Break;
+    end;
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*(i*0.25/S.Height+0.75)),Terminating);
-  if Terminating then
-  begin
-   Break;
-  end;
- end;
 end;
 
 procedure Rotate90(S,D : tbitmap; CallBack : TBaseEffectCallBackProc = nil);
@@ -1707,6 +1753,7 @@ var x, y, W, H, v1, v2: Integer;
     Terminating : boolean;
     p : PARGB;
     rgb : TRGB;
+
   procedure SinCos(AngleRad: Double; var ASin, ACos: Double);
   begin
     ASin := Sin(AngleRad);
@@ -1752,47 +1799,68 @@ var x, y, W, H, v1, v2: Integer;
   end;
 
   procedure Rotate;
-  var x, y, xr, yr, yp: Integer;
-      ACos, ASin: Double;
-      Lim: TRect;
-  begin
-   W := Bmp.Width;
-   H := Bmp.Height;
-   SinCos(-Angle * Pi/180, ASin, ACos);
-   Lim := GetRLLimit(RotateRect(Rect(0, 0, Bmp.Width, Bmp.Height), Point(0, 0), Angle));
-   Bitmap.Width := Lim.Right - Lim.Left;
-   Bitmap.Height := Lim.Bottom - Lim.Top;
+  var
+    I, X, Y, Xr, Yr, Yp: Integer;
+    ACos, ASin: Double;
+    Lim: TRect;
+    YPSin, YPCos : Integer;
 
-   rgb.r:=GetRValue(BackColor);
-   rgb.g:=GetGValue(BackColor);
-   rgb.b:=GetBValue(BackColor);
-   for y := 0 to Bitmap.Height - 1 do
-   begin
-    Dest := Bitmap.ScanLine[y];
-    p:=pargb(dest);
-    for x := 0 to Bitmap.Width - 1 do
+    XWAC, XWAS : array of Integer;
+    SrcAr: array of pRGB;
+  begin
+    W := Bmp.Width;
+    H := Bmp.Height;
+    SinCos(-Angle * Pi / 180, ASin, ACos);
+    Lim := GetRLLimit(RotateRect(Rect(0, 0, Bmp.Width, Bmp.Height), Point(0, 0), Angle));
+    Bitmap.Width := Lim.Right - Lim.Left;
+    Bitmap.Height := Lim.Bottom - Lim.Top;
+
+    Rgb.R := GetRValue(BackColor);
+    Rgb.G := GetGValue(BackColor);
+    Rgb.B := GetBValue(BackColor);
+    SetLength(XWAS, Bitmap.Width);
+    SetLength(XWAC, Bitmap.Width);
+    for I := 0 to Bitmap.Width - 1 do
     begin
-     p[x].r:=rgb.r;
-     p[x].g:=rgb.g;
-     p[x].b:=rgb.b;
+      XWAC[I] := Round((I + Lim.Left) * ACos);
+      XWAS[I] := Round((I + Lim.Left) * ASin);
     end;
-    yp := y + Lim.Top;
-    for x := 0 to Bitmap.Width - 1 do
+
+    SetLength(SrcAr, Bmp.Height);
+    for I := 0 to Bmp.Height - 1 do
+      SrcAr[I] := Bmp.ScanLine[I];
+
+    for Y := 0 to Bitmap.Height - 1 do
     begin
-     xr := Round(((x + Lim.Left) * ACos) - (yp * ASin));
-     yr := Round(((x + Lim.Left) * ASin) + (yp * ACos));
-     if (xr > -1) and (xr < W) and (yr > -1) and (yr < H) then
-     begin
-      Src := Bmp.ScanLine[yr];
-      Inc(Src, xr);
-      Dest^ := Src^;
-     end;
-     Inc(Dest);
+      Dest := Bitmap.ScanLine[Y];
+      P := PARGB(Dest);
+      for X := 0 to Bitmap.Width - 1 do
+      begin
+        P[X].R := Rgb.R;
+        P[X].G := Rgb.G;
+        P[X].B := Rgb.B;
+      end;
+      Yp := Y + Lim.Top;
+      YPSin := Round(Yp * ASin);
+      YPCos := Round(Yp * ACos);
+      for X := 0 to Bitmap.Width - 1 do
+      begin
+        Xr := XWAC[X] - YPSin;
+        Yr := XWAS[X] + YPCos;
+        if (Xr > -1) and (Xr < W) and (Yr > -1) and (Yr < H) then
+        begin
+          Src := SrcAr[Yr];
+          Inc(Src, Xr);
+          Dest^ := Src^;
+        end;
+        Inc(Dest);
+      end;
+      if Y mod 50 = 0 then
+        if Assigned(CallBack) then
+          CallBack(Round(100 * Y / Bitmap.Height), Terminating);
+      if Terminating then
+        Break;
     end;
-    if y mod 50=0 then
-    If Assigned(CallBack) then CallBack(Round(100*y/Bitmap.Height),Terminating);
-    if Terminating then Break;
-   end;
   end;
 
 begin
@@ -1873,239 +1941,254 @@ type
     R: Byte;
   end;
 var
-  x, y, ix, iy: integer;
-  x1, x2, x3: integer;
+  X, Y, Ix, Iy: Integer;
+  X1, X2, X3: Integer;
 
-  xscale, yscale: single;
-  iRed, iGrn, iBlu, iRatio: Longword;
-  p, c1, c2, c3, c4, c5: tRGB24;
-  pt, pt1: pRGB24;
-  iSrc, iDst, s1: integer;
-  i, j, r, g, b, tmpY: integer;
+  Xscale, Yscale: Single;
+  IRed, IGrn, IBlu, IRatio: Longword;
+  P, C1, C2, C3, C4, C5: TRGB24;
+  Pt, Pt1: PRGB24;
+  ISrc, IDst, S1: Integer;
+  I, J, R, G, B, TmpY: Integer;
 
-  RowDest, RowSource, RowSourceStart: integer;
-  w, h: integer;
-  dxmin, dymin: integer;
-  ny1, ny2, ny3: integer;
-  dx, dy: integer;
-  lutX, lutY: array of integer;
-  src,dest:TBitmap;
-  Terminating : boolean;
+  RowDest, RowSource, RowSourceStart: Integer;
+  W, H: Integer;
+  Dxmin, Dymin: Integer;
+  Ny1, Ny2, Ny3: Integer;
+  Dx, Dy: Integer;
+  LutX, LutY: array of Integer;
+  Src, Dest: TBitmap;
+  Terminating: Boolean;
 begin
- w:=Width;
- h:=Height;
-   pointer(src):=pointer(s);
-   pointer(dest):=pointer(d);
-   Terminating:=false;
-  if src.PixelFormat <> pf24bit then src.PixelFormat := pf24bit;
-  if dest.PixelFormat <> pf24bit then dest.PixelFormat := pf24bit;
-  Dest.Width:=Width;
-  Dest.Height:=Height;
+  W := Width;
+  H := Height;
+  Pointer(Src) := Pointer(S);
+  Pointer(Dest) := Pointer(D);
+  Terminating := False;
+  if Src.PixelFormat <> Pf24bit then
+    Src.PixelFormat := Pf24bit;
+  if Dest.PixelFormat <> Pf24bit then
+    Dest.PixelFormat := Pf24bit;
+  Dest.Width := Width;
+  Dest.Height := Height;
 
-  if (src.Width <= dest.Width) and (src.Height <= dest.Height) then
+  if (Src.Width <= Dest.Width) and (Src.Height <= Dest.Height) then
   begin
-    dest.Assign(src);
-    exit;
+    Dest.Assign(Src);
+    Exit;
   end;
 
-  iDst := (w * 24 + 31) and not 31;
-  iDst := iDst div 8; //BytesPerScanline
-  iSrc := (Src.Width * 24 + 31) and not 31;
-  iSrc := iSrc div 8;
+  IDst := (W * 24 + 31) and not 31;
+  IDst := IDst div 8; // BytesPerScanline
+  ISrc := (Src.Width * 24 + 31) and not 31;
+  ISrc := ISrc div 8;
 
-  xscale := 1 / (w / src.Width);
-  yscale := 1 / (h / src.Height);
+  Xscale := 1 / (W / Src.Width);
+  Yscale := 1 / (H / Src.Height);
 
   // X lookup table
-  SetLength(lutX, w);
-  x1 := 0;
-  x2 := trunc(xscale);
-  for x := 0 to w - 1 do
+  SetLength(LutX, W);
+  X1 := 0;
+  X2 := Trunc(Xscale);
+  for X := 0 to W - 1 do
   begin
-    lutX[x] := x2 - x1;
-    x1 := x2;
-    x2 := trunc((x + 2) * xscale);
+    LutX[X] := X2 - X1;
+    X1 := X2;
+    X2 := Trunc((X + 2) * Xscale);
   end;
 
   // Y lookup table
-  SetLength(lutY, h);
-  x1 := 0;
-  x2 := trunc(yscale);
-  for x := 0 to h - 1 do
+  SetLength(LutY, H);
+  X1 := 0;
+  X2 := Trunc(Yscale);
+  for X := 0 to H - 1 do
   begin
-    lutY[x] := x2 - x1;
-    x1 := x2;
-    x2 := trunc((x + 2) * yscale);
+    LutY[X] := X2 - X1;
+    X1 := X2;
+    X2 := Trunc((X + 2) * Yscale);
   end;
 
-  dec(w);
-  dec(h);
-  RowDest := integer(Dest.Scanline[0]);
-  RowSourceStart := integer(Src.Scanline[0]);
+  Dec(W);
+  Dec(H);
+  RowDest := Integer(Dest.Scanline[0]);
+  RowSourceStart := Integer(Src.Scanline[0]);
   RowSource := RowSourceStart;
-  for y := 0 to h do
+  for Y := 0 to H do
   begin
-    dy := lutY[y];
-    x1 := 0;
-    x3 := 0;
-    for x := 0 to w do
+    Dy := LutY[Y];
+    X1 := 0;
+    X3 := 0;
+    for X := 0 to W do
     begin
-      dx:= lutX[x];
-      iRed:= 0;
-      iGrn:= 0;
-      iBlu:= 0;
+      Dx := LutX[X];
+      IRed := 0;
+      IGrn := 0;
+      IBlu := 0;
       RowSource := RowSourceStart;
-      for iy := 1 to dy do
+      for Iy := 1 to Dy do
       begin
-        pt := PRGB24(RowSource + x1);
-        for ix := 1 to dx do
+        Pt := PRGB24(RowSource + X1);
+        for Ix := 1 to Dx do
         begin
-          iRed := iRed + pt.R;
-          iGrn := iGrn + pt.G;
-          iBlu := iBlu + pt.B;
-          inc(pt);
+          IRed := IRed + Pt.R;
+          IGrn := IGrn + Pt.G;
+          IBlu := IBlu + Pt.B;
+          Inc(Pt);
         end;
-        RowSource := RowSource - iSrc;
+        RowSource := RowSource - ISrc;
       end;
-      iRatio := 65535 div (dx * dy);
-      pt1 := PRGB24(RowDest + x3);
-      pt1.R := (iRed * iRatio) shr 16;
-      pt1.G := (iGrn * iRatio) shr 16;
-      pt1.B := (iBlu * iRatio) shr 16;
-      x1 := x1 + 3 * dx;
-      inc(x3,3);
+      IRatio := 65535 div (Dx * Dy);
+      Pt1 := PRGB24(RowDest + X3);
+      Pt1.R := (IRed * IRatio) shr 16;
+      Pt1.G := (IGrn * IRatio) shr 16;
+      Pt1.B := (IBlu * IRatio) shr 16;
+      X1 := X1 + 3 * Dx;
+      Inc(X3, 3);
     end;
-    RowDest := RowDest - iDst;
+    RowDest := RowDest - IDst;
     RowSourceStart := RowSource;
   end;
 
-  if dest.Height < 3 then exit;
+  if Dest.Height < 3 then
+    Exit;
 
   // Sharpening...
-  s1 := integer(dest.ScanLine[0]);
-  iDst := integer(dest.ScanLine[1]) - s1;
-  ny1 := Integer(s1);
-  ny2 := ny1 + iDst;
-  ny3 := ny2 + iDst;
-  for y := 1 to dest.Height - 2 do
+  S1 := Integer(Dest.ScanLine[0]);
+  IDst := Integer(Dest.ScanLine[1]) - S1;
+  Ny1 := Integer(S1);
+  Ny2 := Ny1 + IDst;
+  Ny3 := Ny2 + IDst;
+  for Y := 1 to Dest.Height - 2 do
   begin
-    for x := 0 to dest.Width - 3 do
+    for X := 0 to Dest.Width - 3 do
     begin
-      x1 := x * 3;
-      x2 := x1 + 3;
-      x3 := x1 + 6;
+      X1 := X * 3;
+      X2 := X1 + 3;
+      X3 := X1 + 6;
 
-      c1 := pRGB24(ny1 + x1)^;
-      c2 := pRGB24(ny1 + x3)^;
-      c3 := pRGB24(ny2 + x2)^;
-      c4 := pRGB24(ny3 + x1)^;
-      c5 := pRGB24(ny3 + x3)^;
+      C1 := PRGB24(Ny1 + X1)^;
+      C2 := PRGB24(Ny1 + X3)^;
+      C3 := PRGB24(Ny2 + X2)^;
+      C4 := PRGB24(Ny3 + X1)^;
+      C5 := PRGB24(Ny3 + X3)^;
 
-      r := (c1.R + c2.R + (c3.R * -12) + c4.R + c5.R) div -8;
-      g := (c1.G + c2.G + (c3.G * -12) + c4.G + c5.G) div -8;
-      b := (c1.B + c2.B + (c3.B * -12) + c4.B + c5.B) div -8;
+      R := (C1.R + C2.R + (C3.R * -12) + C4.R + C5.R) div -8;
+      G := (C1.G + C2.G + (C3.G * -12) + C4.G + C5.G) div -8;
+      B := (C1.B + C2.B + (C3.B * -12) + C4.B + C5.B) div -8;
 
-      if r < 0 then r := 0 else if r > 255 then r := 255;
-      if g < 0 then g := 0 else if g > 255 then g := 255;
-      if b < 0 then b := 0 else if b > 255 then b := 255;
+      if R < 0 then
+        R := 0
+      else if R > 255 then
+        R := 255;
+      if G < 0 then
+        G := 0
+      else if G > 255 then
+        G := 255;
+      if B < 0 then
+        B := 0
+      else if B > 255 then
+        B := 255;
 
-      pt1 := pRGB24(ny2 + x2);
-      pt1.R := r;
-      pt1.G := g;
-      pt1.B := b;
+      Pt1 := PRGB24(Ny2 + X2);
+      Pt1.R := R;
+      Pt1.G := G;
+      Pt1.B := B;
     end;
 
-    inc(ny1, iDst);
-    inc(ny2, iDst);
-    inc(ny3, iDst);
+    Inc(Ny1, IDst);
+    Inc(Ny2, IDst);
+    Inc(Ny3, IDst);
 
-          if y mod 50=0 then
-      If Assigned(CallBack) then CallBack(Round(100*y/D.Height),Terminating);
-      if Terminating then Break;
+    if Y mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * Y / D.Height), Terminating);
+    if Terminating then
+      Break;
 
   end;
 end;
 
 procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 type
-  TRGBArray = array[Word] of TRGBTriple;
-  pRGBArray = ^TRGBArray;
+  TRGBArray = array [Word] of TRGBTriple;
+  PRGBArray = ^TRGBArray;
 
 var
-  x, y: Integer;
-  xP, yP: Integer;
-  xP2, yP2: Integer;
-  SrcLine1, SrcLine2: pRGBArray;
-  t3: Integer;
-  z, z2, iz2: Integer;
-  DstLine: pRGBArray;
+  X, Y: Integer;
+  XP, YP: Integer;
+  XP2, YP2: Integer;
+  SrcLine1, SrcLine2: PRGBArray;
+  T3: Integer;
+  Z, Z2, Iz2: Integer;
+  DstLine: PRGBArray;
   DstGap: Integer;
-  w1, w2, w3, w4: Integer;
-  Terminating : Boolean;
+  W1, W2, W3, W4: Integer;
+  Terminating: Boolean;
 begin
   S.PixelFormat := pf24Bit;
   D.PixelFormat := pf24Bit;
-  if Width*Height=0 then
+  if Width * Height = 0 then
   begin
-   D.Assign(S);
-   exit;
+    D.Assign(S);
+    Exit;
   end;
-  D.Width:=Width;
-  D.Height:=Height;
-  Terminating:=false;
+  D.Width := Width;
+  D.Height := Height;
+  Terminating := False;
   if (S.Width = D.Width) and (S.Height = D.Height) then
     D.Assign(S)
   else
   begin
     DstLine := D.ScanLine[0];
-    DstGap  := Integer(D.ScanLine[1]) - Integer(DstLine);
+    DstGap := Integer(D.ScanLine[1]) - Integer(DstLine);
 
-    xP2 := MulDiv(pred(S.Width), $10000, D.Width);
-    yP2 := MulDiv(pred(S.Height), $10000, D.Height);
-    yP  := 0;
+    XP2 := MulDiv(Pred(S.Width), $10000, D.Width);
+    YP2 := MulDiv(Pred(S.Height), $10000, D.Height);
+    YP := 0;
 
-    for y := 0 to pred(D.Height) do
+    for Y := 0 to Pred(D.Height) do
     begin
-      xP := 0;
+      XP := 0;
 
-      SrcLine1 := S.ScanLine[yP shr 16];
+      SrcLine1 := S.ScanLine[YP shr 16];
 
-      if (yP shr 16 < pred(S.Height)) then
-        SrcLine2 := S.ScanLine[succ(yP shr 16)]
+      if (YP shr 16 < Pred(S.Height)) then
+        SrcLine2 := S.ScanLine[Succ(YP shr 16)]
       else
-        SrcLine2 := S.ScanLine[yP shr 16];
+        SrcLine2 := S.ScanLine[YP shr 16];
 
-      z2  := succ(yP and $FFFF);
-      iz2 := succ((not yp) and $FFFF);
-      for x := 0 to pred(D.Width) do
+      Z2 := Succ(YP and $FFFF);
+      Iz2 := Succ((not Yp) and $FFFF);
+      for X := 0 to Pred(D.Width) do
       begin
-        t3 := xP shr 16;
-        z  := xP and $FFFF;
-        w2 := MulDiv(z, iz2, $10000);
-        w1 := iz2 - w2;
-        w4 := MulDiv(z, z2, $10000);
-        w3 := z2 - w4;
-        DstLine[x].rgbtRed := (SrcLine1[t3].rgbtRed * w1 +
-          SrcLine1[t3 + 1].rgbtRed * w2 + SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
+        T3 := XP shr 16;
+        Z := XP and $FFFF;
+        W2 := MulDiv(Z, Iz2, $10000);
+        W1 := Iz2 - W2;
+        W4 := MulDiv(Z, Z2, $10000);
+        W3 := Z2 - W4;
+        DstLine[X].RgbtRed := (SrcLine1[T3].RgbtRed * W1 + SrcLine1[T3 + 1].RgbtRed * W2 + SrcLine2[T3]
+            .RgbtRed * W3 + SrcLine2[T3 + 1].RgbtRed * W4) shr 16;
 
-        DstLine[x].rgbtGreen := (SrcLine1[t3].rgbtGreen * w1 + SrcLine1[t3 + 1].rgbtGreen * w2 +
-          SrcLine2[t3].rgbtGreen * w3 + SrcLine2[t3 + 1].rgbtGreen * w4) shr 16;
+        DstLine[X].RgbtGreen := (SrcLine1[T3].RgbtGreen * W1 + SrcLine1[T3 + 1].RgbtGreen * W2 + SrcLine2[T3]
+            .RgbtGreen * W3 + SrcLine2[T3 + 1].RgbtGreen * W4) shr 16;
 
-        DstLine[x].rgbtBlue := (SrcLine1[t3].rgbtBlue * w1 +
-          SrcLine1[t3 + 1].rgbtBlue * w2 +SrcLine2[t3].rgbtBlue * w3 +  SrcLine2[t3 + 1].rgbtBlue * w4) shr 16;
-        Inc(xP, xP2);
-      end; {for}
-      Inc(yP, yP2);
-      DstLine := pRGBArray(Integer(DstLine) + DstGap);
+        DstLine[X].RgbtBlue := (SrcLine1[T3].RgbtBlue * W1 + SrcLine1[T3 + 1].RgbtBlue * W2 + SrcLine2[T3]
+            .RgbtBlue * W3 + SrcLine2[T3 + 1].RgbtBlue * W4) shr 16;
+        Inc(XP, XP2);
+      end; { for }
+      Inc(YP, YP2);
+      DstLine := PRGBArray(Integer(DstLine) + DstGap);
 
-      if y mod 50=0 then
-      If Assigned(CallBack) then CallBack(Round(100*y/D.Height),Terminating);
-      if Terminating then Break;
+      if Y mod 50 = 0 then
+        if Assigned(CallBack) then
+          CallBack(Round(100 * Y / D.Height), Terminating);
+      if Terminating then
+        Break;
 
-
-    end; {for}
-  end; {if}
-end; {SmoothResize}
+    end; { for }
+  end; { if }
+end; { SmoothResize }
 
 procedure SmoothResize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 type
@@ -2113,16 +2196,16 @@ type
   pRGBArray = ^TRGBArray;
 
 var
-  x, y: Integer;
-  xP, yP: Integer;
+  X, Y: Integer;
+  XP, YP: Integer;
   Mx, My: Integer;
-  SrcLine1, SrcLine2: pRGBArray;
-  t3: Integer;
-  z, z2, iz2: Integer;
-  DstLine: pRGBArray;
+  SrcLine1, SrcLine2: PRGBArray;
+  T3: Integer;
+  Z, Z2, Iz2: Integer;
+  DstLine: PRGBArray;
   DstGap: Integer;
-  w1, w2, w3, w4: Integer;
-  Terminating : boolean;
+  W1, W2, W3, W4: Integer;
+  Terminating: Boolean;
 begin
   Terminating := false;
   S.PixelFormat := pf24Bit;
@@ -2191,56 +2274,68 @@ end; {SmoothResize}
 
 procedure StretchCool(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 var
-  i, j, k, p : Integer;
-  p1 : PARGB;
-  col, r, g, b, Sheight1 : integer;
-  Sh, Sw : Extended;
-  Xp : array of PARGB;
-  Terminating : boolean;
+  I, J, K, P: Integer;
+  P1: PARGB;
+  Col, R, G, B, Sheight1, SWidth1: Integer;
+  Sh, Sw: Extended;
+  Xp: array of PARGB;
+  Terminating: Boolean;
+  YMin, YMax : Integer;
+  XWA : array of Integer;
 begin
- If Width=0 then exit;
- If Height=0 then exit;
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- D.Width:=Width;
- D.Height:=Height;
- Sh:=S.height/height;
- Sw:=S.width/width;
- Sheight1:=S.height-1;
- SetLength(Xp,S.height);
- for i:=0 to Sheight1 do
- Xp[i]:=s.ScanLine[i];
- Terminating:=false;
- for i:=0 to Height-1 do
- begin
-  p1:=D.ScanLine[i];
-  for j:=0 to Width-1 do
+  if Width = 0 then
+    Exit;
+  if Height = 0 then
+    Exit;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  D.Width := Width;
+  D.Height := Height;
+  Sh := S.Height / Height;
+  Sw := S.Width / Width;
+  Sheight1 := S.Height - 1;
+  SWidth1 := S.Width - 1;
+  SetLength(Xp, S.Height);
+  for I := 0 to Sheight1 do
+    Xp[I] := S.ScanLine[I];
+  Terminating := False;
+  SetLength(XWA, Width + 1);
+  for I := 0 to Width do
+    XWA[I] := Round(Sw * I);
+  for I := 0 to Height - 1 do
   begin
-   col:=0;
-   r:=0;
-   g:=0;
-   b:=0;
-   for k:=Round(Sh*i) to Min(Round(Sh*(i+1))-1,Sheight1) do
-   begin
-    for p:=Round(Sw*j) to Min(Round(Sw*(j+1))-1,S.Width-1) do
+    P1 := D.ScanLine[I];
+    YMin := Round(Sh * I);
+    YMax := Min(Round(Sh * (I + 1)) - 1, Sheight1);
+    for J := 0 to Width - 1 do
     begin
-     inc(col);
-     inc(r,Xp[k,p].r);
-     inc(g,Xp[k,p].g);
-     inc(b,Xp[k,p].b);
+      Col := 0;
+      R := 0;
+      G := 0;
+      B := 0;
+      for K := YMin to YMax do
+      begin
+        for P := XWA[J] to Min(XWA[J + 1] - 1, SWidth1) do
+        begin
+          Inc(Col);
+          Inc(R, Xp[K, P].R);
+          Inc(G, Xp[K, P].G);
+          Inc(B, Xp[K, P].B);
+        end;
+      end;
+      if Col <> 0 then
+      begin
+        P1[J].R := R div Col;
+        P1[J].G := G div Col;
+        P1[J].B := B div Col;
+      end;
     end;
-   end;
-   if col<>0 then
-   begin
-    p1[j].r:=r div col;
-    p1[j].g:=g div col;
-    p1[j].b:=b div col;
-   end;
+    if I mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * I / Height), Terminating);
+    if Terminating then
+      Break;
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*i/Height),Terminating);
-  if Terminating then Break;
- end;
 end;
 
 procedure StrRotated(X, Y: Integer; Arect: TRect; DC: HDC; Font: HFont; Str: string; Ang: Extended; Options: Cardinal);
@@ -2270,206 +2365,239 @@ begin
 end;
 
 procedure CoolDrawTextEx(bitmap:Tbitmap; text:string; Font: HFont; coolcount:integer; coolcolor:Tcolor; aRect : TRect; aType : integer; Options : Cardinal);
- var
- Drawrect:trect;
- c:integer;
- tempb,temp:Tbitmap;
- i,j,k:integer;
- p,p1,pv,pn,pc:pargb;
+var
+  Drawrect: Trect;
+  C: Integer;
+  Tempb, Temp: TBitmap;
+  I, J, K: Integer;
+  P, P1, Pv, Pn, Pc: PARGB;
 begin
- tempb:=tbitmap.create;
- tempb.PixelFormat:=pf24bit;
- tempb.Canvas.Font.Assign(bitmap.Canvas.Font);
- tempb.Canvas.Font.Color:=0;
- tempb.canvas.brush.Color:=$ffffff;
- tempb.Width:=aRect.Right-aRect.Left;
- tempb.height:=aRect.Bottom-aRect.Top;
+  Tempb := TBitmap.Create;
+  try
+    Tempb.PixelFormat := Pf24bit;
+    Tempb.Canvas.Font.Assign(Bitmap.Canvas.Font);
+    Tempb.Canvas.Font.Color := 0;
+    Tempb.Canvas.Brush.Color := $FFFFFF;
+    Tempb.Width := ARect.Right - ARect.Left;
+    Tempb.Height := ARect.Bottom - ARect.Top;
 
- case aType of
- 0 :
- begin
-  DrawRect:=Rect(point(coolcount,coolcount),point(tempb.Width-coolcount,tempb.Height-coolcount));
-  StrRotated(0,0,DrawRect,tempb.Canvas.Handle,Font,text,0,Options);
- end;
- 1 :
- begin
-  DrawRect:=Rect(point(coolcount,coolcount),point(tempb.Height-coolcount,tempb.Width-coolcount));
-  StrRotated(aRect.Right-aRect.Left,0,DrawRect,tempb.Canvas.Handle,Font,text,90,Options);
- end;
- 2 :
- begin
-  DrawRect:=Rect(point(coolcount,coolcount),point(tempb.Width-coolcount,tempb.Height-coolcount));
-  StrRotated(aRect.Right-aRect.Left,aRect.Bottom-aRect.Top,DrawRect,tempb.Canvas.Handle,Font,text,180,Options);
- end;
- 3 :
- begin
-  DrawRect:=Rect(point(coolcount,coolcount),point(tempb.Height-coolcount,tempb.Width-coolcount));
-  StrRotated(0,aRect.Bottom-aRect.Top,DrawRect,tempb.Canvas.Handle,Font,text,270,Options);
- end;
- end;
+    case AType of
+      0:
+        begin
+          DrawRect := Rect(Point(Coolcount, Coolcount), Point(Tempb.Width - Coolcount, Tempb.Height - Coolcount));
+          StrRotated(0, 0, DrawRect, Tempb.Canvas.Handle, Font, Text, 0, Options);
+        end;
+      1:
+        begin
+          DrawRect := Rect(Point(Coolcount, Coolcount), Point(Tempb.Height - Coolcount, Tempb.Width - Coolcount));
+          StrRotated(ARect.Right - ARect.Left, 0, DrawRect, Tempb.Canvas.Handle, Font, Text, 90, Options);
+        end;
+      2:
+        begin
+          DrawRect := Rect(Point(Coolcount, Coolcount), Point(Tempb.Width - Coolcount, Tempb.Height - Coolcount));
+          StrRotated(ARect.Right - ARect.Left, ARect.Bottom - ARect.Top, DrawRect, Tempb.Canvas.Handle, Font, Text, 180,
+            Options);
+        end;
+      3:
+        begin
+          DrawRect := Rect(Point(Coolcount, Coolcount), Point(Tempb.Height - Coolcount, Tempb.Width - Coolcount));
+          StrRotated(0, ARect.Bottom - ARect.Top, DrawRect, Tempb.Canvas.Handle, Font, Text, 270, Options);
+        end;
+    end;
 
- temp:=tbitmap.create;
- temp.PixelFormat:=pf24bit;
- temp.canvas.brush.Color:=$0;
- temp.Width:=aRect.Right-aRect.Left;
- temp.height:=aRect.Bottom-aRect.Top;
- temp.Canvas.Font.Assign(bitmap.Canvas.Font);
- temp.Canvas.Font.color:=0;
- for i:=0 to temp.height-1 do
- begin
- p1:=temp.ScanLine[i];
- p:=tempb.ScanLine[i];
- for j:=0 to temp.width-1 do
- begin
- if p[j].r<>$ff then
- begin
- p1[j].r:=$ff;
- p1[j].g:=$ff;
- p1[j].b:=$ff;
- end;
- end;
- end;
- tempb.Canvas.brush.color:=$0;
- tempb.Canvas.pen.color:=$0;
- tempb.Canvas.Rectangle(0,0,tempb.Width,tempb.Height);
- for k:=1 to coolcount do
- begin
- for i:=1 to temp.height-2 do
- begin
- p:=tempb.ScanLine[i];
- pv:=temp.ScanLine[i-1];
- pc:=temp.ScanLine[i];
- pn:=temp.ScanLine[i+1];
- for j:=1 to temp.width-2 do
- begin
- c:=9;
- if (pv[j-1].r<>0) then dec(c);
- if (pv[j+1].r<>0) then dec(c);
- if (pn[j-1].r<>0) then dec(c);
- if (pn[j+1].r<>0) then dec(c);
- if (pc[j-1].r<>0) then dec(c);
- if (pc[j+1].r<>0) then dec(c);
- if (pn[j].r<>0) then dec(c);
- if (pv[j].r<>0) then dec(c);
- if c<>9 then
- begin
- p[j].r:=min($ff,p[j].r+(pv[j-1].r+pv[j+1].r+pn[j-1].r+pn[j+1].r+pc[j-1].r+pc[j+1].r+pn[j].r+pv[j].r) div (c+1));
- p[j].g:=min($ff,p[j].g+(pv[j-1].g+pv[j+1].g+pn[j-1].g+pn[j+1].g+pc[j-1].g+pc[j+1].g+pn[j].g+pv[j].g) div (c+1));
- p[j].b:=min($ff,p[j].b+(pv[j-1].b+pv[j+1].b+pn[j-1].b+pn[j+1].b+pc[j-1].b+pc[j+1].b+pn[j].b+pv[j].b) div (c+1));
- end;
- end;
- end;
- temp.Assign(tempb);
- end;
- bitmap.PixelFormat:=pf24bit;
- if bitmap.Width=0 then exit;
- for i:=Max(0,aRect.Top) to min(tempb.Height-1+aRect.Top,bitmap.height-1) do
- begin
- p:=bitmap.ScanLine[i];
- p1:=tempb.ScanLine[i-aRect.Top];
- for j:=Max(0,aRect.Left) to min(tempb.Width+aRect.Left-1,bitmap.width-1) do
- begin
- p[j].r:=min(round(p[j].r*(1-p1[j-aRect.Left].r/255))+round(getrvalue(coolcolor)*p1[j-aRect.Left].r/255),255);
- p[j].g:=min(round(p[j].g*(1-p1[j-aRect.Left].g/255))+round(getgvalue(coolcolor)*p1[j-aRect.Left].g/255),255);
- p[j].b:=min(round(p[j].b*(1-p1[j-aRect.Left].b/255))+round(getbvalue(coolcolor)*p1[j-aRect.Left].b/255),255);
- end;
- end;
- DrawRect:=Rect(point(aRect.Left+coolcount,aRect.Top+coolcount),point(aRect.Left+temp.Width-coolcount,temp.Height+aRect.Top-coolcount));
+    Temp := TBitmap.Create;
+    try
+      Temp.PixelFormat := pf24bit;
+      Temp.Canvas.Brush.Color := $0;
+      Temp.Width := ARect.Right - ARect.Left;
+      Temp.Height := ARect.Bottom - ARect.Top;
+      Temp.Canvas.Font.Assign(Bitmap.Canvas.Font);
+      Temp.Canvas.Font.Color := 0;
+      for I := 0 to Temp.Height - 1 do
+      begin
+        P1 := Temp.ScanLine[I];
+        P := Tempb.ScanLine[I];
+        for J := 0 to Temp.Width - 1 do
+        begin
+          if P[J].R <> $FF then
+          begin
+            P1[J].R := $FF;
+            P1[J].G := $FF;
+            P1[J].B := $FF;
+          end;
+        end;
+      end;
+      Tempb.Canvas.Brush.Color := $0;
+      Tempb.Canvas.Pen.Color := $0;
+      Tempb.Canvas.Rectangle(0, 0, Tempb.Width, Tempb.Height);
+      for K := 1 to Coolcount do
+      begin
+        for I := 1 to Temp.Height - 2 do
+        begin
+          P := Tempb.ScanLine[I];
+          Pv := Temp.ScanLine[I - 1];
+          Pc := Temp.ScanLine[I];
+          Pn := Temp.ScanLine[I + 1];
+          for J := 1 to Temp.Width - 2 do
+          begin
+            C := 9;
+            if (Pv[J - 1].R <> 0) then
+              Dec(C);
+            if (Pv[J + 1].R <> 0) then
+              Dec(C);
+            if (Pn[J - 1].R <> 0) then
+              Dec(C);
+            if (Pn[J + 1].R <> 0) then
+              Dec(C);
+            if (Pc[J - 1].R <> 0) then
+              Dec(C);
+            if (Pc[J + 1].R <> 0) then
+              Dec(C);
+            if (Pn[J].R <> 0) then
+              Dec(C);
+            if (Pv[J].R <> 0) then
+              Dec(C);
+            if C <> 9 then
+            begin
+              P[J].R := Min($FF, P[J].R + (Pv[J - 1].R + Pv[J + 1].R + Pn[J - 1].R + Pn[J + 1].R + Pc[J - 1].R + Pc[J + 1]
+                    .R + Pn[J].R + Pv[J].R) div (C + 1));
+              P[J].G := Min($FF, P[J].G + (Pv[J - 1].G + Pv[J + 1].G + Pn[J - 1].G + Pn[J + 1].G + Pc[J - 1].G + Pc[J + 1]
+                    .G + Pn[J].G + Pv[J].G) div (C + 1));
+              P[J].B := Min($FF, P[J].B + (Pv[J - 1].B + Pv[J + 1].B + Pn[J - 1].B + Pn[J + 1].B + Pc[J - 1].B + Pc[J + 1]
+                    .B + Pn[J].B + Pv[J].B) div (C + 1));
+            end;
+          end;
+        end;
+        Temp.Assign(Tempb);
+      end;
+      Bitmap.PixelFormat := Pf24bit;
+      if Bitmap.Width = 0 then
+        Exit;
+      for I := Max(0, ARect.Top) to Min(Tempb.Height - 1 + ARect.Top, Bitmap.Height - 1) do
+      begin
+        P := Bitmap.ScanLine[I];
+        P1 := Tempb.ScanLine[I - ARect.Top];
+        for J := Max(0, ARect.Left) to Min(Tempb.Width + ARect.Left - 1, Bitmap.Width - 1) do
+        begin
+          P[J].R := Min(Round(P[J].R * (1 - P1[J - ARect.Left].R / 255)) + Round
+              (Getrvalue(Coolcolor) * P1[J - ARect.Left].R / 255), 255);
+          P[J].G := Min(Round(P[J].G * (1 - P1[J - ARect.Left].G / 255)) + Round
+              (Getgvalue(Coolcolor) * P1[J - ARect.Left].G / 255), 255);
+          P[J].B := Min(Round(P[J].B * (1 - P1[J - ARect.Left].B / 255)) + Round
+              (Getbvalue(Coolcolor) * P1[J - ARect.Left].B / 255), 255);
+        end;
+      end;
+      DrawRect := Rect(Point(ARect.Left + Coolcount, ARect.Top + Coolcount), Point(ARect.Left + Temp.Width - Coolcount,
+          Temp.Height + ARect.Top - Coolcount));
 
- case aType of
- 0 :  begin
-       DrawRect:=Rect(point(aRect.Left+coolcount,aRect.Top+coolcount),point(aRect.Left+temp.Width-coolcount,temp.Height+aRect.Top-coolcount));
-       StrRotated(0,0,DrawRect,bitmap.Canvas.Handle,Font,text,0,Options);
+      case AType of
+        0:
+          begin
+            DrawRect := Rect(Point(ARect.Left + Coolcount, ARect.Top + Coolcount),
+              Point(ARect.Left + Temp.Width - Coolcount, Temp.Height + ARect.Top - Coolcount));
+            StrRotated(0, 0, DrawRect, Bitmap.Canvas.Handle, Font, Text, 0, Options);
+          end;
+        1:
+          begin
+            DrawRect := Rect(Point(Coolcount, Coolcount), Point(Temp.Height - Coolcount, Temp.Width - Coolcount));
+            StrRotated(ARect.Right, ARect.Top, DrawRect, Bitmap.Canvas.Handle, Font, Text, 90, Options);
+          end;
+        2:
+          begin
+            DrawRect := Rect(Point(Coolcount, Coolcount), Point(Temp.Width - Coolcount, Temp.Height - Coolcount));
+            StrRotated(ARect.Right, ARect.Bottom, DrawRect, Bitmap.Canvas.Handle, Font, Text, 180, Options);
+          end;
+        3:
+          begin
+            DrawRect := Rect(Point(Coolcount, Coolcount), Point(Temp.Height - Coolcount, Temp.Width - Coolcount));
+            StrRotated(ARect.Left, ARect.Bottom, DrawRect, Bitmap.Canvas.Handle, Font, Text, 270, Options);
+          end;
       end;
- 1 :  begin
-       DrawRect:=Rect(point(coolcount,coolcount),point(temp.Height-coolcount,temp.Width-coolcount));
-       StrRotated(aRect.Right,aRect.Top,DrawRect,bitmap.Canvas.Handle,Font,text,90,Options);
-      end;
- 2 :  begin
-       DrawRect:=Rect(point(coolcount,coolcount),point(temp.Width-coolcount,temp.Height-coolcount));
-       StrRotated(aRect.Right,aRect.Bottom,DrawRect,bitmap.Canvas.Handle,Font,text,180,Options);
-      end;
- 3 :  begin
-       DrawRect:=Rect(point(coolcount,coolcount),point(temp.Height-coolcount,temp.Width-coolcount));
-       StrRotated(aRect.Left,aRect.Bottom,DrawRect,bitmap.Canvas.Handle,Font,text,270,Options);
-      end;
- end;
 
- temp.free;
- tempb.free;
+    finally
+      F(Temp);
+    end;
+  finally
+    F(Tempb);
+  end;
 end;
 
 function GetGistogrammBitmap(Height : integer; SBitmap : TBitmap; Options : byte; var MinC, MaxC : Integer) : TBitmap;
 var
-  t : boolean;
-  i, j,  xc : integer;
-  x, MaxCount : integer;
-  G : T255IntArray;
-  GE : array[0..255] of extended;
+  T: Boolean;
+  I, J, Xc: Integer;
+  X, MaxCount: Integer;
+  G: T255IntArray;
+  GE: array [0 .. 255] of Extended;
 begin
- Result:=TBitmap.create;
- Result.PixelFormat:=pf24bit;
- case Options of
-  0 : G:=Gistogramma(SBitmap,t);
-  1 : G:=GistogrammR(SBitmap,t);
-  2 : G:=GistogrammG(SBitmap,t);
-  3 : G:=GistogrammB(SBitmap,t);
- end;
- MaxCount:=1;
-
- for i:=0 to 255 do
- if G[i]>MaxCount then
- begin
-  x:=G[i] div 2;
-  xc:=0;
-  for j:=0 to 255 do
-  if i<>j then
-  if G[j]>x then inc(xc);
-  if xc>5 then
-  MaxCount:=G[i];
- end;
-
- if MaxCount=1 then
- begin
-  for i:=0 to 255 do
-  if G[i]>MaxCount then
-  MaxCount:=G[i];
- end;
-
- for i:=0 to 255 do
- GE[i]:=G[i]/MaxCount;
- MinC:=0;
- for i:=0 to 255 do
- begin
-  if GE[i]>0.05 then
-  begin
-   MinC:=i;
-   break;
+  Result := TBitmap.Create;
+  Result.PixelFormat := Pf24bit;
+  case Options of
+    0:
+      G := Gistogramma(SBitmap, T);
+    1:
+      G := GistogrammR(SBitmap, T);
+    2:
+      G := GistogrammG(SBitmap, T);
+    3:
+      G := GistogrammB(SBitmap, T);
   end;
- end;
- MaxC:=0;
- for i:=255 downto 0 do
- begin
-  if GE[i]>0.05 then
+  MaxCount := 1;
+
+  for I := 0 to 255 do
+    if G[I] > MaxCount then
+    begin
+      X := G[I] div 2;
+      Xc := 0;
+      for J := 0 to 255 do
+        if I <> J then
+          if G[J] > X then
+            Inc(Xc);
+      if Xc > 5 then
+        MaxCount := G[I];
+    end;
+
+  if MaxCount = 1 then
   begin
-   MaxC:=i;
-   break;
+    for I := 0 to 255 do
+      if G[I] > MaxCount then
+        MaxCount := G[I];
   end;
- end;
- Result.Width:=256;
- Result.Height:=Height;
- Result.Canvas.Rectangle(0,0,256,Height);
- for i:=0 to 255 do
- begin
-  Result.Canvas.MoveTo(i+1,Height);
-  Result.Canvas.LineTo(i+1,Height-Round(Height*GE[i]));
- end;
- Result.Canvas.Pen.Color:=$888888;
- Result.Canvas.MoveTo(MinC,0);
- Result.Canvas.LineTo(MinC,Height);
- Result.Canvas.Pen.Color:=$888888;
- Result.Canvas.MoveTo(MaxC,0);
- Result.Canvas.LineTo(MaxC,Height);
+
+  for I := 0 to 255 do
+    GE[I] := G[I] / MaxCount;
+  MinC := 0;
+  for I := 0 to 255 do
+  begin
+    if GE[I] > 0.05 then
+    begin
+      MinC := I;
+      Break;
+    end;
+  end;
+  MaxC := 0;
+  for I := 255 downto 0 do
+  begin
+    if GE[I] > 0.05 then
+    begin
+      MaxC := I;
+      Break;
+    end;
+  end;
+  Result.Width := 256;
+  Result.Height := Height;
+  Result.Canvas.Rectangle(0, 0, 256, Height);
+  for I := 0 to 255 do
+  begin
+    Result.Canvas.MoveTo(I + 1, Height);
+    Result.Canvas.LineTo(I + 1, Height - Round(Height * GE[I]));
+  end;
+  Result.Canvas.Pen.Color := $888888;
+  Result.Canvas.MoveTo(MinC, 0);
+  Result.Canvas.LineTo(MinC, Height);
+  Result.Canvas.Pen.Color := $888888;
+  Result.Canvas.MoveTo(MaxC, 0);
+  Result.Canvas.LineTo(MaxC, Height);
 end;
 
 function GetGistogrammBitmapX(Height,d : integer; G : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
@@ -2608,38 +2736,40 @@ end;
 
 procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 var
-  z1, z2: single;
-  k: single;
-  i, j: integer;
-  h, dw,dh, xo, yo: integer;
-  x1r,y1r : extended;
-  Xs, Xd : array of PARGB;
-  dx, dy : Extended;
-  Terminating : boolean;
+  Z1, Z2: Single;
+  K: Single;
+  I, J: Integer;
+  H, Dw, Dh, Xo, Yo: Integer;
+  X1r, Y1r: Extended;
+  Xs, Xd: array of PARGB;
+  Dx, Dy: Extended;
+  Terminating: Boolean;
 begin
-  Terminating:=false;
-  S.PixelFormat:=Pf24bit;
-  D.PixelFormat:=Pf24bit;
-  D.Width:=Math.Max(D.Width,x+Width);
-  D.height:=Math.Max(D.height,y+Height);
-  dw:=Math.Min(D.Width-x,x+Width);
-  dh:=Math.Min(D.height-y,y+Height);
-  dx:=(Width)/(Rect.Right-Rect.Left-1);
-  dy:=(Height)/(Rect.Bottom-Rect.Top-1);
-  if (dx<1) or (dy<1) then exit;
-  SetLength(Xs,S.Height);
-  for i:=0 to S.Height - 1 do
-  Xs[i]:=S.scanline[i];
-  SetLength(Xd,D.Height);
-  for i:=0 to D.Height - 1 do
-  Xd[i]:=D.scanline[i];
-  h:=min(Round((Rect.Bottom-Rect.Top-1)*dy)-1,dh-1);
-  for i := 0 to h do
+  Terminating := False;
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  D.Width := Math.Max(D.Width, X + Width);
+  D.Height := Math.Max(D.Height, Y + Height);
+  Dw := Math.Min(D.Width - X, X + Width);
+  Dh := Math.Min(D.Height - Y, Y + Height);
+  Dx := (Width) / (Rect.Right - Rect.Left - 1);
+  Dy := (Height) / (Rect.Bottom - Rect.Top - 1);
+  if (Dx < 1) or (Dy < 1) then
+    Exit;
+  SetLength(Xs, S.Height);
+  for I := 0 to S.Height - 1 do
+    Xs[I] := S.Scanline[I];
+  SetLength(Xd, D.Height);
+  for I := 0 to D.Height - 1 do
+    Xd[I] := D.Scanline[I];
+  H := Min(Round((Rect.Bottom - Rect.Top - 1) * Dy) - 1, Dh - 1);
+  for I := 0 to H do
   begin
-      yo := Trunc(i / dy)+Rect.Top;
-      y1r:= Trunc(i / dy) * dy;
-      if yo+1>=S.height then Break;
-    for j := 0 to min(Round((Rect.Right-Rect.Left-1)*dx)-1,dw-1) do
+    Yo := Trunc(I / Dy) + Rect.Top;
+    Y1r := Trunc(I / Dy) * Dy;
+    if Yo + 1 >= S.Height then
+      Break;
+    for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * Dx) - 1, Dw - 1) do
     begin
       xo := Trunc(j / dx)+Rect.Left;
       x1r:= Trunc(j / dx) * dx;
@@ -2667,50 +2797,52 @@ end;
 
 procedure ReplaceColorInImage(S,D : TBitmap; BaseColor, NewColor : TColor; Size, Level : Integer; CallBack : TBaseEffectCallBackProc = nil); overload;
 var
- i,j:integer;
- ps, pd : PARGB;
- Terminating : boolean;
- r1,r2,g1,g2,b1,b2 : Byte;
- c : Extended;
+  I, J: Integer;
+  Ps, Pd: PARGB;
+  Terminating: Boolean;
+  R1, R2, G1, G2, B1, B2: Byte;
+  C: Extended;
 
- function CompareColor(r1,r2,g1,g2,b1,b2 : byte) : Extended;
- var
-   r,g,b : Extended;
- begin
-  r:=Power(1-Abs(r1-r2)/255,Level);
-  g:=Power(1-Abs(g1-g2)/255,Level);
-  b:=Power(1-Abs(b1-b2)/255,Level);
-  Result:=r*g*b;
-  Result:=Min(1,Result*Size/100);
- end;
+  function CompareColor(R1, R2, G1, G2, B1, B2: Byte): Extended;
+  var
+    R, G, B: Extended;
+  begin
+    R := Power(1 - Abs(R1 - R2) / 255, Level);
+    G := Power(1 - Abs(G1 - G2) / 255, Level);
+    B := Power(1 - Abs(B1 - B2) / 255, Level);
+    Result := R * G * B;
+    Result := Min(1, Result * Size / 100);
+  end;
 
 begin
- r1:=GetRValue(ColorToRGB(BaseColor));
- g1:=GetGValue(ColorToRGB(BaseColor));
- b1:=GetBValue(ColorToRGB(BaseColor));
- r2:=GetRValue(ColorToRGB(NewColor));
- g2:=GetGValue(ColorToRGB(NewColor));
- b2:=GetBValue(ColorToRGB(NewColor));
- S.PixelFormat:=pf24bit;
- D.PixelFormat:=pf24bit;
- D.Width:=S.Width;
- D.Height:=S.Height;
- Terminating:=false;
- for i := 0 to S.height-1 do
- begin
-  pS:=S.ScanLine[i];
-  pD:=D.ScanLine[i];
-  for j := 0 to S.width-1 do
+  R1 := GetRValue(ColorToRGB(BaseColor));
+  G1 := GetGValue(ColorToRGB(BaseColor));
+  B1 := GetBValue(ColorToRGB(BaseColor));
+  R2 := GetRValue(ColorToRGB(NewColor));
+  G2 := GetGValue(ColorToRGB(NewColor));
+  B2 := GetBValue(ColorToRGB(NewColor));
+  S.PixelFormat := Pf24bit;
+  D.PixelFormat := Pf24bit;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  Terminating := False;
+  for I := 0 to S.Height - 1 do
   begin
-   c:=CompareColor(pS[j].r,r1,pS[j].g,g1,pS[j].b,b1);
-   pD[j].r:=Round(pS[j].r*(1-C)+r2*C);
-   pD[j].g:=Round(pS[j].g*(1-C)+g2*C);
-   pD[j].b:=Round(pS[j].b*(1-C)+b2*C);
+    PS := S.ScanLine[I];
+    PD := D.ScanLine[I];
+    for J := 0 to S.Width - 1 do
+    begin
+      C := CompareColor(PS[J].R, R1, PS[J].G, G1, PS[J].B, B1);
+      PD[J].R := Round(PS[J].R * (1 - C) + R2 * C);
+      PD[J].G := Round(PS[J].G * (1 - C) + G2 * C);
+      PD[J].B := Round(PS[J].B * (1 - C) + B2 * C);
+    end;
+    if I mod 50 = 0 then
+      if Assigned(CallBack) then
+        CallBack(Round(100 * I / S.Height), Terminating);
+    if Terminating then
+      Break;
   end;
-  if i mod 50=0 then
-  If Assigned(CallBack) then CallBack(Round(100*i/S.Height),Terminating);
-  if Terminating then Break;
- end;
 end;
 
 procedure Emboss(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
@@ -2729,8 +2861,6 @@ begin
 
     for y := 0 to D.Height-2 do
     begin
-      //p1 := bmp.scanline[y];
-      //p2 := bmp.scanline[y+1];
       p1 := PByteArray(SL[y]);
       p2 := PByteArray(SL[y+1]);
 
@@ -2771,10 +2901,6 @@ begin
 
      for y := YOrigin to YFinal do
      begin
-      //p0 := clip.ScanLine [y-1];
-      //p1 := clip.scanline [y];
-      //p2 := clip.ScanLine [y+1];
-
       p0 := PByteArray(SL[y-1]);
       p1 := PByteArray(SL[y]);
       p2 := PByteArray(SL[y+1]);
@@ -2796,12 +2922,12 @@ begin
    end;
 end;
 
-procedure AntiAlias(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-begin
- D.Assign(S);
- D.PixelFormat:=pf24bit;
- AntiAliasRect(D, 0, 0, D.width, D.height, CallBack);
-end;
+ procedure AntiAlias(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+ begin
+   D.Assign(S);
+   D.PixelFormat := Pf24bit;
+   AntiAliasRect(D, 0, 0, D.Width, D.Height, CallBack);
+ end;
 
 function IntToByte(i:Integer):Byte;
 begin
@@ -2852,33 +2978,34 @@ end;
 
 procedure AddMonoNoise(S, D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
 var
-  p0 : pbytearray;
-  x, y, a, r, g, b : Integer;
-  Terminating : Boolean;
-  SL : TScanLines;
+  P0: Pbytearray;
+  X, Y, A, R, G, B: Integer;
+  Terminating: Boolean;
+  SL: TScanLines;
 begin
   D.Assign(S);
-  D.PixelFormat:=pf24bit;
-  Terminating:=false;
+  D.PixelFormat := Pf24bit;
+  Terminating := False;
   SL := TScanlines.Create(D);
   try
-    for y := 0 to D.Height-1 do
+    for Y := 0 to D.Height - 1 do
     begin
-      //p0 := clip.scanline[y];
-      p0 := PByteArray(SL[y]);
-      for x := 0 to D.Width-1 do
+      P0 := PByteArray(SL[Y]);
+      for X := 0 to D.Width - 1 do
       begin
-        a := Random(Amount)-(Amount shr 1);
-        r := p0[x*3]+a;
-        g := p0[x*3+1]+a;
-        b := p0[x*3+2]+a;
-        p0[x*3] := IntToByte(r);
-        p0[x*3+1] := IntToByte(g);
-        p0[x*3+2] := IntToByte(b);
+        A := Random(Amount) - (Amount shr 1);
+        R := P0[X * 3] + A;
+        G := P0[X * 3 + 1] + A;
+        B := P0[X * 3 + 2] + A;
+        P0[X * 3] := IntToByte(R);
+        P0[X * 3 + 1] := IntToByte(G);
+        P0[X * 3 + 2] := IntToByte(B);
       end;
-      if y mod 50=0 then
-      If Assigned(CallBack) then CallBack(Round(100*y/D.Height),Terminating);
-      if Terminating then Break;
+      if Y mod 50 = 0 then
+        if Assigned(CallBack) then
+          CallBack(Round(100 * Y / D.Height), Terminating);
+      if Terminating then
+        Break;
     end;
   finally
     SL.Free;
@@ -3046,11 +3173,11 @@ end;
 procedure SplitBlurW(D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
 //procedure SplitBlur(var clip: tbitmap; Amount: integer);
 var
-  p0, p1, p2 : pbytearray;
-  cx, x, y : Integer;
-  Buf : array[0..3,0..2]of byte;
-  Terminating : boolean;
-  SL : TScanlines;
+  P0, P1, P2: Pbytearray;
+  Cx, X, Y: Integer;
+  Buf: array [0 .. 3, 0 .. 2] of Byte;
+  Terminating: Boolean;
+  SL: TScanlines;
 begin
 
   if Amount = 0 then Exit;
@@ -3266,35 +3393,127 @@ begin
   end;
 end;
 
-procedure ThreadDraw(S, D : TBitmap; x, y : integer);
+procedure SetContractBrightnessRGBChannelValue(ImageS, ImageD: TArPARGB; Width, Height: Integer;  Contrast : Extended; var OverageBrightnss : Integer; Brightness, Red, Green, Blue: Integer); overload;
 var
- SXp,DXp : array of PARGB;
- ymax,xmax : integer;
- i, j : integer;
+  Mb, I, J, W, H, Tb: Integer;
+  vd: Double;
+  ContrastArray : T255ByteArray;
+
+  LUT: array [Byte] of Byte;
+  V: Integer;
+
+  Rx, Gx, Bx: Extended;
+  RArray, GArray, BArray: T255ByteArray;
+
+  RFull, GFull, BFull: T255ByteArray;
+  PARGBS, PARGBD : PRGB;
+
+  function BLimit(B: Integer): Byte;
+  begin
+    if B < 0 then
+      Result := 0
+    else if B > 255 then
+      Result := 255
+    else
+      Result := B;
+  end;
+
 begin
- if S.Width-1+x>D.Width-1 then
- xmax:=D.Width-x-1 else xmax:=S.Width-1;
 
- if S.Height-1+y>D.Height-1 then
- ymax:=D.Height-y-1 else ymax:=S.Height-1;
+  W := Width - 1;
+  H := Height - 1;
 
-{ xmax:=min(D.Width-1,S.Width-1);
- ymax:=min(D.Height-1,S.Height-1);}
- s.PixelFormat:=pf24bit;
- d.PixelFormat:=pf24bit;
- SetLength(SXp,S.height);
- for i:=0 to S.height-1 do
- SXp[i]:=S.ScanLine[i];
- SetLength(DXp,D.height);
- for i:=0 to D.height-1 do
- DXp[i]:=D.ScanLine[i];
+  //contrast
+  if OverageBrightnss < 0 then
+  begin
+    OverageBrightnss := 0;
+    for I := 0 to H do
+      for J := 0 to W do
+        Inc(OverageBrightnss, (ImageS[I, J].R * 77 + ImageS[I, J].G * 151 + ImageS[I, J].B * 28) shr 8);
+  end;
 
- for i:=0 to ymax do
- for j:=0 to xmax do
- try
- DXp[i+y,j+x]:=SXp[i,j];
- except
- end;
+  MB := Round(Tb / (W * H));
+
+  if Contrast > 0 then
+    Vd := 1 + (Contrast / 10)
+  else
+    Vd := 1 - (Sqrt(-Contrast) / 10);
+
+  for I := 0 to 255 do
+    ContrastArray[I] := BLimit(MB + Round((I - MB) * Vd));
+
+  //brightness
+  for I := 0 to 255 do
+  begin
+    V := I + Brightness;
+    if V < 0 then
+      V := 0
+    else if V > 255 then
+      V := 255;
+    LUT[I] := V;
+  end;
+
+  //RGB
+  Rx := 1 + (Red / 100);
+  Gx := 1 + (Green / 100);
+  Bx := 1 + (Blue / 100);
+  for I := 0 to 255 do
+  begin
+    RArray[I] := Round(Min(255, Max(0, I * (Rx))));
+    GArray[I] := Round(Min(255, Max(0, I * (Gx))));
+    BArray[I] := Round(Min(255, Max(0, I * (Bx))));
+  end;
+
+  for I := 0 to 255 do
+  begin
+    RFull[I] := RArray[LUT[ContrastArray[I]]];
+    GFull[I] := GArray[LUT[ContrastArray[I]]];
+    BFull[I] := BArray[LUT[ContrastArray[I]]];
+  end;
+
+  for I := 0 to Height - 1 do
+  begin
+    PARGBS := PRGB(ImageS[I]);
+    PARGBD := PRGB(ImageD[I]);
+    for J := 0 to Width - 1 do
+    begin
+      PARGBD.R := RFull[PARGBS.R];
+      PARGBD.G := GFull[PARGBS.G];
+      PARGBD.B := BFull[PARGBS.B];
+      Inc(PARGBS, 1);
+      Inc(PARGBD, 1);
+    end;
+  end;
+end;
+
+procedure ThreadDraw(S, D: TBitmap; X, Y: Integer);
+var
+  SXp, DXp: array of PARGB;
+  Ymax, Xmax: Integer;
+  I, J: Integer;
+begin
+  if S.Width - 1 + X > D.Width - 1 then
+    Xmax := D.Width - X - 1
+  else
+    Xmax := S.Width - 1;
+
+  if S.Height - 1 + Y > D.Height - 1 then
+    Ymax := D.Height - Y - 1
+  else
+    Ymax := S.Height - 1;
+
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  SetLength(SXp, S.Height);
+  for I := 0 to S.Height - 1 do
+    SXp[I] := S.ScanLine[I];
+  SetLength(DXp, D.Height);
+  for I := 0 to D.Height - 1 do
+    DXp[I] := D.ScanLine[I];
+
+  for I := 0 to Ymax do
+    for J := 0 to Xmax do
+      DXp[I + Y, J + X] := SXp[I, J];
 end;
 
 end.
