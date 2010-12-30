@@ -7,7 +7,7 @@ uses
   GraphicsCool, SysUtils, ImageHistoryUnit, Effects, ComCtrls, Math,
   GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, ExtDlgs,
   ScanlinesFX, clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
-  UnitDBKernel, UnitDBCommon, EffectsLanguage, Dolphin_DB, uDBGraphicTypes,
+  UnitDBKernel, UnitDBCommon, Dolphin_DB, uDBGraphicTypes,
   uMemory;
 
 type

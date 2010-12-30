@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Buttons, ExEffects, Language,
-  EffectsLanguage, ToolsUnit, ScrollingImage, Math,  Dolphin_DB, uGOM, AppEvnts,
+  ToolsUnit, ScrollingImage, Math,  Dolphin_DB, uGOM, AppEvnts,
   uMemory, uDBForm, uSysUtils, uEditorTypes;
 
 type

@@ -4,7 +4,7 @@ object FormLanguage: TFormLanguage
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Select language'
-  ClientHeight = 226
+  ClientHeight = 233
   ClientWidth = 225
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -24,14 +24,14 @@ object FormLanguage: TFormLanguage
     Left = 8
     Top = 8
     Width = 204
-    Height = 26
+    Height = 33
     AutoSize = False
     Caption = 'Please, select language of PhotoDB install:'
     WordWrap = True
   end
   object LbLanguages: TListBox
     Left = 8
-    Top = 42
+    Top = 47
     Width = 209
     Height = 147
     Style = lbOwnerDrawFixed
@@ -46,7 +46,7 @@ object FormLanguage: TFormLanguage
   end
   object BtnOk: TButton
     Left = 142
-    Top = 195
+    Top = 200
     Width = 75
     Height = 25
     Caption = 'Ok'

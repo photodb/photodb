@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes,
-  UnitResampleFilters, uEditorTypes;
+  UnitResampleFilters, uEditorTypes, uMemory;
 
 type
   TResizeToolThread = class(TThread)
@@ -81,25 +81,28 @@ procedure TResizeToolThread.Execute;
 begin
   inherited;
   FreeOnTerminate := True;
-  D := TBitmap.Create;
-  D.PixelFormat := Pf24bit;
-  BaseImage.PixelFormat := Pf24bit;
-  if Assigned(FMethod) then
-  begin
-    if ((FToWidth / BaseImage.Width) > 1) or ((FToHeight / BaseImage.Height) > 1) then
-      Interpolate(0, 0, FToWidth, FToHeight, Rect(0, 0, BaseImage.Width, BaseImage.Height), BaseImage, D, CallBack)
-    else
-      FMethod(FToWidth, FToHeight, BaseImage, D, CallBack);
-  end else
-  begin
-    D.Width := FToWidth;
-    D.Height := FToHeight;
-    Strecth(BaseImage, D, ResampleFilters[FIntMethod].Filter, ResampleFilters[FIntMethod].Width, CallBack);
+  try
+    D := TBitmap.Create;
+    D.PixelFormat := pf24bit;
+    BaseImage.PixelFormat := pf24bit;
+    if Assigned(FMethod) then
+    begin
+      if ((FToWidth / BaseImage.Width) > 1) or ((FToHeight / BaseImage.Height) > 1) then
+        Interpolate(0, 0, FToWidth, FToHeight, Rect(0, 0, BaseImage.Width, BaseImage.Height), BaseImage, D, CallBack)
+      else
+        FMethod(FToWidth, FToHeight, BaseImage, D, CallBack);
+    end else
+    begin
+      D.Width := FToWidth;
+      D.Height := FToHeight;
+      Strecth(BaseImage, D, ResampleFilters[FIntMethod].Filter, ResampleFilters[FIntMethod].Width, CallBack);
+    end;
+  finally
+    F(BaseImage);
+    Synchronize(DoExit);
+    IntParam := 0;
+    Synchronize(SetProgress);
   end;
-  Synchronize(DoExit);
-  BaseImage.Free;
-  IntParam := 0;
-  Synchronize(SetProgress);
 end;
 
 procedure TResizeToolThread.SetProgress;

@@ -398,6 +398,10 @@ begin
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
+{$IFDEF LICENCE}
+var
+  KernelHandle : THandle;
+{$ENDIF}
 begin
   begin
     Inc(FCheckCount);
@@ -429,6 +433,7 @@ begin
       EventLog('Verifyng....');
 
       TLoad.Instance.RequaredCRCCheck;
+      KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
       @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
       if not Initaproc(PChar(Application.ExeName)) then
       begin
@@ -437,6 +442,7 @@ begin
         DBTerminating := True;
         Application.Terminate;
       end;
+      FreeLibrary(KernelHandle);
       {$ENDIF}
     end;
     if (FCheckCount = 100) then //after 10 sec. check for updates
@@ -585,13 +591,13 @@ begin
     //checking RecordCount
     if DBkernel.ReadboolW('DBCheck',ExtractFileName(dbname),true)=true then
     begin
+     DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
      if CommonDBSupport.GetRecordsCount(dbname)=0 then
      begin
       if SplashThread <> nil then
         SplashThread.Terminate;
       begin
-       //ImportImages(dbname);
-       DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
+        ImportImages(dbname);
       end;
      end else
      begin

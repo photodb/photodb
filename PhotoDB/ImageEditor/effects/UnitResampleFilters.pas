@@ -45,7 +45,7 @@ const
 
   procedure Strecth(Src, Dst: TBitmap; filter: TFilterProc;
   fwidth: single; CallBack : TBaseEffectCallBackProc = nil);
-  
+
   type
   // Contributor for a pixel
   TContributor = record
@@ -406,13 +406,15 @@ begin
 {$ENDIF}
       end;
 
-     if k mod 50=0 then
-     If Assigned(CallBack) then CallBack(Round(50*k/SrcHeight),Terminating);
-     if Terminating then Break;
+      if K mod 50 = 0 then
+        if Assigned(CallBack) then
+          CallBack(Round(50 * K / SrcHeight), Terminating);
+      if Terminating then
+        Break;
 
     end;
 
-    // Free the memory allocated for horizontal filter weights  
+    // Free the memory allocated for horizontal filter weights
     for i := 0 to DstWidth-1 do
       FreeMem(contrib^[i].p);
 
@@ -485,9 +487,11 @@ begin
           contrib^[i].p^[k].pixel := n;
           contrib^[i].p^[k].weight := weight;
         end;
-        if k mod 50=0 then
-        If Assigned(CallBack) then CallBack(Round(50*k/DstHeight),Terminating);
-        if Terminating then Break;
+        if K mod 50 = 0 then
+          if Assigned(CallBack) then
+            CallBack(Round(50 * K / DstHeight), Terminating);
+        if Terminating then
+          Break;
       end;
     end;
 
@@ -554,9 +558,11 @@ begin
       Inc(SourceLine, 1);
       Inc(DestLine, 1);
 {$ENDIF}
-      if k mod 50=0 then
-      If Assigned(CallBack) then CallBack(Round(50+50*k/DstHeight),Terminating);
-      if Terminating then Break;
+      if K mod 50 = 0 then
+        if Assigned(CallBack) then
+          CallBack(Round(50 + 50 * K / DstHeight), Terminating);
+      if Terminating then
+        Break;
     end;
 
     // Free the memory allocated for vertical filter weights

@@ -290,7 +290,6 @@ end;
 
 procedure TColorToolPanelClass.SetLocalProperties(Sender: TObject);
 var
-  I: Integer;
   Width, Height: Integer;
   ContrastValue: Extended;
 

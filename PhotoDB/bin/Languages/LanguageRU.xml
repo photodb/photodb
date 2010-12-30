@@ -1002,10 +1002,6 @@
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
-  <scope name="EffectsTool">
-	<translate name="Apply" value="Применить" />
-	<translate name="Close tool" value="Закрыть инструмент" />
-  </scope>
   <scope name="InsertImageTool">
 	<translate name="Load image" value="Открыть файл" />
 	<translate name="Method" value="Метод" />
@@ -1034,11 +1030,60 @@
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="ResizeTool">
+	<translate name="Change size" value="Изменить размер" />
+	<translate name="Convert to 100x100" value="Конвертировать в 100х100" />
+	<translate name="Convert to 200x200" value="Конвертировать в 200х200" />
+	<translate name="Convert to 600x800" value="Конвертировать в 600х800" />
+	<translate name="Custom size" value="Произвольный размер" />
+	<translate name="Width" value="Ширина" />
+	<translate name="Height" value="Высота" />
+	<translate name="Save aspect ratio" value="Сохранять пропорции" />
+	<translate name="Scale" value="Масштаб" />
+	<translate name="Method" value="Метод" />
+	<translate name="Smooth resizing" value="Улучшенное сглаживание" />
+	<translate name="Base resizing" value="Базовое сглаживание" />
+	<translate name="Resizing with sharpness" value="Сглаживание с обострением" />
+	<translate name="Save settings" value="Сохранить" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
-  
-  
+  <scope name="RotateTool">	
+	<translate name="Сhoose action" value="Выберите действие" />
+	<translate name="Rotate left" value="Применить" />
+	<translate name="Rotate right" value="Применить" />
+	<translate name="Rotate on 180°" value="Повернуть на 180°" />
+	<translate name="Flip horisontal" value="Отразить по горизонтали" />
+	<translate name="Flip vertical" value="Отразить по вертикали" />
+	<translate name="Custom angle" value="Произвольный угол" />
+	<translate name="Actions" value="Действия" />
+	<translate name="Background color" value="Цвет фона" />
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  <scope name="TextTool">	
+	<translate name="Text" value="Текст" />
+	<translate name="My text" value="Мой текст" />
+	<translate name="Font name" value="Имя шрифта" />
+	<translate name="Font size" value="Размер шрифта" />
+	<translate name="Font color" value="Цвет шрифта" />
+	<translate name="Text rotation" value="Поворот текста" />
+	<translate name="90°" value="90°" />
+	<translate name="180°" value="180°" />
+	<translate name="270°" value="270°" />
+	<translate name="Text orientation" value="Ориентация текста" />	
+	<translate name="Use outline color" value="Подсветка текста" />
+	<translate name="Size" value="Размер" />
+	<translate name="Color" value="Цвет" />
+	
+	<translate name="Save settings" value="Сохранить" />
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+  </scope>
+  <scope name="EffectsTool">
+	<translate name="Apply" value="Применить" />
+	<translate name="Close tool" value="Закрыть инструмент" />
+	<translate name="Filter &quot;%s&quot; is working" value="Работает фильтр &quot;%s&quot;" />
+  </scope>
   <scope name="Effects">
 	<translate name="Radius: [%2.1f]" value="Радиус: [%2.1f]" />
 	<translate name="Gauss blur" value="Гауссово размытие" />
@@ -1088,18 +1133,17 @@
 	<translate name="Linear blur" value="Линейное размытие" />	
 	<translate name="Twist" value="Скручивание" />	
   </scope>
-  
+  <scope name="ExEffectForm">
+	<translate name="Effects" value="Эффекты" />
+	<translate name="Preview" value="Предпросмотр" />
+	<translate name="Transparency" value="Прозрачность" />
+  </scope>
   <scope name="ActionsList">
 	<translate name="Actions" value="Действия" />
 	<translate name="Save to file" value="Сохранить в файл" />
 	<translate name="Load from file" value="Загрузить из файла" />
 	<translate name="Close" value="Закрыть" />
 	<translate name="PhotoDB actions file (*.dbact)|*.dbact" value="PhotoDB действия (*.dbact)|*.dbact" />
-  </scope>
-  <scope name="ExEffectForm">
-	<translate name="Effects" value="Эффекты" />
-	<translate name="Preview" value="Предпросмотр" />
-	<translate name="Transparency" value="Прозрачность" />
   </scope>
   <scope name="PrinterProgress">
 	<translate name="Abort" value="Прервать" />

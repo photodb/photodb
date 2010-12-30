@@ -2,7 +2,7 @@ unit ExEffectsUnitW;
 
 interface
 
-uses ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2, EffectsLanguage,
+uses ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
   Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs, uGOM,
   uEditorTypes, uMemory;
 

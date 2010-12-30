@@ -6,7 +6,7 @@ uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
   GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, UnitDBKernel,
-  EffectsLanguage, uDBGraphicTypes, uMemory;
+  uDBGraphicTypes, uMemory;
 
 type
   TRedEyeToolPanelClass = class(TCustomSelectToolClass)
@@ -175,6 +175,7 @@ begin
   H := Ih + Rect.Top;
   Iw := (Rect.Right - Rect.Left) div 2;
   W := Iw + Rect.Left;
+  Iy := 0;
   for I := Rect.Left to Rect.Right do
   begin
     Ix := I - W;
