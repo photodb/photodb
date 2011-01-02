@@ -1262,5 +1262,6 @@
 	<translate name="The image does not contain hidden information, or this format is not supported!" value="Изображение не содержит скрытую информацию или данный формат не поддерживается!"/>
 	<translate name="Information in the file is corrupted! Checksum did not match!" value="Информация повреждена в файле! Контрольная сумма не совпала!"/>
 	<translate name="Information in the file will not be encrypted!" value="Информация в файле не будет зашифрована!"/>
+	<translate name="The image contains hidden information, but this format is not supported (version = %d)!" value="Это изображеие содержит скрытую информацию, но формат не поддерживается (версия = %d)!"/>
   </scope>
 </language>

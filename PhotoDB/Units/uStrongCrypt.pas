@@ -16,6 +16,10 @@ uses
   DECRandom,
   Consts;
 
+type
+  TSeed = array[1..16] of AnsiChar;
+  TFileNameUnicode = array[0..254] of WideChar;
+
 procedure CryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
                         ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
@@ -24,11 +28,30 @@ procedure DeCryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binar
                         ACipher: TDECCipherClass; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
 procedure StrongCryptInit;
+function ConvertSeed(Seed : Binary) : TSeed;
+function SeedToBinary(Seed : TSeed) : Binary;
 
 implementation
 
 var
   StrongCryptInitFinished : Boolean = False;
+
+function ConvertSeed(Seed : Binary) : TSeed;
+var
+  I : Integer;
+begin
+  for I := 0 to Length(Seed) - 1 do
+    Result[I + 1] := Seed[I + 1];
+end;
+
+function SeedToBinary(Seed : TSeed) : Binary;
+var
+  I : Integer;
+begin
+  SetLength(Result, 16);
+  for I := 0 to 16 - 1 do
+    Result[I + 1] := Seed[I + 1];
+end;
 
 procedure StrongCryptInit;
 begin

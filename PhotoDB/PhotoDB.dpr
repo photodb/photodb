@@ -297,7 +297,8 @@ uses
   uActivationUtils in 'Units\uActivationUtils.pas',
   uDBFileTypes in 'Units\uDBFileTypes.pas',
   uRuntime in 'Units\uRuntime.pas',
-  uDBGraphicTypes in 'Units\uDBGraphicTypes.pas';
+  uDBGraphicTypes in 'Units\uDBGraphicTypes.pas',
+  uStenography in 'Units\uStenography.pas';
 
 {$R *.res}
 

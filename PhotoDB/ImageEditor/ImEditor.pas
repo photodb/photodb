@@ -499,8 +499,8 @@ end;
 
 procedure TImageEditor.LoadImageVariousformat(Image: TGraphic);
 begin
-  CurrentImage.Width := Temp.Width;
-  CurrentImage.Height := Temp.Height;
+  CurrentImage.Width := Image.Width;
+  CurrentImage.Height := Image.Height;
   CurrentImage.Assign(Image);
   CurrentImage.PixelFormat := Pf24bit;
   MakePCurrentImage;

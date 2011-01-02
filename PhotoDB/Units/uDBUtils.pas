@@ -1285,20 +1285,10 @@ begin
   end;
 end;
 
-
 procedure SelectDB(Caller : TDBForm; DB: string);
 var
   EventInfo: TEventValues;
   DBVersion: Integer;
-
-  procedure DoErrorMsg;
-  begin
-    if Screen.ActiveForm <> nil then
-    begin
-      MessageBoxDB(Caller.Handle, Format(TEXT_MES_ERROR_DB_FILE_F, [DB]), TA('Error'), TD_BUTTON_OK,
-        TD_ICON_ERROR);
-    end;
-  end;
 
 begin
   if FileExists(DB) then
@@ -1306,19 +1296,17 @@ begin
     DBVersion := DBKernel.TestDBEx(DB);
     if DBkernel.ValidDBVersion(DB, DBVersion) then
     begin
-      Dbname := DB;
+      DBname := DB;
       DBKernel.SetDataBase(DB);
       EventInfo.name := Dbname;
       LastInseredID := 0;
       DBKernel.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
-    end else
-    begin
-      DoErrorMsg;
-    end;
-  end else
-  begin
-    DoErrorMsg;
+      Exit;
+    end
   end;
+
+  MessageBoxDB(Caller.Handle, Format(TEXT_MES_ERROR_DB_FILE_F, [DB]), TA('Error'), TD_BUTTON_OK,
+    TD_ICON_ERROR);
 end;
 
 function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; var Info: TOneRecordInfo): Boolean;

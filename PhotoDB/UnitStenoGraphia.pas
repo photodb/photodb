@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, SaveInfoToImage, ShlObj, UnitDBKernel,
+  Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, uStenography, ShlObj, UnitDBKernel,
   Math, ImageConverting, PngImage, GraphicEx, uVistaFuncs,
   GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils, uMemory,
-  uShellIntegration, uDBForm, Dolphin_DB;
+  uShellIntegration, uDBForm, uStrongCrypt, DECUtil, DECCipher, win32crc, Dolphin_DB;
 
 type
   TFormSteno = class(TDBForm)
@@ -111,11 +111,12 @@ function TFormSteno.LoadInfoFromFile(FileName: String) : Boolean;
 var
   Bitmap: TBitmap;
   PNG: TPngImage;
-  Info: TArByte;
-  Header: InfoHeader;
+  Info, Data: TMemoryStream;
+  Header: StenographyHeader;
   Password: string;
   CRC: Cardinal;
   SaveDialog: DBSaveDialog;
+  Chipper : TDECCipherClass;
 
   function LoadCryptFile(FileName: string; _class: TGraphicClass): TGraphic;
   var
@@ -143,7 +144,6 @@ var
   end;
 
 begin
-  Result := False;
   Bitmap := nil;
   PNG := nil;
   try
@@ -160,53 +160,69 @@ begin
     begin
       Bitmap := TBitmap(LoadCryptFile(FileName, TBitmap));
     end;
-    SetLength(Info, 0);
-    LoadInfoFromBitmap(Info, Bitmap);
-    if Length(Info) = 0 then
-    begin
-      MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
-        TD_ICON_WARNING);
-      Exit;
-    end;
-    Header := GetHeaderFromInfo(Info);
-    if Header.OK then
-      if Header.Crypted then
+    Info := TMemoryStream.Create;
+    try
+      Result := ExtractInfoFromBitmap(Info, Bitmap);
+      Info.Seek(0, soFromBeginning);
+      FillChar(Header, SizeOf(Header), 0);
+      if (Info.Size > SizeOf(Header)) then
+        Info.Read(Header, SizeOf(Header));
+
+      if not Result or (Header.ID <> StenoHeaderId) then
       begin
-        Password := GetImagePasswordFromUserStenoraphy(Header.FileName, Header.CRC);
+        MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
+          TD_ICON_WARNING);
+        Exit;
+      end;
+
+      if Header.Version = 1 then
+      begin
+        Password := GetImagePasswordFromUserStenoraphy(Header.FileName, Header.PassCRC);
         if Password = '' then
         begin
           Result := False;
-          SetLength(Info, 0);
           Exit;
         end;
-        DeCryptArray(Info, Password);
-      end;
-    if not Header.OK then
-    begin
-      Result := False;
-      SetLength(Info, 0);
-      MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
-        TD_ICON_WARNING);
-      Exit;
-    end;
-    CRC := InfoCRC(Info);
-    if CRC <> Header.DataCRC then
-      MessageBoxDB(Handle, L('Information in the file is corrupted! Checksum did not match!'), L('Information'), TD_BUTTON_OK,
-        TD_ICON_WARNING);
 
-    SaveDialog := DBSaveDialog.Create;
-    try
-      SaveDialog.SetFileName(Header.FileName);
-      if SaveDialog.Execute then
-      begin
-        SaveInfoToImage.SaveInfoToFile(Info, SaveDialog.FileName);
-        Result := True;
-      end;
+        Data := TMemoryStream.Create;
+        try
+          if not Header.IsCrypted then
+          begin
+            Data.CopyFrom(Info, Header.FileSize);
+          end else
+          begin
+            Chipper := CipherByIdentity(Header.Chiper);
+            DeCryptStreamV2(Info, Data, Password, SeedToBinary(Header.Seed), Header.FileSize, Chipper);
+          end;
+          CalcBufferCRC32(TMemoryStream(Data).Memory, Data.Size, CRC);
+
+          if CRC <> Header.DataCRC then
+            MessageBoxDB(Handle, L('Information in the file is corrupted! Checksum did not match!'), L('Information'), TD_BUTTON_OK,
+              TD_ICON_WARNING);
+
+          SaveDialog := DBSaveDialog.Create;
+          try
+            SaveDialog.SetFileName(Header.FileName);
+            if SaveDialog.Execute then
+            begin
+              Data.SaveToFile(SaveDialog.FileName);
+              Result := True;
+            end;
+          finally
+            F(SaveDialog);
+          end;
+
+        finally
+          F(Data);
+        end;
+
+      end else
+        MessageBoxDB(Handle, Format(L('The image contains hidden information, but this format is not supported (version = %d)!'), [Header.Version]), L('Warning'), TD_BUTTON_OK,
+          TD_ICON_WARNING);
     finally
-      F(SaveDialog);
+      F(Info);
     end;
   finally
-    SetLength(Info, 0);
     F(Bitmap);
   end;
 end;
@@ -271,7 +287,6 @@ end;
 procedure TFormSteno.Button2Click(Sender: TObject);
 var
   Size: Integer;
-  Info: TArByte;
   Bitmap : TBitmap;
   N : Integer;
   Options : TOpenOptions;
@@ -281,6 +296,7 @@ var
   Opt: TCryptImageOptions;
   SavePictureDialog: DBSavePictureDialog;
   FileName: string;
+  InfoStream : TMemoryStream;
 begin
   if ImPreview.Picture.Graphic = nil then
   begin
@@ -328,37 +344,45 @@ begin
         if Opt.Password = '' then
           MessageBoxDB(Handle, L('Information in the file will not be encrypted!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
 
-        Info := SaveFileToInfo(FileName, Opt.Password);
-        N := GetMaxPixelsInSquare(FileName, ImPreview.Picture.Graphic);
-        if N < 0 then
-        begin
-          MessageBoxDB(Handle, L('File is too large!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
-          Exit;
-        end;
-        Bitmap := SaveInfoToBmpFile(ImPreview.Picture.Graphic, Info, N);
-        if Bitmap = nil then
-          Exit;
-
-        if SavePictureDialog.GetFilterIndex = 0 then
-        begin
-          Bitmap.SaveToFile(SavePictureDialog.FileName);
-          if ImagePassword <> '' then
-            CryptGraphicFileV2(SavePictureDialog.FileName, ImagePassword, CRYPT_OPTIONS_NORMAL);
-          ImageSaved := True;
-        end else
-        begin
-          PNG := TPngImage.Create;
-          try
-            PNG.Assign(Bitmap);
-            PNG.SaveToFile(SavePictureDialog.FileName);
-            if ImagePassword <> '' then
-              CryptGraphicFileV2(SavePictureDialog.FileName, ImagePassword, CRYPT_OPTIONS_NORMAL);
-            ImageSaved := True;
-          finally
-            F(PNG);
+        InfoStream := TMemoryStream.Create;
+        try
+          SaveFileToCryptedStream(FileName, Opt.Password, InfoStream);
+          N := GetMaxPixelsInSquare(FileName, ImPreview.Picture.Graphic);
+          if N < 0 then
+          begin
+            MessageBoxDB(Handle, L('File is too large!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+            Exit;
           end;
+          Bitmap := TBitmap.Create;
+          try
+            if not SaveInfoToBmpFile(ImPreview.Picture.Graphic, Bitmap, InfoStream, N) then
+              Exit;
+
+            if SavePictureDialog.GetFilterIndex = 0 then
+            begin
+              Bitmap.SaveToFile(SavePictureDialog.FileName);
+              if ImagePassword <> '' then
+                CryptGraphicFileV2(SavePictureDialog.FileName, ImagePassword, CRYPT_OPTIONS_NORMAL);
+              ImageSaved := True;
+            end else
+            begin
+              PNG := TPngImage.Create;
+              try
+                PNG.Assign(Bitmap);
+                PNG.SaveToFile(SavePictureDialog.FileName);
+                if ImagePassword <> '' then
+                  CryptGraphicFileV2(SavePictureDialog.FileName, ImagePassword, CRYPT_OPTIONS_NORMAL);
+                ImageSaved := True;
+              finally
+                F(PNG);
+              end;
+            end;
+          finally
+            F(Bitmap);
+          end;
+        finally
+          F(InfoStream);
         end;
-        F(Bitmap);
       end;
     finally
       F(SavePictureDialog);

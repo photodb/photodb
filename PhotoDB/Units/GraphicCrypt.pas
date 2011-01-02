@@ -26,7 +26,6 @@ type
 
   TMagicByte = array [0 .. 3] of Byte;
   TFileNameAnsi = array[0..254] of AnsiChar;
-  TFileNameUnicode = array[0..254] of WideChar;
   TByteArray = array of Byte;
 
   TGraphicCryptFileHeaderV1 = record
@@ -44,8 +43,6 @@ type
     FileNameCRC: Cardinal;
     Displacement: Cardinal;
   end;
-
-  TSeed = array[1..16] of AnsiChar;
 
   TGraphicCryptFileHeaderV2 = record
     Version: Byte;
@@ -208,23 +205,6 @@ begin
   Stream.Write(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
 end;*)
 
-function ConvertSeed(Seed : Binary) : TSeed;
-var
-  I : Integer;
-begin
-  for I := 0 to Length(Seed) - 1 do
-    Result[I + 1] := Seed[I + 1];
-end;
-
-function SeedToBinary(Seed : TSeed) : Binary;
-var
-  I : Integer;
-begin
-  SetLength(Result, 16);
-  for I := 0 to 16 - 1 do
-    Result[I + 1] := Seed[I + 1];
-end;
-
 procedure WriteCryptHeaderV2(Stream : TStream; Src : TStream; FileName : string; Password : string; Options: Integer; var Seed : Binary);
 var
   FileCRC : Cardinal;
@@ -326,7 +306,7 @@ begin
     end;
 
     FA := FileGetAttr(FileName);
-    ResetFileattributes(FileName, FA);
+    ResetFileAttributes(FileName, FA);
 
     FS := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
     try
