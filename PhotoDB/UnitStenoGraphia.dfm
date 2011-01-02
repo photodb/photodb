@@ -73,7 +73,7 @@ object FormSteno: TFormSteno
     Height = 161
     BevelInner = bvLowered
     TabOrder = 0
-    object Image1: TImage
+    object ImPreview: TImage
       Left = 2
       Top = 2
       Width = 149
@@ -124,8 +124,8 @@ object FormSteno: TFormSteno
     OnClick = Button3Click
   end
   object ComboBox1: TComboBox
-    Left = 168
-    Top = 176
+    Left = 167
+    Top = 179
     Width = 345
     Height = 21
     Style = csDropDownList

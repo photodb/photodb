@@ -262,7 +262,7 @@ end;
 
 procedure TFormConvertingDB.Button5Click(Sender: TObject);
 begin
- if ID_YES=MessageBoxDB(Handle,TEXT_MES_BREAK_RECREATING_TH,TEXT_MES_WARNING,TD_BUTTON_YESNO,TD_ICON_WARNING) then
+ if ID_YES=MessageBoxDB(Handle,TEXT_MES_BREAK_RECREATING_TH,L('Warning'),TD_BUTTON_YESNO,TD_ICON_WARNING) then
  begin
   BreakConverting:=true;
   RecreatingThInTableTerminating:=true;
@@ -274,7 +274,7 @@ procedure TFormConvertingDB.DoFormExit(Sender: TObject);
 begin
  SilentClose:=true;
  Button5.Enabled:=false;
- MessageBoxDB(Handle,TEXT_MES_CONVETRING_ENDED,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+ MessageBoxDB(Handle,TEXT_MES_CONVETRING_ENDED,L('Information'),TD_BUTTON_OK,TD_ICON_INFORMATION);
  Button6.Visible:=true;
 end;
 
@@ -301,7 +301,7 @@ end;
 procedure TFormConvertingDB.RadioButton1Click(Sender: TObject);
 begin
  //TODO: remove this option
- //MessageBoxDB(Handle,TEXT_MES_DB_IS_OLD_DB,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+ //MessageBoxDB(Handle,TEXT_MES_DB_IS_OLD_DB,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
 end;
 
 procedure TFormConvertingDB.ComboBox2Change(Sender: TObject);
@@ -372,8 +372,8 @@ ThHintSize
   end;
  end;
 
- Label10.Caption:=Format(TEXT_MES_IMAGE_SIZE_FORMAT,[Dolphin_DB.SizeInTextA(ImageSize)]);
- Label12.Caption:=Format(TEXT_MES_NEW_DB_SIZE_FORMAT,[Dolphin_DB.SizeInTextA(RecordCount*ImageSize)]);
+ Label10.Caption:=Format(TEXT_MES_IMAGE_SIZE_FORMAT,[SizeInText(ImageSize)]);
+ Label12.Caption:=Format(TEXT_MES_NEW_DB_SIZE_FORMAT,[SizeInText(RecordCount*ImageSize)]);
 
  Jpeg.free;
 end;

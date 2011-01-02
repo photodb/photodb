@@ -219,7 +219,7 @@ begin
   FA:=FileGetAttr(FileName);
   if (fa and SysUtils.faReadOnly)<>0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
    OpenDialog.Free;
    exit;
   end;

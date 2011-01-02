@@ -21,7 +21,6 @@
     <translate name="%dpx." value="%dпк." />
     <translate name="All formats (%s)" value="Все форматы (%s)" />
     <translate name="Unknown" value="Неизвестно" />
-	
   </scope>
   <scope name="System">
     <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
@@ -251,6 +250,7 @@
     <translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />
     <translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
     <translate name="Add file" value="Добавить файл" />
+	<translate name="This folder (%s) contains %d photos in the database!. Adjust the information in the database?" value="В данной папке (%s) содержится %d фотографий из БД! Скорректировать информацию в БД?" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />
@@ -960,6 +960,8 @@
 	<translate name="Text" value="Текст" />
 	<translate name="New editor" value="Новый редактор" />
 	<translate name="Actions" value="Действия" />
+	<translate name="Close" value="Закрыть" />
+	<translate name="Select background color" value="Выбрать цвет фона" />
 	<translate name="For an unsaved file, the properties are not available." value="Для несохранённого файла, свойства недоступны." />
 	<translate name="Image was changed, save changes?" value="Изображение было изменено, сохранить изображение?" />
 	<translate name="Can not write to file &quot;%s&quot;. The file may be in use by another application..." value="Невозможно записать в файл &quot;%s&quot;. Возможно, файл занят другим приложением..." />
@@ -1049,8 +1051,8 @@
   </scope>
   <scope name="RotateTool">	
 	<translate name="Сhoose action" value="Выберите действие" />
-	<translate name="Rotate left" value="Применить" />
-	<translate name="Rotate right" value="Применить" />
+	<translate name="Rotate left" value="Повернуть влево" />
+	<translate name="Rotate right" value="Повернуть вправо" />
 	<translate name="Rotate on 180°" value="Повернуть на 180°" />
 	<translate name="Flip horisontal" value="Отразить по горизонтали" />
 	<translate name="Flip vertical" value="Отразить по вертикали" />
@@ -1074,7 +1076,6 @@
 	<translate name="Use outline color" value="Подсветка текста" />
 	<translate name="Size" value="Размер" />
 	<translate name="Color" value="Цвет" />
-	
 	<translate name="Save settings" value="Сохранить" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
@@ -1237,5 +1238,29 @@
 	<translate name="Add all files again" value="Добавить все файлы снова"/>
 	<translate name="Unable to find password for file: &quot;%s&quot;" value="Не удаётся найти пароль к файлу: &quot;%s&quot;"/>
 	<translate name="Unable to add file: &quot;%s&quot;" value="Не удалось добавить файл: &quot;%s&quot;"/>
+  </scope>
+  <scope name="Steganography">
+	<translate name="Data hiding" value="Скрытие данных"/>
+	<translate name="Max size = %s" value="Максимальный размер = %s"/>
+	<translate name="Normal size = %s" value="Нормальный размер = %s"/>
+	<translate name="Best size = %s" value="Наилучший размер = %s"/>
+	<translate name="File size = %s" value="Размер файла - %s"/>
+	<translate name="File to hide" value="Файл для скрытия"/>
+	<translate name="File name = &quot;%s&quot;" value="Имя файла = &quot;%s&quot;"/>
+	<translate name="Open image" value="Открыть изображение"/>
+	<translate name="All files (Size &lt; %s)|*?*" value="Все файлы (Размер &lt; %s)|*?*"/>
+	<translate name="Hide file in image" value="Скрыть файл в изображении"/>
+	<translate name="File is too large!" value="Файл слишком большой!"/>
+	<translate name="Extract file" value="Извлечь файл"/>
+	<translate name="Use a filter when selecting a file" value="Использовать фильтр при выборе файла"/>
+	<translate name="Hide file and save image" value="Добавить файл и сохранить"/>
+	<translate name="Max size (worse quality, big noise)" value="Максимальный размер (заметное ухудшение качества)"/>
+	<translate name="Standard size (almost imperceptibly)" value="Нормальный размер (практически незаметно)"/>
+	<translate name="Best size (imperceptibly)" value="Лучший размер (незаметно)"/>
+	<translate name="PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp" value="PNG изображения (*.png)|*.png|BMP изображения (*.bmp)|*.bmp"/>
+	<translate name="Unable to load image from file: %s" value="Невозможно загрузить изображение из файла: %s"/>
+	<translate name="The image does not contain hidden information, or this format is not supported!" value="Изображение не содержит скрытую информацию или данный формат не поддерживается!"/>
+	<translate name="Information in the file is corrupted! Checksum did not match!" value="Информация повреждена в файле! Контрольная сумма не совпала!"/>
+	<translate name="Information in the file will not be encrypted!" value="Информация в файле не будет зашифрована!"/>
   </scope>
 </language>

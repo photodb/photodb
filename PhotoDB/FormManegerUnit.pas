@@ -115,7 +115,7 @@ begin
     begin
      Reg.free;
      EnteringCodeNeeded:=true;
-     MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+     MessageBoxDB(FormManager.Handle, TEXT_MES_LIMIT_TIME_END, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
      exit;
     end
    end else if reg.ValueExists('VersionTime') then
@@ -130,7 +130,7 @@ begin
     reg.WriteBool('VersionTimeA',true);
     Reg.free;
     EnteringCodeNeeded:=true;
-    MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+    MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
     exit;
    end;
    if (days>DemoDays) and not DBInDebug then
@@ -138,7 +138,7 @@ begin
     reg.WriteBool('VersionTimeA',True);
     Reg.free;
     EnteringCodeNeeded:=true;
-    MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+    MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
     exit;
    end;
    Reg.free;
@@ -401,6 +401,7 @@ procedure TFormManager.CheckTimerTimer(Sender: TObject);
 {$IFDEF LICENCE}
 var
   KernelHandle : THandle;
+  Initaproc: TInitializeAProc;
 {$ENDIF}
 begin
   begin
@@ -462,7 +463,7 @@ begin
         try
           ActivateApplication(Viewer.Handle);
           //if Viewer rests - user cal puch button "Close"
-          //if ID_YES = MessageBoxDB(Viewer.Handle, TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q, TEXT_MES_WARNING,TD_BUTTON_YESNO, TD_ICON_WARNING) then
+          //if ID_YES = MessageBoxDB(Viewer.Handle, TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q, L('Warning'),TD_BUTTON_YESNO, TD_ICON_WARNING) then
           //  FMainForms.Clear;
         finally
            TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
@@ -563,7 +564,7 @@ begin
 
 {  if DBVersion<0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_FILE_NOT_FOUND_ERROR,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+   MessageBoxDB(Handle,L('MES_DB_FILE_NOT_FOUND_ERROR'),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
 
    DBFile:=DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
    if DBKernel.TestDB(DBFile.FileName) then

@@ -47,6 +47,13 @@ const
   ReleaseNumber = 12;
 
 const
+  MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
+  DBFilesExt: array [0 .. 1] of string = ('MDB', 'PHOTODB');
+  RetryTryCountOnWrite = 10;
+  RetryTryDelayOnWrite = 100;
+  CurrentDBSettingVersion = 1;
+
+const
   DB_VER_1_8 = 1;
   DB_VER_1_9 = 2;
   DB_VER_2_0 = 3;

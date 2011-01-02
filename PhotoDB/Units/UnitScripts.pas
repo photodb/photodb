@@ -24,10 +24,10 @@ type
   private
     { Private declarations }
   public
+    { Public declarations }
     Script : string;
     TopItem : TMenuItem;
     constructor Create(aOwner : TComponent); override;
-    { Public declarations }
   end;
 
 
@@ -447,36 +447,34 @@ begin
   Value.FloatArray := AValue;
 end;
 
-procedure SetNamedValueStr(const aScript : TScript; const ValueName, AValue : string);
+procedure SetNamedValueStr(const AScript: TScript; const ValueName, AValue: string);
 begin
- {$IFNDEF EXT}
- SetNamedValue(aScript,ValueName,'"'+AnsiQuotedStr(AValue)+'"');
- {$ENDIF EXT}
+  SetNamedValue(AScript, ValueName, AnsiQuotedStr(AValue, '"'));
 end;
 
-  procedure UnMakeFloat(var s : string);
-  var
-    j : integer;
-    b : boolean;
-  begin
-   b:=true;
-   for j:=1 to Length(s) do
-   if s[j]=DecimalSeparator then
-   begin
-    s[j]:='.';
-    b:=false;
-   end;
-   if b then s:=s+'.0';
-  end;
-
-procedure SetNamedValueFloat(const aScript : TScript; const ValueName : string; const Value : Extended);
+procedure UnMakeFloat(var S: string);
 var
-  s : string;
-
+  J: Integer;
+  B: Boolean;
 begin
- s := FloatToStr(Value);
- UnMakeFloat(s);
- SetNamedValue(aScript,ValueName,s);
+  B := True;
+  for J := 1 to Length(S) do
+    if S[J] = DecimalSeparator then
+    begin
+      S[J] := '.';
+      B := False;
+    end;
+  if B then
+    S := S + '.0';
+end;
+
+procedure SetNamedValueFloat(const AScript: TScript; const ValueName: string; const Value: Extended);
+var
+  S: string;
+begin
+  S := FloatToStr(Value);
+  UnMakeFloat(S);
+  SetNamedValue(AScript, ValueName, S);
 end;
 
 procedure SetNamedValue(const aScript : TScript; const ValueName, AValue : string);
@@ -2203,9 +2201,7 @@ begin
     until nnew=0;
     s:=Copy(Expression,n,Length(Expression)-n+1);
     ResS:=ResS+GetNamedValueString(aScript,s);
-    {$IFNDEF EXT}
-    Result:='String("'+AnsiQuotedStr(ResS)+'");';
-    {$ENDIF EXT}
+    Result:='String('+AnsiQuotedStr(ResS, '"')+');';
    end else
    Result:=Expression;
   end;
@@ -2604,9 +2600,7 @@ begin
    if (icon[2]=':') then
    begin
     inc(ImagesCount);
-    {$IFNDEF EXT}
     Ico:=GetSmallIconByPath(Icon);
-    {$ENDIF EXT}
     ImageList.AddIcon(Ico);
     Ico.Free;
     Result.ImageIndex:=ImageList.Count-1;
@@ -3028,7 +3022,7 @@ begin
  AddScriptFunction(Enviroment, 'GetProgramFolder',F_TYPE_FUNCTION_IS_STRING,@GetProgramFolder);
  AddScriptFunction(Enviroment, 'ExtractFileName',F_TYPE_FUNCTION_STRING_IS_STRING,@aExtractFileName);
 
- AddScriptFunction(Enviroment, 'ExtractFileDirectory',F_TYPE_FUNCTION_STRING_IS_STRING,@GetDirectory);
+ AddScriptFunction(Enviroment, 'ExtractFileDirectory',F_TYPE_FUNCTION_STRING_IS_STRING,@ExtractFileDirectory);
  AddScriptFunction(Enviroment, 'ExecuteScriptFile',F_TYPE_PROCEDURE_TSCRIPT_STRING_W,@ExecuteScriptFile);
  {$ENDIF EXT}
  AddScriptFunction(Enviroment, 'MessageBox',F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER,@aMessageBox);

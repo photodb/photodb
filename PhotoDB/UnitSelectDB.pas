@@ -7,10 +7,10 @@ uses
   Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, Language, uDBUtils,
   UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, jpeg, CommonDBSupport,
   UnitDBCommonGraphics, ImgList, ComCtrls, ComboBoxExDB, WebLink,
-  UnitDBCommon, uShellIntegration, UnitDBKernel, uFIleUtils;
+  UnitDBCommon, uShellIntegration, UnitDBKernel, uFIleUtils, uDBForm;
 
 type
-  TFormSelectDB = class(TForm)
+  TFormSelectDB = class(TDBForm)
     Image2: TImage;
     Label1: TLabel;
     PanelStep10: TPanel;
@@ -541,8 +541,8 @@ ThHintSize
   end;
  end;
 
- Label10.Caption:=Format(TEXT_MES_IMAGE_SIZE_FORMAT,[Dolphin_DB.SizeInTextA(ImageSize)]);
- Label12.Caption:=Format(TEXT_MES_NEW_DB_SIZE_FORMAT_10000,[Dolphin_DB.SizeInTextA(10000*ImageSize)]);
+ Label10.Caption:=Format(TEXT_MES_IMAGE_SIZE_FORMAT,[SizeInText(ImageSize)]);
+ Label12.Caption:=Format(TEXT_MES_NEW_DB_SIZE_FORMAT_10000,[SizeInText(10000*ImageSize)]);
 
  Jpeg.free;
 end;
@@ -600,7 +600,7 @@ begin
    FDBFile.Icon:=Application.ExeName+',0';
    DBKernel.AddDB(FDBFile.Name,FDBFile.FileName,FDBFile.Icon);
 
-   MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+   MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FileName]),L('Information'),TD_BUTTON_OK,TD_ICON_INFORMATION);
    Close;
   end;
  end;
@@ -615,7 +615,7 @@ begin
   CreateExampleGroups(FDBFile.FileName,Application.ExeName+',0',ExtractFileDir(Application.ExeName));
   if CheckBox1.Checked then
   DBkernel.SetDataBase(FDBFile.FileName);
-  MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FDBFile.FileName]),TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+  MessageBoxDB(Handle,Format(TEXT_MES_DB_CREATED_SUCCESS_F,[FDBFile.FileName]),L('Information'),TD_BUTTON_OK,TD_ICON_INFORMATION);
   Close;
   exit;
  end;
@@ -631,7 +631,7 @@ begin
    exit;
   end else
   begin
-   MessageBoxDB(Handle,Format(TEXT_MES_ERROR_DB_FILE_F,[DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]),TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+   MessageBoxDB(Handle,Format(TEXT_MES_ERROR_DB_FILE_F,[DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]),L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
   end;
  end;
 
@@ -645,7 +645,7 @@ begin
    exit;
   end else
   begin
-   MessageBoxDB(Handle,Format(TEXT_MES_ERROR_DB_FILE_F,[DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]),TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+   MessageBoxDB(Handle,Format(TEXT_MES_ERROR_DB_FILE_F,[DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]),L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
   end;
  end;
 end;

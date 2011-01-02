@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Classes, SysUtils, ActiveX, CommonDBSupport, DB, Forms,
-  UnitGroupsWork, uVistaFuncs, uShellIntegration, UnitDBDeclare, uFileUtils;
+  UnitGroupsWork, uVistaFuncs, uShellIntegration, UnitDBDeclare, uFileUtils,
+  uMemory, uTranslate;
 
 type
   TConvertDBThread = class(TThread)
@@ -271,8 +272,8 @@ end;
 
 procedure TConvertDBThread.ShowErrorMessage;
 begin
- MessageBoxDB(FForm.Handle, Format(TEXT_MES_CONVERTING_ERROR_F, [fParamStr]),
-      TEXT_MES_ERROR, TD_BUTTON_OK, TD_ICON_ERROR);
+  MessageBoxDB(FForm.Handle, Format(TEXT_MES_CONVERTING_ERROR_F, [fParamStr]),
+      TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 end.

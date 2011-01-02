@@ -35,9 +35,6 @@ function LoadFilesFromClipBoardA : TArrayOfString;
 function NowString : String;
 function SumInt(int1, int2 : integer) : integer;
 function SumStr(str1, str2 : string) : string;
-procedure UnFormatDir(var s:string);
-procedure FormatDir(var s:string);
-function GetDirectory(FileName:string):string;
 procedure ExecAndWait(FileName, Params: String);
 procedure Run(ExeFile, Params : String);
 procedure Exec(FileName : string);
@@ -61,13 +58,13 @@ function GetDriveName(Drive : string; DefString : string) : string;
 function GetMyPicturesFolder : string;
 function GetMyDocumentsFolder : string;
 function GetProgramFolder : string;
-function AnsiQuotedStr(const S: string): string;
 function GetSaveImageFileName(InitFile, Filter : string) : string;
 function GetOpenImageFileName(InitFile, Filter : string) : string;
 procedure CopyFileSynch(S,D : string);
 function FileInPath(aFile, aPath : string) : boolean;
 function GetOpenDirectory(Caption, Root : string) : string;
 function FileHasExt(aFile, aExt : string) : boolean;
+function ExtractFileDirectory(FileName : string) : string;
 
 implementation
 
@@ -79,181 +76,163 @@ end;
 
 function GetProgramFolder : string;
 begin
-  Result := GetDirectory(Application.ExeName);
+  Result := ExtractFilePath(Application.ExeName);
 end;
 
-function AnsiQuotedStr(const S: string): string;
-var
-  P, Src, Dest: PChar;
-  AddCount: Integer;
-const
-  Quote = '"';
+function ExtractFileDirectory(FileName : string) : string;
 begin
-  AddCount := 0;
-  P := AnsiStrScan(PChar(S), Quote);
-  while P <> nil do
-  begin
-    Inc(P);
-    Inc(AddCount);
-    P := AnsiStrScan(P, Quote);
+  Result := ExtractFilePath(FileName);
+end;
+
+function GetOpenFileName(InitFile, Filter: string): string;
+var
+  FD: DBOpenDialog;
+begin
+  Result := '';
+  FD := DBOpenDialog.Create;
+  try
+    FD.SetFileName(InitFile);
+    FD.Filter := Filter;
+    if FD.Execute then
+      Result := FD.FileName;
+  finally
+    F(FD);
   end;
-  if AddCount = 0 then
-  begin
-    Result := S;
-    Exit;
+end;
+
+function GetOpenDirectory(Caption, Root: string): string;
+begin
+  if DirectoryExists(Root) then
+    Result := UnitDBFileDialogs.DBSelectDir(Application.Handle, Caption, Root, UseSimpleSelectFolderDialog)
+  else
+    Result := UnitDBFileDialogs.DBSelectDir(Application.Handle, Caption, UseSimpleSelectFolderDialog);
+end;
+
+function GetSaveFileName(InitFile, Filter: string): string;
+var
+  FD: DBSaveDialog;
+begin
+  Result := '';
+  FD := DBSaveDialog.Create;
+  try
+    FD.SetFileName(InitFile);
+    FD.Filter := Filter;
+    if FD.Execute then
+      Result := FD.FileName;
+  finally
+    F(FD);
   end;
-  SetLength(Result, Length(S) + AddCount);
-  Dest := Pointer(Result);
-  Src := Pointer(S);
-  P := AnsiStrScan(Src, Quote);
-  repeat
-    Inc(P);
-    Move(Src^, Dest^, P - Src);
-    Inc(Dest, P - Src);
-    Dest^ := Quote;
-    Inc(Dest);
-    Src := P;
-    P := AnsiStrScan(Src, Quote);
-  until P = nil;
-  P := StrEnd(Src);
-  Move(Src^, Dest^, P - Src);
-  Inc(Dest, P - Src);
-  Dest^ := Quote;
 end;
 
-function GetOpenFileName(InitFile, Filter : string) : string;
+function GetOpenImageFileName(InitFile, Filter: string): string;
 var
-  FD : DBOpenDialog;
+  FD: DBOpenPictureDialog;
 begin
- Result:='';
- FD:=DBOpenDialog.Create();
- FD.SetFileName(InitFile);
- FD.Filter:=Filter;
- if FD.Execute then
- Result:=FD.FileName;
- FD.Free;
-end;
-
-function GetOpenDirectory(Caption, Root : string) : string;
-begin
- if DirectoryExists(Root) then
- begin
-  Result:=UnitDBFileDialogs.DBSelectDir(Application.Handle,Caption,Root,UseSimpleSelectFolderDialog);
- end else
- begin
-  Result:=UnitDBFileDialogs.DBSelectDir(Application.Handle,Caption,UseSimpleSelectFolderDialog);
- end;
-end;
-
-function GetSaveFileName(InitFile, Filter : string) : string;
-var
-  FD : DBSaveDialog;
-begin
- Result:='';
- FD:=DBSaveDialog.Create();
- FD.SetFileName(InitFile);
- FD.Filter:=Filter;
- if FD.Execute then
- Result:=FD.FileName;
- FD.Free;
-end;
-
-function GetOpenImageFileName(InitFile, Filter : string) : string;
-var
-  FD : DBOpenPictureDialog;
-begin
- Result:='';
- FD:=DBOpenPictureDialog.Create();
-// FD.FileName:=InitFile;
- FD.Filter:=Filter;
- if FD.Execute then
- Result:=FD.FileName;
- FD.Free;
+  Result := '';
+  FD := DBOpenPictureDialog.Create;
+  try
+    FD.SetFileName(InitFile);
+    FD.Filter := Filter;
+    if FD.Execute then
+      Result := FD.FileName;
+  finally
+    F(FD);
+  end;
 end;
 
 function GetSaveImageFileName(InitFile, Filter : string) : string;
 var
-  FD : DBSavePictureDialog;
+  FD: DBSavePictureDialog;
 begin
- Result:='';
- FD:=DBSavePictureDialog.Create();
-// FD.FileName:=InitFile;
- FD.Filter:=Filter;
- if FD.Execute then
- Result:=FD.FileName;
- FD.Free;
-end;
-
-procedure CreateFile(FileName : string);
-var
-  FS : TFileStream;
-begin
- try
-  FS := TFileStream.Create(FileName,fmCreate);
-  FS.Free;
- except
-  on e : Exception do EventLog(':CreateFile() throw exception: '+e.Message);
- end;
-end;
-
-procedure WriteToFile(FileName, aString : string);
-var
-  FS : TFileStream;
-begin
- try
- FS := TFileStream.Create(FileName,fmOpenWrite);
- FS.Seek(0,soEnd);
- except
-  on e : Exception do
-  begin
-   EventLog(':WriteToFile() throw exception: '+e.Message);
-   exit;
+  Result := '';
+  FD := DBSavePictureDialog.Create;
+  try
+    FD.SetFileName(InitFile);
+    FD.Filter := Filter;
+    if FD.Execute then
+      Result := FD.FileName;
+  finally
+    F(FD);
   end;
- end;
- FS.Write(aString[1],Length(aString));
- FS.Free;
 end;
 
-procedure WriteLnToFile(FileName, aString : string);
+procedure CreateFile(FileName: string);
 var
-  FS : TFileStream;
-  eof : array[0..1] of byte;
+  FS: TFileStream;
 begin
- try
-  FS := TFileStream.Create(FileName,fmOpenWrite);
-  FS.Seek(0,soEnd);
-  eof[0]:=13;
-  eof[1]:=10;
-  FS.Write(aString[1],Length(aString));
-  FS.Write(eof[0],2);
- except
-  on e : Exception do
-  begin
-   EventLog(':WriteLnToFile() throw exception: '+e.Message);
-   exit;
+  try
+    FS := TFileStream.Create(FileName, FmCreate);
+  except
+    on E: Exception do
+      EventLog(':CreateFile() throw exception: ' + E.message);
   end;
- end;
- FS.Free;
+  F(FS);
 end;
 
-function aExtractFileName(FileName : string) : string;
+procedure WriteToFile(FileName, AString: string);
+var
+  FS: TFileStream;
 begin
- Result:=ExtractFileName(FileName);
+  try
+    FS := TFileStream.Create(FileName, FmOpenWrite);
+  except
+    on E: Exception do
+    begin
+      EventLog(':WriteToFile() throw exception: ' + E.message);
+      Exit;
+    end;
+  end;
+  try
+    FS.Seek(0, SoEnd);
+    FS.Write(AString[1], Length(AString));
+  finally
+    F(FS);
+  end;
 end;
 
-function aPos(sub, str : string) : integer;
+procedure WriteLnToFile(FileName, AString: string);
+var
+  FS: TFileStream;
+  Eof: array [0 .. 1] of Byte;
 begin
- Result:=Pos(sub,str);
+  try
+    FS := TFileStream.Create(FileName, FmOpenWrite);
+  except
+    on E: Exception do
+    begin
+      EventLog(':WriteLnToFile() throw exception: ' + E.message);
+      Exit;
+    end;
+  end;
+  try
+    FS.Seek(0, SoEnd);
+    Eof[0] := 13;
+    Eof[1] := 10;
+    FS.write(AString[1], Length(AString));
+    FS.write(Eof[0], 2);
+  finally
+    F(FS);
+  end;
 end;
 
-function aStrCopy(s : string; aBegin, aLength : integer) : string;
+function AExtractFileName(FileName: string): string;
 begin
- Result:=Copy(s,aBegin,aLength);
+  Result := ExtractFileName(FileName);
 end;
 
-function aStrToInt(s : string) : integer;
+function APos(Sub, Str: string): Integer;
 begin
- Result:=StrToIntDef(s,0);
+  Result := Pos(Sub, Str);
+end;
+
+function AStrCopy(S: string; ABegin, ALength: Integer): string;
+begin
+  Result := Copy(S, ABegin, ALength);
+end;
+
+function AStrToInt(S: string): Integer;
+begin
+  Result := StrToIntDef(S, 0);
 end;
 
 function GetDirListing(Dir : String; Mask : string) : TArrayOfString;
@@ -278,23 +257,29 @@ var
 begin
   TW.I.Start('GetDirListing');
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  SetLength(Result, 0);
-  if Dir = '' then
-    Exit;
-  Dir := IncludeTrailingBackslash(Dir);
-  Found := FindFirst(Dir + '*.*', FaAnyFile - FaDirectory, SearchRec);
-  while Found = 0 do
-  begin
-    if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
-      if ExtInMask(GetExt(SearchRec.name), Mask) then
+  try
+    SetLength(Result, 0);
+    if Dir = '' then
+      Exit;
+    Dir := IncludeTrailingBackslash(Dir);
+    Found := FindFirst(Dir + '*.*', FaAnyFile - FaDirectory, SearchRec);
+    try
+      while Found = 0 do
       begin
-        SetLength(Result, Length(Result) + 1);
-        Result[Length(Result) - 1] := Dir + SearchRec.name;
+        if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+          if ExtInMask(GetExt(SearchRec.name), Mask) then
+          begin
+            SetLength(Result, Length(Result) + 1);
+            Result[Length(Result) - 1] := Dir + SearchRec.name;
+          end;
+        Found := Sysutils.FindNext(SearchRec);
       end;
-    Found := Sysutils.FindNext(SearchRec);
+    finally
+      FindClose(SearchRec);
+    end;
+  finally
+    SetErrorMode(OldMode);
   end;
-  FindClose(SearchRec);
-  SetErrorMode(OldMode);
   TW.I.Start('GetDirListing - END');
 end;
 
@@ -398,7 +383,7 @@ begin
     AFiles.Add(AFile);
     Copy_Move(True, AFiles);
   finally
-    AFiles.Free;
+    F(AFiles);
   end;
 end;
 
@@ -411,7 +396,7 @@ begin
     AFiles.Add(AFile);
     Copy_Move(False, AFiles);
   finally
-    AFiles.Free;
+    F(AFiles);
   end;
 end;
 
@@ -428,7 +413,7 @@ begin
     end;
     Copy_Move(True, AFiles);
   finally
-    AFiles.Free;
+    F(AFiles);
   end;
 end;
 
@@ -479,38 +464,6 @@ begin
   Result := Str1 + Str2;
 end;
 
-procedure UnFormatDir(var S: string);
-begin
-  if S = '' then
-    Exit;
-  if S[Length(S)] = '\' then
-    Delete(S, Length(S), 1);
-end;
-
-procedure FormatDir(var S: string);
-begin
-  if S = '' then
-    Exit;
-  if S[Length(S)] <> '\' then
-    S := S + '\';
-end;
-
-function GetDirectory(FileName: string): string;
-var
-  I, N: Integer;
-begin
-  N := 0;
-  for I := Length(FileName) downto 1 do
-    if FileName[I] = '\' then
-    begin
-      N := I;
-      Break;
-    end;
-  Delete(Filename, N, Length(Filename) - N + 1);
-  Result := FileName;
-  FormatDir(Result);
-end;
-
 procedure ExecAndWait(FileName, Params: String);
 var
   StartInfo: TStartupInfo;
@@ -542,21 +495,21 @@ procedure Run(ExeFile, Params : String);
 var
   Si : TStartupInfo;
   Dir, CmdLine : string;
-  p : TProcessInformation;
+  P: TProcessInformation;
 begin
   CmdLine := '"' + ExeFile + '" ' + Params;
-  Dir:=GetDirectory(ExeFile);
-  UnformatDir(Dir);
-  FillChar( Si, SizeOf( Si ) , 0 );
-  with Si do begin
-    cb := SizeOf(Si);
-    dwFlags := startf_UseShowWindow;
-    wShowWindow := 4;
+  Dir := ExtractFilePath(ExeFile);
+  FillChar(Si, SizeOf(Si), 0);
+  with Si do
+  begin
+    Cb := SizeOf(Si);
+    DwFlags := Startf_UseShowWindow;
+    WShowWindow := 4;
   end;
-  CreateProcess(nil, PChar(CmdLine), nil, nil, False, CREATE_DEFAULT_ERROR_MODE, nil, PWideChar(Dir), si, p);
+  CreateProcess(nil, PChar(CmdLine), nil, nil, False, CREATE_DEFAULT_ERROR_MODE, nil, PWideChar(Dir), Si, P);
 end;
 
-procedure Exec(FileName : string);
+procedure Exec(FileName: string);
 begin
   ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOW)
 end;
@@ -621,63 +574,68 @@ end;
 
 function GetSmallIconByPath(IconPath : String; Big : boolean = false) : TIcon;
 var
-  Path, Icon : String;
-  IconIndex, i : Integer;
-  ico1,ico2 : HIcon;
-  oldMode: Cardinal;
+  Path, Icon: string;
+  IconIndex, I: Integer;
+  Ico1, Ico2: HIcon;
+  OldMode: Cardinal;
 begin
- i:=Pos(',',IconPath);
- Path:=Copy(IconPath,1,i-1);
- Icon:=Copy(IconPath,i+1,Length(IconPath)-i);
- IconIndex:=StrToIntDef(Icon,0);
- ico1:=0;
- Result := TIcon.create;
- try
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
-  ExtractIconEx(Pchar(Path),IconIndex,ico1,ico2,1);
-  SetErrorMode(oldMode);
- except
- end;
- if Big then
- begin
-  Result.Handle:=ico1;
-  if ico2<>0 then
-  DestroyIcon(ico2);
- end else
- begin
-  Result.Handle:=ico2;
-  if ico1<>0 then
-  DestroyIcon(ico1);
- end;
-end;
+  I := Pos(',', IconPath);
+  Path := Copy(IconPath, 1, I - 1);
+  Icon := Copy(IconPath, I + 1, Length(IconPath) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  Ico1 := 0;
+  Result := TIcon.Create;
 
-function AddIcon(Path : string; ImageList : TImageList; var IconsCount : integer) : integer;
-var
-  ico : TIcon;
-  i : integer;
-begin
- Result:=-1;
- ico:=nil;
- for i:=1 to 20 do
- begin
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-   ico:=GetSmallIconByPath(Path);
-   break;
-  except
-   Sleep(10);
+    ExtractIconEx(Pchar(Path), IconIndex, Ico1, Ico2, 1);
+  finally
+    SetErrorMode(OldMode);
   end;
- end;
- if ico<>nil then
- if not ico.Empty then
- begin
-  ImageList.AddIcon(ico);
-  inc(IconsCount);
-  ico.Free;
-  Result:=ImageList.Count-1;
- end;
+
+  if Big then
+  begin
+    Result.Handle := Ico1;
+    if Ico2 <> 0 then
+      DestroyIcon(Ico2);
+  end else
+  begin
+    Result.Handle := Ico2;
+    if Ico1 <> 0 then
+      DestroyIcon(Ico1);
+  end;
 end;
 
-function AddAssociatedIcon(Path : string; ImageList : TImageList; var IconsCount : integer) : integer;
+function AddIcon(Path: string; ImageList: TImageList; var IconsCount: Integer): integer;
+var
+  Ico: TIcon;
+  I: Integer;
+begin
+  Result := -1;
+  Ico := nil;
+  try
+    for I := 1 to 20 do
+    begin
+      try
+        Ico := GetSmallIconByPath(Path);
+        Break;
+      except
+        Sleep(10);
+      end;
+    end;
+    if Ico <> nil then
+      if not Ico.Empty then
+      begin
+        ImageList.AddIcon(Ico);
+        Inc(IconsCount);
+        Result := ImageList.Count - 1;
+      end;
+  finally
+    F(Ico);
+  end;
+end;
+
+function AddAssociatedIcon(Path: string; ImageList: TImageList; var IconsCount: integer) : integer;
 var
   Ico : TIcon;
   OldMode: Cardinal;
@@ -796,31 +754,31 @@ begin
   end;
 end;
 
-Function GetCDVolumeLabel(CDName : AnsiChar) : String;
+function GetCDVolumeLabel(CDName : AnsiChar) : String;
 var
   VolumeName,
   FileSystemName : array [0..MAX_PATH-1] of Char;
   VolumeSerialNo : DWord;
   MaxComponentLength,FileSystemFlags: Cardinal;
-  oldMode: Cardinal;
+  OldMode: Cardinal;
 begin
-  oldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    GetVolumeInformation(PChar(CDName + ':\'), VolumeName, MAX_PATH, @VolumeSerialNo,
-      MaxComponentLength, FileSystemFlags, FileSystemName, MAX_PATH);
+    GetVolumeInformation(PChar(CDName + ':\'), VolumeName, MAX_PATH, @VolumeSerialNo, MaxComponentLength,
+      FileSystemFlags, FileSystemName, MAX_PATH);
   finally
-    SetErrorMode(oldMode);
+    SetErrorMode(OldMode);
   end;
   Result := VolumeName;
 end;
 
-function MrsGetFileType(strFilename: string): string;
+function MrsGetFileType(StrFilename: string): string;
 var
   FileInfo: TSHFileInfo;
-  oldMode: Cardinal;
+  OldMode: Cardinal;
 begin
   FillChar(FileInfo, SizeOf(FileInfo), #0);
-  oldMode:= SetErrorMode(SEM_FAILCRITICALERRORS);
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     SHGetFileInfo(PChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
     Result := FileInfo.szTypeName;

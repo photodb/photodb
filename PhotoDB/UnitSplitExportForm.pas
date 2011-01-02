@@ -331,12 +331,12 @@ var
 begin
  if not DBKernel.TestDB(Edit1.Text) then
  begin
-  MessageBoxDB(Handle,TEXT_MES_SELECT_DB_PLEASE,TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
+  MessageBoxDB(Handle,TEXT_MES_SELECT_DB_PLEASE,L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
   Edit1.SelectAll;
   Edit1.SetFocus;
   exit;
  end else
- if ID_OK=MessageBoxDB(Handle,Format(TEXT_MES_REALLY_SPLIT_IN_DB_F,[Edit1.Text]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+ if ID_OK=MessageBoxDB(Handle,Format(TEXT_MES_REALLY_SPLIT_IN_DB_F,[Edit1.Text]),L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   SetLength(ID_Delete,0);
   ProgressWindow := GetProgressWindow;
@@ -428,7 +428,7 @@ begin
   if SaveDialog.GetFilterIndex=1 then
   if GetExt(FileName)<>'PHOTODB' then FileName:=FileName+'.photodb';
 
-  if FileExists(FileName) and (ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)) then exit;
+  if FileExists(FileName) and (ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[FileName]),L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING)) then exit;
   begin
    DBKernel.CreateDBbyName(FileName);
    Edit1.Text:=FileName;

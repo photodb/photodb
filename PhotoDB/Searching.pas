@@ -791,28 +791,32 @@ begin
     if Active then
       Application.HideHint;
     THintManager.Instance.CloseHint;
-    HintTimer.Enabled:=false;
-    Info:=GetCurrentPopUpMenuInfo(Item);
-    if not (getTickCount-WindowsMenuTickCount>WindowsMenuTime)  then
-    begin
-      TTranslateManager.Instance.BeginTranslate;
-      try
-        TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
-      finally
-        TTranslateManager.Instance.EndTranslate;
-      end;
-    end else
-    begin
-      FileNames := TStringList.Create;
-      try
-        for I := 0 to Info.Count - 1 do
-        if Info[i].Selected then
-          FileNames.Add(Info[i].FileName);
+    HintTimer.Enabled := False;
+    Info := GetCurrentPopUpMenuInfo(Item);
+    try
+      if not (GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
+      begin
+        TTranslateManager.Instance.BeginTranslate;
+        try
+          TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
+        finally
+          TTranslateManager.Instance.EndTranslate;
+        end;
+      end else
+      begin
+        FileNames := TStringList.Create;
+        try
+          for I := 0 to Info.Count - 1 do
+          if Info[i].Selected then
+            FileNames.Add(Info[i].FileName);
 
-        GetProperties(FileNames, MousePos, ElvMain);
-      finally
-        F(FileNames);
+          GetProperties(FileNames, MousePos, ElvMain);
+        finally
+          F(FileNames);
+        end;
       end;
+    finally
+      F(Info);
     end;
   end else
   begin
@@ -3188,7 +3192,7 @@ begin
 
   CommonKeyWords:=GetCommonWordsA(KeyWordList);
   SelectedInfo.CommonKeyWords:=CommonKeyWords;
-  Label4.Caption:=Format(L('Size: %s'),[sizeintextA(size)]);
+  Label4.Caption:=Format(L('Size: %s'),[SizeInText(size)]);
   Label2.Caption:=L('Items')+' = '+inttostr(GetSelectionCount);
   Memo1.Lines.text:=CommonKeyWords;
   SelectedInfo.IsVariousComments:=IsVariousArStrings(ArComments);
@@ -3227,7 +3231,7 @@ begin
   SelectQuery.active:=true;
   lockwindowupdate(Handle);
   Label2.Caption:=Format(L('ID = %d'),[indent]);
-  Label4.Caption:=Format(L('Size = %s'),[sizeintextA(SelectQuery.FieldByName('FileSize').asinteger)]);
+  Label4.Caption:=Format(L('Size = %s'),[SizeInText(SelectQuery.FieldByName('FileSize').asinteger)]);
   memo1.Lines.text:=SelectQuery.FieldByName('KeyWords').asstring;
   memo2.Lines.text:=SelectQuery.FieldByName('Comment').asstring;
   RatingEdit.Rating:=SelectQuery.FieldByName('Rating').asinteger;
@@ -4692,7 +4696,7 @@ begin
         FFillListInfo.LastSize := Max(1, DataRecord.FileSize);
         with ElvMain.Groups.Add do
         begin
-          Caption := FLessThan + ' ' + SizeInTextA(1024 * 100);
+          Caption := FLessThan + ' ' + SizeInText(1024 * 100);
           Visible := True;
         end;
       end else
@@ -4705,7 +4709,7 @@ begin
           with ElvMain.Groups.Add do
           begin
             FFillListInfo.LastSize := i + i10;
-            Caption := FMoreThan + ' ' + SizeInTextA(I);
+            Caption := FMoreThan + ' ' + SizeInText(I);
             Visible := True;
           end;
         end else
@@ -4719,14 +4723,14 @@ begin
               begin
                 I := 1024 * 1024;
                 FFillListInfo.LastSize := I + i10;
-                Caption := FMoreThan + ' ' + SizeInTextA(I);
+                Caption := FMoreThan + ' ' + SizeInText(I);
                 Visible := True;
               end;
             if (FFillListInfo.LastSize < I + i10) and (DataRecord.FileSize > 1024 * 1024) then
             with ElvMain.Groups.Add do
             begin
               FFillListInfo.LastSize := I + i10;
-              Caption := FMoreThan + ' ' + SizeInTextA(I);
+              Caption := FMoreThan + ' ' + SizeInText(I);
               Visible := True;
             end;
           end else
@@ -4740,14 +4744,14 @@ begin
               begin
                 I := 1024 * 1024 * 10;
                 FFillListInfo.LastSize := I + i10;
-                Caption := FMoreThan + ' ' + SizeInTextA(I);
+                Caption := FMoreThan + ' ' + SizeInText(I);
                 Visible := True;
               end;
               if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 1024 * 1024 * 10) then
                 with ElvMain.Groups.Add do
                 begin
                  FFillListInfo.LastSize := I + i10;
-                 Caption := FMoreThan + ' ' + SizeInTextA(I);
+                 Caption := FMoreThan + ' ' + SizeInText(I);
                  Visible := True;
                 end;
             end else
@@ -4755,7 +4759,7 @@ begin
               with ElvMain.Groups.Add do
               begin
                 FFillListInfo.LastSize := 1024 * 1024 * 100;
-                Caption := FMoreThan + ' ' + SizeInTextA(1024 * 1024 * 100);
+                Caption := FMoreThan + ' ' + SizeInText(1024 * 1024 * 100);
                 Visible := True;
               end;
             end;
@@ -4771,7 +4775,7 @@ begin
           with ElvMain.Groups.Add do
           begin
             FFillListInfo.LastSize := i10 + 1024 * 100;
-            Caption := FLessThan + ' ' + SizeInTextA(i10 + 1024 * 100);
+            Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 100);
             Visible := True;
           end;
        end else
@@ -4783,7 +4787,7 @@ begin
              with ElvMain.Groups.Add do
              begin
               FFillListInfo.LastSize:=i10 + 1024 * 1024;
-              Caption := FLessThan + ' ' + SizeInTextA(i10 + 1024 * 1024);
+              Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 1024);
               Visible := True;
              end;
           end else
@@ -4795,7 +4799,7 @@ begin
              with ElvMain.Groups.Add do
              begin
                FFillListInfo.LastSize := i10 + 1024 * 1024 * 10;
-               Caption := FLessThan + ' ' + SizeInTextA(i10 + 1024 * 1024 * 10);
+               Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 1024 * 10);
                Visible := True;
              end;
            end else
@@ -4803,7 +4807,7 @@ begin
              with ElvMain.Groups.Add do
              begin
                FFillListInfo.LastSize := 1024 * 1024 * 100;
-               Caption := FMoreThan + ' ' + SizeInTextA(1024 * 1024 * 100);
+               Caption := FMoreThan + ' ' + SizeInText(1024 * 1024 * 100);
                Visible := True;
              end;
            end;

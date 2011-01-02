@@ -3563,8 +3563,8 @@ begin
       if DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1) <> -1 then
       begin
         SizeLabel.Caption := Format(L('%s from %s'),
-          [SizeInTextA(DiskFree(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1)),
-          SizeInTextA(DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1))]);
+          [SizeInText(DiskFree(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1)),
+          SizeInText(DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1))]);
         SizeLabel.Visible := True;
         SizeLabel.Top := DimensionsLabel.Top + DimensionsLabel.Height + H;
       end else
@@ -3575,7 +3575,7 @@ begin
       SetErrorMode(OldMode);
     end else
     begin
-      SizeLabel.Caption := Format(L('Size = %s'), [SizeInTextA(FSelectedInfo.Size)]);
+      SizeLabel.Caption := Format(L('Size = %s'), [SizeInText(FSelectedInfo.Size)]);
       SizeLabel.Visible := True;
       SizeLabel.Top := DimensionsLabel.Top + DimensionsLabel.Height + H;
     end;

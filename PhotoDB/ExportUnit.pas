@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uVistaFuncs,
-  uShellIntegration;
+  uShellIntegration, uDBForm;
 
 type
-  TExportForm = class(TForm)
+  TExportForm = class(TDBForm)
     Edit1: TEdit;
     Button1: TButton;
     CheckBox1: TCheckBox;
@@ -98,7 +98,7 @@ begin
       SaveDialog1.FileName := SaveDialog1.FileName + '.photodb';
 
     if FileExists(SaveDialog1.FileName) then
-      if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_1, [SaveDialog1.FileName]), TEXT_MES_WARNING,
+      if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_1, [SaveDialog1.FileName]), L('Warning'),
         TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         Exit;
 

@@ -192,8 +192,8 @@ var
 begin
   for I := 1 to ValueListEditor1.Strings.Count do
     try
-      OldFile := GetDirectory(FFiles[I - 1]) + ValueListEditor1.Cells[0, I];
-      NewFile := GetDirectory(FFiles[I - 1]) + ValueListEditor1.Cells[1, I];
+      OldFile := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[0, I];
+      NewFile := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[1, I];
       RenamefileWithDB(Self, OldFile, NewFile, FIDS[I - 1], False);
     except
       on E: Exception do
@@ -432,15 +432,15 @@ var
 begin
   Result := False;
 
-  Dir := GetDirectory(FFiles[0]);
+  Dir := ExtractFilePath(FFiles[0]);
   OldDirFiles := TArStrings(GetDirListing(Dir, '||'));
   SetLength(OldFiles, ValueListEditor1.Strings.Count);
   for I := 1 to ValueListEditor1.Strings.Count do
-    OldFiles[I - 1] := GetDirectory(FFiles[I - 1]) + ValueListEditor1.Cells[0, I];
+    OldFiles[I - 1] := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[0, I];
 
   SetLength(NewFiles, ValueListEditor1.Strings.Count);
   for I := 1 to ValueListEditor1.Strings.Count do
-    NewFiles[I - 1] := GetDirectory(FFiles[I - 1]) + ValueListEditor1.Cells[1, I];
+    NewFiles[I - 1] := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[1, I];
 
   for I := 0 to Length(OldFiles) - 1 do
     for J := 0 to Length(NewFiles) - 1 do

@@ -5,7 +5,7 @@ unit uFileUtils;
 interface
 
 uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl, Variants, ShlObj, ActiveX,
-     VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes;
+     VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes, uSysUtils;
 
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);

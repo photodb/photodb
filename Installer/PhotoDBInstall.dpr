@@ -41,7 +41,8 @@ uses
   uActions in 'uActions.pas',
   uAssociationActions in 'uAssociationActions.pas',
   uUpdatingWindowsActions in 'uUpdatingWindowsActions.pas',
-  uRuntime in '..\PhotoDB\Units\uRuntime.pas';
+  uRuntime in '..\PhotoDB\Units\uRuntime.pas',
+  uSysUtils in '..\PhotoDB\Units\uSysUtils.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

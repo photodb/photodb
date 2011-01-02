@@ -7,10 +7,10 @@ uses
   Dialogs, StdCtrls, UnitDBKernel, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
   uVistaFuncs, CommonDBSupport, UnitPasswordKeeper, ImgList,
   UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants,
-  uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils;
+  uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils, uDBForm;
 
 type
-  TCMDForm = class(TForm)
+  TCMDForm = class(TDBForm)
     Label1: TLabel;
     Timer1: TTimer;
     ApplicationEvents1: TApplicationEvents;
@@ -144,7 +144,7 @@ procedure TCMDForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
  If Working then CanClose:=false;
  if Recreating then
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_BREAK_RECREATING_TH,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+ if ID_OK=MessageBoxDB(Handle,TEXT_MES_BREAK_RECREATING_TH,L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
  begin
   CMD_Command_Break:=true;
  end;

@@ -14,7 +14,7 @@ object EditorFullScreenForm: TEditorFullScreenForm
   FormStyle = fsStayOnTop
   KeyPreview = True
   OldCreateOrder = False
-  PopupMenu = PopupMenu1
+  PopupMenu = PmMain
   WindowState = wsMaximized
   OnClose = FormClose
   OnCreate = FormCreate
@@ -24,14 +24,7 @@ object EditorFullScreenForm: TEditorFullScreenForm
   OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 56
-    Top = 152
-  end
-  object PopupMenu1: TPopupMenu
+  object PmMain: TPopupMenu
     Left = 120
     Top = 56
     object SelectBackGroundColor1: TMenuItem

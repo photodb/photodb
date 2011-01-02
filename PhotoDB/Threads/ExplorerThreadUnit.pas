@@ -1477,23 +1477,32 @@ begin
 end;
 
 procedure TExplorerThread.LoadMyComputerFolder;
+const
+  DRIVE_REMOVABLE = 2;
+  DRIVE_FIXED     = 3;
+  DRIVE_REMOTE    = 4;
+  DRIVE_CDROM     = 5;
 var
   I: Integer;
   DS: TDriveState;
   OldMode: Cardinal;
+  DriveType : UINT;
 begin
   HideProgress;
   ShowInfo(L('Loading "My computer" directory') + '...', 1, 0);
   FFiles := TExplorerFileInfos.Create;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   for I := Ord('C') to Ord('Z') do
-    if (GetDriveType(PChar(Chr(I) + ':\')) = 2) or (GetDriveType(PChar(Chr(I) + ':\')) = 3) or
-      (GetDriveType(PChar(Chr(I) + ':\')) = 5) then
+  begin
+    DriveType := GetDriveType(PChar(Chr(I) + ':\'));
+    if (DriveType = DRIVE_REMOVABLE) or (DriveType = DRIVE_FIXED) or
+      (DriveType = DRIVE_REMOTE) or (DriveType = DRIVE_CDROM) then
     begin
       DriveState(AnsiChar(I));
       AddOneExplorerFileInfo(FFiles, Chr(I) + ':\', EXPLORER_ITEM_DRIVE, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,
         False, False, True);
     end;
+  end;
 
   SynchronizeEx(BeginUpdate);
   AddOneExplorerFileInfo(FFiles, L('Network'), EXPLORER_ITEM_NETWORK, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,

@@ -5,10 +5,10 @@ interface
 uses
   CmpUnit, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, StdCtrls, CheckLst, DB, CommonDBSupport, ExtCtrls,
-  uVistaFuncs, UnitDBKernel, uShellIntegration, uSysUtils;
+  uVistaFuncs, UnitDBKernel, uShellIntegration, uSysUtils, uDBForm;
 
 type
-  TImportDataBaseForm = class(TForm)
+  TImportDataBaseForm = class(TDBForm)
     Label3: TLabel;
     Edit2: TEdit;
     Button2: TButton;
@@ -101,7 +101,7 @@ begin
   DBTestOK:=DBKernel.testDB(OpenDialog1.FileName);
   if AnsiUpperCase(OpenDialog1.FileName)=AnsiUpperCase(dbname) then
   begin
-   MessageBoxDB(Handle,TEXT_MES_MAIN_DB_AND_ADD_SAME,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+   MessageBoxDB(Handle,TEXT_MES_MAIN_DB_AND_ADD_SAME,L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
    DBTestOK:=false;
   end;
   if DBTestOK then

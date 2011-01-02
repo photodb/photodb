@@ -4,7 +4,8 @@ interface
 
 uses
   Classes, Registry, Windows, SysUtils, UnitDBKernel, Forms,
-  uVistaFuncs, uLogger, uConstants, uShellIntegration;
+  uVistaFuncs, uLogger, uConstants, uShellIntegration,
+  uTranslate;
 
 type
   TInternetUpdate = class(TThread)
@@ -169,7 +170,7 @@ begin
   if Screen.ActiveForm <> nil then
  ActiveFormHandle:=Screen.ActiveForm.Handle else
  ActiveFormHandle:=0;
- MessageBoxDB(ActiveFormHandle,StringParam,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_INFORMATION);
+ MessageBoxDB(ActiveFormHandle,StringParam,TA('Information'),TD_BUTTON_OK,TD_ICON_INFORMATION);
 end;
 
 procedure TInternetUpdate.ShowUpdates;

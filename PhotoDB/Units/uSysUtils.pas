@@ -12,8 +12,16 @@ function ShiftKeyDown: Boolean;
 function KillTask(ExeFileName: string): Integer;
 function GetGUID: TGUID;
 function GetProgramPath: string;
+function FloatToStrEx(Value: Extended; Round: Integer): string;
 
 implementation
+
+function FloatToStrEx(Value: Extended; Round: Integer): string;
+var
+  Buffer: array [0 .. 63] of Char;
+begin
+  SetString(Result, Buffer, FloatToText(Buffer, Value, FvExtended, FfGeneral, Round, 0));
+end;
 
 function GetProgramPath: string;
 begin

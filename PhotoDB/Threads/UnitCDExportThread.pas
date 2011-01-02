@@ -76,7 +76,7 @@ end;
 
 procedure TCDExportThread.DoErrorDeletingFiles;
 begin
-  MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_DELETE_ORIGINAL_FILES, TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+  MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_DELETE_ORIGINAL_FILES, TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
 end;
 
 procedure TCDExportThread.DoOnEnd;
@@ -345,7 +345,7 @@ end;
 
 procedure TCDExportThread.ShowCopyError;
 begin
-  MessageBoxDB(FOwner.Handle, TEXT_MES_UNABLE_TO_COPY_DISK, TEXT_MES_WARNING, TD_BUTTON_OK,
+  MessageBoxDB(FOwner.Handle, TEXT_MES_UNABLE_TO_COPY_DISK, TA('Warning'), TD_BUTTON_OK,
     TD_ICON_WARNING);
 end;
 

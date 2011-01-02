@@ -92,13 +92,13 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Image1DblClick(Sender: TObject);
   private
-  FBitmapImageList : TBitmapImageList;
-  WorkQuery : TDataSet;
     { Private declarations }
+    FBitmapImageList: TBitmapImageList;
+    WorkQuery: TDataSet;
+    procedure LoadLanguage;
   public
-  procedure LoadLanguage;
-  procedure ReallignControls;
     { Public declarations }
+    procedure ReallignControls;
   end;
 
 var
@@ -270,7 +270,7 @@ begin
  DB_RATING.text:=inttostr(fQuery.FieldByName('Rating').AsInteger);
  DB_WIDTH.text:=Format(TEXT_MES_PIXEL_FORMAT_D,[fQuery.FieldByName('Width').AsInteger]);
  DB_HEIGHT.text:=Format(TEXT_MES_PIXEL_FORMAT_D,[fQuery.FieldByName('Height').AsInteger]);
- DB_SIZE.text:=SizeInTextA(fQuery.FieldByName('FileSize').AsInteger);
+ DB_SIZE.text:=SizeInText(fQuery.FieldByName('FileSize').AsInteger);
  DB_PATCH.text:=fQuery.FieldByName('FFileName').AsString;
  pic:=TPicture.create;
  pic.Graphic:=TJPEGImage.Create;
@@ -430,7 +430,7 @@ const
 begin
  filesize_ := GetFileSizeByName(FileName);
  F_NAME.Text:=ExtractFileName(FileName);
- F_SIZE.Text:=SizeInTextA(FileSize_);
+ F_SIZE.Text:=SizeInText(FileSize_);
  F_PATCH.text:=FileName;
  for i:=length(FileName) downto 1 do
  if FileName[i]=#0 then delete(FileName,i,1);
@@ -441,7 +441,7 @@ begin
   if Password<>'' then
   pic.Graphic:=DeCryptGraphicFile(FileName,Password) else
   begin
-   MessageBoxDB(Handle,Format(TEXT_MES_CANT_LOAD_IMAGE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+   MessageBoxDB(Handle,Format(L('Unable to load image from file: %s'),[FileName]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
    exit;
   end;
  end else
@@ -449,7 +449,7 @@ begin
  try
   pic.LoadFromFile(FileName);
   except
-   MessageBoxDB(Handle,Format(TEXT_MES_CANT_LOAD_IMAGE,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+   MessageBoxDB(Handle,Format(L('Unable to load image from file: %s'),[FileName]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
    pic.free;
    exit;
   end;

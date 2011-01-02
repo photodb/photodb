@@ -5,7 +5,8 @@ interface
 uses
   Classes, Language, UnitLinksSupport, DB, SysUtils,
   CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc, uFileUtils,
-  UnitDBDeclare, uMemory, uConstants, uDBTypes, uDBBaseTypes;
+  UnitDBDeclare, uMemory, uConstants, uDBTypes, uDBBaseTypes,
+  uTranslate;
 
 type
   TThreadOptimizeDublicates = class(TThread)
@@ -142,7 +143,7 @@ begin
   Table.Active:=true;
   RecordCount:=CommonDBSupport.GetRecordsCount(dbname);
  except
-  FStrParam:=TEXT_MES_ERROR;
+  FStrParam:=TA('Error');
   Synchronize(TextOut);
   FreeDS(Table);
   Synchronize(DoExit);
@@ -198,7 +199,7 @@ begin
    end;
    if (Query.RecordCount=0) and WideSearch then
    begin
-    FStrParam:=TEXT_MES_ERROR;
+    FStrParam:=TA('Error');
     FIntParam:=LINE_INFO_INFO;
     Synchronize(TextOutEx);
 

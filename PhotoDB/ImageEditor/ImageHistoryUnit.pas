@@ -150,11 +150,11 @@ begin
   if FPosition = -1 then
     Exit;
   if FPosition = 0 then
-    Result := FArray[0]
+    Result := TBitmapHistoryItem(FArray[0]).FBitmap
   else
   begin
     Dec(FPosition);
-    Result := FArray[FPosition];
+    Result := TBitmapHistoryItem(FArray[FPosition]).FBitmap;
   end;
   if Assigned(OnHistoryChange) then
     OnHistoryChange(Self, [THA_Undo]);

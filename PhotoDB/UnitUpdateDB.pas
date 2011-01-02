@@ -761,7 +761,7 @@ procedure TUpdateDBForm.OnDirectorySearch(Owner: TObject; FileName: string;
   Size: int64);
 begin
   FFullSize := FFullSize + Size;
-  FInfoStr := Format(L('Reading [%s]'), [SizeInTextA(FFullSize)]);
+  FInfoStr := Format(L('Reading [%s]'), [SizeInText(FFullSize)]);
 end;
 
 procedure TUpdateDBForm.FormKeyDown(Sender: TObject; var Key: Word;

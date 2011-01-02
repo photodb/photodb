@@ -483,7 +483,7 @@ end;
 
 function TextToolClass.LangID: string;
 begin
-  Result := L('TextTool');
+  Result := 'TextTool';
 end;
 
 procedure TextToolClass.OnTextChanged(Sender: TObject);

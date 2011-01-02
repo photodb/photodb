@@ -30,6 +30,7 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure SaveToFileLinkClick(Sender: TObject);
     procedure LoadFromFileLinkClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FParent: TDBForm;
@@ -67,6 +68,11 @@ begin
   ActionsImageList.BkColor := ClWindow;
   Cursor := 0;
   Actions := TList.Create;
+end;
+
+procedure TActionsForm.FormDestroy(Sender: TObject);
+begin
+  FreeList(Actions);
 end;
 
 procedure TActionsForm.CloseLinkClick(Sender: TObject);

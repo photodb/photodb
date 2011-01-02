@@ -281,7 +281,7 @@ begin
  begin
   if PlacesListView.Items.Count=0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_NO_PLACES_TO_IMPORT,TEXT_MES_INFORMATION,TD_BUTTON_OK,TD_ICON_WARNING);
+   MessageBoxDB(Handle,TEXT_MES_NO_PLACES_TO_IMPORT,L('Information'),TD_BUTTON_OK,TD_ICON_WARNING);
    exit;
   end;
   Button2.Enabled:=true;
@@ -328,7 +328,7 @@ begin
   if SaveDialog.GetFilterIndex=1 then
   if GetExt(FileName)<>'PHOTODB' then FileName:=FileName+'.photodb';
 
-  if FileExists(FileName) and (ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)) then exit;
+  if FileExists(FileName) and (ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[FileName]),L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING)) then exit;
   begin
    DbKernel.CreateDBbyName(FileName);
    DBTestOK:=DBKernel.TestDB(FileName);
@@ -390,7 +390,7 @@ procedure TFormImportingImages.FileFounded(Owner: TObject; FileName: string;
 begin
  FullSize:=FullSize+Size;
  inc(ImageCounter);
- Label11.Caption:=Format(TEXT_MES_CURRENT_SIZE_F,[SizeInTextA(FullSize)]);
+ Label11.Caption:=Format(TEXT_MES_CURRENT_SIZE_F,[SizeInText(FullSize)]);
  Label12.Caption:=Format(TEXT_MES_IMAGES_COUNT_F,[ImageCounter]);
  Edit4.Text:=FileName;
 end;
@@ -473,7 +473,7 @@ begin
   inc(ImageProcessedCounter);
   FileSize:=GetFileSizeByName(Value.Name);
   ProcessingSize:=ProcessingSize+FileSize;
-  Label11.Caption:=Format(TEXT_MES_PROCESSING_SIZE_F,[SizeInTextA(ProcessingSize),SizeInTextA(FullSize)]);
+  Label11.Caption:=Format(TEXT_MES_PROCESSING_SIZE_F,[SizeInText(ProcessingSize),SizeInText(FullSize)]);
   Label12.Caption:=Format(TEXT_MES_IMAGES_PROCESSED_COUNT_F,[ImageProcessedCounter,ImageCounter]);
 
   TimeCounter.NextAction(FileSize);
@@ -488,7 +488,7 @@ begin
  begin
   if not CryptFileWithoutPassChecked then
   begin
-   DoHelpHint(TEXT_MES_WARNING,TEXT_MES_CRYPT_FILE_WITHOUT_PASS_MOT_ADDED,p,Self);
+   DoHelpHint(L('Warning'),TEXT_MES_CRYPT_FILE_WITHOUT_PASS_MOT_ADDED,p,Self);
   end;
  end;
 end;

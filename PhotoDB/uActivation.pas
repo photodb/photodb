@@ -5,10 +5,10 @@ interface
 uses
   UnitINI, Searching, dolphin_db, UnitDBKernel, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
-  Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime;
+  Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm;
 
 type
-  TActivateForm = class(TForm)
+  TActivateForm = class(TDBForm)
     EdProgramCode: TEdit;
     Label1: TLabel;
     EdActicationCode: TEdit;
@@ -91,7 +91,7 @@ begin
   finally
     Reg.free;
   end;
-  MessageBoxDB(Handle, TEXT_MES_KEY_SAVE,TEXT_MES_WARNING, TD_BUTTON_OK, TD_ICON_WARNING);
+  MessageBoxDB(Handle, TEXT_MES_KEY_SAVE, L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
   Close;
 end;
 

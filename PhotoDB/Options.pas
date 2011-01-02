@@ -476,7 +476,7 @@ var
 begin
   if ReloadData then
   begin
-   if MessageBoxDB(Handle,TEXT_MES_RELOAD_DATA,TEXT_MES_INFORMATION,TD_BUTTON_OKCANCEL,TD_ICON_QUESTION)=ID_OK then
+   if MessageBoxDB(Handle,TEXT_MES_RELOAD_DATA,L('Information'),TD_BUTTON_OKCANCEL,TD_ICON_QUESTION)=ID_OK then
    begin
     DBKernel.DoIDEvent(Self,0,[EventID_Param_Refresh_Window],EventInfo);
    end;

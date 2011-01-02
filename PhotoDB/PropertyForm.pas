@@ -634,7 +634,7 @@ begin
       KeyWordsMemo.Text := DataRecord.KeyWords;
       LabelName.Text := ExtractFileName(DataRecord.FileName);
       LabelPath.Text := DataRecord.FileName;
-      SizeLabel.Text := SizeInTextA(DataRecord.FileSize);
+      SizeLabel.Text := SizeInText(DataRecord.FileSize);
       Widthmemo.Text := IntToStr(WorkQuery.FieldByName('Width').AsInteger) + L('px.');
       Heightmemo.Text := IntToStr(WorkQuery.FieldByName('Height').AsInteger) + L('px.');
       RatingEdit.Rating := DataRecord.Rating;
@@ -1437,7 +1437,7 @@ begin
   WidthMemo.Text := L('Loading...');
   HeightMemo.Text := L('Loading...');
 
-  SizeLabel.Text := SizeInTextA(GetFileSize(FileName));
+  SizeLabel.Text := SizeInText(GetFileSize(FileName));
   BtSave.Caption := L('Add file');
   BtnFind.Visible := True;
 
@@ -1708,7 +1708,7 @@ begin
   Editing_info := False;
   try
     Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
-    SizeLAbel.Text := SizeInTextA(Size);
+    SizeLAbel.Text := SizeInText(Size);
     OwnerMemo.Text := L('Not avaliable');
     CollectionMemo.Text := L('Not avaliable');
     OwnerMemo.readonly := True;

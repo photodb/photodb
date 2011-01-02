@@ -13,17 +13,13 @@ uses  Language, Registry, Windows, uVistaFuncs,CommonDBSupport,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
       UnitLinksSupport, EasyListView, ImageConverting, uTranslate,
       uMemory, uDBPopupMenuInfo, uAppUtils, UnitDBCommonGraphics,
-      uGraphicUtils, uShellIntegration, uRuntime;
+      uGraphicUtils, uShellIntegration, uRuntime, uSysUtils;
 
 type
   TInitializeAProc = function(s:PChar) : boolean;
 
 var
   LOGGING_ENABLED: Boolean = True;
-  LOGGING_MESSAGE: Boolean = False;
-{$IFDEF LICENCE}
-    Initaproc: TInitializeAProc;
-{$ENDIF}
 
 type
   THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
@@ -171,14 +167,6 @@ type
     PreviewOptions : TPreviewOptions;
   end;
 
-const
-  DemoSecondsToOpen = 5;
-  MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
-  DBFilesExt: array [0 .. 1] of string = ('MDB', 'PHOTODB');
-  RetryTryCountOnWrite = 10;
-  RetryTryDelayOnWrite = 100;
-  CurrentDBSettingVersion = 1;
-
 var
   DBName: string;
   HelpNO: Integer = 0;
@@ -186,7 +174,6 @@ var
   FExtImagesInImageList: Integer;
   GraphicFilterString: string;
 
-function SizeInTextA(Size: Int64): string;
 function XorStrings(S1, S2: string): string;
 function SetStringToLengthWithNoData(S: string; N: Integer): string;
 
@@ -215,13 +202,9 @@ function GetGraphicFilter: string;
 function CenterPos(W1, W2: Integer): Integer;
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
 
-implementation
+function SizeInText(Size: Int64): string;
 
-{uses UnitPasswordForm, CommonDBSupport, uActivation, UnitInternetUpdate,
-  UnitManageGroups, uAbout,
-  UnitUpdateDB, Searching, ManagerDBUnit, ProgressActionUnit, UnitINI,
-  UnitDBCommonGraphics, UnitCDMappingSupport, UnitGroupsWork, CmpUnit,
-  uPrivateHelper; }
+implementation
 
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
 const
@@ -261,23 +244,16 @@ begin
   Result := Format(TA('%dpx.'), [IntToStr(Pixels)]);
 end;
 
-function FloatToStrA(Value: Extended; Round: Integer): string;
-var
-  Buffer: array [0 .. 63] of Char;
-begin
-  SetString(Result, Buffer, FloatToText(Buffer, Value, FvExtended, FfGeneral, Round, 0));
-end;
-
 function SizeInTextA(Size: Int64): string;
 begin
   if Size <= 1024 then
-    Result := Inttostr(Size) + ' ' + TA('Bytes');
+    Result := IntToStr(Size) + ' ' + TA('Bytes');
   if (Size > 1024) and (Size <= 1024 * 999) then
-    Result := FloatToStrA(Size / 1024, 3) + ' ' + TA('Kb');
+    Result := FloatToStrEx(Size / 1024, 3) + ' ' + TA('Kb');
   if (Size > 1024 * 999) and (Size <= 1024 * 1024 * 999) then
-    Result := FloatToStrA(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
+    Result := FloatToStrEx(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
   if (Size > 1024 * 1024 * 999) then
-    Result := FloatToStrA(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
+    Result := FloatToStrEx(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
 end;
 
 function Xorstrings(S1, S2: string): string;
@@ -479,7 +455,6 @@ begin
   until (Longint(GetTickCount) - FirstTick) >= Msecs;
 end;
 
-
 function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
 var
   Findleft: Integer;
@@ -501,9 +476,9 @@ function IsWallpaper(FileName: string): Boolean;
 var
   Str: string;
 begin
-  Str := GetExt(FileName);
-  Result := (Str = 'HTML') or (Str = 'HTM') or (Str = 'GIF') or (Str = 'JPG') or (Str = 'JPEG') or (Str = 'JPE') or
-    (Str = 'BMP');
+  Str := AnsiUpperCase(ExtractFileExt(FileName));
+  Result := (Str = '.HTML') or (Str = '.HTM') or (Str = '.GIF') or (Str = '.JPG') or (Str = '.JPEG') or (Str = '.JPE') or
+    (Str = '.BMP');
   Result := Result and FileExists(FileName);
 end;
 
@@ -675,6 +650,18 @@ begin
     GraphicFilterString := FormatsString;
   end;
   Result := GraphicFilterString;
+end;
+
+function SizeInText(Size: Int64): string;
+begin
+  if Size <= 1024 then
+    Result := IntToStr(Size) + ' ' + TA('Bytes');
+  if (Size > 1024) and (Size <= 1024 * 999) then
+    Result := FloatToStrEx(Size / 1024, 3) + ' ' + TA('Kb');
+  if (Size > 1024 * 999) and (Size <= 1024 * 1024 * 999) then
+    Result := FloatToStrEx(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
+  if (Size > 1024 * 1024 * 999) then
+    Result := FloatToStrEx(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
 end;
 
 initialization

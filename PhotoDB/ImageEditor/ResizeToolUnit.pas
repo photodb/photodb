@@ -5,7 +5,7 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  Language, UnitResampleFilters, uDBBaseTypes,
+  Language, UnitResampleFilters, uDBBaseTypes, UnitDBCommon,
   UnitDBKernel, Effects, uConstants, uEditorTypes, uMemory;
 
 type
@@ -117,7 +117,7 @@ begin
   end;
   if CheckBoxSaveProportions.Checked then
   begin
-    ProportionalSize(ImageSizeW, ImageSizeH, W, H);
+    ProportionalSizeA(ImageSizeW, ImageSizeH, W, H);
   end else
   begin
     W := ImageSizeW;

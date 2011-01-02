@@ -118,7 +118,7 @@ begin
   CDListView.DoubleBuffered := True;
 
   Mapping := TCDIndexMapping.Create;
-  EditCDSize.Text := SizeInTextA(Mapping.GetCDSize);
+  EditCDSize.Text := SizeInText(Mapping.GetCDSize);
 
   DropFileTarget1.Register(CDListView);
   PopupMenuListView.Images := DBKernel.ImageList;
@@ -223,7 +223,7 @@ begin
       Item.Data := Level[I];
       Size := Mapping.GetCDSizeWithDirectory(Level[I]);
       if Size > 0 then
-        Item.SubItems.Add(SizeInTextA(Size))
+        Item.SubItems.Add(SizeInText(Size))
       else
         Item.SubItems.Add('');
       ID := Level[I].DB_ID;
@@ -250,7 +250,7 @@ begin
   finally
     ListView.Items.EndUpdate;
   end;
-  EditCDSize.Text := SizeInTextA(Mapping.GetCDSize);
+  EditCDSize.Text := SizeInText(Mapping.GetCDSize);
   ComboBoxPathList.Items.Clear;
   PathList := Mapping.GetCurrentUpperDirectories;
   try
@@ -405,8 +405,8 @@ begin
   DriveFreeSize := DiskFree(Ord(AnsiLowerCase(EditExportDirectory.Text)[1]) - Ord('a') + 1);
   if Mapping.GetCDSize > DriveFreeSize then
   begin
-    MessageBoxDB(Handle, Format(L('Can not copy files: detected insufficient disk space! Need %s, and free only %s!'), [SizeInTextA(Mapping.GetCDSize),
-        SizeInTextA(DriveFreeSize)]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    MessageBoxDB(Handle, Format(L('Can not copy files: detected insufficient disk space! Need %s, and free only %s!'), [SizeInText(Mapping.GetCDSize),
+        SizeInText(DriveFreeSize)]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;
 

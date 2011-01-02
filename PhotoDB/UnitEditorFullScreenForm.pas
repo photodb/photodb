@@ -4,19 +4,17 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Menus, uConstants,
-  UnitDBKernel, uSysUtils,  UnitDBCommon, UnitDBCommonGraphics,
+  Dialogs, ExtCtrls, Menus, uConstants, uMemory, uDBForm,
+  UnitDBKernel, uSysUtils, UnitDBCommon, UnitDBCommonGraphics,
   Language;
 
 type
-  TEditorFullScreenForm = class(TForm)
-    DestroyTimer: TTimer;
-    PopupMenu1: TPopupMenu;
+  TEditorFullScreenForm = class(TDBForm)
+    PmMain: TPopupMenu;
     Close1: TMenuItem;
     N1: TMenuItem;
     SelectBackGroundColor1: TMenuItem;
     ColorDialog1: TColorDialog;
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -25,14 +23,16 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure SelectBackGroundColor1Click(Sender: TObject);
   private
-  CurrentImage : TBitmap;
-  DrawImage : TBitmap;
     { Private declarations }
+    CurrentImage: TBitmap;
+    DrawImage: TBitmap;
+    procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
-  Procedure SetImage(Image : TBitmap);
-  Procedure CreateDrawImage;
-  Procedure LoadLanguage;
     { Public declarations }
+    procedure SetImage(Image: TBitmap);
+    procedure CreateDrawImage;
   end;
 
 var
@@ -44,45 +44,19 @@ uses ImEditor;
 
 {$R *.dfm}
 
-{$IFNDEF PHOTODB}
-procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
-begin
-// If Max(aWidthToSize,aHeightToSize)<Min(aWidth,aHeight) then
- If (aWidthToSize<aWidth) and (aHeightToSize<aHeight) then
- begin
-  Exit;
- end;
- if (aWidthToSize = 0) or (aHeightToSize = 0) then
- begin
-  aHeightToSize := 0;
-  aWidthToSize  := 0;
- end else begin
-  if (aHeightToSize/aWidthToSize) < (aHeight/aWidth) then
-  begin
-   aHeightToSize := Round ( (aWidth/aWidthToSize) * aHeightToSize );
-   aWidthToSize  := aWidth;
-  end else begin
-   aWidthToSize  := Round ( (aHeight/aHeightToSize) * aWidthToSize );
-   aHeightToSize := aHeight;
-  end;
- end;
-end;
-{$ENDIF}
-
-procedure TEditorFullScreenForm.DestroyTimerTimer(Sender: TObject);
-begin
- EditorFullScreenForm.Release;
- EditorFullScreenForm:=nil;
-end;
-
 procedure TEditorFullScreenForm.FormPaint(Sender: TObject);
 begin
- Canvas.Draw(ClientWidth div 2 - DrawImage.Width div 2,Clientheight div 2 - DrawImage.Height div 2,DrawImage);
+  Canvas.Draw(ClientWidth div 2 - DrawImage.Width div 2, Clientheight div 2 - DrawImage.Height div 2, DrawImage);
+end;
+
+function TEditorFullScreenForm.GetFormID: string;
+begin
+  Result := 'Editor';
 end;
 
 procedure TEditorFullScreenForm.SetImage(Image: TBitmap);
 begin
- CurrentImage:=Image;
+  CurrentImage := Image;
 end;
 
 procedure TEditorFullScreenForm.FormCreate(Sender: TObject);
@@ -91,59 +65,62 @@ begin
   DrawImage.PixelFormat := Pf24bit;
   LoadLanguage;
 
-  PopupMenu1.Images := DBKernel.ImageList;
+  PmMain.Images := DBKernel.ImageList;
   Close1.ImageIndex := DB_IC_EXIT;
   SelectBackGroundColor1.ImageIndex := DB_IC_DESKTOP;
 end;
 
 procedure TEditorFullScreenForm.FormDestroy(Sender: TObject);
 begin
- DrawImage.Free;
+  F(DrawImage);
 end;
 
 procedure TEditorFullScreenForm.Close1Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TEditorFullScreenForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
- DestroyTimer.Enabled:=true;
+  Release;
 end;
 
 procedure TEditorFullScreenForm.CreateDrawImage;
 var
-  w, h : integer;
+  W, H: Integer;
 begin
- w:=CurrentImage.Width;
- h:=CurrentImage.Height;
- ProportionalSize(Screen.Width,Screen.Height,w,h);
- DoResize(w,h,CurrentImage,DrawImage);
+  W := CurrentImage.Width;
+  H := CurrentImage.Height;
+  ProportionalSize(Screen.Width, Screen.Height, W, H);
+  DoResize(W, H, CurrentImage, DrawImage);
 end;
 
-procedure TEditorFullScreenForm.FormKeyPress(Sender: TObject;
-  var Key: Char);
+procedure TEditorFullScreenForm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
- if Key=#27 then Close;
- {$IFDEF PHOTODB}
- if (Key=#10)  and CtrlKeyDown and Focused then Close;
- {$ENDIF}
+  if Ord(Key) = VK_ESCAPE then
+    Close;
+  if (Key = #10) and CtrlKeyDown and Focused then
+    Close;
 end;
 
 procedure TEditorFullScreenForm.LoadLanguage;
 begin
- Close1.Caption:=TEXT_MES_CLOSE;
- SelectBackGroundColor1.Caption:=TEXT_MES_SELECT_BK_COLOR;
-
+  BeginTranslate;
+  try
+    Close1.Caption := L('Close');
+    SelectBackGroundColor1.Caption := L('Select background color');
+  finally
+    EndTranslate;
+  end;
 end;
 
-procedure TEditorFullScreenForm.SelectBackGroundColor1Click(
-  Sender: TObject);
+procedure TEditorFullScreenForm.SelectBackGroundColor1Click(Sender: TObject);
 begin
- ColorDialog1.Color:=Color;
- if ColorDialog1.Execute then Color:=ColorDialog1.Color;
- Refresh;
+  ColorDialog1.Color := Color;
+  if ColorDialog1.Execute then
+    Color := ColorDialog1.Color;
+  Refresh;
 end;
 
 end.

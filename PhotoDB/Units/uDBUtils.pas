@@ -316,8 +316,8 @@ begin
     FQuery.Active := True;
     FQuery.First;
     if FQuery.RecordCount > 0 then
-      if Ask or (ID_OK = MessageBoxDB(Caller.Handle, Format(TEXT_MES_RENAME_FOLDER_WITH_DB_F,
-            [OldFileName, IntToStr(FQuery.RecordCount)]), TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
+      if Ask or (ID_OK = MessageBoxDB(Caller.Handle, Format(TA('This folder (%s) contains %d photos in the database!. Adjust the information in the database?', 'Explorer'),
+            [OldFileName, FQuery.RecordCount]), TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
       begin
         ProgressWindow := GetProgressWindow;
         ProgressWindow.OneOperation := True;

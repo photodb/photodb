@@ -138,7 +138,7 @@ var
 begin
 
   SImageSize := Format(L('Image size: %d x %d'), [FWidth, FHeight]);
-  SFileSize := Format(L('File size: %s'), [SizeintextA(CurrentInfo.FileSize)]);
+  SFileSize := Format(L('File size: %s'), [SizeInText(CurrentInfo.FileSize)]);
 
   FFormBuffer.Width := Width;
   FFormBuffer.Height := Height;

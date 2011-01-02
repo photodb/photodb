@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Language, uDBBaseTypes, uDBTypes, UnitLinksSupport, DB, SysUtils,
-  CommonDBSupport, UnitDBDeclare, uDBUtils;
+  CommonDBSupport, UnitDBDeclare, uDBUtils, uTranslate;
 
 type
   TThreadShowBadLinks = class(TThread)
@@ -70,7 +70,7 @@ begin
   Table.Active:=true;
  except
   FIntParam:=LINE_INFO_ERROR;
-  FStrParam:=TEXT_MES_ERROR;
+  FStrParam:=TA('Error');
   Synchronize(TextOut);
   FreeDS(Table);
   Synchronize(DoExit);
