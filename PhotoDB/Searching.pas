@@ -291,7 +291,7 @@ type
     procedure DeleteItemByID(ID : integer);
     procedure RefreshThumItemByID(ID : integer);
     procedure NewSearch1Click(Sender: TObject);
-    procedure GetUpdates1Click(Sender: TObject);
+//    procedure GetUpdates1Click(Sender: TObject);
 
     procedure HelpNextClick(Sender: TObject);
     procedure HelpCloseClick(Sender : TObject; var CanClose : Boolean);
@@ -2731,11 +2731,11 @@ begin
     SetFocus;
   end;
 end;
-
+     {
 procedure TSearchForm.GetUpdates1Click(Sender: TObject);
 begin
  GetUpdates(true);
-end;
+end;   }
 
 procedure TSearchForm.HelpCloseClick(Sender: TObject;
   var CanClose: Boolean);

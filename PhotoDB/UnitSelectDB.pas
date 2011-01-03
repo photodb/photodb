@@ -311,7 +311,7 @@ begin
    DoSelectStep(30);
   end else
   begin
-   MessageBoxDB(Handle,TEXT_MES_NO_DB_FILE_SELECTED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+   MessageBoxDB(Handle,TEXT_MES_NO_DB_FILE_SELECTED,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
    Button4Click(Sender);
   end;
  end;
@@ -381,7 +381,7 @@ begin
   FA:=FileGetAttr(FileName);
   if FIleExists(FileName) and ((fa and SysUtils.faReadOnly)<>0) then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
    SaveDialog.Free;
    exit;
   end;
@@ -588,7 +588,7 @@ begin
    FA:=FileGetAttr(FileName);
    if FileExists(FileName) and ((fa and SysUtils.faReadOnly)<>0) then
    begin
-    MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+    MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
     SaveDialog.Free;
     exit;
    end;
@@ -710,7 +710,7 @@ begin
   FA:=FileGetAttr(FileName);
   if (fa and SysUtils.faReadOnly)<>0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
    OpenDialog.Free;
    exit;
   end;
@@ -719,7 +719,7 @@ begin
   if DBVersion>0 then
   if not DBKernel.ValidDBVersion(FileName,DBVersion) then
   begin
-   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',TEXT_MES_WARNING,'',TD_BUTTON_YESNO,TD_ICON_WARNING);
+   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',L('Warning'),'',TD_BUTTON_YESNO,TD_ICON_WARNING);
    if ID_YES=DialogResult then
    begin
     ConvertDB(FileName);
@@ -744,7 +744,7 @@ begin
  if DBKernel.ValidDBVersion(FDBFile.FileName,DBKernel.TestDBEx(FDBFile.FileName)) then
   ChangeDBOptions('',FDBFile.FileName) else
  begin
-  MessageBoxDB(Handle,TEXT_MES_SELECT_DB_AT_FIRST,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+  MessageBoxDB(Handle,TEXT_MES_SELECT_DB_AT_FIRST,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
  end;
 end;
 
@@ -755,7 +755,7 @@ begin
   ConvertDB(FDBFile.FileName);
  end else
  begin
-  MessageBoxDB(Handle,TEXT_MES_SELECT_DB_AT_FIRST,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+  MessageBoxDB(Handle,TEXT_MES_SELECT_DB_AT_FIRST,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
  end;
 end;
 

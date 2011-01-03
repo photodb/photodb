@@ -40,7 +40,7 @@ end;
 
 procedure GetUpdates(ShowInfo : boolean);
 begin
-  TInternetUpdate.Create(False, ShowInfo);
+  TInternetUpdate.Create(ShowInfo);
 end;
 
 procedure DoAbout;

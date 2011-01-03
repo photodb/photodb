@@ -1264,4 +1264,10 @@
 	<translate name="Information in the file will not be encrypted!" value="Информация в файле не будет зашифрована!"/>
 	<translate name="The image contains hidden information, but this format is not supported (version = %d)!" value="Это изображеие содержит скрытую информацию, но формат не поддерживается (версия = %d)!"/>
   </scope>
+  <scope name="About">
+	<translate name="Checking updates..." value="Поиск обновлений..."/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+  </scope>
 </language>

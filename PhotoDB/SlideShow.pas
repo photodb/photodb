@@ -3247,6 +3247,6 @@ end;
 
 initialization
 
-Viewer:=nil;
+Viewer := nil;
 
 end.

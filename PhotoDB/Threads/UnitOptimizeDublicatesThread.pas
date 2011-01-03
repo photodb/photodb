@@ -186,7 +186,7 @@ begin
   begin
    if (Query.RecordCount=0) and not WideSearch then
    begin
-    FStrParam:=TEXT_MES_WARNING;
+    FStrParam:=TA('Warning');
     FIntParam:=LINE_INFO_INFO;
     Synchronize(TextOutEx);
 

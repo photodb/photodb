@@ -14,6 +14,7 @@ object ImHint: TImHint
   FormStyle = fsStayOnTop
   KeyPreview = True
   OldCreateOrder = False
+  Position = poOwnerFormCenter
   OnClick = FormClick
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery

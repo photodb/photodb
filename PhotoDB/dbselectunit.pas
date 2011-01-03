@@ -76,7 +76,7 @@ begin
   FA:=FileGetAttr(FileName);
   if (fa and SysUtils.faReadOnly)<>0 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_WARNING);
+   MessageBoxDB(Handle,TEXT_MES_DB_READ_ONLY_CHANGE_ATTR_NEEDED,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
    OpenDialog.Free;
    exit;
   end;
@@ -85,7 +85,7 @@ begin
   if DBVersion>0 then
   if not DBKernel.ValidDBVersion(FileName,DBVersion) then
   begin
-   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',TEXT_MES_WARNING,'',TD_BUTTON_YESNO,TD_ICON_WARNING);
+   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',L('Warning'),'',TD_BUTTON_YESNO,TD_ICON_WARNING);
    if ID_YES=DialogResult then
    begin
     ConvertDB(FileName);
@@ -148,7 +148,7 @@ begin
   if SaveDialog.GetFilterIndex=1 then
   if GetExt(FileName)<>'PHOTODB' then FileName:=FileName+'.photodb';
 
-  if FileExists(FileName) and (ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[FileName]),TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING)) then exit;
+  if FileExists(FileName) and (ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[FileName]),L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING)) then exit;
   begin
    DbKernel.CreateDBbyName(FileName);
    //?DBTestOK:=DBKernel.TestDB(FileName);
@@ -335,7 +335,7 @@ begin
   if DBVersion>0 then
   if not DBKernel.ValidDBVersion(DB.FileName,DBVersion) then
   begin
-   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',TEXT_MES_WARNING,'',TD_BUTTON_YESNO,TD_ICON_WARNING);
+   DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',L('Warning'),'',TD_BUTTON_YESNO,TD_ICON_WARNING);
    if ID_YES=DialogResult then
    begin
     ConvertDB(DB.FileName);

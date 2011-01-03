@@ -229,7 +229,7 @@ begin
   begin
    if not DBKernel.ValidDBVersion(FileName,DBVersion) then
    begin
-    DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',TEXT_MES_WARNING,'',TD_BUTTON_YESNO,TD_ICON_WARNING);
+    DialogResult:=MessageBoxDB(Handle,'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?',L('Warning'),'',TD_BUTTON_YESNO,TD_ICON_WARNING);
     if ID_YES=DialogResult then
     begin
      ConvertDB(FileName);

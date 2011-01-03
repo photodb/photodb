@@ -298,7 +298,8 @@ uses
   uDBFileTypes in 'Units\uDBFileTypes.pas',
   uRuntime in 'Units\uRuntime.pas',
   uDBGraphicTypes in 'Units\uDBGraphicTypes.pas',
-  uStenography in 'Units\uStenography.pas';
+  uStenography in 'Units\uStenography.pas',
+  uInternetUtils in 'Units\uInternetUtils.pas';
 
 {$R *.res}
 

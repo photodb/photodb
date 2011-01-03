@@ -7,16 +7,17 @@ uses
   Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
   UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
-  uMemory, uTranslate, uRuntime, uActivationUtils;
+  uMemory, uTranslate, uRuntime, uActivationUtils, uDBForm,
+  UnitInternetUpdate;
 
 type
-  TAboutForm = class(TForm)
+  TAboutForm = class(TDBForm)
     ImageLogo: TImage;
     ImbClose: TImButton;
     BtShowActivationForm: TButton;
     MemoInfo: TRichEdit;
     MemoRegistrationInfo: TRichEdit;
-    LoadingSign1: TLoadingSign;
+    LsUpdates: TLoadingSign;
     LnkGoToWebSite: TWebLink;
     procedure ImbCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -34,10 +35,12 @@ type
     { Private declarations }
     FBackground : TBitmap;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
+    procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
-    WaitEnabled : boolean;
-    procedure LoadRegistrationData;
     { Public declarations }
+    procedure LoadRegistrationData;
   end;
 
 procedure ShowAbout;
@@ -62,6 +65,11 @@ end;
 
 { TAboutForm }
 
+function TAboutForm.GetFormID: string;
+begin
+  Result := 'About';
+end;
+
 procedure TAboutForm.GrayScale(var Image : TBitmap);
 begin
   UnitDBCommonGraphics.GrayScale(Image);
@@ -81,6 +89,8 @@ procedure TAboutForm.FormCreate(Sender: TObject);
 var
   Logo : TPngImage;
 begin
+  LoadLanguage;
+  LnkGoToWebSite.Left := LsUpdates.Left - LnkGoToWebSite.Width - 5;
   DoubleBuffered := True;
   MemoInfo.Brush.Style := BsClear;
   SetWindowLong(MemoInfo.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT);
@@ -94,19 +104,17 @@ begin
     FBackground.PixelFormat := pf24bit;
     ImageLogo.Picture.Graphic := FBackground;
   finally
-    Logo.Free;
+    F(Logo);
   end;
-  WaitEnabled := True;
-  //ImbClose.Filter := GrayScale;
-  //ImbClose.Refresh;
+
   BtShowActivationForm.Caption := TEXT_MES_OPEN_ACTIVATION_FORM;
   if DBKernel <> nil then
     BtShowActivationForm.Visible := DBkernel.ProgramInDemoMode
   else
     BtShowActivationForm.Visible := False;
-  TW.I.Start('Memo1');
+
   MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
-  TW.I.Start('End');
+  TInternetUpdate.Create(False);
 end;
 
 procedure TAboutForm.Execute;
@@ -152,6 +160,16 @@ begin
   Bitmap.Height := H;
   if FBackground <> nil then
     Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), FBackground.Canvas, Rect(X, Y, X + W, Y + H));
+end;
+
+procedure TAboutForm.LoadLanguage;
+begin
+  BeginTranslate;
+  try
+    LnkGoToWebSite.Text := L('Checking updates...');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TAboutForm.LoadRegistrationData;

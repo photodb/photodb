@@ -466,7 +466,7 @@ object AboutForm: TAboutForm
     ParentFont = False
     TabOrder = 3
   end
-  object LoadingSign1: TLoadingSign
+  object LsUpdates: TLoadingSign
     Left = 611
     Top = 401
     Width = 16

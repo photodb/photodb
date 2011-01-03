@@ -449,7 +449,7 @@ begin
     if (FCheckCount = 100) then //after 10 sec. check for updates
     begin
       TW.I.Start('TInternetUpdate - Create');
-      TInternetUpdate.Create(False, False);
+      TInternetUpdate.Create(False);
     end;
     if (FCheckCount = 600) then //after 1.min. backup database
       DBKernel.BackUpTable;

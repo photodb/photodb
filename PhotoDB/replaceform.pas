@@ -441,7 +441,7 @@ begin
   if Password<>'' then
   pic.Graphic:=DeCryptGraphicFile(FileName,Password) else
   begin
-   MessageBoxDB(Handle,Format(L('Unable to load image from file: %s'),[FileName]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+   MessageBoxDB(Handle,Format(L('Unable to load image from file: %s'),[FileName]),L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
    exit;
   end;
  end else
@@ -449,7 +449,7 @@ begin
  try
   pic.LoadFromFile(FileName);
   except
-   MessageBoxDB(Handle,Format(L('Unable to load image from file: %s'),[FileName]),TEXT_MES_WARNING,TD_BUTTON_OK,TD_ICON_INFORMATION);
+   MessageBoxDB(Handle,Format(L('Unable to load image from file: %s'),[FileName]),L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
    pic.free;
    exit;
   end;
@@ -725,7 +725,7 @@ end;
 
 procedure TDBReplaceForm.Button8Click(Sender: TObject);
 begin
- if ID_OK<>MessageBoxDB(Handle,TEXT_MES_DELETE_FILE_CONFIRM,TEXT_MES_WARNING,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
+ if ID_OK<>MessageBoxDB(Handle,TEXT_MES_DELETE_FILE_CONFIRM,L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
  Res_Address^:=Result_Delete_File;
  OnCloseQuery:=nil;
  Close;

@@ -385,7 +385,7 @@ type
       ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure DropFileTarget1Leave(Sender: TObject);
     procedure GroupManager1Click(Sender: TObject);
-    procedure GetUpdates1Click(Sender: TObject);
+//    procedure GetUpdates1Click(Sender: TObject);
     procedure SetStringPath(Path : String; ChangeTreeView : Boolean);
     procedure HelpTimerTimer(Sender: TObject);
     procedure Help1NextClick(Sender: TObject);
@@ -5344,11 +5344,11 @@ procedure TExplorerForm.GroupManager1Click(Sender: TObject);
 begin
   ExecuteGroupManager;
 end;
-
+      {
 procedure TExplorerForm.GetUpdates1Click(Sender: TObject);
 begin
-  TInternetUpdate.Create(False, True);
-end;
+  TInternetUpdate.Create(True);
+end;     }
 
 procedure TExplorerForm.SetStringPath(Path: String; ChangeTreeView: Boolean);
 var
