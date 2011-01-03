@@ -53,16 +53,16 @@ begin
   end;
 end;
 
-procedure SetPixel(P: PRGB; var C: Integer);
+procedure SetPixel(P: PRGB; var C: Integer); inline;
 
-  procedure SetByte(var B: Byte);
+  procedure SetByte(var B: Byte; var C: Integer); inline;
   begin
     if C > 0 then
     begin
       if B < $FF then
       begin
         B := B + 1;
-        Dec(C);
+        C := C - 1;
       end;
     end
     else if C < 0 then
@@ -70,15 +70,15 @@ procedure SetPixel(P: PRGB; var C: Integer);
       if B > $0 then
       begin
         B := B - 1;
-        Inc(C);
+        C := C + 1;
       end;
     end;
   end;
 
 begin
-  SetByte(P.R);
-  SetByte(P.G);
-  SetByte(P.B);
+  SetByte(P.R, C);
+  SetByte(P.G, C);
+  SetByte(P.B, C);
 end;
 
 function SaveInfoToBmpFile(BeginImage: TGraphic; ResultImage : TBitmap; Info: TStream; Cell: Integer): Boolean;
@@ -250,12 +250,9 @@ begin
         Size := Bsize[2] + Bsize[3] * 256 + Bsize[4] * 256 * 256 + Bsize[5] * 256 * 256 * 256;
         if (Size <= 0) or (Size > MaxSizeInfoInGraphic(Bitmap, 2)) then
         begin
-          SetLength(XP, 0);
           Result := False;
           Exit;
         end;
-        //Size := Min(Size, MaxSizeInfoInGraphic(Bitmap, 2));
-        //SetLength(Result, Size);
         N := 0;
       end;
     end;
@@ -263,7 +260,7 @@ end;
 
 function MaxSizeInfoInGraphic(Graphic: TGraphic; Cell: Integer): Integer;
 begin
-  Result := ((Graphic.Height - 1) div Cell) * ((Graphic.Width - 1) div Cell) - 5;
+  Result := ((Graphic.Height - 1) div Cell) * ((Graphic.Width - 1) div Cell) - SizeOf(StenographyHeader);
 end;
 
 procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TStream);
