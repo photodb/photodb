@@ -109,7 +109,7 @@ h2 {
 
 .sidebar {
 	float: left;
-    margin-left: -937px;
+    margin-left: -972px;
     width: 250px;
 }
 
@@ -142,3 +142,41 @@ h2 {
 	width: 250px;
 }
 
+.downloadInfo{ 
+}
+
+.downloadInfo h1 {
+	font-size:12px;
+	margin: 0;
+	text-align: left;
+}
+
+.donate {
+	height: 100px;
+    margin-left: -25px;
+    margin-top: 24px;
+    width: 250px;
+}
+
+#donateImg{
+    float: left;
+}
+
+.donateWmInfo {
+	float: right;
+}
+
+.paymentInfo {
+	margin-top: 9px;
+}
+
+.donateInfo {
+    float: right;
+    width: 150px;
+}
+
+.phdInfo {
+	font-size: 17px;
+    position: relative;
+    top: -19px;
+}

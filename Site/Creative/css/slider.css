@@ -1,4 +1,6 @@
-#slider{}	
+#slider {
+	border: 1px solid rgb(155, 155, 155);
+}	
 #slider ul, #slider li{
 	margin:0;
 	padding:0;
@@ -18,7 +20,7 @@
 	top:71px;
 	}	
 #nextBtn{ 
-	left:696px;
+	left:698px;
 	}														
 #prevBtn a, #nextBtn a{  
 	display:block;
@@ -43,6 +45,6 @@
 	position:relative;
 	text-align:left;
 	width:696px;
-	background:#fff;		
-	margin-bottom:2em;
+	background:#fff;	
+	left: 40px;
 }	
