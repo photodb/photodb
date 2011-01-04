@@ -10,8 +10,16 @@
         <link rel="stylesheet" type="text/css" href="css/reset.css" />
         <link rel="stylesheet" type="text/css" href="css/main.css" />
         <link rel="stylesheet" type="text/css" href="css/contentBoxBorders.css" />
-        <link rel="stylesheet" type="text/css" href="css/menu.css" />
+        <link rel="stylesheet" type="text/css" href="css/menu.css" />	
+        <link rel="stylesheet" type="text/css" href="css/slider.css" />	
+		<script type="text/javascript" src="scripts/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="scripts/easySlider1.5.js"></script>
         <title></title>
+		<script type="text/javascript">
+			$(document).ready(function(){	
+				$("#slider").easySlider();
+			});
+		</script>
     </head>
     <body>
     	<div class="page">
@@ -39,11 +47,26 @@
                                     <li><a href="#">Купить</a></li>
                                     <li><a href="#">Контакты</a></li>
                                     <li><a href="#">Обратная связь</a></li>
+                                    <li class="last"></li>
                                 </ul>
                             </div><!--mainMenu-->
                             <div class="content">
-                                <div class="formContent">
-                                    <div class="form">
+                                <div class="formContent">								
+                                    <div class="form" >
+									
+
+										<div id="container">
+											<div id="slider">
+												<ul>				
+													<li><a href="#"><img src="img/01.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/02.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/03.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/04.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/05.jpg" alt="Css Template Preview" /></a></li>			
+												</ul>
+											</div>
+										</div>
+									
                                         News
                                         <div>
                                             <img src="img/main_image.jpg" />
@@ -78,6 +101,12 @@
                                                     menu2
                                                 </a>
                                             </li>
+                                            <li>
+                                            	<a href="#">
+                                                    menu3
+                                                </a>
+                                            </li>
+											<li class="last"></li>
                                         </ul>
                                     </div><!--menuVerticalLeft-->
                                     
@@ -102,8 +131,11 @@
             </div><!--container-->
             
             <div class="footer">
-            	<a>Сцука Сцылка</a>
-                <a>Просто Сцылка</a>
+            	<a>Главная страница</a>
+                <a>О программе</a>
+                <a>Скачать</a>
+                <a>Пожертвовать</a>
+                <a>ЧАВО</a>
                 <span style="width:100px;"></span>
                 <span>©2011 Studio Illusion Dolphin</span>
             </div><!--footer-->

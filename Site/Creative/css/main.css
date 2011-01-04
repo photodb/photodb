@@ -105,7 +105,7 @@ h2 {
 }
 
 .formContent {
-	padding: 0 0 0 250px;
+	padding: 0 0 0 78px;
 }
 
 .sidebar {
@@ -117,9 +117,9 @@ h2 {
 .form{
 	float: left;
     width: 100%;
-	border-color:#0066FF;
-	border-style:solid;
-	border-width:1px;
+#	border-color:#0066FF;
+#	border-style:solid;
+#	border-width:1px;
 }
 
 .footer {
@@ -127,6 +127,16 @@ h2 {
 	height: 60px;
 	text-align: center;
 	vertical-align: bottom;
+	margin-top: -22px;
+	color: #888;
+}
+
+.footer span {
+	margin-left: 10px;
+}
+
+.footer a {
+	padding-left: 10px;
 }
 
 .sidebarTable {
