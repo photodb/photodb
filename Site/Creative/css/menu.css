@@ -24,41 +24,37 @@
 	text-decoration: none;
 }
 .mainMenuHorizontal .selected{
-	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -180px transparent;
-}
-.mainMenuHorizontal a:active {
-    background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -120px transparent;
+	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -60px transparent;
 }
 .mainMenuHorizontal a:hover {
-	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -60px transparent;
+	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -120px transparent;
 	color: #000033;
 	padding-bottom: 8px;
 }
 
 .menuVerticalLeft {
-	border-color:#0066FF;
-	border-style:solid;
-	border-width:1px;
-}
-
-.menuButtonTable {
-	height: 30px;
+    margin: 0 0px 0 -122px;
 	width: 150px;
+	background: none;
+	list-style: none;
 }
 
-.menuButtonTable .btLeftSide {
-	background:url(../img/menu/btLeftSide.png);
-	background-repeat:no-repeat;
+.menuVerticalLeft a {
+	background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll 0 0 transparent;
+	color: #000033;
+	display: block;
+	float: left;
+	margin: 0;
+	padding: 8px 12px;
+	text-decoration: none;
 }
 
-.menuButtonTable .btRightSide {
-	background:url(../img/menu/btRightSide.png);
-	background-repeat:no-repeat;
+.menuVerticalLeft .selected{
+	background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll -188px 0 transparent;
 }
 
-.menuButtonTable .btCenterSide {
-	background:url(../img/menu/btCenterSide.png);
-	color:#FFFFFF;
-	text-align: center;
-	background-repeat:repeat-x;
+.menuVerticalLeft a:hover {
+	background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll -375px 0 transparent;
+	color: #000033;
+	padding-bottom: 8px;
 }
