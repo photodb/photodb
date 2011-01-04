@@ -40,3 +40,25 @@
 	border-style:solid;
 	border-width:1px;
 }
+
+.menuButtonTable {
+	height: 30px;
+	width: 150px;
+}
+
+.menuButtonTable .btLeftSide {
+	background:url(../img/menu/btLeftSide.png);
+	background-repeat:no-repeat;
+}
+
+.menuButtonTable .btRightSide {
+	background:url(../img/menu/btRightSide.png);
+	background-repeat:no-repeat;
+}
+
+.menuButtonTable .btCenterSide {
+	background:url(../img/menu/btCenterSide.png);
+	color:#FFFFFF;
+	text-align: center;
+	background-repeat:repeat-x;
+}
