@@ -49,22 +49,30 @@ h2 {
 	TEXT-DECORATION: none;
 	FONT-SIZE: 16px
 }
-
 .mailInfo {
 	text-align: center;
 }
-
-
+.pageContainer{
+	margin-top: -15px;
+}
 .header {
 	height: 55px;
 	padding: 0 0 20px 0;
 }
 
-.logo {
-	float: left;
-	margin-left: -100%;
-	position: relative;
+.logo{
+	margin-left:24px;
 }
+
+.productName{
+	margin-bottom:25px;
+	margin-left:24px;
+}
+#.logo {
+#	float: left;
+#	margin-left: -100%;
+#	position: relative;
+#}
 .languages{
 	float: right; 
 	margin-right: 20px;
@@ -79,16 +87,16 @@ h2 {
 .headName {
 	padding: 0 250px 0 250px;
 }
-
 .headContent {
 	float: left;
 	width: 100%;
 }
-
-.loginHolder {
-	float:left;
-	margin-left:-120px;
-	position:relative;
+.breadCrumbs img {
+    position: relative;
+    top: 2px;
+}
+.breadCrumbs a img {
+    top: 0px;
 }
 
 .page {
@@ -116,20 +124,24 @@ h2 {
 	padding: 0 0 0 78px;
 }
 
-.sidebar {
-	float: left;
-    margin-left: -972px;
+.leftColumn {
+    float: left;
+    left: 14px;
+    position: relative;
+    width: 140px;
+}
+
+.leftColumnHome {
+    float: left;
+    left: 14px;
+    position: relative;
     width: 250px;
 }
-
-.form{
+.pageContent{
 	float: left;
-    width: 100%;
-#	border-color:#0066FF;
-#	border-style:solid;
-#	border-width:1px;
 }
-
+.home{
+}
 .footer {
 	min-width: 1024px;
 	height: 60px;
@@ -138,13 +150,16 @@ h2 {
 	margin-top: -22px;
 	color: #888;
 }
-
 .footer span {
 	margin-left: 10px;
 }
 
 .footer a {
-	padding-left: 10px;
+	margin-left: 10px;
+}
+
+.footer a:link, a:visited{
+	color: #888;
 }
 
 .sidebarTable {

@@ -24,8 +24,13 @@
     <body>
     	<div class="page">
             <div class="header">
-                <a href="index.html"><img style="margin-left:24px;" alt="logo" src="img/logo.png" /></a>
-                <img style="margin-bottom:25px;margin-left:24px;" alt="Photo Database 2" src="img/productName.png"/>
+                <a href="index.html"><img class="logo" alt="logo" src="img/logo.png" /></a>
+                <img class="productName" alt="Photo Database 2" src="img/productName.png"/>
+                <div class="languages">
+                	<span class="changeLanguage">Change language</span>
+                    <a href="#"><img src="img/lang/en.png"/></a>
+                    <a href="#"><img src="img/lang/ru.png"/></a>
+                </div>
             </div><!--header-->
             
             <div class="container">
@@ -50,25 +55,8 @@
                                     <li class="last"></li>
                                 </ul>
                             </div><!--mainMenu-->
-                            <div class="content">
-                                <div class="formContent">								
-                                    <div class="form" >
-									
-
-										<div id="container">
-											<div id="slider">
-												<ul>				
-													<li><a href="#"><img src="img/01.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/02.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/03.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/04.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/05.jpg" alt="Css Template Preview" /></a></li>			
-												</ul>
-											</div>
-										</div>
-                                    </div><!--form-->
-                                </div><!--formContent-->
-                                <div class="sidebar">
+                            <div class="pageContainer">
+								<div class="leftColumnHome">
                                     <div class="download">
                                         <a href="#">
                                             <img src="img/download-icon-windows.png">
@@ -104,7 +92,22 @@
                                         </div><!--donateInfo-->
                                     </div><!--donate-->
                                 </div><!--sidebar-->
-                            </div><!--content-->
+                                <div class="pageContent">
+									<div class="home">
+										<div id="container">
+											<div id="slider">
+												<ul>				
+													<li><a href="#"><img src="img/01.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/02.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/03.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/04.jpg" alt="Css Template Preview" /></a></li>
+													<li><a href="#"><img src="img/05.jpg" alt="Css Template Preview" /></a></li>			
+												</ul>
+											</div>
+										</div>
+									</div>
+                                </div><!--pageContent-->
+                            </div><!--pageContainer-->
                         </td>
                         <td class="rightBorder_head"></td>
                     </tr>
@@ -124,13 +127,12 @@
             </div><!--container-->
             
             <div class="footer">
-            	<a>Главная страница</a>
-                <a>О программе</a>
-                <a>Скачать</a>
-                <a>Пожертвовать</a>
-                <a>ЧАВО</a>
-                <span style="width:100px;"></span>
-                <span>©2011 Studio Illusion Dolphin</span>
+            	<a href="#">Главная страница</a>
+                <a href="#">О программе</a>
+                <a href="#">Скачать</a>
+                <a href="#">Пожертвовать</a>
+                <a href="#">ЧАВО</a>
+                <span><a href="mailto:photodb@illusdolphin.net">©2011 Studio Illusion Dolphin</a></span>
             </div><!--footer-->
         </div><!--page-->
     </body>
