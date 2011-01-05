@@ -34,10 +34,9 @@ a:hover {
 	
 }
 h1 {
-	COLOR: #0000A0;
 	TEXT-DECORATION: none;
-	FONT-SIZE: 25px;
-	text-align: center;
+	FONT-SIZE: 14px;
+	text-align: left;
 }
 
 .headName i {
@@ -66,7 +65,17 @@ h2 {
 	margin-left: -100%;
 	position: relative;
 }
-
+.languages{
+	float: right; 
+	margin-right: 20px;
+	margin-top: -5px;
+}
+.changeLanguage{
+	color: black; 
+	position: relative; 
+	top: -10px; 
+	left: -5px;
+}
 .headName {
 	padding: 0 250px 0 250px;
 }
@@ -179,4 +188,8 @@ h2 {
 	font-size: 17px;
     position: relative;
     top: -19px;
+}
+
+.crumb {
+	color: #888888;
 }
