@@ -384,8 +384,6 @@ type
     procedure DropFileTarget1Enter(Sender: TObject;
       ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure DropFileTarget1Leave(Sender: TObject);
-    procedure GroupManager1Click(Sender: TObject);
-//    procedure GetUpdates1Click(Sender: TObject);
     procedure SetStringPath(Path : String; ChangeTreeView : Boolean);
     procedure HelpTimerTimer(Sender: TObject);
     procedure Help1NextClick(Sender: TObject);
@@ -5340,16 +5338,6 @@ begin
   outdrag:=false;
 end;
 
-procedure TExplorerForm.GroupManager1Click(Sender: TObject);
-begin
-  ExecuteGroupManager;
-end;
-      {
-procedure TExplorerForm.GetUpdates1Click(Sender: TObject);
-begin
-  TInternetUpdate.Create(True);
-end;     }
-
 procedure TExplorerForm.SetStringPath(Path: String; ChangeTreeView: Boolean);
 var
   S, S1, ScriptString: string;
@@ -5523,8 +5511,8 @@ procedure TExplorerForm.ImageEditor1Click(Sender: TObject);
 begin
   with EditorsManager.NewEditor do
   begin
-    Show;
     CloseOnFailture := False;
+    Show;
   end;
 end;
 
@@ -5579,14 +5567,14 @@ var
 begin
   Files := TStringList.Create;
   try
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      index := ItemIndexToMenuIndex(I);
-      if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
-        Files.Add(FFilesInfo[index].FileName)
-    end;
-  GetPrintForm(Files);
+    for I := 0 to ElvMain.Items.Count - 1 do
+      if ElvMain.Items[I].Selected then
+      begin
+        index := ItemIndexToMenuIndex(I);
+        if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
+          Files.Add(FFilesInfo[index].FileName)
+      end;
+    GetPrintForm(Files);
   finally
     F(Files);
   end;

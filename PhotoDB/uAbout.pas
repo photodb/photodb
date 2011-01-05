@@ -8,7 +8,7 @@ uses
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
   UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
   uMemory, uTranslate, uRuntime, uActivationUtils, uDBForm,
-  UnitInternetUpdate;
+  UnitInternetUpdate, uInternetUtils, ShellApi;
 
 type
   TAboutForm = class(TDBForm)
@@ -31,11 +31,14 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure LnkGoToWebSiteGetBackGround(Sender: TObject; X, Y, W, H: Integer;
       Bitmap: TBitmap);
+    procedure LnkGoToWebSiteClick(Sender: TObject);
   private
     { Private declarations }
-    FBackground : TBitmap;
+    FBackground: TBitmap;
+    FUpdateInfo: TUpdateInfo;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
     procedure LoadLanguage;
+    procedure UpdateCkeckComplete(Sender : TObject; Info : TUpdateInfo);
   protected
     function GetFormID : string; override;
   public
@@ -114,7 +117,7 @@ begin
     BtShowActivationForm.Visible := False;
 
   MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
-  TInternetUpdate.Create(False);
+  TInternetUpdate.Create(Self, False, UpdateCkeckComplete);
 end;
 
 procedure TAboutForm.Execute;
@@ -151,6 +154,11 @@ end;
 procedure TAboutForm.FormDestroy(Sender: TObject);
 begin
   F(FBackground);
+end;
+
+procedure TAboutForm.LnkGoToWebSiteClick(Sender: TObject);
+begin
+  ShellExecute(0, nil, 'http://photodb.illusdolphin.net', nil, nil, SW_NORMAL);
 end;
 
 procedure TAboutForm.LnkGoToWebSiteGetBackGround(Sender: TObject; X, Y, W,
@@ -199,6 +207,20 @@ begin
     MemoRegistrationInfo.Lines.Add(TEXT_MES_COPY_NOT_ACTIVATED)
   else
     MemoRegistrationInfo.Lines.Add(DBkernel.ReadRegName);
+end;
+
+procedure TAboutForm.UpdateCkeckComplete(Sender: TObject; Info: TUpdateInfo);
+begin
+  LsUpdates.Visible := False;
+  if not Info.InfoAvaliable then
+  begin
+    LnkGoToWebSite.Text := L('Can not check updates!');
+  end else
+  begin
+    LnkGoToWebSite.Text := L(Format('New version (%s) is avaliable!', [ReleaseToString(Info.Release)]));
+  end;
+  LnkGoToWebSite.Left := LsUpdates.Left + LsUpdates.Width - LnkGoToWebSite.Width;
+  LnkGoToWebSite.Refresh;
 end;
 
 procedure TAboutForm.FormKeyDown(Sender: TObject; var Key: Word;

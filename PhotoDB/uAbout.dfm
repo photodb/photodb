@@ -482,7 +482,10 @@ object AboutForm: TAboutForm
     Width = 116
     Height = 16
     Cursor = crHandPoint
+    ParentColor = False
+    Color = clWhite
     Text = 'Checking updates...'
+    OnClick = LnkGoToWebSiteClick
     ImageIndex = 0
     IconWidth = 16
     IconHeight = 16

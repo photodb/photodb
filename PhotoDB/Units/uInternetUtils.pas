@@ -3,7 +3,29 @@ unit uInternetUtils;
 interface
 
 uses
-  Windows, uConstants;
+  Windows, Classes, SysUtils, uMemory, uConstants;
+
+type
+  TRelease = record
+    Version : Byte;
+    Major : Byte;
+    Minor : Byte;
+    Build : Cardinal;
+  end;
+
+type
+  TUpdateInfo = record
+    InfoAvaliable: Boolean;
+    UrlToDownload: string;
+    Release: TRelease;
+    Version: Byte;
+    Build: Cardinal;
+    ReleaseDate: TDateTime;
+    ReleaseNotes: string;
+    ReleaseText: string;
+  end;
+
+  TUpdateNotifyHandler = procedure(Sender : TObject; Info : TUpdateInfo) of object;
 
 type
   HINTERNET = Pointer;
@@ -26,14 +48,96 @@ const
   wininet = 'wininet.dll';
 
 function DownloadFile(const Url: string): string;
+function StringToRelease(const s: string) : TRelease;
+function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
+function InternetTimeToDateTime(const Value: string) : TDateTime;
+function ReleaseToString(Release : TRelease) : string;
 
 implementation
+
+function InternetTimeToDateTime(const Value: string) : TDateTime;
+var
+  YYYY, MM, DD, HH, SS: string;
+  Y, M, D, H, S: Integer;
+begin
+  Result := 0;
+  if Length(Value) = 4 + 2 + 2 + 2 + 2 then
+  begin
+    YYYY := Copy(Value, 1, 4);
+    MM := Copy(Value, 5, 2);
+    DD := Copy(Value, 7, 2);
+    HH := Copy(Value, 9, 2);
+    SS := Copy(Value, 11, 2);
+    Y := StrToIntDef(YYYY, 0);
+    M := StrToIntDef(MM, 0);
+    D := StrToIntDef(DD, 0);
+    H := StrToIntDef(HH, 0);
+    S := StrToIntDef(SS, 0);
+    Result := EncodeTime(H, S, 0, 0) + EncodeDate(Y, M, D);
+  end;
+end;
+
+function ReleaseToString(Release : TRelease) : string;
+begin
+  Result := IntToStr(Release.Version) + '.' +
+            IntToStr(Release.Major) + '.' +
+            IntToStr(Release.Minor) + '.' +
+            IntToStr(Release.Build);
+end;
+
+function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
+begin
+  Result := False;
+  if CurrentRelease.Version < NewRelease.Version then
+    Result := True
+  else if CurrentRelease.Version = NewRelease.Version then
+  begin
+    if CurrentRelease.Major < NewRelease.Major then
+      Result := True
+    else if CurrentRelease.Major = NewRelease.Major then
+    begin
+      if CurrentRelease.Minor < NewRelease.Minor then
+        Result := True
+      else if CurrentRelease.Minor = NewRelease.Minor then
+      begin
+        if CurrentRelease.Build < NewRelease.Build then
+          Result := True;
+      end;
+    end;
+  end;
+
+end;
+
+function StringToRelease(const s : string) : TRelease;
+var
+  Items: TStrings;
+begin
+  Result.Version := 0;
+  Result.Major   := 0;
+  Result.Minor   := 0;
+  Result.Build   := 0;
+
+  Items := TStringList.Create;
+  try
+    Items.Delimiter := '.';
+    Items.DelimitedText  := s;
+    if Items.Count = 4 then
+    begin
+      Result.Version := StrToIntDef(Items[0], 0);
+      Result.Major   := StrToIntDef(Items[1], 0);
+      Result.Minor   := StrToIntDef(Items[2], 0);
+      Result.Build   := StrToIntDef(Items[3], 0);
+    end;
+  finally
+    F(Items);
+  end;
+end;
 
 function DownloadFile(const Url: string): string;
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
-  Buffer: array[0..1024] of char;
+  Buffer: array[0..1024] of AnsiChar;
   BytesRead: cardinal;
   InternetOpen : TInternetOpen;
   InternetOpenUrl : TInternetOpenUrl;
@@ -42,8 +146,8 @@ var
   WinInetHandle : THandle;
 begin
   WinInetHandle := LoadLibrary(wininet);
-  @InternetOpen := GetProcAddress(WinInetHandle, 'InternetOpen');
-  @InternetOpenUrl := GetProcAddress(WinInetHandle, 'InternetOpenUrl');
+  @InternetOpen := GetProcAddress(WinInetHandle, 'InternetOpenW');
+  @InternetOpenUrl := GetProcAddress(WinInetHandle, 'InternetOpenUrlW');
   @InternetReadFile := GetProcAddress(WinInetHandle, 'InternetReadFile');
   @InternetCloseHandle := GetProcAddress(WinInetHandle, 'InternetCloseHandle');
   Result := '';

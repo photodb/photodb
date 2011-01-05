@@ -1266,8 +1266,8 @@
   </scope>
   <scope name="About">
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
+	<translate name="Can not check updates!" value="Не удалось проверить обновления!"/>
+	<translate name="Нажмите для перехода на" value="Доступна новая версия (%s)!"/>
 	<translate name="Explorer" value="Проводник"/>
   </scope>
 </language>

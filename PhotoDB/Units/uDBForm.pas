@@ -4,7 +4,7 @@ interface
 
 uses
   Forms, Classes, uTranslate, Graphics, SyncObjs,
-  uVistaFuncs, uMemory;
+  uVistaFuncs, uMemory, uGOM;
 
 type
   TDBForm = class(TForm)
@@ -46,11 +46,13 @@ constructor TDBForm.Create(AOwner: TComponent);
 begin
   inherited;
   TFormCollection.Instance.RegisterForm(Self);
+  GOM.AddObj(Self);
 end;
 
 destructor TDBForm.Destroy;
 begin
   TFormCollection.Instance.UnRegisterForm(Self);
+  GOM.RemoveObj(Self);
   inherited;
 end;
 
