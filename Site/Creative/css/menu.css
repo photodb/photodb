@@ -1,8 +1,8 @@
 .mainMenuHorizontal {
-    height: 60px;
-    margin: 0 40px 0 77px;
+    height: 40px;
+    margin: 0 40px 0 112px;
     position: absolute;
-    top: 84px;
+    top: 96px;
     width: 850px;
 	background: none;
 	list-style: none;
@@ -38,7 +38,7 @@
 }
 
 .menuVerticalLeft {
-    margin: 0 0px 0 -71px;
+    margin: 0 0 0 -31px;
 	width: 150px;
 	background: none;
 	list-style: none;

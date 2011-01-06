@@ -5,8 +5,42 @@ body {
 	background-repeat: repeat-x;
 	font-family: Verdana,Arial,Helvetica,sans-serif;
 	FONT-SIZE: 12px;
+	margin: 8px;
 }
-
+h1,h2,h3,h4,h5,h6,strong {
+	/*bringing boldness back to headers and the strong element*/
+	font-weight:bold; 
+}
+ol,ul,dl {
+	/*bringing lists on to the page with breathing room */
+	margin-left:2em;
+}
+ol li {
+	/*giving OL's LIs generated numbers*/
+	list-style: decimal outside;	
+}
+ul li {
+	/*giving UL's LIs generated disc markers*/
+	list-style: none outside;
+}
+dl dd {
+	/*giving UL's LIs generated numbers*/
+	margin-left:1em;
+}
+th,td {
+	/*borders and padding to make the table readable*/
+	border:none;
+	padding:0;
+}
+th {
+	/*distinguishing table headers from data cells*/
+	font-weight:bold;
+	text-align:center;
+}
+p,fieldset,table {
+	/*so things don't run into each other*/
+	margin-bottom:1em;
+}
 textarea {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	FONT-SIZE: 12px;
@@ -164,7 +198,7 @@ span .clearSpan10{
 	margin-left: 10px;
 }
 
-.footer a:link, a:visited{
+.footer a:link, .footer a:visited{
 	color: #888;
 }
 
@@ -211,8 +245,4 @@ span .clearSpan10{
 	font-size: 17px;
     position: relative;
     top: -19px;
-}
-
-.crumb {
-	color: #888888;
 }
