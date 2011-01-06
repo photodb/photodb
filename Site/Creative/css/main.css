@@ -128,11 +128,14 @@ span .clearSpan10{
 	width: 90%;
 }
 .breadCrumbs img {
+    margin-left: 4px;
+    margin-right: 4px;
     position: relative;
     top: 3px;
 }
 .breadCrumbs a img {
-    top: 0px;
+    margin-right: 0;
+    top: 0;
 }
 .pageContent h1
 {
