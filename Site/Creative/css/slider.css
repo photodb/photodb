@@ -12,15 +12,15 @@
 	overflow:hidden; 
 	}	
 #prevBtn, #nextBtn{ 
-	display:block;
 	width:30px;
 	height:77px;
-	position:absolute;
-	left:-30px;
-	top:71px;
+	top: -180px;
+	position:relative;
+	left: -30px;
 	}	
 #nextBtn{ 
 	left:698px;
+	top: -257px;
 	}														
 #prevBtn a, #nextBtn a{  
 	display:block;
@@ -37,7 +37,6 @@
 	padding:0;
 	display:block;
 	overflow:hidden;
-	text-indent:-8000px;
 }
 
 #container{	

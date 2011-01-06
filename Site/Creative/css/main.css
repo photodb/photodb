@@ -49,6 +49,12 @@ h2 {
 	TEXT-DECORATION: none;
 	FONT-SIZE: 16px
 }
+div .clearDiv10{
+	height: 10px;
+}
+span .clearSpan10{
+	width: 10px;
+}
 .mailInfo {
 	text-align: center;
 }
@@ -85,7 +91,7 @@ h2 {
 }
 .headContent {
 	float: left;
-	width: 100%;
+	width: 90%;
 }
 .breadCrumbs img {
     position: relative;
@@ -120,27 +126,27 @@ h2 {
 	padding: 0 0 0 64px;
 }
 
-.formContent {
-	padding: 0 0 0 78px;
-}
-
 .leftColumn {
     float: left;
-    left: 14px;
     position: relative;
     width: 140px;
 }
 
 .leftColumnHome {
     float: left;
-    left: 14px;
     position: relative;
     width: 250px;
 }
 .pageContent{
 	float: left;
+	width: 735px
 }
 .home{
+}
+.homeSlider{
+	height:	241px;    
+	left: 7px;
+    position: relative;
 }
 .footer {
 	min-width: 1024px;
@@ -175,11 +181,13 @@ h2 {
 	text-align: left;
 }
 
+.download {
+	padding-left: 16px;
+}
+
 .donate {
-	height: 100px;
-    margin-left: -25px;
-    margin-top: 24px;
-    width: 250px;
+	height: 141px;
+    width: 238px;
 }
 
 #donateImg{

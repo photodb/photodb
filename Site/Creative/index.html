@@ -17,7 +17,10 @@
         <title></title>
 		<script type="text/javascript">
 			$(document).ready(function(){	
-				$("#slider").easySlider();
+				$("#slider").easySlider({
+					prevText: 	'',
+					nextText: 	''
+				});
 			});
 		</script>
     </head>
@@ -56,19 +59,17 @@
                                 </ul>
                             </div><!--mainMenu-->
                             <div class="pageContainer">
-								<div class="leftColumnHome">
+								<span class="leftColumnHome">
                                     <div class="download">
-                                        <a href="#">
-                                            <img src="img/download-icon-windows.png">
-                                        </a>
-                                        <span class="phdInfo"><a>Photo Database 2.3</a></span>
-                                        <div class="downloadInfo">
-                                            <a href="#" ><h1>Download the latest version now!</h1></a>
-                                            Build 815, 30.12.2010
-                                            <br>(777 downloads)
-                                        </div><!--downloadInfo-->
+										<a href="#"><img src="img/download-icon-windows.png"></a>
+										<span class="phdInfo"><a>Photo Database 2.3</a></span>
+										<div class="downloadInfo">
+											<h1><a href="#" >Download the latest version now!</a></h1>
+											Build 815, 30.12.2010
+											<br>(777 downloads)
+										</div><!--downloadInfo-->
                                     </div><!--download-->
-                                    
+                                    <div class="clearDiv10"></div>
                                     <div class="donate">
                                         <img id="donateImg" src="img/donate.png"/>
                                         <div class="donateInfo">
@@ -91,22 +92,20 @@
                                             </div><!--paymentInfo-->
                                         </div><!--donateInfo-->
                                     </div><!--donate-->
-                                </div><!--sidebar-->
-                                <div class="pageContent">
-									<div class="home">
-										<div id="container">
-											<div id="slider">
-												<ul>				
-													<li><a href="#"><img src="img/01.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/02.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/03.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/04.jpg" alt="Css Template Preview" /></a></li>
-													<li><a href="#"><img src="img/05.jpg" alt="Css Template Preview" /></a></li>			
-												</ul>
-											</div>
+                                </span><!--leftColumnHome-->
+                                <span class="pageContent">
+									<div class="homeSlider">
+										<div id="slider">
+											<ul>				
+												<li><a href="#"><img src="img/01.jpg" alt="Css Template Preview" /></a></li>
+												<li><a href="#"><img src="img/02.jpg" alt="Css Template Preview" /></a></li>
+												<li><a href="#"><img src="img/03.jpg" alt="Css Template Preview" /></a></li>
+												<li><a href="#"><img src="img/04.jpg" alt="Css Template Preview" /></a></li>
+												<li><a href="#"><img src="img/05.jpg" alt="Css Template Preview" /></a></li>			
+											</ul>
 										</div>
 									</div>
-                                </div><!--pageContent-->
+                                </span><!--pageContent-->
                             </div><!--pageContainer-->
                         </td>
                         <td class="rightBorder_head"></td>
@@ -119,7 +118,7 @@
                     <tr style="visibility:hidden">
                         <td width="19px"></td>
                         <td width="429px"></td>
-                        <td></td>
+                        <td style="min-width:128px"></td>
                         <td width="429px"></td>
                         <td width="19px"></td>
                     </tr>
