@@ -249,3 +249,46 @@ span .clearSpan10{
     position: relative;
     top: -19px;
 }
+
+.standartInput {
+	background: url(../img/input.png) repeat-x;
+	border: #888888 solid 1px;
+	height: 20px;
+}
+
+.standartBtn {
+	
+    min-width: 90px;
+}
+
+input.standartBtn:hover {
+	cursor: pointer;
+}
+
+.required label{
+	font-weight:bold;
+}
+
+.required input{
+	background: url(../img/input.png) 0 -25px repeat-x;
+}
+
+.required span{
+	color:#FF8080;
+	font-weight:bold;
+}
+
+.row:hover {
+	background:url(../img/row-bg.png) repeat;
+}
+
+.row {
+	padding: 5px 0;
+	width: 550px;
+}
+
+.row label{
+	width: 200px;
+	text-align: right;
+	display: inline-block;
+}
