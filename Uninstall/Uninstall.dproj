@@ -82,6 +82,8 @@
 			<DCCReference Include="..\Installer\uUpdatingWindowsActions.pas"/>
 			<DCCReference Include="uSelfDeleteAction.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uRuntime.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uSysUtils.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

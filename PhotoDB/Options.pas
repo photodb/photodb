@@ -82,8 +82,6 @@ type
     Button21: TButton;
     CheckBox22: TCheckBox;
     CheckBox2: TCheckBox;
-    CheckBox13: TCheckBox;
-    Edit1: TEdit;
     TsUserMenu: TTabSheet;
     Button2: TButton;
     Button16: TButton;
@@ -165,10 +163,7 @@ type
     procedure Button12Click(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar2Change(Sender: TObject);
-    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
-    procedure Button2Click(Sender: TObject);
     procedure TrackBar3Change(Sender: TObject);
-    procedure CheckBox13Click(Sender: TObject);
     procedure LoadExts;
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -233,7 +228,7 @@ var
 
 implementation
 
-uses Language, CleaningForm, dbselectunit, SlideShow, ExplorerThreadUnit,
+uses Language, CleaningForm, SlideShow, ExplorerThreadUnit,
       ExplorerUnit, UnitJPEGOptions;
 
 {$R *.dfm}
@@ -301,13 +296,10 @@ begin
   TrackBar3.Position:=Min(Max(DBKernel.ReadInteger('Options','SlideShow_GrayScale',20),1),100);
   TrackBar4.Position:=Min(Max(DBKernel.ReadInteger('Options','FullScreen_SlideDelay',40),1),100);
   CheckBox2.Checked:=DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True);
-  CheckBox13.Checked:=DBKernel.ReadboolW('Options','SlideShow_UseExternelViewer',False);
-  CheckBox13Click(Sender);
   TrackBar1Change(Sender);
   TrackBar2Change(Sender);
   TrackBar3Change(Sender);
   TrackBar4Change(Sender);
-  Edit1.Text:=DBKernel.ReadStringW('Options','SlideShow_ExternelViewer');
  end;
  if NewTab=4 then
  begin
@@ -580,19 +572,14 @@ begin
   if FLoadedPages[2] then
   begin
    DBKernel.WriteBool('SlideShow','UseFastSlideShowImageLiading',CheckBox37.Checked);
-
-   SlideShow.IncGrayScale:=TrackBar3.Position;
    DBKernel.WriteBool('Options','RotateWithoutPromt',CheckBox24.Checked);
    DBKernel.WriteBool('Options','RotateEvenIfFileInDB',CheckBox25.Checked);
-
    DBKernel.WriteBool('Options','NextOnClick',CheckBox22.Checked);
    DBKernel.WriteBoolW('Options','SlideShow_UseCoolStretch',CheckBox2.Checked);
    DBKernel.WriteInteger('Options','SlideShow_SlideSteps',TrackBar1.Position);
    DBKernel.WriteInteger('Options','SlideShow_SlideDelay',TrackBar2.Position);
    DBKernel.WriteInteger('Options','SlideShow_GrayScale',TrackBar3.Position);
    DBKernel.WriteInteger('Options','FullScreen_SlideDelay',TrackBar4.Position);
-   DBKernel.WriteString('Options','SlideShow_ExternelViewer',Edit1.Text);
-   DBKernel.WriteBoolW('Options','SlideShow_UseExternelViewer',CheckBox13.Checked);
   end;
 // end;
  Close;
@@ -666,116 +653,120 @@ end;
 
 procedure TOptionsForm.LoadLanguage;
 begin
- Caption := TEXT_MES_OPTIONS;
- TsGeneral.Caption:=L('General');
- TsExplorer.Caption:=L('Explorer');;
- TsView.Caption:=L('Slide show');;
- TsUserMenu.Caption:=TEXT_MES_USER_MENU;
- TsSecurity.Caption:=TEXT_MES_SECURITY;
- TsGlobal.Caption:=TEXT_MES_GLOBAL;
- GroupBox2.Caption:=TEXT_MES_BACKUPING_GROUP;
+  BeginTranslate;
+  try
+    Caption := TEXT_MES_OPTIONS;
+    TsGeneral.Caption := L('General');
+    TsExplorer.Caption := L('Explorer'); ;
+    TsView.Caption := L('Slide show'); ;
+    TsUserMenu.Caption := TEXT_MES_USER_MENU;
+    TsSecurity.Caption := TEXT_MES_SECURITY;
+    TsGlobal.Caption := TEXT_MES_GLOBAL;
+    GroupBox2.Caption := L('Backups');
 
- Dontusethisextension1.Caption:=TEXT_MES_DONT_USE_EXT;
- Usethisprogramasdefault1.Caption:=TEXT_MES_USE_THIS_PROGRAM;
- Usemenuitem1.Caption:=TEXT_MES_USE_ITEM;
- CheckBox4.Caption:=TEXT_MES_SHOW_PREVIEW;
- RadioGroup1.Caption:=TEXT_MES_HINTS;
- RadioGroup1.Items[0]:=TEXT_MES_ANIMATE_SHOW;
- RadioGroup1.Items[1]:=TEXT_MES_SHOW_SHADOW;
- Label12.Caption:= TEXT_MES_SHOW_CURRENT_OBJ;
- CheckBox1.Caption:= TEXT_MES_FOLDERS;
- CheckBox6.Caption:= TEXT_MES_SIMPLE_FILES;
- CheckBox7.Caption:= TEXT_MES_IMAGE_FILES;
- CheckBox8.Caption:= TEXT_MES_HIDDEN_FILES;
- Label13.Caption:= TEXT_MES_TH_OPTIONS;
- CheckBox9.Caption:= TEXT_MES_SHOW_ATTR;
- CheckBox10.Caption:= TEXT_MES_SHOW_TH_FOLDRS;
- CheckBox11.Caption:= TEXT_MES_SAVE_TH_FOLDRS;
- CheckBox12.Caption:= TEXT_MES_SHOW_TH_IMAGE;
- Button12.Caption:= TEXT_MES_SET;
- OkButton.Caption:=TEXT_MES_OK;
- Cancelbutton.Caption:=TEXT_MES_CANCEL;
- CheckBox2.Caption:=TEXT_MES_USE_COOL_STRETCH;
- CheckBox13.Caption:=TEXT_MES_USE_EXTERNAL_VIEWER;
- Label14.Caption:=TEXT_MES_EXT_IN_USE;
- TrackBar4Change(nil);
- TrackBar3Change(nil);
- TrackBar2Change(nil);
- TrackBar1Change(nil);
- Label17.Caption:=TEXT_MES_SECURITY_INFO;
- CheckBox14.Caption:=TEXT_MES_SECURITY_USE_SAVE_IN_SESSION;
- CheckBox15.Caption:=TEXT_MES_SECURITY_USE_SAVE_IN_INI;
- Button3.Caption:=TEXT_MES_SECURITY_CLEAR_SESSION;
- Button4.Caption:=TEXT_MES_SECURITY_CLEAR_INI;
- ListView1.Columns[0].Caption:=TEXT_MES_USER_MENU_ITEM;
- Label20.Caption:=TEXT_MES_CAPTION;
- Label18.Caption:=TEXT_MES_EXECUTABLE_FILE;
- Label25.Caption:=TEXT_MES_EXECUTABLE_FILE_PARAMS;
- Label19.Caption:=TEXT_MES_ICON;
- CheckBox16.Caption:=TEXT_MES_USE_SUBMENU;
- Button14.Caption:=TEXT_MES_ADD;
- Button13.Caption:=TEXT_MES_SAVE;
- Button16.Caption:=TEXT_MES_SAVE;
- Label24.Caption:=TEXT_MES_IMAGE_PRIVIEW;
- Label21.Caption:=TEXT_MES_USER_SUBMENU_CAPTION;
- Label23.Caption:=TEXT_MES_USER_SUBMENU_ICON;
- Addnewcommand1.Caption:=TEXT_MES_ADD_NEW_USER_MENU_ITEM;
- Remore1.Caption:=TEXT_MES_REMOVE_USER_MENU_ITEM;
- Button17.Caption:=TEXT_MES_ITEM_UP;
- Button18.Caption:=TEXT_MES_ITEM_DOWN;
- GroupBox3.Caption:=TEXT_MES_USE_USER_MENU_FOR;
- CheckBox17.Caption:=TEXT_MES_USE_USER_MENU_FOR_ID_MENU;
- CheckBox19.Caption:=TEXT_MES_USE_USER_MENU_FOR_VIEWER;
- CheckBox18.Caption:=TEXT_MES_USE_USER_MENU_FOR_EXPLORER;
- Button19.Caption:=TEXT_MES_CLEAR_FOLDER_IMAGES_CASH;
- Button20.Caption:=TEXT_MES_CLEAR_ICON_CASH;
- CheckBox20.Caption:=TEXT_MES_SHOW_EXIF_MARKER;
- CheckBox21.Caption:=TEXT_MES_SHOW_OTHER_PLACES;
- CheckBox22.Caption:=TEXT_MES_NEXT_ON_CLICK;
- CheckBox23.Caption:=TEXT_MES_USE_HOT_SELECT_IN_LISTVIEWS;
- CheckBox24.Caption:=TEXT_MES_ROTATE_WITHOUT_PROMT;
- CheckBox25.Caption:=TEXT_MES_ROTATE_EVEN_IF_FILE_IN_DB;
- Button21.Caption:=L('JPEG Options');
- Button22.Caption:=L('JPEG Options');
- CheckBox26.Caption:=TEXT_MES_SORT_GROUPS;
- CheckBox27.Caption:=TEXT_MES_USE_GDI_PLUS;
- Label29.Caption:=TEXT_MES_CREATE_BACK_UP_EVERY;
- Label30.Caption:=TEXT_MES_DAYS;
- CheckBox28.Caption:=TEXT_MES_MANY_INSTANCES_OF_PROEPRTY;
- CheckListBox2.Clear;
- CheckListBox2.Items.Add(TA('My computer', 'System'));
- CheckListBox2.Items.Add(TEXT_MES_MY_DOCUMENTS);
- CheckListBox2.Items.Add(TEXT_MES_MY_PICTURES);
- CheckListBox2.Items.Add(TEXT_MES_OTHER_PLACES);
- Button24.Caption:=TEXT_MES_NEW_PLACE;
- Label27.Caption:=TEXT_MES_SHOW_PLACE_IN;
- Label11.Caption:=TEXT_MES_USER_DEFINED_PLACES;
- PlacesListView.Columns[0].Caption:=TEXT_MES_PLACES;
+    Dontusethisextension1.Caption := TEXT_MES_DONT_USE_EXT;
+    Usethisprogramasdefault1.Caption := TEXT_MES_USE_THIS_PROGRAM;
+    Usemenuitem1.Caption := TEXT_MES_USE_ITEM;
+    CheckBox4.Caption := TEXT_MES_SHOW_PREVIEW;
+    RadioGroup1.Caption := TEXT_MES_HINTS;
+    RadioGroup1.Items[0] := TEXT_MES_ANIMATE_SHOW;
+    RadioGroup1.Items[1] := TEXT_MES_SHOW_SHADOW;
+    Label12.Caption := TEXT_MES_SHOW_CURRENT_OBJ;
+    CheckBox1.Caption := TEXT_MES_FOLDERS;
+    CheckBox6.Caption := TEXT_MES_SIMPLE_FILES;
+    CheckBox7.Caption := TEXT_MES_IMAGE_FILES;
+    CheckBox8.Caption := TEXT_MES_HIDDEN_FILES;
+    Label13.Caption := TEXT_MES_TH_OPTIONS;
+    CheckBox9.Caption := TEXT_MES_SHOW_ATTR;
+    CheckBox10.Caption := TEXT_MES_SHOW_TH_FOLDRS;
+    CheckBox11.Caption := TEXT_MES_SAVE_TH_FOLDRS;
+    CheckBox12.Caption := TEXT_MES_SHOW_TH_IMAGE;
+    Button12.Caption := L('Set');
+    OkButton.Caption := L('Ok');
+    CancelButton.Caption := L('Cancel');
+    CheckBox2.Caption := TEXT_MES_USE_COOL_STRETCH;
+    Label14.Caption := TEXT_MES_EXT_IN_USE;
+    TrackBar4Change(nil);
+    TrackBar3Change(nil);
+    TrackBar2Change(nil);
+    TrackBar1Change(nil);
+    Label17.Caption := TEXT_MES_SECURITY_INFO;
+    CheckBox14.Caption := TEXT_MES_SECURITY_USE_SAVE_IN_SESSION;
+    CheckBox15.Caption := TEXT_MES_SECURITY_USE_SAVE_IN_INI;
+    Button3.Caption := TEXT_MES_SECURITY_CLEAR_SESSION;
+    Button4.Caption := TEXT_MES_SECURITY_CLEAR_INI;
+    ListView1.Columns[0].Caption := TEXT_MES_USER_MENU_ITEM;
+    Label20.Caption := TEXT_MES_CAPTION;
+    Label18.Caption := TEXT_MES_EXECUTABLE_FILE;
+    Label25.Caption := TEXT_MES_EXECUTABLE_FILE_PARAMS;
+    Label19.Caption := TEXT_MES_ICON;
+    CheckBox16.Caption := TEXT_MES_USE_SUBMENU;
+    Button14.Caption := TEXT_MES_ADD;
+    Button13.Caption := TEXT_MES_SAVE;
+    Button16.Caption := TEXT_MES_SAVE;
+    Label24.Caption := TEXT_MES_IMAGE_PRIVIEW;
+    Label21.Caption := TEXT_MES_USER_SUBMENU_CAPTION;
+    Label23.Caption := TEXT_MES_USER_SUBMENU_ICON;
+    Addnewcommand1.Caption := TEXT_MES_ADD_NEW_USER_MENU_ITEM;
+    Remore1.Caption := TEXT_MES_REMOVE_USER_MENU_ITEM;
+    Button17.Caption := TEXT_MES_ITEM_UP;
+    Button18.Caption := TEXT_MES_ITEM_DOWN;
+    GroupBox3.Caption := TEXT_MES_USE_USER_MENU_FOR;
+    CheckBox17.Caption := TEXT_MES_USE_USER_MENU_FOR_ID_MENU;
+    CheckBox19.Caption := TEXT_MES_USE_USER_MENU_FOR_VIEWER;
+    CheckBox18.Caption := TEXT_MES_USE_USER_MENU_FOR_EXPLORER;
+    Button19.Caption := TEXT_MES_CLEAR_FOLDER_IMAGES_CASH;
+    Button20.Caption := TEXT_MES_CLEAR_ICON_CASH;
+    CheckBox20.Caption := TEXT_MES_SHOW_EXIF_MARKER;
+    CheckBox21.Caption := TEXT_MES_SHOW_OTHER_PLACES;
+    CheckBox22.Caption := TEXT_MES_NEXT_ON_CLICK;
+    CheckBox23.Caption := TEXT_MES_USE_HOT_SELECT_IN_LISTVIEWS;
+    CheckBox24.Caption := TEXT_MES_ROTATE_WITHOUT_PROMT;
+    CheckBox25.Caption := TEXT_MES_ROTATE_EVEN_IF_FILE_IN_DB;
+    Button21.Caption := L('JPEG Options');
+    Button22.Caption := L('JPEG Options');
+    CheckBox26.Caption := TEXT_MES_SORT_GROUPS;
+    CheckBox27.Caption := TEXT_MES_USE_GDI_PLUS;
+    Label29.Caption := TEXT_MES_CREATE_BACK_UP_EVERY;
+    Label30.Caption := TEXT_MES_DAYS;
+    CheckBox28.Caption := TEXT_MES_MANY_INSTANCES_OF_PROEPRTY;
+    CheckListBox2.Clear;
+    CheckListBox2.Items.Add(TA('My computer', 'System'));
+    CheckListBox2.Items.Add(TEXT_MES_MY_DOCUMENTS);
+    CheckListBox2.Items.Add(TEXT_MES_MY_PICTURES);
+    CheckListBox2.Items.Add(TEXT_MES_OTHER_PLACES);
+    Button24.Caption := TEXT_MES_NEW_PLACE;
+    Label27.Caption := TEXT_MES_SHOW_PLACE_IN;
+    Label11.Caption := TEXT_MES_USER_DEFINED_PLACES;
+    PlacesListView.Columns[0].Caption := TEXT_MES_PLACES;
 
- Additem1.Caption:=TEXT_MES_NEW_PLACE;
- DeleteItem1.Caption:=TEXT_MES_DELETE_ITEM;
- Up1.Caption:=TEXT_MES_ITEM_UP;
- Down1.Caption:=TEXT_MES_ITEM_DOWN;
- Button23.Caption:=TEXT_MES_ICON;
- Rename1.Caption:=TEXT_MES_RENAME;
- CheckBox30.Caption:=TEXT_MES_ALLOW_VIRTUAL_CURSOR_IN_EDITOR;
+    Additem1.Caption := TEXT_MES_NEW_PLACE;
+    DeleteItem1.Caption := TEXT_MES_DELETE_ITEM;
+    Up1.Caption := TEXT_MES_ITEM_UP;
+    Down1.Caption := TEXT_MES_ITEM_DOWN;
+    Button23.Caption := TEXT_MES_ICON;
+    Rename1.Caption := TEXT_MES_RENAME;
+    CheckBox30.Caption := TEXT_MES_ALLOW_VIRTUAL_CURSOR_IN_EDITOR;
 
- Default1.Caption:=TEXT_MES_DEFAULT;
- CheckBox31.Caption:=TEXT_MES_DO_UPDATE_IMAGES_ON_IMAGE_CHANGES;
- CheckBox32.Caption:=TEXT_MES_RUN_EXPLORER_AT_ATARTUP;
- CheckBox33.Caption:=TEXT_MES_USE_SPECIAL_FOLDER;
+    Default1.Caption := TEXT_MES_DEFAULT;
+    CheckBox31.Caption := TEXT_MES_DO_UPDATE_IMAGES_ON_IMAGE_CHANGES;
+    CheckBox32.Caption := TEXT_MES_RUN_EXPLORER_AT_ATARTUP;
+    CheckBox33.Caption := TEXT_MES_USE_SPECIAL_FOLDER;
 
- CheckBox34.Caption:=TEXT_MES_NO_ADD_SMALL_FILES_WITH_WH;
- Label31.Caption:=TEXT_MES_WIDTH;
- Label32.Caption:=TEXT_MES_HEIGHT;
- CheckBox35.Caption:=TEXT_MES_SHOW_GROUPS_IN_SEARCH;
- GroupBox4.Caption:=TEXT_MES_PASSWORDS;
+    CheckBox34.Caption := TEXT_MES_NO_ADD_SMALL_FILES_WITH_WH;
+    Label31.Caption := TEXT_MES_WIDTH;
+    Label32.Caption := TEXT_MES_HEIGHT;
+    CheckBox35.Caption := TEXT_MES_SHOW_GROUPS_IN_SEARCH;
+    GroupBox4.Caption := TEXT_MES_PASSWORDS;
 
- CheckBox5.Caption:=TEXT_MES_USE_FULL_RECT_SELECT;
- Label34.Caption:=TEXT_MES_LIST_VIEW_ROUND_RECT_SIZE;
+    CheckBox5.Caption := TEXT_MES_USE_FULL_RECT_SELECT;
+    Label34.Caption := TEXT_MES_LIST_VIEW_ROUND_RECT_SIZE;
 
- CheckBox37.Caption:=TEXT_MES_USE_SLIDE_SHOW_FAST_LOADING;
- CheckBox38.Caption:=TEXT_MES_USE_SMALL_TOOLBAR_ICONS;
+    CheckBox37.Caption := TEXT_MES_USE_SLIDE_SHOW_FAST_LOADING;
+    CheckBox38.Caption := TEXT_MES_USE_SMALL_TOOLBAR_ICONS;
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TOptionsForm.TrackBar1Change(Sender: TObject);
@@ -788,47 +779,9 @@ begin
  Label22.Caption:=Format(TEXT_MES_SLIDE_SHOW_SPEED,[IntToStr(TrackBar2.Position*50)]);
 end;
 
-procedure TOptionsForm.Edit1KeyPress(Sender: TObject; var Key: Char);
-begin
- if key=#8 then
- begin
-  Edit1.Text:=TEXT_MES_NO_FILE;
- end;
-end;
-
-procedure TOptionsForm.Button2Click(Sender: TObject);
-var
-  OpenDialog : DBOpenDialog;
-begin
-
- OpenDialog:=DBOpenDialog.Create;
- OpenDialog.Filter:='Programs (*.exe)|*.exe';
- OpenDialog.FilterIndex:=1;
-
- if OpenDialog.Execute then
- begin
-  If GetExt(OpenDialog.FileName)='EXE' then
-  Edit1.text:='"'+OpenDialog.FileName+'" %s';
- end;
- OpenDialog.Free;
-end;
-
 procedure TOptionsForm.TrackBar3Change(Sender: TObject);
 begin
  Label16.Caption:=Format(TEXT_MES_SLIDE_SHOW_GRAYSCALE_OPTIONS,[IntToStr(TrackBar3.Position)]);
-end;
-
-procedure TOptionsForm.CheckBox13Click(Sender: TObject);
-begin
- if (not CheckBox13.Checked) then
- begin
-  Edit1.Enabled:=false;
-  Button2.Enabled:=false;
- end else
- begin
-  Edit1.Enabled:=true;
-  Button2.Enabled:=true;
- end;
 end;
 
 procedure TOptionsForm.LoadExts;

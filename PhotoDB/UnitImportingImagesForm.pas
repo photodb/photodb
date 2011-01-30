@@ -5,10 +5,11 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Menus, DmProgress, Dolphin_DB, ComCtrls,
-  acDlgSelect, ImgList, Registry, UnitUpdateDBObject, UnitDBkernel,
+  acDlgSelect, ImgList, UnitUpdateDBObject, UnitDBkernel,
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
   UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils,
-  uConstants, uMemory, uDBForm, uShellIntegration, uRuntime;
+  uConstants, uMemory, uDBForm, uShellIntegration, uRuntime,
+  uShellUtils;
 
 type
   TFormImportingImages = class(TDBForm)
@@ -71,8 +72,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     procedure Button10Click(Sender: TObject);
-
   private
+    { Private declarations }
    FFileName : string;
    SilentClose : boolean;
    Step : integer;
@@ -83,8 +84,10 @@ type
    ProcessingSize : int64;
    ImageProcessedCounter : integer;
    TimeCounter: TTimeCounter;
-    { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
+    { Public declarations }
    procedure LoadLanguage;
    procedure Execute(FileName : string);
    procedure AddFolder(NewPlace : string);
@@ -93,7 +96,6 @@ type
    procedure SetMaxValue(Value : integer);
    procedure SetPosition(Value : integer);
    procedure OnDone(Sender : TObject);
-    { Public declarations }
   end;
 
 const
@@ -124,69 +126,70 @@ begin
 end;
 
 procedure TFormImportingImages.FormCreate(Sender: TObject);
-var
-  Reg: TRegIniFile;
 begin
- FullSize:=0;
- TimeCounter:= TTimeCounter.Create;
- TimeCounter.TimerInterval:=15000;  // 15 seconds to refresh
- ImageCounter:=0;
- ImageProcessedCounter:=0;
- ProcessingSize:=0;
- Step:=1;
- DBTestOK:=false;
+  FullSize := 0;
+  TimeCounter := TTimeCounter.Create;
+  TimeCounter.TimerInterval := 15000; // 15 seconds to refresh
+  ImageCounter := 0;
+  ImageProcessedCounter := 0;
+  ProcessingSize := 0;
+  Step := 1;
+  DBTestOK := false;
 
- DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
 
- PopupMenu1.Images:=DBKernel.ImageList;
- DeleteItem1.ImageIndex:=DB_IC_DELETE_INFO;
- PlacesImageList.BkColor:=PlacesListView.Color;
- Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
+  PopupMenu1.Images := DBKernel.ImageList;
+  DeleteItem1.ImageIndex := DB_IC_DELETE_INFO;
+  PlacesImageList.BkColor := PlacesListView.Color;
 
- AddFolder(Reg.ReadString('Shell Folders', 'My Pictures', ''));
+  AddFolder(GetMyPicturesPath);
 
- Reg.Free;
- LoadLanguage;
- PlacesListView.Columns[0].Caption:=TEXT_MES_FOLDERS_TO_ADD;
+  LoadLanguage;
+  PlacesListView.Columns[0].Caption := TEXT_MES_FOLDERS_TO_ADD;
 
 end;
 
 procedure TFormImportingImages.LoadLanguage;
 begin
- Caption:=TEXT_MES_IMPORT_IMAGES_CAPTION;
- Label1.Caption:=TEXT_MES_IMPORTING_IMAGES_INFO;
- Label4.Caption:=TEXT_MES_IMPORTING_IMAGES_FIRST_STEP;
- Button4.Caption:=TEXT_MES_ADD_FOLDER;
- Button3.Caption:=TEXT_MES_CANCEL;
- Button5.Caption:=TEXT_MES_DELETE;
- Button2.Caption:=L('Previous');
- Button1.Caption:=TEXT_MES_NEXT;
- DeleteItem1.Caption:=TEXT_MES_DELETE;
- CheckBox1.Caption:=TEXT_MES_NO_ADD_SMALL_FILES_WITH_WH;
- Label3.Caption:=TEXT_MES_WIDTH;
- Label5.Caption:=TEXT_MES_HEIGHT;
- RadioButton1.Caption:=TEXT_MES_CURRENT_DB_FILE;
- RadioButton2.Caption:=MAKE_MES_NEW_DB_FILE;
- Label7.Caption:=TEXT_MES_DB_FILE+':';
+  BeginTranslate;
+  try
+    Caption := TEXT_MES_IMPORT_IMAGES_CAPTION;
+    Label1.Caption := TEXT_MES_IMPORTING_IMAGES_INFO;
+    Label4.Caption := TEXT_MES_IMPORTING_IMAGES_FIRST_STEP;
+    Button4.Caption := TEXT_MES_ADD_FOLDER;
+    Button3.Caption := TEXT_MES_CANCEL;
+    Button5.Caption := L('Delete');
+    Button2.Caption := L('Previous');
+    Button1.Caption := L('Next');
+    DeleteItem1.Caption := L('Delete');
+    CheckBox1.Caption := TEXT_MES_NO_ADD_SMALL_FILES_WITH_WH;
+    Label3.Caption := TEXT_MES_WIDTH;
+    Label5.Caption := TEXT_MES_HEIGHT;
+    RadioButton1.Caption := TEXT_MES_CURRENT_DB_FILE;
+    RadioButton2.Caption := MAKE_MES_NEW_DB_FILE;
+    Label7.Caption := TEXT_MES_DB_FILE + ':';
 
- Label2.Caption:=TEXT_MES_IMPORTING_IMAGES_SECOND_STEP;
+    Label2.Caption := TEXT_MES_IMPORTING_IMAGES_SECOND_STEP;
 
- Label6.Caption:=TEXT_MES_IMPORTING_IMAGES_THIRD_STEP;
- Button7.Caption:=TEXT_MES_START_NOW;
- ComboBox1.Clear;
- ComboBox1.Items.Add(TEXT_MES_AKS_ME);
- ComboBox1.Items.Add(TEXT_MES_ADD_ALL);
- ComboBox1.Items.Add(TEXT_MES_SKIP_ALL);
- ComboBox1.Items.Add(TEXT_MES_REPLACE_ALL);
- ComboBox1.ItemIndex:=0;
+    Label6.Caption := TEXT_MES_IMPORTING_IMAGES_THIRD_STEP;
+    Button7.Caption := TEXT_MES_START_NOW;
+    ComboBox1.Clear;
+    ComboBox1.Items.Add(TEXT_MES_AKS_ME);
+    ComboBox1.Items.Add(TEXT_MES_ADD_ALL);
+    ComboBox1.Items.Add(TEXT_MES_SKIP_ALL);
+    ComboBox1.Items.Add(TEXT_MES_REPLACE_ALL);
+    ComboBox1.ItemIndex := 0;
 
-{ Label9.Caption:=TEXT_MES_IF_CONFLICT_IMPORTING_DO;
- Label10.Caption:=TEXT_MES_CALCULATION_IMAGES;
- Label11.Caption:=Format(TEXT_MES_CURRENT_SIZE_F,[SizeInTextA(FullSize)]);
- Label12.Caption:=Format(TEXT_MES_IMAGES_COUNT_F,[ImageCounter]);
- Button8.Caption:=TEXT_MES_BREAK_BUTTON;
- Button9.Caption:=TEXT_MES_PAUSE;
- Button10.Caption:=TEXT_MES_FINISH;}
+    { Label9.Caption:=TEXT_MES_IF_CONFLICT_IMPORTING_DO;
+     Label10.Caption:=TEXT_MES_CALCULATION_IMAGES;
+     Label11.Caption:=Format(TEXT_MES_CURRENT_SIZE_F,[SizeInTextA(FullSize)]);
+     Label12.Caption:=Format(TEXT_MES_IMAGES_COUNT_F,[ImageCounter]);
+     Button8.Caption:=TEXT_MES_BREAK_BUTTON;
+     Button9.Caption:=TEXT_MES_PAUSE;
+     Button10.Caption:=TEXT_MES_FINISH;}
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormImportingImages.Button3Click(Sender: TObject);
@@ -240,31 +243,32 @@ end;
 procedure TFormImportingImages.PlacesListViewContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  item : TListItem;
+  item: TListItem;
 begin
- item:=PlacesListView.GetItemAt(MousePos.X,MousePos.Y);
- if item<>nil then
- begin
-  PopupMenu1.Tag:=item.Index;
-  PopupMenu1.Popup(PlacesListView.ClientToScreen(MousePos).x,PlacesListView.ClientToScreen(MousePos).y);
- end;
+  item := PlacesListView.GetItemAt(MousePos.X, MousePos.Y);
+  if item <> nil then
+  begin
+    PopupMenu1.Tag := item.Index;
+    PopupMenu1.Popup(PlacesListView.ClientToScreen(MousePos).X,
+      PlacesListView.ClientToScreen(MousePos).Y);
+  end;
 end;
 
 procedure TFormImportingImages.Button5Click(Sender: TObject);
 var
-  i : integer;
+  I: integer;
 begin
- if PopupMenu1.Tag<>-1 then
- if PlacesListView.Selected<>nil then
- PopupMenu1.Tag:=PlacesListView.Selected.Index;
+  if PopupMenu1.Tag <> -1 then
+    if PlacesListView.Selected <> nil then
+      PopupMenu1.Tag := PlacesListView.Selected.Index;
 
- if PopupMenu1.Tag<>-1 then
- begin
-  PlacesImageList.Delete(PopupMenu1.Tag);
-  PlacesListView.Items.Delete(PopupMenu1.tag);
-  for i:=PopupMenu1.tag to PlacesListView.Items.Count-1 do
-  PlacesListView.Items[i].ImageIndex:=PlacesListView.Items[i].ImageIndex-1;
- end;
+  if PopupMenu1.Tag <> -1 then
+  begin
+    PlacesImageList.Delete(PopupMenu1.Tag);
+    PlacesListView.Items.Delete(PopupMenu1.Tag);
+    for I := PopupMenu1.Tag to PlacesListView.Items.Count - 1 do
+      PlacesListView.Items[I].ImageIndex := PlacesListView.Items[I].ImageIndex - 1;
+  end;
 end;
 
 procedure TFormImportingImages.Button1Click(Sender: TObject);
@@ -439,6 +443,11 @@ begin
  DBKernel.UnRegisterChangesID(Self,ChangedDBDataByID);
 end;
 
+function TFormImportingImages.GetFormID: string;
+begin
+  Result := 'ImportImages';
+end;
+
 procedure TFormImportingImages.ChangedDBDataByID(Sender: TObject;
   ID: integer; params: TEventFields; Value: TEventValues);
 var
@@ -505,18 +514,18 @@ end;
 
 procedure TFormImportingImages.OnDone(Sender: TObject);
 begin
- DmProgress1.Position:=DmProgress1.MaxValue;
- Button3.Visible:=false;
- Button8.Visible:=false;
- Button9.Visible:=false;
- Button10.Visible:=true;
- Label8.Visible:=false;
+  DmProgress1.Position := DmProgress1.MaxValue;
+  Button3.Visible := false;
+  Button8.Visible := false;
+  Button9.Visible := false;
+  Button10.Visible := true;
+  Label8.Visible := false;
 end;
 
 procedure TFormImportingImages.Button10Click(Sender: TObject);
 begin
- SilentClose:=true;
- Close;
+  SilentClose := true;
+  Close;
 end;
 
 end.

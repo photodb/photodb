@@ -221,7 +221,6 @@ type
   end;
 
 var
-  deltwo : integer= 2;
   EditorsManager : TManagerEditors;
 
 const
@@ -801,43 +800,43 @@ end;
 
 function TImageEditor.GetImageRectA: TRect;
 var
-  Inc_: Integer;
-  Zx, Zy, Zh, Zw: Integer;
+  Increment: Integer;
+  FX, FY, FH, FW: Integer;
 begin
   if ScrollBarH.Visible then
   begin
-    Zx := 0;
+    FX := 0;
   end else
   begin
     if ScrollBarV.Visible then
-      Inc_ := ScrollBarV.Width
+      Increment := ScrollBarV.Width
     else
-      Inc_ := 0;
-    Zx := Max(0, Round(GetVisibleImageWidth / Deltwo - Inc_ - CurrentImage.Width * Zoom / Deltwo));
+      Increment := 0;
+    FX := Max(0, Round(GetVisibleImageWidth / 2 - Increment - CurrentImage.Width * Zoom / 2));
   end;
   if ScrollBarV.Visible then
   begin
-    Zy := 0;
+    FY := 0;
   end else
   begin
     if ScrollBarH.Visible then
-      Inc_ := ScrollBarH.Height
+      Increment := ScrollBarH.Height
     else
-      Inc_ := 0;
-    Zy := Max(0, Round(GetVisibleImageHeight / Deltwo - Inc_ - CurrentImage.Height * Zoom / Deltwo));
+      Increment := 0;
+    FY := Max(0, Round(GetVisibleImageHeight / 2 - Increment - CurrentImage.Height * Zoom / 2));
   end;
   if ScrollBarV.Visible then
-    Inc_ := ScrollBarV.Width
+    Increment := ScrollBarV.Width
   else
-    Inc_ := 0;
-  Zw := Round(Min(GetVisibleImageWidth - Inc_, CurrentImage.Width * Zoom));
+    Increment := 0;
+  FW := Round(Min(GetVisibleImageWidth - Increment, CurrentImage.Width * Zoom));
   if ScrollBarH.Visible then
-    Inc_ := ScrollBarH.Height
+    Increment := ScrollBarH.Height
   else
-    Inc_ := 0;
-  Zh := Round(Min(GetVisibleImageHeight - Inc_, CurrentImage.Height * Zoom));
-  Zh := Zh;
-  Result := Rect(Zx, Zy, Zw + Zx, Zh + Zy);
+    Increment := 0;
+  FH := Round(Min(GetVisibleImageHeight - Increment, CurrentImage.Height * Zoom));
+  FH := FH;
+  Result := Rect(FX, FY, FW + FX, FH + FY);
 end;
 
 procedure TImageEditor.CropLinkClick(Sender: TObject);

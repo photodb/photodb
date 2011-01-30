@@ -215,7 +215,7 @@ FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeStr,FieldTypeStr,FieldTypeStr,Fi
 
 implementation
 
-uses UnitQuickGroupInfo, DBSelectUnit, ExplorerUnit,
+uses UnitQuickGroupInfo, ExplorerUnit,
      Searching, SlideShow, ExportUnit, UnitManageGroups,
      CleaningForm, UnitDBCleaning, UnitCompareDataBases, UnitEditGroupsForm,
      UnitPasswordForm, UnitOpenQueryThread, ProgressActionUnit,

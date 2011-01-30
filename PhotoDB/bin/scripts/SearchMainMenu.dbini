@@ -1,7 +1,7 @@
 <#>[]{scripts\changedb_functions.dbini}
 <File>[0]
 {
-  //все иконки необходимо создать ДО появления соответствующего меню (Выбор БД)
+  //all icons should be created before displaying menu (Choose Collection)
   $IconList=GetDBsIcons;
   //
   <Load results from file>[DB_IC_LOADFROMFILE]
@@ -16,9 +16,9 @@
   <Select DB>[DB_IC_ADDTODB]
   {
    run:  
-   //пустой итем. создаётся сразу
+   //Empty item to show arrow
    <->[]{}
-   //при выботе пункта удаляем всё что там было и добавляем новые итемы
+   //Deleting empty item and fill menu
    DeleteNoFirst;
    InsertSelectDBMenu($IconList);
   }
@@ -32,7 +32,7 @@
 {
  <->[]{}
  DeleteNoFirst;
- //загрузка значения $explorer - определяет видимости панели проводника
+ //Check value $explorer
  LoadExplorerValue;
  if ($explorer=true) 
  {
@@ -60,7 +60,7 @@
   {
     DoManager;
   }
-  <Image editror>[DB_IC_IMEDITOR]
+  <Image editor>[DB_IC_IMEDITOR]
   {  
     $form=NewImageEditor;
     ShowDBForm($form);

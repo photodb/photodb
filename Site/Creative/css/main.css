@@ -127,6 +127,9 @@ span .clearSpan10{
 	float: left;
 	width: 90%;
 }
+.breadCrumbs{
+	margin-left: -4px;
+}
 .breadCrumbs img {
     margin-left: 4px;
     margin-right: 4px;
@@ -176,7 +179,7 @@ span .clearSpan10{
 }
 .pageContent{
 	float: left;
-	width: 735px
+	width: 830px;
 }
 .home{
 }

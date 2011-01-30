@@ -677,7 +677,7 @@ begin
   Cstate := ShowCursor(True);
   while CState < 0 do
     CState := ShowCursor(True);
-  if SlideShowNow then
+  if Viewer.SlideShowNow then
   if FloatPanel<>nil then
   FloatPanel.Show;
 end;
@@ -1015,7 +1015,7 @@ end;
 function TDirectShowForm.CallBack(
   CallbackInfo: TCallbackInfo): TDirectXSlideShowCreatorCallBackResult;
 begin
- if Visible and SlideShowNow then
+ if Visible and Viewer.SlideShowNow then
  if CallbackInfo.Action=CallBack_Next then
  begin
   if not CallbackInfo.ForwardThread then

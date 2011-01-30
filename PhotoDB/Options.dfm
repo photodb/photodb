@@ -41,15 +41,15 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 407
     Height = 441
-    ActivePage = TsGeneral
+    ActivePage = TsSecurity
     TabOrder = 2
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = -52
+      ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitWidth = 281
-      ExplicitHeight = 165
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object CheckBox4: TCheckBox
         Left = 232
         Top = 8
@@ -422,7 +422,6 @@ object OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Next on Click'
         TabOrder = 8
-        OnClick = CheckBox13Click
       end
       object CheckBox2: TCheckBox
         Left = 5
@@ -431,24 +430,6 @@ object OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Use Cool Stretch'
         TabOrder = 9
-      end
-      object CheckBox13: TCheckBox
-        Left = 5
-        Top = 353
-        Width = 394
-        Height = 17
-        Caption = 'Use External Viewer'
-        TabOrder = 10
-        OnClick = CheckBox13Click
-      end
-      object Edit1: TEdit
-        Left = 8
-        Top = 382
-        Width = 361
-        Height = 21
-        TabOrder = 11
-        Text = '<no file>'
-        OnKeyPress = Edit1KeyPress
       end
     end
     object TsUserMenu: TTabSheet
@@ -520,7 +501,6 @@ object OptionsForm: TOptionsForm
         Height = 23
         Caption = '...'
         TabOrder = 0
-        OnClick = Button2Click
       end
       object Button16: TButton
         Left = 8

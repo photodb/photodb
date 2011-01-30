@@ -143,14 +143,14 @@ object SplitExportForm: TSplitExportForm
           TabOrder = 0
           OnClick = Button1Click
         end
-        object Button4: TButton
+        object BtnNew: TButton
           Left = 24
           Top = 4
           Width = 51
           Height = 19
           Caption = 'New'
           TabOrder = 1
-          OnClick = Button4Click
+          OnClick = BtnNewClick
         end
       end
       object Panel8: TPanel
@@ -161,14 +161,14 @@ object SplitExportForm: TSplitExportForm
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 1
-        object Edit1: TEdit
+        object Edit1: TWatermarkedEdit
           Left = 8
           Top = 3
           Width = 1200
           Height = 21
           ReadOnly = True
           TabOrder = 0
-          Text = 'Edit1'
+          WatermarkText = 'Select a file to split the database'
         end
       end
     end
@@ -213,23 +213,23 @@ object SplitExportForm: TSplitExportForm
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 0
-      object Button2: TButton
+      object BtnOk: TButton
         Left = 88
         Top = 8
         Width = 75
         Height = 25
         Caption = 'Ok'
         TabOrder = 0
-        OnClick = Button2Click
+        OnClick = BtnOkClick
       end
-      object Button3: TButton
+      object BtnCancel: TButton
         Left = 7
         Top = 8
         Width = 75
         Height = 25
         Caption = 'Cancel'
         TabOrder = 1
-        OnClick = Button3Click
+        OnClick = BtnCancelClick
       end
     end
   end
@@ -272,7 +272,7 @@ object SplitExportForm: TSplitExportForm
     Enabled = False
     Interval = 10
     OnTimer = DestroyTimerTimer
-    Left = 120
-    Top = 40
+    Left = 136
+    Top = 8
   end
 end

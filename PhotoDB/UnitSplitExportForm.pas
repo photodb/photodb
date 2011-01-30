@@ -7,7 +7,7 @@ uses
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, DropSource, DropTarget, Dolphin_DB,
   Language, acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
   DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger,
-  UnitDBCommon, uConstants, uDBForm, uShellIntegration, uMemory;
+  UnitDBCommon, uConstants, uDBForm, uShellIntegration, uMemory, WatermarkedEdit;
 
 type
   TSplitExportForm = class(TDBForm)
@@ -19,8 +19,8 @@ type
     Label2: TLabel;
     Panel2: TPanel;
     Panel3: TPanel;
-    Button2: TButton;
-    Button3: TButton;
+    BtnOk: TButton;
+    BtnCancel: TButton;
     ImageList1: TImageList;
     MethodImageList: TImageList;
     PopupMenu1: TPopupMenu;
@@ -36,9 +36,9 @@ type
     Panel6: TPanel;
     Panel7: TPanel;
     Panel8: TPanel;
-    Edit1: TEdit;
+    Edit1: TWatermarkedEdit;
     Button1: TButton;
-    Button4: TButton;
+    BtnNew: TButton;
     procedure FormCreate(Sender: TObject);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
@@ -53,10 +53,10 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure Delete1Click(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure BtnCancelClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure Button2Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
+    procedure BtnNewClick(Sender: TObject);
     procedure ListView1Resize(Sender: TObject);
     procedure ListView1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -67,6 +67,8 @@ type
     FRegGroups: TGroups;
     FGroupsFounded: TGroups;
     procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
     procedure CopyRecordsW(OutTable, InTable: TDataSet);
@@ -118,6 +120,11 @@ end;
 procedure TSplitExportForm.FormDestroy(Sender: TObject);
 begin
   F(Items);
+end;
+
+function TSplitExportForm.GetFormID: string;
+begin
+  Result := 'SplitDatabase';
 end;
 
 procedure TSplitExportForm.DropFileTarget1Drop(Sender: TObject;
@@ -179,26 +186,29 @@ end;
 
 procedure TSplitExportForm.Button1Click(Sender: TObject);
 var
-  OpenDialog : DBOpenDialog;
+  OpenDialog: DBOpenDialog;
 begin
- OpenDialog:=DBOpenDialog.Create;
- OpenDialog.Filter:='PhotoDB files (*.photodb)|*.photodb|All Files|*.*';
+  OpenDialog := DBOpenDialog.Create;
+  try
+    OpenDialog.Filter := 'PhotoDB files (*.photodb)|*.photodb|All Files|*.*';
 
- if OpenDialog.Execute then
- if DBKernel.TestDB(OpenDialog.FileName) then
- Edit1.Text:=OpenDialog.FileName;
+    if OpenDialog.Execute then
+      if DBKernel.TestDB(OpenDialog.FileName) then
+        Edit1.Text := OpenDialog.FileName;
 
- OpenDialog.Free;
+  finally
+    F(OpenDialog);
+  end;
 end;
 
 procedure TSplitExportForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Button4.Caption := TEXT_MES_NEW_W;
+    BtnNew.Caption := TEXT_MES_NEW_W;
     Caption := TEXT_MES_SPLIT_DB_CAPTION;
-    Button2.Caption := L('Ok');
-    Button3.Caption := L('Cancel');
+    BtnOk.Caption := L('Ok');
+    BtnCancel.Caption := L('Cancel');
     CheckBox1.Caption := TEXT_MES_DELETE_RECORDS_AFTER_FINISH;
     Label2.Caption := TEXT_MES_PATH;
     Label3.Caption := TEXT_MES_FILES_AND_FOLDERS;
@@ -207,8 +217,8 @@ begin
     ListView1.Columns[0].Caption := TEXT_MES_METHOD;
     ListView1.Columns[1].Caption := TEXT_MES_PATH;
     Label1.Caption := TEXT_MES_SPLIT_DB_INFO;
-    Delete1.Caption := TEXT_MES_DELETE;
-    Edit1.Text := TEXT_MES_NO_FILE;
+    Delete1.Caption := L('Delete');
+    Edit1.WatermarkText := L('Select a file to split the database');
   finally
     EndTranslate;
   end;
@@ -275,7 +285,7 @@ begin
   Split_Opened := False;
 end;
 
-procedure TSplitExportForm.Button3Click(Sender: TObject);
+procedure TSplitExportForm.BtnCancelClick(Sender: TObject);
 begin
   Close;
 end;
@@ -285,7 +295,7 @@ begin
   DestroyTimer.Enabled := True;
 end;
 
-procedure TSplitExportForm.Button2Click(Sender: TObject);
+procedure TSplitExportForm.BtnOkClick(Sender: TObject);
 var
   S, D : TDataSet;
   i, j : integer;
@@ -410,7 +420,7 @@ begin
 
 end;
 
-procedure TSplitExportForm.Button4Click(Sender: TObject);
+procedure TSplitExportForm.BtnNewClick(Sender: TObject);
 var
   SaveDialog : DBSaveDialog;
   FileName : string;
@@ -501,10 +511,11 @@ end;
 
 procedure TSplitExportForm.ListView1Resize(Sender: TObject);
 begin
- ListView1.Columns[1].Width:=ListView1.Width-ListView1.Columns[0].Width-5;
+  ListView1.Columns[1].Width := ListView1.Width - ListView1.Columns[0].Width - 5;
 end;
 
-procedure TSplitExportForm.ListView1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TSplitExportForm.ListView1KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
 var
   Index: Integer;
 begin

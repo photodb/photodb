@@ -16,8 +16,8 @@ type
     Image1: TImage;
     Label1: TLabel;
     Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
+    BtnPrev: TButton;
+    BtnCancel: TButton;
     Panel1: TPanel;
     Label2: TLabel;
     RadioButton1: TRadioButton;
@@ -32,8 +32,8 @@ type
     Progress: TDmProgress;
     Edit2: TEdit;
     Button4: TButton;
-    Button5: TButton;
-    Button6: TButton;
+    BtnBreak: TButton;
+    BtnFinish: TButton;
     Panel2: TPanel;
     Label8: TLabel;
     Label9: TLabel;
@@ -51,13 +51,13 @@ type
     TempProgress: TDmProgress;
     ApplicationEvents1: TApplicationEvents;
     procedure FormCreate(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure BtnCancelClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure BtnPrevClick(Sender: TObject);
     procedure Button4Click(Sender: TObject);
-    procedure Button5Click(Sender: TObject);
-    procedure Button6Click(Sender: TObject);
+    procedure BtnBreakClick(Sender: TObject);
+    procedure BtnFinishClick(Sender: TObject);
     procedure RadioButton1Click(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
@@ -141,7 +141,7 @@ begin
  Image:=TJpegImage.Create;
  Image.Assign(ImagePreview.Picture.Graphic);
  Panel2.Visible:=false;
- Button2.Enabled:=false;
+ BtnPrev.Enabled:=false;
  LoadLanguage;
  Step:=1;
  SilentClose:=false;
@@ -159,32 +159,35 @@ end;
 
 procedure TFormConvertingDB.LoadLanguage;
 begin
- Label1.Caption:=TEXT_MES_DIALOG_CONVERTING_DB;
- Label3.Caption:=TEXT_MES_CURRENT_DATABASE+':';
-// RadioButton1.Caption:=TEXT_MES_CONVERT_TO_BDE;
- RadioButton2.Caption:=TEXT_MES_CONVERT_TO_MDB;
- Button3.Caption:=TEXT_MES_CANCEL;
-// Label2.Caption:=TEXT_MES_CONVERTING_FIRST_STEP;
- Caption:=TEXT_MES_CONVERTING_CAPTION;
- Button2.Caption:=L('Previous');
- Button1.Caption:=TEXT_MES_NEXT;
- Label4.Caption:=TEXT_MES_CONVERTING_SECOND_STEP;
- Label6.Caption:=TEXT_MES_CURRENT_ACTION+':';
- Button4.Caption:=TEXT_MES_START_NOW;
- Button5.Caption:=TEXT_MES_BREAK_BUTTON;
- Button6.Caption:=TEXT_MES_FINISH;
- Label7.Caption:=L('Waiting');
- Label8.Caption:=TEXT_MES_CONVERTING_IMAGE_SIZES_STEP;
- Label9.Caption:=TEXT_MES_SIZE+':';
- ComboBox1.Items[0]:=TEXT_MES_CONVERTATION_JPEG_QUALITY;
- ComboBox1.Items[1]:=TEXT_MES_CONVERTATION_TH_SIZE;
- ComboBox1.Items[2]:=TEXT_MES_CONVERTATION_PANEL_PREVIEW_SIZE;
- ComboBox1.Items[3]:=TEXT_MES_CONVERTATION_HINT_SIZE;
- ComboBox1.ItemIndex:=1;
- LoadDifferentImage1.Caption:=TEXT_MES_LOAD_DIFFERENT_IMAGE;
+  BeginTranslate;
+  try
+    Label1.Caption := TEXT_MES_DIALOG_CONVERTING_DB;
+    Label3.Caption := TEXT_MES_CURRENT_DATABASE + ':';
+    RadioButton2.Caption := TEXT_MES_CONVERT_TO_MDB;
+    BtnCancel.Caption := TEXT_MES_CANCEL;
+    Caption := TEXT_MES_CONVERTING_CAPTION;
+    BtnPrev.Caption := L('Previous');
+    Button1.Caption := L('Next');
+    Label4.Caption := TEXT_MES_CONVERTING_SECOND_STEP;
+    Label6.Caption := TEXT_MES_CURRENT_ACTION + ':';
+    Button4.Caption := TEXT_MES_START_NOW;
+    BtnBreak.Caption := TEXT_MES_BREAK_BUTTON;
+    BtnFinish.Caption := L('Finish');
+    Label7.Caption := L('Waiting');
+    Label8.Caption := TEXT_MES_CONVERTING_IMAGE_SIZES_STEP;
+    Label9.Caption := TEXT_MES_SIZE + ':';
+    ComboBox1.Items[0] := L('JPEG quality');
+    ComboBox1.Items[1] := L('DB Image size');
+    ComboBox1.Items[2] := L('Panel preview size');
+    ComboBox1.Items[3] := L('Preview');
+    ComboBox1.ItemIndex := 1;
+    LoadDifferentImage1.Caption := TEXT_MES_LOAD_DIFFERENT_IMAGE;
+  finally
+    EndTranslate;
+  end;
 end;
 
-procedure TFormConvertingDB.Button3Click(Sender: TObject);
+procedure TFormConvertingDB.BtnCancelClick(Sender: TObject);
 begin
  Close;
 end;
@@ -207,7 +210,7 @@ begin
    Panel2.Visible:=false;
    Panel3.Visible:=true;
    Button1.Visible:=false;
-   Button2.Enabled:=true;
+   BtnPrev.Enabled:=true;
    Button4.Visible:=true;
   end;
 
@@ -216,12 +219,12 @@ begin
    Step:=2;
    Panel1.Visible:=false;
    Panel2.Visible:=true;
-   Button2.Enabled:=true;
+   BtnPrev.Enabled:=true;
    Button4.Visible:=false;
   end;
 end;
 
-procedure TFormConvertingDB.Button2Click(Sender: TObject);
+procedure TFormConvertingDB.BtnPrevClick(Sender: TObject);
 begin
 
   if Step=2 then
@@ -229,7 +232,7 @@ begin
    Step:=1;
    Panel2.Visible:=false;
    Panel1.Visible:=true;
-   Button2.Enabled:=false;
+   BtnPrev.Enabled:=false;
   end;
 
   if Step=3 then
@@ -241,9 +244,9 @@ begin
    Panel3.Visible:=false;
   end;
 
- if Step=2 then
- if not RadioButton2.Checked then Button2Click(Sender);
-
+  if Step = 2 then
+    if not RadioButton2.Checked then
+      BtnPrevClick(Sender);
 end;
 
 procedure TFormConvertingDB.Button4Click(Sender: TObject);
@@ -252,48 +255,51 @@ begin
   begin
    Step:=4;
    Button1.Enabled:=false;
-   Button2.Enabled:=false;
-   Button3.Enabled:=false;
+   BtnPrev.Enabled:=false;
+   BtnCancel.Enabled:=false;
    Button4.Enabled:=false;
-   Button5.Visible:=true;
+   BtnBreak.Visible:=true;
    TConvertDBThread.Create(Self,FFileName,RadioButton2.Checked,ImageOptions);
   end;
 end;
 
-procedure TFormConvertingDB.Button5Click(Sender: TObject);
+procedure TFormConvertingDB.BtnBreakClick(Sender: TObject);
 begin
- if ID_YES=MessageBoxDB(Handle,TEXT_MES_BREAK_RECREATING_TH,L('Warning'),TD_BUTTON_YESNO,TD_ICON_WARNING) then
- begin
-  BreakConverting:=true;
-  RecreatingThInTableTerminating:=true;
-  Button5.Enabled:=false;
- end;
+  if ID_YES = MessageBoxDB(Handle, TEXT_MES_BREAK_RECREATING_TH, L('Warning'),
+    TD_BUTTON_YESNO, TD_ICON_WARNING) then
+  begin
+    BreakConverting := true;
+    RecreatingThInTableTerminating := true;
+    BtnBreak.Enabled := False;
+  end;
 end;
 
 procedure TFormConvertingDB.DoFormExit(Sender: TObject);
 begin
- SilentClose:=true;
- Button5.Enabled:=false;
- MessageBoxDB(Handle,TEXT_MES_CONVETRING_ENDED,L('Information'),TD_BUTTON_OK,TD_ICON_INFORMATION);
- Button6.Visible:=true;
+  SilentClose := true;
+  BtnBreak.Enabled := False;
+  MessageBoxDB(Handle, TEXT_MES_CONVETRING_ENDED, L('Information'),
+    TD_BUTTON_OK, TD_ICON_INFORMATION);
+  BtnFinish.Visible := true;
 end;
 
-procedure TFormConvertingDB.OnConvertingStructureEnd(Sender: TObject; NewFileName : string);
+procedure TFormConvertingDB.OnConvertingStructureEnd(Sender: TObject;
+  NewFileName: string);
 var
- Options : TRecreatingThInTableOptions;
+  Options: TRecreatingThInTableOptions;
 begin
- Options.WriteLineProc:=WriteLine;
- Options.WriteLnLineProc:=WriteLnLine;
- Options.OnEndProcedure:=DoFormExit;
- Options.FileName:= NewFileName;
- Options.GetFilesWithoutPassProc:=PasswordKeeper.GetActiveFiles;
- Options.AddCryptFileToListProc:=PasswordKeeper.AddCryptFileToListProc;
- Options.GetAvaliableCryptFileList:=PasswordKeeper.GetAvaliableCryptFileList;
- Options.OnProgress:=ProgressCallBack;
- RecreatingThInTable.Create(Options);
+  Options.WriteLineProc := WriteLine;
+  Options.WriteLnLineProc := WriteLnLine;
+  Options.OnEndProcedure := DoFormExit;
+  Options.FileName := NewFileName;
+  Options.GetFilesWithoutPassProc := PasswordKeeper.GetActiveFiles;
+  Options.AddCryptFileToListProc := PasswordKeeper.AddCryptFileToListProc;
+  Options.GetAvaliableCryptFileList := PasswordKeeper.GetAvaliableCryptFileList;
+  Options.OnProgress := ProgressCallBack;
+  RecreatingThInTable.Create(Options);
 end;
 
-procedure TFormConvertingDB.Button6Click(Sender: TObject);
+procedure TFormConvertingDB.BtnFinishClick(Sender: TObject);
 begin
  Close;
 end;
@@ -411,25 +417,25 @@ begin
  Case ComboBox1.ItemIndex of
   0:
    begin
-    Label13.Caption:=TEXT_MES_CONVERTATION_JPEG_QUALITY_INFO;
+    Label13.Caption:=L('Sets the compression quality of images stored in the database. Takes the value 1-100');
     FillComboByCompressionRange;
     ComboBox2.Text:=IntToStr(ImageOptions.DBJpegCompressionQuality);
    end;
   1:
    begin
-    Label13.Caption:=TEXT_MES_CONVERTATION_TH_SIZE_INFO;
+    Label13.Caption:=L('Default thumbnail size in database');
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThSize);
    end;
   2:
    begin
-    Label13.Caption:=TEXT_MES_CONVERTATION_PANEL_PREVIEW_SIZE_INFO;
+    Label13.Caption:=L('Size of the images in the panel by default');
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThSizePanelPreview);
    end;
   3:
    begin
-    Label13.Caption:=TEXT_MES_CONVERTATION_HINT_SIZE_INFO;
+    Label13.Caption:=L('Image preview size');
     FillComboByImageSizeRange;
     ComboBox2.Text:=IntToStr(ImageOptions.ThHintSize);
    end;
@@ -447,25 +453,24 @@ end;
 
 procedure TFormConvertingDB.WriteLnLine(Sender: TObject; Line: string; Info : integer);
 var
-  p : PInteger;
-  i : integer;
+  p: PInteger;
 begin
- if Info=LINE_INFO_INFO then
- begin
-  FInfo:=Line;
-  exit;
- end;
- LockWindowUpdate(Handle);
- Infos.Insert(0, FInfo);
+  if Info = LINE_INFO_INFO then
+  begin
+    FInfo := Line;
+    exit;
+  end;
+  LockWindowUpdate(Handle);
+  Infos.Insert(0, FInfo);
 
- GetMem(p,SizeOf(integer));
- p^:=Info;
- ItemsData.Insert( TopRecords,p);
- InfoListBox.Items.Insert( TopRecords,Line);
+  GetMem(p, SizeOf(Integer));
+  p^ := Info;
+  ItemsData.Insert(TopRecords, p);
+  InfoListBox.Items.Insert(TopRecords, Line);
 
- FInfo:='';
+  FInfo := '';
 
- LockWindowUpdate(0);
+  LockWindowUpdate(0);
 end;
 
 procedure TFormConvertingDB.LoadDifferentImage1Click(Sender: TObject);

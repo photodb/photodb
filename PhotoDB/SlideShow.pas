@@ -15,7 +15,7 @@ uses
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime,
-  uDBBaseTypes;
+  uDBBaseTypes, uViewerTypes;
 
 type
   TRotatingImageInfo = record
@@ -25,7 +25,7 @@ type
   end;
 
 type
-  TViewer = class(TThreadForm, IImageSource)
+  TViewer = class(TViewerForm)
     PopupMenu1: TPopupMenu;
     Next1: TMenuItem;
     Previous1: TMenuItem;
@@ -236,23 +236,28 @@ type
     procedure SetDisplayRating(const Value: Integer);
   protected
     { Protected declarations }
+    IncGrayScale: Integer;
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WndProc(var Message: TMessage); override;
     function GetFormID : string; override;
   public
     { Public declarations }
+    ZoomerOn: Boolean;
+    Zoom: Real;
     WaitingList: Boolean;
     FCurrentPage: Integer;
     FPageCount: Integer;
     CursorZoomIn, CursorZoomOut: HIcon;
     DBCanDrag: Boolean;
     DBDragPoint: TPoint;
-    Old_width, Old_height, Old_top, Old_left: Integer;
-    Old_rect: Trect;
     FOldPoint: TPoint;
     WaitGrayScale: Integer;
     WaitImage: TBitmap;
     FSID: TGUID;
+    RealImageWidth: Integer;
+    RealImageHeight: Integer;
+    RealZoomInc: Extended;
+    constructor Create(AOwner: TComponent); override;
     function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
     procedure ExecuteDirectoryWithFileOnThread(FileName : String);
     function Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
@@ -298,16 +303,8 @@ type
 var
   Viewer: TViewer;
   UseOnlySelf: Boolean = False;
-  ZoomerOn: Boolean = False;
-  IncGrayScale: Integer = 20;
-  Zoom: Real = 1;
-  RealZoomInc: Extended = 1;
-  RealImageWidth: Integer = 0;
-  RealImageHeight: Integer = 0;
-  DelTwo: Integer = 2;
   UseOnlyDefaultDraw: Boolean = False;
   CurrentInfo: TRecordsInfo;
-  FullScreenNow, SlideShowNow: Boolean;
   DrawImage: TBitmap;
   FBImage: Tbitmap;
   Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
@@ -491,8 +488,8 @@ begin
 
    Result:=true;
    if not RealZoom then
-   TViewerThread.Create(FileName,Rotate,FullImage,1,FSID,false,false, fCurrentPage) else
-   TViewerThread.Create(FileName,Rotate,FullImage,BeginZoom,FSID,false,false, fCurrentPage);
+   TViewerThread.Create(Self,FileName,Rotate,FullImage,1,FSID,false,false, fCurrentPage) else
+   TViewerThread.Create(Self,FileName,Rotate,FullImage,BeginZoom,FSID,false,false, fCurrentPage);
    ForwardThreadExists:=false;
   end else ForwardThreadNeeds:=true;
  end else
@@ -1576,7 +1573,7 @@ begin
   TbRotateCCW.Enabled:=false;
   TbRotateCW.Enabled:=false;
  end;
- TW.I.Start('SlideShow_UseExternelViewer');
+
  if not UseOnlySelf then
  if not ((FormManager.MainFormsCount=1) and FormManager.IsMainForms(self)) then
 
@@ -1692,6 +1689,15 @@ begin
   end;
  end;
  TW.I.Start('ExecuteW - end');
+end;
+
+constructor TViewer.Create(AOwner: TComponent);
+begin
+  inherited;
+  ZoomerOn := False;
+  Zoom := 1;
+  IncGrayScale := 20;
+  RealZoomInc := 1;
 end;
 
 procedure TViewer.CreateParams(var Params: TCreateParams);
@@ -2092,7 +2098,7 @@ procedure TViewer.FormClick(Sender: TObject);
 var
   p : TPoint;
   ImRect : TRect;
-  dy, dx, {xm,} x, y, z : Extended;
+  dy, dx, x, y, z : Extended;
 begin
  GetCursorPos(p);
  p:=ScreenToClient(p);
@@ -2141,39 +2147,50 @@ end;
 
 function TViewer.HeightW: Integer;
 begin
- Result:=ClientHeight-ToolsBar.Height-3;
+  Result := ClientHeight - ToolsBar.Height - 3;
 end;
 
 function TViewer.GetImageRectA: TRect;
 var
-  inc_ : Integer;
-  zx, zy, zh, zw : Integer;
+  Increment: Integer;
+  FX, FY, FH, FW: Integer;
 begin
   if ScrollBar1.Visible then
   begin
-   zx:=0;
+    FX := 0;
   end else
   begin
-   if ScrollBar2.Visible then inc_:=ScrollBar2.Width else inc_:=0;
-   zx:=Max(0,Round(ClientWidth/deltwo-inc_-FbImage.Width*Zoom/deltwo));
+    if ScrollBar2.Visible then
+      Increment := ScrollBar2.width
+    else
+      Increment := 0;
+    FX := Max(0, Round(ClientWidth / 2 - Increment - FBImage.Width * Zoom / 2));
   end;
   if ScrollBar2.Visible then
   begin
-   zy:=0;
+    FY := 0;
   end else
   begin
-   if ScrollBar1.Visible then inc_:=ScrollBar1.Height else inc_:=0;
-   zy:=Max(0,Round(HeightW/deltwo-inc_-FbImage.Height*Zoom/deltwo));
+    if ScrollBar1.Visible then
+      Increment := ScrollBar1.Height
+    else
+      Increment := 0;
+    FY := Max(0,
+      round(HeightW / 2 - Increment - FBImage.Height * Zoom / 2));
   end;
-  if ScrollBar2.Visible then inc_:=ScrollBar2.Width else inc_:=0;
-  zw:=Round(Min(ClientWidth-inc_,FbImage.Width*Zoom));
-  if ScrollBar1.Visible then inc_:=ScrollBar1.Height else inc_:=0;
-  zh:=Round(Min(HeightW-inc_,FbImage.Height*Zoom));
-  zh:=zh;
-{  if TransparentImage then
-  Result:=Rect(zx+1,zy+1,zw+zx-1,zh+zy-1)
-  else }
-  Result:=Rect(zx,zy,zw+zx,zh+zy);
+  if ScrollBar2.Visible then
+    Increment := ScrollBar2.width
+  else
+    Increment := 0;
+  FW := round(Min(ClientWidth - Increment, FBImage.Width * Zoom));
+  if ScrollBar1.Visible then
+    Increment := ScrollBar1.Height
+  else
+    Increment := 0;
+  FH := round(Min(HeightW - Increment, FBImage.Height * Zoom));
+  FH := FH;
+
+  Result := rect(FX, FY, FW + FX, FH + FY);
 end;
 
 procedure TViewer.RecreateImLists;
@@ -2820,7 +2837,7 @@ begin
   n:=0;
   ForwardThreadExists:=true;
   ForwardThreadFileName:=CurrentInfo.ItemFileNames[n];
-  TViewerThread.Create(CurrentInfo.ItemFileNames[n],CurrentInfo.ItemRotates[n],false,1,ForwardThreadSID,true,not CurrentInfo.LoadedImageInfo[n], 0);
+  TViewerThread.Create(Self,CurrentInfo.ItemFileNames[n],CurrentInfo.ItemRotates[n],false,1,ForwardThreadSID,true,not CurrentInfo.LoadedImageInfo[n], 0);
  end;
 end;
 

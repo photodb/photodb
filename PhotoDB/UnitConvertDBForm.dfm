@@ -722,23 +722,23 @@ object FormConvertingDB: TFormConvertingDB
     TabOrder = 0
     OnClick = Button1Click
   end
-  object Button2: TButton
+  object BtnPrev: TButton
     Left = 376
     Top = 376
     Width = 91
     Height = 25
     Caption = 'Privious'
     TabOrder = 1
-    OnClick = Button2Click
+    OnClick = BtnPrevClick
   end
-  object Button3: TButton
-    Left = 296
-    Top = 376
+  object BtnCancel: TButton
+    Left = 297
+    Top = 375
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 2
-    OnClick = Button3Click
+    OnClick = BtnCancelClick
   end
   object Panel1: TPanel
     Left = 112
@@ -897,7 +897,7 @@ object FormConvertingDB: TFormConvertingDB
     Visible = False
     OnClick = Button4Click
   end
-  object Button5: TButton
+  object BtnBreak: TButton
     Left = 216
     Top = 376
     Width = 75
@@ -905,9 +905,9 @@ object FormConvertingDB: TFormConvertingDB
     Caption = 'Break'
     TabOrder = 6
     Visible = False
-    OnClick = Button5Click
+    OnClick = BtnBreakClick
   end
-  object Button6: TButton
+  object BtnFinish: TButton
     Left = 472
     Top = 376
     Width = 75
@@ -915,7 +915,7 @@ object FormConvertingDB: TFormConvertingDB
     Caption = 'Finish'
     TabOrder = 7
     Visible = False
-    OnClick = Button6Click
+    OnClick = BtnFinishClick
   end
   object Panel2: TPanel
     Left = 112

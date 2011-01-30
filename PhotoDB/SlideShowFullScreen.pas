@@ -165,7 +165,7 @@ begin
   Cstate := ShowCursor(True);
   while CState < 0 do
     CState := ShowCursor(True);
-  if FullScreenNow then
+  if Viewer.FullScreenNow then
   if FloatPanel<>nil then
   FloatPanel.Show;
 end;
@@ -173,9 +173,9 @@ end;
 procedure TFullScreenView.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
- if FullScreenNow then
+ if Viewer.FullScreenNow then
  if Msg.message=260 then Msg.message:=0;
- if FullScreenNow then
+ if Viewer.FullScreenNow then
  if Msg.message=256 then
  begin
   if Msg.wParam=37 then if Viewer<>nil then Viewer.Previous_(nil);
@@ -192,7 +192,7 @@ begin
   Msg.message:=0;
  end;
  if Msg.message<>522 then exit;
- if FullScreenNow then
+ if Viewer.FullScreenNow then
  if Msg.wParam>0 then
  begin
   if Viewer<>nil then Viewer.Previous_(nil);

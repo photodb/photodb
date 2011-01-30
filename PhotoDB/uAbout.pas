@@ -158,7 +158,7 @@ end;
 
 procedure TAboutForm.LnkGoToWebSiteClick(Sender: TObject);
 begin
-  ShellExecute(0, nil, 'http://photodb.illusdolphin.net', nil, nil, SW_NORMAL);
+  ShellExecute(0, nil, HomeURL, nil, nil, SW_NORMAL);
 end;
 
 procedure TAboutForm.LnkGoToWebSiteGetBackGround(Sender: TObject; X, Y, W,
@@ -204,7 +204,7 @@ begin
   MemoRegistrationInfo.Lines.Add(TEXT_MES_REG_TO);
   MemoRegistrationInfo.Lines.Add('');
   if DBkernel.ProgramInDemoMode then
-    MemoRegistrationInfo.Lines.Add(TEXT_MES_COPY_NOT_ACTIVATED)
+    MemoRegistrationInfo.Lines.Add(L('This program isn''t activated.'))
   else
     MemoRegistrationInfo.Lines.Add(DBkernel.ReadRegName);
 end;

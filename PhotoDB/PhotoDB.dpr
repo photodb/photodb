@@ -299,7 +299,8 @@ uses
   uRuntime in 'Units\uRuntime.pas',
   uDBGraphicTypes in 'Units\uDBGraphicTypes.pas',
   uStenography in 'Units\uStenography.pas',
-  uInternetUtils in 'Units\uInternetUtils.pas';
+  uInternetUtils in 'Units\uInternetUtils.pas',
+  uViewerTypes in 'Units\uViewerTypes.pas';
 
 {$R *.res}
 

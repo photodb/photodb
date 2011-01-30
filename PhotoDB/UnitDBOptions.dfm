@@ -4,7 +4,7 @@ object FormDBOptions: TFormDBOptions
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'FormDBOptions'
-  ClientHeight = 336
+  ClientHeight = 335
   ClientWidth = 534
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,14 +18,14 @@ object FormDBOptions: TFormDBOptions
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object LbCollectionName: TLabel
     Left = 8
     Top = 8
     Width = 49
     Height = 13
     Caption = 'DB Name:'
   end
-  object Label2: TLabel
+  object LbDescription: TLabel
     Left = 8
     Top = 56
     Width = 71
@@ -67,14 +67,14 @@ object FormDBOptions: TFormDBOptions
     Height = 13
     Caption = 'Path'
   end
-  object Edit1: TEdit
+  object EdName: TEdit
     Left = 8
     Top = 24
     Width = 521
     Height = 21
     TabOrder = 0
   end
-  object Edit2: TEdit
+  object EdDescriotion: TEdit
     Left = 8
     Top = 72
     Width = 521
@@ -98,23 +98,23 @@ object FormDBOptions: TFormDBOptions
       '200'
       '300')
   end
-  object Button1: TButton
+  object BtnOk: TButton
     Left = 456
     Top = 304
     Width = 75
     Height = 25
     Caption = 'Ok'
     TabOrder = 3
-    OnClick = Button1Click
+    OnClick = BtnOkClick
   end
-  object Button2: TButton
+  object BtnCancel: TButton
     Left = 376
     Top = 304
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 4
-    OnClick = Button2Click
+    OnClick = BtnCancelClick
   end
   object ComboBox2: TComboBox
     Left = 8
@@ -164,10 +164,10 @@ object FormDBOptions: TFormDBOptions
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
     UseSpecIconSize = True
   end
-  object Edit5: TEdit
+  object EdPath: TEdit
     Left = 8
     Top = 120
     Width = 521
@@ -175,23 +175,23 @@ object FormDBOptions: TFormDBOptions
     ReadOnly = True
     TabOrder = 9
   end
-  object Button3: TButton
+  object BtnOpenFileLocation: TButton
     Left = 312
     Top = 144
     Width = 217
     Height = 25
     Caption = 'Open file location'
     TabOrder = 10
-    OnClick = Button3Click
+    OnClick = BtnOpenFileLocationClick
   end
-  object Button4: TButton
+  object BtnChangeFileLocation: TButton
     Left = 312
-    Top = 146
-    Width = 217
+    Top = 144
+    Width = 219
     Height = 25
     Caption = 'Change file location'
     TabOrder = 11
-    OnClick = Button4Click
+    OnClick = BtnChangeFileLocationClick
   end
   object GroupBoxIcon: TGroupBox
     Left = 344
@@ -206,7 +206,7 @@ object FormDBOptions: TFormDBOptions
       Top = 40
       Width = 16
       Height = 16
-      OnClick = Button5Click
+      OnClick = BtnChangeIconClick
     end
     object Label8: TLabel
       Left = 8
@@ -215,14 +215,14 @@ object FormDBOptions: TFormDBOptions
       Height = 13
       Caption = 'Icon preview:'
     end
-    object Button5: TButton
+    object BtnChangeIcon: TButton
       Left = 8
       Top = 72
       Width = 169
       Height = 25
       Caption = 'Change icon'
       TabOrder = 0
-      OnClick = Button5Click
+      OnClick = BtnChangeIconClick
     end
   end
 end

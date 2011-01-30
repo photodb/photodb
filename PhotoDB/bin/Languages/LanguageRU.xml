@@ -1028,6 +1028,7 @@
 	<translate name="Gray" value="Серый" />
 	<translate name="Custom" value="Произвольный" />
 	<translate name="Value [%d]" value="Значение [%d]" />
+	<translate name="Save settings" value="Сохранить" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
@@ -1268,6 +1269,98 @@
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
 	<translate name="Can not check updates!" value="Не удалось проверить обновления!"/>
 	<translate name="Нажмите для перехода на" value="Доступна новая версия (%s)!"/>
+	<translate name="This program isn't activated." value="Эта программа не активирована.>"/>
 	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+  </scope>
+  <scope name="DBOptions">
+	<translate name="Change Collection Settings" value="Изменить опции БД"/>
+	<translate name="Collection Name" value="Имя БД"/>
+	<translate name="Description" value="Описание"/>
+	<translate name="Path to file" value="Путь к БД"/>
+	<translate name="Open file location" value="Открыть месторасположение файла"/>
+	<translate name="Change file location" value="Изменить расположение файла"/>
+	<translate name="Icon options" value="Настройки иконки"/>
+	<translate name="Choose icon" value="Выбрать иконку"/>
+	<translate name="Icon preview" value="Предпросмотр"/>
+	<translate name="Press this link to change the size and quality of previews using convertation wizard" value="Для изменения размеров предпросмотров и качества запустите мастер конвертации базы"/>
+	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
+	<translate name="This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert the database?" value="Выбранная база создана более ранней версией программы. Запустить диалог обновления базы?"/>
+	<translate name="Database file marked as &quot;Read only&quot;! Please, reset this attribute and try again!" value="Файл базы данных имеет атрибут &quot;Только чтение&quot;! Снимите атрибут и попробуйте снова"/>
+	<translate name="New collection" value="Новая БД"/>
+	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
+	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>
+	<translate name="DB Image size" value="Изображения в БД"/>
+	<translate name="JPEG quality" value="JPEG качество"/>
+  </scope>
+  <scope name="SelectDB">
+	<translate name="Change Collection Settings" value="Изменить опции БД"/>
+	<translate name="Icon preview" value="Предпросмотр"/>
+	<translate name="Description" value="Описание"/>
+	<translate name="Database file marked as &quot;Read only&quot;! Please, reset this attribute and try again!" value="Файл базы данных имеет атрибут &quot;Только чтение&quot;! Снимите атрибут и попробуйте снова"/>
+	<translate name="Back" value="Назад"/>
+	<translate name="Next" value="Далее"/>
+	<translate name="Finish" value="Финиш"/>
+	<translate name="Collection &quot;%s&quot; succesfully created!" value="База &quot;%s&quot; успешно создана"/>
+	<translate name="Panel preview size" value="Панель"/>
+	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
+	<translate name="Preview" value="Предпросмотр"/>
+	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>	
+	<translate name="Sets the compression quality of images stored in the database. Takes the value 1-100" value="Устанавливает качество сжатия изображения, хранимых в базе. Принимает значение 1-100"/>
+	<translate name="JPEG quality" value="JPEG качество"/>
+	<translate name="DB Image size" value="Изображения в БД"/>
+	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
+	<translate name="Display name" value="Отображаемое имя"/>
+	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
+	<translate name="Select file" value="Выбрать файл"/>	
+	<translate name="Choose\create\edit DB wizard" value="Диалог выбора\создания\редактирования БД"/>
+	<translate name="Choose an action from the list and click &quot;Next&quot; button" value="Выберите нужное действие из списка и нажмите на кнопку &quot;Далее&quot;" />
+	
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+  </scope>
+  <scope name="ConvertDB">
+	<translate name="Previous" value="Назад"/>
+	<translate name="Next" value="Далее"/>
+	<translate name="Finish" value="Финиш"/>
+	<translate name="Waiting" value="Ожидание"/>
+	<translate name="Panel preview size" value="Панель"/>
+	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
+	<translate name="Preview" value="Предпросмотр"/>
+	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>	
+	<translate name="Sets the compression quality of images stored in the database. Takes the value 1-100" value="Устанавливает качество сжатия изображения, хранимых в базе. Принимает значение 1-100"/>
+	<translate name="JPEG quality" value="JPEG качество"/>
+	<translate name="DB Image size" value="Изображения в БД"/>
+	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
+	
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+  </scope>
+  <scope name="ImportImages">
+	<translate name="Previous" value="Назад"/>
+	<translate name="Next" value="Далее"/>
+	<translate name="Delete" value="Удалить"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+	<translate name="Explorer" value="Проводник"/>
+  </scope>
+  <scope name="SplitDatabase">
+	<translate name="Select a file to split the database" value="Выбарите файл для разбивки базы"/>
+	<translate name="Copy" value="Копировать"/>
+	<translate name="Cut" value="Вырезать"/>
+	<translate name="Delete" value="Удалить"/>
+	<translate name="Explorer" value="Проводник"/>
+  </scope>
+  <scope name="Replace">
+	<translate name="Delete" value="Удалить"/>
+  </scope>
+  <scope name="Options">
+	<translate name="Backup" value="Резервное копирование"/>
+	<translate name="Set" value="Установить"/>
   </scope>
 </language>

@@ -556,13 +556,13 @@ object FormSelectDB: TFormSelectDB
       00FFFFFFFFFFFF8003FFFFFFFFFFFFE00FFFFFFFFFFFFFF01FFFFFFFFFFFFFFC
       7FFFFFFF}
   end
-  object Label1: TLabel
+  object LbStepInfo: TLabel
     Left = 136
     Top = 8
     Width = 361
     Height = 81
     AutoSize = False
-    Caption = 'Label1'
+    Caption = 'Step info'
     WordWrap = True
   end
   object PanelStep10: TPanel
@@ -588,8 +588,8 @@ object FormSelectDB: TFormSelectDB
     end
   end
   object NextButton: TButton
-    Left = 432
-    Top = 416
+    Left = 431
+    Top = 415
     Width = 91
     Height = 25
     Caption = 'Next'
@@ -1842,7 +1842,7 @@ object FormSelectDB: TFormSelectDB
         Height = 13
         Caption = 'Internal Name:'
       end
-      object Edit3: TEdit
+      object EdFileName: TEdit
         Left = 8
         Top = 40
         Width = 489
@@ -1850,7 +1850,7 @@ object FormSelectDB: TFormSelectDB
         ReadOnly = True
         TabOrder = 0
       end
-      object Edit4: TEdit
+      object EdDBType: TEdit
         Left = 8
         Top = 88
         Width = 585
@@ -1867,23 +1867,23 @@ object FormSelectDB: TFormSelectDB
         TabOrder = 2
         OnClick = Button5Click
       end
-      object Button2: TButton
+      object BtnChangeDBOptions: TButton
         Left = 8
         Top = 248
         Width = 225
         Height = 25
         Caption = 'Change DB Options'
         TabOrder = 3
-        OnClick = Button2Click
+        OnClick = BtnChangeDBOptionsClick
       end
-      object Button3: TButton
+      object BtnSelectFile: TButton
         Left = 504
         Top = 40
         Width = 89
         Height = 21
         Caption = 'Select'
         TabOrder = 4
-        OnClick = Button3Click
+        OnClick = BtnSelectFileClick
       end
       object WebLink1: TWebLink
         Left = 8

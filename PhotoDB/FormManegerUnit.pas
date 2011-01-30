@@ -61,7 +61,7 @@ const
 implementation
 
 uses Language, UnitCleanUpThread, ExplorerUnit, Searching, SlideShow,
-DBSelectUnit, uActivation, UnitUpdateDB, UnitInternetUpdate, uAbout,
+uActivation, UnitUpdateDB, UnitInternetUpdate, uAbout,
 UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
 UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
 

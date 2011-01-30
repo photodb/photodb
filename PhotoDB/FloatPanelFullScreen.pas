@@ -19,7 +19,6 @@ type
     ToolButton6: TToolButton;
     ToolButton7: TToolButton;
     DisabledImageList: TImageList;
-    DestroyTimer: TTimer;
     procedure ToolButton1Click(Sender: TObject);
     procedure ToolButton4Click(Sender: TObject);
     procedure ToolButton5Click(Sender: TObject);
@@ -29,43 +28,43 @@ type
     procedure DestroyTimerTimer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-
   private
     { Private declarations }
   public
-  FClosed : Boolean;
     { Public declarations }
+    FClosed : Boolean;
   end;
 
-  var
-    FloatPanel: TFloatPanel;
+var
+  FloatPanel: TFloatPanel;
 
 implementation
 
-uses SlideShowFullScreen, SlideShow, UnitDBkernel, Dolphin_DB;
+uses
+  SlideShowFullScreen, SlideShow, UnitDBKernel, Dolphin_DB;
 
-{$R *.dfm}
+  {$R *.dfm}
 
 procedure TFloatPanel.ToolButton1Click(Sender: TObject);
 begin
- Viewer.MTimer1Click(Sender);
+  Viewer.MTimer1Click(Sender);
 end;
 
 procedure TFloatPanel.ToolButton4Click(Sender: TObject);
 begin
- Viewer.Pause;
- Viewer.PreviousImageClick(Sender);
+  Viewer.Pause;
+  Viewer.PreviousImageClick(Sender);
 end;
 
 procedure TFloatPanel.ToolButton5Click(Sender: TObject);
 begin
- Viewer.Pause;
- Viewer.NextImageClick(Sender);
+  Viewer.Pause;
+  Viewer.NextImageClick(Sender);
 end;
 
 procedure TFloatPanel.ToolButton7Click(Sender: TObject);
 begin
- DestroyTimer.Enabled:=true;
+  Close;
 end;
 
 procedure TFloatPanel.RecreateImLists;
@@ -121,43 +120,38 @@ end;
 
 procedure TFloatPanel.FormCreate(Sender: TObject);
 begin
- FClosed:=false;
- RecreateImLists;
- if Length(CurrentInfo.ItemFileNames)<2 then
- begin
-  ToolButton4.Enabled:=false;
-  ToolButton5.Enabled:=false;
-  ToolButton1.Enabled:=false;
-  ToolButton2.Enabled:=false;
- end else
- begin
-  ToolButton4.Enabled:=True;
-  ToolButton5.Enabled:=True;
-  ToolButton1.Enabled:=True;
-  ToolButton2.Enabled:=True;
- end;
+  FClosed := false;
+  RecreateImLists;
+  if Length(CurrentInfo.ItemFileNames) < 2 then
+  begin
+    ToolButton4.Enabled := false;
+    ToolButton5.Enabled := false;
+    ToolButton1.Enabled := false;
+    ToolButton2.Enabled := false;
+  end
+  else
+  begin
+    ToolButton4.Enabled := true;
+    ToolButton5.Enabled := true;
+    ToolButton1.Enabled := true;
+    ToolButton2.Enabled := true;
+  end;
 end;
 
 procedure TFloatPanel.DestroyTimerTimer(Sender: TObject);
 begin
- FClosed:=true;
- DestroyTimer.Enabled:=false;
- Viewer.Exit1Click(Sender);
+  FClosed := true;
+  Viewer.Exit1Click(Sender);
 end;
 
-procedure TFloatPanel.FormCloseQuery(Sender: TObject;
-  var CanClose: Boolean);
+procedure TFloatPanel.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
- CanClose:=not FullScreenNow and not SlideShowNow;
+  CanClose := not Viewer.FullScreenNow and not Viewer.SlideShowNow;
 end;
 
 procedure TFloatPanel.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- if not FClosed then
- begin
-  FClosed:=true;
-  DestroyTimer.Enabled:=true;
- end;
+  //
 end;
 
 end.

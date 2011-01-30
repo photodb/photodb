@@ -190,6 +190,7 @@ begin
   finally
     F(NewIcon);
   end;
+  Result := True;
 end;
 
 constructor TSaveQueryThread.Create(CreateSuspennded: Boolean; Query: TDataSet; FileName: string; OwnerForm: TForm;

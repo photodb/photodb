@@ -32,7 +32,7 @@ object FloatPanel: TFloatPanel
     TabOrder = 0
     object ToolButton1: TToolButton
       Left = 0
-      Top = 2
+      Top = 0
       Caption = 'ToolButton1'
       Down = True
       Grouped = True
@@ -42,7 +42,7 @@ object FloatPanel: TFloatPanel
     end
     object ToolButton2: TToolButton
       Left = 27
-      Top = 2
+      Top = 0
       Caption = 'ToolButton2'
       Grouped = True
       ImageIndex = 1
@@ -51,7 +51,7 @@ object FloatPanel: TFloatPanel
     end
     object ToolButton3: TToolButton
       Left = 54
-      Top = 2
+      Top = 0
       Width = 8
       Caption = 'ToolButton3'
       ImageIndex = 2
@@ -59,21 +59,21 @@ object FloatPanel: TFloatPanel
     end
     object ToolButton4: TToolButton
       Left = 62
-      Top = 2
+      Top = 0
       Caption = 'ToolButton4'
       ImageIndex = 2
       OnClick = ToolButton4Click
     end
     object ToolButton5: TToolButton
       Left = 89
-      Top = 2
+      Top = 0
       Caption = 'ToolButton5'
       ImageIndex = 3
       OnClick = ToolButton5Click
     end
     object ToolButton6: TToolButton
       Left = 116
-      Top = 2
+      Top = 0
       Width = 8
       Caption = 'ToolButton6'
       ImageIndex = 4
@@ -81,7 +81,7 @@ object FloatPanel: TFloatPanel
     end
     object ToolButton7: TToolButton
       Left = 124
-      Top = 2
+      Top = 0
       Caption = 'ToolButton7'
       ImageIndex = 4
       OnClick = ToolButton7Click
@@ -98,12 +98,5 @@ object FloatPanel: TFloatPanel
   object DisabledImageList: TImageList
     Left = 72
     Top = 32
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 40
-    Top = 16
   end
 end

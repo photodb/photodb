@@ -7,11 +7,13 @@ uses
   GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel,
-  uGraphicUtils, uDBUtils;
+  uGraphicUtils, uDBUtils, uViewerTypes;
 
 type
   TViewerThread = class(TThread)
   private
+    { Private declarations }
+    FViewer: TViewerForm;
     FFileName: string;
     FRotate: Byte;
     FFullImage: Boolean;
@@ -30,7 +32,7 @@ type
     FUpdateInfo: Boolean;
     FPage: Word;
     FPages: Word;
-    { Private declarations }
+    TransparentColor : TColor;
   protected
     procedure Execute; override;
     procedure GetPassword;
@@ -45,7 +47,7 @@ type
     procedure TestThreadSynch;
     procedure UpdateRecord;
   public
-   constructor Create(FileName : String; Rotate : Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
+   constructor Create(Viewer: TViewerForm; FileName : String; Rotate : Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
    destructor Destroy; override;
   end;
 
@@ -55,7 +57,7 @@ uses UnitPasswordForm, SlideShow;
 
 { TViewerThread }
 
-constructor TViewerThread.Create(FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
+constructor TViewerThread.Create(Viewer: TViewerForm; FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
 begin
   inherited Create(False);
   FPage := Page;
@@ -66,6 +68,12 @@ begin
   FSID := SID;
   FIsForward := IsForward;
   FUpdateInfo := UpdateInfo;
+
+  if Viewer.FullScreenNow then
+    TransparentColor := 0
+  else
+    TransparentColor := ClBtnFace;
+
 end;
 
 destructor TViewerThread.Destroy;
@@ -77,19 +85,14 @@ end;
 procedure TViewerThread.Execute;
 var
   PNG : TPNGImage;
-  TransparentColor : TColor;
   GraphicClass : TGraphicClass;
 begin
+  FreeOnTerminate := True;
   FPages := 0;
   Priority := TpHigher;
   FInfo.ItemFileName := FFileName;
-  if FullScreenNow then
-    TransparentColor := 0
-  else
-    TransparentColor := ClBtnFace;
 
   FTransparent := False;
-  FreeOnTerminate := True;
   if not FileExistsEx(FFileName) then
   begin
     SetNOImageAsynch;
@@ -111,7 +114,6 @@ begin
 
  Graphic := GraphicClass.Create;
   try
-
 
  try
   if PassWord<>'' then
@@ -233,23 +235,25 @@ end;
 
 procedure TViewerThread.GetPasswordSynch;
 begin
- if not FullScreenNow then
- PassWord:=GetImagePasswordFromUser(FFileName);
+  if not FViewer.FullScreenNow then
+    PassWord := GetImagePasswordFromUser(FFileName);
 end;
 
 procedure TViewerThread.SetAnimatedImage;
 begin
- if Viewer<>nil then
- if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then begin
-  RealImageHeight:=FRealHeight;
-  RealImageWidth:=FRealWidth;
-  RealZoomInc:=FRealZoomScale;
-  if FUpdateInfo then
-  Viewer.UpdateInfo(FSID, FInfo);
-  Viewer.SetFullImageState(FFullImage,FBeginZoom,1,0);
-  Viewer.SetAnimatedImage(Graphic);
-  Pointer(Graphic) := nil;
- end;
+  if Viewer <> nil then
+    if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or
+      (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
+    begin
+      Viewer.RealImageHeight := FRealHeight;
+      Viewer.RealImageWidth := FRealWidth;
+      Viewer.RealZoomInc := FRealZoomScale;
+      if FUpdateInfo then
+        Viewer.UpdateInfo(FSID, FInfo);
+      Viewer.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
+      Viewer.SetAnimatedImage(Graphic);
+      Pointer(Graphic) := nil;
+    end;
 end;
 
 procedure TViewerThread.SetAnimatedImageAsynch;
@@ -276,17 +280,19 @@ end;
 
 procedure TViewerThread.SetNOImage;
 begin
- if Viewer<>nil then
- if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then begin
-  RealImageHeight:=FRealHeight;
-  RealImageWidth:=FRealWidth;
-  RealZoomInc:=FRealZoomScale;
-  if FUpdateInfo then
-  Viewer.UpdateInfo(FSID,FInfo);
-  Viewer.ImageExists:=false;
-  Viewer.SetFullImageState(FFullImage,FBeginZoom,1,0);
-  Viewer.LoadingFailed(FFileName);
- end;
+  if Viewer <> nil then
+    if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or
+      (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
+    begin
+      Viewer.RealImageHeight := FRealHeight;
+      Viewer.RealImageWidth := FRealWidth;
+      Viewer.RealZoomInc := FRealZoomScale;
+      if FUpdateInfo then
+        Viewer.UpdateInfo(FSID, FInfo);
+      Viewer.ImageExists := False;
+      Viewer.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
+      Viewer.LoadingFailed(FFileName);
+    end;
 end;
 
 procedure TViewerThread.SetNOImageAsynch;
@@ -313,17 +319,20 @@ end;
 
 procedure TViewerThread.SetStaticImage;
 begin
-  if Viewer<>nil then
-  if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
-  begin
-    RealImageHeight := FRealHeight;
-    RealImageWidth := FRealWidth;
-    RealZoomInc := FRealZoomScale;
-    if FUpdateInfo then
-      Viewer.UpdateInfo(FSID, FInfo);
-    Viewer.SetFullImageState(FFullImage, FBeginZoom, fPages, fPage);
-    Viewer.SetStaticImage(Bitmap, FTransparent);
-  end else Bitmap.Free;
+  if Viewer <> nil then
+    if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or
+      (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
+    begin
+      Viewer.RealImageHeight := FRealHeight;
+      Viewer.RealImageWidth := FRealWidth;
+      Viewer.RealZoomInc := FRealZoomScale;
+      if FUpdateInfo then
+        Viewer.UpdateInfo(FSID, FInfo);
+      Viewer.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
+      Viewer.SetStaticImage(Bitmap, FTransparent);
+    end
+    else
+      Bitmap.Free;
 end;
 
 procedure TViewerThread.SetStaticImageAsynch;

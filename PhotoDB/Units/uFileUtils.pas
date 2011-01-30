@@ -288,6 +288,8 @@ end;
 function GetAppDataDirectory: string;
 begin
   Result := GetAppDataDir + PHOTO_DB_APPDATA_DIRECTORY;
+  if not FileExistsSafe(Result) then
+    CreateDirA(Result);
 end;
 
 function GetFileDateTime(FileName: string): TDateTime;
@@ -305,8 +307,7 @@ begin
   if Length(Trim(Folder)) < 2 then
     Exit;
 
-  if Folder[Length(Folder)] <> '\' then
-    Folder := Folder + '\';
+  Folder := IncludeTrailingBackslash(Folder);
   Found := FindFirst(Folder + '*.*', FaAnyFile, SearchRec);
   while Found = 0 do
   begin

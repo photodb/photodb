@@ -2,7 +2,7 @@ unit uLogger;
 
 interface
 
-uses Windows, Classes, SysUtils, uFileUtils, SyncObjs;
+uses Windows, Classes, SysUtils, uFileUtils, SyncObjs, uMemory;
 
 {$DEFINE _EVENTLOG}
 
@@ -47,8 +47,8 @@ end;
 destructor TLogger.Destroy;
 begin        
 {$IFDEF LOG}
-  FFile.Free;
-  FSync.Free;
+  F(FFile);
+  F(FSync);
 {$ENDIF LOG}
   inherited;
 end;
