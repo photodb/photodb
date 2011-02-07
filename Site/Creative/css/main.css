@@ -283,11 +283,17 @@ input.standartBtn:hover {
 
 .row:hover {
 	background:url(../img/row-bg.png) repeat;
+	border-color: #FF8080; 
+	border-style: dashed;
+	border-width: thin;
 }
 
 .row {
 	padding: 5px 0;
-	width: 550px;
+	width: 700px;
+	border-color: #ffffff; 
+	border-style: dashed;
+	border-width: thin;
 }
 
 .row label{
