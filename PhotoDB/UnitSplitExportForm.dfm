@@ -161,7 +161,7 @@ object SplitExportForm: TSplitExportForm
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 1
-        object Edit1: TWatermarkedEdit
+        object EdDBName: TWatermarkedEdit
           Left = 8
           Top = 3
           Width = 1200
@@ -248,7 +248,7 @@ object SplitExportForm: TSplitExportForm
     Left = 336
     Top = 72
   end
-  object PopupMenu1: TPopupMenu
+  object PmMethod: TPopupMenu
     Left = 176
     Top = 152
     object Copy1: TMenuItem
@@ -267,12 +267,5 @@ object SplitExportForm: TSplitExportForm
       Caption = 'Delete'
       OnClick = Delete1Click
     end
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = DestroyTimerTimer
-    Left = 136
-    Top = 8
   end
 end

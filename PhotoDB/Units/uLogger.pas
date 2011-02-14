@@ -2,7 +2,7 @@ unit uLogger;
 
 interface
 
-uses Windows, Classes, SysUtils, uFileUtils, SyncObjs, uMemory;
+uses Windows, Classes, SysUtils, uFileUtils, SyncObjs, uMemory, Dialogs;
 
 {$DEFINE _EVENTLOG}
 
@@ -40,7 +40,12 @@ constructor TLogger.Create;
 begin
 {$IFDEF LOG}
   FSync := TCriticalSection.Create;
-  FFile := TFileStream.Create(GetAppDataDirectory + '\EventLog' + FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) +'.txt', fmCreate);
+  try
+    FFile := TFileStream.Create(GetAppDataDirectory + '\EventLog' + FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) + '.txt', fmCreate);
+  except
+    on e : Exception do
+      ShowMessage(e.Message);
+  end;
 {$ENDIF LOG}
 end;
 

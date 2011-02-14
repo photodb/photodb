@@ -170,8 +170,8 @@ begin
     Button1.Caption := L('Next');
     Label4.Caption := TEXT_MES_CONVERTING_SECOND_STEP;
     Label6.Caption := TEXT_MES_CURRENT_ACTION + ':';
-    Button4.Caption := TEXT_MES_START_NOW;
-    BtnBreak.Caption := TEXT_MES_BREAK_BUTTON;
+    Button4.Caption := L('Start');
+    BtnBreak.Caption := L('Break');
     BtnFinish.Caption := L('Finish');
     Label7.Caption := L('Waiting');
     Label8.Caption := TEXT_MES_CONVERTING_IMAGE_SIZES_STEP;

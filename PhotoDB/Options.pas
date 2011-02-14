@@ -655,7 +655,7 @@ procedure TOptionsForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption := TEXT_MES_OPTIONS;
+    Caption := L('Options');
     TsGeneral.Caption := L('General');
     TsExplorer.Caption := L('Explorer'); ;
     TsView.Caption := L('Slide show'); ;
@@ -702,8 +702,8 @@ begin
     Label19.Caption := TEXT_MES_ICON;
     CheckBox16.Caption := TEXT_MES_USE_SUBMENU;
     Button14.Caption := TEXT_MES_ADD;
-    Button13.Caption := TEXT_MES_SAVE;
-    Button16.Caption := TEXT_MES_SAVE;
+    Button13.Caption := L('Save');
+    Button16.Caption := L('Save');
     Label24.Caption := TEXT_MES_IMAGE_PRIVIEW;
     Label21.Caption := TEXT_MES_USER_SUBMENU_CAPTION;
     Label23.Caption := TEXT_MES_USER_SUBMENU_ICON;
@@ -741,11 +741,11 @@ begin
     PlacesListView.Columns[0].Caption := TEXT_MES_PLACES;
 
     Additem1.Caption := TEXT_MES_NEW_PLACE;
-    DeleteItem1.Caption := TEXT_MES_DELETE_ITEM;
+    DeleteItem1.Caption := L('Delete');
     Up1.Caption := TEXT_MES_ITEM_UP;
     Down1.Caption := TEXT_MES_ITEM_DOWN;
     Button23.Caption := TEXT_MES_ICON;
-    Rename1.Caption := TEXT_MES_RENAME;
+    Rename1.Caption := L('Rename');
     CheckBox30.Caption := TEXT_MES_ALLOW_VIRTUAL_CURSOR_IN_EDITOR;
 
     Default1.Caption := TEXT_MES_DEFAULT;

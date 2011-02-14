@@ -8,34 +8,36 @@ uses
 
 type
   TImportProgressForm = class(TDBForm)
-    DmProgress1: TDmProgress;
+    PbMain: TDmProgress;
     Label13: TLabel;
     ActionLabel: TLabel;
     Label14: TLabel;
     StatusLabel: TLabel;
-    Button1: TButton;
-    Button2: TButton;
-    DmProgress2: TDmProgress;
+    BtnStop: TButton;
+    BtnPause: TButton;
+    PbItemsAdded: TDmProgress;
     Label1: TLabel;
     Label2: TLabel;
-    DmProgress3: TDmProgress;
+    PbItemsUpdated: TDmProgress;
     Label3: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnPauseClick(Sender: TObject);
+    procedure BtnStopClick(Sender: TObject);
   private
     { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
-  procedure SetActionText(Value : String);
-  procedure SetStatusText(Value : String);
-  procedure SetMaxRecords(Value : Integer);
-  procedure AddNewRecord;
-  procedure AddUpdatedRecord;
-  procedure SetProgress(Value : Integer);
-  procedure Done(Sender : Tobject);
-  Procedure LoadLanguage;
     { Public declarations }
+    procedure SetActionText(Value: String);
+    procedure SetStatusText(Value: String);
+    procedure SetMaxRecords(Value: Integer);
+    procedure AddNewRecord;
+    procedure AddUpdatedRecord;
+    procedure SetProgress(Value: Integer);
+    procedure Done(Sender: TObject);
+    Procedure LoadLanguage;
   end;
 
 var
@@ -49,87 +51,98 @@ uses UnitCmpDB, Language, FormManegerUnit;
 
 procedure TImportProgressForm.SetActionText(Value: String);
 begin
- ActionLabel.Caption:=Value;
+  ActionLabel.Caption := Value;
 end;
 
 procedure TImportProgressForm.SetMaxRecords(Value: Integer);
 begin
- DmProgress1.MaxValue:=Value;
- DmProgress2.MaxValue:=Value;
- DmProgress3.MaxValue:=Value;
+  PbMain.MaxValue := Value;
+  PbItemsAdded.MaxValue := Value;
+  PbItemsUpdated.MaxValue := Value;
 end;
 
 procedure TImportProgressForm.SetStatusText(Value: String);
 begin
- StatusLabel.Caption:=Value;
+  StatusLabel.Caption := Value;
 end;
 
 procedure TImportProgressForm.FormCreate(Sender: TObject);
 begin
-// DBKernel.RegisterForm(ImportProgressForm);
- FormManager.RegisterMainForm(self);
- StatusLabel.Caption:=L('Waiting')+'...';
- ActionLabel.Caption:=L('Waiting')+'...';
- DmProgress1.MaxValue:=1;
- DmProgress2.MaxValue:=1;
- DmProgress3.MaxValue:=1;
- DmProgress1.Position:=0;
- DmProgress2.Position:=0;
- DmProgress3.Position:=0;
- LoadLanguage;
+  FormManager.RegisterMainForm(self);
+  StatusLabel.Caption := L('Waiting') + '...';
+  ActionLabel.Caption := L('Waiting') + '...';
+  PbMain.MaxValue := 1;
+  PbItemsAdded.MaxValue := 1;
+  PbItemsUpdated.MaxValue := 1;
+  PbMain.Position := 0;
+  PbItemsAdded.Position := 0;
+  PbItemsUpdated.Position := 0;
+  LoadLanguage;
 end;
 
 procedure TImportProgressForm.AddNewRecord;
 begin
- DmProgress2.Position:=DmProgress2.Position+1;
+  PbItemsAdded.Position := PbItemsAdded.Position + 1;
 end;
 
 procedure TImportProgressForm.AddUpdatedRecord;
 begin
- DmProgress3.Position:=DmProgress3.Position+1;
+  PbItemsUpdated.Position := PbItemsUpdated.Position + 1;
 end;
 
 procedure TImportProgressForm.SetProgress(Value: Integer);
 begin
- DmProgress1.Position:=Value;
+  PbMain.Position := Value;
 end;
 
 procedure TImportProgressForm.FormDestroy(Sender: TObject);
 begin
- FormManager.UnRegisterMainForm(self);
-// DBKernel.UnRegisterForm(ImportProgressForm);
+  FormManager.UnRegisterMainForm(self);
 end;
 
-procedure TImportProgressForm.Button2Click(Sender: TObject);
+function TImportProgressForm.GetFormID: string;
 begin
- UnitCmpDB.Paused:=not UnitCmpDB.Paused;
- if UnitCmpDB.Paused then Button2.Caption:=TEXT_MES_UNPAUSE else Button2.Caption:=TEXT_MES_PAUSE;
+  Result := 'ImportDB';
 end;
 
-procedure TImportProgressForm.Button1Click(Sender: TObject);
+procedure TImportProgressForm.BtnPauseClick(Sender: TObject);
 begin
- UnitCmpDB.Terminated_:=True;
+  UnitCmpDB.Paused := not UnitCmpDB.Paused;
+  if UnitCmpDB.Paused then
+    BtnPause.Caption := TEXT_MES_UNPAUSE
+  else
+    BtnPause.Caption := TEXT_MES_PAUSE;
 end;
 
-procedure TImportProgressForm.Done(Sender: Tobject);
+procedure TImportProgressForm.BtnStopClick(Sender: TObject);
 begin
- Self.Close;
+  UnitCmpDB.Terminated_ := True;
+end;
+
+procedure TImportProgressForm.Done(Sender: TObject);
+begin
+  self.Close;
 end;
 
 procedure TImportProgressForm.LoadLanguage;
 begin
- Caption:=TEXT_MES_IMPORTING_CAPTION;
- DmProgress1.Text:=TEXT_MES_PROGRESS_PR;
- DmProgress2.Text:=TEXT_MES_RECS_ADDED_PR;
- DmProgress3.Text:=TEXT_MES_RECS_UPDATED_PR;
- Button2.Caption:=TEXT_MES_PAUSE;
- Button1.Caption:=TEXT_MES_STOP;
- Label3.Caption:=TEXT_MES_STATUS;
- Label14.Caption:=TEXT_MES_STATUS+':';
- Label13.Caption:=TEXT_MES_CURRENT_ACTION+':';
- ActionLabel.Caption:=TEXT_MES_ACTIONA;
- Label1.Caption:=TEXT_MES_RECORDS_ADDED+':';
- Label2.Caption:=TEXT_MES_RECORDS_UPDATED+':';
+  BeginTranslate;
+  try
+    Caption := L('Import collection');
+    PbMain.Text := L('Progress... (&amp;%%)');
+    PbItemsAdded.Text := TEXT_MES_RECS_ADDED_PR;
+    PbItemsUpdated.Text := TEXT_MES_RECS_UPDATED_PR;
+    BtnPause.Caption := TEXT_MES_PAUSE;
+    BtnStop.Caption := L('Stop');
+    Label3.Caption := TEXT_MES_STATUS;
+    Label14.Caption := TEXT_MES_STATUS + ':';
+    Label13.Caption := TEXT_MES_CURRENT_ACTION + ':';
+    ActionLabel.Caption := TEXT_MES_ACTIONA;
+    Label1.Caption := TEXT_MES_RECORDS_ADDED + ':';
+    Label2.Caption := TEXT_MES_RECORDS_UPDATED + ':';
+  finally
+    EndTranslate;
+  end;
 end;
 
 end.

@@ -5,7 +5,8 @@ interface
 uses
   Classes, Messages, Forms, Dolphin_DB, RawImage, SysUtils,
   Language, UnitDBDeclare, DateUtils, UnitDBCommon,
-  CCR.Exif, uMemory, uDBBaseTypes, uFileUtils;
+  CCR.Exif, uMemory, uDBBaseTypes, uFileUtils,
+  uTranslate;
 
 type
   TScanImportPhotosThreadOptions = record
@@ -212,7 +213,7 @@ begin
   if IsEqualGUID(FSID, GetPhotosFormSID) then
   begin
     (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.MaxValue:=intParam;
-    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text:=Language.TEXT_MES_PROGRESS_PR;
+    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text:= TA('Progress... (&amp;%%)');
   end;
 end;
 

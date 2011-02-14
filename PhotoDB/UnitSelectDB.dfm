@@ -1796,7 +1796,7 @@ object FormSelectDB: TFormSelectDB
     Left = 0
     Top = 112
     Width = 609
-    Height = 305
+    Height = 298
     BevelOuter = bvNone
     TabOrder = 9
     Visible = False
@@ -1858,7 +1858,7 @@ object FormSelectDB: TFormSelectDB
         ReadOnly = True
         TabOrder = 1
       end
-      object Button1: TButton
+      object BtnChooseIcon: TButton
         Left = 8
         Top = 160
         Width = 225

@@ -172,7 +172,7 @@ begin
     Label2.Caption := TEXT_MES_IMPORTING_IMAGES_SECOND_STEP;
 
     Label6.Caption := TEXT_MES_IMPORTING_IMAGES_THIRD_STEP;
-    Button7.Caption := TEXT_MES_START_NOW;
+    Button7.Caption := L('Start');
     ComboBox1.Clear;
     ComboBox1.Items.Add(TEXT_MES_AKS_ME);
     ComboBox1.Items.Add(TEXT_MES_ADD_ALL);
@@ -316,30 +316,38 @@ end;
 
 procedure TFormImportingImages.Button6Click(Sender: TObject);
 var
-  SaveDialog : DBSaveDialog;
-  FileName : string;
+  SaveDialog: DBSaveDialog;
+  FileName: string;
 begin
-  SaveDialog:=DBSaveDialog.Create;
-  SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
-  SaveDialog.FilterIndex:=0;
+  SaveDialog := DBSaveDialog.Create;
+  try
+    SaveDialog.Filter := L('PhotoDB Files (*.photodb)|*.photodb');
+    SaveDialog.FilterIndex := 0;
 
- if SaveDialog.Execute then
- begin
-  FileName:=SaveDialog.FileName;
+    if SaveDialog.Execute then
+    begin
+      FileName := SaveDialog.FileName;
 
-  if SaveDialog.GetFilterIndex=2 then
-  if GetExt(FileName)<>'DB' then FileName:=FileName+'.db';
-  if SaveDialog.GetFilterIndex=1 then
-  if GetExt(FileName)<>'PHOTODB' then FileName:=FileName+'.photodb';
+      if SaveDialog.GetFilterIndex = 2 then
+        if GetExt(FileName) <> 'DB' then
+          FileName := FileName + '.db';
+      if SaveDialog.GetFilterIndex = 1 then
+        if GetExt(FileName) <> 'PHOTODB' then
+          FileName := FileName + '.photodb';
 
-  if FileExists(FileName) and (ID_OK<>MessageBoxDB(Handle,Format(TEXT_MES_FILE_EXISTS_1,[FileName]),L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING)) then exit;
-  begin
-   DbKernel.CreateDBbyName(FileName);
-   DBTestOK:=DBKernel.TestDB(FileName);
-   Edit3.Text:=FileName;
+      if FileExists(FileName) and (ID_OK <> MessageBoxDB(Handle,
+          Format(L('File &quot;%s&quot; already exists! $nl$Replace?'), [FileName]), L('Warning'),
+          TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
+        Exit;
+      begin
+        DBKernel.CreateDBbyName(FileName);
+        DBTestOK := DBKernel.TestDB(FileName);
+        Edit3.Text := FileName;
+      end;
+    end;
+  finally
+    F(SaveDialog);
   end;
- end;
- SaveDialog.Free;
 end;
 
 procedure TFormImportingImages.CheckBox1Click(Sender: TObject);

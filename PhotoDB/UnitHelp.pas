@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmMemo, ImButton, ExtCtrls, Menus, clipbrd, Dolphin_DB,
-  GraphicsBaseTypes, uMemory;
+  GraphicsBaseTypes, uMemory, uTranslate;
 
 type
   TCanHelpCloseProcedure = procedure(Sender: TObject; var CanClose: Boolean) of object;
@@ -77,8 +77,6 @@ procedure DoHelpHintCallBackOnCanClose(Caption, HelpText: string; MyPoint: TPoin
   CallBack: TNotifyEvent; Text: string; OnCanClose: TCanHelpCloseProcedure);
 
 implementation
-
-uses Language;
 
 {$R *.dfm}
 
@@ -301,7 +299,7 @@ end;
 
 procedure THelpPopup.FormCreate(Sender: TObject);
 begin
-  Copy1.Caption := TEXT_MES_COPY;
+  Copy1.Caption := TA('Copy', 'Help');
   FCallBack := nil;
   FOnCanCloseMessage := True;
   FNextButtonVisible := False;

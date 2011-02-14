@@ -109,7 +109,7 @@ begin
    Edit2.Text:= OpenDialog1.FileName;
    Label3.Caption:=Format(TEXT_MES_ADD_DB_RECS_FORMAT,[IntToStr(GetRecordsCount(OpenDialog1.FileName))]);
   end else
-  edit2.Text:=TEXT_MES_NO_DB_FILE;
+  edit2.Text:=L('No file'); //TODO: in XML
  end;
  CheckEnabled;
 end;

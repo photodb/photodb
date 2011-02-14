@@ -58,7 +58,7 @@ object ExportForm: TExportForm
     TabOrder = 1
     OnClick = Button1Click
   end
-  object CheckBox1: TCheckBox
+  object CbPrivate: TCheckBox
     Left = 8
     Top = 32
     Width = 305
@@ -66,7 +66,7 @@ object ExportForm: TExportForm
     Caption = 'Export Private Records'
     TabOrder = 2
   end
-  object CheckBox2: TCheckBox
+  object CbRating: TCheckBox
     Left = 8
     Top = 48
     Width = 305
@@ -74,7 +74,7 @@ object ExportForm: TExportForm
     Caption = 'Export Only Rating Records'
     TabOrder = 3
   end
-  object CheckBox3: TCheckBox
+  object CbWithoutFiles: TCheckBox
     Left = 8
     Top = 64
     Width = 305
@@ -82,7 +82,7 @@ object ExportForm: TExportForm
     Caption = 'Export Records Without Files'
     TabOrder = 4
   end
-  object DmProgress1: TDmProgress
+  object PbMain: TDmProgress
     Left = 8
     Top = 160
     Width = 305
@@ -100,16 +100,16 @@ object ExportForm: TExportForm
     View = dm_pr_cool
     Inverse = False
   end
-  object Button2: TButton
+  object BtnStart: TButton
     Left = 208
     Top = 184
     Width = 107
     Height = 17
     Caption = 'Begin Export'
     TabOrder = 6
-    OnClick = Button2Click
+    OnClick = BtnStartClick
   end
-  object CheckBox4: TCheckBox
+  object CbGroups: TCheckBox
     Left = 8
     Top = 80
     Width = 305
@@ -117,16 +117,16 @@ object ExportForm: TExportForm
     Caption = 'Export Groups'
     TabOrder = 7
   end
-  object CheckBox5: TCheckBox
+  object CbCrypted: TCheckBox
     Left = 7
     Top = 96
     Width = 305
     Height = 17
     Caption = 'Export Crypted'
     TabOrder = 8
-    OnClick = CheckBox5Click
+    OnClick = CbCryptedClick
   end
-  object CheckBox6: TCheckBox
+  object CbCryptedPass: TCheckBox
     Left = 7
     Top = 112
     Width = 305
@@ -135,7 +135,7 @@ object ExportForm: TExportForm
     Enabled = False
     TabOrder = 9
   end
-  object Button3: TButton
+  object BtnBreak: TButton
     Left = 96
     Top = 184
     Width = 105
@@ -143,7 +143,7 @@ object ExportForm: TExportForm
     Caption = 'Break'
     Enabled = False
     TabOrder = 10
-    OnClick = Button3Click
+    OnClick = BtnBreakClick
   end
   object SaveDialog1: TSaveDialog
     Filter = 'PhotoDB Files (*.photodb)|*.photodb'
@@ -154,7 +154,7 @@ object ExportForm: TExportForm
     Enabled = False
     Interval = 1
     OnTimer = DestroyTimerTimer
-    Left = 256
-    Top = 48
+    Left = 224
+    Top = 96
   end
 end

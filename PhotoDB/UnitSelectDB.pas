@@ -58,7 +58,7 @@ type
     EdDBType: TEdit;
     Label14: TLabel;
     ImageIconPreview2: TImage;
-    Button1: TButton;
+    BtnChooseIcon: TButton;
     BtnChangeDBOptions: TButton;
     BtnSelectFile: TButton;
     SelectDBFileNameEdit: TEdit;
@@ -189,37 +189,37 @@ begin
     BackButton.Caption := L('Back');
     NextButton.Caption := L('Next');
     FinishButton.Caption := L('Finish');
-    GroupBox1.Caption := TEXT_MES_DB_NAME_AND_LOCATION;
-    Label2.Caption := TEXT_MES_DB_ENTER_NEW_DB_NAME;
-    Label3.Caption := TEXT_MES_CHOOSE_NEW_DB_PATH;
+    GroupBox1.Caption := L('File name and location');
+    Label2.Caption := L('Select name for new collection') + ':';
+    Label3.Caption := L('Choose file for new collection') + ':';
     Button4.Caption := L('Select file');
     Label4.Caption := L('Icon preview') + ':';
     Button5.Caption := L('Choose icon');
-    Edit1.Text := TEXT_MES_DB_NAME_PATTERN;
-    Edit2.Text := TEXT_MES_NO_DB_FILE;
-    Label5.Caption := TEXT_MES_OPTIONS + ':';
-    Label6.Caption := TEXT_MES_VALUE + ':';
+    Edit1.Text := L('New collection');
+    Edit2.Text := L('No file');
+    Label5.Caption := L('Options') + ':';
+    Label6.Caption := L('Value') + ':';
 
-    GroupBox2.Caption := TEXT_MES_SELECT_DB;
-    Label7.Caption := TEXT_MES_SELECT_DB_FROM_LIST + ':';
+    GroupBox2.Caption := L('Select collection');
+    Label7.Caption := L('Select collection from list') + ':';
 
-    CheckBox1.Caption := TEXT_MES_USE_AS_DEFAULT_DB;
-    CheckBox2.Caption := TEXT_MES_USE_AS_DEFAULT_DB;
+    CheckBox1.Caption := L('Use as default collection');
+    CheckBox2.Caption := L('Use as default collection');
 
-    GroupBox3.Caption := TEXT_MES_SELECT_FILE_ON_HARD_DISK;
-    Label9.Caption := TEXT_MES_FILE_NAME;
-    Label11.Caption := TEXT_MES_DB_TYPE;
+    GroupBox3.Caption := L('Select an file');
+    Label9.Caption := L('File name') + ':';
+    Label11.Caption := L('DB Type') + ':';
     Label14.Caption := L('Icon preview') + ':';
-    Button1.Caption := L('Choose icon');
+    BtnChooseIcon.Caption := L('Choose icon');
     BtnChangeDBOptions.Caption := L('Change Collection Settings');
     BtnSelectFile.Caption := L('Select file');
     Label15.Caption := L('Description');
 
-    CheckBox3.Caption := TEXT_MES_ADD_DEFAULT_GROUPS_TO_DB;
+    CheckBox3.Caption := L('Add standard groups');
 
     Label16.Caption := L('Display name');
 
-    InternalNameEdit.Text := DBKernel.NewDBName(TEXT_MES_DB_NAME_PATTERN);
+    InternalNameEdit.Text := DBKernel.NewDBName(L('New collection'));
 
     WebLink1.Text := L('Press this link to change the size and quality of previews using convertation wizard');
   finally
@@ -308,47 +308,49 @@ end;
 
 procedure TFormSelectDB.BackButtonClick(Sender: TObject);
 begin
- DoSelectStep(GetPrevStep(Step));
+  DoSelectStep(GetPrevStep(Step));
 end;
 
 procedure TFormSelectDB.NextButtonClick(Sender: TObject);
 begin
- if Step=30 then
- begin
-  WriteNewDBOptions;
-  DoSelectStep(40);
- end;
- if Step=20 then
- begin
-  if Edit2.Text<>TEXT_MES_NO_DB_FILE then
+  if Step = 30 then
   begin
-   FDBFile.FileName:=Edit2.Text;
-   FDBFile.Name:=Edit1.Text;
-   DoSelectStep(30);
-  end else
+    WriteNewDBOptions;
+    DoSelectStep(40);
+  end;
+  if Step = 20 then
   begin
-   MessageBoxDB(Handle,TEXT_MES_NO_DB_FILE_SELECTED,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
-   Button4Click(Sender);
+    if Edit2.Text <> L('No file') then
+    begin
+      FDBFile.FileName := Edit2.Text;
+      FDBFile.Name := Edit1.Text;
+      DoSelectStep(30);
+    end else
+    begin
+      MessageBoxDB(Handle, L(
+          'File isn''t selected! Please, select an file and try again.'),
+        L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Button4Click(Sender);
+    end;
   end;
- end;
- if Step=1 then
- begin
-  Case RadioGroup1.ItemIndex of
-  0:
-   begin
-    DoSelectStep(20);
-   end;
-  1:
-   begin
-    DoSelectStep(22);
-   end;
-  2:
-   begin
-    if fOptions=SELECT_DB_OPTION_GET_DB_OR_EXISTS then
-    DoSelectStep(21);
-   end;
+  if Step = 1 then
+  begin
+    Case RadioGroup1.ItemIndex of
+      0:
+        begin
+          DoSelectStep(20);
+        end;
+      1:
+        begin
+          DoSelectStep(22);
+        end;
+      2:
+        begin
+          if FOptions = SELECT_DB_OPTION_GET_DB_OR_EXISTS then
+            DoSelectStep(21);
+        end;
+    end;
   end;
- end;
 end;
 
 procedure TFormSelectDB.Button5Click(Sender: TObject);
@@ -431,61 +433,62 @@ end;
 
 procedure TFormSelectDB.ListBox1Click(Sender: TObject);
 
-procedure FillComboByCompressionRange;
-begin
-  ComboBox2.Items.Clear;
-  ComboBox2.Items.Add('25');
-  ComboBox2.Items.Add('30');
-  ComboBox2.Items.Add('40');
-  ComboBox2.Items.Add('50');
-  ComboBox2.Items.Add('60');
-  ComboBox2.Items.Add('75');
-  ComboBox2.Items.Add('80');
-  ComboBox2.Items.Add('85');
-  ComboBox2.Items.Add('90');
-  ComboBox2.Items.Add('95');
-  ComboBox2.Items.Add('100');
-end;
+  procedure FillComboByCompressionRange;
+  begin
+    ComboBox2.Items.Clear;
+    ComboBox2.Items.Add('25');
+    ComboBox2.Items.Add('30');
+    ComboBox2.Items.Add('40');
+    ComboBox2.Items.Add('50');
+    ComboBox2.Items.Add('60');
+    ComboBox2.Items.Add('75');
+    ComboBox2.Items.Add('80');
+    ComboBox2.Items.Add('85');
+    ComboBox2.Items.Add('90');
+    ComboBox2.Items.Add('95');
+    ComboBox2.Items.Add('100');
+  end;
 
-procedure FillComboByImageSizeRange;
-begin
-  ComboBox2.Items.Clear;
-  ComboBox2.Items.Add('50');
-  ComboBox2.Items.Add('75');
-  ComboBox2.Items.Add('100');
-  ComboBox2.Items.Add('150');
-  ComboBox2.Items.Add('200');
-  ComboBox2.Items.Add('300');
-end;
+  procedure FillComboByImageSizeRange;
+  begin
+    ComboBox2.Items.Clear;
+    ComboBox2.Items.Add('50');
+    ComboBox2.Items.Add('75');
+    ComboBox2.Items.Add('100');
+    ComboBox2.Items.Add('150');
+    ComboBox2.Items.Add('200');
+    ComboBox2.Items.Add('300');
+  end;
 
 begin
- Case ListBox1.ItemIndex of
-  0:
-   begin
-    Label13.Caption:=L('Sets the compression quality of images stored in the database. Takes the value 1-100');
-    FillComboByCompressionRange;
-    ComboBox2.Text:=IntToStr(ImageOptions.DBJpegCompressionQuality);
-   end;
-  1:
-   begin
-    Label13.Caption:=L('Default thumbnail size in database');
-    FillComboByImageSizeRange;
-    ComboBox2.Text:=IntToStr(ImageOptions.ThSize);
-   end;
-  2:
-   begin
-    Label13.Caption:=L('Size of the images in the panel by default');
-    FillComboByImageSizeRange;
-    ComboBox2.Text:=IntToStr(ImageOptions.ThSizePanelPreview);
-   end;
-  3:
-   begin
-    Label13.Caption:=L('Image preview size');
-    FillComboByImageSizeRange;
-    ComboBox2.Text:=IntToStr(ImageOptions.ThHintSize);
-   end;
- end;
- ComboBox2Change(Sender);
+  Case ListBox1.ItemIndex of
+    0:
+      begin
+        Label13.Caption := L(
+          'Sets the compression quality of images stored in the database. Takes the value 1-100');
+        FillComboByCompressionRange;
+        ComboBox2.Text := IntToStr(ImageOptions.DBJpegCompressionQuality);
+      end;
+    1:
+      begin
+        Label13.Caption := L('Default thumbnail size in database');
+        FillComboByImageSizeRange;
+        ComboBox2.Text := IntToStr(ImageOptions.ThSize);
+      end;
+    2:
+      begin
+        Label13.Caption := L('Size of the images in the panel by default');
+        FillComboByImageSizeRange;
+        ComboBox2.Text := IntToStr(ImageOptions.ThSizePanelPreview);
+      end;
+    3:
+      begin
+        Label13.Caption := L('Image preview size');
+        FillComboByImageSizeRange;
+        ComboBox2.Text := IntToStr(ImageOptions.ThHintSize);
+      end;
+  end;
+  ComboBox2Change(Sender);
 end;
 
 procedure TFormSelectDB.ComboBox2Change(Sender: TObject);
@@ -565,17 +568,21 @@ end;
 
 procedure TFormSelectDB.WriteNewDBOptions;
 begin
- Memo1.Clear;
- Memo1.Lines.Add(TEXT_MES_NEW_DB_WILL_CREATE_WITH_THIS_OPTIONS);
- Memo1.Lines.Add('');
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_NAME_FORMAT,[FDBFile.Name]));
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_PATH_FORMAT,[FDBFile.FileName]));
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_ICON_FORMAT,[FDBFile.Icon]));
- Memo1.Lines.Add('');
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_SIZE_FORMAT,[ImageOptions.ThSize]));
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_QUALITY_FORMAT,[ImageOptions.DBJpegCompressionQuality]));
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_HINT_FORMAT,[ImageOptions.ThHintSize]));
- Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_PANEL_PREVIEW,[ImageOptions.ThSizePanelPreview]));
+  Memo1.Clear;
+  Memo1.Lines.Add(TEXT_MES_NEW_DB_WILL_CREATE_WITH_THIS_OPTIONS);
+  Memo1.Lines.Add('');
+  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_NAME_FORMAT, [FDBFile.Name]));
+  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_PATH_FORMAT, [FDBFile.FileName]));
+  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_ICON_FORMAT, [FDBFile.Icon]));
+  Memo1.Lines.Add('');
+  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_SIZE_FORMAT,
+      [ImageOptions.ThSize]));
+  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_QUALITY_FORMAT,
+      [ImageOptions.DBJpegCompressionQuality]));
+  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_HINT_FORMAT,
+      [ImageOptions.ThHintSize]));
+  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_PANEL_PREVIEW,
+      [ImageOptions.ThSizePanelPreview]));
 end;
 
 procedure TFormSelectDB.FinishButtonClick(Sender: TObject);
@@ -747,7 +754,7 @@ begin
         EdFileName.Text := FileName;
         EdDBType.Text := DBKernel.StringDBVersion(DBKernel.TestDBEx(FileName));
       end else
-        EdFileName.Text := TEXT_MES_NO_DB_FILE;
+        EdFileName.Text := L('No file');
 
     end;
   finally
@@ -794,12 +801,9 @@ begin
   RadioGroup1.Items.Clear;
   RadioGroup1.Items.Add(TEXT_MES_SELECT_DB_OPTION_1);
   RadioGroup1.Items.Add(TEXT_MES_SELECT_DB_OPTION_2);
-
   if SELECT_DB_OPTION_GET_DB_OR_EXISTS = Options then
     RadioGroup1.Items.Add(TEXT_MES_SELECT_DB_OPTION_3);
-
   RadioGroup1.Items.Add(TEXT_MES_CREATE_EXAMPLE_DB);
-
   FOptions := Options;
 end;
 

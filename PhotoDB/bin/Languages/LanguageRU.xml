@@ -17,6 +17,7 @@
     <translate name="Information" value="Информация" />
     <translate name="An unexpected error occurred: %s" value="Произошла неожиданная ошибка: %s" />
     <translate name="Progress... (&amp;%%)" value="Прогресс... (&amp;%%)" />
+    <translate name="Executing... (&amp;%%)" value="Выполнение... (&amp;%%)" />
     <translate name="Executing" value="Выполнение" />
     <translate name="%dpx." value="%dпк." />
     <translate name="All formats (%s)" value="Все форматы (%s)" />
@@ -1316,8 +1317,22 @@
 	<translate name="Select file" value="Выбрать файл"/>	
 	<translate name="Choose\create\edit DB wizard" value="Диалог выбора\создания\редактирования БД"/>
 	<translate name="Choose an action from the list and click &quot;Next&quot; button" value="Выберите нужное действие из списка и нажмите на кнопку &quot;Далее&quot;" />
-	
-	<translate name="Explorer" value="Проводник"/>
+	<translate name="Use as default collection" value="Использовать БД по умолчанию"/>	
+	<translate name="File name" value="Имя файла"/>
+	<translate name="Select name for new collection" value="Введите имя для новой базы"/>	
+	<translate name="Select collection" value="Выбрать базу"/>
+	<translate name="Options" value="Настройки"/>
+	<translate name="Choose file for new collection" value="Выберите файл для новой базы"/>
+	<translate name="File name and location" value="Название и месторасположение файлов"/>
+	<translate name="New collection" value="Новая база"/>	
+	<translate name="DB Type" value="Тип БД"/>
+	<translate name="Value" value="Значение"/>	
+	<translate name="Select an file" value="Выбрать файл"/>
+	<translate name="Add standard groups" value="Добавить стандартные группы"/>
+	<translate name="Select collection from list" value="Выбрать БД из списка"/>
+	<translate name="No file" value="Файл не выбран"/>
+	<translate name="File isn't selected! Please, select an file and try again." value="Не выбран файл базы данных! Выберите файл и попробуйте снова."/>
+
 	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
@@ -1335,6 +1350,8 @@
 	<translate name="JPEG quality" value="JPEG качество"/>
 	<translate name="DB Image size" value="Изображения в БД"/>
 	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
+	<translate name="Start" value="Начать"/>	
+	<translate name="Break" value="Прервать"/>
 	
 	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
@@ -1344,8 +1361,10 @@
 	<translate name="Previous" value="Назад"/>
 	<translate name="Next" value="Далее"/>
 	<translate name="Delete" value="Удалить"/>
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
+	<translate name="Start" value="Начать"/>
+	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
+	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
+	
 	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
   </scope>
@@ -1355,12 +1374,76 @@
 	<translate name="Cut" value="Вырезать"/>
 	<translate name="Delete" value="Удалить"/>
 	<translate name="Explorer" value="Проводник"/>
+	<translate name="PhotoDB files (*.photodb)|*.photodb|All Files|*.*" value="PhotoDB файлы (*.photodb)|*.photodb|Все файлы|*.*"/>
+	<translate name="New" value="Новая"/>
+	<translate name="Split Collection" value="Разбивка БД"/>
+	<translate name="Method" value="Метод"/>
+	<translate name="Path" value="Размещение"/>
+	<translate name="Files and folders" value="Файлы и папки"/>
+	<translate name="Delete records after finish" value="Удалить записи по окончанию"/>
+	<translate name="Drag into the list files or folders with images. You can move all these images to separeted collection" value="Перетащите в список файлы и папки, в которых содержатся изображения, которые необходимо перенести в другую БД"/>
+	<translate name="Please select any database" value="Пожалуйста, выберите сперва базу данных"/>
+	<translate name="Do you really want to split the database and use this file: $nl$&quot;%s&quot;?$nl$WARNING: $nl$During the process all other windows will not be available!" value="Вы действительно хотите разбить БД и использовать данный файл:$nl$&quot;%s&quot; ?$nl$ВНИМАНИЕ:$nl$ВО время разбивки другие окна будут недоступны!"/>
+	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
+	<translate name="PhotoDB files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
+	<translate name="Path" value="Размещение"/>
   </scope>
   <scope name="Replace">
 	<translate name="Delete" value="Удалить"/>
+	<translate name="Path" value="Размещение"/>
   </scope>
   <scope name="Options">
+	<translate name="Options" value="Настройки"/>
 	<translate name="Backup" value="Резервное копирование"/>
 	<translate name="Set" value="Установить"/>
+	<translate name="Rename" value="Переименовать"/>
+	<translate name="Delete" value="Удалить"/>
+	<translate name="Save" value="Сохранить"/>	
   </scope>
+  <scope name="Help">
+	<translate name="Copy" value="Копировать"/>
+  </scope>
+  <scope name="ExportDB">
+	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
+	<translate name="Export Collection" value="Экспорт таблицы"/>
+	<translate name="Export private records" value="Экспорт личных записей"/>
+	<translate name="Export items with rating" value="Экспорт только записей с оценкой"/>
+	<translate name="Export items without files" value="Экспорт записей без файлов"/>
+	<translate name="Export of groups" value="Экспортировать группы"/>
+	<translate name="Export crypted items" value="Экспортировать зашифрованные записи"/>
+	<translate name="Export crypted items if password has been found" value="Экспортировать зашифрованные, если найден пароль"/>
+	<translate name="Begin export" value="Начать экспорт"/>
+	<translate name="Break!" value="Прервать!"/>
+	<translate name="Item" value="Запись"/>
+  </scope>
+  <scope name="DBCleaning">
+	<translate name="Save" value="Сохранить"/>
+	<translate name="Close" value="Закрыть"/>
+	<translate name="Stop" value="Остановить"/>
+	<translate name="Start" value="Начать"/>
+	<translate name="Cleaning" value="Очистка"/>
+	<translate name="Delete not valid items" value="Удалять ненужные записи"/>
+	<translate name="Check for duplicates" value="Проверять дубликаты"/>
+	<translate name="Mark deleted files" value="Помечать удалённые файлы"/>	
+	<translate name="Update date from EXIF" value="Обновлять дату из EXIF"/>
+	<translate name="Allow auto cleaning" value="Позволить автоочистку"/>
+	<translate name="Allow fast cleaning" value="Позволить быструю очистку"/>
+  </scope>
+  <scope name="SaveCollection">
+    <translate name="Abort" value="Прервать" />
+    <translate name="Saving in progress..." value="Сохранение выполняется..." />
+    <translate name="Saving items to file" value="Сохранение записей в файл" />
+  </scope>
+  <scope name="ImportDB">
+    <translate name="Import collection" value="Импорт БД" />
+    <translate name="Stop" value="Остановить" />
+    <translate name="Abort" value="Прервать" />
+    <translate name="Abort" value="Прервать" />
+    <translate name="Abort" value="Прервать" />
+    <translate name="Abort" value="Прервать" />
+    <translate name="Abort" value="Прервать" />
+    <translate name="Abort" value="Прервать" />
+    <translate name="Abort" value="Прервать" />
+  </scope>
+  
 </language>

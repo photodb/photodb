@@ -18,7 +18,7 @@ object DBCleaningForm: TDBCleaningForm
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object DmProgress1: TDmProgress
+  object PbMain: TDmProgress
     Left = 8
     Top = 8
     Width = 209
@@ -45,20 +45,20 @@ object DBCleaningForm: TDBCleaningForm
     Checked = True
     State = cbChecked
     TabOrder = 1
-    OnClick = CheckBox4Click
-    OnMouseUp = CheckBox4MouseUp
+    OnClick = CbAutoCleaningClick
+    OnMouseUp = CbAutoCleaningMouseUp
   end
-  object CheckBox2: TCheckBox
+  object CbDuplicated: TCheckBox
     Left = 8
     Top = 48
     Width = 209
     Height = 17
     Caption = 'Verify dublicates'
     TabOrder = 2
-    OnClick = CheckBox4Click
-    OnMouseUp = CheckBox4MouseUp
+    OnClick = CbAutoCleaningClick
+    OnMouseUp = CbAutoCleaningMouseUp
   end
-  object CheckBox3: TCheckBox
+  object CbDeleted: TCheckBox
     Left = 8
     Top = 64
     Width = 209
@@ -67,10 +67,10 @@ object DBCleaningForm: TDBCleaningForm
     Checked = True
     State = cbChecked
     TabOrder = 3
-    OnClick = CheckBox4Click
-    OnMouseUp = CheckBox4MouseUp
+    OnClick = CbAutoCleaningClick
+    OnMouseUp = CbAutoCleaningMouseUp
   end
-  object CheckBox4: TCheckBox
+  object CbAutoCleaning: TCheckBox
     Left = 8
     Top = 80
     Width = 209
@@ -79,10 +79,10 @@ object DBCleaningForm: TDBCleaningForm
     Checked = True
     State = cbChecked
     TabOrder = 4
-    OnClick = CheckBox4Click
-    OnMouseUp = CheckBox4MouseUp
+    OnClick = CbAutoCleaningClick
+    OnMouseUp = CbAutoCleaningMouseUp
   end
-  object Button1: TButton
+  object BtnSave: TButton
     Left = 8
     Top = 136
     Width = 105
@@ -90,46 +90,46 @@ object DBCleaningForm: TDBCleaningForm
     Caption = 'Save'
     Enabled = False
     TabOrder = 5
-    OnClick = Button1Click
+    OnClick = BtnSaveClick
   end
-  object Button2: TButton
+  object BntClose: TButton
     Left = 120
     Top = 136
     Width = 99
     Height = 17
     Caption = 'Close'
     TabOrder = 6
-    OnClick = Button2Click
+    OnClick = BntCloseClick
   end
-  object Button3: TButton
+  object BtnStart: TButton
     Left = 120
     Top = 160
     Width = 99
     Height = 17
     Caption = 'Start Now'
     TabOrder = 7
-    OnClick = Button3Click
+    OnClick = BtnStartClick
   end
-  object Button4: TButton
+  object BtnStop: TButton
     Left = 8
     Top = 160
     Width = 105
     Height = 17
     Caption = 'Stop Now'
     TabOrder = 8
-    OnClick = Button4Click
+    OnClick = BtnStopClick
   end
-  object CheckBox5: TCheckBox
+  object CbFastCleaning: TCheckBox
     Left = 8
     Top = 96
     Width = 209
     Height = 17
     Caption = 'Fast Cleaning'
     TabOrder = 9
-    OnClick = CheckBox4Click
-    OnMouseUp = CheckBox4MouseUp
+    OnClick = CbAutoCleaningClick
+    OnMouseUp = CbAutoCleaningMouseUp
   end
-  object CheckBox6: TCheckBox
+  object CbFixExifDate: TCheckBox
     Left = 8
     Top = 113
     Width = 209
@@ -138,8 +138,8 @@ object DBCleaningForm: TDBCleaningForm
     Checked = True
     State = cbChecked
     TabOrder = 10
-    OnClick = CheckBox4Click
-    OnMouseUp = CheckBox4MouseUp
+    OnClick = CbAutoCleaningClick
+    OnMouseUp = CbAutoCleaningMouseUp
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = True

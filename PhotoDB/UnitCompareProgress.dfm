@@ -92,7 +92,7 @@ object ImportProgressForm: TImportProgressForm
     Height = 13
     Caption = 'Status:'
   end
-  object DmProgress1: TDmProgress
+  object PbMain: TDmProgress
     Left = 8
     Top = 88
     Width = 289
@@ -111,25 +111,25 @@ object ImportProgressForm: TImportProgressForm
     View = dm_pr_cool
     Inverse = False
   end
-  object Button1: TButton
+  object BtnStop: TButton
     Left = 224
     Top = 112
     Width = 75
     Height = 17
     Caption = 'Stop!'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtnStopClick
   end
-  object Button2: TButton
+  object BtnPause: TButton
     Left = 144
     Top = 112
     Width = 73
     Height = 17
     Caption = 'Pause'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtnPauseClick
   end
-  object DmProgress2: TDmProgress
+  object PbItemsAdded: TDmProgress
     Left = 168
     Top = 24
     Width = 129
@@ -148,7 +148,7 @@ object ImportProgressForm: TImportProgressForm
     View = dm_pr_cool
     Inverse = False
   end
-  object DmProgress3: TDmProgress
+  object PbItemsUpdated: TDmProgress
     Left = 168
     Top = 64
     Width = 129

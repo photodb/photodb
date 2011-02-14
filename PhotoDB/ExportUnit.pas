@@ -11,20 +11,20 @@ type
   TExportForm = class(TDBForm)
     Edit1: TEdit;
     Button1: TButton;
-    CheckBox1: TCheckBox;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
-    DmProgress1: TDmProgress;
-    Button2: TButton;
+    CbPrivate: TCheckBox;
+    CbRating: TCheckBox;
+    CbWithoutFiles: TCheckBox;
+    PbMain: TDmProgress;
+    BtnStart: TButton;
     Label1: TLabel;
     Label2: TLabel;
     SaveDialog1: TSaveDialog;
-    CheckBox4: TCheckBox;
-    CheckBox5: TCheckBox;
-    CheckBox6: TCheckBox;
-    Button3: TButton;
+    CbGroups: TCheckBox;
+    CbCrypted: TCheckBox;
+    CbCryptedPass: TCheckBox;
+    BtnBreak: TButton;
     DestroyTimer: TTimer;
-    procedure Button2Click(Sender: TObject);
+    procedure BtnStartClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
     procedure SetRecordText(Value : String);
@@ -36,18 +36,20 @@ type
     procedure Execute;
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure CheckBox5Click(Sender: TObject);
+    procedure CbCryptedClick(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure BtnBreakClick(Sender: TObject);
   private
     { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
-  Procedure LoadLanguage;
     { Public declarations }
+    procedure LoadLanguage;
   end;
 
 var
-  Working : Boolean = false;
+  Working : Boolean = False;
 
 implementation
 
@@ -55,39 +57,40 @@ uses UnitExportThread, Language;
 
 {$R *.dfm}
 
-procedure TExportForm.Button2Click(Sender: TObject);
+procedure TExportForm.BtnStartClick(Sender: TObject);
 var
   Options: TExportOptions;
-  F : TextFile;
+  F: TextFile;
 begin
- System.Assign(F,Edit1.text);
- {$I-}
- System.Rewrite(F);
- {$I+}
- if IOResult<>0 then
- begin
-  MessageBoxDB(Handle,Format(TEXT_MES_CANNOT_CREATE_FILE_F,[Edit1.text]),TEXT_MES_ERROR,TD_BUTTON_OK,TD_ICON_ERROR);
-  exit;
- end;
- System.Close(F);
- Button1.Enabled:=false;
- Button2.Enabled:=false;
- Options.ExportPrivate:=CheckBox1.Checked;
- Options.ExportRatingOnly:=CheckBox2.Checked;
- Options.ExportNoFiles:=CheckBox3.Checked;
- Options.ExportGroups:=CheckBox4.Checked;
- Options.ExportCrypt:=CheckBox5.Checked;
- Options.ExportCryptIfPassFinded:=CheckBox6.Checked and CheckBox5.Enabled;;
- Options.FileName:=Edit1.text;
- CheckBox1.Enabled:=false;
- CheckBox2.Enabled:=false;
- CheckBox3.Enabled:=false;
- CheckBox4.Enabled:=false;
- CheckBox5.Enabled:=false;
- CheckBox6.Enabled:=false;
- Working:=true;
- ExportThread.Create(Options);
- Button3.Enabled:=true;
+  System.Assign(F, Edit1.text);
+{$I-}
+  System.Rewrite(F);
+{$I+}
+  if IOResult <> 0 then
+  begin
+    MessageBoxDB(Handle, Format(TEXT_MES_CANNOT_CREATE_FILE_F, [Edit1.text]),
+      L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    Exit;
+  end;
+  System.Close(F);
+  Button1.Enabled := False;
+  BtnStart.Enabled := False;
+  Options.ExportPrivate := CbPrivate.Checked;
+  Options.ExportRatingOnly := CbRating.Checked;
+  Options.ExportNoFiles := CbWithoutFiles.Checked;
+  Options.ExportGroups := CbGroups.Checked;
+  Options.ExportCrypt := CbCrypted.Checked;
+  Options.ExportCryptIfPassFinded := CbCryptedPass.Checked and CbCrypted.Enabled; ;
+  Options.FileName := Edit1.text;
+  CbPrivate.Enabled := False;
+  CbRating.Enabled := False;
+  CbWithoutFiles.Enabled := False;
+  CbGroups.Enabled := False;
+  CbCrypted.Enabled := False;
+  CbCryptedPass.Enabled := False;
+  Working := True;
+  BtnBreak.Enabled := True;
+  ExportThread.Create(Options);
 end;
 
 procedure TExportForm.Button1Click(Sender: TObject);
@@ -98,7 +101,7 @@ begin
       SaveDialog1.FileName := SaveDialog1.FileName + '.photodb';
 
     if FileExists(SaveDialog1.FileName) then
-      if ID_OK <> MessageBoxDB(Handle, Format(TEXT_MES_FILE_EXISTS_1, [SaveDialog1.FileName]), L('Warning'),
+      if ID_OK <> MessageBoxDB(Handle, Format(L('File &quot;%s&quot; already exists! $nl$Replace?'), [SaveDialog1.FileName]), L('Warning'),
         TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         Exit;
 
@@ -122,12 +125,12 @@ end;
 
 procedure TExportForm.Edit1Change(Sender: TObject);
 begin
-  Button2.Enabled := Edit1.Text <> TEXT_MES_NO_FILEA
+  BtnStart.Enabled := Edit1.Text <> TEXT_MES_NO_FILEA
 end;
 
 procedure TExportForm.Execute;
 begin
-  Edit1Change(nil);
+  Edit1Change(Self);
   ShowModal;
 end;
 
@@ -136,19 +139,24 @@ begin
   LoadLanguage;
 end;
 
+function TExportForm.GetFormID: string;
+begin
+  Result := 'ExportDB';
+end;
+
 procedure TExportForm.SetProgressMaxValue(Value: Integer);
 begin
-  DmProgress1.MaxValue := Value;
+  PbMain.MaxValue := Value;
 end;
 
 procedure TExportForm.SetProgressPosition(Value: Integer);
 begin
-  DmProgress1.Position := Value;
+  PbMain.Position := Value;
 end;
 
 procedure TExportForm.SetProgressText(Value: string);
 begin
-  DmProgress1.Text := Value;
+  PbMain.Text := Value;
 end;
 
 procedure TExportForm.DoExit(Sender: TObject);
@@ -165,22 +173,27 @@ end;
 
 procedure TExportForm.LoadLanguage;
 begin
-  Caption := TEXT_MES_EXPORT_WINDOW_CAPTION;
-  CheckBox1.Caption := TEXT_MES_EXPORT_PRIVATE;
-  CheckBox2.Caption := TEXT_MES_EXPORT_ONLY_RATING;
-  CheckBox3.Caption := TEXT_MES_EXPORT_REC_WITHOUT_FILES;
-  CheckBox4.Caption := TEXT_MES_EXPORT_GROUPS;
-  CheckBox5.Caption := TEXT_MES_EXPORT_CRYPTED;
-  CheckBox6.Caption := TEXT_MES_EXPORT_CRYPTED_IF_PASSWORD_EXISTS;
-  Button2.Caption := TEXT_MES_BEGIN_EXPORT;
-  Button3.Caption := TEXT_MES_BREAK_BUTTON;
-  Label1.Caption := TEXT_MES_REC + ':';
-  DmProgress1.Text := TEXT_MES_PROGRESS_PR;
+  BeginTranslate;
+  try
+    Caption := L('Export Collection');
+    CbPrivate.Caption := L('Export private records');
+    CbRating.Caption := L('Export items with rating');
+    CbWithoutFiles.Caption := L('Export items without files');
+    CbGroups.Caption := L('Export of groups');
+    CbCrypted.Caption := L('Export crypted items');
+    CbCryptedPass.Caption := L('Export crypted items if password has been found');
+    BtnStart.Caption := L('Begin export');
+    BtnBreak.Caption := L('Break!');
+    Label1.Caption := L('Item') + ':';
+    PbMain.text := L('Executing... (&amp;%%)');
+  finally
+    EndTranslate;
+  end;
 end;
 
-procedure TExportForm.CheckBox5Click(Sender: TObject);
+procedure TExportForm.CbCryptedClick(Sender: TObject);
 begin
- CheckBox6.Enabled:=CheckBox5.Checked;
+  CbCryptedPass.Enabled := CbCrypted.Checked;
 end;
 
 procedure TExportForm.DestroyTimerTimer(Sender: TObject);
@@ -189,7 +202,7 @@ begin
   Release;
 end;
 
-procedure TExportForm.Button3Click(Sender: TObject);
+procedure TExportForm.BtnBreakClick(Sender: TObject);
 begin
   UnitExportThread.StopExport := True;
 end;

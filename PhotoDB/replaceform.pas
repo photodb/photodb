@@ -697,7 +697,7 @@ begin
     LabelFSize.Caption := TEXT_MES_SIZE;
     LabelFWidth.Caption := TEXT_MES_WIDTH;
     LabelFHeight.Caption := TEXT_MES_HEIGHT;
-    LabelFPath.Caption := TEXT_MES_PATH;
+    LabelFPath.Caption := L('Path');
     LabelCurrentInfo.Caption := TEXT_MES_CURRENT_FILE_INFO + ':';
     Button1.Caption := TEXT_MES_ADD;
     Button2.Caption := TEXT_MES_REPLACE_FOR_ALL;
@@ -714,7 +714,7 @@ begin
     LabelDBWidth.Caption := TEXT_MES_WIDTH;
     LabelDBHeight.Caption := TEXT_MES_HEIGHT;
     LabelDBSize.Caption := TEXT_MES_SIZE;
-    LabelDBPath.Caption := TEXT_MES_PATH;
+    LabelDBPath.Caption := L('Path');
   finally
     EndTranslate;
   end;

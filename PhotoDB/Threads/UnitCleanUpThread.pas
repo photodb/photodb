@@ -11,30 +11,31 @@ uses
 type
   CleanUpThread = class(TThread)
   private
-   FTable: TDataSet;
-   fQuery : TDataSet;
-   fReg : TBDRegistry;
-   FText : string;
-   FPosition : Integer;
-   FMaxPosition : integer;
-   lastID : integer;
-  procedure UpdateProgress;
-  procedure UpdateMaxProgress;
-  procedure UpdateText;
-  procedure InitializeForm;
-  procedure FinalizeForm;
-  procedure RegisterThread;
-  procedure UnRegisterThread;
-  function GetDBRecordCount : integer;
+    FTable: TDataSet;
+    fQuery: TDataSet;
+    fReg: TBDRegistry;
+    FText: string;
+    FPosition: Integer;
+    FMaxPosition: Integer;
+    lastID: Integer;
+    procedure UpdateProgress;
+    procedure UpdateMaxProgress;
+    procedure UpdateText;
+    procedure InitializeForm;
+    procedure FinalizeForm;
+    procedure RegisterThread;
+    procedure UnRegisterThread;
+    function GetDBRecordCount: Integer;
     { Private declarations }
   protected
     procedure Execute; override;
     procedure SavePosition;
   end;
 
-  var   Termitating : boolean = false;
-        Active : boolean = false;
-      Share_Position, Share_MaxPosition : Integer;
+var
+  Termitating: boolean = false;
+  Active: boolean = false;
+  Share_Position, Share_MaxPosition: Integer;
 
 implementation
 
@@ -44,14 +45,14 @@ uses Searching, dolphin_db, UnitDBCleaning, Language, FormManegerUnit;
 
 procedure CleanUpThread.Execute;
 var
-  i, int, position : integer;
-  s, str_position, _sqlexectext, FromDB : string;
+  i, int, position: Integer;
+  s, str_position, _sqlexectext, FromDB: string;
   ExifData: TExifData;
-  crc : cardinal;
-  folder : string;
-  SetQuery : TDataSet;
-  DateToAdd, aTime : TDateTime;
-  IsDate, IsTime : boolean;
+  crc: cardinal;
+  folder: string;
+  SetQuery: TDataSet;
+  DateToAdd, aTime: TDateTime;
+  IsDate, IsTime: boolean;
 begin
  FreeOnTerminate:=True;
  if FolderView then exit;
@@ -276,11 +277,11 @@ procedure CleanUpThread.FinalizeForm;
 begin
  if DBCleaningForm<>nil then
  begin
-  DBCleaningForm.Button3.Enabled:=True;
-  DBCleaningForm.Button4.Enabled:=False;
-  DBCleaningForm.DmProgress1.MaxValue:=1;
-  DBCleaningForm.DmProgress1.Position:=0;
-  DBCleaningForm.DmProgress1.Text:=TEXT_MES_CLEANING_STOPED;
+  DBCleaningForm.BtnStart.Enabled:=True;
+  DBCleaningForm.BtnStop.Enabled:=False;
+  DBCleaningForm.PbMain.MaxValue:=1;
+  DBCleaningForm.PbMain.Position:=0;
+  DBCleaningForm.PbMain.Text:=TEXT_MES_CLEANING_STOPED;
  end;
 end;
 
@@ -303,10 +304,10 @@ procedure CleanUpThread.InitializeForm;
 begin
  if DBCleaningForm<>nil then
  begin
-  DBCleaningForm.Button3.Enabled:=False;
-  DBCleaningForm.Button4.Enabled:=True;
-  DBCleaningForm.DmProgress1.MaxValue:=Share_MaxPosition;
-  DBCleaningForm.DmProgress1.Position:=Share_Position;
+  DBCleaningForm.BtnStart.Enabled:=False;
+  DBCleaningForm.BtnStop.Enabled:=True;
+  DBCleaningForm.PbMain.MaxValue:=Share_MaxPosition;
+  DBCleaningForm.PbMain.Position:=Share_Position;
  end;
 end;
 
@@ -345,8 +346,8 @@ procedure CleanUpThread.UpdateMaxProgress;
 begin
  if DBCleaningForm<>nil then
  begin
-  DBCleaningForm.DmProgress1.MinValue:=0;
-  DBCleaningForm.DmProgress1.MaxValue:=FMaxPosition;
+  DBCleaningForm.PbMain.MinValue:=0;
+  DBCleaningForm.PbMain.MaxValue:=FMaxPosition;
  end;
 end;
 
@@ -354,16 +355,16 @@ procedure CleanUpThread.UpdateProgress;
 begin
  if DBCleaningForm<>nil then
  begin
-  DBCleaningForm.DmProgress1.Position:=Fposition;
+  DBCleaningForm.PbMain.Position:=Fposition;
  end;
 end;
 
 procedure CleanUpThread.UpdateText;
 begin
- if DBCleaningForm<>nil then
- begin
-  DBCleaningForm.DmProgress1.Text:=FText;
- end;
+  if DBCleaningForm <> nil then
+  begin
+    DBCleaningForm.PbMain.Text := FText;
+  end;
 end;
 
 end.

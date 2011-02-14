@@ -6,7 +6,8 @@ uses
   Windows, Classes, Forms, UnitDBKernel, SysUtils, Graphics, GraphicCrypt, Math,
   RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, ImageConverting,
   UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx, uMemory,
-  uMultiCPUThreadManager, uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes;
+  uMultiCPUThreadManager, uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes,
+  uTranslate;
 
 type
   TSearchBigImagesLoaderThread = class(TMultiCPUThread)
@@ -240,7 +241,7 @@ procedure TSearchBigImagesLoaderThread.SetProgressPosition;
 begin
   (FSender as TSearchForm).PbProgress.MaxValue:=fData.Count;
   (FSender as TSearchForm).PbProgress.Position:=IntParam;
-  (FSender as TSearchForm).PbProgress.text:=TEXT_MES_PROGRESS_PR;
+  (FSender as TSearchForm).PbProgress.text:=TA('Progress... (&amp;%%)');
 end;
 
 procedure TSearchBigImagesLoaderThread.ReplaceBigBitmap;

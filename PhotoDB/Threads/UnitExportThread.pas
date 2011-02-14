@@ -4,7 +4,8 @@ interface
 
 uses
   UnitGroupsWork, Classes, DB, UnitDBKernel, SysUtils, GraphicCrypt, ActiveX,
-   win32crc, UnitDBDeclare, uFileUtils, uConstants;
+  win32crc, UnitDBDeclare, uFileUtils, uConstants,
+  uTranslate;
 
 Type
   TExportOptions = record
@@ -147,7 +148,7 @@ begin
   if FOptions.ExportGroups then
   begin
    SetText(TEXT_MES_SAVING_GROUPS+'...');
-   SetProgressText(TEXT_MES_PROGRESS_PR);
+   SetProgressText(TA('Progress... (&amp;%%)'));
    SetMaxValue(length(FGroupsFounded));
    SetPosition(0);
    FRegGroups:=GetRegisterGroupList(True);
