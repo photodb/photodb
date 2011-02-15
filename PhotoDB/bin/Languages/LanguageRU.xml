@@ -1352,9 +1352,12 @@
 	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
 	<translate name="Start" value="Начать"/>	
 	<translate name="Break" value="Прервать"/>
+	<translate name="Do you really want to close this wizard?" value="Вы действительно  хотите закрыть этот диалог?"/>
+	<translate name="Size: %s from %s" value="Размер: %s из %s"/>	
+	<translate name="Processed %d from %d" value="Обработано %d из %d"/>	
+	<translate name="Time remaining: %s (&amp;%%)" value="Осталось времени: %s (&amp;%%)"/>
 	
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
+	<translate name="Can't add some files to collection because password was not found!" value="Не удалось добавить некоторые файлы в БД т.к. не был найден пароль!"/>
 	<translate name="Explorer" value="Проводник"/>
   </scope>
   <scope name="ImportImages">
@@ -1364,7 +1367,36 @@
 	<translate name="Start" value="Начать"/>
 	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
 	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
+	<translate name="Finish" value="Финиш"/>
+	<translate name="Break" value="Прервать"/>
+	<translate name="Pause" value="Пауза"/>
+	<translate name="Unpause" value="Запустить"/>
+	<translate name="Width" value="Ширина"/>
+	<translate name="Height" value="Высота"/>
+	<translate name="Import your images into the database" value="Импорт ваших изображений в БД"/>	
+	<translate name="This wizard will help you add to the database your photos or other images" value="Этот диалог поможет вам добавить в БД ваши фотографии или другие изображения"/>
+	<translate name="Select folders to import images" value="Выберите папки откуда будут импортировать изображения"/>
+	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
+	<translate name="Current collection" value="Текущий файл БД" />	
+	<translate name="Create new collection" value="Создать новый файл БД"/>	
+	<translate name="File with collection" value="Файл БД"/>
+	<translate name="Locations to import" value="Папки для импорта"/>
+	<translate name="Ask me" value="Спросить меня"/>	
+	<translate name="Add all" value="Добавить все"/>	
+	<translate name="Skip all" value="Пропустить все"/>
+	<translate name="Replace all" value="Заменить все"/>	
+	<translate name="Please, select additional options of import" value="Выберите дополнительные опции импорта изображений."/>
+	<translate name="Click the &quot;Start&quot; button and wait until the program finds and adds all your images. This may require a long time depending on the size of your photo album" value="Нажмите на &quot;Старт&quot; и подождите пока программа найдёт и добавит все ваши изображения. Это может потребовать много времени в зависимости от величины вашего фотоальбома"/>
+	<translate name="If duplicates are found" value="При нахождении дубликатов"/>	
+	<translate name="Searching for images..." value="Поиск изображений..."/>
+	<translate name="Current size - %s" value="Текущий размер - %s"/>	
+	<translate name="Found %d images" value="Найдено фотографий - %d"/>	
+	<translate name="Do you really want to close this wizard?" value="Вы действительно  хотите закрыть этот диалог?"/>
+	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>	
+	<translate name="Please, add any path to import images!" value="Не выбрано ни одного пути для добавления - продолжение невозможно. Нажмите на кнопку &quot;Добавить папку&quot; чтобы добавить путь к фотографиям."/>
+	<translate name="Processing images" value="Обработка изображений"/>
 	
+	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
   </scope>
@@ -1398,7 +1430,11 @@
 	<translate name="Set" value="Установить"/>
 	<translate name="Rename" value="Переименовать"/>
 	<translate name="Delete" value="Удалить"/>
-	<translate name="Save" value="Сохранить"/>	
+	<translate name="Save" value="Сохранить"/>
+	<translate name="Width" value="Ширина"/>
+	<translate name="Height" value="Высота"/>	
+	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
+	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>
   </scope>
   <scope name="Help">
 	<translate name="Copy" value="Копировать"/>
@@ -1438,12 +1474,21 @@
     <translate name="Import collection" value="Импорт БД" />
     <translate name="Stop" value="Остановить" />
     <translate name="Abort" value="Прервать" />
+    <translate name="Pause" value="Пауза"/>
+    <translate name="Unpause" value="Запустить"/>
+	
     <translate name="Abort" value="Прервать" />
     <translate name="Abort" value="Прервать" />
     <translate name="Abort" value="Прервать" />
     <translate name="Abort" value="Прервать" />
     <translate name="Abort" value="Прервать" />
     <translate name="Abort" value="Прервать" />
+  </scope>
+  <scope name="ActionProgress">
+  </scope>
+  <scope name="ReplaceDBItem">
+    <translate name="Width" value="Ширина"/>
+    <translate name="Height" value="Высота"/>
   </scope>
   
 </language>

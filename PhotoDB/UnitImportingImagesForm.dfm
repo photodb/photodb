@@ -616,16 +616,16 @@ object FormImportingImages: TFormImportingImages
       OnContextPopup = PlacesListViewContextPopup
     end
   end
-  object Button1: TButton
+  object BtnNext: TButton
     Left = 320
     Top = 288
     Width = 75
     Height = 25
     Caption = 'Next'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtnNextClick
   end
-  object Button2: TButton
+  object BtnPrev: TButton
     Left = 240
     Top = 288
     Width = 75
@@ -633,16 +633,16 @@ object FormImportingImages: TFormImportingImages
     Caption = 'Privious'
     Enabled = False
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = BtnPrevClick
   end
-  object Button3: TButton
+  object BtnCancel: TButton
     Left = 160
     Top = 288
     Width = 75
     Height = 25
     Caption = 'Cancel'
     TabOrder = 3
-    OnClick = Button3Click
+    OnClick = BtnCancelClick
   end
   object Panel2: TPanel
     Left = 120
@@ -1366,7 +1366,7 @@ object FormImportingImages: TFormImportingImages
       Caption = 'Images founded - 1000'
       Visible = False
     end
-    object DmProgress1: TDmProgress
+    object PbMain: TDmProgress
       Left = 8
       Top = 231
       Width = 257
@@ -1394,7 +1394,7 @@ object FormImportingImages: TFormImportingImages
       TabOrder = 1
     end
   end
-  object Button7: TButton
+  object BtnBegin: TButton
     Left = 320
     Top = 288
     Width = 75
@@ -1402,9 +1402,9 @@ object FormImportingImages: TFormImportingImages
     Caption = 'Begin'
     TabOrder = 6
     Visible = False
-    OnClick = Button7Click
+    OnClick = BtnBeginClick
   end
-  object Button8: TButton
+  object BtnBreak: TButton
     Left = 320
     Top = 288
     Width = 75
@@ -1412,9 +1412,9 @@ object FormImportingImages: TFormImportingImages
     Caption = 'Break'
     TabOrder = 7
     Visible = False
-    OnClick = Button8Click
+    OnClick = BtnBreakClick
   end
-  object Button9: TButton
+  object BtnPause: TButton
     Left = 240
     Top = 288
     Width = 75
@@ -1422,9 +1422,9 @@ object FormImportingImages: TFormImportingImages
     Caption = 'Pause'
     TabOrder = 8
     Visible = False
-    OnClick = Button9Click
+    OnClick = BtnPauseClick
   end
-  object Button10: TButton
+  object BtnFinish: TButton
     Left = 320
     Top = 288
     Width = 75
@@ -1432,7 +1432,7 @@ object FormImportingImages: TFormImportingImages
     Caption = 'Finish!'
     TabOrder = 9
     Visible = False
-    OnClick = Button10Click
+    OnClick = BtnFinishClick
   end
   object PlacesImageList: TImageList
     Left = 88

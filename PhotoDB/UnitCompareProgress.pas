@@ -109,9 +109,9 @@ procedure TImportProgressForm.BtnPauseClick(Sender: TObject);
 begin
   UnitCmpDB.Paused := not UnitCmpDB.Paused;
   if UnitCmpDB.Paused then
-    BtnPause.Caption := TEXT_MES_UNPAUSE
+    BtnPause.Caption := L('Unpause')
   else
-    BtnPause.Caption := TEXT_MES_PAUSE;
+    BtnPause.Caption := L('Pause');
 end;
 
 procedure TImportProgressForm.BtnStopClick(Sender: TObject);
@@ -132,7 +132,7 @@ begin
     PbMain.Text := L('Progress... (&amp;%%)');
     PbItemsAdded.Text := TEXT_MES_RECS_ADDED_PR;
     PbItemsUpdated.Text := TEXT_MES_RECS_UPDATED_PR;
-    BtnPause.Caption := TEXT_MES_PAUSE;
+    BtnPause.Caption := L('Pause');
     BtnStop.Caption := L('Stop');
     Label3.Caption := TEXT_MES_STATUS;
     Label14.Caption := TEXT_MES_STATUS + ':';

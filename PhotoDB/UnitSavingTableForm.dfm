@@ -42,13 +42,13 @@ object SavingTableForm: TSavingTableForm
     View = dm_pr_cool
     Inverse = False
   end
-  object Button1: TButton
+  object BtnAbort: TButton
     Left = 192
     Top = 48
     Width = 83
     Height = 17
     Caption = 'Abort'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = BtnAbortClick
   end
 end

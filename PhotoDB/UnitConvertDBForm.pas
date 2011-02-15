@@ -164,7 +164,7 @@ begin
     Label1.Caption := TEXT_MES_DIALOG_CONVERTING_DB;
     Label3.Caption := TEXT_MES_CURRENT_DATABASE + ':';
     RadioButton2.Caption := TEXT_MES_CONVERT_TO_MDB;
-    BtnCancel.Caption := TEXT_MES_CANCEL;
+    BtnCancel.Caption := L('Cancel');
     Caption := TEXT_MES_CONVERTING_CAPTION;
     BtnPrev.Caption := L('Previous');
     Button1.Caption := L('Next');
@@ -189,38 +189,46 @@ end;
 
 procedure TFormConvertingDB.BtnCancelClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFormConvertingDB.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
+var
+  DialogResult: Integer;
 begin
- if not SilentClose then
- CanClose:=ID_OK=Application.MessageBox(TEXT_MES_DO_YOU_REALLY_WANT_TO_CLOSE_THIS_DIALOG,TEXT_MES_QUESTION,MB_OKCANCEL+MB_ICONQUESTION);
+  if not SilentClose then
+  begin
+    DialogResult := MessageBoxDB(Handle,
+      L('Do you really want to close this wizard?'), L('Question'),
+      TD_BUTTON_OKCANCEL, TD_ICON_QUESTION);
+    CanClose := DialogResult = ID_OK;
+  end;
 end;
 
 procedure TFormConvertingDB.Button1Click(Sender: TObject);
 begin
- if Step=1 then
- if not RadioButton2.Checked then Step:=2;
+  if Step = 1 then
+    if not RadioButton2.Checked then
+      Step := 2;
 
-  if Step=2 then
+  if Step = 2 then
   begin
-   Step:=3;
-   Panel2.Visible:=false;
-   Panel3.Visible:=true;
-   Button1.Visible:=false;
-   BtnPrev.Enabled:=true;
-   Button4.Visible:=true;
+    Step := 3;
+    Panel2.Visible := False;
+    Panel3.Visible := True;
+    Button1.Visible := False;
+    BtnPrev.Enabled := True;
+    Button4.Visible := True;
   end;
 
-  if Step=1 then
+  if Step = 1 then
   begin
-   Step:=2;
-   Panel1.Visible:=false;
-   Panel2.Visible:=true;
-   BtnPrev.Enabled:=true;
-   Button4.Visible:=false;
+    Step := 2;
+    Panel1.Visible := False;
+    Panel2.Visible := True;
+    BtnPrev.Enabled := True;
+    Button4.Visible := False;
   end;
 end;
 

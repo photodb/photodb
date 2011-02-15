@@ -6,7 +6,7 @@ uses
   Windows, SysUtils, UnitGroupsWork, UnitExportThread, Classes, DB, Dolphin_DB,
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
   acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants,
-  uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory;
+  uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate;
 
 type
   TSaveQueryThread = class(TThread)
@@ -111,7 +111,7 @@ var
 
 begin
  Result:=nil;
- if ID_YES=MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_DO_YOU_WANT_REPLACE_ICON_QUESTION,TEXT_MES_QUESTION,TD_BUTTON_YESNO,TD_ICON_QUESTION) then
+ if ID_YES=MessageBoxDB(Dolphin_DB.GetActiveFormHandle,TEXT_MES_DO_YOU_WANT_REPLACE_ICON_QUESTION, TA('Question') ,TD_BUTTON_YESNO,TD_ICON_QUESTION) then
  begin
   LoadIconDLG := TOpenDialog.Create(nil);
   LoadIconDLG.Filter:=TEXT_MES_ICONS_OPEN_MASK;

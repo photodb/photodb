@@ -199,13 +199,10 @@ begin
     Edit2.Text := L('No file');
     Label5.Caption := L('Options') + ':';
     Label6.Caption := L('Value') + ':';
-
     GroupBox2.Caption := L('Select collection');
     Label7.Caption := L('Select collection from list') + ':';
-
     CheckBox1.Caption := L('Use as default collection');
     CheckBox2.Caption := L('Use as default collection');
-
     GroupBox3.Caption := L('Select an file');
     Label9.Caption := L('File name') + ':';
     Label11.Caption := L('DB Type') + ':';
@@ -214,13 +211,9 @@ begin
     BtnChangeDBOptions.Caption := L('Change Collection Settings');
     BtnSelectFile.Caption := L('Select file');
     Label15.Caption := L('Description');
-
     CheckBox3.Caption := L('Add standard groups');
-
     Label16.Caption := L('Display name');
-
     InternalNameEdit.Text := DBKernel.NewDBName(L('New collection'));
-
     WebLink1.Text := L('Press this link to change the size and quality of previews using convertation wizard');
   finally
     EndTranslate;

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, WebLink, ComCtrls, UnitDBKernel, ShellAPI,
-  Dolphin_DB;
+  Dolphin_DB, uTranslate;
 
 type
   TFormInternetUpdating = class(TForm)
@@ -93,10 +93,10 @@ end;
 
 procedure TFormInternetUpdating.LoadLanguage;
 begin
- Button1.Caption:=TEXT_MES_OK;
- WebLink2.Text:=TEXT_MES_HOME_PAGE;
- WebLink1.Text:=TEXT_MES_DOWNLOAD_NOW;
- CheckBox1.Caption:=TEXT_MES_REMAIND_ME_LATER;
+  Button1.Caption := TA('Ok');
+  WebLink2.Text := TEXT_MES_HOME_PAGE;
+  WebLink1.Text := TEXT_MES_DOWNLOAD_NOW;
+  CheckBox1.Caption := TEXT_MES_REMAIND_ME_LATER;
 end;
 
 end.

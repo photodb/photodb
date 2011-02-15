@@ -753,9 +753,9 @@ begin
     CheckBox32.Caption := TEXT_MES_RUN_EXPLORER_AT_ATARTUP;
     CheckBox33.Caption := TEXT_MES_USE_SPECIAL_FOLDER;
 
-    CheckBox34.Caption := TEXT_MES_NO_ADD_SMALL_FILES_WITH_WH;
-    Label31.Caption := TEXT_MES_WIDTH;
-    Label32.Caption := TEXT_MES_HEIGHT;
+    CheckBox34.Caption := L('Do not add files to collection if size less than') + ':';
+    Label31.Caption := L('Width');
+    Label32.Caption := L('Height');
     CheckBox35.Caption := TEXT_MES_SHOW_GROUPS_IN_SEARCH;
     GroupBox4.Caption := TEXT_MES_PASSWORDS;
 
@@ -1139,38 +1139,43 @@ end;
 
 procedure TOptionsForm.Button24Click(Sender: TObject);
 var
-  NewPlace : String;
+  NewPlace: String;
 const
   DefaultIcon = '%SystemRoot%\system32\shell32.dll,3';
 begin
- if PlacesListView.Selected=nil then
- begin
-  NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE, UseSimpleSelectFolderDialog);
-  if DirectoryExists(NewPlace) then
+  if PlacesListView.Selected = nil then
   begin
-   SetLength(FPlaces,Length(FPlaces)+1);
-   FPlaces[Length(FPlaces)-1].Name:=GetFileNameWithoutExt(NewPlace);
-   FPlaces[Length(FPlaces)-1].FolderName:=NewPlace;
-   FPlaces[Length(FPlaces)-1].Icon:=DefaultIcon;
-   FPlaces[Length(FPlaces)-1].MyComputer:=true;
-   FPlaces[Length(FPlaces)-1].MyDocuments:=true;
-   FPlaces[Length(FPlaces)-1].MyPictures:=true;
-   FPlaces[Length(FPlaces)-1].OtherFolder:=true;
-   AddIconToListFromPath(PlacesImageList, DefaultIcon);
-   with PlacesListView.Items.AddItem(nil) do
-   begin
-    ImageIndex:=PlacesImageList.Count-1;
-    Caption:=GetFileNameWithoutExt(NewPlace);
-   end;
+    NewPlace := UnitDBFileDialogs.DBSelectDir(Handle,
+      L('Please, select a folder'), UseSimpleSelectFolderDialog);
+    if DirectoryExists(NewPlace) then
+    begin
+      SetLength(FPlaces, Length(FPlaces) + 1);
+      FPlaces[Length(FPlaces) - 1].Name := GetFileNameWithoutExt(NewPlace);
+      FPlaces[Length(FPlaces) - 1].FolderName := NewPlace;
+      FPlaces[Length(FPlaces) - 1].Icon := DefaultIcon;
+      FPlaces[Length(FPlaces) - 1].MyComputer := true;
+      FPlaces[Length(FPlaces) - 1].MyDocuments := true;
+      FPlaces[Length(FPlaces) - 1].MyPictures := true;
+      FPlaces[Length(FPlaces) - 1].OtherFolder := true;
+      AddIconToListFromPath(PlacesImageList, DefaultIcon);
+      with PlacesListView.Items.AddItem(nil) do
+      begin
+        ImageIndex := PlacesImageList.Count - 1;
+        Caption := GetFileNameWithoutExt(NewPlace);
+      end;
+    end;
+  end else
+  begin
+    NewPlace := UnitDBFileDialogs.DBSelectDir(Handle,
+      L('Please, select a folder'),
+      FPlaces[PlacesListView.Selected.Index].FolderName,
+      UseSimpleSelectFolderDialog);
+    if DirectoryExists(NewPlace) then
+      FPlaces[PlacesListView.Selected.Index].FolderName := NewPlace;
+    FPlaces[PlacesListView.Selected.Index].Name := GetFileNameWithoutExt
+      (NewPlace);
+    PlacesListView.Selected.Caption := GetFileNameWithoutExt(NewPlace);
   end;
- end else
- begin
-  NewPlace:=UnitDBFileDialogs.DBSelectDir(Handle,TEXT_MES_SEL_NEW_PLACE,FPlaces[PlacesListView.Selected.Index].FolderName, UseSimpleSelectFolderDialog);
-  if DirectoryExists(NewPlace) then
-  FPlaces[PlacesListView.Selected.Index].FolderName:=NewPlace;
-  FPlaces[PlacesListView.Selected.Index].Name:=GetFileNameWithoutExt(NewPlace);
-  PlacesListView.Selected.Caption:=GetFileNameWithoutExt(NewPlace);
- end;
 end;
 
 procedure TOptionsForm.ReadPlaces;

@@ -96,6 +96,8 @@ type
     FBitmapImageList: TBitmapImageList;
     WorkQuery: TDataSet;
     procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
     { Public declarations }
     procedure ReallignControls;
@@ -642,6 +644,11 @@ begin
  DBKernel.UnRegisterChangesID(self,self.ChangedDBDataByID);
 end;
 
+function TDBReplaceForm.GetFormID: string;
+begin
+  Result := 'ReplaceDBItem';
+end;
+
 procedure TDBReplaceForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
@@ -695,8 +702,8 @@ begin
     Delete1.Caption := L('Delete');
     LabelFName.Caption := TEXT_MES_NAME;
     LabelFSize.Caption := TEXT_MES_SIZE;
-    LabelFWidth.Caption := TEXT_MES_WIDTH;
-    LabelFHeight.Caption := TEXT_MES_HEIGHT;
+    LabelFWidth.Caption := L('Width');
+    LabelFHeight.Caption := L('Height');
     LabelFPath.Caption := L('Path');
     LabelCurrentInfo.Caption := TEXT_MES_CURRENT_FILE_INFO + ':';
     Button1.Caption := TEXT_MES_ADD;
@@ -711,8 +718,8 @@ begin
     DbLabel_id.Caption := TEXT_MES_ID;
     LabelDBName.Caption := TEXT_MES_NAME;
     LabelDBRating.Caption := TEXT_MES_RATING;
-    LabelDBWidth.Caption := TEXT_MES_WIDTH;
-    LabelDBHeight.Caption := TEXT_MES_HEIGHT;
+    LabelDBWidth.Caption := L('Width');
+    LabelDBHeight.Caption := L('Height');
     LabelDBSize.Caption := TEXT_MES_SIZE;
     LabelDBPath.Caption := L('Path');
   finally

@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, DmProgress, Language, Dolphin_DB, AppEvnts,
-  uVistaFuncs, uGOM, uMemory, uShellIntegration, uSysUtils;
+  uVistaFuncs, uGOM, uMemory, uShellIntegration, uSysUtils, uDBForm;
 
 type
-  TProgressActionForm = class(TForm)
+  TProgressActionForm = class(TDBForm)
     OperationCounter: TDmProgress;
     OperationProgress: TDmProgress;
     Label1: TLabel;
@@ -42,8 +42,9 @@ type
     procedure WMActivate(var Message: TWMActivate); message WM_ACTIVATE;
     procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
   protected
+    { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
-    { Private declarations }
+    function GetFormID : string; override;
   public
     WindowID: TGUID;
     Closed: Boolean;
@@ -268,7 +269,7 @@ procedure TProgressActionForm.FormCloseQuery(Sender: TObject;
 begin
   if CanClosedByUser then
   begin
-    Closed := ID_YES = MessageBoxDB(Handle, TEXT_MES_DO_YOU_REALLY_WANT_CANCEL_OPERATION, TEXT_MES_QUESTION,
+    Closed := ID_YES = MessageBoxDB(Handle, TEXT_MES_DO_YOU_REALLY_WANT_CANCEL_OPERATION, L('Question'),
       TD_BUTTON_YESNO, TD_ICON_QUESTION);
     CanClose := WindowCanClose;
   end;
@@ -294,6 +295,11 @@ begin
     AlphaBlend := True;
     AlphaBlendValue := 220;
   end;
+end;
+
+function TProgressActionForm.GetFormID: string;
+begin
+  Result := 'ActionProgress';
 end;
 
 procedure TProgressActionForm.CreateParams(var Params: TCreateParams);

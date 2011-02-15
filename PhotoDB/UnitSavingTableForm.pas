@@ -11,10 +11,10 @@ type
   TSavingTableForm = class(TDBForm)
     DmProgress1: TDmProgress;
     Label1: TLabel;
-    Button1: TButton;
+    BtnAbort: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnAbortClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadLanguage;
@@ -60,7 +60,7 @@ begin
   BeginTranslate;
   try
     DmProgress1.Text := L('Progress... (&amp;%%)');
-    Button1.Caption := L('Abort');
+    BtnAbort.Caption := L('Abort');
     Label1.Caption := L('Saving in progress...');
     Caption := L('Saving items to file');
   finally
@@ -100,7 +100,7 @@ begin
   CanClose := False;
 end;
 
-procedure TSavingTableForm.Button1Click(Sender: TObject);
+procedure TSavingTableForm.BtnAbortClick(Sender: TObject);
 begin
   FTerminating := True;
 end;

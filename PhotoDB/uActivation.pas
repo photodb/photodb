@@ -115,7 +115,7 @@ begin
   Label1.Caption := TEXT_MES_PROGRAM_CODE;
   Label2.Caption := TEXT_MES_ACTIVATION_KEY;
   Label3.Caption := TEXT_MES_ACTIVATION_NAME;
-  Button1.Caption := TEXT_MES_CANCEL;
+  Button1.Caption := L('Cancel');
   Button2.Caption := TEXT_MES_SET_CODE;
   Caption := TEXT_MES_ACTIVATION_CAPTION;
   Button3.Caption := TEXT_MES_GET_CODE;
