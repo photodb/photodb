@@ -552,7 +552,7 @@ ThHintSize
   end;
  end;
 
- Label10.Caption:=Format(TEXT_MES_IMAGE_SIZE_FORMAT,[SizeInText(ImageSize)]);
+ Label10.Caption:=Format(L('Image size: %s'),[SizeInText(ImageSize)]);
  Label12.Caption:=Format(TEXT_MES_NEW_DB_SIZE_FORMAT_10000,[SizeInText(10000*ImageSize)]);
 
  Jpeg.free;

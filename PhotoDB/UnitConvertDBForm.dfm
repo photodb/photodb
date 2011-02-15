@@ -713,14 +713,14 @@ object FormConvertingDB: TFormConvertingDB
     Caption = 'Text'
     WordWrap = True
   end
-  object Button1: TButton
+  object BtnNext: TButton
     Left = 472
     Top = 376
     Width = 75
     Height = 25
     Caption = 'Next'
     TabOrder = 0
-    OnClick = Button1Click
+    OnClick = BtnNextClick
   end
   object BtnPrev: TButton
     Left = 376
@@ -887,7 +887,7 @@ object FormConvertingDB: TFormConvertingDB
       Inverse = False
     end
   end
-  object Button4: TButton
+  object BtnStart: TButton
     Left = 472
     Top = 376
     Width = 75
@@ -895,7 +895,7 @@ object FormConvertingDB: TFormConvertingDB
     Caption = 'Start!'
     TabOrder = 5
     Visible = False
-    OnClick = Button4Click
+    OnClick = BtnStartClick
   end
   object BtnBreak: TButton
     Left = 216

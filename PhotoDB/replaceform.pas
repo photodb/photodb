@@ -701,7 +701,7 @@ begin
     Caption := TEXT_MES_CHOOSE_ACTION;
     Delete1.Caption := L('Delete');
     LabelFName.Caption := TEXT_MES_NAME;
-    LabelFSize.Caption := TEXT_MES_SIZE;
+    LabelFSize.Caption := L('Size');
     LabelFWidth.Caption := L('Width');
     LabelFHeight.Caption := L('Height');
     LabelFPath.Caption := L('Path');
@@ -720,7 +720,7 @@ begin
     LabelDBRating.Caption := TEXT_MES_RATING;
     LabelDBWidth.Caption := L('Width');
     LabelDBHeight.Caption := L('Height');
-    LabelDBSize.Caption := TEXT_MES_SIZE;
+    LabelDBSize.Caption := L('Size');
     LabelDBPath.Caption := L('Path');
   finally
     EndTranslate;

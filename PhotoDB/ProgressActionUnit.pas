@@ -125,12 +125,17 @@ end;
 
 procedure TProgressActionForm.LoadLanguage;
 begin
-  Label3.Caption := TEXT_MES_WAIT_ACTION;
-  Label2.Caption := TEXT_MES_TASKS + ':';
-  Label1.Caption := TEXT_MES_CURRENT_ACTION + ':';
-  Caption := TEXT_MES_PROGRESS_FORM;
-  OperationCounter.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
-  OperationProgress.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
+  BeginTranslate;
+  try
+    Label3.Caption := TEXT_MES_WAIT_ACTION;
+    Label2.Caption := TEXT_MES_TASKS + ':';
+    Label1.Caption := L('Current action') + ':';
+    Caption := TEXT_MES_PROGRESS_FORM;
+    OperationCounter.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
+    OperationProgress.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TProgressActionForm.ReCount;

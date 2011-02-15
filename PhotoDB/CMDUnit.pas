@@ -29,30 +29,33 @@ type
     procedure InfoListBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
   private
-   PasswordKeeper : TPasswordKeeper;
-   ItemsData : TList;
-   Infos : TStrings;
-   FInfo : String;
-   FProgressEnabled : boolean;
-   Icons : array of TIcon;
-   TopRecords : integer;
-   CurrentWideIndex : integer;
+    PasswordKeeper: TPasswordKeeper;
+    ItemsData: TList;
+    Infos: TStrings;
+    FInfo: String;
+    FProgressEnabled: Boolean;
+    Icons: array of TIcon;
+    TopRecords: Integer;
+    CurrentWideIndex: Integer;
     { Private declarations }
+  protected
+    function GetFormID: string; override;
   public
-  procedure PackPhotoTable;
-  procedure ShowBadLinks;
-  procedure RecreateImThInPhotoTable;
-  procedure OptimizeDublicates;
-  procedure OnEnd(Sender : TObject);
-  Procedure LoadLanguage;
-  Procedure RestoreTable(FileName : String);
-  Procedure BackUpTable;
-  procedure WriteLine(Sender : TObject; Line : string; Info : integer);
-  procedure WriteLnLine(Sender : TObject; Line : string; Info : integer);
-  procedure LoadToolBarIcons;
-  procedure ProgressCallBack(Sender : TObject; var Info : TProgressCallBackInfo);
-  procedure SetWideIndex;
     { Public declarations }
+    procedure PackPhotoTable;
+    procedure ShowBadLinks;
+    procedure RecreateImThInPhotoTable;
+    procedure OptimizeDublicates;
+    procedure OnEnd(Sender: TObject);
+    Procedure LoadLanguage;
+    Procedure RestoreTable(FileName: String);
+    Procedure BackUpTable;
+    procedure WriteLine(Sender: TObject; Line: string; Info: Integer);
+    procedure WriteLnLine(Sender: TObject; Line: string; Info: Integer);
+    procedure LoadToolBarIcons;
+    procedure ProgressCallBack(Sender: TObject;
+      var Info: TProgressCallBackInfo);
+    procedure SetWideIndex;
   end;
 
 var
@@ -142,18 +145,22 @@ end;
 
 procedure TCMDForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
- If Working then CanClose:=false;
- if Recreating then
- if ID_OK=MessageBoxDB(Handle,TEXT_MES_BREAK_RECREATING_TH,L('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
- begin
-  CMD_Command_Break:=true;
- end;
+  If Working then
+    CanClose := False;
+
+  if Recreating then
+    if ID_OK = MessageBoxDB(Handle, L(
+        'Do you really want to cancel current action?'), L('Warning'),
+      TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    begin
+      CMD_Command_Break := True;
+    end;
 end;
 
 procedure TCMDForm.LoadLanguage;
 begin
- Caption:=TEXT_MES_CMD_CAPTION;
- Label1.Caption:=TEXT_MES_CMD_TEXT;
+  Caption := TEXT_MES_CMD_CAPTION;
+  Label1.Caption := TEXT_MES_CMD_TEXT;
 end;
 
 procedure TCMDForm.RecreateImThInPhotoTable;
@@ -212,21 +219,22 @@ end;
 procedure TCMDForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
- if not Active then Exit;
- if Msg.message=256 then
- begin
-  if (Msg.wParam=Byte('B')) and CtrlKeyDown then CMD_Command_Break:=true;
- end;
- if Msg.hwnd=InfoListBox.Handle then
- if Msg.message<>15 then
- if Msg.message<>512 then
- if Msg.message<>160 then
- if Msg.message<>161 then
- if Msg.message=522 then
- begin
-  Msg.message:=0;
-//  ShowMessage(IntToStr(Msg.message));
- end;
+  if not Active then
+    Exit;
+  if Msg.message = 256 then
+  begin
+    if (Msg.wParam = Byte('B')) and CtrlKeyDown then
+      CMD_Command_Break := true;
+  end;
+  if Msg.hwnd = InfoListBox.Handle then
+    if Msg.message <> 15 then
+      if Msg.message <> 512 then
+        if Msg.message <> 160 then
+          if Msg.message <> 161 then
+            if Msg.message = 522 then
+            begin
+              Msg.message := 0;
+            end;
 end;
 
 procedure TCMDForm.ShowBadLinks;
@@ -357,6 +365,11 @@ end;
 procedure TCMDForm.FormDestroy(Sender: TObject);
 begin
  ItemsData.Free;
+end;
+
+function TCMDForm.GetFormID: string;
+begin
+  Result := 'CMD';
 end;
 
 procedure TCMDForm.LoadToolBarIcons;

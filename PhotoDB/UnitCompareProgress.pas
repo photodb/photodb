@@ -136,7 +136,7 @@ begin
     BtnStop.Caption := L('Stop');
     Label3.Caption := TEXT_MES_STATUS;
     Label14.Caption := TEXT_MES_STATUS + ':';
-    Label13.Caption := TEXT_MES_CURRENT_ACTION + ':';
+    Label13.Caption := L('Current action') + ':';
     ActionLabel.Caption := TEXT_MES_ACTIONA;
     Label1.Caption := TEXT_MES_RECORDS_ADDED + ':';
     Label2.Caption := TEXT_MES_RECORDS_UPDATED + ':';

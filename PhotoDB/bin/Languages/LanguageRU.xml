@@ -1332,7 +1332,8 @@
 	<translate name="Select collection from list" value="Выбрать БД из списка"/>
 	<translate name="No file" value="Файл не выбран"/>
 	<translate name="File isn't selected! Please, select an file and try again." value="Не выбран файл базы данных! Выберите файл и попробуйте снова."/>
-
+	<translate name="Image size: %s" value="Размер изображения: %s"/>
+	
 	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
 	<translate name="Explorer" value="Проводник"/>
@@ -1356,9 +1357,21 @@
 	<translate name="Size: %s from %s" value="Размер: %s из %s"/>	
 	<translate name="Processed %d from %d" value="Обработано %d из %d"/>	
 	<translate name="Time remaining: %s (&amp;%%)" value="Осталось времени: %s (&amp;%%)"/>
-	
 	<translate name="Can't add some files to collection because password was not found!" value="Не удалось добавить некоторые файлы в БД т.к. не был найден пароль!"/>
-	<translate name="Explorer" value="Проводник"/>
+	<translate name="Convert collection" value="Конвертировать БД"/>	
+	<translate name="This wizard will help you convert your database from one format to another." value="Этот диалог поможет вам конвертировать Вашу базу данных из одного формата в другой."/>
+	<translate name="Current collection" value="Текущая БД"/>	
+	<translate name="Convert to *.photodb (PhotoDB)" value="Конвертировать в *.photodb (PhotoDB)"/>	
+	<translate name="Please wait until convertation is in progress. This can take some time to complete..." value="Подождите пока выполнится ппреобразование БД, это может потребовать несколько минут..."/>
+	<translate name="Current action" value="Текущее действие"/>	
+	<translate name="You can adjust the size and compression quality of images in the database and other sizes of images" value="Вы можете настроить размеры и качество сжатия изображений в БД и другие размеры изображений"/>
+	<translate name="Load other image" value="Загрузить другое изображение"/>	
+	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
+	<translate name="Convertation of the collection is completed!" value="Конвертирование БД завершено!"/>
+	<translate name="Image size: %s" value="Размер изображения: %s"/>
+	<translate name="The size of new database (approximately): %s" value="Размер новой базы (ориентировочно): %s"/>
+	<translate name="JPEG Image File (*.jpg)|*.jpg|JPEG Image File (*.jpeg)|*.jpeg" value="JPEG изображения (*.jpg)|*.jpg|JPEG изображения (*.jpeg)|*.jpeg"/>
+	<translate name="Size" value="Размер"/>
   </scope>
   <scope name="ImportImages">
 	<translate name="Previous" value="Назад"/>
@@ -1395,10 +1408,6 @@
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>	
 	<translate name="Please, add any path to import images!" value="Не выбрано ни одного пути для добавления - продолжение невозможно. Нажмите на кнопку &quot;Добавить папку&quot; чтобы добавить путь к фотографиям."/>
 	<translate name="Processing images" value="Обработка изображений"/>
-	
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
   </scope>
   <scope name="SplitDatabase">
 	<translate name="Select a file to split the database" value="Выбарите файл для разбивки базы"/>
@@ -1476,6 +1485,7 @@
     <translate name="Abort" value="Прервать" />
     <translate name="Pause" value="Пауза"/>
     <translate name="Unpause" value="Запустить"/>
+  	<translate name="Current action" value="Текущее действие"/>
 	
     <translate name="Abort" value="Прервать" />
     <translate name="Abort" value="Прервать" />
@@ -1485,10 +1495,15 @@
     <translate name="Abort" value="Прервать" />
   </scope>
   <scope name="ActionProgress">
+  	<translate name="Current action" value="Текущее действие"/>
   </scope>
   <scope name="ReplaceDBItem">
     <translate name="Width" value="Ширина"/>
     <translate name="Height" value="Высота"/>
+    <translate name="Size" value="Размер"/>
+	
   </scope>
-  
+  <scope name="CMD">
+	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
+  </scope>
 </language>
