@@ -129,7 +129,7 @@ begin
   BeginTranslate;
   try
     Caption := L('Import collection');
-    PbMain.Text := L('Progress... (&amp;%%)');
+    PbMain.Text := L('Progress... (&%%)');
     PbItemsAdded.Text := TEXT_MES_RECS_ADDED_PR;
     PbItemsUpdated.Text := TEXT_MES_RECS_UPDATED_PR;
     BtnPause.Caption := L('Pause');

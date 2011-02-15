@@ -1804,7 +1804,9 @@ begin
   FileName := DBKernel.DBs[PmRestore.Tag].FileName;
   if DBKernel.TestDB(FileName) then
   begin
-    SelectDB(Self, FileName);
+    if not SelectDB(Self, FileName) then
+      MessageBoxDB(Handle, Format(L('Invalid or missing file $nl$"%s"! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version'), [FileName]), L('Error'), TD_BUTTON_OK,
+        TD_ICON_ERROR);
   end else
   begin
     if not FileExists(FileName) then

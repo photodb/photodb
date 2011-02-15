@@ -142,7 +142,7 @@ end;
 procedure TActivateForm.HelpActivationCloseClick(Sender: TObject;
   var CanClose: Boolean);
 begin
-  CanClose := ID_OK = MessageBoxDB(GetActiveFormHandle, TEXT_MES_CLOSE_HELP, TEXT_MES_CONFIRM, TD_BUTTON_OKCANCEL,
+  CanClose := ID_OK = MessageBoxDB(GetActiveFormHandle, TEXT_MES_CLOSE_HELP, L('Confirm'), TD_BUTTON_OKCANCEL,
     TD_ICON_INFORMATION);
   if CanClose then
   begin

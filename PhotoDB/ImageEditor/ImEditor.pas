@@ -2196,7 +2196,7 @@ begin
             end;
 
             if Replace then
-              UpdateImageRecord(FileName, ID);
+              UpdateImageRecord(Self, FileName, ID);
           end;
         2:
           begin
@@ -2225,7 +2225,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(FileName, ID);
+              UpdateImageRecord(Self, FileName, ID);
           end;
 
      3:
@@ -2254,7 +2254,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(FileName, ID);
+              UpdateImageRecord(Self, FileName, ID);
           end;
 
         4:
@@ -2283,7 +2283,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(FileName, ID);
+              UpdateImageRecord(Self, FileName, ID);
           end;
 
         5:
@@ -2312,7 +2312,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(FileName, ID);
+              UpdateImageRecord(Self, FileName, ID);
           end;
 
       end;

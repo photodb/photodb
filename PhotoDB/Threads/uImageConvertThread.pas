@@ -224,7 +224,7 @@ const
     finally
       if (AnsiLowerCase(FileName) = AnsiLowerCase(FData.FileName)) then
       begin
-        UpdateImageRecord(FData.FileName, FData.ID);
+        UpdateImageRecord(ThreadForm, FData.FileName, FData.ID);
         Synchronize(NotifyDB);
         TLockFiles.Instance.RemoveLockedFile(FileName);
         TLockFiles.Instance.AddLockedFile(FileName, 100);
@@ -260,53 +260,51 @@ begin
     FileName := FileName + GetGraphicExtForSave(NewGraphicClass);
 
     //if only rotate and JPEG image -> rotate only with GDI+
+    InitGDIPlus;
     if FProcessingParams.Rotate
-      and DBKernel.Readbool('Options', 'UseGDIPlus', GDIPlusPresent)
+      //and DBKernel.Readbool('Options', 'UseGDIPlus', GDIPlusPresent)
       and not FProcessingParams.Resize
       and not FProcessingParams.AddWatermark
       and not FProcessingParams.PreviewOptions.GeneratePreview
       and (NewGraphicClass = GraphicClass)
-      and (GraphicClass = TJPEGImage) then
+      and (GraphicClass = TJPEGImage)
+      and GDIPlusPresent then
     begin
-      InitGDIPlus;
-      if GDIPlusPresent then
-      begin
-        FixEXIFRotate;
-        if FProcessingParams.Rotation = DB_IMAGE_ROTATE_0 then
-          Exit;
-
-        MS := TMemoryStream.Create;
-        try
-          if Crypted then
-          begin
-            if not DecryptFileToStream(FData.FileName, Password, MS) then
-              Exit;
-
-            MD := TMemoryStream.Create;
-            try
-              case FProcessingParams.Rotation of
-                DB_IMAGE_ROTATE_270:
-                  RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate270);
-                DB_IMAGE_ROTATE_90:
-                  RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate90);
-                DB_IMAGE_ROTATE_180:
-                  RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate180);
-              end;
-
-              SaveFile(MODE_GDI_PLUS_CRYPT);
-
-            finally
-              F(MD);
-            end;
-          end else
-            SaveFile(MODE_GDI_PLUS);
-
-        finally
-          F(MS);
-        end;
-
+      FixEXIFRotate;
+      if FProcessingParams.Rotation = DB_IMAGE_ROTATE_0 then
         Exit;
+
+      MS := TMemoryStream.Create;
+      try
+        if Crypted then
+        begin
+          if not DecryptFileToStream(FData.FileName, Password, MS) then
+            Exit;
+
+          MD := TMemoryStream.Create;
+          try
+            case FProcessingParams.Rotation of
+              DB_IMAGE_ROTATE_270:
+                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate270);
+              DB_IMAGE_ROTATE_90:
+                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate90);
+              DB_IMAGE_ROTATE_180:
+                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate180);
+            end;
+
+            SaveFile(MODE_GDI_PLUS_CRYPT);
+
+          finally
+            F(MD);
+          end;
+        end else
+          SaveFile(MODE_GDI_PLUS);
+
+      finally
+        F(MS);
       end;
+
+      Exit;
     end;
 
     Graphic := GraphicClass.Create;

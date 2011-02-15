@@ -142,7 +142,7 @@ begin
   BeginTranslate;
   try
     Caption := L('Cleaning');
-    PbMain.Text := L('Executing... (&amp;%%)');
+    PbMain.Text := L('Executing... (&%%)');
     CheckBox1.Caption := L('Delete not valid items');
     CbDuplicated.Caption := L('Check for duplicates');
     CbDeleted.Caption := L('Mark deleted files');

@@ -148,7 +148,7 @@ begin
   if FOptions.ExportGroups then
   begin
    SetText(TEXT_MES_SAVING_GROUPS+'...');
-   SetProgressText(TA('Progress... (&amp;%%)'));
+   SetProgressText(TA('Progress... (&%%)'));
    SetMaxValue(length(FGroupsFounded));
    SetPosition(0);
    FRegGroups:=GetRegisterGroupList(True);

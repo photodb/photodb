@@ -316,7 +316,8 @@
 	<translate name="Do you really want to delete this database (%s)?" value="Вы действительно хотите удалить эту БД (%s)?" />
 	<translate name="Do you really want to convert your database? Conversion will take place after program restart." value="Вы действительно хотите преобразовать вашу базу данных? Преобразование начнётся после перезапуска программы." />
 	<translate name="Do you really want to optimize the duplicates in a table? Optimization starts at the next startup..." value="Вы действительно хотите оптимизировать дубликаты в таблице? Оптимизация начнётся при следующем запуске программы..." />
-	<translate name="This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?" value="Данная БД не может быть использована без конвертирования, т.е. она создана для работы со старыми версиями программы. Запустить мастер конвертации баз?" />
+	<translate name="This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?" value="Данная БД не может быть использована без конвертирования, т.е. она создана для работы со старыми версиями программы. Запустить мастер конвертации баз?" />
+	<translate name="Invalid or missing file $nl$&quot;%s&quot;! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version" value="Неверный или несуществующий файл $nl$&quot;%s&quot;! $nl$Проверьте наличие файла или попробуйте добавить его через менеджер БД - возможно, файл был создан в предыдущей версии программы и необходимо его сконвертировать в текущую версию"/>
   </scope>
   <scope name="PropertiesForm">
     <translate name="Properties" value="Свойства" />
@@ -1333,9 +1334,23 @@
 	<translate name="No file" value="Файл не выбран"/>
 	<translate name="File isn't selected! Please, select an file and try again." value="Не выбран файл базы данных! Выберите файл и попробуйте снова."/>
 	<translate name="Image size: %s" value="Размер изображения: %s"/>
+	<translate name="Create new collection" value="Создание нового файла Базы Данных"/>
+	<translate name="Select existing collection from hard disk" value="Использовать существующий файл на жёстком диске"/>
+	<translate name="Use other registered collection" value="Использовать зарегистрированную базу"/>
+	<translate name="Create standard collection*" value="Создать стандартную базу*"/>
+	<translate name="Please select any collection at first!" value="Сперва выберите файл базы данных!"/>
+	<translate name="My collection" value="Моя коллекция"/>	
+	<translate name="The size of the new database (approximately for 10,000 records): %s" value="Размер новой базы (ориентировочно для 10000 записей) = %s"/>
+	<translate name="Invalid or missing file $nl$&quot;%s&quot;! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version" value="Неверный или несуществующий файл $nl$&quot;%s&quot;! $nl$Проверьте наличие файла или попробуйте добавить его через менеджер БД - возможно, файл был создан в предыдущей версии программы и необходимо его сконвертировать в текущую версию"/>
+	<translate name="The new collection will be created with the following settings:" value="Новая база будет создана со следующими настройками:"/>
+	<translate name="Collection name: &quot;%s&quot;" value="Имя базы: &quot;%s&quot;"/>
+	<translate name="Path to collection: &quot;%s&quot;" value="Путь к базе: &quot;%s&quot;"/>
+	<translate name="Path to icon: &quot;%s&quot;" value="Путь к иконке: &quot;%s&quot;"/>
 	
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
+	<translate name="Size of collection previews: %dpx" value="Размер изображений в базе: %dpx"/>
+	<translate name="Quality of images: %dpx" value="Качество изображений: %dpx"/>
+	<translate name="Preview size: %dpx" value="Предпросмотр: %dpx"/>
+	<translate name="Small preview size: %dpx" value="Изображения в панели: %dpx"/>
 	<translate name="Explorer" value="Проводник"/>
   </scope>
   <scope name="ConvertDB">

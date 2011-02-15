@@ -213,7 +213,7 @@ begin
   if IsEqualGUID(FSID, GetPhotosFormSID) then
   begin
     (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.MaxValue:=intParam;
-    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text:= TA('Progress... (&amp;%%)');
+    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text:= TA('Progress... (&%%)');
   end;
 end;
 

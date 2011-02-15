@@ -665,7 +665,7 @@ begin
  For i:=1 to ListView1.Items.Count do
  if ListView1.Items[i-1].Indent=PopupMenu1.Tag then
  begin
-  If ID_OK=MessageBoxDB(Handle,TEXT_MES_DEL_FROM_DB_CONFIRM,TEXT_MES_CONFIRM,TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
+  If ID_OK=MessageBoxDB(Handle,TEXT_MES_DEL_FROM_DB_CONFIRM,L('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
   begin
    fQuery:=GetQuery;
    fQuery.active:=false;

@@ -59,7 +59,7 @@ procedure TSavingTableForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    DmProgress1.Text := L('Progress... (&amp;%%)');
+    DmProgress1.Text := L('Progress... (&%%)');
     BtnAbort.Caption := L('Abort');
     Label1.Caption := L('Saving in progress...');
     Caption := L('Saving items to file');

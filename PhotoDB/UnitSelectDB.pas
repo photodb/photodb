@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, Language, uDBUtils,
+  Dialogs, StdCtrls, ExtCtrls, Spin, Dolphin_DB, uDBUtils,
   UnitDBDeclare, UnitDBFileDialogs, uVistaFuncs, jpeg, CommonDBSupport,
   UnitDBCommonGraphics, ImgList, ComCtrls, ComboBoxExDB, WebLink,
   UnitDBCommon, uShellIntegration, UnitDBKernel, uFIleUtils, uDBForm,
@@ -242,61 +242,61 @@ end;
 
 procedure TFormSelectDB.DoSelectStep(NewStep : integer);
 begin
- if (NewStep=1) then
- begin
-  NextButton.Enabled:=true;
-  PanelStep10.Visible:=true;
-  PanelStep20.Visible:=false;
-  PanelStep21.Visible:=false;
-  PanelStep22.Visible:=false;
-  Step:=1;
-  BackButton.Enabled:=false;
-  FinishButton.Enabled:=false;
- end;
- if (NewStep=20) then
- begin
-  PanelStep10.Visible:=false;
-  PanelStep20.Visible:=true;
-  PanelStep30.Visible:=false;
-  Step:=20;
-  BackButton.Enabled:=true;
- end;
- if (NewStep=21) then
- begin
-  NextButton.Enabled:=false;
-  PanelStep10.Visible:=false;
-  PanelStep21.Visible:=true;
-  Step:=21;
-  BackButton.Enabled:=true;
-  FinishButton.Enabled:=true;
-  ComboBoxExDB1Change(Self);
- end;
- if (NewStep=22) then
- begin
-  NextButton.Enabled:=false;
-  PanelStep10.Visible:=false;
-  PanelStep22.Visible:=true;
-  Step:=22;
-  BackButton.Enabled:=true;
-  FinishButton.Enabled:=true;
- end;
- if (NewStep=30) then
- begin
-  PanelStep20.Visible:=false;
-  PanelStep30.Visible:=true;
-  PanelStep40.Visible:=false;
-  Step:=30;
-  BackButton.Enabled:=true;
-  FinishButton.Enabled:=false;
- end;
- if (NewStep=40) then
- begin
-  PanelStep30.Visible:=false;
-  PanelStep40.Visible:=true;
-  Step:=40;
-  NextButton.Enabled:=false;
-  FinishButton.Enabled:=true;
- end;
+  if (NewStep = 1) then
+  begin
+    NextButton.Enabled := true;
+    PanelStep10.Visible := true;
+    PanelStep20.Visible := false;
+    PanelStep21.Visible := false;
+    PanelStep22.Visible := false;
+    Step := 1;
+    BackButton.Enabled := false;
+    FinishButton.Enabled := false;
+  end;
+  if (NewStep = 20) then
+  begin
+    PanelStep10.Visible := false;
+    PanelStep20.Visible := true;
+    PanelStep30.Visible := false;
+    Step := 20;
+    BackButton.Enabled := true;
+  end;
+  if (NewStep = 21) then
+  begin
+    NextButton.Enabled := false;
+    PanelStep10.Visible := false;
+    PanelStep21.Visible := true;
+    Step := 21;
+    BackButton.Enabled := true;
+    FinishButton.Enabled := true;
+    ComboBoxExDB1Change(Self);
+  end;
+  if (NewStep = 22) then
+  begin
+    NextButton.Enabled := false;
+    PanelStep10.Visible := false;
+    PanelStep22.Visible := true;
+    Step := 22;
+    BackButton.Enabled := true;
+    FinishButton.Enabled := true;
+  end;
+  if (NewStep = 30) then
+  begin
+    PanelStep20.Visible := false;
+    PanelStep30.Visible := true;
+    PanelStep40.Visible := false;
+    Step := 30;
+    BackButton.Enabled := true;
+    FinishButton.Enabled := false;
+  end;
+  if (NewStep = 40) then
+  begin
+    PanelStep30.Visible := false;
+    PanelStep40.Visible := true;
+    Step := 40;
+    NextButton.Enabled := false;
+    FinishButton.Enabled := true;
+  end;
 end;
 
 procedure TFormSelectDB.BackButtonClick(Sender: TObject);
@@ -373,7 +373,7 @@ var
 begin
   SaveDialog := DBSaveDialog.Create;
   try
-    SaveDialog.Filter := 'PhotoDB Files (*.photodb)|*.photodb';
+    SaveDialog.Filter := L('PhotoDB Files (*.photodb)|*.photodb');
 
     if SaveDialog.Execute then
     begin
@@ -489,92 +489,106 @@ var
   Bitmap, Result: TBitmap;
   W, H, Size: Integer;
   ImageSize: Int64;
-  JPEG: TJpegImage;
+  jpeg: TJpegImage;
 begin
-{
-JPEGCOmpression
-ThSize
-ThSizePanelPreview
-ThHintSize
-}
- Case ListBox1.ItemIndex of
- 0:
-  begin
-   Size:=StrToIntDef(ComboBox2.Text,150);
-   if Size<1 then Size:=1;
-   if Size>100 then Size:=100;
-   ImageOptions.DBJpegCompressionQuality:=Size;
+  {
+    JPEGCOmpression
+    ThSize
+    ThSizePanelPreview
+    ThHintSize
+  }
+  jpeg := nil;
+  case ListBox1.ItemIndex of
+    0:
+      begin
+        Size := StrToIntDef(ComboBox2.Text, 150);
+        if Size < 1 then
+          Size := 1;
+        if Size > 100 then
+          Size := 100;
+        ImageOptions.DBJpegCompressionQuality := Size;
+      end;
+    1:
+      begin
+        Size := StrToIntDef(ComboBox2.Text, 150);
+        if Size < 50 then
+          Size := 50;
+        if Size > 1000 then
+          Size := 0100;
+        ImageOptions.ThSize := Size;
+      end;
+    2:
+      begin
+        Size := StrToIntDef(ComboBox2.Text, 150);
+        if Size < 50 then
+          Size := 50;
+        if Size > 1000 then
+          Size := 1000;
+        ImageOptions.ThSizePanelPreview := Size;
+      end;
+    3:
+      begin
+        Size := StrToIntDef(ComboBox2.Text, 150);
+        if Size < 50 then
+          Size := 50;
+        if Size > 1000 then
+          Size := 1000;
+        ImageOptions.ThHintSize := Size;
+      end;
   end;
- 1:
-  begin
-   Size:=StrToIntDef(ComboBox2.Text,150);
-   if Size<50 then Size:=50;
-   if Size>1000 then Size:=0100;
-   ImageOptions.ThSize:=Size;
-  end;
- 2:
-  begin
-   Size:=StrToIntDef(ComboBox2.Text,150);
-   if Size<50 then Size:=50;
-   if Size>1000 then Size:=1000;
-   ImageOptions.ThSizePanelPreview:=Size;
-  end;
- 3:
-  begin
-   Size:=StrToIntDef(ComboBox2.Text,150);
-   if Size<50 then Size:=50;
-   if Size>1000 then Size:=1000;
-   ImageOptions.ThHintSize:=Size;
-  end;
- end;
 
- ImageSize:=CalcJpegResampledSize(Image, ImageOptions.ThSize, ImageOptions.DBJpegCompressionQuality, Jpeg);
- if (ListBox1.ItemIndex=0) or (ListBox1.ItemIndex=1) then
- begin
-  ImagePreview.Picture.Assign(Jpeg);
- end else
- begin
-  if ListBox1.ItemIndex = 2 then
+  ImageSize := CalcJpegResampledSize(Image, ImageOptions.ThSize,
+    ImageOptions.DBJpegCompressionQuality, jpeg);
+  if (ListBox1.ItemIndex = 0) or (ListBox1.ItemIndex = 1) then
   begin
-   CalcJpegResampledSize(Image, ImageOptions.ThSizePanelPreview, ImageOptions.DBJpegCompressionQuality, Jpeg);
-   ImagePreview.Picture.Assign(Jpeg);
+    ImagePreview.Picture.Assign(jpeg);
   end else
   begin
-   w:=Image.Width;
-   h:=Image.Height;
-   Bitmap:=TBitmap.Create;
-   Bitmap.Assign(Image);
-   ProportionalSize(ImageOptions.ThHintSize,ImageOptions.ThHintSize,w,h);
-   Result:=TBitmap.Create;
-   DoResize(w,h,Bitmap,Result);
-   Bitmap.Free;
-   ImagePreview.Picture.Assign(Result);
+    if ListBox1.ItemIndex = 2 then
+    begin
+      CalcJpegResampledSize(Image, ImageOptions.ThSizePanelPreview,
+        ImageOptions.DBJpegCompressionQuality, jpeg);
+      ImagePreview.Picture.Assign(jpeg);
+    end else
+    begin
+      W := Image.Width;
+      H := Image.Height;
+      Bitmap := TBitmap.Create;
+      try
+        Bitmap.Assign(Image);
+        ProportionalSize(ImageOptions.ThHintSize, ImageOptions.ThHintSize, W, H);
+        Result := TBitmap.Create;
+        DoResize(W, H, Bitmap, Result);
+      finally
+        F(Bitmap);
+      end;
+      ImagePreview.Picture.Assign(Result);
+    end;
   end;
- end;
 
- Label10.Caption:=Format(L('Image size: %s'),[SizeInText(ImageSize)]);
- Label12.Caption:=Format(TEXT_MES_NEW_DB_SIZE_FORMAT_10000,[SizeInText(10000*ImageSize)]);
+  Label10.Caption := Format(L('Image size: %s'), [SizeInText(ImageSize)]);
+  Label12.Caption := Format(L('The size of the new database (approximately for 10,000 records): %s'),
+    [SizeInText(10000 * ImageSize)]);
 
- Jpeg.free;
+  F(jpeg);
 end;
-
 
 procedure TFormSelectDB.WriteNewDBOptions;
 begin
   Memo1.Clear;
-  Memo1.Lines.Add(TEXT_MES_NEW_DB_WILL_CREATE_WITH_THIS_OPTIONS);
+  Memo1.Lines.Add(L('The new collection will be created with the following settings:')+#13#13);
   Memo1.Lines.Add('');
-  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_NAME_FORMAT, [FDBFile.Name]));
-  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_PATH_FORMAT, [FDBFile.FileName]));
-  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_ICON_FORMAT, [FDBFile.Icon]));
+  Memo1.Lines.Add(Format(L('Collection name: "%s"'), [FDBFile.Name]));
+  Memo1.Lines.Add(Format(L('Path to collection: "%s"'), [FDBFile.FileName]));
+  Memo1.Lines.Add(Format(L('Path to icon: "%s"'), [FDBFile.Icon]));
   Memo1.Lines.Add('');
-  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_SIZE_FORMAT,
+  Memo1.Lines.Add(Format(L('Size of collection previews: %dpx'),
       [ImageOptions.ThSize]));
-  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_QUALITY_FORMAT,
+  Memo1.Lines.Add(Format(L('Quality of images: %dpx'),
       [ImageOptions.DBJpegCompressionQuality]));
-  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_HINT_FORMAT,
+  Memo1.Lines.Add(Format(L('Preview size: %dpx'),
       [ImageOptions.ThHintSize]));
-  Memo1.Lines.Add(Format(TEXT_MES_NEW_DB_IMAGE_PANEL_PREVIEW,
+  Memo1.Lines.Add(Format(L('Small preview size: %dpx'),
       [ImageOptions.ThSizePanelPreview]));
 end;
 
@@ -583,86 +597,106 @@ var
   FileName : string;
   SaveDialog : DBSaveDialog;
   FA : integer;
+
+  function InvalidDBFileMessage : string;
+  begin
+    Result := L('Invalid or missing file $nl$"%s"! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version');
+  end;
+
 begin
- if (RadioGroup1.ItemIndex=3) or ((RadioGroup1.ItemIndex=2) and (fOptions = SELECT_DB_OPTION_GET_DB)) then
- begin
-  //Sample DB
-  SaveDialog := DBSaveDialog.Create;
-
-  SaveDialog.Filter:='PhotoDB Files (*.photodb)|*.photodb';
-
-  if SaveDialog.Execute then
+  if (RadioGroup1.ItemIndex = 3) or ((RadioGroup1.ItemIndex = 2) and
+      (FOptions = SELECT_DB_OPTION_GET_DB)) then
   begin
-   FileName:=SaveDialog.FileName;
+    // Sample DB
+    SaveDialog := DBSaveDialog.Create;
+    try
+      SaveDialog.Filter := L('PhotoDB Files (*.photodb)|*.photodb');
+      if SaveDialog.Execute then
+      begin
+        FileName := SaveDialog.FileName;
 
-   if SaveDialog.GetFilterIndex=2 then
-   if GetExt(FileName)<>'DB' then FileName:=FileName+'.db';
-   if SaveDialog.GetFilterIndex=1 then
-   if GetExt(FileName)<>'PHOTODB' then FileName:=FileName+'.photodb';
+        if SaveDialog.GetFilterIndex = 2 then
+          if GetExt(FileName) <> 'DB' then
+            FileName := FileName + '.db';
+        if SaveDialog.GetFilterIndex = 1 then
+          if GetExt(FileName) <> 'PHOTODB' then
+            FileName := FileName + '.photodb';
 
-   FA:=FileGetAttr(FileName);
-   if FileExists(FileName) and ((fa and SysUtils.faReadOnly)<>0) then
-   begin
-    MessageBoxDB(Handle,LReadOnly,L('Warning'),TD_BUTTON_OK,TD_ICON_WARNING);
-    SaveDialog.Free;
-    exit;
-   end;
+        FA := FileGetAttr(FileName);
+        if FIleExists(FileName) and ((FA and SysUtils.faReadOnly) <> 0) then
+        begin
+          MessageBoxDB(Handle, LReadOnly, L('Warning'), TD_BUTTON_OK,
+            TD_ICON_WARNING);
+          Exit;
+        end;
 
-   CreateExampleDB(FileName,Application.ExeName+',0',ExtractFileDir(Application.ExeName));
+        CreateExampleDB(FileName, Application.ExeName + ',0',
+          ExtractFileDir(Application.ExeName));
 
-   FDBFile.Name:=DBkernel.NewDBName(TEXT_MES_DEFAULT_DB_NAME);
-   FDBFile.FileName:=FileName;
-   FDBFile.Icon:=Application.ExeName+',0';
-   DBKernel.AddDB(FDBFile.Name,FDBFile.FileName,FDBFile.Icon);
+        FDBFile.Name := DBKernel.NewDBName(L('My collection'));
+        FDBFile.FileName := FileName;
+        FDBFile.Icon := Application.ExeName + ',0';
+        DBKernel.AddDB(FDBFile.Name, FDBFile.FileName, FDBFile.Icon);
 
-   MessageBoxDB(Handle,Format(L('Collection "%s" succesfully created!'),[FileName]),L('Information'),TD_BUTTON_OK,TD_ICON_INFORMATION);
-   Close;
+        MessageBoxDB(Handle, Format(L('Collection "%s" succesfully created!'),
+            [FileName]), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+        Close;
+      end;
+    finally
+      F(SaveDialog);
+    end;
   end;
- end;
 
- if Step=40 then
- begin
-  DBkernel.CreateDBbyName(FDBFile.FileName);
-  CommonDBSupport.ADOCreateSettingsTable(FDBFile.FileName);
-  ImageOptions.Description:=Edit5.Text;
-  CommonDBSupport.UpdateImageSettings(FDBFile.FileName,ImageOptions);
-  if CheckBox3.Checked then
-  CreateExampleGroups(FDBFile.FileName,Application.ExeName+',0',ExtractFileDir(Application.ExeName));
-  if CheckBox1.Checked then
-  DBkernel.SetDataBase(FDBFile.FileName);
-  MessageBoxDB(Handle,Format(L('Collection "%s" succesfully created!'),[FDBFile.FileName]),L('Information'),TD_BUTTON_OK,TD_ICON_INFORMATION);
-  Close;
-  exit;
- end;
-
- if Step=21 then
- begin
-  if DBkernel.TestDB(DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName) then
+  if Step = 40 then
   begin
-   if CheckBox2.Checked then
-   DBKernel.SetDataBase(DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName);
-   FDBFile:=DBKernel.DBs[ComboBoxExDB1.ItemIndex];
-   Close;
-   exit;
-  end else
-  begin
-   MessageBoxDB(Handle,Format(TEXT_MES_ERROR_DB_FILE_F,[DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]),L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    DBKernel.CreateDBbyName(FDBFile.FileName);
+    CommonDBSupport.ADOCreateSettingsTable(FDBFile.FileName);
+    ImageOptions.Description := Edit5.Text;
+    CommonDBSupport.UpdateImageSettings(FDBFile.FileName, ImageOptions);
+    if CheckBox3.Checked then
+      CreateExampleGroups(FDBFile.FileName, Application.ExeName + ',0',
+        ExtractFileDir(Application.ExeName));
+    if CheckBox1.Checked then
+      DBKernel.SetDataBase(FDBFile.FileName);
+    MessageBoxDB(Handle, Format(L('Collection "%s" succesfully created!'),
+        [FDBFile.FileName]), L('Information'), TD_BUTTON_OK,
+      TD_ICON_INFORMATION);
+    Close;
+    Exit;
   end;
- end;
 
- if Step=22 then
- begin
-  if DBkernel.TestDB(FDBFile.FileName) then
+  if Step = 21 then
   begin
-   //TODO:
-   DBKernel.AddDB(FDBFile.Name,FDBFile.FileName,FDBFile.Icon);
-   Close;
-   exit;
-  end else
-  begin
-   MessageBoxDB(Handle,Format(TEXT_MES_ERROR_DB_FILE_F,[DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]),L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    if DBKernel.TestDB(DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName) then
+    begin
+      if CheckBox2.Checked then
+        DBKernel.SetDataBase(DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName);
+      FDBFile := DBKernel.DBs[ComboBoxExDB1.ItemIndex];
+      Close;
+      Exit;
+    end else
+    begin
+      MessageBoxDB(Handle, Format(InvalidDBFileMessage,
+          [DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]), L('Error'),
+        TD_BUTTON_OK, TD_ICON_ERROR);
+    end;
   end;
- end;
+
+  if Step = 22 then
+  begin
+    if DBKernel.TestDB(FDBFile.FileName) then
+    begin
+      // TODO:
+      DBKernel.AddDB(FDBFile.Name, FDBFile.FileName, FDBFile.Icon);
+      Close;
+      Exit;
+    end else
+    begin
+      MessageBoxDB(Handle, Format(InvalidDBFileMessage,
+          [DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName]), L('Error'),
+        TD_BUTTON_OK, TD_ICON_ERROR);
+    end;
+  end;
 end;
 
 procedure TFormSelectDB.RefreshDBList;
@@ -704,9 +738,9 @@ end;
 
 procedure TFormSelectDB.BtnSelectFileClick(Sender: TObject);
 var
-  DBVersion : integer;
-  DialogResult : integer;
-  FA : integer;
+  DBVersion : Integer;
+  DialogResult : Integer;
+  FA : Integer;
   OpenDialog : DBOpenDialog;
   FileName : string;
   DBTestOK : boolean;
@@ -735,7 +769,7 @@ begin
         if not DBKernel.ValidDBVersion(FileName, DBVersion) then
         begin
           DialogResult := MessageBoxDB(Handle,
-            'This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?', L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
+            'This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?', L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
           if ID_YES = DialogResult then
             ConvertDB(FileName);
 
@@ -762,7 +796,7 @@ begin
     ChangeDBOptions('', FDBFile.FileName)
   else
   begin
-    MessageBoxDB(Handle, TEXT_MES_SELECT_DB_AT_FIRST, L('Warning'),
+    MessageBoxDB(Handle, L('Please select any collection at first!'), L('Warning'),
       TD_BUTTON_OK, TD_ICON_WARNING);
   end;
 end;
@@ -774,7 +808,7 @@ begin
     ConvertDB(FDBFile.FileName);
   end else
   begin
-    MessageBoxDB(Handle, TEXT_MES_SELECT_DB_AT_FIRST, L('Warning'),
+    MessageBoxDB(Handle, L('Please select any collection at first!'), L('Warning'),
       TD_BUTTON_OK, TD_ICON_WARNING);
   end;
 end;
@@ -792,11 +826,11 @@ end;
 procedure TFormSelectDB.SetOptions(Options: Integer);
 begin
   RadioGroup1.Items.Clear;
-  RadioGroup1.Items.Add(TEXT_MES_SELECT_DB_OPTION_1);
-  RadioGroup1.Items.Add(TEXT_MES_SELECT_DB_OPTION_2);
+  RadioGroup1.Items.Add(L('Create new collection'));
+  RadioGroup1.Items.Add(L('Select existing collection from hard disk'));
   if SELECT_DB_OPTION_GET_DB_OR_EXISTS = Options then
-    RadioGroup1.Items.Add(TEXT_MES_SELECT_DB_OPTION_3);
-  RadioGroup1.Items.Add(TEXT_MES_CREATE_EXAMPLE_DB);
+    RadioGroup1.Items.Add(L('Use other registered collection'));
+  RadioGroup1.Items.Add(L('Create standard collection*'));
   FOptions := Options;
 end;
 

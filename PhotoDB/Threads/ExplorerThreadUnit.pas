@@ -1696,7 +1696,7 @@ var
 begin
   Info := FUpdaterInfo.FileInfo;
   if FUpdaterInfo.UpdateDB and (Info.ID > 0) then
-    UpdateImageRecord(Info.FileName, Info.ID);
+    UpdateImageRecord(FSender, Info.FileName, Info.ID);
 
   FQuery := GetQuery;
   UnProcessPath(FFolder);

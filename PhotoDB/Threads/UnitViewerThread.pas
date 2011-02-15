@@ -68,12 +68,11 @@ begin
   FSID := SID;
   FIsForward := IsForward;
   FUpdateInfo := UpdateInfo;
-
+  FViewer := Viewer;
   if Viewer.FullScreenNow then
     TransparentColor := 0
   else
     TransparentColor := ClBtnFace;
-
 end;
 
 destructor TViewerThread.Destroy;

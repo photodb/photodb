@@ -5236,7 +5236,7 @@ begin
   Info := GetCurrentPopUpMenuInfo(nil);
   try
     Options.Info := Info;
-    TRefreshDBRecordsThread.Create(Options);
+    TRefreshDBRecordsThread.Create(Self, Options);
   finally
     F(Info);
   end;

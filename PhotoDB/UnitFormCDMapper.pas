@@ -267,7 +267,7 @@ begin
               info.Add(InfoRecord);
               DS.Next;
             end;
-            TRefreshDBRecordsThread.Create(Options);
+            TRefreshDBRecordsThread.Create(Self, Options);
           finally
             F(Info);
           end;

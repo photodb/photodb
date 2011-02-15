@@ -241,7 +241,7 @@ procedure TSearchBigImagesLoaderThread.SetProgressPosition;
 begin
   (FSender as TSearchForm).PbProgress.MaxValue:=fData.Count;
   (FSender as TSearchForm).PbProgress.Position:=IntParam;
-  (FSender as TSearchForm).PbProgress.text:=TA('Progress... (&amp;%%)');
+  (FSender as TSearchForm).PbProgress.text:=TA('Progress... (&%%)');
 end;
 
 procedure TSearchBigImagesLoaderThread.ReplaceBigBitmap;

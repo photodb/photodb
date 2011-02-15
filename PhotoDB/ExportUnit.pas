@@ -185,7 +185,7 @@ begin
     BtnStart.Caption := L('Begin export');
     BtnBreak.Caption := L('Break!');
     Label1.Caption := L('Item') + ':';
-    PbMain.text := L('Executing... (&amp;%%)');
+    PbMain.text := L('Executing... (&%%)');
   finally
     EndTranslate;
   end;

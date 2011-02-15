@@ -577,7 +577,7 @@ end;
 
 procedure UpdateDBThread.UpdateCurrent;
 begin
-  UpdateImageRecord(FInfo[FileNumber].FileName, Res.Ids[0]);
+  UpdateImageRecord(FSender.Form, FInfo[FileNumber].FileName, Res.Ids[0]);
 end;
 
 procedure UpdateDBThread.CryptFileWithoutPass;

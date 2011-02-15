@@ -1206,7 +1206,7 @@ var
   Options : TRefreshIDRecordThreadOptions;
 begin
   Options.Info := FInfo;
-  TRefreshDBRecordsThread.Create(Options);
+  TRefreshDBRecordsThread.Create(FOwner, Options);
 end;
 
 procedure TDBPopupMenu.RefreshThumItemPopUpMenu_(Sender: TObject);

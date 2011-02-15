@@ -31,9 +31,9 @@ procedure UpdateMovedDBRecord(ID: Integer; FileName: string);
 procedure SetRotate(ID, Rotate: Integer);
 procedure SetRating(ID, Rating: Integer);
 procedure SetAttr(ID, Attr: Integer);
-procedure UpdateImageRecord(FileName: string; ID: Integer);
-procedure UpdateImageRecordEx(FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
-procedure SelectDB(Caller : TDBForm; DB: string);
+procedure UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer);
+procedure UpdateImageRecordEx(Caller: TDBForm; FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
+function SelectDB(Caller : TDBForm; DB: string) : Boolean;
 procedure CopyFullRecordInfo(Handle : THandle; ID: Integer);
 procedure ExecuteQuery(SQL: string);
 procedure GetFileListByMask(BeginFile, Mask: string;
@@ -608,13 +608,12 @@ begin
   end;
 end;
 
-
-procedure UpdateImageRecord(FileName: string; ID: Integer);
+procedure UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer);
 begin
-  UpdateImageRecordEx(FileName, ID, nil);
+  UpdateImageRecordEx(Caller, FileName, ID, nil);
 end;
 
-procedure UpdateImageRecordEx(FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
+procedure UpdateImageRecordEx(Caller: TDBForm; FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
 var
   Table: TDataSet;
   Res: TImageDBRecordA;
@@ -721,7 +720,7 @@ begin
             EventInfo.IsDate := True;
             EventInfo.IsTime := True;
             EF := [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];
-            DoDBkernelEvent(nil, ID, EF, EventInfo);
+            DoDBkernelEvent(Caller, ID, EF, EventInfo);
             _SetSql := _SetSql + 'DateToAdd=:DateToAdd,';
             _SetSql := _SetSql + 'aTime=:aTime,';
             _SetSql := _SetSql + 'IsDate=:IsDate,';
@@ -748,7 +747,7 @@ begin
         begin
           _SetSql := _SetSql + Format('Attr=%d,', [Db_attr_norm]);
           EventInfo.Attr := Db_attr_norm;
-          DoDBkernelEvent(nil, ID, [EventID_Param_Attr], EventInfo);
+          DoDBkernelEvent(Caller, ID, [EventID_Param_Attr], EventInfo);
         end;
       end;
 
@@ -756,7 +755,7 @@ begin
       begin
         _SetSql := _SetSql + Format('Attr=%d,', [Db_attr_norm]);
         EventInfo.Attr := Db_attr_norm;
-        DoDBkernelEvent(nil, ID, [EventID_Param_Attr], EventInfo);
+        DoDBkernelEvent(Caller, ID, [EventID_Param_Attr], EventInfo);
       end;
 
       if _SetSql[Length(_SetSql)] = ',' then
@@ -787,11 +786,12 @@ begin
       else
         AssignParam(Table, Next, Res.Jpeg);
 
-      Res.Jpeg.SaveToFile(Format('c:\%d.jpg', [ID]));
       if UpdateDateTime then
       begin
         SetDateParam(Table, 'DateToAdd', DateToAdd);
+        Next;
         SetDateParam(Table, 'aTime', ATime);
+        Next;
         SetBoolParam(Table, Next, IsDate);
         SetBoolParam(Table, Next, IsTime);
       end;
@@ -1285,7 +1285,7 @@ begin
   end;
 end;
 
-procedure SelectDB(Caller : TDBForm; DB: string);
+function SelectDB(Caller : TDBForm; DB: string) : Boolean;
 var
   EventInfo: TEventValues;
   DBVersion: Integer;
@@ -1304,9 +1304,6 @@ begin
       Exit;
     end
   end;
-
-  MessageBoxDB(Caller.Handle, Format(TEXT_MES_ERROR_DB_FILE_F, [DB]), TA('Error'), TD_BUTTON_OK,
-    TD_ICON_ERROR);
 end;
 
 function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; var Info: TOneRecordInfo): Boolean;

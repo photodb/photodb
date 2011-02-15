@@ -28,7 +28,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(Options: TRefreshIDRecordThreadOptions);
+    constructor Create(Owner: TDBForm; Options: TRefreshIDRecordThreadOptions);
     destructor Destroy; override;
     procedure InitializeProgress;
     procedure DestroyProgress;
@@ -47,11 +47,12 @@ uses ProgressActionUnit;
 
 { TRefreshDBRecordsThread }
 
-constructor TRefreshDBRecordsThread.Create(Options: TRefreshIDRecordThreadOptions);
+constructor TRefreshDBRecordsThread.Create(Owner: TDBForm; Options: TRefreshIDRecordThreadOptions);
 var
   I: Integer;
 begin
   inherited Create(False);
+  DBEvent_Sender := Owner;
   FInfo := TDBPopupMenuInfo.Create;
   FInfo.Assign(Options.Info);
   for I := 0 to FInfo.Count - 1 do
@@ -94,7 +95,7 @@ begin
           SetProgressPosition(C);
           try
             // TODO: DBKernelEvent NOT in thread!
-            UpdateImageRecordEx(FInfo[I].FileName, FInfo[I].ID, OnDBKernelEventProcedure);
+            UpdateImageRecordEx(DBEvent_Sender, FInfo[I].FileName, FInfo[I].ID, OnDBKernelEventProcedure);
           except
             on E: Exception do
               EventLog(':TRefreshDBRecordsThread::Execute()/UpdateImageRecord throw exception: ' + E.message);
