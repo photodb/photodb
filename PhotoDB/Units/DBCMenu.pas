@@ -924,7 +924,7 @@ begin
       ProgressForm.MaxPosCurrentOperation := Count;
       ProgressForm.OneOperation := False;
       if Count > 2 then
-        ProgressForm.DoShow;
+        ProgressForm.DoFormShow;
       ProgressForm.XPosition := 0;
       if VarKeyWords and VarGroups then
         ProgressForm.OperationCount := 2
@@ -1117,7 +1117,7 @@ begin
   ProgressForm.MaxPosCurrentOperation:=Count;
   ProgressForm.OneOperation:=true;
   if Count>2 then
-  ProgressForm.DoShow;
+  ProgressForm.DoFormShow;
   ProgressForm.xPosition:=0;
   for i:=0 to FInfo.Count-1 do
   if FInfo[i].Selected then

@@ -173,7 +173,7 @@ begin
       ProgressForm.MaxPosCurrentOperation := FTable.RecordCount;
       ProgressForm.XPosition := 0;
       ProgressForm.CanClosedByUser := True;
-      ProgressForm.DoShow;
+      ProgressForm.DoFormShow;
       FTable.First;
       AllList := TStringList.Create;
       Words := TStringList.Create;

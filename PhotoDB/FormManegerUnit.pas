@@ -30,6 +30,7 @@ type
     procedure ExitApplication;
     procedure WMCopyData(var Msg : TWMCopyData); message WM_COPYDATA;
     procedure InitializeActivation;
+    function GetTimeLimitMessage: string;
   public
     constructor Create(AOwner : TComponent);  override;
     destructor Destroy; override;
@@ -43,6 +44,7 @@ type
     function IsMainForms(Form : TForm) : Boolean;
     procedure CloseApp(Sender : TObject);
     procedure Load;
+    property TimeLimitMessage : string read GetTimeLimitMessage;
   end;
 
 var
@@ -60,10 +62,11 @@ const
 
 implementation
 
-uses Language, UnitCleanUpThread, ExplorerUnit, Searching, SlideShow,
-uActivation, UnitUpdateDB, UnitInternetUpdate, uAbout,
-UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
-UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
+uses
+  UnitCleanUpThread, ExplorerUnit, Searching, SlideShow,
+  uActivation, UnitUpdateDB, UnitInternetUpdate, uAbout,
+  UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
+  UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
 
 {$R *.dfm}
 
@@ -98,58 +101,61 @@ end;
 
 procedure TFormManager.InitializeActivation;
 var
-  Reg : TBDRegistry;
-  days : integer;
-  d1 : tdatetime;
+  Reg: TBDRegistry;
+  Days: Integer;
+  D1: Tdatetime;
 
 begin
- if DBKernel.ProgramInDemoMode and not DBInDebug then
- begin
-  try
-   Reg:=TBDRegistry.Create(REGISTRY_CLASSES);
-   Reg.OpenKey('CLSID\{F70C45B3-1D2B-4FC3-829F-16E5AF6937EB}\',true);
-   d1:=now;
-   if Reg.ValueExists('VersionTimeA') then
-   begin
-    if Reg.ReadBool('VersionTimeA') then
-    begin
-     Reg.free;
-     EnteringCodeNeeded:=true;
-     MessageBoxDB(FormManager.Handle, TEXT_MES_LIMIT_TIME_END, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
-     exit;
-    end
-   end else if reg.ValueExists('VersionTime') then
-   d1:=reg.Readdatetime('VersionTime') else
-   begin
-    reg.Writedatetime('VersionTime',now);
-    d1:=now;
-   end;
-   days:=round(now-d1);
-   if days<0 then
-   begin
-    reg.WriteBool('VersionTimeA',true);
-    Reg.free;
-    EnteringCodeNeeded:=true;
-    MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
-    exit;
-   end;
-   if (days>DemoDays) and not DBInDebug then
-   begin
-    reg.WriteBool('VersionTimeA',True);
-    Reg.free;
-    EnteringCodeNeeded:=true;
-    MessageBoxDB(FormManager.Handle,TEXT_MES_LIMIT_TIME_END,L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
-    exit;
-   end;
-   Reg.free;
-  except
-   on e : Exception do
-   begin
-    MessageBoxDB(FormManager.Handle,Format(L('Unhandled error: %s') ,[e.Message]), L('Error') ,TD_BUTTON_OK,TD_ICON_INFORMATION);
-    Exit;
-   end;
+  if DBKernel.ProgramInDemoMode and not DBInDebug then
+  begin
+    try
+      Reg := TBDRegistry.Create(REGISTRY_CLASSES);
+      Reg.OpenKey('CLSID\{F70C45B3-1D2B-4FC3-829F-16E5AF6937EB}\', True);
+      D1 := Now;
+      if Reg.ValueExists('VersionTimeA') then
+      begin
+        if Reg.ReadBool('VersionTimeA') then
+        begin
+          Reg.Free;
+          EnteringCodeNeeded := True;
+          MessageBoxDB(FormManager.Handle, GetTimeLimitMessage, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+          Exit;
+        end
+      end
+      else if Reg.ValueExists('VersionTime') then
+        D1 := Reg.Readdatetime('VersionTime')
+      else
+      begin
+        Reg.Writedatetime('VersionTime', Now);
+        D1 := Now;
+      end;
+      Days := Round(Now - D1);
+      if Days < 0 then
+      begin
+        Reg.WriteBool('VersionTimeA', True);
+        Reg.Free;
+        EnteringCodeNeeded := True;
+        MessageBoxDB(FormManager.Handle, GetTimeLimitMessage, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+        Exit;
+      end;
+      if (Days > DemoDays) and not DBInDebug then
+      begin
+        Reg.WriteBool('VersionTimeA', True);
+        Reg.Free;
+        EnteringCodeNeeded := True;
+        MessageBoxDB(FormManager.Handle, GetTimeLimitMessage, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+        Exit;
+      end;
+      Reg.Free;
+    except
+      on E: Exception do
+      begin
+        MessageBoxDB(FormManager.Handle, Format(L('Unhandled error: %s'), [E.message]), L('Error'), TD_BUTTON_OK,
+          TD_ICON_INFORMATION);
+        Exit;
+      end;
+    end;
   end;
- end;
 end;
 
 procedure TFormManager.Run(LoadingThread : TThread);
@@ -392,6 +398,11 @@ begin
   EventLog('finalization:');
 end;
 
+function TFormManager.GetTimeLimitMessage: string;
+begin
+  Result := L('After the 30 days has expired, you must activate your copy!');
+end;
+
 procedure TFormManager.CalledTimerTimer(Sender: TObject);
 begin
   Application.Terminate;
@@ -439,7 +450,7 @@ begin
       if not Initaproc(PChar(Application.ExeName)) then
       begin
         SplashThread.Terminate;
-        MessageBoxDB(GetActiveFormHandle, TEXT_MES_APPLICATION_NOT_VALID, L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        MessageBoxDB(GetActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         DBTerminating := True;
         Application.Terminate;
       end;
@@ -462,9 +473,6 @@ begin
         KillTimer(0, TimerCheckMainFormsHandle);
         try
           ActivateApplication(Viewer.Handle);
-          //if Viewer rests - user cal puch button "Close"
-          //if ID_YES = MessageBoxDB(Viewer.Handle, TEXT_MES_VIEWER_REST_IN_MEMORY_CLOSE_Q, L('Warning'),TD_BUTTON_YESNO, TD_ICON_WARNING) then
-          //  FMainForms.Clear;
         finally
            TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
         end;

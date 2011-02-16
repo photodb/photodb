@@ -7,7 +7,8 @@ uses
   Dialogs, StdCtrls, UnitDBKernel, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
   uVistaFuncs, CommonDBSupport, UnitPasswordKeeper, ImgList,
   UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants,
-  uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils, uDBForm;
+  uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils, uDBForm,
+  uMemory;
 
 type
   TCMDForm = class(TDBForm)
@@ -29,6 +30,7 @@ type
     procedure InfoListBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
   private
+    { Private declarations }
     PasswordKeeper: TPasswordKeeper;
     ItemsData: TList;
     Infos: TStrings;
@@ -37,7 +39,6 @@ type
     Icons: array of TIcon;
     TopRecords: Integer;
     CurrentWideIndex: Integer;
-    { Private declarations }
   protected
     function GetFormID: string; override;
   public
@@ -60,41 +61,41 @@ type
 
 var
   CMDForm: TCMDForm;
-  Working : Boolean = false;
-  Recreating : Boolean;
-  LineS : String;
-  LineN : Integer;
-  PointN : Integer = 0;
-  CMD_Command_Break : boolean = false;
-
+  Working: Boolean = False;
+  Recreating: Boolean;
+  LineS: string;
+  LineN: Integer;
+  PointN: Integer = 0;
+  CMD_Command_Break: Boolean = False;
 
 implementation
 
-uses UnitRecreatingThInTable, UnitPackingTable, Language,
-      UnitRestoreTableThread, UnitThreadShowBadLinks,
-      UnitBackUpTableInCMD, UnitOptimizeDublicatesThread;
+uses
+  UnitRecreatingThInTable, UnitPackingTable,
+  UnitRestoreTableThread, UnitThreadShowBadLinks,
+  UnitBackUpTableInCMD, UnitOptimizeDublicatesThread;
 
 {$R *.dfm}
 
 procedure TCMDForm.FormCreate(Sender: TObject);
 begin
- CurrentWideIndex:=-1;
- FProgressEnabled:=false;
- FInfo:='';
- DoubleBuffered:=true;
- Infos := TStringList.Create;
- ItemsData:=TList.Create;
- InfoListBox.DoubleBuffered:=true;
- InfoListBox.ItemHeight:=InfoListBox.Canvas.TextHeight('Iy')*3+5;
- InfoListBox.Clear;
- LoadToolBarIcons;
+  CurrentWideIndex := -1;
+  FProgressEnabled := False;
+  FInfo := '';
+  DoubleBuffered := True;
+  Infos := TStringList.Create;
+  ItemsData := TList.Create;
+  InfoListBox.DoubleBuffered := True;
+  InfoListBox.ItemHeight := InfoListBox.Canvas.TextHeight('Iy') * 3 + 5;
+  InfoListBox.Clear;
+  LoadToolBarIcons;
 
- PasswordKeeper:=nil;
- Recreating:=false;
- WriteLnLine(Self,Format(TEXT_MES_WELCOME_FORMAT,[ProductName]),LINE_INFO_INFO);
- WriteLnLine(Self,'',LINE_INFO_GREETING);
+  PasswordKeeper := nil;
+  Recreating := False;
+  WriteLnLine(Self, Format(L('Welcome to %s!'), [ProductName]), LINE_INFO_INFO);
+  WriteLnLine(Self, '', LINE_INFO_GREETING);
 
- LoadLanguage;
+  LoadLanguage;
 end;
 
 procedure TCMDForm.OnEnd(Sender: TObject);
@@ -106,41 +107,42 @@ end;
 
 procedure TCMDForm.PackPhotoTable;
 var
-  Options : TPackingTableThreadOptions;
+  Options: TPackingTableThreadOptions;
 begin
- TopRecords:=0;
- WriteLnLine(Self,TEXT_MES_PACKING_TABLE,LINE_INFO_INFO);
- WriteLnLine(Self,'['+dbname+']',LINE_INFO_DB);
- WriteLnLine(Self,TEXT_MES_PACKING_TABLE,LINE_INFO_OK);
- SetWideIndex;
- Timer1.Enabled:=True;
- Options.FileName:=DBName;
- Options.OnEnd:=OnEnd;
- Options.WriteLineProc:=WriteLine;
- PackingTable.Create(Options);
- Working:=True;
- CMDForm.ShowModal;
+  TopRecords := 0;
+  WriteLnLine(Self, L('Packing table:'), LINE_INFO_INFO);
+  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
+  WriteLnLine(Self, L('Packing table:'), LINE_INFO_OK);
+  SetWideIndex;
+  Timer1.Enabled := True;
+  Options.FileName := DBName;
+  Options.OnEnd := OnEnd;
+  Options.WriteLineProc := WriteLine;
+  PackingTable.Create(Options);
+  Working := True;
+  CMDForm.ShowModal;
 end;
 
 procedure TCMDForm.Timer1Timer(Sender: TObject);
 var
-  i : integer;
-  S : String;
+  I: Integer;
+  S: string;
 begin
- If Working then
- begin
-  if PointN=0 then
+  if Working then
   begin
-   LineN:=InfoListBox.Items.Count;
-   LineS:=InfoListBox.Items[LineN-1];
+    if PointN = 0 then
+    begin
+      LineN := InfoListBox.Items.Count;
+      LineS := InfoListBox.Items[LineN - 1];
+    end;
+    Inc(PointN);
+    if PointN > 10 then
+      PointN := 0;
+    S := LineS;
+    for I := 1 to PointN do
+      S := S + '.';
+    InfoListBox.Items[LineN - 1] := S;
   end;
-  inc(PointN);
-  If PointN>10 then PointN:=0;
-  S:=LineS;
-  For i:=1 to PointN do
-  s:=s+'.';
-  InfoListBox.Items[LineN-1]:=s;
- end;
 end;
 
 procedure TCMDForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -159,61 +161,61 @@ end;
 
 procedure TCMDForm.LoadLanguage;
 begin
-  Caption := TEXT_MES_CMD_CAPTION;
-  Label1.Caption := TEXT_MES_CMD_TEXT;
+  Caption := L('Commands window');
+  Label1.Caption := L('Please wait until the program completes the operation...');
 end;
 
 procedure TCMDForm.RecreateImThInPhotoTable;
 var
- Options : TRecreatingThInTableOptions;
+  Options: TRecreatingThInTableOptions;
 begin
- PasswordKeeper := TPasswordKeeper.Create;
+  PasswordKeeper := TPasswordKeeper.Create;
 
- WriteLnLine(Self,TEXT_MES_RECREATING_TH_TABLE,LINE_INFO_INFO);
- WriteLnLine(Self,'['+dbname+']',LINE_INFO_DB);
- SetWideIndex;
- WriteLnLine(Self,TEXT_MES_RECREATING,LINE_INFO_INFO);
- WriteLnLine(Self,TEXT_MES_BEGIN_RECREATING_TH_TABLE,LINE_INFO_OK);
+  WriteLnLine(Self, L('Collection'), LINE_INFO_INFO);
+  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
+  SetWideIndex;
+  WriteLnLine(Self, L('Updating...'), LINE_INFO_INFO);
+  WriteLnLine(Self, L('Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl + B)'), LINE_INFO_OK);
 
- TopRecords:=2;
+  TopRecords := 2;
 
- Timer1.Enabled:=false;
- Options.WriteLineProc:=WriteLine;
- Options.WriteLnLineProc:=WriteLnLine;
- Options.OnEndProcedure:=OnEnd;
- Options.FileName:=DBName;
- Options.GetFilesWithoutPassProc:=PasswordKeeper.GetActiveFiles;
- Options.AddCryptFileToListProc:=PasswordKeeper.AddCryptFileToListProc;
- Options.GetAvaliableCryptFileList:=PasswordKeeper.GetAvaliableCryptFileList;
- Options.OnProgress:=ProgressCallBack;
- FProgressEnabled:=true;
- RecreatingThInTable.Create(Options);
- Working:=True;
- Recreating:=True;
- CMDForm.ShowModal;
- PasswordKeeper.Free;
+  Timer1.Enabled := False;
+  Options.WriteLineProc := WriteLine;
+  Options.WriteLnLineProc := WriteLnLine;
+  Options.OnEndProcedure := OnEnd;
+  Options.FileName := DBName;
+  Options.GetFilesWithoutPassProc := PasswordKeeper.GetActiveFiles;
+  Options.AddCryptFileToListProc := PasswordKeeper.AddCryptFileToListProc;
+  Options.GetAvaliableCryptFileList := PasswordKeeper.GetAvaliableCryptFileList;
+  Options.OnProgress := ProgressCallBack;
+  FProgressEnabled := True;
+  RecreatingThInTable.Create(Options);
+  Working := True;
+  Recreating := True;
+  CMDForm.ShowModal;
+  F(PasswordKeeper);
 end;
 
 procedure TCMDForm.RestoreTable(FileName : String);
 var
-  Options : TRestoreThreadOptions;
+  Options: TRestoreThreadOptions;
 begin
 
- WriteLnLine(Self,TEXT_MES_RESTORING_TABLE,LINE_INFO_INFO);
- WriteLnLine(Self,'['+FileName+']',LINE_INFO_DB);
- WriteLnLine(Self,TEXT_MES_RESTORING,LINE_INFO_INFO);
- WriteLnLine(Self,TEXT_MES_BEGIN_RESTORING_TABLE,LINE_INFO_OK);
- SetWideIndex;
+  WriteLnLine(Self, L('Restoring collection:'), LINE_INFO_INFO);
+  WriteLnLine(Self, '[' + FileName + ']', LINE_INFO_DB);
+  WriteLnLine(Self, L('Restoring'), LINE_INFO_INFO);
+  WriteLnLine(Self, L('Starting restoring of collection. Please wait...'), LINE_INFO_OK);
+  SetWideIndex;
 
- Timer1.Enabled:=true;
- Options.WriteLineProc:=WriteLine;
- Options.OnEnd:=OnEnd;
- Options.FileName:=FileName;
+  Timer1.Enabled := True;
+  Options.WriteLineProc := WriteLine;
+  Options.OnEnd := OnEnd;
+  Options.FileName := FileName;
 
- ThreadRestoreTable.Create(Options);
- Working:=True;
- Recreating:=True;
- CMDForm.ShowModal;
+  ThreadRestoreTable.Create(Options);
+  Working := True;
+  Recreating := True;
+  CMDForm.ShowModal;
 end;
 
 procedure TCMDForm.ApplicationEvents1Message(var Msg: tagMSG;
@@ -239,132 +241,138 @@ end;
 
 procedure TCMDForm.ShowBadLinks;
 var
-   Options: TShowBadLinksThreadOptions;
+  Options: TShowBadLinksThreadOptions;
 begin
- WriteLnLine(Self,TEXT_MES_BAD_LINKS_TABLE,LINE_INFO_INFO);
- WriteLnLine(Self,'['+dbname+']',LINE_INFO_DB);
- SetWideIndex;
- WriteLnLine(Self,TEXT_MES_BAD_LINKS_TABLE_WORKING_1,LINE_INFO_INFO);
- WriteLnLine(Self,TEXT_MES_BAD_LINKS_TABLE_WORKING,LINE_INFO_OK);
- TopRecords:=2;
+  WriteLnLine(Self, L('Will be searched for invalid references in the collection:'), LINE_INFO_INFO);
+  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
+  SetWideIndex;
+  WriteLnLine(Self, L('Search is executing'), LINE_INFO_INFO);
+  WriteLnLine(Self, L('Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)'), LINE_INFO_OK);
+  TopRecords := 2;
 
- Timer1.Enabled:=false;
+  Timer1.Enabled := False;
 
- Options.WriteLineProc:=WriteLine;
- Options.WriteLnLineProc:=WriteLnLine;
- Options.OnEnd:=OnEnd;
- Options.FileName:=DBName;
- Options.OnProgress:=ProgressCallBack;
- FProgressEnabled:=true;
+  Options.WriteLineProc := WriteLine;
+  Options.WriteLnLineProc := WriteLnLine;
+  Options.OnEnd := OnEnd;
+  Options.FileName := DBName;
+  Options.OnProgress := ProgressCallBack;
+  FProgressEnabled := True;
 
- TThreadShowBadLinks.Create(Options);
- Working:=True;
- Recreating:=true;
- CMDForm.ShowModal;
- TextToClipboard(InfoListBox.Items.Text);
+  TThreadShowBadLinks.Create(Options);
+  Working := True;
+  Recreating := True;
+  CMDForm.ShowModal;
+  TextToClipboard(InfoListBox.Items.Text);
 end;
 
 procedure TCMDForm.BackUpTable;
 var
-   Options: TBackUpTableThreadOptions;
+  Options: TBackUpTableThreadOptions;
 begin
 
- WriteLnLine(Self,TEXT_MES_BACK_UP_TABLE,LINE_INFO_INFO);
- WriteLnLine(Self,'['+dbname+']',LINE_INFO_DB);
- WriteLnLine(Self,TEXT_MES_PROSESSING_,LINE_INFO_OK);
- SetWideIndex;
- TopRecords:=0;
+  WriteLnLine(Self, L('Backing up the collection'), LINE_INFO_INFO);
+  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
+  WriteLnLine(Self, L('Performing:'), LINE_INFO_OK);
+  SetWideIndex;
+  TopRecords := 0;
 
- Options.WriteLineProc:=WriteLine;
- Options.WriteLnLineProc:=WriteLnLine;
- Options.OnEnd:=OnEnd;
- Options.FileName:=DBName;
+  Options.WriteLineProc := WriteLine;
+  Options.WriteLnLineProc := WriteLnLine;
+  Options.OnEnd := OnEnd;
+  Options.FileName := DBName;
 
- Timer1.Enabled:=false;
- BackUpTableInCMD.Create(Options);
- Working:=True;
- Recreating:=True;
- CMDForm.ShowModal;
+  Timer1.Enabled := False;
+  BackUpTableInCMD.Create(Options);
+  Working := True;
+  Recreating := True;
+  CMDForm.ShowModal;
 end;
 
 procedure TCMDForm.OptimizeDublicates;
 var
-   Options: TOptimizeDublicatesThreadOptions;
+  Options: TOptimizeDublicatesThreadOptions;
 begin
- WriteLnLine(Self,TEXT_MES_OPTIMIZANG_DUBLICATES,LINE_INFO_INFO);
- WriteLnLine(Self,'['+dbname+']',LINE_INFO_DB);
- SetWideIndex;
- WriteLnLine(Self,TEXT_MES_OPTIMIZANG_DUBLICATES_WORKING_1,LINE_INFO_INFO);
- WriteLnLine(Self,TEXT_MES_OPTIMIZANG_DUBLICATES_WORKING,LINE_INFO_OK);
- TopRecords:=2;
+  WriteLnLine(Self, L('Optimization duplicates ... (Press Ctrl + B to break the process)'), LINE_INFO_INFO);
+  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
+  SetWideIndex;
+  WriteLnLine(Self, L('Performing scanning the collection'), LINE_INFO_INFO);
+  WriteLnLine(Self, L('Performing scanning the collection, please wait...'), LINE_INFO_OK);
+  TopRecords := 2;
 
- Options.WriteLineProc:=WriteLine;
- Options.WriteLnLineProc:=WriteLnLine;
- Options.OnEnd:=OnEnd;
- Options.FileName:=DBName;
- Options.OnProgress:=ProgressCallBack;
- FProgressEnabled:=true;
+  Options.WriteLineProc := WriteLine;
+  Options.WriteLnLineProc := WriteLnLine;
+  Options.OnEnd := OnEnd;
+  Options.FileName := DBName;
+  Options.OnProgress := ProgressCallBack;
+  FProgressEnabled := True;
 
- Timer1.Enabled:=false;
- TThreadOptimizeDublicates.Create(Options);
- Working:=True;
- Recreating:=true;
- CMDForm.ShowModal;
- TextToClipboard(InfoListBox.Items.Text);
+  Timer1.Enabled := False;
+  TThreadOptimizeDublicates.Create(Options);
+  Working := True;
+  Recreating := True;
+  CMDForm.ShowModal;
+  TextToClipboard(InfoListBox.Items.Text);
 end;
 
-procedure TCMDForm.WriteLine(Sender: TObject; Line: string; Info : integer);
+procedure TCMDForm.WriteLine(Sender: TObject; Line: string; Info: Integer);
 begin
- BeginScreenUpdate(Handle);
- PInteger(ItemsData[0])^:=Info;
- InfoListBox.Items[0]:=Line;
- EndScreenUpdate(Handle,false);
+  BeginScreenUpdate(Handle);
+  try
+    PInteger(ItemsData[0])^ := Info;
+    InfoListBox.Items[0] := Line;
+  finally
+    EndScreenUpdate(Handle, False);
+  end;
 end;
 
 procedure TCMDForm.WriteLnLine(Sender: TObject; Line: string; Info : integer);
 var
-  p : PInteger;
+  P: PInteger;
 begin
- if Info=LINE_INFO_INFO then
- begin
-  FInfo:=Line;
-  exit;
- end;
- LockWindowUpdate(Handle);
- Infos.Insert(0, FInfo);
+  if Info = LINE_INFO_INFO then
+  begin
+    FInfo := Line;
+    Exit;
+  end;
+  LockWindowUpdate(Handle);
+  try
+    Infos.Insert(0, FInfo);
 
- GetMem(p,SizeOf(integer));
- p^:=Info;
- ItemsData.Insert( TopRecords,p);
- InfoListBox.Items.Insert( TopRecords,Line);
+    GetMem(P, SizeOf(Integer));
+    P^ := Info;
+    ItemsData.Insert(TopRecords, P);
+    InfoListBox.Items.Insert(TopRecords, Line);
 
- FInfo:='';
-
- LockWindowUpdate(0);
+    FInfo := '';
+  finally
+    LockWindowUpdate(0);
+  end;
 end;
 
 procedure TCMDForm.PasswordTimerTimer(Sender: TObject);
 var
-  PasswordList : TArCardinal;
-  i : integer;
+  PasswordList: TArCardinal;
+  I: Integer;
 begin
- PasswordList:=nil;
- if PasswordKeeper=nil then exit;
- if PasswordKeeper.Count>0 then
- begin
-  PasswordTimer.Enabled:=false;
-  PasswordList:=PasswordKeeper.GetPasswords;
-  for i:=0 to Length(PasswordList)-1 do
+  PasswordList := nil;
+  if PasswordKeeper = nil then
+    Exit;
+  if PasswordKeeper.Count > 0 then
   begin
-   PasswordKeeper.TryGetPasswordFromUser(PasswordList[i]);
+    PasswordTimer.Enabled := False;
+    PasswordList := PasswordKeeper.GetPasswords;
+    for I := 0 to Length(PasswordList) - 1 do
+    begin
+      PasswordKeeper.TryGetPasswordFromUser(PasswordList[I]);
+    end;
+    PasswordTimer.Enabled := True;
   end;
-  PasswordTimer.Enabled:=true;
- end;
 end;
 
 procedure TCMDForm.FormDestroy(Sender: TObject);
 begin
- ItemsData.Free;
+  F(ItemsData);
 end;
 
 function TCMDForm.GetFormID: string;
@@ -395,28 +403,26 @@ begin
   AddIcon('ADMINTOOLS');
 end;
 
-procedure TCMDForm.ProgressCallBack(Sender: TObject;
-  var Info: TProgressCallBackInfo);
+procedure TCMDForm.ProgressCallBack(Sender: TObject; var Info: TProgressCallBackInfo);
 begin
- if TempProgress.MaxValue<>Info.MaxValue then
- TempProgress.MaxValue:=Info.MaxValue;
- TempProgress.Position:=Info.Position;
+  if TempProgress.MaxValue <> Info.MaxValue then
+    TempProgress.MaxValue := Info.MaxValue;
+  TempProgress.Position := Info.Position;
 end;
 
 procedure TCMDForm.InfoListBoxMeasureItem(Control: TWinControl;
   Index: Integer; var Height: Integer);
 begin
- if Index=CurrentWideIndex then
- begin
-//  CurrentWideIndex:=-1;
-  Height:=InfoListBox.Canvas.TextHeight('Iy')*5+5
- end else
- Height:=InfoListBox.Canvas.TextHeight('Iy')*3+5;
+  if index = CurrentWideIndex then
+  begin
+    Height := InfoListBox.Canvas.TextHeight('Iy') * 5 + 5
+  end else
+    Height := InfoListBox.Canvas.TextHeight('Iy') * 3 + 5;
 end;
 
 procedure TCMDForm.SetWideIndex;
 begin
- CurrentWideIndex:=InfoListBox.Items.Count-2;
+  CurrentWideIndex := InfoListBox.Items.Count - 2;
 end;
 
 procedure TCMDForm.InfoListBoxDrawItem(Control: TWinControl; index: Integer; Rect: TRect; State: TOwnerDrawState);

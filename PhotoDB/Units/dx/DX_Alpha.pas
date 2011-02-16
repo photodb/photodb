@@ -5,10 +5,11 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, jpeg, AppEvnts, Dolphin_DB, DDraw,
-  Language, Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils;
+  Language, Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils,
+  uDBForm;
 
 type
-  TDirectShowForm = class(TForm)
+  TDirectShowForm = class(TDBForm)
     MouseTimer: TTimer;
     ApplicationEvents1: TApplicationEvents;
     DelayTimer: TTimer;
@@ -53,14 +54,17 @@ type
     procedure DestroyTimerTimer(Sender: TObject);
     function CallBack(CallbackInfo : TCallbackInfo) : TDirectXSlideShowCreatorCallBackResult;
   private
+    { Private declarations }
     FReady: Boolean;
     FForwardThreadExists: Boolean;
     FForwardFileName: String;
     procedure SetReady(const Value: boolean);
     procedure SetForwardThreadExists(const Value: boolean);
     procedure SetForwardFileName(const Value: String);
-    { Private declarations }
+  protected
+    function GetFormID : string; override;
   public
+    { Public declarations }
     FPlay: Boolean;
     SID: TGUID;
     ForwardSID: TGUID;
@@ -70,7 +74,6 @@ type
     property Ready : boolean read FReady write SetReady;
     property ForwardThreadExists : boolean read FForwardThreadExists Write SetForwardThreadExists;
     property ForwardFileName : String read FForwardFileName Write SetForwardFileName;
-    { Public declarations }
   end;
 
 var
@@ -493,7 +496,7 @@ begin
   //Это - первый источник для преобразования.
  DirectDraw4.CreateSurface (SurfaceDesc, Buffer, nil);
  except
-  ShowMessage(TEXT_MES_DIRECT_X_FAILTURE);
+   on e : Exception do ShowMessage(L('Error initializing graphics mode: %s', e.Message));
  end;
  //Ксати, ни один файл еще не загружен.
  FileLoaded := false;
@@ -734,6 +737,11 @@ begin
  if FloatPanel=nil then exit;
  FloatPanel.Top:=0;
  FloatPanel.Left:=ClientWidth-FloatPanel.Width;
+end;
+
+function TDirectShowForm.GetFormID: string;
+begin
+  Result := 'Viewer';
 end;
 
 procedure TDirectShowForm.ReTransForm(Alpha: byte);

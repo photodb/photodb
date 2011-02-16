@@ -662,7 +662,7 @@ begin
   if GetExplorerByCID(CID) <> nil then
     GetExplorerByCID(CID).Show;
   if GetProgressByCID(CID) <> nil then
-    GetProgressByCID(CID).DoShow;
+    GetProgressByCID(CID).DoFormShow;
   if GetPanelByCID(CID) <> nil then
     GetPanelByCID(CID).Show;
 end;

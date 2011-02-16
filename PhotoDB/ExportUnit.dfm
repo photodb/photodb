@@ -38,24 +38,13 @@ object ExportForm: TExportForm
     Height = 13
     Caption = '[no records]'
   end
-  object Edit1: TEdit
-    Left = 8
-    Top = 8
-    Width = 288
-    Height = 21
-    ReadOnly = True
-    TabOrder = 0
-    Text = '<no file>'
-    OnChange = Edit1Change
-    OnKeyPress = Edit1KeyPress
-  end
   object Button1: TButton
     Left = 296
     Top = 8
     Width = 17
     Height = 19
     Caption = '...'
-    TabOrder = 1
+    TabOrder = 0
     OnClick = Button1Click
   end
   object CbPrivate: TCheckBox
@@ -64,7 +53,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Private Records'
-    TabOrder = 2
+    TabOrder = 1
   end
   object CbRating: TCheckBox
     Left = 8
@@ -72,7 +61,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Only Rating Records'
-    TabOrder = 3
+    TabOrder = 2
   end
   object CbWithoutFiles: TCheckBox
     Left = 8
@@ -80,7 +69,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Records Without Files'
-    TabOrder = 4
+    TabOrder = 3
   end
   object PbMain: TDmProgress
     Left = 8
@@ -106,7 +95,7 @@ object ExportForm: TExportForm
     Width = 107
     Height = 17
     Caption = 'Begin Export'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = BtnStartClick
   end
   object CbGroups: TCheckBox
@@ -115,7 +104,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Groups'
-    TabOrder = 7
+    TabOrder = 6
   end
   object CbCrypted: TCheckBox
     Left = 7
@@ -123,7 +112,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Crypted'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = CbCryptedClick
   end
   object CbCryptedPass: TCheckBox
@@ -133,7 +122,7 @@ object ExportForm: TExportForm
     Height = 17
     Caption = 'Export crypted if password exists'
     Enabled = False
-    TabOrder = 9
+    TabOrder = 8
   end
   object BtnBreak: TButton
     Left = 96
@@ -142,8 +131,16 @@ object ExportForm: TExportForm
     Height = 17
     Caption = 'Break'
     Enabled = False
-    TabOrder = 10
+    TabOrder = 9
     OnClick = BtnBreakClick
+  end
+  object EdName: TWatermarkedEdit
+    Left = 8
+    Top = 8
+    Width = 289
+    Height = 21
+    TabOrder = 10
+    WatermarkText = 'Please select a file'
   end
   object SaveDialog1: TSaveDialog
     Filter = 'PhotoDB Files (*.photodb)|*.photodb'

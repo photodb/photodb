@@ -1009,7 +1009,7 @@ begin
    ProgressForm.OneOperation:=false;
    ProgressForm.MaxPosCurrentOperation:=Length(SelectedInfo.Ids);
    ProgressForm.xPosition:=0;
-   ProgressForm.DoShow;
+   ProgressForm.DoFormShow;
   end;
 
   //[BEGIN] Date Support

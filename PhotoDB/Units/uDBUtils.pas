@@ -1291,6 +1291,7 @@ var
   DBVersion: Integer;
 
 begin
+  Result := False;
   if FileExists(DB) then
   begin
     DBVersion := DBKernel.TestDBEx(DB);
@@ -1301,6 +1302,7 @@ begin
       EventInfo.name := Dbname;
       LastInseredID := 0;
       DBKernel.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
+      Result := True;
       Exit;
     end
   end;

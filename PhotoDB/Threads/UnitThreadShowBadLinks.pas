@@ -77,7 +77,7 @@ begin
   exit;
  end;
  FIntParam:=LINE_INFO_OK;
- FStrParam:=TEXT_MES_BAD_LINKS_TABLE_WORKING;
+ FStrParam:=TA('Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)', 'CMD');
  Synchronize(TextOutEx);
  Table.First;
  Repeat

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, DmProgress, Language, Dolphin_DB, AppEvnts,
+  Dialogs, ExtCtrls, StdCtrls, DmProgress, Dolphin_DB, AppEvnts,
   uVistaFuncs, uGOM, uMemory, uShellIntegration, uSysUtils, uDBForm;
 
 type
@@ -49,7 +49,7 @@ type
     WindowID: TGUID;
     Closed: Boolean;
     WindowCanClose: Boolean;
-    procedure DoShow;
+    procedure DoFormShow;
     procedure SetMaxOneValue(Value: Int64);
     procedure SetMaxTwoValue(Value: Int64);
     procedure ReCount;
@@ -96,7 +96,7 @@ begin
   Result := TProgressActionForm.Create(Application, Background);
 end;
 
-procedure TProgressActionForm.DoShow;
+procedure TProgressActionForm.DoFormShow;
 begin
   if not CanClosedByUser then
     DisableWindowCloseButton(Handle);
@@ -127,12 +127,12 @@ procedure TProgressActionForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Label3.Caption := TEXT_MES_WAIT_ACTION;
-    Label2.Caption := TEXT_MES_TASKS + ':';
+    Label3.Caption := L('Please wait while the program performs the current operation and updates the the collection.');
+    Label2.Caption := L('Tasks') + ':';
     Label1.Caption := L('Current action') + ':';
-    Caption := TEXT_MES_PROGRESS_FORM;
-    OperationCounter.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
-    OperationProgress.Text := TEXT_MES_DEFAULT_PROGRESS_TEXT;
+    Caption := L('Action is performed');
+    OperationCounter.Text := L('Processing... (&%%)');
+    OperationProgress.Text := L('Processing... (&%%)');
   finally
     EndTranslate;
   end;
@@ -146,8 +146,7 @@ begin
     OperationProgress.Position := FPosition;
     OperationCounter.MaxValue := FMaxPosCurrentOperation;
     OperationCounter.Position := FPosition;
-  end
-  else
+  end else
   begin
     OperationProgress.MaxValue := FMaxPosCurrentOperation;
     OperationProgress.Position := FPosition;
@@ -274,7 +273,7 @@ procedure TProgressActionForm.FormCloseQuery(Sender: TObject;
 begin
   if CanClosedByUser then
   begin
-    Closed := ID_YES = MessageBoxDB(Handle, TEXT_MES_DO_YOU_REALLY_WANT_CANCEL_OPERATION, L('Question'),
+    Closed := ID_YES = MessageBoxDB(Handle, L('Do you really want to abort the operation?'), L('Question'),
       TD_BUTTON_YESNO, TD_ICON_QUESTION);
     CanClose := WindowCanClose;
   end;

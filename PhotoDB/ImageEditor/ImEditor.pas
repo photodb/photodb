@@ -2174,13 +2174,13 @@ begin
                   EXIFSection.ExifObj.WriteThruInt('Orientation',1); //Normal orientation!!!
                   EXIFSection.ExifObj.AdjExifSize(CurrentImage.Width, CurrentImage.Height);
                   except
-                  MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
+                  MessageBoxDB(Handle, PWideChar(Format(CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
                   end;
                   end;
                   try
                   EXIFSection.WriteEXIFJpeg((Image as TJPEGImage),FileName);
                   except
-                  MessageBoxDB(Handle, PWideChar(Format(TEXT_MES_CANT_WRITE_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
+                  MessageBoxDB(Handle, PWideChar(Format(CANT_WRITE_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
                   end;
                   end else }
                 begin

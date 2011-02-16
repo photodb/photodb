@@ -44,14 +44,14 @@ type
 
     fSpsearch_ShowFolderid : integer;
     fSpsearch_ShowFolder : string;
-    fSpsearch_ShowFoldername : string;
+ //   fSpsearch_ShowFoldername : string;
     fSpsearch_ShowThFile : string;
     fSpsearch_ScanFile : string;
     fSpsearch_ScanFilePersent : Extended;
     fSpsearch_ScanFileRotate : boolean;
     ImThs : TArStrings;
-    FCurrentFile : String;
-    StringParam : String;
+  //  FCurrentFile : String;
+//    StringParam : String;
     FSearchParams : TSearchQuery;
     IthIds : TArInteger;
     StrParam : String;
@@ -59,8 +59,8 @@ type
     procedure ErrorSQL;
     function CreateQuery : TDBQueryParams;
     procedure DoOnDone;
-    procedure SetSearchPathW(Path : String);
-    procedure SetSearchPath;
+//    procedure SetSearchPathW(Path : String);
+//    procedure SetSearchPath;
     procedure GetWideSearchOptions(Params : TDBQueryParams);
     function AddOptions(SqlQuery : string) : string;
     procedure SetProgressText(Value : String);
@@ -69,9 +69,9 @@ type
     procedure SetMaxValueA;
     procedure SetProgress(Value : Integer);
     procedure SetProgressA;
-    procedure DoSetSearchByComparing;
+//    procedure DoSetSearchByComparing;
     procedure GetFilter(Params : TDBQueryParams; Attr : Integer);
-    procedure GetPassForFile;
+//    procedure GetPassForFile;
     procedure StartLoadingList;
   protected
     RatingParam, LastMonth, LastYear, LastRating : integer;
@@ -374,7 +374,7 @@ begin
        except
          on e : Exception do
          begin
-           fErrorMsg:=e.Message+#13+TEXT_MES_QUERY_FAILED;
+           fErrorMsg:=e.Message;
            SynchronizeEx(ErrorSQL);
            exit;
          end;
@@ -401,7 +401,7 @@ begin
      except
        on e : Exception do
        begin
-         fErrorMsg := e.Message + #13 + TEXT_MES_QUERY_FAILED;
+         fErrorMsg := e.Message;
          SynchronizeEx(ErrorSQL);
        end;
      end;
@@ -477,7 +477,7 @@ begin
     except
       on e : Exception do
       begin
-        fErrorMsg:=e.Message+#13+TEXT_MES_QUERY_FAILED;
+        fErrorMsg:=e.Message;
         SynchronizeEx(ErrorSQL);
       end;
     end;
@@ -999,17 +999,17 @@ begin
  end;
 end;
 
-procedure SearchThread.SetSearchPath;
+{procedure SearchThread.SetSearchPath;
 begin
   (ThreadForm as TSearchForm).SetPath(StringParam);
-end;
+end;}
 
-procedure SearchThread.SetSearchPathW(Path: String);
+{procedure SearchThread.SetSearchPathW(Path: String);
 begin
  if not DirectoryExists(Path) then exit;
  StringParam:=Path;
  SynchronizeEx(SetSearchPath);
-end;
+end; }
 
 procedure SearchThread.GetWideSearchOptions(Params : TDBQueryParams);
 var
@@ -1092,15 +1092,15 @@ begin
     Result := SqlQuery
 end;
 
-procedure SearchThread.DoSetSearchByComparing;
+{procedure SearchThread.DoSetSearchByComparing;
 begin
   (ThreadForm as TSearchForm).DoSetSearchByComparing;
-end;
+end; }
 
-procedure SearchThread.GetPassForFile;
+{procedure SearchThread.GetPassForFile;
 begin
   StrParam := GetImagePasswordFromUser(StrParam);
-end;
+end;}
 
 procedure SearchThread.LoadImages;
 var

@@ -955,7 +955,7 @@ begin
         ProgressForm.OneOperation := False;
         ProgressForm.MaxPosCurrentOperation := FFilesInfo.Count;
         ProgressForm.XPosition := 0;
-        ProgressForm.DoShow;
+        ProgressForm.DoFormShow;
       end;
 
       // [BEGIN] Include Support

@@ -5,11 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uVistaFuncs,
-  uShellIntegration, uDBForm;
+  uShellIntegration, uDBForm, WatermarkedEdit;
 
 type
   TExportForm = class(TDBForm)
-    Edit1: TEdit;
     Button1: TButton;
     CbPrivate: TCheckBox;
     CbRating: TCheckBox;
@@ -24,6 +23,7 @@ type
     CbCryptedPass: TCheckBox;
     BtnBreak: TButton;
     DestroyTimer: TTimer;
+    EdName: TWatermarkedEdit;
     procedure BtnStartClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
@@ -32,7 +32,7 @@ type
     procedure SetProgressPosition(Value : Integer);
     procedure SetProgressText(Value : String);
     procedure Edit1Change(Sender: TObject);
-    procedure DoExit(Sender: TObject);
+    procedure DoFormExit(Sender: TObject);
     procedure Execute;
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -53,7 +53,7 @@ var
 
 implementation
 
-uses UnitExportThread, Language;
+uses UnitExportThread;
 
 {$R *.dfm}
 
@@ -62,13 +62,13 @@ var
   Options: TExportOptions;
   F: TextFile;
 begin
-  System.Assign(F, Edit1.text);
+  System.Assign(F, EdName.text);
 {$I-}
   System.Rewrite(F);
 {$I+}
   if IOResult <> 0 then
   begin
-    MessageBoxDB(Handle, Format(TEXT_MES_CANNOT_CREATE_FILE_F, [Edit1.text]),
+    MessageBoxDB(Handle, Format(L('Can not create file "%s"'), [EdName.text]),
       L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
     Exit;
   end;
@@ -81,7 +81,7 @@ begin
   Options.ExportGroups := CbGroups.Checked;
   Options.ExportCrypt := CbCrypted.Checked;
   Options.ExportCryptIfPassFinded := CbCryptedPass.Checked and CbCrypted.Enabled; ;
-  Options.FileName := Edit1.text;
+  Options.FileName := EdName.text;
   CbPrivate.Enabled := False;
   CbRating.Enabled := False;
   CbWithoutFiles.Enabled := False;
@@ -101,11 +101,11 @@ begin
       SaveDialog1.FileName := SaveDialog1.FileName + '.photodb';
 
     if FileExists(SaveDialog1.FileName) then
-      if ID_OK <> MessageBoxDB(Handle, Format(L('File &quot;%s&quot; already exists! $nl$Replace?'), [SaveDialog1.FileName]), L('Warning'),
+      if ID_OK <> MessageBoxDB(Handle, Format(L('File "%s" already exists! $nl$Replace?'), [SaveDialog1.FileName]), L('Warning'),
         TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         Exit;
 
-    Edit1.Text := SaveDialog1.FileName;
+    EdName.Text := SaveDialog1.FileName;
   end;
 end;
 
@@ -113,9 +113,7 @@ procedure TExportForm.Edit1KeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = #8 then
     if not Working then
-    begin
-      Edit1.Text := TEXT_MES_NO_FILEA;
-    end;
+      EdName.Text := '';
 end;
 
 procedure TExportForm.SetRecordText(Value: string);
@@ -125,7 +123,7 @@ end;
 
 procedure TExportForm.Edit1Change(Sender: TObject);
 begin
-  BtnStart.Enabled := Edit1.Text <> TEXT_MES_NO_FILEA
+  BtnStart.Enabled := EdName.Text <> '';
 end;
 
 procedure TExportForm.Execute;
@@ -159,10 +157,10 @@ begin
   PbMain.Text := Value;
 end;
 
-procedure TExportForm.DoExit(Sender: TObject);
+procedure TExportForm.DoFormExit(Sender: TObject);
 begin
- Working:=false;
- Close;
+  Working := False;
+  Close;
 end;
 
 procedure TExportForm.FormCloseQuery(Sender: TObject;
@@ -186,6 +184,7 @@ begin
     BtnBreak.Caption := L('Break!');
     Label1.Caption := L('Item') + ':';
     PbMain.text := L('Executing... (&%%)');
+    EdName.WatermarkText := L('Please select a file');
   finally
     EndTranslate;
   end;

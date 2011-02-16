@@ -33,6 +33,8 @@
   <scope name="System">
     <translate name="Get photos" value="Получить фотографии" />
     <translate name="Browse with PhotoDB" value="Проводник с PhotoDB" />
+    <translate name="After the 30 days has expired, you must activate your copy!" value="Время работы программы истекло! Вы должны активизировать данную копию!" />
+    <translate name="Application is damaged! Possible it is infected by a virus!" value="Приложение повреждено! Возможно, что оно инфицировано каким-либо вирусом!" />
   </scope>
   <scope name="Setup">
     <translate name="Friends" value="Друзья" />
@@ -647,6 +649,9 @@
     <translate name="Rating (Ctrl+rating)" value="Оценка (Ctrl+оценка)" />
     <translate name="Image editor (Ctrl+E)" value="Редактор (Ctrl+E)" />
     <translate name="Properties (Ctrl+Z)" value="Свойства (Ctrl+Z)" />
+    <translate name="Error initializing graphics mode: %s" value="Ошибка инициализации графического режима: %s" />
+	
+	
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -1440,14 +1445,6 @@
 	<translate name="PhotoDB files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
 	<translate name="Path" value="Размещение"/>
   </scope>
-  <scope name="Replace">
-	<translate name="Delete" value="Удалить"/>
-	<translate name="Path" value="Размещение"/>
-	<translate name="Add" value="Добавить"/>
-	<translate name="Name" value="Имя"/>
-	<translate name="ID" value="ID"/>
-	<translate name="Rating" value="Оценка"/>
-  </scope>
   <scope name="Options">
 	<translate name="Options" value="Настройки"/>
 	<translate name="Backup" value="Резервное копирование"/>
@@ -1559,6 +1556,8 @@
 	<translate name="Begin export" value="Начать экспорт"/>
 	<translate name="Break!" value="Прервать!"/>
 	<translate name="Item" value="Запись"/>
+	<translate name="Can not create file &quot;%s&quot;" value="Невозможно создать файл &quot;%s&quot;"/>
+	<translate name="Please select a file" value="Выберите файл"/>	
   </scope>
   <scope name="DBCleaning">
 	<translate name="Save" value="Сохранить"/>
@@ -1594,13 +1593,54 @@
   </scope>
   <scope name="ActionProgress">
   	<translate name="Current action" value="Текущее действие"/>
-  </scope>
+  	<translate name="Please wait while the program performs the current operation and updates the the collection." value="Пожалуйста, подождите, пока программа выполнит текущую операцию и обновит базу данных."/>
+    <translate name="Do you really want to abort the operation?" value="Вы действительно хотите прервать выполнение текущей операции?"/>
+    <translate name="Tasks" value="Задачи"/>	
+    <translate name="Action is performed" value="Выполняется действие"/>
+	</scope>
   <scope name="ReplaceDBItem">
     <translate name="Width" value="Ширина"/>
     <translate name="Height" value="Высота"/>
     <translate name="Size" value="Размер"/>
+	<translate name="Delete" value="Удалить"/>
+	<translate name="Path" value="Размещение"/>
+	<translate name="Add" value="Добавить"/>
+	<translate name="Name" value="Имя"/>
+	<translate name="ID" value="ID"/>
+	<translate name="Rating" value="Оценка"/>
+	<translate name="Please select necessary action" value="Выберите необходимое действие"/>	
+	<translate name="Current information from file" value="Текущая информация по файлу"/>
+	<translate name="Replace for all" value="Заменить все"/>
+	<translate name="Skip for all" value="Пропустить все"/>
+	<translate name="Add for all" value="Добавить все"/>
+	<translate name="Replace" value="Заменить"/>
+	<translate name="Skip" value="Пропустить"/>
+	<translate name="Replace and delete duplicates" value="Заменить и удалить дубликаты"/>
+	<translate name="Delete file" value="Удалить файл"/>
+	<translate name="Current information from collection" value="Текущая информация по БД"/>
+	<translate name="Do you really want to delete this file?" value="Вы действительно хотите удалить этот файл?"/>
+	<translate name="%dpx." value="%dpx."/>
+	<translate name="Do you really want to delete this information from the collection?" value="Вы действительно хотите удалить эту информацию из БД?"/>
   </scope>
   <scope name="CMD">
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
+    <translate name="Welcome to %s!" value="Добро пожаловать в %s!"/>
+    <translate name="Packing table:" value="Упаковка таблицы:"/>	
+    <translate name="Commands window" value="Окно команд"/>	
+    <translate name="Please wait until the program completes the operation..." value="Подождите пока программа выполнит операцию..."/>
+    <translate name="Collection" value="База"/>	
+    <translate name="Updating..." value="Обновление..."/>	
+    <translate name="Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl + B)" value="Начало обновления таблицы. Это долгое действие, пожалуйста - подождите... (чтобы прервать действие, нажмите Ctrl+B)"/>
+    <translate name="Restoring collection:" value="Восстановление БД:"/>
+    <translate name="Restoring" value="Восстановление"/>
+    <translate name="Starting restoring of collection. Please wait..." value="Начало обновления таблицы. Пожалуйста - подождите..."/>
+    <translate name="Will be searched for invalid references in the collection:" value="Будет произведён поиск недействительных ссылок по БД:"/>
+    <translate name="Search is executing" value="Выполняется поиск"/>
+	<translate name="Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)" value="Выполняется поиск, пожалуйста, подождите... $nl$(по завершению лог будет скопирован в буфер обмена)"/>
+	<translate name="Backing up the collection" value="Backing up the database"/>
+	<translate name="Performing:" value="Выполняется:"/>
+	<translate name="Optimization duplicates ... (Press Ctrl + B to break the process)" value="Оптимизация дубликатов... (Ctrl+B для прекращения)"/>
+	<translate name="Performing scanning the collection" value="Выполняется сканирование БД"/>
+	<translate name="Performing scanning the collection, please wait..." value="Выполняется сканирование БД, пожалуйста, подождите..."/>
   </scope>
 </language>
