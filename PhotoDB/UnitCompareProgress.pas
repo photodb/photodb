@@ -45,7 +45,7 @@ var
 
 implementation
 
-uses UnitCmpDB, Language, FormManegerUnit;
+uses UnitCmpDB, FormManegerUnit;
 
 {$R *.dfm}
 
@@ -69,8 +69,6 @@ end;
 procedure TImportProgressForm.FormCreate(Sender: TObject);
 begin
   FormManager.RegisterMainForm(self);
-  StatusLabel.Caption := L('Waiting') + '...';
-  ActionLabel.Caption := L('Waiting') + '...';
   PbMain.MaxValue := 1;
   PbItemsAdded.MaxValue := 1;
   PbItemsUpdated.MaxValue := 1;
@@ -97,7 +95,7 @@ end;
 
 procedure TImportProgressForm.FormDestroy(Sender: TObject);
 begin
-  FormManager.UnRegisterMainForm(self);
+  FormManager.UnRegisterMainForm(Self);
 end;
 
 function TImportProgressForm.GetFormID: string;
@@ -130,16 +128,18 @@ begin
   try
     Caption := L('Import collection');
     PbMain.Text := L('Progress... (&%%)');
-    PbItemsAdded.Text := TEXT_MES_RECS_ADDED_PR;
-    PbItemsUpdated.Text := TEXT_MES_RECS_UPDATED_PR;
+    PbItemsAdded.Text := L('&%% (Added)');
+    PbItemsUpdated.Text := L('&%% (Updated)');
     BtnPause.Caption := L('Pause');
     BtnStop.Caption := L('Stop');
-    Label3.Caption := TEXT_MES_STATUS;
-    Label14.Caption := TEXT_MES_STATUS + ':';
+    Label3.Caption := L('Status');
+    Label14.Caption := L('Status') + ':';
     Label13.Caption := L('Current action') + ':';
-    ActionLabel.Caption := TEXT_MES_ACTIONA;
-    Label1.Caption := TEXT_MES_RECORDS_ADDED + ':';
-    Label2.Caption := TEXT_MES_RECORDS_UPDATED + ':';
+    ActionLabel.Caption := L('<Status>');
+    Label1.Caption := L('Records added') + ':';
+    Label2.Caption := L('Records updated') + ':';
+    StatusLabel.Caption := L('Waiting') + '...';
+    ActionLabel.Caption := L('Waiting') + '...';
   finally
     EndTranslate;
   end;

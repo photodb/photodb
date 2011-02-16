@@ -700,13 +700,13 @@ begin
   try
     Caption := TEXT_MES_CHOOSE_ACTION;
     Delete1.Caption := L('Delete');
-    LabelFName.Caption := TEXT_MES_NAME;
+    LabelFName.Caption := L('Name');
     LabelFSize.Caption := L('Size');
     LabelFWidth.Caption := L('Width');
     LabelFHeight.Caption := L('Height');
     LabelFPath.Caption := L('Path');
     LabelCurrentInfo.Caption := TEXT_MES_CURRENT_FILE_INFO + ':';
-    Button1.Caption := TEXT_MES_ADD;
+    Button1.Caption := L('Add');
     Button2.Caption := TEXT_MES_REPLACE_FOR_ALL;
     Button3.Caption := TEXT_MES_SKIP_FOR_ALL;
     Button4.Caption := TEXT_MES_ADD_FOR_ALL;
@@ -715,9 +715,9 @@ begin
     Button7.Caption := TEXT_MES_REPLACE_AND_DELETE_DUBLICATES;
     Button8.Caption := TEXT_MES_DELETE_FILE;
     LabelDBInfo.Caption := TEXT_MES_DB_FILE_INFO + ':';
-    DbLabel_id.Caption := TEXT_MES_ID;
-    LabelDBName.Caption := TEXT_MES_NAME;
-    LabelDBRating.Caption := TEXT_MES_RATING;
+    DbLabel_id.Caption := L('ID');
+    LabelDBName.Caption := L('Name');
+    LabelDBRating.Caption := L('Rating');
     LabelDBWidth.Caption := L('Width');
     LabelDBHeight.Caption := L('Height');
     LabelDBSize.Caption := L('Size');

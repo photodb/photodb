@@ -41,15 +41,11 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 407
     Height = 441
-    ActivePage = TsSecurity
+    ActivePage = TsGeneral
     TabOrder = 2
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object CheckBox4: TCheckBox
         Left = 232
         Top = 8
@@ -58,26 +54,10 @@ object OptionsForm: TOptionsForm
         Caption = 'Show Preview'
         TabOrder = 0
       end
-      object RadioGroup1: TRadioGroup
-        Left = 232
-        Top = 24
-        Width = 161
-        Height = 49
-        Caption = 'Hints'
-        ItemIndex = 1
-        Items.Strings = (
-          'Animated Show'
-          'Show Shadow')
-        TabOrder = 1
-      end
     end
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label27: TLabel
         Left = 272
         Top = 136
@@ -298,10 +278,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label15: TLabel
         Left = 6
         Top = 4
@@ -435,10 +411,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label23: TLabel
         Left = 9
         Top = 260
@@ -454,7 +426,7 @@ object OptionsForm: TOptionsForm
         Caption = 'User submenu caption'
       end
       object Label24: TLabel
-        Left = 137
+        Left = 143
         Top = 217
         Width = 41
         Height = 13
@@ -693,10 +665,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox2: TGroupBox
         Left = 8
         Top = 192
@@ -1095,10 +1063,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label32: TLabel
         Left = 134
         Top = 392

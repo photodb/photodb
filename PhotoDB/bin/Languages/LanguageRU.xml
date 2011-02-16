@@ -91,7 +91,7 @@
     <translate name="Error writing data on disk: %s." value="Ошибка записи данных на диск: %s." />
     <translate name="Watermark Options" value="Настнойки водяного знака" />
   </scope>
-  <scope name="Password">  
+  <scope name="Password">
     <translate name="Password" value="Пароль" />
     <translate name="Password confirm" value="Подтвердите пароль" />
     <translate name="Enter password for selected objects" value="Введите пароль для выбранных объектов" />
@@ -776,7 +776,7 @@
 	<translate name="Edit group" value="Редактировать группу" />
 	<translate name="Groups in DB not found! Do you want to create new group?" value="Группы в базе не найдены! Вы хотите создать новую группу?" />
   </scope> 
-  <scope name="NewGroup">  
+  <scope name="NewGroup">
 	<translate name="Group with this name already exists!" value="Группа с таким именем уже существует!" />
 	<translate name="Create new group" value="Создать новую группу" />
 	<translate name="Enter group name" value="Введите имя группы" />
@@ -790,7 +790,7 @@
 	<translate name="Include in quick group list" value="Включать в базовый список групп" />    
 	<translate name="Related groups" value="Связанные группы" />
   </scope> 
-  <scope name="GroupInfo">  
+  <scope name="GroupInfo">
 	<translate name="Group info" value="Информация о группе" />
 	<translate name="Group" value="Группа" />
 	<translate name="Date created" value="Дата создания" />
@@ -901,7 +901,7 @@
 	<translate name="Unable to find file %s by address &quot;%s&quot;" value="Невозможно найти файл %s по адресу &quot;%s&quot;" />	
 	<translate name="File %s is not found in this directory! Use this directory as a root of drive &quot;%s&quot;?" value="Файл %s не найден в этой директории! Использовать директорию как корнепую папку диска &quot;%s&quot;?" />
   </scope>
-  <scope name="CD mapping">    
+  <scope name="CD mapping">
     <translate name="CD mapping" value="Привязка дисков" />
 	<translate name="In this window you can manage your removable disks with photos. To connect a drive - select the drive or select the file &quot;%s&quot; in the file system" value="В этом окне вы можете управлять съемными диски с фотографиями. Чтобы подключить диск - выберите этот диск или выберите файл &quot;%s&quot; в файловой системе" />
 	<translate name="ID" value="ID" />
@@ -930,7 +930,7 @@
 	<translate name="New font" value="Новый шрифт" />
 	<translate name="Select font from list below" value="Выберите шрифт со списка ниже" />
   </scope>
-  <scope name="Editor">	
+  <scope name="Editor">
     <translate name="File &quot;%s&quot; already exists! Do you want to replace it?" value="Файл &quot;%s&quot; уже существует! Вы хотите его заменить?" />  
 	<translate name="Unable to open the image as you edit another image." value="Невозможно открыть изображение т.к. выполняется редактирование другого изображения." />
 	<translate name="Current font" value="Текущий шрифт" />
@@ -1052,7 +1052,7 @@
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
-  <scope name="RotateTool">	
+  <scope name="RotateTool">
 	<translate name="Сhoose action" value="Выберите действие" />
 	<translate name="Rotate left" value="Повернуть влево" />
 	<translate name="Rotate right" value="Повернуть вправо" />
@@ -1065,7 +1065,7 @@
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
-  <scope name="TextTool">	
+  <scope name="TextTool">
 	<translate name="Text" value="Текст" />
 	<translate name="My text" value="Мой текст" />
 	<translate name="Font name" value="Имя шрифта" />
@@ -1154,7 +1154,7 @@
 	<translate name="Printing ..." value="Идёт печать..." />
 	<translate name="Please wait until done printing..." value="Пожалуйста, подождите пока производится вывод на печать..." />
   </scope>
-  <scope name="Printer">    
+  <scope name="Printer">
 	<translate name="Generating preview" value="Генерация предпросмотра" />
 	<translate name="Add printer" value="Добавить принтер" />
 	<translate name="Printer setup" value="Настройки принтера" />
@@ -1272,9 +1272,6 @@
 	<translate name="Can not check updates!" value="Не удалось проверить обновления!"/>
 	<translate name="Нажмите для перехода на" value="Доступна новая версия (%s)!"/>
 	<translate name="This program isn't activated." value="Эта программа не активирована.>"/>
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
-	<translate name="Explorer" value="Проводник"/>
   </scope>
   <scope name="DBOptions">
 	<translate name="Change Collection Settings" value="Изменить опции БД"/>
@@ -1346,7 +1343,6 @@
 	<translate name="Collection name: &quot;%s&quot;" value="Имя базы: &quot;%s&quot;"/>
 	<translate name="Path to collection: &quot;%s&quot;" value="Путь к базе: &quot;%s&quot;"/>
 	<translate name="Path to icon: &quot;%s&quot;" value="Путь к иконке: &quot;%s&quot;"/>
-	
 	<translate name="Size of collection previews: %dpx" value="Размер изображений в базе: %dpx"/>
 	<translate name="Quality of images: %dpx" value="Качество изображений: %dpx"/>
 	<translate name="Preview size: %dpx" value="Предпросмотр: %dpx"/>
@@ -1447,6 +1443,10 @@
   <scope name="Replace">
 	<translate name="Delete" value="Удалить"/>
 	<translate name="Path" value="Размещение"/>
+	<translate name="Add" value="Добавить"/>
+	<translate name="Name" value="Имя"/>
+	<translate name="ID" value="ID"/>
+	<translate name="Rating" value="Оценка"/>
   </scope>
   <scope name="Options">
 	<translate name="Options" value="Настройки"/>
@@ -1459,6 +1459,90 @@
 	<translate name="Height" value="Высота"/>	
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>
+	<translate name="Add" value="Добавить"/>	
+	<translate name="User menu" value="Меню"/>	
+	<translate name="Security" value="Безопасность"/>	
+	<translate name="Global" value="Глобальные"/>	
+	<translate name="Don't use this extension" value="Не использовать это расширение"/>
+	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
+	<translate name="Add menu item" value="Использовать пункт в меню"/>	
+	<translate name="Show previews" value="Показывать предпросмотр"/>	
+	<translate name="Show object types" value="Показывать следующие объекты"/>	
+	<translate name="Folders" value="Папки"/>
+	<translate name="Simple files" value="Простые файлы"/>
+	<translate name="Images" value="Изображения"/>
+	<translate name="Hidden files" value="Скрытые файлы"/>	
+	<translate name="Preview options" value="Опции предпросмотров"/>	
+	<translate name="Display attributes" value="Показывать атрибуты"/>	
+	<translate name="Display previews for folders" value="Показывать предпросмотр для папок"/>
+	<translate name="Save preview for folders" value="Сохранять предпросмотр для папок"/>
+	<translate name="Show previews for images" value="Показывать предпросмотр для изображений"/>
+	<translate name="Use high-quality rendering" value="Использовать качественную прорисовку"/>
+	<translate name="Extensions" value="Текущие расширения"/>	
+	<translate name="WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!" value="ВНИМАНИЕ: Используйте возможности шифрования осторожно. Если Вы забыли пароль к каким-либо изображениям, их восстановить невозможно!"/>
+	<translate name="Speed of displaying images for fullscreen: %d ms." value="Скорость слайдов для полноэкранного режима: %d ms."/>
+	<translate name="Grayscale effect speed: %d." value="Скорость для перехода в чёрно-белый цвет (загрузка): %d."/>
+	<translate name="Slide show delay: %d ms." value="Дополнительная задержка для Слайд-Шоу: %d ms."/>
+	<translate name="Number of steps for slide show: %d" value="Количество шагов для Слайд-Шоу: %d"/>
+	<translate name="Programs (*.exe)|*.exe|All Files (*.*)|*.*'" value="Программы (*.exe)|*.exe|Все файлы (*.*)|*.*'"/>
+	<translate name="Automatically save passwords for the current session" value="Автоматически сохранять пароли для текущей сессии"/>
+	<translate name="Automatically save passwords in the settings (NOT RECOMMENDED)" value="Автоматически сохранять пароли в настройках (НЕ РЕКОМЕНДУЕТСЯ)"/>
+	<translate name="Clear current passwords in session" value="Очистить текущие пароли в сессии"/>
+	<translate name="Clear the current password in settings" value="Очистить текущие пароли в настройках"/>
+	<translate name="Menu item" value="Пункт меню"/>
+	<translate name="Executable file" value="Исполняемый файл"/>
+	<translate name="Parameters" value="Параметры запуска"/>
+	<translate name="Icon" value="Иконка"/>
+	<translate name="Add to submenu" value="Добавить в субменю"/>	
+	<translate name="Additional" value="Дополнительно"/>	
+	<translate name="GDI+ is unavaliable" value="GDI+ недоступно"/>	
+	<translate name="Refresh data in windows?" value="Перезагрузить данные в окнах?"/>	
+	<translate name="Please select folder" value="Выберите папку"/>	
+	<translate name="Preview" value="Предпросмотр"/>	
+	<translate name="Submenu caption" value="Заголовок субменю"/>
+	<translate name="Submenu icon" value="Иконка субменю"/>	
+	<translate name="Add new item" value="Добавить новый пункт"/>	
+	<translate name="Remove" value="Удалить"/>	
+	<translate name="Up" value="Вверх"/>
+	<translate name="Down" value="Вниз"/>	
+	<translate name="Display menu for" value="Отображать меню для"/>	
+	<translate name="ID Menu" value="ID Меню"/>
+	<translate name="Viewer" value="Просмотра"/>
+	<translate name="Explorer" value="Проводника"/>
+	<translate name="Clear previews cache" value="Очистить кэш предпросмотров"/>	
+	<translate name="Clear icons cache" value="Очистить кэш иконок"/>	
+	<translate name="Show EXIF marker" value="Показывать EXIF заголовок"/>
+	<translate name="General" value="Основное" />
+	<translate name="Display links &quot;Other places&quot;" value="Отображать ссылки &quot;Другие места&quot;"/>
+	<translate name="&quot;Next&quot; by click" value="&quot;Следующий&quot; при клике"/>
+	<translate name="Use the selection by hover on the list" value="Использовать выделение при наведении в списках"/>
+	<translate name="Rotate the image on the disk without asking for confirmation" value="Поворачивать изображение на диске не спрашивая подтверждения"/>
+	<translate name="Even if the file in the database, rotate on drive" value="Даже если файл в БД, поворачивать на диске"/>
+	<translate name="Sort groups" value="Сортировать группы"/>
+	<translate name="Use GDI+" value="Использовать GDI+"/>	
+	<translate name="Create backup every" value="Создавать резервную копию каждые"/>	
+	<translate name="days" value="дней"/>
+	<translate name="Allow multiple instances of properties window" value="Разрешить загрузку нескольких копий окна свойств"/>
+	<translate name="My documents" value="Мои документы"/>
+	<translate name="My computer" value="Мой компьютер"/>
+	<translate name="My pictures" value="Мои изображения"/>
+	<translate name="Other places" value="Другие места"/>	
+	<translate name="New place" value="Новое место"/>	
+	<translate name="Display in" value="Отображать в"/>
+	<translate name="User defined places" value="Дополнительные места"/>	
+	<translate name="Places" value="Места"/>	
+	<translate name="Virtual cursor to the Editor" value="Виртуальный курсор в редакторе"/>
+	<translate name="Default" value="По умолчанию"/>	
+	<translate name="Check changes of files and update links (may slow down program)" value="Следить за изменением файлов и обновлять ссылки (может замедлять работу)"/>
+	<translate name="Start Explorer at startup" value="Запускать проводник при запуске"/>
+	<translate name="Use folder" value="Использовать папку"/>
+	<translate name="Group photos in search window" value="Разбивать на группы в поисковике"/>
+	<translate name="Passwords" value="Пароли"/>	
+	<translate name="Use full selection in lists" value="Использовать полное выделение в списках"/>
+	<translate name="Round size" value="Размер закругления"/>
+	<translate name="Use a faster boot files (DB in the background)" value="Использовать быструю загрузку файлов (бд в фоне)"/>
+	<translate name="Use small icons for toolbars" value="Использовать маленькие иконки для тулбаров"/>
+	<translate name="Options" value="Настройки"/>
   </scope>
   <scope name="Help">
 	<translate name="Copy" value="Копировать"/>
@@ -1500,14 +1584,13 @@
     <translate name="Abort" value="Прервать" />
     <translate name="Pause" value="Пауза"/>
     <translate name="Unpause" value="Запустить"/>
-  	<translate name="Current action" value="Текущее действие"/>
-	
-    <translate name="Abort" value="Прервать" />
-    <translate name="Abort" value="Прервать" />
-    <translate name="Abort" value="Прервать" />
-    <translate name="Abort" value="Прервать" />
-    <translate name="Abort" value="Прервать" />
-    <translate name="Abort" value="Прервать" />
+    <translate name="Current action" value="Текущее действие"/>	
+    <translate name="&amp;%% (Added)" value="&amp;%% (Добавлено)" />
+    <translate name="&amp;%% (Updated)" value="&amp;%% (Обновлено)" />
+    <translate name="Status" value="Статус" />	
+    <translate name="&lt;Status&gt;" value="&lt;Статус&gt;" />	
+    <translate name="Records added" value="Записей добавлено" />
+    <translate name="Records updated" value="Записей обновлено" />
   </scope>
   <scope name="ActionProgress">
   	<translate name="Current action" value="Текущее действие"/>
@@ -1516,7 +1599,6 @@
     <translate name="Width" value="Ширина"/>
     <translate name="Height" value="Высота"/>
     <translate name="Size" value="Размер"/>
-	
   </scope>
   <scope name="CMD">
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>

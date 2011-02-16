@@ -273,10 +273,7 @@ begin
   Left := WindowLeft;
 
   FAlphaBlend := 0;
-  if DBKernel.ReadInteger('Options', 'PreviewSwohOptions', 0) = 0 then
-    TimerShow.Enabled := True
-  else
-    FAlphaBlend := 255;
+  TimerShow.Enabled := True;
 
   if Fowner <> nil then
     if Fowner.FormStyle = Fsstayontop then
@@ -397,13 +394,11 @@ begin
     Exit;
   end;
 
-  if (FAlphaBlend > 0) and (DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 0) then
+  if (FAlphaBlend > 0) then
   begin
     TimerHide.Enabled := True;
     CanClose := False;
-  end else
-    if DBKernel.Readinteger('Options', 'PreviewSwohOptions', 0) = 1 then
-      RecreateWnd; //WFT?
+  end;
 
   TimerHintCheck.Enabled := False;
   FClosed := True;

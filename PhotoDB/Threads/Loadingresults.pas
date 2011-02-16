@@ -491,40 +491,6 @@ begin
   SynchronizeEx(DoOnDone); *)
 end;
 
-{procedure SearchThread.InitializeA;
-begin
-  with (ThreadForm as TSearchForm) do
-  begin
-    PbProgress.Position:=0;
-    PbProgress.MaxValue:=fQuery.RecordCount;
-    Label7.Caption:=format(TEXT_MES_RES_REC,[IntToStr(fQuery.RecordCount)]);
-    PbProgress.Text:=TEXT_MES_LOAD_QUERY_PR;
-  end;
-end;
-
-procedure SearchThread.InitializeB;
-begin
-  with (ThreadForm as TSearchForm) do
-  begin
-    PbProgress.Position:=0;
-    PbProgress.MaxValue:=intparam;
-    Label7.Caption:=TEXT_MES_SEARCH_FOR_REC;
-    PbProgress.Text:=format(TEXT_MES_SEARCH_FOR_REC_FROM,[IntToStr(intparam)]);
-  end;
-end;   }
-
-
-
-{procedure SearchThread.NewItem;
-begin
-  if QueryType <> QT_W_SCAN_FILE then
-  begin
-   (ThreadForm as TSearchForm).PbProgress.Position:=fi;
-  end;
-  //TODO:!!!!!AddItemInListViewByGroups((ThreadForm as TSearchForm).ListView, FID, FSearchParams.SortMethod, FSearchParams.SortDecrement, fShowGroups, SizeParam,
-  //TODO:!!!!!  FileNameParam, RatingParam, fDateTimeParam, fInclude, LastSize, LastChar, LastRating, LastMonth, LastYear);
-end; }
-
 procedure SearchThread.GetFilter(Params : TDBQueryParams; Attr : Integer);
 begin
   case Attr of
