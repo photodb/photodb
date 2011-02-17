@@ -250,6 +250,7 @@
     <translate name="Add objects" value="Добавить объекты" />
     <translate name="Add disk" value="Добавить диск" />
     <translate name="Add directory" value="Добавить папку" />
+    <translate name="Next..." value="Далее..." />
     <translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />
     <translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
     <translate name="Add file" value="Добавить файл" />
@@ -475,6 +476,7 @@
     <translate name="No rating" value="Без оценки" />
     <translate name="Rating found" value="Оценка" />
     <translate name="Search (%s results)" value="Поиск (%s результатов)" />
+    <translate name="Next..." value="Далее..." />
   </scope>
   <scope name="SelectGroup">
     <translate name="Select group" value="Выбор группы" />
@@ -650,8 +652,7 @@
     <translate name="Image editor (Ctrl+E)" value="Редактор (Ctrl+E)" />
     <translate name="Properties (Ctrl+Z)" value="Свойства (Ctrl+Z)" />
     <translate name="Error initializing graphics mode: %s" value="Ошибка инициализации графического режима: %s" />
-	
-	
+    <translate name="Unable to show file:" value="Невозможно отобразить файл:" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -905,6 +906,9 @@
 	<translate name="CD Index (%s)|%s" value="Индекс диска (%s)|%s" />
 	<translate name="Unable to find file %s by address &quot;%s&quot;" value="Невозможно найти файл %s по адресу &quot;%s&quot;" />	
 	<translate name="File %s is not found in this directory! Use this directory as a root of drive &quot;%s&quot;?" value="Файл %s не найден в этой директории! Использовать директорию как корнепую папку диска &quot;%s&quot;?" />
+	<translate name="An unexpected error occurred: %s" value="Непредвиденная ошибка! %s" />
+	<translate name="Unable to copy files to the final location! Check if there are write permissions to the specified directory!" value="Невозможно скопировать файлы в конечное размещение! Проверьте, имеются ли права записи в указанную директорию!" />
+	<translate name="Unable to delete original files! Check if you have right to delete the files. Please try again later manually delete these files." value="Не удалось удалить оригинальные файлы! Проверьте, имеете ли Вы право на удаление файлов. Попробуйте позже вручную удалить эти файлы." />
   </scope>
   <scope name="CD mapping">
     <translate name="CD mapping" value="Привязка дисков" />
@@ -1276,7 +1280,11 @@
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
 	<translate name="Can not check updates!" value="Не удалось проверить обновления!"/>
 	<translate name="Нажмите для перехода на" value="Доступна новая версия (%s)!"/>
-	<translate name="This program isn't activated." value="Эта программа не активирована.>"/>
+	<translate name="This program isn't activated." value="Эта программа не активирована."/>	
+	<translate name="Program code" value="Код вашей копии программы"/>	
+	<translate name="Open activation form" value="Открыть форму активации"/>
+	<translate name="The program is registered to" value="Зарегистрировано на"/>
+	<translate name="Standalone database created using &quot;%s&quot;. In this program many features are disabled and these features are available in the full version." value="Автономная база данных созданная с помощью &quot;%s&quot;. В этой программе отключены многие функции, доступные в полной версии."/>
   </scope>
   <scope name="DBOptions">
 	<translate name="Change Collection Settings" value="Изменить опции БД"/>
@@ -1387,7 +1395,17 @@
 	<translate name="Image size: %s" value="Размер изображения: %s"/>
 	<translate name="The size of new database (approximately): %s" value="Размер новой базы (ориентировочно): %s"/>
 	<translate name="JPEG Image File (*.jpg)|*.jpg|JPEG Image File (*.jpeg)|*.jpeg" value="JPEG изображения (*.jpg)|*.jpg|JPEG изображения (*.jpeg)|*.jpeg"/>
-	<translate name="Size" value="Размер"/>
+	<translate name="Size" value="Размер"/>	
+	<translate name="Item #%d from %d" value="Запись #%d из %d" />
+	<translate name="Saving groups" value="Сохранение групп"/>
+	<translate name="Saving group: %s" value="Сохранение группы: %s"/>	
+	<translate name="An error occurred during converting the collection! (%s)" value="Произошла ошибка во время конвертации базы! (%s)"/>
+	<translate name="Can not delete file %s, maybe he's busy with another program or process. Will use a different name (file_name_1)" value="Не удаётся удалить файл %s, возможно он занят другой программой или процессом. Будет использовано другое имя (имя_файла_1)"/>
+	<translate name="Converting the structure..." value="Конвертирование структуры..."/>	
+	<translate name="Opening collection" value="Открытие БД"/>
+	<translate name="Creating collection" value="Создание базы данных"/>	
+	<translate name="Creating collection: success!" value="Создание БД успешно завершено"/>	
+	<translate name="Update collection configuration is complete!" value="Обновление настроек базы завершено!"/>
   </scope>
   <scope name="ImportImages">
 	<translate name="Previous" value="Назад"/>
@@ -1542,7 +1560,12 @@
 	<translate name="Options" value="Настройки"/>
   </scope>
   <scope name="Help">
+	<translate name="Help" value="Помощь"/>
 	<translate name="Copy" value="Копировать"/>
+	<translate name="Do you really want to refuse help?" value="Вы действительно хотите отказаться от помощи?"/>
+	<translate name="     Click the &quot;Get code&quot; and then start mail program with a new letter in the title of which is given all the necessary information to activate. $nl$You need send this letter or (if the mailer does not run) Send by email to %email%, in which you want to specify the code of the program and its version.$nl$     Press &quot;Next ...&quot; for further assistance.$nl$    Or click on the cross at the top to help is no longer displayed. $nl$$nl$$nl$$nl$" value="     Нажмите на кнопку &quot;Получить код&quot;, после чего запустится почтовая программа с новым письмом, в заголовке которого дана вся необходимая  для активации информация. $nl$     Вам необходимо отослать это письмо или же (если почтовая программа не запустилась) самим отправить письмо на адрес %email%, в котором нужно указать код программы и её версию.$nl$$nl$     Нажмите а&quot;Далее...а&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$$nl$$nl$$nl$"/>
+	<translate name="     During the day we will send you an activation code that you shoulf enter into this box and click on &quot;Install code&quot;. After that the program will be activated.$nl$$nl$" value="     В течении суток вам будет выслан код активации, который нужно ввести в это окно и нажать на кнопку &quot;Установить код&quot;. После этого программа будет активирована.$nl$$nl$"/>
+	<translate name="     To add photos to the collection, select &quot;Explore&quot; from the context menu, then find your pictures and select &quot;Add items&quot;.$nl$$nl$    Click &quot;Help&quot; for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$" value="     Для добавления фотографий в Базу Данных выберите пункт &quot;Проводник&quot; в контекстном меню, затем найдите ваши фотографии и в меню выберите &quot;Добавить объекты&quot;.$nl$$nl$     Нажмите &quot;Справка&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$ $nl$$nl$"/>
   </scope>
   <scope name="ExportDB">
 	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
@@ -1557,7 +1580,10 @@
 	<translate name="Break!" value="Прервать!"/>
 	<translate name="Item" value="Запись"/>
 	<translate name="Can not create file &quot;%s&quot;" value="Невозможно создать файл &quot;%s&quot;"/>
-	<translate name="Please select a file" value="Выберите файл"/>	
+	<translate name="Please select a file" value="Выберите файл"/>
+	<translate name="Item #%s from %s" value="Запись #%s из %s" />
+	<translate name="Saving groups" value="Сохранение групп" />
+	<translate name="Saving group: %s" value="Сохранение группs: %s" />	
   </scope>
   <scope name="DBCleaning">
 	<translate name="Save" value="Сохранить"/>
@@ -1569,8 +1595,10 @@
 	<translate name="Check for duplicates" value="Проверять дубликаты"/>
 	<translate name="Mark deleted files" value="Помечать удалённые файлы"/>	
 	<translate name="Update date from EXIF" value="Обновлять дату из EXIF"/>
-	<translate name="Allow auto cleaning" value="Позволить автоочистку"/>
-	<translate name="Allow fast cleaning" value="Позволить быструю очистку"/>
+	<translate name="Allow auto cleaning" value="Позволить автоочистку"/>	
+	<translate name="Allow fast cleaning" value="Позволить быструю очистку"/>	
+	<translate name="Cleaning... [%s]" value="Очистка... [%s]"/>
+	<translate name="Cleaning is stopped" value="Очистка остановлена"/>	
   </scope>
   <scope name="SaveCollection">
     <translate name="Abort" value="Прервать" />
@@ -1578,6 +1606,27 @@
     <translate name="Saving items to file" value="Сохранение записей в файл" />
   </scope>
   <scope name="ImportDB">
+    <translate name="Import settings" value="Настройки импорта" />
+    <translate name="Add new items" value="Добавлять новые записи" />
+    <translate name="Add items without files" value="Добавлять записи без файлов" />
+    <translate name="Add rating" value="Добавлять оценку" />
+    <translate name="Add rotate" value="Добавлять поворот" />	
+    <translate name="Add private" value="Добавлять личные" />
+    <translate name="Add keywords" value="Добавлять ключевые слова" />
+    <translate name="Add groups" value="Добавлять группы" />
+    <translate name="Add empty comments" value="Добавлять пустые комментарии" />
+    <translate name="Add comments" value="Добавлять комментарии" />
+    <translate name="Add comments with author" value="Добавлять именованые комментарии" />
+    <translate name="Add links" value="Добавлять ссылки" />
+    <translate name="Ignore keywords" value="Игнорировать слова" />
+    <translate name="Replace" value="Заменить" />
+    <translate name="to" value="на" />
+    <translate name="Add collection" value="Добавочная БД" />
+    <translate name="Author" value="Автор" />
+    <translate name="List of ignored words" value="Список игнорируемых слов" />
+    <translate name="Advanced search if file names equals" value="Использовать узнавание при совпадении имени" />
+    <translate name="Please, choose different collections" value="Главная и добавочная БД совпадают!" />
+    <translate name="Add collection (%d items)" value="Добавочная БД (%d записей)" />	
     <translate name="Import collection" value="Импорт БД" />
     <translate name="Stop" value="Остановить" />
     <translate name="Abort" value="Прервать" />
@@ -1589,7 +1638,13 @@
     <translate name="Status" value="Статус" />	
     <translate name="&lt;Status&gt;" value="&lt;Статус&gt;" />	
     <translate name="Records added" value="Записей добавлено" />
-    <translate name="Records updated" value="Записей обновлено" />
+    <translate name="Records updated" value="Записей обновлено" />	
+   <translate name="Pause" value="Пауза" />
+   <translate name="Initialization" value="Инициализация" />
+   <translate name="Please wait a minute..." value="Пожалуйста, подождите минуту..." />
+   <translate name="Reading information about groups" value="Чтение базы данных групп" />
+   <translate name="Reading collection information" value="Чтение базы данных..." />
+   <translate name="Item #%s [%s]" value="Запись №%s [%s]" />
   </scope>
   <scope name="ActionProgress">
   	<translate name="Current action" value="Текущее действие"/>
@@ -1642,5 +1697,25 @@
 	<translate name="Optimization duplicates ... (Press Ctrl + B to break the process)" value="Оптимизация дубликатов... (Ctrl+B для прекращения)"/>
 	<translate name="Performing scanning the collection" value="Выполняется сканирование БД"/>
 	<translate name="Performing scanning the collection, please wait..." value="Выполняется сканирование БД, пожалуйста, подождите..."/>
+	<translate name="Packing collection files..." value="Упаковка файлов БД..."/>	
+	<translate name="Packing completed..." value="Упаковка завершилась..."/>	
+	<translate name="CMD" value="CMD"/>	
+	
   </scope>
+  <scope name="Activation">
+    <translate name="Next..." value="Далее..." />
+	<translate name="Program code" value="Код вашей копии программы"/>
+	<translate name="Enter here activation key" value="Введите сюда ключ для активации"/>
+    <translate name="User name" value="Имя для активации" />
+	<translate name="Install code" value="Установить код"/>
+	<translate name="Activation" value="Активация"/>
+	<translate name="Get personal code" value="Получить код"/>
+    <translate name="Activation key saved! Please restart the application!" value="Ключ для активации сохранён! Перезапустите приложение для результата!"/>
+  </scope>
+  <scope name="Updates">
+	<translate name="New version is available - %s" value="Доступна новая версия - %s"/>
+	<translate name="Home page" value="Сайт программы"/>
+	<translate name="Download now!" value="Загрузить сейчас!"/>
+	<translate name="Remind me later" value="Напомнить мне потом"/>
+  </scope>  
 </language>

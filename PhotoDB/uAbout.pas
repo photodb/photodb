@@ -35,7 +35,7 @@ type
   private
     { Private declarations }
     FBackground: TBitmap;
-    FUpdateInfo: TUpdateInfo;
+    //FUpdateInfo: TUpdateInfo;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
     procedure LoadLanguage;
     procedure UpdateCkeckComplete(Sender : TObject; Info : TUpdateInfo);
@@ -50,7 +50,7 @@ procedure ShowAbout;
 
 implementation
 
-uses uActivation, Language;
+uses uActivation;
 
 {$R *.dfm}
 
@@ -110,7 +110,7 @@ begin
     F(Logo);
   end;
 
-  BtShowActivationForm.Caption := TEXT_MES_OPEN_ACTIVATION_FORM;
+  BtShowActivationForm.Caption := L('Open activation form');
   if DBKernel <> nil then
     BtShowActivationForm.Visible := DBkernel.ProgramInDemoMode
   else
@@ -126,7 +126,7 @@ begin
   begin
     BtShowActivationForm.Visible := False;
     MemoRegistrationInfo.Clear;
-    MemoRegistrationInfo.Lines.Add(Format(TEXT_MES_DB_VIEW_ABOUT_F, [ProductName]));
+    MemoRegistrationInfo.Lines.Add(Format(L('Standalone database created using "%s". In this program many features are disabled and these features are available in the full version.'), [ProductName]));
     ShowModal;
     Exit;
   end;
@@ -186,7 +186,7 @@ var
   N: Cardinal;
 begin
   MemoRegistrationInfo.Clear;
-  MemoRegistrationInfo.Lines.Add(TEXT_MES_PROGRAM_CODE);
+  MemoRegistrationInfo.Lines.Add(L('Program code') + ':');
   S := GetIdeDiskSerialNumber;
   CalcStringCRC32(S, N);
   N := N xor $6357A302; // v2.2
@@ -201,7 +201,7 @@ begin
   Code := S + Inttohex(N, 8);
   MemoRegistrationInfo.Lines.Add(Code);
   MemoRegistrationInfo.Lines.Add('');
-  MemoRegistrationInfo.Lines.Add(TEXT_MES_REG_TO);
+  MemoRegistrationInfo.Lines.Add(L('The program is registered to'));
   MemoRegistrationInfo.Lines.Add('');
   if DBkernel.ProgramInDemoMode then
     MemoRegistrationInfo.Lines.Add(L('This program isn''t activated.'))

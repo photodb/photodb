@@ -6,10 +6,10 @@ uses
   Classes, Graphics, Jpeg, DB, CommonDBSupport, UnitDBKernel, SysUtils,
   GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport,
   ActiveX, Dolphin_DB, uMemory, uDBBaseTypes, uDBTypes, uDBUtils,
-  win32crc;
+  win32crc, uDBThread;
 
 type
-  RecreatingThInTable = class(TThread)
+  RecreatingThInTable = class(TDBThread)
   private
     { Private declarations }
     FStrParam: string;
@@ -21,6 +21,7 @@ type
     ImageOptions: TImageDBOptions;
     ProgressInfo: TProgressCallBackInfo;
   protected
+    function GetThreadID : string; override;
     procedure Execute; override;
     procedure DoExit;
     procedure TextOut;
@@ -280,7 +281,7 @@ begin
     end;
 
     FIntParam := LINE_INFO_PROGRESS;
-    FStrParam := TEXT_MES_PACKING_MAIN_DB_FILE;
+    FStrParam := L('Packing collection files...');
     Synchronize(TextOut);
 
     PackTable(FOptions.FileName);
@@ -297,27 +298,32 @@ end;
 
 function RecreatingThInTable.GetAvaliableCryptFileList: TArInteger;
 begin
- Result:=fOptions.GetAvaliableCryptFileList(self);
+  Result := FOptions.GetAvaliableCryptFileList(Self);
 end;
 
 procedure RecreatingThInTable.GetCryptFileList;
 begin
- fCryptFileList := fOptions.GetFilesWithoutPassProc(self);
+  FCryptFileList := FOptions.GetFilesWithoutPassProc(Self);
 end;
 
 procedure RecreatingThInTable.GetPass;
 begin
- FStrParam:=GetImagePasswordFromUserEx(FStrParam,FBoolParam);
+  FStrParam := GetImagePasswordFromUserEx(FStrParam, FBoolParam);
+end;
+
+function RecreatingThInTable.GetThreadID: string;
+begin
+  Result := 'CMD';
 end;
 
 procedure RecreatingThInTable.TextOut;
 begin
- fOptions.WriteLineProc(self,FStrParam,FIntParam);
+  FOptions.WriteLineProc(Self, FStrParam, FIntParam);
 end;
 
 procedure RecreatingThInTable.TextOutEx;
 begin
- fOptions.WriteLnLineProc(self,FStrParam,FIntParam);
+  FOptions.WriteLnLineProc(Self, FStrParam, FIntParam);
 end;
 
 end.

@@ -4,19 +4,20 @@ interface
 
 uses
   Classes, Dolphin_DB, Windows, Sysutils, UnitGroupsWork,
-  ComObj, ActiveX, UnitDBDeclare;
+  ComObj, ActiveX, UnitDBDeclare, uDBThread;
 
 type
-  PackingTable = class(TThread)
+  PackingTable = class(TDBThread)
   private
     { Private declarations }
     FText: string;
     FOptions: TPackingTableThreadOptions;
   protected
-    procedure AddTextLine;
-    procedure DoExit;
+    function GetThreadID : string; override;
     procedure Execute; override;
   public
+   procedure AddTextLine;
+    procedure DoExit;
     constructor Create(Options: TPackingTableThreadOptions);
   end;
 
@@ -26,27 +27,31 @@ uses Language, CommonDBSupport;
 
 procedure PackingTable.AddTextLine;
 begin
- fOptions.WriteLineProc(Self,FText,LINE_INFO_OK);
-// CMDForm.RichEdit1.Lines.Add(FText);
+  FOptions.WriteLineProc(Self, FText, LINE_INFO_OK);
 end;
 
 procedure PackingTable.Execute;
 begin
- FreeOnTerminate:=true;
- FText:=TEXT_MES_PACKING_MAIN_DB_FILE;
- Synchronize(AddTextLine);
+  FreeOnTerminate := True;
+  try
+    FText := L('Packing collection files...');
+    Synchronize(AddTextLine);
+    PackTable(FOptions.FileName);
+    FText := L('Packing completed...');
+    Synchronize(AddTextLine);
+  finally
+    Synchronize(DoExit);
+  end;
+end;
 
- PackTable(fOptions.FileName);
-
- FText:=TEXT_MES_PACKING_END;
- synchronize(AddTextLine);
- synchronize(DoExit);
+function PackingTable.GetThreadID: string;
+begin
+  Result := 'CMD';
 end;
 
 procedure PackingTable.DoExit;
 begin
- fOptions.OnEnd(Self);
-// CMDForm.OnEnd(Self);
+  FOptions.OnEnd(Self);
 end;
 
 constructor PackingTable.Create(Options: TPackingTableThreadOptions);

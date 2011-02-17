@@ -6,10 +6,10 @@ uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
   GraphicsCool, Language, Effects, UnitDBCommonGraphics, uMemory,
   ImageConverting, SyncObjs, uConstants, UnitDBKernel,
-  uGraphicUtils;
+  uGraphicUtils, uDBThread;
 
 type
-  TDirectXSlideShowCreator = class(TThread)
+  TDirectXSlideShowCreator = class(TDBThread)
   private
     { Private declarations }
     FInfo: TDirectXSlideShowCreatorInfo;
@@ -26,6 +26,7 @@ type
     BooleanParam: Boolean;
     Paused: Boolean;
   protected
+    function GetThreadID : string; override;
     procedure DoCallBack(Action: Byte);
     procedure DoCallBackSynch;
     procedure Execute; override;
@@ -170,12 +171,9 @@ var
   Zoom: Extended;
   TempImage: TBitmap;
   GraphicClass : TGraphicClass;
-
-const
-  Text_out = TEXT_MES_CREATING + '...';
-  Text_error_out = TEXT_MES_UNABLE_SHOW_FILE;
-
+  Text_error_out : string;
 begin
+  Text_error_out := L('Unable to show file:');
   LoadingPicture := True;
   try
     if ValidCryptGraphicFile(FInfo.FileName) then
@@ -407,6 +405,11 @@ begin
     Result := True
   else
     Result := False;
+end;
+
+function TDirectXSlideShowCreator.GetThreadID: string;
+begin
+  Result := 'Viewer';
 end;
 
 procedure TDirectXSlideShowCreator.IFPause;

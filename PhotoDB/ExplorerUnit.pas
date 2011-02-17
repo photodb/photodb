@@ -3901,7 +3901,7 @@ begin
         begin
           Activate;
           DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_2, Point(0, 0), AddLink, Help1NextClick,
-            TEXT_MES_NEXT_HELP, Help1CloseClick);
+            L('Next...'), Help1CloseClick);
         end;
   LockwindowUpdate(0);
   EventLog('ReallignInfo OK');
@@ -5427,13 +5427,13 @@ begin
   begin
     HelpTimer.Enabled := False;
     DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_1, Point(0, 0), ElvMain, Help1NextClick,
-      TEXT_MES_NEXT_HELP, Help1CloseClick);
+      L('Next...'), Help1CloseClick);
   end;
   if HelpNO = 2 then
   begin
     HelpTimer.Enabled := False;
     DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_2, Point(0, 0), AddLink, Help1NextClick,
-      TEXT_MES_NEXT_HELP, Help1CloseClick);
+      L('Next...'), Help1CloseClick);
   end;
   if HelpNO = 4 then
   begin
@@ -5447,7 +5447,7 @@ end;
 procedure TExplorerForm.Help1CloseClick(Sender: TObject;
   var CanClose: Boolean);
 begin
-  CanClose := ID_OK = MessageBoxDB(Handle, TEXT_MES_CLOSE_HELP, L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_INFORMATION);
+  CanClose := ID_OK = MessageBoxDB(Handle, L('Do you really want to refuse help?', 'Help'), L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_INFORMATION);
   if CanClose then
   begin
     HelpNo := 0;

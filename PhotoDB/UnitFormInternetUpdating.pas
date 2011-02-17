@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, WebLink, ComCtrls, UnitDBKernel, ShellAPI,
-  Dolphin_DB, uTranslate;
+  Dolphin_DB, uTranslate, uDBForm;
 
 type
-  TFormInternetUpdating = class(TForm)
+  TFormInternetUpdating = class(TDBForm)
     Panel1: TPanel;
     Button1: TButton;
     WebLink1: TWebLink;
@@ -23,80 +23,90 @@ type
     procedure WebLink1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
-  DownloadURL : String;
     { Private declarations }
+    DownloadURL: string;
+    procedure LoadLanguage;
+  protected
+    function GetFormID: string; override;
   public
-  procedure Execute(NewVersion, Text, URL : String);
-  procedure LoadLanguage;
     { Public declarations }
+    procedure Execute(NewVersion, Text, URL: string);
   end;
 
 procedure ShowAvaliableUpdating(NewVersion, Text, URL : String);
 
 implementation
 
-uses language;
-
 {$R *.dfm}
 
-procedure ShowAvaliableUpdating(NewVersion, Text, URL : String);
+procedure ShowAvaliableUpdating(NewVersion, Text, URL: string);
 var
   FormInternetUpdating: TFormInternetUpdating;
 begin
- Application.CreateForm(TFormInternetUpdating, FormInternetUpdating);
- FormInternetUpdating.Execute(NewVersion,Text, URL);
+  Application.CreateForm(TFormInternetUpdating, FormInternetUpdating);
+  FormInternetUpdating.Execute(NewVersion, Text, URL);
 end;
 
 { TFormInternetUpdating }
 
-procedure TFormInternetUpdating.Execute(NewVersion, Text, URL : String);
+procedure TFormInternetUpdating.Execute(NewVersion, Text, URL: string);
 begin
- Caption:=format(TEXT_MES_NEW_UPDATING_CAPTION,[NewVersion]);
- RichEdit1.Text:=Text;
- DownloadURL:=URL;
- Show;
+  Caption := Format(L('New version is available - %s'), [NewVersion]);
+  RichEdit1.Text := Text;
+  DownloadURL := URL;
+  Show;
 end;
 
 procedure TFormInternetUpdating.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- Release;
+  DestroyTimer.Enabled := False;
+  Release;
 end;
 
-procedure TFormInternetUpdating.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TFormInternetUpdating.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- DestroyTimer.Enabled:=true;
+  DestroyTimer.Enabled := True;
 end;
 
 procedure TFormInternetUpdating.Button1Click(Sender: TObject);
 begin
- if CheckBox1.Checked then DBKernel.WriteDateTime('','LastUpdating',Now);
- Close;
+  if CheckBox1.Checked then
+    DBKernel.WriteDateTime('', 'LastUpdating', Now);
+  Close;
 end;
 
 procedure TFormInternetUpdating.WebLink2Click(Sender: TObject);
 begin
- DoHomePage;
+  DoHomePage;
 end;
 
 procedure TFormInternetUpdating.WebLink1Click(Sender: TObject);
 begin
- ShellExecute(0, nil, PWideChar(DownloadURL), nil, nil, SW_NORMAL);
- Close;
+  ShellExecute(0, nil, PWideChar(DownloadURL), nil, nil, SW_NORMAL);
+  Close;
 end;
 
 procedure TFormInternetUpdating.FormCreate(Sender: TObject);
 begin
- LoadLanguage
+  LoadLanguage
+end;
+
+function TFormInternetUpdating.GetFormID: string;
+begin
+  Result := 'Updates';
 end;
 
 procedure TFormInternetUpdating.LoadLanguage;
 begin
-  Button1.Caption := TA('Ok');
-  WebLink2.Text := TEXT_MES_HOME_PAGE;
-  WebLink1.Text := TEXT_MES_DOWNLOAD_NOW;
-  CheckBox1.Caption := TEXT_MES_REMAIND_ME_LATER;
+  BeginTranslate;
+  try
+    Button1.Caption := TA('Ok');
+    WebLink2.Text := L('Home page');
+    WebLink1.Text := L('Download now!');
+    CheckBox1.Caption := L('Remind me later');
+  finally
+    EndTranslate;
+  end;
 end;
 
 end.

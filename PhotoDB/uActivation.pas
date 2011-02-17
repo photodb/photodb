@@ -5,7 +5,8 @@ interface
 uses
   UnitINI, Searching, dolphin_db, UnitDBKernel, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
-  Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm;
+  Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm,
+  uMemory, uConstants;
 
 type
   TActivateForm = class(TDBForm)
@@ -32,29 +33,35 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
-    Hs, Nm : string;
-    procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
     { Private declarations }
-  public
+    Hs, Nm : string;
     procedure LoadLanguage;
+    procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
+  protected
+    function GetFormID : string; override;
+  public
+    { Public declarations }
     procedure HelpActivationNextClick(Sender: TObject);
     procedure HelpActivationCloseClick(Sender : TObject; var CanClose : Boolean);
-    { Public declarations }
   end;
 
 procedure ShowActivationDialog;
 
 implementation
 
-uses Language, UnitHelp, FormManegerUnit;
+uses
+  UnitHelp, FormManegerUnit;
 
 procedure ShowActivationDialog;
 var
   ActivateForm: TActivateForm;
 begin
   Application.CreateForm(TActivateForm, ActivateForm);
-  ActivateForm.Execute;
-  ActivateForm.Release;
+  try
+    ActivateForm.Execute;
+  finally
+    R(ActivateForm);
+  end;
 end;
 
 {$R *.dfm}
@@ -81,17 +88,17 @@ var
 begin
   if FolderView then
     Exit;
-  Nm := EdUserName.text;
-  Hs := EdActicationCode.text;
+  Nm := EdUserName.Text;
+  Hs := EdActicationCode.Text;
   Reg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     Reg.OpenKey('\CLSID\' + ActivationID, True);
     Reg.WriteString('UserName', Nm);
     Reg.WriteString('Code', Hs);
   finally
-    Reg.free;
+    F(Reg);
   end;
-  MessageBoxDB(Handle, TEXT_MES_KEY_SAVE, L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+  MessageBoxDB(Handle, L('Activation key saved! Please restart the application!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
   Close;
 end;
 
@@ -112,13 +119,18 @@ end;
 
 procedure TActivateForm.LoadLanguage;
 begin
-  Label1.Caption := TEXT_MES_PROGRAM_CODE;
-  Label2.Caption := TEXT_MES_ACTIVATION_KEY;
-  Label3.Caption := TEXT_MES_ACTIVATION_NAME;
-  Button1.Caption := L('Cancel');
-  Button2.Caption := TEXT_MES_SET_CODE;
-  Caption := TEXT_MES_ACTIVATION_CAPTION;
-  Button3.Caption := TEXT_MES_GET_CODE;
+  BeginTranslate;
+  try
+    Label1.Caption := L('Program code') + ':';
+    Label2.Caption := L('Enter here activation key') + ':';
+    Label3.Caption := L('User name');
+    Button1.Caption := L('Cancel');
+    Button2.Caption := L('Install code');
+    Caption := L('Activation');
+    Button3.Caption := L('Get personal code');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TActivateForm.Button3Click(Sender: TObject);
@@ -131,18 +143,22 @@ begin
 end;
 
 procedure TActivateForm.HelpTimerTimer(Sender: TObject);
+var
+  HelpMessage: string;
 begin
+  HelpMessage := '     Click the "Get code" and then start mail program with a new letter in the title of which is given all the necessary information to activate. $nl$You need send this letter or (if the mailer does not run)' + 'Send by email to %email%, in which you want to specify the code of the program and its version.' + '$nl$     Press "Next ..." for further assistance.' + '$nl$    Or click on the cross at the top to help is no longer displayed. $nl$$nl$$nl$$nl$';
+  HelpMessage := StringReplace(HelpMessage, '%email%', ProgramMail, []);
   HelpTimer.Enabled := False;
   if DBkernel.GetDemoMode then
     if HelpActivationNO = 3 then
-      DoHelpHintCallBackOnCanClose(TEXT_MES_HELP_HINT, TEXT_MES_HELP_ACTIVATION_3, Point(0, 0), Button3,
-        HelpActivationNextClick, TEXT_MES_NEXT_HELP, HelpActivationCloseClick);
+      DoHelpHintCallBackOnCanClose(L('Help', 'Help'), HelpMessage, Point(0, 0), Button3,
+        HelpActivationNextClick, L('Next...'), HelpActivationCloseClick);
 end;
 
 procedure TActivateForm.HelpActivationCloseClick(Sender: TObject;
   var CanClose: Boolean);
 begin
-  CanClose := ID_OK = MessageBoxDB(GetActiveFormHandle, TEXT_MES_CLOSE_HELP, L('Confirm'), TD_BUTTON_OKCANCEL,
+  CanClose := ID_OK = MessageBoxDB(GetActiveFormHandle, L('Do you really want to refuse help?', 'Help'), L('Confirm'), TD_BUTTON_OKCANCEL,
     TD_ICON_INFORMATION);
   if CanClose then
   begin
@@ -157,11 +173,14 @@ begin
 end;
 
 procedure TActivateForm.HelpTimer2Timer(Sender: TObject);
+var
+  HelpMessage: string;
 begin
   if not Active then
     Exit;
   HelpTimer2.Enabled := False;
-  DoHelpHint(TEXT_MES_HELP_HINT, TEXT_MES_HELP_ACTIVATION_4, Point(0, 0), EdActicationCode);
+  HelpMessage := L('During the day we will send you an activation code that you shoulf enter into this box and click on "Install code...". After that the program will be activated.$nl$$nl$');
+  DoHelpHint(L('Help', 'Help'), HelpMessage, Point(0, 0), EdActicationCode);
   HelpActivationNO := 0;
   DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
 end;
@@ -178,6 +197,11 @@ procedure TActivateForm.FormKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_ESCAPE then
     Close;
+end;
+
+function TActivateForm.GetFormID: string;
+begin
+  Result := 'Activation';
 end;
 
 initialization

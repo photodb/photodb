@@ -2555,46 +2555,54 @@ procedure TSearchForm.HelpTimerTimer(Sender: TObject);
 var
   DS : TDataSet;
 
-  procedure xHint(xDS : TDataSet);
+  procedure XHint(XDS: TDataSet);
+  var
+    HelpHint: string;
 
-    function count :  integer;
+    function Count: Integer;
     begin
-     result:=xDS.FieldByName('RecordsCount').AsInteger;
+      Result := XDS.FieldByName('RecordsCount').AsInteger;
     end;
 
   begin
-   if count<50 then
-   DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_FIRST, Point(0,0), ElvMain, HelpNextClick, L('Next...'),HelpCloseClick) else
-   begin
-    HelpNo:=0;
-    DBKernel.WriteBool('HelpSystem','CheckRecCount',False);
-   end;
+    HelpHint := L('     To add photos to the collection, select "Explore" from the context menu, then find your pictures and select "Add items".' + '$nl$$nl$    Click "Help" for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$');
+
+    if Count < 50 then
+      DoHelpHintCallBackOnCanClose(L('Help'), HelpHint, Point(0, 0), ElvMain, HelpNextClick,
+        L('Next...'), HelpCloseClick)
+    else
+    begin
+      HelpNo := 0;
+      DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
+    end;
   end;
 
 begin
- if not Active then Exit;
- if FolderView then Exit;
- HelpTimer.Enabled:=false;
- if not DBKernel.ReadBool('HelpSystem','CheckRecCount',True) then
- begin
-  HelpActivationNO:=0;
-  if DBkernel.GetDemoMode then
-  if DBKernel.ReadBool('HelpSystem','ActivationHelp',True) then
-  DoHelpHintCallBackOnCanClose(L('Help'),TEXT_MES_HELP_ACTIVATION_FIRST,Point(0,0),ElvMain,HelpActivationNextClick, L('Next...'),HelpActivationCloseClick) else
-  if not DBkernel.GetDemoMode then
-  DBKernel.WriteBool('HelpSystem','ActivationHelp',false);
-  exit;
- end;
+  if not Active then
+    Exit;
+  if FolderView then
+    Exit;
+  HelpTimer.Enabled := False;
+  if not DBKernel.ReadBool('HelpSystem', 'CheckRecCount', True) then
+  begin
+    HelpActivationNO := 0;
+    if DBkernel.GetDemoMode then
+      if DBKernel.ReadBool('HelpSystem', 'ActivationHelp', True) then
+        DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_ACTIVATION_FIRST, Point(0, 0), ElvMain,
+          HelpActivationNextClick, L('Next...'), HelpActivationCloseClick)
+      else if not DBkernel.GetDemoMode then
+        DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
+    Exit;
+  end;
 
- if GetDBType=DB_TYPE_MDB then
- begin
-  DS:=GetQuery(true);
-  SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
-  DS.Open;
-  xHint(DS);
-  FreeDS(DS);
- end;
-
+  if GetDBType = DB_TYPE_MDB then
+  begin
+    DS := GetQuery(True);
+    SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
+    DS.Open;
+    XHint(DS);
+    FreeDS(DS);
+  end;
 end;
 
 procedure TSearchForm.PopupMenu7Popup(Sender: TObject);
@@ -2731,29 +2739,24 @@ begin
     SetFocus;
   end;
 end;
-     {
-procedure TSearchForm.GetUpdates1Click(Sender: TObject);
-begin
- GetUpdates(true);
-end;   }
 
-procedure TSearchForm.HelpCloseClick(Sender: TObject;
-  var CanClose: Boolean);
+procedure TSearchForm.HelpCloseClick(Sender: TObject; var CanClose: Boolean);
 begin
- CanClose:=ID_OK=MessageBoxDB(Handle,TEXT_MES_CLOSE_HELP, L('Confirm'), TD_BUTTON_OKCANCEL,TD_ICON_QUESTION);
- if CanClose then
- begin
-  HelpNo:=0;
-  DBKernel.WriteBool('HelpSystem','CheckRecCount',False);
- end;
+  CanClose := ID_OK = MessageBoxDB(Handle, L('Do you really want to refuse help?', 'Help'), L('Confirm'),
+    TD_BUTTON_OKCANCEL, TD_ICON_QUESTION);
+  if CanClose then
+  begin
+    HelpNo := 0;
+    DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
+  end;
 end;
 
 procedure TSearchForm.HelpNextClick(Sender: TObject);
 var
-  Handled : boolean;
+  Handled: Boolean;
 begin
- ListViewContextPopup(ElvMain,Point(0,0),Handled);
- HelpNO:=1;
+  ListViewContextPopup(ElvMain, Point(0, 0), Handled);
+  HelpNO := 1;
 end;
 
 procedure TSearchForm.FormShow(Sender: TObject);
@@ -2765,31 +2768,32 @@ begin
   SearchEdit.SetFocus;
 end;
 
-procedure TSearchForm.HelpActivationCloseClick(Sender: TObject;
-  var CanClose: Boolean);
+procedure TSearchForm.HelpActivationCloseClick(Sender: TObject; var CanClose: Boolean);
 begin
- CanClose:=ID_OK=MessageBoxDB(Handle,TEXT_MES_CLOSE_HELP, L('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_QUESTION);
- if CanClose then
- begin
-  HelpActivationNO:=0;
-  DBKernel.WriteBool('HelpSystem','ActivationHelp',False);
- end;
+  CanClose := ID_OK = MessageBoxDB(Handle, L('Do you really want to refuse help?', 'Help'), L('Confirm'),
+    TD_BUTTON_OKCANCEL, TD_ICON_QUESTION);
+  if CanClose then
+  begin
+    HelpActivationNO := 0;
+    DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
+  end;
 end;
 
 procedure TSearchForm.HelpActivationNextClick(Sender: TObject);
 var
-  Handled : boolean;
+  Handled: Boolean;
 begin
- HelpActivationNO:=HelpActivationNO+1;
- if HelpActivationNO=1 then
- begin
-  DoHelpHintCallBackOnCanClose(L('Help'),TEXT_MES_HELP_ACTIVATION_1,Point(0,0),ElvMain,HelpActivationNextClick,TEXT_MES_NEXT_HELP,HelpActivationCloseClick);
- end;
- if HelpActivationNO=2 then
- begin
-  ListViewContextPopup(ElvMain,Point(0,0),Handled);
-  HelpActivationNO:=3;
- end;
+  HelpActivationNO := HelpActivationNO + 1;
+  if HelpActivationNO = 1 then
+  begin
+    DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_ACTIVATION_1, Point(0, 0), ElvMain,
+      HelpActivationNextClick, L('Next...'), HelpActivationCloseClick);
+  end;
+  if HelpActivationNO = 2 then
+  begin
+    ListViewContextPopup(ElvMain, Point(0, 0), Handled);
+    HelpActivationNO := 3;
+  end;
 end;
 
 procedure TSearchForm.ImageEditor1Click(Sender: TObject);

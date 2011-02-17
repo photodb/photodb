@@ -1,23 +1,25 @@
 unit UnitCleanUpThread;
+//TODO: review module
 
 interface
 
 uses
-  UnitDBKernel, windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
+  UnitDBKernel, Windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
   SysUtils,ComCtrls, Graphics, jpeg, UnitINI, DateUtils, uFileUtils,
   CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants,
-  CCR.Exif, uMemory, uRuntime, uDBUtils;
+  CCR.Exif, uMemory, uRuntime, uDBUtils, uDBThread;
 
 type
-  CleanUpThread = class(TThread)
+  CleanUpThread = class(TDBThread)
   private
+    { Private declarations }
     FTable: TDataSet;
-    fQuery: TDataSet;
-    fReg: TBDRegistry;
+    FQuery: TDataSet;
+    FReg: TBDRegistry;
     FText: string;
     FPosition: Integer;
     FMaxPosition: Integer;
-    lastID: Integer;
+    LastID: Integer;
     procedure UpdateProgress;
     procedure UpdateMaxProgress;
     procedure UpdateText;
@@ -26,120 +28,133 @@ type
     procedure RegisterThread;
     procedure UnRegisterThread;
     function GetDBRecordCount: Integer;
-    { Private declarations }
   protected
     procedure Execute; override;
     procedure SavePosition;
+    function GetThreadID : string; override;
   end;
 
 var
-  Termitating: boolean = false;
-  Active: boolean = false;
+  Termitating: Boolean = False;
+  Active: Boolean = False;
   Share_Position, Share_MaxPosition: Integer;
 
 implementation
 
-uses Searching, dolphin_db, UnitDBCleaning, Language, FormManegerUnit;
+uses dolphin_db, UnitDBCleaning, FormManegerUnit;
 
 { CleanUpThread }
 
 procedure CleanUpThread.Execute;
 var
-  i, int, position: Integer;
-  s, str_position, _sqlexectext, FromDB: string;
+  I, Int, Position: Integer;
+  S, Str_position, _sqlexectext, FromDB: string;
   ExifData: TExifData;
-  crc: cardinal;
-  folder: string;
+  Crc: Cardinal;
+  Folder: string;
   SetQuery: TDataSet;
-  DateToAdd, aTime: TDateTime;
-  IsDate, IsTime: boolean;
+  DateToAdd, ATime: TDateTime;
+  IsDate, IsTime: Boolean;
 begin
- FreeOnTerminate:=True;
- if FolderView then exit;
- Synchronize(RegisterThread);
+  FreeOnTerminate := True;
+  if FolderView then
+    Exit;
+  Synchronize(RegisterThread);
 
- If Active then exit;
- Priority:=tpIdle;
- Termitating:=false;
- Active:=true;
+  if Active then
+    Exit;
+  Priority := TpIdle;
+  Termitating := False;
+  Active := True;
 
- FTable:=GetQuery;
- fQuery:=GetQuery;
+  FTable := GetQuery;
+  FQuery := GetQuery;
 
- fReg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- fReg.OpenKey(RegRoot,true);
- str_position:=fReg.ReadString('CleanPosition');
- if fReg.ValueExists('CleanLastID') then
- lastID:=fReg.ReadInteger('CleanLastID') else lastID:=0;
- position:=StrToIntDef(str_position,1);
- if Position<1 then Position:=1;
- FMaxPosition:=GetDBRecordCount;
- if Position>FMaxPosition then
- begin
-  DBKernel.WriteBool('Options','AllowFastCleaning',False);
-  Position:=1;
- end;
- fReg.free;
-
- Share_Position:=0;
-
- Share_MaxPosition:=FMaxPosition;
- Synchronize(UpdateMaxProgress);
- Synchronize(InitializeForm);
- FPosition:=Position;
- while not FMaxPosition<FPosition do
- begin
-  if not DBKernel.ReadBool('Options','AllowFastCleaning',False) then
-  Sleep(2500);
-
-  if Termitating then break;
-  _sqlexectext:='Select * from $DB$ where ID=(Select MIN(ID) from $DB$ where ID>'+IntToStr(lastID)+')';
-
-  SetSQL(FTable,_sqlexectext);
-  FTable.Open;
-
-  FText:=format(TEXT_MES_CLEANING_ITEM,[Trim(FTable.FieldByName('Name').AsString)]);
-  lastID:=FTable.FieldByName('ID').AsInteger;
-  Synchronize(UpdateText);
-  inc(Fposition);
-  //Fposition:=FTable.RecNo;
-
-  Share_Position:=FPosition;
-  Synchronize(UpdateProgress);
-  if fPosition mod 10 = 0 then SavePosition;
-  if FTable=nil then break;
-  if Termitating then break;
-
+  FReg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-
-    if not StaticPath(FTable.FieldByName('FFileName').AsString) then
+    FReg.OpenKey(RegRoot, True);
+    Str_position := FReg.ReadString('CleanPosition');
+    if FReg.ValueExists('CleanLastID') then
+      LastID := FReg.ReadInteger('CleanLastID')
+    else
+      LastID := 0;
+    Position := StrToIntDef(Str_position, 1);
+    if Position < 1 then
+      Position := 1;
+    FMaxPosition := GetDBRecordCount;
+    if Position > FMaxPosition then
     begin
-     Continue;
+      DBKernel.WriteBool('Options', 'AllowFastCleaning', False);
+      Position := 1;
     end;
+  finally
+    F(FReg);
+  end;
 
-    folder:= ExtractFileDir(FTable.FieldByName('FFileName').AsString);
-    folder:=AnsiLowerCase(folder);
-    CalcStringCRC32(AnsiLowerCase(folder),crc);
-    int:=Integer(crc);
-    if int<>FTable.FieldByName('FolderCRC').AsInteger then
-    begin
-     SetQuery:=GetQuery;
-     SetSQL(SetQuery,'Update $DB$ Set FolderCRC=:FolderCRC Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
-     SetIntParam(SetQuery,0,crc);
-     ExecSQL(SetQuery);
+  Share_Position := 0;
 
-     FreeDS(SetQuery);
-    end;
+  Share_MaxPosition := FMaxPosition;
+  Synchronize(UpdateMaxProgress);
+  Synchronize(InitializeForm);
+  FPosition := Position;
+  while not FMaxPosition < FPosition do
+  begin
+    if not DBKernel.ReadBool('Options', 'AllowFastCleaning', False) then
+      Sleep(2500);
 
+    if Termitating then
+      Break;
+    _sqlexectext := 'Select * from $DB$ where ID=(Select MIN(ID) from $DB$ where ID>' + IntToStr(LastID) + ')';
 
-   if DBKernel.ReadBool('Options','DeleteNotValidRecords',True) then
-   begin
-    if not FileExists( FTable.FieldByName('FFileName').AsString) then
-    begin
-     if DBKernel.ReadBool('Options','DeleteNotValidRecords',True) then
-     begin
-      if (FTable.FieldByName('Rating').AsInteger=0) and (FTable.FieldByName('Access').AsInteger<>db_access_private) and (FTable.FieldByName('Comment').AsString='') and (FTable.FieldByName('KeyWords').AsString='') and (FTable.FieldByName('Groups').AsString='') and (FTable.FieldByName('IsDate').AsBoolean=False)  then
+    SetSQL(FTable, _sqlexectext);
+    FTable.Open;
+
+    FText := Format(L('Cleaning... [%s]'), [Trim(FTable.FieldByName('Name').AsString)]);
+    LastID := FTable.FieldByName('ID').AsInteger;
+    Synchronize(UpdateText);
+    Inc(Fposition);
+    // Fposition:=FTable.RecNo;
+
+    Share_Position := FPosition;
+    Synchronize(UpdateProgress);
+    if FPosition mod 10 = 0 then
+      SavePosition;
+    if FTable = nil then
+      Break;
+    if Termitating then
+      Break;
+
+    try
+
+      if not StaticPath(FTable.FieldByName('FFileName').AsString) then
+        Continue;
+
+      Folder := ExtractFileDir(FTable.FieldByName('FFileName').AsString);
+      Folder := AnsiLowerCase(Folder);
+      CalcStringCRC32(AnsiLowerCase(Folder), Crc);
+      Int := Integer(Crc);
+      if Int <> FTable.FieldByName('FolderCRC').AsInteger then
       begin
+        SetQuery := GetQuery;
+        SetSQL(SetQuery,
+          'Update $DB$ Set FolderCRC=:FolderCRC Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
+        SetIntParam(SetQuery, 0, Crc);
+        ExecSQL(SetQuery);
+
+        FreeDS(SetQuery);
+      end;
+
+      if DBKernel.ReadBool('Options', 'DeleteNotValidRecords', True) then
+      begin
+        if not FileExists(FTable.FieldByName('FFileName').AsString) then
+        begin
+          if DBKernel.ReadBool('Options', 'DeleteNotValidRecords', True) then
+          begin
+            if (FTable.FieldByName('Rating').AsInteger = 0) and
+              (FTable.FieldByName('Access').AsInteger <> Db_access_private) and
+              (FTable.FieldByName('Comment').AsString = '') and (FTable.FieldByName('KeyWords').AsString = '') and
+              (FTable.FieldByName('Groups').AsString = '') and (FTable.FieldByName('IsDate').AsBoolean = False) then
+            begin
               SetQuery := GetQuery;
               try
                 SetSQL(SetQuery, 'Delete from $DB$ Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
@@ -147,224 +162,243 @@ begin
               finally
                 FreeDS(SetQuery);
               end;
-       Continue;
+              Continue;
+            end;
+          end;
+          FQuery.Active := False;
+
+          SetSQL(FQuery, 'UPDATE $DB$ SET Attr=' + Inttostr(Db_attr_not_exists) + ' WHERE ID=' + Inttostr
+              (FTable.FieldByName('ID').AsInteger));
+          ExecSQL(FQuery);
+        end else
+        begin
+          if (FTable.FieldByName('Attr').AsInteger = Db_attr_not_exists) then
+            SetAttr(FTable.FieldByName('ID').AsInteger, Db_attr_norm);
+        end;
+      end
+      except
+        on E: Exception do
+          EventLog(':CleanUpThread::Execute() throw exception: ' + E.message);
       end;
-     end;
-     fQuery.Active:=false;
 
-     SetSQL(fQuery,'UPDATE $DB$ SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID='+inttostr(FTable.FieldByName('ID').AsInteger));
-     ExecSQL(fQuery);
-    end else
-    begin
-     if (FTable.FieldByName('Attr').AsInteger=db_attr_not_exists) then
-     SetAttr(FTable.FieldByName('ID').AsInteger,db_attr_norm);
+      if Termitating then
+        Break;
+
+      try
+        S := FTable.FieldByName('FFileName').AsString;
+        if S <> AnsiLowerCase(S) then
+        begin
+          SetQuery := GetQuery;
+          SetSQL(SetQuery,
+            'UPDATE $DB$ Set FFileName=:FFileName Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
+          SetStrParam(SetQuery, 0, AnsiLowerCase(S));
+          ExecSQL(SetQuery);
+          FreeDS(SetQuery);
+        end;
+      except
+        on E: Exception do
+          EventLog(':CleanUpThread::Execute() throw exception: ' + E.message);
+      end;
+
+      if Termitating then
+        Break;
+
+      if DBKernel.ReadBool('Options', 'FixDateAndTime', True) then
+      begin
+        ExifData := TExifData.Create;
+        try
+          ExifData.LoadFromJPEG(FTable.FieldByName('FFileName').AsString);
+          if YearOf(ExifData.DateTime) > 2000 then
+            if (FTable.FieldByName('DateToAdd').AsDateTime <> ExifData.DateTime) or
+              (FTable.FieldByName('aTime').AsDateTime <> TimeOf(ExifData.DateTime)) then
+            begin
+
+              DateToAdd := ExifData.DateTime;
+              ATime := TimeOf(ExifData.DateTime);
+              IsDate := True;
+              IsTime := True;
+              _sqlexectext := '';
+              _sqlexectext := _sqlexectext + 'DateToAdd=:DateToAdd,';
+              _sqlexectext := _sqlexectext + 'aTime=:aTime,';
+              _sqlexectext := _sqlexectext + 'IsDate=:IsDate,';
+              _sqlexectext := _sqlexectext + 'IsTime=:IsTime';
+              SetQuery := GetQuery;
+              SetSQL(SetQuery, 'Update $DB$ Set ' + _sqlexectext + ' where ID = ' + IntToStr
+                  (FTable.FieldByName('ID').AsInteger));
+              SetDateParam(SetQuery, 'DateToAdd', DateToAdd);
+              SetDateParam(SetQuery, 'aTime', ATime);
+              SetBoolParam(SetQuery, 2, IsDate);
+              SetBoolParam(SetQuery, 3, IsTime);
+              ExecSQL(SetQuery);
+              FreeDS(SetQuery);
+            end;
+        except
+          on E: Exception do
+            EventLog(':CleanUpThread::Execute() throw exception: ' + E.message);
+        end;
+        F(ExifData);
+      end;
+
+    if Termitating then
+      Break;
+    try
+      if DBKernel.ReadBool('Options', 'VerifyDublicates', False) then
+      begin
+        FQuery.Active := False;
+
+        if (GetDBType(Dbname) = DB_TYPE_MDB) then
+        begin
+          FromDB := '(Select * from $DB$ where StrThCrc=:StrThCrc)';
+          SetSQL(FQuery, 'SELECT * FROM ' + FromDB + ' WHERE StrTh = :StrTh ORDER BY ID');
+          SetIntParam(FQuery, 0, StringCRC(FTable.FieldByName('StrTh').AsString));
+          SetStrParam(FQuery, 1, FTable.FieldByName('StrTh').AsString);
+        end else
+        begin
+          SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrTh = :StrTh ORDER BY ID');
+          SetStrParam(FQuery, 0, FTable.FieldByName('StrTh').AsString);
+        end;
+
+        if Termitating then
+          Break;
+
+        FQuery.Active := True;
+        FQuery.First;
+        if FQuery.RecordCount > 1 then
+        begin
+          for I := 1 to FQuery.RecordCount do
+          begin
+            if FTable = nil then
+              Break;
+            if Termitating then
+              Break;
+            if FQuery.FieldByName('Attr').AsInteger <> Db_attr_dublicate then
+              SetAttr(FQuery.FieldByName('ID').AsInteger, Db_attr_dublicate);
+            FQuery.Next;
+          end;
+        end;
+        if (FQuery.RecordCount = 1) and Fileexists(FTable.FieldByName('FFileName').AsString) and
+          (FTable.FieldByName('Attr').AsInteger = Db_attr_dublicate) then
+          SetAttr(FTable.FieldByName('ID').AsInteger, Db_attr_norm);
+      end;
+    except
+      on E: Exception do
+        EventLog(':CleanUpThread::Execute() throw exception: ' + E.message);
     end;
-   end
-  except
-   on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
+
+    // FTable.next;
   end;
-
-  if Termitating then break;
-
+  SavePosition;
+  FreeDS(FTable);
+  FreeDS(FQuery);
+  Synchronize(FinalizeForm);
+  Active := False;
   try
-   s:=FTable.FieldByName('FFileName').AsString;
-   If s<>AnsiLowerCase(s) then
-   begin
-     SetQuery:=GetQuery;
-     SetSQL(SetQuery,'UPDATE $DB$ Set FFileName=:FFileName Where ID='+IntToStr(FTable.FieldByName('ID').AsInteger));
-     SetStrParam(SetQuery,0,AnsiLowerCase(s));
-     ExecSQL(SetQuery);
-     FreeDS(SetQuery);
-    end;
+    Synchronize(UnRegisterThread);
   except
-   on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
+    on E: Exception do
+      EventLog(':CleanUpThread::Execute()/UnRegisterThread throw exception: ' + E.message);
   end;
-
-  if Termitating then break;
-
-  if DBKernel.ReadBool('Options','FixDateAndTime',True) then
-  begin
-   ExifData := TExifData.Create;
-   try
-    ExifData.LoadFromJPEG(FTable.FieldByName('FFileName').AsString);
-    if YearOf(ExifData.DateTime)>2000 then
-    if (FTable.FieldByName('DateToAdd').AsDateTime<>ExifData.DateTime) or (FTable.FieldByName('aTime').AsDateTime<>TimeOf(ExifData.DateTime)) then
-    begin
-
-       DateToAdd:=ExifData.DateTime;
-       aTime:=TimeOf(ExifData.DateTime);
-       IsDate:=True;
-       IsTime:=True;
-       _sqlexectext:='';
-       _sqlexectext:=_sqlexectext+'DateToAdd=:DateToAdd,';
-       _sqlexectext:=_sqlexectext+'aTime=:aTime,';
-       _sqlexectext:=_sqlexectext+'IsDate=:IsDate,';
-       _sqlexectext:=_sqlexectext+'IsTime=:IsTime';
-       SetQuery:=GetQuery;
-       SetSQL(SetQuery,'Update $DB$ Set '+_sqlexectext+' where ID = '+IntToStr(FTable.FieldByName('ID').AsInteger));
-       SetDateParam(SetQuery,'DateToAdd',DateToAdd);
-       SetDateParam(SetQuery,'aTime',aTime);
-       SetBoolParam(SetQuery,2,IsDate);
-       SetBoolParam(SetQuery,3,IsTime);
-       ExecSQL(SetQuery);
-       FreeDS(SetQuery);
-     end;
-   except
-   on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
-   end;
-    F(ExifData);
-  end;
-
-  if Termitating then break;
-  try
-  if DBKernel.ReadBool('Options','VerifyDublicates',False) then
-  begin
-   fQuery.Active:=false;
-
-   if (GetDBType(dbname)=DB_TYPE_MDB) then
-   begin
-    FromDB:='(Select * from $DB$ where StrThCrc=:StrThCrc)';
-    SetSQL(fQuery,'SELECT * FROM '+FromDB+' WHERE StrTh = :StrTh ORDER BY ID');
-    SetIntParam(fQuery,0,StringCRC(FTable.FieldByName('StrTh').AsString));
-    SetStrParam(fQuery,1,FTable.FieldByName('StrTh').AsString);
-   end else
-   begin
-    SetSQL(fQuery,'SELECT * FROM $DB$ WHERE StrTh = :StrTh ORDER BY ID');
-    SetStrParam(fQuery,0,FTable.FieldByName('StrTh').AsString);
-   end;
-
-{   SetSQL(fQuery,'SELECT * FROM '+GetDefDBName+' WHERE (StrTh = :str)');
-
-   SetStrParam(fQuery,0,FTable.FieldByName('StrTh').AsString);
-}
-   if Termitating then Break;
-
-   fQuery.Active:=true;
-   fQuery.First;
-   if fQuery.RecordCount>1 then
-   begin
-    for i:=1 to fQuery.RecordCount do
-    begin
-     if FTable=nil then break;
-     if termitating then break;
-     if fQuery.FieldByName('Attr').AsInteger<>db_attr_dublicate then
-     SetAttr(fQuery.FieldByName('ID').AsInteger,db_attr_dublicate);
-     fQuery.next;
-    end;
-   end;
-   if (fQuery.RecordCount=1) and  fileexists(FTable.FieldByName('FFileName').AsString) and (FTable.FieldByName('Attr').AsInteger=db_attr_dublicate) then
-   SetAttr(FTable.FieldByName('ID').AsInteger,db_attr_norm);
-  end;
-  except
-   on e : Exception do EventLog(':CleanUpThread::Execute() throw exception: '+e.Message);
-  end;
-
-  //FTable.next;
- end;
- SavePosition;
- FreeDS(FTable);
- FreeDS(fQuery);
- Synchronize(FinalizeForm);
- Active:=false;
- try
-  Synchronize(UnRegisterThread);
- except
-   on e : Exception do EventLog(':CleanUpThread::Execute()/UnRegisterThread throw exception: '+e.Message);
- end;
 end;
 
 procedure CleanUpThread.FinalizeForm;
 begin
- if DBCleaningForm<>nil then
- begin
-  DBCleaningForm.BtnStart.Enabled:=True;
-  DBCleaningForm.BtnStop.Enabled:=False;
-  DBCleaningForm.PbMain.MaxValue:=1;
-  DBCleaningForm.PbMain.Position:=0;
-  DBCleaningForm.PbMain.Text:=TEXT_MES_CLEANING_STOPED;
- end;
+  if DBCleaningForm <> nil then
+  begin
+    DBCleaningForm.BtnStart.Enabled := True;
+    DBCleaningForm.BtnStop.Enabled := False;
+    DBCleaningForm.PbMain.MaxValue := 1;
+    DBCleaningForm.PbMain.Position := 0;
+    DBCleaningForm.PbMain.Text := L('Cleaning is stopped');
+  end;
 end;
 
-function CleanUpThread.GetDBRecordCount: integer;
+function CleanUpThread.GetDBRecordCount: Integer;
 var
-  DS : TDataSet;
+  DS: TDataSet;
 begin
- DS := GetQuery;
- SetSQL(DS,'SELECT count(*) as DB_Count from $DB$');
- try
-  DS.Open;
-  Result:=DS.FieldByName('DB_Count').AsInteger;
- except
-  Result:=0;
- end;
- FreeDS(DS);
+  DS := GetQuery;
+  try
+    SetSQL(DS, 'SELECT count(*) as DB_Count from $DB$');
+    try
+      DS.Open;
+      Result := DS.FieldByName('DB_Count').AsInteger;
+    except
+      Result := 0;
+    end;
+  finally
+    FreeDS(DS);
+  end;
+end;
+
+function CleanUpThread.GetThreadID: string;
+begin
+  Result := 'DBCleaning';
 end;
 
 procedure CleanUpThread.InitializeForm;
 begin
- if DBCleaningForm<>nil then
- begin
-  DBCleaningForm.BtnStart.Enabled:=False;
-  DBCleaningForm.BtnStop.Enabled:=True;
-  DBCleaningForm.PbMain.MaxValue:=Share_MaxPosition;
-  DBCleaningForm.PbMain.Position:=Share_Position;
- end;
+  if DBCleaningForm <> nil then
+  begin
+    DBCleaningForm.BtnStart.Enabled := False;
+    DBCleaningForm.BtnStop.Enabled := True;
+    DBCleaningForm.PbMain.MaxValue := Share_MaxPosition;
+    DBCleaningForm.PbMain.Position := Share_Position;
+  end;
 end;
 
 procedure CleanUpThread.RegisterThread;
-Var
-  TermInfo : TTemtinatedAction;
+var
+  TermInfo: TTemtinatedAction;
 begin
- TermInfo.TerminatedPointer:=@Termitating;
- TermInfo.TerminatedVerify:=@Active;
- TermInfo.Options:=TA_INFORM_AND_NT;
- TermInfo.Owner:=Self;
- FormManager.RegisterActionCanTerminating(TermInfo);
+  TermInfo.TerminatedPointer := @Termitating;
+  TermInfo.TerminatedVerify := @Active;
+  TermInfo.Options := TA_INFORM_AND_NT;
+  TermInfo.Owner := Self;
+  FormManager.RegisterActionCanTerminating(TermInfo);
 end;
 
 procedure CleanUpThread.SavePosition;
 begin
- fReg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- fReg.OpenKey(RegRoot,true);
- fReg.WriteString('CleanPosition',IntToStr(fposition));
- fReg.WriteInteger('CleanLastID',LastID);
- fReg.free;
+  FReg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    FReg.OpenKey(RegRoot, True);
+    FReg.WriteString('CleanPosition', IntToStr(Fposition));
+    FReg.WriteInteger('CleanLastID', LastID);
+  finally
+    F(FReg);
+  end;
 end;
 
 procedure CleanUpThread.UnRegisterThread;
-Var
-  TermInfo : TTemtinatedAction;
+var
+  TermInfo: TTemtinatedAction;
 begin
- TermInfo.TerminatedPointer:=@Termitating;
- TermInfo.TerminatedVerify:=@Active;
- TermInfo.Options:=TA_INFORM_AND_NT;
- TermInfo.Owner:=Self;
- FormManager.UnRegisterActionCanTerminating(TermInfo);
+  TermInfo.TerminatedPointer := @Termitating;
+  TermInfo.TerminatedVerify := @Active;
+  TermInfo.Options := TA_INFORM_AND_NT;
+  TermInfo.Owner := Self;
+  FormManager.UnRegisterActionCanTerminating(TermInfo);
 end;
 
 procedure CleanUpThread.UpdateMaxProgress;
 begin
- if DBCleaningForm<>nil then
- begin
-  DBCleaningForm.PbMain.MinValue:=0;
-  DBCleaningForm.PbMain.MaxValue:=FMaxPosition;
- end;
+  if DBCleaningForm <> nil then
+  begin
+    DBCleaningForm.PbMain.MinValue := 0;
+    DBCleaningForm.PbMain.MaxValue := FMaxPosition;
+  end;
 end;
 
 procedure CleanUpThread.UpdateProgress;
 begin
- if DBCleaningForm<>nil then
- begin
-  DBCleaningForm.PbMain.Position:=Fposition;
- end;
+  if DBCleaningForm <> nil then
+    DBCleaningForm.PbMain.Position := Fposition;
 end;
 
 procedure CleanUpThread.UpdateText;
 begin
   if DBCleaningForm <> nil then
-  begin
     DBCleaningForm.PbMain.Text := FText;
-  end;
 end;
 
 end.

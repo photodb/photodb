@@ -42,13 +42,14 @@ type
     Function DBsNormal : Boolean;
     Procedure CheckEnabled;
     procedure Button4Click(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+    procedure LoadLanguage;
+  protected
+    function GetFormID : string; override;
   public
-  Procedure LoadLanguage;
     { Public declarations }
   end;
 
@@ -57,161 +58,163 @@ var
 
 implementation
 
-uses UnitCompareProgress, UnitCmpDB, Language;
+uses
+  UnitCompareProgress, UnitCmpDB;
 
 {$R *.dfm}
 
 procedure TImportDataBaseForm.Button5Click(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TImportDataBaseForm.FormCreate(Sender: TObject);
 var
-  Filter : String;
+  Filter: string;
 begin
- Filter:='Access files (*.photodb;*.mdb)|*.photodb;*.mdb';
- OpenDialog1.Filter:=Filter;
-// DBKernel.RegisterForm(ImportDataBaseForm);
- Memo1.Lines.Clear;
- CheckEnabled;
- Edit4.text:=GetWindowsUserName;
- LoadLanguage;
- CheckListBox1.Checked[0]:=True;
- CheckListBox1.Checked[1]:=True;
- CheckListBox1.Checked[2]:=True;
- CheckListBox1.Checked[3]:=True;
- CheckListBox1.Checked[4]:=True;
- CheckListBox1.Checked[5]:=True;
- CheckListBox1.Checked[6]:=True;
- CheckListBox1.Checked[7]:=True;
- CheckListBox1.Checked[8]:=True;
- CheckListBox1.Checked[9]:=True;
- CheckListBox1.Checked[10]:=True;
- CheckListBox1.Checked[11]:=True;
- CheckListBox1.Checked[12]:=False;
+  Filter := 'Access files (*.photodb;*.mdb)|*.photodb;*.mdb';
+  OpenDialog1.Filter := Filter;
+  Memo1.Lines.Clear;
+  CheckEnabled;
+  Edit4.Text := GetWindowsUserName;
+  LoadLanguage;
+  CheckListBox1.Checked[0] := True;
+  CheckListBox1.Checked[1] := True;
+  CheckListBox1.Checked[2] := True;
+  CheckListBox1.Checked[3] := True;
+  CheckListBox1.Checked[4] := True;
+  CheckListBox1.Checked[5] := True;
+  CheckListBox1.Checked[6] := True;
+  CheckListBox1.Checked[7] := True;
+  CheckListBox1.Checked[8] := True;
+  CheckListBox1.Checked[9] := True;
+  CheckListBox1.Checked[10] := True;
+  CheckListBox1.Checked[11] := True;
+  CheckListBox1.Checked[12] := False;
 end;
 
 procedure TImportDataBaseForm.Button2Click(Sender: TObject);
 var
-  DBTestOK : boolean;
+  DBTestOK: Boolean;
 begin
- if OpenDialog1.execute then
- begin
-  DBTestOK:=DBKernel.testDB(OpenDialog1.FileName);
-  if AnsiUpperCase(OpenDialog1.FileName)=AnsiUpperCase(dbname) then
+  if OpenDialog1.Execute then
   begin
-   MessageBoxDB(Handle,TEXT_MES_MAIN_DB_AND_ADD_SAME,L('Warning'),TD_BUTTON_OK,TD_ICON_INFORMATION);
-   DBTestOK:=false;
+    DBTestOK := DBKernel.TestDB(OpenDialog1.FileName);
+    if AnsiUpperCase(OpenDialog1.FileName) = AnsiUpperCase(Dbname) then
+    begin
+      MessageBoxDB(Handle, L('Please, choose different collections'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+      DBTestOK := False;
+    end;
+    if DBTestOK then
+    begin
+      Edit2.Text := OpenDialog1.FileName;
+      Label3.Caption := Format(L('Add collection (%d items)'), [GetRecordsCount(OpenDialog1.FileName)]);
+    end
+    else
+      Edit2.Text := L('No file'); // TODO: in XML
   end;
-  if DBTestOK then
-  begin
-   Edit2.Text:= OpenDialog1.FileName;
-   Label3.Caption:=Format(TEXT_MES_ADD_DB_RECS_FORMAT,[IntToStr(GetRecordsCount(OpenDialog1.FileName))]);
-  end else
-  edit2.Text:=L('No file'); //TODO: in XML
- end;
- CheckEnabled;
+  CheckEnabled;
 end;
 
 procedure TImportDataBaseForm.Execute;
 begin
- Show;
+  Show;
 end;
 
 function TImportDataBaseForm.DBsNormal: Boolean;
 begin
- if DBKernel.TestDB(edit2.Text) then Result:=True else Result:=False;
+  Result := DBKernel.TestDB(Edit2.Text);
 end;
 
 procedure TImportDataBaseForm.CheckEnabled;
 begin
- If DBsNormal then
- Button4.Enabled:=True else
- Button4.Enabled:=False;
+  Button4.Enabled := DBsNormal;
 end;
 
 procedure TImportDataBaseForm.Button4Click(Sender: TObject);
 var
-  Options : TCompOptions;
+  Options: TCompOptions;
 begin
- With Options do
- begin
-  AddNewRecords := CheckListBox1.Checked[0];
-  AddRecordsWithoutFiles := CheckListBox1.Checked[1];
-  AddRating :=CheckListBox1.Checked[2];
-  AddRotate :=CheckListBox1.Checked[3];
-  AddPrivate :=CheckListBox1.Checked[4];
-  AddKeyWords:=CheckListBox1.Checked[5];
-  AddGroups:=CheckListBox1.Checked[6];
-  AddNilComment :=CheckListBox1.Checked[7];
-  AddComment :=CheckListBox1.Checked[8];
-  AddNamedComment:=CheckListBox1.Checked[9];
-  AddDate :=CheckListBox1.Checked[10];
-  AddLinks :=CheckListBox1.Checked[11];
-  IgnoreWords :=CheckListBox1.Checked[12];
-  IgWords := Memo1.Text;
-  Autor := edit4.Text;
-  UseScanningByFileName:=CheckBox1.Checked;
- end;
- UnitCmpDB.SourceTableName:=Edit2.text;
- UnitCmpDB.Options :=  Options;
- UnitCmpDB.IgnoredWords:= Memo1.Text;
- Application.CreateForm(TImportProgressForm,ImportProgressForm);
- Hide;
- Application.ProcessMessages;
- ImportProgressForm.Show;
- CmpDBTh.Create(false);
- Close; //?
+  with Options do
+  begin
+    AddNewRecords := CheckListBox1.Checked[0];
+    AddRecordsWithoutFiles := CheckListBox1.Checked[1];
+    AddRating := CheckListBox1.Checked[2];
+    AddRotate := CheckListBox1.Checked[3];
+    AddPrivate := CheckListBox1.Checked[4];
+    AddKeyWords := CheckListBox1.Checked[5];
+    AddGroups := CheckListBox1.Checked[6];
+    AddNilComment := CheckListBox1.Checked[7];
+    AddComment := CheckListBox1.Checked[8];
+    AddNamedComment := CheckListBox1.Checked[9];
+    AddDate := CheckListBox1.Checked[10];
+    AddLinks := CheckListBox1.Checked[11];
+    IgnoreWords := CheckListBox1.Checked[12];
+    IgWords := Memo1.Text;
+    Autor := Edit4.Text;
+    UseScanningByFileName := CheckBox1.Checked;
+  end;
+  UnitCmpDB.SourceTableName := Edit2.Text;
+  UnitCmpDB.Options := Options;
+  UnitCmpDB.IgnoredWords := Memo1.Text;
+  Application.CreateForm(TImportProgressForm, ImportProgressForm);
+  Hide;
+  Application.ProcessMessages;
+  ImportProgressForm.Show;
+  CmpDBTh.Create(False);
+  Close; // ?
 end;
 
-procedure TImportDataBaseForm.FormDestroy(Sender: TObject);
+function TImportDataBaseForm.GetFormID: string;
 begin
-// DBkernel.UnRegisterForm(ImportDataBaseForm);
+  Result := 'ImportDB';
 end;
 
 procedure TImportDataBaseForm.LoadLanguage;
 begin
-  Caption := TEXT_MES_IMPORTING_OPTIONS_CAPTION;
-  CheckListBox1.Clear;
-  CheckListBox1.Items.Add(TEXT_MES_ADD_NEW_RECS);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_REC_WITHOUT_FILES);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_RATING);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_ROTATE);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_PRIVATE);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_KEYWORDS);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_GROUPS);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_NIL_COMMENT);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_COMMENT);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_NAMED_COMMENT);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_DATE);
-  CheckListBox1.Items.Add(TEXT_MES_ADD_LINKS);
-  CheckListBox1.Items.Add(TEXT_MES_IGNORE_KEYWORDS);
-  Button5.Caption := L('Cancel');
-  Button4.Caption := L('Ok');
-  GroupBox1.Caption := TEXT_MES_REPLACE_GROUP_BOX;
-  Label9.Caption := TEXT_MES_ON__REPLACE_;
-  Label10.Caption := TEXT_MES_ON__REPLACE_;
-  Label11.Caption := TEXT_MES_ON__REPLACE_;
-  Label12.Caption := TEXT_MES_ON__REPLACE_;
-
-  Label3.Caption := TEXT_MES_ADD_DB;
-  Label4.Caption := TEXT_MES_BY_AUTHOR;
-  Label5.Caption := TEXT_MES_LIST_IGNORE_WORDS;
-  CheckBox1.Caption := TEXT_MES_USE_SCANNING_BY_FILENAME;
+  BeginTranslate;
+  try
+    Caption := L('Import settings');
+    CheckListBox1.Clear;
+    CheckListBox1.Items.Add(L('Add new items'));
+    CheckListBox1.Items.Add(L('Add items without files'));
+    CheckListBox1.Items.Add(L('Add rating'));
+    CheckListBox1.Items.Add(L('Add rotate'));
+    CheckListBox1.Items.Add(L('Add private'));
+    CheckListBox1.Items.Add(L('Add keywords'));
+    CheckListBox1.Items.Add(L('Add groups'));
+    CheckListBox1.Items.Add(L('Add empty comments'));
+    CheckListBox1.Items.Add(L('Add comments'));
+    CheckListBox1.Items.Add(L('Add comments with author'));
+    CheckListBox1.Items.Add(L('Добавлять дату'));
+    CheckListBox1.Items.Add(L('Add links'));
+    CheckListBox1.Items.Add(L('Ignore keywords'));
+    Button5.Caption := L('Cancel');
+    Button4.Caption := L('Ok');
+    GroupBox1.Caption := L('Replace');
+    Label9.Caption := L('to');
+    Label10.Caption := L('to');
+    Label11.Caption := L('to');
+    Label12.Caption := L('to');
+    Label3.Caption := L('Add collection');
+    Label4.Caption := L('Author');
+    Label5.Caption := L('List of ignored words') + ':';
+    CheckBox1.Caption := L('Advanced search if file names equals');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TImportDataBaseForm.DestroyTimerTimer(Sender: TObject);
 begin
- DestroyTimer.Enabled:=false;
- ImportDataBaseForm:=nil;
- Release;
+  DestroyTimer.Enabled := False;
+  ImportDataBaseForm := nil;
+  Release;
 end;
 
-procedure TImportDataBaseForm.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TImportDataBaseForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- DestroyTimer.Enabled:=true;
+  DestroyTimer.Enabled := True;
 end;
 
 end.

@@ -1,12 +1,13 @@
 unit UnitCDExportThread;
+//TODO: review module
 
 interface
 
 uses
-  Classes, Forms, UnitCDMappingSupport, UnitDBKernel, Language, uVistaFuncs, DB,
+  Classes, Forms, UnitCDMappingSupport, UnitDBKernel, uVistaFuncs, DB,
   UnitGroupsWork, UnitDBDeclare, CommonDBSupport, win32crc, SysUtils, uLogger,
   uFileUtils, uConstants, uShellIntegration, uDBTypes, uDBBaseTypes, uDBForm,
-  uTranslate;
+  uDBThread;
 
 type
   TCDExportOptions = record
@@ -18,7 +19,7 @@ type
   end;
 
 type
-  TCDExportThread = class(TThread)
+  TCDExportThread = class(TDBThread)
   private
     { Private declarations }
     Mapping: TCDIndexMapping;
@@ -38,6 +39,7 @@ type
     FOwner : TDBForm;
   protected
     procedure Execute; override;
+    function GetThreadID : string; override;
   public
     constructor Create(Owner : TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
     procedure DoErrorDeletingFiles;
@@ -76,7 +78,7 @@ end;
 
 procedure TCDExportThread.DoErrorDeletingFiles;
 begin
-  MessageBoxDB(Handle, TEXT_MES_UNABLE_TO_DELETE_ORIGINAL_FILES, TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+  MessageBoxDB(Handle, L('Unable to delete original files! Check if you have right to delete the files. Please try again later manually delete these files.'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
 end;
 
 procedure TCDExportThread.DoOnEnd;
@@ -343,15 +345,20 @@ begin
   Synchronize(DoOnEnd);
 end;
 
+function TCDExportThread.GetThreadID: string;
+begin
+  Result := 'CDExport';
+end;
+
 procedure TCDExportThread.ShowCopyError;
 begin
-  MessageBoxDB(FOwner.Handle, TEXT_MES_UNABLE_TO_COPY_DISK, TA('Warning'), TD_BUTTON_OK,
+  MessageBoxDB(FOwner.Handle, L('Unable to copy files to the final location! Check if there are write permissions to the specified directory!'), L('Warning'), TD_BUTTON_OK,
     TD_ICON_WARNING);
 end;
 
 procedure TCDExportThread.ShowError;
 begin
-  MessageBoxDB(FOwner.Handle, Format(TEXT_MES_UNKNOWN_ERROR_F, [StrParam]), TA('Error'),
+  MessageBoxDB(FOwner.Handle, Format(L('An unexpected error occurred: %s'), [StrParam]), L('Error'),
     TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
