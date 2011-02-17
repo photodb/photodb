@@ -53,7 +53,7 @@ var
 
 implementation
 
-uses Searching, Language, uSearchThreadPool;
+uses Searching, uSearchThreadPool;
 
 constructor TSearchBigImagesLoaderThread.Create(Sender: TThreadForm; SID: TGUID; OnDone: TNotifyEvent; PictureSize: integer;
   Data : TDBPopupMenuInfo; MainThread : Boolean);

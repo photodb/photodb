@@ -495,7 +495,7 @@ var
 
 implementation
 
-uses Language, UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
+uses  UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
   PropertyForm, Options, UnitLoadFilesToPanel,
   UnitHintCeator, UnitImHint, ExplorerUnit, UnitUpdateDB,
   UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
@@ -2554,6 +2554,7 @@ end;
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
 var
   DS : TDataSet;
+  MessageText: string;
 
   procedure XHint(XDS: TDataSet);
   var
@@ -2586,9 +2587,10 @@ begin
   if not DBKernel.ReadBool('HelpSystem', 'CheckRecCount', True) then
   begin
     HelpActivationNO := 0;
+    MessageText := L('     Do you want to get help, how to activate the program? If YES, then click on "More..." for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed. $nl$$nl$');
     if DBkernel.GetDemoMode then
       if DBKernel.ReadBool('HelpSystem', 'ActivationHelp', True) then
-        DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_ACTIVATION_FIRST, Point(0, 0), ElvMain,
+        DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
           HelpActivationNextClick, L('Next...'), HelpActivationCloseClick)
       else if not DBkernel.GetDemoMode then
         DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
@@ -2782,11 +2784,13 @@ end;
 procedure TSearchForm.HelpActivationNextClick(Sender: TObject);
 var
   Handled: Boolean;
+  MessageText: string;
 begin
   HelpActivationNO := HelpActivationNO + 1;
   if HelpActivationNO = 1 then
   begin
-    DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_ACTIVATION_1, Point(0, 0), ElvMain,
+    MessageText := L('     To activate the program call the context menu, select "Help" -> "Activation"$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
+    DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
       HelpActivationNextClick, L('Next...'), HelpActivationCloseClick);
   end;
   if HelpActivationNO = 2 then

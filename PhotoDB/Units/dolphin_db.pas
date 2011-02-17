@@ -2,7 +2,7 @@ unit Dolphin_db;
 
 interface
 
-uses  Language, Registry, Windows, uVistaFuncs,CommonDBSupport,
+uses  Registry, Windows, uVistaFuncs,CommonDBSupport,
       Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
       Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
       ImgList, ComCtrls, JPEG, DmProgress, win32crc,

@@ -5,7 +5,7 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  ComCtrls, Effects, ExEffects, Language, Dialogs, Forms, GraphicsBaseTypes,
+  ComCtrls, Effects, ExEffects, Dialogs, Forms, GraphicsBaseTypes,
   ExEffectsUnitW, OptimizeImageUnit, UnitDBKernel,
   uEditorTypes, uMemory, uTranslate;
 

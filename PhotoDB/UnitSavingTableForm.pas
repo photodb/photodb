@@ -35,7 +35,7 @@ procedure SaveQuery(Query: TDataSet; FileName: String; SubFolders: Boolean;
 
 implementation
 
-uses Language, UnitSaveQueryThread;
+uses UnitSaveQueryThread;
 
 {$R *.dfm}
 

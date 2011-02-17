@@ -497,6 +497,7 @@ type
     procedure HideLoadingSign;
     procedure AsEXIF1Click(Sender: TObject);
    private
+     { Private declarations }
      FBitmapImageList : TBitmapImageList;
      FWindowID : TGUID;
      NewFileName : String;
@@ -569,10 +570,10 @@ type
        MousePos: TPoint; var Handled: Boolean);
      procedure DoSelectItem;
      procedure SendToItemPopUpMenu_(Sender : TObject);
-//     procedure CorrectPath(Src : TStrings; Dest : string);
      procedure LoadIcons;
-    function GetMyComputer: string;
-    { Private declarations }
+     function GetMyComputer: string;
+     function GetSecondStepHelp: string;
+     property SecondStepHelp : string read GetSecondStepHelp;
    protected
      procedure ComboWNDProc(var Message: TMessage);
      procedure ZoomIn;
@@ -630,7 +631,7 @@ var
 
 implementation
 
-uses Language, UnitUpdateDB, ExplorerThreadUnit, Searching,
+uses UnitUpdateDB, ExplorerThreadUnit, Searching,
      SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
      FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
      uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
@@ -3900,7 +3901,7 @@ begin
         if SelCount < 3 then
         begin
           Activate;
-          DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_2, Point(0, 0), AddLink, Help1NextClick,
+          DoHelpHintCallBackOnCanClose(L('Help'), GetSecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
             L('Next...'), Help1CloseClick);
         end;
   LockwindowUpdate(0);
@@ -5419,6 +5420,8 @@ begin
 end;
 
 procedure TExplorerForm.HelpTimerTimer(Sender: TObject);
+var
+  MessageText: string;
 begin
   if not Active then
     Exit;
@@ -5426,19 +5429,22 @@ begin
   if HelpNO = 1 then
   begin
     HelpTimer.Enabled := False;
-    DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_1, Point(0, 0), ElvMain, Help1NextClick,
+    MessageText := L('     Find in explorer folder with your photos, select the photo and press "Add item(s)" in menu.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
+    DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain, Help1NextClick,
       L('Next...'), Help1CloseClick);
   end;
   if HelpNO = 2 then
   begin
     HelpTimer.Enabled := False;
-    DoHelpHintCallBackOnCanClose(L('Help'), TEXT_MES_HELP_2, Point(0, 0), AddLink, Help1NextClick,
+    DoHelpHintCallBackOnCanClose(L('Help'), GetSecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
       L('Next...'), Help1CloseClick);
   end;
   if HelpNO = 4 then
   begin
     HelpTimer.Enabled := False;
-    DoHelpHint(L('Help'), TEXT_MES_HELP_3, Point(0, 0), ElvMain);
+
+    MessageText := L('Now the pictures that do not have icon (+) in the upper left corner are in the collection. They are available using the search and for them advanced context menu is available. Further help is available from the main menu (Help -> Help).$nl$$nl$');
+    DoHelpHint(L('Help'), MessageText, Point(0, 0), ElvMain);
     HelpNO := 0;
     DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
   end;
@@ -6451,6 +6457,11 @@ end;
 function CanPasteFileInByType(FileType : integer) : boolean;
 begin
   Result := ((FileType=EXPLORER_ITEM_DRIVE) or (FileType=EXPLORER_ITEM_FOLDER) or (FileType=EXPLORER_ITEM_SHARE));
+end;
+
+function TExplorerForm.GetSecondStepHelp: string;
+begin
+  Result := L('     Click the "Add item (s)" to add photos to the database. After that the pictures you can add information.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
 end;
 
 function TExplorerForm.GetSelectedFiles: TArrayOfString;

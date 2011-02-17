@@ -5,7 +5,7 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, SysUtils, ImageHistoryUnit, Effects, ComCtrls, Math,
-  GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, ExtDlgs,
+  GraphicsBaseTypes, CustomSelectTool, Dialogs, ExtDlgs,
   ScanlinesFX, clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
   UnitDBKernel, UnitDBCommon, Dolphin_DB, uDBGraphicTypes,
   uMemory;

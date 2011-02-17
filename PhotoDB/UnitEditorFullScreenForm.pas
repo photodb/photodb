@@ -5,8 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Menus, uConstants, uMemory, uDBForm,
-  UnitDBKernel, uSysUtils, UnitDBCommon, UnitDBCommonGraphics,
-  Language;
+  UnitDBKernel, uSysUtils, UnitDBCommon, UnitDBCommonGraphics;
 
 type
   TEditorFullScreenForm = class(TDBForm)

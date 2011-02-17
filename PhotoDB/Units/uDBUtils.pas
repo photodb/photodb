@@ -7,7 +7,7 @@ uses
   UnitDBKernel, uSysUtils, DB, uConstants, CommonDBSupport, uDBTypes,
   uDBPopupMenuInfo, UnitDBDeclare, DateUtils, win32crc, uPrivateHelper,
   uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
-  uDBBaseTypes, uMemory, UnitLinksSupport, Language, uGraphicUtils,
+  uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils,
   Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
   uDBForm, uDBGraphicTypes, ImageConverting, GraphicsCool,
   GraphicsBaseTypes;

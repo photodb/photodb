@@ -7,7 +7,8 @@ uses
   SysUtils, DB, GraphicCrypt, Dialogs, DateUtils, CommonDBSupport,
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
-  CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils;
+  CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
+  uTranslate;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -101,8 +102,6 @@ function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh,
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 
 implementation
-
-uses Language;
 
 { UpdateDBThread }
 
@@ -538,8 +537,8 @@ end;
 
 procedure UpdateDBThread.LimitError;
 begin
-  MessageBoxDB(GetActiveFormHandle, Format(TEXT_MES_LIMIT_RECS, [Inttostr(LimitDemoRecords)]),
-    TEXT_MES_NEEDS_ACTIVATION, TD_BUTTON_OK, TD_ICON_INFORMATION);
+  MessageBoxDB(GetActiveFormHandle, Format(TA('You are working with a non-activated program!$nl$You can only add %d items!', 'Activation'), [LimitDemoRecords]),
+    TA('Requires activation of the program', 'Activation'), TD_BUTTON_OK, TD_ICON_INFORMATION);
 end;
 
 procedure UpdateDBThread.ExecuteReplaceDialog;

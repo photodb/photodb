@@ -4,9 +4,8 @@ interface
 
 uses
   Classes, Messages, Forms, Dolphin_DB, RawImage, SysUtils,
-  Language, UnitDBDeclare, DateUtils, UnitDBCommon,
-  CCR.Exif, uMemory, uDBBaseTypes, uFileUtils,
-  uTranslate;
+  UnitDBDeclare, DateUtils, UnitDBCommon,
+  CCR.Exif, uMemory, uDBBaseTypes, uFileUtils, uTranslate;
 
 type
   TScanImportPhotosThreadOptions = record
@@ -18,10 +17,10 @@ type
   end;
 
   TFileDateRecord = record
-   FileName : string;
-   Date : TDateTime;
-   Options : integer;
-   Tag : integer;
+    FileName: string;
+    Date: TDateTime;
+    Options: Integer;
+    Tag: Integer;
   end;
 
  TFileDateList = array of TFileDateRecord;
@@ -35,33 +34,31 @@ type
 type
   TScanImportPhotosThread = class(TThread)
   private
-   fOptions : TScanImportPhotosThreadOptions;
-   fFiles : TStrings;
-   FSID : TGUID;
-   StrParam : String;
-   BoolParam : Boolean;
-   DateFileList : TFileDateList;
-   IntParam : integer;
-//   fOnProgress : TCallBackProgressEvent;
     { Private declarations }
+    FOptions: TScanImportPhotosThreadOptions;
+    FFiles: TStrings;
+    FSID: TGUID;
+    StrParam: string;
+    BoolParam: Boolean;
+    DateFileList: TFileDateList;
+    IntParam: Integer;
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspennded: Boolean;
-      Options : TScanImportPhotosThreadOptions);
-    procedure AddFileToList(FileName : String; Date : TDateTime);
+    constructor Create(CreateSuspennded: Boolean; Options: TScanImportPhotosThreadOptions);
+    procedure AddFileToList(FileName: string; Date: TDateTime);
     procedure SetDateDataList;
-    procedure SetMaxPosition(MaxPos : integer);
+    procedure SetMaxPosition(MaxPos: Integer);
     procedure SetMaxPositionSynch;
-    procedure SetPosition(Pos : integer);
+    procedure SetPosition(Pos: Integer);
     procedure SetPositionSynch;
     procedure DoOnDone;
-    procedure OnLoadingFilesCallBackEvent(Sender : TObject; var Info : TProgressCallBackInfo);
+    procedure OnLoadingFilesCallBackEvent(Sender: TObject; var Info: TProgressCallBackInfo);
     procedure OnProgressSynch;
   end;
 
-  var
-    GetPhotosFormSID : TGUID;
+var
+  GetPhotosFormSID: TGUID;
 
 implementation
 
@@ -77,11 +74,11 @@ begin
   FSID := GetPhotosFormSID;
 end;
 
-procedure TScanImportPhotosThread.AddFileToList(FileName : String; Date : TDateTime);
+procedure TScanImportPhotosThread.AddFileToList(FileName: string; Date: TDateTime);
 begin
- SetLength(DateFileList,Length(DateFileList)+1);
- DateFileList[Length(DateFileList)-1].FileName:=FileName;
- DateFileList[Length(DateFileList)-1].Date:=Date;
+  SetLength(DateFileList, Length(DateFileList) + 1);
+  DateFileList[Length(DateFileList) - 1].FileName := FileName;
+  DateFileList[Length(DateFileList) - 1].Date := Date;
 end;
 
 procedure TScanImportPhotosThread.Execute;
@@ -148,52 +145,57 @@ var
 
 
 begin
- FreeOnTerminate:=true;
+  FreeOnTerminate := True;
 
- fOptions.Mask:='|'+fOptions.Mask+'|';
- For i:=Length(fOptions.Mask) downto 2 do
- if (fOptions.Mask[i]='|') and (fOptions.Mask[i-1]='|') then Delete(fOptions.Mask,i,1);
- if Length(fOptions.Mask)>0 then Delete(fOptions.Mask,1,1);
- fOptions.Mask:=SupportedExt+fOptions.Mask;
+  FOptions.Mask := '|' + FOptions.Mask + '|';
+  for I := Length(FOptions.Mask) downto 2 do
+    if (FOptions.Mask[I] = '|') and (FOptions.Mask[I - 1] = '|') then
+      Delete(FOptions.Mask, I, 1);
+  if Length(FOptions.Mask) > 0 then
+    Delete(FOptions.Mask, 1, 1);
+  FOptions.Mask := SupportedExt + FOptions.Mask;
 
- fFiles := TStringList.Create;
- MaxFilesCount:=10000;
- MaxFilesSearch:=100000;
- GetFileNamesFromDrive(fOptions.Directory, fOptions.Mask, fFiles, MaxFilesCount, MaxFilesSearch, OnLoadingFilesCallBackEvent);
+  FFiles := TStringList.Create;
+  MaxFilesCount := 10000;
+  MaxFilesSearch := 100000;
+  GetFileNamesFromDrive(FOptions.Directory, FOptions.Mask, FFiles, MaxFilesCount, MaxFilesSearch,
+    OnLoadingFilesCallBackEvent);
 
- SetMaxPosition(fFiles.Count);
- for i:=0 to fFiles.Count-1 do
- begin
-  SetPosition(i+1);
-  ExifData := TExifData.Create;
-  try
-   ExifData.LoadFromJPEG(fFiles[i]);
-  except
-  end;
-  if not ExifData.Empty then
+  SetMaxPosition(FFiles.Count);
+  for I := 0 to FFiles.Count - 1 do
   begin
-   AddFileToList(fFiles[i], DateOf(ExifData.DateTime));
-  end else
-  begin
-   if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(fFiles[i]) then
-   begin
-    RAWExif:=ReadRAWExif(fFiles[i]);
-    if RAWExif.isEXIF then
-    begin
-     FDate:=DateOf(RAWExif.TimeStamp);
-     if FDate>0 then AddFileToList(fFiles[i],FDate);
-
-     if IsEqualGUID(FSID, GetPhotosFormSID) then
-       Break;
+    SetPosition(I + 1);
+    ExifData := TExifData.Create;
+    try
+      ExifData.LoadFromJPEG(FFiles[I]);
+    except
     end;
-   end;
+    if not ExifData.Empty then
+    begin
+      AddFileToList(FFiles[I], DateOf(ExifData.DateTime));
+    end
+    else
+    begin
+      if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FFiles[I]) then
+      begin
+        RAWExif := ReadRAWExif(FFiles[I]);
+        if RAWExif.IsEXIF then
+        begin
+          FDate := DateOf(RAWExif.TimeStamp);
+          if FDate > 0 then
+            AddFileToList(FFiles[I], FDate);
+
+          if IsEqualGUID(FSID, GetPhotosFormSID) then
+            Break;
+        end;
+      end;
+    end;
+    F(ExifData);
   end;
-  F(ExifData);
- end;
- if Length(DateFileList)>1 then
- QuickSort(DateFileList,Length(DateFileList));
- Synchronize(SetDateDataList);
- Synchronize(DoOnDone);
+  if Length(DateFileList) > 1 then
+    QuickSort(DateFileList, Length(DateFileList));
+  Synchronize(SetDateDataList);
+  Synchronize(DoOnDone);
 end;
 
 procedure TScanImportPhotosThread.SetDateDataList;
@@ -202,64 +204,64 @@ begin
     (fOptions.Owner as TGetToPersonalFolderForm).SetDataList(DateFileList);
 end;
 
-procedure TScanImportPhotosThread.SetMaxPosition(MaxPos: integer);
+procedure TScanImportPhotosThread.SetMaxPosition(MaxPos: Integer);
 begin
- intParam:=MaxPos;
- Synchronize(SetMaxPositionSynch);
+  IntParam := MaxPos;
+  Synchronize(SetMaxPositionSynch);
 end;
 
 procedure TScanImportPhotosThread.SetMaxPositionSynch;
 begin
   if IsEqualGUID(FSID, GetPhotosFormSID) then
   begin
-    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.MaxValue:=intParam;
-    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text:= TA('Progress... (&%%)');
+    (FOptions.Owner as TGetToPersonalFolderForm).ProgressBar.MaxValue := IntParam;
+    (FOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Text := TA('Progress... (&%%)');
   end;
 end;
 
 procedure TScanImportPhotosThread.SetPosition(Pos: integer);
 begin
- intParam:=Pos;
- Synchronize(SetPositionSynch);
+  IntParam := Pos;
+  Synchronize(SetPositionSynch);
 end;
 
 procedure TScanImportPhotosThread.SetPositionSynch;
 begin
   if IsEqualGUID(FSID, GetPhotosFormSID) then
-    (fOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Position:=intParam;
+    (FOptions.Owner as TGetToPersonalFolderForm).ProgressBar.Position := IntParam;
 end;
 
 procedure TScanImportPhotosThread.DoOnDone;
 begin
- FOptions.OnEnd(self);
+  FOptions.OnEnd(Self);
 end;
 
-procedure TScanImportPhotosThread.OnLoadingFilesCallBackEvent(
-  Sender: TObject; var Info: TProgressCallBackInfo);
+procedure TScanImportPhotosThread.OnLoadingFilesCallBackEvent(Sender: TObject; var Info: TProgressCallBackInfo);
 begin
   if IsEqualGUID(FSID, GetPhotosFormSID) then
   begin
-    StrParam:=Info.Information;
-    BoolParam:=Info.Terminate;
+    StrParam := Info.Information;
+    BoolParam := Info.Terminate;
     Synchronize(OnProgressSynch);
-    Info.Terminate:=BoolParam;
- end else
-   Info.Terminate:=true;
+    Info.Terminate := BoolParam;
+  end
+  else
+    Info.Terminate := True;
 end;
 
 procedure TScanImportPhotosThread.OnProgressSynch;
 var
   Info: TProgressCallBackInfo;
 begin
- if Assigned(fOptions.OnProgress) then
- begin
-  Info.MaxValue:=-1;
-  Info.Position:=-1;
-  Info.Information:=StrParam;
-  Info.Terminate:=BoolParam;
-  fOptions.OnProgress(self,info);
-  BoolParam:=Info.Terminate;
- end;
+  if Assigned(FOptions.OnProgress) then
+  begin
+    Info.MaxValue := -1;
+    Info.Position := -1;
+    Info.Information := StrParam;
+    Info.Terminate := BoolParam;
+    FOptions.OnProgress(Self, Info);
+    BoolParam := Info.Terminate;
+  end;
 end;
 
 end.

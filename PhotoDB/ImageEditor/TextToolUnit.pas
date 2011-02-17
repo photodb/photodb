@@ -3,7 +3,7 @@ unit TextToolUnit;
 interface
 
 uses CustomSelectTool, Windows, Classes, Graphics, Effects, GraphicsBaseTypes, Math,
-     StdCtrls, Controls, Language, Forms, SysUtils, ExtCtrls, Buttons, Spin,
+     StdCtrls, Controls, Forms, SysUtils, ExtCtrls, Buttons, Spin,
      UnitDBKernel, Dialogs, uDBGraphicTypes, uMemory;
 
 type

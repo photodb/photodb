@@ -23,7 +23,7 @@ type
 
 implementation
 
-uses Language, CommonDBSupport;
+uses CommonDBSupport;
 
 procedure PackingTable.AddTextLine;
 begin

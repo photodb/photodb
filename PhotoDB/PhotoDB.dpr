@@ -182,7 +182,6 @@ uses
   DBCMenu in 'Units\DBCMenu.pas',
   ExplorerTypes in 'Units\ExplorerTypes.pas',
   UnitGroupsWork in 'Units\UnitGroupsWork.pas',
-  Language in 'Units\Language.pas',
   UnitGroupsReplace in 'Units\UnitGroupsReplace.pas',
   UnitBitmapImageList in 'Units\UnitBitmapImageList.pas',
   Network in 'Units\Network.pas',

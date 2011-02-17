@@ -43,7 +43,7 @@ implementation
 
 { RecreatingThInTable }
 
-uses CMDUnit, Language, UnitPasswordForm;
+uses CMDUnit, UnitPasswordForm;
 
 procedure RecreatingThInTable.AddCryptFileCall;
 begin
@@ -95,64 +95,68 @@ var
 
   procedure ProcessCurrentRecord;
   begin
-   try
-    info:=GetImageIDW(Table.FieldByName('FFileName').AsString,false,true,ImageOptions.ThSize,ImageOptions.DBJpegCompressionQuality);
-    if info.IsError then
-    begin
-     FStrParam:=Format(TEXT_MES_FAILED_TH_FOR_ITEM,[Trim(Table.FieldByname('Name').AsString),info.ErrorText]);
-     FIntParam:=LINE_INFO_ERROR;
-     Synchronize(TextOutEx);
-     exit;
-    end;
-    Table.Edit;
-    if info.Jpeg<>nil then
-    begin
-     if info.Crypt or Crypting then
-     begin
-      MS := TMemoryStream.Create;
-      try
-        CryptGraphicImage(Info.Jpeg, Info.Password, MS);
-        BF := TBlobField(Table.FieldByName('thum'));
-        MS.Seek(0, soFromBeginning);
-        BF.LoadFromStream(ms);
-      finally
-        MS.free;
+    try
+      Info := GetImageIDW(Table.FieldByName('FFileName').AsString, False, True, ImageOptions.ThSize,
+        ImageOptions.DBJpegCompressionQuality);
+      if Info.IsError then
+      begin
+        FStrParam := Format(L('Unable to get information about the file "%s" because: %s'), [Trim(Table.FieldByname('Name').AsString), Info.ErrorText]);
+        FIntParam := LINE_INFO_ERROR;
+        Synchronize(TextOutEx);
+        Exit;
       end;
-     end else
-     Table.FieldByName('thum').Assign(info.Jpeg);
+      Table.Edit;
+      if Info.Jpeg <> nil then
+      begin
+        if Info.Crypt or Crypting then
+        begin
+          MS := TMemoryStream.Create;
+          try
+            CryptGraphicImage(Info.Jpeg, Info.Password, MS);
+            BF := TBlobField(Table.FieldByName('thum'));
+            MS.Seek(0, SoFromBeginning);
+            BF.LoadFromStream(Ms);
+          finally
+            MS.Free;
+          end;
+        end
+        else
+          Table.FieldByName('thum').Assign(Info.Jpeg);
+      end;
+      if Info.ImTh <> '' then
+      begin
+        if Table.FieldByName('StrTh').AsString <> Info.ImTh then
+        begin
+          FStrParam := Format(L('Updated information about file "%s"'), [Trim(Table.FieldByname('Name').AsString)]);
+          FIntParam := LINE_INFO_OK;
+          if Crypted then
+            FStrParam := FStrParam + ' *';
+          Synchronize(TextOutEx);
+          Table.FieldByName('StrTh').AsString := Info.ImTh;
+          CRC := StringCRC(Info.ImTh);
+          if Integer(CRC) <> Table.FieldByName('StrThCrc').AsInteger then
+            Table.FieldByName('StrThCrc').AsInteger := Integer(CRC);
+        end;
+      end;
+      Info.Jpeg.Free;
+      FStrParam := Format(L('Updating item %s from %s [%s]'), [IntToStr(Table.RecNo), IntToStr(TableRecordCount),
+        Trim(Table.FieldByname('Name').AsString)]);
+      if Assigned(FOptions.OnProgress) then
+      begin
+        ProgressInfo.MaxValue := TableRecordCount;
+        ProgressInfo.Position := Table.RecNo;
+        ProgressInfo.Information := L('Update previews in collection...');
+        ProgressInfo.Terminate := False;
+        Synchronize(DoProgress);
+      end;
+      FIntParam := LINE_INFO_OK;
+      Synchronize(TextOut);
+      Table.Post;
+    except
+      FStrParam := Format(L('Failed to update item: %s'), [Table.FieldByname('Name').AsString]);
+      FIntParam := LINE_INFO_ERROR;
+      Synchronize(TextOut);
     end;
-    if info.ImTh<>'' then
-    begin
-     if Table.FieldByName('StrTh').AsString<>info.ImTh then
-     begin
-      FStrParam:=Format(TEXT_MES_FIXED_TH_FOR_ITEM,[Trim(Table.FieldByname('Name').AsString)]);
-      FIntParam:=LINE_INFO_OK;
-      if Crypted then FStrParam:=FStrParam+' *';
-      Synchronize(TextOutEx);
-      Table.FieldByName('StrTh').AsString:=info.ImTh;
-      CRC:=StringCRC(info.ImTh);
-      if CRC<>Table.FieldByName('StrThCrc').AsInteger then
-      Table.FieldByName('StrThCrc').AsInteger:=Integer(CRC);
-     end;
-    end;
-    info.Jpeg.free;
-    FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT,[IntToStr(Table.RecNo),IntToStr(TableRecordCount),Trim(Table.FieldByname('Name').AsString)]);
-    if Assigned(fOptions.OnProgress) then
-    begin
-     ProgressInfo.MaxValue:=TableRecordCount;
-     ProgressInfo.Position:=Table.RecNo;
-     ProgressInfo.Information:=TEXT_MES_RECREATING_PREVIEWS;
-     ProgressInfo.Terminate:=false;
-     Synchronize(DoProgress);
-    end;
-    FIntParam:=LINE_INFO_OK;
-    Synchronize(TextOut);
-    Table.Post;
-   except
-    FStrParam:=Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_ERROR,[Table.FieldByname('Name').AsString]);
-    FIntParam:=LINE_INFO_ERROR;
-    Synchronize(TextOut);
-   end;
   end;
 
 begin
@@ -167,11 +171,14 @@ begin
         ImageOptions := CommonDBSupport.GetImageSettingsFromTable(FOptions.FileName);
         Table.Active := True;
       except
-        FStrParam := TEXT_MES_RECREATINH_TH_FORMAT_ERROR;
-        FIntParam := LINE_INFO_ERROR;
-        Synchronize(TextOut);
-        Synchronize(DoExit);
-        Exit;
+        on e: Exception do
+        begin
+          FStrParam := Format(L('Failed to update item: %s'), [e.Message]);
+          FIntParam := LINE_INFO_ERROR;
+          Synchronize(TextOut);
+          Synchronize(DoExit);
+          Exit;
+        end;
       end;
       Crypting := False;
       Table.First;
@@ -186,7 +193,7 @@ begin
 
           if not StaticPath(Table.FieldByName('FFileName').AsString) then
           begin
-            FStrParam := Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CD_DVD_CANCELED_INFO_F,
+            FStrParam := Format(L('Update item %s from %s [%s] is canceled (CD\DVD files are updated from disk management window)'),
               [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
             FIntParam := LINE_INFO_WARNING;
             Synchronize(TextOutEx);
@@ -201,14 +208,14 @@ begin
             if Pass = '' then
             begin
               AddPasswordFile(Table.FieldByName('ID').AsInteger, Table.FieldByName('FFileName').AsString);
-              FStrParam := Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CRYPTED_POSTPONED,
+              FStrParam := Format(L('Update item %s from %s [%s] postponed (encrypted)'),
                 [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
               FIntParam := LINE_INFO_WARNING;
               Synchronize(TextOutEx);
 
               if not GraphicCrypt.ValidCryptBlobStreamJPG(Table.FieldByName('thum')) then
               begin
-                FStrParam := Format(TEXT_MES_RECREATINH_TH_FOR_ITEM_FORMAT_CRYPTED_FIXED,
+                FStrParam := Format(L('For item %s from %s [%s] removed the preview (the file is encrypted, and the record - no)'),
                   [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
                 FIntParam := LINE_INFO_WARNING;
                 Synchronize(TextOutEx);
@@ -220,17 +227,20 @@ begin
                   Bmp.Height := ImageOptions.ThSize;
                   FillRectNoCanvas(Bmp, 0);
                   Jpeg := TJpegImage.Create;
-                  Jpeg.Assign(Bmp);
-                  F(Bmp);
-                  Jpeg.CompressionQuality := ImageOptions.DBJpegCompressionQuality;
-                  Jpeg.Compress;
                   try
-                    Table.Edit;
-                    Table.FieldByName('thum').Assign(Jpeg);
-                    Table.Post;
-                  except
+                    Jpeg.Assign(Bmp);
+                    F(Bmp);
+                    Jpeg.CompressionQuality := ImageOptions.DBJpegCompressionQuality;
+                    Jpeg.Compress;
+                    try
+                      Table.Edit;
+                      Table.FieldByName('thum').Assign(Jpeg);
+                      Table.Post;
+                    except
+                    end;
+                  finally
+                    F(Jpeg);
                   end;
-                  Jpeg.Free;
                 finally
                   F(Bmp);
                 end;
@@ -249,7 +259,7 @@ begin
           if CMD_Command_Break then
           begin
             FIntParam := LINE_INFO_WARNING;
-            FStrParam := Format(TEXT_MES_ACTION_BREAKED_ITEM_FORMAT, [IntToStr(Table.RecNo), IntToStr(Table.RecordCount),
+            FStrParam := Format(L('The action was interrupted on item %s from %s [%s]'), [IntToStr(Table.RecNo), IntToStr(Table.RecordCount),
               Copy(Table.FieldByname('Name').AsString, 1, 15)]);
             Synchronize(TextOut);
             Break;
@@ -287,7 +297,7 @@ begin
     PackTable(FOptions.FileName);
 
     FIntParam := LINE_INFO_OK;
-    FStrParam := TEXT_MES_PACKING_END;
+    FStrParam := L('Packing is completed...');
     Synchronize(TextOut);
 
     Synchronize(DoExit);

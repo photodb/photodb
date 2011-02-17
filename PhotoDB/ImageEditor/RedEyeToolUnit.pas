@@ -5,7 +5,7 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
-  GraphicsBaseTypes, Language, CustomSelectTool, Dialogs, UnitDBKernel,
+  GraphicsBaseTypes, CustomSelectTool, Dialogs, UnitDBKernel,
   uDBGraphicTypes, uMemory;
 
 type

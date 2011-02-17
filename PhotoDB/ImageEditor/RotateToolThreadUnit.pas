@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, RotateToolUnit,
-  Language, GraphicsBaseTypes, ScanlinesFX, uEditorTypes, uMemory;
+  GraphicsBaseTypes, ScanlinesFX, uEditorTypes, uMemory;
 
 type
   TRotateEffectThread = class(TThread)

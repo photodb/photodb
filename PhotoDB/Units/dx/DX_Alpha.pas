@@ -5,8 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, jpeg, AppEvnts, Dolphin_DB, DDraw,
-  Language, Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils,
-  uDBForm;
+  Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils, uDBForm;
 
 type
   TDirectShowForm = class(TDBForm)

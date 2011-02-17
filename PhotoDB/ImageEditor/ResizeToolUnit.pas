@@ -5,7 +5,7 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  Language, UnitResampleFilters, uDBBaseTypes, UnitDBCommon,
+  UnitResampleFilters, uDBBaseTypes, UnitDBCommon,
   UnitDBKernel, Effects, uConstants, uEditorTypes, uMemory;
 
 type

@@ -4,18 +4,20 @@ interface
 
 uses
   Windows, Classes, UnitDBKernel, Forms, UnitGroupsWork, SysUtils,
-  Language, CommonDBSupport, UnitDBDeclare, uFileUtils, uConstants;
+  CommonDBSupport, UnitDBDeclare, uFileUtils, uConstants,
+  uDBThread;
 
 type
-  ThreadRestoreTable = class(TThread)
+  ThreadRestoreTable = class(TDBThread)
   private
     { Private declarations }
     FOptions: TRestoreThreadOptions;
     StrParam: string;
     procedure DoExit;
   protected
-    procedure TextOut;
     procedure Execute; override;
+    function GetThreadID : string; override;
+    procedure TextOut;
   public
     constructor Create(Options: TRestoreThreadOptions);
   end;
@@ -28,7 +30,7 @@ uses CMDUnit;
 
 procedure ThreadRestoreTable.DoExit;
 begin
- CMDForm.OnEnd(Self);
+  CMDForm.OnEnd(Self);
 end;
 
 constructor ThreadRestoreTable.Create(Options: TRestoreThreadOptions);
@@ -44,59 +46,62 @@ var
 begin
   FreeOnTerminate := True;
 
-    S := ExtractFilePath(Application.ExeName);
-   try
-    CreateDirA(GetAppDataDirectory+BackUpFolder);
-   except
-    StrParam:=TEXT_MES_ERROR_CREATE_BACK_UP_DEFAULT_DB;
-    Sleep(10000);
-    Synchronize(TextOut);
-    Synchronize(DoExit);
-    exit;
-   end;
-   try
-    CopyFile(PChar(dbname),PChar(GetAppDataDirectory+BackUpFolder+GetFileNameWithoutExt(dbname)+'[BU].photodb'),false);
-    if not FileExists(GetAppDataDirectory+BackUpFolder+GetFileNameWithoutExt(dbname)+'[BU].photodb') then
-    Exception.Create('');
-   except
-    StrParam:=TEXT_MES_ERROR_CREATE_BACK_UP_DEFAULT_DB;
-    Sleep(10000);
-    Synchronize(TextOut);
-    Synchronize(DoExit);
-    exit;
-   end;
-   try
-    DeleteFile(dbname);
-    CreateDirA(GetAppDataDirectory+DBRestoreFolder);
-   except
-    StrParam:=Format(TEXT_MES_ERROR_COPYING_DB,[fOptions.FileName,GetAppDataDirectory+BackUpFolder+GetFileNameWithoutExt(dbname)+'[BU].db']);
-    Sleep(10000);
-    Synchronize(TextOut);
-    Synchronize(DoExit);
-    exit;
-   end;
-   try
-    s:=ExtractFilePath(Application.ExeName);
-    FileName:=GetAppDataDirectory+DBRestoreFolder+ExtractFileName(fOptions.FileName);
-    CopyFile(PChar(fOptions.FileName),PChar(FileName),false);
-   except
-    StrParam:=Format(TEXT_MES_ERROR_COPYING_DB,[fOptions.FileName,GetAppDataDirectory+BackUpFolder+GetFileNameWithoutExt(dbname)+'[BU].db']);
-    Sleep(10000);
-    Synchronize(TextOut);
-    Synchronize(DoExit);
-    exit;
-   end;
-   DBKernel.AddDB(GetFileNameWithoutExt(fOptions.FileName),fOptions.FileName,Application.ExeName+',0',false);
-   DBKernel.SetDataBase(FileName);
+  S := ExtractFilePath(Application.ExeName);
+  try
+    if not CreateDirA(GetAppDataDirectory + BackUpFolder) then
+      RaiseLastOSError;
 
- Sleep(2000);
- Synchronize(DoExit);
+    CopyFile(PChar(Dbname), PChar(GetAppDataDirectory + BackUpFolder + GetFileNameWithoutExt(Dbname) + '[BU].photodb'),
+      False);
+    if not FileExists(GetAppDataDirectory + BackUpFolder + GetFileNameWithoutExt(Dbname) + '[BU].photodb') then
+      RaiseLastOSError;
+  except
+    on E: Exception do
+    begin
+      StrParam := Format(L('Error! Unable to create backup for currect collection: %s!'), [E.message]);
+      Synchronize(TextOut);
+      Sleep(10000);
+      Synchronize(DoExit);
+      Exit;
+    end;
+  end;
+
+  try
+    if not DeleteFile(Dbname) then
+      RaiseLastOSError;
+    if not CreateDirA(GetAppDataDirectory + DBRestoreFolder) then
+      RaiseLastOSError;
+
+    S := ExtractFilePath(Application.ExeName);
+    FileName := GetAppDataDirectory + DBRestoreFolder + ExtractFileName(FOptions.FileName);
+    if not CopyFile(PChar(FOptions.FileName), PChar(FileName), False) then
+      RaiseLastOSError;
+  except
+    on e: Exception do
+    begin
+      StrParam := Format(L('Unable to restore collection (%s)! The current collection may be corrupted or missing! After starting try to restore the file "%s" which is a backup of your collection. Error: %s'), [FOptions.FileName,
+        GetAppDataDirectory + BackUpFolder + GetFileNameWithoutExt(Dbname) + '[BU].db', e.Message]);
+      Synchronize(TextOut);
+      Sleep(10000);
+      Synchronize(DoExit);
+      Exit;
+    end;
+  end;
+  DBKernel.AddDB(GetFileNameWithoutExt(FOptions.FileName), FOptions.FileName, Application.ExeName + ',0', False);
+  DBKernel.SetDataBase(FileName);
+
+  Sleep(2000);
+  Synchronize(DoExit);
+end;
+
+function ThreadRestoreTable.GetThreadID: string;
+begin
+  Result := 'CMD';
 end;
 
 procedure ThreadRestoreTable.TextOut;
 begin
- fOptions.WriteLineProc(self,StrParam,LINE_INFO_OK);
-// CMDForm.RichEdit1.Lines[CMDForm.RichEdit1.Lines.Count-1]:=StrParam;
+  FOptions.WriteLineProc(Self, StrParam, LINE_INFO_OK);
 end;
 
 end.
