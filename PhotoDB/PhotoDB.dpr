@@ -374,80 +374,79 @@ exports
   FileVersion name 'FileVersion';
 
 begin
-//  FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
-//  ReportMemoryLeaksOnShutdown := True;
-{
- //Command line
-
- /OPTIMIZE_DUBLICTES
- /SHOWBADLINKS
- /RECREATETHTABLE
- /BACKUP
- /PACKTABLE
- /CONVERT
- /SLEEP
- /SAFEMODE
- /UNINSTALL
- /EXPLORER
- /GETPHOTOS
- /NOLOGO
- /NoPrevVersion
- /NoFaultCheck
- /NoFullRun
- /Execute "c:\script.dbscript"
- /NoVistaMsg
- /NoVistaFileDlg
- /SelectDB "DBFile"
- /SelectDB "DBName"
- /SelectDBPermanent
- /ADD "file"
- /ADD "directory"
- /AddPass "pass1!pass2!..."
- /Logging
- /SQLExec
- /SQLExecFile
-}
-  TW.i.Start('START');
-
-  EventLog('');
-  EventLog('');
-  EventLog('');
-  EventLog(Format('Program running! [%s]', [ProductName]));
-
-  // Lazy init enviroment procedure
-  TW.i.Start('TScriptEnviroments');
-  TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
-
-  LOGGING_ENABLED := GetParamStrDBBool('/Logging');
-  if LOGGING_ENABLED then
-    EventLog(Format('Program logging enabled!! [%s]', [ProductName]))
-  else
-    EventLog('Program logging DISABLED! Run program with param "/Logging"');
-
-  // PREPAIRING ----------------------------------------------------
-
-  if GetParamStrDBBool('/SLEEP') then
-    Sleep(1000);
-
-  // INITIALIZAING APPLICATION
-  if GetDBViewMode then
-  begin
-    FolderView := True;
-    // TODO: !!! UseScripts := False;
-  end;
-
-  SetSplashProgress(10);
-  TW.i.Start('Application.Initialize');
-  Application.Initialize;
-  SetSplashProgress(15);
-
-  EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
-
-  TW.i.Start('FindRunningVersion');
-  if not GetParamStrDBBool('/NoPrevVersion') then
-    FindRunningVersion;
-
   try
+  //  FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
+  //  ReportMemoryLeaksOnShutdown := True;
+  {
+   //Command line
+
+   /OPTIMIZE_DUBLICTES
+   /SHOWBADLINKS
+   /RECREATETHTABLE
+   /BACKUP
+   /PACKTABLE
+   /CONVERT
+   /SLEEP
+   /SAFEMODE
+   /UNINSTALL
+   /EXPLORER
+   /GETPHOTOS
+   /NOLOGO
+   /NoPrevVersion
+   /NoFaultCheck
+   /NoFullRun
+   /Execute "c:\script.dbscript"
+   /NoVistaMsg
+   /NoVistaFileDlg
+   /SelectDB "DBFile"
+   /SelectDB "DBName"
+   /SelectDBPermanent
+   /ADD "file"
+   /ADD "directory"
+   /AddPass "pass1!pass2!..."
+   /Logging
+   /SQLExec
+   /SQLExecFile
+  }
+    TW.I.Start('START');
+
+    EventLog('');
+    EventLog('');
+    EventLog('');
+    EventLog(Format('Program running! [%s]', [ProductName]));
+
+    // Lazy init enviroment procedure
+    TW.i.Start('TScriptEnviroments');
+    TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
+
+    LOGGING_ENABLED := GetParamStrDBBool('/Logging');
+    if LOGGING_ENABLED then
+      EventLog(Format('Program logging enabled!! [%s]', [ProductName]))
+    else
+      EventLog('Program logging DISABLED! Run program with param "/Logging"');
+
+    // PREPAIRING ----------------------------------------------------
+
+    if GetParamStrDBBool('/SLEEP') then
+      Sleep(1000);
+
+    // INITIALIZAING APPLICATION
+    if GetDBViewMode then
+    begin
+      FolderView := True;
+      // TODO: !!! UseScripts := False;
+    end;
+
+    SetSplashProgress(10);
+    TW.i.Start('Application.Initialize');
+    Application.Initialize;
+    SetSplashProgress(15);
+
+    EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
+
+    TW.i.Start('FindRunningVersion');
+    if not GetParamStrDBBool('/NoPrevVersion') then
+      FindRunningVersion;
 
     TW.i.Start('InitializeDBLoadScript');
     if not DBTerminating then
@@ -469,7 +468,7 @@ begin
 
       TW.i.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+      Application.ShowMainForm := False;
       // This is main form of application
 
       TW.i.Start('SetSplashProgress 50');
@@ -690,7 +689,10 @@ begin
     if not DBTerminating then
       Application.Run;
 
-  finally
-
+  except
+    on e : Exception do
+    begin
+      ShowMessage('Fatal error: ' + e.Message);
+    end;
   end;
 end.

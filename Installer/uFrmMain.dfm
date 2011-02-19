@@ -27,7 +27,7 @@ object FrmMain: TFrmMain
     Width = 185
     Height = 161
   end
-  object Label1: TLabel
+  object LbWelcome: TLabel
     Left = 8
     Top = 176
     Width = 178

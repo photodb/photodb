@@ -22,7 +22,7 @@ type
     ImMain: TImage;
     BtnNext: TButton;
     BtnCancel: TButton;
-    Label1: TLabel;
+    LbWelcome: TLabel;
     Bevel1: TBevel;
     BtnInstall: TButton;
     BtnPrevious: TButton;
@@ -143,6 +143,7 @@ begin
     BtnNext.Caption := L('Next');
     BtnPrevious.Caption := L('Previous');
     BtnInstall.Caption := L('Install');
+    LbWelcome.Caption := L('Welcome to the Photo Database 2.3');
   finally
     EndTranslate;
   end;

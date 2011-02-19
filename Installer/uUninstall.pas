@@ -130,8 +130,4 @@ begin
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_2_2);
 end;
 
-initialization
-
-  TInstallManager.Instance.RegisterScope(TUninstallPreviousShortcutsAction);
-
 end.

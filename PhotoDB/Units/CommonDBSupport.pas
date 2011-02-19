@@ -452,6 +452,7 @@ var
   FTable: TDataSet;
 begin
   Result := 0;
+  try
   if (GetDBType(Table) = DB_TYPE_MDB) then
   begin
     FTable := GetQuery(Table); // ONLY MDB
@@ -462,6 +463,10 @@ begin
     finally
       FreeDS(FTable);
     end;
+  end;
+  except
+    on e: Exception do
+      TLogger.Instance.Message('GetRecordsCount throws an exception: ' + e.Message);
   end;
 end;
 

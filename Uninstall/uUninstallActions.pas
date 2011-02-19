@@ -100,9 +100,4 @@ begin
   end;
 end;
 
-initialization
-
-  TInstallManager.Instance.RegisterScope(TUninstallFiles);
-  TInstallManager.Instance.RegisterScope(TUninstallShortCuts);
-
 end.

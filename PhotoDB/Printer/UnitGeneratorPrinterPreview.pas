@@ -4,13 +4,13 @@ interface
 
 uses
   Classes, Graphics, UnitPrinterTypes, Printers, PrinterProgress,
-  uTranslate, uMemory;
+  uTranslate, uMemory, uDBThread;
 
 type
   TOnEndGeneratePrinterPreviewEvent = procedure(Bitmap: TBitmap; SID: string) of object;
 
 type
-  TGeneratorPrinterPreview = class(TThread)
+  TGeneratorPrinterPreview = class(TDBThread)
   private
     { Private declarations }
     FSID: string;
@@ -33,6 +33,7 @@ type
   protected
     { Protected declarations }
     procedure Execute; override;
+    function GetThreadID : string; override;
   public
     { Public declarations }
     procedure SetImage;
@@ -74,7 +75,7 @@ var
 begin
   if not FDoPrint then
   begin
-    SetCommentText(TA('Generating preview') + '...');
+    SetCommentText(L('Generating preview') + '...');
     Synchronize(ShowProgress);
     FOptions.VirtualImage := FVirtualBitmaped;
     FOptions.Image := FVirtualBitmap;
@@ -124,6 +125,11 @@ begin
       F(Files);
     end;
   end;
+end;
+
+function TGeneratorPrinterPreview.GetThreadID: string;
+begin
+  Result := 'Printer';
 end;
 
 constructor TGeneratorPrinterPreview.Create(CreateSuspennded: Boolean; Sender: TObject; SID: string;

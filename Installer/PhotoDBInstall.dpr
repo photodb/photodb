@@ -42,10 +42,12 @@ uses
   uAssociationActions in 'uAssociationActions.pas',
   uUpdatingWindowsActions in 'uUpdatingWindowsActions.pas',
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
-  uSysUtils in '..\PhotoDB\Units\uSysUtils.pas';
+  uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
+  uInstallProcess in 'uInstallProcess.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}
+{$R ..\PhotoDB\Resources\Install.res}
 
 begin
   Application.Initialize;

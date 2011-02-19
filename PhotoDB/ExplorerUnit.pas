@@ -1019,7 +1019,7 @@ end;
 
 procedure TExplorerForm.Shell1Click(Sender: TObject);
 begin
-  ShellExecute(Handle, nil, PChar(ProcessPath(fFilesInfo[PmItemPopup.Tag].FileName)), nil, nil, SW_NORMAL);
+  ShellExecute(Handle, 'open', PChar(ProcessPath(fFilesInfo[PmItemPopup.Tag].FileName)), nil, nil, SW_NORMAL);
 end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);
@@ -3747,6 +3747,7 @@ begin
   end else
   begin
     TbDelete.Enabled := False;
+    DeleteLink.Visible := False;
     DeleteLink.Top := PropertiesLink.Top;
   end;
 
@@ -3901,7 +3902,7 @@ begin
         if SelCount < 3 then
         begin
           Activate;
-          DoHelpHintCallBackOnCanClose(L('Help'), GetSecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
+          DoHelpHintCallBackOnCanClose(L('Help'), SecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
             L('Next...'), Help1CloseClick);
         end;
   LockwindowUpdate(0);
@@ -5413,7 +5414,7 @@ begin
         Viewer.ShowFile(S);
         Viewer.Show;
       end else
-        ShellExecute(Handle, nil, PChar(S), nil, nil, SW_NORMAL);
+        ShellExecute(Handle, 'open', PChar(S), nil, nil, SW_NORMAL);
     end else if not ChangeTreeView then
       MessageBoxDB(Handle, Format(L('Directory "%s" not found!'), [S]), L('Warning'), TD_BUTTON_OK, TD_ICON_ERROR);
   end;
@@ -5436,7 +5437,7 @@ begin
   if HelpNO = 2 then
   begin
     HelpTimer.Enabled := False;
-    DoHelpHintCallBackOnCanClose(L('Help'), GetSecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
+    DoHelpHintCallBackOnCanClose(L('Help'), SecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
       L('Next...'), Help1CloseClick);
   end;
   if HelpNO = 4 then
@@ -7053,7 +7054,7 @@ begin
         if GetExt(fFilesInfo[Index].FileName) <> 'LNK' then
         begin
           ShellDir := ExtractFileDir(fFilesInfo[Index].FileName);
-          ShellExecute(Handle, nil, PWideChar(fFilesInfo[Index].FileName), nil,
+          ShellExecute(Handle, 'open', PWideChar(fFilesInfo[Index].FileName), nil,
             PWideChar(ShellDir), SW_NORMAL);
           RestoreSelected;
           Exit;
@@ -7083,7 +7084,7 @@ begin
               Exit;
             end;
             ShellDir := ExtractFileDir(LinkPath);
-            ShellExecute(Handle, nil, PWideChar(LinkPath), nil, PWideChar(ShellDir), SW_NORMAL);
+            ShellExecute(Handle, 'open', PWideChar(LinkPath), nil, PWideChar(ShellDir), SW_NORMAL);
             RestoreSelected;
             Exit;
           end;
@@ -7711,6 +7712,7 @@ begin
   Resize1.ImageIndex := DB_IC_RESIZE;
   Directory2.ImageIndex := DB_IC_NEW_DIRECTORY;
   TextFile2.ImageIndex := DB_IC_TEXT_FILE;
+  AsEXIF1.ImageIndex := DB_IC_ROTATE_MAGIC;
   RotateCCW1.ImageIndex := DB_IC_ROTETED_270;
   RotateCW1.ImageIndex := DB_IC_ROTETED_90;
   Rotateon1801.ImageIndex := DB_IC_ROTETED_180;

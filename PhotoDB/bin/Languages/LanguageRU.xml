@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<language name="Русский язык" image="LanguageRU.png" autor="Команда PhotoDB">
+<language name="Русский язык" image="LanguageRU.png" autor="Команда PhotoDB" langCode="419">
   <scope name="">
     <translate name="Ok" value="Да" />
     <translate name="Cancel" value="Отмена" />
@@ -37,6 +37,7 @@
     <translate name="Application is damaged! Possible it is infected by a virus!" value="Приложение повреждено! Возможно, что оно инфицировано каким-либо вирусом!" />
   </scope>
   <scope name="Setup">
+    <translate name="Welcome to the Photo Database 2.3" value="Добро пожаловать в Photo Database 2.3" />
     <translate name="Friends" value="Друзья" />
     <translate name="Family" value="Семья" />
     <translate name="Update" value="Обновление" />
@@ -52,6 +53,9 @@
     <translate name="Select none" value="Отменить всё" />
     <translate name="PhotoDB 2.3 Uninstall" value="Удаление PhotoDB 2.3" />
     <translate name="Yes, I want to uninstall this program" value="Да, я хочу удалить эту программу" />
+	<translate name="Don't use this extension" value="Не использовать это расширение"/>
+	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
+	<translate name="Add menu item" value="Использовать пункт в меню"/>	
   </scope>
   <scope name="JPEG">
 	<translate name="JPEG compression" value="JPEG компрессия" />
@@ -1018,6 +1022,7 @@
   <scope name="InsertImageTool">
 	<translate name="Load image" value="Открыть файл" />
 	<translate name="Method" value="Метод" />
+	<translate name="Overlay" value="Перекрытие" />
 	<translate name="Sum" value="Сумма" />
 	<translate name="Dark" value="Тёмное" />
 	<translate name="Light" value="Светлое" />
@@ -1065,7 +1070,7 @@
 	<translate name="Сhoose action" value="Выберите действие" />
 	<translate name="Rotate left" value="Повернуть влево" />
 	<translate name="Rotate right" value="Повернуть вправо" />
-	<translate name="Rotate on 180°" value="Повернуть на 180°" />
+	<translate name="Rotate on 180 degree" value="Повернуть на 180°" />
 	<translate name="Flip horisontal" value="Отразить по горизонтали" />
 	<translate name="Flip vertical" value="Отразить по вертикали" />
 	<translate name="Custom angle" value="Произвольный угол" />
@@ -1279,7 +1284,7 @@
   <scope name="About">
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
 	<translate name="Can not check updates!" value="Не удалось проверить обновления!"/>
-	<translate name="Нажмите для перехода на" value="Доступна новая версия (%s)!"/>
+	<translate name="New version (%s) is avaliable!" value="Доступна новая версия (%s)!"/>
 	<translate name="This program isn't activated." value="Эта программа не активирована."/>	
 	<translate name="Program code" value="Код вашей копии программы"/>	
 	<translate name="Open activation form" value="Открыть форму активации"/>
@@ -1360,7 +1365,7 @@
 	<translate name="Quality of images: %dpx" value="Качество изображений: %dpx"/>
 	<translate name="Preview size: %dpx" value="Предпросмотр: %dpx"/>
 	<translate name="Small preview size: %dpx" value="Изображения в панели: %dpx"/>
-	<translate name="Explorer" value="Проводник"/>
+	<translate name="Press this link to change the size and quality of previews using convertation wizard" value="Для изменения размеров предпросмотров и качества запустите мастер конвертации базы"/>
   </scope>
   <scope name="ConvertDB">
 	<translate name="Previous" value="Назад"/>
@@ -1428,10 +1433,11 @@
 	<translate name="Create new collection" value="Создать новый файл БД"/>	
 	<translate name="File with collection" value="Файл БД"/>
 	<translate name="Locations to import" value="Папки для импорта"/>
-	<translate name="Ask me" value="Спросить меня"/>	
+	<translate name="Ask me" value="Спросить меня"/>
 	<translate name="Add all" value="Добавить все"/>	
 	<translate name="Skip all" value="Пропустить все"/>
-	<translate name="Replace all" value="Заменить все"/>	
+	<translate name="Replace all" value="Заменить все"/>
+	<translate name="Add folder" value="Добавить папку"/>
 	<translate name="Please, select additional options of import" value="Выберите дополнительные опции импорта изображений."/>
 	<translate name="Click the &quot;Start&quot; button and wait until the program finds and adds all your images. This may require a long time depending on the size of your photo album" value="Нажмите на &quot;Старт&quot; и подождите пока программа найдёт и добавит все ваши изображения. Это может потребовать много времени в зависимости от величины вашего фотоальбома"/>
 	<translate name="If duplicates are found" value="При нахождении дубликатов"/>	

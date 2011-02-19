@@ -58,7 +58,7 @@ begin
 {$ENDIF}
 
 {$IFDEF PROFILER}
-  FS := TFileStream.Create(Format('c:\tw%d.txt', [ThreadID]), fmCreate or fmShareDenyWrite);
+  FS := TFileStream.Create(Format('tw%d.txt', [ThreadID]), fmCreate or fmShareDenyWrite);
   SW := TStreamWriter.Create(FS, TEncoding.UTF8);
 {$ENDIF}
 end;

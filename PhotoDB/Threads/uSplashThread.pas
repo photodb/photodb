@@ -6,7 +6,7 @@ uses
    Classes, Windows, Messages, JPEG, Graphics, uTime,
    uConstants, uResources, UnitDBCommonGraphics, uMemory,
    uTranslate, ActiveX, uFileUtils, pngimage,
-   uFormUtils;
+   uFormUtils, uAppUtils;
 
 type
   TSplashThread = class(TThread)
@@ -43,7 +43,6 @@ var
 procedure SetSplashProgress(ProgressValue : Byte);
 begin
   hSplashProgress := ProgressValue;
-  //PostMessage(hSplashWnd, WM_PAINT, 0, 0);
 end;
 
 procedure UpdateFormImage;
@@ -184,14 +183,14 @@ end;
 
 initialization
 
-  //if not GetParamStrDBBool('/NoLogo') then
+  SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
+  SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
+  if not GetParamStrDBBool('/NoLogo') then
   begin
     TW.I.Start('TSplashThread');
-    SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
-    SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
     SplashThread := TSplashThread.Create(False);
-    TLanguageThread.Create(False);
     TW.I.Start('TSplashThread - Created');
   end;
+  TLanguageThread.Create(False);
 
 end.

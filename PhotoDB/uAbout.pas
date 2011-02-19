@@ -8,7 +8,7 @@ uses
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
   UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
   uMemory, uTranslate, uRuntime, uActivationUtils, uDBForm,
-  UnitInternetUpdate, uInternetUtils, ShellApi;
+  UnitInternetUpdate, uInternetUtils, ShellApi, Dolphin_DB;
 
 type
   TAboutForm = class(TDBForm)
@@ -35,7 +35,7 @@ type
   private
     { Private declarations }
     FBackground: TBitmap;
-    //FUpdateInfo: TUpdateInfo;
+    FUpdateInfo: TUpdateInfo;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
     procedure LoadLanguage;
     procedure UpdateCkeckComplete(Sender : TObject; Info : TUpdateInfo);
@@ -117,6 +117,8 @@ begin
     BtShowActivationForm.Visible := False;
 
   MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
+
+  FUpdateInfo.InfoAvaliable := False;
   TInternetUpdate.Create(Self, False, UpdateCkeckComplete);
 end;
 
@@ -158,7 +160,11 @@ end;
 
 procedure TAboutForm.LnkGoToWebSiteClick(Sender: TObject);
 begin
-  ShellExecute(0, nil, HomeURL, nil, nil, SW_NORMAL);
+  if FUpdateInfo.InfoAvaliable then
+    ShellExecute(Handle, 'open', PChar(FUpdateInfo.UrlToDownload), nil, nil, SW_NORMAL)
+  else
+    ShellExecute(Handle, 'open', PChar(ResolveLanguageString(HomePageURL)), nil, nil, SW_NORMAL);
+  Close;
 end;
 
 procedure TAboutForm.LnkGoToWebSiteGetBackGround(Sender: TObject; X, Y, W,
@@ -211,13 +217,14 @@ end;
 
 procedure TAboutForm.UpdateCkeckComplete(Sender: TObject; Info: TUpdateInfo);
 begin
+  FUpdateInfo := Info;
   LsUpdates.Visible := False;
   if not Info.InfoAvaliable then
   begin
     LnkGoToWebSite.Text := L('Can not check updates!');
   end else
   begin
-    LnkGoToWebSite.Text := L(Format('New version (%s) is avaliable!', [ReleaseToString(Info.Release)]));
+    LnkGoToWebSite.Text := Format(L('New version (%s) is avaliable!'), [ReleaseToString(Info.Release)]);
   end;
   LnkGoToWebSite.Left := LsUpdates.Left + LsUpdates.Width - LnkGoToWebSite.Width;
   LnkGoToWebSite.Refresh;

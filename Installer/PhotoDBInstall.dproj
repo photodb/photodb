@@ -97,6 +97,7 @@
 			<DCCReference Include="uUpdatingWindowsActions.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uRuntime.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uSysUtils.pas"/>
+			<DCCReference Include="uInstallProcess.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -211,11 +211,4 @@ begin
   Callback(Self, InstallPoints_RunProgram, InstallPoints_RunProgram, Terminate);
 end;
 
-initialization
-
-  TInstallManager.Instance.RegisterScope(TInstallFiles);
-  TInstallManager.Instance.RegisterScope(TInstallRegistry);
-  TInstallManager.Instance.RegisterScope(TInstallShortcuts);
-  TInstallManager.Instance.RegisterScope(TInstallRunProgram);
-
 end.

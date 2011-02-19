@@ -91,7 +91,7 @@ begin
   Result := False;
   FReg := TRegistry.Create;
   try
-    FReg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
     FReg.DeleteKey('\.photodb');
     FReg.DeleteKey('\PhotoDB.PhotodbFile\');
     FReg.DeleteKey('\.ids');
@@ -195,7 +195,7 @@ begin
     FReg.WriteString('UninstallString', '"' + IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'UnInstall.exe"' + ' /uninstall');
     FReg.WriteString('DisplayName', 'Photo DataBase');
     FReg.WriteString('DisplayVersion', ProductVersion);
-    FReg.WriteString('HelpLink', HomeURL);
+    FReg.WriteString('HelpLink', ResolveLanguageString(HomePageURL));
     FReg.WriteString('Publisher', CopyRightString);
     FReg.WriteString('URLInfoAbout', 'MailTo:' + ProgramMail);
   except

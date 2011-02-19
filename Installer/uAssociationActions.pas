@@ -41,8 +41,5 @@ begin
   FCallback(Self, InstallPoints_Association * Current, InstallPoints_Association * Total, Terminate);
 end;
 
-initialization
-
-  TInstallManager.Instance.RegisterScope(TInstallAssociations);
 
 end.

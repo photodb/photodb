@@ -169,7 +169,8 @@ var
 
   procedure CloseLoadingForm;
   begin
-    LoadingThread.Terminate;
+    if LoadingThread <> nil then
+      LoadingThread.Terminate;
   end;
 
   function IsFile(S: string): Boolean;
@@ -449,7 +450,8 @@ begin
       @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
       if not Initaproc(PChar(Application.ExeName)) then
       begin
-        SplashThread.Terminate;
+        if SplashThread <> nil then
+          SplashThread.Terminate;
         MessageBoxDB(GetActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         DBTerminating := True;
         Application.Terminate;

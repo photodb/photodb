@@ -56,7 +56,7 @@ type
   TDBEventsIDArray = array of DBEventsIDArray;
 
 const
-  IconsCount = 119;
+  IconsCount = 120;
 
 type
  TDbKernelArrayIcons = array [1..IconsCount] of THandle;
@@ -1642,11 +1642,11 @@ begin
   icons[117] := LoadIcon(IconDllInstance,'CD_EXPORT');
   icons[118] := LoadIcon(IconDllInstance,'CD_MAPPING');
   icons[119] := LoadIcon(IconDllInstance,'CD_IMAGE');
+  icons[120] := LoadIcon(IconDllInstance,'MAGIC_ROTATE');;
 
   //disabled items are bad
-
-  for i:=1 to IconsCount do
-    ImageList_ReplaceIcon(FImageList.Handle, -1, icons[i]);
+  for I := 1 to IconsCount do
+    ImageList_ReplaceIcon(FImageList.Handle, -1, Icons[I]);
 end;
 
 { TCharObject }

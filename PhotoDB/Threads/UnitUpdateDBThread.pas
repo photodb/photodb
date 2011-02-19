@@ -8,7 +8,7 @@ uses
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
-  uTranslate;
+  uTranslate, ActiveX;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -273,6 +273,7 @@ var
 
 begin
   FreeOnTerminate := True;
+  CoInitialize(nil);
   try
 
     FileNumber := 0;
@@ -531,6 +532,7 @@ begin
     end;
 
   finally
+    CoUninitialize;
     Synchronize(DoOnDone);
   end;
 end;

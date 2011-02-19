@@ -11,26 +11,32 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
     Height = 13
     Caption = 'LblPath'
   end
-  object Label7: TLabel
+  object LblUseExt: TLabel
     Left = 232
     Top = 3
-    Width = 153
-    Height = 13
+    Width = 195
+    Height = 38
+    AutoSize = False
     Caption = '- File will open with this Program'
+    WordWrap = True
   end
-  object Label8: TLabel
+  object LblAddSubmenuItem: TLabel
     Left = 232
     Top = 34
-    Width = 185
-    Height = 13
+    Width = 195
+    Height = 39
+    AutoSize = False
     Caption = '- File option will added for this file type'
+    WordWrap = True
   end
-  object Label9: TLabel
+  object LblSkipExt: TLabel
     Left = 232
     Top = 65
-    Width = 112
-    Height = 13
+    Width = 195
+    Height = 32
+    AutoSize = False
     Caption = '- File extension ignored'
+    WordWrap = True
   end
   object CbFileExtensions: TCheckListBox
     Left = 3
@@ -99,5 +105,10 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
       Caption = 'Select None'
       OnClick = SelectNone1Click
     end
+  end
+  object AppEvents: TApplicationEvents
+    OnMessage = AppEventsMessage
+    Left = 272
+    Top = 240
   end
 end

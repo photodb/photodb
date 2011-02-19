@@ -733,7 +733,8 @@ end;
 
 procedure TFormSelectDB.ComboBoxExDB1Change(Sender: TObject);
 begin
-  SelectDBFileNameEdit.Text := DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName;
+  if ComboBoxExDB1.Items.Count > 0 then
+    SelectDBFileNameEdit.Text := DBKernel.DBs[ComboBoxExDB1.ItemIndex].FileName;
 end;
 
 procedure TFormSelectDB.BtnSelectFileClick(Sender: TObject);

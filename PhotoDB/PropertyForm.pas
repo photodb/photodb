@@ -1265,7 +1265,7 @@ end;
 
 procedure TPropertiesForm.Shell1Click(Sender: TObject);
 begin
-  ShellExecute(Handle, nil, PWideChar(LabelPath.Text), nil, nil, SW_NORMAL);
+  ShellExecute(Handle, 'open', PWideChar(LabelPath.Text), nil, nil, SW_NORMAL);
 end;
 
 procedure TPropertiesForm.Show1Click(Sender: TObject);
@@ -2283,7 +2283,7 @@ begin
     LINK_TYPE_FILE:
       begin
         S := ExcludeTrailingBackslash(LI[N].LinkValue);
-        ShellExecute(Handle, nil, PWideChar(LI[N].LinkValue), nil, PWideChar(S), SW_NORMAL);
+        ShellExecute(Handle, 'open', PWideChar(LI[N].LinkValue), nil, PWideChar(S), SW_NORMAL);
       end;
     LINK_TYPE_FOLDER:
       begin

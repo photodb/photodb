@@ -147,16 +147,16 @@ object FormDBOptions: TFormDBOptions
     ReadOnly = True
     TabOrder = 7
   end
-  object WebLink1: TWebLink
+  object WlChangeImageQuality: TWebLink
     Left = 8
     Top = 288
     Width = 246
     Height = 13
     Cursor = crHandPoint
     ParentColor = False
-    Color = clWhite
+    Color = clBtnFace
     Text = 'To change thumbnail size and quality press this link'
-    OnClick = WebLink1Click
+    OnClick = WlChangeImageQualityClick
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0

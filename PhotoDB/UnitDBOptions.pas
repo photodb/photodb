@@ -24,7 +24,7 @@ type
     Edit3: TEdit;
     Label6: TLabel;
     Edit4: TEdit;
-    WebLink1: TWebLink;
+    WlChangeImageQuality: TWebLink;
     Label7: TLabel;
     EdPath: TEdit;
     BtnOpenFileLocation: TButton;
@@ -35,7 +35,7 @@ type
     Label8: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
-    procedure WebLink1Click(Sender: TObject);
+    procedure WlChangeImageQualityClick(Sender: TObject);
     procedure BtnOpenFileLocationClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
     procedure BtnChangeFileLocationClick(Sender: TObject);
@@ -139,7 +139,7 @@ begin
     Label4.Caption := L('Image preview size');
     Label5.Caption := L('DB Image size');
     Label6.Caption := L('JPEG quality');
-    WebLink1.Text := L('Press this link to change the size and quality of previews using convertation wizard');
+    WlChangeImageQuality.Text := L('Press this link to change the size and quality of previews using convertation wizard');
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');
     GroupBoxIcon.Caption := L('Icon options');
@@ -155,7 +155,7 @@ begin
   Close;
 end;
 
-procedure TFormDBOptions.WebLink1Click(Sender: TObject);
+procedure TFormDBOptions.WlChangeImageQualityClick(Sender: TObject);
 begin
   ConvertDB(DBFile.FileName);
 end;
@@ -186,7 +186,7 @@ var
     EdDescriotion.Enabled := False;
     ComboBox1.Enabled := False;
     ComboBox2.Enabled := False;
-    WebLink1.Enabled := False;
+    WlChangeImageQuality.Enabled := False;
   end;
 
 begin

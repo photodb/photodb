@@ -664,7 +664,7 @@ begin
   ElvMain.Header.Columns.Add;
   CreateBackground;
 
-  tbStopOperation.Enabled := False;
+  TbStopOperation.Enabled := False;
 
   ExplorerManager.LoadEXIF;
   WindowID := GetGUID;
@@ -703,37 +703,39 @@ begin
   FUpdatingDB:=false;
 
   DropFileTarget2.Register(SearchEdit);
-  DropFileTarget1.Register(Self);
+  DropFileTarget1.register(Self);
 
- TW.I.Start('S -> DateTimePickers');
- try
+  TW.I.Start('S -> DateTimePickers');
+  try
 
- for i:=0 to n-1 do
- begin
-  Menus[i]:=TMenuItem.Create(InsertSpesialQueryPopupMenu);
-  Menus[i].Caption:=Captions[i];
-  Menus[i].OnClick:=InsertSpesialQueryPopupMenuItemClick;
-  Menus[i].Tag:=i;
-  InsertSpesialQueryPopupMenu.Items.Add(Menus[i]);
- end;
- Menus[0].Enabled:=false;
- ElvMain.HotTrack.Enabled:=DBKernel.Readbool('Options','UseHotSelect',true);
- PnLeft.Width:=DBKernel.ReadInteger('Search','LeftPanelWidth',150);
- FBitmapImageList := TBitmapImageList.Create;
- TW.I.Start('S -> RegisterMainForm');
- FormManager.RegisterMainForm(Self);
- except
-   on e : Exception do EventLog(':TSearchForm::FormCreate() throw exception: '+e.Message);
- end;
- try
-  initialization_;
- except
-   on e : Exception do EventLog(':TSearchForm::FormCreate() throw exception: '+e.Message);
- end;
- TW.I.Start('S -> DBKernel.RegisterForm');
- TW.I.Start('S -> LoadLanguage');
- LoadLanguage;
- SearchManager.AddSearch(Self);
+    for I := 0 to N - 1 do
+    begin
+      Menus[I] := TMenuItem.Create(InsertSpesialQueryPopupMenu);
+      Menus[I].Caption := Captions[I];
+      Menus[I].OnClick := InsertSpesialQueryPopupMenuItemClick;
+      Menus[I].Tag := I;
+      InsertSpesialQueryPopupMenu.Items.Add(Menus[I]);
+    end;
+    Menus[0].Enabled := False;
+    ElvMain.HotTrack.Enabled := DBKernel.Readbool('Options', 'UseHotSelect', True);
+    PnLeft.Width := DBKernel.ReadInteger('Search', 'LeftPanelWidth', 150);
+    FBitmapImageList := TBitmapImageList.Create;
+    TW.I.Start('S -> RegisterMainForm');
+    FormManager.RegisterMainForm(Self);
+  except
+    on E: Exception do
+      EventLog(':TSearchForm::FormCreate() throw exception: ' + E.message);
+  end;
+  try
+    Initialization_;
+  except
+    on E: Exception do
+      EventLog(':TSearchForm::FormCreate() throw exception: ' + E.message);
+  end;
+  TW.I.Start('S -> DBKernel.RegisterForm');
+  TW.I.Start('S -> LoadLanguage');
+  LoadLanguage;
+  SearchManager.AddSearch(Self);
 
   if DBKernel.ReadboolW('', 'DoUpdateHelp', False) then
   begin
@@ -1415,7 +1417,6 @@ end;
 procedure TSearchForm.FormDestroy(Sender: TObject);
 begin
   GOM.RemoveObj(Self);
-  ClearItems;
   DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
 
   DropFileTarget2.Unregister;
@@ -2043,7 +2044,7 @@ end;
 
 procedure TSearchForm.Explorer1Click(Sender: TObject);
 begin
- NewExplorer;
+  NewExplorer;
 end;
 
 function TSearchForm.GetCurrentPopUpMenuInfo(Item : TEasyItem) : TDBPopupMenuInfo;
@@ -3305,9 +3306,10 @@ end;
 
 procedure TSearchForm.IsTimePanelDblClick(Sender: TObject);
 begin
- If FUpdatingDB then Exit;
- IsTimePanel.Visible:=False;
- Memo1Change(Sender);
+  if FUpdatingDB then
+    Exit;
+  IsTimePanel.Visible := False;
+  Memo1Change(Sender);
 end;
 
 procedure TSearchForm.PopupMenu1Popup(Sender: TObject);
@@ -4465,6 +4467,7 @@ var
   DS : TDataSet;
   DateRangeBackgroundImage : TPNGImage;
   DateRangeBackgroundImageBMP : TBitmap;
+  BackgroundImage: TBitmap;
 begin
   if not elvDateRange.BackGround.Image.Empty then
     Exit;
@@ -4474,13 +4477,19 @@ begin
   elvDateRange.BackGround.AlphaBlend := True;
   elvDateRange.BackGround.OffsetTrack := True;
   elvDateRange.BackGround.BlendAlpha := 220;
-  elvDateRange.BackGround.Image := TBitmap.Create;
-  elvDateRange.BackGround.Image.PixelFormat := pf24bit;
-  elvDateRange.BackGround.Image.Width := 100;
-  elvDateRange.BackGround.Image.Height := 100;
-  elvDateRange.BackGround.Image.Canvas.Brush.Color := clWindow;
-  elvDateRange.BackGround.Image.Canvas.Pen.Color := clWindow;
-  elvDateRange.BackGround.Image.Canvas.Rectangle(0, 0, 100, 100);
+
+  BackgroundImage := TBitmap.Create;
+  try
+    BackgroundImage.PixelFormat := pf24bit;
+    BackgroundImage.Width := 100;
+    BackgroundImage.Height := 100;
+    BackgroundImage.Canvas.Brush.Color := clWindow;
+    BackgroundImage.Canvas.Pen.Color := clWindow;
+    BackgroundImage.Canvas.Rectangle(0, 0, 100, 100);
+    elvDateRange.BackGround.Image := BackgroundImage;
+  finally
+    F(BackgroundImage);
+  end;
 
   DateRangeBackgroundImage := GetDateRangeImage;
   try

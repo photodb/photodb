@@ -511,7 +511,7 @@ end;
 
 procedure Exec(FileName: string);
 begin
-  ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOW)
+  ShellExecute(GetActiveWindow, 'open', PChar(FileName), nil, nil, SW_SHOW)
 end;
 
 Procedure aCopyFile(FromFile, ToDir : string);

@@ -13,6 +13,7 @@ function KillTask(ExeFileName: string): Integer;
 function GetGUID: TGUID;
 function GetProgramPath: string;
 function FloatToStrEx(Value: Extended; Round: Integer): string;
+function GetSystemLanguage: string;
 
 implementation
 
@@ -77,6 +78,16 @@ begin
     ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
   CloseHandle(FSnapshotHandle);
+end;
+
+function GetSystemLanguage: string;
+var
+  ID: LangID;
+  Language: array [0..255] of Char;
+begin
+  ID := GetSystemDefaultLangID;
+  VerLanguageName(ID, Language, SizeOf(Language) - 1);
+  Result := string(Language);
 end;
 
 function GetGUID: TGUID;

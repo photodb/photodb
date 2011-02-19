@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
-  StrUtils, uTranslate, uLogger, XPMan, pngimage, uInstallZip;
+  StrUtils, uTranslate, uLogger, pngimage, uInstallZip, uSysUtils;
 
 type
   TLanguageItem = class(TObject)
@@ -21,7 +21,6 @@ type
     LbLanguages: TListBox;
     BtnOk: TButton;
     LbInfo: TLabel;
-    XPManifest: TXPManifest;
     procedure LbLanguagesClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure LbLanguagesDrawItem(Control: TWinControl; Index: Integer;

@@ -114,79 +114,88 @@ begin
   end;
 end;
 
-function TBDRegistry.DeleteValue(Name: String): boolean;
+function TBDRegistry.DeleteValue(name: string): Boolean;
 var
-  Key : string;
+  Key: string;
 begin
- Result:=false;
- if Registry is TRegistry then Result:=(Registry as TRegistry).DeleteKey(Name);
- if Registry is TMyRegistryINIFile then
- begin
-  Key:=(Registry as TMyRegistryINIFile).Key;
-  (Registry as TMyRegistryINIFile).DeleteKey(Key,Name);
-  Result:=true;
- end;
+  Result := False;
+  if Registry is TRegistry then
+    Result := (Registry as TRegistry).DeleteKey(name);
+  if Registry is TMyRegistryINIFile then
+  begin
+    Key := (Registry as TMyRegistryINIFile).Key;
+    (Registry as TMyRegistryINIFile).DeleteKey(Key, name);
+    Result := True;
+  end;
 end;
 
 destructor TBDRegistry.Destroy;
 begin
- Registry.Free;
- inherited Destroy;
+  Registry.Free;
+  inherited Destroy;
 end;
 
 procedure TBDRegistry.GetKeyNames(Strings: TStrings);
 var
-  Key, s : string;
-  TempStrings : TStrings;
-  i : integer;
+  Key, S: string;
+  TempStrings: TStrings;
+  I: Integer;
 begin
- try
-  if Registry is TRegistry then (Registry as TRegistry).GetKeyNames(Strings);
-  if Registry is TMyRegistryINIFile then
-  begin
-   Key:=(Registry as TMyRegistryINIFile).Key;
-   TempStrings:=TStringList.Create;
-   (Registry as TMyRegistryINIFile).ReadSections(TempStrings);
-   for i:=0 to TempStrings.Count-1 do
-   begin
-    if AnsiLowerCase(Copy(TempStrings[i],1,Length(Key))) = AnsiLowerCase(Key) then
+  try
+    if Registry is TRegistry then
+      (Registry as TRegistry).GetKeyNames(Strings);
+    if Registry is TMyRegistryINIFile then
     begin
-     s:=TempStrings[i];
-     Delete(s,1,Length(Key)+1);
-     Strings.Add(s)
+      Key := (Registry as TMyRegistryINIFile).Key;
+      TempStrings := TStringList.Create;
+      try
+        (Registry as TMyRegistryINIFile).ReadSections(TempStrings);
+        for I := 0 to TempStrings.Count - 1 do
+        begin
+          if AnsiLowerCase(Copy(TempStrings[I], 1, Length(Key))) = AnsiLowerCase(Key) then
+          begin
+            S := TempStrings[I];
+            Delete(S, 1, Length(Key) + 1);
+            Strings.Add(S)
+          end;
+        end;
+      finally
+        F(TempStrings);
+      end;
     end;
-   end;
-   TempStrings.Free;
+  except
+    on E: Exception do
+      EventLog(':TBDRegistry::GetKeyNames() throw exception: ' + E.message);
   end;
- except
-  on e : Exception do EventLog(':TBDRegistry::GetKeyNames() throw exception: '+e.Message);
- end;
 end;
 
 procedure TBDRegistry.GetValueNames(Strings: TStrings);
 var
-  Key : string;
+  Key: string;
 begin
- try
-  if Registry is TRegistry then (Registry as TRegistry).GetValueNames(Strings);
-  if Registry is TMyRegistryINIFile then
-  begin
-   Key:=(Registry as TMyRegistryINIFile).Key;
-   (Registry as TMyRegistryINIFile).ReadSectionValues(Key,Strings);
+  try
+    if Registry is TRegistry then
+      (Registry as TRegistry).GetValueNames(Strings);
+    if Registry is TMyRegistryINIFile then
+    begin
+      Key := (Registry as TMyRegistryINIFile).Key;
+      (Registry as TMyRegistryINIFile).ReadSectionValues(Key, Strings);
+    end;
+  except
+    on E: Exception do
+      EventLog(':TBDRegistry::GetValueNames() throw exception: ' + E.message);
   end;
- except
-  on e : Exception do EventLog(':TBDRegistry::GetValueNames() throw exception: '+e.Message);
- end;
 end;
 
-function TBDRegistry.KeyExists(Key: String): boolean;
+function TBDRegistry.KeyExists(Key: string): Boolean;
 begin
- Result:=false;
- if Registry is TRegistry then Result:=(Registry as TRegistry).KeyExists(Key);
- if Registry is TMyRegistryINIFile then
- begin
-  Result:=(Registry as TMyRegistryINIFile).SectionExists(Key);
- end;
+  Result := False;
+  if Registry is TRegistry then
+    Result := (Registry as TRegistry).KeyExists(Key);
+  if Registry is TMyRegistryINIFile then
+  begin
+    Result := (Registry as TMyRegistryINIFile).SectionExists(Key);
+  end;
 end;
 
 function TBDRegistry.OpenKey(Key: String; CreateInNotExists: Boolean) : boolean;
@@ -201,137 +210,148 @@ begin
   end;
 end;
 
-function TBDRegistry.ReadBool(Name: String; Default: boolean): boolean;
+function TBDRegistry.ReadBool(name: string; default: Boolean): Boolean;
 var
-  Key : string;
+  Key: string;
 begin
-  Result:=Default;
- try
-  if Registry is TRegistry then Result:=(Registry as TRegistry).ReadBool(Name);
+  Result := default;
+  try
+    if Registry is TRegistry then
+      Result := (Registry as TRegistry).ReadBool(name);
+    if Registry is TMyRegistryINIFile then
+    begin
+      Key := (Registry as TMyRegistryINIFile).Key;
+      Result := (Registry as TMyRegistryINIFile).ReadBool(Key, name, default);
+    end;
+  except
+    on E: Exception do
+      EventLog(':TBDRegistry::ReadBool() throw exception: ' + E.message);
+  end;
+end;
+
+function TBDRegistry.ReadDateTime(name: string; default: TDateTime): TDateTime;
+var
+  Key: string;
+begin
+  Result := default;
+  try
+    if Registry is TRegistry then
+      Result := (Registry as TRegistry).ReadDateTime(name);
+    if Registry is TMyRegistryINIFile then
+    begin
+      Key := (Registry as TMyRegistryINIFile).Key;
+      Result := (Registry as TMyRegistryINIFile).ReadDateTime(Key, name, default);
+    end;
+  except
+    on E: Exception do
+      EventLog(':TBDRegistry::ReadDateTime() throw exception: ' + E.message);
+  end;
+end;
+
+function TBDRegistry.ReadInteger(name: string; default: Integer): Integer;
+var
+  Key: string;
+begin
+  Result := default;
+  try
+    if Registry is TRegistry then
+      Result := (Registry as TRegistry).ReadInteger(name);
+    if Registry is TMyRegistryINIFile then
+    begin
+      Key := (Registry as TMyRegistryINIFile).Key;
+      Result := (Registry as TMyRegistryINIFile).ReadInteger(Key, name, default);
+    end;
+  except
+    on E: Exception do
+      EventLog(':TBDRegistry::ReadInteger() throw exception: ' + E.message);
+  end;
+end;
+
+function TBDRegistry.ReadString(name, default: string): string;
+var
+  Key: string;
+begin
+  Result := default;
+  try
+    if Registry is TRegistry then
+      Result := (Registry as TRegistry).ReadString(name);
+    if Registry is TMyRegistryINIFile then
+    begin
+      Key := (Registry as TMyRegistryINIFile).Key;
+      Result := (Registry as TMyRegistryINIFile).ReadString(Key, name, default);
+    end;
+  except
+    on E: Exception do
+      EventLog(':TBDRegistry::ReadString() throw exception: ' + E.message);
+  end;
+end;
+
+function TBDRegistry.ValueExists(name: string): Boolean;
+var
+  Key: string;
+begin
+  Result := False;
+  if Registry is TRegistry then
+    Result := (Registry as TRegistry).ValueExists(name);
   if Registry is TMyRegistryINIFile then
   begin
-   Key:=(Registry as TMyRegistryINIFile).Key;
-   Result:=(Registry as TMyRegistryINIFile).ReadBool(Key,Name,Default);
+    Key := (Registry as TMyRegistryINIFile).Key;
+    Result := (Registry as TMyRegistryINIFile).ValueExists(Key, name);
   end;
- except
-  on e : Exception do EventLog(':TBDRegistry::ReadBool() throw exception: '+e.Message);
- end;
 end;
 
-function TBDRegistry.ReadDateTime(Name: String;
-  Default: TDateTime): TDateTime;
+procedure TBDRegistry.WriteBool(name: string; Value: Boolean);
 var
-  Key : string;
+  Key: string;
 begin
-  Result:=Default;
- try
-  if Registry is TRegistry then Result:=(Registry as TRegistry).ReadDateTime(Name);
+  if Registry is TRegistry then (Registry as TRegistry)
+    .WriteBool(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
-   Key:=(Registry as TMyRegistryINIFile).Key;
-   Result:=(Registry as TMyRegistryINIFile).ReadDateTime(Key,Name,Default);
+    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
+    .WriteBool(Key, name, Value);
   end;
- except
-  on e : Exception do EventLog(':TBDRegistry::ReadDateTime() throw exception: '+e.Message);
- end;
 end;
 
-function TBDRegistry.ReadInteger(Name: String; Default: Integer): Integer;
+procedure TBDRegistry.WriteDateTime(name: string; Value: TDateTime);
 var
-  Key : string;
+  Key: string;
 begin
- Result:=Default;
- try
-  if Registry is TRegistry then Result:=(Registry as TRegistry).ReadInteger(Name);
+  if Registry is TRegistry then (Registry as TRegistry)
+    .WriteDateTime(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
-   Key:=(Registry as TMyRegistryINIFile).Key;
-   Result:=(Registry as TMyRegistryINIFile).ReadInteger(Key,Name,Default);
+    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
+    .WriteDateTime(Key, name, Value);
   end;
- except
-  on e : Exception do EventLog(':TBDRegistry::ReadInteger() throw exception: '+e.Message);
- end;
 end;
 
-function TBDRegistry.ReadString(Name, Default: string): string;
+procedure TBDRegistry.WriteInteger(name: string; Value: Integer);
 var
-  Key : string;
+  Key: string;
 begin
- Result:=Default;
- try
-  if Registry is TRegistry then Result:=(Registry as TRegistry).ReadString(Name);
+  if Registry is TRegistry then (Registry as TRegistry)
+    .WriteInteger(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
-   Key:=(Registry as TMyRegistryINIFile).Key;
-   Result:=(Registry as TMyRegistryINIFile).ReadString(Key,Name,Default);
+    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
+    .WriteInteger(Key, name, Value);
   end;
- except
-  on e : Exception do EventLog(':TBDRegistry::ReadString() throw exception: '+e.Message);
- end;
 end;
 
-function TBDRegistry.ValueExists(Name: String): boolean;
+procedure TBDRegistry.WriteString(name, Value: string);
 var
-  Key : string;
+  Key: string;
 begin
- Result:=false;
- if Registry is TRegistry then Result:=(Registry as TRegistry).ValueExists(Name);
- if Registry is TMyRegistryINIFile then
- begin
-  Key:=(Registry as TMyRegistryINIFile).Key;
-  Result:=(Registry as TMyRegistryINIFile).ValueExists(Key,Name);
- end;
-end;
-
-procedure TBDRegistry.WriteBool(Name: String; Value: boolean);
-var
-  Key : string;
-begin
- if Registry is TRegistry then (Registry as TRegistry).WriteBool(Name,Value);
- if Registry is TMyRegistryINIFile then
- begin
-  Key:=(Registry as TMyRegistryINIFile).Key;
-  (Registry as TMyRegistryINIFile).WriteBool(Key,Name,Value);
- end;
-end;
-
-procedure TBDRegistry.WriteDateTime(Name: String; Value: TDateTime);
-var
-  Key : string;
-begin
- if Registry is TRegistry then (Registry as TRegistry).WriteDateTime(Name,Value);
- if Registry is TMyRegistryINIFile then
- begin
-  Key:=(Registry as TMyRegistryINIFile).Key;
-  (Registry as TMyRegistryINIFile).WriteDateTime(Key,Name,Value);
- end;
-end;
-
-procedure TBDRegistry.WriteInteger(Name: String; Value: Integer);
-var
-  Key : string;
-begin
- if Registry is TRegistry then (Registry as TRegistry).WriteInteger(Name,Value);
- if Registry is TMyRegistryINIFile then
- begin
-  Key:=(Registry as TMyRegistryINIFile).Key;
-  (Registry as TMyRegistryINIFile).WriteInteger(Key,Name,Value);
- end;
-end;
-
-procedure TBDRegistry.WriteString(Name, Value: String);
-var
-  Key : string;
-begin
- if Registry is TRegistry then
- begin
-  (Registry as TRegistry).WriteString(Name,Value);
- end;
- if Registry is TMyRegistryINIFile then
- begin
-  Key:=(Registry as TMyRegistryINIFile).Key;
-  (Registry as TMyRegistryINIFile).WriteString(Key,Name,Value);
- end;
+  if Registry is TRegistry then
+  begin (Registry as TRegistry)
+    .WriteString(name, Value);
+  end;
+  if Registry is TMyRegistryINIFile then
+  begin
+    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
+    .WriteString(Key, name, Value);
+  end;
 end;
 
 { TDBRegistryCache }

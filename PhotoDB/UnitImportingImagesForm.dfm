@@ -783,8 +783,8 @@ object FormImportingImages: TFormImportingImages
     object Label6: TLabel
       Left = 8
       Top = 8
-      Width = 249
-      Height = 65
+      Width = 257
+      Height = 73
       AutoSize = False
       Caption = 'Step info'
       WordWrap = True

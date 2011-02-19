@@ -81,7 +81,7 @@ begin
   TimerActivated := False;
   Destroying := False;
   LoadLanguage;
-  LnkClose.Left := ClientWidth - LnkClose.Width - 5;
+  LnkClose.Left := ClientWidth - TrbImageSize.Width - LnkClose.Width - 5;
   LockChange := False;
 end;
 

@@ -348,29 +348,29 @@ end;
 
 procedure DoHelp;
 begin
-  ShellExecute(0, nil, 'http://photodb.illusdolphin.net', nil, nil, SW_NORMAL);
+  ShellExecute(GetActiveWindow, 'open', 'http://photodb.illusdolphin.net', nil, nil, SW_NORMAL);
 end;
 
 procedure DoUpdateHelp;
 begin
   if FileExists(ProgramDir + 'Help\photodb_updating.htm') then
-    ShellExecute(0, nil, PWideChar(ProgramDir + 'Help\photodb_updating.htm'), nil, nil, SW_NORMAL);
+    ShellExecute(GetActiveWindow, 'open', PWideChar(ProgramDir + 'Help\photodb_updating.htm'), nil, nil, SW_NORMAL);
 end;
 
 procedure DoHomePage;
 begin
-  ShellExecute(0, nil, PWideChar(HomeURL), nil, nil, SW_NORMAL);
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(HomePageURL)), nil, nil, SW_NORMAL);
 end;
 
 procedure DoHomeContactWithAuthor;
 begin
-  ShellExecute(0, nil, PWideChar('mailto:' + ProgramMail + '?subject=''''' + ProductName + ''''''), nil, nil,
+  ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=''''' + ProductName + ''''''), nil, nil,
     SW_NORMAL);
 end;
 
 procedure DoGetCode(S: string);
 begin
-  ShellExecute(0, nil, PWideChar('mailto:' + ProgramMail + '?subject=''''' + ProductName +
+  ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=''''' + ProductName +
         ''''' REGISTRATION CODE = ''''' + S + ''''''), nil, nil, SW_NORMAL);
 end;
 

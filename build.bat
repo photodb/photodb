@@ -1,3 +1,7 @@
+d:
+cd "D:\Dmitry\Delphi exe\Photo Database"
+
+
 SET DELPHI=C:\Program Files\Embarcadero\RAD Studio\7.0
 SET PROGS=C:\Program Files
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
@@ -13,6 +17,7 @@ cd photodb/resources
 "%BRCC32%" Manifest.rc
 "%BRCC32%" ImagePanelBackground.rc
 "%BRCC32%" Loading.rc
+"%BRCC32%" Install.rc
 
 cd ..
 cd ..

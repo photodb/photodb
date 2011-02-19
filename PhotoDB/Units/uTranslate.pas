@@ -87,11 +87,17 @@ type
 function TA(const StringToTranslate, Scope: string) : string; overload;
 function TA(const StringToTranslate: string) : string; overload;
 procedure LoadLanguageFromFile(var Language : TLanguage; var LanguageCode : string);
+function ResolveLanguageString(s: string) : string;
 
 var
   LanguageInitCallBack : TLanguageInitCallBack = LoadLanguageFromFile;
 
 implementation
+
+function ResolveLanguageString(s: string) : string;
+begin
+  Result := StringReplace(s, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [rfReplaceAll, rfIgnoreCase]);
+end;
 
 procedure LoadLanguageFromFile(var Language : TLanguage; var LanguageCode : string);
 var
@@ -100,10 +106,10 @@ var
 begin
   if LanguageCode = '--' then
   begin
-    Reg := TRegistry.Create;
+    Reg := TRegistry.Create(KEY_READ);
     try
       Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
-      Reg.OpenKey(RegRoot, True);
+      Reg.OpenKey(RegRoot, False);
       LanguageCode := Reg.ReadString('Language');
     finally
       F(Reg);

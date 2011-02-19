@@ -224,13 +224,16 @@ uses UnitQuickGroupInfo, ExplorerUnit,
 
 {$R *.dfm}
 
-function TManagerDB.GetListViewItemAt(Y : integer): TListItem;
+function TManagerDB.GetListViewItemAt(Y : Integer): TListItem;
 var
   R : TRect;
-  I, Index : integer;
+  I, Index : Integer;
 begin
   Result := nil;
-  Index := Max(0, (Y - GetListViewHeaderHeight(ElvMain)) div ImlMain.Height - 1);
+  if ElvMain.Items.Count > 0 then
+    Index := ElvMain.TopItem.Index
+  else
+    Index := 0;
   for I := Index to elvMain.Items.Count - 1 do
   begin
     R := elvMain.Items[I].DisplayRect(drBounds);

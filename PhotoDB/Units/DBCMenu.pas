@@ -1381,7 +1381,7 @@ begin
  if FInfo[i].Selected then
  begin
   s:=ExtractFileDir(Finfo[i].FileName);
-  if ShellExecute(0, nil, PWideChar(ProcessPath(Finfo[i].FileName)), nil, PWideChar(s), SW_NORMAL)<32 then
+  if ShellExecute(GetActiveWindow, 'open', PWideChar(ProcessPath(Finfo[i].FileName)), nil, PWideChar(s), SW_NORMAL)<32 then
   EventLog(':TDBPopupMenu::ShellExecutePopUpMenu()/ShellExecute return < 32, path = '+Finfo[i].FileName);
  end;
 end;

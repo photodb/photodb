@@ -32,8 +32,4 @@ begin
   Callback(Self, InstallPoints_SystemInfo, InstallPoints_SystemInfo, Terminate);
 end;
 
-initialization
-
-  TInstallManager.Instance.RegisterScope(TInstallUpdatingWindows);
-
 end.

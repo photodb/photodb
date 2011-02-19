@@ -7,7 +7,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CheckLst, uInstallFrame, UnitDBFileDialogs, Registry,
-  uShellUtils, uInstallScope, uInstallUtils, uAssociations, uMemory, Menus;
+  uShellUtils, uInstallScope, uInstallUtils, uAssociations, uMemory, Menus,
+  AppEvnts;
 
 type
   TFrAdvancedOptions = class(TInstallFrame)
@@ -15,20 +16,22 @@ type
     EdPath: TEdit;
     LbInstallPath: TLabel;
     CbInstallTypeChecked: TCheckBox;
-    Label7: TLabel;
+    LblUseExt: TLabel;
     CbInstallTypeGrayed: TCheckBox;
-    Label8: TLabel;
+    LblAddSubmenuItem: TLabel;
     CbInstallTypeNone: TCheckBox;
-    Label9: TLabel;
+    LblSkipExt: TLabel;
     BtnSelectDirectory: TButton;
     PmAssociations: TPopupMenu;
     SelectDefault1: TMenuItem;
     SelectAll1: TMenuItem;
     SelectNone1: TMenuItem;
+    AppEvents: TApplicationEvents;
     procedure BtnSelectDirectoryClick(Sender: TObject);
     procedure SelectDefault1Click(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
     procedure SelectNone1Click(Sender: TObject);
+    procedure AppEventsMessage(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
     procedure LoadExtensionList;
@@ -46,6 +49,21 @@ type
 implementation
 
 {$R *.dfm}
+
+procedure TFrAdvancedOptions.AppEventsMessage(var Msg: tagMSG;
+  var Handled: Boolean);
+begin
+  inherited;
+  if (Msg.message = WM_LBUTTONDOWN)
+  or (Msg.message = WM_LBUTTONDBLCLK)
+  or (Msg.message = WM_MOUSEMOVE) then
+  begin
+    if (Msg.hwnd = CbInstallTypeChecked.Handle)
+      or (Msg.hwnd = CbInstallTypeGrayed.Handle)
+      or (Msg.hwnd = CbInstallTypeNone.Handle) then
+        Msg.message := 0;
+  end;
+end;
 
 procedure TFrAdvancedOptions.BtnSelectDirectoryClick(Sender: TObject);
 var
@@ -113,6 +131,9 @@ begin
   SelectDefault1.Caption := L('Select default associations');
   SelectAll1.Caption := L('Select all');
   SelectNone1.Caption := L('Select none');
+  LblUseExt.Caption := L('Use PhotoDB as default association');
+  LblAddSubmenuItem.Caption := L('Add menu item');
+  LblSkipExt.Caption := L('Don''t use this extension');
 end;
 
 procedure TFrAdvancedOptions.LoadNone;

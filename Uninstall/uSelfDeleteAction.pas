@@ -60,8 +60,4 @@ begin
   Callback(Self, InstallRemoveSelfPoints, InstallRemoveSelfPoints, Terminate);
 end;
 
-initialization
-
-  TInstallManager.Instance.RegisterScope(TSelfDeleteActions);
-
 end.

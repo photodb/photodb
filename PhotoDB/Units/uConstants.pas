@@ -36,9 +36,9 @@ const
   ProgramMail = 'illusdolphin@gmail.com';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
 
-  InstallNotifyURL = '/{LNG}/install.aspx';
-  UpdateNotifyURL = '/{LNG}/update.aspx';
-  HomeURL = 'http://photodb.illusdolphin.net';
+  InstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/install.aspx';
+  UpdateNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/update.aspx';
+  HomePageURL = 'http://photodb.illusdolphin.net/{LNG}.aspx';
 
   //install
   DBID = '{E1446065-CB87-440D-9315-6FA356F921B5}';
@@ -181,6 +181,7 @@ const
   DB_IC_CD_EXPORT      = 116;
   DB_IC_CD_MAPPING     = 117;
   DB_IC_CD_IMAGE       = 118;
+  DB_IC_ROTATE_MAGIC   = 119;
 
 const
     WM_DROPFILES = $0233;

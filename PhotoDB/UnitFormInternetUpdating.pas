@@ -82,7 +82,7 @@ end;
 
 procedure TFormInternetUpdating.WebLink1Click(Sender: TObject);
 begin
-  ShellExecute(0, nil, PWideChar(DownloadURL), nil, nil, SW_NORMAL);
+  ShellExecute(Handle, 'open', PWideChar(DownloadURL), nil, nil, SW_NORMAL);
   Close;
 end;
 

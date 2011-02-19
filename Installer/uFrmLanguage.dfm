@@ -23,7 +23,7 @@ object FormLanguage: TFormLanguage
   object LbInfo: TLabel
     Left = 8
     Top = 8
-    Width = 204
+    Width = 209
     Height = 33
     AutoSize = False
     Caption = 'Please, select language of PhotoDB install:'
@@ -52,9 +52,5 @@ object FormLanguage: TFormLanguage
     Caption = 'Ok'
     TabOrder = 1
     OnClick = BtnOkClick
-  end
-  object XPManifest: TXPManifest
-    Left = 168
-    Top = 56
   end
 end

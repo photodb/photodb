@@ -192,7 +192,7 @@ end;
 
 procedure TFormImportingImages.BtnCancelClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFormImportingImages.FormCloseQuery(Sender: TObject;

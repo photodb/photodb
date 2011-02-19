@@ -45,6 +45,7 @@ const
   EXT_ASSOCIATION_PREFIX = 'PhotoDB';
   ASSOCIATION_PREVIOUS = 'PhotoDB_PreviousAssociation';
   ASSOCIATION_ADD_HANDLER_COMMAND = 'PhotoDBView';
+  ASSOCIATION_PATH = '\Software\Classes\';
 
 function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
 function AssociationStateToCheckboxState(AssociationState : TAssociationState) : TCheckBoxState;
@@ -95,20 +96,20 @@ begin
     Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
     Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
   finally
-    Reg.Free;
+    F(Reg);
   end;
 
   Reg := TRegistry.Create;
   try
-    Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
-    Reg.OpenKey('\' + Ext, True);
+    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
     ExtensionHandler := Reg.ReadString('');
     PreviousHandler := Reg.ReadString(ASSOCIATION_PREVIOUS);
     Reg.CloseKey;
 
     if ExtensionHandler <> '' then
     begin
-      ShellPath := '\' + ExtensionHandler + '\Shell\';
+      ShellPath := ASSOCIATION_PATH + ExtensionHandler + '\Shell\';
       //unregister view menu item
       if Reg.KeyExists(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command') then
         Reg.DeleteKey(ShellPath + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command');
@@ -125,7 +126,7 @@ begin
       end;
     end;
 
-    Reg.OpenKey('\' + Ext, True);
+    Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
     if not StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(PreviousHandler)) then
       Reg.WriteString('', PreviousHandler)
     else
@@ -135,7 +136,6 @@ begin
     F(Reg);
   end;
 end;
-
 
 function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
 var
@@ -149,7 +149,10 @@ begin
 
   Reg := TRegistry.Create;
   try
-    Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    //The HKEY_CLASSES_ROOT subtree is a view formed by merging:
+    // HKEY_CURRENT_USER\Software\Classes
+    // and HKEY_LOCAL_MACHINE\Software\Classes
     for I := 0 to TFileAssociations.Instance.Count - 1 do
     begin
       if Assigned(CallBack) then
@@ -164,7 +167,7 @@ begin
       case TFileAssociations.Instance[I].State of
         TAS_DEFAULT:
           begin
-            Reg.OpenKey('\' + Ext, True);
+            Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
             S := Reg.ReadString('');
             Reg.CloseKey;
             B := False;
@@ -172,39 +175,39 @@ begin
               B := True;
             if not B then
             begin
-              Reg.OpenKey('\' + S + '\Shell\Open\Command', False);
+              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\Open\Command', False);
               B := Reg.ReadString('') = '';
               Reg.CloseKey;
             end;
             if B then
             begin
-              Reg.OpenKey('\' + Ext, True);
+              Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
               Reg.WriteString('', 'PhotoDB' + Ext);
               Reg.CloseKey;
-              Reg.OpenKey('\PhotoDB' + Ext + '\Shell\Open\Command', True);
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
               Reg.WriteString('', Format('"%s" "%%1"', [FileName]));
               Reg.CloseKey;
-              Reg.OpenKey('\PhotoDB' + Ext + '\DefaultIcon', True);
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
               Reg.WriteString('', Filename + ',0');
               Reg.CloseKey;
             end else
             begin
-              Reg.OpenKey('\' + Ext, True);
+              Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
               S := Reg.ReadString('');
               Reg.WriteString('PhotoDB_PreviousAssociation', S);
               Reg.WriteString('', 'PhotoDB' + Ext);
               Reg.CloseKey;
-              Reg.OpenKey('\PhotoDB' + Ext + '\Shell\Open\Command', True);
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
               Reg.WriteString('', Format('"%s" "%%1"', [Filename]));
               Reg.CloseKey;
-              Reg.OpenKey('\PhotoDB' + Ext + '\DefaultIcon', True);
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
               Reg.WriteString('', Filename + ',0');
               Reg.CloseKey;
             end;
           end;
         TAS_ADD_HANDLER:
           begin
-            Reg.OpenKey('\' + Ext, True);
+            Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
             S := Reg.ReadString('');
             Reg.CloseKey;
             C := False;
@@ -213,30 +216,30 @@ begin
               C := True;
             if not C then
             begin
-              Reg.OpenKey('\' + S + '\Shell\Open\Command', False);
+              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\Open\Command', False);
               B :=  Reg.ReadString('') = '';
               Reg.CloseKey;
             end;
             if B then
             begin
-              Reg.OpenKey('\' + Ext, True);
+              Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
               Reg.WriteString('', 'PhotoDB' + Ext);
               Reg.CloseKey;
             end;
             if B then
-              Reg.OpenKey('\PhotoDB' + Ext + '\Shell\PhotoDBView', True)
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\PhotoDBView', True)
             else
-              Reg.OpenKey('\' + S + '\Shell\PhotoDBView', True);
+              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\PhotoDBView', True);
             Reg.WriteString('', TA('View with PhotoDB', 'System'));
             Reg.CloseKey;
             if B then
-              Reg.OpenKey('\PhotoDB' + Ext + '\Shell\PhotoDBView\Command', True)
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\PhotoDBView\Command', True)
             else
-              Reg.OpenKey('\' + S + '\Shell\PhotoDBView\Command', True);
+              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\PhotoDBView\Command', True);
             Reg.WriteString('', Format('"%s" "%%1"', [Filename]));
             if B then
             begin
-              Reg.OpenKey('\PhotoDB' + Ext + '\DefaultIcon', True);
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
               Reg.WriteString('', Filename + ',0');
             end;
             Reg.CloseKey;
@@ -376,7 +379,7 @@ begin
   try
     Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
 
-    Reg.OpenKey('\' + Extension, False);
+    Reg.OpenKey(ASSOCIATION_PATH + Extension, False);
     AssociationHandler := Reg.ReadString('');
     Reg.CloseKey;
 
@@ -386,8 +389,7 @@ begin
       Exit;
     end;
 
-    //TODO: HKEY_CLASSES_ROOT\.jpeg\OpenWithProgids
-    Reg.OpenKey('\' + AssociationHandler + '\shell\open\command', False);
+    Reg.OpenKey(ASSOCIATION_PATH + AssociationHandler + '\shell\open\command', False);
     AssociationCommand := Reg.ReadString('');
     Reg.CloseKey;
 

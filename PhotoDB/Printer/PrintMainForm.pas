@@ -222,7 +222,7 @@ end;
 
 procedure TPrintForm.BtnAddPrinterClick(Sender: TObject);
 begin
-  ShellExecute(Handle, nil, 'rundll32.exe' ,'shell32.dll,SHHelpShortcuts_RunDLL AddPrinter','', SW_SHOWNORMAL);
+  ShellExecute(Handle, 'open', 'rundll32.exe' ,'shell32.dll,SHHelpShortcuts_RunDLL AddPrinter','', SW_SHOWNORMAL);
 end;
 
 procedure TPrintForm.Button2Click(Sender: TObject);

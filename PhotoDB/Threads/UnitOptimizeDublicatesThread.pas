@@ -14,7 +14,6 @@ type
     { Private declarations }
     FStrParam: string;
     FIntParam: Integer;
-    ResArray: TImageDBRecordAArray;
     FOptions: TOptimizeDublicatesThreadOptions;
     ProgressInfo: TProgressCallBackInfo;
   protected
@@ -252,7 +251,6 @@ begin
     FileName := Query.FieldByName('FFileName').AsString;
     ID := Query.FieldByName('ID').AsInteger;
     StrTh := Query.FieldByName('StrTh').AsString;
-    Rating := 0;
     FE := False;
     for I := 1 to Query.RecordCount do
     begin
