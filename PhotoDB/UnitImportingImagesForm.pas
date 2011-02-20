@@ -12,6 +12,12 @@ uses
   uShellUtils;
 
 type
+  TImportPlace = class(TObject)
+  public
+    Path: string;
+  end;
+
+type
   TFormImportingImages = class(TDBForm)
     Image1: TImage;
     Label1: TLabel;
@@ -72,30 +78,31 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     procedure BtnFinishClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
-   FFileName : string;
-   SilentClose : boolean;
-   Step : integer;
-   DBTestOK : boolean;
-   UpdateObject : TUpdaterDB;
-   FullSize : int64;
-   ImageCounter : integer;
-   ProcessingSize : int64;
-   ImageProcessedCounter : integer;
-   TimeCounter: TTimeCounter;
+    FFileName: string;
+    SilentClose: Boolean;
+    Step: Integer;
+    DBTestOK: Boolean;
+    UpdateObject: TUpdaterDB;
+    FullSize: Int64;
+    ImageCounter: Integer;
+    ProcessingSize: Int64;
+    ImageProcessedCounter: Integer;
+    TimeCounter: TTimeCounter;
+    procedure LoadLanguage;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
-   procedure LoadLanguage;
-   procedure Execute(FileName : string);
-   procedure AddFolder(NewPlace : string);
-   procedure FileFounded(Owner : TObject; FileName : string; Size : int64);
-   procedure DirectoryAdded(Sender : TObject);
-   procedure SetMaxValue(Value : integer);
-   procedure SetPosition(Value : integer);
-   procedure OnDone(Sender : TObject);
+    procedure Execute(FileName: string);
+    procedure AddFolder(NewPlace: string);
+    procedure FileFounded(Owner: TObject; FileName: string; Size: Int64);
+    procedure DirectoryAdded(Sender: TObject);
+    procedure SetMaxValue(Value: Integer);
+    procedure SetPosition(Value: Integer);
+    procedure OnDone(Sender: TObject);
   end;
 
 const
@@ -107,7 +114,8 @@ implementation
 
 {$R *.dfm}
 
-uses UnitUpdateDBThread, UnitHelp;
+uses
+  UnitUpdateDBThread, UnitHelp;
 
 procedure ImportImages(FileName: string);
 var
@@ -136,7 +144,7 @@ begin
   ImageProcessedCounter := 0;
   ProcessingSize := 0;
   Step := 1;
-  DBTestOK := false;
+  DBTestOK := False;
 
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
 
@@ -185,6 +193,7 @@ begin
     BtnPause.Caption := L('Pause');
     BtnFinish.Caption := L('Finish');
     PlacesListView.Columns[0].Caption := L('Locations to import');
+    PbMain.Text := L('Progress... (&%%)');
   finally
     EndTranslate;
   end;
@@ -193,6 +202,16 @@ end;
 procedure TFormImportingImages.BtnCancelClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TFormImportingImages.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+var
+  I: Integer;
+begin
+  for I := 0 to PlacesListView.Items.Count - 1 do
+    TObject(PlacesListView.Items[I].Data).Free;
+  PlacesListView.Clear;
 end;
 
 procedure TFormImportingImages.FormCloseQuery(Sender: TObject;
@@ -218,17 +237,17 @@ end;
 
 procedure TFormImportingImages.AddFolder(NewPlace : string);
 var
-  P: Pointer;
+  P: TImportPlace;
 begin
   if DirectoryExists(NewPlace) then
   begin
     AddIconToListFromPath(PlacesImageList, DefaultIcon);
+    P:= TImportPlace.Create;
+    P.Path := NewPlace;
     with PlacesListView.Items.AddItem(nil) do
     begin
       ImageIndex := PlacesImageList.Count - 1;
       Caption := Mince(NewPlace, 30);
-      GetMem(P, Length(NewPlace) + 1);
-      Lstrcpyn(P, PWideChar(NewPlace), Length(NewPlace) + 1);
       Data := P;
     end;
   end;
@@ -246,12 +265,12 @@ end;
 procedure TFormImportingImages.PlacesListViewContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  item: TListItem;
+  Item: TListItem;
 begin
-  item := PlacesListView.GetItemAt(MousePos.X, MousePos.Y);
-  if item <> nil then
+  Item := PlacesListView.GetItemAt(MousePos.X, MousePos.Y);
+  if Item <> nil then
   begin
-    PopupMenu1.Tag := item.Index;
+    PopupMenu1.Tag := Item.Index;
     PopupMenu1.Popup(PlacesListView.ClientToScreen(MousePos).X,
       PlacesListView.ClientToScreen(MousePos).Y);
   end;
@@ -268,6 +287,7 @@ begin
   if PopupMenu1.Tag <> -1 then
   begin
     PlacesImageList.Delete(PopupMenu1.Tag);
+    TObject(PlacesListView.Items[PopupMenu1.Tag].Data).Free;
     PlacesListView.Items.Delete(PopupMenu1.Tag);
     for I := PopupMenu1.Tag to PlacesListView.Items.Count - 1 do
       PlacesListView.Items[I].ImageIndex := PlacesListView.Items[I].ImageIndex - 1;
@@ -368,18 +388,17 @@ end;
 
 procedure TFormImportingImages.BtnBeginClick(Sender: TObject);
 begin
-  BtnCancel.Enabled := false;
-  BtnPrev.Visible := false;
-  BtnBegin.Visible := false;
-  BtnBreak.Visible := true;
-  BtnPause.Visible := true;
+  BtnCancel.Enabled := False;
+  BtnPrev.Visible := False;
+  BtnBegin.Visible := False;
+  BtnBreak.Visible := True;
+  BtnPause.Visible := True;
 
   DBKernel.WriteBool('Options', 'NoAddSmallImages', CheckBox1.Checked);
   DBKernel.WriteString('Options', 'NoAddSmallImagesWidth', Edit1.Text);
   DBKernel.WriteString('Options', 'NoAddSmallImagesHeight', Edit2.Text);
 
-  UpdateObject := TUpdaterDB.Create(false);
-
+  UpdateObject := TUpdaterDB.Create(Self);
   UpdateObject.OwnerFormSetMaxValue := SetMaxValue;
   UpdateObject.OwnerFormSetPosition := SetPosition;
   UpdateObject.OnDirectoryAdded := DirectoryAdded;
@@ -393,13 +412,12 @@ begin
     3:
       UpdateObject.AutoAnswer := Result_replace_all;
   end;
-  UpdateObject.Auto := false;
-  UpdateObject.AddDirectory(PWideChar(PlacesListView.Items[0].Data),
-    FileFounded);
-  Label10.Visible := true;
-  Label11.Visible := true;
-  Label12.Visible := true;
-  Image3.Visible := true;
+  UpdateObject.Auto := False;
+  UpdateObject.AddDirectory(TImportPlace(PlacesListView.Items[0].Data).Path, FileFounded);
+  Label10.Visible := True;
+  Label11.Visible := True;
+  Label12.Visible := True;
+  Image3.Visible := True;
 end;
 
 procedure TFormImportingImages.FileFounded(Owner: TObject; FileName: string;
@@ -414,9 +432,10 @@ end;
 
 procedure TFormImportingImages.DirectoryAdded(Sender: TObject);
 begin
+  TObject(PlacesListView.Items[0].Data).Free;
   PlacesListView.Items[0].Delete;
   if PlacesListView.Items.Count > 0 then
-    UpdateObject.AddDirectory(PWideChar(PlacesListView.Items[0].Data),
+    UpdateObject.AddDirectory(TImportPlace(PlacesListView.Items[0].Data).Path,
       FileFounded)
   else
   begin
@@ -470,14 +489,17 @@ procedure TFormImportingImages.ChangedDBDataByID(Sender: TObject;
 var
   Bit: TBitmap;
   P: TPoint;
-  FileSize: integer;
+  FileSize: Integer;
 
-  procedure FillRectToBitmapA(var Bitmap: TBitmap);
+  procedure FillRectToBitmapA(Bitmap: TBitmap);
+  var
+    C : TCanvas;
   begin
-    Bitmap.Canvas.Pen.Color := 0;
-    Bitmap.Canvas.Brush.Color := MakeDarken(ClWindow, 0.9);
-    Bitmap.Canvas.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
-    Bitmap.Canvas.Pen.Color := ClWindow;
+    C := Bitmap.Canvas;
+    C.Pen.Color := 0;
+    C.Brush.Color := MakeDarken(ClWindow, 0.9);
+    C.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
+    C.Pen.Color := ClWindow;
   end;
 
 begin

@@ -441,10 +441,10 @@ begin
   for I := 0 to DropFileTarget1.Files.Count - 1 do
   begin
     FInfoStr := '';
-    if FileExists((DropFileTarget1.Files[I])) then
+    if FileExistsSafe((DropFileTarget1.Files[I])) then
       UpdaterDB.AddFile((DropFileTarget1.Files[I]));
 
-    if Directoryexists((DropFileTarget1.Files[I])) then
+    if DirectoryExistsSafe((DropFileTarget1.Files[I])) then
       UpdaterDB.AddDirectory((DropFileTarget1.Files[I]), OnDirectorySearch);
 
     UpdaterDB.Execute;
@@ -752,9 +752,7 @@ begin
       if FImagePos > 5 then
         FImagePos := 0;
     end;
-
   end;
-
 end;
 
 procedure TUpdateDBForm.OnDirectorySearch(Owner: TObject; FileName: string;

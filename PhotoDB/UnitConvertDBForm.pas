@@ -124,8 +124,7 @@ procedure TFormConvertingDB.Execute(FileName: string);
 var
   DBVer: Integer;
 begin
-  if SplashThread <> nil then
-    SplashThread.Terminate;
+  CloseSplashWindow;
   FFileName := FileName;
   RadioButton1.Enabled := False; // TODO: !!! BDEInstalled;
   Edit2.Text := FFileName;

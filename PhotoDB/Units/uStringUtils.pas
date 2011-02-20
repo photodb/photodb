@@ -2,8 +2,9 @@ unit uStringUtils;
 
 interface
 
-uses Windows, SysUtils;
+uses Windows, Classes, SysUtils;
 
+procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
 function ConvertUniversalFloatToLocal(s: string): string;
 function PosExS(SubStr: string; const Str: string; index: integer = 1): Integer;
 function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer; overload;
@@ -13,6 +14,26 @@ var
   _MaxSearchPos : Integer;
 
 implementation
+
+procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
+var
+  I, P: Integer;
+  StrTemp: string;
+begin
+  P := 1;
+  List.Clear;
+  for I := 1 to Length(Str) do
+    if (Str[I] = SplitChar) or (I = Length(Str)) then
+    begin
+      if I = Length(Str) then
+        StrTemp := Copy(Str, P, I - P + 1)
+      else
+        StrTemp := Copy(Str, P, I - P);
+
+      List.Add(StrTemp);
+      P := I + 1;
+    end;
+end;
 
 function ConvertUniversalFloatToLocal(s: string): string;
 var

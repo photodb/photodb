@@ -50,17 +50,6 @@ begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
-  {  if UpdatingWorking then
-      Exit;
-    UpdatingWorking := True;
-    D := DBKernel.ReadDateTime('', 'LastUpdating', Now);
-    Sleep(5000);
-    if (Now - D < 7) and not FNeedsInformation then
-    begin
-      UpdatingWorking := False;
-      Exit;
-    end;     }
-
     try
       UpdateFullUrl := ResolveLanguageString(UpdateNotifyURL);
       UpdateText := DownloadFile(UpdateFullUrl);

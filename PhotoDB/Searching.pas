@@ -867,12 +867,16 @@ begin
     FilesToDrag.Clear;
     GetCursorPos(DBDragPoint);
     MenuInfo := GetCurrentPopUpMenuInfo(Item);
+    try
 
-    for I:=0 to MenuInfo.Count - 1 do
-      if MenuInfo[I].Selected then
-        if FileExistsSafe(MenuInfo[I].FileName) then
-          FilesToDrag.Add(MenuInfo[I].FileName);
+      for I:=0 to MenuInfo.Count - 1 do
+        if MenuInfo[I].Selected then
+          if FileExistsSafe(MenuInfo[I].FileName) then
+            FilesToDrag.Add(MenuInfo[I].FileName);
 
+    finally
+      F(MenuInfo);
+    end;
     if FilesToDrag.Count = 0 then
       DBCanDrag := False;
   end;
@@ -909,11 +913,15 @@ begin
   if ElvMain.Selection.First <> nil then
   begin
     MenuInfo := GetCurrentPopUpMenuInfo(ListViewSelected);
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
-    DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
-    Viewer.Execute(Sender, Info);
-    Viewer.Show;
+    try
+      if Viewer = nil then
+        Application.CreateForm(TViewer, Viewer);
+      DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
+      Viewer.Execute(Sender, Info);
+      Viewer.Show;
+    finally
+      F(MenuInfo);
+    end;
   end;
 end;
 
@@ -930,10 +938,14 @@ var
 begin
   Info := RecordsInfoNil;
   DBInfo := GetCurrentPopUpMenuInfo(nil);
-  DBPopupMenuInfoToRecordsInfo(DBInfo, Info);
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-  Viewer.Execute(Sender, Info);
+  try
+    DBPopupMenuInfoToRecordsInfo(DBInfo, Info);
+    if Viewer = nil then
+      Application.CreateForm(TViewer, Viewer);
+    Viewer.Execute(Sender, Info);
+  finally
+    F(DBInfo);
+  end;
 end;
 
 procedure TSearchForm.SaveClick(Sender: TObject);
@@ -3120,163 +3132,177 @@ var
   SelectQuery : TDataSet;
 begin
   SelectQuery := GetQuery;
- if Active then
+  try
+    if Active then
+      Memo2.PopupMenu := nil;
 
- Memo2.PopupMenu:=nil;
- if ListViewSelected=nil then
- if GetSelectionCount=0 then
- begin
-  HidePanelTimer.Enabled:=true;
-  Exit;
- end;
- HidePanelTimer.Enabled:=false;
- LockWindowUpdate(Handle);
- PropertyPanel.Show;
- SearchPanelB.Top:=PropertyPanel.Top-1;
- LockWindowUpdate(0);
- WorkQuery:=GetQuery;
- if (GetSelectionCount>1) then
- begin
-  SelectedInfo.One:=false;
-  SelectedInfo.Nil_:=false;
-  size:=0;
-  SetLength(SelectedInfo.Ids,0);
-  SetLength(ArDates,0);
-  SetLength(ArTimes,0);
-  SetLength(ArIsDates,0);
-  SetLength(ArIsTimes,0);
-  SetLength(ArInt,0);
-  ArComments := TStringList.Create;
-  KeyWordList := TStringList.Create;
-  ArGroups := TStringList.Create;
+    if ListViewSelected = nil then
+      if GetSelectionCount = 0 then
+      begin
+        HidePanelTimer.Enabled := True;
+        Exit;
+      end;
+    HidePanelTimer.Enabled := False;
+    BeginScreenUpdate(PropertyPanel.Handle);
+    try
+      PropertyPanel.Show;
+      SearchPanelB.Top := PropertyPanel.Top - 1;
+    finally
+      EndScreenUpdate(PropertyPanel.Handle, False);
+    end;
+    WorkQuery := GetQuery;
+    try
+      if (GetSelectionCount > 1) then
+      begin
+        SelectedInfo.One := False;
+        SelectedInfo.Nil_ := False;
+        Size := 0;
+        SetLength(SelectedInfo.Ids, 0);
+        SetLength(ArDates, 0);
+        SetLength(ArTimes, 0);
+        SetLength(ArIsDates, 0);
+        SetLength(ArIsTimes, 0);
+        SetLength(ArInt, 0);
+        ArComments := TStringList.Create;
+        KeyWordList := TStringList.Create;
+        ArGroups := TStringList.Create;
 
-  for i:=0 to ElvMain.Items.Count-1 do
-  if ElvMain.Items[i].Selected then
-  begin
-    SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[i]);
-   Size:=Size+SearchRecord.FileSize;
-   KeyWordList.Add(SearchRecord.KeyWords);
-   SetLength(SelectedInfo.Ids,Length(SelectedInfo.Ids)+1);
-   SelectedInfo.Ids[Length(SelectedInfo.Ids)-1]:=SearchRecord.ID;
-   SetLength(ArDates,Length(ArDates)+1);
-   ArDates[Length(ArDates)-1]:=SearchRecord.Date;
-   SetLength(ArTimes,Length(ArTimes)+1);
-   ArTimes[Length(ArTimes)-1]:=SearchRecord.Time;
+        for I := 0 to ElvMain.Items.Count - 1 do
+          if ElvMain.Items[I].Selected then
+          begin
+            SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
+            Size := Size + SearchRecord.FileSize;
+            KeyWordList.Add(SearchRecord.KeyWords);
+            SetLength(SelectedInfo.Ids, Length(SelectedInfo.Ids) + 1);
+            SelectedInfo.Ids[Length(SelectedInfo.Ids) - 1] := SearchRecord.ID;
+            SetLength(ArDates, Length(ArDates) + 1);
+            ArDates[Length(ArDates) - 1] := SearchRecord.Date;
+            SetLength(ArTimes, Length(ArTimes) + 1);
+            ArTimes[Length(ArTimes) - 1] := SearchRecord.Time;
 
-   SetLength(ArInt,Length(ArInt)+1);
-   ArInt[Length(ArInt)-1]:=SearchRecord.Rating;
-   ArComments.Add(SearchRecord.Comment);
+            SetLength(ArInt, Length(ArInt) + 1);
+            ArInt[Length(ArInt) - 1] := SearchRecord.Rating;
+            ArComments.Add(SearchRecord.Comment);
 
-   SetLength(ArIsDates,Length(ArIsDates)+1);
-   ArIsDates[Length(ArIsDates)-1]:=SearchRecord.IsDate;
-   SetLength(ArIsTimes,Length(ArIsTimes)+1);
-   ArIsTimes[Length(ArIsTimes)-1]:=SearchRecord.IsTime;
+            SetLength(ArIsDates, Length(ArIsDates) + 1);
+            ArIsDates[Length(ArIsDates) - 1] := SearchRecord.IsDate;
+            SetLength(ArIsTimes, Length(ArIsTimes) + 1);
+            ArIsTimes[Length(ArIsTimes) - 1] := SearchRecord.IsTime;
 
-   ArGroups.Add(SearchRecord.Groups);
+            ArGroups.Add(SearchRecord.Groups);
+          end;
+        BeginScreenUpdate(PropertyPanel.Handle);
+        try
+          SelectedInfo.CommonRating := MaxStatInt(ArInt);
+          RatingEdit.Rating := SelectedInfo.CommonRating;
+          RatingEdit.Islayered := True;
+          RatingEdit.Layered := 100;
+
+          CurrentItemInfo.ItemDate := MaxStatDate(ArDates);
+          CurrentItemInfo.ItemIsDate := MaxStatBool(ArIsDates);
+          SelectedInfo.Date := MaxStatDate(ArDates);
+          SelectedInfo.IsDate := MaxStatBool(ArIsDates);
+          PanelValueIsDateSets.Visible := IsVariousBool(ArIsDates) or IsVariousDate(ArDates);
+          DateTimePicker1.DateTime := SelectedInfo.Date;
+          IsDatePanel.Visible := not SelectedInfo.IsDate;
+          SelectedInfo.IsVariousDates := PanelValueIsDateSets.Visible;
+
+          CurrentItemInfo.ItemTime := MaxStatDate(TArDateTime(ArTimes));
+          CurrentItemInfo.ItemIsTime := MaxStatBool(ArIsTimes);
+          SelectedInfo.Time := MaxStatTime(ArTimes);
+          SelectedInfo.IsTime := MaxStatBool(ArIsTimes);
+          PanelValueIsTimeSets.Visible := IsVariousBool(ArIsTimes) or IsVariousDate(TArDateTime(ArTimes));
+          DateTimePicker4.DateTime := SelectedInfo.Time;
+          IsTimePanel.Visible := not SelectedInfo.IsTime;
+          SelectedInfo.IsVariousTimes := PanelValueIsTimeSets.Visible;
+
+          CommonKeyWords := GetCommonWordsA(KeyWordList);
+          SelectedInfo.CommonKeyWords := CommonKeyWords;
+          Label4.Caption := Format(L('Size: %s'), [SizeInText(Size)]);
+          Label2.Caption := L('Items') + ' = ' + Inttostr(GetSelectionCount);
+          Memo1.Lines.Text := CommonKeyWords;
+          SelectedInfo.IsVariousComments := IsVariousArStrings(ArComments);
+          if SelectedInfo.IsVariousComments then
+          begin
+            SelectedInfo.CommonComment := L('<Different comments>');
+            CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+            Memo2.PopupMenu := PopupMenu6;
+          end else
+          begin
+            SelectedInfo.CommonComment := ArComments[0];
+            CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+          end;
+          if SelectedInfo.IsVariousComments then
+          begin
+            Memo2.readonly := True;
+            Memo2.Cursor := CrHandPoint;
+          end;
+          Memo2.Text := SelectedInfo.CommonComment;
+          CurrentItemInfo.ItemGroups := GetCommonGroups(ArGroups);
+          SelectedInfo.Groups := CurrentItemInfo.ItemGroups;
+          FPropertyGroups := CurrentItemInfo.ItemGroups;
+          ReloadGroups;
+          Memo1Change(nil);
+        finally
+          EndScreenUpdate(PropertyPanel.Handle, True);
+        end;
+        FCurrentSelectedID := -1;
+      end else
+      begin
+        RatingEdit.Islayered := False;
+
+        Indent := 0;
+        if ElvMain.Selection.First <> nil then
+          Indent := ElvMain.Selection.First.Tag;
+
+        SetSQL(SelectQuery, 'SELECT * FROM $DB$ WHERE ID=' + Inttostr(Indent));
+        SelectQuery.Active := True;
+        BeginScreenUpdate(PropertyPanel.Handle);
+        try
+          Label2.Caption := Format(L('ID = %d'), [Indent]);
+          Label4.Caption := Format(L('Size = %s'), [SizeInText(SelectQuery.FieldByName('FileSize').Asinteger)]);
+          Memo1.Lines.Text := SelectQuery.FieldByName('KeyWords').Asstring;
+          Memo2.Lines.Text := SelectQuery.FieldByName('Comment').Asstring;
+          RatingEdit.Rating := SelectQuery.FieldByName('Rating').Asinteger;
+          CurrentItemInfo.ItemRating := RatingEdit.Rating;
+
+          ElvMain.Hint := SelectQuery.FieldByName('Comment').Asstring;
+          FCurrentSelectedID := SelectQuery.FieldByName('ID').AsInteger;
+          CurrentItemInfo.ItemKeyWords := SelectQuery.FieldByName('KeyWords').AsString;
+          CurrentItemInfo.ItemComment := SelectQuery.FieldByName('Comment').AsString;
+
+          DateTimePicker1.DateTime := SelectQuery.FieldByName('DateToAdd').AsDateTime;
+          CurrentItemInfo.ItemDate := SelectQuery.FieldByName('DateToAdd').AsDateTime;
+          CurrentItemInfo.ItemIsDate := SelectQuery.FieldByName('IsDate').AsBoolean;
+          SelectedInfo.IsDate := CurrentItemInfo.ItemIsDate;
+          IsDatePanel.Visible := not CurrentItemInfo.ItemIsDate;
+          PanelValueIsDateSets.Visible := False;
+
+          DateTimePicker4.DateTime := SelectQuery.FieldByName('aTime').AsDateTime;
+          CurrentItemInfo.ItemTime := SelectQuery.FieldByName('aTime').AsDateTime;
+          CurrentItemInfo.ItemIsTime := SelectQuery.FieldByName('IsTime').AsBoolean;
+          SelectedInfo.IsTime := CurrentItemInfo.ItemIsTime;
+          IsTimePanel.Visible := not CurrentItemInfo.ItemIsTime;
+          PanelValueIsTimeSets.Visible := False;
+
+          CurrentItemInfo.ItemGroups := SelectQuery.FieldByName('Groups').AsString;
+          FPropertyGroups := CurrentItemInfo.ItemGroups;
+          ReloadGroups;
+          Save.Enabled := False;
+          Memo2.Cursor := CrDefault;
+          Application.HintHidePause := 50 * Length(SelectQuery.FieldByName('Comment').AsString);
+          SelectQuery.Close;
+          Memo1Change(nil);
+        finally
+          EndScreenUpdate(PropertyPanel.Handle, True);
+        end;
+      end;
+    finally
+      FreeDS(WorkQuery);
+    end;
+  finally
+    FreeDS(SelectQuery);
   end;
-  lockwindowupdate(Handle);
-  SelectedInfo.CommonRating:=MaxStatInt(ArInt);
-  RatingEdit.Rating:=SelectedInfo.CommonRating;
-  RatingEdit.Islayered:=True;
-  RatingEdit.layered:=100;
-
-  CurrentItemInfo.ItemDate:=MaxStatDate(ArDates);
-  CurrentItemInfo.ItemIsDate:=MaxStatBool(ArIsDates);
-  SelectedInfo.Date:=MaxStatDate(ArDates);
-  SelectedInfo.IsDate:=MaxStatBool(ArIsDates);
-  PanelValueIsDateSets.Visible:=IsVariousBool(ArIsDates) or IsVariousDate(ArDates);
-  DateTimePicker1.DateTime:=SelectedInfo.Date;
-  IsDatePanel.Visible:=not SelectedInfo.IsDate;
-  SelectedInfo.IsVariousDates:=PanelValueIsDateSets.Visible;
-
-
-  CurrentItemInfo.ItemTime:=MaxStatDate(TArDateTime(ArTimes));
-  CurrentItemInfo.ItemIsTime:=MaxStatBool(ArIsTimes);
-  SelectedInfo.Time:=MaxStatTime(ArTimes);
-  SelectedInfo.IsTime:=MaxStatBool(ArIsTimes);
-  PanelValueIsTimeSets.Visible:=IsVariousBool(ArIsTimes) or IsVariousDate(TArDateTime(ArTimes));
-  DateTimePicker4.DateTime:=SelectedInfo.Time;
-  IsTimePanel.Visible:=not SelectedInfo.IsTime;
-  SelectedInfo.IsVariousTimes:=PanelValueIsTimeSets.Visible;
-
-  CommonKeyWords:=GetCommonWordsA(KeyWordList);
-  SelectedInfo.CommonKeyWords:=CommonKeyWords;
-  Label4.Caption:=Format(L('Size: %s'),[SizeInText(size)]);
-  Label2.Caption:=L('Items')+' = '+inttostr(GetSelectionCount);
-  Memo1.Lines.text:=CommonKeyWords;
-  SelectedInfo.IsVariousComments:=IsVariousArStrings(ArComments);
-  if SelectedInfo.IsVariousComments then
-  begin
-   SelectedInfo.CommonComment:=L('<Different comments>');
-   CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
-   Memo2.PopupMenu:=PopupMenu6;
-  end else
-  begin
-   SelectedInfo.CommonComment:=ArComments[0];
-   CurrentItemInfo.ItemComment:= SelectedInfo.CommonComment;
-  end;
-  if SelectedInfo.IsVariousComments then
-  begin
-   Memo2.ReadOnly:=true;
-   Memo2.Cursor:=CrHandPoint;
-  end;
-  Memo2.Text:=SelectedInfo.CommonComment;
-  CurrentItemInfo.ItemGroups:=GetCommonGroups(ArGroups);
-  SelectedInfo.Groups:=CurrentItemInfo.ItemGroups;
-  FPropertyGroups:=CurrentItemInfo.ItemGroups;
-  ReloadGroups;
-  Memo1Change(nil);
-  lockwindowupdate(0);
-  FCurrentSelectedID:=-1;
-  FreeDS(WorkQuery);
- end else begin
-  RatingEdit.Islayered:=false;
-
-  indent:=0;
-  if ElvMain.Selection.First<>nil then
-  indent:=ElvMain.Selection.First.Tag;
-
-  SetSQL(SelectQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(indent));
-  SelectQuery.active:=true;
-  lockwindowupdate(Handle);
-  Label2.Caption:=Format(L('ID = %d'),[indent]);
-  Label4.Caption:=Format(L('Size = %s'),[SizeInText(SelectQuery.FieldByName('FileSize').asinteger)]);
-  memo1.Lines.text:=SelectQuery.FieldByName('KeyWords').asstring;
-  memo2.Lines.text:=SelectQuery.FieldByName('Comment').asstring;
-  RatingEdit.Rating:=SelectQuery.FieldByName('Rating').asinteger;
-  CurrentItemInfo.ItemRating:=RatingEdit.Rating;
-
-  ElvMain.Hint := SelectQuery.FieldByName('Comment').asstring;
-  FCurrentSelectedID:=SelectQuery.FieldByName('ID').AsInteger;
-  CurrentItemInfo.ItemKeyWords:=SelectQuery.FieldByName('KeyWords').AsString;
-  CurrentItemInfo.ItemComment:=SelectQuery.FieldByName('Comment').AsString;
-
-  DateTimePicker1.DateTime:=SelectQuery.FieldByName('DateToAdd').AsDateTime;
-  CurrentItemInfo.ItemDate:=SelectQuery.FieldByName('DateToAdd').AsDateTime;
-  CurrentItemInfo.ItemIsDate:=SelectQuery.FieldByName('IsDate').AsBoolean;
-  SelectedInfo.IsDate:=CurrentItemInfo.ItemIsDate;
-  IsDatePanel.Visible:=not CurrentItemInfo.ItemIsDate;
-  PanelValueIsDateSets.Visible:=False;
-
-  DateTimePicker4.DateTime:=SelectQuery.FieldByName('aTime').AsDateTime;
-  CurrentItemInfo.ItemTime:=SelectQuery.FieldByName('aTime').AsDateTime;
-  CurrentItemInfo.ItemIsTime:=SelectQuery.FieldByName('IsTime').AsBoolean;
-  SelectedInfo.IsTime:=CurrentItemInfo.ItemIsTime;
-  IsTimePanel.Visible:=not CurrentItemInfo.ItemIsTime;
-  PanelValueIsTimeSets.Visible:=False;
-
-  CurrentItemInfo.ItemGroups:=SelectQuery.FieldByName('Groups').AsString;
-  FPropertyGroups:=CurrentItemInfo.ItemGroups;
-  ReloadGroups;
-  Save.Enabled:=false;
-  Memo2.Cursor:=CrDefault;
-  Application.HintHidePause:=50*length(SelectQuery.FieldByName('Comment').AsString);
-  SelectQuery.Close;
-  Memo1Change(nil);
-  lockwindowupdate(0);
-  FreeDS(WorkQuery);
- end;
- FreeDS(SelectQuery);
 end;
 
 procedure TSearchForm.SelectTimerTimer(Sender: TObject);

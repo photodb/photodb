@@ -53,7 +53,7 @@ type
     OnDirectoryAdded: TNotifyEvent;
     OnExecuting: TNotifyEvent;
     NoLimit: Boolean;
-    constructor Create(AutoCreateForm: Boolean = True);
+    constructor Create(OwnerForm: TDBForm = nil);
     destructor Destroy; override;
     function AddFile(FileName: string; Silent: Boolean = False): Boolean;
     function AddDirectory(Directory: string; OnFileFounded: TFileFoundedEvent): Boolean;
@@ -79,7 +79,8 @@ type
 
 implementation
 
-uses UnitUpdateDBThread, DBScriptFunctions,
+uses
+  UnitUpdateDBThread, DBScriptFunctions,
   FormManegerUnit, UnitUpdateDB, ProgressActionUnit;
 
 { TUpdaterDB }
@@ -145,8 +146,9 @@ begin
   Result := True;
 end;
 
-constructor TUpdaterDB.Create(AutoCreateForm : boolean = true);
+constructor TUpdaterDB.Create(OwnerForm: TDBForm = nil);
 begin
+  FForm := OwnerForm;
   FFilesInfo := TDBPopupMenuInfo.Create;
   ScriptProcessString := Include('Scripts\Adding_AddFile.dbini');
   FProcessScript := TScript.Create('');
@@ -165,7 +167,7 @@ begin
   FmaxSize := 0;
   FPause := False;
   FAutoAnswer := Result_invalid;
-  if AutoCreateForm then
+  if OwnerForm = nil then
   begin
     Application.CreateForm(TUpdateDBForm, FForm);
     (FForm as TUpdateDBForm).SetAddObject(Self);

@@ -589,7 +589,7 @@ object FormSelectDB: TFormSelectDB
   end
   object NextButton: TButton
     Left = 431
-    Top = 415
+    Top = 416
     Width = 91
     Height = 25
     Caption = 'Next'
@@ -1735,7 +1735,7 @@ object FormSelectDB: TFormSelectDB
     Left = 0
     Top = 112
     Width = 609
-    Height = 305
+    Height = 298
     BevelOuter = bvNone
     TabOrder = 8
     Visible = False

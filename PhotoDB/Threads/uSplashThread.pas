@@ -19,10 +19,8 @@ type
     procedure Execute; override;
   end;
 
-var
-  SplashThread : TThread = nil;
-
 procedure SetSplashProgress(ProgressValue : Byte);
+procedure CloseSplashWindow;
 
 implementation
 
@@ -38,7 +36,14 @@ var
   hSplashProgress : Byte = 0;
   IsFirstDraw : Boolean = True;
   MouseCaptured : Boolean = False;
-  LoadingImage : TBitmap = nil;
+  LoadingImage : TBitmap = nil;  
+  SplashThread : TThread = nil;
+               
+procedure CloseSplashWindow;
+begin
+  if SplashThread <> nil then
+    SplashThread.Terminate;
+end;
 
 procedure SetSplashProgress(ProgressValue : Byte);
 begin

@@ -12,6 +12,7 @@ type
 
 function CreateDirA(Dir: string): Boolean;
 function FileExistsSafe(FileName: string) : Boolean;
+function DirectoryExistsSafe(DirectoryPath: string) : Boolean;
 function GetAppDataDirectory: string;
 function ResolveShortcut(Wnd: HWND; ShortcutPath: string): string;
 function FileExistsEx(const FileName :TFileName) :Boolean;
@@ -79,6 +80,18 @@ begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     Result := FileExists(FileName);
+  finally
+    SetErrorMode(OldMode);
+  end;
+end;
+
+function DirectoryExistsSafe(DirectoryPath: string) : Boolean;
+var
+  OldMode : Cardinal;
+begin
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := DirectoryExists(DirectoryPath);
   finally
     SetErrorMode(OldMode);
   end;

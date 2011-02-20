@@ -318,7 +318,7 @@ end;
 
 procedure StopApplication;
 begin
-  SplashThread.Terminate;
+  CloseSplashWindow;
   DBTerminating := True;
   Halt;
 end;
@@ -354,7 +354,7 @@ begin
           StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
           cd.lpData := Buf;
 
-          SplashThread.Terminate;
+          CloseSplashWindow;
           if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
           begin
             DBTerminating := True;
@@ -432,15 +432,12 @@ begin
 
     // INITIALIZAING APPLICATION
     if GetDBViewMode then
-    begin
       FolderView := True;
-      // TODO: !!! UseScripts := False;
-    end;
 
-    SetSplashProgress(10);
+    SetSplashProgress(15);
     TW.i.Start('Application.Initialize');
     Application.Initialize;
-    SetSplashProgress(15);
+    SetSplashProgress(30);
 
     EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
@@ -455,38 +452,30 @@ begin
 
       EventLog('TDBKernel.Create');
       DBKernel := TDBKernel.Create;
-      TW.i.Start('DBKernel.LogIn');
+      TW.I.Start('DBKernel.LogIn');
       DBKernel.LogIn('', '', True);
 
-      TW.i.Start('SetSplashProgress 35');
-      SetSplashProgress(25);
+      TW.I.Start('SetSplashProgress 35');
+      SetSplashProgress(45);
 
       TLoad.Instance.StartDBKernelIconsThread;
       TLoad.Instance.StartDBSettingsThread;
 
-      SetSplashProgress(35);
+      SetSplashProgress(60);
 
-      TW.i.Start('TFormManager Create');
+      TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
       Application.ShowMainForm := False;
       // This is main form of application
 
-      TW.i.Start('SetSplashProgress 50');
-      SetSplashProgress(50);
-
-      TW.i.Start('Kernel');
-      // CHECK DEMO MODE ----------------------------------------------------
-      //EventLog(':DBKernel.InitRegModule');
-      //TW.i.Start('InitRegModule');
-      // TODO: LATER!!!! DBKernel.InitRegModule;
-      TW.i.Start('SetSplashProgress 70');
+      TW.I.Start('SetSplashProgress 70');
       SetSplashProgress(70);
     end;
 
     if DBInDebug or Emulation or GetDBViewMode then
       AExplorerFolders := TExplorerFolders.Create;
 
-    TW.i.Start('GetCIDA');
+    TW.I.Start('GetCIDA');
     SetSplashProgress(90);
 
     EventLog('...GROUPS CHECK + MENU...');
@@ -513,12 +502,11 @@ begin
             EventLog('Application terminated...');
             if ID_OK = MessageBoxDB(FormManager.Handle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
             begin
-              SplashThread.Terminate;
+              CloseSplashWindow;
               DBKernel.WriteBool('StartUp', 'Pack', False);
               Application.CreateForm(TCMDForm, CMDForm);
               CMDForm.PackPhotoTable;
-              CMDForm.Release;
-              CMDForm := nil;
+              R(CMDForm);
             end;
           end;
 
@@ -528,7 +516,7 @@ begin
       if GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp',
         'ConvertDB', False) then
       begin
-        SplashThread.Terminate;
+        CloseSplashWindow;
         EventLog('Converting...');
         DBKernel.WriteBool('StartUp', 'ConvertDB', False);
         ConvertDB(dbname);
@@ -537,72 +525,66 @@ begin
     if not DBTerminating then
       if GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp', 'Pack', False) then
       begin
-        SplashThread.Terminate;
+        CloseSplashWindow;
         EventLog('Packing...');
         DBKernel.WriteBool('StartUp', 'Pack', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.PackPhotoTable;
-        CMDForm.Release;
-        CMDForm := nil;
+        R(CMDForm);
       end;
 
     if not DBTerminating then
       if GetParamStrDBBool('/BACKUP') then
       begin
-        SplashThread.Terminate;
+        CloseSplashWindow;
         EventLog('BackUp...');
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.BackUpTable;
-        CMDForm.Release;
-        CMDForm := nil;
+        R(CMDForm);
       end;
 
     if not DBTerminating then
       if GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp', 'RecreateIDEx', False) then
       begin
-        SplashThread.Terminate;
+        CloseSplashWindow;
         EventLog('Recreating thumbs in Table...');
         DBKernel.WriteBool('StartUp', 'RecreateIDEx', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.RecreateImThInPhotoTable;
-        CMDForm.Release;
-        CMDForm := nil;
+        R(CMDForm);
       end;
 
     if not DBTerminating then
       if GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp', 'ScanBadLinks', False) then
       begin
-        SplashThread.Terminate;
+        CloseSplashWindow;
         EventLog('Show Bad Links in table...');
         DBKernel.WriteBool('StartUp', 'ScanBadLinks', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.ShowBadLinks;
-        CMDForm.Release;
-        CMDForm := nil;
+        R(CMDForm);
       end;
 
     if not DBTerminating then
       if GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp', 'OptimizeDublicates', False) then
       begin
-        SplashThread.Terminate;
+        CloseSplashWindow;
         EventLog('Optimizingdublicates in table...');
         DBKernel.WriteBool('StartUp', 'OptimizeDublicates', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.OptimizeDublicates;
-        CMDForm.Release;
-        CMDForm := nil;
+        R(CMDForm);
       end;
 
     if not DBTerminating then
       if DBKernel.ReadBool('StartUp', 'Restore', False) then
       begin
-        SplashThread.Terminate;
+        CloseSplashWindow;
         DBKernel.WriteBool('StartUp', 'Restore', False);
         EventLog('Restoring Table...' + DBKernel.ReadString('StartUp', 'RestoreFile'));
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.RestoreTable(DBKernel.ReadString('StartUp', 'RestoreFile'));
-        CMDForm.Release;
-        CMDForm := nil;
+        R(CMDForm);
       end;
 
     TW.i.Start('LoadingAboutForm.FREE');
@@ -622,13 +604,13 @@ begin
 
     // THEMES AND RUNNING DB ---------------------------------------------
 
-    TW.i.Start('THEMES AND RUNNING DB');
+    TW.I.Start('THEMES AND RUNNING DB');
 
     If not DBTerminating then
     begin
       EventLog('Run manager...');
       if not GetParamStrDBBool('/NoFullRun') then
-        FormManager.Run(SplashThread);
+        FormManager.Run;
 
       if not DBTerminating then
       begin

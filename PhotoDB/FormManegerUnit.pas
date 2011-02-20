@@ -26,10 +26,8 @@ type
     WasIde : Boolean;
     ExitAppl : Boolean;
     LockCleaning : Boolean;
-    EnteringCodeNeeded : Boolean;
     procedure ExitApplication;
     procedure WMCopyData(var Msg : TWMCopyData); message WM_COPYDATA;
-    procedure InitializeActivation;
     function GetTimeLimitMessage: string;
   public
     constructor Create(AOwner : TComponent);  override;
@@ -38,7 +36,7 @@ type
     procedure UnRegisterMainForm(Value: TForm);
     procedure RegisterActionCanTerminating(Value: TTemtinatedAction);
     procedure UnRegisterActionCanTerminating(Value: TTemtinatedAction);
-    procedure Run(LoadingThread : TThread);
+    procedure Run;
     procedure Close(Form : TForm);
     function MainFormsCount : Integer;
     function IsMainForms(Form : TForm) : Boolean;
@@ -99,66 +97,7 @@ end;
 
 { TFormManager }
 
-procedure TFormManager.InitializeActivation;
-var
-  Reg: TBDRegistry;
-  Days: Integer;
-  D1: Tdatetime;
-
-begin
-  if DBKernel.ProgramInDemoMode and not DBInDebug then
-  begin
-    try
-      Reg := TBDRegistry.Create(REGISTRY_CLASSES);
-      Reg.OpenKey('CLSID\{F70C45B3-1D2B-4FC3-829F-16E5AF6937EB}\', True);
-      D1 := Now;
-      if Reg.ValueExists('VersionTimeA') then
-      begin
-        if Reg.ReadBool('VersionTimeA') then
-        begin
-          Reg.Free;
-          EnteringCodeNeeded := True;
-          MessageBoxDB(FormManager.Handle, GetTimeLimitMessage, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
-          Exit;
-        end
-      end
-      else if Reg.ValueExists('VersionTime') then
-        D1 := Reg.Readdatetime('VersionTime')
-      else
-      begin
-        Reg.Writedatetime('VersionTime', Now);
-        D1 := Now;
-      end;
-      Days := Round(Now - D1);
-      if Days < 0 then
-      begin
-        Reg.WriteBool('VersionTimeA', True);
-        Reg.Free;
-        EnteringCodeNeeded := True;
-        MessageBoxDB(FormManager.Handle, GetTimeLimitMessage, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
-        Exit;
-      end;
-      if (Days > DemoDays) and not DBInDebug then
-      begin
-        Reg.WriteBool('VersionTimeA', True);
-        Reg.Free;
-        EnteringCodeNeeded := True;
-        MessageBoxDB(FormManager.Handle, GetTimeLimitMessage, L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
-        Exit;
-      end;
-      Reg.Free;
-    except
-      on E: Exception do
-      begin
-        MessageBoxDB(FormManager.Handle, Format(L('Unhandled error: %s'), [E.message]), L('Error'), TD_BUTTON_OK,
-          TD_ICON_INFORMATION);
-        Exit;
-      end;
-    end;
-  end;
-end;
-
-procedure TFormManager.Run(LoadingThread : TThread);
+procedure TFormManager.Run;
 var
   Directory, S: string;
   ParamStr1, ParamStr2: string;
@@ -166,12 +105,6 @@ var
   IDList: TArInteger;
   FileList: TArStrings;
   I: Integer;
-
-  procedure CloseLoadingForm;
-  begin
-    if LoadingThread <> nil then
-      LoadingThread.Terminate;
-  end;
 
   function IsFile(S: string): Boolean;
   var
@@ -234,7 +167,7 @@ begin
               NewSearch.DoSearchNow(nil);
             end;
           end;
-          CloseLoadingForm;
+          CloseSplashWindow;
           NewSearch.Show;
         end else
         begin
@@ -245,7 +178,7 @@ begin
           TW.I.Start('ExecuteDirectoryWithFileOnThread');
           Viewer.ExecuteDirectoryWithFileOnThread(ParamStr1);
           TW.I.Start('ActivateApplication');
-          CloseLoadingForm;
+          CloseSplashWindow;
           Viewer.Show;
         end;
       end else
@@ -260,7 +193,7 @@ begin
               SetPath(DBKernel.ReadString('Options', 'SpecialStartUpFolder'))
             else
               SetNewPathW(GetCurrentPathW, False);
-            CloseLoadingForm;
+            CloseSplashWindow;
             Show;
           end;
         end else
@@ -268,7 +201,7 @@ begin
           TW.I.Start('SearchManager.NewSearch');
           NewSearch := SearchManager.NewSearch;
           Application.Restore;
-          CloseLoadingForm;
+          CloseSplashWindow;
           NewSearch.Show;
         end;
       end;
@@ -279,7 +212,7 @@ begin
         with ExplorerManager.NewExplorer(False) do
         begin
           SetPath(Directory);
-          CloseLoadingForm;
+          CloseSplashWindow;
           Show;
         end;
       end else
@@ -287,8 +220,8 @@ begin
         Application.Restore;
         with SearchManager.NewSearch do
         begin
+          CloseSplashWindow;
           Show;
-          CloseLoadingForm;
         end;
       end;
     end;
@@ -432,31 +365,23 @@ begin
     if (FCheckCount = 50) and not FolderView then //after 5 sec.
     begin
 
-    {  if not DBTerminating then
-        if not FolderView then
-          if KernelHandle = 0 then
-          begin
-            EventLog('KernelHandle IS 0 -> exit');
-            MessageBoxDB(GetActiveFormHandle, L('Unable to load "Kernel.dll" library!'),
-              L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-            Application.Terminate;
-          end;
-                   }
       {$IFDEF LICENCE}
       EventLog('Verifyng....');
 
       TLoad.Instance.RequaredCRCCheck;
       KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
-      @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
-      if not Initaproc(PChar(Application.ExeName)) then
-      begin
-        if SplashThread <> nil then
-          SplashThread.Terminate;
-        MessageBoxDB(GetActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-        DBTerminating := True;
-        Application.Terminate;
+      try
+        @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
+        if not Initaproc(PChar(Application.ExeName)) then
+        begin
+          CloseSplashWindow;
+          MessageBoxDB(GetActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+          DBTerminating := True;
+          Application.Terminate;
+        end;
+      finally
+        FreeLibrary(KernelHandle);
       end;
-      FreeLibrary(KernelHandle);
       {$ENDIF}
     end;
     if (FCheckCount = 100) then //after 10 sec. check for updates
@@ -488,21 +413,21 @@ end;
 procedure TFormManager.RegisterActionCanTerminating(
   Value: TTemtinatedAction);
 var
-  i : integer;
-  b : boolean;
+  I: Integer;
+  B: Boolean;
 begin
- b:=false;
- For i:=0 to Length(FTemtinatedActions)-1 do
- if FTemtinatedActions[i].Owner=Value.Owner then
- begin
-  b:=true;
-  break;
- end;
- If not b then
- begin
-  SetLength(FTemtinatedActions,Length(FTemtinatedActions)+1);
-  FTemtinatedActions[Length(FTemtinatedActions)-1]:=Value;
- end;
+  B := False;
+  for I := 0 to Length(FTemtinatedActions) - 1 do
+    if FTemtinatedActions[I].Owner = Value.Owner then
+    begin
+      B := True;
+      Break;
+    end;
+  if not B then
+  begin
+    SetLength(FTemtinatedActions, Length(FTemtinatedActions) + 1);
+    FTemtinatedActions[Length(FTemtinatedActions) - 1] := Value;
+  end;
 end;
 
 procedure TFormManager.UnRegisterActionCanTerminating(
@@ -545,80 +470,72 @@ begin
 end;
 
 procedure TFormManager.Load;
+var
+  DBFile: TPhotoDBFile;
+  DBVersion: Integer;
 begin
   TW.I.Start('FM -> Load');
- Caption := DBID;
- CanCheckViewerInMainForms:=false;
- LockCleaning:=true;
- EnteringCodeNeeded := false;
- try
-  TW.I.Start('FM -> InitializeDolphinDB');
-  if not FolderView then
-  InitializeActivation else
-  begin
-   dbname := ExtractFilePath(Application.ExeName)+'FolderDB.photodb';
+  Caption := DBID;
+  CanCheckViewerInMainForms := False;
+  LockCleaning := True;
+  try
 
-   if FileExistsSafe(ExtractFilePath(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb') then
-   dbname:=ExtractFilePath(ParamStr(0))+AnsiLowerCase(GetFileNameWithoutExt(paramStr(0)))+'.photodb';
-  end;
- except
-  on e : Exception do EventLog(':TFormManager::FormCreate() throw exception: '+e.Message);
- end;
- if DBTerminating then
-   TimerCloseHandle := SetTimer(0, TIMER_CLOSE, 1000, @TimerProc);
-
- If not DBTerminating then
- begin
-
- // DBVersion:=DBKernel.TestDBEx(dbname,true);
-
-{  if DBVersion<0 then
-  begin
-   MessageBoxDB(Handle,L('MES_DB_FILE_NOT_FOUND_ERROR'),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
-
-   DBFile:=DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
-   if DBKernel.TestDB(DBFile.FileName) then
-   DBKernel.AddDB(DBFile._Name,DBFile.FileName,DBFile.Icon);
-   DBKernel.SetDataBase(DBFile.FileName);
-
-   DBVersion:=DBKernel.TestDBEx(dbname,true);
-   if not DBKernel.ValidDBVersion(dbname,DBVersion) then
-   Halt;
-  end else  }
-  begin
-  { if not DBKernel.ValidDBVersion(dbname,DBVersion) then
-   begin
-    ConvertDB(dbname);
-    if not DBKernel.TestDB(dbname,true) then Halt;
-   end else }
-   begin
-    if DBkernel.ReadboolW('DBCheckType',ExtractFileName(dbname),true)=true then
-    begin
-     //TODO: ???
-     {if GetDBType=DB_TYPE_BDE then
-     ConvertDB(dbname);}
-     DBkernel.WriteBoolW('DBCheckType',ExtractFileName(dbname),false);
-    end;
-    //checking RecordCount
-    if DBkernel.ReadboolW('DBCheck',ExtractFileName(dbname),true)=true then
-    begin
-     DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
-     if CommonDBSupport.GetRecordsCount(dbname)=0 then
-     begin
-      if SplashThread <> nil then
-        SplashThread.Terminate;
+    try
+      TW.I.Start('FM -> InitializeDolphinDB');
+      if FolderView then
       begin
-        ImportImages(dbname);
+        Dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
+
+        if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
+          Dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
       end;
-     end else
-     begin
-      DBkernel.WriteBoolW('DBCheck',ExtractFileName(dbname),false);
-     end;
+    except
+      on E: Exception do
+        EventLog(':TFormManager::FormCreate() throw exception: ' + E.message);
     end;
-   end;
+    if DBTerminating then
+      TimerCloseHandle := SetTimer(0, TIMER_CLOSE, 1000, @TimerProc);
+
+    if not DBTerminating then
+    begin
+
+      if not FileExistsSafe(Dbname) then
+      begin
+        CloseSplashWindow;
+        DBFile := DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
+        try
+          if DBKernel.TestDB(DBFile.FileName) then
+            DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
+          DBKernel.SetDataBase(DBFile.FileName);
+
+          DBVersion := DBKernel.TestDBEx(dbname, True);
+          if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+            Application.Terminate;
+
+        finally
+          F(DBFile);
+        end;
+      end;
+
+      // checking RecordCount
+      if DBkernel.ReadboolW('DBCheck', ExtractFileName(dbname), True) = True then
+      begin
+        DBkernel.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
+        if CommonDBSupport.GetRecordsCount(Dbname) = 0 then
+        begin
+          CloseSplashWindow;
+          ImportImages(dbname);
+        end else
+        begin
+          DBkernel.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
+        end;
+      end;
+    end;
+
+  finally
+    LockCleaning := False;
   end;
-  LockCleaning:=false;
- end;
+
   TW.I.Start('FM -> HidefromTaskBar');
   HidefromTaskBar(Application.Handle);
 end;

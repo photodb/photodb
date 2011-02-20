@@ -8,7 +8,7 @@ uses
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
-  uTranslate, ActiveX;
+  uTranslate, ActiveX, CCR.Exif.JPEGUtils;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -114,9 +114,9 @@ begin
   FInfo := Info; //Copy pointer to self
 
   FOnDone := OnDone;
-  fTerminating := Terminating;
-  fPause := Pause;
-  fAutoAnswer := AutoAnswer;
+  FTerminating := Terminating;
+  FPause := Pause;
+  FAutoAnswer := AutoAnswer;
   FSender := Sender;
   FNoLimit := NoLimit;
   FUseFileNameScaning:=UseFileNameScaning;
@@ -124,7 +124,8 @@ end;
 
 procedure UpdateDBThread.DoOnDone;
 begin
-  if Assigned(FOnDone) then FOnDone(Self);
+  if Assigned(FOnDone) then
+    FOnDone(Self);
 end;
 
 function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh, KeyWords, Comment, Password: string;
@@ -161,10 +162,13 @@ begin
     try
       Date := 0;
       try
-        ExifData.LoadFromJPEG(Path);
-        Date := DateOf(ExifData.DateTime);
-        Time := TimeOf(ExifData.DateTime);
-        Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
+        if HasJPEGHeader(Path) then
+        begin
+          ExifData.LoadFromJPEG(Path);
+          Date := DateOf(ExifData.DateTime);
+          Time := TimeOf(ExifData.DateTime);
+          Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
+        end;
       except
         on e : Exception do
           Eventlog('Reading EXIF failed: ' + e.Message);

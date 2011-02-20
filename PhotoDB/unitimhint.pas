@@ -145,9 +145,9 @@ begin
   FillTransparentColor(FFormBuffer, clBlack, 0);
   DrawRoundGradientVert(FFormBuffer, Rect(0, 0, Width, Height),
     clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 220);
-  Bitmap := TBitmap.Create;
-
   TextHeight := Canvas.TextHeight('Iy');
+
+  Bitmap := TBitmap.Create;
   try
     DrawShadowToImage(Bitmap, ImageBuffer);
     DrawImageEx32(FFormBuffer, Bitmap, 5, 5);
@@ -170,7 +170,7 @@ begin
     DrawText32Bit(FFormBuffer, SImageSize, Font, R, 0);
     RenderForm(Self, FFormBuffer, FAlphaBlend);
   finally
-    Bitmap.Free;
+    F(Bitmap);
   end;
 
 end;

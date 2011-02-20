@@ -168,7 +168,6 @@ type
   end;
 
 var
-  DBName: string;
   HelpNO: Integer = 0;
   HelpActivationNO: Integer = 0;
   FExtImagesInImageList: Integer;

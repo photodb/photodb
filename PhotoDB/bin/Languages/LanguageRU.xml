@@ -914,7 +914,7 @@
 	<translate name="Unable to copy files to the final location! Check if there are write permissions to the specified directory!" value="Невозможно скопировать файлы в конечное размещение! Проверьте, имеются ли права записи в указанную директорию!" />
 	<translate name="Unable to delete original files! Check if you have right to delete the files. Please try again later manually delete these files." value="Не удалось удалить оригинальные файлы! Проверьте, имеете ли Вы право на удаление файлов. Попробуйте позже вручную удалить эти файлы." />
   </scope>
-  <scope name="CD mapping">
+  <scope name="CDMapper">
     <translate name="CD mapping" value="Привязка дисков" />
 	<translate name="In this window you can manage your removable disks with photos. To connect a drive - select the drive or select the file &quot;%s&quot; in the file system" value="В этом окне вы можете управлять съемными диски с фотографиями. Чтобы подключить диск - выберите этот диск или выберите файл &quot;%s&quot; в файловой системе" />
 	<translate name="ID" value="ID" />

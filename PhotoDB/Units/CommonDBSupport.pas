@@ -556,6 +556,9 @@ var
   FQuery: TDataSet;
 begin
   Result := GetDefaultImageDBOptions;
+  if TableName = '' then
+     Exit;
+
   FQuery := GetQuery(TableName, True);
   try
     SQL := 'SELECT * FROM DBSettings';

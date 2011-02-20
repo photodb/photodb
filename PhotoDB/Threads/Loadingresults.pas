@@ -1207,11 +1207,13 @@ begin
           if GetTickCount - FLastPacketTime > MIN_PACKET_TIME then
           begin
             SynchronizeEx(SendDataPacketToForm);
+            FData.Clear;
             FLastPacketTime := GetTickCount;
           end;
           FWorkQuery.Next;
         end;
         SynchronizeEx(SendDataPacketToForm);
+        FData.Clear;
       end;
 
       if FSearchParams.IsEstimate then
@@ -1231,7 +1233,6 @@ end;
 procedure SearchThread.SendDataPacketToForm;
 begin
   (ThreadForm as TSearchForm).LoadDataPacket(FData);
-  FData.Clear;
 end;
 
 procedure SearchThread.StartLoadingList;

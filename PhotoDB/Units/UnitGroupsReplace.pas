@@ -3,7 +3,7 @@ unit UnitGroupsReplace;
 interface
 
 uses UnitGroupsWork, Forms, SysUtils, Dialogs, Windows, UnitDBKernel,
-  uTranslate, uVistaFuncs, uShellIntegration, Dolphin_DB;
+  uTranslate, uVistaFuncs, uShellIntegration, Dolphin_DB, CommonDBSupport;
 
 procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW;
@@ -59,7 +59,7 @@ end;
 
 procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 begin
-  FilterGroupsW(Groups, OutRegGroups, InRegGroups, Actions, Dbname);
+  FilterGroupsW(Groups, OutRegGroups, InRegGroups, Actions, dbname);
 end;
 
 procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW;

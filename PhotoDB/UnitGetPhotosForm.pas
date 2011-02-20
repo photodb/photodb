@@ -380,18 +380,18 @@ begin
       Options.OpenFolder := CbOpenFolder.Checked;
       Options.AddFolder := CbAddProtosToDB.Checked;
       OptionsArray[LvMain.Selected.index] := Options;
-      GroupTag := TItemRecordOptions(LvMain.Items[LvMain.Selected.index].Data^).Tag;
+      GroupTag := TItemRecordOptions(LvMain.Items[LvMain.Selected.index].Data).Tag;
 
       // look index-down
       for I := LvMain.Selected.index downto 0 do
-        if TItemRecordOptions(LvMain.Items[I].Data^).Tag = GroupTag then
+        if TItemRecordOptions(LvMain.Items[I].Data).Tag = GroupTag then
           OptionsArray[I] := Options
         else
           Break;
 
       // look index-ip
       for I := LvMain.Selected.index to LvMain.Items.Count - 1 do
-        if TItemRecordOptions(LvMain.Items[I].Data^).Tag = GroupTag then
+        if TItemRecordOptions(LvMain.Items[I].Data).Tag = GroupTag then
           OptionsArray[I] := Options
         else
           Break;
@@ -444,7 +444,7 @@ begin
     // EXTENDED LOADING FILES
     for I := 0 to LvMain.Items.Count - 1 do
     begin
-      ItemOptions := TItemRecordOptions(LvMain.Items[I].Data^);
+      ItemOptions := TItemRecordOptions(LvMain.Items[I].Data);
       if ItemOptions.Options = DIRECTORY_OPTION_DATE_EXCLUDE then
         Continue;
       Options := OptionsArray[I];
@@ -460,8 +460,8 @@ begin
       end;
       Files := TStringList.Create;
       try
-        Date := TItemRecordOptions(LvMain.Items[I].Data^).Date;
-        TItemRecordOptions(LvMain.Items[I].Data^).Tag := -1;
+        Date := TItemRecordOptions(LvMain.Items[I].Data).Date;
+        TItemRecordOptions(LvMain.Items[I].Data).Tag := -1;
         LvMain.Refresh;
         for J := 0 to Length(FDataList) - 1 do
           if FDataList[J].Date = Date then
@@ -830,7 +830,7 @@ begin
     MergeUp1.Visible := MoveUp1.Visible;
     MergeDown1.Visible := MoveDown1.Visible;
 
-    case TItemRecordOptions(Item.Data^).Options of
+    case TItemRecordOptions(Item.Data).Options of
       DIRECTORY_OPTION_DATE_SINGLE:
         SimpleCopy1.default := True;
       DIRECTORY_OPTION_DATE_WITH_UP:
@@ -847,7 +847,7 @@ end;
 procedure TGetToPersonalFolderForm.SimpleCopy1Click(Sender: TObject);
 begin
   FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_SINGLE;
-  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_SINGLE;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data).Options := DIRECTORY_OPTION_DATE_SINGLE;
   RecountGroups;
   LvMain.Refresh;
 end;
@@ -855,7 +855,7 @@ end;
 procedure TGetToPersonalFolderForm.MergeUp1Click(Sender: TObject);
 begin
   FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_WITH_UP;
-  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_WITH_UP;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data).Options := DIRECTORY_OPTION_DATE_WITH_UP;
   OptionsArray[PmListView.Tag] := OptionsArray[PmListView.Tag - 1];
   RecountGroups;
   LvMain.Refresh;
@@ -864,7 +864,7 @@ end;
 procedure TGetToPersonalFolderForm.MergeDown1Click(Sender: TObject);
 begin
   FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_WITH_DOWN;
-  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_WITH_DOWN;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data).Options := DIRECTORY_OPTION_DATE_WITH_DOWN;
   OptionsArray[PmListView.Tag] := OptionsArray[PmListView.Tag + 1];
   RecountGroups;
   LvMain.Refresh;
@@ -873,7 +873,7 @@ end;
 procedure TGetToPersonalFolderForm.DontCopy1Click(Sender: TObject);
 begin
   FDataList[PmListView.Tag].Options := DIRECTORY_OPTION_DATE_EXCLUDE;
-  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Options := DIRECTORY_OPTION_DATE_EXCLUDE;
+  TItemRecordOptions(LvMain.Items[PmListView.Tag].Data).Options := DIRECTORY_OPTION_DATE_EXCLUDE;
   RecountGroups;
   LvMain.Refresh;
 end;
@@ -887,12 +887,12 @@ begin
   LastGroup := False;
   for I := 0 to LvMain.Items.Count - 2 do
   begin
-    CurrentRecord := TItemRecordOptions(LvMain.Items[I].Data^);
-    NextRecord := TItemRecordOptions(LvMain.Items[I + 1].Data^);
+    CurrentRecord := TItemRecordOptions(LvMain.Items[I].Data);
+    NextRecord := TItemRecordOptions(LvMain.Items[I + 1].Data);
     if LastGroup then
-      TItemRecordOptions(LvMain.Items[I].Data^).Tag := 0
+      TItemRecordOptions(LvMain.Items[I].Data).Tag := 0
     else
-      TItemRecordOptions(LvMain.Items[I].Data^).Tag := 1;
+      TItemRecordOptions(LvMain.Items[I].Data).Tag := 1;
     if (CurrentRecord.Options = DIRECTORY_OPTION_DATE_WITH_DOWN) and
       (NextRecord.Options = DIRECTORY_OPTION_DATE_EXCLUDE) then
     begin
@@ -924,19 +924,19 @@ begin
   I := LvMain.Items.Count - 1;
   if I > -1 then
   begin
-    CurrentRecord := TItemRecordOptions(LvMain.Items[I].Data^);
+    CurrentRecord := TItemRecordOptions(LvMain.Items[I].Data);
     if CurrentRecord.Options <> DIRECTORY_OPTION_DATE_WITH_UP then
     begin
       if LastGroup then
-        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 0
+        TItemRecordOptions(LvMain.Items[I].Data).Tag := 0
       else
-        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 1;
+        TItemRecordOptions(LvMain.Items[I].Data).Tag := 1;
     end else
     begin
       if LastGroup then
-        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 1
+        TItemRecordOptions(LvMain.Items[I].Data).Tag := 1
       else
-        TItemRecordOptions(LvMain.Items[I].Data^).Tag := 0;
+        TItemRecordOptions(LvMain.Items[I].Data).Tag := 0;
     end;
   end else
   begin
@@ -1015,7 +1015,7 @@ begin
   Info := RecordsInfoNil;
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Date := TItemRecordOptions(LvMain.Items[PmListView.Tag].Data^).Date;
+  Date := TItemRecordOptions(LvMain.Items[PmListView.Tag].Data).Date;
   QuickSort(FDataList, Length(FDataList));
   for I := 0 to Length(FDataList) - 1 do
   begin

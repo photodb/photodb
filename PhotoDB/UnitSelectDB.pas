@@ -204,6 +204,7 @@ begin
     CheckBox1.Caption := L('Use as default collection');
     CheckBox2.Caption := L('Use as default collection');
     GroupBox3.Caption := L('Select an file');
+    Label8.Caption := L('File name') + ':';
     Label9.Caption := L('File name') + ':';
     Label11.Caption := L('DB Type') + ':';
     Label14.Caption := L('Icon preview') + ':';
@@ -821,7 +822,11 @@ end;
 
 function TFormSelectDB.GetResultDB: TPhotoDBFile;
 begin
-  Result := FDBFile;
+  Result := TPhotoDBFile.Create;
+  Result.Name := FDBFile.Name;
+  Result.Icon := FDBFile.Icon;
+  Result.FileName := FDBFile.FileName;
+  Result.FileType := FDBFile.FileType;
 end;
 
 procedure TFormSelectDB.SetOptions(Options: Integer);

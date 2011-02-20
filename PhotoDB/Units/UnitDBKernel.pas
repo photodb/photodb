@@ -9,10 +9,10 @@ uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
   uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,
-  uRuntime, uDBBaseTypes;
+  uRuntime, uDBBaseTypes, uStringUtils;
 
 type
-  TCharObject = class (TObject)
+  TCharObject = class(TObject)
   private
     FChar: Char;
     procedure SetChar(const Value: Char);
@@ -22,13 +22,15 @@ type
     property Char_: Char read FChar write SetChar;
   end;
 
-type DBChangesIDEvent = Procedure(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues)  of object;
+type
+  DBChangesIDEvent = procedure(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
 
-type DBEventsIDArray = record
- Sender : TObject;
- IDs : integer;
- DBChangeIDArrayesEvents : DBChangesIDEvent;
-end;
+type
+  DBEventsIDArray = record
+    Sender: TObject;
+    IDs: Integer;
+    DBChangeIDArrayesEvents: DBChangesIDEvent;
+  end;
 
 type
   TUserRights = record
@@ -106,25 +108,23 @@ type TDBKernel = class(TObject)
     procedure WriteDateTime(Key, name: string; Value: TDateTime);
     function ReadKeys(Key: string): TStrings;
     function ReadValues(Key: string): TStrings;
-    function ReadBool(Key, name: string; default: Boolean): Boolean;
-    function ReadRealBool(Key, name: string; default: Boolean): Boolean;
-    function ReadboolW(Key, name: string; default: Boolean): Boolean;
-    function ReadInteger(Key, name: string; default: Integer): Integer;
-    function ReadString(Key, name: string): string;
-    function ReadStringW(Key, name: string): string;
-    function ReadDateTime(Key, name: string; default: TdateTime): TDateTime;
+    function ReadBool(Key, Name: string; Default: Boolean): Boolean;
+    function ReadRealBool(Key, Name: string; Default: Boolean): Boolean;
+    function ReadboolW(Key, Name: string; Default: Boolean): Boolean;
+    function ReadInteger(Key, Name: string; Default: Integer): Integer;
+    function ReadString(Key, Name: string): string;
+    function ReadStringW(Key, Name: string): string;
+    function ReadDateTime(Key, Name: string; Default: TdateTime): TDateTime;
     procedure BackUpTable;
     function LogIn(UserName, Password: string; AutoLogin: Boolean): Integer;
     function CreateDBbyName(FileName: string): Integer;
     function GetDataBase: string;
     function GetDataBaseName: string;
-    procedure SetDataBase(DBname_: string);
+    procedure SetDataBase(DatabaseFileName: string);
     procedure SetActivateKey(AName, AKey: string);
     function ReadActivateKey: string;
     function GetDemoMode: Boolean;
     function ReadRegName: string;
-//    procedure RegisterForm(Form: TForm);
-//    procedure UnRegisterForm(Form: TForm);
     function GetTemporaryFolder: string;
     function ApplicationCode: string;
     procedure SaveApplicationCode(Key: string);
@@ -169,7 +169,7 @@ function Chartoint(Ch: Char): Integer;
 
 implementation
 
-uses {Dolphin_db, }UnitCrypting, CommonDBSupport,
+uses UnitCrypting, CommonDBSupport,
   UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
   UnitBackUpTableInCMD, UnitCDMappingSupport;
 
@@ -193,59 +193,55 @@ begin
 end;
 
 function TDBKernel.CreateDBbyName(FileName: string): integer;
-var
-  f : file;
 begin
- result:=0;
- CreateDirA(ExtractFileDir(FileName));
- try
-  if FileExists(FileName) then
-  begin
-   System.Assign(f,FileName);
-   System.Erase(f);
+  Result := 0;
+  CreateDirA(ExtractFileDir(FileName));
+  try
+    if FileExistsSafe(FileName) then
+      DeleteFile(FileName);
+  except
+    on E: Exception do
+    begin
+      EventLog(':TDBKernel::CreateDBbyName() throw exception: ' + E.message);
+      Exit;
+    end;
   end;
- except
-  on e : Exception do
+  if FileExistsSafe(FileName) then
   begin
-   EventLog(':TDBKernel::CreateDBbyName() throw exception: '+e.Message);
-   Exit;
+    Result := 1;
+    Exit;
   end;
- end;
- if FileExists(FileName) then
- begin
-  Result:=1;
-  exit;
- end;
- Result:=1;
- if GetDBType(FileName)=DB_TYPE_MDB then
- begin
-  if ADOCreateImageTable(FileName) then result:=0;
-  ADOCreateSettingsTable(FileName);
- end;
+  Result := 1;
+  if GetDBType(FileName) = DB_TYPE_MDB then
+  begin
+    if ADOCreateImageTable(FileName) then
+      Result := 0;
+    ADOCreateSettingsTable(FileName);
+  end;
 end;
 
-destructor TDBKernel.destroy;
+destructor TDBKernel.Destroy;
 var
   I: Integer;
 begin
-  FImageList.Free;
-  FINIPasswods.Free;
-  FPasswodsInSession.Free;
+  F(FImageList);
+  F(FINIPasswods);
+  F(FPasswodsInSession);
   for I := 1 to 100 do
     if Chars[I] <> nil then
       Chars[I].Free;
   FreeIconDll;
-  FRegistryCache.Free;
-  FSych.Free;
+  F(FRegistryCache);
+  F(FSych);
   F(FForms);
   F(FDBs);
   inherited;
 end;
 
-procedure TDBKernel.DoIDEvent(Sender : TDBForm; ID : integer; params : TEventFields; Value : TEventValues);
+procedure TDBKernel.DoIDEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
 var
-  i:integer;
-  fXevents : TDBEventsIDArray;
+  I: Integer;
+  FXevents: TDBEventsIDArray;
 begin
   if Sender = nil then
     raise Exception.Create('Sender is null!');
@@ -258,21 +254,28 @@ begin
       if CharToInt(GetCodeChar(1)) + CharToInt(GetCodeChar(2)) <> 15 then
         Exit;
 
- if length(fevents)=0 then exit;
- SetLength(fXevents,length(fevents));
- for i:=0 to length(fevents)-1 do
- fXevents[i]:=fevents[i];
- for i:=0 to length(fXevents)-1 do
- begin
-  if fXevents[i].ids=-1 then begin if Assigned(fXevents[i].DBChangeIDArrayesEvents) then
-  fXevents[i].DBChangeIDArrayesEvents(Sender,ID,Params,Value) end else
-  begin
-   if fXevents[i].ids=ID then begin if Assigned(fXevents[i].DBChangeIDArrayesEvents) then
-   fXevents[i].DBChangeIDArrayesEvents(Sender,ID,Params,Value) end;
-  end;
- end;
-end;
+  if Length(Fevents) = 0 then
+    Exit;
 
+  SetLength(FXevents, Length(Fevents));
+  for I := 0 to Length(Fevents) - 1 do
+    FXevents[I] := Fevents[I];
+  for I := 0 to Length(FXevents) - 1 do
+  begin
+    if FXevents[I].Ids = -1 then
+    begin
+      if Assigned(FXevents[I].DBChangeIDArrayesEvents) then
+        FXevents[I].DBChangeIDArrayesEvents(Sender, ID, Params, Value)
+    end else
+    begin
+      if FXevents[I].Ids = ID then
+      begin
+        if Assigned(FXevents[I].DBChangeIDArrayesEvents) then
+          FXevents[I].DBChangeIDArrayesEvents(Sender, ID, Params, Value)
+      end;
+    end;
+  end;
+end;
 
 function TDBKernel.LogIn(UserName, Password: string; AutoLogin : boolean): integer;
 begin
@@ -281,16 +284,18 @@ begin
   Result := 0;
 end;
 
-function TDBKernel.Readbool(Key, Name: string; default : boolean): boolean;
+function TDBKernel.Readbool(Key, Name: string; Default: Boolean): Boolean;
 var
-  Reg : TBDRegistry;
-  Value : string;
+  Reg: TBDRegistry;
+  Value: string;
 begin
-  Result := Default;
+  Result := default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Value := AnsiLowerCase(reg.ReadString(Name));
-  if Value = 'true' then Result := True;
-  if Value = 'false' then Result := False;
+  Value := AnsiLowerCase(Reg.ReadString(name));
+  if Value = 'true' then
+    Result := True;
+  if Value = 'false' then
+    Result := False;
 end;
 
 function TDBKernel.ReadRealBool(Key, Name: string; Default : boolean): Boolean;
@@ -362,26 +367,26 @@ function TDBKernel.ReadValues(Key: string): TStrings;
 var
   Reg : TBDRegistry;
 begin
-  Result:=TStringList.Create;
+  Result := TStringList.Create;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Reg.GetValueNames(Result);
 end;
 
 procedure TDBKernel.DeleteValues(Key: string);
 var
-  Reg : TBDRegistry;
-  i : integer;
-  Result : TStrings;
+  Reg: TBDRegistry;
+  I: Integer;
+  Result: TStrings;
 begin
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    Result:=TStringList.Create;
-    Reg.OpenKey(GetRegRootKey+Key,true);
+    Result := TStringList.Create;
+    Reg.OpenKey(GetRegRootKey + Key, True);
     Reg.GetValueNames(Result);
-    for i:=0 to Result.Count-1 do
-      Reg.DeleteValue(Result[i]);
+    for I := 0 to Result.Count - 1 do
+      Reg.DeleteValue(Result[I]);
   finally
-    Reg.Free;
+    F(Reg);
   end;
 end;
 
@@ -393,7 +398,7 @@ begin
   try
     Reg.DeleteKey(GetRegRootKey+Key);
   finally;
-    Reg.Free;
+    F(Reg);
   end;
 end;
 
@@ -406,341 +411,347 @@ begin
   Result := Reg.ReadString(Name);
 end;
 
-procedure TDBKernel.RegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
+procedure TDBKernel.RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
 var
-  i : integer;
-  is_ : boolean;
+  I: Integer;
+  Is_: Boolean;
 begin
- is_:=false;
- for i:=0 to length(fevents)-1 do
- if (@fevents[i].DBChangeIDArrayesEvents=@Event_) and (fevents[i].ids=-1) and (Sender=fevents[i].Sender) then
- begin
-  is_:=true;
-  break;
- end;
- if not is_ then
- begin
-  setlength(fevents,length(fevents)+1);
-  fevents[length(fevents)-1].ids:=-1;
-  fevents[length(fevents)-1].Sender:=Sender;
-  fevents[length(fevents)-1].DBChangeIDArrayesEvents:=Event_;
- end;
+  Is_ := False;
+  for I := 0 to Length(Fevents) - 1 do
+    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = -1) and (Sender = Fevents[I].Sender) then
+    begin
+      Is_ := True;
+      Break;
+    end;
+  if not Is_ then
+  begin
+    Setlength(Fevents, Length(Fevents) + 1);
+    Fevents[Length(Fevents) - 1].Ids := -1;
+    Fevents[Length(Fevents) - 1].Sender := Sender;
+    Fevents[Length(Fevents) - 1].DBChangeIDArrayesEvents := Event_;
+  end;
 end;
 
-procedure TDBKernel.RegisterChangesIDByID(Sender : TObject; Event_ : DBChangesIDEvent;
-  id: integer);
+procedure TDBKernel.RegisterChangesIDByID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
 var
-  i : integer;
-  is_ : boolean;
+  I: Integer;
+  Is_: Boolean;
 begin
- is_:=false;
- for i:=0 to length(fevents)-1 do
- if (@fevents[i].DBChangeIDArrayesEvents=@Event_) and (fevents[i].ids=id) and (Sender=fevents[i].Sender) then
- begin
-  is_:=true;
-  break;
- end;
- if not is_ then
- begin
-  setlength(fevents,length(fevents)+1);
-  fevents[length(fevents)-1].ids:=id;
-  fevents[length(fevents)-1].sender:=Sender;
-  fevents[length(fevents)-1].DBChangeIDArrayesEvents:=Event_;
- end;
+  Is_ := False;
+  for I := 0 to Length(Fevents) - 1 do
+    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = Id) and (Sender = Fevents[I].Sender) then
+    begin
+      Is_ := True;
+      Break;
+    end;
+  if not Is_ then
+  begin
+    Setlength(Fevents, Length(Fevents) + 1);
+    Fevents[Length(Fevents) - 1].Ids := Id;
+    Fevents[Length(Fevents) - 1].Sender := Sender;
+    Fevents[Length(Fevents) - 1].DBChangeIDArrayesEvents := Event_;
+  end;
 end;
 
-function TDBKernel.TestDB(DBName_: string; OpenInThread : boolean = false): boolean;
+function TDBKernel.TestDB(DBName_: string; OpenInThread: Boolean = False): Boolean;
 begin
- Result:=ValidDBVersion(DBName_,TestDBEx(DBName_,OpenInThread));
+  Result := ValidDBVersion(DBName_, TestDBEx(DBName_, OpenInThread));
 end;
 
-function TDBKernel.TestDBEx(DBName_: string; OpenInThread : boolean = false): integer;
+function TDBKernel.TestDBEx(DBName_: string; OpenInThread: Boolean = False): Integer;
 var
-  FTestTable : TDataSet;
-  ActiveOk : boolean;
+  FTestTable: TDataSet;
+  ActiveOk: Boolean;
 begin
- //Fast test -> in thread load db query
-  result:=0;
+  // Fast test -> in thread load db query
+  Result := 0;
   if not FileExists(DBName_) then
   begin
-   result:=-1;
-   exit;
+    Result := -1;
+    Exit;
   end;
-  FTestTable:=nil;
-  if (GetDBType(DBName_)=DB_TYPE_MDB) and (GetFileSizeByName(DBName_)>500*1025) then
+  FTestTable := nil;
+  if (GetDBType(DBName_) = DB_TYPE_MDB) and (GetFileSizeByName(DBName_) > 500 * 1025) then
   begin
-   FTestTable:= GetQuery(DBName_);
-   SetSQL(FTestTable,'Select TOP 1 * From ImageTable Where ID<>0 ');
-   try
-    FTestTable.Open;
-   except
-    on e : Exception do
-    begin
-     EventLog(':TDBKernel::TestDBEx()/Open throw exception: '+e.Message);
-     FreeDS(FTestTable);
-     result:=-2;
-     exit;
+    FTestTable := GetQuery(DBName_);
+    SetSQL(FTestTable, 'Select TOP 1 * From ImageTable Where ID<>0 ');
+    try
+      FTestTable.Open;
+    except
+      on E: Exception do
+      begin
+        EventLog(':TDBKernel::TestDBEx()/Open throw exception: ' + E.message);
+        FreeDS(FTestTable);
+        Result := -2;
+        Exit;
+      end;
     end;
-   end;
   end;
 
-  if FTestTable<>nil then
-  if FTestTable.Active then
-  if FTestTable.RecordCount=0 then
-  begin
-   FreeDS(FTestTable);
-   FTestTable:= GetTable(DBName_,DB_TABLE_IMAGES);
-  end;
+  if FTestTable <> nil then
+    if FTestTable.Active then
+      if FTestTable.RecordCount = 0 then
+      begin
+        FreeDS(FTestTable);
+        FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
+      end;
 
-  if FTestTable=nil then FTestTable:= GetTable(DBName_,DB_TABLE_IMAGES);
+  if FTestTable = nil then
+    FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
 
-  if FTestTable=nil then exit;
-  if not (FTestTable.Active) then
+  if FTestTable = nil then
+    Exit;
+  if not(FTestTable.Active) then
   begin
-   if OpenInThread then
-   begin
-    ThreadOpenResultWork:=false;
-    TActiveTableThread.Create(FTestTable,true,ThreadOpenResult);
-    Repeat
-     Application.ProcessMessages;
-     Sleep(50);
-    until ThreadOpenResultBool;
-    ActiveOk:=ThreadOpenResultBool;
-   end else
-   ActiveOk:=ActiveTable(FTestTable,true);
-   if not ActiveOk then
-   begin
-    FreeDS(FTestTable);
-    result:=-3;
-    exit;
-   end;
+    if OpenInThread then
+    begin
+      ThreadOpenResultWork := False;
+      TActiveTableThread.Create(FTestTable, True, ThreadOpenResult);
+      repeat
+        Application.ProcessMessages;
+        Sleep(50);
+      until ThreadOpenResultBool;
+      ActiveOk := ThreadOpenResultBool;
+    end
+    else
+      ActiveOk := ActiveTable(FTestTable, True);
+    if not ActiveOk then
+    begin
+      FreeDS(FTestTable);
+      Result := -3;
+      Exit;
+    end;
   end;
 
   try
-   FTestTable.First;
-   FTestTable.FieldByName('ID').AsInteger;
-   if FTestTable.FindField('Name')=nil then
-   begin
-    FreeDS(FTestTable);
-    result:=-4;
-    exit;
-   end;
-   FTestTable.FieldByName('Name').AsString;
-   if FTestTable.FindField('FFilename')=nil then
-   begin
-    FreeDS(FTestTable);
-    result:=-5;
-    exit;
-   end;
-   FTestTable.FieldByName('FFilename').AsString;
-   FTestTable.FieldByName('StrTh').AsString;
-   FTestTable.FieldByName('Comment').AsString;
-   FTestTable.FieldByName('KeyWords').AsString;
-   FTestTable.FieldByName('Rating').AsInteger;
-   FTestTable.FieldByName('Attr').AsInteger;
-   FTestTable.FieldByName('Access').AsInteger;
-   FTestTable.FieldByName('Owner').AsString;
-   FTestTable.FieldByName('Collection').AsString;
-   FTestTable.FieldByName('FileSize').AsInteger;
-   FTestTable.FieldByName('Width').AsInteger;
-   FTestTable.FieldByName('Height').AsInteger;
-   FTestTable.FieldByName('Rotated').AsInteger;
-   Result:=DB_VER_1_8;
-   //Added in PhotoDB v1.9
-   if FTestTable.FindField('Include')=nil then
-   begin
-     FreeDS(FTestTable);
-     exit;
-   end;
-   FTestTable.FindField('Include').AsBoolean;
-   if FTestTable.FindField('Links')=nil then
-   begin
-    FreeDS(FTestTable);
-    exit;
-   end;
-   FTestTable.FindField('Links').AsString;
-   Result:=DB_VER_1_9;
-   if FTestTable.FindField('aTime')=nil then
-   begin
-    FreeDS(FTestTable);
-    exit;
-   end;
-   FTestTable.FindField('aTime').AsDateTime;
-   if FTestTable.FindField('IsTime')=nil then
-   begin
-    FreeDS(FTestTable);
-    exit;
-   end;
+    FTestTable.First;
+    FTestTable.FieldByName('ID').AsInteger;
+    if FTestTable.FindField('Name') = nil then
+    begin
+      FreeDS(FTestTable);
+      Result := -4;
+      Exit;
+    end;
+    FTestTable.FieldByName('Name').AsString;
+    if FTestTable.FindField('FFilename') = nil then
+    begin
+      FreeDS(FTestTable);
+      Result := -5;
+      Exit;
+    end;
+    FTestTable.FieldByName('FFilename').AsString;
+    FTestTable.FieldByName('StrTh').AsString;
+    FTestTable.FieldByName('Comment').AsString;
+    FTestTable.FieldByName('KeyWords').AsString;
+    FTestTable.FieldByName('Rating').AsInteger;
+    FTestTable.FieldByName('Attr').AsInteger;
+    FTestTable.FieldByName('Access').AsInteger;
+    FTestTable.FieldByName('Owner').AsString;
+    FTestTable.FieldByName('Collection').AsString;
+    FTestTable.FieldByName('FileSize').AsInteger;
+    FTestTable.FieldByName('Width').AsInteger;
+    FTestTable.FieldByName('Height').AsInteger;
+    FTestTable.FieldByName('Rotated').AsInteger;
+    Result := DB_VER_1_8;
+    // Added in PhotoDB v1.9
+    if FTestTable.FindField('Include') = nil then
+    begin
+      FreeDS(FTestTable);
+      Exit;
+    end;
+    FTestTable.FindField('Include').AsBoolean;
+    if FTestTable.FindField('Links') = nil then
+    begin
+      FreeDS(FTestTable);
+      Exit;
+    end;
+    FTestTable.FindField('Links').AsString;
+    Result := DB_VER_1_9;
+    if FTestTable.FindField('aTime') = nil then
+    begin
+      FreeDS(FTestTable);
+      Exit;
+    end;
+    FTestTable.FindField('aTime').AsDateTime;
+    if FTestTable.FindField('IsTime') = nil then
+    begin
+      FreeDS(FTestTable);
+      Exit;
+    end;
 
-   Result:=DB_VER_2_0;
-   if (GetDBType(DBName_)=DB_TYPE_MDB) then
-   if FTestTable.FindField('FolderCRC')=nil then
-   begin
-    FreeDS(FTestTable);
-    exit;
-   end;
+    Result := DB_VER_2_0;
+    if (GetDBType(DBName_) = DB_TYPE_MDB) then
+      if FTestTable.FindField('FolderCRC') = nil then
+      begin
+        FreeDS(FTestTable);
+        Exit;
+      end;
 
-   if (GetDBType(DBName_)=DB_TYPE_MDB) then
-   if FTestTable.FindField('StrThCRC')=nil then
-   begin
-    FreeDS(FTestTable);
-    exit;
-   end;
+    if (GetDBType(DBName_) = DB_TYPE_MDB) then
+      if FTestTable.FindField('StrThCRC') = nil then
+      begin
+        FreeDS(FTestTable);
+        Exit;
+      end;
 
   except
-   on e : Exception do
-   begin
-    EventLog(':TDBKernel::TestDBEx() throw exception: '+e.Message);
-    FreeDS(FTestTable);
-    result:=-6;
-    exit;
-   end;
+    on E: Exception do
+    begin
+      EventLog(':TDBKernel::TestDBEx() throw exception: ' + E.message);
+      FreeDS(FTestTable);
+      Result := -6;
+      Exit;
+    end;
   end;
-  if (GetDBType(DBName_)=DB_TYPE_MDB) then
+  if (GetDBType(DBName_) = DB_TYPE_MDB) then
   begin
-   Result:=DB_VER_2_1;
-   FTestTable:=nil;
+    Result := DB_VER_2_1;
+    FTestTable := nil;
 
-   try
-    FTestTable:= GetTable(DBName_,DB_TABLE_SETTINGS);
-    FTestTable.Open;
-   except
-    on e : Exception do
-    begin
-     EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: '+e.Message);
-     if FTestTable<>nil then FreeDS(FTestTable);
-     exit;
-    end;
-   end;
-   if FTestTable<>nil then
-   begin
-    if FTestTable.RecordCount>0 then
-    begin
-     FTestTable.First;
-     if FTestTable.FindField('Version')=nil then
-     begin
-      FreeDS(FTestTable);
-      exit;
-     end;
-     if FTestTable.FindField('DBJpegCompressionQuality')=nil then
-     begin
-      FreeDS(FTestTable);
-      exit;
-     end;
-     if FTestTable.FindField('ThSizePanelPreview')=nil then
-     begin
-      FreeDS(FTestTable);
-      exit;
-     end;
-     if FTestTable.FindField('ThImageSize')=nil then
-     begin
-      FreeDS(FTestTable);
-      exit;
-     end;
-     if FTestTable.FindField('ThHintSize')=nil then
-     begin
-      FreeDS(FTestTable);
-      exit;
-     end;
-     try
-      FTestTable.FieldByName('Version').AsString;
-      FTestTable.FieldByName('DBJpegCompressionQuality').AsString;
-      FTestTable.FieldByName('ThSizePanelPreview').AsInteger;
-      FTestTable.FieldByName('ThImageSize').AsInteger;
-      FTestTable.FieldByName('ThHintSize').AsInteger;
-     except
-      on e : Exception do
+    try
+      FTestTable := GetTable(DBName_, DB_TABLE_SETTINGS);
+      FTestTable.Open;
+    except
+      on E: Exception do
       begin
-       EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: '+e.Message);
-       FreeDS(FTestTable);
-       exit;
+        EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: ' + E.message);
+        if FTestTable <> nil then
+          FreeDS(FTestTable);
+        Exit;
       end;
-     end;
-     Result:=DB_VER_2_2;
     end;
-    FreeDS(FTestTable);
-   end;
+    if FTestTable <> nil then
+    begin
+      if FTestTable.RecordCount > 0 then
+      begin
+        FTestTable.First;
+        if FTestTable.FindField('Version') = nil then
+        begin
+          FreeDS(FTestTable);
+          Exit;
+        end;
+        if FTestTable.FindField('DBJpegCompressionQuality') = nil then
+        begin
+          FreeDS(FTestTable);
+          Exit;
+        end;
+        if FTestTable.FindField('ThSizePanelPreview') = nil then
+        begin
+          FreeDS(FTestTable);
+          Exit;
+        end;
+        if FTestTable.FindField('ThImageSize') = nil then
+        begin
+          FreeDS(FTestTable);
+          Exit;
+        end;
+        if FTestTable.FindField('ThHintSize') = nil then
+        begin
+          FreeDS(FTestTable);
+          Exit;
+        end;
+        try
+          FTestTable.FieldByName('Version').AsString;
+          FTestTable.FieldByName('DBJpegCompressionQuality').AsString;
+          FTestTable.FieldByName('ThSizePanelPreview').AsInteger;
+          FTestTable.FieldByName('ThImageSize').AsInteger;
+          FTestTable.FieldByName('ThHintSize').AsInteger;
+        except
+          on E: Exception do
+          begin
+            EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: ' + E.message);
+            FreeDS(FTestTable);
+            Exit;
+          end;
+        end;
+        Result := DB_VER_2_2;
+      end;
+      FreeDS(FTestTable);
+    end;
   end;
 
   FreeDS(FTestTable);
 end;
 
-procedure TDBKernel.UnRegisterChangesID(Sender : TObject; Event_ : DBChangesIDEvent);
+procedure TDBKernel.UnRegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
 var
-  i, j : integer;
+  I, J: Integer;
 begin
- if length(fevents)=0 then exit;
- for i:=0 to length(fevents)-1 do
- begin
-  if (@fevents[i].DBChangeIDArrayesEvents=@Event_) and (fevents[i].ids=-1) and (Sender=fevents[i].Sender) then
+  if Length(Fevents) = 0 then
+    Exit;
+  for I := 0 to Length(Fevents) - 1 do
   begin
-   for j:=i to length(fevents)-2 do
-   fevents[j]:=fevents[j+1];
-   SetLength(fevents,Length(fevents)-1);
-   break;
+    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = -1) and (Sender = Fevents[I].Sender) then
+    begin
+      for J := I to Length(Fevents) - 2 do
+        Fevents[J] := Fevents[J + 1];
+      SetLength(Fevents, Length(Fevents) - 1);
+      Break;
+    end;
   end;
- end;
 end;
 
-procedure TDBKernel.UnRegisterChangesIDByID(Sender : TObject; Event_ : DBChangesIDEvent; id: integer);
+procedure TDBKernel.UnRegisterChangesIDByID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
 var
-  i, j : integer;
+  I, J: Integer;
 begin
- if length(fevents)=0 then exit;
- for i:=0 to length(fevents)-1 do
- if (@fevents[i].DBChangeIDArrayesEvents=@Event_) and (fevents[i].ids=id) and (Sender=fevents[i].Sender) then
- begin
-  for j:=i to length(fevents)-2 do
-  fevents[j]:=fevents[j+1];
-  SetLength(fevents,Length(fevents)-1);
-  break;
- end;
+  if Length(Fevents) = 0 then
+    Exit;
+  for I := 0 to Length(Fevents) - 1 do
+    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = Id) and (Sender = Fevents[I].Sender) then
+    begin
+      for J := I to Length(Fevents) - 2 do
+        Fevents[J] := Fevents[J + 1];
+      SetLength(Fevents, Length(Fevents) - 1);
+      Break;
+    end;
 end;
 
-procedure TDBKernel.UnRegisterChangesIDBySender(Sender : TObject);
+procedure TDBKernel.UnRegisterChangesIDBySender(Sender: TObject);
 var
-  i, j, k : integer;
+  I, J, K: Integer;
 begin
- if length(fevents)=0 then exit;
- for k:=0 to length(fevents)-1 do
- for i:=0 to length(fevents)-1 do
- if (Sender=fevents[i].Sender) then
- begin
-  for j:=i to length(fevents)-2 do
-  fevents[j]:=fevents[j+1];
-  SetLength(fevents,Length(fevents)-1);
-  break;
- end;
+  if Length(Fevents) = 0 then
+    Exit;
+  for K := 0 to Length(Fevents) - 1 do
+    for I := 0 to Length(Fevents) - 1 do
+      if (Sender = Fevents[I].Sender) then
+      begin
+        for J := I to Length(Fevents) - 2 do
+          Fevents[J] := Fevents[J + 1];
+        SetLength(Fevents, Length(Fevents) - 1);
+        Break;
+      end;
 end;
 
-procedure TDBKernel.WriteBool(Key, Name: string; Value: boolean);
+procedure TDBKernel.WriteBool(Key, name: string; Value: Boolean);
 var
-  Reg : TBDRegistry;
+  Reg: TBDRegistry;
 begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   if Value then
-    Reg.WriteString(Name,'True')
+    Reg.WriteString(name, 'True')
   else
-    Reg.WriteString(Name,'False');
+    Reg.WriteString(name, 'False');
 end;
 
-procedure TDBKernel.WriteBoolW(Key, Name: string; value: boolean);
+procedure TDBKernel.WriteBoolW(Key, name: string; Value: Boolean);
 var
-  Reg : TBDRegistry;
+  Reg: TBDRegistry;
 begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
   if Value then
-    Reg.WriteString(Name,'True')
+    Reg.WriteString(name, 'True')
   else
-    Reg.WriteString(Name,'False');
+    Reg.WriteString(name, 'False');
 end;
 
-procedure TDBKernel.WriteInteger(Key, Name: string; Value: integer);
+procedure TDBKernel.WriteInteger(Key, name: string; Value: Integer);
 var
-  Reg : TBDRegistry;
+  Reg: TBDRegistry;
 begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Reg.WriteString(Name, IntToStr(Value));
+  Reg.WriteString(name, IntToStr(Value));
 end;
 
 procedure TDBKernel.WriteProperty(Key, Name, Value: string);
@@ -800,46 +811,54 @@ begin
     Result := TA('Unknown DB', 'System');
 end;
 
-procedure TDBKernel.SetDataBase(DBname_: string);
+procedure TDBKernel.SetDataBase(DatabaseFileName: string);
 var
-  Reg : TBDRegistry;
+  Reg: TBDRegistry;
 begin
- if not FileExists(DBname_) then exit;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot,true);
-  Reg.WriteString('DBDefaultName',DBname_);
- except
-  on e : Exception do EventLog(':TDBKernel::SetDataBase() throw exception: '+e.Message);
- end;
- dbname:=DBname_;
- Reg.Free;
- ReadDBOptions;
+  if not FileExistsSafe(DatabaseFileName) then
+    Exit;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    try
+      Reg.OpenKey(RegRoot, True);
+      Reg.WriteString('DBDefaultName', DatabaseFileName);
+    except
+      on E: Exception do
+        EventLog(':TDBKernel::SetDataBase() throw exception: ' + E.message);
+    end;
+    Dbname := DatabaseFileName;
+  finally
+    F(Reg);
+  end;
+  ReadDBOptions;
 end;
 
-procedure TDBKernel.SetActivateKey(aName,aKey: String);
+procedure TDBKernel.SetActivateKey(AName, AKey: string);
 var
-  Reg : TBDRegistry;
-  Key, Name : String;
+  Reg: TBDRegistry;
+  Key, name: string;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CLASSES);
- if PortableWork then
- begin
-  Key:='\CLSID';
-  Name:='Key';
- end else
- begin
-  Key:='\CLSID\'+ActivationID;
-  Name:='DefaultHandle';
- end;
- try
-  Reg.OpenKey(Key,true);
-  Reg.WriteString(Name,aKey);
-  Reg.WriteString('UserName',aName);
-  Reg.CloseKey;
-  except
- end;
- Reg.free;
+  Reg := TBDRegistry.Create(REGISTRY_CLASSES);
+  try
+    if PortableWork then
+    begin
+      Key := '\CLSID';
+      name := 'Key';
+    end else
+    begin
+      Key := '\CLSID\' + ActivationID;
+      name := 'DefaultHandle';
+    end;
+    try
+      Reg.OpenKey(Key, True);
+      Reg.WriteString(name, AKey);
+      Reg.WriteString('UserName', AName);
+      Reg.CloseKey;
+    except
+    end;
+  finally
+    F(Reg);
+  end;
 end;
 
 function TDBKernel.ReadActivateKey: string;
@@ -867,6 +886,8 @@ begin
       Result := Reg.ReadString(Name);
       SaveApplicationCode(Result);
     except
+      on E: Exception do
+        EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
     end;
     Reg.CloseKey;
   finally
@@ -931,6 +952,8 @@ begin
       Reg.OpenKey(Key, True);
       Result := Reg.ReadString('UserName');
     except
+      on E: Exception do
+        EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
     end;
   finally
     F(Reg);
@@ -999,11 +1022,11 @@ begin
  end;
 end;
 
-function TDBKernel.GetCodeChar(n: integer): Char;
+function TDBKernel.GetCodeChar(N: Integer): Char;
 begin
- Result:=#0;
- if Chars[Sootv[n]]<>nil then
- Result:=Chars[sootv[n]].Char_;
+  Result := #0;
+  if Chars[Sootv[N]] <> nil then
+    Result := Chars[Sootv[N]].Char_;
 end;
 
 function TDBKernel.ProgramInDemoMode: Boolean;
@@ -1131,56 +1154,60 @@ end;
 
 procedure TDBKernel.LoadINIPasswords;
 var
-  Reg : TBDRegistry;
-  s : String;
+  Reg: TBDRegistry;
+  S: string;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  if FINIPasswods<>nil then FINIPasswods.Free;
-  Reg.OpenKey(GetRegRootKey,true);
-  s:='';
-  if Reg.ValueExists('INI') then
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-   s:=Reg.ReadString('INI');
-  except
+    try
+      F(FINIPasswods);
+      Reg.OpenKey(GetRegRootKey, True);
+      S := '';
+      if Reg.ValueExists('INI') then
+          S := Reg.ReadString('INI');
+
+      S := HexStringToString(S);
+      if Length(S) > 0 then
+        FINIPasswods := DeCryptTStrings(S, 'dbpass')
+      else
+        FINIPasswods := TStringList.Create;
+    except
+      on E: Exception do
+        EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
+    end;
+  finally
+    F(Reg);
   end;
-  s:=HexStringToString(s);
-  if Length(s)>0 then
-  begin                             //TODO:!
-   FINIPasswods:=DeCryptTStrings(s, 'dbpass')
-  end else
-  FINIPasswods:=TStringList.Create;
- except
- end;
- Reg.free;
 end;
 
 procedure TDBKernel.SaveINIPasswords;
 var
-  Reg : TBDRegistry;
-  s : String;
+  Reg: TBDRegistry;
+  S: string;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(GetRegRootKey,true);//todo!
-  s:=CryptTStrings(FINIPasswods, 'dbpass');
-  s:=StringToHexString(s);
-  Reg.WriteString('INI',s);
- except
- end;
- Reg.free;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey, True); // todo!
+    S := CryptTStrings(FINIPasswods, 'dbpass');
+    S := StringToHexString(S);
+    Reg.WriteString('INI', S);
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
+  end;
+  Reg.Free;
 end;
 
 procedure TDBKernel.ClearINIPasswords;
 begin
- FINIPasswods.Clear;
- SaveINIPasswords;
+  FINIPasswods.Clear;
+  SaveINIPasswords;
 end;
 
-procedure TDBKernel.ThreadOpenResult(Result: boolean);
+procedure TDBKernel.ThreadOpenResult(Result: Boolean);
 begin
- ThreadOpenResultBool := Result;
- ThreadOpenResultWork := false;
+  ThreadOpenResultBool := Result;
+  ThreadOpenResultWork := False;
 end;
 
 procedure TDBKernel.LoadDBs;
@@ -1192,7 +1219,7 @@ var
 begin
   FDBs := TPhotoDBFiles.Create;
 
-  List:=TStringList.Create;
+  List := TStringList.Create;
   try
     Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
     try
@@ -1211,165 +1238,172 @@ begin
         end;
       end;
     finally
-      Reg.Free;
+      F(Reg);
     end;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
 procedure TDBKernel.MoveDB(OldDBFile, NewDBFile: string);
 var
-  Reg : TBDRegistry;
-  DBS : TStrings;
-  i : integer;
+  Reg: TBDRegistry;
+  DBS: TStrings;
+  I: Integer;
 begin
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+'dbs',true);
-  DBS:=TStringList.Create;
-  Reg.GetKeyNames(DBS);
-  Reg.CloseKey;
-  for i:=0 to DBS.Count-1 do
-  begin
-   Reg.OpenKey(RegRoot+'dbs\'+DBS[i],true);
-   if AnsiLowerCase(Reg.ReadString('FileName'))=AnsiLowerCase(OldDBFile) then
-   begin
-    Reg.WriteString('FileName',NewDBFile);
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot + 'dbs', True);
+    DBS := TStringList.Create;
+    Reg.GetKeyNames(DBS);
     Reg.CloseKey;
-    break;
-   end;
-   Reg.CloseKey;
-  end;
- except
-  on e : Exception do EventLog(':TDBKernel::MoveDB() throw exception: '+e.Message);
- end;
- Reg.Free;
- LoadDBs;
-end;
-
-function TDBKernel.DBExists(DBName : string) : boolean;
-var
-  Reg : TBDRegistry;
-  DBS : TStrings;
-  i : integer;
-begin
- Result:=false;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+'dbs',true);
-  DBS:=TStringList.Create;
-  Reg.GetKeyNames(DBS);
-  Reg.CloseKey;
-  for i:=0 to DBS.Count-1 do
-  begin
-   Reg.OpenKey(RegRoot+'dbs\'+DBS[i],true);
-   if AnsiLowerCase(Reg.ReadString('FileName'))=AnsiLowerCase(DBName) then
-   begin
-    Result:=true;
-    Reg.CloseKey;
-    break;
-   end;
-   Reg.CloseKey;
-  end;
- except
-  on e : Exception do EventLog(':TDBKernel::DBExists() throw exception: '+e.Message);
- end;
- Reg.Free;
-end;
-
-function TDBKernel.NewDBName(DBNamePattern : string) : string;
-var
-  Reg : TBDRegistry;
-  DBS : TStrings;
-  i, j : integer;
-  DBNameCurrent : string;
-  b : boolean;
-begin
- Result:=DBNamePattern;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+'dbs',true);
-  DBS:=TStringList.Create;
-  Reg.GetKeyNames(DBS);
-  Reg.CloseKey;
-  DBNameCurrent:=DBNamePattern;
-  for j:=1 to 1000 do
-  begin
-   b:=false;
-   for i:=0 to DBS.Count-1 do
-   begin
-    if AnsiLowerCase(DBS[i])=AnsiLowerCase(DBNameCurrent) then
+    for I := 0 to DBS.Count - 1 do
     begin
-     b:=true;
+      Reg.OpenKey(RegRoot + 'dbs\' + DBS[I], True);
+      if AnsiLowerCase(Reg.ReadString('FileName')) = AnsiLowerCase(OldDBFile) then
+      begin
+        Reg.WriteString('FileName', NewDBFile);
+        Reg.CloseKey;
+        Break;
+      end;
+      Reg.CloseKey;
     end;
-   end;
-   if b then
-   begin
-    DBNameCurrent:= DBNamePattern+'_'+IntToStr(j);
-   end else
-   begin
-    Result:=DBNameCurrent;
-    exit;
-   end;
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::MoveDB() throw exception: ' + E.message);
   end;
- except
-  on e : Exception do EventLog(':TDBKernel::NewDBName() throw exception: '+e.Message);
- end;
- Reg.Free;
+  Reg.Free;
+  LoadDBs;
 end;
 
-procedure TDBKernel.AddDB(DBName, DBFile, DBIco: string; Force : boolean = false);
+function TDBKernel.DBExists(DBName: string): Boolean;
 var
-  Reg : TBDRegistry;
+  Reg: TBDRegistry;
+  DBS: TStrings;
+  I: Integer;
 begin
- if not Force then
- if DBExists(DBFile) then exit;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+'dbs\'+DBName,true);
-  Reg.WriteString('FileName',DBFile);
-  Reg.WriteString('icon',DBIco);
-  Reg.WriteInteger('type',CommonDBSupport.GetDBType(DBFile));
- except
-  on e : Exception do EventLog(':TDBKernel::AddDB() throw exception: '+e.Message);
- end;
- Reg.Free;
- LoadDBs;
+  Result := False;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot + 'dbs', True);
+    DBS := TStringList.Create;
+    Reg.GetKeyNames(DBS);
+    Reg.CloseKey;
+    for I := 0 to DBS.Count - 1 do
+    begin
+      Reg.OpenKey(RegRoot + 'dbs\' + DBS[I], True);
+      if AnsiLowerCase(Reg.ReadString('FileName')) = AnsiLowerCase(DBName) then
+      begin
+        Result := True;
+        Reg.CloseKey;
+        Break;
+      end;
+      Reg.CloseKey;
+    end;
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::DBExists() throw exception: ' + E.message);
+  end;
+  Reg.Free;
 end;
 
-function TDBKernel.RenameDB(OldDBName, NewDBName: string): boolean;
+function TDBKernel.NewDBName(DBNamePattern: string): string;
 var
-  Reg : TBDRegistry;
-  DB : TPhotoDBFile;
+  Reg: TBDRegistry;
+  DBS: TStrings;
+  I, J: Integer;
+  DBNameCurrent: string;
+  B: Boolean;
 begin
- Result:=false;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.OpenKey(RegRoot+'dbs\'+OldDBName,true);
-  DB :=  TPhotoDBFile.Create;
-  DB.Name:=OldDBName;
-  DB.Icon:=Reg.ReadString('icon');
-  DB.FileName:=Reg.ReadString('FileName');
-  DB.FileType:=Reg.ReadInteger('type');
-  Reg.CloseKey;
-  Reg.OpenKey(RegRoot+'dbs\'+NewDBName,true);
-  Reg.WriteString('FileName',DB.FileName);
-  Reg.WriteString('icon',DB.Icon);
-  Reg.WriteInteger('type',CommonDBSupport.GetDBType(DB.FileName));
-  Reg.CloseKey;
- except
-  on e : Exception do EventLog(':TDBKernel::RenameDB() throw exception: '+e.Message);
- end;
- Reg.Free;
- Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
- try
-  Reg.DeleteKey(RegRoot+'dbs\'+OldDBName);
- except
-  on e : Exception do EventLog(':TDBKernel::RenameDB() throw exception: '+e.Message);
- end;
- Reg.Free;
- LoadDBs;
+  Result := DBNamePattern;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot + 'dbs', True);
+    DBS := TStringList.Create;
+    Reg.GetKeyNames(DBS);
+    Reg.CloseKey;
+    DBNameCurrent := DBNamePattern;
+    for J := 1 to 1000 do
+    begin
+      B := False;
+      for I := 0 to DBS.Count - 1 do
+      begin
+        if AnsiLowerCase(DBS[I]) = AnsiLowerCase(DBNameCurrent) then
+        begin
+          B := True;
+        end;
+      end;
+      if B then
+      begin
+        DBNameCurrent := DBNamePattern + '_' + IntToStr(J);
+      end else
+      begin
+        Result := DBNameCurrent;
+        Exit;
+      end;
+    end;
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::NewDBName() throw exception: ' + E.message);
+  end;
+  Reg.Free;
+end;
+
+procedure TDBKernel.AddDB(DBName, DBFile, DBIco: string; Force: Boolean = False);
+var
+  Reg: TBDRegistry;
+begin
+  if not Force then
+    if DBExists(DBFile) then
+      Exit;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot + 'dbs\' + DBName, True);
+    Reg.WriteString('FileName', DBFile);
+    Reg.WriteString('icon', DBIco);
+    Reg.WriteInteger('type', CommonDBSupport.GetDBType(DBFile));
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::AddDB() throw exception: ' + E.message);
+  end;
+  Reg.Free;
+  LoadDBs;
+end;
+
+function TDBKernel.RenameDB(OldDBName, NewDBName: string): Boolean;
+var
+  Reg: TBDRegistry;
+  DB: TPhotoDBFile;
+begin
+  Result := False;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot + 'dbs\' + OldDBName, True);
+    DB := TPhotoDBFile.Create;
+    DB.name := OldDBName;
+    DB.Icon := Reg.ReadString('icon');
+    DB.FileName := Reg.ReadString('FileName');
+    DB.FileType := Reg.ReadInteger('type');
+    Reg.CloseKey;
+    Reg.OpenKey(RegRoot + 'dbs\' + NewDBName, True);
+    Reg.WriteString('FileName', DB.FileName);
+    Reg.WriteString('icon', DB.Icon);
+    Reg.WriteInteger('type', CommonDBSupport.GetDBType(DB.FileName));
+    Reg.CloseKey;
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::RenameDB() throw exception: ' + E.message);
+  end;
+  Reg.Free;
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.DeleteKey(RegRoot + 'dbs\' + OldDBName);
+  except
+    on E: Exception do
+      EventLog(':TDBKernel::RenameDB() throw exception: ' + E.message);
+  end;
+  Reg.Free;
+  LoadDBs;
 end;
 
 function TDBKernel.DeleteDB(DBName: string): boolean;
@@ -1469,37 +1503,22 @@ begin
   end;
 end;
 
-function SplitString(str : String; SplitChar : char) : TArStrings;
-var
-  i,p : integer;
-  StrTemp : string;
-begin
-  p:=1;
-  SetLength(Result,0);
-  for i:=1 to Length(str) do
-  if (str[i]=SplitChar) or (i = Length(str))  then
-  begin
-   if i = Length(str) then
-   StrTemp:=copy(str,p,i-p+1) else
-   StrTemp:=copy(str,p,i-p);
-
-   SetLength(Result,Length(Result)+1);
-   Result[Length(Result)-1]:= StrTemp;
-   p:=i+1;
-  end;
-end;
-
 procedure TDBKernel.GetPasswordsFromParams;
 var
-  PassParam : string;
-  PassArray : TArStrings;
-  i : integer;
+  PassParam: string;
+  PassArray: TStrings;
+  I: Integer;
 begin
- PassParam:=GetParamStrDBValue('/AddPass');
- PassParam:=SysUtils.AnsiDequotedStr(PassParam,'"');
- PassArray:=SplitString(PassParam,'!');
- for i:=0 to Length(PassArray)-1 do
- AddTemporaryPasswordInSession(PassArray[i]);
+  PassArray:= TStringList.Create;
+  try
+    PassParam := GetParamStrDBValue('/AddPass');
+    PassParam := SysUtils.AnsiDequotedStr(PassParam, '"');
+    SplitString(PassParam, '!', PassArray);
+    for I := 0 to PassArray.Count - 1 do
+      AddTemporaryPasswordInSession(PassArray[I]);
+  finally
+    F(PassArray);
+  end;
 end;
 
 function TDBKernel.GetSortGroupsByName: Boolean;
@@ -1653,8 +1672,8 @@ end;
 
 constructor TCharObject.Create;
 begin
- Inherited;
- FChar:=#0;
+  inherited;
+  FChar := #0;
 end;
 
 destructor TCharObject.Destroy;
