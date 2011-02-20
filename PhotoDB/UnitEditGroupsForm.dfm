@@ -618,8 +618,8 @@ object EditGroupsForm: TEditGroupsForm
     OnClick = BtnOkClick
   end
   object BtnCreateGroup: TButton
-    Left = 120
-    Top = 431
+    Left = 154
+    Top = 432
     Width = 97
     Height = 25
     Caption = 'New Group'
@@ -629,7 +629,7 @@ object EditGroupsForm: TEditGroupsForm
   object BtnManager: TButton
     Left = 9
     Top = 432
-    Width = 105
+    Width = 139
     Height = 25
     Caption = 'Manager'
     TabOrder = 3

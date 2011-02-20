@@ -285,7 +285,7 @@ begin
     AutoAnswerSetted := False;
 
 {$IFDEF LICENCE}
-    if DBKernel.GetDemoMode then
+ (*   if DBKernel.GetDemoMode then
     begin
       if GetRecordsCount > LimitDemoRecords then
       begin
@@ -297,7 +297,7 @@ begin
         EventLog(':Limit of records! --> exit updating DB');
         Exit;
       end;
-    end;
+    end;*)
 {$ENDIF}
 
     ResArray := GetimageIDWEx(FInfo, FUseFileNameScaning);

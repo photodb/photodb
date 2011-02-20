@@ -316,7 +316,8 @@ const
 
 implementation
 
-uses UnitUpdateDB, PropertyForm, SlideShowFullScreen,
+uses
+  UnitUpdateDB, PropertyForm, SlideShowFullScreen,
   ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
@@ -1132,19 +1133,20 @@ end;
 
 procedure TViewer.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
 var
-  i : integer;
+  I: Integer;
 begin
- if Viewer=nil then exit;
+  if Viewer = nil then
+    Exit;
 
- if [EventID_Param_Rotate,EventID_Param_Image,EventID_Param_Name]*params<>[] then
- begin
-  for i:=0 to LockEventRotateFileList.Count-1 do
-  if AnsiLowerCase(Value.Name)=LockEventRotateFileList[i] then
+  if [EventID_Param_Rotate, EventID_Param_Image, EventID_Param_Name] * Params <> [] then
   begin
-   LockEventRotateFileList.Delete(i);
-   exit;
+    for I := 0 to LockEventRotateFileList.Count - 1 do
+      if AnsiLowerCase(Value.name) = LockEventRotateFileList[I] then
+      begin
+        LockEventRotateFileList.Delete(I);
+        Exit;
+      end;
   end;
- end;
 
  if SetNewIDFileData in params then
  begin
@@ -1156,6 +1158,17 @@ begin
    CurrentInfo.ItemTimes[i]:=Value.Time;
    CurrentInfo.ItemIsDates[i]:=true;
    CurrentInfo.ItemIsTimes[i]:=Value.IsTime;
+ (* fFilesInfo[I].Rating := Value.Rating;
+  fFilesInfo[I].Rotation := Value.Rotate;
+  fFilesInfo[I].Comment := Value.Comment;
+  fFilesInfo[I].KeyWords := Value.Comment;
+  fFilesInfo[I].Links := Value.Links;
+  fFilesInfo[I].Groups := Value.Groups;
+  FFilesInfo[I].IsDate := True;
+  FFilesInfo[I].IsTime := Value.IsTime;
+  FFilesInfo[I].Loaded := True;
+  FFilesInfo[I].Links := '';
+ *)
    break;
   end;
   exit;
