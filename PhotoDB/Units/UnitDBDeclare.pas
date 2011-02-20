@@ -17,7 +17,7 @@ type
   TPasswordRecord = class
   public
    CRC : Cardinal;
-   FileName : String; 
+   FileName : String;
    ID : integer;
   end;
 
@@ -38,13 +38,13 @@ type
   end;
 
   TImageDBOptions = record
-    Version : integer;
-    DBJpegCompressionQuality : byte;
-    ThSize : integer;
-    ThSizePanelPreview : integer;
-    ThHintSize : integer;
-    Description : string;
-    Name : string;
+    Version: Integer;
+    DBJpegCompressionQuality: Byte;
+    ThSize: Integer;
+    ThSizePanelPreview: Integer;
+    ThHintSize: Integer;
+    Description: string;
+    name: string;
   end;
 
   TPackingTableThreadOptions = record
@@ -62,7 +62,7 @@ type
   TShowBadLinksThreadOptions = record
    FileName : string;
    OnEnd : TNotifyEvent;
-   WriteLineProc :  TWriteLineProcedure;    
+   WriteLineProc :  TWriteLineProcedure;
    WriteLnLineProc :  TWriteLineProcedure;
    OnProgress : TCallBackProgressEvent;
   end;
@@ -78,7 +78,7 @@ type
    FileName : string;
    OnEnd : TNotifyEvent;
    WriteLineProc :  TWriteLineProcedure;
-   WriteLnLineProc :  TWriteLineProcedure;  
+   WriteLnLineProc :  TWriteLineProcedure;
    OnProgress : TCallBackProgressEvent;
   end;
 
@@ -94,7 +94,7 @@ Type TEventField=(EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
      EventID_Param_Add_Crypt_WithoutPass, SetNewIDFileData,
      EventID_Param_Links,  EventID_Param_DB_Changed, EventID_Param_Refresh_Window,
      EventID_FileProcessed, EventID_Repaint_ImageList);
-     
+
      TEventFields = set of TEventField;
 
   TEventValues = record
@@ -125,13 +125,13 @@ Type TEventField=(EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
 
   ///////////////CONSTANT SECTION//////////////////////
 
-const              
+const
   LINE_INFO_UNDEFINED = 0;
   LINE_INFO_OK        = 1;
   LINE_INFO_ERROR     = 2;
-  LINE_INFO_WARNING   = 3; 
-  LINE_INFO_PLUS      = 4;   
-  LINE_INFO_PROGRESS  = 5;   
+  LINE_INFO_WARNING   = 3;
+  LINE_INFO_PLUS      = 4;
+  LINE_INFO_PROGRESS  = 5;
   LINE_INFO_DB        = 6;
   LINE_INFO_GREETING  = 7;
   LINE_INFO_INFO      = -1;
@@ -280,6 +280,7 @@ type
     Exists: Integer; // for drawing in lists
     LongImageID: string;
     Data: TClonableObject;
+    constructor Create;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
     destructor Destroy; override;
@@ -365,6 +366,29 @@ begin
     Result.Data := Data.Copy
   else
     Result.Data := nil;
+end;
+
+constructor TDBPopupMenuInfoRecord.Create;
+begin
+  ID := 0;
+  FileName := '';
+  Comment := '';
+  Groups := '';
+  FileSize := 0;
+  Rotation := 0;
+  Rating := 0;
+  Access := 0;
+  Date := 0;
+  Time := 0;
+  IsDate := False;
+  IsTime := False;
+  Crypted := False;
+  KeyWords := '';
+  InfoLoaded := False;
+  Include := False;
+  Links := '';
+  Selected := False;
+  Data := nil;
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromDS(DS: TDataSet);

@@ -24,7 +24,8 @@ procedure InitEnviroment(Enviroment : TScriptEnviroment);
 
 implementation
 
-uses ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
+uses
+  ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, Searching, ManagerDBUnit, Options, ImEditor, UnitFormCont,
   ExplorerUnit, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,

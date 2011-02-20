@@ -56,6 +56,7 @@ type
     constructor Create(OwnerForm: TDBForm = nil);
     destructor Destroy; override;
     function AddFile(FileName: string; Silent: Boolean = False): Boolean;
+    function AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent: Boolean = False): Boolean;
     function AddDirectory(Directory: string; OnFileFounded: TFileFoundedEvent): Boolean;
     procedure EndDirectorySize(Sender: TObject);
     procedure OnAddFileDone(Sender: TObject);
@@ -118,29 +119,47 @@ begin
     end;
 end;
 
-function TUpdaterDB.AddFile(FileName : string; Silent : Boolean = false): Boolean;
+function TUpdaterDB.AddFile(FileName : string; Silent : Boolean = False): Boolean;
+var
+  Info: TDBPopupMenuInfoRecord;
+begin
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    Info.FileName := FileName;
+    AddFileEx(Info, Silent);
+  finally
+    F(Info);
+  end;
+end;
+
+function TUpdaterDB.AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent: Boolean = False): Boolean;
 var
   FileSize: Int64;
+  FileName: string;
 begin
+  FileName := FileInfo.FileName;
   ProcessFile(FileName);
+  FileInfo.FileName := FileName;
 
-  if Silent or (FileExists(FileName) and ExtInMask(SupportedExt, GetExt(FileName))) then
+  if Silent or (FileExistsSafe(FileName) and ExtInMask(SupportedExt, GetExt(FileName))) then
     if not(FileExistsInFileList(FileName)) then
     begin
       FileSize := GetFileSizeByName(FileName);
       Inc(FmaxSize, FileSize);
-      FFilesInfo.Add(FileName);
+      FFilesInfo.Add(FileInfo.Copy);
+
       if Assigned(OwnerFormSetMaxValue) then
         OwnerFormSetMaxValue(FFilesInfo.Count);
 
       if Assigned(OwnerFormAddFileSizes) then
         OwnerFormAddFileSizes(FileSize);
+
       if Auto then
       begin
+        Execute;
         if not Silent then
-          Execute;
-        if Assigned(ShowForm) then
-          ShowForm(Self);
+          if Assigned(ShowForm) then
+            ShowForm(Self);
       end;
     end;
   Result := True;

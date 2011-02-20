@@ -479,7 +479,7 @@ begin
     SetSplashProgress(90);
 
     EventLog('...GROUPS CHECK + MENU...');
-    TW.i.Start('IsValidGroupsTable');
+    TW.I.Start('IsValidGroupsTable');
 
     try
       if not DBTerminating then
@@ -491,7 +491,7 @@ begin
     end;
     // DB FAULT ----------------------------------------------------
 
-    TW.i.Start('CHECKS');
+    TW.I.Start('CHECKS');
 
     if not FolderView then
       if not DBTerminating then
@@ -598,7 +598,7 @@ begin
     If not DBTerminating then
     begin
       EventLog('Form manager...');
-      TW.i.Start('Form manager...');
+      TW.I.Start('Form manager...');
       FormManager.Load;
     end;
 

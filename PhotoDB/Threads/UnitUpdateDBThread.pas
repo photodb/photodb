@@ -119,7 +119,7 @@ begin
   FAutoAnswer := AutoAnswer;
   FSender := Sender;
   FNoLimit := NoLimit;
-  FUseFileNameScaning:=UseFileNameScaning;
+  FUseFileNameScaning := UseFileNameScaning;
 end;
 
 procedure UpdateDBThread.DoOnDone;
@@ -256,7 +256,8 @@ var
   procedure AddFileToDB;
   begin
     if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
-      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsTime) then
+      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsTime, FInfo[FileNumber].Rating,
+      FInfo[FileNumber].Rotation, FInfo[FileNumber].Links, FInfo[FileNumber].Access, FInfo[FileNumber].Groups) then
       Synchronize(SetImages)
     else
       F(ResArray[FileNumber].Jpeg);
@@ -605,18 +606,18 @@ var
 begin
   EventInfo.name := AnsiLowerCase(FInfo[FileNumber].FileName);
   EventInfo.ID := LastInseredID;
-  EventInfo.Rotate := 0;
-  EventInfo.Rating := 0;
-  EventInfo.Comment := '';
-  EventInfo.KeyWords := '';
-  EventInfo.Access := 0;
-  EventInfo.Attr := 0;
+  EventInfo.Rotate := FInfo[FileNumber].Rotation;
+  EventInfo.Rating := FInfo[FileNumber].Rating;
+  EventInfo.Comment := FInfo[FileNumber].Comment;
+  EventInfo.KeyWords := FInfo[FileNumber].KeyWords;
+  EventInfo.Access := FInfo[FileNumber].Access;
+  EventInfo.Attr := FInfo[FileNumber].Attr;
   EventInfo.Date := Date;
   EventInfo.IsDate := True;
   EventInfo.IsTime := IsTime;
   EventInfo.Time := TimeOf(Time);
   EventInfo.Image := nil;
-  EventInfo.Groups := '';
+  EventInfo.Groups := FInfo[FileNumber].Groups;
   EventInfo.JPEGImage := Res.Jpeg;
   EventInfo.Crypt := Res.Crypt;
   EventInfo.Include := True;
@@ -632,18 +633,18 @@ var
 begin
   EventInfo.name := AnsiLowerCase(FInfo[FileNumber].FileName);
   EventInfo.ID := LastInseredID;
-  EventInfo.Rotate := 0;
-  EventInfo.Rating := 0;
-  EventInfo.Comment := '';
-  EventInfo.KeyWords := '';
-  EventInfo.Access := 0;
-  EventInfo.Attr := 0;
+  EventInfo.Rotate := FInfo[FileNumber].Rotation;
+  EventInfo.Rating := FInfo[FileNumber].Rating;
+  EventInfo.Comment := FInfo[FileNumber].Comment;
+  EventInfo.KeyWords := FInfo[FileNumber].KeyWords;
+  EventInfo.Access := FInfo[FileNumber].Access;
+  EventInfo.Attr := FInfo[FileNumber].Attr;
   EventInfo.Date := Date;
   EventInfo.IsDate := True;
   EventInfo.IsTime := IsTime;
   EventInfo.Time := TimeOf(Time);
   EventInfo.Image := nil;
-  EventInfo.Groups := '';
+  EventInfo.Groups := FInfo[FileNumber].Groups;
   EventInfo.JPEGImage := Res.Jpeg;
   EventInfo.Crypt := Res.Crypt;
   EventInfo.Include := True;

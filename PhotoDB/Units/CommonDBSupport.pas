@@ -138,12 +138,12 @@ procedure ExecSQL(SQL : TDataSet);
 
 function GetBoolParam(Query : TDataSet; index : integer) : boolean;
 
-procedure LoadParamFromStream(Query : TDataSet; index : integer; Stream : TStream; FT : TFieldType);
-procedure SetDateParam(Query : TDataSet; Name : string; Date : TDateTime);
-procedure SetBoolParam(Query : TDataSet; index : integer; Bool : Boolean);
-procedure SetStrParam(Query : TDataSet; index : integer; Value : String);
-procedure SetIntParam(Query : TDataSet; index : integer; Value : integer);
-function QueryParamsCount(Query : TDataSet) : integer;
+ procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; FT: TFieldType);
+ procedure SetDateParam(Query: TDataSet; name: string; Date: TDateTime);
+ procedure SetBoolParam(Query: TDataSet; index: Integer; Bool: Boolean);
+ procedure SetStrParam(Query: TDataSet; index: Integer; Value: string);
+ procedure SetIntParam(Query: TDataSet; index: Integer; Value: Integer);
+ function QueryParamsCount(Query: TDataSet): Integer;
 
 function GetQueryText(Query : TDataSet) : string;
 procedure AssignParams(S,D : TDataSet);

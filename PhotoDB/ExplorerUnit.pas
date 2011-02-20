@@ -1997,7 +1997,13 @@ begin
         if HelpNo = 3 then
           Help1NextClick(Self);
 
-        fFilesInfo[i].ID := ID;
+        fFilesInfo[I].ID := ID;
+        fFilesInfo[I].Rating := Value.Rating;
+        fFilesInfo[I].Rotation := Value.Rotate;
+        fFilesInfo[I].Comment := Value.Comment;
+        fFilesInfo[I].KeyWords := Value.Comment;
+        fFilesInfo[I].Links := Value.Links;
+        fFilesInfo[I].Groups := Value.Groups;
         FFilesInfo[I].IsDate := True;
         FFilesInfo[I].IsTime := Value.IsTime;
         FFilesInfo[I].Loaded := True;
@@ -6947,11 +6953,28 @@ end;
 procedure TExplorerForm.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
+  FileInfo: TDBPopupMenuInfoRecord;
 begin
-  SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
-  EventInfo.Rating := (Sender as TMenuItem).Tag;
-  DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag, [EventID_Param_Rating],
-    EventInfo);
+  if RatingPopupMenu1.Tag > 0 then
+  begin
+    SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
+    EventInfo.Rating := (Sender as TMenuItem).Tag;
+    DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag, [EventID_Param_Rating],
+      EventInfo);
+  end else
+  begin
+    if UpdaterDB = nil then
+      UpdaterDB := TUpdaterDB.Create;
+
+    FileInfo:= TDBPopupMenuInfoRecord.Create;
+    try
+      FileInfo.FileName := FFilesInfo[-RatingPopupMenu1.Tag].FileName;
+      FileInfo.Rating := (Sender as TMenuItem).Tag;
+      UpdaterDB.AddFileEx(FileInfo, True);
+    finally
+      F(FileInfo);
+    end;
+  end;
 end;
 
 procedure TExplorerForm.ListView1Resize(Sender: TObject);
@@ -6990,15 +7013,17 @@ begin
     begin
       Index := ItemAtPos(p.X, p.Y).Index;
       Index := ItemIndexToMenuIndex(index);
-      RatingPopupMenu1.Tag := fFilesInfo[Index].ID;
-      if RatingPopupMenu1.Tag > 0 then
-      begin
-        Application.HideHint;
-        THintManager.Instance.CloseHint;
-        LastMouseItem := nil;
-        RatingPopupMenu1.Popup(p1.X, p1.Y);
-        Exit;
-      end;
+      if FFilesInfo[Index].ID > 0 then
+        RatingPopupMenu1.Tag := FFilesInfo[Index].ID
+      else
+        RatingPopupMenu1.Tag := - Index;
+
+      Application.HideHint;
+      THintManager.Instance.CloseHint;
+      LastMouseItem := nil;
+      RatingPopupMenu1.Popup(p1.X, p1.Y);
+      Exit;
+
     end;
   end;
 
