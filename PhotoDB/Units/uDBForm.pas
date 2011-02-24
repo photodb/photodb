@@ -52,7 +52,8 @@ end;
 destructor TDBForm.Destroy;
 begin
   TFormCollection.Instance.UnRegisterForm(Self);
-  GOM.RemoveObj(Self);
+  if GOM <> nil then
+    GOM.RemoveObj(Self);
   inherited;
 end;
 
@@ -70,7 +71,6 @@ function TDBForm.L(StringToTranslate : string) : string;
 begin
   Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, GetFormID)
 end;
-
 
 var
   FInstance : TFormCollection = nil;

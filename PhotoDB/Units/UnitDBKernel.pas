@@ -181,6 +181,7 @@ var
 begin
   inherited;
   FDBs := nil;
+  FImageList := nil;
   FSych := TCriticalSection.Create;
   FForms := TList.Create;
   FRegistryCache := TDBRegistryCache.Create;
@@ -1366,7 +1367,7 @@ begin
     on E: Exception do
       EventLog(':TDBKernel::AddDB() throw exception: ' + E.message);
   end;
-  Reg.Free;
+  F(Reg);
   LoadDBs;
 end;
 

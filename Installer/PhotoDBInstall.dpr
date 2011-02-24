@@ -43,7 +43,8 @@ uses
   uUpdatingWindowsActions in 'uUpdatingWindowsActions.pas',
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
   uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
-  uInstallProcess in 'uInstallProcess.pas';
+  uInstallProcess in 'uInstallProcess.pas',
+  uSetupDatabaseActions in 'uSetupDatabaseActions.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

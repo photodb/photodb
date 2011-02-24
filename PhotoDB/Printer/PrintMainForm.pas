@@ -743,7 +743,7 @@ begin
     Label2.Caption := L('Page') + ':';
     Label1.Caption := L('Print layouts') + ':';
     WlGeneratePreview.Text := L('Generate preview');
-    StHintText.Caption := L('    Choose a format to print the list on the left and double-click on the selected format');
+    StHintText.Caption := L('Choose a format to print the list on the left and double-click on the selected format');
   finally
     EndTranslate;
   end;

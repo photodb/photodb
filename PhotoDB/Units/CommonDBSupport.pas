@@ -973,7 +973,7 @@ end;
 
 Procedure InitializeDBLoadScript;
 begin
- EventLog(':InitializeDBLoadScript()');
+  EventLog(':InitializeDBLoadScript()');
   if DBLoadInitialized then
     Exit;
 {$IFNDEF DEBUG}
@@ -983,42 +983,46 @@ begin
     try
       AddScriptFunction(aScript.PrivateEnviroment,'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @UnitScripts.ReadFile);
 
-  SetNamedValue(aScript,'$PortableWork','False');
-  SetNamedValue(aScript,'$InitialString',DBFConnectionString);
-  SetNamedValue(aScript,'$Provider',MDBProvider);
-  LoadScript:='';
-  TW.I.Start('InitializeDB -> Load.dbini');
-  try
-   aFS := TFileStream.Create(ProgramDir+'scripts\Load.dbini',fmOpenRead);
-   SetLength(LoadScript,aFS.Size);
-   aFS.Read(LoadScript[1],aFS.Size);
-   for LoadInteger:=Length(LoadScript) downto 1 do
-   begin
-    if LoadScript[LoadInteger]=#10 then LoadScript[LoadInteger]:=' ';
-    if LoadScript[LoadInteger]=#13 then LoadScript[LoadInteger]:=' ';
-   end;
-   aFS.Free;
-  except
-   on e : Exception do EventLog(':InitializeDBLoadScript() at Loading Script exception : '+e.Message);
+      SetNamedValue(AScript, '$PortableWork', 'False');
+      SetNamedValue(AScript, '$InitialString', DBFConnectionString);
+      SetNamedValue(AScript, '$Provider', MDBProvider);
+      LoadScript := '';
+      TW.I.Start('InitializeDB -> Load.dbini');
+      try
+        AFS := TFileStream.Create(ProgramDir + 'scripts\Load.dbini', FmOpenRead);
+        SetLength(LoadScript, AFS.Size);
+        AFS.Read(LoadScript[1], AFS.Size);
+        for LoadInteger := Length(LoadScript) downto 1 do
+        begin
+          if LoadScript[LoadInteger] = #10 then
+            LoadScript[LoadInteger] := ' ';
+          if LoadScript[LoadInteger] = #13 then
+            LoadScript[LoadInteger] := ' ';
+        end;
+        AFS.Free;
+      except
+        on E: Exception do
+          EventLog(':InitializeDBLoadScript() at Loading Script exception : ' + E.message);
+      end;
+      TW.I.Start('InitializeDB -> ExecuteScript');
+      try
+        ExecuteScript(nil, AScript, LoadScript, LoadInteger, nil);
+      except
+        on E: Exception do
+          EventLog(':InitializeDBLoadScript() at Executing Script exception : ' + E.message);
+      end;
+      TW.I.Start('InitializeDB -> Read vars');
+      PortableWork := AnsiUpperCase(GetNamedValueString(AScript, '$PortableWork')) = 'TRUE';
+      DBFConnectionString := GetNamedValueString(AScript, '$InitialString');
+      MDBProvider := GetNamedValueString(AScript, '$Provider');
+    finally
+      F(AScript);
+    end;
   end;
-  TW.I.Start('InitializeDB -> ExecuteScript');
-  try
-   ExecuteScript(nil, aScript, LoadScript, LoadInteger, nil);
-  except
-   on e : Exception do EventLog(':InitializeDBLoadScript() at Executing Script exception : '+e.Message);
-  end;
-  TW.I.Start('InitializeDB -> Read vars');
-  PortableWork:=AnsiUpperCase(GetNamedValueString(aScript,'$PortableWork'))='TRUE';
-  DBFConnectionString:=GetNamedValueString(aScript,'$InitialString');
-  MDBProvider:=GetNamedValueString(aScript,'$Provider');
-  finally
-    aScript.Free;
-  end;
- end;
   TW.I.Start('InitializeDBLoadScript - end');
- EventLog(':InitializeDBLoadScript() return true');
- DBLoadInitialized:=true;
- {$ENDIF}
+  EventLog(':InitializeDBLoadScript() return true');
+  DBLoadInitialized := True;
+{$ENDIF}
 end;
 
 { TADOConnections }

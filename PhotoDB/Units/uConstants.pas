@@ -27,6 +27,7 @@ const
   SetupDataName = 'SETUP_DATA';
 
   //Information
+  PhotoDBFileName = 'PhotoDB.exe';
   ProductName = 'Photo DataBase 2.3';
   StartMenuProgramsPath = 'Photo DB v2.3';
   ProductVersion = '2.3';

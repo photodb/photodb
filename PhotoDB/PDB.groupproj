@@ -1,0 +1,48 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{06B626DA-BEDB-4FF7-9DB3-2F5A2F64B600}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="PhotoDB.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\Installer\PhotoDBInstall.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="PhotoDB">
+			<MSBuild Projects="PhotoDB.dproj"/>
+		</Target>
+		<Target Name="PhotoDB:Clean">
+			<MSBuild Targets="Clean" Projects="PhotoDB.dproj"/>
+		</Target>
+		<Target Name="PhotoDB:Make">
+			<MSBuild Targets="Make" Projects="PhotoDB.dproj"/>
+		</Target>
+		<Target Name="PhotoDBInstall">
+			<MSBuild Projects="..\Installer\PhotoDBInstall.dproj"/>
+		</Target>
+		<Target Name="PhotoDBInstall:Clean">
+			<MSBuild Targets="Clean" Projects="..\Installer\PhotoDBInstall.dproj"/>
+		</Target>
+		<Target Name="PhotoDBInstall:Make">
+			<MSBuild Targets="Make" Projects="..\Installer\PhotoDBInstall.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="PhotoDB;PhotoDBInstall"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="PhotoDB:Clean;PhotoDBInstall:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="PhotoDB:Make;PhotoDBInstall:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>

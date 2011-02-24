@@ -1195,7 +1195,6 @@
 	<translate name="Crop photos" value="Кадрировать фотографии" />
 	<translate name="Use custom size" value="Произвольный размер" />
 	<translate name="Custom size" value="Размер" />
-	<translate name="Page" value="Страница" />
 	<translate name="Print layouts" value="Размещение фотографий" />
 	<translate name="Generate preview" value="Сделать предпросмотр" />
 	<translate name="35 photos on page" value="35 фотографий на странице" />
@@ -1212,7 +1211,7 @@
 	<translate name="4x6 sm. 1 photo in 4 copies" value="4x6 см. 1 фото в 4 отпечатках" />
 	<translate name="3x4 sm. 1 photo in 6 copies" value="3x4 см. 1 фото в 6 отпечатках" />
 	<translate name="Page" value="Страница" />
-	<translate name="    Choose a format to print the list on the left and double-click on the selected format" value="    Выберите формат для печати в списке слева и дважды кликните на выбранном формате" />
+	<translate name="Choose a format to print the list on the left and double-click on the selected format" value="    Выберите формат для печати в списке слева и дважды кликните на выбранном формате" />
 	<translate name="Unable to open printer form: %s" value="Невозможно открыть форму печати по причине: %s" />
 	<translate name="File &quot;%s&quot; already exists! Do you want to replace it?" value="Файл &quot;%s&quot; уже существует! Вы хотите его заменить?" />  
   </scope>

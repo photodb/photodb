@@ -320,7 +320,6 @@ procedure StopApplication;
 begin
   CloseSplashWindow;
   DBTerminating := True;
-  Halt;
 end;
 
 procedure FindRunningVersion;
@@ -587,7 +586,18 @@ begin
         R(CMDForm);
       end;
 
-    TW.i.Start('LoadingAboutForm.FREE');
+    if not DBTerminating and GetParamStrDBBool('/install') then
+    begin
+      if not FileExistsSafe(dbname) then
+      begin
+        s1 := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
+        CreateExampleDB(s1, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
+        DBKernel.AddDB(TA('My collection'), s1, Application.ExeName + ',0');
+        DBKernel.SetDataBase(s1);
+      end;
+
+      StopApplication;
+    end;
 
     // PREPAIRING RUNNING DB ----------------------------------------
 
@@ -668,9 +678,16 @@ begin
     AllowDragAndDrop;
 
     TW.i.Start('Application.Run');
+
     if not DBTerminating then
       Application.Run;
 
+    if DBTerminating then
+      begin
+        TLoad.Instance.RequaredDBKernelIcons;
+        TLoad.Instance.RequaredCRCCheck;
+        TLoad.Instance.RequaredDBSettings;
+      end;
   except
     on e : Exception do
     begin

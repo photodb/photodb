@@ -1708,24 +1708,7 @@ begin
       if (LoadBaseFile <> '') and (CurrentInfo.Count = 1) then
         TempInfo := CurrentInfo[0];
 
-  CurrentInfo.Clear;
-  for I := 0 to Info.Count - 1 do
-  // All file operations in threads! if FileExists(Info.ItemFileNames[i]) then
-  begin
-    if (CurrentInfo.Count > 0) and (Info.Position <= I) and (CurrentInfo.Position = -1) then
-      CurrentInfo.Position := CurrentInfo.Count - 1;
-    if (TempInfo <> nil) and (TempInfo.ID > 0) then
-      if AnsiLowerCase(TempInfo.FileName) = AnsiLowerCase(Info[I].FileName) then
-      begin
-        CurrentInfo.Add(TempInfo.Copy);
-        CurrentInfo.Position := CurrentInfo.Count;
-        Continue;
-      end;
-    CurrentInfo.Add(Info[I].Copy);
-  end;
-  if CurrentInfo.Position = -1 then
-    CurrentInfo.Position := 0;
-
+  CurrentInfo.Assign(Info);
   TW.I.Start('DoProcessPath');
 
   for I := 0 to CurrentInfo.Count - 1 do

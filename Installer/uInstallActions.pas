@@ -146,7 +146,7 @@ begin
     for J := 0 to DiskObject.ShortCuts.Count - 1 do
     begin
       Inc(CurentPosition, InstallPoints_ShortCut);
-      ObjectPath := ResolveInstallPath(IncludeTrailingBackslash(DiskObject.FinalDestination) + DiskObject.Name);  
+      ObjectPath := ResolveInstallPath(IncludeTrailingBackslash(DiskObject.FinalDestination) + DiskObject.Name);
       ShortcutPath := ResolveInstallPath(DiskObject.ShortCuts[J].Location);
       if StartsText('http', ShortcutPath) then
       begin
@@ -173,7 +173,7 @@ var
   FileName : string;
 begin
   FCallback := Callback;
-  FileName := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe';
+  FileName := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
   RegInstallApplication(FileName, OnInstallRegistryCallBack);
 end;
 
@@ -197,16 +197,19 @@ var
   StartInfo  : TStartupInfo;
   ProcInfo   : TProcessInformation;
 begin
-  PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + 'PhotoDB.exe';
+  PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
 
   { fill with known state }
-  FillChar(StartInfo,SizeOf(TStartupInfo),#0);
-  FillChar(ProcInfo,SizeOf(TProcessInformation),#0);
-  StartInfo.cb := SizeOf(TStartupInfo);
+  FillChar(StartInfo, SizeOf(TStartupInfo), #0);
+  FillChar(ProcInfo, SizeOf(TProcessInformation), #0);
+  StartInfo.Cb := SizeOf(TStartupInfo);
 
   CreateProcess(PChar(PhotoDBExeFile), '/sleep', nil, nil, False,
               CREATE_NEW_PROCESS_GROUP + NORMAL_PRIORITY_CLASS,
               nil, PChar(CurrentInstall.DestinationPath), StartInfo, ProcInfo);
+
+  CloseHandle(ProcInfo.hProcess);
+  CloseHandle(ProcInfo.hThread);
 
   Callback(Self, InstallPoints_RunProgram, InstallPoints_RunProgram, Terminate);
 end;

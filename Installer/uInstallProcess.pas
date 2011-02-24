@@ -7,7 +7,8 @@ uses
   uInstallActions,
   uUpdatingWindowsActions,
   uAssociationActions,
-  uUninstall;
+  uUninstall,
+  uSetupDatabaseActions;
 
 implementation
 
@@ -19,6 +20,7 @@ initialization
   TInstallManager.Instance.RegisterScope(TInstallShortcuts);
   TInstallManager.Instance.RegisterScope(TInstallAssociations);
   TInstallManager.Instance.RegisterScope(TInstallUpdatingWindows);
+  TInstallManager.Instance.RegisterScope(TSetupDatabaseActions);
   TInstallManager.Instance.RegisterScope(TInstallRunProgram);
 
 end.

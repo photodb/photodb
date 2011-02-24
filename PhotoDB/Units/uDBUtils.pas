@@ -1292,7 +1292,6 @@ var
   FBS: TStream;
   Folder, QueryString, S: string;
   CRC: Cardinal;
-  JPEG: TJpegImage;
 begin
   Result := False;
   FQuery := GetQuery;

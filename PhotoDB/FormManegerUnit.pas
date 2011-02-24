@@ -430,19 +430,18 @@ begin
   end;
 end;
 
-procedure TFormManager.UnRegisterActionCanTerminating(
-  Value: TTemtinatedAction);
+procedure TFormManager.UnRegisterActionCanTerminating(Value: TTemtinatedAction);
 var
-  i, j : integer;
+  I, J: Integer;
 begin
- For i:=0 to Length(FTemtinatedActions)-1 do
- if FTemtinatedActions[i].Owner=Value.Owner then
- begin
-  For j:=i to Length(FTemtinatedActions)-2 do
-  FTemtinatedActions[j]:=FTemtinatedActions[j+1];
-  SetLength(FTemtinatedActions,Length(FTemtinatedActions)-1);
-  break;
- end;
+  for I := 0 to Length(FTemtinatedActions) - 1 do
+    if FTemtinatedActions[I].Owner = Value.Owner then
+    begin
+      for J := I to Length(FTemtinatedActions) - 2 do
+        FTemtinatedActions[J] := FTemtinatedActions[J + 1];
+      SetLength(FTemtinatedActions, Length(FTemtinatedActions) - 1);
+      Break;
+    end;
 end;
 
 function TFormManager.MainFormsCount: Integer;
@@ -452,15 +451,15 @@ end;
 
 function TFormManager.IsMainForms(Form: TForm): Boolean;
 begin
-  Result:= FMainForms.IndexOf(Form) > -1;
+  Result := FMainForms.IndexOf(Form) > -1;
 end;
 
 procedure TFormManager.CloseApp(Sender: TObject);
 var
-  i : integer;
+  I: Integer;
 begin
-  for i := 0 to FMainForms.Count - 1 do
-    TForm(FMainForms[i]).Close;
+  for I := 0 to FMainForms.Count - 1 do
+    TForm(FMainForms[I]).Close;
 end;
 
 procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(
@@ -663,8 +662,8 @@ end;
 
 destructor TFormManager.Destroy;
 begin
-  inherited;
   F(FMainForms);
+  inherited;
 end;
 
 initialization
