@@ -10,7 +10,7 @@ uses
    UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
    GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
    uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
-   uConstants, uAppUtils, uDBUtils;
+   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo;
 
 type
   TUpdateDBForm = class(TDBForm)
@@ -513,13 +513,25 @@ end;
 // LastIDImage
 procedure TUpdateDBForm.Image1Click(Sender: TObject);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Info := RecordsInfoOne(LastFileName, LastIDImage, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False,
-    False, True, '');
-  Viewer.Execute(Sender, Info);
+
+  Info := TDBPopupMenuInfo.Create;
+  try
+    InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(LastFileName);
+    try
+      InfoItem.ID := LastIDImage;
+      info.Add(InfoItem);
+      Viewer.Execute(Sender, Info);
+    finally
+      F(InfoItem);
+    end;
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TUpdateDBForm.SetAutoAnswer(Value: Integer);

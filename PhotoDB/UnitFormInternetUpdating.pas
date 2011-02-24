@@ -100,7 +100,7 @@ procedure TFormInternetUpdating.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Button1.Caption := TA('Ok');
+    Button1.Caption := L('Ok');
     WebLink2.Text := L('Home page');
     WebLink1.Text := L('Download now!');
     CheckBox1.Caption := L('Remind me later');

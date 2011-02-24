@@ -1047,15 +1047,16 @@ end;
 
 procedure TFormCont.SlideShow1Click(Sender: TObject);
 var
-  Info: TRecordsInfo;
   DBInfo: TDBPopupMenuInfo;
 begin
-  Info := RecordsInfoNil;
-  DBInfo := GetCurrentPopUpMenuInfo(nil);
-  DBPopupMenuInfoToRecordsInfo(DBInfo, Info);
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Viewer.Execute(Sender, Info);
+  DBInfo := GetCurrentPopUpMenuInfo(nil);
+  try
+    Viewer.Execute(Sender, DBInfo);
+  finally
+    F(DBInfo);
+  end;
 end;
 
 function TFormCont.ExistsItemById(id: integer): boolean;
@@ -1430,7 +1431,6 @@ end;
 procedure TFormCont.ListView1DblClick(Sender: TObject);
 var
   MenuInfo: TDBPopupMenuInfo;
-  Info: TRecordsInfo;
   Pos, MousePos: TPoint;
   Item: TEasyItem;
 begin
@@ -1460,12 +1460,15 @@ begin
   HintTimer.Enabled := False;
   if ListView1Selected <> nil then
   begin
-    MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
-    DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
-    Viewer.Execute(Sender, Info);
-    Viewer.Show;
+    MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
+    try
+      Viewer.Execute(Sender, MenuInfo);
+      Viewer.Show;
+    finally
+      F(MenuInfo);
+    end;
   end;
 end;
 

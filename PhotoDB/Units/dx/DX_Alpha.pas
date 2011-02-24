@@ -169,8 +169,9 @@ implementation
 //Но ему-то этот код в ИНет выкладывать влом, ему и сайт делать нЕкогда...
 //
 
-uses  FloatPanelFullScreen, SlideShow, SlideShowFullScreen,
-     UnitDirectXSlideShowCreator;
+uses
+  FloatPanelFullScreen, SlideShow, SlideShowFullScreen,
+  UnitDirectXSlideShowCreator;
 
 //Копирование Offscreen на экран (по WM_PAINT, к примеру)
 procedure UpdateSurface (ParentControl: TControl);
@@ -225,7 +226,7 @@ begin
   ZeroMemory (@SurfaceDesc, sizeof (TDDSurfaceDesc2));
   SurfaceDesc.dwSize := sizeof (TDDSurfaceDesc2);
   Buffer.Lock (nil, SurfaceDesc, DDLOCK_WAIT or DDLOCK_SURFACEMEMORYPTR or DDLOCK_READONLY, 0);
-  //В SurfaceDesc.lpSurface должны выгрузиться байты поверхности.
+  // В SurfaceDesc.lpSurface должны выгрузиться байты поверхности.
   if SurfaceDesc.lpSurface = nil then
      UnLock (Buffer);
 end;
@@ -393,18 +394,17 @@ begin
              (((msa * ((c shr Bbm) and $FF) + a * ((c1 shr Bbm) and $FF)) shr 8) shl Bbm);
         //Записываем в выходной массив
         bb^[m] := c;
-        bb^[m + 1] := c shr 8;
-        bb^[m + 2] := c shr 16;
-        //Следующая точка:
-        inc (m, x1);
-     until m > n
-  end;
-  //Разблокируем буфер.
-  UnLock (Buffer);
-end;
+        bb^[M + 1] := C shr 8;
+        Bb^[M + 2] := C shr 16;
+        // Следующая точка:
+        Inc(M, X1);
+      until M > N end;
+      // Разблокируем буфер.
+      UnLock(Buffer);
+    end;
 
-//По Create создаем DirectDraw и все провехности. Надо бы это делать по Resize
-//и после каждого IDirectDrawSurface4.IsLost, но я забил болт.
+    // По Create создаем DirectDraw и все провехности. Надо бы это делать по Resize
+    // и после каждого IDirectDrawSurface4.IsLost, но я забил болт.
 procedure TDirectShowForm.FormCreate(Sender: TObject);
 var
     pp: integer;
@@ -893,9 +893,9 @@ begin
  if AlphaCount<30 then exit;
  if not XForward then
  begin
-  inc(CurrentFileNumber);
-  if CurrentFileNumber>=Length(CurrentInfo.ItemFileNames) then
-  CurrentFileNumber:=0;
+  inc(Viewer.CurrentFileNumber);
+  if Viewer.CurrentFileNumber>=Viewer.CurrentInfo.Count then
+  Viewer.CurrentFileNumber:=0;
  end;
  LoadCurrentImage(XForward,true);
 end;
@@ -905,20 +905,20 @@ begin
  FNowPaused:=false;
  FReadyAfterPause:=false;
  SID:=GetGUID;
- Dec(CurrentFileNumber);
- if CurrentFileNumber<0 then
- CurrentFileNumber:=Length(CurrentInfo.ItemFileNames)-1;
+ Dec(Viewer.CurrentFileNumber);
+ if Viewer.CurrentFileNumber<0 then
+ Viewer.CurrentFileNumber:=Viewer.CurrentInfo.Count-1;
  LoadCurrentImage(false,false);
 end;
 
 procedure TDirectShowForm.LoadCurrentImage(XForward, Next : Boolean);
 var
   Info : TDirectXSlideShowCreatorInfo;
-  n : integer;
+  N : Integer;
 begin
  if not XForward then
  begin
-  if FForwardThreadExists and (ForwardFileName=CurrentInfo.ItemFileNames[CurrentFileNumber]) then
+  if FForwardThreadExists and (ForwardFileName=Viewer.Item.FileName) then
   begin
    Ready:=true;
    exit;
@@ -929,26 +929,26 @@ begin
  end;
  if XForward then
  begin
-  n:=CurrentFileNumber;
+  n:=Viewer.CurrentFileNumber;
   ForwardSID:=GetGUID;
   if Next then
   begin
    inc(n);
-   if n>=Length(CurrentInfo.ItemFileNames) then
+   if n>=Viewer.CurrentInfo.Count then
    n:=0;
   end else
   begin
    dec(n);
    if n<0 then
-   n:=Length(CurrentInfo.ItemFileNames)-1;
+   n:=Viewer.CurrentInfo.Count-1;
   end;
-  Info.FileName:=CurrentInfo.ItemFileNames[n];
-  Info.Rotate:=CurrentInfo.ItemRotates[n];
-  ForwardFileName:=CurrentInfo.ItemFileNames[n]
+  Info.FileName:=Viewer.CurrentInfo[N].FileName;
+  Info.Rotate:=Viewer.CurrentInfo[N].Rotation;
+  ForwardFileName:=Info.FileName
  end else
  begin
-  Info.FileName:=CurrentInfo.ItemFileNames[CurrentFileNumber];
-  Info.Rotate:=CurrentInfo.ItemRotates[CurrentFileNumber];
+  Info.FileName:=Viewer.Item.FileName;
+  Info.Rotate:=Viewer.Item.Rotation;
  end;
  Info.CallBack:=CallBack;
  Info.FDirectXSlideShowReady:=@FDirectXShowReadyForImage;

@@ -13,7 +13,7 @@ type
     procedure AddNewThread(Thread : TMultiCPUThread); override;
   public
     class function Instance : TExplorerThreadPool;
-    procedure ExtractImage(Sender : TMultiCPUThread; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);
+    procedure ExtractImage(Sender : TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(Sender : TMultiCPUThread; DirectoryPath: string; FileID : TGUID);
     procedure ExtractBigImage(Sender : TMultiCPUThread; FileName: string; Rotated : Integer; FileID : TGUID);
   end;
@@ -33,7 +33,7 @@ begin
     AddAvaliableThread(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, TExplorerThread(Thread).ExplorerInfo, TExplorerForm(Thread.ThreadForm), TExplorerThread(Thread).FUpdaterInfo, Thread.StateID));
 end;
 
-procedure TExplorerThreadPool.ExtractImage(Sender : TMultiCPUThread; Info: TOneRecordInfo; CryptedFile: Boolean; FileID : TGUID);
+procedure TExplorerThreadPool.ExtractImage(Sender : TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID : TGUID);
 var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
@@ -55,7 +55,7 @@ begin
         Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
-      Avaliablethread.FInfo := Info;
+      Avaliablethread.FInfo.Assign(Info, True);
       Avaliablethread.IsCryptedFile := CryptedFile;
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_IMAGE;
@@ -91,8 +91,8 @@ begin
         Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
-      Avaliablethread.FInfo.ItemFileName := FileName;
-      Avaliablethread.FInfo.ItemRotate := Rotated;
+      Avaliablethread.FInfo.FileName := FileName;
+      Avaliablethread.FInfo.Rotation := Rotated;
       Avaliablethread.IsCryptedFile := False;
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_BIG_IMAGE;
@@ -128,7 +128,7 @@ begin
         Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
       Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
       Avaliablethread.StateID := Thread.StateID;
-      Avaliablethread.FInfo.ItemFileName := DirectoryPath;
+      Avaliablethread.FInfo.FileName := DirectoryPath;
       Avaliablethread.IsCryptedFile := False;
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_DIRECTORY;

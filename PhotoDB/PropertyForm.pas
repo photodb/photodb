@@ -1269,13 +1269,10 @@ begin
 end;
 
 procedure TPropertiesForm.Show1Click(Sender: TObject);
-var
-  Info: TRecordsInfo;
 begin
-  DBPopupMenuInfoToRecordsInfo(FFilesInfo, Info);
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Viewer.Execute(Sender, Info);
+  Viewer.Execute(Sender, FFilesInfo);
   Viewer.Show;
 end;
 
@@ -1524,7 +1521,7 @@ begin
     Copy1.Visible := True;
   DBItem1.Clear;
   FFilesInfo.AttrExists := False;
-  TDBPopupMenu.Instance.AddDBContMenu(DBItem1, FFilesInfo);
+  TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, FFilesInfo);
 end;
 
 procedure TPropertiesForm.FormDestroy(Sender: TObject);
@@ -2388,7 +2385,7 @@ begin
       MenuInfo.IsListItem := False;
       MenuInfo.AttrExists := False;
       IDMenu1.Caption := Format(L('DB Item [%d]'), [ID]);
-      TDBPopupMenu.Instance.AddDBContMenu(IDMenu1, MenuInfo);
+      TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
       DoExit;
       Exit;
     end;
@@ -2406,7 +2403,7 @@ begin
       else
         IDMenu1.Caption := Format(L('DB Item [%d]'), [0]);
 
-      TDBPopupMenu.Instance.AddDBContMenu(IDMenu1, MenuInfo);
+      TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
       DoExit;
       Exit;
     end;
@@ -3020,28 +3017,34 @@ end;
 
 procedure TPropertiesForm.AddImThLink1Click(Sender: TObject);
 var
-  Info : TOneRecordInfo;
+  Info : TDBPopupMenuInfoRecord;
   LinkInfo: TLinkInfo;
   I: Integer;
   B: Boolean;
 begin
-  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
-  if Info.ItemImTh = '' then
-    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
-  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := L('Processing');
-  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
-  B := True;
-  for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = L('Processing') then
+
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    if Info.LongImageID = '' then
+      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+    LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+    LinkInfo.LinkName := L('Processing');
+    LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
+    B := True;
+    for I := 0 to Length(FPropertyLinks) - 1 do
+      if FPropertyLinks[I].LinkName = L('Processing') then
+      begin
+        B := False;
+        Break;
+      end;
+    if B then
     begin
-      B := False;
-      Break;
+      SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+      FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
     end;
-  if B then
-  begin
-    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
-    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+  finally
+    F(Info);
   end;
   ReadLinks;
   SetFocus;
@@ -3049,28 +3052,33 @@ end;
 
 procedure TPropertiesForm.AddOriginalImTh1Click(Sender: TObject);
 var
-  Info : TOneRecordInfo;
+  Info : TDBPopupMenuInfoRecord;
   LinkInfo: TLinkInfo;
   I: Integer;
   B: Boolean;
 begin
-  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
-  if Info.ItemImTh = '' then
-    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
-  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := L('Original');
-  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
-  B := True;
-  for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = L('Original') then
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    if Info.LongImageID = '' then
+      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+    LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+    LinkInfo.LinkName := L('Original');
+    LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
+    B := True;
+    for I := 0 to Length(FPropertyLinks) - 1 do
+      if FPropertyLinks[I].LinkName = L('Original') then
+      begin
+        B := False;
+        Break;
+      end;
+    if B then
     begin
-      B := False;
-      Break;
+      SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+      FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
     end;
-  if B then
-  begin
-    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
-    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+  finally
+    F(Info);
   end;
   ReadLinks;
   SetFocus;
@@ -3079,42 +3087,49 @@ end;
 procedure TPropertiesForm.AddImThProcessingImageAndAddOriginalToProcessingPhoto1Click(
   Sender: TObject);
 var
-  Info : TOneRecordInfo;
+  Info : TDBPopupMenuInfoRecord;
   LinkInfo: TLinkInfo;
   LinksInfo: TLinksInfo;
   Query: TDataSet;
   I: Integer;
   B: Boolean;
 begin
-  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
-  if Info.ItemImTh = '' then
-    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
-  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := L('Processing');
-  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
-  B := True;
-  for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = L('Processing') then
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    if Info.LongImageID = '' then
+      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+    LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+    LinkInfo.LinkName := L('Processing');
+    LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
+    B := True;
+    for I := 0 to Length(FPropertyLinks) - 1 do
+      if FPropertyLinks[I].LinkName = L('Processing') then
+      begin
+        B := False;
+        Break;
+      end;
+    if B then
     begin
-      B := False;
-      Break;
+      SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+      FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
     end;
-  if B then
-  begin
-    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
-    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+    SetLength(LinksInfo, 1);
+    LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
+    LinksInfo[0].LinkName := L('Original');
+    LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
+    ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.Links);
+    Query := GetQuery;
+    try
+      SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ID]));
+      SetStrParam(Query, 0, Info.Links);
+      ExecSQL(Query);
+    finally
+      FreeDS(Query);
+    end;
+  finally
+    F(Info);
   end;
-  SetLength(LinksInfo, 1);
-  LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
-  LinksInfo[0].LinkName := L('Original');
-  // TODO:[0]
-  LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
-  ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.ItemLinks);
-  Query := GetQuery;
-  SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ItemId]));
-  SetStrParam(Query, 0, Info.ItemLinks);
-  ExecSQL(Query);
-  FreeDS(Query);
   ReadLinks;
   SetFocus;
 end;
@@ -3122,42 +3137,50 @@ end;
 procedure TPropertiesForm.AddOriginalImThAndAddProcessngToOriginalImTh1Click(
   Sender: TObject);
 var
-  Info : TOneRecordInfo;
+  Info : TDBPopupMenuInfoRecord;
   LinkInfo: TLinkInfo;
   LinksInfo: TLinksInfo;
   Query: TDataSet;
   I: Integer;
   B: Boolean;
 begin
-  GetInfoByFileNameA(LinkDropFiles[0], False, Info);
-  if Info.ItemImTh = '' then
-    Info.ItemImTh := GetImageIDW(LinkDropFiles[0], False).ImTh;
-  LinkInfo.LinkType := LINK_TYPE_ID_EXT;
-  LinkInfo.LinkName := L('Original');
-  LinkInfo.LinkValue := CodeExtID(Info.ItemImTh);
-  B := True;
-  for I := 0 to Length(FPropertyLinks) - 1 do
-    if FPropertyLinks[I].LinkName = L('Original') then
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    if Info.LongImageID = '' then
+      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+    LinkInfo.LinkType := LINK_TYPE_ID_EXT;
+    LinkInfo.LinkName := L('Original');
+    LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
+    B := True;
+    for I := 0 to Length(FPropertyLinks) - 1 do
+      if FPropertyLinks[I].LinkName = L('Original') then
+      begin
+        B := False;
+        Break;
+      end;
+    if B then
     begin
-      B := False;
-      Break;
+      SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
+      FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
     end;
-  if B then
-  begin
-    SetLength(FPropertyLinks, Length(FPropertyLinks) + 1);
-    FPropertyLinks[Length(FPropertyLinks) - 1] := LinkInfo;
+    SetLength(LinksInfo, 1);
+    LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
+    LinksInfo[0].LinkName := L('Processing');
+    // TODO:[0]
+    LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
+    ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.Links);
+    Query := GetQuery;
+    try
+      SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ID]));
+      SetStrParam(Query, 0, Info.Links);
+      ExecSQL(Query);
+    finally
+      FreeDS(Query);
+    end;
+  finally
+    F(Info);
   end;
-  SetLength(LinksInfo, 1);
-  LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
-  LinksInfo[0].LinkName := L('Processing');
-  // TODO:[0]
-  LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
-  ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.ItemLinks);
-  Query := GetQuery;
-  SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ItemId]));
-  SetStrParam(Query, 0, Info.ItemLinks);
-  ExecSQL(Query);
-  FreeDS(Query);
   ReadLinks;
   SetFocus;
 end;

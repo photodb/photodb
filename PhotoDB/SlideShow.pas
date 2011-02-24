@@ -184,7 +184,7 @@ type
     procedure Pause;
     procedure DestroyTimerTimer(Sender: TObject);
     procedure ImageFrameTimerTimer(Sender: TObject);
-    procedure UpdateInfo(SID : TGUID; Info : TOneRecordInfo);
+    procedure UpdateInfo(SID : TGUID; Info : TDBPopupMenuInfoRecord);
     procedure TbSlideShowClick(Sender: TObject);
     procedure SlideTimerTimer(Sender: TObject);
     procedure ImageEditor1Click(Sender: TObject);
@@ -193,7 +193,7 @@ type
     procedure TbRatingClick(Sender: TObject);
     procedure N51Click(Sender: TObject);
     procedure ApplicationEvents1Hint(Sender: TObject);
-    procedure UpdateInfoAboutFileName(FileName : String; info : TOneRecordInfo);
+    procedure UpdateInfoAboutFileName(FileName : String; info : TDBPopupMenuInfoRecord);
     procedure SendTo1Click(Sender: TObject);
     procedure NewPanel1Click(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
@@ -240,8 +240,10 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WndProc(var Message: TMessage); override;
     function GetFormID : string; override;
+    function GetItem: TDBPopupMenuInfoRecord; override;
   public
     { Public declarations }
+    CurrentInfo: TDBPopupMenuInfo;
     ZoomerOn: Boolean;
     Zoom: Real;
     WaitingList: Boolean;
@@ -260,8 +262,8 @@ type
     constructor Create(AOwner: TComponent); override;
     function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
     procedure ExecuteDirectoryWithFileOnThread(FileName : String);
-    function Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
-    function ExecuteW(Sender: TObject; Info : TRecordsInfo; LoadBaseFile : String) : boolean;
+    function Execute(Sender: TObject; Info: TDBPopupMenuInfo) : boolean;
+    function ExecuteW(Sender: TObject; Info : TDBPopupMenuInfo; LoadBaseFile : String) : boolean;
     procedure LoadLanguage;
     procedure LoadPopupMenuLanguage;
     procedure ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
@@ -287,28 +289,27 @@ type
     function GetPageCaption : String;
     property DisplayRating : Integer write SetDisplayRating;
   published
-    Property ImageExists : Boolean read FImageExists write SetImageExists;
-    Property StaticImage : Boolean read FStaticImage Write SetPropStaticImage;
-    Property Loading : Boolean read FLoading write SetLoading;
-    Property ValidImages : Integer read FValidImages write SetValidImages;
-    Property ForwardThreadExists : Boolean read FForwardThreadExists write SetForwardThreadExists;
-    Property ForwardThreadSID : TGUID read FForwardThreadSID write SetForwardThreadSID;
-    Property ForwardThreadNeeds : Boolean read FForwardThreadNeeds write SetForwardThreadNeeds;
-    Property ForwardThreadFileName : string read FForwardThreadFileName write SetForwardThreadFileName;
-    Property TransparentImage : Boolean read FTransparentImage write SetTransparentImage;
-    Property CurrentlyLoadedFile : String read FCurrentlyLoadedFile write SetCurrentlyLoadedFile;
-    Property Play : boolean read FPlay write SetPlay;
+    property ImageExists: Boolean read FImageExists write SetImageExists;
+    property StaticImage: Boolean read FStaticImage write SetPropStaticImage;
+    property Loading: Boolean read FLoading write SetLoading;
+    property ValidImages: Integer read FValidImages write SetValidImages;
+    property ForwardThreadExists: Boolean read FForwardThreadExists write SetForwardThreadExists;
+    property ForwardThreadSID: TGUID read FForwardThreadSID write SetForwardThreadSID;
+    property ForwardThreadNeeds: Boolean read FForwardThreadNeeds write SetForwardThreadNeeds;
+    property ForwardThreadFileName: string read FForwardThreadFileName write SetForwardThreadFileName;
+    property TransparentImage: Boolean read FTransparentImage write SetTransparentImage;
+    property CurrentlyLoadedFile: string read FCurrentlyLoadedFile write SetCurrentlyLoadedFile;
+    property Play: Boolean read FPlay write SetPlay;
+    property Item: TDBPopupMenuInfoRecord read GetItem;
   end;
 
 var
   Viewer: TViewer;
   UseOnlySelf: Boolean = False;
   UseOnlyDefaultDraw: Boolean = False;
-  CurrentInfo: TRecordsInfo;
   DrawImage: TBitmap;
   FBImage: Tbitmap;
   Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
-  CurrentFileNumber: Integer;
 
 const
   CursorZoomInNo = 130;
@@ -328,6 +329,7 @@ uses
 procedure TViewer.FormCreate(Sender: TObject);
 begin
   TW.I.Start('TViewer.FormCreate');
+  CurrentInfo := TDBPopupMenuInfo.Create;
   FCreating := True;
   FCurrentPage := 0;
   FPageCount := 1;
@@ -442,380 +444,444 @@ end;
 
 function TViewer.LoadImage_(Sender: TObject; FileName: String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
 var
-  text : string;
-  NeedsUpdating : Boolean;
+  Text: string;
+  NeedsUpdating: Boolean;
 begin
- Result:=false;
+  Result := False;
 
- SetProgressPosition(CurrentFileNumber + 1, Length(CurrentInfo.ItemFileNames));
- if (not CurrentInfo.LoadedImageInfo[CurrentFileNumber]) and (CurrentInfo.ItemIds[CurrentFileNumber]=0) then
- NeedsUpdating:=true else NeedsUpdating:=false;
- CurrentInfo.LoadedImageInfo[CurrentFileNumber]:=true;
- DoWaitToImage(Sender);
- Rotate:=CurrentInfo.ItemRotates[CurrentFileNumber];
-// DBKernel.RegisterChangesIDbyID(self,ChangedDBDataByID,CurrentInfo.ItemIds[CurrentFileNumber]);
- if CheckFileExistsWithSleep(FileName,false) then
- begin
-  Caption:=Format(L('View') + ' - %s   [%d/%d]',[ExtractFileName(FileName),CurrentFileNumber+1, Length(CurrentInfo.LoadedImageInfo)]);
+  SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
+  if (not Item.InfoLoaded) and (Item.ID = 0) then
+    NeedsUpdating := True
+  else
+    NeedsUpdating := False;
 
-  DisplayRating := CurrentInfo.ItemRatings[CurrentFileNumber];
+  Item.InfoLoaded := True;
+  DoWaitToImage(Sender);
+  Rotate := Item.Rotation;
 
-  TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
-  TbRotateCW.Enabled:=TbRotateCCW.Enabled;
+ // DBKernel.RegisterChangesIDbyID(self,ChangedDBDataByID,CurrentInfo.ItemIds[CurrentFileNumber]);
 
-  FSID:=GetGUID;
-  if not ForwardThreadExists or (ForwardThreadFileName<>FileName) or (Length(CurrentInfo.ItemIds)=0) or FullImage then
+  if CheckFileExistsWithSleep(FileName, False) then
   begin
-   if NeedsUpdating then
-   begin
-    if not DBKernel.ReadBool('SlideShow','UseFastSlideShowImageLiading',true) then
-    begin
-     UpdateRecord(CurrentFileNumber);
-     Rotate:=CurrentInfo.ItemRotates[CurrentFileNumber];
-     DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
+    Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(FileName), CurrentFileNumber + 1,
+      CurrentInfo.Count]);
 
-     TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
-     TbRotateCW.Enabled:=TbRotateCCW.Enabled;
+    DisplayRating := Item.Rating;
+    TbRotateCCW.Enabled := True;
+    TbRotateCW.Enabled := True;
+
+    FSID := GetGUID;
+  if not ForwardThreadExists or (ForwardThreadFileName <> FileName) or (CurrentInfo.Count = 0)
+      or FullImage then
+    begin
+      if NeedsUpdating then
+      begin
+        if not DBKernel.ReadBool('SlideShow', 'UseFastSlideShowImageLiading', True) then
+        begin
+          UpdateRecord(CurrentFileNumber);
+          Rotate := Item.Rotation;
+          DisplayRating := Item.ID;
+
+          TbRotateCCW.Enabled := True;
+          TbRotateCW.Enabled := True;
+        end else
+        begin
+          DisplayRating := -Item.ID;
+          TimerDBWork.Enabled := True;
+          TbRotateCCW.Enabled := False;
+          TbRotateCW.Enabled := False;
+          TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
+          Rotate := 0;
+        end;
+      end;
+
+      Result := True;
+      if not RealZoom then
+        TViewerThread.Create(Self, FileName, Rotate, FullImage, 1, FSID, False, False, FCurrentPage)
+      else
+        TViewerThread.Create(Self, FileName, Rotate, FullImage, BeginZoom, FSID, False, False, FCurrentPage);
+      ForwardThreadExists := False;
     end else
-    begin
-     DisplayRating := - CurrentInfo.ItemIds[CurrentFileNumber];
-     TimerDBWork.Enabled:=true;
-     TbRotateCCW.Enabled:=false;
-     TbRotateCW.Enabled:=false;
-     TSlideShowUpdateInfoThread.Create(Self, StateID, CurrentInfo.ItemFileNames[CurrentFileNumber]);
-     Rotate:=0;
-    end;
-   end;
+      ForwardThreadNeeds := True;
+  end else
+  begin
+    Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(FileName), CurrentFileNumber + 1,
+      CurrentInfo.Count]);
+    DisplayRating := Item.ID;
 
-   Result:=true;
-   if not RealZoom then
-   TViewerThread.Create(Self,FileName,Rotate,FullImage,1,FSID,false,false, fCurrentPage) else
-   TViewerThread.Create(Self,FileName,Rotate,FullImage,BeginZoom,FSID,false,false, fCurrentPage);
-   ForwardThreadExists:=false;
-  end else ForwardThreadNeeds:=true;
- end else
- begin
-  Caption:=Format(L('View') + ' - %s   [%d/%d]',[ExtractFileName(FileName),CurrentFileNumber+1,Length(CurrentInfo.LoadedImageInfo)]);
-  DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
+    TbRotateCCW.Enabled := True;
+    TbRotateCW.Enabled := True;
 
-  TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
-  TbRotateCW.Enabled:=TbRotateCCW.Enabled;
-
-  Text:=Format(L('File %s not found!'),[Mince(FileName,80)]);
-  FbImage.Canvas.Rectangle(0,0,FbImage.width,FbImage.Height);
-  FbImage.Width:=FbImage.Canvas.TextWidth(text);
-  FbImage.Height:=FbImage.Canvas.TextHeight(text);
-  FbImage.Canvas.TextOut(0,0,text);
-  RecreateDrawImage(Sender);
-  FormPaint(Sender);
-  Result:=false;
- end;
- TW.I.Start('LoadImage_ - end');
+    Text := Format(L('File %s not found!'), [Mince(FileName, 80)]);
+    FbImage.Canvas.Rectangle(0, 0, FbImage.Width, FbImage.Height);
+    FbImage.Width := FbImage.Canvas.TextWidth(Text);
+    FbImage.Height := FbImage.Canvas.TextHeight(Text);
+    FbImage.Canvas.TextOut(0, 0, Text);
+    RecreateDrawImage(Sender);
+    FormPaint(Sender);
+    Result := False;
+  end;
+  TW.I.Start('LoadImage_ - end');
 end;
 
 procedure TViewer.RecreateDrawImage(Sender: TObject);
 var
-  fh,fw : integer;
-  zx,zy,zw,zh, x1,x2,y1,y2 : integer;
-  ImRect, BeginRect : TRect;
-  z : real;
-  FileName : string;
-  TempImage, b : TBitmap;
-  aCopyRect : TRect;
-  text_error_out : string;
+  Fh, Fw: Integer;
+  Zx, Zy, Zw, Zh, X1, X2, Y1, Y2: Integer;
+  ImRect, BeginRect: TRect;
+  Z: Real;
+  FileName: string;
+  TempImage, B: TBitmap;
+  ACopyRect: TRect;
+  Text_error_out: string;
 
- procedure DrawRect(x1,y1,x2,y2 : Integer);
- begin
-  if TransparentImage then
+  procedure DrawRect(X1, Y1, X2, Y2: Integer);
   begin
-   drawimage.Canvas.Brush.Color:=ClBtnFace;
-   drawimage.Canvas.Pen.Color:=0;
-   drawimage.Canvas.Rectangle(x1-1,y1-1,x2+1,y2+1);
+    if TransparentImage then
+    begin
+      Drawimage.Canvas.Brush.Color := ClBtnFace;
+      Drawimage.Canvas.Pen.Color := 0;
+      Drawimage.Canvas.Rectangle(X1 - 1, Y1 - 1, X2 + 1, Y2 + 1);
+    end;
   end;
- end;
 
 begin
-  z:=0;
-  UseOnlyDefaultDraw:=false;
-  FileName:=FCurrentlyLoadedFile;
+  Z := 0;
+  UseOnlyDefaultDraw := False;
+  FileName := FCurrentlyLoadedFile;
   if FullScreenNow then
   begin
-   DrawImage.Width:=Screen.Width;
-   DrawImage.Height:=Screen.Height;
-   DrawImage.Canvas.Brush.Color:=0;
-   DrawImage.Canvas.pen.Color:=0;
-   DrawImage.Canvas.Rectangle(0,0,DrawImage.Width,DrawImage.Height);
-   if (FbImage.Height=0) or (FbImage.width=0) then exit;
-   fw:=FbImage.Width;
-   fh:=FbImage.Height;
-   ProportionalSize(Screen.Width,Screen.Height,fw,fh);
-   if ImageExists then
-   begin
-    If false{DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True)} then
+    DrawImage.Width := Screen.Width;
+    DrawImage.Height := Screen.Height;
+    DrawImage.Canvas.Brush.Color := 0;
+    DrawImage.Canvas.Pen.Color := 0;
+    DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
+    if (FbImage.Height = 0) or (FbImage.Width = 0) then
+      Exit;
+    Fw := FbImage.Width;
+    Fh := FbImage.Height;
+    ProportionalSize(Screen.Width, Screen.Height, Fw, Fh);
+    if ImageExists then
     begin
-     if ZoomerOn then z:=RealZoomInc*Zoom else
-     begin
-      if RealImageWidth*RealImageHeight<>0 then
+      if False { DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) } then
       begin
-       if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_270) then
-       z:=min(fw/RealImageHeight,fh/RealImageWidth) else
-       z:=min(fw/RealImageWidth,fh/RealImageHeight);
-      end else z:=1;
-     end;
-     if (Z<ZoomSmoothMin) or UseOnlyDefaultDraw then
-     StretchCool(Screen.Width div 2 - fw div 2,Screen.Height div 2 - fh div 2,fw,fh,FbImage,DrawImage)
-     else begin
-      TempImage := TBitmap.Create;
-      TempImage.PixelFormat:=pf24bit;
-      TempImage.Width:=fw;
-      TempImage.Height:=fh;
-      SmoothResize(fw,fh,FbImage,TempImage);
-      DrawImage.Canvas.Draw(Screen.Width div 2 - fw div 2,Screen.Height div 2 - fh div 2,TempImage);
-      TempImage.Free;
-     end;
-    end else
-    begin
-     SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-     DrawImage.Canvas.StretchDraw(rect(Screen.Width div 2 - fw div 2,Screen.Height div 2 - fh div 2,Screen.Width div 2 - fw div 2+fw,Screen.Height div 2 - fh div 2+fh),FbImage);
-    end;
-   end else
-   begin
-    DrawImage.Canvas.Font.Color:=$FFFFFF;
-    text_error_out := L('Error showing image!');
-    DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(text_error_out) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2,text_error_out);
-    DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(FileName) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2+DrawImage.Canvas.Textheight(FileName)+4,FileName);
-   end;
-   if FullScreenView<>nil then
-   FullScreenView.Canvas.Draw(0,0,DrawImage);
-   exit;
-  end;
-  DrawImage.Width:=Clientwidth;
-  DrawImage.Height:=HeightW;
-  DrawImage.Canvas.Brush.Color:=ClBtnFace;
-  DrawImage.Canvas.pen.Color:=ClBtnFace;
-  DrawImage.Canvas.Rectangle(0,0,DrawImage.Width,DrawImage.Height);
-  if (FbImage.Height=0) or (FbImage.width=0) then exit;
-  if (FbImage.width>ClientWidth) or (FbImage.Height>HeightW) then
-  begin
-   if FbImage.width/FbImage.Height<DrawImage.width/DrawImage.Height then
-   begin
-    fh:=DrawImage.Height;
-    fw:=round(drawimage.Height*(FbImage.width/fbImage.Height));
-   end else begin
-    fw:=DrawImage.width;
-    fh:=round(DrawImage.width*(FbImage.Height/fbImage.width));
-   end;
-  end else begin
-   fh:=FbImage.Height;
-   fw:=FbImage.Width;
-  end;
-  x1:=ClientWidth div 2 - fw div 2;
-  y1:=(HeightW) div 2 - fh div 2;
-  x2:=x1+fw;
-  y2:=y1+fh;
-  ImRect:=GetImageRectA;
-  zx:=ImRect.Left;
-  zy:=ImRect.Top;
-  zw:=ImRect.Right-ImRect.Left;
-  zh:=ImRect.Bottom-ImRect.Top;
-  if ImageExists or Loading then
-  begin
-   If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
-   begin
-    if ZoomerOn and not WaitImageTimer.Enabled then
-    begin
-     DrawRect(ImRect.Left,ImRect.Top,ImRect.Right,ImRect.Bottom);
-     if Zoom<=1 then
-     begin
-      if (Zoom<ZoomSmoothMin) or UseOnlyDefaultDraw then
-      StretchCoolW(zx,zy,zw,zh,Rect(Round(ScrollBar1.Position/zoom), Round(ScrollBar2.Position/zoom), Round((ScrollBar1.Position+zw)/zoom),Round((ScrollBar2.Position+zh)/zoom)),FbImage,DrawImage)
-      else begin
-       aCopyRect :=  Rect(Round(ScrollBar1.Position/zoom), Round(ScrollBar2.Position/zoom), Round((ScrollBar1.Position+zw)/zoom),Round((ScrollBar2.Position+zh)/zoom));
-       TempImage := TBitmap.Create;
-       TempImage.PixelFormat:=pf24bit;
-       TempImage.Width:=zw;
-       TempImage.Height:=zh;
-       B:= TBitmap.Create;
-       B.PixelFormat:=pf24bit;
-       B.Width:=(aCopyRect.Right-aCopyRect.Left);
-       B.Height:=(aCopyRect.Bottom-aCopyRect.Top);
-       B.Canvas.CopyRect(Rect(0,0,B.Width,B.Height),FBImage.Canvas,aCopyRect);
-       SmoothResize(zw,zh,B,TempImage);
-       B.Free;
-       DrawImage.Canvas.Draw(zx,zy,TempImage);
-       TempImage.Free;
+        if ZoomerOn then
+          Z := RealZoomInc * Zoom
+        else
+        begin
+          if RealImageWidth * RealImageHeight <> 0 then
+          begin
+            if (Item.Rotation = DB_IMAGE_ROTATE_90) or
+              (Item.Rotation = DB_IMAGE_ROTATE_270) then
+              Z := Min(Fw / RealImageHeight, Fh / RealImageWidth)
+            else
+              Z := Min(Fw / RealImageWidth, Fh / RealImageHeight);
+          end else
+            Z := 1;
+        end;
+        if (Z < ZoomSmoothMin) or UseOnlyDefaultDraw then
+          StretchCool(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2, Fw, Fh, FbImage, DrawImage)
+        else
+        begin
+          TempImage := TBitmap.Create;
+          try
+            TempImage.PixelFormat := pf24bit;
+            TempImage.Width := Fw;
+            TempImage.Height := Fh;
+            SmoothResize(Fw, Fh, FbImage, TempImage);
+            DrawImage.Canvas.Draw(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2, TempImage);
+          finally
+            F(TempImage);
+          end;
+        end;
+      end else
+      begin
+        SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
+        DrawImage.Canvas.StretchDraw(Rect(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2,
+            Screen.Width div 2 - Fw div 2 + Fw, Screen.Height div 2 - Fh div 2 + Fh), FbImage);
       end;
-
-     end else
-     Interpolate(zx,zy,zw,zh,Rect(Round(ScrollBar1.Position/zoom), Round(ScrollBar2.Position/zoom), Round((ScrollBar1.Position+zw)/zoom),Round((ScrollBar2.Position+zh)/zoom)),FbImage,DrawImage);
     end else
     begin
-     DrawRect(x1,y1,x2,y2);
-     if ZoomerOn then z:=RealZoomInc*Zoom else
-     begin
-      if RealImageWidth*RealImageHeight<>0 then
-      begin
-       if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_270) then
-       z:=min(fw/RealImageHeight,fh/RealImageWidth) else
-       z:=min(fw/RealImageWidth,fh/RealImageHeight);
-      end else z:=1;
-     end;
-     if (Z<ZoomSmoothMin) or UseOnlyDefaultDraw then
-     StretchCool(x1,y1,x2-x1,y2-y1,FbImage,DrawImage)
-     else begin
-      TempImage := TBitmap.Create;
-      TempImage.PixelFormat:=pf24bit;
-      TempImage.Width:=x2-x1;
-      TempImage.Height:=y2-y1;
-      SmoothResize(x2-x1,y2-y1,FbImage,TempImage);
-      DrawImage.Canvas.Draw(x1,y1,TempImage);
-      TempImage.Free;
-     end;
+      DrawImage.Canvas.Font.Color := $FFFFFF;
+      Text_error_out := L('Error showing image!');
+      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(Text_error_out) div 2,
+        DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2, Text_error_out);
+      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(FileName) div 2,
+        DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2 + DrawImage.Canvas.Textheight
+          (FileName) + 4, FileName);
     end;
-   end else
-   begin
-    if ZoomerOn and not WaitImageTimer.Enabled then
+    if FullScreenView <> nil then
+      FullScreenView.Canvas.Draw(0, 0, DrawImage);
+    Exit;
+  end;
+  DrawImage.Width := Clientwidth;
+  DrawImage.Height := HeightW;
+  DrawImage.Canvas.Brush.Color := ClBtnFace;
+  DrawImage.Canvas.Pen.Color := ClBtnFace;
+  DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
+  if (FbImage.Height = 0) or (FbImage.Width = 0) then
+    Exit;
+  if (FbImage.Width > ClientWidth) or (FbImage.Height > HeightW) then
+  begin
+    if FbImage.Width / FbImage.Height < DrawImage.Width / DrawImage.Height then
     begin
-      ImRect:=Rect(Round(ScrollBar1.Position/zoom),Round((ScrollBar2.Position)/zoom),Round((ScrollBar1.Position+zw)/zoom),Round((ScrollBar2.Position+zh)/zoom));
-      BeginRect:=GetImageRectA;
-      DrawRect(BeginRect.Left,BeginRect.Top,BeginRect.Right,BeginRect.Bottom);
-      SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-      DrawImage.Canvas.CopyMode:=SRCCOPY;
-      DrawImage.Canvas.CopyRect(BeginRect,FbImage.Canvas,ImRect);
+      Fh := DrawImage.Height;
+      Fw := Round(Drawimage.Height * (FbImage.Width / FbImage.Height));
     end else
     begin
-     DrawRect(x1,y1,x2,y2);
-     SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-     DrawImage.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
+      Fw := DrawImage.Width;
+      Fh := Round(DrawImage.Width * (FbImage.Height / FbImage.Width));
     end;
-   end;
   end else
   begin
-   DrawImage.Canvas.Font.Color:=0;
-   DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(text_error_out) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2,text_error_out);
-   DrawImage.Canvas.TextOut(DrawImage.Width div 2-DrawImage.Canvas.TextWidth(FileName) div 2,DrawImage.Height div 2-DrawImage.Canvas.Textheight(text_error_out) div 2+DrawImage.Canvas.Textheight(FileName)+4,FileName);
+    Fh := FbImage.Height;
+    Fw := FbImage.Width;
+  end;
+  X1 := ClientWidth div 2 - Fw div 2;
+  Y1 := (HeightW) div 2 - Fh div 2;
+  X2 := X1 + Fw;
+  Y2 := Y1 + Fh;
+  ImRect := GetImageRectA;
+  Zx := ImRect.Left;
+  Zy := ImRect.Top;
+  Zw := ImRect.Right - ImRect.Left;
+  Zh := ImRect.Bottom - ImRect.Top;
+  if ImageExists or Loading then
+  begin
+    if DBKernel.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+    begin
+      if ZoomerOn and not WaitImageTimer.Enabled then
+      begin
+        DrawRect(ImRect.Left, ImRect.Top, ImRect.Right, ImRect.Bottom);
+        if Zoom <= 1 then
+        begin
+          if (Zoom < ZoomSmoothMin) or UseOnlyDefaultDraw then
+            StretchCoolW(Zx, Zy, Zw, Zh, Rect(Round(ScrollBar1.Position / Zoom), Round(ScrollBar2.Position / Zoom),
+                Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom)), FbImage, DrawImage)
+          else
+          begin
+            ACopyRect := Rect(Round(ScrollBar1.Position / Zoom), Round(ScrollBar2.Position / Zoom),
+              Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom));
+            TempImage := TBitmap.Create;
+            try
+              TempImage.PixelFormat := Pf24bit;
+              TempImage.Width := Zw;
+              TempImage.Height := Zh;
+              B := TBitmap.Create;
+              try
+                B.PixelFormat := Pf24bit;
+                B.Width := (ACopyRect.Right - ACopyRect.Left);
+                B.Height := (ACopyRect.Bottom - ACopyRect.Top);
+                B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FBImage.Canvas, ACopyRect);
+                SmoothResize(Zw, Zh, B, TempImage);
+              finally
+                F(B);
+              end;
+              DrawImage.Canvas.Draw(Zx, Zy, TempImage);
+            finally
+              F(TempImage);
+            end;
+          end;
+        end else
+          Interpolate(Zx, Zy, Zw, Zh, Rect(Round(ScrollBar1.Position / Zoom), Round(ScrollBar2.Position / Zoom),
+              Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom)), FbImage, DrawImage);
+      end else
+      begin
+        DrawRect(X1, Y1, X2, Y2);
+        if ZoomerOn then
+          Z := RealZoomInc * Zoom
+        else
+        begin
+          if RealImageWidth * RealImageHeight <> 0 then
+          begin
+            if (Item.Rotation = DB_IMAGE_ROTATE_90) or
+              (Item.Rotation = DB_IMAGE_ROTATE_270) then
+              Z := Min(Fw / RealImageHeight, Fh / RealImageWidth)
+            else
+              Z := Min(Fw / RealImageWidth, Fh / RealImageHeight);
+          end else
+            Z := 1;
+        end;
+        if (Z < ZoomSmoothMin) or UseOnlyDefaultDraw then
+          StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, DrawImage)
+        else
+        begin
+          TempImage := TBitmap.Create;
+          try
+            TempImage.PixelFormat := Pf24bit;
+            TempImage.Width := X2 - X1;
+            TempImage.Height := Y2 - Y1;
+            SmoothResize(X2 - X1, Y2 - Y1, FbImage, TempImage);
+            DrawImage.Canvas.Draw(X1, Y1, TempImage);
+          finally
+            F(TempImage);
+          end;
+        end;
+      end;
+    end
+    else
+    begin
+      if ZoomerOn and not WaitImageTimer.Enabled then
+      begin
+        ImRect := Rect(Round(ScrollBar1.Position / Zoom), Round((ScrollBar2.Position) / Zoom),
+          Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom));
+        BeginRect := GetImageRectA;
+        DrawRect(BeginRect.Left, BeginRect.Top, BeginRect.Right, BeginRect.Bottom);
+        SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
+        DrawImage.Canvas.CopyMode := SRCCOPY;
+        DrawImage.Canvas.CopyRect(BeginRect, FbImage.Canvas, ImRect);
+      end else
+      begin
+        DrawRect(X1, Y1, X2, Y2);
+        SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
+        DrawImage.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
+      end;
+    end;
+  end else
+  begin
+    DrawImage.Canvas.Font.Color := 0;
+    DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(Text_error_out) div 2,
+      DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2, Text_error_out);
+    DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(FileName) div 2,
+      DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2 + DrawImage.Canvas.Textheight
+        (FileName) + 4, FileName);
   end;
   if WaitImageTimer.Enabled and FImageExists then
   begin
-   TW.I.Start('WaitImageTimer');
-   WaitImage.Width:=DrawImage.Width;
-   WaitImage.Height:=DrawImage.Height;
-   GrayScaleImage(DrawImage,WaitImage,WaitGrayScale);
-   Canvas.Draw(0,0,WaitImage);
-   TW.I.Start('WaitImageTimer - end');
-   exit;
+    TW.I.Start('WaitImageTimer');
+    WaitImage.Width := DrawImage.Width;
+    WaitImage.Height := DrawImage.Height;
+    GrayScaleImage(DrawImage, WaitImage, WaitGrayScale);
+    Canvas.Draw(0, 0, WaitImage);
+    TW.I.Start('WaitImageTimer - end');
+    Exit;
   end;
-  if (not WaitImageTimer.Enabled) and (RealImageHeight*RealImageWidth<>0) then
+  if (not WaitImageTimer.Enabled) and (RealImageHeight * RealImageWidth <> 0) then
   begin
-   if ZoomerOn then z:=RealZoomInc*Zoom else
-   begin
-    if (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_90) or (CurrentInfo.ItemRotates[CurrentFileNumber]=DB_IMAGE_ROTATE_270) then
-    z:=min(fw/RealImageHeight,fh/RealImageWidth) else
-    z:=min(fw/RealImageWidth,fh/RealImageHeight);
-   end;
-   if WaitingList then
-   Caption:=Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]) else
-   Caption:=Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]', [ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,z*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
+    if ZoomerOn then
+      Z := RealZoomInc * Zoom
+    else
+    begin
+      if (Item.Rotation = DB_IMAGE_ROTATE_90) or
+        (Item.Rotation = DB_IMAGE_ROTATE_270) then
+        Z := Min(Fw / RealImageHeight, Fh / RealImageWidth)
+      else
+        Z := Min(Fw / RealImageWidth, Fh / RealImageHeight);
+    end;
+    if WaitingList then
+      Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',
+        [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
+        LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count])
+    else
+      Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
+        [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight, Z * 100,
+        CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
   end;
-  LastZValue:=z;
- FormPaint(Sender);
+  LastZValue := Z;
+  FormPaint(Sender);
 end;
 
 procedure TViewer.FormResize(Sender: TObject);
 begin
- TW.I.Start('TViewer.FormResize');
- if FCreating then
-   Exit;
- DrawImage.width:=ClientWidth;
- DrawImage.Height:=HeightW;
- if not WaitImageTimer.Enabled then
- ReAllignScrolls(False,Point(0,0));
- RecreateDrawImage(Sender);
- ToolsBar.Left:=ClientWidth div 2- ToolsBar.Width div 2;
- BottomImage.Top:=ClientHeight - ToolsBar.Height;
- BottomImage.Width:=ClientWidth;
- BottomImage.Height:=ToolsBar.Height;
- Canvas.Brush.Color:=ClBtnFace;
- Canvas.Pen.Color:=ClBtnFace;
- Canvas.Rectangle(0,HeightW,ClientWidth,ClientHeight);
- if StaticImage then  else
- begin
-  Canvas.Rectangle(0,0,Width,HeightW);
-  FormPaint(Sender);
- end;
- TbrActions.Refresh;
- TW.I.Start('TViewer.FormResize - end');
+  TW.I.Start('TViewer.FormResize');
+  if FCreating then
+    Exit;
+  DrawImage.Width := ClientWidth;
+  DrawImage.Height := HeightW;
+  if not WaitImageTimer.Enabled then
+    ReAllignScrolls(False, Point(0, 0));
+  RecreateDrawImage(Sender);
+  ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
+  BottomImage.Top := ClientHeight - ToolsBar.Height;
+  BottomImage.Width := ClientWidth;
+  BottomImage.Height := ToolsBar.Height;
+  Canvas.Brush.Color := clBtnFace;
+  Canvas.Pen.Color := clBtnFace;
+  Canvas.Rectangle(0, HeightW, ClientWidth, ClientHeight);
+  if not StaticImage then
+  begin
+    Canvas.Rectangle(0, 0, Width, HeightW);
+    FormPaint(Sender);
+  end;
+  TbrActions.Refresh;
+  TW.I.Start('TViewer.FormResize - end');
 end;
 
 procedure TViewer.Next_(Sender: TObject);
 begin
-  if Length(CurrentInfo.ItemFileNames)<2 then exit;
-  inc(CurrentFileNumber);
-  if CurrentFileNumber>=Length(CurrentInfo.ItemFileNames) then
-  CurrentFileNumber:=0;
-  fCurrentPage:=0;
+  if CurrentInfo.Count < 2 then
+    Exit;
+  Inc(CurrentFileNumber);
+  if CurrentFileNumber >= CurrentInfo.Count then
+    CurrentFileNumber := 0;
+  FCurrentPage := 0;
   if SlideShowNow then
-  if CurrentInfo.ItemCrypted[CurrentFileNumber] or ValidCryptGraphicFile(CurrentInfo.ItemFileNames[CurrentFileNumber]) then
-  if DBKernel.FindPasswordForCryptImageFile(CurrentInfo.ItemFileNames[CurrentFileNumber])='' then exit;
+    if Item.Crypted or ValidCryptGraphicFile(Item.FileName)
+      then
+      if DBKernel.FindPasswordForCryptImageFile(Item.FileName) = '' then
+        Exit;
   if not SlideShowNow then
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false) else
+    LoadImage_(Sender, Item.FileName, Item.Rotation, False,
+      Zoom, False)
 end;
 
 procedure TViewer.Previous_(Sender: TObject);
 begin
-  if Length(CurrentInfo.ItemFileNames)<2 then exit;
+  if CurrentInfo.Count < 2 then
+    Exit;
   Dec(CurrentFileNumber);
-  if CurrentFileNumber<0 then
-  CurrentFileNumber:=Length(CurrentInfo.ItemFileNames)-1;
-  fCurrentPage:=0;
+  if CurrentFileNumber < 0 then
+    CurrentFileNumber := CurrentInfo.Count - 1;
+  FCurrentPage := 0;
   if not SlideShowNow then
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
+    LoadImage_(Sender, Item.FileName, Item.Rotation, False,
+      Zoom, False);
 end;
 
 procedure TViewer.NextImageClick(Sender: TObject);
 begin
- if not SlideShowNow then
- begin
-  if FullScreenNow then
-  if Play then
+  if not SlideShowNow then
   begin
-   SlideTimer.Enabled:=false;
-   SlideTimer.Enabled:=true;
+    if FullScreenNow then
+      if Play then
+      begin
+        SlideTimer.Enabled := False;
+        SlideTimer.Enabled := True;
+      end;
+    Next_(Sender);
+  end else
+  begin
+    if DirectShowForm <> nil then
+      DirectShowForm.Next(False);
   end;
-  Next_(Sender);
- end else
- begin
-  if DirectShowForm<>nil then
-  DirectShowForm.Next(false);
- end;
 end;
 
 procedure TViewer.PreviousImageClick(Sender: TObject);
 begin
- if not SlideShowNow then
- begin
-  if FullScreenNow then
-  if Play then
+  if not SlideShowNow then
   begin
-   SlideTimer.Enabled:=false;
-   SlideTimer.Enabled:=true;
+    if FullScreenNow then
+      if Play then
+      begin
+        SlideTimer.Enabled := False;
+        SlideTimer.Enabled := True;
+      end;
+    Previous_(Sender);
+  end else
+  begin
+    if DirectShowForm <> nil then
+      DirectShowForm.Previous;
   end;
-  Previous_(Sender);
- end else
- begin
-  if DirectShowForm<>nil then
-  DirectShowForm.Previous;
- end;
 end;
 
 procedure TViewer.Shell1Click(Sender: TObject);
 begin
-  ShellExecute(Handle, 'open', PWideChar(CurrentInfo.ItemFileNames[CurrentFileNumber]), nil, nil, SW_NORMAL);
+  ShellExecute(Handle, 'open', PWideChar(Item.FileName), nil, nil, SW_NORMAL);
 end;
 
 procedure TViewer.FormDestroy(Sender: TObject);
 begin
-  CurrentInfo := RecordsInfoNil;
+  F(CurrentInfo);
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
   F(FbImage);
@@ -836,129 +902,136 @@ end;
 
 procedure TViewer.FullScreen1Click(Sender: TObject);
 begin
- if Loading then exit;
- FullScreenNow:=true;
- SlideTimer.Enabled:=true;
- Play:=true;
- WaitImageTimer.Enabled:=false;
- RecreateDrawImage(Sender);
- if FullScreenView=nil then
- Application.CreateForm(TFullScreenView, FullScreenView);
- MTimer1.ImageIndex:=DB_IC_PAUSE;
- MTimer1Click(Sender);
- FullScreenView.show;
+  if Loading then
+    Exit;
+  FullScreenNow := True;
+  SlideTimer.Enabled := True;
+  Play := True;
+  WaitImageTimer.Enabled := False;
+  RecreateDrawImage(Sender);
+  if FullScreenView = nil then
+    Application.CreateForm(TFullScreenView, FullScreenView);
+  MTimer1.ImageIndex := DB_IC_PAUSE;
+  MTimer1Click(Sender);
+  FullScreenView.Show;
 end;
 
 procedure TViewer.Exit1Click(Sender: TObject);
 begin
- if not FullScreenNow and not SlideShowNow then
- begin
-  Close;
- end;
- if FullScreenNow then
- begin
-  FloatPanel.Release;
-  FloatPanel.Free;
-  FloatPanel:=nil;
-  FullScreenNow:=false;
-  RecreateDrawImage(Sender);
-  SlideTimer.Enabled:=false;
-  Play:=false;
-  if FullScreenView<>nil then FullScreenView.Close;
- end;
- if SlideShowNow then
- begin
-  FloatPanel.Release;
-  FloatPanel.Free;
-  FloatPanel:=nil;
-  SlideShowNow:=false;
-  Loading:=true;
-  ImageExists:=false;
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
-  if DirectShowForm<>nil then DirectShowForm.Close;
- end;
+  if not FullScreenNow and not SlideShowNow then
+  begin
+    Close;
+  end;
+  if FullScreenNow then
+  begin
+    R(FloatPanel);
+    FullScreenNow := False;
+    RecreateDrawImage(Sender);
+    SlideTimer.Enabled := False;
+    Play := False;
+    if FullScreenView <> nil then
+      FullScreenView.Close;
+  end;
+  if SlideShowNow then
+  begin
+    R(FloatPanel);
+    SlideShowNow := False;
+    Loading := True;
+    ImageExists := False;
+    LoadImage_(Sender, Item.FileName, Item.Rotation, False,
+      Zoom, False);
+    if DirectShowForm <> nil then
+      DirectShowForm.Close;
+  end;
 end;
 
 procedure TViewer.PaintBox1DblClick(Sender: TObject);
 begin
- FullScreen1Click(sender);
+  FullScreen1Click(Sender);
 end;
 
 procedure TViewer.FormPaint(Sender: TObject);
 begin
- if SlideShowNow or FullScreenNow then exit;
- if WaitImageTimer.Enabled then
- begin
-   if FImageExists then
-     Canvas.Draw(0,0,WaitImage)
- end else
-   Canvas.draw(0,0,DrawImage);
+  if SlideShowNow or FullScreenNow then
+    Exit;
+  if WaitImageTimer.Enabled then
+  begin
+    if FImageExists then
+      Canvas.Draw(0, 0, WaitImage)
+  end else
+    Canvas.Draw(0, 0, DrawImage);
 end;
 
 procedure TViewer.NewPicture(Sender: TObject);
 var
-  fh,fw,x1,x2,y1,y2 : integer;
+  Fh, Fw, X1, X2, Y1, Y2: Integer;
 begin
  if not SlideShowNow then
- begin
-  Fcsrbmp.Assign(Fnowcsrbmp);
-  FNewCsrBmp.Canvas.Rectangle(0,0,FNewCsrBmp.width,FNewCsrBmp.Height);
-  if (FbImage.Height=0) or (FbImage.width=0) then exit;
-  if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
   begin
-   if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
-   begin
-    fh:=FNewCsrBmp.Height;
-    fw:=round(FNewCsrBmp.Height*(FbImage.width/fbImage.Height));
-   end else begin
-    fw:=FNewCsrBmp.width;
-    fh:=round(FNewCsrBmp.width*(FbImage.Height/fbImage.width));
-   end;
-  end else begin
-   fh:=FbImage.Height;
-   fw:=FbImage.width;
-  end;
-  x1:=Screen.Width div 2 - fw div 2;
-  y1:=Screen.Height div 2 - fh div 2;
-  x2:=Screen.Width div 2 + fw div 2;
-  y2:=Screen.Height div 2 + fh div 2;
-  If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
-  StretchCool(x1,y1,x2-x1,y2-y1,FbImage,FNewCsrBmp) else
-  FNewCsrBmp.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
- end else
- begin
-  if DirectShowForm=nil then exit;
-  FNewCsrBmp.Canvas.Rectangle(0,0,FNewCsrBmp.width,FNewCsrBmp.Height);
-  if (FbImage.Height=0) or (FbImage.width=0) then exit;
-  if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
-  begin
-   if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
-   begin
-    fh:=FNewCsrBmp.Height;
-    fw:=round(FNewCsrBmp.Height*(FbImage.width/fbImage.Height));
-   end else begin
-    fw:=FNewCsrBmp.width;
-    fh:=round(FNewCsrBmp.width*(FbImage.Height/fbImage.width));
-   end;
-  end else begin
-   fh:=FbImage.Height;
-   fw:=FbImage.width;
-  end;
-  x1:=Screen.Width div 2 - fw div 2;
-  y1:=Screen.Height div 2 - fh div 2;
-  x2:=Screen.Width div 2 + fw div 2;
-  y2:=Screen.Height div 2 + fh div 2;
-  If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
-  StretchCool(x1,y1,x2-x1,y2-y1,FbImage,FNewCsrBmp) else
-  FNewCsrBmp.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
-  if DirectShowForm.FirstLoad then
-  begin
-   DirectShowForm.SetFirstImage(FNewCsrBmp);
+    Fcsrbmp.Assign(Fnowcsrbmp);
+    FNewCsrBmp.Canvas.Rectangle(0, 0, FNewCsrBmp.Width, FNewCsrBmp.Height);
+    if (FbImage.Height = 0) or (FbImage.Width = 0) then
+      Exit;
+    if (FbImage.Width > FNewCsrBmp.Width) or (FbImage.Height > FNewCsrBmp.Height) then
+    begin
+      if FbImage.Width / FbImage.Height < FNewCsrBmp.Width / FNewCsrBmp.Height then
+      begin
+        Fh := FNewCsrBmp.Height;
+        Fw := Round(FNewCsrBmp.Height * (FbImage.Width / FbImage.Height));
+      end else
+      begin
+        Fw := FNewCsrBmp.Width;
+        Fh := Round(FNewCsrBmp.Width * (FbImage.Height / FbImage.Width));
+      end;
+    end else
+    begin
+      Fh := FbImage.Height;
+      Fw := FbImage.Width;
+    end;
+    X1 := Screen.Width div 2 - Fw div 2;
+    Y1 := Screen.Height div 2 - Fh div 2;
+    X2 := Screen.Width div 2 + Fw div 2;
+    Y2 := Screen.Height div 2 + Fh div 2;
+    if DBKernel.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+      StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, FNewCsrBmp)
+    else
+      FNewCsrBmp.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
   end else
   begin
-   DirectShowForm.NewImage(FNewCsrBmp);
+    if DirectShowForm = nil then
+      Exit;
+    FNewCsrBmp.Canvas.Rectangle(0, 0, FNewCsrBmp.Width, FNewCsrBmp.Height);
+    if (FbImage.Height = 0) or (FbImage.Width = 0) then
+      Exit;
+    if (FbImage.Width > FNewCsrBmp.Width) or (FbImage.Height > FNewCsrBmp.Height) then
+    begin
+      if FbImage.Width / FbImage.Height < FNewCsrBmp.Width / FNewCsrBmp.Height then
+      begin
+        Fh := FNewCsrBmp.Height;
+        Fw := Round(FNewCsrBmp.Height * (FbImage.Width / FbImage.Height));
+      end else
+      begin
+        Fw := FNewCsrBmp.Width;
+        Fh := Round(FNewCsrBmp.Width * (FbImage.Height / FbImage.Width));
+      end;
+    end else
+    begin
+      Fh := FbImage.Height;
+      Fw := FbImage.Width;
+    end;
+    X1 := Screen.Width div 2 - Fw div 2;
+    Y1 := Screen.Height div 2 - Fh div 2;
+    X2 := Screen.Width div 2 + Fw div 2;
+    Y2 := Screen.Height div 2 + Fh div 2;
+    if DBKernel.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+      StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, FNewCsrBmp)
+    else
+      FNewCsrBmp.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
+    if DirectShowForm.FirstLoad then
+      DirectShowForm.SetFirstImage(FNewCsrBmp)
+    else
+      DirectShowForm.NewImage(FNewCsrBmp);
   end;
- end;
 end;
 
 procedure TViewer.PopupMenu1Popup(Sender: TObject);
@@ -969,113 +1042,114 @@ var
 
   procedure InitializeInfo;
   begin
-    MenuRecord := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
+    MenuRecord := CurrentInfo[CurrentFileNumber].Copy;
     Info.Add(MenuRecord);
   end;
 
 begin
   LoadPopupMenuLanguage;
- if Length(CurrentInfo.ItemIds)=0 then exit;
- Info := TDBPopupMenuInfo.Create;
- try
- Info.IsPlusMenu:=false;
- Info.IsListItem:=false;
- For i:=N2.MenuIndex+1 to DBItem1.MenuIndex-1 do
- PopupMenu1.Items.Delete(N2.MenuIndex+1);
- if CurrentInfo.ItemIds[CurrentFileNumber]<>0 then
- begin
-  AddToDB1.Visible:=false;
-  DBItem1.Visible:=true;
-  DBItem1.Caption:=Format(L('DB Item [%d]'),[CurrentInfo.ItemIds[CurrentFileNumber]]);
-  InitializeInfo;
-  TDBPopupMenu.Instance.AddDBContMenu(DBItem1,info);
- end else
- begin
+  if CurrentInfo.Count = 0 then
+    Exit;
+  Info := TDBPopupMenuInfo.Create;
+  try
+    Info.IsPlusMenu := False;
+    Info.IsListItem := False;
+    for I := N2.MenuIndex + 1 to DBItem1.MenuIndex - 1 do
+      PopupMenu1.Items.Delete(N2.MenuIndex + 1);
+    if Item.ID <> 0 then
+    begin
+      AddToDB1.Visible := False;
+      DBItem1.Visible := True;
+      DBItem1.Caption := Format(L('DB Item [%d]'), [Item.ID]);
+      InitializeInfo;
+      TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Info);
+    end else
+    begin
+      if DBKernel.ReadBool('Options', 'UseUserMenuForViewer', True) then
+        if not(SlideShowNow or FullScreenNow) then
+        begin
+          InitializeInfo;
+          TDBPopupMenu.Instance.SetInfo(Self, Info);
+          TDBPopupMenu.Instance.AddUserMenu(PopupMenu1.Items, True, N2.MenuIndex + 1);
+        end;
 
-  if DBKernel.ReadBool('Options','UseUserMenuForViewer',true) then
-  if not (SlideShowNow or FullScreenNow) then
-  begin
-   InitializeInfo;
-   TDBPopupMenu.Instance.SetInfo(info);
-   TDBPopupMenu.Instance.AddUserMenu(PopupMenu1.Items,true,N2.MenuIndex+1);
+      AddToDB1.Visible := True;
+      DBItem1.Visible := False;
+    end;
+    FullScreen1.Visible := not(FullScreenNow or SlideShowNow);
+    SlideShow1.Visible := not(FullScreenNow or SlideShowNow);
+    begin
+      AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Crypted;
+      ZoomOut1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
+      ZoomIn1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
+      RealSize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
+      BestSize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
+      DBItem1.Visible := not(SlideShowNow or FullScreenNow) and (Item.ID <> 0);
+      SetasDesktopWallpaper1.Visible := not(SlideShowNow) and ImageExists and not Item.Crypted and IsWallpaper(Item.FileName);
+      Rotate1.Visible := not(SlideShowNow) and ImageExists;
+      Properties1.Visible := not(SlideShowNow or FullScreenNow);
+      GoToSearchWindow1.Visible := not(SlideShowNow);
+      Explorer1.Visible := not(SlideShowNow);
+      Resize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
+      Shell1.Visible := not(SlideShowNow or FullScreenNow);
+      Print1.Visible := not(SlideShowNow) and ImageExists;
+      ImageEditor1.Visible := not(SlideShowNow) and ImageExists;
+      SendTo1.Visible := not(SlideShowNow) and ImageExists and (Item.ID = 0);
+    end;
+    Tools1.Visible := Resize1.Visible or Print1.Visible or ImageEditor1.Visible or GoToSearchWindow1.Visible;
+    NewPanel1.Visible := Tools1.Visible;
+  finally
+    F(Info);
   end;
-
-  AddToDB1.Visible:=True;
-  DBItem1.Visible:=false;
- end;
- FullScreen1.Visible:=not (FullScreenNow or SlideShowNow);
- SlideShow1.Visible:=not (FullScreenNow or SlideShowNow);
- begin
-  AddToDB1.Visible:=AddToDB1.Visible and not (SlideShowNow or FullScreenNow) and not CurrentInfo.ItemCrypted[CurrentFileNumber];
-  ZoomOut1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
-  ZoomIn1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
-  RealSize1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
-  BestSize1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
-  DBItem1.Visible:=not (SlideShowNow or FullScreenNow) and (CurrentInfo.ItemIds[CurrentFileNumber]<>0);
-  SetasDesktopWallpaper1.Visible:=not (SlideShowNow) and ImageExists and not CurrentInfo.ItemCrypted[CurrentFileNumber] and IsWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber]);
-  Rotate1.Visible:=not (SlideShowNow) and ImageExists;
-  Properties1.Visible:=not (SlideShowNow or FullScreenNow);
-  GoToSearchWindow1.Visible:=not (SlideShowNow);
-  Explorer1.Visible:=not (SlideShowNow);
-  Resize1.Visible:=not (SlideShowNow or FullScreenNow) and ImageExists;
-  Shell1.Visible:=not (SlideShowNow or FullScreenNow);
-  Print1.Visible:=not (SlideShowNow) and ImageExists;
-  ImageEditor1.Visible:=not (SlideShowNow) and ImageExists;
-  SendTo1.Visible:=not (SlideShowNow) and ImageExists and (CurrentInfo.ItemIds[CurrentFileNumber]=0);
- end;
-
- Tools1.Visible:=Resize1.Visible or Print1.Visible or ImageEditor1.Visible or GoToSearchWindow1.Visible;
- NewPanel1.Visible:=Tools1.Visible;
- finally
-   F(Info);
- end;
 end;
 
 procedure TViewer.MTimer1Click(Sender: TObject);
 begin
- if not SlideShowNow then
- begin
-  if MTimer1.ImageIndex=DB_IC_PAUSE then
+  if not SlideShowNow then
   begin
-   MTimer1.Caption:= L('Start timer');
-   MTimer1.ImageIndex:=DB_IC_PLAY;
-   if FloatPanel<>nil then
-   begin
-    FloatPanel.ToolButton1.Down:=false;
-    FloatPanel.ToolButton2.Down:=true;
-   end;
-   SlideTimer.Enabled:=false;
-   Play:=false;
-  end else begin
-   MTimer1.Caption:=L('Stop timer');
-   MTimer1.ImageIndex:=DB_IC_PAUSE;
-   if FloatPanel<>nil then
-   begin
-    FloatPanel.ToolButton1.Down:=true;
-    FloatPanel.ToolButton2.Down:=false;
-   end;
-   SlideTimer.Enabled:=true;
-   Play:=true;
-  end;
- end else
- begin
-  if MTimer1.ImageIndex=DB_IC_PAUSE then
+    if MTimer1.ImageIndex = DB_IC_PAUSE then
+    begin
+      MTimer1.Caption := L('Start timer');
+      MTimer1.ImageIndex := DB_IC_PLAY;
+      if FloatPanel <> nil then
+      begin
+        FloatPanel.ToolButton1.Down := False;
+        FloatPanel.ToolButton2.Down := True;
+      end;
+      SlideTimer.Enabled := False;
+      Play := False;
+    end else
+    begin
+      MTimer1.Caption := L('Stop timer');
+      MTimer1.ImageIndex := DB_IC_PAUSE;
+      if FloatPanel <> nil then
+      begin
+        FloatPanel.ToolButton1.Down := True;
+        FloatPanel.ToolButton2.Down := False;
+      end;
+      SlideTimer.Enabled := True;
+      Play := True;
+    end;
+  end else
   begin
-   if DirectShowForm<>nil then
-   DirectShowForm.Pause;
-   MTimer1.Caption:=L('Start timer');
-   MTimer1.ImageIndex:=DB_IC_PLAY;
-   FloatPanel.ToolButton1.Down:=false;
-   FloatPanel.ToolButton2.Down:=true;
-  end else begin
-   if DirectShowForm<>nil then
-   DirectShowForm.Play;
-   MTimer1.Caption:=L('Stop timer');
-   MTimer1.ImageIndex:=DB_IC_PAUSE;
-   FloatPanel.ToolButton1.Down:=true;
-   FloatPanel.ToolButton2.Down:=false;
+    if MTimer1.ImageIndex = DB_IC_PAUSE then
+    begin
+      if DirectShowForm <> nil then
+        DirectShowForm.Pause;
+      MTimer1.Caption := L('Start timer');
+      MTimer1.ImageIndex := DB_IC_PLAY;
+      FloatPanel.ToolButton1.Down := False;
+      FloatPanel.ToolButton2.Down := True;
+    end else
+    begin
+      if DirectShowForm <> nil then
+        DirectShowForm.Play;
+      MTimer1.Caption := L('Stop timer');
+      MTimer1.ImageIndex := DB_IC_PAUSE;
+      FloatPanel.ToolButton1.Down := True;
+      FloatPanel.ToolButton2.Down := False;
+    end;
   end;
- end;
 end;
 
 procedure TViewer.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -1093,9 +1167,9 @@ begin
     if (Abs(DBDragPoint.X - P.X) > 5) or (Abs(DBDragPoint.Y - P.Y) > 5) then
     begin
       DropFileSource1.Files.Clear;
-      if Length(CurrentInfo.ItemFileNames) > 0 then
+      if CurrentInfo.Count > 0 then
       begin
-        FileName := CurrentInfo.ItemFileNames[CurrentFileNumber];
+        FileName := Item.FileName;
         DropFileSource1.Files.Add(FileName);
 
         BitmapImageList := TBitmapImageList.Create;
@@ -1148,161 +1222,176 @@ begin
       end;
   end;
 
- if SetNewIDFileData in params then
- begin
-  for i:=0 to Length(CurrentInfo.ItemIds)-1 do
-  if AnsiLowerCase(CurrentInfo.ItemFileNames[i])=AnsiLowerCase(Value.Name) then
+  if SetNewIDFileData in Params then
   begin
-   CurrentInfo.ItemIds[i]:=ID;
-   CurrentInfo.ItemDates[i]:=Value.Date;
-   CurrentInfo.ItemTimes[i]:=Value.Time;
-   CurrentInfo.ItemIsDates[i]:=true;
-   CurrentInfo.ItemIsTimes[i]:=Value.IsTime;
- (* fFilesInfo[I].Rating := Value.Rating;
-  fFilesInfo[I].Rotation := Value.Rotate;
-  fFilesInfo[I].Comment := Value.Comment;
-  fFilesInfo[I].KeyWords := Value.Comment;
-  fFilesInfo[I].Links := Value.Links;
-  fFilesInfo[I].Groups := Value.Groups;
-  FFilesInfo[I].IsDate := True;
-  FFilesInfo[I].IsTime := Value.IsTime;
-  FFilesInfo[I].Loaded := True;
-  FFilesInfo[I].Links := '';
- *)
-   break;
+    for I := 0 to CurrentInfo.Count - 1 do
+      if AnsiLowerCase(CurrentInfo[I].FileName) = AnsiLowerCase(Value.name) then
+      begin
+        CurrentInfo[I].ID := ID;
+        CurrentInfo[I].Date := Value.Date;
+        CurrentInfo[I].Time := Value.Time;
+        CurrentInfo[I].IsDate := True;
+        CurrentInfo[I].IsTime := Value.IsTime;
+        CurrentInfo[I].Rating := Value.Rating;
+        CurrentInfo[I].Rotation := Value.Rotate;
+        CurrentInfo[I].Comment := Value.Comment;
+        CurrentInfo[I].KeyWords := Value.Comment;
+        CurrentInfo[I].Links := Value.Links;
+        CurrentInfo[I].Groups := Value.Groups;
+        CurrentInfo[I].IsDate := True;
+        CurrentInfo[I].IsTime := Value.IsTime;
+        CurrentInfo[I].InfoLoaded := True;
+        CurrentInfo[I].Links := '';
+        Break;
+      end;
+    Exit;
   end;
-  exit;
- end;
-
 
  if ID>0 then
- begin
-  for i:=0 to Length(CurrentInfo.ItemIds)-1 do
-  if CurrentInfo.ItemIds[i]=ID then
   begin
-   if EventID_Param_Private in params then
-   CurrentInfo.ItemAccesses[i]:=Value.Access;
-   if EventID_Param_IsDate in params then
-   CurrentInfo.ItemIsDates[i]:=Value.IsDate;
-   if EventID_Param_IsTime in params then
-   CurrentInfo.ItemIsTimes[i]:=Value.IsTime;
-   if EventID_Param_Crypt in params then
-   CurrentInfo.ItemCrypted[i]:=Value.Crypt;
-   if EventID_Param_Groups in params then
-   CurrentInfo.ItemGroups[i]:=Value.Groups;
-   if EventID_Param_Date in params then
-   CurrentInfo.ItemDates[i]:=Value.Date;
-   if EventID_Param_Time in params then
-   CurrentInfo.ItemTimes[i]:=Value.Time;
-   if EventID_Param_Rating in params then
-   begin
-    CurrentInfo.ItemRatings[i]:=Value.Rating;
-    if i=CurrentFileNumber then
-      DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
-   end;
-   if EventID_Param_Name in params then
-   CurrentInfo.ItemFileNames[i]:=Value.Name;
-   if EventID_Param_KeyWords in params then
-   CurrentInfo.ItemKeyWords[i]:=Value.KeyWords;
-   if EventID_Param_Links in params then
-   CurrentInfo.ItemLinks[i]:=Value.Links;
-   if EventID_Param_Comment in params then
-   CurrentInfo.ItemComments[i]:=Value.Comment;
-   if EventID_Param_Delete in params then
-   begin
-    CurrentInfo.LoadedImageInfo[i]:=true;
-    CurrentInfo.ItemIds[i]:=0;
-    if i=CurrentFileNumber then
-    LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
-    exit;
-   end;
+    for I := 0 to CurrentInfo.Count - 1 do
+      if CurrentInfo[I].ID = ID then
+      begin
+        if EventID_Param_Private in Params then
+          CurrentInfo[I].Access := Value.Access;
+        if EventID_Param_IsDate in Params then
+          CurrentInfo[I].IsDate := Value.IsDate;
+        if EventID_Param_IsTime in Params then
+          CurrentInfo[I].IsTime := Value.IsTime;
+        if EventID_Param_Crypt in Params then
+          CurrentInfo[I].Crypted := Value.Crypt;
+        if EventID_Param_Groups in Params then
+          CurrentInfo[I].Groups := Value.Groups;
+        if EventID_Param_Date in Params then
+          CurrentInfo[I].Date := Value.Date;
+        if EventID_Param_Time in Params then
+          CurrentInfo[I].Time := Value.Time;
+        if EventID_Param_Rating in Params then
+        begin
+          CurrentInfo[I].Rating := Value.Rating;
+          if I = CurrentFileNumber then
+            DisplayRating := CurrentInfo[I].ID;
+        end;
+        if EventID_Param_Name in Params then
+          CurrentInfo[I].FileName := Value.name;
+        if EventID_Param_KeyWords in Params then
+          CurrentInfo[I].KeyWords := Value.KeyWords;
+        if EventID_Param_Links in Params then
+          CurrentInfo[I].Links := Value.Links;
+        if EventID_Param_Comment in Params then
+          CurrentInfo[I].Comment := Value.Comment;
+        if EventID_Param_Delete in Params then
+        begin
+          CurrentInfo[I].InfoLoaded := True;
+          CurrentInfo[I].ID := 0;
+          if I = CurrentFileNumber then
+            LoadImage_(Sender, CurrentInfo[I].FileName,
+              CurrentInfo[I].Rotation, False, Zoom, False);
+          Exit;
+        end;
+      end;
   end;
- end;
- If (EventID_Param_Name in params) then
- begin
-  if CurrentInfo.ItemFileNames[CurrentFileNumber]=Value.Name then
+  if (EventID_Param_Name in Params) then
   begin
-   if Value.NewName<>'' then
-   CurrentInfo.ItemFileNames[CurrentFileNumber]:=Value.NewName;
-   CurrentInfo.LoadedImageInfo[CurrentFileNumber]:=false;
-   LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
-   exit;
-  end;
+    if Item.FileName = Value.name then
+    begin
+      if Value.NewName <> '' then
+        Item.FileName := Value.NewName;
+      Item.InfoLoaded := False;
+      LoadImage_(Sender, Item.FileName, Item.Rotation,
+        False, Zoom, False);
+      Exit;
+    end;
 
-  if ID=-1 then
-  for i:=0 to Length(CurrentInfo.ItemIds)-1 do
-  if CurrentInfo.ItemFileNames[i]=Value.NewName then
-  begin
-   CurrentInfo.LoadedImageInfo[i]:=false;
-   if i=CurrentFileNumber then
-   LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
-   exit;
-  end;
+    if ID = -1 then
+      for I := 0 to CurrentInfo.Count - 1 do
+        if CurrentInfo[I].FileName = Value.NewName then
+        begin
+          CurrentInfo[I].InfoLoaded := False;
+          if I = CurrentFileNumber then
+            LoadImage_(Sender, CurrentInfo[I].FileName, CurrentInfo[I].Rotation, False, Zoom, False);
+          Exit;
+        end;
 
- end;
- if Length(CurrentInfo.ItemIds)-1<CurrentFileNumber then exit;
- if id=CurrentInfo.ItemIds[CurrentFileNumber] then
- begin
-  If (EventID_Param_Rotate in params) then
-  CurrentInfo.ItemRotates[CurrentFileNumber]:=Value.Rotate;
-  If (EventID_Param_Rotate in params) or (EventID_Param_Image in params) then
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
- end;
+  end;
+  if CurrentInfo.Count - 1 < CurrentFileNumber then
+    Exit;
+
+  if Id = Item.ID then
+  begin
+    if (EventID_Param_Rotate in Params) then
+      Item.Rotation := Value.Rotate;
+    if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) then
+      LoadImage_(Sender, Item.FileName, Item.Rotation,
+        False, Zoom, False);
+  end;
 end;
 
-procedure TViewer.LoadListImages(List: TstringList);
+procedure TViewer.LoadListImages(List: TStringList);
 var
-  i : integer;
-  FileName : string;
-  fQuery : TDataSet;
+  I: Integer;
+  FileName: string;
+  FQuery: TDataSet;
+  InfoItem: TDBPopupMenuInfoRecord;
 begin
- if List.Count=0 then exit;
- CurrentInfo:=RecordsInfoNil;
- fQuery:=GetQuery;
- for i := 0 to List.Count-1 do
- begin
-  FileName:=List[i];
-  SetSQL(fQuery,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
-  SetStrParam(fQuery,0,NormalizeDBStringLike(AnsiLowerCase(FileName)));
-  fQuery.active:=true;
-  if fQuery.RecordCount<>0 then
-  begin
-   fQuery.First;
-   AddRecordsInfoOne(CurrentInfo,fQuery.FieldByName('FFileName').AsString,fQuery.FieldByName('ID').AsInteger, fQuery.FieldByName('Rotated').AsInteger,fQuery.FieldByName('Rating').AsInteger,fQuery.FieldByName('Access').AsInteger,fQuery.FieldByName('Comment').AsString,fQuery.FieldByName('KeyWords').AsString,fQuery.FieldByName('Owner').AsString,fQuery.FieldByName('Collection').AsString,fQuery.FieldByName('Groups').AsString,fQuery.FieldByName('DateToAdd').AsDateTime,fQuery.FieldByName('IsDate').AsBoolean,fQuery.FieldByName('IsTime').AsBoolean,fQuery.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')),true,fQuery.FieldByName('Include').AsBoolean,fQuery.FieldByName('Links').AsString);
-  end else begin
-  AddRecordsInfoOne(CurrentInfo,FileName,0,0,0,0,'','','','','',0,false,false,0,ValidCryptGraphicFile(FileName),true,false,'');
+  if List.Count = 0 then
+    Exit;
+
+  CurrentInfo.Clear;
+  FQuery := GetQuery;
+  try
+    for I := 0 to List.Count - 1 do
+    begin
+      FileName := List[I];
+      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
+          + ' AND FFileName LIKE :FFileName');
+      SetStrParam(FQuery, 0, NormalizeDBStringLike(AnsiLowerCase(FileName)));
+      FQuery.Active := True;
+      if FQuery.RecordCount <> 0 then
+      begin
+        FQuery.First;
+        InfoItem := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
+        CurrentInfo.Add(InfoItem);
+      end else
+      begin
+        InfoItem := TDBPopupMenuInfoRecord.Create;
+        InfoItem.FileName := FileName;
+        InfoItem.Crypted := ValidCryptGraphicFile(FileName);
+        InfoItem.InfoLoaded := True;
+      end;
+    end;
+  finally
+    FreeDS(FQuery);
   end;
- end;
- FreeDS(fQuery);
- CurrentFileNumber:=0;
- LoadImage_(nil,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
- Show;
- SetFocus;
- if Length(CurrentInfo.ItemFileNames)<2 then
- begin
-  TbBack.Enabled := False;
-  TbForward.Enabled := False;
-  SetProgressPosition(0, 0);
-  if FloatPanel<>nil then
+  CurrentFileNumber := 0;
+  LoadImage_(nil, Item.FileName, Item.Rotation, False, Zoom, False);
+  Show;
+  SetFocus;
+  if CurrentInfo.Count < 2 then
   begin
-   FloatPanel.ToolButton4.Enabled:=false;
-   FloatPanel.ToolButton5.Enabled:=false;
-   FloatPanel.ToolButton1.Enabled:=false;
-   FloatPanel.ToolButton2.Enabled:=false;
-  end;
- end else
- begin
-  SetProgressPosition(CurrentFileNumber + 1, Length(CurrentInfo.ItemFileNames));
-  TbBack.Enabled := True;
-  TbForward.Enabled := True;
-  if FloatPanel<>nil then
+    TbBack.Enabled := False;
+    TbForward.Enabled := False;
+    SetProgressPosition(0, 0);
+    if FloatPanel <> nil then
+    begin
+      FloatPanel.ToolButton4.Enabled := False;
+      FloatPanel.ToolButton5.Enabled := False;
+      FloatPanel.ToolButton1.Enabled := False;
+      FloatPanel.ToolButton2.Enabled := False;
+    end;
+  end else
   begin
-   FloatPanel.ToolButton4.Enabled:=True;
-   FloatPanel.ToolButton5.Enabled:=True;
-   FloatPanel.ToolButton1.Enabled:=True;
-   FloatPanel.ToolButton2.Enabled:=True;
+    SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
+    TbBack.Enabled := True;
+    TbForward.Enabled := True;
+    if FloatPanel <> nil then
+    begin
+      FloatPanel.ToolButton4.Enabled := True;
+      FloatPanel.ToolButton5.Enabled := True;
+      FloatPanel.ToolButton1.Enabled := True;
+      FloatPanel.ToolButton2.Enabled := True;
+    end;
   end;
- end;
 end;
 
 procedure TViewer.LoadPopupMenuLanguage;
@@ -1349,28 +1438,39 @@ end;
 
 procedure TViewer.ShowFile(FileName: String);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
 begin
-  Info := RecordsInfoOne(FileName, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0,
-    ValidCryptGraphicFile(FileName), False, False, '');
-  Execute(nil, Info);
+  Info:= TDBPopupMenuInfo.Create;
+  try
+    InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+    InfoItem.Crypted := ValidCryptGraphicFile(FileName);
+    Info.Add(InfoItem);
+    Execute(nil, Info);
+  finally
+    F(Info);
+  end;
 end;
 
-procedure TViewer.ShowFolder(Files: Tstrings; CurrentN : integer);
+procedure TViewer.ShowFolder(Files: TStrings; CurrentN : integer);
 var
   I: Integer;
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
 begin
-  Info := RecordsInfoNil;
-  if Files = nil then
-    Exit;
-  for I := 0 to Files.Count - 1 do
-  begin
-    AddRecordsInfoOne(Info, Files[I], 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0,
-      ValidCryptGraphicFile(Files[I]), False, False, '');
+  Info:= TDBPopupMenuInfo.Create;
+  try
+    for I := 0 to Files.Count - 1 do
+    begin
+      InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(Files[I]);
+      InfoItem.Crypted := ValidCryptGraphicFile(Files[I]);
+      Info.Add(InfoItem);
+    end;
+    Info.Position := CurrentN;
+    Execute(nil, Info);
+  finally
+    F(Info);
   end;
-  Info.Position := CurrentN;
-  Execute(nil, Info);
 end;
 
 procedure TViewer.UpdateRecord(FileNo: integer);
@@ -1380,13 +1480,14 @@ var
 begin
   DS := GetQuery;
   try
-    FileName := CurrentInfo.ItemFileNames[FileNo];
-    SetSQL(DS,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FileName))+' AND FFileName LIKE :FFileName');
+    FileName := CurrentInfo[FileNo].FileName;
+    SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
+        + ' AND FFileName LIKE :FFileName');
     SetStrParam(DS, 0, AnsiLowerCase(FileName));
     DS.Active := True;
-    if DS.RecordCount=0 then
+    if DS.RecordCount = 0 then
       Exit;
-    SetRecordsInfoOne(CurrentInfo,FileNo,DS.FieldByName('FFileName').AsString,DS.FieldByName('ID').AsInteger,DS.FieldByName('Rotated').AsInteger,DS.FieldByName('Rating').AsInteger,DS.FieldByName('Access').AsInteger,DS.FieldByName('Comment').AsString,DS.FieldByName('Groups').AsString,DS.FieldByName('DateToAdd').AsDateTime,DS.FieldByName('IsDate').AsBoolean,DS.FieldByName('IsTime').AsBoolean,DS.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(DS.FieldByName('thum')),DS.FieldByName('Include').AsBoolean,DS.FieldByName('Links').AsString);
+    CurrentInfo[FileNo] := TDBPopupMenuInfoRecord.CreateFromDS(DS);
   finally
     FreeDS(DS);
   end;
@@ -1429,7 +1530,7 @@ begin
 	    FButtons[1].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
       FW7TaskBar.ThumbBarAddButtons(Handle, 2, @FButtons);
 
-      SetProgressPosition(CurrentFileNumber + 1, Length(CurrentInfo.ItemFileNames));
+      SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
     end;
   end;
 
@@ -1441,35 +1542,35 @@ begin
       WindowsMenuTickCount := GetTickCount;
 
       if Msg.WParam = VK_LEFT then
-        PreviousImageClick(nil);
+        PreviousImageClick(Self);
 
       if Msg.WParam = VK_RIGHT then
-        NextImageClick(nil);
+        NextImageClick(Self);
 
       if Msg.Hwnd = Handle then
         if Msg.WParam = VK_ESCAPE then
           Close;
 
       if (Msg.WParam = VK_DELETE) then
-        TbDeleteClick(nil);
+        TbDeleteClick(Self);
 
       if (Msg.wParam = Byte(' ')) then
-        Next_(nil);
+        Next_(Self);
 
       if CtrlKeyDown then
       begin
-        if Msg.wParam = Byte('F') then FitToWindowClick(nil);
-        if Msg.wParam = Byte('A') then RealSizeClick(nil);
-        if Msg.wParam = Byte('S') then TbSlideShowClick(nil);
-        if Msg.wParam = VK_RETURN then FullScreen1Click(nil);
-        if Msg.wParam = Byte('I') then TbZoomOutClick(nil);
-        if Msg.wParam = Byte('O') then TbZoomInClick(nil);
-        if Msg.wParam = Byte('L') then RotateCCW1Click(nil);
-        if Msg.wParam = Byte('R') then RotateCW1Click(nil);
-        if Msg.wParam = Byte('D') then TbDeleteClick(nil);
-        if Msg.wParam = Byte('P') then Print1Click(nil);
-        if Msg.wParam = Byte('E') then ImageEditor1Click(nil);
-        if Msg.wParam = Byte('Z') then Properties1Click(nil);
+        if Msg.wParam = Byte('F') then FitToWindowClick(Self);
+        if Msg.wParam = Byte('A') then RealSizeClick(Self);
+        if Msg.wParam = Byte('S') then TbSlideShowClick(Self);
+        if Msg.wParam = VK_RETURN then FullScreen1Click(Self);
+        if Msg.wParam = Byte('I') then TbZoomOutClick(Self);
+        if Msg.wParam = Byte('O') then TbZoomInClick(Self);
+        if Msg.wParam = Byte('L') then RotateCCW1Click(Self);
+        if Msg.wParam = Byte('R') then RotateCW1Click(Self);
+        if Msg.wParam = Byte('D') then TbDeleteClick(Self);
+        if Msg.wParam = Byte('P') then Print1Click(Self);
+        if Msg.wParam = Byte('E') then ImageEditor1Click(Self);
+        if Msg.wParam = Byte('Z') then Properties1Click(Self);
 
         if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N51Click(N01);
         if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N51Click(N11);
@@ -1492,216 +1593,237 @@ begin
     if ZoomerOn or CtrlKeyDown then
     begin
       if Msg.WParam > 0 then
-        TbZoomOutClick(nil)
+        TbZoomOutClick(Self)
       else
-        TbZoomInClick(nil);
+        TbZoomInClick(Self);
     end else
     begin
       if Msg.WParam > 0 then
-        Previous_(nil)
+        Previous_(Self)
       else
-        Next_(nil);
+        Next_(Self);
     end;
   end;
 end;
 
 procedure TViewer.ShowFolderA(FileName : string; ShowPrivate : Boolean);
 var
-  N : integer;
-  Info : TRecordsInfo;
+  N: Integer;
+  Info: TDBPopupMenuInfo;
 begin
   if FileExists(FileName) then
   begin
     FileName := LongFileName(FileName);
-    GetFileListByMask(FileName, SupportedExt, Info, N, ShowPrivate);
-    if Length(info.ItemFileNames) > 0 then
-      Execute(Self, info);
+    Info := TDBPopupMenuInfo.Create;
+    try
+      GetFileListByMask(FileName, SupportedExt, Info, N, ShowPrivate);
+      if info.Count > 0 then
+        Execute(Self, info);
+    finally
+      F(Info);
+    end;
   end;
 end;
 
 procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName : String);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
 begin
   NewFormState;
   WaitingList := True;
   TSlideShowScanDirectoryThread.Create(Self, StateID, FileName);
-  Info := RecordsInfoOne(FileName, 0,0,0,0,'','','','','',0, False, False, 0, ValidCryptGraphicFile(FileName), False, False, '');
-  ExecuteW(Self, Info, '');
-  Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]), RealImageWidth, RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)]);
 
+  Info := TDBPopupMenuInfo.Create;
+  try
+    InfoItem:= TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+    InfoItem.Crypted := ValidCryptGraphicFile(FileName);
+    Info.Add(InfoItem);
+    ExecuteW(Self, Info, '');
+    Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',
+      [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
+      LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]);
+  finally
+    F(Info);
+  end;
 end;
 
-function TViewer.Execute(Sender: TObject; Info: TRecordsInfo) : boolean;
+function TViewer.Execute(Sender: TObject; Info: TDBPopupMenuInfo) : boolean;
 begin
   NewFormState;
-  WaitingList:=false;
-  Result:=ExecuteW(Sender, Info, '');
+  WaitingList := False;
+  Result := ExecuteW(Sender, Info, '');
 end;
 
-function TViewer.ExecuteW(Sender: TObject; Info: TRecordsInfo; LoadBaseFile : String) : boolean;
+function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile : String) : boolean;
 var
-  i : integer;
-  text_out : String;
-  TempInfo : TOneRecordInfo;
-  LoadImage : TPNGImage;
-  LoadImageBMP : TBitmap;
-  FOldImageExists : Boolean;
+  I: Integer;
+  TmpStr, Text_out: string;
+  TempInfo: TDBPopupMenuInfoRecord;
+  LoadImage: TPNGImage;
+  LoadImageBMP: TBitmap;
+  FOldImageExists, NotifyUser: Boolean;
 
 begin
- TW.I.Start('ExecuteW');
- Result:=true;
- SlideTimer.Enabled:=false;
- Play:=false;
- //Loading:=true;
- FullScreenNow:=false;
- SlideShowNow:=false;
- FOldImageExists := ImageExists;
- ImageExists:=false;
- if LoadBaseFile = '' then
-   ImageFrameTimer.Enabled := False;
- TW.I.Start('ToolButton1.Enabled');
- if Length(Info.ItemFileNames)=0 then
- begin
-  SetProgressPosition(0, 0);
-  TbBack.Enabled := False;
-  TbForward.Enabled := False;
-  TbFitToWindow.Enabled:=false;
-  TbRealSize.Enabled:=false;
-  TbSlideShow.Enabled:=false;
-  TbZoomOut.Enabled:=false;
-  TbZoomIn.Enabled:=false;
-  TbRotateCCW.Enabled:=false;
-  TbRotateCW.Enabled:=false;
- end else
- begin
-  SetProgressPosition(Info.Position + 1, Length(Info.ItemFileNames));
-  TbBack.Enabled := True;
-  TbForward.Enabled := True;
-  TbFitToWindow.Enabled:=true;
-  TbRealSize.Enabled:=true;
-  TbSlideShow.Enabled:=true;
-  TbZoomOut.Enabled:=true;
-  TbZoomIn.Enabled:=true;
-  TbRotateCCW.Enabled:=false;
-  TbRotateCW.Enabled:=false;
- end;
+  TW.I.Start('ExecuteW');
+  Result := True;
+  SlideTimer.Enabled := False;
+  Play := False;
+  FullScreenNow := False;
+  SlideShowNow := False;
+  FOldImageExists := ImageExists;
+  ImageExists := False;
+  if LoadBaseFile = '' then
+    ImageFrameTimer.Enabled := False;
+  TW.I.Start('ToolButton1.Enabled');
 
- if not UseOnlySelf then
- if not ((FormManager.MainFormsCount=1) and FormManager.IsMainForms(self)) then
-
- if (LoadBaseFile<>'') and (Length(CurrentInfo.ItemIds)=1) then
- begin
-  TempInfo:=GetRecordFromRecords(CurrentInfo,0);
- end else
- begin
-  TempInfo.ItemId:=-1;
- end;
- CurrentInfo:=RecordsInfoNil;
- CurrentInfo.Position:=-1;
- for i:=0 to length(Info.ItemFileNames)-1 do
-// All file operations in threads! if FileExists(Info.ItemFileNames[i]) then
- begin
-  if (Info.Position<=i) and (CurrentInfo.Position=-1) then
-  CurrentInfo.Position:=Length(CurrentInfo.ItemFileNames);
-  if TempInfo.ItemId>0 then
-  if AnsiLowerCase(TempInfo.ItemFileName)=AnsiLowerCase(Info.ItemFileNames[i]) then
+  SetProgressPosition(Info.Position + 1, Info.Count);
+  if Info.Count = 0 then
   begin
-   AddToRecordsInfoOneInfo(CurrentInfo,TempInfo);
-   CurrentInfo.Position:=length(CurrentInfo.ItemIds)-1;
-   continue;
-  end;
-   AddRecordsInfoOne(CurrentInfo,Info.ItemFileNames[i],Info.ItemIds[i],Info.ItemRotates[i],Info.ItemRatings[i],Info.ItemAccesses[i],'',Info.ItemKeyWords[i],'','',Info.ItemGroups[i],Info.ItemDates[i],Info.ItemIsDates[i],Info.ItemIsTimes[i],Info.ItemTimes[i],Info.ItemCrypted[i],Info.LoadedImageInfo[i],Info.ItemInclude[i],Info.ItemLinks[i]);
- end;
- If CurrentInfo.Position=-1 then CurrentInfo.Position:=0;
-
- TW.I.Start('DoProcessPath');
- if CurrentInfo.Position < Length(CurrentInfo.ItemFileNames) then
-   DoProcessPath(CurrentInfo.ItemFileNames[CurrentInfo.Position],true);
- for i:=0 to length(CurrentInfo.ItemFileNames)-1 do
- DoProcessPath(CurrentInfo.ItemFileNames[i]);
-
- begin
-  If Length(CurrentInfo.ItemFileNames)=0 then exit;
-  if not FullScreenNow then
-  if FullScreenView<>nil then
-  FullScreenView.Close;
-  if not SlideShowNow then
-  if DirectShowForm<>nil then
-  DirectShowForm.Close;
-
-  CurrentFileNumber:=CurrentInfo.Position;
-  if not ((LoadBaseFile<>'') and (AnsiLowerCase(CurrentInfo.ItemFileNames[CurrentFileNumber])=AnsiLowerCase(LoadBaseFile))) then
-  begin
-   Loading := True;
-   TW.I.Start('LoadImage_');
-   if LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false) then
-   begin
-    FbImage.Canvas.Brush.Color:=ClBtnFace;
-    FbImage.Canvas.pen.Color:=ClBtnFace;
-    if FNewCsrBmp<>nil then
-    FNewCsrBmp.Canvas.Rectangle(0,0,FNewCsrBmp.width,FNewCsrBmp.Height);
-    FbImage.Width:=170;
-    FbImage.Height:=170;
-    FbImage.Canvas.Rectangle(0,0,FbImage.width,FbImage.Height);
-
-    LoadImage := GetSlideShowLoadPicture;
-    try
-      LoadImageBMP := TBitmap.Create;
-      try
-        LoadPNGImage32bit(LoadImage, LoadImageBMP, ClBtnFace);
-        FbImage.Canvas.Draw(0, 0, LoadImageBMP);
-      finally
-        LoadImageBMP.Free;
-      end;
-    finally
-      LoadImage.Free;
-    end;
-
-    text_out := L('Processing') + '...';
-    FbImage.Canvas.TextOut(FbImage.Width div 2-FbImage.Canvas.TextWidth(text_out) div 2,FbImage.Height{ div 2}-4*FbImage.Canvas.Textheight(text_out) div 2,text_out);
-
-    TW.I.Start('RecreateDrawImage_');
-    RecreateDrawImage(Sender);
-    TW.I.Start('FormPaint');
-    FormPaint(Sender);
-   end;
-
+    TbBack.Enabled := False;
+    TbForward.Enabled := False;
+    TbFitToWindow.Enabled := False;
+    TbRealSize.Enabled := False;
+    TbSlideShow.Enabled := False;
+    TbZoomOut.Enabled := False;
+    TbZoomIn.Enabled := False;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False;
   end else
   begin
-   Caption:=Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',[ExtractFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]),RealImageWidth,RealImageHeight,LastZValue*100,CurrentFileNumber+1,Length(CurrentInfo.ItemFileNames)])+GetPageCaption;
-   DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
-   FImageExists := FOldImageExists;
-   TbRotateCW.Enabled:=TbRotateCCW.Enabled;
+    TbBack.Enabled := True;
+    TbForward.Enabled := True;
+    TbFitToWindow.Enabled := True;
+    TbRealSize.Enabled := True;
+    TbSlideShow.Enabled := True;
+    TbZoomOut.Enabled := True;
+    TbZoomIn.Enabled := True;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False;
   end;
- end;
- UseOnlySelf:=false;
- if Length(CurrentInfo.ItemFileNames)<2 then
- begin
-  TbBack.Enabled := False;
-  TbForward.Enabled := False;
-  SetProgressPosition(0, 0);
-  if FloatPanel<>nil then
+
+  TempInfo := nil;
+  if not UseOnlySelf then
+    if not((FormManager.MainFormsCount = 1) and FormManager.IsMainForms(Self)) then
+      if (LoadBaseFile <> '') and (CurrentInfo.Count = 1) then
+        TempInfo := CurrentInfo[0];
+
+  CurrentInfo.Clear;
+  for I := 0 to Info.Count - 1 do
+  // All file operations in threads! if FileExists(Info.ItemFileNames[i]) then
   begin
-   FloatPanel.ToolButton1.Enabled:=false;
-   FloatPanel.ToolButton2.Enabled:=false;
-   FloatPanel.ToolButton4.Enabled:=false;
-   FloatPanel.ToolButton5.Enabled:=false;
+    if (CurrentInfo.Count > 0) and (Info.Position <= I) and (CurrentInfo.Position = -1) then
+      CurrentInfo.Position := CurrentInfo.Count - 1;
+    if (TempInfo <> nil) and (TempInfo.ID > 0) then
+      if AnsiLowerCase(TempInfo.FileName) = AnsiLowerCase(Info[I].FileName) then
+      begin
+        CurrentInfo.Add(TempInfo.Copy);
+        CurrentInfo.Position := CurrentInfo.Count;
+        Continue;
+      end;
+    CurrentInfo.Add(Info[I].Copy);
   end;
- end else
- begin
-  TbBack.Enabled := True;
-  TbForward.Enabled := True;
-  SetProgressPosition(CurrentFileNumber + 1, Length(CurrentInfo.ItemFileNames));
-  if FloatPanel<>nil then
+  if CurrentInfo.Position = -1 then
+    CurrentInfo.Position := 0;
+
+  TW.I.Start('DoProcessPath');
+
+  for I := 0 to CurrentInfo.Count - 1 do
   begin
-   FloatPanel.ToolButton1.Enabled:=True;
-   FloatPanel.ToolButton2.Enabled:=True;
-   FloatPanel.ToolButton4.Enabled:=True;
-   FloatPanel.ToolButton5.Enabled:=True;
+    NotifyUser := False;
+    if I = CurrentInfo.Position then
+      NotifyUser := CurrentInfo.Position < CurrentInfo.Count;
+
+    TmpStr := CurrentInfo[I].FileName;
+    DoProcessPath(TmpStr, NotifyUser);
+    CurrentInfo[I].FileName := TmpStr;
   end;
- end;
- TW.I.Start('ExecuteW - end');
+
+  begin
+    if CurrentInfo.Count = 0 then
+      Exit;
+    if not FullScreenNow then
+      if FullScreenView <> nil then
+        FullScreenView.Close;
+    if not SlideShowNow then
+      if DirectShowForm <> nil then
+        DirectShowForm.Close;
+
+  CurrentFileNumber := CurrentInfo.Position;
+  if not ((LoadBaseFile<>'') and (AnsiLowerCase(Item.FileName)=AnsiLowerCase(LoadBaseFile))) then
+  begin
+      Loading := True;
+      TW.I.Start('LoadImage_');
+      if LoadImage_(Sender, Item.FIleName, Item.Rotation, False,
+        Zoom, False) then
+      begin
+        FbImage.Canvas.Brush.Color := clBtnFace;
+        FbImage.Canvas.Pen.Color := clBtnFace;
+        if FNewCsrBmp <> nil then
+          FNewCsrBmp.Canvas.Rectangle(0, 0, FNewCsrBmp.Width, FNewCsrBmp.Height);
+        FbImage.Width := 170;
+        FbImage.Height := 170;
+        FbImage.Canvas.Rectangle(0, 0, FbImage.Width, FbImage.Height);
+
+        LoadImage := GetSlideShowLoadPicture;
+        try
+          LoadImageBMP := TBitmap.Create;
+          try
+            LoadPNGImage32bit(LoadImage, LoadImageBMP, ClBtnFace);
+            FbImage.Canvas.Draw(0, 0, LoadImageBMP);
+          finally
+            F(LoadImageBMP);
+          end;
+        finally
+          F(LoadImage);
+        end;
+
+        Text_out := L('Processing') + '...';
+        FbImage.Canvas.TextOut(FbImage.Width div 2 - FbImage.Canvas.TextWidth(Text_out) div 2,
+          FbImage.Height - 4 * FbImage.Canvas.Textheight(Text_out) div 2, Text_out);
+
+        TW.I.Start('RecreateDrawImage_');
+        RecreateDrawImage(Sender);
+        TW.I.Start('FormPaint');
+        FormPaint(Sender);
+      end;
+    end else
+    begin
+      Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
+        [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
+        LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
+      DisplayRating := Item.ID;
+      FImageExists := FOldImageExists;
+      TbRotateCW.Enabled := TbRotateCCW.Enabled;
+    end;
+  end;
+  UseOnlySelf := False;
+  if CurrentInfo.Count < 2 then
+  begin
+    TbBack.Enabled := False;
+    TbForward.Enabled := False;
+    SetProgressPosition(0, 0);
+    if FloatPanel <> nil then
+    begin
+      FloatPanel.ToolButton1.Enabled := False;
+      FloatPanel.ToolButton2.Enabled := False;
+      FloatPanel.ToolButton4.Enabled := False;
+      FloatPanel.ToolButton5.Enabled := False;
+    end;
+  end else
+  begin
+    TbBack.Enabled := True;
+    TbForward.Enabled := True;
+    SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
+    if FloatPanel <> nil then
+    begin
+      FloatPanel.ToolButton1.Enabled := True;
+      FloatPanel.ToolButton2.Enabled := True;
+      FloatPanel.ToolButton4.Enabled := True;
+      FloatPanel.ToolButton5.Enabled := True;
+    end;
+  end;
+  TW.I.Start('ExecuteW - end');
 end;
 
 constructor TViewer.Create(AOwner: TComponent);
@@ -1726,75 +1848,76 @@ end;
 
 procedure TViewer.WaitImageTimerTimer(Sender: TObject);
 begin
- WaitGrayScale:=WaitGrayScale + IncGrayScale;
- If WaitGrayScale>100 then
- begin
-  WaitGrayScale:=100;
-  Exit;
- end;
- WaitImage.Width:=drawimage.Width;
- WaitImage.Height:=drawimage.Height;
- GrayScaleImage(Drawimage, WaitImage, WaitGrayScale);
- Canvas.Draw(0, 0, WaitImage);
+  WaitGrayScale := WaitGrayScale + IncGrayScale;
+  if WaitGrayScale > 100 then
+  begin
+    WaitGrayScale := 100;
+    Exit;
+  end;
+  WaitImage.Width := Drawimage.Width;
+  WaitImage.Height := Drawimage.Height;
+  GrayScaleImage(Drawimage, WaitImage, WaitGrayScale);
+  Canvas.Draw(0, 0, WaitImage);
 end;
 
 procedure TViewer.DoWaitToImage(Sender: TObject);
 begin
- If WaitImageTimer.Enabled then exit;
- WaitImageTimer.Enabled:=True;
- WaitGrayScale := 0;
+  if WaitImageTimer.Enabled then
+    Exit;
+  WaitImageTimer.Enabled := True;
+  WaitGrayScale := 0;
 end;
 
 procedure TViewer.EndWaitToImage(Sender: TObject);
 begin
- WaitImageTimer.Enabled:=false;
- WaitGrayScale := 0;
+  WaitImageTimer.Enabled := False;
+  WaitGrayScale := 0;
 end;
 
 procedure TViewer.Onlythisfile1Click(Sender: TObject);
 begin
- If UpdaterDB=nil then
- UpdaterDB:=TUpdaterDB.Create;
- UpdaterDB.AddFile(CurrentInfo.ItemFileNames[CurrentFileNumber])
+  if UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
+  UpdaterDB.AddFile(Item.FileName)
 end;
 
 procedure TViewer.AllFolder1Click(Sender: TObject);
 begin
- If UpdaterDB=nil then
- UpdaterDB:=TUpdaterDB.Create;
- UpdaterDB.AddDirectory(ExtractFileDir(CurrentInfo.ItemFileNames[CurrentFileNumber]),nil)
+  if UpdaterDB = nil then
+    UpdaterDB := TUpdaterDB.Create;
+  UpdaterDB.AddDirectory(ExtractFileDir(Item.FileName), nil)
 end;
 
 procedure TViewer.GoToSearchWindow1Click(Sender: TObject);
 var
-  NewSearch : TSearchForm;
+  NewSearch: TSearchForm;
 begin
- if FullScreenNow then
- Exit1Click(nil);
- NewSearch:=SearchManager.GetAnySearch;
- NewSearch.Show;
- NewSearch.SetFocus;
+  if FullScreenNow then
+    Exit1Click(Self);
+  NewSearch := SearchManager.GetAnySearch;
+  NewSearch.Show;
+  NewSearch.SetFocus;
 end;
 
 procedure TViewer.Explorer1Click(Sender: TObject);
 begin
- if FullScreenNow then
- Exit1Click(nil);
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetOldPath(CurrentInfo.ItemFileNames[CurrentFileNumber]);
-  SetPath(ExtractFileDir(CurrentInfo.ItemFileNames[CurrentFileNumber]));
-  Show;
- end;
+  if FullScreenNow then
+    Exit1Click(Self);
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetOldPath(Item.FileName);
+    SetPath(ExtractFileDir(Item.FileName));
+    Show;
+  end;
 end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- if FullScreenView<>nil then
- Exit1Click(nil);
- if DirectShowForm<>nil then
- DirectShowForm.Close;
- DestroyTimer.Enabled:=true;
+  if FullScreenView <> nil then
+    Exit1Click(nil);
+  if DirectShowForm <> nil then
+    DirectShowForm.Close;
+  DestroyTimer.Enabled := True;
 end;
 
 procedure TViewer.LoadLanguage;
@@ -1829,7 +1952,7 @@ var
 begin
   FileList := TStringList.Create;
   try
-    FileList.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+    FileList.Add(Item.FileName);
     Copy_Move(True, FileList);
   finally
      FileList.Free;
@@ -1839,323 +1962,359 @@ end;
 procedure TViewer.FormMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
- WindowsMenuTickCount:=GetTickCount;
- if length(CurrentInfo.ItemFileNames)=0 then exit;
- If Button=mbLeft then
- if FileExists(CurrentInfo.ItemFileNames[CurrentFileNumber]) then
- begin
-  DBCanDrag:=True;
-  GetCursorPos(DBDragPoint);
- end;
+  WindowsMenuTickCount := GetTickCount;
+  if CurrentInfo.Count = 0 then
+    Exit;
+  if Button = MbLeft then
+    if FileExists(Item.FileName) then
+    begin
+      DBCanDrag := True;
+      GetCursorPos(DBDragPoint);
+    end;
 end;
 
-procedure TViewer.FormMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
+procedure TViewer.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
- DBCanDrag:=false;
+  DBCanDrag := False;
 end;
 
-procedure TViewer.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode;
-  var ScrollPos: Integer);
+procedure TViewer.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
- if ScrollPos>(Sender as TScrollBar).Max-(Sender as TScrollBar).PageSize then
- ScrollPos:=(Sender as TScrollBar).Max-(Sender as TScrollBar).PageSize;
- RecreateDrawImage(Sender);
+  if ScrollPos > (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize then
+    ScrollPos := (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize;
+  RecreateDrawImage(Sender);
 end;
 
-procedure TViewer.ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
+procedure TViewer.ReAllignScrolls(IsCenter: Boolean; CenterPoint: TPoint);
 var
-  inc_ : integer;
-  pos, m, ps : integer;
-  v1,v2 : boolean;
+  Inc_: Integer;
+  Pos, M, Ps: Integer;
+  V1, V2: Boolean;
 
 begin
- Panel1.Visible:=false;
- if not ZoomerOn then
- begin
-  ScrollBar1.Position:=0;
-  ScrollBar1.Visible:=false;
-  ScrollBar2.Position:=0;
-  ScrollBar2.Visible:=false;
-  Exit;
- end;
- v1:=ScrollBar1.Visible;
- v2:=ScrollBar2.Visible;
- if not ScrollBar1.Visible and not ScrollBar2.Visible then
- begin
-  ScrollBar1.Visible:=FbImage.Width*zoom>ClientWidth;
-  if ScrollBar1.Visible then inc_:=ScrollBar1.Height else inc_:=0;
-  ScrollBar2.Visible:=FbImage.height*zoom>HeightW-inc_;
- end;
- begin
-  if ScrollBar2.Visible then inc_:=ScrollBar2.Width else inc_:=0;
-  ScrollBar1.Visible:=FbImage.Width*zoom>ClientWidth-inc_;
-  ScrollBar1.Width:=ClientWidth-Inc_;
-  if ScrollBar1.Visible then inc_:=ScrollBar1.Height else inc_:=0;
-  ScrollBar1.Top:=HeightW-Inc_;
- end;
- begin
-  if ScrollBar1.Visible then inc_:=ScrollBar1.height else inc_:=0;
-  ScrollBar2.Visible:=FbImage.Height*zoom>HeightW-inc_;
-  ScrollBar2.Height:=HeightW-Inc_;
-  if ScrollBar2.Visible then inc_:=ScrollBar2.Width else inc_:=0;
-  ScrollBar2.Left:=ClientWidth-Inc_;
- end;
- begin
-  if ScrollBar2.Visible then inc_:=ScrollBar2.Width else inc_:=0;
-  ScrollBar1.Visible:=FbImage.Width*zoom>ClientWidth-inc_;
-  ScrollBar1.Width:=ClientWidth-Inc_;
-  if ScrollBar1.Visible then inc_:=ScrollBar1.Height else inc_:=0;
-  ScrollBar1.Top:=HeightW-Inc_;
- end;
- if not ScrollBar1.Visible then ScrollBar1.Position:=0;
- if not ScrollBar2.Visible then ScrollBar2.Position:=0;
-  if ScrollBar1.Visible and not v1 then
+  Panel1.Visible := False;
+  if not ZoomerOn then
   begin
-   ScrollBar1.PageSize:=0;
-   ScrollBar1.Position:=0;
-   ScrollBar1.Max:=100;
-   ScrollBar1.Position:=50;
+    ScrollBar1.Position := 0;
+    ScrollBar1.Visible := False;
+    ScrollBar2.Position := 0;
+    ScrollBar2.Visible := False;
+    Exit;
   end;
-  if ScrollBar2.Visible and not v2 then
+  V1 := ScrollBar1.Visible;
+  V2 := ScrollBar2.Visible;
+  if not ScrollBar1.Visible and not ScrollBar2.Visible then
   begin
-   ScrollBar2.PageSize:=0;
-   ScrollBar2.Position:=0;
-   ScrollBar2.Max:=100;
-   ScrollBar2.Position:=50;
+    ScrollBar1.Visible := FbImage.Width * Zoom > ClientWidth;
+    if ScrollBar1.Visible then
+      Inc_ := ScrollBar1.Height
+    else
+      Inc_ := 0;
+    ScrollBar2.Visible := FbImage.Height * Zoom > HeightW - Inc_;
   end;
- Panel1.Width:=ScrollBar2.Width;
- Panel1.height:=ScrollBar1.height;
- Panel1.Left:=ClientWidth-Panel1.Width;
- Panel1.Top:=HeightW-Panel1.Height;
- Panel1.Visible:=ScrollBar1.Visible and ScrollBar2.Visible;
- if ScrollBar1.Visible then
- begin
-  if ScrollBar2.Visible then inc_:=ScrollBar2.Width else inc_:=0;
-  m:=Round(FbImage.Width*zoom);
-  ps:=ClientWidth-inc_;
-  if ps>m then ps:=0;
-  if (ScrollBar1.Max<>ScrollBar1.PageSize) then
-  pos:=Round(ScrollBar1.Position*((m-ps)/(ScrollBar1.Max-ScrollBar1.PageSize))) else
-  pos:=ScrollBar1.Position;
-  if m<ScrollBar1.PageSize then
-  ScrollBar1.PageSize:=ps;
-  ScrollBar1.Max:=m;
-  ScrollBar1.PageSize:=ps;
-  ScrollBar1.LargeChange:=ps div 10;
-  ScrollBar1.Position:=Math.Min(ScrollBar1.Max,pos);
- end;
- if ScrollBar2.Visible then
- begin
-  if ScrollBar1.Visible then inc_:=ScrollBar1.Height else inc_:=0;
-  m:=Round(FbImage.Height*zoom);
-  ps:=HeightW-inc_;
-  if ps>m then ps:=0;
-  if ScrollBar2.Max<>ScrollBar2.PageSize then
-  pos:=Round(ScrollBar2.Position*((m-ps)/(ScrollBar2.Max-ScrollBar2.PageSize))) else
-  pos:=ScrollBar2.Position;
-  if m<ScrollBar2.PageSize then
-  ScrollBar2.PageSize:=ps;
-  ScrollBar2.Max:=m;
-  ScrollBar2.PageSize:=ps;
-  ScrollBar2.LargeChange:=ps div 10;
-  ScrollBar2.Position:=Math.Min(ScrollBar2.Max,pos);
- end;
- if ScrollBar1.Position>ScrollBar1.Max-ScrollBar1.PageSize then
- ScrollBar1.Position:=ScrollBar1.Max-ScrollBar1.PageSize;
- if ScrollBar2.Position>ScrollBar2.Max-ScrollBar2.PageSize then
- ScrollBar2.Position:=ScrollBar2.Max-ScrollBar2.PageSize;
+  begin
+    if ScrollBar2.Visible then
+      Inc_ := ScrollBar2.Width
+    else
+      Inc_ := 0;
+    ScrollBar1.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
+    ScrollBar1.Width := ClientWidth - Inc_;
+    if ScrollBar1.Visible then
+      Inc_ := ScrollBar1.Height
+    else
+      Inc_ := 0;
+    ScrollBar1.Top := HeightW - Inc_;
+  end;
+  begin
+    if ScrollBar1.Visible then
+      Inc_ := ScrollBar1.Height
+    else
+      Inc_ := 0;
+    ScrollBar2.Visible := FbImage.Height * Zoom > HeightW - Inc_;
+    ScrollBar2.Height := HeightW - Inc_;
+    if ScrollBar2.Visible then
+      Inc_ := ScrollBar2.Width
+    else
+      Inc_ := 0;
+    ScrollBar2.Left := ClientWidth - Inc_;
+  end;
+  begin
+    if ScrollBar2.Visible then
+      Inc_ := ScrollBar2.Width
+    else
+      Inc_ := 0;
+    ScrollBar1.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
+    ScrollBar1.Width := ClientWidth - Inc_;
+    if ScrollBar1.Visible then
+      Inc_ := ScrollBar1.Height
+    else
+      Inc_ := 0;
+    ScrollBar1.Top := HeightW - Inc_;
+  end;
+  if not ScrollBar1.Visible then
+    ScrollBar1.Position := 0;
+  if not ScrollBar2.Visible then
+    ScrollBar2.Position := 0;
+  if ScrollBar1.Visible and not V1 then
+  begin
+    ScrollBar1.PageSize := 0;
+    ScrollBar1.Position := 0;
+    ScrollBar1.Max := 100;
+    ScrollBar1.Position := 50;
+  end;
+  if ScrollBar2.Visible and not V2 then
+  begin
+    ScrollBar2.PageSize := 0;
+    ScrollBar2.Position := 0;
+    ScrollBar2.Max := 100;
+    ScrollBar2.Position := 50;
+  end;
+  Panel1.Width := ScrollBar2.Width;
+  Panel1.Height := ScrollBar1.Height;
+  Panel1.Left := ClientWidth - Panel1.Width;
+  Panel1.Top := HeightW - Panel1.Height;
+  Panel1.Visible := ScrollBar1.Visible and ScrollBar2.Visible;
+  if ScrollBar1.Visible then
+  begin
+    if ScrollBar2.Visible then
+      Inc_ := ScrollBar2.Width
+    else
+      Inc_ := 0;
+    M := Round(FbImage.Width * Zoom);
+    Ps := ClientWidth - Inc_;
+    if Ps > M then
+      Ps := 0;
+    if (ScrollBar1.Max <> ScrollBar1.PageSize) then
+      Pos := Round(ScrollBar1.Position * ((M - Ps) / (ScrollBar1.Max - ScrollBar1.PageSize)))
+    else
+      Pos := ScrollBar1.Position;
+    if M < ScrollBar1.PageSize then
+      ScrollBar1.PageSize := Ps;
+    ScrollBar1.Max := M;
+    ScrollBar1.PageSize := Ps;
+    ScrollBar1.LargeChange := Ps div 10;
+    ScrollBar1.Position := Math.Min(ScrollBar1.Max, Pos);
+  end;
+  if ScrollBar2.Visible then
+  begin
+    if ScrollBar1.Visible then
+      Inc_ := ScrollBar1.Height
+    else
+      Inc_ := 0;
+    M := Round(FbImage.Height * Zoom);
+    Ps := HeightW - Inc_;
+    if Ps > M then
+      Ps := 0;
+    if ScrollBar2.Max <> ScrollBar2.PageSize then
+      Pos := Round(ScrollBar2.Position * ((M - Ps) / (ScrollBar2.Max - ScrollBar2.PageSize)))
+    else
+      Pos := ScrollBar2.Position;
+    if M < ScrollBar2.PageSize then
+      ScrollBar2.PageSize := Ps;
+    ScrollBar2.Max := M;
+    ScrollBar2.PageSize := Ps;
+    ScrollBar2.LargeChange := Ps div 10;
+    ScrollBar2.Position := Math.Min(ScrollBar2.Max, Pos);
+  end;
+  if ScrollBar1.Position > ScrollBar1.Max - ScrollBar1.PageSize then
+    ScrollBar1.Position := ScrollBar1.Max - ScrollBar1.PageSize;
+  if ScrollBar2.Position > ScrollBar2.Max - ScrollBar2.PageSize then
+    ScrollBar2.Position := ScrollBar2.Max - ScrollBar2.PageSize;
 end;
 
 procedure TViewer.RealSizeClick(Sender: TObject);
 begin
- Cursor:=CrDefault;
- TbZoomOut.Down:=false;
- TbZoomIn.Down:=false;
- if not ZoomerOn and (RealZoomInc>1) then
- begin
-  ZoomerOn:=True;
-  Zoom:=1;
-  TbFitToWindow.Enabled:=false;
-  ZoomIn1.Enabled:=false;
-  ZoomOut1.Enabled:=false;
-  TbRealSize.Enabled:=false;
-  TbSlideShow.Enabled:=false;
-  TbZoomOut.Enabled:=false;
-  TbZoomIn.Enabled:=false;
-  TbRotateCCW.Enabled:=false;
-  TbRotateCW.Enabled:=false;
-  RealSize1.Enabled:=false;
-  BestSize1.Enabled:=false;
-  ScrollBar1.PageSize:=0;
-  ScrollBar1.Max:=100;
-  ScrollBar1.Position:=50;
-  ScrollBar2.PageSize:=0;
-  ScrollBar2.Max:=100;
-  ScrollBar2.Position:=50;
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],true,1,true);
-  TbrActions.Refresh;
- end else
- begin
-  Zoom:=1;
-  ZoomerOn:=True;
-  FormResize(Sender);
- end;
+  Cursor := CrDefault;
+  TbZoomOut.Down := False;
+  TbZoomIn.Down := False;
+  if not ZoomerOn and (RealZoomInc > 1) then
+  begin
+    ZoomerOn := True;
+    Zoom := 1;
+    TbFitToWindow.Enabled := False;
+    ZoomIn1.Enabled := False;
+    ZoomOut1.Enabled := False;
+    TbRealSize.Enabled := False;
+    TbSlideShow.Enabled := False;
+    TbZoomOut.Enabled := False;
+    TbZoomIn.Enabled := False;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False;
+    RealSize1.Enabled := False;
+    BestSize1.Enabled := False;
+    ScrollBar1.PageSize := 0;
+    ScrollBar1.Max := 100;
+    ScrollBar1.Position := 50;
+    ScrollBar2.PageSize := 0;
+    ScrollBar2.Max := 100;
+    ScrollBar2.Position := 50;
+    LoadImage_(Sender, Item.FileName, Item.Rotation, True, 1, True);
+    TbrActions.Refresh;
+  end else
+  begin
+    Zoom := 1;
+    ZoomerOn := True;
+    FormResize(Sender);
+  end;
 end;
 
 procedure TViewer.FitToWindowClick(Sender: TObject);
 begin
- Cursor:=CrDefault;
- TbZoomOut.Down:=false;
- TbZoomIn.Down:=false;
- ZoomerOn:=False;
- Zoom:=1;
- FormResize(Sender);
+  Cursor := CrDefault;
+  TbZoomOut.Down := False;
+  TbZoomIn.Down := False;
+  ZoomerOn := False;
+  Zoom := 1;
+  FormResize(Sender);
 end;
 
 procedure TViewer.TbZoomOutClick(Sender: TObject);
 var
-//  i,n : integer;
-  z : real;
+  Z: Real;
 begin
- TbRealSize.Down:=false;
- TbFitToWindow.Down:=false;
- Cursor:=CursorZoomOutNo;
- if not ZoomerOn and (RealZoomInc>1) then
- begin
-  ZoomerOn:=True;
-  if (RealImageWidth<ClientWidth) and (RealImageHeight<HeightW) then
-  z:=1 else
-  z:=Max(RealImageWidth/ClientWidth,RealImageHeight/(HeightW));
-  z:=1/z;
-  z:=Max(z*0.8,0.01);
-  TbFitToWindow.Enabled:=false;
-  TbRealSize.Enabled:=false;
-  TbSlideShow.Enabled:=false;
-  TbZoomOut.Enabled:=false;
-  TbZoomIn.Enabled:=false;
-  TbRotateCCW.Enabled:=false;
-  TbRotateCW.Enabled:=false;
-  RealSize1.Enabled:=false;
-  BestSize1.Enabled:=false;
-  ZoomIn1.Enabled:=false;
-  ZoomOut1.Enabled:=false;
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],true,z,true);
-  TbrActions.Refresh;
- end else
- begin
-  if ZoomerOn then
+  TbRealSize.Down := False;
+  TbFitToWindow.Down := False;
+  Cursor := CursorZoomOutNo;
+  if not ZoomerOn and (RealZoomInc > 1) then
   begin
-   z:=Zoom;
-  end else
+    ZoomerOn := True;
+    if (RealImageWidth < ClientWidth) and (RealImageHeight < HeightW) then
+      Z := 1
+    else
+      Z := Max(RealImageWidth / ClientWidth, RealImageHeight / (HeightW));
+    Z := 1 / Z;
+    Z := Max(Z * 0.8, 0.01);
+    TbFitToWindow.Enabled := False;
+    TbRealSize.Enabled := False;
+    TbSlideShow.Enabled := False;
+    TbZoomOut.Enabled := False;
+    TbZoomIn.Enabled := False;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False;
+    RealSize1.Enabled := False;
+    BestSize1.Enabled := False;
+    ZoomIn1.Enabled := False;
+    ZoomOut1.Enabled := False;
+    LoadImage_(Sender, Item.FileName, Item.Rotation, True, Z, True);
+    TbrActions.Refresh;
+  end
+  else
   begin
-   if (RealImageWidth<ClientWidth) and (RealImageHeight<HeightW) then
-   z:=1 else
-   z:=Max(RealImageWidth/ClientWidth,RealImageHeight/(HeightW));
-   z:=1/z;
+    if ZoomerOn then
+    begin
+      Z := Zoom;
+    end else
+    begin
+      if (RealImageWidth < ClientWidth) and (RealImageHeight < HeightW) then
+        Z := 1
+      else
+        Z := Max(RealImageWidth / ClientWidth, RealImageHeight / (HeightW));
+      Z := 1 / Z;
+    end;
+    ZoomerOn := True;
+    Zoom := Max(Z * 0.8, 0.05);
+    FormResize(Sender);
   end;
-  ZoomerOn:=True;
-  Zoom:=Max(z*0.8,0.05);
-  FormResize(Sender);
- end;
 end;
 
 procedure TViewer.TbZoomInClick(Sender: TObject);
 var
-  z : real;
+  Z: Real;
 begin
- TbRealSize.Down:=false;
- TbFitToWindow.Down:=false;
- Cursor:=CursorZoomInNo;
- if not ZoomerOn and (RealZoomInc>1) then
- begin
-  ZoomerOn:=True;
-  if (RealImageWidth<ClientWidth) and (RealImageHeight<HeightW) then
-  z:=1 else
-  z:=Max(RealImageWidth/ClientWidth,RealImageHeight/(HeightW));
-  z:=1/z;
-  z:=Min(z*(1/0.8),16);
-  TbFitToWindow.Enabled:=false;
-  TbRealSize.Enabled:=false;
-  TbSlideShow.Enabled:=false;
-  TbZoomOut.Enabled:=false;
-  TbZoomIn.Enabled:=false;
-  TbRotateCCW.Enabled:=false;
-  TbRotateCW.Enabled:=false;
-  RealSize1.Enabled:=false;
-  BestSize1.Enabled:=false;
-  ZoomIn1.Enabled:=false;
-  ZoomOut1.Enabled:=false;
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],true,z,true);
-  TbrActions.Refresh;
- end else
- begin
-  if  ZoomerOn then
+  TbRealSize.Down := False;
+  TbFitToWindow.Down := False;
+  Cursor := CursorZoomInNo;
+  if not ZoomerOn and (RealZoomInc > 1) then
   begin
-   z:=Zoom;
+    ZoomerOn := True;
+    if (RealImageWidth < ClientWidth) and (RealImageHeight < HeightW) then
+      Z := 1
+    else
+      Z := Max(RealImageWidth / ClientWidth, RealImageHeight / (HeightW));
+    Z := 1 / Z;
+    Z := Min(Z * (1 / 0.8), 16);
+    TbFitToWindow.Enabled := False;
+    TbRealSize.Enabled := False;
+    TbSlideShow.Enabled := False;
+    TbZoomOut.Enabled := False;
+    TbZoomIn.Enabled := False;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False;
+    RealSize1.Enabled := False;
+    BestSize1.Enabled := False;
+    ZoomIn1.Enabled := False;
+    ZoomOut1.Enabled := False;
+    LoadImage_(Sender, Item.FileName, Item.Rotation, True, Z, True);
+    TbrActions.Refresh;
   end else
   begin
-   if (RealImageWidth<ClientWidth) and (RealImageHeight<HeightW) then
-   z:=1 else
-   z:=Max(RealImageWidth/ClientWidth,RealImageHeight/(HeightW));
-   z:=1/z;
-  end;
+    if ZoomerOn then
+    begin
+      Z := Zoom;
+    end else
+    begin
+      if (RealImageWidth < ClientWidth) and (RealImageHeight < HeightW) then
+        Z := 1
+      else
+        Z := Max(RealImageWidth / ClientWidth, RealImageHeight / (HeightW));
+      Z := 1 / Z;
+    end;
 
-  ZoomerOn:=True;
-  Zoom:=Min(z*(1/0.8),16);
-  FormResize(Sender);
- end;
+    ZoomerOn := True;
+    Zoom := Min(Z * (1 / 0.8), 16);
+    FormResize(Sender);
+  end;
 end;
 
 procedure TViewer.FormClick(Sender: TObject);
 var
-  p : TPoint;
-  ImRect : TRect;
-  dy, dx, x, y, z : Extended;
+  P: TPoint;
+  ImRect: TRect;
+  Dy, Dx, X, Y, Z: Extended;
 begin
- GetCursorPos(p);
- p:=ScreenToClient(p);
- if Cursor=CrDefault then
- begin
-  if DBKernel.Readbool('Options','NextOnClick',false) then
+  GetCursorPos(P);
+  P := ScreenToClient(P);
+  if Cursor = CrDefault then
   begin
-   NextImageClick(Sender);
-   Exit;
-  end else
-  begin
-   if SlideShowNow or FullScreenNow then
-   begin
-    NextImageClick(Sender);
+    if DBKernel.Readbool('Options', 'NextOnClick', False) then
+    begin
+      NextImageClick(Sender);
+      Exit;
+    end else
+    begin
+      if SlideShowNow or FullScreenNow then
+      begin
+        NextImageClick(Sender);
+        Exit;
+      end;
+    end;
     Exit;
-   end;
   end;
-  Exit;
- end;
- if Cursor=CursorZoomInNo then
- begin
-  z:=Zoom;
-  Zoom:=Min(z*(1/0.8),16);
-  ImRect:=GetImageRectA;
-  x:=P.x;
-  y:=P.y;
-  dx:=(x-(ImRect.Right-ImRect.Left) div 2)/(ImRect.Right-ImRect.Left);
-  ScrollBar1.Position:=ScrollBar1.Position+Round(ScrollBar1.PageSize*dx);
-  dy:=(y-(ImRect.Bottom-ImRect.Top) div 2)/(ImRect.Bottom-ImRect.Top);
-  ScrollBar2.Position:=ScrollBar2.Position+Round(ScrollBar2.PageSize*dy);
- end;
- if Cursor=CursorZoomOutNo then
- begin
-  z:=Zoom;
-  Zoom:=Max(z*0.8,0.05);
-  ImRect:=GetImageRectA;
-  x:=p.x;
-  y:=p.y;
-  dx:=(x-(ImRect.Right-ImRect.Left) div 2)/(ImRect.Right-ImRect.Left);
-  ScrollBar1.Position:=ScrollBar1.Position+Round(ScrollBar1.PageSize*dx);
-  dy:=(y-(ImRect.Bottom-ImRect.Top) div 2)/(ImRect.Bottom-ImRect.Top);
-  ScrollBar2.Position:=ScrollBar2.Position+Round(ScrollBar2.PageSize*dy);
- end;
- FormResize(Sender);
+  if Cursor = CursorZoomInNo then
+  begin
+    Z := Zoom;
+    Zoom := Min(Z * (1 / 0.8), 16);
+    ImRect := GetImageRectA;
+    X := P.X;
+    Y := P.Y;
+    Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
+    ScrollBar1.Position := ScrollBar1.Position + Round(ScrollBar1.PageSize * Dx);
+    Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
+    ScrollBar2.Position := ScrollBar2.Position + Round(ScrollBar2.PageSize * Dy);
+  end;
+  if Cursor = CursorZoomOutNo then
+  begin
+    Z := Zoom;
+    Zoom := Max(Z * 0.8, 0.05);
+    ImRect := GetImageRectA;
+    X := P.X;
+    Y := P.Y;
+    Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
+    ScrollBar1.Position := ScrollBar1.Position + Round(ScrollBar1.PageSize * Dx);
+    Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
+    ScrollBar2.Position := ScrollBar2.Position + Round(ScrollBar2.PageSize * Dy);
+  end;
+  FormResize(Sender);
 end;
 
 function TViewer.HeightW: Integer;
@@ -2204,6 +2363,11 @@ begin
   FH := FH;
 
   Result := rect(FX, FY, FW + FX, FH + FY);
+end;
+
+function TViewer.GetItem: TDBPopupMenuInfoRecord;
+begin
+  Result := CurrentInfo[CurrentFileNumber];
 end;
 
 procedure TViewer.RecreateImLists;
@@ -2276,17 +2440,15 @@ end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);
 var
-  FileInfo : TDBPopupMenuInfoRecord;
   Info : TDBPopupMenuInfo;
 begin
   Info := TDBPopupMenuInfo.Create;
   try
-    FileInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
-    Info.Add(FileInfo);
+    Info.Add(Item.Copy);
 
     RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
 
-    LockEventRotateFileList.Add(AnsiLowerCase(FileInfo.FileName));
+    LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
     Rotate270A(FbImage);
     if ZoomerOn then
       RealSizeClick(Sender);
@@ -2299,17 +2461,15 @@ end;
 
 procedure TViewer.RotateCW1Click(Sender: TObject);
 var
-  FileInfo: TDBPopupMenuInfoRecord;
   Info: TDBPopupMenuInfo;
 begin
   Info := TDBPopupMenuInfo.Create;
   try
-    FileInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
-    Info.Add(FileInfo);
+    Info.Add(Item.Copy);
 
     RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
 
-    LockEventRotateFileList.Add(AnsiLowerCase(FileInfo.FileName));
+    LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
 
     Rotate90A(FbImage);
     if ZoomerOn then
@@ -2324,13 +2484,11 @@ end;
 
 procedure TViewer.Rotateon1801Click(Sender: TObject);
 var
-  FileInfo: TDBPopupMenuInfoRecord;
   Info: TDBPopupMenuInfo;
 begin
   Info := TDBPopupMenuInfo.Create;
   try
-    FileInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
-    Info.Add(FileInfo);
+    Info.Add(Item.Copy);
     RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
   finally
     F(Info);
@@ -2339,38 +2497,37 @@ end;
 
 procedure TViewer.Stretch1Click(Sender: TObject);
 begin
-  SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber], WPSTYLE_STRETCH);
+  SetDesktopWallpaper(Item.FileName, WPSTYLE_STRETCH);
 end;
 
 procedure TViewer.Center1Click(Sender: TObject);
 begin
-  SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber], WPSTYLE_CENTER);
+  SetDesktopWallpaper(Item.FileName, WPSTYLE_CENTER);
 end;
 
 procedure TViewer.Tile1Click(Sender: TObject);
 begin
-  SetDesktopWallpaper(CurrentInfo.ItemFileNames[CurrentFileNumber], WPSTYLE_TILE);
+  SetDesktopWallpaper(Item.FileName, WPSTYLE_TILE);
 end;
 
 procedure TViewer.Properties1Click(Sender: TObject);
 begin
- if CurrentInfo.ItemIds[CurrentFileNumber]<>0 then
- PropertyManager.NewIDProperty(CurrentInfo.ItemIds[CurrentFileNumber]).Execute(CurrentInfo.ItemIds[CurrentFileNumber]) else
- PropertyManager.NewFileProperty(CurrentInfo.ItemFileNames[CurrentFileNumber]).ExecuteFileNoEx(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+  if Item.ID <> 0 then
+    PropertyManager.NewIDProperty(Item.ID).Execute(Item.ID)
+  else
+    PropertyManager.NewFileProperty(Item.FileName).ExecuteFileNoEx(Item.FileName);
 end;
 
 procedure TViewer.Resize1Click(Sender: TObject);
 var
   List: TDBPopupMenuInfo;
-  ImageInfo: TDBPopupMenuInfoRecord;
 begin
   List := TDBPopupMenuInfo.Create;
   try
-    ImageInfo := TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(CurrentInfo, CurrentFileNumber);
-    List.Add(ImageInfo);
+    List.Add(Item.Copy);
     ResizeImages(Self, List);
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -2380,14 +2537,14 @@ var
   FNames: TStrings;
   P: TPoint;
 begin
-  if Length(CurrentInfo.ItemFileNames) = 0 then
+  if CurrentInfo.Count = 0 then
     Exit;
 
   if (GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
   begin
     FNames := TStringList.Create;
     try
-      FNames.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+      FNames.Add(Item.FileName);
       GetProperties(FNames, MousePos, Self);
     finally
       F(FNames);
@@ -2410,14 +2567,14 @@ begin
       DropFileTarget1.Files.AssignTo(FileList);
       LoadListImages(FileList);
     finally
-      FileList.Free;
+      F(FileList);
     end;
   end;
 end;
 
 procedure TViewer.ReloadCurrent;
 begin
-  LoadImage_(Self,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,zoom,false);
+  LoadImage_(Self, Item.FileName, Item.Rotation, False, Zoom, False);
 end;
 
 procedure TViewer.Pause;
@@ -2456,112 +2613,114 @@ end;
 
 procedure TViewer.SetStaticImage(Image : TBitmap; Transparent : Boolean);
 begin
- if CurrentFileNumber>Length(CurrentInfo.ItemFileNames)-1 then exit;
- FCurrentlyLoadedFile:=CurrentInfo.ItemFileNames[CurrentFileNumber];
- TransparentImage:=Transparent;
- ForwardThreadExists:=false;
- ForwardThreadNeeds:=false;
- FbImage.Free;
- FbImage:=Image;
- StaticImage:=True;
- ImageExists:=True;
- Loading:=False;
- if not ZoomerOn  then Cursor:=crDefault;
- TbFitToWindow.Enabled:=true;
- TbRealSize.Enabled:=true;
- TbSlideShow.Enabled:=true;
- TbZoomOut.Enabled:=true;
- TbZoomIn.Enabled:=true;
+  if CurrentFileNumber > CurrentInfo.Count - 1 then
+    Exit;
+  FCurrentlyLoadedFile := Item.FileName;
+  TransparentImage := Transparent;
+  ForwardThreadExists := False;
+  ForwardThreadNeeds := False;
+  F(FbImage);
+  FbImage := Image;
+  StaticImage := True;
+  ImageExists := True;
+  Loading := False;
+  if not ZoomerOn then
+    Cursor := CrDefault;
+  TbFitToWindow.Enabled := True;
+  TbRealSize.Enabled := True;
+  TbSlideShow.Enabled := True;
+  TbZoomOut.Enabled := True;
+  TbZoomIn.Enabled := True;
+  TbRotateCCW.Enabled := True;
+  TbRotateCW.Enabled := True;
+  ZoomIn1.Enabled := True;
+  ZoomOut1.Enabled := True;
+  RealSize1.Enabled := True;
+  BestSize1.Enabled := True;
+  TbRealSize.Down := False;
+  TbFitToWindow.Down := False;
+  TbZoomOut.Down := False;
+  TbZoomIn.Down := False;
+  EndWaitToImage(Self);
 
- TbRotateCCW.Enabled:=(CurrentInfo.ItemIds[CurrentFileNumber]<>0) or (CurrentInfo.ItemIds[CurrentFileNumber]=0);
- TbRotateCW.Enabled:=TbRotateCCW.Enabled;
+  if FRotatingImageInfo.Enabled then
+    if AnsiLowerCase(FRotatingImageInfo.FileName) = AnsiLowerCase(FCurrentlyLoadedFile) then
+      ApplyRotate(FbImage, FRotatingImageInfo.Rotating);
 
- ZoomIn1.Enabled:=True;
- ZoomOut1.Enabled:=True;
- RealSize1.Enabled:=True;
- BestSize1.Enabled:=True;
- TbRealSize.Down:=false;
- TbFitToWindow.Down:=false;
- TbZoomOut.Down:=false;
- TbZoomIn.Down:=false;
- EndWaitToImage(nil);
-
- if FRotatingImageInfo.Enabled then
-   if AnsiLowerCase(FRotatingImageInfo.FileName)=AnsiLowerCase(FCurrentlyLoadedFile) then
-     ApplyRotate(FbImage, FRotatingImageInfo.Rotating);
-
- ReAllignScrolls(False,Point(0,0));
- ValidImages:=1;
- RecreateDrawImage(nil);
- PrepareNextImage;
- FRotatingImageInfo.Enabled:=false;
+  ReAllignScrolls(False, Point(0, 0));
+  ValidImages := 1;
+  RecreateDrawImage(Self);
+  PrepareNextImage;
+  FRotatingImageInfo.Enabled := False;
 end;
 
 procedure TViewer.SetLoading(const Value: Boolean);
 begin
   FLoading := Value;
-  TbSlideShow.Enabled:=not Value;
-  if Length(CurrentInfo.ItemFileNames)=0 then TbSlideShow.Enabled:=false;
+  TbSlideShow.Enabled := not Value;
+  if CurrentInfo.Count = 0 then
+    TbSlideShow.Enabled := False;
 end;
 
 procedure TViewer.SetAnimatedImage(Image: TGraphic);
 var
- i : integer;
- im : TGifImage;
+  I: Integer;
+  Im: TGifImage;
 begin
   F(AnimatedImage);
-  AnimatedImage:=Image;
- FCurrentlyLoadedFile:=CurrentInfo.ItemFileNames[CurrentFileNumber];
- ForwardThreadExists:=false;
- StaticImage:=False;
- ImageExists:=True;
- Loading:=False;
- if not ZoomerOn  then Cursor:=crDefault;
- TbFitToWindow.Enabled:=true;
- TbRealSize.Enabled:=true;
- TbSlideShow.Enabled:=true;
- TbZoomOut.Enabled:=true;
- TbZoomIn.Enabled:=true;
+  AnimatedImage := Image;
+  FCurrentlyLoadedFile := Item.FileName;
+  ForwardThreadExists := False;
+  StaticImage := False;
+  ImageExists := True;
+  Loading := False;
+  if not ZoomerOn then
+    Cursor := CrDefault;
+  TbFitToWindow.Enabled := True;
+  TbRealSize.Enabled := True;
+  TbSlideShow.Enabled := True;
+  TbZoomOut.Enabled := True;
+  TbZoomIn.Enabled := True;
 
- TbRotateCCW.Enabled:=True;
- TbRotateCW.Enabled:=TbRotateCCW.Enabled;
+  TbRotateCCW.Enabled := True;
+  TbRotateCW.Enabled := True;
 
- ZoomIn1.Enabled:=True;
- ZoomOut1.Enabled:=True;
- RealSize1.Enabled:=True;
- BestSize1.Enabled:=True;
- TbRealSize.Down:=false;
- TbFitToWindow.Down:=false;
- TbZoomOut.Down:=false;
- TbZoomIn.Down:=false;
- EndWaitToImage(nil);
- ReAllignScrolls(False,Point(0,0));
- SlideNO:=-1;
- ZoomerOn:=false;
- im:=(AnimatedImage as TGIFImage);
- ValidImages:=0;
- TransparentImage:=false;
- for i:=0 to im.Images.count-1 do
- begin
-  if not im.Images[i].Empty then
-  ValidImages:=ValidImages+1;
-  if im.Images[i].Transparent then
-  TransparentImage:=true;
- end;
- AnimatedBuffer.Width:=im.Width;
- AnimatedBuffer.Height:=im.Height;
- if FullScreenNow then
- begin
-  AnimatedBuffer.Canvas.Brush.Color:=0;
-  AnimatedBuffer.Canvas.Pen.Color:=0;
- end else
- begin
-  AnimatedBuffer.Canvas.Brush.Color:=ClBtnFace;
-  AnimatedBuffer.Canvas.Pen.Color:=ClBtnFace;
- end;
- AnimatedBuffer.Canvas.Rectangle(0,0,AnimatedBuffer.Width,AnimatedBuffer.Height);
- ImageFrameTimer.Interval:=1;
- ImageFrameTimer.Enabled:=true;
+  ZoomIn1.Enabled := True;
+  ZoomOut1.Enabled := True;
+  RealSize1.Enabled := True;
+  BestSize1.Enabled := True;
+  TbRealSize.Down := False;
+  TbFitToWindow.Down := False;
+  TbZoomOut.Down := False;
+  TbZoomIn.Down := False;
+  EndWaitToImage(Self);
+  ReAllignScrolls(False, Point(0, 0));
+  SlideNO := -1;
+  ZoomerOn := False;
+  Im := (AnimatedImage as TGIFImage);
+  ValidImages := 0;
+  TransparentImage := False;
+  for I := 0 to Im.Images.Count - 1 do
+  begin
+    if not Im.Images[I].Empty then
+      ValidImages := ValidImages + 1;
+    if Im.Images[I].Transparent then
+      TransparentImage := True;
+  end;
+  AnimatedBuffer.Width := Im.Width;
+  AnimatedBuffer.Height := Im.Height;
+  if FullScreenNow then
+  begin
+    AnimatedBuffer.Canvas.Brush.Color := 0;
+    AnimatedBuffer.Canvas.Pen.Color := 0;
+  end else
+  begin
+    AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
+    AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
+  end;
+  AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
+  ImageFrameTimer.Interval := 1;
+  ImageFrameTimer.Enabled := True;
 end;
 
 procedure TViewer.ImageFrameTimerTimer(Sender: TObject);
@@ -2572,7 +2731,7 @@ end;
 function TViewer.GetImage(FileName: string; Bitmap: TBitmap): Boolean;
 begin
   Result := False;
-  if AnsiLowerCase(FileName) = AnsiLowerCase(CurrentInfo.ItemFileNames[CurrentFileNumber]) then
+  if AnsiLowerCase(FileName) = AnsiLowerCase(Item.FileName) then
   begin
     Result := True;
     Bitmap.Assign(DrawImage);
@@ -2581,94 +2740,110 @@ end;
 
 procedure TViewer.NextSlide;
 var
-  c, PreviousNumber : integer;
-  r, bounds_  : TRect;
-  im : TGifImage;
-  DisposalMethod : TDisposalMethod;
-  del : integer;
-  TimerEnabled:Boolean;
-  gsi : TGIFSubImage;
+  C, PreviousNumber: Integer;
+  R, Bounds_: TRect;
+  Im: TGifImage;
+  DisposalMethod: TDisposalMethod;
+  Del: Integer;
+  TimerEnabled: Boolean;
+  Gsi: TGIFSubImage;
 begin
- del:=1;
- if not (ImageExists and not StaticImage) then exit;
- if SlideNO=-1 then
- begin
-  SlideNO:=GetFirstImageNO;
- end else
- begin
-  SlideNO:=GetNextImageNO;
- end;
- r:=(AnimatedImage as TGIFImage).Images[SlideNO].BoundsRect;
- if FullScreenNow then
- begin
-  AnimatedBuffer.Canvas.Brush.Color:=0;
-  AnimatedBuffer.Canvas.Pen.Color:=0;
- end else
- begin
-  AnimatedBuffer.Canvas.Brush.Color:=ClBtnFace;
-  AnimatedBuffer.Canvas.Pen.Color:=ClBtnFace;
- end;
- im:=(AnimatedImage as TGIFImage);
- TimerEnabled:=false;
- PreviousNumber:=GetPreviousImageNO;
- DisposalMethod:=dmNone;
- if im.Animate then
- if im.Images.Count>1 then
- begin
- gsi:=im.Images[SlideNO];
- if gsi.Empty then exit;
- if im.Images[PreviousNumber].Empty then DisposalMethod:=dmNone else
- begin
-  if im.Images[PreviousNumber].GraphicControlExtension<>nil then
-  DisposalMethod:=im.Images[PreviousNumber].GraphicControlExtension.Disposal else
-  DisposalMethod:=dmNone;
- end;
- del:=100;
- if im.Images[SlideNO].GraphicControlExtension<>nil then
- del:=im.Images[SlideNO].GraphicControlExtension.Delay*10;
- if del=10 then del:=100;
- if del=0 then del:=100;
- TimerEnabled:=True;
- end else
- DisposalMethod:=dmNone;
- if SlideNO=0 then DisposalMethod:=dmBackground;
- if (DisposalMethod=dmBackground) then
- begin
-  bounds_:=im.Images[PreviousNumber].BoundsRect;
-  if FullScreenNow then
+  Del := 1;
+  if not(ImageExists and not StaticImage) then
+    Exit;
+  if SlideNO = -1 then
   begin
-   AnimatedBuffer.Canvas.Pen.Color:=0;
-   AnimatedBuffer.Canvas.Brush.Color:=0;
+    SlideNO := GetFirstImageNO;
   end else
   begin
-   AnimatedBuffer.Canvas.Pen.Color:=ClBtnFace;
-   AnimatedBuffer.Canvas.Brush.Color:=ClBtnFace;
+    SlideNO := GetNextImageNO;
   end;
+  R := (AnimatedImage as TGIFImage).Images[SlideNO].BoundsRect;
+  if FullScreenNow then
+  begin
+    AnimatedBuffer.Canvas.Brush.Color := 0;
+    AnimatedBuffer.Canvas.Pen.Color := 0;
+  end else
+  begin
+    AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
+    AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
+  end;
+  Im := (AnimatedImage as TGIFImage);
+  TimerEnabled := False;
+  PreviousNumber := GetPreviousImageNO;
+  DisposalMethod := DmNone;
+  if Im.Animate then
+    if Im.Images.Count > 1 then
+    begin
+      Gsi := Im.Images[SlideNO];
+      if Gsi.Empty then
+        Exit;
+      if Im.Images[PreviousNumber].Empty then
+        DisposalMethod := DmNone
+      else
+      begin
+        if Im.Images[PreviousNumber].GraphicControlExtension <> nil then
+          DisposalMethod := Im.Images[PreviousNumber].GraphicControlExtension.Disposal
+        else
+          DisposalMethod := DmNone;
+      end;
+      Del := 100;
+      if Im.Images[SlideNO].GraphicControlExtension <> nil then
+        Del := Im.Images[SlideNO].GraphicControlExtension.Delay * 10;
+      if Del = 10 then
+        Del := 100;
+      if Del = 0 then
+        Del := 100;
+      TimerEnabled := True;
+    end
+    else
+      DisposalMethod := DmNone;
+  if SlideNO = 0 then
+    DisposalMethod := DmBackground;
+  if (DisposalMethod = DmBackground) then
+  begin
+    Bounds_ := Im.Images[PreviousNumber].BoundsRect;
+    if FullScreenNow then
+    begin
+      AnimatedBuffer.Canvas.Pen.Color := 0;
+      AnimatedBuffer.Canvas.Brush.Color := 0;
+    end else
+    begin
+      AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
+      AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
+    end;
 
-  AnimatedBuffer.Canvas.Rectangle(bounds_);
- end;
- if DisposalMethod=dmPrevious then
- begin
-  c:=SlideNO;
-  dec(c);
-  if c<0 then
-  c:=im.Images.Count-1;
-  im.Images[c].StretchDraw(AnimatedBuffer.Canvas,r,im.Images[SlideNO].Transparent,false);
- end;
- im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas,r,im.Images[SlideNO].Transparent,false);
- if CurrentFileNumber<=Length(CurrentInfo.ItemRotates)-1 then
- case CurrentInfo.ItemRotates[CurrentFileNumber] of
-  DB_IMAGE_ROTATE_0 : FbImage.Assign(AnimatedBuffer);
-  DB_IMAGE_ROTATE_90 : Rotate90(AnimatedBuffer,FbImage);
-  DB_IMAGE_ROTATE_180 : Rotate180(AnimatedBuffer,FbImage);
-  DB_IMAGE_ROTATE_270: Rotate270(AnimatedBuffer,FbImage)
- end;
- RecreateDrawImage(nil);
- ImageFrameTimer.Enabled:=false;
- ImageFrameTimer.Interval:=del;
- if not TimerEnabled then ImageFrameTimer.Enabled:=false else
- ImageFrameTimer.Enabled:=true;
- if ValidImages=1 then ImageFrameTimer.Enabled:=false;
+    AnimatedBuffer.Canvas.Rectangle(Bounds_);
+  end;
+  if DisposalMethod = DmPrevious then
+  begin
+    C := SlideNO;
+    Dec(C);
+    if C < 0 then
+      C := Im.Images.Count - 1;
+    Im.Images[C].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+  end;
+  Im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+  if CurrentFileNumber <= CurrentInfo.Count - 1 then
+    case Item.Rotation of
+      DB_IMAGE_ROTATE_0:
+        FbImage.Assign(AnimatedBuffer);
+      DB_IMAGE_ROTATE_90:
+        Rotate90(AnimatedBuffer, FbImage);
+      DB_IMAGE_ROTATE_180:
+        Rotate180(AnimatedBuffer, FbImage);
+      DB_IMAGE_ROTATE_270:
+        Rotate270(AnimatedBuffer, FbImage)
+    end;
+  RecreateDrawImage(Self);
+  ImageFrameTimer.Enabled := False;
+  ImageFrameTimer.Interval := Del;
+  if not TimerEnabled then
+    ImageFrameTimer.Enabled := False
+  else
+    ImageFrameTimer.Enabled := True;
+  if ValidImages = 1 then
+    ImageFrameTimer.Enabled := False;
 end;
 
 procedure TViewer.SetValidImages(const Value: Integer);
@@ -2803,33 +2978,33 @@ end;
 
 procedure TViewer.LoadingFailed(FileName: String);
 begin
- Loading:=false;
- FCurrentlyLoadedFile:=FileName;
- Cursor:=crDefault;
- TbFitToWindow.Enabled:=false;
- TbRealSize.Enabled:=false;
- TbSlideShow.Enabled:=false;
- TbZoomOut.Enabled:=false;
- TbZoomIn.Enabled:=false;
- TbRotateCCW.Enabled:=false;
- TbRotateCW.Enabled:=false;
- ZoomIn1.Enabled:=false;
- ZoomOut1.Enabled:=false;
- RealSize1.Enabled:=false;
- BestSize1.Enabled:=false;
- TbRealSize.Down:=false;
- TbFitToWindow.Down:=false;
- TbZoomOut.Down:=false;
- TbZoomIn.Down:=false;
- EndWaitToImage(nil);
- ReAllignScrolls(False,Point(0,0));
- ImageExists:=false;
- ValidImages:=0;
- ForwardThreadExists:=false;
- ForwardThreadNeeds:=false;
- RecreateDrawImage(nil);
- PrepareNextImage;
- FRotatingImageInfo.Enabled:=false;
+  Loading := False;
+  FCurrentlyLoadedFile := FileName;
+  Cursor := CrDefault;
+  TbFitToWindow.Enabled := False;
+  TbRealSize.Enabled := False;
+  TbSlideShow.Enabled := False;
+  TbZoomOut.Enabled := False;
+  TbZoomIn.Enabled := False;
+  TbRotateCCW.Enabled := False;
+  TbRotateCW.Enabled := False;
+  ZoomIn1.Enabled := False;
+  ZoomOut1.Enabled := False;
+  RealSize1.Enabled := False;
+  BestSize1.Enabled := False;
+  TbRealSize.Down := False;
+  TbFitToWindow.Down := False;
+  TbZoomOut.Down := False;
+  TbZoomIn.Down := False;
+  EndWaitToImage(Self);
+  ReAllignScrolls(False, Point(0, 0));
+  ImageExists := False;
+  ValidImages := 0;
+  ForwardThreadExists := False;
+  ForwardThreadNeeds := False;
+  RecreateDrawImage(Self);
+  PrepareNextImage;
+  FRotatingImageInfo.Enabled := False;
 end;
 
 procedure TViewer.SetCurrentlyLoadedFile(const Value: String);
@@ -2839,44 +3014,44 @@ end;
 
 procedure TViewer.PrepareNextImage;
 var
-  n : integer;
+  N: Integer;
 begin
- ForwardThreadSID:=GetGUID;
- if Length(CurrentInfo.ItemFileNames)>1 then
- begin
-  n:=CurrentFileNumber;
-  inc(n);
-  if n>=Length(CurrentInfo.ItemFileNames) then
-  n:=0;
-  ForwardThreadExists:=true;
-  ForwardThreadFileName:=CurrentInfo.ItemFileNames[n];
-  TViewerThread.Create(Self,CurrentInfo.ItemFileNames[n],CurrentInfo.ItemRotates[n],false,1,ForwardThreadSID,true,not CurrentInfo.LoadedImageInfo[n], 0);
- end;
+  ForwardThreadSID := GetGUID;
+  if CurrentInfo.Count > 1 then
+  begin
+    N := CurrentFileNumber;
+    Inc(N);
+    if N >= CurrentInfo.Count then
+      N := 0;
+    ForwardThreadExists := True;
+    ForwardThreadFileName := CurrentInfo[N].FileName;
+    TViewerThread.Create(Self, CurrentInfo[N].FileName, CurrentInfo[N].Rotation, False, 1, ForwardThreadSID,
+      True, not CurrentInfo[N].InfoLoaded, 0);
+  end;
 end;
 
 procedure TViewer.SetFullImageState(State: Boolean; BeginZoom : Extended; Pages, Page : integer);
 begin
- fPageCount:=Pages;
- fCurrentPage:=Page;
- MakePagesLinks;
- if State then
- begin
-  ZoomerOn:=True;
-  Zoom:=BeginZoom;
- end else
- begin
-  ZoomerOn:=False;
-  Zoom:=1;
- end;
+  FPageCount := Pages;
+  FCurrentPage := Page;
+  MakePagesLinks;
+  if State then
+  begin
+    ZoomerOn := True;
+    Zoom := BeginZoom;
+  end else
+  begin
+    ZoomerOn := False;
+    Zoom := 1;
+  end;
 end;
 
-procedure TViewer.UpdateInfo(SID: TGUID; Info: TOneRecordInfo);
+procedure TViewer.UpdateInfo(SID: TGUID; Info: TDBPopupMenuInfoRecord);
 begin
- SetRecordsInfoOne(CurrentInfo,CurrentFileNumber,Info.ItemFileName,Info.ItemId,Info.ItemRotate,Info.ItemRating,Info.ItemAccess,Info.ItemComment,Info.ItemGroups,Info.ItemDate,Info.ItemIsDate,Info.ItemIsTime,Info.ItemTime,Info.ItemCrypted,Info.ItemInclude,Info.ItemLinks);
- DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
-
- TbRotateCCW.Enabled:=True;
- TbRotateCW.Enabled:=TbRotateCCW.Enabled;
+  CurrentInfo[CurrentFileNumber] :=  Info;
+  DisplayRating := Info.ID;
+  TbRotateCCW.Enabled := True;
+  TbRotateCW.Enabled := TbRotateCCW.Enabled;
 end;
 
 procedure TViewer.TbSlideShowClick(Sender: TObject);
@@ -2895,7 +3070,7 @@ end;
 
 procedure TViewer.SlideTimerTimer(Sender: TObject);
 begin
- NextImageClick(Sender);
+  NextImageClick(Sender);
 end;
 
 procedure TViewer.SetPlay(const Value: boolean);
@@ -2911,7 +3086,7 @@ begin
   with EditorsManager.NewEditor do
   begin
     Show;
-    OpenFileName(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+    OpenFileName(Item.FileName);
   end;
 end;
 
@@ -2921,132 +3096,100 @@ var
 begin
   Files := TStringList.Create;
   try
-    if FileExists(CurrentInfo.ItemFileNames[CurrentFileNumber]) then
-      Files.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
+    if FileExists(Item.FileName) then
+      Files.Add(Item.FileName);
     if Files.Count > 0 then
       GetPrintForm(Files);
   finally
-    Files.Free;
+    F(Files);
   end;
 end;
 
 procedure TViewer.TbDeleteClick(Sender: TObject);
 var
-  fQuery : TDataSet;
-  Files : TStrings;
-  EventInfo : TEventValues;
-  SQL_ : string;
-  i, DeleteID : Integer;
+  FQuery: TDataSet;
+  Files: TStrings;
+  EventInfo: TEventValues;
+  SQL_: string;
+  I, DeleteID: Integer;
 begin
- If ID_OK=MessageBoxDB(Handle,L('Do you really want to delete file to recycle bin?'), L('Delete confirn'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
- begin
-  DeleteID:=0;
-  if CurrentInfo.ItemIds[CurrentFileNumber]<>0 then
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete file to recycle bin?'), L('Delete confirn'),
+    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-   fQuery:=GetQuery;
-   try
-     DeleteID:=CurrentInfo.ItemIds[CurrentFileNumber];
-     SQL_:=Format('DELETE FROM $DB$ WHERE ID = %d', [CurrentInfo.ItemIds[CurrentFileNumber]]);
-     SetSQL(fQuery,SQL_);
-     ExecSQL(fQuery);
-   finally
-     FreeDS(fQuery);
-   end;
-  end;
+    DeleteID := 0;
+    if Item.ID <> 0 then
+    begin
+      FQuery := GetQuery;
+      try
+        DeleteID := Item.ID;
+        SQL_ := Format('DELETE FROM $DB$ WHERE ID = %d', [Item.ID]);
+        SetSQL(FQuery, SQL_);
+        ExecSQL(FQuery);
+      finally
+        FreeDS(FQuery);
+      end;
+    end;
 
-  Files := TStringList.Create;
-  try
-    Files.Add(CurrentInfo.ItemFileNames[CurrentFileNumber]);
-    SilentDeleteFiles(Handle, Files, true );
-  finally
-    F(Files);
-  end;
+    Files := TStringList.Create;
+    try
+      Files.Add(Item.FileName);
+      SilentDeleteFiles(Handle, Files, True);
+    finally
+      F(Files);
+    end;
 
-  for i:=CurrentFileNumber to Length(CurrentInfo.ItemIds)-2 do
-  begin
-   With CurrentInfo do
-   begin
-    ItemFileNames[i]:=ItemFileNames[i+1];
-    ItemIds[i]:=ItemIds[i+1];
-    ItemRotates[i]:=ItemRotates[i+1];
-    ItemRatings[i]:=ItemRatings[i+1];
-    ItemAccesses[i]:=ItemAccesses[i+1];
-    ItemComments[i]:=ItemComments[i+1];
-    ItemCollections[i]:=ItemCollections[i+1];
-    ItemGroups[i]:=ItemGroups[i+1];
-    ItemOwners[i]:=ItemOwners[i+1];
-    ItemKeyWords[i]:=ItemKeyWords[i+1];
-    ItemDates[i]:=ItemDates[i+1];
-    ItemIsDates[i]:=ItemIsDates[i+1];
-    ItemCrypted[i]:=ItemCrypted[i+1];
-    LoadedImageInfo[i]:= LoadedImageInfo[i+1];
-   end;
+    CurrentInfo.Delete(CurrentFileNumber);
+
+    if CurrentInfo.Count = 0 then
+    begin
+      Close;
+      DBKernel.DoIDEvent(Self, DeleteID, [EventID_Param_Delete], EventInfo);
+      Exit;
+    end;
+    if CurrentFileNumber > CurrentInfo.Count - 1 then
+      CurrentFileNumber := CurrentInfo.Count - 1;
+
+    if Item.ID <> 0 then
+      DBKernel.DoIDEvent(Self, DeleteID, [EventID_Param_Delete], EventInfo);
+    if CurrentInfo.Count < 2 then
+    begin
+      TbBack.Enabled := False;
+      TbForward.Enabled := False;
+      SetProgressPosition(0, 0);
+      if FloatPanel <> nil then
+      begin
+        FloatPanel.ToolButton1.Enabled := False;
+        FloatPanel.ToolButton2.Enabled := False;
+        FloatPanel.ToolButton4.Enabled := False;
+        FloatPanel.ToolButton5.Enabled := False;
+      end;
+    end else
+    begin
+      TbBack.Enabled := True;
+      TbForward.Enabled := True;
+      SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
+      if FloatPanel <> nil then
+      begin
+        FloatPanel.ToolButton1.Enabled := True;
+        FloatPanel.ToolButton2.Enabled := True;
+        FloatPanel.ToolButton4.Enabled := True;
+        FloatPanel.ToolButton5.Enabled := True;
+      end;
+    end;
+    TbFitToWindow.Enabled := False;
+    ZoomIn1.Enabled := False;
+    ZoomOut1.Enabled := False;
+    TbRealSize.Enabled := False;
+    TbSlideShow.Enabled := False;
+    TbZoomOut.Enabled := False;
+    TbZoomIn.Enabled := False;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False;
+    RealSize1.Enabled := False;
+    BestSize1.Enabled := False;
+    LoadImage_(Sender, Item.FileName, Item.Rotation, False, 1, True);
+    TbrActions.Refresh;
   end;
-  With CurrentInfo do
-  begin
-   SetLength(ItemFileNames,Length(ItemFileNames)-1);
-   SetLength(ItemIds,Length(ItemIds)-1);
-   SetLength(ItemRotates,Length(ItemRotates)-1);
-   SetLength(ItemRatings,Length(ItemRatings)-1);
-   SetLength(ItemAccesses,Length(ItemAccesses)-1);
-   SetLength(ItemComments,Length(ItemComments)-1);
-   SetLength(ItemCollections,Length(ItemCollections)-1);
-   SetLength(ItemGroups,Length(ItemGroups)-1);
-   SetLength(ItemOwners,Length(ItemOwners)-1);
-   SetLength(ItemKeyWords,Length(ItemKeyWords)-1);
-   SetLength(ItemDates,Length(ItemDates)-1);
-   SetLength(ItemIsDates,Length(ItemIsDates)-1);
-   SetLength(ItemCrypted,Length(ItemCrypted)-1);
-   SetLength(LoadedImageInfo,Length(LoadedImageInfo)-1);
-   if Length(CurrentInfo.ItemFileNames)=0 then
-   begin
-    Close;
-    DBKernel.DoIDEvent(Self,DeleteID,[EventID_Param_Delete],EventInfo);
-    Exit;
-   end;
-   if CurrentFileNumber>Length(ItemFileNames)-1 then CurrentFileNumber:=Length(ItemFileNames)-1;
-  end;
-  if CurrentInfo.ItemIds[CurrentFileNumber] <> 0 then
-    DBKernel.DoIDEvent(Self,DeleteID,[EventID_Param_Delete],EventInfo);
-  if Length(CurrentInfo.ItemFileNames)<2 then
-  begin
-   TbBack.Enabled := False;
-   TbForward.Enabled := False;
-   SetProgressPosition(0, 0);
-   if FloatPanel<>nil then
-   begin
-    FloatPanel.ToolButton1.Enabled:=false;
-    FloatPanel.ToolButton2.Enabled:=false;
-    FloatPanel.ToolButton4.Enabled:=false;
-    FloatPanel.ToolButton5.Enabled:=false;
-   end;
-  end else
-  begin
-   TbBack.Enabled := True;
-   TbForward.Enabled := True;
-   SetProgressPosition(CurrentFileNumber + 1, Length(CurrentInfo.ItemFileNames));
-   if FloatPanel<>nil then
-   begin
-    FloatPanel.ToolButton1.Enabled:=True;
-    FloatPanel.ToolButton2.Enabled:=True;
-    FloatPanel.ToolButton4.Enabled:=True;
-    FloatPanel.ToolButton5.Enabled:=True;
-   end;
-  end;
-  TbFitToWindow.Enabled:=false;
-  ZoomIn1.Enabled:=false;
-  ZoomOut1.Enabled:=false;
-  TbRealSize.Enabled:=false;
-  TbSlideShow.Enabled:=false;
-  TbZoomOut.Enabled:=false;
-  TbZoomIn.Enabled:=false;
-  TbRotateCCW.Enabled:=false;
-  TbRotateCW.Enabled:=false;
-  RealSize1.Enabled:=false;
-  BestSize1.Enabled:=false;
-  LoadImage_(Sender,CurrentInfo.ItemFileNames[CurrentFileNumber],CurrentInfo.ItemRotates[CurrentFileNumber],false,1,true);
-  TbrActions.Refresh;
- end;
 end;
 
 procedure TViewer.TbRatingClick(Sender: TObject);
@@ -3058,7 +3201,7 @@ begin
   for I := 0 to 5 do
     (FindComponent('N' + IntToStr(I) + '1') as TMenuItem).Default := False;
 
-  (FindComponent('N' + IntToStr(CurrentInfo.ItemRatings[CurrentFileNumber]) + '1') as TMenuItem).default := True;
+  (FindComponent('N' + IntToStr(Item.Rating) + '1') as TMenuItem).default := True;
   RatingPopupMenu.Popup(P.X, P.Y);
 end;
 
@@ -3070,9 +3213,9 @@ var
 begin
   Str := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
   NewRating := StrToInt(Str);
-  SetRating(CurrentInfo.ItemIds[CurrentFileNumber], NewRating);
+  SetRating(Item.ID, NewRating);
   EventInfo.Rating := NewRating;
-  DBKernel.DoIDEvent(Self, CurrentInfo.ItemIds[CurrentFileNumber], [EventID_Param_Rating], EventInfo);
+  DBKernel.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
 end;
 
 procedure TViewer.ApplicationEvents1Hint(Sender: TObject);
@@ -3082,15 +3225,15 @@ begin
 end;
 
 procedure TViewer.UpdateInfoAboutFileName(FileName: String;
-  info: TOneRecordInfo);
+  info: TDBPopupMenuInfoRecord);
 var
   I: Integer;
 begin
-  for I := 0 to Length(CurrentInfo.ItemFileNames) - 1 do
-    if not CurrentInfo.LoadedImageInfo[I] then
-      if CurrentInfo.ItemFileNames[I] = FileName then
+  for I := 0 to CurrentInfo.Count - 1 do
+    if not CurrentInfo[I].InfoLoaded then
+      if CurrentInfo[I].FileName = FileName then
       begin
-        SetRecordToRecords(CurrentInfo, I, Info);
+        CurrentInfo[I].Assign(Info);
         Exit;
       end;
 end;
@@ -3113,14 +3256,14 @@ begin
   Setlength(InfoIDs, 0);
   Setlength(Infoloaded, 1);
   Infoloaded[0] := True;
-  if CurrentInfo.ItemIds[CurrentFileNumber] <> 0 then
+  if Item.ID <> 0 then
   begin
     Setlength(InfoIDs, 1);
-    InfoIDs[0] := CurrentInfo.ItemIds[CurrentFileNumber];
+    InfoIDs[0] := Item.ID;
   end else
   begin
     Setlength(InfoNames, 1);
-    InfoNames[0] := CurrentInfo.ItemFileNames[CurrentFileNumber];
+    InfoNames[0] := Item.FileName;
   end;
 
   if NumberOfPanel >= 0 then
@@ -3143,58 +3286,46 @@ var
   I: Integer;
 begin
   FileName := AnsiLowerCase(FileName);
-  for I := 0 to Length(CurrentInfo.ItemFileNames) - 1 do
-    if AnsiLowerCase(CurrentInfo.ItemFileNames[I]) = FileName then
+  for I := 0 to CurrentInfo.Count - 1 do
+    if AnsiLowerCase(CurrentInfo[I].FileName) = FileName then
     begin
-      SetRecordsInfoOne(CurrentInfo, I, DS.FieldByName('FFileName').AsString,
-        DS.FieldByName('ID').AsInteger, DS.FieldByName('Rotated').AsInteger,
-        DS.FieldByName('Rating').AsInteger,
-        DS.FieldByName('Access').AsInteger,
-        DS.FieldByName('Comment').AsString,
-        DS.FieldByName('Groups').AsString,
-        DS.FieldByName('DateToAdd').AsDateTime,
-        DS.FieldByName('IsDate').AsBoolean,
-        DS.FieldByName('IsTime').AsBoolean,
-        DS.FieldByName('aTime').AsDateTime,
-        ValidCryptBlobStreamJPG(DS.FieldByName('thum')),
-        DS.FieldByName('Include').AsBoolean,
-        DS.FieldByName('Links').AsString);
-      CurrentInfo.LoadedImageInfo[I] := True;
+      CurrentInfo[I].ReadFromDS(DS);
+
       if not Loading then
       begin
-        if CurrentInfo.ItemRotates[I] <> 0 then
+        if CurrentInfo[I].Rotation <> 0 then
           if I = CurrentFileNumber then
           begin
-            ApplyRotate(FbImage, CurrentInfo.ItemRotates[I]);
+            ApplyRotate(FbImage, CurrentInfo[I].Rotation);
             RecreateDrawImage(Self);
           end;
       end else
       begin
         FRotatingImageInfo.Enabled := True;
         FRotatingImageInfo.FileName := FileName;
-        FRotatingImageInfo.Rotating := CurrentInfo.ItemRotates[I];
+        FRotatingImageInfo.Rotating := CurrentInfo[I].Rotation;
       end;
       Break;
     end;
 
-  DisplayRating := CurrentInfo.ItemIds[CurrentFileNumber];
+  DisplayRating := Item.ID;
 
   TbRotateCCW.Enabled := True;
-  TbRotateCW.Enabled := TbRotateCCW.Enabled;
+  TbRotateCW.Enabled := True;
 end;
 
 procedure TViewer.DoSetNoDBRecord(FileName: string);
 var
   I: integer;
 begin
-  for I := 0 to Length(CurrentInfo.ItemFileNames) - 1 do
-    if not CurrentInfo.LoadedImageInfo[I] then
-      if CurrentInfo.ItemFileNames[I] = FileName then
+  for I := 0 to CurrentInfo.Count - 1 do
+    if not CurrentInfo[I].InfoLoaded then
+      if CurrentInfo[I].FileName = FileName then
       begin
-        CurrentInfo.LoadedImageInfo[I] := True;
+        CurrentInfo[I].InfoLoaded := True;
         Break;
       end;
-  DisplayRating := CurrentInfo.ItemRatings[CurrentFileNumber];
+  DisplayRating := Item.Rotation;
 
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled:=TbRotateCCW.Enabled;

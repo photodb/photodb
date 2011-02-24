@@ -129,7 +129,7 @@ procedure TFloatPanel.FormCreate(Sender: TObject);
 begin
   FClosed := false;
   RecreateImLists;
-  if Length(CurrentInfo.ItemFileNames) < 2 then
+  if Viewer.CurrentInfo.Count < 2 then
   begin
     ToolButton4.Enabled := false;
     ToolButton5.Enabled := false;

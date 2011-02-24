@@ -416,7 +416,7 @@ type
     DBCanDrag : Boolean;
     DBDragPoint : TPoint;
     FCurrentSelectedID : Integer;
-    CurrentItemInfo : TOneRecordInfo;
+    CurrentItemInfo : TDBPopupMenuInfoRecord;
     SelectedInfo : TSelectedInfo;
     Creating : Boolean;
     LockChangePath : Boolean;
@@ -613,6 +613,8 @@ begin
   Captions[2] := L('Show duplicates');
 
   TW.I.Start('S -> FormCreate');
+
+  CurrentItemInfo := TDBPopupMenuInfoRecord.Create;
   FCanBackgroundSearch := False;
   FilesToDrag := TStringList.Create;
   FSearchInfo := TSearchInfo.Create;
@@ -885,7 +887,6 @@ end;
 procedure TSearchForm.ListViewDblClick(Sender: TObject);
 var
   MenuInfo: TDBPopupMenuInfo;
-  Info: TRecordsInfo;
   P, P1: TPoint;
   Item: TEasyItem;
 begin
@@ -916,8 +917,7 @@ begin
     try
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
-      DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
-      Viewer.Execute(Sender, Info);
+      Viewer.Execute(Sender, MenuInfo);
       Viewer.Show;
     finally
       F(MenuInfo);
@@ -933,16 +933,13 @@ end;
 
 procedure TSearchForm.SlideShow1Click(Sender: TObject);
 var
-  Info: TRecordsInfo;
   DBInfo: TDBPopupMenuInfo;
 begin
-  Info := RecordsInfoNil;
   DBInfo := GetCurrentPopUpMenuInfo(nil);
   try
-    DBPopupMenuInfoToRecordsInfo(DBInfo, Info);
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
-    Viewer.Execute(Sender, Info);
+    Viewer.Execute(Sender, DBInfo);
   finally
     F(DBInfo);
   end;
@@ -1013,7 +1010,7 @@ begin
   ProgressForm:=nil;
   CommonKeyWords:=SelectedInfo.CommonKeyWords;
   if VariousKeyWords(Memo1.lines.Text,CommonKeyWords) then inc(xCount);
-  If not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then inc(xCount);
+  If not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then inc(xCount);
 
   if xCount>0 then
   begin
@@ -1168,7 +1165,7 @@ begin
 
   //[BEGIN] Groups Support
   CommonGroups:=SelectedInfo.Groups;
-  If not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
+  If not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then
   begin
    FreeSQLList(List);
    ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
@@ -1236,7 +1233,7 @@ var
   i : integer;
   SelectQuery : TDataSet;
 
-  RecordInfo : TOneRecordInfo;
+  RecordInfo : TDBPopupMenuInfoRecord;
   Exists : integer;
   SearchRecord : TDBPopupMenuInfoRecord;
 begin
@@ -1324,11 +1321,11 @@ begin
 
   FBitmapImageList[item.ImageIndex].Bitmap.free;
   FBitmapImageList[item.ImageIndex].Bitmap:=bit;
-  RecordInfo.ItemFileName:=SelectQuery.FieldByName('FFileName').AsString;
-  RecordInfo.ItemRating:=SearchRecord.Rating;
-  RecordInfo.ItemRotate:=SearchRecord.Rotation;
-  RecordInfo.ItemAccess:=SearchRecord.Access;
-  RecordInfo.ItemCrypted:=SearchRecord.Crypted;
+  RecordInfo.FileName:=SelectQuery.FieldByName('FFileName').AsString;
+  RecordInfo.Rating:=SearchRecord.Rating;
+  RecordInfo.Rotation:=SearchRecord.Rotation;
+  RecordInfo.Access:=SearchRecord.Access;
+  RecordInfo.Crypted:=SearchRecord.Crypted;
 
   ElvMain.Refresh;
  end;
@@ -1444,6 +1441,7 @@ begin
   F(FilesToDrag);
   F(FBitmapImageList);
   F(FSearchInfo);
+  F(CurrentItemInfo);
 end;
 
 procedure TSearchForm.BreakOperation(Sender: TObject);
@@ -1500,35 +1498,35 @@ procedure TSearchForm.Memo1Change(Sender: TObject);
  function ReadCHDate : boolean;
  begin
   if GetSelectionCount>1 then
-  Result:=not PanelValueIsDateSets.Visible and ((CurrentItemInfo.ItemIsDate<>not IsDatePanel.Visible) or (CurrentItemInfo.ItemDate<>DateTimePicker1.DateTime) or (SelectedInfo.IsVariousDates and not PanelValueIsDateSets.Visible)) else
-  Result:=(((CurrentItemInfo.ItemDate<>DateTimePicker1.DateTime) or (IsDatePanel.Visible<>not SelectedInfo.IsDate)) and not PanelValueIsDateSets.Visible);
+  Result:=not PanelValueIsDateSets.Visible and ((CurrentItemInfo.IsDate<>not IsDatePanel.Visible) or (CurrentItemInfo.Date<>DateTimePicker1.DateTime) or (SelectedInfo.IsVariousDates and not PanelValueIsDateSets.Visible)) else
+  Result:=(((CurrentItemInfo.Date<>DateTimePicker1.DateTime) or (IsDatePanel.Visible<>not SelectedInfo.IsDate)) and not PanelValueIsDateSets.Visible);
  end;
 
  function ReadCHTime : boolean;
  var
    VarTime : Boolean;
  begin
-  VarTime:=Abs(CurrentItemInfo.ItemTime-TimeOf(DateTimePicker4.DateTime))>1/(24*60*60*3);
+  VarTime:=Abs(CurrentItemInfo.Time-TimeOf(DateTimePicker4.DateTime))>1/(24*60*60*3);
   if GetSelectionCount>1 then
-  Result:=not PanelValueIsTimeSets.Visible and ((CurrentItemInfo.ItemIsTime<>not IsTimePanel.Visible) or (VarTime or (SelectedInfo.IsVariousTimes and not PanelValueIsTimeSets.Visible))) else
+  Result:=not PanelValueIsTimeSets.Visible and ((CurrentItemInfo.IsTime<>not IsTimePanel.Visible) or (VarTime or (SelectedInfo.IsVariousTimes and not PanelValueIsTimeSets.Visible))) else
   Result:=((VarTime or (IsTimePanel.Visible<>not SelectedInfo.IsTime)) and not PanelValueIsTimeSets.Visible);
  end;
 
 begin
  if GetSelectionCount>1 then
  begin
-  if ReadCHTime or ReadCHDate or not RatingEdit.Islayered or (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) or VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
+  if ReadCHTime or ReadCHDate or not RatingEdit.Islayered or (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) or VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then
   Save.Enabled:=true else Save.Enabled:=false;
   if not RatingEdit.Islayered then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
   if (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
   if VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) then Label5.Font.Style:=Label5.Font.Style+[fsBold] else Label5.Font.Style:=Label5.Font.Style-[fsBold];
  end else
  begin
-  if ReadCHTime or ReadCHDate or (CurrentItemInfo.ItemRating<>RatingEdit.Rating) or (CurrentItemInfo.ItemComment<>Memo2.text) or VariousKeyWords(CurrentItemInfo.ItemKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.ItemGroups,FPropertyGroups) then
+  if ReadCHTime or ReadCHDate or (CurrentItemInfo.Rating<>RatingEdit.Rating) or (CurrentItemInfo.Comment<>Memo2.text) or VariousKeyWords(CurrentItemInfo.KeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then
   Save.Enabled:=true else Save.Enabled:=false;
-  if (CurrentItemInfo.ItemRating<>RatingEdit.Rating) then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
-  if (CurrentItemInfo.ItemComment<>Memo2.text) then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
-  if VariousKeyWords(CurrentItemInfo.ItemKeyWords,Memo1.text) then Label5.Font.Style:=Label5.Font.Style+[fsBold] else Label5.Font.Style:=Label5.Font.Style-[fsBold];
+  if (CurrentItemInfo.Rating<>RatingEdit.Rating) then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
+  if (CurrentItemInfo.Comment<>Memo2.text) then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
+  if VariousKeyWords(CurrentItemInfo.KeyWords,Memo1.text) then Label5.Font.Style:=Label5.Font.Style+[fsBold] else Label5.Font.Style:=Label5.Font.Style-[fsBold];
  end;
 end;
 
@@ -2419,8 +2417,9 @@ end;
 
 procedure TSearchForm.PopupMenu5Popup(Sender: TObject);
 begin
- Ratingnotsets1.Visible:=not RatingEdit.Islayered and not FUpdatingDB;
- if GetSelectionCount<2 then Ratingnotsets1.Visible:=False;
+  Ratingnotsets1.Visible := not RatingEdit.Islayered and not FUpdatingDB;
+  if GetSelectionCount < 2 then
+    Ratingnotsets1.Visible := False;
 end;
 
 procedure TSearchForm.MenuItem2Click(Sender: TObject);
@@ -2456,7 +2455,7 @@ begin
   Memo2.Cursor := CrDefault;
   Memo2.Text := '';
   SelectedInfo.CommonComment := '';
-  CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+  CurrentItemInfo.Comment := SelectedInfo.CommonComment;
   Memo1Change(Sender);
 end;
 
@@ -2466,7 +2465,7 @@ begin
   Memo2.Cursor := CrHandPoint;
   Memo2.Text := L('<Different comments>');
   SelectedInfo.CommonComment := '';
-  CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+  CurrentItemInfo.Comment := SelectedInfo.CommonComment;
   Memo1Change(Sender);
 end;
 
@@ -2478,13 +2477,13 @@ end;
 
 procedure TSearchForm.PopupMenu6Popup(Sender: TObject);
 begin
-  SetComent1.Visible := Memo2.readonly;
-  Comentnotsets1.Visible := not Memo2.readonly;
-  MenuItem2.Visible := not Memo2.readonly;
-  Cut1.Visible := not Memo2.readonly;
-  Copy2.Visible := not Memo2.readonly;
-  Paste1.Visible := not Memo2.readonly;
-  Undo1.Visible := not Memo2.readonly;
+  SetComent1.Visible := Memo2.ReadOnly;
+  Comentnotsets1.Visible := not Memo2.ReadOnly;
+  MenuItem2.Visible := not Memo2.ReadOnly;
+  Cut1.Visible := not Memo2.ReadOnly;
+  Copy2.Visible := not Memo2.ReadOnly;
+  Paste1.Visible := not Memo2.ReadOnly;
+  Undo1.Visible := not Memo2.ReadOnly;
 end;
 
 procedure TSearchForm.LoadLanguage;
@@ -2613,10 +2612,13 @@ begin
   if GetDBType = DB_TYPE_MDB then
   begin
     DS := GetQuery(True);
-    SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
-    DS.Open;
-    XHint(DS);
-    FreeDS(DS);
+    try
+      SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
+      DS.Open;
+      XHint(DS);
+    finally
+      FreeDS(DS);
+    end;
   end;
 end;
 
@@ -2714,7 +2716,7 @@ end;
 
 destructor TManagerSearchs.Destroy;
 begin
-  FSearches.Free;
+  F(FSearches);
   inherited;
 end;
 
@@ -2820,48 +2822,60 @@ end;
 
 procedure TSearchForm.Image3Click(Sender: TObject);
 var
-  Groups : TGroups;
-  size, i : integer;
-  MenuItem : TmenuItem;
-  P : TPoint;
-  SmallB, B : TBitmap;
-  JPEG : TJPEGImage;
+  Groups: TGroups;
+  Size, I: Integer;
+  MenuItem: TmenuItem;
+  P: TPoint;
+  SmallB, B: TBitmap;
+  JPEG: TJPEGImage;
 begin
- if not GroupsLoaded then LoadGroupsList(true);
- GetCursorPos(P);
- Groups:=GetRegisterGroupList(true,not (ShiftKeyDown));
- QuickGroupsSearch.Items.Clear;
- GroupsImageList.Clear;
- SmallB := TBitmap.Create;
- SmallB.PixelFormat:=pf24bit;
- for i:=0 to Length(Groups)-1 do
- begin
-  B := TBitmap.Create;
-  B.PixelFormat:=pf24bit;
-  JPEG := TJPEGImage.Create;
-  JPEG.Assign(Groups[i].GroupImage);
-  B.Canvas.Brush.Color:=Graphics.clMenu;
-  B.Canvas.Pen.Color:=Graphics.clMenu;
-  size:=Max(JPEG.Width,JPEG.Height);
-  B.Width:=size;
-  B.Height:=size;
-  B.Canvas.Rectangle(0,0,size,size);
-  B.Canvas.Draw(B.Width div 2 - JPEG.Width div 2, B.Height div 2 - JPEG.Height div 2,JPEG);
-  DoResize(16,16,B,SmallB);
-  B.Free;
-  GroupsImageList.Add(SmallB,nil);
-  JPEG.Free;
- end;
- SmallB.Free;
- for i:=0 to Length(Groups)-1 do
- begin
-  MenuItem := TmenuItem.Create(QuickGroupsSearch.Items);
-  MenuItem.Caption:=Groups[i].GroupName;
-  MenuItem.OnClick:=QuickGroupsearch;
-  MenuItem.ImageIndex:=i;
-  QuickGroupsSearch.Items.Add(MenuItem);
- end;
- QuickGroupsSearch.Popup(P.X,P.Y);
+  if not GroupsLoaded then
+    LoadGroupsList(True);
+
+  GetCursorPos(P);
+  Groups := GetRegisterGroupList(True, not(ShiftKeyDown));
+  QuickGroupsSearch.Items.Clear;
+  GroupsImageList.Clear;
+  SmallB := TBitmap.Create;
+  try
+    SmallB.PixelFormat := Pf24bit;
+    for I := 0 to Length(Groups) - 1 do
+    begin
+      B := TBitmap.Create;
+      try
+        B.PixelFormat := pf24bit;
+        JPEG := TJPEGImage.Create;
+        try
+          JPEG.Assign(Groups[I].GroupImage);
+          B.Canvas.Brush.Color := Graphics.ClMenu;
+          B.Canvas.Pen.Color := Graphics.ClMenu;
+          Size := Max(JPEG.Width, JPEG.Height);
+          B.Width := Size;
+          B.Height := Size;
+          B.Canvas.Rectangle(0, 0, Size, Size);
+          B.Canvas.Draw(B.Width div 2 - JPEG.Width div 2, B.Height div 2 - JPEG.Height div 2, JPEG);
+          DoResize(16, 16, B, SmallB);
+        finally
+          F(JPEG);
+        end;
+      finally
+        F(B);
+      end;
+      GroupsImageList.Add(SmallB, nil);
+    end;
+  finally
+    F(SmallB);
+  end;
+
+  for I := 0 to Length(Groups) - 1 do
+  begin
+    MenuItem := TmenuItem.Create(QuickGroupsSearch.Items);
+    MenuItem.Caption := Groups[I].GroupName;
+    MenuItem.OnClick := QuickGroupsearch;
+    MenuItem.ImageIndex := I;
+    QuickGroupsSearch.Items.Add(MenuItem);
+  end;
+  QuickGroupsSearch.Popup(P.X, P.Y);
 end;
 
 procedure TSearchForm.QuickGroupsearch(Sender: TObject);
@@ -3198,8 +3212,8 @@ begin
           RatingEdit.Islayered := True;
           RatingEdit.Layered := 100;
 
-          CurrentItemInfo.ItemDate := MaxStatDate(ArDates);
-          CurrentItemInfo.ItemIsDate := MaxStatBool(ArIsDates);
+          CurrentItemInfo.Date := MaxStatDate(ArDates);
+          CurrentItemInfo.IsDate := MaxStatBool(ArIsDates);
           SelectedInfo.Date := MaxStatDate(ArDates);
           SelectedInfo.IsDate := MaxStatBool(ArIsDates);
           PanelValueIsDateSets.Visible := IsVariousBool(ArIsDates) or IsVariousDate(ArDates);
@@ -3207,8 +3221,8 @@ begin
           IsDatePanel.Visible := not SelectedInfo.IsDate;
           SelectedInfo.IsVariousDates := PanelValueIsDateSets.Visible;
 
-          CurrentItemInfo.ItemTime := MaxStatDate(TArDateTime(ArTimes));
-          CurrentItemInfo.ItemIsTime := MaxStatBool(ArIsTimes);
+          CurrentItemInfo.Time := MaxStatDate(TArDateTime(ArTimes));
+          CurrentItemInfo.IsTime := MaxStatBool(ArIsTimes);
           SelectedInfo.Time := MaxStatTime(ArTimes);
           SelectedInfo.IsTime := MaxStatBool(ArIsTimes);
           PanelValueIsTimeSets.Visible := IsVariousBool(ArIsTimes) or IsVariousDate(TArDateTime(ArTimes));
@@ -3225,12 +3239,12 @@ begin
           if SelectedInfo.IsVariousComments then
           begin
             SelectedInfo.CommonComment := L('<Different comments>');
-            CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+            CurrentItemInfo.Comment := SelectedInfo.CommonComment;
             Memo2.PopupMenu := PopupMenu6;
           end else
           begin
             SelectedInfo.CommonComment := ArComments[0];
-            CurrentItemInfo.ItemComment := SelectedInfo.CommonComment;
+            CurrentItemInfo.Comment := SelectedInfo.CommonComment;
           end;
           if SelectedInfo.IsVariousComments then
           begin
@@ -3238,9 +3252,9 @@ begin
             Memo2.Cursor := CrHandPoint;
           end;
           Memo2.Text := SelectedInfo.CommonComment;
-          CurrentItemInfo.ItemGroups := GetCommonGroups(ArGroups);
-          SelectedInfo.Groups := CurrentItemInfo.ItemGroups;
-          FPropertyGroups := CurrentItemInfo.ItemGroups;
+          CurrentItemInfo.Groups := GetCommonGroups(ArGroups);
+          SelectedInfo.Groups := CurrentItemInfo.Groups;
+          FPropertyGroups := CurrentItemInfo.Groups;
           ReloadGroups;
           Memo1Change(nil);
         finally
@@ -3264,29 +3278,29 @@ begin
           Memo1.Lines.Text := SelectQuery.FieldByName('KeyWords').Asstring;
           Memo2.Lines.Text := SelectQuery.FieldByName('Comment').Asstring;
           RatingEdit.Rating := SelectQuery.FieldByName('Rating').Asinteger;
-          CurrentItemInfo.ItemRating := RatingEdit.Rating;
+          CurrentItemInfo.Rating := RatingEdit.Rating;
 
           ElvMain.Hint := SelectQuery.FieldByName('Comment').Asstring;
           FCurrentSelectedID := SelectQuery.FieldByName('ID').AsInteger;
-          CurrentItemInfo.ItemKeyWords := SelectQuery.FieldByName('KeyWords').AsString;
-          CurrentItemInfo.ItemComment := SelectQuery.FieldByName('Comment').AsString;
+          CurrentItemInfo.KeyWords := SelectQuery.FieldByName('KeyWords').AsString;
+          CurrentItemInfo.Comment := SelectQuery.FieldByName('Comment').AsString;
 
           DateTimePicker1.DateTime := SelectQuery.FieldByName('DateToAdd').AsDateTime;
-          CurrentItemInfo.ItemDate := SelectQuery.FieldByName('DateToAdd').AsDateTime;
-          CurrentItemInfo.ItemIsDate := SelectQuery.FieldByName('IsDate').AsBoolean;
-          SelectedInfo.IsDate := CurrentItemInfo.ItemIsDate;
-          IsDatePanel.Visible := not CurrentItemInfo.ItemIsDate;
+          CurrentItemInfo.Date := SelectQuery.FieldByName('DateToAdd').AsDateTime;
+          CurrentItemInfo.IsDate := SelectQuery.FieldByName('IsDate').AsBoolean;
+          SelectedInfo.IsDate := CurrentItemInfo.IsDate;
+          IsDatePanel.Visible := not CurrentItemInfo.IsDate;
           PanelValueIsDateSets.Visible := False;
 
           DateTimePicker4.DateTime := SelectQuery.FieldByName('aTime').AsDateTime;
-          CurrentItemInfo.ItemTime := SelectQuery.FieldByName('aTime').AsDateTime;
-          CurrentItemInfo.ItemIsTime := SelectQuery.FieldByName('IsTime').AsBoolean;
-          SelectedInfo.IsTime := CurrentItemInfo.ItemIsTime;
-          IsTimePanel.Visible := not CurrentItemInfo.ItemIsTime;
+          CurrentItemInfo.Time := SelectQuery.FieldByName('aTime').AsDateTime;
+          CurrentItemInfo.IsTime := SelectQuery.FieldByName('IsTime').AsBoolean;
+          SelectedInfo.IsTime := CurrentItemInfo.IsTime;
+          IsTimePanel.Visible := not CurrentItemInfo.IsTime;
           PanelValueIsTimeSets.Visible := False;
 
-          CurrentItemInfo.ItemGroups := SelectQuery.FieldByName('Groups').AsString;
-          FPropertyGroups := CurrentItemInfo.ItemGroups;
+          CurrentItemInfo.Groups := SelectQuery.FieldByName('Groups').AsString;
+          FPropertyGroups := CurrentItemInfo.Groups;
           ReloadGroups;
           Save.Enabled := False;
           Memo2.Cursor := CrDefault;
@@ -3345,14 +3359,19 @@ end;
 
 procedure TSearchForm.View2Click(Sender: TObject);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
   N: Integer;
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-  GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
-  if Length(Info.ItemFileNames) > 0 then
-    Viewer.Execute(Self, Info);
+  Info := TDBPopupMenuInfo.Create;
+  try
+    if Viewer = nil then
+      Application.CreateForm(TViewer, Viewer);
+    GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
+    if Info.Count > 0 then
+      Viewer.Execute(Self, Info);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TSearchForm.DropFileTarget2Drop(Sender: TObject;

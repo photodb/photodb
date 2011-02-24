@@ -200,58 +200,6 @@ type
   end;
 
 type
-  TOneRecordInfo = record
-    ItemFileName: string;
-    ItemCrypted: Boolean;
-    ItemId: Integer;
-    ItemImTh: string;
-    ItemSize: Int64;
-    ItemRotate: Integer;
-    ItemRating: Integer;
-    ItemAccess: Integer;
-    ItemComment: string;
-    ItemCollections: string;
-    ItemGroups: string;
-    ItemOwner: string;
-    ItemKeyWords: string;
-    ItemDate: TDateTime;
-    ItemTime: TDateTime;
-    ItemIsDate: Boolean;
-    ItemIsTime: Boolean;
-    ItemHeight: Integer;
-    ItemWidth: Integer;
-    ItemInclude: Boolean;
-    Image: TJpegImage;
-    Tag: Integer;
-    PassTag: Integer;
-    Loaded: Boolean;
-    ItemLinks: string;
-  end;
-
-  TRecordsInfo = record
-    ItemFileNames: TArStrings;
-    ItemIds: TArInteger;
-    ItemRotates: TArInteger;
-    ItemRatings: TArInteger;
-    ItemAccesses: TArInteger;
-    ItemComments: TArStrings;
-    ItemCollections: TArStrings;
-    ItemGroups: TArStrings;
-    ItemOwners: TArStrings;
-    ItemKeyWords: TArStrings;
-    ItemDates: TArDateTime;
-    ItemTimes: TArTime;
-    ItemIsDates: TArBoolean;
-    ItemIsTimes: TArBoolean;
-    ItemCrypted: TArBoolean;
-    ItemInclude: TArBoolean;
-    ItemLinks: TArStrings;
-    Position: Integer;
-    Tag: Integer;
-    LoadedImageInfo: TArBoolean;
-  end;
-
-type
   TDBPopupMenuInfoRecord = class(TObject)
   protected
     function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
@@ -280,11 +228,16 @@ type
     Exists: Integer; // for drawing in lists
     LongImageID: string;
     Data: TClonableObject;
+    Image: TJpegImage;
+    Tag: Integer;
+    PassTag: Integer;
     constructor Create;
     constructor CreateFromDS(DS: TDataSet);
-    constructor CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
+    constructor CreateFromFile(FileName: string);
     destructor Destroy; override;
+    procedure ReadFromDS(DS: TDataSet);
     function Copy : TDBPopupMenuInfoRecord; virtual;
+    procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
@@ -341,6 +294,34 @@ end;
 
 { TDBPopupMenuInfoRecord }
 
+procedure TDBPopupMenuInfoRecord.Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
+begin
+  ID := Item.ID;
+  FileName := Item.FileName;
+  Comment := Item.Comment;
+  Groups := Item.Groups;
+  FileSize := Item.FileSize;
+  Rotation := Item.Rotation;
+  Rating := Item.Rating;
+  Access := Item.Access;
+  Date := Item.Date;
+  Time := Item.Time;
+  IsDate := Item.IsDate;
+  IsTime := Item.IsTime;
+  Crypted := Item.Crypted;
+  KeyWords := Item.KeyWords;
+  InfoLoaded := Item.InfoLoaded;
+  Include := Item.Include;
+  Links := Item.Links;
+  Selected := Item.Selected;
+  if MoveImage then
+  begin
+    F(Image);
+    Image := Item.Image;
+    Item.Image := nil;
+  end;
+end;
+
 function TDBPopupMenuInfoRecord.Copy: TDBPopupMenuInfoRecord;
 begin
   Result := InitNewInstance;
@@ -370,6 +351,8 @@ end;
 
 constructor TDBPopupMenuInfoRecord.Create;
 begin
+  PassTag := 0;
+  Tag := 0;
   ID := 0;
   FileName := '';
   Comment := '';
@@ -389,14 +372,41 @@ begin
   Links := '';
   Selected := False;
   Data := nil;
+  Image := nil;
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromDS(DS: TDataSet);
-var
-  ThumbField: TField;
 begin
   InfoLoaded := True;
   Selected := True;
+  ReadFromDS(DS);
+  Data := nil;
+  Image := nil;
+end;
+
+constructor TDBPopupMenuInfoRecord.CreateFromFile(FileName: string);
+begin
+  Create;
+  Self.FileName := FileName;
+end;
+
+destructor TDBPopupMenuInfoRecord.Destroy;
+begin
+  F(Data);
+  F(Image);
+  inherited;
+end;
+
+function TDBPopupMenuInfoRecord.InitNewInstance: TDBPopupMenuInfoRecord;
+begin
+  Result := TDBPopupMenuInfoRecord.Create;
+end;
+
+procedure TDBPopupMenuInfoRecord.ReadFromDS(DS: TDataSet);
+var
+  ThumbField: TField;
+begin
+  F(Image);
   ID := DS.FieldByName('ID').AsInteger;
   KeyWords := DS.FieldByName('KeyWords').AsString;
   FileName := DS.FieldByName('FFileName').AsString;
@@ -423,43 +433,8 @@ begin
 
   Include := DS.FieldByName('Include').AsBoolean;
   Links := DS.FieldByName('Links').AsString;
-  Data := nil;
-end;
 
-constructor TDBPopupMenuInfoRecord.CreateFromSlideShowInfo(Info: TRecordsInfo; Position: Integer);
-begin
-  FileName := Info.ItemFileNames[Position];
-  ID := Info.ItemIds[Position];
-  Rotation := Info.ItemRotates[Position];
-  Rating := Info.ItemRatings[Position];
-  Comment := Info.ItemComments[Position];
-  Access := Info.ItemAccesses[Position];
-  Date := Info.ItemDates[Position];
-  Time := Info.ItemTimes[Position];
-  IsDate := Info.ItemIsDates[Position];
-  IsTime := Info.ItemIsTimes[Position];
-  Groups := Info.ItemGroups[Position];
-  Crypted := Info.ItemCrypted[Position];
-  KeyWords := Info.ItemKeyWords[Position];
-  Links := Info.ItemLinks[Position];
-  Selected := True;
   InfoLoaded := True;
-  Attr := 0;
-  InfoLoaded := Info.LoadedImageInfo[Position];
-  FileSize := GetFileSizeByName(Info.ItemFileNames[Position]);
-  Include := Info.ItemInclude[Position];
-  Data := nil;
-end;
-
-destructor TDBPopupMenuInfoRecord.Destroy;
-begin
-  F(Data);
-  inherited;
-end;
-
-function TDBPopupMenuInfoRecord.InitNewInstance: TDBPopupMenuInfoRecord;
-begin
-  Result := TDBPopupMenuInfoRecord.Create;
 end;
 
 { TExplorerFileInfo }

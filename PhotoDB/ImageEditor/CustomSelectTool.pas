@@ -115,7 +115,7 @@ begin
   FProcRecteateImage := nil;
 
   EditWidthLabel := TStaticText.Create(AOwner);
-  EditWidthLabel.Caption := L('Width');
+  EditWidthLabel.Caption := L('Width') + ':';
   EditWidthLabel.Top := 8;
   EditWidthLabel.Left := 8;
   EditWidthLabel.Parent := AOwner as TWinControl;
@@ -135,7 +135,7 @@ begin
   EditHeight.Parent := AOwner as TWinControl;
 
   EditHeightLabel := TStaticText.Create(AOwner);
-  EditHeightLabel.Caption := L('Height');
+  EditHeightLabel.Caption := L('Height') + ':';
   EditHeightLabel.Top := 8;
   EditHeightLabel.Left := EditHeight.Left;
   EditHeightLabel.Parent := AOwner as TWinControl;

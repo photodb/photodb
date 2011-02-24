@@ -62,9 +62,9 @@ type TDBPopupMenu = class
     procedure PrintItemPopUpMenu_(Sender: TObject);
     procedure Execute(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
     procedure ExecutePlus(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
-    procedure AddDBContMenu(Item: Tmenuitem; Info: TDBPopupMenuInfo);
+    procedure AddDBContMenu(Form: TDBForm; Item: Tmenuitem; Info: TDBPopupMenuInfo);
     procedure AddUserMenu(Item: Tmenuitem; Insert: Boolean; index: Integer);
-    procedure SetInfo(Info: TDBPopupMenuInfo);
+    procedure SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
     procedure ScriptExecuted(Sender: TObject);
     function GetGroupImageInImageList(GroupCode: string): Integer;
     function LoadVariablesNo(int : Integer) : integer;
@@ -98,8 +98,8 @@ begin
   MenuScript := ReadScriptFile('Scripts\IDMenu.dbini');
 end;
 
-procedure TDBPopupMenu.AddDBContMenu(item: TMenuItem;
-  info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.AddDBContMenu(Form: TDBForm; Item: TMenuItem;
+  Info: TDBPopupMenuInfo);
 var
   I: Integer;
   Isrecord, IsFile, IsCurrentFile: Boolean;
@@ -137,34 +137,40 @@ begin
     Exit;
   end;
 
- finfo.Assign(info);
- isrecord:=true;
- if finfo.Count=1 then
- if finfo[0].ID=0 then isrecord:=false;
- for i:=0 to item.Count-1 do
- item.Delete(0);
+  FOwner := Form;
 
- if finfo.Count>1 then
- begin
-  isrecord:=false;
-  for i:=0 to finfo.Count-1 do
-  if finfo[i].ID<>0 then isrecord:=true;
- end;
- NoDBInfoNeeded:=false;
+  Finfo.Assign(Info);
+  Isrecord := True;
+  if Finfo.Count = 1 then
+    if Finfo[0].ID = 0 then
+      Isrecord := False;
+  for I := 0 to Item.Count - 1 do
+    Item.Delete(0);
 
- OnlyCurrentDBinfoSelected:=true;
- if finfo.Count>1 then
- for i:=0 to finfo.Count-1 do
- if finfo[I].ID<>0 then
- if finfo[i].Selected then
- if finfo.Position<>i then
- OnlyCurrentDBinfoSelected:=false;
- if finfo[finfo.Position].Selected then
- if finfo[finfo.Position].ID=0 then
- if not OnlyCurrentDBinfoSelected then
- NoDBInfoNeeded:=true;
- if not isrecord then NoDBInfoNeeded:=true;
- if finfo[finfo.Position].ID=0 then NoDBInfoNeeded:=true;
+  if Finfo.Count > 1 then
+  begin
+    Isrecord := False;
+    for I := 0 to Finfo.Count - 1 do
+      if Finfo[I].ID <> 0 then
+        Isrecord := True;
+  end;
+  NoDBInfoNeeded := False;
+
+  OnlyCurrentDBinfoSelected := True;
+  if Finfo.Count > 1 then
+    for I := 0 to Finfo.Count - 1 do
+      if Finfo[I].ID <> 0 then
+        if Finfo[I].Selected then
+          if Finfo.Position <> I then
+            OnlyCurrentDBinfoSelected := False;
+  if Finfo[Finfo.Position].Selected then
+    if Finfo[Finfo.Position].ID = 0 then
+      if not OnlyCurrentDBinfoSelected then
+        NoDBInfoNeeded := True;
+  if not Isrecord then
+    NoDBInfoNeeded := True;
+  if Finfo[Finfo.Position].ID = 0 then
+    NoDBInfoNeeded := True;
 
   TW.I.Start('FileExists');
   IsCurrentFile:=FileExistsSafe(finfo[finfo.Position].FileName);
@@ -177,21 +183,22 @@ begin
         IsFile := True;
         Break;
       end;
- SetLength(MenuGroups,0);
 
-  script:=MenuScript;
+  SetLength(MenuGroups, 0);
+
+  Script := MenuScript;
 
   TW.I.Start('Vars');
-  SetBoolAttr(aScript,'$CanRename',finfo.IsListItem);
-  SetBoolAttr(aScript,'$IsRecord',IsRecord);
-  SetBoolAttr(aScript,'$IsFile',IsFile);
-  SetBoolAttr(aScript,'$NoDBInfoNeeded',NoDBInfoNeeded);
+  SetBoolAttr(AScript, '$CanRename', Finfo.IsListItem);
+  SetBoolAttr(AScript, '$IsRecord', IsRecord);
+  SetBoolAttr(AScript, '$IsFile', IsFile);
+  SetBoolAttr(AScript, '$NoDBInfoNeeded', NoDBInfoNeeded);
 
-  SetIntAttr(aScript,'$MenuLength',finfo.Count);
-  SetIntAttr(aScript,'$Position',finfo.Position);
+  SetIntAttr(AScript, '$MenuLength', Finfo.Count);
+  SetIntAttr(AScript, '$Position', Finfo.Position);
 
-  //if user haven't rights to get FileName its only possible way to know
-  SetBoolAttr(aScript,'$FileExists',FileExistsSafe(finfo[finfo.Position].FileName));
+  // if user haven't rights to get FileName its only possible way to know
+  SetBoolAttr(AScript, '$FileExists', FileExistsSafe(Finfo[Finfo.Position].FileName));
 
   // END Access section
   SetBoolAttr(aScript,'$IsCurrentFile',IsCurrentFile);
@@ -202,165 +209,186 @@ begin
   PanelsTexts := TStringList.Create;
   try
     ManagerPanels.GetPanelsTexts(PanelsTexts);
-    SetLength(aPanelTexts,PanelsTexts.Count);
-    for i:=0 to PanelsTexts.Count-1 do
-    aPanelTexts[i]:=PanelsTexts[i];
-    SetNamedValueArrayStrings(aScript,'$Panels',aPanelTexts);
+    SetLength(APanelTexts, PanelsTexts.Count);
+    for I := 0 to PanelsTexts.Count - 1 do
+      APanelTexts[I] := PanelsTexts[I];
+    SetNamedValueArrayStrings(AScript, '$Panels', APanelTexts);
   finally
     F(PanelsTexts);
   end;
   TW.I.Start('Groups');
   GroupsList := TStringList.Create;
   try
-    for i:=0 to FInfo.Count-1 do
-    if FInfo[i].Selected then
-      GroupsList.Add(FInfo[i].Groups);
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].Selected then
+        GroupsList.Add(FInfo[I].Groups);
 
-    SetNamedValueArrayStrings(aScript,'$Panels',aPanelTexts);
-    StrGroups:=GetCommonGroups(GroupsList);
+    SetNamedValueArrayStrings(AScript, '$Panels', APanelTexts);
+    StrGroups := GetCommonGroups(GroupsList);
   finally
     F(GroupsList);
   end;
-  MenuGroups:=EnCodeGroups(StrGroups);
-  SetLength(aGroupsNames,Length(MenuGroups));
-  SetLength(aGroupsCodes,Length(MenuGroups));
-  for i:=0 to Length(MenuGroups)-1 do
+  MenuGroups := EnCodeGroups(StrGroups);
+  SetLength(AGroupsNames, Length(MenuGroups));
+  SetLength(AGroupsCodes, Length(MenuGroups));
+  for I := 0 to Length(MenuGroups) - 1 do
   begin
-   aGroupsNames[i]:=MenuGroups[i].GroupName;
-   aGroupsCodes[i]:=MenuGroups[i].GroupCode;
+    AGroupsNames[I] := MenuGroups[I].GroupName;
+    AGroupsCodes[I] := MenuGroups[I].GroupCode;
   end;
-  SetNamedValueArrayStrings(aScript,'$GroupsNames',aGroupsNames);
-  SetNamedValueArrayStrings(aScript,'$GroupsCodes',aGroupsCodes);
+  SetNamedValueArrayStrings(AScript, '$GroupsNames', AGroupsNames);
+  SetNamedValueArrayStrings(AScript, '$GroupsCodes', AGroupsCodes);
   TW.I.Start('LoadMenuFromScript');
-  LoadMenuFromScript(item,DBKernel.ImageList,script,aScript,ScriptExecuted,FExtImagesInImageList,true);
+  LoadMenuFromScript(Item, DBKernel.ImageList, Script, AScript, ScriptExecuted, FExtImagesInImageList, True);
   TW.I.Start('LoadMenuFromScript - end');
 end;
 
 procedure TDBPopupMenu.AddUserMenu(Item: TMenuItem; Insert : Boolean; Index : integer);
 var
-  reg : TBDRegistry;
-  S : TStrings;
-  i, c : integer;
-  fCaption,EXEFile,Params,Icon : String;
-  UseSubMenu : Boolean;
-  Ico : TIcon;
+  Reg: TBDRegistry;
+  S: TStrings;
+  I, C: Integer;
+  FCaption, EXEFile, Params, Icon: string;
+  UseSubMenu: Boolean;
+  Ico: TIcon;
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey + '\Menu', True);
+    S := TStringList.Create;
+    try
+      Reg.GetKeyNames(S);
+      SetLength(FUserMenu, 0);
+      SetLength(_user_group_menu_sub_items, 0);
+      SetLength(_user_menu, 0);
+      C := 0;
+      for I := 0 to S.Count - 1 do
+      begin
+        Reg.CloseKey;
+        Reg.OpenKey(GetRegRootKey + '\Menu\' + S[I], True);
+        if Reg.ValueExists('Caption') then
+          FCaption := Reg.ReadString('Caption')
+        else
+          FCaption := 'NO_CAPTION';
+        if Reg.ValueExists('EXEFile') then
+          EXEFile := Reg.ReadString('EXEFile')
+        else
+          EXEFile := 'Explorer.exe';
+        if Reg.ValueExists('Params') then
+          Params := Reg.ReadString('Params')
+        else
+          Params := '';
+        if Reg.ValueExists('Icon') then
+          Icon := Reg.ReadString('Icon')
+        else
+          Icon := '';
+        if Reg.ValueExists('UseSubMenu') then
+          UseSubMenu := Reg.ReadBool('UseSubMenu')
+        else
+          UseSubMenu := False;
+        if (FCaption <> '') and (EXEFile <> '') then
+        begin
+          SetLength(FUserMenu, Length(FUserMenu) + 1);
+          FUserMenu[Length(FUserMenu) - 1].Caption := FCaption;
+          FUserMenu[Length(FUserMenu) - 1].EXEFile := EXEFile;
+          FUserMenu[Length(FUserMenu) - 1].Params := Params;
+          FUserMenu[Length(FUserMenu) - 1].Icon := Icon;
+          FUserMenu[Length(FUserMenu) - 1].UseSubMenu := UseSubMenu;
+          if UseSubMenu then
+            Inc(C);
+        end;
+      end;
+      if C > 0 then
+      begin
+        _user_group_menu := TMenuItem.Create(Item);
+        if DBKernel.ReadString('', 'UserMenuName') <> '' then
+          _user_group_menu.Caption := DBKernel.ReadString('', 'UserMenuName')
+        else
+          _user_group_menu.Caption := TA('Additional', DBMenuID);
+        Icon := DBKernel.ReadString('', 'UserMenuIcon');
+        if Icon = '' then
+          Icon := '%SystemRoot%\system32\shell32.dll,126';
+        Ico := TIcon.Create;
+        try
+          Ico.Handle := ExtractSmallIconByPath(Icon);
+          if not Ico.Empty then
+          begin
+            Inc(FExtImagesInImageList);
+            DBkernel.ImageList.AddIcon(Ico);
+            _user_group_menu.ImageIndex := DBkernel.ImageList.Count - 1;
+          end
+          else
+            _user_group_menu.ImageIndex := DB_IC_COMPUTER;
+        finally
+          F(Ico);
+        end;
 
-  Reg.OpenKey(GetRegRootKey+'\Menu',true);
-  S := TStringList.create;
-  Reg.GetKeyNames(S);
-  SetLength(FUserMenu,0);
-  SetLength(_user_group_menu_sub_items,0);
-  SetLength(_user_menu,0);
-  c:=0;
-  for i:=0 to S.Count-1 do
-  begin
-   Reg.CloseKey;
-   Reg.OpenKey(GetRegRootKey+'\Menu\'+s[i],true);
-   if Reg.ValueExists('Caption') then
-   fCaption:=Reg.ReadString('Caption') else fCaption:='NO_CAPTION';
-   if Reg.ValueExists('EXEFile') then
-   EXEFile:=Reg.ReadString('EXEFile') else EXEFile:='Explorer.exe';
-   if Reg.ValueExists('Params') then
-   Params:=Reg.ReadString('Params') else Params:='';
-   if Reg.ValueExists('Icon') then
-   Icon:=Reg.ReadString('Icon') else Icon:='';
-   if Reg.ValueExists('UseSubMenu') then
-   UseSubMenu:=Reg.ReadBool('UseSubMenu') else UseSubMenu:=false;
-   if (fCaption<>'') and (EXEFile<>'') then
-   begin
-    SetLength(FUserMenu,Length(FUserMenu)+1);
-    FUserMenu[Length(FUserMenu)-1].Caption:=fCaption;
-    FUserMenu[Length(FUserMenu)-1].EXEFile:=EXEFile;
-    FUserMenu[Length(FUserMenu)-1].Params:=Params;
-    FUserMenu[Length(FUserMenu)-1].Icon:=Icon;
-    FUserMenu[Length(FUserMenu)-1].UseSubMenu:=UseSubMenu;
-    if UseSubMenu then inc(c);
-   end;
-  end;
-  if c>0 then
-  begin
-   _user_group_menu := TMenuItem.Create(item);
-   if DBKernel.ReadString('','UserMenuName')<>'' then
-   _user_group_menu.Caption:=DBKernel.ReadString('','UserMenuName') else
-   _user_group_menu.Caption:=TA('Additional', DBMenuID);
-   icon:=DBKernel.ReadString('','UserMenuIcon');
-   if icon='' then icon:='%SystemRoot%\system32\shell32.dll,126';
-   Ico := TIcon.Create;
-    try
-      Ico.Handle := ExtractSmallIconByPath(Icon);
-      if not Ico.Empty then
+      end;
+      for I := 0 to Length(FUserMenu) - 1 do
       begin
-        Inc(FExtImagesInImageList);
-        DBkernel.ImageList.AddIcon(Ico);
-        _user_group_menu.ImageIndex := DBkernel.ImageList.Count - 1;
+        if FUserMenu[I].UseSubMenu then
+        begin
+          SetLength(_user_group_menu_sub_items, Length(_user_group_menu_sub_items) + 1);
+          _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1] := TMenuItem.Create(_user_group_menu);
+          _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].Caption := FUserMenu[I].Caption;
+          _user_group_menu.Add(_user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1]);
+          _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].Tag := I;
+          _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].OnClick := UserMenuItemPopUpMenu_;
+          Ico := TIcon.Create;
+          try
+            Ico.Handle := ExtractSmallIconByPath(FUserMenu[I].Icon);
+            if not Ico.Empty then
+            begin
+              Inc(FExtImagesInImageList);
+              DBkernel.ImageList.AddIcon(Ico);
+              _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].ImageIndex := DBkernel.ImageList.Count - 1;
+            end
+            else
+              _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].ImageIndex := DB_IC_COMPUTER;
+          finally
+            F(Ico);
+          end;
+        end else
+        begin
+          SetLength(_user_menu, Length(_user_menu) + 1);
+          _user_menu[Length(_user_menu) - 1] := TMenuItem.Create(Item);
+          _user_menu[Length(_user_menu) - 1].Caption := FUserMenu[I].Caption;
+          _user_menu[Length(_user_menu) - 1].Tag := I;
+          _user_menu[Length(_user_menu) - 1].OnClick := UserMenuItemPopUpMenu_;
+          Ico := TIcon.Create;
+          try
+            Ico.Handle := ExtractSmallIconByPath(FUserMenu[I].Icon);
+            if not Ico.Empty then
+            begin
+              Inc(FExtImagesInImageList);
+              DBkernel.ImageList.AddIcon(Ico);
+              _user_menu[Length(_user_menu) - 1].ImageIndex := DBkernel.ImageList.Count - 1;
+            end
+            else
+              _user_menu[Length(_user_menu) - 1].ImageIndex := DB_IC_COMPUTER;
+          finally
+            F(Ico);
+          end;
+        end;
+      end;
+      if C > 0 then
+        if Insert then
+          Item.Insert(index, _user_group_menu)
+        else
+          Item.Add(_user_group_menu);
+      if Insert then
+      begin
+        for I := 0 to Length(_user_menu) - 1 do
+          Item.Insert(index, _user_menu[I]);
       end
       else
-        _user_group_menu.ImageIndex := DB_IC_COMPUTER;
+        Item.Add(_user_menu);
     finally
-      F(Ico);
+      F(S);
     end;
-
+  finally
+    F(Reg);
   end;
-  for i:=0 to Length(FUserMenu)-1 do
-  begin
-   if FUserMenu[i].UseSubMenu then
-   begin
-    SetLength(_user_group_menu_sub_items, Length(_user_group_menu_sub_items)+1);
-    _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1]:=TMenuItem.Create(_user_group_menu);
-    _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1].Caption:=FUserMenu[i].Caption;
-    _user_group_menu.Add(_user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1]);
-    _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1].Tag:=i;
-    _user_group_menu_sub_items[Length(_user_group_menu_sub_items)-1].OnClick:=UserMenuItemPopUpMenu_;
-    Ico := TIcon.Create;
-    try
-      Ico.Handle := ExtractSmallIconByPath(FUserMenu[I].Icon);
-      if not Ico.Empty then
-      begin
-        Inc(FExtImagesInImageList);
-        DBkernel.ImageList.AddIcon(Ico);
-        _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].ImageIndex := DBkernel.ImageList.Count - 1;
-      end
-      else
-        _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].ImageIndex := DB_IC_COMPUTER;
-    finally
-      F(Ico);
-    end;
-   end else
-   begin
-    SetLength(_user_menu, Length(_user_menu)+1);
-    _user_menu[Length(_user_menu)-1]:=TMenuItem.Create(item);
-    _user_menu[Length(_user_menu)-1].Caption:=FUserMenu[i].Caption;
-    _user_menu[Length(_user_menu)-1].Tag:=i;
-    _user_menu[Length(_user_menu)-1].OnClick:=UserMenuItemPopUpMenu_;
-    Ico := TIcon.Create;
-    try
-      Ico.Handle := ExtractSmallIconByPath(FUserMenu[I].Icon);
-      if not Ico.Empty then
-      begin
-        Inc(FExtImagesInImageList);
-        DBkernel.ImageList.AddIcon(Ico);
-        _user_menu[Length(_user_menu) - 1].ImageIndex := DBkernel.ImageList.Count - 1;
-      end
-      else
-        _user_menu[Length(_user_menu) - 1].ImageIndex := DB_IC_COMPUTER;
-    finally
-      F(Ico);
-    end;
-   end;
-  end;
-  if c>0 then
-  if Insert then item.Insert(Index,_user_group_menu) else
-  item.Add(_user_group_menu);
-  if Insert then
-  begin
-   for i:=0 to Length(_user_menu)-1 do
-   item.Insert(Index,_user_menu[i]);
-  end else
-  item.Add(_user_menu);
-  S.free;
-  Reg.free;
 end;
 
 procedure TDBPopupMenu.CopyItemPopUpMenu_(Sender: TObject);
@@ -388,10 +416,10 @@ constructor TDBPopupMenu.create;
 begin
   inherited;
 
-  FBusy:=false;
+  FBusy := False;
   Finfo := TDBPopupMenuInfo.Create;
-  aScript := TScript.Create('');
-  aScript.Description:='ID Menu';
+  AScript := TScript.Create('');
+  AScript.Description := 'ID Menu';
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SearchFolderPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SearchFolderPopUpMenu_);
@@ -426,14 +454,14 @@ begin
   AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment,' LoadVariablesNo',Self.LoadVariablesNo);
 
-  _popupmenu:=Tpopupmenu.Create(nil);
+  _popupmenu := Tpopupmenu.Create(nil);
 end;
 
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);
 var
   Options: TCryptImageThreadOptions;
   Opt: TCryptImageOptions;
-  CryptOptions: Integer;
+  I, CryptOptions: Integer;
 begin
   Opt := GetPassForCryptImageFile(TA('SelectedObjects', DBMenuID));
   if Opt.SaveFileCRC then
@@ -442,10 +470,17 @@ begin
     CryptOptions := CRYPT_OPTIONS_NORMAL;
   if Opt.Password = '' then
     Exit;
-  // TODO:!!!
-  { Options.Files := Copy(FInfo.ItemFileNames_);
-    Options.IDs := Copy(FInfo.ItemIDs_);
-    Options.Selected := Copy(FInfo.ItemSelected_); }
+
+  SetLength(Options.Files, FInfo.Count);
+  SetLength(Options.IDs, FInfo.Count);
+  SetLength(Options.Selected, FInfo.Count);
+  for I := 0 to FInfo.Count - 1 do
+  begin
+    Options.Files[I] := FInfo[I].FileName;
+    Options.IDs[I] := FInfo[I].ID;
+    Options.Selected[I] := FInfo[I].Selected;
+  end;
+
   Options.Password := Opt.Password;
   Options.CryptOptions := CryptOptions;
   Options.Action := ACTION_CRYPT_IMAGES;
@@ -454,301 +489,319 @@ end;
 
 procedure TDBPopupMenu.DateItemPopUpMenu_(Sender: TObject);
 var
-  ArDates : TArDateTime;
-  ArTimes : TArTime;
-  ArIsDates : TArBoolean;
-  ArIsTimes : TArBoolean;
-  Date : TDateTime;
-  i : integer;
-  Time : TDateTime;
-  IsDate, IsTime, Changed, FirstID : Boolean;
-  _sqlexectext : string;
-  FQuery : TDataSet;
-  EventInfo : TEventValues;
+  ArDates: TArDateTime;
+  ArTimes: TArTime;
+  ArIsDates: TArBoolean;
+  ArIsTimes: TArBoolean;
+  Date: TDateTime;
+  I: Integer;
+  Time: TDateTime;
+  IsDate, IsTime, Changed, FirstID: Boolean;
+  _sqlexectext: string;
+  FQuery: TDataSet;
+  EventInfo: TEventValues;
 begin
- SetLength(ArDates,0);
- SetLength(ArIsDates,0);
- SetLength(ArTimes,0);
- SetLength(ArIsTimes,0);
- for i:=0 to FInfo.Count - 1 do
- if finfo[i].Selected then
- begin
-  SetLength(ArDates,Length(ArDates)+1);
-  ArDates[Length(ArDates)-1]:=FInfo[i].Date;
-  SetLength(ArTimes,Length(ArTimes)+1);
-  ArTimes[Length(ArTimes)-1]:=FInfo[i].Time;
-  SetLength(ArIsDates,Length(ArIsDates)+1);
-  ArIsDates[Length(ArIsDates)-1]:=FInfo[i].IsDate;
-  SetLength(ArIsTimes,Length(ArIsTimes)+1);
-  ArIsTimes[Length(ArIsTimes)-1]:=FInfo[i].IsTime;
- end;
- IsDate:=MaxStatBool(ArIsDates);
- IsTime:=MaxStatBool(ArIsTimes);
- Date:=MaxStatDate(ArDates);
- Time:=MaxStatTime(ArTimes);
- ChangeDate(Date,IsDate,Changed,Time,IsTime);
- If Changed then
- begin
-  FQuery := GetQuery;
+  SetLength(ArDates, 0);
+  SetLength(ArIsDates, 0);
+  SetLength(ArTimes, 0);
+  SetLength(ArIsTimes, 0);
+  for I := 0 to FInfo.Count - 1 do
+    if Finfo[I].Selected then
+    begin
+      SetLength(ArDates, Length(ArDates) + 1);
+      ArDates[Length(ArDates) - 1] := FInfo[I].Date;
+      SetLength(ArTimes, Length(ArTimes) + 1);
+      ArTimes[Length(ArTimes) - 1] := FInfo[I].Time;
+      SetLength(ArIsDates, Length(ArIsDates) + 1);
+      ArIsDates[Length(ArIsDates) - 1] := FInfo[I].IsDate;
+      SetLength(ArIsTimes, Length(ArIsTimes) + 1);
+      ArIsTimes[Length(ArIsTimes) - 1] := FInfo[I].IsTime;
+    end;
+  IsDate := MaxStatBool(ArIsDates);
+  IsTime := MaxStatBool(ArIsTimes);
+  Date := MaxStatDate(ArDates);
+  Time := MaxStatTime(ArTimes);
+  ChangeDate(Date, IsDate, Changed, Time, IsTime);
+  if Changed then
   begin
-   //[BEGIN] Date Support
-   If IsDate then
-   begin
-    _sqlexectext:='Update $DB$ Set DateToAdd = :Date, IsDate = TRUE Where ID in (';
-    FirstID:=True;
-    for i:=0 to FInfo.Count-1 do
-    if finfo[i].Selected then
+    FQuery := GetQuery;
     begin
-      if FirstID then _sqlexectext:=_sqlexectext+' '+inttostr(finfo[i].ID)+' ' else
-     _sqlexectext:=_sqlexectext+' , '+inttostr(finfo[i].ID)+' ';
-     FirstID:=False;
+   // [BEGIN] Date Support
+      if IsDate then
+      begin
+        _sqlexectext := 'Update $DB$ Set DateToAdd = :Date, IsDate = TRUE Where ID in (';
+        FirstID := True;
+        for I := 0 to FInfo.Count - 1 do
+          if Finfo[I].Selected then
+          begin
+            if FirstID then
+              _sqlexectext := _sqlexectext + ' ' + Inttostr(Finfo[I].ID) + ' '
+            else
+              _sqlexectext := _sqlexectext + ' , ' + Inttostr(Finfo[I].ID) + ' ';
+            FirstID := False;
+          end;
+        _sqlexectext := _sqlexectext + ')';
+        FQuery.Active := False;
+        SetSQL(FQuery, _sqlexectext);
+        SetDateParam(FQuery, 'Date', Date);
+        ExecSQL(FQuery);
+        EventInfo.Date := Date;
+        EventInfo.IsDate := True;
+        for I := 0 to FInfo.Count - 1 do
+          if FInfo[I].Selected then
+            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
+      end
+      else
+      begin
+        _sqlexectext := 'Update $DB$ Set IsDate = FALSE Where ID in (';
+        FirstID := True;
+        for I := 0 to FInfo.Count - 1 do
+          if Finfo[I].Selected then
+          begin
+            if FirstID then
+              _sqlexectext := _sqlexectext + ' ' + Inttostr(Finfo[I].ID) + ' '
+            else
+              _sqlexectext := _sqlexectext + ' , ' + Inttostr(Finfo[I].ID) + ' ';
+            FirstID := False;
+          end;
+        _sqlexectext := _sqlexectext + ')';
+        FQuery.Active := False;
+        SetSQL(FQuery, _sqlexectext);
+        ExecSQL(FQuery);
+        EventInfo.IsDate := FALSE;
+        for I := 0 to FInfo.Count - 1 do
+          if Finfo[I].Selected then
+            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_IsDate], EventInfo);
+      end;
+      // [END] Date Support
+      // [BEGIN] Time Support
+      if IsTime then
+      begin
+        _sqlexectext := 'Update $DB$ Set aTime = :aTime, IsTime = TRUE Where ID in (';
+        FirstID := True;
+        for I := 0 to FInfo.Count - 1 do
+          if Finfo[I].Selected then
+          begin
+            if FirstID then
+              _sqlexectext := _sqlexectext + ' ' + Inttostr(Finfo[I].ID) + ' '
+            else
+              _sqlexectext := _sqlexectext + ' , ' + Inttostr(Finfo[I].ID) + ' ';
+            FirstID := False;
+          end;
+        _sqlexectext := _sqlexectext + ')';
+        FQuery.Active := False;
+        SetSQL(FQuery, _sqlexectext);
+        SetDateParam(FQuery, 'aTime', Time);
+        ExecSQL(FQuery);
+        EventInfo.Time := Time;
+        EventInfo.IsTime := True;
+        for I := 0 to Finfo.Count - 1 do
+          if Finfo[I].Selected then
+            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
+      end
+      else
+      begin
+        _sqlexectext := 'Update $DB$ Set IsTime = FALSE Where ID in (';
+        FirstID := True;
+        for I := 0 to FInfo.Count - 1 do
+          if Finfo[I].Selected then
+          begin
+            if FirstID then
+              _sqlexectext := _sqlexectext + ' ' + Inttostr(Finfo[I].ID) + ' '
+            else
+              _sqlexectext := _sqlexectext + ' , ' + Inttostr(Finfo[I].ID) + ' ';
+            FirstID := False;
+          end;
+        _sqlexectext := _sqlexectext + ')';
+        FQuery.Active := False;
+        SetSQL(FQuery, _sqlexectext);
+        ExecSQL(FQuery);
+        EventInfo.IsTime := FALSE;
+        for I := 0 to FInfo.Count - 1 do
+          if Finfo[I].Selected then
+            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_IsTime], EventInfo);
+      end;
+      // [END] Time Support
     end;
-    _sqlexectext:=_sqlexectext+')';
-    FQuery.active:=false;
-    SetSQL(FQuery,_sqlexectext);
-    SetDateParam(FQuery,'Date',Date);
-    ExecSQL(fQuery);
-    EventInfo.Date:=Date;
-    EventInfo.IsDate:=True;
-    for i:=0 to FInfo.Count-1 do
-    if FInfo[i].Selected then
-    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Date,EventID_Param_IsDate],EventInfo);
-   end else
-   begin
-    _sqlexectext:='Update $DB$ Set IsDate = FALSE Where ID in (';
-    FirstID:=True;
-    for i:=0 to FInfo.Count - 1 do
-    if finfo[i].Selected then
-    begin
-      if FirstID then _sqlexectext:=_sqlexectext+' '+inttostr(finfo[i].ID)+' ' else
-     _sqlexectext:=_sqlexectext+' , '+inttostr(finfo[i].ID)+' ';
-     FirstID:=False;
-    end;
-    _sqlexectext:=_sqlexectext+')';
-    FQuery.active:=false;
-    SetSQL(FQuery,_sqlexectext);
-    ExecSQL(fQuery);
-    EventInfo.IsDate:=FALSE;
-    for i:=0 to FInfo.Count-1 do
-    if finfo[i].Selected then
-    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_IsDate],EventInfo);
-   end;
-   //[END] Date Support
-   //[BEGIN] Time Support
-   If IsTime then
-   begin
-    _sqlexectext:='Update $DB$ Set aTime = :aTime, IsTime = TRUE Where ID in (';
-    FirstID:=True;
-    for i:=0 to FInfo.Count - 1 do
-    if finfo[i].Selected then
-    begin
-      if FirstID then _sqlexectext:=_sqlexectext+' '+inttostr(finfo[i].ID)+' ' else
-     _sqlexectext:=_sqlexectext+' , '+inttostr(finfo[i].ID)+' ';
-     FirstID:=False;
-    end;
-    _sqlexectext:=_sqlexectext+')';
-    FQuery.active:=false;
-    SetSQL(FQuery,_sqlexectext);
-    SetDateParam(FQuery,'aTime',Time);
-    ExecSQL(fQuery);
-    EventInfo.Time:=Time;
-    EventInfo.IsTime:=True;
-    for i:=0 to finfo.Count-1 do
-    if finfo[i].Selected then
-    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Time,EventID_Param_IsTime],EventInfo);
-   end else
-   begin
-    _sqlexectext:='Update $DB$ Set IsTime = FALSE Where ID in (';
-    FirstID:=True;
-    for i:=0 to FInfo.Count-1 do
-    if finfo[i].Selected then
-    begin
-      if FirstID then _sqlexectext:=_sqlexectext+' '+inttostr(finfo[i].ID)+' ' else
-     _sqlexectext:=_sqlexectext+' , '+inttostr(finfo[i].ID)+' ';
-     FirstID:=False;
-    end;
-    _sqlexectext:=_sqlexectext+')';
-    FQuery.active:=false;
-    SetSQL(FQuery,_sqlexectext);
-    ExecSQL(fQuery);
-    EventInfo.IsTime:=FALSE;
-    for i:=0 to FInfo.Count-1 do
-    if finfo[i].Selected then
-    DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_IsTime],EventInfo);
-   end;
-   //[END] Time Support
+    FreeDS(FQuery);
   end;
-  FreeDS(fQuery);
- end;
 end;
 
 procedure TDBPopupMenu.DeCryptItemPopUpMenu_(Sender: TObject);
 var
- i : integer;
- Options : TCryptImageThreadOptions;
- ItemFileNames : TArStrings;
- ItemIDs : TArInteger;
- ItemSelected : TArBoolean;
- Password : string;
+  I: Integer;
+  Options: TCryptImageThreadOptions;
+  ItemFileNames: TArStrings;
+  ItemIDs: TArInteger;
+  ItemSelected: TArBoolean;
+  Password: string;
 begin
 
- Password:=DBKernel.FindPasswordForCryptImageFile(FInfo[FInfo.Position].FileName);
- if Password='' then
- if FileExistsSafe(FInfo[FInfo.Position].FileName) then
- Password:=GetImagePasswordFromUser(FInfo[FInfo.Position].FileName);
+  Password := DBKernel.FindPasswordForCryptImageFile(FInfo[FInfo.Position].FileName);
+  if Password = '' then
+    if FileExistsSafe(FInfo[FInfo.Position].FileName) then
+      Password := GetImagePasswordFromUser(FInfo[FInfo.Position].FileName);
 
- Setlength(ItemFileNames,FInfo.Count);
- Setlength(ItemIDs,FInfo.Count);
- Setlength(ItemSelected,FInfo.Count);
+  Setlength(ItemFileNames, FInfo.Count);
+  Setlength(ItemIDs, FInfo.Count);
+  Setlength(ItemSelected, FInfo.Count);
 
- //be default unchecked
- for i:=0 to FInfo.Count-1 do
- ItemSelected[i]:=false;
+  for I := 0 to FInfo.Count - 1 do
+  begin
+    ItemFileNames[I] := FInfo[I].FileName;
+    ItemIDs[I] := FInfo[I].ID;
+    ItemSelected[I] := FInfo[I].Selected;
+  end;
 
- for i:=0 to FInfo.Count-1 do
- begin
-  ItemFileNames[i]:=FInfo[i].FileName;
-  ItemIDs[i]:=FInfo[i].ID;
-  ItemSelected[i]:=FInfo[i].Selected;
- end;
-
- Options.Files := Copy(ItemFileNames);
- Options.IDs := Copy(ItemIDs);
- Options.Selected := Copy(ItemSelected);
- Options.Action:=ACTION_DECRYPT_IMAGES;
- Options.Password:=Password;
- Options.CryptOptions:=0;
- TCryptingImagesThread.Create(FOwner, Options);
+  Options.Files := Copy(ItemFileNames);
+  Options.IDs := Copy(ItemIDs);
+  Options.Selected := Copy(ItemSelected);
+  Options.Action := ACTION_DECRYPT_IMAGES;
+  Options.Password := Password;
+  Options.CryptOptions := 0;
+  TCryptingImagesThread.Create(FOwner, Options);
 end;
 
 procedure TDBPopupMenu.DeleteDublicatesItemPopUpMenu_(Sender: TObject);
 var
-  i, j : integer;
-  fQuery : TDataSet;
-  EventInfo : TEventValues;
-  SQL_ : string;
-  Files, S : TArStrings;
-  IDs : TArInteger;
+  I, J: Integer;
+  FQuery: TDataSet;
+  EventInfo: TEventValues;
+  SQL_: string;
+  Files, S: TArStrings;
+  IDs: TArInteger;
 begin
- If ID_OK=MessageBoxDB(GetActiveFormHandle,TA('Do you really want ot delete this info from DB?', DBMenuID), TA('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
- begin
-  for i:=0 to finfo.Count - 1 do
-  if finfo[i].Selected then
-  if finfo[i].Attr=db_attr_dublicate then
+  if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID),
+    TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-   fQuery:=GetQuery;
-   SQL_:='SELECT FFileName, ID FROM $DB$ WHERE (ID<>'+IntToStr(finfo[i].ID)+') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = '+IntToStr(finfo[i].ID)+'))';
-   SetSQL(fQuery,SQL_);
-   fQuery.Open;
-   fQuery.First;
-   SetLength(Files,fQuery.RecordCount);
-   SetLength(IDs,fQuery.RecordCount);
-   For j:=1 to fQuery.RecordCount do
-   begin
-    Files[j-1]:=fQuery.FieldByName('FFileName').AsString;
-    IDs[j-1]:=fQuery.FieldByName('ID').AsInteger;
-    fQuery.Next;
-   end;
-   fQuery.Close;
-   SQL_:='DELETE FROM $DB$ WHERE (ID<>'+IntToStr(finfo[i].ID)+') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = '+IntToStr(finfo[i].ID)+'))';
-   SetSQL(fQuery,SQL_);
-   ExecSQL(fQuery);
-   SQL_:='UPDATE $DB$ SET Attr = '+IntToStr(db_attr_norm)+' WHERE (ID='+IntToStr(finfo[i].ID)+')';
-   SetSQL(fQuery,SQL_);
-   ExecSQL(fQuery);
-   EventInfo.Attr:=db_attr_norm;
-   DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Attr],EventInfo);
-   SetLength(S,1);
-   for j:=0 to length(Files)-1 do
-   begin
-    begin
-     If FileExistsSafe(Files[j]) then
-     begin
-      try
-       SilentDeleteFile( Application.Handle, Files[j] , true );
-      except
-      end;
-     end;
-    end;
-    DBKernel.DoIDEvent(FOwner,IDs[j],[EventID_Param_Delete],EventInfo);
-   end;
-   FreeDS(fQuery);
+    for I := 0 to Finfo.Count - 1 do
+      if Finfo[I].Selected then
+        if Finfo[I].Attr = Db_attr_dublicate then
+        begin
+          FQuery := GetQuery;
+          SQL_ := 'SELECT FFileName, ID FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
+            ') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Finfo[I].ID) + '))';
+          SetSQL(FQuery, SQL_);
+          FQuery.Open;
+          FQuery.First;
+          SetLength(Files, FQuery.RecordCount);
+          SetLength(IDs, FQuery.RecordCount);
+          for J := 1 to FQuery.RecordCount do
+          begin
+            Files[J - 1] := FQuery.FieldByName('FFileName').AsString;
+            IDs[J - 1] := FQuery.FieldByName('ID').AsInteger;
+            FQuery.Next;
+          end;
+          FQuery.Close;
+          SQL_ := 'DELETE FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
+            ') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Finfo[I].ID) + '))';
+          SetSQL(FQuery, SQL_);
+          ExecSQL(FQuery);
+          SQL_ := 'UPDATE $DB$ SET Attr = ' + IntToStr(Db_attr_norm) + ' WHERE (ID=' + IntToStr(Finfo[I].ID) + ')';
+          SetSQL(FQuery, SQL_);
+          ExecSQL(FQuery);
+          EventInfo.Attr := Db_attr_norm;
+          DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Attr], EventInfo);
+          SetLength(S, 1);
+          for J := 0 to Length(Files) - 1 do
+          begin
+            begin
+              if FileExistsSafe(Files[J]) then
+              begin
+                try
+                  SilentDeleteFile(Application.Handle, Files[J], True);
+                except
+                end;
+              end;
+            end;
+            DBKernel.DoIDEvent(FOwner, IDs[J], [EventID_Param_Delete], EventInfo);
+          end;
+          FreeDS(FQuery);
+        end;
   end;
- end;
 end;
 
 procedure TDBPopupMenu.DeleteItemPopUpMenu_(Sender: TObject);
 var
-  i : integer;
-  fQuery : TDataSet;
-  EventInfo : TEventValues;
-  SQL_ : string;
-  s : TArStrings;
-  FirstID : boolean;
+  I: Integer;
+  FQuery: TDataSet;
+  EventInfo: TEventValues;
+  SQL_: string;
+  S: TArStrings;
+  FirstID: Boolean;
 begin
- If ID_OK=MessageBoxDB(GetActiveFormHandle,TA('Do you really want ot delete this info from DB?'), TA('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
- begin
-  fQuery:=GetQuery;
-  SQL_:='UPDATE $DB$ SET Attr='+inttostr(db_attr_not_exists)+' WHERE ID in (';
-  FirstID:=True;
-  for i:=0 to finfo.Count-1 do
-  if finfo[i].Selected then
+  if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?'), TA('Confirm'),
+    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-   if FirstID then SQL_:=SQL_+' '+inttostr(finfo[i].ID)+' ' else
-   SQL_:=SQL_+' , '+inttostr(finfo[i].ID)+' ';
-   FirstID:=False;
+    FQuery := GetQuery;
+    SQL_ := 'UPDATE $DB$ SET Attr=' + Inttostr(Db_attr_not_exists) + ' WHERE ID in (';
+    FirstID := True;
+    for I := 0 to Finfo.Count - 1 do
+      if Finfo[I].Selected then
+      begin
+        if FirstID then
+          SQL_ := SQL_ + ' ' + Inttostr(Finfo[I].ID) + ' '
+        else
+          SQL_ := SQL_ + ' , ' + Inttostr(Finfo[I].ID) + ' ';
+        FirstID := False;
+      end;
+    SQL_ := SQL_ + ')';
+    SetSQL(FQuery, SQL_);
+    ExecSQL(FQuery);
+    SetLength(S, 1);
+    for I := 0 to Finfo.Count - 1 do
+      if Finfo[I].Selected then
+      begin
+        begin
+          if FileExistsSafe(Finfo[I].FileName) then
+          begin
+            try
+              SilentDeleteFile(Application.Handle, Finfo[I].FileName, True);
+            except
+            end;
+          end;
+        end;
+        DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
+      end;
+    FreeDS(FQuery);
   end;
-  SQL_:=SQL_+')';
-  SetSQL(fQuery,SQL_);
-  ExecSQL(fQuery);
-  SetLength(s,1);
-  for i := 0 to finfo.Count - 1 do
-  if finfo[i].Selected then
-  begin
-   begin
-    If FileExistsSafe(finfo[i].FileName) then
-    begin
-     try
-      SilentDeleteFile( Application.Handle, finfo[i].FileName , true );
-     except
-     end;
-    end;
-   end;
-   DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Delete],EventInfo);
-  end;
-  FreeDS(fQuery);
- end;
 end;
 
 procedure TDBPopupMenu.DeleteLItemPopUpMenu_(Sender: TObject);
 var
-  i : integer;
-  fQuery : TDataSet;
-  EventInfo : TEventValues;
-  SQL_ : string;
-  FirstID : boolean;
+  I: Integer;
+  FQuery: TDataSet;
+  EventInfo: TEventValues;
+  SQL_: string;
+  FirstID: Boolean;
 begin
- If idOk=MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID), TA('Confirm'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then
- begin
-  fQuery:=GetQuery;
-  fQuery.active:=false;
-  SQL_:='DELETE FROM $DB$ WHERE ID in (';
-  FirstID:=True;
-  for i:=0 to finfo.Count - 1 do
-  if finfo[i].Selected then
+ if IdOk = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID),
+    TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-   if FirstID then SQL_:=SQL_+' '+inttostr(finfo[i].ID)+' ' else
-   SQL_:=SQL_+' , '+inttostr(finfo[i].ID)+' ';
-   FirstID:=False;
+    FQuery := GetQuery;
+    try
+      FQuery.Active := False;
+      SQL_ := 'DELETE FROM $DB$ WHERE ID in (';
+      FirstID := True;
+      for I := 0 to Finfo.Count - 1 do
+        if Finfo[I].Selected then
+        begin
+          if FirstID then
+            SQL_ := SQL_ + ' ' + Inttostr(Finfo[I].ID) + ' '
+          else
+            SQL_ := SQL_ + ' , ' + Inttostr(Finfo[I].ID) + ' ';
+          FirstID := False;
+        end;
+      SQL_ := SQL_ + ')';
+      SetSQL(FQuery, SQL_);
+      ExecSQL(FQuery);
+      for I := 0 to Finfo.Count - 1 do
+        if Finfo[I].Selected then
+          DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
+    finally
+      FreeDS(FQuery);
+    end;
   end;
-  SQL_:=SQL_+')';
-  SetSQL(fQuery,SQL_);
-  ExecSQL(fQuery);
-  for i:=0 to finfo.Count - 1 do
-  if finfo[i].Selected then
-  DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Delete],EventInfo);
-  FreeDS(fQuery);
- end;
 end;
 
 destructor TDBPopupMenu.destroy;
@@ -762,122 +815,134 @@ end;
 
 procedure TDBPopupMenu.EnterPasswordItemPopUpMenu_(Sender: TObject);
 var
-  EventInfo : TEventValues;
-  Query : TDataSet;
-  ID : Integer;
+  EventInfo: TEventValues;
+  Query: TDataSet;
+  ID: Integer;
 begin
- EventInfo.Image:=nil;
- if FileExistsSafe(FInfo[fInfo.Position].FileName) then
- begin
-  if GetImagePasswordFromUser(FInfo[fInfo.Position].FileName)<>'' then
-  DBKernel.DoIDEvent(FOwner,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
- end else
- begin
-  Query := GetQuery;
-  ID:=GetIdByFileName(FInfo[fInfo.Position].FileName);
-  if ID=0 then exit;
-  SetSQL(Query,'SELECT * from $DB$ where ID='+IntToStr(ID));
-  Query.Open;
-  if GetImagePasswordFromUserBlob(Query.FieldByName('thum'),FInfo[fInfo.Position].FileName)<>'' then
-  DBKernel.DoIDEvent(FOwner,FInfo[fInfo.Position].ID,[EventID_Param_Image],EventInfo);
-  Query.free;
- end;
+  EventInfo.Image := nil;
+  if FileExistsSafe(FInfo[FInfo.Position].FileName) then
+  begin
+    if GetImagePasswordFromUser(FInfo[FInfo.Position].FileName) <> '' then
+      DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
+  end
+  else
+  begin
+    Query := GetQuery;
+    ID := GetIdByFileName(FInfo[FInfo.Position].FileName);
+    if ID = 0 then
+      Exit;
+    SetSQL(Query, 'SELECT * from $DB$ where ID=' + IntToStr(ID));
+    Query.Open;
+    if GetImagePasswordFromUserBlob(Query.FieldByName('thum'), FInfo[FInfo.Position].FileName) <> '' then
+      DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
+    Query.Free;
+  end;
 end;
 
-procedure TDBPopupMenu.Execute(Owner : TDBForm; x, y: integer; info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.Execute(Owner: TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
 begin
   FOwner := Owner;
- FPopUpPoint:=Point(X,Y);
- if not FBusy then
- begin
-  FInfo.Assign(info);
-  if Finfo.Count=0 then
-    exit;
+  FPopUpPoint := Point(X, Y);
+  if not FBusy then
   begin
-  _popupmenu.Images:=DBKernel.imageList;
-  _popupmenu.Items.Clear;
-  AddDBContMenu(_popupmenu.items,finfo);
-  _popupmenu.Popup(x,y);
+    FInfo.Assign(Info);
+    if Finfo.Count = 0 then
+      Exit;
+    begin
+      _popupmenu.Images := DBKernel.ImageList;
+      _popupmenu.Items.Clear;
+      AddDBContMenu(FOwner, _popupmenu.Items, Finfo);
+      _popupmenu.Popup(X, Y);
+    end;
+  end else
+  begin
+    _popupmenu.Items.Clear;
+    AddDBContMenu(FOwner, _popupmenu.Items, Finfo);
+    _popupmenu.Popup(X, Y);
   end;
- end else
- begin
-  _popupmenu.Items.Clear;
-  AddDBContMenu(_popupmenu.items,finfo);
-  _popupmenu.Popup(x,y);
- end;
 end;
 
 procedure TDBPopupMenu.ExecutePlus(Owner : TDBForm; x, y: integer; info: TDBPopupMenuInfo;
   Menus: TArMenuitem);
 var
-   i :integer;
-  _menuitem_nil : tmenuitem;
+  I: Integer;
+  _menuitem_nil: Tmenuitem;
 begin
   FOwner := Owner;
- FPopUpPoint:=Point(X,Y);
- FInfo.Assign(info);
- if Finfo.Count=0 then exit;
+  FPopUpPoint := Point(X, Y);
+  FInfo.Assign(Info);
+  if Finfo.Count = 0 then
+    Exit;
   begin
 
-  _popupmenu.Images:=DBKernel.imageList;
-  _popupmenu.Items.Clear;
-  AddDBContMenu(_popupmenu.items,finfo);
-  if length(Menus)>0 then
-  begin
-   _menuitem_nil:=Tmenuitem.Create(_popupmenu);
-   _menuitem_nil.Caption:='-';
-   _popupmenu.items.Add(_menuitem_nil);
-   for i:=0 to length(Menus)-1 do
-   begin
-   _popupmenu.items.Add(Menus[i]);
-   end;
-  end;
-  _popupmenu.Popup(x,y);
+    _popupmenu.Images := DBKernel.ImageList;
+    _popupmenu.Items.Clear;
+    AddDBContMenu(FOwner, _popupmenu.Items, Finfo);
+    if Length(Menus) > 0 then
+    begin
+      _menuitem_nil := Tmenuitem.Create(_popupmenu);
+      _menuitem_nil.Caption := '-';
+      _popupmenu.Items.Add(_menuitem_nil);
+      for I := 0 to Length(Menus) - 1 do
+      begin
+        _popupmenu.Items.Add(Menus[I]);
+      end;
+    end;
+    _popupmenu.Popup(X, Y);
 
   end;
 end;
 
 procedure TDBPopupMenu.ExplorerPopUpMenu_(Sender: TObject);
 begin
- With ExplorerManager.NewExplorer(False) do
- begin
-  SetOldPath(FInfo[FInfo.Position].FileName);
-  SetPath(ExtractFilePath(FInfo[FInfo.Position].FileName));
-  Show;
- end;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetOldPath(FInfo[FInfo.Position].FileName);
+    SetPath(ExtractFilePath(FInfo[FInfo.Position].FileName));
+    Show;
+  end;
 end;
 
-function TDBPopupMenu.GetGroupImageInImageList(GroupCode: string): integer;
+function TDBPopupMenu.GetGroupImageInImageList(GroupCode: string): Integer;
 var
-  FGroup : TGroup;
-  B, SmallB : TBitmap;
-  size : integer;
+  FGroup: TGroup;
+  B, SmallB: TBitmap;
+  Size: Integer;
 begin
- FGroup:=GetGroupByGroupCode(GroupCode,true);
- if FGroup.GroupImage<>nil then
- begin
- if not FGroup.GroupImage.Empty then
+  FGroup := GetGroupByGroupCode(GroupCode, True);
+  if FGroup.GroupImage <> nil then
   begin
-   inc(FExtImagesInImageList);
-   B := TBitmap.Create;
-   B.PixelFormat:=pf24bit;
-   SmallB := TBitmap.Create;
-   SmallB.PixelFormat:=pf24bit;
-   B.Canvas.Brush.Color:=Graphics.clMenu;
-   B.Canvas.Pen.Color:=Graphics.clMenu;
-   size:=Max(FGroup.GroupImage.Width,FGroup.GroupImage.Height);
-   B.Width:=size;
-   B.Height:=size;
-   B.Canvas.Rectangle(0,0,size,size);
-   B.Canvas.Draw(B.Width div 2 - FGroup.GroupImage.Width div 2, B.Height div 2 - FGroup.GroupImage.Height div 2,FGroup.GroupImage);
-   DoResize(16,16,B,SmallB);
-   DBKernel.ImageList.Add(SmallB,nil);
-   B.Free;
-   SmallB.Free;
-   Result:=DBKernel.ImageList.Count-1;
-  end else Result:=DB_IC_GROUPS;
- end else Result:=DB_IC_GROUPS;
- FreeGroup(FGroup);
+    if not FGroup.GroupImage.Empty then
+    begin
+      Inc(FExtImagesInImageList);
+      B := TBitmap.Create;
+      try
+        B.PixelFormat := Pf24bit;
+        SmallB := TBitmap.Create;
+        try
+          SmallB.PixelFormat := Pf24bit;
+          B.Canvas.Brush.Color := Graphics.ClMenu;
+          B.Canvas.Pen.Color := Graphics.ClMenu;
+          Size := Max(FGroup.GroupImage.Width, FGroup.GroupImage.Height);
+          B.Width := Size;
+          B.Height := Size;
+          B.Canvas.Rectangle(0, 0, Size, Size);
+          B.Canvas.Draw(B.Width div 2 - FGroup.GroupImage.Width div 2, B.Height div 2 - FGroup.GroupImage.Height div 2,
+            FGroup.GroupImage);
+          DoResize(16, 16, B, SmallB);
+          DBKernel.ImageList.Add(SmallB, nil);
+        finally
+          F(SmallB);
+        end;
+      finally
+        F(B);
+      end;
+      Result := DBKernel.ImageList.Count - 1;
+    end else
+      Result := DB_IC_GROUPS;
+  end else
+    Result := DB_IC_GROUPS;
+  FreeGroup(FGroup);
 end;
 
 procedure TDBPopupMenu.GroupsPopUpMenu_(Sender: TObject);
@@ -1027,11 +1092,11 @@ end;
 
 procedure TDBPopupMenu.ImageEditorItemPopUpMenu_(Sender: TObject);
 begin
- With EditorsManager.NewEditor do
- begin
-  Show;
-  OpenFileName(finfo[finfo.Position].FileName);
- end;
+  with EditorsManager.NewEditor do
+  begin
+    Show;
+    OpenFileName(Finfo[Finfo.Position].FileName);
+  end;
 end;
 
 class function TDBPopupMenu.Instance: TDBPopupMenu;
@@ -1047,37 +1112,41 @@ end;
 
 function TDBPopupMenu.LoadVariablesNo(int: integer): integer;
 begin
-  Result:=0;
-  if int<0 then exit;
-  if int>finfo.Count-1 then exit;
-  SetBoolAttr(aScript,'$Crypted',finfo[int].Crypted);
-  SetBoolAttr(aScript,'$StaticImage',StaticPath(finfo[int].FileName));
-  SetBoolAttr(aScript,'$WallPaper',IsWallpaper(finfo[int].FileName));
-  SetBoolAttr(aScript,'$Selected',finfo[int].Selected);
-  if finfo[int].Crypted then
+  Result := 0;
+  if Int < 0 then
+    Exit;
+  if Int > Finfo.Count - 1 then
+    Exit;
+  SetBoolAttr(AScript, '$Crypted', Finfo[Int].Crypted);
+  SetBoolAttr(AScript, '$StaticImage', StaticPath(Finfo[Int].FileName));
+  SetBoolAttr(AScript, '$WallPaper', IsWallpaper(Finfo[Int].FileName));
+  SetBoolAttr(AScript, '$Selected', Finfo[Int].Selected);
+  if Finfo[Int].Crypted then
   begin
-   if DBkernel.FindPasswordForCryptImageFile(finfo[int].FileName[int])<>'' then
-   SetNamedValue(aScript,'$CanDecrypt','true') else SetNamedValue(aScript,'$CanDecrypt','false');
+    if DBkernel.FindPasswordForCryptImageFile(Finfo[Int].FileName[Int]) <> '' then
+      SetNamedValue(AScript, '$CanDecrypt', 'true')
+    else
+      SetNamedValue(AScript, '$CanDecrypt', 'false');
   end;
-  if finfo.AttrExists then
+  if Finfo.AttrExists then
   begin
-    SetNamedValue(aScript,'$IsAttrExists','true');
-    SetNamedValue(aScript,'$Attr',IntToStr(finfo[int].Attr));
-    SetBoolAttr(aScript,'$Dublicat',finfo[int].Attr=db_attr_dublicate);
+    SetNamedValue(AScript, '$IsAttrExists', 'true');
+    SetNamedValue(AScript, '$Attr', IntToStr(Finfo[Int].Attr));
+    SetBoolAttr(AScript, '$Dublicat', Finfo[Int].Attr = Db_attr_dublicate);
   end else
   begin
-   SetNamedValue(aScript,'$IsAttrExists','false');
-   SetBoolAttr(aScript,'$Dublicat',false);
-   SetNamedValue(aScript,'$Attr','0');
+    SetNamedValue(AScript, '$IsAttrExists', 'false');
+    SetBoolAttr(AScript, '$Dublicat', False);
+    SetNamedValue(AScript, '$Attr', '0');
   end;
 
-  SetNamedValue(aScript,'$Access',IntToStr(finfo[int].Access));
-  SetNamedValue(aScript,'$Rotation',IntToStr(finfo[int].Rotation));
-  SetNamedValue(aScript,'$Rating',IntToStr(finfo[int].Rating));
-  SetNamedValue(aScript,'$ID',IntToStr(finfo[int].ID));
-  SetNamedValue(aScript,'$FileName','"'+ProcessPath(finfo[int].FileName)+'"');
-  SetNamedValue(aScript,'$KeyWords','"'+finfo[int].KeyWords+'"');
-  SetNamedValue(aScript,'$Links','"'+finfo[int].Links+'"');
+  SetNamedValue(AScript, '$Access', IntToStr(Finfo[Int].Access));
+  SetNamedValue(AScript, '$Rotation', IntToStr(Finfo[Int].Rotation));
+  SetNamedValue(AScript, '$Rating', IntToStr(Finfo[Int].Rating));
+  SetNamedValue(AScript, '$ID', IntToStr(Finfo[Int].ID));
+  SetNamedValue(AScript, '$FileName', '"' + ProcessPath(Finfo[Int].FileName) + '"');
+  SetNamedValue(AScript, '$KeyWords', '"' + Finfo[Int].KeyWords + '"');
+  SetNamedValue(AScript, '$Links', '"' + Finfo[Int].Links + '"');
 end;
 
 procedure TDBPopupMenu.PrintItemPopUpMenu_(Sender: TObject);
@@ -1095,55 +1164,57 @@ begin
     if Files.Count <> 0 then
       GetPrintForm(Files);
   finally
-    Files.Free;
+    F(Files);
   end;
 end;
 
 procedure TDBPopupMenu.PrivateItemPopUpMenu_(Sender: TObject);
 var
-  i:integer;
-  EventInfo : TEventValues;
-  OldAccess : Integer;
-  Count : integer;
-  ProgressForm : TProgressActionForm;
+  I: Integer;
+  EventInfo: TEventValues;
+  OldAccess: Integer;
+  Count: Integer;
+  ProgressForm: TProgressActionForm;
 begin
-  FBusy:=true;
-  OldAccess:=(Sender as TMenuItem).Tag;
-  Count:=0;
-  for i:=0 to FInfo.Count-1 do
-  if FInfo[i].Selected then
-  inc(Count);
-  ProgressForm:=GetProgressWindow;
-  ProgressForm.MaxPosCurrentOperation:=Count;
-  ProgressForm.OneOperation:=true;
-  if Count>2 then
-  ProgressForm.DoFormShow;
-  ProgressForm.xPosition:=0;
-  for i:=0 to FInfo.Count-1 do
-  if FInfo[i].Selected then
+  FBusy := True;
+  OldAccess := (Sender as TMenuItem).Tag;
+  Count := 0;
+  for I := 0 to FInfo.Count - 1 do
+    if FInfo[I].Selected then
+      Inc(Count);
+  ProgressForm := GetProgressWindow;
+  ProgressForm.MaxPosCurrentOperation := Count;
+  ProgressForm.OneOperation := True;
+  if Count > 2 then
+    ProgressForm.DoFormShow;
+  ProgressForm.XPosition := 0;
+  for I := 0 to FInfo.Count - 1 do
+    if FInfo[I].Selected then
   begin
-{!!!}   Application.ProcessMessages;
-   ProgressForm.xPosition:=ProgressForm.xPosition+1;
-   if OldAccess=db_access_none then
-   begin
-    if FInfo[i].Access=db_access_none then
-    begin
-     SetPrivate(FInfo[i].ID);
-     EventInfo.Access:=db_access_private;
-     DBKernel.DoIDEvent(FOwner,FInfo[i].ID,[EventID_Param_Private],EventInfo);
+      { !!! } Application.ProcessMessages;
+      ProgressForm.XPosition := ProgressForm.XPosition + 1;
+      if OldAccess = Db_access_none then
+      begin
+        if FInfo[I].Access = Db_access_none then
+        begin
+          SetPrivate(FInfo[I].ID);
+          EventInfo.Access := Db_access_private;
+          DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
+        end;
+      end
+      else
+      begin
+        if FInfo[I].Access = DB_Access_Private then
+        begin
+          UnSetPrivate(FInfo[I].ID);
+          EventInfo.Access := Db_access_none;
+          DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
+        end;
+      end;
     end;
-   end else begin
-    if FInfo[i].Access=DB_Access_Private then
-    begin
-     UnSetPrivate(FInfo[i].ID);
-     EventInfo.Access:=db_access_none;
-     DBKernel.DoIDEvent(FOwner,FInfo[i].ID,[EventID_Param_Private],EventInfo);
-    end;
-   end;
-  end;
   TPrivatehelper.Instance.Reset;
   R(ProgressForm);
-  FBusy:=false;
+  FBusy := False;
 end;
 
 procedure TDBPopupMenu.PropertyItemPopUpMenu_(Sender: TObject);
@@ -1243,11 +1314,11 @@ end;
 
 procedure TDBPopupMenu.ScriptExecuted(Sender: TObject);
 var
-  c : integer;
+  C: Integer;
 begin
- LoadItemVariables(aScript,Sender as TMenuItemW);
- if Trim((Sender as TMenuItemW).Script)<>'' then
- ExecuteScript(Sender as TMenuItemW,aScript,'',c,nil);
+  LoadItemVariables(AScript, Sender as TMenuItemW);
+  if Trim((Sender as TMenuItemW).Script) <> '' then
+    ExecuteScript(Sender as TMenuItemW, AScript, '', C, nil);
 end;
 
 procedure TDBPopupMenu.SearchFolderPopUpMenu_(Sender: TObject);
@@ -1265,88 +1336,94 @@ end;
 
 procedure TDBPopupMenu.SendToItemPopUpMenu_(Sender: TObject);
 var
-  NumberOfPanel : Integer;
-  InfoNames : TArStrings;
-  InfoIDs : TArInteger;
-  Infoloaded : TArBoolean;
-  i:integer;
-  Panel : TFormCont;
+  NumberOfPanel: Integer;
+  InfoNames: TArStrings;
+  InfoIDs: TArInteger;
+  Infoloaded: TArBoolean;
+  I: Integer;
+  Panel: TFormCont;
 begin
- NumberOfPanel:=(Sender As TMenuItem).Tag;
- Setlength(InfoNames,0);
- Setlength(InfoIDs,0);
- For i:=0 to FInfo.Count-1 do
- if FInfo[i].Selected then
- begin
-  if FInfo[i].ID=0 then
+  NumberOfPanel := (Sender as TMenuItem).Tag;
+  Setlength(InfoNames, 0);
+  Setlength(InfoIDs, 0);
+  for I := 0 to FInfo.Count - 1 do
+    if FInfo[I].Selected then
+    begin
+      if FInfo[I].ID = 0 then
+      begin
+        Setlength(InfoNames, Length(InfoNames) + 1);
+        Setlength(Infoloaded, Length(Infoloaded) + 1);
+        InfoNames[Length(InfoNames) - 1] := FInfo[I].FileName;
+        Infoloaded[Length(Infoloaded) - 1] := FInfo[I].InfoLoaded;
+      end else
+      begin
+        Setlength(InfoIDs, Length(InfoIDs) + 1);
+        InfoIDs[Length(InfoIDs) - 1] := FInfo[I].ID;
+      end;
+    end;
+  if NumberOfPanel >= 0 then
   begin
-  Setlength(InfoNames,Length(InfoNames)+1);
-  Setlength(Infoloaded,Length(Infoloaded)+1);
-  InfoNames[Length(InfoNames)-1]:=FInfo[i].FileName;
-  Infoloaded[Length(Infoloaded)-1]:=FInfo[i].InfoLoaded;
-  end else
-  begin
-   Setlength(InfoIDs,Length(InfoIDs)+1);
-   InfoIDs[Length(InfoIDs)-1]:=FInfo[i].ID;
+    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, ManagerPanels[NumberOfPanel]);
+    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, ManagerPanels[NumberOfPanel]);
   end;
- end;
- If NumberOfPanel>=0 then
- begin
-  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,true,ManagerPanels[NumberOfPanel]);
-  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,false,ManagerPanels[NumberOfPanel]);
- end;
- If NumberOfPanel<0 then
- begin
-  Panel:=ManagerPanels.NewPanel;
-  Panel.Show;
-  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,true,Panel);
-  LoadFilesToPanel.Create(InfoNames,InfoIDs,Infoloaded,true,false,Panel);
- end;
+  if NumberOfPanel < 0 then
+  begin
+    Panel := ManagerPanels.NewPanel;
+    Panel.Show;
+    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, Panel);
+    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, Panel);
+  end;
 end;
 
-procedure TDBPopupMenu.SetInfo(Info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
 begin
   if Info.Count = 0 then
     Exit;
+  FOwner := Form;
   Finfo.Assign(Info);
 end;
 
 procedure TDBPopupMenu.SetRatingItemPopUpMenu_(Sender: TObject);
 var
-  i, NewRating : Integer;
-  EventInfo : TEventValues;
-  SQL_, Str : string;
-  fQuery : TDataSet;
-  FirstID : boolean;
+  I, NewRating: Integer;
+  EventInfo: TEventValues;
+  SQL_, Str: string;
+  FQuery: TDataSet;
+  FirstID: Boolean;
 begin
-  str:=(sender as tmenuitem).Caption;
-  system.delete(str,1,1);
-  NewRating:=StrToInt(str);
-  fQuery:=GetQuery;
-  SQL_:='Update $DB$ Set Rating='+inttostr(NewRating)+' Where ID in (';
-
-  FirstID:=True;
-  for i:=0 to finfo.Count-1 do
-  if finfo[i].Selected then
-  begin
-   if FirstID then SQL_:=SQL_+' '+inttostr(finfo[i].ID)+' ' else
-   SQL_:=SQL_+' , '+inttostr(finfo[i].ID)+' ';
-   FirstID:=False;
-  end;
-  SQL_:=SQL_+')';
-  fQuery.active:=false;
-  SetSQL(fQuery,SQL_);
+  Str := (Sender as Tmenuitem).Caption;
+  System.Delete(Str, 1, 1);
+  NewRating := StrToInt(Str);
+  FQuery := GetQuery;
   try
-   ExecSQL(fQuery);
-   except
+    SQL_ := 'Update $DB$ Set Rating=' + Inttostr(NewRating) + ' Where ID in (';
+
+    FirstID := True;
+    for I := 0 to Finfo.Count - 1 do
+      if Finfo[I].Selected then
+      begin
+        if FirstID then
+          SQL_ := SQL_ + ' ' + Inttostr(Finfo[I].ID) + ' '
+        else
+          SQL_ := SQL_ + ' , ' + Inttostr(Finfo[I].ID) + ' ';
+        FirstID := False;
+      end;
+    SQL_ := SQL_ + ')';
+    FQuery.Active := False;
+    SetSQL(FQuery, SQL_);
+    try
+      ExecSQL(FQuery);
+    except
+    end;
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].Selected then
+      begin
+        EventInfo.Rating := NewRating;
+        DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rating], EventInfo);
+      end;
+  finally
+    FreeDS(FQuery);
   end;
-  for i:=0 to FInfo.Count-1 do
-  if FInfo[i].Selected then
-  begin
-   EventInfo.Rating:=NewRating;
-   DBKernel.DoIDEvent(FOwner,finfo[i].ID,[EventID_Param_Rating],EventInfo);
-  end;
-  FreeDS(fQuery);
 end;
 
 procedure TDBPopupMenu.SetRotateItemPopUpMenu_(Sender: TObject);
@@ -1367,61 +1444,62 @@ end;
 
 procedure TDBPopupMenu.ShellExecutePopUpMenu_(Sender: TObject);
 var
-  i : integer;
-  AllOperations : Integer;
-  s : String;
+  I: Integer;
+  AllOperations: Integer;
+  S: string;
 begin
- AllOperations:=0;
- for i:=0 to FInfo.Count-1 do
- if FInfo[i].Selected then
- Inc(AllOperations);
- If AllOperations>10 then
- if ID_OK<>MessageBoxDB(GetActiveFormHandle,Format(TA('Running %s objects can slow down computer work! Continue?', DBMenuID),[inttostr(AllOperations)]),TA('Warning'),TD_BUTTON_OKCANCEL,TD_ICON_WARNING) then exit;
- for i:=0 to FInfo.Count-1 do
- if FInfo[i].Selected then
- begin
-  s:=ExtractFileDir(Finfo[i].FileName);
-  if ShellExecute(GetActiveWindow, 'open', PWideChar(ProcessPath(Finfo[i].FileName)), nil, PWideChar(s), SW_NORMAL)<32 then
-  EventLog(':TDBPopupMenu::ShellExecutePopUpMenu()/ShellExecute return < 32, path = '+Finfo[i].FileName);
- end;
+  AllOperations := 0;
+  for I := 0 to FInfo.Count - 1 do
+    if FInfo[I].Selected then
+      Inc(AllOperations);
+  if AllOperations > 10 then
+    if ID_OK <> MessageBoxDB(GetActiveFormHandle,
+      Format(TA('Running %s objects can slow down computer work! Continue?', DBMenuID), [Inttostr(AllOperations)]),
+      TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      Exit;
+  for I := 0 to FInfo.Count - 1 do
+    if FInfo[I].Selected then
+    begin
+      S := ExtractFileDir(Finfo[I].FileName);
+      if ShellExecute(GetActiveWindow, 'open', PWideChar(ProcessPath(Finfo[I].FileName)), nil, PWideChar(S), SW_NORMAL)
+        < 32 then
+        EventLog(':TDBPopupMenu::ShellExecutePopUpMenu()/ShellExecute return < 32, path = ' + Finfo[I].FileName);
+    end;
 end;
 
 procedure TDBPopupMenu.ShowDublicatesItemPopUpMenu_(Sender: TObject);
 begin
- With SearchManager.NewSearch do
- begin
-  SearchEdit.text:=':Similar('+IntToStr(FInfo[Finfo.Position].ID)+'):';
-  DoSearchNow(nil);
-  Show;
-  SetFocus;
- end;
+  with SearchManager.NewSearch do
+  begin
+    SearchEdit.Text := ':Similar(' + IntToStr(FInfo[Finfo.Position].ID) + '):';
+    DoSearchNow(nil);
+    Show;
+    SetFocus;
+  end;
 end;
 
 procedure TDBPopupMenu.ShowItemPopUpMenu_(Sender: TObject);
-var
-  Info : TRecordsInfo;
 begin
- if Self<>DBPopupMenu then exit;
- DBPopupMenuInfoToRecordsInfo(Finfo, Info);
- if Viewer=nil then Application.CreateForm(TViewer, Viewer);
- Viewer.Execute(Sender,info);
- Viewer.Show;
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
+  Viewer.Execute(Sender, Finfo);
+  Viewer.Show;
 end;
 
 procedure TDBPopupMenu.UserMenuItemPopUpMenu_(Sender: TObject);
 var
-  i : integer;
-  Params, ExeFile, ExeParams : String;
+  I: Integer;
+  Params, ExeFile, ExeParams: string;
 begin
- for i:=0 to Finfo.Count-1 do
- if FInfo[i].Selected then
- begin
-   Params:=' "'+Finfo[i].FileName+'" ';
- end;
- ExeFile:=FUserMenu[(Sender as TMenuItem).Tag].EXEFile;
- ExeParams:=StringReplace(FUserMenu[(Sender as TMenuItem).Tag].Params,'%1',params,[rfReplaceAll,rfIgnoreCase]);
- if ShellExecute(0,nil,PWideChar(ExeFile),PWideChar(ExeParams),nil,SW_SHOWNORMAL)<32 then
- EventLog(':TDBPopupMenu::UserMenuItemPopUpMenu()/ShellExecute return < 32, path = '+ExeFile+' params = '+ExeParams);
+  for I := 0 to Finfo.Count - 1 do
+    if FInfo[I].Selected then
+      Params := ' "' + Finfo[I].FileName + '" ';
+
+  ExeFile := FUserMenu[(Sender as TMenuItem).Tag].EXEFile;
+  ExeParams := StringReplace(FUserMenu[(Sender as TMenuItem).Tag].Params, '%1', Params, [RfReplaceAll, RfIgnoreCase]);
+  if ShellExecute(0, nil, PWideChar(ExeFile), PWideChar(ExeParams), nil, SW_SHOWNORMAL) < 32 then
+    EventLog(':TDBPopupMenu::UserMenuItemPopUpMenu()/ShellExecute return < 32, path = ' + ExeFile + ' params = ' +
+        ExeParams);
 end;
 
 procedure TDBPopupMenu.WallpaperCenterItemPopUpMenu_(Sender: TObject);

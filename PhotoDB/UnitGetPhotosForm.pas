@@ -10,7 +10,7 @@ uses
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants,
   CCR.Exif, uMemory, uTranslate, uDBForm, uShellUtils, uSysUtils,
-  uDBUtils, uDBTypes, uRuntime, uDBBaseTypes;
+  uDBUtils, uDBTypes, uRuntime, uDBBaseTypes, uDBPopupMenuInfo;
 
 type
   TGetImagesOptions = record
@@ -948,7 +948,8 @@ end;
 
 procedure TGetToPersonalFolderForm.ShowImages1Click(Sender: TObject);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
   I: Integer;
   Date: TDateTime;
 
@@ -1012,20 +1013,29 @@ var
   end;
 
 begin
-  Info := RecordsInfoNil;
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Date := TItemRecordOptions(LvMain.Items[PmListView.Tag].Data).Date;
-  QuickSort(FDataList, Length(FDataList));
-  for I := 0 to Length(FDataList) - 1 do
-  begin
-    if Date = FDataList[I].Date then
-      // crypted
-      AddRecordsInfoOne(Info, FDataList[I].FileName, 0, 0, 0, 0, '', '', '', '', '', FDataList[I].Date, True, False, 0,
-        False, True, True, '');
+
+  Info := TDBPopupMenuInfo.Create;
+  try
+
+    Date := TItemRecordOptions(LvMain.Items[PmListView.Tag].Data).Date;
+    QuickSort(FDataList, Length(FDataList));
+    for I := 0 to Length(FDataList) - 1 do
+    begin
+      if Date = FDataList[I].Date then
+      begin
+        InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FDataList[I].FileName);
+        InfoItem.Date := FDataList[I].Date;
+        Info.Add(InfoItem);
+      end;
+    end;
+    Viewer.Execute(Sender, Info);
+    Viewer.Show;
+
+  except
+    F(Info);
   end;
-  Viewer.Execute(Sender, Info);
-  Viewer.Show;
 end;
 
 procedure TGetToPersonalFolderForm.Remove1Click(Sender: TObject);

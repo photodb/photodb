@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, uDBUtils, Menus, UnitDBKernel,
   UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt, uMemory, uDBForm,
-  uConstants;
+  uConstants, uDBPopupMenuInfo;
 
 type
   TFormHistory = class(TDBForm)
@@ -112,10 +112,10 @@ end;
 
 procedure TFormHistory.InfoListBoxDblClick(Sender: TObject);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
   P: TPoint;
   N: Integer;
-  OneInfo: TOneRecordInfo;
 begin
   GetCursorPos(P);
   P := InfoListBox.ScreenToClient(P);
@@ -124,10 +124,22 @@ begin
     Exit;
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  GetInfoByFileNameA(FileList[N], False, OneInfo);
-  Info := GetRecordsFromOne(OneInfo);
-  Viewer.Execute(Sender, Info);
-  Viewer.Show;
+
+  InfoItem := TDBPopupMenuInfoRecord.Create;
+  try
+    GetInfoByFileNameA(FileList[N], False, InfoItem);
+
+    Info := TDBPopupMenuInfo.Create;
+    try
+      Info.Add(InfoItem);
+      Viewer.Execute(Sender, Info);
+      Viewer.Show;
+    finally
+      F(Info);
+    end;
+  finally
+    F(InfoItem);
+  end;
 end;
 
 procedure TFormHistory.InfoListBoxContextPopup(Sender: TObject;
@@ -148,15 +160,27 @@ end;
 
 procedure TFormHistory.View1Click(Sender: TObject);
 var
-  Info: TRecordsInfo;
-  OneInfo: TOneRecordInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  GetInfoByFileNameA(FileList[PmActions.Tag], False, OneInfo);
-  Info := GetRecordsFromOne(OneInfo);
-  Viewer.Execute(Sender, Info);
-  Viewer.Show;
+
+  InfoItem := TDBPopupMenuInfoRecord.Create;
+  try
+    Info := TDBPopupMenuInfo.Create;
+    try
+      GetInfoByFileNameA(FileList[PmActions.Tag], False, InfoItem);
+
+      Info.Add(InfoItem);
+      Viewer.Execute(Sender, Info);
+      Viewer.Show;
+    finally
+      F(Info);
+    end;
+  finally
+    F(InfoItem);
+  end;
 end;
 
 procedure TFormHistory.Explorer1Click(Sender: TObject);

@@ -51,7 +51,7 @@ object ActionsForm: TActionsForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = False
+      ImageCanRegenerate = True
       UseSpecIconSize = True
     end
     object LoadFromFileLink: TWebLink
@@ -69,7 +69,7 @@ object ActionsForm: TActionsForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = False
+      ImageCanRegenerate = True
       UseSpecIconSize = True
     end
     object CloseLink: TWebLink
@@ -87,7 +87,7 @@ object ActionsForm: TActionsForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = False
+      ImageCanRegenerate = True
       UseSpecIconSize = True
     end
   end

@@ -7,7 +7,7 @@ uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
      Math, uScript, UnitCDMappingSupport, uFileUtils, ImageConverting,
      UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
-     uDBFileTypes, uGraphicUtils, uSysUtils;
+     uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo;
 
 procedure DoActivation;
 procedure GetUpdates(ShowInfo : boolean);
@@ -280,13 +280,24 @@ end;
 
 procedure ShowFile(FileName: string);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
+  InfoItem: TDBPopupMenuInfoRecord;
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Info := RecordsInfoOne(FileName, 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False, False, True, '');
-  Viewer.Execute(nil, Info);
-  Viewer.Show;
+
+  Info := TDBPopupMenuInfo.Create;
+  try
+    InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+    try
+      Viewer.Execute(nil, Info);
+      Viewer.Show;
+    finally
+      F(InfoItem);
+    end;
+  finally
+    F(Info);
+  end;
 end;
 
 function SplitLinks(Links, NoParam: string): TArrayOfString;

@@ -238,7 +238,7 @@ type
     function hintrealA(Info: TDBPopupMenuInfoRecord): Boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    Procedure SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
+    Procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID);
     procedure SpeedButton3Click(Sender: TObject);
     Procedure BeginUpdate();
     Procedure EndUpdate();
@@ -317,7 +317,7 @@ type
     procedure SetStatusText(Text : String);
     procedure SetNewFileNameGUID(FileGUID : TGUID);
     procedure Button1Click(Sender: TObject);
-    Procedure SetPanelInfo(Info : TOneRecordInfo; FileGUID : TGUID);
+    Procedure SetPanelInfo(Info : TDBPopupMenuInfoRecord; FileGUID : TGUID);
     Procedure SetPanelImage(Image : TBitmap; FileGUID : TGUID);
     procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
@@ -994,7 +994,6 @@ end;
 procedure TExplorerForm.SlideShow1Click(Sender: TObject);
 var
   FileName : string;
-  Info: TRecordsInfo;
   MenuInfo: TDBPopupMenuInfo;
 begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
@@ -1006,14 +1005,13 @@ begin
     try
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
-      DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
-      Viewer.Execute(Sender, Info);
+      Viewer.Execute(Sender, MenuInfo);
       Viewer.Show;
     finally
       F(MenuInfo);
     end;
   end;
-  if fFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
+  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
     Viewer.ShowFolderA(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate);
 end;
 
@@ -1388,7 +1386,7 @@ begin
         Info.ListItem := Item;
       end;
       Info.AttrExists := False;
-      TDBPopupMenu.Instance.AddDBContMenu(DBItem1, Info);
+      TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Info);
     finally
       F(Info);
     end;
@@ -1403,7 +1401,7 @@ begin
       begin
         Info := GetCurrentPopUpMenuInfo(Item);
         try
-          TDBPopupMenu.Instance.SetInfo(Info);
+          TDBPopupMenu.Instance.SetInfo(Self, Info);
           TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
         finally
           F(Info);
@@ -1767,7 +1765,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SetInfoToItem(info : TOneRecordInfo; FileGUID: TGUID);
+procedure TExplorerForm.SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID);
 var
   I : Integer;
   ExplorerInfo : TExplorerFileInfo;
@@ -1777,31 +1775,13 @@ begin
     ExplorerInfo := fFilesInfo[I];
     if IsEqualGUID(ExplorerInfo.SID, FileGUID) then
     begin
-      ExplorerInfo.FileName := info.ItemFileName;
-      ExplorerInfo.ID := info.ItemId;
-      ExplorerInfo.Rotation := info.ItemRotate;
-      ExplorerInfo.Access := info.ItemAccess;
-      ExplorerInfo.Rating := info.ItemRating;
-      ExplorerInfo.FileSize := info.ItemSize;
-      ExplorerInfo.Comment := info.ItemComment;
-      ExplorerInfo.KeyWords := info.ItemKeyWords;
-      ExplorerInfo.Date := info.ItemDate;
-      ExplorerInfo.Time := info.ItemTime;
-      ExplorerInfo.IsDate := info.ItemIsDate;
-      ExplorerInfo.IsTime := info.ItemIsTime;
-      ExplorerInfo.Groups := info.ItemGroups;
-      ExplorerInfo.KeyWords := info.ItemKeyWords;
-      ExplorerInfo.FileType := Info.Tag;
-      ExplorerInfo.Crypted := Info.ItemCrypted;
-      ExplorerInfo.Loaded := Info.Loaded;
-      ExplorerInfo.Include := Info.ItemInclude;
-      ExplorerInfo.Links := Info.ItemLinks;
+      ExplorerInfo.Assign(Info);
       if Viewer <> nil then
-        Viewer.UpdateInfoAboutFileName(info.ItemFileName, Info);
+        Viewer.UpdateInfoAboutFileName(Info.FileName, Info);
       Break;
     end;
   end;
-  if AnsiLowerCase(info.ItemFileName) = AnsiLowerCase(FSelectedInfo.FileName) then
+  if AnsiLowerCase(info.FileName) = AnsiLowerCase(FSelectedInfo.FileName) then
     ListView1SelectItem(nil, nil, False);
 end;
 
@@ -2213,8 +2193,6 @@ begin
   UpdaterInfo.IsUpdater := False;
   UpdaterInfo.UpdateDB := False;
   UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
-  { if HelpNo=3 then
-    UpdaterInfo.ProcHelpAfterUpdate:=Help1NextClick else }
   UpdaterInfo.ProcHelpAfterUpdate := nil;
   Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
   Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
@@ -3360,16 +3338,16 @@ begin
 
 end;
 
-procedure TExplorerForm.SetPanelInfo(Info: TOneRecordInfo;
+procedure TExplorerForm.SetPanelInfo(Info: TDBPopupMenuInfoRecord;
   FileGUID: TGUID);
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
   begin
-    FSelectedInfo.Width := Info.ItemWidth;
-    FSelectedInfo.Height := Info.ItemHeight;
-    FSelectedInfo.Id := Info.ItemId;
-    FSelectedInfo.Rating := Info.ItemRating;
-    FSelectedInfo.Access := Info.ItemAccess;
+    FSelectedInfo.Width := Info.Width;
+    FSelectedInfo.Height := Info.Height;
+    FSelectedInfo.Id := Info.ID;
+    FSelectedInfo.Rating := Info.Rating;
+    FSelectedInfo.Access := Info.Access;
     ReallignInfo;
   end;
 end;
@@ -4289,7 +4267,6 @@ end;
 procedure TExplorerForm.ImPreviewDblClick(Sender: TObject);
 var
   MenuInfo : TDBPopupMenuInfo;
-  Info : TRecordsInfo;
 begin
   if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
   begin
@@ -4297,8 +4274,7 @@ begin
     try
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
-      DBPopupMenuInfoToRecordsInfo(MenuInfo, Info);
-      Viewer.Execute(Sender, Info);
+      Viewer.Execute(Sender, MenuInfo);
     finally
       F(MenuInfo);
     end;
@@ -6266,14 +6242,20 @@ end;
 
 procedure TExplorerForm.View2Click(Sender: TObject);
 var
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
   N: Integer;
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
-  if Length(Info.ItemFileNames) > 0 then
-    Viewer.Execute(Self, Info);
+
+  Info := TDBPopupMenuInfo.Create;
+  try
+    GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
+    if Info.Count > 0 then
+      Viewer.Execute(Self, Info);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.AddUpdateID(ID: Integer);
@@ -6990,7 +6972,6 @@ procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;
 var
   Capt, dir, ShellDir, LinkPath: string;
   MenuInfo: TDBPopupMenuInfo;
-  Info: TRecordsInfo;
   index: Integer;
   P, P1: TPoint;
   Item: TObject;
@@ -7065,8 +7046,7 @@ begin
         try
           If Viewer = nil then
             Application.CreateForm(TViewer, Viewer);
-          DBPopupMenuInfoToRecordsInfo(MenuInfo, info);
-          Viewer.Execute(Sender, info);
+          Viewer.Execute(Sender, MenuInfo);
           Viewer.Show;
           RestoreSelected;
         finally
@@ -7100,8 +7080,7 @@ begin
               try
                 if Viewer = nil then
                   Application.CreateForm(TViewer, Viewer);
-                DBPopupMenuInfoToRecordsInfo(MenuInfo, info);
-                Viewer.Execute(Sender, info);
+                Viewer.Execute(Sender, MenuInfo);
                 RestoreSelected;
               finally
                 F(MenuInfo);

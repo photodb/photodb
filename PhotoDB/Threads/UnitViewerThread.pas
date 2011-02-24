@@ -28,7 +28,7 @@ type
     FIsForward: Boolean;
     FTransparent: Boolean;
     FBooleanResult: Boolean;
-    FInfo: TOneRecordInfo;
+    FInfo: TDBPopupMenuInfoRecord;
     FUpdateInfo: Boolean;
     FPage: Word;
     FPages: Word;
@@ -69,6 +69,7 @@ begin
   FIsForward := IsForward;
   FUpdateInfo := UpdateInfo;
   FViewer := Viewer;
+  FInfo := nil;
   if Viewer.FullScreenNow then
     TransparentColor := 0
   else
@@ -89,7 +90,7 @@ begin
   FreeOnTerminate := True;
   FPages := 0;
   Priority := TpHigher;
-  FInfo.ItemFileName := FFileName;
+  FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
 
   FTransparent := False;
   if not FileExistsEx(FFileName) then
@@ -173,7 +174,7 @@ begin
    begin
     if (Graphic is TBitmap) then
     begin
-     if {not (Graphic is TPSDGraphic) or} PSDTransparent then
+     if PSDTransparent then
      begin
       if (Graphic as TBitmap).PixelFormat=pf32bit then
       begin
@@ -378,27 +379,29 @@ procedure TViewerThread.UpdateRecord;
 var
   Query : TDataSet;
 begin
- CoInitialize(nil);
- try
- Query := GetQuery;
- try
-  Query.Active:=false;
-  SetSQL(Query,'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
-  SetStrParam(Query,0,AnsiLowerCase(FFileName));
-  Query.active:=true;
-  if Query.RecordCount<>0 then
-  begin
-   FInfo:=RecordInfoOne(Query.FieldByName('FFileName').AsString,Query.FieldByName('ID').AsInteger,Query.FieldByName('Rotated').AsInteger,Query.FieldByName('Rating').AsInteger,Query.FieldByName('Access').AsInteger,Query.FieldByName('FileSize').AsInteger,Query.FieldByName('Comment').AsString,Query.FieldByName('KeyWords').AsString,'','',Query.FieldByName('Groups').AsString,Query.FieldByName('DateToAdd').AsDateTime,Query.FieldByName('IsDate').AsBoolean,Query.FieldByName('IsTime').AsBoolean,Query.FieldByName('aTime').AsDateTime,ValidCryptBlobStreamJPG(Query.FieldByName('thum')),Query.FieldByName('Include').AsBoolean,true,Query.FieldByName('Links').AsString);
-   FRotate:=FInfo.ItemRotate;
-  end else FUpdateInfo:=false;
-  Query.Close;
- finally
-  FreeDS(Query);
- end;
- FInfo.ItemFileName:=FFileName;
- finally
-   CoUnInitialize;
- end;
+  CoInitialize(nil);
+  try
+    FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
+    Query := GetQuery;
+    try
+      Query.Active := False;
+      SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName))
+          + ' AND FFileName LIKE :FFileName');
+      SetStrParam(Query, 0, AnsiLowerCase(FFileName));
+      Query.Active := True;
+      if Query.RecordCount <> 0 then
+      begin
+        FInfo.ReadFromDS(Query);
+        FRotate := FInfo.Rotation;
+      end else
+        FUpdateInfo := False;
+      Query.Close;
+    finally
+      FreeDS(Query);
+    end;
+  finally
+    CoUnInitialize;
+  end;
 end;
 
 end.

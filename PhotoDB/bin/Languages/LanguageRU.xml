@@ -1021,6 +1021,8 @@
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="InsertImageTool">
+	<translate name="Width" value="Ширина" />
+	<translate name="Height" value="Высота" />
 	<translate name="Load image" value="Открыть файл" />
 	<translate name="Method" value="Метод" />
 	<translate name="Overlay" value="Перекрытие" />
@@ -1037,6 +1039,9 @@
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="RedEyeTool">
+	<translate name="Width" value="Ширина" />
+	<translate name="Height" value="Высота" />
+	<translate name="Green" value="Зелёный" />
 	<translate name="Eye color" value="Цвет глаз" />
 	<translate name="Green" value="Зелёный" />
 	<translate name="Blue" value="Голубой" />
@@ -1081,6 +1086,8 @@
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="TextTool">
+	<translate name="Width" value="Ширина" />
+	<translate name="Height" value="Высота" />
 	<translate name="Text" value="Текст" />
 	<translate name="My text" value="Мой текст" />
 	<translate name="Font name" value="Имя шрифта" />
@@ -1753,5 +1760,9 @@
 	<translate name="Please enter name for new collection" value="Введите имя новой БД"/>
 	<translate name="Do you want to change the icon for the ultimate database?" value="Вы хотите сменить иконку у конечной БД?"/>
 	<translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
+  </scope>
+  <scope name="Hint">
+	<translate name="Image size: %d x %d" value="Размер изображения: %d x %d"/>
+	<translate name="File size: %s" value="Размер файла: %s"/>
   </scope>  
 </language>

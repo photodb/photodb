@@ -123,7 +123,7 @@ type
     procedure DoLoadBigImages;
     procedure GetAllFiles;
     procedure DoDefaultSort;
-    procedure ExtractImage(Info : TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
+    procedure ExtractImage(Info : TDBPopupMenuInfoRecord; CryptedFile : Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
     procedure ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
     procedure DoMultiProcessorTask; override;
@@ -136,7 +136,7 @@ type
   public
     FUpdaterInfo : TUpdaterInfo;
     ExplorerInfo : TExplorerViewInfo;
-    FInfo : TOneRecordInfo;
+    FInfo : TDBPopupMenuInfoRecord;
     IsCryptedFile : Boolean;
     FFileID : TGUID;
     FSender : TExplorerForm;
@@ -169,6 +169,7 @@ constructor TExplorerThread.Create(Folder,
   Mask: string; ThreadType : Integer; Info: TExplorerViewInfo; Sender : TExplorerForm; UpdaterInfo: TUpdaterInfo; SID : TGUID);
 begin
   inherited Create(Sender, SID);
+  FInfo := TDBPopupMenuInfoRecord.Create;
   CurrentFileInfo := nil;
   FPacketImages  := nil;
   FPacketInfos  := nil;
@@ -780,46 +781,31 @@ begin
 end;
 
 procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
-  var
+var
   FBS : TStream;
   CryptedFile : Boolean;
-  JPEG : TJpegImage;
-  begin
+  JPEG: TJpegImage;
+begin
   TempBitmap := nil;
   IsBigImage := False;
   CryptedFile := ValidCryptGraphicFile(FileName);
 
-  FInfo := RecordInfoOne(FileName, 0, 0, 0, 0, FileSize, '', '', '', '', '', 0, False, False, 0, CryptedFile, True, False, '');
+  F(FInfo);
+  FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+  FInfo.FileSize := FileSize;
+  FInfo.Crypted := CryptedFile;
   FInfo.Tag := EXPLORER_ITEM_FOLDER;
 
   if not FUpdaterInfo.IsUpdater then
   begin
     if FindInQuery(FileName) then
     begin
-      FInfo:=RecordInfoOne(
-        FileName,
-        fQuery.FieldByName('ID').AsInteger,
-        fQuery.FieldByName('Rotated').AsInteger,
-        fQuery.FieldByName('Rating').AsInteger,
-        fQuery.FieldByName('Access').AsInteger,
-        fQuery.FieldByName('FileSize').AsInteger,
-        fQuery.FieldByName('Comment').AsString,
-        fQuery.FieldByName('KeyWords').AsString,
-        fQuery.FieldByName('Owner').AsString,
-        fQuery.FieldByName('Collection').AsString,
-        fQuery.FieldByName('Groups').AsString,
-        fQuery.FieldByName('DateToAdd').AsDateTime,
-        fQuery.FieldByName('IsDate').AsBoolean,
-        fQuery.FieldByName('IsTime').AsBoolean,
-        fQuery.FieldByName('aTime').AsDateTime,
-        ValidCryptBlobStreamJPG(fQuery.FieldByName('thum')),
-        fQuery.FieldByName('Include').AsBoolean,
-        True,
-        fQuery.FieldByName('Links').AsString);
 
+      FInfo.ReadFromDS(fQuery);
+      FInfo.FileName := FileName;
       if ExplorerInfo.View = LV_THUMBS then
       begin
-        if FInfo.ItemCrypted then
+        if FInfo.Crypted then
         begin
           JPEG := TJpegImage.Create;
           DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum')), JPEG);
@@ -833,7 +819,7 @@ procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : In
           try
             FInfo.Image.LoadFromStream(FBS);
           finally
-            FBS.Free;
+            F(FBS);
           end;
         end;
       end;
@@ -841,7 +827,7 @@ procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : In
   end else
     GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS, FInfo);
 
-  FInfo.Loaded := True;
+  FInfo.InfoLoaded := True;
   FInfo.Tag := EXPLORER_ITEM_IMAGE;
 
   if not ExplorerInfo.View = LV_THUMBS then
@@ -871,7 +857,7 @@ begin
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam);
     if TempBitmap <> nil then
-      FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.ItemInclude, isBigImage)
+      FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage)
   end;
 end;
 
@@ -1054,8 +1040,8 @@ var
           Exit;
       end;
     finally
-      FFileNames.Free;
-      FPrivateFileNames.Free;
+      F(FFileNames);
+      F(FPrivateFileNames);
     end;
 
     Dx:=4;
@@ -1117,7 +1103,7 @@ var
           try
             FJPEG.LoadFromStream(FBS);
           finally
-            FBS.Free;
+            F(FBS);
           end;
         end;
         fbmp := TBitmap.Create;
@@ -1132,7 +1118,7 @@ var
           ProportionalSize(SmallImageSize, SmallImageSize, W, H);
           DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
         finally
-          fbmp.Free;
+          F(fbmp);
         end;
       end else
       begin
@@ -1658,7 +1644,7 @@ begin
             False, False, True);
         SynchronizeEx(InfoToExplorerForm);
       finally
-        ShareList.Free;
+        F(ShareList);
       end;
       for I := 0 to FFiles.Count - 1 do
       begin
@@ -1745,20 +1731,20 @@ begin
   finally
     F(FFiles);
   end;
-  if FInfo.ItemId <> 0 then
+  if FInfo.ID <> 0 then
     if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
       SynchronizeEx(DoUpdaterHelpProc);
 end;
 
-function TExplorerThread.ShowFileIfHidden(FileName :String): boolean;
+function TExplorerThread.ShowFileIfHidden(FileName: string): Boolean;
 var
-  fa : integer;
+  Fa: Integer;
 begin
- Result:=false;
- fa:=FileGetAttr(FileName);
- fa:=fa and FaHidden;
- If ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (fa=0)) then
- Result:=true;
+  Result := False;
+  Fa := FileGetAttr(FileName);
+  Fa := Fa and FaHidden;
+  if ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (Fa = 0)) then
+    Result := True;
 end;
 
 procedure TExplorerThread.ReplaceImageInExplorerB;
@@ -1779,13 +1765,13 @@ end;
 
 procedure TExplorerThread.UpdateSimpleFile;
 begin
- StringParam:=Fmask;
+  StringParam := Fmask;
 // SynchronizeEx(FileNeeded);
-// If BooleanResult then
- begin
-  CurrentFile:=FFolder;
-  MakeIconForFile;
- end;
+  // If BooleanResult then
+  begin
+    CurrentFile := FFolder;
+    MakeIconForFile;
+  end;
 end;
 
 procedure TExplorerThread.ChangeIDImage;
@@ -1811,12 +1797,13 @@ end;
 procedure TExplorerThread.UpdateFolder;
 begin
   FFiles:=TExplorerFileInfos.Create;
-  AddOneExplorerFileInfo(FFiles,FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(Fmask), 0,0,0,0,0,'','','',0,false,false,true);
-  GUIDParam:=FFiles[0].SID;
-  CurrentFile:=FFiles[0].FileName;
-  fMask:=SupportedExt;
+  AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(Fmask), 0, 0, 0, 0, 0, '', '', '', 0,
+    False, False, True);
+  GUIDParam := FFiles[0].SID;
+  CurrentFile := FFiles[0].FileName;
+  FMask := SupportedExt;
   if ExplorerInfo.ShowThumbNailsForFolders then
-  ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
+    ReplaceThumbImageToFolder(CurrentFile, GUIDParam);
 end;
 
 procedure TExplorerThread.EndUpdateID;
@@ -2016,6 +2003,7 @@ begin
   F(FVisibleFiles);
   F(FFiles);
   F(FUpdaterInfo.FileInfo);
+  F(FInfo);
   inherited;
 end;
 
@@ -2034,7 +2022,7 @@ begin
   FSender.DoStopLoading;
 end;
 
-procedure TExplorerThread.ExtractImage(Info: TOneRecordInfo; CryptedFile : Boolean; FileID : TGUID);
+procedure TExplorerThread.ExtractImage(Info: TDBPopupMenuInfoRecord; CryptedFile : Boolean; FileID : TGUID);
 var
   W, H : integer;
   Graphic : TGraphic;
@@ -2042,9 +2030,9 @@ var
   Password : string;
   TempBit : TBitmap;
 begin
-  if Info.ItemId = 0 then
+  if Info.ID = 0 then
   begin
-    GraphicClass := GetGraphicClass(ExtractFileExt(Info.ItemFileName), False);
+    GraphicClass := GetGraphicClass(ExtractFileExt(Info.FileName), False);
     if GraphicClass = nil then
        Exit;
 
@@ -2053,12 +2041,12 @@ begin
       if CryptedFile then
       begin
         IsBigImage := True;
-        Info.ItemCrypted := True;
-        Password := DBKernel.FindPasswordForCryptImageFile(Info.ItemFileName);
+        Info.Crypted := True;
+        Password := DBKernel.FindPasswordForCryptImageFile(Info.FileName);
         if Password <> '' then
         begin
           F(Graphic);
-          Graphic := DeCryptGraphicFile(Info.ItemFileName, Password);
+          Graphic := DeCryptGraphicFile(Info.FileName, Password);
           if (Graphic <> nil) and not Graphic.Empty then
             Info.PassTag := 1;
         end else
@@ -2069,13 +2057,13 @@ begin
       begin
         if Graphic is TRAWImage then
         begin
-          if not (Graphic as TRAWImage).LoadThumbnailFromFile(Info.ItemFileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
-            Graphic.LoadFromFile(Info.ItemFileName);
+          if not (Graphic as TRAWImage).LoadThumbnailFromFile(Info.FileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
+            Graphic.LoadFromFile(Info.FileName);
         end else
-          Graphic.LoadFromFile(Info.ItemFileName);
+          Graphic.LoadFromFile(Info.FileName);
         IsBigImage := True;
       end;
-      if not ((Info.PassTag = 0) and Info.ItemCrypted) then
+      if not ((Info.PassTag = 0) and Info.Crypted) then
       begin
         TempBit := TBitmap.create;
         try
@@ -2109,7 +2097,7 @@ begin
     end;
   end else //if ID <> 0
   begin
-    if not ((Info.PassTag = 0) and Info.ItemCrypted) and not ((Info.Image = nil) or Info.Image.Empty) then
+    if not ((Info.PassTag = 0) and Info.Crypted) and not ((Info.Image = nil) or Info.Image.Empty) then
     begin
       TempBitmap := TBitmap.Create;
       AssignJpeg(TempBitmap, Info.Image);
@@ -2121,14 +2109,14 @@ begin
   end;
   F(Info.Image);
 
-  if not ((Info.PassTag = 0) and Info.ItemCrypted) then
-    ApplyRotate(TempBitmap, Info.ItemRotate);
+  if not ((Info.PassTag = 0) and Info.Crypted) then
+    ApplyRotate(TempBitmap, Info.Rotation);
 
   if (FThreadType = THREAD_TYPE_IMAGE) or (FOwnerThreadType = THREAD_TYPE_IMAGE) then
     IsBigImage := False; //сбрасываем флаг для того чтобы перезагрузилась картинка
 
   GUIDParam := FileID;
-  FInfo := Info;
+  FInfo.Assign(Info);
   if not SynchronizeEx(ReplaceImageInExplorer) then
     F(TempBitmap);
 end;
@@ -2139,10 +2127,10 @@ begin
     ExtractImage(FInfo, IsCryptedFile, FFileID);
 
   if Mode = THREAD_PREVIEW_MODE_DIRECTORY then
-    ReplaceThumbImageToFolder(FInfo.ItemFileName, FFileID);
+    ReplaceThumbImageToFolder(FInfo.FileName, FFileID);
 
   if Mode = THREAD_PREVIEW_MODE_BIG_IMAGE then
-     ExtractBigPreview(FInfo.ItemFileName, FInfo.ItemRotate, FFileID);
+     ExtractBigPreview(FInfo.FileName, FInfo.Rotation, FFileID);
 
   F(FUpdaterInfo.FileInfo);
 end;

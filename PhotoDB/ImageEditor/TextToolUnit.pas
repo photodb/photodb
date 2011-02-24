@@ -190,7 +190,7 @@ begin
   LeftOrientationButton.Parent := Self;
   Bit := TBitmap.Create;
   try
-    LeftOrientationButton.Glyph.Handle := LoadBitmap(HInstance, 'LEFTTEXT');
+    Bit.Handle := LoadBitmap(HInstance, 'LEFTTEXT');
     LeftOrientationButton.Glyph := Bit;
   finally
     F(Bit);
@@ -207,7 +207,7 @@ begin
 
   Bit := TBitmap.Create;
   try
-    CenterOrientationButton.Glyph.Handle := LoadBitmap(HInstance, 'CENTERTEXT');
+    Bit.Handle := LoadBitmap(HInstance, 'CENTERTEXT');
     CenterOrientationButton.Glyph := Bit;
   finally
     F(Bit);
@@ -223,7 +223,7 @@ begin
   RightOrientationButton.Parent := Self;
   Bit := TBitmap.Create;
   try
-    RightOrientationButton.Glyph.Handle := LoadBitmap(HInstance, 'RIGHTTEXT');
+    Bit.Handle := LoadBitmap(HInstance, 'RIGHTTEXT');
     RightOrientationButton.Glyph := Bit;
   finally
     F(Bit);

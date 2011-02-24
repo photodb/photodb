@@ -3,8 +3,8 @@ unit UnitSlideShowScanDirectoryThread;
 interface
 
 uses
-  Classes, Forms, uThreadForm, uThreadEx, ActiveX,
-  UnitDBCommon, UnitDBDeclare, uDBUtils;
+  Classes, Forms, uThreadForm, uThreadEx, ActiveX, uMemory,
+  UnitDBCommon, UnitDBDeclare, uDBUtils, uDBPopupMenuInfo;
 
 type
   TSlideShowScanDirectoryThread = class(TThreadEx)
@@ -12,7 +12,7 @@ type
     { Private declarations }
     FSender: TForm;
     BaseFileName: string;
-    Info: TRecordsInfo;
+    Info: TDBPopupMenuInfo;
     FSID: TGUID;
   protected
     procedure Execute; override;
@@ -41,8 +41,13 @@ begin
   FreeOnTerminate:=true;
   CoInitialize(nil);
   try
-    GetFileListByMask(BaseFileName, SupportedExt, Info, N, true);
-    SynchronizeEx(SynchNotify);
+    Info := TDBPopupMenuInfo.Create;
+    try
+      GetFileListByMask(BaseFileName, SupportedExt, Info, N, true);
+      SynchronizeEx(SynchNotify);
+    finally
+      F(Info);
+    end;
   finally
     CoUninitialize;
   end;

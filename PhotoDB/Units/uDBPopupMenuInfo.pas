@@ -365,6 +365,8 @@ end;
 procedure TDBPopupMenuInfo.SetValueByIndex(index: Integer;
   const Value: TDBPopupMenuInfoRecord);
 begin
+  if FData[index] <> nil then
+    TDBPopupMenuInfoRecord(FData[index]).Free;
   FData[index] := Value;
 end;
 

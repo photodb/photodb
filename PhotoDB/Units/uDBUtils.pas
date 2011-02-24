@@ -37,38 +37,16 @@ function SelectDB(Caller : TDBForm; DB: string) : Boolean;
 procedure CopyFullRecordInfo(Handle : THandle; ID: Integer);
 procedure ExecuteQuery(SQL: string);
 procedure GetFileListByMask(BeginFile, Mask: string;
- out Info: TRecordsInfo; var N: Integer; ShowPrivate: Boolean);
-function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; var Info: TOneRecordInfo): Boolean;
+  Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
+function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
 procedure UpdateImageThInLinks(OldImageTh, NewImageTh: string);
 function BitmapToString(Bit: TBitmap): string;
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm = nil);
 
 { DB Types }
-function RecordInfoOne(name: string; ID, Rotate, Rating, Access: Integer; Size: Int64;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; Isdate, IsTime: Boolean; Time: TTime;
-  Crypt, Include, Loaded: Boolean; Links: string): TOneRecordInfo;
-function RecordInfoOneA(name: string; ID, Rotate, Rating, Access, Size: Integer;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TTime;
-  Crypt: Boolean; Tag: Integer; Include: Boolean; Links: string): TOneRecordInfo;
-procedure AddRecordsInfoOne(var D: TRecordsInfo; name: string; ID, Rotate, Rating, Access: Integer;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TTime;
-  Crypt, Loaded, Include: Boolean; Links: string);
-procedure SetRecordsInfoOne(var D: TRecordsInfo; N: Integer; name: string; ID, Rotate, Rating, Access: Integer;
-  Comment, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TDateTime; Crypt, Include: Boolean;
-  Links: string);
-function RecordsInfoOne(name: string; ID, Rotate, Rating, Access: Integer;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; Isdate, IsTime: Boolean;
-  Time: TDateTime; Crypt, Loaded, Include: Boolean; Links: string): TRecordsInfo;
-function GetRecordsFromOne(Info: TOneRecordInfo): TRecordsInfo;
-function GetRecordFromRecords(Info: TRecordsInfo; N: Integer): TOneRecordInfo;
-procedure SetRecordToRecords(Info: TRecordsInfo; N: Integer; Rec: TOneRecordInfo);
-function RecordsInfoNil: TRecordsInfo;
-procedure AddToRecordsInfoOneInfo(var Infos: TRecordsInfo; Info: TOneRecordInfo);
-procedure DBPopupMenuInfoToRecordsInfo(var DBP: TDBPopupMenuInfo; var RI: TRecordsInfo);
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
 function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
-function LoadInfoFromDataSet(TDS: TDataSet): TOneRecordInfo;
 { END DB Types }
 
 implementation
@@ -1308,7 +1286,7 @@ begin
   end;
 end;
 
-function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; var Info: TOneRecordInfo): Boolean;
+function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
 var
   FQuery: TDataSet;
   FBS: TStream;
@@ -1317,7 +1295,6 @@ var
   JPEG: TJpegImage;
 begin
   Result := False;
-  Info.Image := nil;
   FQuery := GetQuery;
   try
     FileName := AnsiLowerCase(FileName);
@@ -1346,22 +1323,8 @@ begin
       Exit;
 
     Result := True;
-    Pointer(JPEG) := Pointer(Info.Image);
-    Info := RecordInfoOne(FQuery.FieldByName('FFileName').AsString, FQuery.FieldByName('ID').AsInteger,
-      FQuery.FieldByName('Rotated').AsInteger, FQuery.FieldByName('Rating').AsInteger,
-      FQuery.FieldByName('Access').AsInteger, FQuery.FieldByName('FileSize').AsInteger,
-      FQuery.FieldByName('Comment').AsString, FQuery.FieldByName('KeyWords').AsString,
-      FQuery.FieldByName('Owner').AsString, FQuery.FieldByName('Collection').AsString,
-      FQuery.FieldByName('Groups').AsString, FQuery.FieldByName('DateToAdd').AsDateTime,
-      FQuery.FieldByName('IsDate').AsBoolean, FQuery.FieldByName('IsTime').AsBoolean,
-      FQuery.FieldByName('aTime').AsDateTime, ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')),
-      FQuery.FieldByName('Include').AsBoolean, True, FQuery.FieldByName('Links').AsString);
-    Info.ItemHeight := FQuery.FieldByName('Height').AsInteger;
-    Info.ItemWidth := FQuery.FieldByName('Width').AsInteger;
-    Info.ItemLinks := FQuery.FieldByName('Links').AsString;
-    Info.ItemImTh := FQuery.FieldByName('StrTh').AsString;
+    Info.ReadFromDS(FQuery);
     Info.Tag := EXPLORER_ITEM_IMAGE;
-    Pointer(Info.Image) := Pointer(JPEG);
 
     if LoadThum then
     begin
@@ -1372,7 +1335,7 @@ begin
       begin
         DeCryptBlobStreamJPG(FQuery.FieldByName('thum'),
           DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum')), Info.Image);
-        Info.ItemCrypted := True;
+        Info.Crypted := True;
         if (Info.Image <> nil) and (not Info.Image.Empty) then
           Info.Tag := 1;
 
@@ -1382,7 +1345,7 @@ begin
         try
           Info.Image.LoadFromStream(FBS);
         finally
-          FBS.Free;
+          F(FBS);
         end;
       end;
     end;
@@ -1450,7 +1413,7 @@ begin
   end;
 end;
 
-procedure GetFileListByMask(BeginFile, Mask: string; out Info: TRecordsInfo; var N: Integer; ShowPrivate: Boolean);
+procedure GetFileListByMask(BeginFile, Mask: string; Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
 var
   Found, I, J: Integer;
   SearchRec: TSearchRec;
@@ -1474,6 +1437,7 @@ begin
 
   if Folder = '' then
     Exit;
+
   List := TStringlist.Create;
   try
     C := 0;
@@ -1550,42 +1514,39 @@ begin
         end;
         FindClose(SearchRec);
 
-        Info := RecordsInfoNil;
+        Info.Clear;
         FQuery.First;
         for I := 0 to List.Count - 1 do
-          AddRecordsInfoOne(Info, List[I], 0, 0, 0, 0, '', '', '', '', '', 0, False, False, 0, False, False, True, '');
+          Info.Add(List[I]);
 
         for I := 0 to FQuery.RecordCount - 1 do
         begin
-          for J := 0 to Length(Info.ItemFileNames) - 1 do
+          for J := 0 to Info.Count - 1 do
           begin
-            if (AddFolder + FQuery.FieldByName('FFileName').AsString) = Info.ItemFileNames[J] then
+            if (AddFolder + FQuery.FieldByName('FFileName').AsString) = Info[J].FileName then
             begin
-              SetRecordToRecords(Info, J, LoadInfoFromDataSet(FQuery));
+              Info[J].ReadFromDS(FQuery);
               Break;
             end;
           end;
           FQuery.Next;
         end;
-        for I := 0 to Length(Info.ItemFileNames) - 1 do
+        for I := 0 to Info.Count - 1 do
         begin
-          if AnsiLowerCase(Info.ItemFileNames[I]) = AnsiLowerCase(BeginFile) then
+          if AnsiLowerCase(Info[I].FileName) = AnsiLowerCase(BeginFile) then
             Info.Position := I;
-          if not Info.LoadedImageInfo[I] then
-          begin
-            Info.ItemCrypted[I] := False; // ? !!! ValidCryptGraphicFile(Info.ItemFileNames[i]);
-            Info.LoadedImageInfo[I] := True;
-          end;
+
+          Info[I].InfoLoaded := True;
         end;
         FQuery.Close;
       finally
         FreeDS(FQuery);
       end;
     finally
-      FBlockedFiles.Free;
+      F(FBlockedFiles);
     end;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -1621,338 +1582,6 @@ end;
 ///////////////////////////////////////////////////////////////////////
 ///  BEGIN DB TYPES
 ///////////////////////////////////////////////////////////////////////
-
-
-function RecordsInfoNil: TRecordsInfo;
-begin
-  Result.Position := 0;
-  Result.Tag := 0;
-  SetLength(Result.ItemFileNames, 0);
-  SetLength(Result.ItemIds, 0);
-  SetLength(Result.ItemRotates, 0);
-  SetLength(Result.ItemRatings, 0);
-  SetLength(Result.ItemAccesses, 0);
-  SetLength(Result.ItemComments, 0);
-  SetLength(Result.ItemOwners, 0);
-  SetLength(Result.ItemKeyWords, 0);
-  SetLength(Result.ItemCollections, 0);
-  SetLength(Result.ItemDates, 0);
-  SetLength(Result.ItemIsDates, 0);
-  SetLength(Result.ItemIsTimes, 0);
-  SetLength(Result.ItemTimes, 0);
-  SetLength(Result.ItemGroups, 0);
-  SetLength(Result.ItemCrypted, 0);
-  SetLength(Result.LoadedImageInfo, 0);
-  SetLength(Result.ItemInclude, 0);
-  SetLength(Result.ItemLinks, 0);
-end;
-
-function RecordsInfoOne(name: string; ID, Rotate, Rating, Access: Integer;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean;
-  Time: TDateTime; Crypt, Loaded, Include: Boolean; Links: string): TRecordsInfo;
-begin
-  Result.Position := 0;
-  Result.Tag := 0;
-  SetLength(Result.ItemFileNames, 1);
-  SetLength(Result.ItemIds, 1);
-  SetLength(Result.ItemRotates, 1);
-  SetLength(Result.ItemRatings, 1);
-  SetLength(Result.ItemAccesses, 1);
-  SetLength(Result.ItemComments, 1);
-  SetLength(Result.ItemOwners, 1);
-  SetLength(Result.ItemKeyWords, 1);
-  SetLength(Result.ItemCollections, 1);
-  SetLength(Result.ItemDates, 1);
-  SetLength(Result.ItemIsDates, 1);
-  SetLength(Result.ItemIsTimes, 1);
-  SetLength(Result.ItemTimes, 1);
-  SetLength(Result.ItemGroups, 1);
-  SetLength(Result.ItemCrypted, 1);
-  SetLength(Result.LoadedImageInfo, 1);
-  SetLength(Result.ItemInclude, 1);
-  SetLength(Result.ItemLinks, 1);
-  Result.ItemFileNames[0] := name;
-  Result.ItemIds[0] := ID;
-  Result.ItemRotates[0] := Rotate;
-  Result.ItemRatings[0] := Rating;
-  Result.ItemAccesses[0] := Access;
-  Result.ItemComments[0] := Comment;
-  Result.ItemOwners[0] := Owner_;
-  Result.ItemKeyWords[0] := Comment;
-  Result.ItemCollections[0] := Collection;
-  Result.ItemDates[0] := Date;
-  Result.ItemIsDates[0] := IsDate;
-  Result.ItemIsTimes[0] := IsTime;
-  Result.ItemTimes[0] := Time;
-  Result.ItemGroups[0] := Groups;
-  Result.ItemCrypted[0] := Crypt;
-  Result.LoadedImageInfo[0] := Loaded;
-  Result.ItemInclude[0] := Include;
-  Result.ItemLinks[0] := Links;
-end;
-
-procedure AddToRecordsInfoOneInfo(var Infos: TRecordsInfo; Info: TOneRecordInfo);
-var
-  L: Integer;
-begin
-  L := Length(Infos.ItemFileNames) + 1;
-  SetLength(Infos.ItemFileNames, L);
-  SetLength(Infos.ItemIds, L);
-  SetLength(Infos.ItemRotates, L);
-  SetLength(Infos.ItemRatings, L);
-  SetLength(Infos.ItemAccesses, L);
-  SetLength(Infos.ItemComments, L);
-  SetLength(Infos.ItemOwners, L);
-  SetLength(Infos.ItemKeyWords, L);
-  SetLength(Infos.ItemCollections, L);
-  SetLength(Infos.ItemDates, L);
-  SetLength(Infos.ItemIsDates, L);
-  SetLength(Infos.ItemIsTimes, L);
-  SetLength(Infos.ItemTimes, L);
-  SetLength(Infos.ItemGroups, L);
-  SetLength(Infos.ItemCrypted, L);
-  SetLength(Infos.ItemInclude, L);
-  SetLength(Infos.ItemLinks, L);
-  Infos.ItemFileNames[L - 1] := Info.ItemFileName;
-  Infos.ItemIds[L - 1] := Info.ItemId;
-  Infos.ItemRotates[L - 1] := Info.ItemRotate;
-  Infos.ItemRatings[L - 1] := Info.ItemRating;
-  Infos.ItemAccesses[L - 1] := Info.ItemAccess;
-  Infos.ItemComments[L - 1] := Info.ItemComment;
-  Infos.ItemOwners[L - 1] := Info.ItemOwner;
-  Infos.ItemKeyWords[L - 1] := Info.ItemKeyWords;
-  Infos.ItemCollections[L - 1] := Info.ItemCollections;
-  Infos.ItemDates[L - 1] := Info.ItemDate;
-  Infos.ItemIsDates[L - 1] := Info.ItemIsDate;
-  Infos.ItemIsTimes[L - 1] := Info.ItemIsTime;
-  Infos.ItemTimes[L - 1] := Info.ItemTime;
-  Infos.ItemGroups[L - 1] := Info.ItemGroups;
-  Infos.ItemCrypted[L - 1] := Info.ItemCrypted;
-  Infos.ItemInclude[L - 1] := Info.ItemInclude;
-  Infos.ItemLinks[L - 1] := Info.ItemLinks;
-end;
-
-function RecordInfoOneA(name: string; ID, Rotate, Rating, Access, Size: Integer;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TTime;
-  Crypt: Boolean; Tag: Integer; Include: Boolean; Links: string): TOneRecordInfo;
-begin
-  Result.ItemFileName := name;
-  Result.ItemCrypted := False;
-  Result.ItemId := ID;
-  Result.ItemSize := Size;
-  Result.ItemRotate := Rotate;
-  Result.ItemRating := Rating;
-  Result.ItemAccess := Access;
-  Result.ItemComment := Comment;
-  Result.ItemCollections := Collection;
-  Result.ItemOwner := Owner_;
-  Result.ItemKeyWords := KeyWords;
-  Result.Image := nil;
-  Result.ItemDate := Date;
-  Result.ItemTime := Time;
-  Result.ItemIsDate := IsDate;
-  Result.ItemIsTime := IsDate;
-  Result.ItemGroups := Groups;
-  Result.ItemCrypted := Crypt;
-  Result.ItemInclude := Include;
-  Result.ItemLinks := Links;
-  Result.Tag := Tag;
-end;
-
-function GetRecordsFromOne(Info: TOneRecordInfo): TRecordsInfo;
-begin
-  Result.Position := 0;
-  Result.Tag := 0;
-  SetLength(Result.ItemFileNames, 1);
-  SetLength(Result.ItemIds, 1);
-  SetLength(Result.ItemRotates, 1);
-  SetLength(Result.ItemRatings, 1);
-  SetLength(Result.ItemAccesses, 1);
-  SetLength(Result.ItemComments, 1);
-  SetLength(Result.ItemComments, 1);
-  SetLength(Result.ItemKeyWords, 1);
-  SetLength(Result.ItemOwners, 1);
-  SetLength(Result.ItemGroups, 1);
-  SetLength(Result.ItemDates, 1);
-  SetLength(Result.ItemTimes, 1);
-  SetLength(Result.ItemIsDates, 1);
-  SetLength(Result.ItemIsTimes, 1);
-  SetLength(Result.ItemCollections, 1);
-  SetLength(Result.ItemCrypted, 1);
-  SetLength(Result.LoadedImageInfo, 1);
-  SetLength(Result.ItemInclude, 1);
-  SetLength(Result.ItemLinks, 1);
-  Result.ItemFileNames[0] := Info.ItemFileName;
-  Result.ItemIds[0] := Info.ItemId;
-  Result.ItemRotates[0] := Info.ItemRotate;
-  Result.ItemRatings[0] := Info.ItemRating;
-  Result.ItemAccesses[0] := Info.ItemAccess;
-  Result.ItemComments[0] := Info.ItemComment;
-  Result.ItemKeyWords[0] := Info.ItemKeyWords;
-  Result.ItemOwners[0] := Info.ItemOwner;
-  Result.ItemCollections[0] := Info.ItemCollections;
-  Result.ItemDates[0] := Info.ItemDate;
-  Result.ItemTimes[0] := Info.ItemTime;
-  Result.ItemIsDates[0] := Info.ItemIsDate;
-  Result.ItemIsTimes[0] := Info.ItemIsTime;
-  Result.ItemGroups[0] := Info.ItemGroups;
-  Result.ItemCrypted[0] := Info.ItemCrypted;
-  Result.LoadedImageInfo[0] := Info.Loaded;
-  Result.ItemInclude[0] := Info.ItemInclude;
-  Result.ItemLinks[0] := Info.ItemLinks;
-end;
-
-function GetRecordFromRecords(Info: TRecordsInfo; N: Integer): TOneRecordInfo;
-begin
-  Result.ItemFileName := Info.ItemFileNames[N];
-  Result.ItemId := Info.ItemIds[N];
-  Result.ItemRotate := Info.ItemRotates[N];
-  Result.ItemRating := Info.ItemRatings[N];
-  Result.ItemAccess := Info.ItemAccesses[N];
-  Result.ItemComment := Info.ItemComments[N];
-  Result.ItemKeyWords := Info.ItemKeyWords[N];
-  Result.ItemOwner := Info.ItemOwners[N];
-  Result.ItemCollections := Info.ItemCollections[N];
-  Result.ItemDate := Info.ItemDates[N];
-  Result.ItemTime := Info.ItemTimes[N];
-  Result.ItemIsDate := Info.ItemIsDates[N];
-  Result.ItemIsTime := Info.ItemIsTimes[N];
-  Result.ItemGroups := Info.ItemGroups[N];
-  Result.ItemCrypted := Info.ItemCrypted[N];
-  Result.ItemInclude := Info.ItemInclude[N];
-  Result.Loaded := Info.LoadedImageInfo[N];
-  Result.ItemLinks := Info.ItemLinks[N];
-end;
-
-procedure SetRecordToRecords(Info: TRecordsInfo; N: Integer; Rec: TOneRecordInfo);
-begin
-  Info.ItemFileNames[N] := Rec.ItemFileName;
-  Info.ItemIds[N] := Rec.ItemId;
-  Info.ItemRotates[N] := Rec.ItemRotate;
-  Info.ItemRatings[N] := Rec.ItemRating;
-  Info.ItemAccesses[N] := Rec.ItemAccess;
-  Info.ItemComments[N] := Rec.ItemComment;
-  Info.ItemKeyWords[N] := Rec.ItemKeyWords;
-  Info.ItemOwners[N] := Rec.ItemOwner;
-  Info.ItemCollections[N] := Rec.ItemCollections;
-  Info.ItemDates[N] := Rec.ItemDate;
-  Info.ItemTimes[N] := Rec.ItemTime;
-  Info.ItemIsDates[N] := Rec.ItemIsDate;
-  Info.ItemIsTimes[N] := Rec.ItemIsTime;
-  Info.ItemGroups[N] := Rec.ItemGroups;
-  Info.ItemCrypted[N] := Rec.ItemCrypted;
-  Info.ItemInclude[N] := Rec.ItemInclude;
-  Info.LoadedImageInfo[N] := Rec.Loaded;
-  Info.ItemLinks[N] := Rec.ItemLinks;
-end;
-
-function LoadInfoFromDataSet(TDS: TDataSet): TOneRecordInfo;
-begin
-  Result.ItemFileName := TDS.FieldByName('FFileName').AsString;
-  Result.ItemCrypted := ValidCryptBlobStreamJPG(TDS.FieldByName('Thum'));
-  Result.ItemId := TDS.FieldByName('ID').AsInteger;
-  Result.ItemImTh := TDS.FieldByName('StrTh').AsString;
-  Result.ItemSize := TDS.FieldByName('FileSize').AsInteger;
-  Result.ItemRotate := TDS.FieldByName('Rotated').AsInteger;
-  Result.ItemRating := TDS.FieldByName('Rating').AsInteger;
-  Result.ItemAccess := TDS.FieldByName('Access').AsInteger;
-  Result.ItemComment := TDS.FieldByName('Comment').AsString;
-  Result.ItemGroups := TDS.FieldByName('Groups').AsString;
-  Result.ItemKeyWords := TDS.FieldByName('KeyWords').AsString;
-  Result.ItemDate := TDS.FieldByName('DateToAdd').AsDateTime;
-  Result.ItemIsDate := TDS.FieldByName('IsDate').AsBoolean;
-  Result.ItemIsTime := TDS.FieldByName('IsTime').AsBoolean;
-  Result.ItemInclude := TDS.FieldByName('Include').AsBoolean;
-  Result.ItemLinks := TDS.FieldByName('Links').AsString;
-  Result.Loaded := True;
-end;
-
-procedure SetRecordsInfoOne(var D: TRecordsInfo; N: Integer; name: string; ID, Rotate, Rating, Access: Integer;
-  Comment, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TDateTime; Crypt, Include: Boolean;
-  Links: string);
-begin
-  D.ItemFileNames[N] := name;
-  D.ItemIds[N] := ID;
-  D.ItemRotates[N] := Rotate;
-  D.ItemRatings[N] := Rating;
-  D.ItemAccesses[N] := Access;
-  D.ItemComments[N] := Comment;
-  D.ItemGroups[N] := Groups;
-  D.ItemDates[N] := Date;
-  D.ItemTimes[N] := Time;
-  D.ItemIsDates[N] := IsDate;
-  D.ItemIsTimes[N] := IsTime;
-  D.ItemCrypted[N] := Crypt;
-  D.ItemInclude[N] := Include;
-  D.ItemLinks[N] := Links;
-end;
-
-procedure AddRecordsInfoOne(var D: TRecordsInfo; name: string; ID, Rotate, Rating, Access: Integer;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TTime;
-  Crypt, Loaded, Include: Boolean; Links: string);
-var
-  L: Integer;
-begin
-  L := Length(D.ItemFileNames);
-  SetLength(D.ItemFileNames, L + 1);
-  SetLength(D.ItemIds, L + 1);
-  SetLength(D.ItemRotates, L + 1);
-  SetLength(D.ItemRatings, L + 1);
-  SetLength(D.ItemAccesses, L + 1);
-  SetLength(D.ItemComments, L + 1);
-  SetLength(D.ItemOwners, L + 1);
-  SetLength(D.ItemCollections, L + 1);
-  SetLength(D.ItemKeyWords, L + 1);
-  SetLength(D.ItemDates, L + 1);
-  SetLength(D.ItemTimes, L + 1);
-  SetLength(D.ItemIsDates, L + 1);
-  SetLength(D.ItemIsTimes, L + 1);
-  SetLength(D.ItemGroups, L + 1);
-  SetLength(D.ItemCrypted, L + 1);
-  SetLength(D.LoadedImageInfo, L + 1);
-  SetLength(D.ItemInclude, L + 1);
-  SetLength(D.ItemLinks, L + 1);
-  D.ItemFileNames[L] := name;
-  D.ItemIds[L] := ID;
-  D.ItemRotates[L] := Rotate;
-  D.ItemRatings[L] := Rating;
-  D.ItemAccesses[L] := Access;
-  D.ItemComments[L] := Comment;
-  D.ItemOwners[L] := Owner_;
-  D.ItemCollections[L] := Collection;
-  D.ItemKeyWords[L] := KeyWords;
-  D.ItemDates[L] := Date;
-  D.ItemTimes[L] := Time;
-  D.ItemIsDates[L] := IsDate;
-  D.ItemIsTimes[L] := IsTime;
-  D.ItemGroups[L] := Groups;
-  D.ItemCrypted[L] := Crypt;
-  D.LoadedImageInfo[L] := Loaded;
-  D.ItemInclude[L] := Include;
-  D.ItemLinks[L] := Links;
-end;
-
-
-
-procedure DBPopupMenuInfoToRecordsInfo(var DBP: TDBPopupMenuInfo; var RI: TRecordsInfo);
-var
-  I, FilesSelected: Integer;
-begin
-  FilesSelected := 0;
-  for I := 0 to DBP.Count - 1 do
-    if DBP[I].Selected then
-      Inc(FilesSelected);
-
-  RI := RecordsInfoNil;
-  RI.Position := DBP.Position;
-  for I := 0 to DBP.Count - 1 do
-    if DBP[I].Selected or (FilesSelected <= 1) then
-    begin
-      AddRecordsInfoOne(RI, DBP[I].FileName, DBP[I].ID, DBP[I].Rotation, DBP[I].Rating, DBP[I].Access, DBP[I].Comment,
-        '', '', '', DBP[I].Groups, DBP[I].Date, DBP[I].IsDate, DBP[I].IsTime, DBP[I].Time, DBP[I].Crypted,
-        DBP[I].InfoLoaded, DBP[I].Include, DBP[I].Links);
-    end;
-end;
 
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
 var
@@ -2007,33 +1636,6 @@ begin
   finally
     FreeDS(FQuery);
   end;
-end;
-
-function RecordInfoOne(name: string; ID, Rotate, Rating, Access: Integer; Size: Int64;
-  Comment, KeyWords, Owner_, Collection, Groups: string; Date: TDateTime; IsDate, IsTime: Boolean; Time: TTime;
-  Crypt, Include, Loaded: Boolean; Links: string): TOneRecordInfo;
-begin
-  Result.ItemFileName := name;
-  Result.ItemCrypted := Crypt;
-  Result.ItemId := ID;
-  Result.ItemSize := Size;
-  Result.ItemRotate := Rotate;
-  Result.ItemRating := Rating;
-  Result.ItemAccess := Access;
-  Result.ItemComment := Comment;
-  Result.ItemCollections := Collection;
-  Result.ItemOwner := Owner_;
-  Result.ItemKeyWords := KeyWords;
-  Result.ItemDate := Date;
-  Result.ItemTime := Time;
-  Result.ItemIsDate := IsDate;
-  Result.ItemIsTime := IsTime;
-  Result.ItemGroups := Groups;
-  Result.ItemInclude := Include;
-  Result.ItemLinks := Links;
-  Result.Image := nil;
-  Result.PassTag := 0;
-  Result.Loaded := Loaded;
 end;
 
 ///

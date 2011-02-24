@@ -10,7 +10,7 @@ uses
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
-  uDBUtils;
+  uDBUtils, uDBPopupMenuInfo;
 
 type
   TFormManager = class(TDBForm)
@@ -548,7 +548,7 @@ var
   N, I: Integer;
   FormCont: TFormCont;
   B: TArBoolean;
-  Info: TRecordsInfo;
+  Info: TDBPopupMenuInfo;
   Data: Pointer;
 begin
 

@@ -14,7 +14,7 @@ type
     FFileSID: TGUID;
     FFileName: string;
     TempBitmap: TBitmap;
-    Info: TOneRecordInfo;
+    Info: TDBPopupMenuInfoRecord;
     FOwner: TExplorerForm;
     FGraphic: TGraphic;
     FBit, TempBit: TBitmap;
@@ -25,6 +25,7 @@ type
     procedure DoDrawAttributes;
   public
     constructor Create(FileName: string; FileSID: TGUID; Owner: TExplorerForm);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -36,6 +37,7 @@ uses ExplorerThreadUnit;
 constructor TExplorerThumbnailCreator.Create(FileName : string; FileSID: TGUID; Owner : TExplorerForm);
 begin
   inherited Create(False);
+  Info := TDBPopupMenuInfoRecord.Create;
   FFileName := FileName;
   FFileSID := FileSID;
   FOwner := Owner;
@@ -111,7 +113,7 @@ begin
               F(TempBit);
             end;
           end;
-          ApplyRotate(TempBitmap, Info.ItemRotate);
+          ApplyRotate(TempBitmap, Info.Rotation);
         end else
         begin
           DoProcessPath(FFileName);
@@ -130,7 +132,7 @@ begin
           try
             if ValidCryptGraphicFile(FFileName) then
             begin
-              Info.ItemCrypted := True;
+              Info.Crypted := True;
               Password := DBKernel.FindPasswordForCryptImageFile(FFileName);
 
               if Password <> '' then
@@ -152,8 +154,8 @@ begin
             FBit := TBitmap.Create;
             try
               FBit.PixelFormat := pf24bit;
-              Info.ItemHeight := FGraphic.Height;
-              Info.ItemWidth := FGraphic.Width;
+              Info.Height := FGraphic.Height;
+              Info.Width := FGraphic.Width;
               JPEGScale(FGraphic, ThSizeExplorerPreview, ThSizeExplorerPreview);
 
               TempBit := TBitmap.Create;
@@ -201,13 +203,19 @@ begin
   end;
 end;
 
+destructor TExplorerThumbnailCreator.Destroy;
+begin
+  F(Info);
+  inherited;
+end;
+
 procedure TExplorerThumbnailCreator.DoDrawAttributes;
 var
   Exists : integer;
 begin
   Exists := 1;
-  DrawAttributes(TempBitmap, ThSizeExplorerPreview, Info.ItemRating, Info.ItemRotate, Info.ItemAccess,
-    Info.ItemFileName, Info.ItemCrypted, Exists, Info.ItemId);
+  DrawAttributes(TempBitmap, ThSizeExplorerPreview, Info.Rating, Info.Rotation, Info.Access,
+    Info.FileName, Info.Crypted, Exists, Info.ID);
 end;
 
 procedure TExplorerThumbnailCreator.SetImage;

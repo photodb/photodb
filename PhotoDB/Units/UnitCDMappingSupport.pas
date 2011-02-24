@@ -5,7 +5,8 @@ interface
 uses
   Windows, Classes, SysUtils, StrUtils, UnitDBFileDialogs,
   uShellIntegration, UnitDBDeclare, uVistaFuncs, uFileUtils,
-  uMemory, uTranslate, uConstants, uDBBaseTypes, uDBUtils;
+  uMemory, uTranslate, uConstants, uDBBaseTypes, uDBUtils,
+  uDBPopupMenuInfo;
 
 type
  // File strusts//////////////////////////////////////
@@ -356,47 +357,55 @@ var
   Found: Integer;
   SearchRec: TSearchRec;
   Info: TProgressCallBackInfo;
-  DBInfo: TRecordsInfo;
+  DBInfo: TDBPopupMenuInfo;
   I, N: Integer;
 begin
   CreateDirectory(ExtractFileName(Directory));
   SelectDirectory(ExtractFileName(Directory));
 
-  Directory := IncludeTrailingBackslash(Directory);
-  Found := FindFirst(Directory + '*', FaDirectory, SearchRec);
-  Info.MaxValue := 0;
-  Info.Position := 0;
-  Info.Information := '';
-  Info.Terminate := False;
-  N := 0;
-  GetFileListByMask(Directory, '*.*', DBInfo, N, True);
-  for I := 0 to Length(DBInfo.ItemFileNames) - 1 do
-  begin
-    if DBInfo.ItemIds[I] = 0 then
-      AddRealFile(DBInfo.ItemFileNames[I])
-    else
-      AddImageFile(DBFilePath(DBInfo.ItemFileNames[I], DBInfo.ItemIds[I]));
-    Info.MaxValue := Info.MaxValue + GetFileSizeByName(DBInfo.ItemFileNames[I]);
+  DBInfo := TDBPopupMenuInfo.Create;
+  try
+    Directory := IncludeTrailingBackslash(Directory);
+    Found := FindFirst(Directory + '*', FaDirectory, SearchRec);
+    try
+      Info.MaxValue := 0;
+      Info.Position := 0;
+      Info.Information := '';
+      Info.Terminate := False;
+      N := 0;
+      GetFileListByMask(Directory, '*.*', DBInfo, N, True);
+      for I := 0 to DBInfo.Count - 1 do
+      begin
+        if DBInfo[I].ID = 0 then
+          AddRealFile(DBInfo[I].FileName)
+        else
+          AddImageFile(DBFilePath(DBInfo[I].FileName, DBInfo[I].ID));
+        Info.MaxValue := Info.MaxValue + GetFileSizeByName(DBInfo[I].FileName);
 
-    if Assigned(CallBackProc) then
-      CallBackProc(Self, Info);
-    if Info.Terminate then
-      Break;
-  end;
-  while Found = 0 do
-  begin
-    if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
-    begin
-      if SysUtils.DirectoryExists(Directory + SearchRec.name) then
-        AddRealDirectory(Directory + SearchRec.name, CallBackProc);
+        if Assigned(CallBackProc) then
+          CallBackProc(Self, Info);
+        if Info.Terminate then
+          Break;
+      end;
+      while Found = 0 do
+      begin
+        if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+        begin
+          if SysUtils.DirectoryExists(Directory + SearchRec.name) then
+            AddRealDirectory(Directory + SearchRec.name, CallBackProc);
+        end;
+        Found := SysUtils.FindNext(SearchRec);
+        if Assigned(CallBackProc) then
+          CallBackProc(Self, Info);
+        if Info.Terminate then
+          Break;
+      end;
+    finally
+      SysUtils.FindClose(SearchRec);
     end;
-    Found := SysUtils.FindNext(SearchRec);
-    if Assigned(CallBackProc) then
-      CallBackProc(Self, Info);
-    if Info.Terminate then
-      Break;
+  finally
+    F(DBInfo);
   end;
-  SysUtils.FindClose(SearchRec);
   GoUp;
   Result := True;
 end;
@@ -425,19 +434,24 @@ end;
 procedure TCDIndexMapping.AddRealItemsToCurrentDirectory(Files: TStrings);
 var
   I: Integer;
-  Info: TOneRecordInfo;
+  Info: TDBPopupMenuInfoRecord;
 begin
-  for I := 0 to Files.Count - 1 do
-  begin
-    if SysUtils.DirectoryExists(Files[I]) then
-      AddRealDirectory(Files[I], nil);
-    if FileExistsEx(Files[I]) then
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    for I := 0 to Files.Count - 1 do
     begin
-      if not GetInfoByFileNameA(Files[I], False, Info) then
-        AddRealFile(Files[I])
-      else
-        AddImageFile(DBFilePath(Info.ItemFileName, Info.ItemId));
+      if SysUtils.DirectoryExists(Files[I]) then
+        AddRealDirectory(Files[I], nil);
+      if FileExistsEx(Files[I]) then
+      begin
+        if not GetInfoByFileNameA(Files[I], False, Info) then
+          AddRealFile(Files[I])
+        else
+          AddImageFile(DBFilePath(Info.FileName, Info.ID));
+      end;
     end;
+  finally
+    F(Info);
   end;
 end;
 
