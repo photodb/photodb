@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="PhotoDBSite" Class="SiteDatabaseDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=illusdolphin.net\SQLEXPRESS;Initial Catalog=PhotoDBSite;User ID=pdbsite_user" SettingsObjectName="PhotoDBDatabase.Properties.Settings" SettingsPropertyName="PhotoDBSiteConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.Activation" Member="Activations">
+    <Type Name="Activation">
+      <Column Name="ActivationId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FirstName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="LastName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Country" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="City" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Address" Type="System.String" DbType="NVarChar(250) NOT NULL" CanBeNull="false" />
+      <Column Name="Phone" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="ActivationMode" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="ProgramCode" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="ActivationCode" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="ActivationDate" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="Host_Activation" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.PageView" Member="PageViews">
+    <Type Name="PageView">
+      <Column Name="PageViewId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="PageId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ViewDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Association Name="Host_PageView" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Refer" Member="Refers">
+    <Type Name="Refer">
+      <Column Name="ReferId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="ReferUrl" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
+      <Column Name="ReferCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DateCreate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="DateUpdate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Contact" Member="Contacts">
+    <Type Name="Contact">
+      <Column Name="ContactId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FirstName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="LastName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Text" Type="System.String" DbType="NVarChar(1000) NOT NULL" CanBeNull="false" />
+      <Column Name="ContactMode" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="Host_Contact" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Download" Member="Downloads">
+    <Type Name="Download">
+      <Column Name="DownloadId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="DownloadPageId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="RequestedUrl" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
+      <Column Name="MediaId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DownloadUrl" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ReferId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DownloadDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Association Name="Host_Download" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Host" Member="Hosts">
+    <Type Name="Host">
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="HostName" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="HostDescriptin" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Association Name="Host_Activation" Member="Activations" ThisKey="HostId" OtherKey="HostId" Type="Activation" />
+      <Association Name="Host_PageView" Member="PageViews" ThisKey="HostId" OtherKey="HostId" Type="PageView" />
+      <Association Name="Host_Contact" Member="Contacts" ThisKey="HostId" OtherKey="HostId" Type="Contact" />
+      <Association Name="Host_Download" Member="Downloads" ThisKey="HostId" OtherKey="HostId" Type="Download" />
+    </Type>
+  </Table>
+</Database>

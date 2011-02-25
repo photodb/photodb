@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoDBUserControls", "PhotoDBUserControls\PhotoDBUserControls.csproj", "{BDDCEF45-D193-472A-A1B8-8AD1D17607CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoDBXsltExtensions", "PhotoDBXsltExtensions\PhotoDBXsltExtensions.csproj", "{8139F7EC-28FC-46CF-B9AB-CBFDCD2AFB65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoDBDatabase", "PhotoDBDatabase\PhotoDBDatabase.csproj", "{CA0C90D6-79A6-42F6-97D6-715819E0AED1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDDCEF45-D193-472A-A1B8-8AD1D17607CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDDCEF45-D193-472A-A1B8-8AD1D17607CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDDCEF45-D193-472A-A1B8-8AD1D17607CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDDCEF45-D193-472A-A1B8-8AD1D17607CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8139F7EC-28FC-46CF-B9AB-CBFDCD2AFB65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8139F7EC-28FC-46CF-B9AB-CBFDCD2AFB65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8139F7EC-28FC-46CF-B9AB-CBFDCD2AFB65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8139F7EC-28FC-46CF-B9AB-CBFDCD2AFB65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA0C90D6-79A6-42F6-97D6-715819E0AED1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA0C90D6-79A6-42F6-97D6-715819E0AED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA0C90D6-79A6-42F6-97D6-715819E0AED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA0C90D6-79A6-42F6-97D6-715819E0AED1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
