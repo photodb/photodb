@@ -1,0 +1,73 @@
+﻿<%@ Master Language="C#" MasterPageFile="~/umbraco/masterpages/default.master" AutoEventWireup="true" %>
+
+<asp:Content ContentPlaceHolderID="ContentPlaceHolderDefault" runat="server">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta NAME="KEYWORDS" CONTENT="">
+    <meta NAME="DESCRIPTION" CONTENT="">
+    <meta NAME="autor" Content="Veresov Dzmitry, E-Mail: illusdolphin@gmail.com">
+    <meta NAME="copyright" Content="Studio Illusdolphin">
+    <meta NAME="design" Content="Veresova Hanna, E-Mail: miaur@mail.ru">
+    <link rel="stylesheet" type="text/css" href="/css/reset.css" />
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="/css/contentBoxBorders.css" />
+    <link rel="stylesheet" type="text/css" href="/css/menu.css" />
+    <link rel="stylesheet" type="text/css" href="/css/slider.css" />  
+    <script type="text/javascript" src="/scripts/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="/scripts/easySlider1.5.js"></script>
+    <title></title>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <a href="<umbraco:Macro Alias='HomePageLink' runat='server'/>"><img class="logo" alt="logo" src="/img/logo.png" /></a>
+        <img class="productName" alt="Photo Database 2" src="/img/productName.png"/>
+        <umbraco:Macro Alias="LanguageSelector" runat="server" />
+      </div><!--header-->
+      
+      <div class="container">
+        <table class="borderTable_head">
+            <tr class="topBorderH_head">
+              <td colspan="2" class="cornerLeftTop_head"></td>
+              <td class="topBorder_head"></td>
+              <td colspan="2" class="cornerRightTop_head"></td>
+            </tr>
+            <tr>
+              <td class="leftBorder_head"></td>
+              <td colspan="3" class="borderTableContent_head">
+                <umbraco:Macro Alias="TopNavigation" runat="server" />
+                <div class="pageContainer">
+                  <asp:ContentPlaceHolder Id="PageContent" runat="server" />
+                </div>
+              </td>
+              <td class="rightBorder_head"></td>
+            </tr>
+            <tr class="bottomBorderH_head">
+              <td colspan="2" class="cornerLeftBottom_head"></td>
+              <td class="bottomBorder_head"></td>
+              <td colspan="2" class="cornerRightBottom_head"></td>
+            </tr>
+            <tr style="visibility:hidden">
+              <td width="19px"></td>
+              <td width="429px"></td>
+              <td style="min-width:128px"></td>
+              <td width="429px"></td>
+              <td width="19px"></td>
+            </tr>
+        </table> 
+      </div><!--container-->
+      
+      <div class="footer">
+        <a href="#">Главная страница</a>
+        <a href="#">О программе</a>
+        <a href="#">Скачать</a>
+        <a href="#">Пожертвовать</a>
+        <a href="#">ЧАВО</a>
+        <span><a href="mailto:photodb@illusdolphin.net">©2011 Studio Illusion Dolphin</a></span>
+      </div><!--footer-->
+  </div><!--page-->
+  </body>
+</html>
+</asp:Content>
