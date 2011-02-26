@@ -4,12 +4,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta NAME="KEYWORDS" CONTENT="">
-    <meta NAME="DESCRIPTION" CONTENT="">
-    <meta NAME="autor" Content="Veresov Dzmitry, E-Mail: illusdolphin@gmail.com">
-    <meta NAME="copyright" Content="Studio Illusdolphin">
-    <meta NAME="design" Content="Veresova Hanna, E-Mail: miaur@mail.ru">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta NAME="KEYWORDS" CONTENT="<umbraco:Item field='mETAKeywords' runat='server' />" />
+    <meta NAME="DESCRIPTION" CONTENT="<umbraco:Item field='mETADescription' runat='server' />" />
+    <meta NAME="autor" Content="Veresov Dzmitry, E-Mail: illusdolphin@gmail.com" />
+    <meta NAME="copyright" Content="Studio Illusdolphin" />
+    <meta NAME="design" Content="Veresova Hanna, E-Mail: miaur@mail.ru" />
     <link rel="stylesheet" type="text/css" href="/css/reset.css" />
     <link rel="stylesheet" type="text/css" href="/css/main.css" />
     <link rel="stylesheet" type="text/css" href="/css/contentBoxBorders.css" />
@@ -17,13 +17,14 @@
     <link rel="stylesheet" type="text/css" href="/css/slider.css" />  
     <script type="text/javascript" src="/scripts/jquery-1.4.4.min.js"></script>
     <script type="text/javascript" src="/scripts/easySlider1.5.js"></script>
-    <title></title>
+    <title>Photo Database - <umbraco:Item field="title" useIfEmpty="pageName" runat="server" /></title>
   </head>
   <body>
+    <umbraco:Macro Alias="ReferCounter" runat="server" />
     <div class="page">
       <div class="header">
         <a href="<umbraco:Macro Alias='HomePageLink' runat='server'/>"><img class="logo" alt="logo" src="/img/logo.png" /></a>
-        <img class="productName" alt="Photo Database 2" src="/img/productName.png"/>
+        <img class="productName" alt="Photo Database 2" src="/img/productName.png" />
         <umbraco:Macro Alias="LanguageSelector" runat="server" />
       </div><!--header-->
       
@@ -59,14 +60,7 @@
         </table> 
       </div><!--container-->
       
-      <div class="footer">
-        <a href="#">Главная страница</a>
-        <a href="#">О программе</a>
-        <a href="#">Скачать</a>
-        <a href="#">Пожертвовать</a>
-        <a href="#">ЧАВО</a>
-        <span><a href="mailto:photodb@illusdolphin.net">©2011 Studio Illusion Dolphin</a></span>
-      </div><!--footer-->
+      <umbraco:Macro Alias="Footer" runat="server" />
   </div><!--page-->
   </body>
 </html>

@@ -6,16 +6,8 @@ using System.Configuration;
 
 namespace PhotoDBDatabase.Classes
 {
-    public static class DownloadManager
+    public class DownloadManager : BaseManager
     {
-        public static string ConnectionString
-        {
-            get
-            {
-                return ConfigurationManager.AppSettings["SiteDatabase"];            
-            }
-        }
-
         public static int GetDownloadCount(int mediaId)
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
@@ -32,18 +24,18 @@ namespace PhotoDBDatabase.Classes
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
             {
-                /*Download d = new Download()
+                Download d = new Download()
                 {
                     DownloadDate = DateTime.Now,
                     DownloadPageId = pageId,
                     DownloadUrl = downloadUrl,
                     RequestedUrl = requestUrl,
                     MediaId = mediaId,
-                    ReferId = 0,
-                    HostId = 0,
+                    ReferId = StatsManager.CurrentRefererId,
+                    HostId = StatsManager.HostId,
                 };
                 db.Downloads.InsertOnSubmit(d);
-                db.SubmitChanges();*/
+                db.SubmitChanges();
             }
         }
     }

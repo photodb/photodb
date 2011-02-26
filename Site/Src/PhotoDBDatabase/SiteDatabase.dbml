@@ -64,8 +64,8 @@
   <Table Name="dbo.Host" Member="Hosts">
     <Type Name="Host">
       <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="HostName" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
-      <Column Name="HostDescriptin" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="HostName" Type="System.String" DbType="NChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="HostDescription" Type="System.String" DbType="NChar(250) NOT NULL" CanBeNull="false" />
       <Association Name="Host_Activation" Member="Activations" ThisKey="HostId" OtherKey="HostId" Type="Activation" />
       <Association Name="Host_PageView" Member="PageViews" ThisKey="HostId" OtherKey="HostId" Type="PageView" />
       <Association Name="Host_Contact" Member="Contacts" ThisKey="HostId" OtherKey="HostId" Type="Contact" />

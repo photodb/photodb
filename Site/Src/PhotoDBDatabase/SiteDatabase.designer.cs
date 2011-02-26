@@ -1381,7 +1381,7 @@ namespace PhotoDBDatabase
 		
 		private string _HostName;
 		
-		private string _HostDescriptin;
+		private string _HostDescription;
 		
 		private EntitySet<Activation> _Activations;
 		
@@ -1399,8 +1399,8 @@ namespace PhotoDBDatabase
     partial void OnHostIdChanged();
     partial void OnHostNameChanging(string value);
     partial void OnHostNameChanged();
-    partial void OnHostDescriptinChanging(string value);
-    partial void OnHostDescriptinChanged();
+    partial void OnHostDescriptionChanging(string value);
+    partial void OnHostDescriptionChanged();
     #endregion
 		
 		public Host()
@@ -1432,7 +1432,7 @@ namespace PhotoDBDatabase
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostName", DbType="NChar(10) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostName", DbType="NChar(50) NOT NULL", CanBeNull=false)]
 		public string HostName
 		{
 			get
@@ -1452,22 +1452,22 @@ namespace PhotoDBDatabase
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostDescriptin", DbType="NChar(10) NOT NULL", CanBeNull=false)]
-		public string HostDescriptin
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostDescription", DbType="NChar(250) NOT NULL", CanBeNull=false)]
+		public string HostDescription
 		{
 			get
 			{
-				return this._HostDescriptin;
+				return this._HostDescription;
 			}
 			set
 			{
-				if ((this._HostDescriptin != value))
+				if ((this._HostDescription != value))
 				{
-					this.OnHostDescriptinChanging(value);
+					this.OnHostDescriptionChanging(value);
 					this.SendPropertyChanging();
-					this._HostDescriptin = value;
-					this.SendPropertyChanged("HostDescriptin");
-					this.OnHostDescriptinChanged();
+					this._HostDescription = value;
+					this.SendPropertyChanged("HostDescription");
+					this.OnHostDescriptionChanged();
 				}
 			}
 		}
