@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
-  GraphicsCool, Effects, UnitDBCommonGraphics, uMemory,
+  GraphicsCool, Effects, UnitDBCommonGraphics, uMemory, uDXUtils,
   ImageConverting, SyncObjs, uConstants, UnitDBKernel, uGraphicUtils, uDBThread;
 
 type
@@ -18,7 +18,7 @@ type
     FilePassword: string;
     FCallBackAction: Byte;
     FSynchBitmap: TBitmap;
-    R: TRect;
+    Rct: TRect;
     Fx: TDDBltFx;
     FXForward: Boolean;
     FNext: Boolean;
@@ -29,7 +29,6 @@ type
     procedure DoCallBack(Action: Byte);
     procedure DoCallBackSynch;
     procedure Execute; override;
-    function PackColor(Color: TColor): TColor;
     function CenterBmp(Buffer: IDirectDrawSurface4; Bitmap: TBitmap; Rect: TRect): TRect;
     procedure ReplaceTransform;
     procedure DoExit;
@@ -148,7 +147,7 @@ begin
     until False;
   end;
   Synchronize(DoExitSynch);
-  FInfo.Buffer.Free;
+  R(FInfo.Buffer);
   FreeMem(FInfo.TempSrc)
 end;
 
@@ -230,7 +229,7 @@ begin
                   else
                     Zoom := 1;
 
-                  if (Zoom<ZoomSmoothMin) or UseOnlyDefaultDraw then
+                  if (Zoom<ZoomSmoothMin) then
                     StretchCoolEx0(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, Image, ScreenImage, $000000)
                   else
                   begin
@@ -273,8 +272,8 @@ begin
 
             FillChar (fx, SizeOf (fx), 0);
             fx.dwSize := SizeOf (fx);
-            fx.dwFillColor := PackColor (0);
-            r := Rect(0, 0, ScreenImage.Width, ScreenImage.Height);
+            fx.dwFillColor := PackColor (0, FInfo.BPP, FInfo.RBM, FInfo.GBM, FInfo.BBM);
+            Rct := Rect(0, 0, ScreenImage.Width, ScreenImage.Height);
             Synchronize(Btl);
             CenterBmp (FInfo.Buffer, ScreenImage, Rect(0, 0, ScreenImage.Width, ScreenImage.Height));
             F(ScreenImage);
@@ -297,23 +296,6 @@ begin
   finally
     DoExit;
   end;
-end;
-
-function TDirectXSlideShowCreator.PackColor(Color: TColor): TColor;
-var
-  R, G, B: Integer;
-begin
-  Color := ColorToRGB(Color);
-  B := (Color shr 16) and $FF;
-  G := (Color shr 8) and $FF;
-  R := Color and $FF;
-  if FInfo.BPP = 16 then
-  begin
-    R := R shr 3;
-    G := G shr 3;
-    B := B shr 3;
-  end;
-  Result := (R shl FInfo.RBM) or (G shl FInfo.GBM) or (B shl FInfo.BBM);
 end;
 
 procedure UnLock (Buffer: IDirectDrawSurface4);
@@ -372,7 +354,7 @@ end;
 procedure TDirectXSlideShowCreator.Btl;
 begin
   if FInfo.Buffer <> nil then
-    FInfo.Buffer.Blt(@R, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @Fx);
+    FInfo.Buffer.Blt(@Rct, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @Fx);
 end;
 
 function TDirectXSlideShowCreator.Ready: boolean;

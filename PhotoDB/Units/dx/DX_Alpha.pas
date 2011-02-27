@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, jpeg, AppEvnts, Dolphin_DB, DDraw,
-  Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils, uDBForm;
+  Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils, uDBForm,
+  uDXUtils, uMemory;
 
 type
   TDirectShowForm = class(TDBForm)
@@ -54,6 +55,22 @@ type
     function CallBack(CallbackInfo : TCallbackInfo) : TDirectXSlideShowCreatorCallBackResult;
   private
     { Private declarations }
+    FOldPoint: TPoint;
+    //Основная структура DirectDraw
+    DirectDraw4: IDirectDraw4;
+      //Основная (видимая) поверхность
+    PrimarySurface: IDirectDrawSurface4;
+      //Поверхность для обработки WM_PAINT
+    Offscreen: IDirectDrawSurface4;
+      //Внеэкранные (невидимые) поверхности
+    Buffer : IDirectDrawSurface4;
+      //Информация о цветовом разрешении
+    BPP, RBM, GBM, BBM: integer;
+      //Массивы, хранящие данные поверхностей
+    TransSrc1, TransSrc2 : PByteArr;
+      //Параметры преобразования
+    TransHeight, TransPitch, TransSize: integer;
+
     FReady: Boolean;
     FForwardThreadExists: Boolean;
     FForwardFileName: String;
@@ -70,6 +87,11 @@ type
     FManager: TObject;
     FNowPaused: Boolean;
     FReadyAfterPause : Boolean;
+    procedure UpdateSurface (ParentControl: TControl);
+    procedure PrepareTransform (Buffer1, Buffer2: IDirectDrawSurface4);
+    procedure UnPrepareTransform;
+    procedure ReplaseTransform(Buffer : IDirectDrawSurface4);
+    procedure TransformAlpha(Buffer: IDirectDrawSurface4; Alpha: Integer);
     property Ready : boolean read FReady write SetReady;
     property ForwardThreadExists : boolean read FForwardThreadExists Write SetForwardThreadExists;
     property ForwardFileName : String read FForwardFileName Write SetForwardFileName;
@@ -81,20 +103,7 @@ var
   FDirectXShowReadyForImage : Boolean;
   AlphaCount : Byte = 0;
   XAlphaCount : Extended;
-    //Основная структура DirectDraw
-  DirectDraw4: IDirectDraw4;
-    //Основная (видимая) поверхность
-  PrimarySurface: IDirectDrawSurface4;
-    //Поверхность для обработки WM_PAINT
-  Offscreen: IDirectDrawSurface4;
-    //Внеэкранные (невидимые) поверхности
-  Buffer : IDirectDrawSurface4;
-    //Информация о цветовом разрешении
-  BPP, RBM, GBM, BBM: integer;
-    //Массивы, хранящие данные поверхностей
-  TransSrc1, TransSrc2 : PByteArr;
-    //Параметры преобразования
-  TransHeight, TransPitch, TransSize: integer;
+
     //Флаги загрузки картинок
   FileLoaded: boolean;
   ThreadDestroy : Boolean = false;
@@ -106,75 +115,12 @@ implementation
 
 {$R *.DFM}
 
-//     ЭМУЛЯЦИЯ АЛЬФА-КАНАЛА И ЭФФЕКТЫ ПРОЗРАЧНОСТИ ДЛЯ DIRECTDRAW
-//
-  // Платформа: Windows 95/98
-  // Язык: Borland Delphi 5.0
-  // Комментарии в коде: есть
-//     Ключевые слова: Delphi, DirectX, DirectDraw, transparency, alpha channel, emulation
-//     Состав: DX_alphachannel.dpr, DX_alphachannel.res, DX_Alpha.pas, DX_Alpha.dfm
-//            + заголовочные файлы DirectX 6.0 для Delphi (см. ниже)
-//
-//     ЭТОТ КОД ПОСТАВЛЯЕТСЯ "AS IS" БЕЗ КАКОЙ-ЛИБО ГАРАНТИИ!
-//
-//-----------------------------------------------------------------------------------------
-//
-//     Автор: Антон "t_lambda" Черниговский, 2001
-//     Домашняя страница: http://t_lambda.chat.ru
-//     E-mail: t_lambda@chat.ru
-//
-//-----------------------------------------------------------------------------------------
-//
-//В DirectDraw нет эффектов прозрачности. При попытке создать поверхность DirectDraw
-//с флагом DDSD_ALPHABITDEPTH она просто не создается (тогда как в Direct3D
-//альфа-канал работает). Конечно, можно использовать преобразования DirectX Media
-//Transform (типа MetaCreations Color Fade), но a) за них надо платить бабки, и b)
-//иногда хочется самому контролировать процесс преобразования, а не использовать
-//предопределенные эффекты.
-//
-//В этом примере создаются три поверхности DirectDraw, на две загружаются картинки в
-//формате .bmp, после чего программа получает доступ к данным поверхностей с помощью
-//функции IDirectDrawSurface4.Lock. Далее с этими данными можно делать все что угодно,
-//в том числе и эмулировать альфа-канал (прозрачность). Третья поверхность используется
-//для обработки WM_PAINT. И работает это все не медленнее, чем MetaCreations Color Fade.
-//
-//Программа запоминает информацию о цветовом разрешении экрана и корректно работает при
-//разрешении 16, 24 и 32 bpp. Программа НЕ работает при 256 цветах. Программа НЕ
-//обрабатывает WM_SIZE и потерю проверхностей при изменении разрешения экрана или
-//захвате видеопамяти полноэкранным приложением типа скринсэйвера (IDirectDrawSurface4.
-//IsLost). В этих случаях надо бы удалить всю структуру DirectDraw и создать заново,
-//после чего загрузить все картинки и проинициализировать преобразования. Но это НЕ
-//сделано, так что перезапускайте программу.
-//
-//Программа использует файлы ddraw.pas, comswitch.inc и stringswitch.inc из комплекта
-//заголовочных файлов DirectX 6.0, адаптированные для Delphi Erik Unger:
-//
-//  http://www.delphi-jedi.org/DelphiGraphics/ E-Mail: Erik.Unger@gmx.at
-//
-//При этом файл comswitch.inc должен содержать строку {$DEFINE D2COM}, так как поддержку
-//синтаксиса COM-модели Delphi 3 мне запустить не удалось (возможно, из-за проблем с моим
-//экземпляром Delphi). По этой же причине пакет содержит файл ole2.pas из комплекта Delphi.
-//
-//-----------------------------------------------------------------------------------------
-//
-//     Дополнительная литература:
-//     1. Windows platform SDK
-//     2. DirectX SDK
-//     3. Заголовочные файлы DirectX 6.0 для Delphi:
-//     http://www.delphi-jedi.org/DelphiGraphics/
-//
-//-----------------------------------------------------------------------------------------
-//
-//ПРИМЕЧАНИЕ: Вообще-то, всему этому меня научил мой коллега Леха Бурмистров.
-//Но ему-то этот код в ИНет выкладывать влом, ему и сайт делать нЕкогда...
-//
-
 uses
   FloatPanelFullScreen, SlideShow, SlideShowFullScreen,
   UnitDirectXSlideShowCreator;
 
 //Копирование Offscreen на экран (по WM_PAINT, к примеру)
-procedure UpdateSurface (ParentControl: TControl);
+procedure TDirectShowForm.UpdateSurface (ParentControl: TControl);
 var r1, r2: TRect;
     p: TPoint;
     fx: TDDBltFx;
@@ -191,138 +137,57 @@ begin
   PrimarySurface.Blt (@r2, Offscreen, @r1, DDBLT_WAIT, @fx);
 end;
 
-//Упаковка цвета с учетом цветового разрешения видеоадаптера
-//(параметы RBM, GBM и BBM запомнили при создании DirectDraw)
-function PackColor (Color: TColor): TColor; inline;
-var r, g, b: integer;
-begin
-  Color := ColorToRGB (Color);
-  b := (Color shr 16) and $FF;
-  g := (Color shr 8) and $FF;
-  r := Color and $FF;
-  if BPP = 16 then begin
-     r := r shr 3;
-     g := g shr 3;
-     b := b shr 3;
-  end;
-  Result := (r shl RBM) or (g shl GBM) or (b shl BBM);
-end;
-
-//Разблокировка поверхности.
-//НЕ ЗАХОДИТЕ ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ МЕЖДУ Lock и UnLock! ВСЕ ПОВИСНЕТ!
-procedure UnLock (Buffer: IDirectDrawSurface4);
-begin
-  if Buffer = nil then exit;
-  Buffer.UnLock (nil);
-end;
-
-//Блокировка поверхности НА ЧТЕНИЕ. Можно, конечно, блокировать ВООБЩЕ, но это
-//длительная операция, а указание флагов DDLOCK_READONLY или DDLOCK_WRITEONLY
-//вроде бы позволяет системе что-то там оптимизировать...
-//НЕ ЗАХОДИТЕ ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ МЕЖДУ Lock и UnLock! ВСЕ ПОВИСНЕТ!
-procedure LockRead (Buffer: IDirectDrawSurface4; var SurfaceDesc: TDDSurfaceDesc2);
-begin
-  if Buffer = nil then exit;
-  ZeroMemory (@SurfaceDesc, sizeof (TDDSurfaceDesc2));
-  SurfaceDesc.dwSize := sizeof (TDDSurfaceDesc2);
-  Buffer.Lock (nil, SurfaceDesc, DDLOCK_WAIT or DDLOCK_SURFACEMEMORYPTR or DDLOCK_READONLY, 0);
-  // В SurfaceDesc.lpSurface должны выгрузиться байты поверхности.
-  if SurfaceDesc.lpSurface = nil then
-     UnLock (Buffer);
-end;
-
-//Блокировка поверхности НА ЗАПИСЬ.
-//НЕ ЗАХОДИТЕ ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ МЕЖДУ Lock и UnLock! ВСЕ ПОВИСНЕТ!
-procedure LockWrite (Buffer: IDirectDrawSurface4; var SurfaceDesc: TDDSurfaceDesc2);
-begin
-  if Buffer = nil then exit;
-  ZeroMemory (@SurfaceDesc, sizeof (TDDSurfaceDesc2));
-  SurfaceDesc.dwSize := sizeof (TDDSurfaceDesc2);
-  Buffer.Lock (nil, SurfaceDesc, DDLOCK_WAIT or DDLOCK_SURFACEMEMORYPTR or DDLOCK_WRITEONLY, 0);
-  if SurfaceDesc.lpSurface = nil then
-     UnLock (Buffer);
-end;
-
-//А это - копирование картинки из объекта Delphi TBitmap на поверхность DirectDraw.
-//Картинка масштабируется так, чтобы заполнить наибОльшую часть прямоугольника Rect,
- // после чего размещается по центру. Возвращает прямоугольник, РЕАЛЬНО занятый картинкой.
-function CenterBmp(Buffer: IDirectDrawSurface4; Bitmap: TBitmap; Rect: TRect): TRect;
-var
-   Dc: HDC;
-   W0, H0: Integer;
-   W, H: Double;
-begin
-   if (Buffer = nil) or (Bitmap = nil) then
-     Exit;
-   // Масштабируем и центрируем.
-  w0 := Bitmap.Width;
-  h0 := Bitmap.Height;
-  w := Rect.Right - Rect.Left;
-  h := 1.0 * h0 * w / w0;
-  if h > Rect.Bottom - Rect.Top then begin
-     h := Rect.Bottom - Rect.Top;
-     w := 1.0 * w0 * h / h0;
-  end;
-  Rect.Top := trunc ((Rect.Bottom + Rect.Top - h) / 2.0);
-  Rect.Left := trunc ((Rect.Right + Rect.Left - w) / 2.0);
-  Rect.Right := trunc (Rect.Left + w);
-  Rect.Bottom := trunc (Rect.Top + h);
-  //Получаем device context поверхности. Device context картинки - TBitmap.Canvas.Handle.
-  //НЕ ЗАХОДИТЕ СЮДА ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ! ВСЕ ПОВИСНЕТ!
-  Buffer.GetDC (DC);
-//  SetStretchBltMode (dc, STRETCH_HALFTONE);
-  //Копируем.
-  BitBlt(dc,0,0,Bitmap.Width,Bitmap.Height, Bitmap.Canvas.Handle,0,0,SRCCOPY);
-{  StretchBlt (dc, Rect.Left, Rect.Top, Rect.Right - Rect.Left, Rect.Bottom - Rect.Top,
-              Bitmap.Canvas.Handle, 0, 0, Bitmap.Width, Bitmap.Height, SRCCOPY);       }
-  //ДОЛЖНЫ освободить device context поверхности!
-  Buffer.ReleaseDC (DC);
-  Result := Classes.Rect(0,0,Bitmap.Width,Bitmap.Height);
-end;
-
 //Освобождаем массивы, хранящие данные поверхностей.
-procedure UnPrepareTransform;
+procedure TDirectShowForm.UnPrepareTransform;
 begin
-  if TransSrc1 <> nil then begin
-     FreeMem (TransSrc1);
-     FreeMem (TransSrc2);
-     TransSrc1 := nil;
-     TransSrc2 := nil;
+  if TransSrc1 <> nil then
+  begin
+    FreeMem (TransSrc1);
+    FreeMem (TransSrc2);
+    TransSrc1 := nil;
+    TransSrc2 := nil;
   end;
 end;
 
 //Готовим преобразование: блокируем поверхности, отводим память под массивы,
 //копируем данные поверхностей.
-procedure PrepareTransform (Buffer1, Buffer2: IDirectDrawSurface4);
-var dd: TDDSurfaceDesc2;
+procedure TDirectShowForm.PrepareTransform (Buffer1, Buffer2: IDirectDrawSurface4);
+var
+  dd: TDDSurfaceDesc2;
 begin
   if (Buffer1 = nil) or (Buffer2 = nil) then exit;
   //Чистим память.
   UnPrepareTransform;
   //Блокируем первый источник.
   LockRead (Buffer1, dd);
-  //НЕ ЗАХОДИТЕ СЮДА ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ!
-  //Запоминаем размеры.
-  TransPitch := dd.lPitch;
-  TransHeight := dd.dwHeight;
-  TransSize := TransHeight * TransPitch;
-  //Отводим память.
-  GetMem (TransSrc1, TransSize);
-  GetMem (TransSrc2, TransSize);
-  //Копируем первый источник...
-  CopyMemory (TransSrc1, dd.lpSurface, TransSize - 1);
-  //...и разблокируем его.
-  UnLock (Buffer1);
+  try
+    //НЕ ЗАХОДИТЕ СЮДА ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ!
+    //Запоминаем размеры.
+    TransPitch := dd.lPitch;
+    TransHeight := dd.dwHeight;
+    TransSize := TransHeight * TransPitch;
+    //Отводим память.
+    GetMem (TransSrc1, TransSize);
+    GetMem (TransSrc2, TransSize);
+    //Копируем первый источник...
+    CopyMemory (TransSrc1, dd.lpSurface, TransSize - 1);
+  finally
+    //...и разблокируем его.
+    UnLock (Buffer1);
+  end;
   //Блокируем второй источник.
   LockRead (Buffer2, dd);
-  //НЕ ЗАХОДИТЕ СЮДА ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ!
-  //Копируем его...
-  CopyMemory (TransSrc2, dd.lpSurface, TransSize - 1);
-  //...и разблокируем его.
-  UnLock (Buffer2);
+  try
+    //НЕ ЗАХОДИТЕ СЮДА ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ!
+    //Копируем его...
+    CopyMemory (TransSrc2, dd.lpSurface, TransSize - 1);
+    //...и разблокируем его.
+  finally
+    UnLock (Buffer2);
+  end;
 end;
 
-procedure ReplaseTransform(Buffer : IDirectDrawSurface4);
+procedure TDirectShowForm.ReplaseTransform(Buffer : IDirectDrawSurface4);
 var
   dd: TDDSurfaceDesc2;
   T : PByteArr;
@@ -331,26 +196,30 @@ begin
  TransSrc1:=TransSrc2;
  TransSrc2 := T;
  LockRead (Buffer, dd);
- TransPitch := dd.lPitch;
- TransHeight := dd.dwHeight;
- TransSize := TransHeight * TransPitch;
- CopyMemory (TransSrc2, dd.lpSurface, TransSize - 1);
- UnLock (Buffer);
+ try
+   TransPitch := dd.lPitch;
+   TransHeight := dd.dwHeight;
+   TransSize := TransHeight * TransPitch;
+   CopyMemory (TransSrc2, dd.lpSurface, TransSize - 1);
+ finally
+  UnLock (Buffer);
+ end;
 end;
 
 //O.K. Вот оно - самое главное. Эмуляция альфа-канала делается ЗДЕСЬ, побайтным
 //преобразованием данных поверхностей. Результат заносится в Buffer. Alpha -
-//коэффициент прозрачности, от 0 до 255.
+// коэффициент прозрачности, от 0 до 255.
 //
 //Вообще, это очень критичный участок. Надо бы переписать это на ассемблере,
 //но я ASM'а не знаю. Может, кто-нибудь перепишет и мне пришлет, а?
 //
 //В принципе, здесь вместо прозрачности можно сделать все что угодно, вплоть до
-//нелинейного преобразования координат. Написать бы так, чтобы быстро работало....
-procedure TransformAlpha (Buffer: IDirectDrawSurface4; Alpha: integer);
-var dd: TDDSurfaceDesc2;
-    c, c1, m, n: integer;
-    a, msa, x1: integer;
+// нелинейного преобразования координат. Написать бы так, чтобы быстро работало....
+procedure TDirectShowForm.TransformAlpha(Buffer: IDirectDrawSurface4; Alpha: Integer);
+var
+  Dd: TDDSurfaceDesc2;
+  C, C1, M, N: Integer;
+  A, Msa, X1: Integer;
     bb: ^TByteArray;
 begin
  {$R-}
@@ -359,14 +228,16 @@ begin
   //НЕ ЗАХОДИТЕ СЮДА ОТЛАДЧИКОМ В ПОШАГОВОМ РЕЖИМЕ!
   LockWrite (Buffer, dd);
   if dd.lpSurface = nil then exit;
-  bb := dd.lpSurface;
-  m := 0;
-  x1 := BPP shr 3;
-  n := TransSize - x1;
-  //Обработка разная для 16 bpp (2 байта на пиксель) и 24/32 bpp (3 байта на пиксель).
-  //Если делать ОДИН цикл и проверку цветового разрешения ВНУТРИ, это будет -10% к
-  //быстродействию. Поэтому пишем ДВА цикла.
-  if Bpp = 16 then begin
+  try
+    bb := dd.lpSurface;
+    m := 0;
+    x1 := BPP shr 3;
+    n := TransSize - x1;
+    //Обработка разная для 16 bpp (2 байта на пиксель) и 24/32 bpp (3 байта на пиксель).
+    //Если делать ОДИН цикл и проверку цветового разрешения ВНУТРИ, это будет -10% к
+    //быстродействию. Поэтому пишем ДВА цикла.
+    if Bpp = 16 then
+    begin
      a := alpha shr 3; //Множитель прозрачности первого источника.
      msa := $1F - a;   //Множитель прозрачности второго источника.
      repeat
@@ -376,32 +247,34 @@ begin
         c := (((msa * ((c shr Rbm) and $1F) + a * ((c1 shr Rbm) and $1F)) shr 5) shl Rbm) or
              (((msa * ((c shr Gbm) and $1F) + a * ((c1 shr Gbm) and $1F)) shr 5) shl Gbm) or
              (((msa * ((c shr Bbm) and $1F) + a * ((c1 shr Bbm) and $1F)) shr 5) shl Bbm);
-        //Записываем в выходной массив
-        bb^[m] := c;
-        bb^[m + 1] := c shr 8;
-        //Следующая точка:
-        inc (m, x1);
-     until m > n
-  end else begin
-     a := alpha;    //Множитель прозрачности первого источника.
-     msa := $FF - a;//Множитель прозрачности второго источника.
-     repeat
-        c := integer ((@(TransSrc1^[m]))^); //Пиксель первого источника.
-        c1 := integer ((@(TransSrc2^[m]))^);//Пиксель второго источника.
-        //Результирующий пиксель
-        c := (((msa * ((c shr Rbm) and $FF) + a * ((c1 shr Rbm) and $FF)) shr 8) shl Rbm) or
-             (((msa * ((c shr Gbm) and $FF) + a * ((c1 shr Gbm) and $FF)) shr 8) shl Gbm) or
-             (((msa * ((c shr Bbm) and $FF) + a * ((c1 shr Bbm) and $FF)) shr 8) shl Bbm);
-        //Записываем в выходной массив
-        bb^[m] := c;
-        bb^[M + 1] := C shr 8;
-        Bb^[M + 2] := C shr 16;
+        // Записываем в выходной массив
+        Bb^[M] := C;
+        Bb^[M + 1] := C shr 8;
         // Следующая точка:
         Inc(M, X1);
-      until M > N end;
-      // Разблокируем буфер.
-      UnLock(Buffer);
-    end;
+      until M > N
+     end else
+    begin A := Alpha; // Множитель прозрачности первого источника.
+    Msa := $FF - A; // Множитель прозрачности второго источника.
+    repeat
+      C := Integer((@(TransSrc1^[M]))^); // Пиксель первого источника.
+      c1 := integer ((@(TransSrc2^[m]))^);//Пиксель второго источника.
+      //Результирующий пиксель
+      c := (((msa * ((c shr Rbm) and $FF) + a * ((c1 shr Rbm) and $FF)) shr 8) shl Rbm) or
+           (((msa * ((c shr Gbm) and $FF) + a * ((c1 shr Gbm) and $FF)) shr 8) shl Gbm) or
+           (((msa * ((c shr Bbm) and $FF) + a * ((c1 shr Bbm) and $FF)) shr 8) shl Bbm);
+      //Записываем в выходной массив
+      bb^[m] := c;
+      bb^[M + 1] := C shr 8;
+      Bb^[M + 2] := C shr 16;
+      // Следующая точка:
+      Inc(M, X1);
+    until M > N end;
+    // Разблокируем буфер.
+  finally
+    UnLock(Buffer);
+  end;
+end;
 
     // По Create создаем DirectDraw и все провехности. Надо бы это делать по Resize
     // и после каждого IDirectDrawSurface4.IsLost, но я забил болт.
@@ -489,7 +362,7 @@ begin
  //Закрасим ее цветом фона (иначе на ней будет "снег").
  FillChar (fx, sizeof (fx), 0);
  fx.dwSize := sizeof (fx);
- fx.dwFillColor := PackColor (Color);
+ fx.dwFillColor := PackColor (Color, BPP, RBM, GBM, BBM);
  r := ClientRect;
  Offscreen.Blt (@r, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @fx);
   //Это - первый источник для преобразования.
@@ -531,70 +404,74 @@ var
   TempImage, FirstImage : TBitmap;
   x1, x2, y1, y2, fh, fw : integer;
   Zoom : Extended;
+  FbImage, FNewCsrBmp: TBitmap;
 begin
   Show;
+  FbImage := Viewer.FbImage;
+  FNewCsrBmp := Viewer.FNewCsrBmp;
   if FloatPanel<>nil then
   FloatPanel.Show;
   MouseTimer.Enabled:=false;
   MouseTimer.Enabled:=true;
   SystemParametersInfo(SPI_SCREENSAVERRUNNING, 1, nil, 0);
   FirstImage := TBitmap.Create;
-  FirstImage.Width:=Screen.Width;
-  FirstImage.Height:=Screen.Height;
-  FirstImage.Canvas.Brush.Color:=ClBlack;
-  FirstImage.Canvas.Pen.Color:=ClBlack;
-  FirstImage.PixelFormat:=pf24bit;
-  FirstImage.Canvas.Rectangle(0,0,FirstImage.width,FirstImage.Height);
-  if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
-  begin
-    if FNewCsrBmp.Empty then
-      FNewCsrBmp.Assign(FbImage);
-   if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
-   begin
-    fh:=FNewCsrBmp.Height;
-    fw:=round(FNewCsrBmp.Height*(FbImage.width/fbImage.Height));
-   end else begin
-    fw:=FNewCsrBmp.width;
-    fh:=round(FNewCsrBmp.width*(FbImage.Height/fbImage.width));
-   end;
-  end else begin
-   fh:=FbImage.Height;
-   fw:=FbImage.width;
+  try
+    FirstImage.Width:=Screen.Width;
+    FirstImage.Height:=Screen.Height;
+    FirstImage.Canvas.Brush.Color:=ClBlack;
+    FirstImage.Canvas.Pen.Color:=ClBlack;
+    FirstImage.PixelFormat:=pf24bit;
+    FirstImage.Canvas.Rectangle(0,0,FirstImage.width,FirstImage.Height);
+    if (FbImage.width>FNewCsrBmp.width) or (FbImage.Height>FNewCsrBmp.Height) then
+    begin
+      if FNewCsrBmp.Empty then
+        FNewCsrBmp.Assign(FbImage);
+     if FbImage.width/FbImage.Height<FNewCsrBmp.width/FNewCsrBmp.Height then
+     begin
+      fh:=FNewCsrBmp.Height;
+      fw:=round(FNewCsrBmp.Height*(FbImage.width/fbImage.Height));
+     end else begin
+      fw:=FNewCsrBmp.width;
+      fh:=round(FNewCsrBmp.width*(FbImage.Height/fbImage.width));
+     end;
+    end else begin
+     fh:=FbImage.Height;
+     fw:=FbImage.width;
+    end;
+    x1:=Screen.Width div 2 - fw div 2;
+    y1:=Screen.Height div 2 - fh div 2;
+    x2:=Screen.Width div 2 + fw div 2;
+    y2:=Screen.Height div 2 + fh div 2;
+    If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
+    begin
+     if FbImage.Width<>0 then
+     Zoom:=(x2-x1)/FbImage.Width else Zoom:=1;
+
+     if (Zoom<ZoomSmoothMin) then
+     StretchCool(x1,y1,x2-x1,y2-y1,FbImage,FirstImage)
+     else begin
+      TempImage := TBitmap.Create;
+      TempImage.PixelFormat:=pf24bit;
+      TempImage.Width:=x2-x1;
+      TempImage.Height:=y2-y1;
+      SmoothResize(x2-x1,y2-y1,FbImage,TempImage);
+      FirstImage.Canvas.Draw(x1,y1,TempImage);
+      TempImage.Free;
+     end;
+
+    end else
+    FirstImage.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
+    DirectShowForm.SetFirstImage(FirstImage);
+  finally
+    F(FirstImage);
   end;
-  x1:=Screen.Width div 2 - fw div 2;
-  y1:=Screen.Height div 2 - fh div 2;
-  x2:=Screen.Width div 2 + fw div 2;
-  y2:=Screen.Height div 2 + fh div 2;
-  If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
-  begin
-   if FbImage.Width<>0 then
-   Zoom:=(x2-x1)/FbImage.Width else Zoom:=1;
-
-   if (Zoom<ZoomSmoothMin) or UseOnlyDefaultDraw then
-   StretchCool(x1,y1,x2-x1,y2-y1,FbImage,FirstImage)
-   else begin
-    TempImage := TBitmap.Create;
-    TempImage.PixelFormat:=pf24bit;
-    TempImage.Width:=x2-x1;
-    TempImage.Height:=y2-y1;
-    SmoothResize(x2-x1,y2-y1,FbImage,TempImage);
-    FirstImage.Canvas.Draw(x1,y1,TempImage);
-    TempImage.Free;
-   end;
-
-  end else
-  FirstImage.Canvas.StretchDraw(rect(x1,y1,x2,y2),FbImage);
-  DirectShowForm.SetFirstImage(FirstImage);
-  FirstImage.Free;
-//  TempThreadScr:=nil;
   DelayTimer.Enabled:=true;
 end;
 
 procedure TDirectShowForm.FormDeactivate(Sender: TObject);
 begin
   ShowMouse;
-  SystemParametersInfo(SPI_SCREENSAVERRUNNING, 0, nil, 0);
-//  Close;
+    SystemParametersInfo(SPI_SCREENSAVERRUNNING, 0, nil, 0);
 end;
 
 procedure TDirectShowForm.FormMouseDown(Sender: TObject;
@@ -623,10 +500,10 @@ procedure TDirectShowForm.FormMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseTimer.Enabled:=true;
-  if (abs(OldPoint.X-x)>5) or (abs(OldPoint.X-x)>5) then
+  if (abs(FOldPoint.X-x)>5) or (abs(FOldPoint.X-x)>5) then
   begin
    ShowMouse;
-   OldPoint:=Point(x,y);
+   FOldPoint:=Point(x,y);
    MouseTimer.Enabled:=false;
    MouseTimer.Enabled:=true;
   end;
@@ -645,9 +522,6 @@ end;
 
 procedure TDirectShowForm.FormClick(Sender: TObject);
 begin
-{ DelayTimer.Enabled:=false;
- Viewer.Next_(Sender);
- LoadCurrentImage(false,true); }
  if Viewer=nil then exit;
  Viewer.Pause;
  Viewer.NextImageClick(nil);
@@ -723,27 +597,28 @@ begin
   end;
  end else
  begin
-  if Viewer<>nil then
-  begin
-   Viewer.Pause;
-   Viewer.NextImageClick(nil);
+      if Viewer <> nil then
+      begin
+        Viewer.Pause;
+        Viewer.NextImageClick(nil);
+      end;
+    end;
   end;
- end;
-end;
 
-procedure TDirectShowForm.FormResize(Sender: TObject);
-begin
- if FloatPanel=nil then exit;
- FloatPanel.Top:=0;
- FloatPanel.Left:=ClientWidth-FloatPanel.Width;
-end;
+  procedure TDirectShowForm.FormResize(Sender: TObject);
+  begin
+    if FloatPanel = nil then
+      Exit;
+    FloatPanel.Top := 0;
+    FloatPanel.Left := ClientWidth - FloatPanel.Width;
+  end;
 
-function TDirectShowForm.GetFormID: string;
-begin
-  Result := 'Viewer';
-end;
+  function TDirectShowForm.GetFormID: string;
+  begin
+    Result := 'Viewer';
+  end;
 
-procedure TDirectShowForm.ReTransForm(Alpha: byte);
+  procedure TDirectShowForm.ReTransForm(Alpha: byte);
 begin
  TransformAlpha (Offscreen, Alpha);
  UpdateSurface (self);
@@ -761,7 +636,7 @@ var
 begin
  FillChar (fx, sizeof (fx), 0);
  fx.dwSize := sizeof (fx);
- fx.dwFillColor := PackColor (0);
+ fx.dwFillColor := PackColor (0, BPP, RBM, GBM, BBM);
  r := ClientRect;
   //...после чего определяем, какАя кнопка была нажата (первый или второй
   //источник), и в зависимости от этого лепим картинку в соответствующий
@@ -775,7 +650,7 @@ begin
  UpdateSurface (self);
  FForwardThreadExists:=false;
 end;
-
+//TODO: merge methods
 procedure TDirectShowForm.NewImage(Image: TBitmap);
 var
   fx: TDDBltFx;
@@ -783,7 +658,7 @@ var
 begin
  FillChar (fx, sizeof (fx), 0);
  fx.dwSize := sizeof (fx);
- fx.dwFillColor := PackColor (0);
+ fx.dwFillColor := PackColor (0, BPP, RBM, GBM, BBM);
  r := ClientRect;
   //...после чего определяем, какАя кнопка была нажата (первый или второй
   //источник), и в зависимости от этого лепим картинку в соответствующий

@@ -259,6 +259,9 @@ type
     RealImageWidth: Integer;
     RealImageHeight: Integer;
     RealZoomInc: Extended;
+    DrawImage: TBitmap;
+    FBImage: TBitmap;
+    Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
     constructor Create(AOwner: TComponent); override;
     function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
     procedure ExecuteDirectoryWithFileOnThread(FileName : String);
@@ -305,11 +308,6 @@ type
 
 var
   Viewer: TViewer;
-  UseOnlySelf: Boolean = False;
-  UseOnlyDefaultDraw: Boolean = False;
-  DrawImage: TBitmap;
-  FBImage: Tbitmap;
-  Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
 
 const
   CursorZoomInNo = 130;
@@ -355,7 +353,7 @@ begin
   FLoading := True;
   FImageExists := False;
   DBCanDrag := False;
-  DropFileTarget1.register(Self);
+  DropFileTarget1.Register(Self);
   SlideTimer.Interval := Math.Min(Math.Max(DBKernel.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
   IncGrayScale := Math.Min(Math.Max(DBKernel.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
   FullScreenNow := False;
@@ -459,8 +457,6 @@ begin
   DoWaitToImage(Sender);
   Rotate := Item.Rotation;
 
- // DBKernel.RegisterChangesIDbyID(self,ChangedDBDataByID,CurrentInfo.ItemIds[CurrentFileNumber]);
-
   if CheckFileExistsWithSleep(FileName, False) then
   begin
     Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(FileName), CurrentFileNumber + 1,
@@ -476,23 +472,12 @@ begin
     begin
       if NeedsUpdating then
       begin
-        if not DBKernel.ReadBool('SlideShow', 'UseFastSlideShowImageLiading', True) then
-        begin
-          UpdateRecord(CurrentFileNumber);
-          Rotate := Item.Rotation;
-          DisplayRating := Item.ID;
-
-          TbRotateCCW.Enabled := True;
-          TbRotateCW.Enabled := True;
-        end else
-        begin
-          DisplayRating := -Item.ID;
-          TimerDBWork.Enabled := True;
-          TbRotateCCW.Enabled := False;
-          TbRotateCW.Enabled := False;
-          TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
-          Rotate := 0;
-        end;
+        DisplayRating := Item.Rating;
+        TimerDBWork.Enabled := True;
+        TbRotateCCW.Enabled := False;
+        TbRotateCW.Enabled := False;
+        TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
+        Rotate := 0;
       end;
 
       Result := True;
@@ -547,7 +532,6 @@ var
 
 begin
   Z := 0;
-  UseOnlyDefaultDraw := False;
   FileName := FCurrentlyLoadedFile;
   if FullScreenNow then
   begin
@@ -579,7 +563,7 @@ begin
           end else
             Z := 1;
         end;
-        if (Z < ZoomSmoothMin) or UseOnlyDefaultDraw then
+        if (Z < ZoomSmoothMin) then
           StretchCool(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2, Fw, Fh, FbImage, DrawImage)
         else
         begin
@@ -655,7 +639,7 @@ begin
         DrawRect(ImRect.Left, ImRect.Top, ImRect.Right, ImRect.Bottom);
         if Zoom <= 1 then
         begin
-          if (Zoom < ZoomSmoothMin) or UseOnlyDefaultDraw then
+          if (Zoom < ZoomSmoothMin) then
             StretchCoolW(Zx, Zy, Zw, Zh, Rect(Round(ScrollBar1.Position / Zoom), Round(ScrollBar2.Position / Zoom),
                 Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom)), FbImage, DrawImage)
           else
@@ -702,7 +686,7 @@ begin
           end else
             Z := 1;
         end;
-        if (Z < ZoomSmoothMin) or UseOnlyDefaultDraw then
+        if (Z < ZoomSmoothMin) then
           StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, DrawImage)
         else
         begin
@@ -804,6 +788,7 @@ begin
     FormPaint(Sender);
   end;
   TbrActions.Refresh;
+  TbrActions.Realign;
   TW.I.Start('TViewer.FormResize - end');
 end;
 
@@ -966,7 +951,7 @@ procedure TViewer.NewPicture(Sender: TObject);
 var
   Fh, Fw, X1, X2, Y1, Y2: Integer;
 begin
- if not SlideShowNow then
+  if not SlideShowNow then
   begin
     Fcsrbmp.Assign(Fnowcsrbmp);
     FNewCsrBmp.Canvas.Rectangle(0, 0, FNewCsrBmp.Width, FNewCsrBmp.Height);
@@ -1242,6 +1227,9 @@ begin
         CurrentInfo[I].IsTime := Value.IsTime;
         CurrentInfo[I].InfoLoaded := True;
         CurrentInfo[I].Links := '';
+
+        if I = CurrentFileNumber then
+          DisplayRating := CurrentInfo[I].Rating;
         Break;
       end;
     Exit;
@@ -1270,7 +1258,7 @@ begin
         begin
           CurrentInfo[I].Rating := Value.Rating;
           if I = CurrentFileNumber then
-            DisplayRating := CurrentInfo[I].ID;
+            DisplayRating := CurrentInfo[I].Rating;
         end;
         if EventID_Param_Name in Params then
           CurrentInfo[I].FileName := Value.name;
@@ -1580,6 +1568,14 @@ begin
         if (Msg.wParam = Byte('5')) or (Msg.wParam = Byte(VK_NUMPAD5)) then N51Click(N51);
       end;
 
+      if CtrlKeyDown and ShiftKeyDown then
+      begin
+        if Msg.wParam = VK_OEM_PLUS then
+          RotateCW1Click(Self);
+
+        if Msg.wParam = VK_OEM_MINUS then
+          RotateCCW1Click(Self);
+      end;
     Msg.message:=0;
   end;
 
@@ -1659,7 +1655,6 @@ function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile 
 var
   I: Integer;
   TmpStr, Text_out: string;
-  TempInfo: TDBPopupMenuInfoRecord;
   LoadImage: TPNGImage;
   LoadImageBMP: TBitmap;
   FOldImageExists, NotifyUser: Boolean;
@@ -1701,12 +1696,6 @@ begin
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
   end;
-
-  TempInfo := nil;
-  if not UseOnlySelf then
-    if not((FormManager.MainFormsCount = 1) and FormManager.IsMainForms(Self)) then
-      if (LoadBaseFile <> '') and (CurrentInfo.Count = 1) then
-        TempInfo := CurrentInfo[0];
 
   CurrentInfo.Assign(Info);
   TW.I.Start('DoProcessPath');
@@ -1775,12 +1764,12 @@ begin
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
         [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
         LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
-      DisplayRating := Item.ID;
+      DisplayRating := Item.Rating;
       FImageExists := FOldImageExists;
       TbRotateCW.Enabled := TbRotateCCW.Enabled;
     end;
   end;
-  UseOnlySelf := False;
+
   if CurrentInfo.Count < 2 then
   begin
     TbBack.Enabled := False;
@@ -1826,6 +1815,8 @@ begin
   Params.WndParent := GetDesktopWindow;
   with params do
     ExStyle := ExStyle or WS_EX_APPWINDOW;
+
+  Params.WinClassName := 'AVL_AVView';
   TW.I.Start('CreateParams - END');
 end;
 
@@ -2133,6 +2124,7 @@ begin
     ScrollBar2.Position := 50;
     LoadImage_(Sender, Item.FileName, Item.Rotation, True, 1, True);
     TbrActions.Refresh;
+    TbrActions.Realign;
   end else
   begin
     Zoom := 1;
@@ -2180,8 +2172,8 @@ begin
     ZoomOut1.Enabled := False;
     LoadImage_(Sender, Item.FileName, Item.Rotation, True, Z, True);
     TbrActions.Refresh;
-  end
-  else
+    TbrActions.Realign;
+  end else
   begin
     if ZoomerOn then
     begin
@@ -2229,6 +2221,7 @@ begin
     ZoomOut1.Enabled := False;
     LoadImage_(Sender, Item.FileName, Item.Rotation, True, Z, True);
     TbrActions.Refresh;
+    TbrActions.Realign;
   end else
   begin
     if ZoomerOn then
@@ -2399,15 +2392,15 @@ begin
         ImageList_ReplaceIcon(Imlists[I].Handle, -1, Icons[I, J]);
         if I = 0 then
         begin
-          if J in [0, 1, 12, 14, 15, 22] then
-          begin
+          {if J in [0, 1, 12, 14, 15, 22] then
+          begin    }
             B.Canvas.Rectangle(0, 0, 16, 16);
             DrawIconEx(B.Canvas.Handle, 0, 0, Icons[I, J], 16, 16, 0, 0, DI_NORMAL);
             GrayScale(B);
             Imlists[2].Add(B, nil);
-          end
+          {end
           else
-            ImageList_ReplaceIcon(Imlists[2].Handle, -1, Icons[I, J]);
+            ImageList_ReplaceIcon(Imlists[2].Handle, -1, Icons[I, J]);    }
         end;
       end;
     TW.I.Start('DestroyIcon');
@@ -2428,6 +2421,7 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     Info.Add(Item.Copy);
+    Info[0].Selected := True;
 
     RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
 
@@ -2449,6 +2443,7 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     Info.Add(Item.Copy);
+    Info[0].Selected := True;
 
     RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
 
@@ -2472,6 +2467,7 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     Info.Add(Item.Copy);
+    Info[0].Selected := True;
     RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
   finally
     F(Info);
@@ -3032,7 +3028,7 @@ end;
 procedure TViewer.UpdateInfo(SID: TGUID; Info: TDBPopupMenuInfoRecord);
 begin
   CurrentInfo[CurrentFileNumber] :=  Info;
-  DisplayRating := Info.ID;
+  DisplayRating := Info.Rating;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := TbRotateCCW.Enabled;
 end;
@@ -3172,6 +3168,7 @@ begin
     BestSize1.Enabled := False;
     LoadImage_(Sender, Item.FileName, Item.Rotation, False, 1, True);
     TbrActions.Refresh;
+    TbrActions.Realign;
   end;
 end;
 
@@ -3193,12 +3190,31 @@ var
   Str: string;
   NewRating: Integer;
   EventInfo: TEventValues;
+  FileInfo: TDBPopupMenuInfoRecord;
 begin
   Str := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
   NewRating := StrToInt(Str);
-  SetRating(Item.ID, NewRating);
-  EventInfo.Rating := NewRating;
-  DBKernel.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
+
+  if Item.ID > 0 then
+  begin
+    SetRating(Item.ID, NewRating);
+    EventInfo.Rating := NewRating;
+    DBKernel.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
+  end else
+  begin
+    if UpdaterDB = nil then
+      UpdaterDB := TUpdaterDB.Create;
+
+    FileInfo:= TDBPopupMenuInfoRecord.Create;
+    try
+      FileInfo.FileName := Item.FileName;
+      FileInfo.Rating := NewRating;
+      UpdaterDB.AddFileEx(FileInfo, True);
+    finally
+      F(FileInfo);
+    end;
+  end;
+
 end;
 
 procedure TViewer.ApplicationEvents1Hint(Sender: TObject);
@@ -3291,7 +3307,7 @@ begin
       Break;
     end;
 
-  DisplayRating := Item.ID;
+  DisplayRating := Item.Rating;
 
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := True;
@@ -3308,7 +3324,7 @@ begin
         CurrentInfo[I].InfoLoaded := True;
         Break;
       end;
-  DisplayRating := Item.Rotation;
+  DisplayRating := Item.Rating;
 
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled:=TbRotateCCW.Enabled;
@@ -3371,7 +3387,7 @@ end;
 
 procedure TViewer.SetDisplayRating(const Value: Integer);
 begin
-   TbRating.Enabled := (Value > 0);
+   TbRating.Enabled := (Value >= 0);
    TbRating.ImageIndex := 14 + Abs(Value);
 end;
 

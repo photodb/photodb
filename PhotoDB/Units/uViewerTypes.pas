@@ -10,11 +10,12 @@ type
   private
     FFullScreenNow: Boolean;
     FSlideShowNow: Boolean;
+  protected
+    function GetItem: TDBPopupMenuInfoRecord; virtual;
   public
     CurrentFileNumber: Integer;
     property FullScreenNow: Boolean read FFullScreenNow write FFullScreenNow;
     property SlideShowNow: Boolean read FSlideShowNow write FSlideShowNow;
-    function GetItem: TDBPopupMenuInfoRecord; virtual;
   end;
 
 implementation

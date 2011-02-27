@@ -598,7 +598,6 @@ begin
         Application.CreateForm(TViewer, Viewer);
       FileNameA := LongFileName(FileNameA);
       GetFileListByMask(FileNameA, SupportedExt, Info, N, True);
-      SlideShow.UseOnlySelf := True;
       ShowWindow(Viewer.Handle, SW_RESTORE);
       Viewer.Execute(Self, Info);
       Viewer.Show;

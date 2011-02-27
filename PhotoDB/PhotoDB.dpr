@@ -299,7 +299,8 @@ uses
   uDBGraphicTypes in 'Units\uDBGraphicTypes.pas',
   uStenography in 'Units\uStenography.pas',
   uInternetUtils in 'Units\uInternetUtils.pas',
-  uViewerTypes in 'Units\uViewerTypes.pas';
+  uViewerTypes in 'Units\uViewerTypes.pas',
+  uDXUtils in 'Units\dx\uDXUtils.pas';
 
 {$R *.res}
 
@@ -464,7 +465,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-      Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
       // This is main form of application
 
       TW.I.Start('SetSplashProgress 70');

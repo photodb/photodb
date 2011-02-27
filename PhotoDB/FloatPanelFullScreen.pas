@@ -25,7 +25,6 @@ type
     procedure ToolButton7Click(Sender: TObject);
     procedure RecreateImLists;
     procedure FormCreate(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
@@ -144,12 +143,6 @@ begin
   end;
 end;
 
-procedure TFloatPanel.DestroyTimerTimer(Sender: TObject);
-begin
-  FClosed := true;
-  Viewer.Exit1Click(Sender);
-end;
-
 procedure TFloatPanel.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   CanClose := not Viewer.FullScreenNow and not Viewer.SlideShowNow;
@@ -157,7 +150,8 @@ end;
 
 procedure TFloatPanel.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  //
+  FClosed := True;
+  Viewer.Exit1Click(Sender);
 end;
 
 end.
