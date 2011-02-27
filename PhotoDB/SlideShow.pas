@@ -197,6 +197,10 @@ type
     procedure SendTo1Click(Sender: TObject);
     procedure NewPanel1Click(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
+    procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
   private
     { Private declarations }
     WindowsMenuTickCount : Cardinal;
@@ -1525,58 +1529,58 @@ begin
   if not Active or SlideShowNow or FullScreenNow then
     Exit;
 
-    if Msg.message = WM_KEYDOWN then
+  if Msg.message = WM_KEYDOWN then
+  begin
+    WindowsMenuTickCount := GetTickCount;
+
+    if Msg.WParam = VK_LEFT then
+      PreviousImageClick(Self);
+
+    if Msg.WParam = VK_RIGHT then
+      NextImageClick(Self);
+
+    if Msg.Hwnd = Handle then
+      if Msg.WParam = VK_ESCAPE then
+        Close;
+
+    if (Msg.WParam = VK_DELETE) then
+      TbDeleteClick(Self);
+
+    if (Msg.wParam = Byte(' ')) then
+      Next_(Self);
+
+    if CtrlKeyDown then
     begin
-      WindowsMenuTickCount := GetTickCount;
+      if Msg.wParam = Byte('F') then FitToWindowClick(Self);
+      if Msg.wParam = Byte('A') then RealSizeClick(Self);
+      if Msg.wParam = Byte('S') then TbSlideShowClick(Self);
+      if Msg.wParam = VK_RETURN then FullScreen1Click(Self);
+      if Msg.wParam = Byte('I') then TbZoomOutClick(Self);
+      if Msg.wParam = Byte('O') then TbZoomInClick(Self);
+      if Msg.wParam = Byte('L') then RotateCCW1Click(Self);
+      if Msg.wParam = Byte('R') then RotateCW1Click(Self);
+      if Msg.wParam = Byte('D') then TbDeleteClick(Self);
+      if Msg.wParam = Byte('P') then Print1Click(Self);
+      if Msg.wParam = Byte('E') then ImageEditor1Click(Self);
+      if Msg.wParam = Byte('Z') then Properties1Click(Self);
 
-      if Msg.WParam = VK_LEFT then
-        PreviousImageClick(Self);
+      if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N51Click(N01);
+      if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N51Click(N11);
+      if (Msg.wParam = Byte('2')) or (Msg.wParam = Byte(VK_NUMPAD2)) then N51Click(N21);
+      if (Msg.wParam = Byte('3')) or (Msg.wParam = Byte(VK_NUMPAD3)) then N51Click(N31);
+      if (Msg.wParam = Byte('4')) or (Msg.wParam = Byte(VK_NUMPAD4)) then N51Click(N41);
+      if (Msg.wParam = Byte('5')) or (Msg.wParam = Byte(VK_NUMPAD5)) then N51Click(N51);
+    end;
 
-      if Msg.WParam = VK_RIGHT then
-        NextImageClick(Self);
+    if CtrlKeyDown and ShiftKeyDown then
+    begin
+      if Msg.wParam = VK_OEM_PLUS then
+        RotateCW1Click(Self);
 
-      if Msg.Hwnd = Handle then
-        if Msg.WParam = VK_ESCAPE then
-          Close;
-
-      if (Msg.WParam = VK_DELETE) then
-        TbDeleteClick(Self);
-
-      if (Msg.wParam = Byte(' ')) then
-        Next_(Self);
-
-      if CtrlKeyDown then
-      begin
-        if Msg.wParam = Byte('F') then FitToWindowClick(Self);
-        if Msg.wParam = Byte('A') then RealSizeClick(Self);
-        if Msg.wParam = Byte('S') then TbSlideShowClick(Self);
-        if Msg.wParam = VK_RETURN then FullScreen1Click(Self);
-        if Msg.wParam = Byte('I') then TbZoomOutClick(Self);
-        if Msg.wParam = Byte('O') then TbZoomInClick(Self);
-        if Msg.wParam = Byte('L') then RotateCCW1Click(Self);
-        if Msg.wParam = Byte('R') then RotateCW1Click(Self);
-        if Msg.wParam = Byte('D') then TbDeleteClick(Self);
-        if Msg.wParam = Byte('P') then Print1Click(Self);
-        if Msg.wParam = Byte('E') then ImageEditor1Click(Self);
-        if Msg.wParam = Byte('Z') then Properties1Click(Self);
-
-        if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N51Click(N01);
-        if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N51Click(N11);
-        if (Msg.wParam = Byte('2')) or (Msg.wParam = Byte(VK_NUMPAD2)) then N51Click(N21);
-        if (Msg.wParam = Byte('3')) or (Msg.wParam = Byte(VK_NUMPAD3)) then N51Click(N31);
-        if (Msg.wParam = Byte('4')) or (Msg.wParam = Byte(VK_NUMPAD4)) then N51Click(N41);
-        if (Msg.wParam = Byte('5')) or (Msg.wParam = Byte(VK_NUMPAD5)) then N51Click(N51);
-      end;
-
-      if CtrlKeyDown and ShiftKeyDown then
-      begin
-        if Msg.wParam = VK_OEM_PLUS then
-          RotateCW1Click(Self);
-
-        if Msg.wParam = VK_OEM_MINUS then
-          RotateCCW1Click(Self);
-      end;
-    Msg.message:=0;
+      if Msg.wParam = VK_OEM_MINUS then
+        RotateCCW1Click(Self);
+    end;
+    Msg.message := 0;
   end;
 
   if (Msg.message = WM_RBUTTONDOWN) or (Msg.message = WM_RBUTTONUP) then
@@ -1586,7 +1590,7 @@ begin
 
   if (Msg.message = WM_MOUSEWHEEL) then
   begin
-    if ZoomerOn or CtrlKeyDown then
+    if ZoomerOn or CtrlKeyDown or ShiftKeyDown then
     begin
       if Msg.WParam > 0 then
         TbZoomOutClick(Self)
@@ -1950,6 +1954,20 @@ end;
 procedure TViewer.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   DBCanDrag := False;
+end;
+
+procedure TViewer.FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if CtrlKeyDown or ShiftKeyDown then
+    TbZoomOutClick(Self)
+end;
+
+procedure TViewer.FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if CtrlKeyDown or ShiftKeyDown then
+    TbZoomInClick(Self);
 end;
 
 procedure TViewer.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
@@ -3027,7 +3045,7 @@ end;
 
 procedure TViewer.UpdateInfo(SID: TGUID; Info: TDBPopupMenuInfoRecord);
 begin
-  CurrentInfo[CurrentFileNumber] :=  Info;
+  CurrentInfo[CurrentFileNumber].Assign(Info);
   DisplayRating := Info.Rating;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := TbRotateCCW.Enabled;

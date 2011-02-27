@@ -25,6 +25,8 @@ object Viewer: TViewer
   OnMouseDown = FormMouseDown
   OnMouseMove = FormMouseMove
   OnMouseUp = FormMouseUp
+  OnMouseWheelDown = FormMouseWheelDown
+  OnMouseWheelUp = FormMouseWheelUp
   OnPaint = FormPaint
   OnResize = FormResize
   PixelsPerInch = 96

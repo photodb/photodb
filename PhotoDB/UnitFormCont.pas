@@ -195,6 +195,7 @@ type
     procedure LoadToolBarIcons;
     procedure LoadSizes;
     procedure CreateBackgroundImage;
+    procedure ClearList;
     function HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
   published
     property PictureSize : Integer read FPictureSize;
@@ -419,32 +420,37 @@ begin
 
     Hinttimer.Enabled := False;
     Info := GetCurrentPopUpMenuInfo(Item);
-    Info.AttrExists := False;
-    if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
-    begin
-      Info.IsPlusMenu := False;
-      Info.IsListItem := False;
-      Setlength(Menus, 1);
-      Menus[0] := Tmenuitem.Create(nil);
-      Menus[0].Caption := L('Delete item from list');
-      Menus[0].Tag := Item.index;
-      Menus[0].ImageIndex := DB_IC_DELETE_INFO;
-      Menus[0].OnClick := DeleteIndexItemFromPopUpMenu;
-      TDBPopupMenu.Instance.ExecutePlus(Self, ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, Info,
-        Menus);
-    end else
-    begin
-      FileNames := TStringList.Create;
-      try
-        for I := 0 to Info.Count - 1 do
-          if Info[I].Selected then
-            FileNames.Add(Info[I].FileName);
+    try
+      Info.AttrExists := False;
+      if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
+      begin
+        Info.IsPlusMenu := False;
+        Info.IsListItem := False;
+        Setlength(Menus, 1);
+        Menus[0] := Tmenuitem.Create(nil);
+        Menus[0].Caption := L('Delete item from list');
+        Menus[0].Tag := Item.index;
+        Menus[0].ImageIndex := DB_IC_DELETE_INFO;
+        Menus[0].OnClick := DeleteIndexItemFromPopUpMenu;
+        TDBPopupMenu.Instance.ExecutePlus(Self, ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, Info,
+          Menus);
+      end else
+      begin
+        FileNames := TStringList.Create;
+        try
+          for I := 0 to Info.Count - 1 do
+            if Info[I].Selected then
+              FileNames.Add(Info[I].FileName);
 
-        GetProperties(FileNames, MousePos, ElvMain);
-      finally
-        F(FileNames);
+          GetProperties(FileNames, MousePos, ElvMain);
+        finally
+          F(FileNames);
+        end;
       end;
+    finally
+      F(Info);
     end;
+
   end else
     PopupMenu1.Popup(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
 end;
@@ -474,13 +480,17 @@ begin
     FilesToDrag.Clear;
     GetCursorPos(DBDragPoint);
     MenuInfo := GetCurrentPopUpMenuInfo(Item);
-    for I := 0 to MenuInfo.Count - 1 do
-      if ElvMain.Items[I].Selected then
-        if FileExistsSafe(MenuInfo[I].FileName) then
-          FilesToDrag.Add(MenuInfo[I].FileName);
+    try
+      for I := 0 to MenuInfo.Count - 1 do
+        if ElvMain.Items[I].Selected then
+          if FileExistsSafe(MenuInfo[I].FileName) then
+            FilesToDrag.Add(MenuInfo[I].FileName);
 
-    if FilesToDrag.Count = 0 then
-      DBCanDrag := False;
+      if FilesToDrag.Count = 0 then
+        DBCanDrag := False;
+    finally
+      F(MenuInfo);
+    end;
   end;
 end;
 
@@ -669,70 +679,71 @@ end;
 procedure TFormCont.ListView1SelectItem(Sender: TObject; Item: TEasyItem;
       Selected: Boolean);
 var
-  Image : TBitmap;
-  w,h : integer;
+  Image: TBitmap;
+  W, H: Integer;
 begin
   Application.HideHint;
   THintManager.Instance.CloseHint;
 
- if Selected=false then
- begin
-  WlResize.Visible:=false;
-  WlConvert.Visible:=false;
-  ExportLink.Visible:=false;
-  ExCopyLink.Visible:=false;
-  Panel3.Visible:=false;
-  TbResize.Enabled:=false;
-  TbConvert.Enabled:=false;
-  TbExport.Enabled:=false;
-  TbCopy.Enabled:=false;
- end else
- begin
-  if image1.Picture.Bitmap<>nil then
-  image1.Picture.Graphic:=nil;
+  if Selected = False then
+  begin
+    WlResize.Visible := False;
+    WlConvert.Visible := False;
+    ExportLink.Visible := False;
+    ExCopyLink.Visible := False;
+    Panel3.Visible := False;
+    TbResize.Enabled := False;
+    TbConvert.Enabled := False;
+    TbExport.Enabled := False;
+    TbCopy.Enabled := False;
+  end
+  else
+  begin
+    if Image1.Picture.Bitmap <> nil then
+      Image1.Picture.Graphic := nil;
 
-  Image:=TBitmap.Create;
-  Image.PixelFormat:=pf24bit;
-  w:=FBitmapImageList[Item.ImageIndex].Bitmap.Width;
-  h:=FBitmapImageList[Item.ImageIndex].Bitmap.Height;
-  ProportionalSize(50,50,w,h);
-  DoResize(w,h,FBitmapImageList[Item.ImageIndex].Bitmap,Image);
-  image1.Picture.Bitmap.Assign(Image);
-  Image.Free;
+    Image := TBitmap.Create;
+    Image.PixelFormat := Pf24bit;
+    W := FBitmapImageList[Item.ImageIndex].Bitmap.Width;
+    H := FBitmapImageList[Item.ImageIndex].Bitmap.Height;
+    ProportionalSize(50, 50, W, H);
+    DoResize(W, H, FBitmapImageList[Item.ImageIndex].Bitmap, Image);
+    Image1.Picture.Bitmap.Assign(Image);
+    Image.Free;
 
-  LabelName.Caption:=ExtractFileName(Data[Item.Index].FileName);// else
-  LabelID.Caption:=Format(L('ID = %d'),[Data[Item.Index].ID]);
-  Panel3.Visible:=true;
-  WlResize.Visible:=true;
-  WlConvert.Visible:=true;
-  ExportLink.Visible:=true;
-  ExCopyLink.Visible:=true;
-  TbResize.Enabled:=true;
-  TbConvert.Enabled:=true;
-  TbExport.Enabled:=true;
-  TbCopy.Enabled:=true;
-  LabelSize.Visible:=true;
-  LabelSize.Caption:=Format(L('Items : %d'),[SelCount]);
- end;
+    LabelName.Caption := ExtractFileName(Data[Item.index].FileName); // else
+    LabelID.Caption := Format(L('ID = %d'), [Data[Item.index].ID]);
+    Panel3.Visible := True;
+    WlResize.Visible := True;
+    WlConvert.Visible := True;
+    ExportLink.Visible := True;
+    ExCopyLink.Visible := True;
+    TbResize.Enabled := True;
+    TbConvert.Enabled := True;
+    TbExport.Enabled := True;
+    TbCopy.Enabled := True;
+    LabelSize.Visible := True;
+    LabelSize.Caption := Format(L('Items : %d'), [SelCount]);
+  end;
 end;
 
 procedure TFormCont.Close1Click(Sender: TObject);
 begin
- ManagerPanels.RemovePanel(self);
- TerminateTimer.Enabled:=true;
+  ManagerPanels.RemovePanel(Self);
+  TerminateTimer.Enabled := True;
 end;
 
 procedure TFormCont.SelectAll1Click(Sender: TObject);
 begin
- ElvMain.Selection.SelectAll;
- ElvMain.SetFocus;
+  ElvMain.Selection.SelectAll;
+  ElvMain.SetFocus;
 end;
 
 procedure TFormCont.Clear1Click(Sender: TObject);
 begin
   Data.Clear;
   FBitmapImageList.Clear;
-  ElvMain.Items.Clear;
+  ClearList;
 end;
 
 procedure TFormCont.SaveToFile1Click(Sender: TObject);
@@ -965,6 +976,7 @@ end;
 
 procedure TFormCont.FormDestroy(Sender: TObject);
 begin
+  ClearList;
   GOM.RemoveObj(Self);
   DropFileTarget2.Unregister;
   F(Data);
@@ -1964,6 +1976,15 @@ procedure TFormCont.PopupMenuZoomDropDownPopup(Sender: TObject);
 begin
   Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
   BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
+end;
+
+procedure TFormCont.ClearList;
+var
+  I : Integer;
+begin
+  for I := 0 to ElvMain.Items.Count - 1 do
+    TDataObject(ElvMain.Items[I].Data).Free;
+  ElvMain.Items.Clear;
 end;
 
 initialization

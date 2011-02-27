@@ -39,6 +39,7 @@ type
     procedure DoStopLoading;
   public
     constructor Create(Files : TArStrings; IDs : TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TForm);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -63,38 +64,40 @@ constructor LoadFilesToPanel.Create(Files: TArStrings; IDs : TArInteger; ArLoade
 var
   I: Integer;
 begin
- inherited Create(False);
+  inherited Create(False);
+  FInfo := nil;
+  // enable stop button
+  (Owner as TFormCont).TbStop.Enabled := True;
+  FValidThread := True;
 
- //enable stop button
- (Owner as TFormCont).TbStop.Enabled:=true;
- FValidThread:=true;
-
- fTermitated:=false;
- if Owner=nil then exit;
- if not (Owner is TFormCont) then exit;
- fSID:=(Owner as TFormCont).SID;
- (Owner as TFormCont).AddThread;
- fPictureSize:=(Owner as TFormCont).PictureSize;
- SetLength(fFiles,Length(Files));
- for i:=0 to Length(fFiles)-1 do
- fFiles[i]:=Files[i];
- SetLength(fids,Length(IDs));
- for i:=0 to Length(fids)-1 do
- fids[i]:=IDs[i];
- if UseLoaded then
- begin
-  SetLength(FArLoaded,Length(ArLoaded));
-  for i:=0 to Length(FArLoaded)-1 do
-  FArLoaded[i]:=ArLoaded[i];
- end else
- begin
-  SetLength(FArLoaded,Length(Files));
-  for i:=0 to Length(FArLoaded)-1 do
-  FArLoaded[i]:=false;
- end;
- FUseLoaded:=UseLoaded;
- fbyid := ByID;
- FOwner:=Owner;
+  FTermitated := False;
+  if Owner = nil then
+    Exit;
+  if not(Owner is TFormCont) then
+    Exit;
+  FSID := (Owner as TFormCont).SID;
+  (Owner as TFormCont).AddThread;
+  FPictureSize := (Owner as TFormCont).PictureSize;
+  SetLength(FFiles, Length(Files));
+  for I := 0 to Length(FFiles) - 1 do
+    FFiles[I] := Files[I];
+  SetLength(Fids, Length(IDs));
+  for I := 0 to Length(Fids) - 1 do
+    Fids[I] := IDs[I];
+  if UseLoaded then
+  begin
+    SetLength(FArLoaded, Length(ArLoaded));
+    for I := 0 to Length(FArLoaded) - 1 do
+      FArLoaded[I] := ArLoaded[I];
+  end else
+  begin
+    SetLength(FArLoaded, Length(Files));
+    for I := 0 to Length(FArLoaded) - 1 do
+      FArLoaded[I] := False;
+  end;
+  FUseLoaded := UseLoaded;
+  Fbyid := ByID;
+  FOwner := Owner;
 end;
 
 procedure LoadFilesToPanel.CreateItemsByID(IDs: TArInteger);
@@ -136,8 +139,7 @@ begin
     begin
       FInfo := nil;
       Continue;
-    end
-    else
+    end else
     begin
       FQuery.First;
       for I := 1 to FQuery.RecordCount do
@@ -160,20 +162,19 @@ begin
             Password := DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum'));
             if Password <> '' then
               DeCryptBlobStreamJPG(FQuery.FieldByName('thum'), Password, JPEG);
-          end
-          else
+          end else
           begin
             FBS := GetBlobStream(FQuery.FieldByName('thum'), BmRead);
             try
               JPEG.LoadFromStream(Fbs);
             finally
-              FBS.Free;
+              F(FBS);
             end;
           end;
           if not JPEG.Empty then
             NewItem(JPEG);
         finally
-          JPEG.Free;
+          F(JPEG);
         end;
 
         FQuery.Next;
@@ -183,15 +184,23 @@ begin
 
 end;
 
+destructor LoadFilesToPanel.Destroy;
+begin
+  F(FInfo);
+  F(FBit);
+  inherited;
+end;
+
 procedure LoadFilesToPanel.DoStopLoading;
 begin
- if ManagerPanels.ExistsPanel(FOwner,fSID) then
- (FOwner as TFormCont).DoStopLoading(fSID) else
- begin
-  fTermitated:=true;
-  FValidThread:=false;
-  exit;
- end;
+  if ManagerPanels.ExistsPanel(FOwner, FSID) then
+    (FOwner as TFormCont).DoStopLoading(FSID)
+  else
+  begin
+    FTermitated := True;
+    FValidThread := False;
+    Exit;
+  end;
 end;
 
 procedure LoadFilesToPanel.Execute;
@@ -205,63 +214,70 @@ begin
   CoInitialize(nil);
   try
 
- if fbyid then l:=Length(fIDs) else l:=Length(FFiles);
+    if Fbyid then
+      L := Length(FIDs)
+    else
+      L := Length(FFiles);
 
- FQuery := GetQuery;
- try
- SetLength(fRotates,Max(Length(fIDs),Length(FFiles)));
- if not fbyid then
- begin
-  for i:=0 to l-1 do
-  begin
-   Synchronize(GetPictureSize);
-   if not FValidThread then break;
-   if not fbyid then
-   SetLength(fIDs,1);
-   if fbyid then
-   SetLength(FFiles,1);
-   if FTermitated then exit;
-   fbit:=TBitmap.create;
-   fbit.PixelFormat:=pf24bit;
-    Fbit.Canvas.Brush.Color := ClWindow;
-    Fbit.Canvas.Pen.Color := ClWindow;
-   fbit.Width:=fPictureSize;
-   fbit.Height:=fPictureSize;
-   if fbyid then
-     GetInfoByFileNameOrID(ffiles[0],Fids[i],i, Graphic)
-   else
-     GetInfoByFileNameOrID(ffiles[i],Fids[0],i, Graphic);
-   try
-     fRotates[i]:=FInfo.Rotation;
-     if not FValidThread then
-       Break;
-     if Assigned(Graphic) then
-      NewItem(Graphic);
-
-   finally
-     F(Graphic);
-   end;
-  end;
- end else
-  CreateItemsByID(Fids);
-
- finally
-   FreeDS(FQuery);
- end;
-
- Synchronize(GetSIDFromForm);
- ////////////////////////////////////
- if (fPictureSize<>ThSizePanelPreview) and ManagerPanels.ExistsPanel(FOwner,fSID) then
- begin
-    Data := TDBPopupMenuInfo.Create;
+    FQuery := GetQuery;
     try
-      for I := 0 to Length(FFiles) - 1 do
+      SetLength(FRotates, Max(Length(FIDs), Length(FFiles)));
+      if not Fbyid then
       begin
-        DataRec := TDBPopupMenuInfoRecord.Create;
-        DataRec.FileName := FFiles[i];
-        Data.Add(DataRec);
-      end;
-      UnitPanelLoadingBigImagesThread.TPanelLoadingBigImagesThread.Create(FOwner,(FOwner as TFormCont).BigImagesSID, nil, FPictureSize, Data);
+        for I := 0 to L - 1 do
+        begin
+          Synchronize(GetPictureSize);
+          if not FValidThread then
+            Break;
+          if not Fbyid then
+            SetLength(FIDs, 1);
+          if Fbyid then
+            SetLength(FFiles, 1);
+          if FTermitated then
+            Exit;
+          FBit := TBitmap.Create;
+          FBit.PixelFormat := pf24bit;
+          FBit.Canvas.Brush.Color := clWindow;
+          FBit.Canvas.Pen.Color := clWindow;
+          FBit.Width := FPictureSize;
+          FBit.Height := FPictureSize;
+          if Fbyid then
+            GetInfoByFileNameOrID(Ffiles[0], Fids[I], I, Graphic)
+          else
+            GetInfoByFileNameOrID(Ffiles[I], Fids[0], I, Graphic);
+          try
+            FRotates[I] := FInfo.Rotation;
+            if not FValidThread then
+              Break;
+            if Assigned(Graphic) then
+              NewItem(Graphic);
+
+          finally
+            F(Graphic);
+          end;
+        end;
+      end
+      else
+        CreateItemsByID(Fids);
+
+    finally
+      FreeDS(FQuery);
+    end;
+
+    Synchronize(GetSIDFromForm);
+    /// /////////////////////////////////
+    if (FPictureSize <> ThSizePanelPreview) and ManagerPanels.ExistsPanel(FOwner, FSID) then
+    begin
+      Data := TDBPopupMenuInfo.Create;
+      try
+        for I := 0 to Length(FFiles) - 1 do
+        begin
+          DataRec := TDBPopupMenuInfoRecord.Create;
+          DataRec.FileName := FFiles[I];
+          Data.Add(DataRec);
+        end;
+        UnitPanelLoadingBigImagesThread.TPanelLoadingBigImagesThread.Create(FOwner, (FOwner as TFormCont).BigImagesSID,
+          nil, FPictureSize, Data);
 
       finally
         F(Data);
@@ -311,8 +327,7 @@ begin
   if (C = 0) then
   begin
     CryptFile := ValidCryptGraphicFile(FileName);
-    FInfo := TDBPopupMenuInfoRecord.Create;
-    FInfo.FileName := FileName;
+    FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     FInfo.Crypted := CryptFile;
     FInfo.Include := True;
     FInfo.InfoLoaded := True;
@@ -406,7 +421,7 @@ begin
       F(FBit);
     end;
   finally
-    B.Free;
+    F(B);
   end;
 end;
 

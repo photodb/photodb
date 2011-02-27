@@ -1535,6 +1535,7 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
+  ExplorerManager.RemoveExplorer(Self);
   NewFormState;
   ClearList;
   DirectoryWatcher.StopWatch;
@@ -2116,7 +2117,6 @@ end;
 procedure TExplorerForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  ExplorerManager.RemoveExplorer(Self);
   THintManager.Instance.CloseHint;
   Hinttimer.Enabled := False;
   Release;
@@ -5412,7 +5412,7 @@ begin
   if HelpNO = 1 then
   begin
     HelpTimer.Enabled := False;
-    MessageText := L('     Find in explorer folder with your photos, select the photo and press "Add item(s)" in menu.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
+    MessageText := '     ' + L('Find in explorer folder with your photos, select the photo and press "Add item(s)" in menu.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
     DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain, Help1NextClick,
       L('Next...'), Help1CloseClick);
   end;
@@ -5426,7 +5426,7 @@ begin
   begin
     HelpTimer.Enabled := False;
 
-    MessageText := L('Now the pictures that do not have icon (+) in the upper left corner are in the collection. They are available using the search and for them advanced context menu is available. Further help is available from the main menu (Help -> Help).$nl$$nl$');
+    MessageText := '     ' + L('Now the pictures that do not have icon (+) in the upper left corner are in the collection. They are available using the search and for them advanced context menu is available. Further help is available from the main menu (Help -> Help).$nl$$nl$');
     DoHelpHint(L('Help'), MessageText, Point(0, 0), ElvMain);
     HelpNO := 0;
     DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
@@ -6450,7 +6450,7 @@ end;
 
 function TExplorerForm.GetSecondStepHelp: string;
 begin
-  Result := L('     Click the "Add item (s)" to add photos to the database. After that the pictures you can add information.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
+  Result := '     ' + L('Click the "Add item (s)" to add photos to the database. After that the pictures you can add information.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
 end;
 
 function TExplorerForm.GetSelectedFiles: TArrayOfString;

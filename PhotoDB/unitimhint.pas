@@ -182,109 +182,113 @@ var
   R : TRect;
   InverseHW, IsAnimated : Boolean;
 begin
-  FCheckFunction := CheckFunction;
-  FOwner := Sender;
-  FWidth := W;
-  FHeight := H;
-  if not GOM.IsObj(FOwner) then
-    Exit;
-  if not FCheckFunction(Info) then
-    Exit;
+  try
+    FCheckFunction := CheckFunction;
+    FOwner := Sender;
+    FWidth := W;
+    FHeight := H;
+    if not GOM.IsObj(FOwner) then
+      Exit;
+    if not FCheckFunction(Info) then
+      Exit;
 
-  ImageFrameTimer.Enabled := False;
-  AnimatedBuffer := nil;
-  CanClosed := True;
+    ImageFrameTimer.Enabled := False;
+    AnimatedBuffer := nil;
+    CanClosed := True;
 
-  TimerHide.Enabled := False;
-  TimerShow.Enabled := False;
-  GoIn := False;
-  TimerHintCheck.Enabled := True;
-  FDragDrop := True;
-  CurrentInfo := Info;
+    TimerHide.Enabled := False;
+    TimerShow.Enabled := False;
+    GoIn := False;
+    TimerHintCheck.Enabled := True;
+    FDragDrop := True;
+    CurrentInfo := Info.Copy;
 
-  IsAnimated := (G is TGIFImage) and ((G as TGIFImage).Images.Count > 1);
-  InverseHW := not (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_180);
-  if not (InverseHW and IsAnimated) then
-  begin
-    DisplayWidth := G.Width;
-    DisplayHeight := G.Height;
-  end else
-  begin
-    DisplayHeight := G.Width;
-    DisplayWidth := G.Height;
+    IsAnimated := (G is TGIFImage) and ((G as TGIFImage).Images.Count > 1);
+    InverseHW := not (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_180);
+    if not (InverseHW and IsAnimated) then
+    begin
+      DisplayWidth := G.Width;
+      DisplayHeight := G.Height;
+    end else
+    begin
+      DisplayHeight := G.Width;
+      DisplayWidth := G.Height;
+    end;
+    if not IsAnimated then
+      ProportionalSize(ThHintSize, ThHintSize, DisplayWidth, DisplayHeight);
+
+    ImageBuffer := TBitmap.Create;
+    AnimatedBuffer := TBitmap.Create;
+    AnimatedBuffer.PixelFormat := Pf24bit;
+    AnimatedBuffer.Width := G.Width;
+    AnimatedBuffer.Height := G.Height;
+    AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
+    AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
+    AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
+    AnimatedImage := G;
+
+    if IsAnimated then
+    begin
+      SlideNO := -1;
+      ImageFrameTimer.Interval := 1;
+      ImageFrameTimer.Enabled := True;
+      ImageBuffer.Width := DisplayWidth;
+      ImageBuffer.Height := DisplayHeight;
+      //Draw first slide
+      ImageFrameTimerTimer(Self);
+    end else
+    begin
+      ImageBuffer.Assign(G);
+    end;
+
+    WindowWidth := Max(100, DisplayWidth + 10 + 2);
+    WindowHeight := DisplayHeight + 10;
+
+    TextHeight := Canvas.TextHeight('Iy');
+    R.Left := 5;
+    R.Right := WindowWidth - 5;
+    R.Top := WindowHeight + 10;
+
+    R.Bottom := 5 + 200;
+    DrawText(Canvas.Handle, PChar(ImageName), Length(ImageName), R, DT_WORDBREAK or DT_CALCRECT);
+    Inc(WindowHeight, 2 * (5 + TextHeight) + (5 + R.Bottom - R.Top) + 5);
+
+    //fix window position
+    Rect := Classes.Rect(Pos.X, Pos.Y, Pos.X + 100, Pos.Y + 100);
+    if Rect.Top + WindowHeight + 10 > Screen.Height then
+      WindowTop := Rect.Top - 20 - WindowHeight
+    else
+      WindowTop := Rect.Top + 10;
+
+    if Rect.Left + WindowWidth + 10 > Screen.Width then
+      WindowLeft := Rect.Left - 20 - WindowWidth
+    else
+      WindowLeft := Rect.Left + 10;
+
+    if WindowTop < 0 then
+      WindowTop := 100;
+    if WindowLeft < 0 then
+      WindowLeft := 100;
+
+    Top := WindowTop;
+    Left := WindowLeft;
+
+    FAlphaBlend := 0;
+    TimerShow.Enabled := True;
+
+    if Fowner <> nil then
+      if Fowner.FormStyle = Fsstayontop then
+        SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE);
+    FClosed := False;
+
+    ClientWidth := WindowWidth;
+    ClientHeight := WindowHeight;
+
+    CreateFormImage;
+    ShowWindow(Handle, SW_SHOWNOACTIVATE);
+  finally
+    F(Info);
   end;
-  if not IsAnimated then
-    ProportionalSize(ThHintSize, ThHintSize, DisplayWidth, DisplayHeight);
-
-  ImageBuffer := TBitmap.Create;
-  AnimatedBuffer := TBitmap.Create;
-  AnimatedBuffer.PixelFormat := Pf24bit;
-  AnimatedBuffer.Width := G.Width;
-  AnimatedBuffer.Height := G.Height;
-  AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
-  AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
-  AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
-  AnimatedImage := G;
-
-  if IsAnimated then
-  begin
-    SlideNO := -1;
-    ImageFrameTimer.Interval := 1;
-    ImageFrameTimer.Enabled := True;
-    ImageBuffer.Width := DisplayWidth;
-    ImageBuffer.Height := DisplayHeight;
-    //Draw first slide
-    ImageFrameTimerTimer(Self);
-  end else
-  begin
-    ImageBuffer.Assign(G);
-  end;
-
-  WindowWidth := Max(100, DisplayWidth + 10 + 2);
-  WindowHeight := DisplayHeight + 10;
-
-  TextHeight := Canvas.TextHeight('Iy');
-  R.Left := 5;
-  R.Right := WindowWidth - 5;
-  R.Top := WindowHeight + 10;
-
-  R.Bottom := 5 + 200;
-  DrawText(Canvas.Handle, PChar(ImageName), Length(ImageName), R, DT_WORDBREAK or DT_CALCRECT);
-  Inc(WindowHeight, 2 * (5 + TextHeight) + (5 + R.Bottom - R.Top) + 5);
-
-  //fix window position
-  Rect := Classes.Rect(Pos.X, Pos.Y, Pos.X + 100, Pos.Y + 100);
-  if Rect.Top + WindowHeight + 10 > Screen.Height then
-    WindowTop := Rect.Top - 20 - WindowHeight
-  else
-    WindowTop := Rect.Top + 10;
-
-  if Rect.Left + WindowWidth + 10 > Screen.Width then
-    WindowLeft := Rect.Left - 20 - WindowWidth
-  else
-    WindowLeft := Rect.Left + 10;
-
-  if WindowTop < 0 then
-    WindowTop := 100;
-  if WindowLeft < 0 then
-    WindowLeft := 100;
-
-  Top := WindowTop;
-  Left := WindowLeft;
-
-  FAlphaBlend := 0;
-  TimerShow.Enabled := True;
-
-  if Fowner <> nil then
-    if Fowner.FormStyle = Fsstayontop then
-      SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE);
-  FClosed := False;
-
-  ClientWidth := WindowWidth;
-  ClientHeight := WindowHeight;
-
-  CreateFormImage;
-  ShowWindow(Handle, SW_SHOWNOACTIVATE);
 end;
 
 procedure TImHint.FormClick(Sender: TObject);
@@ -298,6 +302,7 @@ begin
   FInternalClose := False;
   CanClosed := True;
   AnimatedBuffer := nil;
+  CurrentInfo := nil;
   DropFileTargetMain.Register(Self);
   FClosed := True;
 
@@ -424,14 +429,19 @@ begin
   TimerHintCheck.Enabled := False;
   FDragDrop := True;
   MenuInfo := TDBPopupMenuInfo.Create;
-  MenuInfo.Add(CurrentInfo);
-  MenuInfo.AttrExists := False;
-  MenuInfo.ListItem := nil;
-  MenuInfo.IsListItem := False;
-  TDBPopupMenu.Instance.Execute(Self, ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y, MenuInfo);
-  if not FClosed then
-    TimerHide.Enabled := True;
-  FDragDrop := False;
+  try
+    MenuInfo.Add(CurrentInfo.Copy);
+    MenuInfo[0].Selected := True;
+    MenuInfo.AttrExists := False;
+    MenuInfo.ListItem := nil;
+    MenuInfo.IsListItem := False;
+    TDBPopupMenu.Instance.Execute(Self, ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y, MenuInfo);
+    if not FClosed then
+      TimerHide.Enabled := True;
+    FDragDrop := False;
+  finally
+    F(MenuInfo);
+  end;
 end;
 
 procedure TImHint.TimerHintCheckTimer(Sender: TObject);
@@ -465,6 +475,8 @@ begin
   F(AnimatedBuffer);
   F(ImageBuffer);
   F(AnimatedImage);
+  F(CurrentInfo);
+  F(FFormBuffer);
   DropFileTargetMain.Unregister;
 end;
 

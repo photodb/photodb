@@ -91,113 +91,120 @@ begin
   FPages := 0;
   Priority := TpHigher;
   FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
-
-  FTransparent := False;
-  if not FileExistsEx(FFileName) then
-  begin
-    SetNOImageAsynch;
-    Exit;
-  end;
-
-  GetPassword;
-  if Crypted and (PassWord = '') then
-  begin
-    SetNOImageAsynch;
-    Exit;
-  end;
-  GraphicClass := GetGraphicClass(GetExt(FFileName), False);
-  if GraphicClass = nil then
-  begin
-    SetNOImageAsynch;
-    Exit;
-  end;
-
- Graphic := GraphicClass.Create;
   try
-
- try
-  if PassWord<>'' then
-  begin
-   F(Graphic);
-   Graphic:=DeCryptGraphicFileEx(FFileName,PassWord,fPages,false,fPage);
-  end else
-  begin
-   if Crypted and (PassWord='') then
-   begin
-    SetNOImageAsynch;
-    exit;
-   end else
-   begin
-    if Graphic is TiffImageUnit.TTiffGraphic then
+    FTransparent := False;
+    if not FileExistsEx(FFileName) then
     begin
-     (Graphic as TiffImageUnit.TTiffGraphic).Page:=fPage;
-     (Graphic as TiffImageUnit.TTiffGraphic).LoadFromFile(FFileName);
-    end else
-    Graphic.LoadFromFile(FFileName);
-   end;
-  end;
- except
-  SetNOImageAsynch;
-  exit;
- end;
- if FUpdateInfo then
- UpdateRecord;
-
-
-
- FRealWidth:=Graphic.Width;
- FRealHeight:=Graphic.Height;
- if not FFullImage then
- JPEGScale(Graphic,Screen.Width,Screen.Height);
- FRealZoomScale:=FRealWidth/Graphic.Width;
- if Graphic is TGIFImage then
- begin
-  SetAnimatedImageAsynch;
- end else
- begin
-  Bitmap := TBitmap.Create;
-  try
-   if PassWord='' then
-   if Graphic is TiffImageUnit.TTiffGraphic then
-   begin
-    fPages:=(Graphic as TiffImageUnit.TTiffGraphic).Pages;
-   end;
-   if Graphic is TPNGImage then
-   begin
-    FTransparent:=true;
-    PNG:=(Graphic as TPNGImage);
-    if PNG.TransparencyMode <> ptmNone then
-    begin
-     LoadPNGImage32bit(PNG, Bitmap, TransparentColor);
-    end else AssignGraphic(Bitmap, Graphic);
-   end else
-   begin
-    if (Graphic is TBitmap) then
-    begin
-     if PSDTransparent then
-     begin
-      if (Graphic as TBitmap).PixelFormat=pf32bit then
-      begin
-       FTransparent := True;
-       LoadBMPImage32bit(Graphic as TBitmap,Bitmap,TransparentColor);
-      end else AssignGraphic(Bitmap, Graphic);
-     end else AssignGraphic(Bitmap, Graphic);
-    end else AssignGraphic(Bitmap, Graphic);
-   end;
-   Bitmap.PixelFormat:=pf24bit;
-  except
-   Bitmap.Free;
-   SetNOImageAsynch;
-   exit;
-  end;
-
-      ApplyRotate(Bitmap, FRotate);
-      SetStaticImageAsynch;
+      SetNOImageAsynch;
+      Exit;
     end;
-  finally
-    F(Graphic);
-  end;
 
+    GetPassword;
+    if Crypted and (PassWord = '') then
+    begin
+      SetNOImageAsynch;
+      Exit;
+    end;
+    GraphicClass := GetGraphicClass(GetExt(FFileName), False);
+    if GraphicClass = nil then
+    begin
+      SetNOImageAsynch;
+      Exit;
+    end;
+
+    Graphic := GraphicClass.Create;
+    try
+
+      try
+        if PassWord <> '' then
+        begin
+          F(Graphic);
+          Graphic := DeCryptGraphicFileEx(FFileName, PassWord, FPages, False, FPage);
+        end else
+        begin
+          if Crypted and (PassWord = '') then
+          begin
+            SetNOImageAsynch;
+            Exit;
+          end else
+          begin
+            if Graphic is TiffImageUnit.TTiffGraphic then
+            begin
+              (Graphic as TiffImageUnit.TTiffGraphic).Page := FPage;
+              (Graphic as TiffImageUnit.TTiffGraphic).LoadFromFile(FFileName);
+            end
+            else
+              Graphic.LoadFromFile(FFileName);
+          end;
+        end;
+      except
+        SetNOImageAsynch;
+        Exit;
+      end;
+      if FUpdateInfo then
+        UpdateRecord;
+
+      FRealWidth := Graphic.Width;
+      FRealHeight := Graphic.Height;
+      if not FFullImage then
+        JPEGScale(Graphic, Screen.Width, Screen.Height);
+      FRealZoomScale := FRealWidth / Graphic.Width;
+      if Graphic is TGIFImage then
+      begin
+        SetAnimatedImageAsynch;
+      end else
+      begin
+        Bitmap := TBitmap.Create;
+        try
+          if PassWord = '' then
+            if Graphic is TiffImageUnit.TTiffGraphic then
+            begin
+              FPages := (Graphic as TiffImageUnit.TTiffGraphic).Pages;
+            end;
+          if Graphic is TPNGImage then
+          begin
+            FTransparent := True;
+            PNG := (Graphic as TPNGImage);
+            if PNG.TransparencyMode <> PtmNone then
+            begin
+              LoadPNGImage32bit(PNG, Bitmap, TransparentColor);
+            end
+            else
+              AssignGraphic(Bitmap, Graphic);
+          end else
+          begin
+            if (Graphic is TBitmap) then
+            begin
+              if PSDTransparent then
+              begin
+                if (Graphic as TBitmap).PixelFormat = Pf32bit then
+                begin
+                  FTransparent := True;
+                  LoadBMPImage32bit(Graphic as TBitmap, Bitmap, TransparentColor);
+                end else
+                  AssignGraphic(Bitmap, Graphic);
+              end else
+                AssignGraphic(Bitmap, Graphic);
+            end else
+              AssignGraphic(Bitmap, Graphic);
+          end;
+          Bitmap.PixelFormat := pf24bit;
+        except
+          F(Bitmap);
+          SetNOImageAsynch;
+          Exit;
+        end;
+
+        ApplyRotate(Bitmap, FRotate);
+        SetStaticImageAsynch;
+      end;
+    finally
+      F(Graphic);
+    end;
+
+  finally
+    F(FInfo);
+  end;
 end;
 
 procedure TViewerThread.GetPassword;
@@ -258,24 +265,28 @@ end;
 
 procedure TViewerThread.SetAnimatedImageAsynch;
 begin
- if not FIsForward then
- begin
-  Synchronize(SetAnimatedImage);
-  exit;
- end else
- begin
-  Repeat
-   if Viewer=nil then break;
-   if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
-   if not Viewer.ForwardThreadExists then break;
-   if Viewer.ForwardThreadNeeds then
-   begin
+  if not FIsForward then
+  begin
     Synchronize(SetAnimatedImage);
-    exit;
-   end;
-   sleep(10);
-  until false;
- end;
+    Exit;
+  end
+  else
+  begin
+    repeat
+      if Viewer = nil then
+        Break;
+      if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+        Break;
+      if not Viewer.ForwardThreadExists then
+        Break;
+      if Viewer.ForwardThreadNeeds then
+      begin
+        Synchronize(SetAnimatedImage);
+        Exit;
+      end;
+      Sleep(10);
+    until False;
+  end;
 end;
 
 procedure TViewerThread.SetNOImage;
@@ -297,24 +308,27 @@ end;
 
 procedure TViewerThread.SetNOImageAsynch;
 begin
- if not FIsForward then
- begin
-  Synchronize(SetNOImage);
-  Exit;
- end else
- begin
-  Repeat
-   if Viewer=nil then break;
-   if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
-   if not Viewer.ForwardThreadExists then break;
-   if Viewer.ForwardThreadNeeds then
-   begin
+  if not FIsForward then
+  begin
     Synchronize(SetNOImage);
-    exit;
-   end;
-   sleep(10);
-  until False;
- end;
+    Exit;
+  end else
+  begin
+    repeat
+      if Viewer = nil then
+        Break;
+      if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+        Break;
+      if not Viewer.ForwardThreadExists then
+        Break;
+      if Viewer.ForwardThreadNeeds then
+      begin
+        Synchronize(SetNOImage);
+        Exit;
+      end;
+      Sleep(10);
+    until False;
+  end;
 end;
 
 procedure TViewerThread.SetStaticImage;
@@ -332,47 +346,51 @@ begin
       Viewer.SetStaticImage(Bitmap, FTransparent);
     end
     else
-      Bitmap.Free;
+      F(Bitmap);
 end;
 
 procedure TViewerThread.SetStaticImageAsynch;
 begin
   if not FIsForward then
   begin
-   Synchronize(SetStaticImage);
-   exit;
+    Synchronize(SetStaticImage);
+    Exit;
   end else
   begin
-    Repeat
-   if Viewer=nil then break;
-   if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then break;
-   if not Viewer.ForwardThreadExists then break;
-   if Viewer.ForwardThreadNeeds then
-   begin
-    Synchronize(SetStaticImage);
-    exit;
-   end;
-   Sleep(10);
-  until false;
-  Bitmap.Free;
- end;
+    repeat
+      if Viewer = nil then
+        Break;
+      if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+        Break;
+      if not Viewer.ForwardThreadExists then
+        Break;
+      if Viewer.ForwardThreadNeeds then
+      begin
+        Synchronize(SetStaticImage);
+        Exit;
+      end;
+      Sleep(10);
+    until False;
+    F(Bitmap);
+  end;
 end;
 
 function TViewerThread.TestThread: Boolean;
 begin
-  FBooleanResult:=false;
+  FBooleanResult := False;
   Synchronize(TestThreadSynch);
-  Result:=FBooleanResult;
+  Result := FBooleanResult;
 end;
 
 procedure TViewerThread.TestThreadSynch;
 begin
-  if Viewer=nil then
+  if Viewer = nil then
   begin
-    FBooleanResult:=false;
+    FBooleanResult := False;
     Exit;
   end;
-  FBooleanResult := (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) and (Viewer<>nil);
+  FBooleanResult := (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID,
+      FSID) and FIsForward) and (Viewer <> nil);
 end;
 
 procedure TViewerThread.UpdateRecord;

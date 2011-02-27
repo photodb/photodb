@@ -1428,6 +1428,10 @@ begin
   GOM.RemoveObj(Self);
   DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
 
+  ClearItems;
+  SaveQueryList;
+  SearchManager.RemoveSearch(Self);
+
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
   if Creating then
@@ -1737,7 +1741,6 @@ var
   I: Integer;
   Item: TEasyItem;
   DataRecord: TDBPopupMenuInfoRecord;
-  MenuInfo: TDBPopupMenuInfoRecord;
 begin
   GetCursorPos(P);
   P1 := ElvMain.ScreenToClient(P);
@@ -1756,9 +1759,7 @@ begin
 
   HintTimer.Enabled := False;
   DataRecord := GetSearchRecordFromItemData(LastMouseItem);
-  MenuInfo := DataRecord.Copy;
-
-  THintManager.Instance.CreateHintWindow(Self, MenuInfo, P, HintRealA);
+  THintManager.Instance.CreateHintWindow(Self, DataRecord.Copy, P, HintRealA);
 
   Item := ItemAtPos(P1.X, P1.Y);
   if Item = nil then
@@ -2252,10 +2253,6 @@ end;
 
 procedure TSearchForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  ClearItems;
-  SaveQueryList;
-  SearchManager.RemoveSearch(Self);
-  Hide;
   Release;
 end;
 
@@ -2578,7 +2575,7 @@ var
     end;
 
   begin
-    HelpHint := L('     To add photos to the collection, select "Explore" from the context menu, then find your pictures and select "Add items".' + '$nl$$nl$    Click "Help" for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$');
+    HelpHint := '     ' + L('To add photos to the collection, select "Explore" from the context menu, then find your pictures and select "Add items".' + '$nl$$nl$    Click "Help" for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$');
 
     if Count < 50 then
       DoHelpHintCallBackOnCanClose(L('Help'), HelpHint, Point(0, 0), ElvMain, HelpNextClick,
@@ -2599,7 +2596,7 @@ begin
   if not DBKernel.ReadBool('HelpSystem', 'CheckRecCount', True) then
   begin
     HelpActivationNO := 0;
-    MessageText := L('     Do you want to get help, how to activate the program? If YES, then click on "More..." for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed. $nl$$nl$');
+    MessageText := '     ' + L('Do you want to get help, how to activate the program? If YES, then click on "More..." for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed. $nl$$nl$', 'Help');
     if DBkernel.GetDemoMode then
       if DBKernel.ReadBool('HelpSystem', 'ActivationHelp', True) then
         DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
@@ -2804,7 +2801,7 @@ begin
   HelpActivationNO := HelpActivationNO + 1;
   if HelpActivationNO = 1 then
   begin
-    MessageText := L('     To activate the program call the context menu, select "Help" -> "Activation"$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$');
+    MessageText := '     ' + L('To activate the program call the context menu, select "Help" -> "Activation"$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$', 'Help');
     DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
       HelpActivationNextClick, L('Next...'), HelpActivationCloseClick);
   end;

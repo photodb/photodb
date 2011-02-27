@@ -82,100 +82,104 @@ var
 begin
   FreeOnTerminate := True;
 
-  if not FileExistsSafe(FInfo.FileName) then
-    Exit;
-
-  GraphicClass := GetGraphicClass(ExtractFileExt(FInfo.FileName), False);
-  if GraphicClass = nil then
-    Exit;
-
-  Graphic := GraphicClass.Create;
   try
-    Crypted := False;
-    FilePass := '';
-    if ValidCryptGraphicFile(FInfo.FileName) then
-    begin
-      Crypted := True;
-      FilePass := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
-      if FilePass = '' then
-        Exit;
-    end;
-
-    if not CheckThreadState then
+    if not FileExistsSafe(FInfo.FileName) then
       Exit;
 
-    FInfo.FileSize := GetFileSizeByName(FInfo.FileName);
-
-    if not CheckThreadState then
+    GraphicClass := GetGraphicClass(ExtractFileExt(FInfo.FileName), False);
+    if GraphicClass = nil then
       Exit;
 
-    if Crypted then
-    begin
-      F(Graphic);
-      Graphic := DeCryptGraphicFile(FInfo.FileName, FilePass);
-      if Graphic = nil then
-        Exit;
-    end else
-    begin
-      if Graphic is TRAWImage then
+    Graphic := GraphicClass.Create;
+    try
+      Crypted := False;
+      FilePass := '';
+      if ValidCryptGraphicFile(FInfo.FileName) then
       begin
-        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
-          Graphic.LoadFromFile(FInfo.FileName);
-      end else
-        Graphic.LoadFromFile(FInfo.FileName);
-    end;
-
-    if not CheckThreadState then
-      Exit;
-
-    FOriginalWidth := Graphic.Width;
-    FOriginalHeight := Graphic.Height;
-
-    if (Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 1) then
-    begin
-      Synchronize(DoShowHint);
-      Exit;
-    end else
-    begin
-      JPEGScale(Graphic, ThHintSize, ThHintSize);
-      Bitmap := TBitmap.Create;
-      try
-        AssignGraphic(Bitmap, Graphic);
-
-        if not CheckThreadState then
-          exit;
-
-        F(Graphic);
-        FW := Bitmap.Width;
-        FH := Bitmap.Height;
-        ProportionalSize(ThHintSize, ThHintSize, FW, FH);
-
-        FB := TBitmap.Create;
-        try
-          FB.PixelFormat := Bitmap.PixelFormat;
-
-          DoResize(FW, FH, Bitmap, FB);
-
-          if not CheckThreadState then
-            exit;
-
-          ApplyRotate(FB, FInfo.Rotation);
-
-          if not CheckThreadState then
-            exit;
-
-          Graphic := FB;
-          FB := nil;
-          Synchronize(DoShowHint);
-        finally
-          F(FB);
-        end;
-      finally
-        F(Bitmap);
+        Crypted := True;
+        FilePass := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+        if FilePass = '' then
+          Exit;
       end;
+
+      if not CheckThreadState then
+        Exit;
+
+      FInfo.FileSize := GetFileSizeByName(FInfo.FileName);
+
+      if not CheckThreadState then
+        Exit;
+
+      if Crypted then
+      begin
+        F(Graphic);
+        Graphic := DeCryptGraphicFile(FInfo.FileName, FilePass);
+        if Graphic = nil then
+          Exit;
+      end else
+      begin
+        if Graphic is TRAWImage then
+        begin
+          if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
+            Graphic.LoadFromFile(FInfo.FileName);
+        end else
+          Graphic.LoadFromFile(FInfo.FileName);
+      end;
+
+      if not CheckThreadState then
+        Exit;
+
+      FOriginalWidth := Graphic.Width;
+      FOriginalHeight := Graphic.Height;
+
+      if (Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 1) then
+      begin
+        Synchronize(DoShowHint);
+        Exit;
+      end else
+      begin
+        JPEGScale(Graphic, ThHintSize, ThHintSize);
+        Bitmap := TBitmap.Create;
+        try
+          AssignGraphic(Bitmap, Graphic);
+
+          if not CheckThreadState then
+            exit;
+
+          F(Graphic);
+          FW := Bitmap.Width;
+          FH := Bitmap.Height;
+          ProportionalSize(ThHintSize, ThHintSize, FW, FH);
+
+          FB := TBitmap.Create;
+          try
+            FB.PixelFormat := Bitmap.PixelFormat;
+
+            DoResize(FW, FH, Bitmap, FB);
+
+            if not CheckThreadState then
+              exit;
+
+            ApplyRotate(FB, FInfo.Rotation);
+
+            if not CheckThreadState then
+              exit;
+
+            Graphic := FB;
+            FB := nil;
+            Synchronize(DoShowHint);
+          finally
+            F(FB);
+          end;
+        finally
+          F(Bitmap);
+        end;
+      end;
+    finally
+      F(Graphic);
     end;
   finally
-    F(Graphic);
+    F(FInfo);
   end;
 end;
 
@@ -196,7 +200,7 @@ var
   ImHint : TImHint;
 begin
   Application.CreateForm(TImHint, ImHint);
-  ImHint.Execute(FOwner, Graphic, FOriginalWidth, FOriginalHeight, FInfo, FPoint, FHintCheckProc);
+  ImHint.Execute(FOwner, Graphic, FOriginalWidth, FOriginalHeight, FInfo.Copy, FPoint, FHintCheckProc);
   Graphic := nil;
 end;
 

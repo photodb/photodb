@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
   uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, uDBForm, uShellIntegration,
-  uGraphicUtils, uConstants;
+  uGraphicUtils, uConstants, uMemory;
 
 type
   TEditGroupsForm = class(TDBForm)
@@ -94,8 +94,9 @@ procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : B
 
 implementation
 
-uses UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
-     UnitQuickGroupInfo, Searching, SelectGroupForm;
+uses
+  UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
+  UnitQuickGroupInfo, Searching, SelectGroupForm;
 
 {$R *.dfm}
 
@@ -263,7 +264,7 @@ begin
  begin
   if not LstSelectedGroups.Selected[ItemNo] then
   begin
-   LstSelectedGroups.Selected[ItemNo]:=True;
+   LstSelectedGroups.Selected[ItemNo] := True;
       for I := 0 to LstSelectedGroups.Items.Count - 1 do
         if I <> ItemNo then
           LstSelectedGroups.Selected[I] := False;
@@ -306,48 +307,57 @@ var
 begin
   FreeGroups(FRegGroups);
   FreeGroups(FShowenRegGroups);
-  FRegGroups:=GetRegisterGroupList(True);
+  FRegGroups := GetRegisterGroupList(True);
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
-  SmallB.PixelFormat := Pf24bit;
-  SmallB.Width := 32;
-  SmallB.Height := 32 + 2;
-  SmallB.Canvas.Pen.Color := clBtnFace;
-  SmallB.Canvas.Brush.Color := clBtnFace;
-  SmallB.Canvas.Rectangle(0, 0, SmallB.Width, SmallB.Height);
-  DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], SmallB.Width div 2 - 8,
-    SmallB.Height div 2 - 8, 0, 0, DI_NORMAL);
-  GroupsImageList.Add(SmallB, nil);
-  SmallB.Free;
+  try
+    SmallB.PixelFormat := pf24bit;
+    SmallB.Width := 32;
+    SmallB.Height := 32 + 2;
+    SmallB.Canvas.Pen.Color := ClBtnFace;
+    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Rectangle(0, 0, SmallB.Width, SmallB.Height);
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], SmallB.Width div 2 - 8,
+      SmallB.Height div 2 - 8, 0, 0, DI_NORMAL);
+    GroupsImageList.Add(SmallB, nil);
+  finally
+    F(SmallB);
+  end;
   LstAvaliableGroups.Clear;
   for I := 0 to Length(FRegGroups) - 1 do
   begin
     SmallB := TBitmap.Create;
-    SmallB.PixelFormat := pf24bit;
-    SmallB.Canvas.Brush.Color := ClBtnFace;
-    if FRegGroups[I].GroupImage <> nil then
-      if not FRegGroups[I].GroupImage.Empty then
+    try
+      SmallB.PixelFormat := pf24bit;
+      SmallB.Canvas.Brush.Color := clBtnFace;
+      if FRegGroups[I].GroupImage <> nil then
+        if not FRegGroups[I].GroupImage.Empty then
+        begin
+          B := TBitmap.Create;
+          try
+            B.PixelFormat := pf24bit;
+            B.Canvas.Brush.Color := ClBtnFace;
+            B.Canvas.Pen.Color := ClBtnFace;
+            Size := Max(FRegGroups[I].GroupImage.Width, FRegGroups[I].GroupImage.Height);
+            B.Width := Size;
+            B.Height := Size;
+            B.Canvas.Rectangle(0, 0, Size, Size);
+            B.Canvas.Draw(B.Width div 2 - FRegGroups[I].GroupImage.Width div 2,
+              B.Height div 2 - FRegGroups[I].GroupImage.Height div 2, FRegGroups[I].GroupImage);
+            DoResize(32, 34, B, SmallB);
+          finally
+            F(B);
+          end;
+        end;
+      GroupsImageList.Add(SmallB, nil);
+      if FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
       begin
-        B := TBitmap.Create;
-        B.PixelFormat := pf24bit;
-        B.Canvas.Brush.Color := ClBtnFace;
-        B.Canvas.Pen.Color := ClBtnFace;
-        Size := Max(FRegGroups[I].GroupImage.Width, FRegGroups[I].GroupImage.Height);
-        B.Width := Size;
-        B.Height := Size;
-        B.Canvas.Rectangle(0, 0, Size, Size);
-        B.Canvas.Draw(B.Width div 2 - FRegGroups[I].GroupImage.Width div 2,
-          B.Height div 2 - FRegGroups[I].GroupImage.Height div 2, FRegGroups[I].GroupImage);
-        DoResize(32, 34, B, SmallB);
-        B.Free;
+        UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
+        LstAvaliableGroups.Items.Add(FRegGroups[I].GroupName);
       end;
-    GroupsImageList.Add(SmallB, nil);
-    if FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
-    begin
-      UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
-      LstAvaliableGroups.Items.Add(FRegGroups[I].GroupName);
+    finally
+      F(SmallB);
     end;
-    SmallB.Free;
   end;
 end;
 
@@ -382,7 +392,7 @@ end;
 procedure TEditGroupsForm.ComboBoxEx1_KeyPress(Sender: TObject;
   var Key: Char);
 begin
-  Key:= #0;
+  Key := #0;
 end;
 
 procedure TEditGroupsForm.LstSelectedGroupsDblClick(Sender: TObject);
@@ -643,6 +653,10 @@ end;
 
 procedure TEditGroupsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin;
+  FreeGroups(FRegGroups);
+  FreeGroups(FShowenRegGroups);
+  FreeGroups(FOldGroups);
+  FreeGroups(FSetGroups);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataGroups);
 end;
 

@@ -285,29 +285,29 @@ end;
 
 Procedure AddGroupToGroups(var Groups : TGroups; Group : TGroup);
 var
-  i : Integer;
-    B: Boolean;
+  I : Integer;
+  B: Boolean;
+begin
+  B := False;
+  for I := 0 to Length(Groups) - 1 do
   begin
-    B := False;
-    for I := 0 to Length(Groups) - 1 do
+    if Groups[I].GroupCode = Group.GroupCode then
     begin
-      if Groups[I].GroupCode = Group.GroupCode then
-      begin
-        B := True;
-        Break;
-      end;
-    end;
-    if not B then
-    begin
-      SetLength(Groups, Length(Groups) + 1);
-      Groups[Length(Groups) - 1] := Group;
-      if Group.GroupImage <> nil then
-      begin
-        Groups[Length(Groups) - 1].GroupImage := TJpegImage.Create;
-        Groups[Length(Groups) - 1].GroupImage.Assign(Group.GroupImage);
-      end;
+      B := True;
+      Break;
     end;
   end;
+  if not B then
+  begin
+    SetLength(Groups, Length(Groups) + 1);
+    Groups[Length(Groups) - 1] := Group;
+    if Group.GroupImage <> nil then
+    begin
+      Groups[Length(Groups) - 1].GroupImage := TJpegImage.Create;
+      Groups[Length(Groups) - 1].GroupImage.Assign(Group.GroupImage);
+    end;
+  end;
+end;
 
 Procedure AddGroupsToGroups(var Groups : TGroups; GroupsToAdd : TGroups);
 var

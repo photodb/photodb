@@ -272,7 +272,6 @@ object FormCont: TFormCont
       end>
     EdgeInner = esNone
     EdgeOuter = esNone
-    ExplicitWidth = 473
     object ToolBar1: TToolBar
       Left = 11
       Top = 0

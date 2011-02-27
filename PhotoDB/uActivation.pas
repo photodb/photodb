@@ -146,7 +146,7 @@ procedure TActivateForm.HelpTimerTimer(Sender: TObject);
 var
   HelpMessage: string;
 begin
-  HelpMessage := '     Click the "Get code" and then start mail program with a new letter in the title of which is given all the necessary information to activate. $nl$You need send this letter or (if the mailer does not run)' + 'Send by email to %email%, in which you want to specify the code of the program and its version.' + '$nl$     Press "Next ..." for further assistance.' + '$nl$    Or click on the cross at the top to help is no longer displayed. $nl$$nl$$nl$$nl$';
+  HelpMessage := '     ' + L('Click the "Get code" and then start mail program with a new letter in the title of which is given all the necessary information to activate. $nl$You need send this letter or (if the mailer does not run) ' + 'Send by email to %email%, in which you want to specify the code of the program and its version.' + '$nl$     Press "Next ..." for further assistance.' + '$nl$    Or click on the cross at the top to help is no longer displayed. $nl$$nl$$nl$$nl$', 'Help');
   HelpMessage := StringReplace(HelpMessage, '%email%', ProgramMail, []);
   HelpTimer.Enabled := False;
   if DBkernel.GetDemoMode then
@@ -179,7 +179,7 @@ begin
   if not Active then
     Exit;
   HelpTimer2.Enabled := False;
-  HelpMessage := L('During the day we will send you an activation code that you shoulf enter into this box and click on "Install code...". After that the program will be activated.$nl$$nl$');
+  HelpMessage := '     ' + L('During the day we will send you an activation code that you shoulf enter into this box and click on "Install code...". After that the program will be activated.$nl$$nl$', 'Help');
   DoHelpHint(L('Help', 'Help'), HelpMessage, Point(0, 0), EdActicationCode);
   HelpActivationNO := 0;
   DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);

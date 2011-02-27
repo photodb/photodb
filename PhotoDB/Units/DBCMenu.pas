@@ -1482,7 +1482,7 @@ procedure TDBPopupMenu.ShowItemPopUpMenu_(Sender: TObject);
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Viewer.Execute(Sender, Finfo);
+  Viewer.Execute(Sender, FInfo);
   Viewer.Show;
 end;
 
