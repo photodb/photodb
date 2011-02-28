@@ -170,9 +170,9 @@ type
     SearchEdit: TComboBoxExDB;
     CoolBar1: TCoolBar;
     TbMain: TToolBar;
-    TbZoomIn: TToolButton;
-    ToolBarImageList: TImageList;
     TbZoomOut: TToolButton;
+    ToolBarImageList: TImageList;
+    TbZoomIn: TToolButton;
     TbSearch: TToolButton;
     TbSave: TToolButton;
     TbLoad: TToolButton;
@@ -369,8 +369,8 @@ type
     procedure SearchEditDropDown(Sender: TObject);
     procedure SearchEditSelect(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure TbZoomInClick(Sender: TObject);
     procedure TbZoomOutClick(Sender: TObject);
+    procedure TbZoomInClick(Sender: TObject);
     procedure TbExplorerClick(Sender: TObject);
     procedure SearchEditGetAdditionalImage(Sender: TObject; Index: Integer;
       HDC: Cardinal; var Top, Left: Integer);
@@ -467,6 +467,7 @@ type
     procedure StartLoadingList;
     procedure StopLoadingList;
     procedure UpdateQueryEstimateCount(Count : Integer);
+    procedure ReloadBigImages;
   published
     { Public declarations }
     property SortMethod : Integer read GetSortMethod;
@@ -720,7 +721,7 @@ begin
     end;
     Menus[0].Enabled := False;
     ElvMain.HotTrack.Enabled := DBKernel.Readbool('Options', 'UseHotSelect', True);
-    PnLeft.Width := DBKernel.ReadInteger('Search', 'LeftPanelWidth', 150);
+    PnLeft.Width := DBKernel.ReadInteger('Search', 'LeftPanelWidth', 180);
     FBitmapImageList := TBitmapImageList.Create;
     TW.I.Start('S -> RegisterMainForm');
     FormManager.RegisterMainForm(Self);
@@ -2547,8 +2548,8 @@ begin
 
     TbSearch.Caption := L('Search');
     TbSort.Caption := L('Sort');
-    TbZoomIn.Caption := L('Zoom In');
     TbZoomOut.Caption := L('Zoom Out');
+    TbZoomIn.Caption := L('Zoom In');
     TbGroups.Caption := L('Groups');
 
     TbSave.Caption := L('Save');
@@ -3646,16 +3647,20 @@ begin
 end;
 
 procedure TSearchForm.BigImagesTimerTimer(Sender: TObject);
+begin
+  if FListUpdating then
+    Exit;
+  BigImagesTimer.Enabled := False;
+  //тут начинается загрузка больших картинок
+  ReloadBigImages;
+end;
+
+procedure TSearchForm.ReloadBigImages;
 var
   I : Integer;
   Data : TDBPopupMenuInfo;
 begin
-  if Self.fListUpdating then
-    Exit;
-  BigImagesTimer.Enabled := False;
   NewFormSubState;
-  //тут начинается загрузка больших картинок
-
   Data := TDBPopupMenuInfo.Create;
   for I := 0 to ElvMain.Items.Count - 1 do
     Data.Add(GetSearchRecordFromItemData(ElvMain.Items[I]).Copy);
@@ -3940,14 +3945,14 @@ begin
   AddDisabledIcon('SEARCH_BREAK_GRAY');
 
   TbSearch.ImageIndex:=0;
-  TbSort.ImageIndex:=1;
-  TbZoomIn.ImageIndex:=3;
-  TbZoomOut.ImageIndex:=2;
-  TbGroups.ImageIndex:=4;
-  TbSave.ImageIndex:=5;
-  TbLoad.ImageIndex:=6;
-  TbExplorer.ImageIndex:=7;
-  tbStopOperation.ImageIndex:=8;
+  TbSort.ImageIndex := 1;
+  TbZoomOut.ImageIndex := 3;
+  TbZoomIn.ImageIndex := 2;
+  TbGroups.ImageIndex := 4;
+  TbSave.ImageIndex := 5;
+  TbLoad.ImageIndex := 6;
+  TbExplorer.ImageIndex := 7;
+  TbStopOperation.ImageIndex := 8;
 
   TbMain.Images := ToolBarImageList;
   TbMain.DisabledImages:= DisabledToolBarImageList;
@@ -3957,8 +3962,9 @@ procedure TSearchForm.ZoomIn;
 begin
   ElvMain.BeginUpdate;
   try
-    if FPictureSize > 40 then
-      FPictureSize:=FPictureSize - 10;
+    if FPictureSize < ListViewMaxThumbnailSize then
+      FPictureSize := FPictureSize + 10;
+
     LoadSizes;
     BigImagesTimer.Enabled := False;
     BigImagesTimer.Enabled := True;
@@ -3977,8 +3983,8 @@ procedure TSearchForm.ZoomOut;
 begin
   ElvMain.BeginUpdate;
   try
-    if FPictureSize < 550 then
-      FPictureSize := FPictureSize + 10;
+    if FPictureSize > ListViewMinThumbnailSize then
+      FPictureSize:=FPictureSize - 10;
 
     LoadSizes;
     BigImagesTimer.Enabled := False;
@@ -3993,14 +3999,14 @@ begin
   end;
 end;
 
-procedure TSearchForm.TbZoomInClick(Sender: TObject);
-begin
-  ZoomIn;
-end;
-
 procedure TSearchForm.TbZoomOutClick(Sender: TObject);
 begin
   ZoomOut;
+end;
+
+procedure TSearchForm.TbZoomInClick(Sender: TObject);
+begin
+  ZoomIn;
 end;
 
 procedure TSearchForm.ReRecreateGroupsList();

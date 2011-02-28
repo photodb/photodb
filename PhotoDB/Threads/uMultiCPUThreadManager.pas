@@ -13,6 +13,7 @@ type
     FSyncEvent: Integer;
     FWorkingInProgress: Boolean;
     FThreadNumber: Integer;
+    FOwner: TMultiCPUThread;
     procedure DoMultiProcessorWork;
   protected
     procedure DoMultiProcessorTask; virtual; abstract;
@@ -23,6 +24,7 @@ type
     property Mode: Integer read FMode write FMode;
     property SyncEvent: Integer read FSyncEvent write FSyncEvent;
     property WorkingInProgress: Boolean read FWorkingInProgress write FWorkingInProgress;
+    property Owner: TMultiCPUThread read FOwner write FOwner;
   end;
 
 type
@@ -46,6 +48,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure CloseAndWaitForAllThreads;
+    function GetBusyThreadsCountForThread(Thread: TMultiCPUThread): Integer;
     property AvaliableThreadsCount : Integer read GetAvaliableThreadsCount;
     property BusyThreadsCount : Integer read GetBusyThreadsCount;
   end;
@@ -186,9 +189,27 @@ begin
   end;
 end;
 
+function TThreadPoolCustom.GetBusyThreadsCountForThread(
+  Thread: TMultiCPUThread): Integer;
+var
+  I : Integer;
+begin
+  FSync.Enter;
+  try
+    CheckBusyThreads;
+    Result := 0;
+    for I := 0 to FBusyThreadList.Count - 1 do
+      if TMultiCPUThread(FBusyThreadList[I]).Owner = Thread then
+        Inc(Result);
+  finally
+    FSync.Leave;
+  end;
+end;
+
 procedure TThreadPoolCustom.StartThread(Sender, Thread: TMultiCPUThread);
 begin
   Thread.WorkingInProgress := True;
+  Thread.FOwner := Sender;
   Sender.RegisterSubThread(Thread);
   TW.I.Start('Resume thread:' + IntToStr(Thread.ThreadID));
   SetEvent(TMultiCPUThread(Thread).SyncEvent);

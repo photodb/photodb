@@ -40,7 +40,6 @@ type
     Paste1: TMenuItem;
     Panel3: TPanel;
     SaveDialog1: TSaveDialog;
-    Panel4: TPanel;
     Hinttimer: TTimer;
     SlideShow1: TMenuItem;
     ImageList1: TImageList;
@@ -323,7 +322,7 @@ begin
 
   SetLVSelection(ElvMain);
 
-  FPictureSize := ThSizePanelPreview;
+  FPictureSize := Max(85, ThSizePanelPreview);
   LoadSizes;
 
   ElvMain.IncrementalSearch.Enabled := True;
@@ -998,63 +997,69 @@ end;
 
 procedure TFormCont.Paste1Click(Sender: TObject);
 var
-  s,s1 : string;
-  fids_ : tarinteger;
-  i,n:integer;
-  param : TArStrings;
-  b : TArBoolean;
+  S, S1: string;
+  Fids_: Tarinteger;
+  I, N: Integer;
+  Param: TArStrings;
+  B: TArBoolean;
 begin
   S := Clipboard.AsText;
   for I := Length(S) downto 1 do
     if not CharInSet(S[I], Cifri) and (S[I] <> '$') then
       Delete(S, I, 1);
-  if length(s)<2 then exit;
-  n:=1;
-  for i:=1 to length(s) do
-  if s[i]='$' then
-  begin
-   s1:=copy(s,n,i-n);
-   n:=i+1;
-   setlength(fids_,length(fids_)+1);
-  fids_[length(fids_)-1]:=strtointdef(s1,0);
-  end;
-  Setlength(param,1);
-  Setlength(b,1);
-  LoadFilesToPanel.Create(param,fids_,b,false,true,self);
+  if Length(S) < 2 then
+    Exit;
+  N := 1;
+  for I := 1 to Length(S) do
+    if S[I] = '$' then
+    begin
+      S1 := Copy(S, N, I - N);
+      N := I + 1;
+      Setlength(Fids_, Length(Fids_) + 1);
+      Fids_[Length(Fids_) - 1] := Strtointdef(S1, 0);
+    end;
+  Setlength(Param, 1);
+  Setlength(B, 1);
+  LoadFilesToPanel.Create(Param, Fids_, B, False, True, Self);
 end;
 
 procedure TFormCont.LoadFromFile1Click(Sender: TObject);
 var
-  fids_ : TArInteger;
-  param : TArStrings;
-  b : TArBoolean;
-  OpenDialog : DBOpenDialog;
+  Fids_: TArInteger;
+  Param: TArStrings;
+  B: TArBoolean;
+  OpenDialog: DBOpenDialog;
 begin
 
- OpenDialog:=DBOpenDialog.Create;
- OpenDialog.Filter:='All supported (*.ids,*.dbl)|*.dbl;*.ids|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl';
- OpenDialog.FilterIndex:=1;
+  OpenDialog := DBOpenDialog.Create;
+  try
+    OpenDialog.Filter :=
+      L('All supported (*.ids,*.dbl)|*.dbl;*.ids|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl');
+    OpenDialog.FilterIndex := 1;
 
- if FilePushed then OpenDialog.SetFileName(FilePushedName);
+    if FilePushed then
+      OpenDialog.SetFileName(FilePushedName);
 
- if FilePushed or OpenDialog.Execute then
- begin
-  if GetExt(OpenDialog.FileName)='IDS' then
-  begin
-   fids_:=LoadIDsFromfileA(OpenDialog.FileName);
-   SetLength(param,1);
-   Setlength(b,1);
-   LoadFilesToPanel.Create(param,fids_,b,false,true,self);
+    if FilePushed or OpenDialog.Execute then
+    begin
+      if GetExt(OpenDialog.FileName) = 'IDS' then
+      begin
+        Fids_ := LoadIDsFromfileA(OpenDialog.FileName);
+        SetLength(Param, 1);
+        Setlength(B, 1);
+        LoadFilesToPanel.Create(Param, Fids_, B, False, True, Self);
+      end;
+      if GetExt(OpenDialog.FileName) = 'DBL' then
+      begin
+        LoadDblFromfile(OpenDialog.FileName, Fids_, Param);
+        LoadFilesToPanel.Create(Param, Fids_, B, False, True, Self);
+        LoadFilesToPanel.Create(Param, Fids_, B, False, False, Self);
+      end;
+    end;
+  finally
+    F(OpenDialog);
   end;
-  if GetExt(OpenDialog.FileName)='DBL' then
-  begin
-   LoadDblFromfile(OpenDialog.FileName,fids_,param);
-   LoadFilesToPanel.Create(param,fids_,b,false,true,self);
-   LoadFilesToPanel.Create(param,fids_,b,false,false,self);
-  end;
- end;
- OpenDialog.Free;
- FilePushed:=false;
+  FilePushed := False;
 end;
 
 procedure TFormCont.SlideShow1Click(Sender: TObject);
@@ -1400,20 +1405,20 @@ begin
   if FPanels.Count = 0 then
   begin
     FTag := 1;
-    S := Format(TA('Panel (%s)', 'Panel'), [IntToStr(FTag)]);
+    S := Format(TA('Panel (%d)', 'Panel'), [FTag]);
   end;
   if FPanels.Count > 0 then
   begin
     for I := 0 to FPanels.Count - 1 do
       if not TagExists(I + 1) then
       begin
-        S := Format(TA('Panel (%s)', 'Panel'), [Inttostr(I + 1)]);
+        S := Format(TA('Panel (%d)', 'Panel'), [I + 1]);
         FTag := I + 1;
         Break;
       end;
     if FTag = 0 then
     begin
-      S := Format(TA('Panel (%s)', 'Panel'), [Inttostr(FPanels.Count + 1)]);
+      S := Format(TA('Panel (%d)', 'Panel'), [FPanels.Count + 1]);
       FTag := FPanels.Count + 1;
     end;
   end;
@@ -1808,7 +1813,7 @@ begin
   ElvMain.BeginUpdate;
   try
     SelectedVisible := IsSelectedVisible;
-    if FPictureSize > 50 then
+    if FPictureSize > ListViewMinThumbnailSize then
       FPictureSize := FPictureSize - 10;
     LoadSizes;
     BigImagesTimer.Enabled := False;
@@ -1831,7 +1836,7 @@ begin
   ElvMain.BeginUpdate;
   try
     SelectedVisible := IsSelectedVisible;
-    if FPictureSize < 550 then
+    if FPictureSize < ListViewMaxThumbnailSize then
       FPictureSize := FPictureSize + 10;
     LoadSizes;
     BigImagesTimer.Enabled := False;

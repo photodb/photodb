@@ -73,6 +73,7 @@ var
   J, I, Incr: Integer;
   Files: TStrings;
 begin
+  FreeOnTerminate := True;
   if not FDoPrint then
   begin
     SetCommentText(L('Generating preview') + '...');

@@ -1136,23 +1136,23 @@ object SearchForm: TSearchForm
         ImageIndex = 4
         Style = tbsSeparator
       end
-      object TbZoomIn: TToolButton
+      object TbZoomOut: TToolButton
         Left = 60
         Top = 0
         AutoSize = True
-        Caption = 'Zoom In'
+        Caption = 'Zoom Out'
         ImageIndex = 0
-        OnClick = TbZoomInClick
+        OnClick = TbZoomOutClick
       end
-      object TbZoomOut: TToolButton
+      object TbZoomIn: TToolButton
         Left = 72
         Top = 0
         AutoSize = True
-        Caption = 'Zoom out'
+        Caption = 'Zoom in'
         DropdownMenu = PopupMenuZoomDropDown
         ImageIndex = 1
         Style = tbsDropDown
-        OnClick = TbZoomOutClick
+        OnClick = TbZoomInClick
       end
       object ToolButton11: TToolButton
         Left = 105

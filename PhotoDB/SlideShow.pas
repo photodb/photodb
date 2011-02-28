@@ -1596,6 +1596,7 @@ begin
         TbZoomOutClick(Self)
       else
         TbZoomInClick(Self);
+      Msg.message := 0;
     end else
     begin
       if Msg.WParam > 0 then
@@ -2445,8 +2446,7 @@ begin
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
     Rotate270A(FbImage);
-    if ZoomerOn then
-      RealSizeClick(Sender);
+    FitToWindowClick(Sender);
 
     RecreateDrawImage(Self);
   finally
@@ -2469,7 +2469,7 @@ begin
 
     Rotate90A(FbImage);
     if ZoomerOn then
-      RealSizeClick(Sender);
+      FitToWindowClick(Sender);
 
     ReAllignScrolls(True, Point(0, 0));
     RecreateDrawImage(Self);
@@ -2486,7 +2486,15 @@ begin
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
+
+    LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
+
     RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
+    if ZoomerOn then
+      FitToWindowClick(Sender);
+
+    ReAllignScrolls(True, Point(0, 0));
+    RecreateDrawImage(Self);
   finally
     F(Info);
   end;

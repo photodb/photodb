@@ -160,7 +160,7 @@ begin
       try
         LoadImages;
       finally
-        FData.Free;
+        F(FData);
       end;
     finally
       if not FSearchParams.IsEstimate then
@@ -968,35 +968,27 @@ end;
 
 procedure SearchThread.DoOnDone;
 var
-  AData : TDBPopupMenuInfo;
+  AData: TDBPopupMenuInfo;
 begin
- try
+  if FPictureSize = ThImageSize then
+    if Assigned(FOnDone) then
+      FOnDone(Self);
+
+    (ThreadForm as TSearchForm).StopLoadingList;
+    //TODO:!!!if (ThreadForm as TSearchForm).SearchByCompating then
+    //TODO:!!!begin
+    //TODO:!!! (ThreadForm as TSearchForm).Decremect1.Checked:=true;
+    //TODO:!!! (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
+    //TODO:!!!end else
   begin
-   if fPictureSize=ThImageSize then
-   if Assigned(FOnDone) then FOnDone(self);
-   (ThreadForm as TSearchForm).StopLoadingList;
-   //TODO:!!!if (ThreadForm as TSearchForm).SearchByCompating then
-   //TODO:!!!begin
-   //TODO:!!! (ThreadForm as TSearchForm).Decremect1.Checked:=true;
-   //TODO:!!! (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
-   //TODO:!!!end else
-   begin
     if (ThreadForm as TSearchForm).SortbyCompare1.Checked then
     begin
-     (ThreadForm as TSearchForm).SortbyDate1Click((ThreadForm as TSearchForm).SortbyDate1);
+      (ThreadForm as TSearchForm).SortbyDate1Click((ThreadForm as TSearchForm).SortbyDate1);
     end;
-   end;
   end;
   //Loading big images
-  if fPictureSize<>ThImageSize then
-  begin
-    (ThreadForm as TSearchForm).NewFormSubState;
-     AData := TDBPopupMenuInfo.Create;
-     AData.Assign(FData);
-    (ThreadForm as TSearchForm).RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(ThreadForm,(ThreadForm as TSearchForm).SubStateID,nil,fPictureSize, AData, True));
-  end;
- except
- end;
+  if FPictureSize <> ThImageSize then
+    (ThreadForm as TSearchForm).ReloadBigImages;
 end;
 
 {procedure SearchThread.SetSearchPath;

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, WebLink, dolphin_db, UnitDBKernel,
-  UnitDBCommon, UnitDBCommonGraphics, uDBForm, uConstants;
+  UnitDBCommon, UnitDBCommonGraphics, uDBForm, uConstants, Math;
 
 type
   TBigImagesSizeForm = class(TDBForm)
@@ -97,7 +97,7 @@ begin
     3: BigThSize := 200;
     4: BigThSize := 150;
     5: BigThSize := 100;
-    6: BigThSize := 50;
+    6: BigThSize := 85;
   end;
 
   FCallBack(Self, BigThSize, BigThSize);
@@ -109,7 +109,7 @@ end;
 procedure TBigImagesSizeForm.SetRadioButtonSize;
 begin
   case BigThSize of
-    50:  RgPictureSize.ItemIndex := 6;
+    85:  RgPictureSize.ItemIndex := 6;
     100: RgPictureSize.ItemIndex := 5;
     150: RgPictureSize.ItemIndex := 4;
     200: RgPictureSize.ItemIndex := 3;
@@ -129,7 +129,7 @@ begin
 
     LockChange := True;
     RgPictureSize.ItemIndex := 0;
-    BigThSize := (50 - TrbImageSize.Position) * 10 + 40;
+    BigThSize := Max((50 - TrbImageSize.Position) * 10 + 80, 85);
     RgPictureSize.Buttons[0].Caption := Format(L('%dx%d pixels'), [BigThSize, BigThSize]);
 
     FCallBack(Self, BigThSize, BigThSize);

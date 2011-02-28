@@ -69,6 +69,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FGroups: TGroups;
@@ -180,6 +181,15 @@ begin
   LoadLanguage;
   CbRemoveKeywords.Checked := DBkernel.ReadBool('Propetry', 'DeleteKeyWords', True);
   CbShowAllGroups.Checked := DBkernel.ReadBool('Propetry', 'ShowAllGroups', False);
+end;
+
+procedure TEditGroupsForm.FormDestroy(Sender: TObject);
+begin
+  FreeGroups(FRegGroups);
+  FreeGroups(FShowenRegGroups);
+  FreeGroups(FOldGroups);
+  FreeGroups(FSetGroups);
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataGroups);
 end;
 
 procedure TEditGroupsForm.BtnCreateGroupClick(Sender: TObject);
@@ -653,11 +663,6 @@ end;
 
 procedure TEditGroupsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin;
-  FreeGroups(FRegGroups);
-  FreeGroups(FShowenRegGroups);
-  FreeGroups(FOldGroups);
-  FreeGroups(FSetGroups);
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataGroups);
 end;
 
 procedure TEditGroupsForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

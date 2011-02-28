@@ -731,27 +731,28 @@
 	<translate name="Panel (%d)" value="Панель (%d)" />
 	<translate name="Delete item from list" value="Удалить из списка" />
 	<translate name="ID = %d" value="ID = %d" />
-	<translate name="Items : %d" value="Изображений : %d" />
+	<translate name="Items : %d" value="Фото: %d" />
 	<translate name="File already exists! Replace?" value="Файл уже существует! Заменить?" />
-	<translate name="Info" value="Информация" />
+	<translate name="Info" value="Инфо" />
 	<translate name="View" value="Вид" />
 	<translate name="Select all" value="Выделить всё" />
-	<translate name="Copy" value="Копировать" />
+	<translate name="Copy" value="Копия" />
 	<translate name="Paste" value="Вставить" />
 	<translate name="Load from file" value="Загрузить из файла" />
 	<translate name="Save to file" value="Сохранить в файл" />
 	<translate name="Clear" value="Очистить" />
 	<translate name="Close" value="Закрыть" />
-	<translate name="Resize" value="Изменить размер" />
+	<translate name="Resize" value="Размер" />
 	<translate name="Convert" value="Конвертировать" />
-	<translate name="Export" value="Экспортировать" />
+	<translate name="Export" value="Экспорт" />
 	<translate name="Photo" value="Фото" />
 	<translate name="Actions" value="Действия" />
 	<translate name="Rename" value="Переименовать" />
 	<translate name="Select place to copy files" value="Выберите место для копирования файлов" />
 	<translate name="Enter text" value="Введите текст" />
 	<translate name="Enter new name of panel" value="Введите новое название панели" />
-	<translate name="New panel" value="Новую панель" />	
+	<translate name="New panel" value="Новую панель" />
+	<translate name="All supported (*.ids,*.dbl)|*.dbl;*.ids|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl" value="Все поддерживаемые (*.ids,*.dbl)|*.dbl;*.ids|DataDase результаты (*.ids)|*.ids|DataDase списки файлов (*.dbl)|*.dbl" />
   </scope>
   <scope name="KeywordList">
 	<translate name="List of keywords" value="Список ключевых слов" />

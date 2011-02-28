@@ -17,6 +17,7 @@ object EditGroupsForm: TEditGroupsForm
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96

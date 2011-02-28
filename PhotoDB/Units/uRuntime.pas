@@ -20,7 +20,7 @@ var
   ThSize: Integer = 152;
   ThSizeExplorerPreview: Integer = 100;
   ThSizePropertyPreview: Integer = 100;
-  ThSizePanelPreview: Integer = 75;
+  ThSizePanelPreview: Integer = 85;
   ThImageSize: Integer = 150;
   ThHintSize: Integer = 300;
 

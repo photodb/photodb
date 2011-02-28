@@ -24,7 +24,9 @@ object PrintForm: TPrintForm
     Height = 527
     Align = alLeft
     TabOrder = 0
-    OnResize = ToolsPanelResize
+    DesignSize = (
+      169
+      527)
     object BaseImage: TImage
       Left = 0
       Top = 0
@@ -265,18 +267,19 @@ object PrintForm: TPrintForm
         0AC2E18894B1BA2E88864ADCC0592BE12C087F24299373FFD9}
       Visible = False
     end
-    object ListView1: TListView
+    object LvMain: TListView
       Left = 8
       Top = 91
       Width = 153
-      Height = 214
+      Height = 325
+      Anchors = [akLeft, akTop, akBottom]
       Columns = <>
       HideSelection = False
       LargeImages = ImlFormatPreviews
       ReadOnly = True
       TabOrder = 0
-      OnDblClick = ListView1DblClick
-      OnResize = ListView1Resize
+      OnDblClick = LvMainDblClick
+      OnResize = LvMainResize
     end
     object Panel2: TPanel
       Left = 1
@@ -396,7 +399,7 @@ object PrintForm: TPrintForm
         Height = 16
         Cursor = crHandPoint
         Text = 'Make Image'
-        OnClick = ListView1DblClick
+        OnClick = LvMainDblClick
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16

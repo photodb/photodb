@@ -203,8 +203,8 @@ type
     ToolButton10: TToolButton;
     ToolButtonView: TToolButton;
     ToolButton11: TToolButton;
-    TbZoomIn: TToolButton;
     TbZoomOut: TToolButton;
+    TbZoomIn: TToolButton;
     ToolButton12: TToolButton;
     TbSearch: TToolButton;
     ToolButton16: TToolButton;
@@ -485,8 +485,8 @@ type
     procedure DoStopLoading;
     procedure AddHiddenInfo1Click(Sender: TObject);
     procedure ExtractHiddenInfo1Click(Sender: TObject);
-    procedure TbZoomInClick(Sender: TObject);
     procedure TbZoomOutClick(Sender: TObject);
+    procedure TbZoomInClick(Sender: TObject);
     procedure TbStopClick(Sender: TObject);
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
     procedure MapCD1Click(Sender: TObject);
@@ -1003,8 +1003,6 @@ begin
   begin
     MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
     try
-      if Viewer = nil then
-        Application.CreateForm(TViewer, Viewer);
       Viewer.Execute(Sender, MenuInfo);
       Viewer.Show;
     finally
@@ -1012,7 +1010,10 @@ begin
     end;
   end;
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
+  begin
     Viewer.ShowFolderA(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate);
+    Viewer.Show;
+  end;
 end;
 
 procedure TExplorerForm.Shell1Click(Sender: TObject);
@@ -4275,6 +4276,7 @@ begin
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
       Viewer.Execute(Sender, MenuInfo);
+      Viewer.Show;
     finally
       F(MenuInfo);
     end;
@@ -4405,6 +4407,7 @@ begin
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
     Viewer.ShowFolderA(GetCurrentPath, ExplorerManager.ShowPrivate);
+    Viewer.Show;
   end;
 end;
 
@@ -4612,8 +4615,8 @@ begin
     TbPaste.Hint := L('Paste');
     TbDelete.Hint := L('Delete');
     ToolButtonView.Hint := L('View');
-    TbZoomIn.Hint := L('Zoom in');
     TbZoomOut.Hint := L('Zoom out');
+    TbZoomIn.Hint := L('Zoom in');
     TbSearch.Hint := L('Go to search window');
     TbStop.Hint := L('Stop');
     TbOptions.Hint := L('Options');
@@ -6252,7 +6255,10 @@ begin
   try
     GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
     if Info.Count > 0 then
+    begin
       Viewer.Execute(Self, Info);
+      Viewer.Show;
+    end;
   finally
     F(Info);
   end;
@@ -7081,6 +7087,7 @@ begin
                 if Viewer = nil then
                   Application.CreateForm(TViewer, Viewer);
                 Viewer.Execute(Sender, MenuInfo);
+                Viewer.Show;
                 RestoreSelected;
               finally
                 F(MenuInfo);
@@ -7316,12 +7323,12 @@ procedure TExplorerForm.ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
 begin
   if not (ssCtrl in Shift) then exit;
 
-  if WheelDelta<0 then
+  if WheelDelta < 0 then
     ZoomIn
   else
     ZoomOut;
 
- Handled:=true;
+  Handled := True;
 end;
 
 procedure TExplorerForm.ZoomIn;
@@ -7331,8 +7338,8 @@ begin
   ElvMain.BeginUpdate;
   try
      SelectedVisible := IsSelectedVisible;
-     if FPictureSize > 50 then
-       FPictureSize := FPictureSize - 10;
+    if FPictureSize < ListViewMaxThumbnailSize then
+      FPictureSize := FPictureSize + 10;
      LoadSizes;
      BigImagesTimer.Enabled:=false;
      BigImagesTimer.Enabled:=true;
@@ -7340,7 +7347,7 @@ begin
      ElvMain.Groups.ReIndexItems;
      ElvMain.Groups.Rebuild(true);
 
-    if SelectedVisible then
+    if SelectedVisible and not IsSelectedVisible then
       ElvMain.Selection.First.MakeVisible(emvTop);
   finally
     ElvMain.EndUpdate;
@@ -7354,15 +7361,15 @@ begin
   ElvMain.BeginUpdate;
   try
     SelectedVisible:=IsSelectedVisible;
-    if FPictureSize < 550 then
-      FPictureSize := FPictureSize + 10;
+    if FPictureSize > ListViewMinThumbnailSize then
+      FPictureSize := FPictureSize - 10;
     LoadSizes;
     BigImagesTimer.Enabled := False;
     BigImagesTimer.Enabled := True;
     ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
     ElvMain.Groups.ReIndexItems;
     ElvMain.Groups.Rebuild(True);
-    if SelectedVisible then
+    if SelectedVisible and not IsSelectedVisible then
       ElvMain.Selection.First.MakeVisible(EmvTop);
   finally
     ElvMain.EndUpdate;
@@ -7448,14 +7455,14 @@ begin
   end;
 end;
 
-procedure TExplorerForm.TbZoomInClick(Sender: TObject);
-begin
-  ZoomIn;
-end;
-
 procedure TExplorerForm.TbZoomOutClick(Sender: TObject);
 begin
   ZoomOut;
+end;
+
+procedure TExplorerForm.TbZoomInClick(Sender: TObject);
+begin
+  ZoomIn;
 end;
 
 procedure TExplorerForm.LoadToolBarNormaIcons;

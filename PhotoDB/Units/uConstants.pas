@@ -53,6 +53,8 @@ const
   RetryTryCountOnWrite = 10;
   RetryTryDelayOnWrite = 100;
   CurrentDBSettingVersion = 1;
+  ListViewMinThumbnailSize = 85;
+  ListViewMaxThumbnailSize = 550;
 
 const
   DB_VER_1_8 = 1;

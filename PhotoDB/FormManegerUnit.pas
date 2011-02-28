@@ -597,10 +597,15 @@ begin
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
       FileNameA := LongFileName(FileNameA);
-      GetFileListByMask(FileNameA, SupportedExt, Info, N, True);
-      ShowWindow(Viewer.Handle, SW_RESTORE);
-      Viewer.Execute(Self, Info);
-      Viewer.Show;
+      Info := TDBPopupMenuInfo.Create;
+      try
+        GetFileListByMask(FileNameA, SupportedExt, Info, N, True);
+        ShowWindow(Viewer.Handle, SW_RESTORE);
+        Viewer.Execute(Self, Info);
+        Viewer.Show;
+      finally
+        F(Info);
+      end;
       ActivateBackgroundApplication(Viewer.Handle);
     end else if (AnsiUpperCase(FileNameA) <> '/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA, False) then
     begin

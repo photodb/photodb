@@ -20,7 +20,7 @@ type
     OkButtonPanel: TPanel;
     BtnPrint: TButton;
     BtnCancel: TButton;
-    ListView1: TListView;
+    LvMain: TListView;
     RightPanel: TPanel;
     BaseImage: TImage;
     ImlFormatPreviews: TImageList;
@@ -61,14 +61,13 @@ type
     procedure FormCreate(Sender: TObject);
     procedure DoGenerateSample;
     procedure AddSampleImage(SampleImageType : TPrintSampleSizeOne);
-    procedure ListView1DblClick(Sender: TObject);
+    procedure LvMainDblClick(Sender: TObject);
     procedure SetPreviewImage(Bitmap : TBitmap; SID : String);
-    procedure ListView1Resize(Sender: TObject);
+    procedure LvMainResize(Sender: TObject);
     procedure FullSizeLinkClick(Sender: TObject);
     procedure ZoomOutLinkClick(Sender: TObject);
     procedure ZoomInLinkClick(Sender: TObject);
     procedure FitToSizeLinkClick(Sender: TObject);
-    procedure ToolsPanelResize(Sender: TObject);
     procedure BtnPrintClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure CbPageNumberClick(Sender: TObject);
@@ -124,6 +123,7 @@ var
   Handle: THandle;
   I: Integer;
 begin
+  Result := nil;
   try
     Application.CreateForm(TPrintForm, Result);
     for I := 0 to Files.Count - 1 do
@@ -145,6 +145,7 @@ end;
 
 function GetPrintForm(Picture: TBitmap): TPrintForm;
 begin
+  Result := nil;
   if Picture.Empty then
     Exit;
   Application.CreateForm(TPrintForm, Result);
@@ -194,13 +195,13 @@ var
   Item: TListItem;
   Options: TGenerateImageOptions;
 begin
-  ImlFormatPreviews.Width := ListView1.Width - 50;
+  ImlFormatPreviews.Width := LvMain.Width - 100;
   ImlFormatPreviews.Height := Round(ImlFormatPreviews.Width * Printer.PageHeight / Printer.PageWidth);
   SampleImage := TBitmap.Create;
   try
     SampleImage.PixelFormat := pf24bit;
     SampleImage.Assign(BaseImage.Picture.Graphic);
-    Item := ListView1.Items.Add;
+    Item := LvMain.Items.Add;
     Item.ImageIndex := -1;
     Item.Caption := FormatToText(SampleImageType);
     Options.CropImages := False;
@@ -256,7 +257,7 @@ begin
     SamplePage.Width := Printer.PageWidth;
     SamplePage.Height := Printer.PageHeight;
     PaperSize := GetPaperSize;
-    ListView1.Items.Clear;
+    LvMain.Items.Clear;
 
     case PaperSize of
       TPS_A4:
@@ -343,13 +344,12 @@ begin
   LoadLanguage;
   PrintFormExists := True;
   FFiles := TStringList.Create;
-  ListView1.DoubleBuffered := True;
+  LvMain.DoubleBuffered := True;
   VirtualBitmap := nil;
   ZoomInLink.LoadIconSize(ZoomInLink.Icon, 16, 16);
   ZoomOutLink.LoadIconSize(ZoomOutLink.Icon, 16, 16);
   FitToSizeLink.LoadIconSize(FitToSizeLink.Icon, 16, 16);
   FullSizeLink.LoadIconSize(FullSizeLink.Icon, 16, 16);
-  ToolsPanelResize(Sender);
   FStatusProgress := CreateProgressBar(StatusBar1, 0);
   FStatusProgress.Hide;
 
@@ -364,7 +364,7 @@ begin
   SaveWindowPos1.SetPosition;
 end;
 
-procedure TPrintForm.ListView1DblClick(Sender: TObject);
+procedure TPrintForm.LvMainDblClick(Sender: TObject);
 var
   Item: TListItem;
   SampleType: TPrintSampleSizeOne;
@@ -374,9 +374,9 @@ var
   Options: TGenerateImageOptions;
 begin
 
-  Item := ListView1.Selected;
+  Item := LvMain.Selected;
   if Item = nil then
-    Item := ListView1.Items[0];
+    Item := LvMain.Items[0];
   SampleType := TPrintSampleSizeOne(Item.Indent);
   PreviewSID := GetCID;
   StHintText.Hide;
@@ -460,7 +460,7 @@ begin
   Button2.Enabled := False;
   BtnCancel.Enabled := False;
   BtnPrint.Enabled := False;
-  ListView1.Enabled := False;
+  LvMain.Enabled := False;
   CbPageNumber.Enabled := False;
   ZoomInLink.Enabled := False;
   ZoomOutLink.Enabled := False;
@@ -487,7 +487,7 @@ begin
     Button2.Enabled := True;
     BtnCancel.Enabled := True;
     if not CbUseCustomSize.Checked then
-      ListView1.Enabled := True;
+      LvMain.Enabled := True;
     RadioGroup1.Enabled := True;
     CbPageNumber.Enabled := True;
     BtnPrint.Enabled := True;
@@ -503,9 +503,9 @@ begin
   end;
 end;
 
-procedure TPrintForm.ListView1Resize(Sender: TObject);
+procedure TPrintForm.LvMainResize(Sender: TObject);
 begin
-  ShowScrollBar(ListView1.Handle, SB_HORZ, FALSE);
+  ShowScrollBar(LvMain.Handle, SB_HORZ, FALSE);
 end;
 
 procedure TPrintForm.FullSizeLinkClick(Sender: TObject);
@@ -535,11 +535,6 @@ begin
   FastScrollingImage1.AutoZoomImage := True;
   FastScrollingImage1.AutoShrinkImage := True;
   FastScrollingImage1.Resize;
-end;
-
-procedure TPrintForm.ToolsPanelResize(Sender: TObject);
-begin
-  ListView1.Height := ToolsPanel.Height - Panel2.Height - 15 - Panel3.Height;
 end;
 
 procedure TPrintForm.BtnPrintClick(Sender: TObject);
@@ -625,7 +620,7 @@ begin
   finally
     F(Files);
   end;
-  ListView1.Enabled := False;
+  LvMain.Enabled := False;
   CbPageNumber.Enabled := False;
   ZoomInLink.Enabled := False;
   ZoomOutLink.Enabled := False;
@@ -754,7 +749,7 @@ begin
   EdWidth.Enabled := CbUseCustomSize.Checked;
   EdHeight.Enabled := CbUseCustomSize.Checked;
   ComboBox2.Enabled := CbUseCustomSize.Checked;
-  ListView1.Enabled := not CbUseCustomSize.Checked;
+  LvMain.Enabled := not CbUseCustomSize.Checked;
 end;
 
 procedure TPrintForm.Execute(VirtualFile: TBitmap);

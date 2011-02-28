@@ -26,7 +26,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
     Width = 45
     Height = 176
     Align = alLeft
-    Max = 51
+    Max = 50
     Min = 1
     Orientation = trVertical
     Position = 1
@@ -55,7 +55,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
         '200x200'
         '150x150'
         '100x100'
-        '50x50')
+        '85x85')
       TabOrder = 0
       OnClick = RgPictureSizeClick
     end

@@ -929,21 +929,21 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 7
         Style = tbsSeparator
       end
-      object TbZoomIn: TToolButton
+      object TbZoomOut: TToolButton
         Left = 191
         Top = 0
         AutoSize = True
         ImageIndex = 8
-        OnClick = TbZoomInClick
+        OnClick = TbZoomOutClick
       end
-      object TbZoomOut: TToolButton
+      object TbZoomIn: TToolButton
         Left = 203
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
         ImageIndex = 9
         Style = tbsDropDown
-        OnClick = TbZoomOutClick
+        OnClick = TbZoomInClick
       end
       object ToolButton20: TToolButton
         Left = 236
