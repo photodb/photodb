@@ -12,11 +12,6 @@ uses
   uAssociatedIcons, uDBPopupMenuInfo, uConstants, uGraphicUtils,
   uDBBaseTypes, uDBFileTypes, uRuntime;
 
-type
-  TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
-                QT_FOLDER, QT_RESULT_ITH, QT_RESULT_IDS, QT_SIMILAR,
-                QT_ONE_TEXT, QT_ONE_KEYWORD, QT_W_SCAN_FILE, QT_NO_NOPATH);
-
 const
   SM_ID         = 0;
   SM_TITLE      = 1;
@@ -30,18 +25,9 @@ type
   SearchThread = class(TThreadEx)
   private
     { Private declarations }
-{    fQuery: TDataSet;
-    FI : integer;
-    FID : integer;  }
     FPictureSize : integer;
-
- {   fbit : TBitmap;
-    fpic : TPicture;
-    fthum_images_:integer;  }
     ferrormsg : string;
     foptions : integer;
- {   fInclude : Boolean;  }
-
     fSpsearch_ShowFolderid : integer;
     fSpsearch_ShowFolder : string;
  //   fSpsearch_ShowFoldername : string;
@@ -50,8 +36,6 @@ type
     fSpsearch_ScanFilePersent : Extended;
     fSpsearch_ScanFileRotate : boolean;
     ImThs : TArStrings;
-  //  FCurrentFile : String;
-//    StringParam : String;
     FSearchParams : TSearchQuery;
     IthIds : TArInteger;
     StrParam : String;
@@ -61,8 +45,8 @@ type
     procedure DoOnDone;
 //    procedure SetSearchPathW(Path : String);
 //    procedure SetSearchPath;
-    procedure GetWideSearchOptions(Params : TDBQueryParams);
-    function AddOptions(SqlQuery : string) : string;
+    procedure AddWideSearchOptions(Params : TDBQueryParams);
+    procedure AddOptions(SqlParams : TDBQueryParams);
     procedure SetProgressText(Value : String);
     procedure SetProgressTextA;
     procedure SetMaxValue(Value : Integer);
@@ -70,7 +54,7 @@ type
     procedure SetProgress(Value : Integer);
     procedure SetProgressA;
 //    procedure DoSetSearchByComparing;
-    procedure GetFilter(Params : TDBQueryParams; Attr : Integer);
+    procedure ApplyFilter(Params : TDBQueryParams; Attr : Integer);
 //    procedure GetPassForFile;
     procedure StartLoadingList;
   protected
@@ -80,7 +64,7 @@ type
     FileNameParam : string;
     StrTh : string;
     FQueryString : string;
-    QueryType : TQueryType;
+
     FDateTimeParam : TDateTime;
     FData : TDBPopupMenuInfo;
     fQData : TDBPopupMenuInfo;
@@ -491,7 +475,7 @@ begin
   SynchronizeEx(DoOnDone); *)
 end;
 
-procedure SearchThread.GetFilter(Params : TDBQueryParams; Attr : Integer);
+procedure SearchThread.ApplyFilter(Params : TDBQueryParams; Attr : Integer);
 begin
   case Attr of
     db_attr_norm:
@@ -505,30 +489,30 @@ begin
   if not FSearchParams.ShowPrivate then
     Params.Query := Params.Query + ' AND (Access = 0)';
 
-  GetWideSearchOptions(Params);
+  AddWideSearchOptions(Params);
 end;
 
 function SearchThread.CreateQuery : TDBQueryParams;
 var
-  Folder, SysAction, stemp,s1,s,sqltext:string;
-  a,b,c, n, i,j, id, Left, L, m : integer;
-  sqlwords, sqlrwords: TStrings;
-  systemquery, First : boolean;
-  fields_names: array[1..10] of string;
-  fields_names_count : integer;
-  fSpecQuery : TDataSet;
-  Sid : String;
+  Folder, SysAction, Stemp, S1, S, Sqltext: string;
+  A, B, C, N, I, J, Id, Left, L, M: Integer;
+  Sqlwords, Sqlrwords: TStrings;
+  Systemquery, First: Boolean;
+  Fields_names: array [1 .. 10] of string;
+  Fields_names_count: Integer;
+  FSpecQuery: TDataSet;
+  Sid: string;
 
 const
   AllocImThBy = 5;
 
-  procedure AddField(FieldName : String);
+  procedure AddField(FieldName: string);
   begin
-   inc(fields_names_count);
-   fields_names[fields_names_count]:=FieldName;
+    Inc(Fields_names_count);
+    Fields_names[Fields_names_count] := FieldName;
   end;
 
-  function FIELDS : string;
+  function FIELDS: string;
   begin
     if FSearchParams.IsEstimate then
       Result := 'COUNT(*)'
@@ -538,426 +522,380 @@ const
 
 begin
   Result := TDBQueryParams.Create;
- QueryType:=QT_NONE;
- foptions:=0;
- sqltext:=FSearchParams.Query;
- if sqltext='' then sqltext:='*';
- systemquery:=false;
- if length(sqltext)>3 then
- begin
-  if (sqltext[1]='%') and (sqltext[2]=':') and (sqltext[length(sqltext)]=':') then
-  begin
-   Delete(sqltext,1,1);
-  end;
- end;
+  Foptions := 0;
+  SqlText := FSearchParams.Query;
+  if SqlText = '' then
+    SqlText := '*';
+  Systemquery := False;
 
- if length(sqltext)>2 then
- if (sqltext[1]=':') and (sqltext[length(sqltext)]=':') then
- begin
-  sysaction:=copy(sqltext,2,length(sqltext)-2);
+  if Length(SqlText) > 3 then
+    if (SqlText[1] = '%') and (SqlText[2] = ':') and (SqlText[Length(SqlText)] = ':') then
+      Delete(SqlText, 1, 1);
 
-  if AnsiLowerCase(sysaction)=AnsiLowerCase('DeletedFiles') then
-  begin
-   systemquery:=true;
-   QueryType:=QT_DELETED;
-   Result.Query:= Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
-   GetFilter(Result, db_attr_not_exists);
-  end;
-
-  if AnsiLowerCase(sysaction)=AnsiLowerCase('Dublicates') then
-  begin
-   QueryType:=QT_DUBLICATES;
-   SystemQuery:=true;
-   Result.Query:= Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
-   GetFilter(Result, db_attr_dublicate);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,5))=AnsiLowerCase('Group') then
-  begin
-   QueryType:=QT_GROUP;
-   SystemQuery:=true;
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where (Groups like "'+GroupSearchByGroupName(Copy(sysaction,7,length(sysaction)-7))+'")';
-   GetFilter(Result, db_attr_norm);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,4))=AnsiLowerCase('Text') then
-  begin
-   QueryType:=QT_ONE_TEXT;
-   SystemQuery:=true;
-   stemp:=Copy(sysaction,6,length(sysaction)-6);
-   stemp:=NormalizeDBString(stemp);
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where (KeyWords like "%'+stemp+'%") or (Comment like "%'+stemp+'%") or (FFileName like "%'+stemp+'%")';
-   GetFilter(Result, db_attr_norm);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,6))=AnsiLowerCase('nopath') then
-  begin
-   QueryType:=QT_NO_NOPATH;
-   SystemQuery:=true;
-   stemp:=Copy(sysaction,6,length(sysaction)-6);
-   stemp:=NormalizeDBString(stemp);
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where (FolderCRC = 0)';
-   GetFilter(Result, db_attr_norm);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,14))=AnsiLowerCase('ShowNullFields') then
-  begin
-   QueryType:=QT_ONE_TEXT;
-   SystemQuery:=true;
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,13))=AnsiLowerCase('FixNullFields') then
-  begin
-   QueryType:=QT_ONE_TEXT;
-   SystemQuery:=true;
-   fSpecQuery:=GetQuery;
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where (Comment is null) or (KeyWords is null) or (Groups is null) or (Links is null)';
-
-   SetSQL(fSpecQuery,'Update $DB$ Set Comment="" where Comment is null');
-   ExecSQL(fSpecQuery);
-   SetSQL(fSpecQuery,'Update $DB$ Set KeyWords="" where KeyWords is null');
-   ExecSQL(fSpecQuery);
-   SetSQL(fSpecQuery,'Update $DB$ Set Groups="" where Groups is null');
-   ExecSQL(fSpecQuery);
-   SetSQL(fSpecQuery,'Update $DB$ Set Links="" where Links is null');
-   ExecSQL(fSpecQuery);
-   FreeDS(fSpecQuery);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,7))=AnsiLowerCase('FixIDEx') then
-  begin
-   QueryType:=QT_ONE_TEXT;
-   SystemQuery:=true;
-   stemp:='';
-   for i:=1 to 200 do
-   stemp:=stemp+'_';
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where not (StrTh like "'+stemp+'")';
-   GetFilter(Result, db_attr_norm);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,5))=AnsiLowerCase('Links') then
-  begin
-   QueryType:=QT_ONE_TEXT;
-   SystemQuery:=true;
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where (Links like "%[%]%{%}%;%" )';
-   GetFilter(Result, db_attr_norm);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,9))=AnsiLowerCase('ScanImage') then
-  begin
-   fSpsearch_ScanFileRotate:=false;
-   QueryType:=QT_W_SCAN_FILE;
-   s:=copy(sysaction,12,length(sysaction)-12);
-   if PosEx(':',s,3)=-1 then
-   begin
-    fSpsearch_ScanFilePersent:=50;
-    fSpsearch_ScanFile:=s;
-   end else
-   begin
-    stemp:=Copy(S,1,PosEx(':',s,3)-1);
-    fSpsearch_ScanFile:= stemp;
-    stemp:=Copy(S,PosEx(':',s,3)+1,Length(S)-PosEx(':',s,3));
-    fSpsearch_ScanFilePersent:=Min(100,Max(0.0000000001,StrToFloatDef(stemp,50)));
-   end;
-   SystemQuery:=true;
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,10))=AnsiLowerCase('ScanImageW') then
-  begin
-   fSpsearch_ScanFileRotate:=true;
-   QueryType:=QT_W_SCAN_FILE;
-   s:=copy(sysaction,12,length(sysaction)-12);
-   if PosEx(':',s,3)=-1 then
-   begin
-    fSpsearch_ScanFilePersent:=50;
-    fSpsearch_ScanFile:=s;
-   end else
-   begin
-    stemp:=Copy(S,1,PosEx(':',s,3)-1);
-    fSpsearch_ScanFile:= stemp;
-    stemp:=Copy(S,PosEx(':',s,3)+1,Length(S)-PosEx(':',s,3));
-    fSpsearch_ScanFilePersent:=Min(100,Max(0.0000000001,StrToFloatDef(stemp,50)));
-   end;
-   SystemQuery:=true;
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,7))=AnsiLowerCase('KeyWord') then
-  begin
-   QueryType:=QT_ONE_KEYWORD;
-   SystemQuery:=true;
-   stemp:=Copy(sysaction,9,length(sysaction)-9);
-   stemp:=NormalizeDBString(stemp);
-   Result.Query:= Format('SELECT %s FROM $DB$', [FIELDS]);
-   Result.Query:=Result.Query+' where (KeyWords like "%'+stemp+'%") ';
-   GetFilter(Result, db_attr_norm);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,6))=AnsiLowerCase('folder') then
-  begin
-   QueryType:=QT_FOLDER;
-   systemquery:=true;
-
-   Folder:=IncludeTrailingBackslash(copy(sysaction,8,length(sysaction)-8));
-
-   Result.Query:=Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
-   Result.AddIntParam('CRC', GetPathCRC(Folder));
-   if not FSearchParams.ShowPrivate then Result.Query:=Result.Query+' and (Access<>'+inttostr(db_access_private)+')';
-
-   foptions:=SPSEARCH_SHOWFOLDER;
-   if not directoryexists(Folder) then
-   fspsearch_showfolder:='' else fspsearch_showfolder:=Folder;
-   fspsearch_showfolderid:=StrToIntDef(Copy(sysaction,8,length(sysaction)-8),0);
-   GetFilter(Result, db_attr_norm);
-  end;
-
-  if AnsiLowerCase(copy(sysaction,1,7))=AnsiLowerCase('similar') then
-  begin
-   QueryType:=QT_SIMILAR;
-   systemquery:=true;
-   Sid:=copy(sysaction,9,length(sysaction)-9);
-   id:=StrToIntDef(Sid,0);
-
-
-   fSpecQuery := GetQuery;
-   SetSQL(fSpecQuery,'SELECT StrTh FROM $DB$ WHERE ID = '+IntToStr(id));
-   fSpecQuery.Open;
-   StrTh:=fSpecQuery.FieldByName('StrTh').AsString;
-   FreeDS(fSpecQuery);
-
-   Result.Query:= Format('SELECT %s FROM $DB$ WHERE StrTh = :str', [FIELDS]);
-
-   if not FSearchParams.ShowPrivate then Result.Query:=Result.Query+' and (Access<>'+inttostr(db_access_private)+')';
-
-   foptions:=SPSEARCH_SHOWSIMILAR;
-  end;
- end;
-
- if AnsiLowerCase(copy(Sysaction,1,6))=AnsiLowerCase('ThFile') then
-  begin
-   QueryType:=QT_TEXT;
-   systemquery:=true;
-   foptions:=SPSEARCH_SHOWTHFILE;
-   fSpSearch_ShowThFile:=copy(sysaction,8,length(sysaction)-8);
-   ImThs:=LoadImThsFromfileA(fSpSearch_ShowThFile);
-   first:=true;
-   fSpecQuery := GetQuery;
-   SetLength(IthIds,0);
-   SetProgressText(TA('Converting...'));
-
-   //AllocImThBy
-
-   SetMaxValue(Length(ImThs) div AllocImThBy);
-
-   L:=Length(ImThs);
-   n:=Trunc(L/AllocImThBy);
-   if L/AllocImThBy-n>0 then inc(n);
-   Left:=L;
-   c:=0;
-   SetLength(IthIds,0);
-   for j:=1 to n do
-   begin
-    SQLText:='SELECT ID FROM $DB$ WHERE ';
-    m:=Math.Min(Left,Math.Min(L,AllocImThBy));
-    fSpecQuery.Active:=false;
-    for i:=1 to m do
+  if Length(SqlText) > 2 then
+    if (Sqltext[1] = ':') and (Sqltext[Length(Sqltext)] = ':') then
     begin
-     Dec(Left);
-     inc(c);
-     SQLText:=SQLText+' (StrTh=:S'+inttostr(c)+') ';
-     if i<>m then SQLText:=SQLText+'or';
-    end;
-    SetSQL(fSpecQuery,SQLText);
-    for i:=1 to m do
-    SetStrParam(fSpecQuery,i-1,ImThs[i-1+AllocImThBy*(j-1)]);
-    fSpecQuery.Active:=True;
-    fSpecQuery.First;
-    for i:=1 to fSpecQuery.RecordCount do
-    begin
-     SetLength(IthIds,Length(IthIds)+1);
-     IthIds[Length(IthIds)-1]:=fSpecQuery.FieldByName('ID').AsInteger;
-     fSpecQuery.Next;
-    end;
-    SetProgress(j-1);
-   end;
-   FreeDS(fSpecQuery);
-   first:=true;
-   Result.Query:= Format('SELECT %s FROM $DB$ Where (', [FIELDS]);
-   for i:=0 to Length(IthIds)-1 do
-   begin
-    if first then
-    begin
-      Result.Query:= Result.Query+' (ID='+IntToStr(IthIds[i])+') ';
-     First:=false;
-    end else
-    Result.Query:= Result.Query+' OR (ID='+IntToStr(IthIds[i])+') ';
-   end;
-   if Length(IthIds)=0 then
-   Result.Query:= Result.Query+'(ID=0) ';
-   Result.Query:= Result.Query+' ) ';
-   GetFilter(Result, db_attr_norm);
-  end;
+      Sysaction := Copy(Sqltext, 2, Length(Sqltext) - 2);
 
- if not systemquery then
- begin
-  QueryType:=QT_TEXT;
-  for i:=1 to length(sqltext) do
-  begin
-   if sqltext[i]='*' then sqltext[i]:='%';
-   if sqltext[i]='?' then sqltext[i]:='_';
-  end;
-  begin
-   if sqltext[length(sqltext)]<>'$' then
-   begin
-    fields_names_count:=0;
-    stemp:='';
-    a:=0;
-    b:=0;
-    a:=Pos('[+',sqltext);
-    if a>0 then
-    b:=PosEx(']',sqltext,a);
-    if b>0 then
-    stemp:=AnsiUpperCase(copy(sqltext,a+2,b-a-2));
-    for i:=Length(stemp) downto 1 do
-    if not CharInSet(stemp[i], ['C','K','F','G','L']) then
-    Delete(stemp,i,1);
-
-    for j:=1 to Length(stemp) do
-    for i:=1 to Length(stemp)-1 do
-    if Byte(stemp[i])<Byte(stemp[i+1]) then
-    begin
-     c:=Byte(stemp[i]);
-     stemp[i]:=stemp[i+1];
-     stemp[i+1]:=Char(c);
-    end;
-    for i:=Length(stemp)-1 downto 1 do
-    if stemp[i+1]=stemp[i] then
-    Delete(stemp,i+1,1);
-
-    for i:=1 to Math.Min(5,Length(stemp)) do
-    begin
-     Case Byte(AnsiUpperCase(stemp)[i]) of
-      Byte('C'): AddField('Comment');
-      Byte('K'): AddField('KeyWords');
-      Byte('F'): AddField('FFileName');
-      Byte('G'): AddField('Groups');
-      Byte('L'): AddField('Links');
-     end;
-    end;
-    if fields_names_count>0 then
-    Delete(sqltext,a,b-a+1);
-
-    if fields_names_count<1 then
-    begin
-     fields_names[1]:='FFileName';
-     fields_names[2]:='Comment';
-     fields_names[3]:='KeyWords';
-     fields_names_count:=3;
-    end;
-    sqlwords:=TStringList.Create;
-    sqlrwords:=TStringList.Create;
-    sqltext:=' '+sqltext+' ';
-    for i:=length(sqltext) downto 2 do
-    if (sqltext[i]=' ') and (sqltext[i-1]=' ') then
-    delete(sqltext,i,1);
-    for i:=1 to length(sqltext) do
-    begin
-     if (sqltext[i]=' ') or (i=1) then
-     for j:=i+1 to length(sqltext) do
-     if (sqltext[j]=' ') or (j=length(sqltext)) then
-     begin
-      if i=1 then
-      stemp:=copy(sqltext,i+1,j-i-1) else
-      stemp:=copy(sqltext,i+1,j-i-1);
-      if Length(stemp)>0 then
+      if AnsiLowerCase(Sysaction) = AnsiLowerCase('DeletedFiles') then
       begin
-       if stemp[1]='-' then
-       sqlrwords.add(stemp) else sqlwords.add(stemp);
-      end else sqlwords.add(stemp);
-      break;
-     end;
-    end;
-    if sqlwords.Count=0 then sqlwords.add('%');
-
-    sqltext:='(';
-    for i:=1 to fields_names_count do
-    begin
-
-     if (i<>1) then
-     sqltext:=sqltext+') or (';
-     for j:=1 to sqlwords.count do
-     begin
-      sqltext:=sqltext+fields_names[i]+' like "%'+sqlwords[j-1]+'%"';
-      if (j<>sqlwords.count) then sqltext:=sqltext+' and ';
-     end;
-    end;
-    sqltext:=sqltext+')';
-
-
-    Result.Query:= Format('SELECT %s FROM $DB$ ', [FIELDS]);
-    Result.Query:=Result.Query+Format(' where %s and (%s)', [Format(' ((Rating >= %d) AND (Rating <= %d)) ',[FSearchParams.RatingFrom, FSearchParams.RatingTo]),
-                                                      sqltext]);
-
-    if FSearchParams.GroupName<>'' then
-    Result.Query:=Result.Query+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
-
-    if sqlrwords.count>0 then
-    begin
-     Result.Query:=Result.Query+' AND not (';
-     sqltext:='(';
-     for i:=1 to fields_names_count do
-     begin
-      if (i<>1) then
-      sqltext:=sqltext+') or (';
-      for j:=1 to sqlrwords.count do
-      begin
-       stemp:=sqlrwords[j-1];
-       Delete(stemp,1,1);
-       sqltext:=sqltext+''+fields_names[i]+' like "%'+stemp+'%"';
-       if (j<>sqlrwords.count) then sqltext:=sqltext+' or ';
+        Systemquery := True;
+        Result.QueryType := QT_DELETED;
+        Result.Query := Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
+        ApplyFilter(Result, Db_attr_not_exists);
       end;
-     end;
-     sqltext:=sqltext+')';
-     Result.Query:=Result.Query+sqltext+')';
+
+      if AnsiLowerCase(Sysaction) = AnsiLowerCase('Dublicates') then
+      begin
+        Result.QueryType := QT_DUBLICATES;
+        SystemQuery := True;
+        Result.Query := Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
+        ApplyFilter(Result, Db_attr_dublicate);
+      end;
+
+      if AnsiLowerCase(Copy(Sysaction, 1, 5)) = AnsiLowerCase('Links') then
+      begin
+        Result.QueryType := QT_ONE_TEXT;
+        SystemQuery := True;
+        Result.Query := Format('SELECT %s FROM $DB$', [FIELDS]);
+        Result.Query := Result.Query + ' where (Links like "%[%]%{%}%;%" )';
+        ApplyFilter(Result, Db_attr_norm);
+      end;
+
+      if AnsiLowerCase(Copy(Sysaction, 1, 9)) = AnsiLowerCase('ScanImage') then
+      begin
+        FSpsearch_ScanFileRotate := False;
+        Result.QueryType := QT_W_SCAN_FILE;
+        S := Copy(Sysaction, 12, Length(Sysaction) - 12);
+        if PosEx(':', S, 3) = -1 then
+        begin
+          FSpsearch_ScanFilePersent := 50;
+          FSpsearch_ScanFile := S;
+        end else
+        begin
+          Stemp := Copy(S, 1, PosEx(':', S, 3) - 1);
+          FSpsearch_ScanFile := Stemp;
+          Stemp := Copy(S, PosEx(':', S, 3) + 1, Length(S) - PosEx(':', S, 3));
+          FSpsearch_ScanFilePersent := Min(100, Max(0.0000000001, StrToFloatDef(Stemp, 50)));
+        end;
+        SystemQuery := True;
+      end;
+
+      if AnsiLowerCase(Copy(Sysaction, 1, 10)) = AnsiLowerCase('ScanImageW') then
+      begin
+        FSpsearch_ScanFileRotate := True;
+        Result.QueryType := QT_W_SCAN_FILE;
+        S := Copy(Sysaction, 12, Length(Sysaction) - 12);
+        if PosEx(':', S, 3) = -1 then
+        begin
+          FSpsearch_ScanFilePersent := 50;
+          FSpsearch_ScanFile := S;
+        end else
+        begin
+          Stemp := Copy(S, 1, PosEx(':', S, 3) - 1);
+          FSpsearch_ScanFile := Stemp;
+          Stemp := Copy(S, PosEx(':', S, 3) + 1, Length(S) - PosEx(':', S, 3));
+          FSpsearch_ScanFilePersent := Min(100, Max(0.0000000001, StrToFloatDef(Stemp, 50)));
+        end;
+        SystemQuery := True;
+      end;
+
+      if AnsiLowerCase(Copy(Sysaction, 1, 7)) = AnsiLowerCase('KeyWord') then
+      begin
+        Result.QueryType := QT_ONE_KEYWORD;
+        SystemQuery := True;
+        Stemp := Copy(Sysaction, 9, Length(Sysaction) - 9);
+        Stemp := NormalizeDBString(Stemp);
+        Result.Query := Format('SELECT %s FROM $DB$', [FIELDS]);
+        Result.Query := Result.Query + ' where (KeyWords like "%' + Stemp + '%") ';
+        ApplyFilter(Result, Db_attr_norm);
+      end;
+
+      if AnsiLowerCase(Copy(Sysaction, 1, 6)) = AnsiLowerCase('folder') then
+      begin
+        Result.QueryType := QT_FOLDER;
+        Systemquery := True;
+
+        Folder := IncludeTrailingBackslash(Copy(Sysaction, 8, Length(Sysaction) - 8));
+
+        Result.Query := Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
+        Result.AddIntParam('CRC', GetPathCRC(Folder));
+        if not FSearchParams.ShowPrivate then
+          Result.Query := Result.Query + ' and (Access<>' + Inttostr(Db_access_private) + ')';
+
+        Foptions := SPSEARCH_SHOWFOLDER;
+        if not DirectoryExistsSafe(Folder) then
+          Fspsearch_showfolder := ''
+        else
+          Fspsearch_showfolder := Folder;
+        Fspsearch_showfolderid := StrToIntDef(Copy(Sysaction, 8, Length(Sysaction) - 8), 0);
+        ApplyFilter(Result, Db_attr_norm);
+      end;
+
+      if AnsiLowerCase(Copy(Sysaction, 1, 7)) = AnsiLowerCase('similar') then
+      begin
+        Result.QueryType := QT_SIMILAR;
+        Systemquery := True;
+        Sid := Copy(Sysaction, 9, Length(Sysaction) - 9);
+        Id := StrToIntDef(Sid, 0);
+
+        FSpecQuery := GetQuery;
+        try
+          SetSQL(FSpecQuery, 'SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Id));
+          FSpecQuery.Open;
+          StrTh := FSpecQuery.FieldByName('StrTh').AsString;
+        finally
+          FreeDS(FSpecQuery);
+        end;
+
+        Result.Query := Format('SELECT %s FROM $DB$ WHERE StrTh = :str', [FIELDS]);
+
+        if not FSearchParams.ShowPrivate then
+          Result.Query := Result.Query + ' and (Access<>' + Inttostr(Db_access_private) + ')';
+
+        Foptions := SPSEARCH_SHOWSIMILAR;
+      end;
     end;
 
-    sqlwords.free;
-    sqlrwords.free;
-   end else
-   begin
-    sqltext:='(';
-    s:=FSearchParams.Query;
-    for i:=length(s) downto 1 do
-    if not CharInSet(s[i], cifri) and (s[i]<>'$') then delete(s,i,1);
-    if length(s)<2 then exit;
-    n:=1;
-    for i:=1 to length(s) do
-    if s[i]='$' then
+  if AnsiLowerCase(Copy(Sysaction, 1, 6)) = AnsiLowerCase('HashFile') then
+  begin
+    Result.QueryType := QT_TEXT;
+    Systemquery := True;
+    Foptions := SPSEARCH_SHOWTHFILE;
+    FSpSearch_ShowThFile := Copy(Sysaction, 8, Length(Sysaction) - 8);
+    ImThs := LoadImThsFromfileA(FSpSearch_ShowThFile);
+    First := True;
+    FSpecQuery := GetQuery;
+    SetLength(IthIds, 0);
+    SetProgressText(TA('Converting...'));
+
+    // AllocImThBy
+
+    SetMaxValue(Length(ImThs) div AllocImThBy);
+
+    L := Length(ImThs);
+    N := Trunc(L / AllocImThBy);
+    if L / AllocImThBy - N > 0 then
+      Inc(N);
+    Left := L;
+    C := 0;
+    SetLength(IthIds, 0);
+    for J := 1 to N do
     begin
-     s1:=copy(s,n,i-n);
-     n:=i+1;
-     sqltext:=sqltext+' (ID='+s1+') OR';
+      SQLText := 'SELECT ID FROM $DB$ WHERE ';
+      M := Math.Min(Left, Math.Min(L, AllocImThBy));
+      FSpecQuery.Active := False;
+      for I := 1 to M do
+      begin
+        Dec(Left);
+        Inc(C);
+        SQLText := SQLText + ' (StrTh=:S' + Inttostr(C) + ') ';
+        if I <> M then
+          SQLText := SQLText + 'or';
+      end;
+      SetSQL(FSpecQuery, SQLText);
+      for I := 1 to M do
+        SetStrParam(FSpecQuery, I - 1, ImThs[I - 1 + AllocImThBy * (J - 1)]);
+      FSpecQuery.Active := True;
+      FSpecQuery.First;
+      for I := 1 to FSpecQuery.RecordCount do
+      begin
+        SetLength(IthIds, Length(IthIds) + 1);
+        IthIds[Length(IthIds) - 1] := FSpecQuery.FieldByName('ID').AsInteger;
+        FSpecQuery.Next;
+      end;
+      SetProgress(J - 1);
     end;
-    sqltext:=sqltext+' (ID=0))';
-    Result.Query:= Format('SELECT %s FROM $DB$ ', [FIELDS]);
-    Result.Query:=Result.Query+' where ('+sqltext+')';
-
-    if FSearchParams.GroupName<>'' then
-    Result.Query:=Result.Query+' AND (Groups like "'+GroupSearchByGroupName(FSearchParams.GroupName)+'")';
-   end;
-   GetFilter(Result, db_attr_norm);
+    FreeDS(FSpecQuery);
+    First := True;
+    Result.Query := Format('SELECT %s FROM $DB$ Where (', [FIELDS]);
+    for I := 0 to Length(IthIds) - 1 do
+    begin
+      if First then
+      begin
+        Result.Query := Result.Query + ' (ID=' + IntToStr(IthIds[I]) + ') ';
+        First := False;
+      end else
+        Result.Query := Result.Query + ' OR (ID=' + IntToStr(IthIds[I]) + ') ';
+    end;
+    if Length(IthIds) = 0 then
+      Result.Query := Result.Query + '(ID=0) ';
+    Result.Query := Result.Query + ' ) ';
+    ApplyFilter(Result, Db_attr_norm);
   end;
- end;
 
- Result.Query:=AddOptions(Result.Query);
+  if not Systemquery then
+  begin
+    Result.QueryType := QT_TEXT;
+    for I := 1 to Length(Sqltext) do
+    begin
+      if Sqltext[I] = '*' then
+        Sqltext[I] := '%';
+      if Sqltext[I] = '?' then
+        Sqltext[I] := '_';
+    end;
+    begin
+      if Sqltext[Length(Sqltext)] <> '$' then
+      begin
+        Fields_names_count := 0;
+        Stemp := '';
+        A := 0;
+        B := 0;
+        A := Pos('[+', Sqltext);
+        if A > 0 then
+          B := PosEx(']', Sqltext, A);
+        if B > 0 then
+          Stemp := AnsiUpperCase(Copy(Sqltext, A + 2, B - A - 2));
+        for I := Length(Stemp) downto 1 do
+          if not CharInSet(Stemp[I], ['C', 'K', 'F', 'G', 'L']) then
+            Delete(Stemp, I, 1);
 
+        for J := 1 to Length(Stemp) do
+          for I := 1 to Length(Stemp) - 1 do
+            if Byte(Stemp[I]) < Byte(Stemp[I + 1]) then
+            begin
+              C := Byte(Stemp[I]);
+              Stemp[I] := Stemp[I + 1];
+              Stemp[I + 1] := Char(C);
+            end;
+        for I := Length(Stemp) - 1 downto 1 do
+          if Stemp[I + 1] = Stemp[I] then
+            Delete(Stemp, I + 1, 1);
+
+        for I := 1 to Math.Min(5, Length(Stemp)) do
+        begin
+          case Byte(AnsiUpperCase(Stemp)[I]) of
+            Byte('C'):
+              AddField('Comment');
+            Byte('K'):
+              AddField('KeyWords');
+            Byte('F'):
+              AddField('FFileName');
+            Byte('G'):
+              AddField('Groups');
+            Byte('L'):
+              AddField('Links');
+          end;
+        end;
+        if Fields_names_count > 0 then
+          Delete(Sqltext, A, B - A + 1);
+
+        if Fields_names_count < 1 then
+        begin
+          Fields_names[1] := 'FFileName';
+          Fields_names[2] := 'Comment';
+          Fields_names[3] := 'KeyWords';
+          Fields_names_count := 3;
+        end;
+        Sqlwords := TStringList.Create;
+        Sqlrwords := TStringList.Create;
+        try
+          Sqltext := ' ' + Sqltext + ' ';
+          for I := Length(Sqltext) downto 2 do
+            if (Sqltext[I] = ' ') and (Sqltext[I - 1] = ' ') then
+              Delete(Sqltext, I, 1);
+          for I := 1 to Length(Sqltext) do
+          begin
+            if (Sqltext[I] = ' ') or (I = 1) then
+              for J := I + 1 to Length(Sqltext) do
+                if (Sqltext[J] = ' ') or (J = Length(Sqltext)) then
+                begin
+                  if I = 1 then
+                    Stemp := Copy(Sqltext, I + 1, J - I - 1)
+                  else
+                    Stemp := Copy(Sqltext, I + 1, J - I - 1);
+                  if Length(Stemp) > 0 then
+                  begin
+                    if Stemp[1] = '-' then
+                      Sqlrwords.Add(Stemp)
+                    else
+                      Sqlwords.Add(Stemp);
+                  end
+                  else
+                    Sqlwords.Add(Stemp);
+                  Break;
+                end;
+          end;
+          if Sqlwords.Count = 0 then
+            Sqlwords.Add('%');
+
+          Sqltext := '(';
+          for I := 1 to Fields_names_count do
+          begin
+
+            if (I <> 1) then
+              Sqltext := Sqltext + ') or (';
+            for J := 1 to Sqlwords.Count do
+            begin
+              Sqltext := Sqltext + Fields_names[I] + ' like "%' + Sqlwords[J - 1] + '%"';
+              if (J <> Sqlwords.Count) then
+                Sqltext := Sqltext + ' and ';
+            end;
+          end;
+          Sqltext := Sqltext + ')';
+
+          Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
+          Result.Query := Result.Query + Format(' where %s and (%s)',
+            [Format(' ((Rating >= %d) AND (Rating <= %d)) ', [FSearchParams.RatingFrom, FSearchParams.RatingTo]),
+            Sqltext]);
+
+          if FSearchParams.GroupName <> '' then
+            Result.Query := Result.Query + ' AND (Groups like "' + GroupSearchByGroupName(FSearchParams.GroupName) + '")';
+
+          if Sqlrwords.Count > 0 then
+          begin
+            Result.Query := Result.Query + ' AND not (';
+            Sqltext := '(';
+            for I := 1 to Fields_names_count do
+            begin
+              if (I <> 1) then
+                Sqltext := Sqltext + ') or (';
+              for J := 1 to Sqlrwords.Count do
+              begin
+                Stemp := Sqlrwords[J - 1];
+                Delete(Stemp, 1, 1);
+                Sqltext := Sqltext + '' + Fields_names[I] + ' like "%' + Stemp + '%"';
+                if (J <> Sqlrwords.Count) then
+                  Sqltext := Sqltext + ' or ';
+              end;
+            end;
+            Sqltext := Sqltext + ')';
+            Result.Query := Result.Query + Sqltext + ')';
+          end;
+
+        finally
+          F(Sqlwords);
+          F(Sqlrwords);
+        end;
+      end else
+      begin
+        Sqltext := '(';
+        S := FSearchParams.Query;
+        for I := Length(S) downto 1 do
+          if not CharInSet(S[I], Cifri) and (S[I] <> '$') then
+            Delete(S, I, 1);
+        if Length(S) < 2 then
+          Exit;
+        N := 1;
+        for I := 1 to Length(S) do
+          if S[I] = '$' then
+          begin
+            S1 := Copy(S, N, I - N);
+            N := I + 1;
+            Sqltext := Sqltext + ' (ID=' + S1 + ') OR';
+          end;
+        Sqltext := Sqltext + ' (ID=0))';
+        Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
+        Result.Query := Result.Query + ' where (' + Sqltext + ')';
+
+        if FSearchParams.GroupName <> '' then
+          Result.Query := Result.Query + ' AND (Groups like "' + GroupSearchByGroupName(FSearchParams.GroupName) + '")';
+      end;
+      ApplyFilter(Result, Db_attr_norm);
+    end;
+  end;
+
+  AddOptions(Result);
 end;
 
 destructor SearchThread.Destroy;
@@ -970,12 +908,15 @@ procedure SearchThread.DoOnDone;
 var
   AData: TDBPopupMenuInfo;
 begin
-  if FPictureSize = ThImageSize then
+  //Loading big images
+  if FPictureSize <> ThImageSize then
+    (ThreadForm as TSearchForm).ReloadBigImages
+  else
     if Assigned(FOnDone) then
       FOnDone(Self);
 
-    (ThreadForm as TSearchForm).StopLoadingList;
-    //TODO:!!!if (ThreadForm as TSearchForm).SearchByCompating then
+  (ThreadForm as TSearchForm).StopLoadingList;
+    //if (ThreadForm as TSearchForm).SearchByCompating then
     //TODO:!!!begin
     //TODO:!!! (ThreadForm as TSearchForm).Decremect1.Checked:=true;
     //TODO:!!! (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
@@ -986,9 +927,7 @@ begin
       (ThreadForm as TSearchForm).SortbyDate1Click((ThreadForm as TSearchForm).SortbyDate1);
     end;
   end;
-  //Loading big images
-  if FPictureSize <> ThImageSize then
-    (ThreadForm as TSearchForm).ReloadBigImages;
+
 end;
 
 {procedure SearchThread.SetSearchPath;
@@ -1003,7 +942,7 @@ begin
  SynchronizeEx(SetSearchPath);
 end; }
 
-procedure SearchThread.GetWideSearchOptions(Params : TDBQueryParams);
+procedure SearchThread.AddWideSearchOptions(Params : TDBQueryParams);
 var
   Result: string;
 begin
@@ -1018,9 +957,9 @@ begin
   Params.AddDateTimeParam('MaxDate', Trunc(FSearchParams.DateTo) + 1);
 
   if not FSearchParams.ShowPrivate then
-    Result := Result + ' AND (Access = 0)'
-  else
-    Result := Result + ' AND (Attr<>' + Inttostr(Db_attr_not_exists) + ')';
+    Result := Result + ' AND (Access = 0)';
+
+  Result := Result + ' AND (Attr<>' + Inttostr(Db_attr_not_exists) + ')';
 
   Params.Query := Params.Query + Result;
 end;
@@ -1058,14 +997,17 @@ begin
   (ThreadForm as TSearchForm).PbProgress.Text:=StrParam;
 end;
 
-function SearchThread.AddOptions(SqlQuery : string): string;
+procedure SearchThread.AddOptions(SqlParams : TDBQueryParams);
 var
   SortDirection : string;
 
 begin
-  if (QueryType=QT_TEXT) or (QueryType=QT_GROUP) or (QueryType=QT_FOLDER) or (QueryType=QT_ONE_TEXT) or (QueryType=QT_ONE_KEYWORD) or (QueryType=QT_NO_NOPATH) then
-  if not FSearchParams.ShowAllImages then
-    SqlQuery := SqlQuery + ' and (Include=TRUE) ';
+  case SqlParams.QueryType of
+    QT_TEXT, QT_GROUP, QT_FOLDER,
+    QT_ONE_TEXT, QT_ONE_KEYWORD, QT_NO_NOPATH:
+    if not FSearchParams.ShowAllImages then
+      SqlParams.Query := SqlParams.Query + ' and (Include = TRUE) ';
+  end;
 
   if not FSearchParams.IsEstimate then
   begin
@@ -1074,14 +1016,15 @@ begin
       SortDirection := ' DESC';
 
     case FSearchParams.SortMethod of
-      SM_TITLE :     Result := SqlQuery + ' ORDER BY Name'      + SortDirection;
-      SM_DATE_TIME : Result := SqlQuery + ' ORDER BY DateToAdd' + SortDirection+', aTime' + SortDirection;
-      SM_RATING:     Result := SqlQuery + ' ORDER BY Rating'    + SortDirection;
-      SM_FILE_SIZE:  Result := SqlQuery + ' ORDER BY FileSize'  + SortDirection;
-      SM_SIZE:       Result := SqlQuery + ' ORDER BY Width'     + SortDirection;
+      SM_TITLE :     SqlParams.Query := SqlParams.Query + ' ORDER BY Name'      + SortDirection;
+      SM_DATE_TIME : SqlParams.Query := SqlParams.Query + ' ORDER BY DateToAdd' + SortDirection+', aTime' + SortDirection;
+      SM_RATING:     SqlParams.Query := SqlParams.Query + ' ORDER BY Rating'    + SortDirection;
+      SM_FILE_SIZE:  SqlParams.Query := SqlParams.Query + ' ORDER BY FileSize'  + SortDirection;
+      SM_SIZE:       SqlParams.Query := SqlParams.Query + ' ORDER BY Width'     + SortDirection;
+    else
+                     SqlParams.Query := SqlParams.Query + ' ORDER BY ID'        + SortDirection;
     end;
-  end else
-    Result := SqlQuery
+  end;
 end;
 
 {procedure SearchThread.DoSetSearchByComparing;

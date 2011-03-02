@@ -68,7 +68,7 @@ type
   TFunctionIsBoolean = function : Boolean;
   TFunctionStringIsBoolean = function(S : String) : Boolean;
   TFunctionAddIcon = function(Path : string; ImageList : TImageList; var IconsCount : integer) : integer;
-  TProcedureScript = procedure(var Script : TScript);
+  TProcedureScript = procedure(const Script : TScript);
   TProcedureBoolean = procedure(Bool : Boolean);
   TFunctionStringIsInteger = function(S : String) : integer;
   TProcedureClear = procedure(aOwner: TMenuItem);
@@ -328,12 +328,12 @@ begin
   Result := (s <> '') and (s[1] = '$');
 end;
 
-function GetCID : string;
+function GetCID: string;
 var
-  CID : TGUID;
+  CID: TGUID;
 begin
- CoCreateGuid(CID);
- Result:=GUIDToString(CID);
+  CoCreateGuid(CID);
+  Result := GUIDToString(CID);
 end;
 
 function GetValueType(const aScript : TScript; const Value : string) : integer;
@@ -2746,7 +2746,7 @@ begin
  Halt;
 end;
 
-procedure ClearMemory(var aScript : TScript);
+procedure ClearMemory(const aScript : TScript);
 begin
  aScript.NamedValues.Clear;
 end;
@@ -2839,233 +2839,219 @@ end;
 
 procedure ShowMemoryStatus(const aScript : TScript);
 var
-  StatusForm : TForm;
-  List : TListBox;
-  i : integer;
+  StatusForm: TForm;
+  List: TListBox;
+  I: Integer;
 begin
- Application.CreateForm(TForm,StatusForm);
- StatusForm.Caption:='Memory for ['+aScript.Description+']';
- List := TListBox.Create(StatusForm);
- List.Parent:=StatusForm;
- List.Align:=AlClient;
- StatusForm.Position:=poScreenCenter;
- for i:=0 to aScript.NamedValues.Count-1 do
- begin
-  VarValue(aScript,aScript.NamedValues[i].aName,List);
- end;
- StatusForm.ShowModal;
- StatusForm.Release;
- StatusForm.Free;
+  Application.CreateForm(TForm, StatusForm);
+  try
+    StatusForm.Caption := 'Memory for [' + AScript.Description + ']';
+    List := TListBox.Create(StatusForm);
+    List.Parent := StatusForm;
+    List.Align := AlClient;
+    StatusForm.Position := PoScreenCenter;
+    for I := 0 to AScript.NamedValues.Count - 1 do
+      VarValue(AScript, AScript.NamedValues[I].AName, List);
+
+    StatusForm.ShowModal;
+  finally
+    R(StatusForm);
+  end;
 end;
 
 procedure ShowFunctionList(const aScript : TScript);
 var
-  StatusForm : TForm;
-  List : TListBox;
-  I : integer;
+  StatusForm: TForm;
+  List: TListBox;
+  I, J: Integer;
+  FunctionsList: TStringList;
 
-  function GetTypeName(aType : integer) : string;
+  function GetTypeName(AType: Integer): string;
   var
-    i : integer;
+    I: Integer;
   begin
-   Result:='Unknown';
-   for i:=1 to FTypesLength do
-   begin
-    if FTypesInt[i]=aType then
+    Result := 'Unknown';
+    for I := 1 to FTypesLength do
     begin
-     Result:=FTypes[i];
-     break;
+      if FTypesInt[I] = AType then
+      begin
+        Result := FTypes[I];
+        Break;
+      end;
     end;
-   end;
   end;
 
 begin
- Application.CreateForm(TForm,StatusForm);
- StatusForm.Caption:='Functions for ['+aScript.Description+']';
- List := TListBox.Create(StatusForm);
- List.Parent:=StatusForm;
- List.Align:=AlClient;
- StatusForm.Width:=500;
- StatusForm.Height:=300;
- StatusForm.Position:=poScreenCenter;
-{ TempFunctions:=aScript.ScriptFunctions;
+  Application.CreateForm(TForm, StatusForm);
+  try
+    StatusForm.Caption := 'Functions for [' + AScript.Description + ']';
+    List := TListBox.Create(StatusForm);
+    List.Parent := StatusForm;
+    List.Align := AlClient;
+    StatusForm.Width := 500;
+    StatusForm.Height := 300;
+    StatusForm.Position := PoScreenCenter;
 
- for j:=0 to Length(TempFunctions)-1 do
- for i:=0 to Length(TempFunctions)-2 do
- begin
-  if CompareStr(TempFunctions[i].Name,TempFunctions[i+1].Name)>0 then
-  begin
-   TempFunct:=TempFunctions[i];
-   TempFunctions[i]:=TempFunctions[i+1];
-   TempFunctions[i+1]:=TempFunct;
+    FunctionsList:= TStringList.Create;
+    for I := 0 to AScript.ScriptFunctions.Count - 1 do
+      FunctionsList.Add(AScript.ScriptFunctions[I].Name + '   [' + GetTypeName(AScript.ScriptFunctions[I].AType) + ']');
+
+    for J := 0 to FunctionsList.Count - 1 do
+      for I := 0 to FunctionsList.Count - 2 do
+        if CompareStr(FunctionsList[I], FunctionsList[I + 1]) > 0 then
+          FunctionsList.Exchange(I, I + 1);
+
+    List.Items.Assign(FunctionsList);
+
+    StatusForm.ShowModal;
+  finally
+    R(StatusForm);
   end;
- end; }
-
- for i:=0 to aScript.ScriptFunctions.Count - 1 do
- begin
-  List.Items.Add(aScript.ScriptFunctions[i].Name+'   ['+GetTypeName(aScript.ScriptFunctions[i].aType)+']');
- end;
- StatusForm.ShowModal;
- StatusForm.Release;
- StatusForm.Free;
 end;
 
-procedure ExecuteScriptFile(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil; FileName : string = '');
+procedure ExecuteScriptFile(Sender: TMenuItemW; var AScript: TScript; AlternativeCommand: string;
+  var ImagesCount: Integer; ImageList: TImageList; OnClick: TNotifyEvent = nil; FileName: string = '');
 var
-   FileText : string;
+  FileText: string;
 begin
   FileText := ReadScriptFile(FileName);
-  ExecuteScript(Sender,aScript,FileText,ImagesCount,ImageList,OnClick);
+  ExecuteScript(Sender, AScript, FileText, ImagesCount, ImageList, OnClick);
 end;
 
-function aMessageBox(Text, Caption : string; params : integer) : integer;
+function AMessageBox(Text, Caption: string; Params: Integer): Integer;
 begin
- Result:=Application.MessageBox(PWideChar(Text), PWideChar(Caption), params);
+  Result := Application.MessageBox(PWideChar(Text), PWideChar(Caption), Params);
 end;
 
-function ReplaceString(Str : string; WhatReplase, ToReplase : string) : string;
+function ReplaceString(Str: string; WhatReplase, ToReplase: string): string;
 begin
- Result:=StringReplace(Str,WhatReplase,ToReplase,[rfReplaceAll,rfIgnoreCase]);
+  Result := StringReplace(Str, WhatReplase, ToReplase, [RfReplaceAll, RfIgnoreCase]);
 end;
 
-function ReplaceStringAll(Str : string; WhatReplase, ToReplase : string) : string;
+function ReplaceStringAll(Str: string; WhatReplase, ToReplase: string): string;
 begin
- Result:=StringReplace(Str,WhatReplase,ToReplase,[rfIgnoreCase]);
+  Result := StringReplace(Str, WhatReplase, ToReplase, [RfIgnoreCase]);
 end;
 
 procedure LoadBaseFunctions(Enviroment : TScriptEnviroment);
 begin
- AddScriptFunction(Enviroment,'ShowString',F_TYPE_PROCEDURE_STRING,@ShowString);
+  AddScriptFunction(Enviroment, 'ShowString', F_TYPE_PROCEDURE_STRING, @ShowString);
 
- AddScriptFunction(Enviroment,'REGISTER_SCRIPT',F_TYPE_FUNCTION_REGISTER_SCRIPT,nil);
+  AddScriptFunction(Enviroment, 'REGISTER_SCRIPT', F_TYPE_FUNCTION_REGISTER_SCRIPT, nil);
 
- AddScriptFunction(Enviroment,'START_DEBUG',F_TYPE_FUNCTION_DEBUG_START,nil);
- AddScriptFunction(Enviroment,'STOP_DEBUG',F_TYPE_FUNCTION_DEBUG_END,nil);
- AddScriptFunction(Enviroment,'LOAD_VARS',F_TYPE_FUNCTION_LOAD_VARS,nil);
- AddScriptFunction(Enviroment,'SAVE_VAR',F_TYPE_FUNCTION_SAVE_VAR,nil);
- AddScriptFunction(Enviroment,'DELETE_VAR',F_TYPE_FUNCTION_DELETE_VAR,nil);
+  AddScriptFunction(Enviroment, 'START_DEBUG', F_TYPE_FUNCTION_DEBUG_START, nil);
+  AddScriptFunction(Enviroment, 'STOP_DEBUG', F_TYPE_FUNCTION_DEBUG_END, nil);
+  AddScriptFunction(Enviroment, 'LOAD_VARS', F_TYPE_FUNCTION_LOAD_VARS, nil);
+  AddScriptFunction(Enviroment, 'SAVE_VAR', F_TYPE_FUNCTION_SAVE_VAR, nil);
+  AddScriptFunction(Enviroment, 'DELETE_VAR', F_TYPE_FUNCTION_DELETE_VAR, nil);
 
- AddScriptFunction(Enviroment,'ReplaceString',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ReplaceString);
- AddScriptFunction(Enviroment,'ReplaceStringAll',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@ReplaceStringAll);
+  AddScriptFunction(Enviroment, 'ReplaceString', F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING, @ReplaceString);
+  AddScriptFunction(Enviroment, 'ReplaceStringAll', F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING, @ReplaceStringAll);
 
- AddScriptFunction(Enviroment,'ArrayIntLength',F_TYPE_FUNCTION_ARRAYINTEGER_IS_INTEGER,@ArrayIntLength);
- AddScriptFunction(Enviroment,'GetIntItem',F_TYPE_FUNCTION_ARRAYINTEGER_INTEGER_IS_INTEGER,@GetIntItem);
- AddScriptFunction(Enviroment,'SetIntItem',F_TYPE_PROCEDURE_ARRAYINTEGER_INTEGER_INTEGER,@SetIntItem);
- AddScriptFunction(Enviroment,'GetIntArray',F_TYPE_FUNCTION_INTEGER_IS_ARRAYINTEGER,@GetIntArray);
- AddScriptFunction(Enviroment,'AddIntItem',F_TYPE_PROCEDURE_VAR_ARRAYINTEGER_INTEGER,@AddIntItem);
- AddScriptFunction(Enviroment,'AddStringItem',F_TYPE_PROCEDURE_VAR_ARRAYSTRING_STRING,@AddStringItem);
- AddScriptFunction(Enviroment,'GetStringArray',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@GetStringArray);
- AddScriptFunction(Enviroment,'Clear',F_TYPE_PROCEDURE_CLEAR,@Clear);
- AddScriptFunction(Enviroment,'DeleteNoFirst',F_TYPE_PROCEDURE_CLEAR,@DeleteNoFirst);
- AddScriptFunction(Enviroment,'SetNamedValue',F_TYPE_PROCEDURE_STRING_STRING,@SetNamedValue);
- AddScriptFunction(Enviroment,'String',F_TYPE_FUNCTION_STRING_IS_STRING,@aSetString);
- AddScriptFunction(Enviroment,'Integer',F_TYPE_FUNCTION_INTEGER_IS_INTEGER,@aSetInteger);
- AddScriptFunction(Enviroment,'WriteCode',F_TYPE_PROCEDURE_WRITE_STRING,@WriteCode);
- AddScriptFunction(Enviroment,'Include',F_TYPE_PROCEDURE_WRITE_STRING,@include);
- {$IFNDEF EXT}
+  AddScriptFunction(Enviroment, 'ArrayIntLength', F_TYPE_FUNCTION_ARRAYINTEGER_IS_INTEGER, @ArrayIntLength);
+  AddScriptFunction(Enviroment, 'GetIntItem', F_TYPE_FUNCTION_ARRAYINTEGER_INTEGER_IS_INTEGER, @GetIntItem);
+  AddScriptFunction(Enviroment, 'SetIntItem', F_TYPE_PROCEDURE_ARRAYINTEGER_INTEGER_INTEGER, @SetIntItem);
+  AddScriptFunction(Enviroment, 'GetIntArray', F_TYPE_FUNCTION_INTEGER_IS_ARRAYINTEGER, @GetIntArray);
+  AddScriptFunction(Enviroment, 'AddIntItem', F_TYPE_PROCEDURE_VAR_ARRAYINTEGER_INTEGER, @AddIntItem);
+  AddScriptFunction(Enviroment, 'AddStringItem', F_TYPE_PROCEDURE_VAR_ARRAYSTRING_STRING, @AddStringItem);
+  AddScriptFunction(Enviroment, 'GetStringArray', F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING, @GetStringArray);
+  AddScriptFunction(Enviroment, 'Clear', F_TYPE_PROCEDURE_CLEAR, @Clear);
+  AddScriptFunction(Enviroment, 'DeleteNoFirst', F_TYPE_PROCEDURE_CLEAR, @DeleteNoFirst);
+  AddScriptFunction(Enviroment, 'SetNamedValue', F_TYPE_PROCEDURE_STRING_STRING, @SetNamedValue);
+  AddScriptFunction(Enviroment, 'String', F_TYPE_FUNCTION_STRING_IS_STRING, @ASetString);
+  AddScriptFunction(Enviroment, 'Integer', F_TYPE_FUNCTION_INTEGER_IS_INTEGER, @ASetInteger);
+  AddScriptFunction(Enviroment, 'WriteCode', F_TYPE_PROCEDURE_WRITE_STRING, @WriteCode);
+  AddScriptFunction(Enviroment, 'Include', F_TYPE_PROCEDURE_WRITE_STRING, @Include);
+{$IFNDEF EXT}
+  AddScriptFunction(Enviroment, 'SumInt', F_TYPE_FUNCTION_INTEGER_INTEGER_IS_INTEGER, @SumInt);
+  AddScriptFunction(Enviroment, 'SumStr', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @SumStr);
+  AddScriptFunction(Enviroment, 'ArrayStringLength', F_TYPE_FUNCTION_ARRAYSTRING_IS_INTEGER, @ArrayStringLength);
+  AddScriptFunction(Enviroment, 'GetStringItem', F_TYPE_FUNCTION_ARRAYSTRING_INTEGER_IS_STRING, @GetStringItem);
+  AddScriptFunction(Enviroment, 'CreateItem', F_TYPE_FUNCTION_CREATE_ITEM, @CreateItem);
+  AddScriptFunction(Enviroment, 'CreateItemDef', F_TYPE_FUNCTION_CREATE_ITEM_DEF, @CreateItemDef);
+  AddScriptFunction(Enviroment, 'CreateItemDefChecked', F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED, @CreateItemDefChecked);
+  AddScriptFunction(Enviroment, 'CreateItemDefCheckedSubTag', F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED_SUBTAG,
+    @CreateItemDefChecked);
+  AddScriptFunction(Enviroment, 'CreateParentItem', F_TYPE_FUNCTION_CREATE_PARENT_ITEM, @CreateItem);
 
- AddScriptFunction(Enviroment,'SumInt',F_TYPE_FUNCTION_INTEGER_INTEGER_IS_INTEGER,@SumInt);
- AddScriptFunction(Enviroment,'SumStr',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@SumStr);
- AddScriptFunction(Enviroment,'ArrayStringLength',F_TYPE_FUNCTION_ARRAYSTRING_IS_INTEGER,@ArrayStringLength);
- AddScriptFunction(Enviroment,'GetStringItem',F_TYPE_FUNCTION_ARRAYSTRING_INTEGER_IS_STRING,@GetStringItem);
- AddScriptFunction(Enviroment,'CreateItem',F_TYPE_FUNCTION_CREATE_ITEM,@CreateItem);
- AddScriptFunction(Enviroment,'CreateItemDef',F_TYPE_FUNCTION_CREATE_ITEM_DEF,@CreateItemDef);
- AddScriptFunction(Enviroment,'CreateItemDefChecked',F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED,@CreateItemDefChecked);
- AddScriptFunction(Enviroment,'CreateItemDefCheckedSubTag',F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED_SUBTAG,@CreateItemDefChecked);
- AddScriptFunction(Enviroment,'CreateParentItem',F_TYPE_FUNCTION_CREATE_PARENT_ITEM,@CreateItem);
+  AddScriptFunction(Enviroment, 'IntToStr', F_TYPE_FUNCTION_INTEGER_IS_STRING, @AIntToStr);
+  AddScriptFunction(Enviroment, 'SpilitWords', F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING, @SpilitWords);
+  AddScriptFunction(Enviroment, 'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @ReadFile);
+  AddScriptFunction(Enviroment, 'Default', F_TYPE_PROCEDURE_TSCRIPT, @default);
+  AddScriptFunction(Enviroment, 'InVisible', F_TYPE_PROCEDURE_TSCRIPT, @InVisible);
+  AddScriptFunction(Enviroment, 'Disabled', F_TYPE_PROCEDURE_TSCRIPT, @Disabled);
+  AddScriptFunction(Enviroment, 'Checked', F_TYPE_PROCEDURE_TSCRIPT, @Checked);
+  AddScriptFunction(Enviroment, 'AddIcon', F_TYPE_FUNCTION_ADD_ICON, @AddIcon);
+  AddScriptFunction(Enviroment, 'Boolean', F_TYPE_FUNCTION_BOOLEAN_IS_BOOLEAN, @ABoolean);
+  AddScriptFunction(Enviroment, 'GetDirListing', F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING, @GetDirListing);
+  AddScriptFunction(Enviroment, 'FileExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @AFileExists);
+  AddScriptFunction(Enviroment, 'DirectoryExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @ADirectoryExists);
+  AddScriptFunction(Enviroment, 'DirectoryFileExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @ADirectoryFileExists);
+  AddScriptFunction(Enviroment, 'AddAssociatedIcon', F_TYPE_FUNCTION_ADD_ICON, @AddAssociatedIcon);
+  AddScriptFunction(Enviroment, 'PathFormat', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @APathFormat);
+  AddScriptFunction(Enviroment, 'GetUSBDrives', F_TYPE_FUNCTION_IS_ARRAYSTRING, @GetUSBDrives);
+  AddScriptFunction(Enviroment, 'GetCDROMDrives', F_TYPE_FUNCTION_IS_ARRAYSTRING, @GetCDROMDrives);
+  AddScriptFunction(Enviroment, 'GetAllDrives', F_TYPE_FUNCTION_IS_ARRAYSTRING, @GetAllDrives);
+  AddScriptFunction(Enviroment, 'GetDriveName', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @GetDriveName);
+  AddScriptFunction(Enviroment, 'GetMyPicturesFolder', F_TYPE_FUNCTION_IS_STRING, @GetMyPicturesFolder);
+  AddScriptFunction(Enviroment, 'GetMyDocumentsFolder', F_TYPE_FUNCTION_IS_STRING, @GetMyDocumentsFolder);
+  AddScriptFunction(Enviroment, 'ShowInt', F_TYPE_PROCEDURE_INTEGER, @ShowInt);
+  AddScriptFunction(Enviroment, 'Sleep', F_TYPE_PROCEDURE_INTEGER, @Sleep);
+  AddScriptFunction(Enviroment, 'AltKeyDown', F_TYPE_FUNCTION_IS_BOOLEAN, @AltKeyDown);
+  AddScriptFunction(Enviroment, 'CtrlKeyDown', F_TYPE_FUNCTION_IS_BOOLEAN, @CtrlKeyDown);
+  AddScriptFunction(Enviroment, 'ShiftKeyDown', F_TYPE_FUNCTION_IS_BOOLEAN, @ShiftKeyDown);
+  AddScriptFunction(Enviroment, 'NowString', F_TYPE_FUNCTION_IS_STRING, @NowString);
+  AddScriptFunction(Enviroment, 'Halt', F_TYPE_PROCEDURE_NO_PARAMS, @AHalt);
+  AddScriptFunction(Enviroment, 'LoadFilesFromClipBoard', F_TYPE_FUNCTION_IS_ARRAYSTRING, @LoadFilesFromClipBoardA);
+  AddScriptFunction(Enviroment, 'ClipboardCopyFile', F_TYPE_PROCEDURE_STRING, @CopyFile);
+  AddScriptFunction(Enviroment, 'ClipboardCutFile', F_TYPE_PROCEDURE_STRING, @CutFile);
+  AddScriptFunction(Enviroment, 'ClipboardCopyFiles', F_TYPE_PROCEDURE_ARRAYSTRING, @CopyFiles);
+  AddScriptFunction(Enviroment, 'ClipboardCutFiles', F_TYPE_PROCEDURE_ARRAYSTRING, @CutFiles);
+  AddScriptFunction(Enviroment, 'ShowMemoryStatus', F_TYPE_PROCEDURE_TSCRIPT, @ShowMemoryStatus);
+  AddScriptFunction(Enviroment, 'ClearMemory', F_TYPE_PROCEDURE_TSCRIPT, @ClearMemory);
+  AddScriptFunction(Enviroment, 'ShowFunctionList', F_TYPE_PROCEDURE_TSCRIPT, @ShowFunctionList);
 
+  AddScriptFunction(Enviroment, 'StrToInt', F_TYPE_FUNCTION_STRING_IS_INTEGER, @AStrToInt);
+  AddScriptFunction(Enviroment, 'Pos', F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER, @APos);
+  AddScriptFunction(Enviroment, 'StrCopy', F_TYPE_FUNCTION_STRING_INTEGER_INTEGER_IS_STRING, @AStrCopy);
 
- AddScriptFunction(Enviroment,'IntToStr',F_TYPE_FUNCTION_INTEGER_IS_STRING,@aIntToStr);
- AddScriptFunction(Enviroment,'SpilitWords',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@SpilitWords);
- AddScriptFunction(Enviroment, 'ReadFile',F_TYPE_FUNCTION_STRING_IS_STRING,@ReadFile);
- AddScriptFunction(Enviroment, 'Default',F_TYPE_PROCEDURE_TSCRIPT,@Default);
- AddScriptFunction(Enviroment, 'InVisible',F_TYPE_PROCEDURE_TSCRIPT,@InVisible);
- AddScriptFunction(Enviroment, 'Disabled',F_TYPE_PROCEDURE_TSCRIPT,@Disabled);
- AddScriptFunction(Enviroment, 'Checked',F_TYPE_PROCEDURE_TSCRIPT,@Checked);
- AddScriptFunction(Enviroment, 'AddIcon',F_TYPE_FUNCTION_ADD_ICON,@AddIcon);
- AddScriptFunction(Enviroment, 'Boolean',F_TYPE_FUNCTION_BOOLEAN_IS_BOOLEAN,@aBoolean);
- AddScriptFunction(Enviroment, 'GetDirListing',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@GetDirListing);
- AddScriptFunction(Enviroment, 'FileExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aFileExists);
- AddScriptFunction(Enviroment, 'DirectoryExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aDirectoryExists);
- AddScriptFunction(Enviroment, 'DirectoryFileExists',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@aDirectoryFileExists);
- AddScriptFunction(Enviroment, 'AddAssociatedIcon',F_TYPE_FUNCTION_ADD_ICON,@AddAssociatedIcon);
- AddScriptFunction(Enviroment, 'PathFormat',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@aPathFormat);
- AddScriptFunction(Enviroment, 'GetUSBDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetUSBDrives);
- AddScriptFunction(Enviroment, 'GetCDROMDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetCDROMDrives);
- AddScriptFunction(Enviroment, 'GetAllDrives',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetAllDrives);
- AddScriptFunction(Enviroment, 'GetDriveName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetDriveName);
- AddScriptFunction(Enviroment, 'GetMyPicturesFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyPicturesFolder);
- AddScriptFunction(Enviroment, 'GetMyDocumentsFolder',F_TYPE_FUNCTION_IS_STRING,@GetMyDocumentsFolder);
- AddScriptFunction(Enviroment, 'ShowInt',F_TYPE_PROCEDURE_INTEGER,@ShowInt);
- AddScriptFunction(Enviroment, 'Sleep',F_TYPE_PROCEDURE_INTEGER,@Sleep);
- AddScriptFunction(Enviroment, 'AltKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@AltKeyDown);
- AddScriptFunction(Enviroment, 'CtrlKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@CtrlKeyDown);
- AddScriptFunction(Enviroment, 'ShiftKeyDown',F_TYPE_FUNCTION_IS_BOOLEAN,@ShiftKeyDown);
- AddScriptFunction(Enviroment, 'NowString',F_TYPE_FUNCTION_IS_STRING,@NowString);
- AddScriptFunction(Enviroment, 'Halt',F_TYPE_PROCEDURE_NO_PARAMS,@aHalt);
- AddScriptFunction(Enviroment, 'LoadFilesFromClipBoard',F_TYPE_FUNCTION_IS_ARRAYSTRING,@LoadFilesFromClipBoardA);
- AddScriptFunction(Enviroment, 'ClipboardCopyFile',F_TYPE_PROCEDURE_STRING,@CopyFile);
- AddScriptFunction(Enviroment, 'ClipboardCutFile',F_TYPE_PROCEDURE_STRING,@CutFile);
- AddScriptFunction(Enviroment, 'ClipboardCopyFiles',F_TYPE_PROCEDURE_ARRAYSTRING,@CopyFiles);
- AddScriptFunction(Enviroment, 'ClipboardCutFiles',F_TYPE_PROCEDURE_ARRAYSTRING,@CutFiles);
- AddScriptFunction(Enviroment, 'ShowMemoryStatus',F_TYPE_PROCEDURE_TSCRIPT,@ShowMemoryStatus);
- AddScriptFunction(Enviroment, 'ClearMemory',F_TYPE_PROCEDURE_TSCRIPT,@ClearMemory);
- AddScriptFunction(Enviroment, 'ShowFunctionList',F_TYPE_PROCEDURE_TSCRIPT,@ShowFunctionList);
+  AddScriptFunction(Enviroment, 'GetOpenDirectory', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @GetOpenDirectory);
 
- AddScriptFunction(Enviroment, 'StrToInt',F_TYPE_FUNCTION_STRING_IS_INTEGER,@aStrToInt);
- AddScriptFunction(Enviroment, 'Pos',F_TYPE_FUNCTION_STRING_STRING_IS_INTEGER,@aPos);
- AddScriptFunction(Enviroment, 'StrCopy',F_TYPE_FUNCTION_STRING_INTEGER_INTEGER_IS_STRING,@aStrCopy);
+  AddScriptFunction(Enviroment, 'GetProgramFolder', F_TYPE_FUNCTION_IS_STRING, @GetProgramFolder);
+  AddScriptFunction(Enviroment, 'ExtractFileName', F_TYPE_FUNCTION_STRING_IS_STRING, @AExtractFileName);
 
- AddScriptFunction(Enviroment, 'GetOpenDirectory',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenDirectory);
+  AddScriptFunction(Enviroment, 'ExtractFileDirectory', F_TYPE_FUNCTION_STRING_IS_STRING, @ExtractFileDirectory);
+  AddScriptFunction(Enviroment, 'ExecuteScriptFile', F_TYPE_PROCEDURE_TSCRIPT_STRING_W, @ExecuteScriptFile);
+{$ENDIF EXT}
+  AddScriptFunction(Enviroment, 'MessageBox', F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER, @AMessageBox);
+  AddScriptFunction(Enviroment, 'Float', F_TYPE_FUNCTION_FLOAT_IS_FLOAT, @Float);
 
+  AddScriptFunction(Enviroment, 'FileInPath', F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN, @FileInPath);
 
- AddScriptFunction(Enviroment, 'GetProgramFolder',F_TYPE_FUNCTION_IS_STRING,@GetProgramFolder);
- AddScriptFunction(Enviroment, 'ExtractFileName',F_TYPE_FUNCTION_STRING_IS_STRING,@aExtractFileName);
-
- AddScriptFunction(Enviroment, 'ExtractFileDirectory',F_TYPE_FUNCTION_STRING_IS_STRING,@ExtractFileDirectory);
- AddScriptFunction(Enviroment, 'ExecuteScriptFile',F_TYPE_PROCEDURE_TSCRIPT_STRING_W,@ExecuteScriptFile);
- {$ENDIF EXT}
- AddScriptFunction(Enviroment, 'MessageBox',F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER,@aMessageBox);
- AddScriptFunction(Enviroment, 'Float',F_TYPE_FUNCTION_FLOAT_IS_FLOAT,@Float);
-
- AddScriptFunction(Enviroment, 'FileInPath',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@FileInPath);
-
- AddScriptFunction(Enviroment, 'FileHasExt',F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,@UnitScriptsFunctions.FileHasExt);
+  AddScriptFunction(Enviroment, 'FileHasExt', F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,
+    @UnitScriptsFunctions.FileHasExt);
 end;
 
-procedure LoadFileFunctions(Enviroment : TScriptEnviroment);
+procedure LoadFileFunctions(Enviroment: TScriptEnviroment);
 begin
- {$IFNDEF EXT}
- AddScriptFunction(Enviroment, 'CopyFile',F_TYPE_PROCEDURE_STRING_STRING,@aCopyFile);
- AddScriptFunction(Enviroment, 'CopyFileSynch',F_TYPE_PROCEDURE_STRING_STRING,@CopyFileSynch);
- AddScriptFunction(Enviroment, 'RenameFile',F_TYPE_PROCEDURE_STRING_STRING,@aRenameFile);
- AddScriptFunction(Enviroment, 'Run',F_TYPE_PROCEDURE_STRING_STRING,@Run);
- AddScriptFunction(Enviroment, 'RunWait',F_TYPE_PROCEDURE_STRING_STRING,@ExecAndWait);
- AddScriptFunction(Enviroment, 'DeleteFile',F_TYPE_PROCEDURE_STRING,@aDeleteFile);
- AddScriptFunction(Enviroment, 'Exec',F_TYPE_PROCEDURE_STRING,@Exec);
+{$IFNDEF EXT}
+  AddScriptFunction(Enviroment, 'CopyFile', F_TYPE_PROCEDURE_STRING_STRING, @ACopyFile);
+  AddScriptFunction(Enviroment, 'CopyFileSynch', F_TYPE_PROCEDURE_STRING_STRING, @CopyFileSynch);
+  AddScriptFunction(Enviroment, 'RenameFile', F_TYPE_PROCEDURE_STRING_STRING, @ARenameFile);
+  AddScriptFunction(Enviroment, 'Run', F_TYPE_PROCEDURE_STRING_STRING, @Run);
+  AddScriptFunction(Enviroment, 'RunWait', F_TYPE_PROCEDURE_STRING_STRING, @ExecAndWait);
+  AddScriptFunction(Enviroment, 'DeleteFile', F_TYPE_PROCEDURE_STRING, @ADeleteFile);
+  AddScriptFunction(Enviroment, 'Exec', F_TYPE_PROCEDURE_STRING, @Exec);
 
- AddScriptFunction(Enviroment, 'WriteLnToFile',F_TYPE_PROCEDURE_STRING_STRING,@WriteLnToFile);
- AddScriptFunction(Enviroment, 'WriteToFile',F_TYPE_PROCEDURE_STRING_STRING,@WriteToFile);
- AddScriptFunction(Enviroment, 'CreateFile',F_TYPE_PROCEDURE_STRING,@CreateFile);
- AddScriptFunction(Enviroment, 'GetSaveFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetSaveFileName);
- AddScriptFunction(Enviroment, 'GetOpenFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenFileName);
+  AddScriptFunction(Enviroment, 'WriteLnToFile', F_TYPE_PROCEDURE_STRING_STRING, @WriteLnToFile);
+  AddScriptFunction(Enviroment, 'WriteToFile', F_TYPE_PROCEDURE_STRING_STRING, @WriteToFile);
+  AddScriptFunction(Enviroment, 'CreateFile', F_TYPE_PROCEDURE_STRING, @CreateFile);
+  AddScriptFunction(Enviroment, 'GetSaveFileName', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @GetSaveFileName);
+  AddScriptFunction(Enviroment, 'GetOpenFileName', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @GetOpenFileName);
 
- AddScriptFunction(Enviroment, 'GetSaveImageFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetSaveImageFileName);
- AddScriptFunction(Enviroment, 'GetOpenImageFileName',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@GetOpenImageFileName);
- {$ENDIF EXT}
-end;
-
-procedure FinalizeScript(aScript : TScript);
-//var
-//  i : integer;
-begin
-{ for i:=0 to Length(aScript.NamedValues)-1 do
- if aScript.NamedValues[i].aName='$NO_UNLOAD' then
- if aScript.NamedValues[i].BoolValue=true then
-  exit; }
-  //TODO: !!!!!
- //if aScript.ID<>'' then
- //ScriptsManager.RemoveScript(aScript.ID);
+  AddScriptFunction(Enviroment, 'GetSaveImageFileName', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @GetSaveImageFileName);
+  AddScriptFunction(Enviroment, 'GetOpenImageFileName', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @GetOpenImageFileName);
+{$ENDIF EXT}
 end;
 
 { TScriptsManager }

@@ -3,7 +3,7 @@ object FormCont: TFormCont
   Top = 193
   Caption = 'Panel'
   ClientHeight = 364
-  ClientWidth = 483
+  ClientWidth = 542
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -34,8 +34,6 @@ object FormCont: TFormCont
       BevelOuter = bvNone
       TabOrder = 0
       Visible = False
-      ExplicitTop = 28
-      ExplicitHeight = 303
       object Label2: TLabel
         Left = 8
         Top = 144
@@ -252,7 +250,7 @@ object FormCont: TFormCont
   object CoolBar1: TCoolBar
     Left = 0
     Top = 0
-    Width = 483
+    Width = 542
     Height = 30
     AutoSize = True
     BandBorderStyle = bsNone
@@ -261,14 +259,15 @@ object FormCont: TFormCont
         Control = ToolBar1
         ImageIndex = -1
         MinHeight = 30
-        Width = 481
+        Width = 540
       end>
     EdgeInner = esNone
     EdgeOuter = esNone
+    ExplicitWidth = 483
     object ToolBar1: TToolBar
       Left = 11
       Top = 0
-      Width = 472
+      Width = 531
       Height = 30
       AutoSize = True
       ButtonHeight = 30

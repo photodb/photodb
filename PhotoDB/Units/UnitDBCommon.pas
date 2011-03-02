@@ -2,20 +2,18 @@ unit UnitDBCommon;
 
 interface
 
-uses Windows, Classes, Forms, Math, SysUtils, uScript, UnitScripts, Messages,
-     ReplaseIconsInScript, uTime, uMemory, uFileUtils;
+uses Windows, Classes, Forms, Math, SysUtils, Messages, uMemory;
 
-function Hash_Cos_C(s:string):integer;
 function ActivateApplication(const Handle1: THandle): Boolean;
-procedure ExecuteScriptFile(FileName : String; UseDBFunctions : boolean = false);
-
 procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
 function ProgramDir : string;
 procedure ActivateBackgroundApplication(hWnd : THandle);
-function StringToHexString(text : String) : string;
-function HexStringToString(text : String) : string;
+function StringToHexString(Text: string): string;
+function HexStringToString(Text: string): string;
+function HexCharToInt(Ch: Char): Integer;
+function IntToHexChar(Int: Integer): Char;
 
 var
   ProcessorCount: Integer = 0;
@@ -92,6 +90,16 @@ begin
     C := HexToIntDef(Str, 0);
     Result := Result + Chr(C);
   end;
+end;
+
+function HexCharToInt(Ch: Char): Integer;
+begin
+  Result := HexToIntDef(Ch, 0);
+end;
+
+function IntToHexChar(Int: Integer): Char;
+begin
+  Result := IntToHex(Int, 1)[1];
 end;
 
 function ActivateApplication(const Handle1: THandle): Boolean;
@@ -215,7 +223,7 @@ begin
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
 end;
-
+  (*
 function Hash_Cos_C(S: string): Integer;
 var
   C, I: Integer;
@@ -226,42 +234,7 @@ begin
     C := C + Round($FFFFFFFF * Cos(I) * Ord(S[I]));
 {$R+}
   Result := C;
-end;
-
-procedure ExecuteScriptFile(FileName : String; UseDBFunctions : boolean = false);
-var
-  AScript: TScript;
-  I: Integer;
-  LoadScript: string;
-  AFS: TFileStream;
-begin
-  AScript := TScript.Create('');
-  try
-    LoadScript := '';
-    try
-      AFS := TFileStream.Create(FileName, FmOpenRead);
-      SetLength(LoadScript, AFS.Size);
-      AFS.read(LoadScript[1], AFS.Size);
-      for I := Length(LoadScript) downto 1 do
-      begin
-        if LoadScript[I] = #10 then
-          LoadScript[I] := ' ';
-        if LoadScript[I] = #13 then
-          LoadScript[I] := ' ';
-      end;
-      LoadScript := AddIcons(LoadScript);
-      AFS.Free;
-    except
-    end;
-    try
-      ExecuteScript(nil, AScript, LoadScript, I, nil);
-    except
-      // on e : Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
-    end;
-  finally
-    AScript.Free;
-  end;
-end;
+end;   *)
 
 procedure ProportionalSizeA(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
 begin

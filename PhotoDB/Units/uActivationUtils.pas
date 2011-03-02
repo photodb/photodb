@@ -3,266 +3,346 @@ unit uActivationUtils;
 interface
 
 uses
-  Windows, SysUtils, UnitDBCommon, uRuntime;
+  Windows, SysUtils, UnitDBCommon, uRuntime, Classes, Registry, uMemory,
+  win32crc, uConstants, SyncObjs;
 
 type
   TCIDProcedure = procedure(Buffferm: PChar; BuffesSize : Integer);
 
-function ActivationID: string;
-function GetIdeDiskSerialNumber: string;
-function CodeToActivateCode(S: string): string;
+const
+  RegistrationUserName : string = 'UserName';
+  RegistrationCode : string = 'AcivationCode';
+
+type
+  TActivationManager = class(TObject)
+  private
+    FSync: TCriticalSection;
+    FRegistractionKey: string;
+    FRegistrationLoaded: Boolean;
+    FIsDemoMode: Boolean;
+    FIsFullMode: Boolean;
+    constructor Create;
+    function GetIsDemoMode: Boolean;
+    function GetIsFullMode: Boolean;
+    function GetApplicationCode: string;
+    function GetActivationKey: string;
+    function GetActivationUserName: string;
+    procedure CheckActivationStatus;
+  public
+    class function Instance: TActivationManager;
+    destructor Destroy; override;
+    function SaveActivateKey(Name, Key: string; RegisterForAllUsers: Boolean): Boolean;
+    procedure CheckActivationCode(ApplicationCode, ActivationCode: string; out DemoMode: Boolean; out FullMode: Boolean);
+    function GenerateProgramCode(HardwareString: string): string;
+    property IsDemoMode: Boolean read GetIsDemoMode;
+    property IsFullMode: Boolean read GetIsFullMode;
+    property ApplicationCode: string read GetApplicationCode;
+    property ActivationKey: string read GetActivationKey;
+    property ActivationUserName: string read GetActivationUserName;
+  end;
+
+function GenerateActivationKey(ApplicationCode: string; FullVersion: Boolean): string;
 
 implementation
 
-function CodeToActivateCode(S: string): string;
 var
-  C, Intr, Sum, I: Integer;
-  Hs: string;
+  ActivationManager : TActivationManager = nil;
+
+function RegistrationRoot : string;
 begin
-  Sum := 0;
-  for I := 1 to Length(S) do
-    Sum := Sum + Ord(S[I]);
-  Result := '';
-  for I := 1 to Length(S) div 2 do
+  Result := RegRoot + 'Activation';
+end;
+
+function ReadActivationOption(OptionName: string): string;
+var
+  Reg: TRegistry;
+  I : Integer;
+const
+  ActivetionModes: array [0 .. 1] of DWORD = (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE);
+begin
+  for I := 0 to Length(ActivetionModes) - 1 do
   begin
-    C := HexToIntDef(S[2 * (I - 1) + 1] + S[2 * (I - 1) + 2], 0);
-    Intr := Round(Abs($FF * Cos($FF * C + Sum + Sin(I))));
-    Hs := Inttohex(Intr, 2);
-    Result := Result + Hs;
+    Reg := TRegistry.Create;
+    Reg.RootKey := ActivetionModes[I];
+    try
+      if Reg.OpenKey(RegistrationRoot, True) then
+      begin
+        if Reg.ValueExists(RegistrationCode) then
+        begin
+          Result := Reg.ReadString(OptionName);
+          if Result <> '' then
+            Exit;
+        end;
+      end;
+      Reg.CloseKey;
+    finally
+      F(Reg);
+    end;
   end;
 end;
 
-function ActivationID: string;
+procedure GetPeripheralDiskIdentifiers(List: TStrings);
 var
-  P: TCIDProcedure;
-  PAddr: Pointer;
-  Buffer : PChar;
-  KernelHandle : THandle;
-
+  Reg: TRegistry;
+  DiskList,
+  AdapterList,
+  ControllerList: TStrings;
+  I, J, K: Integer;
 const
-  MaxBufferSize = 255;
-
+  HARDWARE_ROOT = 'HARDWARE\DESCRIPTION\System\MultifunctionAdapter';
 begin
-  Result := '';
-  KernelHandle := LoadLibrary(PChar(IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + 'Kernel.dll'));
+  List.Clear;
+  Reg := TRegistry.Create(KEY_READ);
   try
-    PAddr := GetProcAddress(KernelHandle, 'GetCIDA');
-    if PAddr = nil then
-      Exit;
-
-    @P := PAddr;
-    GetMem(Buffer, MaxBufferSize);
-    try
-      P(Buffer, MaxBufferSize);
-      Result := Trim(Buffer);
-    finally
-      FreeMem(Buffer);
-    end;
-
-  finally
-    FreeLibrary(KernelHandle);
-  end;
-end;
-
-function GetIdeDiskSerialNumberW: string;
-var
-  VolumeName, FileSystemName: array [0 .. MAX_PATH - 1] of Char;
-  VolumeSerialNo: DWord;
-  MaxComponentLength, FileSystemFlags: Cardinal;
-begin
-  GetVolumeInformation(PWideChar(Copy(ParamStr(0), 1, 3)), VolumeName, MAX_PATH, @VolumeSerialNo,
-    MaxComponentLength, FileSystemFlags, FileSystemName, MAX_PATH);
-  Result := IntToHex(VolumeSerialNo, 8);
-end;
-
-function GetIdeDiskSerialNumber: string;
-type
-  TSrbIoControl = packed record
-    HeaderLength: ULONG;
-    Signature: array [0 .. 7] of Char;
-    Timeout: ULONG;
-    ControlCode: ULONG;
-    ReturnCode: ULONG;
-    Length: ULONG;
-  end;
-
-  SRB_IO_CONTROL = TSrbIoControl;
-  PSrbIoControl = ^TSrbIoControl;
-
-  TIDERegs = packed record
-    BFeaturesReg: Byte; // Used for specifying SMART "commands".
-    BSectorCountReg: Byte; // IDE sector count register
-    BSectorNumberReg: Byte; // IDE sector number register
-    BCylLowReg: Byte; // IDE low order cylinder value
-    BCylHighReg: Byte; // IDE high order cylinder value
-    BDriveHeadReg: Byte; // IDE drive/head register
-    BCommandReg: Byte; // Actual IDE command.
-    BReserved: Byte; // reserved for future use. Must be zero.
-  end;
-
-  IDEREGS = TIDERegs;
-  PIDERegs = ^TIDERegs;
-
-  TSendCmdInParams = packed record
-    CBufferSize: DWORD; // Buffer size in bytes
-    IrDriveRegs: TIDERegs; // Structure with drive register values.
-    BDriveNumber: Byte; // Physical drive number to send command to (0,1,2,3).
-    BReserved: array [0 .. 2] of Byte; // Reserved for future expansion.
-    DwReserved: array [0 .. 3] of DWORD; // For future use.
-    BBuffer: array [0 .. 0] of Byte; // Input buffer.
-  end;
-
-  SENDCMDINPARAMS = TSendCmdInParams;
-  PSendCmdInParams = ^TSendCmdInParams;
-
-  TIdSector = packed record
-    WGenConfig: Word;
-    WNumCyls: Word;
-    WReserved: Word;
-    WNumHeads: Word;
-    WBytesPerTrack: Word;
-    WBytesPerSector: Word;
-    WSectorsPerTrack: Word;
-    WVendorUnique: array [0 .. 2] of Word;
-    SSerialNumber: array [0 .. 19] of Char;
-    WBufferType: Word;
-    WBufferSize: Word;
-    WECCSize: Word;
-    SFirmwareRev: array [0 .. 7] of Char;
-    SModelNumber: array [0 .. 39] of Char;
-    WMoreVendorUnique: Word;
-    WDoubleWordIO: Word;
-    WCapabilities: Word;
-    WReserved1: Word;
-    WPIOTiming: Word;
-    WDMATiming: Word;
-    WBS: Word;
-    WNumCurrentCyls: Word;
-    WNumCurrentHeads: Word;
-    WNumCurrentSectorsPerTrack: Word;
-    UlCurrentSectorCapacity: ULONG;
-    WMultSectorStuff: Word;
-    UlTotalAddressableSectors: ULONG;
-    WSingleWordDMA: Word;
-    WMultiWordDMA: Word;
-    BReserved: array [0 .. 127] of Byte;
-  end;
-
-  PIdSector = ^TIdSector;
-
-const
-  IDE_ID_FUNCTION = $EC;
-  IDENTIFY_BUFFER_SIZE = 512;
-  DFP_RECEIVE_DRIVE_DATA = $0007C088;
-  IOCTL_SCSI_MINIPORT = $0004D008;
-  IOCTL_SCSI_MINIPORT_IDENTIFY = $001B0501;
-  DataSize = Sizeof(TSendCmdInParams) - 1 + IDENTIFY_BUFFER_SIZE;
-  BufferSize = SizeOf(SRB_IO_CONTROL) + DataSize;
-  W9xBufferSize = IDENTIFY_BUFFER_SIZE + 16;
-var
-  HDevice: THandle;
-  CbBytesReturned: DWORD;
-  PInData: PSendCmdInParams;
-  POutData: Pointer; // PSendCmdInParams;
-  Buffer: array [0 .. BufferSize - 1] of Byte;
-  SrbControl: TSrbIoControl absolute Buffer;
-
-  procedure ChangeByteOrder(var Data; Size: Integer);
-  var
-    Ptr: PChar;
-    I: Integer;
-    C: Char;
-  begin
-    Ptr := @Data;
-    for I := 0 to (Size shr 1) - 1 do
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
+    if Reg.OpenKey(HARDWARE_ROOT, False) then
     begin
-      C := Ptr^;
-      Ptr^ := (Ptr + 1)^; (Ptr + 1)
-      ^ := C;
-      Inc(Ptr, 2);
-    end;
-  end;
+      AdapterList := TStringList.Create;
+      ControllerList := TStringList.Create;
+      DiskList := TStringList.Create;
+      try
+        Reg.GetKeyNames(AdapterList);
+        for I := 0 to AdapterList.Count - 1 do
+        begin
+          Reg.CloseKey;
+          if Reg.OpenKey(HARDWARE_ROOT + '\' + AdapterList[I] + '\DiskController', False) then
+          begin
+            Reg.GetKeyNames(ControllerList);
 
-begin
-  if PortableWork then
-  begin
-    Result := GetIdeDiskSerialNumberW;
-    Exit;
-  end;
-  Result := '';
-  FillChar(Buffer, BufferSize, #0);
-  if Win32Platform = VER_PLATFORM_WIN32_NT then
-  begin // Windows NT, Windows 2000
-    // Get SCSI port handle
-    HDevice := CreateFile('\\.\Scsi0:', GENERIC_READ or GENERIC_WRITE, FILE_SHARE_READ or FILE_SHARE_WRITE, nil,
-      OPEN_EXISTING, 0, 0);
-    if HDevice = INVALID_HANDLE_VALUE then
-      Exit;
-    try
-      SrbControl.HeaderLength := SizeOf(SRB_IO_CONTROL);
-      System.Move('SCSIDISK', SrbControl.Signature, 8);
-      SrbControl.Timeout := 2;
-      SrbControl.Length := DataSize;
-      SrbControl.ControlCode := IOCTL_SCSI_MINIPORT_IDENTIFY;
-      PInData := PSendCmdInParams(PChar(@Buffer) + SizeOf(SRB_IO_CONTROL));
-      POutData := PInData;
-      with PInData^ do
-      begin
-        CBufferSize := IDENTIFY_BUFFER_SIZE;
-        BDriveNumber := 0;
-        with IrDriveRegs do
-        begin
-          BFeaturesReg := 0;
-          BSectorCountReg := 1;
-          BSectorNumberReg := 1;
-          BCylLowReg := 0;
-          BCylHighReg := 0;
-          BDriveHeadReg := $A0;
-          BCommandReg := IDE_ID_FUNCTION;
+            for J := 0 to ControllerList.Count - 1 do
+            begin
+              Reg.CloseKey;
+              if Reg.OpenKey(HARDWARE_ROOT + '\' + AdapterList[I] + '\DiskController\' + ControllerList[J] + '\DiskPeripheral', False) then
+              begin
+                Reg.GetKeyNames(DiskList);
+                for K := 0 to DiskList.Count - 1 do
+                begin
+                  Reg.CloseKey;
+                  if Reg.OpenKey(HARDWARE_ROOT + '\' + AdapterList[I] + '\DiskController\' + ControllerList[J] + '\DiskPeripheral\' + DiskList[K], False) then
+                  begin
+                    if Reg.ValueExists('Identifier') then
+                      List.Add(Reg.ReadString('Identifier'));
+                  end;
+                end;
+              end;
+            end;
+         end;
         end;
+      finally
+        F(AdapterList);
+        F(ControllerList);
+        F(DiskList);
       end;
-      if not DeviceIoControl(HDevice, IOCTL_SCSI_MINIPORT, @Buffer, BufferSize, @Buffer, BufferSize, CbBytesReturned,
-        nil) then
-        Exit;
-    finally
-      CloseHandle(HDevice);
     end;
-  end
-  else
-  begin // Windows 95 OSR2, Windows 98
-    HDevice := CreateFile('\\.\SMARTVSD', 0, 0, nil, CREATE_NEW, 0, 0);
-    if HDevice = INVALID_HANDLE_VALUE then
-      Exit;
-    try
-      PInData := PSendCmdInParams(@Buffer);
-      POutData := PChar(@PInData^.BBuffer);
-      with PInData^ do
-      begin
-        CBufferSize := IDENTIFY_BUFFER_SIZE;
-        BDriveNumber := 0;
-        with IrDriveRegs do
-        begin
-          BFeaturesReg := 0;
-          BSectorCountReg := 1;
-          BSectorNumberReg := 1;
-          BCylLowReg := 0;
-          BCylHighReg := 0;
-          BDriveHeadReg := $A0;
-          BCommandReg := IDE_ID_FUNCTION;
-        end;
-      end;
-      if not DeviceIoControl(HDevice, DFP_RECEIVE_DRIVE_DATA, PInData, SizeOf(TSendCmdInParams) - 1, POutData,
-        W9xBufferSize, CbBytesReturned, nil) then
-        Exit;
-    finally
-      CloseHandle(HDevice);
-    end;
-  end;
-  with PIdSector(PChar(POutData) + 16)^ do
-  begin
-    ChangeByteOrder(SSerialNumber, SizeOf(SSerialNumber));
-    SetString(Result, SSerialNumber, SizeOf(SSerialNumber));
+  finally
+    F(Reg);
   end;
 end;
+
+function GetProcStringID: string;
+var
+  LpSystemInfo: TSystemInfo;
+begin
+  GetSystemInfo(LpSystemInfo);
+  Result := IntToStr(LpSystemInfo.DwProcessorType) + IntToStr(LpSystemInfo.wProcessorLevel) + IntToStr(LpSystemInfo.wProcessorRevision);
+end;
+
+function GetSystemHardwareString: string;
+var
+  DiskList: TStrings;
+  I: Integer;
+begin
+  Result := '';
+  DiskList := TStringList.Create;
+  try
+    GetPeripheralDiskIdentifiers(DiskList);
+    for I := 0 to DiskList.Count - 1 do
+      Result := Result + DiskList[I];
+
+    Result := Result + GetProcStringID;
+  finally
+    F(DiskList);
+  end;
+end;
+
+function GenerateActivationKey(ApplicationCode: string; FullVersion: Boolean): string;
+var
+  I: Integer;
+  SSS: string;
+  Ar: array [1 .. 16] of Integer;
+begin
+  Result := '';
+  for I := 1 to 8 do
+  begin
+    SSS := IntToHex(Abs(Round(Cos(Ord(ApplicationCode[I]) + 100 * I + 0.34) * 16)), 8);
+    ApplicationCode[I] := SSS[8];
+  end;
+  for I := 1 to 16 do
+    Ar[I] := 0;
+  for I := 1 to 8 do
+    Ar[(I - 1) * 2 + 1] := HexCharToInt(ApplicationCode[I]);
+
+  if not FullVersion then
+    Ar[2] := 15 - Ar[1]
+  else
+    Ar[2] := (Ar[1] + Ar[3] * Ar[7] * Ar[15]) mod 15;
+
+  if not FullVersion and (Ar[2] = (Ar[1] + Ar[3] * Ar[7] * Ar[15]) mod 15) then
+    Ar[2] := (Ar[2] + 1) mod 15;
+
+  Ar[4] := Ar[2] * (Ar[3] + 1) * 123 mod 15;
+  Ar[6] := Round(Sqrt(Ar[5]) * 100) mod 15;
+  Ar[8] := (Ar[4] + Ar[6]) * 17 mod 15;
+  Randomize;
+  Ar[10] := Random(16);
+  Ar[12] := Ar[10] * Ar[10] * Ar[10] mod 15;
+  Ar[14] := Ar[7] * Ar[9] mod 15;
+  Ar[16] := 0;
+  for I := 1 to 15 do
+    Ar[16] := Ar[16] + Ar[I];
+  Ar[16] := Ar[16] mod 15;
+  for I := 1 to 16 do
+    Result := Result + IntToHexChar(Ar[I]);
+end;
+
+{ TActivationManager }
+
+procedure TActivationManager.CheckActivationCode(ApplicationCode,
+  ActivationCode: string; out DemoMode, FullMode: Boolean);
+var
+  I, Sum: Integer;
+  Str, ActCode, S: string;
+begin
+  DemoMode := True;
+  FullMode := False;
+
+  if FolderView then
+    Exit;
+
+  S := ApplicationCode;
+  ActCode := ActivationCode;
+  if Length(ActCode) < 16 then
+    ActCode := '0000000000000000';
+  for I := 1 to 8 do
+  begin
+    Str := Inttohex(Abs(Round(Cos(Ord(S[I]) + 100 * I + 0.34) * 16)), 8);
+    if ActCode[(I - 1) * 2 + 1] <> Str[8] then
+      Exit;
+  end;
+
+  Sum := 0;
+  for I := 1 to 15 do
+    Sum := Sum + HexCharToInt(ActCode[I]);
+  if IntToHexChar(Sum mod 15) <> ActCode[16] then
+    Exit;
+
+  //2 checks passed, program works not in demo mode!
+  DemoMode := False;
+  //check full version
+  FullMode := HexCharToInt(ActCode[2]) = (HexCharToInt(ActCode[1]) + (HexCharToInt(ActCode[3]) * HexCharToInt(ActCode[7]) * HexCharToInt(ActCode[15]))) mod 15;
+end;
+
+procedure TActivationManager.CheckActivationStatus;
+begin
+  if FRegistrationLoaded then
+    Exit;
+
+  CheckActivationCode(ApplicationCode, ActivationKey, FIsDemoMode, FIsFullMode);
+  FRegistrationLoaded := True;
+end;
+
+constructor TActivationManager.Create;
+begin
+  FSync := TCriticalSection.Create;
+  FRegistrationLoaded := False;
+end;
+
+destructor TActivationManager.Destroy;
+begin
+  F(FSync);
+  inherited;
+end;
+
+function TActivationManager.GenerateProgramCode(HardwareString: string): string;
+var
+  S, Code: string;
+  N: Cardinal;
+begin
+  S := HardwareString;
+  CalcStringCRC32(S, N);
+  N := N xor $6357A303; // v2.3
+  S := IntToHex(N, 8);
+  CalcStringCRC32(S, N);
+  N := N xor $162C90CA; // v2.3
+  Code := S + Inttohex(N, 8);
+  Result := Code;
+end;
+
+function TActivationManager.GetActivationKey: string;
+begin
+  Result := ReadActivationOption(RegistrationCode);
+end;
+
+function TActivationManager.GetActivationUserName: string;
+begin
+  Result := ReadActivationOption(RegistrationUserName);
+end;
+
+function TActivationManager.GetApplicationCode: string;
+begin
+  Result := GenerateProgramCode(GetSystemHardwareString);
+end;
+
+function TActivationManager.GetIsDemoMode: Boolean;
+begin
+  CheckActivationStatus;
+  Result := FIsDemoMode;
+end;
+
+function TActivationManager.GetIsFullMode: Boolean;
+begin
+  Result := FIsFullMode;
+end;
+
+class function TActivationManager.Instance: TActivationManager;
+begin
+  if ActivationManager = nil then
+    ActivationManager := TActivationManager.Create;
+
+  Result := ActivationManager;
+end;
+
+function TActivationManager.SaveActivateKey(Name, Key: string;
+  RegisterForAllUsers: Boolean): Boolean;
+var
+  Reg: TRegistry;
+begin
+  Result := False;
+
+  Reg := TRegistry.Create;
+
+  if RegisterForAllUsers then
+    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE
+  else
+    Reg.RootKey := Windows.HKEY_CURRENT_USER;
+  try
+    if Reg.OpenKey(RegistrationRoot, True) then
+    begin
+      Reg.WriteString(RegistrationCode, Key);
+      Reg.WriteString(RegistrationUserName, Name);
+      Reg.CloseKey;
+      FRegistrationLoaded := False;
+      Result := True;
+    end;
+  finally
+    F(Reg);
+  end;
+end;
+
+initialization
+
+finalization
+
+  F(ActivationManager);
 
 end.

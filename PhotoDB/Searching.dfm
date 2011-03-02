@@ -160,7 +160,6 @@ object SearchForm: TSearchForm
         TabOrder = 5
         OnChange = Memo1Change
         OnDblClick = SetComent1Click
-        OnKeyDown = Memo1KeyDown
       end
       object Memo1: TMemo
         Tag = 1
@@ -181,8 +180,6 @@ object SearchForm: TSearchForm
         ScrollBars = ssVertical
         TabOrder = 6
         OnChange = Memo1Change
-        OnKeyDown = Memo1KeyDown
-        OnKeyPress = Memo1KeyPress
       end
       object Save: TButton
         Left = 110

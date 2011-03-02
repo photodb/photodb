@@ -154,7 +154,7 @@ begin
             if GetExt(ParamStr1) = 'ITH' then
             begin
               S := LoadIDsFromfile(ParamStr1);
-              NewSearch.SearchEdit.Text := ':ThFile(' + ParamStr1 + '):';
+              NewSearch.SearchEdit.Text := ':HashFile(' + ParamStr1 + '):';
               NewSearch.DoSearchNow(nil);
             end;
             if GetExt(ParamStr1) = 'DBL' then
@@ -634,7 +634,7 @@ begin
         begin
           with SearchManager.NewSearch do
           begin
-            SearchEdit.Text := ':ThFile(' + FilenameA + '):';
+            SearchEdit.Text := ':HashFile(' + FilenameA + '):';
             DoSearchNow(Self);
             Show;
             ActivateBackgroundApplication(Handle);

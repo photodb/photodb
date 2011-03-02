@@ -61,10 +61,16 @@ type
     Value : TDateTime;
   end;
 
+type
+  TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
+                QT_FOLDER, QT_RESULT_ITH, QT_RESULT_IDS, QT_SIMILAR,
+                QT_ONE_TEXT, QT_ONE_KEYWORD, QT_W_SCAN_FILE, QT_NO_NOPATH);
+
   TDBQueryParams = class(TObject)
   private
     FParamList : TList;
     FQuery : string;
+    FQueryType : TQueryType;
   public
     function AddDateTimeParam(Name : string; Value : TDateTime) : TDBDateTimeParam;
     function AddIntParam(Name : string; Value : Integer) : TDBIntegerParam;
@@ -72,6 +78,7 @@ type
     destructor Destroy; override;
     procedure ApplyToDS(DS : TDataSet);
     property Query : string read FQuery write FQuery;
+    property QueryType : TQueryType read FQueryType write FQueryType;
   end;
 
 var
@@ -1121,6 +1128,7 @@ end;
 constructor TDBQueryParams.Create;
 begin
   FParamList := TList.Create;
+  FQueryType := QT_NONE;
 end;
 
 destructor TDBQueryParams.Destroy;

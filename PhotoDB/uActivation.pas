@@ -34,7 +34,6 @@ type
       Shift: TShiftState);
   private
     { Private declarations }
-    Hs, Nm : string;
     procedure LoadLanguage;
     procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
   protected
@@ -69,17 +68,16 @@ end;
 procedure TActivateForm.FormCreate(Sender: TObject);
 begin
   LoadLanguage;
-  Hs := DBKernel.ReadActivateKey;
   if not FolderView then
-    Nm := DBKernel.ReadRegName;
-  EdProgramCode.Text := DBKernel.ApplicationCode;
+  begin
+    EdProgramCode.Text := TActivationManager.Instance.ApplicationCode;
 
-  if not FolderView then
-    if not DBKernel.ProgramInDemoMode then
+    if not TActivationManager.Instance.IsDemoMode then
     begin
-      EdActicationCode.Text := DBKernel.ReadActivateKey;
-      EdUserName.Text := DBKernel.ReadRegName;
+      EdActicationCode.Text := TActivationManager.Instance.ActivationKey;
+      EdUserName.Text := TActivationManager.Instance.ActivationUserName;
     end;
+  end;
 end;
 
 procedure TActivateForm.Button2Click(Sender: TObject);
@@ -88,17 +86,10 @@ var
 begin
   if FolderView then
     Exit;
-  Nm := EdUserName.Text;
-  Hs := EdActicationCode.Text;
-  Reg := TBDRegistry.Create(REGISTRY_CLASSES);
-  try
-    Reg.OpenKey('\CLSID\' + ActivationID, True);
-    Reg.WriteString('UserName', Nm);
-    Reg.WriteString('Code', Hs);
-  finally
-    F(Reg);
-  end;
-  MessageBoxDB(Handle, L('Activation key saved! Please restart the application!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+
+  if TActivationManager.Instance.SaveActivateKey(EdUserName.Text, EdActicationCode.Text, False) then
+    MessageBoxDB(Handle, L('Activation key saved! Please restart the application!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+
   Close;
 end;
 
@@ -149,7 +140,7 @@ begin
   HelpMessage := '     ' + L('Click the "Get code" and then start mail program with a new letter in the title of which is given all the necessary information to activate. $nl$You need send this letter or (if the mailer does not run) ' + 'Send by email to %email%, in which you want to specify the code of the program and its version.' + '$nl$     Press "Next ..." for further assistance.' + '$nl$    Or click on the cross at the top to help is no longer displayed. $nl$$nl$$nl$$nl$', 'Help');
   HelpMessage := StringReplace(HelpMessage, '%email%', ProgramMail, []);
   HelpTimer.Enabled := False;
-  if DBkernel.GetDemoMode then
+  if TActivationManager.Instance.IsDemoMode then
     if HelpActivationNO = 3 then
       DoHelpHintCallBackOnCanClose(L('Help', 'Help'), HelpMessage, Point(0, 0), Button3,
         HelpActivationNextClick, L('Next...'), HelpActivationCloseClick);
@@ -187,8 +178,6 @@ end;
 
 procedure TActivateForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if not FolderView then
-    DBKernel.SetActivateKey(Nm, Hs);
   FormManager.UnRegisterMainForm(Self);
 end;
 

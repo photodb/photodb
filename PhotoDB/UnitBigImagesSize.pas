@@ -150,7 +150,7 @@ begin
 
   LockChange := True;
   BigThSize := aPictureSize;
-  TrbImageSize.Position := 50 - (BigThSize div 10 - 4);
+  TrbImageSize.Position := 50 - (BigThSize div 10 - 8);
   p.y := p.y - 10 - Round((TrbImageSize.Height - 20) * TrbImageSize.Position / TrbImageSize.Max);
 
   if p.y < 0 then
@@ -161,8 +161,7 @@ begin
     Top := 0;
     p := ClientToScreen(p);
     SetCursorPos(p.X, p.y);
-  end
-  else
+  end else
   begin
     Left := p.X;
     Top := p.y - GetSystemMetrics(SM_CYFRAME) - GetSystemMetrics(SM_CYCAPTION)

@@ -3116,7 +3116,7 @@ var
   Files: TStrings;
   EventInfo: TEventValues;
   SQL_: string;
-  I, DeleteID: Integer;
+  DeleteID: Integer;
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete file to recycle bin?'), L('Delete confirn'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then

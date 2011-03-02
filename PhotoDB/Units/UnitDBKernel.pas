@@ -66,21 +66,18 @@ type
 type TDBKernel = class(TObject)
   private
     { Private declarations }
-    FINIPasswods : TStrings;
-    FPasswodsInSession : TStrings;
-    FEvents : TDBEventsIDArray;
+    FINIPasswods: TStrings;
+    FPasswodsInSession: TStrings;
+    FEvents: TDBEventsIDArray;
     FImageList: TImageList;
-    FForms : TList;
-    FApplicationKey : String;
-    Chars : array[1..100] of TCharObject;
-    Sootv : array [1..16] of integer;
-    FDemoMode : Boolean;
-    ThreadOpenResultBool : Boolean;
-    ThreadOpenResultWork : Boolean;
-    FDBs : TPhotoDBFiles;
-    fImageOptions : TImageDBOptions;
-    FRegistryCache : TDBRegistryCache;
-    FSych : TCriticalSection;
+    FForms: TList;
+    FApplicationKey: string;
+    ThreadOpenResultBool: Boolean;
+    ThreadOpenResultWork: Boolean;
+    FDBs: TPhotoDBFiles;
+    FImageOptions: TImageDBOptions;
+    FRegistryCache: TDBRegistryCache;
+    FSych: TCriticalSection;
     procedure LoadDBs;
     function GetSortGroupsByName: Boolean;
   public
@@ -121,16 +118,6 @@ type TDBKernel = class(TObject)
     function GetDataBase: string;
     function GetDataBaseName: string;
     procedure SetDataBase(DatabaseFileName: string);
-    procedure SetActivateKey(AName, AKey: string);
-    function ReadActivateKey: string;
-    function GetDemoMode: Boolean;
-    function ReadRegName: string;
-    function GetTemporaryFolder: string;
-    function ApplicationCode: string;
-    procedure SaveApplicationCode(Key: string);
-    function GetCodeChar(N: Integer): Char;
-    function ProgramInDemoMode: Boolean;
-    procedure InitRegModule;
     procedure AddTemporaryPasswordInSession(Pass: string);
     function FindPasswordForCryptImageFile(FileName: string): string;
     procedure ClearTemporaryPasswordsInSession;
@@ -176,8 +163,6 @@ uses UnitCrypting, CommonDBSupport,
 { TDBKernel }
 
 constructor TDBKernel.Create;
-var
-  I : integer;
 begin
   inherited;
   FDBs := nil;
@@ -186,8 +171,6 @@ begin
   FForms := TList.Create;
   FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
-  for I := 1 to 100 do
-    Chars[I] := nil;
   FPasswodsInSession := TStringList.create;
   FINIPasswods := nil;
   FApplicationKey := '';
@@ -222,15 +205,10 @@ begin
 end;
 
 destructor TDBKernel.Destroy;
-var
-  I: Integer;
 begin
   F(FImageList);
   F(FINIPasswods);
   F(FPasswodsInSession);
-  for I := 1 to 100 do
-    if Chars[I] <> nil then
-      Chars[I].Free;
   FreeIconDll;
   F(FRegistryCache);
   F(FSych);
@@ -249,11 +227,6 @@ begin
 
   if GetCurrentThreadId <> MainThreadID then
     raise Exception.Create('DoIDEvent call not from main thread! Sender: ' + Sender.ClassName);
-
-  if not ProgramInDemoMode then
-    if not DBInDebug then
-      if CharToInt(GetCodeChar(1)) + CharToInt(GetCodeChar(2)) <> 15 then
-        Exit;
 
   if Length(Fevents) = 0 then
     Exit;
@@ -834,68 +807,6 @@ begin
   ReadDBOptions;
 end;
 
-procedure TDBKernel.SetActivateKey(AName, AKey: string);
-var
-  Reg: TBDRegistry;
-  Key, name: string;
-begin
-  Reg := TBDRegistry.Create(REGISTRY_CLASSES);
-  try
-    if PortableWork then
-    begin
-      Key := '\CLSID';
-      name := 'Key';
-    end else
-    begin
-      Key := '\CLSID\' + ActivationID;
-      name := 'DefaultHandle';
-    end;
-    try
-      Reg.OpenKey(Key, True);
-      Reg.WriteString(name, AKey);
-      Reg.WriteString('UserName', AName);
-      Reg.CloseKey;
-    except
-    end;
-  finally
-    F(Reg);
-  end;
-end;
-
-function TDBKernel.ReadActivateKey: string;
-var
-  Reg: TBDRegistry;
-  Key, Name: string;
-begin
-  if FApplicationKey <> '' then
-    Exit;
-  if FolderView then
-    Exit;
-  Reg := TBDRegistry.Create(REGISTRY_CLASSES, True);
-  try
-    if PortableWork then
-    begin
-      Key := '\CLSID';
-      Name := 'Key';
-    end else
-    begin
-      Key := '\CLSID\' + ActivationID;
-      Name := 'DefaultHandle';
-    end;
-    try
-      Reg.OpenKey(Key, True);
-      Result := Reg.ReadString(Name);
-      SaveApplicationCode(Result);
-    except
-      on E: Exception do
-        EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
-    end;
-    Reg.CloseKey;
-  finally
-    F(Reg);
-  end;
-end;
-
 function Chartoint(Ch: Char): Integer;
 begin
   Result := HexToIntDef(Ch, 0);
@@ -904,135 +815,6 @@ end;
 function Inttochar(Int: Integer): Char;
 begin
   Result := IntToHex(Int, 1)[1];
-end;
-
-function TDBKernel.GetDemoMode: Boolean;
-var
-  I, Sum: Integer;
-  Str, ActCode, S: string;
-begin
-  Result := False;
-  if FolderView then
-    Exit;
-  S := ApplicationCode;
-  ActCode := ReadActivateKey;
-  if Length(ActCode) < 16 then
-    ActCode := '0000000000000000';
-  for I := 1 to 8 do
-  begin
-    Str := Inttohex(Abs(Round(Cos(Ord(S[I]) + 100 * I + 0.34) * 16)), 8);
-    if ActCode[(I - 1) * 2 + 1] <> Str[8] then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
-  Sum := 0;
-  for I := 1 to 15 do
-    Sum := Sum + Chartoint(ActCode[I]);
-  if Inttochar(Sum mod 15) <> ActCode[16] then
-  begin
-    Result := True;
-    Exit;
-  end;
-end;
-
-function TDBKernel.ReadRegName: string;
-var
-  Reg: TBDRegistry;
-  Key: string;
-begin
-  Reg := TBDRegistry.Create(REGISTRY_CLASSES);
-  try
-    if PortableWork then
-      Key := '\CLSID'
-    else
-      Key := '\CLSID\' + ActivationID;
-
-    try
-      Reg.OpenKey(Key, True);
-      Result := Reg.ReadString('UserName');
-    except
-      on E: Exception do
-        EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
-    end;
-  finally
-    F(Reg);
-  end;
-end;
-
-function TDBKernel.GetTemporaryFolder: string;
-begin
-  Result := ExtractFileDir(Application.ExeName);
-end;
-
-function TDBKernel.ApplicationCode: String;
-var
-  s, Code : String;
-  n : Cardinal;
-begin
- s:=GetIdeDiskSerialNumber;
- CalcStringCRC32(s,n);
-// n:=n xor $FA45B671;  //v1.75
-// n:=n xor $8C54AF5B; //v1.8
-// n:=n xor $AC68DF35; //v1.9
-// n:=n xor $B1534A4F; //v2.0
-// n:=n xor $29E0FA13; //v2.1
- n:=n xor $6357A302; //v2.2
- s:=inttohex(n,8);
- CalcStringCRC32(s,n);
- {$IFDEF ENGL}
-  n:=n xor $1459EF12;
- {$ENDIF}
- {$IFDEF RUS}
-//  n:=n xor $4D69F789; //v1.9
-//  n:=n xor $E445CF12; //v2.0
-//  n:=n xor $56C987F3; //v2.1
- n:=n xor $762C90CA; //v2.2
- {$ENDIF}
- Code:=s+inttohex(n,8);
- Result:=Code;
-end;
-
-procedure TDBKernel.SaveApplicationCode(Key : String);
-var
-  i, n : integer;
-begin
- Randomize;
- If Length(Key)<16 then key:='0000000000000000';
- for i:=1 to 100 do
- if Chars[i]<>nil then
- begin
-  Chars[i].free;
-  Chars[i]:=nil;
- end;
- for i:=1 to 16 do
- sootv[i]:=0;
- for i:=1 to 16 do
- begin
-  Repeat
-   n:=Random(100)+1;
-   if Chars[n]=nil then
-   begin
-    Chars[n]:=TCharObject.Create;
-    Chars[n].Char_:=Key[i];
-    sootv[i]:=n;
-    Break;
-   end;
-  Until False;
- end;
-end;
-
-function TDBKernel.GetCodeChar(N: Integer): Char;
-begin
-  Result := #0;
-  if Chars[Sootv[N]] <> nil then
-    Result := Chars[Sootv[N]].Char_;
-end;
-
-function TDBKernel.ProgramInDemoMode: Boolean;
-begin
- Result:=FDemoMode;
 end;
 
 procedure TDBKernel.BackUpTable;
@@ -1053,12 +835,6 @@ begin
 
     DBkernel.WriteBool('StartUp', 'BackUp', True);
   end;
-end;
-
-procedure TDBKernel.InitRegModule;
-begin
-  ReadActivateKey;
-  FDemoMode := GetDemoMode;
 end;
 
 procedure TDBKernel.AddTemporaryPasswordInSession(Pass: String);

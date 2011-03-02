@@ -111,10 +111,7 @@ begin
   end;
 
   BtShowActivationForm.Caption := L('Open activation form');
-  if DBKernel <> nil then
-    BtShowActivationForm.Visible := DBkernel.ProgramInDemoMode
-  else
-    BtShowActivationForm.Visible := False;
+  BtShowActivationForm.Visible := TActivationManager.Instance.IsDemoMode;
 
   MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
 
@@ -187,32 +184,18 @@ begin
 end;
 
 procedure TAboutForm.LoadRegistrationData;
-var
-  S, Code: string;
-  N: Cardinal;
 begin
   MemoRegistrationInfo.Clear;
   MemoRegistrationInfo.Lines.Add(L('Program code') + ':');
-  S := GetIdeDiskSerialNumber;
-  CalcStringCRC32(S, N);
-  N := N xor $6357A302; // v2.2
-  S := Inttohex(N, 8);
-  CalcStringCRC32(S, N);
-{$IFDEF ENGL}
-  N := N xor $1459EF12;
-{$ENDIF}
-{$IFDEF RUS}
-  N := N xor $762C90CA; // v2.2
-{$ENDIF}
-  Code := S + Inttohex(N, 8);
-  MemoRegistrationInfo.Lines.Add(Code);
+
+  MemoRegistrationInfo.Lines.Add(TActivationManager.Instance.ApplicationCode);
   MemoRegistrationInfo.Lines.Add('');
   MemoRegistrationInfo.Lines.Add(L('The program is registered to'));
   MemoRegistrationInfo.Lines.Add('');
-  if DBkernel.ProgramInDemoMode then
+  if TActivationManager.Instance.IsDemoMode then
     MemoRegistrationInfo.Lines.Add(L('This program isn''t activated.'))
   else
-    MemoRegistrationInfo.Lines.Add(DBkernel.ReadRegName);
+    MemoRegistrationInfo.Lines.Add(TActivationManager.Instance.ActivationUserName);
 end;
 
 procedure TAboutForm.UpdateCkeckComplete(Sender: TObject; Info: TUpdateInfo);

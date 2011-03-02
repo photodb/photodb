@@ -5,7 +5,7 @@ interface
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
   Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
   UnitDBFileDialogs, Forms, uVistaFuncs, uLogger, uShellIntegration,
-  uFileUtils, uTime, uMemory, uTranslate, uRuntime;
+  uFileUtils, uTime, uMemory, uTranslate, uRuntime, ReplaseIconsInScript;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;
@@ -20,10 +20,10 @@ function GetDirListing(Dir : String; Mask : string) : TArrayOfString;
 function SpilitWords(S : string) : TArrayOfString;
 function SpilitWordsW(S : string; SplitChar : char) : TArrayOfString;
 function aIntToStr(int : integer) : string;
-procedure Default(var aScript : TScript);
-procedure InVisible(var aScript : TScript);
-procedure Disabled(var aScript : TScript);
-procedure Checked(var aScript : TScript);
+procedure Default(const aScript : TScript);
+procedure InVisible(const aScript : TScript);
+procedure Disabled(const aScript : TScript);
+procedure Checked(const aScript : TScript);
 function aDirectoryExists(FileName : string) : boolean;
 function aDirectoryFileExists(FileName : string) : boolean;
 function aPathFormat(aPath, aFile : string) : string;
@@ -65,8 +65,44 @@ function FileInPath(aFile, aPath : string) : boolean;
 function GetOpenDirectory(Caption, Root : string) : string;
 function FileHasExt(aFile, aExt : string) : boolean;
 function ExtractFileDirectory(FileName : string) : string;
+procedure ExecuteScriptFile(FileName: string; UseDBFunctions: Boolean = False);
 
 implementation
+
+procedure ExecuteScriptFile(FileName: string; UseDBFunctions: Boolean = False);
+var
+  AScript: TScript;
+  I: Integer;
+  LoadScript: string;
+  AFS: TFileStream;
+begin
+  AScript := TScript.Create('');
+  try
+    LoadScript := '';
+    try
+      AFS := TFileStream.Create(FileName, FmOpenRead);
+      SetLength(LoadScript, AFS.Size);
+      AFS.read(LoadScript[1], AFS.Size);
+      for I := Length(LoadScript) downto 1 do
+      begin
+        if LoadScript[I] = #10 then
+          LoadScript[I] := ' ';
+        if LoadScript[I] = #13 then
+          LoadScript[I] := ' ';
+      end;
+      LoadScript := AddIcons(LoadScript);
+      AFS.Free;
+    except
+    end;
+    try
+      ExecuteScript(nil, AScript, LoadScript, I, nil);
+    except
+      on e : Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
+    end;
+  finally
+    AScript.Free;
+  end;
+end;
 
 function FileHasExt(aFile, aExt : string) : boolean;
 begin
@@ -320,22 +356,22 @@ begin
   Result:=IntToStr(int);
 end;
 
-procedure default(var AScript: TScript);
+procedure default(const AScript: TScript);
 begin
   SetNamedValue(AScript, '$Default', 'true');
 end;
 
-procedure InVisible(var AScript: TScript);
+procedure InVisible(const AScript: TScript);
 begin
   SetNamedValue(AScript, '$Visible', 'false');
 end;
 
-procedure Disabled(var AScript: TScript);
+procedure Disabled(const AScript: TScript);
 begin
   SetNamedValue(AScript, '$Enabled', 'false');
 end;
 
-procedure Checked(var AScript: TScript);
+procedure Checked(const AScript: TScript);
 begin
   SetNamedValue(AScript, '$Checked', 'true');
 end;

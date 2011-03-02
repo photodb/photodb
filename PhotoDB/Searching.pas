@@ -20,7 +20,7 @@ uses
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
   uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate,
   uShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
-  uDBUtils, uDBFileTypes, Dolphin_DB;
+  uDBUtils, uDBFileTypes, Dolphin_DB, uActivationUtils;
 
 type
   TDateRange = record
@@ -215,17 +215,13 @@ type
     procedure SelectAll1Click(Sender: TObject);
 
     function GetAllFiles:  TStrings;
-    procedure Memo1KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure ManageDB1Click(Sender: TObject);
     procedure RefreshInfoByID(ID : integer);
     procedure Memo1Change(Sender: TObject);
     procedure ErrorQSL(sql : string);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
-    procedure Memo1KeyPress(Sender: TObject; var Key: Char);
     procedure ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    procedure Options1Click(Sender: TObject);
     procedure CopySearchResults1Click(Sender: TObject);
     procedure HintTimerTimer(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
@@ -289,10 +285,7 @@ type
     procedure Splitter1CanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure DeleteItemByID(ID : integer);
-    procedure RefreshThumItemByID(ID : integer);
     procedure NewSearch1Click(Sender: TObject);
-//    procedure GetUpdates1Click(Sender: TObject);
-
     procedure HelpNextClick(Sender: TObject);
     procedure HelpCloseClick(Sender : TObject; var CanClose : Boolean);
     procedure HelpActivationNextClick(Sender: TObject);
@@ -763,9 +756,12 @@ begin
   TLoad.Instance.RequaredDBKernelIcons;
 
   Ico := TIcon.Create;
-  DBkernel.ImageList.GetIcon(DB_IC_GROUPS, Ico);
-  Image3.Picture.Graphic := Ico;
-  Ico.Free;
+  try
+    DBkernel.ImageList.GetIcon(DB_IC_GROUPS, Ico);
+    Image3.Picture.Graphic := Ico;
+  finally
+    F(Ico);
+  end;
 
   TW.I.Start('S -> Create - END');
   FW7TaskBar := CreateTaskBarInstance;
@@ -928,8 +924,8 @@ end;
 
 procedure TSearchForm.ListViewSelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
 begin
- if not SelectTimer.Enabled then
- SelectTimer.Enabled:=true;
+  if not SelectTimer.Enabled then
+    SelectTimer.Enabled := True;
 end;
 
 procedure TSearchForm.SlideShow1Click(Sender: TObject);
@@ -948,449 +944,296 @@ end;
 
 procedure TSearchForm.SaveClick(Sender: TObject);
 var
-  s, s1, s2, s3, _sqlexectext, CommonKeyWords, KeyWords, CommonGroups, Groups : string;
-  EventInfo : TEventValues;
-  i, j, id  :Integer;
-  List : TSQLList;
-  IDs : String;
-  xCount : integer;
-  ProgressForm : TProgressActionForm;
-  WorkQuery : TDataSet;
-  SearchRecord : TDBPopupMenuInfoRecord;
+  S, S1, S2, S3, _sqlexectext, CommonKeyWords, KeyWords, CommonGroups, Groups: string;
+  EventInfo: TEventValues;
+  I, J, Id: Integer;
+  List: TSQLList;
+  IDs: string;
+  XCount: Integer;
+  ProgressForm: TProgressActionForm;
+  WorkQuery: TDataSet;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
- WorkQuery:=GetQuery;
- If not DBkernel.ProgramInDemoMode then
- begin
-  if CharToInt(DBkernel.GetCodeChar(12))<>CharToInt(DBkernel.GetCodeChar(10))*CharToInt(DBkernel.GetCodeChar(10))*CharToInt(DBkernel.GetCodeChar(10)) mod 15 then exit;
- end;
-
- if GetSelectionCount = 1 then
- begin
-  S:=label2.Caption;
-  delete(s,1,5);
-  id:=strtointdef(s,-1);
-  if id<0 then exit;
-  _sqlexectext:='Update $DB$';
-  s1:=normalizeDBString(memo2.lines.Text);
-  s2:=normalizeDBString(memo1.lines.Text);
-  s3:=normalizeDBString(FPropertyGroups);
-  _sqlexectext:=_sqlexectext+' Set Comment='+s1+' , KeyWords='+s2+', Rating='+inttostr(RatingEdit.Rating)+', DateToAdd = :Date, IsDate = :IsDate, aTime = :aTime, IsTime = :IsTime, Groups = '+s3;
-
-  _sqlexectext:=_sqlexectext+ ' Where ID=:ID';
-  WorkQuery.active:=false;
-  SetSQL(WorkQuery,_sqlexectext);
-
-  SetDateParam(WorkQuery,'Date',DateTimePicker1.DateTime);
-  SetBoolParam(WorkQuery,1,not IsDatePanel.Visible);
-  SetDateParam(WorkQuery,'aTime',TimeOf(DateTimePicker4.DateTime));
-  SetBoolParam(WorkQuery,3,not IsTimePanel.Visible);
-  SetIntParam(WorkQuery,4,id);  //Must be LAST PARAM!
-  ExecSQL(WorkQuery);
-  EventInfo.Comment:=memo2.lines.Text;
-  EventInfo.KeyWords:=memo1.lines.Text;
-  EventInfo.Rating:=RatingEdit.Rating;
-  EventInfo.Groups:=FPropertyGroups;
-  EventInfo.Date:=DateTimePicker1.DateTime;
-  EventInfo.IsDate:=not IsDatePanel.Visible;
-  DBKernel.DoIDEvent(Self,id,[EventID_Param_Rating,EventID_Param_Comment,EventID_Param_KeyWords,EventID_Param_Date,EventID_Param_IsDate,EventID_Param_Groups],EventInfo);
- end else
- begin
-  FUpdatingDB:=true;
-  Save.Enabled:=false;
-  WlStartStop.Enabled:=false;
-  ElvMain.Enabled:=false;
-
-  Memo1.Enabled:=false;
-  Memo2.Enabled:=false;
-  ComboBoxSelGroups.Enabled:=false;
-  DateTimePicker1.Enabled:=false;
-  DateTimePicker4.Enabled:=false;
-  RatingEdit.Enabled:=false;
-
-  xCount:=0;
-  ProgressForm:=nil;
-  CommonKeyWords:=SelectedInfo.CommonKeyWords;
-  if VariousKeyWords(Memo1.lines.Text,CommonKeyWords) then inc(xCount);
-  If not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then inc(xCount);
-
-  if xCount>0 then
-  begin
-   ProgressForm:=GetProgressWindow;
-   ProgressForm.OperationCount:=xCount;
-   ProgressForm.OperationPosition:=0;
-   ProgressForm.OneOperation:=false;
-   ProgressForm.MaxPosCurrentOperation:=Length(SelectedInfo.Ids);
-   ProgressForm.xPosition:=0;
-   ProgressForm.DoFormShow;
-  end;
-
-  //[BEGIN] Date Support
-  If not PanelValueIsDateSets.Visible then
-  begin
-   _sqlexectext:='Update $DB$ Set DateToAdd = :Date Where ';
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' (ID='+inttostr(SelectedInfo.Ids[i])+')' else
-   _sqlexectext:=_sqlexectext+' OR (ID='+inttostr(SelectedInfo.Ids[i])+')';
-   WorkQuery.active:=false;
-   SetSQL(WorkQuery,_sqlexectext);
-   SetDateParam(WorkQuery,'Date',DateTimePicker1.DateTime);
-   ExecSQL(WorkQuery);
-   EventInfo.Date:=DateTimePicker1.DateTime;
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Date],EventInfo);
-  end;
-  if not PanelValueIsDateSets.Visible then
-  begin
-   _sqlexectext:='Update $DB$ Set IsDate = :IsDate Where ';
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' (ID='+inttostr(SelectedInfo.Ids[i])+')' else
-   _sqlexectext:=_sqlexectext+' OR (ID='+inttostr(SelectedInfo.Ids[i])+')';
-   WorkQuery.active:=false;
-   SetSQL(WorkQuery,_sqlexectext);
-   SetBoolParam(WorkQuery,0,not IsDatePanel.Visible);
-   ExecSQL(WorkQuery);
-   EventInfo.IsDate:=not IsDatePanel.Visible;
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_IsDate],EventInfo);
-  end;
-  //[END] Date Support
-
-
-  //[BEGIN] Time Support
-  If not PanelValueIsTimeSets.Visible then
-  begin
-   _sqlexectext:='Update $DB$ Set aTime = :aTime Where ';
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' (ID='+inttostr(SelectedInfo.Ids[i])+')' else
-   _sqlexectext:=_sqlexectext+' OR (ID='+inttostr(SelectedInfo.Ids[i])+')';
-   WorkQuery.active:=false;
-   SetSQL(WorkQuery,_sqlexectext);
-   SetDateParam(WorkQuery,'aTime',TimeOf(DateTimePicker4.DateTime));
-   ExecSQL(WorkQuery);
-   EventInfo.Time:=TimeOf(DateTimePicker4.DateTime);
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Time],EventInfo);
-  end;
-  if not PanelValueIsTimeSets.Visible then
-  begin
-   _sqlexectext:='Update $DB$ Set IsTime = :IsTime Where ID in (';
-   for i:=0 to Length(SelectedInfo.Ids)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(SelectedInfo.Ids[i])+' ' else
-   _sqlexectext:=_sqlexectext+' , '+inttostr(SelectedInfo.Ids[i])+'';
-   _sqlexectext:=_sqlexectext+')';
-
-   WorkQuery.active:=false;
-   SetSQL(WorkQuery,_sqlexectext);
-   SetBoolParam(WorkQuery,0,not IsTimePanel.Visible);
-   ExecSQL(WorkQuery);
-   EventInfo.IsTime:=not IsTimePanel.Visible;
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_IsTime],EventInfo);
-  end;
-  //[END] Time Support
-
-  //[BEGIN] Rating Support
-  if not RatingEdit.Islayered then
-  begin
-   _sqlexectext:='Update $DB$ Set Rating = :Rating Where ID in (';
-   for i:=0 to Length(SelectedInfo.Ids)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(SelectedInfo.Ids[i])+' ' else
-   _sqlexectext:=_sqlexectext+' , '+inttostr(SelectedInfo.Ids[i])+'';
-   _sqlexectext:=_sqlexectext+')';
-   WorkQuery.active:=false;
-   SetSQL(WorkQuery,_sqlexectext);
-   SetIntParam(WorkQuery,0,RatingEdit.Rating);
-   ExecSQL(WorkQuery);
-   EventInfo.Rating:=RatingEdit.Rating;
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Rating],EventInfo);
-  end;
-  //[END] Rating Support
-
-  //[BEGIN] Comment Support
-  if not Memo2.ReadOnly then
-  begin
-   _sqlexectext:='Update $DB$ Set Comment = '+normalizeDBString(Memo2.Text)+' Where ID in (';
-   for i:=0 to Length(SelectedInfo.Ids)-1 do
-   if i=0 then _sqlexectext:=_sqlexectext+' '+inttostr(SelectedInfo.Ids[i])+' ' else
-   _sqlexectext:=_sqlexectext+' , '+inttostr(SelectedInfo.Ids[i])+'';
-   _sqlexectext:=_sqlexectext+')';
-   WorkQuery.active:=false;
-   SetSQL(WorkQuery,_sqlexectext);
-   ExecSQL(WorkQuery);
-   EventInfo.Comment:=Memo2.Text;
-   For i:=0 to Length(SelectedInfo.Ids)-1 do
-   DBKernel.DoIDEvent(Self,SelectedInfo.Ids[i],[EventID_Param_Comment],EventInfo);
-  end;
-  //[END] Comment Support
-
-  //[BEGIN] KeyWords Support
-
-  If VariousKeyWords(Memo1.lines.Text,CommonKeyWords) then
-  begin
-   FreeSQLList(List);
-   ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
-   ProgressForm.xPosition:=0;
-   for i:=0 to ElvMain.Items.Count-1 do
-   if ElvMain.Items[I].Selected then
-   begin
-     SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
-     KeyWords := SearchRecord.KeyWords;
-     ReplaceWords(SelectedInfo.CommonKeyWords, Memo1.Lines.Text,KeyWords);
-     if VariousKeyWords(KeyWords, SearchRecord.KeyWords) then
-      AddQuery(List,KeyWords, SearchRecord.ID);
-   end;
-
-   PackSQLList(List,VALUE_TYPE_KEYWORDS);
-   ProgressForm.MaxPosCurrentOperation:=Length(List);
-   for i:=0 to Length(List)-1 do
-   begin
-    IDs:='';
-    for j:=0 to Length(List[i].IDs)-1 do
-    begin
-     if j<>0 then IDs:=IDs+' , ';
-     IDs:=IDs+' '+IntToStr(List[i].IDs[j])+' ';
-    end;
-    ProgressForm.xPosition:=ProgressForm.xPosition+1;
-    {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set KeyWords = '+NormalizeDBString(List[i].Value)+' Where ID in ('+IDs+')';
-    WorkQuery.active:=false;
-    SetSQL(WorkQuery,_sqlexectext);
-    ExecSQL(WorkQuery);
-    EventInfo.KeyWords:=List[i].Value;
-    for j:=0 to Length(List[i].IDs)-1 do
-    DBKernel.DoIDEvent(Self,List[i].IDs[j],[EventID_Param_KeyWords],EventInfo);
-   end;
-  end;
-  //[END] KeyWords Support
-
-  //[BEGIN] Groups Support
-  CommonGroups:=SelectedInfo.Groups;
-  If not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then
-  begin
-   FreeSQLList(List);
-   ProgressForm.OperationPosition:=ProgressForm.OperationPosition+1;
-   ProgressForm.xPosition:=0;
-   for i:=0 to ElvMain.Items.Count-1 do
-   if ElvMain.Items[i].Selected then
-   begin
-     SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
-     Groups:=SearchRecord.Groups;
-    ReplaceGroups(SelectedInfo.Groups,FPropertyGroups,Groups);
-    if not CompareGroups(Groups,SearchRecord.Groups) then
-     AddQuery(List,Groups,SearchRecord.ID);
-
-   end;
-   PackSQLList(List,VALUE_TYPE_GROUPS);
-   ProgressForm.MaxPosCurrentOperation:=Length(List);
-   for i:=0 to Length(List)-1 do
-   begin
-    IDs:='';
-    for j:=0 to Length(List[i].IDs)-1 do
-    begin
-     if j<>0 then IDs:=IDs+' , ';
-     IDs:=IDs+' '+IntToStr(List[i].IDs[j])+' ';
-    end;
-    ProgressForm.xPosition:=ProgressForm.xPosition+1;
-    {!!!}   Application.ProcessMessages;
-    _sqlexectext:='Update $DB$ Set Groups = '+normalizeDBString(List[i].Value)+' Where ID in ('+IDs+')';
-    WorkQuery.active:=false;
-    SetSQL(WorkQuery,_sqlexectext);
-   ExecSQL(WorkQuery);
-     EventInfo.Groups:=List[i].Value;
-    for j:=0 to Length(List[i].IDs)-1 do
-    DBKernel.DoIDEvent(Self,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
-   end;
-
-  end;
-  //[END] Groups Support
-  FUpdatingDB:=false;
-  ElvMain.Enabled:=true;
-  WlStartStop.Enabled:=true;
-
-  Memo1.Enabled:=true;
-  Memo2.Enabled:=true;
-  ComboBoxSelGroups.Enabled:=true;
-  DateTimePicker1.Enabled:=true;
-  DateTimePicker4.Enabled:=true;
-  RatingEdit.Enabled:=true;
-  if ProgressForm<>nil then
-  begin
-   ProgressForm.Release;
-  end;
-  DoShowSelectInfo;
- end;
- FreeDS(WorkQuery);
- Save.Enabled:=false;
-end;
-
-procedure TSearchForm.RefreshThumItemByID(ID : integer);
-var
-  BS : TStream;
-  item : TEasyItem;
-  Password, fname : string;
-  J : TJpegImage;
-  bit : TBitmap;
-  i : integer;
-  SelectQuery : TDataSet;
-
-  RecordInfo : TDBPopupMenuInfoRecord;
-  Exists : integer;
-  SearchRecord : TDBPopupMenuInfoRecord;
-begin
-  //TODO: WTF?
-  bit := nil;
-  Password:='';
-  item:=GetListItemByID(ID);
-  if item=nil then exit;
-
-  SelectQuery := GetQuery;
+  WorkQuery := GetQuery;
   try
-  SearchRecord := GetSearchRecordFromItemData(item);
+    if GetSelectionCount = 1 then
+    begin
+      S := Label2.Caption;
+      Delete(S, 1, 5);
+      Id := Strtointdef(S, -1);
+      if Id < 0 then
+        Exit;
+      _sqlexectext := 'Update $DB$';
+      S1 := NormalizeDBString(Memo2.Lines.Text);
+      S2 := NormalizeDBString(Memo1.Lines.Text);
+      S3 := NormalizeDBString(FPropertyGroups);
+      _sqlexectext := _sqlexectext + ' Set Comment=' + S1 + ' , KeyWords=' + S2 + ', Rating=' + Inttostr
+        (RatingEdit.Rating) +
+        ', DateToAdd = :Date, IsDate = :IsDate, aTime = :aTime, IsTime = :IsTime, Groups = ' + S3;
 
- if not (item.imageindex<=0) then
- begin
-  SelectQuery.Active:=false;
-  SetSQL(SelectQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(ID));
-  SelectQuery.active:=true;
-  if TBlobField(SelectQuery.FieldByName('thum'))=nil then
-  begin
-   exit;
-  end;
-  if ValidCryptBlobStreamJPG(SelectQuery.FieldByName('thum')) then
-  begin
-   Password:=DBKernel.FindPasswordForCryptBlobStream(SelectQuery.FieldByName('thum'));
-   if Password<>'' then
-   begin
-    J:=TJpegImage.Create;
-    DeCryptBlobStreamJPG(SelectQuery.FieldByName('thum'),Password, J);
-    SearchRecord.Crypted:=true;
-   end else
-   begin
-    bit := TBitmap.create;
-    bit.PixelFormat:=pf24bit;
-    bit.Width:=ThSize;
-    bit.Height:=ThSize;
-    FillColorEx(bit, clWindow);
-    try
-    // bit.canvas.Draw(ThSize div 2 - image1.picture.Graphic.Width div 2,ThSize div 2 - image1.picture.Graphic.height div 2,image1.picture.Graphic);
-    except
+      _sqlexectext := _sqlexectext + ' Where ID=:ID';
+      WorkQuery.Active := False;
+      SetSQL(WorkQuery, _sqlexectext);
+
+      SetDateParam(WorkQuery, 'Date', DateTimePicker1.DateTime);
+      SetBoolParam(WorkQuery, 1, not IsDatePanel.Visible);
+      SetDateParam(WorkQuery, 'aTime', TimeOf(DateTimePicker4.DateTime));
+      SetBoolParam(WorkQuery, 3, not IsTimePanel.Visible);
+      SetIntParam(WorkQuery, 4, Id); // Must be LAST PARAM!
+      ExecSQL(WorkQuery);
+      EventInfo.Comment := Memo2.Lines.Text;
+      EventInfo.KeyWords := Memo1.Lines.Text;
+      EventInfo.Rating := RatingEdit.Rating;
+      EventInfo.Groups := FPropertyGroups;
+      EventInfo.Date := DateTimePicker1.DateTime;
+      EventInfo.IsDate := not IsDatePanel.Visible;
+      DBKernel.DoIDEvent(Self, Id, [EventID_Param_Rating, EventID_Param_Comment, EventID_Param_KeyWords,
+        EventID_Param_Date, EventID_Param_IsDate, EventID_Param_Groups], EventInfo);
+    end else
+    begin
+      FUpdatingDB := True;
+      Save.Enabled := False;
+      WlStartStop.Enabled := False;
+      ElvMain.Enabled := False;
+
+      Memo1.Enabled := False;
+      Memo2.Enabled := False;
+      ComboBoxSelGroups.Enabled := False;
+      DateTimePicker1.Enabled := False;
+      DateTimePicker4.Enabled := False;
+      RatingEdit.Enabled := False;
+
+      XCount := 0;
+      CommonKeyWords := SelectedInfo.CommonKeyWords;
+      if VariousKeyWords(Memo1.Lines.Text, CommonKeyWords) then
+        Inc(XCount);
+      if not CompareGroups(CurrentItemInfo.Groups, FPropertyGroups) then
+        Inc(XCount);
+
+      ProgressForm := nil;
+      try
+        if XCount > 0 then
+        begin
+          ProgressForm := GetProgressWindow;
+          ProgressForm.OperationCount := XCount;
+          ProgressForm.OperationPosition := 0;
+          ProgressForm.OneOperation := False;
+          ProgressForm.MaxPosCurrentOperation := Length(SelectedInfo.Ids);
+          ProgressForm.XPosition := 0;
+          ProgressForm.DoFormShow;
+        end;
+
+        // [BEGIN] Date Support
+        if not PanelValueIsDateSets.Visible then
+        begin
+          _sqlexectext := 'Update $DB$ Set DateToAdd = :Date Where ';
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            if I = 0 then
+              _sqlexectext := _sqlexectext + ' (ID=' + Inttostr(SelectedInfo.Ids[I]) + ')'
+            else
+              _sqlexectext := _sqlexectext + ' OR (ID=' + Inttostr(SelectedInfo.Ids[I]) + ')';
+          WorkQuery.Active := False;
+          SetSQL(WorkQuery, _sqlexectext);
+          SetDateParam(WorkQuery, 'Date', DateTimePicker1.DateTime);
+          ExecSQL(WorkQuery);
+          EventInfo.Date := DateTimePicker1.DateTime;
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            DBKernel.DoIDEvent(Self, SelectedInfo.Ids[I], [EventID_Param_Date], EventInfo);
+        end;
+        if not PanelValueIsDateSets.Visible then
+        begin
+          _sqlexectext := 'Update $DB$ Set IsDate = :IsDate Where ';
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            if I = 0 then
+              _sqlexectext := _sqlexectext + ' (ID=' + Inttostr(SelectedInfo.Ids[I]) + ')'
+            else
+              _sqlexectext := _sqlexectext + ' OR (ID=' + Inttostr(SelectedInfo.Ids[I]) + ')';
+          WorkQuery.Active := False;
+          SetSQL(WorkQuery, _sqlexectext);
+          SetBoolParam(WorkQuery, 0, not IsDatePanel.Visible);
+          ExecSQL(WorkQuery);
+          EventInfo.IsDate := not IsDatePanel.Visible;
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            DBKernel.DoIDEvent(Self, SelectedInfo.Ids[I], [EventID_Param_IsDate], EventInfo);
+        end;
+        // [END] Date Support
+
+        // [BEGIN] Time Support
+        if not PanelValueIsTimeSets.Visible then
+        begin
+          _sqlexectext := 'Update $DB$ Set aTime = :aTime Where ';
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            if I = 0 then
+              _sqlexectext := _sqlexectext + ' (ID=' + Inttostr(SelectedInfo.Ids[I]) + ')'
+            else
+              _sqlexectext := _sqlexectext + ' OR (ID=' + Inttostr(SelectedInfo.Ids[I]) + ')';
+          WorkQuery.Active := False;
+          SetSQL(WorkQuery, _sqlexectext);
+          SetDateParam(WorkQuery, 'aTime', TimeOf(DateTimePicker4.DateTime));
+          ExecSQL(WorkQuery);
+          EventInfo.Time := TimeOf(DateTimePicker4.DateTime);
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            DBKernel.DoIDEvent(Self, SelectedInfo.Ids[I], [EventID_Param_Time], EventInfo);
+        end;
+        if not PanelValueIsTimeSets.Visible then
+        begin
+          _sqlexectext := 'Update $DB$ Set IsTime = :IsTime Where ID in (';
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            if I = 0 then
+              _sqlexectext := _sqlexectext + ' ' + Inttostr(SelectedInfo.Ids[I]) + ' '
+            else
+              _sqlexectext := _sqlexectext + ' , ' + Inttostr(SelectedInfo.Ids[I]) + '';
+          _sqlexectext := _sqlexectext + ')';
+
+          WorkQuery.Active := False;
+          SetSQL(WorkQuery, _sqlexectext);
+          SetBoolParam(WorkQuery, 0, not IsTimePanel.Visible);
+          ExecSQL(WorkQuery);
+          EventInfo.IsTime := not IsTimePanel.Visible;
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            DBKernel.DoIDEvent(Self, SelectedInfo.Ids[I], [EventID_Param_IsTime], EventInfo);
+        end;
+        // [END] Time Support
+
+        // [BEGIN] Rating Support
+        if not RatingEdit.Islayered then
+        begin
+          _sqlexectext := 'Update $DB$ Set Rating = :Rating Where ID in (';
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            if I = 0 then
+              _sqlexectext := _sqlexectext + ' ' + Inttostr(SelectedInfo.Ids[I]) + ' '
+            else
+              _sqlexectext := _sqlexectext + ' , ' + Inttostr(SelectedInfo.Ids[I]) + '';
+          _sqlexectext := _sqlexectext + ')';
+          WorkQuery.Active := False;
+          SetSQL(WorkQuery, _sqlexectext);
+          SetIntParam(WorkQuery, 0, RatingEdit.Rating);
+          ExecSQL(WorkQuery);
+          EventInfo.Rating := RatingEdit.Rating;
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            DBKernel.DoIDEvent(Self, SelectedInfo.Ids[I], [EventID_Param_Rating], EventInfo);
+        end;
+        // [END] Rating Support
+
+        // [BEGIN] Comment Support
+        if not Memo2.readonly then
+        begin
+          _sqlexectext := 'Update $DB$ Set Comment = ' + NormalizeDBString(Memo2.Text) + ' Where ID in (';
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            if I = 0 then
+              _sqlexectext := _sqlexectext + ' ' + Inttostr(SelectedInfo.Ids[I]) + ' '
+            else
+              _sqlexectext := _sqlexectext + ' , ' + Inttostr(SelectedInfo.Ids[I]) + '';
+          _sqlexectext := _sqlexectext + ')';
+          WorkQuery.Active := False;
+          SetSQL(WorkQuery, _sqlexectext);
+          ExecSQL(WorkQuery);
+          EventInfo.Comment := Memo2.Text;
+          for I := 0 to Length(SelectedInfo.Ids) - 1 do
+            DBKernel.DoIDEvent(Self, SelectedInfo.Ids[I], [EventID_Param_Comment], EventInfo);
+        end;
+        // [END] Comment Support
+
+        // [BEGIN] KeyWords Support
+        if VariousKeyWords(Memo1.Lines.Text, CommonKeyWords) then
+        begin
+          FreeSQLList(List);
+          ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
+          ProgressForm.XPosition := 0;
+          for I := 0 to ElvMain.Items.Count - 1 do
+            if ElvMain.Items[I].Selected then
+            begin
+              SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
+              KeyWords := SearchRecord.KeyWords;
+              ReplaceWords(SelectedInfo.CommonKeyWords, Memo1.Lines.Text, KeyWords);
+              if VariousKeyWords(KeyWords, SearchRecord.KeyWords) then
+                AddQuery(List, KeyWords, SearchRecord.ID);
+            end;
+
+          PackSQLList(List, VALUE_TYPE_KEYWORDS);
+          ProgressForm.MaxPosCurrentOperation := Length(List);
+          for I := 0 to Length(List) - 1 do
+          begin
+            IDs := '';
+            for J := 0 to Length(List[I].IDs) - 1 do
+            begin
+              if J <> 0 then
+                IDs := IDs + ' , ';
+              IDs := IDs + ' ' + IntToStr(List[I].IDs[J]) + ' ';
+            end;
+            ProgressForm.XPosition := ProgressForm.XPosition + 1;
+            { !!! } Application.ProcessMessages;
+            _sqlexectext := 'Update $DB$ Set KeyWords = ' + NormalizeDBString(List[I].Value) + ' Where ID in (' + IDs + ')';
+            WorkQuery.Active := False;
+            SetSQL(WorkQuery, _sqlexectext);
+            ExecSQL(WorkQuery);
+            EventInfo.KeyWords := List[I].Value;
+            for J := 0 to Length(List[I].IDs) - 1 do
+              DBKernel.DoIDEvent(Self, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
+          end;
+        end;
+        // [END] KeyWords Support
+
+        // [BEGIN] Groups Support
+        CommonGroups := SelectedInfo.Groups;
+        if not CompareGroups(CurrentItemInfo.Groups, FPropertyGroups) then
+        begin
+          FreeSQLList(List);
+          ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
+          ProgressForm.XPosition := 0;
+          for I := 0 to ElvMain.Items.Count - 1 do
+            if ElvMain.Items[I].Selected then
+            begin
+              SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
+              Groups := SearchRecord.Groups;
+              ReplaceGroups(SelectedInfo.Groups, FPropertyGroups, Groups);
+              if not CompareGroups(Groups, SearchRecord.Groups) then
+                AddQuery(List, Groups, SearchRecord.ID);
+
+            end;
+          PackSQLList(List, VALUE_TYPE_GROUPS);
+          ProgressForm.MaxPosCurrentOperation := Length(List);
+          for I := 0 to Length(List) - 1 do
+          begin
+            IDs := '';
+            for J := 0 to Length(List[I].IDs) - 1 do
+            begin
+              if J <> 0 then
+                IDs := IDs + ' , ';
+              IDs := IDs + ' ' + IntToStr(List[I].IDs[J]) + ' ';
+            end;
+            ProgressForm.XPosition := ProgressForm.XPosition + 1;
+            { !!! } Application.ProcessMessages;
+            _sqlexectext := 'Update $DB$ Set Groups = ' + NormalizeDBString(List[I].Value) + ' Where ID in (' + IDs + ')';
+            WorkQuery.Active := False;
+            SetSQL(WorkQuery, _sqlexectext);
+            ExecSQL(WorkQuery);
+            EventInfo.Groups := List[I].Value;
+            for J := 0 to Length(List[I].IDs) - 1 do
+              DBKernel.DoIDEvent(Self, List[I].IDs[J], [EventID_Param_Groups], EventInfo);
+          end;
+
+        end;
+        // [END] Groups Support
+        FUpdatingDB := False;
+        ElvMain.Enabled := True;
+        WlStartStop.Enabled := True;
+
+        Memo1.Enabled := True;
+        Memo2.Enabled := True;
+        ComboBoxSelGroups.Enabled := True;
+        DateTimePicker1.Enabled := True;
+        DateTimePicker4.Enabled := True;
+        RatingEdit.Enabled := True;
+      finally
+        R(ProgressForm);
+      end;
+      DoShowSelectInfo;
     end;
-    Exists:=0;
-    DrawAttributes(bit,fPictureSize,0,0,0,SelectQuery.FieldByName('FFileName').AsString,true,Exists);
-    FBitmapImageList[item.ImageIndex].Bitmap.Free;
-    FBitmapImageList[item.ImageIndex].Bitmap:=bit;
-    ElvMain.Refresh;
-    exit;
-   end;
-  end else
-  begin
-   J:=TJpegImage.Create;
-   BS:=GetBlobStream(SelectQuery.FieldByName('thum'),bmRead);
-   SearchRecord.Crypted:=false;
-   try
-    if BS.Size<>0 then
-    J.loadfromStream(BS) else
-   except
-   end;
-   BS.Free;
-  end;
-  bit := TBitmap.create;
-  bit.PixelFormat:=pf24bit;
-  bit.Canvas.Brush.Color:=clWindow;
-  bit.Canvas.Pen.Color:=clWindow;
-  bit.width:=ThSize;
-  bit.height:=ThSize;
-  FillColorEx(bit, clWindow);
-
-  bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
-  J.free;
-  SearchRecord.Rotation:=SelectQuery.FieldByName('Rotated').AsInteger;
-  ApplyRotate(bit, SearchRecord.Rotation);
-
-  fname:=Trim(SelectQuery.FieldByName('Name').asstring);
-  for i:= Length(fname) downto 1 do
-  begin
-   if fname[i]=' ' then Delete(fname,i,1) else break;
-  end;
-  item.Caption:=fname;
-  SearchRecord.FileName:=SelectQuery.FieldByName('FFileName').AsString;
-  //iItemIndex:=ItemIndex(item);
-
-  Exists:=0;
-  DrawAttributes(bit,fPictureSize,SearchRecord.Rating,SearchRecord.Rotation,SearchRecord.Access,SelectQuery.FieldByName('FFileName').AsString,SearchRecord.Crypted,Exists);
-
-  FBitmapImageList[item.ImageIndex].Bitmap.free;
-  FBitmapImageList[item.ImageIndex].Bitmap:=bit;
-  RecordInfo.FileName:=SelectQuery.FieldByName('FFileName').AsString;
-  RecordInfo.Rating:=SearchRecord.Rating;
-  RecordInfo.Rotation:=SearchRecord.Rotation;
-  RecordInfo.Access:=SearchRecord.Access;
-  RecordInfo.Crypted:=SearchRecord.Crypted;
-
-  ElvMain.Refresh;
- end;
- if GetlistitembyID(ID).imageindex=0 then
- begin
-  SelectQuery.Active:=false;
-  SetSQL(SelectQuery,'SELECT * FROM $DB$ WHERE ID='+inttostr(ID));
-  SelectQuery.active:=true;
-  if TBlobField(SelectQuery.FieldByName('thum'))=nil then
-  begin
-   exit;
-  end;
-  if ValidCryptBlobStreamJPG(SelectQuery.FieldByName('thum')) then
-  begin
-   Password:=DBKernel.FindPasswordForCryptBlobStream(SelectQuery.FieldByName('thum'));
-   if Password<>'' then
-   begin
-    J:=TJPEGImage.Create;
-    DeCryptBlobStreamJPG(SelectQuery.FieldByName('thum'),Password, J);
-    SearchRecord.Crypted:=true;
-   end else
-   begin
-    bit.width:=ThSize;
-    bit.height:=ThSize;
-    FillColorEx(bit, clWindow);
-    try
-    // bit.canvas.Draw(ThSize div 2 - Image1.Picture.Graphic.Width div 2,ThSize div 2 - Image1.Picture.Graphic.height div 2,Image1.Picture.Graphic);
-    except
-    end;
-    Exists:=0;
-    DrawAttributes(bit,fPictureSize,0,0,0,SelectQuery.FieldByName('FFileName').AsString,true,Exists);
-    FBitmapImageList[item.ImageIndex].Bitmap.Assign(bit);
-    ElvMain.Refresh;
-    exit;
-   end;
-  end else
-  begin
-   J:=TJpegImage.Create;
-   SearchRecord.Crypted:=false;
-   BS:=GetBlobStream(SelectQuery.FieldByName('thum'),bmRead);
-   try
-    if BS.Size<>0 then
-    J.loadfromStream(BS) else
-   except
-   end;
-   BS.Free;
-  end;
-  bit := TBitmap.create;
-  bit.PixelFormat:=pf24bit;
-  bit.width:=ThSize;
-  bit.height:=ThSize;
-  FillColorEx(bit, clWindow);
-  bit.canvas.Draw(ThSize div 2 - J.Width div 2,ThSize div 2 - J.height div 2,J);
-  J.free;
-  ApplyRotate(bit, SearchRecord.Rotation);
-  Exists:=0;
-  DrawAttributes(bit,fPictureSize,SearchRecord.Rating,SearchRecord.Rotation,SearchRecord.Access,SelectQuery.FieldByName('FFileName').AsString,SearchRecord.Crypted,Exists);
-  FBitmapImageList.AddBitmap(bit);
-  ElvMain.Refresh;
-  item.ImageIndex:=FBitmapImageList.Count-1;
- end;
   finally
-    FreeDS(SelectQuery);
+    FreeDS(WorkQuery);
   end;
+  Save.Enabled := False;
 end;
 
 function TSearchForm.GetListItemByID(ID : integer) : TEasyItem;
@@ -1479,12 +1322,6 @@ begin
     Result.Add(GetSearchRecordFromItemData(ElvMain.Items[I]).FileName);
 end;
 
-procedure TSearchForm.Memo1KeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if Key=ord('"') then key:=ord('''');
-end;
-
 procedure TSearchForm.ManageDB1Click(Sender: TObject);
 begin
   DoManager;
@@ -1500,39 +1337,73 @@ end;
 
 procedure TSearchForm.Memo1Change(Sender: TObject);
 
- function ReadCHDate : boolean;
- begin
-  if GetSelectionCount>1 then
-  Result:=not PanelValueIsDateSets.Visible and ((CurrentItemInfo.IsDate<>not IsDatePanel.Visible) or (CurrentItemInfo.Date<>DateTimePicker1.DateTime) or (SelectedInfo.IsVariousDates and not PanelValueIsDateSets.Visible)) else
-  Result:=(((CurrentItemInfo.Date<>DateTimePicker1.DateTime) or (IsDatePanel.Visible<>not SelectedInfo.IsDate)) and not PanelValueIsDateSets.Visible);
- end;
+  function ReadCHDate: Boolean;
+  begin
+    if GetSelectionCount > 1 then
+      Result := not PanelValueIsDateSets.Visible and ((CurrentItemInfo.IsDate <> not IsDatePanel.Visible) or
+          (CurrentItemInfo.Date <> DateTimePicker1.DateTime) or
+          (SelectedInfo.IsVariousDates and not PanelValueIsDateSets.Visible))
+    else
+      Result := (((CurrentItemInfo.Date <> DateTimePicker1.DateTime) or (IsDatePanel.Visible <> not SelectedInfo.IsDate)
+          ) and not PanelValueIsDateSets.Visible);
+  end;
 
- function ReadCHTime : boolean;
- var
-   VarTime : Boolean;
- begin
-  VarTime:=Abs(CurrentItemInfo.Time-TimeOf(DateTimePicker4.DateTime))>1/(24*60*60*3);
-  if GetSelectionCount>1 then
-  Result:=not PanelValueIsTimeSets.Visible and ((CurrentItemInfo.IsTime<>not IsTimePanel.Visible) or (VarTime or (SelectedInfo.IsVariousTimes and not PanelValueIsTimeSets.Visible))) else
-  Result:=((VarTime or (IsTimePanel.Visible<>not SelectedInfo.IsTime)) and not PanelValueIsTimeSets.Visible);
- end;
+  function ReadCHTime: Boolean;
+  var
+    VarTime: Boolean;
+  begin
+    VarTime := Abs(CurrentItemInfo.Time - TimeOf(DateTimePicker4.DateTime)) > 1 / (24 * 60 * 60 * 3);
+    if GetSelectionCount > 1 then
+      Result := not PanelValueIsTimeSets.Visible and ((CurrentItemInfo.IsTime <> not IsTimePanel.Visible) or
+          (VarTime or (SelectedInfo.IsVariousTimes and not PanelValueIsTimeSets.Visible)))
+    else
+      Result := ((VarTime or (IsTimePanel.Visible <> not SelectedInfo.IsTime)) and not PanelValueIsTimeSets.Visible);
+  end;
 
 begin
- if GetSelectionCount>1 then
- begin
-  if ReadCHTime or ReadCHDate or not RatingEdit.Islayered or (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) or VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then
-  Save.Enabled:=true else Save.Enabled:=false;
-  if not RatingEdit.Islayered then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
-  if (not Memo2.ReadOnly and SelectedInfo.IsVariousComments) or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment<>Memo2.Text)) then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
-  if VariousKeyWords(SelectedInfo.CommonKeyWords,Memo1.Text) then Label5.Font.Style:=Label5.Font.Style+[fsBold] else Label5.Font.Style:=Label5.Font.Style-[fsBold];
- end else
- begin
-  if ReadCHTime or ReadCHDate or (CurrentItemInfo.Rating<>RatingEdit.Rating) or (CurrentItemInfo.Comment<>Memo2.text) or VariousKeyWords(CurrentItemInfo.KeyWords,Memo1.Text) or not CompareGroups(CurrentItemInfo.Groups,FPropertyGroups) then
-  Save.Enabled:=true else Save.Enabled:=false;
-  if (CurrentItemInfo.Rating<>RatingEdit.Rating) then Label8.Font.Style:=Label8.Font.Style+[fsBold] else Label8.Font.Style:=Label8.Font.Style-[fsBold];
-  if (CurrentItemInfo.Comment<>Memo2.text) then Label6.Font.Style:=Label6.Font.Style+[fsBold] else Label6.Font.Style:=Label6.Font.Style-[fsBold];
-  if VariousKeyWords(CurrentItemInfo.KeyWords,Memo1.text) then Label5.Font.Style:=Label5.Font.Style+[fsBold] else Label5.Font.Style:=Label5.Font.Style-[fsBold];
- end;
+ if GetSelectionCount > 1 then
+  begin
+    if ReadCHTime or ReadCHDate or not RatingEdit.Islayered or (not Memo2.readonly and SelectedInfo.IsVariousComments)
+      or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment <> Memo2.Text)) or VariousKeyWords
+      (SelectedInfo.CommonKeyWords, Memo1.Text) or not CompareGroups(CurrentItemInfo.Groups, FPropertyGroups) then
+      Save.Enabled := True
+    else
+      Save.Enabled := False;
+    if not RatingEdit.Islayered then
+      Label8.Font.Style := Label8.Font.Style + [FsBold]
+    else
+      Label8.Font.Style := Label8.Font.Style - [FsBold];
+    if (not Memo2.readonly and SelectedInfo.IsVariousComments) or
+      (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment <> Memo2.Text)) then
+      Label6.Font.Style := Label6.Font.Style + [FsBold]
+    else
+      Label6.Font.Style := Label6.Font.Style - [FsBold];
+    if VariousKeyWords(SelectedInfo.CommonKeyWords, Memo1.Text) then
+      Label5.Font.Style := Label5.Font.Style + [FsBold]
+    else
+      Label5.Font.Style := Label5.Font.Style - [FsBold];
+  end
+  else
+  begin
+    if ReadCHTime or ReadCHDate or (CurrentItemInfo.Rating <> RatingEdit.Rating) or
+      (CurrentItemInfo.Comment <> Memo2.Text) or VariousKeyWords(CurrentItemInfo.KeyWords, Memo1.Text)
+      or not CompareGroups(CurrentItemInfo.Groups, FPropertyGroups) then
+      Save.Enabled := True
+    else
+      Save.Enabled := False;
+    if (CurrentItemInfo.Rating <> RatingEdit.Rating) then
+      Label8.Font.Style := Label8.Font.Style + [FsBold]
+    else
+      Label8.Font.Style := Label8.Font.Style - [FsBold];
+    if (CurrentItemInfo.Comment <> Memo2.Text) then
+      Label6.Font.Style := Label6.Font.Style + [FsBold]
+    else
+      Label6.Font.Style := Label6.Font.Style - [FsBold];
+    if VariousKeyWords(CurrentItemInfo.KeyWords, Memo1.Text) then
+      Label5.Font.Style := Label5.Font.Style + [FsBold]
+    else
+      Label5.Font.Style := Label5.Font.Style - [FsBold];
+  end;
 end;
 
 procedure TSearchForm.ErrorQSL(sql : string);
@@ -1634,12 +1505,6 @@ begin
   ElvMain.Items.Clear;
 end;
 
-procedure TSearchForm.Memo1KeyPress(Sender: TObject; var Key: Char);
-begin
-  if Key = '"' then
-    Key := '''';
-end;
-
 procedure TSearchForm.ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
@@ -1719,11 +1584,6 @@ begin
 
 end;
 
-procedure TSearchForm.Options1Click(Sender: TObject);
-begin
-  DoOptions;
-end;
-
 procedure TSearchForm.CopySearchResults1Click(Sender: TObject);
 var
   I : integer;
@@ -1798,7 +1658,7 @@ begin
   Getcursorpos(P);
   P1 := ElvMain.ScreenToClient(P);
   Result := not((not Self.Active) or (not ElvMain.Focused) or (ItemAtPos(P1.X, P1.Y) <> LastMouseItem) or
-    (ItemAtPos(P1.X, P1.Y) = nil) {//TODO: or (Item <> Loadingthitem)});
+    (ItemAtPos(P1.X, P1.Y) = nil));
 end;
 
 procedure TSearchForm.initialization_;
@@ -1813,41 +1673,35 @@ begin
   TW.I.Start('S -> DoShowSelectInfo');
   WlStartStop.Onclick := DoSearchNow;
   SearchIcon := LoadImage(DBKernel.IconDllInstance, 'EXPLORER_SEARCH_SMALL', IMAGE_ICON, 16, 16, 0);
-  WlStartStop.LoadFromHIcon(SearchIcon);
-  DestroyIcon(SearchIcon);
+  try
+    WlStartStop.LoadFromHIcon(SearchIcon);
+  finally
+    DestroyIcon(SearchIcon);
+  end;
   WlStartStop.Text := L('Search');
   Label7.Caption := L('No results');
   PbProgress.Text := L('No results');
   SaveWindowPos1.Key := RegRoot + 'Searching';
   SaveWindowPos1.SetPosition;
-
   SortLink.UseSpecIconSize := True;
   ElvMain.DoubleBuffered := True;
-
   TW.I.Start('S -> Immges');
   PopupMenu8.Images := DBKernel.ImageList;
   OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
   AddFolder1.ImageIndex := DB_IC_ADD_FOLDER;
-
   SortbyCompare1.ImageIndex := DB_IC_DUBLICAT;
-
   View2.ImageIndex := DB_IC_SLIDE_SHOW;
-
   RatingPopupMenu1.Images := DBkernel.ImageList;
-
   N00.ImageIndex := DB_IC_DELETE_INFO;
   N01.ImageIndex := DB_IC_RATING_1;
   N02.ImageIndex := DB_IC_RATING_2;
   N03.ImageIndex := DB_IC_RATING_3;
   N04.ImageIndex := DB_IC_RATING_4;
   N05.ImageIndex := DB_IC_RATING_5;
-
   ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
-
   TW.I.Start('S -> BackGroundSearchPanelResize');
   BackGroundSearchPanelResize(nil);
   TW.I.Start('S -> Splitter1Moved');
-
   Creating := False;
 end;
 
@@ -1878,7 +1732,7 @@ begin
   SaveDialog := DBSaveDialog.Create;
   try
     SaveDialog.Filter :=
-      'DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
+      L('Collection Results (*.ids)|*.ids|Collection file list (*.dbl)|*.dbl|Collection hashes (*.ith)|*.ith');
     SaveDialog.FilterIndex := 1;
 
     if SaveDialog.Execute then
@@ -1953,7 +1807,7 @@ begin
   OpenDialog := DBOpenDialog.Create;
   try
     OpenDialog.Filter :=
-      'All Supported (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl|DataDase ImTh Results (*.ith)|*.ith';
+      L('All Supported (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|Collection Results (*.ids)|*.ids|Collection file list (*.dbl)|*.dbl|Collection hashes (*.ith)|*.ith');
     OpenDialog.FilterIndex := 1;
 
     if OpenDialog.Execute then
@@ -1974,7 +1828,7 @@ begin
       end;
       if GetExt(OpenDialog.FileName) = 'ITH' then
       begin
-        SearchEdit.Text := ':ThFile(' + OpenDialog.FileName + '):';
+        SearchEdit.Text := ':HashFile(' + OpenDialog.FileName + '):';
         DoSearchNow(nil);
       end;
     end;
@@ -2598,11 +2452,11 @@ begin
   begin
     HelpActivationNO := 0;
     MessageText := '     ' + L('Do you want to get help, how to activate the program? If YES, then click on "More..." for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed. $nl$$nl$', 'Help');
-    if DBkernel.GetDemoMode then
+    if TActivationManager.Instance.IsDemoMode then
       if DBKernel.ReadBool('HelpSystem', 'ActivationHelp', True) then
         DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
           HelpActivationNextClick, L('Next...'), HelpActivationCloseClick)
-      else if not DBkernel.GetDemoMode then
+      else if not TActivationManager.Instance.IsDemoMode then
         DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
     Exit;
   end;

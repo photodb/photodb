@@ -481,6 +481,8 @@
     <translate name="Rating found" value="Оценка" />
     <translate name="Search (%s results)" value="Поиск (%s результатов)" />
     <translate name="Next..." value="Далее..." />
+    <translate name="Collection Results (*.ids)|*.ids|Collection file list (*.dbl)|*.dbl|Collection hashes (*.ith)|*.ith" value="Список идентификаторов (*.ids)|*.ids|Результаты в виде списка файлов (*.dbl)|*.dbl|Результаты в виде хэшей (*.ith)|*.ith" />
+    <translate name="All Supported (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|Collection Results (*.ids)|*.ids|Collection file list (*.dbl)|*.dbl|Collection hashes (*.ith)|*.ith" value="Все поддерживаемые форматы (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|Список идентификаторов (*.ids)|*.ids|Результаты в виде списка файлов (*.dbl)|*.dbl|Результаты в виде хэшей (*.ith)|*.ith" />
   </scope>
   <scope name="SelectGroup">
     <translate name="Select group" value="Выбор группы" />
@@ -498,7 +500,7 @@
 	<translate name="Comment for group" value="Коментарий к группе" />
 	<translate name="Keywords for group" value="Ключевые слова к группе" />
 	<translate name="Include in quick group list" value="Включать в базовый список групп" />
-	<translate name="Related groups" value="Связанные группы" />	
+	<translate name="Related groups" value="Связанные группы" />
   </scope>
   <scope name="DBMenu">
     <translate name="File" value="Файл" />

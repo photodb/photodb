@@ -2,189 +2,132 @@ unit Unit1;
 
 interface
 
-{$DEFINE RUS}
-
 uses
-  math ,win32crc, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, jpeg, ExtCtrls, XPMan, shellapi, ActivationFunctions;
+  math, win32crc, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, jpeg, ExtCtrls, XPMan, shellapi,
+  uActivationUtils, UnitDBCommon, TwButton;
 
 type
-  TForm1 = class(TForm)
-    Edit1: TEdit;
-    Button1: TButton;
-    Edit3: TEdit;
+  TManualActivation = class(TForm)
+    EdProgramCode: TEdit;
+    BtnGenerate: TButton;
+    EdActivationCode: TEdit;
     Image1: TImage;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
-    Edit2: TEdit;
-    XPManifest1: TXPManifest;
-    Image2: TImage;
-    procedure Button1Click(Sender: TObject);
+    EdUserName: TEdit;
+    TwbFullVersion: TTwButton;
+    procedure BtnGenerateClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
   private
-  procedure wmmousedown(var s : Tmessage); message wm_lbuttondown;
     { Private declarations }
+    procedure SelfCheck;
+    procedure WMMouseDown(var S: Tmessage); message WM_LBUTTONDOWN;
   public
     { Public declarations }
   end;
 
 var
-  Form1: TForm1;
+  ManualActivation: TManualActivation;
 
 implementation
 
 {$R *.dfm}
 
-procedure SelfDel;
+procedure TManualActivation.BtnGenerateClick(Sender: TObject);
 var
-  f : textFile;
-  FileName : String;
+  I: Integer;
+  Hs, Cs, Csold: string;
+  N: Cardinal;
+  B: Boolean;
+
+  procedure CheckVersion(VersionCode: Integer; VersionText: string);
+  begin
+    I := HexToIntDef(Cs, 0) xor VersionCode;
+    Csold := IntToHex(I, 8);
+    if Copy(Csold, 1, 8) = 'FFFFFFFF' then
+      Delete(Csold, 1, 8);
+    if (Csold = Hs) and not B then
+    begin
+      Cs := Csold;
+      Label2.Caption := VersionText;
+      B := True;
+    end;
+  end;
+
 begin
- FileName:=changefileext(paramstr(0),'.bat');
- AssignFile(f,FileName);
- Rewrite(f);
- writeln(f,':1');
- writeln(f,format('Erase "%s"',[paramstr(0)]));
- writeln(f,format('If exist "%s" Goto 1',[paramstr(0)]));
- writeln(f,format('Erase "%s"',[FileName]));
- CloseFile(f);
- ShellExecute(Application.Handle, 'Open', PChar(FileName), nil, nil, sw_hide);
- Halt;
+  Hs := Copy(EdProgramCode.Text, 1, 8);
+  Cs := Copy(EdProgramCode.Text, 9, 8);
+  CalcStringCRC32(Hs, N);
+  Hs := Inttohex(N, 8);
+
+  if Cs <> Hs then
+  begin
+    B := False;
+    Csold := IntToHex(HexToIntDef(Cs, 0) xor $4D69F789, 8);
+    if (Csold = Hs) and not B then
+    begin
+      Cs := Csold;
+      Label2.Caption := 'Activation Key (v1.9)';
+      B := True;
+    end;
+
+    CheckVersion($E445CF12, 'Activation Key (v2.0)');
+    CheckVersion($56C987F3, 'Activation Key (v2.1)');
+    CheckVersion($762C90CA, 'Activation Key (v2.2)');
+    CheckVersion($162C90CA, 'Activation Key (v2.3)');
+
+    if not B then
+    begin
+      Application.MessageBox('Code is not valid!', 'Warning', MB_OK + MB_ICONHAND);
+      EdProgramCode.SetFocus;
+      Exit;
+    end
+  end else
+  begin
+    Label2.Caption := 'Activation Key (v1.8 or smaller)';
+  end;
+
+  EdActivationCode.Text := GenerateActivationKey(EdProgramCode.Text, TwbFullVersion.Pushed);
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TManualActivation.WMMouseDown(var s: Tmessage);
+begin
+  Perform(WM_NCLBUTTONDOWN, HTCaption, S.Lparam);
+end;
+
+procedure TManualActivation.FormCreate(Sender: TObject);
+begin
+  SelfCheck;
+  EdProgramCode.Text := TActivationManager.Instance.ApplicationCode;
+  EdUserName.Text := TActivationManager.Instance.ActivationUserName;
+end;
+
+procedure TManualActivation.SelfCheck;
 var
-  i : integer;
-  ar : array[1..16] of integer;
-  sss,s, key, hs, cs, csold : string;
-  n : Cardinal;
-  b : boolean;
+  I: Integer;
+  HString, PCode, ACode: string;
+  Full, Demo: Boolean;
 begin
- s:=edit1.text;
- hs:=copy(s,1,8);
- CalcStringCRC32(hs,n);
- hs:=inttohex(n,8);
- cs:=copy(s,9,8);
- Image2.Hide;
- if cs<>hs then
- begin
-  b:=false;
-  csold:=IntToHex(HexToIntDef(cs,0) xor $1459EF12,8);
-  if (csold=hs) and not b then
+  for I := -10000 to 10000 do
   begin
-   cs:=csold;
-   Label2.Caption:='Activation Key (ENGL)';
-   Image2.Show;
-   b:=true;
-  end;
-  csold:=IntToHex(HexToIntDef(cs,0) xor $4D69F789,8);
-  if (csold=hs) and not b then
-  begin
-   cs:=csold;
-   Label2.Caption:='Activation Key (v1.9)';
-   b:=true;
-  end;
+    HString := IntToStr(I);
+    PCode := TActivationManager.Instance.GenerateProgramCode(HString);
 
-  i:=HexToIntDef(cs,0) xor $E445CF12;
-  csold:=IntToHex(i,8);
-  if Copy(csold,1,8)='FFFFFFFF' then Delete(csold,1,8);
-  if (csold=hs) and not b then
-  begin
-   cs:=csold;
-   Label2.Caption:='Activation Key (v2.0)';
-   b:=true;
+    ACode := GenerateActivationKey(PCode, Odd(I));
+
+    if I < 0 then
+      ACode := IntToStr(I);
+
+    TActivationManager.Instance.CheckActivationCode(PCode, ACode, Demo, Full);
+
+    if (I < 0) xor Demo then
+      raise Exception.Create('Demo move system check fail' + IntToStr(I));
+
+    if ((I > 0) and (Odd(I) <> Full)) or ((I < 0) and Full) or (Demo and Full) then
+      raise Exception.Create('Full mode check fail' + IntToStr(I));
   end;
-                             
-  i:=HexToIntDef(cs,0) xor $56C987F3;
-  csold:=IntToHex(i,8);
-  if Copy(csold,1,8)='FFFFFFFF' then Delete(csold,1,8);
-  if (csold=hs) and not b then
-  begin
-   cs:=csold;
-   Label2.Caption:='Activation Key (v2.1)';
-   b:=true;
-  end;
-
-  i:=HexToIntDef(cs,0) xor $762C90CA;
-  csold:=IntToHex(i,8);
-  if Copy(csold,1,8)='FFFFFFFF' then Delete(csold,1,8);
-  if (csold=hs) and not b then
-  begin
-   cs:=csold;
-   Label2.Caption:='Activation Key (v2.2)';
-   b:=true;
-  end;
-  if not b then
-  begin
-   Application.MessageBox('Code is not valid!','Warning',mb_ok+mb_iconwarning);
-   edit1.SetFocus;
-   exit;
-  end
- end else
- begin
-  Label2.Caption:='Activation Key (v1.8 or smaller)';
- end;
- Key:='';
- for i:=1 to 8 do
- begin
- sss:=inttohex(abs(Round(cos(ord(s[i])+100*i+0.34)*16)),8);
- s[i]:=sss[8];
- end;
- for i:=1 to 16 do
- ar[i]:=0;
- for i:=1 to 8 do
- ar[(i-1)*2+1]:=chartoint(s[i]);
- ar[2]:=15-ar[1];
- ar[4]:=ar[2]*(ar[3]+1)*123 mod 15;
- ar[6]:=round(sqrt(ar[5])*100) mod 15;
- ar[8]:= (ar[4]+ ar[6])*17 mod 15;
- randomize;
- ar[10]:= random(16);
- ar[12]:= ar[10]*ar[10]*ar[10] mod 15;
- ar[14]:= ar[7]*ar[9] mod 15;
- ar[16]:=0;
- for i:=1 to 15 do
- ar[16]:=ar[16]+ar[i];
- ar[16]:=ar[16] mod 15;
- for i:=1 to 16 do
- Key:=Key+inttochar(ar[i]);
- edit3.text:=Key;
-end;
-
-procedure TForm1.wmmousedown(var s: Tmessage);
-begin
-  perform(wm_nclbuttondown,HTcaption,s.lparam);
-end;
-
-procedure TForm1.FormCreate(Sender: TObject);
-var
-  s, Code : String;
-  n : Cardinal;
-begin
- s:=GetIdeDiskSerialNumber;
- CalcStringCRC32(s,n);
-// n:=n xor $29E0FA13; //v2.1
- n:=n xor $6357A302; //v2.2
- s:=inttohex(n,8);
- CalcStringCRC32(s,n);
- {$IFDEF ENGL}
-  n:=n xor $1459EF12;
- {$ENDIF}
- {$IFDEF RUS}
-//  n:=n xor $4D69F789; //v1.9
-//  n:=n xor $E445CF12; //v2.0
-//  n:=n xor $56C987F3; //v2.1
- n:=n xor $762C90CA; //v2.2
- {$ENDIF}
- Code:=s+inttohex(n,8);
- edit1.text:=Code;
-end;
-
-procedure TForm1.FormDestroy(Sender: TObject);
-begin
-// selfdel;
 end;
 
 end.

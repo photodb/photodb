@@ -15,7 +15,7 @@ uses
   UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
-  uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes;
+  uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -643,7 +643,7 @@ begin
       TimeEdit.Enabled := True;
 
       CollectionMemo.Text := DBkernel.GetDataBaseName;
-      OwnerMemo.Text := DBkernel.ReadRegName;
+      OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
       DateEdit.DateTime := DataRecord.Date;
       TimeEdit.Time := DataRecord.Time;
@@ -923,12 +923,6 @@ var
   end;
 
 begin
-  if not DBKernel.ProgramInDemoMode then
-  begin
-    if CharToInt(DBkernel.GetCodeChar(14)) <> CharToInt(DBkernel.GetCodeChar(7)) * CharToInt(DBkernel.GetCodeChar(9)) mod 15 then
-      Exit;
-  end;
-
   WorkQuery := GetQuery;
   try
     if FShowInfoType = SHOW_INFO_IDS then

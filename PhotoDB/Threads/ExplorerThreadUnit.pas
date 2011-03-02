@@ -931,13 +931,13 @@ begin
   CurrentFile := IncludeTrailingBackslash(CurrentFile);
   fFolderImages.Directory := CurrentFile;
   FFolderImagesResult := AExplorerFolders.GetFolderImages(CurrentFile, SmallImageSize, SmallImageSize);
-  FFastDirectoryLoading:=false;
+  FFastDirectoryLoading := False;
   if FFolderImagesResult.Directory <> '' then
     FFastDirectoryLoading := True
   else
   begin
-    for i := 1 to 4 do
-    FFolderImages.Images[i] := nil;
+    for I := 1 to 4 do
+      FFolderImages.Images[I] := nil;
   end;
   try
 
@@ -1183,15 +1183,18 @@ begin
     if not FFastDirectoryLoading and ExplorerInfo.SaveThumbNailsForFolders then
     begin
       for I := 1 to 4 do
-        fFolderImages.FileNames[I] := FilesInFolder[I];
+        FFolderImages.FileNames[I] := FilesInFolder[I];
       for I := 1 to 4 do
-        fFolderImages.FileDates[I] := FilesDatesInFolder[I];
-      AExplorerFolders.SaveFolderImages(fFolderImages, SmallImageSize, SmallImageSize);
+        FFolderImages.FileDates[I] := FilesDatesInFolder[I];
+      AExplorerFolders.SaveFolderImages(FFolderImages, SmallImageSize, SmallImageSize);
     end;
 
   finally
     for I := 1 to 4 do
-      F(fFolderImages.Images[I]);
+      F(FFolderImages.Images[I]);
+
+    for I := 1 to 4 do
+      F(FFolderImagesResult.Images[I]);
   end;
 
   GUIDParam := DirctoryID;

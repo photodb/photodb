@@ -4154,17 +4154,6 @@ end;
 
 function TManagerExplorer.NewExplorer(GoToLastSavedPath : Boolean): TExplorerForm;
 begin
-  if not DBKernel.ProgramInDemoMode then
-  begin
-    if FolderView or (CharToInt(DBkernel.GetCodeChar(4))<>CharToInt(DBkernel.GetCodeChar(2))*(CharToInt(DBkernel.GetCodeChar(3))+1)*123 mod 15) then
-    begin
-      if FExplorers.Count > 0 then
-      begin
-        Result:=FExplorers[0];
-        exit;
-      end;
-    end;
-  end;
   Result := TExplorerForm.Create(Application, GoToLastSavedPath);
 end;
 
@@ -4181,30 +4170,30 @@ end;
 
 procedure TExplorerForm.SetNewPath(Path : String; Explorer : Boolean);
 var
-  s,s1 : string;
-  i : integer;
+  S, S1 : string;
+  I: integer;
   oldMode: Cardinal;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-  if Explorer then
-    EventLog('SetNewPath "' + Path + '" <Explorer>')
-  else
-    EventLog('SetNewPath "' + Path + '"');
-  S := ExcludeTrailingBackslash(Path);
-  if (AnsiLowerCase(Path) = AnsiLowerCase(MyComputer)) or (Path = '') or not DirectoryExists(S) then
-  begin
-    if Length(S) > 2 then
-      if Copy(S, 1, 2) = '\\' then
-      begin
-        S := ExcludeTrailingBackslash(S);
-        Delete(S, 1, 2);
-        If Pos('\', S) = 0 then
+    if Explorer then
+      EventLog('SetNewPath "' + Path + '" <Explorer>')
+    else
+      EventLog('SetNewPath "' + Path + '"');
+    S := ExcludeTrailingBackslash(Path);
+    if (AnsiLowerCase(Path) = AnsiLowerCase(MyComputer)) or (Path = '') or not DirectoryExists(S) then
+    begin
+      if Length(S) > 2 then
+        if Copy(S, 1, 2) = '\\' then
         begin
-          SetNewPathW(ExplorerPath('\\' + S, EXPLORER_ITEM_COMPUTER), False);
-          Exit;
+          S := ExcludeTrailingBackslash(S);
+          Delete(S, 1, 2);
+          If Pos('\', S) = 0 then
+          begin
+            SetNewPathW(ExplorerPath('\\' + S, EXPLORER_ITEM_COMPUTER), False);
+            Exit;
+          end;
         end;
-      end;
       if (AnsiLowerCase(Path) = AnsiLowerCase(MyComputer)) or (Path='') then
       begin
         SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False);
