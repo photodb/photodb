@@ -61,6 +61,7 @@
   <ItemGroup>
     <Content Include="ContactUsForm.ascx" />
     <Content Include="DownloadHandler.ascx" />
+    <Content Include="FreeActivationHandler.ascx" />
     <Content Include="FreeActivationForm.ascx" />
     <Content Include="ReferCounter.ascx" />
     <Content Include="Web.config" />
@@ -86,6 +87,13 @@
     <Compile Include="DownloadHandler.ascx.designer.cs">
       <DependentUpon>DownloadHandler.ascx</DependentUpon>
     </Compile>
+    <Compile Include="FreeActivationHandler.ascx.cs">
+      <DependentUpon>FreeActivationHandler.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FreeActivationHandler.ascx.designer.cs">
+      <DependentUpon>FreeActivationHandler.ascx</DependentUpon>
+    </Compile>
     <Compile Include="FreeActivationForm.ascx.cs">
       <DependentUpon>FreeActivationForm.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -103,6 +111,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PhotoDBActivation\PhotoDBActivation.csproj">
+      <Project>{6481BB41-5DB4-4C02-808E-2D5A0C379344}</Project>
+      <Name>PhotoDBActivation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PhotoDBDatabase\PhotoDBDatabase.csproj">
       <Project>{CA0C90D6-79A6-42F6-97D6-715819E0AED1}</Project>
       <Name>PhotoDBDatabase</Name>

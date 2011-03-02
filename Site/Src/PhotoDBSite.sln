@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoDBXsltExtensions", "Ph
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoDBDatabase", "PhotoDBDatabase\PhotoDBDatabase.csproj", "{CA0C90D6-79A6-42F6-97D6-715819E0AED1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoDBActivation", "PhotoDBActivation\PhotoDBActivation.csproj", "{6481BB41-5DB4-4C02-808E-2D5A0C379344}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{CA0C90D6-79A6-42F6-97D6-715819E0AED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA0C90D6-79A6-42F6-97D6-715819E0AED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA0C90D6-79A6-42F6-97D6-715819E0AED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6481BB41-5DB4-4C02-808E-2D5A0C379344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6481BB41-5DB4-4C02-808E-2D5A0C379344}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6481BB41-5DB4-4C02-808E-2D5A0C379344}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6481BB41-5DB4-4C02-808E-2D5A0C379344}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2078,9 +2078,9 @@ begin
       end;
 
       if (Msg.wParam = VK_SUBTRACT) then
-        ZoomIn;
-      if (Msg.wParam = VK_ADD) then
         ZoomOut;
+      if (Msg.wParam = VK_ADD) then
+        ZoomIn;
       if (Msg.wParam = VK_DELETE) and not FUpdatingDB then
         DeleteSelected;
       if (Msg.wParam = Ord('a')) and CtrlKeyDown and not FUpdatingDB then
@@ -3495,9 +3495,9 @@ begin
     Exit;
 
   if WheelDelta < 0 then
-    ZoomIn
+    ZoomOut
   else
-    ZoomOut;
+    ZoomIn;
 end;
 
 procedure TSearchForm.BigImagesTimerTimer(Sender: TObject);

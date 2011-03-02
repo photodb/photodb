@@ -37,9 +37,10 @@ const
   ProgramMail = 'illusdolphin@gmail.com';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
 
-  InstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/install.aspx';
-  UpdateNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/update.aspx';
-  HomePageURL = 'http://photodb.illusdolphin.net/{LNG}.aspx';
+  InstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/install';
+  UpdateNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/update';
+  HomePageURL = 'http://photodb.illusdolphin.net/{LNG}';
+  FreeActivationURL = 'http://photodb.illusdolphin.net/FreeActivationHandler';
 
   //install
   DBID = '{E1446065-CB87-440D-9315-6FA356F921B5}';

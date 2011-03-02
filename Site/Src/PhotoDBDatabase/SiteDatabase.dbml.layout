@@ -2,12 +2,6 @@
 <ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 9" name="SiteDatabase">
   <DataContextMoniker Name="/SiteDatabaseDataContext" />
   <nestedChildShapes>
-    <classShape Id="2150ad6e-1fc7-41d4-89b8-9a67d46fa58d" absoluteBounds="0.5, 1.125, 2, 3.3093082682291666">
-      <DataClassMoniker Name="/SiteDatabaseDataContext/Activation" />
-      <nestedChildShapes>
-        <elementListCompartment Id="0c78567a-4458-4c81-9dd4-1f6fc9e54387" absoluteBounds="0.51500000000000012, 1.585, 1.9700000000000002, 2.7493082682291665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
-      </nestedChildShapes>
-    </classShape>
     <classShape Id="54b3cee1-5844-4e35-8d71-707675486f6e" absoluteBounds="3.75, 5.25, 2, 1.5785953776041666">
       <DataClassMoniker Name="/SiteDatabaseDataContext/PageView" />
       <nestedChildShapes>
@@ -38,32 +32,38 @@
         <elementListCompartment Id="040e7ef8-a3d3-4c0a-b697-ee2aac8eb993" absoluteBounds="3.39, 3.96, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <associationConnector edgePoints="[(3.375 : 3.96715413411458); (2.5 : 3.96715413411458)]" fixedFrom="Algorithm" fixedTo="Algorithm">
-      <AssociationMoniker Name="/SiteDatabaseDataContext/Host/Host_Activation" />
-      <nodes>
-        <classShapeMoniker Id="7039dafa-119f-4803-8bd3-f8f5d015b25e" />
-        <classShapeMoniker Id="2150ad6e-1fc7-41d4-89b8-9a67d46fa58d" />
-      </nodes>
-    </associationConnector>
-    <associationConnector edgePoints="[(4.5625 : 4.8862939453125); (4.5625 : 5.25)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(4.5625 : 4.8862939453125); (4.5625 : 5.25)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/SiteDatabaseDataContext/Host/Host_PageView" />
       <nodes>
         <classShapeMoniker Id="7039dafa-119f-4803-8bd3-f8f5d015b25e" />
         <classShapeMoniker Id="54b3cee1-5844-4e35-8d71-707675486f6e" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(4.375 : 3.5); (4.375 : 3.15549967447917)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(4.375 : 3.5); (4.375 : 3.15549967447917)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/SiteDatabaseDataContext/Host/Host_Contact" />
       <nodes>
         <classShapeMoniker Id="7039dafa-119f-4803-8bd3-f8f5d015b25e" />
         <classShapeMoniker Id="108fd957-fe51-41d2-9ec6-d8dc23c22fbc" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(3.53125 : 4.8862939453125); (3.53125 : 5.15625); (2.5 : 5.15625)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(3.53125 : 4.8862939453125); (3.53125 : 5.15625); (2.5 : 5.15625)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/SiteDatabaseDataContext/Host/Host_Download" />
       <nodes>
         <classShapeMoniker Id="7039dafa-119f-4803-8bd3-f8f5d015b25e" />
         <classShapeMoniker Id="b67f4b62-dd54-4688-a9ed-460af2c0715a" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="cab81da2-92df-45e7-bf27-594af608f3b7" absoluteBounds="0.75, 0.5, 2, 3.5016097005208326">
+      <DataClassMoniker Name="/SiteDatabaseDataContext/Activation" />
+      <nestedChildShapes>
+        <elementListCompartment Id="c2c4b266-049c-4717-8c42-a063fd39ebf6" absoluteBounds="0.765, 0.96, 1.9700000000000002, 2.941609700520833" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(3.375 : 3.75080485026042); (2.75 : 3.75080485026042)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/SiteDatabaseDataContext/Host/Host_Activation" />
+      <nodes>
+        <classShapeMoniker Id="7039dafa-119f-4803-8bd3-f8f5d015b25e" />
+        <classShapeMoniker Id="cab81da2-92df-45e7-bf27-594af608f3b7" />
       </nodes>
     </associationConnector>
   </nestedChildShapes>

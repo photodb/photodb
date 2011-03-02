@@ -30,9 +30,6 @@ namespace PhotoDBDatabase
 		
     #region Extensibility Method Definitions
     partial void OnCreated();
-    partial void InsertActivation(Activation instance);
-    partial void UpdateActivation(Activation instance);
-    partial void DeleteActivation(Activation instance);
     partial void InsertPageView(PageView instance);
     partial void UpdatePageView(PageView instance);
     partial void DeletePageView(PageView instance);
@@ -48,6 +45,9 @@ namespace PhotoDBDatabase
     partial void InsertHost(Host instance);
     partial void UpdateHost(Host instance);
     partial void DeleteHost(Host instance);
+    partial void InsertActivation(Activation instance);
+    partial void UpdateActivation(Activation instance);
+    partial void DeleteActivation(Activation instance);
     #endregion
 		
 		public SiteDatabaseDataContext() : 
@@ -78,14 +78,6 @@ namespace PhotoDBDatabase
 				base(connection, mappingSource)
 		{
 			OnCreated();
-		}
-		
-		public System.Data.Linq.Table<Activation> Activations
-		{
-			get
-			{
-				return this.GetTable<Activation>();
-			}
 		}
 		
 		public System.Data.Linq.Table<PageView> PageViews
@@ -127,395 +119,12 @@ namespace PhotoDBDatabase
 				return this.GetTable<Host>();
 			}
 		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Activation")]
-	public partial class Activation : INotifyPropertyChanging, INotifyPropertyChanged
-	{
 		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _ActivationId;
-		
-		private string _FirstName;
-		
-		private string _LastName;
-		
-		private string _Email;
-		
-		private string _Country;
-		
-		private string _City;
-		
-		private string _Address;
-		
-		private string _Phone;
-		
-		private string _ActivationMode;
-		
-		private string _ProgramCode;
-		
-		private string _ActivationCode;
-		
-		private string _ActivationDate;
-		
-		private int _HostId;
-		
-		private EntityRef<Host> _Host;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnActivationIdChanging(int value);
-    partial void OnActivationIdChanged();
-    partial void OnFirstNameChanging(string value);
-    partial void OnFirstNameChanged();
-    partial void OnLastNameChanging(string value);
-    partial void OnLastNameChanged();
-    partial void OnEmailChanging(string value);
-    partial void OnEmailChanged();
-    partial void OnCountryChanging(string value);
-    partial void OnCountryChanged();
-    partial void OnCityChanging(string value);
-    partial void OnCityChanged();
-    partial void OnAddressChanging(string value);
-    partial void OnAddressChanged();
-    partial void OnPhoneChanging(string value);
-    partial void OnPhoneChanged();
-    partial void OnActivationModeChanging(string value);
-    partial void OnActivationModeChanged();
-    partial void OnProgramCodeChanging(string value);
-    partial void OnProgramCodeChanged();
-    partial void OnActivationCodeChanging(string value);
-    partial void OnActivationCodeChanged();
-    partial void OnActivationDateChanging(string value);
-    partial void OnActivationDateChanged();
-    partial void OnHostIdChanging(int value);
-    partial void OnHostIdChanged();
-    #endregion
-		
-		public Activation()
-		{
-			this._Host = default(EntityRef<Host>);
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int ActivationId
+		public System.Data.Linq.Table<Activation> Activations
 		{
 			get
 			{
-				return this._ActivationId;
-			}
-			set
-			{
-				if ((this._ActivationId != value))
-				{
-					this.OnActivationIdChanging(value);
-					this.SendPropertyChanging();
-					this._ActivationId = value;
-					this.SendPropertyChanged("ActivationId");
-					this.OnActivationIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FirstName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string FirstName
-		{
-			get
-			{
-				return this._FirstName;
-			}
-			set
-			{
-				if ((this._FirstName != value))
-				{
-					this.OnFirstNameChanging(value);
-					this.SendPropertyChanging();
-					this._FirstName = value;
-					this.SendPropertyChanged("FirstName");
-					this.OnFirstNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string LastName
-		{
-			get
-			{
-				return this._LastName;
-			}
-			set
-			{
-				if ((this._LastName != value))
-				{
-					this.OnLastNameChanging(value);
-					this.SendPropertyChanging();
-					this._LastName = value;
-					this.SendPropertyChanged("LastName");
-					this.OnLastNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string Email
-		{
-			get
-			{
-				return this._Email;
-			}
-			set
-			{
-				if ((this._Email != value))
-				{
-					this.OnEmailChanging(value);
-					this.SendPropertyChanging();
-					this._Email = value;
-					this.SendPropertyChanged("Email");
-					this.OnEmailChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Country", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string Country
-		{
-			get
-			{
-				return this._Country;
-			}
-			set
-			{
-				if ((this._Country != value))
-				{
-					this.OnCountryChanging(value);
-					this.SendPropertyChanging();
-					this._Country = value;
-					this.SendPropertyChanged("Country");
-					this.OnCountryChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_City", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string City
-		{
-			get
-			{
-				return this._City;
-			}
-			set
-			{
-				if ((this._City != value))
-				{
-					this.OnCityChanging(value);
-					this.SendPropertyChanging();
-					this._City = value;
-					this.SendPropertyChanged("City");
-					this.OnCityChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Address", DbType="NVarChar(250) NOT NULL", CanBeNull=false)]
-		public string Address
-		{
-			get
-			{
-				return this._Address;
-			}
-			set
-			{
-				if ((this._Address != value))
-				{
-					this.OnAddressChanging(value);
-					this.SendPropertyChanging();
-					this._Address = value;
-					this.SendPropertyChanged("Address");
-					this.OnAddressChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string Phone
-		{
-			get
-			{
-				return this._Phone;
-			}
-			set
-			{
-				if ((this._Phone != value))
-				{
-					this.OnPhoneChanging(value);
-					this.SendPropertyChanging();
-					this._Phone = value;
-					this.SendPropertyChanged("Phone");
-					this.OnPhoneChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationMode", DbType="NChar(10) NOT NULL", CanBeNull=false)]
-		public string ActivationMode
-		{
-			get
-			{
-				return this._ActivationMode;
-			}
-			set
-			{
-				if ((this._ActivationMode != value))
-				{
-					this.OnActivationModeChanging(value);
-					this.SendPropertyChanging();
-					this._ActivationMode = value;
-					this.SendPropertyChanged("ActivationMode");
-					this.OnActivationModeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ProgramCode", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string ProgramCode
-		{
-			get
-			{
-				return this._ProgramCode;
-			}
-			set
-			{
-				if ((this._ProgramCode != value))
-				{
-					this.OnProgramCodeChanging(value);
-					this.SendPropertyChanging();
-					this._ProgramCode = value;
-					this.SendPropertyChanged("ProgramCode");
-					this.OnProgramCodeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationCode", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string ActivationCode
-		{
-			get
-			{
-				return this._ActivationCode;
-			}
-			set
-			{
-				if ((this._ActivationCode != value))
-				{
-					this.OnActivationCodeChanging(value);
-					this.SendPropertyChanging();
-					this._ActivationCode = value;
-					this.SendPropertyChanged("ActivationCode");
-					this.OnActivationCodeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationDate", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string ActivationDate
-		{
-			get
-			{
-				return this._ActivationDate;
-			}
-			set
-			{
-				if ((this._ActivationDate != value))
-				{
-					this.OnActivationDateChanging(value);
-					this.SendPropertyChanging();
-					this._ActivationDate = value;
-					this.SendPropertyChanged("ActivationDate");
-					this.OnActivationDateChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostId", DbType="Int NOT NULL")]
-		public int HostId
-		{
-			get
-			{
-				return this._HostId;
-			}
-			set
-			{
-				if ((this._HostId != value))
-				{
-					if (this._Host.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnHostIdChanging(value);
-					this.SendPropertyChanging();
-					this._HostId = value;
-					this.SendPropertyChanged("HostId");
-					this.OnHostIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Activation", Storage="_Host", ThisKey="HostId", OtherKey="HostId", IsForeignKey=true)]
-		public Host Host
-		{
-			get
-			{
-				return this._Host.Entity;
-			}
-			set
-			{
-				Host previousValue = this._Host.Entity;
-				if (((previousValue != value) 
-							|| (this._Host.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Host.Entity = null;
-						previousValue.Activations.Remove(this);
-					}
-					this._Host.Entity = value;
-					if ((value != null))
-					{
-						value.Activations.Add(this);
-						this._HostId = value.HostId;
-					}
-					else
-					{
-						this._HostId = default(int);
-					}
-					this.SendPropertyChanged("Host");
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+				return this.GetTable<Activation>();
 			}
 		}
 	}
@@ -1383,13 +992,13 @@ namespace PhotoDBDatabase
 		
 		private string _HostDescription;
 		
-		private EntitySet<Activation> _Activations;
-		
 		private EntitySet<PageView> _PageViews;
 		
 		private EntitySet<Contact> _Contacts;
 		
 		private EntitySet<Download> _Downloads;
+		
+		private EntitySet<Activation> _Activations;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -1405,10 +1014,10 @@ namespace PhotoDBDatabase
 		
 		public Host()
 		{
-			this._Activations = new EntitySet<Activation>(new Action<Activation>(this.attach_Activations), new Action<Activation>(this.detach_Activations));
 			this._PageViews = new EntitySet<PageView>(new Action<PageView>(this.attach_PageViews), new Action<PageView>(this.detach_PageViews));
 			this._Contacts = new EntitySet<Contact>(new Action<Contact>(this.attach_Contacts), new Action<Contact>(this.detach_Contacts));
 			this._Downloads = new EntitySet<Download>(new Action<Download>(this.attach_Downloads), new Action<Download>(this.detach_Downloads));
+			this._Activations = new EntitySet<Activation>(new Action<Activation>(this.attach_Activations), new Action<Activation>(this.detach_Activations));
 			OnCreated();
 		}
 		
@@ -1472,19 +1081,6 @@ namespace PhotoDBDatabase
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Activation", Storage="_Activations", ThisKey="HostId", OtherKey="HostId")]
-		public EntitySet<Activation> Activations
-		{
-			get
-			{
-				return this._Activations;
-			}
-			set
-			{
-				this._Activations.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_PageView", Storage="_PageViews", ThisKey="HostId", OtherKey="HostId")]
 		public EntitySet<PageView> PageViews
 		{
@@ -1524,6 +1120,19 @@ namespace PhotoDBDatabase
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Activation", Storage="_Activations", ThisKey="HostId", OtherKey="HostId")]
+		public EntitySet<Activation> Activations
+		{
+			get
+			{
+				return this._Activations;
+			}
+			set
+			{
+				this._Activations.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -1542,18 +1151,6 @@ namespace PhotoDBDatabase
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
-		}
-		
-		private void attach_Activations(Activation entity)
-		{
-			this.SendPropertyChanging();
-			entity.Host = this;
-		}
-		
-		private void detach_Activations(Activation entity)
-		{
-			this.SendPropertyChanging();
-			entity.Host = null;
 		}
 		
 		private void attach_PageViews(PageView entity)
@@ -1590,6 +1187,433 @@ namespace PhotoDBDatabase
 		{
 			this.SendPropertyChanging();
 			entity.Host = null;
+		}
+		
+		private void attach_Activations(Activation entity)
+		{
+			this.SendPropertyChanging();
+			entity.Host = this;
+		}
+		
+		private void detach_Activations(Activation entity)
+		{
+			this.SendPropertyChanging();
+			entity.Host = null;
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Activation")]
+	public partial class Activation : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _ActivationId;
+		
+		private string _FirstName;
+		
+		private string _LastName;
+		
+		private string _Email;
+		
+		private string _Country;
+		
+		private string _City;
+		
+		private string _Address;
+		
+		private string _Phone;
+		
+		private string _ActivationMode;
+		
+		private string _ProgramCode;
+		
+		private string _ActivationCode;
+		
+		private System.DateTime _ActivationDate;
+		
+		private int _HostId;
+		
+		private string _ProgramVersion;
+		
+		private EntityRef<Host> _Host;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnActivationIdChanging(int value);
+    partial void OnActivationIdChanged();
+    partial void OnFirstNameChanging(string value);
+    partial void OnFirstNameChanged();
+    partial void OnLastNameChanging(string value);
+    partial void OnLastNameChanged();
+    partial void OnEmailChanging(string value);
+    partial void OnEmailChanged();
+    partial void OnCountryChanging(string value);
+    partial void OnCountryChanged();
+    partial void OnCityChanging(string value);
+    partial void OnCityChanged();
+    partial void OnAddressChanging(string value);
+    partial void OnAddressChanged();
+    partial void OnPhoneChanging(string value);
+    partial void OnPhoneChanged();
+    partial void OnActivationModeChanging(string value);
+    partial void OnActivationModeChanged();
+    partial void OnProgramCodeChanging(string value);
+    partial void OnProgramCodeChanged();
+    partial void OnActivationCodeChanging(string value);
+    partial void OnActivationCodeChanged();
+    partial void OnActivationDateChanging(System.DateTime value);
+    partial void OnActivationDateChanged();
+    partial void OnHostIdChanging(int value);
+    partial void OnHostIdChanged();
+    partial void OnProgramVersionChanging(string value);
+    partial void OnProgramVersionChanged();
+    #endregion
+		
+		public Activation()
+		{
+			this._Host = default(EntityRef<Host>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int ActivationId
+		{
+			get
+			{
+				return this._ActivationId;
+			}
+			set
+			{
+				if ((this._ActivationId != value))
+				{
+					this.OnActivationIdChanging(value);
+					this.SendPropertyChanging();
+					this._ActivationId = value;
+					this.SendPropertyChanged("ActivationId");
+					this.OnActivationIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FirstName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string FirstName
+		{
+			get
+			{
+				return this._FirstName;
+			}
+			set
+			{
+				if ((this._FirstName != value))
+				{
+					this.OnFirstNameChanging(value);
+					this.SendPropertyChanging();
+					this._FirstName = value;
+					this.SendPropertyChanged("FirstName");
+					this.OnFirstNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string LastName
+		{
+			get
+			{
+				return this._LastName;
+			}
+			set
+			{
+				if ((this._LastName != value))
+				{
+					this.OnLastNameChanging(value);
+					this.SendPropertyChanging();
+					this._LastName = value;
+					this.SendPropertyChanged("LastName");
+					this.OnLastNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Email
+		{
+			get
+			{
+				return this._Email;
+			}
+			set
+			{
+				if ((this._Email != value))
+				{
+					this.OnEmailChanging(value);
+					this.SendPropertyChanging();
+					this._Email = value;
+					this.SendPropertyChanged("Email");
+					this.OnEmailChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Country", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Country
+		{
+			get
+			{
+				return this._Country;
+			}
+			set
+			{
+				if ((this._Country != value))
+				{
+					this.OnCountryChanging(value);
+					this.SendPropertyChanging();
+					this._Country = value;
+					this.SendPropertyChanged("Country");
+					this.OnCountryChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_City", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string City
+		{
+			get
+			{
+				return this._City;
+			}
+			set
+			{
+				if ((this._City != value))
+				{
+					this.OnCityChanging(value);
+					this.SendPropertyChanging();
+					this._City = value;
+					this.SendPropertyChanged("City");
+					this.OnCityChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Address", DbType="NVarChar(250) NOT NULL", CanBeNull=false)]
+		public string Address
+		{
+			get
+			{
+				return this._Address;
+			}
+			set
+			{
+				if ((this._Address != value))
+				{
+					this.OnAddressChanging(value);
+					this.SendPropertyChanging();
+					this._Address = value;
+					this.SendPropertyChanged("Address");
+					this.OnAddressChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Phone
+		{
+			get
+			{
+				return this._Phone;
+			}
+			set
+			{
+				if ((this._Phone != value))
+				{
+					this.OnPhoneChanging(value);
+					this.SendPropertyChanging();
+					this._Phone = value;
+					this.SendPropertyChanged("Phone");
+					this.OnPhoneChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationMode", DbType="NChar(10) NOT NULL", CanBeNull=false)]
+		public string ActivationMode
+		{
+			get
+			{
+				return this._ActivationMode;
+			}
+			set
+			{
+				if ((this._ActivationMode != value))
+				{
+					this.OnActivationModeChanging(value);
+					this.SendPropertyChanging();
+					this._ActivationMode = value;
+					this.SendPropertyChanged("ActivationMode");
+					this.OnActivationModeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ProgramCode", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string ProgramCode
+		{
+			get
+			{
+				return this._ProgramCode;
+			}
+			set
+			{
+				if ((this._ProgramCode != value))
+				{
+					this.OnProgramCodeChanging(value);
+					this.SendPropertyChanging();
+					this._ProgramCode = value;
+					this.SendPropertyChanged("ProgramCode");
+					this.OnProgramCodeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationCode", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string ActivationCode
+		{
+			get
+			{
+				return this._ActivationCode;
+			}
+			set
+			{
+				if ((this._ActivationCode != value))
+				{
+					this.OnActivationCodeChanging(value);
+					this.SendPropertyChanging();
+					this._ActivationCode = value;
+					this.SendPropertyChanged("ActivationCode");
+					this.OnActivationCodeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivationDate", DbType="DateTime NOT NULL")]
+		public System.DateTime ActivationDate
+		{
+			get
+			{
+				return this._ActivationDate;
+			}
+			set
+			{
+				if ((this._ActivationDate != value))
+				{
+					this.OnActivationDateChanging(value);
+					this.SendPropertyChanging();
+					this._ActivationDate = value;
+					this.SendPropertyChanged("ActivationDate");
+					this.OnActivationDateChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostId", DbType="Int NOT NULL")]
+		public int HostId
+		{
+			get
+			{
+				return this._HostId;
+			}
+			set
+			{
+				if ((this._HostId != value))
+				{
+					if (this._Host.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnHostIdChanging(value);
+					this.SendPropertyChanging();
+					this._HostId = value;
+					this.SendPropertyChanged("HostId");
+					this.OnHostIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ProgramVersion", DbType="NChar(10) NOT NULL", CanBeNull=false)]
+		public string ProgramVersion
+		{
+			get
+			{
+				return this._ProgramVersion;
+			}
+			set
+			{
+				if ((this._ProgramVersion != value))
+				{
+					this.OnProgramVersionChanging(value);
+					this.SendPropertyChanging();
+					this._ProgramVersion = value;
+					this.SendPropertyChanged("ProgramVersion");
+					this.OnProgramVersionChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Activation", Storage="_Host", ThisKey="HostId", OtherKey="HostId", IsForeignKey=true)]
+		public Host Host
+		{
+			get
+			{
+				return this._Host.Entity;
+			}
+			set
+			{
+				Host previousValue = this._Host.Entity;
+				if (((previousValue != value) 
+							|| (this._Host.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Host.Entity = null;
+						previousValue.Activations.Remove(this);
+					}
+					this._Host.Entity = value;
+					if ((value != null))
+					{
+						value.Activations.Add(this);
+						this._HostId = value.HostId;
+					}
+					else
+					{
+						this._HostId = default(int);
+					}
+					this.SendPropertyChanged("Host");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 	}
 }

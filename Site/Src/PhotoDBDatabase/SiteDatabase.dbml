@@ -1,23 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="PhotoDBSite" Class="SiteDatabaseDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
   <Connection Mode="AppSettings" ConnectionString="Data Source=illusdolphin.net\SQLEXPRESS;Initial Catalog=PhotoDBSite;User ID=pdbsite_user" SettingsObjectName="PhotoDBDatabase.Properties.Settings" SettingsPropertyName="PhotoDBSiteConnectionString" Provider="System.Data.SqlClient" />
-  <Table Name="dbo.Activation" Member="Activations">
-    <Type Name="Activation">
-      <Column Name="ActivationId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="FirstName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="LastName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Country" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="City" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Address" Type="System.String" DbType="NVarChar(250) NOT NULL" CanBeNull="false" />
-      <Column Name="Phone" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="ActivationMode" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
-      <Column Name="ProgramCode" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="ActivationCode" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="ActivationDate" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Association Name="Host_Activation" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
-    </Type>
-  </Table>
   <Table Name="dbo.PageView" Member="PageViews">
     <Type Name="PageView">
       <Column Name="PageViewId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -66,10 +48,29 @@
       <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="HostName" Type="System.String" DbType="NChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="HostDescription" Type="System.String" DbType="NChar(250) NOT NULL" CanBeNull="false" />
-      <Association Name="Host_Activation" Member="Activations" ThisKey="HostId" OtherKey="HostId" Type="Activation" />
       <Association Name="Host_PageView" Member="PageViews" ThisKey="HostId" OtherKey="HostId" Type="PageView" />
       <Association Name="Host_Contact" Member="Contacts" ThisKey="HostId" OtherKey="HostId" Type="Contact" />
       <Association Name="Host_Download" Member="Downloads" ThisKey="HostId" OtherKey="HostId" Type="Download" />
+      <Association Name="Host_Activation" Member="Activations" ThisKey="HostId" OtherKey="HostId" Type="Activation" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Activation" Member="Activations">
+    <Type Name="Activation">
+      <Column Name="ActivationId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FirstName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="LastName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Country" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="City" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Address" Type="System.String" DbType="NVarChar(250) NOT NULL" CanBeNull="false" />
+      <Column Name="Phone" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="ActivationMode" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="ProgramCode" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="ActivationCode" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="ActivationDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ProgramVersion" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Association Name="Host_Activation" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
     </Type>
   </Table>
 </Database>

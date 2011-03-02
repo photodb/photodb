@@ -2868,9 +2868,9 @@ begin
         ListView1ContextPopup(ElvMain, Point(-1, -1), InternalHandled);
 
       if (Msg.WParam = VK_SUBTRACT) then
-        ZoomIn;
-      if (Msg.WParam = VK_ADD) then
         ZoomOut;
+      if (Msg.WParam = VK_ADD) then
+        ZoomIn;
 
       if (Msg.WParam = VK_F2) then
         if ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
@@ -7313,9 +7313,9 @@ begin
   if not (ssCtrl in Shift) then exit;
 
   if WheelDelta < 0 then
-    ZoomIn
+    ZoomOut
   else
-    ZoomOut;
+    ZoomIn;
 
   Handled := True;
 end;
