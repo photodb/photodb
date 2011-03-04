@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes, Forms,
-  uVistaFuncs, uLogger, uEditorTypes, uShellIntegration, uMemory;
+  uConstants, uLogger, uEditorTypes, uShellIntegration, uMemory;
 
 type
   TBaseEffectThread = class(TThread)

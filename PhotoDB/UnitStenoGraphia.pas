@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, uStenography, ShlObj, UnitDBKernel,
-  Math, ImageConverting, PngImage, GraphicEx, uVistaFuncs,
+  Math, ImageConverting, PngImage, GraphicEx, uConstants,
   GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils, uMemory,
   uShellIntegration, uDBForm, uStrongCrypt, DECUtil, DECCipher, win32crc, Dolphin_DB;
 

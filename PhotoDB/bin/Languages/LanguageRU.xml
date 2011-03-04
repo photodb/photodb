@@ -1740,12 +1740,25 @@
 	<translate name="Unable to restore collection (%s)! The current collection may be corrupted or missing! After starting try to restore the file &quot;%s&quot; which is a backup of your collection. Error: %s" value="Не удалось восстановить БД (%s)! Текущая БД может быть повреждена или отсутствовать! После запуска попробуйте восстановить файл &quot;%s&quot; в котором находится резервная копия вашей БД. Возникла ошибка: %s"/>
   </scope>
   <scope name="Activation">
+	<translate name="Activation" value="Активация"/>
+    <translate name="Previous" value="Назад" />
+    <translate name="Next" value="Далее" />
+    <translate name="Finish" value="Финиш" />
+    <translate name="First name" value="Имя" />
+    <translate name="Last name" value="Фамилия" />
+    <translate name="E-mail" value="E-mail" />
+    <translate name="Phone" value="Телефон" />
+    <translate name="Country" value="Страна" />
+    <translate name="City" value="Город" />
+    <translate name="Address" value="Адрес" />	
+    <translate name="Thank you for activation the program!" value="Спасибо за активацию программы" />
+    
+	<translate name="Activation" value="Activation" />  
     <translate name="Next..." value="Далее..." />
 	<translate name="Program code" value="Код вашей копии программы"/>
 	<translate name="Enter here activation key" value="Введите сюда ключ для активации"/>
     <translate name="User name" value="Имя для активации" />
 	<translate name="Install code" value="Установить код"/>
-	<translate name="Activation" value="Активация"/>
 	<translate name="Get personal code" value="Получить код"/>
     <translate name="Activation key saved! Please restart the application!" value="Ключ для активации сохранён! Перезапустите приложение для результата!"/>
 	<translate name="You are working with a non-activated program!$nl$You can only add %d items!" value="Вы работаете в неактивированной программой!$nl$Вы можете добавить только %d записей!"/>

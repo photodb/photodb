@@ -3,7 +3,8 @@ unit uInternetUtils;
 interface
 
 uses
-  Windows, Classes, SysUtils, uMemory, uConstants;
+  Windows, Classes, SysUtils, uMemory, uConstants,
+  EncdDecd;
 
 type
   TRelease = record
@@ -52,8 +53,19 @@ function StringToRelease(const s: string) : TRelease;
 function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
 function InternetTimeToDateTime(const Value: string) : TDateTime;
 function ReleaseToString(Release : TRelease) : string;
+function EncodeBase64Url(inputData: string): string;
 
 implementation
+
+function EncodeBase64Url(inputData: string): string;
+begin
+  //EncdDecd
+  Result := string(EncodeBase64(PChar(inputData), Length(inputData) * SizeOf(Char)));
+  // =+/ => *-_
+  Result := StringReplace(Result, '=', '*', [rfReplaceAll]);
+  Result := StringReplace(Result, '+', '-', [rfReplaceAll]);
+  Result := StringReplace(Result, '/', '_', [rfReplaceAll]);
+end;
 
 function InternetTimeToDateTime(const Value: string) : TDateTime;
 var

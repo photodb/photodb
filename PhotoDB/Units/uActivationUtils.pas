@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, UnitDBCommon, uRuntime, Classes, Registry, uMemory,
-  win32crc, uConstants, SyncObjs;
+  win32crc, uConstants, SyncObjs, uTranslate;
 
 type
   TCIDProcedure = procedure(Buffferm: PChar; BuffesSize : Integer);
@@ -17,7 +17,6 @@ type
   TActivationManager = class(TObject)
   private
     FSync: TCriticalSection;
-    FRegistractionKey: string;
     FRegistrationLoaded: Boolean;
     FIsDemoMode: Boolean;
     FIsFullMode: Boolean;
@@ -28,6 +27,7 @@ type
     function GetActivationKey: string;
     function GetActivationUserName: string;
     procedure CheckActivationStatus;
+    function GetCanUseFreeActivation: Boolean;
   public
     class function Instance: TActivationManager;
     destructor Destroy; override;
@@ -39,6 +39,7 @@ type
     property ApplicationCode: string read GetApplicationCode;
     property ActivationKey: string read GetActivationKey;
     property ActivationUserName: string read GetActivationUserName;
+    property CanUseFreeActivation: Boolean read GetCanUseFreeActivation;
   end;
 
 function GenerateActivationKey(ApplicationCode: string; FullVersion: Boolean): string;
@@ -291,6 +292,11 @@ end;
 function TActivationManager.GetApplicationCode: string;
 begin
   Result := GenerateProgramCode(GetSystemHardwareString);
+end;
+
+function TActivationManager.GetCanUseFreeActivation: Boolean;
+begin
+  Result := TTranslateManager.Instance.Language = 'RU';
 end;
 
 function TActivationManager.GetIsDemoMode: Boolean;

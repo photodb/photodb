@@ -300,7 +300,12 @@ uses
   uStenography in 'Units\uStenography.pas',
   uInternetUtils in 'Units\uInternetUtils.pas',
   uViewerTypes in 'Units\uViewerTypes.pas',
-  uDXUtils in 'Units\dx\uDXUtils.pas';
+  uDXUtils in 'Units\dx\uDXUtils.pas',
+  uFrameWizardBase in 'Wizards\uFrameWizardBase.pas' {FrameWizardBase: TFrame},
+  uFrameFreeActivation in 'Activation\uFrameFreeActivation.pas' {FrameFreeActivation},
+  uWizards in 'Wizards\uWizards.pas',
+  uFrameActivationLanding in 'Activation\uFrameActivationLanding.pas' {Frame1: TFrame},
+  uInternetFreeActivationThread in 'Activation\uInternetFreeActivationThread.pas';
 
 {$R *.res}
 

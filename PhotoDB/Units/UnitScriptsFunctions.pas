@@ -4,7 +4,7 @@ interface
 
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
   Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
-  UnitDBFileDialogs, Forms, uVistaFuncs, uLogger, uShellIntegration,
+  UnitDBFileDialogs, Forms, uConstants, uLogger, uShellIntegration,
   uFileUtils, uTime, uMemory, uTranslate, uRuntime, ReplaseIconsInScript;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
@@ -578,7 +578,7 @@ end;
 
 function ShowInt(int : integer) : string;
 begin
-  MessageBoxDB(Dolphin_DB.GetActiveFormHandle, IntToStr(Int), TA('Information'), TD_BUTTON_OK,
+  MessageBoxDB(GetActiveFormHandle, IntToStr(Int), TA('Information'), TD_BUTTON_OK,
     TD_ICON_INFORMATION);
 end;
 

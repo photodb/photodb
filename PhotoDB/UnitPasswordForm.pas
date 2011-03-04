@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, UnitDBKernel, FormManegerUnit, GraphicCrypt, DB,
-  uVistaFuncs, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
+  uConstants, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
   uDBForm, uTranslate, uFileUtils, uShellIntegration;
 
 type

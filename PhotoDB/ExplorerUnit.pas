@@ -3101,7 +3101,7 @@ function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;
 var
   I : Integer;
 begin
-  Result := false;
+  Result := False;
   for I := 0 to fFilesInfo.Count - 1 do
   If IsEqualGUID(fFilesInfo[I].SID, FileSID) then
   begin
@@ -3323,7 +3323,7 @@ end;
 
 procedure TExplorerForm.Button1Click(Sender: TObject);
 begin
-  FIsExplorer:=false;
+  FIsExplorer := False;
   ListView1SelectItem(Sender, ListView1Selected, True);
   PropertyPanel.Show;
   CloseButtonPanel.Hide;

@@ -14,10 +14,24 @@ namespace PhotoDBUserControls
                   @"\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\" +
                   @".)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$";
             Regex re = new Regex(strRegex);
-            if (re.IsMatch(inputEmail))
-                return (true);
-            else
-                return (false);
+            return re.IsMatch(inputEmail);
+        }
+
+        public string base64DecodeUrl(string data)
+        {
+            try
+            {
+                data = data.Replace('*', '=');
+                data = data.Replace('-', '+');
+                data = data.Replace('_', '/');
+
+                byte[] decbuff = Convert.FromBase64String(data);
+                return System.Text.Encoding.Unicode.GetString(decbuff);
+            }
+            catch
+            {
+                return String.Empty;
+            }
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -34,28 +48,28 @@ namespace PhotoDBUserControls
                 ltrReply.Text = "v";
                 return;
             }
-            string firstName = Request["fn"] ?? String.Empty;
+            string firstName = base64DecodeUrl(Request["fn"] ?? String.Empty);
             if (String.IsNullOrEmpty(firstName))
             {
                 ltrReply.Text = "fn";
                 return;
             }
-            string lastName = Request["ln"] ?? String.Empty;
+            string lastName = base64DecodeUrl(Request["ln"] ?? String.Empty);
             if (String.IsNullOrEmpty(lastName))
             {
                 ltrReply.Text = "ln";
                 return;
             }
-            string email = Request["e"] ?? String.Empty;
+            string email = base64DecodeUrl(Request["e"] ?? String.Empty);
             if (!isEmail(email))
             {
                 ltrReply.Text = "e";
                 return;
             }
-            string phone = Request["p"] ?? String.Empty;
-            string country = Request["co"] ?? String.Empty;
-            string city = Request["ci"] ?? String.Empty;
-            string address = Request["a"] ?? String.Empty;
+            string phone = base64DecodeUrl(Request["p"] ?? String.Empty);
+            string country = base64DecodeUrl(Request["co"] ?? String.Empty);
+            string city = base64DecodeUrl(Request["ci"] ?? String.Empty);
+            string address = base64DecodeUrl(Request["a"] ?? String.Empty);
             string freeActivationKey = ActivationHelper.GenerateFreeActivationNumber(programKey);
             ActivationManager.NewFreeActivation(firstName, lastName, email, phone,
                 country, city, address, programKey, freeActivationKey, programVersion);

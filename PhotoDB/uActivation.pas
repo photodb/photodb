@@ -6,7 +6,7 @@ uses
   UnitINI, Searching, dolphin_db, UnitDBKernel, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
   Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm,
-  uMemory, uConstants;
+  uMemory, uConstants, uWizards;
 
 type
   TActivateForm = class(TDBForm)
@@ -14,14 +14,19 @@ type
     Label1: TLabel;
     EdActicationCode: TEdit;
     Label2: TLabel;
-    Button1: TButton;
     Button2: TButton;
     EdUserName: TEdit;
     Label3: TLabel;
-    Image1: TImage;
     Button3: TButton;
     HelpTimer: TTimer;
     HelpTimer2: TTimer;
+    Bevel1: TBevel;
+    BtnNext: TButton;
+    BtnCancel: TButton;
+    BtnFinish: TButton;
+    BtnPrevious: TButton;
+    Image1: TImage;
+    LbInfo: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -32,9 +37,14 @@ type
     procedure HelpTimer2Timer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure BtnCancelClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure BtnFinishClick(Sender: TObject);
   private
     { Private declarations }
+    FWizard: TWizardManager;
     procedure LoadLanguage;
+    procedure StepChanged(Sender: TObject);
     procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
   protected
     function GetFormID : string; override;
@@ -49,17 +59,20 @@ procedure ShowActivationDialog;
 implementation
 
 uses
-  UnitHelp, FormManegerUnit;
+  UnitHelp, FormManegerUnit, uFrameFreeActivation;
 
 procedure ShowActivationDialog;
 var
   ActivateForm: TActivateForm;
 begin
-  Application.CreateForm(TActivateForm, ActivateForm);
-  try
-    ActivateForm.Execute;
-  finally
-    R(ActivateForm);
+  if not FolderView then
+  begin
+    Application.CreateForm(TActivateForm, ActivateForm);
+    try
+      ActivateForm.Execute;
+    finally
+      R(ActivateForm);
+    end;
   end;
 end;
 
@@ -68,7 +81,16 @@ end;
 procedure TActivateForm.FormCreate(Sender: TObject);
 begin
   LoadLanguage;
-  if not FolderView then
+
+  FWizard := TWizardManager.Create(Self);
+  FWizard.OnChange := StepChanged;
+  if TActivationManager.Instance.CanUseFreeActivation then
+  begin
+    FWizard.AddStep(TFrameFreeActivation);
+  end;
+
+  FWizard.Start(Self, 183, 8);
+ { if not FolderView then
   begin
     EdProgramCode.Text := TActivationManager.Instance.ApplicationCode;
 
@@ -77,16 +99,16 @@ begin
       EdActicationCode.Text := TActivationManager.Instance.ActivationKey;
       EdUserName.Text := TActivationManager.Instance.ActivationUserName;
     end;
-  end;
+  end; }
+end;
+
+procedure TActivateForm.FormDestroy(Sender: TObject);
+begin
+  F(FWizard);
 end;
 
 procedure TActivateForm.Button2Click(Sender: TObject);
-var
-  Reg : TBDRegistry;
 begin
-  if FolderView then
-    Exit;
-
   if TActivationManager.Instance.SaveActivateKey(EdUserName.Text, EdActicationCode.Text, False) then
     MessageBoxDB(Handle, L('Activation key saved! Please restart the application!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
 
@@ -96,6 +118,16 @@ end;
 procedure TActivateForm.Execute;
 begin
   ShowModal;
+end;
+
+procedure TActivateForm.BtnCancelClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TActivateForm.BtnFinishClick(Sender: TObject);
+begin
+  FWizard.Execute;
 end;
 
 procedure TActivateForm.Button1Click(Sender: TObject);
@@ -112,16 +144,25 @@ procedure TActivateForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Label1.Caption := L('Program code') + ':';
-    Label2.Caption := L('Enter here activation key') + ':';
+    Caption := L('Activation');
+    BtnCancel.Caption := L('Cancel');
+    BtnPrevious.Caption := L('Previous');
+    BtnNext.Caption := L('Next');
+    BtnFinish.Caption := L('Finish');
+{     Label1.Caption := L('Program code') + ':';
+   Label2.Caption := L('Enter here activation key') + ':';
     Label3.Caption := L('User name');
     Button1.Caption := L('Cancel');
     Button2.Caption := L('Install code');
-    Caption := L('Activation');
-    Button3.Caption := L('Get personal code');
+    Button3.Caption := L('Get personal code'); }
   finally
     EndTranslate;
   end;
+end;
+
+procedure TActivateForm.StepChanged(Sender: TObject);
+begin
+  //
 end;
 
 procedure TActivateForm.Button3Click(Sender: TObject);

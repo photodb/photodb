@@ -3,7 +3,7 @@ unit UnitGroupsTools;
 interface
 
 uses Windows, DB, Forms, Classes, UnitGroupsWork, SysUtils,
-  ProgressActionUnit, uVistaFuncs, uMemory, uTranslate,
+  ProgressActionUnit, uConstants, uMemory, uTranslate,
   uShellIntegration;
 
 procedure MoveGroup(GroupToMove, IntoGroup: TGroup); overload;

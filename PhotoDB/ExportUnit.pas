@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uVistaFuncs,
+  Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uConstants,
   uShellIntegration, uDBForm, WatermarkedEdit;
 
 type

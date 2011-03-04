@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt,
-  uVistaFuncs, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher,
+  uConstants, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher,
   WatermarkedEdit, uDBForm, UnitDBKernel, uShellIntegration;
 
 type

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, UnitDBkernel, FormManegerUnit, StdCtrls, WatermarkedEdit,
-  uVistaFuncs, uDBForm, uShellIntegration;
+  uConstants, uDBForm, uShellIntegration;
 
 type
   TAddSessionPasswordForm = class(TDBForm)

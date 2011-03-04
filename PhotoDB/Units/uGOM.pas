@@ -19,10 +19,20 @@ type
     function Count: Integer;
   end;
 
-var
-  GOM: TManagerObjects = nil;
+function GOM: TManagerObjects;
 
 implementation
+
+var
+  GOMObj: TManagerObjects = nil;
+
+function GOM: TManagerObjects;
+begin
+  if GOMObj = nil then
+    GOMObj := TManagerObjects.Create;
+
+  Result := GOMObj;
+end;
 
 { TManagerObjects }
 
@@ -93,10 +103,8 @@ end;
 
 initialization
 
-  GOM := TManagerObjects.Create;
-
 finalization
 
-  F(GOM);
+  F(GOMObj);
 
 end.
