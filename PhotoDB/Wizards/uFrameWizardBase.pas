@@ -9,11 +9,19 @@ uses
 type
   TFrameWizardBase = class;
 
+  TFrameWizardBaseClass = class of TFrameWizardBase;
+
   TWizardManagerBase = class(TObject)
   private
     FOwner: TDBForm;
+  protected
+    function GetWizardDone: Boolean; virtual; abstract;
   public
     constructor Create(Owner: TDBForm);  virtual;
+    procedure NextStep;  virtual; abstract;
+    function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; virtual; abstract;
+    procedure AddStep(Step: TFrameWizardBaseClass); virtual; abstract;
+    property WizardDone: Boolean read GetWizardDone;
   end;
 
   TFrameWizardBase = class(TFrame)
@@ -21,22 +29,29 @@ type
     { Private declarations }
     FOnChange: TNotifyEvent;
     FManager: TWizardManagerBase;
+    FIsBusy: Boolean;
+    FIsStepComplete: Boolean;
   protected
+    { Protected declarations }
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate, Scope: string): string; overload;
     procedure LoadLanguage; virtual;
-    function IsFinal: Boolean; virtual;
     procedure Changeed;
+    function GetCanGoNext: Boolean; virtual;
   public
     { Public declarations }
+    constructor Create(AOwner: TComponent); override;
     procedure Execute; virtual;
+    procedure InitNextStep; virtual;
     procedure Init(Manager: TWizardManagerBase); virtual;
     procedure Unload; virtual;
+    function IsFinal: Boolean; virtual;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property IsBusy: Boolean read FIsBusy write FIsBusy;
+    property IsStepComplete: Boolean read FIsStepComplete write FIsStepComplete;
     property Manager: TWizardManagerBase read FManager;
+    property CanGoNext: Boolean read GetCanGoNext;
   end;
-
-  TFrameWizardBaseClass = class of TFrameWizardBase;
 
 implementation
 
@@ -50,16 +65,28 @@ begin
     FOnChange(Self);
 end;
 
+constructor TFrameWizardBase.Create(AOwner: TComponent);
+begin
+  inherited;
+  FOnChange := nil;
+end;
+
 procedure TFrameWizardBase.Execute;
 begin
-  //cwrite here logic to execute
+  //write here logic to execute
+end;
+
+function TFrameWizardBase.GetCanGoNext: Boolean;
+begin
+  Result := True;
 end;
 
 procedure TFrameWizardBase.Init(Manager: TWizardManagerBase);
 begin
   //some init logic of step
   GOM.AddObj(Self);
-  FOnChange := nil;
+  FIsBusy := False;
+  FIsStepComplete := False;
   FManager := Manager;
   TTranslateManager.Instance.BeginTranslate;
   try
@@ -67,6 +94,11 @@ begin
   finally
     TTranslateManager.Instance.EndTranslate;
   end;
+end;
+
+procedure TFrameWizardBase.InitNextStep;
+begin
+  //insert here next step initialization
 end;
 
 function TFrameWizardBase.L(StringToTranslate: string): string;

@@ -1,16 +1,14 @@
 inherited FrameFreeActivation: TFrameFreeActivation
-  Width = 321
-  Height = 323
+  Height = 320
   Color = clWhite
   Font.Color = clBlack
   ParentBackground = False
   ParentColor = False
   ParentFont = False
-  ExplicitWidth = 321
-  ExplicitHeight = 323
+  ExplicitHeight = 320
   DesignSize = (
-    321
-    323)
+    320
+    320)
   object LbInternetQuery: TLabel
     Left = 40
     Top = 288
@@ -24,7 +22,7 @@ inherited FrameFreeActivation: TFrameFreeActivation
   object EdFirstName: TLabeledEdit
     Left = 3
     Top = 16
-    Width = 315
+    Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = 11206655
@@ -36,7 +34,7 @@ inherited FrameFreeActivation: TFrameFreeActivation
   object EdLastName: TLabeledEdit
     Left = 3
     Top = 56
-    Width = 315
+    Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = 11206655
@@ -48,7 +46,7 @@ inherited FrameFreeActivation: TFrameFreeActivation
   object EdEmail: TLabeledEdit
     Left = 3
     Top = 96
-    Width = 315
+    Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = 11206655
@@ -60,7 +58,7 @@ inherited FrameFreeActivation: TFrameFreeActivation
   object EdPhone: TLabeledEdit
     Left = 3
     Top = 136
-    Width = 315
+    Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = clWhite
@@ -72,7 +70,7 @@ inherited FrameFreeActivation: TFrameFreeActivation
   object EdCountry: TLabeledEdit
     Left = 3
     Top = 176
-    Width = 315
+    Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = clWhite
@@ -84,7 +82,7 @@ inherited FrameFreeActivation: TFrameFreeActivation
   object EdCity: TLabeledEdit
     Left = 3
     Top = 219
-    Width = 315
+    Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = clWhite
@@ -96,7 +94,7 @@ inherited FrameFreeActivation: TFrameFreeActivation
   object EdAddress: TLabeledEdit
     Left = 3
     Top = 259
-    Width = 315
+    Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = clWhite

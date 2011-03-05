@@ -34,7 +34,7 @@ const
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;
-  ProgramMail = 'illusdolphin@gmail.com';
+  ProgramMail = 'photodb@illusdolphin.net';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
 
   InstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/install';

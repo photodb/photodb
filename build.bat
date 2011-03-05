@@ -18,6 +18,7 @@ cd photodb/resources
 "%BRCC32%" ImagePanelBackground.rc
 "%BRCC32%" Loading.rc
 "%BRCC32%" Install.rc
+"%BRCC32%" Activation.rc
 
 cd ..
 cd ..

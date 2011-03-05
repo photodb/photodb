@@ -255,7 +255,7 @@ begin
       begin
         ICmd := LongInt(FPM) - 1;
         HR := ICMenu.GetCommandString(ICmd, GCS_VERBA, nil, ZVerb, SizeOf(ZVerb));
-        Verb := StrPas(ZVerb);
+        Verb := string(StrPas(ZVerb));
         Handled := False;
         if Supports(WC, IShellCommandVerb, SCV) then
         begin

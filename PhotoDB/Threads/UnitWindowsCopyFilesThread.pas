@@ -75,7 +75,6 @@ var
   Res: Boolean;
 begin
   FreeOnTerminate := True;
-  Res := False;
   try
     Res := CopyFilesSynch(0, FSrc, FDest, FMove, FAutoRename) = 0;
 

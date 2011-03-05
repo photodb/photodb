@@ -12,6 +12,7 @@
     <translate name="Gb" value="Гб" />
     <translate name="Bytes" value="Байт" />
     <translate name="Error" value="Ошибка" />
+    <translate name="Warning" value="Внимание" />
     <translate name="Question" value="Вопрос" />
     <translate name="Confirm" value="Подтверждение" />	
     <translate name="Information" value="Информация" />
@@ -1750,19 +1751,30 @@
     <translate name="Phone" value="Телефон" />
     <translate name="Country" value="Страна" />
     <translate name="City" value="Город" />
-    <translate name="Address" value="Адрес" />	
+    <translate name="Address" value="Адрес" />
     <translate name="Thank you for activation the program!" value="Спасибо за активацию программы" />
+    <translate name="Please wait until program copmletes the activation process..." value="Пожалуйста, подождите пока программма выполнит активацию через интернет..." />
+    <translate name="Activation via internet failed! Please, check your internet connection settings in IE. Only manual actiovation is possible at this moment!" value="Активация через интернет не удалась! Проверьте настройки интернета в IE. Возможна только ручная активация!" />
+    <translate name="This wizard helps you to activate this copy of application. Please fill all requared filds and follow the instructions." value="Этот диалог поможет вам активировать программу. Пожалуйста, заполните все необходимые поля и следуйте инструкциям." />
+    <translate name="Field &quot;%s&quot; is required!" value="Поле &quot;%s&quot; является обязательным!" />
+	<translate name="Activate new copy of application" value="Активировать новую копию приложения" />
+    <translate name="Install activation code" value="Установить в систему код активации" />
+    <translate name="To manually activate the program you need to send a letter with the following information to" value="Для ручной активации программы Вам необходимо отослать письмо со следующими данными на адрес" />
+	<translate name="(*) - required fields" value="(*) - обязательные поля" />
+	
+	<translate name="Activation" value="Activation" />
+	<translate name="Activation" value="Activation" />
+	<translate name="Activation" value="Activation" />
     
-	<translate name="Activation" value="Activation" />  
     <translate name="Next..." value="Далее..." />
-	<translate name="Program code" value="Код вашей копии программы"/>
-	<translate name="Enter here activation key" value="Введите сюда ключ для активации"/>
+    <translate name="Program code" value="Код вашей копии программы"/>
+    <translate name="Enter here activation key" value="Введите сюда ключ для активации"/>
     <translate name="User name" value="Имя для активации" />
-	<translate name="Install code" value="Установить код"/>
-	<translate name="Get personal code" value="Получить код"/>
+    <translate name="Install code" value="Установить код"/>
+    <translate name="Get personal code" value="Получить код"/>
     <translate name="Activation key saved! Please restart the application!" value="Ключ для активации сохранён! Перезапустите приложение для результата!"/>
-	<translate name="You are working with a non-activated program!$nl$You can only add %d items!" value="Вы работаете в неактивированной программой!$nl$Вы можете добавить только %d записей!"/>
-	<translate name="Requires activation of the program" value="Необходима активация программы" />
+    <translate name="You are working with a non-activated program!$nl$You can only add %d items!" value="Вы работаете в неактивированной программой!$nl$Вы можете добавить только %d записей!"/>
+    <translate name="Requires activation of the program" value="Необходима активация программы" />
   </scope>
   <scope name="Updates">
 	<translate name="New version is available - %s" value="Доступна новая версия - %s"/>

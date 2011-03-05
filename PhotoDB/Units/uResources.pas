@@ -13,6 +13,7 @@ function GetSearchWait : TPNGImage;
 function GetDateRangeImage : TPNGImage;
 function GetImagePanelImage : TPNGImage;
 function GetLoadingImage : TPNGImage;
+function GetActivationImage : TPNGImage;
               
 {$R Logo.res}    
 {$R slideshow_load.res}
@@ -24,6 +25,7 @@ function GetLoadingImage : TPNGImage;
 {$R Manifest.res}
 {$R ImagePanelBackground.res}
 {$R Loading.res}
+{$R Activation.res}
 
 implementation
 
@@ -110,6 +112,11 @@ end;
 function GetLogoPicture : TPNGImage;
 begin
   Result := LoadPNGFromRES('LOGO');
+end;
+
+function GetActivationImage : TPNGImage;
+begin
+  Result := LoadPNGFromRES('ACTIVATION');
 end;
 
 end.

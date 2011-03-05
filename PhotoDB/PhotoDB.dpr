@@ -304,8 +304,11 @@ uses
   uFrameWizardBase in 'Wizards\uFrameWizardBase.pas' {FrameWizardBase: TFrame},
   uFrameFreeActivation in 'Activation\uFrameFreeActivation.pas' {FrameFreeActivation},
   uWizards in 'Wizards\uWizards.pas',
-  uFrameActivationLanding in 'Activation\uFrameActivationLanding.pas' {Frame1: TFrame},
-  uInternetFreeActivationThread in 'Activation\uInternetFreeActivationThread.pas';
+  uFrameActivationLanding in 'Activation\uFrameActivationLanding.pas' {FrameActivationLanding: TFrame},
+  uInternetFreeActivationThread in 'Activation\uInternetFreeActivationThread.pas',
+  uFrameFreeManualActivation in 'Activation\uFrameFreeManualActivation.pas' {FrameFreeManualActivation: TFrame},
+  uFrameActicationSetCode in 'Activation\uFrameActicationSetCode.pas' {FrameActicationSetCode: TFrame},
+  uFrameBuyApplication in 'Activation\uFrameBuyApplication.pas' {FrameBuyApplication: TFrame};
 
 {$R *.res}
 

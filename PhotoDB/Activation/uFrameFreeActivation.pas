@@ -23,17 +23,19 @@ type
     procedure RegistrationCallBack(Reply: string);
   protected
     procedure LoadLanguage; override;
-    function IsFinal: Boolean; override;
     procedure ActivateControls(IsActive: Boolean);
   public
     { Public declarations }
+    function IsFinal: Boolean; override;
     procedure Execute; override;
+    procedure InitNextStep; override;
   end;
 
 implementation
 
 uses
-  uInternetFreeActivationThread;
+  uInternetFreeActivationThread,
+  uFrameFreeManualActivation;
 
 {$R *.dfm}
 
@@ -55,6 +57,7 @@ var
   Info: InternetActivationInfo;
 begin
   inherited;
+  IsBusy := True;
   LbInternetQuery.Show;
   LsQuery.Show;
   ActivateControls(False);
@@ -69,6 +72,12 @@ begin
   Info.CallBack := RegistrationCallBack;
   TInternetFreeActivationThread.Create(Info);
   Changeed;
+end;
+
+procedure TFrameFreeActivation.InitNextStep;
+begin
+  inherited;
+  Manager.AddStep(TFrameFreeManualActivation);
 end;
 
 function TFrameFreeActivation.IsFinal: Boolean;
@@ -86,52 +95,61 @@ begin
   EdCountry.EditLabel.Caption := L('Country') + ':';
   EdCity.EditLabel.Caption := L('City') + ':';
   EdAddress.EditLabel.Caption := L('Address') + ':';
+  LbInternetQuery.Caption := L('Please wait until program copmletes the activation process...');
 end;
 
 procedure TFrameFreeActivation.RegistrationCallBack(Reply: string);
 var
   IsDemo, FullMode: Boolean;
-  Name, Code: string;
+  Name: string;
   I: Integer;
 begin
   LbInternetQuery.Hide;
   LsQuery.Hide;
-  ActivateControls(True);
+  try
 
-  if Reply = 'fn' then
-  begin
-    MessageBoxDB(Handle, Format(L('Field "%s" is required!'), [L('First name')]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
-    Exit;
-  end;
-  if Reply = 'ln' then
-  begin
-    MessageBoxDB(Handle, Format(L('Field "%s" is required!'), [L('Last name')]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
-    Exit;
-  end;
-  if Reply = 'e' then
-  begin
-    MessageBoxDB(Handle, Format(L('Field "%s" is required and should be well-formatted!'), [L('E-mail')]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
-    Exit;
-  end;
+    for I := Length(Reply) downto 1 do
+      if not CharInSet(Reply[I], ['0'..'9', 'A'..'Z', 'a'..'z'])  then
+        Delete(Reply, I, 1);
 
-  Code := Reply;
-  for I := Length(Code) downto 1 do
-    if not CharInSet(Code[I], ['0'..'9', 'A'..'F'])  then
-      Delete(Code, I, 1);
-
-  TActivationManager.Instance.CheckActivationCode(TActivationManager.Instance.ApplicationCode, Code, IsDemo, FullMode);
-  if not IsDemo then
-  begin
-    Name := Format('%s %s', [EdFirstName.Text, EdLastName.Text]);
-    if TActivationManager.Instance.SaveActivateKey(Name, Code, True) or TActivationManager.Instance.SaveActivateKey(Name, Code, False) then
+    if Reply = 'fn' then
     begin
-      MessageBoxDB(Handle, L('Thank you for activation the program!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
-      //TODO: close the dialog
+      MessageBoxDB(Handle, Format(L('Field "%s" is required!'), [L('First name')]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Exit;
     end;
-  end;
+    if Reply = 'ln' then
+    begin
+      MessageBoxDB(Handle, Format(L('Field "%s" is required!'), [L('Last name')]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Exit;
+    end;
+    if Reply = 'e' then
+    begin
+      MessageBoxDB(Handle, Format(L('Field "%s" is required and should be well-formatted!'), [L('E-mail')]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Exit;
+    end;
 
-  EventLog('Invalid reply from server: ' + Reply);
-  //TODO: manual activation
+    TActivationManager.Instance.CheckActivationCode(TActivationManager.Instance.ApplicationCode, Reply, IsDemo, FullMode);
+    if not IsDemo then
+    begin
+      Name := Format('%s %s', [EdFirstName.Text, EdLastName.Text]);
+      if TActivationManager.Instance.SaveActivateKey(Name, Reply, True) or TActivationManager.Instance.SaveActivateKey(Name, Reply, False) then
+      begin
+        MessageBoxDB(Handle, L('Thank you for activation the program!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+        IsStepComplete := True;
+        Exit;
+      end;
+    end;
+
+    EventLog('Invalid reply from server: ' + Reply);
+    MessageBoxDB(Handle, L('Activation via internet failed! Please, check your internet connection settings in IE. Only manual actiovation is possible at this moment!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+
+    IsBusy := False;
+    Manager.NextStep;
+  finally
+    IsBusy := False;
+    ActivateControls(True);
+    Changeed;
+  end;
 end;
 
 end.
