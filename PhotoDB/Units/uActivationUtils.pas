@@ -302,7 +302,8 @@ end;
 function TActivationManager.GetIsDemoMode: Boolean;
 begin
   CheckActivationStatus;
-  Result := FIsDemoMode;
+  Result := (FIsDemoMode and CanUseFreeActivation)
+            or (not IsFullMode and not CanUseFreeActivation);
 end;
 
 function TActivationManager.GetIsFullMode: Boolean;

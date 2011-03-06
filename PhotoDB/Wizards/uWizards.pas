@@ -98,7 +98,7 @@ begin
   Frame.Left := FX;
   Frame.Top := FY;
   Frame.Visible := False;
-  Frame.Init(Self);
+  Frame.Init(Self, True);
   Frame.OnChange := OnStepChanged;
   FSteps.Add(Frame);
 end;
@@ -223,7 +223,7 @@ begin
       Steps[I].Hide;
 
     Steps[CurrentStep].IsBusy := False;
-    Steps[CurrentStep].Init(Self);
+    Steps[CurrentStep].Init(Self, False);
     Steps[CurrentStep].Show;
   end;
 end;

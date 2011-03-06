@@ -733,12 +733,6 @@ begin
   LoadLanguage;
   SearchManager.AddSearch(Self);
 
-  if DBKernel.ReadboolW('', 'DoUpdateHelp', False) then
-  begin
-    DoUpdateHelp;
-    DBKernel.WriteBoolW('', 'DoUpdateHelp', False);
-  end;
-
   TW.I.Start('S -> LoadGroupsList');
   LoadGroupsList;
 

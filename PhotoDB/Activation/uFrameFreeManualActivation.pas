@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, uFrameWizardBase, StdCtrls, WebLink, ExtCtrls, Dolphin_DB,
-  uConstants, uActivationUtils;
+  uConstants, uActivationUtils, Clipbrd, uMemory;
 
 type
   TFrameFreeManualActivation = class(TFrameWizardBase)
@@ -22,7 +22,8 @@ type
   public
     { Public declarations }
     procedure Execute; override;
-    procedure Init(Manager: TWizardManagerBase); override;
+    procedure SendRegistrationEmail;
+    procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     function IsFinal: Boolean; override;
   end;
 
@@ -39,9 +40,10 @@ procedure TFrameFreeManualActivation.Execute;
 begin
   inherited;
   if not FProgramStarted then
-    DoGetCode(TActivationManager.Instance.ApplicationCode);
+    SendRegistrationEmail;
 
   IsStepComplete := True;
+  Changed;
 end;
 
 function TFrameFreeManualActivation.GetCanGoNext: Boolean;
@@ -49,7 +51,7 @@ begin
   Result := False;
 end;
 
-procedure TFrameFreeManualActivation.Init(Manager: TWizardManagerBase);
+procedure TFrameFreeManualActivation.Init(Manager: TWizardManagerBase; FirstInitialization: Boolean);
 var
   Step: TFrameFreeActivation;
 begin
@@ -79,11 +81,23 @@ begin
   LbManualActivationInfo.Caption := L('To manually activate the program you need to send a letter with the following information to') + ':';
 end;
 
+procedure TFrameFreeManualActivation.SendRegistrationEmail;
+var
+  Files: TStrings;
+begin
+  Files := TStringList.Create;
+  try
+    SendEMail(Handle, ProgramMail, '', ProductName + ': REGISTRATION CODE = ' + TActivationManager.Instance.ApplicationCode, MemInfo.Text, Files);
+  finally
+    F(Files);
+  end;
+end;
+
 procedure TFrameFreeManualActivation.WlMailClick(Sender: TObject);
 begin
   inherited;
   FProgramStarted := True;
-  DoGetCode(TActivationManager.Instance.ApplicationCode);
+  SendRegistrationEmail;
 end;
 
 end.

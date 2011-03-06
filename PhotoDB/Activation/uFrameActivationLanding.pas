@@ -17,7 +17,7 @@ type
   public
     { Public declarations }
     procedure InitNextStep; override;
-    procedure Init(Manager: TWizardManagerBase); override;
+    procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
   end;
 
 implementation
@@ -30,10 +30,15 @@ uses
 
 { TFrameActivationLanding }
 
-procedure TFrameActivationLanding.Init(Manager: TWizardManagerBase);
+procedure TFrameActivationLanding.Init(Manager: TWizardManagerBase; FirstInitialization: Boolean);
+var
+  FreeActivationRequired,
+  FullActivationRequired: Boolean;
 begin
   inherited;
-  RbActivateApplication.Enabled := TActivationManager.Instance.IsDemoMode and TActivationManager.Instance.CanUseFreeActivation;
+  FreeActivationRequired := TActivationManager.Instance.IsDemoMode and TActivationManager.Instance.CanUseFreeActivation;
+  FullActivationRequired := not TActivationManager.Instance.CanUseFreeActivation and not TActivationManager.Instance.IsFullMode;
+  RbActivateApplication.Enabled := FreeActivationRequired or FullActivationRequired;
   if not RbActivateApplication.Enabled then
     RbSetCode.Checked := True;
 end;

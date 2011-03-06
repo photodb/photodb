@@ -8,7 +8,7 @@ uses
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
-  uTranslate, ActiveX, CCR.Exif.JPEGUtils;
+  uTranslate, ActiveX, CCR.Exif.JPEGUtils, uActivationUtils;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -284,8 +284,7 @@ begin
     FileNumber := 0;
     AutoAnswerSetted := False;
 
-{$IFDEF LICENCE}
- (*   if DBKernel.GetDemoMode then
+    if TActivationManager.Instance.IsDemoMode then
     begin
       if GetRecordsCount > LimitDemoRecords then
       begin
@@ -297,8 +296,7 @@ begin
         EventLog(':Limit of records! --> exit updating DB');
         Exit;
       end;
-    end;*)
-{$ENDIF}
+    end;
 
     ResArray := GetimageIDWEx(FInfo, FUseFileNameScaning);
 

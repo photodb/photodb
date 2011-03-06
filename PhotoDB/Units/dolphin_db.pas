@@ -173,21 +173,18 @@ var
   FExtImagesInImageList: Integer;
   GraphicFilterString: string;
 
-function XorStrings(S1, S2: string): string;
-function SetStringToLengthWithNoData(S: string; N: Integer): string;
-
 procedure LoadNickJpegImage(Image: TImage);
 procedure DoHelp;
 procedure DoGetCode(S: string);
 procedure DoHomeContactWithAuthor;
 procedure DoHomePage;
-procedure DBError(ErrorValue, Error: string);
+procedure DoBuyApplication;
+function SendEMail(Handle: THandle; ToAddress, ToName, Subject, Body: string; Files: TStrings): Cardinal;
 
 procedure Delay(Msecs: Longint);
 function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
 
 function IsWallpaper(FileName: string): Boolean;
-procedure DoUpdateHelp;
 function GetDBFileName(FileName, DBName: string): string;
 
 function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
@@ -255,36 +252,6 @@ begin
     Result := FloatToStrEx(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
 end;
 
-function Xorstrings(S1, S2: string): string;
-var
-  I: Integer;
-begin
-  Result := '';
-  for I := 1 to 255 do
-    Result := Result + ' ';
-  for I := 1 to Min(Min(Length(S1), Length(S2)), 255) do
-  begin
-    Result[I] := Chr(Ord(S1[I]) xor Ord(S2[I]));
-  end;
-end;
-
-function Setstringtolengthwithnodata(S: string; N: Integer): string;
-var
-  Cs, I: Integer;
-begin
-  Cs := 0;
-  for I := 1 to Min(Length(S), N) do
-    Cs := Cs + Ord(S[I]);
-  Result := '';
-  for I := 1 to N do
-    Result := Result + ' ';
-  for I := 1 to N do
-    if I <= Length(S) then
-      Result[I] := Chr((Ord(S[I]) xor I) xor Cs)
-    else
-      Result[I] := Chr((I + Cs) xor Cs);
-end;
-
 procedure LoadNickJpegImage(Image: TImage);
 var
   Pic: Tpicture;
@@ -299,61 +266,64 @@ begin
     begin
       Pic := TPicture.Create;
       try
-        Pic.LoadFromFile(OpenPictureDialog.FileName);
-      except
-        Pic.Free;
-        OpenPictureDialog.Free;
-        Exit;
+        try
+          Pic.LoadFromFile(OpenPictureDialog.FileName);
+        except
+          Exit;
+        end;
+        JpegScale(Pic.Graphic, 48, 48);
+        Bitmap := TBitmap.Create;
+        try
+          Bitmap.PixelFormat := pf24Bit;
+          Bitmap.Assign(Pic.Graphic);
+
+          Bmp := Tbitmap.Create;
+          try
+            Bmp.PixelFormat := pf24bit;
+            if Bitmap.Width > Bitmap.Height then
+            begin
+              if Bitmap.Width > 48 then
+                Bmp.Width := 48
+              else
+                Bmp.Width := Bitmap.Width;
+              Bmp.Height := Round(Bmp.Width * (Bitmap.Height / Bitmap.Width));
+            end else
+            begin
+              if Bitmap.Height > 48 then
+                Bmp.Height := 48
+              else
+                Bmp.Height := Bitmap.Height;
+              Bmp.Width := Round(Bmp.Height * (Bitmap.Width / Bitmap.Height));
+            end;
+            DoResize(Bmp.Width, Bmp.Height, Bitmap, Bmp);
+            F(Bitmap);
+            Fjpg := TJPegImage.Create;
+            try
+              Fjpg.CompressionQuality := DBJpegCompressionQuality;
+              Fjpg.Assign(Bmp);
+              Fjpg.JPEGNeeded;
+              Image.Picture.Graphic := Fjpg;
+            finally
+              F(Fjpg);
+            end;
+          finally
+            F(Bmp);
+          end;
+        finally
+          F(Bitmap);
+        end;
+      finally
+        F(Pic);
       end;
-      JpegScale(Pic.Graphic, 48, 48);
-      Bitmap := TBitmap.Create;
-      Bitmap.PixelFormat := Pf24Bit;
-      Bitmap.Assign(Pic.Graphic);
-      Pic.Free;
-      Bmp := Tbitmap.Create;
-      Bmp.PixelFormat := Pf24bit;
-      if Bitmap.Width > Bitmap.Height then
-      begin
-        if Bitmap.Width > 48 then
-          Bmp.Width := 48
-        else
-          Bmp.Width := Bitmap.Width;
-        Bmp.Height := Round(Bmp.Width * (Bitmap.Height / Bitmap.Width));
-      end else
-      begin
-        if Bitmap.Height > 48 then
-          Bmp.Height := 48
-        else
-          Bmp.Height := Bitmap.Height;
-        Bmp.Width := Round(Bmp.Height * (Bitmap.Width / Bitmap.Height));
-      end;
-      DoResize(Bmp.Width, Bmp.Height, Bitmap, Bmp);
-      Bitmap.Free;
-      Fjpg := TJPegImage.Create;
-      Fjpg.CompressionQuality := DBJpegCompressionQuality;
-      Fjpg.Assign(Bmp);
-      Fjpg.JPEGNeeded;
-      if Image.Picture.Graphic = nil then
-        Image.Picture.Graphic := TJpegImage.Create;
-      Image.Picture.Graphic.Assign(Fjpg);
-      Image.Refresh;
-      Fjpg.Free;
-      Bmp.Free;
     end;
   finally
-    OpenPictureDialog.Free;
+    F(OpenPictureDialog);
   end;
 end;
 
 procedure DoHelp;
 begin
   ShellExecute(GetActiveWindow, 'open', 'http://photodb.illusdolphin.net', nil, nil, SW_NORMAL);
-end;
-
-procedure DoUpdateHelp;
-begin
-  if FileExists(ProgramDir + 'Help\photodb_updating.htm') then
-    ShellExecute(GetActiveWindow, 'open', PWideChar(ProgramDir + 'Help\photodb_updating.htm'), nil, nil, SW_NORMAL);
 end;
 
 procedure DoHomePage;
@@ -367,12 +337,17 @@ begin
     SW_NORMAL);
 end;
 
-procedure DoGetCode(S: string);
+procedure DoBuyApplication;
 begin
-  ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=''''' + ProductName +
-        ''''' REGISTRATION CODE = ''''' + S + ''''''), nil, nil, SW_NORMAL);
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(BuyPageURL)), nil, nil, SW_NORMAL);
 end;
 
+procedure DoGetCode(S: string);
+begin
+  ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=' + ProductName +
+        ': REGISTRATION CODE = ' + S ), nil, nil, SW_NORMAL);
+end;
+{
 function SendMail(const From, Dest, Subject, Text, FileName: PAnsiChar; Outlook: Boolean): Integer;
 var
   message: TMapiMessage;
@@ -424,6 +399,7 @@ begin
       if @SM <> nil then
       begin
         MakeMessage;
+
         Result := SM(0, Application.Handle, message, MAPI_FLAG, 0);
       end
       else
@@ -431,18 +407,7 @@ begin
     finally
       FreeLibrary(MAPIModule);
     end;
-end;
-
-procedure DBError(ErrorValue, Error: string);
-var
-  Body: TStrings;
-begin
-  Body := TStringList.Create;
-  Body.Add('Error body:');
-  Body.Add(ErrorValue);
-  SendMail('', ProgramMail, PAnsiChar(AnsiString('Error in program [' + Error + ']')), PAnsiChar(AnsiString(Body.Text)), '', True);
-  Body.Free;
-end;
+end;    }
 
 procedure Delay(Msecs: Longint);
 var
@@ -661,6 +626,99 @@ begin
     Result := FloatToStrEx(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
   if (Size > 1024 * 1024 * 999) then
     Result := FloatToStrEx(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
+end;
+
+function SendEMail(Handle: THandle; ToAddress, ToName, Subject, Body: string; Files: TStrings): Cardinal;
+type
+  TAttachAccessArray = array [0..0] of TMapiFileDesc;
+  PAttachAccessArray = ^TAttachAccessArray;
+var
+  MapiMessage: TMapiMessage;
+  Receip: TMapiRecipDesc;
+  Attachments: PAttachAccessArray;
+  i1: integer;
+  FileName: string;
+  dwRet: Cardinal;
+  MAPI_Session: Cardinal;
+  WndList: Pointer;
+begin
+  if ToName = '' then
+    ToName := ToAddress;
+
+  dwRet := MapiLogon(Handle,
+    PAnsiChar(''),
+    PAnsiChar(''),
+    MAPI_LOGON_UI or MAPI_NEW_SESSION,
+    0, @MAPI_Session);
+
+  if (dwRet <> SUCCESS_SUCCESS) then
+  begin
+    Result := Cardinal(-1);
+    Exit;
+  end else
+  begin
+    FillChar(MapiMessage, SizeOf(MapiMessage), #0);
+    Attachments := nil;
+    FillChar(Receip, SizeOf(Receip), #0);
+
+    if ToAddress <> '' then
+    begin
+      Receip.ulReserved := 0;
+      Receip.ulRecipClass := MAPI_TO;
+      Receip.lpszName := StrNew(PAnsiChar(AnsiString(ToName)));
+      Receip.lpszAddress := StrNew(PAnsiChar(AnsiString('SMTP:' + ToAddress)));
+      Receip.ulEIDSize := 0;
+      MapiMessage.nRecipCount := 1;
+      MapiMessage.lpRecips := @Receip;
+    end;
+
+    if Files.Count > 0 then
+    begin
+      GetMem(Attachments, SizeOf(TMapiFileDesc) * Files.Count);
+
+      for i1 := 0 to Files.Count - 1 do
+      begin
+        FileName := Files[i1];
+        Attachments[i1].ulReserved := 0;
+        Attachments[i1].flFlags := 0;
+        Attachments[i1].nPosition := ULONG($FFFFFFFF);
+        Attachments[i1].lpszPathName := StrNew(PAnsiChar(AnsiString(FileName)));
+        Attachments[i1].lpszFileName := StrNew(PAnsiChar(AnsiString(ExtractFileName(FileName))));
+        Attachments[i1].lpFileType := nil;
+      end;
+      MapiMessage.nFileCount := Files.Count;
+      MapiMessage.lpFiles := @Attachments^;
+    end;
+
+    if Subject <> '' then
+      MapiMessage.lpszSubject := StrNew(PAnsiChar(AnsiString(Subject)));
+    if Body <> '' then
+      MapiMessage.lpszNoteText := StrNew(PAnsiChar(AnsiString(Body)));
+
+    WndList := DisableTaskWindows(0);
+    try
+      Result := MapiSendMail(MAPI_Session, Handle,
+        MapiMessage, MAPI_DIALOG, 0);
+    finally
+      EnableTaskWindows( WndList );
+    end;
+
+    for i1 := 0 to Files.Count - 1 do
+    begin
+      StrDispose(Attachments[i1].lpszPathName);
+      StrDispose(Attachments[i1].lpszFileName);
+    end;
+
+    if Assigned(MapiMessage.lpszSubject) then
+      StrDispose(MapiMessage.lpszSubject);
+    if Assigned(MapiMessage.lpszNoteText) then
+      StrDispose(MapiMessage.lpszNoteText);
+    if Assigned(Receip.lpszAddress) then
+      StrDispose(Receip.lpszAddress);
+    if Assigned(Receip.lpszName) then
+      StrDispose(Receip.lpszName);
+    MapiLogOff(MAPI_Session, Handle, 0, 0);
+  end;
 end;
 
 initialization

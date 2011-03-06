@@ -71,7 +71,7 @@ begin
   Info.Address := EdAddress.Text;
   Info.CallBack := RegistrationCallBack;
   TInternetFreeActivationThread.Create(Info);
-  Changeed;
+  Changed;
 end;
 
 procedure TFrameFreeActivation.InitNextStep;
@@ -148,7 +148,7 @@ begin
   finally
     IsBusy := False;
     ActivateControls(True);
-    Changeed;
+    Changed;
   end;
 end;
 

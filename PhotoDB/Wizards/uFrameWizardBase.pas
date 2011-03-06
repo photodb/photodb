@@ -36,14 +36,14 @@ type
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate, Scope: string): string; overload;
     procedure LoadLanguage; virtual;
-    procedure Changeed;
+    procedure Changed;
     function GetCanGoNext: Boolean; virtual;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     procedure Execute; virtual;
     procedure InitNextStep; virtual;
-    procedure Init(Manager: TWizardManagerBase); virtual;
+    procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); virtual;
     procedure Unload; virtual;
     function IsFinal: Boolean; virtual;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -59,7 +59,7 @@ implementation
 
 { TFrameWizardBase }
 
-procedure TFrameWizardBase.Changeed;
+procedure TFrameWizardBase.Changed;
 begin
   if Assigned(FOnChange) then
     FOnChange(Self);
@@ -81,18 +81,21 @@ begin
   Result := True;
 end;
 
-procedure TFrameWizardBase.Init(Manager: TWizardManagerBase);
+procedure TFrameWizardBase.Init(Manager: TWizardManagerBase; FirstInitialization: Boolean);
 begin
   //some init logic of step
-  GOM.AddObj(Self);
-  FIsBusy := False;
-  FIsStepComplete := False;
-  FManager := Manager;
-  TTranslateManager.Instance.BeginTranslate;
-  try
-    LoadLanguage;
-  finally
-    TTranslateManager.Instance.EndTranslate;
+  if FirstInitialization then
+  begin
+    GOM.AddObj(Self);
+    FIsBusy := False;
+    FIsStepComplete := False;
+    FManager := Manager;
+    TTranslateManager.Instance.BeginTranslate;
+    try
+      LoadLanguage;
+    finally
+      TTranslateManager.Instance.EndTranslate;
+    end;
   end;
 end;
 

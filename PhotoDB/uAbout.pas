@@ -111,7 +111,6 @@ begin
   end;
 
   BtShowActivationForm.Caption := L('Open activation form');
-  BtShowActivationForm.Visible := TActivationManager.Instance.IsDemoMode;
 
   MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
 
@@ -137,6 +136,7 @@ end;
 procedure TAboutForm.BtShowActivationFormClick(Sender: TObject);
 begin
   ShowActivationDialog;
+  LoadRegistrationData;
 end;
 
 procedure TAboutForm.Button2Click(Sender: TObject);
@@ -185,12 +185,13 @@ end;
 
 procedure TAboutForm.LoadRegistrationData;
 begin
+  BtShowActivationForm.Visible := TActivationManager.Instance.IsDemoMode;
   MemoRegistrationInfo.Clear;
   MemoRegistrationInfo.Lines.Add(L('Program code') + ':');
 
   MemoRegistrationInfo.Lines.Add(TActivationManager.Instance.ApplicationCode);
   MemoRegistrationInfo.Lines.Add('');
-  MemoRegistrationInfo.Lines.Add(L('The program is registered to'));
+  MemoRegistrationInfo.Lines.Add(L('The program is registered to') + ':');
   MemoRegistrationInfo.Lines.Add('');
   if TActivationManager.Instance.IsDemoMode then
     MemoRegistrationInfo.Lines.Add(L('This program isn''t activated.'))
@@ -203,12 +204,10 @@ begin
   FUpdateInfo := Info;
   LsUpdates.Visible := False;
   if not Info.InfoAvaliable then
-  begin
-    LnkGoToWebSite.Text := L('Can not check updates!');
-  end else
-  begin
+    LnkGoToWebSite.Text := L('Can not check updates!')
+  else
     LnkGoToWebSite.Text := Format(L('New version (%s) is avaliable!'), [ReleaseToString(Info.Release)]);
-  end;
+
   LnkGoToWebSite.Left := LsUpdates.Left + LsUpdates.Width - LnkGoToWebSite.Width;
   LnkGoToWebSite.Refresh;
 end;

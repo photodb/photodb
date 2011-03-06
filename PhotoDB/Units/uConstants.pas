@@ -40,6 +40,7 @@ const
   InstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/install';
   UpdateNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/update';
   HomePageURL = 'http://photodb.illusdolphin.net/{LNG}';
+  BuyPageURL = 'http://photodb.illusdolphin.net/{LNG}/buy';
   FreeActivationURL = 'http://photodb.illusdolphin.net/FreeActivationHandler';
 
   //install

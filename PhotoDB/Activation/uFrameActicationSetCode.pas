@@ -19,7 +19,7 @@ type
     function GetCanGoNext: Boolean; override;
   public
     { Public declarations }
-    procedure Init(Manager: TWizardManagerBase); override;
+    procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     function IsFinal: Boolean; override;
     procedure Execute; override;
   end;
@@ -44,10 +44,10 @@ begin
   Result := False;
 end;
 
-procedure TFrameActicationSetCode.Init(Manager: TWizardManagerBase);
+procedure TFrameActicationSetCode.Init(Manager: TWizardManagerBase; FirstInitialization: Boolean);
 begin
   inherited;
-  if not FolderView then
+  if not FolderView and FirstInitialization then
   begin
     EdApplicationCode.Text := TActivationManager.Instance.ApplicationCode;
 

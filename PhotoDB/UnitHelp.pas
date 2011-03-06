@@ -515,7 +515,7 @@ end;
 
 procedure THelpPopup.Copy1Click(Sender: TObject);
 begin
-  ClipBoard.SetTextBuf(PWideChar(MemText.Text));
+  ClipBoard.SetTextBuf(PChar(MemText.Text));
 end;
 
 procedure THelpPopup.FormKeyDown(Sender: TObject; var Key: Word;
