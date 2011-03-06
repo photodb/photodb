@@ -52,7 +52,7 @@ procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEas
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
 procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
-procedure SetLVSelection(ListView : TEasyListView);
+procedure SetLVSelection(ListView : TEasyListView; MouseButton: TCommonMouseButtons = []);
 procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : TEasyItem;
                              ARect : TRect; BImageList : TBitmapImageList; var Y : Integer;
                              ShowInfo : Boolean; ID : Integer;
@@ -536,9 +536,9 @@ begin
   end;
 end;
 
-procedure SetLVSelection(ListView : TEasyListView);
+procedure SetLVSelection(ListView : TEasyListView; MouseButton: TCommonMouseButtons = []);
 begin
-  ListView.Selection.MouseButton := [];
+  ListView.Selection.MouseButton := MouseButton;
   ListView.Selection.AlphaBlend := True;
   ListView.Selection.AlphaBlendSelRect := True;
   ListView.Selection.MultiSelect := True;

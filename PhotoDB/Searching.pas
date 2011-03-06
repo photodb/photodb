@@ -615,13 +615,12 @@ begin
   FListUpdating := False;
   GroupsLoaded := False;
   SearchEdit.ShowDropDownMenu := False;
+  MouseDowned := False;
+  PopupHandled := False;
 
   ElvMain := TEasyListView.Create(Self);
   ElvMain.Parent := Self;
   ElvMain.Align := AlClient;
-
-  MouseDowned := False;
-  PopupHandled := False;
 
   ElvMain.BackGround.Enabled := True;
   ElvMain.BackGround.Tile := False;
@@ -665,6 +664,7 @@ begin
   ExplorerManager.LoadEXIF;
   WindowID := GetGUID;
   TW.I.Start('S -> TScript');
+
   aScript := TScript.Create('');
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'HideExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Properties1Click);
@@ -676,7 +676,7 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, Exit1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'LoadExplorerValue',  F_TYPE_OBJ_PROCEDURE_TOBJECT, LoadExplorerValue);
 
-  SetNamedValue(aScript, '$dbname', '"'+dbname+'"');
+  SetNamedValue(AScript, '$dbname', '"' + Dbname + '"');
   ReloadListMenu;
 
   TW.I.Start('S -> ReadScriptFile');

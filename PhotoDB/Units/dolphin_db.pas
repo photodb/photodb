@@ -347,67 +347,6 @@ begin
   ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=' + ProductName +
         ': REGISTRATION CODE = ' + S ), nil, nil, SW_NORMAL);
 end;
-{
-function SendMail(const From, Dest, Subject, Text, FileName: PAnsiChar; Outlook: Boolean): Integer;
-var
-  message: TMapiMessage;
-  Recipient, Sender: TMapiRecipDesc;
-  File_Attachment: TMapiFileDesc;
-
-  function MakeMessage: TMapiMessage;
-  begin
-    FillChar(Sender, SizeOf(Sender), 0);
-    Sender.UlRecipClass := MAPI_ORIG;
-    Sender.LpszAddress := From;
-
-    FillChar(Recipient, SizeOf(Recipient), 0);
-    Recipient.UlRecipClass := MAPI_TO;
-    Recipient.LpszAddress := Dest;
-
-    FillChar(File_Attachment, SizeOf(File_Attachment), 0);
-    File_Attachment.NPosition := Cardinal(-1);
-    File_Attachment.LpszPathName := FileName;
-
-    FillChar(Result, SizeOf(Result), 0);
-    with message do
-    begin
-      LpszSubject := Subject;
-      LpszNoteText := Text;
-      LpOriginator := @Sender;
-      NRecipCount := 1;
-      LpRecips := @Recipient;
-      NFileCount := 1;
-      LpFiles := @File_Attachment;
-    end;
-  end;
-
-var
-  SM: TFNMapiSendMail;
-  MAPIModule: HModule;
-  MAPI_FLAG: Cardinal;
-begin
-  if Outlook then
-    MAPI_FLAG := MAPI_DIALOG
-  else
-    MAPI_FLAG := 0;
-  MAPIModule := LoadLibrary(PWideChar(MAPIDLL));
-  if MAPIModule = 0 then
-    Result := -1
-  else
-    try
-      @SM := GetProcAddress(MAPIModule, 'MAPISendMail');
-      if @SM <> nil then
-      begin
-        MakeMessage;
-
-        Result := SM(0, Application.Handle, message, MAPI_FLAG, 0);
-      end
-      else
-        Result := 1;
-    finally
-      FreeLibrary(MAPIModule);
-    end;
-end;    }
 
 procedure Delay(Msecs: Longint);
 var

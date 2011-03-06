@@ -264,7 +264,7 @@ run:
 { 
 initialization:
   $Visible=true;
-  $KeyWordsArray=SpilitWords($KeyWords);
+  $KeyWordsArray=SplitWords($KeyWords);
   $len=ArrayStringLength($KeyWordsArray);
   for ($i=0;$i<$len;$i=SumInt($i,1)) {
       $caption=GetStringItem($KeyWordsArray,$i);

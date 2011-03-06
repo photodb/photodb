@@ -37,7 +37,7 @@ object OptionsForm: TOptionsForm
     OnClick = OkButtonClick
   end
   object PcMain: TPageControl
-    Left = 9
+    Left = 8
     Top = 8
     Width = 407
     Height = 441
@@ -669,7 +669,7 @@ object OptionsForm: TOptionsForm
         Left = 8
         Top = 192
         Width = 385
-        Height = 121
+        Height = 81
         Caption = 'BackUping'
         TabOrder = 0
         object Label30: TLabel
@@ -1243,22 +1243,9 @@ object OptionsForm: TOptionsForm
       end
     end
   end
-  object ColorDialog1: TColorDialog
-    Left = 180
-    Top = 448
-  end
-  object FontDialog1: TFontDialog
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    Left = 44
-    Top = 448
-  end
   object PopupMenu1: TPopupMenu
-    Left = 232
-    Top = 448
+    Left = 280
+    Top = 368
     object Usethisprogramasdefault1: TMenuItem
       Caption = 'Use this program as default'
       OnClick = Usethisprogramasdefault1Click
@@ -1280,8 +1267,8 @@ object OptionsForm: TOptionsForm
     end
   end
   object PopupMenu2: TPopupMenu
-    Left = 369
-    Top = 445
+    Left = 209
+    Top = 421
     object Addnewcommand1: TMenuItem
       Caption = 'Add new command'
       OnClick = Addnewcommand1Click
@@ -1292,19 +1279,19 @@ object OptionsForm: TOptionsForm
     end
   end
   object ImageList1: TImageList
-    Left = 321
-    Top = 445
+    Left = 137
+    Top = 421
   end
   object DestroyTimer: TTimer
     Enabled = False
     Interval = 1
     OnTimer = DestroyTimerTimer
-    Left = 284
-    Top = 448
+    Left = 348
+    Top = 368
   end
   object PopupMenu3: TPopupMenu
-    Left = 132
-    Top = 448
+    Left = 212
+    Top = 368
     object Additem1: TMenuItem
       Caption = 'Add item'
       OnClick = Button24Click
@@ -1333,14 +1320,14 @@ object OptionsForm: TOptionsForm
     end
   end
   object PlacesImageList: TImageList
-    Left = 84
-    Top = 448
+    Left = 140
+    Top = 368
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = True
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 8
-    Top = 448
+    Left = 280
+    Top = 421
   end
 end

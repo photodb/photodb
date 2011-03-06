@@ -375,11 +375,11 @@ begin
     if Terminating then
       Exit;
 
-    AWidth := SampleImage.Width;
-    AHeight := SampleImage.Height;
-    ProportionalSize(Result.Width, Result.Height, AWidth, AHeight);
+    AWidth := SampleImage.Width - 2;
+    AHeight := SampleImage.Height - 2;
+    ProportionalSize(Result.Width - 2, Result.Height - 2, AWidth, AHeight);
     if AWidth / SampleImage.Width < 1 then
-      StretchCool(Result.Width div 2 - AWidth div 2, Result.Height div 2 - AHeight div 2, AWidth, Aheight, SampleImage,
+      StretchCool(Result.Width div 2 - AWidth div 2, Result.Height div 2 - AHeight div 2, AWidth, AHeight, SampleImage,
         Result)
     else
       Interpolate(Result.Width div 2 - AWidth div 2, Result.Height div 2 - AHeight div 2, AWidth, AHeight,

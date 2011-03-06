@@ -37,6 +37,7 @@ begin
     MessageBoxDB(Handle, L('Activation key saved! Please restart the application!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
 
   IsStepComplete := True;
+  Changed;
 end;
 
 function TFrameActicationSetCode.GetCanGoNext: Boolean;

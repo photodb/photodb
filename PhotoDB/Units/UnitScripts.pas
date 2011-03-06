@@ -2975,7 +2975,7 @@ begin
   AddScriptFunction(Enviroment, 'CreateParentItem', F_TYPE_FUNCTION_CREATE_PARENT_ITEM, @CreateItem);
 
   AddScriptFunction(Enviroment, 'IntToStr', F_TYPE_FUNCTION_INTEGER_IS_STRING, @AIntToStr);
-  AddScriptFunction(Enviroment, 'SpilitWords', F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING, @SpilitWords);
+  AddScriptFunction(Enviroment, 'SplitWords', F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING, @SpilitWords);
   AddScriptFunction(Enviroment, 'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @ReadFile);
   AddScriptFunction(Enviroment, 'Default', F_TYPE_PROCEDURE_TSCRIPT, @default);
   AddScriptFunction(Enviroment, 'InVisible', F_TYPE_PROCEDURE_TSCRIPT, @InVisible);

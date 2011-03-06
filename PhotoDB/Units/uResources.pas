@@ -2,7 +2,7 @@ unit uResources;
 
 interface
 
-uses Windows, SysUtils, Classes, JPEG, pngImage;
+uses Windows, SysUtils, Classes, JPEG, pngImage, uMemory;
 
 function GetFolderPicture : TPNGImage;
 function GetLogoPicture : TPNGImage;
@@ -14,10 +14,11 @@ function GetDateRangeImage : TPNGImage;
 function GetImagePanelImage : TPNGImage;
 function GetLoadingImage : TPNGImage;
 function GetActivationImage : TPNGImage;
+function GetPrinterPatternImage : TJpegImage;
               
 {$R Logo.res}    
-{$R slideshow_load.res}
-{$R directory_large.res}
+{$R Slideshow_Load.res}
+{$R Directory_Large.res}
 {$R ExplorerBackground.res}
 {$R SearchBackground.res}   
 {$R SearchWait.res}
@@ -26,6 +27,7 @@ function GetActivationImage : TPNGImage;
 {$R ImagePanelBackground.res}
 {$R Loading.res}
 {$R Activation.res}
+{$R PrinterPattern.res}
 
 implementation
 
@@ -65,7 +67,21 @@ begin
   begin
     Result := TPNGImage.Create;
     Result.LoadFromStream(RCDataStream);
-    RCDataStream.Free;
+    F(RCDataStream);
+  end;
+end;
+
+function LoadJPEGFromRES(ResName : string) : TJPEGImage;
+var
+  RCDataStream : TMemoryStream;
+begin
+  Result := nil;
+  RCDataStream := GetRCDATAResourceStream(ResName);
+  if RCDataStream <> nil then
+  begin
+    Result := TJPEGImage.Create;
+    Result.LoadFromStream(RCDataStream);
+    F(RCDataStream);
   end;
 end;
 
@@ -117,6 +133,11 @@ end;
 function GetActivationImage : TPNGImage;
 begin
   Result := LoadPNGFromRES('ACTIVATION');
+end;
+
+function GetPrinterPatternImage : TJpegImage;
+begin
+  Result := LoadJPEGFromRES('PRINTERPATTERN');
 end;
 
 end.

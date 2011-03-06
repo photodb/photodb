@@ -8,7 +8,9 @@ uses
   ScrollingImage, printers, ScrollingImageAddons, ImgList, Math, UnitPrinterTypes,
   WebLink, SaveWindowPos, ExtDlgs, UnitDBFileDialogs, UnitDBKernel,
   Dolphin_DB, GraphicCrypt, uVistaFuncs, UnitCDMappingSupport, uConstants,
-  Menus, uDBForm, uMemory, uTranslate, uShellIntegration, uFileUtils;
+  Menus, uDBForm, uMemory, uTranslate, uShellIntegration, uFileUtils,
+  uResources, CommCtrl, MPCommonObjects, EasyListview, MPCommonUtilities,
+  uListViewUtils;
 
 type
   TPrintForm = class(TDBForm)
@@ -20,9 +22,7 @@ type
     OkButtonPanel: TPanel;
     BtnPrint: TButton;
     BtnCancel: TButton;
-    LvMain: TListView;
     RightPanel: TPanel;
-    BaseImage: TImage;
     ImlFormatPreviews: TImageList;
     FastScrollingImage1: TFastScrollingImage;
     Panel1: TPanel;
@@ -55,15 +55,15 @@ type
     Label5: TLabel;
     WlGeneratePreview: TWebLink;
     StHintText: TStaticText;
+    LvMain: TEasyListview;
     procedure BtnAddPrinterClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure DoGenerateSample;
     procedure AddSampleImage(SampleImageType : TPrintSampleSizeOne);
-    procedure LvMainDblClick(Sender: TObject);
+    procedure ALvMainDblClick(Sender: TObject);
     procedure SetPreviewImage(Bitmap : TBitmap; SID : String);
-    procedure LvMainResize(Sender: TObject);
     procedure FullSizeLinkClick(Sender: TObject);
     procedure ZoomOutLinkClick(Sender: TObject);
     procedure ZoomInLinkClick(Sender: TObject);
@@ -85,6 +85,9 @@ type
     procedure EdHeightExit(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
     procedure FastScrollingImage1Resize(Sender: TObject);
+    procedure LvMainDblClick(Sender: TCustomEasyListview;
+      Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState;
+      var Handled: Boolean);
   private
     { Private declarations }
     PreviewSID: string;
@@ -152,7 +155,6 @@ begin
   Result.Execute(Picture);
 end;
 
-
 function TPrintForm.FormatToText(FormatIndex: TPrintSampleSizeOne): string;
 begin
   Result := '';
@@ -192,15 +194,23 @@ procedure TPrintForm.AddSampleImage(SampleImageType: TPrintSampleSizeOne);
 var
   NewImage: TBitmap;
   SampleImage: TBitmap;
-  Item: TListItem;
+  Item: TEasyItem;
   Options: TGenerateImageOptions;
+  PrinterPattern: TJpegImage;
 begin
-  ImlFormatPreviews.Width := LvMain.Width - 100;
+  ImlFormatPreviews.Width := LvMain.Width - GetSystemMetrics(SM_CXVSCROLL) - 32;
   ImlFormatPreviews.Height := Round(ImlFormatPreviews.Width * Printer.PageHeight / Printer.PageWidth);
+  LvMain.CellSizes.Thumbnail.Width := ImlFormatPreviews.Width + 30;
+  LvMain.CellSizes.Thumbnail.Height := ImlFormatPreviews.Height + 40;
   SampleImage := TBitmap.Create;
   try
     SampleImage.PixelFormat := pf24bit;
-    SampleImage.Assign(BaseImage.Picture.Graphic);
+    PrinterPattern := GetPrinterPatternImage;
+    try
+      SampleImage.Assign(PrinterPattern);
+    finally
+      F(PrinterPattern);
+    end;
     Item := LvMain.Items.Add;
     Item.ImageIndex := -1;
     Item.Caption := FormatToText(SampleImageType);
@@ -212,7 +222,7 @@ begin
     try
       ImlFormatPreviews.Add(NewImage, nil);
       Item.ImageIndex := ImlFormatPreviews.Count - 1;
-      Item.Indent := Integer(SampleImageType);
+      Item.Data := TObject(SampleImageType);
     finally
       F(NewImage);
     end;
@@ -342,6 +352,10 @@ var
   Ico: TIcon;
 begin
   LoadLanguage;
+
+  SetLVSelection(LvMain, [cmbLeft]);
+  LvMain.Selection.RectSelect := False;
+
   PrintFormExists := True;
   FFiles := TStringList.Create;
   LvMain.DoubleBuffered := True;
@@ -364,9 +378,9 @@ begin
   SaveWindowPos1.SetPosition;
 end;
 
-procedure TPrintForm.LvMainDblClick(Sender: TObject);
+procedure TPrintForm.ALvMainDblClick(Sender: TObject);
 var
-  Item: TListItem;
+  Item: TEasyItem;
   SampleType: TPrintSampleSizeOne;
   Files: TStrings;
   I, Incr: Integer;
@@ -374,10 +388,10 @@ var
   Options: TGenerateImageOptions;
 begin
 
-  Item := LvMain.Selected;
+  Item := LvMain.Selection.First;
   if Item = nil then
     Item := LvMain.Items[0];
-  SampleType := TPrintSampleSizeOne(Item.Indent);
+  SampleType := TPrintSampleSizeOne(Item.Data);
   PreviewSID := GetCID;
   StHintText.Hide;
   Bitmap := TBitmap.Create;
@@ -501,11 +515,6 @@ begin
     FitToSizeLink.SetDefault;
     FullSizeLink.SetDefault;
   end;
-end;
-
-procedure TPrintForm.LvMainResize(Sender: TObject);
-begin
-  ShowScrollBar(LvMain.Handle, SB_HORZ, FALSE);
 end;
 
 procedure TPrintForm.FullSizeLinkClick(Sender: TObject);
@@ -742,6 +751,13 @@ begin
   finally
     EndTranslate;
   end;
+end;
+
+procedure TPrintForm.LvMainDblClick(Sender: TCustomEasyListview;
+  Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState;
+  var Handled: Boolean);
+begin
+  ALvMainDblClick(Sender);
 end;
 
 procedure TPrintForm.CbUseCustomSizeClick(Sender: TObject);

@@ -326,29 +326,24 @@ end;
 
 function SpilitWordsW(S : string; SplitChar : char) : TArrayOfString;
 var
-  I, J: Integer;
-  Pi_: PInteger;
-  LS: Integer;
+  I: Integer;
+  SL: TStrings;
 begin
-  LS := Length(S);
-  SetLength(Result, 0);
-  S := SplitChar + S + SplitChar;
-  Pi_ := @I;
-  for I := 1 to LS - 1 do
-  begin
-    // if i+1>LS-1 then break;
-    if (S[I] = SplitChar) and (S[I + 1] <> SplitChar) then
-      for J := I + 1 to LS do
-        if (S[J] = SplitChar) or (J = LS) then
-        begin
-          SetLength(Result, Length(Result) + 1);
-          Result[Length(Result) - 1] := Copy(S, I + 1, J - I - 1);
-          Pi_^ := J - 1;
-          Break;
-        end;
+  SL := TStringList.Create;
+  try
+    SL.Delimiter := SplitChar;
+    SL.DelimitedText := S;
+    for I := SL.Count - 1 downto 0 do
+      if Trim(SL[I]) = '' then
+        SL.Delete(I);
+
+    SetLength(Result, SL.Count);
+    for I := SL.Count - 1 downto 0 do
+      Result[I] := Trim(SL[I]);
+
+  finally
+    SL.Free;
   end;
-  for I := 0 to Length(Result) - 1 do
-    Result[I] := Trim(Result[I]);
 end;
 
 function aIntToStr(int : integer) : string;

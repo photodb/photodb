@@ -13,8 +13,6 @@ uses
 
 type
   TOptionsForm = class(TDBForm)
-    ColorDialog1: TColorDialog;
-    FontDialog1: TFontDialog;
     CancelButton: TButton;
     OkButton: TButton;
     PopupMenu1: TPopupMenu;
@@ -149,8 +147,6 @@ type
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
-    procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
     procedure OkButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -415,13 +411,6 @@ end;
 function TOptionsForm.GetFormID: string;
 begin
   Result := 'Options';
-end;
-
-procedure TOptionsForm.Shape1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  ColorDialog1.Color := (Sender as TShape).Brush.Color;
-  if ColorDialog1.Execute then 
-    (Sender as TShape).Brush.Color := ColorDialog1.Color;
 end;
 
 procedure TOptionsForm.FormCreate(Sender: TObject);
