@@ -323,7 +323,7 @@ end;
 
 procedure DoHelp;
 begin
-  ShellExecute(GetActiveWindow, 'open', 'http://photodb.illusdolphin.net', nil, nil, SW_NORMAL);
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(HomePageURL)), nil, nil, SW_NORMAL);
 end;
 
 procedure DoHomePage;

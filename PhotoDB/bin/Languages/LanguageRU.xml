@@ -402,6 +402,27 @@
 	<translate name="Connect this photo with original" value="Связать данное фото с оригиналом" />
     <translate name="Connect this photo with processed (Add link to this photo to processed)" value="Связать данное фото с обработкой (к обработке добавляется ссылка на этот оригинал)" />
 	<translate name="Connect this photo with original (Add link to this photo to original)" value="Связать данное фото с оригиналом (к оригиналу добавляется ссылка на эту обработку)" />
+    <translate name="Exif header not found." value="Exif заголовок не найден." />
+    <translate name="Off" value="Выключена" />
+    <translate name="On" value="Включена" />
+    <translate name="Flash" value="Вспышка" />
+    <translate name="Exposure" value="Выдержка" />
+    <translate name="ISO" value="ISO" />
+    <translate name="Focal length" value="Фокусное расстояние" />
+    <translate name="F number" value="Диафрагма" />
+    <translate name="Orientation" value="Ориентация" />
+    <translate name="Normal" value="Обычная" />
+    <translate name="Right" value="Вправо" />
+    <translate name="Left" value="Влево" />
+    <translate name="180 grad." value="180 град." />
+    <translate name="Software" value="Программа" />
+    <translate name="Description" value="Описание" />
+    <translate name="Date and time" value="Дата и время" />
+    <translate name="Copyright" value="Права" />
+    <translate name="Make" value="Производитель" />
+    <translate name="Model" value="Модель" />
+    <translate name="Not avaliable" value="Не доступно" />	
+    <translate name="Add file" value="Добавить" />
   </scope>
   <scope name="Search">
     <translate name="More than" value="Больше чем" />
@@ -414,6 +435,7 @@
     <translate name="Rating" value="Оценка" />
     <translate name="Size" value="Размер" />
     <translate name="Comment" value="Коментарий" />
+    <translate name="Keywords" value="Ключевые слова" />
     <translate name="Save" value="Сохранить" />
     <translate name="Search" value="Поиск" />
     <translate name="Panels" value="Панели" />

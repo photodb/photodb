@@ -11,7 +11,9 @@
 
 <xsl:param name="currentPage"/>
 <xsl:variable name="root" select="$currentPage/ancestor::*[name()='root']" />
-<xsl:variable name="languageRoot" select="$currentPage/ancestor-or-self::*[@level=1]" />
+<xsl:variable name="languageHolderDocTypeId" select="1042" />
+
+<xsl:variable name="languageRoot" select="$currentPage/ancestor-or-self::*[@level=1 and @nodeType=$languageHolderDocTypeId]" />
 
 <xsl:template match="/">
 

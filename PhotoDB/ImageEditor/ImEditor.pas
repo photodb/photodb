@@ -959,6 +959,7 @@ begin
   BrushLink.Enabled := True;
   InsertImageLink.Enabled := True;
   SaveLink.Enabled := True;
+  OpenFileLink.SetDefault;
   CropLink.SetDefault;
   RotateLink.SetDefault;
   ColorsLink.SetDefault;

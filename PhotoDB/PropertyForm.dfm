@@ -1281,8 +1281,8 @@ object PropertiesForm: TPropertiesForm
         TabOrder = 0
         OnContextPopup = VleExifContextPopup
         ColWidths = (
-          100
-          187)
+          144
+          143)
       end
     end
     object TsGistogramm: TTabSheet
@@ -1370,6 +1370,17 @@ object PropertiesForm: TPropertiesForm
         TabOrder = 1
       end
     end
+  end
+  object BtnAddFile: TButton
+    Left = 135
+    Top = 498
+    Width = 91
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Add file'
+    Enabled = False
+    TabOrder = 6
+    OnClick = BtSaveClick
   end
   object PmItem: TPopupMenu
     OnPopup = PmItemPopup

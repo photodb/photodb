@@ -11,27 +11,27 @@ type
     NormalImageList: TImageList;
     HotImageList: TImageList;
     ToolBar1: TToolBar;
-    ToolButton1: TToolButton;
-    ToolButton2: TToolButton;
+    TbPlay: TToolButton;
+    TbPause: TToolButton;
     ToolButton3: TToolButton;
-    ToolButton4: TToolButton;
-    ToolButton5: TToolButton;
+    TbPrev: TToolButton;
+    TbNext: TToolButton;
     ToolButton6: TToolButton;
-    ToolButton7: TToolButton;
+    TbClose: TToolButton;
     DisabledImageList: TImageList;
-    procedure ToolButton1Click(Sender: TObject);
-    procedure ToolButton4Click(Sender: TObject);
-    procedure ToolButton5Click(Sender: TObject);
-    procedure ToolButton7Click(Sender: TObject);
+    procedure TbPlayClick(Sender: TObject);
+    procedure TbPrevClick(Sender: TObject);
+    procedure TbNextClick(Sender: TObject);
+    procedure TbCloseClick(Sender: TObject);
     procedure RecreateImLists;
     procedure FormCreate(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
     { Public declarations }
     FClosed : Boolean;
+    procedure SetButtonsEnabled(Enabled: Boolean);
   end;
 
 var
@@ -42,26 +42,26 @@ implementation
 uses
   SlideShowFullScreen, SlideShow, UnitDBKernel, Dolphin_DB;
 
-  {$R *.dfm}
+{$R *.dfm}
 
-procedure TFloatPanel.ToolButton1Click(Sender: TObject);
+procedure TFloatPanel.TbPlayClick(Sender: TObject);
 begin
   Viewer.MTimer1Click(Sender);
 end;
 
-procedure TFloatPanel.ToolButton4Click(Sender: TObject);
+procedure TFloatPanel.TbPrevClick(Sender: TObject);
 begin
   Viewer.Pause;
   Viewer.PreviousImageClick(Sender);
 end;
 
-procedure TFloatPanel.ToolButton5Click(Sender: TObject);
+procedure TFloatPanel.TbNextClick(Sender: TObject);
 begin
   Viewer.Pause;
   Viewer.NextImageClick(Sender);
 end;
 
-procedure TFloatPanel.ToolButton7Click(Sender: TObject);
+procedure TFloatPanel.TbCloseClick(Sender: TObject);
 begin
   Close;
 end;
@@ -119,33 +119,22 @@ begin
     end;
   for I := 0 to 1 do
     for J := 0 to 4 do
-    begin
       Icons[I, J].Free;
-    end;
+end;
+
+procedure TFloatPanel.SetButtonsEnabled(Enabled: Boolean);
+begin
+  TbPrev.Enabled := Enabled;
+  TbNext.Enabled := Enabled;
+  TbPlay.Enabled := Enabled;
+  TbPause.Enabled := Enabled;
 end;
 
 procedure TFloatPanel.FormCreate(Sender: TObject);
 begin
-  FClosed := false;
+  FClosed := False;
   RecreateImLists;
-  if Viewer.CurrentInfo.Count < 2 then
-  begin
-    ToolButton4.Enabled := false;
-    ToolButton5.Enabled := false;
-    ToolButton1.Enabled := false;
-    ToolButton2.Enabled := false;
-  end else
-  begin
-    ToolButton4.Enabled := true;
-    ToolButton5.Enabled := true;
-    ToolButton1.Enabled := true;
-    ToolButton2.Enabled := true;
-  end;
-end;
-
-procedure TFloatPanel.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-begin
-  CanClose := not Viewer.FullScreenNow and not Viewer.SlideShowNow;
+  SetButtonsEnabled(Viewer.CurrentInfo.Count > 1);
 end;
 
 procedure TFloatPanel.FormClose(Sender: TObject; var Action: TCloseAction);

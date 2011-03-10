@@ -13,7 +13,7 @@
 <xsl:variable name="home" select="$currentPage/ancestor-or-self::*[@level=1]" />
 <xsl:variable name="releasesHolderDocTypeId" select="1091" /> 
 <xsl:variable name="downloadPageDocTypeId" select="1072" />
-<xsl:variable name="downloadPage" select="$currentPage/ancestor-or-self::*[name()='root']/descendant::*[@nodeType=$downloadPageDocTypeId]" />
+<xsl:variable name="downloadPage" select="$home/descendant::*[@nodeType=$downloadPageDocTypeId]" />
 <xsl:variable name="releases" select="$home/descendant::*[@nodeType=$releasesHolderDocTypeId]/child::*[@isDoc and string(isStable)='1']" />
 <xsl:variable name="u">
   http://<xsl:value-of select="umbraco.library:RequestServerVariables('SERVER_NAME')"/>

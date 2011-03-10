@@ -7,7 +7,7 @@ object SearchForm: TSearchForm
   ClientWidth = 805
   Color = clBtnFace
   Constraints.MinHeight = 180
-  Constraints.MinWidth = 310
+  Constraints.MinWidth = 330
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

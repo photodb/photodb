@@ -2226,11 +2226,11 @@ end;
 
 procedure TSearchForm.ComboBox1_DblClick(Sender: TObject);
 var
-  KeyWords : string;
+  KeyWords: string;
 begin
-  KeyWords:=Memo1.Text;
-  DBChangeGroups(FPropertyGroups,KeyWords);
-  Memo1.Text:=KeyWords;
+  KeyWords := Memo1.Text;
+  DBChangeGroups(FPropertyGroups, KeyWords);
+  Memo1.Text := KeyWords;
   ReloadGroups;
   Memo1Change(Sender);
 end;

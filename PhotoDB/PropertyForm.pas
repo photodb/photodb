@@ -143,6 +143,7 @@ type
     LbLinks: TLabel;
     LinksScrollBox: TScrollBox;
     VleExif: TValueListEditor;
+    BtnAddFile: TButton;
     procedure Execute(ID : integer);
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
@@ -346,7 +347,7 @@ begin
     if TPropertiesForm(FPropertys[I]).FShowInfoType = SHOW_INFO_ID then
       if TPropertiesForm(FPropertys[I]).ImageID = ID then
   begin
-    Result := FPropertys[i];
+    Result := FPropertys[I];
     Exit;
   end;
 end;
@@ -357,10 +358,10 @@ var
 begin
   Result := nil;
   for I := 0 to FPropertys.Count - 1 do
-    if TPropertiesForm(FPropertys[i]).FShowInfoType = SHOW_INFO_FILE_NAME then
-      if AnsiLowerCase(TPropertiesForm(FPropertys[i]).FileName) = AnsiLowerCase(FileName) then
+    if TPropertiesForm(FPropertys[I]).FShowInfoType = SHOW_INFO_FILE_NAME then
+      if AnsiLowerCase(TPropertiesForm(FPropertys[I]).FileName) = AnsiLowerCase(FileName) then
       begin
-        Result := FPropertys[i];
+        Result := FPropertys[I];
         Exit;
       end;
 end;
@@ -526,7 +527,8 @@ begin
     DBKernel.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBKernel.RegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBitem1.Visible := True;
-    BtSave.Caption := L('Save');
+    BtSave.Visible := True;
+    BtnAddFile.Visible := False;
     CommentMemo.Cursor := CrDefault;
     CommentMemo.PopupMenu := nil;
     WorkQuery := GetQuery;
@@ -579,7 +581,7 @@ begin
                   JPEG := TJpegImage.Create;
                   JPEG.LoadFromStream(FBS);
                 finally
-                  FBS.Free;
+                  F(FBS);
                 end;
               end;
 
@@ -1309,15 +1311,17 @@ var
   Rec: TDBPopupMenuInfoRecord;
   FS : TFileStream;
 begin
-  if not FileExistsSafe(FileName) then
-    Exit;
-  if not ExtInMask(SupportedExt, Getext(FileName)) then
-    Exit;
   if FSaving then
   begin
     SetFocus;
     Exit;
   end;
+
+  if not ExtInMask(SupportedExt, Getext(FileName)) or not FileExistsSafe(FileName) then
+    Exit;
+
+  BtnAddFile.Enabled := True;
+
   DoProcessPath(FileName);
   SetLength(FPropertyLinks, 0);
   SetLength(FNowGroups, 0);
@@ -1429,7 +1433,8 @@ begin
   HeightMemo.Text := L('Loading...');
 
   SizeLabel.Text := SizeInText(GetFileSize(FileName));
-  BtSave.Caption := L('Add file');
+  BtSave.Visible := False;
+  BtnAddFile.Visible := True;
   BtnFind.Visible := True;
 
   Show;
@@ -1438,7 +1443,7 @@ end;
 procedure TPropertiesForm.BeginAdding(Sender: TObject);
 begin
   Image1DblClick(Sender);
-  BtSave.Enabled := False;
+  BtnAddFile.Enabled := False;
   Adding_now := True;
 end;
 
@@ -1596,7 +1601,8 @@ begin
   PcMain.ActivePageIndex := 0;
   if Length(IDs) = 0 then
     Exit;
-  BtSave.Caption := L('Save');
+  BtSave.Visible := True;
+  BtnAddFile.Visible := False;
   Image2.Visible := False;
   DateEdit.Enabled := True;
   TimeEdit.Enabled := True;
@@ -1958,6 +1964,7 @@ begin
   CbShowAllGroups.Caption := L('Show all groups');
   CbRemoveKeywordsForGroups.Caption := L('Remove unused keywords');
   MoveToGroup1.Caption := L('Move to group');
+  BtnAddFile.Caption := L('Add file');
 
   LbGroupsEditInfo.Caption := L('Use button "-->" to add new groups or button "<--" to remove them');
   Cancel1.Caption := L('Cancel');
@@ -2011,10 +2018,13 @@ var
   Orientation : Integer;
   OldMode : Cardinal;
 
+const
+  XMPBasicValues: array[TWindowsStarRating] of UnicodeString = ('', '1', '2', '3', '4', '5');
+
   procedure XInsert(Key, Value: string);
   begin
     if Value <> '' then
-      VleEXIF.InsertRow(Key, Value, True);
+      VleEXIF.InsertRow(Key + ': ', Value, True);
   end;
 
   procedure XInsertInt(Key: string; Value: Integer);
@@ -2027,6 +2037,22 @@ var
   begin
     if Value <> 0 then
       VleEXIF.InsertRow(Key, FloatToStr(Value), True);
+  end;
+
+  function FractionToString(Fraction: TExifFraction): string;
+  begin
+    if Fraction.Denominator <> 0 then
+      Result := FormatFloat('0.0' , Fraction.Numerator / Fraction.Denominator)
+    else
+      Result := Fraction.AsString;
+  end;
+
+  function ExposureFractionToString(Fraction: TExifFraction): string;
+  begin
+    if Fraction.Numerator <> 0 then
+      Result := '1/' + FormatFloat('0' , Fraction.Denominator / Fraction.Numerator)
+    else
+      Result := Fraction.AsString;
   end;
 
 begin
@@ -2057,35 +2083,44 @@ begin
           if not ExifData.Empty then
           begin
 
-            XInsert('Make: ', ExifData.CameraMake);
-            XInsert('Model: ', ExifData.CameraModel);
-            XInsert('Copyright: ', ExifData.Copyright);
-            XInsert('Date and time: ', FormatDateTime('yyyy/mm/dd', ExifData.DateTime));
-            XInsert('Description: ', ExifData.ImageDescription);
-            XInsert('Software: ', ExifData.Software);
+            XInsert(L('Make'), ExifData.CameraMake);
+            XInsert(L('Model'), ExifData.CameraModel);
+            XInsert(L('Copyright'), ExifData.Copyright);
+            XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTime));
+            XInsert(L('Description'), ExifData.ImageDescription);
+            XInsert(L('Software'), ExifData.Software);
             Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
             case Orientation of
               DB_IMAGE_ROTATE_0:
-                XInsert('Orientation: ', L('Normal'));
+                XInsert(L('Orientation'), L('Normal'));
               DB_IMAGE_ROTATE_90:
-                XInsert('Orientation: ', L('Right'));
+                XInsert(L('Orientation'), L('Right'));
               DB_IMAGE_ROTATE_270:
-                XInsert('Orientation: ', L('Left'));
+                XInsert(L('Orientation'), L('Left'));
               DB_IMAGE_ROTATE_180:
-                XInsert('Orientation: ', L('180 grad.'));
+                XInsert(L('Orientation'), L('180 grad.'));
             end;
 
-            XInsert('Exposure: ', ExifData.ExposureTime.AsString);
-            XInsert('ISO: ', ExifData.ISOSpeedRatings.AsString);
-            XInsert('Focal length: ', ExifData.FocalLength.AsString);
-            XInsert('F number: ', ExifData.FNumber.AsString);
+            XInsert(L('Exposure'), ExposureFractionToString(ExifData.ExposureTime));
+            XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
+            XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
+            XInsert(L('F number'), FractionToString(ExifData.FNumber));
             if ExifData.Flash.Fired then
-              XInsert('Flash: ', L('On'))
+              XInsert(L('Flash'), L('On'))
             else
-              XInsert('Flash: ', L('Off'));
+              XInsert(L('Flash'), L('Off'));
 
-            XInsert('Width: ', IntToStr(ExifData.ExifImageWidth.Value) + ' px.');
-            XInsert('Height: ', IntToStr(ExifData.ExifImageheight.Value) + 'px.');
+            XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
+            XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
+
+            XInsert(L('Author'), ExifData.Author);
+            XInsert(L('Comments'), ExifData.Comments);
+            XInsert(L('Keywords'), ExifData.Keywords);
+            XInsert(L('Subject'), ExifData.Subject);
+            XInsert(L('Title'), ExifData.Title);
+            if ExifData.UserRating <> urUndefined then
+              XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
+
           end
           else
             VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
@@ -2194,25 +2229,27 @@ begin
     Links[I].ImageCanRegenerate := True;
     //
     Icon := TIcon.Create;
-
-    case LI[I].LinkType of
-      LINK_TYPE_ID:
-        Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
-      LINK_TYPE_ID_EXT:
-        Icon.Handle := UnitDBKernel.Icons[DB_IC_NOTES + 1];
-      LINK_TYPE_IMAGE:
-        Icon.Handle := UnitDBKernel.Icons[DB_IC_DESKTOP + 1];
-      LINK_TYPE_FILE:
-        Icon.Handle := UnitDBKernel.Icons[DB_IC_SHELL + 1];
-      LINK_TYPE_FOLDER:
-        Icon.Handle := UnitDBKernel.Icons[DB_IC_DIRECTORY + 1];
-      LINK_TYPE_TXT:
-        Icon.Handle := UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1];
-      LINK_TYPE_HTML:
-        Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+    try
+      case LI[I].LinkType of
+        LINK_TYPE_ID:
+          Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+        LINK_TYPE_ID_EXT:
+          Icon.Handle := UnitDBKernel.Icons[DB_IC_NOTES + 1];
+        LINK_TYPE_IMAGE:
+          Icon.Handle := UnitDBKernel.Icons[DB_IC_DESKTOP + 1];
+        LINK_TYPE_FILE:
+          Icon.Handle := UnitDBKernel.Icons[DB_IC_SHELL + 1];
+        LINK_TYPE_FOLDER:
+          Icon.Handle := UnitDBKernel.Icons[DB_IC_DIRECTORY + 1];
+        LINK_TYPE_TXT:
+          Icon.Handle := UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1];
+        LINK_TYPE_HTML:
+          Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+      end;
+      Links[I].Icon := Icon;
+    finally
+      F(Icon);
     end;
-    Links[I].Icon := Icon;
-    Icon.Free;
     Links[I].Visible := True;
   end;
   CommentMemoChange(Self);
@@ -2559,7 +2596,7 @@ begin
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
     RegGroupsImageList.Add(SmallB, nil);
   finally
-    SmallB.Free;
+    F(SmallB);
   end;
 
   LstAvaliableGroups.Items.BeginUpdate;
@@ -2576,7 +2613,7 @@ begin
           begin
             B := TBitmap.Create;
             try
-              B.PixelFormat := Pf24bit;
+              B.PixelFormat := pf24bit;
               Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
               B.Canvas.Brush.Color := ClBtnFace;
               B.Canvas.Pen.Color := ClBtnFace;
@@ -2587,7 +2624,7 @@ begin
                 B.Height div 2 - RegGroups[I].GroupImage.Height div 2, RegGroups[I].GroupImage);
               DoResize(16, 16, B, SmallB);
             finally
-              B.Free;
+              F(B);
             end;
             SmallB.Height := 18;
           end;
@@ -2598,7 +2635,7 @@ begin
           LstAvaliableGroups.Items.Add(RegGroups[I].GroupName);
         end;
       finally
-        SmallB.Free;
+        F(SmallB);
       end;
     end;
   finally
@@ -2640,8 +2677,6 @@ var
   end;
 
 begin
-  if FShowInfoType = SHOW_INFO_FILE_NAME then
-    Exit;
   if Control = LstCurrentGroups then
   begin
     XNewGroups := CopyGroups(FNowGroups);
@@ -2652,7 +2687,7 @@ begin
     RemoveGroupsFromGroups(XNewGroups, FNowGroups);
   end;
   try
-    if index = -1 then
+    if (Index = -1) or (Index >= Length(FNowGroups)) then
       Exit;
     with (Control as TListBox).Canvas do
     begin
@@ -2820,8 +2855,7 @@ begin
     end;
     PopupMenuGroups.Tag := ItemNo;
     PopupMenuGroups.Popup(LstCurrentGroups.ClientToScreen(MousePos).X, LstCurrentGroups.ClientToScreen(MousePos).Y);
-  end
-  else
+  end else
   begin
     for I := 0 to LstCurrentGroups.Items.Count - 1 do
       LstCurrentGroups.Selected[I] := False;
@@ -2846,21 +2880,22 @@ end;
 
 procedure TPropertiesForm.LstAvaliableGroupsDblClick(Sender: TObject);
 begin
- if fSaving then Exit;
- Button6Click(Sender);
+  if FSaving then
+    Exit;
+  Button6Click(Sender);
 end;
 
-function TPropertiesForm.aGetGroupByCode(GroupCode: String): integer;
+function TPropertiesForm.AGetGroupByCode(GroupCode: string): Integer;
 var
-  i : integer;
+  I: Integer;
 begin
- Result:=0;
- for i:=0 to Length(RegGroups)-1 do
- if RegGroups[i].GroupCode=GroupCode then
- begin
-  Result:=i;
-  break;
- end;
+  Result := 0;
+  for I := 0 to Length(RegGroups) - 1 do
+    if RegGroups[I].GroupCode = GroupCode then
+    begin
+      Result := I;
+      Break;
+    end;
 end;
 
 procedure TPropertiesForm.CreateGroup1Click(Sender: TObject);
@@ -2922,8 +2957,7 @@ begin
     CreateGroup1.Visible := False;
     MoveToGroup1.Visible := False;
     ChangeGroup1.Visible := True;
-  end
-  else
+  end else
   begin
     CreateGroup1.Visible := True;
     MoveToGroup1.Visible := True;

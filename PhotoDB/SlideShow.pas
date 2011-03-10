@@ -1102,8 +1102,8 @@ begin
       MTimer1.ImageIndex := DB_IC_PLAY;
       if FloatPanel <> nil then
       begin
-        FloatPanel.ToolButton1.Down := False;
-        FloatPanel.ToolButton2.Down := True;
+        FloatPanel.TbPlay.Down := False;
+        FloatPanel.TbPause.Down := True;
       end;
       SlideTimer.Enabled := False;
       Play := False;
@@ -1113,8 +1113,8 @@ begin
       MTimer1.ImageIndex := DB_IC_PAUSE;
       if FloatPanel <> nil then
       begin
-        FloatPanel.ToolButton1.Down := True;
-        FloatPanel.ToolButton2.Down := False;
+        FloatPanel.TbPlay.Down := True;
+        FloatPanel.TbPause.Down := False;
       end;
       SlideTimer.Enabled := True;
       Play := True;
@@ -1127,16 +1127,16 @@ begin
         DirectShowForm.Pause;
       MTimer1.Caption := L('Start timer');
       MTimer1.ImageIndex := DB_IC_PLAY;
-      FloatPanel.ToolButton1.Down := False;
-      FloatPanel.ToolButton2.Down := True;
+      FloatPanel.TbPlay.Down := False;
+      FloatPanel.TbPause.Down := True;
     end else
     begin
       if DirectShowForm <> nil then
         DirectShowForm.Play;
       MTimer1.Caption := L('Stop timer');
       MTimer1.ImageIndex := DB_IC_PAUSE;
-      FloatPanel.ToolButton1.Down := True;
-      FloatPanel.ToolButton2.Down := False;
+      FloatPanel.TbPlay.Down := True;
+      FloatPanel.TbPause.Down := False;
     end;
   end;
 end;
@@ -1365,24 +1365,15 @@ begin
     TbForward.Enabled := False;
     SetProgressPosition(0, 0);
     if FloatPanel <> nil then
-    begin
-      FloatPanel.ToolButton4.Enabled := False;
-      FloatPanel.ToolButton5.Enabled := False;
-      FloatPanel.ToolButton1.Enabled := False;
-      FloatPanel.ToolButton2.Enabled := False;
-    end;
+      FloatPanel.SetButtonsEnabled(False);
+
   end else
   begin
     SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
     TbBack.Enabled := True;
     TbForward.Enabled := True;
     if FloatPanel <> nil then
-    begin
-      FloatPanel.ToolButton4.Enabled := True;
-      FloatPanel.ToolButton5.Enabled := True;
-      FloatPanel.ToolButton1.Enabled := True;
-      FloatPanel.ToolButton2.Enabled := True;
-    end;
+      FloatPanel.SetButtonsEnabled(True);
   end;
 end;
 
@@ -1781,24 +1772,15 @@ begin
     TbForward.Enabled := False;
     SetProgressPosition(0, 0);
     if FloatPanel <> nil then
-    begin
-      FloatPanel.ToolButton1.Enabled := False;
-      FloatPanel.ToolButton2.Enabled := False;
-      FloatPanel.ToolButton4.Enabled := False;
-      FloatPanel.ToolButton5.Enabled := False;
-    end;
+      FloatPanel.SetButtonsEnabled(False);
+
   end else
   begin
     TbBack.Enabled := True;
     TbForward.Enabled := True;
     SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
     if FloatPanel <> nil then
-    begin
-      FloatPanel.ToolButton1.Enabled := True;
-      FloatPanel.ToolButton2.Enabled := True;
-      FloatPanel.ToolButton4.Enabled := True;
-      FloatPanel.ToolButton5.Enabled := True;
-    end;
+      FloatPanel.SetButtonsEnabled(True);
   end;
   TW.I.Start('ExecuteW - end');
 end;
@@ -1821,6 +1803,7 @@ begin
   with params do
     ExStyle := ExStyle or WS_EX_APPWINDOW;
 
+  //Windows explorer window class - EEePc touch pad support
   Params.WinClassName := 'AVL_AVView';
   TW.I.Start('CreateParams - END');
 end;
@@ -2588,8 +2571,8 @@ begin
     DirectShowForm.Pause;
   MTimer1.Caption := L('Start timer');
   MTimer1.ImageIndex := DB_IC_PLAY;
-  FloatPanel.ToolButton1.Down := False;
-  FloatPanel.ToolButton2.Down := True;
+  FloatPanel.TbPlay.Down := False;
+  FloatPanel.TbPause.Down := True;
 end;
 
 procedure TViewer.DestroyTimerTimer(Sender: TObject);
@@ -3162,24 +3145,14 @@ begin
       TbForward.Enabled := False;
       SetProgressPosition(0, 0);
       if FloatPanel <> nil then
-      begin
-        FloatPanel.ToolButton1.Enabled := False;
-        FloatPanel.ToolButton2.Enabled := False;
-        FloatPanel.ToolButton4.Enabled := False;
-        FloatPanel.ToolButton5.Enabled := False;
-      end;
+        FloatPanel.SetButtonsEnabled(False);
     end else
     begin
       TbBack.Enabled := True;
       TbForward.Enabled := True;
       SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
       if FloatPanel <> nil then
-      begin
-        FloatPanel.ToolButton1.Enabled := True;
-        FloatPanel.ToolButton2.Enabled := True;
-        FloatPanel.ToolButton4.Enabled := True;
-        FloatPanel.ToolButton5.Enabled := True;
-      end;
+        FloatPanel.SetButtonsEnabled(True);
     end;
     TbFitToWindow.Enabled := False;
     ZoomIn1.Enabled := False;

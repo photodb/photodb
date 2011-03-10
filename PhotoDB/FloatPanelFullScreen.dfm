@@ -15,7 +15,6 @@ object FloatPanel: TFloatPanel
   Position = poDefault
   Visible = True
   OnClose = FormClose
-  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -30,24 +29,24 @@ object FloatPanel: TFloatPanel
     HotImages = HotImageList
     Images = NormalImageList
     TabOrder = 0
-    object ToolButton1: TToolButton
+    object TbPlay: TToolButton
       Left = 0
       Top = 0
-      Caption = 'ToolButton1'
+      Caption = 'TbPlay'
       Down = True
       Grouped = True
       ImageIndex = 0
       Style = tbsCheck
-      OnClick = ToolButton1Click
+      OnClick = TbPlayClick
     end
-    object ToolButton2: TToolButton
+    object TbPause: TToolButton
       Left = 27
       Top = 0
-      Caption = 'ToolButton2'
+      Caption = 'TbPause'
       Grouped = True
       ImageIndex = 1
       Style = tbsCheck
-      OnClick = ToolButton1Click
+      OnClick = TbPlayClick
     end
     object ToolButton3: TToolButton
       Left = 54
@@ -57,19 +56,19 @@ object FloatPanel: TFloatPanel
       ImageIndex = 2
       Style = tbsSeparator
     end
-    object ToolButton4: TToolButton
+    object TbPrev: TToolButton
       Left = 62
       Top = 0
-      Caption = 'ToolButton4'
+      Caption = 'TbPrev'
       ImageIndex = 2
-      OnClick = ToolButton4Click
+      OnClick = TbPrevClick
     end
-    object ToolButton5: TToolButton
+    object TbNext: TToolButton
       Left = 89
       Top = 0
-      Caption = 'ToolButton5'
+      Caption = 'TbNext'
       ImageIndex = 3
-      OnClick = ToolButton5Click
+      OnClick = TbNextClick
     end
     object ToolButton6: TToolButton
       Left = 116
@@ -79,12 +78,12 @@ object FloatPanel: TFloatPanel
       ImageIndex = 4
       Style = tbsSeparator
     end
-    object ToolButton7: TToolButton
+    object TbClose: TToolButton
       Left = 124
       Top = 0
-      Caption = 'ToolButton7'
+      Caption = 'TbClose'
       ImageIndex = 4
-      OnClick = ToolButton7Click
+      OnClick = TbCloseClick
     end
   end
   object NormalImageList: TImageList

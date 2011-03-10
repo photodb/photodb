@@ -14,7 +14,7 @@ object ActivateForm: TActivateForm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
-  Position = poDesigned
+  Position = poDesktopCenter
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate

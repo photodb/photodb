@@ -7,6 +7,7 @@ object ExplorerForm: TExplorerForm
   ClientWidth = 870
   Color = clBtnFace
   Constraints.MinHeight = 200
+  Constraints.MinWidth = 300
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
