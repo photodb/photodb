@@ -34,6 +34,7 @@ type
     function SaveActivateKey(Name, Key: string; RegisterForAllUsers: Boolean): Boolean;
     procedure CheckActivationCode(ApplicationCode, ActivationCode: string; out DemoMode: Boolean; out FullMode: Boolean);
     function GenerateProgramCode(HardwareString: string): string;
+    function ReadActivationOption(OptionName: string): string;
     property IsDemoMode: Boolean read GetIsDemoMode;
     property IsFullMode: Boolean read GetIsFullMode;
     property ApplicationCode: string read GetApplicationCode;
@@ -52,34 +53,6 @@ var
 function RegistrationRoot : string;
 begin
   Result := RegRoot + 'Activation';
-end;
-
-function ReadActivationOption(OptionName: string): string;
-var
-  Reg: TRegistry;
-  I : Integer;
-const
-  ActivetionModes: array [0 .. 1] of DWORD = (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE);
-begin
-  for I := 0 to Length(ActivetionModes) - 1 do
-  begin
-    Reg := TRegistry.Create;
-    Reg.RootKey := ActivetionModes[I];
-    try
-      if Reg.OpenKey(RegistrationRoot, True) then
-      begin
-        if Reg.ValueExists(RegistrationCode) then
-        begin
-          Result := Reg.ReadString(OptionName);
-          if Result <> '' then
-            Exit;
-        end;
-      end;
-      Reg.CloseKey;
-    finally
-      F(Reg);
-    end;
-  end;
 end;
 
 procedure GetPeripheralDiskIdentifiers(List: TStrings);
@@ -207,6 +180,46 @@ begin
 end;
 
 { TActivationManager }
+
+function TActivationManager.ReadActivationOption(OptionName: string): string;
+var
+  Reg: TRegistry;
+  AppKey, ActCode: string;
+  IsDemo, IsFull: Boolean;
+  I : Integer;
+const
+  ActivetionModes: array [0 .. 1] of DWORD = (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE);
+begin
+  AppKey := ApplicationCode;
+  IsDemo := True;
+  IsFull := False;
+  for I := 0 to Length(ActivetionModes) - 1 do
+  begin
+    Reg := TRegistry.Create;
+    Reg.RootKey := ActivetionModes[I];
+    try
+      if Reg.OpenKey(RegistrationRoot, True) then
+      begin
+        if Reg.ValueExists(RegistrationCode) and Reg.ValueExists(OptionName) then
+        begin
+          ActCode := Reg.ReadString(RegistrationCode);
+          CheckActivationCode(AppKey, ActCode, IsDemo, IsFull);
+          if not IsDemo then
+          begin
+            if IsFull or (ActivetionModes[I] = HKEY_LOCAL_MACHINE) then
+              Result := Reg.ReadString(OptionName);
+          end;
+
+          if Result <> '' then
+            Exit;
+        end;
+      end;
+      Reg.CloseKey;
+    finally
+      F(Reg);
+    end;
+  end;
+end;
 
 procedure TActivationManager.CheckActivationCode(ApplicationCode,
   ActivationCode: string; out DemoMode, FullMode: Boolean);

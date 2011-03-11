@@ -526,6 +526,7 @@ begin
       InfoItem.ID := LastIDImage;
       info.Add(InfoItem);
       Viewer.Execute(Sender, Info);
+      Viewer.Show;
     finally
       F(InfoItem);
     end;
@@ -788,6 +789,7 @@ begin
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
     Viewer.ExecuteDirectoryWithFileOnThread(FCurrentFileName);
+    Viewer.Show;
   end;
 end;
 

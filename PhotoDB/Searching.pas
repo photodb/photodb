@@ -931,6 +931,7 @@ begin
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
     Viewer.Execute(Sender, DBInfo);
+    Viewer.Show;
   finally
     F(DBInfo);
   end;
@@ -2663,7 +2664,7 @@ end;
 
 procedure TSearchForm.ImageEditor1Click(Sender: TObject);
 begin
- NewImageEditor;
+  NewImageEditor;
 end;
 
 procedure TSearchForm.Image3Click(Sender: TObject);
@@ -3214,7 +3215,10 @@ begin
       Application.CreateForm(TViewer, Viewer);
     GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
     if Info.Count > 0 then
+    begin
       Viewer.Execute(Self, Info);
+      Viewer.Show;
+    end;
   finally
     F(Info);
   end;

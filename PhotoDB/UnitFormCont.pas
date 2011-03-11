@@ -1071,6 +1071,7 @@ begin
   DBInfo := GetCurrentPopUpMenuInfo(nil);
   try
     Viewer.Execute(Sender, DBInfo);
+    Viewer.Show;
   finally
     F(DBInfo);
   end;
