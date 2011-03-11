@@ -11,16 +11,16 @@
 
 <xsl:param name="currentPage"/>
 <xsl:variable name="root" select="$currentPage/ancestor::*[name()='root']" />
-<xsl:variable name="languageHolderDocTypeId" select="1042" />
+<xsl:variable name="languageHolderDocTypeId" select="1045" />
 
-<xsl:variable name="languageRoot" select="$currentPage/ancestor-or-self::*[@level=1 and @nodeType=$languageHolderDocTypeId]" />
+<xsl:variable name="languageRoot" select="$currentPage/ancestor-or-self::*[@level=1]" />
 
 <xsl:template match="/">
 
   <div class="languages">
     <span class="changeLanguage"><xsl:value-of select="$languageRoot/changeLanguageText" /></span>
-    <xsl:for-each select="$root/child::*[@isDoc]">
-      <a href="{umbraco.library:NiceUrl(./@id)}"><img src="/img/lang/{./@nodeName}.png"/></a>
+    <xsl:for-each select="$root/child::*[@isDoc and @nodeType=$languageHolderDocTypeId]">
+      <a href="{umbraco.library:NiceUrl(./@id)}"><img src="/img/lang/{./@nodeName}.png" /></a>
     </xsl:for-each>
   </div>
 </xsl:template>

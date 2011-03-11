@@ -26,6 +26,7 @@
               <xsl:variable name="image" select="umbraco.library:GetMedia(./image, false)/umbracoFile" />
               <xsl:if test="$image != ''">
                 <li>
+                  <xsl:if test="position()!=1"><xsl:attribute name="style">display:none;</xsl:attribute></xsl:if>
                   <a href="#">
                     <img src="{$image}" alt="{./imageName}" />
                   </a>
@@ -42,6 +43,7 @@
           prevText:   '',
           nextText:   ''
         });
+        $("#slider li").show();
       });
     </script>
 

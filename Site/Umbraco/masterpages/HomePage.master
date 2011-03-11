@@ -6,6 +6,7 @@
     <div class="clearDiv10"></div>
     <umbraco:Macro Alias="DonateHomeCallout" runat="server" />  
   </span><!--leftColumnHome-->
+
   <span class="pageContent">
     <umbraco:Macro Alias="HomeSlider" runat="server" />
   </span><!--pageContent-->

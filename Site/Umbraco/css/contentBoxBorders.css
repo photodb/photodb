@@ -2,72 +2,66 @@
 
 /* Border of head content
 -----------------------------------------------------------------------------*/
-table.borderTable_head {	
-	min-width: 1024px;
+table.borderTable_head {  
+  width: 1024px;
 }
 
 .topBorderH_head{
-	height: 69px;
+  height: 59px;
 }
 
 .bottomBorderH_head{
-	height: 69px;
+  height: 59px;
 }
 
 .cornerLeftTop_head{
-	background:url(../img/boxBorders/head-cornerLeftUp.png);
-	background-repeat: no-repeat;
-	width: 448px;
-	height: 69px;
+  background:url(../img/boxBorders/head-cornerLeftUp.png);
+  background-repeat: no-repeat;
+  height: 59px;
 }
 
 .cornerRightTop_head{
-	background:url(../img/boxBorders/head-cornerRightUp.png);
-	background-repeat: no-repeat;
-	width: 448px;
-	height: 69px;
+  background:url(../img/boxBorders/head-cornerRightUp.png);
+  background-repeat: no-repeat;
+  height: 59px;
 }
 
 .topBorder_head{
-	background:url(../img/boxBorders/head-sideUp.png);
-	background-repeat: repeat-x;
-	height: 69px;
+  background:url(../img/boxBorders/head-sideUp.png);
+  background-repeat: repeat-x;
+  height: 59px;
 }
 
 .cornerLeftBottom_head {
-	background:url(../img/boxBorders/head-cornerLeftDown.png);
-	background-repeat: no-repeat;
-	width: 448px;
-	height: 62px;
+  background:url(../img/boxBorders/head-cornerLeftDown.png);
+  background-repeat: no-repeat;
+  height: 59px;
 }
 
 .cornerRightBottom_head {
-	background:url(../img/boxBorders/head-cornerRightDown.png);
-	background-repeat: no-repeat;
-	width: 448px;
-	height: 62px;
+  background:url(../img/boxBorders/head-cornerRightDown.png);
+  background-repeat: no-repeat;
+  height: 59px;
 }
 
 .bottomBorder_head {
-	background:url(../img/boxBorders/head-sideDown.png);
-	background-repeat: repeat-x;
-	height: 62px;
+  background:url(../img/boxBorders/head-sideDown.png);
+  background-repeat: repeat-x;
+  height: 59px;
 }
 
 .leftBorder_head {
-	background: url(../img/boxBorders/head-sideLeft.png);
-	background-repeat: repeat-y;
-	width: 19px;
+  background: url(../img/boxBorders/head-sideLeft.png);
+  background-repeat: repeat-y;
 }
 
 .rightBorder_head {
-	background: url(../img/boxBorders/head-sideRight.png);
-	background-repeat: repeat-y;
-	width: 19px;
+  background: url(../img/boxBorders/head-sideRight.png);
+  background-repeat: repeat-y;
 }
 
 td.borderTableContent_head {
-	background: #FFFFFF;
+  background: #FFFFFF;
 }
 
 /*-----------------------------------------------------------------------------
@@ -76,70 +70,81 @@ end border of head content*/
 /* Border of content
 -----------------------------------------------------------------------------*/
 .topBorderH {
-	height: 12px;
+  height: 12px;
 }
 
 .bottomBorderH {
-	height: 12px;
+  height: 12px;
 }
 
 .cornerLeftTop {
-	background:url(../img/boxBorders/cornerLeftUp.png);
-	background-repeat: no-repeat;
-	width: 12px;
-	height: 12px;
+  background:url(../img/boxBorders/cornerLeftUp.png);
+  background-repeat: no-repeat;
+  height: 12px;
 }
 
 .cornerRightTop {
-	background:url(../img/boxBorders/cornerRightUp.png);
-	background-repeat: no-repeat;
-	width: 12px;
-	height: 12px;
+  background:url(../img/boxBorders/cornerRightUp.png);
+  background-repeat: no-repeat;
+  height: 12px;
 }
 
 .cornerLeftBottom {
-	background:url(../img/boxBorders/cornerLeftDown.png);
-	background-repeat: no-repeat;
-	width: 12px;
-	height: 12px;
+  background:url(../img/boxBorders/cornerLeftDown.png);
+  background-repeat: no-repeat;
+  height: 12px;
 }
 
 .cornerRightBottom {
-	background:url(../img/boxBorders/cornerRightDown.png);
-	background-repeat: no-repeat;
-	width: 12px;
-	height: 12px;
+  background:url(../img/boxBorders/cornerRightDown.png);
+  background-repeat: no-repeat;
+  height: 12px;
 }
 
 .topBorder {
-	background:url(../img/boxBorders/sideUp.png);
-	background-repeat: repeat-x;
-	height: 12px;
+  background:url(../img/boxBorders/sideUp.png);
+  background-repeat: repeat-x;
+  height: 12px;
 }
 
 .bottomBorder {
-	background:url(../img/boxBorders/sideDown.png);
-	background-repeat: repeat-x;
-	height: 12px;
-	background-position: bottom;
+  background:url(../img/boxBorders/sideDown.png);
+  background-repeat: repeat-x;
+  height: 12px;
+  background-position: bottom;
 }
 
 .leftBorder {
-	background: url(../img/boxBorders/sideLeft.png);
-	background-repeat: repeat-y;
-	width: 12px;
+  background: url(../img/boxBorders/sideLeft.png);
+  background-repeat: repeat-y;
 }
 
 .rightBorder {
-	background: url(../img/boxBorders/sideRight.png);
-	background-repeat: repeat-y;
-	width: 12px;
+  background: url(../img/boxBorders/sideRight.png);
+  background-repeat: repeat-y;
 }
 
 td.borderTableContent {
-	border: #F4B520;
-	border-width: 2px;
-	border-style:solid;
+  border: #F4B520;
+  border-width: 2px;
+  border-style:solid;
 }
 /*-----------------------------------------------------------------------------
 end border of content*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* EDITOR PROPERTIES - PLEASE DON'T DELETE THIS LINE TO AVOID DUPLICATE PROPERTIES */

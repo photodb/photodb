@@ -3,38 +3,11 @@
 <asp:content ContentPlaceHolderId="PageContent" runat="server">
   <span class="leftColumn">
       <div class="menuVerticalLeft">
-        <ul>
-            <li>
-              <a class="selected" href="#">
-                    ghjghbhghghb
-                </a>
-            </li>
-            <li>
-              <a href="#">
-                    fhghghghfgh
-                </a>
-            </li>
-            <li>
-              <a href="#">
-              menu alala
-                </a>
-            </li>
-            <li>
-              <a href="#">
-                    menu2
-                </a>
-            </li>
-            <li>
-              <a href="#">
-                    menu3
-                </a>
-            </li>
-            <li class="last"></li>
-          </ul>
+        <umbraco:Macro Alias="LeftMenu" runat="server" />
       </div><!--menuVerticalLeft-->                                    
     </span><!--sidebar-->
     <span class="pageContent">  
-      <umbraco:Macro Alias="Breadcrumbs" runat="server"></umbraco:Macro>
+      <umbraco:Macro Alias="Breadcrumbs" runat="server" />
       <h1><umbraco:Item field="title" runat="server" /></h1>
       <div id="container">
         <asp:ContentPlaceHolder Id="RightContent" runat="server" />

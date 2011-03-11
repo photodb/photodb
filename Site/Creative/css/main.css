@@ -1,134 +1,134 @@
 @charset "utf-8";
 
 body {
-	background-image: url(../img/bg.gif);
-	background-repeat: repeat-x;
-	font-family: Verdana,Arial,Helvetica,sans-serif;
-	FONT-SIZE: 12px;
-	margin: 8px;
+  background-image: url(../img/bg.gif);
+  background-repeat: repeat-x;
+  font-family: Verdana,Arial,Helvetica,sans-serif;
+  FONT-SIZE: 12px;
+  margin: 8px;
 }
 h1,h2,h3,h4,h5,h6,strong {
-	/*bringing boldness back to headers and the strong element*/
-	font-weight:bold; 
+  /*bringing boldness back to headers and the strong element*/
+  font-weight:bold; 
 }
 ol,ul,dl {
-	/*bringing lists on to the page with breathing room */
-	margin-left:2em;
+  /*bringing lists on to the page with breathing room */
+  margin-left:2em;
 }
 ol li {
-	/*giving OL's LIs generated numbers*/
-	list-style: decimal outside;	
+  /*giving OL's LIs generated numbers*/
+  list-style: decimal outside;  
 }
 ul li {
-	/*giving UL's LIs generated disc markers*/
-	list-style: none outside;
+  /*giving UL's LIs generated disc markers*/
+  list-style: none outside;
 }
 dl dd {
-	/*giving UL's LIs generated numbers*/
-	margin-left:1em;
+  /*giving UL's LIs generated numbers*/
+  margin-left:1em;
 }
 th,td {
-	/*borders and padding to make the table readable*/
-	border:none;
-	padding:0;
+  /*borders and padding to make the table readable*/
+  border:none;
+  padding:0;
 }
 th {
-	/*distinguishing table headers from data cells*/
-	font-weight:bold;
-	text-align:center;
+  /*distinguishing table headers from data cells*/
+  font-weight:bold;
+  text-align:center;
 }
 p,fieldset,table {
-	/*so things don't run into each other*/
-	margin-bottom:1em;
+  /*so things don't run into each other*/
+  margin-bottom:1em;
 }
 textarea {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	FONT-SIZE: 12px;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  FONT-SIZE: 12px;
 }
 select {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	FONT-SIZE: 12px;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  FONT-SIZE: 12px;
 }
 a:active {
-	color: #0000A0;
-	TEXT-DECORATION: none;
+  color: #0000A0;
+  TEXT-DECORATION: none;
 }
 a:link {
-	color: #0000A0;
-	TEXT-DECORATION: none;
+  color: #0000A0;
+  TEXT-DECORATION: none;
 }
 a:visited {
-	color: #0000A0;
-	TEXT-DECORATION: none;
+  color: #0000A0;
+  TEXT-DECORATION: none;
 }
 a:hover {
-	color: #0080ff;
-	TEXT-DECORATION: underline;
-	cursor:pointer;
-	
+  color: #0080ff;
+  TEXT-DECORATION: underline;
+  cursor:pointer;
+  
 }
 h1 {
-	TEXT-DECORATION: none;
-	FONT-SIZE: 14px;
-	text-align: left;
+  TEXT-DECORATION: none;
+  FONT-SIZE: 14px;
+  text-align: left;
 }
 
 .headName i {
-	font-size: 20px;
-	font-family: Bookman Old Style;
+  font-size: 20px;
+  font-family: Bookman Old Style;
 }
 
 h2 {
-	COLOR: #0000A0;
-	TEXT-DECORATION: none;
-	FONT-SIZE: 16px
+  COLOR: #0000A0;
+  TEXT-DECORATION: none;
+  FONT-SIZE: 16px
 }
 div .clearDiv10{
-	height: 10px;
+  height: 10px;
 }
 span .clearSpan10{
-	width: 10px;
+  width: 10px;
 }
 .mailInfo {
-	text-align: center;
+  text-align: center;
 }
 .pageContainer{
-	margin-top: -10px;
+  /*margin-top: -10px;*/
 }
 .header {
-	height: 55px;
-	padding: 0 0 20px 0;
+  height: 55px;
+  padding: 0 0 20px 0;
 }
 
 .logo{
-	margin-left:24px;
+  margin-left:24px;
 }
 
 .productName{
-	margin-bottom:25px;
-	margin-left:24px;
+  margin-bottom:25px;
+  margin-left:24px;
 }
-
+.logo_holder{
+  float: left; 
+  position:absolute;
+}
 .languages{
-	float: right; 
-	margin-right: 20px;
-	margin-top: -5px;
+  float: right; 
+  margin-right: 20px;
+  margin-top: -5px;
 }
 .changeLanguage{
-	color: black; 
-	position: relative; 
-	top: -10px; 
-	left: -5px;
+  color: black; 
+  position: relative; 
+  top: -10px; 
+  left: -5px;
 }
 .headName {
-	padding: 0 250px 0 250px;
+  padding: 0 250px 0 250px;
 }
 .headContent {
-	float: left;
-	width: 90%;
-}
-.breadCrumbs{
-	margin-left: -4px;
+  float: left;
+  width: 90%;
 }
 .breadCrumbs img {
     margin-left: 4px;
@@ -142,28 +142,28 @@ span .clearSpan10{
 }
 .pageContent h1
 {
-	margin-top: 10px;
-	margin-bottom: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 .page {
-	width: 1024px;
-	margin: 0 auto;
+  width: 1024px;
+  margin: 0 auto;
 }
 
 .container{
-	width: 100%;
-	padding: 0;
-	height: 1%;
+  width: 100%;
+  padding: 0;
+  height: 1%;
 }
 .container:after {
-	content: '.';
-	display: block;
-	clear: both;
-	visibility: hidden;
-	height: 0;
+  content: '.';
+  display: block;
+  clear: both;
+  visibility: hidden;
+  height: 0;
 }
 .content {
-	padding: 0 0 0 64px;
+  padding: 0 0 0 64px;
 }
 
 .leftColumn {
@@ -171,75 +171,76 @@ span .clearSpan10{
     position: relative;
     width: 140px;
 }
-
 .leftColumnHome {
     float: left;
     position: relative;
+    display: block;
     width: 250px;
 }
 .pageContent{
-	float: left;
-	width: 830px;
+  float: left;
+  display: block;
+  width: 735px; 
 }
 .home{
 }
 .homeSlider{
-	height:	241px;    
-	left: 7px;
+  height:  241px;    
+  left: 7px;
     position: relative;
 }
 .footer {
-	min-width: 1024px;
-	height: 60px;
-	text-align: center;
-	vertical-align: bottom;
-	margin-top: -22px;
-	color: #888;
+  min-width: 1024px;
+  height: 60px;
+  text-align: center;
+  vertical-align: bottom;
+  margin-top: -22px;
+  color: #888;
 }
 .footer span {
-	margin-left: 10px;
+  margin-left: 10px;
 }
 
 .footer a {
-	margin-left: 10px;
+  margin-left: 10px;
 }
 
 .footer a:link, .footer a:visited{
-	color: #888;
+  color: #888;
 }
 
 .sidebarTable {
-	width: 250px;
+  width: 250px;
 }
 
 .downloadInfo{ 
 }
 
 .downloadInfo h1 {
-	font-size:12px;
-	margin: 0;
-	text-align: left;
+  font-size:12px;
+  margin: 0;
+  text-align: left;
 }
 
 .download {
-	padding-left: 16px;
+  padding-left: 16px;
 }
 
 .donate {
-	height: 141px;
+  height: 141px;
     width: 238px;
 }
 
-#donateImg{
+.donateWmImg{
     float: left;
 }
 
 .donateWmInfo {
-	float: right;
+  float: right;
 }
 
 .paymentInfo {
-	margin-top: 9px;
+  margin-top: 9px;
 }
 
 .donateInfo {
@@ -248,7 +249,7 @@ span .clearSpan10{
 }
 
 .phdInfo {
-	font-size: 17px;
+  font-size: 17px;
     position: relative;
     top: -19px;
 }
@@ -257,11 +258,14 @@ span .clearSpan10{
 	background: url(../img/input.png) repeat-x;
 	border: #888888 solid 1px;
 	height: 20px;
+	width: 200px;
 }
 
 .standartBtn {
 	background: url(../img/btn.png) repeat-x;
     min-width: 90px;
+	position: relative;
+	left: 216px;
 }
 
 input.standartBtn:hover {
@@ -290,14 +294,14 @@ input.standartBtn:hover {
 
 .row {
 	padding: 5px 0;
-	width: 700px;
+	width: 330px;
 	border-color: #ffffff; 
 	border-style: dashed;
 	border-width: thin;
 }
 
 .row label{
-	width: 200px;
+	width: 100px;
 	text-align: right;
 	display: inline-block;
 }

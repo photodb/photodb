@@ -4,75 +4,87 @@
     position: absolute;
     top: 96px;
     width: 850px;
-	background: none;
-	list-style: none;
-	padding: 0;
+  background: none;
+  list-style: none;
+  padding: 0;
 }
 .mainMenuHorizontal li {
-	float: left;
-	font: Arial, Helvetica, sans-serif;
-	margin: 0;
-	padding: 0;
+  float: left;
+  font: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 .mainMenuHorizontal a {
-	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 0 transparent;
-	color: #000033;
-	display: block;
-	float: left;
-	margin: 0;
-	padding: 8px 12px;
-	text-decoration: none;
+  background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 0 transparent;
+  color: #000033;
+  display: block;
+  float: left;
+  margin: 0;
+  padding: 8px 12px;
+  text-decoration: none;
 }
 .mainMenuHorizontal .last {
-	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 0 transparent;
-	padding: 15px 0px;
-	width: 1px;
+  background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 0 transparent;
+  padding: 15px 0px;
+  width: 1px;
 }
 .mainMenuHorizontal .selected{
-	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -60px transparent;
+  background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -60px transparent;
 }
 .mainMenuHorizontal a:hover {
-	background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -120px transparent;
-	color: #000033;
-	padding-bottom: 8px;
+  background: url(../img/menu/hor_menu_bg.png) no-repeat scroll 0 -120px transparent;
+  color: #000033;
+  padding-bottom: 8px;
 }
 
 .menuVerticalLeft {
-    margin: 0 0 0 -31px;
-	width: 150px;
-	background: none;
-	list-style: none;
+  margin: 0 0 0 -7px;
+  width: 115px;
+  background: none;
+  list-style: none;
 }
 
 .menuVerticalLeft a {
-	background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll 0 0 transparent;
-	color: #000033;
-	display: block;
-	float: left;
-	margin: 0;
-	padding: 12px 15px;
-	text-decoration: none;
+  background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll 0 0 transparent;
+  color: #000033;
+  display: block;
+  margin: 0;
+  padding: 12px 15px;
+  text-decoration: none;
 }
 .menuVerticalLeft a {
-	min-width: 100px;
+  min-width: 100px;
 }
 .menuVerticalLeft .last {
-	background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll 0 0 transparent;
-	color: #000033;
-	display: block;
-	float: left;
-	margin: 0;
-	padding: 0px 15px;
-	text-decoration: none;
-	min-width: 100px;
-	height: 1px;
+  background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll 0 0 transparent;
+  color: #000033;
+  display: block;
+  float: left;
+  margin: 0;
+  padding: 0px 15px;
+  text-decoration: none;
+  min-width: 100px;
+  height: 1px;
 }
-
+.menuVerticalLeft ul{
+  margin: 0px;
+}
 .menuVerticalLeft .selected{
-	background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll -188px 0 transparent;
+  background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll -188px 0 transparent;
 }
 
 .menuVerticalLeft a:hover {
-	background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll -375px 0 transparent;
-	color: #000033;
+  background: url(../img/menu/ver_menuL_bg.png) no-repeat scroll -375px 0 transparent;
+  color: #000033;
 }
+
+
+
+
+
+
+
+
+
+
+/* EDITOR PROPERTIES - PLEASE DON'T DELETE THIS LINE TO AVOID DUPLICATE PROPERTIES */

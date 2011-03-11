@@ -10,11 +10,12 @@
 <xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
+<xsl:variable name="mode" select="string(umbraco.library:RequestQueryString('mode'))" />
 <xsl:variable name="home" select="$currentPage/ancestor-or-self::*[@level=1]" />
 <xsl:variable name="releasesHolderDocTypeId" select="1091" /> 
 <xsl:variable name="downloadPageDocTypeId" select="1072" />
 <xsl:variable name="downloadPage" select="$home/descendant::*[@nodeType=$downloadPageDocTypeId]" />
-<xsl:variable name="releases" select="$home/descendant::*[@nodeType=$releasesHolderDocTypeId]/child::*[@isDoc and string(isStable)='1']" />
+<xsl:variable name="releases" select="$home/descendant::*[@nodeType=$releasesHolderDocTypeId]/child::*[@isDoc and (($mode='stable' and string(isStable)='1') or $mode!='stable')]" />
 <xsl:variable name="u">
   http://<xsl:value-of select="umbraco.library:RequestServerVariables('SERVER_NAME')"/>
 </xsl:variable>
@@ -32,6 +33,7 @@
         <release_notes><xsl:value-of select="./releaseNotes" /></release_notes>
         <release_text><xsl:value-of select="./releaseText" /></release_text>
         <download_url><xsl:value-of select="$u" /><xsl:value-of select="umbraco.library:NiceUrl($downloadPage/@id)" /></download_url>
+        <is_stable><xsl:if test="string(./isStable)='1'">true</xsl:if></is_stable>
       </update>
     </xsl:if>
   </xsl:for-each> 

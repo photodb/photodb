@@ -18,18 +18,6 @@
       <Column Name="DateUpdate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
     </Type>
   </Table>
-  <Table Name="dbo.Contact" Member="Contacts">
-    <Type Name="Contact">
-      <Column Name="ContactId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="FirstName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="LastName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Text" Type="System.String" DbType="NVarChar(1000) NOT NULL" CanBeNull="false" />
-      <Column Name="ContactMode" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
-      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Association Name="Host_Contact" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
-    </Type>
-  </Table>
   <Table Name="dbo.Download" Member="Downloads">
     <Type Name="Download">
       <Column Name="DownloadId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -49,9 +37,9 @@
       <Column Name="HostName" Type="System.String" DbType="NChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="HostDescription" Type="System.String" DbType="NChar(250) NOT NULL" CanBeNull="false" />
       <Association Name="Host_PageView" Member="PageViews" ThisKey="HostId" OtherKey="HostId" Type="PageView" />
-      <Association Name="Host_Contact" Member="Contacts" ThisKey="HostId" OtherKey="HostId" Type="Contact" />
       <Association Name="Host_Download" Member="Downloads" ThisKey="HostId" OtherKey="HostId" Type="Download" />
       <Association Name="Host_Activation" Member="Activations" ThisKey="HostId" OtherKey="HostId" Type="Activation" />
+      <Association Name="Host_Contact" Member="Contacts" ThisKey="HostId" OtherKey="HostId" Type="Contact" />
     </Type>
   </Table>
   <Table Name="dbo.Activation" Member="Activations">
@@ -71,6 +59,20 @@
       <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ProgramVersion" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
       <Association Name="Host_Activation" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Contact" Member="Contacts">
+    <Type Name="Contact">
+      <Column Name="ContactId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FirstName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="LastName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Text" Type="System.String" DbType="NVarChar(1000) NOT NULL" CanBeNull="false" />
+      <Column Name="ContactMode" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Organization" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Theme" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Association Name="Host_Contact" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
     </Type>
   </Table>
 </Database>

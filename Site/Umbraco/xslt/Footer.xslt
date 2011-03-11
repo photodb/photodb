@@ -10,7 +10,7 @@
 <xsl:output method="html" omit-xml-declaration="yes"/>
   
 <xsl:param name="currentPage"/>
-<xsl:variable name="footerLinks" select="$currentPage/ancestor-or-self::*[@level=1]/descendant-or-self::*[string(includeInFooter)='1']" />
+<xsl:variable name="footerLinks" select="$currentPage/ancestor-or-self::*[@level=1]/descendant-or-self::*[string(includeInFooter)='1' and string(umbracoNaviHide)!='1']" />
 
 <xsl:template match="/">
 

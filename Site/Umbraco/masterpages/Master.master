@@ -23,8 +23,14 @@
     <umbraco:Macro Alias="ReferCounter" runat="server" />
     <div class="page">
       <div class="header">
-        <a href="<umbraco:Macro Alias='HomePageLink' runat='server'/>"><img class="logo" alt="logo" src="/img/logo.png" /></a>
-        <img class="productName" alt="Photo Database 2" src="/img/productName.png" />
+        <div class="logo_holder">
+          <div class="logo">
+            <a href="<umbraco:Macro Alias='HomePageLink' runat='server'/>"><img class="logo" alt="logo" src="/img/logo.png" /></a>
+          </div>
+          <div class="productNameHolder">
+            <img class="productName" alt="Photo Database 2" src="/img/productName.png" />
+          </div>
+        </div>
         <umbraco:Macro Alias="LanguageSelector" runat="server" />
       </div><!--header-->
       
@@ -53,7 +59,7 @@
             <tr style="visibility:hidden">
               <td width="19px"></td>
               <td width="429px"></td>
-              <td style="min-width:128px"></td>
+              <td width="128px"></td>
               <td width="429px"></td>
               <td width="19px"></td>
             </tr>

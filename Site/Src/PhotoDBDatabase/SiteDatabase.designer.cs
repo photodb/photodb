@@ -36,9 +36,6 @@ namespace PhotoDBDatabase
     partial void InsertRefer(Refer instance);
     partial void UpdateRefer(Refer instance);
     partial void DeleteRefer(Refer instance);
-    partial void InsertContact(Contact instance);
-    partial void UpdateContact(Contact instance);
-    partial void DeleteContact(Contact instance);
     partial void InsertDownload(Download instance);
     partial void UpdateDownload(Download instance);
     partial void DeleteDownload(Download instance);
@@ -48,6 +45,9 @@ namespace PhotoDBDatabase
     partial void InsertActivation(Activation instance);
     partial void UpdateActivation(Activation instance);
     partial void DeleteActivation(Activation instance);
+    partial void InsertContact(Contact instance);
+    partial void UpdateContact(Contact instance);
+    partial void DeleteContact(Contact instance);
     #endregion
 		
 		public SiteDatabaseDataContext() : 
@@ -96,14 +96,6 @@ namespace PhotoDBDatabase
 			}
 		}
 		
-		public System.Data.Linq.Table<Contact> Contacts
-		{
-			get
-			{
-				return this.GetTable<Contact>();
-			}
-		}
-		
 		public System.Data.Linq.Table<Download> Downloads
 		{
 			get
@@ -125,6 +117,14 @@ namespace PhotoDBDatabase
 			get
 			{
 				return this.GetTable<Activation>();
+			}
+		}
+		
+		public System.Data.Linq.Table<Contact> Contacts
+		{
+			get
+			{
+				return this.GetTable<Contact>();
 			}
 		}
 	}
@@ -462,253 +462,6 @@ namespace PhotoDBDatabase
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Contact")]
-	public partial class Contact : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _ContactId;
-		
-		private string _FirstName;
-		
-		private string _LastName;
-		
-		private string _Email;
-		
-		private string _Text;
-		
-		private string _ContactMode;
-		
-		private int _HostId;
-		
-		private EntityRef<Host> _Host;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnContactIdChanging(int value);
-    partial void OnContactIdChanged();
-    partial void OnFirstNameChanging(string value);
-    partial void OnFirstNameChanged();
-    partial void OnLastNameChanging(string value);
-    partial void OnLastNameChanged();
-    partial void OnEmailChanging(string value);
-    partial void OnEmailChanged();
-    partial void OnTextChanging(string value);
-    partial void OnTextChanged();
-    partial void OnContactModeChanging(string value);
-    partial void OnContactModeChanged();
-    partial void OnHostIdChanging(int value);
-    partial void OnHostIdChanged();
-    #endregion
-		
-		public Contact()
-		{
-			this._Host = default(EntityRef<Host>);
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContactId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int ContactId
-		{
-			get
-			{
-				return this._ContactId;
-			}
-			set
-			{
-				if ((this._ContactId != value))
-				{
-					this.OnContactIdChanging(value);
-					this.SendPropertyChanging();
-					this._ContactId = value;
-					this.SendPropertyChanged("ContactId");
-					this.OnContactIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FirstName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string FirstName
-		{
-			get
-			{
-				return this._FirstName;
-			}
-			set
-			{
-				if ((this._FirstName != value))
-				{
-					this.OnFirstNameChanging(value);
-					this.SendPropertyChanging();
-					this._FirstName = value;
-					this.SendPropertyChanged("FirstName");
-					this.OnFirstNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string LastName
-		{
-			get
-			{
-				return this._LastName;
-			}
-			set
-			{
-				if ((this._LastName != value))
-				{
-					this.OnLastNameChanging(value);
-					this.SendPropertyChanging();
-					this._LastName = value;
-					this.SendPropertyChanged("LastName");
-					this.OnLastNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string Email
-		{
-			get
-			{
-				return this._Email;
-			}
-			set
-			{
-				if ((this._Email != value))
-				{
-					this.OnEmailChanging(value);
-					this.SendPropertyChanging();
-					this._Email = value;
-					this.SendPropertyChanged("Email");
-					this.OnEmailChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Text", DbType="NVarChar(1000) NOT NULL", CanBeNull=false)]
-		public string Text
-		{
-			get
-			{
-				return this._Text;
-			}
-			set
-			{
-				if ((this._Text != value))
-				{
-					this.OnTextChanging(value);
-					this.SendPropertyChanging();
-					this._Text = value;
-					this.SendPropertyChanged("Text");
-					this.OnTextChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContactMode", DbType="NChar(10) NOT NULL", CanBeNull=false)]
-		public string ContactMode
-		{
-			get
-			{
-				return this._ContactMode;
-			}
-			set
-			{
-				if ((this._ContactMode != value))
-				{
-					this.OnContactModeChanging(value);
-					this.SendPropertyChanging();
-					this._ContactMode = value;
-					this.SendPropertyChanged("ContactMode");
-					this.OnContactModeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostId", DbType="Int NOT NULL")]
-		public int HostId
-		{
-			get
-			{
-				return this._HostId;
-			}
-			set
-			{
-				if ((this._HostId != value))
-				{
-					if (this._Host.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnHostIdChanging(value);
-					this.SendPropertyChanging();
-					this._HostId = value;
-					this.SendPropertyChanged("HostId");
-					this.OnHostIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Contact", Storage="_Host", ThisKey="HostId", OtherKey="HostId", IsForeignKey=true)]
-		public Host Host
-		{
-			get
-			{
-				return this._Host.Entity;
-			}
-			set
-			{
-				Host previousValue = this._Host.Entity;
-				if (((previousValue != value) 
-							|| (this._Host.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Host.Entity = null;
-						previousValue.Contacts.Remove(this);
-					}
-					this._Host.Entity = value;
-					if ((value != null))
-					{
-						value.Contacts.Add(this);
-						this._HostId = value.HostId;
-					}
-					else
-					{
-						this._HostId = default(int);
-					}
-					this.SendPropertyChanged("Host");
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-	}
-	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Download")]
 	public partial class Download : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -994,11 +747,11 @@ namespace PhotoDBDatabase
 		
 		private EntitySet<PageView> _PageViews;
 		
-		private EntitySet<Contact> _Contacts;
-		
 		private EntitySet<Download> _Downloads;
 		
 		private EntitySet<Activation> _Activations;
+		
+		private EntitySet<Contact> _Contacts;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -1015,9 +768,9 @@ namespace PhotoDBDatabase
 		public Host()
 		{
 			this._PageViews = new EntitySet<PageView>(new Action<PageView>(this.attach_PageViews), new Action<PageView>(this.detach_PageViews));
-			this._Contacts = new EntitySet<Contact>(new Action<Contact>(this.attach_Contacts), new Action<Contact>(this.detach_Contacts));
 			this._Downloads = new EntitySet<Download>(new Action<Download>(this.attach_Downloads), new Action<Download>(this.detach_Downloads));
 			this._Activations = new EntitySet<Activation>(new Action<Activation>(this.attach_Activations), new Action<Activation>(this.detach_Activations));
+			this._Contacts = new EntitySet<Contact>(new Action<Contact>(this.attach_Contacts), new Action<Contact>(this.detach_Contacts));
 			OnCreated();
 		}
 		
@@ -1094,19 +847,6 @@ namespace PhotoDBDatabase
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Contact", Storage="_Contacts", ThisKey="HostId", OtherKey="HostId")]
-		public EntitySet<Contact> Contacts
-		{
-			get
-			{
-				return this._Contacts;
-			}
-			set
-			{
-				this._Contacts.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Download", Storage="_Downloads", ThisKey="HostId", OtherKey="HostId")]
 		public EntitySet<Download> Downloads
 		{
@@ -1130,6 +870,19 @@ namespace PhotoDBDatabase
 			set
 			{
 				this._Activations.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Contact", Storage="_Contacts", ThisKey="HostId", OtherKey="HostId")]
+		public EntitySet<Contact> Contacts
+		{
+			get
+			{
+				return this._Contacts;
+			}
+			set
+			{
+				this._Contacts.Assign(value);
 			}
 		}
 		
@@ -1165,18 +918,6 @@ namespace PhotoDBDatabase
 			entity.Host = null;
 		}
 		
-		private void attach_Contacts(Contact entity)
-		{
-			this.SendPropertyChanging();
-			entity.Host = this;
-		}
-		
-		private void detach_Contacts(Contact entity)
-		{
-			this.SendPropertyChanging();
-			entity.Host = null;
-		}
-		
 		private void attach_Downloads(Download entity)
 		{
 			this.SendPropertyChanging();
@@ -1196,6 +937,18 @@ namespace PhotoDBDatabase
 		}
 		
 		private void detach_Activations(Activation entity)
+		{
+			this.SendPropertyChanging();
+			entity.Host = null;
+		}
+		
+		private void attach_Contacts(Contact entity)
+		{
+			this.SendPropertyChanging();
+			entity.Host = this;
+		}
+		
+		private void detach_Contacts(Contact entity)
 		{
 			this.SendPropertyChanging();
 			entity.Host = null;
@@ -1585,6 +1338,301 @@ namespace PhotoDBDatabase
 					if ((value != null))
 					{
 						value.Activations.Add(this);
+						this._HostId = value.HostId;
+					}
+					else
+					{
+						this._HostId = default(int);
+					}
+					this.SendPropertyChanged("Host");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Contact")]
+	public partial class Contact : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _ContactId;
+		
+		private string _FirstName;
+		
+		private string _LastName;
+		
+		private string _Email;
+		
+		private string _Text;
+		
+		private string _ContactMode;
+		
+		private int _HostId;
+		
+		private string _Organization;
+		
+		private string _Theme;
+		
+		private EntityRef<Host> _Host;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnContactIdChanging(int value);
+    partial void OnContactIdChanged();
+    partial void OnFirstNameChanging(string value);
+    partial void OnFirstNameChanged();
+    partial void OnLastNameChanging(string value);
+    partial void OnLastNameChanged();
+    partial void OnEmailChanging(string value);
+    partial void OnEmailChanged();
+    partial void OnTextChanging(string value);
+    partial void OnTextChanged();
+    partial void OnContactModeChanging(string value);
+    partial void OnContactModeChanged();
+    partial void OnHostIdChanging(int value);
+    partial void OnHostIdChanged();
+    partial void OnOrganizationChanging(string value);
+    partial void OnOrganizationChanged();
+    partial void OnThemeChanging(string value);
+    partial void OnThemeChanged();
+    #endregion
+		
+		public Contact()
+		{
+			this._Host = default(EntityRef<Host>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContactId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int ContactId
+		{
+			get
+			{
+				return this._ContactId;
+			}
+			set
+			{
+				if ((this._ContactId != value))
+				{
+					this.OnContactIdChanging(value);
+					this.SendPropertyChanging();
+					this._ContactId = value;
+					this.SendPropertyChanged("ContactId");
+					this.OnContactIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FirstName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string FirstName
+		{
+			get
+			{
+				return this._FirstName;
+			}
+			set
+			{
+				if ((this._FirstName != value))
+				{
+					this.OnFirstNameChanging(value);
+					this.SendPropertyChanging();
+					this._FirstName = value;
+					this.SendPropertyChanged("FirstName");
+					this.OnFirstNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string LastName
+		{
+			get
+			{
+				return this._LastName;
+			}
+			set
+			{
+				if ((this._LastName != value))
+				{
+					this.OnLastNameChanging(value);
+					this.SendPropertyChanging();
+					this._LastName = value;
+					this.SendPropertyChanged("LastName");
+					this.OnLastNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Email
+		{
+			get
+			{
+				return this._Email;
+			}
+			set
+			{
+				if ((this._Email != value))
+				{
+					this.OnEmailChanging(value);
+					this.SendPropertyChanging();
+					this._Email = value;
+					this.SendPropertyChanged("Email");
+					this.OnEmailChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Text", DbType="NVarChar(1000) NOT NULL", CanBeNull=false)]
+		public string Text
+		{
+			get
+			{
+				return this._Text;
+			}
+			set
+			{
+				if ((this._Text != value))
+				{
+					this.OnTextChanging(value);
+					this.SendPropertyChanging();
+					this._Text = value;
+					this.SendPropertyChanged("Text");
+					this.OnTextChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContactMode", DbType="NChar(10) NOT NULL", CanBeNull=false)]
+		public string ContactMode
+		{
+			get
+			{
+				return this._ContactMode;
+			}
+			set
+			{
+				if ((this._ContactMode != value))
+				{
+					this.OnContactModeChanging(value);
+					this.SendPropertyChanging();
+					this._ContactMode = value;
+					this.SendPropertyChanged("ContactMode");
+					this.OnContactModeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostId", DbType="Int NOT NULL")]
+		public int HostId
+		{
+			get
+			{
+				return this._HostId;
+			}
+			set
+			{
+				if ((this._HostId != value))
+				{
+					if (this._Host.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnHostIdChanging(value);
+					this.SendPropertyChanging();
+					this._HostId = value;
+					this.SendPropertyChanged("HostId");
+					this.OnHostIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Organization", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Organization
+		{
+			get
+			{
+				return this._Organization;
+			}
+			set
+			{
+				if ((this._Organization != value))
+				{
+					this.OnOrganizationChanging(value);
+					this.SendPropertyChanging();
+					this._Organization = value;
+					this.SendPropertyChanged("Organization");
+					this.OnOrganizationChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Theme", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Theme
+		{
+			get
+			{
+				return this._Theme;
+			}
+			set
+			{
+				if ((this._Theme != value))
+				{
+					this.OnThemeChanging(value);
+					this.SendPropertyChanging();
+					this._Theme = value;
+					this.SendPropertyChanged("Theme");
+					this.OnThemeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Contact", Storage="_Host", ThisKey="HostId", OtherKey="HostId", IsForeignKey=true)]
+		public Host Host
+		{
+			get
+			{
+				return this._Host.Entity;
+			}
+			set
+			{
+				Host previousValue = this._Host.Entity;
+				if (((previousValue != value) 
+							|| (this._Host.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Host.Entity = null;
+						previousValue.Contacts.Remove(this);
+					}
+					this._Host.Entity = value;
+					if ((value != null))
+					{
+						value.Contacts.Add(this);
 						this._HostId = value.HostId;
 					}
 					else
