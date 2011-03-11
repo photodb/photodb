@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Classes\ActivationManager.cs" />
     <Compile Include="Classes\BaseManager.cs" />
+    <Compile Include="Classes\ContactUsManager.cs" />
     <Compile Include="Classes\DownloadManager.cs" />
     <Compile Include="Classes\StatsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

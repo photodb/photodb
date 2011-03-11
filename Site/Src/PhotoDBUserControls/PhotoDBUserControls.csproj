@@ -73,6 +73,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\UmbracoUserControl.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="ContactUsForm.ascx.cs">
       <DependentUpon>ContactUsForm.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

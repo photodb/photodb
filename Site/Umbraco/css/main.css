@@ -249,14 +249,14 @@ span .clearSpan10{
 }
 
 .donateInfo {
-    float: right;
-    width: 150px;
+  float: right;
+  width: 150px;
 }
 
 .phdInfo {
   font-size: 17px;
-    position: relative;
-    top: -19px;
+  position: relative;
+  top: -19px;
 }
 
 .standartInput {
@@ -266,11 +266,18 @@ span .clearSpan10{
   width: 200px;
 }
 
+.multilineInput {
+  background: url(../img/multi_input.png) repeat-x;
+  border: #888888 solid 1px;
+  width: 200px;
+  padding-top: 4px;
+}
+
 .standartBtn {
   background: url(../img/btn.png) repeat-x;
   width: 90px;
   position: relative;
-  left: 216px;
+  left: 222px;
 }
 
 input.standartBtn:hover {
@@ -285,9 +292,17 @@ input.standartBtn:hover {
   background: url(../img/input.png) 0 -25px repeat-x;
 }
 
-.required span{
-  color:#FF8080;
-  font-weight:bold;
+.validation_summary{
+  color: red;
+  padding-bottom: 5px;
+}
+
+.requared_sign{
+  float: left;
+  display: block;
+  width: 10px;
+  color: #FF8080;
+  font-weight: bold;
 }
 
 .row:hover {
@@ -311,6 +326,10 @@ input.standartBtn:hover {
   display: block;
   float:left;
 }
+
+
+
+
 
 
 

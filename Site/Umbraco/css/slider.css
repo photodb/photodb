@@ -1,49 +1,52 @@
 #slider {
-	border: 1px solid rgb(155, 155, 155);
-}	
+  border: 1px solid rgb(155, 155, 155);
+}  
 #slider ul, #slider li{
-	margin:0;
-	padding:0;
-	list-style:none;
-	}
+  margin:0;
+  padding:0;
+  list-style:none;
+  }
 #slider li{ 
-	width:696px;
-	height:241px;
-	overflow:hidden; 
-	}	
+  width:696px;
+  height:241px;
+  overflow:hidden; 
+  }  
 #prevBtn, #nextBtn{ 
-	width:30px;
-	height:77px;
-	top: -180px;
-	position:relative;
-	left: -30px;
-	}	
+  width:30px;
+  height:77px;
+  top: -180px;
+  position:relative;
+  left: -30px;
+  }  
 #nextBtn{ 
-	left:698px;
-	top: -257px;
-	}														
+  left:698px;
+  top: -257px;
+  }                            
 #prevBtn a, #nextBtn a{  
-	display:block;
-	width:30px;
-	height:77px;
-	background:url(../img/btn_prev.gif) no-repeat 0 0;	
-	}	
+  display:block;
+  width:30px;
+  height:77px;
+  background:url(../img/btn_prev.gif) no-repeat 0 0;  
+  }  
 #nextBtn a{ 
-	background:url(../img/btn_next.gif) no-repeat 0 0;	
-	}	
-	
+  background:url(../img/btn_next.gif) no-repeat 0 0;  
+  }  
+  
 .graphic, #prevBtn, #nextBtn{
-	margin:0;
-	padding:0;
-	display:block;
-	overflow:hidden;
+  margin:0;
+  padding:0;
+  display:block;
+  overflow:hidden;
 }
 
-#container{	
-	margin:0 auto;
-	position:relative;
-	text-align:left;
-	width:696px;
-	background:#fff;	
-	left: 7px;
-}	
+#container{  
+  margin:0 auto;
+  position:relative;
+  text-align:left;
+  width:735px;
+  background:#fff;  
+  /*left: 7px;*/
+}  
+
+
+/* EDITOR PROPERTIES - PLEASE DON'T DELETE THIS LINE TO AVOID DUPLICATE PROPERTIES */
