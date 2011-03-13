@@ -15,8 +15,15 @@ namespace PhotoDBXsltExtensions
         public static int GetFileSize(string fileName)
         {
             string filePath = HttpContext.Current.Server.MapPath(fileName);
-            FileInfo fileInfo = new FileInfo(filePath);
-            return (int)fileInfo.Length;
+            try
+            {
+                FileInfo fileInfo = new FileInfo(filePath);
+                return (int)fileInfo.Length;
+            }
+            catch
+            {
+                return -1;
+            }
         }
 
         public static string FormatFileSize(int fileSize, string mbText)

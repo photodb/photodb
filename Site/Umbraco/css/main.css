@@ -328,17 +328,50 @@ input.standartBtn:hover {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
+.download_page{
+	width: 650px;
+}
+.download_info {
+	min-height: 55px;
+}
+.download_page  .download {
+    padding-left: 0px;
+	float:left;
+	width: 300px;
+}
+.download_page  .download_beta {
+    padding-left: 0px;
+	float:right;
+	width: 300px;
+}
+.release_list{
+	padding-top: 30px;
+	clear:both;
+}
+.release{
+	padding: 5px 0 0 0;
+	clear:both;
+}
+.release_list .stable{
+	font-weight:bold;
+}
+.release_list .info{
+	padding-bottom: 10px;
+	font-size: 14px;
+	font-weight:bold;
+}
+.release  img{
+	margin-right: 4px;
+}
+.release_download{
+	display:block;
+	float:left;
+}
+.release_name{
+	display:block;
+	float:left;
+	padding-top: 1px;
+}
 
 
 /* EDITOR PROPERTIES - PLEASE DON'T DELETE THIS LINE TO AVOID DUPLICATE PROPERTIES */

@@ -10,6 +10,7 @@
     <key alias="tree">Content</key>
   </area>
   <area alias="defaultdialogs">
+    <key alias="cut">Cut</key>
     <key alias="link">Link</key>
     <key alias="insertlink">Insert link</key>
     <key alias="insertgraphicheadline">Insert graphic headline</key>
@@ -155,8 +156,14 @@
     <key alias="retry" version="4.0">Retry</key>
     <key alias="next" version="4.0">Next</key>
     <key alias="previous" version="4.0">Previous</key>
-    <key alias="search" version="4.0">Search</key>
+      <key alias="search" version="4.0">Search</key>
+      <key alias="renew">Renew</key>
+      <key alias="locked">Locked</key>
   </area>
+    <area alias="lockout">
+        <key alias="lockoutWillOccur">You've been idle and logout will automatically occur in</key>
+        <key alias="renewSession">Renew now to save your work</key>
+    </area>
   <area alias="dashboard">
     <key alias="welcome">Welcome</key>
     <key alias="openinnew">has opened in a new window</key>
@@ -164,6 +171,7 @@
     <key alias="restart">Restart</key>
     <key alias="browser">Browse your website</key>
     <key alias="visit">Visit</key>
+    <key alias="dontShowAgain">- Hide</key>
   </area>
   <area alias="sections">
     <key alias="content">Content</key>
@@ -267,6 +275,8 @@
     <key alias="localPackage" version="4.0">Install local package</key>
     <key alias="scripts" version="4.0">Scripts</key>
     <key alias="scripting" version="4.3">Scripting Files</key>
+    <key alias="installStarterKit" version="4.6">Install starter kit</key>
+    <key alias="installSkin" version="4.6">Install skin</key>
   </area>
   <area alias="user">
     <key alias="username">Username</key>
@@ -298,6 +308,16 @@
     <key alias="permissionSelectPages" version="4.0">Select pages to modify their permissions</key>
     <key alias="permissionReplaceChildren" version="4.0">Replace child node permssions</key>
     <key alias="permissionSelectedPages" version="4.0"><![CDATA[You are currently modifying permissions for the pages:]]></key>
+
+
+    <key alias="changePassword" version="4.6">Change Your Password</key>
+    <key alias="changePasswordDescription" version="4.6">You can change your password for accessing the Umbraco Back Office by filling out the form below and click the 'Change Password' button</key>
+    <key alias="passwordEnterNew" version="4.6">Enter your new password</key>
+    <key alias="passwordConfirm" version="4.6">Please confirm the new password</key>
+    <key alias="passwordChanged" version="4.6">Your password has been changed!</key>
+    <key alias="passwordIsDifferent" version="4.6">There was a difference between the new password and the confirmed password. Please try again!</key>
+    <key alias="passwordIsBlank" version="4.6">Your new password cannot be blank!</key>
+    <key alias="passwordMismatch" version="4.6">The confirmed password doesn't match the new password!</key>
   </area>
   <area alias="settings">
     <key alias="nodetype">Nodetype</key>
@@ -400,7 +420,7 @@
     <key alias="fileSavedHeader">File saved</key>
     <key alias="fileSavedText">File saved without any errors</key>
 
-    <key alias="contentTypeSavedHeader">Contenttype saved</key>
+    <key alias="contentTypeSavedHeader">Document Type saved</key>
     <key alias="contentTypeTabCreated">Tab created</key>
     <key alias="contentTypeTabDeleted">Tab deleted</key>
     <key alias="contentTypeTabDeletedText">Tab with id: %0% deleted</key>
@@ -515,7 +535,7 @@
   </area>
   <area alias="editdatatype">
     <key alias="renderControl">Render control</key>
-    <key alias="guid">Data Type GUID</key>
+    <key alias="guid">Data Editor GUID</key>
     <key alias="dataBaseDatatype">Database datatype</key>
     <key alias="addPrevalue">Add prevalue</key>
     <key alias="rteButtons">Buttons</key>

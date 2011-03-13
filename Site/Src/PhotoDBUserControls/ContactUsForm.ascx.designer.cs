@@ -13,6 +13,24 @@ namespace PhotoDBUserControls {
     public partial class ContactUsForm {
         
         /// <summary>
+        /// mvMain control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.MultiView mvMain;
+        
+        /// <summary>
+        /// vForm control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.View vForm;
+        
+        /// <summary>
         /// vsContactUs control.
         /// </summary>
         /// <remarks>
@@ -137,5 +155,23 @@ namespace PhotoDBUserControls {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnSubmit;
+        
+        /// <summary>
+        /// vThankYouMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.View vThankYouMessage;
+        
+        /// <summary>
+        /// ltrThankYouMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrThankYouMessage;
     }
 }

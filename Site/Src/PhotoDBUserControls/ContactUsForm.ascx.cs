@@ -25,8 +25,8 @@ namespace PhotoDBUserControls
             rfvLastName.ErrorMessage = String.Format(errorMessage, GetProperty("lastNameText"));
             rfvEmail.ErrorMessage = String.Format(errorMessage, GetProperty("emailText"));
             revEmail.ErrorMessage = String.Format(incorrectFormat, GetProperty("emailText"));
-            rfvOrganization.ErrorMessage = String.Format(incorrectFormat, GetProperty("organizationText"));
-            rfvMessageText.ErrorMessage = String.Format(incorrectFormat, GetProperty("messageText"));
+            rfvOrganization.ErrorMessage = String.Format(errorMessage, GetProperty("organizationText"));
+            rfvMessageText.ErrorMessage = String.Format(errorMessage, GetProperty("messageText"));
         }
 
         protected void btnSubmit_Click(object sender, EventArgs e)
@@ -39,7 +39,10 @@ namespace PhotoDBUserControls
                     txtEmail.Text,
                     txtOrganization.Text,
                     txtTheme.Text,
-                    txtMessageText.Text);
+                    txtMessageText.Text,
+                    "CONTACTUS");
+                ltrThankYouMessage.Text = GetProperty("thankYouMessage");
+                mvMain.ActiveViewIndex = 1;
             }
         }
     }

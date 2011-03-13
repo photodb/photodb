@@ -1,59 +1,87 @@
 <%@ Control Language="c#" AutoEventWireup="True" Codebehind="defaultUser.ascx.cs" Inherits="umbraco.presentation.install.steps.defaultUser" TargetSchema="http://schemas.microsoft.com/intellisense/ie5"%>
-<h1>Step 4/5: Check umbraco security</h1>
-<asp:Panel ID="identify" Runat="server" Visible="True">
-<p>
-  umbraco creates a default user with a login <strong>('admin')</strong> and password <strong>('default')</strong>. It's <strong>important</strong> that the password is 
-  changed to something unique.
-</p>
+<asp:Placeholder ID="identify" Runat="server" Visible="True">
 
-<p>
-  This step will check the default user's password and suggest if it needs to be changed.
-</p>
+<!-- create box -->
+					<div class="tab main-tabinfo">
 
-<asp:Literal id="identifyResult" Runat="server"></asp:Literal>
-</asp:Panel>
+						<div class="container">
 
-<asp:Panel ID="changeForm" Runat="server" Visible="false">
+							<h1>Create User</h1>
+							<div class="create-hold">
+								<p>You can now setup a new admin user to log into Umbraco, we recommend using a stong password for this (a password which is more than 4 characters and contains a mix of letters, numbers and symbols).
+                                Please make a note of the chosen password.</p>
+								<p>The password can be changed once you have completed the installation and logged into the admin interface.</p>
+							</div>
 
-<ol class="form">
-  <li style="height: 20px;">
-  <asp:Label runat="server" AssociatedControlID="password" ID="Label1">User name:</asp:Label> <strong id="username">admin</strong>
-  </li>
-   <li>
-    <asp:Label runat="server" AssociatedControlID="password" ID="passwordLabel">Enter new password:</asp:Label>
-    <asp:TextBox id="password" TextMode="password" CssClass="textfield" Runat="server"></asp:TextBox>
-    <asp:RequiredFieldValidator runat="server" ControlToValidate="password" ID="passwordvalidator">*</asp:RequiredFieldValidator>
-    </li>
-   <li>
-    <asp:Label runat="server" AssociatedControlID="confirmpassword" ID="confirmpasswordlabel">Confirm password:</asp:Label>
-    <asp:TextBox id="confirmpassword" TextMode="password" CssClass="textfield" Runat="server"></asp:TextBox>
-    <asp:RequiredFieldValidator runat="server" ControlToValidate="confirmpassword" ID="confirmpasswordvalidator">*</asp:RequiredFieldValidator>
-    <asp:CompareValidator runat="server" ControlToValidate="confirmpassword" ControlToCompare="password">*</asp:CompareValidator>
-    </li>
-</ol>
-        
-<p>
-<asp:Button id="changePassword" Runat="server" Text="Change Password" OnClientClick="showProgress(this,'loadingBar'); return true;" onclick="changePassword_Click"></asp:Button>
-</p>
+						</div>
 
-</asp:Panel>
+						<div class="database-hold">
 
-<asp:Panel ID="passwordChanged" Runat="server" Visible="False">
-<div class="success"><p>The password is changed!</p></div>
-</asp:Panel>
+							<form action="#">
+
+								<fieldset>
+
+									<div class="container">
+
+										<div class="instruction-hold">
+
+											<div class="row">
+                                                <asp:label AssociatedControlID="tb_name" runat="server">Name:</asp:label>
+												<span><asp:TextBox ID="tb_name" CssClass="text" type="text" Text="admin" runat="server"  /></span>
+                                                <asp:RequiredFieldValidator Display="Dynamic" CssClass="invalidaing" ControlToValidate="tb_name" runat="server" ErrorMessage="Name is a mandatory field" />
+											</div>
+
+											<div class="row">
+												<asp:label AssociatedControlID="tb_email" runat="server">Email:</asp:label>
+												<span><asp:TextBox ID="tb_email" CssClass="text" type="text" Text="admin@domain.com" runat="server"  /></span>
+                                                <asp:RequiredFieldValidator Display="Dynamic" CssClass="invalidaing" ControlToValidate="tb_email" runat="server" ErrorMessage="Email is a mandatory field" />
+											</div>
+
+											<div class="row">
+												<asp:label AssociatedControlID="tb_login" runat="server">Username:</asp:label>
+												<span><asp:TextBox ID="tb_login" CssClass="text" type="text" Text="admin" runat="server"  /></span>
+												<asp:RequiredFieldValidator Display="Dynamic" CssClass="invalidaing" ControlToValidate="tb_login" runat="server" ErrorMessage="Username is a mandatory field" />
+											</div>
+
+											<div class="row" style="height: 35px; overflow: hidden;">
+	                                            <asp:label AssociatedControlID="tb_password" runat="server">Password:</asp:label>
+												<span><asp:TextBox ID="tb_password" CssClass="text" TextMode="Password" type="text" Text="" runat="server"  /></span>
+												<asp:RequiredFieldValidator Display="Dynamic" CssClass="invalidaing" ControlToValidate="tb_password" runat="server" ErrorMessage="Password is a mandatory field" />
+											</div>
+
+											<div class="row">
+												<asp:Label AssociatedControlID="tb_password_confirm" runat="server">Confirm Password:</asp:label>
+												<span><asp:TextBox ID="tb_password_confirm" CssClass="text" TextMode="Password" type="text" Text="" runat="server"  /></span>
+                                                <asp:RequiredFieldValidator Display="Dynamic" CssClass="invalidaing" ControlToValidate="tb_password_confirm" runat="server" ErrorMessage="Confirm Password is a mandatory field" />
+                                                <asp:CompareValidator Display="Dynamic" CssClass="invalidaing" ControlToCompare="tb_password" ControlToValidate="tb_password_confirm" ErrorMessage="The passwords must be identical" runat="server" />
+											</div>
+
+											<div class="check-hold">
+                                            	<asp:CheckBox ID="cb_newsletter" runat="server" Checked="true"  /> 
+                                                <asp:label AssociatedControlID="cb_newsletter" runat="server">Sign up for our monthly newsletter</asp:label>
+											</div>
+										</div>
+									</div>
+									<footer class="btn-box">
+										<div class="t">&nbsp;</div>
+                                        <asp:LinkButton CssClass="btn-create" runat="server" onclick="changePassword_Click"><span>Create user</span></asp:linkbutton>
+									</footer>
+								</fieldset>
+							</form>
+						</div>
+					</div>
+</asp:Placeholder>
 
 <script type="text/javascript">
   $(document).ready(function() {
-			
-				//ADVANCE
-				jQuery("#<%= password.ClientID %>").passStrength({
-					shortPass: 		"error",
-					badPass:		"error",
-					goodPass:		"success",
-					strongPass:		"success",
-					baseStyle:		"passtestresult",
-					userid:			"admin",
+                 jQuery("#<%= tb_password.ClientID %>").passStrength({
+                     shortPass:     "invalidaing",
+                     badPass:       "invalidaing",
+                     goodPass:      "validaing",
+                     strongPass:    "validaing",
+                     baseStyle:     "basevalidaing",
+					userid:         jQuery("#<%= tb_login.ClientID %>").val(),
 					messageloc:		1
 				});
 			});
-		</script>
+</script>

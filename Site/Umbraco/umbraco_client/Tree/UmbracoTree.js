@@ -103,6 +103,7 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
                     this._opts.appActions.addEventHandler("nodeDeleting", function(E) { _this.onNodeDeleting(E) });
                     this._opts.appActions.addEventHandler("nodeDeleted", function(E) { _this.onNodeDeleted(E) });
                     this._opts.appActions.addEventHandler("nodeRefresh", function(E) { _this.onNodeRefresh(E) });
+                    this._opts.appActions.addEventHandler("publicError", function(E, err) { _this.onPublicError(E, err) });
                 }
 
                 this._containerId = jItem.attr("id");
@@ -126,6 +127,7 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
                 this._opts.recycleBinId = id;
             },
 
+            //TODO: add public method to clear a specific tree cache
             clearTreeCache: function() {
                 // <summary>This will remove all stored trees in client side cache so that the next time a tree needs loading it will be refreshed</summary>
                 this._debug("clearTreeCache...");
@@ -181,7 +183,7 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
                     this.clearTreeCache();
                     this._opts.app = this._opts.app;
                 }
-                else if (this._tree&& (this._opts.app.toLowerCase() == app.toLowerCase())) {
+                else if (this._tree && (this._opts.app.toLowerCase() == app.toLowerCase())) {
                     this._debug("not rebuilding");
                     
                     //don't rebuild if the tree object exists, the app that's being requested to be loaded is 
@@ -201,6 +203,8 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
 
                 //check if we should rebuild from a saved tree
                 var saveData = this._loadedApps["tree_" + app];
+
+                this.setActiveTreeType(app);
 
                 if (saveData != null) {
                     this._debug("rebuildTree: rebuilding from cache: app = " + app);
@@ -229,7 +233,7 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
                         this._debug("rebuildTree: syncing to last selected: " + lastSelected);
                         //add the event handler for the tree sync and sync the tree
                         this.addEventHandler("syncFound", foundHandler);
-                        this.setActiveTreeType($(saveData.selected[0]).attr("umb:type"));
+                        this.setActiveTreeType($(saveData.selected[0]).attr("umb:type"));                      
                         this.syncTree(lastSelected);
                     }
 
@@ -545,7 +549,7 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
                     .effect("highlight", {}, 1000);
             },
 
-            onNodeDeleted: function(EV) {
+            onNodeDeleted: function (EV) {
                 /// <summary>Event handler for when a tree node is deleted after ajax call</summary>
 
                 this._debug("onNodeDeleted");
@@ -555,9 +559,9 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
                 //ensure the branch is closed
                 this._tree.close_branch(nodeToDel);
                 //make the node disapear
-                nodeToDel.hide("drop", { direction: "down" }, 400, function() {
+                nodeToDel.hide("drop", { direction: "down" }, 400, function () {
                     //remove the node from the DOM, do this after 1 second as IE doesn't like it when you try this right away.
-                    setTimeout(function() { nodeToDel.remove(); }, 1000);
+                    setTimeout(function () { nodeToDel.remove(); }, 1000);
                 });
                 this._updateRecycleBin();
             },
@@ -710,6 +714,33 @@ Umbraco.Sys.registerNamespace("Umbraco.Controls");
 
             onError: function(ERR, TREE_OBJ) {
                 this._debug("ERROR!!!!! " + ERR);
+            },
+            
+            onPublicError: function(ev, errorObj) {
+                /// <summary>Event handler for when a tree node fails an ajax call</summary>
+
+                this._debug("onPublicError");
+
+                var errorNode = this._actionNode.jsNode;
+
+                // reload parent
+                this.reloadActionNode(false, true, null);
+
+                if (this._isDebug) {
+                    alert('There was an error processing the request\n' +
+                          '=========================================\n\n' +
+                          'Error Message:\n ' +
+                          errorObj.get_message() + '\n\n' +
+                          'Technical information:\n ' +
+                          '=========================================\n\n' +
+                          'Status Code: ' + errorObj.get_statusCode() + '\n\n' +
+                          'Exception Type: ' + errorObj.get_exceptionType() + '\n\n' +
+                          'Timed Out: ' + errorObj.get_timedOut() + '\n\n' +
+                          'Full Stacktrace:\n' + errorObj.get_stackTrace());
+                } else {
+                    this._opts.appActions.showSpeachBubble("error", "Error handling action", errorObj.get_message());
+                }
+
             },
 
             _debug: function(strMsg) {

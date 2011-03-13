@@ -64,6 +64,7 @@
     <Content Include="FreeActivationHandler.ascx" />
     <Content Include="FreeActivationForm.ascx" />
     <Content Include="ReferCounter.ascx" />
+    <Content Include="UnInstallReason.ascx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -111,6 +112,13 @@
     </Compile>
     <Compile Include="ReferCounter.ascx.designer.cs">
       <DependentUpon>ReferCounter.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="UnInstallReason.ascx.cs">
+      <DependentUpon>UnInstallReason.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="UnInstallReason.ascx.designer.cs">
+      <DependentUpon>UnInstallReason.ascx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

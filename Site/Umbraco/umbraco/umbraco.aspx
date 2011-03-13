@@ -36,6 +36,10 @@
     <umb:JsInclude ID="JsInclude11" runat="server" FilePath="js/language.aspx" PathNameAlias="UmbracoRoot" />
     <umb:JsInclude ID="JsInclude4" runat="server" FilePath="modal/modal.js" PathNameAlias="UmbracoClient"
         Priority="10" />
+
+         <umb:JsInclude ID="JsInclude17" runat="server" FilePath="modal/jquery.simplemodal.1.4.1.custom.js" PathNameAlias="UmbracoClient"
+        Priority="10" />
+
     <umb:JsInclude ID="JsInclude12" runat="server" FilePath="js/UmbracoSpeechBubbleBackend.js"
         PathNameAlias="UmbracoRoot" />
     <umb:JsInclude ID="JsInclude15" runat="server" FilePath="js/UmbracoSpeechBubbleBackend.js"
@@ -61,6 +65,11 @@
     </asp:ScriptManager>
     </form>
     <div style="position: relative;">
+        <div id="logout-warning" class="notice" style="display: none; text-align: center">
+            <h3 style="margin-bottom: 3px;">
+                <%= umbraco.ui.Text("lockout", "lockoutWillOccur")%> <span id="logout-warning-counter">
+                </span> <a href="#" onclick="umbracoRenewSession();"><%= umbraco.ui.Text("lockout", "renewSession")%></a>.</h3>
+        </div>
         <div class="topBar" id="topBar">
             <div style="float: left">
                 <button id="buttonCreate" onclick="UmbClientMgr.appActions().launchCreateWizard();"
@@ -109,8 +118,6 @@
     <script type="text/javascript">
     	  <asp:PlaceHolder ID="bubbleText" Runat="server"/>
     </script>
-    <iframe src="keepalive.aspx" style="border: none; width: 1px; height: 1px; position: absolute;">
-    </iframe>
     <div id="defaultSpeechbubble">
     </div>
     <div id="umbModalBox">
@@ -119,6 +126,19 @@
         <a href="#" id="umbracModalBoxClose" class="jqmClose">&times;</a>
         <div id="umbModalBoxContent">
             <iframe frameborder="0" id="umbModalBoxIframe" src=""></iframe>
+        </div>
+    </div>
+
+    <div id="logout-refresh" style="display:none;">
+        <p><%= umbraco.ui.Text("general","locked").ToUpper() %></p>
+        <div id="sessionrefreshpassword">
+            <label for="sessionpass"><%= umbraco.ui.Text("general","password") %></label><input name="sessionpass" type="password"/>
+        </div>
+
+        <div id="sessionrefreshbuttons">
+        <button id="renew-session" onclick="javascript:umbracoSessionRenewCheckPassword();"><%= umbraco.ui.Text("general","renew") %></button>
+        <%= umbraco.ui.Text("general","or") %> 
+        <a href="#" onclick="javascript:umbracoSessionLogout();"><%= umbraco.ui.Text("general","logout") %></a>
         </div>
     </div>
     <script type="text/javascript">
@@ -168,8 +188,121 @@
         });
 
 
-        // Handles single vs double click on application item icon buttons...
+        // *** NEW KEEP ALIVE - Should be moved to app manager *** */
 
+        window.setInterval(keepAlive, 10000);
+        function keepAlive() {
+            umbraco.presentation.webservices.legacyAjaxCalls.GetSecondsBeforeUserLogout(validateUserTimeout, umbracoShowSessionRenewModal);
+        }
+        function validateUserTimeout(secondsBeforeTimeout) {
+            var logoutElement = jQuery("#logout-warning");
+            // when five minutes left, show warning
+            if (secondsBeforeTimeout < 300) {
+                if (secondsBeforeTimeout <= 0) {
+                    umbracoShowSessionRenewModal();
+                } else {
+
+                    logoutElement.fadeIn();
+                    jQuery("#logout-warning-counter").html(secondsBeforeTimeout + ' seconds...');
+
+                    // when two mintutes left make warning RED
+                    if (secondsBeforeTimeout <= 120) {
+                        logoutElement.addClass('error');
+                        logoutElement.removeClass('notice');
+                    }
+                }
+            } else {
+                logoutElement.fadeOut().removeClass('error').addClass('notice');
+            }
+        }
+
+        function umbracoRenewSession() {
+            umbraco.presentation.webservices.legacyAjaxCalls.RenewUmbracoSession(
+                function () { jQuery("#logout-warning").fadeOut().removeClass('error').addClass('notice'); },
+                umbracoShowSessionRenewModal);
+
+            }
+
+            function umbracoShowSessionRenewModal() {
+
+                jQuery("#logout-warning").fadeOut().removeClass('error').addClass('notice');
+
+                jQuery("#sessionrefreshpassword input").attr("style", "");
+                jQuery("#sessionrefreshpassword label").click(function () { jQuery(this).hide(); jQuery(this).next("input").focus(); });
+                jQuery("#sessionrefreshpassword input").click(function () { jQuery(this).prev("label").hide(); });
+                jQuery("#sessionrefreshpassword input").blur(function () { if (jQuery(this).val() == "") { jQuery(this).prev("label").show(); } });
+
+                jQuery("#sessionrefreshpassword input").keypress(function (e) {
+                    if (jQuery("#sessionrefreshpassword label").is(":visible")) {
+                        jQuery("#sessionrefreshpassword label").hide()
+                    }
+                    code = (e.keyCode ? e.keyCode : e.which);
+                    if (code == 13) jQuery("#renew-session").click();
+
+                });
+
+                jQuery("#logout-refresh").fullmodal();
+            }
+
+            function umbracoSessionRenewCheckPassword() {
+
+               
+
+                if (jQuery("#sessionrefreshpassword input").val() != "") {
+                    jQuery.ajax({
+                        type: "POST",
+                        url: "<%=umbraco.IO.IOHelper.ResolveUrl(umbraco.IO.SystemDirectories.Umbraco) %>/webservices/legacyAjaxCalls.asmx/ValidateUser",
+                        data: "{'username': '<%=this.getUser().LoginName%>', 'password': '" + jQuery("#sessionrefreshpassword input").val() + "'}",
+                        success: function (result) {
+
+                            if (result.d == true) {
+                                // reset seconds
+                                umbraco.presentation.webservices.legacyAjaxCalls.RenewUmbracoSession();
+
+                                jQuery("#sessionrefreshpassword input").val("");
+                                jQuery.fullmodal.close();
+                            }
+                            else {
+                                umbracoSessionRenewCheckPasswordFail();
+                            }
+
+                        }
+                    });
+                }
+                else {
+                    umbracoSessionRenewCheckPasswordFail();
+                }
+            }
+
+            function umbracoSessionRenewCheckPasswordFail() {
+                jQuery("#sessionrefreshpassword").effect("shake", { times: 5, distance: 5 }, 80);
+                jQuery("#sessionrefreshpassword input").attr("style", "border: 2px solid red;");
+
+            }
+            function umbracoSessionLogout() {
+
+                //alert('Session has expired on server - can\'t renew. Logging out!');
+                top.document.location.href = 'logout.aspx';
+            }
+
+        function blink($target) {
+            // Set the color the field should blink in 
+            var backgroundColor = '#FBC2C4';
+            var existingBgColor;
+
+            // Load the current background color 
+            existingBgColor = $target.css('background-color');
+
+            // Set the new background color 
+            $target.css('background-color', backgroundColor);
+
+            // Set it back to old color after 500 ms 
+            setTimeout(function () { $target.css('background-color', existingBgColor); }, 500);
+        }
+
+        // *** END *** */
+
+        // Handles single vs double click on application item icon buttons...
         function appItemSingleClick(itemName) {
             UmbClientMgr.historyManager().addHistory(itemName);
             return false;

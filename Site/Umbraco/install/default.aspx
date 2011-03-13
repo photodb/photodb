@@ -1,97 +1,147 @@
 <%@ Page Language="c#" CodeBehind="default.aspx.cs" AutoEventWireup="True" Inherits="umbraco.presentation.install._default" EnableViewState="False" %>
-<%@ Register TagPrefix="cc1" Namespace="umbraco.uicontrols" Assembly="controls" %>
 <%@ Register TagPrefix="umb" Namespace="ClientDependency.Core.Controls" Assembly="ClientDependency.Core" %>
+
 <%@ Register Src="~/install/Title.ascx" TagPrefix="umb1" TagName="PageTitle" %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<!DOCTYPE html>
+<html>
 <head runat="server">
-    
-    <umb1:PageTitle runat="server" />
 
-    <cc1:UmbracoClientDependencyLoader runat="server" id="ClientLoader"  />
-	
-	<umb:CssInclude ID="CssInclude1" runat="server" FilePath="style.css" />
-	<umb:CssInclude ID="CssInclude2" runat="server" FilePath="modal/style.css" PathNameAlias="UmbracoClient" />
-	
-	<umb:JsInclude ID="JsInclude4" runat="server" FilePath="ui/jquery.js" PathNameAlias="UmbracoClient" Priority="0" />
-	<umb:JsInclude ID="JsInclude3" runat="server" FilePath="Application/NamespaceManager.js" PathNameAlias="UmbracoClient" Priority="0" />
-	<umb:JsInclude ID="JsInclude1" runat="server" FilePath="modal/modal.js" PathNameAlias="UmbracoClient" Priority="10" />
-	<umb:JsInclude ID="JsInclude2" runat="server" FilePath="passwordStrength/passwordstrength.js" PathNameAlias="UmbracoClient" Priority="11" />
+	<meta charset="utf-8">
 
-    <style type="text/css">
-      #generatedCategories{display: none;}
-      #list1a{height: 300px; overflow: auto;}
-      #list1a .installed h3, #list1a .installed h3 *{color: #666;}
-      #list1a .installed h3 span{font-size: 11px; padding-left: 25px;} 
-      
-      .loadNitrosButton{position: absolute; bottom: 5px;}
-      
-      .actions a{color: #333; text-decoration: none; display:block; padding: 0px 25px 0px 10px; margin-top: 20px;}
-      .actions a h3{color: #000; margin-bottom: 2px; text-decoration: underline}
-      .actions a:hover{text-decoration: underline;}
-      .passtestresult{margin-left: 15px; font-weight: bold; padding: 4px 10px 4px 10px !Important;}
-      
-    </style>      
-    
+	<umb1:PageTitle runat="server" />
+
+	<link media="all" rel="stylesheet" href="../umbraco_client/installer/css/jquery-ui-1.8.6.custom.css">
+	<link media="all" type="text/css" rel="stylesheet" href="../umbraco_client/installer/css/reset.css" />
+	<link media="all" rel="stylesheet" href="../umbraco_client/installer/css/all.css">
+	<link media="all" type="text/css" rel="stylesheet" href="../umbraco_client/installer/css/form.css" />
+
+	<script src="../umbraco_client/installer/js/jquery.1.4.4.js" type="text/javascript"></script>
+	<script src="../umbraco_client/installer/js/jquery.ui.selectmenu.js" type="text/javascript"></script>
+	<script src="../umbraco_client/installer/js/jquery.main.js" type="text/javascript"></script>
+
+    <script src="../umbraco_client/passwordStrength/passwordstrength.js" type="text/javascript"></script>
+
+	<!--[if lt IE 9]>
+		<link media="all" rel="stylesheet" href="../umbraco_client/installer/css/lt7.css">
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!--[if lt IE 7]><script type="text/javascript" src="../umbraco_client/installer/js/ie-png.js"></script><![endif]-->
 </head>
-<body>
+
+<body class="<%= currentStepClass %>">
+
+   
+	<form runat="server">
+	<asp:ScriptManager ID="ScriptManager1"  EnablePageMethods="true" runat="server"/>
+    <!-- all page -->
+
+	<section id="wrapper">
+
+		<div class="wholder">
+
+			<!-- header -->
+
+			<header id="header">
+
+				<div class="holder">
+
+					<strong class="logo"><a href="#">Umbraco</a></strong>
+
+				</div>
+
+			</header>
+
+			<!-- all content -->
+
+			<section id="main">
+
+				<!-- tabset -->
+
+				<nav class="tabset">
+
+					<asp:Repeater ID="rp_steps" runat="server" OnItemDataBound="bindStep">
+					<HeaderTemplate><ul></HeaderTemplate>
+					<FooterTemplate></ul></FooterTemplate>
+					<ItemTemplate>
+						<li class="<asp:literal runat='server' ID='lt_class' />"><asp:Literal ID="lt_name" runat="server" /><em>&nbsp;</em></li>
+					</ItemTemplate>
+					</asp:Repeater>
+					
+					<div class="b">&nbsp;</div>
+
+				</nav>
+
+				<!-- content -->
+
+				<section class="content">
+					<asp:PlaceHolder ID="PlaceHolderStep" runat="server"></asp:PlaceHolder>
+				</section>
+			</section>
+		</div>
+	</section>
+
 	
-    <script type="text/javascript">
 
-        function nextStep(button, elementId) {
-            showProgress(button, elementId);
-            setTimeout('document.location.href = \'default.aspx?installStep=' + document.getElementById("step").value + '\'', 100);
-        }
+	<!-- bg page -->
+	<div class="bg-main">
+		<div class="color2">
+			
+			<div class="bg-c"></div>
+		</div>
 
-        function showProgress(button, elementId) {
-            var img = document.getElementById(elementId);
+		<div class="color3">
+			
+			<div class="bg-c"></div>
+		</div>
 
-            img.style.visibility = "visible";
-            button.style.display = "none";
-        }
+		<div class="color1">
+			
+			<div class="bg-c"></div>
+		</div>
 
-        function InstallPackages(button, elementId) {
-            var next = document.getElementById('<%= next.ClientID %>');
-            next.style.display = "none";
+		<div class="color4">
+			
+			<div class="bg-c"></div>
+		</div>
 
-            showProgress(button, elementId);
-        }
+		<div class="color5">
+			
+			<div class="bg-c"></div>
+		</div>
 
-        function toggleModules() {
-            document.getElementById("generatedCategories").style.display = "block";
-        }
-
-        function openDemoModal(id, name) {
-            UmbClientMgr.openModalWindow("http://packages.umbraco.org/viewPackageData.aspx?id=" + id, name, true, 750, 550)
-            return false;
-        }
-    </script>
-
+	</div>
 	
 
-    <form id="Form1" method="post" runat="server">
-    <asp:ScriptManager runat="server" ID="umbracoScriptManager">
-    </asp:ScriptManager>
-    <cc1:UmbracoPanel Style="text-align: left;" ID="Panel1" AutoResize="false" runat="server" Height="550px" Width="680px" Text="Umbraco Configuration Wizard">
-        <div id="contentScroll">
-            <asp:PlaceHolder ID="PlaceHolderStep" runat="server"></asp:PlaceHolder>
-        </div>
-        <div id="buttons">
-            <div id="loadingBar">
-               <cc1:ProgressBar ID="prgbar" runat="server" Title="Loading..." /><br />
-            </div>
-            
-            <asp:Button ID="next" OnClientClick="nextStep(this,'loadingBar'); return false;" Text="Next &raquo;" runat="server" />
-            
-        </div>
-    </cc1:UmbracoPanel>
-    <input type="hidden" runat="server" value="welcome" id="step">
-    </form>
-    
-    <div id="umbModalBox">
-      <div id="umbModalBoxHeader"></div><a href="#" id="umbracModalBoxClose" class="jqmClose">&times;</a>
-      <div id="umbModalBoxContent"><iframe frameborder="0" id="umbModalBoxIframe" src=""></iframe></div>
-    </div>
+    <!-- lightbox -->
+<div class="lightbox" id="lightbox">
+	<a href="#" class="btn-close btn-close-box">close</a>
+	<div class="t">&nbsp;</div>
+	<div class="c">
+		<div class="heading">
+			<strong class="title">Name of skin</strong>
+			<span class="create">Created by: <a href="#">Cogworks</a></span>
+		</div>
+		<div class="carusel">
+			<ul>
+				<li><img src="../umbraco_client/installer/images/img09.jpg" alt="image description"></li>
+				<li><img src="../umbraco_client/installer/images/img10.jpg" alt="image description"></li>
+				<li><img src="../umbraco_client/installer/images/img11.jpg" alt="image description"></li>
+			</ul>
+		</div>
+
+		<footer class="btn-box">
+			<a href="#single-tab4" class="single-tab btn-install btn-close-box">Install</a>
+		</footer>
+	</div>
+	<div class="b">&nbsp;</div>
+</div>
+
+	<input type="hidden" runat="server" value="welcome" id="step">
+	
+	</form>
 </body>
+
 </html>
+

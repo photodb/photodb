@@ -4,7 +4,7 @@ namespace PhotoDBDatabase.Classes
     public class ContactUsManager : BaseManager
     {
         public static bool LeaveMessage(string firstName, string lastName, string email, string organization,
-            string theme, string text)
+            string theme, string text, string mode)
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
             {
@@ -17,7 +17,7 @@ namespace PhotoDBDatabase.Classes
                     Theme = theme,
                     Text = text,
                     HostId = StatsManager.HostId,
-                    ContactMode = "CONTACTUS",
+                    ContactMode = mode,
                 };
                 db.Contacts.InsertOnSubmit(contact);
                 db.SubmitChanges();

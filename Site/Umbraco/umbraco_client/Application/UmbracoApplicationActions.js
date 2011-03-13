@@ -259,7 +259,7 @@ Umbraco.Application.Actions = function () {
                     UmbClientMgr.openModalWindow("create.aspx?nodeId=" + actionNode.nodeId + "&nodeType=" + actionNode.nodeType + "&nodeName=" + actionNode.nodeName + '&rnd=' + this._utils.generateRandom(), uiKeys['actions_create'], true, 600, 425);
                 }
                 else if (actionNode.nodeType == "initmember") {
-                    UmbClientMgr.openModalWindow("create.aspx?nodeId=" + actionNode.nodeId + "&nodeType=" + actionNode.nodeType + "&nodeName=" + actionNode.nodeName + '&rnd=' + this._utils.generateRandom(), uiKeys['actions_create'], true, 420, 380);
+                    UmbClientMgr.openModalWindow("create.aspx?nodeId=" + actionNode.nodeId + "&nodeType=" + actionNode.nodeType + "&nodeName=" + actionNode.nodeName + '&rnd=' + this._utils.generateRandom(), uiKeys['actions_create'], true, 480, 380);
                 }
                 else if (actionNode.nodeType == "initpython" || actionNode.nodeType == "initdlrscripting") {
                     UmbClientMgr.openModalWindow("create.aspx?nodeId=" + actionNode.nodeId + "&nodeType=" + actionNode.nodeType + "&nodeName=" + actionNode.nodeName + '&rnd=' + this._utils.generateRandom(), uiKeys['actions_create'], true, 420, 380);
@@ -329,8 +329,13 @@ Umbraco.Application.Actions = function () {
 
             this._debug("actionDelete");
 
+            // tg: quick workaround for the are you sure you want to delete 'null' confirm message happening when deleting xslt files
+            currrentNodeName = UmbClientMgr.mainTree().getActionNode().nodeName;
+            if (currrentNodeName == null || currrentNodeName == "null") {
+                currrentNodeName = UmbClientMgr.mainTree().getActionNode().nodeId;
+            }
 
-            if (confirm(uiKeys['defaultdialogs_confirmdelete'] + ' "' + UmbClientMgr.mainTree().getActionNode().nodeName + '"?\n\n')) {
+            if (confirm(uiKeys['defaultdialogs_confirmdelete'] + ' "' + currrentNodeName + '"?\n\n')) {
                 //raise nodeDeleting event
                 jQuery(window.top).trigger("nodeDeleting", []);
                 var _this = this;
@@ -354,7 +359,12 @@ Umbraco.Application.Actions = function () {
                             _this._debug("actionDelete: Raising event");
                             //raise nodeDeleted event
                             jQuery(window.top).trigger("nodeDeleted", []);
-                        });
+                        },
+                        function (error) {
+                            _this._debug("actionDelete: Raising public error event");
+                            //raise public error event
+                            jQuery(window.top).trigger("publicError", [error]);
+                        })
                 }
             }
 
