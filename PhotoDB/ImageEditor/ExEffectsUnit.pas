@@ -6,7 +6,7 @@ uses
   Windows, ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
   Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs,
   Forms, OptimizeImageUnit, uEditorTypes, uGOM,
-  UnitDBKernel, uMemory;
+  UnitDBKernel, uMemory, uSettings;
 
 type
   TGausBlur = class(TExEffect)
@@ -1606,7 +1606,7 @@ begin
   Name := PresentComboBox.Text;
   if Name = '' then
     Exit;
-  DBKernel.DeleteKey('Editor\CustomEffect\' + Name);
+  Settings.DeleteKey('Editor\CustomEffect\' + Name);
   ReloadUserPresents;
 end;
 
@@ -1819,9 +1819,9 @@ begin
   for I := -2 to 2 do
     for J := -2 to 2 do
     begin
-      E[3 + I, 3 + J].Text := DBKernel.ReadString('Editor\CustomEffect\' + name, InttoStr((I + 2) * 5 + J + 2));
+      E[3 + I, 3 + J].Text := Settings.ReadString('Editor\CustomEffect\' + name, InttoStr((I + 2) * 5 + J + 2));
     end;
-  DeviderEdit.Text := DBKernel.ReadString('Editor\CustomEffect\' + name, 'Devider');
+  DeviderEdit.Text := Settings.ReadString('Editor\CustomEffect\' + name, 'Devider');
 end;
 
 procedure TCustomMatrixEffect.MakeImage(Sender: TObject);
@@ -1884,7 +1884,7 @@ var
   List: TStrings;
 begin
   PresentComboBox.Clear;
-  List := DBKernel.ReadKeys('Editor\CustomEffect');
+  List := Settings.ReadKeys('Editor\CustomEffect');
   for I := 1 to List.Count do
     PresentComboBox.Items.Add(List[I - 1]);
 
@@ -1904,10 +1904,9 @@ begin
   end;
   for I := -2 to 2 do
     for J := -2 to 2 do
-    begin
-      DBKernel.WriteString('Editor\CustomEffect\' + name, IntToStr((I + 2) * 5 + J + 2), E[3 + I, 3 + J].Text);
-    end;
-  DBKernel.WriteString('Editor\CustomEffect\' + name, 'Devider', DeviderEdit.Text);
+      Settings.WriteString('Editor\CustomEffect\' + name, IntToStr((I + 2) * 5 + J + 2), E[3 + I, 3 + J].Text);
+
+  Settings.WriteString('Editor\CustomEffect\' + name, 'Devider', DeviderEdit.Text);
 
   ReloadUserPresents;
 end;

@@ -308,7 +308,8 @@ uses
   uInternetFreeActivationThread in 'Activation\uInternetFreeActivationThread.pas',
   uFrameFreeManualActivation in 'Activation\uFrameFreeManualActivation.pas' {FrameFreeManualActivation: TFrame},
   uFrameActicationSetCode in 'Activation\uFrameActicationSetCode.pas' {FrameActicationSetCode: TFrame},
-  uFrameBuyApplication in 'Activation\uFrameBuyApplication.pas' {FrameBuyApplication: TFrame};
+  uFrameBuyApplication in 'Activation\uFrameBuyApplication.pas' {FrameBuyApplication: TFrame},
+  uSettings in 'Units\uSettings.pas';
 
 {$R *.res}
 
@@ -504,14 +505,14 @@ begin
     if not FolderView then
       if not DBTerminating then
         if not GetParamStrDBBool('/NoFaultCheck') then
-          if (DBKernel.ReadProperty('Starting', 'ApplicationStarted') = '1')
+          if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1')
             and not DBInDebug then
           begin
             EventLog('Application terminated...');
             if ID_OK = MessageBoxDB(FormManager.Handle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
             begin
               CloseSplashWindow;
-              DBKernel.WriteBool('StartUp', 'Pack', False);
+              Settings.WriteBool('StartUp', 'Pack', False);
               Application.CreateForm(TCMDForm, CMDForm);
               CMDForm.PackPhotoTable;
               R(CMDForm);
@@ -521,21 +522,21 @@ begin
     // SERVICES ----------------------------------------------------
 
     if not DBTerminating then
-      if GetParamStrDBBool('/CONVERT') or DBKernel.ReadBool('StartUp',
+      if GetParamStrDBBool('/CONVERT') or Settings.ReadBool('StartUp',
         'ConvertDB', False) then
       begin
         CloseSplashWindow;
         EventLog('Converting...');
-        DBKernel.WriteBool('StartUp', 'ConvertDB', False);
+        Settings.WriteBool('StartUp', 'ConvertDB', False);
         ConvertDB(dbname);
       end;
 
     if not DBTerminating then
-      if GetParamStrDBBool('/PACKTABLE') or DBKernel.ReadBool('StartUp', 'Pack', False) then
+      if GetParamStrDBBool('/PACKTABLE') or Settings.ReadBool('StartUp', 'Pack', False) then
       begin
         CloseSplashWindow;
         EventLog('Packing...');
-        DBKernel.WriteBool('StartUp', 'Pack', False);
+        Settings.WriteBool('StartUp', 'Pack', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.PackPhotoTable;
         R(CMDForm);
@@ -552,46 +553,46 @@ begin
       end;
 
     if not DBTerminating then
-      if GetParamStrDBBool('/RECREATETHTABLE') or DBKernel.ReadBool('StartUp', 'RecreateIDEx', False) then
+      if GetParamStrDBBool('/RECREATETHTABLE') or Settings.ReadBool('StartUp', 'RecreateIDEx', False) then
       begin
         CloseSplashWindow;
         EventLog('Recreating thumbs in Table...');
-        DBKernel.WriteBool('StartUp', 'RecreateIDEx', False);
+        Settings.WriteBool('StartUp', 'RecreateIDEx', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.RecreateImThInPhotoTable;
         R(CMDForm);
       end;
 
     if not DBTerminating then
-      if GetParamStrDBBool('/SHOWBADLINKS') or DBKernel.ReadBool('StartUp', 'ScanBadLinks', False) then
+      if GetParamStrDBBool('/SHOWBADLINKS') or Settings.ReadBool('StartUp', 'ScanBadLinks', False) then
       begin
         CloseSplashWindow;
         EventLog('Show Bad Links in table...');
-        DBKernel.WriteBool('StartUp', 'ScanBadLinks', False);
+        Settings.WriteBool('StartUp', 'ScanBadLinks', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.ShowBadLinks;
         R(CMDForm);
       end;
 
     if not DBTerminating then
-      if GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or DBKernel.ReadBool('StartUp', 'OptimizeDublicates', False) then
+      if GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or Settings.ReadBool('StartUp', 'OptimizeDublicates', False) then
       begin
         CloseSplashWindow;
         EventLog('Optimizingdublicates in table...');
-        DBKernel.WriteBool('StartUp', 'OptimizeDublicates', False);
+        Settings.WriteBool('StartUp', 'OptimizeDublicates', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.OptimizeDublicates;
         R(CMDForm);
       end;
 
     if not DBTerminating then
-      if DBKernel.ReadBool('StartUp', 'Restore', False) then
+      if Settings.ReadBool('StartUp', 'Restore', False) then
       begin
         CloseSplashWindow;
-        DBKernel.WriteBool('StartUp', 'Restore', False);
-        EventLog('Restoring Table...' + DBKernel.ReadString('StartUp', 'RestoreFile'));
+        Settings.WriteBool('StartUp', 'Restore', False);
+        EventLog('Restoring Table...' + Settings.ReadString('StartUp', 'RestoreFile'));
         Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.RestoreTable(DBKernel.ReadString('StartUp', 'RestoreFile'));
+        CMDForm.RestoreTable(Settings.ReadString('StartUp', 'RestoreFile'));
         R(CMDForm);
       end;
 

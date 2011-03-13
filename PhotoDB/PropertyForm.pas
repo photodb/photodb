@@ -15,7 +15,8 @@ uses
   UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
-  uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils;
+  uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
+  uSettings;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -373,7 +374,7 @@ end;
 
 function TPropertyManager.NewFileProperty(FileName: string): TPropertiesForm;
 begin
-  if not DBKernel.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
+  if not Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
   begin
     if PropertyCount > 0 then
       Result := FPropertys[0]
@@ -391,7 +392,7 @@ end;
 
 function TPropertyManager.NewIDProperty(ID: Integer): TPropertiesForm;
 begin
-  if not DBKernel.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
+  if not Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
   begin
     if PropertyCount>0 then
       Result := FPropertys[0]
@@ -409,7 +410,7 @@ end;
 
 function TPropertyManager.NewSimpleProperty: TPropertiesForm;
 begin
-  if not DBKernel.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
+  if not Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
   begin
     if PropertyCount > 0 then
       Result := FPropertys[0]
@@ -761,8 +762,8 @@ begin
   SaveWindowPos1.SetPosition;
   LoadLanguage;
 
-  CbRemoveKeywordsForGroups.Checked := DBKernel.ReadBool('Propetry', 'DeleteKeyWords', True);
-  CbShowAllGroups.Checked := DBKernel.ReadBool('Propetry', 'ShowAllGroups', False);
+  CbRemoveKeywordsForGroups.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
+  CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
 end;
 
 procedure TPropertiesForm.Image1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -2875,7 +2876,7 @@ end;
 procedure TPropertiesForm.CbShowAllGroupsClick(Sender: TObject);
 begin
   RecreateGroupsList;
-  DBKernel.WriteBool('Propetry', 'ShowAllGroups', CbShowAllGroups.Checked);
+  Settings.WriteBool('Propetry', 'ShowAllGroups', CbShowAllGroups.Checked);
 end;
 
 procedure TPropertiesForm.LstAvaliableGroupsDblClick(Sender: TObject);
@@ -2967,7 +2968,7 @@ end;
 
 procedure TPropertiesForm.CbRemoveKeywordsForGroupsClick(Sender: TObject);
 begin
-  DBKernel.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywordsForGroups.Checked);
+  Settings.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywordsForGroups.Checked);
 end;
 
 procedure TPropertiesForm.MoveToGroup1Click(Sender: TObject);

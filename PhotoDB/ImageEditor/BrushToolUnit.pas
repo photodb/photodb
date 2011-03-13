@@ -4,8 +4,8 @@ interface
 
 uses Windows, ToolsUnit, WebLink, Classes, Controls, Graphics,
      Math, Forms, ComCtrls, StdCtrls, SysUtils,
-     Dialogs, GraphicsCool, GraphicsBaseTypes,
-     UnitDBKernel, ExtCtrls, uEditorTypes, uMemory;
+     Dialogs, GraphicsCool, GraphicsBaseTypes, uSettings,
+     ExtCtrls, uEditorTypes, uMemory, UnitDBKernel;
 
 type
   TBrushToolClass = class(TToolsPanelClass)
@@ -112,7 +112,7 @@ begin
   BrushSizeTrackBar.OnChange := BrushSizeChanged;
   BrushSizeTrackBar.Min := 1;
   BrushSizeTrackBar.Max := 500;
-  BrushSizeTrackBar.Position := DBKernel.ReadInteger('Editor', 'BrushToolSize', 30);
+  BrushSizeTrackBar.Position := Settings.ReadInteger('Editor', 'BrushToolSize', 30);
   BrushSizeTrackBar.Parent := Self;
 
   BrusTransparencyCaption := TStaticText.Create(AOwner);
@@ -128,7 +128,7 @@ begin
   BrusTransparencyTrackBar.OnChange := BrushTransparencyChanged;
   BrusTransparencyTrackBar.Min := 1;
   BrusTransparencyTrackBar.Max := 100;
-  BrusTransparencyTrackBar.Position := DBKernel.ReadInteger('Editor', 'BrushTransparency', 100);
+  BrusTransparencyTrackBar.Position := Settings.ReadInteger('Editor', 'BrushTransparency', 100);
   BrusTransparencyTrackBar.Parent := Self;
 
   BrusTransparencyCaption.Caption := Format(L('Transparency [%d]'), [BrusTransparencyTrackBar.Position]);
@@ -149,7 +149,7 @@ begin
 
   MethodDrawChooser.Items.Add(L('Normal'));
   MethodDrawChooser.Items.Add(L('Color replace'));
-  MethodDrawChooser.ItemIndex := DBKernel.ReadInteger('Editor', 'BrushToolStyle', 0);
+  MethodDrawChooser.ItemIndex := Settings.ReadInteger('Editor', 'BrushToolStyle', 0);
   MethodDrawChooser.OnChange := BrushTransparencyChanged;
 
   BrushColorChooser := TShape.Create(AOwner);
@@ -157,7 +157,7 @@ begin
   BrushColorChooser.Left := 10;
   BrushColorChooser.Width := 20;
   BrushColorChooser.Height := 20;
-  BrushColorChooser.Brush.Color := DBKernel.ReadInteger('Editor', 'BrushToolColor', 0);
+  BrushColorChooser.Brush.Color := Settings.ReadInteger('Editor', 'BrushToolColor', 0);
   BrushColorChooser.OnMouseDown := ColorClick;
   BrushColorChooser.Parent := Self;
 
@@ -408,10 +408,10 @@ end;
 
 procedure TBrushToolClass.DoSaveSettings(Sender: TObject);
 begin
-  DBKernel.WriteInteger('Editor', 'BrushToolStyle', MethodDrawChooser.ItemIndex);
-  DBKernel.WriteInteger('Editor', 'BrushToolColor', BrushColorChooser.Brush.Color);
-  DBKernel.WriteInteger('Editor', 'BrushToolSize', BrushSizeTrackBar.Position);
-  DBKernel.WriteInteger('Editor', 'BrushTransparency', BrusTransparencyTrackBar.Position);
+  Settings.WriteInteger('Editor', 'BrushToolStyle', MethodDrawChooser.ItemIndex);
+  Settings.WriteInteger('Editor', 'BrushToolColor', BrushColorChooser.Brush.Color);
+  Settings.WriteInteger('Editor', 'BrushToolSize', BrushSizeTrackBar.Position);
+  Settings.WriteInteger('Editor', 'BrushTransparency', BrusTransparencyTrackBar.Position);
 end;
 
 procedure TBrushToolClass.BrushTransparencyChanged(Sender: TObject);

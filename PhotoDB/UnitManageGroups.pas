@@ -8,7 +8,7 @@ uses
   ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math, CommCtrl,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
   UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils,
-  uShellIntegration, uConstants, Dolphin_DB;
+  uShellIntegration, uConstants, Dolphin_DB, uSettings;
 
 type
   TFormManageGroups = class(TDBForm)
@@ -134,7 +134,7 @@ begin
   ShowAll1.ImageIndex := DB_IC_EXPLORER_PANEL;
   SelectFont1.ImageIndex := DB_IC_OPTIONS;
   LoadLanguage;
-  ShowAll1.Checked := DBKernel.ReadBool('GroupsManager', 'ShowAllGroups', True);
+  ShowAll1.Checked := Settings.ReadBool('GroupsManager', 'ShowAllGroups', True);
   if ShowAll1.Checked then
     ShowAll1.ImageIndex := -1;
   LoadToolBarIcons;
@@ -200,7 +200,7 @@ begin
   ListView1.Items.BeginUpdate;
   try
     FreeGroups(Groups);
-    Groups := GetRegisterGroupList(True, not DBKernel.ReadBool('GroupsManager', 'ShowAllGroups', True));
+    Groups := GetRegisterGroupList(True, not Settings.ReadBool('GroupsManager', 'ShowAllGroups', True));
     FBitmapImageList.Clear;
     for I := 0 to Length(Groups) - 1 do
     begin
@@ -355,7 +355,7 @@ begin
           Btext.Canvas.Pen.Color := Sender.Canvas.Brush.Color;
           Btext.Canvas.FillRect(Rect(0, 0, Btext.Width, Btext.Height));
 
-          Fn := DBKernel.ReadString('GroupsManager', 'FontName');
+          Fn := Settings.ReadString('GroupsManager', 'FontName');
           if Fn <> '' then
             Btext.Canvas.Font.name := Fn
           else
@@ -484,7 +484,7 @@ begin
     ShowAll1.ImageIndex := -1
   else
     ShowAll1.ImageIndex := DB_IC_EXPLORER_PANEL;
-  DBKernel.WriteBool('GroupsManager', 'ShowAllGroups', ShowAll1.Checked);
+  Settings.WriteBool('GroupsManager', 'ShowAllGroups', ShowAll1.Checked);
   LoadGroups;
 end;
 
@@ -492,11 +492,11 @@ procedure TFormManageGroups.SelectFont1Click(Sender: TObject);
 var
   Fn, NewFont: string;
 begin
-  Fn := DBKernel.ReadString('GroupsManager', 'FontName');
+  Fn := Settings.ReadString('GroupsManager', 'FontName');
   if Fn = '' then
     Fn := 'MS Sans Serif';
   if SelectFont(Fn, NewFont) then
-    DBKernel.WriteString('GroupsManager', 'FontName', NewFont);
+    Settings.WriteString('GroupsManager', 'FontName', NewFont);
   ListView1.Refresh;
 end;
 
@@ -506,7 +506,7 @@ var
 
   procedure AddIcon(name: string);
   begin
-    if DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False) then
+    if Settings.Readbool('Options', 'UseSmallToolBarButtons', False) then
       name := name + '_SMALL';
 
     Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(name));
@@ -515,7 +515,7 @@ var
   end;
 
 begin
-  if DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False) then
+  if Settings.Readbool('Options', 'UseSmallToolBarButtons', False) then
   begin
     ToolBarImageList.Width := 16;
     ToolBarImageList.Height := 16;

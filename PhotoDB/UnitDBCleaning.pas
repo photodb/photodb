@@ -5,7 +5,7 @@ interface
 uses
   Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmProgress, SaveWindowPos, uConstants, UnitDBKernel,
-  uDBForm;
+  uDBForm, uSettings;
 
 type
   TDBCleaningForm = class(TDBForm)
@@ -54,12 +54,12 @@ procedure TDBCleaningForm.FormCreate(Sender: TObject);
 begin
   SaveWindowPos1.Key := RegRoot + 'Cleaning';
   SaveWindowPos1.SetPosition;
-  CheckBox1.Checked := DBKernel.ReadBool('Options', 'DeleteNotValidRecords', True);
-  CbDuplicated.Checked := DBKernel.ReadBool('Options', 'VerifyDublicates', False);
-  CbDeleted.Checked := DBKernel.ReadBool('Options', 'MarkDeletedFiles', True);
-  CbAutoCleaning.Checked := DBKernel.ReadBool('Options', 'AllowAutoCleaning', False);
-  CbFastCleaning.Checked := DBKernel.ReadBool('Options', 'AllowFastCleaning', False);
-  CbFixExifDate.Checked := DBKernel.ReadBool('Options', 'FixDateAndTime', True);
+  CheckBox1.Checked := Settings.ReadBool('Options', 'DeleteNotValidRecords', True);
+  CbDuplicated.Checked := Settings.ReadBool('Options', 'VerifyDublicates', False);
+  CbDeleted.Checked := Settings.ReadBool('Options', 'MarkDeletedFiles', True);
+  CbAutoCleaning.Checked := Settings.ReadBool('Options', 'AllowAutoCleaning', False);
+  CbFastCleaning.Checked := Settings.ReadBool('Options', 'AllowFastCleaning', False);
+  CbFixExifDate.Checked := Settings.ReadBool('Options', 'FixDateAndTime', True);
   BtnStart.Enabled := not UnitCleanUpThread.Active;
   BtnStop.Enabled := UnitCleanUpThread.Active;
   PbMain.MaxValue := UnitCleanUpThread.Share_MaxPosition;
@@ -89,24 +89,24 @@ end;
 
 procedure TDBCleaningForm.BtnSaveClick(Sender: TObject);
 begin
-  DBKernel.WriteBool('Options', 'DeleteNotValidRecords', CheckBox1.Checked);
-  DBKernel.WriteBool('Options', 'VerifyDublicates', CbDuplicated.Checked);
-  DBKernel.WriteBool('Options', 'MarkDeletedFiles', CbDeleted.Checked);
-  DBKernel.WriteBool('Options', 'AllowAutoCleaning', CbAutoCleaning.Checked);
-  DBKernel.WriteBool('Options', 'AllowFastCleaning', CbFastCleaning.Checked);
-  DBKernel.WriteBool('Options', 'FixDateAndTime', CbFixExifDate.Checked);
+  Settings.WriteBool('Options', 'DeleteNotValidRecords', CheckBox1.Checked);
+  Settings.WriteBool('Options', 'VerifyDublicates', CbDuplicated.Checked);
+  Settings.WriteBool('Options', 'MarkDeletedFiles', CbDeleted.Checked);
+  Settings.WriteBool('Options', 'AllowAutoCleaning', CbAutoCleaning.Checked);
+  Settings.WriteBool('Options', 'AllowFastCleaning', CbFastCleaning.Checked);
+  Settings.WriteBool('Options', 'FixDateAndTime', CbFixExifDate.Checked);
   VerifyEnabledToSave;
 end;
 
 procedure TDBCleaningForm.VerifyEnabledToSave;
 begin
-  if (CheckBox1.Checked = DBKernel.ReadBool('Options', 'DeleteNotValidRecords',
-      True)) and (CbDuplicated.Checked = DBKernel.ReadBool('Options',
-      'VerifyDublicates', False)) and (CbDeleted.Checked = DBKernel.ReadBool
+  if (CheckBox1.Checked = Settings.ReadBool('Options', 'DeleteNotValidRecords',
+      True)) and (CbDuplicated.Checked = Settings.ReadBool('Options',
+      'VerifyDublicates', False)) and (CbDeleted.Checked = Settings.ReadBool
       ('Options', 'MarkDeletedFiles', True)) and
-    (CbAutoCleaning.Checked = DBKernel.ReadBool('Options', 'AllowAutoCleaning',
-      True)) and (CbFastCleaning.Checked = DBKernel.ReadBool('Options',
-      'AllowFastCleaning', False)) and (CbFixExifDate.Checked = DBKernel.ReadBool
+    (CbAutoCleaning.Checked = Settings.ReadBool('Options', 'AllowAutoCleaning',
+      True)) and (CbFastCleaning.Checked = Settings.ReadBool('Options',
+      'AllowFastCleaning', False)) and (CbFixExifDate.Checked = Settings.ReadBool
       ('Options', 'FixDateAndTime', True)) then
     BtnSave.Enabled := False
   else

@@ -4,7 +4,7 @@ interface
 
 uses CustomSelectTool, Windows, Classes, Graphics, Effects, GraphicsBaseTypes, Math,
      StdCtrls, Controls, Forms, SysUtils, ExtCtrls, Buttons, Spin,
-     UnitDBKernel, Dialogs, uDBGraphicTypes, uMemory;
+     UnitDBKernel, Dialogs, uDBGraphicTypes, uMemory, uSettings;
 
 type
   TextToolClass = Class(TCustomSelectToolClass)
@@ -94,8 +94,8 @@ begin
   TextMemo.ScrollBars := SsVertical;
   TextMemo.OnChange := OnTextChanged;
   TextMemo.Parent := AOwner as TWinControl;
-  if DBKernel.ReadString('Editor', 'TextToolText') <> '' then
-    TextMemo.Text := DBKernel.ReadString('Editor', 'TextToolText')
+  if Settings.ReadString('Editor', 'TextToolText') <> '' then
+    TextMemo.Text := Settings.ReadString('Editor', 'TextToolText')
   else
     TextMemo.Text := L('My text');
 
@@ -111,8 +111,8 @@ begin
   FontNameEdit.OnChange := OnTextChanged;
   FontNameEdit.Parent := AOwner as TWinControl;
   FontNameEdit.Items := Screen.Fonts;
-  if DBKernel.ReadString('Editor', 'TextToolFontName') <> '' then
-    FontNameEdit.Text := DBKernel.ReadString('Editor', 'TextToolFontName')
+  if Settings.ReadString('Editor', 'TextToolFontName') <> '' then
+    FontNameEdit.Text := Settings.ReadString('Editor', 'TextToolFontName')
   else
     FontNameEdit.Text := 'Times New Roman';
 
@@ -132,8 +132,8 @@ begin
   for I := 1 to MaxSizes do
     FontSizeEdit.Items.Add(IntToStr(Sizes[I]));
 
-  if DBKernel.ReadInteger('Editor', 'TextToolFontSize', 0) <> 0 then
-    FontSizeEdit.Text := IntToStr(DBKernel.ReadInteger('Editor', 'TextToolFontSize', 0))
+  if Settings.ReadInteger('Editor', 'TextToolFontSize', 0) <> 0 then
+    FontSizeEdit.Text := IntToStr(Settings.ReadInteger('Editor', 'TextToolFontSize', 0))
   else
     FontSizeEdit.Text := '12';
 
@@ -146,8 +146,8 @@ begin
   FontColorEdit.OnMouseDown := ColorClick;
   FontColorEdit.Pen.Color := 0;
 
-  if DBKernel.ReadInteger('Editor', 'TextToolFontColor', -1) <> -1 then
-    FontColorEdit.Brush.Color := DBKernel.ReadInteger('Editor', 'TextToolFontColor', 0)
+  if Settings.ReadInteger('Editor', 'TextToolFontColor', -1) <> -1 then
+    FontColorEdit.Brush.Color := Settings.ReadInteger('Editor', 'TextToolFontColor', 0)
   else
     FontColorEdit.Brush.Color := 0;
 
@@ -172,7 +172,7 @@ begin
   RotateTextChooser.Items.Add(L('90°'));
   RotateTextChooser.Items.Add(L('180°'));
   RotateTextChooser.Items.Add(L('270°'));
-  RotateTextChooser.ItemIndex := DBKernel.ReadInteger('Editor', 'TextToolFontRotation', 0);
+  RotateTextChooser.ItemIndex := Settings.ReadInteger('Editor', 'TextToolFontRotation', 0);
 
   OrientationLabel := TStaticText.Create(AOwner);
   OrientationLabel.Top := RotateTextChooser.Top + RotateTextChooser.Height + 3;
@@ -229,7 +229,7 @@ begin
     F(Bit);
   end;
 
-  case DBKernel.ReadInteger('Editor', 'TextToolFontOrientation', 1) of
+  case Settings.ReadInteger('Editor', 'TextToolFontOrientation', 1) of
     1:
       LeftOrientationButton.Down := True;
     2:
@@ -246,7 +246,7 @@ begin
   EnableOutline.Width := 160;
   EnableOutline.Caption := L('Use outline color');
   EnableOutline.OnClick := EnableOutlineClick;
-  EnableOutline.Checked := DBKernel.ReadBool('Editor', 'TextToolEnableOutLine', False);
+  EnableOutline.Checked := Settings.ReadBool('Editor', 'TextToolEnableOutLine', False);
   EnableOutline.Parent := Self;
 
   OutLineSizeLabel := TStaticText.Create(AOwner);
@@ -261,7 +261,7 @@ begin
   OutLineSizeEdit.Width := 50;
   OutLineSizeEdit.MinValue := 1;
   OutLineSizeEdit.MaxValue := 100;
-  OutLineSizeEdit.Value := DBKernel.ReadInteger('Editor', 'TextToolOutLineSize', 5);
+  OutLineSizeEdit.Value := Settings.ReadInteger('Editor', 'TextToolOutLineSize', 5);
   OutLineSizeEdit.OnChange := OnTextChanged;
   OutLineSizeEdit.Parent := Self;
   OutLineSizeEdit.Enabled := EnableOutline.Checked;
@@ -277,7 +277,7 @@ begin
   OutLineColorEdit.Left := OutLineSizeEdit.Left + OutLineSizeEdit.Width + 15;
   OutLineColorEdit.Width := 15;
   OutLineColorEdit.Height := 15;
-  OutLineColorEdit.Brush.Color := DBKernel.ReadInteger('Editor', 'TextToolOutLineColor', OutLineColorEdit.Brush.Color);
+  OutLineColorEdit.Brush.Color := Settings.ReadInteger('Editor', 'TextToolOutLineColor', OutLineColorEdit.Brush.Color);
 
   OutLineColorEdit.OnMouseDown := OutLineColorClick;
   OutLineColorEdit.Parent := Self;
@@ -447,20 +447,20 @@ end;
 
 procedure TextToolClass.DoSaveSettings(Sender: TObject);
 begin
-  DBKernel.WriteString('Editor', 'TextToolText', TextMemo.Text);
-  DBKernel.WriteString('Editor', 'TextToolFontName', FontNameEdit.Text);
-  DBKernel.WriteInteger('Editor', 'TextToolFontSize', StrToIntDef(FontSizeEdit.Text, 12));
-  DBKernel.WriteInteger('Editor', 'TextToolFontColor', FontColorEdit.Brush.Color);
-  DBKernel.WriteInteger('Editor', 'TextToolFontRotation', RotateTextChooser.ItemIndex);
+  Settings.WriteString('Editor', 'TextToolText', TextMemo.Text);
+  Settings.WriteString('Editor', 'TextToolFontName', FontNameEdit.Text);
+  Settings.WriteInteger('Editor', 'TextToolFontSize', StrToIntDef(FontSizeEdit.Text, 12));
+  Settings.WriteInteger('Editor', 'TextToolFontColor', FontColorEdit.Brush.Color);
+  Settings.WriteInteger('Editor', 'TextToolFontRotation', RotateTextChooser.ItemIndex);
   if LeftOrientationButton.Down then
-    DBKernel.WriteInteger('Editor', 'TextToolFontOrientation', 1);
+    Settings.WriteInteger('Editor', 'TextToolFontOrientation', 1);
   if CenterOrientationButton.Down then
-    DBKernel.WriteInteger('Editor', 'TextToolFontOrientation', 2);
+    Settings.WriteInteger('Editor', 'TextToolFontOrientation', 2);
   if RightOrientationButton.Down then
-    DBKernel.WriteInteger('Editor', 'TextToolFontOrientation', 3);
-  DBKernel.WriteBool('Editor', 'TextToolEnableOutLine', EnableOutline.Checked);
-  DBKernel.WriteInteger('Editor', 'TextToolOutLineColor', OutLineColorEdit.Brush.Color);
-  DBKernel.WriteInteger('Editor', 'TextToolOutLineSize', OutLineSizeEdit.Value);
+    Settings.WriteInteger('Editor', 'TextToolFontOrientation', 3);
+  Settings.WriteBool('Editor', 'TextToolEnableOutLine', EnableOutline.Checked);
+  Settings.WriteInteger('Editor', 'TextToolOutLineColor', OutLineColorEdit.Brush.Color);
+  Settings.WriteInteger('Editor', 'TextToolOutLineSize', OutLineSizeEdit.Value);
 end;
 
 procedure TextToolClass.EnableOutlineClick(Sender: TObject);

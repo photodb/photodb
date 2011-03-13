@@ -9,7 +9,7 @@ uses
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
   UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
   UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
-  uRuntime, uMemory;
+  uRuntime, uMemory, uSettings;
 
 type
   TOptionsForm = class(TDBForm)
@@ -245,20 +245,20 @@ begin
 
   if NewTab = 0 then
   begin
-    CheckBox4.Checked := DBKernel.Readbool('Options', 'AllowPreview', True);
+    CheckBox4.Checked := Settings.Readbool('Options', 'AllowPreview', True);
   end;
   if NewTab = 1 then
   begin
-    CheckBox1.Checked := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-    CheckBox6.Checked := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-    CheckBox7.Checked := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-    CheckBox8.Checked := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-    CheckBox9.Checked := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-    CheckBox10.Checked := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-    CheckBox11.Checked := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-    CheckBox12.Checked := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-    CheckBox20.Checked := DBKernel.ReadBool('Options', 'ShowEXIFMarker', False);
-    CheckBox21.Checked := DBKernel.ReadBool('Options', 'ShowOtherPlaces', True);
+    CheckBox1.Checked := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+    CheckBox6.Checked := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+    CheckBox7.Checked := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+    CheckBox8.Checked := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+    CheckBox9.Checked := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+    CheckBox10.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+    CheckBox11.Checked := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+    CheckBox12.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+    CheckBox20.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
+    CheckBox21.Checked := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
     CheckListBox1.Items.Clear;
     for I := 1 to Length(SupportedExt) do
     begin
@@ -279,17 +279,17 @@ begin
   end;
   if NewTab = 2 then
   begin
-    CheckBox37.Checked := DBKernel.ReadBool('SlideShow', 'UseFastSlideShowImageLiading', True);
+    CheckBox37.Checked := Settings.ReadBool('SlideShow', 'UseFastSlideShowImageLiading', True);
 
-    CheckBox22.Checked := DBKernel.Readbool('Options', 'NextOnClick', False);
-    CheckBox24.Checked := DBKernel.Readbool('Options', 'RotateWithoutPromt', True);
-    CheckBox25.Checked := DBKernel.Readbool('Options', 'RotateEvenIfFileInDB', True);
+    CheckBox22.Checked := Settings.Readbool('Options', 'NextOnClick', False);
+    CheckBox24.Checked := Settings.Readbool('Options', 'RotateWithoutPromt', True);
+    CheckBox25.Checked := Settings.Readbool('Options', 'RotateEvenIfFileInDB', True);
 
-    TrackBar1.Position := Min(Max(DBKernel.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
-    TrackBar2.Position := Min(Max(DBKernel.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100);
-    TrackBar3.Position := Min(Max(DBKernel.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
-    TrackBar4.Position := Min(Max(DBKernel.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100);
-    CheckBox2.Checked := DBKernel.ReadboolW('Options', 'SlideShow_UseCoolStretch', True);
+    TrackBar1.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
+    TrackBar2.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100);
+    TrackBar3.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
+    TrackBar4.Position := Min(Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100);
+    CheckBox2.Checked := Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True);
     TrackBar1Change(Sender);
     TrackBar2Change(Sender);
     TrackBar3Change(Sender);
@@ -297,30 +297,30 @@ begin
   end;
   if NewTab = 4 then
   begin
-    CheckBox14.Checked := DBKernel.Readbool('Options', 'AutoSaveSessionPasswords', True);
-    CheckBox15.Checked := DBKernel.Readbool('Options', 'AutoSaveINIPasswords', False);
-    Edit10.Text := IntToStr(DBKernel.ReadInteger('Options', 'BackUpdays', 7));
+    CheckBox14.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
+    CheckBox15.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
+    Edit10.Text := IntToStr(Settings.ReadInteger('Options', 'BackUpdays', 7));
   end;
 
   if NewTab = 5 then
   begin
 
-    CheckBox38.Checked := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
-    CheckBox5.Checked := DBKernel.Readbool('Options', 'UseListViewFullRectSelect', False);
-    Edit2.Text := IntToStr(DBKernel.ReadInteger('Options', 'UseListViewRoundRectSize', 3));
+    CheckBox38.Checked := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
+    CheckBox5.Checked := Settings.Readbool('Options', 'UseListViewFullRectSelect', False);
+    Edit2.Text := IntToStr(Settings.ReadInteger('Options', 'UseListViewRoundRectSize', 3));
 
-    CheckBox26.Checked := DBKernel.Readbool('Options', 'SortGroupsByName', True);
-    CheckBox23.Checked := DBKernel.Readbool('Options', 'UseHotSelect', True);
-    CheckBox27.Checked := DBKernel.Readbool('Options', 'UseGDIPlus', GDIPlusPresent);
-    CheckBox28.Checked := DBKernel.Readbool('Options', 'AllowManyInstancesOfProperty', True);
-    CheckBox30.Checked := DBKernel.ReadBool('Editor', 'VirtualCursor', False);
-    CheckBox31.Checked := DBKernel.ReadBool('Options', 'CheckUpdateLinks', False);
+    CheckBox26.Checked := Settings.Readbool('Options', 'SortGroupsByName', True);
+    CheckBox23.Checked := Settings.Readbool('Options', 'UseHotSelect', True);
+    CheckBox27.Checked := Settings.Readbool('Options', 'UseGDIPlus', GDIPlusPresent);
+    CheckBox28.Checked := Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True);
+    CheckBox30.Checked := Settings.ReadBool('Editor', 'VirtualCursor', False);
+    CheckBox31.Checked := Settings.ReadBool('Options', 'CheckUpdateLinks', False);
 
-    CheckBox32.Checked := DBKernel.ReadBool('Options', 'RunExplorerAtStartUp', False);
-    CheckBox33.Checked := DBKernel.ReadBool('Options', 'UseSpecialStartUpFolder', False);
-    Edit11.Text := DBKernel.ReadString('Options', 'SpecialStartUpFolder');
+    CheckBox32.Checked := Settings.ReadBool('Options', 'RunExplorerAtStartUp', False);
+    CheckBox33.Checked := Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False);
+    Edit11.Text := Settings.ReadString('Options', 'SpecialStartUpFolder');
 
-    CheckBox35.Checked := DBKernel.Readbool('Options', 'UseGroupsInSearch', True);
+    CheckBox35.Checked := Settings.Readbool('Options', 'UseGroupsInSearch', True);
     if not DirectoryExists(Edit11.Text) then
     begin
       RegIni := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
@@ -330,9 +330,9 @@ begin
     CheckBox33.Enabled := CheckBox32.Checked;
     Edit11.Enabled := CheckBox33.Checked and CheckBox33.Enabled;
 
-    CheckBox34.Checked := DBKernel.ReadBool('Options', 'NoAddSmallImages', True);
-    Edit12.Text := IntToStr(DBKernel.ReadInteger('Options', 'NoAddSmallImagesWidth', 64));
-    Edit13.Text := IntToStr(DBKernel.ReadInteger('Options', 'NoAddSmallImagesHeight', 64));
+    CheckBox34.Checked := Settings.ReadBool('Options', 'NoAddSmallImages', True);
+    Edit12.Text := IntToStr(Settings.ReadInteger('Options', 'NoAddSmallImagesWidth', 64));
+    Edit13.Text := IntToStr(Settings.ReadInteger('Options', 'NoAddSmallImagesHeight', 64));
     Edit12.Enabled := CheckBox34.Checked;
     Edit13.Enabled := CheckBox34.Checked;
   end;
@@ -386,13 +386,13 @@ begin
     end;
     S.Free;
     Reg.Free;
-    CheckBox17.Checked := DBKernel.ReadBool('Options', 'UseUserMenuForIDmenu', True);
-    CheckBox19.Checked := DBKernel.ReadBool('Options', 'UseUserMenuForViewer', True);
-    CheckBox18.Checked := DBKernel.ReadBool('Options', 'UseUserMenuForExplorer', True);
-    Edit7.Text := DBKernel.ReadString('', 'UserMenuName');
+    CheckBox17.Checked := Settings.ReadBool('Options', 'UseUserMenuForIDmenu', True);
+    CheckBox19.Checked := Settings.ReadBool('Options', 'UseUserMenuForViewer', True);
+    CheckBox18.Checked := Settings.ReadBool('Options', 'UseUserMenuForExplorer', True);
+    Edit7.Text := Settings.ReadString('', 'UserMenuName');
     if Edit7.Text = '' then
       Edit7.Text := L('Additional');
-    Edit8.Text := DBKernel.ReadString('', 'UserMenuIcon');
+    Edit8.Text := Settings.ReadString('', 'UserMenuIcon');
     if Edit8.Text = '' then
       Edit8.Text := '%SystemRoot%\system32\shell32.dll,126';
 
@@ -430,8 +430,8 @@ begin
   CheckBox27.Enabled := GDIPlusPresent;
   if not GDIPlusPresent then
     CheckBox27.Caption := L('GDI+ is unavaliable');
-  PopupMenu3.Images := DBkernel.ImageList;
-  PopupMenu2.Images := DBkernel.ImageList;
+  PopupMenu3.Images := DBKernel.ImageList;
+  PopupMenu2.Images := DBKernel.ImageList;
   Up1.ImageIndex := DB_IC_UP;
   Down1.ImageIndex := DB_IC_DOWN;
   DeleteItem1.ImageIndex := DB_IC_DELETE_INFO;
@@ -461,21 +461,21 @@ begin
   // 0: 
   if FLoadedPages[0] then
   begin
-    DBKernel.WriteBool('Options', 'AllowPreview', CheckBox4.Checked);
+    Settings.WriteBool('Options', 'AllowPreview', CheckBox4.Checked);
   end;
   // 1: 
   if FLoadedPages[1] then
   begin
-    DBKernel.WriteBool('Options', 'Explorer_ShowFolders', CheckBox1.Checked);
-    DBKernel.WriteBool('Options', 'Explorer_ShowSimpleFiles', CheckBox6.Checked);
-    DBKernel.WriteBool('Options', 'Explorer_ShowImageFiles', CheckBox7.Checked);
-    DBKernel.WriteBool('Options', 'Explorer_ShowHiddenFiles', CheckBox8.Checked);
-    DBKernel.WriteBool('Options', 'Explorer_ShowAttributes', CheckBox9.Checked);
-    DBKernel.WriteBool('Options', 'Explorer_ShowThumbnailsForFolders', CheckBox10.Checked);
-    DBKernel.WriteBool('Options', 'Explorer_SaveThumbnailsForFolders', CheckBox11.Checked);
-    DBKernel.WriteBool('Options', 'Explorer_ShowThumbnailsForImages', CheckBox12.Checked);
-    DBKernel.WriteBool('Options', 'ShowEXIFMarker', CheckBox20.Checked);
-    DBKernel.WriteBool('Options', 'ShowOtherPlaces', CheckBox21.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowFolders', CheckBox1.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowSimpleFiles', CheckBox6.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowImageFiles', CheckBox7.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowHiddenFiles', CheckBox8.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowAttributes', CheckBox9.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForFolders', CheckBox10.Checked);
+    Settings.WriteBool('Options', 'Explorer_SaveThumbnailsForFolders', CheckBox11.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForImages', CheckBox12.Checked);
+    Settings.WriteBool('Options', 'ShowEXIFMarker', CheckBox20.Checked);
+    Settings.WriteBool('Options', 'ShowOtherPlaces', CheckBox21.Checked);
 
     ExplorerManager.ShowEXIF := CheckBox20.Checked;
     ExplorerManager.ShowQuickLinks := CheckBox21.Checked;
@@ -519,53 +519,53 @@ begin
       Reg.CloseKey;
     end;
     Reg.Free;
-    DBKernel.WriteBool('Options', 'UseUserMenuForIDmenu', CheckBox17.Checked);
-    DBKernel.WriteBool('Options', 'UseUserMenuForViewer', CheckBox19.Checked);
-    DBKernel.WriteBool('Options', 'UseUserMenuForExplorer', CheckBox18.Checked);
+    Settings.WriteBool('Options', 'UseUserMenuForIDmenu', CheckBox17.Checked);
+    Settings.WriteBool('Options', 'UseUserMenuForViewer', CheckBox19.Checked);
+    Settings.WriteBool('Options', 'UseUserMenuForExplorer', CheckBox18.Checked);
   end;
   // 4 : 
   if FLoadedPages[4] then
   begin
-    DBKernel.WriteBool('Options', 'AutoSaveSessionPasswords', CheckBox14.Checked);
-    DBKernel.WriteBool('Options', 'AutoSaveINIPasswords', CheckBox15.Checked);
-    DBKernel.WriteInteger('Options', 'BackUpdays', StrToIntDef(Edit10.Text, 7));
+    Settings.WriteBool('Options', 'AutoSaveSessionPasswords', CheckBox14.Checked);
+    Settings.WriteBool('Options', 'AutoSaveINIPasswords', CheckBox15.Checked);
+    Settings.WriteInteger('Options', 'BackUpdays', StrToIntDef(Edit10.Text, 7));
   end;
   // 5 : 
   if FLoadedPages[5] then
   begin
-    DBKernel.WriteBool('Options', 'UseSmallToolBarButtons', CheckBox38.Checked);
-    DBKernel.WriteBool('Options', 'UseListViewFullRectSelect', CheckBox5.Checked);
-    DBKernel.WriteInteger('Options', 'UseListViewRoundRectSize', StrToIntDef(Edit2.Text, 0));
+    Settings.WriteBool('Options', 'UseSmallToolBarButtons', CheckBox38.Checked);
+    Settings.WriteBool('Options', 'UseListViewFullRectSelect', CheckBox5.Checked);
+    Settings.WriteInteger('Options', 'UseListViewRoundRectSize', StrToIntDef(Edit2.Text, 0));
 
-    DBKernel.WriteBool('Options', 'UseGroupsInSearch', CheckBox35.Checked);
-    DBKernel.WriteBool('Options', 'SortGroupsByName', CheckBox26.Checked);
-    DBKernel.WriteBool('Options', 'UseHotSelect', CheckBox23.Checked);
-    DBKernel.WriteBool('Options', 'UseGDIPlus', CheckBox27.Checked);
-    DBKernel.WriteBool('Options', 'AllowManyInstancesOfProperty', CheckBox28.Checked);
-    DBKernel.WriteBool('Editor', 'VirtualCursor', CheckBox30.Checked);
-    DBKernel.WriteBool('Options', 'CheckUpdateLinks', CheckBox31.Checked);
+    Settings.WriteBool('Options', 'UseGroupsInSearch', CheckBox35.Checked);
+    Settings.WriteBool('Options', 'SortGroupsByName', CheckBox26.Checked);
+    Settings.WriteBool('Options', 'UseHotSelect', CheckBox23.Checked);
+    Settings.WriteBool('Options', 'UseGDIPlus', CheckBox27.Checked);
+    Settings.WriteBool('Options', 'AllowManyInstancesOfProperty', CheckBox28.Checked);
+    Settings.WriteBool('Editor', 'VirtualCursor', CheckBox30.Checked);
+    Settings.WriteBool('Options', 'CheckUpdateLinks', CheckBox31.Checked);
 
-    DBKernel.WriteBool('Options', 'RunExplorerAtStartUp', CheckBox32.Checked);
-    DBKernel.WriteBool('Options', 'UseSpecialStartUpFolder', CheckBox33.Checked);
-    DBKernel.WriteString('Options', 'SpecialStartUpFolder', Edit11.Text);
+    Settings.WriteBool('Options', 'RunExplorerAtStartUp', CheckBox32.Checked);
+    Settings.WriteBool('Options', 'UseSpecialStartUpFolder', CheckBox33.Checked);
+    Settings.WriteString('Options', 'SpecialStartUpFolder', Edit11.Text);
 
-    DBKernel.WriteBool('Options', 'NoAddSmallImages', CheckBox34.Checked);
-    DBKernel.WriteString('Options', 'NoAddSmallImagesWidth', Edit12.Text);
-    DBKernel.WriteString('Options', 'NoAddSmallImagesHeight', Edit13.Text);
+    Settings.WriteBool('Options', 'NoAddSmallImages', CheckBox34.Checked);
+    Settings.WriteString('Options', 'NoAddSmallImagesWidth', Edit12.Text);
+    Settings.WriteString('Options', 'NoAddSmallImagesHeight', Edit13.Text);
 
   end;
   // 2 : 
   if FLoadedPages[2] then
   begin
-    DBKernel.WriteBool('SlideShow', 'UseFastSlideShowImageLiading', CheckBox37.Checked);
-    DBKernel.WriteBool('Options', 'RotateWithoutPromt', CheckBox24.Checked);
-    DBKernel.WriteBool('Options', 'RotateEvenIfFileInDB', CheckBox25.Checked);
-    DBKernel.WriteBool('Options', 'NextOnClick', CheckBox22.Checked);
-    DBKernel.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CheckBox2.Checked);
-    DBKernel.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
-    DBKernel.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
-    DBKernel.WriteInteger('Options', 'SlideShow_GrayScale', TrackBar3.Position);
-    DBKernel.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
+    Settings.WriteBool('SlideShow', 'UseFastSlideShowImageLiading', CheckBox37.Checked);
+    Settings.WriteBool('Options', 'RotateWithoutPromt', CheckBox24.Checked);
+    Settings.WriteBool('Options', 'RotateEvenIfFileInDB', CheckBox25.Checked);
+    Settings.WriteBool('Options', 'NextOnClick', CheckBox22.Checked);
+    Settings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CheckBox2.Checked);
+    Settings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
+    Settings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
+    Settings.WriteInteger('Options', 'SlideShow_GrayScale', TrackBar3.Position);
+    Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
   end;
   // end; 
   Close;
@@ -807,12 +807,12 @@ end;
 
 procedure TOptionsForm.Button3Click(Sender: TObject);
 begin
-  DBkernel.ClearTemporaryPasswordsInSession;
+  DBKernel.ClearTemporaryPasswordsInSession;
 end;
 
 procedure TOptionsForm.Button4Click(Sender: TObject);
 begin
-  DBkernel.ClearINIPasswords;
+  DBKernel.ClearINIPasswords;
 end;
 
 procedure TOptionsForm.Button7Click(Sender: TObject);
@@ -994,8 +994,8 @@ end;
 
 procedure TOptionsForm.Button16Click(Sender: TObject);
 begin
-  DBKernel.WriteString('', 'UserMenuName', Edit7.Text);
-  DBKernel.WriteString('', 'UserMenuIcon', Edit8.Text);
+  Settings.WriteString('', 'UserMenuName', Edit7.Text);
+  Settings.WriteString('', 'UserMenuIcon', Edit8.Text);
 end;
 
 procedure TOptionsForm.Button15Click(Sender: TObject);

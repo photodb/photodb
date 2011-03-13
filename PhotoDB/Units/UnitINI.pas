@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Registry, IniFiles, Classes, SysUtils, uLogger, uConstants, uMemory,
-  uRuntime;
+  uRuntime, SyncObjs;
 
 type
   TMyRegistryINIFile = class(TIniFile)
@@ -23,15 +23,15 @@ type
     constructor Create(ASection: Integer; readonly: Boolean = False);
     destructor Destroy; override;
     function OpenKey(Key: string; CreateInNotExists: Boolean): Boolean;
-    function ReadString(name: string; default: string = ''): string;
-    function ReadInteger(name: string; default: Integer = 0): Integer;
-    function ReadDateTime(name: string; default: TDateTime = 0): TDateTime;
+    function ReadString(name: string; Default: string = ''): string;
+    function ReadInteger(name: string; Default: Integer = 0): Integer;
+    function ReadDateTime(name: string; Default: TDateTime = 0): TDateTime;
+    function ReadBool(name: string; Default: Boolean = False): Boolean;
     procedure CloseKey;
     procedure GetKeyNames(Strings: TStrings);
     procedure GetValueNames(Strings: TStrings);
     function ValueExists(name: string): Boolean;
     function KeyExists(Key: string): Boolean;
-    function ReadBool(name: string; default: Boolean = False): Boolean;
     function DeleteKey(Key: string): Boolean;
     function DeleteValue(name: string): Boolean;
     procedure WriteString(name: string; Value: string);
@@ -45,12 +45,12 @@ type
   TDBRegistryCache = class(TObject)
   private
     FList : TList;
+    FSync: TCriticalSection;
   public
     constructor Create;
     destructor Destroy; override;
     function GetSection(ASection : Integer; AKey : string) : TBDRegistry;
   end;
-
 
 const
   REGISTRY_ALL_USERS    = 0;
@@ -131,7 +131,7 @@ end;
 
 destructor TBDRegistry.Destroy;
 begin
-  Registry.Free;
+  F(Registry);
   inherited Destroy;
 end;
 
@@ -308,8 +308,8 @@ begin
     .WriteBool(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
-    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
-    .WriteBool(Key, name, Value);
+    Key := (Registry as TMyRegistryINIFile).Key;
+    (Registry as TMyRegistryINIFile).WriteBool(Key, name, Value);
   end;
 end;
 
@@ -321,8 +321,8 @@ begin
     .WriteDateTime(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
-    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
-    .WriteDateTime(Key, name, Value);
+    Key := (Registry as TMyRegistryINIFile).Key;
+    (Registry as TMyRegistryINIFile).WriteDateTime(Key, name, Value);
   end;
 end;
 
@@ -334,8 +334,8 @@ begin
     .WriteInteger(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
-    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
-    .WriteInteger(Key, name, Value);
+    Key := (Registry as TMyRegistryINIFile).Key;
+    (Registry as TMyRegistryINIFile).WriteInteger(Key, name, Value);
   end;
 end;
 
@@ -344,13 +344,13 @@ var
   Key: string;
 begin
   if Registry is TRegistry then
-  begin (Registry as TRegistry)
-    .WriteString(name, Value);
+  begin
+    (Registry as TRegistry).WriteString(name, Value);
   end;
   if Registry is TMyRegistryINIFile then
   begin
-    Key := (Registry as TMyRegistryINIFile).Key; (Registry as TMyRegistryINIFile)
-    .WriteString(Key, name, Value);
+    Key := (Registry as TMyRegistryINIFile).Key;
+    (Registry as TMyRegistryINIFile).WriteString(Key, name, Value);
   end;
 end;
 
@@ -359,10 +359,12 @@ end;
 constructor TDBRegistryCache.Create;
 begin
   FList := TList.Create;
+  FSync := TCriticalSection.Create;
 end;
 
 destructor TDBRegistryCache.Destroy;
 begin
+  F(FSync);
   FreeList(FList);
   inherited;
 end;
@@ -372,19 +374,24 @@ var
   I : Integer;
   Reg : TBDRegistry;
 begin
-  for I := 0 to FList.Count - 1 do
-  begin
-    Reg := FList[I];
-    if (Reg.Key = AKey) and (Reg.Section = ASection) then
+  FSync.Enter;
+  try
+    for I := 0 to FList.Count - 1 do
     begin
-      Result := FList[I];
-      Exit;
+      Reg := FList[I];
+      if (Reg.Key = AKey) and (Reg.Section = ASection) then
+      begin
+        Result := FList[I];
+        Exit;
+      end;
     end;
-  end;
 
-  Result := TBDRegistry.Create(ASection);
-  Result.OpenKey(AKey, True);
-  FList.Add(Result);
+    Result := TBDRegistry.Create(ASection);
+    Result.OpenKey(AKey, True);
+    FList.Add(Result);
+  finally
+    FSync.Leave;
+  end;
 end;
 
 end.

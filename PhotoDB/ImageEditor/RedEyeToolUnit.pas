@@ -6,7 +6,7 @@ uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
   GraphicsBaseTypes, CustomSelectTool, Dialogs, UnitDBKernel,
-  uDBGraphicTypes, uMemory;
+  uDBGraphicTypes, uMemory, uSettings;
 
 type
   TRedEyeToolPanelClass = class(TCustomSelectToolClass)
@@ -245,9 +245,9 @@ begin
   FCustomColor := $0;
   FCustomColorDialog := TColorDialog.Create(AOwner);
 
-  EffectSizeScroll.Position := DBKernel.ReadInteger('Editor', 'RedEyeToolSize', 50);
-  FEyeColor.ItemIndex := DBKernel.ReadInteger('Editor', 'RedEyeColor', 0);
-  FCustomColor := DBKernel.ReadInteger('Editor', 'RedEyeColorCustom', 0);
+  EffectSizeScroll.Position := Settings.ReadInteger('Editor', 'RedEyeToolSize', 50);
+  FEyeColor.ItemIndex := Settings.ReadInteger('Editor', 'RedEyeColor', 0);
+  FCustomColor := Settings.ReadInteger('Editor', 'RedEyeColorCustom', 0);
 
   SaveSettingsLink.Top := FEyeColor.Top + FEyeColor.Height + 15;
   MakeItLink.Top := SaveSettingsLink.Top + SaveSettingsLink.Height + 5;
@@ -380,9 +380,9 @@ end;
 
 procedure TRedEyeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
-  DBKernel.WriteInteger('Editor', 'RedEyeToolSize', EffectSizeScroll.Position);
-  DBKernel.WriteInteger('Editor', 'RedEyeColor', FEyeColor.ItemIndex);
-  DBKernel.WriteInteger('Editor', 'RedEyeColorCustom', FCustomColor);
+  Settings.WriteInteger('Editor', 'RedEyeToolSize', EffectSizeScroll.Position);
+  Settings.WriteInteger('Editor', 'RedEyeColor', FEyeColor.ItemIndex);
+  Settings.WriteInteger('Editor', 'RedEyeColorCustom', FCustomColor);
 end;
 
 class function TRedEyeToolPanelClass.ID: string;

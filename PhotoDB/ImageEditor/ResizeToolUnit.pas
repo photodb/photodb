@@ -5,7 +5,7 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  UnitResampleFilters, uDBBaseTypes, UnitDBCommon,
+  UnitResampleFilters, uDBBaseTypes, UnitDBCommon, uSettings,
   UnitDBKernel, Effects, uConstants, uEditorTypes, uMemory;
 
 type
@@ -341,16 +341,16 @@ begin
   CloseLink.ImageCanRegenerate := True;
   IcoCancel.Free;
 
-  ComboBoxPercent.Text := IntToStr(DBKernel.ReadInteger('Editor', 'PercentValue', 100)) + '%';
-  WidthEdit.Text := IntToStr(DBKernel.ReadInteger('Editor', 'CustomWidth', 100));
-  HeightEdit.Text := IntToStr(DBKernel.ReadInteger('Editor', 'CustomHeight', 100));
-  RadioButton100x100.Checked := DBKernel.ReadBool('Editor', 'ResizeTo100x100', False);
-  RadioButton200x200.Checked := DBKernel.ReadBool('Editor', 'ResizeTo200x200', False);
-  RadioButton600x800.Checked := DBKernel.ReadBool('Editor', 'ResizeTo600x800', True);
-  RadioButton_Custom.Checked := DBKernel.ReadBool('Editor', 'ResizeToCustom', False);
-  CheckBoxSaveProportions.Checked := DBKernel.ReadBool('Editor', 'SaveProportions', True);
-  RadioButtonPercent.Checked := DBKernel.ReadBool('Editor', 'ResizeToPercent', False);
-  ComboBoxMethod.ItemIndex := DBKernel.ReadInteger('Editor', 'ResizeMethod', 0);
+  ComboBoxPercent.Text := IntToStr(Settings.ReadInteger('Editor', 'PercentValue', 100)) + '%';
+  WidthEdit.Text := IntToStr(Settings.ReadInteger('Editor', 'CustomWidth', 100));
+  HeightEdit.Text := IntToStr(Settings.ReadInteger('Editor', 'CustomHeight', 100));
+  RadioButton100x100.Checked := Settings.ReadBool('Editor', 'ResizeTo100x100', False);
+  RadioButton200x200.Checked := Settings.ReadBool('Editor', 'ResizeTo200x200', False);
+  RadioButton600x800.Checked := Settings.ReadBool('Editor', 'ResizeTo600x800', True);
+  RadioButton_Custom.Checked := Settings.ReadBool('Editor', 'ResizeToCustom', False);
+  CheckBoxSaveProportions.Checked := Settings.ReadBool('Editor', 'SaveProportions', True);
+  RadioButtonPercent.Checked := Settings.ReadBool('Editor', 'ResizeToPercent', False);
+  ComboBoxMethod.ItemIndex := Settings.ReadInteger('Editor', 'ResizeMethod', 0);
   Loading := False;
 end;
 
@@ -397,16 +397,16 @@ end;
 
 procedure TResizeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
-  DBKernel.WriteBool('Editor', 'ResizeTo100x100', RadioButton100x100.Checked);
-  DBKernel.WriteBool('Editor', 'ResizeTo200x200', RadioButton200x200.Checked);
-  DBKernel.WriteBool('Editor', 'ResizeTo600x800', RadioButton600x800.Checked);
-  DBKernel.WriteBool('Editor', 'ResizeToCustom', RadioButton_Custom.Checked);
-  DBKernel.WriteBool('Editor', 'SaveProportions', CheckBoxSaveProportions.Checked);
-  DBKernel.WriteBool('Editor', 'ResizeToPercent', RadioButtonPercent.Checked);
-  DBKernel.WriteInteger('Editor', 'ResizeMethod', ComboBoxMethod.ItemIndex);
-  DBKernel.WriteInteger('Editor', 'CustomWidth', StrToIntDef(WidthEdit.Text, 100));
-  DBKernel.WriteInteger('Editor', 'CustomHeight', StrToIntDef(HeightEdit.Text, 100));
-  DBKernel.WriteInteger('Editor','PercentValue',Round(GetZoom*100));
+  Settings.WriteBool('Editor', 'ResizeTo100x100', RadioButton100x100.Checked);
+  Settings.WriteBool('Editor', 'ResizeTo200x200', RadioButton200x200.Checked);
+  Settings.WriteBool('Editor', 'ResizeTo600x800', RadioButton600x800.Checked);
+  Settings.WriteBool('Editor', 'ResizeToCustom', RadioButton_Custom.Checked);
+  Settings.WriteBool('Editor', 'SaveProportions', CheckBoxSaveProportions.Checked);
+  Settings.WriteBool('Editor', 'ResizeToPercent', RadioButtonPercent.Checked);
+  Settings.WriteInteger('Editor', 'ResizeMethod', ComboBoxMethod.ItemIndex);
+  Settings.WriteInteger('Editor', 'CustomWidth', StrToIntDef(WidthEdit.Text, 100));
+  Settings.WriteInteger('Editor', 'CustomHeight', StrToIntDef(HeightEdit.Text, 100));
+  Settings.WriteInteger('Editor','PercentValue',Round(GetZoom*100));
 end;
 
 procedure TResizeToolPanelClass.EditChange(Sender: TObject);

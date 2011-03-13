@@ -9,7 +9,8 @@ uses
   ExtCtrls, ComCtrls,  Dialogs, DB, CommCtrl, JPEG, Math,
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
   UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
-  uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm;
+  uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm,
+  uSettings;
 
 type
   TDBReplaceForm = class(TDBForm)
@@ -378,7 +379,7 @@ begin
   WorkQuery := GetQuery;
   DropFileTarget1.register(Self);
   FBitmapImageList := TBitmapImageList.Create;
-  ListView1.HotTrack := DBKernel.Readbool('Options', 'UseHotSelect', True);
+  ListView1.HotTrack := Settings.Readbool('Options', 'UseHotSelect', True);
   Listview1.DoubleBuffered := True;
   ListView1SelectItem(Sender, nil, False);
   DBKernel.RegisterChangesID(Self, Self.ChangedDBDataByID);

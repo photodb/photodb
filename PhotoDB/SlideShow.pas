@@ -15,7 +15,7 @@ uses
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime,
-  uDBBaseTypes, uViewerTypes;
+  uDBBaseTypes, uViewerTypes, uSettings;
 
 type
   TRotatingImageInfo = record
@@ -358,8 +358,8 @@ begin
   FImageExists := False;
   DBCanDrag := False;
   DropFileTarget1.Register(Self);
-  SlideTimer.Interval := Math.Min(Math.Max(DBKernel.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
-  IncGrayScale := Math.Min(Math.Max(DBKernel.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
+  SlideTimer.Interval := Math.Min(Math.Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
+  IncGrayScale := Math.Min(Math.Max(Settings.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
   FullScreenNow := False;
   SlideShowNow := False;
   TbrActions.DoubleBuffered := True;
@@ -636,7 +636,7 @@ begin
   Zh := ImRect.Bottom - ImRect.Top;
   if ImageExists or Loading then
   begin
-    if DBKernel.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+    if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
     begin
       if ZoomerOn and not WaitImageTimer.Enabled then
       begin
@@ -981,7 +981,7 @@ begin
     Y1 := Screen.Height div 2 - Fh div 2;
     X2 := Screen.Width div 2 + Fw div 2;
     Y2 := Screen.Height div 2 + Fh div 2;
-    if DBKernel.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+    if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
       StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, FNewCsrBmp)
     else
       FNewCsrBmp.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
@@ -1012,7 +1012,7 @@ begin
     Y1 := Screen.Height div 2 - Fh div 2;
     X2 := Screen.Width div 2 + Fw div 2;
     Y2 := Screen.Height div 2 + Fh div 2;
-    if DBKernel.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+    if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
       StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, FNewCsrBmp)
     else
       FNewCsrBmp.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
@@ -1054,7 +1054,7 @@ begin
       TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Info);
     end else
     begin
-      if DBKernel.ReadBool('Options', 'UseUserMenuForViewer', True) then
+      if Settings.ReadBool('Options', 'UseUserMenuForViewer', True) then
         if not(SlideShowNow or FullScreenNow) then
         begin
           InitializeInfo;
@@ -2254,7 +2254,7 @@ begin
   P := ScreenToClient(P);
   if Cursor = CrDefault then
   begin
-    if DBKernel.Readbool('Options', 'NextOnClick', False) then
+    if Settings.Readbool('Options', 'NextOnClick', False) then
     begin
       NextImageClick(Sender);
       Exit;

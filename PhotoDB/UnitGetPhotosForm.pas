@@ -10,7 +10,8 @@ uses
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants,
   CCR.Exif, uMemory, uTranslate, uDBForm, uShellUtils, uSysUtils,
-  uDBUtils, uDBTypes, uRuntime, uDBBaseTypes, uDBPopupMenuInfo;
+  uDBUtils, uDBTypes, uRuntime, uDBBaseTypes, uDBPopupMenuInfo,
+  uSettings;
 
 type
   TGetImagesOptions = record
@@ -299,8 +300,8 @@ begin
   GetPhotosFormSID := GetGUID;
   ThreadInProgress := False;
   LoadLanguage;
-  if DirectoryExists(DBKernel.ReadString('GetPhotos', 'DFolder')) then
-    EdFolder.Text := DBKernel.ReadString('GetPhotos', 'DFolder')
+  if DirectoryExists(Settings.ReadString('GetPhotos', 'DFolder')) then
+    EdFolder.Text := Settings.ReadString('GetPhotos', 'DFolder')
   else
   begin
     EdFolder.Text := GetMyPicturesPath;
@@ -321,19 +322,16 @@ begin
   DontCopy1.ImageIndex := DB_IC_DELETE_INFO;
   ShowImages1.ImageIndex := DB_IC_SLIDE_SHOW;
 
-  CbOpenFolder.Checked := DBKernel.ReadBool('GetPhotos', 'OpenFolder', True);
-  CbAddProtosToDB.Checked := DBKernel.ReadBool('GetPhotos', 'AddPhotos', True);
-  if DBKernel.ReadString('GetPhotos', 'MaskFolder') <> '' then
-    EdFolderMask.Text := DBKernel.ReadString('GetPhotos', 'MaskFolder')
+  CbOpenFolder.Checked := Settings.ReadBool('GetPhotos', 'OpenFolder', True);
+  CbAddProtosToDB.Checked := Settings.ReadBool('GetPhotos', 'AddPhotos', True);
+  if Settings.ReadString('GetPhotos', 'MaskFolder') <> '' then
+    EdFolderMask.Text := Settings.ReadString('GetPhotos', 'MaskFolder')
   else
     EdFolderMask.Text := '%yy:mm:dd = %YMD (%coment)';
 
-  if DBKernel.ReadString('GetPhotos', 'Comment') <> '' then
-    MemComment.Text := DBKernel.ReadString('GetPhotos', 'Comment')
-  else
-    MemComment.Text := L('Your comment');
+  MemComment.Text := Settings.ReadString('GetPhotos', 'Comment', L('Your comment'));
 
-  case DBKernel.ReadInteger('GetPhotos', 'GetMethod', 0) of
+  case Settings.ReadInteger('GetPhotos', 'GetMethod', 0) of
     0:
       CbMethod.ItemIndex := 0;
     1:
@@ -343,11 +341,8 @@ begin
   end;
   EdFolderMaskChange(Sender);
 
-  CheckBox2.Checked := DBKernel.ReadBool('GetPhotos', 'UseMultimediaMask', True);
-  if DBKernel.ReadString('GetPhotos', 'MultimediaMask') <> '' then
-    EdMultimediaMask.Text := DBKernel.ReadString('GetPhotos', 'MultimediaMask')
-  else
-    EdMultimediaMask.Text := MultimediaBaseFiles;
+  CheckBox2.Checked := Settings.ReadBool('GetPhotos', 'UseMultimediaMask', True);
+  EdMultimediaMask.Text := Settings.ReadString('GetPhotos', 'MultimediaMask', MultimediaBaseFiles)
 end;
 
 procedure TGetToPersonalFolderForm.BtnChooseFolderClick(Sender: TObject);
@@ -401,14 +396,14 @@ end;
 
 procedure TGetToPersonalFolderForm.BtnSaveClick(Sender: TObject);
 begin
-  DBKernel.WriteBool('GetPhotos', 'OpenFolder', CbOpenFolder.Checked);
-  DBKernel.WriteBool('GetPhotos', 'AddPhotos', CbAddProtosToDB.Checked);
-  DBKernel.WriteString('GetPhotos', 'DFolder', EdFolder.Text);
-  DBKernel.WriteString('GetPhotos', 'MaskFolder', EdFolderMask.Text);
-  DBKernel.WriteString('GetPhotos', 'Comment', MemComment.Text);
-  DBKernel.WriteInteger('GetPhotos', 'GetMethod', CbMethod.ItemIndex);
-  DBKernel.WriteString('GetPhotos', 'MultimediaMask', EdMultimediaMask.Text);
-  DBKernel.WriteBool('GetPhotos', 'UseMultimediaMask', CheckBox2.Checked);
+  Settings.WriteBool('GetPhotos', 'OpenFolder', CbOpenFolder.Checked);
+  Settings.WriteBool('GetPhotos', 'AddPhotos', CbAddProtosToDB.Checked);
+  Settings.WriteString('GetPhotos', 'DFolder', EdFolder.Text);
+  Settings.WriteString('GetPhotos', 'MaskFolder', EdFolderMask.Text);
+  Settings.WriteString('GetPhotos', 'Comment', MemComment.Text);
+  Settings.WriteInteger('GetPhotos', 'GetMethod', CbMethod.ItemIndex);
+  Settings.WriteString('GetPhotos', 'MultimediaMask', EdMultimediaMask.Text);
+  Settings.WriteBool('GetPhotos', 'UseMultimediaMask', CheckBox2.Checked);
 end;
 
 procedure TGetToPersonalFolderForm.BtnOkClick(Sender: TObject);

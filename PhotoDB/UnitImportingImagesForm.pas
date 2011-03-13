@@ -9,7 +9,7 @@ uses
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
   UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils,
   uConstants, uMemory, uDBForm, uShellIntegration, uRuntime,
-  uShellUtils;
+  uShellUtils, uSettings;
 
 type
   TImportPlace = class(TObject)
@@ -394,9 +394,9 @@ begin
   BtnBreak.Visible := True;
   BtnPause.Visible := True;
 
-  DBKernel.WriteBool('Options', 'NoAddSmallImages', CheckBox1.Checked);
-  DBKernel.WriteString('Options', 'NoAddSmallImagesWidth', Edit1.Text);
-  DBKernel.WriteString('Options', 'NoAddSmallImagesHeight', Edit2.Text);
+  Settings.WriteBool('Options', 'NoAddSmallImages', CheckBox1.Checked);
+  Settings.WriteString('Options', 'NoAddSmallImagesWidth', Edit1.Text);
+  Settings.WriteString('Options', 'NoAddSmallImagesHeight', Edit2.Text);
 
   UpdateObject := TUpdaterDB.Create(Self);
   UpdateObject.OwnerFormSetMaxValue := SetMaxValue;

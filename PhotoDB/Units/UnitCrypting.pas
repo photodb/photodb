@@ -5,7 +5,7 @@ interface
 uses
   dolphin_db, GraphicCrypt, DB, Windows, SysUtils,
   UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils,
-  uDBForm;
+  uDBForm, uMemory;
 
 const
   CRYPT_RESULT_UNDEFINED         = 0;
@@ -36,13 +36,13 @@ var
   MS : TMemoryStream;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
-  if GetDBType=DB_TYPE_MDB then
+  if GetDBType = DB_TYPE_MDB then
   begin
-    Query:=GetQuery;
+    Query := GetQuery;
     try
       SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
       Query.Open;
-      JPEG:=TJPEGImage.Create;
+      JPEG := TJPEGImage.Create;
       try
         JPEG.Assign(Query.FieldByName('thum'));
         MS := TMemoryStream.Create;
@@ -51,10 +51,10 @@ begin
           SetSQL(Query, 'Update $DB$ Set thum = :thum where ID = ' + IntToStr(ID));
           LoadParamFromStream(Query, 0, MS, ftBlob);
         finally
-          MS.Free;
+          F(MS);
         end;
       finally
-        JPEG.Free;
+        F(JPEG);
       end;
       ExecSQL(Query);
     finally
@@ -86,7 +86,7 @@ begin
           ExecSQL(Query);
         end;
       finally
-        JPEG.Free;
+        F(JPEG);
       end;
     finally
       FreeDS(Query);
@@ -157,120 +157,124 @@ begin
 
   if ID <> 0 then
     if ResetPasswordDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
-    begin
       Result := CRYPT_RESULT_FAILED_CRYPT_DB;
-    end;
 
 end;
 
 function DeCryptTStrings(S : String; Pass : String) : TStrings;
 var
- x : array of byte;
- i, Lpass : integer;
- CRC : Cardinal;
- TempStream, MS : TMemoryStream;
- GraphicHeader : TGraphicCryptFileHeader;
- GraphicHeaderV1 : TGraphicCryptFileHeaderV1;
+  X: array of Byte;
+  I, Lpass: Integer;
+  CRC: Cardinal;
+  TempStream, MS: TMemoryStream;
+  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
 begin
- Result:=TStringList.Create;
- MS:=TMemoryStream.Create;
- MS.WriteBuffer(Pointer(s)^,Length(S));
- MS.Seek(0,soFromBeginning);
- MS.Read(GraphicHeader,SizeOf(TGraphicCryptFileHeader));
- if GraphicHeader.ID<>'.PHDBCRT' then
- begin
-  MS.Free;
-  exit;
- end;
- if GraphicHeader.Version=1 then
- begin
-  MS.Read(GraphicHeaderV1,SizeOf(TGraphicCryptFileHeaderV1));
-  CalcStringCRC32(Pass,CRC);
-  if GraphicHeaderV1.PassCRC<>CRC then
-  begin
-   MS.Free;
-   exit;
-  end;
-  if GraphicHeaderV1.Displacement>0 then
-  MS.Seek(GraphicHeaderV1.Displacement,soCurrent);
-  SetLength(x,GraphicHeaderV1.FileSize);
-  MS.Read(Pointer(x)^,GraphicHeaderV1.FileSize);
-  MS.Free;
-  Lpass:=Length(Pass);
-  for i:=0 to Length(x)-1 do
-  x[i]:=x[i] xor (TMagicByte(GraphicHeaderV1.Magic)[i mod 4+1] xor Byte(Pass[i mod Lpass+1]));
-  TempStream := TMemoryStream.Create;
-  TempStream.Seek(0,soFromBeginning);
-  TempStream.WriteBuffer(Pointer(x)^,Length(x));
-  TempStream.Seek(0,soFromBeginning);
+  Result := TStringList.Create;
+  MS := TMemoryStream.Create;
   try
-  Result.LoadFromStream(TempStream);
-  except
+    MS.WriteBuffer(Pointer(S)^, Length(S));
+    MS.Seek(0, SoFromBeginning);
+    MS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    if GraphicHeader.ID <> '.PHDBCRT' then
+      Exit;
+
+    if GraphicHeader.Version = 1 then
+    begin
+      MS.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
+      CalcStringCRC32(Pass, CRC);
+      if GraphicHeaderV1.PassCRC <> CRC then
+        Exit;
+
+      if GraphicHeaderV1.Displacement > 0 then
+        MS.Seek(GraphicHeaderV1.Displacement, SoCurrent);
+      SetLength(X, GraphicHeaderV1.FileSize);
+      MS.Read(Pointer(X)^, GraphicHeaderV1.FileSize);
+      F(MS);
+
+      Lpass := Length(Pass);
+      for I := 0 to Length(X) - 1 do
+        X[I] := X[I] xor (TMagicByte(GraphicHeaderV1.Magic)[I mod 4 + 1] xor Byte(Pass[I mod Lpass + 1]));
+      TempStream := TMemoryStream.Create;
+      try
+        TempStream.Seek(0, SoFromBeginning);
+        TempStream.WriteBuffer(Pointer(X)^, Length(X));
+        TempStream.Seek(0, SoFromBeginning);
+        try
+          Result.LoadFromStream(TempStream);
+        except
+        end;
+      finally
+        F(TempStream);
+      end;
+    end;
+  finally
+    F(MS);
   end;
-  TempStream.Free;
- end;
 end;
 
-function CryptTStrings(TS : TStrings; Pass : String) : String;
+function CryptTStrings(TS: TStrings; Pass: string): string;
 var
- MS : TMemoryStream;
- x : array of byte;
- i, LPass : integer;
- GraphicHeader : TGraphicCryptFileHeader;
- GraphicHeaderV1 : TGraphicCryptFileHeaderV1;
+  MS: TMemoryStream;
+  X: array of Byte;
+  I, LPass: Integer;
+  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeaderV1: TGraphicCryptFileHeaderV1;
 begin
- Result:='';
- MS:=TMemoryStream.Create;
- TS.SaveToStream(MS);
- SetLength(x,MS.Size);
- MS.Seek(0,soFromBeginning);
- MS.Read(GraphicHeader,SizeOf(GraphicHeader));
- if GraphicHeader.ID='.PHDBCRT' then
- begin
-  MS.Free;
-  exit;
- end;
- MS.Seek(0,soFromBeginning);
- MS.Read(Pointer(x)^,MS.Size);
- MS.Free;
- LPass:=length(Pass);
- Randomize;
+  Result := '';
+  MS := TMemoryStream.Create;
+  try
+    TS.SaveToStream(MS);
+    SetLength(X, MS.Size);
+    MS.Seek(0, SoFromBeginning);
+    MS.read(GraphicHeader, SizeOf(GraphicHeader));
+    if GraphicHeader.ID = '.PHDBCRT' then
+      Exit;
 
+    MS.Seek(0, SoFromBeginning);
+    MS.Read(Pointer(X)^, MS.Size);
+  finally
+    F(MS);
+  end;
+  LPass := Length(Pass);
+  Randomize;
 {$IFOPT R+}
 {$DEFINE CKRANGE}
 {$R-}
 {$ENDIF}
- GraphicHeaderV1.Magic:=Random(High(Cardinal));
- for i:=0 to Length(x)-1 do
- x[i]:=x[i] xor (TMagicByte(GraphicHeaderV1.Magic)[i mod 4+1] xor Byte(Pass[i mod Lpass+1]));
+  GraphicHeaderV1.Magic := Random( high(Cardinal));
+  for I := 0 to Length(X) - 1 do
+    X[I] := X[I] xor (TMagicByte(GraphicHeaderV1.Magic)[I mod 4 + 1] xor Byte(Pass[I mod Lpass + 1]));
 {$IFDEF CKRANGE}
 {$UNDEF CKRANGE}
 {$R+}
 {$ENDIF}
-
- MS:=TMemoryStream.Create;
- MS.Seek(0,soFromBeginning);
- GraphicHeader.ID:='.PHDBCRT';
- GraphicHeader.Version:=1;
- GraphicHeader.DBVersion:=0;
- MS.Write(GraphicHeader,SizeOf(TGraphicCryptFileHeader));
- GraphicHeaderV1.Version:=1;
- GraphicHeaderV1.FileSize:=Length(x);
- CalcStringCRC32(Pass,GraphicHeaderV1.PassCRC);
- GraphicHeaderV1.CRCFileExists:=false;
- GraphicHeaderV1.CRCFile:=0;
- GraphicHeaderV1.TypeExtract:=0;
- GraphicHeaderV1.CryptFileName:=false;
- GraphicHeaderV1.CFileName:='';
- GraphicHeaderV1.TypeFileNameExtract:=0;
- GraphicHeaderV1.FileNameCRC:=0;
- GraphicHeaderV1.Displacement:=0;
- MS.Write(GraphicHeaderV1,SizeOf(TGraphicCryptFileHeaderV1));
- MS.Write(Pointer(x)^,Length(x));
- SetLength(Result,MS.Size);
- MS.Seek(0,soFromBeginning);
- MS.ReadBuffer(Pointer(Result)^,MS.Size);
- MS.Free;
+  MS := TMemoryStream.Create;
+  try
+    MS.Seek(0, SoFromBeginning);
+    GraphicHeader.ID := '.PHDBCRT';
+    GraphicHeader.Version := 1;
+    GraphicHeader.DBVersion := 0;
+    MS.write(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    GraphicHeaderV1.Version := 1;
+    GraphicHeaderV1.FileSize := Length(X);
+    CalcStringCRC32(Pass, GraphicHeaderV1.PassCRC);
+    GraphicHeaderV1.CRCFileExists := False;
+    GraphicHeaderV1.CRCFile := 0;
+    GraphicHeaderV1.TypeExtract := 0;
+    GraphicHeaderV1.CryptFileName := False;
+    GraphicHeaderV1.CFileName := '';
+    GraphicHeaderV1.TypeFileNameExtract := 0;
+    GraphicHeaderV1.FileNameCRC := 0;
+    GraphicHeaderV1.Displacement := 0;
+    MS.write(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
+    MS.write(Pointer(X)^, Length(X));
+    SetLength(Result, MS.Size);
+    MS.Seek(0, SoFromBeginning);
+    MS.ReadBuffer(Pointer(Result)^, MS.Size);
+  finally
+    F(MS);
+  end;
 end;
 
 end.

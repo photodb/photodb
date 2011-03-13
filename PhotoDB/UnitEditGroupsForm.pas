@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
   uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, uDBForm, uShellIntegration,
-  uGraphicUtils, uConstants, uMemory;
+  uGraphicUtils, uConstants, uMemory, uSettings;
 
 type
   TEditGroupsForm = class(TDBForm)
@@ -179,8 +179,8 @@ begin
   RecreateGroupsList;
   DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
   LoadLanguage;
-  CbRemoveKeywords.Checked := DBkernel.ReadBool('Propetry', 'DeleteKeyWords', True);
-  CbShowAllGroups.Checked := DBkernel.ReadBool('Propetry', 'ShowAllGroups', False);
+  CbRemoveKeywords.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
+  CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
 end;
 
 procedure TEditGroupsForm.FormDestroy(Sender: TObject);
@@ -471,12 +471,12 @@ end;
 procedure TEditGroupsForm.CbShowAllGroupsClick(Sender: TObject);
 begin
   RecreateGroupsList;
-  DBkernel.WriteBool('Propetry','ShowAllGroups', CbShowAllGroups.Checked);
+  Settings.WriteBool('Propetry','ShowAllGroups', CbShowAllGroups.Checked);
 end;
 
 procedure TEditGroupsForm.CbRemoveKeywordsClick(Sender: TObject);
 begin
-  DBkernel.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywords.Checked);
+  Settings.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywords.Checked);
 end;
 
 procedure TEditGroupsForm.LstAvaliableGroupsDrawItem(Control: TWinControl;

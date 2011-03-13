@@ -8,7 +8,7 @@ uses
   GraphicsBaseTypes, CustomSelectTool, Dialogs, ExtDlgs,
   ScanlinesFX, clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
   UnitDBKernel, UnitDBCommon, Dolphin_DB, uDBGraphicTypes,
-  uMemory;
+  uMemory, uSettings;
 
 type
   InsertImageToolPanelClass = class(TCustomSelectToolClass)
@@ -100,7 +100,7 @@ begin
   TransparentEdit.OnChange := RecreateImage;
   TransparentEdit.Min := 1;
   TransparentEdit.Max := 100;
-  TransparentEdit.Position := DBKernel.ReadInteger('Editor', 'InsertImageTransparency', 100);
+  TransparentEdit.Position := Settings.ReadInteger('Editor', 'InsertImageTransparency', 100);
   TransparentEdit.Parent := Self;
   LabelMethod.Caption := Format(L('Transparency [%d]'), [TransparentEdit.Position]);
   SaveSettingsLink.Top := TransparentEdit.Top + TransparentEdit.Height + 5;
@@ -371,7 +371,7 @@ end;
 
 procedure InsertImageToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
-  DBKernel.WriteInteger('Editor', 'InsertImageTransparency', TransparentEdit.Position);
+  Settings.WriteInteger('Editor', 'InsertImageTransparency', TransparentEdit.Position);
 end;
 
 procedure InsertImageToolPanelClass.ExecuteProperties(Properties: String;

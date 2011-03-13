@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit,
+  GraphicsCool, Math, SysUtils, ImageHistoryUnit, uSettings,
   GraphicsBaseTypes, UnitDBKernel, Menus, uMemory;
 
 type
@@ -287,10 +287,10 @@ begin
 
   CloseLink.ImageCanRegenerate := True;
 
-  ComboBoxProp.ItemIndex := DBKernel.ReadInteger('Editor', 'Crop_Tool_PropSelect', 0);
-  EditPrWidth.Text := IntToStr(DBKernel.ReadInteger('Editor', 'Crop_Tool_Prop_W', 15));
-  EditPrHeight.Text := IntToStr(DBKernel.ReadInteger('Editor', 'Crop_Tool_Prop_H', 10));
-  CheckProportions.Checked := DBKernel.ReadBool('Editor', 'Crop_Tool_Save_Prop', False);
+  ComboBoxProp.ItemIndex := Settings.ReadInteger('Editor', 'Crop_Tool_PropSelect', 0);
+  EditPrWidth.Text := IntToStr(Settings.ReadInteger('Editor', 'Crop_Tool_Prop_W', 15));
+  EditPrHeight.Text := IntToStr(Settings.ReadInteger('Editor', 'Crop_Tool_Prop_H', 10));
+  CheckProportions.Checked := Settings.ReadBool('Editor', 'Crop_Tool_Save_Prop', False);
 end;
 
 destructor TCropToolPanelClass.Destroy;
@@ -735,10 +735,10 @@ end;
 
 procedure TCropToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
-  DBKernel.WriteInteger('Editor', 'Crop_Tool_PropSelect', ComboBoxProp.ItemIndex);
-  DBKernel.WriteInteger('Editor', 'Crop_Tool_Prop_W', StrToIntDef(EditPrWidth.Text, 15));
-  DBKernel.WriteInteger('Editor', 'Crop_Tool_Prop_H', StrToIntDef(EditPrHeight.Text, 10));
-  DBKernel.WriteBool('Editor', 'Crop_Tool_Save_Prop', CheckProportions.Checked);
+  Settings.WriteInteger('Editor', 'Crop_Tool_PropSelect', ComboBoxProp.ItemIndex);
+  Settings.WriteInteger('Editor', 'Crop_Tool_Prop_W', StrToIntDef(EditPrWidth.Text, 15));
+  Settings.WriteInteger('Editor', 'Crop_Tool_Prop_H', StrToIntDef(EditPrHeight.Text, 10));
+  Settings.WriteBool('Editor', 'Crop_Tool_Save_Prop', CheckProportions.Checked);
 end;
 
 procedure TCropToolPanelClass.ChangeSize(Sender: TObject);

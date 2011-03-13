@@ -10,7 +10,7 @@ uses
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
-  uDBUtils, uDBPopupMenuInfo;
+  uDBUtils, uDBPopupMenuInfo, uSettings;
 
 type
   TFormManager = class(TDBForm)
@@ -123,7 +123,7 @@ var
 begin
   try
     EventLog(':TFormManager::Run()...');
-    DBKernel.WriteProperty('Starting', 'ApplicationStarted', '1');
+    Settings.WriteProperty('Starting', 'ApplicationStarted', '1');
 
     ParamStr1 := ParamStr(1);
     ParamStr2 := Paramstr(2);
@@ -184,13 +184,13 @@ begin
       end else
       begin
         // Default Form
-        if DBKernel.ReadBool('Options', 'RunExplorerAtStartUp', False) then
+        if Settings.ReadBool('Options', 'RunExplorerAtStartUp', False) then
         begin
           TW.I.Start('RUN NewExplorer');
           with ExplorerManager.NewExplorer(False) do
           begin
-            if DBKernel.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
-              SetPath(DBKernel.ReadString('Options', 'SpecialStartUpFolder'))
+            if Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
+              SetPath(Settings.ReadString('Options', 'SpecialStartUpFolder'))
             else
               SetNewPathW(GetCurrentPathW, False);
             CloseSplashWindow;
@@ -324,7 +324,7 @@ begin
   Application.Terminate;
   TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
 
-  DBKernel.WriteProperty('Starting', 'ApplicationStarted', '0');
+  Settings.WriteProperty('Starting', 'ApplicationStarted', '0');
   EventLog(':TFormManager::ExitApplication()/OK...');
   EventLog('');
   EventLog('');
@@ -517,16 +517,16 @@ begin
       end;
 
       // checking RecordCount
-      if DBkernel.ReadboolW('DBCheck', ExtractFileName(dbname), True) = True then
+      if Settings.ReadboolW('DBCheck', ExtractFileName(dbname), True) = True then
       begin
-        DBkernel.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
+        Settings.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
         if CommonDBSupport.GetRecordsCount(Dbname) = 0 then
         begin
           CloseSplashWindow;
           ImportImages(dbname);
         end else
         begin
-          DBkernel.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
+          Settings.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
         end;
       end;
     end;

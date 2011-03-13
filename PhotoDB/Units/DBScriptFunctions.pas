@@ -7,7 +7,7 @@ uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
      Math, uScript, UnitCDMappingSupport, uFileUtils, ImageConverting,
      UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
-     uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo;
+     uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings;
 
 procedure DoActivation;
 procedure GetUpdates(ShowInfo : boolean);
@@ -105,37 +105,37 @@ end;
 
 function ReadRegString(Key, Value: string): string;
 begin
-  Result := DBKernel.ReadString(Key, Value);
+  Result := Settings.ReadString(Key, Value);
 end;
 
 function ReadRegBool(Key, Value: string): Boolean;
 begin
-  Result := DBKernel.ReadBool(Key, Value, False);
+  Result := Settings.ReadBool(Key, Value, False);
 end;
 
 function ReadRegRealBool(Key, Value: string): Boolean;
 begin
-  Result := DBKernel.ReadRealBool(Key, Value, False);
+  Result := Settings.ReadRealBool(Key, Value, False);
 end;
 
 function ReadRegInteger(Key, Value : string) : integer;
 begin
-  Result := DBKernel.ReadInteger(Key, Value, 0);
+  Result := Settings.ReadInteger(Key, Value, 0);
 end;
 
 procedure WriteRegString(Key, Value: string; AValue: string);
 begin
-  DBKernel.WriteString(Key, Value, AValue);
+  Settings.WriteString(Key, Value, AValue);
 end;
 
 procedure WriteRegBool(Key, Value: string; AValue: Boolean);
 begin
-  DBKernel.WriteBool(Key, Value, AValue);
+  Settings.WriteBool(Key, Value, AValue);
 end;
 
 procedure WriteRegInteger(Key, Value: string; AValue: Integer);
 begin
-  DBKernel.WriteInteger(Key, Value, AValue);
+  Settings.WriteInteger(Key, Value, AValue);
 end;
 
 procedure SetFileNameByID(ID: Integer; FileName: string);
@@ -143,14 +143,17 @@ var
   FQuery: TDataSet;
 begin
   FQuery := GetQuery;
-  FQuery.Active := False;
-  FileName := NormalizeDBString(AnsiLowerCase(FileName));
-  SetSQL(FQuery, 'Update $DB$ Set FFileName="' + FileName + '" WHERE ID=' + Inttostr(ID));
   try
-    ExecSQL(FQuery);
-  except
+    FQuery.Active := False;
+    FileName := NormalizeDBString(AnsiLowerCase(FileName));
+    SetSQL(FQuery, 'Update $DB$ Set FFileName="' + FileName + '" WHERE ID=' + Inttostr(ID));
+    try
+      ExecSQL(FQuery);
+    except
+    end;
+  finally
+    FreeDS(FQuery);
   end;
-  FreeDS(FQuery);
 end;
 
 function ShowKeyWord(KeyWord: string): string;

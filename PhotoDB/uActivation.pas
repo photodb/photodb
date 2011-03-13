@@ -6,7 +6,7 @@ uses
   UnitINI, Searching, dolphin_db, UnitDBKernel, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
   Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm,
-  uMemory, uConstants, uWizards, pngimage, uResources, uPNGUtils;
+  uMemory, uConstants, uWizards, pngimage, uResources, uPNGUtils, uSettings;
 
 type
   TActivateForm = class(TDBForm)
@@ -173,7 +173,7 @@ begin
   if CanClose then
   begin
     HelpActivationNO := 0;
-    DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
+    Settings.WriteBool('HelpSystem', 'ActivationHelp', False);
   end;
 end;
 

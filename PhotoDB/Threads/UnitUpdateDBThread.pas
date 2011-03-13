@@ -3,12 +3,13 @@ unit UnitUpdateDBThread;
 interface
 
 uses
-  ReplaceForm, UnitDBKernel, Windows, Dolphin_db, Classes, UnitUpdateDB, Forms,
+  ReplaceForm, Windows, Dolphin_db, Classes, UnitUpdateDB, Forms,
   SysUtils, DB, GraphicCrypt, Dialogs, DateUtils, CommonDBSupport,
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
-  uTranslate, ActiveX, CCR.Exif.JPEGUtils, uActivationUtils;
+  uTranslate, ActiveX, CCR.Exif.JPEGUtils, uActivationUtils, uSettings,
+  UnitDBKernel;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -139,9 +140,9 @@ var
   StrThCrc: Cardinal;
 begin
   Result := False;
-  if DBKernel.ReadBool('Options', 'NoAddSmallImages', True) then
+  if Settings.ReadBool('Options', 'NoAddSmallImages', True) then
   begin
-    if (DBKernel.ReadInteger('Options', 'NoAddSmallImagesWidth', 64) > OrWidth) or (DBKernel.ReadInteger('Options',
+    if (Settings.ReadInteger('Options', 'NoAddSmallImagesWidth', 64) > OrWidth) or (Settings.ReadInteger('Options',
         'NoAddSmallImagesHeight', 64) > OrHeight) then
       // small images - no photos
       Exit;

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, WebLink, ComCtrls, UnitDBKernel, ShellAPI,
+  Dialogs, StdCtrls, ExtCtrls, WebLink, ComCtrls, uSettings, ShellAPI,
   Dolphin_DB, uTranslate, uDBForm;
 
 type
@@ -71,7 +71,7 @@ end;
 procedure TFormInternetUpdating.Button1Click(Sender: TObject);
 begin
   if CheckBox1.Checked then
-    DBKernel.WriteDateTime('', 'LastUpdating', Now);
+    Settings.WriteDateTime('', 'LastUpdating', Now);
   Close;
 end;
 

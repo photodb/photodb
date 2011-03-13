@@ -19,7 +19,8 @@ uses
   UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
-  uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime, uDBUtils;
+  uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
+  uDBUtils, uSettings;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -803,25 +804,25 @@ begin
   SetLength(FListDragItems, 0);
   FDBCanDragW := False;
   ImPreview.Picture.Bitmap := nil;
-  DropFileTarget2.Register(Self);
-  DropFileTarget1.Register(ElvMain);
+  DropFileTarget2.register(Self);
+  DropFileTarget1.register(ElvMain);
 
-  ElvMain.HotTrack.Enabled := DBKernel.Readbool('Options','UseHotSelect',true);
+  ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   FormManager.RegisterMainForm(Self);
-  fStatusProgress := CreateProgressBar(StatusBar1, 1);
-  fStatusProgress.Visible:=false;
-  fHistory.OnHistoryChange:=HistoryChanged;
-  TbBack.Enabled:=false;
-  TbForward.Enabled:=false;
+  FStatusProgress := CreateProgressBar(StatusBar1, 1);
+  FStatusProgress.Visible := False;
+  FHistory.OnHistoryChange := HistoryChanged;
+  TbBack.Enabled := False;
+  TbForward.Enabled := False;
   DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
 
   NewFormState;
-  MainPanel.Width:=DBKernel.ReadInteger('Explorer','LeftPanelWidth',135);
+  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
 
-  Lock:=false;
+  Lock := False;
   FWndOrigin := CbPathEdit.WindowProc;
   CbPathEdit.WindowProc := ComboWNDProc;
-  SlashHandled:=false;
+  SlashHandled := False;
 
   TW.I.Start('aScript');
   aScript := TScript.Create('');
@@ -906,16 +907,16 @@ begin
   GOM.AddObj(Self);
   if FGoToLastSavedPath then
   begin
-    NewPath:=DBkernel.ReadString('Explorer','Patch');
-    NewPathType:=DBkernel.ReadInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
+    NewPath := Settings.ReadString('Explorer', 'Patch');
+    NewPathType := Settings.ReadInteger('Explorer', 'PatchType', EXPLORER_ITEM_MYCOMPUTER);
 
-    DBkernel.WriteString('Explorer','Patch','');
-    DBkernel.WriteInteger('Explorer','PatchType',EXPLORER_ITEM_MYCOMPUTER);
+    Settings.WriteString('Explorer', 'Patch', '');
+    Settings.WriteInteger('Explorer', 'PatchType', EXPLORER_ITEM_MYCOMPUTER);
 
-    SetNewPathW(ExplorerPath(NewPath,NewPathType),True);
+    SetNewPathW(ExplorerPath(NewPath, NewPathType), True);
 
-    DBkernel.WriteString('Explorer','Patch',NewPath);
-    DBkernel.WriteInteger('Explorer','PatchType',NewPathType);
+    Settings.WriteString('Explorer', 'Patch', NewPath);
+    Settings.WriteInteger('Explorer', 'PatchType', NewPathType);
   end;
   CreateBackgrounds;
 
@@ -1397,7 +1398,7 @@ begin
   begin
     if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
       SendTo1.Visible := True;
-    if DBKernel.ReadBool('Options', 'UseUserMenuForExplorer', True) then
+    if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
       if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
       begin
         Info := GetCurrentPopUpMenuInfo(Item);
@@ -1550,10 +1551,10 @@ begin
   DropFileTarget1.Unregister;
   DBKernel.UnRegisterChangesID(Sender,ChangedDBDataByID);
 
-  DBkernel.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
+  Settings.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
 
-  DBkernel.WriteString('Explorer','Patch',GetCurrentPathW.Path);
-  DBkernel.WriteInteger('Explorer','PatchType',GetCurrentPathW.PType);
+  Settings.WriteString('Explorer','Patch',GetCurrentPathW.Path);
+  Settings.WriteInteger('Explorer','PatchType',GetCurrentPathW.PType);
   FStatusProgress.Free;
   FormManager.UnRegisterMainForm(Self);
   F(FFilesInfo);
@@ -1632,7 +1633,7 @@ begin
     Exit;
 
   if not(CtrlKeyDown or ShiftKeyDown) then
-    if DBKernel.Readbool('Options', 'UseHotSelect', True) then
+    if Settings.Readbool('Options', 'UseHotSelect', True) then
       if not LastMouseItem.Selected then
       begin
         if not(CtrlKeyDown or ShiftKeyDown) then
@@ -1754,7 +1755,7 @@ begin
     HintTimer.Enabled := False;
     if Active then
     begin
-      if DBKernel.Readbool('Options', 'AllowPreview', True) then
+      if Settings.Readbool('Options', 'AllowPreview', True) then
         HintTimer.Enabled := True;
       ItemWithHint := LastMouseItem;
     end;
@@ -2159,14 +2160,14 @@ begin
   UpdaterInfo.IsUpdater := False;
   UpdaterInfo.UpdateDB := False;
   UpdaterInfo.ProcHelpAfterUpdate := nil;
-  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
   Info.View := ListView;
   Info.PictureSize := FPictureSize;
   for I := 0 to ElvMain.Items.Count - 1 do
@@ -2195,14 +2196,14 @@ begin
   UpdaterInfo.UpdateDB := False;
   UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
   UpdaterInfo.ProcHelpAfterUpdate := nil;
-  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
   Info.View := ListView;
   Info.PictureSize := FPictureSize;
   if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
@@ -2228,14 +2229,14 @@ begin
   UpdaterInfo.UpdateDB := True;
   UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[index].Copy);
   UpdaterInfo.ProcHelpAfterUpdate := nil;
-  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
   Info.View := ListView;
   Info.PictureSize := FPictureSize;
   if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
@@ -2970,16 +2971,16 @@ begin
             UpdaterInfo.FileInfo := Info;
             UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
             Self.NewFileName := '';
-            ExplorerViewInfo.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-            ExplorerViewInfo.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-            ExplorerViewInfo.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-            ExplorerViewInfo.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-            ExplorerViewInfo.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-            ExplorerViewInfo.ShowThumbNailsForFolders := DBKernel.Readbool('Options',
+            ExplorerViewInfo.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+            ExplorerViewInfo.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+            ExplorerViewInfo.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+            ExplorerViewInfo.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+            ExplorerViewInfo.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+            ExplorerViewInfo.ShowThumbNailsForFolders := Settings.Readbool('Options',
               'Explorer_ShowThumbnailsForFolders', True);
-            ExplorerViewInfo.SaveThumbNailsForFolders := DBKernel.Readbool('Options',
+            ExplorerViewInfo.SaveThumbNailsForFolders := Settings.Readbool('Options',
               'Explorer_SaveThumbnailsForFolders', True);
-            ExplorerViewInfo.ShowThumbNailsForImages := DBKernel.Readbool('Options',
+            ExplorerViewInfo.ShowThumbNailsForImages := Settings.Readbool('Options',
               'Explorer_ShowThumbnailsForImages', True);
             ExplorerViewInfo.View := ListView;
             ExplorerViewInfo.PictureSize := FPictureSize;
@@ -3327,8 +3328,8 @@ begin
   ListView1SelectItem(Sender, ListView1Selected, True);
   PropertyPanel.Show;
   CloseButtonPanel.Hide;
-  DBkernel.WriteInteger('Explorer', 'LeftPanelWidthExplorer', MainPanel.Width);
-  MainPanel.Width := DBKernel.ReadInteger('Explorer', 'LeftPanelWidth', 135);
+  Settings.WriteInteger('Explorer', 'LeftPanelWidthExplorer', MainPanel.Width);
+  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
   ListView1SelectItem(Sender, ListView1Selected, False);
 end;
 
@@ -4021,20 +4022,20 @@ begin
   end;
   FIsExplorer := True;
   CloseButtonPanel.Show;
-  MainPanel.Width := DBKernel.ReadInteger('Explorer', 'LeftPanelWidthExplorer', 135);
+  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidthExplorer', 135);
 end;
 
 { TManagerExplorer }
 
 procedure TManagerExplorer.LoadEXIF;
 begin
-  FShowEXIF := DBKernel.ReadBool('Options', 'ShowEXIFMarker', False);
+  FShowEXIF := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
 end;
 
 procedure TManagerExplorer.AddExplorer(Explorer: TExplorerForm);
 begin
-  FShowEXIF := DBKernel.ReadBool('Options', 'ShowEXIFMarker', False);
-  ShowQuickLinks := DBKernel.ReadBool('Options', 'ShowOtherPlaces', True);
+  FShowEXIF := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
+  ShowQuickLinks := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
 
   if FExplorers.IndexOf(Explorer) = -1 then
     FExplorers.Add(Explorer);
@@ -4824,14 +4825,14 @@ begin
   UpdaterInfo.FileInfo := nil;
   Inc(FReadingFolderNumber);
 
-  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
   Info.View := ListView;
   EventLog('ExplorerThread');
   if ElvMain <> nil then
@@ -5421,7 +5422,7 @@ begin
     MessageText := '     ' + L('Now the pictures that do not have icon (+) in the upper left corner are in the collection. They are available using the search and for them advanced context menu is available. Further help is available from the main menu (Help -> Help).$nl$$nl$');
     DoHelpHint(L('Help'), MessageText, Point(0, 0), ElvMain);
     HelpNO := 0;
-    DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
+    Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
   end;
 end;
 
@@ -5432,7 +5433,7 @@ begin
   if CanClose then
   begin
     HelpNo := 0;
-    DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
+    Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
   end;
 end;
 
@@ -7378,14 +7379,14 @@ begin
   // тут начинается загрузка больших картинок
   UpdaterInfo.IsUpdater := False;
   UpdaterInfo.FileInfo := nil;
-  Info.ShowFolders := DBKernel.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := DBKernel.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := DBKernel.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := DBKernel.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := DBKernel.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := DBKernel.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := DBKernel.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Info.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+  Info.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Info.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Info.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Info.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Info.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Info.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Info.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
   Info.View := ListView;
   Info.PictureSize := FPictureSize;
   UpdaterInfo.FileInfo := nil;
@@ -7471,7 +7472,7 @@ var
   end;
 
 begin
-  UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
+  UseSmallIcons := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
   ToolBarNormalImageList.Clear;
 
   if UseSmallIcons then
@@ -7515,7 +7516,7 @@ var
 begin
   ToolBarDisabledImageList.Clear;
 
-  UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
+  UseSmallIcons := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
   if UseSmallIcons then
   begin
     ToolBarDisabledImageList.Width := 16;

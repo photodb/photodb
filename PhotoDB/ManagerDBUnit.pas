@@ -13,7 +13,8 @@ uses
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
   UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
   DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo,
-  uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime;
+  uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
+  uSettings;
 
 type
   TManagerDB = class(TDBForm)
@@ -761,8 +762,8 @@ begin
   if MessageBoxDB(Handle, Format(Mes, [FBackUpFiles[PopupMenu5.Tag]]), L('Warning'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) = ID_OK then
   begin
-    DBkernel.WriteBool('StartUp', 'Restore', True);
-    DBkernel.WriteString('StartUp', 'RestoreFile', FBackUpFiles[PopupMenu5.Tag]);
+    Settings.WriteBool('StartUp', 'Restore', True);
+    Settings.WriteString('StartUp', 'RestoreFile', FBackUpFiles[PopupMenu5.Tag]);
   end;
 end;
 
@@ -1588,7 +1589,7 @@ end;
 procedure TManagerDB.PackTabelLinkClick(Sender: TObject);
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to pack the table? Packing will begin the next startup...'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
-    DBkernel.WriteBool('StartUp', 'Pack', True);
+    Settings.WriteBool('StartUp', 'Pack', True);
 end;
 
 procedure TManagerDB.ExportTableLinkClick(Sender: TObject);
@@ -1619,13 +1620,13 @@ end;
 procedure TManagerDB.RecreateIDExLinkClick(Sender: TObject);
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to rebuild the IDEx in the table? Processing begins on the next startup.'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
-    DBkernel.WriteBool('StartUp', 'RecreateIDEx', True);
+    Settings.WriteBool('StartUp', 'RecreateIDEx', True);
 end;
 
 procedure TManagerDB.ScanforBadLinksLinkClick(Sender: TObject);
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to scan the table on the broken links? Processing will begin when the next launch.'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
-    DBkernel.WriteBool('StartUp', 'ScanBadLinks', True);
+    Settings.WriteBool('StartUp', 'ScanBadLinks', True);
 end;
 
 procedure TManagerDB.BackUpDBLinkClick(Sender: TObject);
@@ -1633,7 +1634,7 @@ begin
   if ID_OK <> MessageBoxDB(Handle, L('Do you really want to create a backup?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
     Exit;
 
-  DBkernel.WriteBool('StartUp', 'BackUp', True);
+  Settings.WriteBool('StartUp', 'BackUp', True);
   MessageBoxDB(Handle, L('Restoring will begin when the next launch!'), L('Information'), TD_BUTTON_OK,
     TD_ICON_INFORMATION);
 end;
@@ -1893,13 +1894,13 @@ procedure TManagerDB.DublicatesLinkClick(Sender: TObject);
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to optimize the duplicates in a table? Optimization starts at the next startup...'), L('Warning'), TD_BUTTON_OKCANCEL,
     TD_ICON_QUESTION) then
-    DBkernel.WriteBool('StartUp', 'OptimizeDublicates', True);
+    Settings.WriteBool('StartUp', 'OptimizeDublicates', True);
 end;
 
 procedure TManagerDB.ConvertLinkClick(Sender: TObject);
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to convert your database? Conversion will take place after program restart'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
-    DBkernel.WriteBool('StartUp', 'ConvertDB', True);
+    Settings.WriteBool('StartUp', 'ConvertDB', True);
 end;
 
 procedure TManagerDB.ChangePathLinkClick(Sender: TObject);

@@ -15,7 +15,7 @@ uses
   RAWImage, DragDrop, DragDropFile, UVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
   UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, ImageConverting,
   CCR.Exif, uEditorTypes, uShellIntegration, uRuntime, uSysUtils,
-  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants;
+  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants, uSettings;
 
 type
   TWindowEnableState = record
@@ -344,7 +344,7 @@ begin
   Zoom := 0.5;
   SaveWindowPos1.SetPosition;
 
-  VirtualBrushCursor := DBKernel.ReadBool('Editor', 'VirtualCursor', False);
+  VirtualBrushCursor := Settings.ReadBool('Editor', 'VirtualCursor', False);
   FormManager.RegisterMainForm(Self);
   PmMain.Images := DBKernel.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;

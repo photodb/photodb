@@ -905,8 +905,6 @@ begin
 end;
 
 procedure SearchThread.DoOnDone;
-var
-  AData: TDBPopupMenuInfo;
 begin
   //Loading big images
   if FPictureSize <> ThImageSize then
@@ -966,35 +964,35 @@ end;
 
 procedure SearchThread.SetMaxValue(Value: Integer);
 begin
- IntParam:=Value;
- SynchronizeEx(SetMaxValueA);
+  IntParam := Value;
+  SynchronizeEx(SetMaxValueA);
 end;
 
 procedure SearchThread.SetMaxValueA;
 begin
-  (ThreadForm as TSearchForm).PbProgress.MaxValue:=IntParam;
+  (ThreadForm as TSearchForm).PbProgress.MaxValue := IntParam;
 end;
 
 procedure SearchThread.SetProgress(Value: Integer);
 begin
- IntParam:=Value;
- SynchronizeEx(SetProgressA);
+  IntParam := Value;
+  SynchronizeEx(SetProgressA);
 end;
 
 procedure SearchThread.SetProgressA;
 begin
-  (ThreadForm as TSearchForm).PbProgress.Position:=IntParam;
+  (ThreadForm as TSearchForm).PbProgress.Position := IntParam;
 end;
 
 procedure SearchThread.SetProgressText(Value: String);
 begin
- StrParam:=Value;
- SynchronizeEx(SetProgressTextA);
+  StrParam := Value;
+  SynchronizeEx(SetProgressTextA);
 end;
 
 procedure SearchThread.SetProgressTextA;
 begin
-  (ThreadForm as TSearchForm).PbProgress.Text:=StrParam;
+  (ThreadForm as TSearchForm).PbProgress.Text := StrParam;
 end;
 
 procedure SearchThread.AddOptions(SqlParams : TDBQueryParams);
@@ -1039,10 +1037,10 @@ end;}
 
 procedure SearchThread.LoadImages;
 var
-  FWorkQuery : TDataSet;
-  FLastPacketTime : Cardinal;
-  QueryParams : TDBQueryParams;
-  Counter : Integer;
+  FWorkQuery: TDataSet;
+  FLastPacketTime: Cardinal;
+  QueryParams: TDBQueryParams;
+  Counter: Integer;
 
   procedure AddItem(S : TDataSet);
   var

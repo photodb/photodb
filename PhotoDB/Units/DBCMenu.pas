@@ -12,7 +12,7 @@ uses
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
   uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate,
-  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils;
+  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings;
 
 type TDBPopupMenu = class
    private
@@ -301,11 +301,11 @@ begin
       if C > 0 then
       begin
         _user_group_menu := TMenuItem.Create(Item);
-        if DBKernel.ReadString('', 'UserMenuName') <> '' then
-          _user_group_menu.Caption := DBKernel.ReadString('', 'UserMenuName')
+        if Settings.ReadString('', 'UserMenuName') <> '' then
+          _user_group_menu.Caption := Settings.ReadString('', 'UserMenuName')
         else
           _user_group_menu.Caption := TA('Additional', DBMenuID);
-        Icon := DBKernel.ReadString('', 'UserMenuIcon');
+        Icon := Settings.ReadString('', 'UserMenuIcon');
         if Icon = '' then
           Icon := '%SystemRoot%\system32\shell32.dll,126';
         Ico := TIcon.Create;

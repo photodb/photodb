@@ -237,9 +237,7 @@ begin
       //Draw first slide
       ImageFrameTimerTimer(Self);
     end else
-    begin
       ImageBuffer.Assign(G);
-    end;
 
     WindowWidth := Max(100, DisplayWidth + 10 + 2);
     WindowHeight := DisplayHeight + 10;
@@ -265,10 +263,13 @@ begin
     else
       WindowLeft := Rect.Left + 10;
 
-    if WindowTop < 0 then
-      WindowTop := 100;
-    if WindowLeft < 0 then
-      WindowLeft := 100;
+    if GOM.IsObj(Sender) then
+    begin
+      if WindowTop < Sender.Monitor.Top then
+        WindowTop := 100;
+      if WindowLeft < Sender.Monitor.Left then
+        WindowLeft := 100;
+    end;
 
     Top := WindowTop;
     Left := WindowLeft;

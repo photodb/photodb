@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SysUtils, UnitDBKernel, Forms, CommonDBSupport,
-  UnitDBDeclare, uConstants, uFileUtils, uTranslate;
+  UnitDBDeclare, uConstants, uFileUtils, uTranslate, uSettings;
 
 type
   BackUpTableInCMD = class(TThread)
@@ -75,7 +75,7 @@ begin
   FIntParam := LINE_INFO_OK;
   Synchronize(TextOut);
   Synchronize(DoExit);
-  DBkernel.WriteDateTime('Options', 'BackUpDateTime', Now)
+  Settings.WriteDateTime('Options', 'BackUpDateTime', Now)
 end;
 
 procedure BackUpTableInCMD.TextOut;

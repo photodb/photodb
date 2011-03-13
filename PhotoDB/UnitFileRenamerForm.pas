@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus, UnitDBKernel,
+  Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus,
   DB, WebLink, uConstants, UnitDBDeclare, uFileUtils, Dolphin_DB,
-  uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils;
+  uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils, uSettings;
 
 type
   TFormFastFileRenamer = class(TDBForm)
@@ -96,12 +96,12 @@ var
   I: Integer;
 begin
   LoadLanguage;
-  List := DBKernel.ReadValues('Renamer');
+  List := Settings.ReadValues('Renamer');
   CmMaskList.Items.Clear;
   for I := 0 to List.Count - 1 do
-    CmMaskList.Items.Add(DBKernel.ReadString('Renamer', List[I]));
+    CmMaskList.Items.Add(Settings.ReadString('Renamer', List[I]));
 
-  CmMaskList.Text := DBKernel.ReadString('Options', 'RenameText');
+  CmMaskList.Text := Settings.ReadString('Options', 'RenameText');
   List.Free;
 
   if CmMaskList.Text = '' then
@@ -215,12 +215,12 @@ begin
 
   DoRename;
 
-  DBKernel.DeleteValues('Renamer');
+  Settings.DeleteValues('Renamer');
   for I := 0 to CmMaskList.Items.Count - 1 do
   begin
-    DBKernel.WriteString('Renamer', 'val' + IntToStr(I + 1), CmMaskList.Items[I]);
+    Settings.WriteString('Renamer', 'val' + IntToStr(I + 1), CmMaskList.Items[I]);
   end;
-  DBKernel.WriteString('Options', 'RenameText', CmMaskList.Text);
+  Settings.WriteString('Options', 'RenameText', CmMaskList.Text);
   Close;
 end;
 

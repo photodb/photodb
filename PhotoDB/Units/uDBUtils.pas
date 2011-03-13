@@ -7,7 +7,7 @@ uses
   UnitDBKernel, uSysUtils, DB, uConstants, CommonDBSupport, uDBTypes,
   uDBPopupMenuInfo, UnitDBDeclare, DateUtils, win32crc, uPrivateHelper,
   uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
-  uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils,
+  uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
   uDBForm, uDBGraphicTypes, ImageConverting, GraphicsCool,
   GraphicsBaseTypes;
@@ -681,7 +681,7 @@ begin
       _SetSql := _SetSql + Format('FolderCRC=%d,', [Crc]);
 
       UpdateDateTime := False;
-      if DBKernel.ReadBool('Options', 'FixDateAndTime', True) then
+      if Settings.ReadBool('Options', 'FixDateAndTime', True) then
       begin
         ExifData := TExifData.Create;
         try
@@ -1210,35 +1210,35 @@ var
 begin
   if OldImageTh = NewImageTh then
     Exit;
-  if not DBKernel.ReadBool('Options', 'CheckUpdateLinks', False) then
+  if not Settings.ReadBool('Options', 'CheckUpdateLinks', False) then
     Exit;
+
   FQuery := GetQuery;
-  OldImageThCode := CodeExtID(OldImageTh);
-  SetSQL(FQuery, 'Select ID, Links from $DB$ where Links like "%' + OldImageThCode + '%"');
   try
-    FQuery.Active := True;
-  except
+    OldImageThCode := CodeExtID(OldImageTh);
+    SetSQL(FQuery, 'Select ID, Links from $DB$ where Links like "%' + OldImageThCode + '%"');
+    try
+      FQuery.Active := True;
+    except
+      Exit;
+    end;
+    if FQuery.RecordCount = 0 then
+      Exit;
+
+    FQuery.First;
+    SetLength(IDs, 0);
+    SetLength(Links, 0);
+    for I := 1 to FQuery.RecordCount do
+    begin
+      SetLength(IDs, Length(IDs) + 1);
+      IDs[Length(IDs) - 1] := FQuery.FieldByName('ID').AsInteger;
+      SetLength(Links, Length(Links) + 1);
+      Links[Length(Links) - 1] := FQuery.FieldByName('Links').AsString;
+      FQuery.Next;
+    end;
+  finally
     FreeDS(FQuery);
-    Exit;
   end;
-  if FQuery.RecordCount = 0 then
-  begin
-    FreeDS(FQuery);
-    Exit;
-  end;
-  FQuery.First;
-  SetLength(IDs, 0);
-  SetLength(Links, 0);
-  for I := 1 to FQuery.RecordCount do
-  begin
-    SetLength(IDs, Length(IDs) + 1);
-    IDs[Length(IDs) - 1] := FQuery.FieldByName('ID').AsInteger;
-    SetLength(Links, Length(Links) + 1);
-    Links[Length(Links) - 1] := FQuery.FieldByName('Links').AsString;
-    FQuery.Next;
-  end;
-  FQuery.Close;
-  FreeDS(FQuery);
   SetLength(Info, Length(Links));
   for I := 0 to Length(IDs) - 1 do
   begin
@@ -1255,11 +1255,15 @@ begin
   // correction
   // Access
   Table := GetQuery;
-  for I := 0 to Length(IDs) - 1 do
-  begin
-    Link := CodeLinksInfo(Info[I]);
-    SetSQL(Table, 'Update $DB$ set Links="' + Link + '" where ID = ' + IntToStr(IDs[I]));
-    ExecSQL(Table);
+  try
+    for I := 0 to Length(IDs) - 1 do
+    begin
+      Link := CodeLinksInfo(Info[I]);
+      SetSQL(Table, 'Update $DB$ set Links="' + Link + '" where ID = ' + IntToStr(IDs[I]));
+      ExecSQL(Table);
+    end;
+  finally
+    FreeDS(Table);
   end;
 end;
 

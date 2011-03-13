@@ -7,7 +7,7 @@ uses
   UnitDBKernel, Windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
   SysUtils,ComCtrls, Graphics, jpeg, UnitINI, DateUtils, uFileUtils,
   CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants,
-  CCR.Exif, uMemory, uRuntime, uDBUtils, uDBThread;
+  CCR.Exif, uMemory, uRuntime, uDBUtils, uDBThread, uSettings;
 
 type
   CleanUpThread = class(TDBThread)
@@ -84,7 +84,7 @@ begin
     FMaxPosition := GetDBRecordCount;
     if Position > FMaxPosition then
     begin
-      DBKernel.WriteBool('Options', 'AllowFastCleaning', False);
+      Settings.WriteBool('Options', 'AllowFastCleaning', False);
       Position := 1;
     end;
   finally
@@ -99,7 +99,7 @@ begin
   FPosition := Position;
   while not FMaxPosition < FPosition do
   begin
-    if not DBKernel.ReadBool('Options', 'AllowFastCleaning', False) then
+    if not Settings.ReadBool('Options', 'AllowFastCleaning', False) then
       Sleep(2500);
 
     if Termitating then
@@ -144,11 +144,11 @@ begin
         FreeDS(SetQuery);
       end;
 
-      if DBKernel.ReadBool('Options', 'DeleteNotValidRecords', True) then
+      if Settings.ReadBool('Options', 'DeleteNotValidRecords', True) then
       begin
         if not FileExists(FTable.FieldByName('FFileName').AsString) then
         begin
-          if DBKernel.ReadBool('Options', 'DeleteNotValidRecords', True) then
+          if Settings.ReadBool('Options', 'DeleteNotValidRecords', True) then
           begin
             if (FTable.FieldByName('Rating').AsInteger = 0) and
               (FTable.FieldByName('Access').AsInteger <> Db_access_private) and
@@ -203,7 +203,7 @@ begin
       if Termitating then
         Break;
 
-      if DBKernel.ReadBool('Options', 'FixDateAndTime', True) then
+      if Settings.ReadBool('Options', 'FixDateAndTime', True) then
       begin
         ExifData := TExifData.Create;
         try
@@ -242,7 +242,7 @@ begin
     if Termitating then
       Break;
     try
-      if DBKernel.ReadBool('Options', 'VerifyDublicates', False) then
+      if Settings.ReadBool('Options', 'VerifyDublicates', False) then
       begin
         FQuery.Active := False;
 

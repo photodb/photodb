@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, jpeg, AppEvnts, Dolphin_DB, DDraw,
   Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils, uDBForm,
-  uDXUtils, uMemory;
+  uDXUtils, uMemory, uSettings;
 
 type
   TDirectShowForm = class(TDBForm)
@@ -288,8 +288,8 @@ var
     Objects : TThreadDestroyDXObjects;
 begin
  DDrawInit;
- AlphaSteeps:=Min(Max(DBKernel.ReadInteger('Options','SlideShow_SlideSteps',25),1),100);
- DelayTimer.Interval:=Min(Max(DBKernel.ReadInteger('Options','SlideShow_SlideDelay',40),1),100)*50;
+ AlphaSteeps:=Min(Max(Settings.ReadInteger('Options','SlideShow_SlideSteps',25),1),100);
+ DelayTimer.Interval:=Min(Max(Settings.ReadInteger('Options','SlideShow_SlideDelay',40),1),100)*50;
  FNowPaused :=false;
  FReadyAfterPause :=false;
  FManager:=TDirectXSlideShowCreatorManager.Create;
@@ -442,7 +442,7 @@ begin
     y1:=Screen.Height div 2 - fh div 2;
     x2:=Screen.Width div 2 + fw div 2;
     y2:=Screen.Height div 2 + fh div 2;
-    If DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
+    If Settings.ReadboolW('Options','SlideShow_UseCoolStretch',True) then
     begin
      if FbImage.Width<>0 then
      Zoom:=(x2-x1)/FbImage.Width else Zoom:=1;

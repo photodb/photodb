@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt,
   uConstants, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher,
-  WatermarkedEdit, uDBForm, UnitDBKernel, uShellIntegration;
+  WatermarkedEdit, uDBForm, UnitDBKernel, uShellIntegration, uSettings;
 
 type
   TCryptImageForm = class(TDBForm)
@@ -96,7 +96,7 @@ procedure TCryptImageForm.FillChiperList;
           TCryptImageForm(Data).PmCryptMethod.Items.Add(MenuItem);
         end;
         if (TCryptImageForm(Data).PmCryptMethod.Items.Count = 0)
-           or (Integer(ClassType.Identity) = DBKernel.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity))) then
+           or (Integer(ClassType.Identity) = Settings.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity))) then
           MenuItem.Click;
       finally
         Chiper.Free;
@@ -114,8 +114,8 @@ procedure TCryptImageForm.FormCreate(Sender: TObject);
 var
   FPassIcon : HIcon;
 begin
-  CbSavePasswordForSession.Checked := DBKernel.Readbool('Options', 'AutoSaveSessionPasswords', True);
-  CbSavePasswordPermanent.Checked := DBKernel.Readbool('Options', 'AutoSaveINIPasswords', False);
+  CbSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
+  CbSavePasswordPermanent.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
   SaveFileCRC := False;
   CryptFileName := False;
   Password := '';
@@ -202,7 +202,7 @@ begin
   WblMethod.Text := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
   WblMethod.Tag := TMenuItem(Sender).Tag;
 
-  DBKernel.WriteInteger('Options', 'DefaultCryptClass', TMenuItem(Sender).Tag);
+  Settings.WriteInteger('Options', 'DefaultCryptClass', TMenuItem(Sender).Tag);
   SetDefaultCipherClass(CipherByIdentity(TMenuItem(Sender).Tag));
 end;
 

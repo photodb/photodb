@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, UnitDBKernel, FormManegerUnit, GraphicCrypt, DB,
   uConstants, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
-  uDBForm, uTranslate, uFileUtils, uShellIntegration;
+  uDBForm, uTranslate, uFileUtils, uShellIntegration, uSettings;
 
 type
   PasswordType = Integer;
@@ -172,8 +172,8 @@ procedure TPassWordForm.FormCreate(Sender: TObject);
 begin
   FOpenedList := False;
   ClientHeight := BtOk.Top + BtOk.Height + 5;
-  CbSavePassToSession.Checked := DBKernel.Readbool('Options', 'AutoSaveSessionPasswords', True);
-  CbSavePassPermanent.Checked := DBKernel.Readbool('Options', 'AutoSaveINIPasswords', False);
+  CbSavePassToSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
+  CbSavePassPermanent.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
   LoadLanguage;
   Password := '';
   PassIcon := TIcon.Create;

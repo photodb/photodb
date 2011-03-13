@@ -3,9 +3,9 @@ unit UnitUpdateDBObject;
 interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
-     UnitDBKernel, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
+     UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
      uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM,
-     uTranslate, Dolphin_DB, uDBForm;
+     uTranslate, Dolphin_DB, uDBForm, uSettings;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;
@@ -394,7 +394,7 @@ var
 begin
   ProgressWindow := GetProgressWindow;
   try
-    C := DBKernel.ReadInteger('Updater', 'Counter', 0);
+    C := Settings.ReadInteger('Updater', 'Counter', 0);
     ProgressWindow.OneOperation := True;
     ProgressWindow.MaxPosCurrentOperation := C;
     ProgressWindow.XPosition := 0;
@@ -409,7 +409,7 @@ begin
         ProgressWindow.XPosition := I;
         Application.ProcessMessages;
       end;
-      AddFile(DBKernel.ReadString('Updater', 'File' + IntToStr(I)), I <> C - 1);
+      AddFile(Settings.ReadString('Updater', 'File' + IntToStr(I)), I <> C - 1);
     end;
 
   finally
@@ -421,9 +421,9 @@ procedure TUpdaterDB.SaveWork;
 var
   I: Integer;
 begin
-  DBKernel.WriteInteger('Updater', 'Counter', FFilesInfo.Count);
+  Settings.WriteInteger('Updater', 'Counter', FFilesInfo.Count);
   for I := 0 to FFilesInfo.Count - 1 do
-    DBKernel.WriteString('Updater', 'File' + IntToStr(I), FFilesInfo[I].FileName);
+    Settings.WriteString('Updater', 'File' + IntToStr(I), FFilesInfo[I].FileName);
 end;
 
 function TUpdaterDB.GetCount: Integer;

@@ -10,7 +10,7 @@ uses
   Dolphin_DB, GraphicCrypt, uVistaFuncs, UnitCDMappingSupport, uConstants,
   Menus, uDBForm, uMemory, uTranslate, uShellIntegration, uFileUtils,
   uResources, CommCtrl, MPCommonObjects, EasyListview, MPCommonUtilities,
-  uListViewUtils;
+  uListViewUtils, uSettings;
 
 type
   TPrintForm = class(TDBForm)
@@ -694,8 +694,8 @@ begin
             try
               Image.Assign(FastScrollingImage1.Picture);
               (Image as TJPEGImage).ProgressiveEncoding := True;
-              (Image as TJPEGImage).CompressionQuality := DBKernel.ReadInteger('', 'JPEGCompression', 75);
-              (Image as TJPEGImage).ProgressiveEncoding := DBKernel.ReadBool('', 'JPEGProgressiveMode', False);
+              (Image as TJPEGImage).CompressionQuality := Settings.ReadInteger('', 'JPEGCompression', 75);
+              (Image as TJPEGImage).ProgressiveEncoding := Settings.ReadBool('', 'JPEGProgressiveMode', False);
               Image.SaveToFile(FileName);
             finally
               F(Image);

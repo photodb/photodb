@@ -20,7 +20,7 @@ uses
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
   uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate,
   uShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
-  uDBUtils, uDBFileTypes, Dolphin_DB, uActivationUtils;
+  uDBUtils, uDBFileTypes, Dolphin_DB, uActivationUtils, uSettings;
 
 type
   TDateRange = record
@@ -543,7 +543,7 @@ begin
   PbProgress.Position := 0;
   PbProgress.Text := L('Query executing') + '...';
 
-  ElvMain.ShowGroupMargins := DBKernel.Readbool('Options', 'UseGroupsInSearch', True);
+  ElvMain.ShowGroupMargins := Settings.Readbool('Options', 'UseGroupsInSearch', True);
 
   LsSearchResults.Hide;
   NewFormState;
@@ -713,8 +713,8 @@ begin
       InsertSpesialQueryPopupMenu.Items.Add(Menus[I]);
     end;
     Menus[0].Enabled := False;
-    ElvMain.HotTrack.Enabled := DBKernel.Readbool('Options', 'UseHotSelect', True);
-    PnLeft.Width := DBKernel.ReadInteger('Search', 'LeftPanelWidth', 180);
+    ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
+    PnLeft.Width := Settings.ReadInteger('Search', 'LeftPanelWidth', 180);
     FBitmapImageList := TBitmapImageList.Create;
     TW.I.Start('S -> RegisterMainForm');
     FormManager.RegisterMainForm(Self);
@@ -793,7 +793,7 @@ begin
       begin
         TTranslateManager.Instance.BeginTranslate;
         try
-          TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).x,ElvMain.ClientToScreen(MousePos).y,Info);
+          TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).x, ElvMain.ClientToScreen(MousePos).y,Info);
         finally
           TTranslateManager.Instance.EndTranslate;
         end;
@@ -1265,7 +1265,7 @@ end;
 procedure TSearchForm.FormDestroy(Sender: TObject);
 begin
   GOM.RemoveObj(Self);
-  DBKernel.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
+  Settings.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
 
   ClearItems;
   SaveQueryList;
@@ -1564,14 +1564,14 @@ begin
     HintTimer.Enabled := False;
     if Active then
     begin
-      if DBKernel.Readbool('Options', 'AllowPreview', True) then
+      if Settings.Readbool('Options', 'AllowPreview', True) then
         HintTimer.Enabled := True;
       ItemWithHint := LastMouseItem;
     end;
 
     Data := GetSearchRecordFromItemData(LastMouseItem);
 
-    if DBKernel.Readbool('Options', 'AllowPreview', True) then
+    if Settings.Readbool('Options', 'AllowPreview', True) then
       ElvMain.ShowHint := not FileExistsSafe(Data.FileName);
 
     ElvMain.Hint := Data.Comment;
@@ -1621,7 +1621,7 @@ begin
   if Item = nil then
     Exit;
 
-  if DBKernel.Readbool('Options', 'UseHotSelect', True) then
+  if Settings.Readbool('Options', 'UseHotSelect', True) then
 
     if not(CtrlKeyDown or ShiftKeyDown) then
       if not LastMouseItem.Selected then
@@ -2433,7 +2433,7 @@ var
     else
     begin
       HelpNo := 0;
-      DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
+      Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
     end;
   end;
 
@@ -2443,16 +2443,16 @@ begin
   if FolderView then
     Exit;
   HelpTimer.Enabled := False;
-  if not DBKernel.ReadBool('HelpSystem', 'CheckRecCount', True) then
+  if not Settings.ReadBool('HelpSystem', 'CheckRecCount', True) then
   begin
     HelpActivationNO := 0;
     MessageText := '     ' + L('Do you want to get help, how to activate the program? If YES, then click on "More..." for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed. $nl$$nl$', 'Help');
     if TActivationManager.Instance.IsDemoMode then
-      if DBKernel.ReadBool('HelpSystem', 'ActivationHelp', True) then
+      if Settings.ReadBool('HelpSystem', 'ActivationHelp', True) then
         DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
           HelpActivationNextClick, L('Next...'), HelpActivationCloseClick)
       else if not TActivationManager.Instance.IsDemoMode then
-        DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
+        Settings.WriteBool('HelpSystem', 'ActivationHelp', False);
     Exit;
   end;
 
@@ -2611,7 +2611,7 @@ begin
   if CanClose then
   begin
     HelpNo := 0;
-    DBKernel.WriteBool('HelpSystem', 'CheckRecCount', False);
+    Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
   end;
 end;
 
@@ -2639,7 +2639,7 @@ begin
   if CanClose then
   begin
     HelpActivationNO := 0;
-    DBKernel.WriteBool('HelpSystem', 'ActivationHelp', False);
+    Settings.WriteBool('HelpSystem', 'ActivationHelp', False);
   end;
 end;
 
@@ -3773,7 +3773,7 @@ var
   end;
 
 begin
-  UseSmallIcons := DBKernel.Readbool('Options', 'UseSmallToolBarButtons', False);
+  UseSmallIcons := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
   TbLoad.Visible := True;
 
   if UseSmallIcons then
@@ -4180,19 +4180,19 @@ var
 begin
   RegQueryRootPath := 'Search\DB_' + DBKernel.GetDataBaseName + '\Query';
 
-  QueryCount := DBKernel.ReadInteger(RegQueryRootPath, 'Count', 0);
+  QueryCount := Settings.ReadInteger(RegQueryRootPath, 'Count', 0);
   FNow := Now;
   for I := QueryCount - 1 downto 0 do
   begin
     RegQueryPath := RegQueryRootPath + IntToStr(I);
-    RatingFrom := DBKernel.ReadInteger(RegQueryPath, 'RatingFrom', 0);
-    RatingTo := DBKernel.ReadInteger(RegQueryPath, 'RatingTo', 5);
-    DateFrom := DBKernel.ReadDateTime(RegQueryPath, 'DateFrom', FNow - 365);
-    DateTo := DBKernel.ReadDateTime(RegQueryPath, 'DateTo', FNow);
-    GroupName := DBKernel.ReadString(RegQueryPath, 'GroupName');
-    Query := DBKernel.ReadString(RegQueryPath, 'Query');
-    SortMethod := DBKernel.ReadInteger(RegQueryPath, 'SortMethod', SM_DATE_TIME);
-    SortDesc := DBKernel.ReadBool(RegQueryPath, 'SortDesc', True);
+    RatingFrom := Settings.ReadInteger(RegQueryPath, 'RatingFrom', 0);
+    RatingTo := Settings.ReadInteger(RegQueryPath, 'RatingTo', 5);
+    DateFrom := Settings.ReadDateTime(RegQueryPath, 'DateFrom', FNow - 365);
+    DateTo := Settings.ReadDateTime(RegQueryPath, 'DateTo', FNow);
+    GroupName := Settings.ReadString(RegQueryPath, 'GroupName');
+    Query := Settings.ReadString(RegQueryPath, 'Query');
+    SortMethod := Settings.ReadInteger(RegQueryPath, 'SortMethod', SM_DATE_TIME);
+    SortDesc := Settings.ReadBool(RegQueryPath, 'SortDesc', True);
 
     FSearchInfo.Add(RatingFrom, RatingTo, DateFrom, DateTo, GroupName, Query, SortMethod, SortDesc);
   end;
@@ -4230,18 +4230,18 @@ const
   MaxQueriesToSave = 20;
 begin
   RegQueryRootPath := 'Search\DB_' + DBKernel.GetDataBaseName + '\Query';
-  DBKernel.WriteInteger(RegQueryRootPath, 'Count', FSearchInfo.Count);
+  Settings.WriteInteger(RegQueryRootPath, 'Count', FSearchInfo.Count);
   for I := 0 to Min(MaxQueriesToSave, FSearchInfo.Count) - 1 do
   begin
     RegQueryPath := RegQueryRootPath + IntToStr(I);
-    DBKernel.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingFrom);
-    DBKernel.WriteInteger(RegQueryPath, 'RatingTo', FSearchInfo[I].RatingTo);
-    DBKernel.WriteDateTime(RegQueryPath, 'DateFrom', FSearchInfo[I].DateFrom);
-    DBKernel.WriteDateTime(RegQueryPath, 'DateTo', FSearchInfo[I].DateTo);
-    DBKernel.WriteString(RegQueryPath, 'GroupName', FSearchInfo[I].GroupName);
-    DBKernel.WriteString(RegQueryPath, 'Query', FSearchInfo[I].Query);
-    DBKernel.WriteInteger(RegQueryPath, 'SortMethod', FSearchInfo[I].SortMethod);
-    DBKernel.WriteBool(RegQueryPath, 'SortDesc', FSearchInfo[I].SortDecrement);
+    Settings.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingFrom);
+    Settings.WriteInteger(RegQueryPath, 'RatingTo', FSearchInfo[I].RatingTo);
+    Settings.WriteDateTime(RegQueryPath, 'DateFrom', FSearchInfo[I].DateFrom);
+    Settings.WriteDateTime(RegQueryPath, 'DateTo', FSearchInfo[I].DateTo);
+    Settings.WriteString(RegQueryPath, 'GroupName', FSearchInfo[I].GroupName);
+    Settings.WriteString(RegQueryPath, 'Query', FSearchInfo[I].Query);
+    Settings.WriteInteger(RegQueryPath, 'SortMethod', FSearchInfo[I].SortMethod);
+    Settings.WriteBool(RegQueryPath, 'SortDesc', FSearchInfo[I].SortDecrement);
   end;
 end;
 
@@ -4816,7 +4816,7 @@ end;
 
 function TSearchForm.GetShowGroups: Boolean;
 begin
-  Result := DBKernel.Readbool('Options', 'UseGroupsInSearch', True);
+  Result := Settings.Readbool('Options', 'UseGroupsInSearch', True);
 end;
 
 function TSearchForm.GetSortDecrement: Boolean;

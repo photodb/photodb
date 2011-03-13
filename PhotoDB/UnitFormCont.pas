@@ -15,7 +15,7 @@ uses
   uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
   uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uDBBaseTypes, uSysUtils, uDBUtils, uDBFileTypes,
-  uRuntime;
+  uRuntime, uSettings;
 
 type
   TDestDype = class(TObject)
@@ -344,7 +344,7 @@ begin
   FilePushed := False;
   LoadLanguage;
 
-  ElvMain.HotTrack.Enabled := DBKernel.Readbool('Options', 'UseHotSelect', True);
+  ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
 
   DropFileTarget2.register(Self);
   FBitmapImageList := TBitmapImageList.Create;
@@ -863,7 +863,7 @@ begin
   THintManager.Instance.CreateHintWindow(Self, MenuRecord, P, HintCallBack);
 
   if not (CtrlKeyDown or ShiftKeyDown) then
-    if DBKernel.Readbool('Options', 'UseHotSelect', True) then
+    if Settings.Readbool('Options', 'UseHotSelect', True) then
       if not LastMouseItem.Selected then
       begin
         if not(CtrlKeyDown or ShiftKeyDown) then
@@ -941,7 +941,7 @@ begin
     HintTimer.Enabled := False;
     if Active then
     begin
-      if DBKernel.Readbool('Options', 'AllowPreview', True) then
+      if Settings.Readbool('Options', 'AllowPreview', True) then
         HintTimer.Enabled := True;
       ItemWithHint := LastMouseItem;
     end;

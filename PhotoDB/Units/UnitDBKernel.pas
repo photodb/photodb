@@ -9,18 +9,7 @@ uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
   uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,
-  uRuntime, uDBBaseTypes, uStringUtils;
-
-type
-  TCharObject = class(TObject)
-  private
-    FChar: Char;
-    procedure SetChar(const Value: Char);
-  public
-    constructor Create;
-    destructor Destroy; override;
-    property Char_: Char read FChar write SetChar;
-  end;
+  uRuntime, uDBBaseTypes, uStringUtils, uSettings;
 
 type
   DBChangesIDEvent = procedure(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -33,28 +22,6 @@ type
   end;
 
 type
-  TUserRights = record
-   Delete : boolean;
-   Add : boolean;
-   ChDbName : boolean;
-   SetPrivate : boolean;
-   SetRating : boolean;
-   SetInfo : boolean;
-   ChPass : boolean;
-   ShowPrivate : boolean;
-   ShowOptions : boolean;
-   ShowAdminTools : boolean;
-   FileOperationsCritical : Boolean;
-   FileOperationsNormal : Boolean;
-   ManageGroups : Boolean;
-   Execute : Boolean;
-   Crypt : Boolean;
-   EditImage : boolean;
-   ShowPath : boolean;
-   Print : Boolean;
-  end;
-
-type
   TDBEventsIDArray = array of DBEventsIDArray;
 
 const
@@ -63,7 +30,8 @@ const
 type
  TDbKernelArrayIcons = array [1..IconsCount] of THandle;
 
-type TDBKernel = class(TObject)
+type
+  TDBKernel = class(TObject)
   private
     { Private declarations }
     FINIPasswods: TStrings;
@@ -76,7 +44,6 @@ type TDBKernel = class(TObject)
     ThreadOpenResultWork: Boolean;
     FDBs: TPhotoDBFiles;
     FImageOptions: TImageDBOptions;
-    FRegistryCache: TDBRegistryCache;
     FSych: TCriticalSection;
     procedure LoadDBs;
     function GetSortGroupsByName: Boolean;
@@ -94,28 +61,9 @@ type TDBKernel = class(TObject)
     procedure RegisterChangesIDbyID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
     procedure DoIDEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
     function TestDB(DBName_: string; OpenInThread: Boolean = False): Boolean;
-    function ReadProperty(Key, name: string): string;
-    procedure DeleteKey(Key: string);
-    procedure WriteProperty(Key, name, Value: string);
-    procedure WriteBool(Key, name: string; Value: Boolean);
-    procedure WriteBoolW(Key, name: string; Value: Boolean);
-    procedure WriteInteger(Key, name: string; Value: Integer);
-    procedure WriteStringW(Key, name, Value: string);
-    procedure WriteString(Key, name: string; Value: string);
-    procedure WriteDateTime(Key, name: string; Value: TDateTime);
-    function ReadKeys(Key: string): TStrings;
-    function ReadValues(Key: string): TStrings;
-    function ReadBool(Key, Name: string; Default: Boolean): Boolean;
-    function ReadRealBool(Key, Name: string; Default: Boolean): Boolean;
-    function ReadboolW(Key, Name: string; Default: Boolean): Boolean;
-    function ReadInteger(Key, Name: string; Default: Integer): Integer;
-    function ReadString(Key, Name: string): string;
-    function ReadStringW(Key, Name: string): string;
-    function ReadDateTime(Key, Name: string; Default: TdateTime): TDateTime;
     procedure BackUpTable;
     function LogIn(UserName, Password: string; AutoLogin: Boolean): Integer;
     function CreateDBbyName(FileName: string): Integer;
-    function GetDataBase: string;
     function GetDataBaseName: string;
     procedure SetDataBase(DatabaseFileName: string);
     procedure AddTemporaryPasswordInSession(Pass: string);
@@ -130,7 +78,6 @@ type TDBKernel = class(TObject)
     procedure AddDB(DBName, DBFile, DBIco: string; Force: Boolean = False);
     function RenameDB(OldDBName, NewDBName: string): Boolean;
     function DeleteDB(DBName: string): Boolean;
-    procedure DeleteValues(Key: string);
     function TestDBEx(DBName_: string; OpenInThread: Boolean = False): Integer;
     function StringDBVersion(DBVersion: Integer): string;
     procedure MoveDB(OldDBFile, NewDBFile: string);
@@ -151,9 +98,6 @@ var
   Icons: TDbKernelArrayIcons;
   DBKernel: TDBKernel = nil;
 
-function Inttochar(Int: Integer): Char;
-function Chartoint(Ch: Char): Integer;
-
 implementation
 
 uses UnitCrypting, CommonDBSupport,
@@ -169,7 +113,6 @@ begin
   FImageList := nil;
   FSych := TCriticalSection.Create;
   FForms := TList.Create;
-  FRegistryCache := TDBRegistryCache.Create;
   LoadDBs;
   FPasswodsInSession := TStringList.create;
   FINIPasswods := nil;
@@ -210,7 +153,6 @@ begin
   F(FINIPasswods);
   F(FPasswodsInSession);
   FreeIconDll;
-  F(FRegistryCache);
   F(FSych);
   F(FForms);
   F(FDBs);
@@ -256,133 +198,6 @@ begin
   DoSelectDB;
   LoadINIPasswords;
   Result := 0;
-end;
-
-function TDBKernel.Readbool(Key, Name: string; Default: Boolean): Boolean;
-var
-  Reg: TBDRegistry;
-  Value: string;
-begin
-  Result := default;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Value := AnsiLowerCase(Reg.ReadString(name));
-  if Value = 'true' then
-    Result := True;
-  if Value = 'false' then
-    Result := False;
-end;
-
-function TDBKernel.ReadRealBool(Key, Name: string; Default : boolean): Boolean;
-var
-  Reg : TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Result := Reg.ReadBool(Name);
-end;
-
-function TDBKernel.ReadboolW(Key, Name: string; Default : boolean): boolean;
-var
-  Reg : TBDRegistry;
-  Value : string;
-begin
-  Result := Default;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
-  Value := AnsiLowerCase(Reg.ReadString(Name));
-  if Value = 'true' then Result := True;
-  if Value = 'false' then Result := False;
-end;
-
-function TDBKernel.ReadInteger(Key, Name : string; Default : integer): integer;
-var
-  Reg : TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Result := StrToIntDef(reg.ReadString(Name), Default);
-end;
-
-function TDBKernel.ReadDateTime(Key, Name : string; Default : TDateTime): TDateTime;
-var
-  Reg : TBDRegistry;
-begin
-  Result:=Default;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  if Reg.ValueExists(Name) then
-    Result:=Reg.ReadDateTime(Name);
-end;
-
-function TDBKernel.ReadProperty(Key, Name: string): string;
-var
-  Reg : TBDRegistry;
-begin
-  Result := '';
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
-  Result := Reg.ReadString(Name);
-end;
-
-function TDBKernel.ReadString(Key, Name: string): string;
-var
-  Reg : TBDRegistry;
-begin
-  Result := '';
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Result:=Reg.ReadString(Name);
-end;
-
-function TDBKernel.ReadKeys(Key: string): TStrings;
-var
-  Reg : TBDRegistry;
-begin
-  Result:=TStringList.Create;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Reg.GetKeyNames(Result);
-end;
-
-function TDBKernel.ReadValues(Key: string): TStrings;
-var
-  Reg : TBDRegistry;
-begin
-  Result := TStringList.Create;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Reg.GetValueNames(Result);
-end;
-
-procedure TDBKernel.DeleteValues(Key: string);
-var
-  Reg: TBDRegistry;
-  I: Integer;
-  Result: TStrings;
-begin
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Result := TStringList.Create;
-    Reg.OpenKey(GetRegRootKey + Key, True);
-    Reg.GetValueNames(Result);
-    for I := 0 to Result.Count - 1 do
-      Reg.DeleteValue(Result[I]);
-  finally
-    F(Reg);
-  end;
-end;
-
-procedure TDBKernel.DeleteKey(Key: string);
-var
-  Reg : TBDRegistry;
-begin
-  Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.DeleteKey(GetRegRootKey+Key);
-  finally;
-    F(Reg);
-  end;
-end;
-
-function TDBKernel.ReadStringW(Key, Name: string): string;
-var
-  Reg : TBDRegistry;
-begin
-  Result := '';
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
-  Result := Reg.ReadString(Name);
 end;
 
 procedure TDBKernel.RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
@@ -698,76 +513,6 @@ begin
       end;
 end;
 
-procedure TDBKernel.WriteBool(Key, name: string; Value: Boolean);
-var
-  Reg: TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  if Value then
-    Reg.WriteString(name, 'True')
-  else
-    Reg.WriteString(name, 'False');
-end;
-
-procedure TDBKernel.WriteBoolW(Key, name: string; Value: Boolean);
-var
-  Reg: TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
-  if Value then
-    Reg.WriteString(name, 'True')
-  else
-    Reg.WriteString(name, 'False');
-end;
-
-procedure TDBKernel.WriteInteger(Key, name: string; Value: Integer);
-var
-  Reg: TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Reg.WriteString(name, IntToStr(Value));
-end;
-
-procedure TDBKernel.WriteProperty(Key, Name, Value: string);
-var
-  Reg : TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
-  Reg.WriteString(Name, Value);
-end;
-
-procedure TDBKernel.WriteString(Key, Name, Value: string);
-var
-  Reg : TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Reg.WriteString(Name, Value);
-end;
-
-procedure TDBKernel.WriteStringW(Key, Name, value: string);
-var
-  Reg : TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
-  Reg.WriteString(Name, Value);
-end;
-
-procedure TDBKernel.WriteDateTime(Key, Name : String; Value: TDateTime);
-var
-  Reg : TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Reg.WriteDateTime(Name, Value);
-end;
-
-function TDBKernel.GetDataBase: string;
-var
-  Reg : TBDRegistry;
-begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
-  Result:=Reg.ReadString('DBDefaultName');
-end;
-
 function TDBKernel.GetDataBaseName: string;
 var
   I: Integer;
@@ -807,16 +552,6 @@ begin
   ReadDBOptions;
 end;
 
-function Chartoint(Ch: Char): Integer;
-begin
-  Result := HexToIntDef(Ch, 0);
-end;
-
-function Inttochar(Int: Integer): Char;
-begin
-  Result := IntToHex(Int, 1)[1];
-end;
-
 procedure TDBKernel.BackUpTable;
 var
    Options: TBackUpTableThreadOptions;
@@ -824,7 +559,7 @@ begin
   if FolderView then
     Exit;
 
-  if Now - DBkernel.ReadDateTime('Options', 'BackUpDateTime', 0) > DBKernel.ReadInteger('Options', 'BackUpdays', 7) then
+  if Now - Settings.ReadDateTime('Options', 'BackUpDateTime', 0) > Settings.ReadInteger('Options', 'BackUpdays', 7) then
   begin
     Options.WriteLineProc := nil;
     Options.WriteLnLineProc := nil;
@@ -833,7 +568,7 @@ begin
 
     BackUpTableInCMD.Create(Options);
 
-    DBkernel.WriteBool('StartUp', 'BackUp', True);
+    Settings.WriteBool('StartUp', 'BackUp', True);
   end;
 end;
 
@@ -1261,7 +996,7 @@ begin
   ParamDBFile := GetParamStrDBValue('/SelectDB');
   if ParamDBFile = '' then
   begin
-    Dbname := GetDataBase;
+    Dbname := Settings.DataBase;
   end else
   begin
     for I := 0 to DBs.Count - 1 do
@@ -1300,7 +1035,7 @@ end;
 
 function TDBKernel.GetSortGroupsByName: Boolean;
 begin
-  Result := Readbool('Options', 'SortGroupsByName', True);
+  Result := Settings.Readbool('Options', 'SortGroupsByName', True);
 end;
 
 procedure TDBKernel.LoadIcons;
@@ -1443,24 +1178,6 @@ begin
   //disabled items are bad
   for I := 1 to IconsCount do
     ImageList_ReplaceIcon(FImageList.Handle, -1, Icons[I]);
-end;
-
-{ TCharObject }
-
-constructor TCharObject.Create;
-begin
-  inherited;
-  FChar := #0;
-end;
-
-destructor TCharObject.Destroy;
-begin
- Inherited;
-end;
-
-procedure TCharObject.SetChar(const Value: Char);
-begin
-  FChar := Value;
 end;
 
 initialization
