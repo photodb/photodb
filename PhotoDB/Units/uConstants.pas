@@ -37,7 +37,7 @@ const
   ProgramMail = 'photodb@illusdolphin.net';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
 
-  InstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/donate';
+  DonateURL = 'http://photodb.illusdolphin.net/{LNG}/donate';
   UnInstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/uninstall';
   UpdateNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/update';
   HomePageURL = 'http://photodb.illusdolphin.net/{LNG}';

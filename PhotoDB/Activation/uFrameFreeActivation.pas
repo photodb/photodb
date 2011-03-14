@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, uFrameWizardBase, LoadingSign, uShellIntegration,
-  uConstants, uActivationUtils, uLogger;
+  uConstants, uActivationUtils, uLogger, Dolphin_DB;
 
 type
   TFrameFreeActivation = class(TFrameWizardBase)
@@ -135,6 +135,7 @@ begin
       if TActivationManager.Instance.SaveActivateKey(Name, Reply, True) or TActivationManager.Instance.SaveActivateKey(Name, Reply, False) then
       begin
         MessageBoxDB(Handle, L('Thank you for activation the program!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+        DoDonate;
         IsStepComplete := True;
         Exit;
       end;

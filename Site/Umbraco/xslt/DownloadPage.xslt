@@ -30,7 +30,7 @@
               <xsl:value-of select="$currentPage/downloadStableText" />
             </div>
             <a href="{$downloadUrl}"><img src="/img/download-icon-windows.png" /></a>
-            <span class="phdInfo"><a><xsl:value-of select="./productName" /></a></span>
+            <span class="phdInfo"><a href="{$downloadUrl}"><xsl:value-of select="./productName" /></a></span>
             <div class="downloadInfo">
               <h1><a href="{$downloadUrl}"><xsl:value-of select="$currentPage/downloadStableLabelText" disable-output-escaping="yes" /></a></h1>
               <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />
@@ -54,7 +54,7 @@
               <xsl:value-of select="$currentPage/downloadNotStableText" />
             </div>
             <a href="{$downloadUrl}"><img src="/img/download-icon-windows.png" /></a>
-            <span class="phdInfo"><a><xsl:value-of select="./productName" /></a></span>
+            <span class="phdInfo"><a href="{$downloadUrl}"><xsl:value-of select="./productName" /></a></span>
             <div class="downloadInfo">
               <h1><a href="{$downloadUrl}"><xsl:value-of select="$currentPage/downloadNotStableLabelText" disable-output-escaping="yes" /></a></h1>
               <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />

@@ -38,6 +38,10 @@
     <Reference Include="cms">
       <HintPath>..\..\Umbraco\bin\cms.dll</HintPath>
     </Reference>
+    <Reference Include="interfaces, Version=1.0.3883.24900, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Umbraco\bin\interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />

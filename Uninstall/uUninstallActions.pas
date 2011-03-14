@@ -6,11 +6,12 @@ interface
 
 uses
   Windows, uActions, uInstallScope, SysUtils, uInstallUtils,
-  uFileUtils, StrUtils;
+  uFileUtils, StrUtils, uConstants, uTranslate, ShellAPI;
 
 const
   DeleteFilePoints = 128 * 1024;
   UnInstallPoints_ShortCut = 128 * 1024;
+  UninstallNotifyPoints_ShortCut = 1024 * 1024;
 
 type
   TUninstallFiles = class(TInstallAction)
@@ -20,6 +21,12 @@ type
   end;
 
   TUninstallShortCuts = class(TInstallAction)
+  public
+    function CalculateTotalPoints : Int64; override;
+    procedure Execute(Callback : TActionCallback); override;
+  end;
+
+  TUninstallNotify = class(TInstallAction)
   public
     function CalculateTotalPoints : Int64; override;
     procedure Execute(Callback : TActionCallback); override;
@@ -98,6 +105,18 @@ begin
       DeleteFile(ShortcutPath);
     end;
   end;
+end;
+
+{ TUninstallNotify }
+
+function TUninstallNotify.CalculateTotalPoints: Int64;
+begin
+  Result := UninstallNotifyPoints_ShortCut;
+end;
+
+procedure TUninstallNotify.Execute(Callback: TActionCallback);
+begin
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(UnInstallNotifyURL)), nil, nil, SW_NORMAL);
 end;
 
 end.

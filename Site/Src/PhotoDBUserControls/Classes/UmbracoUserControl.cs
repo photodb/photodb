@@ -1,5 +1,6 @@
 ﻿using System;
-using umbraco.presentation.nodeFactory;
+using umbraco.interfaces;
+using umbraco.NodeFactory;
 
 namespace PhotoDBUserControls.Classes
 {
@@ -12,7 +13,7 @@ namespace PhotoDBUserControls.Classes
             if (_node == null)
                 _node = Node.GetCurrent();
 
-            Property prop = _node.GetProperty(propertyName);
+            IProperty prop = _node.GetProperty(propertyName);
             if (prop == null)
                 return String.Format("Property {0} not found in node {1}!", propertyName, _node.Id);
 

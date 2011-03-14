@@ -20,7 +20,7 @@ namespace PhotoDBUserControls
                 string filePath = (string)p.Value;
                 if (!String.IsNullOrEmpty(filePath))
                 {
-                    int pageId = umbraco.presentation.nodeFactory.Node.GetCurrent().Id;
+                    int pageId = umbraco.NodeFactory.Node.GetCurrent().Id;
                     DownloadManager.NewDownload(mediaId, pageId, Request.RawUrl, filePath);
                     Response.Redirect(filePath);
                 }

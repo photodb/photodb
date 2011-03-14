@@ -179,6 +179,7 @@ procedure DoGetCode(S: string);
 procedure DoHomeContactWithAuthor;
 procedure DoHomePage;
 procedure DoBuyApplication;
+procedure DoDonate;
 function SendEMail(Handle: THandle; ToAddress, ToName, Subject, Body: string; Files: TStrings): Cardinal;
 
 procedure Delay(Msecs: Longint);
@@ -340,6 +341,11 @@ end;
 procedure DoBuyApplication;
 begin
   ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(BuyPageURL)), nil, nil, SW_NORMAL);
+end;
+
+procedure DoDonate;
+begin
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(DonateURL)), nil, nil, SW_NORMAL);
 end;
 
 procedure DoGetCode(S: string);
