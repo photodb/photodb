@@ -5,8 +5,8 @@ interface
 uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
      Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, UnitDBCommon,
-     ImageConverting, uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel,
-     uRuntime, uDBUtils, uFileUtils;
+     uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel,
+     uRuntime, uDBUtils, uFileUtils, uAssociations;
 
 type
   TExplorerThumbnailCreator = class(TThread)
@@ -121,10 +121,10 @@ begin
           if not FileExists(FFileName) then
             FFileName := ProgramDir + FFileName;
 
-          if not (FileExists(FFileName) and ExtInMask(SupportedExt, GetExt(FFileName))) then
+          if not (FileExists(FFileName) and IsGraphicFile(FFileName)) then
             Exit;
 
-          GraphicClass := GetGraphicClass(ExtractFileExt(FFileName), False);
+          GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FFileName));
           if GraphicClass = nil then
             Exit;
 

@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, ImageConverting, Math, UVistaFuncs,
-  JPEG, GIFImage, GraphicEx, UnitDBkernel, GraphicCrypt,
+  Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, Math, UVistaFuncs,
+  JPEG, GIFImage, GraphicEx, UnitDBkernel, GraphicCrypt, uAssociations,
   AcDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
   UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
   DmProgress, uW7TaskBar, PngImage, uGOM, uWatermarkOptions, uImageSource,
@@ -173,7 +173,7 @@ begin
   if DdConvert.ItemIndex = -1 then
     FProcessingParams.GraphicClass := nil
   else
-    FProcessingParams.GraphicClass := GetConvertableImageClasses[DdConvert.ItemIndex];
+    FProcessingParams.GraphicClass := TGraphicClass(DdConvert.Items.Objects[DdConvert.ItemIndex]);
 
   FProcessingParams.Resize := CbResize.Checked;
   FProcessingParams.ResizeToSize := (DdResizeAction.ItemIndex in [0 .. 4]) or
@@ -258,9 +258,9 @@ end;
 
 procedure TFormSizeResizer.FormCreate(Sender: TObject);
 var
-  Formats: TArGraphicClass;
   I: Integer;
   Description, Mask: string;
+  Ext : TFileAssociation;
 begin
   FCreatingResize := True;
   FIgnoreInput := False;
@@ -268,28 +268,16 @@ begin
   LoadLanguage;
   FData := TDBPopupMenuInfo.Create;
 
-  Formats := GetConvertableImageClasses;
-  for I := 0 to Length(Formats) - 1 do
+  for I := 0 to TFileAssociations.Instance.Count - 1 do
   begin
-    if Formats[I] = TiffImageUnit.TTiffGraphic then
-      Description := 'Tiff Image'
-    else if Formats[I] = TGIFImage then
-      Description := 'GIF Image'
-    else if Formats[I] = TPngImage then
-      Description := 'PNG Image'
-    else
-      Description := GraphicEx.FileFormatList.GetDescription(Formats[I]);
+    Ext := TFileAssociations.Instance[I];
+    if Ext.CanSave then
+    begin
+      Description := Ext.Description;
+      Mask := '*' + Ext.Extension;
 
-    if Formats[I] = TiffImageUnit.TTiffGraphic then
-      Mask := '*.tiff'
-    else if Formats[I] = TBitmap then
-      Mask := '*.bmp'
-    else if Formats[I] = TPngImage then
-      Mask := '*.png'
-    else
-      Mask := GraphicFileMask(Formats[I]);
-
-    DdConvert.Items.AddObject(Description + '  (' + Mask + ')', TObject(I));
+      DdConvert.Items.AddObject(Description + '  (' + Mask + ')', TObject(Ext.GraphicClass));
+    end;
   end;
   DdConvert.ItemIndex := 0;
   DdRotate.ItemIndex := 0;
@@ -386,15 +374,12 @@ var
 
   function CheckFileTypes: Boolean;
   var
-    GraphicClass: TGraphicClass;
     I: Integer;
   begin
     Result := True;
     for I := 0 to FData.Count - 1 do
-    begin
-      GraphicClass := GetGraphicClass(ExtractFileExt(FData[I].FileName), True);
-      Result := Result and ConvertableImageClass(GraphicClass);
-    end;
+      Result := Result and TFileAssociations.Instance.IsConvertableExt(ExtractFileExt(FData[I].FileName));
+
   end;
 
 begin

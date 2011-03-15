@@ -9,7 +9,7 @@ uses
   uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
-  uDBForm, uDBGraphicTypes, ImageConverting, GraphicsCool,
+  uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations,
   GraphicsBaseTypes;
 
 procedure CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
@@ -879,7 +879,7 @@ begin
         G := DeCryptGraphicFile(FileName, Pass);
     end else
     begin
-      G := GetGraphicClass(GetExt(FileName), False).Create;
+      G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
       G.LoadFromFile(FileName);
     end;
   end;
@@ -1089,7 +1089,7 @@ begin
     end  else
     begin
       Result.Crypt := False;
-      G := GetGraphicClass(GetExt(FileName), False).Create;
+      G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
       G.LoadFromFile(FileName);
     end;
   except

@@ -6,7 +6,7 @@ uses
   SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
   CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
   UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
-  UnitDBCommon, uLogger, ImageConverting, uMemory, UnitDBKernel,
+  UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations,
   uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime;
 
 type
@@ -318,7 +318,7 @@ begin
     C := FQuery.RecordCount;
   end;
 
-  GraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
   if GraphicClass = nil then
     Exit;
 

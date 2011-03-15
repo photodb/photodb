@@ -53,7 +53,6 @@ type
     property Items[Index: Integer]: TRAWExifRecord read GetValueByIndex; default;
   end;
 
-  function IsRAWImageFile(FileName : String) : Boolean;
   function ReadRAWExif(FileName : String) : TRAWExif;
 
 var
@@ -64,16 +63,6 @@ implementation
 uses
   Dolphin_DB, UnitDBCommon;
 
-var
-  aScript : TScript;  
-  LoadScript : string;    
-  LoadInteger : integer;
-  aFS : TFileStream;
-  aSR : TStreamReader;
-  _i : integer;
-  _s : string;
-  _p : integer;
-    
 const
   RAW_DISPLAY = 2;
   RAW_PREVIEW = 1;
@@ -127,11 +116,6 @@ begin
   finally
     RawBitmap.Free;
   end;
-end;
-
-function IsRAWImageFile(FileName : String) : boolean;
-begin
- Result := ExtInMask('|'+RAWImages,GetExt(FileName));
 end;
 
 procedure TRAWImage.Assign(Source: TPersistent);
@@ -314,54 +298,17 @@ end;
 
 initialization
 
-  TW.I.Start('InitRAW');
-  RAWImages := '';
-  if (AnsiUpperCase(paramStr(1))<>'/SAFEMODE') and (AnsiUpperCase(paramStr(1))<>'/UNINSTALL') then
-  begin
-    //Loading Extensions from ini-file
-    aScript := TScript.Create('InitRAW');
-    try
-      AddScriptFunction(aScript.Enviroment, 'String', F_TYPE_FUNCTION_STRING_IS_STRING, @aSetString);
-      LoadScript := '';
-      aFS := TFileStream.Create(ProgramDir + 'scripts\LoadRAW.dbini',fmOpenRead);
-      try
-        aSR := TStreamReader.Create(aFS);
-        try
-          LoadScript := aSR.ReadToEnd;
-          LoadScript := StringReplace(LoadScript, #13#10, '  ', [rfReplaceAll]);
-        finally
-          aSR.Free;
-        end;
-      finally
-        aFS.Free;
-      end;
-    ExecuteScript(nil, aScript, LoadScript, LoadInteger, nil);
-    RAWImages := GetNamedValueString(aScript, '$RAWImages');
-  finally
-    aScript.Free;
-  end;
-  if RAWImages = '' then
-    RAWImages := 'CR2|';
-  TempRAWMask := TempRAWMask + RAWImages;
-  SupportedExt := SupportedExt + RAWImages;
-
-  TW.I.Start('RAW - RegisterFileFormat');
-  _p := 1; //first -  NOT "|"
-  for _i := 1 to Length(RAWImages) do
-  begin
-    if RAWImages[_i]= '|' then
-    begin
-      _s := Copy(RAWImages, _p, _i - _p);
-      TPicture.RegisterFileFormat(AnsiLowerCase(_s), 'Camera RAW format', TRAWImage);
-      _p := _i + 1;
-    end;
-  end;
-  end else
-    IsRAWSupport := False;
+  TPicture.RegisterFileFormat('crw', 'Camera RAW Images', TRAWImage);
+  TPicture.RegisterFileFormat('cr2', 'Camera RAW Images', TRAWImage);
+  TPicture.RegisterFileFormat('nef', 'Camera RAW Images', TRAWImage);
+  TPicture.RegisterFileFormat('raf', 'Camera RAW Images', TRAWImage);
+  TPicture.RegisterFileFormat('dng', 'Camera RAW Images', TRAWImage);
+  TPicture.RegisterFileFormat('mos', 'Camera RAW Images', TRAWImage);
+  TPicture.RegisterFileFormat('kdc', 'Camera RAW Images', TRAWImage);
+  TPicture.RegisterFileFormat('dcr', 'Camera RAW Images', TRAWImage);
 
 finalization
 
-  if IsRAWSupport then
-    TPicture.UnregisterGraphicClass(TRAWImage);
+  TPicture.UnregisterGraphicClass(TRAWImage);
 
 end.

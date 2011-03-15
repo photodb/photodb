@@ -15,7 +15,7 @@ uses
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime,
-  uDBBaseTypes, uViewerTypes, uSettings;
+  uDBBaseTypes, uViewerTypes, uSettings, uAssociations;
 
 type
   TRotatingImageInfo = record
@@ -1608,7 +1608,7 @@ begin
     FileName := LongFileName(FileName);
     Info := TDBPopupMenuInfo.Create;
     try
-      GetFileListByMask(FileName, SupportedExt, Info, N, ShowPrivate);
+      GetFileListByMask(FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
       if info.Count > 0 then
         Execute(Self, info);
     finally

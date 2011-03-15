@@ -12,28 +12,28 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
     Caption = 'LblPath'
   end
   object LblUseExt: TLabel
-    Left = 232
+    Left = 296
     Top = 3
-    Width = 195
-    Height = 38
+    Width = 131
+    Height = 40
     AutoSize = False
     Caption = '- File will open with this Program'
     WordWrap = True
   end
   object LblAddSubmenuItem: TLabel
-    Left = 232
-    Top = 34
-    Width = 195
-    Height = 39
+    Left = 296
+    Top = 41
+    Width = 134
+    Height = 50
     AutoSize = False
     Caption = '- File option will added for this file type'
     WordWrap = True
   end
   object LblSkipExt: TLabel
-    Left = 232
-    Top = 65
-    Width = 195
-    Height = 32
+    Left = 296
+    Top = 89
+    Width = 131
+    Height = 40
     AutoSize = False
     Caption = '- File extension ignored'
     WordWrap = True
@@ -41,7 +41,7 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
   object CbFileExtensions: TCheckListBox
     Left = 3
     Top = 3
-    Width = 201
+    Width = 264
     Height = 270
     AllowGrayed = True
     ItemHeight = 13
@@ -57,8 +57,8 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
     Text = 'EdPath'
   end
   object CbInstallTypeChecked: TCheckBox
-    Left = 216
-    Top = 3
+    Left = 273
+    Top = 2
     Width = 17
     Height = 17
     Checked = True
@@ -66,8 +66,8 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
     TabOrder = 2
   end
   object CbInstallTypeGrayed: TCheckBox
-    Left = 216
-    Top = 34
+    Left = 273
+    Top = 40
     Width = 17
     Height = 17
     AllowGrayed = True
@@ -75,8 +75,8 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
     TabOrder = 3
   end
   object CbInstallTypeNone: TCheckBox
-    Left = 216
-    Top = 65
+    Left = 273
+    Top = 88
     Width = 17
     Height = 17
     TabOrder = 4

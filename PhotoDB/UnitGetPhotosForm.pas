@@ -11,7 +11,7 @@ uses
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants,
   CCR.Exif, uMemory, uTranslate, uDBForm, uShellUtils, uSysUtils,
   uDBUtils, uDBTypes, uRuntime, uDBBaseTypes, uDBPopupMenuInfo,
-  uSettings;
+  uSettings, uAssociations;
 
 type
   TGetImagesOptions = record
@@ -112,7 +112,7 @@ type
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure Execute(Pach: string);
+    procedure Execute(Path: string);
     procedure OnEndScanFolder(Sender: TObject);
     procedure OnLoadingFilesCallBackEvent(Sender: TObject; var Info: TProgressCallBackInfo);
     procedure SetDataList(DataList: TFileDateList);
@@ -167,7 +167,7 @@ begin
   try
     MaxFiles := 500;
     FilesSearch := 4;
-    GetFileNamesFromDrive(Path, SupportedExt, Files, MaxFiles, FilesSearch);
+    GetFileNamesFromDrive(Path, TFileAssociations.Instance.ExtensionList, Files, MaxFiles, FilesSearch);
     if Files.Count = 0 then
     begin
       MaxFiles := 500;
@@ -211,7 +211,7 @@ begin
   end;
 end;
 
-procedure TGetToPersonalFolderForm.Execute(Pach: string);
+procedure TGetToPersonalFolderForm.Execute(Path: string);
 var
   Date: TDateTime;
   Mask: string;
@@ -220,7 +220,7 @@ var
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    FPath := Pach;
+    FPath := Path;
     if CheckBox2.Checked then
     begin
       Mask := EdMultimediaMask.Text;
@@ -230,11 +230,10 @@ begin
           Delete(Mask, I, 1);
       if Length(Mask) > 0 then
         Delete(Mask, 1, 1);
-      Mask := SupportedExt + Mask;
-    end
-    else
-      Mask := SupportedExt;
-    Date := GetPhotosDate(Mask, Pach);
+      Mask := TFileAssociations.Instance.ExtensionList + Mask;
+    end else
+      Mask := TFileAssociations.Instance.ExtensionList;
+    Date := GetPhotosDate(Mask, Path);
   finally
     SetErrorMode(OldMode);
   end;
@@ -517,10 +516,10 @@ begin
             Delete(Mask, I, 1);
         if Length(Mask) > 0 then
           Delete(Mask, 1, 1);
-        Mask := SupportedExt + Mask;
+        Mask := TFileAssociations.Instance.ExtensionList + Mask;
       end
       else
-        Mask := SupportedExt;
+        Mask := TFileAssociations.Instance.ExtensionList;
       GetFileNamesFromDrive(FPath, Mask, Files, FilesSearch, MaxFiles);
 
       Hide;

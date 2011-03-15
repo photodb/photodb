@@ -8,12 +8,12 @@ uses
   Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
   Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
   GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
-  EasyListview, GraphicsCool, uVistaFuncs, uResources, ImageConverting,
+  EasyListview, GraphicsCool, uVistaFuncs, uResources,
   UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
-  uSysUtils, uRuntime, uDBUtils;
+  uSysUtils, uRuntime, uDBUtils, uAssociations;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -409,8 +409,7 @@ begin
                   begin
                     FE := (SearchRec.Attr and FaDirectory = 0);
                     S := ExtractFileExt(SearchRec.name);
-                    Delete(S, 1, 1);
-                    S := '|' + AnsiUpperCase(S) + '|';
+                    S := '|' + AnsiLowerCase(S) + '|';
                     P := Pos(S, SupportedExt);
                     EM := P <> 0;
                   end;
@@ -1124,7 +1123,7 @@ begin
         end else
         begin
 
-          GraphicClass := GetGraphicClass(ExtractFileExt(Files[Index]), False);
+          GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Files[Index]));
           if GraphicClass = nil then
             Continue;
 
@@ -1941,7 +1940,7 @@ begin
 
   CurrentFile := FileName;
 
-  GraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
   if GraphicClass = nil then
     Exit;
 
@@ -2039,7 +2038,7 @@ var
 begin
   if Info.ID = 0 then
   begin
-    GraphicClass := GetGraphicClass(ExtractFileExt(Info.FileName), False);
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
     if GraphicClass = nil then
        Exit;
 

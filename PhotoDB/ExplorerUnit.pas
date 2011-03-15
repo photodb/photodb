@@ -20,7 +20,7 @@ uses
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
-  uDBUtils, uSettings;
+  uDBUtils, uSettings, uAssociations;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -1650,7 +1650,7 @@ begin
       end;
   LastMouseItem.Focused := True;
 
-  if not ExtInMask(SupportedExt, GetExt(FFilesInfo[index].FileName)) then
+  if IsGraphicFile(FFilesInfo[index].FileName) then
     Exit;
 
   if not FileExists(FFilesInfo[index].FileName) then
@@ -2984,7 +2984,7 @@ begin
               'Explorer_ShowThumbnailsForImages', True);
             ExplorerViewInfo.View := ListView;
             ExplorerViewInfo.PictureSize := FPictureSize;
-            TExplorerThread.Create('', SupportedExt, 0, ExplorerViewInfo, Self, UpdaterInfo, StateID);
+            TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, ExplorerViewInfo, Self, UpdaterInfo, StateID);
           end;
         end;
       FILE_ACTION_REMOVED:
@@ -3043,13 +3043,13 @@ begin
                 ElvMain.Items[I].Caption := ExtractFileName(PInfo[K].FNewFileName);
                 FFilesInfo[index].FileName := PInfo[K].FNewFileName;
                 if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
-                  if not ExtInMask(SupportedExt, GetExt(PInfo[K].FNewFileName)) then
+                  if not IsGraphicFile(PInfo[K].FNewFileName) then
                   begin
                     FFilesInfo[index].FileType := EXPLORER_ITEM_FILE;
                     FFilesInfo[index].ID := 0;
                   end;
                 if FFilesInfo[index].FileType = EXPLORER_ITEM_FILE then
-                  if ExtInMask(SupportedExt, GetExt(PInfo[K].FNewFileName)) then
+                  if IsGraphicFile(PInfo[K].FNewFileName) then
                   begin
                     FFilesInfo[index].FileType := EXPLORER_ITEM_IMAGE;
                   end;
@@ -5382,7 +5382,7 @@ begin
     S := Path;
     if CheckFileExistsWithMessageEx(S, False) then
     begin
-      if ExtInMask(SupportedExt, GetExt(S)) then
+      if IsGraphicFile(S) then
       begin
         if Viewer = nil then
           Application.CreateForm(TViewer, Viewer);
@@ -6243,7 +6243,7 @@ begin
 
   Info := TDBPopupMenuInfo.Create;
   try
-    GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
+    GetFileListByMask(TempFolderName, TFileAssociations.Instance.ExtensionList, Info, N, True);
     if Info.Count > 0 then
     begin
       Viewer.Execute(Self, Info);
@@ -7070,7 +7070,7 @@ begin
             Exit;
           end else
           begin
-            if ExtInMask(SupportedExt, GetExt(LinkPath)) then
+            if IsGraphicFile(LinkPath) then
             begin
               MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
               try

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
   Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes,
-  ImageConverting, uMemory, uGraphicUtils, uDBGraphicTypes;
+  uMemory, uGraphicUtils, uDBGraphicTypes, uAssociations;
 
 type
   TPropertyLoadGistogrammThreadOptions = record
@@ -95,7 +95,7 @@ begin
   FreeOnTerminate := True;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    GraphicClass := GetGraphicClass(ExtractFileExt(fOptions.FileName), False);
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FOptions.FileName));
     if GraphicClass = nil then
       Exit;
 

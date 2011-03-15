@@ -18,7 +18,7 @@ uses
   UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, pngimage, uResources, uMemory,
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar, uGOM,
-  uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate,
+  uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate, uAssociations,
   uShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
   uDBUtils, uDBFileTypes, Dolphin_DB, uActivationUtils, uSettings;
 
@@ -3213,7 +3213,7 @@ begin
   try
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
-    GetFileListByMask(TempFolderName, SupportedExt, Info, N, True);
+    GetFileListByMask(TempFolderName, TFileAssociations.Instance.ExtensionList, Info, N, True);
     if Info.Count > 0 then
     begin
       Viewer.Execute(Self, Info);

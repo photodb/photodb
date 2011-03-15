@@ -5,7 +5,7 @@ interface
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
      UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
      uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM,
-     uTranslate, Dolphin_DB, uDBForm, uSettings;
+     uTranslate, Dolphin_DB, uDBForm, uSettings, uAssociations;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;
@@ -141,7 +141,7 @@ begin
   ProcessFile(FileName);
   FileInfo.FileName := FileName;
 
-  if Silent or (FileExistsSafe(FileName) and ExtInMask(SupportedExt, GetExt(FileName))) then
+  if Silent or (FileExistsSafe(FileName) and IsGraphicFile(FileName)) then
     if not(FileExistsInFileList(FileName)) then
     begin
       FileSize := GetFileSizeByName(FileName);

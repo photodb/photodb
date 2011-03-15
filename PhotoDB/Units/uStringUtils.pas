@@ -5,6 +5,7 @@ interface
 uses Windows, Classes, SysUtils;
 
 procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
+function JoinList(List: TStrings; JoinString: string): string;
 function ConvertUniversalFloatToLocal(s: string): string;
 function PosExS(SubStr: string; const Str: string; index: integer = 1): Integer;
 function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer; overload;
@@ -313,6 +314,20 @@ begin
         end;
       end;
     end;
+  end;
+end;
+
+function JoinList(List: TStrings; JoinString: string): string;
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := 0 to List.Count - 1 do
+  begin
+    if I <> 0 then
+      Result := Result + JoinString;
+
+    Result := Result + List[I];
   end;
 end;
 

@@ -4,7 +4,7 @@ interface
 
 uses Windows, SysUtils, Math, Graphics, Printers, Classes, ComObj, uLogger,
   UnitDBKernel, GraphicCrypt, GraphicsBaseTypes, UnitDBCommonGraphics,
-  ImageConverting, ActiveX, uMemory;
+  ActiveX, uMemory, uAssociations;
 
 type
   TCallBackPrinterGeneratePreviewProc = procedure(Progress: Byte; var Terminate: Boolean) of object;
@@ -310,7 +310,7 @@ begin
       Result := Graphic <> nil;
     end else
     begin
-      GraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+      GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
 
       if GraphicClass <> nil then
       begin

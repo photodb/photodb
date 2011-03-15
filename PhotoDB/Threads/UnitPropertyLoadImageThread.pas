@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
   UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics,
-  uMemory, GraphicsCool, ImageConverting, uGraphicUtils, uRuntime,
+  uMemory, GraphicsCool, uGraphicUtils, uRuntime, uAssociations,
   uConstants;
 
 type
@@ -55,7 +55,7 @@ var
   GraphicClass : TGraphicClass;
 begin
   FreeOnTerminate := True;
-  GraphicClass := GetGraphicClass(ExtractFileExt(FOptions.FileName), False);
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FOptions.FileName));
   if GraphicClass = nil then
     Exit;
 

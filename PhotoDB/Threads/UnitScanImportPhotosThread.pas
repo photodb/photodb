@@ -4,16 +4,17 @@ interface
 
 uses
   Classes, Messages, Forms, Dolphin_DB, RawImage, SysUtils,
-  UnitDBDeclare, DateUtils, UnitDBCommon,
-  CCR.Exif, uMemory, uDBBaseTypes, uFileUtils, uTranslate;
+  UnitDBDeclare, DateUtils, UnitDBCommon, uAssociations,
+  CCR.Exif, uMemory, uDBBaseTypes, uFileUtils, uTranslate,
+  uGraphicUtils;
 
 type
   TScanImportPhotosThreadOptions = record
-   Directory : String;
-   Mask : String;
-   OnEnd : TNotifyEvent;
-   Owner : TForm;
-   OnProgress : TCallBackProgressEvent;
+    Directory: string;
+    Mask: string;
+    OnEnd: TNotifyEvent;
+    Owner: TForm;
+    OnProgress: TCallBackProgressEvent;
   end;
 
   TFileDateRecord = record
@@ -153,7 +154,7 @@ begin
       Delete(FOptions.Mask, I, 1);
   if Length(FOptions.Mask) > 0 then
     Delete(FOptions.Mask, 1, 1);
-  FOptions.Mask := SupportedExt + FOptions.Mask;
+  FOptions.Mask := TFileAssociations.Instance.ExtensionList + FOptions.Mask;
 
   FFiles := TStringList.Create;
   MaxFilesCount := 10000;
@@ -173,10 +174,9 @@ begin
     if not ExifData.Empty then
     begin
       AddFileToList(FFiles[I], DateOf(ExifData.DateTime));
-    end
-    else
+    end else
     begin
-      if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FFiles[I]) then
+      if RAWImage.IsRAWSupport and IsRAWImageFile(FFiles[I]) then
       begin
         RAWExif := ReadRAWExif(FFiles[I]);
         if RAWExif.IsEXIF then

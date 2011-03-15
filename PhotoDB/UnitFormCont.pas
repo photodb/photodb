@@ -15,7 +15,7 @@ uses
   uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
   uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uDBBaseTypes, uSysUtils, uDBUtils, uDBFileTypes,
-  uRuntime, uSettings;
+  uRuntime, uSettings, uAssociations;
 
 type
   TDestDype = class(TObject)
@@ -1555,28 +1555,29 @@ end;
 procedure TFormCont.DropFileTarget2Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 var
-  i : integer;
-  Param : TArStrings;
-  Ids : TArInteger;
-  b : TArBoolean;
+  I: Integer;
+  Param: TArStrings;
+  Ids: TArInteger;
+  B: TArBoolean;
 begin
- if DBCanDrag then exit;
- for i:=0 to DropFileTarget2.Files.Count-1 do
- begin
-  if ExtinMask(SupportedExt,GetExt(DropFileTarget2.Files[i])) then
+  if DBCanDrag then
+    Exit;
+  for I := 0 to DropFileTarget2.Files.Count - 1 do
   begin
-   SetLength(Param,Length(Param)+1);
-   Param[Length(Param)-1]:=DropFileTarget2.Files[i];
-  end else
-  begin
-   FilePushed:=true;
-   FilePushedName:=DropFileTarget2.Files[i];
-   LoadFromFile1Click(nil);
+    if IsGraphicFile(DropFileTarget2.Files[I]) then
+    begin
+      SetLength(Param, Length(Param) + 1);
+      Param[Length(Param) - 1] := DropFileTarget2.Files[I];
+    end else
+    begin
+      FilePushed := True;
+      FilePushedName := DropFileTarget2.Files[I];
+      LoadFromFile1Click(nil);
+    end;
   end;
- end;
- SetLength(ids,1);
- SetLength(b,1);
- LoadFilesToPanel.Create(param,ids,b,false,false,self);
+  SetLength(Ids, 1);
+  SetLength(B, 1);
+  LoadFilesToPanel.Create(Param, Ids, B, False, False, Self);
 end;
 
 procedure TFormCont.WlResizeClick(Sender: TObject);
@@ -1617,10 +1618,10 @@ end;
 
 procedure TFormCont.ExCopyLinkClick(Sender: TObject);
 var
-  FileName, Temp, UpDir, Dir, NewDir : String;
-  l1,l2 : integer;
-  i : integer;
-  DestWide : TList;
+  FileName, Temp, UpDir, Dir, NewDir: string;
+  L1, L2: Integer;
+  I: Integer;
+  DestWide: TList;
 
   procedure AddFileToDestWide(NewDir, NewFileName: string);
   var

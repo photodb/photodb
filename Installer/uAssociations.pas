@@ -3,8 +3,35 @@ unit uAssociations;
 interface
 
 uses
-  Windows, Classes, StdCtrls, uMemory, SysUtils, Registry,
-  uTranslate, StrUtils;
+  Windows, Classes, Graphics, StdCtrls, uMemory, SysUtils, Registry,
+  uTranslate, StrUtils, SyncObjs,
+  jpeg,
+  {$IFDEF PHOTODB}
+  GraphicEx,
+  TiffImageUnit, //TiffImageUnit should be AFTER GraphicEx!!!
+  GifImage,
+  RAWImage,
+  {$ENDIF}
+  pngimage,
+  uStringUtils;
+
+{$IF DEFINED(UNINSTALL) OR DEFINED(INSTALL)}
+const
+  TTIFFGraphic = nil;
+  TPSDGraphic = nil;
+  TGIFImage = nil;
+  TRAWImage = nil;
+  TRLAGraphic = nil;
+  TAutodeskGraphic = nil;
+  TPPMGraphic = nil;
+  TTargaGraphic = nil;
+  TPCXGraphic = nil;
+  TSGIGraphic = nil;
+  TPCDGraphic = nil;
+  TPSPGraphic = nil;
+  TCUTGraphic = nil;
+  TEPSGraphic = nil;
+{$IFEND}
 
 type
   TAssociation = class(TObject)
@@ -14,10 +41,17 @@ type
   TAssociationState = (TAS_IGNORE, TAS_ADD_HANDLER, TAS_DEFAULT);
 
   TFileAssociation = class(TAssociation)
+  private
+    FDescription: string;
+    function GetDescription: string;
   public
     Extension : string;
     ExeParams : string;
-    State : TAssociationState;
+    Group: Integer;
+    State: TAssociationState;
+    GraphicClass: TGraphicClass;
+    CanSave: Boolean;
+    property Description: string read GetDescription write FDescription;
   end;
 
   TInstallAssociationCallBack = procedure(Current, Total : Integer; var Terminate : Boolean) of object;
@@ -25,20 +59,32 @@ type
   TFileAssociations = class(TObject)
   private
     FAssociations : TList;
+    FFullFilter: string;
+    FExtensionList: string;
+    FChanged: Boolean;
+    FSync: TCriticalSection;
     constructor Create;
-    procedure AddFileExtension(Extension : string); overload;
-    procedure AddFileExtension(Extension, ExeParams : string); overload;
+    procedure AddFileExtension(Extension, Description : string; Group: Integer; GraphicClass: TGraphicClass; CanSave: Boolean = False); overload;
+    procedure AddFileExtension(Extension, Description, ExeParams : string; Group: Integer; GraphicClass: TGraphicClass; CanSave: Boolean = False); overload;
     procedure FillList;
     function GetAssociations(Index: Integer): TFileAssociation;
     function GetCount: Integer;
     function GetAssociationByExt(Ext : string): TFileAssociation;
+    function GetFullFilter: string;
+    function GetExtensionList: string;
+    procedure UpdateCache;
   public
     class function Instance : TFileAssociations;
     destructor Destroy; override;
     function GetCurrentAssociationState(Extension : string) : TAssociationState;
+    function GetFilter(ExtList: string; UseGroups: Boolean; ForOpening: Boolean) : string;
+    function GetGraphicClass(Ext: String): TGraphicClass;
+    function IsConvertableExt(Ext: String): Boolean;
     property Associations[Index : Integer] : TFileAssociation read GetAssociations; default;
     property Exts[Ext : string] : TFileAssociation read GetAssociationByExt;
     property Count : Integer read GetCount;
+    property FullFilter: string read GetFullFilter;
+    property ExtensionList: string read GetExtensionList;
   end;
 
 const
@@ -50,6 +96,7 @@ const
 function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
 function AssociationStateToCheckboxState(AssociationState : TAssociationState) : TCheckBoxState;
 function CheckboxStateToAssociationState(CheckBoxState : TCheckBoxState) : TAssociationState;
+function IsGraphicFile(FileName: string): Boolean;
 
 implementation
 
@@ -252,6 +299,18 @@ begin
   Result := True;
 end;
 
+function IsGraphicFile(FileName: string): Boolean;
+begin
+  Result := Pos('|' + ExtractFileExt(FileName) + '|', TFileAssociations.Instance.ExtensionList) > 0;
+end;
+
+{ TFileAssociation }
+
+function TFileAssociation.GetDescription: string;
+begin
+  Result := TA(FDescription, 'Associations');
+end;
+
 { TFileAssociations }
 
 class function TFileAssociations.Instance: TFileAssociations;
@@ -262,23 +321,52 @@ begin
   Result := FInstance;
 end;
 
-procedure TFileAssociations.AddFileExtension(Extension, ExeParams: string);
+function TFileAssociations.IsConvertableExt(Ext: String): Boolean;
+var
+  I: Integer;
+  Association: TFileAssociation;
+begin
+  FSync.Enter;
+  try
+    Result := False;
+    Ext := AnsiLowerCase(Ext);
+    for I := 0 to Count - 1 do
+    begin
+      Association := Self[I];
+      if Association.Extension = Ext then
+      begin
+        Result := Association.CanSave;
+        Exit;
+      end;
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TFileAssociations.AddFileExtension(Extension, Description, ExeParams: string; Group: Integer; GraphicClass: TGraphicClass; CanSave: Boolean = False);
 var
   Ext : TFileAssociation;
 begin
+  FChanged := True;
   Ext := TFileAssociation.Create;
   Ext.Extension := Extension;
   Ext.ExeParams := ExeParams;
+  Ext.Description := Description;
+  Ext.Group := Group;
+  Ext.GraphicClass := GraphicClass;
+  Ext.CanSave := CanSave;
   FAssociations.Add(Ext);
 end;
 
-procedure TFileAssociations.AddFileExtension(Extension: string);
+procedure TFileAssociations.AddFileExtension(Extension, Description: string; Group: Integer; GraphicClass: TGraphicClass; CanSave: Boolean = False);
 begin
-  AddFileExtension(Extension, '');
+  AddFileExtension(Extension, Description, '', Group, GraphicClass, CanSave);
 end;
 
 constructor TFileAssociations.Create;
 begin
+  FSync := TCriticalSection.Create;
   FAssociations := TList.Create;
   FillList;
 end;
@@ -286,58 +374,81 @@ end;
 destructor TFileAssociations.Destroy;
 begin
   FreeList(FAssociations);
+  F(FSync);
   inherited;
 end;
 
 procedure TFileAssociations.FillList;
 begin
-  AddFileExtension('.jfif');
-  AddFileExtension('.jpg');
-  AddFileExtension('.jpe');
-  AddFileExtension('.jpeg');
-  AddFileExtension('.tiff');
-  AddFileExtension('.tif');
-  AddFileExtension('.psd');
-  AddFileExtension('.gif');
-  AddFileExtension('.png');
-  AddFileExtension('.bmp');
-  AddFileExtension('.thm');
+  FSync.Enter;
+  try
 
-  AddFileExtension('.crw');
-  AddFileExtension('.cr2');
-  AddFileExtension('.nef');
-  AddFileExtension('.raf');
-  AddFileExtension('.dng');
-  AddFileExtension('.mos');
-  AddFileExtension('.kdc');
-  AddFileExtension('.dcr');
+    AddFileExtension('.jfif', 'JPEG Images', 0, TJpegImage);
+    AddFileExtension('.jpg', 'JPEG Images', 0, TJpegImage, True);
+    AddFileExtension('.jpe', 'JPEG Images', 0, TJpegImage);
+    AddFileExtension('.jpeg', 'JPEG Images', 0, TJpegImage);
+    AddFileExtension('.thm', 'JPEG Images', 0, TJpegImage);
 
-  AddFileExtension('.pic');
-  AddFileExtension('.pdd');
-  AddFileExtension('.ppm');
-  AddFileExtension('.pgm');
-  AddFileExtension('.pbm');
-  AddFileExtension('.fax');
-  AddFileExtension('.rle');
-  AddFileExtension('.rla');
-  AddFileExtension('.tga');
-  AddFileExtension('.dib');
-  AddFileExtension('.win');
-  AddFileExtension('.vst');
-  AddFileExtension('.vda');
-  AddFileExtension('.icb');
-  AddFileExtension('.eps');
-  AddFileExtension('.pcc');
-  AddFileExtension('.pcx');
-  AddFileExtension('.rpf');
-  AddFileExtension('.sgi');
-  AddFileExtension('.rgba');
-  AddFileExtension('.rgb');
-  AddFileExtension('.bw');
-  AddFileExtension('.cel');
-  AddFileExtension('.pcd');
-  AddFileExtension('.psp');
-  AddFileExtension('.cut');
+    AddFileExtension('.tiff', 'TIFF images', 1, TTIFFGraphic, True);
+    AddFileExtension('.tif', 'TIFF images', 1, TTIFFGraphic);
+
+    AddFileExtension('.psd', 'Photoshop Images', 2, TPSDGraphic);
+    AddFileExtension('.pdd', 'Photoshop Images', 2, TPSDGraphic);
+
+    AddFileExtension('.gif', 'Animated images', 3, TGIFImage, True);
+
+    AddFileExtension('.png', 'Portable network graphic images', 4, TPngImage, True);
+
+    AddFileExtension('.bmp', 'Standard Windows bitmap images', 5, TBitmap, True);
+    AddFileExtension('.rle', 'Standard Windows bitmap images', 5, TBitmap);
+    AddFileExtension('.dib', 'Standard Windows bitmap images', 5, TBitmap);
+
+    AddFileExtension('.crw', 'Camera RAW Images', 6, TRAWImage);
+    AddFileExtension('.cr2', 'Camera RAW Images', 6, TRAWImage);
+    AddFileExtension('.nef', 'Camera RAW Images', 6, TRAWImage);
+    AddFileExtension('.raf', 'Camera RAW Images', 6, TRAWImage);
+    AddFileExtension('.dng', 'Camera RAW Images', 6, TRAWImage);
+    AddFileExtension('.mos', 'Camera RAW Images', 6, TRAWImage);
+    AddFileExtension('.kdc', 'Camera RAW Images', 6, TRAWImage);
+    AddFileExtension('.dcr', 'Camera RAW Images', 6, TRAWImage);
+
+    AddFileExtension('.rla', 'SGI Wavefront images', 7, TRLAGraphic);
+    AddFileExtension('.rpf', 'SGI Wavefront images', 7, TRLAGraphic);
+
+    AddFileExtension('.pic', 'Autodesk images files', 8, TAutodeskGraphic);
+    AddFileExtension('.cel', 'Autodesk images files', 8, TAutodeskGraphic);
+
+    AddFileExtension('.ppm', 'Portable pixel/gray map images', 9, TPPMGraphic);
+    AddFileExtension('.pgm', 'Portable pixel/gray map images', 9, TPPMGraphic);
+    AddFileExtension('.pbm', 'Portable pixel/gray map images', 9, TPPMGraphic);
+
+    AddFileExtension('.fax', 'GFI fax images', 10, TTIFFGraphic);
+
+    AddFileExtension('.tga', 'Truevision images', 11, TTargaGraphic, True);
+    AddFileExtension('.vst', 'Truevision images', 11, TTargaGraphic);
+    AddFileExtension('.icb', 'Truevision images', 11, TTargaGraphic);
+    AddFileExtension('.vda', 'Truevision images', 11, TTargaGraphic);
+    AddFileExtension('.win', 'Truevision images', 11, TTargaGraphic);
+
+    AddFileExtension('.pcc', 'ZSoft Paintbrush images', 12, TPCXGraphic);
+    AddFileExtension('.pcx', 'ZSoft Paintbrush images', 12, TPCXGraphic);
+
+    AddFileExtension('.sgi', 'SGI images', 13, TSGIGraphic);
+    AddFileExtension('.rgba', 'SGI images', 13, TSGIGraphic);
+    AddFileExtension('.rgb', 'SGI images', 13, TSGIGraphic);
+    AddFileExtension('.bw', 'SGI images', 13, TSGIGraphic);
+
+    AddFileExtension('.pcd', 'Kodak Photo-CD images', 14, TPCDGraphic);
+
+    AddFileExtension('.psp', 'Paintshop Pro images', 15, TPSPGraphic);
+
+    AddFileExtension('.cut', 'Dr. Halo images', 16, TCUTGraphic);
+    AddFileExtension('.pal', 'Dr. Halo images', 16, TCUTGraphic);
+
+    AddFileExtension('.eps', 'Encapsulated Postscript images', 17, TEPSGraphic);
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TFileAssociations.GetAssociationByExt(
@@ -400,6 +511,156 @@ begin
 
   finally
     F(Reg);
+  end;
+end;
+
+function TFileAssociations.GetExtensionList: string;
+begin
+  FSync.Enter;
+  try
+    if FChanged then
+    begin
+      UpdateCache;
+      FChanged := False;
+    end;
+    Result := FExtensionList;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TFileAssociations.GetFilter(ExtList: string; UseGroups,
+  ForOpening: Boolean): string;
+var
+  I, J: Integer;
+  ResultList,
+  EList,
+  AllExtList,
+  RequestExts: TStrings;
+  Association: TFileAssociation;
+begin
+  FSync.Enter;
+  try
+    ResultList := TStringList.Create;
+    try
+
+      EList := TStringList.Create;
+      RequestExts := TStringList.Create;
+      AllExtList := TStringList.Create;
+      try
+        SplitString(ExtList, '|', RequestExts);
+
+        for I := 0 to RequestExts.Count - 1 do
+        begin
+          EList.Clear;
+          Association := Self.Exts[RequestExts[I]];
+          if UseGroups then
+          begin
+            for J := 0 to Self.Count - 1 do
+              if Self[J].Group = Association.Group then
+                EList.Add('*' + Self[J].Extension);
+          end else
+            EList.Add('*' + Association.Extension);
+
+          ResultList.Add(Format('%s (%s)|%s',
+                    [TA(Association.Description, 'Associations'),
+                    JoinList(EList, ','),
+                    JoinList(EList, ';')]));
+
+          if ForOpening then
+            AllExtList.AddStrings(EList);
+        end;
+
+        if ForOpening and (RequestExts.Count > 1) then
+        begin
+          ResultList.Insert(0, Format('%s (%s)|%s',
+                    [TA('All supported formats', 'Associations'),
+                    JoinList(AllExtList, ','),
+                    JoinList(AllExtList, ';')]));
+        end;
+
+      finally
+        F(RequestExts);
+        F(EList);
+        F(AllExtList);
+      end;
+
+      Result := JoinList(ResultList, '|');
+    finally
+      F(ResultList);
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TFileAssociations.UpdateCache;
+var
+  Association: TFileAssociation;
+  AllExtensions: TStrings;
+  I: Integer;
+  OldGroup: Integer;
+begin
+  AllExtensions := TStringList.Create;
+  FExtensionList := '';
+  try
+    OldGroup := -1;
+    for I := 0 to Self.Count - 1 do
+    begin
+      Association := Self[I];
+      if I <> 0 then
+        FExtensionList := FExtensionList + '|';
+
+      FExtensionList := FExtensionList + Association.Extension;
+
+      if OldGroup <> Association.Group then
+        AllExtensions.Add(Association.Extension);
+
+      OldGroup := Association.Group;
+    end;
+
+    FExtensionList := '|' + FExtensionList + '|';
+    FFullFilter := GetFilter(JoinList(AllExtensions, '|'), True, True) + '|';
+  finally
+    F(AllExtensions);
+  end;
+end;
+
+function TFileAssociations.GetFullFilter: string;
+begin
+  FSync.Enter;
+  try
+    if FChanged then
+    begin
+      UpdateCache;
+      FChanged := False;
+    end;
+    Result := FFullFilter;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TFileAssociations.GetGraphicClass(Ext: String): TGraphicClass;
+var
+  I: Integer;
+  Association: TFileAssociation;
+begin
+  FSync.Enter;
+  try
+    Result := nil;
+    Ext := AnsiLowerCase(Ext);
+    for I := 0 to Count - 1 do
+    begin
+      Association := Self[I];
+      if Association.Extension = Ext then
+      begin
+        Result := Association.GraphicClass;
+        Exit;
+      end;
+    end;
+  finally
+    FSync.Leave;
   end;
 end;
 

@@ -44,7 +44,8 @@ uses
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
   uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
   uInstallProcess in 'uInstallProcess.pas',
-  uSetupDatabaseActions in 'uSetupDatabaseActions.pas';
+  uSetupDatabaseActions in 'uSetupDatabaseActions.pas',
+  uStringUtils in '..\PhotoDB\Units\uStringUtils.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

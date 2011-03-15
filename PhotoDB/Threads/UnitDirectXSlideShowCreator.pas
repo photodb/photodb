@@ -5,7 +5,8 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
   GraphicsCool, Effects, UnitDBCommonGraphics, uMemory, uDXUtils,
-  ImageConverting, SyncObjs, uConstants, UnitDBKernel, uGraphicUtils, uDBThread;
+  SyncObjs, uConstants, UnitDBKernel, uGraphicUtils, uDBThread,
+  uAssociations;
 
 type
   TDirectXSlideShowCreator = class(TDBThread)
@@ -186,7 +187,7 @@ begin
 
     if LoadingPicture then
     begin
-      GraphicClass := GetGraphicClass(ExtractFileExt(FInfo.FileName), False);
+      GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
 
       if GraphicClass = nil then
       begin

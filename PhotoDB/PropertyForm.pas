@@ -16,7 +16,7 @@ uses
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
   uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
-  uSettings;
+  uSettings, uAssociations;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -1318,7 +1318,7 @@ begin
     Exit;
   end;
 
-  if not ExtInMask(SupportedExt, Getext(FileName)) or not FileExistsSafe(FileName) then
+  if not IsGraphicFile(FileName) or not FileExistsSafe(FileName) then
     Exit;
 
   BtnAddFile.Enabled := True;
@@ -1356,7 +1356,7 @@ begin
   FDateTimeInFileExists := FFileDate <> 0;
   if not FDateTimeInFileExists then
   begin
-    if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FileName) then
+    if RAWImage.IsRAWSupport and IsRAWImageFile(FileName) then
     begin
       RAWExif := ReadRAWExif(FileName);
       try
@@ -2061,7 +2061,7 @@ begin
 
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    if RAWImage.IsRAWSupport and RAWImage.IsRAWImageFile(FileName) then
+    if RAWImage.IsRAWSupport and IsRAWImageFile(FileName) then
     begin
       RAWExif := ReadRAWExif(FileName);
       try

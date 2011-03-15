@@ -13,9 +13,9 @@ uses
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
   UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage, TiffImageUnit,
   RAWImage, DragDrop, DragDropFile, UVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
-  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, ImageConverting,
+  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger,
   CCR.Exif, uEditorTypes, uShellIntegration, uRuntime, uSysUtils,
-  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants, uSettings;
+  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants, uSettings, uAssociations;
 
 type
   TWindowEnableState = record
@@ -383,7 +383,7 @@ var
 begin
   OpenPictureDialog := DBOpenPictureDialog.Create;
   try
-    OpenPictureDialog.Filter := GetGraphicFilter;
+    OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
 
     if OpenPictureDialog.Execute then
       OpenFileName(OpenPictureDialog.FileName);
@@ -914,7 +914,7 @@ begin
 
       end else
       begin
-        if GetGraphicClass(GetExt(FileName), False) = TRAWImage then
+        if TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage then
         begin
           Pic.Graphic := TRAWImage.Create;
           // by default RAW is half-sized
@@ -2104,8 +2104,7 @@ var
 begin
   SavePictureDialog := DBSavePictureDialog.Create;
   try
-    SavePictureDialog.Filter :=
-      'JPEG Image File (*.jpg)|*.jpg|GIF Image (*.gif)|*.gif|Bitmaps (*.bmp)|*.bmp|PNG Files (*.png)|*.png|TIFF files (*.tiff)|*.tiff';
+    SavePictureDialog.Filter := TFileAssociations.Instance.GetFilter('.jpg|.gif|.bmp|.png|.tiff', False, False);
     SavePictureDialog.FilterIndex := 1;
 
     FSaved := False;

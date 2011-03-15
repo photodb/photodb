@@ -6,9 +6,9 @@ uses
   Windows, Messages, SysUtils, Classes, ExtCtrls, JPEG, DB,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage,
-  GraphicCrypt, UnitDBCommon, ImageConverting, uGOM, uFileUtils,
+  GraphicCrypt, UnitDBCommon, uGOM, uFileUtils,
   uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare,
-  uGraphicUtils, uRuntime;
+  uGraphicUtils, uRuntime, uAssociations;
 
 type
   HintCeator = class(TThread)
@@ -86,7 +86,7 @@ begin
     if not FileExistsSafe(FInfo.FileName) then
       Exit;
 
-    GraphicClass := GetGraphicClass(ExtractFileExt(FInfo.FileName), False);
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
     if GraphicClass = nil then
       Exit;
 

@@ -5,7 +5,7 @@ unit GraphicCrypt;
 interface
 
 uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
-  JPEG, PngImage, TiffImageUnit, uFileUtils,
+  JPEG, PngImage, TiffImageUnit, uFileUtils, uAssociations,
   GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil, DECCipher,
   GIFImage, DB;
 
@@ -95,7 +95,7 @@ procedure CryptStream(S, D : TStream; Password : string; Options: Integer; FileN
 
 implementation
 
-uses CommonDBSupport, ImageConverting, Dolphin_DB;
+uses CommonDBSupport, Dolphin_DB;
 
 procedure FillCharArray(var CharAray : TFileNameUnicode; Str : String);
 var
@@ -478,7 +478,7 @@ begin
         Exit;
 
       MS.Seek(0, soFromBeginning);
-      GraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+      GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
       if GraphicClass = nil then
         Exit;
 

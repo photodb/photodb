@@ -5,9 +5,9 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, SysUtils, Forms,
   GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
-  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, ImageConverting, JPEG,
+  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel,
-  uGraphicUtils, uDBUtils, uViewerTypes;
+  uGraphicUtils, uDBUtils, uViewerTypes, uAssociations;
 
 type
   TViewerThread = class(TThread)
@@ -105,7 +105,7 @@ begin
       SetNOImageAsynch;
       Exit;
     end;
-    GraphicClass := GetGraphicClass(GetExt(FFileName), False);
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FFileName));
     if GraphicClass = nil then
     begin
       SetNOImageAsynch;

@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, SysUtils, Classes, Graphics, Jpeg, Math, uConstants,
-  UnitDBCommonGraphics, GraphicsBaseTypes, uDBGraphicTypes;
+  UnitDBCommonGraphics, GraphicsBaseTypes, uDBGraphicTypes, uAssociations,
+  RAWImage;
 
 function MixColors(Color1, Color2: TColor; Percent: Integer): TColor;
 function MakeDarken(BaseColor : TColor; Multiply : Extended) : TColor; overload;
@@ -15,6 +16,7 @@ function ColorDiv2(Color1, COlor2: TColor): TColor;
 function ColorDarken(Color: TColor): TColor;
 function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
+function IsRAWImageFile(FileName : String) : Boolean;
 
 implementation
 
@@ -524,6 +526,11 @@ begin
         Rotate := I;
       end;
     end;
+end;
+
+function IsRAWImageFile(FileName : String) : Boolean;
+begin
+  Result := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage;
 end;
 
 end.

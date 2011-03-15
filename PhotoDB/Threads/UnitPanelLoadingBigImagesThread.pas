@@ -5,8 +5,8 @@ interface
 uses
   Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt,
   UnitDBDeclare, RAWImage, UnitDBCommonGraphics, UnitDBCommon,
-  UnitCDMappingSupport, uLogger, ImageConverting, uMemory, UnitDBKernel,
-  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes;
+  UnitCDMappingSupport, uLogger, uMemory, UnitDBKernel,
+  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uAssociations;
 
 type
   TPanelLoadingBigImagesThread = class(TThread)
@@ -111,7 +111,7 @@ begin
       if BoolParam then
       begin
 
-        GraphicClass := GetGraphicClass(ExtractFileExt(StrParam), False);
+        GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(StrParam));
         if GraphicClass = nil then
           Continue;
         Graphic := GraphicClass.Create;

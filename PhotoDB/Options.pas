@@ -260,7 +260,8 @@ begin
     CheckBox20.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
     CheckBox21.Checked := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
     CheckListBox1.Items.Clear;
-    for I := 1 to Length(SupportedExt) do
+    //TODO:!!!!
+    {for I := 1 to Length(SupportedExt) do
     begin
       if SupportedExt[I] = '|' then
         for J := I to Length(SupportedExt) do
@@ -273,7 +274,7 @@ begin
                 Break;
               end;
         end;
-    end;
+    end; }
     LoadExts;
     ReadPlaces;
   end;

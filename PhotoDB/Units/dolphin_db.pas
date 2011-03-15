@@ -11,9 +11,10 @@ uses  Registry, Windows, uVistaFuncs,CommonDBSupport,
       MAPI, DDraw, Math, DateUtils, GraphicsCool,
       GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
       UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
-      UnitLinksSupport, EasyListView, ImageConverting, uTranslate,
+      UnitLinksSupport, EasyListView, uTranslate,
       uMemory, uDBPopupMenuInfo, uAppUtils, UnitDBCommonGraphics,
-      uGraphicUtils, uShellIntegration, uRuntime, uSysUtils;
+      uGraphicUtils, uShellIntegration, uRuntime, uSysUtils,
+      uAssociations;
 
 type
   TInitializeAProc = function(s:PChar) : boolean;
@@ -194,7 +195,7 @@ function EXIFDateToDate(DateTime: string): TDateTime;
 function EXIFDateToTime(DateTime: string): TDateTime;
 
 function GetActiveFormHandle: Integer;
-function GetGraphicFilter: string;
+//function GetGraphicFilter: string;
 
 function CenterPos(W1, W2: Integer): Integer;
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
@@ -262,7 +263,7 @@ var
 begin
   OpenPictureDialog := DBOpenPictureDialog.Create;
   try
-    OpenPictureDialog.Filter := GetGraphicFilter;
+    OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
     if OpenPictureDialog.Execute then
     begin
       Pic := TPicture.Create;
@@ -498,6 +499,7 @@ begin
     Result := 0;
 end;
 
+{
 function GetGraphicFilter: string;
 var
   AllFormatsString: string;
@@ -560,7 +562,7 @@ begin
   end;
   Result := GraphicFilterString;
 end;
-
+        }
 function SizeInText(Size: Int64): string;
 begin
   if Size <= 1024 then

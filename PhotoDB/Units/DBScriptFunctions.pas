@@ -5,7 +5,7 @@ interface
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
-     Math, uScript, UnitCDMappingSupport, uFileUtils, ImageConverting,
+     Math, uScript, UnitCDMappingSupport, uFileUtils, uAssociations,
      UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
      uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings;
 
@@ -270,15 +270,8 @@ begin
 end;
 
 function ImageFile(FileName: string): Boolean;
-var
-  S: string;
-  P: PWideChar;
 begin
-  S := ExtractFileExt(FileName);
-  Delete(S, 1, 1);
-  S := '|' + AnsiUpperCase(S) + '|';
-  P := StrPos(PWideChar(SupportedExt), PWideChar(S));
-  Result := P <> nil;
+  Result := IsGraphicFile(FileName);
 end;
 
 procedure ShowFile(FileName: string);
@@ -756,73 +749,79 @@ var
   r : integer;
   CompResult : TImageCompareResult;
 begin
- Result:=0;
- if not FileExistsSafe(File1) then exit;
- if not FileExistsSafe(File2) then exit;
- G1:=nil;
- G2:=nil;
- if ValidCryptGraphicFile(File1) then
- begin
-  pass1 := DBKernel.FindPasswordForCryptImageFile(File1);
-  if pass1 = '' then exit;
- end;
- if ValidCryptGraphicFile(File2) then
- begin
-  pass2 := DBKernel.FindPasswordForCryptImageFile(File2);
-  if pass2 = '' then exit;
- end;
- try
-  if pass1='' then
+  Result := 0;
+  if not FileExistsSafe(File1) then
+    Exit;
+  if not FileExistsSafe(File2) then
+    Exit;
+  G1 := nil;
+  G2 := nil;
+  if ValidCryptGraphicFile(File1) then
   begin
-   G1:=GetGraphicClass(GetExt(File1),false).Create;
-   G1.LoadFromFile(File1);
-  end else G1:=GraphicCrypt.DeCryptGraphicFile(File1,pass1);
- except
-  if G1<>nil then G1.Free;
-  exit;
- end;
- try
-  if pass2='' then
+    Pass1 := DBKernel.FindPasswordForCryptImageFile(File1);
+    if Pass1 = '' then
+      Exit;
+  end;
+  if ValidCryptGraphicFile(File2) then
   begin
-   G2:=GetGraphicClass(GetExt(File2),false).Create;
-   G2.LoadFromFile(File2);
-  end else G2:=GraphicCrypt.DeCryptGraphicFile(File2,pass2);
- except
-  if G1<>nil then G1.Free;
-  if G2<>nil then G2.Free;
-  exit;
- end;
- CompResult:=CompareImages(G1,G2,r,true,false,raz);
- Result:=Max(CompResult.ByGistogramm,CompResult.ByPixels);
- G1.Free;
- G2.Free;
+    Pass2 := DBKernel.FindPasswordForCryptImageFile(File2);
+    if Pass2 = '' then
+      Exit;
+  end;
+  try
+    if Pass1 = '' then
+    begin
+      G1 := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(File1)).Create;
+      G1.LoadFromFile(File1);
+    end  else
+      G1 := GraphicCrypt.DeCryptGraphicFile(File1, Pass1);
+  except
+    F(G1);
+    Exit;
+  end;
+  try
+    if Pass2 = '' then
+    begin
+      G2 := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(File2)).Create;
+      G2.LoadFromFile(File2);
+    end else
+      G2 := GraphicCrypt.DeCryptGraphicFile(File2, Pass2);
+  except
+    F(G1);
+    F(G2);
+    Exit;
+  end;
+  CompResult := CompareImages(G1, G2, R, True, False, Raz);
+  Result := Max(CompResult.ByGistogramm, CompResult.ByPixels);
+  F(G1);
+  F(G2);
 end;
 
-function PromtUserCryptImageFile(FileName : string) : string;
+function PromtUserCryptImageFile(FileName: string): string;
 begin
- Result:=GetPassForCryptImageFile(FileName).Password;
+  Result := GetPassForCryptImageFile(FileName).Password;
 end;
 
-function CryptGraphicFile(FileName, Password : string) : boolean;
+function CryptGraphicFile(FileName, Password: string): Boolean;
 begin
- Result:=CryptGraphicFileV2(FileName, Password, 0);
+  Result := CryptGraphicFileV2(FileName, Password, 0);
 end;
 
-function aPromtString(Caption, Text, InitialString : String) : string;
+function APromtString(Caption, Text, InitialString: string): string;
 begin
- Result:= InitialString;
- PromtString(Caption, Text, Result);
+  Result := InitialString;
+  PromtString(Caption, Text, Result);
 end;
 
-function TestDB(DB : String) : boolean;
+function TestDB(DB: string): Boolean;
 begin
- Result:= DBKernel.TestDB(DB);
+  Result := DBKernel.TestDB(DB);
 end;
 
-procedure AddFileToPanel(CID, FileName : string);
+procedure AddFileToPanel(CID, FileName: string);
 begin
- if GetPanelByCID(CID)<>nil then
- GetPanelByCID(CID).AddFileName(FileName);
+  if GetPanelByCID(CID) <> nil then
+    GetPanelByCID(CID).AddFileName(FileName);
 end;
 
 function ExecuteActions(CID, FileName, ToFileName : string): string;
@@ -863,7 +862,7 @@ end;
 
 function GetImagesMask: string;
 begin
-  Result := SupportedExt;
+  Result := TFileAssociations.Instance.ExtensionList;
 end;
 
 Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);

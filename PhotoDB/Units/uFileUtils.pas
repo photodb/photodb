@@ -47,6 +47,8 @@ function ReadTextFileInString(FileName: string): string;
 function ExtinMask(Mask: string; Ext: string): Boolean;
 function GetExt(Filename: string): string;
 function ProgramDir : string;
+function GetConvertedFileName(FileName, NewEXT: string): string;
+function GetConvertedFileNameWithDir(FileName, Dir, NewEXT: string): string;
 
 var
   CopyFilesSynchCount: Integer = 0;
@@ -854,7 +856,7 @@ begin
       if MaxFilesCount < 0 then
         Break;
 
-      if FileExists and ExtinMask(Mask, GetExt(FileName)) then
+      if FileExists and ExtInMask(Mask, GetExt(FileName)) then
       begin
         if Files.Count >= MaxFilesSearch then
           Break;
@@ -948,6 +950,48 @@ end;
 function ProgramDir : string;
 begin
   Result := IncludeTrailingBackSlash(ExtractFileDir(ParamStr(0)));
+end;
+
+function GetConvertedFileName(FileName, NewEXT  : string) : string;
+var
+  S, Dir: string;
+  I: Integer;
+begin
+  Result := FileName;
+  Dir := ExtractFileDir(Result);
+  ChangeFileExt(Result, NewEXT);
+  Result := Dir + GetFileNameWithoutExt(Result) + '.' + AnsiLowerCase(NewEXT);
+  if not FileExists(Result) then
+    Exit;
+  S := Dir + ExtractFileName(Result);
+  I := 1;
+  while (FileExists(S)) do
+  begin
+    S := Dir + GetFileNameWithoutExt(Result) + ' (' + IntToStr(I) + ').' + NewEXT;
+    Inc(I);
+  end;
+  Result := S;
+end;
+
+function GetConvertedFileNameWithDir(FileName, Dir, NewEXT  : string) : string;
+var
+  S: string;
+  I: Integer;
+begin
+  Result := FileName;
+  Dir := IncludeTrailingBackslash(Dir);
+  ChangeFileExt(Result, NewEXT);
+  Result := Dir + GetFileNameWithoutExt(Result) + '.' + AnsiLowerCase(NewEXT);
+  if not FileExists(Result) then
+    Exit;
+  S := Dir + ExtractFileName(Result);
+  I := 1;
+  while (FileExists(S)) do
+  begin
+    S := Dir + GetFileNameWithoutExt(Result) + ' (' + IntToStr(I) + ').' + NewEXT;
+    Inc(I);
+  end;
+  Result := S;
 end;
 
 end.

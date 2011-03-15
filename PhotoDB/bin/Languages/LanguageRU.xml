@@ -58,6 +58,27 @@
 	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
 	<translate name="Add menu item" value="Использовать пункт в меню"/>	
   </scope>
+  <scope name="Associations">
+	<translate name="All supported formats" value="Все поддерживаемые форматы" />
+	<translate name="JPEG Images" value="JPEG Изображения" />
+	<translate name="TIFF images" value="TIFF Изображения" />
+	<translate name="Photoshop Images" value="Photoshop Изображения" />
+	<translate name="Animated images" value="Анимированные изображения" />
+	<translate name="Portable network graphic images" value="PNG Изображения" />
+	<translate name="Standard Windows bitmap images" value="Стандартные BMP файлы" />
+	<translate name="Camera RAW Images" value="Изображения с фотокамер" />
+	<translate name="SGI Wavefront images" value="SGI Wavefront Изображения" />
+	<translate name="Autodesk images files" value="Autodesk Изображения" />
+	<translate name="Portable pixel/gray map images" value="Portable pixel/gray map изображения" />
+	<translate name="GFI fax images" value="GFI fax изображения" />
+	<translate name="Truevision images" value="Truevision изображения" />
+	<translate name="ZSoft Paintbrush images" value="ZSoft Paintbrush изображения" />
+	<translate name="SGI images" value="SGI изображения" />
+	<translate name="Kodak Photo-CD images" value="Kodak фото-CD изображения" />
+	<translate name="Paintshop Pro images" value="Paintshop Pro изображения" />
+	<translate name="Dr. Halo images" value="Dr. Halo изображения" />
+	<translate name="Encapsulated Postscript images" value="PostScript изображения" />
+  </scope>
   <scope name="JPEG">
 	<translate name="JPEG compression" value="JPEG компрессия" />
     <translate name="JPEG compression (%d%%):" value="JPEG компрессия (%d%%):" />

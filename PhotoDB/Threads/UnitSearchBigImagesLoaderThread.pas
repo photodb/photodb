@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Classes, Forms, UnitDBKernel, SysUtils, Graphics, GraphicCrypt, Math,
-  RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, ImageConverting,
+  RAWImage, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon,
   UnitCDMappingSupport, uThreadForm, uLogger, uThreadEx, uMemory,
   uMultiCPUThreadManager, uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes,
-  uTranslate;
+  uTranslate, uAssociations;
 
 type
   TSearchBigImagesLoaderThread = class(TMultiCPUThread)
@@ -150,7 +150,7 @@ var
 begin
   FileName := ProcessPath(FileName);
 
-  FGraphicClass := GetGraphicClass(ExtractFileExt(FileName), False);
+  FGraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
   if FGraphicClass = nil then
     Exit;
 

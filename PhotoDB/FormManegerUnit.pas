@@ -10,7 +10,7 @@ uses
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
-  uDBUtils, uDBPopupMenuInfo, uSettings;
+  uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations;
 
 type
   TFormManager = class(TDBForm)
@@ -140,7 +140,7 @@ begin
       TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
       if IsFile(ParamStr1) then
       begin
-        if not ExtInMask(SupportedExt, GetExt(ParamStr1)) then
+        if not IsGraphicFile(ParamStr1) then
         begin
           NewSearch := SearchManager.NewSearch;
           if CheckFileExistsWithMessageEx(ParamStr1, False) then
@@ -592,14 +592,14 @@ begin
         Exit;
       end;
     end;
-    if ExtInMask(SupportedExt, GetExt(FileNameA)) then
+    if IsGraphicFile(FileNameA) then
     begin
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
       FileNameA := LongFileName(FileNameA);
       Info := TDBPopupMenuInfo.Create;
       try
-        GetFileListByMask(FileNameA, SupportedExt, Info, N, True);
+        GetFileListByMask(FileNameA, TFileAssociations.Instance.ExtensionList, Info, N, True);
         ShowWindow(Viewer.Handle, SW_RESTORE);
         Viewer.Execute(Self, Info);
         Viewer.Show;

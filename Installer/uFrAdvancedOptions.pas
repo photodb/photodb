@@ -95,7 +95,7 @@ var
 begin
   inherited;
   for I := 0 to CbFileExtensions.Items.Count - 1 do
-    TFileAssociations.Instance.Exts[CbFileExtensions.Items[I]].State := CheckboxStateToAssociationState(CbFileExtensions.State[I]);
+    TFileAssociations.Instance.Exts[TFileAssociation(CbFileExtensions.Items.Objects[I]).Extension].State := CheckboxStateToAssociationState(CbFileExtensions.State[I]);
   CurrentInstall.DestinationPath := EdPath.Text;
 end;
 
@@ -121,7 +121,7 @@ var
 begin
   CbFileExtensions.Items.Clear;
   for I := 0 to TFileAssociations.Instance.Count - 1 do
-    CbFileExtensions.Items.Add(TFileAssociations.Instance[I].Extension);
+    CbFileExtensions.Items.AddObject(Format('%s   (%s)', [TFileAssociations.Instance[I].Extension, TFileAssociations.Instance[I].Description]), TFileAssociations.Instance[I]);
 end;
 
 procedure TFrAdvancedOptions.LoadLanguage;

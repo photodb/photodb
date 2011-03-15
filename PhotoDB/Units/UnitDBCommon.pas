@@ -17,9 +17,9 @@ function IntToHexChar(Int: Integer): Char;
 
 var
   ProcessorCount: Integer = 0;
-  RAWImages: string = 'CR2|';
-  TempRAWMask: string = '|THUMB|JPG|TIFF|PBB|';
-  SupportedExt : String = '|BMP|JFIF|JPG|JPE|JPEG|RLE|DIB|WIN|VST|VDA|TGA|ICB|TIFF|TIF|FAX|EPS|PCC|PCX|RPF|RLA|SGI|RGBA|RGB|BW|PSD|PDD|PPM|PGM|PBM|CEL|PIC|PCD|GIF|CUT|PSP|PNG|THM|';
+//  RAWImages: string = 'CR2|';
+//  TempRAWMask: string = '|THUMB|JPG|TIFF|PBB|';
+//  SupportedExt : String = '|BMP|JFIF|JPG|JPE|JPEG|RLE|DIB|WIN|VST|VDA|TGA|ICB|TIFF|TIF|FAX|EPS|PCC|PCX|RPF|RLA|SGI|RGBA|RGB|BW|PSD|PDD|PPM|PGM|PBM|CEL|PIC|PCD|GIF|CUT|PSP|PNG|THM|';
 
 implementation
 

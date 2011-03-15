@@ -188,7 +188,6 @@ uses
   GraphicCrypt in 'Units\GraphicCrypt.pas',
   UnitCrypting in 'Units\UnitCrypting.pas',
   ShellContextMenu in 'Units\ShellContextMenu.pas',
-  ImageConverting in 'Units\ImageConverting.pas',
   DDraw in 'Units\DDraw.pas',
   DXCommon in 'Units\DXCommon.pas',
   UnitLinksSupport in 'Units\UnitLinksSupport.pas',

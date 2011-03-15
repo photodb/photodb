@@ -9,7 +9,7 @@ uses
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
   uTranslate, ActiveX, CCR.Exif.JPEGUtils, uActivationUtils, uSettings,
-  UnitDBKernel;
+  UnitDBKernel, uAssociations;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -675,7 +675,7 @@ begin
     end;
     if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
     begin
-      if FileExists(DirectoryName + SearchRec.Name) and ExtInMask(SupportedExt, GetExt(DirectoryName + SearchRec.Name)) then
+      if FileExists(DirectoryName + SearchRec.Name) and IsGraphicFile(DirectoryName + SearchRec.Name) then
       begin
         Result := Result + SearchRec.Size;
         FileName := DirectoryName + SearchRec.Name;

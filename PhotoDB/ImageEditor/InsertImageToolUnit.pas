@@ -7,7 +7,7 @@ uses
   GraphicsCool, SysUtils, ImageHistoryUnit, Effects, ComCtrls, Math,
   GraphicsBaseTypes, CustomSelectTool, Dialogs, ExtDlgs,
   ScanlinesFX, clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
-  UnitDBKernel, UnitDBCommon, Dolphin_DB, uDBGraphicTypes,
+  UnitDBKernel, UnitDBCommon, uDBGraphicTypes, uAssociations,
   uMemory, uSettings;
 
 type
@@ -51,7 +51,7 @@ begin
   if ClipBoard.HasFormat(CF_BITMAP) then
     Image.Assign(ClipBoard);
   OpenFileDialog := DBOpenPictureDialog.Create;
-  OpenFileDialog.Filter := GetGraphicFilter;
+  OpenFileDialog.Filter := TFileAssociations.Instance.FullFilter;
   LoadImageButton := TButton.Create(AOwner);
   LoadImageButton.Parent := Self;
   LoadImageButton.Top := EditWidth.Top + EditWidth.Height + 5;

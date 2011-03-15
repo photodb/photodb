@@ -8,7 +8,7 @@ uses
   acDlgSelect, DropSource, DropTarget, uDBUtils, ComCtrls, ImgList,
   UnitDBKernel, DragDrop, DragDropFile, uVistaFuncs, ComboBoxExDB,
   UnitDBFileDialogs, uDBForm, WatermarkedMemo, WatermarkedEdit,
-  uShellIntegration, Dolphin_db, uConstants;
+  uShellIntegration, Dolphin_db, uConstants, uAssociations;
 
 type
   TFormEditLink = class(TDBForm)
@@ -188,7 +188,7 @@ begin
     LINK_TYPE_ID:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := GetGraphicFilter;
+        OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
         if OpenPictureDialog.Execute then
           EdValue.Text := IntToStr(GetIdByFileName(OpenPictureDialog.FileName));
 
@@ -197,7 +197,7 @@ begin
     LINK_TYPE_IMAGE:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := GetGraphicFilter;
+        OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
         if OpenPictureDialog.Execute then
           EdValue.Text := OpenPictureDialog.FileName;
         OpenPictureDialog.Free;
@@ -218,7 +218,7 @@ begin
     LINK_TYPE_ID_EXT:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := GetGraphicFilter;
+        OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
         if OpenPictureDialog.Execute then
         begin
           EdValue.Text := CodeExtID(GetImageIDW(OpenPictureDialog.FileName, False).ImTh);

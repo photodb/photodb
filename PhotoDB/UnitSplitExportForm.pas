@@ -7,7 +7,8 @@ uses
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, DropSource, DropTarget, Dolphin_DB,
   acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
   DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger,
-  UnitDBCommon, uConstants, uDBForm, uShellIntegration, uMemory, WatermarkedEdit;
+  UnitDBCommon, uConstants, uDBForm, uShellIntegration, uMemory, WatermarkedEdit,
+  uAssociations;
 
 type
   TSplitExportForm = class(TDBForm)
@@ -162,7 +163,7 @@ begin
         end;
       end;
       if FileExists(DropFileTarget1.Files[I]) then
-        if ExtInMask(SupportedExt, GetExt(DropFileTarget1.Files[I])) then
+        if IsGraphicFile(DropFileTarget1.Files[I]) then
         begin
           Ico := TIcon.Create;
           try
