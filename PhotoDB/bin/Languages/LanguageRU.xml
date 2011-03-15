@@ -1704,12 +1704,13 @@
     <translate name="&lt;Status&gt;" value="&lt;Статус&gt;" />	
     <translate name="Records added" value="Записей добавлено" />
     <translate name="Records updated" value="Записей обновлено" />	
-   <translate name="Pause" value="Пауза" />
-   <translate name="Initialization" value="Инициализация" />
-   <translate name="Please wait a minute..." value="Пожалуйста, подождите минуту..." />
-   <translate name="Reading information about groups" value="Чтение базы данных групп" />
-   <translate name="Reading collection information" value="Чтение базы данных..." />
-   <translate name="Item #%s [%s]" value="Запись №%s [%s]" />
+    <translate name="Pause" value="Пауза" />
+    <translate name="Initialization" value="Инициализация" />
+    <translate name="Please wait a minute..." value="Пожалуйста, подождите минуту..." />
+    <translate name="Reading information about groups" value="Чтение базы данных групп" />
+    <translate name="Reading collection information" value="Чтение базы данных..." />
+    <translate name="Item #%s [%s]" value="Запись №%s [%s]" />
+	<translate name="No file" value="Файл не выбран"/>
   </scope>
   <scope name="ActionProgress">
   	<translate name="Current action" value="Текущее действие"/>

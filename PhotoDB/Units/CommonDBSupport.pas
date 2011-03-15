@@ -118,7 +118,7 @@ var
 
   MDBProvider : string = 'Microsoft.Jet.OLEDB.4.0';
 
- var
+var
    //TODO: delete it
    dbname : string = '';
 

@@ -121,7 +121,7 @@ begin
           if not FileExists(FFileName) then
             FFileName := ProgramDir + FFileName;
 
-          if not (FileExists(FFileName) and IsGraphicFile(FFileName)) then
+          if not (FileExists(FFileName) or not IsGraphicFile(FFileName)) then
             Exit;
 
           GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FFileName));

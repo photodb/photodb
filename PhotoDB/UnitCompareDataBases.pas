@@ -109,9 +109,8 @@ begin
     begin
       Edit2.Text := OpenDialog1.FileName;
       Label3.Caption := Format(L('Add collection (%d items)'), [GetRecordsCount(OpenDialog1.FileName)]);
-    end
-    else
-      Edit2.Text := L('No file'); // TODO: in XML
+    end else
+      Edit2.Text := L('No file');
   end;
   CheckEnabled;
 end;

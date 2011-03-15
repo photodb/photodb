@@ -60,8 +60,8 @@ end;
 
 destructor TManagerObjects.Destroy;
 begin
-  FObjects.Free;
-  FSync.Free;
+  F(FObjects);
+  F(FSync);
   inherited;
 end;
 
@@ -70,7 +70,7 @@ begin
   FSync.Enter;
   try
     RemoveObj(Obj);
-    Obj.Free;
+    F(Obj);
   finally
     FSync.Leave;
   end;

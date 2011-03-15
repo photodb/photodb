@@ -300,8 +300,6 @@ end;
 
 { TCDIndexMapping }
 
-//TODO: Destroy
-
 //MAPPING:
 //label "PHOTOS"
 //c:\dir\path\image.jpeg

@@ -154,7 +154,6 @@ const
 
             MODE_GDI_PLUS:
               begin
-                //todo: remove thumbnail and fix exif
                 case FProcessingParams.Rotation of
                   DB_IMAGE_ROTATE_270:
                     RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate270, FileName);

@@ -1005,12 +1005,11 @@ begin
             Found := FindFirst(CurrentFile + '*.*', faAnyFile, SearchRec);
             while Found = 0 do
             begin
-              if (SearchRec.Name<>'.') and (SearchRec.Name<>'..') then
+              if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
               begin
                 FE := (SearchRec.Attr and faDirectory = 0);
                 s := ExtractFileExt(SearchRec.Name);
-                Delete(s, 1, 1);
-                s:= '|' + AnsiUpperCase(s) + '|';
+                s:= '|' + AnsiLowerCase(s) + '|';
                 p := Pos(s, SupportedExt);
                 EM := p <> 0;
 

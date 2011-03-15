@@ -108,7 +108,8 @@ var
   P1: PARGB;
   Sh, Sw: Extended;
   Xp: array of PARGB;
-  X, Y : Integer;
+  Y : Integer;
+  XAr: array of Integer;
 begin
   D.Width := 100;
   D.Height := 100;
@@ -118,16 +119,16 @@ begin
   for I := 0 to S.Height - 1 do
     Xp[I] := S.ScanLine[I];
 
+  SetLength(XAr, Width);
+  for J := 0 to Width - 1 do
+    XAr[J] := Round(Sw * J);
+
   for I := 0 to Height - 1 do
   begin
     P1 := D.ScanLine[I];
     Y := Round(Sh * I);
     for J := 0 to Width - 1 do
-    begin
-      //todo: fast logic using array
-      X := Round(Sw * J);
-      P1[J] := Xp[Y, X];
-    end;
+      P1[J] := Xp[Y, XAr[J]];
   end;
 end;
 

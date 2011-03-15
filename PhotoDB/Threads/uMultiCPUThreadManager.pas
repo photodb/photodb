@@ -221,6 +221,11 @@ var
 begin
   for I := FBusyThreadList.Count - 1 downto 0 do
   begin
+    if not GOM.IsObj(FBusyThreadList[I]) then
+    begin
+      FBusyThreadList.Delete(I);
+      Continue;
+    end;
     if not TMultiCPUThread(FBusyThreadList[I]).FWorkingInProgress then
     begin
       FAvaliableThreadList.Add(FBusyThreadList[I]);

@@ -94,7 +94,6 @@ begin
           Inc(C);
           SetProgressPosition(C);
           try
-            // TODO: DBKernelEvent NOT in thread!
             UpdateImageRecordEx(DBEvent_Sender, FInfo[I].FileName, FInfo[I].ID, OnDBKernelEventProcedure);
           except
             on E: Exception do

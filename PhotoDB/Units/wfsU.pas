@@ -210,7 +210,7 @@ begin
 end;
 
 function TWFS.CreateDirHandle(aDir: string): THandle;
-begin                                                                                      //TODO: ADMIN REQUARED???
+begin                                                                                      //TODO: IS ADMIN REQUARED???
   Result := CreateFile(PChar(aDir), FILE_LIST_DIRECTORY, FILE_SHARE_READ+FILE_SHARE_DELETE+FILE_SHARE_WRITE,
                    nil, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS or FILE_FLAG_OVERLAPPED, 0);
 end;
