@@ -33,6 +33,7 @@ type
     FileNumber: Integer;
     Time, Date: TDateTime;
     IsTime: Boolean;
+    IsDate: Boolean;
     FNoLimit: Boolean;
   protected
     procedure Execute; override;
@@ -303,7 +304,6 @@ begin
 
     for Counter := 1 to FInfo.Count do
     begin
-
       if Res.Jpeg <> nil then
       begin
         if (Res.Count = 1) and ((Res.Attr[0] = Db_attr_not_exists) or (Res.FileNames[0] <> FInfo[FileNumber].FileName)) and
@@ -342,6 +342,10 @@ begin
                 end;
               Result_Add:
                 begin
+                  Date := FInfo[FileNumber].Date;
+                  IsDate := FInfo[FileNumber].IsDate;
+                  Time := FInfo[FileNumber].Time;
+                  IsTime := FInfo[FileNumber].IsTime;
                   AddFileToDB;
                   FQuery := GetQuery;
                   try

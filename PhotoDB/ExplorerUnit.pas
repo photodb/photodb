@@ -6948,7 +6948,7 @@ begin
     try
       FileInfo.FileName := FFilesInfo[-RatingPopupMenu1.Tag].FileName;
       FileInfo.Rating := (Sender as TMenuItem).Tag;
-      UpdaterDB.AddFileEx(FileInfo, True);
+      UpdaterDB.AddFileEx(FileInfo, True, True);
     finally
       F(FileInfo);
     end;

@@ -209,8 +209,8 @@ var
   begin
     ShowInfo(L('DB Query...'), 1, 0);
     if (GetDBType = DB_TYPE_MDB) and not FolderView then
-      SetSQL(FQuery, 'Select * From (Select * from $DB$ where FolderCRC=' + Inttostr(Integer(Crc)) +
-          ') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
+      SetSQL(FQuery, 'Select * FROM $DB$ WHERE FolderCRC = ' + Inttostr(Integer(Crc)) +
+          ' AND (FFileName LIKE :FolderA) AND NOT (FFileName LIKE :FolderB)');
     if FolderView then
     begin
       SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
@@ -359,7 +359,7 @@ begin
 
         IsPrivateDirectory := TPrivateHelper.Instance.IsPrivateDirectory(DBFolderToSearch);
 
-        DBFolder:=NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
+        DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
         FQuery := GetQuery;
         try
           TW.I.Start('IsPrivateDirectory');

@@ -3,7 +3,7 @@ unit UnitLinksSupport;
 interface
 
 uses
-  Windows, SysUtils, Classes, StrUtils, uTranslate, UnitDBDeclare, UnitDBCommon,
+  Windows, SysUtils, Classes, StrUtils, uTranslate, UnitDBDeclare, uSysUtils,
   uConstants;
 
 const

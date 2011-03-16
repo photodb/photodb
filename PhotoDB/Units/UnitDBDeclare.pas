@@ -214,7 +214,7 @@ type
     Selected: Boolean;
     Access: Integer;
     Date: TDateTime;
-    Time: TDateTime;
+    Time: TTime;
     IsDate: Boolean;
     IsTime: Boolean;
     Groups: string;

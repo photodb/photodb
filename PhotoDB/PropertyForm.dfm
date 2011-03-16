@@ -1391,17 +1391,6 @@ object PropertiesForm: TPropertiesForm
       end
     end
   end
-  object BtnAddFile: TButton
-    Left = 135
-    Top = 498
-    Width = 91
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Add file'
-    Enabled = False
-    TabOrder = 6
-    OnClick = BtSaveClick
-  end
   object PmItem: TPopupMenu
     OnPopup = PmItemPopup
     Left = 8

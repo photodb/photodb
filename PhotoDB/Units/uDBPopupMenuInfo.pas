@@ -39,6 +39,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Assign(Source : TDBPopupMenuInfo);
+    procedure Insert(Index: Integer; MenuRecord: TDBPopupMenuInfoRecord);
     procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
     function Add(FileName: string) : TDBPopupMenuInfoRecord; overload;
     procedure Clear;
@@ -77,6 +78,12 @@ implementation
 procedure TDBPopupMenuInfo.Add(MenuRecord: TDBPopupMenuInfoRecord);
 begin
   FData.Add(MenuRecord);
+end;
+
+procedure TDBPopupMenuInfo.Insert(Index: Integer;
+  MenuRecord: TDBPopupMenuInfoRecord);
+begin
+  FData.Insert(Index, MenuRecord);
 end;
 
 function TDBPopupMenuInfo.Add(FileName: string) : TDBPopupMenuInfoRecord;

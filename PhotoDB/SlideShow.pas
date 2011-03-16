@@ -3208,7 +3208,7 @@ begin
     try
       FileInfo.FileName := Item.FileName;
       FileInfo.Rating := NewRating;
-      UpdaterDB.AddFileEx(FileInfo, True);
+      UpdaterDB.AddFileEx(FileInfo, True, True);
     finally
       F(FileInfo);
     end;

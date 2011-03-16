@@ -1497,8 +1497,7 @@ begin
         begin
           FE := (SearchRec.Attr and FaDirectory = 0);
           S := ExtractFileExt(SearchRec.name);
-          Delete(S, 1, 1);
-          S := '|' + AnsiUpperCase(S) + '|';
+          S := '|' + AnsiLowerCase(S) + '|';
           if PSupportedExt = '*.*' then
             EM := True
           else

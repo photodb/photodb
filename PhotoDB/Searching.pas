@@ -1431,7 +1431,7 @@ begin
   end else
   if ID=-2 then
     Exit
-    //TODO:!!! ???? WTF?
+    //TODO: move -2 to some constant
   else if [EventID_Param_DB_Changed,EventID_Param_Refresh_Window] * params<>[] then
   begin
     ReRecreateGroupsList;

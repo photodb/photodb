@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Forms, uThreadForm, uThreadEx, ActiveX, uMemory,
-  UnitDBCommon, UnitDBDeclare, uDBUtils, uDBPopupMenuInfo;
+  UnitDBCommon, UnitDBDeclare, uDBUtils, uDBPopupMenuInfo, uAssociations;
 
 type
   TSlideShowScanDirectoryThread = class(TThreadEx)
@@ -43,7 +43,7 @@ begin
   try
     Info := TDBPopupMenuInfo.Create;
     try
-      GetFileListByMask(BaseFileName, SupportedExt, Info, N, true);
+      GetFileListByMask(BaseFileName, TFileAssociations.Instance.ExtensionList, Info, N, true);
       SynchronizeEx(SynchNotify);
     finally
       F(Info);

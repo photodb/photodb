@@ -9,7 +9,7 @@ uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
   uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,
-  uRuntime, uDBBaseTypes, uStringUtils, uSettings;
+  uRuntime, uDBBaseTypes, uStringUtils, uSettings, uSysUtils;
 
 type
   DBChangesIDEvent = procedure(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues) of object;

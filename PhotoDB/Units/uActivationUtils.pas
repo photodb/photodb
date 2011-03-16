@@ -3,8 +3,8 @@ unit uActivationUtils;
 interface
 
 uses
-  Windows, SysUtils, UnitDBCommon, uRuntime, Classes, Registry, uMemory,
-  win32crc, uConstants, SyncObjs, uTranslate;
+  Windows, SysUtils, uRuntime, Classes, Registry, uMemory,
+  win32crc, uConstants, SyncObjs, uTranslate, uSysUtils;
 
 type
   TCIDProcedure = procedure(Buffferm: PChar; BuffesSize : Integer);

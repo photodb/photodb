@@ -301,7 +301,7 @@ end;
 
 function IsGraphicFile(FileName: string): Boolean;
 begin
-  Result := Pos('|' + ExtractFileExt(FileName) + '|', TFileAssociations.Instance.ExtensionList) > 0;
+  Result := Pos('|' + AnsiLOwerCase(ExtractFileExt(FileName)) + '|', TFileAssociations.Instance.ExtensionList) > 0;
 end;
 
 { TFileAssociation }

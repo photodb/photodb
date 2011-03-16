@@ -5,6 +5,14 @@ interface
 uses
   Windows, Forms, Tlhelp32, SysUtils, ActiveX;
 
+function StringToHexString(Text: string): string;
+function HexStringToString(Text: string): string;
+function HexCharToInt(Ch: Char): Integer;
+function IntToHexChar(Int: Integer): Char;
+function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
+
+function FloatToStrEx(Value: Extended; Round: Integer): string;
+
 function GetWindowsUserName: string;
 function AltKeyDown: Boolean;
 function CtrlKeyDown: Boolean;
@@ -12,10 +20,88 @@ function ShiftKeyDown: Boolean;
 function KillTask(ExeFileName: string): Integer;
 function GetGUID: TGUID;
 function GetProgramPath: string;
-function FloatToStrEx(Value: Extended; Round: Integer): string;
 function GetSystemLanguage: string;
 
 implementation
+
+function StripHexPrefix(const HexStr: string): string;
+begin
+  if Pos('$', HexStr) = 1 then
+    Result := Copy(HexStr, 2, Length(HexStr) - 1)
+  else if Pos('0x', SysUtils.LowerCase(HexStr)) = 1 then
+    Result := Copy(HexStr, 3, Length(HexStr) - 2)
+  else
+    Result := HexStr;
+end;
+
+function AddHexPrefix(const HexStr: string): string;
+begin
+  Result := SysUtils.HexDisplayPrefix + StripHexPrefix(HexStr);
+end;
+
+function TryHexToInt(const HexStr: string; out Value: Integer): Boolean;
+var
+  E: Integer; // error code
+begin
+  Val(AddHexPrefix(HexStr), Value, E);
+  Result := E = 0;
+end;
+
+function HexToInt(const HexStr: string): Integer;
+{$IFDEF FPC}
+const
+{$ELSE}
+resourcestring
+{$ENDIF}
+  sHexConvertError = '''%s'' is not a valid hexadecimal value';
+begin
+  if not TryHexToInt(HexStr, Result) then
+    raise SysUtils.EConvertError.CreateFmt(sHexConvertError, [HexStr]);
+end;
+
+function HexToIntDef(const HexStr: string; const Default: Integer): Integer;
+begin
+  if not TryHexToInt(HexStr, Result) then
+    Result := Default;
+end;
+
+function StringToHexString(Text: string): string;
+var
+  I: Integer;
+  Str: string;
+begin
+  Result := '';
+  for I := 1 to Length(Text) do
+  begin
+    Str := IntToHex(Ord(Text[I]), 2);
+    Result := Result + Str;
+  end;
+end;
+
+function HexStringToString(Text : String) : string;
+var
+  I: Integer;
+  C: Byte;
+  Str: string;
+begin
+  Result := '';
+  for I := 1 to Length(Text) div 2 do
+  begin
+    Str := Copy(Text, (I - 1) * 2 + 1, 2);
+    C := HexToIntDef(Str, 0);
+    Result := Result + Chr(C);
+  end;
+end;
+
+function HexCharToInt(Ch: Char): Integer;
+begin
+  Result := HexToIntDef(Ch, 0);
+end;
+
+function IntToHexChar(Int: Integer): Char;
+begin
+  Result := IntToHex(Int, 1)[1];
+end;
 
 function FloatToStrEx(Value: Extended; Round: Integer): string;
 var

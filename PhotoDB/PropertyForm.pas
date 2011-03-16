@@ -144,7 +144,6 @@ type
     LbLinks: TLabel;
     LinksScrollBox: TScrollBox;
     VleExif: TValueListEditor;
-    BtnAddFile: TButton;
     procedure Execute(ID : integer);
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
@@ -464,7 +463,7 @@ end;
 function TPropertiesForm.ReadCHDate : Boolean;
 begin
   Result := False;
-  if FShowInfoType = SHOW_INFO_ID then
+  if (FShowInfoType = SHOW_INFO_ID) or (FShowInfoType = SHOW_INFO_FILE_NAME) then
     Result := (((FFilesInfo[0].IsDate <> DateEdit.Checked) or
           (FFilesInfo[0].Date <> DateEdit.DateTime)) and DateEdit.Enabled);
 
@@ -480,9 +479,9 @@ var
   VarTime : Boolean;
 begin
   Result := False;
-  if FShowInfoType = SHOW_INFO_ID then
+  if (FShowInfoType = SHOW_INFO_ID) or (FShowInfoType = SHOW_INFO_FILE_NAME) then
   begin
-    VarTime := Abs(FFilesInfo[0].Time - TimeOf(TimeEdit.Time)) > 1 / (24 * 60 * 60 * 3);
+    VarTime := Abs(FFilesInfo[0].Time - TimeEdit.Time) > 1 / (24 * 60 * 60 * 3);
     Result := (((FFilesInfo[0].IsTime <> TimeEdit.Checked) or VarTime) and TimeEdit.Enabled);
   end;
   if FShowInfoType = SHOW_INFO_IDS then
@@ -528,8 +527,6 @@ begin
     DBKernel.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBKernel.RegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBitem1.Visible := True;
-    BtSave.Visible := True;
-    BtnAddFile.Visible := False;
     CommentMemo.Cursor := CrDefault;
     CommentMemo.PopupMenu := nil;
     WorkQuery := GetQuery;
@@ -879,11 +876,7 @@ begin
   UpdateControlFont(LbLinks, CHLinks);
   UpdateControlFont(CbInclude, CHInclude);
 
-  if FShowInfoType = SHOW_INFO_FILE_NAME then
-    BtSave.Enabled := False
-  else
-    BtSave.Enabled := CHDate or CHTime or CHRating or CHComment or ChKeywords or CHGroups or CHInclude or CHLinks;
-
+  BtSave.Enabled := CHDate or CHTime or CHRating or CHComment or ChKeywords or CHGroups or CHInclude or CHLinks;
 end;
 
 procedure TPropertiesForm.Image1DblClick(Sender: TObject);
@@ -891,11 +884,8 @@ begin
   if No_file then
     Exit;
 
-  if (FShowInfoType = SHOW_INFO_ID) or (FShowInfoType = SHOW_INFO_IDS) then
-  begin
-    CommentMemo.Show;
-    LabelComment.Show;
-  end;
+  CommentMemo.Show;
+  LabelComment.Show;
 end;
 
 procedure TPropertiesForm.BtSaveClick(Sender: TObject);
@@ -911,6 +901,7 @@ var
   FQuery: TDataSet;
   IDArray: TArInteger;
   WorkQuery: TDataSet;
+  FileInfo: TDBPopupMenuInfoRecord;
 
   function GenerateIDList : string;
   var
@@ -1231,9 +1222,25 @@ begin
         EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include], EventInfo);
     end else
     begin
+      LockImput;
+      FSaving := False;
       if UpdaterDB = nil then
         UpdaterDB := TUpdaterDB.Create;
-      UpdaterDB.AddFile(FileName);
+      FileInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+      try
+        FileInfo.Comment := CommentMemo.Text;
+        FileInfo.KeyWords := KeyWordsMemo.Text;
+        FileInfo.Rating := RatingEdit.Rating;
+        FileInfo.Groups := CodeGroups(FNowGroups);
+        FileInfo.Include := CbInclude.Checked;
+        FileInfo.Date := DateEdit.DateTime;
+        FileInfo.Time := TimeOf(TimeEdit.Time);
+        FileInfo.IsDate := not DateEdit.Checked;
+        FileInfo.IsTime := not TimeEdit.Checked;
+        UpdaterDB.AddFileEx(FileInfo, True, True);
+      finally
+        F(FileInfo);
+      end;
     end;
   finally
     FreeDS(WorkQuery);
@@ -1310,7 +1317,6 @@ var
   RAWExif: TRAWExif;
   Options: TPropertyLoadImageThreadOptions;
   Rec: TDBPopupMenuInfoRecord;
-  FS : TFileStream;
 begin
   if FSaving then
   begin
@@ -1321,8 +1327,6 @@ begin
   if not IsGraphicFile(FileName) or not FileExistsSafe(FileName) then
     Exit;
 
-  BtnAddFile.Enabled := True;
-
   DoProcessPath(FileName);
   SetLength(FPropertyLinks, 0);
   SetLength(FNowGroups, 0);
@@ -1331,20 +1335,11 @@ begin
   try
     FFileDate := 0;
     try
-      FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
-      try
-        FS.Seek(0, soFromBeginning);
-        if HasExifHeader(FS) then
-        begin
-          ExifData.LoadFromStream(FS);
-          if not ExifData.Empty then
-          begin
-            FFileDate := DateOf(ExifData.DateTime);
-            FFileTime := TimeOf(ExifData.DateTime);
-          end;
-        end;
-      finally
-        F(FS);
+      ExifData.LoadFromJPEG(FileName);
+      if not ExifData.Empty then
+      begin
+        FFileDate := DateOf(ExifData.DateTime);
+        FFileTime := TimeOf(ExifData.DateTime);
       end;
     except
       EventLog('Error reading EXIF in file "' + FileName + '"');
@@ -1387,39 +1382,38 @@ begin
   Rec.FileName := FileName;
   FFilesInfo.Clear;
   FFilesInfo.Add(Rec);
-  OwnerMemo.readonly := True;
 
-  RatingEdit.Enabled := False;
+  CommentMemo.Text := '';
   RatingEdit.Islayered := False;
-  CommentMemo.PopupMenu := nil;
 
   ResetBold;
+  ReloadGroups;
 
   LabelName.Text := ExtractFileName(FileName);
   LabelPath.Text := LongFileName(FileName);
   LabelComment.Hide;
   CommentMemo.Hide;
-  CommentMemo.readonly := True;
-  CommentMemo.Cursor := CrDefault;
   RatingEdit.Rating := 0;
   Image2.Visible := False;
   CollectionMemo.Text := L('Not avaliable');
   CollectionMemo.readonly := True;
   IDLabel.Text := L('Not avaliable');
-  KeyWordsMemo.Text := L('Not avaliable');
   OwnerMemo.Text := L('Not avaliable');
-  KeyWordsMemo.readonly := True;
 
-  DateEdit.Enabled := False;
   if FFileDate <> 0 then
     DateEdit.DateTime := FFileDate
   else
     DateEdit.DateTime := Now;
-  TimeEdit.Enabled := False;
+
   TimeEdit.Time := FFileTime;
 
   DateEdit.Checked := FDateTimeInFileExists;
   TimeEdit.Checked := FDateTimeInFileExists;
+
+  Rec.Date := DateEdit.DateTime;
+  Rec.Time := TimeEdit.Time;
+  Rec.IsTime := FDateTimeInFileExists;
+  Rec.IsDate := FDateTimeInFileExists;
 
   SID := GetGUID;
   Options.FileName := FileName;
@@ -1434,17 +1428,16 @@ begin
   HeightMemo.Text := L('Loading...');
 
   SizeLabel.Text := SizeInText(GetFileSize(FileName));
-  BtSave.Visible := False;
-  BtnAddFile.Visible := True;
   BtnFind.Visible := True;
 
+  Editing_info := True;
   Show;
 end;
 
 procedure TPropertiesForm.BeginAdding(Sender: TObject);
 begin
   Image1DblClick(Sender);
-  BtnAddFile.Enabled := False;
+  BtSave.Enabled := False;
   Adding_now := True;
 end;
 
@@ -1462,7 +1455,8 @@ end;
 
 procedure TPropertiesForm.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
 var
-  I, ID_: Integer;
+  I, NewFileID: Integer;
+  EventFileName: string;
 begin
   if ID = -2 then
     Exit;
@@ -1490,17 +1484,19 @@ begin
         end;
       SHOW_INFO_FILE_NAME:
         begin
-          if (AnsiLowerCase(Value.NewName) = AnsiLowerCase(FileName)) and FileExistsSafe(Value.NewName) then
+          EventFileName := Value.NewName;
+          if Trim(EventFileName) = '' then
+            EventFileName := Value.Name;
+
+          if (AnsiLowerCase(EventFileName) = AnsiLowerCase(FileName)) and FileExistsSafe(EventFileName) then
           begin
-            ID_ := GetIdByFileName(FileName);
-            if ID_ = 0 then
+            NewFileID := GetIdByFileName(FileName);
+            if NewFileID = 0 then
               ExecuteFileNoEx(Value.NewName)
             else
-              Execute(ID_);
+              Execute(NewFileID);
+            Exit;
           end;
-          if (AnsiLowerCase(Value.name) = AnsiLowerCase(FileName)) then
-            if FileExistsSafe(Value.NewName) and not FileExistsSafe(Value.name) then
-              ExecuteFileNoEx(Value.NewName)
         end;
     end;
   end;
@@ -1602,8 +1598,6 @@ begin
   PcMain.ActivePageIndex := 0;
   if Length(IDs) = 0 then
     Exit;
-  BtSave.Visible := True;
-  BtnAddFile.Visible := False;
   Image2.Visible := False;
   DateEdit.Enabled := True;
   TimeEdit.Enabled := True;
@@ -1827,11 +1821,6 @@ end;
 
 procedure TPropertiesForm.PmRatingNotAvaliablePopup(Sender: TObject);
 begin
-  if FShowInfoType = SHOW_INFO_FILE_NAME then
-  begin
-    Ratingnotsets1.Visible := False;
-    Exit;
-  end;
   Ratingnotsets1.Visible := not RatingEdit.Islayered;
   if FShowInfoType <> SHOW_INFO_IDS then
     Ratingnotsets1.Visible := False;
@@ -1840,8 +1829,6 @@ end;
 
 procedure TPropertiesForm.CommentMemoDblClick(Sender: TObject);
 begin
-  if FShowInfoType = SHOW_INFO_FILE_NAME then
-    Exit;
   if not CommentMemo.readonly then
     Exit;
   CommentMemo.readonly := False;
@@ -1965,7 +1952,6 @@ begin
   CbShowAllGroups.Caption := L('Show all groups');
   CbRemoveKeywordsForGroups.Caption := L('Remove unused keywords');
   MoveToGroup1.Caption := L('Move to group');
-  BtnAddFile.Caption := L('Add file');
 
   LbGroupsEditInfo.Caption := L('Use button "-->" to add new groups or button "<--" to remove them');
   Cancel1.Caption := L('Cancel');
@@ -2122,8 +2108,7 @@ begin
             if ExifData.UserRating <> urUndefined then
               XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
 
-          end
-          else
+          end else
             VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
         except
           on e : Exception do
@@ -2688,7 +2673,7 @@ begin
     RemoveGroupsFromGroups(XNewGroups, FNowGroups);
   end;
   try
-    if (Index = -1) or (Index >= Length(FNowGroups)) then
+    if Index = -1 then
       Exit;
     with (Control as TListBox).Canvas do
     begin
@@ -3034,7 +3019,7 @@ end;
 procedure TPropertiesForm.DropFileTarget2Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 begin
- if FShowInfoType<>SHOW_INFO_FILE_NAME then
+ if FShowInfoType <> SHOW_INFO_FILE_NAME then
     if DropFileTarget2.Files.Count = 1 then
     begin
       SetFocus;

@@ -796,12 +796,12 @@ object SearchForm: TSearchForm
       object WlStartStop: TWebLink
         Left = 8
         Top = 50
-        Width = 133
+        Width = 127
         Height = 16
         Cursor = crHandPoint
         ParentColor = False
         Color = clBtnFace
-        Text = 'Search (999999 Result)'
+        Text = 'Search (1000+ Result)'
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16

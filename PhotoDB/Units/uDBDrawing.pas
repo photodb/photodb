@@ -26,8 +26,8 @@ end;
 
 procedure DrawAttributesEx(HCanvas : THandle; DeltaX, DeltaY : Integer; Rating, Rotate, Access : Integer; FileName : String; Crypted : Boolean; var Exists : Integer; ID : Integer = 0);
 var
-  FS: TFileStream;
-  FE : boolean;
+  FE: Boolean;
+  ExifData: TExifData;
 begin
   if ID = 0 then
     DrawIconEx(HCanvas, DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_NEW+1], 16, 16, 0, 0, DI_NORMAL);
@@ -51,18 +51,23 @@ begin
 
   if (ExplorerManager <> nil) and ExplorerManager.ShowEXIF then
   begin
-    FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+
+    ExifData := TExifData.Create;
     try
-      if HasExifHeader(FS) then
-      begin
-        F(FS);
-        if ID = 0 then
-          DrawIconEx(HCanvas, 20 + DeltaX, DeltaY, UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL)
-        else
-          DrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL);
+      try
+        ExifData.LoadFromJPEG(FileName);
+        if not ExifData.Empty then
+        begin
+          if ID = 0 then
+            DrawIconEx(HCanvas, 20 + DeltaX, DeltaY, UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL)
+          else
+            DrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL);
+        end;
+      except
+        //header not found, it's ok
       end;
     finally
-      F(FS);
+      F(ExifData);
     end;
   end;
 
