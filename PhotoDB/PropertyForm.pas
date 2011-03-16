@@ -1999,8 +1999,6 @@ end;
 procedure TPropertiesForm.ReadExifData;
 var
   ExifData: TExifData;
-  I: Integer;
-  RAWExif: TRAWExif;
   Orientation : Integer;
   OldMode : Cardinal;
 
@@ -2046,76 +2044,59 @@ begin
 
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    if RAWImage.IsRAWSupport and IsRAWImageFile(FileName) then
-    begin
-      RAWExif := ReadRAWExif(FileName);
+    ExifData := TExifData.Create;
+    try
       try
-        if RAWExif.IsEXIF then
+        ExifData.LoadFromGraphic(FileName);
+        if not ExifData.Empty then
         begin
-          VleEXIF.InsertRow('RAW Info:', '', True);
-          for I := 0 to RAWExif.Count - 1 do
-            xInsert(Format('%s: ', [RAWExif[i].Description]), RAWExif[i].Value);
+
+          XInsert(L('Make'), ExifData.CameraMake);
+          XInsert(L('Model'), ExifData.CameraModel);
+          XInsert(L('Copyright'), ExifData.Copyright);
+          XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTime));
+          XInsert(L('Description'), ExifData.ImageDescription);
+          XInsert(L('Software'), ExifData.Software);
+          Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+          case Orientation of
+            DB_IMAGE_ROTATE_0:
+              XInsert(L('Orientation'), L('Normal'));
+            DB_IMAGE_ROTATE_90:
+              XInsert(L('Orientation'), L('Right'));
+            DB_IMAGE_ROTATE_270:
+              XInsert(L('Orientation'), L('Left'));
+            DB_IMAGE_ROTATE_180:
+              XInsert(L('Orientation'), L('180 grad.'));
+          end;
+
+          XInsert(L('Exposure'), ExposureFractionToString(ExifData.ExposureTime));
+          XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
+          XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
+          XInsert(L('F number'), FractionToString(ExifData.FNumber));
+          if ExifData.Flash.Fired then
+            XInsert(L('Flash'), L('On'))
+          else
+            XInsert(L('Flash'), L('Off'));
+
+          XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
+          XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
+
+          XInsert(L('Author'), ExifData.Author);
+          XInsert(L('Comments'), ExifData.Comments);
+          XInsert(L('Keywords'), ExifData.Keywords);
+          XInsert(L('Subject'), ExifData.Subject);
+          XInsert(L('Title'), ExifData.Title);
+          if ExifData.UserRating <> urUndefined then
+            XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
+
         end else
-          VleEXIF.InsertRow('Info:', L('Exif header not found'), True);
-      finally
-        RAWExif.Free;
+          VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
+      except
+        on e : Exception do
+          Eventlog(e.Message);
       end;
-    end else
-    begin
-      ExifData := TExifData.Create;
-      try
-        try
-          ExifData.LoadFromGraphic(FileName);
-          if not ExifData.Empty then
-          begin
-
-            XInsert(L('Make'), ExifData.CameraMake);
-            XInsert(L('Model'), ExifData.CameraModel);
-            XInsert(L('Copyright'), ExifData.Copyright);
-            XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTime));
-            XInsert(L('Description'), ExifData.ImageDescription);
-            XInsert(L('Software'), ExifData.Software);
-            Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-            case Orientation of
-              DB_IMAGE_ROTATE_0:
-                XInsert(L('Orientation'), L('Normal'));
-              DB_IMAGE_ROTATE_90:
-                XInsert(L('Orientation'), L('Right'));
-              DB_IMAGE_ROTATE_270:
-                XInsert(L('Orientation'), L('Left'));
-              DB_IMAGE_ROTATE_180:
-                XInsert(L('Orientation'), L('180 grad.'));
-            end;
-
-            XInsert(L('Exposure'), ExposureFractionToString(ExifData.ExposureTime));
-            XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
-            XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
-            XInsert(L('F number'), FractionToString(ExifData.FNumber));
-            if ExifData.Flash.Fired then
-              XInsert(L('Flash'), L('On'))
-            else
-              XInsert(L('Flash'), L('Off'));
-
-            XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
-            XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
-
-            XInsert(L('Author'), ExifData.Author);
-            XInsert(L('Comments'), ExifData.Comments);
-            XInsert(L('Keywords'), ExifData.Keywords);
-            XInsert(L('Subject'), ExifData.Subject);
-            XInsert(L('Title'), ExifData.Title);
-            if ExifData.UserRating <> urUndefined then
-              XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
-
-          end else
-            VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
-        except
-          on e : Exception do
-            Eventlog(e.Message);
-        end;
-      finally
-        F(ExifData);
-      end;
+    finally
+      F(ExifData);
     end;
   finally
     SetErrorMode(OldMode);
