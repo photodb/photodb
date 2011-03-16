@@ -2218,21 +2218,22 @@ begin
     try
       case LI[I].LinkType of
         LINK_TYPE_ID:
-          Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
         LINK_TYPE_ID_EXT:
-          Icon.Handle := UnitDBKernel.Icons[DB_IC_NOTES + 1];
+          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_NOTES + 1]);
         LINK_TYPE_IMAGE:
-          Icon.Handle := UnitDBKernel.Icons[DB_IC_DESKTOP + 1];
+          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_DESKTOP + 1]);
         LINK_TYPE_FILE:
-          Icon.Handle := UnitDBKernel.Icons[DB_IC_SHELL + 1];
+          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
         LINK_TYPE_FOLDER:
-          Icon.Handle := UnitDBKernel.Icons[DB_IC_DIRECTORY + 1];
+          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
         LINK_TYPE_TXT:
-          Icon.Handle := UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1];
+          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1]);
         LINK_TYPE_HTML:
-          Icon.Handle := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
       end;
       Links[I].Icon := Icon;
+      Links[I].Refresh;
     finally
       F(Icon);
     end;

@@ -8,7 +8,7 @@ uses
   acDlgSelect, DropSource, DropTarget, uDBUtils, ComCtrls, ImgList,
   UnitDBKernel, DragDrop, DragDropFile, uVistaFuncs, ComboBoxExDB,
   UnitDBFileDialogs, uDBForm, WatermarkedMemo, WatermarkedEdit,
-  uShellIntegration, Dolphin_db, uConstants, uAssociations;
+  uShellIntegration, Dolphin_db, uConstants, uAssociations, uMemory;
 
 type
   TFormEditLink = class(TDBForm)
@@ -107,7 +107,7 @@ var
   I: Integer;
 begin
   LoadLanguage;
-  DropFileTarget1.register(Self);
+  DropFileTarget1.Register(Self);
   LinkImageList.Clear;
   for I := LINK_TYPE_ID to LINK_TYPE_TXT do
   begin
@@ -188,26 +188,35 @@ begin
     LINK_TYPE_ID:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
-        if OpenPictureDialog.Execute then
-          EdValue.Text := IntToStr(GetIdByFileName(OpenPictureDialog.FileName));
+        try
+          OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
+          if OpenPictureDialog.Execute then
+            EdValue.Text := IntToStr(GetIdByFileName(OpenPictureDialog.FileName));
 
-        OpenPictureDialog.Free;
+        finally
+          F(OpenPictureDialog);
+        end;
       end;
     LINK_TYPE_IMAGE:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
-        if OpenPictureDialog.Execute then
-          EdValue.Text := OpenPictureDialog.FileName;
-        OpenPictureDialog.Free;
+        try
+          OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
+          if OpenPictureDialog.Execute then
+            EdValue.Text := OpenPictureDialog.FileName;
+        finally
+          F(OpenPictureDialog);
+        end;
       end;
     LINK_TYPE_FILE:
       begin
         OpenDialog := DBOpenDialog.Create;
-        if OpenDialog.Execute then
-          EdValue.Text := OpenDialog.FileName;
-        OpenDialog.Free;
+        try
+          if OpenDialog.Execute then
+            EdValue.Text := OpenDialog.FileName;
+        finally
+          F(OpenDialog);
+        end;
       end;
     LINK_TYPE_FOLDER:
       begin
@@ -218,11 +227,12 @@ begin
     LINK_TYPE_ID_EXT:
       begin
         OpenPictureDialog := DBOpenPictureDialog.Create;
-        OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
-        if OpenPictureDialog.Execute then
-        begin
-          EdValue.Text := CodeExtID(GetImageIDW(OpenPictureDialog.FileName, False).ImTh);
-          OpenPictureDialog.Free;
+        try
+          OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
+          if OpenPictureDialog.Execute then
+            EdValue.Text := CodeExtID(GetImageIDW(OpenPictureDialog.FileName, False).ImTh);
+        finally
+          F(OpenPictureDialog);
         end;
       end;
   end;
