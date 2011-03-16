@@ -1650,7 +1650,7 @@ begin
       end;
   LastMouseItem.Focused := True;
 
-  if IsGraphicFile(FFilesInfo[index].FileName) then
+  if not IsGraphicFile(FFilesInfo[index].FileName) then
     Exit;
 
   if not FileExists(FFilesInfo[index].FileName) then
@@ -2014,7 +2014,7 @@ begin
     VerifyPaste(Self);
     Exit;
   end;
-  ImParams := [EventID_Param_Image,EventID_Param_Delete,EventID_Param_Critical,EventID_Param_Crypt];
+  ImParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
   if ImParams * params<> [] then
   begin
     if ID > 0 then
@@ -2024,7 +2024,7 @@ begin
   end;
 
   ReRotation := 0;
-  UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private, EventID_Param_Access,
+  UpdateInfoParams := [EventID_Param_Crypt, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private, EventID_Param_Access,
     EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime, EventID_Param_Groups,
     EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Include];
   if UpdateInfoParams * Params <> [] then
@@ -2044,10 +2044,14 @@ begin
             FFilesInfo[I].Access := Value.Access;
           if EventID_Param_Access in Params then
             FFilesInfo[I].Access := Value.Access;
+          if EventID_Param_Crypt in Params then
+            FFilesInfo[I].Crypted := Value.Crypt;
           if EventID_Param_Rating in Params then
             FFilesInfo[I].Rating := Value.Rating;
           if EventID_Param_Date in Params then
             FFilesInfo[I].Date := Value.Date;
+          if EventID_Param_Time in Params then
+            FFilesInfo[I].Time := Value.Time;
           if EventID_Param_Time in Params then
             FFilesInfo[I].Time := Value.Time;
           if EventID_Param_IsDate in Params then
@@ -2072,8 +2076,14 @@ begin
             FFilesInfo[I].Include := Value.Include;
 
             ElvMain.Items[I].BorderColor := GetListItemBorderColor(TDataObject(ElvMain.Items[I].Data));
-            ElvMain.Refresh;
           end;
+          if [EventID_Param_Include,
+              EventID_Param_Rotate,
+              EventID_Param_Private,
+              EventID_Param_Access,
+              EventID_Param_Crypt,
+              EventID_Param_Rating ] * Params <> [] then
+            ElvMain.Refresh;
           Break;
         end;
       end;
@@ -2578,6 +2588,12 @@ begin
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
       Index := MenuIndexToItemIndex(I);
+      if Bitmap = nil then
+      begin
+        ElvMain.Items[index].Invalidate(False);
+        Exit;
+      end;
+
       if (FFilesInfo[I].IsBigImage) and (Big = True) // если загружается большая картинка впервые
         then
         Exit;

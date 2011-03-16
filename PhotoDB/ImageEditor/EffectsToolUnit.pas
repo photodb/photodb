@@ -6,8 +6,8 @@ uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
   ComCtrls, Effects, ExEffects, Dialogs, Forms, GraphicsBaseTypes,
-  ExEffectsUnitW, OptimizeImageUnit, UnitDBKernel,
-  uEditorTypes, uMemory, uTranslate;
+  ExEffectsUnitW, OptimizeImageUnit, UnitDBKernel, uListViewUtils, MPCommonUtilities,
+  uEditorTypes, uMemory, uTranslate, EasyListView;
 
 type
   TEffectsManager = class(TObject)
@@ -33,7 +33,8 @@ type
     NewImage: TBitmap;
     CloseLink: TWebLink;
     MakeItLink: TWebLink;
-    EffectsChooser: TListView;
+    //EffectsChooser: TListView;
+    EffectsChooser: TEasyListView;
     ImageList: TImageList;
     EM: TEffectsManager;
     BaseEffects: TBaseEffectProcedures;
@@ -58,13 +59,13 @@ type
     procedure MakeTransform; override;
     procedure ClosePanelEvent(Sender: TObject);
     procedure DoMakeImage(Sender: TObject);
-    procedure SelectEffect(Sender: TObject);
+    procedure SelectEffect(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState; var Handled: Boolean);
     procedure SetBaseImage(Image: TBitmap);
     procedure FillEffects(OneEffectID: string = '');
     procedure SetThreadImage(Image: TBitmap; SID: string);
     procedure SetProgress(Progress: Integer; SID: string);
     procedure SetNewImage(Image: TBitmap);
-    procedure EffectChooserPress(Sender: TObject; var Key: Char);
+    procedure EffectChooserPress(Sender: TCustomEasyListview; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
     procedure ExecuteProperties(Properties: string; OnDone: TNotifyEvent); override;
     procedure SetProperties(Properties: string); override;
   end;
@@ -105,24 +106,29 @@ begin
   IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
   IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
 
-  EffectsChooser := TListView.Create(Self); ;
+  EffectsChooser := TEasyListview.Create(Self);
   EffectsChooser.Parent := AOwner as TWinControl;
   EffectsChooser.Left := 5;
   EffectsChooser.Top := 5;
   EffectsChooser.Width := 180;
-  EffectsChooser.Height := 400;
+  EffectsChooser.Height := EffectsChooser.Parent.Height - 75;
+  EffectsChooser.Anchors := [akLeft, akTop, akRight, akBottom];
   EffectsChooser.OnDblClick := SelectEffect;
   EffectsChooser.DoubleBuffered := True;
-  EffectsChooser.readonly := True;
-  EffectsChooser.HideSelection := False;
-  EffectsChooser.OnKeyPress := EffectChooserPress;
+  EffectsChooser.EditManager.Enabled := False;
+  EffectsChooser.OnKeyAction := EffectChooserPress;
+
+  SetLVSelection(EffectsChooser, [cmbLeft]);
+  EffectsChooser.Selection.RectSelect := False;
+  EffectsChooser.Selection.BlendIcon := False;
+  EffectsChooser.Selection.FullRowSelect := True;
 
   ImageList := TImageList.Create(Self);
   ImageList.Width := 100;
   ImageList.Height := 100;
   ImageList.BkColor := ClWhite;
-  EffectsChooser.LargeImages := ImageList;
-  EffectsChooser.ViewStyle := VsIcon;
+  EffectsChooser.ImagesLarge := ImageList;
+  EffectsChooser.View := elsThumbnail;
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := AOwner as TWinControl;
@@ -134,6 +140,7 @@ begin
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
   MakeItLink.ImageCanRegenerate := True;
+  MakeItLink.Anchors := [akLeft, akBottom];
   IcoOK.Free;
 
   CloseLink := TWebLink.Create(Self);
@@ -146,6 +153,7 @@ begin
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
   CloseLink.ImageCanRegenerate := True;
+  CloseLink.Anchors := [akLeft, akBottom];
   IcoCancel.Free;
 
   CloseLink.ImageCanRegenerate := True;
@@ -167,22 +175,24 @@ begin
   MakeTransform;
 end;
 
-procedure TEffectsToolPanelClass.EffectChooserPress(Sender: TObject; var Key: Char);
+procedure TEffectsToolPanelClass.EffectChooserPress(Sender: TCustomEasyListview; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 begin
-  if Key = Chr(VK_RETURN) then
-    SelectEffect(Sender);
+  if CharCode = VK_RETURN then
+    SelectEffect(Sender, cmbNone, Point(0, 0), [], DoDefault);
 end;
 
 procedure TEffectsToolPanelClass.ExecuteProperties(Properties: string; OnDone: TNotifyEvent);
+var
+  Handled: Boolean;
 begin
   FOnDone := OnDone;
   ApplyOnDone := True;
-  SelectEffect(Self);
+  SelectEffect(nil, cmbNone, Point(0, 0), [], Handled);
 end;
 
 procedure TEffectsToolPanelClass.FillEffects(OneEffectID: string = '');
 var
-  Item: TlistItem;
+  Item: TEasyItem;
   I: Integer;
   Bitmap: Tbitmap;
   ExEffect: TExEffect;
@@ -212,7 +222,7 @@ begin
       ImageList.Add(Bitmap, nil);
       Item := EffectsChooser.Items.Add;
       Item.ImageIndex := ImageList.Count - 1;
-      Item.Indent := I;
+      Item.Data := Pointer(I);
       Item.Caption := BaseEffects[I].name;
     end;
 
@@ -228,7 +238,7 @@ begin
         ImageList.Add(Bitmap, nil);
         Item := EffectsChooser.Items.Add;
         Item.ImageIndex := ImageList.Count - 1;
-        Item.Indent := I + Length(BaseEffects);
+        Item.Data := Pointer(I + Length(BaseEffects));
         Item.Caption := ExEffect.GetName;
       finally
         F(ExEffect);
@@ -265,9 +275,9 @@ begin
   ClosePanel;
 end;
 
-procedure TEffectsToolPanelClass.SelectEffect(Sender: TObject);
+procedure TEffectsToolPanelClass.SelectEffect(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState; var Handled: Boolean);
 var
-  Item: TListItem;
+  Item: TEasyItem;
   ExEffectForm: TExEffectForm;
   ExEffect: TExEffect;
 
@@ -287,23 +297,23 @@ begin
       Exit;
     end;
   end;
-  Item := EffectsChooser.Selected;
+  Item := EffectsChooser.Selection.First;
   if Item = nil then
     Exit;
   FSID := IntToStr(Random(100000));
-  if Item.Indent <= Length(BaseEffects) - 1 then
+  if Integer(Item.Data) <= Length(BaseEffects) - 1 then
   begin
     NewImage.Assign(Image);
-    TempFilterID := BaseEffects[Item.Indent].ID;
-    (Editor as TImageEditor).StatusBar1.Panels[0].Text := Format(L('Filter "%s" is working'), [BaseEffects[Item.Indent].name]);
-    TBaseEffectThread.Create(Self, BaseEffects[Item.Indent].Proc, NewImage, FSID, SetThreadImage, Editor);
+    TempFilterID := BaseEffects[Integer(Item.Data)].ID;
+    (Editor as TImageEditor).StatusBar1.Panels[0].Text := Format(L('Filter "%s" is working'), [BaseEffects[Integer(Item.Data)].name]);
+    TBaseEffectThread.Create(Self, BaseEffects[Integer(Item.Data)].Proc, NewImage, FSID, SetThreadImage, Editor);
     NewImage := nil;
   end else
   begin
     Application.CreateForm(TExEffectForm, ExEffectForm);
     try
       ExEffectForm.Editor := Editor;
-      ExEffect := ExEffects[Item.Indent - Length(BaseEffects)].Create;
+      ExEffect := ExEffects[Integer(Item.Data) - Length(BaseEffects)].Create;
       try
       TempFilterID := ExEffect.ID;
       (Editor as TImageEditor).StatusBar1.Panels[0].Text := Format(L('Filter "%s" is working'), [ExEffect.GetName]);
@@ -312,7 +322,7 @@ begin
         F(ExEffect);
       end;
       OutFilterInitialString := FilterInitialString;
-      if not ExEffectForm.Execute(Self, Image, NewImage, ExEffects[Item.Indent - Length(BaseEffects)],
+      if not ExEffectForm.Execute(Self, Image, NewImage, ExEffects[Integer(Item.Data) - Length(BaseEffects)],
         OutFilterInitialString) then
         NewImage := nil;
     finally

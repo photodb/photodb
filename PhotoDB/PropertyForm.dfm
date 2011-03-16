@@ -545,6 +545,7 @@ object PropertiesForm: TPropertiesForm
         BorderStyle = bsNone
         Lines.Strings = (
           '<data>')
+        ReadOnly = True
         TabOrder = 3
         OnChange = CommentMemoChange
       end
@@ -558,6 +559,7 @@ object PropertiesForm: TPropertiesForm
         BorderStyle = bsNone
         Lines.Strings = (
           '<data>')
+        ReadOnly = True
         TabOrder = 2
         OnChange = CommentMemoChange
       end

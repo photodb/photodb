@@ -1472,20 +1472,17 @@ begin
 
         if ElvMain.Items[i].ImageIndex > -1 then
           ApplyRotate(FBitmapImageList[ElvMain.Items[i].ImageIndex].Bitmap, ReRotation);
-
-        RefreshParams := [EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
-        if (ElvMain.Items[i].ImageIndex < 0) or (RefreshParams * params <> []) then
-        begin
-          FilesToUpdate := TDBPopupMenuInfo.Create;
-          with FilesToUpdate.Add(SearchRecord.FileName) do
-            Rotation := SearchRecord.Rotation;
-
-          NewFormSubState;
-          RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, FilesToUpdate, True));
-        end;
-
-        ElvMain.Items[I].Invalidate(False);
       end;
+      RefreshParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
+      if (ElvMain.Items[i].ImageIndex < 0) or (RefreshParams * params <> []) then
+      begin
+        FilesToUpdate := TDBPopupMenuInfo.Create;
+        FilesToUpdate.Add(SearchRecord.Copy);
+
+        NewFormSubState;
+        RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, FilesToUpdate, True));
+      end;
+      ElvMain.Items[I].Invalidate(False);
     end;
   end
 end;
@@ -3447,14 +3444,10 @@ begin
     if AnsiLowerCase(SearchRecord.FileName) = FileName then
     begin
       if ListItem.ImageIndex = -1 then
-      begin
-        ListItem.ImageIndex := FBitmapImageList.AddBitmap(Bitmap);
-        Bitmap := nil;
-      end
-      else begin
-        FBitmapImageList.Items[ListItem.ImageIndex].Bitmap.Assign(Bitmap);
-        F(Bitmap);
-      end;
+        ListItem.ImageIndex := FBitmapImageList.AddBitmap(Bitmap)
+      else
+        FBitmapImageList.Items[ListItem.ImageIndex].Graphic := Bitmap;
+      Bitmap := nil;
       ListItem.Invalidate(True);
       Result := True;
       Break;

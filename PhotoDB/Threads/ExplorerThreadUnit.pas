@@ -794,7 +794,7 @@ begin
   FInfo.FileSize := FileSize;
   FInfo.Crypted := CryptedFile;
   FInfo.Tag := EXPLORER_ITEM_FOLDER;
-
+  FInfo.PassTag := 0;
   if not FUpdaterInfo.IsUpdater then
   begin
     if FindInQuery(FileName) then
@@ -855,8 +855,8 @@ begin
   if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam);
-    if TempBitmap <> nil then
-      FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage)
+    //if TempBitmap <> nil then
+    FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage)
   end;
 end;
 

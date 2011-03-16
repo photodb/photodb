@@ -5,7 +5,7 @@ interface
 uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
   UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB,
-  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm;
+  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX;
 
 type
   TCryptImageThreadOptions = record
@@ -31,7 +31,6 @@ type
     StrParam: string;
     Count: Integer;
     ProgressWindow: TForm;
-    Result: Integer;
     Table: TDataSet;
     FPassword: string;
     FField: TField;
@@ -89,9 +88,9 @@ var
   EventInfo: TEventValues;
 begin
   if FOptions.Action = ACTION_CRYPT_IMAGES then
-    EventInfo.Crypt := Result = CRYPT_RESULT_OK
+    EventInfo.Crypt := CryptResult = CRYPT_RESULT_OK
   else
-    EventInfo.Crypt := Result <> CRYPT_RESULT_OK;
+    EventInfo.Crypt := CryptResult <> CRYPT_RESULT_OK;
 
   if IntParam <> 0 then
     DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt], EventInfo)
@@ -115,60 +114,67 @@ var
   C: Integer;
 begin
   FreeOnTerminate := True;
-  Count := 0;
-  for I := 0 to Length(FOptions.IDs) - 1 do
-    if FOptions.Selected[I] then
-      Inc(Count);
-  Synchronize(InitializeProgress);
-  C := 0;
-  for I := 0 to Length(FOptions.IDs) - 1 do
-  begin
-    StrParam := FOptions.Files[I];
-    IntParam := FOptions.IDs[I];
-    Position := I;
-    if FOptions.Selected[I] then
+  CoInitialize(nil);
+  try
+    Count := 0;
+    for I := 0 to Length(FOptions.IDs) - 1 do
+      if FOptions.Selected[I] then
+        Inc(Count);
+    Synchronize(InitializeProgress);
+    C := 0;
+    for I := 0 to Length(FOptions.IDs) - 1 do
     begin
-      Synchronize(IfBreakOperation);
-      if BoolParam then
+      StrParam := FOptions.Files[I];
+      IntParam := FOptions.IDs[I];
+      Position := I;
+      if FOptions.Selected[I] then
       begin
-        for J := I to Length(FOptions.IDs) - 1 do
+        Synchronize(IfBreakOperation);
+        if BoolParam then
         begin
-          StrParam := FOptions.Files[J];
-          Synchronize(RemoveFileFromUpdatingList);
+          for J := I to Length(FOptions.IDs) - 1 do
+          begin
+            StrParam := FOptions.Files[J];
+            Synchronize(RemoveFileFromUpdatingList);
+          end;
+          Synchronize(DoDBkernelEventRefreshList);
+          Continue;
         end;
-        Synchronize(DoDBkernelEventRefreshList);
-        Continue;
-      end;
-      Inc(C);
-      SetProgressPosition(C);
-      if FOptions.Action = ACTION_CRYPT_IMAGES then
-      begin
-        // Crypting images
-        try
-          Result := CryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
-            FOptions.CryptOptions, False);
-        except
+        Inc(C);
+        SetProgressPosition(C);
+        if FOptions.Action = ACTION_CRYPT_IMAGES then
+        begin
+          // Crypting images
+          try
+            CryptResult := CryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
+              FOptions.CryptOptions, False);
+          except
+            on e: Exception do
+              EventLog(e);
+          end;
+        end else
+        begin
+          // DEcrypting images
+          FE := FileExists(FOptions.Files[I]);
+          // GetPassword
+          StrParam := FOptions.Files[I];
+          IntParam := FOptions.IDs[I];
+          GetPassword;
+          // DEcrypting images
+          CryptResult := ResetPasswordImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FPassword);
         end;
-      end
-      else
-      begin
-        // DEcrypting images
-        FE := FileExists(FOptions.Files[I]);
-        // GetPassword
         StrParam := FOptions.Files[I];
         IntParam := FOptions.IDs[I];
-        GetPassword;
-        // DEcrypting images
-        CryptResult := ResetPasswordImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FPassword);
+        Synchronize(RemoveFileFromUpdatingList);
+        Synchronize(DoDBkernelEventRefreshList);
+        Synchronize(DoDBkernelEvent);
       end;
-      Synchronize(RemoveFileFromUpdatingList);
-      Synchronize(DoDBkernelEventRefreshList);
-      Synchronize(DoDBkernelEvent);
     end;
+    FreeDS(Table);
+    Synchronize(DestroyProgress);
+  finally
+    CoUninitialize;
   end;
-  if Table <> nil then
-    Table.Free;
-  Synchronize(DestroyProgress);
 end;
 
 procedure TCryptingImagesThread.GetPasswordFromUserFile;
@@ -268,8 +274,9 @@ end;
 procedure TCryptingImagesThread.SetProgressPositionSynch;
 begin
   if not GOM.IsObj(ProgressWindow) then
-    Exit; (ProgressWindow as TProgressActionForm)
-  .XPosition := IntParam;
+    Exit;
+
+  (ProgressWindow as TProgressActionForm).XPosition := IntParam;
 end;
 
 end.

@@ -20,12 +20,18 @@ type
     procedure Message(Value : string);
   end;
 
-procedure EventLog(Message : string);
+procedure EventLog(Message : string); overload;
+procedure EventLog(Ex: Exception); overload;
 
 implementation
 
 var
   Logger : TLogger = nil;
+
+procedure EventLog(Ex: Exception);
+begin
+  EventLog(Ex.ToString);
+end;
 
 procedure EventLog(Message : string);
 begin

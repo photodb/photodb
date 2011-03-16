@@ -91,7 +91,7 @@ var
   Reg : TBDRegistry;
 begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
-  Result := StrToIntDef(reg.ReadString(Name), Default);
+  Result := StrToIntDef(Reg.ReadString(Name), Default);
 end;
 
 function TSettings.ReadDateTime(Key, Name : string; Default : TDateTime): TDateTime;

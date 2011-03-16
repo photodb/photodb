@@ -285,6 +285,7 @@ begin
     ClientWidth := WindowWidth;
     ClientHeight := WindowHeight;
 
+    DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
     CreateFormImage;
     ShowWindow(Handle, SW_SHOWNOACTIVATE);
   finally

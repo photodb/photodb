@@ -87,7 +87,7 @@ begin
   Application.CreateForm(TPassWordForm, PassWordForm);
   PassWordForm.FFileName := '';
   PassWordForm.DB := nil;
-  PassWordForm.LbTitle.Caption := TA('Enter password for group of files (press "Show files" to see list) here:');
+  PassWordForm.LbTitle.Caption := TA('Enter password for group of files (press "Show files" to see list) here:', 'Password');
   PassWordForm.FCRC := CRC;
   PassWordForm.DialogType := PASS_TYPE_IMAGES_CRC;
   PassWordForm.UseAsk := False;
@@ -107,7 +107,7 @@ begin
   Application.CreateForm(TPassWordForm, PassWordForm);
   PassWordForm.FFileName := FileName;
   PassWordForm.DB := nil;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
   PassWordForm.UseAsk := False;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_FILE;
   PassWordForm.ReallignControlsEx;
@@ -126,7 +126,7 @@ begin
   PassWordForm.UseAsk := True;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_FILE;
   PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
   PassWordForm.ShowModal;
   AskAgain := not PassWordForm.CbDoNotAskAgain.Checked;
   Result := PassWordForm.Password;
@@ -143,7 +143,7 @@ begin
   PassWordForm.UseAsk := False;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_BLOB;
   PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
   PassWordForm.ShowModal;
   Result := PassWordForm.Password;
   PassWordForm.Release;
@@ -161,7 +161,7 @@ begin
   PassWordForm.FCRC := CRC;
   PassWordForm.DialogType := PASS_TYPE_IMAGE_STENO;
   PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:'), [Mince(FileName, 30)]);
+  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
   PassWordForm.ShowModal;
   Result := PassWordForm.Password;
   PassWordForm.Release;

@@ -638,7 +638,9 @@
     <translate name="Select DB" value="Выбрать базу" />
     <translate name="User menu" value="Пользовательское меню" />
     <translate name="Select" value="Выбрать" />	
-    <translate name="Edit groups" value="Редактировать группы" />	
+    <translate name="Edit groups" value="Редактировать группы" />
+    <translate name="Busy..." value="Занято..." />	
+    <translate name="Unable to show menu!" value="невозможно отобразить меню!" />
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />

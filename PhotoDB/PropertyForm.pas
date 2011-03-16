@@ -481,7 +481,7 @@ begin
   Result := False;
   if (FShowInfoType = SHOW_INFO_ID) or (FShowInfoType = SHOW_INFO_FILE_NAME) then
   begin
-    VarTime := Abs(FFilesInfo[0].Time - TimeEdit.Time) > 1 / (24 * 60 * 60 * 3);
+    VarTime := Abs(FFilesInfo[0].Time - TimeOf(TimeEdit.Time)) > 1 / (24 * 60 * 60 * 3);
     Result := (((FFilesInfo[0].IsTime <> TimeEdit.Checked) or VarTime) and TimeEdit.Enabled);
   end;
   if FShowInfoType = SHOW_INFO_IDS then
@@ -518,8 +518,6 @@ begin
     ResetBold;
     if ImageID <> Id then
       PcMain.ActivePageIndex := 0;
-    DateEdit.Enabled := True;
-    TimeEdit.Enabled := True;
     Image2.Visible := False;
     FShowInfoType := SHOW_INFO_ID;
 
@@ -637,6 +635,7 @@ begin
       SizeLabel.Text := SizeInText(DataRecord.FileSize);
       Widthmemo.Text := IntToStr(WorkQuery.FieldByName('Width').AsInteger) + L('px.');
       Heightmemo.Text := IntToStr(WorkQuery.FieldByName('Height').AsInteger) + L('px.');
+
       RatingEdit.Rating := DataRecord.Rating;
       RatingEdit.Islayered := False;
       DateEdit.Enabled := True;
@@ -1162,7 +1161,7 @@ begin
           SetSQL(WorkQuery, _sqlexectext);
           SetDateParam(WorkQuery, 'aTime', TimeOf(TimeEdit.Time));
           ExecSQL(FQuery);
-          EventInfo.Time := TimeEdit.Time;
+          EventInfo.Time := TimeOf(TimeEdit.Time);
           EventInfo.IsTime := True;
           for I := 0 to FFilesInfo.Count - 1 do
             DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
@@ -1222,7 +1221,7 @@ begin
         EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include], EventInfo);
     end else
     begin
-      LockImput;
+      BtSave.Enabled := True;
       FSaving := False;
       if UpdaterDB = nil then
         UpdaterDB := TUpdaterDB.Create;
@@ -1411,7 +1410,7 @@ begin
   TimeEdit.Checked := FDateTimeInFileExists;
 
   Rec.Date := DateEdit.DateTime;
-  Rec.Time := TimeEdit.Time;
+  Rec.Time := TimeOf(TimeEdit.Time);
   Rec.IsTime := FDateTimeInFileExists;
   Rec.IsDate := FDateTimeInFileExists;
 

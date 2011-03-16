@@ -568,18 +568,31 @@ begin
         Data[I].Rotation := Value.Rotate;
       end;
 
-      if EventID_Param_Private in params then Data[i].Access:=Value.Access;
-      if EventID_Param_KeyWords in params then Data[i].KeyWords:=Value.KeyWords;
-      if EventID_Param_Crypt in params then Data[i].Crypted:=Value.Crypt;
-      if EventID_Param_Date in params then Data[i].Date:=Value.Date;
-      if EventID_Param_Time in params then Data[i].Time:=Value.Time;
-      if EventID_Param_Rotate in params then Data[i].Rotation:=Value.Rotate;
-      if EventID_Param_Rating in params then Data[i].Rating:=Value.Rating;
-      if EventID_Param_Comment in params then Data[i].Comment:=Value.Comment;
-      if EventID_Param_IsDate in params then Data[i].IsDate:=Value.IsDate;
-      if EventID_Param_IsTime in params then Data[i].IsTime:=Value.IsTime;
-      if EventID_Param_Groups in params then Data[i].Groups:=Value.Groups;
-      if EventID_Param_Links in params then Data[i].Links:=Value.Links;
+      if EventID_Param_Private in Params then
+        Data[I].Access := Value.Access;
+      if EventID_Param_KeyWords in Params then
+        Data[I].KeyWords := Value.KeyWords;
+      if EventID_Param_Crypt in Params then
+        Data[I].Crypted := Value.Crypt;
+      if EventID_Param_Date in Params then
+        Data[I].Date := Value.Date;
+      if EventID_Param_Time in Params then
+        Data[I].Time := Value.Time;
+      if EventID_Param_Rotate in Params then
+        Data[I].Rotation := Value.Rotate;
+      if EventID_Param_Rating in Params then
+        Data[I].Rating := Value.Rating;
+      if EventID_Param_Comment in Params then
+        Data[I].Comment := Value.Comment;
+      if EventID_Param_IsDate in Params then
+        Data[I].IsDate := Value.IsDate;
+      if EventID_Param_IsTime in Params then
+        Data[I].IsTime := Value.IsTime;
+      if EventID_Param_Groups in Params then
+        Data[I].Groups := Value.Groups;
+      if EventID_Param_Links in Params then
+        Data[I].Links := Value.Links;
+
       if EventID_Param_Include in params then
       begin
         Data[I].Include := Value.Include;
@@ -597,9 +610,7 @@ begin
       if Data[I].ID = ID then
       begin
         if ElvMain.Items[I].ImageIndex > -1 then
-        begin
           ApplyRotate(FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap, ReRotation);
-        end;
       end;
   end;
 
@@ -609,38 +620,47 @@ begin
       // TODO: normal image
       RefreshItemByID(Id);
     end;
-  if (EventID_Param_Include in Params) then
+
+  if [EventID_Param_Include,
+      EventID_Param_Rotate,
+      EventID_Param_Private,
+      EventID_Param_Access,
+      EventID_Param_Crypt,
+      EventID_Param_Rating ] * Params <> [] then
     ElvMain.Refresh;
 
   if (EventID_Param_Delete in Params) then
     DeleteIndexItemByID(ID);
 
- if SetNewIDFileData in params then
- begin
-  for i:=0 to Data.Count-1 do
-  if AnsiLowerCase(Data[i].FileName)=Value.Name then
+  if SetNewIDFileData in Params then
   begin
-   Data[i].ID:=ID;
-   Data[i].IsDate:=true;
-   Data[i].IsTime:=Value.IsTime;
-   Data[i].Date:=Value.Date;
-   Data[i].Time:=Value.Time;
-   ElvMain.Refresh;
-   break;
+    for I := 0 to Data.Count - 1 do
+      if AnsiLowerCase(Data[I].FileName) = Value.Name then
+      begin
+        Data[I].ID := ID;
+        Data[I].IsDate := True;
+        Data[I].IsTime := Value.IsTime;
+        Data[I].Date := Value.Date;
+        Data[I].Time := Value.Time;
+        Data[I].Rating := Value.Rating;
+        Data[I].Crypted := Value.Crypt;
+        Data[I].Comment := Value.Comment;
+        Data[I].Keywords := Value.Keywords;
+        Data[I].Links := Value.Links;
+        Data[I].Groups := Value.Groups;
+        ElvMain.Refresh;
+        Break;
+      end;
+    Exit;
   end;
-  exit;
- end;
 
- RefreshParams:=[EventID_Param_Private,EventID_Param_Rotate,EventID_Param_Name,EventID_Param_Rating,EventID_Param_Crypt];
- if RefreshParams*params<>[] then
- begin
-  ElvMain.Repaint;
- end;
+  RefreshParams := [EventID_Param_Private, EventID_Param_Rotate, EventID_Param_Name, EventID_Param_Rating,
+    EventID_Param_Crypt];
+  if RefreshParams * Params <> [] then
+    ElvMain.Repaint;
 
- if [EventID_Param_DB_Changed] * params<>[] then
- begin
-  Close;
- end;
+  if [EventID_Param_DB_Changed] * Params <> [] then
+    Close;
 end;
 
 procedure TFormCont.AddNewItem(Image : Tbitmap; Info : TDBPopupMenuInfoRecord);

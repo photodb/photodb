@@ -1550,6 +1550,8 @@ begin
   finally
     F(List);
   end;
+  if Info.Count = 0 then
+    Info.Add(TDBPopupMenuInfoRecord.CreateFromFile(BeginFile));
 end;
 
 procedure CopyFullRecordInfo(Handle : THandle; ID: Integer);

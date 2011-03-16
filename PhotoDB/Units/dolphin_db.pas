@@ -14,7 +14,7 @@ uses  Registry, Windows, uVistaFuncs,CommonDBSupport,
       UnitLinksSupport, EasyListView, uTranslate,
       uMemory, uDBPopupMenuInfo, uAppUtils, UnitDBCommonGraphics,
       uGraphicUtils, uShellIntegration, uRuntime, uSysUtils,
-      uAssociations;
+      uAssociations, uActivationUtils;
 
 type
   TInitializeAProc = function(s:PChar) : boolean;
@@ -176,7 +176,6 @@ var
 
 procedure LoadNickJpegImage(Image: TImage);
 procedure DoHelp;
-procedure DoGetCode(S: string);
 procedure DoHomeContactWithAuthor;
 procedure DoHomePage;
 procedure DoBuyApplication;
@@ -195,7 +194,6 @@ function EXIFDateToDate(DateTime: string): TDateTime;
 function EXIFDateToTime(DateTime: string): TDateTime;
 
 function GetActiveFormHandle: Integer;
-//function GetGraphicFilter: string;
 
 function CenterPos(W1, W2: Integer): Integer;
 function ExifOrientationToRatation(Orientation : Integer) : Integer;
@@ -325,7 +323,7 @@ end;
 
 procedure DoHelp;
 begin
-  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(HomePageURL)), nil, nil, SW_NORMAL);
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(HomePageURL) + '?mode=help'), nil, nil, SW_NORMAL);
 end;
 
 procedure DoHomePage;
@@ -340,19 +338,16 @@ begin
 end;
 
 procedure DoBuyApplication;
+var
+  BuyUrl: string;
 begin
-  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(BuyPageURL)), nil, nil, SW_NORMAL);
+  BuyUrl := ResolveLanguageString(BuyPageURL) + '?v=' + ProductVersion + '&ac=' + TActivationManager.Instance.ApplicationCode;
+  ShellExecute(GetActiveWindow, 'open', PWideChar(BuyUrl), nil, nil, SW_NORMAL);
 end;
 
 procedure DoDonate;
 begin
   ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(DonateURL)), nil, nil, SW_NORMAL);
-end;
-
-procedure DoGetCode(S: string);
-begin
-  ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=' + ProductName +
-        ': REGISTRATION CODE = ' + S ), nil, nil, SW_NORMAL);
 end;
 
 procedure Delay(Msecs: Longint);
@@ -499,70 +494,6 @@ begin
     Result := 0;
 end;
 
-{
-function GetGraphicFilter: string;
-var
-  AllFormatsString: string;
-  FormatsString, StrTemp: string;
-  P, I: Integer;
-  RAWFormats: string;
-
-  procedure AddGraphicFormat(FormatName: string; Extensions: string; LastExtension: Boolean);
-  begin
-    FormatsString := FormatsString + FormatName + ' (' + Extensions + ')' + '|' + Extensions;
-    if not LastExtension then
-      FormatsString := FormatsString + '|';
-
-    AllFormatsString := AllFormatsString + Extensions;
-    if not LastExtension then
-      AllFormatsString := AllFormatsString + ';';
-  end;
-
-begin
-  AllFormatsString := '';
-  FormatsString := '';
-  RAWFormats := '';
-  if GraphicFilterString = '' then
-  begin
-    AddGraphicFormat('JPEG Image File', '*.jpg;*.jpeg;*.jfif;*.jpe;*.thm', False);
-    AddGraphicFormat('Tiff images', '*.tiff;*.tif;*.fax', False);
-    AddGraphicFormat('Portable network graphic images', '*.png', False);
-    AddGraphicFormat('GIF Images', '*.gif', False);
-
-    if IsRAWSupport then
-    begin
-      P := 1;
-      for I := 1 to Length(RAWImages) do
-        if (RAWImages[I] = '|') then
-        begin
-          StrTemp := Copy(RAWImages, P, I - P);
-
-          RAWFormats := RAWFormats + '*.' + AnsiLowerCase(StrTemp);
-          if I <> Length(RAWImages) then
-            RAWFormats := RAWFormats + ';';
-          P := I + 1;
-        end;
-      AddGraphicFormat('Camera RAW Images', RAWFormats, False);
-    end;
-
-    AddGraphicFormat('Bitmaps', '*.bmp;*.rle;*.dib', False);
-    AddGraphicFormat('Photoshop images', '*.psd;*.pdd', False);
-    AddGraphicFormat('Truevision images', '*.win;*.vst;*.vda;*.tga;*.icb', False);
-    AddGraphicFormat('ZSoft Paintbrush images', '*.pcx;*.pcc;*.scr', False);
-    AddGraphicFormat('Alias/Wavefront images', '*.rpf;*.rla', False);
-    AddGraphicFormat('SGI true color images', '*.sgi;*.rgba;*.rgb;*.bw', False);
-    AddGraphicFormat('Portable map images', '*.ppm;*.pgm;*.pbm', False);
-    AddGraphicFormat('Autodesk images', '*.cel;*.pic', False);
-    AddGraphicFormat('Kodak Photo-CD images', '*.pcd', False);
-    AddGraphicFormat('Dr. Halo images', '*.cut', False);
-    AddGraphicFormat('Paintshop Pro images', '*.psp', True);
-
-    FormatsString := Format(TA('All formats (%s)'), [AllFormatsString]) + '|' + AllFormatsString + '|' + FormatsString;
-    GraphicFilterString := FormatsString;
-  end;
-  Result := GraphicFilterString;
-end;
-        }
 function SizeInText(Size: Int64): string;
 begin
   if Size <= 1024 then

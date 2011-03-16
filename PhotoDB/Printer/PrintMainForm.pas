@@ -112,7 +112,7 @@ var
   Printing: Boolean;
 
 function GetPrintForm(Files: TStrings): TPrintForm; overload;
-function GetPrintForm(Picture: TBitmap): TPrintForm; overload;
+function GetPrintForm(var Picture: TBitmap): TPrintForm; overload;
 
 implementation
 
@@ -146,13 +146,14 @@ begin
   end;
 end;
 
-function GetPrintForm(Picture: TBitmap): TPrintForm;
+function GetPrintForm(var Picture: TBitmap): TPrintForm;
 begin
   Result := nil;
   if Picture.Empty then
     Exit;
   Application.CreateForm(TPrintForm, Result);
   Result.Execute(Picture);
+  Picture := nil;
 end;
 
 function TPrintForm.FormatToText(FormatIndex: TPrintSampleSizeOne): string;
@@ -869,3 +870,4 @@ PrintFormExists := False;
 Printing := False;
 
 end.
+

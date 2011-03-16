@@ -384,8 +384,8 @@ exports
 
 begin
   try
-  //  FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
-  //  ReportMemoryLeaksOnShutdown := True;
+    //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
+    //ReportMemoryLeaksOnShutdown := True;
   {
    //Command line
 

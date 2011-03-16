@@ -4,7 +4,7 @@ interface
 
 uses DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
      GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
-     uDBForm;
+     uDBForm, DateUtils;
 
 const
   BufferSize = 100*3*4*4096;
@@ -314,6 +314,8 @@ begin
   Include := Item.Include;
   Links := Item.Links;
   Selected := Item.Selected;
+  Tag := Item.Tag;
+  PassTag := Item.PassTag;
   if MoveImage then
   begin
     F(Image);
@@ -325,24 +327,7 @@ end;
 function TDBPopupMenuInfoRecord.Copy: TDBPopupMenuInfoRecord;
 begin
   Result := InitNewInstance;
-  Result.ID := ID;
-  Result.FileName := FileName;
-  Result.Comment := Comment;
-  Result.Groups := Groups;
-  Result.FileSize := FileSize;
-  Result.Rotation := Rotation;
-  Result.Rating := Rating;
-  Result.Access := Access;
-  Result.Date := Date;
-  Result.Time := Time;
-  Result.IsDate := IsDate;
-  Result.IsTime := IsTime;
-  Result.Crypted := Crypted;
-  Result.KeyWords := KeyWords;
-  Result.InfoLoaded := InfoLoaded;
-  Result.Include := Include;
-  Result.Links := Links;
-  Result.Selected := Selected;
+  Result.Assign(Self, False);
   if Data <> nil then
     Result.Data := Data.Copy
   else
@@ -417,7 +402,7 @@ begin
   Attr := DS.FieldByName('Attr').AsInteger;
   Comment := DS.FieldByName('Comment').AsString;
   Date := DS.FieldByName('DateToAdd').AsDateTime;
-  Time := DS.FieldByName('aTime').AsDateTime;
+  Time := TimeOf(DS.FieldByName('aTime').AsDateTime);
   IsDate := DS.FieldByName('IsDate').AsBoolean;
   IsTime := DS.FieldByName('IsTime').AsBoolean;
   Groups := DS.FieldByName('Groups').AsString;

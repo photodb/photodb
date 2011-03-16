@@ -928,6 +928,8 @@ begin
           CurrentFileName := FileName;
         end;
       end;
+      EXIFSection := TExifData.Create;
+      EXIFSection.LoadFromGraphic(Pic.Graphic);
       FilePassWord := PassWord;
       (ActionForm as TActionsForm).Reset;
       LoadProgramImageFormat(pic);
@@ -1805,6 +1807,7 @@ begin
   F(Buffer);
   F(ImageHistory);
   F(NewActions);
+  F(EXIFSection);
 end;
 
 procedure TImageEditor.ZoomOutLinkClick(Sender: TObject);
@@ -2163,26 +2166,23 @@ begin
                 SetJPEGOptions('ImageEditor');
 
               SetJPEGGraphicSaveOptions('ImageEditor', Image);
+              TJPEGImage(Image).Compress;
 
               try
-                // TODO: fix exif
-                { if EXIFSection<>nil then
-                  begin
-                  if EXIFSection.ExifObj<>nil then
-                  begin
-                  try
-                  EXIFSection.ExifObj.WriteThruInt('Orientation',1); //Normal orientation!!!
-                  EXIFSection.ExifObj.AdjExifSize(CurrentImage.Width, CurrentImage.Height);
-                  except
-                  MessageBoxDB(Handle, PWideChar(Format(CANT_MODIRY_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
+               if not EXIFSection.Empty then
+               begin
+                 EXIFSection.BeginUpdate;
+                 try
+                    EXIFSection.Orientation := toTopLeft;
+                    EXIFSection.ExifImageWidth := Width;
+                    EXIFSection.ExifImageHeight := Height;
+                    EXIFSection.Thumbnail := nil;
+                    Image.SaveToFile(FileName);
+                    EXIFSection.SaveToGraphic(FileName);
+                  finally
+                    EXIFSection.EndUpdate;
                   end;
-                  end;
-                  try
-                  EXIFSection.WriteEXIFJpeg((Image as TJPEGImage),FileName);
-                  except
-                  MessageBoxDB(Handle, PWideChar(Format(CANT_WRITE_EXIF_TO_FILE_F,[FileName])),L('Error'),TD_BUTTON_OK,TD_ICON_ERROR);
-                  end;
-                  end else }
+                end else
                 begin
                   Image.SaveToFile(FileName);
                 end;
