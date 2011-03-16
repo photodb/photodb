@@ -1335,7 +1335,7 @@ begin
   try
     FFileDate := 0;
     try
-      ExifData.LoadFromJPEG(FileName);
+      ExifData.LoadFromGraphic(FileName);
       if not ExifData.Empty then
       begin
         FFileDate := DateOf(ExifData.DateTime);
@@ -2066,7 +2066,7 @@ begin
       ExifData := TExifData.Create;
       try
         try
-          ExifData.LoadFromJPEG(FileName);
+          ExifData.LoadFromGraphic(FileName);
           if not ExifData.Empty then
           begin
 

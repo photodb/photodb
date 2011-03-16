@@ -63,7 +63,7 @@ var
     begin
       ExifData := TExifData.Create;
       try
-        ExifData.LoadFromJPEG(FData.FileName);
+        ExifData.LoadFromGraphic(FData.FileName);
         FProcessingParams.Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
       except
         on e : Exception do
@@ -80,7 +80,7 @@ var
     ExifData := TExifData.Create;
     try
       Stream.Seek(0, soFromBeginning);
-      ExifData.LoadFromJPEG(Stream);
+      ExifData.LoadFromGraphic(Stream);
       ExifData.BeginUpdate;
       try
         ExifData.Orientation := toTopLeft;
@@ -91,7 +91,7 @@ var
         Jpeg := TJpegImage.Create;
         try
           Jpeg.LoadFromStream(Stream);
-          ExifData.SaveToJPEG(Jpeg);
+          ExifData.SaveToGraphic(Jpeg);
           Stream.Size := 0;
           Jpeg.SaveToStream(Stream);
         finally

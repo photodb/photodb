@@ -274,7 +274,6 @@ uses
   uPrivateHelper in 'Units\uPrivateHelper.pas',
   CCR.Exif.Consts in 'External\CCR.Exif\CCR.Exif.Consts.pas',
   CCR.Exif.IPTC in 'External\CCR.Exif\CCR.Exif.IPTC.pas',
-  CCR.Exif.JpegUtils in 'External\CCR.Exif\CCR.Exif.JpegUtils.pas',
   CCR.Exif in 'External\CCR.Exif\CCR.Exif.pas',
   CCR.Exif.StreamHelper in 'External\CCR.Exif\CCR.Exif.StreamHelper.pas',
   CCR.Exif.TagIDs in 'External\CCR.Exif\CCR.Exif.TagIDs.pas',
@@ -308,7 +307,9 @@ uses
   uFrameFreeManualActivation in 'Activation\uFrameFreeManualActivation.pas' {FrameFreeManualActivation: TFrame},
   uFrameActicationSetCode in 'Activation\uFrameActicationSetCode.pas' {FrameActicationSetCode: TFrame},
   uFrameBuyApplication in 'Activation\uFrameBuyApplication.pas' {FrameBuyApplication: TFrame},
-  uSettings in 'Units\uSettings.pas';
+  uSettings in 'Units\uSettings.pas',
+  CCR.Exif.BaseUtils in 'External\CCR.Exif\CCR.Exif.BaseUtils.pas',
+  CCR.Exif.TiffUtils in 'External\CCR.Exif\CCR.Exif.TiffUtils.pas';
 
 {$R *.res}
 

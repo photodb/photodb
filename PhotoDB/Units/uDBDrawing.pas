@@ -55,7 +55,7 @@ begin
     ExifData := TExifData.Create;
     try
       try
-        ExifData.LoadFromJPEG(FileName);
+        ExifData.LoadFromGraphic(FileName);
         if not ExifData.Empty then
         begin
           if ID = 0 then

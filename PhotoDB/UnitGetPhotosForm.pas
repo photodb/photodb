@@ -190,7 +190,7 @@ begin
     begin
       ExifData := TExifData.Create;
       try
-        ExifData.LoadFromJPEG(Files[I - 1]);
+        ExifData.LoadFromGraphic(Files[I - 1]);
         Dates[I] := DateOf(ExifData.DateTime);
       except
         Dates[I] := DateOf(Now);

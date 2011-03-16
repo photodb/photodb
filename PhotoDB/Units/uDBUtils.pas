@@ -685,7 +685,7 @@ begin
       begin
         ExifData := TExifData.Create;
         try
-          ExifData.LoadFromJPEG(FileName);
+          ExifData.LoadFromGraphic(FileName);
           if YearOf(ExifData.DateTime) > 2000 then
           begin
             UpdateDateTime := True;

@@ -207,7 +207,7 @@ begin
       begin
         ExifData := TExifData.Create;
         try
-          ExifData.LoadFromJPEG(FTable.FieldByName('FFileName').AsString);
+          ExifData.LoadFromGraphic(FTable.FieldByName('FFileName').AsString);
           if YearOf(ExifData.DateTime) > 2000 then
             if (FTable.FieldByName('DateToAdd').AsDateTime <> ExifData.DateTime) or
               (FTable.FieldByName('aTime').AsDateTime <> TimeOf(ExifData.DateTime)) then

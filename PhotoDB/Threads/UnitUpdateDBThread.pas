@@ -8,7 +8,7 @@ uses
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
-  uTranslate, ActiveX, CCR.Exif.JPEGUtils, uActivationUtils, uSettings,
+  uTranslate, ActiveX, uActivationUtils, uSettings,
   UnitDBKernel, uAssociations;
 
 type
@@ -164,9 +164,9 @@ begin
     try
       Date := 0;
       try
-        if HasJPEGHeader(Path) then
-        begin
-          ExifData.LoadFromJPEG(Path);
+        ExifData.LoadFromGraphic(Path);
+        if not ExifData.Empty then
+        begin;
           Date := DateOf(ExifData.DateTime);
           Time := TimeOf(ExifData.DateTime);
           Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));

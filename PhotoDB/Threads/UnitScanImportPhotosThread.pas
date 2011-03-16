@@ -168,7 +168,7 @@ begin
     SetPosition(I + 1);
     ExifData := TExifData.Create;
     try
-      ExifData.LoadFromJPEG(FFiles[I]);
+      ExifData.LoadFromGraphic(FFiles[I]);
     except
     end;
     if not ExifData.Empty then

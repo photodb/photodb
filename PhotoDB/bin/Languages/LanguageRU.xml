@@ -442,8 +442,7 @@
     <translate name="Copyright" value="Права" />
     <translate name="Make" value="Производитель" />
     <translate name="Model" value="Модель" />
-    <translate name="Not avaliable" value="Не доступно" />	
-    <translate name="Add file" value="Добавить" />
+    <translate name="Not avaliable" value="Не доступно" />
   </scope>
   <scope name="Search">
     <translate name="More than" value="Больше чем" />
