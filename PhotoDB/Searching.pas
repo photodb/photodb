@@ -111,9 +111,6 @@ type
     Setvalue1: TMenuItem;
     ImageList1: TImageList;
     HelpTimer: TTimer;
-    SearchPanelB: TPanel;
-    PbProgress: TDmProgress;
-    Label7: TLabel;
     pnDateRange: TPanel;
     PopupMenu8: TPopupMenu;
     OpeninExplorer1: TMenuItem;
@@ -422,6 +419,11 @@ type
     FW7TaskBar : ITaskbarList3;
     FCanBackgroundSearch: Boolean;
     FMoreThan, FLessThan: string;
+    FEstimateCount: Integer;
+    FProgressValue: Extended;
+    FIsEstimatingActive: Boolean;
+    FIsSearchingActive: Boolean;
+    FLastProgressState: TBPF;
     function HintRealA(Info : TDBPopupMenuInfoRecord) : Boolean;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
@@ -457,10 +459,17 @@ type
     procedure LoadDataPacket(Packet : TDBPopupMenuInfo);
     procedure EmptyFillListInfo;
     procedure StartSearchThread(IsEstimate : Boolean);
-    procedure StartLoadingList;
     procedure StopLoadingList;
-    procedure UpdateQueryEstimateCount(Count : Integer);
     procedure ReloadBigImages;
+
+    procedure NotifySearchingStart;
+    procedure NotifySearchingEnd;
+    procedure NitifyEstimateStart;
+    procedure NitifyEstimateEnd;
+    procedure UpdateEstimateState(EstimateCount: Integer);
+    procedure UpdateProgressState(ProgressValue: Extended);
+    procedure UpdateSearchState;
+    procedure UpdateVistaProgressState(State: TBPF);
   published
     { Public declarations }
     property SortMethod : Integer read GetSortMethod;
@@ -534,15 +543,10 @@ begin
 
   WlStartStop.OnClick:= BreakOperation;
   WlStartStop.Text:= L('Stop');
-  PbProgress.Text:= L('Stopping') + '...';
-  Label7.Caption := L('Calculating') + '...';
   If Creating then Exit;
 
   ClearItems;
   FBitmapImageList.Clear;
-  PbProgress.Text := L('Initialize') + '...';
-  PbProgress.Position := 0;
-  PbProgress.Text := L('Query executing') + '...';
 
   ElvMain.ShowGroupMargins := Settings.Readbool('Options', 'UseGroupsInSearch', True);
 
@@ -603,6 +607,7 @@ var
   MainMenuScript : string;
   Ico : TIcon;
 begin
+  FLastProgressState := TBPF_NOPROGRESS;
   Captions[0] := L('System query');
   Captions[1] := L('Show deleted items');
   Captions[2] := L('Show duplicates');
@@ -1293,11 +1298,8 @@ begin
   StopLoadingList;
   if TbStopOperation.Enabled then
     TbStopOperation.Click;
-  PbProgress.Text := L('Stoping') + '...';
   WlStartStop.Onclick := DoSearchNow;
   WlStartStop.Text := L('Search');
-  PbProgress.Text := L('Done');
-  PbProgress.Position := 0;
   ElvMain.Show;
   BackGroundSearchPanel.Hide;
   ElvMain.Groups.EndUpdate;
@@ -1672,8 +1674,6 @@ begin
     DestroyIcon(SearchIcon);
   end;
   WlStartStop.Text := L('Search');
-  Label7.Caption := L('No results');
-  PbProgress.Text := L('No results');
   SaveWindowPos1.Key := RegRoot + 'Searching';
   SaveWindowPos1.SetPosition;
   SortLink.UseSpecIconSize := True;
@@ -2304,6 +2304,7 @@ begin
   Memo1Change(Sender);
 end;
 
+
 procedure TSearchForm.Comentnotsets1Click(Sender: TObject);
 begin
   Memo2.readonly := True;
@@ -2341,7 +2342,6 @@ begin
     LabelBackGroundSearching.Caption := L('Please, wait - search in progress...');
     Label1.Caption := L('Search text');
     Label2.Caption := L('ID');
-    Label7.Caption := L('Result');
     Label8.Caption := L('Rating');
 
     Label4.Caption := L('Size');
@@ -3005,7 +3005,6 @@ begin
     BeginScreenUpdate(PropertyPanel.Handle);
     try
       PropertyPanel.Show;
-      SearchPanelB.Top := PropertyPanel.Top - 1;
     finally
       EndScreenUpdate(PropertyPanel.Handle, False);
     end;
@@ -3905,10 +3904,11 @@ end;
 
 procedure TSearchForm.TbStopOperationClick(Sender: TObject);
 begin
-  if tbStopOperation.Enabled then
+  if TbStopOperation.Enabled then
   begin
     BreakOperation(Sender);
     NewFormState;
+    NotifySearchingEnd;
   end;
 end;
 
@@ -4831,34 +4831,17 @@ begin
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 
-procedure TSearchForm.StartLoadingList;
-begin
-  LsData.BringToFront;
-  LsData.Top := ElvMain.Top + 3;
-  LsData.Left := ElvMain.Left + ElvMain.Width - 16 - 2 - 3 - GetSystemMetrics(SM_CXVSCROLL);
-  LsData.Color := ElvMain.Color;
-  LsData.Show;
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
-end;
-
 procedure TSearchForm.StopLoadingList;
 begin
-  LsData.Hide;
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
-  TbStopOperation.Enabled := False;
   NewFormState;
+  TbStopOperation.Enabled := False;
+  NotifySearchingEnd;
 end;
 
 procedure TSearchForm.SearchEditChange(Sender: TObject);
 begin
   if not FCanBackgroundSearch then
     Exit;
-  WlStartStop.Text := L('Search');
-  LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
-  LsSearchResults.Color := SearchPanelA.Color;
-  LsSearchResults.Show;
 
   TmrSearchResultsCount.Enabled := False;
   TmrSearchResultsCount.Enabled := True;
@@ -4870,23 +4853,132 @@ begin
   StartSearchThread(True)
 end;
 
-procedure TSearchForm.UpdateQueryEstimateCount(Count: Integer);
-var
-  Counter : string;
-begin
-  LsSearchResults.Hide;
-  if Count > 1000 then
-    Counter := '1000+'
-  else
-    Counter := IntToStr(Count);
-
-  WlStartStop.Text := Format(L('Search (%s results)'), [Counter]);
-end;
-
 procedure TSearchForm.elvDateRangeItemSelectionChanged(
   Sender: TCustomEasyListview; Item: TEasyItem);
 begin
   SearchEditChange(Sender);
+end;
+
+procedure TSearchForm.NitifyEstimateStart;
+begin
+  if FIsEstimatingActive <> True then
+  begin
+    FIsEstimatingActive := True;
+    UpdateSearchState;
+  end;
+end;
+
+procedure TSearchForm.NitifyEstimateEnd;
+begin
+  if FIsEstimatingActive <> False then
+  begin
+    FIsEstimatingActive := False;
+    UpdateSearchState;
+  end;
+end;
+
+procedure TSearchForm.NotifySearchingStart;
+begin
+  if FIsSearchingActive <> True then
+  begin
+    FIsSearchingActive := True;
+    FProgressValue := -1;
+    UpdateSearchState;
+  end;
+end;
+
+procedure TSearchForm.NotifySearchingEnd;
+begin
+  if FIsSearchingActive <> False then
+  begin
+    FIsSearchingActive := False;
+    UpdateSearchState;
+  end;
+end;
+
+procedure TSearchForm.UpdateEstimateState(EstimateCount: Integer);
+begin
+  if FEstimateCount <> EstimateCount then
+  begin
+    FEstimateCount := EstimateCount;
+    UpdateSearchState;
+  end;
+end;
+
+procedure TSearchForm.UpdateProgressState(ProgressValue: Extended);
+begin
+  if FProgressValue <> ProgressValue then
+  begin
+    FProgressValue := ProgressValue;
+    UpdateSearchState;
+  end;
+end;
+
+procedure TSearchForm.UpdateSearchState;
+var
+  Counter : string;
+begin
+  if FIsSearchingActive then
+  begin
+    if FProgressValue < 0 then
+    begin
+      WlStartStop.Text := L('Stop');
+      LsData.BringToFront;
+      LsData.Top := ElvMain.Top + 3;
+      LsData.Left := ElvMain.Left + ElvMain.Width - 16 - 2 - 3 - GetSystemMetrics(SM_CXVSCROLL);
+      LsData.Color := ElvMain.Color;
+      LsData.Show;
+      UpdateVistaProgressState(TBPF_INDETERMINATE);
+    end else
+    begin
+      if FW7TaskBar <> nil then
+      begin
+        UpdateVistaProgressState(TBPF_NORMAL);
+        FW7TaskBar.SetProgressValue(Handle, Max(0, Min(100, Round(FProgressValue))), 100);
+      end;
+      WlStartStop.Text := Format(L('Stop (%s%%)'), [FormatFloat('##0.0', FProgressValue)]);
+      LsData.BringToFront;
+      LsData.Top := ElvMain.Top + 3;
+      LsData.Left := ElvMain.Left + ElvMain.Width - 16 - 2 - 3 - GetSystemMetrics(SM_CXVSCROLL);
+      LsData.Color := ElvMain.Color;
+      LsData.Show;
+    end;
+  end else if FIsEstimatingActive then
+  begin
+    WlStartStop.Text := L('Search');
+    LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
+    LsSearchResults.Color := SearchPanelA.Color;
+    LsSearchResults.Show;
+  end else
+  begin
+    LsSearchResults.Hide;
+    WlStartStop.Text := L('Search');
+    LsData.Hide;
+    UpdateVistaProgressState(TBPF_NOPROGRESS);
+    if FEstimateCount > 1000 then
+      Counter := '1000+'
+    else if FEstimateCount > -1 then
+      Counter := IntToStr(FEstimateCount)
+    else
+      Counter := '';
+
+    if Counter <> '' then
+      WlStartStop.Text := Format(L('Search (%s results)'), [Counter])
+    else
+      WlStartStop.Text := (L('Search'));
+  end;
+end;
+
+procedure TSearchForm.UpdateVistaProgressState(State: TBPF);
+begin
+  if FW7TaskBar <> nil then
+  begin
+    if FLastProgressState <> State then
+    begin
+      FW7TaskBar.SetProgressState(Handle, State);
+      FLastProgressState := State;
+    end;
+  end;
 end;
 
 initialization

@@ -19,7 +19,6 @@ type
     FVisibleFiles : TArStrings;
     BoolParam : Boolean;
     StrParam : string;
-    OldInformationText : string;
     IntParam : Integer;
     BitmapParam : TBitmap;
     FI : Integer;
@@ -40,7 +39,6 @@ type
     procedure GetVisibleFiles;
     procedure FileNameExists;
     procedure InitializeLoadingBigImages;
-    procedure SetProgressPosition;
     procedure ReplaceBigBitmap;
     procedure EndLoading;
     property ImageFileName : string read FImageFileName write FImageFileName;
@@ -124,8 +122,6 @@ begin
 
       FI := I + 1;
       IntParam := FI;
-
-      SynchronizeEx(SetProgressPosition);
     end;
 
     if ProcessorCount > 1 then
@@ -213,12 +209,7 @@ procedure TSearchBigImagesLoaderThread.InitializeLoadingBigImages;
 begin
   with (FSender as TSearchForm) do
   begin
-    PbProgress.Position := 0;
-    PbProgress.MaxValue := Intparam;
     // Saving text information
-    OldInformationText := Label7.Caption;
-    Label7.Caption := L('Loading previews');
-    PbProgress.Text := Format(L('Loading previews (%s)'), [IntToStr(Intparam)]);
     (FSender as TSearchForm).TbStopOperation.Enabled := True;
   end;
 end;
@@ -236,13 +227,6 @@ end;
 procedure TSearchBigImagesLoaderThread.GetVisibleFiles;
 begin
   FVisibleFiles := (FSender as TSearchForm).GetVisibleItems;
-end;
-
-procedure TSearchBigImagesLoaderThread.SetProgressPosition;
-begin
-  (FSender as TSearchForm).PbProgress.MaxValue := FData.Count;
-  (FSender as TSearchForm).PbProgress.Position := IntParam;
-  (FSender as TSearchForm).PbProgress.Text := TA('Progress... (&%%)');
 end;
 
 procedure TSearchBigImagesLoaderThread.ReplaceBigBitmap;
@@ -268,10 +252,6 @@ begin
   if (FSender as TSearchForm).TbStopOperation.Enabled then
   begin
     (FSender as TSearchForm).TbStopOperation.Click;
-    (FSender as TSearchForm).PbProgress.Text := L('Done');
-    (FSender as TSearchForm).Label7.Caption := OldInformationText;
-    (FSender as TSearchForm).PbProgress.Position := 0;
-    (FSender as TSearchForm).PbProgress.MaxValue := 1;
   end;
 end;
 

@@ -47,13 +47,13 @@ object SearchForm: TSearchForm
     TabOrder = 0
     object PropertyPanel: TPanel
       Left = 1
-      Top = 397
+      Top = 396
       Width = 178
       Height = 326
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
-      TabOrder = 4
+      TabOrder = 3
       Visible = False
       DesignSize = (
         178
@@ -330,61 +330,13 @@ object SearchForm: TSearchForm
     end
     object ExplorerPanel: TPanel
       Left = 1
-      Top = 723
+      Top = 722
       Width = 178
       Height = 15
       Align = alClient
       ParentColor = True
-      TabOrder = 3
-      Visible = False
-    end
-    object SearchPanelB: TPanel
-      Left = 1
-      Top = 396
-      Width = 178
-      Height = 1
-      Align = alTop
-      BevelOuter = bvNone
-      ParentColor = True
-      ParentShowHint = False
-      PopupMenu = PopupMenu1
-      ShowHint = True
       TabOrder = 2
-      DesignSize = (
-        178
-        1)
-      object Label7: TLabel
-        Left = 8
-        Top = 2
-        Width = 30
-        Height = 13
-        Caption = 'Result'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsUnderline]
-        ParentFont = False
-      end
-      object PbProgress: TDmProgress
-        Left = 8
-        Top = 18
-        Width = 167
-        Height = 18
-        Anchors = [akLeft, akTop, akRight]
-        MaxValue = 100
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        Text = 'Progress... (&%%)'
-        BorderColor = 38400
-        CoolColor = 38400
-        Color = clBlack
-        View = dm_pr_cool
-        Inverse = False
-      end
+      Visible = False
     end
     object pnDateRange: TPanel
       Left = 1

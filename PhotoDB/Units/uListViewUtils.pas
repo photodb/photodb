@@ -163,7 +163,7 @@ begin
     begin
       if TBitmap(Graphic).PixelFormat = pf32Bit then
       begin
-        R := Rect(5, TBitmap(Graphic).Height - 22, TBitmap(Graphic).Width, TBitmap(Graphic).Height- 3);
+        R := Rect(6, TBitmap(Graphic).Height - 22, TBitmap(Graphic).Width, TBitmap(Graphic).Height - 3);
         TBitmap(Graphic).Canvas.Font := ListView.Font;
         DrawText(TBitmap(Graphic).Canvas.Handle, PChar(CustomInfo), Length(CustomInfo), R, DrawTextOpt or DT_CALCRECT);
         SelectionRect := R;

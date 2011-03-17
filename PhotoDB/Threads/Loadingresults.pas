@@ -45,18 +45,12 @@ type
     procedure DoOnDone;
     procedure AddWideSearchOptions(Params : TDBQueryParams);
     procedure AddOptions(SqlParams : TDBQueryParams);
-    procedure SetProgressText(Value : String);
-    procedure SetProgressTextA;
-    procedure SetMaxValue(Value : Integer);
-    procedure SetMaxValueA;
-    procedure SetProgress(Value : Integer);
-    procedure SetProgressA;
-//    procedure DoSetSearchByComparing;
     procedure ApplyFilter(Params : TDBQueryParams; Attr : Integer);
     procedure GetPassForFile;
     procedure StartLoadingList;
     procedure SetPercentProgress(Value: Extended);
     procedure SetPercentProgressSync;
+    procedure NotifySearchEnd;
   protected
     RatingParam, LastMonth, LastYear, LastRating : integer;
     FData : TDBPopupMenuInfo;
@@ -70,6 +64,8 @@ type
     procedure AddItem(S : TDataSet);
     procedure LoadTextQuery(QueryParams : TDBQueryParams);  
     procedure DoScanSimilarFiles(QueryParams : TDBQueryParams);
+    procedure NitifyEstimateStart;
+    procedure NitifyEstimateEnd;
   public
     constructor Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
     destructor Destroy; override;
@@ -107,6 +103,11 @@ begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
+    if FSearchParams.IsEstimate then
+      SynchronizeEx(NitifyEstimateStart)
+    else
+      SynchronizeEx(StartLoadingList);
+
     try
       //#8 - invalid query identify, needed from script executing
       if FSearchParams.Query = #8 then
@@ -122,7 +123,11 @@ begin
       end;
     finally
       if not FSearchParams.IsEstimate then
+      begin
+        SynchronizeEx(NotifySearchEnd);
         SynchronizeEx(DoOnDone);
+      end else
+        SynchronizeEx(NitifyEstimateEnd);
     end;
   finally
     CoUninitialize;
@@ -317,11 +322,8 @@ begin
     FSpecQuery := GetQuery;
     try
       SetLength(IthIds, 0);
-      SetProgressText(TA('Converting...'));
-
       // AllocImThBy
-
-      SetMaxValue(Length(ImThs) div AllocImThBy);
+      //SetMaxValue(Length(ImThs) div AllocImThBy);
 
       L := Length(ImThs);
       N := Trunc(L / AllocImThBy);
@@ -354,7 +356,7 @@ begin
           IthIds[Length(IthIds) - 1] := FSpecQuery.FieldByName('ID').AsInteger;
           FSpecQuery.Next;
         end;
-        SetProgress(J - 1);
+        //SetProgress(J - 1);
       end;
     finally  
       FreeDS(FSpecQuery);
@@ -602,50 +604,6 @@ begin
   Params.Query := Params.Query + Result;
 end;
 
-procedure SearchThread.SetMaxValue(Value: Integer);
-begin
-  IntParam := Value;
-  SynchronizeEx(SetMaxValueA);
-end;
-
-procedure SearchThread.SetMaxValueA;
-begin
-  (ThreadForm as TSearchForm).PbProgress.MaxValue := IntParam;
-end;
-
-procedure SearchThread.SetPercentProgress(Value: Extended);
-begin
-  ExtendedParam := Value;
-  SynchronizeEx(SetPercentProgressSync);
-end;
-
-procedure SearchThread.SetPercentProgressSync;
-begin
-  (ThreadForm as TSearchForm).WlStartStop.Text:= L('Stop') + ' ' + FloatToStrEx(ExtendedParam, 1) + '%';
-end;
-
-procedure SearchThread.SetProgress(Value: Integer);
-begin
-  IntParam := Value;
-  SynchronizeEx(SetProgressA);
-end;
-
-procedure SearchThread.SetProgressA;
-begin
-  (ThreadForm as TSearchForm).PbProgress.Position := IntParam;
-end;
-
-procedure SearchThread.SetProgressText(Value: String);
-begin
-  StrParam := Value;
-  SynchronizeEx(SetProgressTextA);
-end;
-
-procedure SearchThread.SetProgressTextA;
-begin
-  (ThreadForm as TSearchForm).PbProgress.Text := StrParam;
-end;
-
 procedure SearchThread.AddOptions(SqlParams : TDBQueryParams);
 var
   SortDirection : string;
@@ -690,20 +648,20 @@ var
   QueryParams: TDBQueryParams;
 
 begin
-  if not FSearchParams.IsEstimate then
-    SynchronizeEx(StartLoadingList);
-    
   QueryParams := CreateQuery;
   try
     if FSearchParams.IsEstimate and not QueryParams.CanBeEstimated then
-      Exit;
+    begin
+      IntParam := -1;
+      SynchronizeEx(UpdateQueryEstimateCount);
+    end;
       
     if QueryParams.QueryType = QT_TEXT then
       LoadTextQuery(QueryParams);
                
     if QueryParams.QueryType = QT_W_SCAN_FILE then
       DoScanSimilarFiles(QueryParams);
-        
+
   finally
     F(QueryParams);
   end; 
@@ -715,6 +673,7 @@ var
   Counter: Integer;
   FLastPacketTime: Cardinal;
 begin
+  SetPercentProgress(-1);
   FWorkQuery := GetQuery(FSearchParams.IsEstimate);
   try
 
@@ -985,6 +944,16 @@ begin
   end;
 end;
 
+procedure SearchThread.NitifyEstimateStart;
+begin
+  (ThreadForm as TSearchForm).NitifyEstimateStart;
+end;
+
+procedure SearchThread.NitifyEstimateEnd;
+begin
+  (ThreadForm as TSearchForm).NitifyEstimateEnd;
+end;
+
 procedure SearchThread.SendDataPacketToForm;
 begin
   (ThreadForm as TSearchForm).LoadDataPacket(FData);
@@ -992,12 +961,28 @@ end;
 
 procedure SearchThread.StartLoadingList;
 begin
-  (ThreadForm as TSearchForm).StartLoadingList;
+  (ThreadForm as TSearchForm).NotifySearchingStart;
+end;
+
+procedure SearchThread.NotifySearchEnd;
+begin
+  (ThreadForm as TSearchForm).NotifySearchingEnd;
 end;
 
 procedure SearchThread.UpdateQueryEstimateCount;
 begin
-  (ThreadForm as TSearchForm).UpdateQueryEstimateCount(IntParam);
+  (ThreadForm as TSearchForm).UpdateEstimateState(IntParam);
+end;
+
+procedure SearchThread.SetPercentProgress(Value: Extended);
+begin
+  ExtendedParam := Value;
+  SynchronizeEx(SetPercentProgressSync);
+end;
+
+procedure SearchThread.SetPercentProgressSync;
+begin
+  (ThreadForm as TSearchForm).UpdateProgressState(ExtendedParam);
 end;
 
 end.
