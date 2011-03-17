@@ -68,7 +68,7 @@ var
   LoadIconDLG: TOpenDialog;
   FN: string;
   index: Integer;
-  ResIcoNameW, IcoTempNameW: PWideChar;
+  ResIcoNameW: PWideChar;
   Update: DWORD;
   Ig: TPIconGroup;
 
@@ -100,7 +100,7 @@ var
         end;
       end;
       if Language <> 0 then
-        SaveIconGroupResourceW(Update, ResIcoNameW, Language, IcoTempNameW)
+        SaveIconGroupResourceW(Update, ResIcoNameW, Language, PWideChar(IcoTempName))
       else
       begin
         EndUpdateResourceW(Update, True);
@@ -133,8 +133,6 @@ begin
         if ChangeIconDialog(Application.Handle, FN, index) then
         begin
           IcoTempName := C_GetTempPathIco + IntToStr(Random(10000000)) + '.ico';
-          GetMem(IcoTempNameW, 2048);
-          IcoTempNameW := StringToWideChar(IcoTempName, IcoTempNameW, 2048);
           FindIconEx(FN, index);
           Result := TIcon.Create;
           Result.LoadFromFile(IcoTempName);
@@ -221,8 +219,8 @@ end;
 
 procedure TSaveQueryThread.Done;
 begin
- FOwner.OnCloseQuery:=nil;
- FOwner.Close;
+  FOwner.OnCloseQuery := nil;
+  FOwner.Close;
 end;
 
 procedure TSaveQueryThread.Execute;
@@ -392,7 +390,7 @@ begin
         NewIcon.SaveToFile(OutIconName);
         NewIcon.Free;
 
-        ReplaceIcon(ExtractFilePath(FFileName) + SaveToDBName + '.exe', StringToPWide(OutIconName),
+        ReplaceIcon(ExtractFilePath(FFileName) + SaveToDBName + '.exe', PWideChar(OutIconName),
           OriginalIconLanguage);
         try
           if FileExists(OutIconName) then

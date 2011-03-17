@@ -1440,7 +1440,7 @@ begin
       Image.Assign(Bitmap);
       Bitmap.Width := Image.Height;
       Bitmap.Height := Image.Width;
-      SetLength(PA, Image.Width);
+      SetLength(PA32, Image.Height);
       for I := 0 to Bitmap.Height - 1 do
         PA32[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
       for I := 0 to Image.Height - 1 do

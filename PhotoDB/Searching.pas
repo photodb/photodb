@@ -489,7 +489,8 @@ var
 
 implementation
 
-uses  UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
+uses
+  UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
   PropertyForm, Options, UnitLoadFilesToPanel,
   UnitHintCeator, UnitImHint, ExplorerUnit, UnitUpdateDB,
   UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
@@ -3264,28 +3265,26 @@ procedure TSearchForm.EasyListViewItemThumbnailDraw(
 var
   Data : TDBPopupMenuInfoRecord;
   Y : Integer;
+  CustomInfo: string;
+  Extension: TSearchDataExtension;
 begin
   if FListUpdating or (Item.Data = nil) then
     Exit;
-
-{ //TODO:
-  if (Data.CompareResult.ByGistogramm > 0) or (Data.CompareResult.ByPixels > 0) then
-  begin
-    DrawIconEx(TmpBitmap.Canvas.Handle, FPictureSize-16, TmpBitmap.Height - 18, UnitDBKernel.Icons[DB_IC_DUBLICAT+1], 16, 16, 0, 0, DI_NORMAL);
-    TmpStr := Format('%d%%\%d%%', [Round(Data.CompareResult.ByPixels), Round(Data.CompareResult.ByGistogramm)]);
-    R1 := Rect(fPictureSize - 16 - TmpBitmap.Canvas.TextWidth(TmpStr) - 3, TmpBitmap.Height - 16,fPictureSize - 16, TmpBitmap.Height);
-    DrawTextA(TmpBitmap.Canvas.Handle, PWideChar(TmpStr), Length(TmpStr), R1, DT_VCENTER + DT_CENTER);
-  end; }
 
   if Item.ImageIndex < 0 then
     Exit;
 
   Data := GetSearchRecordFromItemData(Item);
+  CustomInfo := '';
+
+  Extension := TSearchDataExtension(Data.Data);
+  if (Extension.CompareResult.ByGistogramm > 0) or (Extension.CompareResult.ByPixels > 0) then
+    CustomInfo := Format('%d%%', [Round((Extension.CompareResult.ByPixels * 8 + Extension.CompareResult.ByGistogramm * 2) / 10)]);
 
   DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
                      FBitmapImageList, Y,
                      True, Data.ID, Data.FileName, Data.Rating, Data.Rotation,
-                     Data.Access, Data.Crypted, Data.Exists);
+                     Data.Access, Data.Crypted, Data.Exists, CustomInfo);
 
 end;
 
@@ -4400,10 +4399,8 @@ begin
 
   DS := GetQuery(True);
 
-  TADOQuery(DS).CursorType := ctOpenForwardOnly;
-  TADOQuery(DS).CursorLocation := clUseClient;
+  ForwardOnlyQuery(DS);
   TADOQuery(DS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
-  TADOQuery(DS).LockType := ltReadOnly;
   SetSQL(DS, 'SELECT DISTINCT DateToAdd FROM $DB$ WHERE IsDate = True ORDER BY DateToAdd DESC');
   TADOQuery(DS).OnFetchProgress := FetchProgress;
 

@@ -5,7 +5,18 @@ interface
 uses
   Windows, SysUtils, Classes, Graphics, Jpeg, Math, uConstants,
   UnitDBCommonGraphics, GraphicsBaseTypes, uDBGraphicTypes, uAssociations,
-  RAWImage;
+  RAWImage, uMemory;
+
+type
+  TCompareArray = array [0 .. 99, 0 .. 99, 0 .. 2] of Integer;
+
+  TCompareImageInfo = class
+  public
+    X2_0, X2_90, X2_180, X2_270: TCompareArray;
+    B2_0: TBitmap;
+    constructor Create(Image: TGraphic; Quick, FSpsearch_ScanFileRotate: Boolean);
+    destructor Destroy; override;
+  end;
 
 function MixColors(Color1, Color2: TColor; Percent: Integer): TColor;
 function MakeDarken(BaseColor : TColor; Multiply : Extended) : TColor; overload;
@@ -15,6 +26,8 @@ procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
 function ColorDiv2(Color1, COlor2: TColor): TColor;
 function ColorDarken(Color: TColor): TColor;
 function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
+  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
+function CompareImagesEx(Image1: TGraphic; Image2Info: TCompareImageInfo; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
 function IsRAWImageFile(FileName : String) : Boolean;
 
@@ -385,38 +398,111 @@ begin
   Result := Round(Power(101, ResultExt / 10000) - 1); // Result in 0..100
 end;
 
-function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
-  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
-type
-  TCompareArray = array [0 .. 99, 0 .. 99, 0 .. 2] of Integer;
+procedure FillArray(Image: TBitmap; var AArray: TCompareArray);
 var
-  B1, B2, B1_, B2_0: TBitmap;
-  X1, X2_0, X2_90, X2_180, X2_270: TCompareArray;
-  I: Integer;
-  Res: array [0 .. 3] of TImageCompareResult;
-
-  procedure FillArray(Image: TBitmap; var AArray: TCompareArray);
-  var
-    I, J: Integer;
-    P: Pargb;
+  I, J: Integer;
+  P: Pargb;
+begin
+  for I := 0 to 99 do
   begin
-    for I := 0 to 99 do
+    P := Image.ScanLine[I];
+    for J := 0 to 99 do
     begin
-      P := Image.ScanLine[I];
-      for J := 0 to 99 do
-      begin
-        AArray[I, J, 0] := P[J].R;
-        AArray[I, J, 1] := P[J].G;
-        AArray[I, J, 2] := P[J].B;
-      end;
+      AArray[I, J, 0] := P[J].R;
+      AArray[I, J, 1] := P[J].G;
+      AArray[I, J, 2] := P[J].B;
     end;
   end;
+end;
+
+//TODO: speed up!!!
+function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
+  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
+var
+  CI: TCompareImageInfo;
+
+begin
+  if Image2.Empty then
+  begin
+    Result.ByGistogramm := 0;
+    Result.ByPixels := 0;
+    Exit;
+  end;
+  CI := TCompareImageInfo.Create(Image2, Quick, FSpsearch_ScanFileRotate);
+  try
+    Result := CompareImagesEx(Image1, CI, Rotate, FSpsearch_ScanFileRotate, Quick, Raz);
+  finally
+    F(CI);
+  end;
+end;
+
+{ TCompareImageInfo }
+
+constructor TCompareImageInfo.Create(Image: TGraphic; Quick, FSpsearch_ScanFileRotate: Boolean);
+var
+  B2: TBitmap;
+begin
+  B2_0 := TBitmap.Create;
+  B2_0.PixelFormat := pf24bit;
+
+  B2 := TBitmap.Create;
+  try
+    B2.PixelFormat := pf24bit;
+    B2.Assign(Image);
+
+    if Quick then
+    begin
+      if (B2.Width = 100) and (B2.Height = 100) then
+      begin
+        B2_0.Assign(B2);
+      end else
+        StretchA(100, 100, B2, B2_0);
+
+      FillArray(B2_0, X2_0);
+    end else
+    begin
+      if (B2.Width >= 100) and (B2.Height >= 100) then
+        StretchCool(100, 100, B2, B2_0)
+      else
+        Interpolate(0, 0, 100, 100, Rect(0, 0, B2.Width, B2.Height), B2, B2_0);
+
+      FillArray(B2_0, X2_0);
+    end;
+  finally
+    B2.Free;
+  end;
+
+  if FSpsearch_ScanFileRotate then
+  begin
+    Rotate90A(B2_0);
+    FillArray(B2_0, X2_90);
+    Rotate90A(B2_0);
+    FillArray(B2_0, X2_180);
+    Rotate90A(B2_0);
+    FillArray(B2_0, X2_270);
+  end;
+end;
+
+destructor TCompareImageInfo.Destroy;
+begin
+  F(B2_0);
+  inherited;
+end;
+
+function CompareImagesEx(Image1: TGraphic; Image2Info: TCompareImageInfo; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
+  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
+var
+  B1, B1_: TBitmap;
+  X1: TCompareArray;
+  I: Integer;
+  Res: array [0 .. 3] of TImageCompareResult;
 
   function CmpImages(Image1, Image2: TCompareArray): Byte;
   var
     X: TCompareArray;
     I, J, K: Integer;
-    Diff, ResultExt: Extended;
+    ResultExt: Extended;
+    Diff: Integer;
   begin
     ResultExt := 10000;
     for I := 0 to 99 do
@@ -429,14 +515,14 @@ var
     for I := 0 to 99 do
       for J := 0 to 99 do
       begin
-        Diff := Round(Sqrt(Sqr(0.3 * X[I, J, 0]) + Sqr(0.58 * X[I, J, 1]) + Sqr(0.11 * X[I, J, 2])));
+        Diff :=  (X[I, J, 0] * 77 + X[I, J, 1] * 151 + X[I, J, 2] * 28) shr 8;
         if Diff > Raz then
-          ResultExt := ResultExt * (1 - Diff / 1024);
-        if Diff = 0 then
-          ResultExt := ResultExt * 1.05;
-        if Diff = 1 then
-          ResultExt := ResultExt * 1.01;
-        if Diff < 10 then
+          ResultExt := ResultExt * (1 - Diff / 1024)
+        else if Diff = 0 then
+          ResultExt := ResultExt * 1.05
+        else if Diff = 1 then
+          ResultExt := ResultExt * 1.01
+        else if Diff < 10 then
           ResultExt := ResultExt * 1.001;
       end;
     if ResultExt > 10000 then
@@ -445,76 +531,55 @@ var
   end;
 
 begin
-  if Image1.Empty or Image2.Empty then
-  begin
-    Result.ByGistogramm := 0;
-    Result.ByPixels := 0;
+  Result.ByGistogramm := 0;
+  Result.ByPixels := 0;
+  if Image1.Empty then
     Exit;
-  end;
-  B1 := TBitmap.Create;
-  B2 := TBitmap.Create;
-  B1.PixelFormat := Pf24bit;
-  B2.PixelFormat := Pf24bit;
-  B1.Assign(Image1);
-  B2.Assign(Image2);
 
   B1_ := TBitmap.Create;
-  B2_0 := TBitmap.Create;
-  B1_.PixelFormat := Pf24bit;
-  B2_0.PixelFormat := Pf24bit;
-  if Quick then
-  begin
-    if (B1.Width = 100) and (B1.Height = 100) then
-    begin
-      B1_.Assign(B1);
-    end
-    else
-      StretchA(100, 100, B1, B1_);
-    B1.Free;
-    FillArray(B1_, X1);
-    if (B2.Width = 100) and (B2.Height = 100) then
-    begin
-      B2_0.Assign(B2);
-    end
-    else
-      StretchA(100, 100, B2, B2_0);
-    B2.Free;
-    FillArray(B2_0, X2_0);
-  end
-  else
-  begin
-    if (B1.Width >= 100) and (B1.Height >= 100) then
-      StretchCool(100, 100, B1, B1_)
-    else
-      Interpolate(0, 0, 100, 100, Rect(0, 0, B1.Width, B1.Height), B1, B1_);
-    B1.Free;
-    FillArray(B1_, X1);
-    if (B2.Width >= 100) and (B2.Height >= 100) then
-      StretchCool(100, 100, B2, B2_0)
-    else
-      Interpolate(0, 0, 100, 100, Rect(0, 0, B2.Width, B2.Height), B2, B2_0);
-    B2.Free;
-    FillArray(B2_0, X2_0);
+  try
+    B1_.PixelFormat := pf24bit;
+
+    B1 := TBitmap.Create;
+    try
+      B1.PixelFormat := pf24bit;
+      AssignGraphic(B1, Image1);
+
+      if Quick then
+      begin
+        if (B1.Width = 100) and (B1.Height = 100) then
+        begin
+          AssignBitmap(B1_, B1);
+        end else
+          StretchA(100, 100, B1, B1_);
+
+        FillArray(B1_, X1);
+
+      end else
+      begin
+        if (B1.Width >= 100) and (B1.Height >= 100) then
+          StretchA(100, 100, B1, B1_)
+        else
+          Interpolate(0, 0, 100, 100, Rect(0, 0, B1.Width, B1.Height), B1, B1_);
+
+        FillArray(B1_, X1);
+      end;
+    finally
+      F(B1);
+    end;
+    if not Quick then
+      Result.ByGistogramm := CompareImagesByGistogramm(B1_, Image2Info.B2_0);
+
+  finally
+    F(B1_);
   end;
-  if not Quick then
-    Result.ByGistogramm := CompareImagesByGistogramm(B1_, B2_0);
-  B1_.Free;
+
+  Res[0].ByPixels := CmpImages(X1, Image2Info.X2_0);
   if FSpsearch_ScanFileRotate then
   begin
-    Rotate90A(B2_0);
-    FillArray(B2_0, X2_90);
-    Rotate90A(B2_0);
-    FillArray(B2_0, X2_180);
-    Rotate90A(B2_0);
-    FillArray(B2_0, X2_270);
-  end;
-  B2_0.Free;
-  Res[0].ByPixels := CmpImages(X1, X2_0);
-  if FSpsearch_ScanFileRotate then
-  begin
-    Res[3].ByPixels := CmpImages(X1, X2_90);
-    Res[2].ByPixels := CmpImages(X1, X2_180);
-    Res[1].ByPixels := CmpImages(X1, X2_270);
+    Res[3].ByPixels := CmpImages(X1, Image2Info.X2_90);
+    Res[2].ByPixels := CmpImages(X1, Image2Info.X2_180);
+    Res[1].ByPixels := CmpImages(X1, Image2Info.X2_270);
   end;
   Rotate := 0;
   Result.ByPixels := Res[0].ByPixels;

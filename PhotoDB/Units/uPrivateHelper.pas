@@ -147,6 +147,7 @@ begin
   try
     Query := GetQuery(True);
     try
+      ForwardOnlyQuery(Query);
       SetSQL(Query, Format('SELECT DISTINCT FolderCRC from $DB$ WHERE Access = %d', [Db_access_private]));
       Query.Open;
       if not Query.IsEmpty then

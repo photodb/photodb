@@ -58,7 +58,8 @@ procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : 
                              ShowInfo : Boolean; ID : Integer;
                              FileName : string; Rating : Integer;
                              Rotate : Integer; Access : Integer;
-                             Crypted : Boolean; var Exists : Integer);
+                             Crypted : Boolean; var Exists : Integer;
+                             CustomInfo: string = '');
 
 procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList; Caption : string;
                           DragPoint : TPoint; var SpotX, SpotY : Integer);
@@ -83,7 +84,10 @@ procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : 
                              ShowInfo : Boolean; ID : Integer;
                              FileName : string; Rating : Integer;
                              Rotate : Integer; Access : Integer;
-                             Crypted : Boolean; var Exists : Integer);
+                             Crypted : Boolean; var Exists : Integer; CustomInfo: string = '');
+const
+  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;
+  RoundRadius = 5;
 
 var
   Graphic : TGraphic;
@@ -96,6 +100,7 @@ var
   ClientRect : TRect;
   RectArray: TEasyRectArrayObject;
   ColorFrom, ColorTo : TColor;
+  SelectionRect, R: TRect;
 begin
   Graphic := BImageList[Item.ImageIndex].Graphic;
 
@@ -154,7 +159,22 @@ begin
       DrawShadowToImage(TempBmpShadow, TBitmap(Graphic));
       Graphic := TempBmpShadow;
     end;
+    if (CustomInfo <> '') and (Graphic is TBitmap) then
+    begin
+      if TBitmap(Graphic).PixelFormat = pf32Bit then
+      begin
+        R := Rect(5, TBitmap(Graphic).Height - 22, TBitmap(Graphic).Width, TBitmap(Graphic).Height- 3);
+        TBitmap(Graphic).Canvas.Font := ListView.Font;
+        DrawText(TBitmap(Graphic).Canvas.Handle, PChar(CustomInfo), Length(CustomInfo), R, DrawTextOpt or DT_CALCRECT);
+        SelectionRect := R;
+        InflateRect(SelectionRect, 3, 3);
 
+        DrawRoundGradientVert(TBitmap(Graphic), SelectionRect,
+          ListView.Selection.GradientColorBottom, ListView.Selection.GradientColorTop,
+          ListView.Selection.Color, RoundRadius);
+        DrawText32Bit(TBitmap(Graphic), CustomInfo, ListView.Font, R, DrawTextOpt);
+      end;
+    end;
     if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) and HasMMX then
     begin
       ClientRect := ListView.Scrollbars.ViewableViewportRect;

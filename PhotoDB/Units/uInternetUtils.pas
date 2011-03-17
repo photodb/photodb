@@ -172,7 +172,7 @@ begin
         begin
           FillChar(Buffer, SizeOf(Buffer), 0);
           repeat
-            Result := Result + Buffer;
+            Result := Result + string(Buffer);
             FillChar(Buffer, SizeOf(Buffer), 0);
             InternetReadFile(UrlHandle, @Buffer, SizeOf(Buffer), BytesRead);
           until BytesRead = 0;

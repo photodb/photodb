@@ -196,7 +196,7 @@ const
               end;
           end;
 
-          if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) then
+          if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) and (GetLastError <> 87) then
             raise Exception.Create('Error code = ' + IntToStr(GetLastError));
           Exit;
         except
@@ -257,12 +257,15 @@ begin
 
     FileName := IncludeTrailingPathDelimiter(FProcessingParams.WorkDirectory);
     FileName := FileName + GetFileNameWithoutExt(FData.FileName) + FProcessingParams.Preffix;
-    FileName := FileName + GraphicExtension(NewGraphicClass);
+
+    if (NewGraphicClass = GraphicClass) then
+      FileName := FileName + ExtractFileExt(FData.FileName)
+    else
+      FileName := FileName + '.' + GraphicExtension(NewGraphicClass);
 
     //if only rotate and JPEG image -> rotate only with GDI+
     InitGDIPlus;
     if FProcessingParams.Rotate
-      //and DBKernel.Readbool('Options', 'UseGDIPlus', GDIPlusPresent)
       and not FProcessingParams.Resize
       and not FProcessingParams.AddWatermark
       and not FProcessingParams.PreviewOptions.GeneratePreview

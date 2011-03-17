@@ -62,23 +62,27 @@ type
   end;
 
 type
-  TQueryType = (QT_NONE, QT_TEXT, QT_GROUP, QT_DELETED, QT_DUBLICATES,
-                QT_FOLDER, QT_RESULT_ITH, QT_RESULT_IDS, QT_SIMILAR,
-                QT_ONE_TEXT, QT_ONE_KEYWORD, QT_W_SCAN_FILE, QT_NO_NOPATH);
+  TQueryType = (QT_TEXT, QT_W_SCAN_FILE);
 
   TDBQueryParams = class(TObject)
   private
-    FParamList : TList;
-    FQuery : string;
-    FQueryType : TQueryType;
+    FParamList: TList;
+    FQuery: string;
+    FQueryType: TQueryType;
+    FCanBeEstimated: Boolean;
+    FData: TObject;
+    procedure SetData(const Value: TObject);
   public
     function AddDateTimeParam(Name : string; Value : TDateTime) : TDBDateTimeParam;
     function AddIntParam(Name : string; Value : Integer) : TDBIntegerParam;
+    function AddStringParam(Name : string; Value : string) : TDBStringParam;
     constructor Create;
     destructor Destroy; override;
     procedure ApplyToDS(DS : TDataSet);
-    property Query : string read FQuery write FQuery;
-    property QueryType : TQueryType read FQueryType write FQueryType;
+    property Query: string read FQuery write FQuery;
+    property QueryType: TQueryType read FQueryType write FQueryType;
+    property CanBeEstimated: Boolean read FCanBeEstimated write FCanBeEstimated;
+    property Data: TObject read FData write SetData;
   end;
 
 var
@@ -145,12 +149,12 @@ procedure ExecSQL(SQL : TDataSet);
 
 function GetBoolParam(Query : TDataSet; index : integer) : boolean;
 
- procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; FT: TFieldType);
- procedure SetDateParam(Query: TDataSet; name: string; Date: TDateTime);
- procedure SetBoolParam(Query: TDataSet; index: Integer; Bool: Boolean);
- procedure SetStrParam(Query: TDataSet; index: Integer; Value: string);
- procedure SetIntParam(Query: TDataSet; index: Integer; Value: Integer);
- function QueryParamsCount(Query: TDataSet): Integer;
+procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; FT: TFieldType);
+procedure SetDateParam(Query: TDataSet; name: string; Date: TDateTime);
+procedure SetBoolParam(Query: TDataSet; index: Integer; Bool: Boolean);
+procedure SetStrParam(Query: TDataSet; index: Integer; Value: string);
+procedure SetIntParam(Query: TDataSet; index: Integer; Value: Integer);
+function QueryParamsCount(Query: TDataSet): Integer;
 
 function GetQueryText(Query : TDataSet) : string;
 procedure AssignParams(S,D : TDataSet);
@@ -183,10 +187,18 @@ function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
 function TryOpenCDS(DS: TDataSet): Boolean;
 function GetDBViewMode: Boolean;
+procedure ForwardOnlyQuery(DS: TDataSet);
 
 implementation
 
  uses UnitGroupsWork;
+
+procedure ForwardOnlyQuery(DS: TDataSet);
+begin
+  TADOQuery(DS).CursorType := ctOpenForwardOnly;
+  TADOQuery(DS).CursorLocation := clUseServer;
+  TADOQuery(DS).LockType := ltReadOnly;
+end;
 
 function TryOpenCDS(DS: TDataSet): Boolean;
 var
@@ -1102,6 +1114,14 @@ begin
   FParamList.Add(Result);
 end;
 
+function TDBQueryParams.AddStringParam(Name, Value: string): TDBStringParam;
+begin
+  Result := TDBStringParam.Create;
+  Result.Name := Name;
+  Result.Value := Value;
+  FParamList.Add(Result);
+end;
+
 procedure TDBQueryParams.ApplyToDS(DS: TDataSet);
 var
   I : Integer;
@@ -1121,6 +1141,8 @@ begin
         Paramert.Value := TDBDateTimeParam(DBParam).Value;
       if DBParam is TDBIntegerParam then
         Paramert.Value := TDBIntegerParam(DBParam).Value;
+      if DBParam is TDBStringParam then
+        Paramert.Value := TDBStringParam(DBParam).Value;
     end;
   end;
 end;
@@ -1128,13 +1150,22 @@ end;
 constructor TDBQueryParams.Create;
 begin
   FParamList := TList.Create;
-  FQueryType := QT_NONE;
+  FQueryType := QT_TEXT;
+  FCanBeEstimated := True;
+  FData := nil;
 end;
 
 destructor TDBQueryParams.Destroy;
 begin
   FreeList(FParamList);
+  F(FData);
   inherited;
+end;
+
+procedure TDBQueryParams.SetData(const Value: TObject);
+begin
+  F(FData);
+  FData := Value;
 end;
 
 function GetDBViewMode: Boolean;
