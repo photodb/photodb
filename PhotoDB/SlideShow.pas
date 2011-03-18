@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
   AppEvnts, ImgList, UnitDBKernel, jpeg, Win32crc, CommCtrl,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
-  FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, Searching,
+  FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, uSearchTypes,
   ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage, uFileUtils,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
@@ -1852,7 +1852,7 @@ end;
 
 procedure TViewer.GoToSearchWindow1Click(Sender: TObject);
 var
-  NewSearch: TSearchForm;
+  NewSearch: TSearchCustomForm;
 begin
   if FullScreenNow then
     Exit1Click(Self);

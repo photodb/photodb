@@ -50,7 +50,8 @@ procedure GetListOfKeyWords;
 
 implementation
 
-uses Searching, UnitOpenQueryThread;
+uses
+  uSearchTypes, UnitOpenQueryThread;
 
 {$R *.dfm}
 
@@ -288,12 +289,7 @@ end;
 
 procedure TFormListOfKeyWords.Search1Click(Sender: TObject);
 begin
-  with SearchManager.NewSearch do
-  begin
-    Show;
-    SearchEdit.Text := ':KeyWord(' + LstKeywords.Items[PmKeywords.Tag] + '):';
-    DoSearchNow(Sender);
-  end;
+  SearchManager.NewSearch.StartSearch(':KeyWord(' + LstKeywords.Items[PmKeywords.Tag] + '):');
 end;
 
 procedure TFormListOfKeyWords.DBOpened(Sender : TObject; DS : TDataSet);

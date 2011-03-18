@@ -88,7 +88,7 @@ Procedure ExecuteGroupManager;
 implementation
 
 uses UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo,
-  Searching, UnitSelectFontForm;
+  uSearchTypes, UnitSelectFontForm;
 
 {$R *.dfm}
 
@@ -262,13 +262,8 @@ begin
 end;
 
 procedure TFormManageGroups.MenuActionSearchForGroup(Sender: TObject);
-var
-  Search : TSearchForm;
 begin
-  Search := SearchManager.NewSearch;
-  Search.SearchEdit.Text := ':Group(' + Groups[(Sender as TmenuItem).Owner.Tag].GroupName + '):';
-  Search.WlStartStop.OnClick(Sender);
-  Search.Show;
+  SearchManager.NewSearch.StartSearch(':Group(' + Groups[(Sender as TmenuItem).Owner.Tag].GroupName + '):');
   Close;
 end;
 

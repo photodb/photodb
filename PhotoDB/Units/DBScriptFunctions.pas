@@ -27,7 +27,7 @@ implementation
 uses
   ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
-  UnitUpdateDB, Searching, ManagerDBUnit, Options, ImEditor, UnitFormCont,
+  UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor, UnitFormCont,
   ExplorerUnit, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
   SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
@@ -160,9 +160,7 @@ function ShowKeyWord(KeyWord: string): string;
 begin
   with SearchManager.NewSearch do
   begin
-    Show;
-    SearchEdit.Text := ':KeyWord(' + KeyWord + '):';
-    DoSearchNow(nil);
+    StartSearch(':KeyWord(' + KeyWord + '):');
     Result := GUIDToString(WindowID);
   end;
 end;
@@ -171,9 +169,7 @@ function OpenSearch(StringSearch: string): string;
 begin
   with SearchManager.NewSearch do
   begin
-    Show;
-    SearchEdit.Text := StringSearch;
-    DoSearchNow(nil);
+    StartSearch(StringSearch);
     Result := GUIDToString(WindowID);
   end;
 end;
@@ -481,7 +477,7 @@ begin
   end;
 end;
 
-function GetSearchByCID(CID : string) : TSearchForm;
+function GetSearchByCID(CID : string) : TSearchCustomForm;
 var
   I: Integer;
 begin
@@ -529,7 +525,7 @@ begin
     begin
       if CID = GUIDToString(SearchManager[I].WindowID) then
       begin
-        Result := SearchManager[I].SearchEdit.Text;
+        Result := SearchManager[I].SearchText;
         Break;
       end;
     end;
@@ -546,7 +542,7 @@ begin
     begin
       if CID = GUIDToString(SearchManager[I].WindowID) then
       begin
-        SearchManager[I].SearchEdit.Text := Text;
+        SearchManager[I].SearchText := Text;
         Break;
       end;
     end;
@@ -563,7 +559,7 @@ begin
     begin
       if CID = GUIDToString(SearchManager[I].WindowID) then
       begin
-        SearchManager[I].DoSearchNow(nil);
+        SearchManager[I].StartSearch;
         Break;
       end;
     end;

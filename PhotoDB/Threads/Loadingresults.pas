@@ -926,6 +926,7 @@ begin
                 end;
                 FQuery.Next;
               end;
+              FData.Clear;
             finally
               F(CompareInfo);
             end;

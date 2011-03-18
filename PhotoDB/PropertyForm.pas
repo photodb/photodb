@@ -305,7 +305,7 @@ var
 
 implementation
 
-uses UnitQuickGroupInfo, Searching, SlideShow, UnitHintCeator,
+uses UnitQuickGroupInfo, uSearchTypes, SlideShow, UnitHintCeator,
      UnitEditGroupsForm, UnitManageGroups, CmpUnit,
      UnitEditLinkForm, UnitHelp, ExplorerUnit, UnitNewGroupForm,
      UnitFormChangeGroup, SelectGroupForm, UnitGroupsTools, Options;
@@ -1282,16 +1282,12 @@ end;
 procedure TPropertiesForm.Searchforit1Click(Sender: TObject);
 var
   PR : TImageDBRecordA;
-  NewSearch : TSearchForm;
 begin
   if FShowInfoType = SHOW_INFO_ID then
   begin
     if FileExistsSafe(FileName) then
     begin
-      NewSearch := SearchManager.NewSearch;
-      NewSearch.Show;
-      NewSearch.SearchEdit.Text := Inttostr(ImageId) + '$';
-      NewSearch.DoSearchNow(nil);
+      SearchManager.NewSearch.StartSearch(IntToStr(ImageId) + '$');
     end else
     begin
       Pr := GetImageIDW(FileName, True);
@@ -2903,13 +2899,8 @@ begin
 end;
 
 procedure TPropertiesForm.SearchForGroup1Click(Sender: TObject);
-var
-  NewSearch : TSearchForm;
 begin
-  NewSearch := SearchManager.NewSearch;
-  NewSearch.SearchEdit.Text := ':Group(' + FNowGroups[PopupMenuGroups.Tag].GroupName + '):';
-  NewSearch.WlStartStop.OnClick(Sender);
-  NewSearch.Show;
+  SearchManager.NewSearch.StartSearch(':Group(' + FNowGroups[PopupMenuGroups.Tag].GroupName + '):');
 end;
 
 procedure TPropertiesForm.QuickInfo1Click(Sender: TObject);

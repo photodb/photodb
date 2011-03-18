@@ -792,9 +792,8 @@ begin
         try
           Result.GroupImage := TJpegImage.Create;
           Result.GroupImage.LoadfromStream(BS);
-
         finally
-          BS.Free;
+          F(BS);
         end;
       end;
     end;
@@ -802,7 +801,6 @@ begin
     Result.GroupDate := Query.FieldByName('GroupDate').AsDateTime;
     Result.GroupFaces := Query.FieldByName('GroupFaces').AsString;
     Result.GroupAccess := Query.FieldByName('GroupAccess').AsInteger;
-
     Result.GroupKeyWords := Query.FieldByName('GroupKW').AsString;
     Result.AutoAddKeyWords := Query.FieldByName('GroupAddKW').AsBoolean;
     Result.RelatedGroups := Query.FieldByName('RelatedGroups').AsString;

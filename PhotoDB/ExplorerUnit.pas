@@ -632,7 +632,7 @@ var
 
 implementation
 
-uses UnitUpdateDB, ExplorerThreadUnit, Searching,
+uses UnitUpdateDB, ExplorerThreadUnit, uSearchTypes,
      SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
      FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
      uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
@@ -4264,7 +4264,7 @@ end;
 
 procedure TExplorerForm.GoToSearchWindow1Click(Sender: TObject);
 var
-  NewSearch : TSearchForm;
+  NewSearch : TSearchCustomForm;
 begin
   NewSearch := SearchManager.GetAnySearch;
   NewSearch.Show;
@@ -4478,15 +4478,8 @@ begin
 end;
 
 procedure TExplorerForm.OpeninSearchWindow1Click(Sender: TObject);
-var
-  NewSearch: TSearchForm;
 begin
-  NewSearch := SearchManager.NewSearch;
-  NewSearch.SearchEdit.Text := ':Folder(' + GetCurrentPath + '):';
-  NewSearch.SetPath(GetCurrentPath);
-  NewSearch.DoSearchNow(nil);
-  NewSearch.Show;
-  NewSearch.SetFocus;
+  SearchManager.NewSearch.StartSearchDirectory(GetCurrentPath);
 end;
 
 procedure TExplorerForm.LoadLanguage;

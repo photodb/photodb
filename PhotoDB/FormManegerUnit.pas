@@ -61,7 +61,7 @@ const
 implementation
 
 uses
-  UnitCleanUpThread, ExplorerUnit, Searching, SlideShow,
+  UnitCleanUpThread, ExplorerUnit, uSearchTypes, SlideShow,
   uActivation, UnitUpdateDB, UnitInternetUpdate, uAbout,
   UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
   UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
@@ -101,7 +101,7 @@ procedure TFormManager.Run;
 var
   Directory, S: string;
   ParamStr1, ParamStr2: string;
-  NewSearch: TSearchForm;
+  NewSearch: TSearchCustomForm;
   IDList: TArInteger;
   FileList: TArStrings;
   I: Integer;
@@ -148,14 +148,14 @@ begin
             if GetExt(ParamStr1) = 'IDS' then
             begin
               S := LoadIDsFromfile(ParamStr1);
-              NewSearch.SearchEdit.Text := Copy(S, 1, 1000);
-              NewSearch.DoSearchNow(nil);
+              NewSearch.SearchText := Copy(S, 1, 1000);
+              NewSearch.StartSearch;
             end;
             if GetExt(ParamStr1) = 'ITH' then
             begin
               S := LoadIDsFromfile(ParamStr1);
-              NewSearch.SearchEdit.Text := ':HashFile(' + ParamStr1 + '):';
-              NewSearch.DoSearchNow(nil);
+              NewSearch.SearchText := ':HashFile(' + ParamStr1 + '):';
+              NewSearch.StartSearch;
             end;
             if GetExt(ParamStr1) = 'DBL' then
             begin
@@ -163,8 +163,8 @@ begin
               S := '';
               for I := 1 to Length(IDList) do
                 S := S + IntToStr(IDList[I - 1]) + '$';
-              NewSearch.SearchEdit.Text := Copy(S, 1, 500);
-              NewSearch.DoSearchNow(nil);
+              NewSearch.SearchText := Copy(S, 1, 500);
+              NewSearch.StartSearch;
             end;
           end;
           CloseSplashWindow;
@@ -634,9 +634,7 @@ begin
         begin
           with SearchManager.NewSearch do
           begin
-            SearchEdit.Text := ':HashFile(' + FilenameA + '):';
-            DoSearchNow(Self);
-            Show;
+            StartSearch(':HashFile(' + FilenameA + '):');
             ActivateBackgroundApplication(Handle);
           end;
           Exit;

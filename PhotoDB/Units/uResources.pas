@@ -9,7 +9,6 @@ function GetLogoPicture : TPNGImage;
 function GetSlideShowLoadPicture : TPNGImage;
 function GetExplorerBackground : TPNGImage;
 function GetSearchBackground : TPNGImage;
-function GetSearchWait : TPNGImage;
 function GetDateRangeImage : TPNGImage;
 function GetImagePanelImage : TPNGImage;
 function GetLoadingImage : TPNGImage;
@@ -21,7 +20,6 @@ function GetPrinterPatternImage : TJpegImage;
 {$R Directory_Large.res}
 {$R ExplorerBackground.res}
 {$R SearchBackground.res}   
-{$R SearchWait.res}
 {$R DateRange.res}
 {$R Manifest.res}
 {$R ImagePanelBackground.res}
@@ -105,11 +103,6 @@ begin
   Result := LoadPNGFromRES('SEARCHBACKGROUND');
 end;
 
-function GetSearchWait : TPNGImage;
-begin
-  Result := LoadPNGFromRES('SEARCHWAIT');
-end;
-      
 function GetDateRangeImage : TPNGImage;
 begin
   Result := LoadPNGFromRES('DATERANGE');

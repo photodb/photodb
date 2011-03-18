@@ -9,12 +9,12 @@ uses
   ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd,
   EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus,
   CustomSelectTool, TextToolUnit, BrushToolUnit, InsertImageToolUnit,
-  GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm, Searching, UnitJPEGOptions,
+  GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm, UnitJPEGOptions,
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
   UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage, TiffImageUnit,
   RAWImage, DragDrop, DragDropFile, UVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
   UnitDBCommonGraphics, UnitCDMappingSupport, uLogger,
-  CCR.Exif, uEditorTypes, uShellIntegration, uRuntime, uSysUtils,
+  CCR.Exif, uEditorTypes, uShellIntegration, uRuntime, uSysUtils, uSearchTypes,
   uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants, uSettings, uAssociations;
 
 type

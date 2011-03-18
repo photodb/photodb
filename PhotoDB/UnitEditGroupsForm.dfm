@@ -646,7 +646,6 @@ object EditGroupsForm: TEditGroupsForm
     Items.Strings = (
       '<Data>')
     MultiSelect = True
-    ParentColor = True
     TabOrder = 4
     OnContextPopup = LstSelectedGroupsContextPopup
     OnDblClick = LstSelectedGroupsDblClick
@@ -662,7 +661,6 @@ object EditGroupsForm: TEditGroupsForm
     Items.Strings = (
       '<Data>')
     MultiSelect = True
-    ParentColor = True
     TabOrder = 5
     OnDblClick = BtnAddGroupClick
     OnDrawItem = LstAvaliableGroupsDrawItem

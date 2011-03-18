@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
   ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics, uDBForm, uMemory,
-  uShellIntegration, uConstants;
+  uShellIntegration, uConstants, uSearchTypes;
 
 type
   TFormQuickGroupInfo = class(TDBForm)
@@ -65,7 +65,7 @@ implementation
 
 {$R *.dfm}
 
-uses UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, Searching;
+uses UnitDBKernel, UnitFormChangeGroup, UnitManageGroups;
 
 procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm);
 var
@@ -216,12 +216,8 @@ end;
 
 procedure TFormQuickGroupInfo.SearchForGroup1Click(Sender: TObject);
 begin
-  with SearchManager.NewSearch do
-  begin
-    SearchEdit.Text := ':Group(' + FGroup.GroupName + '):';
-    BtnOk.OnClick(Sender);
-    Show;
-  end;
+  SearchManager.NewSearch.StartSearch(':Group(' + FGroup.GroupName + '):');
+  BtnOk.OnClick(Sender);
   Close;
   if FCloseOwner then
     FOwner.Close;

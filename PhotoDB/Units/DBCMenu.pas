@@ -77,12 +77,11 @@ type TDBPopupMenu = class
 
 var
    MenuScript : string;
-   aFS : TFileStream;
 
 implementation
 
 uses
-  ExplorerUnit, PropertyForm, SlideShow, Searching, UnitFormCont,
+  ExplorerUnit, PropertyForm, SlideShow, uSearchTypes, UnitFormCont,
   UnitLoadFilesToPanel, UnitEditGroupsForm, UnitMenuDateForm, CmpUnit,
   UnitQuickGroupInfo, UnitCrypting, UnitPasswordForm,
   ImEditor, FormManegerUnit, CommonDBSupport,
@@ -1301,15 +1300,8 @@ begin
 end;
 
 procedure TDBPopupMenu.ScanImageItemPopUpMenu_(Sender: TObject);
-var
-  NewSearch: TSearchForm;
 begin
-  NewSearch := SearchManager.NewSearch;
-  NewSearch.SearchEdit.Text := ':ScanImageW(' + Finfo[Finfo.Position].FileName + ':1):';
-  NewSearch.SetPath(ExtractFilePath(Finfo[Finfo.Position].FileName));
-  NewSearch.DoSearchNow(nil);
-  NewSearch.Show;
-  NewSearch.SetFocus;
+  SearchManager.NewSearch.StartSearchSimilar(Finfo[Finfo.Position].FileName);
 end;
 
 procedure TDBPopupMenu.ScriptExecuted(Sender: TObject);
@@ -1322,16 +1314,9 @@ begin
 end;
 
 procedure TDBPopupMenu.SearchFolderPopUpMenu_(Sender: TObject);
-var
-  NewSearch: TSearchForm;
 begin
-  NewSearch := SearchManager.NewSearch;
-  // TODO:!!!
-  NewSearch.SearchEdit.Text := ':Folder(' + Inttostr(Finfo[Finfo.Position].ID) + '):';
-  NewSearch.SetPath(ExtractFilePath(Finfo[Finfo.Position].FileName));
-  NewSearch.DoSearchNow(nil);
-  NewSearch.Show;
-  NewSearch.SetFocus;
+  SearchManager.NewSearch.StartSearchDirectory(ExtractFilePath(Finfo[Finfo.Position].FileName),
+    Finfo[Finfo.Position].ID);
 end;
 
 procedure TDBPopupMenu.SendToItemPopUpMenu_(Sender: TObject);
@@ -1469,13 +1454,7 @@ end;
 
 procedure TDBPopupMenu.ShowDublicatesItemPopUpMenu_(Sender: TObject);
 begin
-  with SearchManager.NewSearch do
-  begin
-    SearchEdit.Text := ':Similar(' + IntToStr(FInfo[Finfo.Position].ID) + '):';
-    DoSearchNow(nil);
-    Show;
-    SetFocus;
-  end;
+  SearchManager.NewSearch.StartSearch(':Similar(' + IntToStr(FInfo[Finfo.Position].ID) + '):');
 end;
 
 procedure TDBPopupMenu.ShowItemPopUpMenu_(Sender: TObject);

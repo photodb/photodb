@@ -309,7 +309,8 @@ uses
   uFrameBuyApplication in 'Activation\uFrameBuyApplication.pas' {FrameBuyApplication: TFrame},
   uSettings in 'Units\uSettings.pas',
   CCR.Exif.BaseUtils in 'External\CCR.Exif\CCR.Exif.BaseUtils.pas',
-  CCR.Exif.TiffUtils in 'External\CCR.Exif\CCR.Exif.TiffUtils.pas';
+  CCR.Exif.TiffUtils in 'External\CCR.Exif\CCR.Exif.TiffUtils.pas',
+  uSearchTypes in 'Units\uSearchTypes.pas';
 
 {$R *.res}
 

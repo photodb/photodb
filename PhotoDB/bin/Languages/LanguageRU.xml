@@ -448,7 +448,6 @@
     <translate name="More than" value="Больше чем" />
     <translate name="Less than" value="Менее чем" />
     <translate name="Empty query" value="Пустой запрос" />
-    <translate name="Please, wait - search in progress..." value="Пожалуйста, ждите - выполняется запрос" />
     <translate name="Search text" value="Текст поиска" />
     <translate name="ID" value="ID" />
     <translate name="Result" value="Результат" />

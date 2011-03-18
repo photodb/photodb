@@ -97,7 +97,7 @@ implementation
 
 uses
   UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
-  UnitQuickGroupInfo, Searching, SelectGroupForm;
+  UnitQuickGroupInfo, uSearchTypes, SelectGroupForm;
 
 {$R *.dfm}
 
@@ -459,13 +459,8 @@ begin
 end;
 
 procedure TEditGroupsForm.SearchForGroup1Click(Sender: TObject);
-var
-  NewSearch: TSearchForm;
 begin
-  NewSearch := SearchManager.NewSearch;
-  NewSearch.SearchEdit.Text := ':Group(' + FGroups[PmGroup.Tag].GroupName+'):';
-  NewSearch.WlStartStop.OnClick(Sender);
-  NewSearch.Show;
+  SearchManager.NewSearch.StartSearch(':Group(' + FGroups[PmGroup.Tag].GroupName+'):');
 end;
 
 procedure TEditGroupsForm.CbShowAllGroupsClick(Sender: TObject);
