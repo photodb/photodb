@@ -1526,6 +1526,8 @@
   </scope>
   <scope name="Options">
 	<translate name="Options" value="Настройки"/>
+	<translate name="Change default JPEG Options" value="Изменить настройки JPEG по умолчанию"/>
+	
 	<translate name="Backup" value="Резервное копирование"/>
 	<translate name="Set" value="Установить"/>
 	<translate name="Rename" value="Переименовать"/>
@@ -1571,7 +1573,6 @@
 	<translate name="Icon" value="Иконка"/>
 	<translate name="Add to submenu" value="Добавить в субменю"/>	
 	<translate name="Additional" value="Дополнительно"/>	
-	<translate name="GDI+ is unavaliable" value="GDI+ недоступно"/>	
 	<translate name="Refresh data in windows?" value="Перезагрузить данные в окнах?"/>	
 	<translate name="Please select folder" value="Выберите папку"/>	
 	<translate name="Preview" value="Предпросмотр"/>	
@@ -1595,7 +1596,6 @@
 	<translate name="Rotate the image on the disk without asking for confirmation" value="Поворачивать изображение на диске не спрашивая подтверждения"/>
 	<translate name="Even if the file in the database, rotate on drive" value="Даже если файл в БД, поворачивать на диске"/>
 	<translate name="Sort groups" value="Сортировать группы"/>
-	<translate name="Use GDI+" value="Использовать GDI+"/>	
 	<translate name="Create backup every" value="Создавать резервную копию каждые"/>	
 	<translate name="days" value="дней"/>
 	<translate name="Allow multiple instances of properties window" value="Разрешить загрузку нескольких копий окна свойств"/>

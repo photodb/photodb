@@ -7,7 +7,7 @@ interface
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
   uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations,
-  ShlObj, uFileUtils, uRuntime;
+  ShellApi, ShlObj, uFileUtils, uRuntime;
 
 type
   TRegistryInstallCallBack = procedure(Current, Total: Integer; var Terminate : Boolean) of object;
@@ -25,6 +25,7 @@ function GetMyPicturesPath: string;
 function GetAppDataPath: string;
 function GetTempDirectory: string;
 function GetTempFileName: TFileName;
+procedure RefreshSystemIconCache;
 
 implementation
 
@@ -456,6 +457,12 @@ begin
   if Windows.GetTempFileName(PChar(GetTempDirectory), '~', 0, TempFileName) = 0 then
     raise Exception.Create(SysErrorMessage(GetLastError));
   Result := TempFileName;
+end;
+
+procedure RefreshSystemIconCache;
+begin
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
+  SHChangeNotify(SHCNE_UPDATEIMAGE, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
 end;
 
 end.

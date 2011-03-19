@@ -112,7 +112,7 @@ var
   I: Integer;
 begin
   for I := 0 to CbFileExtensions.Items.Count - 1 do
-    CbFileExtensions.State[I] := AssociationStateToCheckboxState(TFileAssociations.Instance.GetCurrentAssociationState(CbFileExtensions.Items[I]));
+    CbFileExtensions.State[I] := AssociationStateToCheckboxState(TFileAssociations.Instance.GetCurrentAssociationState(TFileAssociation(CbFileExtensions.Items.Objects[I]).Extension));
 end;
 
 procedure TFrAdvancedOptions.LoadExtensionList;

@@ -204,7 +204,7 @@ begin
   FillChar(ProcInfo, SizeOf(TProcessInformation), #0);
   StartInfo.Cb := SizeOf(TStartupInfo);
 
-  CreateProcess(PChar(PhotoDBExeFile), '/sleep', nil, nil, False,
+  CreateProcess(PChar(PhotoDBExeFile), PChar(PhotoDBExeFile + ' /sleep'), nil, nil, False,
               CREATE_NEW_PROCESS_GROUP + NORMAL_PRIORITY_CLASS,
               nil, PChar(CurrentInstall.DestinationPath), StartInfo, ProcInfo);
 

@@ -3,7 +3,7 @@ unit uUpdatingWindowsActions;
 interface
 
 uses
-  ShellApi, ShlObj, uActions;
+  uActions, uShellUtils;
 
 const
   InstallPoints_SystemInfo = 1024 * 1024;
@@ -27,8 +27,7 @@ procedure TInstallUpdatingWindows.Execute(Callback: TActionCallback);
 var
   Terminate : Boolean;
 begin
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
-  SHChangeNotify(SHCNE_UPDATEIMAGE, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
+  RefreshSystemIconCache;
   Callback(Self, InstallPoints_SystemInfo, InstallPoints_SystemInfo, Terminate);
 end;
 

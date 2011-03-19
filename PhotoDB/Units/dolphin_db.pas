@@ -28,7 +28,7 @@ type
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
 
-const
+{const
   InstallType_Checked = 0;
   InstallType_UnChecked = 1;
   InstallType_Grayed = 2;
@@ -39,7 +39,7 @@ type
     InstallType: Integer;
   end;
 
-  TInstallExts = array of TInstallExt;
+  TInstallExts = array of TInstallExt;    }
 
 const
   TA_UNKNOWN = 0;

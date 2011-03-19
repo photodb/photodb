@@ -5,17 +5,17 @@ interface
 uses
   Registry, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
-  Menus, ShellCtrls, Dolphin_DB, ImgList, Math, GDIPlusRotate, Mask, uFileUtils,
+  Menus, ShellCtrls, Dolphin_DB, ImgList, Math, Mask, uFileUtils,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
   UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
   UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
-  uRuntime, uMemory, uSettings;
+  uRuntime, uMemory, uSettings, WebLink, uAssociations, AppEvnts;
 
 type
   TOptionsForm = class(TDBForm)
     CancelButton: TButton;
     OkButton: TButton;
-    PopupMenu1: TPopupMenu;
+    PmExtensionStatus: TPopupMenu;
     Usethisprogramasdefault1: TMenuItem;
     Usemenuitem1: TMenuItem;
     Dontusethisextension1: TMenuItem;
@@ -23,7 +23,6 @@ type
     Addnewcommand1: TMenuItem;
     Remore1: TMenuItem;
     ImageList1: TImageList;
-    DestroyTimer: TTimer;
     PopupMenu3: TPopupMenu;
     Additem1: TMenuItem;
     DeleteItem1: TMenuItem;
@@ -39,29 +38,26 @@ type
     PcMain: TPageControl;
     TsGeneral: TTabSheet;
     TsExplorer: TTabSheet;
-    Button20: TButton;
-    Button12: TButton;
-    Button19: TButton;
-    Button24: TButton;
-    Button23: TButton;
-    CheckListBox1: TCheckListBox;
+    BtnClearIconCache: TButton;
+    BtnClearThumbnailCache: TButton;
+    BtnChooseNewPlace: TButton;
+    BtnChoosePlaceIcon: TButton;
     PlacesListView: TListView;
-    CheckListBox2: TCheckListBox;
-    Label27: TLabel;
-    Label11: TLabel;
-    CheckBox21: TCheckBox;
-    CheckBox20: TCheckBox;
-    CheckBox12: TCheckBox;
-    CheckBox11: TCheckBox;
-    CheckBox10: TCheckBox;
-    CheckBox9: TCheckBox;
+    CblPlacesDisplayIn: TCheckListBox;
+    LbDisplayPlacesIn: TLabel;
+    LbPlacesList: TLabel;
+    CbExplorerShowPlaces: TCheckBox;
+    CbExplorerShowEXIF: TCheckBox;
+    CbExplorerShowThumbsForImages: TCheckBox;
+    CbExplorerSaveThumbsForFolders: TCheckBox;
+    CbExplorerShowThumbsForFolders: TCheckBox;
+    CbExplorerShowAttributes: TCheckBox;
     Label13: TStaticText;
     Label12: TStaticText;
-    CheckBox1: TCheckBox;
-    CheckBox6: TCheckBox;
-    CheckBox7: TCheckBox;
-    CheckBox8: TCheckBox;
-    Label14: TStaticText;
+    CbExplorerShowFolders: TCheckBox;
+    CbExplorerShowSimpleFiles: TCheckBox;
+    CbExplorerShowImages: TCheckBox;
+    CbExplorerShowHidden: TCheckBox;
     Bevel1: TBevel;
     TsView: TTabSheet;
     TrackBar1: TTrackBar;
@@ -75,11 +71,9 @@ type
     CheckBox24: TCheckBox;
     CheckBox25: TCheckBox;
     CheckBox37: TCheckBox;
-    Button21: TButton;
     CheckBox22: TCheckBox;
     CheckBox2: TCheckBox;
     TsUserMenu: TTabSheet;
-    Button2: TButton;
     Button16: TButton;
     GroupBox3: TGroupBox;
     CheckBox17: TCheckBox;
@@ -114,8 +108,8 @@ type
     Label29: TLabel;
     Edit10: TEdit;
     GroupBox4: TGroupBox;
-    Label17: TLabel;
-    Image1: TImage;
+    LbSecureInfo: TLabel;
+    ImSecureInfo: TImage;
     Button4: TButton;
     Button3: TButton;
     CheckBox15: TCheckBox;
@@ -138,28 +132,39 @@ type
     CheckBox30: TCheckBox;
     CheckBox28: TCheckBox;
     CheckBox35: TCheckBox;
-    Button22: TButton;
-    CheckBox27: TCheckBox;
     CheckBox26: TCheckBox;
     CheckBox23: TCheckBox;
     Label34: TLabel;
+    LbShellExtensions: TStaticText;
+    CbExtensionList: TCheckListBox;
+    BtnInstallExtensions: TButton;
     CheckBox4: TCheckBox;
+    LblSkipExt: TLabel;
+    LblAddSubmenuItem: TLabel;
+    LblUseExt: TLabel;
+    CbInstallTypeChecked: TCheckBox;
+    CbInstallTypeGrayed: TCheckBox;
+    CbInstallTypeNone: TCheckBox;
+    Bevel2: TBevel;
+    WlDefaultJPEGOptions: TWebLink;
+    AeMain: TApplicationEvents;
+    WlViewerJPEGOptions: TWebLink;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure OkButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
-    procedure CheckListBox1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure CbExtensionListContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure Usethisprogramasdefault1Click(Sender: TObject);
     procedure Usemenuitem1Click(Sender: TObject);
     procedure Dontusethisextension1Click(Sender: TObject);
-    procedure Button12Click(Sender: TObject);
+    procedure BtnInstallExtensionsClick(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar2Change(Sender: TObject);
     procedure TrackBar3Change(Sender: TObject);
-    procedure LoadExts;
+    procedure LoadDefaultExtStates;
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
@@ -176,21 +181,18 @@ type
     procedure Button15Click(Sender: TObject);
     procedure Button17Click(Sender: TObject);
     procedure Button18Click(Sender: TObject);
-    procedure Button20Click(Sender: TObject);
-    procedure Button19Click(Sender: TObject);
+    procedure BtnClearIconCacheClick(Sender: TObject);
+    procedure BtnClearThumbnailCacheClick(Sender: TObject);
     procedure TrackBar4Change(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
-    procedure Button21Click(Sender: TObject);
-    procedure Button22Click(Sender: TObject);
     procedure PlacesListViewContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    procedure Button24Click(Sender: TObject);
+    procedure BtnChooseNewPlaceClick(Sender: TObject);
     procedure ReadPlaces;
     procedure WritePlaces;
     procedure PlacesListViewSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
-    procedure CheckListBox2ClickCheck(Sender: TObject);
-    procedure Button23Click(Sender: TObject);
+    procedure CblPlacesDisplayInClickCheck(Sender: TObject);
+    procedure BtnChoosePlaceIconClick(Sender: TObject);
     procedure DeleteItem1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
     procedure Down1Click(Sender: TObject);
@@ -203,6 +205,11 @@ type
     procedure CheckBox33Click(Sender: TObject);
     procedure CheckBox34Click(Sender: TObject);
     procedure PcMainChange(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
+    procedure WlDefaultJPEGOptionsClick(Sender: TObject);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+    procedure WlViewerJPEGOptionsClick(Sender: TObject);
   private
     FThemeList : TStringList;
     FUserMenu : TUserMenuItemArray;
@@ -231,12 +238,11 @@ uses
 
 procedure TOptionsForm.TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
 var
-  I, J: Integer;
+  I: Integer;
   Reg: TBDRegistry;
   S: TStrings;
   FCaption, EXEFile, Params, Icon: string;
   UseSubMenu: Boolean;
-  Ico: Ticon;
   RegIni: TRegIniFile;
 begin
   if FLoadedPages[NewTab] then
@@ -246,36 +252,25 @@ begin
   if NewTab = 0 then
   begin
     CheckBox4.Checked := Settings.Readbool('Options', 'AllowPreview', True);
+    CbExtensionList.Items.Clear;
+    for I := 0 to TFileAssociations.Instance.Count - 1 do
+      CbExtensionList.Items.AddObject(Format('%s   (%s)', [TFileAssociations.Instance[I].Extension, TFileAssociations.Instance[I].Description]), TFileAssociations.Instance[I]);
+
+    LoadDefaultExtStates;
   end;
   if NewTab = 1 then
   begin
-    CheckBox1.Checked := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
-    CheckBox6.Checked := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-    CheckBox7.Checked := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
-    CheckBox8.Checked := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-    CheckBox9.Checked := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-    CheckBox10.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-    CheckBox11.Checked := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-    CheckBox12.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-    CheckBox20.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
-    CheckBox21.Checked := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
-    CheckListBox1.Items.Clear;
-    //TODO:!!!!
-    {for I := 1 to Length(SupportedExt) do
-    begin
-      if SupportedExt[I] = '|' then
-        for J := I to Length(SupportedExt) do
-        begin
-          if SupportedExt[J] = '|' then
-            if (J - I - 1 > 0) and (I + 1 < Length(SupportedExt)) then
-              if (Copy(SupportedExt, I + 1, J - I - 1)) <> '' then
-              begin
-                CheckListBox1.Items.Add(AnsiUppercase(Copy(SupportedExt, I + 1, J - I - 1)));
-                Break;
-              end;
-        end;
-    end; }
-    LoadExts;
+    CbExplorerShowFolders.Checked := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+    CbExplorerShowSimpleFiles.Checked := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+    CbExplorerShowImages.Checked := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+    CbExplorerShowHidden.Checked := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+    CbExplorerShowAttributes.Checked := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+    CbExplorerShowThumbsForFolders.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+    CbExplorerSaveThumbsForFolders.Checked := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+    CbExplorerShowThumbsForImages.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+    CbExplorerShowEXIF.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
+    CbExplorerShowPlaces.Checked := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
+
     ReadPlaces;
   end;
   if NewTab = 2 then
@@ -312,7 +307,6 @@ begin
 
     CheckBox26.Checked := Settings.Readbool('Options', 'SortGroupsByName', True);
     CheckBox23.Checked := Settings.Readbool('Options', 'UseHotSelect', True);
-    CheckBox27.Checked := Settings.Readbool('Options', 'UseGDIPlus', GDIPlusPresent);
     CheckBox28.Checked := Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True);
     CheckBox30.Checked := Settings.ReadBool('Editor', 'VirtualCursor', False);
     CheckBox31.Checked := Settings.ReadBool('Options', 'CheckUpdateLinks', False);
@@ -345,48 +339,54 @@ begin
     ImageList1.Height := 16;
     ImageList1.BkColor := Clmenu;
     Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    Reg.OpenKey(GetRegRootKey + '\Menu', True);
-    S := TStringList.Create;
-    Reg.GetKeyNames(S);
-    SetLength(FUserMenu, 0);
-    ListView1.Clear;
-    for I := 0 to S.Count - 1 do
-    begin
-      Reg.CloseKey;
-      Reg.OpenKey(GetRegRootKey + '\Menu' + S[I], True);
-      UseSubMenu := True;
-      
-      if Reg.ValueExists('Caption') then
-        FCaption := Reg.ReadString('Caption');
-      if Reg.ValueExists('EXEFile') then
-        EXEFile := Reg.ReadString('EXEFile');
-      if Reg.ValueExists('Params') then
-        Params := Reg.ReadString('Params');
-      if Reg.ValueExists('Icon') then
-        Icon := Reg.ReadString('Icon');
-      if Reg.ValueExists('UseSubMenu') then
-        UseSubMenu := Reg.ReadBool('UseSubMenu');
-
-      if (FCaption <> '') and (EXEFile <> '') then
-      begin
-        SetLength(FUserMenu, Length(FUserMenu) + 1);
-        FUserMenu[Length(FUserMenu) - 1].Caption := FCaption;
-        FUserMenu[Length(FUserMenu) - 1].EXEFile := EXEFile;
-        FUserMenu[Length(FUserMenu) - 1].Params := Params;
-        FUserMenu[Length(FUserMenu) - 1].Icon := Icon;
-        FUserMenu[Length(FUserMenu) - 1].UseSubMenu := UseSubMenu;
-
-        AddIconToListFromPath(ImageList1, Icon);
-
-        with ListView1.Items.Add do
+    try
+      Reg.OpenKey(GetRegRootKey + '\Menu', True);
+      S := TStringList.Create;
+      try
+        Reg.GetKeyNames(S);
+        SetLength(FUserMenu, 0);
+        ListView1.Clear;
+        for I := 0 to S.Count - 1 do
         begin
-          ImageIndex := ImageList1.Count - 1;
-          Caption := FCaption;
+          Reg.CloseKey;
+          Reg.OpenKey(GetRegRootKey + '\Menu' + S[I], True);
+          UseSubMenu := True;
+      
+          if Reg.ValueExists('Caption') then
+            FCaption := Reg.ReadString('Caption');
+          if Reg.ValueExists('EXEFile') then
+            EXEFile := Reg.ReadString('EXEFile');
+          if Reg.ValueExists('Params') then
+            Params := Reg.ReadString('Params');
+          if Reg.ValueExists('Icon') then
+            Icon := Reg.ReadString('Icon');
+          if Reg.ValueExists('UseSubMenu') then
+            UseSubMenu := Reg.ReadBool('UseSubMenu');
+
+          if (FCaption <> '') and (EXEFile <> '') then
+          begin
+            SetLength(FUserMenu, Length(FUserMenu) + 1);
+            FUserMenu[Length(FUserMenu) - 1].Caption := FCaption;
+            FUserMenu[Length(FUserMenu) - 1].EXEFile := EXEFile;
+            FUserMenu[Length(FUserMenu) - 1].Params := Params;
+            FUserMenu[Length(FUserMenu) - 1].Icon := Icon;
+            FUserMenu[Length(FUserMenu) - 1].UseSubMenu := UseSubMenu;
+
+            AddIconToListFromPath(ImageList1, Icon);
+
+            with ListView1.Items.Add do
+            begin
+              ImageIndex := ImageList1.Count - 1;
+              Caption := FCaption;
+            end;
+          end;
         end;
+      finally
+        F(S);
       end;
+    finally
+      F(Reg);
     end;
-    S.Free;
-    Reg.Free;
     CheckBox17.Checked := Settings.ReadBool('Options', 'UseUserMenuForIDmenu', True);
     CheckBox19.Checked := Settings.ReadBool('Options', 'UseUserMenuForViewer', True);
     CheckBox18.Checked := Settings.ReadBool('Options', 'UseUserMenuForExplorer', True);
@@ -414,11 +414,15 @@ begin
   Result := 'Options';
 end;
 
+procedure TOptionsForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Release;
+end;
+
 procedure TOptionsForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
-  InitGDIPlus;
   ReloadData := False;
   ClientHeight := OkButton.Top + OkButton.Height + 3;
 
@@ -428,9 +432,6 @@ begin
     FLoadedPages[I] := False;
   LoadLanguage;
   FThemeList := nil;
-  CheckBox27.Enabled := GDIPlusPresent;
-  if not GDIPlusPresent then
-    CheckBox27.Caption := L('GDI+ is unavaliable');
   PopupMenu3.Images := DBKernel.ImageList;
   PopupMenu2.Images := DBKernel.ImageList;
   Up1.ImageIndex := DB_IC_UP;
@@ -442,11 +443,18 @@ begin
   Remore1.ImageIndex := DB_IC_DELETE_INFO;
   CheckBox31.Enabled := not FolderView;
   ClientHeight := 484;
+  PcMainChange(Self);
+  WlDefaultJPEGOptions.Color := clWindow;
+  WlViewerJPEGOptions.Color := clWindow;
+end;
+
+procedure TOptionsForm.FormDestroy(Sender: TObject);
+begin
+  OptionsForm := nil;
 end;
 
 procedure TOptionsForm.OkButtonClick(Sender: TObject);
 var
-  Exts: TInstallExts;
   I: Integer;
   Reg: TBDRegistry;
   S: TStrings;
@@ -462,64 +470,54 @@ begin
   // 0: 
   if FLoadedPages[0] then
   begin
-    Settings.WriteBool('Options', 'AllowPreview', CheckBox4.Checked);
+    //TODO:
   end;
   // 1: 
   if FLoadedPages[1] then
   begin
-    Settings.WriteBool('Options', 'Explorer_ShowFolders', CheckBox1.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowSimpleFiles', CheckBox6.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowImageFiles', CheckBox7.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowHiddenFiles', CheckBox8.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowAttributes', CheckBox9.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForFolders', CheckBox10.Checked);
-    Settings.WriteBool('Options', 'Explorer_SaveThumbnailsForFolders', CheckBox11.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForImages', CheckBox12.Checked);
-    Settings.WriteBool('Options', 'ShowEXIFMarker', CheckBox20.Checked);
-    Settings.WriteBool('Options', 'ShowOtherPlaces', CheckBox21.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowFolders', CbExplorerShowFolders.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowSimpleFiles', CbExplorerShowSimpleFiles.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowImageFiles', CbExplorerShowImages.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowHiddenFiles', CbExplorerShowHidden.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowAttributes', CbExplorerShowAttributes.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForFolders', CbExplorerShowThumbsForFolders.Checked);
+    Settings.WriteBool('Options', 'Explorer_SaveThumbnailsForFolders', CbExplorerSaveThumbsForFolders.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForImages', CbExplorerShowThumbsForImages.Checked);
+    Settings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
+    Settings.WriteBool('Options', 'ShowOtherPlaces', CbExplorerShowPlaces.Checked);
 
-    ExplorerManager.ShowEXIF := CheckBox20.Checked;
-    ExplorerManager.ShowQuickLinks := CheckBox21.Checked;
-    SetLength(Exts, CheckListBox1.Items.Count);
-    for I := 1 to CheckListBox1.Items.Count do
-    begin
-      Exts[I - 1].Ext := CheckListBox1.Items[I - 1];
-      case CheckListBox1.State[I - 1] of
-        CbUnchecked:
-          Exts[I - 1].InstallType := InstallType_UnChecked;
-        CbChecked:
-          Exts[I - 1].InstallType := InstallType_Checked;
-        CbGrayed:
-          Exts[I - 1].InstallType := InstallType_Grayed;
-      end;
-    end;
-    // TODO: ExtInstallApplicationW(Exts,InstalledFileName); 
+    ExplorerManager.ShowEXIF := CbExplorerShowEXIF.Checked;
+    ExplorerManager.ShowQuickLinks := CbExplorerShowPlaces.Checked;
     WritePlaces;
   end;
   // 3 : 
   if FLoadedPages[3] then
   begin
     Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    Reg.OpenKey(GetRegRootKey + '\Menu', True);
-    S := TStringList.Create;
-    Reg.GetKeyNames(S);
-    Reg.CloseKey;
-    for I := 1 to S.Count do
-    begin
-      Reg.DeleteKey(GetRegRootKey + '\Menu\.' + IntToStr(I));
+    try
+      Reg.OpenKey(GetRegRootKey + '\Menu', True);
+      S := TStringList.Create;
+      try
+        Reg.GetKeyNames(S);
+        Reg.CloseKey;
+        for I := 1 to S.Count do
+          Reg.DeleteKey(GetRegRootKey + '\Menu\.' + IntToStr(I));
+      finally
+        F(S);
+      end;
+      for I := 0 to Length(FUserMenu) - 1 do
+      begin
+        Reg.OpenKey(GetRegRootKey + '\Menu\.' + IntToStr(I), True);
+        Reg.WriteString('Caption', FUserMenu[I].Caption);
+        Reg.WriteString('EXEFile', FUserMenu[I].EXEFile);
+        Reg.WriteString('Params', FUserMenu[I].Params);
+        Reg.WriteString('Icon', FUserMenu[I].Icon);
+        Reg.WriteBool('UseSubMenu', FUserMenu[I].UseSubMenu);
+        Reg.CloseKey;
+      end;
+    finally
+      F(Reg);
     end;
-    S.Free;
-    for I := 0 to Length(FUserMenu) - 1 do
-    begin
-      Reg.OpenKey(GetRegRootKey + '\Menu\.' + IntToStr(I), True);
-      Reg.WriteString('Caption', FUserMenu[I].Caption);
-      Reg.WriteString('EXEFile', FUserMenu[I].EXEFile);
-      Reg.WriteString('Params', FUserMenu[I].Params);
-      Reg.WriteString('Icon', FUserMenu[I].Icon);
-      Reg.WriteBool('UseSubMenu', FUserMenu[I].UseSubMenu);
-      Reg.CloseKey;
-    end;
-    Reg.Free;
     Settings.WriteBool('Options', 'UseUserMenuForIDmenu', CheckBox17.Checked);
     Settings.WriteBool('Options', 'UseUserMenuForViewer', CheckBox19.Checked);
     Settings.WriteBool('Options', 'UseUserMenuForExplorer', CheckBox18.Checked);
@@ -534,6 +532,7 @@ begin
   // 5 : 
   if FLoadedPages[5] then
   begin
+    Settings.WriteBool('Options', 'AllowPreview', CheckBox4.Checked);
     Settings.WriteBool('Options', 'UseSmallToolBarButtons', CheckBox38.Checked);
     Settings.WriteBool('Options', 'UseListViewFullRectSelect', CheckBox5.Checked);
     Settings.WriteInteger('Options', 'UseListViewRoundRectSize', StrToIntDef(Edit2.Text, 0));
@@ -541,7 +540,6 @@ begin
     Settings.WriteBool('Options', 'UseGroupsInSearch', CheckBox35.Checked);
     Settings.WriteBool('Options', 'SortGroupsByName', CheckBox26.Checked);
     Settings.WriteBool('Options', 'UseHotSelect', CheckBox23.Checked);
-    Settings.WriteBool('Options', 'UseGDIPlus', CheckBox27.Checked);
     Settings.WriteBool('Options', 'AllowManyInstancesOfProperty', CheckBox28.Checked);
     Settings.WriteBool('Editor', 'VirtualCursor', CheckBox30.Checked);
     Settings.WriteBool('Options', 'CheckUpdateLinks', CheckBox31.Checked);
@@ -570,27 +568,26 @@ begin
   end;
   // end; 
   Close;
-  DestroyTimer.Enabled := True;
 end;
 
 procedure TOptionsForm.CancelButtonClick(Sender: TObject);
 begin
   Close;
-  DestroyTimer.Enabled := True;
 end;
 
-procedure TOptionsForm.CheckListBox1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+procedure TOptionsForm.CbExtensionListContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
 var
   Item: Integer;
 begin
-  Item := CheckListBox1.ItemAtPos(MousePos, True);
+  Item := CbExtensionList.ItemAtPos(MousePos, True);
   if Item <> -1 then
   begin
-    PopupMenu1.Tag := Item;
+    CbExtensionList.Selected[Item] := True;
+    PmExtensionStatus.Tag := Item;
     Usethisprogramasdefault1.Checked := False;
     Usemenuitem1.Checked := False;
     Dontusethisextension1.Checked := False;
-    case CheckListBox1.State[Item] of
+    case CbExtensionList.State[Item] of
       CbUnchecked:
         Dontusethisextension1.Checked := True;
       CbChecked:
@@ -599,48 +596,47 @@ begin
         Usemenuitem1.Checked := True;
     end;
   end;
-  PopupMenu1.PopUp(CheckListBox1.CLientToScreen(MousePos).X, CheckListBox1.CLientToScreen(MousePos).Y);
+  PmExtensionStatus.PopUp(CbExtensionList.CLientToScreen(MousePos).X, CbExtensionList.CLientToScreen(MousePos).Y);
 end;
 
 procedure TOptionsForm.Usethisprogramasdefault1Click(Sender: TObject);
 begin
-  CheckListBox1.State[PopupMenu1.Tag] := CbChecked;
+  CbExtensionList.State[PmExtensionStatus.Tag] := CbChecked;
 end;
 
 procedure TOptionsForm.Usemenuitem1Click(Sender: TObject);
 begin
-  CheckListBox1.State[PopupMenu1.Tag] := CbGrayed;
+  CbExtensionList.State[PmExtensionStatus.Tag] := CbGrayed;
 end;
 
 procedure TOptionsForm.Dontusethisextension1Click(Sender: TObject);
 begin
-  CheckListBox1.State[PopupMenu1.Tag] := CbUnchecked;
+  CbExtensionList.State[PmExtensionStatus.Tag] := CbUnchecked;
 end;
 
-procedure TOptionsForm.Button12Click(Sender: TObject);
+procedure TOptionsForm.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+begin
+  if (Msg.message = WM_LBUTTONDOWN)
+  or (Msg.message = WM_LBUTTONDBLCLK)
+  or (Msg.message = WM_MOUSEMOVE) then
+  begin
+    if (Msg.hwnd = CbInstallTypeChecked.Handle)
+      or (Msg.hwnd = CbInstallTypeGrayed.Handle)
+      or (Msg.hwnd = CbInstallTypeNone.Handle) then
+        Msg.message := 0;
+  end;
+end;
+
+procedure TOptionsForm.BtnInstallExtensionsClick(Sender: TObject);
 var
   I: Integer;
-  Exts: TInstallExts;
 begin
-  SetLength(Exts, CheckListBox1.Items.Count);
-  for I := 1 to CheckListBox1.Items.Count do
-  begin
-    Exts[I - 1].Ext := CheckListBox1.Items[I - 1];
-    case CheckListBox1.State[I - 1] of
-      CbUnchecked:
-        Exts[I - 1].InstallType := InstallType_UnChecked;
-      CbChecked:
-        Exts[I - 1].InstallType := InstallType_Checked;
-      CbGrayed:
-        Exts[I - 1].InstallType := InstallType_Grayed;
-    end;
-  end;
-  // TODO: ExtInstallApplicationW(Exts,Application.ExeName); 
-  LoadExts;
-  try
-    // TODO: RebuildIconCacheAndNotifyChanges; 
-  except
-  end;
+  for I := 0 to CbExtensionList.Items.Count - 1 do
+    TFileAssociations.Instance.Exts[TFileAssociation(CbExtensionList.Items.Objects[I]).Extension].State := CheckboxStateToAssociationState(CbExtensionList.State[I]);
+
+  InstallGraphicFileAssociations(Application.ExeName, nil);
+  RefreshSystemIconCache;
+  LoadDefaultExtStates;
 end;
 
 procedure TOptionsForm.LoadLanguage;
@@ -660,25 +656,25 @@ begin
     Usemenuitem1.Caption := L('Add menu item');
     CheckBox4.Caption := L('Show previews');
     Label12.Caption := L('Show object types') + ':';
-    CheckBox1.Caption := L('Folders');
-    CheckBox6.Caption := L('Simple files');
-    CheckBox7.Caption := L('Images');
-    CheckBox8.Caption := L('Hidden files');
+    CbExplorerShowFolders.Caption := L('Folders');
+    CbExplorerShowSimpleFiles.Caption := L('Simple files');
+    CbExplorerShowImages.Caption := L('Images');
+    CbExplorerShowHidden.Caption := L('Hidden files');
     Label13.Caption := L('Preview options') + ':';
-    CheckBox9.Caption := L('Display attributes');
-    CheckBox10.Caption := L('Display previews for folders');
-    CheckBox11.Caption := L('Save preview for folders');
-    CheckBox12.Caption := L('Show previews for images');
-    Button12.Caption := L('Set');
+    CbExplorerShowAttributes.Caption := L('Display attributes');
+    CbExplorerShowThumbsForFolders.Caption := L('Display previews for folders');
+    CbExplorerSaveThumbsForFolders.Caption := L('Save preview for folders');
+    CbExplorerShowThumbsForImages.Caption := L('Show previews for images');
+    BtnInstallExtensions.Caption := L('Set');
     OkButton.Caption := L('Ok');
     CancelButton.Caption := L('Cancel');
     CheckBox2.Caption := L('Use high-quality rendering');
-    Label14.Caption := L('Extensions') + ':';
+    LbShellExtensions.Caption := L('Extensions') + ':';
     TrackBar4Change(Self);
     TrackBar3Change(Self);
     TrackBar2Change(Self);
     TrackBar1Change(Self);
-    Label17.Caption := L('WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!');
+    LbSecureInfo.Caption := L('WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!');
     CheckBox14.Caption := L('Automatically save passwords for the current session');
     CheckBox15.Caption := L('Automatically save passwords in the settings (NOT RECOMMENDED)');
     Button3.Caption := L('Clear current passwords in session');
@@ -703,36 +699,35 @@ begin
     CheckBox17.Caption := L('ID Menu');
     CheckBox19.Caption := L('Viewer');
     CheckBox18.Caption := L('Explorer');
-    Button19.Caption := L('Clear previews cache');
-    Button20.Caption := L('Clear icons cache');
-    CheckBox20.Caption := L('Show EXIF marker');
-    CheckBox21.Caption := L('Display links "Other places"');
+    BtnClearThumbnailCache.Caption := L('Clear previews cache');
+    BtnClearIconCache.Caption := L('Clear icons cache');
+    CbExplorerShowEXIF.Caption := L('Show EXIF marker');
+    CbExplorerShowPlaces.Caption := L('Display links "Other places"');
     CheckBox22.Caption := L('"Next" by click');
     CheckBox23.Caption := L('Use the selection by hover on the list');
     CheckBox24.Caption := L('Rotate the image on the disk without asking for confirmation');
     CheckBox25.Caption := L('Even if the file in the database, rotate on drive');
-    Button21.Caption := L('JPEG Options');
-    Button22.Caption := L('JPEG Options');
+    WlViewerJPEGOptions.Text := L('JPEG Options');
+    WlDefaultJPEGOptions.Text := L('Change default JPEG Options');
     CheckBox26.Caption := L('Sort groups');
-    CheckBox27.Caption := L('Use GDI+');
     Label29.Caption := L('Create backup every') + ':';
     Label30.Caption := L('days');
     CheckBox28.Caption := L('Allow multiple instances of properties window');
-    CheckListBox2.Clear;
-    CheckListBox2.Items.Add(L('My computer'));
-    CheckListBox2.Items.Add(L('My documents'));
-    CheckListBox2.Items.Add(L('My pictures'));
-    CheckListBox2.Items.Add(L('Other places'));
-    Button24.Caption := L('New place');
-    Label27.Caption := L('Display in') + ':';
-    Label11.Caption := L('User defined places') + ':';
+    CblPlacesDisplayIn.Clear;
+    CblPlacesDisplayIn.Items.Add(L('My computer'));
+    CblPlacesDisplayIn.Items.Add(L('My documents'));
+    CblPlacesDisplayIn.Items.Add(L('My pictures'));
+    CblPlacesDisplayIn.Items.Add(L('Other places'));
+    BtnChooseNewPlace.Caption := L('New place');
+    LbDisplayPlacesIn.Caption := L('Display in') + ':';
+    LbPlacesList.Caption := L('User defined places') + ':';
     PlacesListView.Columns[0].Caption := L('Places') + ':';
 
     Additem1.Caption := L('New place');
     DeleteItem1.Caption := L('Delete');
     Up1.Caption := L('Up');
     Down1.Caption := L('Down');
-    Button23.Caption := L('Icon');
+    BtnChoosePlaceIcon.Caption := L('Icon');
     Rename1.Caption := L('Rename');
     CheckBox30.Caption := L('Virtual cursor to the Editor');
     Default1.Caption := L('Default');
@@ -773,37 +768,12 @@ begin
   Label26.Caption := Format(L('Speed of displaying images for fullscreen: %d ms.'), [TrackBar4.Position * 100]);
 end;
 
-procedure TOptionsForm.LoadExts;
-{var
-  i : integer;
-  reg : TRegistry;
-  s : string;   }
+procedure TOptionsForm.LoadDefaultExtStates;
+var
+  I: Integer;
 begin
- {Reg:=TRegistry.Create;
- Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;
- For i:=1 to CheckListBox1.Items.Count do
- begin
-  CheckListBox1.State[i-1]:=cbUnchecked;
-  Reg.OpenKey('\.'+CheckListBox1.Items[i-1],false);
-  S:=Reg.ReadString('');
-  Reg.CloseKey;
-  Reg.OpenKey('\'+S+'\shell\open\command',false);
-  If reg.ReadString('')='' then
-  CheckListBox1.State[i-1]:=cbUnchecked else
-  begin
-   if FileRegisteredOnInstalledApplication(reg.ReadString('')) then
-   CheckListBox1.State[i-1]:=cbChecked else
-   begin
-    Reg.CloseKey;
-    Reg.OpenKey('\'+S+'\Shell\PhotoDBView\command',false);
-    if FileRegisteredOnInstalledApplication(reg.ReadString('')) then
-    CheckListBox1.State[i-1]:=cbGrayed else
-    CheckListBox1.State[i-1]:=cbUnchecked;
-   end;
-  end;
-  Reg.CloseKey;
- end;
- Reg.Free;}
+  for I := 0 to CbExtensionList.Items.Count - 1 do
+    CbExtensionList.State[I] := AssociationStateToCheckboxState(TFileAssociations.Instance.GetCurrentAssociationState(TFileAssociation(CbExtensionList.Items.Objects[I]).Extension));
 end;
 
 procedure TOptionsForm.Button3Click(Sender: TObject);
@@ -1068,32 +1038,14 @@ begin
   end;
 end;
 
-procedure TOptionsForm.Button20Click(Sender: TObject);
+procedure TOptionsForm.BtnClearIconCacheClick(Sender: TObject);
 begin
   TAIcons.Instance.Clear;
 end;
 
-procedure TOptionsForm.Button19Click(Sender: TObject);
+procedure TOptionsForm.BtnClearThumbnailCacheClick(Sender: TObject);
 begin
   AExplorerFolders.Clear;
-end;
-
-procedure TOptionsForm.DestroyTimerTimer(Sender: TObject);
-begin
-  SaveWindowPos1.SavePosition;
-  DestroyTimer.Enabled := False;
-  Release;
-  OptionsForm := nil;
-end;
-
-procedure TOptionsForm.Button21Click(Sender: TObject);
-begin
-  SetJPEGOptions('Viewer');
-end;
-
-procedure TOptionsForm.Button22Click(Sender: TObject);
-begin
-  SetJPEGOptions;
 end;
 
 procedure TOptionsForm.CreateParams(var Params: TCreateParams);
@@ -1134,7 +1086,7 @@ begin
   PopupMenu3.Popup(PlacesListView.ClientToScreen(MousePos).X, PlacesListView.ClientToScreen(MousePos).Y);
 end;
 
-procedure TOptionsForm.Button24Click(Sender: TObject);
+procedure TOptionsForm.BtnChooseNewPlaceClick(Sender: TObject);
 var
   NewPlace: String;
 const
@@ -1247,6 +1199,16 @@ begin
   end;
 end;
 
+procedure TOptionsForm.WlDefaultJPEGOptionsClick(Sender: TObject);
+begin
+  SetJPEGOptions;
+end;
+
+procedure TOptionsForm.WlViewerJPEGOptionsClick(Sender: TObject);
+begin
+  SetJPEGOptions('Viewer');
+end;
+
 procedure TOptionsForm.WritePlaces;
 var
   I: Integer;
@@ -1291,35 +1253,35 @@ begin
   if not Selected then
   begin
     for I := 0 to 3 do
-      CheckListBox2.Checked[I] := False;
-    CheckListBox2.Enabled := False;
-    Button23.Enabled := False;
+      CblPlacesDisplayIn.Checked[I] := False;
+    CblPlacesDisplayIn.Enabled := False;
+    BtnChoosePlaceIcon.Enabled := False;
   end else
   begin
-    CheckListBox2.Checked[0] := FPlaces[Item.Index].MyComputer;
-    CheckListBox2.Checked[1] := FPlaces[Item.Index].MyDocuments;
-    CheckListBox2.Checked[2] := FPlaces[Item.Index].MyPictures;
-    CheckListBox2.Checked[3] := FPlaces[Item.Index].OtherFolder;
-    CheckListBox2.Enabled := True;
-    Button23.Enabled := True;
+    CblPlacesDisplayIn.Checked[0] := FPlaces[Item.Index].MyComputer;
+    CblPlacesDisplayIn.Checked[1] := FPlaces[Item.Index].MyDocuments;
+    CblPlacesDisplayIn.Checked[2] := FPlaces[Item.Index].MyPictures;
+    CblPlacesDisplayIn.Checked[3] := FPlaces[Item.Index].OtherFolder;
+    CblPlacesDisplayIn.Enabled := True;
+    BtnChoosePlaceIcon.Enabled := True;
   end;
 end;
 
-procedure TOptionsForm.CheckListBox2ClickCheck(Sender: TObject);
+procedure TOptionsForm.CblPlacesDisplayInClickCheck(Sender: TObject);
 var
   I: Integer;
 begin
   if PlacesListView.Selected <> nil then
   begin
     I := PlacesListView.Selected.Index;
-    FPlaces[I].MyComputer := CheckListBox2.Checked[0];
-    FPlaces[I].MyDocuments := CheckListBox2.Checked[1];
-    FPlaces[I].MyPictures := CheckListBox2.Checked[2];
-    FPlaces[I].OtherFolder := CheckListBox2.Checked[3];
+    FPlaces[I].MyComputer := CblPlacesDisplayIn.Checked[0];
+    FPlaces[I].MyDocuments := CblPlacesDisplayIn.Checked[1];
+    FPlaces[I].MyPictures := CblPlacesDisplayIn.Checked[2];
+    FPlaces[I].OtherFolder := CblPlacesDisplayIn.Checked[3];
   end;
 end;
 
-procedure TOptionsForm.Button23Click(Sender: TObject);
+procedure TOptionsForm.BtnChoosePlaceIconClick(Sender: TObject);
 var
   FileName: string;
   IconIndex: Integer;

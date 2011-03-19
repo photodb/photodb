@@ -14,7 +14,9 @@ object OptionsForm: TOptionsForm
   Font.Style = []
   OldCreateOrder = False
   PrintScale = poNone
+  OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -41,112 +43,188 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 407
     Height = 441
-    ActivePage = TsGeneral
+    ActivePage = TsSecurity
     TabOrder = 2
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object CheckBox4: TCheckBox
-        Left = 232
-        Top = 8
-        Width = 161
+      object LblSkipExt: TLabel
+        Left = 268
+        Top = 112
+        Width = 131
+        Height = 40
+        AutoSize = False
+        Caption = '- File extension ignored'
+        WordWrap = True
+      end
+      object LblAddSubmenuItem: TLabel
+        Left = 265
+        Top = 68
+        Width = 134
+        Height = 38
+        AutoSize = False
+        Caption = '- File option will added for this file type'
+        WordWrap = True
+      end
+      object LblUseExt: TLabel
+        Left = 268
+        Top = 26
+        Width = 131
+        Height = 40
+        AutoSize = False
+        Caption = '- File will open with this Program'
+        WordWrap = True
+      end
+      object Bevel2: TBevel
+        Left = 3
+        Top = 206
+        Width = 390
+        Height = 9
+        Shape = bsTopLine
+      end
+      object LbShellExtensions: TStaticText
+        Left = 3
+        Top = 3
+        Width = 84
         Height = 17
-        Caption = 'Show Preview'
+        Caption = 'Shell Extensions:'
         TabOrder = 0
+      end
+      object CbExtensionList: TCheckListBox
+        Left = 3
+        Top = 26
+        Width = 236
+        Height = 174
+        AllowGrayed = True
+        ItemHeight = 13
+        TabOrder = 1
+        OnContextPopup = CbExtensionListContextPopup
+      end
+      object BtnInstallExtensions: TButton
+        Left = 245
+        Top = 175
+        Width = 151
+        Height = 25
+        Caption = 'Set'
+        TabOrder = 2
+        OnClick = BtnInstallExtensionsClick
+      end
+      object CbInstallTypeChecked: TCheckBox
+        Left = 245
+        Top = 25
+        Width = 17
+        Height = 17
+        Checked = True
+        State = cbChecked
+        TabOrder = 3
+      end
+      object CbInstallTypeGrayed: TCheckBox
+        Left = 245
+        Top = 68
+        Width = 17
+        Height = 17
+        AllowGrayed = True
+        State = cbGrayed
+        TabOrder = 4
+      end
+      object CbInstallTypeNone: TCheckBox
+        Left = 245
+        Top = 111
+        Width = 17
+        Height = 17
+        TabOrder = 5
+      end
+      object WlDefaultJPEGOptions: TWebLink
+        Left = 3
+        Top = 221
+        Width = 146
+        Height = 13
+        Cursor = crHandPoint
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlue
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentColor = False
+        Color = clBtnFace
+        Text = 'Change default JPEG settings'
+        OnClick = WlDefaultJPEGOptionsClick
+        ImageIndex = 0
+        IconWidth = 0
+        IconHeight = 0
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
+        UseSpecIconSize = True
       end
     end
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object Label27: TLabel
-        Left = 272
+      object LbDisplayPlacesIn: TLabel
+        Left = 207
         Top = 136
         Width = 41
         Height = 13
         Caption = 'Show in:'
       end
-      object Label11: TLabel
-        Left = 136
+      object LbPlacesList: TLabel
+        Left = 3
         Top = 136
         Width = 97
         Height = 13
         Caption = 'User defined places:'
       end
       object Bevel1: TBevel
-        Left = 136
+        Left = 3
         Top = 344
-        Width = 257
+        Width = 390
         Height = 9
         Shape = bsTopLine
       end
-      object Button20: TButton
-        Left = 136
+      object BtnClearIconCache: TButton
+        Left = 0
         Top = 384
-        Width = 257
+        Width = 233
         Height = 24
-        Caption = 'Clear Icon Cash'
+        Caption = 'Clear Icon Cache'
         TabOrder = 0
-        OnClick = Button20Click
+        OnClick = BtnClearIconCacheClick
       end
-      object Button12: TButton
-        Left = 8
-        Top = 384
-        Width = 113
-        Height = 25
-        Caption = 'Set'
-        TabOrder = 1
-        OnClick = Button12Click
-      end
-      object Button19: TButton
-        Left = 136
-        Top = 351
-        Width = 257
+      object BtnClearThumbnailCache: TButton
+        Left = 3
+        Top = 352
+        Width = 230
         Height = 26
-        Caption = 'Clear Folder Thumbnails Cash'
-        TabOrder = 2
-        OnClick = Button19Click
+        Caption = 'Clear Folder Thumbnails Cache'
+        TabOrder = 1
+        OnClick = BtnClearThumbnailCacheClick
       end
-      object Button24: TButton
-        Left = 136
+      object BtnChooseNewPlace: TButton
+        Left = 3
         Top = 312
         Width = 89
         Height = 25
         Caption = 'Select Folder'
-        TabOrder = 3
-        OnClick = Button24Click
+        TabOrder = 2
+        OnClick = BtnChooseNewPlaceClick
       end
-      object Button23: TButton
-        Left = 232
+      object BtnChoosePlaceIcon: TButton
+        Left = 98
         Top = 312
         Width = 81
         Height = 25
         Caption = 'Icon'
         Enabled = False
-        TabOrder = 4
-        OnClick = Button23Click
-      end
-      object CheckListBox1: TCheckListBox
-        Left = 8
-        Top = 112
-        Width = 113
-        Height = 265
-        AllowGrayed = True
-        ItemHeight = 13
-        TabOrder = 5
-        OnContextPopup = CheckListBox1ContextPopup
+        TabOrder = 3
+        OnClick = BtnChoosePlaceIconClick
       end
       object PlacesListView: TListView
-        Left = 136
-        Top = 152
-        Width = 145
+        Left = 3
+        Top = 153
+        Width = 198
         Height = 153
         Columns = <
           item
@@ -155,18 +233,18 @@ object OptionsForm: TOptionsForm
           end>
         HideSelection = False
         SmallImages = PlacesImageList
-        TabOrder = 6
+        TabOrder = 4
         ViewStyle = vsReport
         OnContextPopup = PlacesListViewContextPopup
         OnEdited = PlacesListViewEdited
         OnSelectItem = PlacesListViewSelectItem
       end
-      object CheckListBox2: TCheckListBox
-        Left = 288
+      object CblPlacesDisplayIn: TCheckListBox
+        Left = 207
         Top = 152
-        Width = 110
+        Width = 191
         Height = 153
-        OnClickCheck = CheckListBox2ClickCheck
+        OnClickCheck = CblPlacesDisplayInClickCheck
         Enabled = False
         ItemHeight = 13
         Items.Strings = (
@@ -174,122 +252,110 @@ object OptionsForm: TOptionsForm
           'My Picures'
           'My Documents'
           'Other folders')
-        TabOrder = 7
+        TabOrder = 5
       end
-      object CheckBox21: TCheckBox
-        Left = 136
-        Top = 114
+      object CbExplorerShowPlaces: TCheckBox
+        Left = 7
+        Top = 113
         Width = 241
         Height = 17
         Caption = 'Show "Other Places"'
-        TabOrder = 8
+        TabOrder = 6
       end
-      object CheckBox20: TCheckBox
-        Left = 136
-        Top = 96
+      object CbExplorerShowEXIF: TCheckBox
+        Left = 7
+        Top = 95
         Width = 241
         Height = 17
         Caption = 'Show EXIF marker'
-        TabOrder = 9
+        TabOrder = 7
       end
-      object CheckBox12: TCheckBox
-        Left = 168
+      object CbExplorerShowThumbsForImages: TCheckBox
+        Left = 175
         Top = 72
         Width = 217
         Height = 17
         Caption = 'Show Thumbnails For Images'
-        TabOrder = 10
+        TabOrder = 8
       end
-      object CheckBox11: TCheckBox
-        Left = 168
+      object CbExplorerSaveThumbsForFolders: TCheckBox
+        Left = 175
         Top = 56
         Width = 217
         Height = 17
         Caption = 'Save Thumbnails For Folders'
-        TabOrder = 11
+        TabOrder = 9
       end
-      object CheckBox10: TCheckBox
-        Left = 168
+      object CbExplorerShowThumbsForFolders: TCheckBox
+        Left = 175
         Top = 40
         Width = 217
         Height = 17
         Caption = 'Show Thumbnails For Folders'
-        TabOrder = 12
+        TabOrder = 10
       end
-      object CheckBox9: TCheckBox
-        Left = 168
+      object CbExplorerShowAttributes: TCheckBox
+        Left = 175
         Top = 24
         Width = 217
         Height = 17
         Caption = 'Show Attributes'
-        TabOrder = 13
+        TabOrder = 11
       end
       object Label13: TStaticText
-        Left = 168
-        Top = 5
+        Left = 169
+        Top = 3
         Width = 217
         Height = 17
         AutoSize = False
         Caption = 'Thumbnails options:'
-        TabOrder = 14
+        TabOrder = 12
       end
       object Label12: TStaticText
-        Left = 8
-        Top = 5
+        Left = 3
+        Top = 3
         Width = 160
         Height = 17
         AutoSize = False
         Caption = 'Show current objects:'
-        TabOrder = 15
+        TabOrder = 13
       end
-      object CheckBox1: TCheckBox
-        Left = 8
+      object CbExplorerShowFolders: TCheckBox
+        Left = 7
         Top = 24
         Width = 161
         Height = 17
         Caption = 'Folders'
-        TabOrder = 16
+        TabOrder = 14
       end
-      object CheckBox6: TCheckBox
-        Left = 8
+      object CbExplorerShowSimpleFiles: TCheckBox
+        Left = 7
         Top = 40
         Width = 161
         Height = 17
         Caption = 'Simple Files'
-        TabOrder = 17
+        TabOrder = 15
       end
-      object CheckBox7: TCheckBox
-        Left = 8
+      object CbExplorerShowImages: TCheckBox
+        Left = 7
         Top = 56
         Width = 161
         Height = 17
         Caption = 'Image Files'
-        TabOrder = 18
+        TabOrder = 16
       end
-      object CheckBox8: TCheckBox
-        Left = 8
+      object CbExplorerShowHidden: TCheckBox
+        Left = 7
         Top = 72
         Width = 161
         Height = 17
         Caption = 'Hidden Files'
-        TabOrder = 19
-      end
-      object Label14: TStaticText
-        Left = 8
-        Top = 93
-        Width = 84
-        Height = 17
-        Caption = 'Shell Extensions:'
-        TabOrder = 20
+        TabOrder = 17
       end
     end
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label15: TLabel
         Left = 6
         Top = 4
@@ -394,39 +460,51 @@ object OptionsForm: TOptionsForm
         Caption = 'Use Fast Viewing'
         TabOrder = 6
       end
-      object Button21: TButton
-        Left = 6
-        Top = 282
-        Width = 193
-        Height = 21
-        Caption = 'JPEG options'
-        TabOrder = 7
-        OnClick = Button21Click
-      end
       object CheckBox22: TCheckBox
-        Left = 5
-        Top = 314
+        Left = 6
+        Top = 298
         Width = 394
         Height = 17
         Caption = 'Next on Click'
-        TabOrder = 8
+        TabOrder = 7
       end
       object CheckBox2: TCheckBox
-        Left = 5
-        Top = 333
+        Left = 6
+        Top = 321
         Width = 394
         Height = 17
         Caption = 'Use Cool Stretch'
-        TabOrder = 9
+        TabOrder = 8
+      end
+      object WlViewerJPEGOptions: TWebLink
+        Left = 3
+        Top = 279
+        Width = 71
+        Height = 13
+        Cursor = crHandPoint
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlue
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentColor = False
+        Color = clBtnFace
+        Text = 'JPEG settings'
+        OnClick = WlViewerJPEGOptionsClick
+        ImageIndex = 0
+        IconWidth = 0
+        IconHeight = 0
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
+        UseSpecIconSize = True
       end
     end
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label23: TLabel
         Left = 9
         Top = 260
@@ -482,30 +560,22 @@ object OptionsForm: TOptionsForm
         Height = 13
         Caption = 'Caption:'
       end
-      object Button2: TButton
-        Left = 376
-        Top = 382
-        Width = 17
-        Height = 23
-        Caption = '...'
-        TabOrder = 0
-      end
       object Button16: TButton
-        Left = 8
-        Top = 304
+        Left = 3
+        Top = 303
         Width = 105
         Height = 17
         Caption = 'Save'
-        TabOrder = 1
+        TabOrder = 0
         OnClick = Button16Click
       end
       object GroupBox3: TGroupBox
-        Left = 216
-        Top = 240
+        Left = 220
+        Top = 236
         Width = 161
         Height = 73
         Caption = 'Use Menu for'
-        TabOrder = 2
+        TabOrder = 1
         object CheckBox17: TCheckBox
           Left = 8
           Top = 16
@@ -538,7 +608,7 @@ object OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Save'
         Enabled = False
-        TabOrder = 3
+        TabOrder = 2
         OnClick = Button13Click
       end
       object Button14: TButton
@@ -547,7 +617,7 @@ object OptionsForm: TOptionsForm
         Width = 105
         Height = 17
         Caption = 'Add'
-        TabOrder = 4
+        TabOrder = 3
         OnClick = Addnewcommand1Click
       end
       object Button18: TButton
@@ -556,7 +626,7 @@ object OptionsForm: TOptionsForm
         Width = 57
         Height = 17
         Caption = 'Down'
-        TabOrder = 5
+        TabOrder = 4
         OnClick = Button18Click
       end
       object Button17: TButton
@@ -565,7 +635,7 @@ object OptionsForm: TOptionsForm
         Width = 57
         Height = 17
         Caption = 'Up'
-        TabOrder = 6
+        TabOrder = 5
         OnClick = Button17Click
       end
       object ListView1: TListView
@@ -581,7 +651,7 @@ object OptionsForm: TOptionsForm
         HideSelection = False
         ReadOnly = True
         SmallImages = ImageList1
-        TabOrder = 7
+        TabOrder = 6
         ViewStyle = vsReport
         OnContextPopup = ListView1ContextPopup
         OnSelectItem = ListView1SelectItem
@@ -592,7 +662,7 @@ object OptionsForm: TOptionsForm
         Width = 15
         Height = 21
         Caption = '...'
-        TabOrder = 8
+        TabOrder = 7
         OnClick = Button15Click
       end
       object Edit8: TEdit
@@ -601,14 +671,14 @@ object OptionsForm: TOptionsForm
         Width = 137
         Height = 21
         ReadOnly = True
-        TabOrder = 9
+        TabOrder = 8
       end
       object Edit7: TEdit
         Left = 9
         Top = 236
         Width = 121
         Height = 21
-        TabOrder = 10
+        TabOrder = 9
       end
       object CheckBox16: TCheckBox
         Left = 127
@@ -618,7 +688,7 @@ object OptionsForm: TOptionsForm
         Caption = 'Use "user submenu"'
         Checked = True
         State = cbChecked
-        TabOrder = 11
+        TabOrder = 10
       end
       object Edit5: TEdit
         Left = 127
@@ -627,7 +697,7 @@ object OptionsForm: TOptionsForm
         Height = 21
         Enabled = False
         ReadOnly = True
-        TabOrder = 12
+        TabOrder = 11
         OnKeyPress = Edit6KeyPress
       end
       object Button7: TButton
@@ -637,7 +707,7 @@ object OptionsForm: TOptionsForm
         Height = 21
         Caption = '...'
         Enabled = False
-        TabOrder = 13
+        TabOrder = 12
         OnClick = Button7Click
       end
       object Edit9: TEdit
@@ -646,7 +716,7 @@ object OptionsForm: TOptionsForm
         Width = 270
         Height = 21
         Enabled = False
-        TabOrder = 14
+        TabOrder = 13
         OnKeyPress = Edit6KeyPress
       end
       object Edit4: TEdit
@@ -655,7 +725,7 @@ object OptionsForm: TOptionsForm
         Width = 254
         Height = 21
         Enabled = False
-        TabOrder = 15
+        TabOrder = 14
         OnKeyPress = Edit6KeyPress
       end
       object Button5: TButton
@@ -665,7 +735,7 @@ object OptionsForm: TOptionsForm
         Height = 21
         Caption = '...'
         Enabled = False
-        TabOrder = 16
+        TabOrder = 15
         OnClick = Button5Click
       end
       object Edit6: TEdit
@@ -674,17 +744,13 @@ object OptionsForm: TOptionsForm
         Width = 145
         Height = 21
         Enabled = False
-        TabOrder = 17
+        TabOrder = 16
         OnKeyPress = Edit6KeyPress
       end
     end
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox2: TGroupBox
         Left = 8
         Top = 192
@@ -722,10 +788,10 @@ object OptionsForm: TOptionsForm
         Height = 177
         Caption = 'Passwords'
         TabOrder = 1
-        object Label17: TLabel
+        object LbSecureInfo: TLabel
           Left = 64
           Top = 16
-          Width = 297
+          Width = 318
           Height = 57
           AutoSize = False
           Caption = 
@@ -734,7 +800,7 @@ object OptionsForm: TOptionsForm
             'they!!!'
           WordWrap = True
         end
-        object Image1: TImage
+        object ImSecureInfo: TImage
           Left = 8
           Top = 16
           Width = 49
@@ -1083,10 +1149,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label32: TLabel
         Left = 134
         Top = 392
@@ -1109,7 +1171,7 @@ object OptionsForm: TOptionsForm
         Caption = 'px'
       end
       object Label34: TLabel
-        Left = 3
+        Left = 8
         Top = 224
         Width = 58
         Height = 13
@@ -1167,25 +1229,25 @@ object OptionsForm: TOptionsForm
         OnClick = CheckBox33Click
       end
       object CheckBox32: TCheckBox
-        Left = 7
+        Left = 8
         Top = 312
-        Width = 386
+        Width = 385
         Height = 17
         Caption = 'Start Explorer At startup'
         TabOrder = 6
         OnClick = CheckBox32Click
       end
       object CheckBox31: TCheckBox
-        Left = 7
+        Left = 8
         Top = 267
-        Width = 386
+        Width = 385
         Height = 38
         Caption = 'Verify links on updation images (works slowly, read help)'
         TabOrder = 7
         WordWrap = True
       end
       object Edit2: TEdit
-        Left = 7
+        Left = 8
         Top = 242
         Width = 121
         Height = 21
@@ -1193,15 +1255,15 @@ object OptionsForm: TOptionsForm
         Text = '3'
       end
       object CheckBox5: TCheckBox
-        Left = 7
+        Left = 8
         Top = 201
-        Width = 386
+        Width = 385
         Height = 17
         Caption = 'Use full rect select in ListView'
         TabOrder = 9
       end
       object CheckBox38: TCheckBox
-        Left = 7
+        Left = 8
         Top = 181
         Width = 385
         Height = 17
@@ -1209,17 +1271,17 @@ object OptionsForm: TOptionsForm
         TabOrder = 10
       end
       object CheckBox30: TCheckBox
-        Left = 7
+        Left = 8
         Top = 161
-        Width = 386
+        Width = 385
         Height = 17
         Caption = 'Virtual Cursor in Editor'
         TabOrder = 11
       end
       object CheckBox28: TCheckBox
-        Left = 7
+        Left = 8
         Top = 116
-        Width = 386
+        Width = 385
         Height = 17
         Caption = 'Use many instances of Property'
         TabOrder = 12
@@ -1232,44 +1294,35 @@ object OptionsForm: TOptionsForm
         Caption = 'Use Groups in search'
         TabOrder = 13
       end
-      object Button22: TButton
-        Left = 6
-        Top = 66
-        Width = 193
-        Height = 23
-        Caption = 'JPEG options'
-        TabOrder = 14
-        OnClick = Button22Click
-      end
-      object CheckBox27: TCheckBox
-        Left = 7
-        Top = 44
-        Width = 386
-        Height = 17
-        Caption = 'Use GDI+'
-        TabOrder = 15
-      end
       object CheckBox26: TCheckBox
-        Left = 7
+        Left = 8
         Top = 26
-        Width = 386
+        Width = 385
         Height = 17
         Caption = 'Sort Groups by Name'
-        TabOrder = 16
+        TabOrder = 14
       end
       object CheckBox23: TCheckBox
-        Left = 7
+        Left = 8
         Top = 8
-        Width = 386
+        Width = 385
         Height = 17
         Caption = 'Use "hot" select in listviews'
-        TabOrder = 17
+        TabOrder = 15
+      end
+      object CheckBox4: TCheckBox
+        Left = 8
+        Top = 139
+        Width = 385
+        Height = 17
+        Caption = 'Show Preview'
+        TabOrder = 16
       end
     end
   end
-  object PopupMenu1: TPopupMenu
-    Left = 280
-    Top = 368
+  object PmExtensionStatus: TPopupMenu
+    Left = 288
+    Top = 448
     object Usethisprogramasdefault1: TMenuItem
       Caption = 'Use this program as default'
       OnClick = Usethisprogramasdefault1Click
@@ -1291,8 +1344,8 @@ object OptionsForm: TOptionsForm
     end
   end
   object PopupMenu2: TPopupMenu
-    Left = 209
-    Top = 421
+    Left = 161
+    Top = 437
     object Addnewcommand1: TMenuItem
       Caption = 'Add new command'
       OnClick = Addnewcommand1Click
@@ -1303,22 +1356,15 @@ object OptionsForm: TOptionsForm
     end
   end
   object ImageList1: TImageList
-    Left = 137
-    Top = 421
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 348
-    Top = 368
+    Left = 9
+    Top = 437
   end
   object PopupMenu3: TPopupMenu
-    Left = 212
-    Top = 368
+    Left = 124
+    Top = 440
     object Additem1: TMenuItem
       Caption = 'Add item'
-      OnClick = Button24Click
+      OnClick = BtnChooseNewPlaceClick
     end
     object DeleteItem1: TMenuItem
       Caption = 'Delete Item'
@@ -1344,14 +1390,19 @@ object OptionsForm: TOptionsForm
     end
   end
   object PlacesImageList: TImageList
-    Left = 140
-    Top = 368
+    Left = 92
+    Top = 408
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = True
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 280
-    Top = 421
+    Left = 192
+    Top = 437
+  end
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
+    Left = 248
+    Top = 440
   end
 end

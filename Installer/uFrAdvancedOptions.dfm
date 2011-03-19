@@ -22,9 +22,9 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
   end
   object LblAddSubmenuItem: TLabel
     Left = 296
-    Top = 41
+    Top = 44
     Width = 134
-    Height = 50
+    Height = 42
     AutoSize = False
     Caption = '- File option will added for this file type'
     WordWrap = True
@@ -67,7 +67,7 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
   end
   object CbInstallTypeGrayed: TCheckBox
     Left = 273
-    Top = 40
+    Top = 44
     Width = 17
     Height = 17
     AllowGrayed = True
