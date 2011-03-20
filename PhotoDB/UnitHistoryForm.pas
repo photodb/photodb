@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, uDBUtils, Menus, UnitDBKernel,
   UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt, uMemory, uDBForm,
-  uConstants, uDBPopupMenuInfo;
+  uConstants, uDBPopupMenuInfo, uFileUtils;
 
 type
   TFormHistory = class(TDBForm)
@@ -218,7 +218,7 @@ begin
   for I := 0 to List.Count - 1 do
   begin
     FileList.Add(List[I]);
-    if FileExists(List[I]) then
+    if FileExistsSafe(List[I]) then
     begin
       if GraphicCrypt.ValidCryptGraphicFile(List[I]) then
       begin
@@ -295,7 +295,7 @@ var
 begin
   for I := 0 to FileList.Count - 1 do
   begin
-    if FileExists(FileList[I]) then
+    if FileExistsSafe(FileList[I]) then
       UpdaterDB.AddFile(FileList[I]);
   end;
 end;

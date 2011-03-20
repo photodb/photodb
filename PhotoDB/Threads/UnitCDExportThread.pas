@@ -126,8 +126,8 @@ begin
  InTable.FieldByName('FileSize').AsInteger:=OutTable.FieldByName('FileSize').AsInteger;
  InTable.FieldByName('KeyWords').AsString:=OutTable.FieldByName('KeyWords').AsString;
  InTable.FieldByName('StrTh').AsString:=OutTable.FieldByName('StrTh').AsString;
- If fileexists(InTable.FieldByName('FFileName').AsString) then
- InTable.FieldByName('Attr').AsInteger:=db_attr_norm else
+ if FileExistsSafe(InTable.FieldByName('FFileName').AsString) then
+   InTable.FieldByName('Attr').AsInteger:=db_attr_norm else
  InTable.FieldByName('Attr').AsInteger:=db_attr_not_exists;
  InTable.FieldByName('Attr').AsInteger:=OutTable.FieldByName('Attr').AsInteger;
  InTable.FieldByName('Collection').AsString:=OutTable.FieldByName('Collection').AsString;

@@ -26,6 +26,7 @@
   </scope>
   <scope name="System">
     <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
+    <translate name="View with PhotoDB" value="Просмотрт с помощью PhotoDB" />
   </scope>
   <scope name="InstallLanguage">
     <translate name="Select language" value="Выбор языка" />
@@ -85,7 +86,7 @@
 	<translate name="Choose JPEG mode and compression rate" value="Выберите настройки JPEG" />
 	<translate name="JPEG" value="JPEG" />
 	<translate name="Progressive mode" value="Прогрессивный режим" />
-	<translate name="Optimize to size" value="оптимизировать под размер" />
+	<translate name="Optimize to size" value="Оптимизировать под размер" />
   </scope> 
   <scope name="DateChange">
     <translate name="Change date and time" value="Изменить дату и время" />

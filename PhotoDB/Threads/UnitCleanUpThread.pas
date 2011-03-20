@@ -146,7 +146,7 @@ begin
 
       if Settings.ReadBool('Options', 'DeleteNotValidRecords', True) then
       begin
-        if not FileExists(FTable.FieldByName('FFileName').AsString) then
+        if not FileExistsSafe(FTable.FieldByName('FFileName').AsString) then
         begin
           if Settings.ReadBool('Options', 'DeleteNotValidRecords', True) then
           begin
@@ -208,13 +208,13 @@ begin
         ExifData := TExifData.Create;
         try
           ExifData.LoadFromGraphic(FTable.FieldByName('FFileName').AsString);
-          if YearOf(ExifData.DateTime) > 2000 then
-            if (FTable.FieldByName('DateToAdd').AsDateTime <> ExifData.DateTime) or
-              (FTable.FieldByName('aTime').AsDateTime <> TimeOf(ExifData.DateTime)) then
+          if YearOf(ExifData.DateTimeOriginal) > 2000 then
+            if (FTable.FieldByName('DateToAdd').AsDateTime <> ExifData.DateTimeOriginal) or
+              (FTable.FieldByName('aTime').AsDateTime <> TimeOf(ExifData.DateTimeOriginal)) then
             begin
 
-              DateToAdd := ExifData.DateTime;
-              ATime := TimeOf(ExifData.DateTime);
+              DateToAdd := ExifData.DateTimeOriginal;
+              ATime := TimeOf(ExifData.DateTimeOriginal);
               IsDate := True;
               IsTime := True;
               _sqlexectext := '';
@@ -276,7 +276,7 @@ begin
             FQuery.Next;
           end;
         end;
-        if (FQuery.RecordCount = 1) and Fileexists(FTable.FieldByName('FFileName').AsString) and
+        if (FQuery.RecordCount = 1) and FileExistsSafe(FTable.FieldByName('FFileName').AsString) and
           (FTable.FieldByName('Attr').AsInteger = Db_attr_dublicate) then
           SetAttr(FTable.FieldByName('ID').AsInteger, Db_attr_norm);
       end;

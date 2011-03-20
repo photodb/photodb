@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, CommCtrl, Dialogs, Classes, CommonDBSupport,
-  SysUtils, ComCtrls, Graphics, DBGrids, DB, Dolphin_DB,
+  SysUtils, ComCtrls, Graphics, DBGrids, DB, Dolphin_DB, uFileUtils,
   jpeg, registry, uConstants;
 
 type
@@ -58,7 +58,7 @@ begin
    begin
     if fReqQuery.FieldByName('ID').AsInteger<>fQuery.FieldByName('ID').AsInteger then
     begin
-     if not (FileExists(fQuery.FieldByName('FFileName').AsString)) and (FileExists(fReqQuery.FieldByName('FFileName').AsString)) then
+     if not (FileExistsSafe(fQuery.FieldByName('FFileName').AsString)) and (FileExistsSafe(fReqQuery.FieldByName('FFileName').AsString)) then
      begin
       If fReqQuery.FieldByName('Comment').AsString<>'' then
       UpdatedComment:=fReqQuery.FieldByName('Comment').AsString+#10#13+'P.S. '+fQuery.FieldByName('Comment').AsString else

@@ -169,7 +169,7 @@ begin
     // deleting temp and system db files
 
     FileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName) + '.ldb';
-    if FileExists(FileName) then
+    if FileExistsSafe(FileName) then
       SilentDeleteFile(0, FileName, True);
 
   except

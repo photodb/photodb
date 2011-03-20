@@ -310,7 +310,8 @@ uses
   uSettings in 'Units\uSettings.pas',
   CCR.Exif.BaseUtils in 'External\CCR.Exif\CCR.Exif.BaseUtils.pas',
   CCR.Exif.TiffUtils in 'External\CCR.Exif\CCR.Exif.TiffUtils.pas',
-  uSearchTypes in 'Units\uSearchTypes.pas';
+  uSearchTypes in 'Units\uSearchTypes.pas',
+  uCryptUtils in 'Units\uCryptUtils.pas';
 
 {$R *.res}
 

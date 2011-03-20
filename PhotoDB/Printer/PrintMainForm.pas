@@ -687,7 +687,7 @@ begin
             SetJPEGOptions;
             if (GetExt(FileName) <> 'JPG') and (GetExt(FileName) <> 'JPEG') then
               FileName := FileName + '.jpg';
-            if FileExists(FileName) then
+            if FileExistsSafe(FileName) then
               if ID_OK <> MessageBoxDB(Handle, Format(L('File "%s" already exists! Do you want to replace it?'), [FileName]), L('Warning'),
                 TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
                 Exit;

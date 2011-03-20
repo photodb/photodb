@@ -1573,7 +1573,7 @@ begin
     Exit;
   begin
     if GetExt(S) <> GetExt(FFilesInfo[PmItemPopup.Tag].FileName) then
-      if FileExists(FFilesInfo[PmItemPopup.Tag].FileName) then
+      if FileExistsSafe(FFilesInfo[PmItemPopup.Tag].FileName) then
       begin
         if ID_OK <> MessageBoxDB(Handle, L('Do you really want to replace extension to selected object?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         begin
@@ -1653,7 +1653,7 @@ begin
   if not IsGraphicFile(FFilesInfo[index].FileName) then
     Exit;
 
-  if not FileExists(FFilesInfo[index].FileName) then
+  if not FileExistsSafe(FFilesInfo[index].FileName) then
     Exit;
 
   HintTimer.Enabled := False;
@@ -2115,8 +2115,8 @@ begin
   end;
 
   if (EventID_Param_Add in Params) or (EventID_Param_Name in Params) then
-    if not(FileExists(Value.NewName) or DirectoryExists(Value.NewName)) and not
-      (FileExists(Value.name) or DirectoryExists(Value.name)) then
+    if not(FileExistsSafe(Value.NewName) or DirectoryExists(Value.NewName)) and not
+      (FileExistsSafe(Value.Name) or DirectoryExists(Value.name)) then
       RefreshItemByName(Value.name)
     else
       RefreshItemByName(Value.NewName);
@@ -3054,7 +3054,7 @@ begin
             if AnsiLowerCase(FFilesInfo[index].FileName) = AnsiLowerCase(PInfo[K].FOldFileName) then
             begin
               if (not DirectoryExists(PInfo[K].FOldFileName) and DirectoryExists(PInfo[K].FNewFileName)) or
-                (not FileExists(PInfo[K].FOldFileName) and FileExists(PInfo[K].FNewFileName)) then
+                (not FileExistsSafe(PInfo[K].FOldFileName) and FileExistsSafe(PInfo[K].FNewFileName)) then
               begin
                 ElvMain.Items[I].Caption := ExtractFileName(PInfo[K].FNewFileName);
                 FFilesInfo[index].FileName := PInfo[K].FNewFileName;
@@ -5645,11 +5645,11 @@ begin
   S := IncludeTrailingBackslash(GetCurrentPath);
 
   N := 1;
-  if FileExists(S + FileName) then
+  if FileExistsSafe(S + FileName) then
   begin
     repeat
       Inc(N);
-    until not FileExists(S + FileNameTemplate + ' (' + Inttostr(N) + ').txt');
+    until not FileExistsSafe(S + FileNameTemplate + ' (' + Inttostr(N) + ').txt');
     FileName := S + FileNameTemplate + ' (' + Inttostr(N) + ').txt';
   end else
     FileName := S + FileName;
@@ -5660,7 +5660,7 @@ begin
 {$I-}
   if IOResult <> 0 then
   begin
-    if not FileExists(FileName) then
+    if not FileExistsSafe(FileName) then
     begin
       MessageBoxDB(Handle, Format(L('Unable to create file "%s"!'), [FileName]), L('Error'), TD_BUTTON_OK,
         TD_ICON_ERROR);

@@ -53,7 +53,7 @@ begin
 
     CopyFile(PChar(Dbname), PChar(GetAppDataDirectory + BackUpFolder + GetFileNameWithoutExt(Dbname) + '[BU].photodb'),
       False);
-    if not FileExists(GetAppDataDirectory + BackUpFolder + GetFileNameWithoutExt(Dbname) + '[BU].photodb') then
+    if not FileExistsSafe(GetAppDataDirectory + BackUpFolder + GetFileNameWithoutExt(Dbname) + '[BU].photodb') then
       RaiseLastOSError;
   except
     on E: Exception do

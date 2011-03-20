@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uConstants,
-  uShellIntegration, uDBForm, WatermarkedEdit;
+  uShellIntegration, uDBForm, WatermarkedEdit, uFileUtils;
 
 type
   TExportForm = class(TDBForm)
@@ -100,7 +100,7 @@ begin
     if AnsiUpperCase(ExtractFileExt(SaveDialog1.FileName)) <> '.PHOTODB' then
       SaveDialog1.FileName := SaveDialog1.FileName + '.photodb';
 
-    if FileExists(SaveDialog1.FileName) then
+    if FileExistsSafe(SaveDialog1.FileName) then
       if ID_OK <> MessageBoxDB(Handle, Format(L('File "%s" already exists! $nl$Replace?'), [SaveDialog1.FileName]), L('Warning'),
         TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         Exit;

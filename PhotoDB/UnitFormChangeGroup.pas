@@ -239,20 +239,23 @@ begin
   Ts.Clear;
   Directory := IncludeTrailingBackslash(ProgramDir) + PlugInImagesFolder;
   Found := FindFirst(Directory + '*.jpgc', FaAnyFile, SearchRec);
-  while Found = 0 do
-  begin
-    if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+  try
+    while Found = 0 do
     begin
-      if Fileexists(Directory + SearchRec.name) then
-        try
-          if ValidJPEGContainer(Directory + SearchRec.name) then
-            TS.Add(Directory + SearchRec.name);
-        except
-        end;
+      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+      begin
+        if FileExistsSafe(Directory + SearchRec.Name) then
+          try
+            if ValidJPEGContainer(Directory + SearchRec.Name) then
+              TS.Add(Directory + SearchRec.Name);
+          except
+          end;
+      end;
+      Found := SysUtils.FindNext(SearchRec);
     end;
-    Found := SysUtils.FindNext(SearchRec);
+  finally
+    FindClose(SearchRec);
   end;
-  FindClose(SearchRec);
   GraphicSelect1.Galeries := Ts;
   GraphicSelect1.Showgaleries := True;
 end;

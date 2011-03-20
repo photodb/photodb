@@ -377,6 +377,7 @@ type
     FIsEstimatingActive: Boolean;
     FIsSearchingActive: Boolean;
     FLastProgressState: TBPF;
+    FProgressMessage : Cardinal;
     function HintRealA(Info : TDBPopupMenuInfoRecord) : Boolean;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
@@ -464,7 +465,7 @@ var
   Ico: TIcon;
   SearchIcon: HIcon;
 begin
-  FLastProgressState := TBPF_NOPROGRESS;
+  FLastProgressState := TBPF_PAUSED;
   FListUpdating := False;
   GroupsLoaded := False;
   MouseDowned := False;
@@ -593,7 +594,10 @@ begin
   TbMain.AutoSize := True;
 
   TW.I.Start('S -> W7 TaskBar');
-  FW7TaskBar := CreateTaskBarInstance;
+  FW7TaskBar := nil;
+//  FW7TaskBar := CreateTaskBarInstance;
+  FProgressMessage := RegisterWindowMessage('SLIDE_SHOW_PROGRESS');
+  PostMessage(Handle, FProgressMessage, 0, 0);
 
   TW.I.Start('S -> SetupListView');
   SetupListView;
@@ -1259,7 +1263,7 @@ begin
         FileName := SaveDialog.FileName;
         if GetExt(FileName) <> 'IDS' then
           FileName := FileName + '.ids';
-        if FileExists(FileName) then
+        if FileExistsSafe(FileName) then
           if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
             TD_ICON_WARNING) then
             Exit;
@@ -1276,7 +1280,7 @@ begin
         FileName := SaveDialog.FileName;
         if GetExt(FileName) <> 'DBL' then
           FileName := FileName + '.dbl';
-        if FileExists(FileName) then
+        if FileExistsSafe(FileName) then
           if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
             TD_ICON_WARNING) then
             Exit;
@@ -1292,7 +1296,7 @@ begin
         FileName := SaveDialog.FileName;
         if GetExt(FileName) <> 'ITH' then
           FileName := FileName + '.ith';
-        if FileExists(FileName) then
+        if FileExistsSafe(FileName) then
           if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
             TD_ICON_WARNING) then
             Exit;
@@ -2035,6 +2039,9 @@ var
   i : integer;
   TmpBool : Boolean;
 begin
+  if msg.message = FProgressMessage then
+    FW7TaskBar := CreateTaskBarInstance;
+
   if (Msg.message = WM_KEYDOWN) and (SearchEdit.Focused) and (Msg.wParam = VK_RETURN) then
   begin
     Handled := True;
@@ -4713,16 +4720,17 @@ begin
     end;
   end else if FIsEstimatingActive then
   begin
+    UpdateVistaProgressState(TBPF_NOPROGRESS);
     WlStartStop.Text := L('Search');
     LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
     LsSearchResults.Color := SearchPanelA.Color;
     LsSearchResults.Show;
   end else
   begin
+    UpdateVistaProgressState(TBPF_NOPROGRESS);
     LsSearchResults.Hide;
     WlStartStop.Text := L('Search');
     LsData.Hide;
-    UpdateVistaProgressState(TBPF_NOPROGRESS);
     if FEstimateCount > 1000 then
       Counter := '1000+'
     else if FEstimateCount > -1 then
@@ -4743,6 +4751,8 @@ begin
   begin
     if FLastProgressState <> State then
     begin
+      //to reset state to 'NORMAL'
+      FW7TaskBar.SetProgressValue(Handle, 1, 1);
       FW7TaskBar.SetProgressState(Handle, State);
       FLastProgressState := State;
     end;

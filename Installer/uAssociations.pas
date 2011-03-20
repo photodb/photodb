@@ -38,7 +38,9 @@ type
 
   end;
 
-  TAssociationState = (TAS_IGNORE, TAS_ADD_HANDLER, TAS_DEFAULT);
+  TAssociationState = (
+    TAS_NOT_INSTALLED, TAS_INSTALLED_OTHER, TAS_PHOTODB_HANDLER, TAS_PHOTODB_DEFAULT
+  );
 
   TFileAssociation = class(TAssociation)
   private
@@ -94,7 +96,7 @@ const
   ASSOCIATION_PATH = '\Software\Classes\';
 
 function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
-function AssociationStateToCheckboxState(AssociationState : TAssociationState) : TCheckBoxState;
+function AssociationStateToCheckboxState(AssociationState : TAssociationState; Update: Boolean) : TCheckBoxState;
 function CheckboxStateToAssociationState(CheckBoxState : TCheckBoxState) : TAssociationState;
 function IsGraphicFile(FileName: string): Boolean;
 
@@ -103,17 +105,33 @@ implementation
 var
   FInstance : TFileAssociations = nil;
 
-function AssociationStateToCheckboxState(AssociationState : TAssociationState) : TCheckBoxState;
+function AssociationStateToCheckboxState(AssociationState : TAssociationState; Update: Boolean) : TCheckBoxState;
 begin
-  case AssociationState of
-    TAS_IGNORE:
-      Result := cbUnchecked;
-    TAS_ADD_HANDLER:
-      Result := cbGrayed;
-    TAS_DEFAULT:
-      Result := cbChecked;
-    else
-      raise Exception.Create('Invalid AssociationState');
+  if not Update then
+  begin
+    case AssociationState of
+      TAS_INSTALLED_OTHER,
+      TAS_PHOTODB_HANDLER:
+        Result := cbGrayed;
+      TAS_NOT_INSTALLED,
+      TAS_PHOTODB_DEFAULT:
+        Result := cbChecked;
+      else
+        raise Exception.Create('Invalid AssociationState');
+    end;
+  end else
+  begin
+    case AssociationState of
+      TAS_NOT_INSTALLED,
+      TAS_INSTALLED_OTHER:
+        Result := cbUnchecked;
+      TAS_PHOTODB_HANDLER:
+        Result := cbGrayed;
+      TAS_PHOTODB_DEFAULT:
+        Result := cbChecked;
+      else
+        raise Exception.Create('Invalid AssociationState');
+    end;
   end;
 end;
 
@@ -121,29 +139,32 @@ function CheckboxStateToAssociationState(CheckBoxState : TCheckBoxState) : TAsso
 begin
   case CheckBoxState of
     cbUnchecked:
-      Result := TAS_IGNORE;
+      Result := TAS_INSTALLED_OTHER;
     cbGrayed:
-      Result := TAS_ADD_HANDLER;
+      Result := TAS_PHOTODB_HANDLER;
     cbChecked:
-      Result := TAS_DEFAULT;
+      Result := TAS_PHOTODB_DEFAULT;
     else
       raise Exception.Create('Invalid CheckBoxState');
   end;
 end;
 
-procedure UnregisterPhotoDBAssociation(Ext : string);
+procedure UnregisterPhotoDBAssociation(Ext : string; Full: Boolean);
 var
   Reg: TRegistry;
   ShellPath, ExtensionHandler, PreviousHandler : string;
 begin
-  Reg := TRegistry.Create;
-  try
-    Reg.RootKey := Windows.HKEY_CURRENT_USER;
-    Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
-    Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-  finally
-    F(Reg);
+  if Full then
+  begin
+    Reg := TRegistry.Create;
+    try
+      Reg.RootKey := Windows.HKEY_CURRENT_USER;
+      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
+      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
+    finally
+      F(Reg);
+    end;
   end;
 
   Reg := TRegistry.Create;
@@ -191,6 +212,7 @@ var
   S, Ext: string;
   B, C: Boolean;
   Terminate : Boolean;
+  CurrectAssociation: TAssociationState;
 begin
   Terminate := False;
 
@@ -209,10 +231,18 @@ begin
         Break;
       Ext := TFileAssociations.Instance[I].Extension;
 
-      UnregisterPhotoDBAssociation(Ext);
+      CurrectAssociation := TFileAssociations.Instance.GetCurrentAssociationState(Ext);
 
       case TFileAssociations.Instance[I].State of
-        TAS_DEFAULT:
+        TAS_NOT_INSTALLED,
+        TAS_INSTALLED_OTHER:
+          case CurrectAssociation of
+            TAS_PHOTODB_HANDLER:
+              UnregisterPhotoDBAssociation(Ext, False);
+            TAS_PHOTODB_DEFAULT:
+              UnregisterPhotoDBAssociation(Ext, True);
+          end;
+        TAS_PHOTODB_DEFAULT:
           begin
             Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
             S := Reg.ReadString('');
@@ -252,7 +282,7 @@ begin
               Reg.CloseKey;
             end;
           end;
-        TAS_ADD_HANDLER:
+        TAS_PHOTODB_HANDLER:
           begin
             Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
             S := Reg.ReadString('');
@@ -274,15 +304,15 @@ begin
               Reg.CloseKey;
             end;
             if B then
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\PhotoDBView', True)
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND, True)
             else
-              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\PhotoDBView', True);
+              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND, True);
             Reg.WriteString('', TA('View with PhotoDB', 'System'));
             Reg.CloseKey;
             if B then
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\PhotoDBView\Command', True)
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command', True)
             else
-              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\PhotoDBView\Command', True);
+              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command', True);
             Reg.WriteString('', Format('"%s" "%%1"', [Filename]));
             if B then
             begin
@@ -490,24 +520,37 @@ begin
   try
     Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
 
-    Reg.OpenKey(ASSOCIATION_PATH + Extension, False);
+    Reg.OpenKey(Extension, False);
     AssociationHandler := Reg.ReadString('');
     Reg.CloseKey;
 
-    if StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(AssociationHandler)) then
-    begin
-      Result := TAS_DEFAULT;
-      Exit;
-    end;
-
-    Reg.OpenKey(ASSOCIATION_PATH + AssociationHandler + '\shell\open\command', False);
+    Reg.OpenKey(AssociationHandler + '\shell\open\command', False);
     AssociationCommand := Reg.ReadString('');
     Reg.CloseKey;
 
     if AssociationCommand = '' then
-      Result := TAS_DEFAULT
-    else
-      Result := TAS_ADD_HANDLER;
+    begin
+      Reg.CloseKey;
+      Reg.OpenKey(AssociationHandler + '\shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\command', False);
+      AssociationCommand := Reg.ReadString('');
+      if Pos('photodb.exe', AnsiLowerCase(AssociationCommand)) > 0 then
+        Result := TAS_PHOTODB_HANDLER
+      else
+        Result := TAS_NOT_INSTALLED;
+    end else
+    begin
+      if Pos('photodb.exe', AnsiLowerCase(AssociationCommand)) > 0 then
+        Result := TAS_PHOTODB_DEFAULT
+      else begin
+        Reg.CloseKey;
+        Reg.OpenKey(AssociationHandler + '\shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\command', False);
+        AssociationCommand := Reg.ReadString('');
+        if Pos('photodb.exe', AnsiLowerCase(AssociationCommand)) > 0 then
+          Result := TAS_PHOTODB_HANDLER
+        else
+          Result := TAS_INSTALLED_OTHER;
+      end;
+    end;
 
   finally
     F(Reg);

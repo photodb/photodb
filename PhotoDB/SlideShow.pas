@@ -1603,7 +1603,7 @@ var
   N: Integer;
   Info: TDBPopupMenuInfo;
 begin
-  if FileExists(FileName) then
+  if FileExistsSafe(FileName) then
   begin
     FileName := LongFileName(FileName);
     Info := TDBPopupMenuInfo.Create;
@@ -1928,7 +1928,7 @@ begin
   if CurrentInfo.Count = 0 then
     Exit;
   if Button = MbLeft then
-    if FileExists(Item.FileName) then
+    if FileExistsSafe(Item.FileName) then
     begin
       DBCanDrag := True;
       GetCursorPos(DBDragPoint);
@@ -3084,7 +3084,7 @@ var
 begin
   Files := TStringList.Create;
   try
-    if FileExists(Item.FileName) then
+    if FileExistsSafe(Item.FileName) then
       Files.Add(Item.FileName);
     if Files.Count > 0 then
       GetPrintForm(Files);

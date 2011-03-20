@@ -43,33 +43,33 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 407
     Height = 441
-    ActivePage = TsSecurity
+    ActivePage = TsGeneral
     TabOrder = 2
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
       object LblSkipExt: TLabel
-        Left = 268
-        Top = 112
-        Width = 131
+        Left = 246
+        Top = 113
+        Width = 150
         Height = 40
         AutoSize = False
         Caption = '- File extension ignored'
         WordWrap = True
       end
       object LblAddSubmenuItem: TLabel
-        Left = 265
-        Top = 68
-        Width = 134
+        Left = 246
+        Top = 69
+        Width = 150
         Height = 38
         AutoSize = False
         Caption = '- File option will added for this file type'
         WordWrap = True
       end
       object LblUseExt: TLabel
-        Left = 268
+        Left = 246
         Top = 26
-        Width = 131
+        Width = 150
         Height = 40
         AutoSize = False
         Caption = '- File will open with this Program'
@@ -93,7 +93,7 @@ object OptionsForm: TOptionsForm
       object CbExtensionList: TCheckListBox
         Left = 3
         Top = 26
-        Width = 236
+        Width = 214
         Height = 174
         AllowGrayed = True
         ItemHeight = 13
@@ -101,16 +101,16 @@ object OptionsForm: TOptionsForm
         OnContextPopup = CbExtensionListContextPopup
       end
       object BtnInstallExtensions: TButton
-        Left = 245
+        Left = 223
         Top = 175
-        Width = 151
+        Width = 173
         Height = 25
         Caption = 'Set'
         TabOrder = 2
         OnClick = BtnInstallExtensionsClick
       end
       object CbInstallTypeChecked: TCheckBox
-        Left = 245
+        Left = 223
         Top = 25
         Width = 17
         Height = 17
@@ -119,7 +119,7 @@ object OptionsForm: TOptionsForm
         TabOrder = 3
       end
       object CbInstallTypeGrayed: TCheckBox
-        Left = 245
+        Left = 223
         Top = 68
         Width = 17
         Height = 17
@@ -128,7 +128,7 @@ object OptionsForm: TOptionsForm
         TabOrder = 4
       end
       object CbInstallTypeNone: TCheckBox
-        Left = 245
+        Left = 223
         Top = 111
         Width = 17
         Height = 17
@@ -751,41 +751,43 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      object GroupBox2: TGroupBox
+      object GbBackup: TGroupBox
         Left = 8
-        Top = 192
+        Top = 247
         Width = 385
         Height = 81
         Caption = 'BackUping'
         TabOrder = 0
         object Label30: TLabel
           Left = 134
-          Top = 53
+          Top = 43
           Width = 24
           Height = 13
           Caption = 'Days'
         end
-        object Label29: TLabel
+        object BlBackupInterval: TLabel
           Left = 8
-          Top = 24
+          Top = 19
           Width = 127
           Height = 13
           Caption = 'Create backUp copy every'
         end
-        object Edit10: TEdit
-          Left = 8
-          Top = 48
+        object SedBackupDays: TSpinEdit
+          Left = 7
+          Top = 38
           Width = 121
-          Height = 21
+          Height = 22
+          MaxValue = 100
+          MinValue = 0
           TabOrder = 0
-          Text = 'Edit10'
+          Value = 0
         end
       end
-      object GroupBox4: TGroupBox
-        Left = 8
+      object GbPasswords: TGroupBox
+        Left = 11
         Top = 8
         Width = 385
-        Height = 177
+        Height = 233
         Caption = 'Passwords'
         TabOrder = 1
         object LbSecureInfo: TLabel
@@ -1110,25 +1112,32 @@ object OptionsForm: TOptionsForm
             0FFF8EFFFFFF00000FFFFFFFFFFF80001FFFFFFFFFFFE0003FFFFFFFFFFFF800
             FFFFFFFF}
         end
-        object Button4: TButton
+        object LbDefaultPasswordMethod: TLabel
           Left = 8
-          Top = 144
+          Top = 116
+          Width = 125
+          Height = 13
+          Caption = 'Default Password Method:'
+        end
+        object BtnClearPasswordsInSettings: TButton
+          Left = 8
+          Top = 197
           Width = 225
           Height = 25
           Caption = 'Clear INI passwords'
           TabOrder = 0
-          OnClick = Button4Click
+          OnClick = BtnClearPasswordsInSettingsClick
         end
-        object Button3: TButton
+        object BtnClearSessionPasswords: TButton
           Left = 8
-          Top = 112
+          Top = 165
           Width = 225
           Height = 25
           Caption = 'Clear current loaded passwords'
           TabOrder = 1
-          OnClick = Button3Click
+          OnClick = BtnClearSessionPasswordsClick
         end
-        object CheckBox15: TCheckBox
+        object CbAutoSavePasswordInSettings: TCheckBox
           Left = 8
           Top = 88
           Width = 361
@@ -1136,13 +1145,30 @@ object OptionsForm: TOptionsForm
           Caption = 'Use auto saving password in user'#39's settings'
           TabOrder = 2
         end
-        object CheckBox14: TCheckBox
+        object CbAutoSavePasswordForSession: TCheckBox
           Left = 8
           Top = 72
           Width = 361
           Height = 17
           Caption = 'Use auto saving password in current session'
           TabOrder = 3
+        end
+        object WblMethod: TWebLink
+          Left = 8
+          Top = 135
+          Width = 84
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'BlowFish - 56'
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = True
+          TopIconIncrement = 0
+          ImageCanRegenerate = True
+          UseSpecIconSize = True
         end
       end
     end
@@ -1404,5 +1430,9 @@ object OptionsForm: TOptionsForm
     OnMessage = AeMainMessage
     Left = 248
     Top = 440
+  end
+  object PmCryptMethod: TPopupMenu
+    Left = 368
+    Top = 384
   end
 end

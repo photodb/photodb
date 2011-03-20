@@ -271,7 +271,7 @@ begin
         B := True;
         for K := 1 to 4 do
           if FImages[I].FileNames[K]<>'' then
-            if not FileExists(FImages[I].FileNames[K]) then
+            if not FileExistsSafe(FImages[I].FileNames[K]) then
             begin
               B := False;
               Break;

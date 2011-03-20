@@ -112,7 +112,7 @@ begin
               Continue;
             end;
           if not FOptions.ExportNoFiles then
-            if not Fileexists(TableOut.FieldByName('FFileName').AsString) then
+            if not FileExistsSafe(TableOut.FieldByName('FFileName').AsString) then
             begin
               TableOut.Next;
               Continue;
@@ -264,7 +264,7 @@ begin
     InTable.FieldByName('FileSize').AsInteger := OutTable.FieldByName('FileSize').AsInteger;
     InTable.FieldByName('KeyWords').AsString := OutTable.FieldByName('KeyWords').AsString;
     InTable.FieldByName('StrTh').AsString := OutTable.FieldByName('StrTh').AsString;
-    if Fileexists(InTable.FieldByName('FFileName').AsString) then
+    if FileExistsSafe(InTable.FieldByName('FFileName').AsString) then
       InTable.FieldByName('Attr').AsInteger := Db_attr_norm
     else
       InTable.FieldByName('Attr').AsInteger := Db_attr_not_exists;

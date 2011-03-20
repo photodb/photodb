@@ -384,7 +384,7 @@ begin
   Str := AnsiUpperCase(ExtractFileExt(FileName));
   Result := (Str = '.HTML') or (Str = '.HTM') or (Str = '.GIF') or (Str = '.JPG') or (Str = '.JPEG') or (Str = '.JPE') or
     (Str = '.BMP');
-  Result := Result and FileExists(FileName);
+  Result := Result and FileExistsSafe(FileName);
 end;
 
 function AnsiCompareTextWithNum(Text1, Text2: string): Integer;

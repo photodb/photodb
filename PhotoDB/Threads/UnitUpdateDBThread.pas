@@ -167,8 +167,8 @@ begin
         ExifData.LoadFromGraphic(Path);
         if not ExifData.Empty then
         begin;
-          Date := DateOf(ExifData.DateTime);
-          Time := TimeOf(ExifData.DateTime);
+          Date := DateOf(ExifData.DateTimeOriginal);
+          Time := TimeOf(ExifData.DateTimeOriginal);
           Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
         end;
       except
@@ -679,7 +679,7 @@ begin
     end;
     if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
     begin
-      if FileExists(DirectoryName + SearchRec.Name) and IsGraphicFile(DirectoryName + SearchRec.Name) then
+      if FileExistsSafe(DirectoryName + SearchRec.Name) and IsGraphicFile(DirectoryName + SearchRec.Name) then
       begin
         Result := Result + SearchRec.Size;
         FileName := DirectoryName + SearchRec.Name;

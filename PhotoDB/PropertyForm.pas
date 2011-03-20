@@ -2050,7 +2050,7 @@ begin
           XInsert(L('Make'), ExifData.CameraMake);
           XInsert(L('Model'), ExifData.CameraModel);
           XInsert(L('Copyright'), ExifData.Copyright);
-          XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTime));
+          XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTimeOriginal));
           XInsert(L('Description'), ExifData.ImageDescription);
           XInsert(L('Software'), ExifData.Software);
           Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));

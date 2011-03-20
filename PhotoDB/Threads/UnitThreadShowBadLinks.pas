@@ -4,7 +4,8 @@ interface
 
 uses
   Classes, uDBBaseTypes, uDBTypes, UnitLinksSupport, DB, SysUtils,
-  CommonDBSupport, UnitDBDeclare, uDBUtils, uTranslate, uDBThread, ActiveX;
+  CommonDBSupport, UnitDBDeclare, uDBUtils, uTranslate, uDBThread, ActiveX,
+  uFileUtils;
 
 type
   TThreadShowBadLinks = class(TDBThread)
@@ -117,12 +118,12 @@ begin
                   end;
                 LINK_TYPE_IMAGE:
                   begin
-                    if not FileExists(LI[I].LinkValue) then
+                    if not FileExistsSafe(LI[I].LinkValue) then
                       DoError;
                   end;
                 LINK_TYPE_FILE:
                   begin
-                    if not FileExists(LI[I].LinkValue) then
+                    if not FileExistsSafe(LI[I].LinkValue) then
                       DoError;
                   end;
                 LINK_TYPE_FOLDER:

@@ -5,7 +5,7 @@ interface
 
 uses
   Windows, SysUtils, Graphics, UnitDBDeclare, JPEG, DB, Classes,
-  uMemory, uConstants;
+  uMemory, uConstants, uFileUtils;
 
 type
   TGroup = record
@@ -113,7 +113,7 @@ begin
   if FileName <> '' then
     if FileName[1] = '"' then
       FileName := Copy(FileName, 2, Length(FileName) - 2);
-  Result := FileExists(FileName);
+  Result := FileExistsSafe(FileName);
 end;
 
 function GetNilGroup: TGroup;
@@ -390,13 +390,13 @@ begin
   Result := False;
   Query := GetQuery(FileName);
   try
-    SetSQL(Query, 'Select * From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"');
+    SetSQL(Query, 'Select 1 From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"');
     try
       Query.Active := True;
     except
       Exit;
     end;
-    Result := Query.RecordCount = 0;
+    Result := Query.RecordCount <> 0;
     Query.Close;
   finally
     FreeDS(Query);

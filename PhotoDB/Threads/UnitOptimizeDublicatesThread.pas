@@ -254,7 +254,7 @@ begin
     FE := False;
     for I := 1 to Query.RecordCount do
     begin
-      if FileExists(Query.FieldByName('FFileName').AsString) then
+      if FileExistsSafe(Query.FieldByName('FFileName').AsString) then
       begin
         FileName := Query.FieldByName('FFileName').AsString;
         StrTh := Query.FieldByName('StrTh').AsString;
@@ -354,7 +354,7 @@ begin
 
     // ATTR
 
-    if FileExists(FileName) then
+    if FileExistsSafe(FileName) then
       Attr := Db_attr_norm
     else
       Attr := Db_attr_not_exists;
@@ -417,7 +417,7 @@ begin
         DeleteRecordByID(Query.FieldByName('ID').AsInteger);
         AFile := Query.FieldByName('FFileName').AsString;
         try
-          if FileExists(AFile) then
+          if FileExistsSafe(AFile) then
             if AnsiLowerCase(AFile) <> AnsiLowerCase(FileName) then
               SilentDeleteFile(0, AFile, True, True);
         except

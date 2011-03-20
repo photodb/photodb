@@ -47,7 +47,7 @@ var
 begin
   inherited;
   for I := 0 to TFileAssociations.Instance.Count - 1 do
-    TFileAssociations.Instance[I].State := TAS_IGNORE;
+    TFileAssociations.Instance[I].State := TAS_INSTALLED_OTHER;
 
   CurrentInstall.DestinationPath := IncludeTrailingBackslash(ExtractFileDir(GetInstalledFileName));
 end;

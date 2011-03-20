@@ -62,7 +62,7 @@ begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
       RenameFolderWithDB(Owner, Src[I], Adest, False);
     end;
-    if FileExists(FN) then
+    if FileExistsSafe(FN) then
     begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
       RenameFileWithDB(Owner, Src[I], Adest, GetIDByFileName(Src[I]), True);

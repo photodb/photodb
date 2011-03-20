@@ -740,7 +740,7 @@ begin
     NFN2 := Dir + NewFileName + '.mb';
     NFN3 := Dir + NewFileName + 'G.db';
     NFN4 := Dir + NewFileName + 'G.mb';
-    if FileExists(NFN1) or FileExists(NFN2) or FileExists(NFN3) or FileExists(NFN4) then
+    if FileExistsSafe(NFN1) or FileExistsSafe(NFN2) or FileExistsSafe(NFN3) or FileExistsSafe(NFN4) then
     begin
       MessageBoxDB(Handle, L('File with that name already exists! Select a different file name.'), L('Error'),
         TD_BUTTON_OK, TD_ICON_ERROR);

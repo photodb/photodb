@@ -789,7 +789,7 @@ begin
     begin
       if GetExt(FileName) <> 'IDS' then
         FileName := FileName + '.ids';
-      if FileExists(FileName) then
+      if FileExistsSafe(FileName) then
         if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
           TD_ICON_WARNING) then
           Exit;
@@ -804,7 +804,7 @@ begin
     begin
       if GetExt(FileName) <> 'DBL' then
         FileName := FileName + '.dbl';
-      if FileExists(FileName) then
+      if FileExistsSafe(FileName) then
         if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
           TD_ICON_WARNING) then
           Exit;
@@ -828,7 +828,7 @@ begin
     begin
       if GetExt(FileName) <> 'ITH' then
         FileName := FileName + '.ith';
-      if FileExists(FileName) then
+      if FileExistsSafe(FileName) then
         if ID_OK <> MessageBoxDB(Handle, L('File already exists! Replace?'), L('Warning'), TD_BUTTON_OKCANCEL,
           TD_ICON_WARNING) then
           Exit;

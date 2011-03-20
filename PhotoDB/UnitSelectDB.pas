@@ -388,7 +388,7 @@ begin
           FileName := FileName + '.photodb';
 
       FA := FileGetAttr(FileName);
-      if FIleExists(FileName) and ((FA and SysUtils.faReadOnly) <> 0) then
+      if FileExistsSafe(FileName) and ((FA and SysUtils.faReadOnly) <> 0) then
       begin
         MessageBoxDB(Handle, LReadOnly, L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         Exit;
@@ -624,7 +624,7 @@ begin
             FileName := FileName + '.photodb';
 
         FA := FileGetAttr(FileName);
-        if FIleExists(FileName) and ((FA and SysUtils.faReadOnly) <> 0) then
+        if FileExistsSafe(FileName) and ((FA and SysUtils.faReadOnly) <> 0) then
         begin
           MessageBoxDB(Handle, LReadOnly, L('Warning'), TD_BUTTON_OK,
             TD_ICON_WARNING);
@@ -751,7 +751,7 @@ begin
   try
     OpenDialog.Filter := L('PhotoDB Files (*.photodb)|*.photodb');
 
-    if FIleExists(dbname) then
+    if FileExistsSafe(dbname) then
       OpenDialog.SetFileName(dbname);
 
     if OpenDialog.Execute then

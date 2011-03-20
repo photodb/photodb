@@ -978,7 +978,7 @@ begin
                 FPrivateFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
 
               if (Query.FieldByName('Access').AsInteger<>db_access_private) or ExplorerInfo.ShowPrivate then
-              if FileExists(Query.FieldByName('FFileName').AsString) then
+              if FileExistsSafe(Query.FieldByName('FFileName').AsString) then
               if ShowFileIfHidden(Query.FieldByName('FFileName').AsString) then
               begin
                 OK := true;
@@ -1261,7 +1261,7 @@ var
   Info : TDBPopupMenuInfoRecord;
 begin
   Info := FUpdaterInfo.FileInfo;
-  FE := FileExists(Info.FileName);
+  FE := FileExistsSafe(Info.FileName);
 
   if FolderView then
     if AnsiLowerCase(ExtractFileName(Info.FileName)) = 'folderdb.ldb' then
@@ -1934,7 +1934,7 @@ begin
   FileName := ProcessPath(FileName);
   GUIDParam := FileGUID;
 
-  if not FileExists(FileName) then
+  if not FileExistsSafe(FileName) then
     Exit;
 
   CurrentFile := FileName;

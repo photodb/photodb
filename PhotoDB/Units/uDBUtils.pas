@@ -686,15 +686,15 @@ begin
         ExifData := TExifData.Create;
         try
           ExifData.LoadFromGraphic(FileName);
-          if YearOf(ExifData.DateTime) > 2000 then
+          if YearOf(ExifData.DateTimeOriginal) > 2000 then
           begin
             UpdateDateTime := True;
-            DateToAdd := DateOf(ExifData.DateTime);
-            ATime := TimeOf(ExifData.DateTime);
+            DateToAdd := DateOf(ExifData.DateTimeOriginal);
+            ATime := TimeOf(ExifData.DateTimeOriginal);
             IsDate := True;
             IsTime := True;
-            EventInfo.Date := DateOf(ExifData.DateTime);
-            EventInfo.Time := TimeOf(ExifData.DateTime);
+            EventInfo.Date := DateOf(ExifData.DateTimeOriginal);
+            EventInfo.Time := TimeOf(ExifData.DateTimeOriginal);
             EventInfo.IsDate := True;
             EventInfo.IsTime := True;
             EF := [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];

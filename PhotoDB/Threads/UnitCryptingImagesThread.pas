@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB,
+  UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB, uFileUtils,
   UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX;
 
 type
@@ -155,7 +155,7 @@ begin
         end else
         begin
           // DEcrypting images
-          FE := FileExists(FOptions.Files[I]);
+          FE := FileExistsSafe(FOptions.Files[I]);
           // GetPassword
           StrParam := FOptions.Files[I];
           IntParam := FOptions.IDs[I];

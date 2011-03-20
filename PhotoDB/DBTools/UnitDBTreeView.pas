@@ -161,7 +161,7 @@ begin
   begin
     AddFile(WorkTable.FieldByName('FFileName').AsString, WorkTable.FieldByName('ID').AsInteger,
       ValidCryptBlobStreamJPG(WorkTable.FieldByName('Thum')), False
-      { not FileExists(WorkTable.FieldByName('FFileName').AsString) } );
+      { not FileExistsSafe(WorkTable.FieldByName('FFileName').AsString) } );
     WorkTable.Next;
     if K mod 50 = 0 then
       FStatusProgress.Position := K;
@@ -637,7 +637,7 @@ begin
         if Node.Parent = nil then
           Break;
       until False;
-      if FileExists(Path) then
+      if FileExistsSafe(Path) then
       begin
         DropFileSource1.Files.Clear;
         DropFileSource1.Files.Add(Path);

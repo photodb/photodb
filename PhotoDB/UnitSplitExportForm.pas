@@ -162,7 +162,7 @@ begin
           F(Ico);
         end;
       end;
-      if FileExists(DropFileTarget1.Files[I]) then
+      if FileExistsSafe(DropFileTarget1.Files[I]) then
         if IsGraphicFile(DropFileTarget1.Files[I]) then
         begin
           Ico := TIcon.Create;
@@ -440,7 +440,7 @@ begin
         if GetExt(FileName) <> 'PHOTODB' then
           FileName := FileName + '.photodb';
 
-      if FileExists(FileName) and (ID_OK <> MessageBoxDB(Handle,
+      if FileExistsSafe(FileName) and (ID_OK <> MessageBoxDB(Handle,
           Format(L('File &quot;%s&quot; already exists! $nl$Replace?'),
             [FileName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING))
         then
@@ -481,7 +481,7 @@ begin
       .AsString;
     InTable.FieldByName('StrTh').AsString := OutTable.FieldByName('StrTh')
       .AsString;
-    If FileExists(InTable.FieldByName('FFileName').AsString) then
+    If FileExistsSafe(InTable.FieldByName('FFileName').AsString) then
       InTable.FieldByName('Attr').AsInteger := db_attr_norm
     else
       InTable.FieldByName('Attr').AsInteger := db_attr_not_exists;

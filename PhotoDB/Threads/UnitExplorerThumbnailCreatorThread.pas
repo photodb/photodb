@@ -118,10 +118,10 @@ begin
         begin
           DoProcessPath(FFileName);
           if FolderView then
-          if not FileExists(FFileName) then
+          if not FileExistsSafe(FFileName) then
             FFileName := ProgramDir + FFileName;
 
-          if not (FileExists(FFileName) or not IsGraphicFile(FFileName)) then
+          if not (FileExistsSafe(FFileName) or not IsGraphicFile(FFileName)) then
             Exit;
 
           GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FFileName));

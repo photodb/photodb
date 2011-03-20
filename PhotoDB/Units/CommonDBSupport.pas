@@ -89,10 +89,6 @@ var
   ADOConnections : TADOConnections = nil;
   DBLoadInitialized: Boolean = False;
   FSync : TCriticalSection = nil;
-  aScript : TScript;
-  LoadInteger : integer;
-  aFS : TFileStream;
-  LoadScript : string;
   DBFConnectionString : string = 'Provider=Microsoft.Jet.OLEDB.4.0;Password="";User ID=Admin;'+
                             'Data Source=%s;Mode=Share Deny None;Extended Properties="";'+
                             'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
@@ -158,7 +154,6 @@ function QueryParamsCount(Query: TDataSet): Integer;
 
 function GetQueryText(Query : TDataSet) : string;
 procedure AssignParams(S,D : TDataSet);
-//function GetDefDBName : string;
 function GetBlobStream(F : TField; Mode : TBlobStreamMode) : TStream;
 procedure AssignParam(Query : TDataSet; index : integer; Value : TPersistent);
 
@@ -177,7 +172,7 @@ function GetTableNameByFileName(FileName : string) : string;
 Procedure AssingQuery(var QueryS, QueryD : TDataSet);
 
 function GetRecordsCount(Table : string) : integer;
-Procedure InitializeDBLoadScript;
+procedure InitializeDBLoadScript;
 function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : boolean;
 function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
 procedure PackTable(FileName : string);
@@ -823,7 +818,8 @@ begin
     if ADOConnections[I].ADOConnection = ADOConnection then
     begin
       Dec(ADOConnections[I].RefCount);
-      if ADOConnections[I].RefCount = 0 then
+      //and try to keep one opened connection
+      if (ADOConnections[I].RefCount = 0) and (ADOConnections.Count > 1) then
       begin
         ADOConnections[I].ADOConnection.Free;
         ADOConnections[I].Free;
@@ -990,7 +986,14 @@ begin
   end;
 end;
 
-Procedure InitializeDBLoadScript;
+procedure InitializeDBLoadScript;
+{$IFNDEF DEBUG}
+var
+  LoadInteger: Integer;
+  aFS: TFileStream;
+  aScript: TScript;
+  LoadScript : string;
+{$ENDIF}
 begin
   EventLog(':InitializeDBLoadScript()');
   if DBLoadInitialized then

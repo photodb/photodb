@@ -136,9 +136,7 @@ object CryptImageForm: TCryptImageForm
     Width = 84
     Height = 16
     Cursor = crHandPoint
-    PopupMenu = PmCryptMethod
     Text = 'BlowFish - 56'
-    OnClick = WblMethodClick
     ImageIndex = 0
     IconWidth = 16
     IconHeight = 16
@@ -150,7 +148,7 @@ object CryptImageForm: TCryptImageForm
     UseSpecIconSize = True
   end
   object PmCryptMethod: TPopupMenu
-    Left = 112
+    Left = 104
     Top = 168
   end
 end

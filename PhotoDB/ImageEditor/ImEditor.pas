@@ -2150,7 +2150,7 @@ begin
             ID := 0;
             if (GetExt(FileName) <> 'JPG') and (GetExt(FileName) <> 'JPEG') then
               FileName := FileName + '.jpg';
-            if FileExists(FileName) then
+            if FileExistsSafe(FileName) then
             begin
               if not ForseSave then
                 if RewriteFile(FileName) then
@@ -2453,7 +2453,7 @@ begin
     PropertyManager.NewIDProperty(Pr.Ids[0]).Execute(Pr.Ids[0])
   else
   begin
-    if FileExists(CurrentFileName) then
+    if FileExistsSafe(CurrentFileName) then
       PropertyManager.NewFileProperty(CurrentFileName).ExecuteFileNoEx(CurrentFileName)
     else
       MessageBoxDB(Handle, L('For an unsaved file, the properties are not available.'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);

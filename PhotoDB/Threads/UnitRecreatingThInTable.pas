@@ -6,7 +6,7 @@ uses
   Classes, Graphics, Jpeg, DB, CommonDBSupport, UnitDBKernel, SysUtils,
   GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport,
   ActiveX, Dolphin_DB, uMemory, uDBBaseTypes, uDBTypes, uDBUtils,
-  win32crc, uDBThread;
+  win32crc, uDBThread, uFileUtils;
 
 type
   RecreatingThInTable = class(TDBThread)
@@ -186,7 +186,7 @@ begin
       repeat
         if RecreatingThInTableTerminating then
           Break;
-        if FileExists(Table.FieldByName('FFileName').AsString) then
+        if FileExistsSafe(Table.FieldByName('FFileName').AsString) then
         begin
 
           Crypted := False;

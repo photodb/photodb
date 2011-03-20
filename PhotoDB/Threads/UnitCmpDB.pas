@@ -6,7 +6,7 @@ uses
   UnitGroupsReplace, CmpUnit, Classes, DB, dolphin_db, SysUtils,
   UnitGroupsWork, UnitLinksSupport, GraphicCrypt, JPEG, CommonDBSupport,
   UnitDBDeclare, UnitDBKernel, uDBTypes, uDBGraphicTypes, win32crc,
-  uGraphicUtils, uDBThread, uMemory;
+  uGraphicUtils, uDBThread, uMemory, uFileUtils;
 
 type
   CmpDBTh = class(TDBThread)
@@ -307,7 +307,7 @@ begin
       if Foptions.AddNewRecords then
       begin
         try
-          FE := FileExists(FSourceTable.FieldByName('FFileName').AsString);
+          FE := FileExistsSafe(FSourceTable.FieldByName('FFileName').AsString);
           if FE or (not FE and Foptions.AddRecordsWithoutFiles) then
           begin
             AddNewRecord;

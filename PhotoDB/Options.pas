@@ -9,10 +9,11 @@ uses
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
   UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
   UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
-  uRuntime, uMemory, uSettings, WebLink, uAssociations, AppEvnts;
+  uRuntime, uMemory, uSettings, WebLink, uAssociations, AppEvnts, Spin,
+  uCryptUtils;
 
 type
-  TOptionsForm = class(TDBForm)
+  TOptionsForm = class(TPasswordSettingsDBForm)
     CancelButton: TButton;
     OkButton: TButton;
     PmExtensionStatus: TPopupMenu;
@@ -103,17 +104,16 @@ type
     Edit6: TEdit;
     Label20: TLabel;
     TsSecurity: TTabSheet;
-    GroupBox2: TGroupBox;
+    GbBackup: TGroupBox;
     Label30: TLabel;
-    Label29: TLabel;
-    Edit10: TEdit;
-    GroupBox4: TGroupBox;
+    BlBackupInterval: TLabel;
+    GbPasswords: TGroupBox;
     LbSecureInfo: TLabel;
     ImSecureInfo: TImage;
-    Button4: TButton;
-    Button3: TButton;
-    CheckBox15: TCheckBox;
-    CheckBox14: TCheckBox;
+    BtnClearPasswordsInSettings: TButton;
+    BtnClearSessionPasswords: TButton;
+    CbAutoSavePasswordInSettings: TCheckBox;
+    CbAutoSavePasswordForSession: TCheckBox;
     TsGlobal: TTabSheet;
     Label32: TLabel;
     Edit13: TEdit;
@@ -149,6 +149,10 @@ type
     WlDefaultJPEGOptions: TWebLink;
     AeMain: TApplicationEvents;
     WlViewerJPEGOptions: TWebLink;
+    SedBackupDays: TSpinEdit;
+    WblMethod: TWebLink;
+    LbDefaultPasswordMethod: TLabel;
+    PmCryptMethod: TPopupMenu;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -165,8 +169,8 @@ type
     procedure TrackBar2Change(Sender: TObject);
     procedure TrackBar3Change(Sender: TObject);
     procedure LoadDefaultExtStates;
-    procedure Button3Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
+    procedure BtnClearSessionPasswordsClick(Sender: TObject);
+    procedure BtnClearPasswordsInSettingsClick(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -223,6 +227,8 @@ type
   public
     { Public declarations }
     procedure LoadLanguage;
+    function GetPopupMenu: TPopupMenu; override;
+    function GetPaswordLink: TWebLink; override;
   end;
 
 var
@@ -293,9 +299,10 @@ begin
   end;
   if NewTab = 4 then
   begin
-    CheckBox14.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
-    CheckBox15.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
-    Edit10.Text := IntToStr(Settings.ReadInteger('Options', 'BackUpdays', 7));
+    FillChiperList;
+    CbAutoSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
+    CbAutoSavePasswordInSettings.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
+    SedBackupDays.Value := Settings.ReadInteger('Options', 'BackUpdays', 7);
   end;
 
   if NewTab = 5 then
@@ -414,6 +421,16 @@ begin
   Result := 'Options';
 end;
 
+function TOptionsForm.GetPaswordLink: TWebLink;
+begin
+  Result := WblMethod;
+end;
+
+function TOptionsForm.GetPopupMenu: TPopupMenu;
+begin
+  Result := PmCryptMethod;
+end;
+
 procedure TOptionsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Release;
@@ -422,6 +439,7 @@ end;
 procedure TOptionsForm.FormCreate(Sender: TObject);
 var
   I: Integer;
+  FPassIcon : HIcon;
 begin
   ReloadData := False;
   ClientHeight := OkButton.Top + OkButton.Height + 3;
@@ -446,6 +464,10 @@ begin
   PcMainChange(Self);
   WlDefaultJPEGOptions.Color := clWindow;
   WlViewerJPEGOptions.Color := clWindow;
+
+  FPassIcon := LoadIcon(DBKernel.IconDllInstance, PChar('PASSWORD'));
+  WblMethod.LoadFromHIcon(FPassIcon);
+  DestroyIcon(FPassIcon);
 end;
 
 procedure TOptionsForm.FormDestroy(Sender: TObject);
@@ -525,9 +547,9 @@ begin
   // 4 : 
   if FLoadedPages[4] then
   begin
-    Settings.WriteBool('Options', 'AutoSaveSessionPasswords', CheckBox14.Checked);
-    Settings.WriteBool('Options', 'AutoSaveINIPasswords', CheckBox15.Checked);
-    Settings.WriteInteger('Options', 'BackUpdays', StrToIntDef(Edit10.Text, 7));
+    Settings.WriteBool('Options', 'AutoSaveSessionPasswords', CbAutoSavePasswordForSession.Checked);
+    Settings.WriteBool('Options', 'AutoSaveINIPasswords', CbAutoSavePasswordInSettings.Checked);
+    Settings.WriteInteger('Options', 'BackUpdays', SedBackupDays.Value);
   end;
   // 5 : 
   if FLoadedPages[5] then
@@ -650,7 +672,7 @@ begin
     TsUserMenu.Caption := L('User menu');
     TsSecurity.Caption := L('Security');
     TsGlobal.Caption := L('Global');
-    GroupBox2.Caption := L('Backups');
+    GbBackup.Caption := L('Backups');
     Dontusethisextension1.Caption := L('Don''t use this extension');
     Usethisprogramasdefault1.Caption := L('Use PhotoDB as default association');
     Usemenuitem1.Caption := L('Add menu item');
@@ -675,10 +697,10 @@ begin
     TrackBar2Change(Self);
     TrackBar1Change(Self);
     LbSecureInfo.Caption := L('WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!');
-    CheckBox14.Caption := L('Automatically save passwords for the current session');
-    CheckBox15.Caption := L('Automatically save passwords in the settings (NOT RECOMMENDED)');
-    Button3.Caption := L('Clear current passwords in session');
-    Button4.Caption := L('Clear the current password in settings');
+    CbAutoSavePasswordForSession.Caption := L('Automatically save passwords for the current session');
+    CbAutoSavePasswordInSettings.Caption := L('Automatically save passwords in the settings (NOT RECOMMENDED)');
+    BtnClearSessionPasswords.Caption := L('Clear current passwords in session');
+    BtnClearPasswordsInSettings.Caption := L('Clear the current password in settings');
     ListView1.Columns[0].Caption := L('Menu item');
     Label20.Caption := L('Caption');
     Label18.Caption := L('Executable file');
@@ -710,7 +732,7 @@ begin
     WlViewerJPEGOptions.Text := L('JPEG Options');
     WlDefaultJPEGOptions.Text := L('Change default JPEG Options');
     CheckBox26.Caption := L('Sort groups');
-    Label29.Caption := L('Create backup every') + ':';
+    BlBackupInterval.Caption := L('Create backup every') + ':';
     Label30.Caption := L('days');
     CheckBox28.Caption := L('Allow multiple instances of properties window');
     CblPlacesDisplayIn.Clear;
@@ -738,11 +760,15 @@ begin
     Label31.Caption := L('Width');
     Label32.Caption := L('Height');
     CheckBox35.Caption := L('Group photos in search window');
-    GroupBox4.Caption := L('Passwords');
+    GbPasswords.Caption := L('Passwords');
     CheckBox5.Caption := L('Use full selection in lists');
     Label34.Caption := L('Round size') + ':';
     CheckBox37.Caption := L('Use a faster boot files (DB in the background)');
     CheckBox38.Caption := L('Use small icons for toolbars');
+
+    LblUseExt.Caption := L('Use PhotoDB as default association', 'Setup');
+    LblAddSubmenuItem.Caption := L('Add menu item', 'Setup');
+    LblSkipExt.Caption := L('Don''t use this extension', 'Setup');
   finally
     EndTranslate;
   end;
@@ -773,15 +799,15 @@ var
   I: Integer;
 begin
   for I := 0 to CbExtensionList.Items.Count - 1 do
-    CbExtensionList.State[I] := AssociationStateToCheckboxState(TFileAssociations.Instance.GetCurrentAssociationState(TFileAssociation(CbExtensionList.Items.Objects[I]).Extension));
+    CbExtensionList.State[I] := AssociationStateToCheckboxState(TFileAssociations.Instance.GetCurrentAssociationState(TFileAssociation(CbExtensionList.Items.Objects[I]).Extension), True);
 end;
 
-procedure TOptionsForm.Button3Click(Sender: TObject);
+procedure TOptionsForm.BtnClearSessionPasswordsClick(Sender: TObject);
 begin
   DBKernel.ClearTemporaryPasswordsInSession;
 end;
 
-procedure TOptionsForm.Button4Click(Sender: TObject);
+procedure TOptionsForm.BtnClearPasswordsInSettingsClick(Sender: TObject);
 begin
   DBKernel.ClearINIPasswords;
 end;

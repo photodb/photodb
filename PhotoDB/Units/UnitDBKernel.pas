@@ -254,7 +254,7 @@ var
 begin
   // Fast test -> in thread load db query
   Result := 0;
-  if not FileExists(DBName_) then
+  if not FileExistsSafe(DBName_) then
   begin
     Result := -1;
     Exit;

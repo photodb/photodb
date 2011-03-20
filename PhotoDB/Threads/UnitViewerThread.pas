@@ -148,7 +148,11 @@ begin
       FRealHeight := Graphic.Height;
       if not FFullImage then
         JPEGScale(Graphic, Screen.Width, Screen.Height);
-      FRealZoomScale := FRealWidth / Graphic.Width;
+
+      FRealZoomScale := 1;
+      if Graphic.Width <> 0 then
+        FRealZoomScale := FRealWidth / Graphic.Width;
+
       if Graphic is TGIFImage then
       begin
         SetAnimatedImageAsynch;

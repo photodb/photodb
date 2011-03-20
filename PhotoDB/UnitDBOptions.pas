@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Dolphin_DB, StdCtrls, CommonDBSupport, WebLink,
   UnitDBDeclare, UnitDBFileDialogs, uConstants, ExtCtrls, UnitDBCommonGraphics,
-  UnitDBKernel, uShellIntegration, uDBForm, uMemory;
+  UnitDBKernel, uShellIntegration, uDBForm, uMemory, uFileUtils;
 
 type
   TFormDBOptions = class(TDBForm)
@@ -232,7 +232,7 @@ begin
   try
     OpenDialog.Filter := L('PhotoDB Files (*.photodb)|*.photodb');
 
-    if FileExists(DBName) then
+    if FileExistsSafe(DBName) then
       OpenDialog.SetFileName(DBName);
 
     if OpenDialog.Execute then

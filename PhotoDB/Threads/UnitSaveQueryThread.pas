@@ -183,7 +183,7 @@ begin
 
       ReplaceIcon(Directory + SaveToDBName + '.exe', PChar(IcoTempName), Language);
 
-      if FileExists(IcoTempName) then
+      if FileExistsSafe(IcoTempName) then
         DeleteFile(IcoTempName);
 
     end;
@@ -246,7 +246,7 @@ var
   var
     LocationFolder: string;
   begin
-    if FileExists(Location) then
+    if FileExistsSafe(Location) then
       LocationFolder := ExtractFileDir(Location)
     else
       LocationFolder := Location;
@@ -268,7 +268,7 @@ var
       SetSQL(FQuery, 'Select * From ' + FromSQL + ' where (FFileName Like :FolderA)' + AndWhere);
 
     LocationFolder := IncludeTrailingBackslash(LocationFolder);
-    if FileExists(Location) then
+    if FileExistsSafe(Location) then
       SetStrParam(FQuery, 0, '%' + AnsiLowerCase(Location) + '%')
     else
       SetStrParam(FQuery, 0, '%' + LocationFolder + '%');
@@ -339,7 +339,7 @@ begin
     Exit;
   end;
 
-  if FileExists(FFileName) then
+  if FileExistsSafe(FFileName) then
     DBFolder := ExtractFilePath(FFileName)
   else
     DBFolder := FFileName;
@@ -393,7 +393,7 @@ begin
         ReplaceIcon(ExtractFilePath(FFileName) + SaveToDBName + '.exe', PWideChar(OutIconName),
           OriginalIconLanguage);
         try
-          if FileExists(OutIconName) then
+          if FileExistsSafe(OutIconName) then
             DeleteFile(OutIconName);
         except
         end;
@@ -471,7 +471,7 @@ begin
   InTable.FieldByName('FileSize').AsInteger := OutTable.FieldByName('FileSize').AsInteger;
   InTable.FieldByName('KeyWords').AsString := OutTable.FieldByName('KeyWords').AsString;
   InTable.FieldByName('StrTh').AsString := OutTable.FieldByName('StrTh').AsString;
-  if Fileexists(InTable.FieldByName('FFileName').AsString) then
+  if FileExistsSafe(InTable.FieldByName('FFileName').AsString) then
     InTable.FieldByName('Attr').AsInteger := Db_attr_norm
   else
     InTable.FieldByName('Attr').AsInteger := Db_attr_not_exists;
