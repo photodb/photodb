@@ -130,7 +130,7 @@ object NewGroupForm: TNewGroupForm
     Width = 75
     Height = 17
     Caption = 'Ok'
-    TabOrder = 2
+    TabOrder = 8
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
@@ -139,7 +139,7 @@ object NewGroupForm: TNewGroupForm
     Width = 75
     Height = 17
     Caption = 'Cancel'
-    TabOrder = 3
+    TabOrder = 7
     OnClick = BtnCancelClick
   end
   object MemKeywords: TWatermarkedMemo
@@ -147,7 +147,7 @@ object NewGroupForm: TNewGroupForm
     Top = 140
     Width = 257
     Height = 29
-    TabOrder = 4
+    TabOrder = 2
     WatermarkText = 'Place here keywords for this group'
   end
   object CbAddkeywords: TCheckBox
@@ -156,7 +156,7 @@ object NewGroupForm: TNewGroupForm
     Width = 249
     Height = 17
     Caption = 'Auto Add keyWords'
-    TabOrder = 5
+    TabOrder = 3
   end
   object CbeGroupList: TComboBoxEx
     Left = 8
@@ -164,7 +164,7 @@ object NewGroupForm: TNewGroupForm
     Width = 255
     Height = 22
     ItemsEx = <>
-    TabOrder = 6
+    TabOrder = 4
     OnDblClick = CbeGroupListDblClick
     OnDropDown = CbeGroupListDropDown
     OnKeyPress = CbeGroupListKeyPress
@@ -179,7 +179,7 @@ object NewGroupForm: TNewGroupForm
     Caption = 'Include In Quick Lists'
     Checked = True
     State = cbChecked
-    TabOrder = 7
+    TabOrder = 5
   end
   object CbPrivateGroup: TCheckBox
     Left = 8
@@ -189,7 +189,7 @@ object NewGroupForm: TNewGroupForm
     Caption = 'Private group'
     Checked = True
     State = cbChecked
-    TabOrder = 8
+    TabOrder = 6
   end
   object PopupMenu1: TPopupMenu
     Left = 152

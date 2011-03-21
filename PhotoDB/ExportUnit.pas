@@ -9,7 +9,7 @@ uses
 
 type
   TExportForm = class(TDBForm)
-    Button1: TButton;
+    BtnSelectFile: TButton;
     CbPrivate: TCheckBox;
     CbRating: TCheckBox;
     CbWithoutFiles: TCheckBox;
@@ -25,7 +25,7 @@ type
     DestroyTimer: TTimer;
     EdName: TWatermarkedEdit;
     procedure BtnStartClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnSelectFileClick(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
     procedure SetRecordText(Value : String);
     procedure SetProgressMaxValue(Value : Integer);
@@ -93,7 +93,7 @@ begin
   ExportThread.Create(Options);
 end;
 
-procedure TExportForm.Button1Click(Sender: TObject);
+procedure TExportForm.BtnSelectFileClick(Sender: TObject);
 begin
   if SaveDialog1.Execute then
   begin

@@ -2,8 +2,8 @@ object FormFastFileRenamer: TFormFastFileRenamer
   Left = 201
   Top = 125
   Caption = 'FormFastFileRenamer'
-  ClientHeight = 351
-  ClientWidth = 309
+  ClientHeight = 441
+  ClientWidth = 424
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,8 +18,8 @@ object FormFastFileRenamer: TFormFastFileRenamer
   object ValueListEditor1: TValueListEditor
     Left = 0
     Top = 73
-    Width = 309
-    Height = 247
+    Width = 424
+    Height = 337
     Align = alClient
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect, goThumbTracking]
     PopupMenu = pmSort
@@ -29,20 +29,23 @@ object FormFastFileRenamer: TFormFastFileRenamer
     TitleCaptions.Strings = (
       'Original File Name'
       'New File Name')
+    ExplicitWidth = 309
+    ExplicitHeight = 247
     ColWidths = (
       188
-      115)
+      230)
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 309
+    Width = 424
     Height = 73
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = -6
     DesignSize = (
-      309
+      424
       73)
     object LblTitle: TLabel
       Left = 8
@@ -52,7 +55,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Caption = 'Mask:'
     end
     object Label2: TLabel
-      Left = 164
+      Left = 279
       Top = 8
       Width = 37
       Height = 13
@@ -60,34 +63,26 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Caption = 'Begin #'
       ExplicitLeft = 240
     end
-    object Button3: TButton
-      Left = 226
+    object BtnHelp: TButton
+      Left = 341
       Top = 24
       Width = 75
       Height = 22
       Anchors = [akTop, akRight]
       Caption = '???'
-      TabOrder = 0
-      OnClick = Button3Click
-    end
-    object Edit2: TEdit
-      Left = 164
-      Top = 24
-      Width = 57
-      Height = 21
-      Anchors = [akTop, akRight]
-      TabOrder = 1
-      Text = '1'
-      OnChange = Edit1Change
+      TabOrder = 2
+      OnClick = BtnHelpClick
+      ExplicitLeft = 226
     end
     object CmMaskList: TComboBox
       Left = 8
       Top = 24
-      Width = 149
+      Width = 264
       Height = 21
       Anchors = [akLeft, akTop, akRight]
-      TabOrder = 2
+      TabOrder = 0
       OnChange = Edit1Change
+      ExplicitWidth = 149
     end
     object BtAdd: TButton
       Left = 9
@@ -119,8 +114,8 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
-      ParentColor = False
       Color = clRed
+      ParentColor = False
       Text = 'Conflict of FileNames! '
       OnClick = WebLinkWarningClick
       ImageIndex = 0
@@ -133,26 +128,39 @@ object FormFastFileRenamer: TFormFastFileRenamer
       ImageCanRegenerate = True
       UseSpecIconSize = True
     end
+    object SedStartN: TSpinEdit
+      Left = 278
+      Top = 24
+      Width = 57
+      Height = 22
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
+    end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 320
-    Width = 309
+    Top = 410
+    Width = 424
     Height = 31
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitTop = 320
+    ExplicitWidth = 309
     DesignSize = (
-      309
+      424
       31)
     object Panel3: TPanel
-      Left = 144
+      Left = 259
       Top = 0
       Width = 165
       Height = 31
       Align = alRight
       BevelOuter = bvNone
-      TabOrder = 0
+      TabOrder = 1
+      ExplicitLeft = 144
       object BtnOK: TButton
         Left = 86
         Top = 3
@@ -175,13 +183,14 @@ object FormFastFileRenamer: TFormFastFileRenamer
     object CheckBox1: TCheckBox
       Left = 8
       Top = 8
-      Width = 133
+      Width = 248
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Change EXT'
       Constraints.MinWidth = 130
-      TabOrder = 1
+      TabOrder = 0
       OnClick = Edit1Change
+      ExplicitWidth = 133
     end
   end
   object pmSort: TPopupMenu

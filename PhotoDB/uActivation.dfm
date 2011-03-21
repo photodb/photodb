@@ -58,7 +58,7 @@ object ActivateForm: TActivateForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnNext'
-    TabOrder = 0
+    TabOrder = 2
     OnClick = BtnNextClick
   end
   object BtnCancel: TButton
@@ -68,7 +68,7 @@ object ActivateForm: TActivateForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
-    TabOrder = 1
+    TabOrder = 0
     OnClick = BtnCancelClick
   end
   object BtnFinish: TButton
@@ -78,7 +78,7 @@ object ActivateForm: TActivateForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnFinish'
-    TabOrder = 2
+    TabOrder = 3
     OnClick = BtnFinishClick
   end
   object BtnPrevious: TButton
@@ -88,7 +88,7 @@ object ActivateForm: TActivateForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Previous'
-    TabOrder = 3
+    TabOrder = 1
     OnClick = BtnPreviousClick
   end
 end

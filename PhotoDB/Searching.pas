@@ -377,7 +377,8 @@ type
     FIsEstimatingActive: Boolean;
     FIsSearchingActive: Boolean;
     FLastProgressState: TBPF;
-    FProgressMessage : Cardinal;
+    FProgressMessage: Cardinal;
+    FReloadGroupsMessage: Cardinal;
     function HintRealA(Info : TDBPopupMenuInfoRecord) : Boolean;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
@@ -596,7 +597,8 @@ begin
   TW.I.Start('S -> W7 TaskBar');
   FW7TaskBar := nil;
 //  FW7TaskBar := CreateTaskBarInstance;
-  FProgressMessage := RegisterWindowMessage('SLIDE_SHOW_PROGRESS');
+  FProgressMessage := RegisterWindowMessage('SEARCHING_PROGRESS');
+  FReloadGroupsMessage := RegisterWindowMessage('SEARCHING_RELOAD_GROUPS');
   PostMessage(Handle, FProgressMessage, 0, 0);
 
   TW.I.Start('S -> SetupListView');
@@ -2042,6 +2044,9 @@ begin
   if msg.message = FProgressMessage then
     FW7TaskBar := CreateTaskBarInstance;
 
+  if msg.message = FReloadGroupsMessage then
+    ReloadGroups;
+
   if (Msg.message = WM_KEYDOWN) and (SearchEdit.Focused) and (Msg.wParam = VK_RETURN) then
   begin
     Handled := True;
@@ -2175,7 +2180,6 @@ procedure TSearchForm.ComboBox1_Select(Sender: TObject);
 var
   KeyWords: string;
 begin
-  Application.ProcessMessages;
   if ComboBoxSelGroups.ItemsEx.Count = 0 then
     Exit;
   if ComboBoxSelGroups.ItemIndex <> -1 then
@@ -2184,14 +2188,12 @@ begin
     begin
       KeyWords := Memo1.Text;
       DBChangeGroups(FPropertyGroups, KeyWords);
-      Application.ProcessMessages;
+      PostMessage(Handle, FReloadGroupsMessage, 0, 0);
       Memo1.Text := KeyWords;
-      ReloadGroups;
       Memo1Change(Sender);
     end else
-    begin
       ShowGroupInfo(ComboBoxSelGroups.Text, False, nil);
-    end;
+
   ComboBoxSelGroups.ItemIndex := 0;
   ComboBoxSelGroups.LastItemIndex := 0;
   ComboBoxSelGroups.Text := '';
@@ -2748,7 +2750,6 @@ var
   end;
 
 begin
-
   GroupsImageList.Clear;
   FCurrentGroups := EncodeGroups(FPropertyGroups);
   for I := 0 to Length(FCurrentGroups) - 1 do

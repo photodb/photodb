@@ -43,7 +43,7 @@ object FormSelectGroup: TFormSelectGroup
     Width = 75
     Height = 25
     Caption = 'Ok'
-    TabOrder = 1
+    TabOrder = 2
     OnClick = BtOkClick
   end
   object BtCancel: TButton
@@ -52,7 +52,7 @@ object FormSelectGroup: TFormSelectGroup
     Width = 75
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 2
+    TabOrder = 1
     OnClick = BtCancelClick
   end
   object GroupsImageList: TImageList

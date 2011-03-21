@@ -687,7 +687,7 @@ object FormChangeDBPath: TFormChangeDBPath
     Height = 21
     Anchors = [akTop, akRight]
     Caption = 'Scan'
-    TabOrder = 1
+    TabOrder = 2
     OnClick = BtnScanFoldersClick
   end
   object BtnChooseNewPath: TButton
@@ -697,9 +697,8 @@ object FormChangeDBPath: TFormChangeDBPath
     Height = 21
     Anchors = [akTop, akRight]
     Caption = 'Choose'
-    TabOrder = 2
+    TabOrder = 4
     OnClick = BtnChooseNewPathClick
-    ExplicitLeft = 384
   end
   object EdNewPath: TEdit
     Left = 8
@@ -710,7 +709,6 @@ object FormChangeDBPath: TFormChangeDBPath
     ReadOnly = True
     TabOrder = 3
     Text = 'c:\'
-    ExplicitWidth = 369
   end
   object DprMain: TDmProgress
     Left = 8
@@ -730,7 +728,6 @@ object FormChangeDBPath: TFormChangeDBPath
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
-    ExplicitWidth = 465
   end
   object BtnOk: TButton
     Left = 435
@@ -739,9 +736,8 @@ object FormChangeDBPath: TFormChangeDBPath
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Ok'
-    TabOrder = 5
+    TabOrder = 8
     OnClick = BtnOkClick
-    ExplicitLeft = 400
   end
   object BtnCancel: TButton
     Left = 355
@@ -750,9 +746,8 @@ object FormChangeDBPath: TFormChangeDBPath
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Cancel'
-    TabOrder = 6
+    TabOrder = 7
     OnClick = BtnCancelClick
-    ExplicitLeft = 320
   end
   object BtnChooseOldPath: TButton
     Left = 419
@@ -761,9 +756,8 @@ object FormChangeDBPath: TFormChangeDBPath
     Height = 21
     Anchors = [akTop, akRight]
     Caption = 'Choose'
-    TabOrder = 7
+    TabOrder = 1
     OnClick = BtnChooseOldPathClick
-    ExplicitLeft = 384
   end
   object CheckBox1: TCheckBox
     Left = 8
@@ -774,7 +768,6 @@ object FormChangeDBPath: TFormChangeDBPath
     Caption = 'Change only in end path exists'
     Checked = True
     State = cbChecked
-    TabOrder = 8
-    ExplicitWidth = 306
+    TabOrder = 6
   end
 end

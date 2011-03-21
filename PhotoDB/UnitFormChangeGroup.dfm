@@ -131,7 +131,7 @@ object FormChangeGroup: TFormChangeGroup
     Width = 317
     Height = 41
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 0
+    TabOrder = 1
     WatermarkText = 'Write here comment to this group'
   end
   object BtnOk: TButton
@@ -141,7 +141,7 @@ object FormChangeGroup: TFormChangeGroup
     Height = 17
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
-    TabOrder = 1
+    TabOrder = 8
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
@@ -151,7 +151,7 @@ object FormChangeGroup: TFormChangeGroup
     Height = 17
     Anchors = [akRight, akBottom]
     Caption = 'Cancel'
-    TabOrder = 2
+    TabOrder = 7
     OnClick = BtnCancelClick
   end
   object MemKeywords: TWatermarkedMemo
@@ -160,7 +160,7 @@ object FormChangeGroup: TFormChangeGroup
     Width = 317
     Height = 64
     Anchors = [akLeft, akTop, akRight, akBottom]
-    TabOrder = 3
+    TabOrder = 2
     WatermarkText = 'Write here keywords for this group'
   end
   object CbAddkeywords: TCheckBox
@@ -170,7 +170,7 @@ object FormChangeGroup: TFormChangeGroup
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'Auto Add keyWords'
-    TabOrder = 4
+    TabOrder = 3
   end
   object ComboBoxEx1: TComboBoxEx
     Left = 8
@@ -179,7 +179,7 @@ object FormChangeGroup: TFormChangeGroup
     Height = 22
     ItemsEx = <>
     Anchors = [akLeft, akRight, akBottom]
-    TabOrder = 5
+    TabOrder = 4
     OnDblClick = ComboBoxEx1DblClick
     OnDropDown = ComboBoxEx1DropDown
     OnKeyPress = ComboBoxEx1KeyPress
@@ -193,7 +193,7 @@ object FormChangeGroup: TFormChangeGroup
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Include In Quick Lists'
-    TabOrder = 6
+    TabOrder = 5
   end
   object EdName: TWatermarkedEdit
     Left = 60
@@ -207,7 +207,7 @@ object FormChangeGroup: TFormChangeGroup
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 0
     WatermarkText = 'Enter group name'
   end
   object CbPrivateGroup: TCheckBox
@@ -217,7 +217,7 @@ object FormChangeGroup: TFormChangeGroup
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Group is private'
-    TabOrder = 8
+    TabOrder = 6
   end
   object PmLoadFromFile: TPopupMenu
     OnPopup = PmLoadFromFilePopup
@@ -248,5 +248,10 @@ object FormChangeGroup: TFormChangeGroup
     AutoSizeGaleries = False
     Left = 192
     Top = 64
+  end
+  object ApplicationEvents1: TApplicationEvents
+    OnMessage = ApplicationEvents1Message
+    Left = 256
+    Top = 72
   end
 end

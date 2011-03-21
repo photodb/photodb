@@ -44,7 +44,7 @@ object PassWordForm: TPassWordForm
     Width = 75
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 1
+    TabOrder = 5
     OnClick = BtCancelClick
   end
   object BtOk: TButton
@@ -53,7 +53,7 @@ object PassWordForm: TPassWordForm
     Width = 75
     Height = 25
     Caption = 'Ok'
-    TabOrder = 2
+    TabOrder = 6
     OnClick = BtOkClick
   end
   object CbSavePassToSession: TCheckBox
@@ -64,7 +64,7 @@ object PassWordForm: TPassWordForm
     Caption = 'Save Password for all session'
     Checked = True
     State = cbChecked
-    TabOrder = 3
+    TabOrder = 1
   end
   object CbSavePassPermanent: TCheckBox
     Left = 8
@@ -72,7 +72,7 @@ object PassWordForm: TPassWordForm
     Width = 305
     Height = 17
     Caption = 'Save Password for in settings (NOT recommend)'
-    TabOrder = 4
+    TabOrder = 2
   end
   object CbDoNotAskAgain: TCheckBox
     Left = 8
@@ -80,7 +80,7 @@ object PassWordForm: TPassWordForm
     Width = 305
     Height = 17
     Caption = 'Do not ask again'
-    TabOrder = 5
+    TabOrder = 3
   end
   object BtCancelForFiles: TButton
     Left = 8
@@ -88,7 +88,7 @@ object PassWordForm: TPassWordForm
     Width = 145
     Height = 25
     Caption = 'Cancel For:'
-    TabOrder = 6
+    TabOrder = 4
     Visible = False
     OnClick = BtCancelForFilesClick
   end

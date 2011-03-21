@@ -17,7 +17,7 @@ type
     EdName: TWatermarkedEdit;
     Label2: TLabel;
     Label3: TLabel;
-    Button1: TButton;
+    BtnChooseLinkValue: TButton;
     BtnOk: TButton;
     BtnCancel: TButton;
     LblInfo: TLabel;
@@ -27,7 +27,7 @@ type
     CbLinkType: TComboBoxExDB;
     procedure FormCreate(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnChooseLinkValueClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
@@ -177,7 +177,7 @@ begin
   end;
 end;
 
-procedure TFormEditLink.Button1Click(Sender: TObject);
+procedure TFormEditLink.BtnChooseLinkValueClick(Sender: TObject);
 var
   S: string;
   OpenDialog: DBOpenDialog;

@@ -43,7 +43,7 @@ object CryptImageForm: TCryptImageForm
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Cancel'
-    TabOrder = 6
+    TabOrder = 7
     OnClick = BtCancelClick
   end
   object BtOk: TButton
@@ -53,7 +53,7 @@ object CryptImageForm: TCryptImageForm
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Ok'
-    TabOrder = 7
+    TabOrder = 8
     OnClick = BtOkClick
   end
   object CbSaveCRC: TCheckBox

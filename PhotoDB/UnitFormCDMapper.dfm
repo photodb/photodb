@@ -376,8 +376,6 @@ object FormCDMapper: TFormCDMapper
     ViewStyle = vsReport
     OnDblClick = CDMappingListViewDblClick
     OnSelectItem = CDMappingListViewSelectItem
-    ExplicitWidth = 510
-    ExplicitHeight = 241
   end
   object ButtonOK: TButton
     Left = 451
@@ -386,10 +384,8 @@ object FormCDMapper: TFormCDMapper
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
-    TabOrder = 1
+    TabOrder = 3
     OnClick = ButtonOKClick
-    ExplicitLeft = 443
-    ExplicitTop = 319
   end
   object ButtonAddocation: TButton
     Left = 296
@@ -400,8 +396,6 @@ object FormCDMapper: TFormCDMapper
     Caption = 'Add CD Location'
     TabOrder = 2
     OnClick = ButtonAddocationClick
-    ExplicitLeft = 288
-    ExplicitTop = 320
   end
   object ButtonRemoveLocation: TButton
     Left = 139
@@ -411,10 +405,8 @@ object FormCDMapper: TFormCDMapper
     Anchors = [akRight, akBottom]
     Caption = 'Remove CD location'
     Enabled = False
-    TabOrder = 3
+    TabOrder = 1
     OnClick = ButtonRemoveLocationClick
-    ExplicitLeft = 131
-    ExplicitTop = 319
   end
   object CDImageList: TImageList
     ColorDepth = cd32Bit

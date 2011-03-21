@@ -53,7 +53,7 @@ object FrmMain: TFrmMain
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'BtnNext'
-    TabOrder = 0
+    TabOrder = 2
     OnClick = BtnNextClick
   end
   object BtnCancel: TButton
@@ -63,7 +63,7 @@ object FrmMain: TFrmMain
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'BtnCancel'
-    TabOrder = 1
+    TabOrder = 0
     OnClick = BtnCancelClick
   end
   object BtnInstall: TButton
@@ -73,7 +73,7 @@ object FrmMain: TFrmMain
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'BtnInstall'
-    TabOrder = 2
+    TabOrder = 3
     OnClick = BtnInstallClick
   end
   object BtnPrevious: TButton
@@ -82,7 +82,7 @@ object FrmMain: TFrmMain
     Width = 75
     Height = 25
     Caption = 'Previous'
-    TabOrder = 3
+    TabOrder = 1
     OnClick = BtnPreviousClick
   end
 end

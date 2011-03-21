@@ -3,610 +3,686 @@ unit CmpUnit;
 interface
 
 uses
-  uDBBaseTypes, SysUtils, Classes, uConstants;
+  uDBBaseTypes, SysUtils, Classes, uConstants, uMemory;
 
 type
   TCompOptions = record
-  AddNewRecords : Boolean;
-  AddRecordsWithoutFiles : Boolean;
-  AddRating : Boolean;
-  AddRotate : Boolean;
-  AddPrivate : Boolean;
-  AddKeyWords : Boolean;
-  AddGroups : Boolean;
-  AddNilComment : Boolean;
-  AddComment : Boolean;
-  AddNamedComment : Boolean;
-  AddDate : Boolean;
-  AddLinks : Boolean;
-  IgnoreWords : Boolean;
-  IgWords : string;
-  Autor : string;
-  WordsToReplace : array[1..4] of String;
-  WordsReplace : array[1..4] of String;
-  UseScanningByFileName : boolean;
- end;
+    AddNewRecords: Boolean;
+    AddRecordsWithoutFiles: Boolean;
+    AddRating: Boolean;
+    AddRotate: Boolean;
+    AddPrivate: Boolean;
+    AddKeyWords: Boolean;
+    AddGroups: Boolean;
+    AddNilComment: Boolean;
+    AddComment: Boolean;
+    AddNamedComment: Boolean;
+    AddDate: Boolean;
+    AddLinks: Boolean;
+    IgnoreWords: Boolean;
+    IgWords: string;
+    Autor: string;
+    WordsToReplace: array [1 .. 4] of string;
+    WordsReplace: array [1 .. 4] of string;
+    UseScanningByFileName: Boolean;
+  end;
 
 type
   TSpilitOptions = record
   UpDown : boolean;
  end;
 
-procedure SpilitWords(S : string; var Words_ : TStrings);
-procedure SpilitWordsA(S : string; var Words_ : TStrings; options : TSpilitOptions);
-procedure AddWords(var S,D : Tstrings);
-procedure AddWordsB(var S,D : TStrings);
-procedure DeleteWords(S:Tstrings; var D : Tstrings); overload;
-function AddWordsA(S:string; var D : string): boolean;
-function AddWordsW(S,Ig:string; var D : string): boolean;
-procedure DelSpaces(var S : Tstrings);
-procedure DelSpacesA(var S : string);
-procedure DelSpacesW(var S : string);
+procedure SpilitWords(S: string; var Words_: TStrings);
+procedure SpilitWordsA(S: string; var Words_: TStrings; Options: TSpilitOptions);
+procedure AddWords(var S, D: Tstrings);
+procedure AddWordsB(var S, D: TStrings);
+procedure DeleteWords(S: Tstrings; var D: Tstrings); overload;
+function AddWordsA(S: string; var D: string): Boolean;
+function AddWordsW(S, Ig: string; var D: string): Boolean;
+procedure DelSpaces(S: Tstrings);
+procedure DelSpacesA(var S: string);
+procedure DelSpacesW(var S: string);
 
-function WordExists(Words_ : TStrings; s: string) : boolean;
+function WordExists(Words_: TStrings; S: string): Boolean;
 
-procedure GetCommonWords(A,B : Tstrings; var D : Tstrings);
-Function WordsToString(Words : TStrings) : String;
+procedure GetCommonWords(A, B: Tstrings; var D: Tstrings);
+function WordsToString(Words: TStrings): string;
 {$IFNDEF EXT}
-function GetCommonWordsA(Words : TStringList): String;
-procedure DeleteWords(var Words : String; WordsToDelete : String); overload;
-Procedure ReplaceWords(A,B : String; var D : string);
-function VariousKeyWords(S1, S2 : String) : Boolean;
-Function SimilarTexts(A,B : string) : boolean;
-function MaxStatBool(Bools : TArBoolean):Boolean;
-function IsVariousBool(Bools : TArBoolean):Boolean;
-function MaxStatStr(Strs : TArStrings):String;
-function MaxStatInt(Ints : TArInteger):Integer;
-function MaxStatDate(Dates : TArDateTime) : TDateTime;
-function MaxStatTime(Times : TArTime) : TDateTime;
+function GetCommonWordsA(Words: TStringList): string;
+procedure DeleteWords(var Words: string; WordsToDelete: string); overload;
+procedure ReplaceWords(A, B: string; var D: string);
+function VariousKeyWords(S1, S2: string): Boolean;
+function SimilarTexts(A, B: string): Boolean;
+function MaxStatBool(Bools: TArBoolean): Boolean;
+function IsVariousBool(Bools: TArBoolean): Boolean;
+function MaxStatStr(Strs: TArStrings): string;
+function MaxStatInt(Ints: TArInteger): Integer;
+function MaxStatDate(Dates: TArDateTime): TDateTime;
+function MaxStatTime(Times: TArTime): TDateTime;
 
-Function IsVariousArStrings(Ar : TStrings) : Boolean;
-Function IsVariousArInteger(Ar : TArInteger) : Boolean;
-function IsVariousDate(Dates : TArDateTime) : Boolean;
-function IsVariousArBoolean(Ar : TArBoolean) : Boolean;
+function IsVariousArStrings(Ar: TStrings): Boolean;
+function IsVariousArInteger(Ar: TArInteger): Boolean;
+function IsVariousDate(Dates: TArDateTime): Boolean;
+function IsVariousArBoolean(Ar: TArBoolean): Boolean;
 {$ENDIF}
+
 implementation
 
-function WordExists(Words_ : TStrings; s: string) : boolean;
+function WordExists(Words_: TStrings; S: string): Boolean;
 var
-  i : integer;
+  I: Integer;
 begin
- result:=false;
- for i:=0 to Words_.Count-1 do
- if Words_[i]=s then
- begin
-  result:=true;
-  break;
- end;
+  Result := False;
+  for I := 0 to Words_.Count - 1 do
+    if Words_[I] = S then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
-procedure SpilitWords(S : string; var Words_ : TStrings);
+procedure SpilitWords(S: string; var Words_: TStrings);
 var
-  i, j : integer;
-  pi_ : PInteger;
+  I, J: Integer;
+  Pi_: PInteger;
 begin
- if Words_=nil then Words_:=tstringlist.Create;
- Words_.Clear;
- s:=' '+s+' ';
- pi_:=@i;
- for i:=1 to length(s)-1 do
- begin
-  if i+1>length(s)-1 then break;
-  if (not CharInSet(s[i], abs_alldb)) and CharInSet(s[i+1], abs_alldb) then
-  for j:=i+1 to length(s) do
-  if not CharInSet(s[j], abs_alldb) or (j=length(s)) then
+  if Words_ = nil then
+    Words_ := Tstringlist.Create;
+  Words_.Clear;
+  S := ' ' + S + ' ';
+  Pi_ := @I;
+  for I := 1 to Length(S) - 1 do
   begin
-   Words_.Add(copy(s,i+1,j-i-1));
-   pi_^:=j-1;
-   break;
+    if I + 1 > Length(S) - 1 then
+      Break;
+    if (not CharInSet(S[I], Abs_alldb)) and CharInSet(S[I + 1], Abs_alldb) then
+      for J := I + 1 to Length(S) do
+        if not CharInSet(S[J], Abs_alldb) or (J = Length(S)) then
+        begin
+          Words_.Add(Copy(S, I + 1, J - I - 1));
+          Pi_^ := J - 1;
+          Break;
+        end;
   end;
- end;
- DelSpaces(Words_);
+  DelSpaces(Words_);
 end;
 
-procedure SpilitWordsA(S : string; var Words_ : TStrings; options : TSpilitOptions);
+procedure SpilitWordsA(S: string; var Words_: TStrings; Options: TSpilitOptions);
 var
-  i, j, n : integer;
-  pi_ : PInteger;
+  I, J, N: Integer;
+  Pi_: PInteger;
 begin
- if Words_=nil then Words_:=tstringlist.Create;
- Words_.Clear;
- s:=' '+s+' ';
- pi_:=@i;
- n:=0;
- if options.UpDown then
- Repeat
- inc(n);
- if (CharInSet(s[i], abs_englUp) or CharInSet(s[i], abs_rusUp)) and (CharInSet(s[i], abs_englDown) or CharInSet(s[i], abs_rusDown)) then
- insert(' ',s,i);
- until n+1>length(s);
- for i:=1 to length(s)-1 do
- begin
-  if i+1>length(s)-1 then break;
-  if (not CharInSet(s[i], abs_alldb)) and CharInSet(s[i+1], abs_alldb) then
-  for j:=i+1 to length(s) do
-  if not CharInSet(s[j], abs_alldb) or (j=length(s)) then
+  if Words_ = nil then
+    Words_ := TStringlist.Create;
+  Words_.Clear;
+  S := ' ' + S + ' ';
+  Pi_ := @I;
+  N := 0;
+  if Options.UpDown then
+    repeat
+      Inc(N);
+      if (CharInSet(S[I], Abs_englUp) or CharInSet(S[I], Abs_rusUp)) and
+        (CharInSet(S[I], Abs_englDown) or CharInSet(S[I], Abs_rusDown)) then
+        Insert(' ', S, I);
+    until N + 1 > Length(S);
+    for I := 1 to Length(S) - 1 do
+    begin
+      if I + 1 > Length(S) - 1 then
+        Break;
+      if (not CharInSet(S[I], Abs_alldb)) and CharInSet(S[I + 1], Abs_alldb) then
+        for J := I + 1 to Length(S) do
+          if not CharInSet(S[J], Abs_alldb) or (J = Length(S)) then
+          begin
+            Words_.Add(Copy(S, I + 1, J - I - 1));
+            Pi_^ := J - 1;
+            Break;
+          end;
+    end;
+  DelSpaces(Words_);
+end;
+
+procedure AddWords(var S, D: Tstrings);
+var
+  I: Integer;
+begin
+  for I := 0 to S.Count - 1 do
+    if not WordExists(D, S[I]) then
+      D.Text := D.Text + ' ' + S[I];
+end;
+
+procedure AddWordsB(var S, D: TStrings);
+var
+  I: Integer;
+begin
+  for I := 0 to S.Count - 1 do
+    D.Add(S[I])
+end;
+
+procedure DeleteWords(S: Tstrings; var D: Tstrings);
+var
+  I: Integer;
+  Temp: TStrings;
+begin
+  Temp := TStringList.Create;
+  try
+    for I := 0 to D.Count - 1 do
+      if not WordExists(S, D[I]) then
+        Temp.Add(D[I]);
+    D.Assign(Temp);
+  finally
+    F(Temp);
+  end;
+end;
+
+procedure DelSpaces(S: TStrings);
+var
+  I: Integer;
+  St: string;
+begin
+  for I := 0 to S.Count - 1 do
   begin
-   Words_.Add(copy(s,i+1,j-i-1));
-   pi_^:=j-1;
-   break;
+    St := S[I];
+    DelSpacesA(St);
+    S[I] := St;
   end;
- end;
- DelSpaces(Words_);
 end;
 
-procedure AddWords(var S,D : Tstrings);
+procedure DelSpacesA(var S: string);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=0 to S.Count-1 do
- if not WordExists(d,s[i]) then d.Text:=d.Text+' '+s[i];
+  for I := Length(S) downto 1 do
+    if S[I] = ' ' then
+      Delete(S, I, 1);
 end;
 
-procedure AddWordsB(var S,D : TStrings);
+procedure DelSpacesW(var S: string);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=0 to S.Count-1 do
- D.Add(S[i])
+  for I := Length(S) downto 2 do
+    if (S[I] = ' ') and (S[I - 1] = ' ') then
+      Delete(S, I, 1);
 end;
 
-procedure DeleteWords(S:Tstrings; var D : Tstrings);
+function AddWordsA(S: string; var D: string): Boolean;
 var
-  i:Integer;
-  Temp : TStrings;
+  I: Integer;
+  S_, D_: Tstrings;
 begin
- Temp:=TStringList.Create;
- Temp.Clear;
- for i:=0 to D.Count-1 do
- if not WordExists(S,D[i]) then
- Temp.Add(D[i]);
- D.Assign(Temp);
- Temp.Free;
+  Result := False;
+  S_ := TStringList.Create;
+  D_ := TStringList.Create;
+  try
+    SpilitWords(S, S_);
+    SpilitWords(D, D_);
+    if Length(D) > 1 then
+      if D[Length(D)] = ' ' then
+        Delete(D, Length(D), 1);
+    for I := 0 to S_.Count - 1 do
+      if not WordExists(D_, S_[I]) then
+      begin
+        Result := True;
+        D := D + ' ' + S_[I];
+      end;
+  finally
+    F(S_);
+    F(D_);
+  end;
 end;
 
-
-procedure DelSpaces(var S : Tstrings);
+function AddWordsW(S, Ig: string; var D: string): Boolean;
 var
-  i : integer;
-  st : string;
+  I: Integer;
+  S_, D_, Ig_: TStrings;
 begin
- for i:=0 to S.Count-1 do
- begin
-  st:=s[i];
-  DelSpacesA(st);
-  s[i]:=st;
- end;
+  Result := False;
+  S_ := TStringList.Create;
+  D_ := TStringList.Create;
+  Ig_ := TStringList.Create;
+  try
+    SpilitWords(S, S_);
+    SpilitWords(D, D_);
+    SpilitWords(Ig, Ig_);
+    if Length(D) > 1 then
+      if D[Length(D)] = ' ' then
+        Delete(D, Length(D), 1);
+    for I := 0 to S_.Count - 1 do
+      if not WordExists(D_, S_[I]) and not WordExists(Ig_, S_[I]) then
+      begin
+        Result := True;
+        D := D + ' ' + S_[I];
+      end;
+  finally
+    F(S_);
+    F(D_);
+    F(Ig_);
+  end;
 end;
 
-procedure DelSpacesA(var S : string);
+procedure ReplaceWords(A, B: string; var D: string);
 var
-  i : integer;
+  A_, B_, D_: TStrings;
 begin
- for i:=length(s) downto 1 do
- if s[i]=' ' then delete(s,i,1);
+  A_ := TStringList.Create;
+  B_ := TStringList.Create;
+  D_ := TStringList.Create;
+  try
+    SpilitWords(A, A_);
+    SpilitWords(B, B_);
+    SpilitWords(D, D_);
+    DeleteWords(A_, D_);
+    AddWords(B_, D_);
+    D := WordsToString(D_);
+  finally
+    F(A_);
+    F(B_);
+    F(D_);
+  end;
 end;
 
-procedure DelSpacesW(var S : string);
+procedure GetCommonWords(A, B: TStrings; var D: TStrings);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=length(s) downto 2 do
- if (s[i]=' ') and (s[i-1]=' ') then delete(s,i,1);
+  if D = nil then
+    D := TStringList.Create;
+  D.Clear;
+  for I := 0 to A.Count - 1 do
+    if WordExists(B, A[I]) then
+      D.Add(A[I])
 end;
 
-function AddWordsA(S:string; var D : string) : boolean;
+function WordsToString(Words: TStrings): string;
 var
-  i : integer;
-  s_ ,d_ :tstrings;
+  I: Integer;
 begin
- result:=false;
- s_:=tstringlist.Create;
- d_:=tstringlist.Create;
- SpilitWords(s,s_);
- SpilitWords(d,d_);
- if length(d)>1 then
- if d[length(d)]=' ' then delete(d,length(d),1);
- for i:=0 to S_.Count-1 do
- if not WordExists(d_,s_[i]) then
- begin
- result:=true;
- d:=d+' '+s_[i];
- end;
-end;
-
-function AddWordsW(S,Ig:string; var D : string) : boolean;
-var
-  i : integer;
-  s_,d_,ig_ : tstrings;
-begin
- result:=false;
- s_:=tstringlist.Create;
- d_:=tstringlist.Create;
- ig_:=tstringlist.Create;
- SpilitWords(s,s_);
- SpilitWords(d,d_);
- SpilitWords(ig,ig_);
- if length(d)>1 then
- if d[length(d)]=' ' then delete(d,length(d),1);
- for i:=0 to S_.Count-1 do
- if not WordExists(d_,s_[i]) and not WordExists(ig_,s_[i]) then
- begin
- result:=true;
- d:=d+' '+s_[i];
- end;
-end;
-
-Procedure ReplaceWords(A,B : String; var D : string);
-var
-  a_, b_, d_ : TStrings;
-begin
- a_:=tstringlist.Create;
- b_:=tstringlist.Create;
- d_:=tstringlist.Create;
- SpilitWords(a,a_);
- SpilitWords(b,b_);
- SpilitWords(d,d_);
- DeleteWords(a_,d_);
- AddWords(b_,d_);
- D:=WordsToString(d_);
- a_.Free;
- b_.Free;
- d_.Free;
-end;
-
-procedure GetCommonWords(A,B : Tstrings; var D : Tstrings);
-var
-  i : integer;
-begin
- If D=nil then D:=TStringList.Create;
- D.Clear;
- For i:=0 to A.Count-1 do
- if WordExists(B,A[i]) then
- D.Add(A[i])
-end;
-
-Function WordsToString(Words : TStrings) : String;
-var
-  i : Integer;
-begin
-  Result:='';
-  For i:=0 to Words.Count-1 do
-  If Result='' then Result:=Words[0] else
-  Result:=Result+' '+Words[i];
+  Result := '';
+  for I := 0 to Words.Count - 1 do
+    if Result = '' then
+      Result := Words[0]
+    else
+      Result := Result + ' ' + Words[I];
   DelSpacesW(Result);
 end;
 
 {$IFNDEF EXT}
 
-Function GetCommonWordsA(Words : TStringList): String;
+function GetCommonWordsA(Words: TStringList): string;
 var
-  Common, Temp, Str : TStrings;
-  i : Integer;
+  Common, Temp, Str: TStrings;
+  I: Integer;
 begin
   if Words.Count = 0 then
     Exit;
 
-  Common:=TStringList.create;
-  Temp:=TStringList.create;
-  Str:=TStringList.create;
-  SpilitWords(Words[0],Common);
-  for i:=1 to Words.Count - 1 do
-  begin
-   SpilitWords(Words[i],Temp);
-   GetCommonWords(Common,Temp,Str);
-   Common.Assign(Str);
-   If Common.Count=0 then break;
+  Common := TStringList.Create;
+  Temp := TStringList.Create;
+  Str := TStringList.Create;
+  try
+    SpilitWords(Words[0], Common);
+    for I := 1 to Words.Count - 1 do
+    begin
+      SpilitWords(Words[I], Temp);
+      GetCommonWords(Common, Temp, Str);
+      Common.Assign(Str);
+      if Common.Count = 0 then
+        Break;
+    end;
+    Result := WordsToString(Common);
+  finally
+    F(Common);
+    F(Temp);
+    F(Str);
   end;
-  Result:=WordsToString(Common);
-  Common.free;
 end;
 
-Function SimilarTexts(A{Big text},B{TextIn} : string) : boolean;
+function SimilarTexts(A { Big text } , B { TextIn } : string): Boolean;
 var
-  i, a1, b1, c1 : integer;
-  s_, d_, c_ : tstrings;
+  I, B1, C1: Integer;
+  S_, D_, C_: Tstrings;
 begin
- result:=false;
- s_:=tstringlist.Create;
- d_:=tstringlist.Create;
- c_:=tstringlist.Create;
- SpilitWords(A,s_);
- SpilitWords(B,d_);
- a1:= s_.count;
- b1:= d_.count;
- for i:=0 to d_.Count-1 do
- if WordExists(s_,d_[i]) then
- begin
-  c_.add(d_[i]);
- end;
- c1:=c_.Count;
- if (b1=0) and (c1<>0) then begin result:=false; exit; end;
- if (b1=0) and (c1=0) then begin result:=true; exit; end;
- if ((c1)/(b1))>0.9 then Result:=True else result:=false;
+  S_ := TStringList.Create;
+  D_ := TStringList.Create;
+  C_ := TStringList.Create;
+  try
+    SpilitWords(A, S_);
+    SpilitWords(B, D_);
+    B1 := D_.Count;
+    for I := 0 to D_.Count - 1 do
+      if WordExists(S_, D_[I]) then
+      begin
+        C_.Add(D_[I]);
+      end;
+    C1 := C_.Count;
+    if (B1 = 0) and (C1 <> 0) then
+    begin
+      Result := False;
+      Exit;
+    end;
+    if (B1 = 0) and (C1 = 0) then
+    begin
+      Result := True;
+      Exit;
+    end;
+    if ((C1) / (B1)) > 0.9 then
+      Result := True
+    else
+      Result := False;
+  finally
+    F(S_);
+    F(D_);
+    F(C_);
+  end;
 end;
 
-function VariousKeyWords(S1, S2 : String) : Boolean;
+function VariousKeyWords(S1, S2: string): Boolean;
 var
-  i : integer;
-  A1, A2 : TStrings;
+  I: Integer;
+  A1, A2: TStrings;
 begin
- Result:=False;
- A1:=tstringlist.Create;
- A2:=tstringlist.Create;
- SpilitWords(S1,A1);
- SpilitWords(S2,A2);
- For i:=1 to A1.Count do
- if not WordExists(A2,A1[i-1]) then
- begin
-  Result:=True;
-  A1.Free;
-  A2.Free;
-  Exit;
- end;
- For i:=1 to A2.Count do
- if not WordExists(A1,A2[i-1]) then
- begin
-  Result:=True;
-  A1.Free;
-  A2.Free;
-  Exit;
- end;
- A1.Free;
- A2.Free;
+  Result := False;
+  A1 := Tstringlist.Create;
+  A2 := Tstringlist.Create;
+  try
+    SpilitWords(S1, A1);
+    SpilitWords(S2, A2);
+    for I := 1 to A1.Count do
+      if not WordExists(A2, A1[I - 1]) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    for I := 1 to A2.Count do
+      if not WordExists(A1, A2[I - 1]) then
+      begin
+        Result := True;
+        Exit;
+    end;
+  finally
+    F(A1);
+    F(A2);
+  end;
 end;
 
-function MaxStatDate(Dates : TArDateTime) : TDateTime;
-type TDateStat = record
-  Date : TDateTime;
-  Count : Integer;
- end;
- TArDateStat = Array of TDateStat;
-Var
-  i:integer;
-  Stat : TArDateStat;
-  MaxC, MaxN : Integer;
- Procedure AddStat(var DatesStat : TArDateStat; Date : TDateTime);
- var
-   j : Integer;
- begin
-  For j:=0 to length(DatesStat)-1 do
-  if DatesStat[j].Date=Date then
-  begin
-   DatesStat[j].Count:=DatesStat[j].Count+1;
-   Exit;
+function MaxStatDate(Dates: TArDateTime): TDateTime;
+type
+  TDateStat = record
+    Date: TDateTime;
+    Count: Integer;
   end;
-  SetLength(DatesStat,Length(DatesStat)+1);
-  DatesStat[Length(DatesStat)-1].Date:=Date;
-  DatesStat[Length(DatesStat)-1].Count:=0;
- end;
+
+  TArDateStat = array of TDateStat;
+
+var
+  I: Integer;
+  Stat: TArDateStat;
+  MaxC, MaxN: Integer;
+
+  procedure AddStat(var DatesStat: TArDateStat; Date: TDateTime);
+  var
+    J: Integer;
+  begin
+    for J := 0 to Length(DatesStat) - 1 do
+      if DatesStat[J].Date = Date then
+      begin
+        DatesStat[J].Count := DatesStat[J].Count + 1;
+        Exit;
+      end;
+    SetLength(DatesStat, Length(DatesStat) + 1);
+    DatesStat[Length(DatesStat) - 1].Date := Date;
+    DatesStat[Length(DatesStat) - 1].Count := 0;
+  end;
+
 begin
- Result:=0;
- If length(Dates)=0 then exit;
- SetLength(Stat,0);
- For i:=0 to length(Dates)-1 do
- AddStat(Stat,Dates[i]);
- MaxC:=Stat[0].Count;
- MaxN:=0;
- For i:=0 to length(Stat)-1 do
- If MaxC<Stat[i].Count then
- begin
-  MaxC:=Stat[i].Count;
-  MaxN:=i;
- end;
- Result:=Stat[MaxN].Date;
+  Result := 0;
+  if Length(Dates) = 0 then
+    Exit;
+  SetLength(Stat, 0);
+  for I := 0 to Length(Dates) - 1 do
+    AddStat(Stat, Dates[I]);
+  MaxC := Stat[0].Count;
+  MaxN := 0;
+  for I := 0 to Length(Stat) - 1 do
+    if MaxC < Stat[I].Count then
+    begin
+      MaxC := Stat[I].Count;
+      MaxN := I;
+    end;
+  Result := Stat[MaxN].Date;
 end;
 
-function MaxStatTime(Times : TArTime) : TDateTime;
-type TDateStat = record
-  Time : TDateTime;
-  Count : Integer;
- end;
- TArDateStat = Array of TDateStat;
-Var
-  i:integer;
-  Stat : TArDateStat;
-  MaxC, MaxN : Integer;
- Procedure AddStat(var DatesStat : TArDateStat; Time : TDateTime);
- var
-   j : Integer;
- begin
-  For j:=0 to length(DatesStat)-1 do
-  if DatesStat[j].Time=Time then
-  begin
-   DatesStat[j].Count:=DatesStat[j].Count+1;
-   Exit;
+function MaxStatTime(Times: TArTime): TDateTime;
+type
+  TDateStat = record
+    Time: TDateTime;
+    Count: Integer;
   end;
-  SetLength(DatesStat,Length(DatesStat)+1);
-  DatesStat[Length(DatesStat)-1].Time:=Time;
-  DatesStat[Length(DatesStat)-1].Count:=0;
- end;
+
+  TArDateStat = array of TDateStat;
+
+var
+  I: Integer;
+  Stat: TArDateStat;
+  MaxC, MaxN: Integer;
+
+  procedure AddStat(var DatesStat: TArDateStat; Time: TDateTime);
+  var
+    J: Integer;
+  begin
+    for J := 0 to Length(DatesStat) - 1 do
+      if DatesStat[J].Time = Time then
+      begin
+        DatesStat[J].Count := DatesStat[J].Count + 1;
+        Exit;
+      end;
+    SetLength(DatesStat, Length(DatesStat) + 1);
+    DatesStat[Length(DatesStat) - 1].Time := Time;
+    DatesStat[Length(DatesStat) - 1].Count := 0;
+  end;
+
 begin
- Result:=0;
- If length(Times)=0 then exit;
- SetLength(Stat,0);
- For i:=0 to length(Times)-1 do
- AddStat(Stat,Times[i]);
- MaxC:=Stat[0].Count;
- MaxN:=0;
- For i:=0 to length(Stat)-1 do
- If MaxC<Stat[i].Count then
- begin
-  MaxC:=Stat[i].Count;
-  MaxN:=i;
- end;
- Result:=Stat[MaxN].Time;
+  Result := 0;
+  if Length(Times) = 0 then
+    Exit;
+  SetLength(Stat, 0);
+  for I := 0 to Length(Times) - 1 do
+    AddStat(Stat, Times[I]);
+  MaxC := Stat[0].Count;
+  MaxN := 0;
+  for I := 0 to Length(Stat) - 1 do
+    if MaxC < Stat[I].Count then
+    begin
+      MaxC := Stat[I].Count;
+      MaxN := I;
+    end;
+  Result := Stat[MaxN].Time;
 end;
 
 //function MaxStat32Bit(
 
-function MaxStatInt(Ints : TArInteger) : Integer;
-type TIntStat = record
-  Int : integer;
-  Count : Integer;
- end;
- TArIntStat = Array of TIntStat;
-Var
-  i:integer;
-  Stat : TArIntStat;
-  MaxC, MaxN : Integer;
- Procedure AddStat(var IntStat : TArIntStat; Int : integer);
- var
-   j : Integer;
- begin
-  For j:=0 to length(IntStat)-1 do
-  if IntStat[j].Int=Int then
-  begin
-   IntStat[j].Count:=IntStat[j].Count+1;
-   Exit;
+function MaxStatInt(Ints: TArInteger): Integer;
+type
+  TIntStat = record
+    Int: Integer;
+    Count: Integer;
   end;
-  SetLength(IntStat,Length(IntStat)+1);
-  IntStat[Length(IntStat)-1].Int:=Int;
-  IntStat[Length(IntStat)-1].Count:=0;
- end;
-begin
- Result:=0;
- If length(Ints)=0 then exit;
- SetLength(Stat,0);
- For i:=0 to length(Ints)-1 do
- AddStat(Stat,Ints[i]);
- MaxC:=Stat[0].Count;
- MaxN:=0;
- For i:=0 to length(Stat)-1 do
- If MaxC<Stat[i].Count then
- begin
-  MaxC:=Stat[i].Count;
-  MaxN:=i;
- end;
- Result:=Stat[MaxN].int;
-end;
 
-function MaxStatStr(Strs : TArStrings) : String;
-type TStrStat = record
-  Str : String;
-  Count : Integer;
- end;
- TArStrStat = Array of TStrStat;
-Var
-  i:integer;
-  Stat : TArStrStat;
-  MaxC, MaxN : Integer;
- Procedure AddStat(var StrStat : TArStrStat; Str : String);
- var
-   j : Integer;
- begin
-  For j:=0 to length(StrStat)-1 do
-  if StrStat[j].Str=Str then
+  TArIntStat = array of TIntStat;
+var
+  I: Integer;
+  Stat: TArIntStat;
+  MaxC, MaxN: Integer;
+  procedure AddStat(var IntStat: TArIntStat; Int: Integer);
+  var
+    J: Integer;
   begin
-   StrStat[j].Count:=StrStat[j].Count+1;
-   Exit;
+    for J := 0 to Length(IntStat) - 1 do
+      if IntStat[J].Int = Int then
+      begin
+        IntStat[J].Count := IntStat[J].Count + 1;
+        Exit;
+      end;
+    SetLength(IntStat, Length(IntStat) + 1);
+    IntStat[Length(IntStat) - 1].Int := Int;
+    IntStat[Length(IntStat) - 1].Count := 0;
   end;
-  SetLength(StrStat,Length(StrStat)+1);
-  StrStat[Length(StrStat)-1].Str:=Str;
-  StrStat[Length(StrStat)-1].Count:=0;
- end;
+
 begin
- If length(Strs)=0 then exit;
- SetLength(Stat,0);
- For i:=0 to length(Strs)-1 do
- AddStat(Stat,Strs[i]);
- MaxC:=Stat[0].Count;
- MaxN:=0;
- For i:=0 to length(Stat)-1 do
- If MaxC<Stat[i].Count then
- begin
-  MaxC:=Stat[i].Count;
-  MaxN:=i;
- end;
- Result:=Stat[MaxN].Str;
+  Result := 0;
+  if Length(Ints) = 0 then
+    Exit;
+  SetLength(Stat, 0);
+  for I := 0 to Length(Ints) - 1 do
+    AddStat(Stat, Ints[I]);
+  MaxC := Stat[0].Count;
+  MaxN := 0;
+  for I := 0 to Length(Stat) - 1 do
+    if MaxC < Stat[I].Count then
+    begin
+      MaxC := Stat[I].Count;
+      MaxN := I;
+    end;
+  Result := Stat[MaxN].Int;
 end;
 
-function IsVariousBool(Bools : TArBoolean) : Boolean;
+function MaxStatStr(Strs: TArStrings): string;
+type
+  TStrStat = record
+    Str: string;
+    Count: Integer;
+  end;
+
+  TArStrStat = array of TStrStat;
 var
-  i : Integer;
-  b : Boolean;
-begin
- Result:=False;
- if Length(Bools)=0 then exit;
- b:=Bools[0];
- For i:=0 to Length(Bools)-1 do
- if b<>Bools[i] then
- begin
-  Result:=True;
-  Break;
- end;
-end;
-
-function IsVariousDate(Dates : TArDateTime) : Boolean;
-var
-  i : Integer;
-  d : TDateTime;
-begin
- Result:=False;
- if Length(Dates)=0 then exit;
- d:=Dates[0];
- For i:=0 to Length(Dates)-1 do
- if d<>Dates[i] then
- begin
-  Result:=True;
-  Break;
- end;
-end;
-
-function MaxStatBool(Bools : TArBoolean):Boolean;
-type TBoolStat = record
-  Bool : Boolean;
-  Count : Integer;
- end;
- TArBoolStat = Array of TBoolStat;
-Var
-  i:integer;
-  Stat : TArBoolStat;
-  MaxC, MaxN : Integer;
- Procedure AddStat(var BoolStat : TArBoolStat; Bool : Boolean);
- var
-   j : Integer;
- begin
-  For j:=0 to length(BoolStat)-1 do
-  if BoolStat[j].Bool=Bool then
+  I: Integer;
+  Stat: TArStrStat;
+  MaxC, MaxN: Integer;
+  procedure AddStat(var StrStat: TArStrStat; Str: string);
+  var
+    J: Integer;
   begin
-   BoolStat[j].Count:=BoolStat[j].Count+1;
-   Exit;
+    for J := 0 to Length(StrStat) - 1 do
+      if StrStat[J].Str = Str then
+      begin
+        StrStat[J].Count := StrStat[J].Count + 1;
+        Exit;
+      end;
+    SetLength(StrStat, Length(StrStat) + 1);
+    StrStat[Length(StrStat) - 1].Str := Str;
+    StrStat[Length(StrStat) - 1].Count := 0;
   end;
-  SetLength(Boolstat,Length(BoolStat)+1);
-  BoolStat[Length(BoolStat)-1].Bool:=Bool;
-  BoolStat[Length(BoolStat)-1].Count:=0;
- end;
+
 begin
- Result:=false;
- If length(Bools)=0 then exit;
- SetLength(Stat,0);
- For i:=0 to length(Bools)-1 do
- AddStat(Stat,Bools[i]);
- MaxC:=Stat[0].Count;
- MaxN:=0;
- For i:=0 to length(Stat)-1 do
- If MaxC<Stat[i].Count then
- begin
-  MaxC:=Stat[i].Count;
-  MaxN:=i;
- end;
- Result:=Stat[MaxN].Bool;
+  if Length(Strs) = 0 then
+    Exit;
+  SetLength(Stat, 0);
+  for I := 0 to Length(Strs) - 1 do
+    AddStat(Stat, Strs[I]);
+  MaxC := Stat[0].Count;
+  MaxN := 0;
+  for I := 0 to Length(Stat) - 1 do
+    if MaxC < Stat[I].Count then
+    begin
+      MaxC := Stat[I].Count;
+      MaxN := I;
+    end;
+  Result := Stat[MaxN].Str;
 end;
 
-Function IsVariousArInteger(Ar : TArInteger) : Boolean;
+function IsVariousBool(Bools: TArBoolean): Boolean;
 var
-  i, n : integer;
+  I: Integer;
+  B: Boolean;
 begin
- Result:=False;
- if length(Ar)=0 then exit;
- n:=Ar[0];
- for i:=1 to length(Ar)-1 do
- if n<>Ar[i] then
- begin
-  Result:=True;
-  Break;
- end;
+  Result := False;
+  if Length(Bools) = 0 then
+    Exit;
+  B := Bools[0];
+  for I := 0 to Length(Bools) - 1 do
+    if B <> Bools[I] then
+    begin
+      Result := True;
+      Break;
+    end;
+end;
+
+function IsVariousDate(Dates: TArDateTime): Boolean;
+var
+  I: Integer;
+  D: TDateTime;
+begin
+  Result := False;
+  if Length(Dates) = 0 then
+    Exit;
+  D := Dates[0];
+  for I := 0 to Length(Dates) - 1 do
+    if D <> Dates[I] then
+    begin
+      Result := True;
+      Break;
+    end;
+end;
+
+function MaxStatBool(Bools: TArBoolean): Boolean;
+type
+  TBoolStat = record
+    Bool: Boolean;
+    Count: Integer;
+  end;
+
+  TArBoolStat = array of TBoolStat;
+var
+  I: Integer;
+  Stat: TArBoolStat;
+  MaxC, MaxN: Integer;
+  procedure AddStat(var BoolStat: TArBoolStat; Bool: Boolean);
+  var
+    J: Integer;
+  begin
+    for J := 0 to Length(BoolStat) - 1 do
+      if BoolStat[J].Bool = Bool then
+      begin
+        BoolStat[J].Count := BoolStat[J].Count + 1;
+        Exit;
+      end;
+    SetLength(Boolstat, Length(BoolStat) + 1);
+    BoolStat[Length(BoolStat) - 1].Bool := Bool;
+    BoolStat[Length(BoolStat) - 1].Count := 0;
+  end;
+
+begin
+  Result := False;
+  if Length(Bools) = 0 then
+    Exit;
+  SetLength(Stat, 0);
+  for I := 0 to Length(Bools) - 1 do
+    AddStat(Stat, Bools[I]);
+  MaxC := Stat[0].Count;
+  MaxN := 0;
+  for I := 0 to Length(Stat) - 1 do
+    if MaxC < Stat[I].Count then
+    begin
+      MaxC := Stat[I].Count;
+      MaxN := I;
+    end;
+  Result := Stat[MaxN].Bool;
+end;
+
+function IsVariousArInteger(Ar: TArInteger): Boolean;
+var
+  I, N: Integer;
+begin
+  Result := False;
+  if Length(Ar) = 0 then
+    Exit;
+  N := Ar[0];
+  for I := 1 to Length(Ar) - 1 do
+    if N <> Ar[I] then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
 function IsVariousArStrings(Ar: TStrings): Boolean;
@@ -626,34 +702,39 @@ begin
     end;
 end;
 
-function IsVariousArBoolean(Ar : TArBoolean) : Boolean;
+function IsVariousArBoolean(Ar: TArBoolean): Boolean;
 var
-  i : integer;
-  b : boolean;
+  I: Integer;
+  B: Boolean;
 begin
- Result:=False;
- if length(Ar)=0 then exit;
- b:=Ar[0];
- for i:=1 to length(Ar)-1 do
- if b<>Ar[i] then
- begin
-  Result:=True;
-  Break;
- end;
+  Result := False;
+  if Length(Ar) = 0 then
+    Exit;
+  B := Ar[0];
+  for I := 1 to Length(Ar) - 1 do
+    if B <> Ar[I] then
+    begin
+      Result := True;
+      Break;
+    end;
 end;
 
-procedure DeleteWords(var Words : String; WordsToDelete : String);
+procedure DeleteWords(var Words: string; WordsToDelete: string);
 var
-  S, D : TStrings;
+  S, D: TStrings;
 begin
- S:=TStringList.Create;
- D:=TStringList.Create;
- SpilitWords(Words,D);
- SpilitWords(WordsToDelete,S);
- DeleteWords(S,D);
- Words:=WordsToString(D);
- S.Free;
- D.Free;
+  S := TStringList.Create;
+  D := TStringList.Create;
+  try
+    SpilitWords(Words, D);
+    SpilitWords(WordsToDelete, S);
+    DeleteWords(S, D);
+    Words := WordsToString(D);
+  finally
+    F(S);
+    F(D);
+  end;
 end;
 {$ENDIF}
+
 end.

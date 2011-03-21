@@ -213,6 +213,7 @@ begin
     if FGroup.AutoAddKeyWords then
       AddWordsA(FGroup.GroupKeyWords, FNewKeyWords);
   end;
+  FreeGroups(FSetGroups);
   FSetGroups := CopyGroups(FGroups);
   Close;
 end;
@@ -232,24 +233,33 @@ var
     FRelatedGroups := EncodeGroups(Group.RelatedGroups);
     // сохраняем что имели
     OldGroups := CopyGroups(FSetGroups);
-    // копируем?
-    Groups := CopyGroups(OldGroups);
+    try
+      // копируем?
+      Groups := CopyGroups(OldGroups);
+      try
 
-    // добавили группу и связанные с ней группы
-    AddGroupToGroups(Groups, Group);
-    AddGroupsToGroups(Groups, FRelatedGroups);
+        // добавили группу и связанные с ней группы
+        AddGroupToGroups(Groups, Group);
+        AddGroupsToGroups(Groups, FRelatedGroups);
 
-    // занесли это всё в FSetGroups - результат
-    FSetGroups := CopyGroups(Groups);
+        // занесли это всё в FSetGroups - результат
+        FreeGroups(FSetGroups);
+        FSetGroups := CopyGroups(Groups);
 
-    // получили все новые группы путём вычитаниясо старым
-    RemoveGroupsFromGroups(Groups, OldGroups);
-    for I := 0 to Length(Groups) - 1 do
-    begin
-      // добавляем группу и ключевые слова к ней
-      LstSelectedGroups.Items.Add(Groups[I].GroupName);
-      TempGroup := GetGroupByGroupCode(Groups[I].GroupCode, False);
-      AddWordsA(TempGroup.GroupKeyWords, FNewKeyWords);
+        // получили все новые группы путём вычитания со старым
+        RemoveGroupsFromGroups(Groups, OldGroups);
+        for I := 0 to Length(Groups) - 1 do
+        begin
+          // добавляем группу и ключевые слова к ней
+          LstSelectedGroups.Items.Add(Groups[I].GroupName);
+          TempGroup := GetGroupByGroupCode(Groups[I].GroupCode, False);
+          AddWordsA(TempGroup.GroupKeyWords, FNewKeyWords);
+        end;
+      finally
+        FreeGroups(Groups);
+      end;
+    finally
+      FreeGroups(OldGroups);
     end;
   end;
 
@@ -519,13 +529,13 @@ begin
   end;
 
   try
-    if Index=-1 then
-      exit;
+    if index = -1 then
+      Exit;
     with (Control as TListBox).Canvas do
     begin
       FillRect(Rect);
-      n:=-1;
-      if Control=LstSelectedGroups then
+      N := -1;
+      if Control = LstSelectedGroups then
       begin
         for i:=0 to Length(FRegGroups)-1 do
         begin
@@ -583,7 +593,8 @@ begin
       TextOut(Rect.Left + 32 + 5, Rect.Top + 3, Text1);
       TextOut(Rect.Left + 32 + 5, Rect.Top + 3 + 14, Text);
     end;
-  except
+  finally
+    FreeGroups(XNewGroups);
   end;
 end;
 

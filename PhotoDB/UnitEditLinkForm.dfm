@@ -198,18 +198,18 @@ object FormEditLink: TFormEditLink
     Top = 112
     Width = 177
     Height = 21
-    TabOrder = 0
+    TabOrder = 1
     OnChange = EdNameChange
     OnKeyPress = CbLinkTypeKeyPress
   end
-  object Button1: TButton
+  object BtnChooseLinkValue: TButton
     Left = 168
     Top = 152
     Width = 17
     Height = 65
     Caption = '...'
-    TabOrder = 1
-    OnClick = Button1Click
+    TabOrder = 3
+    OnClick = BtnChooseLinkValueClick
   end
   object BtnOk: TButton
     Left = 112
@@ -217,7 +217,7 @@ object FormEditLink: TFormEditLink
     Width = 75
     Height = 25
     Caption = 'Ok'
-    TabOrder = 2
+    TabOrder = 4
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
@@ -226,7 +226,7 @@ object FormEditLink: TFormEditLink
     Width = 75
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 3
+    TabOrder = 5
     OnClick = BtnCancelClick
   end
   object EdValue: TWatermarkedMemo
@@ -234,7 +234,7 @@ object FormEditLink: TFormEditLink
     Top = 152
     Width = 161
     Height = 65
-    TabOrder = 4
+    TabOrder = 2
     OnChange = EdNameChange
     OnKeyPress = EdValueKeyPress
   end
@@ -245,7 +245,7 @@ object FormEditLink: TFormEditLink
     Height = 22
     ItemsEx = <>
     Style = csExDropDownList
-    TabOrder = 5
+    TabOrder = 0
     OnChange = EdNameChange
     OnKeyPress = CbLinkTypeKeyPress
     Images = LinkImageList

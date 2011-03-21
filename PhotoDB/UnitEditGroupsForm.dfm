@@ -606,7 +606,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 75
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 0
+    TabOrder = 8
     OnClick = BtnCancelClick
   end
   object BtnOk: TButton
@@ -615,7 +615,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 75
     Height = 25
     Caption = 'Ok'
-    TabOrder = 1
+    TabOrder = 9
     OnClick = BtnOkClick
   end
   object BtnCreateGroup: TButton
@@ -624,7 +624,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 97
     Height = 25
     Caption = 'New Group'
-    TabOrder = 2
+    TabOrder = 7
     OnClick = BtnCreateGroupClick
   end
   object BtnManager: TButton
@@ -633,7 +633,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 139
     Height = 25
     Caption = 'Manager'
-    TabOrder = 3
+    TabOrder = 6
     OnClick = GroupManeger1Click
   end
   object LstSelectedGroups: TListBox
@@ -646,7 +646,7 @@ object EditGroupsForm: TEditGroupsForm
     Items.Strings = (
       '<Data>')
     MultiSelect = True
-    TabOrder = 4
+    TabOrder = 3
     OnContextPopup = LstSelectedGroupsContextPopup
     OnDblClick = LstSelectedGroupsDblClick
     OnDrawItem = LstAvaliableGroupsDrawItem
@@ -661,7 +661,7 @@ object EditGroupsForm: TEditGroupsForm
     Items.Strings = (
       '<Data>')
     MultiSelect = True
-    TabOrder = 5
+    TabOrder = 0
     OnDblClick = BtnAddGroupClick
     OnDrawItem = LstAvaliableGroupsDrawItem
   end
@@ -671,7 +671,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 27
     Height = 65
     Caption = '<--'
-    TabOrder = 6
+    TabOrder = 2
     OnClick = BtnRemoveGroupClick
   end
   object BtnAddGroup: TButton
@@ -680,7 +680,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 27
     Height = 65
     Caption = '-->'
-    TabOrder = 7
+    TabOrder = 1
     OnClick = BtnAddGroupClick
   end
   object CbRemoveKeywords: TCheckBox
@@ -689,7 +689,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 281
     Height = 17
     Caption = 'Remove KeyWords For Group'
-    TabOrder = 8
+    TabOrder = 5
     OnClick = CbRemoveKeywordsClick
   end
   object CbShowAllGroups: TCheckBox
@@ -698,7 +698,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 281
     Height = 17
     Caption = 'Show All Groups'
-    TabOrder = 9
+    TabOrder = 4
     OnClick = CbShowAllGroupsClick
   end
   object PmGroup: TPopupMenu

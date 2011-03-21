@@ -8,7 +8,7 @@ uses
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
   ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon,
   uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo,
-  uShellIntegration;
+  uShellIntegration, AppEvnts, uMemory;
 
 type
   TFormChangeGroup = class(TDBForm)
@@ -29,6 +29,7 @@ type
     GraphicSelect1: TGraphicSelectEx;
     EdName: TWatermarkedEdit;
     CbPrivateGroup: TCheckBox;
+    ApplicationEvents1: TApplicationEvents;
     procedure FormCreate(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
@@ -41,12 +42,14 @@ type
     procedure ComboBoxEx1KeyPress(Sender: TObject; var Key: Char);
     procedure ComboBoxEx1Select(Sender: TObject);
     procedure PmLoadFromFilePopup(Sender: TObject);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
     FGroup: TGroup;
     Saving: Boolean;
     FNewRelatedGroups: string;
     FGroupDate: TDateTime;
+    FReloadGroupsMessage: Cardinal;
   protected
     function GetFormID : string; override;
   public
@@ -72,7 +75,7 @@ begin
   try
     FormChangeGroup.Execute(Group.GroupCode);
   finally
-    FormChangeGroup.Release;
+    R(FormChangeGroup);
   end;
 end;
 
@@ -81,6 +84,7 @@ begin
   Saving := False;
   LoadLanguage;
   RelodDllNames;
+  FReloadGroupsMessage := RegisterWindowMessage('EDIT_GROUP_RELOAD_GROUPS');
 end;
 
 Procedure TFormChangeGroup.Execute(GroupCode : String);
@@ -88,30 +92,41 @@ var
   Group : TGroup;
 begin
   Group := GetGroupByGroupCode(GroupCode, True);
-  if Group.GroupName = '' then
-  begin
-    MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
-    Exit;
-  end;
-  FGroup := CopyGroup(Group);
   try
-    if Group.GroupImage <> nil then
-      ImgMain.Picture.Graphic := Group.GroupImage;
-    EdName.Text := Group.GroupName;
+    if Group.GroupName = '' then
+    begin
+      MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Exit;
+    end;
+    FGroup := CopyGroup(Group);
+    try
+      if Group.GroupImage <> nil then
+        ImgMain.Picture.Graphic := Group.GroupImage;
 
-    FGroupDate := Group.GroupDate;
-    MemComments.Text := Group.GroupComment;
-    MemKeywords.Text := Group.GroupKeyWords;
-    CbAddkeywords.Checked := Group.AutoAddKeyWords;
-    CbPrivateGroup.Checked := Group.GroupAccess = GROUP_ACCESS_PRIVATE;
-    CbInclude.Checked := Group.IncludeInQuickList;
-    FNewRelatedGroups := Group.RelatedGroups;
+      EdName.Text := Group.GroupName;
+      FGroupDate := Group.GroupDate;
+      MemComments.Text := Group.GroupComment;
+      MemKeywords.Text := Group.GroupKeyWords;
+      CbAddkeywords.Checked := Group.AutoAddKeyWords;
+      CbPrivateGroup.Checked := Group.GroupAccess = GROUP_ACCESS_PRIVATE;
+      CbInclude.Checked := Group.IncludeInQuickList;
+      FNewRelatedGroups := Group.RelatedGroups;
 
+    finally
+      FreeGroup(FGroup);
+    end;
   finally
-    FreeGroup(FGroup);
+    FreeGroup(Group);
   end;
   ReloadGroups;
   ShowModal;
+end;
+
+procedure TFormChangeGroup.ApplicationEvents1Message(var Msg: tagMSG;
+  var Handled: Boolean);
+begin
+  if msg.message = FReloadGroupsMessage then
+    ReloadGroups;
 end;
 
 procedure TFormChangeGroup.BtnCancelClick(Sender: TObject);
@@ -235,29 +250,29 @@ var
   Directory: string;
   TS: Tstrings;
 begin
-  Ts := TStringList.Create;
-  Ts.Clear;
-  Directory := IncludeTrailingBackslash(ProgramDir) + PlugInImagesFolder;
-  Found := FindFirst(Directory + '*.jpgc', FaAnyFile, SearchRec);
+  TS := TStringList.Create;
   try
-    while Found = 0 do
-    begin
-      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+    Directory := IncludeTrailingBackslash(ProgramDir) + PlugInImagesFolder;
+    Found := FindFirst(Directory + '*.jpgc', FaAnyFile, SearchRec);
+    try
+      while Found = 0 do
       begin
-        if FileExistsSafe(Directory + SearchRec.Name) then
-          try
+        if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+        begin
+          if FileExistsSafe(Directory + SearchRec.Name) then
             if ValidJPEGContainer(Directory + SearchRec.Name) then
               TS.Add(Directory + SearchRec.Name);
-          except
-          end;
+        end;
+        Found := SysUtils.FindNext(SearchRec);
       end;
-      Found := SysUtils.FindNext(SearchRec);
+    finally
+      FindClose(SearchRec);
     end;
+    GraphicSelect1.Galeries := TS;
+    GraphicSelect1.Showgaleries := True;
   finally
-    FindClose(SearchRec);
+    F(TS);
   end;
-  GraphicSelect1.Galeries := Ts;
-  GraphicSelect1.Showgaleries := True;
 end;
 
 procedure TFormChangeGroup.ImgMainClick(Sender: TObject);
@@ -342,14 +357,13 @@ procedure TFormChangeGroup.ComboBoxEx1Select(Sender: TObject);
 var
   KeyWords : string;
 begin
-  Application.ProcessMessages;
   if ComboBoxEx1.ItemsEx.Count = 0 then
     Exit;
+
   if (ComboBoxEx1.Text = ComboBoxEx1.Items[ComboBoxEx1.Items.Count - 1]) then
   begin
     DBChangeGroups(FNewRelatedGroups, KeyWords, False);
-    Application.ProcessMessages;
-    ReloadGroups;
+    PostMessage(Handle, FReloadGroupsMessage, 0, 0);
   end else
   begin
     ShowGroupInfo(ComboBoxEx1.Text, False, nil);

@@ -218,7 +218,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 65
     Height = 25
     Caption = 'Ok'
-    TabOrder = 0
+    TabOrder = 17
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
@@ -227,7 +227,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 65
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 1
+    TabOrder = 16
     OnClick = BtnCancelClick
   end
   object DtpFromDate: TDateTimePicker
@@ -238,7 +238,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Date = 38476.977185509260000000
     Time = 38476.977185509260000000
     DateFormat = dfLong
-    TabOrder = 2
+    TabOrder = 3
     OnChange = EdFolderMaskChange
   end
   object EdFolderMask: TEdit
@@ -246,7 +246,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Top = 72
     Width = 233
     Height = 21
-    TabOrder = 3
+    TabOrder = 4
     Text = '%yy:mm:dd = %YMD (%coment)'
     OnChange = EdFolderMaskChange
   end
@@ -257,7 +257,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Height = 57
     Lines.Strings = (
       'You comment')
-    TabOrder = 4
+    TabOrder = 5
     OnChange = EdFolderMaskChange
   end
   object EdFolder: TEdit
@@ -266,7 +266,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 217
     Height = 21
     ReadOnly = True
-    TabOrder = 5
+    TabOrder = 7
     Text = 'EdFolder'
     OnChange = EdFolderMaskChange
   end
@@ -276,7 +276,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 17
     Height = 19
     Caption = '...'
-    TabOrder = 6
+    TabOrder = 8
     OnClick = BtnChooseFolderClick
   end
   object CbMethod: TComboBox
@@ -286,7 +286,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Height = 21
     Style = csDropDownList
     ItemIndex = 0
-    TabOrder = 7
+    TabOrder = 12
     Text = 'Move'
     OnChange = EdFolderMaskChange
     Items.Strings = (
@@ -299,7 +299,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 129
     Height = 17
     Caption = 'Open This Folder'
-    TabOrder = 8
+    TabOrder = 11
     OnClick = EdFolderMaskChange
   end
   object MemFolderName: TMemo
@@ -310,7 +310,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Lines.Strings = (
       'Memo2')
     ReadOnly = True
-    TabOrder = 9
+    TabOrder = 6
   end
   object BtnSave: TButton
     Left = 8
@@ -318,7 +318,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 81
     Height = 25
     Caption = 'Save'
-    TabOrder = 10
+    TabOrder = 15
     OnClick = BtnSaveClick
   end
   object CheckBox2: TCheckBox
@@ -329,7 +329,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Caption = 'Get Multimedia Files'
     Checked = True
     State = cbChecked
-    TabOrder = 11
+    TabOrder = 9
     OnClick = CheckBox2Click
   end
   object EdMultimediaMask: TEdit
@@ -337,7 +337,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Top = 288
     Width = 233
     Height = 21
-    TabOrder = 12
+    TabOrder = 10
     Text = '|MOV|MP3|AVI|MPEG|MPG|'
     OnChange = EdFolderMaskChange
   end
@@ -366,7 +366,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     ReadOnly = True
     RowSelect = True
     SmallImages = OptionsImageList
-    TabOrder = 14
+    TabOrder = 1
     ViewStyle = vsReport
     Visible = False
     OnAdvancedCustomDrawItem = LvMainAdvancedCustomDrawItem
@@ -380,7 +380,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 225
     Height = 17
     Caption = 'Scan dates'
-    TabOrder = 15
+    TabOrder = 2
     Visible = False
     OnClick = BtnScanDatesClick
   end
@@ -390,7 +390,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 17
     Height = 137
     Caption = '>'
-    TabOrder = 16
+    TabOrder = 0
     OnClick = ExtendedButtonClick
   end
   object ProgressBar: TDmProgress

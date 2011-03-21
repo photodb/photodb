@@ -1908,7 +1908,7 @@ object FormSelectDB: TFormSelectDB
         Top = 216
         Width = 585
         Height = 21
-        TabOrder = 6
+        TabOrder = 5
         Text = 'InternalNameEdit'
         OnChange = InternalNameEditChange
       end

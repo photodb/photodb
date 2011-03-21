@@ -38,14 +38,14 @@ object ExportForm: TExportForm
     Height = 13
     Caption = '[no records]'
   end
-  object Button1: TButton
+  object BtnSelectFile: TButton
     Left = 296
     Top = 8
     Width = 17
     Height = 19
     Caption = '...'
-    TabOrder = 0
-    OnClick = Button1Click
+    TabOrder = 1
+    OnClick = BtnSelectFileClick
   end
   object CbPrivate: TCheckBox
     Left = 8
@@ -53,7 +53,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Private Records'
-    TabOrder = 1
+    TabOrder = 2
   end
   object CbRating: TCheckBox
     Left = 8
@@ -61,7 +61,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Only Rating Records'
-    TabOrder = 2
+    TabOrder = 3
   end
   object CbWithoutFiles: TCheckBox
     Left = 8
@@ -69,7 +69,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Records Without Files'
-    TabOrder = 3
+    TabOrder = 4
   end
   object PbMain: TDmProgress
     Left = 8
@@ -95,7 +95,7 @@ object ExportForm: TExportForm
     Width = 107
     Height = 17
     Caption = 'Begin Export'
-    TabOrder = 5
+    TabOrder = 10
     OnClick = BtnStartClick
   end
   object CbGroups: TCheckBox
@@ -104,7 +104,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Groups'
-    TabOrder = 6
+    TabOrder = 5
   end
   object CbCrypted: TCheckBox
     Left = 7
@@ -112,7 +112,7 @@ object ExportForm: TExportForm
     Width = 305
     Height = 17
     Caption = 'Export Crypted'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = CbCryptedClick
   end
   object CbCryptedPass: TCheckBox
@@ -122,7 +122,7 @@ object ExportForm: TExportForm
     Height = 17
     Caption = 'Export crypted if password exists'
     Enabled = False
-    TabOrder = 8
+    TabOrder = 7
   end
   object BtnBreak: TButton
     Left = 96
@@ -139,7 +139,7 @@ object ExportForm: TExportForm
     Top = 8
     Width = 289
     Height = 21
-    TabOrder = 10
+    TabOrder = 0
     WatermarkText = 'Please select a file'
   end
   object SaveDialog1: TSaveDialog

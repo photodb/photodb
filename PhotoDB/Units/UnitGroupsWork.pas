@@ -319,6 +319,7 @@ begin
   for I := 0 to Length(Groups) - 1 do
     if Groups[I].GroupCode = Group.GroupCode then
     begin
+      FreeGroup(Groups[I]);
       for J := I to Length(Groups) - 2 do
         Groups[J] := Groups[J + 1];
       SetLength(Groups, Length(Groups) - 1);
@@ -788,7 +789,7 @@ begin
     begin
       if TBlobField(Query.FieldByName('GroupImage')) <> nil then
       begin
-        Bs := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
+        BS := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
         try
           Result.GroupImage := TJpegImage.Create;
           Result.GroupImage.LoadfromStream(BS);

@@ -115,10 +115,10 @@ type
     LbAddWidth: TLabel;
     CbDontAddSmallFiles: TCheckBox;
     EdExplorerStartupLocation: TEdit;
-    Button25: TButton;
+    BtnSelectExplorerStartupFolder: TButton;
     CbExplorerStartupLocation: TCheckBox;
     CbStartUpExplorer: TCheckBox;
-    CbCkeckLinksOnUpdate: TCheckBox;
+    CbCheckLinksOnUpdate: TCheckBox;
     CbSmallToolBars: TCheckBox;
     CblEditorVirtuaCursor: TCheckBox;
     CbSortGroups: TCheckBox;
@@ -195,7 +195,7 @@ type
       var S: String);
     procedure Default1Click(Sender: TObject);
     procedure CbStartUpExplorerClick(Sender: TObject);
-    procedure Button25Click(Sender: TObject);
+    procedure BtnSelectExplorerStartupFolderClick(Sender: TObject);
     procedure CbExplorerStartupLocationClick(Sender: TObject);
     procedure CbDontAddSmallFilesClick(Sender: TObject);
     procedure PcMainChange(Sender: TObject);
@@ -296,7 +296,7 @@ begin
     CbSortGroups.Checked := Settings.Readbool('Options', 'SortGroupsByName', True);
     CbListViewHotSelect.Checked := Settings.Readbool('Options', 'UseHotSelect', True);
     CblEditorVirtuaCursor.Checked := Settings.ReadBool('Editor', 'VirtualCursor', False);
-    CbCkeckLinksOnUpdate.Checked := Settings.ReadBool('Options', 'CheckUpdateLinks', False);
+    CbCheckLinksOnUpdate.Checked := Settings.ReadBool('Options', 'CheckUpdateLinks', False);
 
     CbStartUpExplorer.Checked := Settings.ReadBool('Options', 'RunExplorerAtStartUp', False);
     CbExplorerStartupLocation.Checked := Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False);
@@ -435,7 +435,7 @@ begin
   Rename1.ImageIndex := DB_IC_RENAME;
   Addnewcommand1.ImageIndex := DB_IC_EXPLORER;
   Remove1.ImageIndex := DB_IC_DELETE_INFO;
-  CbCkeckLinksOnUpdate.Enabled := not FolderView;
+  CbCheckLinksOnUpdate.Enabled := not FolderView;
   ClientHeight := 484;
   PcMainChange(Self);
   WlDefaultJPEGOptions.Color := clWindow;
@@ -539,7 +539,7 @@ begin
     Settings.WriteBool('Options', 'SortGroupsByName', CbSortGroups.Checked);
     Settings.WriteBool('Options', 'UseHotSelect', CbListViewHotSelect.Checked);
     Settings.WriteBool('Editor', 'VirtualCursor', CblEditorVirtuaCursor.Checked);
-    Settings.WriteBool('Options', 'CheckUpdateLinks', CbCkeckLinksOnUpdate.Checked);
+    Settings.WriteBool('Options', 'CheckUpdateLinks', CbCheckLinksOnUpdate.Checked);
 
     Settings.WriteBool('Options', 'RunExplorerAtStartUp', CbStartUpExplorer.Checked);
     Settings.WriteBool('Options', 'UseSpecialStartUpFolder', CbExplorerStartupLocation.Checked);
@@ -723,7 +723,7 @@ begin
     Rename1.Caption := L('Rename');
     CblEditorVirtuaCursor.Caption := L('Virtual cursor to the Editor');
     Default1.Caption := L('Default');
-    CbCkeckLinksOnUpdate.Caption := L('Check changes of files and update links (may slow down program)');
+    CbCheckLinksOnUpdate.Caption := L('Check changes of files and update links (may slow down program)');
     CbStartUpExplorer.Caption := L('Start Explorer at startup');
     CbExplorerStartupLocation.Caption := L('Use folder');
     CbDontAddSmallFiles.Caption := L('Do not add files to collection if size less than') + ':';
@@ -1418,7 +1418,7 @@ begin
   EdExplorerStartupLocation.Enabled := CbExplorerStartupLocation.Checked;
 end;
 
-procedure TOptionsForm.Button25Click(Sender: TObject);
+procedure TOptionsForm.BtnSelectExplorerStartupFolderClick(Sender: TObject);
 var
   Dir: string;
 begin

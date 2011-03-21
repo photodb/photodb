@@ -183,7 +183,7 @@ object FormJpegOptions: TFormJpegOptions
     Width = 75
     Height = 25
     Caption = 'OK'
-    TabOrder = 0
+    TabOrder = 4
     OnClick = BtOKClick
   end
   object BtCancel: TButton
@@ -192,7 +192,7 @@ object FormJpegOptions: TFormJpegOptions
     Width = 75
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 1
+    TabOrder = 3
     OnClick = BtCancelClick
   end
   object GbJPEGOption: TGroupBox
@@ -234,7 +234,7 @@ object FormJpegOptions: TFormJpegOptions
     Width = 241
     Height = 17
     Caption = 'Optimize to File Size'
-    TabOrder = 3
+    TabOrder = 0
     OnClick = CbOptimizeToSizeClick
   end
   object Edit1: TEdit
@@ -243,7 +243,7 @@ object FormJpegOptions: TFormJpegOptions
     Width = 193
     Height = 21
     Enabled = False
-    TabOrder = 4
+    TabOrder = 1
     Text = '100'
     OnKeyPress = Edit1KeyPress
   end

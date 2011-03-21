@@ -163,7 +163,7 @@ object SplitExportForm: TSplitExportForm
         TabOrder = 1
         object EdDBName: TWatermarkedEdit
           Left = 8
-          Top = 3
+          Top = 0
           Width = 1200
           Height = 21
           ReadOnly = True

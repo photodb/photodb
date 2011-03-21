@@ -422,7 +422,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Top = 0
     Width = 162
     Height = 154
-    Date = 38187.745693935180000000
+    Date = 38187.010807268520000000
     PopupMenu = PmDate
     TabOrder = 0
     OnDblClick = BtOKClick
@@ -433,7 +433,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Width = 67
     Height = 17
     Caption = 'Ok'
-    TabOrder = 1
+    TabOrder = 3
     OnClick = BtOKClick
   end
   object BtCancel: TButton
@@ -456,7 +456,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Kind = dtkTime
     ParentBiDiMode = False
     PopupMenu = PmTime
-    TabOrder = 3
+    TabOrder = 1
   end
   object PmDate: TPopupMenu
     OnPopup = PmDatePopup

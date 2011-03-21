@@ -260,10 +260,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -295,7 +291,7 @@ object PropertiesForm: TPropertiesForm
       end
       object WidthLabel: TLabel
         Left = 3
-        Top = 242
+        Top = 224
         Width = 28
         Height = 13
         Caption = 'Width'
@@ -308,7 +304,7 @@ object PropertiesForm: TPropertiesForm
       end
       object Heightlabel: TLabel
         Left = 3
-        Top = 224
+        Top = 242
         Width = 28
         Height = 13
         Caption = 'Heigh'
@@ -460,7 +456,7 @@ object PropertiesForm: TPropertiesForm
         Lines.Strings = (
           '<data>')
         ReadOnly = True
-        TabOrder = 7
+        TabOrder = 8
       end
       object widthmemo: TMemo
         Tag = 11
@@ -473,7 +469,7 @@ object PropertiesForm: TPropertiesForm
         Lines.Strings = (
           '<data>')
         ReadOnly = True
-        TabOrder = 8
+        TabOrder = 7
       end
       object SizeLabel: TMemo
         Tag = 11
@@ -610,10 +606,6 @@ object PropertiesForm: TPropertiesForm
     object TsGroups: TTabSheet
       Caption = 'Groups'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -1278,10 +1270,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -1302,10 +1290,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -1358,10 +1342,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)

@@ -73,7 +73,7 @@ object FormCDExport: TFormCDExport
       Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Export'
-      TabOrder = 0
+      TabOrder = 5
       OnClick = ButtonExportClick
     end
     object CheckBoxDeleteFiles: TCheckBox
@@ -101,7 +101,7 @@ object FormCDExport: TFormCDExport
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       ReadOnly = True
-      TabOrder = 3
+      TabOrder = 0
       Text = 'c:\'
     end
     object ButtonChooseDirectory: TButton
@@ -111,7 +111,7 @@ object FormCDExport: TFormCDExport
       Height = 21
       Anchors = [akTop, akRight]
       Caption = 'Choose'
-      TabOrder = 4
+      TabOrder = 3
       OnClick = ButtonChooseDirectoryClick
     end
     object CheckBoxCreatePortableDB: TCheckBox
@@ -122,7 +122,7 @@ object FormCDExport: TFormCDExport
       Caption = 'Create Portable DB'
       Checked = True
       State = cbChecked
-      TabOrder = 5
+      TabOrder = 4
     end
   end
   object PanelTop: TPanel
@@ -132,8 +132,6 @@ object FormCDExport: TFormCDExport
     Height = 185
     Align = alTop
     TabOrder = 2
-    ExplicitLeft = 8
-    ExplicitTop = -6
     DesignSize = (
       716
       185)
@@ -489,7 +487,7 @@ object FormCDExport: TFormCDExport
         end>
       Style = csExDropDownList
       Anchors = [akLeft, akTop, akRight]
-      TabOrder = 0
+      TabOrder = 2
       OnSelect = ComboBoxPathListSelect
       ShowDropDownMenu = True
       LastItemIndex = 0
@@ -502,7 +500,7 @@ object FormCDExport: TFormCDExport
       Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Add items'
-      TabOrder = 1
+      TabOrder = 3
       OnClick = ButtonAddItemsClick
     end
     object ButtonRemoveItems: TButton
@@ -512,7 +510,7 @@ object FormCDExport: TFormCDExport
       Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Remove items'
-      TabOrder = 2
+      TabOrder = 4
       OnClick = ButtonRemoveItemsClick
     end
     object ButtonCreateDirectory: TButton
@@ -522,7 +520,7 @@ object FormCDExport: TFormCDExport
       Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Create directory'
-      TabOrder = 3
+      TabOrder = 5
       OnClick = ButtonCreateDirectoryClick
     end
     object EditLabel: TWatermarkedEdit
@@ -530,7 +528,7 @@ object FormCDExport: TFormCDExport
       Top = 112
       Width = 177
       Height = 21
-      TabOrder = 4
+      TabOrder = 0
       WatermarkText = 'CDLabel'
     end
     object EditCDSize: TEdit
@@ -539,7 +537,7 @@ object FormCDExport: TFormCDExport
       Width = 217
       Height = 21
       ReadOnly = True
-      TabOrder = 5
+      TabOrder = 1
       Text = '0 Mb'
     end
   end

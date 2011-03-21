@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus,
   DB, WebLink, uConstants, UnitDBDeclare, uFileUtils, Dolphin_DB,
-  uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils, uSettings;
+  uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils, uSettings, Spin;
 
 type
   TFormFastFileRenamer = class(TDBForm)
@@ -17,12 +17,11 @@ type
     pmSort: TPopupMenu;
     SortbyFileName1: TMenuItem;
     SortbyFileSize1: TMenuItem;
-    Button3: TButton;
+    BtnHelp: TButton;
     Panel3: TPanel;
     BtnOK: TButton;
     BtnCancel: TButton;
     CheckBox1: TCheckBox;
-    Edit2: TEdit;
     Label2: TLabel;
     CmMaskList: TComboBox;
     BtAdd: TButton;
@@ -31,11 +30,12 @@ type
     SortbyModified1: TMenuItem;
     SortbyFileType1: TMenuItem;
     WebLinkWarning: TWebLink;
+    SedStartN: TSpinEdit;
     procedure FormCreate(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure BtnOKClick(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure BtnHelpClick(Sender: TObject);
     procedure SortbyFileName1Click(Sender: TObject);
     procedure SortbyFileSize1Click(Sender: TObject);
     procedure SortbyFileNumber1Click(Sender: TObject);
@@ -146,7 +146,7 @@ var
 begin
   for I := 1 to ValueListEditor1.Strings.Count do
   begin
-    N := StrToIntDef(Edit2.Text, 1) - 1 + I;
+    N := SedStartN.Value - 1 + I;
     S := CmMaskList.Text;
     S := StringReplace(S, '%fn', GetFileNameWithoutExt(ExtractFileName(ValueListEditor1.Cells[0, I])),
       [RfReplaceAll, RfIgnoreCase]);
@@ -224,7 +224,7 @@ begin
   Close;
 end;
 
-procedure TFormFastFileRenamer.Button3Click(Sender: TObject);
+procedure TFormFastFileRenamer.BtnHelpClick(Sender: TObject);
 var
   Info : string;
 begin
