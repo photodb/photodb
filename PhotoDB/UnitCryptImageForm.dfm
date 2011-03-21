@@ -142,7 +142,7 @@ object CryptImageForm: TCryptImageForm
     IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
-    EnterBould = True
+    EnterBould = False
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True

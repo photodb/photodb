@@ -774,7 +774,7 @@ var
   SQL_: string;
   FirstID: Boolean;
 begin
- if IdOk = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID),
+ if IdOk = MessageBoxDB(GetActiveFormHandle, TA('Do you really want to delete this info from Collection?', DBMenuID),
     TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     FQuery := GetQuery;

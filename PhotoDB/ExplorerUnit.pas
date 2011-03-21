@@ -6526,7 +6526,7 @@ end;
 
 procedure TExplorerForm.FileName1Click(Sender: TObject);
 var
-  i, l, index, n : integer;
+  I, L, Index, N : integer;
   aType : byte;
 
 type

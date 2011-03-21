@@ -316,7 +316,7 @@ begin
   ImageHistory := TBitmapHistory.Create;
   ImageHistory.OnHistoryChange := HistoryChanged;
   CurrentImage := TBitmap.Create;
-  CurrentImage.PixelFormat := Pf32bit;
+  CurrentImage.PixelFormat := pf32bit;
   CurrentImage.Width := 0;
   CurrentImage.Height := 0;
   Buffer := TBitmap.Create;

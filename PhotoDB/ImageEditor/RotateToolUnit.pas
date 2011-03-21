@@ -129,11 +129,11 @@ begin
   SelectChooseBox.OnClick := SelectChooseBoxClick;
 
   CustomAngle := TAngle.Create(AOwner);
+  CustomAngle.Parent := Self;
   CustomAngle.Top := SelectChooseBox.Top + SelectChooseBox.Height + 5;
   CustomAngle.Left := 5;
   CustomAngle.Width := 50;
   CustomAngle.Height := 50;
-  CustomAngle.Parent := Self;
   CustomAngle.OnChange := AngleChanged;
 
   AngleEdit := TSpinEdit.Create(AOwner);

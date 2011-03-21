@@ -5,7 +5,7 @@ interface
 uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
   Rating, ComCtrls, StdCtrls, ExtCtrls, Forms, Windows, Classes,
   Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
-  GraphicSelectEx, ValEdit, GraphicCrypt, ADODB, uLogger, uActivationUtils,
+  ValEdit, GraphicCrypt, ADODB, uLogger, uActivationUtils,
   EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
   uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,

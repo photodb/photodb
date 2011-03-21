@@ -414,7 +414,7 @@ var
     if Result <> '' then
       for I := 1 to Length(Result) do
       begin
-        if not CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+        if CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
         begin
           Delete(Result, 1, I - 1);
           Break;
@@ -428,6 +428,8 @@ var
         Break;
       end;
     end;
+    if Result = '' then
+      Result := Str;
   end;
 
 begin

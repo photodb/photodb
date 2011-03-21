@@ -129,7 +129,7 @@ begin
   FArray.Clear;
 end;
 
-constructor TBitmapHistory.create;
+constructor TBitmapHistory.Create;
 begin
   inherited;
   FPosition := -1;

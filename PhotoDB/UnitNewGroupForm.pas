@@ -145,7 +145,7 @@ begin
     Group.GroupCode := CreateNewGroupCode
   else
     Group.GroupCode := FGroupCode;
-  Group.GroupImage.Assign(ImGroup.Picture.Graphic as TJpegImage);
+  Group.GroupImage.Assign(ImGroup.Picture.Graphic);
   Group.GroupComment := MemComments.Text;
   Group.GroupKeyWords := MemKeywords.Text;
   Group.AutoAddKeyWords := CbAddkeywords.Checked;
@@ -231,28 +231,31 @@ var
   TS: Tstrings;
 begin
   Ts := TStringList.Create;
-  Ts.Clear;
-  Directory := IncludeTrailingBackslash(ProgramDir) + PlugInImagesFolder;
-  Found := FindFirst(Directory + '*.jpgc', FaAnyFile, SearchRec);
   try
-    while Found = 0 do
-    begin
-      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+    Directory := IncludeTrailingBackslash(ProgramDir) + PlugInImagesFolder;
+    Found := FindFirst(Directory + '*.jpgc', FaAnyFile, SearchRec);
+    try
+      while Found = 0 do
       begin
-        if FileExistsSafe(Directory + SearchRec.Name) then
-          try
-            if ValidJPEGContainer(Directory + SearchRec.Name) then
-              TS.Add(Directory + SearchRec.Name);
-          except
-          end;
+        if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+        begin
+          if FileExistsSafe(Directory + SearchRec.Name) then
+            try
+              if ValidJPEGContainer(Directory + SearchRec.Name) then
+                TS.Add(Directory + SearchRec.Name);
+            except
+            end;
+        end;
+        Found := SysUtils.FindNext(SearchRec);
       end;
-      Found := SysUtils.FindNext(SearchRec);
+    finally
+      FindClose(SearchRec);
     end;
+    GraphicSelect1.Galeries := Ts;
+    GraphicSelect1.Showgaleries := True;
   finally
-    FindClose(SearchRec);
+    F(Ts);
   end;
-  GraphicSelect1.Galeries := Ts;
-  GraphicSelect1.Showgaleries := True;
 end;
 
 function TNewGroupForm.GetFormID: string;
@@ -280,7 +283,7 @@ begin
     end;
     ImGroup.Picture.Graphic := B;
   finally
-    B.Free;
+    F(B);
   end;
 end;
 
@@ -299,7 +302,7 @@ var
 begin
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
-  SmallB.PixelFormat := Pf24bit;
+  SmallB.PixelFormat := pf24bit;
   SmallB.Width := 16;
   SmallB.Height := 16;
   SmallB.Canvas.Pen.Color := ClWindow;

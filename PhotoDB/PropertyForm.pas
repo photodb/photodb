@@ -373,50 +373,25 @@ end;
 
 function TPropertyManager.NewFileProperty(FileName: string): TPropertiesForm;
 begin
-  if not Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
-  begin
-    if PropertyCount > 0 then
-      Result := FPropertys[0]
-    else
-      Application.CreateForm(TPropertiesForm, Result);
-  end else
-  begin
-    Result := GetPropertyByFileName(FileName);
-    if Result <> nil then
-      Exit
-    else
-      Result := NewSimpleProperty;
-  end;
+  Result := GetPropertyByFileName(FileName);
+  if Result <> nil then
+    Exit
+  else
+    Result := NewSimpleProperty;
 end;
 
 function TPropertyManager.NewIDProperty(ID: Integer): TPropertiesForm;
 begin
-  if not Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
-  begin
-    if PropertyCount>0 then
-      Result := FPropertys[0]
-    else
-      Application.CreateForm(TPropertiesForm, Result);
-  end else
-  begin
-    Result := GetPropertyByID(ID);
-    if Result <> nil then
-      Exit
-    else
-      Result := NewSimpleProperty;
-  end;
+  Result := GetPropertyByID(ID);
+  if Result <> nil then
+    Exit
+  else
+    Result := NewSimpleProperty;
 end;
 
 function TPropertyManager.NewSimpleProperty: TPropertiesForm;
 begin
-  if not Settings.Readbool('Options', 'AllowManyInstancesOfProperty', True) then
-  begin
-    if PropertyCount > 0 then
-      Result := FPropertys[0]
-    else
-      Application.CreateForm(TPropertiesForm, Result);
-  end else
-    Application.CreateForm(TPropertiesForm, Result);
+  Application.CreateForm(TPropertiesForm, Result);
 end;
 
 function TPropertyManager.PropertyCount: Integer;

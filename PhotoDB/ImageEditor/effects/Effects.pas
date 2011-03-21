@@ -1899,13 +1899,10 @@ begin
           end;
           Inc(Dest);
 
-          if y mod 50=0 then
-          If Assigned(CallBack) then CallBack(Round(100*y/Bitmap.Height),Terminating);
-          if Terminating then Break;
          end;
-
-
-
+        if y mod 50=0 then
+        If Assigned(CallBack) then CallBack(Round(100*x/W),Terminating);
+        if Terminating then Break;
         end
       end;
       180: begin

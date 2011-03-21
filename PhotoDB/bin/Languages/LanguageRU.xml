@@ -642,6 +642,7 @@
     <translate name="Edit groups" value="Редактировать группы" />
     <translate name="Busy..." value="Занято..." />	
     <translate name="Unable to show menu!" value="невозможно отобразить меню!" />
+    <translate name="Do you really want to delete this info from Collection?" value="Вы действительно хотите удалить эту информацию из БД?" />
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />
@@ -1528,12 +1529,13 @@
   <scope name="Options">
 	<translate name="Options" value="Настройки"/>
 	<translate name="Change default JPEG Options" value="Изменить настройки JPEG по умолчанию"/>
-	
+	<translate name="Default encryption method" value="Алгоритм для шифрования" />
 	<translate name="Backup" value="Резервное копирование"/>
 	<translate name="Set" value="Установить"/>
 	<translate name="Rename" value="Переименовать"/>
 	<translate name="Delete" value="Удалить"/>
 	<translate name="Save" value="Сохранить"/>
+	<translate name="Caption" value="Заголовок"/>	
 	<translate name="Width" value="Ширина"/>
 	<translate name="Height" value="Высота"/>	
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
@@ -1585,8 +1587,8 @@
 	<translate name="Down" value="Вниз"/>	
 	<translate name="Display menu for" value="Отображать меню для"/>	
 	<translate name="ID Menu" value="ID Меню"/>
-	<translate name="Viewer" value="Просмотра"/>
-	<translate name="Explorer" value="Проводника"/>
+	<translate name="Viewer window" value="Просмотра"/>
+	<translate name="Explorer window" value="Проводника"/>
 	<translate name="Clear previews cache" value="Очистить кэш предпросмотров"/>	
 	<translate name="Clear icons cache" value="Очистить кэш иконок"/>	
 	<translate name="Show EXIF marker" value="Показывать EXIF заголовок"/>
@@ -1594,12 +1596,9 @@
 	<translate name="Display links &quot;Other places&quot;" value="Отображать ссылки &quot;Другие места&quot;"/>
 	<translate name="&quot;Next&quot; by click" value="&quot;Следующий&quot; при клике"/>
 	<translate name="Use the selection by hover on the list" value="Использовать выделение при наведении в списках"/>
-	<translate name="Rotate the image on the disk without asking for confirmation" value="Поворачивать изображение на диске не спрашивая подтверждения"/>
-	<translate name="Even if the file in the database, rotate on drive" value="Даже если файл в БД, поворачивать на диске"/>
 	<translate name="Sort groups" value="Сортировать группы"/>
 	<translate name="Create backup every" value="Создавать резервную копию каждые"/>	
 	<translate name="days" value="дней"/>
-	<translate name="Allow multiple instances of properties window" value="Разрешить загрузку нескольких копий окна свойств"/>
 	<translate name="My documents" value="Мои документы"/>
 	<translate name="My computer" value="Мой компьютер"/>
 	<translate name="My pictures" value="Мои изображения"/>
@@ -1613,13 +1612,10 @@
 	<translate name="Check changes of files and update links (may slow down program)" value="Следить за изменением файлов и обновлять ссылки (может замедлять работу)"/>
 	<translate name="Start Explorer at startup" value="Запускать проводник при запуске"/>
 	<translate name="Use folder" value="Использовать папку"/>
-	<translate name="Group photos in search window" value="Разбивать на группы в поисковике"/>
 	<translate name="Passwords" value="Пароли"/>	
-	<translate name="Use full selection in lists" value="Использовать полное выделение в списках"/>
-	<translate name="Round size" value="Размер закругления"/>
-	<translate name="Use a faster boot files (DB in the background)" value="Использовать быструю загрузку файлов (бд в фоне)"/>
 	<translate name="Use small icons for toolbars" value="Использовать маленькие иконки для тулбаров"/>
-	<translate name="Options" value="Настройки"/>
+	<translate name="Viewer" value="Просмотр"/>
+	<translate name="Explorer" value="Проводник"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>
