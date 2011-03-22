@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
   ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics, uDBForm, uMemory,
-  uShellIntegration, uConstants, uSearchTypes, WebLinkList, WebLink;
+  uShellIntegration, uConstants, uSearchTypes, WebLinkList, WebLink, AppEvnts;
 
 type
   TFormQuickGroupInfo = class(TDBForm)
@@ -32,6 +32,7 @@ type
     GroupsImageList: TImageList;
     PopupMenu2: TPopupMenu;
     WllGroups: TWebLinkList;
+    ApplicationEvents1: TApplicationEvents;
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure EditGroup1Click(Sender: TObject);
@@ -40,6 +41,7 @@ type
     procedure SearchForGroup1Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
     FGroup: TGroup;
@@ -90,6 +92,13 @@ begin
   finally
     R(FormQuickGroupInfo);
   end;
+end;
+
+procedure TFormQuickGroupInfo.ApplicationEvents1Message(var Msg: tagMSG;
+  var Handled: Boolean);
+begin
+  if (Msg.message = WM_MOUSEWHEEL) then
+    WllGroups.PerformMouseWheel(Msg.wParam, Handled);
 end;
 
 procedure TFormQuickGroupInfo.BtnOkClick(Sender: TObject);

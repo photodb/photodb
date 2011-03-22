@@ -126,6 +126,9 @@ procedure TFormChangeGroup.ApplicationEvents1Message(var Msg: tagMSG;
 begin
   if msg.message = FReloadGroupsMessage then
     ReloadGroups;
+
+  if (Msg.message = WM_MOUSEWHEEL) then
+    WllGroups.PerformMouseWheel(Msg.wParam, Handled);
 end;
 
 procedure TFormChangeGroup.BtnCancelClick(Sender: TObject);

@@ -55,7 +55,7 @@ type
     PopupMenu3: TPopupMenu;
     Datenotexists1: TMenuItem;
     PanelValueIsDateSets: TPanel;
-    PopupMenu4: TPopupMenu;
+    PmEditGroups: TPopupMenu;
     EditGroups1: TMenuItem;
     GroupsManager1: TMenuItem;
     DateExists1: TMenuItem;
@@ -229,7 +229,7 @@ type
     procedure LoadLanguage;
     procedure HelpTimerTimer(Sender: TObject);
     procedure PopupMenu7Popup(Sender: TObject);
-    procedure PopupMenu4Popup(Sender: TObject);
+    procedure PmEditGroupsPopup(Sender: TObject);
     procedure Edit2KeyPress(Sender: TObject; var Key: Char);
     procedure PopupMenu8Popup(Sender: TObject);
     procedure OpeninExplorer1Click(Sender: TObject);
@@ -2057,6 +2057,9 @@ begin
   if (Msg.message = WM_KEYUP) and SearchEdit.Focused then
     Msg.Message := 0;
 
+  if (Msg.message = WM_MOUSEWHEEL) then
+    WllGroups.PerformMouseWheel(Msg.wParam, Handled);
+
   if Msg.hwnd = ElvMain.Handle then
   begin
     if Msg.message = WM_RBUTTONDOWN then
@@ -2072,15 +2075,18 @@ begin
 
     if (Msg.message = WM_MOUSEWHEEL) then
     begin
-      if CtrlKeyDown then
+      if not Handled then
       begin
-        if Msg.wParam > 0 then i := 1 else i := -1;
-        ListViewMouseWheel(ElvMain, [ssCtrl], i, Point(0,0), TmpBool);
-        Msg.message := 0;
-      end;
+        if CtrlKeyDown then
+        begin
+          if Msg.wParam > 0 then i := 1 else i := -1;
+          ListViewMouseWheel(ElvMain, [ssCtrl], i, Point(0,0), TmpBool);
+          Msg.message := 0;
+        end;
 
-      Application.HideHint;
-      THintManager.Instance.CloseHint;
+        Application.HideHint;
+        THintManager.Instance.CloseHint;
+      end;
     end;
 
     if Msg.message = WM_KEYDOWN then
@@ -2460,7 +2466,7 @@ begin
   Setvalue1.Visible := not FUpdatingDB;
 end;
 
-procedure TSearchForm.PopupMenu4Popup(Sender: TObject);
+procedure TSearchForm.PmEditGroupsPopup(Sender: TObject);
 begin
   EditGroups1.Visible := not FUpdatingDB;
 end;

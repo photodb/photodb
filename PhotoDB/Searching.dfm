@@ -198,7 +198,6 @@ object SearchForm: TSearchForm
       ParentColor = True
       TabOrder = 3
       Visible = False
-      ExplicitTop = 321
       DesignSize = (
         178
         352)
@@ -456,6 +455,7 @@ object SearchForm: TSearchForm
         BevelOuter = bvNone
         BorderStyle = bsNone
         TabOrder = 10
+        OnDblClick = ComboBox1_DblClick
         VerticalIncrement = 3
         HorizontalIncrement = 5
         LineHeight = 0
@@ -472,8 +472,6 @@ object SearchForm: TSearchForm
       ParentColor = True
       TabOrder = 2
       Visible = False
-      ExplicitTop = 722
-      ExplicitHeight = 15
     end
     object pnDateRange: TPanel
       Left = 1
@@ -526,6 +524,7 @@ object SearchForm: TSearchForm
         PaintInfoGroup.MarginBottom.CaptionIndent = 4
         ParentCtl3D = False
         ParentFont = False
+        PopupMenu = PmEditGroups
         Scrollbars.HorzEnabled = False
         ShowGroupMargins = True
         Selection.AlphaBlend = True
@@ -546,7 +545,6 @@ object SearchForm: TSearchForm
         OnItemSelectionChanged = elvDateRangeItemSelectionChanged
         OnMouseDown = elvDateRangeMouseDown
         OnResize = elvDateRangeResize
-        ExplicitHeight = 217
       end
       object dblDate: TDBLoading
         Left = 61
@@ -1183,8 +1181,8 @@ object SearchForm: TSearchForm
       OnClick = Datenotsets1Click
     end
   end
-  object PopupMenu4: TPopupMenu
-    OnPopup = PopupMenu4Popup
+  object PmEditGroups: TPopupMenu
+    OnPopup = PmEditGroupsPopup
     Left = 224
     Top = 88
     object EditGroups1: TMenuItem

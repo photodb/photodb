@@ -4,9 +4,11 @@ object FormChangeGroup: TFormChangeGroup
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Change Group'
-  ClientHeight = 364
-  ClientWidth = 328
+  ClientHeight = 347
+  ClientWidth = 294
   Color = clBtnFace
+  Constraints.MinHeight = 375
+  Constraints.MinWidth = 250
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -16,8 +18,8 @@ object FormChangeGroup: TFormChangeGroup
   Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
-    328
-    364)
+    294
+    347)
   PixelsPerInch = 96
   TextHeight = 13
   object ImgMain: TImage
@@ -118,53 +120,54 @@ object FormChangeGroup: TFormChangeGroup
   object Label3: TLabel
     Tag = 2
     Left = 8
-    Top = 231
+    Top = 214
     Width = 77
     Height = 13
     Anchors = [akLeft, akBottom]
     Caption = 'Related Groups:'
+    ExplicitTop = 231
   end
   object MemComments: TWatermarkedMemo
     Left = 4
     Top = 76
-    Width = 317
+    Width = 283
     Height = 41
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 1
     WatermarkText = 'Write here comment to this group'
   end
   object BtnOk: TButton
-    Left = 252
-    Top = 334
+    Left = 212
+    Top = 317
     Width = 75
     Height = 23
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
-    TabOrder = 7
+    TabOrder = 8
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 171
-    Top = 334
+    Left = 131
+    Top = 317
     Width = 75
     Height = 24
     Anchors = [akRight, akBottom]
     Caption = 'Cancel'
-    TabOrder = 6
+    TabOrder = 7
     OnClick = BtnCancelClick
   end
   object MemKeywords: TWatermarkedMemo
     Left = 3
     Top = 140
-    Width = 317
-    Height = 65
+    Width = 283
+    Height = 48
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     WatermarkText = 'Write here keywords for this group'
   end
   object CbAddkeywords: TCheckBox
     Left = 8
-    Top = 212
+    Top = 195
     Width = 252
     Height = 17
     Anchors = [akLeft, akBottom]
@@ -173,17 +176,17 @@ object FormChangeGroup: TFormChangeGroup
   end
   object CbInclude: TCheckBox
     Left = 8
-    Top = 290
-    Width = 313
+    Top = 273
+    Width = 279
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Include In Quick Lists'
-    TabOrder = 4
+    TabOrder = 5
   end
   object EdName: TWatermarkedEdit
     Left = 60
     Top = 8
-    Width = 260
+    Width = 226
     Height = 37
     Anchors = [akLeft, akTop, akRight]
     Font.Charset = DEFAULT_CHARSET
@@ -197,24 +200,25 @@ object FormChangeGroup: TFormChangeGroup
   end
   object CbPrivateGroup: TCheckBox
     Left = 8
-    Top = 311
-    Width = 313
+    Top = 294
+    Width = 279
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Group is private'
-    TabOrder = 5
+    TabOrder = 6
   end
   object WllGroups: TWebLinkList
     Left = 8
-    Top = 246
-    Width = 312
+    Top = 230
+    Width = 278
     Height = 42
     HorzScrollBar.Visible = False
+    Anchors = [akLeft, akRight, akBottom]
     BevelEdges = []
     BevelInner = bvNone
     BevelOuter = bvNone
     BorderStyle = bsNone
-    TabOrder = 8
+    TabOrder = 4
     OnDblClick = WllGroupsDblClick
     VerticalIncrement = 5
     HorizontalIncrement = 5

@@ -4,9 +4,11 @@ object NewGroupForm: TNewGroupForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Create New Group'
-  ClientHeight = 299
-  ClientWidth = 268
+  ClientHeight = 347
+  ClientWidth = 294
   Color = clBtnFace
+  Constraints.MinHeight = 375
+  Constraints.MinWidth = 250
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -15,6 +17,9 @@ object NewGroupForm: TNewGroupForm
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  DesignSize = (
+    294
+    347)
   PixelsPerInch = 96
   TextHeight = 13
   object ImGroup: TImage
@@ -96,17 +101,19 @@ object NewGroupForm: TNewGroupForm
   end
   object Label3: TLabel
     Tag = 2
-    Left = 8
-    Top = 192
+    Left = 4
+    Top = 208
     Width = 77
     Height = 13
+    Anchors = [akLeft, akBottom]
     Caption = 'Related Groups:'
   end
   object EdName: TWatermarkedEdit
     Left = 60
     Top = 12
-    Width = 201
+    Width = 226
     Height = 35
+    Anchors = [akLeft, akTop, akRight]
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -24
@@ -119,25 +126,28 @@ object NewGroupForm: TNewGroupForm
   object MemComments: TWatermarkedMemo
     Left = 4
     Top = 76
-    Width = 257
+    Width = 282
     Height = 41
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 1
     WatermarkText = 'Place here comments to this group'
   end
   object BtnOk: TButton
-    Left = 189
-    Top = 277
+    Left = 211
+    Top = 315
     Width = 75
-    Height = 17
+    Height = 24
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 8
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 110
-    Top = 277
+    Left = 130
+    Top = 315
     Width = 75
-    Height = 17
+    Height = 24
+    Anchors = [akRight, akBottom]
     Caption = 'Cancel'
     TabOrder = 7
     OnClick = BtnCancelClick
@@ -145,51 +155,61 @@ object NewGroupForm: TNewGroupForm
   object MemKeywords: TWatermarkedMemo
     Left = 4
     Top = 140
-    Width = 257
-    Height = 29
+    Width = 282
+    Height = 43
+    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     WatermarkText = 'Place here keywords for this group'
   end
   object CbAddkeywords: TCheckBox
-    Left = 8
-    Top = 173
-    Width = 249
+    Left = 4
+    Top = 189
+    Width = 274
     Height = 17
+    Anchors = [akLeft, akRight, akBottom]
     Caption = 'Auto Add keyWords'
     TabOrder = 3
   end
-  object CbeGroupList: TComboBoxEx
-    Left = 8
-    Top = 208
-    Width = 255
-    Height = 22
-    ItemsEx = <>
-    TabOrder = 4
-    OnDblClick = CbeGroupListDblClick
-    OnDropDown = CbeGroupListDropDown
-    OnKeyPress = CbeGroupListKeyPress
-    OnSelect = CbeGroupListSelect
-    Images = GroupsImageList
-  end
   object CbInclude: TCheckBox
-    Left = 8
-    Top = 235
-    Width = 253
+    Left = 4
+    Top = 275
+    Width = 278
     Height = 17
+    Anchors = [akLeft, akRight, akBottom]
     Caption = 'Include In Quick Lists'
     Checked = True
     State = cbChecked
     TabOrder = 5
   end
   object CbPrivateGroup: TCheckBox
-    Left = 8
-    Top = 254
-    Width = 253
+    Left = 4
+    Top = 294
+    Width = 278
     Height = 17
+    Anchors = [akLeft, akRight, akBottom]
     Caption = 'Private group'
     Checked = True
     State = cbChecked
     TabOrder = 6
+  end
+  object WllGroups: TWebLinkList
+    Left = 4
+    Top = 225
+    Width = 282
+    Height = 42
+    HorzScrollBar.Visible = False
+    Anchors = [akLeft, akRight, akBottom]
+    BevelEdges = []
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    BorderStyle = bsNone
+    TabOrder = 4
+    OnDblClick = WllGroupsDblClick
+    VerticalIncrement = 5
+    HorizontalIncrement = 5
+    LineHeight = 0
+    PaddingTop = 2
+    PaddingLeft = 2
   end
   object PopupMenu1: TPopupMenu
     Left = 152
@@ -218,6 +238,11 @@ object NewGroupForm: TNewGroupForm
     RealSizes = True
     AutoSizeGaleries = False
     Left = 200
+    Top = 24
+  end
+  object ApplicationEvents1: TApplicationEvents
+    OnMessage = ApplicationEvents1Message
+    Left = 240
     Top = 24
   end
 end

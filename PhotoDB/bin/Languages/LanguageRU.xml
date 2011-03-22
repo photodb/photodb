@@ -846,14 +846,16 @@
 	<translate name="Create new group" value="Создать новую группу" />
 	<translate name="Enter group name" value="Введите имя группы" />
 	<translate name="Group is private" value="Личная группа" />
-	<translate name="Group is private" value="Личная группа" />    
+	<translate name="Keywords for group" value="Ключевые слова группы" />    
 	<translate name="Write here comment for this group" value="Запишите сюда коментарий к группе" />
     <translate name="Write here keywords for this group" value="Запишите сюда ключевые слова к группе" />
     <translate name="Load from file" value="Загрузить из файла" />
-	<translate name="Auto add keywords to photo" value="Автоматически добавлять ключевые слова к фото" />    
+	<translate name="Auto add keywords to photo" value="Автоматически добавлять ключевые слова" />    
 	<translate name="Comment for group" value="Коментарий к группе" />   
 	<translate name="Include in quick group list" value="Включать в базовый список групп" />    
 	<translate name="Related groups" value="Связанные группы" />
+	<translate name="Edit related groups" value="Редактировать связанные группы" />
+	<translate name="There are no related groups" value="Нет связанных групп" />
   </scope> 
   <scope name="GroupInfo">
 	<translate name="Group info" value="Информация о группе" />
